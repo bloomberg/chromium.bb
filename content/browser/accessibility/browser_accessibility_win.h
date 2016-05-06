@@ -66,6 +66,7 @@ BrowserAccessibilityWin
     COM_INTERFACE_ENTRY2(IDispatch, IAccessible2)
     COM_INTERFACE_ENTRY(IAccessible)
     COM_INTERFACE_ENTRY(IAccessible2)
+    COM_INTERFACE_ENTRY(IAccessibleAction)
     COM_INTERFACE_ENTRY(IAccessibleApplication)
     COM_INTERFACE_ENTRY(IAccessibleEx)
     COM_INTERFACE_ENTRY(IAccessibleHyperlink)

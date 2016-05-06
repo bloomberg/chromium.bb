@@ -226,12 +226,12 @@ void AccessibilityWinBrowserTest::SetUpTextareaField(
 void AccessibilityWinBrowserTest::SetUpSampleParagraph(
     base::win::ScopedComPtr<IAccessibleText>* paragraph_text) {
   ASSERT_NE(nullptr, paragraph_text);
-  LoadInitialAccessibilityTreeFromHtml(std::string(
+  LoadInitialAccessibilityTreeFromHtml(
       "<!DOCTYPE html><html><body>"
       "<p><b>Game theory</b> is \"the study of "
       "<a href=\"#\" title=\"Mathematical model\">mathematical models</a> "
       "of conflict and<br>cooperation between intelligent rational "
-      "decision-makers.\"</p></body></html>"));
+      "decision-makers.\"</p></body></html>");
 
   // Retrieve the IAccessible interface for the web page.
   base::win::ScopedComPtr<IAccessible> document(GetRendererAccessible());
@@ -1646,6 +1646,67 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
 
   CheckTextAtOffset(textarea_text, CONTENTS_LENGTH - 1, IA2_TEXT_BOUNDARY_ALL,
       0, CONTENTS_LENGTH, base::SysUTF8ToWide(TEXTAREA_CONTENTS));
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestIAccessibleAction) {
+  LoadInitialAccessibilityTreeFromHtml(
+      "<!DOCTYPE html><html><body>"
+      "<img src=\"\" alt=\"image\" "
+      "onclick=\"document.querySelector('img').alt = 'image2';\">"
+      "</body></html>");
+
+  // Retrieve the IAccessible interface for the web page.
+  base::win::ScopedComPtr<IAccessible> document(GetRendererAccessible());
+  std::vector<base::win::ScopedVariant> document_children =
+      GetAllAccessibleChildren(document.get());
+  ASSERT_EQ(1u, document_children.size());
+
+  base::win::ScopedComPtr<IAccessible2> div;
+  ASSERT_HRESULT_SUCCEEDED(QueryIAccessible2(
+      GetAccessibleFromVariant(document.get(), document_children[0].AsInput())
+          .get(),
+      div.Receive()));
+  std::vector<base::win::ScopedVariant> div_children =
+      GetAllAccessibleChildren(div.get());
+  ASSERT_EQ(1u, div_children.size());
+
+  base::win::ScopedComPtr<IAccessible2> image;
+  ASSERT_HRESULT_SUCCEEDED(QueryIAccessible2(
+      GetAccessibleFromVariant(div.get(), div_children[0].AsInput()).get(),
+      image.Receive()));
+  LONG image_role = 0;
+  ASSERT_HRESULT_SUCCEEDED(image->role(&image_role));
+  ASSERT_EQ(ROLE_SYSTEM_GRAPHIC, image_role);
+
+  base::win::ScopedComPtr<IAccessibleAction> image_action;
+  ASSERT_HRESULT_SUCCEEDED(image.QueryInterface(image_action.Receive()));
+
+  LONG n_actions = 0;
+  EXPECT_HRESULT_SUCCEEDED(image_action->nActions(&n_actions));
+  EXPECT_EQ(1, n_actions);
+
+  base::win::ScopedBstr action_name;
+  EXPECT_HRESULT_SUCCEEDED(image_action->get_name(0, action_name.Receive()));
+  EXPECT_EQ(L"click", std::wstring(action_name, action_name.Length()));
+  action_name.Release();
+  EXPECT_HRESULT_FAILED(image_action->get_name(1, action_name.Receive()));
+  EXPECT_EQ(nullptr, static_cast<BSTR>(action_name));
+
+  base::win::ScopedVariant childid_self(CHILDID_SELF);
+  base::win::ScopedBstr image_name;
+  EXPECT_HRESULT_SUCCEEDED(
+      image->get_accName(childid_self, image_name.Receive()));
+  EXPECT_EQ(L"image", std::wstring(image_name, image_name.Length()));
+  image_name.Release();
+  // Cllicking the image will change its name.
+  EXPECT_HRESULT_SUCCEEDED(image_action->doAction(0));
+  AccessibilityNotificationWaiter waiter(shell(), AccessibilityModeComplete,
+                                         ui::AX_EVENT_TEXT_CHANGED);
+  waiter.WaitForNotification();
+  EXPECT_HRESULT_SUCCEEDED(
+      image->get_accName(childid_self, image_name.Receive()));
+  EXPECT_EQ(L"image2", std::wstring(image_name, image_name.Length()));
+  EXPECT_HRESULT_FAILED(image_action->doAction(1));
 }
 
 }  // namespace content

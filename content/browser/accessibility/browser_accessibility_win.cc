@@ -2522,7 +2522,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_valid(boolean* valid) {
 }
 
 //
-// IAccessibleAction mostly not implemented.
+// IAccessibleAction partly implemented.
 //
 
 STDMETHODIMP BrowserAccessibilityWin::nActions(long* n_actions) {
@@ -2532,18 +2532,29 @@ STDMETHODIMP BrowserAccessibilityWin::nActions(long* n_actions) {
   if (!n_actions)
     return E_INVALIDARG;
 
-  // Required for IAccessibleHyperlink::anchor/anchorTarget to work properly.
-  // TODO(nektar): Implement the rest of the logic required by this interface.
-  if (IsHyperlink())
+  // |IsHyperlink| is required for |IAccessibleHyperlink::anchor/anchorTarget|
+  // to work properly because the |IAccessibleHyperlink| interface inherits from
+  // |IAccessibleAction|.
+  if (IsHyperlink() || HasStringAttribute(ui::AX_ATTR_ACTION)) {
     *n_actions = 1;
-  else
+  } else {
     *n_actions = 0;
+  }
+
   return S_OK;
 }
 
 STDMETHODIMP BrowserAccessibilityWin::doAction(long action_index) {
-  return E_NOTIMPL;
+  if (!instance_active())
+    return E_FAIL;
+
+  if (!HasStringAttribute(ui::AX_ATTR_ACTION) || action_index != 0)
+    return E_INVALIDARG;
+
+  manager()->DoDefaultAction(*this);
+  return S_OK;
 }
+
 STDMETHODIMP
 BrowserAccessibilityWin::get_description(long action_index, BSTR* description) {
   return E_NOTIMPL;
@@ -2554,9 +2565,26 @@ STDMETHODIMP BrowserAccessibilityWin::get_keyBinding(long action_index,
                                                      long* n_bindings) {
   return E_NOTIMPL;
 }
+
 STDMETHODIMP BrowserAccessibilityWin::get_name(long action_index, BSTR* name) {
-  return E_NOTIMPL;
+  if (!instance_active())
+    return E_FAIL;
+
+  if (!name)
+    return E_INVALIDARG;
+
+  base::string16 action_verb;
+  if (!GetString16Attribute(ui::AX_ATTR_ACTION, &action_verb) ||
+      action_index != 0) {
+    *name = nullptr;
+    return E_INVALIDARG;
+  }
+
+  *name = SysAllocString(action_verb.c_str());
+  DCHECK(name);
+  return S_OK;
 }
+
 STDMETHODIMP
 BrowserAccessibilityWin::get_localizedName(long action_index,
                                            BSTR* localized_name) {
