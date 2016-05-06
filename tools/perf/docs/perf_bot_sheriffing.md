@@ -101,7 +101,7 @@ There are two types of device failures:
     failure.
 
 For both types of failures, please file a bug with
-[this template](https://bugs.chromium.org/p/chromium/issues/entry?components=Infra>Labs&labels=Pri-1,Performance-BotHealth,OS-Android&comment=Link+to+buildbot+status+page:&summary=Device+offline+on+chromium.perf)
+[this template](https://bugs.chromium.org/p/chromium/issues/entry?components=Infra%3ELabs&labels=Pri-1,Performance-BotHealth,OS-Android&comment=Link+to+buildbot+status+page:&summary=Device+offline+on+chromium.perf)
 which will add an issue to the infra labs queue.
 
 If you need help triaging, here are the common labels you should use:
