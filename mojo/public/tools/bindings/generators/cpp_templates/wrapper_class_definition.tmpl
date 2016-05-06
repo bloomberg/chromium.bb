@@ -30,7 +30,7 @@
 
 {%- set serializer_type = struct|unmapped_type_for_serializer %}
 
-size_t GetSerializedSize_(const {{struct.name}}Ptr& input,
+size_t GetSerializedSize_({{struct.name}}Ptr& input,
                           mojo::internal::SerializationContext* context) {
 
   return mojo::internal::PrepareToSerialize<{{serializer_type}}>(

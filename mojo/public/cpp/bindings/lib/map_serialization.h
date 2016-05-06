@@ -5,195 +5,115 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_LIB_MAP_SERIALIZATION_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_LIB_MAP_SERIALIZATION_H_
 
-#include <stddef.h>
-#include <utility>
-
-#include "mojo/public/cpp/bindings/lib/array_internal.h"
+#include "mojo/public/cpp/bindings/array.h"
 #include "mojo/public/cpp/bindings/lib/map_data_internal.h"
-#include "mojo/public/cpp/bindings/lib/map_internal.h"
 #include "mojo/public/cpp/bindings/lib/serialization_forward.h"
 #include "mojo/public/cpp/bindings/map.h"
 
 namespace mojo {
 namespace internal {
 
-template <typename MapType,
-          typename DataType,
-          bool value_is_move_only_type = IsMoveOnlyType<MapType>::value,
-          bool is_union =
-              IsUnionDataType<typename RemovePointer<DataType>::type>::value>
-struct MapSerializer;
+template <typename Key, typename Value>
+struct MapContext {
+  explicit MapContext(bool in_is_null) : is_null(in_is_null) {}
 
-template <typename MapType, typename DataType>
-struct MapSerializer<MapType, DataType, false, false> {
-  static size_t GetBaseArraySize(size_t count) {
-    return Align(count * sizeof(DataType));
-  }
-  static size_t GetItemSize(const MapType& item,
-                            SerializationContext* context) {
-    return 0;
-  }
+  bool is_null;
+  Array<Key> keys;
+  Array<Value> values;
 };
 
-template <>
-struct MapSerializer<bool, bool, false, false> {
-  static size_t GetBaseArraySize(size_t count) {
-    return Align((count + 7) / 8);
-  }
-  static size_t GetItemSize(bool item, SerializationContext* context) {
-    return 0;
-  }
-};
+template <typename Key, typename Value, typename MaybeConstUserType>
+struct Serializer<Map<Key, Value>, MaybeConstUserType> {
+  using UserType = typename std::remove_const<MaybeConstUserType>::type;
+  using UserKey = typename UserType::Key;
+  using UserValue = typename UserType::Value;
+  using Data = typename Map<Key, Value>::Data_;
 
-template <typename H>
-struct MapSerializer<ScopedHandleBase<H>, Handle_Data, true, false> {
-  static size_t GetBaseArraySize(size_t count) {
-    return Align(count * sizeof(Handle_Data));
-  }
-  static size_t GetItemSize(const ScopedHandleBase<H>& item,
-                            SerializationContext* context) {
-    return 0;
-  }
-};
+  static_assert(std::is_same<MaybeConstUserType, UserType>::value,
+                "Only support serialization of non-const Maps.");
+  static_assert(IsSpecializationOf<Map, UserType>::value,
+                "Custom mapping of mojom map is not supported yet.");
 
-// This template must only apply to pointer mojo entity (structs and arrays).
-// This is done by ensuring that GetDataTypeAsArrayElement<S>::Data is a
-// pointer.
-template <typename S>
-struct MapSerializer<
-    S,
-    typename EnableIf<
-        IsPointer<typename GetDataTypeAsArrayElement<S>::Data>::value,
-        typename GetDataTypeAsArrayElement<S>::Data>::type,
-    true,
-    false> {
-  typedef
-      typename RemovePointer<typename GetDataTypeAsArrayElement<S>::Data>::type
-          S_Data;
-  static size_t GetBaseArraySize(size_t count) {
-    return count * sizeof(Pointer<S_Data>);
-  }
-  static size_t GetItemSize(const S& item, SerializationContext* context) {
-    return GetSerializedSize_(item, context);
-  }
-};
+  static size_t PrepareToSerialize(UserType& input,
+                                   SerializationContext* context) {
+    auto map_context = new MapContext<UserKey, UserValue>(input.is_null());
+    if (!context->custom_contexts)
+      context->custom_contexts.reset(new std::queue<void*>());
+    context->custom_contexts->push(map_context);
 
-template <typename U, typename U_Data>
-struct MapSerializer<U, U_Data, true, true> {
-  static size_t GetBaseArraySize(size_t count) {
-    return count * sizeof(U_Data);
-  }
-  static size_t GetItemSize(const U& item, SerializationContext* context) {
-    return GetSerializedSize_(item, true, context);
-  }
-};
+    if (!input)
+      return 0;
 
-template <>
-struct MapSerializer<String, String_Data*, false, false> {
-  static size_t GetBaseArraySize(size_t count) {
-    return count * sizeof(Pointer<String_Data>);
+    input.DecomposeMapTo(&map_context->keys, &map_context->values);
+
+    size_t struct_overhead = sizeof(Data);
+    size_t keys_size =
+        internal::PrepareToSerialize<Array<Key>>(map_context->keys, context);
+    size_t values_size = internal::PrepareToSerialize<Array<Value>>(
+        map_context->values, context);
+
+    return struct_overhead + keys_size + values_size;
   }
-  static size_t GetItemSize(const String& item, SerializationContext* context) {
-    return GetSerializedSize_(item, context);
+
+  // We don't need an ArrayValidateParams instance for key validation since
+  // we can deduce it from the Key type. (which can only be primitive types or
+  // non-nullable strings.)
+  static void Serialize(UserType& input,
+                        Buffer* buf,
+                        Data** output,
+                        const ArrayValidateParams* value_validate_params,
+                        SerializationContext* context) {
+    std::unique_ptr<MapContext<UserKey, UserValue>> map_context(
+        static_cast<MapContext<UserKey, UserValue>*>(
+            context->custom_contexts->front()));
+    context->custom_contexts->pop();
+
+    if (map_context->is_null) {
+      *output = nullptr;
+      return;
+    }
+
+    auto result = Data::New(buf);
+    if (result) {
+      const ArrayValidateParams* key_validate_params =
+          MapKeyValidateParamsFactory<
+              typename GetDataTypeAsArrayElement<Key>::Data>::Get();
+      internal::Serialize<Array<Key>>(map_context->keys, buf, &result->keys.ptr,
+                                      key_validate_params, context);
+      internal::Serialize<Array<Value>>(map_context->values, buf,
+                                        &result->values.ptr,
+                                        value_validate_params, context);
+    }
+    *output = result;
+  }
+
+  static bool Deserialize(Data* input,
+                          UserType* output,
+                          SerializationContext* context) {
+    bool success = true;
+    if (input) {
+      Array<UserKey> keys;
+      Array<UserValue> values;
+
+      // Note that we rely on complete deserialization taking place in order to
+      // transfer ownership of all encoded handles. Therefore we don't
+      // short-circuit on failure here.
+      if (!internal::Deserialize<Array<Key>>(input->keys.ptr, &keys, context))
+        success = false;
+      if (!internal::Deserialize<Array<Value>>(input->values.ptr, &values,
+                                               context)) {
+        success = false;
+      }
+
+      *output = UserType(std::move(keys), std::move(values));
+    } else {
+      *output = nullptr;
+    }
+    return success;
   }
 };
 
 }  // namespace internal
-
-// TODO(erg): This can't go away yet. We still need to calculate out the size
-// of a struct header, and two arrays.
-template <typename MapKey, typename MapValue>
-inline size_t GetSerializedSize_(const Map<MapKey, MapValue>& input,
-                                 internal::SerializationContext* context) {
-  if (!input)
-    return 0;
-  typedef typename internal::GetDataTypeAsArrayElement<MapKey>::Data DataKey;
-  typedef
-      typename internal::GetDataTypeAsArrayElement<MapValue>::Data DataValue;
-
-  size_t count = input.size();
-  size_t struct_overhead = sizeof(mojo::internal::Map_Data<DataKey, DataValue>);
-  size_t key_base_size =
-      sizeof(internal::ArrayHeader) +
-      internal::MapSerializer<MapKey, DataKey>::GetBaseArraySize(count);
-  size_t value_base_size =
-      sizeof(internal::ArrayHeader) +
-      internal::MapSerializer<MapValue, DataValue>::GetBaseArraySize(count);
-
-  size_t key_data_size = 0;
-  size_t value_data_size = 0;
-  for (auto it = input.begin(); it != input.end(); ++it) {
-    key_data_size += internal::MapSerializer<MapKey, DataKey>::GetItemSize(
-        it->first, context);
-    value_data_size +=
-        internal::MapSerializer<MapValue, DataValue>::GetItemSize(it->second,
-                                                                  context);
-  }
-
-  return struct_overhead + key_base_size + key_data_size + value_base_size +
-         value_data_size;
-}
-
-// We don't need an ArrayValidateParams instance for key validation since
-// we can deduce it from the Key type. (which can only be primitive types or
-// non-nullable strings.)
-template <typename MapKey,
-          typename MapValue,
-          typename DataKey,
-          typename DataValue>
-inline void SerializeMap_(
-    Map<MapKey, MapValue> input,
-    internal::Buffer* buf,
-    internal::Map_Data<DataKey, DataValue>** output,
-    const internal::ArrayValidateParams* value_validate_params,
-    internal::SerializationContext* context) {
-  if (input) {
-    internal::Map_Data<DataKey, DataValue>* result =
-        internal::Map_Data<DataKey, DataValue>::New(buf);
-    if (result) {
-      Array<MapKey> keys;
-      Array<MapValue> values;
-      input.DecomposeMapTo(&keys, &values);
-      const internal::ArrayValidateParams* key_validate_params =
-          internal::MapKeyValidateParamsFactory<DataKey>::Get();
-      SerializeArray_(std::move(keys), buf, &result->keys.ptr,
-                      key_validate_params, context);
-      SerializeArray_(std::move(values), buf, &result->values.ptr,
-                      value_validate_params, context);
-    }
-    *output = result;
-  } else {
-    *output = nullptr;
-  }
-}
-
-template <typename MapKey,
-          typename MapValue,
-          typename DataKey,
-          typename DataValue>
-inline bool Deserialize_(internal::Map_Data<DataKey, DataValue>* input,
-                         Map<MapKey, MapValue>* output,
-                         internal::SerializationContext* context) {
-  bool success = true;
-  if (input) {
-    Array<MapKey> keys;
-    Array<MapValue> values;
-
-    // Note that we rely on complete deserialization taking place in order to
-    // transfer ownership of all encoded handles. Therefore we don't
-    // short-circuit on failure here.
-    if (!Deserialize_(input->keys.ptr, &keys, context))
-      success = false;
-    if (!Deserialize_(input->values.ptr, &values, context))
-      success = false;
-
-    *output = Map<MapKey, MapValue>(std::move(keys), std::move(values));
-  } else {
-    *output = nullptr;
-  }
-  return success;
-}
-
 }  // namespace mojo
 
 #endif  // MOJO_PUBLIC_CPP_BINDINGS_LIB_MAP_SERIALIZATION_H_

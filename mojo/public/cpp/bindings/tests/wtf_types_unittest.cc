@@ -69,17 +69,18 @@ TEST_F(WTFTypesTest, WTFToWTFSerialization_StringArray) {
   WTFArray<WTF::String> cloned_strs = strs.Clone();
 
   mojo::internal::SerializationContext context;
-  size_t size = GetSerializedSize_(cloned_strs, &context);
+  size_t size = mojo::internal::PrepareToSerialize<Array<mojo::String>>(
+      cloned_strs, &context);
 
   mojo::internal::FixedBufferForTesting buf(size);
   mojo::internal::Array_Data<mojo::internal::String_Data*>* data;
   mojo::internal::ArrayValidateParams validate_params(
       0, true, new mojo::internal::ArrayValidateParams(0, false, nullptr));
-  SerializeArray_(std::move(cloned_strs), &buf, &data, &validate_params,
-                  &context);
+  mojo::internal::Serialize<Array<mojo::String>>(cloned_strs, &buf, &data,
+                                                 &validate_params, &context);
 
   WTFArray<WTF::String> strs2;
-  Deserialize_(data, &strs2, nullptr);
+  mojo::internal::Deserialize<Array<mojo::String>>(data, &strs2, nullptr);
 
   EXPECT_TRUE(strs.Equals(strs2));
 }
@@ -88,16 +89,18 @@ TEST_F(WTFTypesTest, WTFToMojoSerialization_StringArray) {
   WTFArray<WTF::String> strs = ConstructStringArray();
 
   mojo::internal::SerializationContext context;
-  size_t size = GetSerializedSize_(strs, &context);
+  size_t size =
+      mojo::internal::PrepareToSerialize<Array<mojo::String>>(strs, &context);
 
   mojo::internal::FixedBufferForTesting buf(size);
   mojo::internal::Array_Data<mojo::internal::String_Data*>* data;
   mojo::internal::ArrayValidateParams validate_params(
       0, true, new mojo::internal::ArrayValidateParams(0, false, nullptr));
-  SerializeArray_(std::move(strs), &buf, &data, &validate_params, &context);
+  mojo::internal::Serialize<Array<mojo::String>>(strs, &buf, &data,
+                                                 &validate_params, &context);
 
   Array<mojo::String> strs2;
-  Deserialize_(data, &strs2, nullptr);
+  mojo::internal::Deserialize<Array<mojo::String>>(data, &strs2, nullptr);
 
   ASSERT_EQ(4u, strs2.size());
   EXPECT_TRUE(strs2[0].is_null());

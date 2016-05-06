@@ -20,7 +20,6 @@ source_set("bindings") {
     "lib/array_internal.cc",
     "lib/array_internal.h",
     "lib/array_serialization.h",
-    "lib/array_serialization_traits.h",
     "lib/array_traits_standard.h",
     "lib/associated_group.cc",
     "lib/associated_interface_ptr_state.h",
@@ -148,7 +147,6 @@ source_set("wtf_support") {
   sources = [
     "lib/array_traits_wtf.h",
     "lib/string_traits_wtf.cc",
-    "lib/wtf_array_serialization.h",
     "lib/wtf_serialization.h",
     "lib/wtf_string_serialization.cc",
     "lib/wtf_string_serialization.h",

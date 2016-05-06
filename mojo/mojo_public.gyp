@@ -134,7 +134,6 @@
         'public/cpp/bindings/lib/array_internal.cc',
         'public/cpp/bindings/lib/array_internal.h',
         'public/cpp/bindings/lib/array_serialization.h',
-        'public/cpp/bindings/lib/array_serialization_traits.h',
         'public/cpp/bindings/lib/array_traits_standard.h',
         'public/cpp/bindings/lib/associated_group.cc',
         'public/cpp/bindings/lib/associated_interface_ptr_state.h',
@@ -240,7 +239,6 @@
       'sources': [
         'public/cpp/bindings/lib/array_traits_wtf.h',
         'public/cpp/bindings/lib/string_traits_wtf.cc',
-        'public/cpp/bindings/lib/wtf_array_serialization.h',
         'public/cpp/bindings/lib/wtf_serialization.h',
         'public/cpp/bindings/lib/wtf_string_serialization.cc',
         'public/cpp/bindings/lib/wtf_string_serialization.h',

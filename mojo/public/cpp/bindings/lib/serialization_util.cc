@@ -97,7 +97,9 @@ SerializationContext::SerializationContext(
     scoped_refptr<MultiplexRouter> in_router)
     : router(std::move(in_router)) {}
 
-SerializationContext::~SerializationContext() {}
+SerializationContext::~SerializationContext() {
+  DCHECK(!custom_contexts || custom_contexts->empty());
+}
 
 }  // namespace internal
 }  // namespace mojo

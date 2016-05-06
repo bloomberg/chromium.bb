@@ -22,14 +22,6 @@
 namespace mojo {
 namespace internal {
 
-// Generated bindings for native-only types will specialize this to |true|.
-// It can be used as a signal (by e.g. the Array serializer) for when to use
-// SerializeNative_ with a type.
-template <typename E>
-struct ShouldUseNativeSerializer {
-  static const bool value = false;
-};
-
 template <typename MaybeConstUserType,
           bool unmapped = std::is_same<
               NativeStructPtr,
@@ -42,7 +34,7 @@ struct NativeStructSerializerImpl<MaybeConstUserType, true> {
                                    SerializationContext* context) {
     if (!input)
       return 0;
-    return GetSerializedSize_(input->data, context);
+    return internal::PrepareToSerialize<Array<uint8_t>>(input->data, context);
   }
 
   static void Serialize(NativeStructPtr& input,
@@ -56,7 +48,8 @@ struct NativeStructSerializerImpl<MaybeConstUserType, true> {
 
     Array_Data<uint8_t>* data = nullptr;
     const ArrayValidateParams params(0, false, nullptr);
-    SerializeArray_(std::move(input->data), buffer, &data, &params, context);
+    internal::Serialize<Array<uint8_t>>(input->data, buffer, &data, &params,
+                                        context);
     *output = reinterpret_cast<NativeStruct_Data*>(data);
   }
 
@@ -66,7 +59,7 @@ struct NativeStructSerializerImpl<MaybeConstUserType, true> {
     Array_Data<uint8_t>* data = reinterpret_cast<Array_Data<uint8_t>*>(input);
 
     NativeStructPtr result(NativeStruct::New());
-    if (!Deserialize_(data, &result->data, context)) {
+    if (!internal::Deserialize<Array<uint8_t>>(data, &result->data, context)) {
       output = nullptr;
       return false;
     }

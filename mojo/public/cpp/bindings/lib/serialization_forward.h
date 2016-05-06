@@ -7,10 +7,8 @@
 
 #include <stddef.h>
 
-#include "mojo/public/cpp/bindings/array.h"
 #include "mojo/public/cpp/bindings/array_traits.h"
 #include "mojo/public/cpp/bindings/lib/wtf_string_serialization.h"
-#include "mojo/public/cpp/bindings/map.h"
 #include "mojo/public/cpp/bindings/native_struct.h"
 #include "mojo/public/cpp/bindings/string_traits.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
@@ -21,32 +19,21 @@
 // wtf_serialization.h if necessary).
 
 namespace mojo {
-
-template <typename T>
-class WTFArray;
-
 namespace internal {
 
-template <typename T>
-class Array_Data;
-
-class ArrayValidateParams;
-
 class Buffer;
-
-template <typename K, typename V>
-class Map_Data;
 
 class NativeStruct_Data;
 
 struct SerializationContext;
 
-template <typename T>
-struct ShouldUseNativeSerializer;
-
 template <typename MojomType, typename MaybeConstUserType>
 struct Serializer;
 
+// PrepareToSerialize() must be matched by a Serialize() for the same input
+// later. Moreover, within the same SerializationContext if PrepareToSerialize()
+// is called for |input_1|, ..., |input_n|, Serialize() must be called for
+// those objects in the exact same order.
 template <typename MojomType, typename InputUserType, typename... Args>
 size_t PrepareToSerialize(InputUserType&& input, Args&&... args) {
   return Serializer<MojomType,
@@ -90,72 +77,6 @@ void Serialize_(NativeStructPtr input,
 bool Deserialize_(internal::NativeStruct_Data* input,
                   NativeStructPtr* output,
                   internal::SerializationContext* context);
-
-// -----------------------------------------------------------------------------
-// Forward declaration for Array.
-
-template <typename E>
-inline size_t GetSerializedSize_(const Array<E>& input,
-                                 internal::SerializationContext* context);
-
-template <typename E>
-inline void SerializeArray_(
-    Array<E> input,
-    internal::Buffer* buf,
-    typename Array<E>::Data_** output,
-    const internal::ArrayValidateParams* validate_params,
-    internal::SerializationContext* context);
-
-template <typename E>
-inline bool Deserialize_(typename Array<E>::Data_* input,
-                         Array<E>* output,
-                         internal::SerializationContext* context);
-
-// -----------------------------------------------------------------------------
-// Forward declaration for WTFArray.
-
-template <typename E>
-inline size_t GetSerializedSize_(const WTFArray<E>& input,
-                                 internal::SerializationContext* context);
-
-template <typename E>
-inline void SerializeArray_(
-    WTFArray<E> input,
-    internal::Buffer* buf,
-    typename WTFArray<E>::Data_** output,
-    const internal::ArrayValidateParams* validate_params,
-    internal::SerializationContext* context);
-
-template <typename E>
-inline bool Deserialize_(typename WTFArray<E>::Data_* input,
-                         WTFArray<E>* output,
-                         internal::SerializationContext* context);
-
-// -----------------------------------------------------------------------------
-// Forward declaration for Map.
-
-template <typename MapKey, typename MapValue>
-inline size_t GetSerializedSize_(const Map<MapKey, MapValue>& input,
-                                 internal::SerializationContext* context);
-
-template <typename MapKey,
-          typename MapValue,
-          typename DataKey,
-          typename DataValue>
-inline void SerializeMap_(
-    Map<MapKey, MapValue> input,
-    internal::Buffer* buf,
-    internal::Map_Data<DataKey, DataValue>** output,
-    const internal::ArrayValidateParams* value_validate_params,
-    internal::SerializationContext* context);
-
-template <typename MapKey,
-          typename MapValue,
-          typename DataKey,
-          typename DataValue>
-inline bool Deserialize_(internal::Map_Data<DataKey, DataValue>* input,
-                         Map<MapKey, MapValue>* output,
-                         internal::SerializationContext* context);
 
 // -----------------------------------------------------------------------------
 // Forward declaration for String.

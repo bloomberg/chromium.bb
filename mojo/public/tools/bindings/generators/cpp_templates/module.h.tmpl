@@ -56,6 +56,26 @@
 #include "{{header}}"
 {%- endfor %}
 
+{#--- Struct Serialization Helpers -#}
+{%  for struct in structs %}
+{%-   if struct|is_native_only_kind and struct|is_typemapped_kind %}
+{# This helps the array serializer understand how to serialize arrays of this
+   native-only type. #}
+
+namespace mojo {
+namespace internal {
+
+template <>
+struct GetDataTypeAsArrayElement<{{struct|cpp_wrapper_type}}> {
+  using Data = NativeStruct_Data*;
+};
+
+}  // namespace internal
+}  // namespace mojo
+
+{%-   endif %}
+{%- endfor %}
+
 {%- for namespace in namespaces_as_array %}
 namespace {{namespace}} {
 {%- endfor %}
@@ -170,46 +190,6 @@ typedef mojo::StructPtr<{{union.name}}> {{union.name}}Ptr;
 {%    if not struct|should_inline and not struct|is_native_only_kind %}
 {%      include "wrapper_class_declaration.tmpl" %}
 {%    endif %}
-{%- endfor %}
-
-{#--- Struct Serialization Helpers -#}
-{%  for struct in structs %}
-{%-   if struct|is_native_only_kind and struct|is_typemapped_kind %}
-{# This helps the array serializer understand how to serialize arrays of this
-   native-only type.
-   TODO(yzshen): Remove these specializations once the array serializtion code
-   is refactored to be specialized with Mojom stanadard type and user type. #}
-
-{%-     if variant %}
-}  // namespace {{variant}}
-{%-     endif %}
-{%-     for namespace in namespaces_as_array|reverse %}
-}  // namespace {{namespace}}
-{%-     endfor %}
-
-namespace mojo {
-namespace internal {
-
-template <>
-struct ShouldUseNativeSerializer<{{struct|cpp_wrapper_type}}> {
-  static const bool value = true;
-};
-
-template <>
-struct GetDataTypeAsArrayElement<{{struct|cpp_wrapper_type}}> {
-  using Data = NativeStruct_Data*;
-};
-
-}  // namespace internal
-}  // namespace mojo
-
-{%-     for namespace in namespaces_as_array %}
-namespace {{namespace}} {
-{%-     endfor %}
-{%-     if variant %}
-namespace {{variant}} {
-{%-     endif %}
-{%-   endif %}
 {%- endfor %}
 
 {#--- Union Serialization Helpers -#}

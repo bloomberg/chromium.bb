@@ -166,16 +166,18 @@ class ArrayCommonTest {
     for (size_t i = 0; i < array.size(); ++i)
       array[i] = static_cast<int32_t>(i);
 
-    size_t size = GetSerializedSize_(array, nullptr);
+    size_t size =
+        mojo::internal::PrepareToSerialize<Array<int32_t>>(array, nullptr);
     EXPECT_EQ(8U + 4 * 4U, size);
 
     mojo::internal::FixedBufferForTesting buf(size);
     mojo::internal::Array_Data<int32_t>* data;
     mojo::internal::ArrayValidateParams validate_params(0, false, nullptr);
-    SerializeArray_(std::move(array), &buf, &data, &validate_params, nullptr);
+    mojo::internal::Serialize<Array<int32_t>>(array, &buf, &data,
+                                              &validate_params, nullptr);
 
     ArrayType<int32_t> array2;
-    Deserialize_(data, &array2, nullptr);
+    mojo::internal::Deserialize<Array<int32_t>>(data, &array2, nullptr);
 
     EXPECT_EQ(4U, array2.size());
     for (size_t i = 0; i < array2.size(); ++i)
@@ -184,16 +186,18 @@ class ArrayCommonTest {
 
   static void Serialization_EmptyArrayOfPOD() {
     ArrayType<int32_t> array;
-    size_t size = GetSerializedSize_(array, nullptr);
+    size_t size =
+        mojo::internal::PrepareToSerialize<Array<int32_t>>(array, nullptr);
     EXPECT_EQ(8U, size);
 
     mojo::internal::FixedBufferForTesting buf(size);
     mojo::internal::Array_Data<int32_t>* data;
     mojo::internal::ArrayValidateParams validate_params(0, false, nullptr);
-    SerializeArray_(std::move(array), &buf, &data, &validate_params, nullptr);
+    mojo::internal::Serialize<Array<int32_t>>(array, &buf, &data,
+                                              &validate_params, nullptr);
 
     ArrayType<int32_t> array2;
-    Deserialize_(data, &array2, nullptr);
+    mojo::internal::Deserialize<Array<int32_t>>(data, &array2, nullptr);
     EXPECT_EQ(0U, array2.size());
   }
 
@@ -206,17 +210,19 @@ class ArrayCommonTest {
       array[j] = std::move(inner);
     }
 
-    size_t size = GetSerializedSize_(array, nullptr);
+    size_t size = mojo::internal::PrepareToSerialize<Array<Array<int32_t>>>(
+        array, nullptr);
     EXPECT_EQ(8U + 2 * 8U + 2 * (8U + 4 * 4U), size);
 
     mojo::internal::FixedBufferForTesting buf(size);
     mojo::internal::Array_Data<mojo::internal::Array_Data<int32_t>*>* data;
     mojo::internal::ArrayValidateParams validate_params(
         0, false, new mojo::internal::ArrayValidateParams(0, false, nullptr));
-    SerializeArray_(std::move(array), &buf, &data, &validate_params, nullptr);
+    mojo::internal::Serialize<Array<Array<int32_t>>>(array, &buf, &data,
+                                                     &validate_params, nullptr);
 
     ArrayType<ArrayType<int32_t>> array2;
-    Deserialize_(data, &array2, nullptr);
+    mojo::internal::Deserialize<Array<Array<int32_t>>>(data, &array2, nullptr);
 
     EXPECT_EQ(2U, array2.size());
     for (size_t j = 0; j < array2.size(); ++j) {
@@ -232,16 +238,18 @@ class ArrayCommonTest {
     for (size_t i = 0; i < array.size(); ++i)
       array[i] = i % 2 ? true : false;
 
-    size_t size = GetSerializedSize_(array, nullptr);
+    size_t size =
+        mojo::internal::PrepareToSerialize<Array<bool>>(array, nullptr);
     EXPECT_EQ(8U + 8U, size);
 
     mojo::internal::FixedBufferForTesting buf(size);
     mojo::internal::Array_Data<bool>* data;
     mojo::internal::ArrayValidateParams validate_params(0, false, nullptr);
-    SerializeArray_(std::move(array), &buf, &data, &validate_params, nullptr);
+    mojo::internal::Serialize<Array<bool>>(array, &buf, &data, &validate_params,
+                                           nullptr);
 
     ArrayType<bool> array2;
-    Deserialize_(data, &array2, nullptr);
+    mojo::internal::Deserialize<Array<bool>>(data, &array2, nullptr);
 
     EXPECT_EQ(10U, array2.size());
     for (size_t i = 0; i < array2.size(); ++i)
@@ -255,7 +263,8 @@ class ArrayCommonTest {
       array[i] = String(&c, 1);
     }
 
-    size_t size = GetSerializedSize_(array, nullptr);
+    size_t size =
+        mojo::internal::PrepareToSerialize<Array<String>>(array, nullptr);
     EXPECT_EQ(8U +            // array header
                   10 * 8U +   // array payload (10 pointers)
                   10 * (8U +  // string header
@@ -266,10 +275,11 @@ class ArrayCommonTest {
     mojo::internal::Array_Data<mojo::internal::String_Data*>* data;
     mojo::internal::ArrayValidateParams validate_params(
         0, false, new mojo::internal::ArrayValidateParams(0, false, nullptr));
-    SerializeArray_(std::move(array), &buf, &data, &validate_params, nullptr);
+    mojo::internal::Serialize<Array<String>>(array, &buf, &data,
+                                             &validate_params, nullptr);
 
     ArrayType<String> array2;
-    Deserialize_(data, &array2, nullptr);
+    mojo::internal::Deserialize<Array<String>>(data, &array2, nullptr);
 
     EXPECT_EQ(10U, array2.size());
     for (size_t i = 0; i < array2.size(); ++i) {

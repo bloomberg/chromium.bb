@@ -6,7 +6,6 @@
 #define MOJO_PUBLIC_CPP_BINDINGS_LIB_WTF_SERIALIZATION_H_
 
 #include "mojo/public/cpp/bindings/lib/array_traits_wtf.h"
-#include "mojo/public/cpp/bindings/lib/wtf_array_serialization.h"
 #include "mojo/public/cpp/bindings/lib/wtf_string_serialization.h"
 #include "mojo/public/cpp/bindings/string_traits_wtf.h"
 

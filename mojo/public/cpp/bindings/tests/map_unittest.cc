@@ -293,15 +293,20 @@ TEST_F(MapTest, ArrayOfMap) {
     Array<Map<int32_t, int8_t>> array(1);
     array[0].insert(1, 42);
 
-    size_t size = GetSerializedSize_(array, nullptr);
+    mojo::internal::SerializationContext context;
+    size_t size =
+        mojo::internal::PrepareToSerialize<Array<Map<int32_t, int8_t>>>(
+            array, &context);
     FixedBufferForTesting buf(size);
     Array_Data<Map_Data<int32_t, int8_t>*>* data;
     ArrayValidateParams validate_params(
         0, false, new ArrayValidateParams(0, false, nullptr));
-    SerializeArray_(std::move(array), &buf, &data, &validate_params, nullptr);
+    mojo::internal::Serialize<Array<Map<int32_t, int8_t>>>(
+        array, &buf, &data, &validate_params, &context);
 
     Array<Map<int32_t, int8_t>> deserialized_array;
-    Deserialize_(data, &deserialized_array, nullptr);
+    mojo::internal::Deserialize<Array<Map<int32_t, int8_t>>>(
+        data, &deserialized_array, &context);
 
     ASSERT_EQ(1u, deserialized_array.size());
     ASSERT_EQ(1u, deserialized_array[0].size());
@@ -315,16 +320,21 @@ TEST_F(MapTest, ArrayOfMap) {
     map_value[1] = true;
     array[0].insert("hello world", std::move(map_value));
 
-    size_t size = GetSerializedSize_(array, nullptr);
+    mojo::internal::SerializationContext context;
+    size_t size =
+        mojo::internal::PrepareToSerialize<Array<Map<String, Array<bool>>>>(
+            array, &context);
     FixedBufferForTesting buf(size);
     Array_Data<Map_Data<String_Data*, Array_Data<bool>*>*>* data;
     ArrayValidateParams validate_params(
         0, false, new ArrayValidateParams(
                       0, false, new ArrayValidateParams(0, false, nullptr)));
-    SerializeArray_(std::move(array), &buf, &data, &validate_params, nullptr);
+    mojo::internal::Serialize<Array<Map<String, Array<bool>>>>(
+        array, &buf, &data, &validate_params, &context);
 
     Array<Map<String, Array<bool>>> deserialized_array;
-    Deserialize_(data, &deserialized_array, nullptr);
+    mojo::internal::Deserialize<Array<Map<String, Array<bool>>>>(
+        data, &deserialized_array, &context);
 
     ASSERT_EQ(1u, deserialized_array.size());
     ASSERT_EQ(1u, deserialized_array[0].size());

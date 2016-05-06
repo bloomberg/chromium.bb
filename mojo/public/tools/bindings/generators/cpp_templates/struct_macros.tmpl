@@ -29,7 +29,8 @@
   decltype({{original_input_field}}) in_{{name}} = {{original_input_field}};
 {%-     endif %}
 
-{%-     if kind|is_struct_kind or kind|is_string_kind %}
+{%-     if kind|is_struct_kind or kind|is_string_kind or kind|is_array_kind or
+           kind|is_map_kind %}
 {%-       set serializer_type = kind|unmapped_type_for_serializer %}
   size += mojo::internal::PrepareToSerialize<{{serializer_type}}>(
       {{input_field}}, {{context}});
@@ -66,6 +67,7 @@
 {%-   set name = pf.field.name %}
 {%-   set kind = pf.field.kind %}
 {%-   if kind|is_object_kind %}
+{%-     set serializer_type = kind|unmapped_type_for_serializer %}
 {%-     set original_input_field = input_field_pattern|format(name) %}
 {%-     set input_field = "in_%s"|format(name) if input_may_be_temp
                                                else original_input_field %}
@@ -73,18 +75,13 @@
   decltype({{original_input_field}}) in_{{name}} = {{original_input_field}};
 {%-     endif %}
 
-{%-     if kind|is_array_kind %}
+{%-     if kind|is_array_kind or kind|is_map_kind %}
   const mojo::internal::ArrayValidateParams {{name}}_validate_params(
       {{kind|get_array_validate_params_ctor_args|indent(10)}});
-  mojo::SerializeArray_(std::move({{input_field}}), {{buffer}},
-      &{{output}}->{{name}}.ptr, &{{name}}_validate_params, {{context}});
-{%-     elif kind|is_map_kind %}
-  const mojo::internal::ArrayValidateParams {{name}}_validate_params(
-      {{kind.value_kind|get_map_validate_params_ctor_args|indent(10)}});
-  mojo::SerializeMap_(std::move({{input_field}}), {{buffer}},
-      &{{output}}->{{name}}.ptr, &{{name}}_validate_params, {{context}});
+  mojo::internal::Serialize<{{serializer_type}}>(
+          {{input_field}}, {{buffer}}, &{{output}}->{{name}}.ptr,
+          &{{name}}_validate_params, {{context}});
 {%-     elif kind|is_struct_kind or kind|is_string_kind %}
-{%-       set serializer_type = kind|unmapped_type_for_serializer %}
   mojo::internal::Serialize<{{serializer_type}}>(
       {{input_field}}, {{buffer}}, &{{output}}->{{name}}.ptr, {{context}});
 {%-     elif kind|is_union_kind %}
@@ -172,7 +169,8 @@
     if ({{input}}->header_.version < {{pf.min_version}})
       break;
 {%-     endif %}
-{%-     if kind|is_struct_kind or kind|is_string_kind %}
+{%-     if kind|is_struct_kind or kind|is_string_kind or kind|is_array_kind or
+           kind|is_map_kind %}
 {%-       set serializer_type = kind|unmapped_type_for_serializer %}
     if (!mojo::internal::Deserialize<{{serializer_type}}>(
             {{input}}->{{name}}.ptr, &{{output_field}}, {{context}})) {
