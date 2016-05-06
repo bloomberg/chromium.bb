@@ -1502,24 +1502,12 @@ Node* LayoutBlock::nodeForHitTest() const
     return isAnonymousBlockContinuation() ? continuation()->node() : node();
 }
 
-// TODO(pdr): This is too similar to LayoutBox::nodeAtPoint and should share
-//            more code, or merge into LayoutBox::nodeAtPoint entirely.
 bool LayoutBlock::nodeAtPoint(HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction hitTestAction)
 {
     LayoutPoint adjustedLocation(accumulatedOffset + location());
     LayoutSize localOffset = toLayoutSize(adjustedLocation);
 
-    if (!isLayoutView()) {
-        // Check if we need to do anything at all.
-        // If we have clipping, then we can't have any spillout.
-        LayoutRect overflowBox = hasOverflowClip() ? borderBoxRect() : visualOverflowRect();
-        flipForWritingMode(overflowBox);
-        overflowBox.moveBy(adjustedLocation);
-        if (!locationInContainer.intersects(overflowBox))
-            return false;
-    }
-
-    if ((hitTestAction == HitTestBlockBackground || hitTestAction == HitTestChildBlockBackground)
+    if (isInSelfHitTestingPhase(hitTestAction)
         && visibleToHitTestRequest(result.hitTestRequest())
         && isPointInOverflowControl(result, locationInContainer.point(), adjustedLocation)) {
         updateHitTestResult(result, locationInContainer.point() - localOffset);
@@ -1527,27 +1515,7 @@ bool LayoutBlock::nodeAtPoint(HitTestResult& result, const HitTestLocation& loca
         if (result.addNodeToListBasedTestResult(nodeForHitTest(), locationInContainer) == StopHitTesting)
             return true;
     }
-
-    // TODO(pdr): We should also include checks for hit testing border radius at
-    //            the layer level (see: crbug.com/568904).
-
-    if (hitTestChildren(result, locationInContainer, adjustedLocation, hitTestAction))
-        return true;
-
-    if (hitTestClippedOutByRoundedBorder(locationInContainer, adjustedLocation))
-        return false;
-
-    // Now hit test our background
-    if (hitTestAction == HitTestBlockBackground || hitTestAction == HitTestChildBlockBackground) {
-        LayoutRect boundsRect(adjustedLocation, size());
-        if (visibleToHitTestRequest(result.hitTestRequest()) && locationInContainer.intersects(boundsRect)) {
-            updateHitTestResult(result, flipForWritingMode(locationInContainer.point() - localOffset));
-            if (result.addNodeToListBasedTestResult(nodeForHitTest(), locationInContainer, boundsRect) == StopHitTesting)
-                return true;
-        }
-    }
-
-    return false;
+    return LayoutBox::nodeAtPoint(result, locationInContainer, accumulatedOffset, hitTestAction);
 }
 
 bool LayoutBlock::hitTestChildren(HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction hitTestAction)

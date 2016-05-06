@@ -1191,14 +1191,21 @@ bool LayoutBox::nodeAtPoint(HitTestResult& result, const HitTestLocation& locati
 {
     LayoutPoint adjustedLocation = accumulatedOffset + location();
 
-    // Exit early if no children can be hit.
-    LayoutRect overflowRect = visualOverflowRect();
-    overflowRect.moveBy(adjustedLocation);
-    if (!locationInContainer.intersects(overflowRect))
-        return false;
+    if (!isLayoutView()) {
+        // Check if we need to do anything at all.
+        // If we have clipping, then we can't have any spillout.
+        LayoutRect overflowBox = hasOverflowClip() ? borderBoxRect() : visualOverflowRect();
+        flipForWritingMode(overflowBox);
+        overflowBox.moveBy(adjustedLocation);
+        if (!locationInContainer.intersects(overflowBox))
+            return false;
+    }
 
     // TODO(pdr): We should also check for css clip in the !isSelfPaintingLayer
     //            case, similar to overflow clip in LayoutBlock::nodeAtPoint.
+
+    // TODO(pdr): We should also include checks for hit testing border radius at
+    //            the layer level (see: crbug.com/568904).
 
     if (hitTestChildren(result, locationInContainer, adjustedLocation, action))
         return true;
@@ -1206,14 +1213,14 @@ bool LayoutBox::nodeAtPoint(HitTestResult& result, const HitTestLocation& locati
     if (hitTestClippedOutByRoundedBorder(locationInContainer, adjustedLocation))
         return false;
 
-    // Check our bounds next. For this purpose always assume that we can only be hit in the
-    // foreground phase (which is true for replaced elements like images).
-    LayoutRect boundsRect = borderBoxRect();
-    boundsRect.moveBy(adjustedLocation);
-    if (visibleToHitTestRequest(result.hitTestRequest()) && action == HitTestForeground && locationInContainer.intersects(boundsRect)) {
-        updateHitTestResult(result, locationInContainer.point() - toLayoutSize(adjustedLocation));
-        if (result.addNodeToListBasedTestResult(node(), locationInContainer, boundsRect) == StopHitTesting)
-            return true;
+    // Now hit test ourselves.
+    if (isInSelfHitTestingPhase(action) && visibleToHitTestRequest(result.hitTestRequest())) {
+        LayoutRect boundsRect(adjustedLocation, size());
+        if (locationInContainer.intersects(boundsRect)) {
+            updateHitTestResult(result, flipForWritingMode(locationInContainer.point() - toLayoutSize(adjustedLocation)));
+            if (result.addNodeToListBasedTestResult(nodeForHitTest(), locationInContainer, boundsRect) == StopHitTesting)
+                return true;
+        }
     }
 
     return false;

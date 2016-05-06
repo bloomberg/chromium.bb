@@ -397,14 +397,18 @@ private:
     TrackedLayoutBoxListHashSet* positionedObjectsInternal() const;
     TrackedLayoutBoxListHashSet* percentHeightDescendantsInternal() const;
 
-    Node* nodeForHitTest() const;
+    Node* nodeForHitTest() const final;
 
     // Returns true if the positioned movement-only layout succeeded.
     bool tryLayoutDoingPositionedMovementOnly();
 
     bool avoidsFloats() const override { return true; }
 
-    bool hitTestChildren(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction);
+    bool isInSelfHitTestingPhase(HitTestAction hitTestAction) const final
+    {
+        return hitTestAction == HitTestBlockBackground || hitTestAction == HitTestChildBlockBackground;
+    }
+    bool hitTestChildren(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) override;
     // FIXME-BLOCKFLOW: Remove virtualizaion when all callers have moved to LayoutBlockFlow
     virtual bool hitTestFloats(HitTestResult&, const HitTestLocation&, const LayoutPoint&) { return false; }
 
