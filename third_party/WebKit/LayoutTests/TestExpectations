@@ -997,6 +997,8 @@ crbug.com/553838 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reft
 crbug.com/553838 [ Mac ] imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-self-baseline-horiz-001a.xhtml [ Failure ]
 crbug.com/553838 [ Mac ] imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-self-baseline-horiz-001b.xhtml [ Failure ]
 
+crbug.com/582836 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/variables/variable-declaration-15.html [ Failure ]
+
 # These need a rebaseline due crbug.com/504745 on Windows when they are activated again.
 crbug.com/521124 crbug.com/410145 [ Win7 ] fast/css/font-weight-1.html [ Pass Failure ]
 
