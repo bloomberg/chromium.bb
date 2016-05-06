@@ -220,6 +220,13 @@ var allTests = [
     chrome.test.succeed();
   },
 
+  function testLangAttribute() {
+    var p = rootNode.find({ attributes: { language: 'es-ES' } });
+    assertTrue(p !== undefined);
+    assertEq('paragraph', p.role);
+    chrome.test.succeed();
+  },
+
   function testNoAttributes() {
     var div = rootNode.find({ attributes: { name: 'main' } });
     assertTrue(div !== undefined);

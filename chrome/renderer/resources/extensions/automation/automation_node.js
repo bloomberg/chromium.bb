@@ -578,6 +578,7 @@ var stringAttributes = [
     'dropeffect',
     'help',
     'htmlTag',
+    'language',
     'liveRelevant',
     'liveStatus',
     'name',

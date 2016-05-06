@@ -536,7 +536,6 @@ chrome.automation.AutomationNode.prototype.showContextMenu = function() {};
 chrome.automation.AutomationNode.prototype.setSelection =
     function(start, end) {};
 
-
 /** @type {string} */
 chrome.automation.AutomationNode.prototype.containerLiveStatus;
 
@@ -548,6 +547,9 @@ chrome.automation.AutomationNode.prototype.containerLiveAtomic;
 
 /** @type {boolean} */
 chrome.automation.AutomationNode.prototype.containerLiveBusy;
+
+/** @type {string} */
+chrome.automation.AutomationNode.prototype.language;
 
 /** @type {string} */
 chrome.automation.AutomationNode.prototype.liveStatus;
