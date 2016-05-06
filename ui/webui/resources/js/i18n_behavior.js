@@ -22,8 +22,9 @@ var I18nBehavior = {
    * @param {...string} var_args Values to replace the placeholders $1 to $9
    *     in the string.
    * @return {string} A translated, substituted string.
+   * @private
    */
-  i18nRaw: function(id, var_args) {
+  i18nRaw_: function(id, var_args) {
     return arguments.length == 1 ? loadTimeData.getString(id) :
         loadTimeData.getStringF.apply(loadTimeData, arguments);
   },
@@ -37,7 +38,7 @@ var I18nBehavior = {
    * @return {string} A translated, sanitized, substituted string.
    */
   i18n: function(id, var_args) {
-    var rawString = this.i18nRaw.apply(this, arguments);
+    var rawString = this.i18nRaw_.apply(this, arguments);
     return parseHtmlSubset('<b>' + rawString + '</b>').firstChild.innerHTML;
   },
 
@@ -52,8 +53,8 @@ var I18nBehavior = {
    */
   i18nAdvanced: function(id, opts) {
     var args = [id].concat(opts.substitutions || []);
-    var rawString = this.i18nRaw.apply(this, args);
+    var rawString = this.i18nRaw_.apply(this, args);
     return parseHtmlSubset('<b>' + rawString + '</b>', opts.tags, opts.attrs)
         .firstChild.innerHTML;
-  }
+  },
 };

@@ -246,3 +246,10 @@ IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, PromiseResolverTest) {
   AddLibrary(IDR_WEBUI_JS_PROMISE_RESOLVER);
   LoadFile(base::FilePath(FILE_PATH_LITERAL("promise_resolver_test.html")));
 }
+
+IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, I18nBehaviorTest) {
+  AddLibrary(IDR_WEBUI_JS_LOAD_TIME_DATA);
+  AddLibrary(IDR_WEBUI_JS_PARSE_HTML_SUBSET);
+  AddLibrary(IDR_WEBUI_JS_I18N_BEHAVIOR);
+  LoadFile(base::FilePath(FILE_PATH_LITERAL("i18n_behavior_test.html")));
+}

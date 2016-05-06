@@ -1,0 +1,40 @@
+<!doctype html>
+<html>
+<body>
+<script>
+
+function setUpPage() {
+  loadTimeData.data = {
+    'allowedByDefault': '<a href="https://google.com">Google!</a>',
+    'customAttr': '<a is="action-link">Take action!</a>',
+    'customTag': "<x-foo>I'm an X, foo!</x-foo>",
+    'javascriptHref': '<a href="javascript:alert(1)">teh hax</a>',
+    'script': '<script>alert(/xss/)</scr' + 'ipt>',
+    'text': "I'm just text, nobody should have a problem with me!",
+  };
+}
+
+function testI18n() {
+  I18nBehavior.i18n('allowedByDefault');
+  I18nBehavior.i18n('text');
+
+  assertThrows(function() { I18nBehavior.i18n('customAttr'); });
+  assertThrows(function() { I18nBehavior.i18n('customTag'); });
+  assertThrows(function() { I18nBehavior.i18n('javascriptHref'); });
+  assertThrows(function() { I18nBehavior.i18n('script'); });
+}
+
+function testI18nAdvanced() {
+  I18nBehavior.i18nAdvanced('customAttr', {
+    attrs: {
+      is: function(el, val) {
+        return el.tagName == 'A' && val == 'action-link';
+      },
+    },
+  });
+  I18nBehavior.i18nAdvanced('customTag', {tags: ['X-FOO']});
+}
+
+</script>
+</body>
+</html>
