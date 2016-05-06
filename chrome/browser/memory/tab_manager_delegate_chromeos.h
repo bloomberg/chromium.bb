@@ -154,6 +154,7 @@ class TabManagerDelegate : public arc::ArcBridgeService::Observer,
   };
 
   class FocusedProcess;
+  class UmaReporter;
 
   // content::NotificationObserver:
   void Observe(int type,
@@ -239,6 +240,9 @@ class TabManagerDelegate : public arc::ArcBridgeService::Observer,
   arc::mojom::ProcessInstance* arc_process_instance_;
   // Current ProcessInstance version.
   int arc_process_instance_version_;
+
+  // Reports UMA histograms.
+  std::unique_ptr<UmaReporter> uma_;
 
   // Weak pointer factory used for posting tasks to other threads.
   base::WeakPtrFactory<TabManagerDelegate> weak_ptr_factory_;
