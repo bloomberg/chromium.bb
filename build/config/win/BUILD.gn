@@ -41,10 +41,6 @@ config("compiler") {
     # and unsupported but very handy.
     "/d2FastFail",
   ]
-  if (!is_clang) {
-    # TODO(thakis): Enable this with clang too, https://crbug.com/598767
-    cflags += [ "/GS" ]  # Enable buffer security checking.
-  }
 
   # Force C/C++ mode for the given GN detected file type. This is necessary
   # for precompiled headers where the same source file is compiled in both

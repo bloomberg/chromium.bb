@@ -10,15 +10,8 @@ import("//third_party/icu/config.gni")
 import("//ui/base/ui_features.gni")
 
 config("mini_installer_compiler_flags") {
-  cflags = [
-    "/bigobj",
-    "/Gy",  # Enable function-level linking.
-    "/GS-",  # Disable buffer security checking.
-    "/FS",  # Preserve previous PDB behavior.
-  ]
-
-  cflags_c = [ "/TC" ]
-  cflags_cc = [ "/TP" ]
+  # Disable buffer security checking.
+  cflags = [ "/GS-" ]
 }
 
 source_set("lib") {
@@ -43,7 +36,6 @@ source_set("lib") {
     "regkey.h",
   ]
 
-  configs -= [ "//build/config/compiler:compiler" ]
   configs += [ ":mini_installer_compiler_flags" ]
 
   deps = [
@@ -178,7 +170,6 @@ executable("mini_installer") {
   # specify our own to keep the size down.
   configs -= [
     "//build/config:executable_config",
-    "//build/config/compiler:compiler",
     "//build/config/win:console",
   ]
   configs += [
