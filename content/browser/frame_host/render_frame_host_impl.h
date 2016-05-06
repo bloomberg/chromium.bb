@@ -578,6 +578,10 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost,
   FRIEND_TEST_ALL_PREFIXES(RenderFrameHostManagerTest,
                            CreateRenderViewAfterProcessKillAndClosedProxy);
   FRIEND_TEST_ALL_PREFIXES(RenderFrameHostManagerTest,
+                           RestoreFileAccessForHistoryNavigation);
+  FRIEND_TEST_ALL_PREFIXES(RenderFrameHostManagerTest,
+                           RestoreSubframeFileAccessForHistoryNavigation);
+  FRIEND_TEST_ALL_PREFIXES(RenderFrameHostManagerTest,
                            RenderViewInitAfterNewProxyAndProcessKill);
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest, CrashSubframe);
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest,

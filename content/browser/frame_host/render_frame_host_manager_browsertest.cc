@@ -1844,16 +1844,8 @@ class FileChooserDelegate : public WebContentsDelegate {
 };
 
 // Test for http://crbug.com/262948.
-// Flaky on Mac. http://crbug.com/452018
-#if defined(OS_MACOSX)
-#define MAYBE_RestoreFileAccessForHistoryNavigation \
-  DISABLED_RestoreFileAccessForHistoryNavigation
-#else
-#define MAYBE_RestoreFileAccessForHistoryNavigation \
-  RestoreFileAccessForHistoryNavigation
-#endif
 IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
-                       MAYBE_RestoreFileAccessForHistoryNavigation) {
+                       RestoreFileAccessForHistoryNavigation) {
   StartServer();
   base::FilePath file;
   EXPECT_TRUE(PathService::Get(base::DIR_TEMP, &file));
@@ -1870,6 +1862,11 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   EXPECT_TRUE(delegate->file_chosen());
   EXPECT_TRUE(ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(
       process_id, file));
+
+  // Disable the swap out timer so we wait for the UpdateState message.
+  static_cast<WebContentsImpl*>(shell()->web_contents())
+      ->GetMainFrame()
+      ->DisableSwapOutTimerForTesting();
 
   // Navigate to a different process without access to the file, and wait for
   // the old process to exit.
@@ -1928,6 +1925,9 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   EXPECT_TRUE(delegate->file_chosen());
   EXPECT_TRUE(ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(
       process_id, file));
+
+  // Disable the swap out timer so we wait for the UpdateState message.
+  root->current_frame_host()->DisableSwapOutTimerForTesting();
 
   // Navigate to a different process without access to the file, and wait for
   // the old process to exit.
