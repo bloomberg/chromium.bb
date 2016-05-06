@@ -484,6 +484,13 @@ config("compiler_cpu_abi") {
     } else if (current_cpu == "x86") {
       cflags += [ "-m32" ]
       ldflags += [ "-m32" ]
+      if (!is_nacl) {
+        cflags += [
+          "-msse2",
+          "-mfpmath=sse",
+          "-mmmx",
+        ]
+      }
     } else if (current_cpu == "arm") {
       if (is_clang && !is_android && !is_nacl) {
         cflags += [
