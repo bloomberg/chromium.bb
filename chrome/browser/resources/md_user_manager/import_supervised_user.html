@@ -4,8 +4,10 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-selector/iron-selector.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-item/paper-item.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-listbox/paper-listbox.html">
 
 <dom-module id="import-supervised-user">
   <template>
@@ -39,9 +41,11 @@
         padding: 16px;
       }
 
-      #title-bar iron-icon {
-        --iron-icon-height: 12px;
-        --iron-icon-width: 12px;
+      #title-bar paper-icon-button {
+        --paper-icon-button: {
+          height: 36px;
+          width: 36px;
+        };
       }
 
       #message {
@@ -50,31 +54,49 @@
         word-wrap: break-word;
       }
 
-      #user-list .list-item {
-        align-items: center;
-        display: flex;
-        height: 52px;
-        padding: 0 16px;
+      paper-listbox {
+        --paper-listbox: {
+          padding: 0;
+          color: inherit;
+        };
       }
 
-      #user-list .list-item .profile-img {
+      paper-listbox paper-item {
+        --paper-item: {
+          font-size: inherit;
+          height: 52px;
+          line-height: inherit;
+          padding: 0 16px;
+        };
+        --paper-item-disabled: {
+          color: inherit;
+        };
+        --paper-item-focused: {
+          background: rgba(0, 0, 0, .04);
+        };
+        --paper-item-focused-before: {
+          background: none;
+        };
+        --paper-item-selected: {
+          background: rgba(0, 0, 0, .04);
+          font-weight: normal;
+        };
+      }
+
+      paper-listbox paper-item .profile-img {
         flex-shrink: 0;
       }
 
-      #user-list .list-item .profile-name {
+      paper-listbox paper-item .profile-name {
         -webkit-margin-start: 10px;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
       }
 
-      #user-list .list-item .on-device {
+      paper-listbox paper-item .on-device {
         -webkit-margin-start: 10px;
         flex-shrink: 0;
-      }
-
-      #user-list .list-item.selectable.iron-selected {
-        background: var(--paper-grey-200);
       }
 
       #actions {
@@ -87,23 +109,21 @@
         <div id="dialog">
           <div id="title-bar" class="horizontal justified layout">
             <span id="title">$i18n{supervisedUserImportTitle}</span>
-            <iron-icon icon="close" on-tap="onCancelTap_"></iron-icon>
+            <paper-icon-button icon="close" on-tap="onCancelTap_">
+            </paper-icon-button>
           </div>
           <div id="message">[[getMessage_(supervisedUsers_)]]</div>
-          <div id="user-list" class="content-area">
-            <iron-selector selected="{{supervisedUserIndex_}}"
-                selectable=".selectable">
-              <template is="dom-repeat" items="[[supervisedUsers_]]">
-                <div class$="[[getUserClassNames_(item)]]">
-                  <img class="profile-img" src="[[item.iconURL]]"></img>
-                  <div class="profile-name">[[item.name]]</div>
-                  <div class="on-device" hidden="[[!item.onCurrentDevice]]">
-                    $i18n{supervisedUserAlreadyOnThisDevice}
-                  </div>
+          <paper-listbox selected="{{supervisedUserIndex_}}">
+            <template is="dom-repeat" items="[[supervisedUsers_]]">
+              <paper-item disabled="[[item.onCurrentDevice]]">
+                <img class="profile-img" src="[[item.iconURL]]"></img>
+                <div class="profile-name">[[item.name]]</div>
+                <div class="on-device" hidden="[[!item.onCurrentDevice]]">
+                  $i18n{supervisedUserAlreadyOnThisDevice}
                 </div>
-              </template>
-            </iron-selector>
-          </div>
+              </paper-item>
+            </template>
+          </paper-listbox>
           <div id="actions" class="horizontal end-justified layout">
             <paper-button id="cancel" class="action secondary"
                 on-tap="onCancelTap_">

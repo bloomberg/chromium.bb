@@ -82,14 +82,13 @@
         margin: 12px;
         min-width: 0;
         padding: 6px 4px;
+        --paper-button-flat-keyboard-focus: {
+          outline: auto;
+        };
       }
 
       #icons paper-button[active] {
         border-color: var(--google-blue-500);
-      }
-
-      #icons paper-button:focus:not([active]) {
-        outline: 1px dotted #666;
       }
 
       paper-checkbox {

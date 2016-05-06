@@ -92,20 +92,6 @@ Polymer({
   },
 
   /**
-   * Computed binding that returns the appropriate class names for the HTML
-   * container of |supervisedUser| depending on whether it is on this device.
-   * @param {!SupervisedUser} supervisedUser
-   * @private
-   * @return {string}
-   */
-  getUserClassNames_: function(supervisedUser) {
-    var classNames = 'list-item';
-    if (!supervisedUser.onCurrentDevice)
-      classNames += ' selectable';
-    return classNames;
-  },
-
-  /**
    * Hides the popup.
    * @private
    */

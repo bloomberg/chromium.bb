@@ -17,6 +17,11 @@
         display: flex;
         justify-content: center;
       }
+
+      /* neon-animated-pages does not automatically hide what's under content */
+      neon-animated-pages > div:not(.iron-selected) > ::content > * {
+        display: none !important;
+      }
     </style>
     <neon-animated-pages id="animatedPages" attr-for-selected="id"
         selected="[[selectedPage_]]" entry-animation="slide-from-left-animation"
@@ -28,10 +33,7 @@
         </template>
       </div>
       <div id="user-pods-page">
-        <template is="dom-if"
-            if="[[isPageVisible_(selectedPage_, 'user-pods-page')]]">
-          <content></content>
-        </template>
+        <content></content>
       </div>
       <div id="supervised-learn-more-page">
         <template is="dom-if"
@@ -42,12 +44,12 @@
       </div>
       <div id="supervised-create-confirm-page">
         <template is="dom-if"
-            if="[[isPageVisible_(selectedPage_, 'supervised-create-confirm-page')]]">
+            if="[[isPageVisible_(selectedPage_,
+                                 'supervised-create-confirm-page')]]">
           <supervised-user-create-confirm profile-info="[[pageData_]]">
           </supervised-user-create-confirm>
         </template>
       </div>
-      <content></content>
     </neon-animated-pages>
   </template>
   <script src="chrome://md-user-manager/user_manager_pages.js"></script>

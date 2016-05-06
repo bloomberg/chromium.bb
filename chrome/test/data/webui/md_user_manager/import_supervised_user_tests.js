@@ -54,11 +54,11 @@ cr.define('user_manager.import_supervised_user_tests', function() {
         assertEquals(loadTimeData.getString('noSupervisedUserImportText'),
                      importElement.$$('#message').textContent.trim());
 
-        var selectorElement = importElement.$$('iron-selector');
+        var selectorElement = importElement.$$('paper-listbox');
         assertTrue(!!selectorElement);
 
         // There are no supervised users to choose from.
-        var items = selectorElement.querySelectorAll('.list-item');
+        var items = selectorElement.querySelectorAll('paper-item');
         assertEquals(0, items.length);
 
         // Simulate clicking 'Cancel'
@@ -108,30 +108,29 @@ cr.define('user_manager.import_supervised_user_tests', function() {
           assertEquals(loadTimeData.getString('supervisedUserImportText'),
                        importElement.$$('#message').textContent.trim());
 
-          var selectorElement = importElement.$$('iron-selector');
+          var selectorElement = importElement.$$('paper-listbox');
           assertTrue(!!selectorElement);
 
           // Supervised users are ordered correctly (Ones that are not on the
           // current device appear first, then they are alphabetically order in
           // ascending order).
-          var items = selectorElement.querySelectorAll('.list-item');
+          var items = selectorElement.querySelectorAll('paper-item');
           assertEquals(3, items.length);
           assertEquals('supervised user 2', getProfileName(items[0]));
           assertEquals('supervised user 3', getProfileName(items[1]));
           assertEquals('supervised user 1', getProfileName(items[2]));
 
-          // Only supervised users that are not on this device are selectable.
-          var selectableItems = selectorElement.querySelectorAll('.selectable');
-          assertEquals(2, selectableItems.length);
-          assertEquals('supervised user 2', getProfileName(selectableItems[0]));
-          assertEquals('supervised user 3', getProfileName(selectableItems[1]));
+          // Supervised users that are on this device are disabled.
+          var selectableItems = selectorElement.querySelectorAll('[disabled]');
+          assertEquals(1, selectableItems.length);
+          assertEquals('supervised user 1', getProfileName(selectableItems[0]));
 
           // No user is initially selected.
           assertEquals(-1, selectorElement.selected);
           // The import button is disabled if no supervised user is selected.
           assertTrue(importElement.$$('#import').disabled);
 
-          // Simulate selecting the third user which is not selectable.
+          // Simulate selecting the third user which is disabled.
           MockInteractions.tap(items[2]);
           // Confirm no user is selected.
           assertEquals(-1, selectorElement.selected);
