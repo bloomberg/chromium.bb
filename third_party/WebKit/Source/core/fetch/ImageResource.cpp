@@ -367,7 +367,9 @@ void ImageResource::updateImage(bool allDataReceived)
     // to decode.
     if (sizeAvailable || allDataReceived) {
         if (!m_image || m_image->isNull()) {
-            error(errorOccurred() ? getStatus() : DecodeError);
+            if (!errorOccurred())
+                setStatus(DecodeError);
+            clear();
             if (memoryCache()->contains(this))
                 memoryCache()->remove(this);
             return;
@@ -379,27 +381,31 @@ void ImageResource::updateImage(bool allDataReceived)
     }
 }
 
-void ImageResource::finish()
+void ImageResource::updateImageAndClearBuffer()
+{
+    clearImage();
+    updateImage(true);
+    m_data.clear();
+}
+
+void ImageResource::finish(double loadFinishTime)
 {
     if (m_multipartParser) {
         m_multipartParser->finish();
-        if (m_data) {
-            clearImage();
-            updateImage(true);
-            m_data.clear();
-        }
+        if (m_data)
+            updateImageAndClearBuffer();
     } else {
         updateImage(true);
     }
-    Resource::finish();
+    Resource::finish(loadFinishTime);
 }
 
-void ImageResource::error(Resource::Status status)
+void ImageResource::error(const ResourceError& error)
 {
     if (m_multipartParser)
         m_multipartParser->cancel();
     clear();
-    Resource::error(status);
+    Resource::error(error);
     notifyObservers();
 }
 
@@ -498,7 +504,10 @@ void ImageResource::reloadIfLoFi(ResourceFetcher* fetcher)
         return;
     m_resourceRequest.setCachePolicy(WebCachePolicy::BypassingCache);
     m_resourceRequest.setLoFiState(WebURLRequest::LoFiOff);
-    error(Resource::LoadError);
+    if (isLoading())
+        m_loader->cancel();
+    else
+        updateImageAndClearBuffer();
     setStatus(NotStarted);
     load(fetcher);
 }
@@ -520,9 +529,7 @@ void ImageResource::onePartInMultipartReceived(const ResourceResponse& response)
         m_multipartParsingState = MultipartParsingState::ParsingFirstPart;
         return;
     }
-    clear();
-    updateImage(true);
-    m_data.clear();
+    updateImageAndClearBuffer();
 
     if (m_multipartParsingState == MultipartParsingState::ParsingFirstPart) {
         m_multipartParsingState = MultipartParsingState::FinishedParsingFirstPart;

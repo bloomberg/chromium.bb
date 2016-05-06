@@ -180,7 +180,6 @@ void ResourceLoader::cancel(const ResourceError& error)
 
     WTF_LOG(ResourceLoading, "Cancelled load of '%s'.\n", m_resource->url().getString().latin1().data());
     m_state = ConnectionStateCanceled;
-    m_resource->setResourceError(nonNullError);
 
     // If we don't immediately clear m_loader when cancelling, we might get
     // unexpected reentrancy. m_resource->error() can trigger JS events, which
@@ -200,7 +199,7 @@ void ResourceLoader::cancel(const ResourceError& error)
     }
 
     if (m_state != ConnectionStateReleased)
-        m_resource->error(Resource::LoadError);
+        m_resource->error(nonNullError);
     if (m_state != ConnectionStateReleased)
         releaseResources();
 }
@@ -287,14 +286,6 @@ void ResourceLoader::didReceiveResponse(WebURLLoader*, const WebURLResponse& res
 
     if (m_resource->response().httpStatusCode() < 400 || m_resource->shouldIgnoreHTTPStatusCodeErrors())
         return;
-
-    if (!m_notifiedLoadComplete) {
-        m_notifiedLoadComplete = true;
-        m_fetcher->didFailLoading(m_resource.get(), ResourceError::cancelledError(resourceResponse.url()));
-    }
-
-    ASSERT(m_state != ConnectionStateReleased);
-    m_resource->error(Resource::LoadError);
     cancel(ResourceError::cancelledError(resourceResponse.url()));
 }
 
@@ -329,12 +320,10 @@ void ResourceLoader::didFinishLoading(WebURLLoader*, double finishTime, int64_t 
     RELEASE_ASSERT(m_state == ConnectionStateReceivedResponse || m_state == ConnectionStateReceivingData);
     m_state = ConnectionStateFinishedLoading;
     WTF_LOG(ResourceLoading, "Received '%s'.", m_resource->url().getString().latin1().data());
-
-    m_resource->setLoadFinishTime(finishTime);
     didFinishLoadingOnePart(finishTime, encodedDataLength);
     if (m_state == ConnectionStateReleased)
         return;
-    m_resource->finish();
+    m_resource->finish(finishTime);
 
     // If the load has been cancelled by a delegate in response to didFinishLoad(), do not release
     // the resources a second time, they have been released by cancel.
@@ -349,9 +338,6 @@ void ResourceLoader::didFail(WebURLLoader*, const WebURLError& error)
     ASSERT(m_state != ConnectionStateReleased);
     m_state = ConnectionStateFailed;
     WTF_LOG(ResourceLoading, "Failed to load '%s'.\n", m_resource->url().getString().latin1().data());
-
-    m_resource->setResourceError(error);
-
     if (!m_notifiedLoadComplete) {
         m_notifiedLoadComplete = true;
         m_fetcher->didFailLoading(m_resource.get(), error);
@@ -359,7 +345,7 @@ void ResourceLoader::didFail(WebURLLoader*, const WebURLError& error)
     if (m_state == ConnectionStateReleased)
         return;
 
-    m_resource->error(Resource::LoadError);
+    m_resource->error(error);
 
     if (m_state == ConnectionStateReleased)
         return;

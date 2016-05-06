@@ -99,9 +99,9 @@ public:
     void allClientsAndObserversRemoved() override;
 
     void appendData(const char*, size_t) override;
-    void error(Resource::Status) override;
+    void error(const ResourceError&) override;
     void responseReceived(const ResourceResponse&, PassOwnPtr<WebDataConsumerHandle>) override;
-    void finish() override;
+    void finish(double finishTime = 0.0) override;
 
     // For compatibility, images keep loading even if there are HTTP errors.
     bool shouldIgnoreHTTPStatusCodeErrors() const override { return true; }
@@ -152,6 +152,7 @@ private:
 
     void createImage();
     void updateImage(bool allDataReceived);
+    void updateImageAndClearBuffer();
     void clearImage();
     // If not null, changeRect is the changed part of the image.
     void notifyObservers(const IntRect* changeRect = nullptr);

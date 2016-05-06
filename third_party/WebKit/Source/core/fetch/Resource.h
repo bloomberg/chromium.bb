@@ -98,7 +98,7 @@ public:
     virtual void setEncoding(const String&) { }
     virtual String encoding() const { return String(); }
     virtual void appendData(const char*, size_t);
-    virtual void error(Resource::Status);
+    virtual void error(const ResourceError&);
     virtual void setCORSFailed() { }
 
     void setNeedsSynchronousCacheHit(bool needsSynchronousCacheHit) { m_needsSynchronousCacheHit = needsSynchronousCacheHit; }
@@ -106,7 +106,6 @@ public:
     void setLinkPreload(bool isLinkPreload) { m_linkPreload = isLinkPreload; }
     bool isLinkPreload() const { return m_linkPreload; }
 
-    void setResourceError(const ResourceError& error) { m_error = error; }
     const ResourceError& resourceError() const { return m_error; }
 
     void setIdentifier(unsigned long identifier) { m_identifier = identifier; }
@@ -163,8 +162,8 @@ public:
 
     // Computes the status of an object after loading.
     // Updates the expire date on the cache entry file
-    void setLoadFinishTime(double finishTime) { m_loadFinishTime = finishTime; }
-    virtual void finish();
+    virtual void finish(double finishTime);
+    void finish() { finish(0.0); }
 
     // FIXME: Remove the stringless variant once all the callsites' error messages are updated.
     bool passesAccessControlCheck(SecurityOrigin*) const;

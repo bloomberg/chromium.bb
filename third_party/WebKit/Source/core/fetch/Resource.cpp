@@ -324,24 +324,27 @@ void Resource::markClientsAndObserversFinished()
     }
 }
 
-void Resource::error(Resource::Status status)
+void Resource::error(const ResourceError& error)
 {
+    ASSERT(!error.isNull());
+    m_error = error;
     if (!m_revalidatingRequest.isNull())
         m_revalidatingRequest = ResourceRequest();
 
-    if (!m_error.isNull() && (m_error.isCancellation() || !isPreloaded()))
+    if (m_error.isCancellation() || !isPreloaded())
         memoryCache()->remove(this);
 
-    setStatus(status);
+    setStatus(LoadError);
     ASSERT(errorOccurred());
     m_data.clear();
     checkNotify();
     markClientsAndObserversFinished();
 }
 
-void Resource::finish()
+void Resource::finish(double loadFinishTime)
 {
     ASSERT(m_revalidatingRequest.isNull());
+    m_loadFinishTime = loadFinishTime;
     if (!errorOccurred())
         m_status = Cached;
     checkNotify();

@@ -103,8 +103,7 @@ TEST(ResourceTest, LockFailureNoCrash)
         dataVector.append("test", 4);
     resource->setResourceBuffer(SharedBuffer::adoptVector(dataVector));
 
-    resource->setLoadFinishTime(currentTime());
-    resource->finish();
+    resource->finish(currentTime());
     resource->prune();
     ASSERT_TRUE(resource->isPurgeable());
     bool didLock = resource->lock();

@@ -288,7 +288,7 @@ TEST(ImageResourceTest, ReloadIfLoFi)
     cachedImage->reloadIfLoFi(fetcher);
     ASSERT_FALSE(cachedImage->errorOccurred());
     ASSERT_FALSE(cachedImage->resourceBuffer());
-    ASSERT_FALSE(cachedImage->hasImage());
+    ASSERT_TRUE(cachedImage->hasImage());
     ASSERT_EQ(client.imageChangedCount(), 3);
 
     cachedImage->responseReceived(resourceResponse, nullptr);

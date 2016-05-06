@@ -144,16 +144,10 @@ ResourceLoadPriority ResourceFetcher::loadPriority(Resource::Type type, const Fe
     return context().modifyPriorityForExperiments(typeToPriority(type), type, request, visibility);
 }
 
-static void populateResourceTiming(ResourceTimingInfo* info, Resource* resource, bool clearLoadTimings)
+static void populateResourceTiming(ResourceTimingInfo* info, Resource* resource)
 {
     info->setInitialRequest(resource->resourceRequest());
     info->setFinalResponse(resource->response());
-    if (clearLoadTimings) {
-        info->clearLoadTimings();
-        info->setLoadFinishTime(info->initialTime());
-    } else {
-        info->setLoadFinishTime(resource->loadFinishTime());
-    }
 }
 
 static WebURLRequest::RequestContext requestContextFromType(bool isMainFrame, Resource::Type type)
@@ -280,7 +274,9 @@ void ResourceFetcher::requestLoadStarted(Resource* resource, const FetchRequest&
     if (type == ResourceLoadingFromCache && !resource->stillNeedsLoad() && !m_validatedURLs.contains(request.resourceRequest().url())) {
         // Resources loaded from memory cache should be reported the first time they're used.
         OwnPtr<ResourceTimingInfo> info = ResourceTimingInfo::create(request.options().initiatorInfo.name, monotonicallyIncreasingTime(), resource->getType() == Resource::MainResource);
-        populateResourceTiming(info.get(), resource, true);
+        populateResourceTiming(info.get(), resource);
+        info->clearLoadTimings();
+        info->setLoadFinishTime(info->initialTime());
         m_scheduledResourceTimingReports.append(info.release());
         if (!m_resourceTimingReportTimer.isActive())
             m_resourceTimingReportTimer.startOneShot(0, BLINK_FROM_HERE);
@@ -900,7 +896,8 @@ void ResourceFetcher::didFinishLoading(Resource* resource, double finishTime, in
         if (it != m_resourceTimingInfoMap.end()) {
             OwnPtr<ResourceTimingInfo> info = it->value.release();
             m_resourceTimingInfoMap.remove(it);
-            populateResourceTiming(info.get(), resource, false);
+            populateResourceTiming(info.get(), resource);
+            info->setLoadFinishTime(finishTime);
             if (resource->options().requestInitiatorContext == DocumentContext)
                 context().addResourceTiming(*info);
             resource->reportResourceTimingToClients(*info);
