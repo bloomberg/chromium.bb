@@ -899,10 +899,10 @@ bool HTMLInputElement::checked() const
 
 void HTMLInputElement::setChecked(bool nowChecked, TextFieldEventBehavior eventBehavior)
 {
+    m_reflectsCheckedAttribute = false;
     if (checked() == nowChecked)
         return;
 
-    m_reflectsCheckedAttribute = false;
     m_isChecked = nowChecked;
 
     if (RadioButtonGroupScope* scope = radioButtonGroupScope())
