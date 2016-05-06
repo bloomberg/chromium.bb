@@ -238,7 +238,11 @@ class Popen(subprocess.Popen):
       super(Popen, self).__init__(args, **kwargs)
     self.args = args
     if self.detached and not subprocess.mswindows:
-      self.gid = os.getpgid(self.pid)
+      try:
+        self.gid = os.getpgid(self.pid)
+      except OSError:
+        # sometimes the process can run+finish before we collect its pgid. fun.
+        pass
 
   def duration(self):
     """Duration of the child process.
