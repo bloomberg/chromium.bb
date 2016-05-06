@@ -144,7 +144,7 @@ public class PrivacyPreferences extends PreferenceFragment
         } else if (PREF_NAVIGATION_ERROR.equals(key)) {
             PrefServiceBridge.getInstance().setResolveNavigationErrorEnabled((boolean) newValue);
         } else if (PREF_CRASH_DUMP_UPLOAD_NO_CELLULAR.equals(key)) {
-            PrefServiceBridge.getInstance().setCrashReporting((boolean) newValue);
+            PrefServiceBridge.getInstance().setCrashReportingEnabled((boolean) newValue);
         } else if (PREF_CRASH_DUMP_UPLOAD.equals(key)) {
             PrivacyPreferencesManager.getInstance(getActivity()).setUploadCrashDump(
                     (String) newValue);

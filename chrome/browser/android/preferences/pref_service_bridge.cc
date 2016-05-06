@@ -811,11 +811,17 @@ static void SetNotificationsEnabled(JNIEnv* env,
       allow ? CONTENT_SETTING_ASK : CONTENT_SETTING_BLOCK);
 }
 
-static void SetCrashReporting(JNIEnv* env,
-                              const JavaParamRef<jobject>& obj,
-                              jboolean reporting) {
+static void SetCrashReportingEnabled(JNIEnv* env,
+                                     const JavaParamRef<jobject>& obj,
+                                     jboolean reporting) {
   PrefService* local_state = g_browser_process->local_state();
   local_state->SetBoolean(prefs::kCrashReportingEnabled, reporting);
+}
+
+static jboolean IsCrashReportingEnabled(JNIEnv* env,
+                                  const JavaParamRef<jobject>& obj) {
+  PrefService* local_state = g_browser_process->local_state();
+  return local_state->GetBoolean(prefs::kCrashReportingEnabled);
 }
 
 static jboolean CanPrefetchAndPrerender(JNIEnv* env,

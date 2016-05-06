@@ -49,7 +49,7 @@ public class UsageAndCrashReportsPreferenceFragment extends PreferenceFragment {
                 privacyManager.setUsageAndCrashReporting(enabled);
 
                 // Update old three-choice android and chromium preference.
-                PrefServiceBridge.getInstance().setCrashReporting(enabled);
+                PrefServiceBridge.getInstance().setCrashReportingEnabled(enabled);
                 privacyManager.initCrashUploadPreference(enabled);
                 return true;
             }

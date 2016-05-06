@@ -452,17 +452,31 @@ public final class PrefServiceBridge {
     }
 
     /**
-     * @return whether usage and crash report is managed.
+     * @return whether usage and crash report pref is managed. This is Android specific native
+     * pref which should be in sync with Android prefs. This pref will be replaced by platform
+     * independent native pref returned by isMetricsReportingEnabled in future.
      */
     public boolean isCrashReportManaged() {
         return nativeGetCrashReportManaged();
     }
 
     /**
-     * Enable or disable crashes_ui.
+     * Enable or disable usage and crash reporting pref. This is Android specific native
+     * pref which should be in sync with Android prefs. This pref will be replaced by platform
+     * independent native pref returned by isMetricsReportingEnabled in future.
      */
-    public void setCrashReporting(boolean reporting) {
-        nativeSetCrashReporting(reporting);
+    public void setCrashReportingEnabled(boolean reporting) {
+        nativeSetCrashReportingEnabled(reporting);
+    }
+
+    /**
+     * @return whether usage and crash reporting pref is enabled. This is Android specific native
+     * pref which should be in sync with Android prefs. This pref will be replaced by platform
+     * independent native pref returned by isMetricsReportingEnabled in future.
+     */
+    @VisibleForTesting
+    public boolean isCrashReportingEnabled() {
+        return nativeIsCrashReportingEnabled();
     }
 
     /**
@@ -1020,21 +1034,27 @@ public final class PrefServiceBridge {
             int contentSettingType, String pattern, int setting);
 
     /**
-      * @return whether Metrics reporting is enabled.
+      * @return whether usage and crash reporting pref is enabled. This is platform independent
+      * native pref which will replace the Android specific native pref returned by
+      * isCrashReportManaged().
       */
     public boolean isMetricsReportingEnabled() {
         return nativeGetMetricsReportingEnabled();
     }
 
     /**
-     * Sets whether the metrics reporting should be enabled.
+     * Sets whether the usage and crash reporting pref should be enabled. This is platform
+     * independent native pref which will replace the Android specific native pref returned by
+     * isCrashReportManaged().
      */
     public void setMetricsReportingEnabled(boolean enabled) {
         nativeSetMetricsReportingEnabled(enabled);
     }
 
     /**
-     * @return whether the metrics reporting preference has been set by user.
+     * @return whether the usage and crash reporting pref has been set by user. This is platform
+     * independent native pref which will replace the Android specific native pref returned by
+     * isCrashReportManaged().
      */
     public boolean hasSetMetricsReporting() {
         return nativeHasSetMetricsReporting();
@@ -1141,7 +1161,8 @@ public final class PrefServiceBridge {
     private native void nativeSetAllowLocationEnabled(boolean allow);
     private native void nativeSetNotificationsEnabled(boolean allow);
     private native void nativeSetPasswordEchoEnabled(boolean enabled);
-    private native void nativeSetCrashReporting(boolean reporting);
+    private native void nativeSetCrashReportingEnabled(boolean reporting);
+    private native boolean nativeIsCrashReportingEnabled();
     private native boolean nativeCanPrefetchAndPrerender();
     private native AboutVersionStrings nativeGetAboutVersionStrings();
     private native void nativeSetContextualSearchPreference(String preference);

@@ -294,7 +294,7 @@ public class PrivacyPreferencesManager implements CrashReportingPermissionManage
     public void setUploadCrashDump(String when) {
         // Set the crash upload preference regardless of the current connection status.
         boolean canUpload = !when.equals(mCrashDumpNeverUpload);
-        PrefServiceBridge.getInstance().setCrashReporting(canUpload);
+        PrefServiceBridge.getInstance().setCrashReportingEnabled(canUpload);
     }
 
     /**
@@ -349,7 +349,7 @@ public class PrivacyPreferencesManager implements CrashReportingPermissionManage
             ed.putBoolean(PREF_CRASH_DUMP_UPLOAD_NO_CELLULAR, allowCrashUpload);
         }
         ed.apply();
-        PrefServiceBridge.getInstance().setCrashReporting(allowCrashUpload);
+        PrefServiceBridge.getInstance().setCrashReportingEnabled(allowCrashUpload);
     }
 
     /**
@@ -478,5 +478,18 @@ public class PrivacyPreferencesManager implements CrashReportingPermissionManage
     @Override
     public boolean isUploadEnabledForTests() {
         return CommandLine.getInstance().hasSwitch(ChromeSwitches.FORCE_CRASH_DUMP_UPLOAD);
+    }
+
+    /**
+     * Update usage and crash preferences based on Android preferences in case they are out of
+     * sync.
+     */
+    public void syncUsageAndCrashReportingPrefs() {
+        boolean isUploadUserPermitted = isUploadUserPermitted();
+        if (isCellularExperimentEnabled()) {
+            PrefServiceBridge.getInstance().setMetricsReportingEnabled(isUploadUserPermitted);
+        }
+
+        PrefServiceBridge.getInstance().setCrashReportingEnabled(isUploadUserPermitted);
     }
 }
