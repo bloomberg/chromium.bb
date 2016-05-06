@@ -208,7 +208,7 @@ imported/web-platform-tests/csp [ Skip ]
 imported/web-platform-tests/cssom-view [ Skip ]
 ## Owners: TBD
 # imported/web-platform-tests/custom-elements [ Pass ]
-imported/web-platform-tests/custom-elements/pre-v1/registering/unresolved-element-pseudoclass [ Skip ]
+imported/web-platform-tests/custom-elements/registering-custom-elements/unresolved-element-pseudoclass [ Skip ]
 imported/web-platform-tests/docs [ Skip ]
 ## Owners: tkent@chromium.org
 imported/web-platform-tests/dom [ Pass ]
@@ -525,13 +525,7 @@ imported/web-platform-tests/html/browsers/windows/browsing-context-names/browsin
 imported/web-platform-tests/html/browsers/windows/noreferrer-window-name.html [ Skip ]
 imported/web-platform-tests/html/browsers/windows/noreferrer.html [ Skip ]
 imported/web-platform-tests/html/browsers/windows/targeting-cross-origin-nested-browsing-contexts.sub.html [ Skip ]
-imported/web-platform-tests/html/dom/dynamic-markup-insertion/opening-the-input-stream/004.html [ Skip ]
-imported/web-platform-tests/html/dom/dynamic-markup-insertion/opening-the-input-stream/005.html [ Skip ]
-imported/web-platform-tests/html/dom/dynamic-markup-insertion/opening-the-input-stream/006.html [ Skip ]
-imported/web-platform-tests/html/dom/dynamic-markup-insertion/opening-the-input-stream/007.html [ Skip ]
-imported/web-platform-tests/html/dom/dynamic-markup-insertion/opening-the-input-stream/008.html [ Skip ]
 imported/web-platform-tests/html/dom/dynamic-markup-insertion/opening-the-input-stream/009.html [ Skip ]
-imported/web-platform-tests/html/dom/dynamic-markup-insertion/opening-the-input-stream/010.html [ Skip ]
 imported/web-platform-tests/html/dom/dynamic-markup-insertion/opening-the-input-stream/011.html [ Skip ]
 imported/web-platform-tests/html/dom/dynamic-markup-insertion/opening-the-input-stream/012.html [ Skip ]
 imported/web-platform-tests/html/dom/dynamic-markup-insertion/opening-the-input-stream/013.html [ Skip ]
@@ -539,12 +533,10 @@ imported/web-platform-tests/html/dom/dynamic-markup-insertion/opening-the-input-
 imported/web-platform-tests/html/dom/dynamic-markup-insertion/opening-the-input-stream/015.html [ Skip ]
 imported/web-platform-tests/html/dom/dynamic-markup-insertion/opening-the-input-stream/016.html [ Skip ]
 imported/web-platform-tests/html/dom/dynamic-markup-insertion/opening-the-input-stream/document.open-03.html [ Skip ]
-imported/web-platform-tests/html/editing/focus/document-level-focus-apis/document-level-apis.html [ Skip ]
 imported/web-platform-tests/html/semantics/document-metadata/the-base-element/base_multiple.html [ Skip ]
 imported/web-platform-tests/html/semantics/embedded-content/the-object-element/object-handler.html [ Skip ]
 imported/web-platform-tests/html/semantics/forms/attributes-common-to-form-controls/dirname-ltr.html [ Skip ]
 imported/web-platform-tests/html/semantics/forms/the-button-element/button-activate.html [ Skip ]
-imported/web-platform-tests/html/semantics/selectors/pseudo-classes/focus.html [ Skip ]
 imported/web-platform-tests/html/webappapis/scripting/events/onerroreventhandler.html [ Skip ]
 
 # crbug.com/493537: Need to support SVG reference tests
@@ -637,7 +629,7 @@ imported/web-platform-tests/html/semantics/scripting-1/the-script-element/script
 imported/web-platform-tests/html/semantics/scripting-1/the-script-element/serve-with-content-type.py [ Skip ]
 
 # Requires http server. Moved the following test to http/tests/custom-elements/.
-imported/web-platform-tests/custom-elements/pre-v1/creating-and-passing-registries/no-registry-test.html [ Skip ]
+imported/web-platform-tests/custom-elements/creating-and-passing-registries/no-registry-test.html [ Skip ]
 
 # crbug.com/404303: Was broken as of 2014-07-06.
 imported/web-platform-tests/mediacapture-streams/obtaining-local-multimedia-content/navigatorusermedia/unknownkey-option-param.html
