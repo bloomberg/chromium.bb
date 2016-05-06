@@ -280,6 +280,14 @@ void WebMediaPlayerImpl::load(LoadType load_type,
   DoLoad(load_type, url, cors_mode);
 }
 
+bool WebMediaPlayerImpl::supportsOverlayFullscreenVideo() {
+#if defined(OS_ANDROID)
+  return true;
+#else
+  return false;
+#endif
+}
+
 void WebMediaPlayerImpl::enteredFullscreen() {
   fullscreen_ = true;
   if (decoder_requires_restart_for_fullscreen_)
