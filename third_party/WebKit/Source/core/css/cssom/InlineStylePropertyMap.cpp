@@ -11,42 +11,16 @@
 #include "core/css/StylePropertySet.h"
 #include "core/css/cssom/CSSOMTypes.h"
 #include "core/css/cssom/SimpleLength.h"
-#include "core/css/cssom/StyleValueFactory.h"
 
 namespace blink {
 
-StyleValue* InlineStylePropertyMap::get(CSSPropertyID propertyID)
-{
-    StyleValueVector styleVector = getAll(propertyID);
-    if (styleVector.isEmpty())
-        return nullptr;
-
-    return styleVector.at(0);
-}
-
-StyleValueVector InlineStylePropertyMap::getAll(CSSPropertyID propertyID)
+StylePropertyMap::StyleValueVector InlineStylePropertyMap::getAll(CSSPropertyID propertyID)
 {
     CSSValue* cssValue = m_ownerElement->ensureMutableInlineStyle().getPropertyCSSValue(propertyID);
     if (!cssValue)
         return StyleValueVector();
 
-    StyleValueVector styleValueVector;
-
-    if (!cssValue->isValueList()) {
-        StyleValue* styleValue = StyleValueFactory::create(propertyID, *cssValue);
-        if (styleValue)
-            styleValueVector.append(styleValue);
-        return styleValueVector;
-    }
-
-    for (CSSValue* value : *toCSSValueList(cssValue)) {
-        StyleValue* styleValue = StyleValueFactory::create(propertyID, *value);
-        if (!styleValue) {
-            return StyleValueVector();
-        }
-        styleValueVector.append(styleValue);
-    }
-    return styleValueVector;
+    return cssValueToStyleValueVector(propertyID, *cssValue);
 }
 
 bool InlineStylePropertyMap::has(CSSPropertyID propertyID)

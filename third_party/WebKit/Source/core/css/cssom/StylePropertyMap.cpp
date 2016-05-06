@@ -7,21 +7,27 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/css/cssom/SimpleLength.h"
 #include "core/css/cssom/StyleValue.h"
+#include "core/css/cssom/StyleValueFactory.h"
 
 namespace blink {
 
 StyleValue* StylePropertyMap::get(const String& propertyName, ExceptionState& exceptionState)
 {
     CSSPropertyID propertyID = cssPropertyID(propertyName);
-    if (propertyID != CSSPropertyInvalid)
-        return get(propertyID);
+    if (propertyID == CSSPropertyInvalid) {
+        // TODO(meade): Handle custom properties here.
+        exceptionState.throwTypeError("Invalid propertyName: " + propertyName);
+        return nullptr;
+    }
 
-    // TODO(meade): Handle custom properties here.
-    exceptionState.throwTypeError("Invalid propertyName: " + propertyName);
-    return nullptr;
+    StyleValueVector styleVector = getAll(propertyID);
+    if (styleVector.isEmpty())
+        return nullptr;
+
+    return styleVector[0];
 }
 
-HeapVector<Member<StyleValue>> StylePropertyMap::getAll(const String& propertyName, ExceptionState& exceptionState)
+StylePropertyMap::StyleValueVector StylePropertyMap::getAll(const String& propertyName, ExceptionState& exceptionState)
 {
     CSSPropertyID propertyID = cssPropertyID(propertyName);
     if (propertyID != CSSPropertyInvalid)
@@ -29,7 +35,7 @@ HeapVector<Member<StyleValue>> StylePropertyMap::getAll(const String& propertyNa
 
     // TODO(meade): Handle custom properties here.
     exceptionState.throwTypeError("Invalid propertyName: " + propertyName);
-    return HeapVector<Member<StyleValue>>();
+    return StyleValueVector();
 }
 
 bool StylePropertyMap::has(const String& propertyName, ExceptionState& exceptionState)
@@ -74,6 +80,26 @@ void StylePropertyMap::remove(const String& propertyName, ExceptionState& except
     }
     // TODO(meade): Handle custom properties here.
     exceptionState.throwTypeError("Invalid propertyName: " + propertyName);
+}
+
+StylePropertyMap::StyleValueVector StylePropertyMap::cssValueToStyleValueVector(CSSPropertyID propertyID, const CSSValue& cssValue)
+{
+    StyleValueVector styleValueVector;
+
+    if (!cssValue.isValueList()) {
+        StyleValue* styleValue = StyleValueFactory::create(propertyID, cssValue);
+        if (styleValue)
+            styleValueVector.append(styleValue);
+        return styleValueVector;
+    }
+
+    for (CSSValue* value : *toCSSValueList(&cssValue)) {
+        StyleValue* styleValue = StyleValueFactory::create(propertyID, *value);
+        if (!styleValue)
+            return StyleValueVector();
+        styleValueVector.append(styleValue);
+    }
+    return styleValueVector;
 }
 
 } // namespace blink

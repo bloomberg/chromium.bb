@@ -10,16 +10,12 @@
 
 namespace blink {
 
-typedef HeapVector<Member<StyleValue>> StyleValueVector;
-typedef HeapHashMap<CSSPropertyID, StyleValueVector> StyleVectorMap;
-
 class CORE_EXPORT InlineStylePropertyMap final : public MutableStylePropertyMap {
     WTF_MAKE_NONCOPYABLE(InlineStylePropertyMap);
 public:
     explicit InlineStylePropertyMap(Element* ownerElement)
         : m_ownerElement(ownerElement) { }
 
-    StyleValue* get(CSSPropertyID) override;
     StyleValueVector getAll(CSSPropertyID) override;
     bool has(CSSPropertyID) override;
     Vector<String> getProperties() override;
