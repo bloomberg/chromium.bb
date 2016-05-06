@@ -21,7 +21,7 @@
 }
 
 .cast-mode-list {
-  background-color: var(--paper-teal-500);
+  background-color: var(--paper-teal-700);
 }
 
 #close-button {
@@ -61,7 +61,7 @@
 }
 
 .issue {
-  background-color: var(--google-red-500);
+  background-color: var(--paper-red-700);
 }
 
 paper-icon-button {

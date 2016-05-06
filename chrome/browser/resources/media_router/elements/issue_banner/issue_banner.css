@@ -41,6 +41,10 @@
   width: 100%;
 }
 
+.non-blocking > #buttons > .button {
+  color: var(--paper-blue-300);
+}
+
 .non-blocking > #buttons > #default-button {
   -webkit-margin-end: 24px;
 }
