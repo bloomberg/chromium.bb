@@ -457,18 +457,19 @@ public class NewTabPageView extends FrameLayout
      */
     private void updatePeekingCard() {
         // Get the first snippet that could display to make the peeking card transition.
-        View firstSnippetView = null;
+        ViewGroup firstSnippet = null;
         int adapterSize = mNewTabPageAdapter.getItemCount();
         for (int i = 0; i < adapterSize; i++) {
             if (mNewTabPageAdapter.getItemViewType(i) == NewTabPageListItem.VIEW_TYPE_SNIPPET) {
-                firstSnippetView = mRecyclerView.getLayoutManager().findViewByPosition(i);
+                firstSnippet =
+                        (ViewGroup) mRecyclerView.getLayoutManager().findViewByPosition(i);
                 break;
             }
         }
 
         // If first snippet exists change the parameters from peeking card with bleed to full page
         // card when scrolling.
-        if (firstSnippetView != null && firstSnippetView.isShown()) {
+        if (firstSnippet != null && firstSnippet.isShown()) {
             // Value used for max peeking card height and padding.
             int maxPadding = getResources().getDimensionPixelSize(
                     R.dimen.snippets_padding_and_peeking_card_height);
@@ -483,14 +484,21 @@ public class NewTabPageView extends FrameLayout
 
             // Modify the padding so as the margin increases, the padding decreases so the cards
             // content does not shift. Top and bottom remain the same.
-            firstSnippetView.setPadding(
+            firstSnippet.setPadding(
                     maxPadding - bleed, maxPadding, maxPadding - bleed, maxPadding);
 
             // Modify the margin to grow the card from bleed to full width.
             RecyclerView.LayoutParams params =
-                    (RecyclerView.LayoutParams) firstSnippetView.getLayoutParams();
+                    (RecyclerView.LayoutParams) firstSnippet.getLayoutParams();
             params.leftMargin = bleed;
             params.rightMargin = bleed;
+
+            // Set the opacity of the card content to be 0 when peeking and 1 when full width.
+            int firstSnippetChildCount = firstSnippet.getChildCount();
+            for (int i = 0; i < firstSnippetChildCount; ++i) {
+                View snippetChild = firstSnippet.getChildAt(i);
+                snippetChild.setAlpha((maxPadding - bleed) / (float) maxPadding);
+            }
         }
     }
 
