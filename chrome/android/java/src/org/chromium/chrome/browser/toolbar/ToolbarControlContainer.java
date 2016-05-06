@@ -18,6 +18,7 @@ import org.chromium.chrome.browser.compositor.layouts.eventfilter.EdgeSwipeHandl
 import org.chromium.chrome.browser.contextualsearch.SwipeRecognizer;
 import org.chromium.chrome.browser.widget.ClipDrawableProgressBar.DrawingInfo;
 import org.chromium.chrome.browser.widget.ControlContainer;
+import org.chromium.chrome.browser.widget.ToolbarProgressBar;
 import org.chromium.chrome.browser.widget.ViewResourceFrameLayout;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.resources.dynamics.ViewResourceAdapter;
@@ -57,7 +58,8 @@ public class ToolbarControlContainer extends FrameLayout implements ControlConta
     @Override
     public void getProgressBarDrawingInfo(DrawingInfo drawingInfoOut) {
         // TODO(yusufo): Avoid casting to the layout without making the interface bigger.
-        ((ToolbarLayout) mToolbar).getProgressBar().getDrawingInfo(drawingInfoOut);
+        ToolbarProgressBar progressBar = ((ToolbarLayout) mToolbar).getProgressBar();
+        if (progressBar != null) progressBar.getDrawingInfo(drawingInfoOut);
     }
 
     @Override
