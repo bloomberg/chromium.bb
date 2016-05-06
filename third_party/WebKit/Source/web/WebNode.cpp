@@ -30,7 +30,7 @@
 
 #include "public/web/WebNode.h"
 
-#include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/Node.h"
@@ -205,14 +205,11 @@ WebElementCollection WebNode::getElementsByHTMLTagName(const WebString& tag) con
     return WebElementCollection();
 }
 
-WebElement WebNode::querySelector(const WebString& selector, WebExceptionCode& ec) const
+WebElement WebNode::querySelector(const WebString& selector) const
 {
     if (!m_private->isContainerNode())
         return WebElement();
-    TrackExceptionState exceptionState;
-    WebElement element = toContainerNode(m_private.get())->querySelector(selector, exceptionState);
-    ec = exceptionState.code();
-    return element;
+    return toContainerNode(m_private.get())->querySelector(selector, IGNORE_EXCEPTION);
 }
 
 bool WebNode::focused() const

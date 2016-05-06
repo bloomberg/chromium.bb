@@ -71,10 +71,9 @@ void AutomationApiHelper::OnQuerySelector(int request_id,
     }
   }
   blink::WebString web_selector(selector);
-  blink::WebExceptionCode ec = 0;
-  blink::WebElement result_element = start_node.querySelector(web_selector, ec);
+  blink::WebElement result_element = start_node.querySelector(web_selector);
   int result_acc_obj_id = 0;
-  if (!ec && !result_element.isNull()) {
+  if (!result_element.isNull()) {
     blink::WebAXObject result_acc_obj = result_element.accessibilityObject();
     if (!result_acc_obj.isDetached()) {
       while (result_acc_obj.accessibilityIsIgnored())

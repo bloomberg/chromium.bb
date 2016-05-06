@@ -44,9 +44,7 @@ void WebNodeTest::SetUp()
 TEST_F(WebNodeTest, QuerySelectorMatches)
 {
     setInnerHTML("<div id=x><span class=a></span></div>");
-    WebExceptionCode ec;
-    WebElement element = root().querySelector(".a", ec);
-    EXPECT_EQ(0, ec);
+    WebElement element = root().querySelector(".a");
     EXPECT_FALSE(element.isNull());
     EXPECT_TRUE(element.hasHTMLTagName("span"));
 }
@@ -54,18 +52,14 @@ TEST_F(WebNodeTest, QuerySelectorMatches)
 TEST_F(WebNodeTest, QuerySelectorDoesNotMatch)
 {
     setInnerHTML("<div id=x><span class=a></span></div>");
-    WebExceptionCode ec;
-    WebElement element = root().querySelector("section", ec);
-    EXPECT_EQ(0, ec);
+    WebElement element = root().querySelector("section");
     EXPECT_TRUE(element.isNull());
 }
 
 TEST_F(WebNodeTest, QuerySelectorError)
 {
     setInnerHTML("<div></div>");
-    WebExceptionCode ec;
-    WebElement element = root().querySelector("@invalid-selector", ec);
-    EXPECT_NE(0, ec);
+    WebElement element = root().querySelector("@invalid-selector");
     EXPECT_TRUE(element.isNull());
 }
 

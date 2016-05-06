@@ -35,7 +35,6 @@
 #include "../platform/WebPrivatePtr.h"
 #include "../platform/WebString.h"
 #include "../platform/WebVector.h"
-#include "WebExceptionCode.h"
 
 namespace blink {
 
@@ -94,7 +93,9 @@ public:
     // The argument should be lower-cased.
     BLINK_EXPORT WebElementCollection getElementsByHTMLTagName(const WebString&) const;
 
-    BLINK_EXPORT WebElement querySelector(const WebString& selector, WebExceptionCode&) const;
+    // https://developer.mozilla.org/en-US/docs/Web/API/Document/querySelector
+    // If the JS API would have thrown this returns null instead.
+    BLINK_EXPORT WebElement querySelector(const WebString& selector) const;
 
     BLINK_EXPORT bool focused() const;
 

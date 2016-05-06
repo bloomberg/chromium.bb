@@ -597,8 +597,7 @@ base::string16 InferLabelFromDivTable(const WebFormControlElement& element) {
       if (!looking_for_parent && !inferred_label.empty()) {
         CR_DEFINE_STATIC_LOCAL(WebString, kSelector,
                                ("input, select, textarea"));
-        blink::WebExceptionCode ec = 0;
-        WebElement result_element = node.querySelector(kSelector, ec);
+        WebElement result_element = node.querySelector(kSelector);
         if (!result_element.isNull()) {
           inferred_label.clear();
           divs_to_skip.insert(node);

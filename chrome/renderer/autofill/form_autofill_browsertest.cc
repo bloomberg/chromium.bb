@@ -240,10 +240,7 @@ bool ClickElement(const WebDocument& document,
 
   switch (element_descriptor.retrieval_method) {
     case WebElementDescriptor::CSS_SELECTOR: {
-      WebExceptionCode ec = 0;
-      element = document.querySelector(web_descriptor, ec);
-      if (ec)
-        DVLOG(1) << "Query selector failed. Error code: " << ec << ".";
+      element = document.querySelector(web_descriptor);
       break;
     }
     case WebElementDescriptor::ID:
