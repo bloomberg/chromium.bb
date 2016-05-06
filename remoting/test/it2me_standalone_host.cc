@@ -25,9 +25,8 @@ namespace test {
 
 namespace {
 
-void OutputFakeConnectionEventLogger(const FakeConnectionEventLogger* logger) {
-  DCHECK(logger);
-  std::cout << *logger;
+void OutputFakeConnectionEventLogger(const FakeConnectionEventLogger& logger) {
+  std::cout << logger;
 }
 
 constexpr char kSessionJid[] = "user@domain/rest-of-jid";
@@ -79,7 +78,8 @@ void It2MeStandaloneHost::Run() {
 
 void It2MeStandaloneHost::StartOutputTimer() {
   timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(1),
-               base::Bind(&OutputFakeConnectionEventLogger, &event_logger_));
+               base::Bind(&OutputFakeConnectionEventLogger,
+                          base::ConstRef(event_logger_)));
 }
 
 void It2MeStandaloneHost::Connect() {
