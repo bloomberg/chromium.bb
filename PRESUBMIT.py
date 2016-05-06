@@ -1937,7 +1937,7 @@ def _CheckForInvalidOSMacros(input_api, output_api):
   """Check all affected files for invalid OS macros."""
   bad_macros = []
   for f in input_api.AffectedFiles():
-    if not f.LocalPath().endswith(('.py', '.js', '.html', '.css')):
+    if not f.LocalPath().endswith(('.py', '.js', '.html', '.css', '.md')):
       bad_macros.extend(_CheckForInvalidOSMacrosInFile(input_api, f))
 
   if not bad_macros:
