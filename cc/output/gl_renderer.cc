@@ -1008,11 +1008,14 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
       filter->asColorFilter(&colorfilter_rawptr);
       sk_sp<SkColorFilter> cf(colorfilter_rawptr);
 
-      if (cf && cf->asColorMatrix(color_matrix) && !filter->getInput(0)) {
-        // We have a single color matrix as a filter; apply it locally
-        // in the compositor.
+      if (cf && cf->asColorMatrix(color_matrix)) {
+        // We have a color matrix at the root of the filter DAG; apply it
+        // locally in the compositor and process the rest of the DAG (if any)
+        // in Skia.
         use_color_matrix = true;
-      } else {
+        filter = sk_ref_sp(filter->getInput(0));
+      }
+      if (filter) {
         gfx::Vector2dF scale = quad->filters_scale;
         SkMatrix scale_matrix;
         scale_matrix.setScale(scale.x(), scale.y());
