@@ -60,8 +60,8 @@ public class ContextualSearchCaptionControl extends OverlayPanelInflater {
 
         mCaption.setText(sanitizeText(caption));
 
-        show();
         invalidate();
+        show();
     }
 
     /**
@@ -70,6 +70,9 @@ public class ContextualSearchCaptionControl extends OverlayPanelInflater {
     public void hide() {
         mIsVisible = false;
         mOpacity = CAPTION_OPACITY_TRANSPARENT;
+
+        // Snapshot the transparent caption.
+        invalidate();
     }
 
     /**
