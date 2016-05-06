@@ -101,6 +101,19 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
     }
   }
 
+  if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
+    switch (color_id) {
+      // FocusableBorder
+      case NativeTheme::kColorId_FocusedBorderColor:
+        return gfx::kGoogleBlue500;
+      case NativeTheme::kColorId_UnfocusedBorderColor:
+        return SkColorSetA(SK_ColorBLACK, 0x66);
+
+      default:
+        break;
+    }
+  }
+
   // Pre-MD colors.
   // Windows:
   static const SkColor kWindowBackgroundColor = SK_ColorWHITE;
