@@ -1210,7 +1210,7 @@ crbug.com/571710 http/tests/inspector/search/source-frame-search.html [ Timeout 
 
 crbug.com/571721 inspector/console/console-xpath.html [ Timeout Pass ]
 
-crbug.com/602785 css3/filters/effect-reference-subregion-hw.html [ NeedsManualRebaseline ]
+crbug.com/602785 css3/filters/effect-reference-subregion-hw.html [ NeedsRebaseline ]
 
 crbug.com/580378 [ Mac ] fast/replaced/width100percent-searchfield.html [ Failure Pass ]
 
@@ -1260,9 +1260,9 @@ crbug.com/594672 virtual/trustedeventsdefaultaction/fast/events/iframe-object-on
 crbug.com/594672 virtual/trustedeventsdefaultaction/fast/events/scale-and-scroll-iframe-body.html [ Failure Pass ]
 crbug.com/594672 virtual/trustedeventsdefaultaction/fast/events/updateLayoutForHitTest.html [ Failure Pass ]
 
-crbug.com/605515 svg/batik/filters/feTile.svg                                   [ NeedsManualRebaseline ]
-crbug.com/605515 svg/batik/text/textFeatures.svg                                [ NeedsManualRebaseline ]
-crbug.com/605515 svg/batik/text/smallFonts.svg                                  [ NeedsManualRebaseline ]
+crbug.com/605515 svg/batik/filters/feTile.svg                                   [ NeedsRebaseline ]
+crbug.com/605515 svg/batik/text/textFeatures.svg                                [ NeedsRebaseline ]
+crbug.com/605515 svg/batik/text/smallFonts.svg                                  [ NeedsRebaseline ]
 
 crbug.com/540528 [ Linux ] intersection-observer/remove-element.html [ Leak ]
 crbug.com/603728 [ Linux ] virtual/gpu-rasterization/fast/images/color-profile-filter.html [ Failure Timeout Pass ]
@@ -1290,8 +1290,8 @@ crbug.com/453002 [ Win ] fast/text/orientation-sideways.html [ Failure Pass ]
 crbug.com/587737 [ Mac10.11 Retina ] virtual/gpu-rasterization/fast/images/color-profile-filter.html [ Timeout Failure ]
 
 crbug.com/602933 fast/canvas/canvas-incremental-repaint.html [ NeedsManualRebaseline ]
-crbug.com/602933 virtual/gpu/fast/canvas/canvas-incremental-repaint.html [ NeedsManualRebaseline ]
-crbug.com/602933 virtual/display_list_2d_canvas/fast/canvas/canvas-incremental-repaint.html [ NeedsManualRebaseline ]
+crbug.com/602933 virtual/gpu/fast/canvas/canvas-incremental-repaint.html [ NeedsRebaseline ]
+crbug.com/602933 virtual/display_list_2d_canvas/fast/canvas/canvas-incremental-repaint.html [ NeedsRebaseline ]
 
 crbug.com/599975 [ Android ] media/video-autoplay.html [ Crash Timeout ]
 
