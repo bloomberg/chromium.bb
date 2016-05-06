@@ -29,8 +29,8 @@ class PLATFORM_EXPORT WebThreadSupportingGC final {
     USING_FAST_MALLOC(WebThreadSupportingGC);
     WTF_MAKE_NONCOPYABLE(WebThreadSupportingGC);
 public:
-    static PassOwnPtr<WebThreadSupportingGC> create(const char* name);
-    static PassOwnPtr<WebThreadSupportingGC> createForThread(WebThread*);
+    static PassOwnPtr<WebThreadSupportingGC> create(const char* name, bool perThreadHeapEnabled = false);
+    static PassOwnPtr<WebThreadSupportingGC> createForThread(WebThread*, bool perThreadHeapEnabled = false);
     ~WebThreadSupportingGC();
 
     void postTask(const WebTraceLocation& location, PassOwnPtr<SameThreadClosure> task)
@@ -78,7 +78,7 @@ public:
     }
 
 private:
-    WebThreadSupportingGC(const char* name, WebThread*);
+    WebThreadSupportingGC(const char* name, WebThread*, bool perThreadHeapEnabled);
 
     OwnPtr<GCTaskRunner> m_gcTaskRunner;
 
@@ -87,6 +87,7 @@ private:
     // existing thread via createForThread().
     WebThread* m_thread = nullptr;
     OwnPtr<WebThread> m_owningThread;
+    bool m_perThreadHeapEnabled;
 };
 
 } // namespace blink

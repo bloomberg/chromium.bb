@@ -173,6 +173,8 @@ public:
     void lockThreadAttachMutex();
     void unlockThreadAttachMutex();
 
+    bool perThreadHeapEnabled() const { return m_perThreadHeapEnabled; }
+
     bool isTerminating() { return m_isTerminating; }
 
     static void attachMainThread();
@@ -182,7 +184,7 @@ public:
     // Associate ThreadState object with the current thread. After this
     // call thread can start using the garbage collected heap infrastructure.
     // It also has to periodically check for safepoints.
-    static void attachCurrentThread();
+    static void attachCurrentThread(bool perThreadHeapEnabled);
 
     // Disassociate attached ThreadState from the current thread. The thread
     // can no longer use the garbage collected heap after this call.
@@ -526,7 +528,7 @@ private:
         FreelistSnapshot
     };
 
-    ThreadState();
+    ThreadState(bool perThreadHeapEnabled);
     ~ThreadState();
 
     NO_SANITIZE_ADDRESS void copyStackUntilSafePointScope();
@@ -636,6 +638,7 @@ private:
     size_t m_arenaAges[BlinkGC::NumberOfArenas];
     size_t m_currentArenaAges;
 
+    bool m_perThreadHeapEnabled;
     bool m_isTerminating;
     GarbageCollectedMixinConstructorMarker* m_gcMixinMarker;
 
