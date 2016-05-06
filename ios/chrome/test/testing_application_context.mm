@@ -10,6 +10,7 @@
 #include "base/time/default_tick_clock.h"
 #include "components/network_time/network_time_tracker.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
+#include "net/url_request/url_request_context_getter.h"
 
 TestingApplicationContext::TestingApplicationContext()
     : application_locale_("en"),
@@ -127,7 +128,8 @@ TestingApplicationContext::GetNetworkTimeTracker() {
     DCHECK(local_state_);
     network_time_tracker_.reset(new network_time::NetworkTimeTracker(
         base::WrapUnique(new base::DefaultClock),
-        base::WrapUnique(new base::DefaultTickClock), local_state_));
+        base::WrapUnique(new base::DefaultTickClock), local_state_,
+        GetSystemURLRequestContext()));
   }
   return network_time_tracker_.get();
 }

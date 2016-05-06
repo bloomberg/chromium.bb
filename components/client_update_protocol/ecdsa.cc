@@ -98,9 +98,13 @@ std::unique_ptr<Ecdsa> Ecdsa::Create(int key_version,
   return base::WrapUnique(new Ecdsa(key_version, public_key));
 }
 
+void Ecdsa::OverrideNonceForTesting(int key_version, uint32_t nonce) {
+  DCHECK(!request_query_cup2key_.empty());
+  request_query_cup2key_ = base::StringPrintf("%d:%u", pub_key_version_, nonce);
+}
+
 void Ecdsa::SignRequest(const base::StringPiece& request_body,
                         std::string* query_params) {
-  DCHECK(!request_body.empty());
   DCHECK(query_params);
 
   // Generate a random nonce to use for freshness, build the cup2key query

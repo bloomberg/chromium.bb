@@ -17,6 +17,7 @@
 #include "net/cert/x509_certificate.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_certificate_data.h"
+#include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -189,9 +190,13 @@ TEST_F(SSLErrorClassificationTest, GetClockState) {
   // |GetClockState|.
   TestingPrefServiceSimple pref_service;
   network_time::NetworkTimeTracker::RegisterPrefs(pref_service.registry());
+  base::MessageLoop loop;
   network_time::NetworkTimeTracker network_time_tracker(
       base::WrapUnique(new base::DefaultClock()),
-      base::WrapUnique(new base::DefaultTickClock()), &pref_service);
+      base::WrapUnique(new base::DefaultTickClock()), &pref_service,
+      new net::TestURLRequestContextGetter(
+          base::ThreadTaskRunnerHandle::Get()));
+  ;
   EXPECT_EQ(
       ssl_errors::ClockState::CLOCK_STATE_UNKNOWN,
       ssl_errors::GetClockState(base::Time::Now(), &network_time_tracker));

@@ -7,18 +7,31 @@
 #include <stdint.h>
 #include <utility>
 
+#include "base/feature_list.h"
 #include "base/i18n/time_formatting.h"
+#include "base/json/json_reader.h"
 #include "base/logging.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/tick_clock.h"
 #include "build/build_config.h"
+#include "components/client_update_protocol/ecdsa.h"
 #include "components/network_time/network_time_pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "net/base/load_flags.h"
+#include "net/base/net_errors.h"
+#include "net/http/http_response_headers.h"
+#include "net/url_request/url_fetcher.h"
+#include "net/url_request/url_fetcher_response_writer.h"
+#include "net/url_request/url_request_context_getter.h"
 
 namespace network_time {
 
 namespace {
+
+// Minimum number of minutes between time queries.
+const uint32_t kMinimumQueryDelayMinutes = 60;
 
 // Number of time measurements performed in a given network time calculation.
 const uint32_t kNumTimeMeasurements = 7;
@@ -41,6 +54,61 @@ const char kPrefUncertainty[] = "uncertainty";
 // Name of a pref that stores the network time via |ToJsTime|.
 const char kPrefNetworkTime[] = "network";
 
+// Time server's maximum allowable clock skew, in seconds.  (This is a property
+// of the time server that we happen to know.  It's unlikely that it would ever
+// be that badly wrong, but all the same it's included here to document the very
+// rough nature of the time service provided by this class.)
+const uint32_t kTimeServerMaxSkewSeconds = 10;
+
+const char kTimeServiceURL[] = "http://clients2.google.com/time/1/current";
+
+// Finch feature that enables network time service querying.
+const base::Feature kNetworkTimeServiceQuerying{
+    "NetworkTimeServiceQuerying", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// This is an ECDSA prime256v1 named-curve key.
+const int kKeyVersion = 1;
+const uint8_t kKeyPubBytes[] = {
+    0x30, 0x59, 0x30, 0x13, 0x06, 0x07, 0x2a, 0x86, 0x48, 0xce, 0x3d, 0x02,
+    0x01, 0x06, 0x08, 0x2a, 0x86, 0x48, 0xce, 0x3d, 0x03, 0x01, 0x07, 0x03,
+    0x42, 0x00, 0x04, 0xeb, 0xd8, 0xad, 0x0b, 0x8f, 0x75, 0xe8, 0x84, 0x36,
+    0x23, 0x48, 0x14, 0x24, 0xd3, 0x93, 0x42, 0x25, 0x43, 0xc1, 0xde, 0x36,
+    0x29, 0xc6, 0x95, 0xca, 0xeb, 0x28, 0x85, 0xff, 0x09, 0xdc, 0x08, 0xec,
+    0x45, 0x74, 0x6e, 0x4b, 0xc3, 0xa5, 0xfd, 0x8a, 0x2f, 0x02, 0xa0, 0x4b,
+    0xc3, 0xc6, 0xa4, 0x7b, 0xa4, 0x41, 0xfc, 0xa7, 0x02, 0x54, 0xab, 0xe3,
+    0xe4, 0xb1, 0x00, 0xf5, 0xd5, 0x09, 0x11};
+
+std::string GetServerProof(const net::URLFetcher* source) {
+  const net::HttpResponseHeaders* response_headers =
+      source->GetResponseHeaders();
+  if (!response_headers) {
+    return std::string();
+  }
+  std::string proof;
+  return response_headers->EnumerateHeader(nullptr, "x-cup-server-proof",
+                                           &proof)
+             ? proof
+             : std::string();
+}
+
+// Limits the amount of data that will be buffered from the server's response.
+class SizeLimitingStringWriter : public net::URLFetcherStringWriter {
+ public:
+  SizeLimitingStringWriter(size_t limit) : limit_(limit) {}
+
+  int Write(net::IOBuffer* buffer,
+            int num_bytes,
+            const net::CompletionCallback& callback) override {
+    if (data().length() + num_bytes > limit_) {
+      return net::ERR_FILE_TOO_BIG;
+    }
+    return net::URLFetcherStringWriter::Write(buffer, num_bytes, callback);
+  }
+
+ private:
+  size_t limit_;
+};
+
 }  // namespace
 
 // static
@@ -52,8 +120,13 @@ void NetworkTimeTracker::RegisterPrefs(PrefRegistrySimple* registry) {
 NetworkTimeTracker::NetworkTimeTracker(
     std::unique_ptr<base::Clock> clock,
     std::unique_ptr<base::TickClock> tick_clock,
-    PrefService* pref_service)
-    : clock_(std::move(clock)),
+    PrefService* pref_service,
+    scoped_refptr<net::URLRequestContextGetter> getter)
+    : server_url_(kTimeServiceURL),
+      max_response_size_(1024),
+      getter_(std::move(getter)),
+      loop_(nullptr),
+      clock_(std::move(clock)),
       tick_clock_(std::move(tick_clock)),
       pref_service_(pref_service) {
   const base::DictionaryValue* time_mapping =
@@ -83,6 +156,13 @@ NetworkTimeTracker::NetworkTimeTracker(
     pref_service_->ClearPref(prefs::kNetworkTimeMapping);
     network_time_at_last_measurement_ = base::Time();  // Reset.
   }
+
+  base::StringPiece public_key = {reinterpret_cast<const char*>(kKeyPubBytes),
+                                  sizeof(kKeyPubBytes)};
+  query_signer_ =
+      client_update_protocol::Ecdsa::Create(kKeyVersion, public_key);
+
+  QueueTimeQuery(base::TimeDelta::FromMinutes(kMinimumQueryDelayMinutes));
 }
 
 NetworkTimeTracker::~NetworkTimeTracker() {
@@ -132,6 +212,40 @@ void NetworkTimeTracker::UpdateNetworkTime(base::Time network_time,
   time_mapping.SetDouble(kPrefNetworkTime,
       network_time_at_last_measurement_.ToJsTime());
   pref_service_->Set(prefs::kNetworkTimeMapping, time_mapping);
+
+  // Calls to update the network time can (as of this writing) come from various
+  // sources, e.g. organically from Omaha update checks.  In that even, we may
+  // as well delay the next time server query.  If |UpdateNetworkTime| is ever
+  // made into a private method, this can be removed.
+  query_timer_.Reset();
+}
+
+void NetworkTimeTracker::SetTimeServerURLForTesting(const GURL& url) {
+  server_url_ = url;
+}
+
+void NetworkTimeTracker::SetMaxResponseSizeForTesting(size_t limit) {
+  max_response_size_ = limit;
+}
+
+void NetworkTimeTracker::SetPublicKeyForTesting(const base::StringPiece& key) {
+  query_signer_ = client_update_protocol::Ecdsa::Create(kKeyVersion, key);
+}
+
+bool NetworkTimeTracker::QueryTimeServiceForTesting() {
+  QueryTimeService();
+  loop_ = base::MessageLoop::current();  // Gets Quit on completion.
+  return time_fetcher_ != nullptr;
+}
+
+void NetworkTimeTracker::WaitForFetchForTesting(uint32_t nonce) {
+  query_signer_->OverrideNonceForTesting(kKeyVersion, nonce);
+  base::MessageLoop::current()->Run();
+}
+
+base::TimeDelta NetworkTimeTracker::GetTimerDelayForTesting() const {
+  DCHECK(query_timer_.IsRunning());
+  return query_timer_.GetCurrentDelay();
 }
 
 bool NetworkTimeTracker::GetNetworkTime(base::Time* network_time,
@@ -165,6 +279,119 @@ bool NetworkTimeTracker::GetNetworkTime(base::Time* network_time,
     *uncertainty = network_time_uncertainty_ + divergence;
   }
   return true;
+}
+
+void NetworkTimeTracker::QueryTimeService() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  // Do not query the time service if not enabled via Finch.
+  if (!base::FeatureList::IsEnabled(kNetworkTimeServiceQuerying)) {
+    return;
+  }
+
+  // If GetNetworkTime() returns true, the NetworkTimeTracker thinks it is in
+  // sync, so there is no need to query.
+  base::Time network_time;
+  if (GetNetworkTime(&network_time, nullptr)) {
+    return;
+  }
+
+  std::string query_string;
+  query_signer_->SignRequest(nullptr, &query_string);
+  GURL url = server_url_;
+  GURL::Replacements replacements;
+  replacements.SetQueryStr(query_string);
+  url = url.ReplaceComponents(replacements);
+
+  // This cancels any outstanding fetch.
+  time_fetcher_ = net::URLFetcher::Create(url, net::URLFetcher::GET, this);
+  if (!time_fetcher_) {
+    DVLOG(1) << "tried to make fetch happen; failed";
+    return;
+  }
+  time_fetcher_->SaveResponseWithWriter(
+      std::unique_ptr<net::URLFetcherResponseWriter>(
+          new SizeLimitingStringWriter(max_response_size_)));
+  DCHECK(getter_);
+  time_fetcher_->SetRequestContext(getter_.get());
+  // Not expecting any cookies, but just in case.
+  time_fetcher_->SetLoadFlags(net::LOAD_BYPASS_CACHE | net::LOAD_DISABLE_CACHE |
+                              net::LOAD_DO_NOT_SAVE_COOKIES |
+                              net::LOAD_DO_NOT_SEND_COOKIES |
+                              net::LOAD_DO_NOT_SEND_AUTH_DATA);
+  time_fetcher_->Start();
+  fetch_started_ = tick_clock_->NowTicks();
+}
+
+bool NetworkTimeTracker::UpdateTimeFromResponse() {
+  if (time_fetcher_->GetStatus().status() != net::URLRequestStatus::SUCCESS &&
+      time_fetcher_->GetResponseCode() != 200) {
+    DVLOG(1) << "fetch failed, status=" << time_fetcher_->GetStatus().status()
+             << ",code=" << time_fetcher_->GetResponseCode();
+    return false;
+  }
+
+  std::string response_body;
+  if (!time_fetcher_->GetResponseAsString(&response_body)) {
+    DVLOG(1) << "failed to get response";
+    return false;
+  }
+  DCHECK(query_signer_);
+  if (!query_signer_->ValidateResponse(response_body,
+                                       GetServerProof(time_fetcher_.get()))) {
+    DVLOG(1) << "invalid signature";
+    return false;
+  }
+  response_body = response_body.substr(5);  // Skips leading )]}'\n
+  std::unique_ptr<base::Value> value = base::JSONReader::Read(response_body);
+  if (!value) {
+    DVLOG(1) << "bad JSON";
+    return false;
+  }
+  const base::DictionaryValue* dict;
+  if (!value->GetAsDictionary(&dict)) {
+    DVLOG(1) << "not a dictionary";
+    return false;
+  }
+  double current_time_millis;
+  if (!dict->GetDouble("current_time_millis", &current_time_millis)) {
+    DVLOG(1) << "no current_time_millis";
+    return false;
+  }
+  // There is a "server_nonce" key here too, but it serves no purpose other than
+  // to make the server's response unpredictable.
+  base::Time current_time = base::Time::FromJsTime(current_time_millis);
+  base::TimeDelta resolution =
+      base::TimeDelta::FromMilliseconds(1) +
+      base::TimeDelta::FromSeconds(kTimeServerMaxSkewSeconds);
+  base::TimeDelta latency = tick_clock_->NowTicks() - fetch_started_;
+  UpdateNetworkTime(current_time, resolution, latency, tick_clock_->NowTicks());
+  return true;
+}
+
+void NetworkTimeTracker::OnURLFetchComplete(const net::URLFetcher* source) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(time_fetcher_);
+  DCHECK_EQ(source, time_fetcher_.get());
+
+  if (!UpdateTimeFromResponse()) {  // On error, back off.
+    DCHECK(query_timer_.IsRunning());
+    base::TimeDelta delay = query_timer_.GetCurrentDelay();
+    if (delay < base::TimeDelta::FromDays(2)) {
+      delay *= 2;
+    }
+    QueueTimeQuery(delay);
+  }
+  time_fetcher_.reset();
+  if (loop_ != nullptr) {
+    loop_->QuitWhenIdle();
+    loop_ = nullptr;
+  }
+}
+
+void NetworkTimeTracker::QueueTimeQuery(base::TimeDelta delay) {
+  query_timer_.Start(FROM_HERE, delay, this,
+                     &NetworkTimeTracker::QueryTimeService);
 }
 
 }  // namespace network_time
