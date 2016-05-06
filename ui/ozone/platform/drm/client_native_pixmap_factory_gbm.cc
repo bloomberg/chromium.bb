@@ -49,7 +49,13 @@ class ClientNativePixmapFactoryGbm : public ClientNativePixmapFactory {
       case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE:
       case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE_PERSISTENT: {
 #if defined(OS_CHROMEOS)
-        return format == gfx::BufferFormat::BGRA_8888;
+        return
+#if defined(ARCH_CPU_X86_FAMILY)
+            // Currently only Intel driver (i.e. minigbm and Mesa) supports R_8.
+            // crbug.com/356871
+            format == gfx::BufferFormat::R_8 ||
+#endif
+            format == gfx::BufferFormat::BGRA_8888;
 #else
         return false;
 #endif

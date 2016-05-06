@@ -8,6 +8,7 @@
   ((static_cast<uint32_t>(a)) | (static_cast<uint32_t>(b) << 8) | \
    (static_cast<uint32_t>(c) << 16) | (static_cast<uint32_t>(d) << 24))
 
+#define DRM_FORMAT_R8 FOURCC('R', '8', ' ', ' ')
 #define DRM_FORMAT_ARGB8888 FOURCC('A', 'R', '2', '4')
 #define DRM_FORMAT_ABGR8888 FOURCC('A', 'B', '2', '4')
 #define DRM_FORMAT_XRGB8888 FOURCC('X', 'R', '2', '4')
@@ -21,6 +22,7 @@ bool ValidInternalFormat(unsigned internalformat) {
     case GL_RGB:
     case GL_RGBA:
     case GL_BGRA_EXT:
+    case GL_RED_EXT:
       return true;
     default:
       return false;
@@ -29,6 +31,7 @@ bool ValidInternalFormat(unsigned internalformat) {
 
 bool ValidFormat(BufferFormat format) {
   switch (format) {
+    case BufferFormat::R_8:
     case BufferFormat::RGBA_8888:
     case BufferFormat::RGBX_8888:
     case BufferFormat::BGRA_8888:
@@ -39,7 +42,6 @@ bool ValidFormat(BufferFormat format) {
     case BufferFormat::DXT1:
     case BufferFormat::DXT5:
     case BufferFormat::ETC1:
-    case BufferFormat::R_8:
     case BufferFormat::RGBA_4444:
     case BufferFormat::YUV_420:
     case BufferFormat::YUV_420_BIPLANAR:
@@ -53,6 +55,8 @@ bool ValidFormat(BufferFormat format) {
 
 EGLint FourCC(BufferFormat format) {
   switch (format) {
+    case BufferFormat::R_8:
+      return DRM_FORMAT_R8;
     case BufferFormat::RGBA_8888:
       return DRM_FORMAT_ABGR8888;
     case BufferFormat::RGBX_8888:
@@ -66,7 +70,6 @@ EGLint FourCC(BufferFormat format) {
     case BufferFormat::DXT1:
     case BufferFormat::DXT5:
     case BufferFormat::ETC1:
-    case BufferFormat::R_8:
     case BufferFormat::RGBA_4444:
     case BufferFormat::YUV_420:
     case BufferFormat::YUV_420_BIPLANAR:
