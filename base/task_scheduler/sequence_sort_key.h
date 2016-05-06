@@ -17,6 +17,8 @@ class BASE_EXPORT SequenceSortKey final {
  public:
   SequenceSortKey(TaskPriority priority, TimeTicks next_task_sequenced_time);
 
+  TaskPriority priority() const { return priority_; }
+
   bool operator<(const SequenceSortKey& other) const;
   bool operator>(const SequenceSortKey& other) const { return other < *this; }
 

@@ -657,6 +657,8 @@
           'task_scheduler/task.h',
           'task_scheduler/task_scheduler.cc',
           'task_scheduler/task_scheduler.h',
+          'task_scheduler/task_scheduler_impl.cc',
+          'task_scheduler/task_scheduler_impl.h',
           'task_scheduler/task_tracker.cc',
           'task_scheduler/task_tracker.h',
           'task_scheduler/task_traits.cc',
