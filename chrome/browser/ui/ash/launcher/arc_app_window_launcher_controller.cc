@@ -15,6 +15,15 @@
 #include "ui/base/base_window.h"
 #include "ui/views/widget/widget.h"
 
+namespace {
+
+enum class FullScreenMode {
+  NOT_DEFINED,  // Fullscreen mode was not defined.
+  ACTIVE,       // Fullscreen is activated for an app.
+  NON_ACTIVE,   // Fullscreen was not activated for an app.
+};
+}
+
 class ArcAppWindowLauncherController::AppWindow : public ui::BaseWindow {
  public:
   AppWindow(int task_id, ArcAppWindowLauncherController* owner)
@@ -25,6 +34,13 @@ class ArcAppWindowLauncherController::AppWindow : public ui::BaseWindow {
     DCHECK(!controller_ && controller);
     controller_ = controller;
   }
+
+  void SetFullscreenMode(FullScreenMode mode) {
+    DCHECK(mode != FullScreenMode::NOT_DEFINED);
+    fullscreen_mode_ = mode;
+  }
+
+  FullScreenMode fullscreen_mode() const { return fullscreen_mode_; }
 
   int task_id() const { return task_id_; }
 
@@ -137,6 +153,7 @@ class ArcAppWindowLauncherController::AppWindow : public ui::BaseWindow {
 
   int task_id_;
   ash::ShelfID shelf_id_ = 0;
+  FullScreenMode fullscreen_mode_ = FullScreenMode::NOT_DEFINED;
   // Unowned pointers
   ArcAppWindowLauncherController* owner_;
   ArcAppWindowLauncherItemController* controller_ = nullptr;
@@ -265,6 +282,8 @@ void ArcAppWindowLauncherController::OnTaskDestroyed(int task_id) {
   }
 
   task_id_to_app_window_.erase(it);
+  if (task_id_to_app_window_.empty() && root_widget_)
+    root_widget_->SetFullscreen(false);
 }
 
 void ArcAppWindowLauncherController::OnTaskSetActive(int32_t task_id) {
@@ -273,6 +292,10 @@ void ArcAppWindowLauncherController::OnTaskSetActive(int32_t task_id) {
   if (previous_active_app_it != task_id_to_app_window_.end()) {
     owner()->SetItemStatus(previous_active_app_it->second->shelf_id(),
                            ash::STATUS_RUNNING);
+    previous_active_app_it->second->SetFullscreenMode(
+        root_widget_ && root_widget_->IsFullscreen()
+            ? FullScreenMode::ACTIVE
+            : FullScreenMode::NON_ACTIVE);
   }
 
   active_task_id_ = task_id;
@@ -289,6 +312,14 @@ void ArcAppWindowLauncherController::OnTaskSetActive(int32_t task_id) {
                            root_widget_ && root_widget_->IsActive()
                                ? ash::STATUS_ACTIVE
                                : ash::STATUS_RUNNING);
+    if (root_widget_) {
+      root_widget_->SetFullscreen(
+          new_active_app_it->second->fullscreen_mode() ==
+          FullScreenMode::ACTIVE);
+    }
+  } else {
+    if (root_widget_)
+      root_widget_->SetFullscreen(false);
   }
 }
 
