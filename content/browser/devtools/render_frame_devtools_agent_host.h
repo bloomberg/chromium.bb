@@ -42,6 +42,7 @@ namespace network { class NetworkHandler; }
 namespace page { class PageHandler; }
 namespace security { class SecurityHandler; }
 namespace service_worker { class ServiceWorkerHandler; }
+namespace storage { class StorageHandler; }
 namespace tracing { class TracingHandler; }
 }
 
@@ -157,6 +158,8 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   std::unique_ptr<devtools::security::SecurityHandler> security_handler_;
   std::unique_ptr<devtools::service_worker::ServiceWorkerHandler>
       service_worker_handler_;
+  std::unique_ptr<devtools::storage::StorageHandler>
+      storage_handler_;
   std::unique_ptr<devtools::tracing::TracingHandler> tracing_handler_;
   std::unique_ptr<devtools::emulation::EmulationHandler> emulation_handler_;
   std::unique_ptr<DevToolsFrameTraceRecorder> frame_trace_recorder_;

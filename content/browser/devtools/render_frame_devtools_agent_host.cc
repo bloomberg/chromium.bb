@@ -21,6 +21,7 @@
 #include "content/browser/devtools/protocol/page_handler.h"
 #include "content/browser/devtools/protocol/security_handler.h"
 #include "content/browser/devtools/protocol/service_worker_handler.h"
+#include "content/browser/devtools/protocol/storage_handler.h"
 #include "content/browser/devtools/protocol/tracing_handler.h"
 #include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
@@ -353,6 +354,7 @@ RenderFrameDevToolsAgentHost::RenderFrameDevToolsAgentHost(
       security_handler_(nullptr),
       service_worker_handler_(
           new devtools::service_worker::ServiceWorkerHandler()),
+      storage_handler_(new devtools::storage::StorageHandler()),
       tracing_handler_(new devtools::tracing::TracingHandler(
           devtools::tracing::TracingHandler::Renderer,
           host->GetFrameTreeNodeId(),
@@ -370,6 +372,7 @@ RenderFrameDevToolsAgentHost::RenderFrameDevToolsAgentHost(
   dispatcher->SetIOHandler(io_handler_.get());
   dispatcher->SetNetworkHandler(network_handler_.get());
   dispatcher->SetServiceWorkerHandler(service_worker_handler_.get());
+  dispatcher->SetStorageHandler(storage_handler_.get());
   dispatcher->SetTracingHandler(tracing_handler_.get());
 
   if (!host->GetParent()) {
@@ -772,6 +775,8 @@ void RenderFrameDevToolsAgentHost::UpdateProtocolHandlers(
   service_worker_handler_->SetRenderFrameHost(host);
   if (security_handler_)
     security_handler_->SetRenderFrameHost(host);
+  if (storage_handler_)
+    storage_handler_->SetRenderFrameHost(host);
 }
 
 void RenderFrameDevToolsAgentHost::DisconnectWebContents() {

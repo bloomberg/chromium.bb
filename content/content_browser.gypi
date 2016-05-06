@@ -624,6 +624,8 @@
       'browser/devtools/protocol/security_handler.h',
       'browser/devtools/protocol/service_worker_handler.cc',
       'browser/devtools/protocol/service_worker_handler.h',
+      'browser/devtools/protocol/storage_handler.cc',
+      'browser/devtools/protocol/storage_handler.h',
       'browser/devtools/protocol/system_info_handler.cc',
       'browser/devtools/protocol/system_info_handler.h',
       'browser/devtools/protocol/tethering_handler.cc',
