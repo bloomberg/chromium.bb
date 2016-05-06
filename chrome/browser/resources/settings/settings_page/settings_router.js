@@ -356,6 +356,12 @@ Polymer({
     },
 <if expr="chromeos">
     {
+      url: '/dateTime',
+      page: 'advanced',
+      section: 'dateTime',
+      subpage: [],
+    },
+    {
       url: '/bluetooth',
       page: 'advanced',
       section: 'bluetooth',
