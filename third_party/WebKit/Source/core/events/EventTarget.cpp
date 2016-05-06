@@ -60,20 +60,8 @@ void setDefaultAddEventListenerOptionsLegacy(AddEventListenerOptions& options, b
     options.setPassive(false);
 }
 
-void setDefaultEventListenerOptions(EventListenerOptions& options)
-{
-    // The default for capture is based on whether the eventListenerOptions
-    // runtime setting is enabled. That is
-    // addEventListener('type', function(e) {}, {});
-    // behaves differently under the setting. With the setting off
-    // capture is true; with the setting on capture is false.
-    if (!options.hasCapture())
-        options.setCapture(!RuntimeEnabledFeatures::eventListenerOptionsEnabled());
-}
-
 void setDefaultAddEventListenerOptions(AddEventListenerOptions& options)
 {
-    setDefaultEventListenerOptions(options);
     if (!options.hasPassive())
         options.setPassive(false);
 }
@@ -201,7 +189,6 @@ bool EventTarget::removeEventListener(const AtomicString& eventType, const Event
 
 bool EventTarget::removeEventListener(const AtomicString& eventType, const EventListener* listener, EventListenerOptions& options)
 {
-    setDefaultEventListenerOptions(options);
     return removeEventListenerInternal(eventType, listener, options);
 }
 

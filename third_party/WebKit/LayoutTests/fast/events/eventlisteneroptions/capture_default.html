@@ -21,7 +21,7 @@ function testCaptureValue(captureValue, expectedValue, test) {
 
 test(function(t) { testCaptureValue(true, Event.CAPTURING_PHASE, t); }, "True value");
 test(function(t) { testCaptureValue(false, Event.BUBBLING_PHASE, t); }, "False value");
-test(function(t) { testCaptureValue({}, internals.runtimeFlags.eventListenerOptionsEnabled ? Event.BUBBLING_PHASE : Event.CAPTURING_PHASE, t); }, "Empty object");
+test(function(t) { testCaptureValue({}, Event.BUBBLING_PHASE, t); }, "Empty object");
 test(function(t) { testCaptureValue(null, Event.BUBBLING_PHASE, t); }, "Null object");
 test(function(t) { testCaptureValue(undefined, Event.BUBBLING_PHASE, t); }, "Undefined object");
 test(function(t) { testCaptureValue(2.3, Event.CAPTURING_PHASE, t); }, "Positive value");

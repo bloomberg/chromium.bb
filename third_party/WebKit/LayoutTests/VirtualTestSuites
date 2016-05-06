@@ -83,11 +83,6 @@
     "args": ["--stable-release-mode"]
   },
   {
-    "prefix": "stable",
-    "base": "fast/events/eventlisteneroptions",
-    "args": ["--stable-release-mode"]
-  },
-  {
     "prefix": "android",
     "base": "fullscreen",
     "args": ["--enable-threaded-compositing",

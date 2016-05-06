@@ -19,10 +19,10 @@ test(function(t) {
     };
 
     document.addEventListener('test_event', query_function, query_options);
-    assert_equals(supportsCapture, internals.runtimeFlags.eventListenerOptionsEnabled);
+    assert_true(supportsCapture);
     supportsCapture = false;
     document.removeEventListener('test_event', query_function, query_options);
-    assert_equals(supportsCapture, internals.runtimeFlags.eventListenerOptionsEnabled);
+    assert_true(supportsCapture);
     t.done();
 }, "Supports Capture");
 </script>

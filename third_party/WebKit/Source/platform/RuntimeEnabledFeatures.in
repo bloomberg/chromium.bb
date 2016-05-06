@@ -80,7 +80,6 @@ ForceDisplayList2dCanvas
 ForceDisable2dCanvasCopyOnWrite
 ExecCommandInJavaScript status=test
 ComputedAccessibilityInfo status=experimental
-EventListenerOptions status=stable
 ExperimentalCanvasFeatures status=test
 ExperimentalContentSecurityPolicyFeatures status=experimental
 ExperimentalFramework status=stable

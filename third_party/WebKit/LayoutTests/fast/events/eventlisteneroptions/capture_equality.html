@@ -14,9 +14,9 @@ function testOptionEquality(addOptionValue, removeOptionValue, test) {
   test.done();
 }
 
-test(function(t) { testOptionEquality({}, !internals.runtimeFlags.eventListenerOptionsEnabled, t); }, "Empty object");
-test(function(t) { testOptionEquality({'capture': false}, !internals.runtimeFlags.eventListenerOptionsEnabled, t); }, "Capture false");
+test(function(t) { testOptionEquality({}, false, t); }, "Empty object");
+test(function(t) { testOptionEquality({'capture': false}, false, t); }, "Capture false");
 test(function(t) { testOptionEquality({'capture': true}, true, t); }, "Capture true");
-test(function(t) { testOptionEquality({'dummy': true}, !internals.runtimeFlags.eventListenerOptionsEnabled, t); }, "Non-empty object");
+test(function(t) { testOptionEquality({'dummy': true}, false, t); }, "Non-empty object");
 
 </script>

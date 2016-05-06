@@ -5,10 +5,5 @@
 // https://dom.spec.whatwg.org/#dictdef-eventlisteneroptions
 
 dictionary EventListenerOptions {
-    // TODO: |capture| is runtime enabled and its value actually
-    // changes whether the feature is enabled or not. Setting
-    // it to a default value here prevents the ability of checking
-    // whether it was set manually or by default. See EventTarget.cpp
-    // where it is populated. crbug.com/543685
-    [RuntimeEnabled=EventListenerOptions] boolean capture;
+    boolean capture = false;
 };
