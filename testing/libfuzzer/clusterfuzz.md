@@ -50,8 +50,8 @@ goes into general corpus directory. Seed corpus is read-only.
 
 
 [Buildbot]: https://goto.google.com/libfuzzer-clusterfuzz-buildbot
-[fuzzer_test.gni]: https://code.google.com/p/chromium/codesearch#chromium/src/testing/libfuzzer/fuzzer_test.gni
 [chromium_libfuzzer.py]: https://code.google.com/p/chromium/codesearch#chromium/build/scripts/slave/recipes/chromium_libfuzzer.py
 [ClusterFuzz Fuzzer Status]: https://goto.google.com/libfuzzer-clusterfuzz-status
 [ClusterFuzz libFuzzer Logs]: https://goto.google.com/libfuzzer-clusterfuzz-logs
 [Corpus GCS Bucket]: https://goto.google.com/libfuzzer-clusterfuzz-corpus
+[fuzzer_test.gni]: https://code.google.com/p/chromium/codesearch#chromium/src/testing/libfuzzer/fuzzer_test.gni

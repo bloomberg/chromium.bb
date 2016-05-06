@@ -88,6 +88,19 @@ efficient fuzzer should be able to finds lots of them rather quickly.
 The `... pulse ...` line will appear periodically to show the current status.
 
 
+### Default value for maximum testcase length
+
+By default, when run manually, libFuzzer uses `-max_len=64` or takes the length
+of the biggest testcase in corpus if corpus is not empty. ClusterFuzz takes
+random value in range from `1` to `10000` for each fuzzing session and passes
+that value to libFuzzers. If corpus contains testcases of size greater than
+`max_len`, libFuzzer will use only first `max_len` bytes of such testcases.
+
+
+You can specify custom `max_len` value to be used by ClusterFuzz. For more
+information check out [Maximum Testcase Length] section of the [Efficient Fuzzer
+Guide].
+
 ## Submitting Fuzzer to ClusterFuzz
 
 ClusterFuzz builds and executes all `fuzzer_test` targets in the source tree.
@@ -116,9 +129,10 @@ UBSAN_OPTIONS=symbolize=1:halt_on_error=1:print_stacktrace=1 ./fuzzer <corpus_di
 
 
 [Address Sanitizer]: http://clang.llvm.org/docs/AddressSanitizer.html
+[ClusterFuzz status]: clusterfuzz.md#Status-Links
+[crbug/598448]: https://bugs.chromium.org/p/chromium/issues/detail?id=598448
+[Efficient Fuzzer Guide]: efficient_fuzzer.md
+[Maximum Testcase Length]: efficient_fuzzer.md#Maximum-Testcase-Length
 [Memory Sanitizer]: http://clang.llvm.org/docs/MemorySanitizer.html
 [Undefined Behavior Sanitizer]: http://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html
 [url_parse_fuzzer.cc]: https://code.google.com/p/chromium/codesearch#chromium/src/testing/libfuzzer/fuzzers/url_parse_fuzzer.cc
-[ClusterFuzz status]: clusterfuzz.md#Status-Links
-[Efficient Fuzzer Guide]: efficient_fuzzer.md
-[crbug/598448]: https://bugs.chromium.org/p/chromium/issues/detail?id=598448
