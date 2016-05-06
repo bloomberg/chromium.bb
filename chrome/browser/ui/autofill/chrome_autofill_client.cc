@@ -311,6 +311,10 @@ void ChromeAutofillClient::OnFirstUserGestureObserved() {
   DCHECK(factory);
 
   for (content::RenderFrameHost* frame : web_contents()->GetAllFrames()) {
+    // No need to notify non-live frames.
+    // And actually they have no corresponding drivers in the factory's map.
+    if (!frame->IsRenderFrameLive())
+      continue;
     ContentAutofillDriver* driver = factory->DriverForFrame(frame);
     DCHECK(driver);
     driver->NotifyFirstUserGestureObservedInTab();
