@@ -2,38 +2,36 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MASH_WM_SHELF_LAYOUT_H_
-#define MASH_WM_SHELF_LAYOUT_H_
+#ifndef MASH_WM_SHELF_LAYOUT_MANAGER_H_
+#define MASH_WM_SHELF_LAYOUT_MANAGER_H_
 
 #include "base/macros.h"
+#include "mash/shelf/public/interfaces/shelf_constants.mojom.h"
 #include "mash/wm/layout_manager.h"
-#include "mash/wm/public/interfaces/shelf_layout.mojom.h"
 
 namespace mash {
 namespace wm {
 
 // Lays out the shelf within shelf containers.
-class ShelfLayout : public LayoutManager, public mojom::ShelfLayout {
+class ShelfLayoutManager : public LayoutManager {
  public:
-  explicit ShelfLayout(mus::Window* owner);
-  ~ShelfLayout() override;
+  explicit ShelfLayoutManager(mus::Window* owner);
+  ~ShelfLayoutManager() override;
+
+  void SetAlignment(mash::shelf::mojom::Alignment alignment);
+  void SetAutoHideBehavior(mash::shelf::mojom::AutoHideBehavior auto_hide);
 
  private:
   // Overridden from LayoutManager:
   void LayoutWindow(mus::Window* window) override;
 
-  // Overridden from mojom::ShelfLayout:
-  void SetAlignment(mash::shelf::mojom::Alignment alignment) override;
-  void SetAutoHideBehavior(
-      mash::shelf::mojom::AutoHideBehavior auto_hide) override;
-
   mash::shelf::mojom::Alignment alignment_;
   mash::shelf::mojom::AutoHideBehavior auto_hide_behavior_;
 
-  DISALLOW_COPY_AND_ASSIGN(ShelfLayout);
+  DISALLOW_COPY_AND_ASSIGN(ShelfLayoutManager);
 };
 
 }  // namespace wm
 }  // namespace mash
 
-#endif  // MASH_WM_SHELF_LAYOUT_H_
+#endif  // MASH_WM_SHELF_LAYOUT_MANAGER_H_

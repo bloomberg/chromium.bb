@@ -129,6 +129,14 @@ mus::mojom::WindowType GetWindowType(
   return mus::mojom::WindowType::POPUP;
 }
 
+mojom::AshWindowType GetAshWindowType(const mus::Window* window) {
+  if (!window->HasSharedProperty(mojom::kAshWindowType_Property))
+    return mojom::AshWindowType::COUNT;
+
+  return static_cast<mojom::AshWindowType>(
+      window->GetSharedProperty<int32_t>(mojom::kAshWindowType_Property));
+}
+
 base::string16 GetWindowTitle(const mus::Window* window) {
   if (!window->HasSharedProperty(
           mus::mojom::WindowManager::kWindowTitle_Property)) {

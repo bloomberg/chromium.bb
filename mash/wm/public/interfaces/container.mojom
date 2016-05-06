@@ -21,6 +21,8 @@ enum Container {
   LOGIN_WINDOWS,
   LOGIN_APP,    // TODO(beng): what about dialog boxes login opens?
   LOGIN_SHELF,
+  // Status area widget and message center notification popups.
+  STATUS,
   // Bubble windows, for example the sysui system tray bubble and the screen
   // brightness bubble.
   BUBBLES,

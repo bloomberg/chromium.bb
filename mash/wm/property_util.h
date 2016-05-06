@@ -7,6 +7,7 @@
 
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/interfaces/window_manager_constants.mojom.h"
+#include "mash/wm/public/interfaces/ash_window_type.mojom.h"
 #include "mash/wm/public/interfaces/container.mojom.h"
 
 namespace gfx {
@@ -50,6 +51,8 @@ Shadow* GetShadow(const mus::Window* window);
 mus::mojom::WindowType GetWindowType(const mus::Window* window);
 mus::mojom::WindowType GetWindowType(
     const mus::Window::SharedProperties& window);
+
+mojom::AshWindowType GetAshWindowType(const mus::Window* window);
 
 base::string16 GetWindowTitle(const mus::Window* window);
 

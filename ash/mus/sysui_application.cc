@@ -64,11 +64,10 @@ mash::wm::mojom::Container GetContainerId(
   const int id = params.parent->id();
   if (id == kShellWindowId_DesktopBackgroundContainer)
     return mash::wm::mojom::Container::USER_BACKGROUND;
-  // mash::wm::ShelfLayout manages both the shelf and the status area.
-  if (id == kShellWindowId_ShelfContainer ||
-      id == kShellWindowId_StatusContainer) {
+  if (id == kShellWindowId_ShelfContainer)
     return mash::wm::mojom::Container::USER_SHELF;
-  }
+  if (id == kShellWindowId_StatusContainer)
+    return mash::wm::mojom::Container::STATUS;
 
   // Determine the container based on Widget type.
   switch (params.type) {

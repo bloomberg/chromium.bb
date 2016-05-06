@@ -17,7 +17,8 @@
 #include "mash/wm/fill_layout.h"
 #include "mash/wm/screenlock_layout.h"
 #include "mash/wm/shadow_controller.h"
-#include "mash/wm/shelf_layout.h"
+#include "mash/wm/shelf_layout_manager.h"
+#include "mash/wm/status_layout_manager.h"
 #include "mash/wm/window_layout.h"
 #include "mash/wm/window_manager.h"
 #include "mash/wm/window_manager_application.h"
@@ -93,10 +94,15 @@ void RootWindowController::OnAccelerator(uint32_t id, const ui::Event& event) {
   }
 }
 
-ShelfLayout* RootWindowController::GetShelfLayoutManager() {
-  return static_cast<ShelfLayout*>(
+ShelfLayoutManager* RootWindowController::GetShelfLayoutManager() {
+  return static_cast<ShelfLayoutManager*>(
       layout_manager_[GetWindowForContainer(mojom::Container::USER_SHELF)]
           .get());
+}
+
+StatusLayoutManager* RootWindowController::GetStatusLayoutManager() {
+  return static_cast<StatusLayoutManager*>(
+      layout_manager_[GetWindowForContainer(mojom::Container::STATUS)].get());
 }
 
 RootWindowController::RootWindowController(WindowManagerApplication* app)
@@ -131,7 +137,9 @@ void RootWindowController::OnEmbed(mus::Window* root) {
   mus::Window* login_app = GetWindowForContainer(mojom::Container::LOGIN_APP);
   layout_manager_[login_app].reset(new ScreenlockLayout(login_app));
   mus::Window* user_shelf = GetWindowForContainer(mojom::Container::USER_SHELF);
-  layout_manager_[user_shelf].reset(new ShelfLayout(user_shelf));
+  layout_manager_[user_shelf].reset(new ShelfLayoutManager(user_shelf));
+  mus::Window* status = GetWindowForContainer(mojom::Container::STATUS);
+  layout_manager_[status].reset(new StatusLayoutManager(status));
 
   mus::Window* window = GetWindowForContainer(mojom::Container::USER_WINDOWS);
   layout_manager_[window].reset(new WindowLayout(window));
@@ -204,6 +212,7 @@ void RootWindowController::CreateContainers() {
   CreateContainer(mojom::Container::LOGIN_APP, mojom::Container::LOGIN_WINDOWS);
   CreateContainer(mojom::Container::LOGIN_SHELF,
                   mojom::Container::LOGIN_WINDOWS);
+  CreateContainer(mojom::Container::STATUS, mojom::Container::ROOT);
   CreateContainer(mojom::Container::BUBBLES, mojom::Container::ROOT);
   CreateContainer(mojom::Container::SYSTEM_MODAL_WINDOWS,
                   mojom::Container::ROOT);

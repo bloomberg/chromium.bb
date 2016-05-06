@@ -31,7 +31,8 @@ namespace wm {
 
 class LayoutManager;
 class ShadowController;
-class ShelfLayout;
+class ShelfLayoutManager;
+class StatusLayoutManager;
 class WindowManager;
 class WindowManagerApplication;
 
@@ -66,7 +67,8 @@ class RootWindowController : public mus::WindowObserver,
 
   void OnAccelerator(uint32_t id, const ui::Event& event);
 
-  ShelfLayout* GetShelfLayoutManager();
+  ShelfLayoutManager* GetShelfLayoutManager();
+  StatusLayoutManager* GetStatusLayoutManager();
 
  private:
   explicit RootWindowController(WindowManagerApplication* app);

@@ -40,6 +40,7 @@ namespace wm {
 class AcceleratorRegistrarImpl;
 class RootWindowController;
 class RootWindowsObserver;
+class ShelfLayoutImpl;
 class UserWindowControllerImpl;
 
 class WindowManagerApplication
@@ -115,8 +116,9 @@ class WindowManagerApplication
   std::unique_ptr<views::ScreenMus> screen_;
   std::unique_ptr<views::AuraInit> aura_init_;
 
-  // The ShelfLayout object is created once OnEmbed() is called. Until that
+  // The |shelf_layout_| object is created once OnEmbed() is called. Until that
   // time |shelf_layout_requests_| stores pending interface requests.
+  std::unique_ptr<ShelfLayoutImpl> shelf_layout_;
   mojo::BindingSet<mojom::ShelfLayout> shelf_layout_bindings_;
   std::vector<std::unique_ptr<mojo::InterfaceRequest<mojom::ShelfLayout>>>
       shelf_layout_requests_;

@@ -14,7 +14,7 @@
 #include "mash/wm/accelerator_registrar_impl.h"
 #include "mash/wm/root_window_controller.h"
 #include "mash/wm/root_windows_observer.h"
-#include "mash/wm/shelf_layout.h"
+#include "mash/wm/shelf_layout_impl.h"
 #include "mash/wm/user_window_controller_impl.h"
 #include "mojo/converters/input_events/input_events_type_converters.h"
 #include "services/shell/public/cpp/connection.h"
@@ -71,12 +71,10 @@ void WindowManagerApplication::OnRootWindowControllerDoneInit(
   user_window_controller_requests_.clear();
 
   // TODO(msw): figure out if this should be per display, or global.
-  if (root_controller == (*root_controllers_.begin())) {
-    ShelfLayout* shelf_layout = root_controller->GetShelfLayoutManager();
-    for (auto& request : shelf_layout_requests_)
-      shelf_layout_bindings_.AddBinding(shelf_layout, std::move(*request));
-    shelf_layout_requests_.clear();
-  }
+  shelf_layout_->Initialize(root_controller);
+  for (auto& request : shelf_layout_requests_)
+    shelf_layout_bindings_.AddBinding(shelf_layout_.get(), std::move(*request));
+  shelf_layout_requests_.clear();
 
   FOR_EACH_OBSERVER(RootWindowsObserver, root_windows_observers_,
                     OnRootWindowControllerAdded(root_controller));
@@ -124,6 +122,7 @@ void WindowManagerApplication::Initialize(shell::Connector* connector,
   wm_factory_service->SetWindowManagerFactory(
       window_manager_factory_binding_.CreateInterfacePtrAndBind());
 
+  shelf_layout_.reset(new ShelfLayoutImpl);
   user_window_controller_.reset(new UserWindowControllerImpl());
 }
 
@@ -141,9 +140,7 @@ void WindowManagerApplication::Create(
     mojo::InterfaceRequest<mojom::ShelfLayout> request) {
   // TODO(msw): Handle multiple shelves (one per display).
   if (!root_controllers_.empty() && (*root_controllers_.begin())->root()) {
-    ShelfLayout* shelf_layout =
-        (*root_controllers_.begin())->GetShelfLayoutManager();
-    shelf_layout_bindings_.AddBinding(shelf_layout, std::move(request));
+    shelf_layout_bindings_.AddBinding(shelf_layout_.get(), std::move(request));
   } else {
     shelf_layout_requests_.push_back(base::WrapUnique(
         new mojo::InterfaceRequest<mojom::ShelfLayout>(std::move(request))));
