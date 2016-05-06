@@ -65,7 +65,7 @@ const base::Feature kNTPFakeOmniboxTextFeature {
 };
 
 const base::Feature kPhysicalWebFeature {
-  "PhysicalWeb", base::FEATURE_DISABLED_BY_DEFAULT
+  "PhysicalWeb", base::FEATURE_ENABLED_BY_DEFAULT
 };
 
 const base::Feature kSystemDownloadManager {
