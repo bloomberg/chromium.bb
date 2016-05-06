@@ -375,10 +375,10 @@ public class ListUrlsActivity extends AppCompatActivity implements AdapterView.O
             url = pwsResult.requestUrl;
         }
 
-        Intent intent = new Intent(Intent.ACTION_VIEW);
-        intent.addCategory(Intent.CATEGORY_BROWSABLE);
-        intent.setData(Uri.parse(url));
-        return intent;
+        return new Intent(Intent.ACTION_VIEW)
+                .addCategory(Intent.CATEGORY_BROWSABLE)
+                .setData(Uri.parse(url))
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
     }
 
     @VisibleForTesting
