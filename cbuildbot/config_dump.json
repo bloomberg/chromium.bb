@@ -3395,10 +3395,12 @@
     },
     "beaglebone-release": {
         "_template": "release",
+        "active_waterfall": "chromeos",
         "afdo_use": false,
         "boards": [
             "beaglebone"
         ],
+        "buildslave_type": "gce_beefy",
         "chrome_sdk": false,
         "dev_installer_prebuilts": false,
         "image_test": false,
@@ -3406,6 +3408,7 @@
             "base",
             "test"
         ],
+        "important": true,
         "paygen": false,
         "rootfs_verification": false,
         "signer_tests": false,
@@ -3451,75 +3454,6 @@
         "boards": [
             "beaglebone"
         ],
-        "vm_tests": []
-    },
-    "beaglebone-release-group": {
-        "_template": "release",
-        "active_waterfall": "chromeos",
-        "afdo_use": false,
-        "boards": [
-            "beaglebone"
-        ],
-        "child_configs": [
-            {
-                "_template": "release",
-                "afdo_use": false,
-                "boards": [
-                    "beaglebone"
-                ],
-                "chrome_sdk": false,
-                "dev_installer_prebuilts": false,
-                "grouped": true,
-                "image_test": false,
-                "images": [
-                    "base",
-                    "test"
-                ],
-                "name": "beaglebone-release",
-                "paygen": false,
-                "rootfs_verification": false,
-                "signer_tests": false,
-                "sync_chrome": false,
-                "vm_tests": []
-            },
-            {
-                "_template": "release",
-                "afdo_use": false,
-                "boards": [
-                    "beaglebone_servo"
-                ],
-                "build_packages_in_background": true,
-                "chrome_sdk": false,
-                "chrome_sdk_build_chrome": false,
-                "dev_installer_prebuilts": false,
-                "grouped": true,
-                "image_test": false,
-                "images": [
-                    "base",
-                    "test"
-                ],
-                "name": "beaglebone_servo-release",
-                "paygen": false,
-                "payload_image": "base",
-                "rootfs_verification": false,
-                "signer_tests": false,
-                "sync_chrome": false,
-                "unittests": null,
-                "vm_tests": []
-            }
-        ],
-        "chrome_sdk": false,
-        "dev_installer_prebuilts": false,
-        "image_test": false,
-        "images": [
-            "base",
-            "test"
-        ],
-        "important": true,
-        "paygen": false,
-        "rootfs_verification": false,
-        "signer_tests": false,
-        "sync_chrome": false,
         "vm_tests": []
     },
     "beaglebone-tot-chrome-pfq-informational": {
@@ -3640,10 +3574,12 @@
     },
     "beaglebone_servo-release": {
         "_template": "release",
+        "active_waterfall": "chromeos",
         "afdo_use": false,
         "boards": [
             "beaglebone_servo"
         ],
+        "buildslave_type": "gce_beefy",
         "chrome_sdk": false,
         "dev_installer_prebuilts": false,
         "image_test": false,
@@ -3651,6 +3587,7 @@
             "base",
             "test"
         ],
+        "important": true,
         "paygen": false,
         "payload_image": "base",
         "rootfs_verification": false,

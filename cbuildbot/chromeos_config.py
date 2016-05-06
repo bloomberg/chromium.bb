@@ -2442,22 +2442,23 @@ def GetConfig():
 
   # beaglebone build doesn't generate signed images, so don't try to release
   # them.
-  _beaglebone_release = _release.derive(beaglebone, paygen=False,
+  _beaglebone_release = _release.derive(beaglebone,
+                                        paygen=False,
                                         signer_tests=False,
-                                        images=['base', 'test'])
+                                        images=['base', 'test'],
+                                        important=True)
 
-  site_config.AddGroup(
-      'beaglebone-release-group',
-      site_config.Add(
-          'beaglebone-release', _beaglebone_release,
-          boards=['beaglebone'],
-      ),
-      site_config.Add(
-          'beaglebone_servo-release', _beaglebone_release,
-          boards=['beaglebone_servo'],
-          payload_image='base'
-      ).derive(_grouped_variant_config),
-      important=True,
+  site_config.Add(
+      'beaglebone-release', _beaglebone_release,
+      boards=['beaglebone'],
+      buildslave_type=constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
+  )
+
+  site_config.Add(
+      'beaglebone_servo-release', _beaglebone_release,
+      boards=['beaglebone_servo'],
+      payload_image='base',
+      buildslave_type=constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
   )
 
   site_config.Add(

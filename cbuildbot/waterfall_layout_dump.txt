@@ -13,9 +13,8 @@ auron_yuna-release
 banjo-release
 banon-release
 beaglebone-paladin
-[beaglebone-release-group]
-  beaglebone-release
-  beaglebone_servo-release
+beaglebone-release
+beaglebone_servo-release
 buddy-release
 butterfly-paladin
 butterfly-release
