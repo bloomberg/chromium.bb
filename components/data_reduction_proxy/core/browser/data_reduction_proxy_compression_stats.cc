@@ -834,25 +834,27 @@ void DataReductionProxyCompressionStats::RecordRequestSizePrefs(
       int64_t original_length_with_data_reduction_enabled_video = GetInt64(
           data_reduction_proxy::prefs::
               kDailyOriginalContentLengthWithDataReductionProxyEnabledVideo);
-      int64_t received_length_with_data_reduction_enabled_video =
-          GetInt64(data_reduction_proxy::prefs::
-                       kDailyContentLengthWithDataReductionProxyEnabledVideo);
-      int percent_data_reduction_proxy_enabled_video = 0;
-      // UMA percentage cannot be negative.
-      // The DataReductionProxy server will only serve optimized video content
-      // if the optimized content is smaller than the original content.
-      // TODO(ryansturm): Track daily data inflation percents here and
-      // elsewhere. http://crbug.com/595818
-      if (original_length_with_data_reduction_enabled_video >
-          received_length_with_data_reduction_enabled_video) {
-        percent_data_reduction_proxy_enabled_video =
-            100 * (original_length_with_data_reduction_enabled_video -
-                   received_length_with_data_reduction_enabled_video) /
-            original_length_with_data_reduction_enabled_video;
+      if (original_length_with_data_reduction_enabled_video > 0) {
+        int64_t received_length_with_data_reduction_enabled_video =
+            GetInt64(data_reduction_proxy::prefs::
+                         kDailyContentLengthWithDataReductionProxyEnabledVideo);
+        int percent_data_reduction_proxy_enabled_video = 0;
+        // UMA percentage cannot be negative.
+        // The DataReductionProxy server will only serve optimized video content
+        // if the optimized content is smaller than the original content.
+        // TODO(ryansturm): Track daily data inflation percents here and
+        // elsewhere. http://crbug.com/595818
+        if (original_length_with_data_reduction_enabled_video >
+            received_length_with_data_reduction_enabled_video) {
+          percent_data_reduction_proxy_enabled_video =
+              100 * (original_length_with_data_reduction_enabled_video -
+                     received_length_with_data_reduction_enabled_video) /
+              original_length_with_data_reduction_enabled_video;
+        }
+        UMA_HISTOGRAM_PERCENTAGE(
+            "Net.DailyContentSavingPercent_DataReductionProxyEnabled_Video",
+            percent_data_reduction_proxy_enabled_video);
       }
-      UMA_HISTOGRAM_PERCENTAGE(
-          "Net.DailyContentSavingPercent_DataReductionProxyEnabled_Video",
-          percent_data_reduction_proxy_enabled_video);
 
       RECORD_INT64PREF_TO_HISTOGRAM(
           data_reduction_proxy::prefs::
@@ -884,25 +886,27 @@ void DataReductionProxyCompressionStats::RecordRequestSizePrefs(
       int64_t original_length_via_data_reduction_proxy_video =
           GetInt64(data_reduction_proxy::prefs::
                        kDailyOriginalContentLengthViaDataReductionProxyVideo);
-      int64_t received_length_via_data_reduction_proxy_video =
-          GetInt64(data_reduction_proxy::prefs::
-                       kDailyContentLengthViaDataReductionProxyVideo);
-      int percent_via_data_reduction_proxy_video = 0;
-      // UMA percentage cannot be negative.
-      // The DataReductionProxy server will only serve optimized video content
-      // if the optimized content is smaller than the original content.
-      // TODO(ryansturm): Track daily data inflation percents here and
-      // elsewhere. http://crbug.com/595818
-      if (original_length_via_data_reduction_proxy_video >
-          received_length_via_data_reduction_proxy_video) {
-        percent_via_data_reduction_proxy_video =
-            100 * (original_length_via_data_reduction_proxy_video -
-                   received_length_via_data_reduction_proxy_video) /
-            original_length_via_data_reduction_proxy_video;
+      if (original_length_via_data_reduction_proxy_video > 0) {
+        int64_t received_length_via_data_reduction_proxy_video =
+            GetInt64(data_reduction_proxy::prefs::
+                         kDailyContentLengthViaDataReductionProxyVideo);
+        int percent_via_data_reduction_proxy_video = 0;
+        // UMA percentage cannot be negative.
+        // The DataReductionProxy server will only serve optimized video content
+        // if the optimized content is smaller than the original content.
+        // TODO(ryansturm): Track daily data inflation percents here and
+        // elsewhere. http://crbug.com/595818
+        if (original_length_via_data_reduction_proxy_video >
+            received_length_via_data_reduction_proxy_video) {
+          percent_via_data_reduction_proxy_video =
+              100 * (original_length_via_data_reduction_proxy_video -
+                     received_length_via_data_reduction_proxy_video) /
+              original_length_via_data_reduction_proxy_video;
+        }
+        UMA_HISTOGRAM_PERCENTAGE(
+            "Net.DailyContentSavingPercent_ViaDataReductionProxy_Video",
+            percent_via_data_reduction_proxy_video);
       }
-      UMA_HISTOGRAM_PERCENTAGE(
-          "Net.DailyContentSavingPercent_ViaDataReductionProxy_Video",
-          percent_via_data_reduction_proxy_video);
 
       RECORD_INT64PREF_TO_HISTOGRAM(
           data_reduction_proxy::prefs::

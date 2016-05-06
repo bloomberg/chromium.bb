@@ -25781,6 +25781,20 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.DailyContentSavingPercent_DataReductionProxyEnabled_Video"
+    units="%">
+  <owner>bengr@chromium.org</owner>
+  <owner>bolian@chromium.org</owner>
+  <summary>
+    The percentage of data saving in the previous calendar day while the data
+    reduction proxy was enabled. A negative saving will be shown as zero. This
+    only counts responses while the data reduction proxy is enabled. The metric
+    is reported when the first response in the current day is received. If no
+    video bytes were received while the data reduction proxy was enabled, the
+    metric will not be reported.
+  </summary>
+</histogram>
+
 <histogram name="Net.DailyContentSavingPercent_ViaDataReductionProxy" units="%">
   <owner>bengr@chromium.org</owner>
   <owner>bolian@chromium.org</owner>
@@ -25789,6 +25803,19 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     reduction proxy. A negative saving will be shown as zero. This only counts
     responses via the data reduction proxy. The metric is reported when the
     first response in the current day is received.
+  </summary>
+</histogram>
+
+<histogram name="Net.DailyContentSavingPercent_ViaDataReductionProxy_Video"
+    units="%">
+  <owner>bengr@chromium.org</owner>
+  <owner>bolian@chromium.org</owner>
+  <summary>
+    The percentage of data saving in the previous calendar day via the data
+    reduction proxy. A negative saving will be shown as zero. This only counts
+    responses via the data reduction proxy. The metric is reported when the
+    first response in the current day is received. If no video bytes were
+    received via the data reduction proxy, the metric will not be reported.
   </summary>
 </histogram>
 
@@ -89986,10 +90013,6 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="Net.DailyContentLength"/>
   <affected-histogram name="Net.DailyContentLength_DataReductionProxyEnabled"/>
   <affected-histogram name="Net.DailyContentLength_ViaDataReductionProxy"/>
-  <affected-histogram
-      name="Net.DailyContentSavingPercent_DataReductionProxyEnabled"/>
-  <affected-histogram
-      name="Net.DailyContentSavingPercent_ViaDataReductionProxy"/>
   <affected-histogram name="Net.DailyOriginalContentLength"/>
   <affected-histogram
       name="Net.DailyOriginalContentLength_DataReductionProxyEnabled"/>
