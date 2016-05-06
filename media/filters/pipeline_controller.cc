@@ -5,8 +5,6 @@
 #include "media/filters/pipeline_controller.h"
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
-#include "media/base/bind_to_current_loop.h"
 #include "media/base/demuxer.h"
 
 namespace media {
@@ -36,16 +34,10 @@ PipelineController::~PipelineController() {
 
 // TODO(sandersd): If there is a pending suspend, don't call pipeline_.Start()
 // until Resume().
-void PipelineController::Start(
-    Demuxer* demuxer,
-    bool is_streaming,
-    bool is_static,
-    const base::Closure& ended_cb,
-    const PipelineMetadataCB& metadata_cb,
-    const BufferingStateCB& buffering_state_cb,
-    const base::Closure& duration_change_cb,
-    const AddTextTrackCB& add_text_track_cb,
-    const base::Closure& waiting_for_decryption_key_cb) {
+void PipelineController::Start(Demuxer* demuxer,
+                               Pipeline::Client* client,
+                               bool is_streaming,
+                               bool is_static) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(state_ == State::CREATED);
   DCHECK(demuxer);
@@ -58,13 +50,9 @@ void PipelineController::Start(
   demuxer_ = demuxer;
   is_streaming_ = is_streaming;
   is_static_ = is_static;
-  pipeline_->Start(
-      demuxer, renderer_factory_cb_.Run(), ended_cb,
-      BindToCurrentLoop(error_cb_),
-      BindToCurrentLoop(base::Bind(&PipelineController::OnPipelineStatus,
-                                   weak_factory_.GetWeakPtr(), State::PLAYING)),
-      metadata_cb, buffering_state_cb, duration_change_cb, add_text_track_cb,
-      waiting_for_decryption_key_cb);
+  pipeline_->Start(demuxer, renderer_factory_cb_.Run(), client,
+                   base::Bind(&PipelineController::OnPipelineStatus,
+                              weak_factory_.GetWeakPtr(), State::PLAYING));
 }
 
 void PipelineController::Seek(base::TimeDelta time, bool time_updated) {
@@ -158,9 +146,9 @@ void PipelineController::Dispatch() {
   if (pending_suspend_ && state_ == State::PLAYING) {
     pending_suspend_ = false;
     state_ = State::SUSPENDING;
-    pipeline_->Suspend(BindToCurrentLoop(
-        base::Bind(&PipelineController::OnPipelineStatus,
-                   weak_factory_.GetWeakPtr(), State::SUSPENDED)));
+    pipeline_->Suspend(base::Bind(&PipelineController::OnPipelineStatus,
+                                  weak_factory_.GetWeakPtr(),
+                                  State::SUSPENDED));
     return;
   }
 
@@ -191,9 +179,8 @@ void PipelineController::Dispatch() {
     pending_resume_ = false;
     state_ = State::RESUMING;
     pipeline_->Resume(renderer_factory_cb_.Run(), seek_time_,
-                      BindToCurrentLoop(base::Bind(
-                          &PipelineController::OnPipelineStatus,
-                          weak_factory_.GetWeakPtr(), State::PLAYING)));
+                      base::Bind(&PipelineController::OnPipelineStatus,
+                                 weak_factory_.GetWeakPtr(), State::PLAYING));
     return;
   }
 
@@ -224,9 +211,8 @@ void PipelineController::Dispatch() {
     pending_seek_ = false;
     state_ = State::SEEKING;
     pipeline_->Seek(seek_time_,
-                    BindToCurrentLoop(base::Bind(
-                        &PipelineController::OnPipelineStatus,
-                        weak_factory_.GetWeakPtr(), State::PLAYING)));
+                    base::Bind(&PipelineController::OnPipelineStatus,
+                               weak_factory_.GetWeakPtr(), State::PLAYING));
     return;
   }
 

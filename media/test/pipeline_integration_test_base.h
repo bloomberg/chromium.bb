@@ -59,7 +59,7 @@ class DummyTickClock : public base::TickClock {
 // display or audio device. Both of these devices are simulated since they have
 // little effect on verifying pipeline behavior and allow tests to run faster
 // than real-time.
-class PipelineIntegrationTestBase {
+class PipelineIntegrationTestBase : public Pipeline::Client {
  public:
   PipelineIntegrationTestBase();
   virtual ~PipelineIntegrationTestBase();
@@ -151,8 +151,6 @@ class PipelineIntegrationTestBase {
 
   void DemuxerMediaTracksUpdatedCB(std::unique_ptr<MediaTracks> tracks);
 
-  void OnEnded();
-  void OnError(PipelineStatus status);
   void QuitAfterCurrentTimeTask(const base::TimeDelta& quit_time);
 
   // Creates Demuxer and sets |demuxer_|.
@@ -163,9 +161,13 @@ class PipelineIntegrationTestBase {
 
   void OnVideoFramePaint(const scoped_refptr<VideoFrame>& frame);
 
-  MOCK_METHOD1(OnMetadata, void(PipelineMetadata));
-  MOCK_METHOD1(OnBufferingStateChanged, void(BufferingState));
   MOCK_METHOD1(DecryptorAttached, void(bool));
+  // Pipeline::Client overrides.
+  void OnError(PipelineStatus status) override;
+  void OnEnded() override;
+  MOCK_METHOD1(OnMetadata, void(PipelineMetadata));
+  MOCK_METHOD1(OnBufferingStateChange, void(BufferingState));
+  MOCK_METHOD0(OnDurationChange, void());
   MOCK_METHOD2(OnAddTextTrack,
                void(const TextTrackConfig& config,
                     const AddTextTrackDoneCB& done_cb));

@@ -164,6 +164,7 @@ source_set("base") {
     "pipeline.h",
     "pipeline_impl.cc",
     "pipeline_impl.h",
+    "pipeline_metadata.h",
     "pipeline_status.h",
     "player_tracker.cc",
     "player_tracker.h",

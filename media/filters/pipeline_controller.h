@@ -69,14 +69,9 @@ class MEDIA_EXPORT PipelineController {
   //
   // The remaining parameters are just passed directly to pipeline_.Start().
   void Start(Demuxer* demuxer,
+             Pipeline::Client* client,
              bool is_streaming,
-             bool is_static,
-             const base::Closure& ended_cb,
-             const PipelineMetadataCB& metadata_cb,
-             const BufferingStateCB& buffering_state_cb,
-             const base::Closure& duration_change_cb,
-             const AddTextTrackCB& add_text_track_cb,
-             const base::Closure& waiting_for_decryption_key_cb);
+             bool is_static);
 
   // Request a seek to |time|. If |time_updated| is true, then the eventual
   // |seeked_cb| callback will also have |time_updated| set to true; it

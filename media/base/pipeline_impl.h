@@ -76,9 +76,11 @@ class TextRenderer;
 // Some annoying differences between the two paths need to be removed first.
 class MEDIA_EXPORT PipelineImpl : public Pipeline, public DemuxerHost {
  public:
-  // Constructs a media pipeline that will execute on |task_runner|.
-  PipelineImpl(const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-               MediaLog* media_log);
+  // Constructs a media pipeline that will execute media tasks on
+  // |media_task_runner|.
+  PipelineImpl(
+      const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
+      MediaLog* media_log);
   ~PipelineImpl() override;
 
   void SetErrorForTesting(PipelineStatus status);
@@ -87,15 +89,9 @@ class MEDIA_EXPORT PipelineImpl : public Pipeline, public DemuxerHost {
   // Pipeline implementation.
   void Start(Demuxer* demuxer,
              std::unique_ptr<Renderer> renderer,
-             const base::Closure& ended_cb,
-             const PipelineStatusCB& error_cb,
-             const PipelineStatusCB& seek_cb,
-             const PipelineMetadataCB& metadata_cb,
-             const BufferingStateCB& buffering_state_cb,
-             const base::Closure& duration_change_cb,
-             const AddTextTrackCB& add_text_track_cb,
-             const base::Closure& waiting_for_decryption_key_cb) override;
-  void Stop(const base::Closure& stop_cb) override;
+             Client* client,
+             const PipelineStatusCB& seek_cb) override;
+  void Stop() override;
   void Seek(base::TimeDelta time, const PipelineStatusCB& seek_cb) override;
   bool IsRunning() const override;
   double GetPlaybackRate() const override;
@@ -157,6 +153,9 @@ class MEDIA_EXPORT PipelineImpl : public Pipeline, public DemuxerHost {
 
   // Callback executed by filters to update statistics.
   void OnUpdateStatistics(const PipelineStatistics& stats_delta);
+
+  // Callback executed by renderer when waiting for decryption key.
+  void OnWaitingForDecryptionKey();
 
   // The following "task" methods correspond to the public methods, but these
   // methods are run as the result of posting a task to the Pipeline's
@@ -226,17 +225,19 @@ class MEDIA_EXPORT PipelineImpl : public Pipeline, public DemuxerHost {
   // executing |done_cb| with the final status when completed.
   void DoSeek(base::TimeDelta seek_timestamp, const PipelineStatusCB& done_cb);
 
-  // Initiates an asynchronous pause-flush-stop call sequence executing
-  // |done_cb| when completed.
-  void DoStop(const PipelineStatusCB& done_cb);
-  void OnStopCompleted(PipelineStatus status);
+  // Stops media rendering and executes |stop_cb_| when done.
+  void DoStop();
 
   void ReportMetadata();
 
   void BufferingStateChanged(BufferingState new_buffering_state);
 
+  // Task runner of the thread on which this class is constructed.
+  // Also used to post notifications on Pipeline::Client object.
+  const scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
+
   // Task runner used to execute pipeline tasks.
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  const scoped_refptr<base::SingleThreadTaskRunner> media_task_runner_;
 
   // MediaLog to which to log events.
   scoped_refptr<MediaLog> media_log_;
@@ -300,15 +301,6 @@ class MEDIA_EXPORT PipelineImpl : public Pipeline, public DemuxerHost {
   // Temporary callback used for Suspend().
   PipelineStatusCB suspend_cb_;
 
-  // Permanent callbacks passed in via Start().
-  base::Closure ended_cb_;
-  PipelineStatusCB error_cb_;
-  PipelineMetadataCB metadata_cb_;
-  BufferingStateCB buffering_state_cb_;
-  base::Closure duration_change_cb_;
-  AddTextTrackCB add_text_track_cb_;
-  base::Closure waiting_for_decryption_key_cb_;
-
   // Holds the initialized demuxer. Used for seeking. Owned by client.
   Demuxer* demuxer_;
 
@@ -316,6 +308,13 @@ class MEDIA_EXPORT PipelineImpl : public Pipeline, public DemuxerHost {
   // playback rate, and determining when playback has finished.
   std::unique_ptr<Renderer> renderer_;
   std::unique_ptr<TextRenderer> text_renderer_;
+
+  // Holds the client passed on Start().
+  // Initialized, Dereferenced, and Invalidated on |main_task_runner_|.
+  // Used on |media_task_runner_| to post tasks on |main_task_runner_|.
+  base::WeakPtr<Client> weak_client_;
+  // Created and destroyed on |main_task_runner_|.
+  std::unique_ptr<base::WeakPtrFactory<Client>> client_weak_factory_;
 
   PipelineStatistics statistics_;
 

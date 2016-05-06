@@ -81,6 +81,7 @@ class WebTextTrackImpl;
 class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
     : public NON_EXPORTED_BASE(blink::WebMediaPlayer),
       public NON_EXPORTED_BASE(WebMediaPlayerDelegate::Observer),
+      public NON_EXPORTED_BASE(Pipeline::Client),
       public base::SupportsWeakPtr<WebMediaPlayerImpl> {
  public:
   // Constructs a WebMediaPlayer implementation using Chromium's media stack.
@@ -223,13 +224,17 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   friend class WebMediaPlayerImplTest;
 
   void OnPipelineSuspended();
-  void OnPipelineEnded();
-  void OnPipelineError(PipelineStatus error);
-  void OnPipelineMetadata(PipelineMetadata metadata);
-  void OnPipelineBufferingStateChanged(BufferingState buffering_state);
   void OnDemuxerOpened();
+
+  // Pipeline::Client overrides.
+  void OnError(PipelineStatus status) override;
+  void OnEnded() override;
+  void OnMetadata(PipelineMetadata metadata) override;
+  void OnBufferingStateChange(BufferingState state) override;
+  void OnDurationChange() override;
   void OnAddTextTrack(const TextTrackConfig& config,
-                      const AddTextTrackDoneCB& done_cb);
+                      const AddTextTrackDoneCB& done_cb) override;
+  void OnWaitingForDecryptionKey() override;
 
   // Actually seek. Avoids causing |should_notify_time_changed_| to be set when
   // |time_updated| is false.
@@ -267,7 +272,6 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   double GetPipelineDuration() const;
 
   // Callbacks from |pipeline_| that are forwarded to |client_|.
-  void OnDurationChanged();
   void OnNaturalSizeChanged(gfx::Size size);
   void OnOpacityChanged(bool opaque);
 
@@ -287,10 +291,6 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // invoked when using FFmpegDemuxer, since MSE/ChunkDemuxer handle media
   // tracks separately in WebSourceBufferImpl.
   void OnFFmpegMediaTracksUpdated(std::unique_ptr<MediaTracks> tracks);
-
-  // Called when a decoder detects that the key needed to decrypt the stream
-  // is not available.
-  void OnWaitingForDecryptionKey();
 
   // Sets |cdm_context| on the pipeline and fires |cdm_attached_cb| when done.
   // Parameter order is reversed for easy binding.

@@ -19,7 +19,6 @@
 #include "base/debug/crash_logging.h"
 #include "base/metrics/histogram.h"
 #include "base/single_thread_task_runner.h"
-#include "base/synchronization/waitable_event.h"
 #include "base/task_runner_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
@@ -165,7 +164,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
                      base::Unretained(this)),
           base::Bind(&WebMediaPlayerImpl::OnPipelineSeeked, AsWeakPtr()),
           base::Bind(&WebMediaPlayerImpl::OnPipelineSuspended, AsWeakPtr()),
-          base::Bind(&WebMediaPlayerImpl::OnPipelineError, AsWeakPtr())),
+          base::Bind(&WebMediaPlayerImpl::OnError, AsWeakPtr())),
       load_type_(LoadTypeURL),
       opaque_(false),
       playback_rate_(0.0),
@@ -253,12 +252,8 @@ WebMediaPlayerImpl::~WebMediaPlayerImpl() {
 
   renderer_factory_.reset();
 
-  // Make sure to kill the pipeline so there's no more media threads running.
-  // Note: stopping the pipeline might block for a long time.
-  base::WaitableEvent waiter(false, false);
-  pipeline_.Stop(
-      base::Bind(&base::WaitableEvent::Signal, base::Unretained(&waiter)));
-  waiter.Wait();
+  // Pipeline must be stopped before it is destroyed.
+  pipeline_.Stop();
 
   if (last_reported_memory_usage_)
     adjust_allocated_memory_cb_.Run(-last_reported_memory_usage_);
@@ -440,9 +435,8 @@ void WebMediaPlayerImpl::DoSeek(base::TimeDelta time, bool time_updated) {
     // ready state change to eventually happen.
     if (old_state == ReadyStateHaveEnoughData) {
       main_task_runner_->PostTask(
-          FROM_HERE,
-          base::Bind(&WebMediaPlayerImpl::OnPipelineBufferingStateChanged,
-                     AsWeakPtr(), BUFFERING_HAVE_ENOUGH));
+          FROM_HERE, base::Bind(&WebMediaPlayerImpl::OnBufferingStateChange,
+                                AsWeakPtr(), BUFFERING_HAVE_ENOUGH));
     }
     return;
   }
@@ -849,15 +843,6 @@ void WebMediaPlayerImpl::OnFFmpegMediaTracksUpdated(
   }
 }
 
-void WebMediaPlayerImpl::OnWaitingForDecryptionKey() {
-  encrypted_client_->didBlockPlaybackWaitingForKey();
-
-  // TODO(jrummell): didResumePlaybackBlockedForKey() should only be called
-  // when a key has been successfully added (e.g. OnSessionKeysChange() with
-  // |has_additional_usable_key| = true). http://crbug.com/461903
-  encrypted_client_->didResumePlaybackBlockedForKey();
-}
-
 void WebMediaPlayerImpl::SetCdm(const CdmAttachedCB& cdm_attached_cb,
                                 CdmContext* cdm_context) {
   if (!cdm_context) {
@@ -926,7 +911,35 @@ void WebMediaPlayerImpl::OnPipelineSuspended() {
   }
 }
 
-void WebMediaPlayerImpl::OnPipelineEnded() {
+void WebMediaPlayerImpl::OnDemuxerOpened() {
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+  client_->mediaSourceOpened(
+      new WebMediaSourceImpl(chunk_demuxer_, media_log_));
+}
+
+void WebMediaPlayerImpl::OnError(PipelineStatus status) {
+  DVLOG(1) << __FUNCTION__;
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+  DCHECK_NE(status, PIPELINE_OK);
+
+  if (suppress_destruction_errors_)
+    return;
+
+  ReportPipelineError(load_type_, frame_->getSecurityOrigin(), status);
+  media_log_->AddEvent(media_log_->CreatePipelineErrorEvent(status));
+
+  if (ready_state_ == WebMediaPlayer::ReadyStateHaveNothing) {
+    // Any error that occurs before reaching ReadyStateHaveMetadata should
+    // be considered a format error.
+    SetNetworkState(WebMediaPlayer::NetworkStateFormatError);
+  } else {
+    SetNetworkState(PipelineErrorToNetworkState(status));
+  }
+
+  UpdatePlayState();
+}
+
+void WebMediaPlayerImpl::OnEnded() {
   DVLOG(1) << __FUNCTION__;
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
@@ -943,32 +956,9 @@ void WebMediaPlayerImpl::OnPipelineEnded() {
   UpdatePlayState();
 }
 
-void WebMediaPlayerImpl::OnPipelineError(PipelineStatus error) {
+void WebMediaPlayerImpl::OnMetadata(PipelineMetadata metadata) {
   DVLOG(1) << __FUNCTION__;
   DCHECK(main_task_runner_->BelongsToCurrentThread());
-  DCHECK_NE(error, PIPELINE_OK);
-
-  if (suppress_destruction_errors_)
-    return;
-
-  ReportPipelineError(load_type_, frame_->getSecurityOrigin(), error);
-
-  media_log_->AddEvent(media_log_->CreatePipelineErrorEvent(error));
-
-  if (ready_state_ == WebMediaPlayer::ReadyStateHaveNothing) {
-    // Any error that occurs before reaching ReadyStateHaveMetadata should
-    // be considered a format error.
-    SetNetworkState(WebMediaPlayer::NetworkStateFormatError);
-  } else {
-    SetNetworkState(PipelineErrorToNetworkState(error));
-  }
-
-  UpdatePlayState();
-}
-
-void WebMediaPlayerImpl::OnPipelineMetadata(
-    PipelineMetadata metadata) {
-  DVLOG(1) << __FUNCTION__;
 
   pipeline_metadata_ = metadata;
 
@@ -996,9 +986,9 @@ void WebMediaPlayerImpl::OnPipelineMetadata(
   UpdatePlayState();
 }
 
-void WebMediaPlayerImpl::OnPipelineBufferingStateChanged(
-    BufferingState buffering_state) {
-  DVLOG(1) << __FUNCTION__ << "(" << buffering_state << ")";
+void WebMediaPlayerImpl::OnBufferingStateChange(BufferingState state) {
+  DVLOG(1) << __FUNCTION__ << "(" << state << ")";
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   // Ignore buffering state changes until we've completed all outstanding
   // operations.
@@ -1007,7 +997,7 @@ void WebMediaPlayerImpl::OnPipelineBufferingStateChanged(
 
   // TODO(scherkus): Handle other buffering states when Pipeline starts using
   // them and translate them ready state changes http://crbug.com/144683
-  DCHECK_EQ(buffering_state, BUFFERING_HAVE_ENOUGH);
+  DCHECK_EQ(state, BUFFERING_HAVE_ENOUGH);
   SetReadyState(WebMediaPlayer::ReadyStateHaveEnoughData);
 
   // Let the DataSource know we have enough data. It may use this information to
@@ -1026,15 +1016,19 @@ void WebMediaPlayerImpl::OnPipelineBufferingStateChanged(
   UpdatePlayState();
 }
 
-void WebMediaPlayerImpl::OnDemuxerOpened() {
+void WebMediaPlayerImpl::OnDurationChange() {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
-  client_->mediaSourceOpened(
-      new WebMediaSourceImpl(chunk_demuxer_, media_log_));
+
+  // TODO(sandersd): We should call delegate_->DidPlay() with the new duration,
+  // especially if it changed from  <5s to >5s.
+  if (ready_state_ == WebMediaPlayer::ReadyStateHaveNothing)
+    return;
+
+  client_->durationChanged();
 }
 
-void WebMediaPlayerImpl::OnAddTextTrack(
-    const TextTrackConfig& config,
-    const AddTextTrackDoneCB& done_cb) {
+void WebMediaPlayerImpl::OnAddTextTrack(const TextTrackConfig& config,
+                                        const AddTextTrackDoneCB& done_cb) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   const WebInbandTextTrackImpl::Kind web_kind =
@@ -1053,6 +1047,16 @@ void WebMediaPlayerImpl::OnAddTextTrack(
       main_task_runner_, client_, std::move(web_inband_text_track)));
 
   done_cb.Run(std::move(text_track));
+}
+
+void WebMediaPlayerImpl::OnWaitingForDecryptionKey() {
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+
+  encrypted_client_->didBlockPlaybackWaitingForKey();
+  // TODO(jrummell): didResumePlaybackBlockedForKey() should only be called
+  // when a key has been successfully added (e.g. OnSessionKeysChange() with
+  // |has_additional_usable_key| = true). http://crbug.com/461903
+  encrypted_client_->didResumePlaybackBlockedForKey();
 }
 
 void WebMediaPlayerImpl::OnHidden() {
@@ -1250,7 +1254,7 @@ void WebMediaPlayerImpl::StartPipeline() {
                                      encrypted_media_init_data_cb,
                                      media_tracks_updated_cb, media_log_));
 #else
-    OnPipelineError(PipelineStatus::DEMUXER_ERROR_COULD_NOT_OPEN);
+    OnError(PipelineStatus::DEMUXER_ERROR_COULD_NOT_OPEN);
     return;
 #endif
   } else {
@@ -1272,14 +1276,7 @@ void WebMediaPlayerImpl::StartPipeline() {
 
   // TODO(sandersd): On Android, defer Start() if the tab is not visible.
   bool is_streaming = (data_source_ && data_source_->IsStreaming());
-  pipeline_controller_.Start(
-      demuxer_.get(), is_streaming, is_static,
-      BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnPipelineEnded),
-      BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnPipelineMetadata),
-      BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnPipelineBufferingStateChanged),
-      BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnDurationChanged),
-      BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnAddTextTrack),
-      BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnWaitingForDecryptionKey));
+  pipeline_controller_.Start(demuxer_.get(), this, is_streaming, is_static);
 }
 
 void WebMediaPlayerImpl::SetNetworkState(WebMediaPlayer::NetworkState state) {
@@ -1319,15 +1316,6 @@ double WebMediaPlayerImpl::GetPipelineDuration() const {
     return std::numeric_limits<double>::infinity();
 
   return duration.InSecondsF();
-}
-
-void WebMediaPlayerImpl::OnDurationChanged() {
-  // TODO(sandersd): We should call delegate_->DidPlay() with the new duration,
-  // especially if it changed from  <5s to >5s.
-  if (ready_state_ == WebMediaPlayer::ReadyStateHaveNothing)
-    return;
-
-  client_->durationChanged();
 }
 
 void WebMediaPlayerImpl::OnNaturalSizeChanged(gfx::Size size) {

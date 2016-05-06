@@ -12,6 +12,7 @@
 #include "media/base/buffering_state.h"
 #include "media/base/cdm_context.h"
 #include "media/base/media_export.h"
+#include "media/base/pipeline_metadata.h"
 #include "media/base/pipeline_status.h"
 #include "media/base/ranges.h"
 #include "media/base/text_track.h"
@@ -24,63 +25,58 @@ class Demuxer;
 class Renderer;
 class VideoFrame;
 
-// Metadata describing a pipeline once it has been initialized.
-struct PipelineMetadata {
-  PipelineMetadata()
-      : has_audio(false), has_video(false), video_rotation(VIDEO_ROTATION_0) {}
-
-  bool has_audio;
-  bool has_video;
-  gfx::Size natural_size;
-  VideoRotation video_rotation;
-  base::Time timeline_offset;
-};
-
-typedef base::Callback<void(PipelineMetadata)> PipelineMetadataCB;
-
 class MEDIA_EXPORT Pipeline {
  public:
-  // Used to paint VideoFrame.
-  typedef base::Callback<void(const scoped_refptr<VideoFrame>&)> PaintCB;
+  class Client {
+   public:
+    // Executed whenever an error occurs except when the error occurs during
+    // Start/Seek/Resume or Suspend. Those errors are reported via |seek_cb|
+    // and |suspend_cb| respectively.
+    virtual void OnError(PipelineStatus status) = 0;
+
+    // Executed whenever the media reaches the end.
+    virtual void OnEnded() = 0;
+
+    // Executed when the content duration, container video size, start time,
+    // and whether the content has audio and/or video in supported formats are
+    // known.
+    virtual void OnMetadata(PipelineMetadata metadata) = 0;
+
+    // Executed whenever there are changes in the buffering state of the
+    // pipeline.
+    virtual void OnBufferingStateChange(BufferingState state) = 0;
+
+    // Executed whenever the presentation duration changes.
+    virtual void OnDurationChange() = 0;
+
+    // Executed whenever a text track is added.
+    // The client is expected to create a TextTrack and call |done_cb|.
+    virtual void OnAddTextTrack(const TextTrackConfig& config,
+                                const AddTextTrackDoneCB& done_cb) = 0;
+
+    // Executed whenever the key needed to decrypt the stream is not available.
+    virtual void OnWaitingForDecryptionKey() = 0;
+  };
+
+  virtual ~Pipeline() {}
 
   // Build a pipeline to using the given |demuxer| and |renderer| to construct
   // a filter chain, executing |seek_cb| when the initial seek has completed.
-  //
-  // The following permanent callbacks will be executed as follows up until
-  // Stop() has completed:
-  //   |ended_cb| will be executed whenever the media reaches the end.
-  //   |error_cb| will be executed whenever an error occurs but hasn't been
-  //              reported already through another callback.
-  //   |metadata_cb| will be executed when the content duration, container video
-  //                 size, start time, and whether the content has audio and/or
-  //                 video in supported formats are known.
-  //   |buffering_state_cb| will be executed whenever there are changes in the
-  //                        overall buffering state of the pipeline.
-  //   |duration_change_cb| optional callback that will be executed whenever the
-  //                        presentation duration changes.
-  //   |add_text_track_cb| will be executed whenever a text track is added.
-  //   |waiting_for_decryption_key_cb| will be executed whenever the key needed
-  //                                   to decrypt the stream is not available.
+  // Methods on PipelineClient may be called up until Stop() has completed.
   // It is an error to call this method after the pipeline has already started.
   virtual void Start(Demuxer* demuxer,
                      std::unique_ptr<Renderer> renderer,
-                     const base::Closure& ended_cb,
-                     const PipelineStatusCB& error_cb,
-                     const PipelineStatusCB& seek_cb,
-                     const PipelineMetadataCB& metadata_cb,
-                     const BufferingStateCB& buffering_state_cb,
-                     const base::Closure& duration_change_cb,
-                     const AddTextTrackCB& add_text_track_cb,
-                     const base::Closure& waiting_for_decryption_key_cb) = 0;
+                     Client* client,
+                     const PipelineStatusCB& seek_cb) = 0;
 
-  // Asynchronously stops the pipeline, executing |stop_cb| when the pipeline
-  // teardown has completed.
+  // Stops the pipeline. This is a blocking function.
+  // If the pipeline is started, it must be stopped before destroying it.
+  // It it permissible to call Stop() at any point during the lifetime of the
+  // pipeline.
   //
-  // Stop() must complete before destroying the pipeline. It it permissible to
-  // call Stop() at any point during the lifetime of the pipeline.
-  //
-  // It is safe to delete the pipeline during the execution of |stop_cb|.
-  virtual void Stop(const base::Closure& stop_cb) = 0;
+  // Once Stop is called any outstanding completion callbacks
+  // for Start/Seek/Suspend/Resume or Client methods will *not* be called.
+  virtual void Stop() = 0;
 
   // Attempt to seek to the position specified by time.  |seek_cb| will be
   // executed when the all filters in the pipeline have processed the seek.

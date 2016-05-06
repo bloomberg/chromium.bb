@@ -712,29 +712,18 @@ class PipelineIntegrationTest : public PipelineIntegrationTestHost {
     EXPECT_CALL(*this, OnMetadata(_))
         .Times(AtMost(1))
         .WillRepeatedly(SaveArg<0>(&metadata_));
-    EXPECT_CALL(*this, OnBufferingStateChanged(BUFFERING_HAVE_ENOUGH))
+    EXPECT_CALL(*this, OnBufferingStateChange(BUFFERING_HAVE_ENOUGH))
         .Times(AnyNumber());
-    EXPECT_CALL(*this, OnBufferingStateChanged(BUFFERING_HAVE_NOTHING))
+    EXPECT_CALL(*this, OnBufferingStateChange(BUFFERING_HAVE_NOTHING))
         .Times(AnyNumber());
 
     // Encrypted content not used, so this is never called.
     EXPECT_CALL(*this, OnWaitingForDecryptionKey()).Times(0);
 
     demuxer_ = source->GetDemuxer();
-    pipeline_->Start(
-        demuxer_.get(), CreateRenderer(),
-        base::Bind(&PipelineIntegrationTest::OnEnded, base::Unretained(this)),
-        base::Bind(&PipelineIntegrationTest::OnError, base::Unretained(this)),
-        base::Bind(&PipelineIntegrationTest::OnStatusCallback,
-                   base::Unretained(this)),
-        base::Bind(&PipelineIntegrationTest::OnMetadata,
-                   base::Unretained(this)),
-        base::Bind(&PipelineIntegrationTest::OnBufferingStateChanged,
-                   base::Unretained(this)),
-        base::Closure(), base::Bind(&PipelineIntegrationTest::OnAddTextTrack,
-                                    base::Unretained(this)),
-        base::Bind(&PipelineIntegrationTest::OnWaitingForDecryptionKey,
-                   base::Unretained(this)));
+    pipeline_->Start(demuxer_.get(), CreateRenderer(), this,
+                     base::Bind(&PipelineIntegrationTest::OnStatusCallback,
+                                base::Unretained(this)));
     message_loop_.Run();
     EXPECT_EQ(PIPELINE_OK, pipeline_status_);
     return pipeline_status_;
@@ -746,9 +735,9 @@ class PipelineIntegrationTest : public PipelineIntegrationTestHost {
     EXPECT_CALL(*this, OnMetadata(_))
         .Times(AtMost(1))
         .WillRepeatedly(SaveArg<0>(&metadata_));
-    EXPECT_CALL(*this, OnBufferingStateChanged(BUFFERING_HAVE_ENOUGH))
+    EXPECT_CALL(*this, OnBufferingStateChange(BUFFERING_HAVE_ENOUGH))
         .Times(AnyNumber());
-    EXPECT_CALL(*this, OnBufferingStateChanged(BUFFERING_HAVE_NOTHING))
+    EXPECT_CALL(*this, OnBufferingStateChange(BUFFERING_HAVE_NOTHING))
         .Times(AnyNumber());
     EXPECT_CALL(*this, DecryptorAttached(true));
 
@@ -762,20 +751,9 @@ class PipelineIntegrationTest : public PipelineIntegrationTestHost {
                       base::Bind(&PipelineIntegrationTest::DecryptorAttached,
                                  base::Unretained(this)));
 
-    pipeline_->Start(
-        demuxer_.get(), CreateRenderer(),
-        base::Bind(&PipelineIntegrationTest::OnEnded, base::Unretained(this)),
-        base::Bind(&PipelineIntegrationTest::OnError, base::Unretained(this)),
-        base::Bind(&PipelineIntegrationTest::OnStatusCallback,
-                   base::Unretained(this)),
-        base::Bind(&PipelineIntegrationTest::OnMetadata,
-                   base::Unretained(this)),
-        base::Bind(&PipelineIntegrationTest::OnBufferingStateChanged,
-                   base::Unretained(this)),
-        base::Closure(), base::Bind(&PipelineIntegrationTest::OnAddTextTrack,
-                                    base::Unretained(this)),
-        base::Bind(&PipelineIntegrationTest::OnWaitingForDecryptionKey,
-                   base::Unretained(this)));
+    pipeline_->Start(demuxer_.get(), CreateRenderer(), this,
+                     base::Bind(&PipelineIntegrationTest::OnStatusCallback,
+                                base::Unretained(this)));
 
     source->set_encrypted_media_init_data_cb(
         base::Bind(&FakeEncryptedMedia::OnEncryptedMediaInitData,

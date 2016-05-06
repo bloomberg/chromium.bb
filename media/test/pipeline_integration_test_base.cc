@@ -124,9 +124,9 @@ PipelineStatus PipelineIntegrationTestBase::StartInternal(
   EXPECT_CALL(*this, OnMetadata(_))
       .Times(AtMost(1))
       .WillRepeatedly(SaveArg<0>(&metadata_));
-  EXPECT_CALL(*this, OnBufferingStateChanged(BUFFERING_HAVE_ENOUGH))
+  EXPECT_CALL(*this, OnBufferingStateChange(BUFFERING_HAVE_ENOUGH))
       .Times(AnyNumber());
-  EXPECT_CALL(*this, OnBufferingStateChanged(BUFFERING_HAVE_NOTHING))
+  EXPECT_CALL(*this, OnBufferingStateChange(BUFFERING_HAVE_NOTHING))
       .Times(AnyNumber());
   CreateDemuxer(std::move(data_source));
 
@@ -141,20 +141,9 @@ PipelineStatus PipelineIntegrationTestBase::StartInternal(
   // media files are provided in advance.
   EXPECT_CALL(*this, OnWaitingForDecryptionKey()).Times(0);
 
-  pipeline_->Start(
-      demuxer_.get(), CreateRenderer(),
-      base::Bind(&PipelineIntegrationTestBase::OnEnded, base::Unretained(this)),
-      base::Bind(&PipelineIntegrationTestBase::OnError, base::Unretained(this)),
-      base::Bind(&PipelineIntegrationTestBase::OnStatusCallback,
-                 base::Unretained(this)),
-      base::Bind(&PipelineIntegrationTestBase::OnMetadata,
-                 base::Unretained(this)),
-      base::Bind(&PipelineIntegrationTestBase::OnBufferingStateChanged,
-                 base::Unretained(this)),
-      base::Closure(), base::Bind(&PipelineIntegrationTestBase::OnAddTextTrack,
-                                  base::Unretained(this)),
-      base::Bind(&PipelineIntegrationTestBase::OnWaitingForDecryptionKey,
-                 base::Unretained(this)));
+  pipeline_->Start(demuxer_.get(), CreateRenderer(), this,
+                   base::Bind(&PipelineIntegrationTestBase::OnStatusCallback,
+                              base::Unretained(this)));
   message_loop_.Run();
   return pipeline_status_;
 }
@@ -202,7 +191,7 @@ void PipelineIntegrationTestBase::Pause() {
 bool PipelineIntegrationTestBase::Seek(base::TimeDelta seek_time) {
   ended_ = false;
 
-  EXPECT_CALL(*this, OnBufferingStateChanged(BUFFERING_HAVE_ENOUGH))
+  EXPECT_CALL(*this, OnBufferingStateChange(BUFFERING_HAVE_ENOUGH))
       .WillOnce(InvokeWithoutArgs(&message_loop_, &base::MessageLoop::QuitNow));
   pipeline_->Seek(seek_time, base::Bind(&PipelineIntegrationTestBase::OnSeeked,
                                         base::Unretained(this), seek_time));
@@ -220,7 +209,7 @@ bool PipelineIntegrationTestBase::Suspend() {
 bool PipelineIntegrationTestBase::Resume(base::TimeDelta seek_time) {
   ended_ = false;
 
-  EXPECT_CALL(*this, OnBufferingStateChanged(BUFFERING_HAVE_ENOUGH))
+  EXPECT_CALL(*this, OnBufferingStateChange(BUFFERING_HAVE_ENOUGH))
       .WillOnce(InvokeWithoutArgs(&message_loop_, &base::MessageLoop::QuitNow));
   pipeline_->Resume(CreateRenderer(), seek_time,
                     base::Bind(&PipelineIntegrationTestBase::OnSeeked,
@@ -231,8 +220,8 @@ bool PipelineIntegrationTestBase::Resume(base::TimeDelta seek_time) {
 
 void PipelineIntegrationTestBase::Stop() {
   DCHECK(pipeline_->IsRunning());
-  pipeline_->Stop(base::MessageLoop::QuitWhenIdleClosure());
-  message_loop_.Run();
+  pipeline_->Stop();
+  message_loop_.RunUntilIdle();
 }
 
 void PipelineIntegrationTestBase::FailTest(PipelineStatus status) {

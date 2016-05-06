@@ -23,6 +23,7 @@
 #include "media/base/pipeline_status.h"
 #include "media/base/renderer.h"
 #include "media/base/text_track.h"
+#include "media/base/text_track_config.h"
 #include "media/base/time_source.h"
 #include "media/base/video_decoder.h"
 #include "media/base/video_decoder_config.h"
@@ -32,27 +33,36 @@
 
 namespace media {
 
+class MockPipelineClient : public Pipeline::Client {
+ public:
+  MockPipelineClient();
+  ~MockPipelineClient();
+
+  MOCK_METHOD1(OnError, void(PipelineStatus));
+  MOCK_METHOD0(OnEnded, void());
+  MOCK_METHOD1(OnMetadata, void(PipelineMetadata));
+  MOCK_METHOD1(OnBufferingStateChange, void(BufferingState));
+  MOCK_METHOD0(OnDurationChange, void());
+  MOCK_METHOD2(OnAddTextTrack,
+               void(const TextTrackConfig&, const AddTextTrackDoneCB&));
+  MOCK_METHOD0(OnWaitingForDecryptionKey, void());
+};
+
 class MockPipeline : public Pipeline {
  public:
   MockPipeline();
   virtual ~MockPipeline();
 
   // Note: Start() and Resume() declarations are not actually overrides; they
-  // take scoped_ptr* instead of scoped_ptr so that they can be mock methods.
+  // take unique_ptr* instead of unique_ptr so that they can be mock methods.
   // Private stubs for Start() and Resume() implement the actual Pipeline
   // interface by forwarding to these mock methods.
-  MOCK_METHOD10(Start,
-                void(Demuxer*,
-                     std::unique_ptr<Renderer>*,
-                     const base::Closure&,
-                     const PipelineStatusCB&,
-                     const PipelineStatusCB&,
-                     const PipelineMetadataCB&,
-                     const BufferingStateCB&,
-                     const base::Closure&,
-                     const AddTextTrackCB&,
-                     const base::Closure&));
-  MOCK_METHOD1(Stop, void(const base::Closure&));
+  MOCK_METHOD4(Start,
+               void(Demuxer*,
+                    std::unique_ptr<Renderer>*,
+                    Client*,
+                    const PipelineStatusCB&));
+  MOCK_METHOD0(Stop, void());
   MOCK_METHOD2(Seek, void(base::TimeDelta, const PipelineStatusCB&));
   MOCK_METHOD1(Suspend, void(const PipelineStatusCB&));
   MOCK_METHOD3(Resume,
@@ -83,14 +93,8 @@ class MockPipeline : public Pipeline {
   // Forwarding stubs (see comment above).
   void Start(Demuxer* demuxer,
              std::unique_ptr<Renderer> renderer,
-             const base::Closure& ended_cb,
-             const PipelineStatusCB& error_cb,
-             const PipelineStatusCB& seek_cb,
-             const PipelineMetadataCB& metadata_cb,
-             const BufferingStateCB& buffering_state_cb,
-             const base::Closure& duration_change_cb,
-             const AddTextTrackCB& add_text_track_cb,
-             const base::Closure& waiting_for_decryption_key_cb) override;
+             Client* client,
+             const PipelineStatusCB& seek_cb) override;
   void Resume(std::unique_ptr<Renderer> renderer,
               base::TimeDelta timestamp,
               const PipelineStatusCB& seek_cb) override;

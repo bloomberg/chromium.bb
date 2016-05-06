@@ -400,6 +400,7 @@
         'base/pipeline.h',
         'base/pipeline_impl.cc',
         'base/pipeline_impl.h',
+        'base/pipeline_metadata.h',
         'base/pipeline_status.h',
         'base/player_tracker.cc',
         'base/player_tracker.h',

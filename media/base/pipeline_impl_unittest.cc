@@ -48,8 +48,8 @@ ACTION_P(SetDemuxerProperties, duration) {
   arg0->SetDuration(duration);
 }
 
-ACTION_P2(Stop, pipeline, stop_cb) {
-  pipeline->Stop(stop_cb);
+ACTION_P(Stop, pipeline) {
+  pipeline->Stop();
 }
 
 ACTION_P2(SetError, pipeline, status) {
@@ -77,7 +77,7 @@ class PipelineImplTest : public ::testing::Test {
  public:
   // Used for setting expectations on pipeline callbacks.  Using a StrictMock
   // also lets us test for missing callbacks.
-  class CallbackHelper {
+  class CallbackHelper : public Pipeline::Client {
    public:
     CallbackHelper() {}
     virtual ~CallbackHelper() {}
@@ -86,12 +86,16 @@ class PipelineImplTest : public ::testing::Test {
     MOCK_METHOD1(OnSeek, void(PipelineStatus));
     MOCK_METHOD1(OnSuspend, void(PipelineStatus));
     MOCK_METHOD1(OnResume, void(PipelineStatus));
-    MOCK_METHOD0(OnStop, void());
-    MOCK_METHOD0(OnEnded, void());
+
+    // Pipeline::Client overrides.
     MOCK_METHOD1(OnError, void(PipelineStatus));
+    MOCK_METHOD0(OnEnded, void());
     MOCK_METHOD1(OnMetadata, void(PipelineMetadata));
     MOCK_METHOD1(OnBufferingStateChange, void(BufferingState));
     MOCK_METHOD0(OnDurationChange, void());
+    MOCK_METHOD2(OnAddTextTrack,
+                 void(const TextTrackConfig&, const AddTextTrackDoneCB&));
+    MOCK_METHOD0(OnWaitingForDecryptionKey, void());
 
    private:
     DISALLOW_COPY_AND_ASSIGN(CallbackHelper);
@@ -130,11 +134,9 @@ class PipelineImplTest : public ::testing::Test {
       message_loop_.RunUntilIdle();
     }
 
-    // Expect a stop callback if we were started.
-    ExpectPipelineStopAndDestroyPipeline();
-    pipeline_->Stop(
-        base::Bind(&CallbackHelper::OnStop, base::Unretained(&callbacks_)));
     message_loop_.RunUntilIdle();
+    pipeline_->Stop();
+    DestroyPipeline();
   }
 
   void OnDemuxerError() {
@@ -184,7 +186,7 @@ class PipelineImplTest : public ::testing::Test {
   }
 
   void AddTextStream() {
-    EXPECT_CALL(*this, OnAddTextTrack(_, _))
+    EXPECT_CALL(callbacks_, OnAddTextTrack(_, _))
         .WillOnce(Invoke(this, &PipelineImplTest::DoOnAddTextTrack));
     static_cast<DemuxerHost*>(pipeline_.get())
         ->AddTextStream(text_stream(),
@@ -193,20 +195,10 @@ class PipelineImplTest : public ::testing::Test {
   }
 
   void StartPipeline() {
-    EXPECT_CALL(*this, OnWaitingForDecryptionKey()).Times(0);
+    EXPECT_CALL(callbacks_, OnWaitingForDecryptionKey()).Times(0);
     pipeline_->Start(
-        demuxer_.get(), std::move(scoped_renderer_),
-        base::Bind(&CallbackHelper::OnEnded, base::Unretained(&callbacks_)),
-        base::Bind(&CallbackHelper::OnError, base::Unretained(&callbacks_)),
-        base::Bind(&CallbackHelper::OnStart, base::Unretained(&callbacks_)),
-        base::Bind(&CallbackHelper::OnMetadata, base::Unretained(&callbacks_)),
-        base::Bind(&CallbackHelper::OnBufferingStateChange,
-                   base::Unretained(&callbacks_)),
-        base::Bind(&CallbackHelper::OnDurationChange,
-                   base::Unretained(&callbacks_)),
-        base::Bind(&PipelineImplTest::OnAddTextTrack, base::Unretained(this)),
-        base::Bind(&PipelineImplTest::OnWaitingForDecryptionKey,
-                   base::Unretained(this)));
+        demuxer_.get(), std::move(scoped_renderer_), &callbacks_,
+        base::Bind(&CallbackHelper::OnStart, base::Unretained(&callbacks_)));
   }
 
   // Sets up expectations on the callback and initializes the pipeline. Called
@@ -327,17 +319,6 @@ class PipelineImplTest : public ::testing::Test {
       EXPECT_CALL(*demuxer_, Stop());
   }
 
-  void ExpectPipelineStopAndDestroyPipeline() {
-    // After the Pipeline is stopped, it could be destroyed any time. Always
-    // destroy the pipeline immediately after OnStop() to test this.
-    EXPECT_CALL(callbacks_, OnStop())
-        .WillOnce(Invoke(this, &PipelineImplTest::DestroyPipeline));
-  }
-
-  MOCK_METHOD2(OnAddTextTrack,
-               void(const TextTrackConfig&, const AddTextTrackDoneCB&));
-  MOCK_METHOD0(OnWaitingForDecryptionKey, void(void));
-
   void DoOnAddTextTrack(const TextTrackConfig& config,
                         const AddTextTrackDoneCB& done_cb) {
     std::unique_ptr<TextTrack> text_track(new MockTextTrack);
@@ -422,13 +403,10 @@ TEST_F(PipelineImplTest, NeverInitializes) {
   // verify that nothing has been called, then set our expectation for the call
   // made during tear down.
   Mock::VerifyAndClear(&callbacks_);
-  EXPECT_CALL(callbacks_, OnStart(PIPELINE_OK));
 }
 
 TEST_F(PipelineImplTest, StopWithoutStart) {
-  ExpectPipelineStopAndDestroyPipeline();
-  pipeline_->Stop(
-      base::Bind(&CallbackHelper::OnStop, base::Unretained(&callbacks_)));
+  pipeline_->Stop();
   message_loop_.RunUntilIdle();
 }
 
@@ -436,15 +414,13 @@ TEST_F(PipelineImplTest, StartThenStopImmediately) {
   EXPECT_CALL(*demuxer_, Initialize(_, _, _))
       .WillOnce(PostCallback<1>(PIPELINE_OK));
   EXPECT_CALL(*demuxer_, Stop());
+  EXPECT_CALL(callbacks_, OnMetadata(_));
 
   EXPECT_CALL(callbacks_, OnStart(_));
   StartPipeline();
-
-  // Expect a stop callback if we were started.
-  ExpectPipelineStopAndDestroyPipeline();
-  pipeline_->Stop(
-      base::Bind(&CallbackHelper::OnStop, base::Unretained(&callbacks_)));
   message_loop_.RunUntilIdle();
+
+  pipeline_->Stop();
 }
 
 TEST_F(PipelineImplTest, DemuxerErrorDuringStop) {
@@ -456,14 +432,11 @@ TEST_F(PipelineImplTest, DemuxerErrorDuringStop) {
   SetRendererExpectations();
 
   StartPipelineAndExpect(PIPELINE_OK);
+  message_loop_.RunUntilIdle();
 
   EXPECT_CALL(*demuxer_, Stop())
       .WillOnce(InvokeWithoutArgs(this, &PipelineImplTest::OnDemuxerError));
-  ExpectPipelineStopAndDestroyPipeline();
-
-  pipeline_->Stop(
-      base::Bind(&CallbackHelper::OnStop, base::Unretained(&callbacks_)));
-  message_loop_.RunUntilIdle();
+  pipeline_->Stop();
 }
 
 TEST_F(PipelineImplTest, NoStreams) {
@@ -643,6 +616,7 @@ TEST_F(PipelineImplTest, SetVolume) {
   // Initialize then set volume!
   StartPipelineAndExpect(PIPELINE_OK);
   pipeline_->SetVolume(expected);
+  message_loop_.RunUntilIdle();
 }
 
 TEST_F(PipelineImplTest, Properties) {
@@ -683,15 +657,12 @@ TEST_F(PipelineImplTest, BufferedTimeRangesCanChangeAfterStop) {
   EXPECT_CALL(*demuxer_, Initialize(_, _, _))
       .WillOnce(PostCallback<1>(PIPELINE_OK));
   EXPECT_CALL(*demuxer_, Stop());
-
+  EXPECT_CALL(callbacks_, OnMetadata(_));
   EXPECT_CALL(callbacks_, OnStart(_));
   StartPipeline();
-
-  EXPECT_CALL(callbacks_, OnStop());
-  pipeline_->Stop(
-      base::Bind(&CallbackHelper::OnStop, base::Unretained(&callbacks_)));
   message_loop_.RunUntilIdle();
 
+  pipeline_->Stop();
   RunBufferedTimeRangesTest(base::TimeDelta::FromSeconds(5));
   DestroyPipeline();
 }
@@ -813,10 +784,7 @@ TEST_F(PipelineImplTest, DestroyAfterStop) {
   StartPipelineAndExpect(PIPELINE_OK);
 
   ExpectDemuxerStop();
-
-  ExpectPipelineStopAndDestroyPipeline();
-  pipeline_->Stop(
-      base::Bind(&CallbackHelper::OnStop, base::Unretained(&callbacks_)));
+  pipeline_->Stop();
   message_loop_.RunUntilIdle();
 }
 
@@ -834,6 +802,7 @@ TEST_F(PipelineImplTest, Underflow) {
   // Simulate underflow.
   EXPECT_CALL(callbacks_, OnBufferingStateChange(BUFFERING_HAVE_NOTHING));
   buffering_state_cb_.Run(BUFFERING_HAVE_NOTHING);
+  message_loop_.RunUntilIdle();
 
   // Seek while underflowed.
   base::TimeDelta expected = base::TimeDelta::FromSeconds(5);
@@ -851,9 +820,7 @@ TEST_F(PipelineImplTest, PositiveStartTime) {
   SetRendererExpectations();
   StartPipelineAndExpect(PIPELINE_OK);
   ExpectDemuxerStop();
-  ExpectPipelineStopAndDestroyPipeline();
-  pipeline_->Stop(
-      base::Bind(&CallbackHelper::OnStop, base::Unretained(&callbacks_)));
+  pipeline_->Stop();
   message_loop_.RunUntilIdle();
 }
 
@@ -911,34 +878,27 @@ class PipelineTeardownTest : public PipelineImplTest {
   // invoked via stop vs error. The teardown path should be the same,
   // see http://crbug.com/110228
   void DoInitialize(TeardownState state, StopOrError stop_or_error) {
-    PipelineStatus expected_status =
-        SetInitializeExpectations(state, stop_or_error);
-
-    EXPECT_CALL(callbacks_, OnStart(expected_status));
+    SetInitializeExpectations(state, stop_or_error);
     StartPipeline();
     message_loop_.RunUntilIdle();
   }
 
-  PipelineStatus SetInitializeExpectations(TeardownState state,
-                                           StopOrError stop_or_error) {
-    PipelineStatus status = PIPELINE_OK;
-    base::Closure stop_cb =
-        base::Bind(&CallbackHelper::OnStop, base::Unretained(&callbacks_));
-
+  void SetInitializeExpectations(TeardownState state,
+                                 StopOrError stop_or_error) {
     if (state == kInitDemuxer) {
       if (stop_or_error == kStop) {
         EXPECT_CALL(*demuxer_, Initialize(_, _, _))
-            .WillOnce(DoAll(Stop(pipeline_.get(), stop_cb),
-                            PostCallback<1>(PIPELINE_OK)));
-        ExpectPipelineStopAndDestroyPipeline();
+            .WillOnce(
+                DoAll(Stop(pipeline_.get()), PostCallback<1>(PIPELINE_OK)));
+        // Note: OnStart callback is not called after pipeline is stopped.
       } else {
-        status = DEMUXER_ERROR_COULD_NOT_OPEN;
         EXPECT_CALL(*demuxer_, Initialize(_, _, _))
-            .WillOnce(PostCallback<1>(status));
+            .WillOnce(PostCallback<1>(DEMUXER_ERROR_COULD_NOT_OPEN));
+        EXPECT_CALL(callbacks_, OnStart(DEMUXER_ERROR_COULD_NOT_OPEN));
       }
 
       EXPECT_CALL(*demuxer_, Stop());
-      return status;
+      return;
     }
 
     CreateAudioStream();
@@ -954,49 +914,41 @@ class PipelineTeardownTest : public PipelineImplTest {
     if (state == kInitRenderer) {
       if (stop_or_error == kStop) {
         EXPECT_CALL(*renderer_, Initialize(_, _, _, _, _, _, _))
-            .WillOnce(DoAll(Stop(pipeline_.get(), stop_cb),
-                            PostCallback<1>(PIPELINE_OK)));
-        ExpectPipelineStopAndDestroyPipeline();
+            .WillOnce(
+                DoAll(Stop(pipeline_.get()), PostCallback<1>(PIPELINE_OK)));
+        // Note: OnStart or OnMetadata callback are not called
+        // after pipeline is stopped.
       } else {
-        status = PIPELINE_ERROR_INITIALIZATION_FAILED;
         EXPECT_CALL(*renderer_, Initialize(_, _, _, _, _, _, _))
-            .WillOnce(PostCallback<1>(status));
+            .WillOnce(PostCallback<1>(PIPELINE_ERROR_INITIALIZATION_FAILED));
+        EXPECT_CALL(callbacks_, OnMetadata(_));
+        EXPECT_CALL(callbacks_, OnStart(PIPELINE_ERROR_INITIALIZATION_FAILED));
       }
 
       EXPECT_CALL(*demuxer_, Stop());
-      EXPECT_CALL(callbacks_, OnMetadata(_));
-      return status;
+      return;
     }
 
     EXPECT_CALL(*renderer_, Initialize(_, _, _, _, _, _, _))
         .WillOnce(DoAll(SaveArg<3>(&buffering_state_cb_),
                         PostCallback<1>(PIPELINE_OK)));
 
+    // If we get here it's a successful initialization.
+    EXPECT_CALL(callbacks_, OnStart(PIPELINE_OK));
     EXPECT_CALL(callbacks_, OnMetadata(_));
 
-    // If we get here it's a successful initialization.
     EXPECT_CALL(*renderer_, SetPlaybackRate(0.0));
     EXPECT_CALL(*renderer_, SetVolume(1.0f));
     EXPECT_CALL(*renderer_, StartPlayingFrom(base::TimeDelta()))
         .WillOnce(
             SetBufferingState(&buffering_state_cb_, BUFFERING_HAVE_ENOUGH));
-
-    if (status == PIPELINE_OK)
-      EXPECT_CALL(callbacks_, OnBufferingStateChange(BUFFERING_HAVE_ENOUGH));
-
-    return status;
+    EXPECT_CALL(callbacks_, OnBufferingStateChange(BUFFERING_HAVE_ENOUGH));
   }
 
   void DoSeek(TeardownState state, StopOrError stop_or_error) {
-    InSequence s;
-    PipelineStatus status = SetSeekExpectations(state, stop_or_error);
+    SetSeekExpectations(state, stop_or_error);
 
     EXPECT_CALL(*demuxer_, Stop());
-    EXPECT_CALL(callbacks_, OnSeek(status));
-
-    if (status == PIPELINE_OK) {
-      ExpectPipelineStopAndDestroyPipeline();
-    }
 
     pipeline_->Seek(
         base::TimeDelta::FromSeconds(10),
@@ -1004,31 +956,25 @@ class PipelineTeardownTest : public PipelineImplTest {
     message_loop_.RunUntilIdle();
   }
 
-  PipelineStatus SetSeekExpectations(TeardownState state,
-                                     StopOrError stop_or_error) {
-    PipelineStatus status = PIPELINE_OK;
-    base::Closure stop_cb =
-        base::Bind(&CallbackHelper::OnStop, base::Unretained(&callbacks_));
-
+  void SetSeekExpectations(TeardownState state, StopOrError stop_or_error) {
     if (state == kFlushing) {
       if (stop_or_error == kStop) {
         EXPECT_CALL(*renderer_, Flush(_))
             .WillOnce(DoAll(
-                Stop(pipeline_.get(), stop_cb),
                 SetBufferingState(&buffering_state_cb_, BUFFERING_HAVE_NOTHING),
-                RunClosure<0>()));
-        EXPECT_CALL(callbacks_, OnBufferingStateChange(BUFFERING_HAVE_NOTHING));
+                Stop(pipeline_.get()), RunClosure<0>()));
+        // Note: OnBufferingStateChange or OnSeek callbacks are not called
+        // after pipeline is stopped.
       } else {
-        status = PIPELINE_ERROR_READ;
         EXPECT_CALL(*renderer_, Flush(_))
             .WillOnce(DoAll(
-                SetError(pipeline_.get(), status),
                 SetBufferingState(&buffering_state_cb_, BUFFERING_HAVE_NOTHING),
+                SetError(pipeline_.get(), PIPELINE_ERROR_READ),
                 RunClosure<0>()));
         EXPECT_CALL(callbacks_, OnBufferingStateChange(BUFFERING_HAVE_NOTHING));
+        EXPECT_CALL(callbacks_, OnSeek(PIPELINE_ERROR_READ));
       }
-
-      return status;
+      return;
     }
 
     EXPECT_CALL(*renderer_, Flush(_))
@@ -1040,27 +986,25 @@ class PipelineTeardownTest : public PipelineImplTest {
     if (state == kSeeking) {
       if (stop_or_error == kStop) {
         EXPECT_CALL(*demuxer_, Seek(_, _))
-            .WillOnce(DoAll(Stop(pipeline_.get(), stop_cb),
-                            RunCallback<1>(PIPELINE_OK)));
+            .WillOnce(
+                DoAll(Stop(pipeline_.get()), RunCallback<1>(PIPELINE_OK)));
+        // Note: OnSeek callback is not called after pipeline is stopped.
       } else {
-        status = PIPELINE_ERROR_READ;
-        EXPECT_CALL(*demuxer_, Seek(_, _)).WillOnce(RunCallback<1>(status));
+        EXPECT_CALL(*demuxer_, Seek(_, _))
+            .WillOnce(RunCallback<1>(PIPELINE_ERROR_READ));
+        EXPECT_CALL(callbacks_, OnSeek(PIPELINE_ERROR_READ));
       }
-
-      return status;
+      return;
     }
 
     NOTREACHED() << "State not supported: " << state;
-    return status;
   }
 
   void DoSuspend(TeardownState state, StopOrError stop_or_error) {
-    PipelineStatus status = SetSuspendExpectations(state, stop_or_error);
+    SetSuspendExpectations(state, stop_or_error);
 
     if (state == kResuming) {
       EXPECT_CALL(*demuxer_, Stop());
-      if (status == PIPELINE_OK)
-        ExpectPipelineStopAndDestroyPipeline();
     }
 
     PipelineImplTest::DoSuspend();
@@ -1075,12 +1019,7 @@ class PipelineTeardownTest : public PipelineImplTest {
     DoStopOrError(stop_or_error, false);
   }
 
-  PipelineStatus SetSuspendExpectations(TeardownState state,
-                                        StopOrError stop_or_error) {
-    PipelineStatus status = PIPELINE_OK;
-    base::Closure stop_cb =
-        base::Bind(&CallbackHelper::OnStop, base::Unretained(&callbacks_));
-
+  void SetSuspendExpectations(TeardownState state, StopOrError stop_or_error) {
     EXPECT_CALL(*renderer_, SetPlaybackRate(0));
     EXPECT_CALL(callbacks_, OnBufferingStateChange(BUFFERING_HAVE_NOTHING));
     EXPECT_CALL(callbacks_, OnSuspend(PIPELINE_OK));
@@ -1091,19 +1030,17 @@ class PipelineTeardownTest : public PipelineImplTest {
     if (state == kResuming) {
       if (stop_or_error == kStop) {
         EXPECT_CALL(*demuxer_, Seek(_, _))
-            .WillOnce(DoAll(Stop(pipeline_.get(), stop_cb),
-                            RunCallback<1>(PIPELINE_OK)));
-        EXPECT_CALL(callbacks_, OnResume(PIPELINE_OK));
+            .WillOnce(
+                DoAll(Stop(pipeline_.get()), RunCallback<1>(PIPELINE_OK)));
+        // Note: OnResume callback is not called after pipeline is stopped.
       } else {
-        status = PIPELINE_ERROR_READ;
-        EXPECT_CALL(*demuxer_, Seek(_, _)).WillOnce(RunCallback<1>(status));
-        EXPECT_CALL(callbacks_, OnResume(status));
+        EXPECT_CALL(*demuxer_, Seek(_, _))
+            .WillOnce(RunCallback<1>(PIPELINE_ERROR_READ));
+        EXPECT_CALL(callbacks_, OnResume(PIPELINE_ERROR_READ));
       }
     } else if (state != kSuspended && state != kSuspending) {
       NOTREACHED() << "State not supported: " << state;
     }
-
-    return status;
   }
 
   void DoStopOrError(StopOrError stop_or_error, bool expect_errors) {
@@ -1112,9 +1049,7 @@ class PipelineTeardownTest : public PipelineImplTest {
     switch (stop_or_error) {
       case kStop:
         EXPECT_CALL(*demuxer_, Stop());
-        ExpectPipelineStopAndDestroyPipeline();
-        pipeline_->Stop(
-            base::Bind(&CallbackHelper::OnStop, base::Unretained(&callbacks_)));
+        pipeline_->Stop();
         break;
 
       case kError:
@@ -1129,11 +1064,9 @@ class PipelineTeardownTest : public PipelineImplTest {
         EXPECT_CALL(*demuxer_, Stop());
         if (expect_errors)
           EXPECT_CALL(callbacks_, OnError(PIPELINE_ERROR_READ));
-        ExpectPipelineStopAndDestroyPipeline();
         pipeline_->SetErrorForTesting(PIPELINE_ERROR_READ);
         message_loop_.RunUntilIdle();
-        pipeline_->Stop(
-            base::Bind(&CallbackHelper::OnStop, base::Unretained(&callbacks_)));
+        pipeline_->Stop();
         break;
     }
 

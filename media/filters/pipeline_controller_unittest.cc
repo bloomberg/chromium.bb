@@ -28,7 +28,7 @@ using ::testing::StrictMock;
 
 namespace media {
 
-class PipelineControllerTest : public ::testing::Test {
+class PipelineControllerTest : public ::testing::Test, public Pipeline::Client {
  public:
   PipelineControllerTest()
       : pipeline_controller_(&pipeline_,
@@ -46,12 +46,8 @@ class PipelineControllerTest : public ::testing::Test {
   PipelineStatusCB StartPipeline(bool is_streaming, bool is_static) {
     EXPECT_FALSE(pipeline_controller_.IsStable());
     PipelineStatusCB start_cb;
-    EXPECT_CALL(pipeline_, Start(_, _, _, _, _, _, _, _, _, _))
-        .WillOnce(SaveArg<4>(&start_cb));
-    pipeline_controller_.Start(&demuxer_, is_streaming, is_static,
-                               base::Closure(), PipelineMetadataCB(),
-                               BufferingStateCB(), base::Closure(),
-                               AddTextTrackCB(), base::Closure());
+    EXPECT_CALL(pipeline_, Start(_, _, _, _)).WillOnce(SaveArg<3>(&start_cb));
+    pipeline_controller_.Start(&demuxer_, this, is_streaming, is_static);
     Mock::VerifyAndClear(&pipeline_);
     EXPECT_FALSE(pipeline_controller_.IsStable());
     return start_cb;
@@ -120,7 +116,15 @@ class PipelineControllerTest : public ::testing::Test {
 
   void OnSuspended() { was_suspended_ = true; }
 
-  void OnError(PipelineStatus status) { NOTREACHED(); }
+  // Pipeline::Client overrides
+  void OnError(PipelineStatus status) override { NOTREACHED(); }
+  void OnEnded() override{};
+  void OnMetadata(PipelineMetadata metadata) override{};
+  void OnBufferingStateChange(BufferingState state) override{};
+  void OnDurationChange() override{};
+  void OnAddTextTrack(const TextTrackConfig& config,
+                      const AddTextTrackDoneCB& done_cb) override{};
+  void OnWaitingForDecryptionKey() override{};
 
   base::MessageLoop message_loop_;
 
