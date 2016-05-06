@@ -33,6 +33,29 @@
     "isolated_scripts": [
       {
         "args": [
+          "context_lost",
+          "--show-stdout",
+          "--browser=android-content-shell",
+          "-v",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
+        ],
+        "isolate_name": "telemetry_gpu_test",
+        "name": "context_lost_tests",
+        "override_compile_targets": [
+          "telemetry_gpu_test_run"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "0000:0000",
+              "os": "Android"
+            }
+          ]
+        }
+      },
+      {
+        "args": [
           "hardware_accelerated_feature",
           "--show-stdout",
           "--browser=android-content-shell",
@@ -123,6 +146,29 @@
       }
     ],
     "isolated_scripts": [
+      {
+        "args": [
+          "context_lost",
+          "--show-stdout",
+          "--browser=android-content-shell",
+          "-v",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
+        ],
+        "isolate_name": "telemetry_gpu_test",
+        "name": "context_lost_tests",
+        "override_compile_targets": [
+          "telemetry_gpu_test_run"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "0000:0000",
+              "os": "Android"
+            }
+          ]
+        }
+      },
       {
         "args": [
           "hardware_accelerated_feature",

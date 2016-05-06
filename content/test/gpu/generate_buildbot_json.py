@@ -692,7 +692,13 @@ NON_SWARMED_GTESTS = {
 }
 
 TELEMETRY_TESTS = {
-  'context_lost': {},
+  'context_lost': {
+    'tester_configs': [
+      {
+        'allow_on_android': True,
+      },
+    ]
+  },
   'gpu_process_launch_tests': {'target_name': 'gpu_process'},
   'gpu_rasterization': {},
   'hardware_accelerated_feature': {

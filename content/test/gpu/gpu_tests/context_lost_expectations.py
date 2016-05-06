@@ -37,3 +37,10 @@ class ContextLostExpectations(GpuTestExpectations):
     self.Skip('GpuCrash.GPUProcessCrashesExactlyOnce',
               ['linux', 'mac', 'win'], bug=608946)
 
+    # 'Browser must support tab control' raised on Android
+    self.Fail('GpuCrash.GPUProcessCrashesExactlyOnce',
+              ['android'], bug=609629)
+    self.Fail('ContextLost.WebGLContextLostFromGPUProcessExit',
+              ['android'], bug=609629)
+    self.Fail('ContextLost.WebGLContextListInHiddenTab',
+              ['android'], bug=609629)
