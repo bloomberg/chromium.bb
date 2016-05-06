@@ -37,7 +37,7 @@ InspectorTest.waitForServiceWorker = function(callback)
 InspectorTest.dumpServiceWorkersView = function()
 {
     var swView = WebInspector.panels.resources.visibleView;
-    return swView._reportView._sectionList.childTextNodes().map(function(node) { return node.textContent.replace(/Last modified.*/, "Last modified"); }).join("\n");
+    return swView._reportView._sectionList.childTextNodes().map(function(node) { return node.textContent.replace(/Last modified.*/, "Last modified").replace(/#\d+/, "#N"); }).join("\n");
 }
 
 InspectorTest.deleteServiceWorkerRegistration = function(scope)

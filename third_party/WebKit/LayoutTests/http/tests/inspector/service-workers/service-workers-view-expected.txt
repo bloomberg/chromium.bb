@@ -10,7 +10,7 @@ Source
 service-worker-empty.js
 Last modified
 Status
-#0 active and is running
+#N activated and is running
 stop
 Clients
 Errors
@@ -26,7 +26,7 @@ Source
 service-worker-empty.js
 Last modified
 Status
-#0 active and is running
+#N activated and is running
 stop
 Clients
 Errors
@@ -41,7 +41,7 @@ Source
 service-worker-empty.js
 Last modified
 Status
-#1 active and is running
+#N activated and is running
 stop
 Clients
 Errors
@@ -70,7 +70,7 @@ Source
 service-worker-empty.js
 Last modified
 Status
-#1 active and is running
+#N activated and is running
 stop
 Clients
 Errors
