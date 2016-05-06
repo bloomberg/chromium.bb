@@ -184,6 +184,8 @@ _BANNED_CPP_FUNCTIONS = (
             "gnubby_auth_handler_linux\.cc$",
         r"^ui[\\\/]ozone[\\\/]platform[\\\/]drm[\\\/]host[\\\/]"
             "drm_display_host_manager\.cc$",
+        r"^ui[\\\/]base[\\\/]material_design[\\\/]"
+            "material_design_controller\.cc$",
       ),
     ),
     (

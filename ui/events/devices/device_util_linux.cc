@@ -11,6 +11,7 @@
 #include "base/files/file_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
+#include "base/threading/thread_restrictions.h"
 
 namespace ui {
 
@@ -20,7 +21,7 @@ base::FilePath GetInputPathInSys(const base::FilePath& path) {
 }
 
 InputDeviceType GetInputDeviceTypeFromPath(const base::FilePath& path) {
-  DCHECK(!base::MessageLoopForUI::IsCurrent());
+  base::ThreadRestrictions::AssertIOAllowed();
   std::string event_node = path.BaseName().value();
   if (event_node.empty() ||
       !base::StartsWith(event_node, "event",

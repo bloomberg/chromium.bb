@@ -18,6 +18,7 @@
 #include <fcntl.h>
 
 #include "base/files/file_enumerator.h"
+#include "base/threading/thread_restrictions.h"
 #include "ui/events/ozone/evdev/event_device_info.h"
 #endif  // defined(USE_OZONE)
 
@@ -82,6 +83,8 @@ bool MaterialDesignController::IsSecondaryUiMaterial() {
 // static
 MaterialDesignController::Mode MaterialDesignController::DefaultMode() {
 #if defined(OS_CHROMEOS)
+  // If a scan of available devices has already completed, use material-hybrid
+  // if a touchscreen is present.
   if (DeviceDataManager::HasInstance() &&
       DeviceDataManager::GetInstance()->device_lists_complete()) {
     return GetTouchScreensAvailability() == TouchScreensAvailability::ENABLED
@@ -90,6 +93,9 @@ MaterialDesignController::Mode MaterialDesignController::DefaultMode() {
   }
 
 #if defined(USE_OZONE)
+  // Otherwise perform our own scan to determine the presence of a touchscreen.
+  // Note this is a one-time call that occurs during device startup or restart.
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   base::FileEnumerator file_enum(
       base::FilePath(FILE_PATH_LITERAL("/dev/input")), false,
       base::FileEnumerator::FILES, FILE_PATH_LITERAL("event*[0-9]"));
