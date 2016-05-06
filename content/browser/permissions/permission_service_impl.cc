@@ -107,6 +107,7 @@ PermissionServiceImpl::~PermissionServiceImpl() {
 }
 
 void PermissionServiceImpl::OnConnectionError() {
+  CancelPendingOperations();
   context_->ServiceHadConnectionError(this);
   // After that call, |this| will be deleted.
 }
