@@ -11,30 +11,21 @@
 bool {{class_name}}::Validate(const void* data,
                               mojo::internal::BoundsChecker* bounds_checker,
                               bool inlined) {
-  if (!data) {
+  if (!data)
     return true;
-  }
 
-  if (!mojo::internal::IsAligned(data)) {
-    ReportValidationError(mojo::internal::VALIDATION_ERROR_MISALIGNED_OBJECT);
+  if (!ValidateUnionHeaderAndClaimMemory(data, inlined, bounds_checker))
     return false;
-  }
 
-  // If the union is inlined in another structure its memory was already claimed.
-  // This ONLY applies to the union itself, NOT anything which the union points
-  // to.
-  if (!inlined && !bounds_checker->ClaimMemory(data, sizeof({{class_name}}))) {
-    ReportValidationError(
-        mojo::internal::VALIDATION_ERROR_ILLEGAL_MEMORY_RANGE);
-    return false;
-  }
   const {{class_name}}* object = static_cast<const {{class_name}}*>(data);
   ALLOW_UNUSED_LOCAL(object);
 
   switch (object->tag) {
 {%  for field in union.fields %}
     case {{enum_name}}::{{field.name|upper}}: {
-      {{ validation_macros.validate_union_field(field, union)|indent(6) }}
+{%-   set field_expr = "object->data.f_" ~ field.name %}
+{{validation_macros.validate_field(field, field_expr, union.name, false)|indent(4)}}
+      return true;
     }
 {%- endfor %}
     default: {

@@ -52,6 +52,26 @@ bool ValidateStructHeaderAndClaimMemory(const void* data,
   return true;
 }
 
+bool ValidateUnionHeaderAndClaimMemory(const void* data,
+                                       bool inlined,
+                                       BoundsChecker* bounds_checker) {
+  if (!IsAligned(data)) {
+    ReportValidationError(VALIDATION_ERROR_MISALIGNED_OBJECT);
+    return false;
+  }
+
+  // If the union is inlined in another structure its memory was already
+  // claimed.
+  // This ONLY applies to the union itself, NOT anything which the union points
+  // to.
+  if (!inlined && !bounds_checker->ClaimMemory(data, kUnionDataSize)) {
+    ReportValidationError(VALIDATION_ERROR_ILLEGAL_MEMORY_RANGE);
+    return false;
+  }
+
+  return true;
+}
+
 bool ValidateMessageIsRequestWithoutResponse(const Message* message) {
   if (message->has_flag(kMessageIsResponse) ||
       message->has_flag(kMessageExpectsResponse)) {

@@ -357,12 +357,6 @@ def GetCppFieldType(kind):
   return _kind_to_cpp_type[kind]
 
 def GetCppUnionFieldType(kind):
-  if mojom.IsAnyHandleKind(kind):
-    return "mojo::internal::Handle_Data"
-  if mojom.IsInterfaceKind(kind):
-    return "uint64_t"
-  if mojom.IsEnumKind(kind):
-    return "int32_t"
   if mojom.IsUnionKind(kind):
     return ("mojo::internal::Pointer<%s>" % GetNameForKind(kind, internal=True))
   return GetCppFieldType(kind)

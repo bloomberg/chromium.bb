@@ -14,6 +14,11 @@ struct TestWTFCodeGeneration {
   array<handle<message_pipe>> handles;
 };
 
+union TestWTFCodeGeneration2 {
+  string str;
+  array<string> strs;
+};
+
 interface TestWTF {
   EchoString(string? str) => (string? str);
   EchoStringArray(array<string?>? arr) => (array<string?>? arr);

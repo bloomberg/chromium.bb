@@ -31,6 +31,14 @@ bool ValidateEncodedPointer(const uint64_t* offset);
 bool ValidateStructHeaderAndClaimMemory(const void* data,
                                         BoundsChecker* bounds_checker);
 
+// Validates that |data| contains a valid union header, in terms of alignment
+// and size. If not inlined, it checks that the memory range
+// [data, data + num_bytes) is not marked as occupied by other objects in
+// |bounds_checker|. On success, the memory range is marked as occupied.
+bool ValidateUnionHeaderAndClaimMemory(const void* data,
+                                       bool inlined,
+                                       BoundsChecker* bounds_checker);
+
 // Validates that the message is a request which doesn't expect a response.
 bool ValidateMessageIsRequestWithoutResponse(const Message* message);
 // Validates that the message is a request expecting a response.
@@ -119,6 +127,17 @@ bool ValidateStruct(const Pointer<T>& input, BoundsChecker* bounds_checker) {
 template <typename T>
 bool ValidateInlinedUnion(const T& input, BoundsChecker* bounds_checker) {
   return T::Validate(&input, bounds_checker, true);
+}
+
+template <typename T>
+bool ValidateNonInlinedUnion(const Pointer<T>& input,
+                             BoundsChecker* bounds_checker) {
+  if (!ValidateEncodedPointer(&input.offset)) {
+    ReportValidationError(VALIDATION_ERROR_ILLEGAL_POINTER);
+    return false;
+  }
+
+  return T::Validate(DecodePointerRaw(&input.offset), bounds_checker, false);
 }
 
 bool ValidateHandle(const Handle_Data& input, BoundsChecker* bounds_checker);

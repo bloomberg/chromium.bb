@@ -48,7 +48,5 @@ class {{class_name}} {
   void EncodePointers();
   void DecodePointers();
 };
-static_assert(sizeof({{class_name}}) == 16,
+static_assert(sizeof({{class_name}}) == mojo::internal::kUnionDataSize,
               "Bad sizeof({{class_name}})");
-static_assert(sizeof({{class_name}}::Union_) == 8,
-              "Bad sizeof({{class_name}}::Union_)");

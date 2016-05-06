@@ -29,6 +29,10 @@ namespace internal {
 // which is the "decoded" invalid handle.
 const uint32_t kEncodedInvalidHandleValue = static_cast<uint32_t>(-1);
 
+// A serialized union always takes 16 bytes:
+//   4-byte size + 4-byte tag + 8-byte payload.
+const uint32_t kUnionDataSize = 16;
+
 template <typename T>
 class Array_Data;
 

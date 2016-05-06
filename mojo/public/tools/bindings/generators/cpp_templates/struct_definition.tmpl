@@ -1,103 +1,5 @@
+{%- import "validation_macros.tmpl" as validation_macros %}
 {%- set class_name = struct.name ~ "_Data" %}
-
-{#- Validates the specified struct field, which is supposed to be an object
-    (struct/array/string/map/union).
-    This macro is expanded by the Validate() method. #}
-{%- macro _validate_object(struct, packed_field) %}
-{%-   set name = packed_field.field.name %}
-{%-   set kind = packed_field.field.kind %}
-{%-   if not kind|is_nullable_kind %}
-{%-     if kind|is_union_kind %}
-  if (!mojo::internal::ValidateInlinedUnionNonNullable(
-          object->{{name}}, "null {{name}} field in {{struct.name}} struct")) {
-    return false;
-  }
-{%-     else %}
-  if (!mojo::internal::ValidatePointerNonNullable(
-          object->{{name}}, "null {{name}} field in {{struct.name}} struct")) {
-    return false;
-  }
-{%-     endif %}
-{%-   endif %}
-{%-   if kind|is_array_kind or kind|is_string_kind %}
-  const mojo::internal::ArrayValidateParams {{name}}_validate_params(
-      {{kind|get_array_validate_params_ctor_args|indent(6)}});
-  if (!mojo::internal::ValidateArray(object->{{name}}, bounds_checker,
-                                     &{{name}}_validate_params)) {
-    return false;
-  }
-{%-   elif kind|is_map_kind %}
-  const mojo::internal::ArrayValidateParams {{name}}_validate_params(
-      {{kind.value_kind|get_map_validate_params_ctor_args|indent(6)}});
-  if (!mojo::internal::ValidateMap(object->{{name}}, bounds_checker,
-                                   &{{name}}_validate_params)) {
-    return false;
-  }
-{%-   elif kind|is_struct_kind %}
-  if (!mojo::internal::ValidateStruct(object->{{name}}, bounds_checker))
-    return false;
-{%-   elif kind|is_union_kind %}
-  if (!mojo::internal::ValidateInlinedUnion(object->{{name}}, bounds_checker)) {
-    return false;
-  }
-{%-   else %}
-#error Not reached!
-{%-   endif %}
-{%- endmacro %}
-
-{#- Validates the specified struct field, which is supposed to be a handle or
-    contain a handle (in the case of interfaces).
-    This macro is expanded by the Validate() method. #}
-{%- macro _validate_handle(struct, packed_field) %}
-{%-   set name = packed_field.field.name %}
-{%-   set kind = packed_field.field.kind %}
-{%-   if kind|is_interface_kind %}
-  const mojo::internal::Handle_Data {{name}}_handle = object->{{name}}.handle;
-{%-   else %}
-  const mojo::internal::Handle_Data {{name}}_handle = object->{{name}};
-{%-   endif %}
-{%-   if not kind|is_nullable_kind %}
-  if (!mojo::internal::ValidateHandleNonNullable(
-          {{name}}_handle,
-          "invalid {{name}} field in {{struct.name}} struct")) {
-    return false;
-  }
-{%-   endif %}
-  if (!mojo::internal::ValidateHandle({{name}}_handle, bounds_checker))
-    return false;
-{%- endmacro %}
-
-{#- Validates the specified struct field, which is supposed to be an associated
-    interface or an associated interface request.
-    This macro is expanded by the Validate() method. #}
-{%- macro _validate_associated(struct, packed_field) %}
-{%-   set name = packed_field.field.name %}
-{%-   set kind = packed_field.field.kind %}
-{%-   if kind|is_associated_interface_kind %}
-  const mojo::internal::InterfaceId {{name}}_interface_id =
-      object->{{name}}.interface_id;
-{%-   else %}
-  const mojo::internal::InterfaceId {{name}}_interface_id = object->{{name}};
-{%-   endif %}
-{%-   if not kind|is_nullable_kind %}
-  if (!mojo::internal::ValidateInterfaceIdNonNullable(
-          {{name}}_interface_id,
-          "invalid {{name}} field in {{struct.name}} struct")) {
-    return false;
-  }
-{%-   endif %}
-  if (!mojo::internal::ValidateAssociatedInterfaceId({{name}}_interface_id))
-    return false;
-{%- endmacro %}
-
-{#- Validates the specified struct field, which is supposed to be an enum.
-    This macro is expanded by the Validate() method. #}
-{%- macro _validate_enum(struct, packed_field) %}
-{%-   set name = packed_field.field.name %}
-{%-   set kind = packed_field.field.kind %}
-  if (!{{kind|get_qualified_name_for_kind(internal=True)}}::Validate(object->{{name}}))
-    return false;
-{%- endmacro %}
 
 // static
 {{class_name}}* {{class_name}}::New(mojo::internal::Buffer* buf) {
@@ -161,15 +63,8 @@ bool {{class_name}}::Validate(const void* data,
   if (object->header_.version < {{packed_field.min_version}})
     return true;
 {%-     endif %}
-{%-     if kind|is_object_kind %}
-{{_validate_object(struct, packed_field)}}
-{%-     elif kind|is_any_handle_kind or kind|is_interface_kind %}
-{{_validate_handle(struct, packed_field)}}
-{%-     elif kind|is_associated_kind %}
-{{_validate_associated(struct, packed_field)}}
-{%-     else %}
-{{_validate_enum(struct, packed_field)}}
-{%-     endif %}
+{%-     set field_expr = "object->" ~ packed_field.field.name %}
+{{validation_macros.validate_field(packed_field.field, field_expr, struct.name, true)}}
 {%-   endif %}
 {%- endfor %}
 
