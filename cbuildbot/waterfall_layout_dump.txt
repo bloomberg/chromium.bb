@@ -39,6 +39,7 @@ daisy_skate-release
 daisy_spring-paladin
 daisy_spring-release
 edgar-release
+elm-cheets-release
 elm-release
 enguarde-release
 expresso-release

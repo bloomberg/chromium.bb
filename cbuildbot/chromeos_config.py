@@ -354,6 +354,7 @@ _arm_internal_release_boards = frozenset([
     'daisy_skate',
     'daisy_spring',
     'elm',
+    'elm-cheets',
     'gale',
     'gru',
     'kevin',
@@ -539,6 +540,7 @@ _brillo_boards = frozenset([
 
 _cheets_boards = frozenset([
     'cyan-cheets',
+    'elm-cheets',
     'glados-cheets',
     'oak-cheets',
     'samus-cheets',
@@ -582,6 +584,7 @@ _no_unittest_boards = frozenset((
 
 _no_vmtest_boards = _arm_boards | _brillo_boards | frozenset((
     'cyan-cheets',
+    'elm-cheets',
     'glados-cheets',
     'oak-cheets',
     'samus-cheets',
@@ -647,6 +650,7 @@ _waterfall_config_map = {
         'oak-release',
         'elm-release',
         'oak-cheets-release',
+        'elm-cheets-release',
         # reef
         'reef-release',
         'amenia-release',
@@ -2528,6 +2532,11 @@ def GetConfig():
   )
 
   site_config.Add(
+      'elm-cheets-release', cheets_release,
+      _base_configs['elm-cheets'],
+  )
+
+  site_config.Add(
       'glados-cheets-release', cheets_release,
       _base_configs['glados-cheets'],
   )
@@ -2914,6 +2923,7 @@ def GetConfig():
       'oak', (
           'elm',
           'oak-cheets',
+          'elm-cheets',
       ),
       important=False,
   )
