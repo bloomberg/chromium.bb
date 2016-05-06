@@ -92,6 +92,7 @@ void ServerWindow::AddObserver(ServerWindowObserver* observer) {
 }
 
 void ServerWindow::RemoveObserver(ServerWindowObserver* observer) {
+  DCHECK(observers_.HasObserver(observer));
   observers_.RemoveObserver(observer);
 }
 

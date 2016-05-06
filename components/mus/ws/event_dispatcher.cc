@@ -156,10 +156,16 @@ bool EventDispatcher::SetCaptureWindow(ServerWindow* window,
     pointer_targets_.clear();
   }
 
+  // Set the capture before changing native capture; otherwise, the callback
+  // from native platform might try to set the capture again.
+  bool had_capture_window = capture_window_ != nullptr;
+  capture_window_ = window;
+  capture_window_in_nonclient_area_ = in_nonclient_area;
+
   // Begin tracking the capture window if it is not yet being observed.
   if (window) {
     window->AddObserver(this);
-    if (!capture_window_)
+    if (!had_capture_window)
       delegate_->SetNativeCapture();
   } else {
     delegate_->ReleaseNativeCapture();
@@ -167,8 +173,6 @@ bool EventDispatcher::SetCaptureWindow(ServerWindow* window,
       UpdateCursorProviderByLastKnownLocation();
   }
 
-  capture_window_ = window;
-  capture_window_in_nonclient_area_ = in_nonclient_area;
   return true;
 }
 

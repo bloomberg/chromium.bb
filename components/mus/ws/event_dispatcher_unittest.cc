@@ -39,8 +39,16 @@ struct DispatchedEventDetails {
 
 class TestEventDispatcherDelegate : public EventDispatcherDelegate {
  public:
-  explicit TestEventDispatcherDelegate(ServerWindow* root)
-      : root_(root),
+  // Delegate interface used by this class to release capture on event
+  // dispatcher.
+  class Delegate {
+   public:
+    virtual void ReleaseCapture() = 0;
+  };
+
+  TestEventDispatcherDelegate(Delegate* delegate, ServerWindow* root)
+      : delegate_(delegate),
+        root_(root),
         focused_window_(nullptr),
         lost_capture_window_(nullptr),
         last_accelerator_(0) {}
@@ -92,7 +100,10 @@ class TestEventDispatcherDelegate : public EventDispatcherDelegate {
     return focused_window_;
   }
   void SetNativeCapture() override {}
-  void ReleaseNativeCapture() override {}
+  void ReleaseNativeCapture() override {
+    if (delegate_)
+      delegate_->ReleaseCapture();
+  }
   void OnServerWindowCaptureLost(ServerWindow* window) override {
     lost_capture_window_ = window;
   }
@@ -112,6 +123,7 @@ class TestEventDispatcherDelegate : public EventDispatcherDelegate {
     last_event_target_not_found_ = ui::Event::Clone(event);
   }
 
+  Delegate* delegate_;
   ServerWindow* root_;
   ServerWindow* focused_window_;
   ServerWindow* lost_capture_window_;
@@ -188,7 +200,8 @@ void RunMouseEventTests(EventDispatcher* dispatcher,
 // Test fixture for EventDispatcher with friend access to verify the internal
 // state. Setup creates a TestServerWindowDelegate, a visible root ServerWindow,
 // a TestEventDispatcher and the EventDispatcher for testing.
-class EventDispatcherTest : public testing::Test {
+class EventDispatcherTest : public testing::Test,
+                            public TestEventDispatcherDelegate::Delegate {
  public:
   EventDispatcherTest() {}
   ~EventDispatcherTest() override {}
@@ -216,6 +229,11 @@ class EventDispatcherTest : public testing::Test {
   void SetUp() override;
 
  private:
+  // TestEventDispatcherDelegate::Delegate:
+  void ReleaseCapture() override {
+    event_dispatcher_->SetCaptureWindow(nullptr, false);
+  }
+
   std::unique_ptr<TestServerWindowDelegate> window_delegate_;
   std::unique_ptr<ServerWindow> root_window_;
   std::unique_ptr<TestEventDispatcherDelegate> test_event_dispatcher_delegate_;
@@ -275,7 +293,7 @@ void EventDispatcherTest::SetUp() {
   root_window_->SetVisible(true);
 
   test_event_dispatcher_delegate_.reset(
-      new TestEventDispatcherDelegate(root_window_.get()));
+      new TestEventDispatcherDelegate(this, root_window_.get()));
   event_dispatcher_.reset(
       new EventDispatcher(test_event_dispatcher_delegate_.get()));
   event_dispatcher_->set_root(root_window_.get());
@@ -326,7 +344,7 @@ TEST_F(EventDispatcherTest, ProcessEventNoTarget) {
 
 TEST_F(EventDispatcherTest, AcceleratorBasic) {
   ClearSetup();
-  TestEventDispatcherDelegate event_dispatcher_delegate(nullptr);
+  TestEventDispatcherDelegate event_dispatcher_delegate(nullptr, nullptr);
   EventDispatcher dispatcher(&event_dispatcher_delegate);
 
   uint32_t accelerator_1 = 1;
