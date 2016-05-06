@@ -117,12 +117,11 @@ MakeGetRegistrationsInfosCallback(
   return base::Bind(&GetAllInfosCallback, was_called, status, all);
 }
 
-void GetUserDataCallback(
-    bool* was_called,
-    std::string* data_out,
-    ServiceWorkerStatusCode* status_out,
-    const std::string& data,
-    ServiceWorkerStatusCode status) {
+void GetUserDataCallback(bool* was_called,
+                         std::vector<std::string>* data_out,
+                         ServiceWorkerStatusCode* status_out,
+                         const std::vector<std::string>& data,
+                         ServiceWorkerStatusCode status) {
   *was_called = true;
   *data_out = data;
   *status_out = status;
@@ -381,12 +380,12 @@ class ServiceWorkerStorageTest : public testing::Test {
   }
 
   ServiceWorkerStatusCode GetUserData(int64_t registration_id,
-                                      const std::string& key,
-                                      std::string* data) {
+                                      const std::vector<std::string>& keys,
+                                      std::vector<std::string>* data) {
     bool was_called = false;
     ServiceWorkerStatusCode result = SERVICE_WORKER_ERROR_MAX_VALUE;
     storage()->GetUserData(
-        registration_id, key,
+        registration_id, keys,
         base::Bind(&GetUserDataCallback, &was_called, data, &result));
     EXPECT_FALSE(was_called);  // always async
     base::RunLoop().RunUntilIdle();
@@ -394,15 +393,14 @@ class ServiceWorkerStorageTest : public testing::Test {
     return result;
   }
 
-  ServiceWorkerStatusCode StoreUserData(int64_t registration_id,
-                                        const GURL& origin,
-                                        const std::string& key,
-                                        const std::string& data) {
+  ServiceWorkerStatusCode StoreUserData(
+      int64_t registration_id,
+      const GURL& origin,
+      const std::vector<std::pair<std::string, std::string>>& key_value_pairs) {
     bool was_called = false;
     ServiceWorkerStatusCode result = SERVICE_WORKER_ERROR_MAX_VALUE;
-    storage()->StoreUserData(
-        registration_id, origin, key, data,
-        MakeStatusCallback(&was_called, &result));
+    storage()->StoreUserData(registration_id, origin, key_value_pairs,
+                             MakeStatusCallback(&was_called, &result));
     EXPECT_FALSE(was_called);  // always async
     base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(was_called);
@@ -410,11 +408,11 @@ class ServiceWorkerStorageTest : public testing::Test {
   }
 
   ServiceWorkerStatusCode ClearUserData(int64_t registration_id,
-                                        const std::string& key) {
+                                        const std::vector<std::string>& keys) {
     bool was_called = false;
     ServiceWorkerStatusCode result = SERVICE_WORKER_ERROR_MAX_VALUE;
-    storage()->ClearUserData(
-        registration_id, key, MakeStatusCallback(&was_called, &result));
+    storage()->ClearUserData(registration_id, keys,
+                             MakeStatusCallback(&was_called, &result));
     EXPECT_FALSE(was_called);  // always async
     base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(was_called);
@@ -566,14 +564,14 @@ TEST_F(ServiceWorkerStorageTest, DisabledStorage) {
             WriteResponseMetadata(storage(), kResourceId, "foo"));
 
   const std::string kUserDataKey = "key";
-  std::string user_data_out;
+  std::vector<std::string> user_data_out;
   EXPECT_EQ(SERVICE_WORKER_ERROR_ABORT,
-            GetUserData(kRegistrationId, kUserDataKey, &user_data_out));
-  EXPECT_EQ(
-      SERVICE_WORKER_ERROR_ABORT,
-      StoreUserData(kRegistrationId, kScope.GetOrigin(), kUserDataKey, "foo"));
+            GetUserData(kRegistrationId, {kUserDataKey}, &user_data_out));
   EXPECT_EQ(SERVICE_WORKER_ERROR_ABORT,
-            ClearUserData(kRegistrationId, kUserDataKey));
+            StoreUserData(kRegistrationId, kScope.GetOrigin(),
+                          {{kUserDataKey, "foo"}}));
+  EXPECT_EQ(SERVICE_WORKER_ERROR_ABORT,
+            ClearUserData(kRegistrationId, {kUserDataKey}));
   std::vector<std::pair<int64_t, std::string>> data_list_out;
   EXPECT_EQ(SERVICE_WORKER_ERROR_ABORT,
             GetUserDataForAllRegistrations(kUserDataKey, &data_list_out));
@@ -942,13 +940,16 @@ TEST_F(ServiceWorkerStorageTest, StoreUserData) {
             StoreRegistration(live_registration, live_version));
 
   // Store user data associated with the registration.
-  std::string data_out;
+  std::vector<std::string> data_out;
+  EXPECT_EQ(
+      SERVICE_WORKER_OK,
+      StoreUserData(kRegistrationId, kScope.GetOrigin(), {{"key", "data"}}));
   EXPECT_EQ(SERVICE_WORKER_OK,
-            StoreUserData(kRegistrationId, kScope.GetOrigin(), "key", "data"));
-  EXPECT_EQ(SERVICE_WORKER_OK, GetUserData(kRegistrationId, "key", &data_out));
-  EXPECT_EQ("data", data_out);
+            GetUserData(kRegistrationId, {"key"}, &data_out));
+  ASSERT_EQ(1u, data_out.size());
+  EXPECT_EQ("data", data_out[0]);
   EXPECT_EQ(SERVICE_WORKER_ERROR_NOT_FOUND,
-            GetUserData(kRegistrationId, "unknown_key", &data_out));
+            GetUserData(kRegistrationId, {"unknown_key"}, &data_out));
   std::vector<std::pair<int64_t, std::string>> data_list_out;
   EXPECT_EQ(SERVICE_WORKER_OK,
             GetUserDataForAllRegistrations("key", &data_list_out));
@@ -959,21 +960,56 @@ TEST_F(ServiceWorkerStorageTest, StoreUserData) {
   EXPECT_EQ(SERVICE_WORKER_OK,
             GetUserDataForAllRegistrations("unknown_key", &data_list_out));
   EXPECT_EQ(0u, data_list_out.size());
-  EXPECT_EQ(SERVICE_WORKER_OK, ClearUserData(kRegistrationId, "key"));
+  EXPECT_EQ(SERVICE_WORKER_OK, ClearUserData(kRegistrationId, {"key"}));
   EXPECT_EQ(SERVICE_WORKER_ERROR_NOT_FOUND,
-            GetUserData(kRegistrationId, "key", &data_out));
+            GetUserData(kRegistrationId, {"key"}, &data_out));
+
+  // Write/overwrite multiple user data keys.
+  EXPECT_EQ(SERVICE_WORKER_OK,
+            StoreUserData(
+                kRegistrationId, kScope.GetOrigin(),
+                {{"key", "overwrite"}, {"key3", "data3"}, {"key4", "data4"}}));
+  EXPECT_EQ(SERVICE_WORKER_ERROR_NOT_FOUND,
+            GetUserData(kRegistrationId, {"key2"}, &data_out));
+  EXPECT_TRUE(data_out.empty());
+  EXPECT_EQ(SERVICE_WORKER_OK,
+            GetUserData(kRegistrationId, {"key", "key3", "key4"}, &data_out));
+  ASSERT_EQ(3u, data_out.size());
+  EXPECT_EQ("overwrite", data_out[0]);
+  EXPECT_EQ("data3", data_out[1]);
+  EXPECT_EQ("data4", data_out[2]);
+  // Multiple gets fail if one is not found.
+  EXPECT_EQ(SERVICE_WORKER_ERROR_NOT_FOUND,
+            GetUserData(kRegistrationId, {"key", "key2"}, &data_out));
+  EXPECT_TRUE(data_out.empty());
+
+  // Delete multiple user data keys, even if some are not found.
+  EXPECT_EQ(SERVICE_WORKER_OK,
+            ClearUserData(kRegistrationId, {"key", "key2", "key3"}));
+  EXPECT_EQ(SERVICE_WORKER_ERROR_NOT_FOUND,
+            GetUserData(kRegistrationId, {"key"}, &data_out));
+  EXPECT_EQ(SERVICE_WORKER_ERROR_NOT_FOUND,
+            GetUserData(kRegistrationId, {"key2"}, &data_out));
+  EXPECT_EQ(SERVICE_WORKER_ERROR_NOT_FOUND,
+            GetUserData(kRegistrationId, {"key3"}, &data_out));
+  EXPECT_EQ(SERVICE_WORKER_OK,
+            GetUserData(kRegistrationId, {"key4"}, &data_out));
+  ASSERT_EQ(1u, data_out.size());
+  EXPECT_EQ("data4", data_out[0]);
 
   // User data should be deleted when the associated registration is deleted.
+  ASSERT_EQ(
+      SERVICE_WORKER_OK,
+      StoreUserData(kRegistrationId, kScope.GetOrigin(), {{"key", "data"}}));
   ASSERT_EQ(SERVICE_WORKER_OK,
-            StoreUserData(kRegistrationId, kScope.GetOrigin(), "key", "data"));
-  ASSERT_EQ(SERVICE_WORKER_OK,
-            GetUserData(kRegistrationId, "key", &data_out));
-  ASSERT_EQ("data", data_out);
+            GetUserData(kRegistrationId, {"key"}, &data_out));
+  ASSERT_EQ(1u, data_out.size());
+  ASSERT_EQ("data", data_out[0]);
 
   EXPECT_EQ(SERVICE_WORKER_OK,
             DeleteRegistration(kRegistrationId, kScope.GetOrigin()));
   EXPECT_EQ(SERVICE_WORKER_ERROR_NOT_FOUND,
-            GetUserData(kRegistrationId, "key", &data_out));
+            GetUserData(kRegistrationId, {"key"}, &data_out));
   data_list_out.clear();
   EXPECT_EQ(SERVICE_WORKER_OK,
             GetUserDataForAllRegistrations("key", &data_list_out));
@@ -982,20 +1018,36 @@ TEST_F(ServiceWorkerStorageTest, StoreUserData) {
   // Data access with an invalid registration id should be failed.
   EXPECT_EQ(SERVICE_WORKER_ERROR_FAILED,
             StoreUserData(kInvalidServiceWorkerRegistrationId,
-                          kScope.GetOrigin(), "key", "data"));
+                          kScope.GetOrigin(), {{"key", "data"}}));
+  EXPECT_EQ(
+      SERVICE_WORKER_ERROR_FAILED,
+      GetUserData(kInvalidServiceWorkerRegistrationId, {"key"}, &data_out));
   EXPECT_EQ(SERVICE_WORKER_ERROR_FAILED,
-            GetUserData(kInvalidServiceWorkerRegistrationId, "key", &data_out));
-  EXPECT_EQ(SERVICE_WORKER_ERROR_FAILED,
-            ClearUserData(kInvalidServiceWorkerRegistrationId, "key"));
+            ClearUserData(kInvalidServiceWorkerRegistrationId, {"key"}));
 
   // Data access with an empty key should be failed.
   EXPECT_EQ(SERVICE_WORKER_ERROR_FAILED,
-            StoreUserData(
-                kRegistrationId, kScope.GetOrigin(), std::string(), "data"));
+            StoreUserData(kRegistrationId, kScope.GetOrigin(),
+                          std::vector<std::pair<std::string, std::string>>()));
   EXPECT_EQ(SERVICE_WORKER_ERROR_FAILED,
-            GetUserData(kRegistrationId, std::string(), &data_out));
+            StoreUserData(kRegistrationId, kScope.GetOrigin(),
+                          {{std::string(), "data"}}));
   EXPECT_EQ(SERVICE_WORKER_ERROR_FAILED,
-            ClearUserData(kRegistrationId, std::string()));
+            StoreUserData(kRegistrationId, kScope.GetOrigin(),
+                          {{std::string(), "data"}, {"key", "data"}}));
+  EXPECT_EQ(
+      SERVICE_WORKER_ERROR_FAILED,
+      GetUserData(kRegistrationId, std::vector<std::string>(), &data_out));
+  EXPECT_EQ(SERVICE_WORKER_ERROR_FAILED,
+            GetUserData(kRegistrationId, {std::string()}, &data_out));
+  EXPECT_EQ(SERVICE_WORKER_ERROR_FAILED,
+            GetUserData(kRegistrationId, {std::string(), "key"}, &data_out));
+  EXPECT_EQ(SERVICE_WORKER_ERROR_FAILED,
+            ClearUserData(kRegistrationId, std::vector<std::string>()));
+  EXPECT_EQ(SERVICE_WORKER_ERROR_FAILED,
+            ClearUserData(kRegistrationId, {std::string()}));
+  EXPECT_EQ(SERVICE_WORKER_ERROR_FAILED,
+            ClearUserData(kRegistrationId, {std::string(), "key"}));
   data_list_out.clear();
   EXPECT_EQ(SERVICE_WORKER_ERROR_FAILED,
             GetUserDataForAllRegistrations(std::string(), &data_list_out));

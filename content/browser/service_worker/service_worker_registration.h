@@ -32,9 +32,6 @@ class CONTENT_EXPORT ServiceWorkerRegistration
       public ServiceWorkerVersion::Listener {
  public:
   typedef base::Callback<void(ServiceWorkerStatusCode status)> StatusCallback;
-  typedef base::Callback<void(
-      const std::string& data,
-      ServiceWorkerStatusCode status)> GetUserDataCallback;
 
   class Listener {
    public:

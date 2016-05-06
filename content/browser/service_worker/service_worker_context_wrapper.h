@@ -154,15 +154,15 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   // All these methods must be called from the IO thread.
   void GetAllRegistrations(const GetRegistrationsInfosCallback& callback);
   void GetRegistrationUserData(int64_t registration_id,
-                               const std::string& key,
+                               const std::vector<std::string>& keys,
                                const GetUserDataCallback& callback);
-  void StoreRegistrationUserData(int64_t registration_id,
-                                 const GURL& origin,
-                                 const std::string& key,
-                                 const std::string& data,
-                                 const StatusCallback& callback);
+  void StoreRegistrationUserData(
+      int64_t registration_id,
+      const GURL& origin,
+      const std::vector<std::pair<std::string, std::string>>& key_value_pairs,
+      const StatusCallback& callback);
   void ClearRegistrationUserData(int64_t registration_id,
-                                 const std::string& key,
+                                 const std::vector<std::string>& keys,
                                  const StatusCallback& callback);
   void GetUserDataForAllRegistrations(
       const std::string& key,

@@ -994,52 +994,99 @@ TEST(ServiceWorkerDatabaseTest, UserData_Basic) {
                 data, resources, &deleted_version, &newly_purgeable_resources));
 
   // Write user data associated with the stored registration.
-  std::string user_data_out;
+  std::vector<std::string> user_data_out;
   EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
-            database->WriteUserData(
-                data.registration_id, kOrigin, "key1", "data"));
-  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
-            database->ReadUserData(
-                data.registration_id, "key1", &user_data_out));
-  EXPECT_EQ("data", user_data_out);
+            database->WriteUserData(data.registration_id, kOrigin,
+                                    {{"key1", "data"}}));
+  EXPECT_EQ(
+      ServiceWorkerDatabase::STATUS_OK,
+      database->ReadUserData(data.registration_id, {"key1"}, &user_data_out));
+  ASSERT_EQ(1u, user_data_out.size());
+  EXPECT_EQ("data", user_data_out[0]);
 
   // Writing user data not associated with the stored registration should be
   // failed.
   EXPECT_EQ(ServiceWorkerDatabase::STATUS_ERROR_NOT_FOUND,
-            database->WriteUserData(300, kOrigin, "key1", "data"));
+            database->WriteUserData(300, kOrigin, {{"key1", "data"}}));
 
   // Write empty user data for a different key.
   EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
-            database->WriteUserData(
-                data.registration_id, kOrigin, "key2", std::string()));
-  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
-            database->ReadUserData(
-                data.registration_id, "key2", &user_data_out));
-  EXPECT_EQ(std::string(), user_data_out);
-  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
-            database->ReadUserData(
-                data.registration_id, "key1", &user_data_out));
-  EXPECT_EQ("data", user_data_out);
+            database->WriteUserData(data.registration_id, kOrigin,
+                                    {{"key2", std::string()}}));
+  EXPECT_EQ(
+      ServiceWorkerDatabase::STATUS_OK,
+      database->ReadUserData(data.registration_id, {"key2"}, &user_data_out));
+  ASSERT_EQ(1u, user_data_out.size());
+  EXPECT_EQ(std::string(), user_data_out[0]);
+  EXPECT_EQ(
+      ServiceWorkerDatabase::STATUS_OK,
+      database->ReadUserData(data.registration_id, {"key1"}, &user_data_out));
+  ASSERT_EQ(1u, user_data_out.size());
+  EXPECT_EQ("data", user_data_out[0]);
 
   // Overwrite the existing user data.
   EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
-            database->WriteUserData(
-                data.registration_id, kOrigin, "key1", "overwrite"));
-  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
-            database->ReadUserData(
-                data.registration_id, "key1", &user_data_out));
-  EXPECT_EQ("overwrite", user_data_out);
+            database->WriteUserData(data.registration_id, kOrigin,
+                                    {{"key1", "overwrite"}}));
+  EXPECT_EQ(
+      ServiceWorkerDatabase::STATUS_OK,
+      database->ReadUserData(data.registration_id, {"key1"}, &user_data_out));
+  ASSERT_EQ(1u, user_data_out.size());
+  EXPECT_EQ("overwrite", user_data_out[0]);
 
   // Delete the user data.
   EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
-            database->DeleteUserData(data.registration_id, "key1"));
-  EXPECT_EQ(ServiceWorkerDatabase::STATUS_ERROR_NOT_FOUND,
-            database->ReadUserData(
-                data.registration_id, "key1", &user_data_out));
+            database->DeleteUserData(data.registration_id, {"key1"}));
+  EXPECT_EQ(
+      ServiceWorkerDatabase::STATUS_ERROR_NOT_FOUND,
+      database->ReadUserData(data.registration_id, {"key1"}, &user_data_out));
+  EXPECT_TRUE(user_data_out.empty());
+  EXPECT_EQ(
+      ServiceWorkerDatabase::STATUS_OK,
+      database->ReadUserData(data.registration_id, {"key2"}, &user_data_out));
+  ASSERT_EQ(1u, user_data_out.size());
+  EXPECT_EQ(std::string(), user_data_out[0]);
+
+  // Write/overwrite multiple user data keys.
+  EXPECT_EQ(
+      ServiceWorkerDatabase::STATUS_OK,
+      database->WriteUserData(
+          data.registration_id, kOrigin,
+          {{"key2", "overwrite2"}, {"key3", "data3"}, {"key4", "data4"}}));
+  EXPECT_EQ(
+      ServiceWorkerDatabase::STATUS_ERROR_NOT_FOUND,
+      database->ReadUserData(data.registration_id, {"key1"}, &user_data_out));
   EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
-            database->ReadUserData(
-                data.registration_id, "key2", &user_data_out));
-  EXPECT_EQ(std::string(), user_data_out);
+            database->ReadUserData(data.registration_id,
+                                   {"key2", "key3", "key4"}, &user_data_out));
+  ASSERT_EQ(3u, user_data_out.size());
+  EXPECT_EQ("overwrite2", user_data_out[0]);
+  EXPECT_EQ("data3", user_data_out[1]);
+  EXPECT_EQ("data4", user_data_out[2]);
+  // Multiple reads fail if one is not found.
+  EXPECT_EQ(ServiceWorkerDatabase::STATUS_ERROR_NOT_FOUND,
+            database->ReadUserData(data.registration_id, {"key2", "key1"},
+                                   &user_data_out));
+  EXPECT_TRUE(user_data_out.empty());
+
+  // Delete multiple user data keys, even if some are not found.
+  EXPECT_EQ(
+      ServiceWorkerDatabase::STATUS_OK,
+      database->DeleteUserData(data.registration_id, {"key1", "key2", "key3"}));
+  EXPECT_EQ(
+      ServiceWorkerDatabase::STATUS_ERROR_NOT_FOUND,
+      database->ReadUserData(data.registration_id, {"key1"}, &user_data_out));
+  EXPECT_EQ(
+      ServiceWorkerDatabase::STATUS_ERROR_NOT_FOUND,
+      database->ReadUserData(data.registration_id, {"key2"}, &user_data_out));
+  EXPECT_EQ(
+      ServiceWorkerDatabase::STATUS_ERROR_NOT_FOUND,
+      database->ReadUserData(data.registration_id, {"key3"}, &user_data_out));
+  EXPECT_EQ(
+      ServiceWorkerDatabase::STATUS_OK,
+      database->ReadUserData(data.registration_id, {"key4"}, &user_data_out));
+  ASSERT_EQ(1u, user_data_out.size());
+  EXPECT_EQ("data4", user_data_out[0]);
 }
 
 TEST(ServiceWorkerDatabaseTest, UserData_DataIsolation) {
@@ -1076,31 +1123,34 @@ TEST(ServiceWorkerDatabaseTest, UserData_DataIsolation) {
                                         &newly_purgeable_resources));
 
   // Write user data associated with the registration1.
-  std::string user_data_out;
+  std::vector<std::string> user_data_out;
   ASSERT_EQ(ServiceWorkerDatabase::STATUS_OK,
-            database->WriteUserData(
-                data1.registration_id, kOrigin, "key", "data1"));
-  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
-            database->ReadUserData(
-                data1.registration_id, "key", &user_data_out));
-  EXPECT_EQ("data1", user_data_out);
-  EXPECT_EQ(ServiceWorkerDatabase::STATUS_ERROR_NOT_FOUND,
-            database->ReadUserData(
-                data2.registration_id, "key", &user_data_out));
+            database->WriteUserData(data1.registration_id, kOrigin,
+                                    {{"key", "data1"}}));
+  EXPECT_EQ(
+      ServiceWorkerDatabase::STATUS_OK,
+      database->ReadUserData(data1.registration_id, {"key"}, &user_data_out));
+  ASSERT_EQ(1u, user_data_out.size());
+  EXPECT_EQ("data1", user_data_out[0]);
+  EXPECT_EQ(
+      ServiceWorkerDatabase::STATUS_ERROR_NOT_FOUND,
+      database->ReadUserData(data2.registration_id, {"key"}, &user_data_out));
 
   // Write user data associated with the registration2. This shouldn't overwrite
   // the data associated with registration1.
   ASSERT_EQ(ServiceWorkerDatabase::STATUS_OK,
-            database->WriteUserData(
-                data2.registration_id, kOrigin, "key", "data2"));
-  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
-            database->ReadUserData(
-                data1.registration_id, "key", &user_data_out));
-  EXPECT_EQ("data1", user_data_out);
-  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
-            database->ReadUserData(
-                data2.registration_id, "key", &user_data_out));
-  EXPECT_EQ("data2", user_data_out);
+            database->WriteUserData(data2.registration_id, kOrigin,
+                                    {{"key", "data2"}}));
+  EXPECT_EQ(
+      ServiceWorkerDatabase::STATUS_OK,
+      database->ReadUserData(data1.registration_id, {"key"}, &user_data_out));
+  ASSERT_EQ(1u, user_data_out.size());
+  EXPECT_EQ("data1", user_data_out[0]);
+  EXPECT_EQ(
+      ServiceWorkerDatabase::STATUS_OK,
+      database->ReadUserData(data2.registration_id, {"key"}, &user_data_out));
+  ASSERT_EQ(1u, user_data_out.size());
+  EXPECT_EQ("data2", user_data_out[0]);
 
   // Get all registrations with user data.
   std::vector<std::pair<int64_t, std::string>> user_data_list;
@@ -1115,14 +1165,15 @@ TEST(ServiceWorkerDatabaseTest, UserData_DataIsolation) {
   // Delete the data associated with the registration2. This shouldn't delete
   // the data associated with registration1.
   ASSERT_EQ(ServiceWorkerDatabase::STATUS_OK,
-            database->DeleteUserData(data2.registration_id, "key"));
-  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
-            database->ReadUserData(
-                data1.registration_id, "key", &user_data_out));
-  EXPECT_EQ("data1", user_data_out);
-  EXPECT_EQ(ServiceWorkerDatabase::STATUS_ERROR_NOT_FOUND,
-            database->ReadUserData(
-                data2.registration_id, "key", &user_data_out));
+            database->DeleteUserData(data2.registration_id, {"key"}));
+  EXPECT_EQ(
+      ServiceWorkerDatabase::STATUS_OK,
+      database->ReadUserData(data1.registration_id, {"key"}, &user_data_out));
+  ASSERT_EQ(1u, user_data_out.size());
+  EXPECT_EQ("data1", user_data_out[0]);
+  EXPECT_EQ(
+      ServiceWorkerDatabase::STATUS_ERROR_NOT_FOUND,
+      database->ReadUserData(data2.registration_id, {"key"}, &user_data_out));
 
   // And again get all registrations with user data.
   user_data_list.clear();
@@ -1167,30 +1218,33 @@ TEST(ServiceWorkerDatabaseTest, UserData_DeleteRegistration) {
                                         &newly_purgeable_resources));
 
   // Write user data associated with the registration1.
-  std::string user_data_out;
+  std::vector<std::string> user_data_out;
   ASSERT_EQ(ServiceWorkerDatabase::STATUS_OK,
-            database->WriteUserData(
-                data1.registration_id, kOrigin, "key1", "data1"));
+            database->WriteUserData(data1.registration_id, kOrigin,
+                                    {{"key1", "data1"}}));
   ASSERT_EQ(ServiceWorkerDatabase::STATUS_OK,
-            database->WriteUserData(
-                data1.registration_id, kOrigin, "key2", "data2"));
-  ASSERT_EQ(ServiceWorkerDatabase::STATUS_OK,
-            database->ReadUserData(
-                data1.registration_id, "key1", &user_data_out));
-  ASSERT_EQ("data1", user_data_out);
-  ASSERT_EQ(ServiceWorkerDatabase::STATUS_OK,
-            database->ReadUserData(
-                data1.registration_id, "key2", &user_data_out));
-  ASSERT_EQ("data2", user_data_out);
+            database->WriteUserData(data1.registration_id, kOrigin,
+                                    {{"key2", "data2"}}));
+  ASSERT_EQ(
+      ServiceWorkerDatabase::STATUS_OK,
+      database->ReadUserData(data1.registration_id, {"key1"}, &user_data_out));
+  ASSERT_EQ(1u, user_data_out.size());
+  ASSERT_EQ("data1", user_data_out[0]);
+  ASSERT_EQ(
+      ServiceWorkerDatabase::STATUS_OK,
+      database->ReadUserData(data1.registration_id, {"key2"}, &user_data_out));
+  ASSERT_EQ(1u, user_data_out.size());
+  ASSERT_EQ("data2", user_data_out[0]);
 
   // Write user data associated with the registration2.
   ASSERT_EQ(ServiceWorkerDatabase::STATUS_OK,
-            database->WriteUserData(
-                data2.registration_id, kOrigin, "key3", "data3"));
-  ASSERT_EQ(ServiceWorkerDatabase::STATUS_OK,
-            database->ReadUserData(
-                data2.registration_id, "key3", &user_data_out));
-  ASSERT_EQ("data3", user_data_out);
+            database->WriteUserData(data2.registration_id, kOrigin,
+                                    {{"key3", "data3"}}));
+  ASSERT_EQ(
+      ServiceWorkerDatabase::STATUS_OK,
+      database->ReadUserData(data2.registration_id, {"key3"}, &user_data_out));
+  ASSERT_EQ(1u, user_data_out.size());
+  ASSERT_EQ("data3", user_data_out[0]);
 
   // Delete all data associated with the registration1. This shouldn't delete
   // the data associated with registration2.
@@ -1198,16 +1252,17 @@ TEST(ServiceWorkerDatabaseTest, UserData_DeleteRegistration) {
             database->DeleteRegistration(
                 data1.registration_id, kOrigin,
                 &deleted_version, &newly_purgeable_resources));
-  EXPECT_EQ(ServiceWorkerDatabase::STATUS_ERROR_NOT_FOUND,
-            database->ReadUserData(
-                data1.registration_id, "key1", &user_data_out));
-  EXPECT_EQ(ServiceWorkerDatabase::STATUS_ERROR_NOT_FOUND,
-            database->ReadUserData(
-                data1.registration_id, "key2", &user_data_out));
-  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
-            database->ReadUserData(
-                data2.registration_id, "key3", &user_data_out));
-  EXPECT_EQ("data3", user_data_out);
+  EXPECT_EQ(
+      ServiceWorkerDatabase::STATUS_ERROR_NOT_FOUND,
+      database->ReadUserData(data1.registration_id, {"key1"}, &user_data_out));
+  EXPECT_EQ(
+      ServiceWorkerDatabase::STATUS_ERROR_NOT_FOUND,
+      database->ReadUserData(data1.registration_id, {"key2"}, &user_data_out));
+  EXPECT_EQ(
+      ServiceWorkerDatabase::STATUS_OK,
+      database->ReadUserData(data2.registration_id, {"key3"}, &user_data_out));
+  ASSERT_EQ(1u, user_data_out.size());
+  EXPECT_EQ("data3", user_data_out[0]);
 }
 
 TEST(ServiceWorkerDatabaseTest, UserData_UninitializedDatabase) {
@@ -1215,17 +1270,17 @@ TEST(ServiceWorkerDatabaseTest, UserData_UninitializedDatabase) {
   const GURL kOrigin("http://example.com");
 
   // Should be failed because the database does not exist.
-  std::string user_data_out;
+  std::vector<std::string> user_data_out;
   EXPECT_EQ(ServiceWorkerDatabase::STATUS_ERROR_NOT_FOUND,
-            database->ReadUserData(100, "key", &user_data_out));
+            database->ReadUserData(100, {"key"}, &user_data_out));
 
   // Should be failed because the associated registration does not exist.
   EXPECT_EQ(ServiceWorkerDatabase::STATUS_ERROR_NOT_FOUND,
-            database->WriteUserData(100, kOrigin, "key", "data"));
+            database->WriteUserData(100, kOrigin, {{"key", "data"}}));
 
   // Deleting non-existent entry should succeed.
   EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
-            database->DeleteUserData(100, "key"));
+            database->DeleteUserData(100, {"key"}));
 
   // Actually create a new database, but not initialized yet.
   database->LazyOpen(true);
@@ -1233,13 +1288,13 @@ TEST(ServiceWorkerDatabaseTest, UserData_UninitializedDatabase) {
   // Should be failed because the database is not initialized.
   ASSERT_EQ(ServiceWorkerDatabase::UNINITIALIZED, database->state_);
   EXPECT_EQ(ServiceWorkerDatabase::STATUS_ERROR_NOT_FOUND,
-            database->ReadUserData(100, "key", &user_data_out));
+            database->ReadUserData(100, {"key"}, &user_data_out));
   EXPECT_EQ(ServiceWorkerDatabase::STATUS_ERROR_NOT_FOUND,
-            database->WriteUserData(100, kOrigin, "key", "data"));
+            database->WriteUserData(100, kOrigin, {{"key", "data"}}));
 
   // Deleting non-existent entry should succeed.
   EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
-            database->DeleteUserData(100, "key"));
+            database->DeleteUserData(100, {"key"}));
 }
 
 TEST(ServiceWorkerDatabaseTest, UpdateVersionToActive) {
@@ -1444,14 +1499,12 @@ TEST(ServiceWorkerDatabaseTest, DeleteAllDataForOrigin) {
       ServiceWorkerDatabase::STATUS_OK,
       database->WriteRegistration(
           data1, resources1, &deleted_version, &newly_purgeable_resources));
-  ASSERT_EQ(
-      ServiceWorkerDatabase::STATUS_OK,
-      database->WriteUserData(
-          data1.registration_id, origin1, "key1", "data1"));
-  ASSERT_EQ(
-      ServiceWorkerDatabase::STATUS_OK,
-      database->WriteUserData(
-          data1.registration_id, origin1, "key2", "data2"));
+  ASSERT_EQ(ServiceWorkerDatabase::STATUS_OK,
+            database->WriteUserData(data1.registration_id, origin1,
+                                    {{"key1", "data1"}}));
+  ASSERT_EQ(ServiceWorkerDatabase::STATUS_OK,
+            database->WriteUserData(data1.registration_id, origin1,
+                                    {{"key2", "data2"}}));
 
   RegistrationData data2;
   data2.registration_id = 11;
@@ -1467,14 +1520,12 @@ TEST(ServiceWorkerDatabaseTest, DeleteAllDataForOrigin) {
       ServiceWorkerDatabase::STATUS_OK,
       database->WriteRegistration(
           data2, resources2, &deleted_version, &newly_purgeable_resources));
-  ASSERT_EQ(
-      ServiceWorkerDatabase::STATUS_OK,
-      database->WriteUserData(
-          data2.registration_id, origin1, "key3", "data3"));
-  ASSERT_EQ(
-      ServiceWorkerDatabase::STATUS_OK,
-      database->WriteUserData(
-          data2.registration_id, origin1, "key4", "data4"));
+  ASSERT_EQ(ServiceWorkerDatabase::STATUS_OK,
+            database->WriteUserData(data2.registration_id, origin1,
+                                    {{"key3", "data3"}}));
+  ASSERT_EQ(ServiceWorkerDatabase::STATUS_OK,
+            database->WriteUserData(data2.registration_id, origin1,
+                                    {{"key4", "data4"}}));
 
   // |origin2| has one registration (registration3).
   RegistrationData data3;
@@ -1492,14 +1543,12 @@ TEST(ServiceWorkerDatabaseTest, DeleteAllDataForOrigin) {
       ServiceWorkerDatabase::STATUS_OK,
       database->WriteRegistration(
           data3, resources3, &deleted_version, &newly_purgeable_resources));
-  ASSERT_EQ(
-      ServiceWorkerDatabase::STATUS_OK,
-      database->WriteUserData(
-          data3.registration_id, origin2, "key5", "data5"));
-  ASSERT_EQ(
-      ServiceWorkerDatabase::STATUS_OK,
-      database->WriteUserData(
-          data3.registration_id, origin2, "key6", "data6"));
+  ASSERT_EQ(ServiceWorkerDatabase::STATUS_OK,
+            database->WriteUserData(data3.registration_id, origin2,
+                                    {{"key5", "data5"}}));
+  ASSERT_EQ(ServiceWorkerDatabase::STATUS_OK,
+            database->WriteUserData(data3.registration_id, origin2,
+                                    {{"key6", "data6"}}));
 
   std::set<GURL> origins_to_delete;
   origins_to_delete.insert(origin1);
@@ -1555,29 +1604,31 @@ TEST(ServiceWorkerDatabaseTest, DeleteAllDataForOrigin) {
   EXPECT_TRUE(ContainsKey(purgeable_ids_out, 4));
 
   // The user data associated with |origin1| should be removed.
-  std::string user_data_out;
-  EXPECT_EQ(ServiceWorkerDatabase::STATUS_ERROR_NOT_FOUND,
-            database->ReadUserData(
-                data1.registration_id, "key1", &user_data_out));
-  EXPECT_EQ(ServiceWorkerDatabase::STATUS_ERROR_NOT_FOUND,
-            database->ReadUserData(
-                data1.registration_id, "key2", &user_data_out));
-  EXPECT_EQ(ServiceWorkerDatabase::STATUS_ERROR_NOT_FOUND,
-            database->ReadUserData(
-                data2.registration_id, "key3", &user_data_out));
-  EXPECT_EQ(ServiceWorkerDatabase::STATUS_ERROR_NOT_FOUND,
-            database->ReadUserData(
-                data2.registration_id, "key4", &user_data_out));
+  std::vector<std::string> user_data_out;
+  EXPECT_EQ(
+      ServiceWorkerDatabase::STATUS_ERROR_NOT_FOUND,
+      database->ReadUserData(data1.registration_id, {"key1"}, &user_data_out));
+  EXPECT_EQ(
+      ServiceWorkerDatabase::STATUS_ERROR_NOT_FOUND,
+      database->ReadUserData(data1.registration_id, {"key2"}, &user_data_out));
+  EXPECT_EQ(
+      ServiceWorkerDatabase::STATUS_ERROR_NOT_FOUND,
+      database->ReadUserData(data2.registration_id, {"key3"}, &user_data_out));
+  EXPECT_EQ(
+      ServiceWorkerDatabase::STATUS_ERROR_NOT_FOUND,
+      database->ReadUserData(data2.registration_id, {"key4"}, &user_data_out));
 
   // The user data associated with |origin2| should not be removed.
-  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
-            database->ReadUserData(
-                data3.registration_id, "key5", &user_data_out));
-  EXPECT_EQ("data5", user_data_out);
-  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
-            database->ReadUserData(
-                data3.registration_id, "key6", &user_data_out));
-  EXPECT_EQ("data6", user_data_out);
+  EXPECT_EQ(
+      ServiceWorkerDatabase::STATUS_OK,
+      database->ReadUserData(data3.registration_id, {"key5"}, &user_data_out));
+  ASSERT_EQ(1u, user_data_out.size());
+  EXPECT_EQ("data5", user_data_out[0]);
+  EXPECT_EQ(
+      ServiceWorkerDatabase::STATUS_OK,
+      database->ReadUserData(data3.registration_id, {"key6"}, &user_data_out));
+  ASSERT_EQ(1u, user_data_out.size());
+  EXPECT_EQ("data6", user_data_out[0]);
 }
 
 TEST(ServiceWorkerDatabaseTest, DestroyDatabase) {

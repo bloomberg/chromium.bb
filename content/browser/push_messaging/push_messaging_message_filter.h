@@ -71,7 +71,7 @@ class PushMessagingMessageFilter : public BrowserMessageFilter {
   void DidCheckForExistingRegistration(
       const RegisterData& data,
       const PushSubscriptionOptions& options,
-      const std::string& push_registration_id,
+      const std::vector<std::string>& push_registration_id,
       ServiceWorkerStatusCode service_worker_status);
 
   void DidGetEncryptionKeys(const RegisterData& data,
@@ -81,7 +81,7 @@ class PushMessagingMessageFilter : public BrowserMessageFilter {
                             const std::vector<uint8_t>& auth);
 
   void DidGetSenderIdFromStorage(const RegisterData& data,
-                                 const std::string& sender_id,
+                                 const std::vector<std::string>& sender_id,
                                  ServiceWorkerStatusCode service_worker_status);
 
   // Called via PostTask from UI thread.
@@ -111,18 +111,11 @@ class PushMessagingMessageFilter : public BrowserMessageFilter {
 
   void OnUnsubscribe(int request_id, int64_t service_worker_registration_id);
 
-  void UnsubscribeHavingGottenPushSubscriptionId(
+  void UnsubscribeHavingGottenIds(
       int request_id,
       int64_t service_worker_registration_id,
       const GURL& requesting_origin,
-      const std::string& push_subscription_id,
-      ServiceWorkerStatusCode service_worker_status);
-
-  void UnsubscribeHavingGottenSenderId(
-      int request_id,
-      int64_t service_worker_registration_id,
-      const GURL& requesting_origin,
-      const std::string& sender_id,
+      const std::vector<std::string>& push_subscription_and_sender_ids,
       ServiceWorkerStatusCode service_worker_status);
 
   // Called via PostTask from UI thread.
@@ -145,7 +138,7 @@ class PushMessagingMessageFilter : public BrowserMessageFilter {
 
   void DidGetSubscription(int request_id,
                           int64_t service_worker_registration_id,
-                          const std::string& push_subscription_id,
+                          const std::vector<std::string>& push_subscription_id,
                           ServiceWorkerStatusCode status);
 
   void DidGetSubscriptionKeys(int request_id,

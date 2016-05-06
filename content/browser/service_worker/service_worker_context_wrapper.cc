@@ -622,21 +622,21 @@ void ServiceWorkerContextWrapper::GetAllRegistrations(
 
 void ServiceWorkerContextWrapper::GetRegistrationUserData(
     int64_t registration_id,
-    const std::string& key,
+    const std::vector<std::string>& keys,
     const GetUserDataCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!context_core_) {
-    RunSoon(base::Bind(callback, std::string(), SERVICE_WORKER_ERROR_ABORT));
+    RunSoon(base::Bind(callback, std::vector<std::string>(),
+                       SERVICE_WORKER_ERROR_ABORT));
     return;
   }
-  context_core_->storage()->GetUserData(registration_id, key, callback);
+  context_core_->storage()->GetUserData(registration_id, keys, callback);
 }
 
 void ServiceWorkerContextWrapper::StoreRegistrationUserData(
     int64_t registration_id,
     const GURL& origin,
-    const std::string& key,
-    const std::string& data,
+    const std::vector<std::pair<std::string, std::string>>& key_value_pairs,
     const StatusCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!context_core_) {
@@ -644,19 +644,19 @@ void ServiceWorkerContextWrapper::StoreRegistrationUserData(
     return;
   }
   context_core_->storage()->StoreUserData(registration_id, origin.GetOrigin(),
-                                          key, data, callback);
+                                          key_value_pairs, callback);
 }
 
 void ServiceWorkerContextWrapper::ClearRegistrationUserData(
     int64_t registration_id,
-    const std::string& key,
+    const std::vector<std::string>& keys,
     const StatusCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!context_core_) {
     RunSoon(base::Bind(callback, SERVICE_WORKER_ERROR_ABORT));
     return;
   }
-  context_core_->storage()->ClearUserData(registration_id, key, callback);
+  context_core_->storage()->ClearUserData(registration_id, keys, callback);
 }
 
 void ServiceWorkerContextWrapper::GetUserDataForAllRegistrations(

@@ -275,7 +275,7 @@ void PushMessagingMessageFilter::OnSubscribeFromDocument(
 
   service_worker_context_->StoreRegistrationUserData(
       service_worker_registration_id, data.requesting_origin,
-      kPushSenderIdServiceWorkerKey, options.sender_info,
+      {{kPushSenderIdServiceWorkerKey, options.sender_info}},
       base::Bind(&PushMessagingMessageFilter::DidPersistSenderInfo,
                  weak_factory_io_to_io_.GetWeakPtr(), data, options));
 }
@@ -302,7 +302,7 @@ void PushMessagingMessageFilter::OnSubscribeFromWorker(
   if (!options.sender_info.empty()) {
     service_worker_context_->StoreRegistrationUserData(
         service_worker_registration_id, data.requesting_origin,
-        kPushSenderIdServiceWorkerKey, options.sender_info,
+        {{kPushSenderIdServiceWorkerKey, options.sender_info}},
         base::Bind(&PushMessagingMessageFilter::DidPersistSenderInfo,
                    weak_factory_io_to_io_.GetWeakPtr(), data, options));
   } else {
@@ -328,7 +328,8 @@ void PushMessagingMessageFilter::CheckForExistingRegistration(
     const PushSubscriptionOptions& options) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   service_worker_context_->GetRegistrationUserData(
-      data.service_worker_registration_id, kPushRegistrationIdServiceWorkerKey,
+      data.service_worker_registration_id,
+      {kPushRegistrationIdServiceWorkerKey},
       base::Bind(&PushMessagingMessageFilter::DidCheckForExistingRegistration,
                  weak_factory_io_to_io_.GetWeakPtr(), data, options));
 }
@@ -336,13 +337,14 @@ void PushMessagingMessageFilter::CheckForExistingRegistration(
 void PushMessagingMessageFilter::DidCheckForExistingRegistration(
     const RegisterData& data,
     const PushSubscriptionOptions& options,
-    const std::string& push_registration_id,
+    const std::vector<std::string>& push_registration_id,
     ServiceWorkerStatusCode service_worker_status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (service_worker_status == SERVICE_WORKER_OK) {
+    DCHECK_EQ(1u, push_registration_id.size());
     auto callback = base::Bind(
         &PushMessagingMessageFilter::DidGetEncryptionKeys,
-        weak_factory_io_to_io_.GetWeakPtr(), data, push_registration_id);
+        weak_factory_io_to_io_.GetWeakPtr(), data, push_registration_id[0]);
 
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
@@ -363,7 +365,7 @@ void PushMessagingMessageFilter::DidCheckForExistingRegistration(
                    options.sender_info));
   } else {
     service_worker_context_->GetRegistrationUserData(
-        data.service_worker_registration_id, kPushSenderIdServiceWorkerKey,
+        data.service_worker_registration_id, {kPushSenderIdServiceWorkerKey},
         base::Bind(&PushMessagingMessageFilter::DidGetSenderIdFromStorage,
                    weak_factory_io_to_io_.GetWeakPtr(), data));
   }
@@ -388,17 +390,18 @@ void PushMessagingMessageFilter::DidGetEncryptionKeys(
 
 void PushMessagingMessageFilter::DidGetSenderIdFromStorage(
     const RegisterData& data,
-    const std::string& sender_id,
+    const std::vector<std::string>& sender_id,
     ServiceWorkerStatusCode service_worker_status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (service_worker_status != SERVICE_WORKER_OK) {
     SendSubscriptionError(data, PUSH_REGISTRATION_STATUS_NO_SENDER_ID);
     return;
   }
+  DCHECK_EQ(1u, sender_id.size());
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&Core::RegisterOnUI, base::Unretained(ui_core_.get()), data,
-                 sender_id));
+                 sender_id[0]));
 }
 
 void PushMessagingMessageFilter::Core::RegisterOnUI(
@@ -506,7 +509,7 @@ void PushMessagingMessageFilter::PersistRegistrationOnIO(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   service_worker_context_->StoreRegistrationUserData(
       data.service_worker_registration_id, data.requesting_origin,
-      kPushRegistrationIdServiceWorkerKey, push_registration_id,
+      {{kPushRegistrationIdServiceWorkerKey, push_registration_id}},
       base::Bind(&PushMessagingMessageFilter::DidPersistRegistrationOnIO,
                  weak_factory_io_to_io_.GetWeakPtr(), data,
                  push_registration_id, p256dh, auth));
@@ -588,53 +591,34 @@ void PushMessagingMessageFilter::OnUnsubscribe(
   }
 
   service_worker_context_->GetRegistrationUserData(
-      service_worker_registration_id, kPushRegistrationIdServiceWorkerKey,
-      base::Bind(&PushMessagingMessageFilter::
-                     UnsubscribeHavingGottenPushSubscriptionId,
+      service_worker_registration_id,
+      {kPushRegistrationIdServiceWorkerKey, kPushSenderIdServiceWorkerKey},
+      base::Bind(&PushMessagingMessageFilter::UnsubscribeHavingGottenIds,
                  weak_factory_io_to_io_.GetWeakPtr(), request_id,
                  service_worker_registration_id,
                  service_worker_registration->pattern().GetOrigin()));
 }
 
-void PushMessagingMessageFilter::UnsubscribeHavingGottenPushSubscriptionId(
+void PushMessagingMessageFilter::UnsubscribeHavingGottenIds(
     int request_id,
     int64_t service_worker_registration_id,
     const GURL& requesting_origin,
-    const std::string& push_subscription_id,  // Unused, we just want the status
+    const std::vector<std::string>& push_subscription_and_sender_ids,
     ServiceWorkerStatusCode service_worker_status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  if (service_worker_status == SERVICE_WORKER_OK) {
-    service_worker_context_->GetRegistrationUserData(
-        service_worker_registration_id, kPushSenderIdServiceWorkerKey,
-        base::Bind(&PushMessagingMessageFilter::UnsubscribeHavingGottenSenderId,
-                   weak_factory_io_to_io_.GetWeakPtr(), request_id,
-                   service_worker_registration_id, requesting_origin));
-  } else {
-    // Errors are handled the same, whether we were trying to get the
-    // push_subscription_id or the sender_id.
-    UnsubscribeHavingGottenSenderId(
-        request_id, service_worker_registration_id, requesting_origin,
-        std::string() /* sender_id */, service_worker_status);
-  }
-}
-
-void PushMessagingMessageFilter::UnsubscribeHavingGottenSenderId(
-    int request_id,
-    int64_t service_worker_registration_id,
-    const GURL& requesting_origin,
-    const std::string& sender_id,
-    ServiceWorkerStatusCode service_worker_status) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  // Note that the subscription ID (push_subscription_and_sender_ids[0]) is
+  // unused - we just needed to check if the database contained one.
 
   switch (service_worker_status) {
     case SERVICE_WORKER_OK:
+      DCHECK_EQ(2u, push_subscription_and_sender_ids.size());
       BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
           base::Bind(&Core::UnregisterFromService,
                      base::Unretained(ui_core_.get()), request_id,
                      service_worker_registration_id, requesting_origin,
-                     sender_id));
+                     push_subscription_and_sender_ids[1]));
       break;
     case SERVICE_WORKER_ERROR_NOT_FOUND:
       // We did not find a registration, stop here and notify the renderer that
@@ -728,7 +712,7 @@ void PushMessagingMessageFilter::ClearRegistrationData(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   service_worker_context_->ClearRegistrationUserData(
-      service_worker_registration_id, kPushRegistrationIdServiceWorkerKey,
+      service_worker_registration_id, {kPushRegistrationIdServiceWorkerKey},
       base::Bind(&PushMessagingMessageFilter::DidClearRegistrationData,
                  weak_factory_io_to_io_.GetWeakPtr(), request_id,
                  unregistration_status));
@@ -788,7 +772,7 @@ void PushMessagingMessageFilter::OnGetSubscription(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // TODO(johnme): Validate arguments?
   service_worker_context_->GetRegistrationUserData(
-      service_worker_registration_id, kPushRegistrationIdServiceWorkerKey,
+      service_worker_registration_id, {kPushRegistrationIdServiceWorkerKey},
       base::Bind(&PushMessagingMessageFilter::DidGetSubscription,
                  weak_factory_io_to_io_.GetWeakPtr(), request_id,
                  service_worker_registration_id));
@@ -797,7 +781,7 @@ void PushMessagingMessageFilter::OnGetSubscription(
 void PushMessagingMessageFilter::DidGetSubscription(
     int request_id,
     int64_t service_worker_registration_id,
-    const std::string& push_subscription_id,
+    const std::vector<std::string>& push_subscription_id,
     ServiceWorkerStatusCode service_worker_status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   PushGetRegistrationStatus get_status =
@@ -818,8 +802,9 @@ void PushMessagingMessageFilter::DidGetSubscription(
               service_worker_registration_id);
 
       const GURL origin = registration->pattern().GetOrigin();
+      DCHECK_EQ(1u, push_subscription_id.size());
       const GURL endpoint =
-          CreatePushEndpoint(push_endpoint_base_, push_subscription_id);
+          CreatePushEndpoint(push_endpoint_base_, push_subscription_id[0]);
 
       auto callback =
           base::Bind(&PushMessagingMessageFilter::DidGetSubscriptionKeys,

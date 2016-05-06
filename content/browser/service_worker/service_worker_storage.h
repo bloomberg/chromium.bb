@@ -11,6 +11,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -68,9 +69,9 @@ class CONTENT_EXPORT ServiceWorkerStorage
       ServiceWorkerStatusCode status,
       const std::vector<ServiceWorkerRegistrationInfo>& registrations)>
       GetRegistrationsInfosCallback;
-  typedef base::Callback<
-      void(const std::string& data, ServiceWorkerStatusCode status)>
-          GetUserDataCallback;
+  using GetUserDataCallback =
+      base::Callback<void(const std::vector<std::string>& data,
+                          ServiceWorkerStatusCode status)>;
   typedef base::Callback<void(
       const std::vector<std::pair<int64_t, std::string>>& user_data,
       ServiceWorkerStatusCode status)> GetUserDataForAllRegistrationsCallback;
@@ -167,21 +168,24 @@ class CONTENT_EXPORT ServiceWorkerStorage
   void DoomUncommittedResources(const std::set<int64_t>& resource_ids);
 
   // Provide a storage mechanism to read/write arbitrary data associated with
-  // a registration. Each registration has its own key namespace. Stored data
-  // is deleted when the associated registraton is deleted.
+  // a registration. Each registration has its own key namespace.
+  // GetUserData responds OK only if all keys are found; otherwise NOT_FOUND,
+  // and the callback's data will be empty.
   void GetUserData(int64_t registration_id,
-                   const std::string& key,
+                   const std::vector<std::string>& keys,
                    const GetUserDataCallback& callback);
-  void StoreUserData(int64_t registration_id,
-                     const GURL& origin,
-                     const std::string& key,
-                     const std::string& data,
-                     const StatusCallback& callback);
+  // Stored data is deleted when the associated registraton is deleted.
+  void StoreUserData(
+      int64_t registration_id,
+      const GURL& origin,
+      const std::vector<std::pair<std::string, std::string>>& key_value_pairs,
+      const StatusCallback& callback);
+  // Responds OK if all are successfully deleted or not found in the database.
   void ClearUserData(int64_t registration_id,
-                     const std::string& key,
+                     const std::vector<std::string>& keys,
                      const StatusCallback& callback);
-  // Returns all registrations that have user data with a particular key, as
-  // well as that user data.
+  // Responds with all registrations that have user data with a particular key,
+  // as well as that user data.
   void GetUserDataForAllRegistrations(
       const std::string& key,
       const GetUserDataForAllRegistrationsCallback& callback);
@@ -311,9 +315,9 @@ class CONTENT_EXPORT ServiceWorkerStorage
       const ServiceWorkerDatabase::RegistrationData& data,
       const ResourceList& resources,
       ServiceWorkerDatabase::Status status)> FindInDBCallback;
-  typedef base::Callback<void(
-      const std::string& data,
-      ServiceWorkerDatabase::Status)> GetUserDataInDBCallback;
+  typedef base::Callback<void(const std::vector<std::string>& data,
+                              ServiceWorkerDatabase::Status)>
+      GetUserDataInDBCallback;
   typedef base::Callback<void(
       const std::vector<std::pair<int64_t, std::string>>& user_data,
       ServiceWorkerDatabase::Status)>
@@ -386,10 +390,9 @@ class CONTENT_EXPORT ServiceWorkerStorage
   void DidStoreUserData(
       const StatusCallback& callback,
       ServiceWorkerDatabase::Status status);
-  void DidGetUserData(
-      const GetUserDataCallback& callback,
-      const std::string& data,
-      ServiceWorkerDatabase::Status status);
+  void DidGetUserData(const GetUserDataCallback& callback,
+                      const std::vector<std::string>& data,
+                      ServiceWorkerDatabase::Status status);
   void DidDeleteUserData(
       const StatusCallback& callback,
       ServiceWorkerDatabase::Status status);
@@ -479,7 +482,7 @@ class CONTENT_EXPORT ServiceWorkerStorage
       ServiceWorkerDatabase* database,
       scoped_refptr<base::SequencedTaskRunner> original_task_runner,
       int64_t registration_id,
-      const std::string& key,
+      const std::vector<std::string>& keys,
       const GetUserDataInDBCallback& callback);
   static void GetUserDataForAllRegistrationsInDB(
       ServiceWorkerDatabase* database,
