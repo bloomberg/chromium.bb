@@ -108,13 +108,6 @@ class ExternalDataUseObserver : public data_usage::DataUseAggregator::Observer {
   FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest, MultipleMatchingRules);
   FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest,
                            PeriodicFetchMatchingRules);
-  FRIEND_TEST_ALL_PREFIXES(
-      ExternalDataUseObserverTest,
-      ProcessBufferedNavigationEventsAfterControlAppNotInstalled);
-  FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest,
-                           ProcessBufferedNavigationEventsAfterRuleFetch);
-  FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest,
-                           ProcessBufferedNavigationEventsAfterMaxLimit);
   FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest,
                            RegisteredAsDataUseObserver);
   FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest, ReportsMergedCorrectly);

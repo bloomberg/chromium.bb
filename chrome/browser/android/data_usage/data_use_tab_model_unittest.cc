@@ -66,6 +66,7 @@ class MockTabDataUseObserver
  public:
   MOCK_METHOD1(NotifyTrackingStarting, void(SessionID::id_type tab_id));
   MOCK_METHOD1(NotifyTrackingEnding, void(SessionID::id_type tab_id));
+  MOCK_METHOD0(OnDataUseTabModelReady, void());
 };
 
 class TestExternalDataUseObserverBridge
@@ -921,9 +922,31 @@ TEST_F(DataUseTabModelTest, MatchingRuleClearedOnControlAppUninstall) {
   EXPECT_FALSE(data_use_tab_model_->data_use_matcher_->HasValidRules());
 }
 
-// Tests that UI navigation events are buffered until matching rules are fetched
-// and then processed to start data use tracking.
-TEST_F(DataUseTabModelTest, ProcessBufferedNavigationEventsAfterRuleFetch) {
+// Tests that |OnDataUseTabModelReady| is sent to observers when the external
+// control app not installed callback was received.
+TEST_F(DataUseTabModelTest, ReadyForNavigationEventWhenControlAppNotInstalled) {
+  MockTabDataUseObserver mock_observer;
+  data_use_tab_model_->AddObserver(&mock_observer);
+
+  EXPECT_FALSE(data_use_tab_model_->is_ready_for_navigation_event());
+  EXPECT_CALL(mock_observer, OnDataUseTabModelReady()).Times(1);
+
+  data_use_tab_model_->OnControlAppInstallStateChange(false);
+  EXPECT_TRUE(data_use_tab_model_->is_ready_for_navigation_event());
+  testing::Mock::VerifyAndClearExpectations(&mock_observer);
+
+  // Subsequent install and uninstall of the control app does not trigger the
+  // event.
+  EXPECT_CALL(mock_observer, OnDataUseTabModelReady()).Times(0);
+  data_use_tab_model_->OnControlAppInstallStateChange(true);
+  data_use_tab_model_->OnControlAppInstallStateChange(false);
+  testing::Mock::VerifyAndClearExpectations(&mock_observer);
+  EXPECT_TRUE(data_use_tab_model_->is_ready_for_navigation_event());
+}
+
+// Tests that |OnDataUseTabModelReady| is sent to observers when the first rule
+// fetch is complete.
+TEST_F(DataUseTabModelTest, ReadyForNavigationEventAfterRuleFetch) {
   MockTabDataUseObserver mock_observer;
   std::vector<std::string> app_package_names, domain_regexes, labels;
 
@@ -932,29 +955,21 @@ TEST_F(DataUseTabModelTest, ProcessBufferedNavigationEventsAfterRuleFetch) {
   labels.push_back(kTestLabel1);
   data_use_tab_model_->AddObserver(&mock_observer);
 
-  // Navigation event should get buffered, and tracking should not start.
-  EXPECT_CALL(mock_observer, NotifyTrackingStarting(kTabID1)).Times(0);
-  EXPECT_CALL(mock_observer, NotifyTrackingEnding(kTabID1)).Times(0);
-  data_use_tab_model_->OnNavigationEvent(
-      kTabID1, DataUseTabModel::TRANSITION_OMNIBOX_SEARCH, GURL(kURLFoo),
-      std::string());
-  EXPECT_EQ(1U, data_use_tab_model_->data_use_ui_navigations_->size());
-  testing::Mock::VerifyAndClearExpectations(&mock_observer);
+  EXPECT_FALSE(data_use_tab_model_->is_ready_for_navigation_event());
+  EXPECT_CALL(mock_observer, OnDataUseTabModelReady()).Times(1);
 
-  // Once matching rules are fetched, data use tracking should start.
-  EXPECT_CALL(mock_observer, NotifyTrackingStarting(kTabID1)).Times(1);
-  EXPECT_CALL(mock_observer, NotifyTrackingEnding(kTabID1)).Times(0);
+  // First rule fetch triggers the event.
   RegisterURLRegexes(app_package_names, domain_regexes, labels);
-  EXPECT_FALSE(data_use_tab_model_->data_use_ui_navigations_.get());
   testing::Mock::VerifyAndClearExpectations(&mock_observer);
 
-  // Data use tracking should end.
-  EXPECT_CALL(mock_observer, NotifyTrackingStarting(kTabID1)).Times(0);
-  EXPECT_CALL(mock_observer, NotifyTrackingEnding(kTabID1)).Times(1);
-  data_use_tab_model_->OnNavigationEvent(kTabID1,
-                                         DataUseTabModel::TRANSITION_BOOKMARK,
-                                         GURL(std::string()), std::string());
-  EXPECT_FALSE(data_use_tab_model_->data_use_ui_navigations_.get());
+  // Subsequent rule fetches, uninstall and install of the control app does not
+  // trigger the event.
+  EXPECT_CALL(mock_observer, OnDataUseTabModelReady()).Times(0);
+  RegisterURLRegexes(app_package_names, domain_regexes, labels);
+  data_use_tab_model_->OnControlAppInstallStateChange(false);
+  data_use_tab_model_->OnControlAppInstallStateChange(true);
+  testing::Mock::VerifyAndClearExpectations(&mock_observer);
+  EXPECT_TRUE(data_use_tab_model_->is_ready_for_navigation_event());
 }
 
 }  // namespace android

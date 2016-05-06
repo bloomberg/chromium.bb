@@ -38,6 +38,10 @@ public class ExternalDataUseObserver {
             mInstalled = false;
             ApplicationStatus.registerApplicationStateListener(this);
             checkAndNotifyPackageInstallState();
+            if (!mInstalled) {
+                // Notify the state when the control app is not installed on startup.
+                nativeOnControlAppInstallStateChange(mNativeExternalDataUseObserverBridge, false);
+            }
         }
 
         @Override

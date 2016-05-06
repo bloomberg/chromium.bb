@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/run_loop.h"
@@ -21,6 +22,7 @@
 #include "components/data_usage/core/data_use_annotator.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
@@ -34,7 +36,21 @@ namespace {
 const char kFooLabel[] = "foo_label";
 const char kFooPackage[] = "com.foo";
 
+const SessionID::id_type kTabIDFoo = 1;
+const SessionID::id_type kTabIDBar = 2;
+const SessionID::id_type kTabIDBaz = 3;
+
+const char kURLFoo[] = "https://www.foo.com/#q=abc";
+
 }  // namespace
+
+// Mock observer to track the calls to start and end tracking events.
+class MockTabDataUseObserver : public DataUseTabModel::TabDataUseObserver {
+ public:
+  MOCK_METHOD1(NotifyTrackingStarting, void(SessionID::id_type tab_id));
+  MOCK_METHOD1(NotifyTrackingEnding, void(SessionID::id_type tab_id));
+  MOCK_METHOD0(OnDataUseTabModelReady, void());
+};
 
 class TestDataUseTabModel : public DataUseTabModel {
  public:
@@ -80,6 +96,9 @@ class DataUseUITabModelTest : public testing::Test {
     data_use_tab_model_.reset(new TestDataUseTabModel());
     data_use_tab_model_->InitOnUIThread(
         external_data_use_observer_->external_data_use_observer_bridge_);
+  }
+
+  void SetUpDataUseUITabModel() {
     data_use_ui_tab_model_.SetDataUseTabModel(data_use_tab_model_.get());
     data_use_tab_model_->OnControlAppInstallStateChange(true);
   }
@@ -97,6 +116,8 @@ class DataUseUITabModelTest : public testing::Test {
 // Tests that DataUseTabModel is notified of tab closure and navigation events,
 // and DataUseTabModel notifies DataUseUITabModel.
 TEST_F(DataUseUITabModelTest, ReportTabEventsTest) {
+  SetUpDataUseUITabModel();
+
   std::vector<std::string> url_regexes;
   url_regexes.push_back(
       "http://www[.]foo[.]com/#q=.*|https://www[.]foo[.]com/#q=.*");
@@ -178,6 +199,8 @@ TEST_F(DataUseUITabModelTest, ReportTabEventsTest) {
 
 // Tests if the Entrance/Exit UI state is tracked correctly.
 TEST_F(DataUseUITabModelTest, EntranceExitState) {
+  SetUpDataUseUITabModel();
+
   const SessionID::id_type kFooTabId = 1;
   const SessionID::id_type kBarTabId = 2;
   const SessionID::id_type kBazTabId = 3;
@@ -253,6 +276,8 @@ TEST_F(DataUseUITabModelTest, EntranceExitState) {
 
 // Tests if the Entrance/Exit UI state is tracked correctly.
 TEST_F(DataUseUITabModelTest, EntranceExitStateForDialog) {
+  SetUpDataUseUITabModel();
+
   const SessionID::id_type kFooTabId = 1;
 
   std::vector<std::string> url_regexes;
@@ -277,8 +302,7 @@ TEST_F(DataUseUITabModelTest, EntranceExitStateForDialog) {
     // Start a new tab.
     ++foo_tab_id;
     data_use_ui_tab_model()->ReportBrowserNavigation(
-        GURL("https://www.foo.com/#q=abc"), ui::PAGE_TRANSITION_GENERATED,
-        foo_tab_id);
+        GURL(kURLFoo), ui::PAGE_TRANSITION_GENERATED, foo_tab_id);
 
     // |data_use_ui_tab_model| should receive callback about starting of
     // tracking of data usage for |foo_tab_id|.
@@ -311,8 +335,7 @@ TEST_F(DataUseUITabModelTest, EntranceExitStateForDialog) {
 
     // Tab enters tracking state.
     data_use_ui_tab_model()->ReportBrowserNavigation(
-        GURL("https://www.foo.com/#q=abc"), ui::PAGE_TRANSITION_GENERATED,
-        foo_tab_id);
+        GURL(kURLFoo), ui::PAGE_TRANSITION_GENERATED, foo_tab_id);
 
     EXPECT_TRUE(data_use_ui_tab_model()->CheckAndResetDataUseTrackingStarted(
         foo_tab_id))
@@ -356,6 +379,8 @@ TEST_F(DataUseUITabModelTest, EntranceExitStateForDialog) {
 
 // Checks if page transition type is converted correctly.
 TEST_F(DataUseUITabModelTest, ConvertTransitionType) {
+  SetUpDataUseUITabModel();
+
   const struct {
     ui::PageTransition page_transition;
     const std::string url;
@@ -427,6 +452,115 @@ TEST_F(DataUseUITabModelTest, ConvertTransitionType) {
     if (test.expected_return)
       EXPECT_EQ(test.expected_transition_type, transition_type);
   }
+}
+
+// Tests that UI navigation events are buffered until control app not installed
+// callback is received.
+TEST_F(DataUseUITabModelTest,
+       ProcessBufferedNavigationEventsAfterControlAppNotInstalled) {
+  MockTabDataUseObserver mock_observer;
+  data_use_tab_model()->AddObserver(&mock_observer);
+
+  EXPECT_CALL(mock_observer, OnDataUseTabModelReady()).Times(0);
+  EXPECT_CALL(mock_observer, NotifyTrackingStarting(testing::_)).Times(0);
+  data_use_ui_tab_model()->ReportBrowserNavigation(
+      GURL(kURLFoo), ui::PAGE_TRANSITION_LINK, kTabIDFoo);
+
+  data_use_ui_tab_model()->SetDataUseTabModel(data_use_tab_model());
+  data_use_ui_tab_model()->ReportBrowserNavigation(
+      GURL(kURLFoo), ui::PAGE_TRANSITION_LINK, kTabIDBar);
+
+  // Navigation events will be buffered, and tracking will not start.
+  testing::Mock::VerifyAndClearExpectations(&mock_observer);
+
+  // When control app not installed callback is received, ready event should be
+  // triggered, buffered navigation events should be processed, and tracking
+  // should not start.
+  EXPECT_CALL(mock_observer, OnDataUseTabModelReady()).Times(1);
+  EXPECT_CALL(mock_observer, NotifyTrackingStarting(testing::_)).Times(0);
+  data_use_tab_model()->OnControlAppInstallStateChange(false);
+  base::RunLoop().RunUntilIdle();
+  testing::Mock::VerifyAndClearExpectations(&mock_observer);
+
+  // Subsequent navigation events should not start tracking.
+  EXPECT_CALL(mock_observer, NotifyTrackingStarting(testing::_)).Times(0);
+  data_use_ui_tab_model()->ReportBrowserNavigation(
+      GURL(kURLFoo), ui::PAGE_TRANSITION_LINK, kTabIDBaz);
+}
+
+// Tests that UI navigation events are buffered until control app is installed
+// and matching rules are fetched.
+TEST_F(DataUseUITabModelTest, ProcessBufferedNavigationEventsAfterRuleFetch) {
+  std::vector<std::string> url_regexes;
+  url_regexes.push_back(
+      "http://www[.]foo[.]com/#q=.*|https://www[.]foo[.]com/#q=.*");
+
+  MockTabDataUseObserver mock_observer;
+  data_use_tab_model()->AddObserver(&mock_observer);
+
+  EXPECT_CALL(mock_observer, OnDataUseTabModelReady()).Times(0);
+  EXPECT_CALL(mock_observer, NotifyTrackingStarting(testing::_)).Times(0);
+  data_use_ui_tab_model()->ReportBrowserNavigation(
+      GURL(kURLFoo), ui::PAGE_TRANSITION_LINK, kTabIDFoo);
+
+  data_use_ui_tab_model()->SetDataUseTabModel(data_use_tab_model());
+  data_use_ui_tab_model()->ReportBrowserNavigation(
+      GURL(kURLFoo), ui::PAGE_TRANSITION_LINK, kTabIDBar);
+
+  // Navigation events will be buffered, and tracking will not start.
+  testing::Mock::VerifyAndClearExpectations(&mock_observer);
+
+  // When control app installed callback is received, ready event should be
+  // triggered, buffered navigation events should be processed, and tracking
+  // should start.
+  EXPECT_CALL(mock_observer, OnDataUseTabModelReady()).Times(1);
+  EXPECT_CALL(mock_observer, NotifyTrackingStarting(kTabIDFoo)).Times(1);
+  EXPECT_CALL(mock_observer, NotifyTrackingStarting(kTabIDBar)).Times(1);
+
+  base::RunLoop().RunUntilIdle();
+  data_use_tab_model()->OnControlAppInstallStateChange(true);
+
+  RegisterURLRegexes(std::vector<std::string>(url_regexes.size(), kFooPackage),
+                     url_regexes,
+                     std::vector<std::string>(url_regexes.size(), kFooLabel));
+  base::RunLoop().RunUntilIdle();
+
+  // Subsequent navigation events should immediately start tracking.
+  EXPECT_CALL(mock_observer, NotifyTrackingStarting(kTabIDBaz)).Times(1);
+  data_use_ui_tab_model()->ReportBrowserNavigation(
+      GURL(kURLFoo), ui::PAGE_TRANSITION_LINK, kTabIDBaz);
+}
+
+// Tests that UI navigation events are buffered until the buffer reaches a
+// maximum imposed limit.
+TEST_F(DataUseUITabModelTest, ProcessBufferedNavigationEventsAfterMaxLimit) {
+  std::vector<std::string> url_regexes;
+  url_regexes.push_back(
+      "http://www[.]foo[.]com/#q=.*|https://www[.]foo[.]com/#q=.*");
+
+  MockTabDataUseObserver mock_observer;
+  data_use_tab_model()->AddObserver(&mock_observer);
+
+  EXPECT_CALL(mock_observer, NotifyTrackingStarting(kTabIDFoo)).Times(0);
+
+  const size_t kDefaultMaxNavigationEventsBuffered = 1000;
+  // Expect that the max imposed limit will be reached, and the buffer will be
+  // cleared.
+  for (size_t count = 0; count < kDefaultMaxNavigationEventsBuffered; ++count) {
+    data_use_ui_tab_model()->ReportBrowserNavigation(
+        GURL(kURLFoo), ui::PAGE_TRANSITION_LINK, kTabIDFoo);
+  }
+
+  // When control app installed callback is received, ready event will be
+  // triggered. But tracking should not start since the buffer is cleared.
+  EXPECT_CALL(mock_observer, OnDataUseTabModelReady()).Times(1);
+  data_use_ui_tab_model()->SetDataUseTabModel(data_use_tab_model());
+  data_use_tab_model()->OnControlAppInstallStateChange(true);
+  base::RunLoop().RunUntilIdle();
+  RegisterURLRegexes(std::vector<std::string>(url_regexes.size(), kFooPackage),
+                     url_regexes,
+                     std::vector<std::string>(url_regexes.size(), kFooLabel));
+  base::RunLoop().RunUntilIdle();
 }
 
 }  // namespace android

@@ -69,16 +69,19 @@ class DataUseTabModel {
   };
 
   // TabDataUseObserver provides the interface for getting notifications from
-  // the DataUseTabModel. TabDataUseObserver is called back on UI thread.
+  // the DataUseTabModel. The observer must be added on the UI thread, and the
+  // callbacks will be received on the UI thread.
   class TabDataUseObserver {
    public:
     virtual ~TabDataUseObserver() {}
 
-    // Notification callback when tab tracking sessions are started and ended.
-    // The callback will be received on the same thread AddObserver was called
-    // from.
+    // Notification callbacks when tab tracking sessions are started and ended.
     virtual void NotifyTrackingStarting(SessionID::id_type tab_id) = 0;
     virtual void NotifyTrackingEnding(SessionID::id_type tab_id) = 0;
+
+    // Notification callback that DataUseTabModel is ready to process the UI
+    // navigation events.
+    virtual void OnDataUseTabModelReady() = 0;
   };
 
   DataUseTabModel();
@@ -164,6 +167,11 @@ class DataUseTabModel {
   // package name match.
   bool IsCustomTabPackageMatch(SessionID::id_type tab_id) const;
 
+  // Returns true if DataUseTabModel is ready to process UI navigation events.
+  bool is_ready_for_navigation_event() const {
+    return is_ready_for_navigation_event_;
+  }
+
  protected:
   // Notifies the observers that a data usage tracking session started for
   // |tab_id|. Protected for testing.
@@ -172,6 +180,10 @@ class DataUseTabModel {
   // Notifies the observers that an active data usage tracking session ended for
   // |tab_id|. Protected for testing.
   void NotifyObserversOfTrackingEnding(SessionID::id_type tab_id);
+
+  // Notifies the observers that DataUseTabModel is ready to process navigation
+  // events.
+  void NotifyObserversOfDataUseTabModelReady();
 
  private:
   friend class DataUseTabModelTest;
@@ -195,32 +207,8 @@ class DataUseTabModel {
                            UnexpiredTabEntryRemovaltimeHistogram);
   FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest,
                            MatchingRuleFetchOnControlAppInstall);
-  FRIEND_TEST_ALL_PREFIXES(
-      ExternalDataUseObserverTest,
-      ProcessBufferedNavigationEventsAfterControlAppNotInstalled);
-  FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest,
-                           ProcessBufferedNavigationEventsAfterRuleFetch);
-  FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest,
-                           ProcessBufferedNavigationEventsAfterMaxLimit);
 
   typedef base::hash_map<SessionID::id_type, TabDataUseEntry> TabEntryMap;
-
-  // Contains the details of a single UI navigation event.
-  struct DataUseUINavigationEvent {
-    DataUseUINavigationEvent(SessionID::id_type tab_id,
-                             TransitionType transition_type,
-                             GURL url,
-                             std::string package)
-        : tab_id(tab_id),
-          transition_type(transition_type),
-          url(url),
-          package(package) {}
-
-    const SessionID::id_type tab_id;
-    const TransitionType transition_type;
-    const GURL url;
-    const std::string package;
-  };
 
   // Gets the current label of a tab, and the new label if a navigation event
   // occurs in the tab. |tab_id| is the source tab of the generated event,
@@ -257,11 +245,6 @@ class DataUseTabModel {
   // size is |kMaxTabEntries|.
   void CompactTabEntries();
 
-  // Processes the UI navigation events buffered in |data_use_ui_navigations_|
-  // and deletes the vector in |data_use_ui_navigations_| so that navigation
-  // events will not be buffered any more.
-  void ProcessBufferedNavigationEvents();
-
   // Collection of observers that receive tracking session start and end
   // notifications. Notifications are posted on UI thread.
   base::ObserverList<TabDataUseObserver> observers_;
@@ -286,18 +269,14 @@ class DataUseTabModel {
   // Stores the matching patterns.
   std::unique_ptr<DataUseMatcher> data_use_matcher_;
 
+  // True if DataUseTabModel is ready to process UI navigation events.
+  // DataUseTabModel will be considered ready when the first rule fetch is
+  // complete or the control app not installed callback was received, whichever
+  // is sooner.
+  bool is_ready_for_navigation_event_;
+
   // True if the external control app is installed.
   bool is_control_app_installed_;
-
-  // Buffer of UI navigation events that occurred until the first rule fetch is
-  // complete or the control app not installed callback was received or until
-  // |kDefaultMaxNavigationEventsBuffered| navigation events were buffered,
-  // whichever occurs first. Existence of the vector in scoped_ptr indicates if
-  // the UI navigation events need to be buffered. If the scoped_ptr contains a
-  // vector all navigation events will be added to it. Otherwise all navigation
-  // events will be processed immediately.
-  std::unique_ptr<std::vector<DataUseUINavigationEvent>>
-      data_use_ui_navigations_;
 
   base::ThreadChecker thread_checker_;
 

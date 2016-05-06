@@ -402,10 +402,6 @@ TEST_F(ExternalDataUseObserverTest, MatchingRuleFetchOnControlAppInstall) {
         std::string());
     base::RunLoop().RunUntilIdle();
     histogram_tester.ExpectTotalCount("DataUsage.MatchingRulesCount.Valid", 0);
-    EXPECT_EQ(1U, external_data_use_observer()
-                     ->data_use_tab_model_->data_use_ui_navigations_->size());
-    external_data_use_observer()
-        ->data_use_tab_model_->data_use_ui_navigations_->clear();
   }
 
   {
@@ -415,8 +411,6 @@ TEST_F(ExternalDataUseObserverTest, MatchingRuleFetchOnControlAppInstall) {
         ->data_use_tab_model_->OnControlAppInstallStateChange(true);
     base::RunLoop().RunUntilIdle();
     histogram_tester.ExpectTotalCount("DataUsage.MatchingRulesCount.Valid", 1);
-    EXPECT_FALSE(external_data_use_observer()
-                     ->data_use_tab_model_->data_use_ui_navigations_.get());
   }
 
   {
@@ -643,72 +637,6 @@ TEST_F(ExternalDataUseObserverTest, DataUseReportTimedOut) {
       "DataUsage.ReportSubmission.Bytes.TimedOut",
       default_upload_bytes() + default_download_bytes(), 1);
   histogram_tester.ExpectTotalCount(kUMAReportSubmissionDurationHistogram, 0);
-}
-
-// Tests that UI navigation events are buffered until control app not installed
-// callback is received.
-TEST_F(ExternalDataUseObserverTest,
-       ProcessBufferedNavigationEventsAfterControlAppNotInstalled) {
-  external_data_use_observer()->data_use_tab_model_->OnNavigationEvent(
-      kDefaultTabId, DataUseTabModel::TRANSITION_LINK, GURL(kDefaultURL),
-      std::string());
-  external_data_use_observer()->data_use_tab_model_->OnNavigationEvent(
-      kDefaultTabId, DataUseTabModel::TRANSITION_LINK, GURL(kDefaultURL),
-      std::string());
-  EXPECT_EQ(2U, external_data_use_observer()
-                   ->data_use_tab_model_->data_use_ui_navigations_->size());
-  external_data_use_observer()
-      ->data_use_tab_model_->OnControlAppInstallStateChange(false);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(external_data_use_observer()
-                   ->data_use_tab_model_->data_use_ui_navigations_.get());
-}
-
-// Tests that UI navigation events are buffered until control app is installed
-// and matching rules are fetched.
-TEST_F(ExternalDataUseObserverTest,
-       ProcessBufferedNavigationEventsAfterRuleFetch) {
-  external_data_use_observer()->data_use_tab_model_->is_control_app_installed_ =
-      false;
-  base::HistogramTester histogram_tester;
-  external_data_use_observer()->data_use_tab_model_->OnNavigationEvent(
-      kDefaultTabId, DataUseTabModel::TRANSITION_LINK, GURL(kDefaultURL),
-      std::string());
-  external_data_use_observer()->data_use_tab_model_->OnNavigationEvent(
-      kDefaultTabId, DataUseTabModel::TRANSITION_LINK, GURL(kDefaultURL),
-      std::string());
-  EXPECT_EQ(2U, external_data_use_observer()
-                   ->data_use_tab_model_->data_use_ui_navigations_->size());
-  external_data_use_observer()
-      ->data_use_tab_model_->OnControlAppInstallStateChange(true);
-  base::RunLoop().RunUntilIdle();
-  histogram_tester.ExpectTotalCount("DataUsage.MatchingRulesCount.Valid", 3);
-  EXPECT_FALSE(external_data_use_observer()
-                   ->data_use_tab_model_->data_use_ui_navigations_.get());
-}
-
-// Tests that UI navigation events are buffered until the buffer reaches a
-// maximum imposed limit.
-TEST_F(ExternalDataUseObserverTest,
-       ProcessBufferedNavigationEventsAfterMaxLimit) {
-  const uint32_t kDefaultMaxNavigationEventsBuffered = 1000;
-  // Expect that the max imposed limit will be reached, and the buffer will be
-  // cleared.
-  for (size_t count = 0; count < kDefaultMaxNavigationEventsBuffered; ++count) {
-    external_data_use_observer()->data_use_tab_model_->OnNavigationEvent(
-        kDefaultTabId, DataUseTabModel::TRANSITION_LINK, GURL(kDefaultURL),
-        std::string());
-    if (!external_data_use_observer()
-             ->data_use_tab_model_->data_use_ui_navigations_) {
-      // The max limit is reached.
-      break;
-    }
-    EXPECT_EQ(count+1,
-              external_data_use_observer()
-                  ->data_use_tab_model_->data_use_ui_navigations_->size());
-  }
-  EXPECT_FALSE(external_data_use_observer()
-                   ->data_use_tab_model_->data_use_ui_navigations_.get());
 }
 
 }  // namespace android
