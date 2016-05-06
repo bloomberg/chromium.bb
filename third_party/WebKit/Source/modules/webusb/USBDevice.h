@@ -112,6 +112,7 @@ private:
     void asyncReset(ScriptPromiseResolver*, bool success);
 
     void onConnectionError();
+    bool markRequestComplete(ScriptPromiseResolver*);
 
     device::usb::blink::DeviceInfoPtr m_deviceInfo;
     device::usb::blink::DevicePtr m_device;

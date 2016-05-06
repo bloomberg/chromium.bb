@@ -48,12 +48,6 @@ usb::DeviceFilterPtr convertDeviceFilter(const USBDeviceFilter& filter)
     return mojoFilter;
 }
 
-bool isActive(ScriptPromiseResolver* resolver)
-{
-    ExecutionContext* context = resolver->getExecutionContext();
-    return context && !context->activeDOMObjectsAreStopped();
-}
-
 } // namespace
 
 USB::USB(LocalFrame& frame)
@@ -146,8 +140,10 @@ void USB::contextDestroyed()
 
 void USB::onGetDevices(ScriptPromiseResolver* resolver, mojo::WTFArray<usb::DeviceInfoPtr> deviceInfos)
 {
-    if (!isActive(resolver))
+    auto requestEntry = m_deviceManagerRequests.find(resolver);
+    if (requestEntry == m_deviceManagerRequests.end())
         return;
+    m_deviceManagerRequests.remove(requestEntry);
 
     HeapVector<Member<USBDevice>> devices;
     for (auto& deviceInfo : deviceInfos.PassStorage()) {
@@ -161,8 +157,10 @@ void USB::onGetDevices(ScriptPromiseResolver* resolver, mojo::WTFArray<usb::Devi
 
 void USB::onGetPermission(ScriptPromiseResolver* resolver, usb::DeviceInfoPtr deviceInfo)
 {
-    if (!isActive(resolver))
+    auto requestEntry = m_chooserServiceRequests.find(resolver);
+    if (requestEntry == m_chooserServiceRequests.end())
         return;
+    m_chooserServiceRequests.remove(requestEntry);
 
     if (deviceInfo) {
         usb::DevicePtr device;
@@ -188,20 +186,16 @@ void USB::onDeviceChanges(usb::DeviceChangeNotificationPtr notification)
 void USB::onDeviceManagerConnectionError()
 {
     m_deviceManager.reset();
-    for (ScriptPromiseResolver* resolver : m_deviceManagerRequests) {
-        if (isActive(resolver))
-            resolver->reject(DOMException::create(NotFoundError, kNoServiceError));
-    }
+    for (ScriptPromiseResolver* resolver : m_deviceManagerRequests)
+        resolver->reject(DOMException::create(NotFoundError, kNoServiceError));
     m_deviceManagerRequests.clear();
 }
 
 void USB::onChooserServiceConnectionError()
 {
     m_chooserService.reset();
-    for (ScriptPromiseResolver* resolver : m_chooserServiceRequests) {
-        if (isActive(resolver))
-            resolver->reject(DOMException::create(NotFoundError, kNoServiceError));
-    }
+    for (ScriptPromiseResolver* resolver : m_chooserServiceRequests)
+        resolver->reject(DOMException::create(NotFoundError, kNoServiceError));
     m_chooserServiceRequests.clear();
 }
 

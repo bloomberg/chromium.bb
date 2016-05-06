@@ -83,12 +83,6 @@ mojo::WTFArray<uint8_t> convertBufferSource(const ArrayBufferOrArrayBufferView& 
     return mojo::WTFArray<uint8_t>(std::move(vector));
 }
 
-bool isActive(ScriptPromiseResolver* resolver)
-{
-    ExecutionContext* context = resolver->getExecutionContext();
-    return context && !context->activeDOMObjectsAreStopped();
-}
-
 } // namespace
 
 USBDevice::USBDevice(usb::DeviceInfoPtr deviceInfo, usb::DevicePtr device, ExecutionContext* context)
@@ -553,8 +547,7 @@ void USBDevice::setEndpointsForInterface(size_t interfaceIndex, bool set)
 
 void USBDevice::asyncOpen(ScriptPromiseResolver* resolver, usb::OpenDeviceError error)
 {
-    m_deviceRequests.remove(resolver);
-    if (!isActive(resolver))
+    if (!markRequestComplete(resolver))
         return;
 
     switch (error) {
@@ -574,8 +567,7 @@ void USBDevice::asyncOpen(ScriptPromiseResolver* resolver, usb::OpenDeviceError 
 
 void USBDevice::asyncClose(ScriptPromiseResolver* resolver)
 {
-    m_deviceRequests.remove(resolver);
-    if (!isActive(resolver))
+    if (!markRequestComplete(resolver))
         return;
 
     onDeviceOpenedOrClosed(false /* closed */);
@@ -590,8 +582,7 @@ void USBDevice::onDeviceOpenedOrClosed(bool opened)
 
 void USBDevice::asyncSelectConfiguration(size_t configurationIndex, ScriptPromiseResolver* resolver, bool success)
 {
-    m_deviceRequests.remove(resolver);
-    if (!isActive(resolver))
+    if (!markRequestComplete(resolver))
         return;
 
     onConfigurationSelected(success, configurationIndex);
@@ -620,8 +611,7 @@ void USBDevice::onConfigurationSelected(bool success, size_t configurationIndex)
 
 void USBDevice::asyncClaimInterface(size_t interfaceIndex, ScriptPromiseResolver* resolver, bool success)
 {
-    m_deviceRequests.remove(resolver);
-    if (!isActive(resolver))
+    if (!markRequestComplete(resolver))
         return;
 
     onInterfaceClaimedOrUnclaimed(success, interfaceIndex);
@@ -633,8 +623,7 @@ void USBDevice::asyncClaimInterface(size_t interfaceIndex, ScriptPromiseResolver
 
 void USBDevice::asyncReleaseInterface(size_t interfaceIndex, ScriptPromiseResolver* resolver, bool success)
 {
-    m_deviceRequests.remove(resolver);
-    if (!isActive(resolver))
+    if (!markRequestComplete(resolver))
         return;
 
     onInterfaceClaimedOrUnclaimed(!success, interfaceIndex);
@@ -658,8 +647,7 @@ void USBDevice::onInterfaceClaimedOrUnclaimed(bool claimed, size_t interfaceInde
 
 void USBDevice::asyncSelectAlternateInterface(size_t interfaceIndex, size_t alternateIndex, ScriptPromiseResolver* resolver, bool success)
 {
-    m_deviceRequests.remove(resolver);
-    if (!isActive(resolver))
+    if (!markRequestComplete(resolver))
         return;
 
     if (success)
@@ -675,8 +663,7 @@ void USBDevice::asyncSelectAlternateInterface(size_t interfaceIndex, size_t alte
 
 void USBDevice::asyncControlTransferIn(ScriptPromiseResolver* resolver, usb::TransferStatus status, mojo::WTFArray<uint8_t> data)
 {
-    m_deviceRequests.remove(resolver);
-    if (!isActive(resolver))
+    if (!markRequestComplete(resolver))
         return;
 
     DOMException* error = convertFatalTransferStatus(status);
@@ -688,8 +675,7 @@ void USBDevice::asyncControlTransferIn(ScriptPromiseResolver* resolver, usb::Tra
 
 void USBDevice::asyncControlTransferOut(unsigned transferLength, ScriptPromiseResolver* resolver, usb::TransferStatus status)
 {
-    m_deviceRequests.remove(resolver);
-    if (!isActive(resolver))
+    if (!markRequestComplete(resolver))
         return;
 
     DOMException* error = convertFatalTransferStatus(status);
@@ -701,8 +687,7 @@ void USBDevice::asyncControlTransferOut(unsigned transferLength, ScriptPromiseRe
 
 void USBDevice::asyncClearHalt(ScriptPromiseResolver* resolver, bool success)
 {
-    m_deviceRequests.remove(resolver);
-    if (!isActive(resolver))
+    if (!markRequestComplete(resolver))
         return;
 
     if (success)
@@ -713,8 +698,7 @@ void USBDevice::asyncClearHalt(ScriptPromiseResolver* resolver, bool success)
 
 void USBDevice::asyncTransferIn(ScriptPromiseResolver* resolver, usb::TransferStatus status, mojo::WTFArray<uint8_t> data)
 {
-    m_deviceRequests.remove(resolver);
-    if (!isActive(resolver))
+    if (!markRequestComplete(resolver))
         return;
 
     DOMException* error = convertFatalTransferStatus(status);
@@ -726,8 +710,7 @@ void USBDevice::asyncTransferIn(ScriptPromiseResolver* resolver, usb::TransferSt
 
 void USBDevice::asyncTransferOut(unsigned transferLength, ScriptPromiseResolver* resolver, usb::TransferStatus status)
 {
-    m_deviceRequests.remove(resolver);
-    if (!isActive(resolver))
+    if (!markRequestComplete(resolver))
         return;
 
     DOMException* error = convertFatalTransferStatus(status);
@@ -739,8 +722,7 @@ void USBDevice::asyncTransferOut(unsigned transferLength, ScriptPromiseResolver*
 
 void USBDevice::asyncIsochronousTransferIn(ScriptPromiseResolver* resolver, mojo::WTFArray<uint8_t> data, mojo::WTFArray<usb::IsochronousPacketPtr> mojoPackets)
 {
-    m_deviceRequests.remove(resolver);
-    if (!isActive(resolver))
+    if (!markRequestComplete(resolver))
         return;
 
     DOMArrayBuffer* buffer = DOMArrayBuffer::create(data.storage().data(), data.storage().size());
@@ -761,8 +743,7 @@ void USBDevice::asyncIsochronousTransferIn(ScriptPromiseResolver* resolver, mojo
 
 void USBDevice::asyncIsochronousTransferOut(ScriptPromiseResolver* resolver, mojo::WTFArray<usb::IsochronousPacketPtr> mojoPackets)
 {
-    m_deviceRequests.remove(resolver);
-    if (!isActive(resolver))
+    if (!markRequestComplete(resolver))
         return;
 
     HeapVector<Member<USBIsochronousOutTransferPacket>> packets;
@@ -780,8 +761,7 @@ void USBDevice::asyncIsochronousTransferOut(ScriptPromiseResolver* resolver, moj
 
 void USBDevice::asyncReset(ScriptPromiseResolver* resolver, bool success)
 {
-    m_deviceRequests.remove(resolver);
-    if (!isActive(resolver))
+    if (!markRequestComplete(resolver))
         return;
 
     if (success)
@@ -794,11 +774,18 @@ void USBDevice::onConnectionError()
 {
     m_device.reset();
     m_opened = false;
-    for (ScriptPromiseResolver* resolver : m_deviceRequests) {
-        if (isActive(resolver))
-            resolver->reject(DOMException::create(NotFoundError, kDeviceUnavailable));
-    }
+    for (ScriptPromiseResolver* resolver : m_deviceRequests)
+        resolver->reject(DOMException::create(NotFoundError, kDeviceUnavailable));
     m_deviceRequests.clear();
+}
+
+bool USBDevice::markRequestComplete(ScriptPromiseResolver* resolver)
+{
+    auto requestEntry = m_deviceRequests.find(resolver);
+    if (requestEntry == m_deviceRequests.end())
+        return false;
+    m_deviceRequests.remove(requestEntry);
+    return true;
 }
 
 } // namespace blink
