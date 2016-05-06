@@ -11,6 +11,7 @@
 #include <string>
 #include <utility>
 
+#include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
@@ -32,6 +33,13 @@ namespace usb {
 
 namespace {
 
+ACTION_P2(ExpectGuidAndThen, expected_guid, callback) {
+  ASSERT_TRUE(arg0);
+  EXPECT_EQ(expected_guid, arg0->guid);
+  if (!callback.is_null())
+    callback.Run();
+};
+
 class USBDeviceManagerImplTest : public testing::Test {
  public:
   USBDeviceManagerImplTest() : message_loop_(new base::MessageLoop) {}
@@ -52,6 +60,29 @@ class USBDeviceManagerImplTest : public testing::Test {
   std::unique_ptr<base::MessageLoop> message_loop_;
 };
 
+class MockDeviceManagerClient : public DeviceManagerClient {
+ public:
+  MockDeviceManagerClient() : m_binding(this) {}
+  ~MockDeviceManagerClient() {}
+
+  DeviceManagerClientPtr CreateInterfacePtrAndBind() {
+    return m_binding.CreateInterfacePtrAndBind();
+  }
+
+  MOCK_METHOD1(DoOnDeviceAdded, void(DeviceInfo*));
+  void OnDeviceAdded(DeviceInfoPtr device_info) {
+    DoOnDeviceAdded(device_info.get());
+  }
+
+  MOCK_METHOD1(DoOnDeviceRemoved, void(DeviceInfo*));
+  void OnDeviceRemoved(DeviceInfoPtr device_info) {
+    DoOnDeviceRemoved(device_info.get());
+  }
+
+ private:
+  mojo::Binding<DeviceManagerClient> m_binding;
+};
+
 void ExpectDevicesAndThen(const std::set<std::string>& expected_guids,
                           const base::Closure& continuation,
                           mojo::Array<DeviceInfoPtr> results) {
@@ -60,24 +91,6 @@ void ExpectDevicesAndThen(const std::set<std::string>& expected_guids,
   for (size_t i = 0; i < results.size(); ++i)
     actual_guids.insert(results[i]->guid);
   EXPECT_EQ(expected_guids, actual_guids);
-  continuation.Run();
-}
-
-void ExpectDeviceChangesAndThen(
-    const std::set<std::string>& expected_added_guids,
-    const std::set<std::string>& expected_removed_guids,
-    const base::Closure& continuation,
-    DeviceChangeNotificationPtr results) {
-  EXPECT_EQ(expected_added_guids.size(), results->devices_added.size());
-  std::set<std::string> actual_added_guids;
-  for (size_t i = 0; i < results->devices_added.size(); ++i)
-    actual_added_guids.insert(results->devices_added[i]->guid);
-  EXPECT_EQ(expected_added_guids, actual_added_guids);
-  EXPECT_EQ(expected_removed_guids.size(), results->devices_removed.size());
-  std::set<std::string> actual_removed_guids;
-  for (size_t i = 0; i < results->devices_removed.size(); ++i)
-    actual_removed_guids.insert(results->devices_removed[i]->guid);
-  EXPECT_EQ(expected_removed_guids, actual_removed_guids);
   continuation.Run();
 }
 
@@ -154,7 +167,7 @@ TEST_F(USBDeviceManagerImplTest, GetDevice) {
 }
 
 // Test requesting device enumeration updates with GetDeviceChanges.
-TEST_F(USBDeviceManagerImplTest, GetDeviceChanges) {
+TEST_F(USBDeviceManagerImplTest, Client) {
   scoped_refptr<MockUsbDevice> device0 =
       new MockUsbDevice(0x1234, 0x5678, "ACME", "Frobinator", "ABCDEF");
   scoped_refptr<MockUsbDevice> device1 =
@@ -167,11 +180,12 @@ TEST_F(USBDeviceManagerImplTest, GetDeviceChanges) {
   device_client_.usb_service()->AddDevice(device0);
 
   DeviceManagerPtr device_manager = ConnectToDeviceManager();
+  MockDeviceManagerClient mock_client;
+  device_manager->SetClient(mock_client.CreateInterfacePtrAndBind());
 
   {
     // Call GetDevices once to make sure the device manager is up and running
-    // or else we could end up waiting forever for device changes as the next
-    // block races with the ServiceThreadHelper startup.
+    // and the client is set or else we could block forever waiting for calls.
     std::set<std::string> guids;
     guids.insert(device0->guid());
     base::RunLoop loop;
@@ -183,47 +197,23 @@ TEST_F(USBDeviceManagerImplTest, GetDeviceChanges) {
   device_client_.usb_service()->AddDevice(device1);
   device_client_.usb_service()->AddDevice(device2);
   device_client_.usb_service()->RemoveDevice(device1);
-
-  {
-    std::set<std::string> added_guids;
-    std::set<std::string> removed_guids;
-    added_guids.insert(device2->guid());
-    base::RunLoop loop;
-    device_manager->GetDeviceChanges(base::Bind(&ExpectDeviceChangesAndThen,
-                                                added_guids, removed_guids,
-                                                loop.QuitClosure()));
-    loop.Run();
-  }
-
   device_client_.usb_service()->RemoveDevice(device0);
   device_client_.usb_service()->RemoveDevice(device2);
   device_client_.usb_service()->AddDevice(device3);
 
   {
-    std::set<std::string> added_guids;
-    std::set<std::string> removed_guids;
-    added_guids.insert(device3->guid());
-    removed_guids.insert(device0->guid());
-    removed_guids.insert(device2->guid());
     base::RunLoop loop;
-    device_manager->GetDeviceChanges(base::Bind(&ExpectDeviceChangesAndThen,
-                                                added_guids, removed_guids,
-                                                loop.QuitClosure()));
-    loop.Run();
-  }
-
-  {
-    std::set<std::string> added_guids;
-    std::set<std::string> removed_guids;
-    added_guids.insert(device0->guid());
-    base::RunLoop loop;
-    device_manager->GetDeviceChanges(base::Bind(&ExpectDeviceChangesAndThen,
-                                                added_guids, removed_guids,
-                                                loop.QuitClosure()));
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(&MockUsbService::AddDevice,
-                   base::Unretained(device_client_.usb_service()), device0));
+    base::Closure barrier = base::BarrierClosure(6, loop.QuitClosure());
+    testing::InSequence s;
+    EXPECT_CALL(mock_client, DoOnDeviceAdded(_))
+        .WillOnce(ExpectGuidAndThen(device1->guid(), barrier))
+        .WillOnce(ExpectGuidAndThen(device2->guid(), barrier));
+    EXPECT_CALL(mock_client, DoOnDeviceRemoved(_))
+        .WillOnce(ExpectGuidAndThen(device1->guid(), barrier))
+        .WillOnce(ExpectGuidAndThen(device0->guid(), barrier))
+        .WillOnce(ExpectGuidAndThen(device2->guid(), barrier));
+    EXPECT_CALL(mock_client, DoOnDeviceAdded(_))
+        .WillOnce(ExpectGuidAndThen(device3->guid(), barrier));
     loop.Run();
   }
 }

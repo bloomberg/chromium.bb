@@ -11,6 +11,7 @@
 #include "core/events/EventTarget.h"
 #include "device/usb/public/interfaces/chooser_service.mojom-blink.h"
 #include "device/usb/public/interfaces/device_manager.mojom-blink.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
@@ -22,9 +23,11 @@ class USBDeviceRequestOptions;
 
 class USB final
     : public EventTargetWithInlineData
-    , public ContextLifecycleObserver {
+    , public ContextLifecycleObserver
+    , public device::usb::blink::DeviceManagerClient {
     DEFINE_WRAPPERTYPEINFO();
     USING_GARBAGE_COLLECTED_MIXIN(USB);
+    USING_PRE_FINALIZER(USB, dispose);
 public:
     static USB* create(LocalFrame& frame)
     {
@@ -32,6 +35,8 @@ public:
     }
 
     virtual ~USB();
+
+    void dispose();
 
     // USB.idl
     ScriptPromise getDevices(ScriptState*);
@@ -46,11 +51,14 @@ public:
     // ContextLifecycleObserver overrides.
     void contextDestroyed() override;
 
+    // DeviceManagerClient implementation.
+    void OnDeviceAdded(device::usb::blink::DeviceInfoPtr);
+    void OnDeviceRemoved(device::usb::blink::DeviceInfoPtr);
+
     device::usb::blink::DeviceManager* deviceManager() const { return m_deviceManager.get(); }
 
     void onGetDevices(ScriptPromiseResolver*, mojo::WTFArray<device::usb::blink::DeviceInfoPtr>);
     void onGetPermission(ScriptPromiseResolver*, device::usb::blink::DeviceInfoPtr);
-    void onDeviceChanges(device::usb::blink::DeviceChangeNotificationPtr);
 
     void onDeviceManagerConnectionError();
     void onChooserServiceConnectionError();
@@ -64,6 +72,7 @@ private:
     HeapHashSet<Member<ScriptPromiseResolver>> m_deviceManagerRequests;
     device::usb::blink::ChooserServicePtr m_chooserService;
     HeapHashSet<Member<ScriptPromiseResolver>> m_chooserServiceRequests;
+    mojo::Binding<device::usb::blink::DeviceManagerClient> m_clientBinding;
 };
 
 } // namespace blink

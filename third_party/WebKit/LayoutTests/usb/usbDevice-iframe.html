@@ -57,4 +57,37 @@ usb_test(usb => {
     iframe.src = 'about:blank';
   });
 }, 'navigating iframe disconnects device.');
+
+usb_test(usb => {
+  return new Promise((resolve, reject) => {
+    let mockDeviceManager = new usb.MockDeviceManager;
+    let iframe = document.createElement('iframe');
+
+    window.onmessage = messageEvent => {
+      if (messageEvent.data === 'Ready') {
+        document.body.removeChild(iframe);
+        runGarbageCollection().then(() => {
+          mockDeviceManager.addMockDevice(usb.fakeDevices[0]);
+          resolve();
+        });
+      } else {
+        reject(messageEvent.data);
+      }
+    };
+
+    iframe.src = 'resources/open-in-iframe.html';
+    iframe.onload = () => {
+      iframe.contentWindow.mojo.define(
+          "Mojo Service Registry",
+          [ 'content/public/renderer/frame_service_registry' ],
+          (frameServiceRegistry) => {
+        frameServiceRegistry.addServiceOverrideForTesting(
+            usb.DeviceManager.name,
+            pipe => { mockDeviceManager.bindToPipe(pipe); });
+        iframe.contentWindow.postMessage('Ready', '*');
+      });
+    }
+    document.body.appendChild(iframe);
+  });
+}, 'events are not delivered to detached frames');
 </script>

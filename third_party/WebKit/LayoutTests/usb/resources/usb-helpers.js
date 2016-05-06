@@ -325,10 +325,8 @@ function usbMocks(mojo) {
     class MockDeviceManager {
       constructor() {
         this.mockDevices_ = new Map();
-        this.addedDevices_ = [];
-        this.removedDevices_ = [];
-        this.deviceChangePromiseResolvers_ = [];
         this.deviceCloseHandler_ = null;
+        this.client_ = null;
       }
 
       bindToPipe(pipe) {
@@ -341,10 +339,8 @@ function usbMocks(mojo) {
         this.mockDevices_.forEach(device => {
           for (var stub of device.stubs)
             bindings.StubBindings(stub).close();
-          this.removedDevices_.push(device.info);
         });
         this.mockDevices_.clear();
-        this.maybeResolveDeviceChangePromise();
       }
 
       addMockDevice(info) {
@@ -353,8 +349,8 @@ function usbMocks(mojo) {
           stubs: []
         };
         this.mockDevices_.set(info.guid, device);
-        this.addedDevices_.push(info);
-        this.maybeResolveDeviceChangePromise();
+        if (this.client_)
+          this.client_.onDeviceAdded(info);
       }
 
       removeMockDevice(info) {
@@ -362,8 +358,8 @@ function usbMocks(mojo) {
         for (var stub of device.stubs)
           bindings.StubBindings(stub).close();
         this.mockDevices_.delete(info.guid);
-        this.removedDevices_.push(info);
-        this.maybeResolveDeviceChangePromise();
+        if (this.client_)
+          this.client_.onDeviceRemoved(info);
       }
 
       setDeviceCloseHandler(handler) {
@@ -376,34 +372,6 @@ function usbMocks(mojo) {
           devices.push(device.info);
         });
         return Promise.resolve({ results: devices });
-      }
-
-      getDeviceChanges() {
-        let promise = new Promise((resolve, reject) => {
-          this.deviceChangePromiseResolvers_.push(resolve);
-        });
-        this.maybeResolveDeviceChangePromise();
-        return promise;
-      }
-
-      maybeResolveDeviceChangePromise() {
-        if (this.addedDevices_.length == 0 &&
-            this.removedDevices_.length == 0) {
-          return;
-        }
-
-        let resolve = this.deviceChangePromiseResolvers_.shift();
-        if (resolve === undefined)
-          return;
-
-        resolve({
-          changes: {
-            devices_added: this.addedDevices_,
-            devices_removed: this.removedDevices_
-          }
-        });
-        this.addedDevices_ = [];
-        this.removedDevices_ = [];
       }
 
       getDevice(guid, stub) {
@@ -419,6 +387,10 @@ function usbMocks(mojo) {
           };
           device.stubs.push(stub);
         }
+      }
+
+      setClient(client) {
+        this.client_ = client;
       }
     }
 

@@ -52,12 +52,12 @@ usb::DeviceFilterPtr convertDeviceFilter(const USBDeviceFilter& filter)
 
 USB::USB(LocalFrame& frame)
     : ContextLifecycleObserver(frame.document())
+    , m_clientBinding(this)
 {
+    ThreadState::current()->registerPreFinalizer(this);
     frame.serviceRegistry()->connectToRemoteService(mojo::GetProxy(&m_deviceManager));
     m_deviceManager.set_connection_error_handler(createBaseCallback(bind(&USB::onDeviceManagerConnectionError, WeakPersistentThisPointer<USB>(this))));
-    // Set up two sequential calls to GetDeviceChanges to avoid latency.
-    m_deviceManager->GetDeviceChanges(createBaseCallback(bind<usb::DeviceChangeNotificationPtr>(&USB::onDeviceChanges, WeakPersistentThisPointer<USB>(this))));
-    m_deviceManager->GetDeviceChanges(createBaseCallback(bind<usb::DeviceChangeNotificationPtr>(&USB::onDeviceChanges, WeakPersistentThisPointer<USB>(this))));
+    m_deviceManager->SetClient(m_clientBinding.CreateInterfacePtrAndBind());
 }
 
 USB::~USB()
@@ -67,6 +67,13 @@ USB::~USB()
     // persistent handle to this object.
     DCHECK(m_deviceManagerRequests.isEmpty());
     DCHECK(m_chooserServiceRequests.isEmpty());
+}
+
+void USB::dispose()
+{
+    // The pipe to this object must be closed when is marked unreachable to
+    // prevent messages from being dispatched before lazy sweeping.
+    m_clientBinding.Close();
 }
 
 ScriptPromise USB::getDevices(ScriptState* scriptState)
@@ -176,16 +183,19 @@ void USB::onGetPermission(ScriptPromiseResolver* resolver, usb::DeviceInfoPtr de
     }
 }
 
-void USB::onDeviceChanges(usb::DeviceChangeNotificationPtr notification)
+void USB::OnDeviceAdded(usb::DeviceInfoPtr deviceInfo)
 {
-    m_deviceManager->GetDeviceChanges(createBaseCallback(bind<usb::DeviceChangeNotificationPtr>(&USB::onDeviceChanges, WeakPersistentThisPointer<USB>(this))));
-    for (auto& deviceInfo : notification->devices_added.PassStorage()) {
-        usb::DevicePtr device;
-        m_deviceManager->GetDevice(deviceInfo->guid, mojo::GetProxy(&device));
-        dispatchEvent(USBConnectionEvent::create(EventTypeNames::connect, USBDevice::create(std::move(deviceInfo), std::move(device), getExecutionContext())));
-    }
-    for (auto& deviceInfo : notification->devices_removed.PassStorage())
-        dispatchEvent(USBConnectionEvent::create(EventTypeNames::disconnect, USBDevice::create(std::move(deviceInfo), nullptr, getExecutionContext())));
+    if (!m_deviceManager)
+        return;
+
+    usb::DevicePtr device;
+    m_deviceManager->GetDevice(deviceInfo->guid, mojo::GetProxy(&device));
+    dispatchEvent(USBConnectionEvent::create(EventTypeNames::connect, USBDevice::create(std::move(deviceInfo), std::move(device), getExecutionContext())));
+}
+
+void USB::OnDeviceRemoved(usb::DeviceInfoPtr deviceInfo)
+{
+    dispatchEvent(USBConnectionEvent::create(EventTypeNames::disconnect, USBDevice::create(std::move(deviceInfo), nullptr, getExecutionContext())));
 }
 
 void USB::onDeviceManagerConnectionError()

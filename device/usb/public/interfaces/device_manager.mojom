@@ -27,21 +27,23 @@ struct EnumerationOptions {
   array<DeviceFilter>? filters;
 };
 
-struct DeviceChangeNotification {
-  array<DeviceInfo> devices_added;
-  array<DeviceInfo> devices_removed;
-};
-
 interface DeviceManager {
   // Retrieves information about all devices available to the DeviceManager
   // implementation.
   GetDevices(EnumerationOptions? options) => (array<DeviceInfo> results);
 
-  // Retrieves information about changes to the set of devices available to the
-  // DeviceManager since the last call to this method. A device that is added
-  // and removed between calls will not be included.
-  GetDeviceChanges() => (DeviceChangeNotification changes);
-
   // Requests a device by guid.
   GetDevice(string guid, Device& device_request);
+
+  // Sets the client for this DeviceManager service. The service will notify its
+  // client of device events such as connection and disconnection.
+  SetClient(DeviceManagerClient client);
+};
+
+interface DeviceManagerClient {
+  // Called when a device is connected to the host.
+  OnDeviceAdded(DeviceInfo device_info);
+
+  // Called when a device is disconnected from the host.
+  OnDeviceRemoved(DeviceInfo device_info);
 };
