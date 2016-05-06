@@ -212,4 +212,20 @@ bool WillUseGLGetStringForExtensions() {
   return is_es || major_version < 3;
 }
 
+base::NativeLibrary LoadLibraryAndPrintError(
+    const base::FilePath::CharType* filename) {
+  return LoadLibraryAndPrintError(base::FilePath(filename));
+}
+
+base::NativeLibrary LoadLibraryAndPrintError(const base::FilePath& filename) {
+  base::NativeLibraryLoadError error;
+  base::NativeLibrary library = base::LoadNativeLibrary(filename, &error);
+  if (!library) {
+    LOG(ERROR) << "Failed to load " << filename.MaybeAsASCII() << ": "
+               << error.ToString();
+    return NULL;
+  }
+  return library;
+}
+
 }  // namespace gfx

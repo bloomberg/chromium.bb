@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/files/file_path.h"
 #include "base/native_library.h"
 #include "build/build_config.h"
 #include "ui/gl/gl_export.h"
@@ -134,6 +135,11 @@ GL_EXPORT std::string GetGLExtensionsFromCurrentContext();
 // glGetString(GL_EXTENSIONS) or glGetStringi(GL_EXTENSIONS, i) will
 // be used in the function above.
 GL_EXPORT bool WillUseGLGetStringForExtensions();
+
+// Helpers to load a library and log error on failure.
+base::NativeLibrary LoadLibraryAndPrintError(
+    const base::FilePath::CharType* filename);
+base::NativeLibrary LoadLibraryAndPrintError(const base::FilePath& filename);
 
 }  // namespace gfx
 

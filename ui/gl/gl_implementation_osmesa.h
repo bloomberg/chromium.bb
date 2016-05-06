@@ -11,8 +11,6 @@
 namespace gfx {
 
 bool InitializeStaticGLBindingsOSMesaGL();
-base::NativeLibrary LoadLibraryAndPrintError(const char* filename);
-base::NativeLibrary LoadLibraryAndPrintError(const base::FilePath& filename);
 
 }  // namespace gfx
 

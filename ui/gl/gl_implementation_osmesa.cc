@@ -15,21 +15,6 @@
 
 namespace gfx {
 
-base::NativeLibrary LoadLibraryAndPrintError(const base::FilePath& filename) {
-  base::NativeLibraryLoadError error;
-  base::NativeLibrary library = base::LoadNativeLibrary(filename, &error);
-  if (!library) {
-    LOG(ERROR) << "Failed to load " << filename.MaybeAsASCII() << ": "
-               << error.ToString();
-    return NULL;
-  }
-  return library;
-}
-
-base::NativeLibrary LoadLibraryAndPrintError(const char* filename) {
-  return LoadLibraryAndPrintError(base::FilePath(filename));
-}
-
 bool InitializeStaticGLBindingsOSMesaGL() {
   base::FilePath module_path;
   if (!PathService::Get(base::DIR_MODULE, &module_path)) {
