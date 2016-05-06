@@ -82,16 +82,13 @@ class MEDIA_EXPORT VideoDecoder {
   // parallel. Decoder must call |decode_cb| in the same order in which Decode()
   // is called.
   //
-  // Implementations guarantee that the callback will not be called from within
-  // this method and that |decode_cb| will not be blocked on the following
-  // Decode() calls (i.e. |decode_cb| will be called even if Decode() is never
-  // called again).
+  // Implementations guarantee that the |decode_cb| will not be called from
+  // within this method, and that it will be called even if Decode() is never
+  // called again.
   //
   // After decoding is finished the decoder calls |output_cb| specified in
-  // Initialize() for each decoded frame. |output_cb| is always called before
-  // |decode_cb|. However, |output_cb| may be called before Decode() returns, if
-  // other behavior is desired callers should ensure that |output_cb| will
-  // trampoline as necessary.
+  // Initialize() for each decoded frame. |output_cb| may be called before or
+  // after |decode_cb|, including before Decode() returns.
   //
   // If |buffer| is an EOS buffer then the decoder must be flushed, i.e.
   // |output_cb| must be called for each frame pending in the queue and
