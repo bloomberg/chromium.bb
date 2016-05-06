@@ -1,4 +1,4 @@
-Verify that mapping is not valid for misaligned sources.
+Verify that inserting operation works correctly.
 
 INITIAL MODELS
 ===== test-edit-insert-property.css =====

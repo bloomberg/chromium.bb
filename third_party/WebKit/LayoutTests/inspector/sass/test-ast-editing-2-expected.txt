@@ -21,16 +21,16 @@ Running: testRemoveAllProperties
 div{}
 
 Running: testInsertFirstProperty
-div{NEW-NAME: NEW-VALUE;
-color:red;/*display:block;*/margin:0;}
+div{
+NEW-NAME: NEW-VALUE;color:red;/*display:block;*/margin:0;}
 
 Running: testInsertLastProperty
 div{color:red;/*display:block;*/margin:0;
 NEW-NAME: NEW-VALUE;}
 
 Running: testInsertDisabledProperty
-div{color:red;/* NEW-NAME: NEW-VALUE; */
-/*display:block;*/margin:0;}
+div{color:red;
+/* NEW-NAME: NEW-VALUE; *//*display:block;*/margin:0;}
 
 Running: testInsertMultipleProperties
 div{color:red;/*display:block;*/margin:0;
@@ -40,11 +40,11 @@ TRAILING-2: VALUE;
 TRAILING-1: VALUE;}
 
 Running: testPrependMultipleProperties
-div{TRAILING-1: VALUE;
+div{
+TRAILING-1: VALUE;
 TRAILING-2: VALUE;
 TRAILING-3: VALUE;
-TRAILING-4: VALUE;
-color:red;/*display:block;*/margin:0;}
+TRAILING-4: VALUE;color:red;/*display:block;*/margin:0;}
 
 Running: testAppendAndRemoveLastProperty
 div{color:red;/*display:block;*/;

@@ -1,0 +1,54 @@
+Verifies that inserting in empty rule works.
+
+INITIAL MODELS
+===== test-edit-insert-property-empty-rule.css =====
+div.{
+../*.TODO:.styles..*/.}
+
+/*#.sourceMappingURL=test-edit-insert-property-empty-rule.css.map.*/
+
+===== test-edit-insert-property-empty-rule.scss =====
+div.{
+..../*.TODO:.styles..*/
+}
+
+
+------------------------- TEST: testPrependProperty --------------------------
+
+Edits:
+    {0, 4, 0, 5} '{' => '{ border: 1px solid black;'
+===== test-edit-insert-property-empty-rule.css =====
+    div.{
+    ....border:.1px.solid.black;
+    ../*.TODO:.styles..*/.}
+    
+    /*#.sourceMappingURL=test-edit-insert-property-empty-rule.css.map.*/
+    
+===== test-edit-insert-property-empty-rule.scss =====
+    div.{
+    ....border:.1px.solid.black;
+    ..../*.TODO:.styles..*/
+    }
+    
+
+-------------------- TEST: testPrependAndAppendProperties --------------------
+
+Edits:
+    {0, 4, 0, 5} '{' => '{ color: blue;'
+    {1, 22, 1, 23} '}' => 'background: white;}'
+===== test-edit-insert-property-empty-rule.css =====
+    div.{
+    ....color:.blue;
+    ....background:.white;
+    ../*.TODO:.styles..*/.}
+    
+    /*#.sourceMappingURL=test-edit-insert-property-empty-rule.css.map.*/
+    
+===== test-edit-insert-property-empty-rule.scss =====
+    div.{
+    ....color:.blue;
+    ....background:.white;
+    ..../*.TODO:.styles..*/
+    }
+    
+

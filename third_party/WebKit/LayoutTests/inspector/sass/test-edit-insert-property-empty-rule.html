@@ -1,0 +1,40 @@
+<html>
+<head>
+
+<link rel="stylesheet" href="resources/test-edit-insert-property-empty-rule.css">
+
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/debugger-test.js"></script>
+<script src="./sass-test.js"></script>
+<script>
+
+function test()
+{
+    var header = InspectorTest.cssModel.styleSheetHeaders().find(header => !!header.sourceMapURL)
+
+    InspectorTest.runCSSEditTests(header, [
+        function testPrependProperty(text)
+        {
+            return [
+                InspectorTest.createEdit(text, "{", "{ border: 1px solid black;")
+            ];
+        },
+
+        function testPrependAndAppendProperties(text)
+        {
+            return [
+                InspectorTest.createEdit(text, "{", "{ color: blue;"),
+                InspectorTest.createEdit(text, "}", "background: white;}"),
+            ];
+        },
+    ]);
+}
+
+</script>
+
+</head>
+
+<body onload="runTest()">
+<p>Verifies that inserting in empty rule works.</p>
+</body>
+</html>
