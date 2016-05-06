@@ -12,6 +12,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -70,13 +71,14 @@ bool ContainsDataReductionProxyDefaultHostSuffix(
 // Extract the embedded PAC script from the given |pac_url|, and store the
 // extracted script in |pac_script|. Returns true if extraction was successful,
 // otherwise returns false. |pac_script| must not be NULL.
-bool GetEmbeddedPacScript(const std::string& pac_url, std::string* pac_script) {
+bool GetEmbeddedPacScript(base::StringPiece pac_url, std::string* pac_script) {
   DCHECK(pac_script);
-  const std::string kPacURLPrefix =
+  static const char kPacURLPrefix[] =
       "data:application/x-ns-proxy-autoconfig;base64,";
   return base::StartsWith(pac_url, kPacURLPrefix,
                           base::CompareCase::SENSITIVE) &&
-         base::Base64Decode(pac_url.substr(kPacURLPrefix.size()), pac_script);
+         base::Base64Decode(pac_url.substr(arraysize(kPacURLPrefix) - 1),
+                            pac_script);
 }
 
 }  // namespace

@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/strings/string_piece.h"
 
 namespace data_reduction_proxy {
 
@@ -28,12 +29,12 @@ class DataStore {
   virtual void InitializeOnDBThread();
 
   // Gets the value from the store for the provided key.
-  virtual Status Get(const std::string& key, std::string* value);
+  virtual Status Get(base::StringPiece key, std::string* value);
 
   // Persists the provided keys and values into the store.
   virtual Status Put(const std::map<std::string, std::string>& map);
 
-  virtual Status Delete(const std::string& key);
+  virtual Status Delete(base::StringPiece key);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DataStore);

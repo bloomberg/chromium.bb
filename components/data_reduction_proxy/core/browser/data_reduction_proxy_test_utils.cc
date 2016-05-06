@@ -247,9 +247,9 @@ TestDataStore::TestDataStore() {}
 
 TestDataStore::~TestDataStore() {}
 
-DataStore::Status TestDataStore::Get(const std::string& key,
+DataStore::Status TestDataStore::Get(base::StringPiece key,
                                      std::string* value) {
-  auto value_iter = map_.find(key);
+  auto value_iter = map_.find(key.as_string());
   if (value_iter == map_.end())
     return NOT_FOUND;
 
@@ -265,8 +265,8 @@ DataStore::Status TestDataStore::Put(
   return OK;
 }
 
-DataStore::Status TestDataStore::Delete(const std::string& key) {
-  map_.erase(key);
+DataStore::Status TestDataStore::Delete(base::StringPiece key) {
+  map_.erase(key.as_string());
 
   return OK;
 }

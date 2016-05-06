@@ -12,6 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/sequence_checker.h"
+#include "base/strings/string_piece.h"
 #include "components/data_reduction_proxy/core/browser/data_store.h"
 
 namespace leveldb {
@@ -29,11 +30,11 @@ class DataStoreImpl : public DataStore {
   // Overrides of DataStore.
   void InitializeOnDBThread() override;
 
-  Status Get(const std::string& key, std::string* value) override;
+  Status Get(base::StringPiece key, std::string* value) override;
 
   Status Put(const std::map<std::string, std::string>& map) override;
 
-  Status Delete(const std::string& key) override;
+  Status Delete(base::StringPiece key) override;
 
  private:
   // Opens the underlying LevelDB for read and write.

@@ -7,7 +7,7 @@
 #include <stddef.h>
 
 #include <algorithm>
-#include <cstring>
+#include <utility>
 
 #include "base/base64.h"
 #include "base/macros.h"
@@ -265,7 +265,7 @@ void DataReductionProxyTamperDetection::ReportUMAForTamperDetectionCount(
 // fingerprint of received Chrome-Proxy header, and compares the two to see
 // whether they are equal or not.
 bool DataReductionProxyTamperDetection::ValidateChromeProxyHeader(
-    const std::string& fingerprint) const {
+    base::StringPiece fingerprint) const {
   std::string received_fingerprint;
   if (!base::Base64Decode(fingerprint, &received_fingerprint))
     return true;
@@ -296,7 +296,7 @@ void DataReductionProxyTamperDetection::
 // Reduction Proxy's name in Via header. |has_chrome_proxy_via_header| marks
 // that whether the Data Reduction Proxy's Via header occurs or not.
 bool DataReductionProxyTamperDetection::ValidateViaHeader(
-    const std::string& fingerprint,
+    base::StringPiece fingerprint,
     bool* has_chrome_proxy_via_header) const {
   bool has_intermediary;
   *has_chrome_proxy_via_header = HasDataReductionProxyViaHeader(
@@ -355,7 +355,8 @@ bool DataReductionProxyTamperDetection::ValidateOtherHeaders(
   // The first value is the base64 encoded fingerprint.
   std::string received_fingerprint;
   if (!it.GetNext() ||
-      !base::Base64Decode(it.value(), &received_fingerprint)) {
+      !base::Base64Decode(base::StringPiece(it.value_begin(), it.value_end()),
+                          &received_fingerprint)) {
     NOTREACHED();
     return true;
   }
@@ -365,8 +366,8 @@ bool DataReductionProxyTamperDetection::ValidateOtherHeaders(
   // calculation.
   while (it.GetNext()) {
     // Gets values of one header.
-    std::vector<std::string> response_header_values =
-        GetHeaderValues(response_headers_, it.value());
+    std::vector<std::string> response_header_values = GetHeaderValues(
+        response_headers_, base::StringPiece(it.value_begin(), it.value_end()));
     // Sorts the values and concatenate them, with delimiter ";". ";" can occur
     // in a header value and thus two different sets of header values could map
     // to the same string representation. This should be very rare.
@@ -391,7 +392,7 @@ void DataReductionProxyTamperDetection::
 }
 
 bool DataReductionProxyTamperDetection::ValidateContentLength(
-    const std::string& fingerprint,
+    base::StringPiece fingerprint,
     int64_t content_length,
     int64_t* original_content_length) const {
   DCHECK(original_content_length);
@@ -520,33 +521,40 @@ void DataReductionProxyTamperDetection::ReportUMAForContentLength(
 // 2) concatenate sorted values with a "," delimiter.
 std::string DataReductionProxyTamperDetection::ValuesToSortedString(
     std::vector<std::string>* values) {
-  std::string concatenated_values;
   DCHECK(values);
   if (!values) return "";
 
   std::sort(values->begin(), values->end());
-  for (size_t i = 0; i < values->size(); ++i) {
-    // Concatenates with delimiter ",".
-    concatenated_values += (*values)[i] + ",";
+
+  size_t expected_size = 0;
+  for (const auto& value : *values)
+    expected_size += value.size() + 1;
+
+  std::string joined;
+  joined.reserve(expected_size);
+  // Join all the header values together, including a trailing ','.
+  for (const auto& value : *values) {
+    joined.append(value);
+    joined.append(1, ',');
   }
-  return concatenated_values;
+  return joined;
 }
 
-void DataReductionProxyTamperDetection::GetMD5(
-    const std::string& input, std::string* output) {
+void DataReductionProxyTamperDetection::GetMD5(base::StringPiece input,
+                                               std::string* output) {
   base::MD5Digest digest;
-  base::MD5Sum(input.c_str(), input.size(), &digest);
+  base::MD5Sum(input.data(), input.size(), &digest);
   *output = std::string(reinterpret_cast<char*>(digest.a), arraysize(digest.a));
 }
 
 std::vector<std::string> DataReductionProxyTamperDetection::GetHeaderValues(
     const net::HttpResponseHeaders* headers,
-    const std::string& header_name) {
+    base::StringPiece header_name) {
   std::vector<std::string> values;
   std::string value;
   size_t iter = 0;
   while (headers->EnumerateHeader(&iter, header_name, &value)) {
-    values.push_back(value);
+    values.push_back(std::move(value));
   }
   return values;
 }

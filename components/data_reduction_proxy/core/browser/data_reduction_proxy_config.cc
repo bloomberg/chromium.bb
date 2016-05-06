@@ -18,6 +18,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "base/time/default_tick_clock.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_config_values.h"
@@ -840,9 +841,9 @@ void DataReductionProxyConfig::RecordAutoLoFiAccuracyRate(
     }
   }
 
-  static const char prefix[] = "DataReductionProxy.LoFi.Accuracy.";
   base::HistogramBase* accuracy_histogram = GetEnumeratedHistogram(
-      prefix + base::IntToString(measuring_duration.InSeconds()) + ".",
+      base::StringPrintf("DataReductionProxy.LoFi.Accuracy.%d.",
+                         static_cast<int>(measuring_duration.InSeconds())),
       connection_type_, AUTO_LOFI_ACCURACY_INDEX_BOUNDARY - 1);
 
   accuracy_histogram->Add(accuracy);

@@ -15,7 +15,7 @@ DataStore::~DataStore() {
 void DataStore::InitializeOnDBThread() {
 }
 
-DataStore::Status DataStore::Get(const std::string& key, std::string* value) {
+DataStore::Status DataStore::Get(base::StringPiece key, std::string* value) {
   return DataStore::Status::NOT_FOUND;
 }
 
@@ -24,7 +24,7 @@ DataStore::Status DataStore::Put(
   return DataStore::Status::OK;
 }
 
-DataStore::Status DataStore::Delete(const std::string& key) {
+DataStore::Status DataStore::Delete(base::StringPiece key) {
   return DataStore::Status::OK;
 }
 

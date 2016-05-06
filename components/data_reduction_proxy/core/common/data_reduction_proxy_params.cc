@@ -73,7 +73,7 @@ bool IsIncludedInAndroidOnePromoFieldTrial(const char* build_fingerprint) {
   return (fingerprint.find(kAndroidOneIdentifier) != std::string::npos);
 }
 
-std::string GetTrustedSpdyProxyFieldTrialName() {
+const char* GetTrustedSpdyProxyFieldTrialName() {
   return kTrustedSpdyProxyFieldTrialName;
 }
 
@@ -82,11 +82,11 @@ bool IsIncludedInTrustedSpdyProxyFieldTrial() {
              .find(kEnabled) == 0;
 }
 
-std::string GetLoFiFieldTrialName() {
+const char* GetLoFiFieldTrialName() {
   return kLoFiFieldTrial;
 }
 
-std::string GetLoFiFlagFieldTrialName() {
+const char* GetLoFiFlagFieldTrialName() {
   return kLoFiFlagFieldTrial;
 }
 
@@ -165,7 +165,7 @@ bool IsIncludedInQuicFieldTrial() {
   return FieldTrialList::FindFullName(kQuicFieldTrial).find(kEnabled) == 0;
 }
 
-std::string GetQuicFieldTrialName() {
+const char* GetQuicFieldTrialName() {
   return kQuicFieldTrial;
 }
 
@@ -282,7 +282,7 @@ bool GetOverrideProxiesForHttpFromCommandLine(
   return true;
 }
 
-std::string GetServerExperimentsFieldTrialName() {
+const char* GetServerExperimentsFieldTrialName() {
   return kServerExperimentsFieldTrial;
 }
 

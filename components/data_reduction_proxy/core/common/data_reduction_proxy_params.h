@@ -41,7 +41,7 @@ bool IsIncludedInPromoFieldTrial();
 bool IsIncludedInHoldbackFieldTrial();
 
 // Returns the name of the trusted SPDY/HTTP2 proxy field trial.
-std::string GetTrustedSpdyProxyFieldTrialName();
+const char* GetTrustedSpdyProxyFieldTrialName();
 
 // Returns true if this client is part of the enabled group of the trusted
 // SPDY/HTTP2 proxy field trial.
@@ -52,11 +52,11 @@ bool IsIncludedInTrustedSpdyProxyFieldTrial();
 bool IsIncludedInAndroidOnePromoFieldTrial(const char* build_fingerprint);
 
 // Returns the name of the Lo-Fi field trial.
-std::string GetLoFiFieldTrialName();
+const char* GetLoFiFieldTrialName();
 
 // Returns the name of the Lo-Fi field trial that configures LoFi flags when it
 // is force enabled through flags.
-std::string GetLoFiFlagFieldTrialName();
+const char* GetLoFiFlagFieldTrialName();
 
 // Returns true if this client is part of the "Enabled" or "Enabled_Preview"
 // group of the Lo-Fi field trial, both of which mean Lo-Fi should be enabled.
@@ -107,7 +107,7 @@ bool WarnIfNoDataReductionProxy();
 // proxy server as quic://proxy.googlezip.net.
 bool IsIncludedInQuicFieldTrial();
 
-std::string GetQuicFieldTrialName();
+const char* GetQuicFieldTrialName();
 
 // Returns true if the Data Reduction Proxy config client should be used.
 bool IsConfigClientEnabled();
@@ -139,7 +139,7 @@ bool GetOverrideProxiesForHttpFromCommandLine(
     std::vector<net::ProxyServer>* override_proxies_for_http);
 
 // Returns the name of the server side experiment field trial.
-std::string GetServerExperimentsFieldTrialName();
+const char* GetServerExperimentsFieldTrialName();
 
 }  // namespace params
 

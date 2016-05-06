@@ -59,7 +59,7 @@ void DataStoreImpl::InitializeOnDBThread() {
     RecreateDB();
 }
 
-DataStore::Status DataStoreImpl::Get(const std::string& key,
+DataStore::Status DataStoreImpl::Get(base::StringPiece key,
                                      std::string* value) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
 
@@ -68,7 +68,7 @@ DataStore::Status DataStoreImpl::Get(const std::string& key,
 
   leveldb::ReadOptions read_options;
   read_options.verify_checksums = true;
-  leveldb::Slice slice(key);
+  leveldb::Slice slice(key.data(), key.size());
   leveldb::Status status = db_->Get(read_options, slice, value);
   if (status.IsCorruption())
     RecreateDB();
@@ -96,13 +96,13 @@ DataStore::Status DataStoreImpl::Put(
   return LevelDbToDRPStoreStatus(status);
 }
 
-DataStore::Status DataStoreImpl::Delete(const std::string& key) {
+DataStore::Status DataStoreImpl::Delete(base::StringPiece key) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
 
   if (!db_)
     return MISC_ERROR;
 
-  leveldb::Slice slice(key);
+  leveldb::Slice slice(key.data(), key.size());
   leveldb::WriteOptions write_options;
   leveldb::Status status = db_->Delete(write_options, slice);
   if (status.IsCorruption())

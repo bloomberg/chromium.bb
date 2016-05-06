@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/string_piece.h"
 #include "base/time/clock.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
@@ -229,11 +230,11 @@ class TestDataStore : public data_reduction_proxy::DataStore {
 
   void InitializeOnDBThread() override {}
 
-  DataStore::Status Get(const std::string& key, std::string* value) override;
+  DataStore::Status Get(base::StringPiece key, std::string* value) override;
 
   DataStore::Status Put(const std::map<std::string, std::string>& map) override;
 
-  DataStore::Status Delete(const std::string& key) override;
+  DataStore::Status Delete(base::StringPiece key) override;
 
   std::map<std::string, std::string>* map() { return &map_; }
 

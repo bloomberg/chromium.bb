@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "net/proxy/proxy_service.h"
 
@@ -109,15 +110,14 @@ DataReductionProxyBypassType GetDataReductionProxyBypassType(
 // Searches for the specified Chrome-Proxy action, and if present saves its
 // value as a string in |action_value|. Only returns the first one and ignores
 // the rest if multiple actions match |action_prefix|.
-bool GetDataReductionProxyActionValue(
-    const net::HttpResponseHeaders* headers,
-    const std::string& action_prefix,
-    std::string* action_value);
+bool GetDataReductionProxyActionValue(const net::HttpResponseHeaders* headers,
+                                      base::StringPiece action_prefix,
+                                      std::string* action_value);
 
 // Searches for the specified Chrome-Proxy action, and if present interprets
 // its value as a duration in seconds.
 bool ParseHeadersAndSetBypassDuration(const net::HttpResponseHeaders* headers,
-                                      const std::string& action_prefix,
+                                      base::StringPiece action_prefix,
                                       base::TimeDelta* bypass_duration);
 
 // Gets the fingerprint of the Chrome-Proxy header.
