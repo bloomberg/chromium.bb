@@ -7,7 +7,7 @@
   <template>
     <content select="paper-icon-button"></content>
     <div id="pageContainer">
-      <template is="dom-if" if="[[!showAdvancedPage_]]">
+      <template is="dom-if" if="[[showBasicPage_]]">
         <settings-basic-page prefs="{{prefs}}" current-route="{{currentRoute}}">
         </settings-basic-page>
       </template>
@@ -15,6 +15,11 @@
         <settings-advanced-page prefs="{{prefs}}"
             current-route="{{currentRoute}}">
         </settings-advanced-page>
+      </template>
+      <template is="dom-if" if="[[showAboutPage_]]">
+        <!-- TODO(dpapad): Replace this with <settings-about-page>
+            implementation -->
+        <div>$i18n{aboutPageTitle}</div>
       </template>
     </div>
   </template>

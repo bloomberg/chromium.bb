@@ -127,7 +127,7 @@ void AddA11yStrings(content::WebUIDataSource* html_source) {
 
 void AddAboutStrings(content::WebUIDataSource* html_source) {
   LocalizedString localized_strings[] = {
-      {"aboutProgram", IDS_SETTINGS_ABOUT_PROGRAM},
+      {"aboutPageTitle", IDS_SETTINGS_ABOUT_PROGRAM},
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));

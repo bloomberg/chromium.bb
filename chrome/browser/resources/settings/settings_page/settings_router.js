@@ -96,6 +96,12 @@ Polymer({
       subpage: [],
     },
     {
+      url: '/help',
+      page: 'about',
+      section: '',
+      subpage: [],
+    },
+    {
       url: '/advanced',
       page: 'advanced',
       section: '',

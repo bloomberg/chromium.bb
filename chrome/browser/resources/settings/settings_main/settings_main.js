@@ -36,15 +36,23 @@ Polymer({
       observer: 'currentRouteChanged_',
     },
 
-    // If false the 'basic' page should be shown.
-    showAdvancedPage_: {
-      type: Boolean,
-      value: false
-    }
+    /** @private */
+    showAdvancedPage_: Boolean,
+
+    /** @private */
+    showBasicPage_: Boolean,
+
+    /** @private */
+    showAboutPage_: Boolean,
   },
 
-  /** @private */
-  currentRouteChanged_: function(newRoute, oldRoute) {
+  /**
+   * @param {!SettingsRoute} newRoute
+   * @private
+   */
+  currentRouteChanged_: function(newRoute) {
+    this.showAboutPage_ = newRoute.page == 'about';
     this.showAdvancedPage_ = newRoute.page == 'advanced';
+    this.showBasicPage_ = newRoute.page == 'basic';
   },
 });
