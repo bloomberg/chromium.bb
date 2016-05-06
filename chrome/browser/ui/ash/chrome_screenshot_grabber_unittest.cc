@@ -25,6 +25,8 @@
 #include "ui/snapshot/screenshot_grabber.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/users/mock_user_manager.h"
+#include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chromeos/login/login_state.h"
 #endif
 
@@ -109,6 +111,8 @@ TEST_F(ChromeScreenshotGrabberTest, TakeScreenshot) {
   // claim that the user did log in.
   ASSERT_FALSE(chromeos::LoginState::IsInitialized());
   chromeos::LoginState::Initialize();
+  chromeos::ScopedUserManagerEnabler scoped_enabler(
+      new chromeos::MockUserManager());
 #endif
   base::ScopedTempDir directory;
   ASSERT_TRUE(directory.CreateUniqueTempDir());

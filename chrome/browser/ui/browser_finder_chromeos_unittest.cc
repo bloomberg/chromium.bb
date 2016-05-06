@@ -8,7 +8,9 @@
 #include "ash/test/ash_test_helper.h"
 #include "ash/test/test_session_state_delegate.h"
 #include "base/macros.h"
+#include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_chromeos.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
@@ -16,6 +18,8 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/signin/core/account_id/account_id.h"
+#include "components/user_manager/fake_user_manager.h"
+#include "components/user_manager/user.h"
 
 namespace test {
 
@@ -28,12 +32,18 @@ const char kTestAccount2[] = "user2@test.com";
 
 class BrowserFinderChromeOSTest : public BrowserWithTestWindowTest {
  protected:
-  BrowserFinderChromeOSTest() : multi_user_window_manager_(nullptr) {}
+  BrowserFinderChromeOSTest()
+      : multi_user_window_manager_(nullptr),
+        fake_user_manager_(new user_manager::FakeUserManager),
+        user_manager_enabler_(fake_user_manager_) {}
 
   TestingProfile* CreateMultiUserProfile(const AccountId& account_id) {
     TestingProfile* profile =
         profile_manager_->CreateTestingProfile(account_id.GetUserEmail());
     GetUserWindowManager()->AddUser(profile);
+    const user_manager::User* user = fake_user_manager_->AddUser(account_id);
+    chromeos::ProfileHelper::Get()->SetProfileToUserMappingForTesting(
+        const_cast<user_manager::User*>(user));
     ash::test::AshTestHelper::GetTestSessionStateDelegate()->AddUser(
         account_id);
     return profile;
@@ -88,6 +98,8 @@ class BrowserFinderChromeOSTest : public BrowserWithTestWindowTest {
   TestingProfile* second_profile_;
   std::unique_ptr<TestingProfileManager> profile_manager_;
   chrome::MultiUserWindowManagerChromeOS* multi_user_window_manager_;
+  user_manager::FakeUserManager* fake_user_manager_;  // Not owned.
+  chromeos::ScopedUserManagerEnabler user_manager_enabler_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserFinderChromeOSTest);
 };

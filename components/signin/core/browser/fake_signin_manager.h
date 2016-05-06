@@ -23,6 +23,8 @@ class FakeSigninManagerBase : public SigninManagerBase {
   FakeSigninManagerBase(SigninClient* client,
                         AccountTrackerService* account_tracker_service);
   ~FakeSigninManagerBase() override;
+
+  void SignIn(const std::string& account_id);
 };
 
 #if !defined(OS_CHROMEOS)

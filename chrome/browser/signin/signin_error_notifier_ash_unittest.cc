@@ -34,6 +34,11 @@
 #include "ui/display/screen.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/users/mock_user_manager.h"
+#include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
+#endif
+
 namespace ash {
 namespace test {
 
@@ -60,6 +65,12 @@ class SigninErrorNotifierTest : public AshTestBase {
     profile_manager_.reset(
         new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
     ASSERT_TRUE(profile_manager_->SetUp());
+
+#if defined(OS_CHROMEOS)
+    mock_user_manager_ = new chromeos::MockUserManager();
+    user_manager_enabler_.reset(
+        new chromeos::ScopedUserManagerEnabler(mock_user_manager_));
+#endif
 
     TestingBrowserProcess::GetGlobal();
     AshTestBase::SetUp();
@@ -103,6 +114,10 @@ class SigninErrorNotifierTest : public AshTestBase {
   std::unique_ptr<TestingProfile> profile_;
   SigninErrorController* error_controller_;
   NotificationUIManager* notification_ui_manager_;
+#if defined(OS_CHROMEOS)
+  chromeos::MockUserManager* mock_user_manager_;  // Not owned.
+  std::unique_ptr<chromeos::ScopedUserManagerEnabler> user_manager_enabler_;
+#endif
 };
 
 TEST_F(SigninErrorNotifierTest, NoErrorAuthStatusProviders) {
