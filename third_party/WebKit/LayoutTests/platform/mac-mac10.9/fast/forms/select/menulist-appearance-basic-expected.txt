@@ -1,8 +1,8 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 800x436
-  LayoutBlockFlow {HTML} at (0,0) size 800x436
-    LayoutBlockFlow {BODY} at (8,8) size 784x420
+layer at (0,0) size 800x476
+  LayoutBlockFlow {HTML} at (0,0) size 800x476
+    LayoutBlockFlow {BODY} at (8,8) size 784x460
       LayoutMenuList {SELECT} at (4,4) size 49x18 [bgcolor=#F8F8F8]
         LayoutBlockFlow (anonymous) at (0,0) size 49x18
           LayoutText (anonymous) at (8,2) size 18x13
@@ -120,7 +120,34 @@ layer at (0,0) size 800x436
         LayoutBlockFlow (anonymous) at (0,0) size 60x18
           LayoutText (anonymous) at (8,2) size 34x13
             text run at (8,2) width 34: "Month"
-      LayoutText {#text} at (0,0) size 0x0
+      LayoutText {#text} at (68,397) size 4x18
+        text run at (68,397) width 4: " "
+      LayoutBR {BR} at (72,397) size 0x18
+      LayoutMenuList {SELECT} at (4,431) size 49x18 [bgcolor=#F8F8F8]
+        LayoutBlockFlow (anonymous) at (0,0) size 49x18
+          LayoutText (anonymous) at (8,2) size 18x13
+            text run at (8,2) width 18: "foo"
+      LayoutText {#text} at (57,430) size 4x18
+        text run at (57,430) width 4: " "
+      LayoutMenuList {SELECT} at (65,429) size 45x22 [bgcolor=#F8F8F8] [border: (3px solid #00FF00)]
+        LayoutBlockFlow (anonymous) at (3,3) size 39x16
+          LayoutText (anonymous) at (8,1) size 18x13
+            text run at (8,1) width 18: "foo"
+      LayoutText {#text} at (114,430) size 4x18
+        text run at (114,430) width 4: " "
+      LayoutMenuList {SELECT} at (122,424) size 55x32 [bgcolor=#F8F8F8] [border: (8px solid #00FF00)]
+        LayoutBlockFlow (anonymous) at (8,8) size 39x16
+          LayoutText (anonymous) at (8,1) size 18x13
+            text run at (8,1) width 18: "foo"
+      LayoutText {#text} at (181,430) size 4x18
+        text run at (181,430) width 4: " "
+      LayoutMenuList {SELECT} at (189,431) size 41x18 [bgcolor=#F8F8F8] [border: (1px solid #A6A6A6)]
+        LayoutBlockFlow (anonymous) at (1,1) size 39x16
+          LayoutText (anonymous) at (8,1) size 18x13
+            text run at (8,1) width 18: "foo"
+      LayoutText {#text} at (234,430) size 4x18
+        text run at (234,430) width 4: " "
+      LayoutBR {BR} at (238,430) size 0x18
 layer at (12,241) size 200x25 clip at (13,242) size 187x23 scrollHeight 43
   LayoutListBox {SELECT} at (4,233) size 200x25 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     LayoutBlockFlow {OPTION} at (1,1) size 187x14.19

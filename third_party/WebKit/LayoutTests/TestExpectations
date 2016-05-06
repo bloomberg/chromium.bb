@@ -806,9 +806,6 @@ crbug.com/357427 http/tests/workers/terminate-during-sync-operation-filesystem.h
 
 crbug.com/564403 http/tests/inspector/service-workers/service-worker-manager.html [ Failure Pass ]
 
-crbug.com/586127 fast/forms/select/menulist-appearance-basic.html [ NeedsRebaseline ]
-crbug.com/586127 fast/forms/select/basic-selects.html [ NeedsRebaseline ]
-
 crbug.com/306222 fast/hidpi/image-srcset-relative-svg-canvas.html [ Skip ]
 crbug.com/306222 fast/hidpi/image-srcset-relative-svg-canvas-2x.html [ Skip ]
 
