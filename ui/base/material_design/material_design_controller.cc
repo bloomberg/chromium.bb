@@ -107,7 +107,7 @@ MaterialDesignController::Mode MaterialDesignController::DefaultMode() {
   }
 #endif  // defined(USE_OZONE)
   return MATERIAL_NORMAL;
-#elif defined(OS_LINUX)
+#elif defined(OS_LINUX) || defined(OS_MACOSX)
   return MATERIAL_NORMAL;
 #else
   return NON_MATERIAL;
