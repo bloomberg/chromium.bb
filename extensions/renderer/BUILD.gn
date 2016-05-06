@@ -40,7 +40,7 @@ source_set("renderer") {
     sources += wifi_display_sources
 
     deps += [
-      "//third_party/openh264/openh264.gyp:openh264_encoder",
+      "//third_party/openh264:encoder",
       "//third_party/wds:libwds",
     ]
   }
