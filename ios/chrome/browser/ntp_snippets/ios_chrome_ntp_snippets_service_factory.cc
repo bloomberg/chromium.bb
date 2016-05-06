@@ -9,18 +9,21 @@
 #include "base/memory/singleton.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/values.h"
+#include "components/image_fetcher/image_fetcher.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/ntp_snippets/ntp_snippets_fetcher.h"
 #include "components/ntp_snippets/ntp_snippets_service.h"
 #include "components/version_info/version_info.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#include "ios/chrome/browser/suggestions/image_fetcher_impl.h"
 #include "ios/chrome/browser/suggestions/suggestions_service_factory.h"
 #include "ios/chrome/common/channel_info.h"
 #include "ios/web/public/browser_state.h"
 #include "ios/web/public/web_thread.h"
 #include "net/url_request/url_request_context_getter.h"
 
+using suggestions::ImageFetcherImpl;
 using suggestions::SuggestionsService;
 using suggestions::SuggestionsServiceFactory;
 
@@ -90,5 +93,7 @@ IOSChromeNTPSnippetsServiceFactory::BuildServiceInstanceFor(
       GetApplicationContext()->GetApplicationLocale(), scheduler,
       base::WrapUnique(new ntp_snippets::NTPSnippetsFetcher(
           request_context, GetChannel() == version_info::Channel::STABLE)),
-      base::Bind(&ParseJson)));
+      base::Bind(&ParseJson),
+      base::WrapUnique(new ImageFetcherImpl(
+          request_context.get(), web::WebThread::GetBlockingPool()))));
 }

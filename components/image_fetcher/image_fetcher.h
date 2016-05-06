@@ -14,7 +14,8 @@ class SkBitmap;
 
 namespace image_fetcher {
 
-// A class used to fetch server images.
+// A class used to fetch server images. It can be called from any thread and the
+// callback will be called on the thread which initiated the fetch.
 class ImageFetcher {
  public:
   ImageFetcher() {}
@@ -23,7 +24,8 @@ class ImageFetcher {
   virtual void SetImageFetcherDelegate(ImageFetcherDelegate* delegate) = 0;
 
   virtual void StartOrQueueNetworkRequest(
-      const GURL& url, const GURL& image_url,
+      const GURL& url,
+      const GURL& image_url,
       base::Callback<void(const GURL&, const SkBitmap*)> callback) = 0;
 
  private:

@@ -4,7 +4,10 @@
 
 package org.chromium.chrome.browser.ntp.snippets;
 
+import android.graphics.Bitmap;
+
 import org.chromium.base.Callback;
+
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.profiles.Profile;
 
@@ -21,14 +24,22 @@ public class SnippetsBridge {
     private SnippetsObserver mObserver;
 
     /**
-     * An observer for notifying when new snippets are loaded
+     * A callback that is called after a snippet image was fetched from the snippets service.
      */
-    public interface SnippetsObserver {
-        public void onSnippetsReceived(List<SnippetArticle> snippets);
+    public interface FetchSnippetImageCallback {
+        @CalledByNative("FetchSnippetImageCallback")
+        void onSnippetImageAvailable(Bitmap image);
     }
 
     /**
-     * Creates a SnippetsBridge for getting snippet data for the current user
+     * An observer for notifying when new snippets are loaded.
+     */
+    public interface SnippetsObserver {
+        void onSnippetsReceived(List<SnippetArticle> snippets);
+    }
+
+    /**
+     * Creates a SnippetsBridge for getting snippet data for the current user.
      *
      * @param profile Profile of the user that we will retrieve snippets for.
      */
@@ -66,11 +77,18 @@ public class SnippetsBridge {
      * Tells the native service to discard a snippet. It will be removed from the native side
      * storage and will also be discarded from subsequent fetch results.
      *
-     * @param snippet snippet to discard.
+     * @param snippet Snippet to discard.
      */
     public void discardSnippet(SnippetArticle snippet) {
         assert mNativeSnippetsBridge != 0;
         nativeDiscardSnippet(mNativeSnippetsBridge, snippet.mUrl);
+    }
+
+    /**
+     * Fetches the thumbnail image for a snippet.
+     */
+    public void fetchSnippetImage(String snippetUrl, FetchSnippetImageCallback callback) {
+        nativeFetchImage(mNativeSnippetsBridge, snippetUrl, callback);
     }
 
     /**
@@ -129,4 +147,6 @@ public class SnippetsBridge {
     private native void nativeSetObserver(long nativeNTPSnippetsBridge, SnippetsBridge bridge);
     private static native void nativeSnippetVisited(long nativeNTPSnippetsBridge,
             Callback<Boolean> callback, String url);
+    private native void nativeFetchImage(
+            long nativeNTPSnippetsBridge, String snippetUrl, FetchSnippetImageCallback callback);
 }

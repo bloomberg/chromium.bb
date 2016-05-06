@@ -21,12 +21,14 @@
 #include "base/task_runner_util.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "components/image_fetcher/image_fetcher.h"
 #include "components/ntp_snippets/pref_names.h"
 #include "components/ntp_snippets/switches.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/suggestions/proto/suggestions.pb.h"
 
+using image_fetcher::ImageFetcher;
 using suggestions::ChromeSuggestion;
 using suggestions::SuggestionsProfile;
 using suggestions::SuggestionsService;
@@ -177,7 +179,8 @@ NTPSnippetsService::NTPSnippetsService(
     const std::string& application_language_code,
     NTPSnippetsScheduler* scheduler,
     std::unique_ptr<NTPSnippetsFetcher> snippets_fetcher,
-    const ParseJSONCallback& parse_json_callback)
+    const ParseJSONCallback& parse_json_callback,
+    std::unique_ptr<ImageFetcher> image_fetcher)
     : enabled_(false),
       pref_service_(pref_service),
       suggestions_service_(suggestions_service),
@@ -186,6 +189,7 @@ NTPSnippetsService::NTPSnippetsService(
       scheduler_(scheduler),
       snippets_fetcher_(std::move(snippets_fetcher)),
       parse_json_callback_(parse_json_callback),
+      image_fetcher_(std::move(image_fetcher)),
       weak_ptr_factory_(this) {
   snippets_fetcher_subscription_ = snippets_fetcher_->AddCallback(base::Bind(
       &NTPSnippetsService::OnSnippetsDownloaded, base::Unretained(this)));
@@ -260,6 +264,24 @@ void NTPSnippetsService::RescheduleFetching() {
   } else {
     scheduler_->Unschedule();
   }
+}
+
+void NTPSnippetsService::FetchSnippetImage(
+    const GURL& url,
+    const ImageFetchedCallback& callback) {
+  auto it = std::find_if(snippets_.begin(), snippets_.end(),
+                         [&url](const std::unique_ptr<NTPSnippet>& snippet) {
+                           return snippet->url() == url;
+                         });
+  if (it == snippets_.end()) {
+    callback.Run(url, nullptr);
+    return;
+  }
+
+  const NTPSnippet& snippet = *it->get();
+  image_fetcher_->StartOrQueueNetworkRequest(
+      snippet.url(), snippet.salient_image_url(), callback);
+  // TODO(treib): Cache/persist the snippet image.
 }
 
 void NTPSnippetsService::ClearSnippets() {
@@ -421,6 +443,8 @@ bool NTPSnippetsService::MergeSnippets(NTPSnippetStorage new_snippets) {
           snippet->publish_date() +
           base::TimeDelta::FromMinutes(kDefaultExpiryTimeMins));
     }
+
+    // TODO(treib): Prefetch and cache the snippet image. crbug.com/605870
   }
 
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(

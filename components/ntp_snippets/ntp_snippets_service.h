@@ -27,10 +27,15 @@
 
 class PrefRegistrySimple;
 class PrefService;
+class SkBitmap;
 
 namespace base {
 class ListValue;
 class Value;
+}
+
+namespace image_fetcher {
+class ImageFetcher;
 }
 
 namespace suggestions {
@@ -54,17 +59,22 @@ class NTPSnippetsService : public KeyedService {
   using ParseJSONCallback = base::Callback<
       void(const std::string&, const SuccessCallback&, const ErrorCallback&)>;
 
+  using ImageFetchedCallback =
+      base::Callback<void(const GURL&, const SkBitmap*)>;
+
   // |application_language_code| should be a ISO 639-1 compliant string, e.g.
   // 'en' or 'en-US'. Note that this code should only specify the language, not
   // the locale, so 'en_US' (English language with US locale) and 'en-GB_US'
   // (British English person in the US) are not language codes.
-  NTPSnippetsService(PrefService* pref_service,
-                     suggestions::SuggestionsService* suggestions_service,
-                     scoped_refptr<base::SequencedTaskRunner> file_task_runner,
-                     const std::string& application_language_code,
-                     NTPSnippetsScheduler* scheduler,
-                     std::unique_ptr<NTPSnippetsFetcher> snippets_fetcher,
-                     const ParseJSONCallback& parse_json_callback);
+  NTPSnippetsService(
+      PrefService* pref_service,
+      suggestions::SuggestionsService* suggestions_service,
+      scoped_refptr<base::SequencedTaskRunner> file_task_runner,
+      const std::string& application_language_code,
+      NTPSnippetsScheduler* scheduler,
+      std::unique_ptr<NTPSnippetsFetcher> snippets_fetcher,
+      const ParseJSONCallback& parse_json_callback,
+      std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher);
   ~NTPSnippetsService() override;
 
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
@@ -91,8 +101,12 @@ class NTPSnippetsService : public KeyedService {
   }
 
   // (Re)schedules the periodic fetching of snippets. This is necessary because
-  // the schedule depends on the time of day
+  // the schedule depends on the time of day.
   void RescheduleFetching();
+
+  // Fetches the image for the given URL and notifies the observer afterwards.
+  void FetchSnippetImage(const GURL& snippet_url,
+                         const ImageFetchedCallback& callback);
 
   // Deletes all currently stored snippets.
   void ClearSnippets();
@@ -210,6 +224,8 @@ class NTPSnippetsService : public KeyedService {
   base::OneShotTimer expiry_timer_;
 
   ParseJSONCallback parse_json_callback_;
+
+  std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher_;
 
   base::WeakPtrFactory<NTPSnippetsService> weak_ptr_factory_;
 

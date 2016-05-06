@@ -9,7 +9,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
-#include "base/android/scoped_java_ref.h"
+#include "base/callback.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/ntp_snippets/ntp_snippets_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -19,11 +19,16 @@
 #include "components/ntp_snippets/ntp_snippet.h"
 #include "components/ntp_snippets/ntp_snippets_service.h"
 #include "jni/SnippetsBridge_jni.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/android/java_bitmap.h"
 
+using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF8;
 using base::android::JavaParamRef;
 using base::android::ToJavaArrayOfStrings;
 using base::android::ToJavaLongArray;
+using base::android::ScopedJavaGlobalRef;
+using base::android::ScopedJavaLocalRef;
 
 namespace {
 
@@ -64,13 +69,17 @@ static void RescheduleFetching(JNIEnv* env,
 
 NTPSnippetsBridge::NTPSnippetsBridge(JNIEnv* env,
                                      const JavaParamRef<jobject>& j_profile)
-    : snippet_service_observer_(this) {
+    : snippet_service_observer_(this), weak_ptr_factory_(this) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
   ntp_snippets_service_ = NTPSnippetsServiceFactory::GetForProfile(profile);
   history_service_ =
       HistoryServiceFactory::GetForProfile(profile,
                                            ServiceAccessType::EXPLICIT_ACCESS);
   snippet_service_observer_.Add(ntp_snippets_service_);
+}
+
+void NTPSnippetsBridge::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {
+  delete this;
 }
 
 void NTPSnippetsBridge::SetObserver(JNIEnv* env,
@@ -80,10 +89,15 @@ void NTPSnippetsBridge::SetObserver(JNIEnv* env,
   NTPSnippetsServiceLoaded();
 }
 
-NTPSnippetsBridge::~NTPSnippetsBridge() {}
-
-void NTPSnippetsBridge::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {
-  delete this;
+void NTPSnippetsBridge::FetchImage(JNIEnv* env,
+                                   const JavaParamRef<jobject>& obj,
+                                   const JavaParamRef<jstring>& snippet_url_str,
+                                   const JavaParamRef<jobject>& j_callback) {
+  GURL snippet_url(ConvertJavaStringToUTF8(env, snippet_url_str));
+  base::android::ScopedJavaGlobalRef<jobject> callback(j_callback);
+  ntp_snippets_service_->FetchSnippetImage(
+      snippet_url, base::Bind(&NTPSnippetsBridge::OnImageFetched,
+                              weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
 void NTPSnippetsBridge::DiscardSnippet(JNIEnv* env,
@@ -105,6 +119,8 @@ void NTPSnippetsBridge::SnippetVisited(JNIEnv* env,
       base::Bind(&SnippetVisitedHistoryRequestCallback, callback),
       &tracker_);
 }
+
+NTPSnippetsBridge::~NTPSnippetsBridge() {}
 
 void NTPSnippetsBridge::NTPSnippetsServiceLoaded() {
   if (observer_.is_null())
@@ -147,6 +163,19 @@ void NTPSnippetsBridge::NTPSnippetsServiceLoaded() {
 void NTPSnippetsBridge::NTPSnippetsServiceShutdown() {
   observer_.Reset();
   snippet_service_observer_.Remove(ntp_snippets_service_);
+}
+
+void NTPSnippetsBridge::OnImageFetched(ScopedJavaGlobalRef<jobject> callback,
+                                       const GURL& snippet_url,
+                                       const SkBitmap* bitmap) {
+  JNIEnv* env = AttachCurrentThread();
+
+  ScopedJavaLocalRef<jobject> j_bitmap;
+  if (bitmap && !bitmap->isNull())
+    j_bitmap = gfx::ConvertToJavaBitmap(bitmap);
+
+  Java_FetchSnippetImageCallback_onSnippetImageAvailable(env, callback.obj(),
+                                                         j_bitmap.obj());
 }
 
 // static

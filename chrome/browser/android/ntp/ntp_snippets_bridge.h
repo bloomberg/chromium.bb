@@ -8,10 +8,13 @@
 #include <jni.h>
 
 #include "base/android/scoped_java_ref.h"
+#include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/ntp_snippets/ntp_snippets_service.h"
+
+class SkBitmap;
 
 // The C++ counterpart to SnippetsBridge.java. Enables Java code to access
 // the list of snippets to show on the NTP
@@ -24,6 +27,11 @@ class NTPSnippetsBridge : public ntp_snippets::NTPSnippetsServiceObserver {
   void SetObserver(JNIEnv* env,
                    const base::android::JavaParamRef<jobject>& obj,
                    const base::android::JavaParamRef<jobject>& j_observer);
+
+  void FetchImage(JNIEnv* env,
+                  const base::android::JavaParamRef<jobject>& obj,
+                  const base::android::JavaParamRef<jstring>& snippet_url_str,
+                  const base::android::JavaParamRef<jobject>& j_callback);
 
   // Discards the snippet with the given URL.
   void DiscardSnippet(JNIEnv* env,
@@ -45,6 +53,10 @@ class NTPSnippetsBridge : public ntp_snippets::NTPSnippetsServiceObserver {
   void NTPSnippetsServiceLoaded() override;
   void NTPSnippetsServiceShutdown() override;
 
+  void OnImageFetched(base::android::ScopedJavaGlobalRef<jobject> callback,
+                      const GURL& snippet_url,
+                      const SkBitmap* bitmap);
+
   ntp_snippets::NTPSnippetsService* ntp_snippets_service_;
   history::HistoryService* history_service_;
   base::CancelableTaskTracker tracker_;
@@ -54,6 +66,8 @@ class NTPSnippetsBridge : public ntp_snippets::NTPSnippetsServiceObserver {
   ScopedObserver<ntp_snippets::NTPSnippetsService,
                  ntp_snippets::NTPSnippetsServiceObserver>
       snippet_service_observer_;
+
+  base::WeakPtrFactory<NTPSnippetsBridge> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NTPSnippetsBridge);
 };

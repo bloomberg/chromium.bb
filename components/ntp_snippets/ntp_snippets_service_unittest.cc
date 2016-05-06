@@ -17,6 +17,7 @@
 #include "base/test/histogram_tester.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "components/image_fetcher/image_fetcher.h"
 #include "components/ntp_snippets/ntp_snippet.h"
 #include "components/ntp_snippets/ntp_snippets_fetcher.h"
 #include "components/ntp_snippets/ntp_snippets_scheduler.h"
@@ -203,7 +204,7 @@ class NTPSnippetsServiceTest : public testing::Test {
         scheduler_.get(),
         base::WrapUnique(new NTPSnippetsFetcher(
             std::move(request_context_getter), true)),
-        base::Bind(&ParseJson, true)));
+        base::Bind(&ParseJson, true), nullptr));
     if (enabled)
       EXPECT_CALL(*scheduler_, Schedule(_, _, _, _));
     else

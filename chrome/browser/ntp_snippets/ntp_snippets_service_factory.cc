@@ -8,8 +8,10 @@
 #include "base/memory/singleton.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search/suggestions/image_fetcher_impl.h"
 #include "chrome/browser/search/suggestions/suggestions_service_factory.h"
 #include "chrome/common/channel_info.h"
+#include "components/image_fetcher/image_fetcher.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/ntp_snippets/ntp_snippets_fetcher.h"
 #include "components/ntp_snippets/ntp_snippets_scheduler.h"
@@ -26,6 +28,7 @@
 #endif  // OS_ANDROID
 
 using content::BrowserThread;
+using suggestions::ImageFetcherImpl;
 using suggestions::SuggestionsService;
 using suggestions::SuggestionsServiceFactory;
 
@@ -77,5 +80,6 @@ KeyedService* NTPSnippetsServiceFactory::BuildServiceInstanceFor(
       base::WrapUnique(new ntp_snippets::NTPSnippetsFetcher(
           request_context,
           chrome::GetChannel() == version_info::Channel::STABLE)),
-      base::Bind(&safe_json::SafeJsonParser::Parse));
+      base::Bind(&safe_json::SafeJsonParser::Parse),
+      base::WrapUnique(new ImageFetcherImpl(request_context.get())));
 }

@@ -49,6 +49,7 @@ import org.chromium.chrome.browser.ntp.cards.NewTabPageListItem;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageRecyclerView;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.ntp.snippets.SnippetItemDecoration;
+import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge.FetchSnippetImageCallback;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge.SnippetsObserver;
 import org.chromium.chrome.browser.profiles.MostVisitedSites.MostVisitedURLsObserver;
 import org.chromium.chrome.browser.profiles.MostVisitedSites.ThumbnailCallback;
@@ -235,6 +236,13 @@ public class NewTabPageView extends FrameLayout
          * Called when a snippet has been dismissed by the user.
          */
         void onSnippetDismissed(SnippetArticle dismissedSnippet);
+
+        /**
+         * Gets the thumbnail image for a snippet.
+         * @param snippetUrl URL of the snippet for which we want to fetch the image.
+         * @param callback Callback to run after fetching completes (successful or not).
+         */
+        void fetchSnippetImage(String snippetUrl, FetchSnippetImageCallback callback);
     }
 
     /**

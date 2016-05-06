@@ -6,12 +6,10 @@ package org.chromium.chrome.browser.ntp.snippets;
 
 import android.content.res.Resources;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.TransitionDrawable;
 import android.media.ThumbnailUtils;
-import android.os.AsyncTask;
 import android.text.format.DateUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,8 +19,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.Log;
-import org.chromium.base.StreamUtil;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
@@ -32,11 +28,8 @@ import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageListItem;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 
 /**
  * A class that represents the view for a single card snippet.
@@ -52,7 +45,8 @@ public class SnippetArticleViewHolder extends NewTabPageViewHolder implements Vi
     private final TextView mArticleSnippetTextView;
     private final ImageView mThumbnailView;
 
-    private AsyncTask<String, Void, Bitmap> mThumbnailFetchingTask;
+    private FetchImageCallback mImageCallback;
+
     public String mUrl;
     public int mPosition;
 
@@ -90,7 +84,9 @@ public class SnippetArticleViewHolder extends NewTabPageViewHolder implements Vi
             }
 
             @Override
-            public void onViewDetachedFromWindow(View v) {}
+            public void onViewDetachedFromWindow(View v) {
+                cancelImageFetch();
+            }
         });
     }
 
@@ -116,56 +112,53 @@ public class SnippetArticleViewHolder extends NewTabPageViewHolder implements Vi
         mUrl = item.mUrl;
         mPosition = item.mPosition;
 
-        updateThumbnail(item);
+        // If there's still a pending thumbnail fetch, cancel it.
+        cancelImageFetch();
+
+        // If the article has a thumbnail already, reuse it. Otherwise start a fetch.
+        if (item.getThumbnailBitmap() != null) {
+            mThumbnailView.setImageBitmap(item.getThumbnailBitmap());
+        } else {
+            mThumbnailView.setImageResource(R.drawable.ic_snippet_thumbnail_placeholder);
+            mImageCallback = new FetchImageCallback(this, item);
+            mNewTabPageManager.fetchSnippetImage(item.mUrl, mImageCallback);
+        }
+
         updateFavicon(item);
     }
 
-    private void updateThumbnail(final SnippetArticle snippet) {
-        // If this view has a pending fetching task, it will display the stale thumbnail when it
-        // finishes, so we need to cancel that task.
-        if (mThumbnailFetchingTask != null) mThumbnailFetchingTask.cancel(true);
+    private static class FetchImageCallback implements SnippetsBridge.FetchSnippetImageCallback {
+        private SnippetArticleViewHolder mViewHolder;
+        private final SnippetArticle mSnippet;
 
-        if (snippet.getThumbnailBitmap() != null) {
-            mThumbnailView.setImageBitmap(snippet.getThumbnailBitmap());
-            return;
+        public FetchImageCallback(SnippetArticleViewHolder viewHolder, SnippetArticle snippet) {
+            mViewHolder = viewHolder;
+            mSnippet = snippet;
         }
 
-        mThumbnailView.setImageResource(R.drawable.ic_snippet_thumbnail_placeholder);
-
-        if (snippet.mThumbnailUrl.isEmpty()) {
-            Log.e(TAG, "Could not get image thumbnail due to empty URL");
-            return;
+        @Override
+        public void onSnippetImageAvailable(Bitmap image) {
+            if (mViewHolder == null) return;
+            mViewHolder.fadeThumbnailIn(mSnippet, image);
         }
 
-        mThumbnailFetchingTask = new AsyncTask<String, Void, Bitmap>() {
+        public void cancel() {
+            // TODO(treib): Pass the "cancel" on to the actual image fetcher.
+            mViewHolder = null;
+        }
+    }
 
-            @Override
-            protected Bitmap doInBackground(String... params) {
-                InputStream is = null;
-                try {
-                    is = new URL(params[0]).openStream();
-                    return BitmapFactory.decodeStream(is);
-                } catch (IOException e) {
-                    Log.e(TAG, "Could not get image thumbnail", e);
-                } finally {
-                    StreamUtil.closeQuietly(is);
-                }
-
-                return null;
-            }
-
-            @Override
-            protected void onPostExecute(Bitmap result) {
-                if (result == null) return; // Nothing to do, we keep the placeholder.
-                fadeThumbnailIn(snippet, result);
-            }
-        };
-
-        mThumbnailFetchingTask.executeOnExecutor(
-                AsyncTask.THREAD_POOL_EXECUTOR, snippet.mThumbnailUrl);
+    private void cancelImageFetch() {
+        if (mImageCallback != null) {
+            mImageCallback.cancel();
+            mImageCallback = null;
+        }
     }
 
     private void fadeThumbnailIn(SnippetArticle snippet, Bitmap thumbnail) {
+        mImageCallback = null;
+        if (thumbnail == null) return; // Nothing to do, we keep the placeholder.
+
         // We need to crop and scale the downloaded bitmap, as the ImageView we set it on won't be
         // able to do so when using a TransitionDrawable (as opposed to the straight bitmap).
         // That's a limitation of TransitionDrawable, which doesn't handle layers of varying sizes.
