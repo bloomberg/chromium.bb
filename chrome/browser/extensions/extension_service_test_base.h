@@ -17,6 +17,7 @@
 #include "build/build_config.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_renderer_host.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -133,6 +134,9 @@ class ExtensionServiceTestBase : public testing::Test {
   // Destroying at_exit_manager_ will delete all LazyInstances, so it must come
   // after thread_bundle_ in the destruction order.
   base::ShadowingAtExitManager at_exit_manager_;
+
+  // Enable creation of WebContents without initializing a renderer.
+  content::RenderViewHostTestEnabler rvh_test_enabler_;
 
   std::unique_ptr<content::TestBrowserThreadBundle> thread_bundle_;
 

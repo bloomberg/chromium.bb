@@ -24,7 +24,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/test_browser_window.h"
 #include "components/crx_file/id_util.h"
-#include "content/public/test/test_web_contents_factory.h"
+#include "content/public/test/web_contents_tester.h"
 #include "extensions/browser/event_router_factory.h"
 #include "extensions/browser/extension_error_test_util.h"
 #include "extensions/browser/extension_prefs.h"
@@ -332,9 +332,8 @@ TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivatePackFunction) {
 
 // Test developerPrivate.choosePath.
 TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivateChoosePath) {
-  content::TestWebContentsFactory web_contents_factory;
-  content::WebContents* web_contents =
-      web_contents_factory.CreateWebContents(profile());
+  std::unique_ptr<content::WebContents> web_contents(
+      content::WebContentsTester::CreateTestWebContents(profile(), nullptr));
 
   base::FilePath expected_dir_path = data_dir().AppendASCII("good_unpacked");
   api::EntryPicker::SkipPickerAndAlwaysSelectPathForTest(&expected_dir_path);
@@ -376,9 +375,8 @@ TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivateChoosePath) {
 
 // Test developerPrivate.loadUnpacked.
 TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivateLoadUnpacked) {
-  content::TestWebContentsFactory web_contents_factory;
-  content::WebContents* web_contents =
-      web_contents_factory.CreateWebContents(profile());
+  std::unique_ptr<content::WebContents> web_contents(
+      content::WebContentsTester::CreateTestWebContents(profile(), nullptr));
 
   base::FilePath path = data_dir().AppendASCII("good_unpacked");
   api::EntryPicker::SkipPickerAndAlwaysSelectPathForTest(&path);

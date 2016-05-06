@@ -17,8 +17,10 @@
 #include "chrome/browser/extensions/extension_service_test_with_install.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_web_contents_factory.h"
+#include "content/public/test/web_contents_tester.h"
 #include "extensions/browser/image_loader.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
@@ -219,14 +221,13 @@ TEST_F(ExtensionInstallPromptTestWithService, ExtensionInstallPromptIconsTest) {
           base::Bind(&SetImage, &image, image_loop.QuitClosure()));
   image_loop.Run();
   ASSERT_FALSE(image.IsEmpty());
-  content::TestWebContentsFactory factory;
-  content::WebContents* web_contents =
-      factory.CreateWebContents(browser_context());
+  std::unique_ptr<content::WebContents> web_contents(
+      content::WebContentsTester::CreateTestWebContents(browser_context(),
+                                                        nullptr));
   {
-    ExtensionInstallPrompt prompt(web_contents);
+    ExtensionInstallPrompt prompt(web_contents.get());
     base::RunLoop run_loop;
-    prompt.ShowDialog(ExtensionInstallPrompt::DoneCallback(),
-                      extension,
+    prompt.ShowDialog(ExtensionInstallPrompt::DoneCallback(), extension,
                       nullptr,  // Force an icon fetch.
                       base::Bind(&VerifyPromptIconCallback,
                                  run_loop.QuitClosure(), image.AsBitmap()));
@@ -234,7 +235,7 @@ TEST_F(ExtensionInstallPromptTestWithService, ExtensionInstallPromptIconsTest) {
   }
 
   {
-    ExtensionInstallPrompt prompt(web_contents);
+    ExtensionInstallPrompt prompt(web_contents.get());
     base::RunLoop run_loop;
     gfx::ImageSkia app_icon = util::GetDefaultAppIcon();
     prompt.ShowDialog(ExtensionInstallPrompt::DoneCallback(),

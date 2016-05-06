@@ -26,7 +26,6 @@
 #include "chrome/test/base/test_browser_window.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/crx_file/id_util.h"
-#include "content/public/test/test_web_contents_factory.h"
 #include "content/public/test/web_contents_tester.h"
 #include "extensions/browser/extension_dialog_auto_confirm.h"
 #include "extensions/browser/extension_registry.h"
@@ -504,17 +503,17 @@ TEST_F(ExtensionContextMenuModelTest, TestPageAccessSubmenu) {
   const GURL kOtherUrl("http://www.google.com/");
 
   // Add a web contents to the browser.
-  content::TestWebContentsFactory factory;
-  content::WebContents* contents = factory.CreateWebContents(profile());
+  std::unique_ptr<content::WebContents> contents(
+      content::WebContentsTester::CreateTestWebContents(profile(), nullptr));
   Browser* browser = GetBrowser();
-  browser->tab_strip_model()->AppendWebContents(contents, true);
-  EXPECT_EQ(browser->tab_strip_model()->GetActiveWebContents(), contents);
+  browser->tab_strip_model()->AppendWebContents(contents.get(), true);
+  EXPECT_EQ(browser->tab_strip_model()->GetActiveWebContents(), contents.get());
   content::WebContentsTester* web_contents_tester =
-      content::WebContentsTester::For(contents);
+      content::WebContentsTester::For(contents.get());
   web_contents_tester->NavigateAndCommit(kActiveUrl);
 
   ExtensionActionRunner* action_runner =
-      ExtensionActionRunner::GetForWebContents(contents);
+      ExtensionActionRunner::GetForWebContents(contents.get());
   ASSERT_TRUE(action_runner);
 
   // Pretend the extension wants to run.

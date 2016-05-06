@@ -12,7 +12,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/test/test_web_contents_factory.h"
+#include "content/public/test/web_contents_tester.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_icon_set.h"
@@ -316,10 +316,9 @@ TEST_F(BookmarkAppHelperExtensionServiceTest, CreateBookmarkApp) {
   web_app_info.title = base::UTF8ToUTF16(kAppTitle);
   web_app_info.description = base::UTF8ToUTF16(kAppDescription);
 
-  content::TestWebContentsFactory web_contents_factory;
-  content::WebContents* contents =
-      web_contents_factory.CreateWebContents(profile());
-  TestBookmarkAppHelper helper(service_, web_app_info, contents);
+  std::unique_ptr<content::WebContents> contents(
+      content::WebContentsTester::CreateTestWebContents(profile(), nullptr));
+  TestBookmarkAppHelper helper(service_, web_app_info, contents.get());
   helper.Create(base::Bind(&TestBookmarkAppHelper::CreationComplete,
                            base::Unretained(&helper)));
 
@@ -346,10 +345,9 @@ TEST_F(BookmarkAppHelperExtensionServiceTest, CreateBookmarkApp) {
 TEST_F(BookmarkAppHelperExtensionServiceTest, CreateBookmarkAppWithManifest) {
   WebApplicationInfo web_app_info;
 
-  content::TestWebContentsFactory web_contents_factory;
-  content::WebContents* contents =
-      web_contents_factory.CreateWebContents(profile());
-  TestBookmarkAppHelper helper(service_, web_app_info, contents);
+  std::unique_ptr<content::WebContents> contents(
+      content::WebContentsTester::CreateTestWebContents(profile(), nullptr));
+  TestBookmarkAppHelper helper(service_, web_app_info, contents.get());
   helper.Create(base::Bind(&TestBookmarkAppHelper::CreationComplete,
                            base::Unretained(&helper)));
 

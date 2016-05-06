@@ -84,6 +84,3 @@ SigninErrorNotifierTest.NoErrorAuthStatusProviders
 
 # https://crbug.com/577410
 PluginInfoMessageFilterTest.FindEnabledPlugin
-
-# http://crbug.com/608064
-ChromeRuntimeAPIDelegateTest.RequestUpdateCheck

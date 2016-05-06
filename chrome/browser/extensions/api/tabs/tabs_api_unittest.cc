@@ -11,7 +11,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/test_browser_window.h"
 #include "content/public/browser/navigation_entry.h"
-#include "content/public/test/test_web_contents_factory.h"
 #include "content/public/test/web_contents_tester.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/test_util.h"
@@ -78,11 +77,11 @@ TEST_F(TabsApiUnitTest, QueryWithoutTabsPermission) {
   std::string tab_titles[] = {"", "Sample title", "Sample title"};
 
   // Add 3 web contentses to the browser.
-  content::TestWebContentsFactory factory;
-  content::WebContents* web_contentses[arraysize(tab_urls)];
+  std::unique_ptr<content::WebContents> web_contentses[arraysize(tab_urls)];
   for (size_t i = 0; i < arraysize(tab_urls); ++i) {
-    content::WebContents* web_contents = factory.CreateWebContents(profile());
-    web_contentses[i] = web_contents;
+    content::WebContents* web_contents =
+        content::WebContentsTester::CreateTestWebContents(profile(), nullptr);
+    web_contentses[i].reset(web_contents);
     browser()->tab_strip_model()->AppendWebContents(web_contents, true);
     EXPECT_EQ(browser()->tab_strip_model()->GetActiveWebContents(),
               web_contents);
@@ -124,7 +123,7 @@ TEST_F(TabsApiUnitTest, QueryWithoutTabsPermission) {
   ASSERT_TRUE(tabs_list_with_permission->GetDictionary(0, &third_tab_info));
   int third_tab_id = -1;
   ASSERT_TRUE(third_tab_info->GetInteger("id", &third_tab_id));
-  EXPECT_EQ(ExtensionTabUtil::GetTabId(web_contentses[2]), third_tab_id);
+  EXPECT_EQ(ExtensionTabUtil::GetTabId(web_contentses[2].get()), third_tab_id);
 }
 
 TEST_F(TabsApiUnitTest, QueryWithHostPermission) {
@@ -134,11 +133,11 @@ TEST_F(TabsApiUnitTest, QueryWithHostPermission) {
   std::string tab_titles[] = {"", "Sample title", "Sample title"};
 
   // Add 3 web contentses to the browser.
-  content::TestWebContentsFactory factory;
-  content::WebContents* web_contentses[arraysize(tab_urls)];
+  std::unique_ptr<content::WebContents> web_contentses[arraysize(tab_urls)];
   for (size_t i = 0; i < arraysize(tab_urls); ++i) {
-    content::WebContents* web_contents = factory.CreateWebContents(profile());
-    web_contentses[i] = web_contents;
+    content::WebContents* web_contents =
+        content::WebContentsTester::CreateTestWebContents(profile(), nullptr);
+    web_contentses[i].reset(web_contents);
     browser()->tab_strip_model()->AppendWebContents(web_contents, true);
     EXPECT_EQ(browser()->tab_strip_model()->GetActiveWebContents(),
               web_contents);
@@ -176,7 +175,8 @@ TEST_F(TabsApiUnitTest, QueryWithHostPermission) {
     ASSERT_TRUE(tabs_list_with_permission->GetDictionary(0, &third_tab_info));
     int third_tab_id = -1;
     ASSERT_TRUE(third_tab_info->GetInteger("id", &third_tab_id));
-    EXPECT_EQ(ExtensionTabUtil::GetTabId(web_contentses[2]), third_tab_id);
+    EXPECT_EQ(ExtensionTabUtil::GetTabId(web_contentses[2].get()),
+              third_tab_id);
   }
 
   // Try the same without title, first and third tabs will match.
@@ -194,8 +194,10 @@ TEST_F(TabsApiUnitTest, QueryWithHostPermission) {
     ASSERT_TRUE(tabs_list_with_permission->GetDictionary(1, &third_tab_info));
 
     std::vector<int> expected_tabs_ids;
-    expected_tabs_ids.push_back(ExtensionTabUtil::GetTabId(web_contentses[0]));
-    expected_tabs_ids.push_back(ExtensionTabUtil::GetTabId(web_contentses[2]));
+    expected_tabs_ids.push_back(
+        ExtensionTabUtil::GetTabId(web_contentses[0].get()));
+    expected_tabs_ids.push_back(
+        ExtensionTabUtil::GetTabId(web_contentses[2].get()));
 
     int first_tab_id = -1;
     ASSERT_TRUE(first_tab_info->GetInteger("id", &first_tab_id));
