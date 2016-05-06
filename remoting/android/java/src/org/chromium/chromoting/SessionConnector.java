@@ -11,11 +11,11 @@ import org.chromium.chromoting.jni.ConnectionListener;
  * This class manages making a connection to a host, with logic for reloading the host list and
  * retrying the connection in the case of a stale host JID.
  */
-public class SessionConnector implements ConnectionListener, HostListLoader.Callback {
+public class SessionConnector implements ConnectionListener, HostListManager.Callback {
     private Client mClient;
     private ConnectionListener mConnectionListener;
-    private HostListLoader.Callback mHostListCallback;
-    private HostListLoader mHostListLoader;
+    private HostListManager.Callback mHostListCallback;
+    private HostListManager mHostListManager;
     private SessionAuthenticator mAuthenticator;
 
     private String mAccountName;
@@ -36,14 +36,14 @@ public class SessionConnector implements ConnectionListener, HostListLoader.Call
     /**
      * @param connectionListener Object to be notified on connection success/failure.
      * @param hostListCallback Object to be notified whenever the host list is reloaded.
-     * @param hostListLoader The object used for reloading the host list.
+     * @param hostListManager The object used for reloading the host list.
      */
     public SessionConnector(Client client, ConnectionListener connectionListener,
-            HostListLoader.Callback hostListCallback, HostListLoader hostListLoader) {
+            HostListManager.Callback hostListCallback, HostListManager hostListManager) {
         mClient = client;
         mConnectionListener = connectionListener;
         mHostListCallback = hostListCallback;
-        mHostListLoader = hostListLoader;
+        mHostListManager = hostListManager;
     }
 
     /** Initiates a connection to the host. */
@@ -76,7 +76,7 @@ public class SessionConnector implements ConnectionListener, HostListLoader.Call
 
     private void reloadHostListAndConnect() {
         mTriedReloadingHostList = true;
-        mHostListLoader.retrieveHostList(mAuthToken, this);
+        mHostListManager.retrieveHostList(mAuthToken, this);
     }
 
     @Override
@@ -126,7 +126,17 @@ public class SessionConnector implements ConnectionListener, HostListLoader.Call
     }
 
     @Override
-    public void onError(HostListLoader.Error error) {
+    public void onHostUpdated() {
+        // Not implemented Yet.
+    }
+
+    @Override
+    public void onHostDeleted() {
+        // Not implemented Yet.
+    }
+
+    @Override
+    public void onError(HostListManager.Error error) {
         // Connection failed and reloading the host list also failed, so report the connection
         // error.
         mConnectionListener.onConnectionState(ConnectionListener.State.FAILED,

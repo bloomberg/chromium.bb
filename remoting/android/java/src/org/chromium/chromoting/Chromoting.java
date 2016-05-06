@@ -48,7 +48,7 @@ import java.util.Arrays;
  * also requests and renews authentication tokens using the system account manager.
  */
 public class Chromoting extends AppCompatActivity implements ConnectionListener,
-        AccountSwitcher.Callback, HostListLoader.Callback, View.OnClickListener {
+        AccountSwitcher.Callback, HostListManager.Callback, View.OnClickListener {
     private static final String TAG = "Chromoting";
 
     /** Only accounts of this type will be selectable for authentication. */
@@ -76,7 +76,7 @@ public class Chromoting extends AppCompatActivity implements ConnectionListener,
     private String mToken;
 
     /** Helper for fetching the host list. */
-    private HostListLoader mHostListLoader;
+    private HostListManager mHostListManager;
 
     /** List of hosts. */
     private HostInfo[] mHosts = new HostInfo[0];
@@ -103,7 +103,7 @@ public class Chromoting extends AppCompatActivity implements ConnectionListener,
     private SessionAuthenticator mAuthenticator;
 
     /**
-     * This is set when receiving an authentication error from the HostListLoader. If that occurs,
+     * This is set when receiving an authentication error from the HostListManager. If that occurs,
      * this flag is set and a fresh authentication token is fetched from the AccountsService, and
      * used to request the host list a second time.
      */
@@ -192,7 +192,7 @@ public class Chromoting extends AppCompatActivity implements ConnectionListener,
         setSupportActionBar(toolbar);
 
         mTriedNewAuthToken = false;
-        mHostListLoader = new HostListLoader();
+        mHostListManager = new HostListManager();
 
         // Get ahold of our view widgets.
         mHostListView = (ListView) findViewById(R.id.hostList_chooser);
@@ -474,7 +474,7 @@ public class Chromoting extends AppCompatActivity implements ConnectionListener,
                     }
                 });
 
-        SessionConnector connector = new SessionConnector(mClient, this, this, mHostListLoader);
+        SessionConnector connector = new SessionConnector(mClient, this, this, mHostListManager);
         mAuthenticator = new SessionAuthenticator(this, mClient, host);
         connector.connectToHost(mAccount, mToken, host, mAuthenticator,
                 getPreferences(MODE_PRIVATE).getString(PREFERENCE_EXPERIMENTAL_FLAGS, ""));
@@ -501,7 +501,7 @@ public class Chromoting extends AppCompatActivity implements ConnectionListener,
                     public void onTokenFetched(String token) {
                         mWaitingForAuthToken = false;
                         mToken = token;
-                        mHostListLoader.retrieveHostList(mToken, Chromoting.this);
+                        mHostListManager.retrieveHostList(mToken, Chromoting.this);
                     }
 
                     @Override
@@ -544,7 +544,7 @@ public class Chromoting extends AppCompatActivity implements ConnectionListener,
 
     @Override
     public void onHostListReceived(HostInfo[] hosts) {
-        // Store a copy of the array, so that it can't be mutated by the HostListLoader. HostInfo
+        // Store a copy of the array, so that it can't be mutated by the HostListManager. HostInfo
         // is an immutable type, so a shallow copy of the array is sufficient here.
         mHosts = Arrays.copyOf(hosts, hosts.length);
         updateHostListView();
@@ -552,7 +552,17 @@ public class Chromoting extends AppCompatActivity implements ConnectionListener,
     }
 
     @Override
-    public void onError(HostListLoader.Error error) {
+    public void onHostUpdated() {
+        // Not implemented Yet.
+    }
+
+    @Override
+    public void onHostDeleted() {
+        // Not implemented Yet.
+    }
+
+    @Override
+    public void onError(HostListManager.Error error) {
         String explanation = null;
         switch (error) {
             case AUTH_FAILED:

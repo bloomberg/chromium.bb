@@ -21,7 +21,7 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
 
-/** Class to represent a Host returned by {@link HostListLoader}. */
+/** Class to represent a Host returned by {@link HostListManager}. */
 public class HostInfo {
     private static final String TAG = "Chromoting";
 
