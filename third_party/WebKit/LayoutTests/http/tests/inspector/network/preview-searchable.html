@@ -1,0 +1,122 @@
+<html>
+<head>
+<script src="../inspector-test.js"></script>
+<script src="../network-test.js"></script>
+<script>
+function test()
+{
+    function testSearches(view, searches)
+    {
+        for (var search of searches) {
+            view._searchInputElement.value = search;
+            view._regexButton.setToggled(false);
+            view._caseSensitiveButton.setToggled(false);
+            view.showSearchField();
+            InspectorTest.addResult("Should have found and highlighted all: " + search);
+
+            var foundItems = view.element.querySelectorAll("* /deep/ .highlighted-search-result");
+            InspectorTest.addResult("Normal search found " + foundItems.length + " results in dom.");
+
+            foundItems = view.element.querySelectorAll("* /deep/ .cm-search-highlight-start");
+            InspectorTest.addResult("CodeMirror search found " + foundItems.length + " results in dom.");
+            InspectorTest.addResult("");
+        }
+    }
+
+    function previewViewHandled(searches, callback, view)
+    {
+        var isSearchable = (view instanceof WebInspector.SearchableView);
+        var compontentView = view;
+        var typeName = "unknown";
+        if (isSearchable)
+            compontentView = view._searchProvider;
+
+        if (compontentView instanceof WebInspector.ResourceSourceFrame) {
+            typeName = "ResourceSourceFrame";
+            compontentView._ensureContentLoaded();
+            if (!compontentView.loaded) {
+                // try again when content is loaded.
+                InspectorTest.addSniffer(compontentView, "onTextEditorContentLoaded", previewViewHandled.bind(this, searches, callback, view));
+                return;
+            }
+        } else if (compontentView instanceof WebInspector.XMLView) {
+            typeName = "XMLView";
+        } else if(compontentView instanceof WebInspector.JSONView) {
+            typeName = "JSONView";
+        } else if(compontentView instanceof WebInspector.RequestHTMLView) {
+            typeName = "RequestHTMLView";
+        } else if(compontentView instanceof WebInspector.EmptyWidget) {
+            typeName = "EmptyWidget";
+        } else if(compontentView instanceof WebInspector.RequestHTMLView) {
+            typeName = "RequestHTMLView";
+        }
+
+        InspectorTest.addResult("Is Searchable: " + isSearchable);
+        InspectorTest.addResult("Type: " + typeName);
+
+        if (isSearchable)
+            testSearches(view, searches);
+
+        callback();
+    }
+
+    function trySearches(request, searches, callback)
+    {
+        InspectorTest.addSniffer(WebInspector.RequestPreviewView.prototype, "_previewViewHandledForTest", previewViewHandled.bind(this, searches, callback));
+        var networkPanel = WebInspector.panels.network;
+        networkPanel._showRequest(request);
+        var itemView = networkPanel._networkItemView;
+        itemView._selectTab("preview");
+    }
+
+    function testType(contentType, content, searches, callback)
+    {
+        var url = "data:" + contentType + "," + encodeURIComponent(content);
+        InspectorTest.makeSimpleXHR("GET", url, true, function() {
+            var request = InspectorTest.findRequestsByURLPattern(new RegExp(url.escapeForRegExp()))[0];
+            request._resourceType = WebInspector.resourceTypes.Document;
+            trySearches(request, searches, callback);
+        });
+    }
+
+    InspectorTest.runTestSuite([
+        function plainTextTest(next)
+        {
+            testType("text/plain", "foo bar\nfoo bar", ["foo", /*"bar"*/], next);
+        },
+        function jsonTest(next)
+        {
+            testType("application/json", "[533,3223]", ["533", "322"], next);
+        },
+        function jsonSpecialMimeTest(next)
+        {
+            testType("application/vnd.document+json", "{foo0foo: 123}", ["foo"],  next);
+        },
+        function xmlMultipleSearchTest(next)
+        {
+            testType("text/xml", "<bar><foo/></bar>", ["bar", "foo", "bar"],  next);
+        },
+        function xmlSingleSearchTest(next)
+        {
+            testType("text/xml", "<bar></bar>", ["bar"],  next);
+        },
+        function xmlCommentSearchTest(next)
+        {
+            testType("text/xml", "<bar><!-- TEST --></bar>", ["TEST", "/bar", "bar"],  next);
+        },
+        function xmlCDATASearchTest(next)
+        {
+            testType("text/xml", "<a><![CDATA[GGG]]><g tee=\"gee\">tee</g></a>", ["GGG", "tee", "CDATA"],  next);
+        },
+        function xmlMimeTypeJsonTest(next)
+        {
+            testType("text/xml", "{foo0: 'barr', 'barr': 'fooo'}", ["fooo", "bar"],  next);
+        }
+    ]);
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests that resources with JSON MIME types are previewed with the JSON viewer.</p>
+</body>
+</html>

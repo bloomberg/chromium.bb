@@ -9,6 +9,7 @@ function test()
     {
         InspectorTest.addResult("Creating a NetworkRequest with mimeType: " + mimeType);
         var request = new WebInspector.NetworkRequest(WebInspector.mainTarget, 0, 'http://localhost');
+        InspectorTest.addResult("Content: " + content.replace(/\0/g, "**NULL**"));
         request.mimeType = mimeType;
         request._content = content;
         if (statusCode !== undefined)

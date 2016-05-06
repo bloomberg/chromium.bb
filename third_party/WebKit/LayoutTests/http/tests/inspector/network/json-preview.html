@@ -20,7 +20,8 @@ function test()
             var previewView = new WebInspector.RequestPreviewView(request, null);
 
             previewView._createPreviewView(function(previewer) {
-                InspectorTest.addResult("Its previewer is the JSON previewer: " + (previewer && previewer instanceof WebInspector.JSONView));
+                InspectorTest.addResult("Its previewer is searchable: " + (previewer && previewer instanceof WebInspector.SearchableView));
+                InspectorTest.addResult("Its previewer is the JSON previewer: " + (previewer && previewer._searchProvider && previewer._searchProvider instanceof WebInspector.JSONView));
                 done();
             });
         });
