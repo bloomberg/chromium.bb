@@ -75,7 +75,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
         public void onConfigured(CameraCaptureSession cameraCaptureSession) {
             Log.d(TAG, "onConfigured");
             mCaptureSession = cameraCaptureSession;
-            createCaptureRequest();
+            triggerCaptureSession();
             changeCameraStateAndNotify(CameraState.STARTED);
         }
 
@@ -93,32 +93,29 @@ public class VideoCaptureCamera2 extends VideoCapture {
     private class CrImageReaderListener implements ImageReader.OnImageAvailableListener {
         @Override
         public void onImageAvailable(ImageReader reader) {
-            Image image = null;
-            try {
-                image = reader.acquireLatestImage();
+            try (Image image = reader.acquireLatestImage()) {
                 if (image == null) return;
+
                 if (image.getFormat() != ImageFormat.YUV_420_888 || image.getPlanes().length != 3) {
-                    Log.e(TAG, "Unexpected image format: %d or #planes: %d", image.getFormat(),
-                            image.getPlanes().length);
-                    return;
+                    nativeOnError(mNativeVideoCaptureDeviceAndroid, "Unexpected image format: "
+                            + image.getFormat() + " or #planes: " + image.getPlanes().length);
+                    throw new IllegalStateException();
                 }
 
                 if (reader.getWidth() != image.getWidth()
                         || reader.getHeight() != image.getHeight()) {
-                    throw new IllegalStateException("ImageReader size " + reader.getWidth() + "x"
-                            + reader.getHeight() + " did not match Image size " + image.getWidth()
-                            + "x" + image.getHeight());
+                    nativeOnError(mNativeVideoCaptureDeviceAndroid, "ImageReader size ("
+                            + reader.getWidth() + "x" + reader.getHeight()
+                            + ") did not match Image size (" + image.getWidth() + "x"
+                            + image.getHeight() + ")");
+                    throw new IllegalStateException();
                 }
+
                 readImageIntoBuffer(image, mCapturedData);
                 nativeOnFrameAvailable(mNativeVideoCaptureDeviceAndroid, mCapturedData,
                         mCapturedData.length, getCameraRotation());
             } catch (IllegalStateException ex) {
                 Log.e(TAG, "acquireLatestImage():" + ex);
-                return;
-            } finally {
-                if (image != null) {
-                    image.close();
-                }
             }
         }
     };
@@ -201,8 +198,8 @@ public class VideoCaptureCamera2 extends VideoCapture {
         return true;
     }
 
-    private boolean createCaptureRequest() {
-        Log.d(TAG, "createCaptureRequest");
+    private boolean triggerCaptureSession() {
+        Log.d(TAG, "triggerCaptureSession");
         try {
             // This line triggers the capture. No |listener| is registered, so
             // we will not get notified of capture events, instead, ImageReader
