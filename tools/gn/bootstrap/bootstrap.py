@@ -291,6 +291,7 @@ def write_ninja(path, root_gen_dir, options):
       'base/thread_task_runner_handle.cc',
       'base/threading/non_thread_safe_impl.cc',
       'base/threading/post_task_and_reply_impl.cc',
+      'base/threading/sequenced_task_runner_handle.cc',
       'base/threading/sequenced_worker_pool.cc',
       'base/threading/simple_thread.cc',
       'base/threading/thread.cc',
