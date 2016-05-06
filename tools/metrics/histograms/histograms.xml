@@ -65089,6 +65089,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="-102" label="CONNECTION_REFUSED"/>
   <int value="-101" label="CONNECTION_RESET"/>
   <int value="-100" label="CONNECTION_CLOSED"/>
+  <int value="-27" label="BLOCKED_BY_RESPONSE"/>
   <int value="-26" label="CONTEXT_SHUT_DOWN"/>
   <int value="-25" label="UPLOAD_STREAM_REWIND_NOT_SUPPORTED"/>
   <int value="-24" label="BLOCKED_ENROLLMENT_CHECK_PENDING"/>
@@ -79144,6 +79145,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="24" label="BLOCKED_ENROLLMENT_CHECK_PENDING"/>
   <int value="25" label="UPLOAD_STREAM_REWIND_NOT_SUPPORTED"/>
   <int value="26" label="CONTEXT_SHUT_DOWN"/>
+  <int value="27" label="BLOCKED_BY_RESPONSE"/>
   <int value="100" label="CONNECTION_CLOSED"/>
   <int value="101" label="CONNECTION_RESET"/>
   <int value="102" label="CONNECTION_REFUSED"/>

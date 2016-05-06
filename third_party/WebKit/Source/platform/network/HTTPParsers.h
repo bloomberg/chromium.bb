@@ -54,14 +54,6 @@ enum ContentTypeOptionsDisposition {
     ContentTypeOptionsNosniff
 };
 
-enum XFrameOptionsDisposition {
-    XFrameOptionsInvalid,
-    XFrameOptionsDeny,
-    XFrameOptionsSameOrigin,
-    XFrameOptionsAllowAll,
-    XFrameOptionsConflict
-};
-
 // Be sure to update the behavior of XSSAuditor::combineXSSProtectionHeaderAndCSP whenever you change this enum's content or ordering.
 enum ReflectedXSSDisposition {
     ReflectedXSSUnset = 0,
@@ -109,7 +101,6 @@ PLATFORM_EXPORT AtomicString extractMIMETypeFromMediaType(const AtomicString&);
 PLATFORM_EXPORT String extractCharsetFromMediaType(const String&);
 PLATFORM_EXPORT void findCharsetInMediaType(const String& mediaType, unsigned& charsetPos, unsigned& charsetLen, unsigned start = 0);
 PLATFORM_EXPORT ReflectedXSSDisposition parseXSSProtectionHeader(const String& header, String& failureReason, unsigned& failurePosition, String& reportURL);
-PLATFORM_EXPORT XFrameOptionsDisposition parseXFrameOptionsHeader(const String&);
 PLATFORM_EXPORT CacheControlHeader parseCacheControlDirectives(const AtomicString& cacheControlHeader, const AtomicString& pragmaHeader);
 PLATFORM_EXPORT void parseCommaDelimitedHeader(const String& headerValue, CommaDelimitedHeaderSet&);
 // Returns true on success, otherwise false. The Suborigin argument must be a

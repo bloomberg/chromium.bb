@@ -508,36 +508,6 @@ ContentTypeOptionsDisposition parseContentTypeOptionsHeader(const String& header
     return ContentTypeOptionsNone;
 }
 
-XFrameOptionsDisposition parseXFrameOptionsHeader(const String& header)
-{
-    XFrameOptionsDisposition result = XFrameOptionsInvalid;
-
-    if (header.isEmpty())
-        return result;
-
-    Vector<String> headers;
-    header.split(',', headers);
-
-    bool hasValue = false;
-    for (size_t i = 0; i < headers.size(); i++) {
-        String currentHeader = headers[i].stripWhiteSpace();
-        XFrameOptionsDisposition currentValue = XFrameOptionsInvalid;
-        if (equalIgnoringCase(currentHeader, "deny"))
-            currentValue = XFrameOptionsDeny;
-        else if (equalIgnoringCase(currentHeader, "sameorigin"))
-            currentValue = XFrameOptionsSameOrigin;
-        else if (equalIgnoringCase(currentHeader, "allowall"))
-            currentValue = XFrameOptionsAllowAll;
-
-        if (!hasValue)
-            result = currentValue;
-        else if (result != currentValue)
-            return XFrameOptionsConflict;
-        hasValue = true;
-    }
-    return result;
-}
-
 static bool isCacheHeaderSeparator(UChar c)
 {
     // See RFC 2616, Section 2.2

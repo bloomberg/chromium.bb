@@ -457,6 +457,7 @@
       'browser/fileapi/timed_task_helper_unittest.cc',
       'browser/fileapi/transient_file_util_unittest.cc',
       'browser/fileapi/upload_file_system_file_element_reader_unittest.cc',
+      'browser/frame_host/ancestor_throttle_unittest.cc',
       'browser/frame_host/frame_tree_unittest.cc',
       'browser/frame_host/navigation_controller_impl_unittest.cc',
       'browser/frame_host/navigation_entry_impl_unittest.cc',

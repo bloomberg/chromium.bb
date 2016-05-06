@@ -171,8 +171,6 @@ public:
 
     void applyUserAgent(ResourceRequest&);
 
-    bool shouldInterruptLoadForXFrameOptions(const String&, const KURL&, unsigned long requestIdentifier);
-
     bool allAncestorsAreComplete() const; // including this
 
     bool shouldClose(bool isReload = false);

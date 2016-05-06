@@ -739,6 +739,8 @@
       'browser/find_request_manager.cc',
       'browser/find_request_manager.h',
       'browser/font_list_async.cc',
+      'browser/frame_host/ancestor_throttle.cc',
+      'browser/frame_host/ancestor_throttle.h',
       'browser/frame_host/cross_process_frame_connector.cc',
       'browser/frame_host/cross_process_frame_connector.h',
       'browser/frame_host/cross_site_transferring_request.cc',

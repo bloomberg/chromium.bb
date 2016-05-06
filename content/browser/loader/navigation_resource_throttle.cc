@@ -235,6 +235,16 @@ void NavigationResourceThrottle::OnUIChecksPerformed(
     controller()->CancelAndIgnore();
   } else if (result == NavigationThrottle::CANCEL) {
     controller()->Cancel();
+  } else if (result == NavigationThrottle::BLOCK_RESPONSE) {
+    // TODO(mkwst): If we cancel the main frame request with anything other than
+    // 'net::ERR_ABORTED', we'll trigger some special behavior that might not be
+    // desirable here (non-POSTs will reload the page, while POST has some logic
+    // around reloading to avoid duplicating actions server-side). For the
+    // moment, only child frame navigations should be blocked. If we need to
+    // block main frame navigations in the future, we'll need to carefully
+    // consider the right thing to do here.
+    DCHECK(!ResourceRequestInfo::ForRequest(request_)->IsMainFrame());
+    controller()->CancelWithError(net::ERR_BLOCKED_BY_RESPONSE);
   } else {
     controller()->Resume();
   }

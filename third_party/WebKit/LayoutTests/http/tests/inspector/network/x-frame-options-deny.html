@@ -36,8 +36,10 @@ function test()
     function loadingFailed(requestId, time, localizedDescription, canceled)
     {
         var request = InspectorTest.networkLog.requestForId(requestId);
-        if (/x-frame-options-deny\.cgi/.exec(request.url))
+        if (/x-frame-options-deny\.cgi/.exec(request.url)) {
+            InspectorTest.addResult("TODO(mkwst): This started failing when we moved XFO to the browser.");
             InspectorTest.completeTest();
+        }
     }
 }
 </script>

@@ -176,7 +176,7 @@ void didReceiveResourceResponseButCanceled(LocalFrame* frame, DocumentLoader* lo
     didReceiveResourceResponse(frame, identifier, loader, r, 0);
 }
 
-void continueAfterXFrameOptionsDenied(LocalFrame* frame, DocumentLoader* loader, unsigned long identifier, const ResourceResponse& r)
+void canceledAfterReceivedResourceResponse(LocalFrame* frame, DocumentLoader* loader, unsigned long identifier, const ResourceResponse& r)
 {
     didReceiveResourceResponseButCanceled(frame, loader, identifier, r);
 }

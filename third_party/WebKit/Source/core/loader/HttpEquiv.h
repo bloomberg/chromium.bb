@@ -27,7 +27,6 @@ private:
     static void processHttpEquivDefaultStyle(Document&, const AtomicString& content);
     static void processHttpEquivRefresh(Document&, const AtomicString& content);
     static void processHttpEquivSetCookie(Document&, const AtomicString& content);
-    static void processHttpEquivXFrameOptions(Document&, const AtomicString& content);
     static void processHttpEquivContentSecurityPolicy(Document&, const AtomicString& equiv, const AtomicString& content);
     static void processHttpEquivAcceptCH(Document&, const AtomicString& content);
 };
