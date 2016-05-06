@@ -87,7 +87,6 @@ AbstractAudioContext::AbstractAudioContext(Document* document)
     , m_isCleared(false)
     , m_isResolvingResumePromises(false)
     , m_connectionCount(0)
-    , m_didInitializeContextGraphMutex(false)
     , m_deferredTaskHandler(DeferredTaskHandler::create())
     , m_contextState(Suspended)
     , m_closedContextSampleRate(-1)
@@ -96,7 +95,6 @@ AbstractAudioContext::AbstractAudioContext(Document* document)
     , m_periodicWaveSawtooth(nullptr)
     , m_periodicWaveTriangle(nullptr)
 {
-    m_didInitializeContextGraphMutex = true;
     m_destinationNode = DefaultAudioDestinationNode::create(this);
 
     initialize();
@@ -110,7 +108,6 @@ AbstractAudioContext::AbstractAudioContext(Document* document, unsigned numberOf
     , m_isCleared(false)
     , m_isResolvingResumePromises(false)
     , m_connectionCount(0)
-    , m_didInitializeContextGraphMutex(false)
     , m_deferredTaskHandler(DeferredTaskHandler::create())
     , m_contextState(Suspended)
     , m_closedContextSampleRate(-1)
@@ -119,7 +116,6 @@ AbstractAudioContext::AbstractAudioContext(Document* document, unsigned numberOf
     , m_periodicWaveSawtooth(nullptr)
     , m_periodicWaveTriangle(nullptr)
 {
-    m_didInitializeContextGraphMutex = true;
 }
 
 AbstractAudioContext::~AbstractAudioContext()
@@ -141,7 +137,7 @@ void AbstractAudioContext::initialize()
     FFTFrame::initialize();
     m_listener = AudioListener::create();
 
-    if (m_destinationNode.get()) {
+    if (m_destinationNode) {
         m_destinationNode->handler().initialize();
     }
 }
@@ -195,7 +191,7 @@ AudioDestinationNode* AbstractAudioContext::destination() const
     // Cannot be called from the audio thread because this method touches objects managed by Oilpan,
     // and the audio thread is not managed by Oilpan.
     ASSERT(!isAudioThread());
-    return m_destinationNode.get();
+    return m_destinationNode;
 }
 
 void AbstractAudioContext::throwExceptionForClosedState(ExceptionState& exceptionState)
@@ -771,19 +767,37 @@ void AbstractAudioContext::notifySourceNodeFinishedProcessing(AudioHandler* hand
     m_finishedSourceHandlers.append(handler);
 }
 
+void AbstractAudioContext::removeFinishedSourceNodes()
+{
+    ASSERT(isMainThread());
+    AutoLocker locker(this);
+    // Quadratic worst case, but sizes of both vectors are considered
+    // manageable, especially |m_finishedSourceNodes| is likely to be short.
+    for (AudioNode* node : m_finishedSourceNodes) {
+        size_t i = m_activeSourceNodes.find(node);
+        if (i != kNotFound)
+            m_activeSourceNodes.remove(i);
+    }
+    m_finishedSourceNodes.clear();
+}
+
 void AbstractAudioContext::releaseFinishedSourceNodes()
 {
     ASSERT(isGraphOwner());
     ASSERT(isAudioThread());
+    bool didRemove = false;
     for (AudioHandler* handler : m_finishedSourceHandlers) {
         for (unsigned i = 0; i < m_activeSourceNodes.size(); ++i) {
             if (handler == &m_activeSourceNodes[i]->handler()) {
                 handler->breakConnection();
-                m_activeSourceNodes.remove(i);
+                m_finishedSourceNodes.append(m_activeSourceNodes[i]);
+                didRemove = true;
                 break;
             }
         }
     }
+    if (didRemove)
+        Platform::current()->mainThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&AbstractAudioContext::removeFinishedSourceNodes, this));
 
     m_finishedSourceHandlers.clear();
 }
@@ -940,14 +954,7 @@ DEFINE_TRACE(AbstractAudioContext)
 {
     visitor->trace(m_destinationNode);
     visitor->trace(m_listener);
-    // trace() can be called in AbstractAudioContext constructor, and
-    // m_contextGraphMutex might be unavailable.
-    if (m_didInitializeContextGraphMutex) {
-        AutoLocker lock(this);
-        visitor->trace(m_activeSourceNodes);
-    } else {
-        visitor->trace(m_activeSourceNodes);
-    }
+    visitor->trace(m_activeSourceNodes);
     visitor->trace(m_resumeResolvers);
     visitor->trace(m_decodeAudioResolvers);
 

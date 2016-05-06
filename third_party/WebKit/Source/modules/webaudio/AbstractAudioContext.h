@@ -144,7 +144,7 @@ public:
     // Handles the promise and callbacks when |decodeAudioData| is finished decoding.
     void handleDecodeAudioData(AudioBuffer*, ScriptPromiseResolver*, AudioBufferCallback* successCallback, AudioBufferCallback* errorCallback);
 
-    AudioListener* listener() { return m_listener.get(); }
+    AudioListener* listener() { return m_listener; }
 
     virtual bool hasRealtimeConstraint() = 0;
 
@@ -299,6 +299,8 @@ private:
     // haven't finished playing.  Make sure to release them here.
     void releaseActiveSourceNodes();
 
+    void removeFinishedSourceNodes();
+
     Member<AudioListener> m_listener;
 
     // Only accessed in the audio thread.
@@ -313,6 +315,12 @@ private:
     // call AudioHandler::breakConnection() when we remove an AudioNode from
     // this.
     HeapVector<Member<AudioNode>> m_activeSourceNodes;
+
+    // The main thread controls m_activeSourceNodes, all updates and additions
+    // are performed by it. When the audio thread marks a source node as finished,
+    // the nodes are added to |m_finishedSourceNodes| and scheduled for removal
+    // from |m_activeSourceNodes| by the main thread.
+    Vector<UntracedMember<AudioNode>> m_finishedSourceNodes;
 
     // FIXME(dominicc): Move these to AudioContext because only
     // it creates these Promises.
@@ -331,7 +339,6 @@ private:
     unsigned m_connectionCount;
 
     // Graph locking.
-    bool m_didInitializeContextGraphMutex;
     RefPtr<DeferredTaskHandler> m_deferredTaskHandler;
 
     // The state of the AbstractAudioContext.
