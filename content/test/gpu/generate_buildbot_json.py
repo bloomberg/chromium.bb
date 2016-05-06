@@ -724,6 +724,11 @@ TELEMETRY_TESTS = {
     'precommit_args': [
       '--download-refimg-from-cloud-storage',
     ],
+    'tester_configs': [
+      {
+        'allow_on_android': True,
+      },
+    ],
   },
   'screenshot_sync': {},
   'trace_test': {},
