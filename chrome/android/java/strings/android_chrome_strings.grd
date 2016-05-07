@@ -2383,7 +2383,7 @@ You can control the Physical Web in Chrome Settings.
         Payment processed
       </message>
       <message name="IDS_PAYMENTS_ERROR_MESSAGE" desc="The text that informs the user that there is error in verifying and charging the payment.">
-        Error processing payment
+        There was an error processing your order.  Please check your account and try again.
       </message>
 
       <!-- Migration strings -->

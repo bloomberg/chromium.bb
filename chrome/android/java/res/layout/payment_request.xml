@@ -100,39 +100,5 @@
             android:layout_width="match_parent"
             android:padding="@dimen/payments_section_large_spacing"
             android:background="@android:color/white" />
-
-        <!-- Processing dialog. -->
-        <LinearLayout
-            android:id="@+id/waitingOverlay"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:gravity="center"
-            android:orientation="vertical"
-            android:padding="36dp"
-            android:visibility="gone">
-
-            <ProgressBar
-                android:id="@+id/waitingProgressBar"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
-                android:layout_marginBottom="8dp" />
-
-            <ImageView
-                android:id="@+id/waitingSuccess"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@drawable/verify_checkmark"
-                android:visibility="gone"
-                android:contentDescription="@null" />
-
-            <TextView
-                android:id="@+id/waitingMessage"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/payments_processing_message"
-                android:textColor="@color/light_active_color"
-                android:textSize="20sp" />
-        </LinearLayout>
     </LinearLayout>
 </FrameLayout>

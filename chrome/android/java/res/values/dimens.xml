@@ -314,9 +314,15 @@
     <dimen name="payments_section_vertical_spacing">10dp</dimen>
     <dimen name="payments_section_small_spacing">8dp</dimen>
     <dimen name="payments_section_large_spacing">16dp</dimen>
+    <dimen name="payments_section_largest_spacing">32dp</dimen>
     <dimen name="payments_section_descriptive_item_spacing">40dp</dimen>
     <dimen name="payments_section_separator_height">1dp</dimen>
     <dimen name="payments_section_logo_height">36dp</dimen>
     <dimen name="payments_section_logo_width">56dp</dimen>
+    <dimen name="payments_ui_max_dialog_width">600dp</dimen>
     <dimen name="payments_ui_translation">100dp</dimen>
+
+    <!-- Dialog dimensions.
+         https://www.google.com/design/spec/components/dialogs.html#dialogs-simple-dialogs -->
+    <dimen name="dialog_width_unit">56dp</dimen>  <!-- MD dialog widths are multiples of this. -->
 </resources>
