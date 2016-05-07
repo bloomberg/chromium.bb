@@ -435,7 +435,6 @@ private:
     bool isInlineBoxWrapperActuallyChild() const;
 
     Position positionForBox(InlineBox*, bool start = true) const;
-    PositionWithAffinity positionForPointWithInlineChildren(const LayoutPoint&);
 
     // End helper functions and structs used by layoutBlockChildren.
 
@@ -478,6 +477,9 @@ protected:
 
     // Adjust from painting offsets to the local coords of this layoutObject
     void offsetForContents(LayoutPoint&) const;
+
+    PositionWithAffinity positionForPointRespectingEditingBoundaries(LineLayoutBox child, const LayoutPoint& pointInParentCoordinates);
+    PositionWithAffinity positionForPointIfOutsideAtomicInlineLevel(const LayoutPoint&);
 
     virtual bool updateLogicalWidthAndColumnWidth();
 

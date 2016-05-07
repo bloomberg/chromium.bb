@@ -289,6 +289,8 @@ public:
     void simplifiedNormalFlowInlineLayout();
     bool recalcInlineChildrenOverflowAfterStyleChange();
 
+    PositionWithAffinity positionForPoint(const LayoutPoint&) override;
+
 #ifndef NDEBUG
     void showLineTreeAndMark(const InlineBox* = nullptr, const char* = nullptr, const InlineBox* = nullptr, const char* = nullptr, const LayoutObject* = nullptr) const;
 #endif
