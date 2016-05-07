@@ -17,7 +17,6 @@
 #include "content/public/browser/bluetooth_chooser.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "device/bluetooth/bluetooth_adapter.h"
-#include "device/bluetooth/bluetooth_gatt_connection.h"
 #include "device/bluetooth/bluetooth_gatt_notify_session.h"
 #include "device/bluetooth/bluetooth_remote_gatt_service.h"
 
@@ -74,30 +73,6 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
 
   struct RequestDeviceSession;
 
-  // Map to keep track of connections. Inserting and removing connections
-  // will update the Web Contents for the frame. Upon destruction
-  // the map will clear Web Contents of Bluetooth connections.
-  struct ConnectedDevicesMap {
-    ConnectedDevicesMap(int render_process_id);
-    ~ConnectedDevicesMap();
-    bool HasActiveConnection(const std::string& device_id);
-    void InsertOrReplace(
-        int frame_routing_id,
-        const std::string& device_id,
-        std::unique_ptr<device::BluetoothGattConnection> connection);
-    void Remove(int frame_routing_id, const std::string& device_id);
-    void IncrementBluetoothConnectedDeviceCount(int frame_routing_id);
-    void DecrementBluetoothConnectedDeviceCount(int frame_routing_id);
-
-    int render_process_id_;
-    std::unordered_map<std::string,
-                       std::unique_ptr<device::BluetoothGattConnection>>
-        device_id_to_connection_map_;
-    // Keeps track of which frame is connected to which device so that
-    // we can clean up the WebContents in our destructor.
-    std::set<std::pair<int, std::string>> frame_ids_device_ids_;
-  };
-
   // Set |adapter_| to a BluetoothAdapter instance and register observers,
   // releasing references to previous |adapter_|.
   //
@@ -131,13 +106,6 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
       int frame_routing_id,
       const std::vector<content::BluetoothScanFilter>& filters,
       const std::vector<device::BluetoothUUID>& optional_services);
-  void OnGATTServerConnect(int thread_id,
-                           int request_id,
-                           int frame_routing_id,
-                           const std::string& device_id);
-  void OnGATTServerDisconnect(int thread_id,
-                              int frame_routing_id,
-                              const std::string& device_id);
 
   // Callbacks for BluetoothDevice::OnRequestDevice.
   // If necessary, the adapter must be obtained before continuing to Impl.
@@ -168,21 +136,6 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
                             BluetoothChooser::Event event,
                             const std::string& device_id);
 
-  // Callbacks for BluetoothDevice::CreateGattConnection.
-  void OnGATTConnectionCreated(
-      int thread_id,
-      int request_id,
-      int frame_routing_id,
-      const std::string& device_id,
-      base::TimeTicks start_time,
-      std::unique_ptr<device::BluetoothGattConnection> connection);
-  void OnCreateGATTConnectionError(
-      int thread_id,
-      int request_id,
-      const std::string& device_id,
-      base::TimeTicks start_time,
-      device::BluetoothDevice::ConnectErrorCode error_code);
-
   // Functions to query the platform cache for the bluetooth object.
   // result.outcome == CacheQueryOutcome::SUCCESS if the object was found in the
   // cache. Otherwise result.outcome that can used to record the outcome and
@@ -190,15 +143,10 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
   // One of the possible outcomes is BAD_RENDERER. In this case the outcome
   // was already recorded and since there renderer crashed there is no need to
   // send a response.
-
   // Queries the platform cache for a Device with |device_id| for |origin|.
   // Fills in the |outcome| field and the |device| field if successful.
   CacheQueryResult QueryCacheForDevice(const url::Origin& origin,
                                        const std::string& device_id);
-
-  // Returns the origin for the frame with "frame_routing_id" in
-  // render_process_id_.
-  url::Origin GetOrigin(int frame_routing_id);
 
   int render_process_id_;
 
@@ -224,9 +172,6 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
   // and because there's no harm in extending the length of a few discovery
   // sessions when other sessions are active.
   base::Timer discovery_session_timer_;
-
-  // Retains BluetoothGattConnection objects to keep connections open.
-  std::unique_ptr<ConnectedDevicesMap> connected_devices_map_;
 
   // |weak_ptr_on_ui_thread_| provides weak pointers, e.g. for callbacks, and
   // because it exists and has been bound to the UI thread enforces that all

@@ -23,7 +23,6 @@
 
 using blink::WebBluetoothDevice;
 using blink::WebBluetoothError;
-using blink::WebBluetoothRemoteGATTServerConnectCallbacks;
 using blink::WebBluetoothRemoteGATTService;
 using blink::WebBluetoothReadValueCallbacks;
 using blink::WebBluetoothRequestDeviceCallbacks;
@@ -81,10 +80,6 @@ void BluetoothDispatcher::OnMessageReceived(const IPC::Message& msg) {
   IPC_MESSAGE_HANDLER(BluetoothMsg_RequestDeviceSuccess,
                       OnRequestDeviceSuccess);
   IPC_MESSAGE_HANDLER(BluetoothMsg_RequestDeviceError, OnRequestDeviceError);
-  IPC_MESSAGE_HANDLER(BluetoothMsg_GATTServerConnectSuccess,
-                      OnGATTServerConnectSuccess);
-  IPC_MESSAGE_HANDLER(BluetoothMsg_GATTServerConnectError,
-                      OnGATTServerConnectError);
   IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   DCHECK(handled) << "Unhandled message:" << msg.type();
@@ -119,21 +114,6 @@ void BluetoothDispatcher::requestDevice(
                                           optional_services));
 }
 
-void BluetoothDispatcher::connect(
-    int frame_routing_id,
-    const blink::WebString& device_id,
-    blink::WebBluetoothRemoteGATTServerConnectCallbacks* callbacks) {
-  int request_id = pending_connect_requests_.Add(callbacks);
-  Send(new BluetoothHostMsg_GATTServerConnect(
-      CurrentWorkerId(), request_id, frame_routing_id, device_id.utf8()));
-}
-
-void BluetoothDispatcher::disconnect(int frame_routing_id,
-                                     const blink::WebString& device_id) {
-  Send(new BluetoothHostMsg_GATTServerDisconnect(
-      CurrentWorkerId(), frame_routing_id, device_id.utf8()));
-}
-
 void BluetoothDispatcher::WillStopCurrentWorkerThread() {
   delete this;
 }
@@ -160,22 +140,6 @@ void BluetoothDispatcher::OnRequestDeviceError(int thread_id,
   DCHECK(pending_requests_.Lookup(request_id)) << request_id;
   pending_requests_.Lookup(request_id)->onError(WebBluetoothError(error));
   pending_requests_.Remove(request_id);
-}
-
-void BluetoothDispatcher::OnGATTServerConnectSuccess(int thread_id,
-                                                     int request_id) {
-  DCHECK(pending_connect_requests_.Lookup(request_id)) << request_id;
-  pending_connect_requests_.Lookup(request_id)->onSuccess();
-  pending_connect_requests_.Remove(request_id);
-}
-
-void BluetoothDispatcher::OnGATTServerConnectError(int thread_id,
-                                                   int request_id,
-                                                   WebBluetoothError error) {
-  DCHECK(pending_connect_requests_.Lookup(request_id)) << request_id;
-  pending_connect_requests_.Lookup(request_id)
-      ->onError(WebBluetoothError(error));
-  pending_connect_requests_.Remove(request_id);
 }
 
 }  // namespace content

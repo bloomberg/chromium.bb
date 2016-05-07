@@ -16,6 +16,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "content/browser/bluetooth/bluetooth_blacklist.h"
 #include "content/browser/bluetooth/bluetooth_dispatcher_host.h"
+#include "content/browser/bluetooth/frame_connected_bluetooth_devices.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
@@ -25,6 +26,62 @@
 namespace content {
 
 namespace {
+
+blink::mojom::WebBluetoothError TranslateConnectErrorAndRecord(
+    device::BluetoothDevice::ConnectErrorCode error_code) {
+  switch (error_code) {
+    case device::BluetoothDevice::ERROR_UNKNOWN:
+      RecordConnectGATTOutcome(UMAConnectGATTOutcome::UNKNOWN);
+      return blink::mojom::WebBluetoothError::CONNECT_UNKNOWN_ERROR;
+    case device::BluetoothDevice::ERROR_INPROGRESS:
+      RecordConnectGATTOutcome(UMAConnectGATTOutcome::IN_PROGRESS);
+      return blink::mojom::WebBluetoothError::CONNECT_ALREADY_IN_PROGRESS;
+    case device::BluetoothDevice::ERROR_FAILED:
+      RecordConnectGATTOutcome(UMAConnectGATTOutcome::FAILED);
+      return blink::mojom::WebBluetoothError::CONNECT_UNKNOWN_FAILURE;
+    case device::BluetoothDevice::ERROR_AUTH_FAILED:
+      RecordConnectGATTOutcome(UMAConnectGATTOutcome::AUTH_FAILED);
+      return blink::mojom::WebBluetoothError::CONNECT_AUTH_FAILED;
+    case device::BluetoothDevice::ERROR_AUTH_CANCELED:
+      RecordConnectGATTOutcome(UMAConnectGATTOutcome::AUTH_CANCELED);
+      return blink::mojom::WebBluetoothError::CONNECT_AUTH_CANCELED;
+    case device::BluetoothDevice::ERROR_AUTH_REJECTED:
+      RecordConnectGATTOutcome(UMAConnectGATTOutcome::AUTH_REJECTED);
+      return blink::mojom::WebBluetoothError::CONNECT_AUTH_REJECTED;
+    case device::BluetoothDevice::ERROR_AUTH_TIMEOUT:
+      RecordConnectGATTOutcome(UMAConnectGATTOutcome::AUTH_TIMEOUT);
+      return blink::mojom::WebBluetoothError::CONNECT_AUTH_TIMEOUT;
+    case device::BluetoothDevice::ERROR_UNSUPPORTED_DEVICE:
+      RecordConnectGATTOutcome(UMAConnectGATTOutcome::UNSUPPORTED_DEVICE);
+      return blink::mojom::WebBluetoothError::CONNECT_UNSUPPORTED_DEVICE;
+    case device::BluetoothDevice::ERROR_ATTRIBUTE_LENGTH_INVALID:
+      RecordConnectGATTOutcome(UMAConnectGATTOutcome::ATTRIBUTE_LENGTH_INVALID);
+      return blink::mojom::WebBluetoothError::CONNECT_ATTRIBUTE_LENGTH_INVALID;
+    case device::BluetoothDevice::ERROR_CONNECTION_CONGESTED:
+      RecordConnectGATTOutcome(UMAConnectGATTOutcome::CONNECTION_CONGESTED);
+      return blink::mojom::WebBluetoothError::CONNECT_CONNECTION_CONGESTED;
+    case device::BluetoothDevice::ERROR_INSUFFICIENT_ENCRYPTION:
+      RecordConnectGATTOutcome(UMAConnectGATTOutcome::INSUFFICIENT_ENCRYPTION);
+      return blink::mojom::WebBluetoothError::CONNECT_INSUFFICIENT_ENCRYPTION;
+    case device::BluetoothDevice::ERROR_OFFSET_INVALID:
+      RecordConnectGATTOutcome(UMAConnectGATTOutcome::OFFSET_INVALID);
+      return blink::mojom::WebBluetoothError::CONNECT_OFFSET_INVALID;
+    case device::BluetoothDevice::ERROR_READ_NOT_PERMITTED:
+      RecordConnectGATTOutcome(UMAConnectGATTOutcome::READ_NOT_PERMITTED);
+      return blink::mojom::WebBluetoothError::CONNECT_READ_NOT_PERMITTED;
+    case device::BluetoothDevice::ERROR_REQUEST_NOT_SUPPORTED:
+      RecordConnectGATTOutcome(UMAConnectGATTOutcome::REQUEST_NOT_SUPPORTED);
+      return blink::mojom::WebBluetoothError::CONNECT_REQUEST_NOT_SUPPORTED;
+    case device::BluetoothDevice::ERROR_WRITE_NOT_PERMITTED:
+      RecordConnectGATTOutcome(UMAConnectGATTOutcome::WRITE_NOT_PERMITTED);
+      return blink::mojom::WebBluetoothError::CONNECT_WRITE_NOT_PERMITTED;
+    case device::BluetoothDevice::NUM_CONNECT_ERROR_CODES:
+      NOTREACHED();
+      return blink::mojom::WebBluetoothError::UNTRANSLATED_CONNECT_ERROR_CODE;
+  }
+  NOTREACHED();
+  return blink::mojom::WebBluetoothError::UNTRANSLATED_CONNECT_ERROR_CODE;
+}
 
 blink::mojom::WebBluetoothError TranslateGATTErrorAndRecord(
     device::BluetoothRemoteGattService::GattErrorCode error_code,
@@ -107,6 +164,7 @@ WebBluetoothServiceImpl::WebBluetoothServiceImpl(
     RenderFrameHost* render_frame_host,
     blink::mojom::WebBluetoothServiceRequest request)
     : WebContentsObserver(WebContents::FromRenderFrameHost(render_frame_host)),
+      connected_devices_(new FrameConnectedBluetoothDevices(render_frame_host)),
       render_frame_host_(render_frame_host),
       binding_(this, std::move(request)),
       weak_ptr_factory_(this) {
@@ -140,6 +198,20 @@ void WebBluetoothServiceImpl::AdapterPresentChanged(
     bool present) {
   if (!present) {
     ClearState();
+  }
+}
+
+void WebBluetoothServiceImpl::DeviceChanged(device::BluetoothAdapter* adapter,
+                                            device::BluetoothDevice* device) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (!device->IsGattConnected() || !device->IsConnected()) {
+    std::string device_id =
+        connected_devices_->CloseConnectionToDeviceWithAddress(
+            device->GetAddress());
+    if (!device_id.empty()) {
+      // TODO(ortuno): Send event to client.
+      // http://crbug.com/581855
+    }
   }
 }
 
@@ -201,6 +273,58 @@ void WebBluetoothServiceImpl::SetClient(
     blink::mojom::WebBluetoothServiceClientAssociatedPtrInfo client) {
   DCHECK(!client_.get());
   client_.Bind(std::move(client));
+}
+
+void WebBluetoothServiceImpl::RemoteServerConnect(
+    const mojo::String& device_id,
+    const RemoteServerConnectCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  RecordWebBluetoothFunctionCall(UMAWebBluetoothFunction::CONNECT_GATT);
+
+  const CacheQueryResult query_result =
+      GetBluetoothDispatcherHost()->QueryCacheForDevice(GetOrigin(), device_id);
+
+  if (query_result.outcome != CacheQueryOutcome::SUCCESS) {
+    RecordConnectGATTOutcome(query_result.outcome);
+    callback.Run(query_result.GetWebError());
+    return;
+  }
+
+  if (connected_devices_->IsConnectedToDeviceWithId(device_id)) {
+    VLOG(1) << "Already connected.";
+    callback.Run(blink::mojom::WebBluetoothError::SUCCESS);
+    return;
+  }
+
+  // It's possible for WebBluetoothServiceImpl to issue two successive
+  // connection requests for which it would get two successive responses
+  // and consequently try to insert two BluetoothGattConnections for the
+  // same device. WebBluetoothServiceImpl should reject or queue connection
+  // requests if there is a pending connection already, but the platform
+  // abstraction doesn't currently support checking for pending connections.
+  // TODO(ortuno): CHECK that this never happens once the platform
+  // abstraction allows to check for pending connections.
+  // http://crbug.com/583544
+  const base::TimeTicks start_time = base::TimeTicks::Now();
+  query_result.device->CreateGattConnection(
+      base::Bind(&WebBluetoothServiceImpl::OnCreateGATTConnectionSuccess,
+                 weak_ptr_factory_.GetWeakPtr(), device_id, start_time,
+                 callback),
+      base::Bind(&WebBluetoothServiceImpl::OnCreateGATTConnectionFailed,
+                 weak_ptr_factory_.GetWeakPtr(), device_id, start_time,
+                 callback));
+}
+
+void WebBluetoothServiceImpl::RemoteServerDisconnect(
+    const mojo::String& device_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  RecordWebBluetoothFunctionCall(
+      UMAWebBluetoothFunction::REMOTE_GATT_SERVER_DISCONNECT);
+
+  if (connected_devices_->IsConnectedToDeviceWithId(device_id)) {
+    VLOG(1) << "Disconnecting device: " << device_id;
+    connected_devices_->CloseConnectionToDeviceWithId(device_id);
+  }
 }
 
 void WebBluetoothServiceImpl::RemoteServerGetPrimaryService(
@@ -524,6 +648,29 @@ void WebBluetoothServiceImpl::RemoteServerGetPrimaryServiceImpl(
                std::move(service_ptr));
 }
 
+void WebBluetoothServiceImpl::OnCreateGATTConnectionSuccess(
+    const std::string& device_id,
+    base::TimeTicks start_time,
+    const RemoteServerConnectCallback& callback,
+    std::unique_ptr<device::BluetoothGattConnection> connection) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  RecordConnectGATTTimeSuccess(base::TimeTicks::Now() - start_time);
+  RecordConnectGATTOutcome(UMAConnectGATTOutcome::SUCCESS);
+
+  connected_devices_->Insert(device_id, std::move(connection));
+  callback.Run(blink::mojom::WebBluetoothError::SUCCESS);
+}
+
+void WebBluetoothServiceImpl::OnCreateGATTConnectionFailed(
+    const std::string& device_id,
+    base::TimeTicks start_time,
+    const RemoteServerConnectCallback& callback,
+    device::BluetoothDevice::ConnectErrorCode error_code) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  RecordConnectGATTTimeFailed(base::TimeTicks::Now() - start_time);
+  callback.Run(TranslateConnectErrorAndRecord(error_code));
+}
+
 void WebBluetoothServiceImpl::OnReadValueSuccess(
     const RemoteCharacteristicReadValueCallback& callback,
     const std::vector<uint8_t>& value) {
@@ -683,6 +830,8 @@ void WebBluetoothServiceImpl::ClearState() {
   pending_primary_services_requests_.clear();
   characteristic_id_to_service_id_.clear();
   service_id_to_device_address_.clear();
+  connected_devices_.reset(
+      new FrameConnectedBluetoothDevices(render_frame_host_));
 }
 
 }  // namespace content

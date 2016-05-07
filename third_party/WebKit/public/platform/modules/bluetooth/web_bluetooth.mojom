@@ -97,6 +97,16 @@ interface WebBluetoothService {
   // a device disconnects.
   SetClient(associated WebBluetoothServiceClient client);
 
+  // Creates a GATT Connection to a Bluetooth Device with |device_id| if a
+  // connection to the device didn't exist already. If a GATT connection existed
+  // already then this function increases the ref count to keep that connection
+  // alive.
+  RemoteServerConnect(string device_id) => (WebBluetoothError error);
+
+  // If a GATT connection exists for Device with |device_id| then decreases
+  // the ref count for that connection.
+  RemoteServerDisconnect(string device_id);
+
   // Returns the first GATT Service with |service_uuid| of a Bluetooth Device
   // with |device_id|.
   RemoteServerGetPrimaryService(

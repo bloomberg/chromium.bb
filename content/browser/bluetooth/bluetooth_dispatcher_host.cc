@@ -19,7 +19,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
-#include "content/browser/bad_message.h"
 #include "content/browser/bluetooth/bluetooth_blacklist.h"
 #include "content/browser/bluetooth/bluetooth_metrics.h"
 #include "content/browser/bluetooth/cache_query_result.h"
@@ -33,14 +32,10 @@
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_discovery_session.h"
-#include "device/bluetooth/bluetooth_remote_gatt_characteristic.h"
-#include "device/bluetooth/bluetooth_remote_gatt_service.h"
 
 using blink::WebBluetoothError;
 using device::BluetoothAdapter;
 using device::BluetoothAdapterFactory;
-using device::BluetoothRemoteGattCharacteristic;
-using device::BluetoothRemoteGattService;
 using device::BluetoothUUID;
 
 namespace content {
@@ -114,62 +109,6 @@ bool MatchesFilters(const device::BluetoothDevice& device,
   return false;
 }
 
-WebBluetoothError TranslateConnectError(
-    device::BluetoothDevice::ConnectErrorCode error_code) {
-  switch (error_code) {
-    case device::BluetoothDevice::ERROR_UNKNOWN:
-      RecordConnectGATTOutcome(UMAConnectGATTOutcome::UNKNOWN);
-      return WebBluetoothError::CONNECT_UNKNOWN_ERROR;
-    case device::BluetoothDevice::ERROR_INPROGRESS:
-      RecordConnectGATTOutcome(UMAConnectGATTOutcome::IN_PROGRESS);
-      return WebBluetoothError::CONNECT_ALREADY_IN_PROGRESS;
-    case device::BluetoothDevice::ERROR_FAILED:
-      RecordConnectGATTOutcome(UMAConnectGATTOutcome::FAILED);
-      return WebBluetoothError::CONNECT_UNKNOWN_FAILURE;
-    case device::BluetoothDevice::ERROR_AUTH_FAILED:
-      RecordConnectGATTOutcome(UMAConnectGATTOutcome::AUTH_FAILED);
-      return WebBluetoothError::CONNECT_AUTH_FAILED;
-    case device::BluetoothDevice::ERROR_AUTH_CANCELED:
-      RecordConnectGATTOutcome(UMAConnectGATTOutcome::AUTH_CANCELED);
-      return WebBluetoothError::CONNECT_AUTH_CANCELED;
-    case device::BluetoothDevice::ERROR_AUTH_REJECTED:
-      RecordConnectGATTOutcome(UMAConnectGATTOutcome::AUTH_REJECTED);
-      return WebBluetoothError::CONNECT_AUTH_REJECTED;
-    case device::BluetoothDevice::ERROR_AUTH_TIMEOUT:
-      RecordConnectGATTOutcome(UMAConnectGATTOutcome::AUTH_TIMEOUT);
-      return WebBluetoothError::CONNECT_AUTH_TIMEOUT;
-    case device::BluetoothDevice::ERROR_UNSUPPORTED_DEVICE:
-      RecordConnectGATTOutcome(UMAConnectGATTOutcome::UNSUPPORTED_DEVICE);
-      return WebBluetoothError::CONNECT_UNSUPPORTED_DEVICE;
-    case device::BluetoothDevice::ERROR_ATTRIBUTE_LENGTH_INVALID:
-      RecordConnectGATTOutcome(UMAConnectGATTOutcome::ATTRIBUTE_LENGTH_INVALID);
-      return WebBluetoothError::CONNECT_ATTRIBUTE_LENGTH_INVALID;
-    case device::BluetoothDevice::ERROR_CONNECTION_CONGESTED:
-      RecordConnectGATTOutcome(UMAConnectGATTOutcome::CONNECTION_CONGESTED);
-      return WebBluetoothError::CONNECT_CONNECTION_CONGESTED;
-    case device::BluetoothDevice::ERROR_INSUFFICIENT_ENCRYPTION:
-      RecordConnectGATTOutcome(UMAConnectGATTOutcome::INSUFFICIENT_ENCRYPTION);
-      return WebBluetoothError::CONNECT_INSUFFICIENT_ENCRYPTION;
-    case device::BluetoothDevice::ERROR_OFFSET_INVALID:
-      RecordConnectGATTOutcome(UMAConnectGATTOutcome::OFFSET_INVALID);
-      return WebBluetoothError::CONNECT_OFFSET_INVALID;
-    case device::BluetoothDevice::ERROR_READ_NOT_PERMITTED:
-      RecordConnectGATTOutcome(UMAConnectGATTOutcome::READ_NOT_PERMITTED);
-      return WebBluetoothError::CONNECT_READ_NOT_PERMITTED;
-    case device::BluetoothDevice::ERROR_REQUEST_NOT_SUPPORTED:
-      RecordConnectGATTOutcome(UMAConnectGATTOutcome::REQUEST_NOT_SUPPORTED);
-      return WebBluetoothError::CONNECT_REQUEST_NOT_SUPPORTED;
-    case device::BluetoothDevice::ERROR_WRITE_NOT_PERMITTED:
-      RecordConnectGATTOutcome(UMAConnectGATTOutcome::WRITE_NOT_PERMITTED);
-      return WebBluetoothError::CONNECT_WRITE_NOT_PERMITTED;
-    case device::BluetoothDevice::NUM_CONNECT_ERROR_CODES:
-      NOTREACHED();
-      return WebBluetoothError::UNTRANSLATED_CONNECT_ERROR_CODE;
-  }
-  NOTREACHED();
-  return WebBluetoothError::UNTRANSLATED_CONNECT_ERROR_CODE;
-}
-
 void StopDiscoverySession(
     std::unique_ptr<device::BluetoothDiscoverySession> discovery_session) {
   // Nothing goes wrong if the discovery session fails to stop, and we don't
@@ -226,8 +165,6 @@ BluetoothDispatcherHost::BluetoothDispatcherHost(int render_process_id)
       weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  connected_devices_map_.reset(new ConnectedDevicesMap(render_process_id));
-
   // Bind all future weak pointers to the UI thread.
   weak_ptr_on_ui_thread_ = weak_ptr_factory_.GetWeakPtr();
   weak_ptr_on_ui_thread_.get();  // Associates with UI thread.
@@ -250,9 +187,6 @@ bool BluetoothDispatcherHost::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(BluetoothDispatcherHost, message)
   IPC_MESSAGE_HANDLER(BluetoothHostMsg_RequestDevice, OnRequestDevice)
-  IPC_MESSAGE_HANDLER(BluetoothHostMsg_GATTServerConnect, OnGATTServerConnect)
-  IPC_MESSAGE_HANDLER(BluetoothHostMsg_GATTServerDisconnect,
-                      OnGATTServerDisconnect)
   IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -280,7 +214,6 @@ void BluetoothDispatcherHost::SetBluetoothAdapterForTesting(
     // device/service/characteristic is removed.
     // Since this can happen after the test is done and the cleanup function is
     // called, we clean them here.
-    connected_devices_map_.reset(new ConnectedDevicesMap(render_process_id_));
     allowed_devices_map_ = BluetoothAllowedDevicesMap();
   }
 
@@ -336,71 +269,6 @@ struct BluetoothDispatcherHost::RequestDeviceSession {
   std::unique_ptr<BluetoothChooser> chooser;
   std::unique_ptr<device::BluetoothDiscoverySession> discovery_session;
 };
-
-BluetoothDispatcherHost::ConnectedDevicesMap::ConnectedDevicesMap(
-    int render_process_id)
-    : render_process_id_(render_process_id) {}
-
-BluetoothDispatcherHost::ConnectedDevicesMap::~ConnectedDevicesMap() {
-  for (auto frame_id_device_id : frame_ids_device_ids_) {
-    DecrementBluetoothConnectedDeviceCount(frame_id_device_id.first);
-  }
-}
-
-bool BluetoothDispatcherHost::ConnectedDevicesMap::HasActiveConnection(
-    const std::string& device_id) {
-  auto connection_iter = device_id_to_connection_map_.find(device_id);
-  if (connection_iter != device_id_to_connection_map_.end()) {
-    return connection_iter->second->IsConnected();
-  }
-  return false;
-}
-
-void BluetoothDispatcherHost::ConnectedDevicesMap::InsertOrReplace(
-    int frame_routing_id,
-    const std::string& device_id,
-    std::unique_ptr<device::BluetoothGattConnection> connection) {
-  auto connection_iter = device_id_to_connection_map_.find(device_id);
-  if (connection_iter == device_id_to_connection_map_.end()) {
-    IncrementBluetoothConnectedDeviceCount(frame_routing_id);
-    frame_ids_device_ids_.insert(std::make_pair(frame_routing_id, device_id));
-  } else {
-    device_id_to_connection_map_.erase(connection_iter);
-  }
-  device_id_to_connection_map_[device_id] = std::move(connection);
-}
-
-void BluetoothDispatcherHost::ConnectedDevicesMap::Remove(
-    int frame_routing_id,
-    const std::string& device_id) {
-  if (device_id_to_connection_map_.erase(device_id)) {
-    VLOG(1) << "Disconnecting device: " << device_id;
-    DecrementBluetoothConnectedDeviceCount(frame_routing_id);
-    frame_ids_device_ids_.erase(std::make_pair(frame_routing_id, device_id));
-  }
-}
-
-void BluetoothDispatcherHost::ConnectedDevicesMap::
-    IncrementBluetoothConnectedDeviceCount(int frame_routing_id) {
-  RenderFrameHostImpl* render_frame_host =
-      RenderFrameHostImpl::FromID(render_process_id_, frame_routing_id);
-  WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
-      WebContents::FromRenderFrameHost(render_frame_host));
-  if (web_contents) {
-    web_contents->IncrementBluetoothConnectedDeviceCount();
-  }
-}
-
-void BluetoothDispatcherHost::ConnectedDevicesMap::
-    DecrementBluetoothConnectedDeviceCount(int frame_routing_id) {
-  RenderFrameHostImpl* render_frame_host =
-      RenderFrameHostImpl::FromID(render_process_id_, frame_routing_id);
-  WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
-      WebContents::FromRenderFrameHost(render_frame_host));
-  if (web_contents) {
-    web_contents->DecrementBluetoothConnectedDeviceCount();
-  }
-}
 
 void BluetoothDispatcherHost::set_adapter(
     scoped_refptr<device::BluetoothAdapter> adapter) {
@@ -541,67 +409,6 @@ void BluetoothDispatcherHost::OnRequestDevice(
   }
   OnRequestDeviceImpl(thread_id, request_id, frame_routing_id, filters,
                       optional_services);
-}
-
-void BluetoothDispatcherHost::OnGATTServerConnect(
-    int thread_id,
-    int request_id,
-    int frame_routing_id,
-    const std::string& device_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  RecordWebBluetoothFunctionCall(UMAWebBluetoothFunction::CONNECT_GATT);
-  const base::TimeTicks start_time = base::TimeTicks::Now();
-
-  const CacheQueryResult query_result =
-      QueryCacheForDevice(GetOrigin(frame_routing_id), device_id);
-
-  if (query_result.outcome != CacheQueryOutcome::SUCCESS) {
-    RecordConnectGATTOutcome(query_result.outcome);
-    Send(new BluetoothMsg_GATTServerConnectError(thread_id, request_id,
-                                                 query_result.GetWebError()));
-    return;
-  }
-
-  // If we are already connected no need to connect again.
-  if (connected_devices_map_->HasActiveConnection(device_id)) {
-    VLOG(1) << "Already connected.";
-    Send(new BluetoothMsg_GATTServerConnectSuccess(thread_id, request_id));
-    return;
-  }
-
-  query_result.device->CreateGattConnection(
-      base::Bind(&BluetoothDispatcherHost::OnGATTConnectionCreated,
-                 weak_ptr_on_ui_thread_, thread_id, request_id,
-                 frame_routing_id, device_id, start_time),
-      base::Bind(&BluetoothDispatcherHost::OnCreateGATTConnectionError,
-                 weak_ptr_on_ui_thread_, thread_id, request_id, device_id,
-                 start_time));
-}
-
-void BluetoothDispatcherHost::OnGATTServerDisconnect(
-    int thread_id,
-    int frame_routing_id,
-    const std::string& device_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  RecordWebBluetoothFunctionCall(
-      UMAWebBluetoothFunction::REMOTE_GATT_SERVER_DISCONNECT);
-
-  // Frames can send a disconnect request after they've started navigating,
-  // making calls to GetLastCommitted origin invalid. Because we still need
-  // to disconnect the device, otherwise we would leave users with no other
-  // option to disconnect than closing the tab, we purposefully don't
-  // check if the frame has permission to interact with the device.
-
-  // The last BluetoothGattConnection for a device closes the connection when
-  // it's destroyed.
-
-  // This only catches disconnections from the renderer. If the device
-  // disconnects by itself, or the renderer frame has been deleted
-  // due to navigation, we will not hide the indicator.
-  // TODO(ortuno): Once we move to Frame and Mojo we will be able
-  // to observe the frame's lifetime and hide the indicator when necessary.
-  // http://crbug.com/508771
-  connected_devices_map_->Remove(frame_routing_id, device_id);
 }
 
 void BluetoothDispatcherHost::OnGetAdapter(
@@ -928,37 +735,6 @@ void BluetoothDispatcherHost::FinishClosingChooser(
   request_device_sessions_.Remove(chooser_id);
 }
 
-void BluetoothDispatcherHost::OnGATTConnectionCreated(
-    int thread_id,
-    int request_id,
-    int frame_routing_id,
-    const std::string& device_id,
-    base::TimeTicks start_time,
-    std::unique_ptr<device::BluetoothGattConnection> connection) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  RecordConnectGATTTimeSuccess(base::TimeTicks::Now() - start_time);
-  RecordConnectGATTOutcome(UMAConnectGATTOutcome::SUCCESS);
-  connected_devices_map_->InsertOrReplace(frame_routing_id, device_id,
-                                          std::move(connection));
-  Send(new BluetoothMsg_GATTServerConnectSuccess(thread_id, request_id));
-}
-
-void BluetoothDispatcherHost::OnCreateGATTConnectionError(
-    int thread_id,
-    int request_id,
-    const std::string& device_id,
-    base::TimeTicks start_time,
-    device::BluetoothDevice::ConnectErrorCode error_code) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  // There was an error creating the ATT Bearer so we reject with
-  // NetworkError.
-  // https://webbluetoothchrome.github.io/web-bluetooth/#dom-bluetoothdevice-connectgatt
-  RecordConnectGATTTimeFailed(base::TimeTicks::Now() - start_time);
-  // RecordConnectGATTOutcome is called by TranslateConnectError.
-  Send(new BluetoothMsg_GATTServerConnectError(
-      thread_id, request_id, TranslateConnectError(error_code)));
-}
-
 CacheQueryResult BluetoothDispatcherHost::QueryCacheForDevice(
     const url::Origin& origin,
     const std::string& device_id) {
@@ -998,11 +774,6 @@ void BluetoothDispatcherHost::RemoveAdapterObserver(
   if (adapter_) {
     adapter_->RemoveObserver(observer);
   }
-}
-
-url::Origin BluetoothDispatcherHost::GetOrigin(int frame_routing_id) {
-  return RenderFrameHostImpl::FromID(render_process_id_, frame_routing_id)
-      ->GetLastCommittedOrigin();
 }
 
 }  // namespace content

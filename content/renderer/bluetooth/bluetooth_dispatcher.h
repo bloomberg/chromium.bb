@@ -56,10 +56,6 @@ class BluetoothDispatcher : public WorkerThread::Observer {
   void requestDevice(int frame_routing_id,
                      const blink::WebRequestDeviceOptions& options,
                      blink::WebBluetoothRequestDeviceCallbacks* callbacks);
-  void connect(int frame_routing_id,
-               const blink::WebString& device_id,
-               blink::WebBluetoothRemoteGATTServerConnectCallbacks* callbacks);
-  void disconnect(int frame_routing_id, const blink::WebString& device_id);
 
   // WorkerThread::Observer implementation.
   void WillStopCurrentWorkerThread() override;
@@ -72,10 +68,6 @@ class BluetoothDispatcher : public WorkerThread::Observer {
   void OnRequestDeviceError(int thread_id,
                             int request_id,
                             blink::WebBluetoothError error);
-  void OnGATTServerConnectSuccess(int thread_id, int request_id);
-  void OnGATTServerConnectError(int thread_id,
-                                int request_id,
-                                blink::WebBluetoothError error);
 
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
 
@@ -83,10 +75,6 @@ class BluetoothDispatcher : public WorkerThread::Observer {
   // Owns callback objects.
   IDMap<blink::WebBluetoothRequestDeviceCallbacks, IDMapOwnPointer>
       pending_requests_;
-  // Tracks requests to connect to a device.
-  // Owns callback objects.
-  IDMap<blink::WebBluetoothRemoteGATTServerConnectCallbacks, IDMapOwnPointer>
-      pending_connect_requests_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothDispatcher);
 };

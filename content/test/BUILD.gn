@@ -657,6 +657,7 @@ test("content_unittests") {
     "//device/battery",
     "//device/battery:mojo_bindings",
     "//device/bluetooth",
+    "//device/bluetooth:mocks",
     "//gin",
     "//gpu",
     "//gpu:test_support",

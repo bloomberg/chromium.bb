@@ -41,11 +41,15 @@ void WebBluetoothImpl::requestDevice(
 void WebBluetoothImpl::connect(
     const blink::WebString& device_id,
     blink::WebBluetoothRemoteGATTServerConnectCallbacks* callbacks) {
-  GetDispatcher()->connect(frame_routing_id_, device_id, callbacks);
+  GetWebBluetoothService().RemoteServerConnect(
+      mojo::String::From(device_id),
+      base::Bind(&WebBluetoothImpl::OnConnectComplete, base::Unretained(this),
+                 base::Passed(base::WrapUnique(callbacks))));
 }
 
 void WebBluetoothImpl::disconnect(const blink::WebString& device_id) {
-  GetDispatcher()->disconnect(frame_routing_id_, device_id);
+  GetWebBluetoothService().RemoteServerDisconnect(
+      mojo::String::From(device_id));
 }
 
 void WebBluetoothImpl::getPrimaryService(
@@ -140,6 +144,17 @@ void WebBluetoothImpl::RemoteCharacteristicValueChanged(
       base::Bind(&WebBluetoothImpl::DispatchCharacteristicValueChanged,
                  base::Unretained(this), characteristic_instance_id,
                  value.PassStorage()));
+}
+
+void WebBluetoothImpl::OnConnectComplete(
+    std::unique_ptr<blink::WebBluetoothRemoteGATTServerConnectCallbacks>
+        callbacks,
+    blink::mojom::WebBluetoothError error) {
+  if (error == blink::mojom::WebBluetoothError::SUCCESS) {
+    callbacks->onSuccess();
+  } else {
+    callbacks->onError(error);
+  }
 }
 
 void WebBluetoothImpl::OnGetPrimaryServiceComplete(
