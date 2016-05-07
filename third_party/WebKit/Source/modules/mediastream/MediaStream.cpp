@@ -27,6 +27,7 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/frame/Deprecation.h"
 #include "modules/mediastream/MediaStreamRegistry.h"
 #include "modules/mediastream/MediaStreamTrackEvent.h"
 #include "platform/mediastream/MediaStreamCenter.h"
@@ -299,6 +300,14 @@ void MediaStream::streamEnded()
         m_descriptor->setEnded();
         scheduleDispatchEvent(Event::create(EventTypeNames::ended));
     }
+}
+
+bool MediaStream::addEventListenerInternal(const AtomicString& eventType, EventListener* listener, const AddEventListenerOptions& options)
+{
+    if (eventType == EventTypeNames::ended)
+        Deprecation::countDeprecation(getExecutionContext(), UseCounter::MediaStreamOnEnded);
+
+    return EventTargetWithInlineData::addEventListenerInternal(eventType, listener, options);
 }
 
 void MediaStream::contextDestroyed()

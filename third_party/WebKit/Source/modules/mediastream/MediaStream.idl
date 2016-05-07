@@ -48,7 +48,7 @@
     attribute EventHandler onactive;
     attribute EventHandler oninactive;
     //  DEPRECATED
-    [MeasureAs=MediaStreamOnEnded] attribute EventHandler onended;
+    [DeprecateAs=MediaStreamOnEnded] attribute EventHandler onended;
 
     attribute EventHandler onaddtrack;
     attribute EventHandler onremovetrack;

@@ -87,6 +87,9 @@ public:
 
     DECLARE_VIRTUAL_TRACE();
 
+protected:
+    bool addEventListenerInternal(const AtomicString& eventType, EventListener*, const AddEventListenerOptions&) override;
+
 private:
     MediaStream(ExecutionContext*, MediaStreamDescriptor*);
     MediaStream(ExecutionContext*, const MediaStreamTrackVector& audioTracks, const MediaStreamTrackVector& videoTracks);
