@@ -107,7 +107,7 @@
 
           'conditions': [
             # Windows and Linux use Aura, but not Ash.
-            ['OS=="win" or OS=="linux"', {
+            ['OS=="win" or OS=="linux" or OS=="openbsd" or OS=="freebsd"', {
               'use_aura%': 1,
             }],
 
@@ -248,13 +248,13 @@
           }],
 
           # Enable HiDPI on Mac OS, Windows and Linux (including Chrome OS).
-          ['OS=="mac" or OS=="win" or OS=="linux"', {
+          ['OS=="mac" or OS=="win" or OS=="linux" or OS=="openbsd" or OS=="freebsd"', {
             'enable_hidpi%': 1,
           }],
 
           # Enable Top Chrome Material Design on Chrome OS, Windows, and Linux,
-          # and Mac.
-          ['chromeos==1 or OS=="win" or OS=="linux" or OS=="mac"', {
+          # Mac, and *BSD.
+          ['chromeos==1 or OS=="win" or OS=="linux" or OS=="mac" or OS=="openbsd" or OS=="freebsd"', {
             'enable_topchrome_md%': 1,
           }],
 
@@ -771,7 +771,7 @@
         }],
 
         # DBus usage.
-        ['OS=="linux" and embedded==0', {
+        ['(OS=="linux" or OS=="openbsd" or OS=="freebsd") and embedded==0', {
           'use_dbus%': 1,
         }, {
           'use_dbus%': 0,
@@ -867,8 +867,8 @@
         }],
 
         # Use GPU accelerated cross process image transport by default
-        # on linux builds with the Aura window manager
-        ['use_aura==1 and OS=="linux"', {
+        # on linux and *BSD builds with the Aura window manager
+        ['use_aura==1 and (OS=="linux" or OS=="openbsd" or OS=="freebsd")', {
           'ui_compositor_image_transport%': 1,
         }, {
           'ui_compositor_image_transport%': 0,
@@ -981,7 +981,7 @@
         # --help for more information. Meant to be overriden with GYP_DEFINES.
         # TODO(maruel): Remove the conditions as more configurations are
         # supported.
-        ['OS!="ios" and OS!="android" and chromeos==0', {
+        ['OS!="ios" and OS!="android" and chromeos==0 and OS!="openbsd" and OS!="freebsd"', {
           'test_isolation_mode%': 'check',
         }, {
           'test_isolation_mode%': 'noop',
@@ -997,7 +997,7 @@
         }, {
           'use_openmax_dl_fft%': 0,
         }],
-        ['OS=="win" or OS=="linux"', {
+        ['OS=="win" or OS=="linux" or OS=="openbsd" or OS=="freebsd"', {
           'enable_mdns%' : 1,
         }],
 
@@ -4703,9 +4703,9 @@
         ],
       },
     }],
-    # FreeBSD-specific options; note that most FreeBSD options are set above,
+    # *BSD-specific options; note that most *BSD options are set above,
     # with Linux.
-    ['OS=="freebsd"', {
+    ['OS=="openbsd" or OS=="freebsd"', {
       'target_defaults': {
         'ldflags': [
           '-Wl,--no-keep-memory',
