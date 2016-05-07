@@ -1594,9 +1594,9 @@ class OutputApiUnittest(PresubmitTestsBase):
   def testMembersChanged(self):
     self.mox.ReplayAll()
     members = [
-      'MailTextResult', 'PresubmitAddReviewers', 'PresubmitError',
-      'PresubmitNotifyResult', 'PresubmitPromptWarning',
-      'PresubmitPromptOrNotify', 'PresubmitResult', 'is_committing',
+      'MailTextResult', 'PresubmitError', 'PresubmitNotifyResult',
+      'PresubmitPromptWarning', 'PresubmitPromptOrNotify', 'PresubmitResult',
+      'is_committing',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(presubmit.OutputApi(False), members)
@@ -1613,21 +1613,10 @@ class OutputApiUnittest(PresubmitTestsBase):
     self.failIf(presubmit.OutputApi.PresubmitNotifyResult('').fatal)
     self.failIf(presubmit.OutputApi.PresubmitNotifyResult('').should_prompt)
 
-    self.failIf(presubmit.OutputApi.PresubmitAddReviewers(
-        ['foo']).fatal)
-    self.failIf(presubmit.OutputApi.PresubmitAddReviewers(
-        ['foo']).should_prompt)
-
     # TODO(joi) Test MailTextResult once implemented.
 
   def testOutputApiHandling(self):
     self.mox.ReplayAll()
-
-    output = presubmit.PresubmitOutput()
-    presubmit.OutputApi.PresubmitAddReviewers(
-        ['ben@example.com']).handle(output)
-    self.failUnless(output.should_continue())
-    self.failUnlessEqual(output.reviewers, ['ben@example.com'])
 
     output = presubmit.PresubmitOutput()
     presubmit.OutputApi.PresubmitError('!!!').handle(output)

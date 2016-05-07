@@ -158,18 +158,6 @@ class _PresubmitResult(object):
 
 # Top level object so multiprocessing can pickle
 # Public access through OutputApi object.
-class _PresubmitAddReviewers(_PresubmitResult):
-  """Add some suggested reviewers to the change."""
-  def __init__(self, reviewers):
-    super(_PresubmitAddReviewers, self).__init__('')
-    self.reviewers = reviewers
-
-  def handle(self, output):
-    output.reviewers.extend(self.reviewers)
-
-
-# Top level object so multiprocessing can pickle
-# Public access through OutputApi object.
 class _PresubmitError(_PresubmitResult):
   """A hard presubmit error."""
   fatal = True
@@ -270,7 +258,6 @@ class OutputApi(object):
   can output various types of results.
   """
   PresubmitResult = _PresubmitResult
-  PresubmitAddReviewers = _PresubmitAddReviewers
   PresubmitError = _PresubmitError
   PresubmitPromptWarning = _PresubmitPromptWarning
   PresubmitNotifyResult = _PresubmitNotifyResult
