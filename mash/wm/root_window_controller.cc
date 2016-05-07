@@ -7,8 +7,8 @@
 #include <stdint.h>
 
 #include "base/bind.h"
+#include "components/mus/common/event_matcher_util.h"
 #include "components/mus/common/util.h"
-#include "components/mus/public/cpp/event_matcher_util.h"
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_tree_connection.h"
 #include "components/mus/public/cpp/window_tree_host_factory.h"

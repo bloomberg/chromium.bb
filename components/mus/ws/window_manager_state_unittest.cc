@@ -11,7 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/thread_task_runner_handle.h"
-#include "components/mus/public/cpp/event_matcher_util.h"
+#include "components/mus/common/event_matcher_util.h"
 #include "components/mus/surfaces/surfaces_state.h"
 #include "components/mus/ws/accelerator.h"
 #include "components/mus/ws/display_binding.h"

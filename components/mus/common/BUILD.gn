@@ -8,6 +8,8 @@ component("mus_common") {
   sources = [
     "args.cc",
     "args.h",
+    "event_matcher_util.cc",
+    "event_matcher_util.h",
     "event_param_traits.cc",
     "event_param_traits.h",
     "event_param_traits_macros.h",

@@ -11,7 +11,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "components/mus/public/cpp/event_matcher_util.h"
+#include "components/mus/common/event_matcher_util.h"
 #include "components/mus/ws/accelerator.h"
 #include "components/mus/ws/event_dispatcher_delegate.h"
 #include "components/mus/ws/server_window.h"

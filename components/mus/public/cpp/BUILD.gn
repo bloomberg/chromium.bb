@@ -5,10 +5,8 @@
 source_set("cpp") {
   sources = [
     "context_provider.h",
-    "event_matcher_util.h",
     "input_event_handler.h",
     "lib/context_provider.cc",
-    "lib/event_matcher_util.cc",
     "lib/in_flight_change.cc",
     "lib/in_flight_change.h",
     "lib/output_surface.cc",

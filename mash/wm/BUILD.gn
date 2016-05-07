@@ -165,6 +165,7 @@ source_set("unittests") {
     ":lib",
     "//base",
     "//base/test:test_config",
+    "//components/mus/common:mus_common",
     "//components/mus/public/cpp",
     "//components/mus/public/cpp/tests:unittest_support",
     "//components/mus/public/interfaces",
