@@ -4,10 +4,11 @@
 <link rel="import" href="chrome://resources/html/load_time_data.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://extensions/strings.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-toggle-button/paper-toggle-button.html">
 
 <dom-module id="extensions-item">
+  <style include="iron-flex"></style>
   <template>
     <div id="card-wrapper" class$="[[computeClasses_(data.state)]]">
       <div id="card">

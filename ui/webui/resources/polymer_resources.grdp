@@ -98,6 +98,9 @@
   <structure name="IDR_POLYMER_1_0_IRON_FLEX_LAYOUT_IRON_FLEX_LAYOUT_HTML"
              file="../../../third_party/polymer/v1_0/components-chromium/iron-flex-layout/iron-flex-layout.html"
              type="chrome_html" />
+  <structure name="IDR_POLYMER_1_0_IRON_FLEX_LAYOUT_IRON_FLEX_LAYOUT_CLASSES_HTML"
+             file="../../../third_party/polymer/v1_0/components-chromium/iron-flex-layout/iron-flex-layout-classes.html"
+             type="chrome_html" />
   <structure name="IDR_POLYMER_1_0_IRON_FORM_ELEMENT_BEHAVIOR_IRON_FORM_ELEMENT_BEHAVIOR_EXTRACTED_JS"
              file="../../../third_party/polymer/v1_0/components-chromium/iron-form-element-behavior/iron-form-element-behavior-extracted.js"
              type="chrome_html" />
