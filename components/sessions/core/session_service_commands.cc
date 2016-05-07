@@ -42,7 +42,9 @@ static const SessionCommand::id_type kCommandSetTabUserAgentOverride = 18;
 static const SessionCommand::id_type kCommandSessionStorageAssociated = 19;
 static const SessionCommand::id_type kCommandSetActiveWindow = 20;
 static const SessionCommand::id_type kCommandLastActiveTime = 21;
-static const SessionCommand::id_type kCommandSetWindowWorkspace = 22;
+// OBSOLETE Superseded by kCommandSetWindowWorkspace2.
+// static const SessionCommand::id_type kCommandSetWindowWorkspace = 22;
+static const SessionCommand::id_type kCommandSetWindowWorkspace2 = 23;
 
 namespace {
 
@@ -581,18 +583,16 @@ bool CreateTabsAndWindows(const ScopedVector<SessionCommand>& data,
         break;
       }
 
-      case kCommandSetWindowWorkspace: {
+      case kCommandSetWindowWorkspace2: {
         std::unique_ptr<base::Pickle> pickle(command->PayloadAsPickle());
         base::PickleIterator it(*pickle);
-        const SessionID::id_type* window_id;
+        SessionID::id_type window_id;
         std::string workspace;
-        if (!it.ReadBytes(reinterpret_cast<const char**>(&window_id),
-                          sizeof(*window_id)) ||
-            !it.ReadString(&workspace)) {
+         if (!it.ReadInt(&window_id) || !it.ReadString(&workspace)) {
           DVLOG(1) << "Failed reading command " << command->id();
           return true;
         }
-        GetWindow(*window_id, windows)->workspace = workspace;
+        GetWindow(window_id, windows)->workspace = workspace;
         break;
       }
 
@@ -759,11 +759,10 @@ std::unique_ptr<SessionCommand> CreateSetWindowWorkspaceCommand(
     const SessionID& window_id,
     const std::string& workspace) {
   base::Pickle pickle;
-  pickle.WriteBytes(static_cast<const void*>(&window_id), sizeof(window_id));
+  pickle.WriteInt(window_id.id());
   pickle.WriteString(workspace);
   std::unique_ptr<SessionCommand> command(
-      new SessionCommand(kCommandSetWindowWorkspace, pickle.size()));
-  memcpy(command->contents(), pickle.data(), pickle.size());
+      new SessionCommand(kCommandSetWindowWorkspace2, pickle));
   return command;
 }
 
