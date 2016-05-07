@@ -33,7 +33,7 @@ mus::mojom::ShowState GetWindowShowState(const mus::Window* window) {
         window->GetSharedProperty<int32_t>(
             mus::mojom::WindowManager::kShowState_Property));
   }
-  return mus::mojom::ShowState::RESTORED;
+  return mus::mojom::ShowState::DEFAULT;
 }
 
 void SetWindowUserSetBounds(mus::Window* window, const gfx::Rect& bounds) {
@@ -127,6 +127,33 @@ mus::mojom::WindowType GetWindowType(
         mojo::ConvertTo<int32_t>(iter->second));
   }
   return mus::mojom::WindowType::POPUP;
+}
+
+ui::wm::WindowType GetWmWindowType(const mus::Window* window) {
+  switch (GetWindowType(window)) {
+    case mus::mojom::WindowType::WINDOW:
+      return ui::wm::WINDOW_TYPE_NORMAL;
+
+    case mus::mojom::WindowType::PANEL:
+      return ui::wm::WINDOW_TYPE_PANEL;
+
+    case mus::mojom::WindowType::CONTROL:
+      return ui::wm::WINDOW_TYPE_CONTROL;
+
+    case mus::mojom::WindowType::WINDOW_FRAMELESS:
+    case mus::mojom::WindowType::POPUP:
+    case mus::mojom::WindowType::BUBBLE:
+    case mus::mojom::WindowType::DRAG:
+      return ui::wm::WINDOW_TYPE_POPUP;
+
+    case mus::mojom::WindowType::MENU:
+      return ui::wm::WINDOW_TYPE_MENU;
+
+    case mus::mojom::WindowType::TOOLTIP:
+      return ui::wm::WINDOW_TYPE_TOOLTIP;
+  }
+
+  return ui::wm::WINDOW_TYPE_UNKNOWN;
 }
 
 mojom::AshWindowType GetAshWindowType(const mus::Window* window) {

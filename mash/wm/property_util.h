@@ -9,6 +9,7 @@
 #include "components/mus/public/interfaces/window_manager_constants.mojom.h"
 #include "mash/wm/public/interfaces/ash_window_type.mojom.h"
 #include "mash/wm/public/interfaces/container.mojom.h"
+#include "ui/wm/public/window_types.h"
 
 namespace gfx {
 class Rect;
@@ -51,6 +52,8 @@ Shadow* GetShadow(const mus::Window* window);
 mus::mojom::WindowType GetWindowType(const mus::Window* window);
 mus::mojom::WindowType GetWindowType(
     const mus::Window::SharedProperties& window);
+
+ui::wm::WindowType GetWmWindowType(const mus::Window* window);
 
 mojom::AshWindowType GetAshWindowType(const mus::Window* window);
 

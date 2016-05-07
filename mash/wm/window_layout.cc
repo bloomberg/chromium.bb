@@ -25,8 +25,8 @@ void WindowLayout::LayoutWindow(mus::Window* window) {
   gfx::Rect user_set_bounds = GetWindowUserSetBounds(window);
   gfx::Size preferred_size = GetWindowPreferredSize(window);
 
-  // Maximized/fullscreen/presentation windows should be sized to the bounds
-  // of the container.
+  // Maximized/fullscreen windows should be sized to the bounds of the
+  // container.
   // If a window has bounds set by the user, those should be respected as long
   // as they meet certain constraints (e.g. visible).
   // TODO(beng): transient windows:
@@ -35,12 +35,15 @@ void WindowLayout::LayoutWindow(mus::Window* window) {
   // Transient windows should be opened centered within their parent.
 
   switch (show_state) {
+    case mus::mojom::ShowState::FULLSCREEN:
     case mus::mojom::ShowState::MAXIMIZED:
-    case mus::mojom::ShowState::IMMERSIVE:
-    case mus::mojom::ShowState::PRESENTATION:
       FitToContainer(window);
       break;
-    case mus::mojom::ShowState::RESTORED: {
+
+    case mus::mojom::ShowState::DEFAULT:
+    case mus::mojom::ShowState::DOCKED:
+    case mus::mojom::ShowState::INACTIVE:
+    case mus::mojom::ShowState::NORMAL: {
       if (!user_set_bounds.IsEmpty()) {
         // If the bounds are unchanged, this will do nothing.
         window->SetBounds(user_set_bounds);

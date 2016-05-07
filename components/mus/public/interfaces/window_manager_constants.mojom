@@ -11,12 +11,17 @@ enum WindowManagerErrorCode {
   ACCESS_DENIED
 };
 
+// TODO(sky): seems like this should not be defined in mus, rather in mash.
+// Only thing mus cares about is minimized and that should be expressed
+// differently.
 enum ShowState {
-  RESTORED,
+  DEFAULT,
+  NORMAL,
   MINIMIZED,
   MAXIMIZED,
-  IMMERSIVE,
-  PRESENTATION
+  INACTIVE,
+  FULLSCREEN,
+  DOCKED,
 };
 
 enum Rotation {

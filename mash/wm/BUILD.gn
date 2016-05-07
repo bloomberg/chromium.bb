@@ -14,6 +14,16 @@ source_set("lib") {
     "accelerator_registrar_impl.h",
     "background_layout.cc",
     "background_layout.h",
+    "bridge/mus_layout_manager_adapter.cc",
+    "bridge/mus_layout_manager_adapter.h",
+    "bridge/wm_globals_mus.cc",
+    "bridge/wm_globals_mus.h",
+    "bridge/wm_lookup_mus.cc",
+    "bridge/wm_lookup_mus.h",
+    "bridge/wm_root_window_controller_mus.cc",
+    "bridge/wm_root_window_controller_mus.h",
+    "bridge/wm_window_mus.cc",
+    "bridge/wm_window_mus.h",
     "disconnected_app_handler.cc",
     "disconnected_app_handler.h",
     "fill_layout.cc",
@@ -68,6 +78,7 @@ source_set("lib") {
   ]
 
   deps = [
+    "//ash/wm/common:ash_wm_common",
     "//base",
     "//components/mus/common:mus_common",
     "//components/mus/public/cpp",
@@ -85,6 +96,7 @@ source_set("lib") {
     "//ui/events",
     "//ui/gfx",
     "//ui/gfx/geometry",
+    "//ui/mojo/display",
     "//ui/resources",
     "//ui/strings",
     "//ui/views",
