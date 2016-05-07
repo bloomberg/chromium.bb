@@ -214,7 +214,7 @@ public class FindToolbar extends LinearLayout
 
         mFindQuery = (FindQuery) findViewById(R.id.find_query);
         mFindQuery.setFindToolbar(this);
-        mFindQuery.setInputType(InputType.TYPE_TEXT_VARIATION_FILTER);
+        mFindQuery.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_FILTER);
         mFindQuery.setSelectAllOnFocus(true);
         mFindQuery.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
