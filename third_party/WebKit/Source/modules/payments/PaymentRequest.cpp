@@ -248,14 +248,14 @@ void PaymentRequest::onUpdatePaymentDetails(const ScriptValue& detailsScriptValu
     V8PaymentDetails::toImpl(detailsScriptValue.isolate(), detailsScriptValue.v8Value(), details, exceptionState);
     if (exceptionState.hadException()) {
         m_showResolver->reject(DOMException::create(SyntaxError, exceptionState.message()));
-        clearResolversAndCloseMojoConnection();
+        stopResolversAndCloseMojoConnection();
         return;
     }
 
     validatePaymentDetails(details, exceptionState);
     if (exceptionState.hadException()) {
         m_showResolver->reject(DOMException::create(SyntaxError, exceptionState.message()));
-        clearResolversAndCloseMojoConnection();
+        stopResolversAndCloseMojoConnection();
         return;
     }
 
@@ -274,7 +274,7 @@ void PaymentRequest::onUpdatePaymentDetailsFailure(const ScriptValue& error)
         m_showResolver->reject(error);
     if (m_completeResolver)
         m_completeResolver->reject(error);
-    clearResolversAndCloseMojoConnection();
+    stopResolversAndCloseMojoConnection();
 }
 
 DEFINE_TRACE(PaymentRequest)
@@ -290,7 +290,6 @@ DEFINE_TRACE(PaymentRequest)
 
 PaymentRequest::PaymentRequest(ScriptState* scriptState, const Vector<String>& supportedMethods, const PaymentDetails& details, const PaymentOptions& options, const ScriptValue& data, ExceptionState& exceptionState)
     : ContextLifecycleObserver(scriptState->getExecutionContext())
-    , ActiveScriptWrappable(this)
     , m_options(options)
     , m_clientBinding(this)
 {
@@ -347,12 +346,7 @@ PaymentRequest::PaymentRequest(ScriptState* scriptState, const Vector<String>& s
 
 void PaymentRequest::contextDestroyed()
 {
-    clearResolversAndCloseMojoConnection();
-}
-
-bool PaymentRequest::hasPendingActivity() const
-{
-    return m_showResolver || m_completeResolver;
+    stopResolversAndCloseMojoConnection();
 }
 
 void PaymentRequest::OnShippingAddressChange(mojom::blink::ShippingAddressPtr address)
@@ -363,7 +357,7 @@ void PaymentRequest::OnShippingAddressChange(mojom::blink::ShippingAddressPtr ad
     String errorMessage;
     if (!PaymentsValidators::isValidShippingAddress(address, &errorMessage)) {
         m_showResolver->reject(DOMException::create(SyntaxError, errorMessage));
-        clearResolversAndCloseMojoConnection();
+        stopResolversAndCloseMojoConnection();
         return;
     }
 
@@ -398,7 +392,7 @@ void PaymentRequest::OnPaymentResponse(mojom::blink::PaymentResponsePtr response
         String errorMessage;
         if (!PaymentsValidators::isValidShippingAddress(response->shipping_address, &errorMessage)) {
             m_showResolver->reject(DOMException::create(SyntaxError, errorMessage));
-            clearResolversAndCloseMojoConnection();
+            stopResolversAndCloseMojoConnection();
             return;
         }
 
@@ -420,20 +414,26 @@ void PaymentRequest::OnError()
         m_completeResolver->reject(DOMException::create(SyntaxError, "Request cancelled"));
     if (m_showResolver)
         m_showResolver->reject(DOMException::create(SyntaxError, "Request cancelled"));
-    clearResolversAndCloseMojoConnection();
+    stopResolversAndCloseMojoConnection();
 }
 
 void PaymentRequest::OnComplete()
 {
     DCHECK(m_completeResolver);
     m_completeResolver->resolve();
-    clearResolversAndCloseMojoConnection();
+    stopResolversAndCloseMojoConnection();
 }
 
-void PaymentRequest::clearResolversAndCloseMojoConnection()
+void PaymentRequest::stopResolversAndCloseMojoConnection()
 {
+    if (m_completeResolver)
+        m_completeResolver->stop();
     m_completeResolver.clear();
+
+    if (m_showResolver)
+        m_showResolver->stop();
     m_showResolver.clear();
+
     if (m_clientBinding.is_bound())
         m_clientBinding.Close();
     m_paymentProvider.reset();

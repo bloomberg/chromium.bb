@@ -351,6 +351,17 @@ TEST_F(PaymentRequestTest, ResolvePromiseOnComplete)
     static_cast<mojom::blink::PaymentRequestClient*>(request)->OnComplete();
 }
 
+TEST_F(PaymentRequestTest, ContextDestroyedBeforePromiseResolved)
+{
+    ScriptState::Scope scope(getScriptState());
+    PaymentRequest* request = PaymentRequest::create(getScriptState(), Vector<String>(1, "foo"), buildPaymentDetailsForTest(), getExceptionState());
+    EXPECT_FALSE(getExceptionState().hadException());
+    request->show(getScriptState());
+    static_cast<ContextLifecycleObserver*>(request)->contextDestroyed();
+
+    ThreadHeap::collectAllGarbage();
+}
+
 TEST_F(PaymentRequestTest, RejectShowPromiseOnUpdateDetailsFailure)
 {
     ScriptState::Scope scope(getScriptState());
