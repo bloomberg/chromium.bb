@@ -145,6 +145,23 @@ std::unique_ptr<NTPSnippet> NTPSnippet::CreateFromDictionary(
   return snippet;
 }
 
+// static
+bool NTPSnippet::AddFromListValue(const base::ListValue& list,
+                                  PtrVector* snippets) {
+  for (const base::Value* const value : list) {
+    const base::DictionaryValue* dict = nullptr;
+    if (!value->GetAsDictionary(&dict))
+      return false;
+
+    std::unique_ptr<NTPSnippet> snippet = CreateFromDictionary(*dict);
+    if (!snippet)
+      return false;
+
+    snippets->push_back(std::move(snippet));
+  }
+  return true;
+}
+
 std::unique_ptr<base::DictionaryValue> NTPSnippet::ToDictionary() const {
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
 

@@ -15,6 +15,7 @@
 
 namespace base {
 class DictionaryValue;
+class ListValue;
 }
 
 namespace ntp_snippets {
@@ -33,6 +34,8 @@ struct SnippetSource {
 // smarts at all, all the logic is in the service.
 class NTPSnippet {
  public:
+  using PtrVector = std::vector<std::unique_ptr<NTPSnippet>>;
+
   // Creates a new snippet with the given URL. URL must be valid.
   NTPSnippet(const GURL& url);
 
@@ -44,6 +47,11 @@ class NTPSnippet {
   // the property comment.
   static std::unique_ptr<NTPSnippet> CreateFromDictionary(
       const base::DictionaryValue& dict);
+
+  // Creates snippets from dictionary values in |list| and adds them to
+  // |snippets|. Returns true on success, false if anything went wrong.
+  static bool AddFromListValue(const base::ListValue& list,
+                               PtrVector* snippets);
 
   std::unique_ptr<base::DictionaryValue> ToDictionary() const;
 

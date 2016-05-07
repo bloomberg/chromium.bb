@@ -47,7 +47,7 @@ class NTPSnippetsServiceObserver;
 // Stores and vends fresh content data for the NTP.
 class NTPSnippetsService : public KeyedService {
  public:
-  using NTPSnippetStorage = std::vector<std::unique_ptr<NTPSnippet>>;
+  using NTPSnippetStorage = NTPSnippet::PtrVector;
   using const_iterator =
       InnerIterator<NTPSnippetStorage::const_iterator, const NTPSnippet>;
 
@@ -140,14 +140,14 @@ class NTPSnippetsService : public KeyedService {
 
  private:
   void OnSuggestionsChanged(const suggestions::SuggestionsProfile& suggestions);
-  void OnFetchFinished(const base::Value& value, const std::string& status);
+  void OnFetchFinished(NTPSnippetStorage snippets, const std::string& status);
 
   // Expects a top-level dictionary containing a "recos" list, each element of
   // which will be parsed as a snippet.
   bool LoadFromFetchedValue(const base::Value& value);
 
   // Merges newly available snippets with the previously available list.
-  bool MergeSnippets(NTPSnippetStorage new_snippets);
+  void MergeSnippets(NTPSnippetStorage new_snippets);
   // TODO(treib): Investigate a better storage, maybe LevelDB or SQLite?
   void LoadSnippetsFromPrefs();
   void StoreSnippetsToPrefs();
@@ -194,11 +194,6 @@ class NTPSnippetsService : public KeyedService {
 
   // The snippets fetcher.
   std::unique_ptr<NTPSnippetsFetcher> snippets_fetcher_;
-
-  // The subscription to the snippets fetcher.
-  std::unique_ptr<
-      NTPSnippetsFetcher::SnippetsAvailableCallbackList::Subscription>
-      snippets_fetcher_subscription_;
 
   std::string last_fetch_status_;
 
