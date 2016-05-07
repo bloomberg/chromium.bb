@@ -5,6 +5,9 @@
 #ifndef SERVICES_SHELL_PUBLIC_CPP_INTERFACE_REGISTRY_H_
 #define SERVICES_SHELL_PUBLIC_CPP_INTERFACE_REGISTRY_H_
 
+#include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/shell/public/cpp/lib/interface_factory_binder.h"
 #include "services/shell/public/interfaces/interface_provider.mojom.h"
@@ -43,7 +46,8 @@ class InterfaceRegistry : public mojom::InterfaceProvider {
 
     void SetInterfaceBinderForName(InterfaceBinder* binder,
                                    const std::string& interface_name) {
-      registry_->SetInterfaceBinderForName(binder, interface_name);
+      registry_->SetInterfaceBinderForName(
+          base::WrapUnique(binder), interface_name);
     }
 
     void RemoveInterfaceBinderForName(const std::string& interface_name) {
@@ -74,14 +78,14 @@ class InterfaceRegistry : public mojom::InterfaceProvider {
   template <typename Interface>
   bool AddInterface(InterfaceFactory<Interface>* factory) {
     return SetInterfaceBinderForName(
-        new internal::InterfaceFactoryBinder<Interface>(factory),
+        base::WrapUnique(
+            new internal::InterfaceFactoryBinder<Interface>(factory)),
         Interface::Name_);
   }
 
-  void set_default_binder(InterfaceBinder* binder) { default_binder_ = binder; }
-
  private:
-  using NameToInterfaceBinderMap = std::map<std::string, InterfaceBinder*>;
+  using NameToInterfaceBinderMap =
+      std::map<std::string, std::unique_ptr<InterfaceBinder>>;
 
   // mojom::InterfaceProvider:
   void GetInterface(const mojo::String& interface_name,
@@ -89,7 +93,7 @@ class InterfaceRegistry : public mojom::InterfaceProvider {
 
   // Returns true if the binder was set, false if it was not set (e.g. by
   // some filtering policy preventing this interface from being exposed).
-  bool SetInterfaceBinderForName(InterfaceBinder* binder,
+  bool SetInterfaceBinderForName(std::unique_ptr<InterfaceBinder> binder,
                                  const std::string& name);
 
   void RemoveInterfaceBinderForName(const std::string& interface_name);
@@ -98,7 +102,6 @@ class InterfaceRegistry : public mojom::InterfaceProvider {
   mojo::Binding<mojom::InterfaceProvider> binding_;
   Connection* connection_;
 
-  InterfaceBinder* default_binder_;
   NameToInterfaceBinderMap name_to_binder_;
 
   DISALLOW_COPY_AND_ASSIGN(InterfaceRegistry);
