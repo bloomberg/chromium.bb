@@ -17,7 +17,9 @@ namespace extensions {
 
 namespace {
 
+#if defined(ENABLE_PRINT_PREVIEW)
 const char kErrorIncognito[] = "Cannot access in incognito mode";
+#endif
 
 CloudPrintTestsDelegate* g_instance = nullptr;
 
