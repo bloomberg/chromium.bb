@@ -11,20 +11,14 @@ namespace content {
 BluetoothDevice::BluetoothDevice()
     : id(""),
       name(base::string16()),
-      tx_power(device::BluetoothDevice::kUnknownPower),
-      rssi(device::BluetoothDevice::kUnknownPower),
       uuids() {}
 
 BluetoothDevice::BluetoothDevice(
     const std::string& id,
     const base::string16& name,
-    int8_t tx_power,
-    int8_t rssi,
     const std::vector<std::string>& uuids)
     : id(id),
       name(name),
-      tx_power(tx_power),
-      rssi(rssi),
       uuids(uuids) {}
 
 BluetoothDevice::~BluetoothDevice() {
@@ -38,12 +32,6 @@ std::vector<std::string> BluetoothDevice::UUIDsFromBluetoothUUIDs(
   for (const auto& it : uuid_list)
     uuids.push_back(it.canonical_value());
   return uuids;
-}
-
-// static
-int8_t BluetoothDevice::ValidatePower(int16_t power) {
-  return ((power < -127) || (power > 127)) ? BluetoothDevice::kUnknownPower
-                                           : power;
 }
 
 }  // namespace content

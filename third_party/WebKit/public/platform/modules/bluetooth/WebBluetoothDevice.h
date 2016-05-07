@@ -14,13 +14,9 @@ namespace blink {
 struct WebBluetoothDevice {
     WebBluetoothDevice(const WebString& id,
         const WebString& name,
-        int8_t txPower,
-        int8_t rssi,
         const WebVector<WebString>& uuids)
         : id(id)
         , name(name)
-        , txPower(txPower)
-        , rssi(rssi)
         , uuids(uuids)
     {
     }
@@ -28,10 +24,6 @@ struct WebBluetoothDevice {
     // Members corresponding to BluetoothDevice attributes as specified in IDL.
     const WebString id;
     const WebString name;
-    // Powers:
-    // A value of 127 denotes an invalid power.
-    const int8_t txPower;
-    const int8_t rssi;
     const WebVector<WebString> uuids;
 };
 

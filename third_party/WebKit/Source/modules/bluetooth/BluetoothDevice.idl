@@ -17,7 +17,6 @@
     [DeprecateAs=BluetoothDeviceInstanceId, ImplementedAs=id] readonly attribute DOMString instanceID;
     readonly    attribute DOMString id;
     readonly    attribute DOMString?                 name;
-    readonly    attribute BluetoothAdvertisingData   adData;
     readonly    attribute BluetoothRemoteGATTServer  gatt;
     readonly    attribute UUID[]                     uuids;
     [CallWith=ScriptState, DeprecateAs=BluetoothDeviceConnectGATT] Promise<BluetoothRemoteGATTServer> connectGATT ();

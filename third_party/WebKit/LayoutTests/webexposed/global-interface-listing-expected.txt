@@ -319,11 +319,6 @@ interface BlobEvent : Event
     attribute @@toStringTag
     getter data
     method constructor
-interface BluetoothAdvertisingData
-    attribute @@toStringTag
-    getter rssi
-    getter txPower
-    method constructor
 interface BluetoothCharacteristicProperties
     attribute @@toStringTag
     getter authenticatedSignedWrites
@@ -338,7 +333,6 @@ interface BluetoothCharacteristicProperties
     method constructor
 interface BluetoothDevice : EventTarget
     attribute @@toStringTag
-    getter adData
     getter gatt
     getter id
     getter instanceID

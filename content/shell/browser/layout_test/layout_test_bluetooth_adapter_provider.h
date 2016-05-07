@@ -117,32 +117,6 @@ class LayoutTestBluetoothAdapterProvider {
   static scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>>
   GetEmptyAdapter();
 
-  // |PowerValueAdapter|(tx_power, rssi)
-  // Inherits from |EmptyAdapter|
-  // Internal Structure:
-  //  - |HeartRateDevice|
-  //    - Mock Functions:
-  //      - GetInquiryTxPower(): Returns tx_power
-  //      - GetInquiryRSSI(): Returns rssi
-  static scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>>
-  GetPowerValueAdapter(int8_t tx_power, int8_t rssi);
-
-  // |PowerPresenceAdapter|(tx_power_present, rssi_present)
-  // Inherits from |EmptyAdapter|
-  // Internal Structure:
-  //  - |HeartRateDevice|
-  //    - Mock Functions:
-  //      - GetInquiryTxPower(): If tx_power_present is true, returns -10,
-  //        the TxPower of a device broadcasting at 0.1mW. Otherwise
-  //        returns 127 which denotes a missing Tx Power.
-  //        TODO(ortuno): Change 127 to -128 when Tx Power Unknown value gets
-  //        fixed: http://crbug.com/551572
-  //      - GetInquiryRSSI(): If rssi_present is true returns -51,
-  //        the RSSI at 1m from a device broadcasting at 0.1mW. Otherwise
-  //        returns 127 which denotes a missing RSSI.
-  static scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>>
-  GetPowerPresenceAdapter(bool tx_power_present, bool rssi_present);
-
   // |GlucoseHeartRateAdapter|
   // Inherits from |EmptyAdapter|
   // Devices added:

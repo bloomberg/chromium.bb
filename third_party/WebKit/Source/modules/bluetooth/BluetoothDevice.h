@@ -8,7 +8,6 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "modules/EventTargetModules.h"
-#include "modules/bluetooth/BluetoothAdvertisingData.h"
 #include "modules/bluetooth/BluetoothRemoteGATTServer.h"
 #include "platform/heap/Heap.h"
 #include "public/platform/modules/bluetooth/WebBluetoothDevice.h"
@@ -72,7 +71,6 @@ public:
     // IDL exposed interface:
     String id() { return m_webDevice->id; }
     String name() { return m_webDevice->name; }
-    BluetoothAdvertisingData* adData() { return m_adData; }
     BluetoothRemoteGATTServer* gatt() { return m_gatt; }
     Vector<String> uuids();
     // TODO(ortuno): Remove connectGATT
@@ -83,7 +81,6 @@ public:
 
 private:
     OwnPtr<WebBluetoothDevice> m_webDevice;
-    Member<BluetoothAdvertisingData> m_adData;
     Member<BluetoothRemoteGATTServer> m_gatt;
 };
 

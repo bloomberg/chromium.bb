@@ -19,7 +19,6 @@ namespace blink {
 BluetoothDevice::BluetoothDevice(ExecutionContext* context, PassOwnPtr<WebBluetoothDevice> webDevice)
     : ActiveDOMObject(context)
     , m_webDevice(std::move(webDevice))
-    , m_adData(BluetoothAdvertisingData::create(m_webDevice->txPower, m_webDevice->rssi))
     , m_gatt(BluetoothRemoteGATTServer::create(this))
 {
     // See example in Source/platform/heap/ThreadState.h
@@ -68,7 +67,6 @@ DEFINE_TRACE(BluetoothDevice)
 {
     EventTargetWithInlineData::trace(visitor);
     ActiveDOMObject::trace(visitor);
-    visitor->trace(m_adData);
     visitor->trace(m_gatt);
 }
 
