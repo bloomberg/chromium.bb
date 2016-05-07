@@ -89,7 +89,7 @@ function test4() {
 
 function test5() {
     popupWindowRect = getPopupWindowRect();
-    shouldBe('popupWindowRect.x', '-100');
+    shouldBe('popupWindowRect.x', '0');
     shouldBe('popupWindowRect.y', 'menuHeight');
 
     popupWindow.pagePopupController.closePopup();

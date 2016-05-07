@@ -1876,9 +1876,12 @@ IntRect HTMLSelectElement::elementRectRelativeToViewport() const
 {
     if (!layoutObject())
         return IntRect();
+    // Initialize with this frame rectangle relative to the viewport.
+    IntRect rect = document().view()->convertToRootFrame(document().view()->boundsRect());
     // We don't use absoluteBoundingBoxRect() because it can return an IntRect
     // larger the actual size by 1px.
-    return document().view()->contentsToViewport(roundedIntRect(layoutObject()->absoluteBoundingBoxFloatRect()));
+    rect.intersect(document().view()->contentsToViewport(roundedIntRect(layoutObject()->absoluteBoundingBoxFloatRect())));
+    return rect;
 }
 
 LayoutUnit HTMLSelectElement::clientPaddingLeft() const
@@ -1950,6 +1953,8 @@ void HTMLSelectElement::showPopup()
     if (document().frameHost()->chromeClient().hasOpenedPopup())
         return;
     if (!layoutObject() || !layoutObject()->isMenuList())
+        return;
+    if (elementRectRelativeToViewport().isEmpty())
         return;
 
     if (!m_popup)

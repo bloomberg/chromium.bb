@@ -120,6 +120,8 @@ protected:
     void loadFrame(const std::string& fileName)
     {
         FrameTestHelpers::loadFrame(mainFrame(), m_baseURL + fileName);
+        webView()->resize(WebSize(800, 600));
+        webView()->updateAllLifecyclePhases();
     }
 
     WebViewImpl* webView() const { return m_helper.webViewImpl(); }
