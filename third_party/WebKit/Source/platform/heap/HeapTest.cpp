@@ -6498,13 +6498,26 @@ public:
     }
 
 private:
+    void runWhileAttached();
+
     void runThread() override
     {
         ThreadState::attachCurrentThread(false);
         EXPECT_EQ(42, threadSpecificIntWrapper().value());
+        runWhileAttached();
         ThreadState::detachCurrentThread();
         atomicDecrement(&m_threadsToFinish);
     }
+
+    class HeapObject;
+    friend class HeapObject;
+
+    using WeakHeapObjectSet = PersistentHeapHashSet<WeakMember<HeapObject>>;
+
+    static WeakHeapObjectSet& weakHeapObjectSet();
+
+    using HeapObjectSet = PersistentHeapHashSet<Member<HeapObject>>;
+    static HeapObjectSet& heapObjectSet();
 
     static IntWrapper& threadSpecificIntWrapper()
     {
@@ -6519,6 +6532,69 @@ private:
         return *handle;
     }
 };
+
+class ThreadedClearOnShutdownTester::HeapObject final : public GarbageCollectedFinalized<ThreadedClearOnShutdownTester::HeapObject> {
+public:
+    static HeapObject* create(bool testDestructor)
+    {
+        return new HeapObject(testDestructor);
+    }
+
+    ~HeapObject()
+    {
+        if (!m_testDestructor)
+            return;
+
+        // Verify that the weak reference is gone.
+        EXPECT_FALSE(weakHeapObjectSet().contains(this));
+
+        // Add a new member to the static singleton; this will
+        // re-initializes the persistent node of the collection
+        // object. Done while terminating the test thread, so
+        // verify that this brings about the release of the
+        // persistent also.
+        heapObjectSet().add(create(false));
+    }
+
+    DEFINE_INLINE_TRACE() { }
+
+private:
+    explicit HeapObject(bool testDestructor)
+        : m_testDestructor(testDestructor)
+    {
+    }
+
+    bool m_testDestructor;
+};
+
+ThreadedClearOnShutdownTester::WeakHeapObjectSet& ThreadedClearOnShutdownTester::weakHeapObjectSet()
+{
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(
+        ThreadSpecific<WeakHeapObjectSet>, singleton,
+        new ThreadSpecific<WeakHeapObjectSet>);
+    if (!singleton.isSet())
+        singleton->registerAsStaticReference();
+
+    return *singleton;
+}
+
+ThreadedClearOnShutdownTester::HeapObjectSet& ThreadedClearOnShutdownTester::heapObjectSet()
+{
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(
+        ThreadSpecific<HeapObjectSet>, singleton,
+        new ThreadSpecific<HeapObjectSet>);
+    if (!singleton.isSet())
+        singleton->registerAsStaticReference();
+
+    return *singleton;
+}
+
+void ThreadedClearOnShutdownTester::runWhileAttached()
+{
+    EXPECT_EQ(42, threadSpecificIntWrapper().value());
+    // Creates a thread-specific singleton to a weakly held object.
+    weakHeapObjectSet().add(HeapObject::create(true));
+}
 
 } // namespace
 

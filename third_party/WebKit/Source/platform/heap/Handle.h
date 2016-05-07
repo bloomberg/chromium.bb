@@ -549,7 +549,9 @@ private:
     // released during ThreadState shutdown, clearing the association.
     static void clearPersistentNode(void *self)
     {
-        (reinterpret_cast<PersistentHeapCollectionBase<Collection>*>(self))->uninitialize();
+        PersistentHeapCollectionBase<Collection>* collection = (reinterpret_cast<PersistentHeapCollectionBase<Collection>*>(self));
+        collection->uninitialize();
+        collection->clear();
     }
 
     NO_LAZY_SWEEP_SANITIZE_ADDRESS
