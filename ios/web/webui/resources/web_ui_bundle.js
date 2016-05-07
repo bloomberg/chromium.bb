@@ -6,4 +6,5 @@ goog.provide('__crWeb.webUIBundle');
 
 goog.require('__crWeb.webUIBind');
 goog.require('__crWeb.webUIFavicons');
+goog.require('__crWeb.webUIRequire');
 goog.require('__crWeb.webUISend');

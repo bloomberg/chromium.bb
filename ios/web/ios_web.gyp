@@ -363,18 +363,22 @@
       'variables': {
         'closure_entry_point': '__crWeb.webUIBundle',
         'js_bundle_files': [
-          'webui/resources/web_ui_base.js',        
+          '../third_party/requirejs/require.js',
+          'webui/resources/web_ui_base.js',
           'webui/resources/web_ui_bind.js',
           'webui/resources/web_ui_bundle.js',
           'webui/resources/web_ui_favicons.js',
+          'webui/resources/web_ui_module_load_notifier.js',
           'webui/resources/web_ui_send.js',
         ],
       },
       'sources': [
-          'webui/resources/web_ui_base.js',        
+          '../third_party/requirejs/require.js',
+          'webui/resources/web_ui_base.js',
           'webui/resources/web_ui_bind.js',
           'webui/resources/web_ui_bundle.js',
           'webui/resources/web_ui_favicons.js',
+          'webui/resources/web_ui_module_load_notifier.js',
           'webui/resources/web_ui_send.js',
       ],
       '!sources': [
@@ -382,9 +386,11 @@
         # copied with the rest of resources, as they just Closure dependencies
         # for web_ui_bundle.js. Dependencies were added as sources, so they get
         # indexed by Xcode.
+        '../third_party/requirejs/require.js',
         'webui/resources/web_ui_base.js',
         'webui/resources/web_ui_bind.js',
         'webui/resources/web_ui_favicons.js',
+        'webui/resources/web_ui_module_load_notifier.js',
         'webui/resources/web_ui_send.js',
       ],
       'link_settings': {
@@ -476,6 +482,8 @@
         'public/test/test_web_view_content_view.mm',
         'test/crw_fake_web_controller_observer.h',
         'test/crw_fake_web_controller_observer.mm',
+        'test/test_url_constants.cc',
+        'test/test_url_constants.h',
         'test/test_web_thread.cc',
         'test/test_web_thread_bundle.cc',
         'test/web_int_test.h',

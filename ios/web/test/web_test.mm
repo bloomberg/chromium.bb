@@ -14,6 +14,7 @@
 #import "ios/web/navigation/crw_session_controller.h"
 #include "ios/web/public/active_state_manager.h"
 #include "ios/web/public/referrer.h"
+#include "ios/web/public/url_schemes.h"
 #import "ios/web/public/web_state/ui/crw_web_delegate.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
 #import "ios/web/web_state/web_state_impl.h"
@@ -37,7 +38,13 @@ namespace web {
 
 #pragma mark -
 
-WebTest::WebTest() : web_client_(base::WrapUnique(new TestWebClient)) {}
+WebTest::WebTest() : web_client_(base::WrapUnique(new TestWebClient)) {
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    RegisterWebSchemes(true);
+  });
+}
+
 WebTest::~WebTest() {}
 
 void WebTest::SetUp() {

@@ -22,6 +22,9 @@ class TestWebClient : public web::WebClient {
   ~TestWebClient() override;
 
   // WebClient implementation.
+  void AddAdditionalSchemes(std::vector<url::SchemeWithType>*) const override;
+  // Returns true for kTestWebUIScheme URL scheme.
+  bool IsAppSpecificURL(const GURL& url) const override;
   NSString* GetEarlyPageScript() const override;
   void AllowCertificateError(WebState*,
                              int cert_error,

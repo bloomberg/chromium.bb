@@ -331,6 +331,8 @@ source_set("test_support") {
     "public/test/test_web_view_content_view.mm",
     "test/crw_fake_web_controller_observer.h",
     "test/crw_fake_web_controller_observer.mm",
+    "test/test_url_constants.cc",
+    "test/test_url_constants.h",
     "test/test_web_thread.cc",
     "test/test_web_thread_bundle.cc",
     "test/web_int_test.h",
@@ -451,10 +453,12 @@ js_compile_bundle("web_ui_bundle") {
   closure_entry_point = "__crWeb.webUIBundle"
 
   sources = [
+    "../third_party/requirejs/require.js",
     "webui/resources/web_ui_base.js",
     "webui/resources/web_ui_bind.js",
     "webui/resources/web_ui_bundle.js",
     "webui/resources/web_ui_favicons.js",
+    "webui/resources/web_ui_module_load_notifier.js",
     "webui/resources/web_ui_send.js",
   ]
 }

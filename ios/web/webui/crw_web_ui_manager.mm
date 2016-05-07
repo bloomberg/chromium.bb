@@ -4,10 +4,13 @@
 
 #import "ios/web/webui/crw_web_ui_manager.h"
 
+#include "base/json/string_escape.h"
 #include "base/mac/bind_objc_block.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_vector.h"
+#include "base/strings/stringprintf.h"
 #import "base/strings/sys_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #import "ios/web/net/request_group_util.h"
 #include "ios/web/public/browser_state.h"
@@ -39,6 +42,12 @@ const char kScriptCommandPrefix[] = "webui";
 
 // Handles JavaScript message from the WebUI page.
 - (BOOL)handleWebUIJSMessage:(const base::DictionaryValue&)message;
+
+// Handles webui.requestFavicon JavaScript message from the WebUI page.
+- (BOOL)handleRequestFavicon:(const base::ListValue*)arguments;
+
+// Handles webui.loadMojo JavaScript message from the WebUI page.
+- (BOOL)handleLoadMojo:(const base::ListValue*)arguments;
 
 // Removes favicon callback from web state.
 - (void)resetWebState;
@@ -161,9 +170,8 @@ const char kScriptCommandPrefix[] = "webui";
 
 - (BOOL)handleWebUIJSMessage:(const base::DictionaryValue&)message {
   std::string command;
-  if (!message.GetString("message", &command) ||
-      command != "webui.requestFavicon") {
-    DLOG(WARNING) << "Unexpected message received" << command;
+  if (!message.GetString("message", &command)) {
+    DLOG(WARNING) << "Malformed message received";
     return NO;
   }
   const base::ListValue* arguments = nullptr;
@@ -171,6 +179,22 @@ const char kScriptCommandPrefix[] = "webui";
     DLOG(WARNING) << "JS message parameter not found: arguments";
     return NO;
   }
+
+  if (!arguments) {
+    DLOG(WARNING) << "No arguments provided to " << command;
+    return NO;
+  }
+
+  if (command == "webui.requestFavicon")
+    return [self handleRequestFavicon:arguments];
+  if (command == "webui.loadMojo")
+    return [self handleLoadMojo:arguments];
+
+  DLOG(WARNING) << "Unknown webui command received: " << command;
+  return NO;
+}
+
+- (BOOL)handleRequestFavicon:(const base::ListValue*)arguments {
   std::string favicon;
   if (!arguments->GetString(0, &favicon)) {
     DLOG(WARNING) << "JS message parameter not found: Favicon URL";
@@ -191,10 +215,56 @@ const char kScriptCommandPrefix[] = "webui";
     NSString* script =
         [NSString stringWithFormat:@"chrome.setFaviconBackground('%@', '%@');",
                                    faviconURLString, dataURLString];
-    [strongSelf webState]->ExecuteJavaScriptAsync(
-        base::SysNSStringToUTF16(script));
+    [strongSelf webState]->ExecuteJavaScript(base::SysNSStringToUTF16(script));
   };
   [self fetchResourceWithURL:faviconURL completionHandler:faviconHandler];
+  return YES;
+}
+
+- (BOOL)handleLoadMojo:(const base::ListValue*)arguments {
+  std::string moduleName;
+  if (!arguments->GetString(0, &moduleName)) {
+    DLOG(WARNING) << "JS message parameter not found: Module name";
+    return NO;
+  }
+  std::string loadID;
+  if (!arguments->GetString(1, &loadID)) {
+    DLOG(WARNING) << "JS message parameter not found: Load ID";
+    return NO;
+  }
+
+  // Load and inject the script.
+  GURL resourceURL(self.webState->GetLastCommittedURL().Resolve(moduleName));
+  base::WeakNSObject<CRWWebUIManager> weakSelf(self);
+  [self fetchResourceWithURL:resourceURL completionHandler:^(NSData* data) {
+    std::string script;
+    if (data) {
+      script = base::SysNSStringToUTF8(
+          [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
+      // WebUIIOSDataSourceImpl returns the default resource (which is the HTML
+      // page itself) if the resource URL isn't found. Fail with error instead
+      // of silently injecting garbage (leading to a not-very-useful syntax
+      // error from the JS side).
+      if (script.find("<!doctype") != std::string::npos) {
+        NOTREACHED() << "cannot load " << moduleName;
+        script.clear();
+      }
+    }
+
+    // Append with completion function call.
+    if (script.empty()) {
+      DLOG(ERROR) << "Unable to find a module named " << moduleName;
+      script = "__crWeb.webUIModuleLoadNotifier.moduleLoadFailed";
+    } else {
+      script += "__crWeb.webUIModuleLoadNotifier.moduleLoadCompleted";
+    }
+    base::StringAppendF(&script, "(%s, %s);",
+                        base::GetQuotedJSONString(moduleName).c_str(),
+                        base::GetQuotedJSONString(loadID).c_str());
+
+    [weakSelf webState]->ExecuteJavaScript(base::UTF8ToUTF16(script));
+  }];
+
   return YES;
 }
 
