@@ -703,6 +703,8 @@ main(int argc, char *argv[])
 		case 'h':
 			help("weston-launch");
 			exit(EXIT_FAILURE);
+		default:
+			exit(EXIT_FAILURE);
 		}
 	}
 
