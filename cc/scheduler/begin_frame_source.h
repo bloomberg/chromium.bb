@@ -201,8 +201,10 @@ class CC_EXPORT SyntheticBeginFrameSource : public BeginFrameSourceBase,
       std::unique_ptr<DelayBasedTimeSource> time_source);
   ~SyntheticBeginFrameSource() override;
 
-  void OnUpdateVSyncParameters(base::TimeTicks new_vsync_timebase,
-                               base::TimeDelta new_vsync_interval);
+  void OnUpdateVSyncParameters(base::TimeTicks timebase,
+                               base::TimeDelta interval);
+  // This overrides any past or future interval from updating vsync parameters.
+  void SetAuthoritativeVSyncInterval(base::TimeDelta interval);
 
   // BeginFrameSourceBase
   void AddObserver(BeginFrameObserver* obs) override;
@@ -216,6 +218,8 @@ class CC_EXPORT SyntheticBeginFrameSource : public BeginFrameSourceBase,
                                       BeginFrameArgs::BeginFrameArgsType type);
 
   std::unique_ptr<DelayBasedTimeSource> time_source_;
+  base::TimeTicks last_timebase_;
+  base::TimeDelta authoritative_interval_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SyntheticBeginFrameSource);

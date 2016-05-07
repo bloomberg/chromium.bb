@@ -507,6 +507,33 @@ TEST_F(SyntheticBeginFrameSourceTest, VSyncChanges) {
   task_runner_->RunUntilTime(base::TimeTicks::FromInternalValue(60000));
 }
 
+TEST_F(SyntheticBeginFrameSourceTest, AuthoritativeVSyncChanges) {
+  task_runner_->SetAutoAdvanceNowToPendingTasks(true);
+  source_->OnUpdateVSyncParameters(base::TimeTicks::FromInternalValue(500),
+                                   base::TimeDelta::FromMicroseconds(10000));
+  EXPECT_BEGIN_FRAME_SOURCE_PAUSED(*obs_, false);
+  EXPECT_BEGIN_FRAME_USED_MISSED(*obs_, 500, 10500, 10000);
+  source_->AddObserver(obs_.get());
+
+  EXPECT_BEGIN_FRAME_USED(*obs_, 10500, 20500, 10000);
+  EXPECT_BEGIN_FRAME_USED(*obs_, 20500, 30500, 10000);
+  task_runner_->RunUntilTime(base::TimeTicks::FromInternalValue(20501));
+
+  // This will keep the same timebase, so 500, 9999
+  source_->SetAuthoritativeVSyncInterval(
+      base::TimeDelta::FromMicroseconds(9999));
+  EXPECT_BEGIN_FRAME_USED(*obs_, 30500, 40496, 9999);
+  EXPECT_BEGIN_FRAME_USED(*obs_, 40496, 50495, 9999);
+  task_runner_->RunUntilTime(base::TimeTicks::FromInternalValue(40497));
+
+  // Change the vsync params, but the new interval will be ignored.
+  source_->OnUpdateVSyncParameters(base::TimeTicks::FromInternalValue(400),
+                                   base::TimeDelta::FromMicroseconds(1));
+  EXPECT_BEGIN_FRAME_USED(*obs_, 50495, 60394, 9999);
+  EXPECT_BEGIN_FRAME_USED(*obs_, 60394, 70393, 9999);
+  task_runner_->RunUntilTime(base::TimeTicks::FromInternalValue(60395));
+}
+
 TEST_F(SyntheticBeginFrameSourceTest, MultipleObservers) {
   StrictMock<MockBeginFrameObserver> obs1, obs2;
 

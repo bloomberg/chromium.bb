@@ -177,9 +177,19 @@ SyntheticBeginFrameSource::SyntheticBeginFrameSource(
 SyntheticBeginFrameSource::~SyntheticBeginFrameSource() {}
 
 void SyntheticBeginFrameSource::OnUpdateVSyncParameters(
-    base::TimeTicks new_vsync_timebase,
-    base::TimeDelta new_vsync_interval) {
-  time_source_->SetTimebaseAndInterval(new_vsync_timebase, new_vsync_interval);
+    base::TimeTicks timebase,
+    base::TimeDelta interval) {
+  if (!authoritative_interval_.is_zero())
+    interval = authoritative_interval_;
+
+  last_timebase_ = timebase;
+  time_source_->SetTimebaseAndInterval(timebase, interval);
+}
+
+void SyntheticBeginFrameSource::SetAuthoritativeVSyncInterval(
+    base::TimeDelta interval) {
+  authoritative_interval_ = interval;
+  OnUpdateVSyncParameters(last_timebase_, interval);
 }
 
 BeginFrameArgs SyntheticBeginFrameSource::CreateBeginFrameArgs(
