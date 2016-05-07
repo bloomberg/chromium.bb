@@ -321,7 +321,10 @@ class SmoothnessDesktopToughPinchZoomCases(_Smoothness):
     return 'smoothness.desktop_tough_pinch_zoom_cases'
 
 
-@benchmark.Enabled('android')
+# This benchmark runs only on android by it is disabled on android as well
+# because of http://crbug.com/610021
+# @benchmark.Enabled('android')
+@benchmark.Disabled('all')
 class SmoothnessGpuRasterizationToughPinchZoomCases(_Smoothness):
   """Measures rendering statistics for pinch-zooming in the tough pinch zoom
   cases with GPU rasterization.
@@ -435,6 +438,7 @@ class SmoothnessToughImageDecodeCases(_Smoothness):
     return 'smoothness.tough_image_decode_cases'
 
 
+@benchmark.Disabled('android')  # http://crbug.com/610015
 class SmoothnessImageDecodingCases(_Smoothness):
   """Measures decoding statistics for jpeg images.
   """

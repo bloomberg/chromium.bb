@@ -46,7 +46,8 @@ class _RasterizeAndRecordMicro(perf_benchmark.PerfBenchmark):
 
 # RasterizeAndRecord disabled on mac because of crbug.com/350684.
 # RasterizeAndRecord disabled on windows because of crbug.com/338057.
-@benchmark.Disabled('mac', 'win')
+@benchmark.Disabled('mac', 'win',
+                    'android')  # http://crbug.com/610018
 class RasterizeAndRecordMicroTop25(_RasterizeAndRecordMicro):
   """Measures rasterize and record performance on the top 25 web pages.
 

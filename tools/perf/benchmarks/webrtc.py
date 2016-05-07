@@ -60,6 +60,7 @@ class WebrtcDataChannel(_Webrtc):
 # Disabled on reference builds because they crash and don't support tab
 # capture. See http://crbug.com/603232.
 @benchmark.Disabled('reference')
+@benchmark.Disabled('android')  # http://crbug.com/610019
 class WebrtcRendering(perf_benchmark.PerfBenchmark):
   """Specific time measurements (e.g. fps, smoothness) for WebRtc rendering."""
 
