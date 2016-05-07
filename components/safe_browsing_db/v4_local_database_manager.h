@@ -12,7 +12,6 @@
 
 #include "components/safe_browsing_db/database_manager.h"
 #include "components/safe_browsing_db/hit_report.h"
-#include "components/safe_browsing_db/v4_database.h"
 #include "components/safe_browsing_db/v4_protocol_manager_util.h"
 #include "components/safe_browsing_db/v4_update_protocol_manager.h"
 #include "url/gurl.h"
@@ -70,15 +69,10 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
 
   // Stores the current status of the lists to download from the SafeBrowsing
   // servers.
-  // TODO(vakh): current_list_states_ doesn't really belong here.
-  // It should come through the database, from the various V4Stores.
   base::hash_map<UpdateListIdentifier, std::string> current_list_states_;
 
   // The protocol manager that downloads the hash prefix updates.
   std::unique_ptr<V4UpdateProtocolManager> v4_update_protocol_manager_;
-
-  // The database that manages the stores containing the hash prefix updates.
-  std::unique_ptr<V4Database> v4_database_;
 
   friend class base::RefCountedThreadSafe<V4LocalDatabaseManager>;
   DISALLOW_COPY_AND_ASSIGN(V4LocalDatabaseManager);
