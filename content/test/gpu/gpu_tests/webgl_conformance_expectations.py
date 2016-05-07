@@ -82,6 +82,28 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('WebglExtension.OES_texture_float_linear',
         ['android', ('qualcomm', 'Adreno (TM) 330')])
 
+    # Nexus 5X
+    self.Fail('conformance/extensions/oes-texture-float-with-image-data.html',
+        ['android', ('qualcomm', 'Adreno (TM) 418')], bug=609883)
+    self.Fail('conformance/extensions/oes-texture-float-with-image.html',
+        ['android', ('qualcomm', 'Adreno (TM) 418')], bug=609883)
+    self.Fail('conformance/extensions/oes-texture-half-float-with-canvas.html',
+        ['android', ('qualcomm', 'Adreno (TM) 418')], bug=609883)
+    self.Fail(
+        'conformance/extensions/oes-texture-half-float-with-image-data.html',
+        ['android', ('qualcomm', 'Adreno (TM) 418')], bug=609883)
+    self.Fail('conformance/extensions/oes-texture-half-float-with-image.html',
+        ['android', ('qualcomm', 'Adreno (TM) 418')], bug=609883)
+    self.Fail('conformance/extensions/oes-texture-half-float-with-video.html',
+        ['android', ('qualcomm', 'Adreno (TM) 418')], bug=609883)
+    self.Fail('conformance/extensions/webgl-compressed-texture-atc.html',
+        ['android', ('qualcomm', 'Adreno (TM) 418')], bug=609883)
+    self.Fail('conformance/glsl/bugs/sampler-struct-function-arg.html',
+        ['android', ('qualcomm', 'Adreno (TM) 418')], bug=609883)
+    # This test is skipped because it is crashing the GPU process.
+    self.Skip('conformance/glsl/misc/shader-with-non-reserved-words.html',
+        ['android', ('qualcomm', 'Adreno (TM) 418')], bug=609883)
+
     # Nexus 6
     self.Fail('WebglExtension.EXT_sRGB',
         ['android', ('qualcomm', 'Adreno (TM) 420')])
@@ -96,6 +118,10 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # Fails on all platforms
     self.Fail('deqp/data/gles2/shaders/functions.html',
         bug=478572)
+    # Under the Nexus 5X group is a list of failures for bug 609883.
+    # the ext-sRGB.html bug is failing on the Nexus 5X.
+    # If bug 540900 is fixed, double check whether the Nexus 5X
+    # needs a .Fail added for bug 609883 and ext-sRGB.html.
     self.Fail('conformance/extensions/ext-sRGB.html',
         bug=540900)
 
