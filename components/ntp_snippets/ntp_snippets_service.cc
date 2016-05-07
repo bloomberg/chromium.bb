@@ -11,13 +11,11 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/json/json_reader.h"
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/stringprintf.h"
 #include "base/task_runner_util.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -54,7 +52,6 @@ const int kDefaultExpiryTimeMins = 24 * 60;
 
 const char kStatusMessageEmptyHosts[] = "Cannot fetch for empty hosts list.";
 const char kStatusMessageEmptyList[] = "Invalid / empty list.";
-const char kStatusMessageJsonErrorFormat[] = "Received invalid JSON (error %s)";
 const char kStatusMessageOK[] = "OK";
 
 base::TimeDelta GetFetchingInterval(const char* switch_name,
@@ -179,7 +176,6 @@ NTPSnippetsService::NTPSnippetsService(
     const std::string& application_language_code,
     NTPSnippetsScheduler* scheduler,
     std::unique_ptr<NTPSnippetsFetcher> snippets_fetcher,
-    const ParseJSONCallback& parse_json_callback,
     std::unique_ptr<ImageFetcher> image_fetcher)
     : enabled_(false),
       pref_service_(pref_service),
@@ -188,11 +184,9 @@ NTPSnippetsService::NTPSnippetsService(
       application_language_code_(application_language_code),
       scheduler_(scheduler),
       snippets_fetcher_(std::move(snippets_fetcher)),
-      parse_json_callback_(parse_json_callback),
-      image_fetcher_(std::move(image_fetcher)),
-      weak_ptr_factory_(this) {
+      image_fetcher_(std::move(image_fetcher)) {
   snippets_fetcher_subscription_ = snippets_fetcher_->AddCallback(base::Bind(
-      &NTPSnippetsService::OnSnippetsDownloaded, base::Unretained(this)));
+      &NTPSnippetsService::OnFetchFinished, base::Unretained(this)));
 }
 
 NTPSnippetsService::~NTPSnippetsService() {}
@@ -362,43 +356,16 @@ void NTPSnippetsService::OnSuggestionsChanged(
   FetchSnippetsFromHosts(hosts);
 }
 
-void NTPSnippetsService::OnSnippetsDownloaded(
-    const std::string& snippets_json, const std::string& status) {
-  if (!snippets_json.empty()) {
-    DCHECK(status.empty());
-
-    last_fetch_json_ = snippets_json;
-
-    parse_json_callback_.Run(
-        snippets_json,
-        base::Bind(&NTPSnippetsService::OnJsonParsed,
-                   weak_ptr_factory_.GetWeakPtr(), snippets_json),
-        base::Bind(&NTPSnippetsService::OnJsonError,
-                   weak_ptr_factory_.GetWeakPtr(), snippets_json));
-  } else {
+void NTPSnippetsService::OnFetchFinished(const base::Value& value,
+                                         const std::string& status) {
+  if (!status.empty()) {
     last_fetch_status_ = status;
-    LoadingSnippetsFinished();
-  }
-}
-
-void NTPSnippetsService::OnJsonParsed(const std::string& snippets_json,
-                                      std::unique_ptr<base::Value> parsed) {
-  if (!LoadFromFetchedValue(*parsed)) {
-    LOG(WARNING) << "Received invalid snippets: " << snippets_json;
+  } else if (!LoadFromFetchedValue(value)) {
+    LOG(WARNING) << "Received invalid snippets.";
     last_fetch_status_ = kStatusMessageEmptyList;
   } else {
     last_fetch_status_ = kStatusMessageOK;
   }
-
-  LoadingSnippetsFinished();
-}
-
-void NTPSnippetsService::OnJsonError(const std::string& snippets_json,
-                                     const std::string& error) {
-  LOG(WARNING) << "Received invalid JSON (" << error << "): " << snippets_json;
-  last_fetch_status_ = base::StringPrintf(kStatusMessageJsonErrorFormat,
-                                          error.c_str());
-
   LoadingSnippetsFinished();
 }
 

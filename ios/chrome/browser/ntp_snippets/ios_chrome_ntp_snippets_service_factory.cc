@@ -31,8 +31,8 @@ namespace {
 
 void ParseJson(
     const std::string& json,
-    const ntp_snippets::NTPSnippetsService::SuccessCallback& success_callback,
-    const ntp_snippets::NTPSnippetsService::ErrorCallback& error_callback) {
+    const ntp_snippets::NTPSnippetsFetcher::SuccessCallback& success_callback,
+    const ntp_snippets::NTPSnippetsFetcher::ErrorCallback& error_callback) {
   base::JSONReader json_reader;
   std::unique_ptr<base::Value> value = json_reader.ReadToValue(json);
   if (value) {
@@ -92,8 +92,8 @@ IOSChromeNTPSnippetsServiceFactory::BuildServiceInstanceFor(
       chrome_browser_state->GetPrefs(), suggestions_service, task_runner,
       GetApplicationContext()->GetApplicationLocale(), scheduler,
       base::WrapUnique(new ntp_snippets::NTPSnippetsFetcher(
-          request_context, GetChannel() == version_info::Channel::STABLE)),
-      base::Bind(&ParseJson),
+          request_context, base::Bind(&ParseJson),
+          GetChannel() == version_info::Channel::STABLE)),
       base::WrapUnique(new ImageFetcherImpl(
           request_context.get(), web::WebThread::GetBlockingPool()))));
 }

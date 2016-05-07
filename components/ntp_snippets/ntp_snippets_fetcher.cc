@@ -11,6 +11,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/values.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/load_flags.h"
@@ -30,6 +31,7 @@ namespace {
 
 const char kStatusMessageURLRequestErrorFormat[] = "URLRequestStatus error %d";
 const char kStatusMessageHTTPErrorFormat[] = "HTTP error %d";
+const char kStatusMessageJsonErrorFormat[] = "Received invalid JSON (error %s)";
 
 const char kContentSnippetsServerFormat[] =
     "https://chromereader-pa.googleapis.com/v1/fetch?key=%s";
@@ -72,9 +74,12 @@ const char kHostRestrictFormat[] =
 
 NTPSnippetsFetcher::NTPSnippetsFetcher(
     scoped_refptr<URLRequestContextGetter> url_request_context_getter,
+    const ParseJSONCallback& parse_json_callback,
     bool is_stable_channel)
     : url_request_context_getter_(url_request_context_getter),
-      is_stable_channel_(is_stable_channel) {}
+      parse_json_callback_(parse_json_callback),
+      is_stable_channel_(is_stable_channel),
+      weak_ptr_factory_(this) {}
 
 NTPSnippetsFetcher::~NTPSnippetsFetcher() {}
 
@@ -134,17 +139,34 @@ void NTPSnippetsFetcher::OnURLFetchComplete(const URLFetcher* source) {
                                  source->GetResponseCode());
   }
 
-  std::string response;
   if (!message.empty()) {
     DLOG(WARNING) << message << " while trying to download "
                   << source->GetURL().spec();
-
+    callback_list_.Notify(*base::Value::CreateNullValue(), message);
   } else {
-    bool stores_result_to_string = source->GetResponseAsString(&response);
+    bool stores_result_to_string = source->GetResponseAsString(
+        &last_fetch_json_);
     DCHECK(stores_result_to_string);
-  }
 
-  callback_list_.Notify(response, message);
+    parse_json_callback_.Run(
+        last_fetch_json_,
+        base::Bind(&NTPSnippetsFetcher::OnJsonParsed,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&NTPSnippetsFetcher::OnJsonError,
+                   weak_ptr_factory_.GetWeakPtr()));
+  }
+}
+
+void NTPSnippetsFetcher::OnJsonParsed(std::unique_ptr<base::Value> parsed) {
+  callback_list_.Notify(*parsed, std::string());
+}
+
+void NTPSnippetsFetcher::OnJsonError(const std::string& error) {
+  LOG(WARNING) << "Received invalid JSON (" << error << "): "
+               << last_fetch_json_;
+  callback_list_.Notify(*base::Value::CreateNullValue(),
+                        base::StringPrintf(kStatusMessageJsonErrorFormat,
+                                           error.c_str()));
 }
 
 }  // namespace ntp_snippets

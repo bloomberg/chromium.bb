@@ -7,6 +7,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/command_line.h"
 #include "base/json/json_reader.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -21,13 +22,17 @@
 #include "components/ntp_snippets/ntp_snippet.h"
 #include "components/ntp_snippets/ntp_snippets_fetcher.h"
 #include "components/ntp_snippets/ntp_snippets_scheduler.h"
+#include "components/ntp_snippets/switches.h"
 #include "components/prefs/testing_pref_service.h"
+#include "google_apis/google_api_keys.h"
+#include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::ElementsAre;
 using testing::IsEmpty;
+using testing::StartsWith;
 using testing::_;
 
 namespace ntp_snippets {
@@ -35,6 +40,8 @@ namespace ntp_snippets {
 namespace {
 
 const base::Time::Exploded kDefaultCreationTime = {2015, 11, 4, 25, 13, 46, 45};
+const char kTestContentSnippetsServerFormat[] =
+    "https://chromereader-pa.googleapis.com/v1/fetch?key=%s";
 
 base::Time GetDefaultCreationTime() {
   return base::Time::FromUTCExploded(kDefaultCreationTime);
@@ -149,20 +156,29 @@ std::string GetIncompleteJson() {
 }
 
 void ParseJson(
-    bool expect_success,
     const std::string& json,
-    const ntp_snippets::NTPSnippetsService::SuccessCallback& success_callback,
-    const ntp_snippets::NTPSnippetsService::ErrorCallback& error_callback) {
+    const ntp_snippets::NTPSnippetsFetcher::SuccessCallback& success_callback,
+    const ntp_snippets::NTPSnippetsFetcher::ErrorCallback& error_callback) {
   base::JSONReader json_reader;
   std::unique_ptr<base::Value> value = json_reader.ReadToValue(json);
-  bool success = !!value;
-  EXPECT_EQ(expect_success, success);
   if (value) {
     success_callback.Run(std::move(value));
   } else {
     error_callback.Run(json_reader.GetErrorMessage());
   }
 }
+
+// Factory for FakeURLFetcher objects that always generate errors.
+class FailingFakeURLFetcherFactory : public net::URLFetcherFactory {
+ public:
+  std::unique_ptr<net::URLFetcher> CreateURLFetcher(
+      int id, const GURL& url, net::URLFetcher::RequestType request_type,
+      net::URLFetcherDelegate* d) override {
+    return base::WrapUnique(new net::FakeURLFetcher(
+        url, d, /*response_data=*/std::string(), net::HTTP_NOT_FOUND,
+        net::URLRequestStatus::FAILED));
+  }
+};
 
 class MockScheduler : public NTPSnippetsScheduler {
  public:
@@ -179,21 +195,26 @@ class MockScheduler : public NTPSnippetsScheduler {
 class NTPSnippetsServiceTest : public testing::Test {
  public:
   NTPSnippetsServiceTest()
-      : pref_service_(new TestingPrefServiceSimple()) {}
+      : fake_url_fetcher_factory_(
+            /*default_factory=*/&failing_url_fetcher_factory_),
+        test_url_(base::StringPrintf(kTestContentSnippetsServerFormat,
+                                     google_apis::GetAPIKey().c_str())),
+        pref_service_(new TestingPrefServiceSimple()) {
+    NTPSnippetsService::RegisterProfilePrefs(pref_service_->registry());
+    // Since no SuggestionsService is injected in tests, we need to force the
+    // service to fetch from all hosts.
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kDontRestrict);
+  }
+
   ~NTPSnippetsServiceTest() override {}
 
   void SetUp() override {
-    NTPSnippetsService::RegisterProfilePrefs(pref_service_->registry());
-
-    CreateSnippetsService();
+    EXPECT_CALL(mock_scheduler(), Schedule(_, _, _, _)).Times(1);
+    CreateSnippetsService(/*enabled=*/true);
   }
 
-  virtual void CreateSnippetsService() {
-    CreateSnippetsServiceEnabled(true);
-  }
-
-  void CreateSnippetsServiceEnabled(bool enabled) {
-    scheduler_.reset(new MockScheduler);
+  void CreateSnippetsService(bool enabled) {
     scoped_refptr<base::SingleThreadTaskRunner> task_runner(
         base::ThreadTaskRunnerHandle::Get());
     scoped_refptr<net::TestURLRequestContextGetter> request_context_getter =
@@ -201,50 +222,52 @@ class NTPSnippetsServiceTest : public testing::Test {
 
     service_.reset(new NTPSnippetsService(
         pref_service_.get(), nullptr, task_runner, std::string("fr"),
-        scheduler_.get(),
+        &scheduler_,
         base::WrapUnique(new NTPSnippetsFetcher(
-            std::move(request_context_getter), true)),
-        base::Bind(&ParseJson, true), nullptr));
-    if (enabled)
-      EXPECT_CALL(*scheduler_, Schedule(_, _, _, _));
-    else
-      EXPECT_CALL(*scheduler_, Unschedule());
+            std::move(request_context_getter), base::Bind(&ParseJson),
+            /*is_stable_channel=*/true)), /*image_fetcher=*/nullptr));
     service_->Init(enabled);
   }
 
  protected:
+  const GURL& test_url() { return test_url_; }
   NTPSnippetsService* service() { return service_.get(); }
+  MockScheduler& mock_scheduler() {  return scheduler_; }
 
   void LoadFromJSONString(const std::string& json) {
-    service_->OnSnippetsDownloaded(json, std::string());
-  }
-
-  void SetExpectJsonParseSuccess(bool expect_success) {
-    service_->parse_json_callback_ = base::Bind(&ParseJson, expect_success);
+    fake_url_fetcher_factory_.SetFakeResponse(test_url_, json, net::HTTP_OK,
+                                              net::URLRequestStatus::SUCCESS);
+    service_->FetchSnippets();
+    message_loop_.RunUntilIdle();
   }
 
  private:
   base::MessageLoop message_loop_;
+  FailingFakeURLFetcherFactory failing_url_fetcher_factory_;
+  // Instantiation of factory automatically sets itself as URLFetcher's factory.
+  net::FakeURLFetcherFactory fake_url_fetcher_factory_;
+  const GURL test_url_;
   std::unique_ptr<TestingPrefServiceSimple> pref_service_;
   std::unique_ptr<NTPSnippetsService> service_;
-  std::unique_ptr<MockScheduler> scheduler_;
+  MockScheduler scheduler_;
 
   DISALLOW_COPY_AND_ASSIGN(NTPSnippetsServiceTest);
 };
 
 class NTPSnippetsServiceDisabledTest : public NTPSnippetsServiceTest {
  public:
-  void CreateSnippetsService() override {
-    CreateSnippetsServiceEnabled(false);
+  void SetUp() override {
+    EXPECT_CALL(mock_scheduler(), Unschedule()).Times(1);
+    CreateSnippetsService(/*enabled=*/false);
   }
 };
 
-TEST_F(NTPSnippetsServiceTest, Schedule) {
-  // CreateSnippetsServiceEnabled checks that Schedule is called.
+TEST_F(NTPSnippetsServiceTest, ScheduleIfEnabled) {
+  // SetUp() checks that Schedule is called.
 }
 
 TEST_F(NTPSnippetsServiceDisabledTest, Unschedule) {
-  // CreateSnippetsServiceEnabled checks that Unschedule is called.
+  // SetUp() checks that Unschedule is called.
 }
 
 TEST_F(NTPSnippetsServiceTest, Loop) {
@@ -379,23 +402,25 @@ TEST_F(NTPSnippetsServiceTest, LimitNumSnippets) {
 }
 
 TEST_F(NTPSnippetsServiceTest, LoadInvalidJson) {
-  SetExpectJsonParseSuccess(false);
   LoadFromJSONString(GetInvalidJson());
+  EXPECT_THAT(service()->last_status(), StartsWith("Received invalid JSON"));
   EXPECT_EQ(service()->size(), 0u);
 }
 
 TEST_F(NTPSnippetsServiceTest, LoadInvalidJsonWithExistingSnippets) {
   LoadFromJSONString(GetTestJson());
   ASSERT_EQ(service()->size(), 1u);
+  ASSERT_EQ("OK", service()->last_status());
 
-  SetExpectJsonParseSuccess(false);
   LoadFromJSONString(GetInvalidJson());
+  EXPECT_THAT(service()->last_status(), StartsWith("Received invalid JSON"));
   // This should not have changed the existing snippets.
   EXPECT_EQ(service()->size(), 1u);
 }
 
 TEST_F(NTPSnippetsServiceTest, LoadIncompleteJson) {
   LoadFromJSONString(GetIncompleteJson());
+  EXPECT_EQ("Invalid / empty list.", service()->last_status());
   EXPECT_EQ(service()->size(), 0u);
 }
 
@@ -404,6 +429,7 @@ TEST_F(NTPSnippetsServiceTest, LoadIncompleteJsonWithExistingSnippets) {
   ASSERT_EQ(service()->size(), 1u);
 
   LoadFromJSONString(GetIncompleteJson());
+  EXPECT_EQ("Invalid / empty list.", service()->last_status());
   // This should not have changed the existing snippets.
   EXPECT_EQ(service()->size(), 1u);
 }
@@ -433,7 +459,8 @@ TEST_F(NTPSnippetsServiceTest, Discard) {
   EXPECT_EQ(0u, service()->size());
 
   // The snippet should stay discarded even after re-creating the service.
-  CreateSnippetsService();
+  EXPECT_CALL(mock_scheduler(), Schedule(_, _, _, _)).Times(1);
+  CreateSnippetsService(/*enabled=*/true);
   LoadFromJSONString(json_str);
   EXPECT_EQ(0u, service()->size());
 
@@ -704,14 +731,12 @@ TEST_F(NTPSnippetsServiceTest, TestMultipleCompleteSources) {
 
 TEST_F(NTPSnippetsServiceTest, LogNumArticlesHistogram) {
   base::HistogramTester tester;
-  SetExpectJsonParseSuccess(false);
   LoadFromJSONString(GetInvalidJson());
   EXPECT_THAT(tester.GetAllSamples("NewTabPage.Snippets.NumArticles"),
               ElementsAre(base::Bucket(/*min=*/0, /*count=*/1)));
   // Invalid JSON shouldn't contribute to NumArticlesFetched.
   EXPECT_THAT(tester.GetAllSamples("NewTabPage.Snippets.NumArticlesFetched"),
               IsEmpty());
-  SetExpectJsonParseSuccess(true);
   // Valid JSON with empty list.
   LoadFromJSONString("{ \"recos\": []}");
   EXPECT_THAT(tester.GetAllSamples("NewTabPage.Snippets.NumArticles"),
@@ -753,7 +778,8 @@ TEST_F(NTPSnippetsServiceTest, LogNumArticlesHistogram) {
       ElementsAre(base::Bucket(/*min=*/1, /*count=*/1)));
   // Recreating the service and loading from prefs shouldn't count as fetched
   // articles.
-  CreateSnippetsService();
+  EXPECT_CALL(mock_scheduler(), Schedule(_, _, _, _)).Times(1);
+  CreateSnippetsService(/*enabled=*/true);
   tester.ExpectTotalCount("NewTabPage.Snippets.NumArticlesFetched", 4);
 }
 }  // namespace ntp_snippets

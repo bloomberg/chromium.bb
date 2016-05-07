@@ -8,6 +8,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/callback_list.h"
@@ -15,21 +16,32 @@
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_context_getter.h"
 
+namespace base {
+class Value;
+}
+
 namespace ntp_snippets {
 
 // Fetches snippet data for the NTP from the server
 class NTPSnippetsFetcher : public net::URLFetcherDelegate {
  public:
-  // If problems occur (explained in |status_message|), |snippets_json| is
-  // empty; otherwise, |status_message| is empty.
-  using SnippetsAvailableCallback =
-      base::Callback<void(const std::string& snippets_json,
-                          const std::string& status_message)>;
+  // Callbacks for JSON parsing, needed because the parsing is platform-
+  // dependent.
+  using SuccessCallback = base::Callback<void(std::unique_ptr<base::Value>)>;
+  using ErrorCallback = base::Callback<void(const std::string&)>;
+  using ParseJSONCallback = base::Callback<
+      void(const std::string&, const SuccessCallback&, const ErrorCallback&)>;
+
+  // |value| contains parsed JSON. If problems occur (explained in
+  // |status_message|), |value| is empty; otherwise, |status_message| is empty.
   using SnippetsAvailableCallbackList =
-      base::CallbackList<void(const std::string&, const std::string&)>;
+      base::CallbackList<void(const base::Value& value,
+                              const std::string& status_message)>;
+  using SnippetsAvailableCallback = SnippetsAvailableCallbackList::CallbackType;
 
   NTPSnippetsFetcher(
       scoped_refptr<net::URLRequestContextGetter> url_request_context_getter,
+      const ParseJSONCallback& parse_json_callback,
       bool is_stable_channel);
   ~NTPSnippetsFetcher() override;
 
@@ -46,12 +58,23 @@ class NTPSnippetsFetcher : public net::URLFetcherDelegate {
   // subscribers).
   void FetchSnippets(const std::set<std::string>& hosts, int count);
 
+  // Returns the last json fetched from the server.
+  const std::string& last_json() const {
+    return last_fetch_json_;
+  }
+
  private:
   // URLFetcherDelegate implementation.
   void OnURLFetchComplete(const net::URLFetcher* source) override;
 
+  void OnJsonParsed(std::unique_ptr<base::Value> parsed);
+  void OnJsonError(const std::string& error);
+
   // Holds the URL request context.
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
+
+  const ParseJSONCallback parse_json_callback_;
+  std::string last_fetch_json_;
 
   // The fetcher for downloading the snippets.
   std::unique_ptr<net::URLFetcher> url_fetcher_;
@@ -61,6 +84,8 @@ class NTPSnippetsFetcher : public net::URLFetcherDelegate {
 
   // Flag for picking the right (stable/non-stable) API key for Chrome Reader
   bool is_stable_channel_;
+
+  base::WeakPtrFactory<NTPSnippetsFetcher> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NTPSnippetsFetcher);
 };
