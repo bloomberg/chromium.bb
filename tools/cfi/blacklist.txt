@@ -18,6 +18,11 @@ type:*SkBlockComRef*
 # https://crbug.com/517959
 type:*NoAddRefRelease*
 
+# All mojo::test:: types.
+# They are loaded from libmojo_public_test_support.so
+# https://crbug.com/515347
+type:mojo::test::*
+
 # All types and sources from libclearkeycdm.so.
 # See https://crbug.com/557969
 type:media::CdmVideoDecoder

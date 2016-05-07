@@ -14,7 +14,7 @@ namespace test {
 
 // Implementors of the test support APIs can use this interface to install their
 // implementation into the mojo_test_support dynamic library.
-class TestSupport {
+class MOJO_TEST_SUPPORT_EXPORT TestSupport {
  public:
   virtual ~TestSupport();
 

@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 {
   'includes': [
-    '../base/base.isolate',
+    '../mojo/mojo.isolate',
   ],
   'conditions': [
     ['OS=="win" or OS=="mac" or OS=="linux"', {

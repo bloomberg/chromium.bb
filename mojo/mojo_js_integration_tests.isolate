@@ -3,8 +3,8 @@
 # found in the LICENSE file.
 {
   'includes': [
-    '../base/base.isolate',
     '../gin/v8.isolate',
+    '../mojo/mojo.isolate',
     '../third_party/icu/icu.isolate',
   ],
   'conditions': [
