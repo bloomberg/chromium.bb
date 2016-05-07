@@ -407,7 +407,6 @@
     </event>
   </interface>
 
-
   <interface name="wl_data_offer" version="3">
     <description summary="offer to transfer data">
       A wl_data_offer represents a piece of data offered for transfer
