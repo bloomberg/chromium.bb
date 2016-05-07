@@ -103,10 +103,6 @@ wl_map_lookup_flags(struct wl_map *map, uint32_t i);
 void
 wl_map_for_each(struct wl_map *map, wl_iterator_func_t func, void *data);
 
-struct wl_connection;
-struct wl_closure;
-struct wl_proxy;
-
 struct wl_connection *
 wl_connection_create(int fd);
 
