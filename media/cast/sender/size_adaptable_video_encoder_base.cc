@@ -156,9 +156,7 @@ void SizeAdaptableVideoEncoderBase::OnEncodedVideoFrame(
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   --frames_in_encoder_;
   DCHECK_GE(frames_in_encoder_, 0);
-
-  if (encoded_frame)
-    next_frame_id_ = encoded_frame->frame_id + 1;
+  next_frame_id_ = encoded_frame->frame_id + 1;
   frame_encoded_callback.Run(std::move(encoded_frame));
 }
 

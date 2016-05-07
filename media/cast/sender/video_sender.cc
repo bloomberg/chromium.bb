@@ -324,10 +324,6 @@ void VideoSender::OnEncodedVideoFrame(
   frames_in_encoder_--;
   DCHECK_GE(frames_in_encoder_, 0);
 
-  // Encoding was exited with errors.
-  if (!encoded_frame)
-    return;
-
   duration_in_encoder_ =
       last_enqueued_frame_reference_time_ - encoded_frame->reference_time;
 

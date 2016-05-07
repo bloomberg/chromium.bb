@@ -13,12 +13,12 @@
 #include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/scoped_vector.h"
 #include "base/memory/shared_memory.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
-#include "media/base/bind_to_current_loop.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_types.h"
 #include "media/base/video_util.h"
@@ -32,13 +32,7 @@
 namespace {
 
 enum { MAX_H264_QUANTIZER = 51 };
-
-// Number of buffers for encoded bit stream.
-constexpr size_t kOutputBufferCount = 3;
-
-// Maximum number of extra input buffers for encoder. The input buffers are only
-// used when copy is needed to match the required coded size.
-constexpr size_t kExtraInputBufferCount = 2;
+static const size_t kOutputBufferCount = 3;
 
 }  // namespace
 
@@ -102,9 +96,7 @@ class ExternalVideoEncoder::VEAClientImpl
         codec_profile_(media::VIDEO_CODEC_PROFILE_UNKNOWN),
         key_frame_quantizer_parsable_(false),
         requested_bit_rate_(-1),
-        has_seen_zero_length_encoded_frame_(false),
-        max_allowed_input_buffers_(0),
-        allocate_input_buffer_in_progress_(false) {}
+        has_seen_zero_length_encoded_frame_(false) {}
 
   base::SingleThreadTaskRunner* task_runner() const {
     return task_runner_.get();
@@ -142,15 +134,6 @@ class ExternalVideoEncoder::VEAClientImpl
                                                                max_frame_rate_);
   }
 
-  // The destruction call back of the copied video frame to free its use of
-  // the input buffer.
-  void ReturnInputBufferToPool(int index) {
-    DCHECK(task_runner_->RunsTasksOnCurrentThread());
-    DCHECK_GE(index, 0);
-    DCHECK_LT(index, static_cast<int>(input_buffers_.size()));
-    free_input_buffer_index_.push_back(index);
-  }
-
   void EncodeVideoFrame(
       const scoped_refptr<media::VideoFrame>& video_frame,
       const base::TimeTicks& reference_time,
@@ -165,47 +148,8 @@ class ExternalVideoEncoder::VEAClientImpl
         video_frame, reference_time, frame_encoded_callback,
         requested_bit_rate_));
 
-    scoped_refptr<media::VideoFrame> frame = video_frame;
-    if (video_frame->coded_size() != frame_coded_size_) {
-      DCHECK_GE(frame_coded_size_.width(), video_frame->visible_rect().width());
-      DCHECK_GE(frame_coded_size_.height(),
-                video_frame->visible_rect().height());
-
-      if (free_input_buffer_index_.empty()) {
-        if (!allocate_input_buffer_in_progress_ &&
-            input_buffers_.size() < max_allowed_input_buffers_) {
-          allocate_input_buffer_in_progress_ = true;
-          create_video_encode_memory_cb_.Run(
-              media::VideoFrame::AllocationSize(media::PIXEL_FORMAT_I420,
-                                                frame_coded_size_),
-              base::Bind(&VEAClientImpl::OnCreateInputSharedMemory, this));
-        }
-        ExitEncodingWithErrors();
-        return;
-      }
-
-      int index = free_input_buffer_index_.back();
-      base::SharedMemory* input_buffer = input_buffers_[index].get();
-      frame = VideoFrame::WrapExternalSharedMemory(
-          video_frame->format(), frame_coded_size_, video_frame->visible_rect(),
-          video_frame->visible_rect().size(),
-          static_cast<uint8_t*>(input_buffer->memory()),
-          input_buffer->mapped_size(), input_buffer->handle(), 0,
-          video_frame->timestamp());
-      if (!frame || !media::I420CopyWithPadding(*video_frame, frame.get())) {
-        LOG(DFATAL) << "Error: ExternalVideoEncoder: copy failed.";
-        ExitEncodingWithErrors();
-        return;
-      }
-
-      frame->AddDestructionObserver(media::BindToCurrentLoop(base::Bind(
-          &ExternalVideoEncoder::VEAClientImpl::ReturnInputBufferToPool, this,
-          index)));
-      free_input_buffer_index_.pop_back();
-    }
-
     // BitstreamBufferReady will be called once the encoder is done.
-    video_encode_accelerator_->Encode(frame, key_frame_requested);
+    video_encode_accelerator_->Encode(video_frame, key_frame_requested);
   }
 
  protected:
@@ -232,10 +176,8 @@ class ExternalVideoEncoder::VEAClientImpl
                                size_t output_buffer_size) final {
     DCHECK(task_runner_->RunsTasksOnCurrentThread());
 
-    frame_coded_size_ = input_coded_size;
-
-    max_allowed_input_buffers_ = input_count + kExtraInputBufferCount;
-
+    // TODO(miu): Investigate why we are ignoring |input_count| (4) and instead
+    // using |kOutputBufferCount| (3) here.
     for (size_t j = 0; j < kOutputBufferCount; ++j) {
       create_video_encode_memory_cb_.Run(
           output_buffer_size,
@@ -258,8 +200,7 @@ class ExternalVideoEncoder::VEAClientImpl
       NotifyError(media::VideoEncodeAccelerator::kPlatformFailureError);
       return;
     }
-    base::SharedMemory* output_buffer =
-        output_buffers_[bitstream_buffer_id].get();
+    base::SharedMemory* output_buffer = output_buffers_[bitstream_buffer_id];
     if (payload_size > output_buffer->mapped_size()) {
       NOTREACHED();
       VLOG(1) << "BitstreamBufferReady(): invalid payload_size = "
@@ -427,12 +368,6 @@ class ExternalVideoEncoder::VEAClientImpl
                                       base::Passed(&memory)));
   }
 
-  void OnCreateInputSharedMemory(std::unique_ptr<base::SharedMemory> memory) {
-    task_runner_->PostTask(
-        FROM_HERE, base::Bind(&VEAClientImpl::OnReceivedInputSharedMemory, this,
-                              base::Passed(&memory)));
-  }
-
   void OnReceivedSharedMemory(std::unique_ptr<base::SharedMemory> memory) {
     DCHECK(task_runner_->RunsTasksOnCurrentThread());
 
@@ -449,29 +384,6 @@ class ExternalVideoEncoder::VEAClientImpl
                                  output_buffers_[i]->handle(),
                                  output_buffers_[i]->mapped_size()));
     }
-  }
-
-  void OnReceivedInputSharedMemory(std::unique_ptr<base::SharedMemory> memory) {
-    DCHECK(task_runner_->RunsTasksOnCurrentThread());
-
-    if (memory.get()) {
-      input_buffers_.push_back(std::move(memory));
-      free_input_buffer_index_.push_back(input_buffers_.size() - 1);
-    }
-    allocate_input_buffer_in_progress_ = false;
-  }
-
-  // This is called when copy errors occur in encoding process when there is
-  // need to copy the VideoFrames to match the required coded size for encoder.
-  void ExitEncodingWithErrors() {
-    DCHECK(task_runner_->RunsTasksOnCurrentThread());
-
-    std::unique_ptr<SenderEncodedFrame> no_result(nullptr);
-    cast_environment_->PostTask(
-        CastEnvironment::MAIN, FROM_HERE,
-        base::Bind(in_progress_frame_encodes_.back().frame_encoded_callback,
-                   base::Passed(&no_result)));
-    in_progress_frame_encodes_.pop_back();
   }
 
   // Parse H264 SPS, PPS, and Slice header, and return the averaged frame
@@ -548,16 +460,7 @@ class ExternalVideoEncoder::VEAClientImpl
   H264Parser h264_parser_;
 
   // Shared memory buffers for output with the VideoAccelerator.
-  std::vector<std::unique_ptr<base::SharedMemory>> output_buffers_;
-
-  // Shared memory buffers for input video frames with the VideoAccelerator.
-  // These buffers will be allocated only when copy is needed to match the
-  // required coded size for encoder. They are allocated on-demand, up to
-  // |max_allowed_input_buffers_|.
-  std::vector<std::unique_ptr<base::SharedMemory>> input_buffers_;
-
-  // Available input buffer index. These buffers are used in FILO order.
-  std::vector<int> free_input_buffer_index_;
+  ScopedVector<base::SharedMemory> output_buffers_;
 
   // FIFO list.
   std::list<InProgressFrameEncode> in_progress_frame_encodes_;
@@ -572,18 +475,6 @@ class ExternalVideoEncoder::VEAClientImpl
   // encountered.
   // TODO(miu): Remove after discovering cause.  http://crbug.com/519022
   bool has_seen_zero_length_encoded_frame_;
-
-  // The coded size of the video frame required by Encoder. This size is
-  // obtained from VEA through |RequireBitstreamBuffers()|.
-  gfx::Size frame_coded_size_;
-
-  // The maximum number of input buffers. These buffers are used to copy
-  // VideoFrames in order to match the required coded size for encoder.
-  size_t max_allowed_input_buffers_;
-
-  // Set to true when the allocation of an input buffer is in progress, and
-  // reset to false after the allocated buffer is received.
-  bool allocate_input_buffer_in_progress_;
 
   DISALLOW_COPY_AND_ASSIGN(VEAClientImpl);
 };
