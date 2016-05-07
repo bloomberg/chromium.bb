@@ -33,15 +33,20 @@
       }
 
       paper-menu {
-        background: none;  /* Overrides <paper-menu> default. */
-        color: var(--settings-nav-grey);
-        font-size: 13px;
         --paper-menu-selected-item: {
           font-weight: 500;
         };
         --paper-menu-focused-item-after: {
           background: none;
         };
+        background: none;  /* Overrides <paper-menu> default. */
+        color: var(--settings-nav-grey);
+        font-size: 13px;
+        padding: 0;
+      }
+
+      paper-submenu > div {
+        margin-top: 8px;
       }
 
       paper-submenu {
@@ -55,7 +60,6 @@
           color: var(--google-blue-500);
           font-weight: 500;
         };
-        padding: 0;
       }
 
       paper-submenu div {
@@ -65,6 +69,12 @@
         font-size: 13px;
         font-weight: 500;
         min-height: 40px;
+      }
+
+      .separator {
+        /* Per Alan@, this line is different from the other separator lines. */
+        border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+        margin-top: 8px;
       }
     </style>
     <paper-menu name="root-menu">
@@ -164,6 +174,7 @@
           </div>
         </paper-menu>
       </paper-submenu>
+      <div class="separator"></div>
       <paper-submenu data-page="about">
         <div class="menu-trigger" on-tap="openPage_" data-section="">
           <span i18n-content="aboutPageTitle"></span>
