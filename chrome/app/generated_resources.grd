@@ -6386,6 +6386,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Enable the new Translate bubble UX is offered instead of the infobar.
         </message>
       </if>
+      <message name="IDS_FLAGS_TRANSLATE_2016Q2_UI_NAME" desc="Name of the flag to enable the Translate 2016Q2 UI.">
+        Translate 2016Q2 UI
+      </message>
+      <message name="IDS_FLAGS_TRANSLATE_2016Q2_UI_DESCRIPTION" desc="Description for the flag to enable the Translate 2016Q2 UI.">
+        Improved triggering logic and look for Translate Bubble UI
+      </message>
       <message name="IDS_FLAGS_VIEWS_RECT_BASED_TARGETING_NAME" desc="Name of about:flags option for rect-based targeting in views">
         Rect-based targeting in views
       </message>

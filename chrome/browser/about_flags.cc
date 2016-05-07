@@ -54,6 +54,7 @@
 #include "components/signin/core/common/signin_switches.h"
 #include "components/sync_driver/sync_driver_switches.h"
 #include "components/tracing/tracing_switches.h"
+#include "components/translate/core/browser/translate_prefs.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/content_features.h"
@@ -1197,6 +1198,11 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_TRANSLATE_NEW_UX_DESCRIPTION, kOsMac,
      ENABLE_DISABLE_VALUE_TYPE(switches::kEnableTranslateNewUX,
                                switches::kDisableTranslateNewUX)},
+#endif
+#if defined(OS_LINUX) || defined(OS_WIN) || defined(OS_CHROMEOS)
+    {"translate-2016q2-ui", IDS_FLAGS_TRANSLATE_2016Q2_UI_NAME,
+     IDS_FLAGS_TRANSLATE_2016Q2_UI_DESCRIPTION, kOsCrOS | kOsWin | kOsLinux,
+     FEATURE_VALUE_TYPE(translate::kTranslateUI2016Q2)},
 #endif
 #if defined(OS_MACOSX)
     {"enable-native-notifications", IDS_NOTIFICATIONS_NATIVE_FLAG,
