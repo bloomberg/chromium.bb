@@ -34,6 +34,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 
 import java.util.Calendar;
@@ -43,7 +44,10 @@ import java.util.Calendar;
  */
 public class CardUnmaskPrompt
         implements DialogInterface.OnDismissListener, TextWatcher, OnClickListener {
+    private static CardUnmaskObserverForTest sObserverForTest;
+
     private final CardUnmaskPromptDelegate mDelegate;
+    private final CardUnmaskObserverForTest mObserverForTest;
     private final AlertDialog mDialog;
     private boolean mShouldRequestExpirationDate;
     private final int mThisYear;
@@ -98,11 +102,33 @@ public class CardUnmaskPrompt
         void onNewCardLinkClicked();
     }
 
-    public CardUnmaskPrompt(Context context, CardUnmaskPromptDelegate delegate, String title,
-            String instructions, String confirmButtonLabel, int drawableId,
+    /**
+     * A test-only observer for the unmasking prompt.
+     */
+    public interface CardUnmaskObserverForTest {
+        /**
+         * Called when clicks on the prompt are possible.
+         */
+        void onCardUnmaskReadyForInput(CardUnmaskPrompt prompt);
+    }
+
+    public static CardUnmaskPrompt create(Context context, CardUnmaskPromptDelegate delegate,
+            String title, String instructions, String confirmButtonLabel, int drawableId,
             boolean shouldRequestExpirationDate, boolean canStoreLocally,
             boolean defaultToStoringLocally) {
+        CardUnmaskPrompt prompt = new CardUnmaskPrompt(context, delegate, title, instructions,
+                confirmButtonLabel, drawableId, shouldRequestExpirationDate, canStoreLocally,
+                defaultToStoringLocally, sObserverForTest);
+        sObserverForTest = null;
+        return prompt;
+    }
+
+    private CardUnmaskPrompt(Context context, CardUnmaskPromptDelegate delegate, String title,
+            String instructions, String confirmButtonLabel, int drawableId,
+            boolean shouldRequestExpirationDate, boolean canStoreLocally,
+            boolean defaultToStoringLocally, CardUnmaskObserverForTest observerForTest) {
         mDelegate = delegate;
+        mObserverForTest = observerForTest;
 
         LayoutInflater inflater = LayoutInflater.from(context);
         View v = inflater.inflate(R.layout.autofill_card_unmask_prompt, null);
@@ -319,6 +345,9 @@ public class CardUnmaskPrompt
         View view = mShouldRequestExpirationDate ? mMonthInput : mCardUnmaskInput;
         imm.showSoftInput(view, InputMethodManager.SHOW_IMPLICIT);
         view.sendAccessibilityEvent(AccessibilityEvent.TYPE_VIEW_FOCUSED);
+        if (mObserverForTest != null) {
+            mObserverForTest.onCardUnmaskReadyForInput(CardUnmaskPrompt.this);
+        }
     }
 
     private boolean areInputsValid() {
@@ -438,5 +467,15 @@ public class CardUnmaskPrompt
         } catch (NumberFormatException e) {
             return -1;
         }
+    }
+
+    @VisibleForTesting
+    public static void setObserverForTest(CardUnmaskObserverForTest observerForTest) {
+        sObserverForTest = observerForTest;
+    }
+
+    @VisibleForTesting
+    public AlertDialog getDialogForTest() {
+        return mDialog;
     }
 }

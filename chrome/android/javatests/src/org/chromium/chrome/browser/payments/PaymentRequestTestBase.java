@@ -4,11 +4,15 @@
 
 package org.chromium.chrome.browser.payments;
 
+import android.content.DialogInterface;
+
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.autofill.CardUnmaskPrompt;
+import org.chromium.chrome.browser.autofill.CardUnmaskPrompt.CardUnmaskObserverForTest;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestUI;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestUI.PaymentRequestObserverForTest;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
@@ -28,18 +32,26 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 @CommandLineFlags.Add({ChromeSwitches.EXPERIMENTAL_WEB_PLAFTORM_FEATURES})
 abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeActivity>
-        implements PaymentRequestObserverForTest {
-    protected final PaymentsCallbackHelper mReadyForInput = new PaymentsCallbackHelper();
-    protected final PaymentsCallbackHelper mReadyToClose = new PaymentsCallbackHelper();
-    protected final CallbackHelper mDismissed = new CallbackHelper();
-    private final AtomicReference<ContentViewCore> mViewCoreRef =
-            new AtomicReference<ContentViewCore>();
-    private final AtomicReference<WebContents> mWebContentsRef = new AtomicReference<WebContents>();
+        implements PaymentRequestObserverForTest, CardUnmaskObserverForTest {
+    protected final PaymentsCallbackHelper<PaymentRequestUI> mReadyForInput;
+    protected final PaymentsCallbackHelper<PaymentRequestUI> mReadyToPay;
+    protected final PaymentsCallbackHelper<PaymentRequestUI> mReadyToClose;
+    protected final PaymentsCallbackHelper<CardUnmaskPrompt> mReadyToUnmask;
+    protected final CallbackHelper mDismissed;
+    private final AtomicReference<ContentViewCore> mViewCoreRef;
+    private final AtomicReference<WebContents> mWebContentsRef;
     private final String mTestFilePath;
     private PaymentRequestUI mUI;
 
     protected PaymentRequestTestBase(String testFileName) {
         super(ChromeActivity.class);
+        mReadyForInput = new PaymentsCallbackHelper<>();
+        mReadyToPay = new PaymentsCallbackHelper<>();
+        mReadyToClose = new PaymentsCallbackHelper<>();
+        mReadyToUnmask = new PaymentsCallbackHelper<>();
+        mDismissed = new CallbackHelper();
+        mViewCoreRef = new AtomicReference<>();
+        mWebContentsRef = new AtomicReference<>();
         mTestFilePath = UrlUtils.getIsolatedTestFilePath(
                 String.format("chrome/test/data/android/payments/%s", testFileName));
     }
@@ -50,8 +62,8 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeA
     protected abstract void onMainActivityStarted()
             throws InterruptedException, ExecutionException, TimeoutException;
 
-    protected void triggerUIAndWait(PaymentsCallbackHelper helper) throws InterruptedException,
-            ExecutionException, TimeoutException {
+    protected void triggerUIAndWait(PaymentsCallbackHelper<PaymentRequestUI> helper)
+            throws InterruptedException, ExecutionException, TimeoutException {
         startMainActivityWithURL(mTestFilePath);
         onMainActivityStarted();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
@@ -60,6 +72,7 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeA
                 mViewCoreRef.set(getActivity().getCurrentContentViewCore());
                 mWebContentsRef.set(mViewCoreRef.get().getWebContents());
                 PaymentRequestUI.setObserverForTest(PaymentRequestTestBase.this);
+                CardUnmaskPrompt.setObserverForTest(PaymentRequestTestBase.this);
             }
         });
         assertWaitForPageScaleFactorMatch(1);
@@ -67,7 +80,7 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeA
         int callCount = helper.getCallCount();
         DOMUtils.clickNode(this, mViewCoreRef.get(), "buy");
         helper.waitForCallback(callCount);
-        mUI = helper.getUI();
+        mUI = helper.getTarget();
     }
 
     protected void clickAndWait(final int resourceId, CallbackHelper helper)
@@ -77,6 +90,18 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeA
             @Override
             public void run() {
                 mUI.getDialogForTest().findViewById(resourceId).performClick();
+            }
+        });
+        helper.waitForCallback(callCount);
+    }
+
+    protected void cancelCardUnmaskDialogAndWait(final CardUnmaskPrompt prompt,
+            CallbackHelper helper) throws InterruptedException, TimeoutException {
+        int callCount = helper.getCallCount();
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                prompt.getDialogForTest().getButton(DialogInterface.BUTTON_NEGATIVE).performClick();
             }
         });
         helper.waitForCallback(callCount);
@@ -118,6 +143,12 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeA
     }
 
     @Override
+    public void onPaymentRequestReadyToPay(PaymentRequestUI ui) {
+        ThreadUtils.assertOnUiThread();
+        mReadyToPay.notifyCalled(ui);
+    }
+
+    @Override
     public void onPaymentRequestReadyToClose(PaymentRequestUI ui) {
         ThreadUtils.assertOnUiThread();
         mReadyToClose.notifyCalled(ui);
@@ -129,30 +160,35 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeA
         mDismissed.notifyCalled();
     }
 
+    @Override
+    public void onCardUnmaskReadyForInput(CardUnmaskPrompt prompt) {
+        ThreadUtils.assertOnUiThread();
+        mReadyToUnmask.notifyCalled(prompt);
+    }
+
     /**
-     * Listens for payments UI being ready for input or closing.
+     * Listens for UI notifications.
      */
-    protected static class PaymentsCallbackHelper extends CallbackHelper {
-        private PaymentRequestUI mUI;
+    protected static class PaymentsCallbackHelper<T> extends CallbackHelper {
+        private T mTarget;
 
         /**
-         * Returns the payments UI that is ready for input.
+         * Returns the UI that is ready for input.
          *
-         * @return The payments UI that is ready for input.
+         * @return The UI that is ready for input.
          */
-        public PaymentRequestUI getUI() {
-            ThreadUtils.assertOnUiThread();
-            return mUI;
+        public T getTarget() {
+            return mTarget;
         }
 
         /**
-         * Called when the payments UI is ready for input.
+         * Called when the UI is ready for input.
          *
-         * @param ui The payments UI that is ready for input or closing.
+         * @param ui The UI that is ready for input.
          */
-        public void notifyCalled(PaymentRequestUI ui) {
+        public void notifyCalled(T target) {
             ThreadUtils.assertOnUiThread();
-            mUI = ui;
+            mTarget = target;
             notifyCalled();
         }
     }
