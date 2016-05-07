@@ -50,7 +50,6 @@ const int kWifiFetchingHourMax = 22;
 
 const int kDefaultExpiryTimeMins = 24 * 60;
 
-const char kStatusMessageEmptyHosts[] = "Cannot fetch for empty hosts list.";
 const char kStatusMessageOK[] = "OK";
 
 base::TimeDelta GetFetchingInterval(const char* switch_name,
@@ -212,17 +211,7 @@ void NTPSnippetsService::FetchSnippets() {
 
 void NTPSnippetsService::FetchSnippetsFromHosts(
     const std::set<std::string>& hosts) {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDontRestrict)) {
-    snippets_fetcher_->FetchSnippets(std::set<std::string>(), kMaxSnippetCount);
-    return;
-  }
-  if (!hosts.empty()) {
-    snippets_fetcher_->FetchSnippets(hosts, kMaxSnippetCount);
-  } else {
-    last_fetch_status_ = kStatusMessageEmptyHosts;
-    LoadingSnippetsFinished();
-  }
+  snippets_fetcher_->FetchSnippetsFromHosts(hosts, kMaxSnippetCount);
 }
 
 void NTPSnippetsService::RescheduleFetching() {

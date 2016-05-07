@@ -73,9 +73,7 @@ void ParseJson(
 class NTPSnippetsFetcherTest : public testing::Test {
  public:
   NTPSnippetsFetcherTest()
-      : fake_url_fetcher_factory_(
-            /*default_factory=*/&failing_url_fetcher_factory_),
-        snippets_fetcher_(scoped_refptr<net::TestURLRequestContextGetter>(
+      : snippets_fetcher_(scoped_refptr<net::TestURLRequestContextGetter>(
                               new net::TestURLRequestContextGetter(
                                   base::ThreadTaskRunnerHandle::Get())),
                           base::Bind(&ParseJson),
@@ -85,28 +83,43 @@ class NTPSnippetsFetcherTest : public testing::Test {
     snippets_fetcher_.SetCallback(
         base::Bind(&MockSnippetsAvailableCallback::WrappedRun,
                    base::Unretained(&mock_callback_)));
-  }
-
-  net::FakeURLFetcherFactory& fake_url_fetcher_factory() {
-    return fake_url_fetcher_factory_;
+    test_hosts_.insert("www.somehost.com");
   }
 
   NTPSnippetsFetcher& snippets_fetcher() { return snippets_fetcher_; }
   MockSnippetsAvailableCallback& mock_callback() { return mock_callback_; }
   void RunUntilIdle() { message_loop_.RunUntilIdle(); }
   const GURL& test_url() { return test_url_; }
-
+  const std::set<std::string>& test_hosts() const { return test_hosts_; }
   base::HistogramTester& histogram_tester() { return histogram_tester_; }
+
+  void InitFakeURLFetcherFactory() {
+    if (fake_url_fetcher_factory_)
+      return;
+    // Instantiation of factory automatically sets itself as URLFetcher's
+    // factory.
+    fake_url_fetcher_factory_.reset(new net::FakeURLFetcherFactory(
+        /*default_factory=*/&failing_url_fetcher_factory_));
+  }
+
+  void SetFakeResponse(const std::string& response_data,
+                       net::HttpStatusCode response_code,
+                       net::URLRequestStatus::Status status) {
+    InitFakeURLFetcherFactory();
+    fake_url_fetcher_factory_->SetFakeResponse(test_url_, response_data,
+                                               response_code, status);
+  }
 
  private:
   FailingFakeURLFetcherFactory failing_url_fetcher_factory_;
-  // Instantiation of factory automatically sets itself as URLFetcher's factory.
-  net::FakeURLFetcherFactory fake_url_fetcher_factory_;
+  // Initialized lazily in SetFakeResponse().
+  std::unique_ptr<net::FakeURLFetcherFactory> fake_url_fetcher_factory_;
   // Needed to use ThreadTaskRunnerHandle.
   base::MessageLoop message_loop_;
   NTPSnippetsFetcher snippets_fetcher_;
   MockSnippetsAvailableCallback mock_callback_;
   const GURL test_url_;
+  std::set<std::string> test_hosts_;
   base::HistogramTester histogram_tester_;
 
   DISALLOW_COPY_AND_ASSIGN(NTPSnippetsFetcherTest);
@@ -132,14 +145,12 @@ TEST_F(NTPSnippetsFetcherTest, ShouldFetchSuccessfully) {
       "    }]"
       "  }"
       "}]}";
-   fake_url_fetcher_factory().SetFakeResponse(test_url(),
-                                             /*data=*/kJsonStr, net::HTTP_OK,
-                                             net::URLRequestStatus::SUCCESS);
+  SetFakeResponse(/*data=*/kJsonStr, net::HTTP_OK,
+                  net::URLRequestStatus::SUCCESS);
   EXPECT_CALL(mock_callback(), Run(/*snippets=*/SizeIs(1),
                                    /*status_message=*/std::string()))
       .Times(1);
-  snippets_fetcher().FetchSnippets(/*hosts=*/std::set<std::string>(),
-                                   /*count=*/1);
+  snippets_fetcher().FetchSnippetsFromHosts(test_hosts(), /*count=*/1);
   RunUntilIdle();
   EXPECT_THAT(snippets_fetcher().last_json(), Eq(kJsonStr));
   EXPECT_THAT(histogram_tester().GetAllSamples(
@@ -149,14 +160,12 @@ TEST_F(NTPSnippetsFetcherTest, ShouldFetchSuccessfully) {
 
 TEST_F(NTPSnippetsFetcherTest, ShouldFetchSuccessfullyEmptyList) {
   const std::string kJsonStr = "{\"recos\": []}";
-  fake_url_fetcher_factory().SetFakeResponse(test_url(),
-                                             /*data=*/kJsonStr, net::HTTP_OK,
-                                             net::URLRequestStatus::SUCCESS);
+  SetFakeResponse(/*data=*/kJsonStr, net::HTTP_OK,
+                  net::URLRequestStatus::SUCCESS);
   EXPECT_CALL(mock_callback(), Run(/*snippets=*/IsEmpty(),
                                    /*status_message=*/std::string()))
       .Times(1);
-  snippets_fetcher().FetchSnippets(/*hosts=*/std::set<std::string>(),
-                                   /*count=*/1);
+  snippets_fetcher().FetchSnippetsFromHosts(test_hosts(), /*count=*/1);
   RunUntilIdle();
   EXPECT_THAT(snippets_fetcher().last_json(), Eq(kJsonStr));
   EXPECT_THAT(histogram_tester().GetAllSamples(
@@ -164,17 +173,49 @@ TEST_F(NTPSnippetsFetcherTest, ShouldFetchSuccessfullyEmptyList) {
               ElementsAre(base::Bucket(/*min=*/200, /*count=*/1)));
 }
 
+TEST_F(NTPSnippetsFetcherTest, ShouldReportEmptyHostsError) {
+  EXPECT_CALL(mock_callback(),
+              Run(/*snippets=*/IsEmpty(),
+                  /*status_message=*/"Cannot fetch for empty hosts list."))
+      .Times(1);
+  snippets_fetcher().FetchSnippetsFromHosts(/*hosts=*/std::set<std::string>(),
+                                            /*count=*/1);
+  RunUntilIdle();
+  EXPECT_THAT(snippets_fetcher().last_json(), IsEmpty());
+  EXPECT_THAT(histogram_tester().GetAllSamples(
+                  "NewTabPage.Snippets.FetchHttpResponseOrErrorCode"),
+              IsEmpty());
+}
+
+TEST_F(NTPSnippetsFetcherTest, ShouldRestrictToHosts) {
+  net::TestURLFetcherFactory test_url_fetcher_factory;
+  snippets_fetcher().FetchSnippetsFromHosts(test_hosts(), /*count=*/17);
+  net::TestURLFetcher* fetcher = test_url_fetcher_factory.GetFetcherByID(0);
+  ASSERT_THAT(fetcher, NotNull());
+  std::unique_ptr<base::Value> value =
+      base::JSONReader::Read(fetcher->upload_data());
+  ASSERT_TRUE(value);
+  const base::DictionaryValue* dict;
+  ASSERT_TRUE(value->GetAsDictionary(&dict));
+  const base::DictionaryValue* local_scoring_params;
+  ASSERT_TRUE(dict->GetDictionary("advanced_options.local_scoring_params",
+                                  &local_scoring_params));
+  const base::DictionaryValue* content_selectors;
+  ASSERT_TRUE(local_scoring_params->GetDictionary("content_selectors",
+                                                  &content_selectors));
+  std::string content_selector_value;
+  EXPECT_TRUE(content_selectors->GetString("value", &content_selector_value));
+  EXPECT_THAT(content_selector_value, Eq("www.somehost.com"));
+}
+
 TEST_F(NTPSnippetsFetcherTest, ShouldReportUrlStatusError) {
-  fake_url_fetcher_factory().SetFakeResponse(test_url(),
-                                             /*data=*/std::string(),
-                                             net::HTTP_NOT_FOUND,
-                                             net::URLRequestStatus::FAILED);
+  SetFakeResponse(/*data=*/std::string(), net::HTTP_NOT_FOUND,
+                  net::URLRequestStatus::FAILED);
   EXPECT_CALL(mock_callback(),
               Run(/*snippets=*/IsEmpty(),
                   /*status_message=*/"URLRequestStatus error -2"))
       .Times(1);
-  snippets_fetcher().FetchSnippets(/*hosts=*/std::set<std::string>(),
-                                   /*count=*/1);
+  snippets_fetcher().FetchSnippetsFromHosts(test_hosts(), /*count=*/1);
   RunUntilIdle();
   EXPECT_THAT(snippets_fetcher().last_json(), IsEmpty());
   EXPECT_THAT(histogram_tester().GetAllSamples(
@@ -183,15 +224,12 @@ TEST_F(NTPSnippetsFetcherTest, ShouldReportUrlStatusError) {
 }
 
 TEST_F(NTPSnippetsFetcherTest, ShouldReportHttpError) {
-  fake_url_fetcher_factory().SetFakeResponse(test_url(),
-                                             /*data=*/std::string(),
-                                             net::HTTP_NOT_FOUND,
-                                             net::URLRequestStatus::SUCCESS);
+  SetFakeResponse(/*data=*/std::string(), net::HTTP_NOT_FOUND,
+                  net::URLRequestStatus::SUCCESS);
   EXPECT_CALL(mock_callback(), Run(/*snippets=*/IsEmpty(),
                                    /*status_message=*/"HTTP error 404"))
       .Times(1);
-  snippets_fetcher().FetchSnippets(/*hosts=*/std::set<std::string>(),
-                                   /*count=*/1);
+  snippets_fetcher().FetchSnippetsFromHosts(test_hosts(), /*count=*/1);
   RunUntilIdle();
   EXPECT_THAT(snippets_fetcher().last_json(), IsEmpty());
   EXPECT_THAT(histogram_tester().GetAllSamples(
@@ -201,16 +239,14 @@ TEST_F(NTPSnippetsFetcherTest, ShouldReportHttpError) {
 
 TEST_F(NTPSnippetsFetcherTest, ShouldReportJsonError) {
   const std::string kInvalidJsonStr = "{ \"recos\": []";
-  fake_url_fetcher_factory().SetFakeResponse(
-      test_url(),
-      /*data=*/kInvalidJsonStr, net::HTTP_OK, net::URLRequestStatus::SUCCESS);
+  SetFakeResponse(/*data=*/kInvalidJsonStr, net::HTTP_OK,
+                  net::URLRequestStatus::SUCCESS);
   EXPECT_CALL(
       mock_callback(),
       Run(/*snippets=*/IsEmpty(),
           /*status_message=*/StartsWith("Received invalid JSON (error ")))
       .Times(1);
-  snippets_fetcher().FetchSnippets(/*hosts=*/std::set<std::string>(),
-                                   /*count=*/1);
+  snippets_fetcher().FetchSnippetsFromHosts(test_hosts(), /*count=*/1);
   RunUntilIdle();
   EXPECT_THAT(snippets_fetcher().last_json(), Eq(kInvalidJsonStr));
   EXPECT_THAT(histogram_tester().GetAllSamples(
@@ -219,16 +255,14 @@ TEST_F(NTPSnippetsFetcherTest, ShouldReportJsonError) {
 }
 
 TEST_F(NTPSnippetsFetcherTest, ShouldReportJsonErrorForEmptyResponse) {
-  fake_url_fetcher_factory().SetFakeResponse(
-      test_url(),
-      /*data=*/std::string(), net::HTTP_OK, net::URLRequestStatus::SUCCESS);
+  SetFakeResponse(/*data=*/std::string(), net::HTTP_OK,
+                  net::URLRequestStatus::SUCCESS);
   EXPECT_CALL(
       mock_callback(),
       Run(/*snippets=*/IsEmpty(),
           /*status_message=*/StartsWith("Received invalid JSON (error ")))
       .Times(1);
-  snippets_fetcher().FetchSnippets(/*hosts=*/std::set<std::string>(),
-                                   /*count=*/1);
+  snippets_fetcher().FetchSnippetsFromHosts(test_hosts(), /*count=*/1);
   RunUntilIdle();
   EXPECT_THAT(snippets_fetcher().last_json(), std::string());
   EXPECT_THAT(histogram_tester().GetAllSamples(
@@ -239,14 +273,12 @@ TEST_F(NTPSnippetsFetcherTest, ShouldReportJsonErrorForEmptyResponse) {
 TEST_F(NTPSnippetsFetcherTest, ShouldReportInvalidListError) {
   const std::string kJsonStr =
       "{\"recos\": [{ \"contentInfo\": { \"foo\" : \"bar\" }}]}";
-  fake_url_fetcher_factory().SetFakeResponse(test_url(),
-                                             /*data=*/kJsonStr, net::HTTP_OK,
-                                             net::URLRequestStatus::SUCCESS);
+  SetFakeResponse(/*data=*/kJsonStr, net::HTTP_OK,
+                  net::URLRequestStatus::SUCCESS);
   EXPECT_CALL(mock_callback(), Run(/*snippets=*/IsEmpty(),
                                    /*status_message=*/"Invalid / empty list."))
       .Times(1);
-  snippets_fetcher().FetchSnippets(/*hosts=*/std::set<std::string>(),
-                                   /*count=*/1);
+  snippets_fetcher().FetchSnippetsFromHosts(test_hosts(), /*count=*/1);
   RunUntilIdle();
   EXPECT_THAT(snippets_fetcher().last_json(), Eq(kJsonStr));
   EXPECT_THAT(histogram_tester().GetAllSamples(
@@ -257,28 +289,25 @@ TEST_F(NTPSnippetsFetcherTest, ShouldReportInvalidListError) {
 // This test actually verifies that the test setup itself is sane, to prevent
 // hard-to-reproduce test failures.
 TEST_F(NTPSnippetsFetcherTest, ShouldReportHttpErrorForMissingBakedResponse) {
+  InitFakeURLFetcherFactory();
   EXPECT_CALL(mock_callback(), Run(/*snippets=*/IsEmpty(),
                                    /*status_message=*/Not(IsEmpty())))
       .Times(1);
-  snippets_fetcher().FetchSnippets(/*hosts=*/std::set<std::string>(),
-                                   /*count=*/1);
+  snippets_fetcher().FetchSnippetsFromHosts(test_hosts(), /*count=*/1);
   RunUntilIdle();
 }
 
 TEST_F(NTPSnippetsFetcherTest, ShouldCancelOngoingFetch) {
   const std::string kJsonStr = "{ \"recos\": [] }";
-  fake_url_fetcher_factory().SetFakeResponse(test_url(),
-                                             /*data=*/kJsonStr, net::HTTP_OK,
-                                             net::URLRequestStatus::SUCCESS);
+  SetFakeResponse(/*data=*/kJsonStr, net::HTTP_OK,
+                  net::URLRequestStatus::SUCCESS);
   EXPECT_CALL(mock_callback(), Run(/*snippets=*/IsEmpty(),
                                    /*status_message=*/std::string()))
       .Times(1);
-  snippets_fetcher().FetchSnippets(/*hosts=*/std::set<std::string>(),
-                                   /*count=*/1);
-  // Second call to FetchSnippets() overrides/cancels the previous. Callback is
-  // expected to be called once.
-  snippets_fetcher().FetchSnippets(/*hosts=*/std::set<std::string>(),
-                                   /*count=*/1);
+  snippets_fetcher().FetchSnippetsFromHosts(test_hosts(), /*count=*/1);
+  // Second call to FetchSnippetsFromHosts() overrides/cancels the previous.
+  // Callback is expected to be called once.
+  snippets_fetcher().FetchSnippetsFromHosts(test_hosts(), /*count=*/1);
   RunUntilIdle();
   EXPECT_THAT(histogram_tester().GetAllSamples(
                   "NewTabPage.Snippets.FetchHttpResponseOrErrorCode"),

@@ -49,14 +49,13 @@ class NTPSnippetsFetcher : public net::URLFetcherDelegate {
   // overriding any previously set callback.
   void SetCallback(const SnippetsAvailableCallback& callback);
 
-  // Fetches snippets from the server. |hosts| can be used to restrict the
-  // results to a set of hosts, e.g. "www.google.com". If it is empty, no
-  // restrictions are applied.
+  // Fetches snippets from the server. |hosts| restricts the results to a set of
+  // hosts, e.g. "www.google.com". An empty host set produces an error.
   //
   // If an ongoing fetch exists, it will be cancelled and a new one started,
   // without triggering an additional callback (i.e. not noticeable by
   // subscriber of SetCallback()).
-  void FetchSnippets(const std::set<std::string>& hosts, int count);
+  void FetchSnippetsFromHosts(const std::set<std::string>& hosts, int count);
 
   // Returns the last json fetched from the server.
   const std::string& last_json() const {

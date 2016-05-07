@@ -4,6 +4,7 @@
 
 #include "components/ntp_snippets/ntp_snippets_fetcher.h"
 
+#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/metrics/sparse_histogram.h"
@@ -13,6 +14,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
+#include "components/ntp_snippets/switches.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
@@ -29,6 +31,7 @@ namespace ntp_snippets {
 
 namespace {
 
+const char kStatusMessageEmptyHosts[] = "Cannot fetch for empty hosts list.";
 const char kStatusMessageURLRequestErrorFormat[] = "URLRequestStatus error %d";
 const char kStatusMessageHTTPErrorFormat[] = "HTTP error %d";
 const char kStatusMessageJsonErrorFormat[] = "Received invalid JSON (error %s)";
@@ -89,8 +92,21 @@ void NTPSnippetsFetcher::SetCallback(
   snippets_available_callback_ = callback;
 }
 
-void NTPSnippetsFetcher::FetchSnippets(const std::set<std::string>& hosts,
-                                       int count) {
+void NTPSnippetsFetcher::FetchSnippetsFromHosts(
+    const std::set<std::string>& hosts, int count) {
+  std::string host_restricts;
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDontRestrict)) {
+    if (hosts.empty()) {
+      if (!snippets_available_callback_.is_null()) {
+        snippets_available_callback_.Run(NTPSnippet::PtrVector(),
+                                         kStatusMessageEmptyHosts);
+      }
+      return;
+    }
+    for (const std::string& host : hosts)
+      host_restricts += base::StringPrintf(kHostRestrictFormat, host.c_str());
+  }
   const std::string& key = is_stable_channel_
                                ? google_apis::GetAPIKey()
                                : google_apis::GetNonStableAPIKey();
@@ -105,9 +121,6 @@ void NTPSnippetsFetcher::FetchSnippets(const std::set<std::string>& hosts,
   HttpRequestHeaders headers;
   headers.SetHeader("Content-Type", "application/json; charset=UTF-8");
   url_fetcher_->SetExtraRequestHeaders(headers.ToString());
-  std::string host_restricts;
-  for (const std::string& host : hosts)
-    host_restricts += base::StringPrintf(kHostRestrictFormat, host.c_str());
   url_fetcher_->SetUploadData("application/json",
                               base::StringPrintf(kRequestParameterFormat,
                                                  host_restricts.c_str(),
