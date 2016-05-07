@@ -34256,6 +34256,23 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="OfflinePages.Model.ArchiveDirCreationTime" units="ms">
+  <owner>dewittj@chromium.org</owner>
+  <owner>jianli@chromium.org</owner>
+  <summary>
+    The amount of time to create the offline pages archive directory.
+  </summary>
+</histogram>
+
+<histogram name="OfflinePages.Model.ConstructionToLoadedEventTime" units="ms">
+  <owner>dewittj@chromium.org</owner>
+  <owner>jianli@chromium.org</owner>
+  <summary>
+    The amount of time to create the offline pages archive directory and load
+    the offline page model.
+  </summary>
+</histogram>
+
 <histogram name="OfflinePages.OfflinePageCount">
   <owner>fgorski@chromium.org</owner>
   <owner>jianli@chromium.org</owner>

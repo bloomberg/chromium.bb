@@ -119,7 +119,7 @@ OfflinePageModel::OfflinePageModel(
   task_runner_->PostTaskAndReply(
       FROM_HERE, base::Bind(EnsureArchivesDirCreated, archives_dir_),
       base::Bind(&OfflinePageModel::OnEnsureArchivesDirCreatedDone,
-                 weak_ptr_factory_.GetWeakPtr()));
+                 weak_ptr_factory_.GetWeakPtr(), base::TimeTicks::Now()));
 }
 
 OfflinePageModel::~OfflinePageModel() {
@@ -568,12 +568,17 @@ void OfflinePageModel::OnMarkPageAccesseDone(
   // should not have any impact to the UI.
 }
 
-void OfflinePageModel::OnEnsureArchivesDirCreatedDone() {
+void OfflinePageModel::OnEnsureArchivesDirCreatedDone(
+    const base::TimeTicks& start_time) {
+  UMA_HISTOGRAM_TIMES("OfflinePages.Model.ArchiveDirCreationTime",
+                      base::TimeTicks::Now() - start_time);
+
   store_->Load(base::Bind(&OfflinePageModel::OnLoadDone,
-                          weak_ptr_factory_.GetWeakPtr()));
+                          weak_ptr_factory_.GetWeakPtr(), start_time));
 }
 
 void OfflinePageModel::OnLoadDone(
+    const base::TimeTicks& start_time,
     OfflinePageMetadataStore::LoadStatus load_status,
     const std::vector<OfflinePageItem>& offline_pages) {
   DCHECK(!is_loaded_);
@@ -583,6 +588,9 @@ void OfflinePageModel::OnLoadDone(
 
   if (load_status == OfflinePageMetadataStore::LOAD_SUCCEEDED)
     CacheLoadedData(offline_pages);
+
+  UMA_HISTOGRAM_TIMES("OfflinePages.Model.ConstructionToLoadedEventTime",
+                      base::TimeTicks::Now() - start_time);
 
   // Run all the delayed tasks.
   for (const auto& delayed_task : delayed_tasks_)

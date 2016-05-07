@@ -31,6 +31,7 @@ namespace base {
 class SequencedTaskRunner;
 class Time;
 class TimeDelta;
+class TimeTicks;
 }
 
 namespace offline_pages {
@@ -268,7 +269,7 @@ class OfflinePageModel : public KeyedService, public base::SupportsUserData {
   typedef ScopedVector<OfflinePageArchiver> PendingArchivers;
 
   // Callback for ensuring archive directory is created.
-  void OnEnsureArchivesDirCreatedDone();
+  void OnEnsureArchivesDirCreatedDone(const base::TimeTicks& start_time);
 
   void GetAllPagesAfterLoadDone(
       const MultipleOfflinePageItemCallback& callback);
@@ -293,7 +294,8 @@ class OfflinePageModel : public KeyedService, public base::SupportsUserData {
                              const HasPagesCallback& callback) const;
 
   // Callback for loading pages from the offline page metadata store.
-  void OnLoadDone(OfflinePageMetadataStore::LoadStatus load_status,
+  void OnLoadDone(const base::TimeTicks& start_time,
+                  OfflinePageMetadataStore::LoadStatus load_status,
                   const std::vector<OfflinePageItem>& offline_pages);
 
   // Steps for saving a page offline.
