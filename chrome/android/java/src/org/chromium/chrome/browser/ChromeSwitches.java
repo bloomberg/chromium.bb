@@ -240,6 +240,11 @@ public abstract class ChromeSwitches {
      */
     public static final String PARTNER_HOMEPAGE_FOR_TESTING = "partner-homepage-for-testing";
 
+    /**
+     * Enables the all bookmarks section in bookmark manager.
+     */
+    public static final String ENABLE_ALL_BOOKMARKS_VIEW = "enable-all-bookmarks-view";
+
     // Prevent instantiation.
     private ChromeSwitches() {}
 }

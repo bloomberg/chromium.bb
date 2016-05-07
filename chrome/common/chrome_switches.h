@@ -111,6 +111,7 @@ extern const char kEnableAddToShelf[];
 #if defined(OS_ANDROID)
 extern const char kEnableAppLink[];
 #endif
+extern const char kEnableAllBookmarksView[];
 extern const char kEnableAppsFileAssociations[];
 extern const char kEnableAudioDebugRecordingsFromExtension[];
 extern const char kEnableBenchmarking[];

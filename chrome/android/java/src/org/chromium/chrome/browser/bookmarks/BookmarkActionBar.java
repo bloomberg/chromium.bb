@@ -220,7 +220,8 @@ public class BookmarkActionBar extends Toolbar implements BookmarkUIObserver,
     public void onFolderStateSet(BookmarkId folder) {
         mCurrentFolder = mDelegate.getModel().getBookmarkById(folder);
 
-        getMenu().findItem(R.id.search_menu_id).setVisible(false);
+        getMenu().findItem(R.id.search_menu_id)
+                .setVisible(!BookmarkUtils.isAllBookmarksViewEnabled());
         getMenu().findItem(R.id.edit_menu_id).setVisible(mCurrentFolder.isEditable());
 
         // If the parent folder is a top level node, we don't go up anymore.

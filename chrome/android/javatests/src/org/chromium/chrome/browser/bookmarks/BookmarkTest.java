@@ -14,8 +14,10 @@ import android.widget.TextView;
 import junit.framework.Assert;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkItem;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
@@ -165,6 +167,7 @@ public class BookmarkTest extends ChromeActivityTestCaseBase<ChromeActivity> {
                 BookmarkUIState.createFolderUrl(otherId).toString());
     }
 
+    @CommandLineFlags.Add(ChromeSwitches.ENABLE_ALL_BOOKMARKS_VIEW + "=true")
     @SmallTest
     public void testOpenBookmarkManager() throws InterruptedException {
         openBookmarkManager();

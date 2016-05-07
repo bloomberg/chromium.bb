@@ -370,6 +370,9 @@ const char kEnableAddToShelf[] = "enable-add-to-shelf";
 const char kEnableAppLink[] = "enable-app-link";
 #endif
 
+// Enables all bookmarks view in bookmark manager.
+const char kEnableAllBookmarksView[] = "enable-all-bookmarks-view";
+
 // Enable OS integration for Chrome app file associations.
 const char kEnableAppsFileAssociations[]    = "enable-apps-file-associations";
 

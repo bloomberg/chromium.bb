@@ -14792,6 +14792,21 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
     <message name="IDS_FLAGS_ENABLE_SCROLL_ANCHORING_DESCRIPTION" desc="Description of the scroll anchoring flag">
       Adjusts scroll position to prevent visible jumps when offscreen content changes.
     </message>
+    <message name="IDS_FLAGS_ENABLE_ALL_BOOKMARKS_VIEW_CHOICE_DEFAULT" desc="Text to indicate that it'll use the platform settings to enable/disable all bookmarks view.">
+      Default
+    </message>
+    <message name="IDS_FLAGS_ENABLE_ALL_BOOKMARKS_VIEW_CHOICE_ENABLED" desc="Text to indicate the all bookmarks view is enabled.">
+      Enabled
+    </message>
+    <message name="IDS_FLAGS_ENABLE_ALL_BOOKMARKS_VIEW_CHOICE_DISABLED" desc="Text to indicate the all bookmarks view is disabled.">
+      Disabled
+    </message>
+    <message name="IDS_FLAGS_ENABLE_ALL_BOOKMARKS_VIEW_NAME" desc="Name of the show all bookmarks view flag">
+      Enable "all bookmarks" section in bookmark manager.
+    </message>
+    <message name="IDS_FLAGS_SHOW_ALL_BOOKMARKS_VIEW_DESCRIPTION" desc="Description of the show all bookmarks view flag">
+      Enables the all bookmarks view as the default destination of the bookmark manager.
+    </message>
 
     <if expr="chromeos">
       <message name="IDS_FLAGS_ENABLE_NATIVE_CUPS_NAME" desc="Name of the native cups flag.">

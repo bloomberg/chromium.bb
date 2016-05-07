@@ -514,6 +514,14 @@ const FeatureEntry::Choice kHerbPrototypeChoices[] = {
     {IDS_FLAGS_HERB_PROTOTYPE_FLAVOR_ELDERBERRY,
      switches::kTabManagementExperimentTypeElderberry, ""},
 };
+
+const FeatureEntry::Choice kEnableAllBookmarksViewChoices[] = {
+  { IDS_FLAGS_ENABLE_ALL_BOOKMARKS_VIEW_CHOICE_DEFAULT, "", ""},
+  { IDS_FLAGS_ENABLE_ALL_BOOKMARKS_VIEW_CHOICE_ENABLED,
+    switches::kEnableAllBookmarksView, "true" },
+  { IDS_FLAGS_ENABLE_ALL_BOOKMARKS_VIEW_CHOICE_DISABLED,
+    switches::kEnableAllBookmarksView, "false" },
+};
 #endif  // defined(OS_ANDROID)
 
 const FeatureEntry::Choice kEnableUseZoomForDSFChoices[] = {
@@ -1140,6 +1148,9 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE(app_list::switches::kResetAppListInstallState)},
 #endif
 #if defined(OS_ANDROID)
+    {"enable-all-bookmarks-view", IDS_FLAGS_ENABLE_ALL_BOOKMARKS_VIEW_NAME,
+     IDS_FLAGS_SHOW_ALL_BOOKMARKS_VIEW_DESCRIPTION, kOsAndroid,
+     MULTI_VALUE_TYPE(kEnableAllBookmarksViewChoices)},
     {"enable-accessibility-tab-switcher",
      IDS_FLAGS_ACCESSIBILITY_TAB_SWITCHER_NAME,
      IDS_FLAGS_ACCESSIBILITY_TAB_SWITCHER_DESCRIPTION, kOsAndroid,

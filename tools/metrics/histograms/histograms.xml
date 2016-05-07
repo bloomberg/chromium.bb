@@ -76933,6 +76933,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-1235586511" label="enable-datasaver-prompt"/>
   <int value="-1218608640" label="disable-offline-load-stale-cache"/>
   <int value="-1216837777" label="clear-data-reduction-proxy-data-savings"/>
+  <int value="-1212855900" label="enable-all-bookmarks-view"/>
   <int value="-1212273428" label="enable-experimental-app-list"/>
   <int value="-1212167260" label="disable-app-window-cycling"/>
   <int value="-1203742042" label="enable-gesture-selection"/>

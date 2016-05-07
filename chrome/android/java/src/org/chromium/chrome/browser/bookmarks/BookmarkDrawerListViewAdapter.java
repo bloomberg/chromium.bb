@@ -91,7 +91,9 @@ class BookmarkDrawerListViewAdapter extends BaseAdapter {
 
     private void repopulateTopSection() {
         mTopSection.clear();
-        mTopSection.add(new Item(TYPE_ALL_ITEMS));
+        if (BookmarkUtils.isAllBookmarksViewEnabled()) {
+            mTopSection.add(new Item(TYPE_ALL_ITEMS));
+        }
 
         if (mDelegate.getModel().isFolderVisible(mMobileNodeId)) {
             mTopSection.add(new Item(mMobileNodeId));
