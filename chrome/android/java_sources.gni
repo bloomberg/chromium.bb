@@ -492,6 +492,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/ntp/NewTabPageToolbar.java",
   "java/src/org/chromium/chrome/browser/ntp/NewTabPageUma.java",
   "java/src/org/chromium/chrome/browser/ntp/NewTabPageView.java",
+  "java/src/org/chromium/chrome/browser/ntp/NtpColorUtils.java",
   "java/src/org/chromium/chrome/browser/ntp/RecentTabsExpandableListView.java",
   "java/src/org/chromium/chrome/browser/ntp/RecentTabsGroupView.java",
   "java/src/org/chromium/chrome/browser/ntp/RecentTabsManager.java",

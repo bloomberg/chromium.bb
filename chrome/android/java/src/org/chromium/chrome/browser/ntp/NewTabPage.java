@@ -11,7 +11,6 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Build;
@@ -590,9 +589,7 @@ public class NewTabPage
         mProfile = tab.getProfile();
 
         mTitle = activity.getResources().getString(R.string.button_new_tab);
-        mBackgroundColor = ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_SNIPPETS)
-                ? ApiCompatibilityUtils.getColor(activity.getResources(), R.color.ntp_with_cards_bg)
-                : ApiCompatibilityUtils.getColor(activity.getResources(), R.color.ntp_bg);
+        mBackgroundColor = NtpColorUtils.getBackgroundColorResource(activity.getResources());
         mThemeColor = ApiCompatibilityUtils.getColor(
                 activity.getResources(), R.color.default_primary_color);
         TemplateUrlService.getInstance().addObserver(this);
@@ -823,7 +820,9 @@ public class NewTabPage
 
     @Override
     public int getThemeColor() {
-        return isLocationBarShownInNTP() ? Color.WHITE : mThemeColor;
+        return isLocationBarShownInNTP()
+                ? NtpColorUtils.getBackgroundColorResource(mActivity.getResources())
+                : mThemeColor;
     }
 
     @Override

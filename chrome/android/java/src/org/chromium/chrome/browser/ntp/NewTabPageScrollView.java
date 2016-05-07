@@ -59,6 +59,7 @@ public class NewTabPageScrollView extends ScrollView {
                         return retVal;
                     }
                 });
+        setBackgroundColor(NtpColorUtils.getBackgroundColorResource(getResources()));
     }
 
     /**

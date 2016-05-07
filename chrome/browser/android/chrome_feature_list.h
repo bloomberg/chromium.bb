@@ -14,6 +14,7 @@ namespace android {
 
 extern const base::Feature kImportantSitesInCBD;
 extern const base::Feature kMediaStyleNotification;
+extern const base::Feature kNTPMaterialDesign;
 extern const base::Feature kNTPOfflinePagesFeature;
 extern const base::Feature kNTPSnippetsFeature;
 extern const base::Feature kNTPToolbarFeature;

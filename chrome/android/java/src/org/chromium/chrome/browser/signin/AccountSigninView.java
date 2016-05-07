@@ -20,6 +20,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.firstrun.ProfileDataCache;
+import org.chromium.chrome.browser.ntp.NtpColorUtils;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.profiles.ProfileDownloader;
 import org.chromium.chrome.browser.signin.AccountTrackerService.OnSystemAccountsSeededListener;
@@ -193,7 +194,7 @@ public class AccountSigninView extends FrameLayout implements ProfileDownloader.
      * This is currently used in the Recent Tabs Promo and the bookmarks page.
      */
     public void configureForRecentTabsOrBookmarksPage() {
-        setBackgroundResource(R.color.ntp_bg);
+        setBackgroundColor(NtpColorUtils.getBackgroundColorResource(getResources()));
         mCancelButtonTextId = R.string.cancel;
         setUpCancelButton();
     }
