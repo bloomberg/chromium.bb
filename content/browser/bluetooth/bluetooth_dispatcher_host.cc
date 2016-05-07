@@ -993,7 +993,8 @@ void BluetoothDispatcherHost::AddAdapterObserver(
 
 void BluetoothDispatcherHost::RemoveAdapterObserver(
     device::BluetoothAdapter::Observer* observer) {
-  DCHECK(adapter_observers_.erase(observer));
+  size_t removed = adapter_observers_.erase(observer);
+  DCHECK(removed);
   if (adapter_) {
     adapter_->RemoveObserver(observer);
   }
