@@ -56,6 +56,29 @@
       },
       {
         "args": [
+          "gpu_rasterization",
+          "--show-stdout",
+          "--browser=android-content-shell",
+          "-v",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
+        ],
+        "isolate_name": "telemetry_gpu_test",
+        "name": "gpu_rasterization_tests",
+        "override_compile_targets": [
+          "telemetry_gpu_test_run"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "0000:0000",
+              "os": "Android"
+            }
+          ]
+        }
+      },
+      {
+        "args": [
           "hardware_accelerated_feature",
           "--show-stdout",
           "--browser=android-content-shell",
@@ -64,6 +87,29 @@
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "hardware_accelerated_feature_tests",
+        "override_compile_targets": [
+          "telemetry_gpu_test_run"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "0000:0000",
+              "os": "Android"
+            }
+          ]
+        }
+      },
+      {
+        "args": [
+          "memory_test",
+          "--show-stdout",
+          "--browser=android-content-shell",
+          "-v",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
+        ],
+        "isolate_name": "telemetry_gpu_test",
+        "name": "memory_test",
         "override_compile_targets": [
           "telemetry_gpu_test_run"
         ],
@@ -103,29 +149,6 @@
         ],
         "precommit_args": [
           "--download-refimg-from-cloud-storage"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "0000:0000",
-              "os": "Android"
-            }
-          ]
-        }
-      },
-      {
-        "args": [
-          "memory_test",
-          "--show-stdout",
-          "--browser=android-content-shell",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
-        ],
-        "isolate_name": "telemetry_gpu_test",
-        "name": "memory_test",
-        "override_compile_targets": [
-          "telemetry_gpu_test_run"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -263,6 +286,29 @@
       },
       {
         "args": [
+          "gpu_rasterization",
+          "--show-stdout",
+          "--browser=android-content-shell",
+          "-v",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
+        ],
+        "isolate_name": "telemetry_gpu_test",
+        "name": "gpu_rasterization_tests",
+        "override_compile_targets": [
+          "telemetry_gpu_test_run"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "0000:0000",
+              "os": "Android"
+            }
+          ]
+        }
+      },
+      {
+        "args": [
           "hardware_accelerated_feature",
           "--show-stdout",
           "--browser=android-content-shell",
@@ -271,6 +317,29 @@
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "hardware_accelerated_feature_tests",
+        "override_compile_targets": [
+          "telemetry_gpu_test_run"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "0000:0000",
+              "os": "Android"
+            }
+          ]
+        }
+      },
+      {
+        "args": [
+          "memory_test",
+          "--show-stdout",
+          "--browser=android-content-shell",
+          "-v",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
+        ],
+        "isolate_name": "telemetry_gpu_test",
+        "name": "memory_test",
         "override_compile_targets": [
           "telemetry_gpu_test_run"
         ],
@@ -310,29 +379,6 @@
         ],
         "precommit_args": [
           "--download-refimg-from-cloud-storage"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "0000:0000",
-              "os": "Android"
-            }
-          ]
-        }
-      },
-      {
-        "args": [
-          "memory_test",
-          "--show-stdout",
-          "--browser=android-content-shell",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
-        ],
-        "isolate_name": "telemetry_gpu_test",
-        "name": "memory_test",
-        "override_compile_targets": [
-          "telemetry_gpu_test_run"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
