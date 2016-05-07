@@ -51,18 +51,16 @@ class Ecdsa {
 
   // Validates a response given to a ping previously signed with
   // SignRequest(). |response_body| contains the body of the response in
-  // UTF-8. |signature| contains the ECDSA signature and observed request
-  // hash. Returns true if the response is valid and the observed request hash
-  // matches the sent hash.  This method uses internal state that is set by a
-  // prior SignRequest() call.
+  // UTF-8. |server_proof| contains the ECDSA signature and observed request
+  // hash, which is passed in the ETag HTTP header. Returns true if the response
+  // is valid and the observed request hash matches the sent hash.  This method
+  // uses internal state that is set by a prior SignRequest() call.
   bool ValidateResponse(const base::StringPiece& response_body,
-                        const base::StringPiece& signature);
-
-  // Sets the key and nonce that were used to generate a signature that is baked
-  // into a unit test.
-  void OverrideNonceForTesting(int key_version, uint32_t nonce);
+                        const base::StringPiece& server_etag);
 
  private:
+  friend class CupEcdsaTest;
+
   Ecdsa(int key_version, const base::StringPiece& public_key);
 
   // The server keeps multiple signing keys; a version must be sent so that

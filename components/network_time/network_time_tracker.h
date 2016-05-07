@@ -5,35 +5,19 @@
 #ifndef COMPONENTS_NETWORK_TIME_NETWORK_TIME_TRACKER_H_
 #define COMPONENTS_NETWORK_TIME_NETWORK_TIME_TRACKER_H_
 
-#include <stdint.h>
 #include <memory>
 
-#include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
-#include "base/timer/timer.h"
-#include "net/url_request/url_fetcher_delegate.h"
-#include "url/gurl.h"
 
 class PrefRegistrySimple;
 class PrefService;
 
 namespace base {
-class MessageLoop;
 class TickClock;
-}  // namespace base
-
-namespace client_update_protocol {
-class Ecdsa;
-}  // namespace client_udpate_protocol
-
-namespace net {
-class URLFetcher;
-class URLRequestContextGetter;
-}  // namespace net
+}
 
 namespace network_time {
 
@@ -46,18 +30,14 @@ const int64_t kTicksResolutionMs = 1;  // Assume 1ms for non-windows platforms.
 
 // A class that receives network time updates and can provide the network time
 // for a corresponding local time. This class is not thread safe.
-class NetworkTimeTracker : public net::URLFetcherDelegate {
+class NetworkTimeTracker {
  public:
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
-  // Constructor.  Arguments may be stubbed out for tests.  |getter|, if not
-  // null, will cause automatic queries to a time server.  Otherwise, time is
-  // available only if |UpdateNetworkTime| is called.
   NetworkTimeTracker(std::unique_ptr<base::Clock> clock,
                      std::unique_ptr<base::TickClock> tick_clock,
-                     PrefService* pref_service,
-                     scoped_refptr<net::URLRequestContextGetter> getter);
-  ~NetworkTimeTracker() override;
+                     PrefService* pref_service);
+  ~NetworkTimeTracker();
 
   // Sets |network_time| to an estimate of the true time.  Returns true if time
   // is available, and false otherwise.  If |uncertainty| is non-NULL, it will
@@ -81,44 +61,7 @@ class NetworkTimeTracker : public net::URLFetcherDelegate {
                          base::TimeDelta latency,
                          base::TimeTicks post_time);
 
-  void SetMaxResponseSizeForTesting(size_t limit);
-
-  void SetPublicKeyForTesting(const base::StringPiece& key);
-
-  void SetTimeServerURLForTesting(const GURL& url);
-
-  bool QueryTimeServiceForTesting();
-
-  void WaitForFetchForTesting(uint32_t nonce);
-
-  base::TimeDelta GetTimerDelayForTesting() const;
-
  private:
-  // If synchronization has been lost, sends a query to the secure time service.
-  // Upon response, execution resumes in |OnURLFetchComplete|.
-  void QueryTimeService();
-
-  // Updates network time from a time server response, returning true
-  // if successful.
-  bool UpdateTimeFromResponse();
-
-  // net::URLFetcherDelegate:
-  // Called to process responses from the secure time service.
-  void OnURLFetchComplete(const net::URLFetcher* source) override;
-
-  // Sets the next time query to be run at the specified time.
-  void QueueTimeQuery(base::TimeDelta delay);
-
-  // State variables for internally-managed secure time service queries.
-  GURL server_url_;
-  size_t max_response_size_;
-  base::RepeatingTimer query_timer_;
-  scoped_refptr<net::URLRequestContextGetter> getter_;
-  std::unique_ptr<net::URLFetcher> time_fetcher_;
-  base::TimeTicks fetch_started_;
-  std::unique_ptr<client_update_protocol::Ecdsa> query_signer_;
-  base::MessageLoop* loop_;  // For testing; quit on fetch complete.
-
   // The |Clock| and |TickClock| are used to sanity-check one another, allowing
   // the NetworkTimeTracker to notice e.g. suspend/resume events and clock
   // resets.

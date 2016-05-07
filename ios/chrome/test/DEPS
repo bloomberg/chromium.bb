@@ -5,6 +5,5 @@ include_rules = [
   "+ios/public/provider/chrome",
   "+ios/public/test",
   "+ios/web/public",
-  "+net/url_request",
   "+ui",
 ]

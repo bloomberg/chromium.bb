@@ -254,8 +254,7 @@ ApplicationContextImpl::GetNetworkTimeTracker() {
   if (!network_time_tracker_) {
     network_time_tracker_.reset(new network_time::NetworkTimeTracker(
         base::WrapUnique(new base::DefaultClock),
-        base::WrapUnique(new base::DefaultTickClock), GetLocalState(),
-        GetSystemURLRequestContext()));
+        base::WrapUnique(new base::DefaultTickClock), GetLocalState()));
   }
   return network_time_tracker_.get();
 }
