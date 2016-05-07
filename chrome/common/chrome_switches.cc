@@ -204,10 +204,6 @@ const char kDisableAboutInSettings[]        = "disable-about-in-settings";
 // app to their shelf (or platform-specific equivalent)
 const char kDisableAddToShelf[] = "disable-add-to-shelf";
 
-#if defined(OS_ANDROID)
-const char kDisableAppLink[] = "disable-app-link";
-#endif
-
 // Disables the experimental asynchronous DNS client.
 const char kDisableAsyncDns[]               = "disable-async-dns";
 
@@ -365,10 +361,6 @@ const char kEasyUnlockAppPath[]             = "easy-unlock-app-path";
 // Enables the display of a banner allowing the user to add a web
 // app to their shelf (or platform-specific equivalent)
 const char kEnableAddToShelf[] = "enable-add-to-shelf";
-
-#if defined(OS_ANDROID)
-const char kEnableAppLink[] = "enable-app-link";
-#endif
 
 // Enables all bookmarks view in bookmark manager.
 const char kEnableAllBookmarksView[] = "enable-all-bookmarks-view";

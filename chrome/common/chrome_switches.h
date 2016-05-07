@@ -61,9 +61,6 @@ extern const char kDiagnosticsFormat[];
 extern const char kDiagnosticsRecovery[];
 extern const char kDisableAboutInSettings[];
 extern const char kDisableAddToShelf[];
-#if defined(OS_ANDROID)
-extern const char kDisableAppLink[];
-#endif
 extern const char kDisableAsyncDns[];
 extern const char kDisableBackgroundNetworking[];
 extern const char kDisableBundledPpapiFlash[];
@@ -108,9 +105,6 @@ extern const char kDnsPrefetchDisable[];
 extern const char kDumpBrowserHistograms[];
 extern const char kEasyUnlockAppPath[];
 extern const char kEnableAddToShelf[];
-#if defined(OS_ANDROID)
-extern const char kEnableAppLink[];
-#endif
 extern const char kEnableAllBookmarksView[];
 extern const char kEnableAppsFileAssociations[];
 extern const char kEnableAudioDebugRecordingsFromExtension[];

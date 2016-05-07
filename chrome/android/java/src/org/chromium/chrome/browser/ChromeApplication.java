@@ -674,10 +674,6 @@ public class ChromeApplication extends ContentApplication {
         return mPrintingController;
     }
 
-    public AppLinkHandler createAppLinkHandler() {
-        return new AppLinkHandler();
-    }
-
     /**
      * @return An instance of {@link GSAHelper} that handles the start point of chrome's integration
      *         with GSA.
@@ -852,7 +848,7 @@ public class ChromeApplication extends ContentApplication {
      */
     private void cacheNativeFlags() {
         if (sIsFinishedCachingNativeFlags) return;
-        FeatureUtilities.cacheNativeFlags(this);
+        FeatureUtilities.cacheNativeFlags();
         sIsFinishedCachingNativeFlags = true;
     }
 }

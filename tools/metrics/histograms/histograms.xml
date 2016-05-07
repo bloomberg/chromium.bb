@@ -77323,7 +77323,6 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1658644418" label="disable-app-list-voice-search"/>
   <int value="1661925474" label="silent-debugger-extension-api"/>
   <int value="1668611601" label="enable-encrypted-media"/>
-  <int value="1689123607" label="enable-app-link"/>
   <int value="1689183477" label="enable-merge-key-char-events"/>
   <int value="1694854500" label="disable-save-password-bubble"/>
   <int value="1696139514" label="enable-ble-advertising-in-apps"/>
@@ -77359,7 +77358,6 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1865799183" label="javascript-harmony"/>
   <int value="1881036528" label="disable-multilingual-spellchecker"/>
   <int value="1881174782" label="disable-brotli"/>
-  <int value="1889076955" label="disable-app-link"/>
   <int value="1891210939" label="enable-blink-features"/>
   <int value="1892201400" label="enable-password-separated-signin-flow"/>
   <int value="1896456311" label="enable-password-save-in-page-navigation"/>

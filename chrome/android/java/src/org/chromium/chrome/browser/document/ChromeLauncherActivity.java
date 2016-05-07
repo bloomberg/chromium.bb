@@ -35,7 +35,6 @@ import org.chromium.base.CommandLineInitUtil;
 import org.chromium.base.Log;
 import org.chromium.base.TraceEvent;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.AppLinkHandler;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
@@ -207,12 +206,6 @@ public class ChromeLauncherActivity extends Activity
         // Settings "App Notifications" view will open us with a specific category.
         if (intent.hasCategory(Notification.INTENT_CATEGORY_NOTIFICATION_PREFERENCES)) {
             NotificationPlatformBridge.launchNotificationPreferences(this, getIntent());
-            finish();
-            return;
-        }
-
-        if (AppLinkHandler.getInstance((ChromeApplication) getApplication()).handleIntent(
-                this, intent, mIsCustomTabIntent)) {
             finish();
             return;
         }

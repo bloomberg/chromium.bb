@@ -9,8 +9,6 @@ import android.util.Pair;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
-import org.chromium.chrome.browser.AppLinkHandler;
-import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.content_public.browser.WebContents;
 
 import java.util.ArrayList;
@@ -169,9 +167,8 @@ public class LaunchMetrics {
      * This intermediate step is necessary because Activity.onCreate() may be called when
      * the native library has not yet been loaded.
      * @param webContents WebContents for the current Tab.
-     * @param application The ChromeApplication object.
      */
-    public static void commitLaunchMetrics(WebContents webContents, ChromeApplication application) {
+    public static void commitLaunchMetrics(WebContents webContents) {
         for (Pair<String, Integer> item : sActivityUrls) {
             nativeRecordLaunch(true, item.first, item.second, webContents);
         }
@@ -187,8 +184,6 @@ public class LaunchMetrics {
                     TimeUnit.MILLISECONDS);
         }
         sWebappHistogramTimes.clear();
-
-        AppLinkHandler.getInstance(application).commitMetrics();
 
         // Record generic cached events.
         for (CachedHistogram event : CachedHistogram.sEvents) event.commitAndClear();

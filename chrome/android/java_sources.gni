@@ -10,7 +10,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/ActivityTabTaskDescriptionHelper.java",
   "java/src/org/chromium/chrome/browser/ActivityTaskDescriptionIconGenerator.java",
   "java/src/org/chromium/chrome/browser/AfterStartupTaskUtils.java",
-  "java/src/org/chromium/chrome/browser/AppLinkHandler.java",
   "java/src/org/chromium/chrome/browser/ApplicationInitialization.java",
   "java/src/org/chromium/chrome/browser/ApplicationLifetime.java",
   "java/src/org/chromium/chrome/browser/AssistStatusHandler.java",
