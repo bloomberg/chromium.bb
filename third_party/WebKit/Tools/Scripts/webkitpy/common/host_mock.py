@@ -27,7 +27,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 from webkitpy.common.checkout.scm.scm_mock import MockSCM
-from webkitpy.common.net.buildbot.buildbot_mock import MockBuildBot
+from webkitpy.common.net.buildbot_mock import MockBuildBot
 from webkitpy.common.net.web_mock import MockWeb
 from webkitpy.common.system.systemhost_mock import MockSystemHost
 

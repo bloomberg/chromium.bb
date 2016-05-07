@@ -33,7 +33,8 @@ import sys
 
 from webkitpy.common.checkout.scm.detection import SCMDetector
 from webkitpy.common.memoized import memoized
-from webkitpy.common.net import buildbot, web
+from webkitpy.common.net.buildbot import BuildBot
+from webkitpy.common.net import web
 from webkitpy.common.system.systemhost import SystemHost
 from webkitpy.layout_tests.builders import Builders
 from webkitpy.layout_tests.port.factory import PortFactory
@@ -51,7 +52,7 @@ class Host(SystemHost):
         self._scm = None
 
         # Everything below this line is WebKit-specific and belongs on a higher-level object.
-        self.buildbot = buildbot.BuildBot()
+        self.buildbot = BuildBot()
 
         # FIXME: Unfortunately Port objects are currently the central-dispatch objects of the NRWT world.
         # In order to instantiate a port correctly, we have to pass it at least an executive, user, scm, and filesystem

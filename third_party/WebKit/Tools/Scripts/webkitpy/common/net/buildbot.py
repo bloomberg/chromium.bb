@@ -136,8 +136,8 @@ class Builder(object):
             # FIXME: This method is horribly slow due to the huge network load.
             # FIXME: This is a poor way to do revision -> build mapping.
             # Better would be to ask buildbot through some sort of API.
-            print "Loading revision/build list from %s." % self.results_url()
-            print "This may take a while..."
+            _log.info("Loading revision/build list from %s." % self.results_url())
+            _log.info("This may take a while...")
             result_files = self._buildbot._fetch_twisted_directory_listing(self.results_url())
         except urllib2.HTTPError, error:
             if error.code != 404:
@@ -376,7 +376,7 @@ class BuildBot(object):
         for builder in builder_revisions:
             for revision, succeeded in builder_revisions[builder]:
                 revision_statuses.setdefault(revision, set())
-                if succeeded and revision_statuses[revision] != None:
+                if succeeded and revision_statuses[revision] is not None:
                     revision_statuses[revision].add(builder)
                 else:
                     revision_statuses[revision] = None
