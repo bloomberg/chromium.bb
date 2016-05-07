@@ -18,8 +18,6 @@ source_set("media") {
 
   if (mojo_media_host == "browser") {
     sources += [
-      "cast_mojo_media_application.cc",
-      "cast_mojo_media_application.h",
       "cast_mojo_media_client.cc",
       "cast_mojo_media_client.h",
       "cast_renderer.cc",

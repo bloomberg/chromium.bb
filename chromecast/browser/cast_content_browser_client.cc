@@ -53,8 +53,8 @@
 #include "ui/gl/gl_switches.h"
 
 #if defined(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
-#include "chromecast/browser/media/cast_mojo_media_application.h"
 #include "chromecast/browser/media/cast_mojo_media_client.h"
+#include "media/mojo/services/mojo_media_application.h"  // nogncheck
 #endif  // ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS
 
 #if defined(OS_ANDROID)
@@ -69,7 +69,7 @@ namespace shell {
 
 namespace {
 #if defined(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
-static std::unique_ptr<::shell::ShellClient> CreateCastMojoMediaApplication(
+static std::unique_ptr<::shell::ShellClient> CreateMojoMediaApplication(
     CastContentBrowserClient* browser_client,
     const base::Closure& quit_closure) {
   std::unique_ptr<media::CastMojoMediaClient> mojo_media_client(
@@ -77,9 +77,8 @@ static std::unique_ptr<::shell::ShellClient> CreateCastMojoMediaApplication(
           base::Bind(&CastContentBrowserClient::CreateMediaPipelineBackend,
                      base::Unretained(browser_client))));
   return std::unique_ptr<::shell::ShellClient>(
-      new media::CastMojoMediaApplication(
-          std::move(mojo_media_client), browser_client->GetMediaTaskRunner(),
-          quit_closure));
+      new ::media::MojoMediaApplication(std::move(mojo_media_client),
+                                        quit_closure));
 }
 #endif  // ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS
 }  // namespace
@@ -396,7 +395,7 @@ void CastContentBrowserClient::RegisterInProcessMojoApplications(
 #if defined(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
   content::MojoApplicationInfo app_info;
   app_info.application_factory =
-      base::Bind(&CreateCastMojoMediaApplication, base::Unretained(this));
+      base::Bind(&CreateMojoMediaApplication, base::Unretained(this));
   app_info.application_task_runner = GetMediaTaskRunner();
   apps->insert(std::make_pair("mojo:media", app_info));
 #endif
