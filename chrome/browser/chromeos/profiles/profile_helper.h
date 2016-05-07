@@ -33,10 +33,6 @@ class MultiUserWindowManagerChromeOSTest;
 }  // namespace test
 }  // namespace ash
 
-namespace test {
-class BrowserFinderChromeOSTest;
-}  // namespace test
-
 namespace chromeos {
 
 class FileFlusher;
@@ -159,7 +155,6 @@ class ProfileHelper
   friend class SessionStateDelegateChromeOSTest;
   friend class SystemTrayDelegateChromeOSTest;
   friend class ash::test::MultiUserWindowManagerChromeOSTest;
-  friend class ::test::BrowserFinderChromeOSTest;
 
   // Called when signin profile is cleared.
   void OnSigninProfileCleared();

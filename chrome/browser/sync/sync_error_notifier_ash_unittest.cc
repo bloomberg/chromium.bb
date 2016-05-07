@@ -34,11 +34,6 @@
 #include "ui/display/screen.h"
 #endif
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/users/mock_user_manager.h"
-#include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
-#endif
-
 using ::testing::NiceMock;
 using ::testing::Return;
 using ::testing::ReturnRef;
@@ -189,10 +184,6 @@ class SyncErrorNotifierTest : public AshTestBase  {
 #define MAYBE_PassphraseNotification PassphraseNotification
 #endif
 TEST_F(SyncErrorNotifierTest, MAYBE_PassphraseNotification) {
-#if defined(OS_CHROMEOS)
-  chromeos::ScopedUserManagerEnabler scoped_enabler(
-      new chromeos::MockUserManager());
-#endif
   ASSERT_FALSE(notification_ui_manager_->FindById(
       kNotificationId, NotificationUIManager::GetProfileID(profile_)));
 

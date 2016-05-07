@@ -708,7 +708,6 @@
       'browser/ui/ash/launcher/launcher_context_menu_unittest.cc',
       'browser/ui/ash/multi_user/multi_user_context_menu_chromeos_unittest.cc',
       'browser/ui/ash/multi_user/multi_user_notification_blocker_chromeos_unittest.cc',
-      'browser/ui/ash/multi_user/multi_user_util_chromeos_unittest.cc',
       'browser/ui/ash/multi_user/multi_user_window_manager_chromeos_unittest.cc',
       'browser/ui/ash/session_state_delegate_chromeos_unittest.cc',
       'browser/ui/ash/window_positioner_unittest.cc',

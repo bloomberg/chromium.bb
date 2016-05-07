@@ -17,10 +17,6 @@ FakeSigninManagerBase::FakeSigninManagerBase(
 
 FakeSigninManagerBase::~FakeSigninManagerBase() {}
 
-void FakeSigninManagerBase::SignIn(const std::string& account_id) {
-  SetAuthenticatedAccountId(account_id);
-}
-
 #if !defined(OS_CHROMEOS)
 
 FakeSigninManager::FakeSigninManager(

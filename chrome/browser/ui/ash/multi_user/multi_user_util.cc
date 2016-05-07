@@ -23,21 +23,8 @@
 namespace multi_user_util {
 
 AccountId GetAccountIdFromProfile(Profile* profile) {
-#if defined(OS_CHROMEOS)
-  // If in a session the refresh token is revoked, GetProfileUserName() might
-  // returns an empty user email which will cause GetAccountIdFromProfile()
-  // returns an empty account id, which might cause weird behaviors or crash.
-  // Note: If the refresh token is revoked because the user changes his GAIA
-  // password, we will force log out the user within 120 seconds. See crbug.com/
-  // 587318 for more detail.
-  const user_manager::User* user =
-      chromeos::ProfileHelper::Get()->GetUserByProfile(
-          profile->GetOriginalProfile());
-  return user ? user->GetAccountId() : EmptyAccountId();
-#else
   return GetAccountIdFromEmail(
       profile->GetOriginalProfile()->GetProfileUserName());
-#endif
 }
 
 AccountId GetAccountIdFromEmail(const std::string& email) {
@@ -60,6 +47,19 @@ Profile* GetProfileFromAccountId(const AccountId& account_id) {
     if (GetAccountIdFromProfile(*profile_iterator) == account_id)
       return *profile_iterator;
   }
+
+#if defined(OS_CHROMEOS)
+  // If in a session the refresh token is revoked, GetAccountIdFromProfile()
+  // returns an empty account id which will cause the profile not being fetched
+  // properly. In this case we fall back to use GetProfileByUser() function.
+  // Note: If the refresh token is revoked because the user changes his GAIA
+  // password, we will force log out the user within 120 seconds. See crbug.com/
+  // 587318 for more detail.
+  const user_manager::User* user =
+      user_manager::UserManager::Get()->FindUser(account_id);
+  if (user)
+    return chromeos::ProfileHelper::Get()->GetProfileByUser(user);
+#endif
 
   return nullptr;
 }
