@@ -749,7 +749,6 @@ crbug.com/396775 compositing/overflow/reflected-overlay-scrollbars-should-appear
 crbug.com/396775 virtual/prefer_compositing_to_lcd_text/compositing/overflow/reflected-overlay-scrollbars-should-appear-without-compositing.html [ Failure ]
 
 crbug.com/381684 [ Mac Win ] fonts/family-fallback-gardiner.html [ Skip ]
-crbug.com/90515 [ Linux Win ] fast/forms/select-popup/popup-menu-key-operations.html [ NeedsRebaseline ]
 crbug.com/467635 fast/dom/HTMLImageElement/image-sizes-meta-viewport.html [ Skip ]
 
 # crbug.com/396823 [ Mac ] fast/multicol/multicol-with-child-renderLayer-for-input.html [ Failure ]
