@@ -222,6 +222,8 @@ void ThreadState::runTerminationGC()
     // Finish sweeping.
     completeSweep();
 
+    releaseStaticPersistentNodes();
+
     // From here on ignore all conservatively discovered
     // pointers into the heap owned by this thread.
     m_isTerminating = true;
@@ -239,10 +241,10 @@ void ThreadState::runTerminationGC()
     int currentCount = getPersistentRegion()->numberOfPersistents();
     ASSERT(currentCount >= 0);
     while (currentCount != oldCount) {
-        // Release the thread-local static persistents, including any
-        // that are instantiated while running the termination GCs.
-        releaseStaticPersistentNodes();
         ThreadHeap::collectGarbageForTerminatingThread(this);
+        // Release the thread-local static persistents that were
+        // instantiated while running the termination GC.
+        releaseStaticPersistentNodes();
         oldCount = currentCount;
         currentCount = getPersistentRegion()->numberOfPersistents();
     }
