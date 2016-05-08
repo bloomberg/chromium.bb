@@ -20,7 +20,6 @@ InspectorTest.dumpCacheTree = function()
                 return resolve();
             }
 
-            WebInspector.panels.resources.cacheStorageListTreeElement._refreshCaches();
             queryView(0);
 
             function queryView(i)
