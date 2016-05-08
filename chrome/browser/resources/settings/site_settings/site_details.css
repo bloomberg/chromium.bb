@@ -3,6 +3,7 @@
  * found in the LICENSE file. */
 
 :host {
+  -webkit-margin-start: 4px;
   display: block;
 }
 

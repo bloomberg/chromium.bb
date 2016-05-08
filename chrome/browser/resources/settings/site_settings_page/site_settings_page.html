@@ -15,14 +15,16 @@
         <paper-icon-item category$="[[ALL_SITES]]"
             on-tap="onTapCategory">
           <iron-icon icon="list" item-icon=""></iron-icon>
-          <div class="flex">$i18n{siteSettingsCategoryAllSites}</div>
+          <div class="flex category-header">
+            $i18n{siteSettingsCategoryAllSites}
+          </div>
         </paper-icon-item>
 
         <paper-icon-item category$="[[ContentSettingsTypes.COOKIES]]"
             on-tap="onTapCategory">
           <iron-icon icon="[[computeIconForContentCategory(
               ContentSettingsTypes.COOKIES)]]" item-icon=""></iron-icon>
-          <div class="flex">
+          <div class="flex category-header">
             [[computeTitleForContentCategory(ContentSettingsTypes.COOKIES)]]
           </div>
           <div id="cookies" class="option-value"></div>
@@ -32,7 +34,7 @@
             on-tap="onTapCategory">
           <iron-icon icon="[[computeIconForContentCategory(
               ContentSettingsTypes.GEOLOCATION)]]" item-icon=""></iron-icon>
-          <div class="flex">
+          <div class="flex category-header">
             [[computeTitleForContentCategory(ContentSettingsTypes.GEOLOCATION)]]
           </div>
           <div id="geolocation" class="option-value"></div>
@@ -42,7 +44,7 @@
             on-tap="onTapCategory">
           <iron-icon icon="[[computeIconForContentCategory(
               ContentSettingsTypes.CAMERA)]]" item-icon=""></iron-icon>
-          <div class="flex">
+          <div class="flex category-header">
             [[computeTitleForContentCategory(ContentSettingsTypes.CAMERA)]]
           </div>
           <div id="camera" class="option-value"></div>
@@ -52,7 +54,7 @@
             on-tap="onTapCategory">
           <iron-icon icon="[[computeIconForContentCategory(
               ContentSettingsTypes.MIC)]]" item-icon=""></iron-icon>
-          <div class="flex">
+          <div class="flex category-header">
             [[computeTitleForContentCategory(ContentSettingsTypes.MIC)]]
           </div>
           <div id="mic" class="option-value"></div>
@@ -62,7 +64,7 @@
             on-tap="onTapCategory">
           <iron-icon icon="[[computeIconForContentCategory(
               ContentSettingsTypes.JAVASCRIPT)]]" item-icon=""></iron-icon>
-          <div class="flex">
+          <div class="flex category-header">
             [[computeTitleForContentCategory(ContentSettingsTypes.JAVASCRIPT)]]
           </div>
           <div id="javascript" class="option-value"></div>
@@ -72,7 +74,7 @@
             on-tap="onTapCategory">
           <iron-icon icon="[[computeIconForContentCategory(
               ContentSettingsTypes.POPUPS)]]" item-icon=""></iron-icon>
-          <div class="flex">
+          <div class="flex category-header">
             [[computeTitleForContentCategory(ContentSettingsTypes.POPUPS)]]
           </div>
           <div id="popups" class="option-value"></div>
@@ -82,7 +84,7 @@
             on-tap="onTapCategory">
           <iron-icon icon="[[computeIconForContentCategory(
               ContentSettingsTypes.NOTIFICATIONS)]]" item-icon=""></iron-icon>
-          <div class="flex">
+          <div class="flex category-header">
             [[computeTitleForContentCategory(
                 ContentSettingsTypes.NOTIFICATIONS)]]
           </div>
@@ -93,7 +95,7 @@
             on-tap="onTapCategory">
           <iron-icon icon="[[computeIconForContentCategory(
               ContentSettingsTypes.IMAGES)]]" item-icon=""></iron-icon>
-          <div class="flex">
+          <div class="flex category-header">
             [[computeTitleForContentCategory(ContentSettingsTypes.IMAGES)]]
           </div>
           <div id="images" class="option-value"></div>

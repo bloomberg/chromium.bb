@@ -7,11 +7,16 @@
 }
 
 .settings-list > paper-icon-item {
+  -webkit-margin-start: 4px;
   border-bottom: 1px solid var(--paper-grey-300);
 }
 
 .settings-list > paper-icon-item:last-of-type {
   border-bottom: none;
+}
+
+.category-header {
+  -webkit-margin-start: -16px;
 }
 
 .option-value {

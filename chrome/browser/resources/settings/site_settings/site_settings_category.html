@@ -21,8 +21,8 @@
     <style include="settings-shared"></style>
     <paper-icon-item>
       <iron-icon icon="[[computeIconForContentCategory(category)]]"
-          item-icon></iron-icon>
-      <paper-item-body two-line class="flex">
+          class="toggle-icon" item-icon></iron-icon>
+      <paper-item-body two-line class="flex toggle-text">
         <div>[[computeTitleForContentCategory(category)]]</div>
         <div secondary>
           [[computeCategoryDesc(category, categoryEnabled, showRecommendation)]]
