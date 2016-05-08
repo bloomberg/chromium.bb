@@ -23,8 +23,11 @@
  * SOFTWARE.
  */
 
-
-/** Use of this header file is discouraged. Prefer including
+/** \file
+ *
+ *  \brief Include the client API and protocol C API.
+ *
+ *  \warning Use of this header file is discouraged. Prefer including
  *  wayland-client-core.h instead, which does not include the
  *  client protocol header and as such only defines the library
  *  API.

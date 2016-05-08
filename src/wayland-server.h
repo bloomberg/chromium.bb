@@ -23,10 +23,13 @@
  * SOFTWARE.
  */
 
-
-/** Use of this header file is discouraged. Prefer including
+/** \file
+ *
+ *  \brief Include the server API, deprecations and protocol C API.
+ *
+ *  \warning Use of this header file is discouraged. Prefer including
  *  wayland-server-core.h instead, which does not include the
- *  client protocol header and as such only defines the library
+ *  server protocol header and as such only defines the library
  *  API, excluding the deprecated API below.
  */
 
