@@ -32,10 +32,15 @@ import org.chromium.chrome.browser.ChromeBackgroundService;
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.util.NonThreadSafe;
 import org.chromium.components.precache.DeviceState;
+import org.chromium.sync.ModelType;
 
 import java.util.ArrayDeque;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.Queue;
+import java.util.Set;
 
 /**
  * Singleton responsible for starting and stopping a precache session.
@@ -66,7 +71,10 @@ public class PrecacheController {
     static final int WAIT_UNTIL_NEXT_PRECACHE_SECONDS = 6 * 60 * 60;  // 6 hours.
     static final int COMPLETION_TASK_MIN_DELAY_SECONDS = 5 * 60; // 5 minutes.
     static final int COMPLETION_TASK_MAX_DELAY_SECONDS = 60 * 60; // 1 hour.
+    static final int MAX_SYNC_SERVICE_INIT_TIMOUT_MS = 5 * 60 * 1000; // 5 minutes
     static final int MAX_PRECACHE_DURATION_SECONDS = 30 * 60;  // 30 minutes.
+    static final Set<Integer> SYNC_SERVICE_CONFIGURED_DATATYPES =
+            Collections.unmodifiableSet(new HashSet<Integer>(Arrays.asList(ModelType.SESSIONS)));
 
     /**
      * Singleton instance of the PrecacheController. PrecacheController is a
@@ -79,6 +87,11 @@ public class PrecacheController {
      * The default task scheduler. Overridden for tests.
      */
     private static PrecacheTaskScheduler sTaskScheduler = new PrecacheTaskScheduler();
+
+    /**
+     * Listener for syncservice backend.
+     */
+    SyncServiceInitializedNotifier mSyncServiceNotifier;
 
     /** True if a precache session is in progress. Threadsafe. */
     private boolean mIsPrecaching = false;
@@ -335,15 +348,33 @@ public class PrecacheController {
             if (PERIODIC_TASK_TAG.equals(tag)) {
                 cancelPrecacheCompletionTask(mAppContext);
             }
-            startPrecaching();
+            startPrecachingAfterSyncInit();
             return GcmNetworkManager.RESULT_SUCCESS;
         }
         Log.v(TAG, "precache session was already running");
         return GcmNetworkManager.RESULT_FAILURE;
     }
 
+    @VisibleForTesting
+    void startPrecachingAfterSyncInit() {
+        mSyncServiceNotifier = new SyncServiceInitializedNotifier(
+                SYNC_SERVICE_CONFIGURED_DATATYPES, new SyncServiceInitializedNotifier.Listener() {
+                    @Override
+                    public void onDataTypesActive() {
+                        startPrecaching();
+                    }
+
+                    @Override
+                    public void onFailureOrTimedOut() {
+                        // TODO(rajendrant): Add UMA histogram to track this failure.
+                        cancelPrecaching();
+                    }
+                }, MAX_SYNC_SERVICE_INIT_TIMOUT_MS);
+    }
+
     /** Begins a precache session. */
-    private void startPrecaching() {
+    @VisibleForTesting
+    void startPrecaching() {
         Log.v(TAG, "precache session has started");
         registerDeviceStateReceiver();
         acquirePrecachingWakeLock();

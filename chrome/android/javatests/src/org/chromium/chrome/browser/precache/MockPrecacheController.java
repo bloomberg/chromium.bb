@@ -20,6 +20,11 @@ public class MockPrecacheController extends PrecacheController {
     }
 
     @Override
+    void startPrecachingAfterSyncInit() {
+        super.startPrecaching();
+    }
+
+    @Override
     void acquirePrecachingWakeLock() {
         acquiredLockCnt++;
     }

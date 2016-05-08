@@ -606,6 +606,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/precache/PrecacheController.java",
   "java/src/org/chromium/chrome/browser/precache/PrecacheLauncher.java",
   "java/src/org/chromium/chrome/browser/precache/PrecacheTaskScheduler.java",
+  "java/src/org/chromium/chrome/browser/precache/SyncServiceInitializedNotifier.java",
   "java/src/org/chromium/chrome/browser/preferences/AboutChromePreferences.java",
   "java/src/org/chromium/chrome/browser/preferences/AccessibilityPreferences.java",
   "java/src/org/chromium/chrome/browser/preferences/ButtonPreference.java",
