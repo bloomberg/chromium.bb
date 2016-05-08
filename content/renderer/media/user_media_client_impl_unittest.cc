@@ -627,7 +627,7 @@ TEST_F(UserMediaClientImplTest, RenderToAssociatedSinkConstraint) {
   MockConstraintFactory factory;
   blink::WebMediaConstraints audio_constraints =
       factory.CreateWebMediaConstraints();
-  EXPECT_TRUE(AudioRequestHasAutomaticDeviceSelection(
+  EXPECT_FALSE(AudioRequestHasAutomaticDeviceSelection(
       factory.CreateWebMediaConstraints()));
 
   // If the constraint is present, it should dictate the result.
