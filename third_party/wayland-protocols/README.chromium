@@ -12,9 +12,6 @@ completely new functionality, or extends the functionality of some other
 protocol either in Wayland core, or some other protocol in
 wayland-protocols.
 
-Modifications:
-- Added src/unstable/scaler/scaler.xml
-
 To import a new snapshot of wayland-protocols:
 - Checkout the latest release tag: git checkout 1.1
 - Change the DEPS entry to the newly checked out commit.
@@ -31,4 +28,7 @@ To import a new snapshot of wayland-protocols:
     wayland-scanner code < */secure-output/secure-output-unstable-v1.xml > protocol/secure-output-protocol.c
     wayland-scanner server-header < unstable/secure-output/secure-output-unstable-v1.xml > include/protocol/secure-output-unstable-v1-server-protocol.h
     wayland-scanner client-header < unstable/secure-output/secure-output-unstable-v1.xml > include/protocol/secure-output-unstable-v1-client-protocol.h
+    wayland-scanner code < */alpha-compositing/alpha-compositing-unstable-v1.xml > protocol/alpha-compositing-protocol.c
+    wayland-scanner server-header < unstable/alpha-compositing/alpha-compositing-unstable-v1.xml > include/protocol/alpha-compositing-unstable-v1-server-protocol.h
+    wayland-scanner client-header < unstable/alpha-compositing/alpha-compositing-unstable-v1.xml > include/protocol/alpha-compositing-unstable-v1-client-protocol.h
 - Update this README to reflect the new version number.

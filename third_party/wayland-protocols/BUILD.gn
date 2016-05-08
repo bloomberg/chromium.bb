@@ -85,3 +85,24 @@ source_set("secure_output_protocol") {
 
   public_configs = [ ":secure_output_protocol_config" ]
 }
+
+config("alpha_compositing_protocol_config") {
+  include_dirs = [ "include/protocol" ]
+}
+
+source_set("alpha_compositing_protocol") {
+  sources = [
+    "include/protocol/alpha-compositing-unstable-v1-client-protocol.h",
+    "include/protocol/alpha-compositing-unstable-v1-server-protocol.h",
+    "protocol/alpha-compositing-protocol.c",
+  ]
+
+  deps = [
+    "//third_party/wayland:wayland_util",
+  ]
+
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [ "//build/config/compiler:no_chromium_code" ]
+
+  public_configs = [ ":alpha_compositing_protocol_config" ]
+}
