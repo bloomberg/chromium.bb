@@ -83,7 +83,6 @@ void CrossfadeGeneratedImage::draw(SkCanvas* canvas, const SkPaint& paint, const
     canvas->translate(-srcRect.x(), -srcRect.y());
 
     drawCrossfade(canvas, paint, clampMode);
-    canvas->restore();
 }
 
 void CrossfadeGeneratedImage::drawTile(GraphicsContext& context, const FloatRect& srcRect)

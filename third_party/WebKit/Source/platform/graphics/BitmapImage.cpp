@@ -253,7 +253,7 @@ void BitmapImage::draw(SkCanvas* canvas, const SkPaint& paint, const FloatRect& 
         return; // It's too early and we don't have an image yet.
 
     FloatRect adjustedSrcRect = srcRect;
-    adjustedSrcRect.intersect(FloatRect(0, 0, image->width(), image->height()));
+    adjustedSrcRect.intersect(SkRect::Make(image->bounds()));
 
     if (adjustedSrcRect.isEmpty() || dstRect.isEmpty())
         return; // Nothing to draw.
@@ -262,7 +262,7 @@ void BitmapImage::draw(SkCanvas* canvas, const SkPaint& paint, const FloatRect& 
     if (shouldRespectImageOrientation == RespectImageOrientation)
         orientation = frameOrientationAtIndex(m_currentFrame);
 
-    int initialSaveCount = canvas->getSaveCount();
+    SkAutoCanvasRestore autoRestore(canvas, false);
     FloatRect adjustedDstRect = dstRect;
     if (orientation != DefaultImageOrientation) {
         canvas->save();
@@ -280,10 +280,8 @@ void BitmapImage::draw(SkCanvas* canvas, const SkPaint& paint, const FloatRect& 
         }
     }
 
-    SkRect skSrcRect = adjustedSrcRect;
-    canvas->drawImageRect(image.get(), skSrcRect, adjustedDstRect, &paint,
+    canvas->drawImageRect(image.get(), adjustedSrcRect, adjustedDstRect, &paint,
         WebCoreClampingModeToSkiaRectConstraint(clampMode));
-    canvas->restoreToCount(initialSaveCount);
 
     if (currentFrameIsLazyDecoded())
         PlatformInstrumentation::didDrawLazyPixelRef(image->uniqueID());
