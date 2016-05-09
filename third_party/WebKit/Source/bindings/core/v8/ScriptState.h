@@ -9,7 +9,6 @@
 #include "bindings/core/v8/V8PerContextData.h"
 #include "core/CoreExport.h"
 #include "wtf/RefCounted.h"
-#include "wtf/Vector.h"
 #include <v8-debug.h>
 #include <v8.h>
 
@@ -103,9 +102,6 @@ public:
     V8PerContextData* perContextData() const { return m_perContextData.get(); }
     void disposePerContextData();
 
-    bool evalEnabled() const;
-    void setEvalEnabled(bool);
-    ScriptValue getFromGlobalObject(const char* name);
     ScriptValue getFromExtrasExports(const char* name);
 
 protected:

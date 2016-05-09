@@ -66,27 +66,6 @@ void ScriptState::disposePerContextData()
     m_perContextData = nullptr;
 }
 
-bool ScriptState::evalEnabled() const
-{
-    v8::HandleScope handleScope(m_isolate);
-    return context()->IsCodeGenerationFromStringsAllowed();
-}
-
-void ScriptState::setEvalEnabled(bool enabled)
-{
-    v8::HandleScope handleScope(m_isolate);
-    return context()->AllowCodeGenerationFromStrings(enabled);
-}
-
-ScriptValue ScriptState::getFromGlobalObject(const char* name)
-{
-    v8::HandleScope handleScope(m_isolate);
-    v8::Local<v8::Value> v8Value;
-    if (!context()->Global()->Get(context(), v8AtomicString(isolate(), name)).ToLocal(&v8Value))
-        return ScriptValue();
-    return ScriptValue(this, v8Value);
-}
-
 ScriptValue ScriptState::getFromExtrasExports(const char* name)
 {
     v8::HandleScope handleScope(m_isolate);
