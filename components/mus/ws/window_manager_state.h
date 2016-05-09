@@ -150,6 +150,12 @@ class WindowManagerState : public EventDispatcherDelegate {
                                       const ui::Event& event,
                                       base::WeakPtr<Accelerator> accelerator);
 
+  // Registers accelerators used internally for debugging.
+  void AddDebugAccelerators();
+
+  // Returns true if the accelerator was handled.
+  bool HandleDebugAccelerator(uint32_t accelerator_id);
+
   // EventDispatcherDelegate:
   void OnAccelerator(uint32_t accelerator_id, const ui::Event& event) override;
   void SetFocusedWindowFromEventDispatcher(ServerWindow* window) override;

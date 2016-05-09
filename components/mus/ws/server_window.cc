@@ -9,6 +9,7 @@
 
 #include "base/strings/stringprintf.h"
 #include "components/mus/common/transient_window_utils.h"
+#include "components/mus/public/interfaces/window_manager.mojom.h"
 #include "components/mus/ws/server_window_delegate.h"
 #include "components/mus/ws/server_window_observer.h"
 #include "components/mus/ws/server_window_surface_manager.h"
@@ -321,6 +322,13 @@ void ServerWindow::SetProperty(const std::string& name,
                     OnWindowSharedPropertyChanged(this, name, value));
 }
 
+std::string ServerWindow::GetName() const {
+  auto it = properties_.find(mojom::WindowManager::kName_Property);
+  if (it == properties_.end())
+    return std::string();
+  return std::string(it->second.begin(), it->second.end());
+}
+
 void ServerWindow::SetTextInputState(const ui::TextInputState& state) {
   const bool changed = !(text_input_state_ == state);
   if (changed) {
@@ -378,10 +386,10 @@ std::string ServerWindow::GetDebugWindowHierarchy() const {
 void ServerWindow::BuildDebugInfo(const std::string& depth,
                                   std::string* result) const {
   *result += base::StringPrintf(
-      "%sid=%d,%d visible=%s bounds=%d,%d %dx%d" PRIu64 "\n", depth.c_str(),
+      "%sid=%d,%d visible=%s bounds=%d,%d %dx%d name=%s\n", depth.c_str(),
       static_cast<int>(id_.connection_id), static_cast<int>(id_.window_id),
       visible_ ? "true" : "false", bounds_.x(), bounds_.y(), bounds_.width(),
-      bounds_.height());
+      bounds_.height(), GetName().c_str());
   for (const ServerWindow* child : children_)
     child->BuildDebugInfo(depth + "  ", result);
 }

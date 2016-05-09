@@ -5,6 +5,7 @@
 #include "components/mus/ws/window_manager_state.h"
 
 #include "base/memory/weak_ptr.h"
+#include "components/mus/common/event_matcher_util.h"
 #include "components/mus/ws/accelerator.h"
 #include "components/mus/ws/display_manager.h"
 #include "components/mus/ws/platform_display.h"
@@ -19,6 +20,10 @@
 namespace mus {
 namespace ws {
 namespace {
+
+// Debug accelerator IDs start far above the highest valid Windows command ID
+// (0xDFFF) and Chrome's highest IDC command ID.
+const uint32_t kPrintWindowsDebugAcceleratorId = 1u << 31;
 
 base::TimeDelta GetDefaultAckTimerDelay() {
 #if defined(NDEBUG)
@@ -185,6 +190,8 @@ WindowManagerState::WindowManagerState(Display* display,
 
   event_dispatcher_.set_root(root_.get());
   event_dispatcher_.set_surface_id(surface_id);
+
+  AddDebugAccelerators();
 }
 
 bool WindowManagerState::IsActive() const {
@@ -329,12 +336,37 @@ void WindowManagerState::DispatchInputEventToWindowImpl(
   tree->DispatchInputEvent(target, event);
 }
 
+void WindowManagerState::AddDebugAccelerators() {
+  // Always register the accelerators, even if they only work in debug, so that
+  // keyboard behavior is the same in release and debug builds.
+  mojom::EventMatcherPtr matcher = CreateKeyMatcher(
+      mus::mojom::KeyboardCode::S,
+      mus::mojom::kEventFlagControlDown | mus::mojom::kEventFlagAltDown
+          | mus::mojom::kEventFlagShiftDown);
+  event_dispatcher_.AddAccelerator(kPrintWindowsDebugAcceleratorId,
+                                   std::move(matcher));
+}
+
+bool WindowManagerState::HandleDebugAccelerator(uint32_t accelerator_id) {
+#if !defined(NDEBUG)
+  if (accelerator_id == kPrintWindowsDebugAcceleratorId) {
+    // Error so it will be collected in system logs.
+    LOG(ERROR) << "ServerWindow hierarchy:\n"
+               << root()->GetDebugWindowHierarchy();
+    return true;
+  }
+#endif
+  return false;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // EventDispatcherDelegate:
 
 void WindowManagerState::OnAccelerator(uint32_t accelerator_id,
                                        const ui::Event& event) {
   DCHECK(IsActive());
+  if (HandleDebugAccelerator(accelerator_id))
+    return;
   tree_->OnAccelerator(accelerator_id, event);
 }
 

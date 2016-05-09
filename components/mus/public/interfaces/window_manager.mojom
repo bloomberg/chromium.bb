@@ -83,6 +83,7 @@ interface WindowManagerClient {
   // target window. The id is defined by the client and can be used to more
   // easily identify the accelerator's action. If an accelerator with the same
   // id or the same matcher already exists, then the accelerator is not added.
+  // Accelerator ids 1 << 31 and above are reserved for internal use.
   AddAccelerator(uint32 id, EventMatcher matcher) => (bool success);
   RemoveAccelerator(uint32 id);
 

@@ -133,6 +133,8 @@ class ServerWindow {
   }
   void SetProperty(const std::string& name, const std::vector<uint8_t>* value);
 
+  std::string GetName() const;
+
   void SetTextInputState(const ui::TextInputState& state);
   const ui::TextInputState& text_input_state() const {
     return text_input_state_;
