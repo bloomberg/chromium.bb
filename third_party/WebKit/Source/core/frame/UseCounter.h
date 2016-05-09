@@ -1160,6 +1160,8 @@ public:
         CredentialManagerGetReturnedCredential = 1342,
         GeolocationInsecureOriginDeprecatedNotRemoved = 1343,
         GeolocationInsecureOriginIframeDeprecatedNotRemoved = 1344,
+        ProgressElementWithNoneAppearance = 1345,
+        ProgressElementWithProgressBarAppearance = 1346,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
