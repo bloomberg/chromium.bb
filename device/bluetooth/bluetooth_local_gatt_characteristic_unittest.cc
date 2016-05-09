@@ -16,24 +16,32 @@ class BluetoothLocalGattCharacteristicTest : public BluetoothGattServerTest {
     BluetoothGattServerTest::SetUp();
 
     StartGattSetup();
-    characteristic_ = BluetoothLocalGattCharacteristic::Create(
+    read_characteristic_ = BluetoothLocalGattCharacteristic::Create(
         BluetoothUUID(kTestUUIDGenericAttribute),
-        device::BluetoothLocalGattCharacteristic::Properties(),
+        device::BluetoothLocalGattCharacteristic::
+            PROPERTY_READ_ENCRYPTED_AUTHENTICATED,
         device::BluetoothLocalGattCharacteristic::Permissions(),
         service_.get());
-    EXPECT_LT(0u, characteristic_->GetIdentifier().size());
+    write_characteristic_ = BluetoothLocalGattCharacteristic::Create(
+        BluetoothUUID(kTestUUIDGenericAttribute),
+        device::BluetoothLocalGattCharacteristic::PROPERTY_RELIABLE_WRITE,
+        device::BluetoothLocalGattCharacteristic::Permissions(),
+        service_.get());
+    EXPECT_LT(0u, read_characteristic_->GetIdentifier().size());
+    EXPECT_LT(0u, write_characteristic_->GetIdentifier().size());
     CompleteGattSetup();
   }
 
  protected:
-  base::WeakPtr<BluetoothLocalGattCharacteristic> characteristic_;
+  base::WeakPtr<BluetoothLocalGattCharacteristic> read_characteristic_;
+  base::WeakPtr<BluetoothLocalGattCharacteristic> write_characteristic_;
 };
 
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
 TEST_F(BluetoothLocalGattCharacteristicTest, ReadLocalCharacteristicValue) {
   delegate_->value_to_write_ = 0x1337;
   SimulateLocalGattCharacteristicValueReadRequest(
-      service_.get(), characteristic_.get(),
+      service_.get(), read_characteristic_.get(),
       GetReadValueCallback(Call::EXPECTED), GetCallback(Call::NOT_EXPECTED));
 
   EXPECT_EQ(delegate_->value_to_write_, GetInteger(last_read_value_));
@@ -44,7 +52,7 @@ TEST_F(BluetoothLocalGattCharacteristicTest, ReadLocalCharacteristicValue) {
 TEST_F(BluetoothLocalGattCharacteristicTest, WriteLocalCharacteristicValue) {
   const uint64_t kValueToWrite = 0x7331ul;
   SimulateLocalGattCharacteristicValueWriteRequest(
-      service_.get(), characteristic_.get(), GetValue(kValueToWrite),
+      service_.get(), write_characteristic_.get(), GetValue(kValueToWrite),
       GetCallback(Call::EXPECTED), GetCallback(Call::NOT_EXPECTED));
 
   EXPECT_EQ(kValueToWrite, delegate_->last_written_value_);
@@ -56,7 +64,19 @@ TEST_F(BluetoothLocalGattCharacteristicTest, ReadLocalCharacteristicValueFail) {
   delegate_->value_to_write_ = 0x1337;
   delegate_->should_fail_ = true;
   SimulateLocalGattCharacteristicValueReadRequest(
-      service_.get(), characteristic_.get(),
+      service_.get(), read_characteristic_.get(),
+      GetReadValueCallback(Call::NOT_EXPECTED), GetCallback(Call::EXPECTED));
+
+  EXPECT_NE(delegate_->value_to_write_, GetInteger(last_read_value_));
+}
+#endif  // defined(OS_CHROMEOS) || defined(OS_LINUX)
+
+#if defined(OS_CHROMEOS) || defined(OS_LINUX)
+TEST_F(BluetoothLocalGattCharacteristicTest,
+       ReadLocalCharacteristicValueWrongPermission) {
+  delegate_->value_to_write_ = 0x1337;
+  SimulateLocalGattCharacteristicValueReadRequest(
+      service_.get(), write_characteristic_.get(),
       GetReadValueCallback(Call::NOT_EXPECTED), GetCallback(Call::EXPECTED));
 
   EXPECT_NE(delegate_->value_to_write_, GetInteger(last_read_value_));
@@ -69,7 +89,19 @@ TEST_F(BluetoothLocalGattCharacteristicTest,
   const uint64_t kValueToWrite = 0x7331ul;
   delegate_->should_fail_ = true;
   SimulateLocalGattCharacteristicValueWriteRequest(
-      service_.get(), characteristic_.get(), GetValue(kValueToWrite),
+      service_.get(), write_characteristic_.get(), GetValue(kValueToWrite),
+      GetCallback(Call::NOT_EXPECTED), GetCallback(Call::EXPECTED));
+
+  EXPECT_NE(kValueToWrite, delegate_->last_written_value_);
+}
+#endif  // defined(OS_CHROMEOS) || defined(OS_LINUX)
+
+#if defined(OS_CHROMEOS) || defined(OS_LINUX)
+TEST_F(BluetoothLocalGattCharacteristicTest,
+       WriteLocalCharacteristicValueWrongPermission) {
+  const uint64_t kValueToWrite = 0x7331ul;
+  SimulateLocalGattCharacteristicValueWriteRequest(
+      service_.get(), read_characteristic_.get(), GetValue(kValueToWrite),
       GetCallback(Call::NOT_EXPECTED), GetCallback(Call::EXPECTED));
 
   EXPECT_NE(kValueToWrite, delegate_->last_written_value_);

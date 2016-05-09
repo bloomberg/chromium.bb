@@ -34,13 +34,6 @@ class BluetoothLocalGattServiceBlueZ
     : public BluetoothGattServiceBlueZ,
       public device::BluetoothLocalGattService {
  public:
-  static base::WeakPtr<device::BluetoothLocalGattService> Create(
-      device::BluetoothAdapter* adapter,
-      const device::BluetoothUUID& uuid,
-      bool is_primary,
-      BluetoothLocalGattService* included_service,
-      BluetoothLocalGattService::Delegate* delegate);
-
   BluetoothLocalGattServiceBlueZ(
       BluetoothAdapterBlueZ* adapter,
       const device::BluetoothUUID& uuid,

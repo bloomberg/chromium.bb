@@ -46,7 +46,12 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattCharacteristic {
     PROPERTY_AUTHENTICATED_SIGNED_WRITES = 1 << 6,
     PROPERTY_EXTENDED_PROPERTIES = 1 << 7,
     PROPERTY_RELIABLE_WRITE = 1 << 8,
-    PROPERTY_WRITABLE_AUXILIARIES = 1 << 9
+    PROPERTY_WRITABLE_AUXILIARIES = 1 << 9,
+    PROPERTY_READ_ENCRYPTED = 1 << 10,
+    PROPERTY_WRITE_ENCRYPTED = 1 << 11,
+    PROPERTY_READ_ENCRYPTED_AUTHENTICATED = 1 << 12,
+    PROPERTY_WRITE_ENCRYPTED_AUTHENTICATED = 1 << 13,
+    NUM_PROPERTY = 1 << 14,
   };
   typedef uint32_t Properties;
 
@@ -61,12 +66,19 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattCharacteristic {
   // the permission |PERMISSION_READ_ENCRYPTED| to require a secure connection.
   // It is up to the application to properly specify the permissions and
   // properties for a local characteristic.
+  // TODO(rkc): Currently BlueZ infers permissions for characteristics from
+  // the properties. Once this is fixed, we will start sending the permissions
+  // for characteristics to BlueZ. Till then permissions for characteristics
+  // are unimplemented.
   enum Permission {
     PERMISSION_NONE = 0,
     PERMISSION_READ = 1 << 0,
     PERMISSION_WRITE = 1 << 1,
     PERMISSION_READ_ENCRYPTED = 1 << 2,
-    PERMISSION_WRITE_ENCRYPTED = 1 << 3
+    PERMISSION_WRITE_ENCRYPTED = 1 << 3,
+    PERMISSION_READ_ENCRYPTED_AUTHENTICATED = 1 << 4,
+    PERMISSION_WRITE_ENCRYPTED_AUTHENTICATED = 1 << 5,
+    NUM_PERMISSION = 1 << 6,
   };
   typedef uint32_t Permissions;
 

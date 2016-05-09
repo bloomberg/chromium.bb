@@ -4,14 +4,51 @@
 
 #include "device/bluetooth/dbus/fake_bluetooth_gatt_descriptor_service_provider.h"
 
+#include <algorithm>
+#include <iterator>
+
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
+#include "device/bluetooth/dbus/bluetooth_gatt_attribute_value_delegate.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
 #include "device/bluetooth/dbus/fake_bluetooth_gatt_characteristic_service_provider.h"
 #include "device/bluetooth/dbus/fake_bluetooth_gatt_manager_client.h"
+#include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace bluez {
+
+namespace {
+
+bool CanWrite(const std::vector<std::string>& flags) {
+  if (find(flags.begin(), flags.end(), bluetooth_gatt_descriptor::kFlagWrite) !=
+      flags.end())
+    return true;
+  if (find(flags.begin(), flags.end(),
+           bluetooth_gatt_descriptor::kFlagEncryptWrite) != flags.end())
+    return true;
+  if (find(flags.begin(), flags.end(),
+           bluetooth_gatt_descriptor::kFlagEncryptAuthenticatedWrite) !=
+      flags.end())
+    return true;
+  return false;
+}
+
+bool CanRead(const std::vector<std::string>& flags) {
+  if (find(flags.begin(), flags.end(), bluetooth_gatt_descriptor::kFlagRead) !=
+      flags.end())
+    return true;
+  if (find(flags.begin(), flags.end(),
+           bluetooth_gatt_descriptor::kFlagEncryptRead) != flags.end())
+    return true;
+  if (find(flags.begin(), flags.end(),
+           bluetooth_gatt_descriptor::kFlagEncryptAuthenticatedRead) !=
+      flags.end())
+    return true;
+  return false;
+}
+
+}  // namespace
 
 FakeBluetoothGattDescriptorServiceProvider::
     FakeBluetoothGattDescriptorServiceProvider(
@@ -22,6 +59,7 @@ FakeBluetoothGattDescriptorServiceProvider::
         const dbus::ObjectPath& characteristic_path)
     : object_path_(object_path),
       uuid_(uuid),
+      flags_(flags),
       characteristic_path_(characteristic_path),
       delegate_(std::move(delegate)) {
   VLOG(1) << "Creating Bluetooth GATT descriptor: " << object_path_.value();
@@ -82,6 +120,12 @@ void FakeBluetoothGattDescriptorServiceProvider::GetValue(
     return;
   }
 
+  if (!CanRead(flags_)) {
+    VLOG(1) << "GATT descriptor not readable.";
+    error_callback.Run();
+    return;
+  }
+
   // Pass on to the delegate.
   DCHECK(delegate_);
   delegate_->GetValue(callback, error_callback);
@@ -110,6 +154,12 @@ void FakeBluetoothGattDescriptorServiceProvider::SetValue(
   if (!fake_bluetooth_gatt_manager_client->IsServiceRegistered(
           characteristic->service_path())) {
     VLOG(1) << "GATT descriptor not registered.";
+    error_callback.Run();
+    return;
+  }
+
+  if (!CanWrite(flags_)) {
+    VLOG(1) << "GATT descriptor not writeable.";
     error_callback.Run();
     return;
   }

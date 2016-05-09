@@ -4,13 +4,57 @@
 
 #include "device/bluetooth/dbus/fake_bluetooth_gatt_characteristic_service_provider.h"
 
+#include <algorithm>
+#include <iterator>
+
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
+#include "device/bluetooth/dbus/bluetooth_gatt_attribute_value_delegate.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
 #include "device/bluetooth/dbus/fake_bluetooth_gatt_manager_client.h"
+#include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace bluez {
+
+namespace {
+
+bool CanWrite(const std::vector<std::string>& flags) {
+  if (find(flags.begin(), flags.end(),
+           bluetooth_gatt_characteristic::kFlagWrite) != flags.end())
+    return true;
+  if (find(flags.begin(), flags.end(),
+           bluetooth_gatt_characteristic::kFlagWriteWithoutResponse) !=
+      flags.end())
+    return true;
+  if (find(flags.begin(), flags.end(),
+           bluetooth_gatt_characteristic::kFlagReliableWrite) != flags.end())
+    return true;
+  if (find(flags.begin(), flags.end(),
+           bluetooth_gatt_characteristic::kFlagEncryptWrite) != flags.end())
+    return true;
+  if (find(flags.begin(), flags.end(),
+           bluetooth_gatt_characteristic::kFlagEncryptAuthenticatedWrite) !=
+      flags.end())
+    return true;
+  return false;
+}
+
+bool CanRead(const std::vector<std::string>& flags) {
+  if (find(flags.begin(), flags.end(),
+           bluetooth_gatt_characteristic::kFlagRead) != flags.end())
+    return true;
+  if (find(flags.begin(), flags.end(),
+           bluetooth_gatt_characteristic::kFlagEncryptRead) != flags.end())
+    return true;
+  if (find(flags.begin(), flags.end(),
+           bluetooth_gatt_characteristic::kFlagEncryptAuthenticatedRead) !=
+      flags.end())
+    return true;
+  return false;
+}
+
+}  // namespace
 
 FakeBluetoothGattCharacteristicServiceProvider::
     FakeBluetoothGattCharacteristicServiceProvider(
@@ -21,6 +65,7 @@ FakeBluetoothGattCharacteristicServiceProvider::
         const dbus::ObjectPath& service_path)
     : object_path_(object_path),
       uuid_(uuid),
+      flags_(flags),
       service_path_(service_path),
       delegate_(std::move(delegate)) {
   VLOG(1) << "Creating Bluetooth GATT characteristic: " << object_path_.value();
@@ -32,7 +77,6 @@ FakeBluetoothGattCharacteristicServiceProvider::
   DCHECK(base::StartsWith(object_path_.value(), service_path_.value() + "/",
                           base::CompareCase::SENSITIVE));
 
-  // TODO(rkc): Do something with |flags|.
   FakeBluetoothGattManagerClient* fake_bluetooth_gatt_manager_client =
       static_cast<FakeBluetoothGattManagerClient*>(
           bluez::BluezDBusManager::Get()->GetBluetoothGattManagerClient());
@@ -73,6 +117,12 @@ void FakeBluetoothGattCharacteristicServiceProvider::GetValue(
     return;
   }
 
+  if (!CanRead(flags_)) {
+    VLOG(1) << "GATT characteristic not readable.";
+    error_callback.Run();
+    return;
+  }
+
   // Pass on to the delegate.
   DCHECK(delegate_);
   delegate_->GetValue(callback, error_callback);
@@ -91,6 +141,12 @@ void FakeBluetoothGattCharacteristicServiceProvider::SetValue(
           bluez::BluezDBusManager::Get()->GetBluetoothGattManagerClient());
   if (!fake_bluetooth_gatt_manager_client->IsServiceRegistered(service_path_)) {
     VLOG(1) << "GATT characteristic not registered.";
+    error_callback.Run();
+    return;
+  }
+
+  if (!CanWrite(flags_)) {
+    VLOG(1) << "GATT characteristic not writeable.";
     error_callback.Run();
     return;
   }

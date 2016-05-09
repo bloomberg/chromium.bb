@@ -22,8 +22,10 @@ BluetoothLocalGattCharacteristic::Create(
   DCHECK(service);
   bluez::BluetoothLocalGattServiceBlueZ* service_bluez =
       static_cast<bluez::BluetoothLocalGattServiceBlueZ*>(service);
+  // TODO(rkc): Handle permisisons once BlueZ supports getting them from DBus.
   bluez::BluetoothLocalGattCharacteristicBlueZ* characteristic =
-      new bluez::BluetoothLocalGattCharacteristicBlueZ(uuid, service_bluez);
+      new bluez::BluetoothLocalGattCharacteristicBlueZ(uuid, properties,
+                                                       service_bluez);
   return characteristic->weak_ptr_factory_.GetWeakPtr();
 }
 
@@ -33,11 +35,13 @@ namespace bluez {
 
 BluetoothLocalGattCharacteristicBlueZ::BluetoothLocalGattCharacteristicBlueZ(
     const device::BluetoothUUID& uuid,
+    Properties properties,
     BluetoothLocalGattServiceBlueZ* service)
     : BluetoothGattCharacteristicBlueZ(
           BluetoothLocalGattServiceBlueZ::AddGuidToObjectPath(
               service->object_path().value() + "/characteristic")),
       uuid_(uuid),
+      properties_(properties),
       service_(service),
       weak_ptr_factory_(this) {
   VLOG(1) << "Creating local GATT characteristic with identifier: "
@@ -54,8 +58,7 @@ device::BluetoothUUID BluetoothLocalGattCharacteristicBlueZ::GetUUID() const {
 
 device::BluetoothGattCharacteristic::Properties
 BluetoothLocalGattCharacteristicBlueZ::GetProperties() const {
-  NOTIMPLEMENTED();
-  return Properties();
+  return properties_;
 }
 
 device::BluetoothGattCharacteristic::Permissions

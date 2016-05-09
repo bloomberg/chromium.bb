@@ -26,14 +26,9 @@ class BluetoothLocalGattCharacteristicBlueZ
     : public BluetoothGattCharacteristicBlueZ,
       public device::BluetoothLocalGattCharacteristic {
  public:
-  static base::WeakPtr<device::BluetoothLocalGattCharacteristic> Create(
-      const device::BluetoothUUID& uuid,
-      BluetoothGattCharacteristic::Properties properties,
-      BluetoothGattCharacteristic::Permissions permissions,
-      device::BluetoothLocalGattService* service);
-
   BluetoothLocalGattCharacteristicBlueZ(
       const device::BluetoothUUID& uuid,
+      Properties properties,
       BluetoothLocalGattServiceBlueZ* service);
   ~BluetoothLocalGattCharacteristicBlueZ() override;
 
@@ -58,6 +53,9 @@ class BluetoothLocalGattCharacteristicBlueZ
 
   // UUID of this characteristic.
   device::BluetoothUUID uuid_;
+
+  // Properties of this characteristic.
+  Properties properties_;
 
   // Service that contains this characteristic.
   BluetoothLocalGattServiceBlueZ* service_;

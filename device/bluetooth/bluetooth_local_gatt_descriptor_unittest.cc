@@ -22,25 +22,32 @@ class BluetoothLocalGattDescriptorTest : public BluetoothGattServerTest {
         device::BluetoothLocalGattCharacteristic::Properties(),
         device::BluetoothLocalGattCharacteristic::Permissions(),
         service_.get());
-    descriptor_ = BluetoothLocalGattDescriptor::Create(
+    read_descriptor_ = BluetoothLocalGattDescriptor::Create(
         BluetoothUUID(kTestUUIDGenericAttribute),
-        device::BluetoothLocalGattCharacteristic::Permissions(),
+        device::BluetoothLocalGattCharacteristic::PERMISSION_READ,
         characteristic_.get());
-    EXPECT_LT(0u, descriptor_->GetIdentifier().size());
+    write_descriptor_ = BluetoothLocalGattDescriptor::Create(
+        BluetoothUUID(kTestUUIDGenericAttribute),
+        device::BluetoothLocalGattCharacteristic::
+            PERMISSION_WRITE_ENCRYPTED_AUTHENTICATED,
+        characteristic_.get());
+    EXPECT_LT(0u, read_descriptor_->GetIdentifier().size());
+    EXPECT_LT(0u, write_descriptor_->GetIdentifier().size());
     CompleteGattSetup();
   }
 
  protected:
   base::WeakPtr<BluetoothLocalGattCharacteristic> characteristic_;
-  base::WeakPtr<BluetoothLocalGattDescriptor> descriptor_;
+  base::WeakPtr<BluetoothLocalGattDescriptor> read_descriptor_;
+  base::WeakPtr<BluetoothLocalGattDescriptor> write_descriptor_;
 };
 
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
 TEST_F(BluetoothLocalGattDescriptorTest, ReadLocalDescriptorValue) {
   delegate_->value_to_write_ = 0x1337;
   SimulateLocalGattDescriptorValueReadRequest(
-      service_.get(), descriptor_.get(), GetReadValueCallback(Call::EXPECTED),
-      GetCallback(Call::NOT_EXPECTED));
+      service_.get(), read_descriptor_.get(),
+      GetReadValueCallback(Call::EXPECTED), GetCallback(Call::NOT_EXPECTED));
 
   EXPECT_EQ(delegate_->value_to_write_, GetInteger(last_read_value_));
 }
@@ -50,7 +57,7 @@ TEST_F(BluetoothLocalGattDescriptorTest, ReadLocalDescriptorValue) {
 TEST_F(BluetoothLocalGattDescriptorTest, WriteLocalDescriptorValue) {
   const uint64_t kValueToWrite = 0x7331ul;
   SimulateLocalGattDescriptorValueWriteRequest(
-      service_.get(), descriptor_.get(), GetValue(kValueToWrite),
+      service_.get(), write_descriptor_.get(), GetValue(kValueToWrite),
       GetCallback(Call::EXPECTED), GetCallback(Call::NOT_EXPECTED));
 
   EXPECT_EQ(kValueToWrite, delegate_->last_written_value_);
@@ -62,7 +69,7 @@ TEST_F(BluetoothLocalGattDescriptorTest, ReadLocalDescriptorValueFail) {
   delegate_->value_to_write_ = 0x1337;
   delegate_->should_fail_ = true;
   SimulateLocalGattDescriptorValueReadRequest(
-      service_.get(), descriptor_.get(),
+      service_.get(), read_descriptor_.get(),
       GetReadValueCallback(Call::NOT_EXPECTED), GetCallback(Call::EXPECTED));
 
   EXPECT_NE(delegate_->value_to_write_, GetInteger(last_read_value_));
@@ -74,7 +81,31 @@ TEST_F(BluetoothLocalGattDescriptorTest, WriteLocalDescriptorValueFail) {
   const uint64_t kValueToWrite = 0x7331ul;
   delegate_->should_fail_ = true;
   SimulateLocalGattDescriptorValueWriteRequest(
-      service_.get(), descriptor_.get(), GetValue(kValueToWrite),
+      service_.get(), write_descriptor_.get(), GetValue(kValueToWrite),
+      GetCallback(Call::NOT_EXPECTED), GetCallback(Call::EXPECTED));
+
+  EXPECT_NE(kValueToWrite, delegate_->last_written_value_);
+}
+#endif  // defined(OS_CHROMEOS) || defined(OS_LINUX)
+
+#if defined(OS_CHROMEOS) || defined(OS_LINUX)
+TEST_F(BluetoothLocalGattDescriptorTest,
+       ReadLocalDescriptorValueWrongPermissions) {
+  delegate_->value_to_write_ = 0x1337;
+  SimulateLocalGattDescriptorValueReadRequest(
+      service_.get(), write_descriptor_.get(),
+      GetReadValueCallback(Call::NOT_EXPECTED), GetCallback(Call::EXPECTED));
+
+  EXPECT_NE(delegate_->value_to_write_, GetInteger(last_read_value_));
+}
+#endif  // defined(OS_CHROMEOS) || defined(OS_LINUX)
+
+#if defined(OS_CHROMEOS) || defined(OS_LINUX)
+TEST_F(BluetoothLocalGattDescriptorTest,
+       WriteLocalDescriptorValueWrongPermissions) {
+  const uint64_t kValueToWrite = 0x7331ul;
+  SimulateLocalGattDescriptorValueWriteRequest(
+      service_.get(), read_descriptor_.get(), GetValue(kValueToWrite),
       GetCallback(Call::NOT_EXPECTED), GetCallback(Call::EXPECTED));
 
   EXPECT_NE(kValueToWrite, delegate_->last_written_value_);

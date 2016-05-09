@@ -59,10 +59,13 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothGattCharacteristicServiceProvider
   dbus::ObjectPath object_path_;
 
   // 128-bit GATT characteristic UUID.
-  std::string uuid_;
+  const std::string uuid_;
+
+  // Properties for this characteristic.
+  const std::vector<std::string> flags_;
 
   // Object path of the service that this characteristic belongs to.
-  dbus::ObjectPath service_path_;
+  const dbus::ObjectPath service_path_;
 
   // The delegate that method calls are passed on to.
   std::unique_ptr<BluetoothGattAttributeValueDelegate> delegate_;
