@@ -1075,7 +1075,7 @@ if (is_mac) {  # TODO(GYP) Mac build of remoting host.
           if (target_cpu == "x64") {
             _redist_cpu_path = "amd64"
           } else {
-            _redist_cpu_path = "x64"
+            _redist_cpu_path = "x86"
           }
           _generated_files +=
               [ rebase_path("//third_party/platformsdk_win7/files/Redist/" +
