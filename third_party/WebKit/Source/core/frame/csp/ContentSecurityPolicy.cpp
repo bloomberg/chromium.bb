@@ -325,61 +325,55 @@ PassOwnPtr<Vector<CSPHeaderAndType>> ContentSecurityPolicy::headers() const
 template<bool (CSPDirectiveList::*allowed)(ContentSecurityPolicy::ReportingStatus) const>
 bool isAllowedByAll(const CSPDirectiveListVector& policies, ContentSecurityPolicy::ReportingStatus reportingStatus)
 {
-    for (const auto& policy : policies) {
-        if (!(policy.get()->*allowed)(reportingStatus))
-            return false;
-    }
-    return true;
+    bool isAllowed = true;
+    for (const auto& policy : policies)
+        isAllowed &= (policy.get()->*allowed)(reportingStatus);
+    return isAllowed;
 }
 
 template <bool (CSPDirectiveList::*allowed)(ScriptState* scriptState, ContentSecurityPolicy::ReportingStatus, ContentSecurityPolicy::ExceptionStatus) const>
 bool isAllowedByAllWithStateAndExceptionStatus(const CSPDirectiveListVector& policies, ScriptState* scriptState, ContentSecurityPolicy::ReportingStatus reportingStatus, ContentSecurityPolicy::ExceptionStatus exceptionStatus)
 {
-    for (const auto& policy : policies) {
-        if (!(policy.get()->*allowed)(scriptState, reportingStatus, exceptionStatus))
-            return false;
-    }
-    return true;
+    bool isAllowed = true;
+    for (const auto& policy : policies)
+        isAllowed &= (policy.get()->*allowed)(scriptState, reportingStatus, exceptionStatus);
+    return isAllowed;
 }
 
 template<bool (CSPDirectiveList::*allowed)(const String&, const WTF::OrdinalNumber&, ContentSecurityPolicy::ReportingStatus) const>
 bool isAllowedByAllWithContext(const CSPDirectiveListVector& policies, const String& contextURL, const WTF::OrdinalNumber& contextLine, ContentSecurityPolicy::ReportingStatus reportingStatus)
 {
-    for (const auto& policy : policies) {
-        if (!(policy.get()->*allowed)(contextURL, contextLine, reportingStatus))
-            return false;
-    }
-    return true;
+    bool isAllowed = true;
+    for (const auto& policy : policies)
+        isAllowed &= (policy.get()->*allowed)(contextURL, contextLine, reportingStatus);
+    return isAllowed;
 }
 
 template<bool (CSPDirectiveList::*allowed)(const String&, const WTF::OrdinalNumber&, ContentSecurityPolicy::ReportingStatus, const String& content) const>
 bool isAllowedByAllWithContextAndContent(const CSPDirectiveListVector& policies, const String& contextURL, const WTF::OrdinalNumber& contextLine, ContentSecurityPolicy::ReportingStatus reportingStatus, const String& content)
 {
-    for (const auto& policy : policies) {
-        if (!(policy.get()->*allowed)(contextURL, contextLine, reportingStatus, content))
-            return false;
-    }
-    return true;
+    bool isAllowed = true;
+    for (const auto& policy : policies)
+        isAllowed &= (policy.get()->*allowed)(contextURL, contextLine, reportingStatus, content);
+    return isAllowed;
 }
 
 template<bool (CSPDirectiveList::*allowed)(const String&) const>
 bool isAllowedByAllWithNonce(const CSPDirectiveListVector& policies, const String& nonce)
 {
-    for (const auto& policy : policies) {
-        if (!(policy.get()->*allowed)(nonce))
-            return false;
-    }
-    return true;
+    bool isAllowed = true;
+    for (const auto& policy : policies)
+        isAllowed &= (policy.get()->*allowed)(nonce);
+    return isAllowed;
 }
 
 template<bool (CSPDirectiveList::*allowed)(const CSPHashValue&, ContentSecurityPolicy::InlineType) const>
 bool isAllowedByAllWithHash(const CSPDirectiveListVector& policies, const CSPHashValue& hashValue, ContentSecurityPolicy::InlineType type)
 {
-    for (const auto& policy : policies) {
-        if (!(policy.get()->*allowed)(hashValue, type))
-            return false;
-    }
-    return true;
+    bool isAllowed = true;
+    for (const auto& policy : policies)
+        isAllowed &= (policy.get()->*allowed)(hashValue, type);
+    return isAllowed;
 }
 
 template <bool (CSPDirectiveList::*allowFromURL)(const KURL&, ContentSecurityPolicy::RedirectStatus, ContentSecurityPolicy::ReportingStatus) const>
@@ -388,21 +382,19 @@ bool isAllowedByAllWithURL(const CSPDirectiveListVector& policies, const KURL& u
     if (SchemeRegistry::schemeShouldBypassContentSecurityPolicy(url.protocol()))
         return true;
 
-    for (const auto& policy : policies) {
-        if (!(policy.get()->*allowFromURL)(url, redirectStatus, reportingStatus))
-            return false;
-    }
-    return true;
+    bool isAllowed = true;
+    for (const auto& policy : policies)
+        isAllowed &= (policy.get()->*allowFromURL)(url, redirectStatus, reportingStatus);
+    return isAllowed;
 }
 
 template<bool (CSPDirectiveList::*allowed)(LocalFrame*, const KURL&, ContentSecurityPolicy::ReportingStatus) const>
 bool isAllowedByAllWithFrame(const CSPDirectiveListVector& policies, LocalFrame* frame, const KURL& url, ContentSecurityPolicy::ReportingStatus reportingStatus)
 {
-    for (const auto& policy : policies) {
-        if (!(policy.get()->*allowed)(frame, url, reportingStatus))
-            return false;
-    }
-    return true;
+    bool isAllowed = true;
+    for (const auto& policy : policies)
+        isAllowed &= (policy.get()->*allowed)(frame, url, reportingStatus);
+    return isAllowed;
 }
 
 template<bool (CSPDirectiveList::*allowed)(const CSPHashValue&, ContentSecurityPolicy::InlineType) const>

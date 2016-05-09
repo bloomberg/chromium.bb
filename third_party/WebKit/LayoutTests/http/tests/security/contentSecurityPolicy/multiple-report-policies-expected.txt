@@ -1,0 +1,7 @@
+CONSOLE ERROR: line 8: [Report Only] Refused to load the image 'ftp://blah.test/' because it violates the following Content Security Policy directive: "img-src http://* https://*".
+
+PingLoader dispatched to 'http://127.0.0.1:8000/security/contentSecurityPolicy/resources/save-report.php?test=multiple-report-policies-1'.
+CONSOLE ERROR: line 8: [Report Only] Refused to load the image 'ftp://blah.test/' because it violates the following Content Security Policy directive: "img-src http://*".
+
+PingLoader dispatched to 'http://127.0.0.1:8000/security/contentSecurityPolicy/resources/save-report.php?test=multiple-report-policies-2'.
+    

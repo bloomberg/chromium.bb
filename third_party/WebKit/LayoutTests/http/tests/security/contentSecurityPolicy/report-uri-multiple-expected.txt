@@ -1,0 +1,11 @@
+CONSOLE ERROR: line 8: Refused to load the image 'ftp://blah.test/' because it violates the following Content Security Policy directive: "img-src http://*".
+
+CONSOLE ERROR: line 8: [Report Only] Refused to load the image 'ftp://blah.test/' because it violates the following Content Security Policy directive: "img-src http://*".
+
+PingLoader dispatched to 'http://127.0.0.1:8000/security/contentSecurityPolicy/resources/save-report.php?test=report-uri-multiple.php'.
+CSP report received:
+CONTENT_TYPE: application/csp-report
+HTTP_REFERER: http://127.0.0.1:8000/security/contentSecurityPolicy/report-uri-multiple.php
+REQUEST_METHOD: POST
+=== POST DATA ===
+{"csp-report":{"document-uri":"http://127.0.0.1:8000/security/contentSecurityPolicy/report-uri-multiple.php","referrer":"","violated-directive":"img-src http://*","effective-directive":"img-src","original-policy":"img-src http://*; script-src 'self'; report-uri resources/save-report.php?test=report-uri-multiple.php","blocked-uri":"ftp://blah.test","status-code":200}}
