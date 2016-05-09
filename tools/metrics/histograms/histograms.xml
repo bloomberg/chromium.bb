@@ -49511,6 +49511,22 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Setup.Install.PeakPagefileUsage" units="KB">
+  <owner>huangs@chromium.org</owner>
+  <summary>
+    The peak page file usage by setup.exe in KB during install or uninstall
+    attempt.
+  </summary>
+</histogram>
+
+<histogram name="Setup.Install.PeakWorkingSetSize" units="KB">
+  <owner>huangs@chromium.org</owner>
+  <summary>
+    The peak working set size of setup.exe in KB during install or uninstall
+    attempt.
+  </summary>
+</histogram>
+
 <histogram name="Setup.Install.Result" enum="SetupInstallResult">
   <owner>grt@chromium.org</owner>
   <owner>bcwhite@chromium.org</owner>
