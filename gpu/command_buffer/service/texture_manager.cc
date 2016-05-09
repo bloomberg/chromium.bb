@@ -1607,7 +1607,8 @@ bool Texture::CanRenderTo(const FeatureInfo* feature_info, GLint level) const {
             IsValid(internal_format) &&
         internal_format != GL_ALPHA &&
         internal_format != GL_LUMINANCE &&
-        internal_format != GL_LUMINANCE_ALPHA) ||
+        internal_format != GL_LUMINANCE_ALPHA &&
+        internal_format != GL_SRGB_EXT) ||
        feature_info->validators()->
            texture_sized_color_renderable_internal_format.IsValid(
                internal_format));
