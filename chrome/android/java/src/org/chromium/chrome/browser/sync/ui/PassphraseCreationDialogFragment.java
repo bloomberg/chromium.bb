@@ -88,15 +88,18 @@ public class PassphraseCreationDialogFragment extends DialogFragment {
     public void onStart() {
         super.onStart();
         AlertDialog d = (AlertDialog) getDialog();
-        // Override the button's onClick listener. The default gets set in the dialog's onCreate,
-        // when it is shown (in super.onStart()), so we have to do this here. Otherwise the dialog
-        // will close when the button is clicked regardless of what else we do.
-        d.getButton(Dialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                tryToSubmitPassphrase();
-            }
-        });
+        if (d != null) {
+            // Override the button's onClick listener. The default gets set in the dialog's
+            // onCreate, when it is shown (in super.onStart()), so we have to do this here.
+            // Otherwise the dialog will close when the button is clicked regardless of what else we
+            // do.
+            d.getButton(Dialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    tryToSubmitPassphrase();
+                }
+            });
+        }
     }
 
     private void tryToSubmitPassphrase() {
