@@ -43,7 +43,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "ui/aura/client/cursor_client.h"
-#include "ui/aura/mus/mus_util.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/compositor/layer.h"
@@ -521,6 +520,11 @@ void ShelfLayoutManager::OnLockStateChanged(bool locked) {
   UpdateShelfVisibilityAfterLoginUIChange();
 }
 
+void ShelfLayoutManager::OnShelfAlignmentChanged(aura::Window* root_window) {
+  if (Shell::GetInstance()->in_mus())
+    LayoutShelf();
+}
+
 void ShelfLayoutManager::OnShelfAutoHideBehaviorChanged(
     aura::Window* root_window) {
   UpdateVisibilityState();
@@ -674,7 +678,7 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(
 
     GetLayer(shelf_)->SetOpacity(target_bounds.opacity);
     // mash::wm::ShelfLayout manages window bounds when running in mash.
-    if (!aura::GetMusWindow(shelf_->GetNativeWindow())) {
+    if (!Shell::GetInstance()->in_mus()) {
       shelf_->SetBounds(ScreenUtil::ConvertRectToScreen(
           shelf_->GetNativeView()->parent(),
           target_bounds.shelf_bounds_in_root));
@@ -696,7 +700,7 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(
     gfx::Rect status_bounds = target_bounds.status_bounds_in_shelf;
     status_bounds.Offset(target_bounds.shelf_bounds_in_root.OffsetFromOrigin());
     // mash::wm::ShelfLayout manages window bounds when running mash.
-    if (!aura::GetMusWindow(shelf_->GetNativeWindow())) {
+    if (!Shell::GetInstance()->in_mus()) {
       shelf_->status_area_widget()->SetBounds(
           ScreenUtil::ConvertRectToScreen(
               shelf_->status_area_widget()->GetNativeView()->parent(),
