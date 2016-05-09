@@ -633,8 +633,7 @@ def UpdateClang(args):
         [cxx] + cxxflags + ['-print-file-name=libstdc++.so.6']).rstrip()
     CopyFile(libstdcpp, os.path.join(LLVM_BUILD_DIR, 'lib'))
 
-  # TODO(thakis): Remove "-d explain" once http://crbug.com/569337 is fixed.
-  RunCommand(['ninja', '-d', 'explain'], msvc_arch='x64')
+  RunCommand(['ninja'], msvc_arch='x64')
 
   if args.tools:
     # If any Chromium tools were built, install those now.
