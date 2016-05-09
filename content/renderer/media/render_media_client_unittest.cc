@@ -17,42 +17,59 @@ namespace content {
 
 namespace {
 
+class TestKeySystemProperties : public media::KeySystemProperties {
+ public:
+  TestKeySystemProperties(const std::string& key_system_name)
+      : key_system_name_(key_system_name) {}
+
+  std::string GetKeySystemName() const override { return key_system_name_; }
+  bool IsSupportedInitDataType(
+      media::EmeInitDataType init_data_type) const override {
+    return false;
+  }
+  media::SupportedCodecs GetSupportedCodecs() const override {
+    return media::EME_CODEC_NONE;
+  }
+  media::EmeConfigRule GetRobustnessConfigRule(
+      media::EmeMediaType media_type,
+      const std::string& requested_robustness) const override {
+    return requested_robustness.empty() ? media::EmeConfigRule::SUPPORTED
+                                        : media::EmeConfigRule::NOT_SUPPORTED;
+  }
+  media::EmeSessionTypeSupport GetPersistentLicenseSessionSupport()
+      const override {
+    return media::EmeSessionTypeSupport::NOT_SUPPORTED;
+  }
+  media::EmeSessionTypeSupport GetPersistentReleaseMessageSessionSupport()
+      const override {
+    return media::EmeSessionTypeSupport::NOT_SUPPORTED;
+  }
+  media::EmeFeatureSupport GetPersistentStateSupport() const override {
+    return media::EmeFeatureSupport::NOT_SUPPORTED;
+  }
+  media::EmeFeatureSupport GetDistinctiveIdentifierSupport() const override {
+    return media::EmeFeatureSupport::NOT_SUPPORTED;
+  }
+
+ private:
+  const std::string key_system_name_;
+};
+
 class TestContentRendererClient : public ContentRendererClient {
  public:
   TestContentRendererClient() : is_extra_key_system_enabled_(false) {}
 
   // ContentRendererClient implementation.
-  void AddKeySystems(
-      std::vector<media::KeySystemInfo>* key_systems_info) override {
-    // TODO(sandersd): Was this supposed to be added to the list?
-    media::KeySystemInfo key_system_info;
-    key_system_info.key_system = "test.keysystem";
-    key_system_info.max_audio_robustness = media::EmeRobustness::EMPTY;
-    key_system_info.max_video_robustness = media::EmeRobustness::EMPTY;
-    key_system_info.persistent_license_support =
-        media::EmeSessionTypeSupport::NOT_SUPPORTED;
-    key_system_info.persistent_release_message_support =
-        media::EmeSessionTypeSupport::NOT_SUPPORTED;
-    key_system_info.persistent_state_support =
-        media::EmeFeatureSupport::NOT_SUPPORTED;
-    key_system_info.distinctive_identifier_support =
-        media::EmeFeatureSupport::NOT_SUPPORTED;
-    key_systems_info->push_back(key_system_info);
+  void AddSupportedKeySystems(
+      std::vector<std::unique_ptr<media::KeySystemProperties>>*
+          key_systems_properties) override {
+    key_systems_properties->emplace_back(
+        new TestKeySystemProperties("test.keysystem"));
+
 #if defined(WIDEVINE_CDM_AVAILABLE) && defined(WIDEVINE_CDM_IS_COMPONENT)
     if (is_extra_key_system_enabled_) {
-      media::KeySystemInfo wv_key_system_info;
-      wv_key_system_info.key_system = kWidevineKeySystem;
-      wv_key_system_info.max_audio_robustness = media::EmeRobustness::EMPTY;
-      wv_key_system_info.max_video_robustness = media::EmeRobustness::EMPTY;
-      wv_key_system_info.persistent_license_support =
-          media::EmeSessionTypeSupport::NOT_SUPPORTED;
-      wv_key_system_info.persistent_release_message_support =
-          media::EmeSessionTypeSupport::NOT_SUPPORTED;
-      wv_key_system_info.persistent_state_support =
-          media::EmeFeatureSupport::NOT_SUPPORTED;
-      wv_key_system_info.distinctive_identifier_support =
-          media::EmeFeatureSupport::NOT_SUPPORTED;
-      key_systems_info->push_back(wv_key_system_info);
+      key_systems_properties->emplace_back(
+          new TestKeySystemProperties(kWidevineKeySystem));
     }
 #endif
   }

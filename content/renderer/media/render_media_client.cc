@@ -9,7 +9,6 @@
 #include "base/time/default_tick_clock.h"
 #include "content/public/common/content_client.h"
 #include "content/public/renderer/content_renderer_client.h"
-#include "media/base/key_system_info.h"
 
 namespace content {
 
@@ -71,12 +70,6 @@ void RenderMediaClient::AddSupportedKeySystems(
   DVLOG(2) << __FUNCTION__;
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  std::vector<media::KeySystemInfo> key_systems_info;
-  GetContentClient()->renderer()->AddKeySystems(&key_systems_info);
-  for (const auto& info : key_systems_info) {
-    key_systems_properties->emplace_back(
-        new media::InfoBasedKeySystemProperties(info));
-  }
   GetContentClient()->renderer()->AddSupportedKeySystems(
       key_systems_properties);
 

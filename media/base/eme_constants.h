@@ -12,19 +12,12 @@ namespace media {
 // Defines values that specify registered Initialization Data Types used
 // in Encrypted Media Extensions (EME).
 // http://w3c.github.io/encrypted-media/initdata-format-registry.html#registry
-// The mask values are stored in a InitDataTypeMask.
 enum class EmeInitDataType {
   UNKNOWN,
   WEBM,
   CENC,
   KEYIDS
 };
-
-typedef uint32_t InitDataTypeMask;
-const InitDataTypeMask kInitDataTypeMaskNone = 0;
-const InitDataTypeMask kInitDataTypeMaskWebM = 1 << 0;
-const InitDataTypeMask kInitDataTypeMaskCenc = 1 << 1;
-const InitDataTypeMask kInitDataTypeMaskKeyIds = 1 << 2;
 
 // Defines bitmask values that specify codecs used in Encrypted Media Extension
 // (EME). Each value represents a codec within a specific container.

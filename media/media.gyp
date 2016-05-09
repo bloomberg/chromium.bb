@@ -339,8 +339,6 @@
         'base/eme_constants.h',
         'base/encryption_scheme.cc',
         'base/encryption_scheme.h',
-        'base/key_system_info.cc',
-        'base/key_system_info.h',
         'base/key_system_names.cc',
         'base/key_system_names.h',
         'base/key_system_properties.cc',

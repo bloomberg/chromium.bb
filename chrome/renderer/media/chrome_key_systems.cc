@@ -18,7 +18,6 @@
 #include "components/cdm/renderer/widevine_key_system_properties.h"
 #include "content/public/renderer/render_thread.h"
 #include "media/base/eme_constants.h"
-#include "media/base/key_system_info.h"
 #include "media/base/key_system_properties.h"
 
 #include "media/media_features.h"
@@ -36,11 +35,13 @@
 #include "base/version.h"
 #endif
 
-using media::KeySystemInfo;
 using media::KeySystemProperties;
 using media::SupportedCodecs;
 
 #if defined(ENABLE_PEPPER_CDMS)
+static const char kExternalClearKeyPepperType[] =
+    "application/x-ppapi-clearkey-cdm";
+
 static bool IsPepperCdmAvailable(
     const std::string& pepper_type,
     std::vector<base::string16>* additional_param_names,
@@ -56,9 +57,79 @@ static bool IsPepperCdmAvailable(
   return is_available;
 }
 
+// KeySystemProperties implementation for external Clear Key systems.
+class ExternalClearKeyProperties : public KeySystemProperties {
+ public:
+  explicit ExternalClearKeyProperties(const std::string& key_system_name)
+      : key_system_name_(key_system_name) {}
+
+  std::string GetKeySystemName() const override { return key_system_name_; }
+  bool IsSupportedInitDataType(
+      media::EmeInitDataType init_data_type) const override {
+    switch (init_data_type) {
+      case media::EmeInitDataType::WEBM:
+      case media::EmeInitDataType::KEYIDS:
+        return true;
+
+      case media::EmeInitDataType::CENC:
+#if defined(USE_PROPRIETARY_CODECS)
+        return true;
+#else
+        return false;
+#endif  // defined(USE_PROPRIETARY_CODECS)
+
+      case media::EmeInitDataType::UNKNOWN:
+        return false;
+    }
+    NOTREACHED();
+    return false;
+  }
+
+  SupportedCodecs GetSupportedCodecs() const override {
+#if defined(USE_PROPRIETARY_CODECS)
+    return media::EME_CODEC_MP4_ALL | media::EME_CODEC_WEBM_ALL;
+#else
+    return media::EME_CODEC_WEBM_ALL;
+#endif
+  }
+
+  media::EmeConfigRule GetRobustnessConfigRule(
+      media::EmeMediaType media_type,
+      const std::string& requested_robustness) const override {
+    return requested_robustness.empty() ? media::EmeConfigRule::SUPPORTED
+                                        : media::EmeConfigRule::NOT_SUPPORTED;
+  }
+
+  // Persistent license sessions are faked.
+  media::EmeSessionTypeSupport GetPersistentLicenseSessionSupport()
+      const override {
+    return media::EmeSessionTypeSupport::SUPPORTED;
+  }
+
+  media::EmeSessionTypeSupport GetPersistentReleaseMessageSessionSupport()
+      const override {
+    return media::EmeSessionTypeSupport::NOT_SUPPORTED;
+  }
+
+  media::EmeFeatureSupport GetPersistentStateSupport() const override {
+    return media::EmeFeatureSupport::REQUESTABLE;
+  }
+
+  media::EmeFeatureSupport GetDistinctiveIdentifierSupport() const override {
+    return media::EmeFeatureSupport::NOT_SUPPORTED;
+  }
+
+  std::string GetPepperType() const override {
+    return kExternalClearKeyPepperType;
+  }
+
+ private:
+  const std::string key_system_name_;
+};
+
 // External Clear Key (used for testing).
 static void AddExternalClearKey(
-    std::vector<KeySystemInfo>* concrete_key_systems) {
+    std::vector<std::unique_ptr<KeySystemProperties>>* concrete_key_systems) {
   static const char kExternalClearKeyKeySystem[] =
       "org.chromium.externalclearkey";
   static const char kExternalClearKeyDecryptOnlyKeySystem[] =
@@ -69,8 +140,6 @@ static void AddExternalClearKey(
       "org.chromium.externalclearkey.initializefail";
   static const char kExternalClearKeyCrashKeySystem[] =
       "org.chromium.externalclearkey.crash";
-  static const char kExternalClearKeyPepperType[] =
-      "application/x-ppapi-clearkey-cdm";
 
   std::vector<base::string16> additional_param_names;
   std::vector<base::string16> additional_param_values;
@@ -80,48 +149,26 @@ static void AddExternalClearKey(
     return;
   }
 
-  KeySystemInfo info;
-  info.key_system = kExternalClearKeyKeySystem;
-
-  info.supported_init_data_types =
-    media::kInitDataTypeMaskWebM | media::kInitDataTypeMaskKeyIds;
-  info.supported_codecs = media::EME_CODEC_WEBM_ALL;
-#if defined(USE_PROPRIETARY_CODECS)
-  info.supported_init_data_types |= media::kInitDataTypeMaskCenc;
-  info.supported_codecs |= media::EME_CODEC_MP4_ALL;
-#endif  // defined(USE_PROPRIETARY_CODECS)
-
-  info.max_audio_robustness = media::EmeRobustness::EMPTY;
-  info.max_video_robustness = media::EmeRobustness::EMPTY;
-
-  // Persistent sessions are faked.
-  info.persistent_license_support = media::EmeSessionTypeSupport::SUPPORTED;
-  info.persistent_release_message_support =
-      media::EmeSessionTypeSupport::NOT_SUPPORTED;
-  info.persistent_state_support = media::EmeFeatureSupport::REQUESTABLE;
-  info.distinctive_identifier_support = media::EmeFeatureSupport::NOT_SUPPORTED;
-
-  info.pepper_type = kExternalClearKeyPepperType;
-
-  concrete_key_systems->push_back(info);
+  concrete_key_systems->emplace_back(
+      new ExternalClearKeyProperties(kExternalClearKeyKeySystem));
 
   // Add support of decrypt-only mode in ClearKeyCdm.
-  info.key_system = kExternalClearKeyDecryptOnlyKeySystem;
-  concrete_key_systems->push_back(info);
+  concrete_key_systems->emplace_back(
+      new ExternalClearKeyProperties(kExternalClearKeyDecryptOnlyKeySystem));
 
   // A key system that triggers FileIO test in ClearKeyCdm.
-  info.key_system = kExternalClearKeyFileIOTestKeySystem;
-  concrete_key_systems->push_back(info);
+  concrete_key_systems->emplace_back(
+      new ExternalClearKeyProperties(kExternalClearKeyFileIOTestKeySystem));
 
   // A key system that Chrome thinks is supported by ClearKeyCdm, but actually
   // will be refused by ClearKeyCdm. This is to test the CDM initialization
   // failure case.
-  info.key_system = kExternalClearKeyInitializeFailKeySystem;
-  concrete_key_systems->push_back(info);
+  concrete_key_systems->emplace_back(
+      new ExternalClearKeyProperties(kExternalClearKeyInitializeFailKeySystem));
 
   // A key system that triggers a crash in ClearKeyCdm.
-  info.key_system = kExternalClearKeyCrashKeySystem;
-  concrete_key_systems->push_back(info);
+  concrete_key_systems->emplace_back(
+      new ExternalClearKeyProperties(kExternalClearKeyCrashKeySystem));
 }
 
 #if defined(WIDEVINE_CDM_AVAILABLE)
@@ -226,18 +273,15 @@ static void AddPepperBasedWidevine(
 #endif  // defined(WIDEVINE_CDM_AVAILABLE)
 #endif  // defined(ENABLE_PEPPER_CDMS)
 
-void AddChromeKeySystemsInfo(std::vector<KeySystemInfo>* key_systems_info) {
-#if defined(ENABLE_PEPPER_CDMS)
-  AddExternalClearKey(key_systems_info);
-#endif
-}
-
 void AddChromeKeySystems(
     std::vector<std::unique_ptr<KeySystemProperties>>* key_systems_properties) {
 #if defined(ENABLE_PEPPER_CDMS)
+  AddExternalClearKey(key_systems_properties);
+
 #if defined(WIDEVINE_CDM_AVAILABLE)
   AddPepperBasedWidevine(key_systems_properties);
 #endif  // defined(WIDEVINE_CDM_AVAILABLE)
+
 #endif  // defined(ENABLE_PEPPER_CDMS)
 
 #if defined(OS_ANDROID)

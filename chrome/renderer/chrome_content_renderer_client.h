@@ -129,7 +129,6 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   CreateWorkerContentSettingsClientProxy(content::RenderFrame* render_frame,
                                          blink::WebFrame* frame) override;
   bool AllowPepperMediaStreamAPI(const GURL& url) override;
-  void AddKeySystems(std::vector<media::KeySystemInfo>* key_systems) override;
   void AddSupportedKeySystems(
       std::vector<std::unique_ptr<::media::KeySystemProperties>>* key_systems)
       override;

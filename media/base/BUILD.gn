@@ -118,8 +118,6 @@ source_set("base") {
     "eme_constants.h",
     "encryption_scheme.cc",
     "encryption_scheme.h",
-    "key_system_info.cc",
-    "key_system_info.h",
     "key_system_names.cc",
     "key_system_names.h",
     "key_system_properties.cc",

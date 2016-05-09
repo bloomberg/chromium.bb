@@ -9,15 +9,8 @@
 #include <vector>
 
 namespace media {
-struct KeySystemInfo;
 class KeySystemProperties;
 }
-
-// DEPRECATED: Register the key systems supported by populating
-// |key_systems_info|.  TODO(halliwell): move all key systems to
-// KeySystemProperties API.
-void AddChromeKeySystemsInfo(
-    std::vector<media::KeySystemInfo>* key_systems_info);
 
 // Register the key systems supported by populating |key_systems_properties|.
 void AddChromeKeySystems(

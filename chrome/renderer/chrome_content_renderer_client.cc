@@ -1241,11 +1241,6 @@ bool ChromeContentRendererClient::AllowPepperMediaStreamAPI(
   return false;
 }
 
-void ChromeContentRendererClient::AddKeySystems(
-    std::vector<media::KeySystemInfo>* key_systems) {
-  AddChromeKeySystemsInfo(key_systems);
-}
-
 void ChromeContentRendererClient::AddSupportedKeySystems(
     std::vector<std::unique_ptr<::media::KeySystemProperties>>* key_systems) {
   AddChromeKeySystems(key_systems);

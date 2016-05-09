@@ -7,9 +7,7 @@
 
 #include <string>
 
-#include "build/build_config.h"
 #include "media/base/eme_constants.h"
-#include "media/base/key_system_info.h"
 #include "media/base/media_export.h"
 
 namespace media {
@@ -56,38 +54,6 @@ class MEDIA_EXPORT KeySystemProperties {
   virtual bool UseAesDecryptor() const;
 
   virtual std::string GetPepperType() const;
-};
-
-// TODO(halliwell): remove this before M52.  Replace with subclasses that
-// directly implement the different cases (e.g. ClearKey, Widevine, Cast).
-class MEDIA_EXPORT InfoBasedKeySystemProperties : public KeySystemProperties {
- public:
-  InfoBasedKeySystemProperties(const KeySystemInfo& info);
-
-  std::string GetKeySystemName() const override;
-  bool IsSupportedInitDataType(EmeInitDataType init_data_type) const override;
-
-  SupportedCodecs GetSupportedCodecs() const override;
-#if defined(OS_ANDROID)
-  SupportedCodecs GetSupportedSecureCodecs() const override;
-#endif
-
-  EmeConfigRule GetRobustnessConfigRule(
-      EmeMediaType media_type,
-      const std::string& requested_robustness) const override;
-  EmeSessionTypeSupport GetPersistentLicenseSessionSupport() const override;
-  EmeSessionTypeSupport GetPersistentReleaseMessageSessionSupport()
-      const override;
-  EmeFeatureSupport GetPersistentStateSupport() const override;
-  EmeFeatureSupport GetDistinctiveIdentifierSupport() const override;
-  bool UseAesDecryptor() const override;
-
-#if defined(ENABLE_PEPPER_CDMS)
-  std::string GetPepperType() const override;
-#endif
-
- private:
-  const KeySystemInfo info_;
 };
 
 }  // namespace media

@@ -60,11 +60,11 @@ class FakeKeySystems : public KeySystems {
       case EmeInitDataType::UNKNOWN:
         return false;
       case EmeInitDataType::WEBM:
-        return (init_data_types & kInitDataTypeMaskWebM) != 0;
+        return init_data_type_webm_supported_;
       case EmeInitDataType::CENC:
-        return (init_data_types & kInitDataTypeMaskCenc) != 0;
+        return init_data_type_cenc_supported_;
       case EmeInitDataType::KEYIDS:
-        return (init_data_types & kInitDataTypeMaskKeyIds) != 0;
+        return init_data_type_keyids_supported_;
     }
     NOTREACHED();
     return false;
@@ -123,7 +123,9 @@ class FakeKeySystems : public KeySystems {
     return distinctive_identifier;
   }
 
-  InitDataTypeMask init_data_types = kInitDataTypeMaskNone;
+  bool init_data_type_webm_supported_ = false;
+  bool init_data_type_cenc_supported_ = false;
+  bool init_data_type_keyids_supported_ = false;
 
   // INVALID so that they must be set in any test that needs them.
   EmeSessionTypeSupport persistent_license = EmeSessionTypeSupport::INVALID;
@@ -295,7 +297,7 @@ TEST_F(KeySystemConfigSelectorTest, InitDataTypes_Empty) {
 }
 
 TEST_F(KeySystemConfigSelectorTest, InitDataTypes_NoneSupported) {
-  key_systems_->init_data_types = kInitDataTypeMaskWebM;
+  key_systems_->init_data_type_webm_supported_ = true;
 
   std::vector<blink::WebEncryptedMediaInitDataType> init_data_types;
   init_data_types.push_back(blink::WebEncryptedMediaInitDataType::Unknown);
@@ -310,7 +312,7 @@ TEST_F(KeySystemConfigSelectorTest, InitDataTypes_NoneSupported) {
 }
 
 TEST_F(KeySystemConfigSelectorTest, InitDataTypes_SubsetSupported) {
-  key_systems_->init_data_types = kInitDataTypeMaskWebM;
+  key_systems_->init_data_type_webm_supported_ = true;
 
   std::vector<blink::WebEncryptedMediaInitDataType> init_data_types;
   init_data_types.push_back(blink::WebEncryptedMediaInitDataType::Unknown);
