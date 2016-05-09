@@ -1886,6 +1886,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
       'CheckSvnForCommonMimeTypes', 'CheckSvnProperty',
       'RunPythonUnitTests', 'RunPylint',
       'RunUnitTests', 'RunUnitTestsInDirectory',
+      'GetCodereviewOwnerAndReviewers',
       'GetPythonUnitTests', 'GetPylint',
       'GetUnitTests', 'GetUnitTestsInDirectory', 'GetUnitTestsRecursively',
     ]

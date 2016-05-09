@@ -875,7 +875,7 @@ def CheckOwners(input_api, output_api, source_file_filter=None):
       input_api.change.AffectedFiles(file_filter=source_file_filter)])
 
   owners_db = input_api.owners_db
-  owner_email, reviewers = _CodereviewOwnersAndReviewers(
+  owner_email, reviewers = GetCodereviewOwnerAndReviewers(
       input_api,
       owners_db.email_regexp,
       approval_needed=input_api.is_committing)
@@ -904,25 +904,17 @@ def CheckOwners(input_api, output_api, source_file_filter=None):
     return [output('Missing LGTM from someone other than %s' % owner_email)]
   return []
 
-def _CodereviewOwnersAndReviewers(input_api, email_regexp, approval_needed):
+def GetCodereviewOwnerAndReviewers(input_api, email_regexp, approval_needed):
   """Return the owner and reviewers of a change, if any.
 
   If approval_needed is True, only reviewers who have approved the change
   will be returned.
   """
-  if input_api.change.issue:
-    if input_api.gerrit:
-      res = _GerritOwnerAndReviewers(input_api, email_regexp, approval_needed)
-    else:
-      # Rietveld is default.
-      res = _RietveldOwnerAndReviewers(input_api, email_regexp, approval_needed)
-    if res:
-      return res
-
-  reviewers = set()
-  if not approval_needed:
-    reviewers = _ReviewersFromChange(input_api.change)
-  return None, reviewers
+  # Rietveld is default.
+  func = _RietveldOwnerAndReviewers
+  if input_api.gerrit:
+    func = _GerritOwnerAndReviewers
+  return func(input_api, email_regexp, approval_needed)
 
 
 def _GetRietveldIssueProps(input_api, messages):
@@ -953,11 +945,11 @@ def _RietveldOwnerAndReviewers(input_api, email_regexp, approval_needed=False):
 
   If approval_needed is True, only reviewers who have approved the change
   will be returned.
-  Returns None if can't fetch issue properties from codereview.
   """
   issue_props = _GetRietveldIssueProps(input_api, True)
   if not issue_props:
-    return None
+    return None, (set() if approval_needed else
+                  _ReviewersFromChange(input_api.change))
 
   if not approval_needed:
     return issue_props['owner_email'], set(issue_props['reviewers'])
@@ -977,11 +969,11 @@ def _GerritOwnerAndReviewers(input_api, email_regexp, approval_needed=False):
 
   If approval_needed is True, only reviewers who have approved the change
   will be returned.
-  Returns None if can't fetch issue properties from codereview.
   """
   issue = input_api.change.issue
   if not issue:
-    return None
+    return None, (set() if approval_needed else
+                  _ReviewersFromChange(input_api.change))
 
   owner_email = input_api.gerrit.GetChangeOwner(issue)
   reviewers = set(
