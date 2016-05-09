@@ -62,6 +62,7 @@ class IOSChromePasswordManagerClient
       std::unique_ptr<autofill::PasswordForm> form) override;
   void NotifySuccessfulLoginWithExistingPassword(
       const autofill::PasswordForm& form) override;
+  void NotifyStorePasswordCalled() override;
   void ForceSavePassword() override;
   bool IsSavingAndFillingEnabledForCurrentPage() const override;
   const GURL& GetLastCommittedEntryURL() const override;

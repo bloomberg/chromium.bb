@@ -58,6 +58,7 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
                bool(const std::vector<autofill::PasswordForm*>& local_forms));
   MOCK_METHOD1(NotifyUserCouldBeAutoSignedInPtr,
                bool(autofill::PasswordForm* form));
+  MOCK_METHOD0(NotifyStorePasswordCalled, void());
   MOCK_METHOD2(PromptUserToSavePasswordPtr,
                void(PasswordFormManager*, CredentialSourceType type));
   MOCK_METHOD4(PromptUserToChooseCredentialsPtr,
@@ -394,6 +395,7 @@ TEST_F(CredentialManagerImplTest, CredentialManagerOnStore) {
   EXPECT_CALL(*client_, PromptUserToSavePasswordPtr(
                             _, CredentialSourceType::CREDENTIAL_SOURCE_API))
       .Times(testing::Exactly(1));
+  EXPECT_CALL(*client_, NotifyStorePasswordCalled());
 
   bool called = false;
   CallStore(info, base::Bind(&RespondCallback, &called));
@@ -424,12 +426,10 @@ TEST_F(CredentialManagerImplTest, CredentialManagerStoreOverwrite) {
   // the password without prompting the user.
   CredentialInfo info(form_, CredentialType::CREDENTIAL_TYPE_PASSWORD);
   info.password = base::ASCIIToUTF16("Totally new password.");
+  EXPECT_CALL(*client_, PromptUserToSavePasswordPtr(_, _)).Times(0);
+  EXPECT_CALL(*client_, NotifyStorePasswordCalled());
   bool called = false;
   CallStore(info, base::Bind(&RespondCallback, &called));
-
-  EXPECT_CALL(*client_, PromptUserToSavePasswordPtr(
-                            _, CredentialSourceType::CREDENTIAL_SOURCE_API))
-      .Times(testing::Exactly(0));
 
   // Allow the PasswordFormManager to talk to the password store, determine
   // the form is a match for an existing form, and update the PasswordStore.
@@ -457,6 +457,7 @@ TEST_F(CredentialManagerImplTest, CredentialManagerStoreOverwriteZeroClick) {
   // the credential without prompting the user.
   CredentialInfo info(form_, CredentialType::CREDENTIAL_TYPE_PASSWORD);
   bool called = false;
+  EXPECT_CALL(*client_, NotifyStorePasswordCalled());
   CallStore(info, base::Bind(&RespondCallback, &called));
 
   // Allow the PasswordFormManager to talk to the password store, determine
@@ -484,6 +485,7 @@ TEST_F(CredentialManagerImplTest,
   // the credential without prompting the user.
   CredentialInfo info(form_, CredentialType::CREDENTIAL_TYPE_FEDERATED);
   bool called = false;
+  EXPECT_CALL(*client_, NotifyStorePasswordCalled());
   CallStore(info, base::Bind(&RespondCallback, &called));
 
   // Allow the PasswordFormManager to talk to the password store, determine
@@ -537,6 +539,7 @@ TEST_F(CredentialManagerImplTest,
   EXPECT_CALL(*client_, PromptUserToSavePasswordPtr(
                             _, CredentialSourceType::CREDENTIAL_SOURCE_API))
       .Times(testing::Exactly(0));
+  EXPECT_CALL(*client_, NotifyStorePasswordCalled()).Times(0);
 
   bool called = false;
   CallStore(info, base::Bind(&RespondCallback, &called));

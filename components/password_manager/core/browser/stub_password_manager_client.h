@@ -35,6 +35,7 @@ class StubPasswordManagerClient : public PasswordManagerClient {
       std::unique_ptr<autofill::PasswordForm>) override;
   void NotifySuccessfulLoginWithExistingPassword(
       const autofill::PasswordForm& form) override;
+  void NotifyStorePasswordCalled() override;
   void AutomaticPasswordSave(
       std::unique_ptr<PasswordFormManager> saved_manager) override;
   PrefService* GetPrefs() override;

@@ -222,10 +222,6 @@ bool ChromePasswordManagerClient::PromptUserToSaveOrUpdatePassword(
     return false;
   }
 
-  // Prevent the autofill password manager from prompting the second time.
-  if (type == password_manager::CredentialSourceType::CREDENTIAL_SOURCE_API)
-    password_manager_.DropFormManagers();
-
   if (IsTheHotNewBubbleUIEnabled()) {
 #if !BUILDFLAG(ANDROID_JAVA_UI)
     PasswordsClientUIDelegate* manage_passwords_ui_controller =
@@ -340,6 +336,12 @@ void ChromePasswordManagerClient::NotifySuccessfulLoginWithExistingPassword(
     PromptUserToEnableAutosigninIfNecessary();
   }
   possible_auto_sign_in_.reset();
+}
+
+void ChromePasswordManagerClient::NotifyStorePasswordCalled() {
+  // If a site stores a credential the autofill password manager shouldn't kick
+  // in.
+  password_manager_.DropFormManagers();
 }
 
 void ChromePasswordManagerClient::AutomaticPasswordSave(

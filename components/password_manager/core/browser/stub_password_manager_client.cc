@@ -52,6 +52,8 @@ void StubPasswordManagerClient::NotifyUserCouldBeAutoSignedIn(
 void StubPasswordManagerClient::NotifySuccessfulLoginWithExistingPassword(
     const autofill::PasswordForm& form) {}
 
+void StubPasswordManagerClient::NotifyStorePasswordCalled() {}
+
 void StubPasswordManagerClient::AutomaticPasswordSave(
     std::unique_ptr<PasswordFormManager> saved_manager) {}
 

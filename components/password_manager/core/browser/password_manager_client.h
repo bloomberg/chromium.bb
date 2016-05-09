@@ -125,6 +125,9 @@ class PasswordManagerClient {
   virtual void NotifySuccessfulLoginWithExistingPassword(
       const autofill::PasswordForm& form) = 0;
 
+  // Inform the embedder that the site called 'store()'.
+  virtual void NotifyStorePasswordCalled() = 0;
+
   // Called when a password is saved in an automated fashion. Embedder may
   // inform the user that this save has occured.
   virtual void AutomaticPasswordSave(

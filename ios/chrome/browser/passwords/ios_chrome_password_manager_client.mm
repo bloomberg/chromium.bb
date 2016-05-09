@@ -107,6 +107,8 @@ void IOSChromePasswordManagerClient::NotifyUserCouldBeAutoSignedIn(
 void IOSChromePasswordManagerClient::NotifySuccessfulLoginWithExistingPassword(
     const autofill::PasswordForm& form) {}
 
+void IOSChromePasswordManagerClient::NotifyStorePasswordCalled() {}
+
 void IOSChromePasswordManagerClient::ForceSavePassword() {
   NOTIMPLEMENTED();
 }

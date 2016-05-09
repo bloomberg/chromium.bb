@@ -68,6 +68,7 @@ class ChromePasswordManagerClient
       std::unique_ptr<autofill::PasswordForm> form) override;
   void NotifySuccessfulLoginWithExistingPassword(
       const autofill::PasswordForm& form) override;
+  void NotifyStorePasswordCalled() override;
   void AutomaticPasswordSave(
       std::unique_ptr<password_manager::PasswordFormManager> saved_form_manager)
       override;

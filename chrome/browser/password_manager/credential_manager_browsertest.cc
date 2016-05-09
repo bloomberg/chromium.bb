@@ -147,4 +147,56 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest, SaveViaAPIAndAutofill) {
   EXPECT_FALSE(prompt_observer->IsShowingPrompt());
 }
 
+IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest, UpdateViaAPIAndAutofill) {
+  // Save credentials with 'skip_zero_click' false.
+  scoped_refptr<password_manager::TestPasswordStore> password_store =
+      static_cast<password_manager::TestPasswordStore*>(
+          PasswordStoreFactory::GetForProfile(
+              browser()->profile(), ServiceAccessType::IMPLICIT_ACCESS)
+              .get());
+  autofill::PasswordForm signin_form;
+  signin_form.signon_realm = embedded_test_server()->base_url().spec();
+  signin_form.password_value = base::ASCIIToUTF16("12345");
+  signin_form.username_value = base::ASCIIToUTF16("user");
+  signin_form.origin = embedded_test_server()->base_url();
+  signin_form.skip_zero_click = true;
+  signin_form.preferred = true;
+  password_store->AddLogin(signin_form);
+
+  NavigateToFile("/password/password_form.html");
+  std::string fill_password =
+      "document.getElementById('username_field').value = 'user';"
+      "document.getElementById('password_field').value = '12345';";
+  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_password));
+
+  // Call the API to update the form.
+  ASSERT_TRUE(content::ExecuteScript(
+      RenderViewHost(),
+      "var c = new PasswordCredential({ id: 'user', password: '12345' });"
+      "navigator.credentials.store(c);"));
+  std::unique_ptr<PromptObserver> prompt_observer(
+      PromptObserver::Create(WebContents()));
+  EXPECT_FALSE(prompt_observer->IsShowingPrompt());
+  EXPECT_FALSE(prompt_observer->IsShowingUpdatePrompt());
+  signin_form.skip_zero_click = false;
+  signin_form.times_used = 1;
+  password_manager::TestPasswordStore::PasswordMap stored =
+      password_store->stored_passwords();
+  ASSERT_EQ(1u, stored.size());
+  EXPECT_EQ(signin_form, stored[signin_form.signon_realm][0]);
+
+  // Verify that the autofill password manager was suppressed and didn't touch
+  // the store. It would definitely update the '*_element' fields.
+  NavigationObserver form_submit_observer(WebContents());
+  ASSERT_TRUE(content::ExecuteScript(
+      RenderViewHost(),
+      "document.getElementById('input_submit_button').click();"));
+  form_submit_observer.Wait();
+  EXPECT_FALSE(prompt_observer->IsShowingPrompt());
+  EXPECT_FALSE(prompt_observer->IsShowingUpdatePrompt());
+  stored = password_store->stored_passwords();
+  ASSERT_EQ(1u, stored.size());
+  EXPECT_EQ(signin_form, stored[signin_form.signon_realm][0]);
+}
+
 }  // namespace
