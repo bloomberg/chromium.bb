@@ -95,6 +95,14 @@
             "group_name": "branded"
         }
     ],
+    "IOSurfaceClearYosemite": [
+        {
+            "enable_features": [
+                "IOSurfaceClearYosemite"
+            ],
+            "group_name": "Enabled"
+        }
+    ],
     "InstanceID": [
         {
             "group_name": "Enabled"
