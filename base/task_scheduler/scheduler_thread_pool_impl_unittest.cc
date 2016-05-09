@@ -63,7 +63,8 @@ class TaskSchedulerThreadPoolImplTest
 
   void SetUp() override {
     thread_pool_ = SchedulerThreadPoolImpl::Create(
-        ThreadPriority::NORMAL, kNumThreadsInThreadPool, IORestriction::ALLOWED,
+        "TestThreadPoolWithFileIO", ThreadPriority::NORMAL,
+        kNumThreadsInThreadPool, IORestriction::ALLOWED,
         Bind(&TaskSchedulerThreadPoolImplTest::ReEnqueueSequenceCallback,
              Unretained(this)),
         &task_tracker_, &delayed_task_manager_);
@@ -359,7 +360,7 @@ TEST_P(TaskSchedulerThreadPoolImplIORestrictionTest, IORestriction) {
   DelayedTaskManager delayed_task_manager(Bind(&DoNothing));
 
   auto thread_pool = SchedulerThreadPoolImpl::Create(
-      ThreadPriority::NORMAL, 1U, GetParam(),
+      "TestThreadPoolWithParam", ThreadPriority::NORMAL, 1U, GetParam(),
       Bind(&NotReachedReEnqueueSequenceCallback), &task_tracker,
       &delayed_task_manager);
   ASSERT_TRUE(thread_pool);
