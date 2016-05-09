@@ -12,7 +12,7 @@ namespace features {
 // Enables brotli "Accept-Encoding" advertising and "Content-Encoding" support.
 // Brotli format specification: http://www.ietf.org/id/draft-alakuijala-brotli
 const base::Feature kBrotliEncoding{"brotli-encoding",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
+                                    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables the credential management API:
 // https://w3c.github.io/webappsec-credential-management/
