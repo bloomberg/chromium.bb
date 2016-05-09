@@ -41,8 +41,10 @@ static const int64_t kInvalidOfflineId = 0;
 
 struct ClientId;
 
+class ClientPolicyController;
 struct OfflinePageItem;
 class OfflinePageMetadataStore;
+class OfflinePageStorageManager;
 
 // Service for saving pages offline, storing the offline copy and metadata, and
 // retrieving them upon request.
@@ -177,8 +179,9 @@ class OfflinePageModel : public KeyedService, public base::SupportsUserData {
                              const DeletePageCallback& callback);
 
   // Deletes offline pages related to the passed |offline_ids|.
-  void DeletePagesByOfflineId(const std::vector<int64_t>& offline_ids,
-                              const DeletePageCallback& callback);
+  // Making virtual for test purposes.
+  virtual void DeletePagesByOfflineId(const std::vector<int64_t>& offline_ids,
+                                      const DeletePageCallback& callback);
 
   // Wipes out all the data by deleting all saved files and clearing the store.
   void ClearAll(const base::Closure& callback);
@@ -199,7 +202,8 @@ class OfflinePageModel : public KeyedService, public base::SupportsUserData {
                               const CheckPagesExistOfflineCallback& callback);
 
   // Gets all available offline pages.
-  void GetAllPages(const MultipleOfflinePageItemCallback& callback);
+  // Making virtual for test purposes.
+  virtual void GetAllPages(const MultipleOfflinePageItemCallback& callback);
 
   // Gets all offline ids where the offline page has the matching client id.
   void GetOfflineIdsForClientId(const ClientId& client_id,
@@ -259,10 +263,22 @@ class OfflinePageModel : public KeyedService, public base::SupportsUserData {
                                int64_t free_space_bytes,
                                bool reporting_after_delete);
 
+  // Returns the policy controller.
+  // Making virtual for test purposes.
+  virtual ClientPolicyController* GetPolicyController();
+
   // Methods for testing only:
   OfflinePageMetadataStore* GetStoreForTesting();
 
-  bool is_loaded() const { return is_loaded_; }
+  OfflinePageStorageManager* GetStorageManager();
+
+  // Making virtual for test purposes.
+  virtual bool is_loaded() const;
+
+ protected:
+  // Adding a protected constructor for testing-only purposes in
+  // offline_page_storage_manager_unittest.cc
+  OfflinePageModel();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(OfflinePageModelTest, MarkPageForDeletion);
@@ -383,6 +399,13 @@ class OfflinePageModel : public KeyedService, public base::SupportsUserData {
 
   // Delayed tasks that should be invoked after the loading is done.
   std::vector<base::Closure> delayed_tasks_;
+
+  // Controller of the client policies.
+  std::unique_ptr<ClientPolicyController> policy_controller_;
+
+  // Manager for the storage consumed by archives and responsible for
+  // automatic page clearing.
+  std::unique_ptr<OfflinePageStorageManager> storage_manager_;
 
   base::WeakPtrFactory<OfflinePageModel> weak_ptr_factory_;
 

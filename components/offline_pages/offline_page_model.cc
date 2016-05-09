@@ -18,7 +18,9 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "components/offline_pages/client_policy_controller.h"
 #include "components/offline_pages/offline_page_item.h"
+#include "components/offline_pages/offline_page_storage_manager.h"
 #include "components/offline_pages/proto/offline_pages.pb.h"
 #include "url/gurl.h"
 
@@ -110,6 +112,10 @@ bool OfflinePageModel::CanSavePage(const GURL& url) {
   return url.SchemeIsHTTPOrHTTPS();
 }
 
+// protected
+OfflinePageModel::OfflinePageModel()
+    : is_loaded_(false), weak_ptr_factory_(this) {}
+
 OfflinePageModel::OfflinePageModel(
     std::unique_ptr<OfflinePageMetadataStore> store,
     const base::FilePath& archives_dir,
@@ -118,6 +124,8 @@ OfflinePageModel::OfflinePageModel(
       archives_dir_(archives_dir),
       is_loaded_(false),
       task_runner_(task_runner),
+      policy_controller_(new ClientPolicyController()),
+      storage_manager_(new OfflinePageStorageManager(this)),
       weak_ptr_factory_(this) {
   task_runner_->PostTaskAndReply(
       FROM_HERE, base::Bind(EnsureArchivesDirCreated, archives_dir_),
@@ -500,8 +508,20 @@ void OfflinePageModel::RecordStorageHistograms(int64_t total_space_bytes,
   }
 }
 
+ClientPolicyController* OfflinePageModel::GetPolicyController() {
+  return policy_controller_.get();
+}
+
 OfflinePageMetadataStore* OfflinePageModel::GetStoreForTesting() {
   return store_.get();
+}
+
+OfflinePageStorageManager* OfflinePageModel::GetStorageManager() {
+  return storage_manager_.get();
+}
+
+bool OfflinePageModel::is_loaded() const {
+  return is_loaded_;
 }
 
 void OfflinePageModel::OnCreateArchiveDone(const GURL& requested_url,

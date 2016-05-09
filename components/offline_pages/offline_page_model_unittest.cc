@@ -21,8 +21,11 @@
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "components/offline_pages/client_policy_controller.h"
+#include "components/offline_pages/offline_page_client_policy.h"
 #include "components/offline_pages/offline_page_feature.h"
 #include "components/offline_pages/offline_page_item.h"
+#include "components/offline_pages/offline_page_storage_manager.h"
 #include "components/offline_pages/offline_page_test_archiver.h"
 #include "components/offline_pages/offline_page_test_store.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -94,6 +97,7 @@ class OfflinePageModelTest
   void OnGetMultipleOfflinePageItemsResult(
       MultipleOfflinePageItemResult* storage,
       const MultipleOfflinePageItemResult& result);
+  void OnClearPageByStorageManager(int pages_cleared, DeletePageResult result);
 
   // OfflinePageMetadataStore callbacks.
   void OnStoreUpdateDone(bool /* success */);
@@ -162,6 +166,12 @@ class OfflinePageModelTest
 
   const base::FilePath& last_archiver_path() { return last_archiver_path_; }
 
+  int last_cleared_pages_count() const { return last_cleared_pages_count_; }
+
+  DeletePageResult last_clear_page_result() const {
+    return last_clear_page_result_;
+  }
+
  private:
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle task_runner_handle_;
@@ -176,6 +186,8 @@ class OfflinePageModelTest
   ClientId last_deleted_client_id_;
   bool last_has_pages_result_;
   CheckPagesExistOfflineResult last_pages_exist_result_;
+  int last_cleared_pages_count_;
+  DeletePageResult last_clear_page_result_;
 };
 
 OfflinePageModelTest::OfflinePageModelTest()
@@ -289,6 +301,7 @@ void OfflinePageModelTest::ResetResults() {
   last_delete_result_ = DeletePageResult::CANCELLED;
   last_archiver_path_.clear();
   last_pages_exist_result_.clear();
+  last_cleared_pages_count_ = 0;
 }
 
 OfflinePageTestStore* OfflinePageModelTest::GetStore() {
@@ -379,6 +392,13 @@ void OfflinePageModelTest::OnGetMultipleOfflinePageItemsResult(
     MultipleOfflinePageItemResult* storage,
     const MultipleOfflinePageItemResult& result) {
   *storage = result;
+}
+
+void OfflinePageModelTest::OnClearPageByStorageManager(
+    int pages_cleared,
+    DeletePageResult result) {
+  last_cleared_pages_count_ = pages_cleared;
+  last_clear_page_result_ = result;
 }
 
 base::Optional<OfflinePageItem> OfflinePageModelTest::GetPagesByOnlineURL(
@@ -927,6 +947,40 @@ TEST_F(OfflinePageModelTest, SaveRetrieveMultipleClientIds) {
 
   EXPECT_TRUE(id_set.find(offline1) != id_set.end());
   EXPECT_TRUE(id_set.find(offline2) != id_set.end());
+}
+
+TEST_F(OfflinePageModelTest, ClearPagesFromOneSource) {
+  base::Time now = base::Time::Now();
+  base::TimeDelta expiration_period = model()
+                                          ->GetPolicyController()
+                                          ->GetPolicy(kTestClientNamespace)
+                                          .lifetime_policy.expiration_period;
+
+  SavePage(kTestUrl, kTestClientId1);
+  GetStore()->UpdateLastAccessTime(
+      last_save_offline_id(),
+      now - base::TimeDelta::FromDays(10) - expiration_period);
+  SavePage(kTestUrl2, kTestClientId2);
+  GetStore()->UpdateLastAccessTime(
+      last_save_offline_id(),
+      now - base::TimeDelta::FromDays(1) - expiration_period);
+  SavePage(kTestUrl3, kTestClientId3);
+  GetStore()->UpdateLastAccessTime(last_save_offline_id(), now);
+
+  ResetModel();
+
+  // Only first two pages are expired.
+  model()->GetStorageManager()->ClearPagesIfNeeded(base::Bind(
+      &OfflinePageModelTest::OnClearPageByStorageManager, AsWeakPtr()));
+
+  PumpLoop();
+
+  std::vector<OfflinePageItem> offline_pages = GetAllPages();
+
+  EXPECT_EQ(1UL, offline_pages.size());
+  EXPECT_EQ(1UL, GetStore()->GetAllPages().size());
+  EXPECT_EQ(2, last_cleared_pages_count());
+  EXPECT_EQ(DeletePageResult::SUCCESS, last_clear_page_result());
 }
 
 TEST(CommandLineFlagsTest, OfflineBookmarks) {
