@@ -11,10 +11,16 @@
 #include "cc/output/context_provider.h"
 #include "cc/output/output_surface.h"
 #include "cc/scheduler/begin_frame_source.h"
+#include "components/display_compositor/gl_helper.h"
+#include "components/mus/surfaces/ozone_gpu_memory_buffer_manager.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/swap_result.h"
 #include "ui/gl/gl_surface.h"
+
+namespace display_compositor {
+class BufferQueue;
+}
 
 namespace ui {
 class LatencyInfo;
@@ -26,7 +32,6 @@ class CompositorFrame;
 
 namespace mus {
 
-class BufferQueue;
 class SurfacesContextProvider;
 
 // An OutputSurface implementation that directly draws and swap to a GL
@@ -62,7 +67,9 @@ class DirectOutputSurfaceOzone : public cc::OutputSurface {
   // Called when a swap completion is sent from the GPU process.
   void OnGpuSwapBuffersCompleted(gfx::SwapResult result);
 
-  std::unique_ptr<BufferQueue> output_surface_;
+  display_compositor::GLHelper gl_helper_;
+  OzoneGpuMemoryBufferManager gpu_memory_buffer_manager_;
+  std::unique_ptr<display_compositor::BufferQueue> output_surface_;
   std::unique_ptr<cc::SyntheticBeginFrameSource> synthetic_begin_frame_source_;
 
   base::WeakPtrFactory<DirectOutputSurfaceOzone> weak_ptr_factory_;

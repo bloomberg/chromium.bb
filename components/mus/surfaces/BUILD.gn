@@ -22,6 +22,7 @@ source_set("surfaces") {
     "//cc",
     "//cc/surfaces",
     "//cc/surfaces:surface_id",
+    "//components/display_compositor",
     "//components/mus/gles2",
     "//components/mus/public/interfaces",
     "//gpu/command_buffer/client",
@@ -39,10 +40,10 @@ source_set("surfaces") {
 
   if (use_ozone) {
     sources += [
-      "buffer_queue.cc",
-      "buffer_queue.h",
       "direct_output_surface_ozone.cc",
       "direct_output_surface_ozone.h",
+      "ozone_gpu_memory_buffer_manager.cc",
+      "ozone_gpu_memory_buffer_manager.h",
     ]
     deps += [ "//gpu/command_buffer/common" ]
   }

@@ -10,11 +10,13 @@
 #include "cc/output/compositor_frame.h"
 #include "cc/output/context_provider.h"
 #include "cc/output/output_surface_client.h"
+#include "components/display_compositor/buffer_queue.h"
 #include "components/mus/gles2/mojo_gpu_memory_buffer_manager.h"
-#include "components/mus/surfaces/buffer_queue.h"
 #include "components/mus/surfaces/surfaces_context_provider.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
+
+using display_compositor::BufferQueue;
 
 namespace mus {
 
@@ -25,8 +27,14 @@ DirectOutputSurfaceOzone::DirectOutputSurfaceOzone(
     uint32_t target,
     uint32_t internalformat)
     : cc::OutputSurface(context_provider),
-      output_surface_(
-          new BufferQueue(context_provider, target, internalformat, widget)),
+      gl_helper_(context_provider->ContextGL(),
+                 context_provider->ContextSupport()),
+      output_surface_(new BufferQueue(context_provider,
+                                      target,
+                                      internalformat,
+                                      &gl_helper_,
+                                      &gpu_memory_buffer_manager_,
+                                      widget)),
       synthetic_begin_frame_source_(new cc::SyntheticBeginFrameSource(
           task_runner,
           cc::BeginFrameArgs::DefaultInterval())),
