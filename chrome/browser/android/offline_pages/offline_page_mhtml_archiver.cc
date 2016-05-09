@@ -6,11 +6,15 @@
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
+#include "chrome/browser/ssl/chrome_security_state_model_client.h"
+#include "components/security_state/security_state_model.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/filename_util.h"
 
@@ -78,6 +82,11 @@ void OfflinePageMHTMLArchiver::CreateArchive(
   DCHECK(!callback.is_null());
   callback_ = callback;
 
+  if (HasConnectionSecurityError()) {
+    ReportFailure(ArchiverResult::ERROR_SECURITY_CERTIFICATE);
+    return;
+  }
+
   GenerateMHTML(archives_dir, archive_id);
 }
 
@@ -123,14 +132,27 @@ void OfflinePageMHTMLArchiver::OnGenerateMHTMLDone(
   if (file_size < 0) {
     ReportFailure(ArchiverResult::ERROR_ARCHIVE_CREATION_FAILED);
   } else {
-    callback_.Run(this, ArchiverResult::SUCCESSFULLY_CREATED, url, file_path,
-                  file_size);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::Bind(callback_, this, ArchiverResult::SUCCESSFULLY_CREATED, url,
+                   file_path, file_size));
   }
+}
+
+bool OfflinePageMHTMLArchiver::HasConnectionSecurityError() {
+  ChromeSecurityStateModelClient::CreateForWebContents(web_contents_);
+  ChromeSecurityStateModelClient* model_client =
+      ChromeSecurityStateModelClient::FromWebContents(web_contents_);
+  DCHECK(model_client);
+  return security_state::SecurityStateModel::SecurityLevel::SECURITY_ERROR ==
+         model_client->GetSecurityInfo().security_level;
 }
 
 void OfflinePageMHTMLArchiver::ReportFailure(ArchiverResult result) {
   DCHECK(result != ArchiverResult::SUCCESSFULLY_CREATED);
-  callback_.Run(this, result, GURL(), base::FilePath(), 0);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::Bind(callback_, this, result, GURL(), base::FilePath(), 0));
 }
 
 }  // namespace offline_pages

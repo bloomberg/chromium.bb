@@ -75,8 +75,9 @@ class OfflinePageModel : public KeyedService, public base::SupportsUserData {
     STORE_FAILURE,
     ALREADY_EXISTS,
     // Certain pages, i.e. file URL or NTP, will not be saved because these
-    // are already locally accisible.
+    // are already locally accessible.
     SKIPPED,
+    SECURITY_CERTIFICATE_ERROR,
     // NOTE: always keep this entry at the end. Add new result types only
     // immediately above this line. Make sure to update the corresponding
     // histogram enum accordingly.
