@@ -32,6 +32,7 @@ ASH_EXPORT extern const char kNotifierScreenCapture[];
 ASH_EXPORT extern const char kNotifierScreenShare[];
 ASH_EXPORT extern const char kNotifierSessionLengthTimeout[];
 ASH_EXPORT extern const char kNotifierSupervisedUser[];
+ASH_EXPORT extern const char kNotifierWebUsb[];
 
 // Returns true if notifications from |notifier_id| should always appear as
 // popups. "Always appear" means the popups should appear even in login screen,

@@ -50,6 +50,7 @@ const char* kAshSystemNotifiers[] = {
   kNotifierScreenShare,
   kNotifierSessionLengthTimeout,
   kNotifierSupervisedUser,
+  kNotifierWebUsb,
   // Note: Order doesn't matter here, so keep this in alphabetic order, don't
   // just add your stuff at the end!
   NULL
@@ -85,6 +86,7 @@ const char kNotifierScreenCapture[] = "ash.screen-capture";
 const char kNotifierScreenShare[] = "ash.screen-share";
 const char kNotifierSessionLengthTimeout[] = "ash.session-length-timeout";
 const char kNotifierSupervisedUser[] = "ash.locally-managed-user";
+const char kNotifierWebUsb[] = "ash.webusb";
 
 bool ShouldAlwaysShowPopups(const message_center::NotifierId& notifier_id) {
   return MatchSystemNotifierId(notifier_id, kAlwaysShownSystemNotifierIds);
