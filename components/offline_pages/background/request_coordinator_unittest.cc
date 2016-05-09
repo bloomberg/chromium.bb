@@ -17,9 +17,8 @@ namespace offline_pages {
 
 namespace {
 // put test constants here
-const int64_t kRequestId = 42;
 const GURL kUrl("http://universe.com/everything");
-const ClientId kClientId("bookmark", "1234");
+const ClientId kClientId("bookmark", "42");
 }  // namespace
 
 class RequestCoordinatorTest
@@ -51,8 +50,7 @@ TEST_F(RequestCoordinatorTest, SavePageLater) {
   std::unique_ptr<OfflinerPolicy> policy(new OfflinerPolicy());
   std::unique_ptr<OfflinerFactory> factory;
   RequestCoordinator coordinator(std::move(policy), std::move(factory));
-  SavePageRequest request(kRequestId, kUrl, kClientId, base::Time::Now());
-  EXPECT_TRUE(coordinator.SavePageLater(request));
+  EXPECT_TRUE(coordinator.SavePageLater(kUrl, kClientId));
 }
 
 }  // namespace offline_pages

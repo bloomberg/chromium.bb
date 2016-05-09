@@ -414,6 +414,17 @@ public class OfflinePageBridge {
     }
 
     /**
+     * Save the given URL as an offline page when the network becomes available.
+     *
+     * @param url The given URL to save for later
+     * @param clientId The client ID for the offline page to be saved later.
+     */
+    public void savePageLater(final String url, final ClientId clientId) {
+        nativeSavePageLater(
+                mNativeOfflinePageBridge, url, clientId.getNamespace(), clientId.getId());
+    }
+
+    /**
      * Deletes an offline page related to a specified bookmark.
      *
      * @param clientId Client ID for which the offline copy will be deleted.
@@ -621,6 +632,8 @@ public class OfflinePageBridge {
             long nativeOfflinePageBridge, String offlineUrl);
     private native void nativeSavePage(long nativeOfflinePageBridge, SavePageCallback callback,
             WebContents webContents, String clientNamespace, String clientId);
+    private native void nativeSavePageLater(
+            long nativeOfflinePageBridge, String url, String clientNamespace, String clientId);
     private native void nativeDeletePages(
             long nativeOfflinePageBridge, DeletePageCallback callback, long[] offlineIds);
     private native void nativeCheckMetadataConsistency(long nativeOfflinePageBridge);

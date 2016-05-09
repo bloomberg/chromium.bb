@@ -108,4 +108,9 @@ public interface ContextMenuItemDelegate {
      * @param pageUrl URL of the current page.
      */
     void onOpenInChrome(String linkUrl, String pageUrl);
+
+    /**
+     * Called to queue a task to sometime later make an offline page for this url.
+     */
+    void onSavePageLater(String linkUrl);
 }

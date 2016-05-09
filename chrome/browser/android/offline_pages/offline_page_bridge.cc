@@ -12,8 +12,11 @@
 #include "chrome/browser/android/offline_pages/offline_page_mhtml_archiver.h"
 #include "chrome/browser/android/offline_pages/offline_page_model_factory.h"
 #include "chrome/browser/android/offline_pages/offline_page_utils.h"
+#include "chrome/browser/android/offline_pages/request_coordinator_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
+#include "components/offline_pages/background/request_coordinator.h"
+#include "components/offline_pages/background/save_page_request.h"
 #include "components/offline_pages/offline_page_feature.h"
 #include "components/offline_pages/offline_page_item.h"
 #include "components/offline_pages/offline_page_model.h"
@@ -239,11 +242,11 @@ void OfflinePageBridge::GetAllPages(
 ScopedJavaLocalRef<jlongArray> OfflinePageBridge::GetOfflineIdsForClientId(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
-    const JavaParamRef<jstring>& j_client_id_namespace,
+    const JavaParamRef<jstring>& j_namespace,
     const JavaParamRef<jstring>& j_client_id) {
   DCHECK(offline_page_model_->is_loaded());
   offline_pages::ClientId client_id;
-  client_id.name_space = ConvertJavaStringToUTF8(env, j_client_id_namespace);
+  client_id.name_space = ConvertJavaStringToUTF8(env, j_namespace);
   client_id.id = ConvertJavaStringToUTF8(env, j_client_id);
 
   std::vector<int64_t> results =
@@ -292,7 +295,7 @@ void OfflinePageBridge::SavePage(
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jobject>& j_callback_obj,
     const JavaParamRef<jobject>& j_web_contents,
-    const JavaParamRef<jstring>& j_client_id_namespace,
+    const JavaParamRef<jstring>& j_namespace,
     const JavaParamRef<jstring>& j_client_id) {
   DCHECK(j_callback_obj);
   DCHECK(j_web_contents);
@@ -308,12 +311,30 @@ void OfflinePageBridge::SavePage(
       new OfflinePageMHTMLArchiver(web_contents));
 
   offline_pages::ClientId client_id;
-  client_id.name_space = ConvertJavaStringToUTF8(env, j_client_id_namespace);
+  client_id.name_space = ConvertJavaStringToUTF8(env, j_namespace);
   client_id.id = ConvertJavaStringToUTF8(env, j_client_id);
 
   offline_page_model_->SavePage(
       url, client_id, std::move(archiver),
       base::Bind(&SavePageCallback, j_callback_ref, url));
+}
+
+void OfflinePageBridge::SavePageLater(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jstring>& j_url,
+    const JavaParamRef<jstring>& j_namespace,
+    const JavaParamRef<jstring>& j_client_id) {
+  offline_pages::ClientId client_id;
+  client_id.name_space = ConvertJavaStringToUTF8(env, j_namespace);
+  client_id.id = ConvertJavaStringToUTF8(env, j_client_id);
+
+  RequestCoordinator* coordinator =
+      offline_pages::RequestCoordinatorFactory::GetInstance()->
+          GetForBrowserContext(browser_context_);
+
+  coordinator->SavePageLater(
+      GURL(ConvertJavaStringToUTF8(env, j_url)), client_id);
 }
 
 void OfflinePageBridge::DeletePages(

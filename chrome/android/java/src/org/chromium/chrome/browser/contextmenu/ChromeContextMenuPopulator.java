@@ -351,8 +351,8 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
                 helper.startContextMenuDownload(true, false);
             }
         } else if (itemId == R.id.contextmenu_save_offline) {
-            // TODO(petewil): Add code here to save the page offline.
-            Log.d(TAG, "Save an offline copy of the linked page");
+            // This is a temporary hookup point to save a page later.
+            mDelegate.onSavePageLater(params.getLinkUrl());
         } else if (itemId == R.id.contextmenu_search_by_image) {
             ContextMenuUma.record(params, ContextMenuUma.ACTION_SEARCH_BY_IMAGE);
             helper.searchForImage();

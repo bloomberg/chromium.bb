@@ -9,6 +9,7 @@
 #include "components/offline_pages/background/offliner_factory.h"
 #include "components/offline_pages/background/offliner_policy.h"
 #include "components/offline_pages/background/save_page_request.h"
+#include "components/offline_pages/offline_page_item.h"
 
 namespace offline_pages {
 
@@ -23,7 +24,13 @@ RequestCoordinator::RequestCoordinator(
 
 RequestCoordinator::~RequestCoordinator() {}
 
-bool RequestCoordinator::SavePageLater(const SavePageRequest& request) {
+bool RequestCoordinator::SavePageLater(
+    const GURL& url, const ClientId& client_id) {
+
+  // TODO(petewil): We need a robust scheme for allocating new IDs.
+  // TODO(petewil): Build a SavePageRequest.
+  // TODO(petewil): Put the request on the request queue, nudge the scheduler.
+
   return true;
 }
 

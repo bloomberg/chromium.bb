@@ -10,9 +10,11 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "url/gurl.h"
 
 namespace offline_pages {
 
+struct ClientId;
 class OfflinerPolicy;
 class OfflinerFactory;
 class Offliner;
@@ -31,7 +33,7 @@ class RequestCoordinator : public KeyedService {
 
   // Queues |request| to later load and save when system conditions allow.
   // Returns true if the page could be queued successfully.
-  bool SavePageLater(const SavePageRequest& request);
+  bool SavePageLater(const GURL& url, const ClientId& client_id);
 
   // Starts processing of one or more queued save page later requests.
   // Returns whether processing was started and that caller should expect
