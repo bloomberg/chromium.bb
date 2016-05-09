@@ -142,21 +142,28 @@ void WindowManagerConnection::OnEmbed(mus::Window* root) {}
 void WindowManagerConnection::OnConnectionLost(
     mus::WindowTreeConnection* connection) {}
 
-void WindowManagerConnection::OnEventObserved(const ui::Event& event) {
+void WindowManagerConnection::OnEventObserved(const ui::Event& event,
+                                              mus::Window* target) {
   if (!event.IsLocatedEvent())
     return;
+  Widget* target_widget = nullptr;
+  if (target) {
+    mus::Window* root = target->GetRoot();
+    target_widget = NativeWidgetMus::GetWidgetForWindow(root);
+  }
+
   // The mojo input events type converter uses the event root_location field
   // to store screen coordinates. Screen coordinates really should be returned
   // separately. See http://crbug.com/608547
   gfx::Point location_in_screen = event.AsLocatedEvent()->root_location();
   if (event.type() == ui::ET_MOUSE_PRESSED) {
-    FOR_EACH_OBSERVER(
-        PointerWatcher, pointer_watchers_,
-        OnMousePressed(*event.AsMouseEvent(), location_in_screen));
+    FOR_EACH_OBSERVER(PointerWatcher, pointer_watchers_,
+                      OnMousePressed(*event.AsMouseEvent(), location_in_screen,
+                                     target_widget));
   } else if (event.type() == ui::ET_TOUCH_PRESSED) {
-    FOR_EACH_OBSERVER(
-        PointerWatcher, pointer_watchers_,
-        OnTouchPressed(*event.AsTouchEvent(), location_in_screen));
+    FOR_EACH_OBSERVER(PointerWatcher, pointer_watchers_,
+                      OnTouchPressed(*event.AsTouchEvent(), location_in_screen,
+                                     target_widget));
   }
 }
 

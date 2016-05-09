@@ -166,7 +166,8 @@ void RootWindowController::OnConnectionLost(
   delete this;
 }
 
-void RootWindowController::OnEventObserved(const ui::Event& event) {
+void RootWindowController::OnEventObserved(const ui::Event& event,
+                                           mus::Window* target) {
   // Does not use EventObservers.
 }
 

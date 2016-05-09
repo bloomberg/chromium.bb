@@ -16,6 +16,10 @@ namespace ui {
 class LocatedEvent;
 }
 
+namespace views {
+class Widget;
+}
+
 namespace ash {
 
 // Support for PointerWatchers in non-mus ash, implemented with a pre-target
@@ -36,6 +40,7 @@ class ASH_EXPORT PointerWatcherDelegateAura : public PointerWatcherDelegate,
 
  private:
   gfx::Point GetLocationInScreen(const ui::LocatedEvent& event) const;
+  views::Widget* GetTargetWidget(const ui::LocatedEvent& event) const;
 
   // Must be empty on destruction.
   base::ObserverList<views::PointerWatcher, true> pointer_watchers_;

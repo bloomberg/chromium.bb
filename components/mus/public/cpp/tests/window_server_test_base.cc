@@ -87,7 +87,8 @@ void WindowServerTestBase::OnConnectionLost(WindowTreeConnection* connection) {
   window_tree_connection_destroyed_ = true;
 }
 
-void WindowServerTestBase::OnEventObserved(const ui::Event& event) {}
+void WindowServerTestBase::OnEventObserved(const ui::Event& event,
+                                           Window* target) {}
 
 void WindowServerTestBase::SetWindowManagerClient(WindowManagerClient* client) {
   window_manager_client_ = client;

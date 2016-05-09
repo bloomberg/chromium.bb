@@ -73,6 +73,9 @@ class VIEWS_MUS_EXPORT NativeWidgetMus : public internal::NativeWidgetPrivate,
   // Notifies all widgets the frame constants changed in some way.
   static void NotifyFrameChanged(mus::WindowTreeConnection* connection);
 
+  // Returns the widget for a mus::Window, or null if there is none.
+  static Widget* GetWidgetForWindow(mus::Window* window);
+
   mus::Window* window() { return window_; }
   WindowTreeHostMus* window_tree_host() { return window_tree_host_.get(); }
 

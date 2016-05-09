@@ -72,12 +72,14 @@ void OverflowBubble::ProcessPressedEvent(
 }
 
 void OverflowBubble::OnMousePressed(const ui::MouseEvent& event,
-                                    const gfx::Point& location_in_screen) {
+                                    const gfx::Point& location_in_screen,
+                                    views::Widget* target) {
   ProcessPressedEvent(location_in_screen);
 }
 
 void OverflowBubble::OnTouchPressed(const ui::TouchEvent& event,
-                                    const gfx::Point& location_in_screen) {
+                                    const gfx::Point& location_in_screen,
+                                    views::Widget* target) {
   ProcessPressedEvent(location_in_screen);
 }
 

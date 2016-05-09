@@ -4,6 +4,7 @@
 
 #include "ash/system/tray/tray_event_filter.h"
 
+#include "ash/container_delegate.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
@@ -40,37 +41,30 @@ void TrayEventFilter::RemoveWrapper(TrayBubbleWrapper* wrapper) {
 }
 
 void TrayEventFilter::OnMousePressed(const ui::MouseEvent& event,
-                                     const gfx::Point& location_in_screen) {
-  ProcessLocatedEvent(event, location_in_screen);
+                                     const gfx::Point& location_in_screen,
+                                     views::Widget* target) {
+  ProcessPressedEvent(location_in_screen, target);
 }
 
 void TrayEventFilter::OnTouchPressed(const ui::TouchEvent& event,
-                                     const gfx::Point& location_in_screen) {
-  ProcessLocatedEvent(event, location_in_screen);
+                                     const gfx::Point& location_in_screen,
+                                     views::Widget* target) {
+  ProcessPressedEvent(location_in_screen, target);
 }
 
-void TrayEventFilter::ProcessLocatedEvent(
-    const ui::LocatedEvent& event,
-    const gfx::Point& location_in_screen) {
-  // TODO(jamescook): Rewrite this to avoid using event.target() as that will
-  // always be null on mus. http://crbug.com/608570
-  if (event.target()) {
-    aura::Window* target = static_cast<aura::Window*>(event.target());
-    // Don't process events that occurred inside an embedded menu.
-    RootWindowController* root_controller =
-        GetRootWindowController(target->GetRootWindow());
-    if (root_controller &&
-        root_controller->GetContainer(kShellWindowId_MenuContainer)
-            ->Contains(target)) {
+void TrayEventFilter::ProcessPressedEvent(const gfx::Point& location_in_screen,
+                                          views::Widget* target) {
+  if (target) {
+    ContainerDelegate* container_delegate =
+        Shell::GetInstance()->container_delegate();
+    // Don't process events that occurred inside an embedded menu, for example
+    // the right-click menu in a popup notification.
+    if (container_delegate->IsInMenuContainer(target))
       return;
-    }
     // Don't process events that occurred inside the status area widget and
     // a popup notification from message center.
-    if (root_controller &&
-        root_controller->GetContainer(kShellWindowId_StatusContainer)
-            ->Contains(target)) {
+    if (container_delegate->IsInStatusContainer(target))
       return;
-    }
   }
 
   // Check the boundary for all wrappers, and do not handle the event if it

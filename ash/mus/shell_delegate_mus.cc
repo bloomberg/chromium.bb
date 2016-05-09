@@ -9,6 +9,7 @@
 #include "ash/gpu_support_stub.h"
 #include "ash/media_delegate.h"
 #include "ash/mus/app_list_presenter_mus.h"
+#include "ash/mus/container_delegate_mus.h"
 #include "ash/mus/context_menu_mus.h"
 #include "ash/mus/pointer_watcher_delegate_mus.h"
 #include "ash/mus/shelf_delegate_mus.h"
@@ -206,6 +207,10 @@ NewWindowDelegate* ShellDelegateMus::CreateNewWindowDelegate() {
 MediaDelegate* ShellDelegateMus::CreateMediaDelegate() {
   NOTIMPLEMENTED() << " Using a stub MediaDelegate implementation";
   return new MediaDelegateStub;
+}
+
+std::unique_ptr<ContainerDelegate> ShellDelegateMus::CreateContainerDelegate() {
+  return base::WrapUnique(new ContainerDelegateMus);
 }
 
 std::unique_ptr<PointerWatcherDelegate>

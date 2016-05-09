@@ -90,7 +90,7 @@ void MusDemo::OnConnectionLost(mus::WindowTreeConnection* connection) {
   timer_.Stop();
 }
 
-void MusDemo::OnEventObserved(const ui::Event& event) {}
+void MusDemo::OnEventObserved(const ui::Event& event, mus::Window* target) {}
 
 void MusDemo::SetWindowManagerClient(mus::WindowManagerClient* client) {}
 

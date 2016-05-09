@@ -6,6 +6,7 @@
 
 #include "ash/accessibility_delegate.h"
 #include "ash/app_list/app_list_presenter_delegate_factory.h"
+#include "ash/container_delegate_aura.h"
 #include "ash/default_accessibility_delegate.h"
 #include "ash/default_user_wallpaper_delegate.h"
 #include "ash/gpu_support_stub.h"
@@ -253,6 +254,11 @@ ash::NewWindowDelegate* ShellDelegateImpl::CreateNewWindowDelegate() {
 
 ash::MediaDelegate* ShellDelegateImpl::CreateMediaDelegate() {
   return new MediaDelegateImpl;
+}
+
+std::unique_ptr<ash::ContainerDelegate>
+ShellDelegateImpl::CreateContainerDelegate() {
+  return base::WrapUnique(new ContainerDelegateAura);
 }
 
 std::unique_ptr<ash::PointerWatcherDelegate>

@@ -61,6 +61,7 @@ class TestShellDelegate : public ShellDelegate {
   AccessibilityDelegate* CreateAccessibilityDelegate() override;
   NewWindowDelegate* CreateNewWindowDelegate() override;
   MediaDelegate* CreateMediaDelegate() override;
+  std::unique_ptr<ContainerDelegate> CreateContainerDelegate() override;
   std::unique_ptr<PointerWatcherDelegate> CreatePointerWatcherDelegate()
       override;
   ui::MenuModel* CreateContextMenu(ash::Shelf* shelf,

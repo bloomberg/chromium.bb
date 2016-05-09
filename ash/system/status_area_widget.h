@@ -25,8 +25,6 @@ class VirtualKeyboardTray;
 
 class ASH_EXPORT StatusAreaWidget : public views::Widget {
  public:
-  static const char kNativeViewName[];
-
   StatusAreaWidget(aura::Window* status_container, ShelfWidget* shelf_widget);
   ~StatusAreaWidget() override;
 

@@ -174,13 +174,15 @@ void ShelfTooltipManager::ShowTooltipWithDelay(views::View* view) {
 }
 
 void ShelfTooltipManager::OnMousePressed(const ui::MouseEvent& event,
-                                         const gfx::Point& location_in_screen) {
+                                         const gfx::Point& location_in_screen,
+                                         views::Widget* target) {
   // Close on any mouse press events inside or outside the tooltip.
   Close();
 }
 
 void ShelfTooltipManager::OnTouchPressed(const ui::TouchEvent& event,
-                                         const gfx::Point& location_in_screen) {
+                                         const gfx::Point& location_in_screen,
+                                         views::Widget* target) {
   // Close on any touch press events inside or outside the tooltip.
   Close();
 }

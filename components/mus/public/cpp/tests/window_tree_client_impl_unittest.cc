@@ -60,7 +60,7 @@ class TestWindowTreeDelegate : public WindowTreeDelegate {
   // WindowTreeDelegate:
   void OnEmbed(Window* root) override {}
   void OnConnectionLost(WindowTreeConnection* connection) override {}
-  void OnEventObserved(const ui::Event& event) override {
+  void OnEventObserved(const ui::Event& event, Window* target) override {
     last_event_observed_ = ui::Event::Clone(event);
   }
 

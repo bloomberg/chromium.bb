@@ -65,9 +65,11 @@ class ASH_EXPORT ShelfTooltipManager : public ui::EventHandler,
 
   // views::PointerWatcher overrides:
   void OnMousePressed(const ui::MouseEvent& event,
-                      const gfx::Point& location_in_screen) override;
+                      const gfx::Point& location_in_screen,
+                      views::Widget* target) override;
   void OnTouchPressed(const ui::TouchEvent& event,
-                      const gfx::Point& location_in_screen) override;
+                      const gfx::Point& location_in_screen,
+                      views::Widget* target) override;
 
   // ShelfLayoutManagerObserver overrides:
   void WillDeleteShelf() override;

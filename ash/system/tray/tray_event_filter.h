@@ -33,13 +33,15 @@ class TrayEventFilter : public views::PointerWatcher {
 
   // views::PointerWatcher:
   void OnMousePressed(const ui::MouseEvent& event,
-                      const gfx::Point& location_in_screen) override;
+                      const gfx::Point& location_in_screen,
+                      views::Widget* target) override;
   void OnTouchPressed(const ui::TouchEvent& event,
-                      const gfx::Point& location_in_screen) override;
+                      const gfx::Point& location_in_screen,
+                      views::Widget* target) override;
 
  private:
-  void ProcessLocatedEvent(const ui::LocatedEvent& event,
-                           const gfx::Point& location_in_screen);
+  void ProcessPressedEvent(const gfx::Point& location_in_screen,
+                           views::Widget* target);
 
   std::set<TrayBubbleWrapper*> wrappers_;
 

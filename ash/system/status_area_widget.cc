@@ -27,8 +27,6 @@
 
 namespace ash {
 
-const char StatusAreaWidget::kNativeViewName[] = "StatusAreaWidget";
-
 StatusAreaWidget::StatusAreaWidget(aura::Window* status_container,
                                    ShelfWidget* shelf_widget)
     : status_area_widget_delegate_(new StatusAreaWidgetDelegate),
@@ -44,12 +42,12 @@ StatusAreaWidget::StatusAreaWidget(aura::Window* status_container,
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.delegate = status_area_widget_delegate_;
+  params.name = "StatusAreaWidget";
   params.parent = status_container;
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   Init(params);
   set_focus_on_creation(false);
   SetContentsView(status_area_widget_delegate_);
-  GetNativeView()->SetName(kNativeViewName);
 }
 
 StatusAreaWidget::~StatusAreaWidget() {

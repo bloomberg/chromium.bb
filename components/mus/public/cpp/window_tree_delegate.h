@@ -52,8 +52,9 @@ class WindowTreeDelegate {
   virtual void OnConnectionLost(WindowTreeConnection* connection) = 0;
 
   // Called when the WindowTreeConnection receives an input event observed via
-  // SetEventObserver().
-  virtual void OnEventObserved(const ui::Event& event) = 0;
+  // SetEventObserver(). |target| may be null for events that were sent to
+  // windows owned by other processes.
+  virtual void OnEventObserved(const ui::Event& event, Window* target) = 0;
 
  protected:
   virtual ~WindowTreeDelegate() {}

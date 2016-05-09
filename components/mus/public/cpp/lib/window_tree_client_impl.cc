@@ -911,14 +911,14 @@ void WindowTreeClientImpl::OnWindowInputEvent(uint32_t event_id,
                                               mojom::EventPtr event,
                                               uint32_t event_observer_id) {
   std::unique_ptr<ui::Event> ui_event = event.To<std::unique_ptr<ui::Event>>();
+  Window* window = GetWindowByServerId(window_id);  // May be null.
 
   // Non-zero event_observer_id means it matched an event observer on the
   // server.
   if (event_observer_id != 0 && has_event_observer_ &&
       event_observer_id == event_observer_id_)
-    delegate_->OnEventObserved(*ui_event);
+    delegate_->OnEventObserved(*ui_event, window);
 
-  Window* window = GetWindowByServerId(window_id);
   if (!window || !window->input_event_handler_) {
     tree_->OnWindowInputEventAck(event_id, mojom::EventResult::UNHANDLED);
     return;
@@ -942,7 +942,7 @@ void WindowTreeClientImpl::OnEventObserved(mojom::EventPtr event,
   if (has_event_observer_ && event_observer_id == event_observer_id_) {
     std::unique_ptr<ui::Event> ui_event =
         event.To<std::unique_ptr<ui::Event>>();
-    delegate_->OnEventObserved(*ui_event);
+    delegate_->OnEventObserved(*ui_event, nullptr /* target */);
   }
 }
 

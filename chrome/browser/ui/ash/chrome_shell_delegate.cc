@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include "ash/container_delegate_aura.h"
 #include "ash/content/gpu_support_impl.h"
 #include "ash/pointer_watcher_delegate_aura.h"
 #include "ash/session/session_state_delegate.h"
@@ -154,6 +155,11 @@ ash::ShelfDelegate* ChromeShellDelegate::CreateShelfDelegate(
     shelf_delegate_->Init();
   }
   return shelf_delegate_;
+}
+
+std::unique_ptr<ash::ContainerDelegate>
+ChromeShellDelegate::CreateContainerDelegate() {
+  return base::WrapUnique(new ash::ContainerDelegateAura);
 }
 
 std::unique_ptr<ash::PointerWatcherDelegate>

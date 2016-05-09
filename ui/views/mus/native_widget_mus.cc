@@ -377,6 +377,17 @@ void NativeWidgetMus::NotifyFrameChanged(
   }
 }
 
+// static
+Widget* NativeWidgetMus::GetWidgetForWindow(mus::Window* window) {
+  if (!window)
+    return nullptr;
+  NativeWidgetMus* native_widget =
+      window->GetLocalProperty(kNativeWidgetMusKey);
+  if (!native_widget)
+    return nullptr;
+  return native_widget->GetWidget();
+}
+
 aura::Window* NativeWidgetMus::GetRootWindow() {
   return window_tree_host_->window();
 }
