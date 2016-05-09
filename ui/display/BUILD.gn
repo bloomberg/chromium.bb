@@ -34,6 +34,8 @@ component("display") {
     "chromeos/x11/native_display_event_dispatcher_x11.h",
     "display.h",
     "display_export.h",
+    "display_finder.cc",
+    "display_finder.h",
     "display_observer.h",
     "display_switches.cc",
     "display_switches.h",
@@ -161,6 +163,7 @@ test("display_unittests") {
 
   deps = [
     ":display",
+    ":test_support",
     "//base",
     "//base/test:run_all_unittests",
     "//base/test:test_support",
@@ -172,10 +175,7 @@ test("display_unittests") {
   ]
 
   if (is_chromeos) {
-    deps += [
-      ":test_support",
-      ":test_util",
-    ]
+    deps += [ ":test_util" ]
   }
 
   if (is_chromeos && use_ozone) {

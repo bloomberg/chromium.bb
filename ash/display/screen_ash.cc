@@ -18,8 +18,8 @@
 #include "ui/aura/env.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/display/display.h"
+#include "ui/display/display_finder.h"
 #include "ui/display/screen.h"
-#include "ui/gfx/display_finder.h"
 
 namespace ash {
 
@@ -52,12 +52,12 @@ class ScreenForShutdown : public display::Screen {
   }
   display::Display GetDisplayNearestPoint(
       const gfx::Point& point) const override {
-    return *gfx::FindDisplayNearestPoint(display_list_, point);
+    return *display::FindDisplayNearestPoint(display_list_, point);
   }
   display::Display GetDisplayMatching(
       const gfx::Rect& match_rect) const override {
     const display::Display* matching =
-        gfx::FindDisplayWithBiggestIntersection(display_list_, match_rect);
+        display::FindDisplayWithBiggestIntersection(display_list_, match_rect);
     // Fallback to the primary display if there is no matching display.
     return matching ? *matching : GetPrimaryDisplay();
   }
@@ -163,7 +163,7 @@ display::Display ScreenAsh::GetDisplayNearestPoint(
   // Fallback to the display that has the shortest Manhattan distance from
   // the |point|. This is correct in the only areas that matter, namely in the
   // corners between the physical screens.
-  return *gfx::FindDisplayNearestPoint(
+  return *display::FindDisplayNearestPoint(
       GetDisplayManager()->active_display_list(), point);
 }
 
@@ -171,8 +171,9 @@ display::Display ScreenAsh::GetDisplayMatching(
     const gfx::Rect& match_rect) const {
   if (match_rect.IsEmpty())
     return GetDisplayNearestPoint(match_rect.origin());
-  const display::Display* matching = gfx::FindDisplayWithBiggestIntersection(
-      GetDisplayManager()->active_display_list(), match_rect);
+  const display::Display* matching =
+      display::FindDisplayWithBiggestIntersection(
+          GetDisplayManager()->active_display_list(), match_rect);
   // Fallback to the primary display if there is no matching display.
   return matching ? *matching : GetPrimaryDisplay();
 }

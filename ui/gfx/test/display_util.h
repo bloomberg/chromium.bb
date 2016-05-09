@@ -9,7 +9,7 @@
 
 namespace gfx {
 
-inline bool operator==(const gfx::Display& lhs, const gfx::Display& rhs) {
+inline bool operator==(const Display& lhs, const Display& rhs) {
   return lhs.id() == rhs.id() &&
          lhs.bounds() == rhs.bounds() &&
          lhs.work_area() == rhs.work_area() &&

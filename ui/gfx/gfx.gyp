@@ -183,8 +183,6 @@
         'display.h',
         'display_change_notifier.cc',
         'display_change_notifier.h',
-        'display_finder.cc',
-        'display_finder.h',
         'display_observer.cc',
         'display_observer.h',
         'favicon_size.cc',

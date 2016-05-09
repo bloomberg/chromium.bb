@@ -8,8 +8,8 @@
 #include "services/shell/public/cpp/connection.h"
 #include "services/shell/public/cpp/connector.h"
 #include "ui/aura/window.h"
+#include "ui/display/display_finder.h"
 #include "ui/display/display_observer.h"
-#include "ui/gfx/display_finder.h"
 #include "ui/mojo/display/display_type_converters.h"
 #include "ui/views/mus/screen_mus_delegate.h"
 #include "ui/views/mus/window_manager_frame_values.h"
@@ -155,7 +155,7 @@ display::Display ScreenMus::GetDisplayNearestWindow(
 
 display::Display ScreenMus::GetDisplayNearestPoint(
     const gfx::Point& point) const {
-  return *gfx::FindDisplayNearestPoint(displays_, point);
+  return *display::FindDisplayNearestPoint(displays_, point);
 }
 
 int ScreenMus::GetNumDisplays() const {
@@ -169,7 +169,7 @@ std::vector<display::Display> ScreenMus::GetAllDisplays() const {
 display::Display ScreenMus::GetDisplayMatching(
     const gfx::Rect& match_rect) const {
   const display::Display* match =
-      gfx::FindDisplayWithBiggestIntersection(displays_, match_rect);
+      display::FindDisplayWithBiggestIntersection(displays_, match_rect);
   return match ? *match : GetPrimaryDisplay();
 }
 

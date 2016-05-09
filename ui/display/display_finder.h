@@ -2,30 +2,33 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_GFX_DISPLAY_FINDER_H_
-#define UI_GFX_DISPLAY_FINDER_H_
+#ifndef UI_DISPLAY_DISPLAY_FINDER_H_
+#define UI_DISPLAY_DISPLAY_FINDER_H_
 
 #include <vector>
 
-#include "ui/gfx/gfx_export.h"
+#include "ui/display/display_export.h"
 
 namespace gfx {
-
 class Display;
 class Point;
 class Rect;
+}
+
+namespace display {
+using Display = gfx::Display;
 
 // Returns the display in |displays| closest to |point|.
-GFX_EXPORT const Display* FindDisplayNearestPoint(
+DISPLAY_EXPORT const Display* FindDisplayNearestPoint(
     const std::vector<Display>& displays,
-    const Point& point);
+    const gfx::Point& point);
 
 // Returns the display in |displays| with the biggest intersection of |rect|.
 // If none of the displays intersect |rect| null is returned.
-GFX_EXPORT const Display* FindDisplayWithBiggestIntersection(
+DISPLAY_EXPORT const Display* FindDisplayWithBiggestIntersection(
     const std::vector<Display>& displays,
-    const Rect& rect);
+    const gfx::Rect& rect);
 
-}  // namespace gfx
+}  // namespace display
 
-#endif  // UI_GFX_DISPLAY_FINDER_H_
+#endif  // UI_DISPLAY_DISPLAY_FINDER_H_
