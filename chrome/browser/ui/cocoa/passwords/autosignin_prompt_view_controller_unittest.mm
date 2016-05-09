@@ -4,6 +4,8 @@
 
 #import "chrome/browser/ui/cocoa/passwords/account_chooser_view_controller.h"
 
+#include <Carbon/Carbon.h>
+
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/utf_string_conversions.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
@@ -12,6 +14,7 @@
 #include "components/autofill/core/common/password_form.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#import "ui/events/test/cocoa_test_event_utils.h"
 
 
 namespace {
@@ -118,6 +121,14 @@ TEST_F(AutoSigninPromptViewControllerTest, ClosePromptAndHandleClick) {
   [view_controller().contentText clickedOnLink:@"" atIndex:0];
   [view_controller().okButton performClick:nil];
   [view_controller().turnOffButton performClick:nil];
+}
+
+TEST_F(AutoSigninPromptViewControllerTest, CloseOnEsc) {
+  SetUpAutosigninFirstRun();
+  EXPECT_CALL(*this, OnPerformClose());
+  [[view_controller() view]
+      performKeyEquivalent:cocoa_test_event_utils::KeyEventWithKeyCode(
+                               kVK_Escape, '\e', NSKeyDown, 0)];
 }
 
 }  // namespace

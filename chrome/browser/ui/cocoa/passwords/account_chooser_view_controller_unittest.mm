@@ -6,6 +6,8 @@
 
 #include <utility>
 
+#include <Carbon/Carbon.h>
+
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/string16.h"
@@ -20,6 +22,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
+#import "ui/events/test/cocoa_test_event_utils.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -229,6 +232,16 @@ TEST_F(AccountChooserViewControllerTest, ClosePromptAndHandleClick) {
   [base::mac::ObjCCastStrict<CredentialItemButton>(
       [view_controller().credentialButtons objectAtIndex:0]) performClick:nil];
   [view_controller().cancelButton performClick:nil];
+}
+
+TEST_F(AccountChooserViewControllerTest, CloseOnEsc) {
+  PasswordDialogController::FormsVector local_forms;
+  local_forms.push_back(Credential("pizza"));
+  SetUpAccountChooser(&local_forms);
+  EXPECT_CALL(*this, OnPerformClose());
+  [[view_controller() view]
+      performKeyEquivalent:cocoa_test_event_utils::KeyEventWithKeyCode(
+                               kVK_Escape, '\e', NSKeyDown, 0)];
 }
 
 }  // namespace

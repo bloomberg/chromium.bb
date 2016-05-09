@@ -8,6 +8,7 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#import "chrome/browser/ui/cocoa/key_equivalent_constants.h"
 #import "chrome/browser/ui/cocoa/passwords/account_avatar_fetcher_manager.h"
 #import "chrome/browser/ui/cocoa/passwords/credential_item_button.h"
 #import "chrome/browser/ui/cocoa/passwords/passwords_bubble_utils.h"
@@ -93,6 +94,7 @@ constexpr size_t kMaxAccounts = 3;
   cancelButton_ = DialogButton(l10n_util::GetNSString(IDS_APP_CANCEL));
   [cancelButton_ setTarget:self];
   [cancelButton_ setAction:@selector(onCancelClicked:)];
+  [cancelButton_ setKeyEquivalent:kKeyEquivalentEscape];
   [view addSubview:cancelButton_];
 
   // Lay out the views.
