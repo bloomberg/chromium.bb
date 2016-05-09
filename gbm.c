@@ -105,11 +105,6 @@ gbm_device_is_format_supported(struct gbm_device *gbm,
 {
 	unsigned i;
 
-	if (format == GBM_BO_FORMAT_XRGB8888)
-		format = GBM_FORMAT_XRGB8888;
-	if (format == GBM_BO_FORMAT_ARGB8888)
-		format = GBM_FORMAT_ARGB8888;
-
 	if (usage & GBM_BO_USE_CURSOR &&
 		usage & GBM_BO_USE_RENDERING)
 		return 0;

@@ -17,11 +17,6 @@
 
 size_t gbm_num_planes_from_format(uint32_t format)
 {
-	if (format == GBM_BO_FORMAT_XRGB8888)
-		format = GBM_FORMAT_XRGB8888;
-	if (format == GBM_BO_FORMAT_ARGB8888)
-		format = GBM_FORMAT_ARGB8888;
-
 	switch(format)
 	{
 		case GBM_FORMAT_C8:
@@ -82,11 +77,6 @@ size_t gbm_num_planes_from_format(uint32_t format)
 
 int gbm_bpp_from_format(uint32_t format)
 {
-	if (format == GBM_BO_FORMAT_XRGB8888)
-		format = GBM_FORMAT_XRGB8888;
-	if (format == GBM_BO_FORMAT_ARGB8888)
-		format = GBM_FORMAT_ARGB8888;
-
 	switch(format)
 	{
 		case GBM_FORMAT_C8:

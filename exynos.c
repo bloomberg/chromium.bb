@@ -34,8 +34,7 @@ static int gbm_exynos_bo_create(struct gbm_bo *bo,
 		bo->sizes[0] = bo->strides[0] * height + 64;
 		bo->sizes[1] = bo->strides[1] * chroma_height + 64;
 		bo->offsets[0] = bo->offsets[1] = 0;
-	} else if (format == GBM_FORMAT_XRGB8888 || format == GBM_FORMAT_ARGB8888 ||
-			format == GBM_BO_FORMAT_XRGB8888 || format == GBM_BO_FORMAT_ARGB8888 ) {
+	} else if (format == GBM_FORMAT_XRGB8888 || format == GBM_FORMAT_ARGB8888) {
 		bo->strides[0] = gbm_stride_from_format(format, width);
 		bo->sizes[0] = height * bo->strides[0];
 		bo->offsets[0] = 0;
