@@ -163,7 +163,6 @@ public class PrecacheController {
                 .setRequiresCharging(true)
                 .setService(ChromeBackgroundService.class)
                 .setTag(PERIODIC_TASK_TAG)
-                .setUpdateCurrent(true)
                 .build();
         sTaskScheduler.scheduleTask(context, task);
     }
@@ -249,8 +248,14 @@ public class PrecacheController {
     public static void setIsPrecachingEnabled(Context context, boolean enabled) {
         boolean cancelRequired = !enabled && PrecacheController.hasInstance();
         Context appContext = context.getApplicationContext();
+
+        SharedPreferences sharedPreferences = ContextUtils.getAppSharedPreferences();
+        if (sharedPreferences.getBoolean(PREF_IS_PRECACHING_ENABLED, !enabled) == enabled) {
+            return;
+        }
+
         Log.v(TAG, "setting precache enabled to %s", enabled);
-        Editor editor = ContextUtils.getAppSharedPreferences().edit();
+        Editor editor = sharedPreferences.edit();
         editor.putBoolean(PREF_IS_PRECACHING_ENABLED, enabled);
         editor.apply();
 

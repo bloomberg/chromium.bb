@@ -150,14 +150,14 @@ public class PrecacheControllerTest extends InstrumentationTestCase {
     @Feature({"Precache"})
     public void testStartPrecachingNotEnabled() {
         PrecacheController.setIsPrecachingEnabled(mContext, false);
-        verifyScheduledAndCanceledCounts(0, 0, 1, 1);
+        verifyScheduledAndCanceledCounts(0, 0, 0, 0);
         assertEquals(0, mPrecacheLauncher.startCnt);
         assertTrue(mPrecacheController.precache(PrecacheController.PERIODIC_TASK_TAG)
                         == GcmNetworkManager.RESULT_SUCCESS);
         assertFalse(mPrecacheController.isPrecaching());
         verifyLockCounts(0, 0);
         // All tasks are canceled.
-        verifyScheduledAndCanceledCounts(0, 0, 2, 2);
+        verifyScheduledAndCanceledCounts(0, 0, 1, 1);
         assertEquals(0, mPrecacheLauncher.startCnt);
     }
 
@@ -247,5 +247,23 @@ public class PrecacheControllerTest extends InstrumentationTestCase {
         // No tasks are scheduled or canceled.
         verifyScheduledAndCanceledCounts(0, 0, 0, 0);
         verifyLockCounts(0, 0);
+    }
+
+    @SmallTest
+    @Feature({"Precache"})
+    public void testPrecachingEnabledPreferences() {
+        // Initial enable will schedule a periodic task.
+        PrecacheController.setIsPrecachingEnabled(mContext, true);
+        verifyScheduledAndCanceledCounts(1, 0, 0, 0);
+        // Subsequent enable will not schedule or cancel tasks.
+        PrecacheController.setIsPrecachingEnabled(mContext, true);
+        verifyScheduledAndCanceledCounts(1, 0, 0, 0);
+
+        // Disabling will cancel periodic and one-off tasks.
+        PrecacheController.setIsPrecachingEnabled(mContext, false);
+        verifyScheduledAndCanceledCounts(1, 0, 1, 1);
+        // Subsequent disable will not schedule or cancel tasks.
+        PrecacheController.setIsPrecachingEnabled(mContext, false);
+        verifyScheduledAndCanceledCounts(1, 0, 1, 1);
     }
 }
