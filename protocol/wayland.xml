@@ -2577,6 +2577,14 @@
 	The to-be sub-surface must not already have another role, and it
 	must not have an existing wl_subsurface object. Otherwise a protocol
 	error is raised.
+
+	Adding sub-surfaces to a parent is a double-buffered operation on the
+	parent (see wl_surface.commit). The effect of adding a sub-surface
+	becomes visible on the next time the state of the parent surface is
+	applied.
+
+	This request modifies the behaviour of wl_surface.commit request on
+	the sub-surface, see the documentation on wl_subsurface interface.
       </description>
       <arg name="id" type="new_id" interface="wl_subsurface"
 	   summary="the new sub-surface object ID"/>
@@ -2646,7 +2654,7 @@
 	that was turned into a sub-surface with a
 	wl_subcompositor.get_subsurface request. The wl_surface's association
 	to the parent is deleted, and the wl_surface loses its role as
-	a sub-surface. The wl_surface is unmapped.
+	a sub-surface. The wl_surface is unmapped immediately.
       </description>
     </request>
 
