@@ -334,6 +334,7 @@ source_set("app_unit_tests") {
 
   sources = [
     "app/blimp_engine_config_unittest.cc",
+    "app/blimp_system_url_request_context_getter_unittest.cc",
     "app/settings_manager_unittest.cc",
     "app/ui/blimp_screen_unittest.cc",
   ]
@@ -341,12 +342,14 @@ source_set("app_unit_tests") {
   deps = [
     ":app",
     ":app_config",
+    ":app_net",
     ":app_settings",
     ":app_switches",
     "//base",
     "//base/test:run_all_unittests",
     "//base/test:test_support",
     "//blimp/engine:app_ui",
+    "//content/test:test_support",
     "//testing/gmock",
     "//testing/gtest",
     "//ui/display",

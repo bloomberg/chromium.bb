@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "content/public/browser/browser_thread.h"
+#include "net/proxy/proxy_service.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
 
@@ -29,6 +30,9 @@ BlimpSystemURLRequestContextGetter::GetURLRequestContext() {
   if (!url_request_context_) {
     // Use default values
     net::URLRequestContextBuilder builder;
+    // TODO(jessicag): See if proxy_service setup should be harmonized with
+    // user request context getter. http://crbug/609981
+    builder.set_proxy_service(net::ProxyService::CreateDirect());
     url_request_context_ = builder.Build();
   }
   return url_request_context_.get();
