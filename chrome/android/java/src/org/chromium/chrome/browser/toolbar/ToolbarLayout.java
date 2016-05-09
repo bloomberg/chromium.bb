@@ -610,6 +610,13 @@ abstract class ToolbarLayout extends FrameLayout implements Toolbar {
     }
 
     /**
+     * @return True if the progress bar is started.
+     */
+    protected boolean isProgressStarted() {
+        return mProgressBar != null ? mProgressBar.isStarted() : false;
+    }
+
+    /**
      * Finish any toolbar animations.
      */
     public void finishAnimations() { }
