@@ -1123,11 +1123,6 @@ Signing in anyway will merge Chromium information like bookmarks, history, and o
       <message name="IDS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY_CT_INVALID" desc="The text of the identity section when the page is secure, but it contains a Signed Certificate Timestamp from a known Certificate Transparency log that failed to verify.">
         Chromium verified that <ph name="ISSUER">$1<ex>VeriSign</ex></ph> issued this website's certificate. The server supplied Certificate Transparency information, but it was invalid.
       </message>
-      
-      <!-- Desktop Capture -->
-      <message name="IDS_DESKTOP_MEDIA_PICKER_SOURCE_TYPE_TAB" desc="Text for the button on the window picker dialog, clicking which takes one to tab sharing">
-        Chromium Tab
-      </message>
 
       <!-- Runtime permission strings -->
       <if expr="is_android">

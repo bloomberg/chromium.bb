@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/desktop_media_picker_views_deprecated.h"
+#include "chrome/browser/ui/views/desktop_media_picker_views.h"
 
 #include <utility>
 
@@ -21,12 +21,12 @@
 #include "ui/views/window/dialog_client_view.h"
 #include "ui/views/window/dialog_delegate.h"
 
-namespace deprecated {
+namespace views {
 
-class DesktopMediaPickerViewsDeprecatedTest : public testing::Test {
+class DesktopMediaPickerViewsTest : public testing::Test {
  public:
-  DesktopMediaPickerViewsDeprecatedTest() {}
-  ~DesktopMediaPickerViewsDeprecatedTest() override {}
+  DesktopMediaPickerViewsTest() {}
+  ~DesktopMediaPickerViewsTest() override {}
 
   void SetUp() override {
     screen_list_ = new FakeDesktopMediaList();
@@ -39,11 +39,11 @@ class DesktopMediaPickerViewsDeprecatedTest : public testing::Test {
     base::string16 app_name = base::ASCIIToUTF16("foo");
 
     picker_views_.reset(new DesktopMediaPickerViews());
-    picker_views_->Show(
-        NULL, test_helper_.GetContext(), NULL, app_name, app_name,
-        std::move(screen_list), std::move(window_list), std::move(tab_list),
-        false, base::Bind(&DesktopMediaPickerViewsDeprecatedTest::OnPickerDone,
-                          base::Unretained(this)));
+    picker_views_->Show(NULL, test_helper_.GetContext(), NULL, app_name,
+                        app_name, std::move(screen_list),
+                        std::move(window_list), std::move(tab_list), false,
+                        base::Bind(&DesktopMediaPickerViewsTest::OnPickerDone,
+                                   base::Unretained(this)));
   }
 
   void TearDown() override {
@@ -68,19 +68,18 @@ class DesktopMediaPickerViewsDeprecatedTest : public testing::Test {
   std::unique_ptr<DesktopMediaPickerViews> picker_views_;
 };
 
-TEST_F(DesktopMediaPickerViewsDeprecatedTest,
-       DoneCallbackCalledWhenWindowClosed) {
+TEST_F(DesktopMediaPickerViewsTest, DoneCallbackCalledWhenWindowClosed) {
   EXPECT_CALL(*this, OnPickerDone(content::DesktopMediaID()));
 
   GetPickerDialogView()->GetWidget()->Close();
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_F(DesktopMediaPickerViewsDeprecatedTest,
-       DoneCallbackCalledOnOkButtonPressed) {
+TEST_F(DesktopMediaPickerViewsTest, DoneCallbackCalledOnOkButtonPressed) {
   const int kFakeId = 222;
-  EXPECT_CALL(*this, OnPickerDone(content::DesktopMediaID(
-                         content::DesktopMediaID::TYPE_WINDOW, kFakeId)));
+  EXPECT_CALL(*this,
+              OnPickerDone(content::DesktopMediaID(
+                  content::DesktopMediaID::TYPE_WINDOW, kFakeId)));
   window_list_->AddSource(kFakeId);
 
   EXPECT_FALSE(
@@ -96,8 +95,7 @@ TEST_F(DesktopMediaPickerViewsDeprecatedTest,
 
 // Verifies that a MediaSourceView is selected with mouse left click and
 // original selected MediaSourceView gets unselected.
-TEST_F(DesktopMediaPickerViewsDeprecatedTest,
-       SelectMediaSourceViewOnSingleClick) {
+TEST_F(DesktopMediaPickerViewsTest, SelectMediaSourceViewOnSingleClick) {
   window_list_->AddSource(0);
   window_list_->AddSource(1);
 
@@ -127,10 +125,11 @@ TEST_F(DesktopMediaPickerViewsDeprecatedTest,
   EXPECT_TRUE(source_view_1->is_selected());
 }
 
-TEST_F(DesktopMediaPickerViewsDeprecatedTest, DoneCallbackCalledOnDoubleClick) {
+TEST_F(DesktopMediaPickerViewsTest, DoneCallbackCalledOnDoubleClick) {
   const int kFakeId = 222;
-  EXPECT_CALL(*this, OnPickerDone(content::DesktopMediaID(
-                         content::DesktopMediaID::TYPE_WINDOW, kFakeId)));
+  EXPECT_CALL(*this,
+              OnPickerDone(content::DesktopMediaID(
+                  content::DesktopMediaID::TYPE_WINDOW, kFakeId)));
 
   window_list_->AddSource(kFakeId);
 
@@ -144,10 +143,11 @@ TEST_F(DesktopMediaPickerViewsDeprecatedTest, DoneCallbackCalledOnDoubleClick) {
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_F(DesktopMediaPickerViewsDeprecatedTest, DoneCallbackCalledOnDoubleTap) {
+TEST_F(DesktopMediaPickerViewsTest, DoneCallbackCalledOnDoubleTap) {
   const int kFakeId = 222;
-  EXPECT_CALL(*this, OnPickerDone(content::DesktopMediaID(
-                         content::DesktopMediaID::TYPE_WINDOW, kFakeId)));
+  EXPECT_CALL(*this,
+              OnPickerDone(content::DesktopMediaID(
+                  content::DesktopMediaID::TYPE_WINDOW, kFakeId)));
 
   window_list_->AddSource(kFakeId);
   ui::GestureEventDetails details(ui::ET_GESTURE_TAP);
@@ -159,14 +159,14 @@ TEST_F(DesktopMediaPickerViewsDeprecatedTest, DoneCallbackCalledOnDoubleTap) {
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_F(DesktopMediaPickerViewsDeprecatedTest, CancelButtonAlwaysEnabled) {
+TEST_F(DesktopMediaPickerViewsTest, CancelButtonAlwaysEnabled) {
   EXPECT_TRUE(
       GetPickerDialogView()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_CANCEL));
 }
 
 // Verifies that the MediaSourceView is added or removed when |media_list_| is
 // updated.
-TEST_F(DesktopMediaPickerViewsDeprecatedTest, AddAndRemoveMediaSource) {
+TEST_F(DesktopMediaPickerViewsTest, AddAndRemoveMediaSource) {
   // No media source at first.
   EXPECT_EQ(NULL, GetPickerDialogView()->GetMediaSourceViewForTesting(0));
 
@@ -183,7 +183,7 @@ TEST_F(DesktopMediaPickerViewsDeprecatedTest, AddAndRemoveMediaSource) {
 
 // Verifies that focusing the MediaSourceView marks it selected and the
 // original selected MediaSourceView gets unselected.
-TEST_F(DesktopMediaPickerViewsDeprecatedTest, FocusMediaSourceViewToSelect) {
+TEST_F(DesktopMediaPickerViewsTest, FocusMediaSourceViewToSelect) {
   window_list_->AddSource(0);
   window_list_->AddSource(1);
 
@@ -208,7 +208,7 @@ TEST_F(DesktopMediaPickerViewsDeprecatedTest, FocusMediaSourceViewToSelect) {
   EXPECT_TRUE(source_view_1->is_selected());
 }
 
-TEST_F(DesktopMediaPickerViewsDeprecatedTest, OkButtonDisabledWhenNoSelection) {
+TEST_F(DesktopMediaPickerViewsTest, OkButtonDisabledWhenNoSelection) {
   window_list_->AddSource(111);
 
   EXPECT_FALSE(
@@ -224,8 +224,8 @@ TEST_F(DesktopMediaPickerViewsDeprecatedTest, OkButtonDisabledWhenNoSelection) {
 }
 
 // Verifies that the MediaListView get the initial focus.
-TEST_F(DesktopMediaPickerViewsDeprecatedTest, ListViewHasInitialFocus) {
+TEST_F(DesktopMediaPickerViewsTest, ListViewHasInitialFocus) {
   EXPECT_TRUE(GetPickerDialogView()->GetMediaListViewForTesting()->HasFocus());
 }
 
-}  // namespace deprecated
+}  // namespace views

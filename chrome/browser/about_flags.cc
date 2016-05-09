@@ -1528,7 +1528,8 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE(switches::kEnableWebRtcDtls12)},
 #endif
 #if defined(ENABLE_WEBRTC)
-    {"enable-webrtc-ecdsa", IDS_FLAGS_WEBRTC_ECDSA_NAME,
+    {"enable-webrtc-ecdsa",
+     IDS_FLAGS_WEBRTC_ECDSA_NAME,
      IDS_FLAGS_WEBRTC_ECDSA_DESCRIPTION, kOsAll,
      FEATURE_VALUE_TYPE(features::kWebRtcEcdsaDefault)},
 #endif
@@ -1771,11 +1772,6 @@ const FeatureEntry kFeatureEntries[] = {
      ENABLE_DISABLE_VALUE_TYPE(
          extensions::switches::kEnableTabForDesktopShare,
          extensions::switches::kDisableTabForDesktopShare)},
-    {"disable-desktop-capture-picker-old-ui",
-     IDS_FLAG_DISABLE_DESKTOP_CAPTURE_PICKER_OLD_UI,
-     IDS_FLAG_DISABLE_DESKTOP_CAPTURE_PICKER_OLD_UI_DESCRIPTION, kOsAll,
-     SINGLE_VALUE_TYPE(
-         extensions::switches::kDisableDesktopCapturePickerOldUI)},
 #endif
 #if defined(OS_ANDROID)
     {"enable-ntp-snippets", IDS_FLAGS_ENABLE_NTP_SNIPPETS_NAME,
@@ -1844,17 +1840,20 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE(switches::kEnableFullscreenTabDetaching)},
 #endif
 #if defined(OS_ANDROID)
-    {"media-style-notification", IDS_FLAGS_MEDIA_STYLE_NOTIFICATION_NAME,
+    {"media-style-notification",
+     IDS_FLAGS_MEDIA_STYLE_NOTIFICATION_NAME,
      IDS_FLAGS_MEDIA_STYLE_NOTIFICATION_DESCRIPTION, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kMediaStyleNotification)},
-    {"important-sites-in-cbd", IDS_FLAGS_IMPORTANT_SITES_IN_CBD_NAME,
+    {"important-sites-in-cbd",
+     IDS_FLAGS_IMPORTANT_SITES_IN_CBD_NAME,
      IDS_FLAGS_IMPORTANT_SITES_IN_CBD_DESCRIPTION, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kImportantSitesInCBD)},
 #endif
     {"enable-pointer-events",  // FLAGS:RECORD_UMA
-     IDS_FLAGS_EXPERIMENTAL_POINTER_EVENT_NAME,
-     IDS_FLAGS_EXPERIMENTAL_POINTER_EVENT_DESCRIPTION, kOsAll,
-     FEATURE_VALUE_TYPE(features::kPointerEvents)},
+      IDS_FLAGS_EXPERIMENTAL_POINTER_EVENT_NAME,
+      IDS_FLAGS_EXPERIMENTAL_POINTER_EVENT_DESCRIPTION,
+      kOsAll,
+      FEATURE_VALUE_TYPE(features::kPointerEvents)},
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in
     // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.
