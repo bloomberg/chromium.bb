@@ -510,6 +510,7 @@ bool AudioCodecBridge::ConfigureMediaFormat(jobject j_format,
         LOG(ERROR) << "Invalid AAC header";
         return false;
       }
+
       const size_t kCsdLength = 2;
       uint8_t csd[kCsdLength];
       csd[0] = profile << 3 | frequency_index >> 1;
@@ -555,6 +556,15 @@ bool AudioCodecBridge::ConfigureMediaFormat(jobject j_format,
       return false;
   }
   return true;
+}
+
+bool AudioCodecBridge::CreateAudioTrack(int sampling_rate, int channel_count) {
+  DVLOG(2) << __FUNCTION__ << ": samping_rate:" << sampling_rate
+           << " channel_count:" << channel_count;
+
+  JNIEnv* env = AttachCurrentThread();
+  return Java_MediaCodecBridge_createAudioTrack(env, media_codec(),
+                                                sampling_rate, channel_count);
 }
 
 MediaCodecStatus AudioCodecBridge::PlayOutputBuffer(int index,

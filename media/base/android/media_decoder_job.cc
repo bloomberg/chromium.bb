@@ -457,8 +457,10 @@ void MediaDecoderJob::DecodeInternal(
     if (status == MEDIA_CODEC_OUTPUT_FORMAT_CHANGED) {
       // TODO(qinmin): instead of waiting for the next output buffer to be
       // dequeued, post a task on the UI thread to signal the format change.
-      OnOutputFormatChanged();
-      has_format_change = true;
+      if (OnOutputFormatChanged())
+        has_format_change = true;
+      else
+        status = MEDIA_CODEC_ERROR;
     }
   } while (status != MEDIA_CODEC_OK && status != MEDIA_CODEC_ERROR &&
            status != MEDIA_CODEC_DEQUEUE_OUTPUT_AGAIN_LATER);
@@ -675,7 +677,9 @@ bool MediaDecoderJob::IsCodecReconfigureNeeded(
   return true;
 }
 
-void MediaDecoderJob::OnOutputFormatChanged() {}
+bool MediaDecoderJob::OnOutputFormatChanged() {
+  return true;
+}
 
 bool MediaDecoderJob::UpdateOutputFormat() {
   return false;

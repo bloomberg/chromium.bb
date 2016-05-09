@@ -892,7 +892,12 @@ bool MediaCodecDecoder::DepleteOutputBufferQueue() {
       case MEDIA_CODEC_OUTPUT_FORMAT_CHANGED:
         DVLOG(2) << class_name() << "::" << __FUNCTION__
                  << " MEDIA_CODEC_OUTPUT_FORMAT_CHANGED";
-        OnOutputFormatChanged();
+        if (!OnOutputFormatChanged()) {
+          DVLOG(0) << class_name() << "::" << __FUNCTION__
+                   << ": OnOutputFormatChanged failed";
+          status = MEDIA_CODEC_ERROR;
+          media_task_runner_->PostTask(FROM_HERE, internal_error_cb_);
+        }
         break;
 
       case MEDIA_CODEC_OK:

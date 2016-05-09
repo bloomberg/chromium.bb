@@ -282,7 +282,8 @@ class MediaCodecDecoder {
   virtual void DissociatePTSFromTime() {}
 
   // Processes the change of the output format, varies by stream.
-  virtual void OnOutputFormatChanged() = 0;
+  // Returns true if this processing succeeded.
+  virtual bool OnOutputFormatChanged() = 0;
 
   // Renders the decoded frame and releases output buffer, or posts
   // a delayed task to do it at a later time,

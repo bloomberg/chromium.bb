@@ -545,39 +545,14 @@ class MediaCodecBridge {
     }
 
     @CalledByNative
-    private boolean configureAudio(MediaFormat format, MediaCrypto crypto, int flags,
-            boolean playAudio) {
+    private boolean configureAudio(
+            MediaFormat format, MediaCrypto crypto, int flags, boolean playAudio) {
         try {
             mMediaCodec.configure(format, null, crypto, flags);
             if (playAudio) {
                 int sampleRate = format.getInteger(MediaFormat.KEY_SAMPLE_RATE);
                 int channelCount = format.getInteger(MediaFormat.KEY_CHANNEL_COUNT);
-                int channelConfig = getAudioFormat(channelCount);
-                // Using 16bit PCM for output. Keep this value in sync with
-                // kBytesPerAudioOutputSample in media_codec_bridge.cc.
-                int minBufferSize = AudioTrack.getMinBufferSize(sampleRate, channelConfig,
-                        AudioFormat.ENCODING_PCM_16BIT);
-
-                // Set buffer size to be at least 1.5 times the minimum buffer size
-                // (see http://crbug.com/589269).
-                // TODO(timav, qinmin): For MediaSourcePlayer, we starts both audio and
-                // video decoder once we got valid presentation timestamp from the decoder
-                // (prerolling_==false). However, this doesn't guarantee that audiotrack
-                // starts outputing samples, especially with a larger buffersize.
-                // The best solution will be having a large buffer size in AudioTrack, and
-                // sync audio/video start when audiotrack starts output samples
-                // (head position starts progressing).
-                int minBufferSizeInFrames = minBufferSize / PCM16_BYTES_PER_SAMPLE / channelCount;
-                int bufferSize =
-                        (int) (1.5 * minBufferSizeInFrames) * PCM16_BYTES_PER_SAMPLE * channelCount;
-
-                mAudioTrack = new AudioTrack(AudioManager.STREAM_MUSIC, sampleRate, channelConfig,
-                        AudioFormat.ENCODING_PCM_16BIT, bufferSize, AudioTrack.MODE_STREAM);
-                if (mAudioTrack.getState() == AudioTrack.STATE_UNINITIALIZED) {
-                    Log.e(TAG, "Cannot create AudioTrack");
-                    mAudioTrack = null;
-                    return false;
-                }
+                if (!createAudioTrack(sampleRate, channelCount)) return false;
             }
             return true;
         } catch (IllegalArgumentException e) {
@@ -590,6 +565,42 @@ class MediaCodecBridge {
             Log.e(TAG, "Cannot configure the audio codec", e);
         }
         return false;
+    }
+
+    @CalledByNative
+    private boolean createAudioTrack(int sampleRate, int channelCount) {
+        Log.v(TAG, "createAudioTrack: sampleRate:" + sampleRate + " channelCount:" + channelCount);
+
+        int channelConfig = getAudioFormat(channelCount);
+
+        // Using 16bit PCM for output. Keep this value in sync with
+        // kBytesPerAudioOutputSample in media_codec_bridge.cc.
+        int minBufferSize = AudioTrack.getMinBufferSize(
+                sampleRate, channelConfig, AudioFormat.ENCODING_PCM_16BIT);
+
+        // Set buffer size to be at least 1.5 times the minimum buffer size
+        // (see http://crbug.com/589269).
+        // TODO(timav, qinmin): For MediaSourcePlayer, we starts both audio and
+        // video decoder once we got valid presentation timestamp from the decoder
+        // (prerolling_==false). However, this doesn't guarantee that audiotrack
+        // starts outputing samples, especially with a larger buffersize.
+        // The best solution will be having a large buffer size in AudioTrack, and
+        // sync audio/video start when audiotrack starts output samples
+        // (head position starts progressing).
+        int minBufferSizeInFrames = minBufferSize / PCM16_BYTES_PER_SAMPLE / channelCount;
+        int bufferSize =
+                (int) (1.5 * minBufferSizeInFrames) * PCM16_BYTES_PER_SAMPLE * channelCount;
+
+        if (mAudioTrack != null) mAudioTrack.release();
+
+        mAudioTrack = new AudioTrack(AudioManager.STREAM_MUSIC, sampleRate, channelConfig,
+                AudioFormat.ENCODING_PCM_16BIT, bufferSize, AudioTrack.MODE_STREAM);
+        if (mAudioTrack.getState() == AudioTrack.STATE_UNINITIALIZED) {
+            Log.e(TAG, "Cannot create AudioTrack");
+            mAudioTrack = null;
+            return false;
+        }
+        return true;
     }
 
     /**

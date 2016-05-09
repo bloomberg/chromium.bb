@@ -205,7 +205,7 @@ void VideoMediaCodecDecoder::DissociatePTSFromTime() {
   start_pts_ = last_seen_pts_ = kNoTimestamp();
 }
 
-void VideoMediaCodecDecoder::OnOutputFormatChanged() {
+bool VideoMediaCodecDecoder::OnOutputFormatChanged() {
   DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
 
   gfx::Size prev_size = video_size_;
@@ -218,6 +218,7 @@ void VideoMediaCodecDecoder::OnOutputFormatChanged() {
     media_task_runner_->PostTask(
         FROM_HERE, base::Bind(video_size_changed_cb_, video_size_));
   }
+  return true;
 }
 
 void VideoMediaCodecDecoder::Render(int buffer_index,

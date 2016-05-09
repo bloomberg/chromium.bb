@@ -254,8 +254,8 @@ class MediaDecoderJob {
 
   // Signals to decoder job that decoder has updated output format. Decoder job
   // may need to do internal reconfiguration in order to correctly interpret
-  // incoming buffers
-  virtual void OnOutputFormatChanged();
+  // incoming buffers. Returns true if this internal configuration succeeded.
+  virtual bool OnOutputFormatChanged();
 
   // Update the output format from the decoder, returns true if the output
   // format changes, or false otherwise.

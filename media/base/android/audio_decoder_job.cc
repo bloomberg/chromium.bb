@@ -40,13 +40,12 @@ AudioDecoderJob::AudioDecoderJob(
                       request_data_cb,
                       on_demuxer_config_changed_cb),
       audio_codec_(kUnknownAudioCodec),
-      num_channels_(0),
+      config_num_channels_(0),
       config_sampling_rate_(0),
       volume_(-1.0),
-      bytes_per_frame_(0),
       output_sampling_rate_(0),
-      frame_count_(0) {
-}
+      output_num_channels_(0),
+      frame_count_(0) {}
 
 AudioDecoderJob::~AudioDecoderJob() {}
 
@@ -63,15 +62,17 @@ void AudioDecoderJob::SetDemuxerConfigs(const DemuxerConfigs& configs) {
   // TODO(qinmin): split DemuxerConfig for audio and video separately so we
   // can simply store the stucture here.
   audio_codec_ = configs.audio_codec;
-  num_channels_ = configs.audio_channels;
+  config_num_channels_ = configs.audio_channels;
   config_sampling_rate_ = configs.audio_sampling_rate;
   set_is_content_encrypted(configs.is_audio_encrypted);
   audio_extra_data_ = configs.audio_extra_data;
   audio_codec_delay_ns_ = configs.audio_codec_delay_ns;
   audio_seek_preroll_ns_ = configs.audio_seek_preroll_ns;
-  bytes_per_frame_ = kBytesPerAudioOutputSample * num_channels_;
-  if (!media_codec_bridge_)
+
+  if (!media_codec_bridge_) {
     output_sampling_rate_ = config_sampling_rate_;
+    output_num_channels_ = config_num_channels_;
+  }
 }
 
 void AudioDecoderJob::SetVolume(double volume) {
@@ -118,7 +119,8 @@ void AudioDecoderJob::ReleaseOutputBuffer(
 
     base::TimeTicks current_time = base::TimeTicks::Now();
 
-    size_t new_frames_count = size / bytes_per_frame_;
+    size_t bytes_per_frame = kBytesPerAudioOutputSample * output_num_channels_;
+    size_t new_frames_count = size / bytes_per_frame;
     frame_count_ += new_frames_count;
     audio_timestamp_helper_->AddFrames(new_frames_count);
     int64_t frames_to_play = frame_count_ - head_position;
@@ -153,13 +155,12 @@ bool AudioDecoderJob::ComputeTimeToRender() const {
 bool AudioDecoderJob::AreDemuxerConfigsChanged(
     const DemuxerConfigs& configs) const {
   return audio_codec_ != configs.audio_codec ||
-     num_channels_ != configs.audio_channels ||
-     config_sampling_rate_ != configs.audio_sampling_rate ||
-     is_content_encrypted() != configs.is_audio_encrypted ||
-     audio_extra_data_.size() != configs.audio_extra_data.size() ||
-     !std::equal(audio_extra_data_.begin(),
-                 audio_extra_data_.end(),
-                 configs.audio_extra_data.begin());
+         config_num_channels_ != configs.audio_channels ||
+         config_sampling_rate_ != configs.audio_sampling_rate ||
+         is_content_encrypted() != configs.is_audio_encrypted ||
+         audio_extra_data_.size() != configs.audio_extra_data.size() ||
+         !std::equal(audio_extra_data_.begin(), audio_extra_data_.end(),
+                     configs.audio_extra_data.begin());
 }
 
 MediaDecoderJob::MediaDecoderJobStatus
@@ -170,7 +171,7 @@ MediaDecoderJob::MediaDecoderJobStatus
 
   if (!(static_cast<AudioCodecBridge*>(media_codec_bridge_.get()))
            ->ConfigureAndStart(audio_codec_, config_sampling_rate_,
-                               num_channels_, &audio_extra_data_[0],
+                               config_num_channels_, &audio_extra_data_[0],
                                audio_extra_data_.size(), audio_codec_delay_ns_,
                                audio_seek_preroll_ns_, true,
                                GetMediaCrypto())) {
@@ -194,18 +195,42 @@ void AudioDecoderJob::SetVolumeInternal() {
   }
 }
 
-void AudioDecoderJob::OnOutputFormatChanged() {
+bool AudioDecoderJob::OnOutputFormatChanged() {
   DCHECK(media_codec_bridge_);
 
-  int old_sampling_rate = output_sampling_rate_;
+  // Recreate AudioTrack if either sample rate or output channel count changed.
+  // If we cannot obtain these values we assume they did not change.
+  bool needs_recreate_audio_track = false;
+
+  const int old_sampling_rate = output_sampling_rate_;
   MediaCodecStatus status =
       media_codec_bridge_->GetOutputSamplingRate(&output_sampling_rate_);
-  // TODO(timav,watk): This CHECK maintains the behavior of this call before
-  // we started catching CodecException and returning it as MEDIA_CODEC_ERROR.
-  // It needs to be handled some other way. http://crbug.com/585978
-  CHECK_EQ(status, MEDIA_CODEC_OK);
-  if (output_sampling_rate_ != old_sampling_rate)
+
+  if (status == MEDIA_CODEC_OK && old_sampling_rate != output_sampling_rate_) {
+    DCHECK_GT(output_sampling_rate_, 0);
+    DVLOG(2) << __FUNCTION__ << ": new sampling rate " << output_sampling_rate_;
+    needs_recreate_audio_track = true;
+
     ResetTimestampHelper();
+  }
+
+  const int old_num_channels = output_num_channels_;
+  status = media_codec_bridge_->GetOutputChannelCount(&output_num_channels_);
+
+  if (status == MEDIA_CODEC_OK && old_num_channels != output_num_channels_) {
+    DCHECK_GT(output_sampling_rate_, 0);
+    DVLOG(2) << __FUNCTION__ << ": new channel count " << output_num_channels_;
+    needs_recreate_audio_track = true;
+  }
+
+  if (needs_recreate_audio_track &&
+      !static_cast<AudioCodecBridge*>(media_codec_bridge_.get())
+           ->CreateAudioTrack(output_sampling_rate_, output_num_channels_)) {
+    DLOG(ERROR) << __FUNCTION__ << ": cannot create AudioTrack";
+    return false;
+  }
+
+  return true;
 }
 
 }  // namespace media
