@@ -4,18 +4,24 @@
 
 #include "platform/text/Character.h"
 
+#include <unicode/uvernum.h>
+
+#if defined(USING_SYSTEM_ICU) && (U_ICU_VERSION_MAJOR_NUM <= 56)
 #include <unicode/uniset.h>
+#else
+#include <unicode/uchar.h>
+#endif
 
 using namespace WTF;
 using namespace Unicode;
 
 namespace blink {
 
+// ICU 56 or earlier does not have API for Emoji properties,
+// but Chrome's copy of ICU 56 does.
+#if defined(USING_SYSTEM_ICU) && (U_ICU_VERSION_MAJOR_NUM <= 56)
 // The following UnicodeSet patterns were compiled from
 // http://www.unicode.org/Public/emoji/2.0//emoji-data.txt
-
-// FIXME crbug.com/579552:
-// These patterns should move to property group definitions in ICU.
 
 static const char kEmojiTextPattern[] =
     R"([[#][*][0-9][\u00A9][\u00AE][\u203C][\u2049][\u2122][\u2139])"
@@ -105,7 +111,6 @@ bool Character::isEmojiEmojiDefault(UChar32 ch)
     return emojiEmojiSet.contains(ch);
 }
 
-
 bool Character::isEmojiModifierBase(UChar32 ch)
 {
     DEFINE_STATIC_LOCAL(icu::UnicodeSet, emojieModifierBaseSet, ());
@@ -113,6 +118,27 @@ bool Character::isEmojiModifierBase(UChar32 ch)
         applyPatternAndFreeze(&emojieModifierBaseSet, kEmojiModifierBasePattern);
     return emojieModifierBaseSet.contains(ch);
 }
+#else
+bool Character::isEmoji(UChar32 ch)
+{
+    return u_hasBinaryProperty(ch, UCHAR_EMOJI);
+}
+bool Character::isEmojiTextDefault(UChar32 ch)
+{
+    return u_hasBinaryProperty(ch, UCHAR_EMOJI)
+        && !u_hasBinaryProperty(ch, UCHAR_EMOJI_PRESENTATION);
+}
+
+bool Character::isEmojiEmojiDefault(UChar32 ch)
+{
+    return u_hasBinaryProperty(ch, UCHAR_EMOJI_PRESENTATION);
+}
+
+bool Character::isEmojiModifierBase(UChar32 ch)
+{
+    return u_hasBinaryProperty(ch, UCHAR_EMOJI_MODIFIER_BASE);
+}
+#endif // defined(USING_SYSTEM_ICU) && (U_ICU_VERSION_MAJOR_NUM <= 56)
 
 bool Character::isEmojiKeycapBase(UChar32 ch)
 {
