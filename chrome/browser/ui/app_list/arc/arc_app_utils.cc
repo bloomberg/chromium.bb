@@ -40,6 +40,10 @@ class LaunchAppWithoutSize {
       delete this;
       return true;
     }
+    // TODO(skuhne): Change CanHandleResolution into a call which returns
+    // capability flags like [PHONE/TABLET]_[LANDSCAPE/PORTRAIT] and which
+    // might also return the used DP->PIX conversion constant to do better
+    // size calculations.
     bool result = CanHandleResolution(context_, app_id_, landscape_,
         base::Bind(&LaunchAppWithoutSize::Callback, base::Unretained(this)));
     if (!result)
@@ -51,11 +55,8 @@ class LaunchAppWithoutSize {
   // Default sizes to use.
   static const int NEXUS7_WIDTH = 960;
   static const int NEXUS7_HEIGHT = 600;
-  static const int NEXUS5_WIDTH = 360;
-  static const int NEXUS5_HEIGHT = 640;
-
-  // Constants which are (for now) defined by constants coming from Wayland.
-  static const int WINDOW_TITLE_HEIGHT = 30;
+  static const int NEXUS5_WIDTH = 410;
+  static const int NEXUS5_HEIGHT = 690;
 
   content::BrowserContext* context_;
   const std::string app_id_;
@@ -66,7 +67,7 @@ class LaunchAppWithoutSize {
   // function.
   void Callback(bool can_handle) {
     gfx::Size target_size = can_handle ? landscape_.size() :
-        gfx::Size(NEXUS7_WIDTH, NEXUS7_HEIGHT);
+        gfx::Size(NEXUS5_WIDTH, NEXUS5_HEIGHT);
     LaunchAppWithRect(context_, app_id_, getTargetRect(target_size));
     // Now that we are done, we can delete ourselves.
     delete this;
@@ -84,32 +85,15 @@ class LaunchAppWithoutSize {
     gfx::Rect work_area =
         display::Screen::GetScreen()->GetDisplayNearestWindow(root).work_area();
 
-    // For what Android is concerned, the title bar starts at -TITLE_BAR_HEIGHT.
-    // as such we deduct the title bar height simply from the height, but leave
-    // the top as it is.
-    work_area.set_height(work_area.height() - WINDOW_TITLE_HEIGHT);
     gfx::Rect result(size);
 
-    // Make sure that the window fits entirely into the work area.
-    if (size.width() < work_area.width() ||
-        size.height() < work_area.height()) {
-      float aspect = static_cast<float>(size.width()) /
-                     static_cast<float>(size.height());
-      // Calculate the complementary size from the aspect ratio.
-      int w = static_cast<int>(static_cast<float>(work_area.height()) * aspect);
-      int h = static_cast<int>(static_cast<float>(work_area.width()) / aspect);
-      // Overwrite the dimension which is too big with the possible maximum,
-      // keeping the complementary size.
-      if (h > work_area.height()) {
-          result.set_height(work_area.height());
-          result.set_width(w);
-      } else {
-          result.set_width(work_area.width());
-          result.set_height(h);
-      }
-    }
+    // We do not adjust sizes to fit the window into the work area here.
+    // The reason is that the used DP<->pix transformation is different on
+    // ChromeOS and ARC dependent on the device and zoom factor being used.
+    // As such the real size cannot be determined here (yet). However - ARC
+    // will adjust the bounds to not exceed the visible screen later.
 
-    // ChromeOS does not give us much logic at this time, so we emulate what
+   // ChromeOS does not give us much logic at this time, so we emulate what
     // WindowPositioner::GetDefaultWindowBounds does for now.
     // Note: Android's positioning will not overlap the shelf - as such we can
     // ignore the given workspace inset.
