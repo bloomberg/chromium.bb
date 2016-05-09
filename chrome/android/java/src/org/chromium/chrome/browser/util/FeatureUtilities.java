@@ -23,6 +23,8 @@ import org.chromium.base.FieldTrialList;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.browser.AppLinkHandler;
+import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
@@ -233,8 +235,10 @@ public class FeatureUtilities {
     /**
      * Caches flags that must take effect on startup but are set via native code.
      */
-    public static void cacheNativeFlags() {
+    public static void cacheNativeFlags(ChromeApplication application) {
         cacheHerbFlavor();
+        AppLinkHandler.getInstance(application).cacheAppLinkEnabled(
+                application.getApplicationContext());
     }
 
     /**

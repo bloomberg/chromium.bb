@@ -653,7 +653,8 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         RecordUserAction.record("MobileComeToForeground");
 
         if (getActivityTab() != null) {
-            LaunchMetrics.commitLaunchMetrics(getActivityTab().getWebContents());
+            LaunchMetrics.commitLaunchMetrics(getActivityTab().getWebContents(),
+                    (ChromeApplication) getApplication());
         }
         FeatureUtilities.setCustomTabVisible(isCustomTab());
         FeatureUtilities.setIsInMultiWindowMode(
