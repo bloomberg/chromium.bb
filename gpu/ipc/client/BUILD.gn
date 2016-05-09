@@ -31,6 +31,8 @@ source_set("ipc_client_sources") {
     sources += [
       "gpu_memory_buffer_impl_io_surface.cc",
       "gpu_memory_buffer_impl_io_surface.h",
+      "gpu_process_hosted_ca_layer_tree_params.cc",
+      "gpu_process_hosted_ca_layer_tree_params.h",
     ]
   }
   if (is_android) {

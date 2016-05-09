@@ -46,9 +46,6 @@ namespace content {
 class GpuProcessControlImpl;
 class GpuWatchdogThread;
 struct EstablishChannelParams;
-#if defined(OS_MACOSX)
-struct BufferPresentedParams;
-#endif
 
 // The main thread of the GPU child process. There will only ever be one of
 // these per process. It does process initialization and shutdown. It forwards
@@ -97,17 +94,6 @@ class GpuChildThread : public ChildThreadImpl,
                       gpu::error::ContextLostReason reason,
                       const GURL& active_url) override;
   void GpuMemoryUmaStats(const gpu::GPUMemoryUmaStats& params) override;
-#if defined(OS_MACOSX)
-  void SendAcceleratedSurfaceBuffersSwapped(
-      gpu::SurfaceHandle surface_handle,
-      CAContextID ca_context_id,
-      bool fullscreen_low_power_ca_context_valid,
-      CAContextID fullscreen_low_power_ca_context_id,
-      const gfx::ScopedRefCountedIOSurfaceMachPort& io_surface,
-      const gfx::Size& size,
-      float scale_factor,
-      std::vector<ui::LatencyInfo> latency_info) override;
-#endif
 #if defined(OS_WIN)
   void SendAcceleratedSurfaceCreatedChildWindow(
       gpu::SurfaceHandle parent_window,
@@ -130,9 +116,6 @@ class GpuChildThread : public ChildThreadImpl,
   void OnDisableWatchdog();
   void OnGpuSwitched();
 
-#if defined(OS_MACOSX)
-  void OnBufferPresented(const BufferPresentedParams& params);
-#endif
   void OnEstablishChannel(const EstablishChannelParams& params);
   void OnCloseChannel(int32_t client_id);
   void OnLoadedShader(const std::string& shader);

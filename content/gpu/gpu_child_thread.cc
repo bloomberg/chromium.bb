@@ -275,10 +275,6 @@ bool GpuChildThread::OnMessageReceived(const IPC::Message& msg) {
 
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(GpuChildThread, msg)
-#if defined(OS_MACOSX)
-    IPC_MESSAGE_HANDLER(AcceleratedSurfaceMsg_BufferPresented,
-                        OnBufferPresented)
-#endif
     IPC_MESSAGE_HANDLER(GpuMsg_EstablishChannel, OnEstablishChannel)
     IPC_MESSAGE_HANDLER(GpuMsg_CloseChannel, OnCloseChannel)
     IPC_MESSAGE_HANDLER(GpuMsg_DestroyGpuMemoryBuffer, OnDestroyGpuMemoryBuffer)
@@ -322,31 +318,6 @@ void GpuChildThread::DidLoseContext(bool offscreen,
 void GpuChildThread::GpuMemoryUmaStats(const gpu::GPUMemoryUmaStats& params) {
   Send(new GpuHostMsg_GpuMemoryUmaStats(params));
 }
-
-#if defined(OS_MACOSX)
-void GpuChildThread::SendAcceleratedSurfaceBuffersSwapped(
-    gpu::SurfaceHandle surface_handle,
-    CAContextID ca_context_id,
-    bool fullscreen_low_power_ca_context_valid,
-    CAContextID fullscreen_low_power_ca_context_id,
-    const gfx::ScopedRefCountedIOSurfaceMachPort& io_surface,
-    const gfx::Size& size,
-    float scale_factor,
-    std::vector<ui::LatencyInfo> latency_info) {
-  AcceleratedSurfaceBuffersSwappedParams params;
-  params.surface_handle = surface_handle;
-  params.ca_context_id = ca_context_id;
-  params.fullscreen_low_power_ca_context_valid =
-      fullscreen_low_power_ca_context_valid;
-  params.fullscreen_low_power_ca_context_id =
-      fullscreen_low_power_ca_context_id;
-  params.io_surface = io_surface;
-  params.size = size;
-  params.scale_factor = scale_factor;
-  params.latency_info = std::move(latency_info);
-  Send(new GpuHostMsg_AcceleratedSurfaceBuffersSwapped(params));
-}
-#endif
 
 #if defined(OS_WIN)
 void GpuChildThread::SendAcceleratedSurfaceCreatedChildWindow(
@@ -527,15 +498,6 @@ void GpuChildThread::OnGpuSwitched() {
   // Notify observers in the GPU process.
   ui::GpuSwitchingManager::GetInstance()->NotifyGpuSwitched();
 }
-
-#if defined(OS_MACOSX)
-void GpuChildThread::OnBufferPresented(const BufferPresentedParams& params) {
-  if (gpu_channel_manager_) {
-    gpu_channel_manager_->BufferPresented(
-        params.surface_handle, params.vsync_timebase, params.vsync_interval);
-  }
-}
-#endif
 
 void GpuChildThread::OnEstablishChannel(const EstablishChannelParams& params) {
   if (!gpu_channel_manager_)

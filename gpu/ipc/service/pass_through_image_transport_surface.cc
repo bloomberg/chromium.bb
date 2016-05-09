@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "build/build_config.h"
+#include "gpu/ipc/common/gpu_messages.h"
 #include "gpu/ipc/service/gpu_command_buffer_stub.h"
 #include "ui/gfx/vsync_provider.h"
 #include "ui/gl/gl_context.h"
@@ -167,7 +168,10 @@ void PassThroughImageTransportSurface::FinishSwapBuffers(
         swap_ack_time, 1);
   }
 
-  stub_->SendSwapBuffersCompleted(*latency_info, result);
+  GpuCommandBufferMsg_SwapBuffersCompleted_Params params;
+  params.latency_info = *latency_info;
+  params.result = result;
+  stub_->SendSwapBuffersCompleted(params);
 }
 
 void PassThroughImageTransportSurface::FinishSwapBuffersAsync(

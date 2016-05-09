@@ -654,16 +654,6 @@ void GpuProcessTransportFactory::RemoveObserver(
 }
 
 #if defined(OS_MACOSX)
-void GpuProcessTransportFactory::OnGpuSwapBuffersCompleted(
-    gpu::SurfaceHandle surface_handle,
-    const std::vector<ui::LatencyInfo>& latency_info,
-    gfx::SwapResult result) {
-  BrowserCompositorOutputSurface* surface = output_surface_map_.Lookup(
-      surface_handle);
-  if (surface)
-    surface->OnGpuSwapBuffersCompleted(latency_info, result);
-}
-
 void GpuProcessTransportFactory::SetCompositorSuspendedForRecycle(
     ui::Compositor* compositor,
     bool suspended) {

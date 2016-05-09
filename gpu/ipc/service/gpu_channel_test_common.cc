@@ -41,18 +41,6 @@ void TestGpuChannelManagerDelegate::StoreShaderToDisk(
     const std::string& key,
     const std::string& shader) {}
 
-#if defined(OS_MACOSX)
-void TestGpuChannelManagerDelegate::SendAcceleratedSurfaceBuffersSwapped(
-    gpu::SurfaceHandle surface_handle,
-    CAContextID ca_context_id,
-    bool fullscreen_low_power_ca_context_valid,
-    CAContextID fullscreen_low_power_ca_context_id,
-    const gfx::ScopedRefCountedIOSurfaceMachPort& io_surface,
-    const gfx::Size& size,
-    float scale_factor,
-    std::vector<ui::LatencyInfo> latency_info) {}
-#endif
-
 #if defined(OS_WIN)
 void TestGpuChannelManagerDelegate::SendAcceleratedSurfaceCreatedChildWindow(
     SurfaceHandle parent_window,

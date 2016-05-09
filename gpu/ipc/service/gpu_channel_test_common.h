@@ -45,17 +45,6 @@ class TestGpuChannelManagerDelegate : public GpuChannelManagerDelegate {
   void StoreShaderToDisk(int32_t client_id,
                          const std::string& key,
                          const std::string& shader) override;
-#if defined(OS_MACOSX)
-  void SendAcceleratedSurfaceBuffersSwapped(
-      gpu::SurfaceHandle surface_handle,
-      CAContextID ca_context_id,
-      bool fullscreen_low_power_ca_context_valid,
-      CAContextID fullscreen_low_power_ca_context_id,
-      const gfx::ScopedRefCountedIOSurfaceMachPort& io_surface,
-      const gfx::Size& size,
-      float scale_factor,
-      std::vector<ui::LatencyInfo> latency_info) override;
-#endif
 #if defined(OS_WIN)
   void SendAcceleratedSurfaceCreatedChildWindow(
       SurfaceHandle parent_window,

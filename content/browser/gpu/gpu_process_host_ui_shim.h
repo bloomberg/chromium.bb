@@ -93,16 +93,9 @@ class GpuProcessHostUIShim : public IPC::Listener,
 
   // Message handlers.
   bool OnControlMessageReceived(const IPC::Message& message);
-
   void OnLogMessage(int level, const std::string& header,
       const std::string& message);
-
   void OnGraphicsInfoCollected(const gpu::GPUInfo& gpu_info);
-
-#if defined(OS_MACOSX)
-  void OnAcceleratedSurfaceBuffersSwapped(
-      const AcceleratedSurfaceBuffersSwappedParams& params);
-#endif
   void OnVideoMemoryUsageStatsReceived(
       const gpu::VideoMemoryUsageStats& video_memory_usage_stats);
 

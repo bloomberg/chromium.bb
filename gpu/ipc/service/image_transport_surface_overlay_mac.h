@@ -30,8 +30,7 @@ namespace gpu {
 class ImageTransportSurfaceOverlayMac : public gfx::GLSurface,
                                         public ui::GpuSwitchingObserver {
  public:
-  ImageTransportSurfaceOverlayMac(GpuChannelManager* manager,
-                                  GpuCommandBufferStub* stub,
+  ImageTransportSurfaceOverlayMac(GpuCommandBufferStub* stub,
                                   SurfaceHandle handle);
 
   // GLSurface implementation
@@ -72,9 +71,6 @@ class ImageTransportSurfaceOverlayMac : public gfx::GLSurface,
   ~ImageTransportSurfaceOverlayMac() override;
 
   void SetLatencyInfo(const std::vector<ui::LatencyInfo>& latency_info);
-  void BufferPresented(gpu::SurfaceHandle surface_handle,
-                       const base::TimeTicks& vsync_timebase,
-                       const base::TimeDelta& vsync_interval);
   void SendAcceleratedSurfaceBuffersSwapped(
       gpu::SurfaceHandle surface_handle,
       CAContextID ca_context_id,
@@ -86,7 +82,6 @@ class ImageTransportSurfaceOverlayMac : public gfx::GLSurface,
       std::vector<ui::LatencyInfo> latency_info);
   gfx::SwapResult SwapBuffersInternal(const gfx::Rect& pixel_damage_rect);
 
-  GpuChannelManager* manager_;
   base::WeakPtr<GpuCommandBufferStub> stub_;
   SurfaceHandle handle_;
   std::vector<ui::LatencyInfo> latency_info_;
@@ -102,11 +97,6 @@ class ImageTransportSurfaceOverlayMac : public gfx::GLSurface,
   // The renderer ID that all contexts made current to this surface should be
   // targeting.
   GLint gl_renderer_id_;
-
-  // The vsync information provided by the browser.
-  bool vsync_parameters_valid_;
-  base::TimeTicks vsync_timebase_;
-  base::TimeDelta vsync_interval_;
 };
 
 }  // namespace gpu

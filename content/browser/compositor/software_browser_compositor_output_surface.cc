@@ -60,7 +60,8 @@ void SoftwareBrowserCompositorOutputSurface::SwapBuffers(
 
 void SoftwareBrowserCompositorOutputSurface::OnGpuSwapBuffersCompleted(
     const std::vector<ui::LatencyInfo>& latency_info,
-    gfx::SwapResult result) {
+    gfx::SwapResult result,
+    const gpu::GpuProcessHostedCALayerTreeParamsMac* params_mac) {
   NOTREACHED();
 }
 

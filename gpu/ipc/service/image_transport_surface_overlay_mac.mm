@@ -24,6 +24,7 @@ typedef void* GLeglImageOES;
 #include "base/bind_helpers.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/trace_event/trace_event.h"
+#include "gpu/ipc/common/gpu_messages.h"
 #include "gpu/ipc/service/gpu_channel_manager.h"
 #include "gpu/ipc/service/gpu_channel_manager_delegate.h"
 #include "ui/accelerated_widget_mac/ca_layer_tree_coordinator.h"
@@ -31,6 +32,7 @@ typedef void* GLeglImageOES;
 #include "ui/base/cocoa/animation_utils.h"
 #include "ui/base/cocoa/remote_layer_api.h"
 #include "ui/gfx/geometry/rect_conversions.h"
+#include "ui/gfx/swap_result.h"
 #include "ui/gfx/transform.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_fence.h"
@@ -59,23 +61,17 @@ scoped_refptr<gfx::GLSurface> ImageTransportSurfaceCreateNativeSurface(
     GpuChannelManager* manager,
     GpuCommandBufferStub* stub,
     SurfaceHandle handle) {
-  return new ImageTransportSurfaceOverlayMac(manager, stub, handle);
+  return new ImageTransportSurfaceOverlayMac(stub, handle);
 }
 
 ImageTransportSurfaceOverlayMac::ImageTransportSurfaceOverlayMac(
-    GpuChannelManager* manager,
     GpuCommandBufferStub* stub,
     SurfaceHandle handle)
-    : manager_(manager),
-      stub_(stub->AsWeakPtr()),
+    : stub_(stub->AsWeakPtr()),
       handle_(handle),
       use_remote_layer_api_(ui::RemoteLayerAPISupported()),
       scale_factor_(1),
-      gl_renderer_id_(0),
-      vsync_parameters_valid_(false) {
-  manager_->AddBufferPresentedCallback(
-      handle_, base::Bind(&ImageTransportSurfaceOverlayMac::BufferPresented,
-                          base::Unretained(this)));
+      gl_renderer_id_(0) {
   ui::GpuSwitchingManager::GetInstance()->AddObserver(this);
   ca_layer_tree_coordinator_.reset(
       new ui::CALayerTreeCoordinator(use_remote_layer_api_));
@@ -88,7 +84,6 @@ ImageTransportSurfaceOverlayMac::~ImageTransportSurfaceOverlayMac() {
         base::Callback<void(const std::vector<ui::LatencyInfo>&)>());
   }
   Destroy();
-  manager_->RemoveBufferPresentedCallback(handle_);
 }
 
 bool ImageTransportSurfaceOverlayMac::Initialize(
@@ -130,22 +125,6 @@ void ImageTransportSurfaceOverlayMac::SetLatencyInfo(
                        latency_info.end());
 }
 
-void ImageTransportSurfaceOverlayMac::BufferPresented(
-    gpu::SurfaceHandle surface_handle,
-    const base::TimeTicks& vsync_timebase,
-    const base::TimeDelta& vsync_interval) {
-  vsync_timebase_ = vsync_timebase;
-  vsync_interval_ = vsync_interval;
-  vsync_parameters_valid_ = !vsync_interval_.is_zero();
-
-  // Compute |vsync_timebase_| to be the first vsync after time zero.
-  if (vsync_parameters_valid_) {
-    vsync_timebase_ -=
-        vsync_interval_ *
-        ((vsync_timebase_ - base::TimeTicks()) / vsync_interval_);
-  }
-}
-
 void ImageTransportSurfaceOverlayMac::SendAcceleratedSurfaceBuffersSwapped(
     gpu::SurfaceHandle surface_handle,
     CAContextID ca_context_id,
@@ -159,10 +138,20 @@ void ImageTransportSurfaceOverlayMac::SendAcceleratedSurfaceBuffersSwapped(
   TRACE_EVENT_INSTANT2("test_gpu", "SwapBuffers", TRACE_EVENT_SCOPE_THREAD,
                        "GLImpl", static_cast<int>(gfx::GetGLImplementation()),
                        "width", size.width());
-  manager_->delegate()->SendAcceleratedSurfaceBuffersSwapped(
-      surface_handle, ca_context_id, fullscreen_low_power_ca_context_valid,
-      fullscreen_low_power_ca_context_id, io_surface, size, scale_factor,
-      std::move(latency_info));
+
+  GpuCommandBufferMsg_SwapBuffersCompleted_Params params;
+  params.surface_handle = surface_handle;
+  params.ca_context_id = ca_context_id;
+  params.fullscreen_low_power_ca_context_valid =
+      fullscreen_low_power_ca_context_valid;
+  params.fullscreen_low_power_ca_context_id =
+      fullscreen_low_power_ca_context_id;
+  params.io_surface = io_surface;
+  params.pixel_size = size;
+  params.scale_factor = scale_factor;
+  params.latency_info = std::move(latency_info);
+  params.result = gfx::SwapResult::SWAP_ACK;
+  stub_->SendSwapBuffersCompleted(params);
 }
 
 gfx::SwapResult ImageTransportSurfaceOverlayMac::SwapBuffersInternal(

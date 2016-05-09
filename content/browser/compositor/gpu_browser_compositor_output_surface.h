@@ -49,7 +49,8 @@ class GpuBrowserCompositorOutputSurface
   void OnReflectorChanged() override;
   void OnGpuSwapBuffersCompleted(
       const std::vector<ui::LatencyInfo>& latency_info,
-      gfx::SwapResult result) override;
+      gfx::SwapResult result,
+      const gpu::GpuProcessHostedCALayerTreeParamsMac* params_mac) override;
 
   // cc::OutputSurface implementation.
   void SwapBuffers(cc::CompositorFrame* frame) override;
@@ -75,8 +76,10 @@ class GpuBrowserCompositorOutputSurface
 
   gpu::CommandBufferProxyImpl* GetCommandBufferProxy();
 
-  base::CancelableCallback<void(const std::vector<ui::LatencyInfo>&,
-                                gfx::SwapResult)>
+  base::CancelableCallback<void(
+      const std::vector<ui::LatencyInfo>&,
+      gfx::SwapResult,
+      const gpu::GpuProcessHostedCALayerTreeParamsMac* params_mac)>
       swap_buffers_completion_callback_;
   base::CancelableCallback<void(base::TimeTicks timebase,
                                 base::TimeDelta interval)>

@@ -33,12 +33,14 @@
 #include "ui/gfx/swap_result.h"
 
 struct GPUCommandBufferConsoleMessage;
+struct GpuCommandBufferMsg_SwapBuffersCompleted_Params;
 
 namespace base {
 class SharedMemory;
 }
 
 namespace gpu {
+struct GpuProcessHostedCALayerTreeParamsMac;
 struct Mailbox;
 struct SyncToken;
 }
@@ -127,9 +129,10 @@ class GPU_EXPORT CommandBufferProxyImpl
   void SetOnConsoleMessageCallback(const GpuConsoleMessageCallback& callback);
 
   void SetLatencyInfo(const std::vector<ui::LatencyInfo>& latency_info);
-  using SwapBuffersCompletionCallback =
-      base::Callback<void(const std::vector<ui::LatencyInfo>& latency_info,
-                          gfx::SwapResult result)>;
+  using SwapBuffersCompletionCallback = base::Callback<void(
+      const std::vector<ui::LatencyInfo>& latency_info,
+      gfx::SwapResult result,
+      const gpu::GpuProcessHostedCALayerTreeParamsMac* params_mac)>;
   void SetSwapBuffersCompletionCallback(
       const SwapBuffersCompletionCallback& callback);
 
@@ -177,8 +180,8 @@ class GPU_EXPORT CommandBufferProxyImpl
                    gpu::error::Error error);
   void OnConsoleMessage(const GPUCommandBufferConsoleMessage& message);
   void OnSignalAck(uint32_t id);
-  void OnSwapBuffersCompleted(const std::vector<ui::LatencyInfo>& latency_info,
-                              gfx::SwapResult result);
+  void OnSwapBuffersCompleted(
+      const GpuCommandBufferMsg_SwapBuffersCompleted_Params& params);
   void OnUpdateVSyncParameters(base::TimeTicks timebase,
                                base::TimeDelta interval);
 

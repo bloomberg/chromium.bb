@@ -40,18 +40,6 @@ void GpuServiceMus::StoreShaderToDisk(int32_t client_id,
   NOTIMPLEMENTED();
 }
 
-#if defined(OS_MACOSX)
-void GpuServiceMus::SendAcceleratedSurfaceBuffersSwapped(
-    gpu::SurfaceHandle surface_handle,
-    CAContextID ca_context_id,
-    const gfx::ScopedRefCountedIOSurfaceMachPort& io_surface,
-    const gfx::Size& size,
-    float scale_factor,
-    std::vector<ui::LatencyInfo> latency_info) {
-  NOTIMPLEMENTED();
-}
-#endif
-
 #if defined(OS_WIN)
 void GpuServiceMus::SendAcceleratedSurfaceCreatedChildWindow(
     gpu::SurfaceHandle parent_window,

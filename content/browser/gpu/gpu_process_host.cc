@@ -626,10 +626,6 @@ bool GpuProcessHost::OnMessageReceived(const IPC::Message& message) {
                         OnDidDestroyOffscreenContext)
     IPC_MESSAGE_HANDLER(GpuHostMsg_GpuMemoryUmaStats,
                         OnGpuMemoryUmaStatsReceived)
-#if defined(OS_MACOSX)
-    IPC_MESSAGE_HANDLER_GENERIC(GpuHostMsg_AcceleratedSurfaceBuffersSwapped,
-                                OnAcceleratedSurfaceBuffersSwapped(message))
-#endif
     IPC_MESSAGE_HANDLER(GpuHostMsg_DestroyChannel, OnDestroyChannel)
     IPC_MESSAGE_HANDLER(GpuHostMsg_CacheShader, OnCacheShader)
 #if defined(OS_WIN)
@@ -914,13 +910,6 @@ void GpuProcessHost::OnGpuMemoryUmaStatsReceived(
   uma_memory_stats_received_ = true;
   uma_memory_stats_ = stats;
 }
-
-#if defined(OS_MACOSX)
-void GpuProcessHost::OnAcceleratedSurfaceBuffersSwapped(
-    const IPC::Message& message) {
-  RenderWidgetResizeHelper::PostGpuProcessMsg(host_id_, message);
-}
-#endif
 
 void GpuProcessHost::OnProcessLaunched() {
   UMA_HISTOGRAM_TIMES("GPU.GPUProcessLaunchTime",

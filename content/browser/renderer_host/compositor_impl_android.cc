@@ -70,6 +70,10 @@
 #include "ui/gfx/android/device_display_info.h"
 #include "ui/gfx/swap_result.h"
 
+namespace gpu {
+struct GpuProcessHostedCALayerTreeParamsMac;
+}
+
 namespace content {
 
 namespace {
@@ -203,8 +207,10 @@ class OutputSurfaceWithoutParent : public cc::OutputSurface,
     return command_buffer_proxy;
   }
 
-  void OnSwapBuffersCompleted(const std::vector<ui::LatencyInfo>& latency_info,
-                              gfx::SwapResult result) {
+  void OnSwapBuffersCompleted(
+      const std::vector<ui::LatencyInfo>& latency_info,
+      gfx::SwapResult result,
+      const gpu::GpuProcessHostedCALayerTreeParamsMac* params_mac) {
     RenderWidgetHostImpl::CompositorFrameDrawn(latency_info);
     OutputSurface::OnSwapBuffersComplete();
   }
@@ -216,9 +222,11 @@ class OutputSurfaceWithoutParent : public cc::OutputSurface,
  private:
   CompositorImpl* compositor_;
   base::Callback<void(gpu::Capabilities)> populate_gpu_capabilities_callback_;
-  base::CancelableCallback<void(const std::vector<ui::LatencyInfo>&,
-                                gfx::SwapResult)>
-      swap_buffers_completion_callback_;
+  base::CancelableCallback<void(
+      const std::vector<ui::LatencyInfo>&,
+      gfx::SwapResult,
+      const gpu::GpuProcessHostedCALayerTreeParamsMac* params_mac)>
+          swap_buffers_completion_callback_;
   std::unique_ptr<cc::OverlayCandidateValidator> overlay_candidate_validator_;
   std::unique_ptr<ExternalBeginFrameSource> begin_frame_source_;
 };

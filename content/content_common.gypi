@@ -220,8 +220,6 @@
       'public/common/zygote_handle.h',
     ],
     'private_common_sources': [
-      'common/accelerated_surface_buffers_swapped_params_mac.cc',
-      'common/accelerated_surface_buffers_swapped_params_mac.h',
       'common/accessibility_messages.h',
       'common/all_messages.h',
       'common/android/address_parser.cc',
@@ -255,8 +253,6 @@
       'common/browser_plugin/browser_plugin_constants.cc',
       'common/browser_plugin/browser_plugin_constants.h',
       'common/browser_plugin/browser_plugin_messages.h',
-      'common/buffer_presented_params_mac.cc',
-      'common/buffer_presented_params_mac.h',
       'common/cache_storage/cache_storage_messages.h',
       'common/cache_storage/cache_storage_types.cc',
       'common/cache_storage/cache_storage_types.h',

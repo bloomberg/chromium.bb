@@ -70,6 +70,25 @@ IPC_STRUCT_BEGIN(GpuCommandBufferMsg_CreateImage_Params)
   IPC_STRUCT_MEMBER(uint64_t, image_release_count)
 IPC_STRUCT_END()
 
+IPC_STRUCT_BEGIN(GpuCommandBufferMsg_SwapBuffersCompleted_Params)
+#if defined(OS_MACOSX)
+  // Mac-specific parameters used to present CALayers hosted in the GPU process.
+  // TODO(ccameron): Remove these parameters once the CALayer tree is hosted in
+  // the browser process.
+  // https://crbug.com/604052
+  IPC_STRUCT_MEMBER(gpu::SurfaceHandle, surface_handle)
+  // Only one of ca_context_id or io_surface may be non-0.
+  IPC_STRUCT_MEMBER(CAContextID, ca_context_id)
+  IPC_STRUCT_MEMBER(bool, fullscreen_low_power_ca_context_valid)
+  IPC_STRUCT_MEMBER(CAContextID, fullscreen_low_power_ca_context_id)
+  IPC_STRUCT_MEMBER(gfx::ScopedRefCountedIOSurfaceMachPort, io_surface)
+  IPC_STRUCT_MEMBER(gfx::Size, pixel_size)
+  IPC_STRUCT_MEMBER(float, scale_factor)
+#endif
+  IPC_STRUCT_MEMBER(std::vector<ui::LatencyInfo>, latency_info)
+  IPC_STRUCT_MEMBER(gfx::SwapResult, result)
+IPC_STRUCT_END()
+
 //------------------------------------------------------------------------------
 // GPU Channel Messages
 // These are messages from a renderer process to the GPU process.
@@ -191,9 +210,9 @@ IPC_MESSAGE_ROUTED2(GpuCommandBufferMsg_Destroyed,
                     gpu::error::Error /* error */)
 
 // Tells the browser that SwapBuffers returned and passes latency info
-IPC_MESSAGE_ROUTED2(GpuCommandBufferMsg_SwapBuffersCompleted,
-                    std::vector<ui::LatencyInfo> /* latency_info */,
-                    gfx::SwapResult /* result */)
+IPC_MESSAGE_ROUTED1(
+    GpuCommandBufferMsg_SwapBuffersCompleted,
+    GpuCommandBufferMsg_SwapBuffersCompleted_Params /* params */)
 
 // Tells the browser about updated parameters for vsync alignment.
 IPC_MESSAGE_ROUTED2(GpuCommandBufferMsg_UpdateVSyncParameters,

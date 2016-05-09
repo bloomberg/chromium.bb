@@ -25,6 +25,10 @@ namespace gfx {
 enum class SwapResult;
 }
 
+namespace gpu {
+struct GpuProcessHostedCALayerTreeParamsMac;
+}
+
 namespace content {
 class ContextProviderCommandBuffer;
 class ReflectorImpl;
@@ -57,9 +61,14 @@ class CONTENT_EXPORT BrowserCompositorOutputSurface
   virtual base::Closure CreateCompositionStartedCallback();
 
   // Called when a swap completion is sent from the GPU process.
+  // The argument |params_mac| is used to communicate parameters needed on Mac
+  // to display the CALayer for the swap in the browser process.
+  // TODO(ccameron): Remove |params_mac| when the CALayer tree is hosted in the
+  // browser process.
   virtual void OnGpuSwapBuffersCompleted(
       const std::vector<ui::LatencyInfo>& latency_info,
-      gfx::SwapResult result) = 0;
+      gfx::SwapResult result,
+      const gpu::GpuProcessHostedCALayerTreeParamsMac* params_mac) = 0;
 
 #if defined(OS_MACOSX)
   virtual void SetSurfaceSuspendedForRecycle(bool suspended) = 0;

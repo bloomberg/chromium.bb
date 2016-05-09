@@ -43,7 +43,8 @@ void VulkanBrowserCompositorOutputSurface::Destroy() {
 
 void VulkanBrowserCompositorOutputSurface::OnGpuSwapBuffersCompleted(
     const std::vector<ui::LatencyInfo>& latency_info,
-    gfx::SwapResult result) {
+    gfx::SwapResult result,
+    const gpu::GpuProcessHostedCALayerTreeParamsMac* params_mac) {
   RenderWidgetHostImpl::CompositorFrameDrawn(latency_info);
   OnSwapBuffersComplete();
 }

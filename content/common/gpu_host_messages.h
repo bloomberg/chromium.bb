@@ -26,13 +26,6 @@
 #include "url/gurl.h"
 #include "url/ipc/url_param_traits.h"
 
-#if defined(OS_MACOSX)
-#include "content/common/accelerated_surface_buffers_swapped_params_mac.h"
-#include "content/common/buffer_presented_params_mac.h"
-#include "ui/base/cocoa/remote_layer_api.h"
-#include "ui/gfx/mac/io_surface.h"
-#endif
-
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
 
@@ -78,27 +71,6 @@ IPC_STRUCT_TRAITS_BEGIN(content::EstablishChannelParams)
   IPC_STRUCT_TRAITS_MEMBER(allow_view_command_buffers)
   IPC_STRUCT_TRAITS_MEMBER(allow_real_time_streams)
 IPC_STRUCT_TRAITS_END()
-
-#if defined(OS_MACOSX)
-IPC_STRUCT_TRAITS_BEGIN(content::AcceleratedSurfaceBuffersSwappedParams)
-  IPC_STRUCT_TRAITS_MEMBER(surface_handle)
-  // Only one of ca_context_id or io_surface may be non-0.
-  IPC_STRUCT_TRAITS_MEMBER(ca_context_id)
-  IPC_STRUCT_TRAITS_MEMBER(fullscreen_low_power_ca_context_valid)
-  IPC_STRUCT_TRAITS_MEMBER(fullscreen_low_power_ca_context_id)
-  IPC_STRUCT_TRAITS_MEMBER(io_surface)
-  IPC_STRUCT_TRAITS_MEMBER(size)
-  IPC_STRUCT_TRAITS_MEMBER(scale_factor)
-  IPC_STRUCT_TRAITS_MEMBER(latency_info)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(content::BufferPresentedParams)
-  // The vsync parameters, to synchronize presentation with the display.
-  IPC_STRUCT_TRAITS_MEMBER(surface_handle)
-  IPC_STRUCT_TRAITS_MEMBER(vsync_timebase)
-  IPC_STRUCT_TRAITS_MEMBER(vsync_interval)
-IPC_STRUCT_TRAITS_END()
-#endif
 
 IPC_STRUCT_TRAITS_BEGIN(gpu::GpuPreferences)
   IPC_STRUCT_TRAITS_MEMBER(single_process)
@@ -187,13 +159,6 @@ IPC_MESSAGE_CONTROL0(GpuMsg_CollectGraphicsInfo)
 // Tells the GPU process to report video_memory information for the task manager
 IPC_MESSAGE_CONTROL0(GpuMsg_GetVideoMemoryUsageStats)
 
-#if defined(OS_MACOSX)
-// Tells the GPU process that the browser process has handled the swap
-// buffers or post sub-buffer request.
-IPC_MESSAGE_CONTROL1(AcceleratedSurfaceMsg_BufferPresented,
-                     content::BufferPresentedParams)
-#endif
-
 #if defined(OS_ANDROID)
 // Tells the GPU process to wake up the GPU because we're about to draw.
 IPC_MESSAGE_CONTROL0(GpuMsg_WakeUpGpu)
@@ -253,12 +218,6 @@ IPC_MESSAGE_CONTROL1(GpuHostMsg_GraphicsInfoCollected,
 // Response from GPU to a GpuMsg_GetVideoMemory.
 IPC_MESSAGE_CONTROL1(GpuHostMsg_VideoMemoryUsageStats,
                      gpu::VideoMemoryUsageStats /* GPU memory stats */)
-
-#if defined(OS_MACOSX)
-// Tells the browser that an accelerated surface has swapped.
-IPC_MESSAGE_CONTROL1(GpuHostMsg_AcceleratedSurfaceBuffersSwapped,
-                     content::AcceleratedSurfaceBuffersSwappedParams)
-#endif
 
 #if defined(OS_WIN)
 IPC_MESSAGE_CONTROL2(GpuHostMsg_AcceleratedSurfaceCreatedChildWindow,

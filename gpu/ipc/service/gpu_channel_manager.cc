@@ -115,31 +115,6 @@ void GpuChannelManager::RemoveChannel(int client_id) {
   gpu_channels_.erase(client_id);
 }
 
-#if defined(OS_MACOSX)
-void GpuChannelManager::AddBufferPresentedCallback(
-    gpu::SurfaceHandle surface_handle,
-    const BufferPresentedCallback& callback) {
-  DCHECK(buffer_presented_callback_map_.find(surface_handle) ==
-         buffer_presented_callback_map_.end());
-  buffer_presented_callback_map_[surface_handle] = callback;
-}
-
-void GpuChannelManager::RemoveBufferPresentedCallback(
-    gpu::SurfaceHandle surface_handle) {
-  auto it = buffer_presented_callback_map_.find(surface_handle);
-  DCHECK(it != buffer_presented_callback_map_.end());
-  buffer_presented_callback_map_.erase(it);
-}
-
-void GpuChannelManager::BufferPresented(gpu::SurfaceHandle surface_handle,
-                                        const base::TimeTicks& vsync_timebase,
-                                        const base::TimeDelta& vsync_interval) {
-  auto it = buffer_presented_callback_map_.find(surface_handle);
-  if (it != buffer_presented_callback_map_.end())
-    it->second.Run(surface_handle, vsync_timebase, vsync_interval);
-}
-#endif
-
 GpuChannel* GpuChannelManager::LookupChannel(int32_t client_id) const {
   const auto& it = gpu_channels_.find(client_id);
   return it != gpu_channels_.end() ? it->second : nullptr;

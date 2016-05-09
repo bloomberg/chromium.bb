@@ -87,11 +87,6 @@ class CONTENT_EXPORT ImageTransportFactory {
   virtual void RemoveObserver(ImageTransportFactoryObserver* observer) = 0;
 
 #if defined(OS_MACOSX)
-  virtual void OnGpuSwapBuffersCompleted(
-      gpu::SurfaceHandle surface_handle,
-      const std::vector<ui::LatencyInfo>& latency_info,
-      gfx::SwapResult result) = 0;
-
   // Called with |suspended| as true when the ui::Compositor has been
   // disconnected from an NSView and may be attached to another one. Called
   // with |suspended| as false after the ui::Compositor has been connected to

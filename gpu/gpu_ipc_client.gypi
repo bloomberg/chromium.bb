@@ -52,6 +52,8 @@
       'sources+': [
         'ipc/client/gpu_memory_buffer_impl_io_surface.cc',
         'ipc/client/gpu_memory_buffer_impl_io_surface.h',
+        'ipc/client/gpu_process_hosted_ca_layer_tree_params.cc',
+        'ipc/client/gpu_process_hosted_ca_layer_tree_params.h',
       ],
     }],
     ['use_ozone == 1', {

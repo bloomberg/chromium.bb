@@ -47,6 +47,7 @@ class MailboxManager;
 }
 
 struct GpuCommandBufferMsg_CreateImage_Params;
+struct GpuCommandBufferMsg_SwapBuffersCompleted_Params;
 
 namespace gpu {
 
@@ -139,8 +140,7 @@ class GPU_EXPORT GpuCommandBufferStub
   const gles2::FeatureInfo* GetFeatureInfo() const;
 
   void SendSwapBuffersCompleted(
-      const std::vector<ui::LatencyInfo>& latency_info,
-      gfx::SwapResult result);
+      const GpuCommandBufferMsg_SwapBuffersCompleted_Params& params);
   void SendUpdateVSyncParameters(base::TimeTicks timebase,
                                  base::TimeDelta interval);
 
@@ -199,7 +199,6 @@ class GPU_EXPORT GpuCommandBufferStub
   void OnCreateStreamTexture(uint32_t texture_id,
                              int32_t stream_id,
                              bool* succeeded);
-
   void OnCommandProcessed();
   void OnParseError();
 

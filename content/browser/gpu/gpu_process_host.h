@@ -201,9 +201,6 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
                         const GURL& url);
   void OnDidDestroyOffscreenContext(const GURL& url);
   void OnGpuMemoryUmaStatsReceived(const gpu::GPUMemoryUmaStats& stats);
-#if defined(OS_MACOSX)
-  void OnAcceleratedSurfaceBuffersSwapped(const IPC::Message& message);
-#endif
 
 #if defined(OS_WIN)
   void OnAcceleratedSurfaceCreatedChildWindow(

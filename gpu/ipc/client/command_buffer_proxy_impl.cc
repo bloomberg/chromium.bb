@@ -28,6 +28,10 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gl/gl_bindings.h"
 
+#if defined(OS_MACOSX)
+#include "gpu/ipc/client/gpu_process_hosted_ca_layer_tree_params.h"
+#endif
+
 namespace gpu {
 
 namespace {
@@ -695,16 +699,33 @@ gpu::CommandBufferSharedState* CommandBufferProxyImpl::shared_state() const {
 }
 
 void CommandBufferProxyImpl::OnSwapBuffersCompleted(
-    const std::vector<ui::LatencyInfo>& latency_info,
-    gfx::SwapResult result) {
+    const GpuCommandBufferMsg_SwapBuffersCompleted_Params& params) {
+#if defined(OS_MACOSX)
+  gpu::GpuProcessHostedCALayerTreeParamsMac params_mac;
+  params_mac.surface_handle = params.surface_handle;
+  params_mac.ca_context_id = params.ca_context_id;
+  params_mac.fullscreen_low_power_ca_context_valid =
+      params.fullscreen_low_power_ca_context_valid;
+  params_mac.fullscreen_low_power_ca_context_id =
+      params.fullscreen_low_power_ca_context_id;
+  params_mac.io_surface.reset(IOSurfaceLookupFromMachPort(params.io_surface));
+  params_mac.pixel_size = params.pixel_size;
+  params_mac.scale_factor = params.scale_factor;
+  gpu::GpuProcessHostedCALayerTreeParamsMac* mac_frame_ptr = &params_mac;
+#else
+  gpu::GpuProcessHostedCALayerTreeParamsMac* mac_frame_ptr = nullptr;
+#endif
+
   if (!swap_buffers_completion_callback_.is_null()) {
     if (!ui::LatencyInfo::Verify(
-            latency_info, "CommandBufferProxyImpl::OnSwapBuffersCompleted")) {
+            params.latency_info,
+            "CommandBufferProxyImpl::OnSwapBuffersCompleted")) {
       swap_buffers_completion_callback_.Run(std::vector<ui::LatencyInfo>(),
-                                            result);
-      return;
+                                            params.result, mac_frame_ptr);
+    } else {
+      swap_buffers_completion_callback_.Run(params.latency_info, params.result,
+                                            mac_frame_ptr);
     }
-    swap_buffers_completion_callback_.Run(latency_info, result);
   }
 }
 

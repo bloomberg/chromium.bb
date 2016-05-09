@@ -35,7 +35,8 @@ class CONTENT_EXPORT SoftwareBrowserCompositorOutputSurface
   void SwapBuffers(cc::CompositorFrame* frame) override;
   void OnGpuSwapBuffersCompleted(
       const std::vector<ui::LatencyInfo>& latency_info,
-      gfx::SwapResult result) override;
+      gfx::SwapResult result,
+      const gpu::GpuProcessHostedCALayerTreeParamsMac* params_mac) override;
 
 #if defined(OS_MACOSX)
   void SetSurfaceSuspendedForRecycle(bool suspended) override;

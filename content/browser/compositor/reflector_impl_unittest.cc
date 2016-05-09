@@ -100,7 +100,8 @@ class TestOutputSurface : public BrowserCompositorOutputSurface {
 
   void OnGpuSwapBuffersCompleted(
       const std::vector<ui::LatencyInfo>& latency_info,
-      gfx::SwapResult result) override {
+      gfx::SwapResult result,
+      const gpu::GpuProcessHostedCALayerTreeParamsMac* params_mac) override {
     NOTREACHED();
   }
 

@@ -26,12 +26,6 @@
 #include "gpu/ipc/common/memory_stats.h"
 #include "ui/gfx/swap_result.h"
 
-#if defined(OS_MACOSX)
-#include "content/browser/gpu/gpu_surface_tracker.h"
-#include "content/common/accelerated_surface_buffers_swapped_params_mac.h"
-#include "ui/accelerated_widget_mac/accelerated_widget_mac.h"
-#endif
-
 #if defined(USE_OZONE)
 #include "ui/ozone/public/gpu_platform_support_host.h"
 #include "ui/ozone/public/ozone_platform.h"
@@ -188,10 +182,6 @@ bool GpuProcessHostUIShim::OnControlMessageReceived(
 
   IPC_BEGIN_MESSAGE_MAP(GpuProcessHostUIShim, message)
     IPC_MESSAGE_HANDLER(GpuHostMsg_OnLogMessage, OnLogMessage)
-#if defined(OS_MACOSX)
-    IPC_MESSAGE_HANDLER(GpuHostMsg_AcceleratedSurfaceBuffersSwapped,
-                        OnAcceleratedSurfaceBuffersSwapped)
-#endif
     IPC_MESSAGE_HANDLER(GpuHostMsg_GraphicsInfoCollected,
                         OnGraphicsInfoCollected)
     IPC_MESSAGE_HANDLER(GpuHostMsg_VideoMemoryUsageStats,
@@ -219,59 +209,6 @@ void GpuProcessHostUIShim::OnGraphicsInfoCollected(
 
   GpuDataManagerImpl::GetInstance()->UpdateGpuInfo(gpu_info);
 }
-
-#if defined(OS_MACOSX)
-void GpuProcessHostUIShim::OnAcceleratedSurfaceBuffersSwapped(
-    const AcceleratedSurfaceBuffersSwappedParams& params) {
-  TRACE_EVENT0("browser",
-      "GpuProcessHostUIShim::OnAcceleratedSurfaceBuffersSwapped");
-  if (!ui::LatencyInfo::Verify(params.latency_info,
-                               "GpuHostMsg_AcceleratedSurfaceBuffersSwapped")) {
-    TRACE_EVENT0("browser", "ui::LatencyInfo::Verify failed");
-    return;
-  }
-
-  // On Mac with delegated rendering, accelerated surfaces are not necessarily
-  // associated with a RenderWidgetHostViewBase.
-  BufferPresentedParams ack_params;
-  ack_params.surface_handle = params.surface_handle;
-
-  // If the frame was intended for an NSView that the gfx::AcceleratedWidget is
-  // no longer attached to, do not pass the frame along to the widget. Just ack
-  // it to the GPU process immediately, so we can proceed to the next frame.
-  bool should_not_show_frame =
-      content::ImageTransportFactory::GetInstance()
-          ->SurfaceShouldNotShowFramesAfterSuspendForRecycle(
-              params.surface_handle);
-  if (!should_not_show_frame) {
-    gfx::AcceleratedWidget native_widget =
-        content::GpuSurfaceTracker::Get()->AcquireNativeWidget(
-            params.surface_handle);
-    base::ScopedCFTypeRef<IOSurfaceRef> io_surface;
-    CAContextID ca_context_id = params.ca_context_id;
-
-    DCHECK((params.ca_context_id == 0) ^
-           (params.io_surface.get() == MACH_PORT_NULL));
-    if (params.io_surface.get()) {
-      io_surface.reset(IOSurfaceLookupFromMachPort(params.io_surface));
-    }
-
-    ui::AcceleratedWidgetMacGotFrame(
-        native_widget, ca_context_id,
-        params.fullscreen_low_power_ca_context_valid,
-        params.fullscreen_low_power_ca_context_id, io_surface, params.size,
-        params.scale_factor, &ack_params.vsync_timebase,
-        &ack_params.vsync_interval);
-  } else {
-    TRACE_EVENT0("browser", "Skipping recycled surface frame");
-  }
-
-  content::ImageTransportFactory::GetInstance()->OnGpuSwapBuffersCompleted(
-      params.surface_handle, params.latency_info, gfx::SwapResult::SWAP_ACK);
-
-  Send(new AcceleratedSurfaceMsg_BufferPresented(ack_params));
-}
-#endif
 
 void GpuProcessHostUIShim::OnVideoMemoryUsageStatsReceived(
     const gpu::VideoMemoryUsageStats& video_memory_usage_stats) {

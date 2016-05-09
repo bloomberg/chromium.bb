@@ -17,6 +17,12 @@
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/ipc/client/command_buffer_proxy_impl.h"
 
+#if defined(OS_MACOSX)
+#include "content/browser/gpu/gpu_surface_tracker.h"
+#include "gpu/ipc/client/gpu_process_hosted_ca_layer_tree_params.h"
+#include "ui/accelerated_widget_mac/accelerated_widget_mac.h"
+#endif
+
 namespace content {
 
 GpuBrowserCompositorOutputSurface::GpuBrowserCompositorOutputSurface(
@@ -118,7 +124,20 @@ void GpuBrowserCompositorOutputSurface::SwapBuffers(
 
 void GpuBrowserCompositorOutputSurface::OnGpuSwapBuffersCompleted(
     const std::vector<ui::LatencyInfo>& latency_info,
-    gfx::SwapResult result) {
+    gfx::SwapResult result,
+    const gpu::GpuProcessHostedCALayerTreeParamsMac* params_mac) {
+#if defined(OS_MACOSX)
+  if (!SurfaceIsSuspendForRecycle()) {
+    gfx::AcceleratedWidget native_widget =
+        content::GpuSurfaceTracker::Get()->AcquireNativeWidget(
+            params_mac->surface_handle);
+    ui::AcceleratedWidgetMacGotFrame(
+        native_widget, params_mac->ca_context_id,
+        params_mac->fullscreen_low_power_ca_context_valid,
+        params_mac->fullscreen_low_power_ca_context_id, params_mac->io_surface,
+        params_mac->pixel_size, params_mac->scale_factor, nullptr, nullptr);
+  }
+#endif
   RenderWidgetHostImpl::CompositorFrameDrawn(latency_info);
   OnSwapBuffersComplete();
 }

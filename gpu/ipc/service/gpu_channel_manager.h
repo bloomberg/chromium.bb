@@ -26,12 +26,6 @@
 #include "ui/gl/gl_surface.h"
 #include "url/gurl.h"
 
-#if defined(OS_MACOSX)
-#include "base/callback.h"
-#include "base/containers/hash_tables.h"
-#include "gpu/ipc/common/surface_handle.h"
-#endif
-
 namespace base {
 class WaitableEvent;
 }
@@ -69,11 +63,6 @@ class GpuWatchdog;
 // browser process to them based on the corresponding renderer ID.
 class GPU_EXPORT GpuChannelManager {
  public:
-#if defined(OS_MACOSX)
-  typedef base::Callback<
-      void(int32_t, const base::TimeTicks&, const base::TimeDelta&)>
-      BufferPresentedCallback;
-#endif
   GpuChannelManager(const GpuPreferences& gpu_preferences,
                     GpuChannelManagerDelegate* delegate,
                     GpuWatchdog* watchdog,
@@ -106,15 +95,6 @@ class GPU_EXPORT GpuChannelManager {
 
   void LoseAllContexts();
   void MaybeExitOnContextLost();
-
-#if defined(OS_MACOSX)
-  void AddBufferPresentedCallback(int32_t routing_id,
-                                  const BufferPresentedCallback& callback);
-  void RemoveBufferPresentedCallback(int32_t routing_id);
-  void BufferPresented(gpu::SurfaceHandle surface_handle,
-                       const base::TimeTicks& vsync_timebase,
-                       const base::TimeDelta& vsync_interval);
-#endif
 
   const GpuPreferences& gpu_preferences() const {
     return gpu_preferences_;
@@ -193,10 +173,6 @@ class GPU_EXPORT GpuChannelManager {
   GpuDriverBugWorkarounds gpu_driver_bug_workarounds_;
 
   GpuChannelManagerDelegate* const delegate_;
-#if defined(OS_MACOSX)
-  base::hash_map<gpu::SurfaceHandle, BufferPresentedCallback>
-      buffer_presented_callback_map_;
-#endif
 
   GpuWatchdog* watchdog_;
 
