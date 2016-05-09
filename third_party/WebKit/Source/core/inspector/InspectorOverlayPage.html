@@ -76,6 +76,13 @@ body.platform-linux {
     display: flex;
     align-items: center;
     cursor: default;
+    overflow: hidden;
+}
+
+#paused-in-debugger {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
 }
 
 .controls-line > * {
@@ -90,6 +97,8 @@ body.platform-linux {
     margin-left: -1px;
     margin-right: 0;
     padding: 0;
+    flex-shrink: 0;
+    flex-grow: 0;
 }
 
 .controls-line .button:hover {
@@ -1352,7 +1361,7 @@ LayoutEditor.prototype = {
             wallPosition += (minSide === growsInside) ? - handleHalf - LayoutEditor._wallWidth : handleHalf;
             wallElement.style[description.border1] = wallPosition + "px";
             wallElement.style[description.border2] = border2Position + "px";
-            
+
             this._wallsElements.set(anchorName, wallElement);
 
             var labelElement = this._createLabel(parent, anchorElement, anchorInfo);
