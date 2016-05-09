@@ -34,9 +34,11 @@ const char kDefaultTestUrl2[] = "https://whatever.com/";
 class TestPageLoadMetricsObserver : public PageLoadMetricsObserver {
  public:
   explicit TestPageLoadMetricsObserver(
-      std::vector<PageLoadTiming>* observed_timings,
+      std::vector<PageLoadTiming>* updated_timings,
+      std::vector<PageLoadTiming>* complete_timings,
       std::vector<GURL>* observed_committed_urls)
-      : observed_timings_(observed_timings),
+      : updated_timings_(updated_timings),
+        complete_timings_(complete_timings),
         observed_committed_urls_(observed_committed_urls) {}
 
   void OnStart(content::NavigationHandle* navigation_handle,
@@ -44,13 +46,19 @@ class TestPageLoadMetricsObserver : public PageLoadMetricsObserver {
     observed_committed_urls_->push_back(currently_committed_url);
   }
 
+  void OnTimingUpdate(const PageLoadTiming& timing,
+                      const PageLoadExtraInfo& extra_info) override {
+    updated_timings_->push_back(timing);
+  }
+
   void OnComplete(const PageLoadTiming& timing,
                   const PageLoadExtraInfo& extra_info) override {
-    observed_timings_->push_back(timing);
+    complete_timings_->push_back(timing);
   }
 
  private:
-  std::vector<PageLoadTiming>* const observed_timings_;
+  std::vector<PageLoadTiming>* const updated_timings_;
+  std::vector<PageLoadTiming>* const complete_timings_;
   std::vector<GURL>* const observed_committed_urls_;
 };
 
@@ -67,10 +75,13 @@ class TestPageLoadMetricsEmbedderInterface
   }
   void RegisterObservers(PageLoadTracker* tracker) override {
     tracker->AddObserver(base::WrapUnique(new TestPageLoadMetricsObserver(
-        &observed_timings_, &observed_committed_urls_)));
+        &updated_timings_, &complete_timings_, &observed_committed_urls_)));
   }
-  const std::vector<PageLoadTiming>& observed_timings() const {
-    return observed_timings_;
+  const std::vector<PageLoadTiming>& updated_timings() const {
+    return updated_timings_;
+  }
+  const std::vector<PageLoadTiming>& complete_timings() const {
+    return complete_timings_;
   }
 
   // currently_committed_urls passed to OnStart().
@@ -79,7 +90,8 @@ class TestPageLoadMetricsEmbedderInterface
   }
 
  private:
-  std::vector<PageLoadTiming> observed_timings_;
+  std::vector<PageLoadTiming> updated_timings_;
+  std::vector<PageLoadTiming> complete_timings_;
   std::vector<GURL> observed_committed_urls_;
   bool is_prerendering_;
 };
@@ -129,26 +141,31 @@ class MetricsWebContentsObserverTest
   }
 
   void AssertNoNonEmptyTimingReported() {
-    ASSERT_FALSE(embedder_interface_->observed_timings().empty());
-    for (const auto& timing : embedder_interface_->observed_timings()) {
+    ASSERT_FALSE(embedder_interface_->complete_timings().empty());
+    for (const auto& timing : embedder_interface_->complete_timings()) {
       ASSERT_TRUE(timing.IsEmpty());
     }
   }
 
   void AssertNonEmptyTimingsReported(size_t expected_non_empty_timings) {
-    ASSERT_GE(embedder_interface_->observed_timings().size(),
+    ASSERT_GE(embedder_interface_->complete_timings().size(),
               expected_non_empty_timings);
     size_t actual_non_empty_timings = 0;
-    for (const auto& timing : embedder_interface_->observed_timings()) {
+    for (const auto& timing : embedder_interface_->complete_timings()) {
       if (!timing.IsEmpty()) {
         ++actual_non_empty_timings;
       }
     }
     ASSERT_EQ(expected_non_empty_timings, actual_non_empty_timings);
+    ASSERT_GE(embedder_interface_->updated_timings().size(),
+              actual_non_empty_timings);
   }
 
-  void AssertNoTimingReported() {
-    ASSERT_TRUE(embedder_interface_->observed_timings().empty());
+  int CountCompleteTimingReported() {
+    return embedder_interface_->complete_timings().size();
+  }
+  int CountUpdatedTimingReported() {
+    return embedder_interface_->updated_timings().size();
   }
 
   const std::vector<GURL>& observed_committed_urls_from_on_start() const {
@@ -179,14 +196,17 @@ TEST_F(MetricsWebContentsObserverTest, SuccessfulMainFrameNavigation) {
   ASSERT_EQ(1u, observed_committed_urls_from_on_start().size());
   ASSERT_TRUE(observed_committed_urls_from_on_start().at(0).is_empty());
 
+  ASSERT_EQ(0, CountUpdatedTimingReported());
   SimulateTimingUpdate(timing);
-  AssertNoTimingReported();
+  ASSERT_EQ(1, CountUpdatedTimingReported());
+  ASSERT_EQ(0, CountCompleteTimingReported());
 
   web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl2));
   AssertNonEmptyTimingsReported(1);
   ASSERT_EQ(2u, observed_committed_urls_from_on_start().size());
   ASSERT_EQ(kDefaultTestUrl,
             observed_committed_urls_from_on_start().at(1).spec());
+  ASSERT_EQ(1, CountUpdatedTimingReported());
 
   CheckNoErrorEvents();
 }
@@ -213,6 +233,7 @@ TEST_F(MetricsWebContentsObserverTest, NotInMainFrame) {
   // Navigate again to see if the timing updated for a subframe message.
   web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
 
+  ASSERT_EQ(0, CountUpdatedTimingReported());
   AssertNoNonEmptyTimingReported();
   CheckErrorEvent(ERR_IPC_FROM_WRONG_FRAME, 1);
   CheckTotalErrorEvents();
@@ -225,9 +246,12 @@ TEST_F(MetricsWebContentsObserverTest, SamePageNoTrigger) {
   content::WebContentsTester* web_contents_tester =
       content::WebContentsTester::For(web_contents());
   web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
+  ASSERT_EQ(0, CountUpdatedTimingReported());
   SimulateTimingUpdate(timing);
+  ASSERT_EQ(1, CountUpdatedTimingReported());
   web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrlAnchor));
   // A same page navigation shouldn't trigger logging UMA for the original.
+  ASSERT_EQ(1, CountUpdatedTimingReported());
   AssertNoNonEmptyTimingReported();
   CheckNoErrorEvents();
 }
@@ -243,7 +267,8 @@ TEST_F(MetricsWebContentsObserverTest, DontLogPrerender) {
   web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
   SimulateTimingUpdate(timing);
   web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl2));
-  AssertNoTimingReported();
+  ASSERT_EQ(0, CountUpdatedTimingReported());
+  ASSERT_EQ(0, CountCompleteTimingReported());
   CheckErrorEvent(ERR_IPC_WITH_NO_RELEVANT_LOAD, 1);
   CheckTotalErrorEvents();
 }
@@ -258,7 +283,10 @@ TEST_F(MetricsWebContentsObserverTest, DontLogIrrelevantNavigation) {
   GURL about_blank_url = GURL("about:blank");
   web_contents_tester->NavigateAndCommit(about_blank_url);
   SimulateTimingUpdate(timing);
+  ASSERT_EQ(0, CountUpdatedTimingReported());
   web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
+  ASSERT_EQ(0, CountUpdatedTimingReported());
+  ASSERT_EQ(0, CountCompleteTimingReported());
 
   CheckErrorEvent(ERR_IPC_FROM_BAD_URL_SCHEME, 1);
   CheckErrorEvent(ERR_IPC_WITH_NO_RELEVANT_LOAD, 1);
@@ -284,6 +312,8 @@ TEST_F(MetricsWebContentsObserverTest, NotInMainError) {
   SimulateTimingUpdate(timing, subframe);
   CheckErrorEvent(ERR_IPC_FROM_WRONG_FRAME, 1);
   CheckTotalErrorEvents();
+  ASSERT_EQ(0, CountUpdatedTimingReported());
+  ASSERT_EQ(0, CountCompleteTimingReported());
 }
 
 TEST_F(MetricsWebContentsObserverTest, BadIPC) {
@@ -297,7 +327,9 @@ TEST_F(MetricsWebContentsObserverTest, BadIPC) {
   web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
 
   SimulateTimingUpdate(timing);
+  ASSERT_EQ(1, CountUpdatedTimingReported());
   SimulateTimingUpdate(timing2);
+  ASSERT_EQ(1, CountUpdatedTimingReported());
 
   CheckErrorEvent(ERR_BAD_TIMING_IPC, 1);
   CheckTotalErrorEvents();
@@ -324,7 +356,8 @@ TEST_F(MetricsWebContentsObserverTest, ObservePartialNavigation) {
 
   // Navigate again to force histogram logging.
   web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl2));
-  AssertNoTimingReported();
+  ASSERT_EQ(0, CountCompleteTimingReported());
+  ASSERT_EQ(0, CountUpdatedTimingReported());
   CheckErrorEvent(ERR_IPC_WITH_NO_RELEVANT_LOAD, 1);
   CheckTotalErrorEvents();
 }

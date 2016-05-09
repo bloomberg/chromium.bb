@@ -20,6 +20,7 @@ extern const char kHistogramDomContentLoaded[];
 extern const char kHistogramDomLoadingToDomContentLoaded[];
 extern const char kHistogramLoad[];
 extern const char kHistogramFirstContentfulPaint[];
+extern const char kHistogramFirstContentfulPaintImmediate[];
 extern const char kHistogramDomLoadingToFirstContentfulPaint[];
 extern const char kHistogramParseDuration[];
 extern const char kHistogramParseBlockedOnScriptLoad[];
@@ -48,6 +49,9 @@ class CorePageLoadMetricsObserver
   ~CorePageLoadMetricsObserver() override;
 
   // page_load_metrics::PageLoadMetricsObserver:
+  void OnTimingUpdate(
+      const page_load_metrics::PageLoadTiming& timing,
+      const page_load_metrics::PageLoadExtraInfo& info) override;
   void OnComplete(const page_load_metrics::PageLoadTiming& timing,
                   const page_load_metrics::PageLoadExtraInfo& info) override;
   void OnFailedProvisionalLoad(
@@ -69,6 +73,7 @@ class CorePageLoadMetricsObserver
                     const page_load_metrics::PageLoadExtraInfo& info);
 
   FailedProvisionalLoadInfo failed_provisional_load_info_;
+  bool logged_first_contentful_paint_from_timing_update_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(CorePageLoadMetricsObserver);
 };

@@ -126,6 +126,14 @@ class PageLoadMetricsObserver {
   virtual void OnFailedProvisionalLoad(
       content::NavigationHandle* navigation_handle) {}
 
+  // OnTimingUpdate is triggered when an updated PageLoadTiming is
+  // available. This method may be called multiple times over the course of the
+  // page load. Note that this is currently an experimental API which may be
+  // removed in the future. Please email loading-dev@chromium.org if you intend
+  // to override this method.
+  virtual void OnTimingUpdate(const PageLoadTiming& timing,
+                              const PageLoadExtraInfo& extra_info) {}
+
   // OnComplete is triggered when we are ready to record metrics for this page
   // load. This will happen some time after commit. The PageLoadTiming struct
   // contains timing data and the PageLoadExtraInfo struct contains other useful

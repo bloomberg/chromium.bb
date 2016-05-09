@@ -352,6 +352,10 @@ bool PageLoadTracker::UpdateTiming(const PageLoadTiming& new_timing,
       valid_behavior_descendent) {
     timing_ = new_timing;
     metadata_ = new_metadata;
+    const PageLoadExtraInfo info = GetPageLoadMetricsInfo();
+    for (const auto& observer : observers_) {
+      observer->OnTimingUpdate(timing_, info);
+    }
     return true;
   }
   return false;

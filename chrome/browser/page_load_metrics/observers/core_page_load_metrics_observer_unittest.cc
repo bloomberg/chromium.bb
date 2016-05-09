@@ -134,6 +134,16 @@ TEST_F(CorePageLoadMetricsObserverTest, MultipleMetricsAfterCommits) {
   NavigateAndCommit(GURL(kDefaultTestUrl));
   SimulateTimingUpdate(timing);
 
+  // Verify that the non-immediate FCP has not yet been logged, but the
+  // immediate FCP is logged before the next navigation.
+  histogram_tester().ExpectTotalCount(internal::kHistogramFirstContentfulPaint,
+                                      0);
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramFirstContentfulPaintImmediate, 1);
+  histogram_tester().ExpectBucketCount(
+      internal::kHistogramFirstContentfulPaintImmediate,
+      first_contentful_paint.InMilliseconds(), 1);
+
   NavigateAndCommit(GURL(kDefaultTestUrl2));
 
   page_load_metrics::PageLoadTiming timing2;
@@ -158,6 +168,17 @@ TEST_F(CorePageLoadMetricsObserverTest, MultipleMetricsAfterCommits) {
   histogram_tester().ExpectBucketCount(
       internal::kHistogramDomLoadingToDomContentLoaded,
       (dom_content - dom_loading).InMilliseconds(), 1);
+
+  histogram_tester().ExpectTotalCount(internal::kHistogramFirstContentfulPaint,
+                                      1);
+  histogram_tester().ExpectBucketCount(internal::kHistogramFirstContentfulPaint,
+                                       first_contentful_paint.InMilliseconds(),
+                                       1);
+
+  // Verify that no additional immediate metrics were logged as a result of
+  // navigation.
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramFirstContentfulPaintImmediate, 1);
 
   histogram_tester().ExpectTotalCount(
       internal::kHistogramDomLoadingToFirstContentfulPaint, 1);

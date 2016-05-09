@@ -35594,9 +35594,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="PageLoad.Timing2.NavigationToFirstContentfulPaint" units="ms">
   <owner>ksakamoto@chromium.org</owner>
   <summary>
-    The time from navigation start to first &quot;contentful&quot; paint. For
-    now, this is the minimum of PageLoad.Timing2.NavigationToFirstTextPaint and
-    PageLoad.Timing2.NavigationToFirstImagePaint.
+    The time from navigation start to first &quot;contentful&quot; paint.
   </summary>
 </histogram>
 
@@ -91006,6 +91004,16 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="KeysetLoaded" label="Latency for keyset config is loaded"/>
   <suffix name="LayoutLoaded" label="Latency for layout definition is loaded"/>
   <affected-histogram name="InputMethod.VirtualKeyboard.InitLatency"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="ImmediatePageLoadTiming" separator=".">
+  <suffix name="Immediate"
+      label="Logged immediately after a timing update is observed, unlike
+             normal PageLoad timing metrics, which are logged at the end of a
+             page's lifetime. This metric is temporary and is intended to
+             help loading-dev to understand the impact of logging metrics at
+             the end of a page load."/>
+  <affected-histogram name="PageLoad.Timing2.NavigationToFirstContentfulPaint"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="IndexedDBLevelDBErrnoMethods" separator=".">

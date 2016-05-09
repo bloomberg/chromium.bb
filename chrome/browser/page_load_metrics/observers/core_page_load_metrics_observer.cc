@@ -56,6 +56,8 @@ const char kHistogramFirstImagePaint[] =
     "PageLoad.Timing2.NavigationToFirstImagePaint";
 const char kHistogramFirstContentfulPaint[] =
     "PageLoad.Timing2.NavigationToFirstContentfulPaint";
+const char kHistogramFirstContentfulPaintImmediate[] =
+    "PageLoad.Timing2.NavigationToFirstContentfulPaint.Immediate";
 const char kHistogramDomLoadingToFirstContentfulPaint[] =
     "PageLoad.Timing2.DOMLoadingToFirstContentfulPaint";
 const char kHistogramParseDuration[] = "PageLoad.Timing2.ParseDuration";
@@ -129,6 +131,20 @@ const char kRapporMetricsNameCoarseTiming[] =
 CorePageLoadMetricsObserver::CorePageLoadMetricsObserver() {}
 
 CorePageLoadMetricsObserver::~CorePageLoadMetricsObserver() {}
+
+void CorePageLoadMetricsObserver::OnTimingUpdate(
+    const page_load_metrics::PageLoadTiming& timing,
+    const page_load_metrics::PageLoadExtraInfo& info) {
+  if (!logged_first_contentful_paint_from_timing_update_ &&
+      !timing.first_contentful_paint.is_zero()) {
+    if (WasStartedInForegroundEventInForeground(timing.first_contentful_paint,
+                                                info)) {
+      PAGE_LOAD_HISTOGRAM(internal::kHistogramFirstContentfulPaintImmediate,
+                          timing.first_contentful_paint);
+    }
+    logged_first_contentful_paint_from_timing_update_ = true;
+  }
+}
 
 void CorePageLoadMetricsObserver::OnComplete(
     const page_load_metrics::PageLoadTiming& timing,
