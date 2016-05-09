@@ -71,7 +71,7 @@ enum EncryptAllConfig {
 };
 
 // Create a json-format string with the key/value pairs appropriate for a call
-// to HandleConfigure(). If |extra_values| is non-null, then the values from
+// to HandleSetEncryption(). If |extra_values| is non-null, then the values from
 // the passed dictionary are added to the json.
 std::string GetConfiguration(const base::DictionaryValue* extra_values,
                              SyncAllDataConfig sync_all,
@@ -525,7 +525,7 @@ TEST_F(PeopleHandlerTest, TestSyncEverything) {
       .WillRepeatedly(Return(false));
   SetupInitializedProfileSyncService();
   EXPECT_CALL(*mock_pss_, OnUserChoseDatatypes(true, _));
-  handler_->HandleConfigure(&list_args);
+  handler_->HandleSetDatatypes(&list_args);
 
   ExpectPageStatusResponse(PeopleHandler::kConfigurePageStatus);
 }
@@ -538,7 +538,7 @@ TEST_F(PeopleHandlerTest, TestSyncNothing) {
   list_args.Append(new base::StringValue(args));
   EXPECT_CALL(*mock_pss_, RequestStop(ProfileSyncService::CLEAR_DATA));
   SetupInitializedProfileSyncService();
-  handler_->HandleConfigure(&list_args);
+  handler_->HandleSetDatatypes(&list_args);
 
   ExpectPageStatusResponse(PeopleHandler::kConfigurePageStatus);
 }
@@ -557,8 +557,7 @@ TEST_F(PeopleHandlerTest, TurnOnEncryptAll) {
       .WillRepeatedly(Return(true));
   SetupInitializedProfileSyncService();
   EXPECT_CALL(*mock_pss_, EnableEncryptEverything());
-  EXPECT_CALL(*mock_pss_, OnUserChoseDatatypes(true, _));
-  handler_->HandleConfigure(&list_args);
+  handler_->HandleSetEncryption(&list_args);
 
   ExpectPageStatusResponse(PeopleHandler::kConfigurePageStatus);
 }
@@ -576,10 +575,9 @@ TEST_F(PeopleHandlerTest, TestPassphraseStillRequired) {
   EXPECT_CALL(*mock_pss_, IsUsingSecondaryPassphrase())
       .WillRepeatedly(Return(false));
   SetupInitializedProfileSyncService();
-  EXPECT_CALL(*mock_pss_, OnUserChoseDatatypes(_, _));
   SetDefaultExpectationsForConfigPage();
 
-  handler_->HandleConfigure(&list_args);
+  handler_->HandleSetEncryption(&list_args);
   // We should navigate back to the configure page since we need a passphrase.
   ExpectPageStatusResponse(PeopleHandler::kPassphraseFailedPageStatus);
 }
@@ -603,11 +601,10 @@ TEST_F(PeopleHandlerTest, SuccessfullySetPassphrase) {
   EXPECT_CALL(*mock_pss_, IsUsingSecondaryPassphrase())
       .WillRepeatedly(Return(false));
   SetupInitializedProfileSyncService();
-  EXPECT_CALL(*mock_pss_, OnUserChoseDatatypes(_, _));
   EXPECT_CALL(*mock_pss_, SetDecryptionPassphrase("gaiaPassphrase")).
       WillOnce(Return(true));
 
-  handler_->HandleConfigure(&list_args);
+  handler_->HandleSetEncryption(&list_args);
   ExpectPageStatusResponse(PeopleHandler::kConfigurePageStatus);
 }
 
@@ -629,12 +626,11 @@ TEST_F(PeopleHandlerTest, SelectCustomEncryption) {
   EXPECT_CALL(*mock_pss_, IsUsingSecondaryPassphrase())
       .WillRepeatedly(Return(false));
   SetupInitializedProfileSyncService();
-  EXPECT_CALL(*mock_pss_, OnUserChoseDatatypes(_, _));
   EXPECT_CALL(*mock_pss_,
               SetEncryptionPassphrase("custom_passphrase",
                                       ProfileSyncService::EXPLICIT));
 
-  handler_->HandleConfigure(&list_args);
+  handler_->HandleSetEncryption(&list_args);
   ExpectPageStatusResponse(PeopleHandler::kConfigurePageStatus);
 }
 
@@ -656,13 +652,38 @@ TEST_F(PeopleHandlerTest, UnsuccessfullySetPassphrase) {
   EXPECT_CALL(*mock_pss_, IsUsingSecondaryPassphrase())
       .WillRepeatedly(Return(false));
   SetupInitializedProfileSyncService();
-  EXPECT_CALL(*mock_pss_, OnUserChoseDatatypes(_, _));
   EXPECT_CALL(*mock_pss_, SetDecryptionPassphrase("invalid_passphrase")).
       WillOnce(Return(false));
 
   SetDefaultExpectationsForConfigPage();
 
-  handler_->HandleConfigure(&list_args);
+  handler_->HandleSetEncryption(&list_args);
+  // We should navigate back to the configure page since we need a passphrase.
+  ExpectPageStatusResponse(PeopleHandler::kPassphraseFailedPageStatus);
+}
+
+TEST_F(PeopleHandlerTest, UnsuccessfullySetBlankPassphrase) {
+  base::DictionaryValue dict;
+  dict.SetBoolean("usePassphrase", true);
+  std::string args = GetConfiguration(&dict,
+                                      SYNC_ALL_DATA,
+                                      GetAllTypes(),
+                                      "",
+                                      ENCRYPT_PASSWORDS);
+  base::ListValue list_args;
+  list_args.Append(new base::StringValue(kTestCallbackId));
+  list_args.Append(new base::StringValue(args));
+  EXPECT_CALL(*mock_pss_, IsPassphraseRequiredForDecryption())
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL(*mock_pss_, IsPassphraseRequired())
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL(*mock_pss_, IsUsingSecondaryPassphrase())
+      .WillRepeatedly(Return(false));
+  SetupInitializedProfileSyncService();
+
+  SetDefaultExpectationsForConfigPage();
+
+  handler_->HandleSetEncryption(&list_args);
   // We should navigate back to the configure page since we need a passphrase.
   ExpectPageStatusResponse(PeopleHandler::kPassphraseFailedPageStatus);
 }
@@ -691,7 +712,7 @@ TEST_F(PeopleHandlerTest, TestSyncIndividualTypes) {
     EXPECT_CALL(*mock_pss_,
                 OnUserChoseDatatypes(false, ModelTypeSetMatches(type_to_set)));
 
-    handler_->HandleConfigure(&list_args);
+    handler_->HandleSetDatatypes(&list_args);
     ExpectPageStatusResponse(PeopleHandler::kConfigurePageStatus);
     Mock::VerifyAndClearExpectations(mock_pss_);
   }
@@ -713,7 +734,7 @@ TEST_F(PeopleHandlerTest, TestSyncAllManually) {
   SetupInitializedProfileSyncService();
   EXPECT_CALL(*mock_pss_,
               OnUserChoseDatatypes(false, ModelTypeSetMatches(GetAllTypes())));
-  handler_->HandleConfigure(&list_args);
+  handler_->HandleSetDatatypes(&list_args);
 
   ExpectPageStatusResponse(PeopleHandler::kConfigurePageStatus);
 }
@@ -931,8 +952,7 @@ TEST_F(PeopleHandlerTest, TurnOnEncryptAllDisallowed) {
   EXPECT_CALL(*mock_pss_, IsEncryptEverythingAllowed())
       .WillRepeatedly(Return(false));
   EXPECT_CALL(*mock_pss_, EnableEncryptEverything()).Times(0);
-  EXPECT_CALL(*mock_pss_, OnUserChoseDatatypes(true, _));
-  handler_->HandleConfigure(&list_args);
+  handler_->HandleSetEncryption(&list_args);
 
   ExpectPageStatusResponse(PeopleHandler::kConfigurePageStatus);
 }

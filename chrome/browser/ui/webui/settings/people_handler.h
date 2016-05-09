@@ -104,6 +104,7 @@ class PeopleHandler : public SettingsPageUIHandler,
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, TurnOnEncryptAll);
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, TurnOnEncryptAllDisallowed);
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, UnsuccessfullySetPassphrase);
+  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, UnsuccessfullySetBlankPassphrase);
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerNonCrosTest,
                            UnrecoverableErrorInitializingSync);
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerNonCrosTest, GaiaErrorInitializingSync);
@@ -126,9 +127,8 @@ class PeopleHandler : public SettingsPageUIHandler,
   // Callbacks from the page.
   void HandleGetProfileInfo(const base::ListValue* args);
   void OnDidClosePage(const base::ListValue* args);
-  void HandleConfigure(const base::ListValue* args);
-  void HandlePassphraseEntry(const base::ListValue* args);
-  void HandlePassphraseCancel(const base::ListValue* args);
+  void HandleSetDatatypes(const base::ListValue* args);
+  void HandleSetEncryption(const base::ListValue* args);
   void HandleShowSetupUI(const base::ListValue* args);
   void HandleDoSignOutOnAuthError(const base::ListValue* args);
   void HandleStartSignin(const base::ListValue* args);
@@ -177,6 +177,9 @@ class PeopleHandler : public SettingsPageUIHandler,
 
   // Will be called when the kSigninAllowed pref has changed.
   void OnSigninAllowedPrefChange();
+
+  // Suppresses any further signin promos, since the user has signed in once.
+  void MarkFirstSetupComplete();
 
   // Weak pointer.
   Profile* profile_;

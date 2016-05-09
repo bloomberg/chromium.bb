@@ -137,11 +137,18 @@ cr.define('settings', function() {
     didNavigateAwayFromSyncPage: function() {},
 
     /**
-     * Sets the sync preferences, i.e. whether to sync autofill, history, etc.
+     * Sets which types of data to sync.
      * @param {!settings.SyncPrefs} syncPrefs
      * @return {!Promise<!settings.PageStatus>}
      */
-    setSyncPrefs: function(syncPrefs) {},
+    setSyncDatatypes: function(syncPrefs) {},
+
+    /**
+     * Sets the sync encryption options.
+     * @param {!settings.SyncPrefs} syncPrefs
+     * @return {!Promise<!settings.PageStatus>}
+     */
+    setSyncEncryption: function(syncPrefs) {},
 
     /**
      * Opens the Google Activity Controls url in a new tab.
@@ -199,8 +206,14 @@ cr.define('settings', function() {
     },
 
     /** @override */
-    setSyncPrefs: function(syncPrefs) {
-      return cr.sendWithPromise('SyncSetupConfigure',
+    setSyncDatatypes: function(syncPrefs) {
+      return cr.sendWithPromise('SyncSetupSetDatatypes',
+                                JSON.stringify(syncPrefs));
+    },
+
+    /** @override */
+    setSyncEncryption: function(syncPrefs) {
+      return cr.sendWithPromise('SyncSetupSetEncryption',
                                 JSON.stringify(syncPrefs));
     },
 

@@ -159,7 +159,7 @@ Polymer({
     // TODO(tommycli): Clean up the C++ handler to handle passwords separately.
     this.syncPrefs.usePassphrase = false;
 
-    this.browserProxy_.setSyncPrefs(this.syncPrefs).then(
+    this.browserProxy_.setSyncDatatypes(this.syncPrefs).then(
         this.handlePageStatusChanged_.bind(this));
   },
 
@@ -181,7 +181,7 @@ Polymer({
     this.syncPrefs.isGooglePassphrase = false;
     this.syncPrefs.passphrase = this.$$('#passphraseInput').value;
 
-    this.browserProxy_.setSyncPrefs(this.syncPrefs).then(
+    this.browserProxy_.setSyncEncryption(this.syncPrefs).then(
         this.handlePageStatusChanged_.bind(this));
   },
 
@@ -200,7 +200,7 @@ Polymer({
 
     existingPassphraseInput.value = '';
 
-    this.browserProxy_.setSyncPrefs(this.syncPrefs).then(
+    this.browserProxy_.setSyncEncryption(this.syncPrefs).then(
         this.handlePageStatusChanged_.bind(this));
   },
 
