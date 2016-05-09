@@ -94,6 +94,7 @@ if ((is_android && current_cpu == "arm" && arm_use_neon && ffmpeg_branding == "C
     "libavformat/rmsipr.c",
     "libavformat/url.c",
     "libavformat/vorbiscomment.c",
+    "libavformat/w64.c",
     "libavformat/wavdec.c",
     "libavutil/aes.c",
     "libavutil/aes_ctr.c",

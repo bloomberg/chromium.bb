@@ -585,6 +585,7 @@
           'libavformat/rmsipr.c',
           'libavformat/url.c',
           'libavformat/vorbiscomment.c',
+          'libavformat/w64.c',
           'libavformat/wavdec.c',
           'libavutil/aes.c',
           'libavutil/aes_ctr.c',
