@@ -51,18 +51,14 @@ void MessagePumpIOSForIO::FileDescriptorWatcher::OnFileCanReadWithoutBlocking(
     int fd,
     MessagePumpIOSForIO* pump) {
   DCHECK(callback_types_ & kCFFileDescriptorReadCallBack);
-  pump->WillProcessIOEvent();
   watcher_->OnFileCanReadWithoutBlocking(fd);
-  pump->DidProcessIOEvent();
 }
 
 void MessagePumpIOSForIO::FileDescriptorWatcher::OnFileCanWriteWithoutBlocking(
     int fd,
     MessagePumpIOSForIO* pump) {
   DCHECK(callback_types_ & kCFFileDescriptorWriteCallBack);
-  pump->WillProcessIOEvent();
   watcher_->OnFileCanWriteWithoutBlocking(fd);
-  pump->DidProcessIOEvent();
 }
 
 MessagePumpIOSForIO::MessagePumpIOSForIO() : weak_factory_(this) {
@@ -150,22 +146,6 @@ bool MessagePumpIOSForIO::WatchFileDescriptor(
 
 void MessagePumpIOSForIO::RemoveRunLoopSource(CFRunLoopSourceRef source) {
   CFRunLoopRemoveSource(run_loop(), source, kCFRunLoopCommonModes);
-}
-
-void MessagePumpIOSForIO::AddIOObserver(IOObserver *obs) {
-  io_observers_.AddObserver(obs);
-}
-
-void MessagePumpIOSForIO::RemoveIOObserver(IOObserver *obs) {
-  io_observers_.RemoveObserver(obs);
-}
-
-void MessagePumpIOSForIO::WillProcessIOEvent() {
-  FOR_EACH_OBSERVER(IOObserver, io_observers_, WillProcessIOEvent());
-}
-
-void MessagePumpIOSForIO::DidProcessIOEvent() {
-  FOR_EACH_OBSERVER(IOObserver, io_observers_, DidProcessIOEvent());
 }
 
 // static

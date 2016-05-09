@@ -725,15 +725,6 @@ bool MessageLoopForUI::WatchFileDescriptor(
 // MessageLoopForIO
 
 #if !defined(OS_NACL_SFI)
-void MessageLoopForIO::AddIOObserver(
-    MessageLoopForIO::IOObserver* io_observer) {
-  ToPumpIO(pump_.get())->AddIOObserver(io_observer);
-}
-
-void MessageLoopForIO::RemoveIOObserver(
-    MessageLoopForIO::IOObserver* io_observer) {
-  ToPumpIO(pump_.get())->RemoveIOObserver(io_observer);
-}
 
 #if defined(OS_WIN)
 void MessageLoopForIO::RegisterIOHandler(HANDLE file, IOHandler* handler) {

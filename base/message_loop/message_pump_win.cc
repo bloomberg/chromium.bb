@@ -552,10 +552,8 @@ bool MessagePumpForIO::WaitForIOCompletion(DWORD timeout, IOHandler* filter) {
     } else {
       DCHECK(!item.has_valid_io_context ||
              (item.context->handler == item.handler));
-      WillProcessIOEvent();
       item.handler->OnIOCompleted(item.context, item.bytes_transfered,
                                   item.error);
-      DidProcessIOEvent();
     }
   } else {
     // The handler must be gone by now, just cleanup the mess.
@@ -605,22 +603,6 @@ bool MessagePumpForIO::MatchCompletedIOItem(IOHandler* filter, IOItem* item) {
     }
   }
   return false;
-}
-
-void MessagePumpForIO::AddIOObserver(IOObserver *obs) {
-  io_observers_.AddObserver(obs);
-}
-
-void MessagePumpForIO::RemoveIOObserver(IOObserver *obs) {
-  io_observers_.RemoveObserver(obs);
-}
-
-void MessagePumpForIO::WillProcessIOEvent() {
-  FOR_EACH_OBSERVER(IOObserver, io_observers_, WillProcessIOEvent());
-}
-
-void MessagePumpForIO::DidProcessIOEvent() {
-  FOR_EACH_OBSERVER(IOObserver, io_observers_, DidProcessIOEvent());
 }
 
 // static

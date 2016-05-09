@@ -11,7 +11,6 @@
 
 #include "base/base_export.h"
 #include "base/message_loop/message_pump.h"
-#include "base/observer_list.h"
 #include "base/time/time.h"
 #include "base/win/scoped_handle.h"
 
@@ -236,21 +235,6 @@ class BASE_EXPORT MessagePumpForIO : public MessagePumpWin {
                                DWORD error) = 0;
   };
 
-  // An IOObserver is an object that receives IO notifications from the
-  // MessagePump.
-  //
-  // NOTE: An IOObserver implementation should be extremely fast!
-  class IOObserver {
-   public:
-    IOObserver() {}
-
-    virtual void WillProcessIOEvent() = 0;
-    virtual void DidProcessIOEvent() = 0;
-
-   protected:
-    virtual ~IOObserver() {}
-  };
-
   // The extended context that should be used as the base structure on every
   // overlapped IO operation. |handler| must be set to the registered IOHandler
   // for the given file when the operation is started, and it can be set to NULL
@@ -294,9 +278,6 @@ class BASE_EXPORT MessagePumpForIO : public MessagePumpWin {
   // caller is willing to allow pausing regular task dispatching on this thread.
   bool WaitForIOCompletion(DWORD timeout, IOHandler* filter);
 
-  void AddIOObserver(IOObserver* obs);
-  void RemoveIOObserver(IOObserver* obs);
-
  private:
   struct IOItem {
     IOHandler* handler;
@@ -315,8 +296,6 @@ class BASE_EXPORT MessagePumpForIO : public MessagePumpWin {
   bool MatchCompletedIOItem(IOHandler* filter, IOItem* item);
   bool GetIOItem(DWORD timeout, IOItem* item);
   bool ProcessInternalIOItem(const IOItem& item);
-  void WillProcessIOEvent();
-  void DidProcessIOEvent();
 
   // Converts an IOHandler pointer to a completion port key.
   // |has_valid_io_context| specifies whether completion packets posted to
@@ -331,8 +310,6 @@ class BASE_EXPORT MessagePumpForIO : public MessagePumpWin {
   // This list will be empty almost always. It stores IO completions that have
   // not been delivered yet because somebody was doing cleanup.
   std::list<IOItem> completed_io_;
-
-  ObserverList<IOObserver> io_observers_;
 };
 
 }  // namespace base
