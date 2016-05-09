@@ -103,10 +103,12 @@ class PeopleHandler : public SettingsPageUIHandler,
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, TestSyncAllManually);
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, TestPassphraseStillRequired);
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, TestSyncIndividualTypes);
-  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, TurnOnEncryptAll);
+  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest,
+                           EnterExistingFrozenImplicitPassword);
+  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, SetNewCustomPassphrase);
+  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, EnterWrongExistingPassphrase);
+  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, EnterBlankExistingPassphrase);
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, TurnOnEncryptAllDisallowed);
-  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, UnsuccessfullySetPassphrase);
-  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, UnsuccessfullySetBlankPassphrase);
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerNonCrosTest,
                            UnrecoverableErrorInitializingSync);
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerNonCrosTest, GaiaErrorInitializingSync);

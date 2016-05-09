@@ -84,7 +84,6 @@ std::string GetConfiguration(const base::DictionaryValue* extra_values,
   result.SetBoolean("syncAllDataTypes", sync_all == SYNC_ALL_DATA);
   result.SetBoolean("syncNothing", sync_all == SYNC_NOTHING);
   result.SetBoolean("encryptAllData", encrypt_all == ENCRYPT_ALL_DATA);
-  result.SetBoolean("usePassphrase", !passphrase.empty());
   if (!passphrase.empty())
     result.SetString("passphrase", passphrase);
   // Add all of our data types.
@@ -423,7 +422,7 @@ TEST_F(PeopleHandlerTest,
   CheckBool(dictionary, "syncAllDataTypes", true);
   CheckBool(dictionary, "encryptAllDataAllowed", true);
   CheckBool(dictionary, "encryptAllData", false);
-  CheckBool(dictionary, "usePassphrase", false);
+  CheckBool(dictionary, "passphraseRequired", false);
 }
 
 // Verifies the case where the user cancels after the sync backend has
@@ -544,25 +543,6 @@ TEST_F(PeopleHandlerTest, TestSyncNothing) {
   ExpectPageStatusResponse(PeopleHandler::kConfigurePageStatus);
 }
 
-TEST_F(PeopleHandlerTest, TurnOnEncryptAll) {
-  std::string args = GetConfiguration(
-      NULL, SYNC_ALL_DATA, GetAllTypes(), std::string(), ENCRYPT_ALL_DATA);
-  base::ListValue list_args;
-  list_args.Append(new base::StringValue(kTestCallbackId));
-  list_args.Append(new base::StringValue(args));
-  EXPECT_CALL(*mock_pss_, IsPassphraseRequiredForDecryption())
-      .WillRepeatedly(Return(false));
-  EXPECT_CALL(*mock_pss_, IsPassphraseRequired())
-      .WillRepeatedly(Return(false));
-  EXPECT_CALL(*mock_pss_, IsEncryptEverythingAllowed())
-      .WillRepeatedly(Return(true));
-  SetupInitializedProfileSyncService();
-  EXPECT_CALL(*mock_pss_, EnableEncryptEverything());
-  handler_->HandleSetEncryption(&list_args);
-
-  ExpectPageStatusResponse(PeopleHandler::kConfigurePageStatus);
-}
-
 TEST_F(PeopleHandlerTest, TestPassphraseStillRequired) {
   std::string args = GetConfiguration(
       NULL, SYNC_ALL_DATA, GetAllTypes(), std::string(), ENCRYPT_PASSWORDS);
@@ -583,14 +563,11 @@ TEST_F(PeopleHandlerTest, TestPassphraseStillRequired) {
   ExpectPageStatusResponse(PeopleHandler::kPassphraseFailedPageStatus);
 }
 
-TEST_F(PeopleHandlerTest, SuccessfullySetPassphrase) {
+TEST_F(PeopleHandlerTest, EnterExistingFrozenImplicitPassword) {
   base::DictionaryValue dict;
-  dict.SetBoolean("isGooglePassphrase", true);
-  std::string args = GetConfiguration(&dict,
-                                      SYNC_ALL_DATA,
-                                      GetAllTypes(),
-                                      "gaiaPassphrase",
-                                      ENCRYPT_PASSWORDS);
+  dict.SetBoolean("setNewPassphrase", false);
+  std::string args = GetConfiguration(&dict, SYNC_ALL_DATA, GetAllTypes(),
+                                      "oldGaiaPassphrase", ENCRYPT_PASSWORDS);
   base::ListValue list_args;
   list_args.Append(new base::StringValue(kTestCallbackId));
   list_args.Append(new base::StringValue(args));
@@ -602,21 +579,18 @@ TEST_F(PeopleHandlerTest, SuccessfullySetPassphrase) {
   EXPECT_CALL(*mock_pss_, IsUsingSecondaryPassphrase())
       .WillRepeatedly(Return(false));
   SetupInitializedProfileSyncService();
-  EXPECT_CALL(*mock_pss_, SetDecryptionPassphrase("gaiaPassphrase")).
-      WillOnce(Return(true));
+  EXPECT_CALL(*mock_pss_, SetDecryptionPassphrase("oldGaiaPassphrase"))
+      .WillOnce(Return(true));
 
   handler_->HandleSetEncryption(&list_args);
   ExpectPageStatusResponse(PeopleHandler::kConfigurePageStatus);
 }
 
-TEST_F(PeopleHandlerTest, SelectCustomEncryption) {
+TEST_F(PeopleHandlerTest, SetNewCustomPassphrase) {
   base::DictionaryValue dict;
-  dict.SetBoolean("isGooglePassphrase", false);
-  std::string args = GetConfiguration(&dict,
-                                      SYNC_ALL_DATA,
-                                      GetAllTypes(),
-                                      "custom_passphrase",
-                                      ENCRYPT_PASSWORDS);
+  dict.SetBoolean("setNewPassphrase", true);
+  std::string args = GetConfiguration(&dict, SYNC_ALL_DATA, GetAllTypes(),
+                                      "custom_passphrase", ENCRYPT_ALL_DATA);
   base::ListValue list_args;
   list_args.Append(new base::StringValue(kTestCallbackId));
   list_args.Append(new base::StringValue(args));
@@ -635,14 +609,11 @@ TEST_F(PeopleHandlerTest, SelectCustomEncryption) {
   ExpectPageStatusResponse(PeopleHandler::kConfigurePageStatus);
 }
 
-TEST_F(PeopleHandlerTest, UnsuccessfullySetPassphrase) {
+TEST_F(PeopleHandlerTest, EnterWrongExistingPassphrase) {
   base::DictionaryValue dict;
-  dict.SetBoolean("isGooglePassphrase", true);
-  std::string args = GetConfiguration(&dict,
-                                      SYNC_ALL_DATA,
-                                      GetAllTypes(),
-                                      "invalid_passphrase",
-                                      ENCRYPT_PASSWORDS);
+  dict.SetBoolean("setNewPassphrase", false);
+  std::string args = GetConfiguration(&dict, SYNC_ALL_DATA, GetAllTypes(),
+                                      "invalid_passphrase", ENCRYPT_ALL_DATA);
   base::ListValue list_args;
   list_args.Append(new base::StringValue(kTestCallbackId));
   list_args.Append(new base::StringValue(args));
@@ -663,9 +634,9 @@ TEST_F(PeopleHandlerTest, UnsuccessfullySetPassphrase) {
   ExpectPageStatusResponse(PeopleHandler::kPassphraseFailedPageStatus);
 }
 
-TEST_F(PeopleHandlerTest, UnsuccessfullySetBlankPassphrase) {
+TEST_F(PeopleHandlerTest, EnterBlankExistingPassphrase) {
   base::DictionaryValue dict;
-  dict.SetBoolean("usePassphrase", true);
+  dict.SetBoolean("setNewPassphrase", false);
   std::string args = GetConfiguration(&dict,
                                       SYNC_ALL_DATA,
                                       GetAllTypes(),
@@ -816,8 +787,8 @@ TEST_F(PeopleHandlerTest, ShowSetupSyncEverything) {
   CheckBool(dictionary, "tabsRegistered", true);
   CheckBool(dictionary, "themesRegistered", true);
   CheckBool(dictionary, "typedUrlsRegistered", true);
-  CheckBool(dictionary, "showPassphrase", false);
-  CheckBool(dictionary, "usePassphrase", false);
+  CheckBool(dictionary, "passphraseRequired", false);
+  CheckBool(dictionary, "passphraseTypeIsCustom", false);
   CheckBool(dictionary, "encryptAllData", false);
   CheckConfigDataTypeArguments(dictionary, SYNC_ALL_DATA, GetAllTypes());
 }
@@ -870,11 +841,11 @@ TEST_F(PeopleHandlerTest, ShowSetupSyncForAllTypesIndividually) {
   }
 }
 
-TEST_F(PeopleHandlerTest, ShowSetupGaiaPassphraseRequired) {
+TEST_F(PeopleHandlerTest, ShowSetupOldGaiaPassphraseRequired) {
   EXPECT_CALL(*mock_pss_, IsPassphraseRequired())
       .WillRepeatedly(Return(true));
-  EXPECT_CALL(*mock_pss_, IsUsingSecondaryPassphrase())
-      .WillRepeatedly(Return(false));
+  EXPECT_CALL(*mock_pss_, GetPassphraseType())
+      .WillRepeatedly(Return(syncer::FROZEN_IMPLICIT_PASSPHRASE));
   SetupInitializedProfileSyncService();
   SetDefaultExpectationsForConfigPage();
 
@@ -882,14 +853,12 @@ TEST_F(PeopleHandlerTest, ShowSetupGaiaPassphraseRequired) {
   handler_->OpenSyncSetup(false /* creating_supervised_user */);
 
   const base::DictionaryValue* dictionary = ExpectSyncPrefsChanged();
-  CheckBool(dictionary, "showPassphrase", true);
-  CheckBool(dictionary, "usePassphrase", false);
+  CheckBool(dictionary, "passphraseRequired", true);
+  CheckBool(dictionary, "passphraseTypeIsCustom", false);
 }
 
 TEST_F(PeopleHandlerTest, ShowSetupCustomPassphraseRequired) {
   EXPECT_CALL(*mock_pss_, IsPassphraseRequired())
-      .WillRepeatedly(Return(true));
-  EXPECT_CALL(*mock_pss_, IsUsingSecondaryPassphrase())
       .WillRepeatedly(Return(true));
   EXPECT_CALL(*mock_pss_, GetPassphraseType())
       .WillRepeatedly(Return(syncer::CUSTOM_PASSPHRASE));
@@ -900,8 +869,8 @@ TEST_F(PeopleHandlerTest, ShowSetupCustomPassphraseRequired) {
   handler_->OpenSyncSetup(false /* creating_supervised_user */);
 
   const base::DictionaryValue* dictionary = ExpectSyncPrefsChanged();
-  CheckBool(dictionary, "showPassphrase", true);
-  CheckBool(dictionary, "usePassphrase", true);
+  CheckBool(dictionary, "passphraseRequired", true);
+  CheckBool(dictionary, "passphraseTypeIsCustom", true);
 }
 
 TEST_F(PeopleHandlerTest, ShowSetupEncryptAll) {

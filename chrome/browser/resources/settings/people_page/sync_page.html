@@ -101,19 +101,17 @@
           </div>
         </div>
 
-        <template is="dom-if" if="[[!syncPrefs.showPassphrase]]">
+        <template is="dom-if" if="[[!syncPrefs.passphraseRequired]]">
           <div class="list-frame">
             <paper-radio-group id="encryptRadioGroup"
-                selected="[[selectedEncryptionRadio_(syncPrefs.usePassphrase, syncPrefs.encryptAllData)]]"
+                selected="[[selectedEncryptionRadio_(syncPrefs.passphraseTypeIsCustom)]]"
                 on-paper-radio-group-changed="onEncryptionRadioSelectionChanged_">
               <paper-radio-button name="encrypt-with-google"
-                  class="list-item"
-                  disabled="[[encryptionRadiosDisabled_(syncPrefs.usePassphrase, syncPrefs.encryptAllData)]]">
+                  class="list-item" disabled="[[syncPrefs.encryptAllData]]">
                 <span>[[i18n('encryptWithGoogleCredentialsLabel')]]</span>
               </paper-radio-button>
               <paper-radio-button name="encrypt-with-passphrase"
-                  class="list-item"
-                  disabled="[[encryptionRadiosDisabled_(syncPrefs.usePassphrase, syncPrefs.encryptAllData)]]">
+                  class="list-item" disabled="[[syncPrefs.encryptAllData]]">
                 <span>[[encryptWithPassphraseBody_(syncPrefs.fullEncryptionBody)]]</span>
               </paper-radio-button>
             </paper-radio-group>
@@ -137,11 +135,15 @@
             </paper-button>
           </template>
 
-          <template is="dom-if" if="[[syncPrefs.showPassphrase]]">
+          <template is="dom-if" if="[[syncPrefs.passphraseRequired]]">
             <div id="askCustomPassphraseMessage"
-                hidden="[[askOldGooglePassphrase]]">[[syncPrefs.enterPassphraseBody]]</div>
+                hidden$="[[!syncPrefs.passphraseTypeIsCustom]]">
+              [[syncPrefs.enterPassphraseBody]]
+            </div>
             <div id="askOldGooglePassphraseMessage"
-                hidden="[[!askOldGooglePassphrase]]">[[syncPrefs.enterGooglePassphraseBody]]</div>
+                hidden$="[[syncPrefs.passphraseTypeIsCustom]]">
+              [[syncPrefs.enterGooglePassphraseBody]]
+            </div>
             <paper-input id="existingPassphraseInput" type="password"
                 placeholder="[[i18n('passphrasePlaceholder')]]">
             </paper-input>

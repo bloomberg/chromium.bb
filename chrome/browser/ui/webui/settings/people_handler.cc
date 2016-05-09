@@ -75,14 +75,14 @@ struct SyncConfigInfo {
   bool sync_nothing;
   syncer::ModelTypeSet data_types;
   std::string passphrase;
-  bool passphrase_is_gaia;
+  bool set_new_passphrase;
 };
 
 SyncConfigInfo::SyncConfigInfo()
     : encrypt_all(false),
       sync_everything(false),
       sync_nothing(false),
-      passphrase_is_gaia(false) {}
+      set_new_passphrase(false) {}
 
 SyncConfigInfo::~SyncConfigInfo() {}
 
@@ -128,22 +128,11 @@ bool GetConfiguration(const std::string& json, SyncConfigInfo* config) {
   }
 
   // Passphrase settings.
-  bool have_passphrase;
-  if (!result->GetBoolean("usePassphrase", &have_passphrase)) {
-    DLOG(ERROR) << "GetConfiguration() not passed a usePassphrase value";
+  if (result->GetString("passphrase", &config->passphrase) &&
+      !config->passphrase.empty() &&
+      !result->GetBoolean("setNewPassphrase", &config->set_new_passphrase)) {
+    DLOG(ERROR) << "GetConfiguration() not passed a set_new_passphrase value";
     return false;
-  }
-
-  if (have_passphrase) {
-    if (!result->GetBoolean("isGooglePassphrase",
-                            &config->passphrase_is_gaia)) {
-      DLOG(ERROR) << "GetConfiguration() not passed isGooglePassphrase value";
-      return false;
-    }
-    if (!result->GetString("passphrase", &config->passphrase)) {
-      DLOG(ERROR) << "GetConfiguration() not passed a passphrase value";
-      return false;
-    }
   }
   return true;
 }
@@ -483,10 +472,8 @@ void PeopleHandler::HandleSetEncryption(const base::ListValue* args) {
       // it either means that the pending keys were resolved somehow since the
       // time the UI was displayed (re-encryption, pending passphrase change,
       // etc) or the user wants to re-encrypt.
-      if (!configuration.passphrase_is_gaia &&
+      if (configuration.set_new_passphrase &&
           !service->IsUsingSecondaryPassphrase()) {
-        // User passed us a secondary passphrase, and the data is encrypted
-        // with a GAIA passphrase so they must want to encrypt.
         service->SetEncryptionPassphrase(configuration.passphrase,
                                          ProfileSyncService::EXPLICIT);
       }
@@ -511,7 +498,7 @@ void PeopleHandler::HandleSetEncryption(const base::ListValue* args) {
 
   if (configuration.encrypt_all)
     ProfileMetrics::LogProfileSyncInfo(ProfileMetrics::SYNC_ENCRYPT);
-  if (configuration.passphrase_is_gaia && !configuration.passphrase.empty())
+  if (!configuration.set_new_passphrase && !configuration.passphrase.empty())
     ProfileMetrics::LogProfileSyncInfo(ProfileMetrics::SYNC_PASSPHRASE);
 }
 
@@ -843,8 +830,9 @@ void PeopleHandler::PushSyncPrefs() {
   //   encryptionEnabled: true if sync supports encryption
   //   encryptAllData: true if user wants to encrypt all data (not just
   //       passwords)
-  //   usePassphrase: true if the data is encrypted with a secondary passphrase
-  //   show_passphrase: true if a passphrase is needed to decrypt the sync data
+  //   passphraseRequired: true if a passphrase is needed to start sync
+  //   passphraseTypeIsCustom: true if the passphrase type is custom
+  //
   base::DictionaryValue args;
 
   // Tell the UI layer which data types are registered/enabled by the user.
@@ -873,11 +861,11 @@ void PeopleHandler::PushSyncPrefs() {
   // We call IsPassphraseRequired() here, instead of calling
   // IsPassphraseRequiredForDecryption(), because we want to show the passphrase
   // UI even if no encrypted data types are enabled.
-  args.SetBoolean("showPassphrase", service->IsPassphraseRequired());
+  args.SetBoolean("passphraseRequired", service->IsPassphraseRequired());
 
   // To distinguish between FROZEN_IMPLICIT_PASSPHRASE and CUSTOM_PASSPHRASE
-  // we only set usePassphrase for CUSTOM_PASSPHRASE.
-  args.SetBoolean("usePassphrase",
+  // we only set passphraseTypeIsCustom for CUSTOM_PASSPHRASE.
+  args.SetBoolean("passphraseTypeIsCustom",
                   service->GetPassphraseType() == syncer::CUSTOM_PASSPHRASE);
   base::Time passphrase_time = service->GetExplicitPassphraseTime();
   syncer::PassphraseType passphrase_type = service->GetPassphraseType();
