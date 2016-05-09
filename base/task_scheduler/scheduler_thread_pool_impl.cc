@@ -4,8 +4,6 @@
 
 #include "base/task_scheduler/scheduler_thread_pool_impl.h"
 
-#include <stddef.h>
-
 #include <algorithm>
 #include <utility>
 
@@ -15,10 +13,8 @@
 #include "base/memory/ptr_util.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
-#include "base/strings/stringprintf.h"
 #include "base/task_scheduler/delayed_task_manager.h"
 #include "base/task_scheduler/task_tracker.h"
-#include "base/threading/platform_thread.h"
 #include "base/threading/thread_local.h"
 #include "base/threading/thread_restrictions.h"
 
@@ -184,13 +180,11 @@ class SchedulerThreadPoolImpl::SchedulerWorkerThreadDelegateImpl
   // |re_enqueue_sequence_callback| is invoked when ReEnqueueSequence() is
   // called with a non-single-threaded Sequence. |shared_priority_queue| is a
   // PriorityQueue whose transactions may overlap with the worker thread's
-  // single-threaded PriorityQueue's transactions. |index| will be appended to
-  // this thread's name to uniquely identify it.
+  // single-threaded PriorityQueue's transactions.
   SchedulerWorkerThreadDelegateImpl(
       SchedulerThreadPoolImpl* outer,
       const ReEnqueueSequenceCallback& re_enqueue_sequence_callback,
-      const PriorityQueue* shared_priority_queue,
-      int index);
+      const PriorityQueue* shared_priority_queue);
   ~SchedulerWorkerThreadDelegateImpl() override;
 
   PriorityQueue* single_threaded_priority_queue() {
@@ -214,8 +208,6 @@ class SchedulerThreadPoolImpl::SchedulerWorkerThreadDelegateImpl
   // |single_threaded_priority_queue_|.
   bool last_sequence_is_single_threaded_ = false;
 
-  const int index_;
-
   DISALLOW_COPY_AND_ASSIGN(SchedulerWorkerThreadDelegateImpl);
 };
 
@@ -227,7 +219,6 @@ SchedulerThreadPoolImpl::~SchedulerThreadPoolImpl() {
 
 // static
 std::unique_ptr<SchedulerThreadPoolImpl> SchedulerThreadPoolImpl::Create(
-    StringPiece name,
     ThreadPriority thread_priority,
     size_t max_threads,
     IORestriction io_restriction,
@@ -235,7 +226,7 @@ std::unique_ptr<SchedulerThreadPoolImpl> SchedulerThreadPoolImpl::Create(
     TaskTracker* task_tracker,
     DelayedTaskManager* delayed_task_manager) {
   std::unique_ptr<SchedulerThreadPoolImpl> thread_pool(
-      new SchedulerThreadPoolImpl(name, io_restriction, task_tracker,
+      new SchedulerThreadPoolImpl(io_restriction, task_tracker,
                                   delayed_task_manager));
   if (thread_pool->Initialize(thread_priority, max_threads,
                               re_enqueue_sequence_callback)) {
@@ -377,12 +368,10 @@ SchedulerThreadPoolImpl::SchedulerWorkerThreadDelegateImpl::
     SchedulerWorkerThreadDelegateImpl(
         SchedulerThreadPoolImpl* outer,
         const ReEnqueueSequenceCallback& re_enqueue_sequence_callback,
-        const PriorityQueue* shared_priority_queue,
-        int index)
+        const PriorityQueue* shared_priority_queue)
     : outer_(outer),
       re_enqueue_sequence_callback_(re_enqueue_sequence_callback),
-      single_threaded_priority_queue_(shared_priority_queue),
-      index_(index) {}
+      single_threaded_priority_queue_(shared_priority_queue) {}
 
 SchedulerThreadPoolImpl::SchedulerWorkerThreadDelegateImpl::
     ~SchedulerWorkerThreadDelegateImpl() = default;
@@ -395,9 +384,6 @@ void SchedulerThreadPoolImpl::SchedulerWorkerThreadDelegateImpl::OnMainEntry(
   outer_->threads_created_.Wait();
   DCHECK(ContainsWorkerThread(outer_->worker_threads_, worker_thread));
 #endif
-
-  PlatformThread::SetName(
-      StringPrintf("%sWorker%d", outer_->name_.c_str(), index_));
 
   DCHECK(!tls_current_worker_thread.Get().Get());
   DCHECK(!tls_current_thread_pool.Get().Get());
@@ -480,12 +466,10 @@ void SchedulerThreadPoolImpl::SchedulerWorkerThreadDelegateImpl::
 }
 
 SchedulerThreadPoolImpl::SchedulerThreadPoolImpl(
-    StringPiece name,
     IORestriction io_restriction,
     TaskTracker* task_tracker,
     DelayedTaskManager* delayed_task_manager)
-    : name_(name.as_string()),
-      io_restriction_(io_restriction),
+    : io_restriction_(io_restriction),
       idle_worker_threads_stack_lock_(shared_priority_queue_.container_lock()),
       idle_worker_threads_stack_cv_for_testing_(
           idle_worker_threads_stack_lock_.CreateConditionVariable()),
@@ -510,9 +494,9 @@ bool SchedulerThreadPoolImpl::Initialize(
   for (size_t i = 0; i < max_threads; ++i) {
     std::unique_ptr<SchedulerWorkerThread> worker_thread =
         SchedulerWorkerThread::Create(
-            thread_priority, WrapUnique(new SchedulerWorkerThreadDelegateImpl(
-                                 this, re_enqueue_sequence_callback,
-                                 &shared_priority_queue_, i)),
+            thread_priority,
+            WrapUnique(new SchedulerWorkerThreadDelegateImpl(
+                this, re_enqueue_sequence_callback, &shared_priority_queue_)),
             task_tracker_);
     if (!worker_thread)
       break;
