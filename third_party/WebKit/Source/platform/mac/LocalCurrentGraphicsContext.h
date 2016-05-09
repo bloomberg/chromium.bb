@@ -36,9 +36,7 @@ class PLATFORM_EXPORT LocalCurrentGraphicsContext {
     WTF_MAKE_NONCOPYABLE(LocalCurrentGraphicsContext);
 public:
     LocalCurrentGraphicsContext(GraphicsContext&, const IntRect& dirtyRect);
-    // Allows specifying an interest rect to which we clip if slimming paint is enabled and performance would benefit.
-    LocalCurrentGraphicsContext(GraphicsContext&, const IntRect* interestRect, const IntRect& dirtyRect);
-    LocalCurrentGraphicsContext(SkCanvas*, float deviceScaleFactor, const IntRect* interestRect, const IntRect& dirtyRect);
+    LocalCurrentGraphicsContext(SkCanvas*, float deviceScaleFactor, const IntRect& dirtyRect);
     ~LocalCurrentGraphicsContext();
     CGContextRef cgContext();
 private:

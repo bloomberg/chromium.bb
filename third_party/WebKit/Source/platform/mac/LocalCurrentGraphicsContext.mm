@@ -27,18 +27,22 @@
 namespace blink {
 
 LocalCurrentGraphicsContext::LocalCurrentGraphicsContext(GraphicsContext& graphicsContext, const IntRect& dirtyRect)
-    : LocalCurrentGraphicsContext(graphicsContext.canvas(), graphicsContext.deviceScaleFactor(), nullptr, dirtyRect)
+    : LocalCurrentGraphicsContext(graphicsContext.canvas(), graphicsContext.deviceScaleFactor(), dirtyRect)
 {
 }
 
-LocalCurrentGraphicsContext::LocalCurrentGraphicsContext(GraphicsContext& graphicsContext, const IntRect* interestRect,
-                                                         const IntRect& dirtyRect)
-    : LocalCurrentGraphicsContext(graphicsContext.canvas(), graphicsContext.deviceScaleFactor(), interestRect, dirtyRect)
+static IntRect clampRect(int size, const IntRect& rect)
 {
+    IntRect clampedRect(rect);
+    clampedRect.setSize(IntSize(
+        std::min(size, clampedRect.width()),
+        std::min(size, clampedRect.height())));
+    return clampedRect;
 }
 
-LocalCurrentGraphicsContext::LocalCurrentGraphicsContext(SkCanvas* canvas, float deviceScaleFactor, const IntRect* interestRect,
-                                                         const IntRect& dirtyRect)
+static const int kMaxDirtyRectPixelSize = 10000;
+
+LocalCurrentGraphicsContext::LocalCurrentGraphicsContext(SkCanvas* canvas, float deviceScaleFactor, const IntRect& dirtyRect)
     : m_didSetGraphicsContext(false)
     , m_inflatedDirtyRect(ThemeMac::inflateRectForAA(dirtyRect))
     , m_skiaBitLocker(canvas,
@@ -48,12 +52,11 @@ LocalCurrentGraphicsContext::LocalCurrentGraphicsContext(SkCanvas* canvas, float
     m_savedCanvas = canvas;
     canvas->save();
 
-    bool clipToInterest = interestRect && !interestRect->contains(m_inflatedDirtyRect);
-    if (clipToInterest) {
-        IntRect clippedBounds(m_inflatedDirtyRect);
-        clippedBounds.intersect(*interestRect);
-        canvas->clipRect(clippedBounds, SkRegion::kIntersect_Op);
-    }
+    // Constrain the maximum size of what we paint to something reasonable. This accordingly
+    // means we will not paint the entirety of truly huge native form elements, which is
+    // deemed an acceptable tradeoff for this simple approach to manage such an edge case.
+    if (dirtyRect.width() > kMaxDirtyRectPixelSize || dirtyRect.height() > kMaxDirtyRectPixelSize)
+        canvas->clipRect(clampRect(kMaxDirtyRectPixelSize, dirtyRect), SkRegion::kIntersect_Op);
 
     CGContextRef cgContext = this->cgContext();
     if (cgContext == [[NSGraphicsContext currentContext] graphicsPort]) {
