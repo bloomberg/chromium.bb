@@ -87,11 +87,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceClient : public BluezDBusClient {
     // discovered during inquiry. Read-only.
     dbus::Property<int16_t> rssi;
 
-    // List of GATT service object paths. Each referenced object exports the
-    // org.bluez.GattService1 interface and represents a remote GATT service.
-    // This property will be updated once all remote GATT services of this
-    // device have been discovered and exported over D-Bus. Read-only.
-    dbus::Property<std::vector<dbus::ObjectPath>> gatt_services;
+    // Indicate whether or not service discovery has been resolved. Read-only.
+    dbus::Property<bool> services_resolved;
 
     Properties(dbus::ObjectProxy* object_proxy,
                const std::string& interface_name,

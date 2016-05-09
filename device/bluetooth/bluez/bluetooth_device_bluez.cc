@@ -207,6 +207,20 @@ void BluetoothDeviceBlueZ::CreateGattConnectionImpl() {
   NOTIMPLEMENTED();
 }
 
+void BluetoothDeviceBlueZ::SetGattServicesDiscoveryComplete(bool complete) {
+  // BlueZ implementation already tracks service discovery state.
+  NOTIMPLEMENTED();
+}
+
+bool BluetoothDeviceBlueZ::IsGattServicesDiscoveryComplete() const {
+  bluez::BluetoothDeviceClient::Properties* properties =
+      bluez::BluezDBusManager::Get()->GetBluetoothDeviceClient()->GetProperties(
+          object_path_);
+  DCHECK(properties);
+
+  return properties->services_resolved.value();
+}
+
 void BluetoothDeviceBlueZ::DisconnectGatt() {
   Disconnect(base::Bind(&base::DoNothing), base::Bind(&base::DoNothing));
 }

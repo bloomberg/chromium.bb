@@ -558,8 +558,8 @@ void BluetoothAdapterBlueZ::DevicePropertyChanged(
     NotifyDeviceChanged(device_bluez);
   }
 
-  if (property_name == properties->gatt_services.name()) {
-    device_bluez->SetGattServicesDiscoveryComplete(true);
+  if (property_name == properties->services_resolved.name() &&
+      properties->services_resolved.value()) {
     NotifyGattServicesDiscovered(device_bluez);
   }
 
@@ -580,8 +580,6 @@ void BluetoothAdapterBlueZ::DevicePropertyChanged(
     if (properties->connected.value()) {
       if (device_bluez->IsTrustable() && !properties->trusted.value())
         device_bluez->SetTrusted();
-    } else {
-      device_bluez->SetGattServicesDiscoveryComplete(false);
     }
 
     int count = 0;

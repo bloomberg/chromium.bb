@@ -49,7 +49,8 @@ BluetoothDeviceClient::Properties::Properties(
   RegisterProperty(bluetooth_device::kModaliasProperty, &modalias);
   RegisterProperty(bluetooth_device::kRSSIProperty, &rssi);
   RegisterProperty(bluetooth_device::kTxPowerProperty, &tx_power);
-  RegisterProperty(bluetooth_device::kGattServicesProperty, &gatt_services);
+  RegisterProperty(bluetooth_device::kServicesResolvedProperty,
+                   &services_resolved);
 }
 
 BluetoothDeviceClient::Properties::~Properties() {}

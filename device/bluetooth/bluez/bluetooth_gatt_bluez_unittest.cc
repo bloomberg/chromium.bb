@@ -375,18 +375,14 @@ TEST_F(BluetoothGattBlueZTest, ServicesDiscovered) {
 
   TestBluetoothAdapterObserver observer(adapter_);
 
-  EXPECT_EQ(0, observer.gatt_services_discovered_count());
-
   // Expose the fake Heart Rate Service.
   fake_bluetooth_gatt_service_client_->ExposeHeartRateService(
       dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kLowEnergyPath));
   // Notify that all services have been discovered.
-  properties->gatt_services.ReplaceValue(
-      fake_bluetooth_gatt_service_client_->GetServices());
+  properties->services_resolved.ReplaceValue(true);
 
   EXPECT_TRUE(device->IsGattServicesDiscoveryComplete());
   EXPECT_EQ(1u, device->GetGattServices().size());
-  EXPECT_EQ(1, observer.gatt_services_discovered_count());
   EXPECT_EQ(device, observer.last_device());
   EXPECT_EQ(bluez::FakeBluetoothDeviceClient::kLowEnergyAddress,
             observer.last_device_address());
@@ -398,6 +394,7 @@ TEST_F(BluetoothGattBlueZTest, ServicesDiscovered) {
                                 base::Unretained(this)));
   fake_bluetooth_gatt_service_client_->HideHeartRateService();
   properties->connected.ReplaceValue(false);
+  properties->services_resolved.ReplaceValue(false);
 
   EXPECT_FALSE(device->IsConnected());
   EXPECT_FALSE(device->IsGattServicesDiscoveryComplete());
@@ -415,8 +412,7 @@ TEST_F(BluetoothGattBlueZTest, ServicesDiscovered) {
   // Verify that service discovery can be done again:
   fake_bluetooth_gatt_service_client_->ExposeHeartRateService(
       dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kLowEnergyPath));
-  properties->gatt_services.ReplaceValue(
-      fake_bluetooth_gatt_service_client_->GetServices());
+  properties->services_resolved.ReplaceValue(true);
   EXPECT_TRUE(device->IsGattServicesDiscoveryComplete());
   EXPECT_EQ(1u, device->GetGattServices().size());
 }

@@ -83,6 +83,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceBlueZ
   void CreateGattConnection(
       const GattConnectionCallback& callback,
       const ConnectErrorCallback& error_callback) override;
+  void SetGattServicesDiscoveryComplete(bool complete) override;
+  bool IsGattServicesDiscoveryComplete() const override;
   void Pair(device::BluetoothDevice::PairingDelegate* pairing_delegate,
             const base::Closure& callback,
             const ConnectErrorCallback& error_callback) override;
