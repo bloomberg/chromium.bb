@@ -352,6 +352,12 @@ void PerformanceBase::registerPerformanceObserver(PerformanceObserver& observer)
 
 void PerformanceBase::unregisterPerformanceObserver(PerformanceObserver& oldObserver)
 {
+    ASSERT(isMainThread());
+    // Deliver any pending observations on this observer before unregistering.
+    if (m_activeObservers.contains(&oldObserver) && !oldObserver.shouldBeSuspended()) {
+        oldObserver.deliver();
+        m_activeObservers.remove(&oldObserver);
+    }
     m_observers.remove(&oldObserver);
     updatePerformanceObserverFilterOptions();
 }

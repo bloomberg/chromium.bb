@@ -6,6 +6,7 @@
 #define PerformanceObserver_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "core/CoreExport.h"
 #include "core/timing/PerformanceEntry.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Vector.h"
@@ -20,7 +21,7 @@ class PerformanceObserverInit;
 
 using PerformanceEntryVector = HeapVector<Member<PerformanceEntry>>;
 
-class PerformanceObserver final : public GarbageCollected<PerformanceObserver>, public ScriptWrappable {
+class CORE_EXPORT PerformanceObserver final : public GarbageCollected<PerformanceObserver>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
     friend class PerformanceBase;
 public:
