@@ -89,6 +89,7 @@
       'dependencies': [
         '<(DEPTH)/ios/third_party/earl_grey/earl_grey.gyp:EarlGrey',
         'ios_web.gyp:ios_web_test_support',
+        '../testing/earl_grey/earl_grey_support.gyp:earl_grey_support',
       ],
       'export_dependent_settings': [
         '<(DEPTH)/ios/third_party/earl_grey/earl_grey.gyp:EarlGrey',

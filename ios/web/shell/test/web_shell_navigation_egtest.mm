@@ -53,10 +53,12 @@
   // Create map of canned responses and set up the test HTML server.
   std::map<GURL, std::string> responses;
   const GURL URL1 = web::test::HttpServer::MakeUrl("http://firstURL");
+  NSString* URL1Text = base::SysUTF8ToNSString(URL1.spec());
   NSString* response1 = @"Test Page 1";
   responses[URL1] = base::SysNSStringToUTF8(response1);
 
   const GURL URL2 = web::test::HttpServer::MakeUrl("http://secondURL");
+  NSString* URL2Text = base::SysUTF8ToNSString(URL2.spec());
   NSString* response2 = @"Test Page 2";
   responses[URL2] = base::SysNSStringToUTF8(response2);
 
@@ -65,24 +67,28 @@
   web::WebState* webState = web::web_shell_test_util::GetCurrentWebState();
 
   web::navigation_test_util::LoadUrl(webState, URL1);
-
+  [[EarlGrey selectElementWithMatcher:web::addressFieldText(URL1Text)]
+      assertWithMatcher:grey_notNil()];
   [[EarlGrey selectElementWithMatcher:web::webViewContainingText(response1)]
       assertWithMatcher:grey_notNil()];
 
   web::navigation_test_util::LoadUrl(webState, URL2);
-
+  [[EarlGrey selectElementWithMatcher:web::addressFieldText(URL2Text)]
+      assertWithMatcher:grey_notNil()];
   [[EarlGrey selectElementWithMatcher:web::webViewContainingText(response2)]
       assertWithMatcher:grey_notNil()];
 
   [[EarlGrey selectElementWithMatcher:web::backButton()]
       performAction:grey_tap()];
-
+  [[EarlGrey selectElementWithMatcher:web::addressFieldText(URL1Text)]
+      assertWithMatcher:grey_notNil()];
   [[EarlGrey selectElementWithMatcher:web::webViewContainingText(response1)]
       assertWithMatcher:grey_notNil()];
 
   [[EarlGrey selectElementWithMatcher:web::forwardButton()]
       performAction:grey_tap()];
-
+  [[EarlGrey selectElementWithMatcher:web::addressFieldText(URL2Text)]
+      assertWithMatcher:grey_notNil()];
   [[EarlGrey selectElementWithMatcher:web::webViewContainingText(response2)]
       assertWithMatcher:grey_notNil()];
 }

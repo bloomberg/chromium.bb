@@ -11,14 +11,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/ios/wait_util.h"
 #include "base/values.h"
+#include "ios/testing/earl_grey/wait_util.h"
 
 namespace {
-
-// Constant for UI wait loop in seconds.
-const NSTimeInterval kSpinDelaySeconds = 0.01;
-
-// Constant for timeout in seconds while waiting for web element.
-const NSTimeInterval kWaitForWebElementTimeout = 4.0;
 
 // Script that returns document.body as a string.
 char kGetDocumentBodyJavaScript[] =
@@ -48,7 +43,7 @@ id<GREYMatcher> webViewContainingText(NSString* text, web::WebState* webState) {
 
     __block BOOL didSucceed = NO;
     NSDate* deadline =
-        [NSDate dateWithTimeIntervalSinceNow:kWaitForWebElementTimeout];
+        [NSDate dateWithTimeIntervalSinceNow:testing::kWaitForUIElementTimeout];
     while (([[NSDate date] compare:deadline] != NSOrderedDescending) &&
            !didSucceed) {
       webState->ExecuteJavaScript(
@@ -62,7 +57,7 @@ id<GREYMatcher> webViewContainingText(NSString* text, web::WebState* webState) {
             }
           }));
       base::test::ios::SpinRunLoopWithMaxDelay(
-          base::TimeDelta::FromSecondsD(kSpinDelaySeconds));
+          base::TimeDelta::FromSecondsD(testing::kSpinDelaySeconds));
     }
     return didSucceed;
   };

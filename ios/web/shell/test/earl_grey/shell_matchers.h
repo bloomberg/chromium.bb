@@ -9,6 +9,9 @@ namespace web {
 // Shorthand for GREYMatchers::matcherForWebViewContainingText.
 id<GREYMatcher> webViewContainingText(NSString* text);
 
+// Shorthand for GREYMatchers::matcherForAddressFieldEqualToText.
+id<GREYMatcher> addressFieldText(NSString* text);
+
 // Shorthand for GREYMatchers::matcherForBackButton.
 id<GREYMatcher> backButton();
 
@@ -24,6 +27,9 @@ id<GREYMatcher> addressField();
 
 // Matcher for WKWebView containing |text|.
 + (id<GREYMatcher>)matcherForWebViewContainingText:(NSString*)text;
+
+// Matcher for web shell address field text property equal to |text|.
++ (id<GREYMatcher>)matcherForAddressFieldEqualToText:(NSString*)text;
 
 // Matcher for back button in web shell.
 + (id<GREYMatcher>)matcherForWebShellBackButton;
