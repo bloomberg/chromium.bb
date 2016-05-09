@@ -89,23 +89,27 @@ void TaskSchedulerImpl::Initialize() {
   // SchedulerThreadPoolImpl::Create() is safe because a TaskSchedulerImpl can't
   // be deleted before all its thread pools have been joined.
   background_thread_pool_ = SchedulerThreadPoolImpl::Create(
-      ThreadPriority::BACKGROUND, 1U, IORestriction::DISALLOWED,
-      re_enqueue_sequence_callback, &task_tracker_, &delayed_task_manager_);
+      "TaskSchedulerBackground", ThreadPriority::BACKGROUND, 1U,
+      IORestriction::DISALLOWED, re_enqueue_sequence_callback, &task_tracker_,
+      &delayed_task_manager_);
   CHECK(background_thread_pool_);
 
   background_file_io_thread_pool_ = SchedulerThreadPoolImpl::Create(
-      ThreadPriority::BACKGROUND, 1U, IORestriction::ALLOWED,
-      re_enqueue_sequence_callback, &task_tracker_, &delayed_task_manager_);
+      "TaskSchedulerBackgroundFileIO", ThreadPriority::BACKGROUND, 1U,
+      IORestriction::ALLOWED, re_enqueue_sequence_callback, &task_tracker_,
+      &delayed_task_manager_);
   CHECK(background_file_io_thread_pool_);
 
   normal_thread_pool_ = SchedulerThreadPoolImpl::Create(
-      ThreadPriority::NORMAL, 4U, IORestriction::DISALLOWED,
-      re_enqueue_sequence_callback, &task_tracker_, &delayed_task_manager_);
+      "TaskSchedulerForeground", ThreadPriority::NORMAL, 4U,
+      IORestriction::DISALLOWED, re_enqueue_sequence_callback, &task_tracker_,
+      &delayed_task_manager_);
   CHECK(normal_thread_pool_);
 
   normal_file_io_thread_pool_ = SchedulerThreadPoolImpl::Create(
-      ThreadPriority::NORMAL, 12U, IORestriction::ALLOWED,
-      re_enqueue_sequence_callback, &task_tracker_, &delayed_task_manager_);
+      "TaskSchedulerForegroundFileIO", ThreadPriority::NORMAL, 12U,
+      IORestriction::ALLOWED, re_enqueue_sequence_callback, &task_tracker_,
+      &delayed_task_manager_);
   CHECK(normal_file_io_thread_pool_);
 }
 

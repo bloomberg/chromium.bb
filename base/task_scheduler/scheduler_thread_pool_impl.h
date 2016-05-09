@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/base_export.h"
@@ -15,6 +16,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/strings/string_piece.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/task_runner.h"
 #include "base/task_scheduler/priority_queue.h"
@@ -50,15 +52,16 @@ class BASE_EXPORT SchedulerThreadPoolImpl : public SchedulerThreadPool {
   // destroyed after JoinForTesting() has returned.
   ~SchedulerThreadPoolImpl() override;
 
-  // Creates a SchedulerThreadPool with up to |max_threads| threads of priority
-  // |thread_priority|. |io_restriction| indicates whether Tasks on the
-  // constructed thread pool are allowed to make I/O calls.
+  // Creates a SchedulerThreadPool labeled |name| with up to |max_threads|
+  // threads of priority |thread_priority|. |io_restriction| indicates whether
+  // Tasks on the constructed thread pool are allowed to make I/O calls.
   // |re_enqueue_sequence_callback| will be invoked after a thread of this
   // thread pool tries to run a Task. |task_tracker| is used to handle shutdown
   // behavior of Tasks. |delayed_task_manager| handles Tasks posted with a
   // delay. Returns nullptr on failure to create a thread pool with at least one
   // thread.
   static std::unique_ptr<SchedulerThreadPoolImpl> Create(
+      StringPiece name,
       ThreadPriority thread_priority,
       size_t max_threads,
       IORestriction io_restriction,
@@ -89,7 +92,8 @@ class BASE_EXPORT SchedulerThreadPoolImpl : public SchedulerThreadPool {
  private:
   class SchedulerWorkerThreadDelegateImpl;
 
-  SchedulerThreadPoolImpl(IORestriction io_restriction,
+  SchedulerThreadPoolImpl(StringPiece name,
+                          IORestriction io_restriction,
                           TaskTracker* task_tracker,
                           DelayedTaskManager* delayed_task_manager);
 
@@ -106,6 +110,9 @@ class BASE_EXPORT SchedulerThreadPoolImpl : public SchedulerThreadPool {
 
   // Removes |worker_thread| from |idle_worker_threads_stack_|.
   void RemoveFromIdleWorkerThreadsStack(SchedulerWorkerThread* worker_thread);
+
+  // The name of this thread pool, used to label its worker threads.
+  const std::string name_;
 
   // All worker threads owned by this thread pool. Only modified during
   // initialization of the thread pool.

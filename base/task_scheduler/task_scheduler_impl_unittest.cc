@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -77,6 +78,16 @@ void VerifyTaskEnvironement(const TaskTraits& traits) {
   // !ENABLE_THREAD_RESTRICTIONS, even when |traits| don't allow file I/O.
   EXPECT_EQ(traits.with_file_io(), GetIOAllowed());
 #endif
+
+  // Verify that the thread the task is running on is named as expected.
+  const std::string current_thread_name(PlatformThread::GetName());
+  EXPECT_NE(std::string::npos, current_thread_name.find("TaskScheduler"));
+  EXPECT_NE(std::string::npos,
+            current_thread_name.find(
+                traits.priority() == TaskPriority::BACKGROUND ? "Background"
+                                                              : "Foreground"));
+  EXPECT_EQ(traits.with_file_io(),
+            current_thread_name.find("FileIO") != std::string::npos);
 }
 
 void VerifyTaskEnvironementAndSignalEvent(const TaskTraits& traits,
