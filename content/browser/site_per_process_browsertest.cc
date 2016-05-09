@@ -6323,4 +6323,100 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_TRUE(observer.WasUserInteractionReceived());
 }
 
+// Ensures that navigating to data: URLs present in session history will
+// correctly commit the navigation in the same process as the parent frame.
+// See https://crbug.com/606996.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       NavigateSubframeToDataUrlInSessionHistory) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b,b)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  EXPECT_EQ(2U, root->child_count());
+  EXPECT_EQ(
+      " Site A ------------ proxies for B\n"
+      "   |--Site B ------- proxies for A\n"
+      "   +--Site B ------- proxies for A\n"
+      "Where A = http://a.com/\n"
+      "      B = http://b.com/",
+      DepictFrameTree(root));
+
+  TestNavigationObserver observer(shell()->web_contents());
+  FrameTreeNode* child = root->child_at(0);
+
+  // Navigate iframe to a data URL, which will commit in a new SiteInstance.
+  GURL data_url("data:text/html,dataurl");
+  NavigateFrameToURL(child, data_url);
+  EXPECT_TRUE(observer.last_navigation_succeeded());
+  EXPECT_EQ(data_url, observer.last_navigation_url());
+  scoped_refptr<SiteInstanceImpl> orig_site_instance =
+    child->current_frame_host()->GetSiteInstance();
+  EXPECT_NE(root->current_frame_host()->GetSiteInstance(), orig_site_instance);
+
+  // Navigate it to another cross-site url.
+  GURL cross_site_url(embedded_test_server()->GetURL("c.com", "/title1.html"));
+  NavigateFrameToURL(child, cross_site_url);
+  EXPECT_TRUE(observer.last_navigation_succeeded());
+  EXPECT_EQ(cross_site_url, observer.last_navigation_url());
+  EXPECT_EQ(3, web_contents()->GetController().GetEntryCount());
+  EXPECT_NE(orig_site_instance, child->current_frame_host()->GetSiteInstance());
+
+  // Go back and ensure the data: URL committed in the same SiteInstance as the
+  // original navigation.
+  EXPECT_TRUE(web_contents()->GetController().CanGoBack());
+  TestFrameNavigationObserver frame_observer(child);
+  web_contents()->GetController().GoBack();
+  frame_observer.WaitForCommit();
+  EXPECT_EQ(orig_site_instance, child->current_frame_host()->GetSiteInstance());
+}
+
+// Ensures that navigating to about:blank URLs present in session history will
+// correctly commit the navigation in the same process as the one used for
+// the original navigation.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       NavigateSubframeToAboutBlankInSessionHistory) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b,b)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  EXPECT_EQ(2U, root->child_count());
+  EXPECT_EQ(
+      " Site A ------------ proxies for B\n"
+      "   |--Site B ------- proxies for A\n"
+      "   +--Site B ------- proxies for A\n"
+      "Where A = http://a.com/\n"
+      "      B = http://b.com/",
+      DepictFrameTree(root));
+
+  TestNavigationObserver observer(shell()->web_contents());
+  FrameTreeNode* child = root->child_at(0);
+
+  // Navigate iframe to about:blank, which will commit in a new SiteInstance.
+  GURL about_blank_url("about:blank");
+  NavigateFrameToURL(child, about_blank_url);
+  EXPECT_TRUE(observer.last_navigation_succeeded());
+  EXPECT_EQ(about_blank_url, observer.last_navigation_url());
+  scoped_refptr<SiteInstanceImpl> orig_site_instance =
+    child->current_frame_host()->GetSiteInstance();
+  EXPECT_NE(root->current_frame_host()->GetSiteInstance(), orig_site_instance);
+
+  // Navigate it to another cross-site url.
+  GURL cross_site_url(embedded_test_server()->GetURL("c.com", "/title1.html"));
+  NavigateFrameToURL(child, cross_site_url);
+  EXPECT_TRUE(observer.last_navigation_succeeded());
+  EXPECT_EQ(cross_site_url, observer.last_navigation_url());
+  EXPECT_EQ(3, web_contents()->GetController().GetEntryCount());
+  EXPECT_NE(orig_site_instance, child->current_frame_host()->GetSiteInstance());
+
+  // Go back and ensure the about:blank URL committed in the same SiteInstance
+  // as the original navigation.
+  EXPECT_TRUE(web_contents()->GetController().CanGoBack());
+  TestFrameNavigationObserver frame_observer(child);
+  web_contents()->GetController().GoBack();
+  frame_observer.WaitForCommit();
+  EXPECT_EQ(orig_site_instance, child->current_frame_host()->GetSiteInstance());
+}
+
 }  // namespace content

@@ -1108,6 +1108,12 @@ RenderFrameHostManager::GetSiteInstanceForNavigation(
     ui::PageTransition transition,
     bool dest_is_restore,
     bool dest_is_view_source_mode) {
+  // On renderer-initiated navigations, when the frame initiating the navigation
+  // and the frame being navigated differ, |source_instance| is set to the
+  // SiteInstance of the initiating frame. |dest_instance| is present on session
+  // history navigations. The two cannot be set simultaneously.
+  DCHECK(!source_instance || !dest_instance);
+
   SiteInstance* current_instance = render_frame_host_->GetSiteInstance();
 
   // We do not currently swap processes for navigations in webview tag guests.
@@ -2526,22 +2532,30 @@ bool RenderFrameHostManager::CanSubframeSwapProcess(
     const GURL& dest_url,
     SiteInstance* source_instance,
     SiteInstance* dest_instance) {
+  // On renderer-initiated navigations, when the frame initiating the navigation
+  // and the frame being navigated differ, |source_instance| is set to the
+  // SiteInstance of the initiating frame. |dest_instance| is present on session
+  // history navigations. The two cannot be set simultaneously.
+  DCHECK(!source_instance || !dest_instance);
+
   // Don't swap for subframes unless we are in an OOPIF-enabled mode.  We can
   // get here in tests for subframes (e.g., NavigateFrameToURL).
   if (!SiteIsolationPolicy::AreCrossProcessFramesPossible())
     return false;
 
   // If dest_url is a unique origin like about:blank, then the need for a swap
-  // is determined by the source_instance.
+  // is determined by the source_instance or dest_instance.
   GURL resolved_url = dest_url;
   if (url::Origin(resolved_url).unique()) {
-    // If there is no source_instance for a unique origin, then we should avoid
-    // a process swap.
-    if (!source_instance)
+    if (source_instance) {
+      resolved_url = source_instance->GetSiteURL();
+    } else if (dest_instance) {
+      resolved_url = dest_instance->GetSiteURL();
+    } else {
+      // If there is no SiteInstance this unique origin can be associated with,
+      // then we should avoid a process swap.
       return false;
-
-    // Use source_instance to determine if a swap is needed.
-    resolved_url = source_instance->GetSiteURL();
+    }
   }
 
   // If we are in an OOPIF mode that only applies to some sites, only swap if
