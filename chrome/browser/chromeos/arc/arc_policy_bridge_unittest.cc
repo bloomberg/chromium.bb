@@ -73,7 +73,7 @@ class ArcPolicyBridgeTest : public testing::Test {
 
 TEST_F(ArcPolicyBridgeTest, UnmanagedTest) {
   policy_bridge()->OverrideIsManagedForTesting(false);
-  policy_bridge()->GetPolicies(PolicyStringCallback(nullptr));
+  policy_bridge()->GetPolicies(PolicyStringCallback(""));
 }
 
 TEST_F(ArcPolicyBridgeTest, EmptyPolicyTest) {

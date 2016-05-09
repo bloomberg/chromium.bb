@@ -185,7 +185,7 @@ void ArcPolicyBridge::OnPolicyInstanceClosed() {
 void ArcPolicyBridge::GetPolicies(const GetPoliciesCallback& callback) {
   VLOG(1) << "ArcPolicyBridge::GetPolicies";
   if (!is_managed_) {
-    callback.Run(mojo::String(nullptr));
+    callback.Run(mojo::String(""));
     return;
   }
   const policy::PolicyNamespace policy_namespace(policy::POLICY_DOMAIN_CHROME,
