@@ -124,6 +124,36 @@ public class ChromeStrictMode {
         });
     }
 
+    private static void turnOnDetection(StrictMode.ThreadPolicy.Builder threadPolicy,
+            StrictMode.VmPolicy.Builder vmPolicy) {
+        threadPolicy.detectAll();
+        if (Build.VERSION.CODENAME.equals("N")) {
+            vmPolicy.detectAll();
+        } else {
+            // Explicitly enable detection of all violations except file URI leaks, as that
+            // results in false positives when file URI intents are passed between Chrome
+            // activities in separate processes. See http://crbug.com/508282#c11.
+            vmPolicy.detectActivityLeaks()
+                    .detectLeakedClosableObjects()
+                    .detectLeakedRegistrationObjects()
+                    .detectLeakedSqlLiteObjects();
+        }
+    }
+
+    private static void addDefaultPenalties(StrictMode.ThreadPolicy.Builder threadPolicy,
+            StrictMode.VmPolicy.Builder vmPolicy) {
+        threadPolicy.penaltyLog().penaltyFlashScreen().penaltyDeathOnNetwork();
+        vmPolicy.penaltyLog();
+    }
+
+    private static void addThreadDeathPenalty(StrictMode.ThreadPolicy.Builder threadPolicy) {
+        threadPolicy.penaltyDeath();
+    }
+
+    private static void addVmDeathPenalty(StrictMode.VmPolicy.Builder vmPolicy) {
+        vmPolicy.penaltyDeath();
+    }
+
     /**
      * Turn on StrictMode detection based on build and command-line switches.
      */
@@ -134,41 +164,27 @@ public class ChromeStrictMode {
             return;
         }
         sIsStrictModeAlreadyConfigured = true;
+
+        StrictMode.ThreadPolicy.Builder threadPolicy =
+                new StrictMode.ThreadPolicy.Builder(StrictMode.getThreadPolicy());
+        StrictMode.VmPolicy.Builder vmPolicy =
+                new StrictMode.VmPolicy.Builder(StrictMode.getVmPolicy());
+
         CommandLine commandLine = CommandLine.getInstance();
         if ("eng".equals(Build.TYPE)
                 || BuildConfig.sIsDebug
                 || ChromeVersionInfo.isLocalBuild()
                 || commandLine.hasSwitch(ChromeSwitches.STRICT_MODE)) {
-            StrictMode.ThreadPolicy.Builder threadPolicy = new StrictMode.ThreadPolicy.Builder();
-            StrictMode.VmPolicy.Builder vmPolicy = new StrictMode.VmPolicy.Builder();
-
-            threadPolicy = threadPolicy.detectAll()
-                    .penaltyFlashScreen()
-                    .penaltyDeathOnNetwork();
-            if (Build.VERSION.CODENAME.equals("N")) {
-                vmPolicy = vmPolicy.detectAll();
-            } else {
-                // Explicitly enable detection of all violations except file URI leaks, as that
-                // results in false positives when file URI intents are passed between Chrome
-                // activities in separate processes. See http://crbug.com/508282#c11.
-                vmPolicy = vmPolicy.detectActivityLeaks()
-                        .detectLeakedClosableObjects()
-                        .detectLeakedRegistrationObjects()
-                        .detectLeakedSqlLiteObjects();
-            }
-            vmPolicy.penaltyLog();
-
+            turnOnDetection(threadPolicy, vmPolicy);
+            addDefaultPenalties(threadPolicy, vmPolicy);
             if ("death".equals(commandLine.getSwitchValue(ChromeSwitches.STRICT_MODE))) {
-                threadPolicy = threadPolicy.penaltyDeath();
-                vmPolicy = vmPolicy.penaltyDeath();
+                addThreadDeathPenalty(threadPolicy);
+                addVmDeathPenalty(vmPolicy);
             } else if ("testing".equals(commandLine.getSwitchValue(ChromeSwitches.STRICT_MODE))) {
-                threadPolicy = threadPolicy.penaltyDeath();
+                addThreadDeathPenalty(threadPolicy);
                 // Currently VmDeathPolicy kills the process, and is not visible on bot test output.
             }
-            StrictMode.setThreadPolicy(threadPolicy.build());
-            StrictMode.setVmPolicy(vmPolicy.build());
         }
-
         // Enroll 1% of dev sessions into StrictMode watch. This is done client-side rather than
         // through finch because this decision is as early as possible in the browser initialization
         // process. We need to detect early start-up StrictMode violations before loading native and
@@ -177,7 +193,11 @@ public class ChromeStrictMode {
         boolean enableStrictModeWatch =
                 (ChromeVersionInfo.isDevBuild() && Math.random() < UPLOAD_PROBABILITY);
         if ((ChromeVersionInfo.isLocalBuild() && !BuildConfig.sIsDebug) || enableStrictModeWatch) {
+            turnOnDetection(threadPolicy, vmPolicy);
             initializeStrictModeWatch();
         }
+
+        StrictMode.setThreadPolicy(threadPolicy.build());
+        StrictMode.setVmPolicy(vmPolicy.build());
     }
 }
