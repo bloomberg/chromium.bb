@@ -1177,6 +1177,11 @@ crbug.com/531286 virtual/gpu/fast/canvas/yuv-video-on-accelerated-canvas.html [ 
 
 crbug.com/596752 virtual/threaded/inspector/tracing/decode-resize.html [ Pass Failure ]
 
+crbug.com/610300 [ Linux Trusty ] css3/fonts/font-style-matching-4.html [ Failure Pass ]
+crbug.com/610300 [ Linux Trusty ] css3/fonts/font-style-matching-5.html [ Failure Pass ]
+crbug.com/610300 [ Linux Trusty ] css3/fonts/font-style-matching-7.html [ Failure Pass ]
+crbug.com/610300 [ Linux Trusty ] css3/fonts/font-style-matching-8.html [ Failure Pass ]
+
 crbug.com/524646 [ Mac10.10 ] fast/dom/shadow/shadowdom-for-button.html [ Failure ]
 
 crbug.com/538717 [ Win Mac Linux ] http/tests/permissions/chromium/test-request-multiple-window.html [ Failure Pass Timeout ]
