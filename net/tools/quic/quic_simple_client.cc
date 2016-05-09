@@ -239,6 +239,7 @@ void QuicSimpleClient::Disconnect() {
 
   reset_writer();
   packet_reader_.reset();
+  packet_reader_started_ = false;
 
   initialized_ = false;
 }
