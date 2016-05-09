@@ -222,7 +222,7 @@ green received mousemove
     **** Move to blue box & jiggle ****
 green received pointermove
     **** Remove Element ***** 
-green received mousemove
+grey received mousemove
 document received lostpointercapture
 blue received pointerover
 blue received pointerenter

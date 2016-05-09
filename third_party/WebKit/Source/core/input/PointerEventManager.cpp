@@ -81,6 +81,21 @@ PlatformMouseEvent mouseEventWithRegion(Node* node, const PlatformMouseEvent& mo
     return newMouseEvent;
 }
 
+void buildAncestorChain(
+    EventTarget* target,
+    HeapVector<Member<Node>, 20>* ancestors)
+{
+    if (!isInDocument(target))
+        return;
+    Node* targetNode = target->toNode();
+    DCHECK(targetNode);
+    targetNode->updateDistribution();
+    // Index 0 element in the ancestors arrays will be the corresponding
+    // target. So the root of their document will be their last element.
+    for (Node* node = targetNode; node; node = FlatTreeTraversal::parent(*node))
+        ancestors->append(node);
+}
+
 void buildAncestorChainsAndFindCommonAncestors(
     EventTarget* exitedTarget, EventTarget* enteredTarget,
     HeapVector<Member<Node>, 20>* exitedAncestorsOut,
@@ -93,24 +108,8 @@ void buildAncestorChainsAndFindCommonAncestors(
     DCHECK(exitedAncestorsCommonParentIndexOut);
     DCHECK(enteredAncestorsCommonParentIndexOut);
 
-    // Index 0 element in the ancestors arrays will be the corresponding
-    // target. So the root of their document will be their last element.
-
-    if (isInDocument(exitedTarget)) {
-        Node* exitedNode = exitedTarget->toNode();
-        DCHECK(exitedNode);
-        exitedNode->updateDistribution();
-        for (Node* node = exitedNode; node; node = FlatTreeTraversal::parent(*node))
-            exitedAncestorsOut->append(node);
-    }
-
-    if (isInDocument(enteredTarget)) {
-        Node* enteredNode = enteredTarget->toNode();
-        DCHECK(enteredNode);
-        enteredNode->updateDistribution();
-        for (Node* node = enteredNode; node; node = FlatTreeTraversal::parent(*node))
-            enteredAncestorsOut->append(node);
-    }
+    buildAncestorChain(exitedTarget, exitedAncestorsOut);
+    buildAncestorChain(enteredTarget, enteredAncestorsOut);
 
     *exitedAncestorsCommonParentIndexOut = exitedAncestorsOut->size();
     *enteredAncestorsCommonParentIndexOut = enteredAncestorsOut->size();
@@ -508,8 +507,19 @@ WebInputEventResult PointerEventManager::sendMousePointerEvent(
 
     if (pointerEvent->isPrimary() && !m_preventMouseEventForPointerType[toPointerTypeIndex(
         mouseEvent.pointerProperties().pointerType)]) {
+        EventTarget* mouseTarget = effectiveTarget;
+        // Event path could be null if pointer event is not dispatched and
+        // that happens for example when pointer event feature is not enabled.
+        if (!isInDocument(mouseTarget) && pointerEvent->hasEventPath()) {
+            for (size_t i = 0; i < pointerEvent->eventPath().size(); i++) {
+                if (isInDocument(pointerEvent->eventPath()[i].node())) {
+                    mouseTarget = pointerEvent->eventPath()[i].node();
+                    break;
+                }
+            }
+        }
         result = EventHandler::mergeEventResult(result,
-            dispatchMouseEvent(effectiveTarget, mouseEventType, mouseEvent,
+            dispatchMouseEvent(mouseTarget, mouseEventType, mouseEvent,
             nullptr, clickCount));
     }
 
