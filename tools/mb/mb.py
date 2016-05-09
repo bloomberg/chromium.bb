@@ -988,9 +988,10 @@ class MetaBuildWrapper(object):
     extra_files = []
 
     if android and test_type != "script":
-      # TODO(jbudorick): This won't work with instrumentation test targets.
-      # Revisit this logic when those are added to gn_isolate_map.pyl.
-      cmdline = [self.PathJoin('bin', 'run_%s' % target_name)]
+      cmdline = [
+          self.PathJoin('bin', 'run_%s' % target_name),
+          '--logcat-output-dir', '${ISOLATED_OUTDIR}/logcats'
+      ]
     elif use_x11 and test_type == 'windowed_test_launcher':
       extra_files = [
           'xdisplaycheck',
