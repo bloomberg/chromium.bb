@@ -254,6 +254,7 @@
         "test": "gl_tests"
       },
       {
+        "override_isolate_target": "gpu_ipc_service_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -266,6 +267,7 @@
         "test": "gpu_ipc_service_unittests"
       },
       {
+        "override_isolate_target": "gpu_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
