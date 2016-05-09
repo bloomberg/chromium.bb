@@ -33243,6 +33243,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="NewTabPage.OfflineUrlsLoadTime" units="ms">
+  <owner>dewittj@chromium.org</owner>
+  <summary>
+    The amount of time spent waiting for the offline page model to return which
+    New Tab Page URLs are available offline.
+  </summary>
+</histogram>
+
 <histogram name="NewTabPage.OtherSessionsMenu" enum="OtherSessionsActions">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <obsolete>

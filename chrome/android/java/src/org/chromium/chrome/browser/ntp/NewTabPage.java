@@ -14,6 +14,7 @@ import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Build;
+import android.os.SystemClock;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -474,12 +475,17 @@ public class NewTabPage
                 }
             }
 
+            final long offlineQueryStartTime = SystemClock.elapsedRealtime();
+
             OfflinePageBridge.getForProfile(mProfile).checkPagesExistOffline(
                     urlsToCheckForOfflinePage, new Callback<Set<String>>() {
                         @Override
                         public void onResult(Set<String> urlsWithOfflinePages) {
                             urlsAvailableOffline.addAll(urlsWithOfflinePages);
                             callback.onResult(urlsAvailableOffline);
+                            RecordHistogram.recordTimesHistogram("NewTabPage.OfflineUrlsLoadTime",
+                                    SystemClock.elapsedRealtime() - offlineQueryStartTime,
+                                    TimeUnit.MILLISECONDS);
                         }
                     });
         }
