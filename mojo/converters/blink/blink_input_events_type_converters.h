@@ -7,20 +7,23 @@
 
 #include <memory>
 
-#include "components/mus/public/interfaces/input_events.mojom.h"
 #include "mojo/converters/blink/mojo_blink_export.h"
+#include "mojo/public/cpp/bindings/type_converter.h"
 
 namespace blink {
 class WebInputEvent;
+}
+
+namespace ui {
+class Event;
 }
 
 namespace mojo {
 
 template <>
 struct MOJO_BLINK_EXPORT
-    TypeConverter<std::unique_ptr<blink::WebInputEvent>, mus::mojom::EventPtr> {
-  static std::unique_ptr<blink::WebInputEvent> Convert(
-      const mus::mojom::EventPtr& input);
+    TypeConverter<std::unique_ptr<blink::WebInputEvent>, ui::Event> {
+  static std::unique_ptr<blink::WebInputEvent> Convert(const ui::Event& input);
 };
 
 }  // namespace mojo

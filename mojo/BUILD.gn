@@ -31,6 +31,7 @@ group("tests") {
   deps = [
     "//ipc/mojo:ipc_mojo_unittests",
     "//mojo/common:mojo_common_unittests",
+    "//mojo/converters/blink:blink_converters_unittests",
     "//mojo/converters/surfaces/tests:mojo_surfaces_lib_unittests",
     "//mojo/edk/js/test:js_integration_tests",
     "//mojo/edk/js/test:js_unittests",

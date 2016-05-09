@@ -126,10 +126,9 @@ void CompositorMusConnection::OnWindowInputEvent(
     const ui::Event& event,
     std::unique_ptr<base::Callback<void(EventResult)>>* ack_callback) {
   DCHECK(compositor_task_runner_->BelongsToCurrentThread());
-  // TODO(moshayedi): Convert ui::Event directly to blink::WebInputEvent.
   std::unique_ptr<blink::WebInputEvent> web_event(
-      mus::mojom::Event::From(event)
-          .To<std::unique_ptr<blink::WebInputEvent>>());
+      mojo::TypeConverter<std::unique_ptr<blink::WebInputEvent>,
+                          ui::Event>::Convert(event));
   // TODO(sad): We probably need to plumb LatencyInfo through Mus.
   ui::LatencyInfo info;
   InputEventAckState ack_state = input_handler_manager_->HandleInputEvent(
