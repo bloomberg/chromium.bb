@@ -62,7 +62,7 @@ TEST_F(CTObjectsExtractorTest, ExtractEmbeddedSCT) {
       new ct::SignedCertificateTimestamp());
   ExtractEmbeddedSCT(precert_chain_[0], &sct);
 
-  EXPECT_EQ(sct->version, SignedCertificateTimestamp::SCT_VERSION_1);
+  EXPECT_EQ(sct->version, SignedCertificateTimestamp::V1);
   EXPECT_EQ(ct::GetTestPublicKeyId(), sct->log_id);
 
   base::Time expected_timestamp =

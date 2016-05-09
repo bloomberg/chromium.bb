@@ -66,7 +66,7 @@ void MakeTestSCTAndStatus(
     net::SignedCertificateTimestampAndStatusList* sct_list) {
   scoped_refptr<net::ct::SignedCertificateTimestamp> sct(
       new net::ct::SignedCertificateTimestamp());
-  sct->version = net::ct::SignedCertificateTimestamp::SCT_VERSION_1;
+  sct->version = net::ct::SignedCertificateTimestamp::V1;
   sct->log_id = log_id;
   sct->extensions = extensions;
   sct->timestamp = timestamp;
