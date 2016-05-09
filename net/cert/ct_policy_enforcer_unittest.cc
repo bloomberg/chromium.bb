@@ -207,7 +207,7 @@ TEST_F(CTPolicyEnforcerTest,
 
 TEST_F(CTPolicyEnforcerTest, ConformsToCTEVPolicyIfSCTBeforeEnforcementDate) {
   ct::SCTList scts;
-  // This chain_ is valid for 10 years - over 121 months - so requires 5 SCTs.
+  // |chain_| is valid for 10 years - over 121 months - so requires 5 SCTs.
   // All 5 SCTs will be from non-Google logs.
   FillListWithSCTsOfOrigin(ct::SignedCertificateTimestamp::SCT_EMBEDDED, 5,
                            std::vector<std::string>(), false, &scts);
@@ -234,7 +234,7 @@ TEST_F(CTPolicyEnforcerTest, ConformsToCTEVPolicyWithNonEmbeddedSCTs) {
 }
 
 TEST_F(CTPolicyEnforcerTest, ConformsToCTEVPolicyWithEmbeddedSCTs) {
-  // This chain_ is valid for 10 years - over 121 months - so requires 5 SCTs.
+  // |chain_| is valid for 10 years - over 121 months - so requires 5 SCTs.
   ct::SCTList scts;
   FillListWithSCTsOfOrigin(ct::SignedCertificateTimestamp::SCT_EMBEDDED, 5,
                            &scts);
@@ -301,7 +301,7 @@ TEST_F(CTPolicyEnforcerTest, ConformsToCTEVPolicyWithPooledEmbeddedSCTs) {
 TEST_F(CTPolicyEnforcerTest, DoesNotConformToCTEVPolicyNotEnoughSCTs) {
   scoped_refptr<ct::EVCertsWhitelist> non_including_whitelist(
       new DummyEVCertsWhitelist(true, false));
-  // This chain_ is valid for 10 years - over 121 months - so requires 5 SCTs.
+  // |chain_| is valid for 10 years - over 121 months - so requires 5 SCTs.
   ct::SCTList scts;
   FillListWithSCTsOfOrigin(ct::SignedCertificateTimestamp::SCT_EMBEDDED, 2,
                            &scts);
@@ -389,7 +389,7 @@ TEST_F(CTPolicyEnforcerTest,
   AddDisqualifiedLogSCT(ct::SignedCertificateTimestamp::SCT_EMBEDDED, false,
                         &scts);
 
-  // This chain_ is valid for 10 years - over 121 months - so requires 5 SCTs.
+  // |chain_| is valid for 10 years - over 121 months - so requires 5 SCTs.
   EXPECT_EQ(ct::CertPolicyCompliance::CERT_POLICY_COMPLIES_VIA_SCTS,
             policy_enforcer_->DoesConformToCertPolicy(chain_.get(), scts,
                                                       BoundNetLog()));
@@ -406,7 +406,7 @@ TEST_F(CTPolicyEnforcerTest,
   AddDisqualifiedLogSCT(ct::SignedCertificateTimestamp::SCT_EMBEDDED, true,
                         &scts);
 
-  // This chain_ is valid for 10 years - over 121 months - so requires 5 SCTs.
+  // |chain_| is valid for 10 years - over 121 months - so requires 5 SCTs.
   EXPECT_EQ(ct::CertPolicyCompliance::CERT_POLICY_NOT_ENOUGH_SCTS,
             policy_enforcer_->DoesConformToCertPolicy(chain_.get(), scts,
                                                       BoundNetLog()));
@@ -426,7 +426,7 @@ TEST_F(CTPolicyEnforcerTest,
   for (size_t i = 1; i < scts.size(); ++i)
     scts[i]->timestamp = scts[0]->timestamp;
 
-  // This chain_ is valid for 10 years - over 121 months - so requires 5 SCTs.
+  // |chain_| is valid for 10 years - over 121 months - so requires 5 SCTs.
   EXPECT_EQ(ct::CertPolicyCompliance::CERT_POLICY_NOT_ENOUGH_SCTS,
             policy_enforcer_->DoesConformToCertPolicy(chain_.get(), scts,
                                                       BoundNetLog()));
@@ -460,7 +460,7 @@ TEST_F(CTPolicyEnforcerTest,
   FillListWithSCTsOfOrigin(ct::SignedCertificateTimestamp::SCT_EMBEDDED,
                            desired_logs.size(), desired_logs, true, &scts);
 
-  // This chain_ is valid for 10 years - over 121 months - so requires 5 SCTs.
+  // |chain_| is valid for 10 years - over 121 months - so requires 5 SCTs.
   // However, there are only 4 SCTs are from distinct logs.
   EXPECT_EQ(ct::CertPolicyCompliance::CERT_POLICY_NOT_ENOUGH_SCTS,
             policy_enforcer_->DoesConformToCertPolicy(chain_.get(), scts,
