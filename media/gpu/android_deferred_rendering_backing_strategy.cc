@@ -441,14 +441,16 @@ bool AndroidDeferredRenderingBackingStrategy::ShouldCopyPictures() const {
           state_provider_->GetGlDecoder().get()) {
     if (gpu::gles2::ContextGroup* group = gl_decoder->GetContextGroup()) {
       if (gpu::gles2::FeatureInfo* feature_info = group->feature_info()) {
-        return !feature_info->workarounds().avda_dont_copy_pictures;
+        if (feature_info->workarounds().avda_dont_copy_pictures)
+          return false;
       }
     }
   }
 
   // Samsung Galaxy Tab A, J3, and J1 Mini all like to crash on Lollipop in
   // glEGLImageTargetTexture2DOES .  Exact models were SM-T280, SM-J320F,
-  // and SM-j105H.
+  // and SM-j105H.  For these devices, we must check based on the brand / model
+  // number, since the strings used by FeatureInfo aren't populated.
   if (base::android::BuildInfo::GetInstance()->sdk_int() <= 22) {  // L MR1
     const std::string brand(
         base::ToLowerASCII(base::android::BuildInfo::GetInstance()->brand()));
@@ -462,7 +464,6 @@ bool AndroidDeferredRenderingBackingStrategy::ShouldCopyPictures() const {
     }
   }
 
-  // Assume so.
   return true;
 }
 
