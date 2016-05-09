@@ -46,7 +46,7 @@ from webkitpy.layout_tests.models import test_failures
 from webkitpy.layout_tests.models.test_expectations import TestExpectations, BASELINE_SUFFIX_LIST, SKIP
 from webkitpy.layout_tests.port import factory
 from webkitpy.layout_tests.builders import Builders
-from webkitpy.tool.multicommandtool import AbstractDeclarativeCommand
+from webkitpy.tool.multicommandtool import Command
 
 
 _log = logging.getLogger(__name__)
@@ -65,7 +65,7 @@ def _get_branch_name_or_ref(tool):
     return branch_name
 
 
-class AbstractRebaseliningCommand(AbstractDeclarativeCommand):
+class AbstractRebaseliningCommand(Command):
     # not overriding execute() - pylint: disable=W0223
 
     no_optimize_option = optparse.make_option('--no-optimize', dest='optimize', action='store_false', default=True,
@@ -946,7 +946,7 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
                 tool.scm().delete_branch(rebaseline_branch_name)
 
 
-class RebaselineOMatic(AbstractDeclarativeCommand):
+class RebaselineOMatic(Command):
     name = "rebaseline-o-matic"
     help_text = "Calls webkit-patch auto-rebaseline in a loop."
     show_in_main_help = True

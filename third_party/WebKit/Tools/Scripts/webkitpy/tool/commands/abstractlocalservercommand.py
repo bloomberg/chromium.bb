@@ -25,10 +25,10 @@
 from optparse import make_option
 import threading
 
-from webkitpy.tool.multicommandtool import AbstractDeclarativeCommand
+from webkitpy.tool.multicommandtool import Command
 
 
-class AbstractLocalServerCommand(AbstractDeclarativeCommand):
+class AbstractLocalServerCommand(Command):
     server = None
     launch_path = "/"
 
@@ -38,7 +38,7 @@ class AbstractLocalServerCommand(AbstractDeclarativeCommand):
             make_option("--no-show-results", action="store_false", default=True, dest="show_results",
                         help="Don't launch a browser with the rebaseline server"),
         ]
-        AbstractDeclarativeCommand.__init__(self, options=options)
+        super(AbstractLocalServerCommand, self).__init__(options=options)
 
     def _prepare_config(self, options, args, tool):
         return None

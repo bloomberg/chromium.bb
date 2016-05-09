@@ -30,17 +30,17 @@ import logging
 
 from webkitpy.common.system.executive import ScriptError
 from webkitpy.tool.commands.stepsequence import StepSequence
-from webkitpy.tool.multicommandtool import AbstractDeclarativeCommand
+from webkitpy.tool.multicommandtool import Command
 
 _log = logging.getLogger(__name__)
 
 
-class AbstractSequencedCommand(AbstractDeclarativeCommand):
+class AbstractSequencedCommand(Command):
     steps = None
 
     def __init__(self):
         self._sequence = StepSequence(self.steps)
-        AbstractDeclarativeCommand.__init__(self, self._sequence.options())
+        super(AbstractSequencedCommand, self).__init__(self._sequence.options())
 
     def _prepare_state(self, options, args, tool):
         return None

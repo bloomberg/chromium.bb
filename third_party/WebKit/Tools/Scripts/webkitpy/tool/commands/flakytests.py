@@ -29,7 +29,7 @@
 import logging
 import os
 import optparse
-from webkitpy.tool.multicommandtool import AbstractDeclarativeCommand
+from webkitpy.tool.multicommandtool import Command
 from webkitpy.layout_tests.layout_package.bot_test_expectations import BotTestExpectationsFactory
 from webkitpy.layout_tests.models.test_expectations import TestExpectationParser, TestExpectationsModel, TestExpectations
 from webkitpy.common.net import sheriff_calendar
@@ -38,7 +38,7 @@ from webkitpy.common.net import sheriff_calendar
 _log = logging.getLogger(__name__)
 
 
-class FlakyTests(AbstractDeclarativeCommand):
+class FlakyTests(Command):
     name = "print-flaky-tests"
     help_text = "Print out flaky lines from the flakiness dashboard"
     show_in_main_help = True
@@ -62,7 +62,7 @@ Flakiness dashboard: %s
 '''
 
     def __init__(self):
-        AbstractDeclarativeCommand.__init__(self)
+        super(FlakyTests, self).__init__()
         # This is sorta silly, but allows for unit testing:
         self.expectations_factory = BotTestExpectationsFactory
 

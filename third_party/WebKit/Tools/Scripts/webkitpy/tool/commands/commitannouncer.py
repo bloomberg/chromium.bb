@@ -30,13 +30,13 @@ import traceback
 
 from webkitpy.common.config.irc import update_wait_seconds
 from webkitpy.tool.bot.commitannouncer import CommitAnnouncer, CommitAnnouncerThread
-from webkitpy.tool.multicommandtool import AbstractDeclarativeCommand
+from webkitpy.tool.multicommandtool import Command
 
 _log = logging.getLogger(__name__)
 announce_path = "third_party/WebKit"
 
 
-class CommitAnnouncerCommand(AbstractDeclarativeCommand):
+class CommitAnnouncerCommand(Command):
     name = "commit-announcer"
     help_text = "Start an IRC bot for announcing new git commits."
     show_in_main_help = True
@@ -45,7 +45,7 @@ class CommitAnnouncerCommand(AbstractDeclarativeCommand):
         options = [
             make_option("--irc-password", default=None, help="Specify IRC password to use."),
         ]
-        AbstractDeclarativeCommand.__init__(self, options)
+        super(CommitAnnouncerCommand, self).__init__(options)
 
     def execute(self, options, args, tool):
         bot_thread = CommitAnnouncerThread(tool, announce_path, options.irc_password)

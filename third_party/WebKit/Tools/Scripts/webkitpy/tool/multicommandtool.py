@@ -45,15 +45,17 @@ class TryAgain(Exception):
     pass
 
 
+# TODO(qyearsley): This class could be moved to a separate file, e.g. tool/commands/command.py.
 class Command(object):
+    # These class variables can be overridden in subclasses to set specific command behavior.
     name = None
     show_in_main_help = False
+    help_text = None
+    argument_names = None
+    long_help = None
 
-    def __init__(self, help_text, argument_names=None, options=None, long_help=None, requires_local_commits=False):
-        self.help_text = help_text
-        self.long_help = long_help
-        self.argument_names = argument_names
-        self.required_arguments = self._parse_required_arguments(argument_names)
+    def __init__(self, options=None, requires_local_commits=False):
+        self.required_arguments = self._parse_required_arguments(self.argument_names)
         self.options = options
         self.requires_local_commits = requires_local_commits
         self._tool = None
@@ -141,16 +143,6 @@ class Command(object):
         return self.check_arguments_and_execute(options, args)
 
 
-# FIXME: This should just be rolled into Command.  help_text and argument_names do not need to be instance variables.
-class AbstractDeclarativeCommand(Command):
-    help_text = None
-    argument_names = None
-    long_help = None
-
-    def __init__(self, options=None, **kwargs):
-        Command.__init__(self, self.help_text, self.argument_names, options=options, long_help=self.long_help, **kwargs)
-
-
 class HelpPrintingOptionParser(OptionParser):
 
     def __init__(self, epilog_method=None, *args, **kwargs):
@@ -172,7 +164,7 @@ class HelpPrintingOptionParser(OptionParser):
         return ""
 
 
-class HelpCommand(AbstractDeclarativeCommand):
+class HelpCommand(Command):
     name = "help"
     help_text = "Display information about this program or its subcommands"
     argument_names = "[COMMAND]"
@@ -181,7 +173,7 @@ class HelpCommand(AbstractDeclarativeCommand):
         options = [
             make_option("-a", "--all-commands", action="store_true", dest="show_all_commands", help="Print all available commands"),
         ]
-        AbstractDeclarativeCommand.__init__(self, options)
+        super(HelpCommand, self).__init__(options)
         # A hack used to pass --all-commands to _help_epilog even though it's called by the OptionParser.
         self.show_all_commands = False
 

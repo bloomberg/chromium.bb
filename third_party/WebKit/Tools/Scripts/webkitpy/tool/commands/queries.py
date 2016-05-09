@@ -35,14 +35,14 @@ import re
 from optparse import make_option
 
 from webkitpy.common.system.crashlogs import CrashLogs
-from webkitpy.tool.multicommandtool import AbstractDeclarativeCommand
+from webkitpy.tool.multicommandtool import Command
 from webkitpy.layout_tests.models.test_expectations import TestExpectations
 from webkitpy.layout_tests.port.factory import platform_options
 
 _log = logging.getLogger(__name__)
 
 
-class CrashLog(AbstractDeclarativeCommand):
+class CrashLog(Command):
     name = "crash-log"
     help_text = "Print the newest crash log for the given process"
     show_in_main_help = True
@@ -58,7 +58,7 @@ and PID and prints it to stdout."""
         print crash_logs.find_newest_log(args[0], pid)
 
 
-class PrintExpectations(AbstractDeclarativeCommand):
+class PrintExpectations(Command):
     name = 'print-expectations'
     help_text = 'Print the expected result for the given test(s) on the given port(s)'
     show_in_main_help = True
@@ -79,7 +79,7 @@ class PrintExpectations(AbstractDeclarativeCommand):
                         help='display the paths for all applicable expectation files'),
         ] + platform_options(use_globs=True)
 
-        AbstractDeclarativeCommand.__init__(self, options=options)
+        super(PrintExpectations, self).__init__(options=options)
         self._expectation_models = {}
 
     def execute(self, options, args, tool):
@@ -150,7 +150,7 @@ class PrintExpectations(AbstractDeclarativeCommand):
         return TestExpectations(port, tests).model()
 
 
-class PrintBaselines(AbstractDeclarativeCommand):
+class PrintBaselines(Command):
     name = 'print-baselines'
     help_text = 'Prints the baseline locations for given test(s) on the given port(s)'
     show_in_main_help = True
@@ -164,7 +164,7 @@ class PrintBaselines(AbstractDeclarativeCommand):
             make_option('--include-virtual-tests', action='store_true',
                         help='Include virtual tests'),
         ] + platform_options(use_globs=True)
-        AbstractDeclarativeCommand.__init__(self, options=options)
+        super(PrintBaselines, self).__init__(options=options)
         self._platform_regexp = re.compile('platform/([^\/]+)/(.+)')
 
     def execute(self, options, args, tool):
