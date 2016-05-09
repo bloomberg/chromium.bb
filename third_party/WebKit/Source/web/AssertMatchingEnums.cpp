@@ -341,6 +341,15 @@ STATIC_ASSERT_ENUM(WebAXOrientationUndefined, AccessibilityOrientationUndefined)
 STATIC_ASSERT_ENUM(WebAXOrientationVertical, AccessibilityOrientationVertical);
 STATIC_ASSERT_ENUM(WebAXOrientationHorizontal, AccessibilityOrientationHorizontal);
 
+STATIC_ASSERT_ENUM(WebAXAriaCurrentStateUndefined, AriaCurrentStateUndefined);
+STATIC_ASSERT_ENUM(WebAXAriaCurrentStateFalse, AriaCurrentStateFalse);
+STATIC_ASSERT_ENUM(WebAXAriaCurrentStateTrue, AriaCurrentStateTrue);
+STATIC_ASSERT_ENUM(WebAXAriaCurrentStatePage, AriaCurrentStatePage);
+STATIC_ASSERT_ENUM(WebAXAriaCurrentStateStep, AriaCurrentStateStep);
+STATIC_ASSERT_ENUM(WebAXAriaCurrentStateLocation, AriaCurrentStateLocation);
+STATIC_ASSERT_ENUM(WebAXAriaCurrentStateDate, AriaCurrentStateDate);
+STATIC_ASSERT_ENUM(WebAXAriaCurrentStateTime, AriaCurrentStateTime);
+
 STATIC_ASSERT_ENUM(WebAXInvalidStateUndefined, InvalidStateUndefined);
 STATIC_ASSERT_ENUM(WebAXInvalidStateFalse, InvalidStateFalse);
 STATIC_ASSERT_ENUM(WebAXInvalidStateTrue, InvalidStateTrue);

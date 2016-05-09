@@ -1309,6 +1309,33 @@ RGBA32 AXNodeObject::colorValue() const
     return color.rgb();
 }
 
+AriaCurrentState AXNodeObject::ariaCurrentState() const
+{
+    if (!hasAttribute(aria_currentAttr))
+        return AXObject::ariaCurrentState();
+
+    const AtomicString& attributeValue = getAttribute(aria_currentAttr);
+    if (attributeValue.isEmpty() || equalIgnoringCase(attributeValue, "false"))
+        return AriaCurrentStateFalse;
+    if (equalIgnoringCase(attributeValue, "true"))
+        return AriaCurrentStateTrue;
+    if (equalIgnoringCase(attributeValue, "page"))
+        return AriaCurrentStatePage;
+    if (equalIgnoringCase(attributeValue, "step"))
+        return AriaCurrentStateStep;
+    if (equalIgnoringCase(attributeValue, "location"))
+        return AriaCurrentStateLocation;
+    if (equalIgnoringCase(attributeValue, "date"))
+        return AriaCurrentStateDate;
+    if (equalIgnoringCase(attributeValue, "time"))
+        return AriaCurrentStateTime;
+    // An unknown value should return true.
+    if (!attributeValue.isEmpty())
+        return AriaCurrentStateTrue;
+
+    return AXObject::ariaCurrentState();
+}
+
 InvalidState AXNodeObject::getInvalidState() const
 {
     if (hasAttribute(aria_invalidAttr)) {
@@ -1336,7 +1363,7 @@ InvalidState AXNodeObject::getInvalidState() const
         return isInvalid ? InvalidStateTrue : InvalidStateFalse;
     }
 
-    return InvalidStateUndefined;
+    return AXObject::getInvalidState();
 }
 
 int AXNodeObject::posInSet() const

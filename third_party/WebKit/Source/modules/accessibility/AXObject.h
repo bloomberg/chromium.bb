@@ -277,6 +277,17 @@ enum AccessibilityOptionalBool {
     OptionalBoolFalse
 };
 
+enum AriaCurrentState {
+    AriaCurrentStateUndefined = 0,
+    AriaCurrentStateFalse,
+    AriaCurrentStateTrue,
+    AriaCurrentStatePage,
+    AriaCurrentStateStep,
+    AriaCurrentStateLocation,
+    AriaCurrentStateDate,
+    AriaCurrentStateTime
+};
+
 enum InvalidState {
     InvalidStateUndefined = 0,
     InvalidStateFalse,
@@ -734,6 +745,7 @@ public:
     // Properties of interactive elements.
     String actionVerb() const;
     virtual AccessibilityButtonState checkboxOrRadioValue() const;
+    virtual AriaCurrentState ariaCurrentState() const { return AriaCurrentStateUndefined; }
     virtual InvalidState getInvalidState() const { return InvalidStateUndefined; }
     // Only used when invalidState() returns InvalidStateOther.
     virtual String ariaInvalidValue() const { return String(); }

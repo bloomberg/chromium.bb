@@ -436,6 +436,31 @@ ui::AXTextStyle AXTextStyleFromBlink(blink::WebAXTextStyle text_style) {
   return static_cast<ui::AXTextStyle>(browser_text_style);
 }
 
+ui::AXAriaCurrentState AXAriaCurrentStateFromBlink(
+    blink::WebAXAriaCurrentState aria_current_state) {
+  switch (aria_current_state) {
+    case blink::WebAXAriaCurrentStateUndefined:
+      return ui::AX_ARIA_CURRENT_STATE_NONE;
+    case blink::WebAXAriaCurrentStateFalse:
+      return ui::AX_ARIA_CURRENT_STATE_FALSE;
+    case blink::WebAXAriaCurrentStateTrue:
+      return ui::AX_ARIA_CURRENT_STATE_TRUE;
+    case blink::WebAXAriaCurrentStatePage:
+      return ui::AX_ARIA_CURRENT_STATE_PAGE;
+    case blink::WebAXAriaCurrentStateStep:
+      return ui::AX_ARIA_CURRENT_STATE_STEP;
+    case blink::WebAXAriaCurrentStateLocation:
+      return ui::AX_ARIA_CURRENT_STATE_LOCATION;
+    case blink::WebAXAriaCurrentStateDate:
+      return ui::AX_ARIA_CURRENT_STATE_DATE;
+    case blink::WebAXAriaCurrentStateTime:
+      return ui::AX_ARIA_CURRENT_STATE_TIME;
+  }
+
+  NOTREACHED();
+  return ui::AX_ARIA_CURRENT_STATE_NONE;
+}
+
 ui::AXInvalidState AXInvalidStateFromBlink(
     blink::WebAXInvalidState invalid_state) {
   switch (invalid_state) {
@@ -451,10 +476,9 @@ ui::AXInvalidState AXInvalidStateFromBlink(
       return ui::AX_INVALID_STATE_GRAMMAR;
     case blink::WebAXInvalidStateOther:
       return ui::AX_INVALID_STATE_OTHER;
-    default:
-      NOTREACHED();
   }
 
+  NOTREACHED();
   return ui::AX_INVALID_STATE_NONE;
 }
 

@@ -241,6 +241,14 @@ WebString WebAXObject::ariaAutoComplete() const
     return m_private->ariaAutoComplete();
 }
 
+WebAXAriaCurrentState WebAXObject::ariaCurrentState() const
+{
+    if (isDetached())
+        return WebAXAriaCurrentStateUndefined;
+
+    return static_cast<WebAXAriaCurrentState>(m_private->ariaCurrentState());
+}
+
 bool WebAXObject::isButtonStateMixed() const
 {
     if (isDetached())

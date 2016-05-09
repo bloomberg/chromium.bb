@@ -3413,6 +3413,36 @@ void BrowserAccessibilityWin::UpdateStep1ComputeWinAttributes() {
     win_attributes_->ia2_attributes.push_back(L"explicit-name:true");
   }
 
+  // Expose the aria-current attribute.
+  int32_t aria_current_state;
+  if (GetIntAttribute(ui::AX_ATTR_ARIA_CURRENT_STATE, &aria_current_state)) {
+    switch (static_cast<ui::AXAriaCurrentState>(aria_current_state)) {
+      case ui::AX_ARIA_CURRENT_STATE_NONE:
+        break;
+      case ui::AX_ARIA_CURRENT_STATE_FALSE:
+        win_attributes_->ia2_attributes.push_back(L"current:false");
+        break;
+      case ui::AX_ARIA_CURRENT_STATE_TRUE:
+        win_attributes_->ia2_attributes.push_back(L"current:true");
+        break;
+      case ui::AX_ARIA_CURRENT_STATE_PAGE:
+        win_attributes_->ia2_attributes.push_back(L"current:page");
+        break;
+      case ui::AX_ARIA_CURRENT_STATE_STEP:
+        win_attributes_->ia2_attributes.push_back(L"current:step");
+        break;
+      case ui::AX_ARIA_CURRENT_STATE_LOCATION:
+        win_attributes_->ia2_attributes.push_back(L"current:location");
+        break;
+      case ui::AX_ARIA_CURRENT_STATE_DATE:
+        win_attributes_->ia2_attributes.push_back(L"current:date");
+        break;
+      case ui::AX_ARIA_CURRENT_STATE_TIME:
+        win_attributes_->ia2_attributes.push_back(L"current:time");
+        break;
+    }
+  }
+
   // Expose table cell index.
   if (IsCellOrTableHeaderRole()) {
     BrowserAccessibility* table = GetParent();
@@ -3435,7 +3465,9 @@ void BrowserAccessibilityWin::UpdateStep1ComputeWinAttributes() {
   if ((ia_role() == ROLE_SYSTEM_COLUMNHEADER ||
       ia_role() == ROLE_SYSTEM_ROWHEADER) &&
       GetIntAttribute(ui::AX_ATTR_SORT_DIRECTION, &sort_direction)) {
-    switch (sort_direction) {
+    switch (static_cast<ui::AXSortDirection>(sort_direction)) {
+      case ui::AX_SORT_DIRECTION_NONE:
+        break;
       case ui::AX_SORT_DIRECTION_UNSORTED:
         win_attributes_->ia2_attributes.push_back(L"sort:none");
         break;
@@ -3448,8 +3480,6 @@ void BrowserAccessibilityWin::UpdateStep1ComputeWinAttributes() {
       case ui::AX_SORT_DIRECTION_OTHER:
         win_attributes_->ia2_attributes.push_back(L"sort:other");
         break;
-      default:
-        NOTREACHED();
     }
   }
 
@@ -3772,8 +3802,6 @@ std::vector<base::string16> BrowserAccessibilityWin::ComputeTextAttributes()
       }
       break;
     }
-    default:
-      NOTREACHED();
   }
 
   base::string16 language(GetInheritedString16Attribute(ui::AX_ATTR_LANGUAGE));
@@ -3818,8 +3846,6 @@ std::vector<base::string16> BrowserAccessibilityWin::ComputeTextAttributes()
       // Not listed in the IA2 Spec.
       attributes.push_back(L"writing-mode:bt");
       break;
-    default:
-      NOTREACHED();
   }
 
   return attributes;
@@ -4263,9 +4289,8 @@ ui::TextBoundaryType BrowserAccessibilityWin::IA2TextBoundaryToTextBoundary(
       return ui::PARAGRAPH_BOUNDARY;
     case IA2_TEXT_BOUNDARY_ALL:
       return ui::ALL_BOUNDARY;
-    default:
-      NOTREACHED();
   }
+  NOTREACHED();
   return ui::CHAR_BOUNDARY;
 }
 
@@ -4310,8 +4335,6 @@ LONG BrowserAccessibilityWin::FindStartOfStyle(
         return text_length;
       return static_cast<LONG>(iterator->first);
     }
-    default:
-      NOTREACHED();
   }
 
   return start_offset;

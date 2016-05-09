@@ -137,6 +137,7 @@ public:
     BLINK_EXPORT WebAXObject ariaActiveDescendant() const;
     BLINK_EXPORT WebString ariaAutoComplete() const;
     BLINK_EXPORT bool ariaControls(WebVector<WebAXObject>& controlsElements) const;
+    BLINK_EXPORT WebAXAriaCurrentState ariaCurrentState() const;
     BLINK_EXPORT bool ariaFlowTo(WebVector<WebAXObject>& flowToElements) const;
     BLINK_EXPORT bool ariaHasPopup() const;
     BLINK_EXPORT bool isEditable() const;

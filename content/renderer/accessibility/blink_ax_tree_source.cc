@@ -318,6 +318,11 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
   if (src.fontSize())
     dst->AddFloatAttribute(ui::AX_ATTR_FONT_SIZE, src.fontSize());
 
+  if (src.ariaCurrentState()) {
+    dst->AddIntAttribute(ui::AX_ATTR_ARIA_CURRENT_STATE,
+                         AXAriaCurrentStateFromBlink(src.ariaCurrentState()));
+  }
+
   if (src.invalidState()) {
     dst->AddIntAttribute(ui::AX_ATTR_INVALID_STATE,
                          AXInvalidStateFromBlink(src.invalidState()));

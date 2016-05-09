@@ -449,6 +449,31 @@ std::string AXNodeData::ToString() const {
         result += base::StringPrintf(" color_value=&%X",
                                      int_attributes[i].second);
         break;
+      case AX_ATTR_ARIA_CURRENT_STATE:
+        switch (int_attributes[i].second) {
+          case AX_ARIA_CURRENT_STATE_FALSE:
+            result += " aria_current_state=false";
+            break;
+          case AX_ARIA_CURRENT_STATE_TRUE:
+            result += " aria_current_state=true";
+            break;
+          case AX_ARIA_CURRENT_STATE_PAGE:
+            result += " aria_current_state=page";
+            break;
+          case AX_ARIA_CURRENT_STATE_STEP:
+            result += " aria_current_state=step";
+            break;
+          case AX_ARIA_CURRENT_STATE_LOCATION:
+            result += " aria_current_state=location";
+            break;
+          case AX_ARIA_CURRENT_STATE_DATE:
+            result += " aria_current_state=date";
+            break;
+          case AX_ARIA_CURRENT_STATE_TIME:
+            result += " aria_current_state=time";
+            break;
+        }
+        break;
       case AX_ATTR_BACKGROUND_COLOR:
         result += base::StringPrintf(" background_color=&%X",
                                      int_attributes[i].second);

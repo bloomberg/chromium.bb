@@ -50,6 +50,7 @@ bool IsNodeIdIntAttribute(AXIntAttribute attr) {
     case AX_ATTR_SET_SIZE:
     case AX_ATTR_POS_IN_SET:
     case AX_ATTR_COLOR_VALUE:
+    case AX_ATTR_ARIA_CURRENT_STATE:
     case AX_ATTR_BACKGROUND_COLOR:
     case AX_ATTR_COLOR:
     case AX_ATTR_INVALID_STATE:

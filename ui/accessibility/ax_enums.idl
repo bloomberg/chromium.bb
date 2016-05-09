@@ -318,6 +318,10 @@
     // In the case of AX_ROLE_COLOR_WELL, specifies the selected color.
     color_value,
 
+    // Indicates the element that represents the current item within a container
+    // or set of related elements.
+    aria_current_state,
+
     // Text attributes.
 
     // Foreground and background color in RGBA.
@@ -424,6 +428,16 @@
     text_style_italic = 2,
     text_style_underline = 4,
     text_style_line_through = 8
+  };
+
+  [cpp_enum_prefix_override="ax"] enum AXAriaCurrentState {
+    aria_current_state_false,
+    aria_current_state_true,
+    aria_current_state_page,
+    aria_current_state_step,
+    aria_current_state_location,
+    aria_current_state_date,
+    aria_current_state_time
   };
 
   [cpp_enum_prefix_override="ax"] enum AXInvalidState {

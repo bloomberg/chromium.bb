@@ -257,6 +257,17 @@ enum WebAXOrientation {
     WebAXOrientationHorizontal,
 };
 
+enum WebAXAriaCurrentState {
+    WebAXAriaCurrentStateUndefined = 0,
+    WebAXAriaCurrentStateFalse,
+    WebAXAriaCurrentStateTrue,
+    WebAXAriaCurrentStatePage,
+    WebAXAriaCurrentStateStep,
+    WebAXAriaCurrentStateLocation,
+    WebAXAriaCurrentStateDate,
+    WebAXAriaCurrentStateTime
+};
+
 // Only used by HTML form controls and any other element that has
 // an aria-invalid attribute specified.
 enum WebAXInvalidState {

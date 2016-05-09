@@ -24,20 +24,17 @@ ui::AXEvent AXEventFromBlink(blink::WebAXEvent event);
 // in AXNodeData instead.)
 uint32_t AXStateFromBlink(const blink::WebAXObject& o);
 
-// Convert a Blink WebAXTextDirection to an AXTextDirection defined in
-// ui/accessibility.
 ui::AXTextDirection AXTextDirectionFromBlink(
     blink::WebAXTextDirection text_direction);
 
 ui::AXTextStyle AXTextStyleFromBlink(blink::WebAXTextStyle text_style);
 
-// Convert a Blink WebAXInvalidState to an AXInvalidState defined in
-// ui/accessibility.
+ui::AXAriaCurrentState AXAriaCurrentStateFromBlink(
+    blink::WebAXAriaCurrentState aria_current_state);
+
 ui::AXInvalidState AXInvalidStateFromBlink(
     blink::WebAXInvalidState invalid_state);
 
-// Convert a Blink WebAXSortDirection to an AXSortDirection defined in
-// ui/accessibility.
 ui::AXSortDirection AXSortDirectionFromBlink(
     blink::WebAXSortDirection sort_direction);
 
