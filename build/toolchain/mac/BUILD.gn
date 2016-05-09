@@ -239,12 +239,9 @@ template("mac_toolchain") {
     }
 
     tool("copy_bundle_data") {
-      if (is_ios) {
-        _convert_to_binary = "True"
-      } else {
-        _convert_to_binary = "False"
-      }
-      command = "rm -rf {{output}} && ./gyp-mac-tool copy-bundle-resource {{source}} {{output}} $_convert_to_binary"
+      _tool = rebase_path("//build/toolchain/mac/copy_bundle_data.py",
+                          root_build_dir)
+      command = "python $_tool {{source}} {{output}}"
       description = "COPY_BUNDLE_DATA {{source}} {{output}}"
     }
     tool("compile_xcassets") {
