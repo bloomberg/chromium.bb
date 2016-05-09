@@ -100,7 +100,7 @@
     <color name="ntp_list_header_text">#333</color>
     <color name="ntp_list_header_subtext">#969696</color>
     <color name="ntp_list_header_subtext_active">#7cadff</color>
-    <color name="ntp_material_design_bg">#f2f2f2</color>
+    <color name="ntp_with_cards_bg">#f2f2f2</color>
     <color name="snippets_thumnail_placeholder_bg">#f2f2f2</color>
     <color name="snippets_thumnail_placeholder_fg">#757575</color>
     <color name="snippets_background_color">#fff</color>

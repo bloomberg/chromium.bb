@@ -29,11 +29,10 @@ public abstract class ChromeFeatureList {
         return nativeIsEnabled(featureName);
     }
 
-    public static final String MEDIA_STYLE_NOTIFICATION = "MediaStyleNotification";
-    public static final String NTP_FAKE_OMNIBOX_TEXT = "NTPFakeOmniboxText";
-    public static final String NTP_MATERIAL_DESIGN = "NTPMaterialDesign";
     public static final String NTP_SNIPPETS = "NTPSnippets";
     public static final String NTP_TOOLBAR = "NTPToolbar";
+    public static final String NTP_FAKE_OMNIBOX_TEXT = "NTPFakeOmniboxText";
+    public static final String MEDIA_STYLE_NOTIFICATION = "MediaStyleNotification";
 
     private static native boolean nativeIsEnabled(String featureName);
 }

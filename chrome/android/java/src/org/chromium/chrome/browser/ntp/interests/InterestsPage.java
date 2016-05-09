@@ -14,7 +14,6 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.NativePage;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.ntp.NewTabPageUma;
-import org.chromium.chrome.browser.ntp.NtpColorUtils;
 import org.chromium.chrome.browser.ntp.interests.InterestsService.GetInterestsCallback;
 import org.chromium.chrome.browser.ntp.interests.InterestsService.Interest;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -48,7 +47,7 @@ public class InterestsPage implements NativePage {
      */
     public InterestsPage(final Context context, Tab tab, Profile profile) {
         mTitle = context.getResources().getString(R.string.ntp_interests);
-        mBackgroundColor = NtpColorUtils.getBackgroundColorResource(context.getResources());
+        mBackgroundColor = ApiCompatibilityUtils.getColor(context.getResources(), R.color.ntp_bg);
         mThemeColor = ApiCompatibilityUtils.getColor(
                 context.getResources(), R.color.default_primary_color);
         mPageView = (InterestsView) View.inflate(context, R.layout.interests_page, null);
