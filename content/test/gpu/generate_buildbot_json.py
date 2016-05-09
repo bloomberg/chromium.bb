@@ -699,7 +699,14 @@ TELEMETRY_TESTS = {
       },
     ]
   },
-  'gpu_process_launch_tests': {'target_name': 'gpu_process'},
+  'gpu_process_launch_tests': {
+      'target_name': 'gpu_process',
+      'tester_configs': [
+        {
+          'allow_on_android': True,
+        }
+      ],
+  },
   'gpu_rasterization': {
     'tester_configs': [
       {
@@ -716,6 +723,11 @@ TELEMETRY_TESTS = {
   },
   'maps_pixel_test': {
     'target_name': 'maps',
+    'tester_configs': [
+      {
+        'allow_on_android': True,
+      },
+    ],
   },
   'memory_test': {
     'tester_configs': [
