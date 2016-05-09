@@ -96,6 +96,7 @@ void DOMTimer::disposeTimer()
     m_action = nullptr;
     m_userGestureToken = nullptr;
     stop();
+    clearContext();
 }
 
 void DOMTimer::fired()
