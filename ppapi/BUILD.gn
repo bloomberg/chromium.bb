@@ -15,7 +15,6 @@ copy("copy_test_files") {
   visibility = [ ":*" ]
   sources = [
     # Keep "test_case.html.mock-http-headers" with "test_case.html".
-    "tests/ppapi_nacl_tests_newlib.nmf",
     "tests/test_case.html",
     "tests/test_case.html.mock-http-headers",
     "tests/test_page.css",
@@ -287,9 +286,10 @@ source_set("ppapi_gles2_lib") {
 }
 
 if (enable_nacl) {
+  import("//ppapi/native_client/nacl_test_data.gni")
+
   if (is_nacl) {
-    executable("ppapi_nacl_tests_nexe") {
-      output_name = "ppapi_nacl_tests"
+    nacl_test_data("ppapi_nacl_tests") {
       include_dirs = [ "lib/gl/include" ]
       sources = ppapi_sources.test_common_source_files +
                 ppapi_sources.test_nacl_source_files
@@ -297,154 +297,19 @@ if (enable_nacl) {
         "GL_GLEXT_PROTOTYPES",
         "PPAPI_TEST_IMPLEMENTATION",
       ]
-      ldflags = [ "-pthread" ]
       deps = [
         ":ppapi_cpp_lib",
-        "//build/config/nacl:nacl_base",
-        "//ppapi/native_client:ppapi_lib",
-      ]
-    }
-
-    if (current_cpu == "pnacl") {
-      action("translate_pexe_to_nexe") {
-        # We specify the toolchain explicitly because in the Non-SFI case, we
-        # still want to use the pexe built using the newlib_pnacl toolchain.
-        tests = ":ppapi_nacl_tests_nexe(//build/toolchain/nacl:newlib_pnacl)"
-
-        pexe = get_label_info(tests, "root_out_dir") + "/ppapi_nacl_tests.pexe"
-        nexe = "${root_out_dir}/ppapi_nacl_tests.nexe"
-
-        script = "${nacl_toolchain_bindir}/pydir/loader.py"
-        sources = [
-          pexe,
-        ]
-        outputs = [
-          nexe,
-        ]
-
-        if (is_nacl_nonsfi) {
-          if (target_cpu == "x86" || target_cpu == "x64") {
-            arch = "x86-32-nonsfi"
-          } else if (target_cpu == "arm") {
-            arch = "arm-nonsfi"
-          }
-        } else {
-          # TODO(phosek): remove the following once change 1360243003 is rolled
-          # into Chrome and use $target_cpu directly.
-          if (target_cpu == "x86") {
-            arch = "i686"
-          } else if (target_cpu == "x64") {
-            arch = "x86-64"
-          } else if (target_cpu == "arm") {
-            arch = "armv7"
-          }
-        }
-
-        # The pre-translated object file has to be linked with an IRT shim to
-        # get a runnable nexe. This is handled by pnacl-translate, which passes
-        # -l:libpnacl_irt_shim.a to native linker, and we need to ensure the
-        # linker can find the correct library.
-        if (is_nacl_nonsfi) {
-          pnacl_irt_shim = "//ppapi/native_client/src/untrusted/pnacl_irt_shim:aot(//build/toolchain/nacl:newlib_pnacl_nonsfi)"
-        } else {
-          pnacl_irt_shim = "//ppapi/native_client/src/untrusted/pnacl_irt_shim:aot(//build/toolchain/nacl:clang_newlib_${target_cpu})"
-        }
-
-        args = [
-          "pnacl-translate",
-          rebase_path(pexe, root_build_dir),
-          "-o",
-          rebase_path(nexe, root_build_dir),
-          "-arch",
-          arch,
-          "-Wl,-L" +
-              rebase_path(get_label_info(pnacl_irt_shim, "target_out_dir")),
-        ]
-        deps = [
-          tests,
-        ]
-        data_deps = [
-          pnacl_irt_shim,
-        ]
-      }
-    }
-
-    copy("ppapi_nacl_tests_copy") {
-      sources = [
-        "${root_out_dir}/ppapi_nacl_tests.nexe",
-      ]
-
-      # The CPU names used in tests/ppapi_nacl_tests_newlib.nmf
-      # are the ones used in GYP (x32 for x86).
-      if (target_cpu == "x86" ||
-          (is_nacl_nonsfi && (target_cpu == "x86" || target_cpu == "x64"))) {
-        nmf_cpu = "x32"
-      } else {
-        nmf_cpu = target_cpu
-      }
-      if (current_cpu == "pnacl") {
-        if (is_nacl_nonsfi) {
-          suffix = "pnacl_newlib_${nmf_cpu}_nonsfi"
-        } else {
-          suffix = "pnacl_newlib_${nmf_cpu}"
-        }
-      } else if (is_nacl_glibc) {
-        suffix = "glibc_${nmf_cpu}"
-      } else {
-        suffix = "newlib_${nmf_cpu}"
-      }
-      outputs = [
-        "${root_build_dir}/{{source_name_part}}_${suffix}.nexe",
       ]
       if (current_cpu == "pnacl") {
-        deps = [
-          ":translate_pexe_to_nexe",
-        ]
-      } else {
-        deps = [
-          ":ppapi_nacl_tests_nexe",
-        ]
+        pretranslate_pexe = true
       }
-    }
-
-    if (is_nacl_nonsfi) {
-      generate_nonsfi_test_nmf("ppapi_nacl_tests_nmf") {
-        nmf = "${root_build_dir}/ppapi_nacl_tests_pnacl_nonsfi.nmf"
-        files = get_target_outputs(":ppapi_nacl_tests_copy")
-        executable = files[0]
-        deps = [
-          ":ppapi_nacl_tests_copy",
-        ]
-      }
-    } else {
-      generate_nmf("ppapi_nacl_tests_nmf") {
-        if (is_nacl_glibc) {
-          nmf = "${root_build_dir}/ppapi_nacl_tests_glibc.nmf"
-          stage_dependencies = root_build_dir
-        } else if (current_cpu == "pnacl") {
-          nmf = "${root_build_dir}/ppapi_nacl_tests_pnacl.nmf"
-        } else {
-          nmf = "${root_build_dir}/ppapi_nacl_tests_newlib.nmf"
-        }
-        executables = get_target_outputs(":ppapi_nacl_tests_copy")
-        deps = [
-          ":ppapi_nacl_tests_copy",
-        ]
-      }
-    }
-
-    group("ppapi_nacl_tests") {
-      data_deps = [
-        ":ppapi_nacl_tests_copy",
-        ":ppapi_nacl_tests_nmf",
-      ]
     }
   }
 
   group("ppapi_nacl_tests_all") {
     data_deps = [
       ":copy_test_files",
-      ":ppapi_nacl_tests_copy(//build/toolchain/nacl:clang_newlib_${target_cpu})",
+      ":ppapi_nacl_tests(//build/toolchain/nacl:clang_newlib_${target_cpu})",
       ":ppapi_nacl_tests(//build/toolchain/nacl:glibc_${target_cpu})",
       ":ppapi_nacl_tests(//build/toolchain/nacl:newlib_pnacl)",
       ":ppapi_nacl_tests(//build/toolchain/nacl:newlib_pnacl_nonsfi)",

@@ -27,14 +27,17 @@ if (current_cpu == "pnacl") {
 #   output_name: name of the ouput file other than the default
 #   sources: source files for a target
 #   generate_nmf: whether to generate a manifest (default true)
-#   nonstable_pexe: use non-finalized pexe
-#   debug_pexe: copy both non-finalized and finalized pexe
-#   destination_dir: the output directory relative to the $root_build_dir
-#   test_files: additional test files to copy to $destination_dir
-#   nmfflags: additional flags for the nmf generator
+#   pretranslate_pexe: whether to pre-translate pexe to nexe during build
+#     (default true for Non-SFI, otherwise false)
+#   nonstable_pexe: use non-finalized pexe (default false)
+#   debug_pexe: copy both non-finalized and finalized pexe (default false)
+#   destination_dir: the output directory relative to the $root_build_dir,
+#     if ommitted the output directory is $root_build_dir and the manifest
+#     will be suffixed with the name of the toolchain (optional)
+#   test_files: additional test files to copy to $destination_dir (optional)
+#   nmfflags: additional flags for the nmf generator (optional)
 template("nacl_test_data") {
   assert(defined(invoker.sources))
-  assert(defined(invoker.destination_dir))
   forward_variables_from(invoker, [ "destination_dir" ])
 
   if (defined(invoker.output_name)) {
@@ -56,15 +59,22 @@ template("nacl_test_data") {
     suffix = "newlib_${nmf_cpu}"
   }
   suffixed_output_name = "${output_name}_${suffix}"
+  if (current_cpu == "pnacl") {
+    if (defined(invoker.pretranslate_pexe)) {
+      pretranslate_pexe = invoker.pretranslate_pexe
+    } else {
+      pretranslate_pexe = is_nacl_nonsfi
+    }
+    if (pretranslate_pexe) {
+      pexe_translate_target_name = target_name + "_translate_pexe"
+    }
+  }
   if (defined(invoker.generate_nmf)) {
     generate_nmf = invoker.generate_nmf
   } else {
     generate_nmf = true
   }
   nexe_target_name = target_name + "_nexe"
-  if (is_nacl_nonsfi) {
-    pexe_translate_target_name = target_name + "_translate_pexe"
-  }
   nexe_copy_target_name = target_name + "_copy_nexe"
   if (current_cpu == "pnacl" && !is_nacl_nonsfi) {
     if (defined(invoker.debug_pexe) && invoker.debug_pexe) {
@@ -79,6 +89,30 @@ template("nacl_test_data") {
   }
   final_target_name = target_name
 
+  # When the destination_dir is specified, the build artifacts end up
+  # in the that directory and the manifest is the same as the target name.
+  # When the destination_dir is not specified, the artifacts end up
+  # in the root build directory and the manifests are suffixed to ensure
+  # they do not overlap in case when we build the same test using multiple
+  # different toolchains.
+  if (defined(invoker.destination_dir)) {
+    target_dir =
+        "${root_build_dir}/${destination_dir}/${nacl_toolchain_variant}"
+    if (generate_nmf) {
+      nmf_name = output_name
+    }
+  } else {
+    target_dir = root_build_dir
+    if (generate_nmf) {
+      if (is_nacl_nonsfi) {
+        nacl_toolchain_name = "pnacl_${nacl_toolchain_variant}"
+      } else {
+        nacl_toolchain_name = nacl_toolchain_variant
+      }
+      nmf_name = "${output_name}_${nacl_toolchain_name}"
+    }
+  }
+
   executable(nexe_target_name) {
     visibility = [ ":*" ]
     output_name = suffixed_output_name
@@ -86,6 +120,8 @@ template("nacl_test_data") {
     forward_variables_from(invoker,
                            [
                              "cflags",
+                             "defines",
+                             "include_dirs",
                              "ldflags",
                              "libs",
                            ])
@@ -99,23 +135,28 @@ template("nacl_test_data") {
     }
   }
 
-  if (is_nacl_nonsfi) {
+  if (current_cpu == "pnacl" && pretranslate_pexe) {
     action(pexe_translate_target_name) {
       visibility = [ ":$nexe_copy_target_name" ]
 
       # We specify the toolchain explicitly because in the Non-SFI case, we
       # still want to use the pexe built using the newlib_pnacl toolchain.
-      tests = ":$nexe_target_name(//build/toolchain/nacl:newlib_pnacl)"
+      tests = ":ppapi_nacl_tests_nexe(//build/toolchain/nacl:newlib_pnacl)"
 
       pexe = get_label_info(tests, "root_out_dir") +
              "/${suffixed_output_name}.pexe"
-      if (target_cpu == "x86" || target_cpu == "x64") {
+      if (target_cpu == "x86" ||
+          (is_nacl_nonsfi && (target_cpu == "x86" || target_cpu == "x64"))) {
         nmf_cpu = "x32"
       } else {
         nmf_cpu = target_cpu
       }
-      nexe =
-          "${root_out_dir}/${output_name}_pnacl_newlib_${nmf_cpu}_nonsfi.nexe"
+      if (is_nacl_nonsfi) {
+        suffix = "pnacl_newlib_${nmf_cpu}_nonsfi"
+      } else {
+        suffix = "pnacl_newlib_${nmf_cpu}"
+      }
+      nexe = "${root_out_dir}/${output_name}_${suffix}.nexe"
 
       script = "${nacl_toolchain_bindir}/pydir/loader.py"
       sources = [
@@ -125,13 +166,33 @@ template("nacl_test_data") {
         nexe,
       ]
 
-      if (target_cpu == "x86" || target_cpu == "x64") {
-        arch = "x86-32-nonsfi"
-      } else if (target_cpu == "arm") {
-        arch = "arm-nonsfi"
+      if (is_nacl_nonsfi) {
+        if (target_cpu == "x86" || target_cpu == "x64") {
+          arch = "x86-32-nonsfi"
+        } else if (target_cpu == "arm") {
+          arch = "arm-nonsfi"
+        }
+      } else {
+        # TODO(phosek): remove the following once change 1360243003 is rolled
+        # into Chrome and use $target_cpu directly.
+        if (target_cpu == "x86") {
+          arch = "i686"
+        } else if (target_cpu == "x64") {
+          arch = "x86-64"
+        } else if (target_cpu == "arm") {
+          arch = "armv7"
+        }
       }
 
-      pnacl_irt_shim = "//ppapi/native_client/src/untrusted/pnacl_irt_shim:aot(//build/toolchain/nacl:newlib_pnacl_nonsfi)"
+      # The pre-translated object file has to be linked with an IRT shim to
+      # get a runnable nexe. This is handled by pnacl-translate, which passes
+      # -l:libpnacl_irt_shim.a to native linker, and we need to ensure the
+      # linker can find the correct library.
+      if (is_nacl_nonsfi) {
+        pnacl_irt_shim = "//ppapi/native_client/src/untrusted/pnacl_irt_shim:aot(//build/toolchain/nacl:newlib_pnacl_nonsfi)"
+      } else {
+        pnacl_irt_shim = "//ppapi/native_client/src/untrusted/pnacl_irt_shim:aot(//build/toolchain/nacl:clang_newlib_${target_cpu})"
+      }
 
       args = [
         "pnacl-translate",
@@ -157,8 +218,10 @@ template("nacl_test_data") {
     if (generate_nmf) {
       visibility += [ ":$nmf_target_name" ]
     }
-    if (current_cpu == "pnacl" && !is_nacl_nonsfi) {
-      if (defined(invoker.nonstable_pexe) && invoker.nonstable_pexe) {
+    if (current_cpu == "pnacl") {
+      if (pretranslate_pexe) {
+        sources = get_target_outputs(":${pexe_translate_target_name}")
+      } else if (defined(invoker.nonstable_pexe) && invoker.nonstable_pexe) {
         sources = [
           "${root_out_dir}/exe.unstripped/${suffixed_output_name}.pexe",
         ]
@@ -167,17 +230,15 @@ template("nacl_test_data") {
           "${root_out_dir}/${suffixed_output_name}.pexe",
         ]
       }
-    } else if (is_nacl_nonsfi) {
-      sources = get_target_outputs(":${pexe_translate_target_name}")
     } else {
       sources = [
         "${root_out_dir}/${suffixed_output_name}.nexe",
       ]
     }
     outputs = [
-      "${root_build_dir}/${destination_dir}/${nacl_toolchain_variant}/{{source_file_part}}",
+      "${target_dir}/{{source_file_part}}",
     ]
-    if (is_nacl_nonsfi) {
+    if (current_cpu == "pnacl" && pretranslate_pexe) {
       deps = [
         ":$pexe_translate_target_name",
       ]
@@ -196,7 +257,7 @@ template("nacl_test_data") {
           "${root_out_dir}/exe.unstripped/${suffixed_output_name}.pexe",
         ]
         outputs = [
-          "${root_build_dir}/${destination_dir}/${nacl_toolchain_variant}/{{source_name_part}}.pexe.debug",
+          "${target_dir}/{{source_name_part}}.pexe.debug",
         ]
         deps = [
           ":$nexe_target_name",
@@ -210,7 +271,7 @@ template("nacl_test_data") {
       generate_nonsfi_test_nmf(nmf_target_name) {
         visibility = [ ":$final_target_name" ]
         forward_variables_from(invoker, [ "nmfflags" ])
-        nmf = "${root_build_dir}/${destination_dir}/${nacl_toolchain_variant}/${output_name}.nmf"
+        nmf = "${target_dir}/${nmf_name}.nmf"
         files = get_target_outputs(":$nexe_copy_target_name")
         executable = files[0]
         deps = [
@@ -221,12 +282,11 @@ template("nacl_test_data") {
       generate_nmf(nmf_target_name) {
         visibility = [ ":$final_target_name" ]
         forward_variables_from(invoker, [ "nmfflags" ])
-        nmf = "${root_build_dir}/${destination_dir}/${nacl_toolchain_variant}/${output_name}.nmf"
+        nmf = "${target_dir}/${nmf_name}.nmf"
         executables = get_target_outputs(":$nexe_copy_target_name")
         if (is_nacl_glibc) {
           lib_prefix = "${output_name}_libs"
-          stage_dependencies =
-              "${root_build_dir}/${destination_dir}/${nacl_toolchain_variant}"
+          stage_dependencies = target_dir
         }
         deps = [
           ":$nexe_copy_target_name",
@@ -240,7 +300,7 @@ template("nacl_test_data") {
       visibility = [ ":$final_target_name" ]
       sources = invoker.test_files
       outputs = [
-        "${root_build_dir}/${destination_dir}/${nacl_toolchain_variant}/{{source_file_part}}",
+        "${target_dir}/{{source_file_part}}",
       ]
     }
   }
