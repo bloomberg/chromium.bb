@@ -39,6 +39,18 @@ class NTPSnippetsFetcher : public net::URLFetcherDelegate {
       base::Callback<void(NTPSnippet::PtrVector snippets,
                           const std::string& status_message)>;
 
+  // Enumeration listing all possible outcomes for fetch attempts. Used for UMA
+  // histograms, so do not change existing values.
+  enum class FetchResult {
+    SUCCESS,
+    EMPTY_HOSTS,
+    URL_REQUEST_STATUS_ERROR,
+    HTTP_ERROR,
+    JSON_PARSE_ERROR,
+    INVALID_SNIPPET_CONTENT_ERROR,
+    RESULT_MAX
+  };
+
   NTPSnippetsFetcher(
       scoped_refptr<net::URLRequestContextGetter> url_request_context_getter,
       const ParseJSONCallback& parse_json_callback,
@@ -68,6 +80,10 @@ class NTPSnippetsFetcher : public net::URLFetcherDelegate {
 
   void OnJsonParsed(std::unique_ptr<base::Value> parsed);
   void OnJsonError(const std::string& error);
+  void FetchFinishedWithError(FetchResult result,
+                              const std::string& extra_message);
+  // Records result to UMA histogram.
+  void RecordUmaFetchResult(FetchResult result);
 
   // Holds the URL request context.
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;

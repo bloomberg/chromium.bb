@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
@@ -30,12 +31,6 @@ using net::URLRequestStatus;
 namespace ntp_snippets {
 
 namespace {
-
-const char kStatusMessageEmptyHosts[] = "Cannot fetch for empty hosts list.";
-const char kStatusMessageURLRequestErrorFormat[] = "URLRequestStatus error %d";
-const char kStatusMessageHTTPErrorFormat[] = "HTTP error %d";
-const char kStatusMessageJsonErrorFormat[] = "Received invalid JSON (error %s)";
-const char kStatusMessageInvalidList[] = "Invalid / empty list.";
 
 const char kContentSnippetsServerFormat[] =
     "https://chromereader-pa.googleapis.com/v1/fetch?key=%s";
@@ -74,6 +69,27 @@ const char kHostRestrictFormat[] =
     "        \"value\": \"%s\""
     "      }";
 
+std::string FetchResultToString(NTPSnippetsFetcher::FetchResult result) {
+  switch (result) {
+    case NTPSnippetsFetcher::FetchResult::SUCCESS:
+      return "OK";
+    case NTPSnippetsFetcher::FetchResult::EMPTY_HOSTS:
+      return "Cannot fetch for empty hosts list.";
+    case NTPSnippetsFetcher::FetchResult::URL_REQUEST_STATUS_ERROR:
+      return "URLRequestStatus error";
+    case NTPSnippetsFetcher::FetchResult::HTTP_ERROR:
+      return "HTTP error";
+    case NTPSnippetsFetcher::FetchResult::JSON_PARSE_ERROR:
+      return "Received invalid JSON";
+    case NTPSnippetsFetcher::FetchResult::INVALID_SNIPPET_CONTENT_ERROR:
+      return "Invalid / empty list.";
+    case NTPSnippetsFetcher::FetchResult::RESULT_MAX:
+      break;
+  }
+  NOTREACHED();
+  return "Unknown error";
+}
+
 }  // namespace
 
 NTPSnippetsFetcher::NTPSnippetsFetcher(
@@ -98,10 +114,8 @@ void NTPSnippetsFetcher::FetchSnippetsFromHosts(
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDontRestrict)) {
     if (hosts.empty()) {
-      if (!snippets_available_callback_.is_null()) {
-        snippets_available_callback_.Run(NTPSnippet::PtrVector(),
-                                         kStatusMessageEmptyHosts);
-      }
+      FetchFinishedWithError(FetchResult::EMPTY_HOSTS,
+                             /*extra_message=*/std::string());
       return;
     }
     for (const std::string& host : hosts)
@@ -138,7 +152,6 @@ void NTPSnippetsFetcher::FetchSnippetsFromHosts(
 void NTPSnippetsFetcher::OnURLFetchComplete(const URLFetcher* source) {
   DCHECK_EQ(url_fetcher_.get(), source);
 
-  std::string message;
   const URLRequestStatus& status = source->GetStatus();
 
   UMA_HISTOGRAM_SPARSE_SLOWLY(
@@ -146,18 +159,13 @@ void NTPSnippetsFetcher::OnURLFetchComplete(const URLFetcher* source) {
       status.is_success() ? source->GetResponseCode() : status.error());
 
   if (!status.is_success()) {
-    message = base::StringPrintf(kStatusMessageURLRequestErrorFormat,
-                                 status.error());
+    FetchFinishedWithError(
+        FetchResult::URL_REQUEST_STATUS_ERROR,
+        /*extra_message=*/base::StringPrintf(" %d", status.error()));
   } else if (source->GetResponseCode() != net::HTTP_OK) {
-    message = base::StringPrintf(kStatusMessageHTTPErrorFormat,
-                                 source->GetResponseCode());
-  }
-
-  if (!message.empty()) {
-    DLOG(WARNING) << message << " while trying to download "
-                  << source->GetURL().spec();
-    if (!snippets_available_callback_.is_null())
-      snippets_available_callback_.Run(NTPSnippet::PtrVector(), message);
+    FetchFinishedWithError(
+        FetchResult::HTTP_ERROR,
+        /*extra_message=*/base::StringPrintf(" %d", source->GetResponseCode()));
   } else {
     bool stores_result_to_string = source->GetResponseAsString(
         &last_fetch_json_);
@@ -173,9 +181,6 @@ void NTPSnippetsFetcher::OnURLFetchComplete(const URLFetcher* source) {
 }
 
 void NTPSnippetsFetcher::OnJsonParsed(std::unique_ptr<base::Value> parsed) {
-  if (snippets_available_callback_.is_null())
-    return;
-
   const base::DictionaryValue* top_dict = nullptr;
   const base::ListValue* list = nullptr;
   NTPSnippet::PtrVector snippets;
@@ -183,9 +188,10 @@ void NTPSnippetsFetcher::OnJsonParsed(std::unique_ptr<base::Value> parsed) {
       !top_dict->GetList("recos", &list) ||
       !NTPSnippet::AddFromListValue(*list, &snippets)) {
     LOG(WARNING) << "Received invalid snippets: " << last_fetch_json_;
-    snippets_available_callback_.Run(NTPSnippet::PtrVector(),
-                                     kStatusMessageInvalidList);
+    FetchFinishedWithError(FetchResult::INVALID_SNIPPET_CONTENT_ERROR,
+                           /*extra_message=*/std::string());
   } else {
+    RecordUmaFetchResult(FetchResult::SUCCESS);
     snippets_available_callback_.Run(std::move(snippets), std::string());
   }
 }
@@ -193,11 +199,25 @@ void NTPSnippetsFetcher::OnJsonParsed(std::unique_ptr<base::Value> parsed) {
 void NTPSnippetsFetcher::OnJsonError(const std::string& error) {
   LOG(WARNING) << "Received invalid JSON (" << error << "): "
                << last_fetch_json_;
+  FetchFinishedWithError(
+      FetchResult::JSON_PARSE_ERROR,
+      /*extra_message=*/base::StringPrintf(" (error %s)", error.c_str()));
+}
+
+void NTPSnippetsFetcher::FetchFinishedWithError(
+    FetchResult result,
+    const std::string& extra_message) {
+  RecordUmaFetchResult(result);
   if (!snippets_available_callback_.is_null()) {
     snippets_available_callback_.Run(
-        NTPSnippet::PtrVector(),
-        base::StringPrintf(kStatusMessageJsonErrorFormat, error.c_str()));
+        NTPSnippet::PtrVector(), FetchResultToString(result) + extra_message);
   }
+}
+
+void NTPSnippetsFetcher::RecordUmaFetchResult(FetchResult result) {
+  UMA_HISTOGRAM_ENUMERATION("NewTabPage.Snippets.FetchResult",
+                            static_cast<int>(result),
+                            static_cast<int>(FetchResult::RESULT_MAX));
 }
 
 }  // namespace ntp_snippets

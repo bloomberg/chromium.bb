@@ -33386,6 +33386,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="NewTabPage.Snippets.FetchResult" enum="NtpSnippetsFetchResult">
+  <owner>mastiz@chromium.org</owner>
+  <summary>
+    Result of attempting a fetch, logged once per issued trigger.
+  </summary>
+</histogram>
+
 <histogram name="NewTabPage.Snippets.IncompleteSnippetsAfterFetch"
     enum="Boolean">
   <owner>maybelle@chromium.org</owner>
@@ -79966,6 +79973,15 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="0" label="NTP Promo viewed"/>
   <int value="1" label="NTP Promo closed"/>
   <int value="2" label="NTP Promo link clicked"/>
+</enum>
+
+<enum name="NtpSnippetsFetchResult" type="int">
+  <int value="0" label="Success"/>
+  <int value="1" label="Empty hosts"/>
+  <int value="2" label="URLRequestStatus error"/>
+  <int value="3" label="HTTP error"/>
+  <int value="4" label="JSON parse error"/>
+  <int value="5" label="Invalid snippet content"/>
 </enum>
 
 <enum name="NtpSuggestionsType" type="int">

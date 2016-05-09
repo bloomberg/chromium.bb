@@ -168,6 +168,9 @@ TEST_F(NTPSnippetsFetcherTest, ShouldFetchSuccessfullyEmptyList) {
   snippets_fetcher().FetchSnippetsFromHosts(test_hosts(), /*count=*/1);
   RunUntilIdle();
   EXPECT_THAT(snippets_fetcher().last_json(), Eq(kJsonStr));
+  EXPECT_THAT(
+      histogram_tester().GetAllSamples("NewTabPage.Snippets.FetchResult"),
+      ElementsAre(base::Bucket(/*min=*/0, /*count=*/1)));
   EXPECT_THAT(histogram_tester().GetAllSamples(
                   "NewTabPage.Snippets.FetchHttpResponseOrErrorCode"),
               ElementsAre(base::Bucket(/*min=*/200, /*count=*/1)));
@@ -182,6 +185,9 @@ TEST_F(NTPSnippetsFetcherTest, ShouldReportEmptyHostsError) {
                                             /*count=*/1);
   RunUntilIdle();
   EXPECT_THAT(snippets_fetcher().last_json(), IsEmpty());
+  EXPECT_THAT(
+      histogram_tester().GetAllSamples("NewTabPage.Snippets.FetchResult"),
+      ElementsAre(base::Bucket(/*min=*/1, /*count=*/1)));
   EXPECT_THAT(histogram_tester().GetAllSamples(
                   "NewTabPage.Snippets.FetchHttpResponseOrErrorCode"),
               IsEmpty());
@@ -218,6 +224,9 @@ TEST_F(NTPSnippetsFetcherTest, ShouldReportUrlStatusError) {
   snippets_fetcher().FetchSnippetsFromHosts(test_hosts(), /*count=*/1);
   RunUntilIdle();
   EXPECT_THAT(snippets_fetcher().last_json(), IsEmpty());
+  EXPECT_THAT(
+      histogram_tester().GetAllSamples("NewTabPage.Snippets.FetchResult"),
+      ElementsAre(base::Bucket(/*min=*/2, /*count=*/1)));
   EXPECT_THAT(histogram_tester().GetAllSamples(
                   "NewTabPage.Snippets.FetchHttpResponseOrErrorCode"),
               ElementsAre(base::Bucket(/*min=*/-2, /*count=*/1)));
@@ -232,6 +241,9 @@ TEST_F(NTPSnippetsFetcherTest, ShouldReportHttpError) {
   snippets_fetcher().FetchSnippetsFromHosts(test_hosts(), /*count=*/1);
   RunUntilIdle();
   EXPECT_THAT(snippets_fetcher().last_json(), IsEmpty());
+  EXPECT_THAT(
+      histogram_tester().GetAllSamples("NewTabPage.Snippets.FetchResult"),
+      ElementsAre(base::Bucket(/*min=*/3, /*count=*/1)));
   EXPECT_THAT(histogram_tester().GetAllSamples(
                   "NewTabPage.Snippets.FetchHttpResponseOrErrorCode"),
               ElementsAre(base::Bucket(/*min=*/404, /*count=*/1)));
@@ -249,6 +261,9 @@ TEST_F(NTPSnippetsFetcherTest, ShouldReportJsonError) {
   snippets_fetcher().FetchSnippetsFromHosts(test_hosts(), /*count=*/1);
   RunUntilIdle();
   EXPECT_THAT(snippets_fetcher().last_json(), Eq(kInvalidJsonStr));
+  EXPECT_THAT(
+      histogram_tester().GetAllSamples("NewTabPage.Snippets.FetchResult"),
+      ElementsAre(base::Bucket(/*min=*/4, /*count=*/1)));
   EXPECT_THAT(histogram_tester().GetAllSamples(
                   "NewTabPage.Snippets.FetchHttpResponseOrErrorCode"),
               ElementsAre(base::Bucket(/*min=*/200, /*count=*/1)));
@@ -265,6 +280,9 @@ TEST_F(NTPSnippetsFetcherTest, ShouldReportJsonErrorForEmptyResponse) {
   snippets_fetcher().FetchSnippetsFromHosts(test_hosts(), /*count=*/1);
   RunUntilIdle();
   EXPECT_THAT(snippets_fetcher().last_json(), std::string());
+  EXPECT_THAT(
+      histogram_tester().GetAllSamples("NewTabPage.Snippets.FetchResult"),
+      ElementsAre(base::Bucket(/*min=*/4, /*count=*/1)));
   EXPECT_THAT(histogram_tester().GetAllSamples(
                   "NewTabPage.Snippets.FetchHttpResponseOrErrorCode"),
               ElementsAre(base::Bucket(/*min=*/200, /*count=*/1)));
@@ -281,6 +299,9 @@ TEST_F(NTPSnippetsFetcherTest, ShouldReportInvalidListError) {
   snippets_fetcher().FetchSnippetsFromHosts(test_hosts(), /*count=*/1);
   RunUntilIdle();
   EXPECT_THAT(snippets_fetcher().last_json(), Eq(kJsonStr));
+  EXPECT_THAT(
+      histogram_tester().GetAllSamples("NewTabPage.Snippets.FetchResult"),
+      ElementsAre(base::Bucket(/*min=*/5, /*count=*/1)));
   EXPECT_THAT(histogram_tester().GetAllSamples(
                   "NewTabPage.Snippets.FetchHttpResponseOrErrorCode"),
               ElementsAre(base::Bucket(/*min=*/200, /*count=*/1)));
@@ -309,6 +330,9 @@ TEST_F(NTPSnippetsFetcherTest, ShouldCancelOngoingFetch) {
   // Callback is expected to be called once.
   snippets_fetcher().FetchSnippetsFromHosts(test_hosts(), /*count=*/1);
   RunUntilIdle();
+  EXPECT_THAT(
+      histogram_tester().GetAllSamples("NewTabPage.Snippets.FetchResult"),
+      ElementsAre(base::Bucket(/*min=*/0, /*count=*/1)));
   EXPECT_THAT(histogram_tester().GetAllSamples(
                   "NewTabPage.Snippets.FetchHttpResponseOrErrorCode"),
               ElementsAre(base::Bucket(/*min=*/200, /*count=*/1)));
