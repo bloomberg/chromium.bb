@@ -672,6 +672,7 @@ _waterfall_config_map = {
         'smaug-release',
         'smaug-cheets-release',
         'guado_moblab-release',
+        'guado_labstation-release',
 
         # KASAN
         'smaug-kasan-kernel-3_18',

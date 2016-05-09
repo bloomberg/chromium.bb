@@ -61,6 +61,7 @@ glimmer-release
 gnawty-release
 gru-release
 guado-release
+guado_labstation-release
 guado_moblab-paladin
 guado_moblab-release
 heli-release

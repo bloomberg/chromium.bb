@@ -9223,6 +9223,7 @@
     },
     "guado_labstation-release": {
         "_template": "release",
+        "active_waterfall": "chromeos",
         "boards": [
             "guado_labstation"
         ]
