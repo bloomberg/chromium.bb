@@ -26,11 +26,14 @@ function test()
             var colorTreeElement = InspectorTest.getMatchedStylePropertyTreeItem("color");
             colorTreeElement.startEditing(colorTreeElement.valueElement);
 
-            // Most significant digit increment ('F') should not change the value.
-            colorTreeElement.valueElement.dispatchEvent(InspectorTest.createKeyEvent("PageUp", false, false, true));
-            colorTreeElement.valueElement.dispatchEvent(InspectorTest.createKeyEvent("Up"));
-            colorTreeElement.valueElement.dispatchEvent(InspectorTest.createKeyEvent("PageDown"));
-            colorTreeElement.valueElement.dispatchEvent(InspectorTest.createKeyEvent("PageDown", false, false, true));
+            // PageUp should change to 'FF3'
+            colorTreeElement.valueElement.dispatchEvent(InspectorTest.createKeyEvent("PageUp"));
+            // Ctrl/Meta + Shift Down should change to 'EE3'
+            if (WebInspector.isMac())
+                colorTreeElement.valueElement.dispatchEvent(InspectorTest.createKeyEvent("Down", /*Ctrl*/ false, /*Alt*/ false, /*Shift*/ true, /*Meta*/ true));
+            else
+                colorTreeElement.valueElement.dispatchEvent(InspectorTest.createKeyEvent("Down", /*Ctrl*/ true, /*Alt*/ false, /*Shift*/ true, /*Meta*/ false));
+
             InspectorTest.addResult(colorTreeElement.listItemElement.textContent);
             next();
         },
@@ -39,13 +42,12 @@ function test()
         {
             var opacityTreeElement = InspectorTest.getMatchedStylePropertyTreeItem("opacity");
             opacityTreeElement.startEditing(opacityTreeElement.valueElement);
-            // 0.5 (initial)
-            opacityTreeElement.valueElement.dispatchEvent(InspectorTest.createKeyEvent("Up", false, true, false)); // Alt-Up
-            // 0.6
+            // 0.5 (initial). Alt + Up should change to 0.6
+            opacityTreeElement.valueElement.dispatchEvent(InspectorTest.createKeyEvent("Up", /*Ctrl*/ false, /*Alt*/ true, /*Shift*/ false));
+            // Up should change to 1.6
             opacityTreeElement.valueElement.dispatchEvent(InspectorTest.createKeyEvent("Up"));
-            // 1.6
-            opacityTreeElement.valueElement.dispatchEvent(InspectorTest.createKeyEvent("PageUp"));
-            // 11.6
+            // Shift + PageUp should change to 11.6
+            opacityTreeElement.valueElement.dispatchEvent(InspectorTest.createKeyEvent("PageUp", /*Ctrl*/ false, /*Alt*/ false, /*Shift*/ true));
             InspectorTest.addResult(opacityTreeElement.listItemElement.textContent);
             next();
         },
