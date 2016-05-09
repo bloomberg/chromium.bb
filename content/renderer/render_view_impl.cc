@@ -629,6 +629,7 @@ RenderViewImpl::RenderViewImpl(CompositorDependencies* compositor_deps,
       top_controls_shrink_blink_size_(false),
       top_controls_height_(0.f),
       has_focus_(false),
+      webview_(nullptr),
       has_scrolled_focused_editable_node_into_rect_(false),
       page_zoom_level_(params.page_zoom_level),
       main_render_frame_(nullptr),
@@ -662,7 +663,8 @@ void RenderViewImpl::Initialize(const ViewMsg_New_Params& params,
   // Ensure we start with a valid next_page_id_ from the browser.
   DCHECK_GE(next_page_id_, 0);
 
-  webwidget_ = WebView::create(this);
+  webview_ = WebView::create(this);
+  webwidget_ = webview_->widget();
   webwidget_mouse_lock_target_.reset(new WebWidgetLockTarget(webwidget_));
 
   g_view_map.Get().insert(std::make_pair(webview(), this));
@@ -1151,7 +1153,7 @@ void RenderViewImpl::RemoveObserver(RenderViewObserver* observer) {
 }
 
 blink::WebView* RenderViewImpl::webview() const {
-  return static_cast<blink::WebView*>(webwidget());
+  return webview_;
 }
 
 #if defined(ENABLE_PLUGINS)
@@ -2811,8 +2813,9 @@ void RenderViewImpl::CloseForFrame() {
 
 void RenderViewImpl::Close() {
   // We need to grab a pointer to the doomed WebView before we destroy it.
-  WebView* doomed = webview();
+  WebView* doomed = webview_;
   RenderWidget::Close();
+  webview_ = nullptr;
   g_view_map.Get().erase(doomed);
   g_routing_id_view_map.Get().erase(GetRoutingID());
   RenderThread::Get()->Send(new ViewHostMsg_Close_ACK(GetRoutingID()));

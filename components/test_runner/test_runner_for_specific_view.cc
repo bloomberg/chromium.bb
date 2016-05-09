@@ -213,13 +213,20 @@ base::Closure TestRunnerForSpecificView::CreateClosureThatPostsV8Callback(
 }
 
 void TestRunnerForSpecificView::LayoutAndPaintAsync() {
-  test_runner::LayoutAndPaintAsyncThen(web_view(), base::Closure());
+  // TODO(lfg, lukasza): TestRunnerForSpecificView assumes that there's a single
+  // WebWidget for the entire view, but with out-of-process iframes there may be
+  // multiple WebWidgets, one for each local root. We should look into making
+  // this structure more generic.
+  test_runner::LayoutAndPaintAsyncThen(
+      web_view()->mainFrame()->toWebLocalFrame()->frameWidget(),
+      base::Closure());
 }
 
 void TestRunnerForSpecificView::LayoutAndPaintAsyncThen(
     v8::Local<v8::Function> callback) {
   test_runner::LayoutAndPaintAsyncThen(
-      web_view(), CreateClosureThatPostsV8Callback(callback));
+      web_view()->mainFrame()->toWebLocalFrame()->frameWidget(),
+      CreateClosureThatPostsV8Callback(callback));
 }
 
 void TestRunnerForSpecificView::CapturePixelsAsyncThen(

@@ -18,6 +18,7 @@ class WebFrameClient;
 class WebNode;
 class WebScriptExecutionCallback;
 class WebSuspendableTask;
+class WebWidget;
 enum class WebAppBannerPromptReply;
 enum class WebCachePolicy;
 enum class WebSandboxFlags;
@@ -315,6 +316,10 @@ public:
 
     // Returns the node that the context menu opened over.
     virtual WebNode contextMenuNode() const = 0;
+
+    // Returns the WebFrameWidget associated with this frame if there is one or
+    // nullptr otherwise.
+    virtual WebWidget* frameWidget() const = 0;
 
 protected:
     explicit WebLocalFrame(WebTreeScopeType scope) : WebFrame(scope) { }

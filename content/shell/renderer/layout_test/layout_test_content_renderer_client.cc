@@ -36,6 +36,7 @@
 
 using blink::WebAudioDevice;
 using blink::WebClipboard;
+using blink::WebFrame;
 using blink::WebLocalFrame;
 using blink::WebMIDIAccessor;
 using blink::WebMIDIAccessorClient;
@@ -104,10 +105,19 @@ void LayoutTestContentRendererClient::RenderThreadStarted() {
 
 void LayoutTestContentRendererClient::RenderFrameCreated(
     RenderFrame* render_frame) {
-  test_runner::WebFrameTestProxyBase* proxy =
+  test_runner::WebFrameTestProxyBase* frame_proxy =
       GetWebFrameTestProxyBase(render_frame);
-  proxy->set_web_frame(render_frame->GetWebFrame());
+  frame_proxy->set_web_frame(render_frame->GetWebFrame());
   new LayoutTestRenderFrameObserver(render_frame);
+
+  // TODO(lfg): We should fix the TestProxy to track the WebWidgets on every
+  // local root in WebFrameTestProxy instead of having only the WebWidget for
+  // the main frame in WebTestProxy.
+  test_runner::WebTestProxyBase* proxy =
+      GetWebTestProxyBase(render_frame->GetRenderView());
+  WebLocalFrame* frame = render_frame->GetWebFrame();
+  if (!frame->parent())
+    proxy->set_web_widget(frame->frameWidget());
 }
 
 void LayoutTestContentRendererClient::RenderViewCreated(
@@ -115,7 +125,6 @@ void LayoutTestContentRendererClient::RenderViewCreated(
   new ShellRenderViewObserver(render_view);
 
   test_runner::WebTestProxyBase* proxy = GetWebTestProxyBase(render_view);
-  proxy->set_web_widget(render_view->GetWebView());
   proxy->set_web_view(render_view->GetWebView());
   proxy->Reset();
   proxy->SetSendWheelGestures(UseGestureBasedWheelScrolling());

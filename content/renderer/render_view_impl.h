@@ -902,6 +902,8 @@ class CONTENT_EXPORT RenderViewImpl
 
   // View ----------------------------------------------------------------------
 
+  blink::WebView* webview_;
+
   // Cache the preferred size of the page in order to prevent sending the IPC
   // when layout() recomputes but doesn't actually change sizes.
   gfx::Size preferred_size_;

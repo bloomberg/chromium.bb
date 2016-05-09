@@ -834,7 +834,11 @@ void BlinkTestRunner::CaptureDumpContinued() {
   // Force a layout/paint by the end of the test to ensure test coverage of
   // incremental painting.
   test_runner::LayoutAndPaintAsyncThen(
-      render_view()->GetWebView(),
+      render_view()
+          ->GetWebView()
+          ->mainFrame()
+          ->toWebLocalFrame()
+          ->frameWidget(),
       base::Bind(&BlinkTestRunner::CaptureDumpComplete,
                  base::Unretained(this)));
 #else

@@ -35,6 +35,7 @@
 #include "core/frame/LocalFrame.h"
 #include "platform/geometry/FloatRect.h"
 #include "public/platform/WebFileSystemType.h"
+#include "public/web/WebFrameWidget.h"
 #include "public/web/WebLocalFrame.h"
 #include "web/FrameLoaderClientImpl.h"
 #include "web/UserMediaClientImpl.h"
@@ -59,7 +60,6 @@ class WebDataSourceImpl;
 class WebDevToolsAgentImpl;
 class WebDevToolsFrontendImpl;
 class WebFrameClient;
-class WebFrameWidget;
 class WebNode;
 class WebPerformance;
 class WebPlugin;
@@ -242,6 +242,7 @@ public:
     void findMatchRects(WebVector<WebFloatRect>&) override;
     int selectNearestFindMatch(const WebFloatPoint&, WebRect* selectionRect) override;
     void setTickmarks(const WebVector<WebRect>&) override;
+    WebFrameWidget* frameWidget() const override;
 
     // WebFrameImplBase methods:
     void initializeCoreFrame(FrameHost*, FrameOwner*, const AtomicString& name, const AtomicString& uniqueName) override;
@@ -319,7 +320,6 @@ public:
     VisiblePosition visiblePositionForViewportPoint(const WebPoint&);
 
     void setFrameWidget(WebFrameWidget*);
-    WebFrameWidget* frameWidget() const;
 
     // DevTools front-end bindings.
     void setDevToolsFrontend(WebDevToolsFrontendImpl* frontend) { m_webDevToolsFrontend = frontend; }

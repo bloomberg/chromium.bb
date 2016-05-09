@@ -1398,7 +1398,7 @@ void RenderWidget::Close() {
   compositor_.reset();
   if (webwidget_) {
     webwidget_->close();
-    webwidget_ = NULL;
+    webwidget_ = nullptr;
   }
 }
 
