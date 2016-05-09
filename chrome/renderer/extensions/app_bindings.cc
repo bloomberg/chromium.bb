@@ -167,6 +167,9 @@ bool AppBindings::OnMessageReceived(const IPC::Message& message) {
 
 void AppBindings::OnAppInstallStateResponse(
     const std::string& state, int callback_id) {
+  if (!is_valid())
+    return;
+
   v8::Isolate* isolate = context()->isolate();
   v8::HandleScope handle_scope(isolate);
   v8::Context::Scope context_scope(context()->v8_context());
