@@ -133,53 +133,32 @@ source_set("cast_sys_info") {
   }
 }
 
-# This target runs a script which generates a file containing key-value pairs.
-# //build/util/version.py will parse this file, creating "version.h". This
-# target shall only be depended upon by ":cast_version".
-action("generate_cast_version_params") {
-  visibility = [ ":cast_version_action" ]
-
-  script = "//chromecast/tools/build/generate_cast_version_params.py"
-
-  params_file = "$root_gen_dir/cast_version_params"
-  outputs = [
-    params_file,
-  ]
-
-  args = [
-    "-o",
-    rebase_path(params_file),
-    "-p",
-    "$cast_product_type",
-  ]
-
-  if (cast_is_debug) {
-    args += [ "-d" ]
-  }
-
-  if (chromecast_branding != "public") {
-    args += [
-      "-r",
-      rebase_path("//chromecast/internal/build/cast_build_release"),
-    ]
-  }
-}
-
 process_version("cast_version") {
   template_file = "version.h.in"
   output = "$target_gen_dir/version.h"
 
-  params_file = get_target_outputs(":generate_cast_version_params")
-  deps = [
-    ":generate_cast_version_params",
-  ]
-
   extra_args = [
     "-e",
     "VERSION_FULL=\"%s.%s.%s.%s\"%(MAJOR,MINOR,BUILD,PATCH)",
-    "-f",
-    rebase_path(params_file[0]),
+    "-e",
+    "CAST_BUILD_RELEASE=\"$cast_build_release\"",
+    "-e",
+    "CAST_BUILD_INCREMENTAL=\"$cast_build_incremental\"",
+    "-e",
+    "CAST_PRODUCT_TYPE=$cast_product_type",
   ]
+
+  if (cast_is_debug) {
+    extra_args += [
+      "-e",
+      "CAST_IS_DEBUG_BUILD=1",
+    ]
+  } else {
+    extra_args += [
+      "-e",
+      "CAST_IS_DEBUG_BUILD=0",
+    ]
+  }
 }
 
 if (is_android) {

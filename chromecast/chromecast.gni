@@ -14,4 +14,20 @@ declare_args() {
 
   # Use Playready CDMs.
   use_playready = false
+
+  # The incremental build number. The Cast automated builders will set this
+  # value to indicate the buildset. Note: The default value should be greater
+  # than any value the builder may assign to prevent attempted automatic updates
+  # when the default value is used.
+  cast_build_incremental = "999999"
+}
+
+# This is the release version, which takes the form <major>.<minor>. Internal
+# builds will read the value from an internal file containing this value as a
+# string. Public builds, lacking this file, will set a dummy value.
+if (chromecast_branding == "public") {
+  cast_build_release = "eng." + getenv("USER")
+} else {
+  cast_build_release =
+      read_file("//chromecast/internal/build/cast_build_release", "trim string")
 }
