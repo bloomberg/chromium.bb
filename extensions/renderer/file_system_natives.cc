@@ -21,12 +21,11 @@ FileSystemNatives::FileSystemNatives(ScriptContext* context)
     : ObjectBackedNativeHandler(context) {
   RouteFunction(
       "GetFileEntry",
-      "syncFileSystem",
       base::Bind(&FileSystemNatives::GetFileEntry, base::Unretained(this)));
   RouteFunction("GetIsolatedFileSystem",
                 base::Bind(&FileSystemNatives::GetIsolatedFileSystem,
                            base::Unretained(this)));
-  RouteFunction("CrackIsolatedFileSystemName", "fileSystem",
+  RouteFunction("CrackIsolatedFileSystemName",
                 base::Bind(&FileSystemNatives::CrackIsolatedFileSystemName,
                            base::Unretained(this)));
 }

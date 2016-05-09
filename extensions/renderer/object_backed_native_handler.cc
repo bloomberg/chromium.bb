@@ -21,53 +21,9 @@
 namespace extensions {
 
 namespace {
-
-// A wrapper around a handler function that will check if the context is allowed
-// before passing the arguments to the handler function.
-using HandlerFunctionCheck =
-    base::Callback<void(const v8::FunctionCallbackInfo<v8::Value>&,
-                        const v8::Local<v8::Context>&)>;
-
 // Key for the base::Bound routed function.
 const char* kHandlerFunction = "handler_function";
-
-// Checks whether a given |context| has any of the |allowed_features|. This
-// treats an empty |allowed_features| as indicating that any context has access.
-bool IsContextAllowed(const std::vector<std::string>& allowed_features,
-                      const v8::Local<v8::Context>& context) {
-  // We can't access the ScriptContextSet on a worker thread. Luckily, we also
-  // don't inject many bindings into worker threads.
-  // TODO(devlin): Figure out a way around this.
-  if (content::WorkerThread::GetCurrentId() == 0)
-    return true;
-  if (allowed_features.empty())
-    return true;
-  ScriptContext* script_context =
-      ScriptContextSet::GetContextByV8Context(context);
-  // TODO(devlin): Eventually, we should fail if script_context is null.
-  if (!script_context)
-    return true;
-  for (const std::string& feature : allowed_features) {
-    if (script_context->GetAvailability(feature).is_available())
-      return true;
-  }
-
-  return false;
-}
-
-// Checks whether the given |context| has access to any of the necessary
-// |allowed_features| and calls |function|.
-void ValidateAndCall(const ObjectBackedNativeHandler::HandlerFunction& function,
-                     const std::vector<std::string>& allowed_features,
-                     const v8::FunctionCallbackInfo<v8::Value>& args,
-                     const v8::Local<v8::Context>& context) {
-  if (!IsContextAllowed(allowed_features, context)) {
-    NOTREACHED();
-    return;
-  }
-  function.Run(args);
-}
-
+const char* kFeatureName = "feature_name";
 }  // namespace
 
 ObjectBackedNativeHandler::ObjectBackedNativeHandler(ScriptContext* context)
@@ -94,9 +50,12 @@ void ObjectBackedNativeHandler::Router(
   v8::Local<v8::Context> context = isolate->GetCurrentContext();
 
   v8::Local<v8::Value> handler_function_value;
+  v8::Local<v8::Value> feature_name_value;
   // See comment in header file for why we do this.
   if (!GetPrivate(context, data, kHandlerFunction, &handler_function_value) ||
-      handler_function_value->IsUndefined()) {
+      handler_function_value->IsUndefined() ||
+      !GetPrivate(context, data, kFeatureName, &feature_name_value) ||
+      !feature_name_value->IsString()) {
     ScriptContext* script_context =
         ScriptContextSet::GetContextByV8Context(context);
     console::Error(script_context ? script_context->GetRenderFrame() : nullptr,
@@ -104,11 +63,32 @@ void ObjectBackedNativeHandler::Router(
     return;
   }
 
+  // We can't access the ScriptContextSet on a worker thread. Luckily, we also
+  // don't inject many bindings into worker threads.
+  // TODO(devlin): Figure out a way around this.
+  if (content::WorkerThread::GetCurrentId() == 0) {
+    ScriptContext* script_context =
+        ScriptContextSet::GetContextByV8Context(context);
+    v8::Local<v8::String> feature_name_string =
+        feature_name_value->ToString(context).ToLocalChecked();
+    std::string feature_name = *v8::String::Utf8Value(feature_name_string);
+    // TODO(devlin): Eventually, we should fail if either script_context is null
+    // or feature_name is empty.
+    if (script_context && !feature_name.empty()) {
+      Feature::Availability availability =
+          script_context->GetAvailability(feature_name);
+      if (!availability.is_available()) {
+        DVLOG(1) << feature_name
+                 << " is not available: " << availability.message();
+        return;
+      }
+    }
+  }
   // This CHECK is *important*. Otherwise, we'll go around happily executing
   // something random.  See crbug.com/548273.
   CHECK(handler_function_value->IsExternal());
-  static_cast<HandlerFunctionCheck*>(
-      handler_function_value.As<v8::External>()->Value())->Run(args, context);
+  static_cast<HandlerFunction*>(
+      handler_function_value.As<v8::External>()->Value())->Run(args);
 
   // Verify that the return value, if any, is accessible by the context.
   v8::ReturnValue<v8::Value> ret = args.GetReturnValue();
@@ -124,30 +104,25 @@ void ObjectBackedNativeHandler::Router(
 void ObjectBackedNativeHandler::RouteFunction(
     const std::string& name,
     const HandlerFunction& handler_function) {
-  RouteFunction(name, std::vector<std::string>(), handler_function);
+  RouteFunction(name, "", handler_function);
 }
 
 void ObjectBackedNativeHandler::RouteFunction(
     const std::string& name,
     const std::string& feature_name,
     const HandlerFunction& handler_function) {
-  RouteFunction(
-      name, std::vector<std::string>(1, feature_name), handler_function);
-}
-
-void ObjectBackedNativeHandler::RouteFunction(
-    const std::string& name,
-    const std::vector<std::string>& features,
-    const HandlerFunction& handler_function) {
   v8::Isolate* isolate = v8::Isolate::GetCurrent();
   v8::HandleScope handle_scope(isolate);
   v8::Context::Scope context_scope(context_->v8_context());
 
   v8::Local<v8::Object> data = v8::Object::New(isolate);
-  HandlerFunctionCheck check =
-      base::Bind(&ValidateAndCall, handler_function, features);
   SetPrivate(data, kHandlerFunction,
-             v8::External::New(isolate, new HandlerFunctionCheck(check)));
+             v8::External::New(isolate, new HandlerFunction(handler_function)));
+  DCHECK(feature_name.empty() ||
+         ExtensionAPI::GetSharedInstance()->GetFeatureDependency(feature_name))
+      << feature_name;
+  SetPrivate(data, kFeatureName,
+             v8_helpers::ToV8StringUnsafe(isolate, feature_name));
   v8::Local<v8::FunctionTemplate> function_template =
       v8::FunctionTemplate::New(isolate, Router, data);
   v8::Local<v8::ObjectTemplate>::New(isolate, object_template_)

@@ -25,11 +25,8 @@ namespace extensions {
 
 BlobNativeHandler::BlobNativeHandler(ScriptContext* context)
     : ObjectBackedNativeHandler(context) {
-  RouteFunction("GetBlobUuid",
-                std::vector<std::string>({"feedbackPrivate", "mediaGalleries"}),
-                base::Bind(&GetBlobUuid));
+  RouteFunction("GetBlobUuid", base::Bind(&GetBlobUuid));
   RouteFunction("TakeBrowserProcessBlob",
-                std::vector<std::string>({"printerProvider", "mediaGalleries"}),
                 base::Bind(&BlobNativeHandler::TakeBrowserProcessBlob,
                            base::Unretained(this)));
 }

@@ -26,10 +26,7 @@ namespace extensions {
 
 ContextMenusCustomBindings::ContextMenusCustomBindings(ScriptContext* context)
     : ObjectBackedNativeHandler(context) {
-  RouteFunction("GetNextContextMenuId",
-                std::vector<std::string>({"contextMenus",
-                                          "chromeWebViewInternal"}),
-                base::Bind(&GetNextContextMenuId));
+  RouteFunction("GetNextContextMenuId", base::Bind(&GetNextContextMenuId));
 }
 
 }  // extensions
