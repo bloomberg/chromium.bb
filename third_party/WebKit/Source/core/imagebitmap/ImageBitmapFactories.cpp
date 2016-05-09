@@ -231,10 +231,10 @@ void ImageBitmapFactories::ImageBitmapLoader::decodeImageOnDecoderThread(WebTask
     ImageDecoder::AlphaOption alphaOp = ImageDecoder::AlphaPremultiplied;
     if (m_options.premultiplyAlpha() == "none")
         alphaOp = ImageDecoder::AlphaNotPremultiplied;
-    ImageDecoder::GammaAndColorProfileOption colorspaceOp = ImageDecoder::GammaAndColorProfileApplied;
-    if (m_options.colorspaceConversion() == "none")
-        colorspaceOp = ImageDecoder::GammaAndColorProfileIgnored;
-    OwnPtr<ImageDecoder> decoder(ImageDecoder::create(*sharedBuffer, alphaOp, colorspaceOp));
+    ImageDecoder::GammaAndColorProfileOption colorSpaceOp = ImageDecoder::GammaAndColorProfileApplied;
+    if (m_options.colorSpaceConversion() == "none")
+        colorSpaceOp = ImageDecoder::GammaAndColorProfileIgnored;
+    OwnPtr<ImageDecoder> decoder(ImageDecoder::create(*sharedBuffer, alphaOp, colorSpaceOp));
     RefPtr<SkImage> frame;
     if (decoder) {
         decoder->setData(sharedBuffer.get(), true);

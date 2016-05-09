@@ -6,9 +6,9 @@
 
 enum ImageOrientation { "none", "flipY" };
 enum PremultiplyAlpha { "none", "premultiply", "default" };
-enum ColorspaceConversion { "none", "default" };
+enum ColorSpaceConversion { "none", "default" };
 dictionary ImageBitmapOptions {
     ImageOrientation imageOrientation = "none";
     PremultiplyAlpha premultiplyAlpha = "default";
-    ColorspaceConversion colorspaceConversion = "default";
+    ColorSpaceConversion colorSpaceConversion = "default";
 };

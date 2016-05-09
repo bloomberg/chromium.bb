@@ -13,7 +13,7 @@ function checkCanvasRect(buf, x, y, width, height, color, tolerance, bufWidth, r
     }
 }
 
-function runOneIteration(useTexSubImage2D, bindingTarget, program, bitmap, flipY, premultiplyAlpha, retVal, colorspace = 'empty')
+function runOneIteration(useTexSubImage2D, bindingTarget, program, bitmap, flipY, premultiplyAlpha, retVal, colorSpace = 'empty')
 {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     // Enable writes to the RGBA channels
@@ -62,9 +62,9 @@ function runOneIteration(useTexSubImage2D, bindingTarget, program, bitmap, flipY
     var br = premultiplyAlpha ? ((retVal.alpha == 0.5) ? darkGreen : (retVal.alpha == 1) ? greenColor : blackColor) : greenColor;
 
     var blueColor = [0, 0, 255];
-    if (colorspace == 'none') {
+    if (colorSpace == 'none') {
         tl = tr = bl = br = blueColor;
-    } else if (colorspace == 'default' || colorspace == 'notprovided') {
+    } else if (colorSpace == 'default' || colorSpace == 'notprovided') {
         tl = tr = bl = br = redColor;
     }
 
@@ -74,7 +74,7 @@ function runOneIteration(useTexSubImage2D, bindingTarget, program, bitmap, flipY
     }
 
     var tolerance = (retVal.alpha == 0) ? 0 : 2;
-    if (colorspace == 'default' || colorspace == 'none' || colorspace == 'notprovided')
+    if (colorSpace == 'default' || colorSpace == 'none' || colorSpace == 'notprovided')
         tolerance = 13; // For linux and win, the tolerance can be 8.
     for (var tt = 0; tt < targets.length; ++tt) {
         if (bindingTarget == gl.TEXTURE_CUBE_MAP) {
@@ -98,37 +98,37 @@ function runOneIteration(useTexSubImage2D, bindingTarget, program, bitmap, flipY
 
 function runTestOnBindingTarget(bindingTarget, program, bitmaps, retVal) {
     var cases = [
-        { sub: false, bitmap: bitmaps.defaultOption, flipY: false, premultiply: true, colorspace: 'empty' },
-        { sub: true, bitmap: bitmaps.defaultOption, flipY: false, premultiply: true, colorspace: 'empty' },
-        { sub: false, bitmap: bitmaps.noFlipYPremul, flipY: false, premultiply: true, colorspace: 'empty' },
-        { sub: true, bitmap: bitmaps.noFlipYPremul, flipY: false, premultiply: true, colorspace: 'empty' },
-        { sub: false, bitmap: bitmaps.noFlipYDefault, flipY: false, premultiply: true, colorspace: 'empty' },
-        { sub: true, bitmap: bitmaps.noFlipYDefault, flipY: false, premultiply: true, colorspace: 'empty' },
-        { sub: false, bitmap: bitmaps.noFlipYUnpremul, flipY: false, premultiply: false, colorspace: 'empty' },
-        { sub: true, bitmap: bitmaps.noFlipYUnpremul, flipY: false, premultiply: false, colorspace: 'empty' },
-        { sub: false, bitmap: bitmaps.flipYPremul, flipY: true, premultiply: true, colorspace: 'empty' },
-        { sub: true, bitmap: bitmaps.flipYPremul, flipY: true, premultiply: true, colorspace: 'empty' },
-        { sub: false, bitmap: bitmaps.flipYDefault, flipY: true, premultiply: true, colorspace: 'empty' },
-        { sub: true, bitmap: bitmaps.flipYDefault, flipY: true, premultiply: true, colorspace: 'empty' },
-        { sub: false, bitmap: bitmaps.flipYUnpremul, flipY: true, premultiply: false, colorspace: 'empty' },
-        { sub: true, bitmap: bitmaps.flipYUnpremul, flipY: true, premultiply: false, colorspace: 'empty' },
-        { sub: false, bitmap: bitmaps.colorspaceDef, flipY: false, premultiply: true, colorspace: retVal.colorspaceEffect ? 'notprovided' : 'empty' },
-        { sub: true, bitmap: bitmaps.colorspaceDef, flipY: false, premultiply: true, colorspace: retVal.colorspaceEffect ? 'notprovided' : 'empty' },
-        { sub: false, bitmap: bitmaps.colorspaceNone, flipY: false, premultiply: true, colorspace: retVal.colorspaceEffect ? 'none' : 'empty' },
-        { sub: true, bitmap: bitmaps.colorspaceNone, flipY: false, premultiply: true, colorspace: retVal.colorspaceEffect ? 'none' : 'empty' },
-        { sub: false, bitmap: bitmaps.colorspaceDefault, flipY: false, premultiply: true, colorspace: retVal.colorspaceEffect ? 'default' : 'empty' },
-        { sub: true, bitmap: bitmaps.colorspaceDefault, flipY: false, premultiply: true, colorspace: retVal.colorspaceEffect ? 'default' : 'empty' },
+        { sub: false, bitmap: bitmaps.defaultOption, flipY: false, premultiply: true, colorSpace: 'empty' },
+        { sub: true, bitmap: bitmaps.defaultOption, flipY: false, premultiply: true, colorSpace: 'empty' },
+        { sub: false, bitmap: bitmaps.noFlipYPremul, flipY: false, premultiply: true, colorSpace: 'empty' },
+        { sub: true, bitmap: bitmaps.noFlipYPremul, flipY: false, premultiply: true, colorSpace: 'empty' },
+        { sub: false, bitmap: bitmaps.noFlipYDefault, flipY: false, premultiply: true, colorSpace: 'empty' },
+        { sub: true, bitmap: bitmaps.noFlipYDefault, flipY: false, premultiply: true, colorSpace: 'empty' },
+        { sub: false, bitmap: bitmaps.noFlipYUnpremul, flipY: false, premultiply: false, colorSpace: 'empty' },
+        { sub: true, bitmap: bitmaps.noFlipYUnpremul, flipY: false, premultiply: false, colorSpace: 'empty' },
+        { sub: false, bitmap: bitmaps.flipYPremul, flipY: true, premultiply: true, colorSpace: 'empty' },
+        { sub: true, bitmap: bitmaps.flipYPremul, flipY: true, premultiply: true, colorSpace: 'empty' },
+        { sub: false, bitmap: bitmaps.flipYDefault, flipY: true, premultiply: true, colorSpace: 'empty' },
+        { sub: true, bitmap: bitmaps.flipYDefault, flipY: true, premultiply: true, colorSpace: 'empty' },
+        { sub: false, bitmap: bitmaps.flipYUnpremul, flipY: true, premultiply: false, colorSpace: 'empty' },
+        { sub: true, bitmap: bitmaps.flipYUnpremul, flipY: true, premultiply: false, colorSpace: 'empty' },
+        { sub: false, bitmap: bitmaps.colorSpaceDef, flipY: false, premultiply: true, colorSpace: retVal.colorSpaceEffect ? 'notprovided' : 'empty' },
+        { sub: true, bitmap: bitmaps.colorSpaceDef, flipY: false, premultiply: true, colorSpace: retVal.colorSpaceEffect ? 'notprovided' : 'empty' },
+        { sub: false, bitmap: bitmaps.colorSpaceNone, flipY: false, premultiply: true, colorSpace: retVal.colorSpaceEffect ? 'none' : 'empty' },
+        { sub: true, bitmap: bitmaps.colorSpaceNone, flipY: false, premultiply: true, colorSpace: retVal.colorSpaceEffect ? 'none' : 'empty' },
+        { sub: false, bitmap: bitmaps.colorSpaceDefault, flipY: false, premultiply: true, colorSpace: retVal.colorSpaceEffect ? 'default' : 'empty' },
+        { sub: true, bitmap: bitmaps.colorSpaceDefault, flipY: false, premultiply: true, colorSpace: retVal.colorSpaceEffect ? 'default' : 'empty' },
     ];
 
     for (var i in cases) {
         runOneIteration(cases[i].sub, bindingTarget, program, cases[i].bitmap, cases[i].flipY,
-            cases[i].premultiply, retVal, cases[i].colorspace);
+            cases[i].premultiply, retVal, cases[i].colorSpace);
     }
 }
 
-function runTest(bitmaps, alphaVal, colorspaceEffective)
+function runTest(bitmaps, alphaVal, colorSpaceEffective)
 {
-    var retVal = {testPassed: true, alpha: alphaVal, colorspaceEffect: colorspaceEffective};
+    var retVal = {testPassed: true, alpha: alphaVal, colorSpaceEffect: colorSpaceEffective};
     var program = tiu.setupTexturedQuad(gl, internalFormat);
     runTestOnBindingTarget(gl.TEXTURE_2D, program, bitmaps, retVal);
     program = tiu.setupTexturedQuadWithCubeMap(gl, internalFormat);

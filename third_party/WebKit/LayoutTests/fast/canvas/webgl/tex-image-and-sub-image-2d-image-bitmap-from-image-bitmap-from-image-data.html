@@ -59,9 +59,9 @@ function generateTest()
         var p5 = createImageBitmap(bitmap, {imageOrientation: "flipY", premultiplyAlpha: "premultiply"}).then(function(imageBitmap) { bitmaps.flipYPremul = imageBitmap });
         var p6 = createImageBitmap(bitmap, {imageOrientation: "flipY", premultiplyAlpha: "default"}).then(function(imageBitmap) { bitmaps.flipYDefault = imageBitmap });
         var p7 = createImageBitmap(bitmap, {imageOrientation: "flipY", premultiplyAlpha: "none"}).then(function(imageBitmap) { bitmaps.flipYUnpremul = imageBitmap });
-        var p8 = createImageBitmap(bitmap).then(function(imageBitmap) { bitmaps.colorspaceDef = imageBitmap });
-        var p9 = createImageBitmap(bitmap, {colorspaceConversion: "none"}).then(function(imageBitmap) { bitmaps.colorspaceNone = imageBitmap });
-        var p10 = createImageBitmap(bitmap, {colorspaceConversion: "default"}).then(function(imageBitmap) { bitmaps.colorspaceDefault = imageBitmap });
+        var p8 = createImageBitmap(bitmap).then(function(imageBitmap) { bitmaps.colorSpaceDef = imageBitmap });
+        var p9 = createImageBitmap(bitmap, {colorSpaceConversion: "none"}).then(function(imageBitmap) { bitmaps.colorSpaceNone = imageBitmap });
+        var p10 = createImageBitmap(bitmap, {colorSpaceConversion: "default"}).then(function(imageBitmap) { bitmaps.colorSpaceDefault = imageBitmap });
         Promise.all([p1, p2, p3, p4, p5, p6, p7, p8, p9, p10]).then(function() {
             var alphaVal = 0.5;
             var testPassed = runTest(bitmaps, alphaVal, false);

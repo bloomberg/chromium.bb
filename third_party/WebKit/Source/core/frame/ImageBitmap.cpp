@@ -107,7 +107,7 @@ PassRefPtr<SkImage> ImageBitmap::getSkImageFromDecoder(PassOwnPtr<ImageDecoder> 
 // The parameter imageFormat indicates whether the first parameter "image" is unpremultiplied or not.
 // For example, if the image is already in unpremultiplied format and we want the created ImageBitmap
 // in the same format, then we don't need to use the ImageDecoder to decode the image.
-static PassRefPtr<StaticBitmapImage> cropImage(Image* image, const IntRect& cropRect, bool flipY, bool premultiplyAlpha, AlphaDisposition imageFormat = DontPremultiplyAlpha, ImageDecoder::GammaAndColorProfileOption colorspaceOp = ImageDecoder::GammaAndColorProfileApplied)
+static PassRefPtr<StaticBitmapImage> cropImage(Image* image, const IntRect& cropRect, bool flipY, bool premultiplyAlpha, AlphaDisposition imageFormat = DontPremultiplyAlpha, ImageDecoder::GammaAndColorProfileOption colorSpaceOp = ImageDecoder::GammaAndColorProfileApplied)
 {
     ASSERT(image);
 
@@ -124,10 +124,10 @@ static PassRefPtr<StaticBitmapImage> cropImage(Image* image, const IntRect& crop
 
     RefPtr<SkImage> skiaImage = image->imageForCurrentFrame();
     // Attempt to get raw unpremultiplied image data, executed only when skiaImage is premultiplied.
-    if ((((!premultiplyAlpha && !skiaImage->isOpaque()) || !skiaImage) && image->data() && imageFormat == DontPremultiplyAlpha) || colorspaceOp == ImageDecoder::GammaAndColorProfileIgnored) {
+    if ((((!premultiplyAlpha && !skiaImage->isOpaque()) || !skiaImage) && image->data() && imageFormat == DontPremultiplyAlpha) || colorSpaceOp == ImageDecoder::GammaAndColorProfileIgnored) {
         OwnPtr<ImageDecoder> decoder(ImageDecoder::create(*(image->data()),
             premultiplyAlpha ? ImageDecoder::AlphaPremultiplied : ImageDecoder::AlphaNotPremultiplied,
-            colorspaceOp));
+            colorSpaceOp));
         if (!decoder)
             return nullptr;
         decoder->setData(image->data(), true);
@@ -173,7 +173,7 @@ ImageBitmap::ImageBitmap(HTMLImageElement* image, const IntRect& cropRect, Docum
     bool premultiplyAlpha;
     parseOptions(options, flipY, premultiplyAlpha);
 
-    if (options.colorspaceConversion() == "none")
+    if (options.colorSpaceConversion() == "none")
         m_image = cropImage(image->cachedImage()->getImage(), cropRect, flipY, premultiplyAlpha, DontPremultiplyAlpha, ImageDecoder::GammaAndColorProfileIgnored);
     else
         m_image = cropImage(image->cachedImage()->getImage(), cropRect, flipY, premultiplyAlpha, DontPremultiplyAlpha, ImageDecoder::GammaAndColorProfileApplied);
