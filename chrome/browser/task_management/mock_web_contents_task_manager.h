@@ -1,9 +1,9 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_TASK_MANAGEMENT_TASK_MANAGEMENT_BROWSERTEST_UTIL_H_
-#define CHROME_BROWSER_TASK_MANAGEMENT_TASK_MANAGEMENT_BROWSERTEST_UTIL_H_
+#ifndef CHROME_BROWSER_TASK_MANAGEMENT_MOCK_WEB_CONTENTS_TASK_MANAGER_H_
+#define CHROME_BROWSER_TASK_MANAGEMENT_MOCK_WEB_CONTENTS_TASK_MANAGER_H_
 
 #include "base/macros.h"
 #include "chrome/browser/task_management/providers/task_provider_observer.h"
@@ -38,4 +38,4 @@ class MockWebContentsTaskManager : public TaskProviderObserver {
 
 }  // namespace task_management
 
-#endif  // CHROME_BROWSER_TASK_MANAGEMENT_TASK_MANAGEMENT_BROWSERTEST_UTIL_H_
+#endif  // CHROME_BROWSER_TASK_MANAGEMENT_MOCK_WEB_CONTENTS_TASK_MANAGER_H_

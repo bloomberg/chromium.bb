@@ -302,14 +302,12 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticePanel) {
   // Open a new panel to an extension url.
   GURL url(
     "chrome-extension://behllobkkfkfnphdnhnkndlbkcpglgmj/french_sentence.html");
-  Panel* panel = PanelManager::GetInstance()->CreatePanel(
+  Panel* docked_panel = PanelManager::GetInstance()->CreatePanel(
       web_app::GenerateApplicationNameFromExtensionId(
           last_loaded_extension_id()),
-      browser()->profile(),
-      url,
-      nullptr,
-      gfx::Rect(300, 400),
+      browser()->profile(), url, nullptr, gfx::Rect(300, 400),
       PanelManager::CREATE_AS_DOCKED);
+  docked_panel->Show();
 
   // Make sure that a task manager model created after the panel shows the
   // existence of the panel and the extension.
@@ -325,8 +323,31 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticePanel) {
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAboutBlankTab()));
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyTab()));
 
-  // Close the panel and verify that we notice.
-  panel->Close();
+  // Create a second, detached panel.
+  Panel* detached_panel = PanelManager::GetInstance()->CreatePanel(
+      web_app::GenerateApplicationNameFromExtensionId(
+          last_loaded_extension_id()),
+      browser()->profile(), url, nullptr, gfx::Rect(150, 150),
+      PanelManager::CREATE_AS_DETACHED);
+  detached_panel->ShowInactive();
+
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(
+      2, MatchExtension("chrome-extension://behllobkkfkfnphdnhnkndlbkcpglgmj/"
+                        "french_sentence.html")));
+  ASSERT_NO_FATAL_FAILURE(
+      WaitForTaskManagerRows(1, MatchExtension("My extension 1")));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(3, MatchAnyExtension()));
+
+  // Close the panels and verify that we notice.
+  docked_panel->Close();
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(2, MatchAnyExtension()));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(
+      1, MatchExtension("chrome-extension://behllobkkfkfnphdnhnkndlbkcpglgmj/"
+                        "french_sentence.html")));
+  ASSERT_NO_FATAL_FAILURE(
+      WaitForTaskManagerRows(1, MatchExtension("My extension 1")));
+
+  detached_panel->Close();
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyExtension()));
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(
       0,
@@ -364,6 +385,8 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticePanelChanges) {
       nullptr,
       gfx::Rect(300, 400),
       PanelManager::CREATE_AS_DOCKED);
+  panel->ShowInactive();
+
   ASSERT_NO_FATAL_FAILURE(
       WaitForTaskManagerRows(1, MatchExtension("My extension 1")));
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(
@@ -404,14 +427,15 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, KillPanelViaExtensionResource) {
   GURL url(
       "chrome-extension://behllobkkfkfnphdnhnkndlbkcpglgmj/"
       "french_sentence.html");
-  PanelManager::GetInstance()->CreatePanel(
+  Panel* panel = PanelManager::GetInstance()->CreatePanel(
       web_app::GenerateApplicationNameFromExtensionId(
           last_loaded_extension_id()),
       browser()->profile(),
       url,
       nullptr,
       gfx::Rect(300, 400),
-      PanelManager::CREATE_AS_DOCKED);
+      PanelManager::CREATE_AS_DETACHED);
+  panel->Show();
 
   ASSERT_NO_FATAL_FAILURE(
       WaitForTaskManagerRows(1, MatchExtension("My extension 1")));
@@ -447,14 +471,15 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, KillPanelViaPanelResource) {
   GURL url(
       "chrome-extension://behllobkkfkfnphdnhnkndlbkcpglgmj/"
       "french_sentence.html");
-  PanelManager::GetInstance()->CreatePanel(
+  Panel* panel = PanelManager::GetInstance()->CreatePanel(
       web_app::GenerateApplicationNameFromExtensionId(
           last_loaded_extension_id()),
       browser()->profile(),
       url,
       nullptr,
       gfx::Rect(300, 400),
-      PanelManager::CREATE_AS_DOCKED);
+      PanelManager::CREATE_AS_DETACHED);
+  panel->ShowInactive();
 
   ShowTaskManager();
   ASSERT_NO_FATAL_FAILURE(
@@ -474,12 +499,12 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, KillPanelViaPanelResource) {
 
   // Kill the process via the PANEL RESOURCE (not the background page). Verify
   // that both the background page and the panel go away from the task manager.
-  int panel = FindResourceIndex(MatchExtension(
+  int panel_index = FindResourceIndex(MatchExtension(
       "chrome-extension://behllobkkfkfnphdnhnkndlbkcpglgmj/"
       "french_sentence.html"));
-  ASSERT_NE(-1, panel);
-  ASSERT_NE(-1, model()->GetTabId(panel));
-  model()->Kill(panel);
+  ASSERT_NE(-1, panel_index);
+  ASSERT_NE(-1, model()->GetTabId(panel_index));
+  model()->Kill(panel_index);
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(0, MatchAnyExtension()));
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyTab()));
 }

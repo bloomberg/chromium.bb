@@ -6,7 +6,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
-#include "chrome/browser/task_management/task_management_browsertest_util.h"
+#include "chrome/browser/task_management/mock_web_contents_task_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "extensions/browser/test_image_loader.h"
 #include "extensions/common/constants.h"

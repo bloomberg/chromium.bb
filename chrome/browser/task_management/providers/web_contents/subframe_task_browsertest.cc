@@ -4,7 +4,7 @@
 
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/task_management/task_management_browsertest_util.h"
+#include "chrome/browser/task_management/mock_web_contents_task_manager.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"

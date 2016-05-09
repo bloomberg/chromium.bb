@@ -447,6 +447,8 @@
       'browser/sync_file_system/mock_remote_file_sync_service.cc',
       'browser/sync_file_system/mock_remote_file_sync_service.h',
       'browser/tab_contents/view_source_browsertest.cc',
+      'browser/task_management/mock_web_contents_task_manager.cc',
+      'browser/task_management/mock_web_contents_task_manager.h',
       'browser/task_management/providers/web_contents/background_contents_tag_browsertest.cc',
       'browser/task_management/providers/web_contents/devtools_tag_browsertest.cc',
       'browser/task_management/providers/web_contents/extension_tag_browsertest.cc',
