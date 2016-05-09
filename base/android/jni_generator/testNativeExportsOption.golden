@@ -195,18 +195,9 @@ static_cast<jstring>(env->CallStaticObjectMethod(SampleForTests_clazz(env),
 
 // Step 3: RegisterNatives.
 
-static bool RegisterNativesImpl(JNIEnv* env, jclass clazz) {
-
-  base::subtle::Release_Store(&g_SampleForTests_clazz,
-      static_cast<base::subtle::AtomicWord>(env->NewWeakGlobalRef(clazz));
+static bool RegisterNativesImpl(JNIEnv* env) {
 
   return true;
-}
-
-extern "C" JNIEXPORT bool JNICALL
-Java_org_chromium_example_jni_1generator_SampleForTests_nativeInitNativeClass(JNIEnv*
-    env, jclass clazz) {
-  return RegisterNativesImpl(env, clazz);
 }
 
 #endif  // org_chromium_example_jni_generator_SampleForTests_JNI

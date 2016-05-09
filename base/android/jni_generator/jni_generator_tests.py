@@ -37,10 +37,7 @@ class TestOptions(object):
     self.namespace = None
     self.script_name = SCRIPT_NAME
     self.includes = INCLUDES
-    self.pure_native_methods = False
     self.ptr_type = 'long'
-    self.jni_init_native_name = None
-    self.eager_called_by_natives = False
     self.cpp = 'cpp'
     self.javap = 'javap'
     self.native_exports = False
@@ -853,33 +850,6 @@ public class java.util.HashSet {
     self.assertTrue(len(line) > 80,
                     ('Expected #ifndef line to be > 80 chars: ', line))
 
-  def testJarJarRemapping(self):
-    test_data = """
-    package org.chromium.example.jni_generator;
-
-    import org.chromium.example2.Test;
-
-    import org.chromium.example3.PrefixFoo;
-    import org.chromium.example3.Prefix;
-    import org.chromium.example3.Bar$Inner;
-
-    class Example {
-      private static native void nativeTest(Test t);
-      private static native void nativeTest2(PrefixFoo t);
-      private static native void nativeTest3(Prefix t);
-      private static native void nativeTest4(Bar$Inner t);
-    }
-    """
-    jni_generator.JniParams.SetJarJarMappings(
-        """rule org.chromium.example.** com.test.@1
-        rule org.chromium.example2.** org.test2.@1
-        rule org.chromium.example3.Prefix org.test3.Test
-        rule org.chromium.example3.Bar$** org.test3.TestBar$@1""")
-    jni_from_java = jni_generator.JNIFromJavaSource(
-        test_data, 'org/chromium/example/jni_generator/Example', TestOptions())
-    jni_generator.JniParams.SetJarJarMappings('')
-    self.assertGoldenTextEquals(jni_from_java.GetContent())
-
   def testImports(self):
     import_header = """
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
@@ -965,68 +935,6 @@ class Foo {
                                              natives, [], [], test_options)
     self.assertGoldenTextEquals(h.GetContent())
 
-  def testPureNativeMethodsOption(self):
-    test_data = """
-    package org.chromium.example.jni_generator;
-
-    /** The pointer to the native Test. */
-    long nativeTest;
-
-    class Test {
-        private static native long nativeMethod(long nativeTest, int arg1);
-    }
-    """
-    options = TestOptions()
-    options.pure_native_methods = True
-    jni_from_java = jni_generator.JNIFromJavaSource(
-        test_data, 'org/chromium/example/jni_generator/Test', options)
-    self.assertGoldenTextEquals(jni_from_java.GetContent())
-
-  def testJNIInitNativeNameOption(self):
-    test_data = """
-    package org.chromium.example.jni_generator;
-
-    /** The pointer to the native Test. */
-    long nativeTest;
-
-    class Test {
-        private static native boolean nativeInitNativeClass();
-        private static native int nativeMethod(long nativeTest, int arg1);
-    }
-    """
-    options = TestOptions()
-    options.jni_init_native_name = 'nativeInitNativeClass'
-    jni_from_java = jni_generator.JNIFromJavaSource(
-        test_data, 'org/chromium/example/jni_generator/Test', options)
-    self.assertGoldenTextEquals(jni_from_java.GetContent())
-
-  def testEagerCalledByNativesOption(self):
-    test_data = """
-    package org.chromium.example.jni_generator;
-
-    /** The pointer to the native Test. */
-    long nativeTest;
-
-    class Test {
-        private static native boolean nativeInitNativeClass();
-        private static native int nativeMethod(long nativeTest, int arg1);
-        @CalledByNative
-        private void testMethodWithParam(int iParam);
-        @CalledByNative
-        private static int testStaticMethodWithParam(int iParam);
-        @CalledByNative
-        private static double testMethodWithNoParam();
-        @CalledByNative
-        private static String testStaticMethodWithNoParam();
-    }
-    """
-    options = TestOptions()
-    options.jni_init_native_name = 'nativeInitNativeClass'
-    options.eager_called_by_natives = True
-    jni_from_java = jni_generator.JNIFromJavaSource(
-        test_data, 'org/chromium/example/jni_generator/Test', options)
-    self.assertGoldenTextEquals(jni_from_java.GetContent())
-
   def runNativeExportsOption(self, optional):
     test_data = """
     package org.chromium.example.jni_generator;
@@ -1035,7 +943,6 @@ class Foo {
     long nativeTest;
 
     class Test {
-        private static native boolean nativeInitNativeClass();
         private static native int nativeStaticMethod(long nativeTest, int arg1);
         private native int nativeMethod(long nativeTest, int arg1);
         @CalledByNative
@@ -1060,7 +967,6 @@ class Foo {
     }
     """
     options = TestOptions()
-    options.jni_init_native_name = 'nativeInitNativeClass'
     options.native_exports = True
     options.native_exports_optional = optional
     jni_from_java = jni_generator.JNIFromJavaSource(

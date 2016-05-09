@@ -232,11 +232,8 @@ static const JNINativeMethod kMethodsSampleForTests[] = {
     },
 };
 
-static bool RegisterNativesImpl(JNIEnv* env, jclass clazz) {
+static bool RegisterNativesImpl(JNIEnv* env) {
   if (base::android::IsManualJniRegistrationDisabled()) return true;
-
-  base::subtle::Release_Store(&g_SampleForTests_clazz,
-      static_cast<base::subtle::AtomicWord>(env->NewWeakGlobalRef(clazz));
 
   const int kMethodsMyOtherInnerClassSize =
       arraysize(kMethodsMyOtherInnerClass);
@@ -270,12 +267,6 @@ static bool RegisterNativesImpl(JNIEnv* env, jclass clazz) {
   }
 
   return true;
-}
-
-extern "C" JNIEXPORT bool JNICALL
-Java_org_chromium_example_jni_1generator_SampleForTests_nativeInitNativeClass(JNIEnv*
-    env, jclass clazz) {
-  return RegisterNativesImpl(env, clazz);
 }
 
 #endif  // org_chromium_example_jni_generator_SampleForTests_JNI
