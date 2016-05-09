@@ -9,7 +9,7 @@ import page_sets
 from telemetry import benchmark
 
 
-@benchmark.Enabled('android')
+@benchmark.Disabled('all')
 class MemoryMobile(perf_benchmark.PerfBenchmark):
   test = memory.Memory
   page_set = page_sets.MobileMemoryPageSet
