@@ -144,6 +144,20 @@ function test()
     {
         InspectorTest.addResult("MyClass with mixin completions:")
         dumpCompletions(completions, ["myMethod"]);
+        requestObjectCompletions();
+    }
+
+
+    function requestObjectCompletions()
+    {
+        InspectorTest.changeExecutionContext("top");
+        WebInspector.context.flavor(WebInspector.ExecutionContext).completionsForExpression("Object.", "Object.", 0, "", false, checkObjectCompletions.bind(this));
+    }
+
+    function checkObjectCompletions(completions)
+    {
+        InspectorTest.addResult("Object completions:")
+        dumpCompletions(completions, ["getOwnPropertyNames", "getOwnPropertyDescriptor", "keys"]);
         InspectorTest.dumpConsoleMessages();
         InspectorTest.completeTest();
     }

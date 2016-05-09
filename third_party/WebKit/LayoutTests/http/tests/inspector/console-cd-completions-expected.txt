@@ -13,4 +13,8 @@ a
 window.counter = 0
 MyClass with mixin completions:
 myMethod
+Object completions:
+getOwnPropertyNames
+getOwnPropertyDescriptor
+keys
 
