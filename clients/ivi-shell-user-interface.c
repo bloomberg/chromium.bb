@@ -591,6 +591,10 @@ registry_handle_global(void *data, struct wl_registry *registry, uint32_t name,
 			wl_registry_bind(registry, name, &wl_shm_interface, 1);
 		wl_shm_add_listener(p_wlCtx->wlShm, &shm_listenter, p_wlCtx);
 	} else if (!strcmp(interface, "wl_seat")) {
+		/* XXX: should be handling multiple wl_seats */
+		if (p_wlCtx->wlSeat)
+			return;
+
 		p_wlCtx->wlSeat =
 			wl_registry_bind(registry, name, &wl_seat_interface, 1);
 		wl_seat_add_listener(p_wlCtx->wlSeat, &seat_Listener, data);
