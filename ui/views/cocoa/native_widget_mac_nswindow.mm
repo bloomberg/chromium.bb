@@ -12,6 +12,10 @@
 #include "ui/views/widget/native_widget_mac.h"
 #include "ui/views/widget/widget_delegate.h"
 
+@interface NSWindow (Private)
+- (BOOL)hasKeyAppearance;
+@end
+
 @interface NativeWidgetMacNSWindow ()
 - (ViewsNSWindowDelegate*)viewsNSWindowDelegate;
 - (views::Widget*)viewsWidget;
@@ -91,10 +95,10 @@
 }
 
 // Lets the traffic light buttons on the parent window keep their active state.
-- (BOOL)_sharesParentKeyState {
-  // Follow -canBecomeMainWindow unless the window provides its own buttons.
-  return ([self styleMask] & NSClosableWindowMask) == 0 &&
-         ![self canBecomeMainWindow];
+- (BOOL)hasKeyAppearance {
+  if ([self delegate] && [self viewsWidget]->IsAlwaysRenderAsActive())
+    return YES;
+  return [super hasKeyAppearance];
 }
 
 // Override sendEvent to allow key events to be forwarded to a toolkit-views

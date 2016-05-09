@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "ui/base/test/ui_controls.h"
 #import "ui/base/test/windowed_nsnotification_observer.h"
+#include "ui/views/bubble/bubble_dialog_delegate.h"
 #include "ui/views/test/test_widget_observer.h"
 #include "ui/views/test/widget_test.h"
 
@@ -159,6 +160,16 @@ NSData* ViewAsTIFF(NSView* view) {
   return [bitmap TIFFRepresentation];
 }
 
+class TestBubbleView : public BubbleDialogDelegateView {
+ public:
+  explicit TestBubbleView(Widget* parent) {
+    SetAnchorView(parent->GetContentsView());
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestBubbleView);
+};
+
 }  // namespace
 
 // Test that parent windows keep their traffic lights enabled when showing
@@ -176,15 +187,11 @@ TEST_F(NativeWidgetMacInteractiveUITest, ParentWindowTrafficLights) {
   NSData* active_button_image = ViewAsTIFF(button);
   EXPECT_TRUE(active_button_image);
 
-  // Create an activatable frameless child. Frameless so that it doesn't have
-  // traffic lights of its own, and activatable so that it can take key status.
-  Widget* child_widget = new Widget;
-  Widget::InitParams params(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-  params.native_widget = new NativeWidgetMac(child_widget);
-  params.bounds = gfx::Rect(130, 130, 100, 100);
-  params.parent = parent_widget->GetNativeView();
-  child_widget->Init(params);
-  ShowKeyWindow(child_widget);
+  // Pop open a bubble on the parent Widget. When the visibility of Bubbles with
+  // an anchor View changes, BubbleDialogDelegateView::HandleVisibilityChanged()
+  // updates Widget::SetAlwaysRenderAsActive(..) accordingly.
+  ShowKeyWindow(BubbleDialogDelegateView::CreateBubble(
+      new TestBubbleView(parent_widget)));
 
   // Ensure the button instance is still valid.
   EXPECT_EQ(button, [parent standardWindowButton:NSWindowCloseButton]);
@@ -199,6 +206,8 @@ TEST_F(NativeWidgetMacInteractiveUITest, ParentWindowTrafficLights) {
   EXPECT_TRUE([active_button_image isEqualToData:button_image_with_child]);
 
   // Verify that activating some other random window does change the button.
+  // When the bubble loses activation, it will dismiss itself and update
+  // Widget::SetAlwaysRenderAsActive().
   Widget* other_widget = CreateTopLevelPlatformWidget();
   other_widget->SetBounds(gfx::Rect(200, 200, 100, 100));
   ShowKeyWindow(other_widget);
