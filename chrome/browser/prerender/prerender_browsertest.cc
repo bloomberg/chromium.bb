@@ -3081,10 +3081,19 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderFavicon) {
   EXPECT_TRUE(favicon_driver->FaviconIsValid());
 }
 
+// Checks that when prerendered page is swapped in and the referring page
+// neither had set an unload nor it had set a beforeunload handler, the old
+// WebContents will not leak.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderOldWebContentsDeleted) {
+  PrerenderTestURL("/prerender/prerender_page.html", FINAL_STATUS_USED, 1);
+  WebContentsDestructionObserver destruction_observer(GetActiveWebContents());
+  NavigateToDestURL();
+  destruction_observer.Wait();
+}
+
 // Checks that when a prerendered page is swapped in to a referring page, the
 // unload handlers on the referring page are executed and its WebContents is
 // destroyed.
-// TODO(pasko): A similar test for BeforeUnload. See http://crbug.com/600693
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderUnload) {
   // Matches URL in prerender_loader_with_unload.html.
   const GURL unload_url("http://unload-url.test");
@@ -3101,6 +3110,28 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderUnload) {
   WebContentsDestructionObserver destruction_observer(GetActiveWebContents());
   NavigateToDestURL();
   unload_counter.WaitForCount(1);
+  destruction_observer.Wait();
+}
+
+// Checks that a beforeunload handler is executed on the referring page when a
+// prerendered page is swapped in. Also checks that the WebContents of the
+// referring page is destroyed.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderBeforeUnload) {
+  // This URL is requested from prerender_loader_with_beforeunload.html.
+  const GURL beforeunload_url("http://unload-url.test");
+  base::FilePath empty_file = ui_test_utils::GetTestFilePath(
+      base::FilePath(), base::FilePath(FILE_PATH_LITERAL("empty.html")));
+  RequestCounter request_counter;
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&CreateCountingInterceptorOnIO,
+                 beforeunload_url, empty_file, request_counter.AsWeakPtr()));
+
+  set_loader_path("/prerender/prerender_loader_with_beforeunload.html");
+  PrerenderTestURL("/prerender/prerender_page.html", FINAL_STATUS_USED, 1);
+  WebContentsDestructionObserver destruction_observer(GetActiveWebContents());
+  NavigateToDestURL();
+  request_counter.WaitForCount(1);
   destruction_observer.Wait();
 }
 
