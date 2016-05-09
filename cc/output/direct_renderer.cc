@@ -278,10 +278,23 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
 
 gfx::Rect DirectRenderer::ComputeScissorRectForRenderPass(
     const DrawingFrame* frame) {
-  DCHECK(frame->current_render_pass->copy_requests.empty() ||
-         (frame->current_render_pass->damage_rect ==
-          frame->current_render_pass->output_rect));
-  return frame->current_render_pass->damage_rect;
+  gfx::Rect render_pass_scissor = frame->current_render_pass->output_rect;
+
+  if (frame->root_damage_rect == frame->root_render_pass->output_rect ||
+      !frame->current_render_pass->copy_requests.empty())
+    return render_pass_scissor;
+
+  gfx::Transform inverse_transform(gfx::Transform::kSkipInitialization);
+  if (frame->current_render_pass->transform_to_root_target.GetInverse(
+          &inverse_transform)) {
+    // Only intersect inverse-projected damage if the transform is invertible.
+    gfx::Rect damage_rect_in_render_pass_space =
+        MathUtil::ProjectEnclosingClippedRect(inverse_transform,
+                                              frame->root_damage_rect);
+    render_pass_scissor.Intersect(damage_rect_in_render_pass_space);
+  }
+
+  return render_pass_scissor;
 }
 
 bool DirectRenderer::NeedDeviceClip(const DrawingFrame* frame) const {
