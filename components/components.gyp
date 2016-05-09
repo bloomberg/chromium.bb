@@ -122,7 +122,6 @@
         'display_compositor.gypi',
         'domain_reliability.gypi',
         'drive.gypi',
-        'message_port.gypi',
         'navigation_interception.gypi',
         'network_hints.gypi',
         'packed_ct_ev_whitelist.gypi',
