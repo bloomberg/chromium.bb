@@ -171,6 +171,61 @@ std::unique_ptr<device::BluetoothAdvertisement::ServiceData> CreateServiceData(
   return created_data;
 }
 
+bool HasProperty(
+    const std::vector<apibtle::CharacteristicProperty>& api_properties,
+    apibtle::CharacteristicProperty property) {
+  if (find(api_properties.begin(), api_properties.end(), property) !=
+      api_properties.end())
+    return true;
+  return false;
+}
+
+device::BluetoothGattCharacteristic::Properties GetBluetoothProperties(
+    const std::vector<apibtle::CharacteristicProperty>& api_properties) {
+  device::BluetoothGattCharacteristic::Properties properties =
+      device::BluetoothGattCharacteristic::PROPERTY_NONE;
+
+  static_assert(
+      apibtle::CHARACTERISTIC_PROPERTY_LAST == 10,
+      "Update required if the number of characteristic properties changes.");
+
+  if (HasProperty(api_properties, apibtle::CHARACTERISTIC_PROPERTY_BROADCAST))
+    properties |= device::BluetoothGattCharacteristic::PROPERTY_BROADCAST;
+
+  if (HasProperty(api_properties, apibtle::CHARACTERISTIC_PROPERTY_READ))
+    properties |= device::BluetoothGattCharacteristic::PROPERTY_READ;
+  if (HasProperty(api_properties,
+                  apibtle::CHARACTERISTIC_PROPERTY_WRITEWITHOUTRESPONSE))
+    properties |=
+        device::BluetoothGattCharacteristic::PROPERTY_WRITE_WITHOUT_RESPONSE;
+  if (HasProperty(api_properties, apibtle::CHARACTERISTIC_PROPERTY_WRITE))
+    properties |= device::BluetoothGattCharacteristic::PROPERTY_WRITE;
+
+  if (HasProperty(api_properties, apibtle::CHARACTERISTIC_PROPERTY_NOTIFY))
+    properties |= device::BluetoothGattCharacteristic::PROPERTY_NOTIFY;
+
+  if (HasProperty(api_properties, apibtle::CHARACTERISTIC_PROPERTY_INDICATE))
+    properties |= device::BluetoothGattCharacteristic::PROPERTY_INDICATE;
+
+  if (HasProperty(api_properties,
+                  apibtle::CHARACTERISTIC_PROPERTY_AUTHENTICATEDSIGNEDWRITES))
+    properties |= device::BluetoothGattCharacteristic::
+        PROPERTY_AUTHENTICATED_SIGNED_WRITES;
+  if (HasProperty(api_properties,
+                  apibtle::CHARACTERISTIC_PROPERTY_EXTENDEDPROPERTIES))
+    properties |=
+        device::BluetoothGattCharacteristic::PROPERTY_EXTENDED_PROPERTIES;
+  if (HasProperty(api_properties,
+                  apibtle::CHARACTERISTIC_PROPERTY_RELIABLEWRITE))
+    properties |= device::BluetoothGattCharacteristic::PROPERTY_RELIABLE_WRITE;
+  if (HasProperty(api_properties,
+                  apibtle::CHARACTERISTIC_PROPERTY_WRITABLEAUXILIARIES))
+    properties |=
+        device::BluetoothGattCharacteristic::PROPERTY_WRITABLE_AUXILIARIES;
+
+  return properties;
+}
+
 }  // namespace
 
 
@@ -1180,7 +1235,7 @@ void BluetoothLowEnergyCreateCharacteristicFunction::DoWork() {
   base::WeakPtr<device::BluetoothLocalGattCharacteristic> characteristic =
       device::BluetoothLocalGattCharacteristic::Create(
           device::BluetoothUUID(params_->characteristic.uuid),
-          device::BluetoothGattCharacteristic::Properties(),
+          GetBluetoothProperties(params_->characteristic.properties),
           device::BluetoothGattCharacteristic::Permissions(), service);
 
   // Keep a track of this characteristic so we can look it up later if a
