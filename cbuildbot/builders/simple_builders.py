@@ -399,7 +399,7 @@ class DistributedBuilder(SimpleBuilder):
     """
     return self._completion_stage
 
-  def Publish(self, was_build_successful, build_finished):
+  def Complete(self, was_build_successful, build_finished):
     """Completes build by publishing any required information.
 
     Args:
@@ -415,16 +415,53 @@ class DistributedBuilder(SimpleBuilder):
     try:
       completion_stage.Run()
       completion_successful = True
-      if (self._run.config.afdo_update_ebuild and
+    finally:
+      self._Publish(was_build_successful, build_finished, completion_successful)
+
+  def _Publish(self, was_build_successful, build_finished,
+               completion_successful):
+    """Updates and publishes uprevs.
+
+    Args:
+      was_build_successful: Whether the build succeeded.
+      build_finished: Whether the build completed. A build can be successful
+        without completing if it exits early with sys.exit(0).
+      completion_successful: Whether the compeletion_stage succeeded.
+    """
+    is_master_chrome_pfq = (self._run.config.master and
+                            self._run.config.build_type ==
+                            constants.CHROME_PFQ_TYPE)
+
+    updateEbuild_successful = False
+    try:
+      # When (afdo_update_ebuild and not afdo_generate_min) is True,
+      # if completion_stage passed, need to run AFDOUpdateEbuildStage to
+      # prepare for pushing commits to masters;
+      # if it's a master_chrome_pfq build and compeletion_stage failed,
+      # need to run AFDOUpdateEbuildStage to prepare for pushing commits
+      # to a temporary branch.
+      if ((completion_successful or is_master_chrome_pfq) and
+          self._run.config.afdo_update_ebuild and
           not self._run.config.afdo_generate_min):
         self._RunStage(afdo_stages.AFDOUpdateEbuildStage)
+        updateEbuild_successful = True
     finally:
       if self._run.config.master:
         self._RunStage(report_stages.SlaveFailureSummaryStage)
       if self._run.config.push_overlays:
         publish = (was_build_successful and completion_successful and
                    build_finished)
-        self._RunStage(completion_stages.PublishUprevChangesStage, publish)
+        # If this build is master chrome pfq, completion_stage failed,
+        # AFDOUpdateEbuildStage passed, and the necessary build stages
+        # passed, it means publish is False and we need to push the commits
+        # to a temporary branch.
+        temp_publish = (is_master_chrome_pfq and
+                        not completion_successful and
+                        updateEbuild_successful and
+                        was_build_successful and
+                        build_finished)
+        self._RunStage(completion_stages.PublishUprevChangesStage, publish,
+                       temp_publish)
 
   def RunStages(self):
     """Runs simple builder logic and publishes information to overlays."""
@@ -442,4 +479,4 @@ class DistributedBuilder(SimpleBuilder):
         was_build_successful = True
       raise
     finally:
-      self.Publish(was_build_successful, build_finished)
+      self.Complete(was_build_successful, build_finished)

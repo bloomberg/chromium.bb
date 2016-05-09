@@ -837,15 +837,19 @@ class PreCQCompletionStage(generic_stages.BuilderStage):
 class PublishUprevChangesStage(generic_stages.BuilderStage):
   """Makes uprev changes from pfq live for developers."""
 
-  def __init__(self, builder_run, success, **kwargs):
+  def __init__(self, builder_run, success, temp_publish=False, **kwargs):
     """Constructor.
 
     Args:
       builder_run: BuilderRun object.
       success: Boolean indicating whether the build succeeded.
+      temp_publish: Indicating whether to push changes to a temp branch,
+                    default to False.
+                    This is not yet implemented, will include in CL:343573.
     """
     super(PublishUprevChangesStage, self).__init__(builder_run, **kwargs)
     self.success = success
+    self.temp_publish = temp_publish
 
   def PerformStage(self):
     overlays, push_overlays = self._ExtractOverlays()
