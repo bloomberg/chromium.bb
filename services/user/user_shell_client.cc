@@ -92,7 +92,6 @@ UserShellClient::~UserShellClient() {
 void UserShellClient::Initialize(shell::Connector* connector,
                                  const shell::Identity& identity,
                                  uint32_t id) {
-  tracing_.Initialize(connector, identity.name());
   user_objects_.reset(new UserShellClient::UserServiceObjects(
       GetUserDirForUserID(identity.user_id())));
   leveldb_objects_.reset(

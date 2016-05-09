@@ -11,7 +11,6 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/shell/public/cpp/interface_factory.h"
 #include "services/shell/public/cpp/shell_client.h"
-#include "services/tracing/public/cpp/tracing_impl.h"
 #include "services/user/public/interfaces/user_service.mojom.h"
 
 namespace user_service {
@@ -52,8 +51,6 @@ class UserShellClient
 
   scoped_refptr<base::SingleThreadTaskRunner> user_service_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> leveldb_service_runner_;
-
-  mojo::TracingImpl tracing_;
 
   // We create these two objects so we can delete them on the correct task
   // runners.
