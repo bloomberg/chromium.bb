@@ -519,8 +519,8 @@
       'V8 Linux GN': 'gn_release_bot',
       'V8-Blink Linux 64': 'noswarming_gn_release_bot_x64',
       'V8-Blink Linux 64 (dbg)': 'noswarming_gn_debug_bot_x64',
-      'V8-Blink Mac': 'noswarming_gn_release_bot_x64',
-      'V8-Blink Win': 'noswarming_gn_release_bot_minimal_symbols_x86',
+      'V8-Blink Mac': 'noswarming_gyp_release_bot_x64',
+      'V8-Blink Win': 'noswarming_gyp_release_bot_minimal_symbols_x86',
     },
 
     'chromium.webkit': {
@@ -533,14 +533,14 @@
       'WebKit Linux Trusty': 'swarming_gn_release_bot',
       'WebKit Linux': 'swarming_gn_release_bot',
       'WebKit Mac Builder (dbg)': 'swarming_gyp_debug_bot',
-      'WebKit Mac Builder': 'swarming_gn_release_bot',
+      'WebKit Mac Builder': 'swarming_gyp_release_bot',
       'WebKit Mac10.10': 'none',
       'WebKit Mac10.11 (dbg)': 'none',
-      'WebKit Mac10.11 (retina)': 'swarming_gn_release_bot',
+      'WebKit Mac10.11 (retina)': 'swarming_gyp_release_bot',
       'WebKit Mac10.11': 'none',
-      'WebKit Mac10.9': 'swarming_gn_release_bot',
-      'WebKit Win Builder (dbg)': 'swarming_gn_debug_bot_minimal_symbols_x86',
-      'WebKit Win Builder': 'swarming_gn_release_bot_minimal_symbols_x86',
+      'WebKit Mac10.9': 'swarming_gyp_release_bot',
+      'WebKit Win Builder (dbg)': 'swarming_gyp_debug_bot_minimal_symbols_x86',
+      'WebKit Win Builder': 'swarming_gyp_release_bot_minimal_symbols_x86',
       'WebKit Win x64 Builder (dbg)':
         'swarming_gn_debug_bot_minimal_symbols_x64',
       'WebKit Win x64 Builder': 'swarming_gn_release_bot_minimal_symbols_x64',
@@ -551,9 +551,9 @@
 
     'chromium.webrtc.fyi': {
       'Android Builder (dbg)':
-        'android_blink_logging_gn_debug_static_bot',
+        'android_blink_logging_gyp_debug_static_bot',
       'Android Builder ARM64 (dbg)':
-        'android_blink_logging_gn_debug_static_bot_arm64',
+        'android_blink_logging_gyp_debug_static_bot_arm64',
       'Android GN (dbg)': 'android_gn_debug_bot',
       'Android GN': 'android_gn_release_bot',
       'Android Tests (dbg) (K Nexus5)': 'none',
@@ -563,11 +563,11 @@
       'Android Tests (dbg) (L Nexus9)': 'none',
       'Linux Builder': 'gn_release_bot_chrome_with_codecs',
       'Linux Tester': 'none',
-      'Mac Builder': 'chrome_with_codecs_blink_logging_gn_release_trybot',
+      'Mac Builder': 'chrome_with_codecs_blink_logging_gyp_release_trybot',
       'Mac GN (dbg)': 'gn_debug_static_bot_chrome_with_codecs',
       'Mac GN': 'gn_release_bot_chrome_with_codecs',
       'Mac Tester': 'none',
-      'Win Builder': 'chrome_with_codecs_blink_logging_gn_release_trybot_x86',
+      'Win Builder': 'chrome_with_codecs_blink_logging_gyp_release_trybot_x86',
       'Win x64 GN (dbg)': 'gn_debug_bot_minimal_symbols_chrome_with_codecs',
       'Win x64 GN': 'gn_release_bot_minimal_symbols_chrome_with_codecs',
       'Win10 Tester': 'none',
@@ -627,13 +627,13 @@
       'linux_blink_dbg': 'swarming_gn_debug_trybot',
       'linux_blink_rel': 'swarming_gn_release_bot_minimal_symbols',
       'mac_blink_compile_dbg': 'swarming_gyp_debug_trybot',
-      'mac_blink_compile_rel': 'swarming_gn_release_bot_minimal_symbols',
+      'mac_blink_compile_rel': 'swarming_gyp_release_bot_minimal_symbols',
       'mac_blink_dbg': 'swarming_gyp_debug_trybot',
-      'mac_blink_rel': 'swarming_gn_release_bot_minimal_symbols',
-      'win_blink_compile_dbg': 'swarming_gn_debug_trybot_x86',
-      'win_blink_compile_rel': 'swarming_gn_release_bot_minimal_symbols_x86',
-      'win_blink_dbg': 'swarming_gn_debug_trybot_x86',
-      'win_blink_rel': 'swarming_gn_release_bot_minimal_symbols_x86',
+      'mac_blink_rel': 'swarming_gyp_release_bot_minimal_symbols',
+      'win_blink_compile_dbg': 'swarming_gyp_debug_trybot_x86',
+      'win_blink_compile_rel': 'swarming_gyp_release_bot_minimal_symbols_x86',
+      'win_blink_dbg': 'swarming_gyp_debug_trybot_x86',
+      'win_blink_rel': 'swarming_gyp_release_bot_minimal_symbols_x86',
     },
 
     'tryserver.chromium.android': {
@@ -875,12 +875,12 @@
       'android', 'asan', 'gn', 'clang', 'shared', 'debug', 'minimal_symbols',
     ],
 
-    'android_blink_logging_gn_debug_static_bot': [
-      'android', 'blink_logging', 'gn', 'debug_static_bot',
+    'android_blink_logging_gyp_debug_static_bot': [
+      'android', 'blink_logging', 'gyp', 'debug_static_bot',
     ],
 
-    'android_blink_logging_gn_debug_static_bot_arm64': [
-      'android', 'blink_logging', 'gn', 'debug_static_bot', 'arm64',
+    'android_blink_logging_gyp_debug_static_bot_arm64': [
+      'android', 'blink_logging', 'gyp', 'debug_static_bot', 'arm64',
     ],
 
     'android_cast_gn_debug_static_bot': [
@@ -1018,12 +1018,12 @@
       'cast', 'gn', 'release_trybot',
     ],
 
-    'chrome_with_codecs_blink_logging_gn_release_trybot': [
-      'chrome_with_codecs', 'blink_logging', 'gn', 'release_trybot',
+    'chrome_with_codecs_blink_logging_gyp_release_trybot': [
+      'chrome_with_codecs', 'blink_logging', 'gyp', 'release_trybot',
     ],
 
-    'chrome_with_codecs_blink_logging_gn_release_trybot_x86': [
-      'chrome_with_codecs', 'blink_logging', 'gn', 'release_trybot', 'x86',
+    'chrome_with_codecs_blink_logging_gyp_release_trybot_x86': [
+      'chrome_with_codecs', 'blink_logging', 'gyp', 'release_trybot', 'x86',
     ],
 
     'chromeos_gn_debug_bot': [
@@ -1397,10 +1397,6 @@
       'noswarming', 'gn', 'release_bot', 'minimal_symbols', 'x64',
     ],
 
-    'noswarming_gn_release_bot_minimal_symbols_x86': [
-      'noswarming', 'gn', 'release_bot', 'minimal_symbols', 'x86',
-    ],
-
     'noswarming_gn_release_bot_x64': [
       'noswarming', 'gn', 'release_bot', 'x64',
     ],
@@ -1411,6 +1407,10 @@
 
     'noswarming_gyp_release_bot_minimal_symbols_x86': [
       'noswarming', 'gyp', 'release_bot', 'minimal_symbols', 'x86',
+    ],
+
+    'noswarming_gyp_release_bot_x64': [
+      'noswarming', 'gyp', 'release_bot', 'x64',
     ],
 
     'noswarming_gyp_release_trybot': [
@@ -1509,10 +1509,6 @@
       'swarming', 'gn', 'debug_bot_minimal_symbols', 'x64',
     ],
 
-    'swarming_gn_debug_bot_minimal_symbols_x86': [
-      'swarming', 'gn', 'debug_bot_minimal_symbols', 'x86',
-    ],
-
     'swarming_gn_debug_trybot': [
       'swarming', 'gn', 'debug_trybot',
     ],
@@ -1539,10 +1535,6 @@
 
     'swarming_gn_release_bot_minimal_symbols_x64': [
       'swarming', 'gn', 'release_bot_minimal_symbols', 'x64',
-    ],
-
-    'swarming_gn_release_bot_minimal_symbols_x86': [
-      'swarming', 'gn', 'release_bot_minimal_symbols', 'x86',
     ],
 
     'swarming_gn_release_bot_x64': [
@@ -1800,6 +1792,14 @@
 
     'swarming_gyp_msan_release_bot': [
       'swarming', 'gyp', 'msan', 'release_bot',
+    ],
+
+    'swarming_gyp_release_bot': [
+      'swarming', 'gyp', 'release_bot',
+    ],
+
+    'swarming_gyp_release_bot_minimal_symbols': [
+      'swarming', 'gyp', 'release_bot_minimal_symbols',
     ],
 
     'swarming_gyp_release_bot_minimal_symbols_x86': [
