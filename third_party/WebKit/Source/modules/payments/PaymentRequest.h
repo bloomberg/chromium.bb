@@ -31,7 +31,7 @@ class ScriptPromiseResolver;
 class ScriptState;
 class ShippingAddress;
 
-class MODULES_EXPORT PaymentRequest final : public EventTargetWithInlineData, WTF_NON_EXPORTED_BASE(public mojom::blink::PaymentRequestClient), public PaymentCompleter, public PaymentUpdater, public ContextLifecycleObserver {
+class MODULES_EXPORT PaymentRequest final : public EventTargetWithInlineData, WTF_NON_EXPORTED_BASE(public mojom::blink::PaymentRequestClient), public PaymentCompleter, public PaymentUpdater, public ContextLifecycleObserver, public ActiveScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
     USING_GARBAGE_COLLECTED_MIXIN(PaymentRequest)
     WTF_MAKE_NONCOPYABLE(PaymentRequest);
@@ -71,6 +71,9 @@ private:
     // LifecycleObserver:
     void contextDestroyed() override;
 
+    // ActiveScriptWrappable:
+    bool hasPendingActivity() const override;
+
     // mojom::blink::PaymentRequestClient:
     void OnShippingAddressChange(mojom::blink::ShippingAddressPtr) override;
     void OnShippingOptionChange(const String& shippingOptionId) override;
@@ -78,7 +81,8 @@ private:
     void OnError() override;
     void OnComplete() override;
 
-    void stopResolversAndCloseMojoConnection();
+    // Clears the promise resolvers and closes the Mojo connection.
+    void clearResolversAndCloseMojoConnection();
 
     Vector<String> m_supportedMethods;
     PaymentDetails m_details;
