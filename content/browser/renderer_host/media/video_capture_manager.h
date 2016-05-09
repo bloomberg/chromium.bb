@@ -156,6 +156,11 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
   scoped_refptr<base::SingleThreadTaskRunner>& device_task_runner() {
     return device_task_runner_;
   }
+
+  bool TakePhoto(int session_id,
+                 const media::VideoCaptureDevice::TakePhotoCallback&
+                     photo_callback) WARN_UNUSED_RESULT;
+
  private:
   class DeviceEntry;
 

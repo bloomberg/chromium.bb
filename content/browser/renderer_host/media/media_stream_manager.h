@@ -177,6 +177,10 @@ class CONTENT_EXPORT MediaStreamManager
                                    const std::string& source_id,
                                    std::string* device_id) const;
 
+  // Find |device_id| in the list of |requests_|, and returns its session id,
+  // or StreamDeviceInfo::kNoId if not found.
+  int VideoDeviceIdToSessionId(const std::string& device_id) const;
+
   // Called by UI to make sure the device monitor is started so that UI receive
   // notifications about device changes.
   void EnsureDeviceMonitorStarted();

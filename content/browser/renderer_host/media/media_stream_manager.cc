@@ -597,6 +597,21 @@ void MediaStreamManager::StopStreamDevice(int render_process_id,
   }
 }
 
+int MediaStreamManager::VideoDeviceIdToSessionId(
+    const std::string& device_id) const {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  for (const LabeledDeviceRequest& device_request : requests_) {
+    for (const StreamDeviceInfo& info : device_request.second->devices) {
+      if (info.device.id == device_id) {
+        DCHECK_EQ(MEDIA_DEVICE_VIDEO_CAPTURE, info.device.type);
+        return info.session_id;
+      }
+    }
+  }
+  return StreamDeviceInfo::kNoId;
+}
+
 void MediaStreamManager::StopDevice(MediaStreamType type, int session_id) {
   DVLOG(1) << "StopDevice"
            << "{type = " << type << "}"

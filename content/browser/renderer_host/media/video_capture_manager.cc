@@ -840,6 +840,21 @@ void VideoCaptureManager::MaybePostDesktopCaptureWindowId(
   notification_window_ids_.erase(window_id_it);
 }
 
+bool VideoCaptureManager::TakePhoto(
+    int session_id,
+    const media::VideoCaptureDevice::TakePhotoCallback& photo_callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  SessionMap::const_iterator session_it = sessions_.find(session_id);
+  if (session_it == sessions_.end())
+    return false;
+
+  DeviceEntry* const device_info =
+      GetDeviceEntryForMediaStreamDevice(session_it->second);
+  if (!device_info)
+    return false;
+  return device_info->video_capture_device()->TakePhoto(photo_callback);
+}
+
 void VideoCaptureManager::DoStopDeviceOnDeviceThread(
     std::unique_ptr<media::VideoCaptureDevice> device) {
   SCOPED_UMA_HISTOGRAM_TIMER("Media.VideoCaptureManager.StopDeviceTime");

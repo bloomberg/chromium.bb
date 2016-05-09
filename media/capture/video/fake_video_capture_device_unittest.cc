@@ -132,6 +132,28 @@ class DeviceEnumerationListener
   virtual ~DeviceEnumerationListener() {}
 };
 
+class PhotoTakenListener : public base::RefCounted<PhotoTakenListener> {
+ public:
+  MOCK_METHOD0(OnCorrectPhotoTaken, void(void));
+  // GMock doesn't support move-only arguments, so we use this forward method.
+  void DoOnPhotoTaken(const std::string& mime_type,
+                      std::unique_ptr<std::vector<uint8_t>> data) {
+    // Only PNG images are supported right now.
+    EXPECT_STREQ("image/png", mime_type.c_str());
+    // Not worth decoding the incoming data. Just check that the header is PNG.
+    // http://www.libpng.org/pub/png/spec/1.2/PNG-Rationale.html#R.PNG-file-signature
+    ASSERT_GT(data->size(), 4u);
+    EXPECT_EQ('P', data->data()[1]);
+    EXPECT_EQ('N', data->data()[2]);
+    EXPECT_EQ('G', data->data()[3]);
+    OnCorrectPhotoTaken();
+  }
+
+ private:
+  friend class base::RefCounted<PhotoTakenListener>;
+  virtual ~PhotoTakenListener() {}
+};
+
 }  // namespace
 
 class FakeVideoCaptureDeviceBase : public ::testing::Test {
@@ -141,9 +163,9 @@ class FakeVideoCaptureDeviceBase : public ::testing::Test {
         client_(new MockClient(
             base::Bind(&FakeVideoCaptureDeviceBase::OnFrameCaptured,
                        base::Unretained(this)))),
-        video_capture_device_factory_(new FakeVideoCaptureDeviceFactory()) {
-    device_enumeration_listener_ = new DeviceEnumerationListener();
-  }
+        device_enumeration_listener_(new DeviceEnumerationListener()),
+        photo_taken_listener_(new PhotoTakenListener()),
+        video_capture_device_factory_(new FakeVideoCaptureDeviceFactory()) {}
 
   void SetUp() override { EXPECT_CALL(*client_, OnError(_, _)).Times(0); }
 
@@ -175,7 +197,8 @@ class FakeVideoCaptureDeviceBase : public ::testing::Test {
   const std::unique_ptr<base::MessageLoop> loop_;
   std::unique_ptr<base::RunLoop> run_loop_;
   std::unique_ptr<MockClient> client_;
-  scoped_refptr<DeviceEnumerationListener> device_enumeration_listener_;
+  const scoped_refptr<DeviceEnumerationListener> device_enumeration_listener_;
+  const scoped_refptr<PhotoTakenListener> photo_taken_listener_;
   VideoCaptureFormat last_format_;
   const std::unique_ptr<VideoCaptureDeviceFactory>
       video_capture_device_factory_;
@@ -250,6 +273,26 @@ TEST_F(FakeVideoCaptureDeviceTest, GetDeviceSupportedFormats) {
     EXPECT_EQ(supported_formats[3].pixel_format, PIXEL_FORMAT_I420);
     EXPECT_GE(supported_formats[3].frame_rate, 20.0);
   }
+}
+
+TEST_F(FakeVideoCaptureDeviceTest, TakePhoto) {
+  std::unique_ptr<VideoCaptureDevice> device(new FakeVideoCaptureDevice(
+      FakeVideoCaptureDevice::BufferOwnership::OWN_BUFFERS, 30.0));
+  ASSERT_TRUE(device);
+
+  VideoCaptureParams capture_params;
+  capture_params.requested_format.frame_size.SetSize(640, 480);
+  capture_params.requested_format.frame_rate = 30.0;
+  device->AllocateAndStart(capture_params, std::move(client_));
+
+  const VideoCaptureDevice::TakePhotoCallback photo_callback =
+      base::Bind(&PhotoTakenListener::DoOnPhotoTaken, photo_taken_listener_);
+  EXPECT_CALL(*photo_taken_listener_.get(), OnCorrectPhotoTaken()).Times(1);
+  ASSERT_TRUE(device->TakePhoto(photo_callback));
+
+  run_loop_.reset(new base::RunLoop());
+  run_loop_->Run();
+  device->StopAndDeAllocate();
 }
 
 TEST_P(FakeVideoCaptureDeviceCommandLineTest, FrameRate) {

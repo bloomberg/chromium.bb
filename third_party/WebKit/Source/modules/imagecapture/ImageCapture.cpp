@@ -142,9 +142,12 @@ void ImageCapture::onTakePhoto(ScriptPromiseResolver* resolver, const String& mi
     if (!m_serviceRequests.contains(resolver))
         return;
 
-    DCHECK(!data.is_null());
-    const auto& storage = data.storage();
-    resolver->resolve(Blob::create(storage.data(), storage.size(), mimeType));
+    if (data.is_null() || data.empty()) {
+        resolver->reject(DOMException::create(UnknownError, "platform error"));
+    } else {
+        const auto& storage = data.storage();
+        resolver->resolve(Blob::create(storage.data(), storage.size(), mimeType));
+    }
     m_serviceRequests.remove(resolver);
 }
 

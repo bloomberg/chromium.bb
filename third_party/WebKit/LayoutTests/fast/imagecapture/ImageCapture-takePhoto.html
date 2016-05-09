@@ -20,12 +20,14 @@ var test = async_test(function() {
 
   capturer.takePhoto()
     .then(blob => {
-      assert_true(blob.type.length > 0);
-      assert_true(blob.size > 0);
-      this.done();
+      assert_unreached('takePhoto() should not have been resolved');
     })
     .catch(error => {
-      assert_unreached('Error during takePhoto(): '+ error);
+      // LayoutTests do not have a real or a fake camera whatsoever, so content
+      // will not find a matching device for the Track's source id, and the
+      // promise will be rejected.
+      // TODO(mcasas): Revisit all this when https://crbug.com/610333 is solved.
+      this.done();
     });
 }, 'exercises the ImageCapture API takePhoto().');
 

@@ -299,6 +299,16 @@ class MEDIA_EXPORT VideoCaptureDevice {
   // happens first.
   virtual void StopAndDeAllocate() = 0;
 
+  // Asynchronously takes a photo, possibly reconfiguring the capture objects
+  // and/or interrupting the capture flow. Returns false if taking the picture
+  // could not be scheduled at all, or else runs |photo_callback| (on the thread
+  // where TakePhoto() is run).
+  using TakePhotoCallback =
+      base::Callback<void(const std::string&,
+                          std::unique_ptr<std::vector<uint8_t>>)>;
+  virtual bool TakePhoto(const TakePhotoCallback& photo_callback)
+      WARN_UNUSED_RESULT;
+
   // Gets the power line frequency, either from the params if specified by the
   // user or from the current system time zone.
   PowerLineFrequency GetPowerLineFrequency(

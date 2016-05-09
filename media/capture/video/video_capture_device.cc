@@ -141,6 +141,11 @@ VideoCaptureDevice::Client::Buffer::~Buffer() {
 VideoCaptureDevice::~VideoCaptureDevice() {
 }
 
+bool VideoCaptureDevice::TakePhoto(const TakePhotoCallback& photo_callback) {
+  NOTIMPLEMENTED();
+  return false;
+}
+
 PowerLineFrequency VideoCaptureDevice::GetPowerLineFrequencyForLocation()
     const {
   const std::string current_country = base::CountryCodeForCurrentTimezone();

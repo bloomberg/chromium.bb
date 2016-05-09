@@ -15,6 +15,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPaint.h"
+#include "ui/gfx/codec/png_codec.h"
 
 namespace media {
 
@@ -70,6 +71,29 @@ void DrawPacman(bool use_argb,
                          milliseconds, frame_count);
   canvas.scale(3, 3);
   canvas.drawText(time_string.data(), time_string.length(), 30, 20, paint);
+}
+
+// Creates a PNG-encoded frame and sends it back to |callback|. The other
+// parameters are used to replicate the PacMan rendering.
+void DoTakeFakePhoto(const VideoCaptureDevice::TakePhotoCallback& callback,
+                     const VideoCaptureFormat& capture_format,
+                     base::TimeDelta elapsed_time,
+                     float fake_capture_rate) {
+  std::unique_ptr<uint8_t[]> buffer(new uint8_t[VideoFrame::AllocationSize(
+      PIXEL_FORMAT_ARGB, capture_format.frame_size)]);
+
+  DrawPacman(true /* use_argb */, buffer.get(), elapsed_time, fake_capture_rate,
+             capture_format.frame_size);
+
+  std::unique_ptr<std::vector<uint8_t>> encoded_data(
+      new std::vector<uint8_t>());
+  const bool result = gfx::PNGCodec::Encode(
+      buffer.get(), gfx::PNGCodec::FORMAT_RGBA, capture_format.frame_size,
+      capture_format.frame_size.width() * 4, true /* discard_transparency */,
+      std::vector<gfx::PNGCodec::Comment>(), encoded_data.get());
+  DCHECK(result);
+
+  callback.Run("image/png", std::move(encoded_data));
 }
 
 FakeVideoCaptureDevice::FakeVideoCaptureDevice(BufferOwnership buffer_ownership,
@@ -135,6 +159,14 @@ void FakeVideoCaptureDevice::AllocateAndStart(
 void FakeVideoCaptureDevice::StopAndDeAllocate() {
   DCHECK(thread_checker_.CalledOnValidThread());
   client_.reset();
+}
+
+bool FakeVideoCaptureDevice::TakePhoto(
+    const TakePhotoCallback& photo_callback) {
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE, base::Bind(&DoTakeFakePhoto, photo_callback, capture_format_,
+                            elapsed_time_, fake_capture_rate_));
+  return true;
 }
 
 void FakeVideoCaptureDevice::CaptureUsingOwnBuffers(
