@@ -21,12 +21,10 @@ const v8::FunctionCallbackInfo<v8::Value>& info
     {% if not attribute.is_static %}
     {% if attribute.is_lenient_this %}
     {# Make sure that info.Holder() really points to an instance if [LenientThis]. #}
-    v8::Local<v8::Object> holder = {{v8_class}}::findInstanceInPrototypeChain(info.This(), info.GetIsolate());
-    if (holder.IsEmpty())
+    if (!{{v8_class}}::hasInstance(info.Holder(), info.GetIsolate()))
         return; // Return silently because of [LenientThis].
-    {% else %}
-    v8::Local<v8::Object> holder = info.Holder();
     {% endif %}
+    v8::Local<v8::Object> holder = info.Holder();
     {% endif %}
     {# impl #}
     {% if attribute.cached_attribute_validation_method %}
@@ -78,7 +76,7 @@ const v8::FunctionCallbackInfo<v8::Value>& info
     {% if not attribute.is_data_type_property %}
     {% if attribute.is_check_security_for_receiver %}
     if (!BindingSecurity::shouldAllowAccessTo(info.GetIsolate(), callingDOMWindow(info.GetIsolate()), impl, exceptionState)) {
-        {{attribute.v8_set_return_value_for_security_failure}};
+        v8SetReturnValueNull(info);
         exceptionState.throwIfNeeded();
         return;
     }
@@ -86,7 +84,7 @@ const v8::FunctionCallbackInfo<v8::Value>& info
     {% endif %}
     {% if attribute.is_check_security_for_return_value %}
     if (!BindingSecurity::shouldAllowAccessTo(info.GetIsolate(), callingDOMWindow(info.GetIsolate()), {{attribute.cpp_value}}, exceptionState)) {
-        {{attribute.v8_set_return_value_for_security_failure}};
+        v8SetReturnValueNull(info);
         exceptionState.throwIfNeeded();
         return;
     }
@@ -248,12 +246,10 @@ v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info
           raise_exception %}
     {% if attribute.is_lenient_this %}
     {# Make sure that info.Holder() really points to an instance if [LenientThis]. #}
-    v8::Local<v8::Object> holder = {{v8_class}}::findInstanceInPrototypeChain(info.This(), info.GetIsolate());
-    if (holder.IsEmpty())
+    if (!{{v8_class}}::hasInstance(info.Holder(), info.GetIsolate()))
         return; // Return silently because of [LenientThis].
-    {% else %}
-    v8::Local<v8::Object> holder = info.Holder();
     {% endif %}
+    v8::Local<v8::Object> holder = info.Holder();
     {% endif %}
     {% if raise_exception %}
     ExceptionState exceptionState(ExceptionState::SetterContext, "{{attribute.name}}", "{{interface_name}}", holder, info.GetIsolate());

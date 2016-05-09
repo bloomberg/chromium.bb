@@ -1,5 +1,5 @@
-CONSOLE WARNING: 'webkitIndexedDB' is deprecated. Please use 'indexedDB' instead.
 CONSOLE WARNING: 'window.webkitStorageInfo' is deprecated. Please use 'navigator.webkitTemporaryStorage' or 'navigator.webkitPersistentStorage' instead.
+CONSOLE WARNING: 'webkitIndexedDB' is deprecated. Please use 'indexedDB' instead.
 Test for bug 8131: Some properties and methods of window and document objects cannot be converted to a string.
 
 Should say SUCCESS:

@@ -201,10 +201,6 @@ class IdlType(IdlTypeBase):
         return self.base_type in NUMERIC_TYPES
 
     @property
-    def is_boolean_type(self):
-        return self.base_type == 'boolean'
-
-    @property
     def is_primitive_type(self):
         return self.base_type in PRIMITIVE_TYPES
 

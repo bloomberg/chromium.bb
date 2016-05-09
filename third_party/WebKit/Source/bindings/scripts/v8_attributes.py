@@ -57,7 +57,7 @@ def attribute_context(interface, attribute):
     is_do_not_check_security = 'DoNotCheckSecurity' in extended_attributes
     is_check_security_for_receiver = (
         has_extended_attribute_value(interface, 'CheckSecurity', 'Receiver') and
-        is_do_not_check_security)
+        not is_do_not_check_security)
     is_check_security_for_return_value = (
         has_extended_attribute_value(attribute, 'CheckSecurity', 'ReturnValue'))
     if is_check_security_for_receiver or is_check_security_for_return_value:
@@ -120,9 +120,9 @@ def attribute_context(interface, attribute):
         'is_custom_element_callbacks': is_custom_element_callbacks,
         # TODO(yukishiino): Make all DOM attributes accessor-type properties.
         'is_data_type_property': is_data_type_property(interface, attribute),
-        'is_getter_raises_exception': (  # [RaisesException]
+        'is_getter_raises_exception':  # [RaisesException]
             'RaisesException' in extended_attributes and
-            extended_attributes['RaisesException'] in (None, 'Getter')),
+            extended_attributes['RaisesException'] in (None, 'Getter'),
         'is_implemented_in_private_script': is_implemented_in_private_script,
         'is_keep_alive_for_gc': keep_alive_for_gc,
         'is_lenient_this': 'LenientThis' in extended_attributes,
@@ -155,9 +155,10 @@ def attribute_context(interface, attribute):
         'reflect_only': extended_attribute_value_as_list(attribute, 'ReflectOnly'),
         'runtime_enabled_function': v8_utilities.runtime_enabled_function_name(attribute),  # [RuntimeEnabled]
         'should_be_exposed_to_script': not (is_implemented_in_private_script and is_only_exposed_to_private_script),
-        'world_suffixes': (['', 'ForMainWorld']
-                           if 'PerWorldBindings' in extended_attributes
-                           else ['']),  # [PerWorldBindings]
+        'world_suffixes': (
+            ['', 'ForMainWorld']
+            if 'PerWorldBindings' in extended_attributes
+            else ['']),  # [PerWorldBindings]
     }
 
     if is_constructor_attribute(attribute):
@@ -210,21 +211,6 @@ def getter_context(interface, attribute, context):
             cpp_value, extended_attributes=extended_attributes, script_wrappable='impl',
             for_main_world=for_main_world, is_static=attribute.is_static)
 
-    def v8_set_return_value_statement_for_security_failure():
-        # In the case that the access check fails, there is no common rule for
-        # the return value.  The return value depends on each attribute.
-        # However, we shouldn't return null or undefiend for attributes of type
-        # boolean or DOMString at least.  We're making the best guess here.
-        if idl_type.is_explicit_nullable:
-            return 'v8SetReturnValueNull(info)'
-        if idl_type.is_boolean_type:
-            return 'v8SetReturnValueBool(info, false)'
-        if idl_type.is_numeric_type:
-            return 'v8SetReturnValueInt(info, 0)'
-        if idl_type.is_string_type:
-            return 'v8SetReturnValueEmptyString(info)'
-        return 'v8SetReturnValueNull(info)'
-
     context.update({
         'cpp_value': cpp_value,
         'cpp_value_to_v8_value': idl_type.cpp_value_to_v8_value(
@@ -232,10 +218,7 @@ def getter_context(interface, attribute, context):
             extended_attributes=extended_attributes),
         'v8_set_return_value_for_main_world': v8_set_return_value_statement(for_main_world=True),
         'v8_set_return_value': v8_set_return_value_statement(),
-        'v8_set_return_value_for_security_failure':
-            v8_set_return_value_statement_for_security_failure(),
     })
-
 
 def getter_expression(interface, attribute, context):
     arguments = []
@@ -461,7 +444,8 @@ def is_writable(attribute):
 
 def is_data_type_property(interface, attribute):
     return (is_constructor_attribute(attribute) or
-            'DoNotCheckSecurity' in attribute.extended_attributes)
+            interface.name == 'Window' or
+            interface.name == 'Location')
 
 
 # [PutForwards], [Replaceable]

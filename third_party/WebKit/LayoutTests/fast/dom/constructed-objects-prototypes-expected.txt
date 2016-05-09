@@ -1,5 +1,6 @@
 CONSOLE WARNING: 'webkitOfflineAudioContext' is deprecated. Please use 'OfflineAudioContext' instead.
 CONSOLE WARNING: 'webkitAudioContext' is deprecated. Please use 'AudioContext' instead.
+CONSOLE WARNING: 'window.webkitStorageInfo' is deprecated. Please use 'navigator.webkitTemporaryStorage' or 'navigator.webkitPersistentStorage' instead.
 CONSOLE WARNING: 'webkitIDBTransaction' is deprecated. Please use 'IDBTransaction' instead.
 CONSOLE WARNING: 'webkitIDBRequest' is deprecated. Please use 'IDBRequest' instead.
 CONSOLE WARNING: 'webkitIDBObjectStore' is deprecated. Please use 'IDBObjectStore' instead.
@@ -8,9 +9,8 @@ CONSOLE WARNING: 'webkitIDBIndex' is deprecated. Please use 'IDBIndex' instead.
 CONSOLE WARNING: 'webkitIDBFactory' is deprecated. Please use 'IDBFactory' instead.
 CONSOLE WARNING: 'webkitIDBDatabase' is deprecated. Please use 'IDBDatabase' instead.
 CONSOLE WARNING: 'webkitIDBCursor' is deprecated. Please use 'IDBCursor' instead.
-CONSOLE WARNING: 'webkitURL' is deprecated. Please use 'URL' instead.
 CONSOLE WARNING: 'webkitIndexedDB' is deprecated. Please use 'indexedDB' instead.
-CONSOLE WARNING: 'window.webkitStorageInfo' is deprecated. Please use 'navigator.webkitTemporaryStorage' or 'navigator.webkitPersistentStorage' instead.
+CONSOLE WARNING: 'webkitURL' is deprecated. Please use 'URL' instead.
 Make sure prototypes are set up using the window a property came from, instead of the lexical global object.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

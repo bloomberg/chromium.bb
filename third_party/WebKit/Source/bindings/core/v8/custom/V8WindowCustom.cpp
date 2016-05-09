@@ -67,7 +67,7 @@
 
 namespace blink {
 
-void V8Window::eventAttributeGetterCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
+void V8Window::eventAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     LocalDOMWindow* impl = toLocalDOMWindow(V8Window::toImpl(info.Holder()));
     ExceptionState exceptionState(ExceptionState::GetterContext, "event", "Window", info.Holder(), info.GetIsolate());
@@ -89,7 +89,7 @@ void V8Window::eventAttributeGetterCustom(const v8::FunctionCallbackInfo<v8::Val
     v8SetReturnValue(info, jsEvent);
 }
 
-void V8Window::eventAttributeSetterCustom(v8::Local<v8::Value> value, const v8::FunctionCallbackInfo<v8::Value>& info)
+void V8Window::eventAttributeSetterCustom(v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     LocalDOMWindow* impl = toLocalDOMWindow(V8Window::toImpl(info.Holder()));
     ExceptionState exceptionState(ExceptionState::SetterContext, "event", "Window", info.Holder(), info.GetIsolate());
@@ -108,7 +108,7 @@ void V8Window::eventAttributeSetterCustom(v8::Local<v8::Value> value, const v8::
     V8HiddenValue::setHiddenValue(ScriptState::current(info.GetIsolate()), context->Global(), V8HiddenValue::event(info.GetIsolate()), value);
 }
 
-void V8Window::frameElementAttributeGetterCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
+void V8Window::frameElementAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     LocalDOMWindow* impl = toLocalDOMWindow(V8Window::toImpl(info.Holder()));
 
