@@ -131,18 +131,6 @@ cr.define('options', function() {
   };
 
   /**
-   * Updates UI to allow/disallow user from using exceptions for a particular
-   * content setting.
-   * @param {string} type The content settings type being updated.
-   * @param {boolean} allowUserExceptions Whether user may set exceptions.
-   */
-  ContentSettings.setUserExceptionsAllowed = function(type,
-                                                      allowUserExceptions) {
-    // Update exceptions UI window.
-    this.getExceptionsList(type, 'normal').setAllowEdit(allowUserExceptions);
-  };
-
-  /**
    * Initializes an exceptions list.
    * @param {string} type The content type that we are setting exceptions for.
    * @param {Array<options.Exception>} exceptions An array of pairs, where the
