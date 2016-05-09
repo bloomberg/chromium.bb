@@ -8,15 +8,16 @@
 #include <string>
 #include <vector>
 
-#include <base/macros.h>
-#include <base/memory/ref_counted.h>
-#include <base/memory/weak_ptr.h>
-#include <base/threading/platform_thread.h>
-#include <dbus/bus.h>
-#include <dbus/exported_object.h>
-#include <dbus/message.h>
-#include <dbus/object_path.h>
-#include <device/bluetooth/dbus/bluetooth_gatt_service_service_provider.h>
+#include "base/macros.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
+#include "base/threading/platform_thread.h"
+#include "dbus/bus.h"
+#include "dbus/exported_object.h"
+#include "dbus/message.h"
+#include "dbus/object_path.h"
+#include "device/bluetooth/bluetooth_export.h"
+#include "device/bluetooth/dbus/bluetooth_gatt_service_service_provider.h"
 
 namespace bluez {
 
@@ -32,11 +33,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattServiceServiceProviderImpl
       const std::vector<dbus::ObjectPath>& includes);
 
   ~BluetoothGattServiceServiceProviderImpl() override;
-
-  // For testing.
-  BluetoothGattServiceServiceProviderImpl(const dbus::ObjectPath& object_path,
-                                          const std::string& uuid,
-                                          bool is_primary);
 
  private:
   // Returns true if the current thread is on the origin thread.

@@ -18,7 +18,7 @@ FakeBluetoothGattDescriptorServiceProvider::
         const dbus::ObjectPath& object_path,
         std::unique_ptr<BluetoothGattAttributeValueDelegate> delegate,
         const std::string& uuid,
-        const std::vector<std::string>& permissions,
+        const std::vector<std::string>& flags,
         const dbus::ObjectPath& characteristic_path)
     : object_path_(object_path),
       uuid_(uuid),
@@ -33,7 +33,7 @@ FakeBluetoothGattDescriptorServiceProvider::
   DCHECK(base::StartsWith(object_path_.value(),
                           characteristic_path_.value() + "/",
                           base::CompareCase::SENSITIVE));
-  // TODO(armansito): Do something with |permissions|.
+  // TODO(rkc): Do something with |flags|.
 
   FakeBluetoothGattManagerClient* fake_bluetooth_gatt_manager_client =
       static_cast<FakeBluetoothGattManagerClient*>(

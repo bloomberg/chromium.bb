@@ -34,9 +34,14 @@ BluetoothGattServiceServiceProviderImpl::
       weak_ptr_factory_(this) {
   VLOG(1) << "Creating Bluetooth GATT service: " << object_path_.value()
           << " UUID: " << uuid;
+
+  // If we have a null bus, this means that this is being initialized for a
+  // test, hence we shouldn't do any other setup.
+  if (!bus_)
+    return;
+
   DCHECK(!uuid_.empty());
   DCHECK(object_path_.IsValid());
-  DCHECK(bus_);
 
   exported_object_ = bus_->GetExportedObject(object_path_);
 
@@ -68,17 +73,6 @@ BluetoothGattServiceServiceProviderImpl::
   if (bus_)
     bus_->UnregisterExportedObject(object_path_);
 }
-
-BluetoothGattServiceServiceProviderImpl::
-    BluetoothGattServiceServiceProviderImpl(const dbus::ObjectPath& object_path,
-                                            const std::string& uuid,
-                                            bool is_primary)
-    : origin_thread_id_(base::PlatformThread::CurrentId()),
-      uuid_(uuid),
-      is_primary_(is_primary),
-      bus_(nullptr),
-      object_path_(object_path),
-      weak_ptr_factory_(this) {}
 
 bool BluetoothGattServiceServiceProviderImpl::OnOriginThread() {
   return base::PlatformThread::CurrentId() == origin_thread_id_;

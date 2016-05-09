@@ -156,6 +156,8 @@ void BluetoothGattApplicationServiceProviderImpl::GetManagedObjects(
   }
 
   writer.CloseContainer(&array_writer);
+  VLOG(3) << "Sending response to BlueZ for GetManagedObjects: \n"
+          << response->ToString();
   response_sender.Run(std::move(response));
 }
 

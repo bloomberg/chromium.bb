@@ -49,7 +49,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattDescriptorServiceProvider {
   virtual const dbus::ObjectPath& object_path() const = 0;
 
   // Creates the instance, where |bus| is the D-Bus bus connection to export
-  // the object onto, |uuid| is the 128-bit GATT descriptor UUID, |permissions|
+  // the object onto, |uuid| is the 128-bit GATT descriptor UUID, |flags|
   // is the list of attribute permissions, |characteristic_path| is the object
   // path of the exported GATT characteristic the descriptor belongs to,
   // |object_path| is the object path that the descriptor should have, and
@@ -66,7 +66,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattDescriptorServiceProvider {
       const dbus::ObjectPath& object_path,
       std::unique_ptr<BluetoothGattAttributeValueDelegate> delegate,
       const std::string& uuid,
-      const std::vector<std::string>& permissions,
+      const std::vector<std::string>& flags,
       const dbus::ObjectPath& characteristic_path);
 
  protected:

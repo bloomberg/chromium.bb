@@ -23,15 +23,15 @@ BluetoothGattDescriptorServiceProvider::Create(
     const dbus::ObjectPath& object_path,
     std::unique_ptr<BluetoothGattAttributeValueDelegate> delegate,
     const std::string& uuid,
-    const std::vector<std::string>& permissions,
+    const std::vector<std::string>& flags,
     const dbus::ObjectPath& characteristic_path) {
   if (!bluez::BluezDBusManager::Get()->IsUsingFakes()) {
     return new BluetoothGattDescriptorServiceProviderImpl(
-        bus, object_path, std::move(delegate), uuid, permissions,
+        bus, object_path, std::move(delegate), uuid, flags,
         characteristic_path);
   }
   return new FakeBluetoothGattDescriptorServiceProvider(
-      object_path, std::move(delegate), uuid, permissions, characteristic_path);
+      object_path, std::move(delegate), uuid, flags, characteristic_path);
 }
 
 }  // namespace bluez

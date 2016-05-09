@@ -51,8 +51,7 @@ void BluetoothGattApplicationServiceProvider::CreateAttributeServiceProviders(
               base::WrapUnique(new BluetoothGattCharacteristicDelegateWrapper(
                   service.second, characteristic.second.get())),
               characteristic.second->GetUUID().value(),
-              std::vector<std::string>(), std::vector<std::string>(),
-              service.second->object_path())));
+              std::vector<std::string>(), service.second->object_path())));
       for (const auto& descriptor : characteristic.second->GetDescriptors()) {
         descriptor_providers->push_back(
             base::WrapUnique(BluetoothGattDescriptorServiceProvider::Create(

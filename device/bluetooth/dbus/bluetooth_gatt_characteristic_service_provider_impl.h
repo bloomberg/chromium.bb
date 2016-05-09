@@ -33,16 +33,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattCharacteristicServiceProviderImpl
       std::unique_ptr<BluetoothGattAttributeValueDelegate> delegate,
       const std::string& uuid,
       const std::vector<std::string>& flags,
-      const std::vector<std::string>& permissions,
       const dbus::ObjectPath& service_path);
 
   ~BluetoothGattCharacteristicServiceProviderImpl() override;
-
-  // For testing.
-  BluetoothGattCharacteristicServiceProviderImpl(
-      const dbus::ObjectPath& object_path,
-      const std::string& uuid,
-      const dbus::ObjectPath& service_path);
 
   // BluetoothGattCharacteristicServiceProvider override.
   void SendValueChanged(const std::vector<uint8_t>& value) override;
@@ -105,6 +98,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattCharacteristicServiceProviderImpl
 
   // 128-bit characteristic UUID of this object.
   std::string uuid_;
+
+  // Properties and permissions for this characteristic.
+  std::vector<std::string> flags_;
 
   // D-Bus bus object is exported on, not owned by this object and must
   // outlive it.

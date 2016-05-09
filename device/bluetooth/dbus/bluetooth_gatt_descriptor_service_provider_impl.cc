@@ -4,7 +4,7 @@
 
 #include "device/bluetooth/dbus/bluetooth_gatt_descriptor_service_provider_impl.h"
 
-#include <stddef.h>
+#include <cstddef>
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -29,10 +29,11 @@ BluetoothGattDescriptorServiceProviderImpl::
         const dbus::ObjectPath& object_path,
         std::unique_ptr<BluetoothGattAttributeValueDelegate> delegate,
         const std::string& uuid,
-        const std::vector<std::string>& permissions,
+        const std::vector<std::string>& flags,
         const dbus::ObjectPath& characteristic_path)
     : origin_thread_id_(base::PlatformThread::CurrentId()),
       uuid_(uuid),
+      flags_(flags),
       bus_(bus),
       delegate_(std::move(delegate)),
       object_path_(object_path),
@@ -40,7 +41,12 @@ BluetoothGattDescriptorServiceProviderImpl::
       weak_ptr_factory_(this) {
   VLOG(1) << "Created Bluetooth GATT characteristic descriptor: "
           << object_path.value() << " UUID: " << uuid;
-  DCHECK(bus_);
+
+  // If we have a null bus, this means that this is being initialized for a
+  // test, hence we shouldn't do any other setup.
+  if (!bus_)
+    return;
+
   DCHECK(delegate_);
   DCHECK(!uuid_.empty());
   DCHECK(object_path_.IsValid());
@@ -80,19 +86,6 @@ BluetoothGattDescriptorServiceProviderImpl::
   if (bus_)
     bus_->UnregisterExportedObject(object_path_);
 }
-
-BluetoothGattDescriptorServiceProviderImpl::
-    BluetoothGattDescriptorServiceProviderImpl(
-        const dbus::ObjectPath& object_path,
-        const std::string& uuid,
-        const dbus::ObjectPath& characteristic_path)
-    : origin_thread_id_(base::PlatformThread::CurrentId()),
-      uuid_(uuid),
-      bus_(nullptr),
-      delegate_(nullptr),
-      object_path_(object_path),
-      characteristic_path_(characteristic_path),
-      weak_ptr_factory_(this) {}
 
 void BluetoothGattDescriptorServiceProviderImpl::SendValueChanged(
     const std::vector<uint8_t>& value) {
@@ -178,7 +171,6 @@ void BluetoothGattDescriptorServiceProviderImpl::Get(
   dbus::MessageWriter writer(response.get());
   dbus::MessageWriter variant_writer(NULL);
 
-  // TODO(armansito): Process the "Permissions" property below.
   if (property_name == bluetooth_gatt_descriptor::kUUIDProperty) {
     writer.OpenVariant("s", &variant_writer);
     variant_writer.AppendString(uuid_);
@@ -187,6 +179,10 @@ void BluetoothGattDescriptorServiceProviderImpl::Get(
              bluetooth_gatt_descriptor::kCharacteristicProperty) {
     writer.OpenVariant("o", &variant_writer);
     variant_writer.AppendObjectPath(characteristic_path_);
+    writer.CloseContainer(&variant_writer);
+  } else if (property_name == bluetooth_gatt_descriptor::kFlagsProperty) {
+    writer.OpenVariant("as", &variant_writer);
+    variant_writer.AppendArrayOfStrings(flags_);
     writer.CloseContainer(&variant_writer);
   } else {
     response = dbus::ErrorResponse::FromMethodCall(
@@ -341,11 +337,13 @@ void BluetoothGattDescriptorServiceProviderImpl::WriteProperties(
 
   writer->OpenArray("{sv}", &array_writer);
 
+  // UUID:
   array_writer.OpenDictEntry(&dict_entry_writer);
   dict_entry_writer.AppendString(bluetooth_gatt_descriptor::kUUIDProperty);
   dict_entry_writer.AppendVariantOfString(uuid_);
   array_writer.CloseContainer(&dict_entry_writer);
 
+  // Characteristic:
   array_writer.OpenDictEntry(&dict_entry_writer);
   dict_entry_writer.AppendString(
       bluetooth_gatt_descriptor::kCharacteristicProperty);
@@ -353,6 +351,7 @@ void BluetoothGattDescriptorServiceProviderImpl::WriteProperties(
   array_writer.CloseContainer(&dict_entry_writer);
 
   if (value) {
+    // Value:
     array_writer.OpenDictEntry(&dict_entry_writer);
     dict_entry_writer.AppendString(bluetooth_gatt_descriptor::kValueProperty);
     dict_entry_writer.OpenVariant("ay", &variant_writer);
@@ -361,7 +360,14 @@ void BluetoothGattDescriptorServiceProviderImpl::WriteProperties(
     array_writer.CloseContainer(&dict_entry_writer);
   }
 
-  // TODO(armansito): Process "Permissions" property.
+  // Flags:
+  array_writer.OpenDictEntry(&dict_entry_writer);
+  dict_entry_writer.AppendString(bluetooth_gatt_descriptor::kFlagsProperty);
+  dict_entry_writer.OpenVariant("as", &variant_writer);
+  variant_writer.AppendArrayOfStrings(flags_);
+  dict_entry_writer.CloseContainer(&variant_writer);
+  array_writer.CloseContainer(&dict_entry_writer);
+
   writer->CloseContainer(&array_writer);
 }
 

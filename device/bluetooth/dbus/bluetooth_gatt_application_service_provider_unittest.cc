@@ -2,19 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <base/bind.h>
-#include <base/memory/ptr_util.h>
-#include <dbus/bus.h>
-#include <dbus/message.h>
-#include <dbus/object_path.h>
-#include <device/bluetooth/dbus/bluetooth_gatt_application_service_provider_impl.h>
-#include <device/bluetooth/dbus/bluetooth_gatt_characteristic_service_provider_impl.h>
-#include <device/bluetooth/dbus/bluetooth_gatt_descriptor_service_provider_impl.h>
-#include <device/bluetooth/dbus/bluetooth_gatt_service_service_provider_impl.h>
-#include <gtest/gtest.h>
-#include <gtest/internal/gtest-internal.h>
 #include <string>
+#include <vector>
+
+#include "base/bind.h"
+#include "base/memory/ptr_util.h"
+#include "dbus/bus.h"
+#include "dbus/message.h"
+#include "dbus/object_path.h"
 #include "device/bluetooth/dbus/bluetooth_gatt_application_service_provider.h"
+#include "device/bluetooth/dbus/bluetooth_gatt_application_service_provider_impl.h"
+#include "device/bluetooth/dbus/bluetooth_gatt_characteristic_service_provider_impl.h"
+#include "device/bluetooth/dbus/bluetooth_gatt_descriptor_service_provider_impl.h"
+#include "device/bluetooth/dbus/bluetooth_gatt_service_service_provider_impl.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace bluez {
 
@@ -98,6 +99,13 @@ const char kExpectedMessage[] =
     "            variant               object_path "
     "\"/fake/hci0/gatt_application/service0\"\n"
     "          }\n"
+    "          dict entry {\n"
+    "            string \"Flags\"\n"
+    "            variant               array [\n"
+    "                string \"read\"\n"
+    "                string \"write\"\n"
+    "              ]\n"
+    "          }\n"
     "        ]\n"
     "      }\n"
     "    ]\n"
@@ -118,6 +126,13 @@ const char kExpectedMessage[] =
     "            variant               object_path "
     "\"/fake/hci0/gatt_application/service0\"\n"
     "          }\n"
+    "          dict entry {\n"
+    "            string \"Flags\"\n"
+    "            variant               array [\n"
+    "                string \"read\"\n"
+    "                string \"write\"\n"
+    "              ]\n"
+    "          }\n"
     "        ]\n"
     "      }\n"
     "    ]\n"
@@ -137,6 +152,13 @@ const char kExpectedMessage[] =
     "            string \"Service\"\n"
     "            variant               object_path "
     "\"/fake/hci0/gatt_application/service1\"\n"
+    "          }\n"
+    "          dict entry {\n"
+    "            string \"Flags\"\n"
+    "            variant               array [\n"
+    "                string \"read\"\n"
+    "                string \"write\"\n"
+    "              ]\n"
     "          }\n"
     "        ]\n"
     "      }\n"
@@ -159,6 +181,13 @@ const char kExpectedMessage[] =
     "            variant               object_path "
     "\"/fake/hci0/gatt_application/service0/characteristic0\"\n"
     "          }\n"
+    "          dict entry {\n"
+    "            string \"Flags\"\n"
+    "            variant               array [\n"
+    "                string \"read\"\n"
+    "                string \"write\"\n"
+    "              ]\n"
+    "          }\n"
     "        ]\n"
     "      }\n"
     "    ]\n"
@@ -179,6 +208,13 @@ const char kExpectedMessage[] =
     "            string \"Characteristic\"\n"
     "            variant               object_path "
     "\"/fake/hci0/gatt_application/service0/characteristic1\"\n"
+    "          }\n"
+    "          dict entry {\n"
+    "            string \"Flags\"\n"
+    "            variant               array [\n"
+    "                string \"read\"\n"
+    "                string \"write\"\n"
+    "              ]\n"
     "          }\n"
     "        ]\n"
     "      }\n"
@@ -201,6 +237,13 @@ const char kExpectedMessage[] =
     "            variant               object_path "
     "\"/fake/hci0/gatt_application/service1/characteristic0\"\n"
     "          }\n"
+    "          dict entry {\n"
+    "            string \"Flags\"\n"
+    "            variant               array [\n"
+    "                string \"read\"\n"
+    "                string \"write\"\n"
+    "              ]\n"
+    "          }\n"
     "        ]\n"
     "      }\n"
     "    ]\n"
@@ -221,6 +264,13 @@ const char kExpectedMessage[] =
     "            string \"Characteristic\"\n"
     "            variant               object_path "
     "\"/fake/hci0/gatt_application/service0/characteristic0\"\n"
+    "          }\n"
+    "          dict entry {\n"
+    "            string \"Flags\"\n"
+    "            variant               array [\n"
+    "                string \"read\"\n"
+    "                string \"write\"\n"
+    "              ]\n"
     "          }\n"
     "        ]\n"
     "      }\n"
@@ -245,7 +295,8 @@ class BluetoothGattApplicationServiceProviderTest : public testing::Test {
         std::string(kAppObjectPath) + "/" + service_path;
     app_provider->service_providers_.push_back(
         base::WrapUnique(new BluetoothGattServiceServiceProviderImpl(
-            dbus::ObjectPath(full_service_path), kFakeServiceUuid, true)));
+            nullptr, dbus::ObjectPath(full_service_path), kFakeServiceUuid,
+            true, std::vector<dbus::ObjectPath>())));
     return full_service_path;
   }
 
@@ -258,7 +309,9 @@ class BluetoothGattApplicationServiceProviderTest : public testing::Test {
         service_path + "/" + characteristic_path;
     app_provider->characteristic_providers_.push_back(
         base::WrapUnique(new BluetoothGattCharacteristicServiceProviderImpl(
-            dbus::ObjectPath(full_characteristic_path), kFakeCharacteristicUuid,
+            nullptr, dbus::ObjectPath(full_characteristic_path), nullptr,
+            kFakeCharacteristicUuid,
+            std::vector<std::string>({"read", "write"}),
             dbus::ObjectPath(service_path))));
     return full_characteristic_path;
   }
@@ -272,7 +325,8 @@ class BluetoothGattApplicationServiceProviderTest : public testing::Test {
         characteristic_path + "/" + descriptor_path;
     app_provider->descriptor_providers_.push_back(
         base::WrapUnique(new BluetoothGattDescriptorServiceProviderImpl(
-            dbus::ObjectPath(full_descriptor_path), kFakeDescriptorUuid,
+            nullptr, dbus::ObjectPath(full_descriptor_path), nullptr,
+            kFakeDescriptorUuid, std::vector<std::string>({"read", "write"}),
             dbus::ObjectPath(characteristic_path))));
   }
 

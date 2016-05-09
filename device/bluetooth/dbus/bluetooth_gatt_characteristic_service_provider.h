@@ -50,11 +50,11 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattCharacteristicServiceProvider {
 
   // Creates the instance, where |bus| is the D-Bus bus connection to export
   // the object onto, |uuid| is the 128-bit GATT characteristic UUID,
-  // |flags| is the list of GATT characteristic properties, |permissions| is the
-  // list of attribute permissions, |service_path| is the object path of the
-  // exported GATT service the characteristic belongs to, |object_path| is the
-  // object path that the characteristic should have, and |delegate| is the
-  // object that "Value" Get/Set requests will be passed to and responses
+  // |flags| is the list of GATT characteristic properties, |flags| is the
+  // list of flags for this characteristic, |service_path| is the object path
+  // of the exported GATT service the characteristic belongs to, |object_path|
+  // is the object path that the characteristic should have, and |delegate| is
+  // the object that "Value" Get/Set requests will be passed to and responses
   // generated from.
   //
   // Object paths of GATT characteristics must be hierarchical to the path of
@@ -68,7 +68,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattCharacteristicServiceProvider {
       std::unique_ptr<BluetoothGattAttributeValueDelegate> delegate,
       const std::string& uuid,
       const std::vector<std::string>& flags,
-      const std::vector<std::string>& permissions,
       const dbus::ObjectPath& service_path);
 
  protected:

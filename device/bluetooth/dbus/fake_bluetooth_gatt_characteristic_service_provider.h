@@ -30,7 +30,6 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothGattCharacteristicServiceProvider
       std::unique_ptr<BluetoothGattAttributeValueDelegate> delegate,
       const std::string& uuid,
       const std::vector<std::string>& flags,
-      const std::vector<std::string>& permissions,
       const dbus::ObjectPath& service_path);
   ~FakeBluetoothGattCharacteristicServiceProvider() override;
 
