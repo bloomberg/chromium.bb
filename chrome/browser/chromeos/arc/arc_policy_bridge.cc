@@ -115,7 +115,7 @@ std::string GetFilteredJSONPolicies(const policy::PolicyMap& policy_map) {
                policy_map, 2 /*BlockGeolocation*/, &filtered_policies);
   MapBoolToBool("unmuteMicrophoneDisabled", policy::key::kAudioCaptureAllowed,
                 policy_map, true, &filtered_policies);
-  MapBoolToBool("usbFileTransferDisabled",
+  MapBoolToBool("mountPhysicalMediaDisabled",
                 policy::key::kExternalStorageDisabled, policy_map, false,
                 &filtered_policies);
 

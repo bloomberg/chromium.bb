@@ -170,7 +170,7 @@ TEST_F(ArcPolicyBridgeTest, ExternalStorageDisabledTest) {
                    policy::POLICY_SOURCE_CLOUD,
                    new base::FundamentalValue(true), nullptr);
   policy_bridge()->GetPolicies(
-      PolicyStringCallback("{\"usbFileTransferDisabled\":true}"));
+      PolicyStringCallback("{\"mountPhysicalMediaDisabled\":true}"));
 }
 
 TEST_F(ArcPolicyBridgeTest, URLBlacklistTest) {
