@@ -35,6 +35,7 @@
 #include "cc/output/context_provider.h"
 #include "cc/output/output_surface.h"
 #include "cc/output/output_surface_client.h"
+#include "cc/output/vulkan_in_process_context_provider.h"
 #include "cc/raster/single_thread_task_graph_runner.h"
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/surfaces/onscreen_display_client.h"
@@ -61,6 +62,7 @@
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/ipc/client/command_buffer_proxy_impl.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
+#include "gpu/vulkan/vulkan_surface.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "third_party/skia/include/core/SkMallocPixelRef.h"
@@ -221,6 +223,60 @@ class OutputSurfaceWithoutParent : public cc::OutputSurface,
   std::unique_ptr<ExternalBeginFrameSource> begin_frame_source_;
 };
 
+#if defined(ENABLE_VULKAN)
+class VulkanOutputSurface : public cc::OutputSurface {
+ public:
+  VulkanOutputSurface(
+      scoped_refptr<cc::VulkanContextProvider> vulkan_context_provider)
+      : OutputSurface(nullptr,
+                      nullptr,
+                      std::move(vulkan_context_provider),
+                      nullptr) {}
+
+  ~VulkanOutputSurface() override { Destroy(); }
+
+  bool Initialize(gfx::AcceleratedWidget widget) {
+    DCHECK(!surface_);
+    std::unique_ptr<gpu::VulkanSurface> surface(
+        gpu::VulkanSurface::CreateViewSurface(widget));
+    if (!surface->Initialize(vulkan_context_provider()->GetDeviceQueue(),
+                             gpu::VulkanSurface::DEFAULT_SURFACE_FORMAT)) {
+      return false;
+    }
+    surface_ = std::move(surface);
+
+    return true;
+  }
+
+  void SwapBuffers(cc::CompositorFrame* frame) override {
+    surface_->SwapBuffers();
+    PostSwapBuffersComplete();
+    client_->DidSwapBuffers();
+  }
+
+  void Destroy() {
+    if (surface_) {
+      surface_->Destroy();
+      surface_.reset();
+    }
+  }
+
+  void OnSwapBuffersCompleted(const std::vector<ui::LatencyInfo>& latency_info,
+                              gfx::SwapResult result) {
+    RenderWidgetHostImpl::CompositorFrameDrawn(latency_info);
+    OutputSurface::OnSwapBuffersComplete();
+  }
+
+ private:
+  std::unique_ptr<gpu::VulkanSurface> surface_;
+
+  DISALLOW_COPY_AND_ASSIGN(VulkanOutputSurface);
+};
+#endif
+
+base::LazyInstance<scoped_refptr<cc::VulkanInProcessContextProvider>>
+    g_shared_vulkan_context_provider_android_ = LAZY_INSTANCE_INITIALIZER;
+
 static bool g_initialized = false;
 
 base::LazyInstance<cc::SurfaceManager> g_surface_manager =
@@ -275,6 +331,20 @@ CompositorImpl::CreateSurfaceIdAllocator() {
   DCHECK(manager);
   allocator->RegisterSurfaceIdNamespace(manager);
   return allocator;
+}
+
+// static
+scoped_refptr<cc::VulkanInProcessContextProvider>
+CompositorImpl::SharedVulkanContextProviderAndroid() {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableVulkan)) {
+    scoped_refptr<cc::VulkanInProcessContextProvider>* context_provider =
+        g_shared_vulkan_context_provider_android_.Pointer();
+    if (*context_provider == NULL)
+      *context_provider = cc::VulkanInProcessContextProvider::Create();
+    return *context_provider;
+  }
+  return nullptr;
 }
 
 CompositorImpl::CompositorImpl(CompositorClient* client,
@@ -507,82 +577,104 @@ void CompositorImpl::CreateOutputSurface() {
   if (!output_surface_request_pending_ || !host_->visible())
     return;
 
-  // This is used for the browser compositor (offscreen) and for the display
-  // compositor (onscreen), so ask for capabilities needed by either one.
-  // The default framebuffer for an offscreen context is not used, so it does
-  // not need alpha, stencil, depth, antialiasing. The display compositor does
-  // not use these things either, except for alpha when it has a transparent
-  // background.
-  gpu::gles2::ContextCreationAttribHelper attributes;
-  attributes.alpha_size = -1;
-  attributes.stencil_size = 0;
-  attributes.depth_size = 0;
-  attributes.samples = 0;
-  attributes.sample_buffers = 0;
-  attributes.bind_generates_resource = false;
-
-  if (has_transparent_background_) {
-    attributes.alpha_size = 8;
-  } else if (base::SysInfo::IsLowEndDevice()) {
-    // In this case we prefer to use RGB565 format instead of RGBA8888 if
-    // possible.
-    // TODO(danakj): GpuCommandBufferStub constructor checks for alpha == 0 in
-    // order to enable 565, but it should avoid using 565 when -1s are specified
-    // (IOW check that a <= 0 && rgb > 0 && rgb <= 565) then alpha should be -1.
-    attributes.alpha_size = 0;
-    attributes.red_size = 5;
-    attributes.green_size = 6;
-    attributes.blue_size = 5;
+  scoped_refptr<ContextProviderCommandBuffer> context_provider;
+  scoped_refptr<cc::VulkanInProcessContextProvider> vulkan_context_provider =
+      SharedVulkanContextProviderAndroid();
+  std::unique_ptr<cc::OutputSurface> real_output_surface;
+#if defined(ENABLE_VULKAN)
+  std::unique_ptr<VulkanOutputSurface> vulkan_surface;
+  if (vulkan_context_provider) {
+    vulkan_surface.reset(
+        new VulkanOutputSurface(std::move(vulkan_context_provider)));
+    if (!vulkan_surface->Initialize(window_)) {
+      vulkan_surface->Destroy();
+      vulkan_surface.reset();
+    } else {
+      real_output_surface = std::move(vulkan_surface);
+    }
   }
+#endif
 
-  pending_swapbuffers_ = 0;
+  if (!real_output_surface) {
+    // This is used for the browser compositor (offscreen) and for the display
+    // compositor (onscreen), so ask for capabilities needed by either one.
+    // The default framebuffer for an offscreen context is not used, so it does
+    // not need alpha, stencil, depth, antialiasing. The display compositor does
+    // not use these things either, except for alpha when it has a transparent
+    // background.
+    gpu::gles2::ContextCreationAttribHelper attributes;
+    attributes.alpha_size = -1;
+    attributes.stencil_size = 0;
+    attributes.depth_size = 0;
+    attributes.samples = 0;
+    attributes.sample_buffers = 0;
+    attributes.bind_generates_resource = false;
 
-  DCHECK(window_);
-  DCHECK_NE(surface_handle_, gpu::kNullSurfaceHandle);
+    if (has_transparent_background_) {
+      attributes.alpha_size = 8;
+    } else if (base::SysInfo::IsLowEndDevice()) {
+      // In this case we prefer to use RGB565 format instead of RGBA8888 if
+      // possible.
+      // TODO(danakj): GpuCommandBufferStub constructor checks for alpha == 0 in
+      // order to enable 565, but it should avoid using 565 when -1s are
+      // specified
+      // (IOW check that a <= 0 && rgb > 0 && rgb <= 565) then alpha should be
+      // -1.
+      attributes.alpha_size = 0;
+      attributes.red_size = 5;
+      attributes.green_size = 6;
+      attributes.blue_size = 5;
+    }
 
-  BrowserGpuChannelHostFactory* factory =
-      BrowserGpuChannelHostFactory::instance();
-  // This channel might be lost (and even if it isn't right now, it might
-  // still get marked as lost from the IO thread, at any point in time really).
-  // But from here on just try and always lead to either
-  // DidInitializeOutputSurface() or DidFailToInitializeOutputSurface().
-  scoped_refptr<gpu::GpuChannelHost> gpu_channel_host(factory->GetGpuChannel());
+    pending_swapbuffers_ = 0;
 
-  GURL url("chrome://gpu/CompositorImpl::CreateOutputSurface");
-  constexpr bool automatic_flushes = false;
+    DCHECK(window_);
+    DCHECK_NE(surface_handle_, gpu::kNullSurfaceHandle);
 
-  constexpr size_t kBytesPerPixel = 4;
-  const size_t full_screen_texture_size_in_bytes =
-      gfx::DeviceDisplayInfo().GetDisplayHeight() *
-      gfx::DeviceDisplayInfo().GetDisplayWidth() * kBytesPerPixel;
+    BrowserGpuChannelHostFactory* factory =
+        BrowserGpuChannelHostFactory::instance();
+    // This channel might be lost (and even if it isn't right now, it might
+    // still get marked as lost from the IO thread, at any point in time
+    // really).
+    // But from here on just try and always lead to either
+    // DidInitializeOutputSurface() or DidFailToInitializeOutputSurface().
+    scoped_refptr<gpu::GpuChannelHost> gpu_channel_host(
+        factory->GetGpuChannel());
 
-  gpu::SharedMemoryLimits limits;
-  // This limit is meant to hold the contents of the display compositor
-  // drawing the scene. See discussion here:
-  // https://codereview.chromium.org/1900993002/diff/90001/content/browser/renderer_host/compositor_impl_android.cc?context=3&column_width=80&tab_spaces=8
-  limits.command_buffer_size = 64 * 1024;
-  // These limits are meant to hold the uploads for the browser UI without
-  // any excess space.
-  limits.start_transfer_buffer_size = 64 * 1024;
-  limits.min_transfer_buffer_size = 64 * 1024;
-  limits.max_transfer_buffer_size = full_screen_texture_size_in_bytes;
-  // Texture uploads may use mapped memory so give a reasonable limit for them.
-  limits.mapped_memory_reclaim_limit = full_screen_texture_size_in_bytes;
+    GURL url("chrome://gpu/CompositorImpl::CreateOutputSurface");
+    constexpr bool automatic_flushes = false;
 
-  scoped_refptr<ContextProviderCommandBuffer> context_provider(
-      new ContextProviderCommandBuffer(
-          std::move(gpu_channel_host), surface_handle_, url,
-          gfx::PreferIntegratedGpu, automatic_flushes, limits, attributes,
-          nullptr,
-          command_buffer_metrics::DISPLAY_COMPOSITOR_ONSCREEN_CONTEXT));
-  DCHECK(context_provider.get());
+    constexpr size_t kBytesPerPixel = 4;
+    const size_t full_screen_texture_size_in_bytes =
+        gfx::DeviceDisplayInfo().GetDisplayHeight() *
+        gfx::DeviceDisplayInfo().GetDisplayWidth() * kBytesPerPixel;
 
-  std::unique_ptr<cc::OutputSurface> real_output_surface(
-      new OutputSurfaceWithoutParent(
-          this, context_provider,
-          base::Bind(&CompositorImpl::PopulateGpuCapabilities,
-                     base::Unretained(this)),
-          base::WrapUnique(new ExternalBeginFrameSource(this))));
+    gpu::SharedMemoryLimits limits;
+    // This limit is meant to hold the contents of the display compositor
+    // drawing the scene. See discussion here:
+    // https://codereview.chromium.org/1900993002/diff/90001/content/browser/renderer_host/compositor_impl_android.cc?context=3&column_width=80&tab_spaces=8
+    limits.command_buffer_size = 64 * 1024;
+    // These limits are meant to hold the uploads for the browser UI without
+    // any excess space.
+    limits.start_transfer_buffer_size = 64 * 1024;
+    limits.min_transfer_buffer_size = 64 * 1024;
+    limits.max_transfer_buffer_size = full_screen_texture_size_in_bytes;
+    // Texture uploads may use mapped memory so give a reasonable limit for
+    // them.
+    limits.mapped_memory_reclaim_limit = full_screen_texture_size_in_bytes;
+
+    context_provider = new ContextProviderCommandBuffer(
+        std::move(gpu_channel_host), surface_handle_, url,
+        gfx::PreferIntegratedGpu, automatic_flushes, limits, attributes,
+        nullptr, command_buffer_metrics::DISPLAY_COMPOSITOR_ONSCREEN_CONTEXT);
+    DCHECK(context_provider.get());
+
+    real_output_surface = base::WrapUnique(new OutputSurfaceWithoutParent(
+        this, context_provider,
+        base::Bind(&CompositorImpl::PopulateGpuCapabilities,
+                   base::Unretained(this)),
+        base::WrapUnique(new ExternalBeginFrameSource(this))));
+  }
 
   cc::SurfaceManager* manager = GetSurfaceManager();
   display_client_.reset(new cc::OnscreenDisplayClient(
@@ -591,9 +683,16 @@ void CompositorImpl::CreateOutputSurface() {
       BrowserGpuMemoryBufferManager::current(),
       host_->settings().renderer_settings, base::ThreadTaskRunnerHandle::Get(),
       surface_id_allocator_->id_namespace()));
+
   std::unique_ptr<cc::SurfaceDisplayOutputSurface> surface_output_surface(
-      new cc::SurfaceDisplayOutputSurface(manager, surface_id_allocator_.get(),
-                                          context_provider, nullptr));
+      vulkan_context_provider
+          ? new cc::SurfaceDisplayOutputSurface(
+                manager, surface_id_allocator_.get(),
+                static_cast<scoped_refptr<cc::VulkanContextProvider>>(
+                    vulkan_context_provider))
+          : new cc::SurfaceDisplayOutputSurface(manager,
+                                                surface_id_allocator_.get(),
+                                                context_provider, nullptr));
 
   display_client_->set_surface_output_surface(surface_output_surface.get());
   surface_output_surface->set_display_client(display_client_.get());

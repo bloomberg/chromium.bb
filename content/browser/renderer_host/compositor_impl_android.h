@@ -36,6 +36,7 @@ class LayerTreeHost;
 class OnscreenDisplayClient;
 class SurfaceIdAllocator;
 class SurfaceManager;
+class VulkanInProcessContextProvider;
 }
 
 namespace content {
@@ -64,6 +65,9 @@ class CONTENT_EXPORT CompositorImpl
 
   static cc::SurfaceManager* GetSurfaceManager();
   static std::unique_ptr<cc::SurfaceIdAllocator> CreateSurfaceIdAllocator();
+
+  static scoped_refptr<cc::VulkanInProcessContextProvider>
+  SharedVulkanContextProviderAndroid();
 
   void PopulateGpuCapabilities(gpu::Capabilities gpu_capabilities);
 
