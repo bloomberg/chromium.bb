@@ -190,26 +190,26 @@ class FakeDataFetcher : public DataFetcherSharedMemoryBase {
 
 class FakeNonPollingDataFetcher : public FakeDataFetcher {
  public:
-  FakeNonPollingDataFetcher() { }
+  FakeNonPollingDataFetcher() : update_(true) {}
   ~FakeNonPollingDataFetcher() override {}
 
   bool Start(ConsumerType consumer_type, void* buffer) override {
     Init(consumer_type, buffer);
     switch (consumer_type) {
       case CONSUMER_TYPE_MOTION:
-        UpdateMotion();
+        if (update_) UpdateMotion();
         start_motion_.Signal();
         break;
       case CONSUMER_TYPE_ORIENTATION:
-        UpdateOrientation();
+        if (update_) UpdateOrientation();
         start_orientation_.Signal();
         break;
       case CONSUMER_TYPE_ORIENTATION_ABSOLUTE:
-        UpdateOrientationAbsolute();
+        if (update_) UpdateOrientationAbsolute();
         start_orientation_absolute_.Signal();
         break;
       case CONSUMER_TYPE_LIGHT:
-        UpdateLight();
+        if (update_) UpdateLight();
         start_light_.Signal();
         break;
       default:
@@ -244,8 +244,11 @@ class FakeNonPollingDataFetcher : public FakeDataFetcher {
   }
 
   FetcherType GetType() const override { return FakeDataFetcher::GetType(); }
+  void set_update(bool update) { update_ = update; }
 
  private:
+  bool update_;
+
   DISALLOW_COPY_AND_ASSIGN(FakeNonPollingDataFetcher);
 };
 
@@ -562,6 +565,25 @@ TEST(DataFetcherSharedMemoryBaseTest, DoesNotPollZeroDelay) {
   fake_data_fetcher.WaitForStop(CONSUMER_TYPE_ORIENTATION);
 }
 
+TEST(DataFetcherSharedMemoryBaseTest, DoesClearBufferOnStart) {
+  FakeNonPollingDataFetcher fake_data_fetcher;
+  EXPECT_TRUE(fake_data_fetcher.StartFetchingDeviceData(
+      CONSUMER_TYPE_ORIENTATION));
+  fake_data_fetcher.WaitForStart(CONSUMER_TYPE_ORIENTATION);
+  EXPECT_EQ(1, fake_data_fetcher.GetOrientationBuffer()->data.alpha);
+  fake_data_fetcher.StopFetchingDeviceData(CONSUMER_TYPE_ORIENTATION);
+  fake_data_fetcher.WaitForStop(CONSUMER_TYPE_ORIENTATION);
+
+  // Restart orientation without updating the memory buffer and check that
+  // it has been cleared to its initial state.
+  fake_data_fetcher.set_update(false);
+  EXPECT_TRUE(fake_data_fetcher.StartFetchingDeviceData(
+      CONSUMER_TYPE_ORIENTATION));
+  fake_data_fetcher.WaitForStart(CONSUMER_TYPE_ORIENTATION);
+  EXPECT_EQ(0, fake_data_fetcher.GetOrientationBuffer()->data.alpha);
+  fake_data_fetcher.StopFetchingDeviceData(CONSUMER_TYPE_ORIENTATION);
+  fake_data_fetcher.WaitForStop(CONSUMER_TYPE_ORIENTATION);
+}
 
 }  // namespace
 

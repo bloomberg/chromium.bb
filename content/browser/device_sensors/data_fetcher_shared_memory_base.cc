@@ -133,6 +133,12 @@ bool DataFetcherSharedMemoryBase::StartFetchingDeviceData(
   if (!buffer)
     return false;
 
+  size_t buffer_size = GetConsumerSharedMemoryBufferSize(consumer_type);
+  // buffer size should be strictly positive because buffer is non-zero.
+  DCHECK(buffer_size > 0);
+  // make sure to clear any potentially stale values in the memory buffer.
+  memset(buffer, 0, buffer_size);
+
   if (GetType() != FETCHER_TYPE_DEFAULT) {
     if (!InitAndStartPollingThreadIfNecessary())
       return false;
