@@ -329,9 +329,7 @@
     {
       # GN version: //mojo/public/c/test_support
       'target_name': 'mojo_public_test_support',
-      'defines': [
-        'MOJO_TEST_SUPPORT_IMPLEMENTATION',
-      ],
+      'type': 'static_library',
       'include_dirs': [
         '..',
       ],
@@ -342,23 +340,9 @@
       },
       'sources': [
         'public/c/test_support/test_support.h',
-        'public/c/test_support/test_support_export.h',
         # TODO(vtl): Convert this to thunks http://crbug.com/386799
         'public/tests/test_support_private.cc',
         'public/tests/test_support_private.h',
-      ],
-      'conditions': [
-        ['OS=="ios"', {
-          'type': 'static_library',
-        }, {
-          'type': 'shared_library',
-        }],
-        ['OS=="mac"', {
-          'xcode_settings': {
-            # Make it a run-path dependent library.
-            'DYLIB_INSTALL_NAME_BASE': '@loader_path',
-          },
-        }],
       ],
     },
     {
