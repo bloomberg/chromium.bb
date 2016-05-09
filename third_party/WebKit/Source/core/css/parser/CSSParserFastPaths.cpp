@@ -643,7 +643,6 @@ bool CSSParserFastPaths::isValidKeywordPropertyAndValue(CSSPropertyID propertyId
     case CSSPropertyWebkitBoxPack:
         return valueID == CSSValueStart || valueID == CSSValueEnd || valueID == CSSValueCenter || valueID == CSSValueJustify;
     case CSSPropertyColumnFill:
-        ASSERT(RuntimeEnabledFeatures::columnFillEnabled());
         return valueID == CSSValueAuto || valueID == CSSValueBalance;
     case CSSPropertyAlignContent:
         // FIXME: Per CSS alignment, this property should accept an optional <overflow-position>. We should share this parsing code with 'justify-self'.

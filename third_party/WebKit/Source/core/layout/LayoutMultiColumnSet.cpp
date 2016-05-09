@@ -277,10 +277,8 @@ bool LayoutMultiColumnSet::heightIsAuto() const
         // even if column-fill isn't 'balance' - in accordance with the spec). Pretending that
         // column-fill is auto also matches the old multicol implementation, which has no support
         // for this property.
-        if (RuntimeEnabledFeatures::columnFillEnabled()) {
-            if (multiColumnBlockFlow()->style()->getColumnFill() == ColumnFillBalance)
-                return true;
-        }
+        if (multiColumnBlockFlow()->style()->getColumnFill() == ColumnFillBalance)
+            return true;
         if (LayoutBox* next = nextSiblingBox()) {
             if (next->isLayoutMultiColumnSpannerPlaceholder()) {
                 // If we're followed by a spanner, we need to balance.

@@ -35,7 +35,6 @@ BackspaceDefaultHandler status=test
 CacheIgnoreSearchOption status=experimental
 Canvas2dImageChromium status=experimental
 ClientHints status=stable
-ColumnFill status=stable
 CompositedSelectionUpdate
 CompositorWorker status=experimental
 ContextMenu status=experimental

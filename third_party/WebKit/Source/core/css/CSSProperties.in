@@ -177,7 +177,7 @@ clip-rule inherited, svg, type_name=WindRule
 color-interpolation inherited, svg
 color-interpolation-filters inherited, svg, type_name=EColorInterpolation
 color-rendering inherited, svg
-column-fill runtime_flag=ColumnFill, type_name=ColumnFill
+column-fill type_name=ColumnFill
 contain runtime_flag=CSSContainment, converter=convertFlags<Containment>
 content custom_all
 counter-increment custom_all

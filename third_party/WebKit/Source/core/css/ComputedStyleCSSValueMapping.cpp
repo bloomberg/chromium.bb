@@ -1725,7 +1725,6 @@ CSSValue* ComputedStyleCSSValueMapping::get(CSSPropertyID propertyID, const Comp
             return cssValuePool().createIdentifierValue(CSSValueAuto);
         return cssValuePool().createValue(style.columnCount(), CSSPrimitiveValue::UnitType::Number);
     case CSSPropertyColumnFill:
-        ASSERT(RuntimeEnabledFeatures::columnFillEnabled());
         return cssValuePool().createValue(style.getColumnFill());
     case CSSPropertyColumnGap:
         if (style.hasNormalColumnGap())
