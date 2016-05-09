@@ -315,13 +315,13 @@ def DownloadHostGcc(args):
 def AddCMakeToPath():
   """Download CMake and add it to PATH."""
   if sys.platform == 'win32':
-    zip_name = 'cmake-3.2.2-win32-x86.zip'
+    zip_name = 'cmake-3.4.3-win32-x86.zip'
     cmake_dir = os.path.join(LLVM_BUILD_TOOLS_DIR,
-                             'cmake-3.2.2-win32-x86', 'bin')
+                             'cmake-3.4.3-win32-x86', 'bin')
   else:
     suffix = 'Darwin' if sys.platform == 'darwin' else 'Linux'
-    zip_name = 'cmake322_%s.tgz' % suffix
-    cmake_dir = os.path.join(LLVM_BUILD_TOOLS_DIR, 'cmake322', 'bin')
+    zip_name = 'cmake343_%s.tgz' % suffix
+    cmake_dir = os.path.join(LLVM_BUILD_TOOLS_DIR, 'cmake343', 'bin')
   if not os.path.exists(cmake_dir):
     DownloadAndUnpack(CDS_URL + '/tools/' + zip_name, LLVM_BUILD_TOOLS_DIR)
   os.environ['PATH'] = cmake_dir + os.pathsep + os.environ.get('PATH', '')
