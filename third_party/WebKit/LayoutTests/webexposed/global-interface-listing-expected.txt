@@ -1687,11 +1687,6 @@ interface GamepadEvent : Event
     attribute @@toStringTag
     getter gamepad
     method constructor
-interface HMDVRDevice : VRDevice
-    attribute @@toStringTag
-    method constructor
-    method getEyeParameters
-    method setFieldOfView
 interface HTMLAllCollection
     attribute @@toStringTag
     getter length
@@ -3871,7 +3866,7 @@ interface Navigator
     method getBattery
     method getGamepads
     method getInstalledRelatedApps
-    method getVRDevices
+    method getVRDisplays
     method isProtocolHandlerRegistered
     method javaEnabled
     method registerProtocolHandler
@@ -4304,12 +4299,6 @@ interface PopStateEvent : Event
     attribute @@toStringTag
     getter state
     method constructor
-interface PositionSensorVRDevice : VRDevice
-    attribute @@toStringTag
-    method constructor
-    method getImmediateState
-    method getState
-    method resetSensor
 interface PositionValue : StyleValue
     attribute @@toStringTag
     getter x
@@ -6296,20 +6285,39 @@ interface USBOutTransferResult
     getter bytesWritten
     getter status
     method constructor
-interface VRDevice
+interface VRDisplay
     attribute @@toStringTag
-    getter deviceId
-    getter deviceName
-    getter hardwareUnitId
+    getter capabilities
+    getter displayId
+    getter displayName
+    getter isConnected
+    getter isPresenting
+    getter stageParameters
+    method cancelAnimationFrame
+    method constructor
+    method exitPresent
+    method getEyeParameters
+    method getImmediatePose
+    method getLayers
+    method getPose
+    method requestAnimationFrame
+    method requestPresent
+    method resetPose
+    method submitFrame
+interface VRDisplayCapabilities
+    attribute @@toStringTag
+    getter canPresent
+    getter hasExternalDisplay
+    getter hasOrientation
+    getter hasPosition
+    getter maxLayers
     method constructor
 interface VREyeParameters
     attribute @@toStringTag
-    getter currentFieldOfView
-    getter eyeTranslation
-    getter maximumFieldOfView
-    getter minimumFieldOfView
-    getter recommendedFieldOfView
-    getter renderRect
+    getter fieldOfView
+    getter offset
+    getter renderHeight
+    getter renderWidth
     method constructor
 interface VRFieldOfView
     attribute @@toStringTag
@@ -6322,7 +6330,7 @@ interface VRFieldOfView
     setter leftDegrees
     setter rightDegrees
     setter upDegrees
-interface VRPositionState
+interface VRPose
     attribute @@toStringTag
     getter angularAcceleration
     getter angularVelocity
@@ -6331,6 +6339,12 @@ interface VRPositionState
     getter orientation
     getter position
     getter timeStamp
+    method constructor
+interface VRStageParameters
+    attribute @@toStringTag
+    getter sittingToStandingTransform
+    getter sizeX
+    getter sizeZ
     method constructor
 interface VTTCue : TextTrackCue
     attribute @@toStringTag

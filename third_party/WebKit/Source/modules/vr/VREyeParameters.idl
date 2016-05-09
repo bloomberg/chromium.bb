@@ -6,13 +6,9 @@
 [
     RuntimeEnabled=WebVR,
 ] interface VREyeParameters {
-  /* These values are expected to be static per-device/per-user */
-  readonly attribute VRFieldOfView minimumFieldOfView;
-  readonly attribute VRFieldOfView maximumFieldOfView;
-  readonly attribute VRFieldOfView recommendedFieldOfView;
-  readonly attribute DOMPoint eyeTranslation;
-
   /* These values will vary after a FOV has been set */
-  readonly attribute VRFieldOfView currentFieldOfView;
-  readonly attribute DOMRect renderRect;
+  readonly attribute Float32Array offset;
+  readonly attribute VRFieldOfView fieldOfView;
+  readonly attribute unsigned long renderWidth;
+  readonly attribute unsigned long renderHeight;
 };

@@ -6,44 +6,35 @@
 #define VREyeParameters_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
-#include "core/dom/DOMPoint.h"
-#include "core/dom/DOMRect.h"
+#include "core/dom/DOMTypedArray.h"
 #include "modules/vr/VRFieldOfView.h"
 #include "platform/heap/Handle.h"
-#include "public/platform/modules/vr/WebVR.h"
+
 #include "wtf/Forward.h"
 
 namespace blink {
 
-class VREyeParameters final : public GarbageCollected<VREyeParameters>, public ScriptWrappable {
+struct WebVREyeParameters;
+
+class VREyeParameters final : public GarbageCollectedFinalized<VREyeParameters>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static VREyeParameters* create()
-    {
-        return new VREyeParameters();
-    }
+    VREyeParameters();
 
-    VRFieldOfView* minimumFieldOfView() const { return m_minimumFieldOfView; }
-    VRFieldOfView* maximumFieldOfView() const { return m_maximumFieldOfView; }
-    VRFieldOfView* recommendedFieldOfView() const { return m_recommendedFieldOfView; }
-    DOMPoint* eyeTranslation() const { return m_eyeTranslation; }
-    VRFieldOfView* currentFieldOfView() const { return m_currentFieldOfView; }
-    DOMRect* renderRect() const { return m_renderRect; }
+    DOMFloat32Array* offset() const { return m_offset; }
+    VRFieldOfView* fieldOfView() const { return m_fieldOfView; }
+    unsigned long renderWidth() const { return m_renderWidth; }
+    unsigned long renderHeight() const { return m_renderHeight; }
 
-    void setFromWebVREyeParameters(const WebVREyeParameters&);
+    void update(const WebVREyeParameters&);
 
     DECLARE_VIRTUAL_TRACE()
 
 private:
-    VREyeParameters();
-
-    Member<VRFieldOfView> m_minimumFieldOfView;
-    Member<VRFieldOfView> m_maximumFieldOfView;
-    Member<VRFieldOfView> m_recommendedFieldOfView;
-    Member<DOMPoint> m_eyeTranslation;
-
-    Member<VRFieldOfView> m_currentFieldOfView;
-    Member<DOMRect> m_renderRect;
+    Member<DOMFloat32Array> m_offset;
+    Member<VRFieldOfView> m_fieldOfView;
+    unsigned long m_renderWidth;
+    unsigned long m_renderHeight;
 };
 
 } // namespace blink

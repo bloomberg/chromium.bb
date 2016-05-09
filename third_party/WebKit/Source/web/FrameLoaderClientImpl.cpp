@@ -63,7 +63,7 @@
 #include "modules/serviceworkers/NavigatorServiceWorker.h"
 #include "modules/serviceworkers/ServiceWorkerLinkResource.h"
 #include "modules/storage/DOMWindowStorageController.h"
-#include "modules/vr/NavigatorVRDevice.h"
+#include "modules/vr/NavigatorVR.h"
 #include "platform/Histogram.h"
 #include "platform/MIMETypeRegistry.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -167,7 +167,7 @@ void FrameLoaderClientImpl::dispatchDidClearWindowObjectInMainWorld()
             NavigatorServiceWorker::from(*document);
             DOMWindowStorageController::from(*document);
             if (RuntimeEnabledFeatures::webVREnabled())
-                NavigatorVRDevice::from(*document);
+                NavigatorVR::from(*document);
         }
     }
     // FIXME: when extensions go out of process, this whole concept stops working.
