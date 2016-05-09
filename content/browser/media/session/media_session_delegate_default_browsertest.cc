@@ -16,34 +16,50 @@ class MediaSessionDelegateDefaultBrowserTest : public ContentBrowserTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kEnableDefaultMediaSession);
   }
+
+  void Run(WebContents* start_contents, WebContents* interrupt_contents) {
+    std::unique_ptr<MockMediaSessionObserver> media_session_observer(
+        new MockMediaSessionObserver);
+
+    MediaSession* media_session = MediaSession::Get(start_contents);
+    ASSERT_TRUE(media_session);
+
+    MediaSession* other_media_session = MediaSession::Get(interrupt_contents);
+    ASSERT_TRUE(other_media_session);
+
+    media_session_observer->StartNewPlayer();
+    media_session->AddPlayer(
+        media_session_observer.get(), 0, MediaSession::Type::Content);
+    EXPECT_TRUE(media_session->IsActive());
+    EXPECT_FALSE(other_media_session->IsActive());
+
+    media_session_observer->StartNewPlayer();
+    other_media_session->AddPlayer(
+        media_session_observer.get(), 1, MediaSession::Type::Content);
+    EXPECT_FALSE(media_session->IsActive());
+    EXPECT_TRUE(other_media_session->IsActive());
+
+    media_session->Stop(MediaSession::SuspendType::UI);
+    other_media_session->Stop(MediaSession::SuspendType::UI);
+  }
 };
 
+// Two windows from the same BrowserContext.
 IN_PROC_BROWSER_TEST_F(MediaSessionDelegateDefaultBrowserTest,
                        ActiveWebContentsPauseOthers) {
-  std::unique_ptr<MockMediaSessionObserver> media_session_observer(
-      new MockMediaSessionObserver);
+  Run(shell()->web_contents(), CreateBrowser()->web_contents());
+}
 
-  MediaSession* media_session = MediaSession::Get(shell()->web_contents());
-  ASSERT_TRUE(media_session);
+// Regular BrowserContext is interrupted by OffTheRecord one.
+IN_PROC_BROWSER_TEST_F(MediaSessionDelegateDefaultBrowserTest,
+                       RegularBrowserInterruptsOffTheRecord) {
+  Run(shell()->web_contents(), CreateOffTheRecordBrowser()->web_contents());
+}
 
-  WebContents* other_web_contents = CreateBrowser()->web_contents();
-  MediaSession* other_media_session = MediaSession::Get(other_web_contents);
-  ASSERT_TRUE(other_media_session);
-
-  media_session_observer->StartNewPlayer();
-  media_session->AddPlayer(
-      media_session_observer.get(), 0, MediaSession::Type::Content);
-  EXPECT_TRUE(media_session->IsActive());
-  EXPECT_FALSE(other_media_session->IsActive());
-
-  media_session_observer->StartNewPlayer();
-  other_media_session->AddPlayer(
-      media_session_observer.get(), 1, MediaSession::Type::Content);
-  EXPECT_FALSE(media_session->IsActive());
-  EXPECT_TRUE(other_media_session->IsActive());
-
-  media_session->Stop(MediaSession::SuspendType::UI);
-  other_media_session->Stop(MediaSession::SuspendType::UI);
+// OffTheRecord BrowserContext is interrupted by regular one.
+IN_PROC_BROWSER_TEST_F(MediaSessionDelegateDefaultBrowserTest,
+                       OffTheRecordInterruptsRegular) {
+  Run(CreateOffTheRecordBrowser()->web_contents(), shell()->web_contents());
 }
 
 }  // namespace content
