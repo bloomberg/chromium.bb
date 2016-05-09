@@ -59,6 +59,16 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattCharacteristicServiceProviderImpl
   void GetAll(dbus::MethodCall* method_call,
               dbus::ExportedObject::ResponseSender response_sender);
 
+  // Called by BlueZ when a remote central is requesting to read the value of
+  // this characteristic.
+  void ReadValue(dbus::MethodCall* method_call,
+                 dbus::ExportedObject::ResponseSender response_sender);
+
+  // Called by BlueZ when a remote central is requesting to write the value of
+  // this characteristic.
+  void WriteValue(dbus::MethodCall* method_call,
+                  dbus::ExportedObject::ResponseSender response_sender);
+
   // Called by dbus:: when a method is exported.
   void OnExported(const std::string& interface_name,
                   const std::string& method_name,
@@ -85,6 +95,17 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattCharacteristicServiceProviderImpl
   // characteristic value.
   void OnSet(dbus::MethodCall* method_call,
              dbus::ExportedObject::ResponseSender response_sender);
+
+  // Called by the Delegate in response to a method to call to read the value
+  // of this characteristic.
+  void OnReadValue(dbus::MethodCall* method_call,
+                   dbus::ExportedObject::ResponseSender response_sender,
+                   const std::vector<uint8_t>& value);
+
+  // Called by the Delegate in response to a method to call to write the value
+  // of this characteristic.
+  void OnWriteValue(dbus::MethodCall* method_call,
+                    dbus::ExportedObject::ResponseSender response_sender);
 
   // Called by the Delegate in response to a failed method call to get or set
   // the characteristic value.

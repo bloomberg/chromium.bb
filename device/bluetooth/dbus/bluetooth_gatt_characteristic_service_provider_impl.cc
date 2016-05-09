@@ -55,23 +55,38 @@ BluetoothGattCharacteristicServiceProviderImpl::
 
   exported_object_ = bus_->GetExportedObject(object_path_);
 
+  // org.freedesktop.DBus.Properties interface:
   exported_object_->ExportMethod(
       dbus::kDBusPropertiesInterface, dbus::kDBusPropertiesGet,
       base::Bind(&BluetoothGattCharacteristicServiceProviderImpl::Get,
                  weak_ptr_factory_.GetWeakPtr()),
       base::Bind(&BluetoothGattCharacteristicServiceProviderImpl::OnExported,
                  weak_ptr_factory_.GetWeakPtr()));
-
   exported_object_->ExportMethod(
       dbus::kDBusPropertiesInterface, dbus::kDBusPropertiesSet,
       base::Bind(&BluetoothGattCharacteristicServiceProviderImpl::Set,
                  weak_ptr_factory_.GetWeakPtr()),
       base::Bind(&BluetoothGattCharacteristicServiceProviderImpl::OnExported,
                  weak_ptr_factory_.GetWeakPtr()));
-
   exported_object_->ExportMethod(
       dbus::kDBusPropertiesInterface, dbus::kDBusPropertiesGetAll,
       base::Bind(&BluetoothGattCharacteristicServiceProviderImpl::GetAll,
+                 weak_ptr_factory_.GetWeakPtr()),
+      base::Bind(&BluetoothGattCharacteristicServiceProviderImpl::OnExported,
+                 weak_ptr_factory_.GetWeakPtr()));
+
+  // org.bluez.GattCharacteristic1 interface:
+  exported_object_->ExportMethod(
+      bluetooth_gatt_characteristic::kBluetoothGattCharacteristicInterface,
+      bluetooth_gatt_characteristic::kReadValue,
+      base::Bind(&BluetoothGattCharacteristicServiceProviderImpl::ReadValue,
+                 weak_ptr_factory_.GetWeakPtr()),
+      base::Bind(&BluetoothGattCharacteristicServiceProviderImpl::OnExported,
+                 weak_ptr_factory_.GetWeakPtr()));
+  exported_object_->ExportMethod(
+      bluetooth_gatt_characteristic::kBluetoothGattCharacteristicInterface,
+      bluetooth_gatt_characteristic::kWriteValue,
+      base::Bind(&BluetoothGattCharacteristicServiceProviderImpl::WriteValue,
                  weak_ptr_factory_.GetWeakPtr()),
       base::Bind(&BluetoothGattCharacteristicServiceProviderImpl::OnExported,
                  weak_ptr_factory_.GetWeakPtr()));
@@ -304,6 +319,46 @@ void BluetoothGattCharacteristicServiceProviderImpl::GetAll(
                  weak_ptr_factory_.GetWeakPtr(), method_call, response_sender));
 }
 
+void BluetoothGattCharacteristicServiceProviderImpl::ReadValue(
+    dbus::MethodCall* method_call,
+    dbus::ExportedObject::ResponseSender response_sender) {
+  VLOG(3) << "BluetoothGattCharacteristicServiceProvider::ReadValue: "
+          << object_path_.value();
+  DCHECK(OnOriginThread());
+  DCHECK(delegate_);
+  delegate_->GetValue(
+      base::Bind(&BluetoothGattCharacteristicServiceProviderImpl::OnReadValue,
+                 weak_ptr_factory_.GetWeakPtr(), method_call, response_sender),
+      base::Bind(&BluetoothGattCharacteristicServiceProviderImpl::OnFailure,
+                 weak_ptr_factory_.GetWeakPtr(), method_call, response_sender));
+}
+
+void BluetoothGattCharacteristicServiceProviderImpl::WriteValue(
+    dbus::MethodCall* method_call,
+    dbus::ExportedObject::ResponseSender response_sender) {
+  VLOG(3) << "BluetoothGattCharacteristicServiceProvider::WriteValue: "
+          << object_path_.value();
+  DCHECK(OnOriginThread());
+
+  dbus::MessageReader reader(method_call);
+  const uint8_t* bytes = NULL;
+  size_t length = 0;
+
+  if (!reader.PopArrayOfBytes(&bytes, &length))
+    VLOG(2) << "Error reading array of bytes in in WriteValue";
+  std::vector<uint8_t> value;
+  if (bytes)
+    value.assign(bytes, bytes + length);
+
+  DCHECK(delegate_);
+  delegate_->SetValue(
+      value,
+      base::Bind(&BluetoothGattCharacteristicServiceProviderImpl::OnWriteValue,
+                 weak_ptr_factory_.GetWeakPtr(), method_call, response_sender),
+      base::Bind(&BluetoothGattCharacteristicServiceProviderImpl::OnFailure,
+                 weak_ptr_factory_.GetWeakPtr(), method_call, response_sender));
+}
+
 void BluetoothGattCharacteristicServiceProviderImpl::OnExported(
     const std::string& interface_name,
     const std::string& method_name,
@@ -323,6 +378,30 @@ void BluetoothGattCharacteristicServiceProviderImpl::OnGetAll(
       dbus::Response::FromMethodCall(method_call);
   dbus::MessageWriter writer(response.get());
   WriteProperties(&writer, &value);
+  response_sender.Run(std::move(response));
+}
+
+void BluetoothGattCharacteristicServiceProviderImpl::OnReadValue(
+    dbus::MethodCall* method_call,
+    dbus::ExportedObject::ResponseSender response_sender,
+    const std::vector<uint8_t>& value) {
+  VLOG(3) << "Characteristic value obtained from delegate. Responding to "
+             "ReadValue.";
+
+  std::unique_ptr<dbus::Response> response =
+      dbus::Response::FromMethodCall(method_call);
+  dbus::MessageWriter writer(response.get());
+  writer.AppendArrayOfBytes(value.data(), value.size());
+  response_sender.Run(std::move(response));
+}
+
+void BluetoothGattCharacteristicServiceProviderImpl::OnWriteValue(
+    dbus::MethodCall* method_call,
+    dbus::ExportedObject::ResponseSender response_sender) {
+  VLOG(3) << "Responding to WriteValue.";
+
+  std::unique_ptr<dbus::Response> response =
+      dbus::Response::FromMethodCall(method_call);
   response_sender.Run(std::move(response));
 }
 
