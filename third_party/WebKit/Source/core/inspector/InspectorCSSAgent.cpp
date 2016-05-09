@@ -1437,7 +1437,7 @@ PassOwnPtr<protocol::CSS::CSSMedia> InspectorCSSAgent::buildMediaObject(const Me
         mediaObject->setMediaList(mediaListArray.release());
 
     if (inspectorStyleSheet && mediaListSource != MediaListSourceLinkedSheet)
-        mediaObject->setParentStyleSheetId(inspectorStyleSheet->id());
+        mediaObject->setStyleSheetId(inspectorStyleSheet->id());
 
     if (!sourceURL.isEmpty()) {
         mediaObject->setSourceURL(sourceURL);

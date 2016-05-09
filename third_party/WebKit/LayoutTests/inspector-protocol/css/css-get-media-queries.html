@@ -23,8 +23,8 @@ function test()
         {
             if (media1.text != media2.text)
                 return compareValue(media1.text, media2.text);
-            var hasSource1 = !!(media1.parentStyleSheetId && media1.range);
-            var hasSource2 = !!(media2.parentStyleSheetId && media2.range);
+            var hasSource1 = !!(media1.styleSheetId && media1.range);
+            var hasSource2 = !!(media2.styleSheetId && media2.range);
             if (hasSource1 != hasSource2)
                 return compareValue(hasSource1, hasSource2);
             if (media1.range.startLine != media2.range.startLine)
@@ -41,7 +41,7 @@ function test()
 
         var styleSheetIds = [];
         for (var i = 0; i < response.medias.length; ++i) {
-            var styleSheetId = response.medias[i].parentStyleSheetId;
+            var styleSheetId = response.medias[i].styleSheetId;
             if (styleSheetId && styleSheetIds.indexOf(styleSheetId) === -1)
                 styleSheetIds.push(styleSheetId);
         }
@@ -72,8 +72,8 @@ function test()
             InspectorTest.log("    text: " + mediaRule.text);
             InspectorTest.log("    source: " + mediaRule.source);
             InspectorTest.log("    range: " + JSON.stringify(mediaRule.range));
-            if (mediaRule.parentStyleSheetId && mediaRule.range)
-                InspectorTest.log("    computedText: " + getComputedText(styleSheetTextMap[mediaRule.parentStyleSheetId], mediaRule.range));
+            if (mediaRule.styleSheetId && mediaRule.range)
+                InspectorTest.log("    computedText: " + getComputedText(styleSheetTextMap[mediaRule.styleSheetId], mediaRule.range));
             if (!mediaRule.mediaList) {
                 InspectorTest.log("    mediaList is empty");
                 continue;
@@ -90,8 +90,8 @@ function test()
                     InspectorTest.log("            unit: " + expression.unit);
                     if (expression.valueRange) {
                         InspectorTest.log("            valueRange: " + JSON.stringify(expression.valueRange));
-                        if (mediaRule.parentStyleSheetId)
-                            InspectorTest.log("            computedText: " + getComputedText(styleSheetTextMap[mediaRule.parentStyleSheetId], expression.valueRange));
+                        if (mediaRule.styleSheetId)
+                            InspectorTest.log("            computedText: " + getComputedText(styleSheetTextMap[mediaRule.styleSheetId], expression.valueRange));
                     }
                     if (expression.computedLength)
                         InspectorTest.log("            computed length: " + expression.computedLength);
