@@ -2,18 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_DESKTOP_MEDIA_PICKER_VIEWS_H_
-#define CHROME_BROWSER_UI_VIEWS_DESKTOP_MEDIA_PICKER_VIEWS_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_DESKTOP_CAPTURE_DESKTOP_MEDIA_PICKER_VIEWS_H_
+#define CHROME_BROWSER_UI_VIEWS_DESKTOP_CAPTURE_DESKTOP_MEDIA_PICKER_VIEWS_H_
 
 #include "base/macros.h"
 #include "chrome/browser/media/desktop_media_list_observer.h"
 #include "chrome/browser/media/desktop_media_picker.h"
+#include "ui/views/controls/tabbed_pane/tabbed_pane_listener.h"
 #include "ui/views/window/dialog_delegate.h"
 
 namespace views {
 class ImageView;
 class Label;
 class Checkbox;
+class TabbedPane;
 }  // namespace views
 
 class DesktopMediaPickerDialogView;
@@ -112,7 +114,8 @@ class DesktopMediaSourceView : public views::View {
 };
 
 // Dialog view used for DesktopMediaPickerViews.
-class DesktopMediaPickerDialogView : public views::DialogDelegateView {
+class DesktopMediaPickerDialogView : public views::DialogDelegateView,
+                                     public views::TabbedPaneListener {
  public:
   DesktopMediaPickerDialogView(content::WebContents* parent_web_contents,
                                gfx::NativeWindow context,
@@ -132,6 +135,9 @@ class DesktopMediaPickerDialogView : public views::DialogDelegateView {
   void OnSelectionChanged();
   void OnDoubleClick();
 
+  // views::TabbedPaneListener overrides.
+  void TabSelectedAt(int index) override;
+
   // views::View overrides.
   gfx::Size GetPreferredSize() const override;
 
@@ -140,7 +146,9 @@ class DesktopMediaPickerDialogView : public views::DialogDelegateView {
   base::string16 GetWindowTitle() const override;
   bool IsDialogButtonEnabled(ui::DialogButton button) const override;
   views::View* GetInitiallyFocusedView() override;
+  bool ShouldDefaultButtonBeBlue() const override;
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
+  View* CreateExtraView() override;
   bool Accept() override;
   void DeleteDelegate() override;
 
@@ -148,20 +156,23 @@ class DesktopMediaPickerDialogView : public views::DialogDelegateView {
 
   DesktopMediaListView* GetMediaListViewForTesting() const;
   DesktopMediaSourceView* GetMediaSourceViewForTesting(int index) const;
+  views::Checkbox* GetCheckboxForTesting() const;
+  int GetIndexOfSourceTypeForTesting(
+      content::DesktopMediaID::Type source_type) const;
+  views::TabbedPane* GetPaneForTesting() const;
 
  private:
+  void SwitchSourceType(int index);
+
   DesktopMediaPickerViews* parent_;
-  base::string16 app_name_;
 
   views::Label* description_label_;
 
-  // |audio_share_checked_| records whether the user permits audio, when
-  // |audio_share_checkbox_| is disabled.
   views::Checkbox* audio_share_checkbox_;
-  bool audio_share_checked_;
 
-  views::ScrollView* sources_scroll_view_;
-  DesktopMediaListView* sources_list_view_;
+  views::TabbedPane* pane_;
+  std::vector<DesktopMediaListView*> list_views_;
+  std::vector<content::DesktopMediaID::Type> source_types_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopMediaPickerDialogView);
 };
@@ -201,4 +212,4 @@ class DesktopMediaPickerViews : public DesktopMediaPicker {
   DISALLOW_COPY_AND_ASSIGN(DesktopMediaPickerViews);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_DESKTOP_MEDIA_PICKER_VIEWS_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_DESKTOP_CAPTURE_DESKTOP_MEDIA_PICKER_VIEWS_H_
