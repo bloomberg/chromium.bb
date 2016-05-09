@@ -231,6 +231,7 @@ def usage(msg=None):
     Valid options:
        -h, --help, help   Print this message.
        --nohooks          Don't run hooks after checkout.
+       --force            (dangerous) Don't look for existing .gclient file.
        -n, --dry-run      Don't run commands, only print them.
        --no-history       Perform shallow clones, don't fetch the full git history.
 
@@ -255,6 +256,7 @@ def handle_args(argv):
   dry_run = False
   nohooks = False
   no_history = False
+  force = False
   while len(argv) >= 2:
     arg = argv[1]
     if not arg.startswith('-'):
@@ -266,6 +268,8 @@ def handle_args(argv):
       nohooks = True
     elif arg == '--no-history':
       no_history = True
+    elif arg == '--force':
+      force = True
     else:
       usage('Invalid option %s.' % arg)
 
@@ -279,8 +283,11 @@ def handle_args(argv):
   config = argv[1]
   props = argv[2:]
   return (
-      optparse.Values(
-          {'dry_run':dry_run, 'nohooks':nohooks, 'no_history': no_history }),
+      optparse.Values({
+        'dry_run': dry_run,
+        'nohooks': nohooks,
+        'no_history': no_history,
+        'force': force}),
       config,
       props)
 
@@ -324,7 +331,7 @@ def run(options, spec, root):
     checkout = CheckoutFactory(checkout_type, options, checkout_spec, root)
   except KeyError:
     return 1
-  if checkout.exists():
+  if not options.force and checkout.exists():
     print 'Your current directory appears to already contain, or be part of, '
     print 'a checkout. "fetch" is used only to get new checkouts. Use '
     print '"gclient sync" to update existing checkouts.'

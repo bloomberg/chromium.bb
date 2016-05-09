@@ -26,6 +26,7 @@ except ImportError:
       os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
   import subprocess2
 
+DEPOT_TOOLS=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 class Failure(Exception):
   pass
@@ -55,60 +56,54 @@ class LocalRietveld(object):
     self.base_dir = base_dir
     if not self.base_dir:
       self.base_dir = os.path.dirname(os.path.abspath(__file__))
-    # TODO(maruel): This should be in /tmp but that would mean having to fetch
-    # everytime. This test is already annoyingly slow.
     self.rietveld = os.path.join(self.base_dir, '_rietveld')
+    self.infra = os.path.join(self.base_dir, '_infra')
     self.rietveld_app = os.path.join(
-        self.rietveld, 'appengine', 'chromium_rietveld')
+        self.infra, 'infra', 'appengine', 'chromium_rietveld')
+    self.dev_app = os.path.join(
+        self.infra, 'google_appengine', 'dev_appserver.py')
     self.test_server = None
     self.port = None
     self.tempdir = None
-    self.dev_app = None
 
   def install_prerequisites(self):
-    # First, install the Google AppEngine SDK.
-    cmd = [os.path.join(self.base_dir, 'get_appengine.py'),
-           '--dest=%s' % self.base_dir]
-    try:
-      subprocess2.check_call(cmd)
-    except (OSError, subprocess2.CalledProcessError), e:
-      raise Failure('Failed to run %s\n%s' % (cmd, e))
-    sdk_path = os.path.join(self.base_dir, 'google_appengine')
-    self.dev_app = os.path.join(sdk_path, 'dev_appserver.py')
-
-    if os.path.isdir(os.path.join(self.rietveld, '.hg')):
-      # Left over from mercurial. Delete it.
-      print('Deleting deprecated mercurial rietveld files...')
+    if os.path.exists(self.rietveld):
+      print "Removing old rietveld dir"
       shutil.rmtree(self.rietveld)
 
-    # Second, checkout rietveld if not available.
-    if not os.path.isdir(self.rietveld):
-      print('Checking out rietveld...')
-      try:
-        subprocess2.check_call(['git', 'init', self.rietveld])
-        subprocess2.check_call(
-            ['git', 'remote', 'add', '-f', 'origin',
-             'https://chromium.googlesource.com/infra/infra.git'],
-            cwd=self.rietveld)
-        subprocess2.check_call(
-            ['git', 'config', 'core.sparseCheckout', 'true'],
-            cwd=self.rietveld)
-        with file(os.path.join(self.rietveld, '.git/info/sparse-checkout'),
-                  'w') as sparse_file:
-          sparse_file.write('appengine/chromium_rietveld')
-        subprocess2.check_call(
-            ['git', 'pull', 'origin', 'master'],
-            cwd=self.rietveld)
-      except (OSError, subprocess2.CalledProcessError), e:
-        raise Failure('Failed to clone rietveld. \n%s' % e)
-    else:
-      print('Syncing rietveld...')
-      try:
-        subprocess2.check_call(
-            ['git', 'pull', 'origin', 'master'],
-            cwd=self.rietveld)
-      except (OSError, subprocess2.CalledProcessError), e:
-        raise Failure('Failed to sync rietveld\n%s' % e)
+    sdk_path = os.path.join(self.base_dir, 'google_appengine')
+    if os.path.exists(sdk_path):
+      print "Removing old appengine SDK dir"
+      shutil.rmtree(sdk_path)
+
+    previous = os.environ.get('DEPOT_TOOLS_UPDATE')
+    os.environ['DEPOT_TOOLS_UPDATE'] = '0'
+    try:
+      if not os.path.isfile(os.path.join(self.infra, '.gclient')):
+        print('Checking out infra...')
+        shutil.rmtree(self.infra, ignore_errors=True)
+        try:
+          os.makedirs(self.infra)
+          subprocess2.call(
+            [sys.executable, os.path.join(DEPOT_TOOLS, 'fetch.py'),
+             '--force', 'infra', '--managed=true'],
+            cwd=self.infra)
+        except (OSError, subprocess2.CalledProcessError), e:
+          raise Failure('Failed to clone infra. \n%s' % e)
+      else:
+        print('Syncing infra...')
+        try:
+          subprocess2.call(
+            [sys.executable, os.path.join(DEPOT_TOOLS, 'gclient.py'),
+             'sync', '--force'],
+            cwd=self.infra)
+        except (OSError, subprocess2.CalledProcessError), e:
+          raise Failure('Failed to sync infra. \n%s' % e)
+    finally:
+      if previous is None:
+        del os.environ['DEPOT_TOOLS_UPDATE']
+      else:
+        os.environ['DEPOT_TOOLS_UPDATE'] = previous
 
   def start_server(self, verbose=False):
     self.install_prerequisites()
