@@ -78,8 +78,8 @@ window.addEventListener('DOMContentLoaded', function() {
     } else if (useIcons && data.largeIconUrl) {
       createThumbnail(data.largeIconUrl, 'large-icon');
       // TODO(huangs): Log event for large icons.
-    } else if (!useIcons && data.thumbnailUrl) {
-      createThumbnail(data.thumbnailUrl, 'thumbnail');
+    } else if (!useIcons && data.thumbnailUrls && data.thumbnailUrls.length) {
+      createThumbnail(data.thumbnailUrls[0], 'thumbnail');
       logEvent(NTP_LOGGING_EVENT_TYPE.NTP_THUMBNAIL_TILE);
     } else if (data.domain) {
       showDomainElement();
