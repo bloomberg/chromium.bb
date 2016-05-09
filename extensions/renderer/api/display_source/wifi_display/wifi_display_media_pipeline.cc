@@ -70,19 +70,19 @@ void WiFiDisplayMediaPipeline::RequestIDRPicture() {
   video_encoder_->RequestIDRPicture();
 }
 
-enum WiFiDisplayMediaPipeline::InitializationStep : unsigned {
-  INITIALIZE_FIRST,
-  INITIALIZE_AUDIO_ENCODER = INITIALIZE_FIRST,
-  INITIALIZE_VIDEO_ENCODER,
-  INITIALIZE_MEDIA_PACKETIZER,
-  INITIALIZE_MEDIA_SERVICE,
-  INITIALIZE_LAST = INITIALIZE_MEDIA_SERVICE
+enum class WiFiDisplayMediaPipeline::InitializationStep : unsigned {
+  FIRST,
+  AUDIO_ENCODER = FIRST,
+  VIDEO_ENCODER,
+  MEDIA_PACKETIZER,
+  MEDIA_SERVICE,
+  LAST = MEDIA_SERVICE
 };
 
 void WiFiDisplayMediaPipeline::Initialize(
     const InitCompletionCallback& callback) {
   DCHECK(!audio_encoder_ && !video_encoder_ && !packetizer_);
-  OnInitialize(callback, INITIALIZE_FIRST, true);
+  OnInitialize(callback, InitializationStep::FIRST, true);
 }
 
 void WiFiDisplayMediaPipeline::OnInitialize(
@@ -95,15 +95,16 @@ void WiFiDisplayMediaPipeline::OnInitialize(
   }
 
   InitStepCompletionCallback init_step_callback;
-  if (current_step < INITIALIZE_LAST) {
-    InitializationStep next_step =
-        static_cast<InitializationStep>(current_step + 1u);
-    init_step_callback = base::Bind(&WiFiDisplayMediaPipeline::OnInitialize,
-                               weak_factory_.GetWeakPtr(), callback, next_step);
+  if (current_step < InitializationStep::LAST) {
+    InitializationStep next_step = static_cast<InitializationStep>(
+        static_cast<unsigned>(current_step) + 1u);
+    init_step_callback =
+        base::Bind(&WiFiDisplayMediaPipeline::OnInitialize,
+                   weak_factory_.GetWeakPtr(), callback, next_step);
   }
 
   switch (current_step) {
-    case INITIALIZE_AUDIO_ENCODER:
+    case InitializationStep::AUDIO_ENCODER:
       DCHECK(!audio_encoder_);
       if (type_ & wds::AudioSession) {
         auto result_callback =
@@ -114,7 +115,7 @@ void WiFiDisplayMediaPipeline::OnInitialize(
         init_step_callback.Run(true);
       }
       break;
-    case INITIALIZE_VIDEO_ENCODER:
+    case InitializationStep::VIDEO_ENCODER:
       DCHECK(!video_encoder_);
       if (type_ & wds::VideoSession) {
         auto result_callback =
@@ -125,12 +126,12 @@ void WiFiDisplayMediaPipeline::OnInitialize(
         init_step_callback.Run(true);
       }
       break;
-    case INITIALIZE_MEDIA_PACKETIZER:
+    case InitializationStep::MEDIA_PACKETIZER:
       DCHECK(!packetizer_);
       CreateMediaPacketizer();
       init_step_callback.Run(true);
       break;
-    case INITIALIZE_MEDIA_SERVICE:
+    case InitializationStep::MEDIA_SERVICE:
       service_callback_.Run(
           mojo::GetProxy(&media_service_),
           base::Bind(&WiFiDisplayMediaPipeline::OnMediaServiceRegistered,

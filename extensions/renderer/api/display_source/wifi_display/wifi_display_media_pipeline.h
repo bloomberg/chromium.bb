@@ -61,7 +61,7 @@ class WiFiDisplayMediaPipeline {
 
  private:
   using InitStepCompletionCallback = InitCompletionCallback;
-  enum InitializationStep : unsigned;
+  enum class InitializationStep : unsigned;
 
   WiFiDisplayMediaPipeline(
       wds::SessionType type,
