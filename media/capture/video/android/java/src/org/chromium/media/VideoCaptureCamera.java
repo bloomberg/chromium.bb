@@ -38,7 +38,7 @@ public abstract class VideoCaptureCamera
     protected SurfaceTexture mSurfaceTexture = null;
     protected static final int GL_TEXTURE_EXTERNAL_OES = 0x8D65;
 
-    private static final String TAG = "cr.media";
+    private static final String TAG = "VideoCapture";
 
     protected static android.hardware.Camera.CameraInfo getCameraInfo(int id) {
         android.hardware.Camera.CameraInfo cameraInfo = new android.hardware.Camera.CameraInfo();
