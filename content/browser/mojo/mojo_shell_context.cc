@@ -136,20 +136,35 @@ class MojoShellContext::BuiltinManifestProvider
     DCHECK(result.second);
   }
 
+  void AddManifests(std::unique_ptr<
+      ContentBrowserClient::MojoApplicationManifestMap> manifests) {
+    manifests_ = std::move(manifests);
+  }
+
  private:
   // catalog::ManifestProvider:
   bool GetApplicationManifest(const base::StringPiece& name,
                               std::string* manifest_contents) override {
     auto it = manifest_resources_.find(name.as_string());
-    if (it == manifest_resources_.end())
-      return false;
-    *manifest_contents = GetContentClient()->GetDataResource(
-        it->second, ui::ScaleFactor::SCALE_FACTOR_NONE).as_string();
-    DCHECK(!manifest_contents->empty());
-    return true;
+    if (it != manifest_resources_.end()) {
+      *manifest_contents =
+          GetContentClient()
+              ->GetDataResource(it->second, ui::ScaleFactor::SCALE_FACTOR_NONE)
+              .as_string();
+      DCHECK(!manifest_contents->empty());
+      return true;
+    }
+    auto manifest_it = manifests_->find(name.as_string());
+    if (manifest_it != manifests_->end()) {
+      *manifest_contents = manifest_it->second;
+      DCHECK(!manifest_contents->empty());
+      return true;
+    }
+    return false;
   }
 
   std::unordered_map<std::string, int> manifest_resources_;
+  std::unique_ptr<ContentBrowserClient::MojoApplicationManifestMap> manifests_;
 
   DISALLOW_COPY_AND_ASSIGN(BuiltinManifestProvider);
 };
@@ -228,7 +243,15 @@ MojoShellContext::MojoShellContext() {
       new shell::InProcessNativeRunnerFactory(
           BrowserThread::GetBlockingPool()));
 
+  // Allow the embedder to register additional Mojo application manifests
+  // beyond the default ones below.
+  std::unique_ptr<ContentBrowserClient::MojoApplicationManifestMap> manifests(
+      new ContentBrowserClient::MojoApplicationManifestMap);
+  GetContentClient()->browser()->RegisterMojoApplicationManifests(
+      manifests.get());
+
   manifest_provider_.reset(new BuiltinManifestProvider);
+  manifest_provider_->AddManifests(std::move(manifests));
   manifest_provider_->AddManifestResource(kBrowserMojoApplicationName,
                                           IDR_MOJO_CONTENT_BROWSER_MANIFEST);
   manifest_provider_->AddManifestResource(kRendererMojoApplicationName,

@@ -676,6 +676,17 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual void RegisterUnsandboxedOutOfProcessMojoApplications(
       OutOfProcessMojoApplicationMap* apps) {}
 
+  // A map of Mojo application names to corresponding manifest contents.
+  using MojoApplicationManifestMap = std::map<std::string, std::string>;
+
+  // Registers manifest contents for Mojo applications.
+  // See "services/shell/manifest.json" for an example Mojo app manifest.
+  //
+  // TODO(rockot): http://crbug.com/610426. Add more documentations about
+  //  Mojo app manifest.
+  virtual void RegisterMojoApplicationManifests(
+      MojoApplicationManifestMap* manifests) {}
+
   // Allows to override the visibility state of a RenderFrameHost.
   // |visibility_state| should not be null. It will only be set if needed.
   virtual void OverridePageVisibilityState(
