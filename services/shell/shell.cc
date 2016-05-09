@@ -122,7 +122,8 @@ class Shell::Instance : public mojom::Connector,
         identity_(identity),
         capability_spec_(capability_spec),
         allow_any_application_(capability_spec.required.count("*") == 1),
-        pid_receiver_binding_(this) {
+        pid_receiver_binding_(this),
+        weak_factory_(this) {
     if (identity_.name() == kShellName || identity_.name() == kCatalogName)
       pid_ = base::Process::Current().Pid();
     DCHECK_NE(mojom::kInvalidInstanceID, id_);
@@ -216,11 +217,10 @@ class Shell::Instance : public mojom::Connector,
     CHECK(!shell_client_);
     runner_ = shell_->native_runner_factory_->Create(path);
     bool start_sandboxed = false;
-    // We own |runner_|, so Unretained is safe here.
     mojom::ShellClientPtr client = runner_->Start(
         path, identity_, start_sandboxed,
-        base::Bind(&Instance::PIDAvailable, base::Unretained(this)),
-        base::Bind(&Instance::OnRunnerCompleted, base::Unretained(this)));
+        base::Bind(&Instance::PIDAvailable, weak_factory_.GetWeakPtr()),
+        base::Bind(&Instance::OnRunnerCompleted, weak_factory_.GetWeakPtr()));
     StartWithClient(std::move(client));
   }
 
@@ -454,6 +454,7 @@ class Shell::Instance : public mojom::Connector,
   base::ProcessId pid_ = base::kNullProcessId;
   Instance* parent_ = nullptr;
   std::set<Instance*> children_;
+  base::WeakPtrFactory<Instance> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(Instance);
 };

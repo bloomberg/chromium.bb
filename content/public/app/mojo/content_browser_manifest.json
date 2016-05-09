@@ -12,6 +12,12 @@
           "shell:instance_name",
           "shell:user_id"
         ]
+      },
+      "mojo:user": {
+        "interfaces": [
+          "leveldb::LevelDBService",
+          "user_service::UserService"
+         ]
       }
     }
   }

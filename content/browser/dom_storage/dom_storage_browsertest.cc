@@ -57,13 +57,23 @@ IN_PROC_BROWSER_TEST_F(DOMStorageBrowserTest, SanityCheckIncognito) {
   SimpleTest(GetTestUrl("dom_storage", "sanity_check.html"), kIncognito);
 }
 
-// TODO(michaeln): Enable the mojo tests after crbug/608121 is fixed.
-IN_PROC_BROWSER_TEST_F(MojoDOMStorageBrowserTest, DISABLED_SanityCheck) {
+// Enable when crbug/609632 is fixed.
+#if defined(OS_MACOSX)
+#define MAYBE_SanityCheck DISABLED_SanityCheck
+#else
+#define MAYBE_SanityCheck SanityCheck
+#endif
+IN_PROC_BROWSER_TEST_F(MojoDOMStorageBrowserTest, MAYBE_SanityCheck) {
   SimpleTest(GetTestUrl("dom_storage", "sanity_check.html"), kNotIncognito);
 }
 
-IN_PROC_BROWSER_TEST_F(MojoDOMStorageBrowserTest,
-                       DISABLED_SanityCheckIncognito) {
+// Enable when crbug/609632 is fixed.
+#if defined(OS_MACOSX)
+#define MAYBE_SanityCheckIncognito DISABLED_SanityCheckIncognito
+#else
+#define MAYBE_SanityCheckIncognito SanityCheckIncognito
+#endif
+IN_PROC_BROWSER_TEST_F(MojoDOMStorageBrowserTest, MAYBE_SanityCheckIncognito) {
   SimpleTest(GetTestUrl("dom_storage", "sanity_check.html"), kIncognito);
 }
 
