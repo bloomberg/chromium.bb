@@ -16,8 +16,8 @@
   <structure name="IDR_CR_ELEMENTS_CR_EXPAND_BUTTON_JS"
              file="../../webui/resources/cr_elements/cr_expand_button/cr_expand_button.js"
              type="chrome_html" />
-  <structure name="IDR_CR_ELEMENTS_CR_ICONS_HTML"
-             file="../../webui/resources/cr_elements/cr_icons.html"
+  <structure name="IDR_CR_ELEMENTS_ICONS_HTML"
+             file="../../webui/resources/cr_elements/icons.html"
              type="chrome_html" />
   <if expr="chromeos">
     <structure name="IDR_CR_ELEMENTS_CR_NETWORK_ICON_CSS"

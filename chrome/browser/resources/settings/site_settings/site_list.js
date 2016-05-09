@@ -187,9 +187,9 @@ Polymer({
    */
   onToggle_: function(e) {
     if (this.$.category.opened)
-      this.$.icon.icon = 'cr-icons:expand-less';
+      this.$.icon.icon = 'cr:expand-less';
     else
-      this.$.icon.icon = 'cr-icons:expand-more';
+      this.$.icon.icon = 'cr:expand-more';
   },
 
   /**

@@ -55,7 +55,7 @@ var CrPolicyIndicatorBehavior = {
       default:
         assertNotReached();
     }
-    return 'cr-icons:' + icon;
+    return 'cr:' + icon;
   },
 
   /**

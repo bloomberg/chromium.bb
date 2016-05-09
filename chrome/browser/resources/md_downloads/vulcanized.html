@@ -2396,7 +2396,7 @@ paper-button {
   </template>
 
   </dom-module>
-<iron-iconset-svg name="cr-icons" size="24">
+<iron-iconset-svg name="cr" size="24">
   <svg>
     <defs>
       
@@ -2739,11 +2739,11 @@ paper-icon-button {
 }
 
 </style>
-    <paper-icon-button icon="cr-icons:search" id="search-button" disabled$="[[showingSearch_]]" title="[[label]]" on-click="toggleShowingSearch_"></paper-icon-button>
+    <paper-icon-button icon="cr:search" id="search-button" disabled$="[[showingSearch_]]" title="[[label]]" on-click="toggleShowingSearch_"></paper-icon-button>
     <template is="dom-if" if="[[showingSearch_]]" id="search-container">
       <paper-input-container id="search-term" on-search="onSearchTermSearch_" on-keydown="onSearchTermKeydown_" hidden$="[[!showingSearch_]]" no-label-float="">
         <input is="iron-input" id="search-input" type="search" placeholder="[[label]]" incremental="">
-        <paper-icon-button icon="cr-icons:cancel" id="clear-search" on-click="toggleShowingSearch_" title="[[clearLabel]]" hidden$="[[!showingSearch_]]"></paper-icon-button>
+        <paper-icon-button icon="cr:cancel" id="clear-search" on-click="toggleShowingSearch_" title="[[clearLabel]]" hidden$="[[!showingSearch_]]"></paper-icon-button>
       </paper-input-container>
     </template>
   </template>
@@ -2895,7 +2895,7 @@ paper-button {
     <div id="search">
       <cr-search-field id="search-input" label="$i18n{search}" clear-label="$i18n{clearSearch}"></cr-search-field>
       <paper-menu-button id="more" horizontal-align="[[overflowAlign_]]">
-        <paper-icon-button icon="cr-icons:more-vert" title="$i18n{moreActions}" class="dropdown-trigger"></paper-icon-button>
+        <paper-icon-button icon="cr:more-vert" title="$i18n{moreActions}" class="dropdown-trigger"></paper-icon-button>
         <paper-menu class="dropdown-content">
           <paper-item class="clear-all" on-tap="onClearAllTap_">
             $i18n{clearAll}

@@ -7,8 +7,8 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-menu/paper-menu.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-menu-button/paper-menu-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
-<link rel="import" href="chrome://resources/cr_elements/cr_icons.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_search_field/cr_search_field.html">
+<link rel="import" href="chrome://resources/cr_elements/icons.html">
 
 <dom-module id="downloads-toolbar">
   <template>
@@ -27,7 +27,7 @@
       <cr-search-field id="search-input" label="$i18n{search}"
           clear-label="$i18n{clearSearch}"></cr-search-field>
       <paper-menu-button id="more" horizontal-align="[[overflowAlign_]]">
-        <paper-icon-button icon="cr-icons:more-vert" title="$i18n{moreActions}"
+        <paper-icon-button icon="cr:more-vert" title="$i18n{moreActions}"
              class="dropdown-trigger"></paper-icon-button>
         <paper-menu class="dropdown-content">
           <paper-item class="clear-all" on-tap="onClearAllTap_">

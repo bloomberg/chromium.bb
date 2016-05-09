@@ -36,6 +36,6 @@ Polymer({
   },
 
   iconName_: function(expanded) {
-    return expanded ? 'expand-less' : 'expand-more';
+    return expanded ? 'cr:expand-less' : 'cr:expand-more';
   }
 });
