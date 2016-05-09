@@ -63,7 +63,8 @@ cr.define('options.supervisedUserOptions', function() {
       // Add the avatar.
       var iconElement = this.ownerDocument.createElement('img');
       iconElement.className = 'profile-img';
-      iconElement.style.content = getProfileAvatarIcon(supervisedUser.iconURL);
+      iconElement.style.content = cr.icon.getProfileAvatarIcon(
+          supervisedUser.iconURL);
       this.appendChild(iconElement);
 
       // Add the profile name.

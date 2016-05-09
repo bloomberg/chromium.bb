@@ -37,6 +37,7 @@
           '../../../../ui/webui/resources/js/cr/ui/touch_handler.js',
           '../../../../ui/webui/resources/js/cr/ui/tree.js',
           '../../../../ui/webui/resources/js/event_tracker.js',
+          '../../../../ui/webui/resources/js/icon.js',
           '../../../../ui/webui/resources/js/load_time_data.js',
           '../../../../ui/webui/resources/js/parse_html_subset.js',
           '../../../../ui/webui/resources/js/promise_resolver.js',

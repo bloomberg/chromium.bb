@@ -123,7 +123,7 @@ cr.define('options.search_engines', function() {
       var faviconDivEl = this.ownerDocument.createElement('div');
       faviconDivEl.className = 'favicon';
       if (!this.isPlaceholder) {
-        faviconDivEl.style.backgroundImage = getFaviconImageSet(
+        faviconDivEl.style.backgroundImage = cr.icon.getFaviconImageSet(
             // Force default icon if no iconURL is available.
             engine.iconURL || '');
       }

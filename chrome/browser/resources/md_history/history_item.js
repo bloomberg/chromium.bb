@@ -87,7 +87,7 @@ Polymer({
    */
   showIcon_: function() {
     this.$.icon.style.backgroundImage =
-        getFaviconImageSet(this.item.url);
+        cr.icon.getFaviconImageSet(this.item.url);
   },
 
   /**

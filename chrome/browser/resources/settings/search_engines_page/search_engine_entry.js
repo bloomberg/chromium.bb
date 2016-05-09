@@ -79,6 +79,6 @@ Polymer({
    */
   getIconSet_: function(url) {
     // Force default icon, if no |engine.iconURL| is available.
-    return getFaviconImageSet(url || '');
+    return cr.icon.getFaviconImageSet(url || '');
   },
 });

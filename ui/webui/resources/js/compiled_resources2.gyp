@@ -25,6 +25,14 @@
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {
+      'target_name': 'icon',
+      'dependencies': [
+        'cr',
+        'util',
+      ],
+      'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
       'target_name': 'i18n_template_no_process',
       'dependencies': [
         'load_time_data',

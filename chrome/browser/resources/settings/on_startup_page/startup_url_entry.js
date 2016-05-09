@@ -31,7 +31,7 @@ Polymer({
    * @private
    */
   getIconSet_: function(url) {
-    return getFaviconImageSet(url);
+    return cr.icon.getFaviconImageSet(url);
   },
 
   /** @private */

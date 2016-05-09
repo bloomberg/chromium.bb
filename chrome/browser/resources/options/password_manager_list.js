@@ -97,7 +97,7 @@ cr.define('options.passwordManager', function() {
     var urlDiv = cr.doc.createElement('div');
     urlDiv.className = 'favicon-cell url';
     urlDiv.setAttribute('title', getTitleForPasswordOrigin(item));
-    urlDiv.style.backgroundImage = getFaviconImageSet(
+    urlDiv.style.backgroundImage = cr.icon.getFaviconImageSet(
         'origin/' + item.url, 16);
 
     item.urlLink = createUrlLink(item, urlDiv);

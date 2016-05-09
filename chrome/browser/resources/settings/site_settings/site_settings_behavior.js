@@ -259,7 +259,7 @@ var SiteSettingsBehaviorImpl = {
    */
   computeSiteIcon: function(site) {
     var url = this.ensureUrlHasScheme(site.originForDisplay);
-    return 'background-image: ' + getFaviconImageSet(url);
+    return 'background-image: ' + cr.icon.getFaviconImageSet(url);
   },
 };
 

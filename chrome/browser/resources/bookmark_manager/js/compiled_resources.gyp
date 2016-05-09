@@ -33,6 +33,7 @@
           '../../../../../ui/webui/resources/js/load_time_data.js',
           '../../../../../ui/webui/resources/js/promise_resolver.js',
           '../../../../../ui/webui/resources/js/util.js',
+          '../../../../../ui/webui/resources/js/icon.js',
           '../../../../../chrome/browser/resources/bookmark_manager/js/bmm.js',
           '../../../../../chrome/browser/resources/bookmark_manager/js/bmm/bookmark_list.js',
           '../../../../../chrome/browser/resources/bookmark_manager/js/bmm/bookmark_tree.js',

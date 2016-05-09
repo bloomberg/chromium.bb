@@ -236,9 +236,15 @@ IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, SplitterTest) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, UtilTest) {
-  AddLibrary(IDR_WEBUI_JS_CR);
   AddLibrary(IDR_WEBUI_JS_UTIL);
   LoadFile(base::FilePath(FILE_PATH_LITERAL("util_test.html")));
+}
+
+IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, IconTest) {
+  AddLibrary(IDR_WEBUI_JS_CR);
+  AddLibrary(IDR_WEBUI_JS_UTIL);
+  AddLibrary(IDR_WEBUI_JS_ICON);
+  LoadFile(base::FilePath(FILE_PATH_LITERAL("icon_test.html")));
 }
 
 IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, PromiseResolverTest) {

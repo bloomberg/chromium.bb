@@ -65,7 +65,7 @@ Polymer({
 
       for (var i = 0; i < this.tabs.length; i++) {
         icons[i].style.backgroundImage =
-            getFaviconImageSet(this.tabs[i].url);
+            cr.icon.getFaviconImageSet(this.tabs[i].url);
       }
     });
   }

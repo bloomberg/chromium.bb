@@ -462,7 +462,7 @@ Visit.prototype.loadFavicon_ = function(faviconDiv) {
     img.onload = this.onLargeFaviconLoadedAndroid_.bind(this, faviconDiv);
     img.src = 'chrome://large-icon/' + desiredPixelSize + '/' + this.url_;
   } else {
-    faviconDiv.style.backgroundImage = getFaviconImageSet(this.url_);
+    faviconDiv.style.backgroundImage = cr.icon.getFaviconImageSet(this.url_);
   }
 };
 
