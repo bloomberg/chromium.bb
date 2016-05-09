@@ -105,10 +105,6 @@ PlatformWindowMus::~PlatformWindowMus() {
     mus_window_->Destroy();
 }
 
-void PlatformWindowMus::Activate() {
-  mus_window_->SetFocus();
-}
-
 void PlatformWindowMus::SetCursorById(mus::mojom::Cursor cursor) {
   if (last_cursor_ != cursor) {
     // The ui::PlatformWindow interface uses ui::PlatformCursor at this level,

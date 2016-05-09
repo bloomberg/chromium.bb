@@ -41,8 +41,6 @@ class VIEWS_MUS_EXPORT PlatformWindowMus
                     mus::Window* mus_window);
   ~PlatformWindowMus() override;
 
-  void Activate();
-
   void SetCursorById(mus::mojom::Cursor cursor);
 
   // ui::PlatformWindow:

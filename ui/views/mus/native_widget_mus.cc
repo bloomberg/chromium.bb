@@ -798,8 +798,8 @@ bool NativeWidgetMus::IsVisible() const {
 }
 
 void NativeWidgetMus::Activate() {
-  if (window_tree_host_)
-    window_tree_host_->platform_window()->Activate();
+  if (window_)
+    window_->SetFocus();
 }
 
 void NativeWidgetMus::Deactivate() {
