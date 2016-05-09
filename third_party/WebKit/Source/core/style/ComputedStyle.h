@@ -816,7 +816,8 @@ public:
     const Vector<GridTrackSize>& gridAutoRepeatRows() const { return rareNonInheritedData->m_grid->m_gridAutoRepeatRows; }
     size_t gridAutoRepeatColumnsInsertionPoint() const { return rareNonInheritedData->m_grid->m_autoRepeatColumnsInsertionPoint; }
     size_t gridAutoRepeatRowsInsertionPoint() const { return rareNonInheritedData->m_grid->m_autoRepeatRowsInsertionPoint; }
-    AutoRepeatType gridAutoRepeatType() const  { return rareNonInheritedData->m_grid->m_autoRepeatType; }
+    AutoRepeatType gridAutoRepeatColumnsType() const  { return rareNonInheritedData->m_grid->m_autoRepeatColumnsType; }
+    AutoRepeatType gridAutoRepeatRowsType() const  { return rareNonInheritedData->m_grid->m_autoRepeatRowsType; }
     const NamedGridLinesMap& namedGridColumnLines() const { return rareNonInheritedData->m_grid->m_namedGridColumnLines; }
     const NamedGridLinesMap& namedGridRowLines() const { return rareNonInheritedData->m_grid->m_namedGridRowLines; }
     const OrderedNamedGridLines& orderedNamedGridColumnLines() const { return rareNonInheritedData->m_grid->m_orderedNamedGridColumnLines; }
@@ -1366,7 +1367,8 @@ public:
     void setGridAutoRepeatRows(const Vector<GridTrackSize>& trackSizes) { SET_NESTED_VAR(rareNonInheritedData, m_grid, m_gridAutoRepeatRows, trackSizes); }
     void setGridAutoRepeatColumnsInsertionPoint(const size_t insertionPoint) { SET_NESTED_VAR(rareNonInheritedData, m_grid, m_autoRepeatColumnsInsertionPoint, insertionPoint); }
     void setGridAutoRepeatRowsInsertionPoint(const size_t insertionPoint) { SET_NESTED_VAR(rareNonInheritedData, m_grid, m_autoRepeatRowsInsertionPoint, insertionPoint); }
-    void setGridAutoRepeatType(const AutoRepeatType autoRepeatType) { SET_NESTED_VAR(rareNonInheritedData, m_grid, m_autoRepeatType, autoRepeatType); }
+    void setGridAutoRepeatColumnsType(const AutoRepeatType autoRepeatType) { SET_NESTED_VAR(rareNonInheritedData, m_grid, m_autoRepeatColumnsType, autoRepeatType); }
+    void setGridAutoRepeatRowsType(const AutoRepeatType autoRepeatType) { SET_NESTED_VAR(rareNonInheritedData, m_grid, m_autoRepeatRowsType, autoRepeatType); }
     void setNamedGridColumnLines(const NamedGridLinesMap& namedGridColumnLines) { SET_NESTED_VAR(rareNonInheritedData, m_grid, m_namedGridColumnLines, namedGridColumnLines); }
     void setNamedGridRowLines(const NamedGridLinesMap& namedGridRowLines) { SET_NESTED_VAR(rareNonInheritedData, m_grid, m_namedGridRowLines, namedGridRowLines); }
     void setOrderedNamedGridColumnLines(const OrderedNamedGridLines& orderedNamedGridColumnLines) { SET_NESTED_VAR(rareNonInheritedData, m_grid, m_orderedNamedGridColumnLines, orderedNamedGridColumnLines); }

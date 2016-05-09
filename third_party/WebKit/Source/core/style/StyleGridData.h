@@ -57,7 +57,7 @@ public:
         && m_gridColumnGap == o.m_gridColumnGap && m_gridRowGap == o.m_gridRowGap
         && m_gridAutoRepeatColumns == o.m_gridAutoRepeatColumns && m_gridAutoRepeatRows == o.m_gridAutoRepeatRows
         && m_autoRepeatColumnsInsertionPoint == o.m_autoRepeatColumnsInsertionPoint && m_autoRepeatRowsInsertionPoint == o.m_autoRepeatRowsInsertionPoint
-        && m_autoRepeatType == o.m_autoRepeatType;
+        && m_autoRepeatColumnsType == o.m_autoRepeatColumnsType && m_autoRepeatRowsType == o.m_autoRepeatRowsType;
     }
 
     bool operator!=(const StyleGridData& o) const
@@ -101,7 +101,8 @@ public:
     size_t m_autoRepeatColumnsInsertionPoint;
     size_t m_autoRepeatRowsInsertionPoint;
 
-    AutoRepeatType m_autoRepeatType;
+    AutoRepeatType m_autoRepeatColumnsType;
+    AutoRepeatType m_autoRepeatRowsType;
 private:
     StyleGridData();
     StyleGridData(const StyleGridData&);

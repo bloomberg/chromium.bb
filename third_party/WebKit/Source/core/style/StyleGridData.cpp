@@ -52,7 +52,8 @@ StyleGridData::StyleGridData()
     , m_gridAutoRepeatRows(ComputedStyle::initialGridAutoRepeatTracks())
     , m_autoRepeatColumnsInsertionPoint(ComputedStyle::initialGridAutoRepeatInsertionPoint())
     , m_autoRepeatRowsInsertionPoint(ComputedStyle::initialGridAutoRepeatInsertionPoint())
-    , m_autoRepeatType(ComputedStyle::initialGridAutoRepeatType())
+    , m_autoRepeatColumnsType(ComputedStyle::initialGridAutoRepeatType())
+    , m_autoRepeatRowsType(ComputedStyle::initialGridAutoRepeatType())
 {
 }
 
@@ -80,7 +81,8 @@ StyleGridData::StyleGridData(const StyleGridData& o)
     , m_gridAutoRepeatRows(o.m_gridAutoRepeatRows)
     , m_autoRepeatColumnsInsertionPoint(o.m_autoRepeatColumnsInsertionPoint)
     , m_autoRepeatRowsInsertionPoint(o.m_autoRepeatRowsInsertionPoint)
-    , m_autoRepeatType(o.m_autoRepeatType)
+    , m_autoRepeatColumnsType(o.m_autoRepeatColumnsType)
+    , m_autoRepeatRowsType(o.m_autoRepeatRowsType)
 {
 }
 

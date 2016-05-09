@@ -477,7 +477,7 @@ static bool borderImageLengthMatchesAllSides(const BorderImageLengthBox& borderI
     state.style()->setGridAutoRepeat{{type}}sInsertionPoint(autoRepeatInsertionPoint);
     state.style()->setAutoRepeatNamedGrid{{type}}Lines(autoRepeatNamedGridLines);
     state.style()->setAutoRepeatOrderedNamedGrid{{type}}Lines(autoRepeatOrderedNamedGridLines);
-    state.style()->setGridAutoRepeatType(autoRepeatType);
+    state.style()->setGridAutoRepeat{{type}}sType(autoRepeatType);
 }
 {% endmacro %}
 {{apply_grid_template('CSSPropertyGridTemplateColumns', 'Column')}}
