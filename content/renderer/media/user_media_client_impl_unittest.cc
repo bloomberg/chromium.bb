@@ -624,6 +624,9 @@ TEST_F(UserMediaClientImplTest, RenderToAssociatedSinkConstraint) {
   used_media_impl_->DeleteRequest(ms_dispatcher_->audio_input_request_id());
 
   // If audio is requested, but no constraint, it should be true.
+  // Currently we expect it to be false due to a suspected bug in the
+  // device-matching code causing issues with some sound adapters.
+  // See crbug.com/604523
   MockConstraintFactory factory;
   blink::WebMediaConstraints audio_constraints =
       factory.CreateWebMediaConstraints();
