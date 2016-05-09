@@ -1,0 +1,12 @@
+CONSOLE ERROR: line 2440: Uncaught Error: assert_equals: expected Element node <script id="outerScriptElement">
+
+var outerScriptElement ... but got null
+CONSOLE ERROR: line 2440: Uncaught Error: assert_equals: expected Element node <script id="outerScriptElement">
+
+var outerScriptElement ... but got null
+This is a testharness.js-based test.
+Harness Error. harness_status.status = 1 , harness_status.message = Uncaught Error: assert_equals: expected Element node <script id="outerScriptElement">
+
+var outerScriptElement ... but got null
+Harness: the test ran to completion.
+
