@@ -7,7 +7,6 @@ package org.chromium.mojo.bindings;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.util.Log;
 
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.mojo.HandleMock;
 import org.chromium.mojo.MojoTestCase;
@@ -192,11 +191,8 @@ public class ValidationTest extends MojoTestCase {
 
     /**
      * Testing the conformance suite.
-     *
-     * https://crbug.com/536671
-     * @SmallTest
      */
-    @DisabledTest
+    @SmallTest
     public void testConformance() throws FileNotFoundException {
         runTest("conformance_", ConformanceTestInterface.MANAGER.buildStub(null,
                 ConformanceTestInterface.MANAGER.buildProxy(null, new SinkMessageReceiver())));
@@ -217,11 +213,8 @@ public class ValidationTest extends MojoTestCase {
 
     /**
      * Testing the integration suite for request messages.
-     *
-     * https://crbug.com/536671
-     * @SmallTest
      */
-    @DisabledTest
+    @SmallTest
     public void testIntegrationRequestMessage() throws FileNotFoundException {
         runTest("integration_intf_rqst_",
                 new RoutingMessageReceiver(IntegrationTestInterface.MANAGER.buildStub(null,
@@ -233,11 +226,8 @@ public class ValidationTest extends MojoTestCase {
 
     /**
      * Testing the integration suite for response messages.
-     *
-     * https://crbug.com/536671
-     * @SmallTest
      */
-    @DisabledTest
+    @SmallTest
     public void testIntegrationResponseMessage() throws FileNotFoundException {
         runTest("integration_intf_resp_",
                 new RoutingMessageReceiver(IntegrationTestInterface.MANAGER.buildStub(null,
