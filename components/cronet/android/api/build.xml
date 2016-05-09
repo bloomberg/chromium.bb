@@ -13,7 +13,6 @@
           <exclude name="**/HttpUrl*.java"/>
           <exclude name="**/ResponseTooLargeException.java"/>
           <exclude name="**/UrlRequestContextConfig.java"/>
-          <exclude name="**/UserAgent.java"/>
         </fileset>
         <doclet name="com.google.doclava.Doclava">
           <param name="-title" /><param name="Cronet API"/>

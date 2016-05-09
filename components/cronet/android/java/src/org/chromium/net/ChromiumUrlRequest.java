@@ -464,15 +464,15 @@ public class ChromiumUrlRequest implements HttpUrlRequest {
 
     private static int convertRequestPriority(int priority) {
         switch (priority) {
-            case HttpUrlRequest.REQUEST_PRIORITY_IDLE:
+            case REQUEST_PRIORITY_IDLE:
                 return ChromiumUrlRequestPriority.IDLE;
-            case HttpUrlRequest.REQUEST_PRIORITY_LOWEST:
+            case REQUEST_PRIORITY_LOWEST:
                 return ChromiumUrlRequestPriority.LOWEST;
-            case HttpUrlRequest.REQUEST_PRIORITY_LOW:
+            case REQUEST_PRIORITY_LOW:
                 return ChromiumUrlRequestPriority.LOW;
-            case HttpUrlRequest.REQUEST_PRIORITY_MEDIUM:
+            case REQUEST_PRIORITY_MEDIUM:
                 return ChromiumUrlRequestPriority.MEDIUM;
-            case HttpUrlRequest.REQUEST_PRIORITY_HIGHEST:
+            case REQUEST_PRIORITY_HIGHEST:
                 return ChromiumUrlRequestPriority.HIGHEST;
             default:
                 return ChromiumUrlRequestPriority.MEDIUM;

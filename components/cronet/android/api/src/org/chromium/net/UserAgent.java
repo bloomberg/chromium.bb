@@ -14,12 +14,8 @@ import java.util.Locale;
 
 /**
  * Constructs a User-Agent string.
- * @deprecated use {@link CronetEngine.Builder#getDefaultUserAgent}.
  */
-// TODO(pauljensen): Make this class package-private once all callers are
-// transitioned to {@link CronetEngine.Builder#getDefaultUserAgent}.
-@Deprecated
-public final class UserAgent {
+final class UserAgent {
     private static final Object sLock = new Object();
 
     private static final int VERSION_CODE_UNINITIALIZED = 0;

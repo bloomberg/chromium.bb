@@ -37,9 +37,8 @@ import java.net.URLStreamHandlerFactory;
  *     HttpsURLConnection.setDefaultSSLSocketFactory(javax.net.ssl.SSLSocketFactory)}</li>
  * </ul>
  *
- * @deprecated use {@link CronetEngine#createURLStreamHandlerFactory}.
+ * {@hide}
  */
-@Deprecated
 public class CronetURLStreamHandlerFactory implements URLStreamHandlerFactory {
     private final CronetEngine mCronetEngine;
 
