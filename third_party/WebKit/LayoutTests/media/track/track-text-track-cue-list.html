@@ -1,44 +1,29 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Tests TextTrackCueList functionality: length, operator[], and getCueById().</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<video>
+    <track src="captions-webvtt/tc013-settings.vtt" kind="captions" default>
+</video>
+<script>
+async_test(function(t) {
+    var testTrack = document.querySelector("track");
 
-        <script src=../media-file.js></script>
-        <!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src=../video-test.js></script>
-        <script>
+    testTrack.onload = t.step_func_done(function() {
+        var cues = testTrack.track.cues;
 
-            function trackLoaded()
-            {
-                var testTrack = document.getElementById('testTrack');
-                cues = testTrack.track.cues;
+        // Testing TextTrackCueList length.
+        assert_equals(cues.length, 4);
 
-                consoleWrite("<br>*** Testing TextTrackCueList length");
+        // Testing TextTrackCueList [] operator.
+        assert_equals(cues[0].id, "1");
+        assert_equals(cues[3].id, "4");
+        assert_object_equals(cues[4], undefined);
 
-                testExpected("cues.length", 4);
-
-                consoleWrite("<br>*** Testing TextTrackCueList [] operator");
-
-                testExpected("cues[0].id", "1");
-                testExpected("cues[3].id", "4");
-                testExpected("cues[4]", undefined);
-
-                consoleWrite("<br>*** Testing TextTrackCueList getCueById()");
-
-                testExpected("cues.getCueById('1').startTime", 0);
-                testExpected("cues.getCueById('4').startTime", 121);
-                testExpected("cues.getCueById('junk')", undefined);
-
-                endTest();
-            }
-
-        </script>
-    </head>
-    <body>
-        <p>Tests TextTrackCueList functionality: length, operator[], and getCueById()</p>
-        <video>
-            <track id="testTrack" src="captions-webvtt/tc013-settings.vtt" kind="captions" onload="trackLoaded()" default>
-        </video>
-    </body>
-</html>
+        // Testing TextTrackCueList getCueById().
+        assert_equals(cues.getCueById("1").startTime, 0);
+        assert_equals(cues.getCueById("4").startTime, 121);
+        assert_object_equals(cues.getCueById("junk"), undefined);
+    });
+});
+</script>
