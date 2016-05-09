@@ -99,9 +99,9 @@ CORE_EXPORT Node* enclosingNodeOfType(const Position&, bool (*nodeIsOfType)(cons
 CORE_EXPORT Node* enclosingNodeOfType(const PositionInFlatTree&, bool (*nodeIsOfType)(const Node*), EditingBoundaryCrossingRule = CannotCrossEditingBoundary);
 
 HTMLSpanElement* tabSpanElement(const Node*);
-Element* isLastPositionBeforeTable(const VisiblePosition&);
-CORE_EXPORT Element* isFirstPositionAfterTable(const VisiblePosition&);
-CORE_EXPORT Element* isFirstPositionAfterTable(const VisiblePositionInFlatTree&);
+Element* tableElementJustAfter(const VisiblePosition&);
+CORE_EXPORT Element* tableElementJustBefore(const VisiblePosition&);
+CORE_EXPORT Element* tableElementJustBefore(const VisiblePositionInFlatTree&);
 
 // Returns the next leaf node or nullptr if there are no more.
 // Delivers leaf nodes as if the whole DOM tree were a linear chain of its leaf nodes.

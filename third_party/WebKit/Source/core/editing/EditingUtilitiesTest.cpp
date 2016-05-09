@@ -93,7 +93,7 @@ TEST_F(EditingUtilitiesTest, isEditablePositionWithTable)
     EXPECT_FALSE(isEditablePosition(Position(table, 0)));
 }
 
-TEST_F(EditingUtilitiesTest, isFirstPositionAfterTable)
+TEST_F(EditingUtilitiesTest, tableElementJustBefore)
 {
     const char* bodyContent = "<div contenteditable id=host><table id=table><tr><td>1</td></tr></table><b id=two>22</b></div>";
     const char* shadowContent = "<content select=#two></content><content select=#table></content>";
@@ -102,20 +102,20 @@ TEST_F(EditingUtilitiesTest, isFirstPositionAfterTable)
     Node* host = document().getElementById("host");
     Node* table = document().getElementById("table");
 
-    EXPECT_EQ(table, isFirstPositionAfterTable(createVisiblePosition(Position::afterNode(table))));
-    EXPECT_EQ(table, isFirstPositionAfterTable(createVisiblePosition(PositionInFlatTree::afterNode(table))));
+    EXPECT_EQ(table, tableElementJustBefore(createVisiblePosition(Position::afterNode(table))));
+    EXPECT_EQ(table, tableElementJustBefore(createVisiblePosition(PositionInFlatTree::afterNode(table))));
 
-    EXPECT_EQ(table, isFirstPositionAfterTable(createVisiblePosition(Position::lastPositionInNode(table))));
-    EXPECT_EQ(table, isFirstPositionAfterTable(createVisiblePosition(PositionInFlatTree::lastPositionInNode(table))));
+    EXPECT_EQ(table, tableElementJustBefore(createVisiblePosition(Position::lastPositionInNode(table))));
+    EXPECT_EQ(table, tableElementJustBefore(createVisiblePosition(PositionInFlatTree::lastPositionInNode(table))));
 
-    EXPECT_EQ(nullptr, isFirstPositionAfterTable(createVisiblePosition(Position(host, 2))));
-    EXPECT_EQ(table, isFirstPositionAfterTable(createVisiblePosition(PositionInFlatTree(host, 2))));
+    EXPECT_EQ(nullptr, tableElementJustBefore(createVisiblePosition(Position(host, 2))));
+    EXPECT_EQ(table, tableElementJustBefore(createVisiblePosition(PositionInFlatTree(host, 2))));
 
-    EXPECT_EQ(nullptr, isFirstPositionAfterTable(createVisiblePosition(Position::afterNode(host))));
-    EXPECT_EQ(nullptr, isFirstPositionAfterTable(createVisiblePosition(PositionInFlatTree::afterNode(host))));
+    EXPECT_EQ(nullptr, tableElementJustBefore(createVisiblePosition(Position::afterNode(host))));
+    EXPECT_EQ(nullptr, tableElementJustBefore(createVisiblePosition(PositionInFlatTree::afterNode(host))));
 
-    EXPECT_EQ(nullptr, isFirstPositionAfterTable(createVisiblePosition(Position::lastPositionInNode(host))));
-    EXPECT_EQ(table, isFirstPositionAfterTable(createVisiblePosition(PositionInFlatTree::lastPositionInNode(host))));
+    EXPECT_EQ(nullptr, tableElementJustBefore(createVisiblePosition(Position::lastPositionInNode(host))));
+    EXPECT_EQ(table, tableElementJustBefore(createVisiblePosition(PositionInFlatTree::lastPositionInNode(host))));
 }
 
 TEST_F(EditingUtilitiesTest, lastEditablePositionBeforePositionInRoot)

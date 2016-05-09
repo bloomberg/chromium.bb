@@ -432,7 +432,7 @@ void VisibleSelectionTemplate<Strategy>::setEndRespectingGranularity(TextGranula
             // to the start of the next one) to match TextEdit.
             end = nextPositionOf(wordEnd);
 
-            if (Element* table = isFirstPositionAfterTable(end)) {
+            if (Element* table = tableElementJustBefore(end)) {
                 // The paragraph break after the last paragraph in the last cell
                 // of a block table ends at the start of the paragraph after the
                 // table.
@@ -476,7 +476,7 @@ void VisibleSelectionTemplate<Strategy>::setEndRespectingGranularity(TextGranula
         // paragraph to the start of the next one) in the selection.
         VisiblePositionTemplate<Strategy> end = nextPositionOf(visibleParagraphEnd);
 
-        if (Element* table = isFirstPositionAfterTable(end)) {
+        if (Element* table = tableElementJustBefore(end)) {
             // The paragraph break after the last paragraph in the last cell of
             // a block table ends at the start of the paragraph after the table,
             // not at the position just after the table.

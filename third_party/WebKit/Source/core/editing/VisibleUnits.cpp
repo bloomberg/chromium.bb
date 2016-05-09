@@ -1658,7 +1658,7 @@ VisiblePosition startOfNextParagraph(const VisiblePosition& visiblePosition)
     VisiblePosition afterParagraphEnd(nextPositionOf(paragraphEnd, CannotCrossEditingBoundary));
     // The position after the last position in the last cell of a table
     // is not the start of the next paragraph.
-    if (isFirstPositionAfterTable(afterParagraphEnd))
+    if (tableElementJustBefore(afterParagraphEnd))
         return nextPositionOf(afterParagraphEnd, CannotCrossEditingBoundary);
     return afterParagraphEnd;
 }

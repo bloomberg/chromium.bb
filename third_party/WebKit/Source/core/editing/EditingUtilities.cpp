@@ -948,7 +948,7 @@ Position positionAfterContainingSpecialElement(const Position& pos, HTMLElement*
 }
 
 template <typename Strategy>
-static Element* isFirstPositionAfterTableAlgorithm(const VisiblePositionTemplate<Strategy>& visiblePosition)
+static Element* tableElementJustBeforeAlgorithm(const VisiblePositionTemplate<Strategy>& visiblePosition)
 {
     const PositionTemplate<Strategy> upstream(mostBackwardCaretPosition(visiblePosition.deepEquivalent()));
     if (isDisplayInsideTable(upstream.anchorNode()) && upstream.atLastEditingPositionForNode())
@@ -957,17 +957,17 @@ static Element* isFirstPositionAfterTableAlgorithm(const VisiblePositionTemplate
     return nullptr;
 }
 
-Element* isFirstPositionAfterTable(const VisiblePosition& visiblePosition)
+Element* tableElementJustBefore(const VisiblePosition& visiblePosition)
 {
-    return isFirstPositionAfterTableAlgorithm<EditingStrategy>(visiblePosition);
+    return tableElementJustBeforeAlgorithm<EditingStrategy>(visiblePosition);
 }
 
-Element* isFirstPositionAfterTable(const VisiblePositionInFlatTree& visiblePosition)
+Element* tableElementJustBefore(const VisiblePositionInFlatTree& visiblePosition)
 {
-    return isFirstPositionAfterTableAlgorithm<EditingInFlatTreeStrategy>(visiblePosition);
+    return tableElementJustBeforeAlgorithm<EditingInFlatTreeStrategy>(visiblePosition);
 }
 
-Element* isLastPositionBeforeTable(const VisiblePosition& visiblePosition)
+Element* tableElementJustAfter(const VisiblePosition& visiblePosition)
 {
     Position downstream(mostForwardCaretPosition(visiblePosition.deepEquivalent()));
     if (isDisplayInsideTable(downstream.anchorNode()) && downstream.atFirstEditingPositionForNode())
@@ -1544,7 +1544,7 @@ VisibleSelection selectionForParagraphIteration(const VisibleSelection& original
     // if the start of the selection is inside that table, then the last paragraph
     // that we'll want modify is the last one inside the table, not the table itself
     // (a table is itself a paragraph).
-    if (Element* table = isFirstPositionAfterTable(endOfSelection)) {
+    if (Element* table = tableElementJustBefore(endOfSelection)) {
         if (startOfSelection.deepEquivalent().anchorNode()->isDescendantOf(table))
             newSelection = VisibleSelection(startOfSelection, previousPositionOf(endOfSelection, CannotCrossEditingBoundary));
     }
@@ -1553,7 +1553,7 @@ VisibleSelection selectionForParagraphIteration(const VisibleSelection& original
     // and if the end of the selection is inside that table, then the first paragraph
     // we'll want to modify is the first one inside the table, not the paragraph
     // containing the table itself.
-    if (Element* table = isLastPositionBeforeTable(startOfSelection)) {
+    if (Element* table = tableElementJustAfter(startOfSelection)) {
         if (endOfSelection.deepEquivalent().anchorNode()->isDescendantOf(table))
             newSelection = VisibleSelection(nextPositionOf(startOfSelection, CannotCrossEditingBoundary), endOfSelection);
     }

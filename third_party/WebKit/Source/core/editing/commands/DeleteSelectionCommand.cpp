@@ -852,12 +852,11 @@ void DeleteSelectionCommand::doApply(EditingState* editingState)
         // Don't need a placeholder when deleting a selection that starts just
         // before a table and ends inside it (we do need placeholders to hold
         // open empty cells, but that's handled elsewhere).
-        if (Element* table = isLastPositionBeforeTable(m_selectionToDelete.visibleStart())) {
+        if (Element* table = tableElementJustAfter(m_selectionToDelete.visibleStart())) {
             if (m_selectionToDelete.end().anchorNode()->isDescendantOf(table))
                 m_needPlaceholder = false;
         }
     }
-
 
     // set up our state
     initializePositionData(editingState);
