@@ -1290,13 +1290,6 @@ crbug.com/587737 [ Mac10.11 Retina ] virtual/gpu-rasterization/fast/images/color
 
 crbug.com/602933 fast/canvas/canvas-incremental-repaint.html [ NeedsManualRebaseline ]
 
-crbug.com/606196 fast/writing-mode/text-combine-various-fonts.html [ NeedsRebaseline ]
-crbug.com/606196 [ Win ] fast/text/emphasis.html [ NeedsRebaseline ]
-crbug.com/606196 fast/writing-mode/japanese-rl-selection.html [ NeedsRebaseline ]
-crbug.com/606196 fast/text/emphasis-vertical.html [ NeedsRebaseline ]
-crbug.com/606196 fast/writing-mode/japanese-lr-selection.html [ NeedsRebaseline ]
-crbug.com/606196 [ Win ] fast/text/unicode-fallback-font.html [ NeedsRebaseline ]
-
 crbug.com/599975 [ Android ] media/video-autoplay.html [ Crash Timeout ]
 
 # DocumentWriteEvaluator is still experimental
