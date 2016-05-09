@@ -6,11 +6,6 @@ import("//testing/test.gni")
 import("config.gni")
 
 if (current_toolchain == host_toolchain) {
-  gypi_values = exec_script("//build/gypi_to_gn.py",
-                            [ rebase_path("relocation_packer.gyp") ],
-                            "scope",
-                            [ "relocation_packer.gyp" ])
-
   # GYP: //third_party/android_platform/relocation_packer.gyp:android_lib_relocation_packer
   source_set("android_lib_relocation_packer") {
     deps = [
@@ -18,7 +13,19 @@ if (current_toolchain == host_toolchain) {
     ]
     configs -= [ "//build/config/compiler:chromium_code" ]
     configs += [ "//build/config/compiler:no_chromium_code" ]
-    sources = gypi_values.relocation_packer_sources
+    sources = [
+      "bionic/tools/relocation_packer/src/debug.cc",
+      "bionic/tools/relocation_packer/src/debug.h",
+      "bionic/tools/relocation_packer/src/delta_encoder.cc",
+      "bionic/tools/relocation_packer/src/delta_encoder.h",
+      "bionic/tools/relocation_packer/src/elf_file.cc",
+      "bionic/tools/relocation_packer/src/elf_file.h",
+      "bionic/tools/relocation_packer/src/elf_traits.h",
+      "bionic/tools/relocation_packer/src/packer.cc",
+      "bionic/tools/relocation_packer/src/packer.h",
+      "bionic/tools/relocation_packer/src/sleb128.cc",
+      "bionic/tools/relocation_packer/src/sleb128.h",
+    ]
   }
 
   # GYP: //third_party/android_platform/relocation_packer.gyp:android_relocation_packer
@@ -28,11 +35,25 @@ if (current_toolchain == host_toolchain) {
       "//build/config/sanitizers:deps",
       "//third_party/elfutils:libelf",
     ]
-    sources = gypi_values.relocation_packer_main_source
+    sources = [
+      "bionic/tools/relocation_packer/src/main.cc",
+      "bionic/tools/relocation_packer/src/nativehelper/ScopedFd.h",
+    ]
   }
 
   copy("copy_android_relocation_packer_test_data") {
-    sources = gypi_values.relocation_packer_test_data_sources
+    sources = [
+      "bionic/tools/relocation_packer/test_data/elf_file_unittest_relocs_arm32.so",
+      "bionic/tools/relocation_packer/test_data/elf_file_unittest_relocs_arm32_packed.so",
+      "bionic/tools/relocation_packer/test_data/elf_file_unittest_relocs_arm64.so",
+      "bionic/tools/relocation_packer/test_data/elf_file_unittest_relocs_arm64_packed.so",
+      "bionic/tools/relocation_packer/test_data/elf_file_unittest_relocs_ia32.so",
+      "bionic/tools/relocation_packer/test_data/elf_file_unittest_relocs_ia32_packed.so",
+      "bionic/tools/relocation_packer/test_data/elf_file_unittest_relocs_mips32.so",
+      "bionic/tools/relocation_packer/test_data/elf_file_unittest_relocs_mips32_packed.so",
+      "bionic/tools/relocation_packer/test_data/elf_file_unittest_relocs_x64.so",
+      "bionic/tools/relocation_packer/test_data/elf_file_unittest_relocs_x64_packed.so",
+    ]
     outputs = [
       "$root_out_dir/{{source_file_part}}",
     ]
@@ -45,7 +66,14 @@ if (current_toolchain == host_toolchain) {
       ":copy_android_relocation_packer_test_data",
       "//testing/gtest",
     ]
-    sources = gypi_values.relocation_packer_test_sources
+    sources = [
+      "bionic/tools/relocation_packer/src/debug_unittest.cc",
+      "bionic/tools/relocation_packer/src/delta_encoder_unittest.cc",
+      "bionic/tools/relocation_packer/src/elf_file_unittest.cc",
+      "bionic/tools/relocation_packer/src/packer_unittest.cc",
+      "bionic/tools/relocation_packer/src/run_all_unittests.cc",
+      "bionic/tools/relocation_packer/src/sleb128_unittest.cc",
+    ]
   }
 }
 
