@@ -324,6 +324,7 @@ protected:
     // this condition.
     virtual bool shouldIgnoreOverflowPropertyForInlineBlockBaseline() const { return false; }
 
+    bool hitTestChildren(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) override;
     void updateHitTestResult(HitTestResult&, const LayoutPoint&) override;
 
     // Delay update scrollbar until finishDelayUpdateScrollInfo() will be
@@ -408,9 +409,6 @@ private:
     {
         return hitTestAction == HitTestBlockBackground || hitTestAction == HitTestChildBlockBackground;
     }
-    bool hitTestChildren(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) override;
-    // FIXME-BLOCKFLOW: Remove virtualizaion when all callers have moved to LayoutBlockFlow
-    virtual bool hitTestFloats(HitTestResult&, const HitTestLocation&, const LayoutPoint&) { return false; }
 
     bool isPointInOverflowControl(HitTestResult&, const LayoutPoint& locationInContainer, const LayoutPoint& accumulatedOffset) const;
 

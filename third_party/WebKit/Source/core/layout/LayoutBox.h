@@ -947,6 +947,7 @@ protected:
 
     LayoutObject* splitAnonymousBoxesAroundChild(LayoutObject* beforeChild);
 
+    virtual bool hitTestChildren(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction);
     void addLayerHitTestRects(LayerHitTestRects&, const PaintLayer* currentCompositedLayer, const LayoutPoint& layerOffset, const LayoutRect& containerRect) const override;
     void computeSelfHitTestRects(Vector<LayoutRect>&, const LayoutPoint& layerOffset) const override;
 
@@ -1042,7 +1043,6 @@ private:
     bool intersectsVisibleViewport();
 
     virtual bool isInSelfHitTestingPhase(HitTestAction hitTestAction) const { return hitTestAction == HitTestForeground; }
-    virtual bool hitTestChildren(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction);
 
     void updateBackgroundAttachmentFixedStatusAfterStyleChange();
 

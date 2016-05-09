@@ -1519,44 +1519,18 @@ bool LayoutBlock::nodeAtPoint(HitTestResult& result, const HitTestLocation& loca
 
 bool LayoutBlock::hitTestChildren(HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction hitTestAction)
 {
-    // TODO(pdr): We should also check for css clip in the !isSelfPaintingLayer
-    //            case, similar to overflow clip below.
-    if (hasOverflowClip() && !hasSelfPaintingLayer()) {
-        if (!locationInContainer.intersects(overflowClipRect(accumulatedOffset, ExcludeOverlayScrollbarSizeForHitTesting)))
-            return false;
-        if (style()->hasBorderRadius()) {
-            LayoutRect borderRect = borderBoxRect();
-            borderRect.moveBy(accumulatedOffset);
-            if (!locationInContainer.intersects(style()->getRoundedInnerBorderFor(borderRect)))
-                return false;
-        }
-    }
-
-    // A control clip can also clip out child hit testing.
-    if (hasControlClip() && !locationInContainer.intersects(controlClipRect(accumulatedOffset)))
-        return false;
-
+    ASSERT(!childrenInline());
     LayoutPoint scrolledOffset(hasOverflowClip() ? accumulatedOffset - scrolledContentOffset() : accumulatedOffset);
-    if (childrenInline() && !isTable()) {
-        if (m_lineBoxes.hitTest(LineLayoutBoxModel(this), result, locationInContainer, scrolledOffset, hitTestAction)) {
+    HitTestAction childHitTest = hitTestAction;
+    if (hitTestAction == HitTestChildBlockBackgrounds)
+        childHitTest = HitTestChildBlockBackground;
+    for (LayoutBox* child = lastChildBox(); child; child = child->previousSiblingBox()) {
+        LayoutPoint childPoint = flipForWritingModeForChild(child, scrolledOffset);
+        if (!child->hasSelfPaintingLayer() && !child->isFloating() && !child->isColumnSpanAll() && child->nodeAtPoint(result, locationInContainer, childPoint, childHitTest)) {
             updateHitTestResult(result, flipForWritingMode(toLayoutPoint(locationInContainer.point() - accumulatedOffset)));
             return true;
         }
-    } else {
-        HitTestAction childHitTest = hitTestAction;
-        if (hitTestAction == HitTestChildBlockBackgrounds)
-            childHitTest = HitTestChildBlockBackground;
-        for (LayoutBox* child = lastChildBox(); child; child = child->previousSiblingBox()) {
-            LayoutPoint childPoint = flipForWritingModeForChild(child, scrolledOffset);
-            if (!child->hasSelfPaintingLayer() && !child->isFloating() && !child->isColumnSpanAll() && child->nodeAtPoint(result, locationInContainer, childPoint, childHitTest)) {
-                updateHitTestResult(result, flipForWritingMode(toLayoutPoint(locationInContainer.point() - accumulatedOffset)));
-                return true;
-            }
-        }
     }
-
-    if (hitTestAction == HitTestFloat && hitTestFloats(result, locationInContainer, scrolledOffset))
-        return true;
 
     return false;
 }
