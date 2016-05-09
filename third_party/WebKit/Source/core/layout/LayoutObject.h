@@ -275,7 +275,7 @@ public:
 
     LayoutObject* lastLeafChild() const;
 
-    // The following six functions are used when the layout tree hierarchy changes to make sure layers get
+    // The following functions are used when the layout tree hierarchy changes to make sure layers get
     // properly added and removed.  Since containership can be implemented by any subclass, and since a hierarchy
     // can contain a mixture of boxes and other object types, these functions need to be in the base class.
     PaintLayer* enclosingLayer() const;
@@ -283,6 +283,10 @@ public:
     void removeLayers(PaintLayer* parentLayer);
     void moveLayers(PaintLayer* oldParent, PaintLayer* newParent);
     PaintLayer* findNextLayer(PaintLayer* parentLayer, LayoutObject* startPoint, bool checkParent = true);
+
+    // Returns the layer that will paint this object.
+    // If possible, use the faster PaintInvalidationState::paintingLayer() instead.
+    PaintLayer* paintingLayer() const;
 
     // Scrolling is a LayoutBox concept, however some code just cares about recursively scrolling our enclosing ScrollableArea(s).
     bool scrollRectToVisible(
@@ -1563,8 +1567,11 @@ protected:
     // owned by this object, including the object itself, LayoutText/LayoutInline line boxes, etc.,
     // not including children which will be invalidated normally during invalidateTreeIfNeeded() and
     // parts which are invalidated separately (e.g. scrollbars).
-    // The caller should ensure the enclosing layer has been setNeedsRepaint before calling this function.
+    // The caller should ensure the painting layer has been setNeedsRepaint before calling this function.
     virtual void invalidateDisplayItemClients(const LayoutBoxModelObject& paintInvalidationContainer, PaintInvalidationReason) const;
+
+    // If possible, use the faster paintInvalidationState.paintingLayer().setNeedsRepaint().
+    void setPaintingLayerNeedsRepaint() const;
 
     // Sets enclosing layer needsRepaint, then calls invalidateDisplayItemClients().
     // Should use this version when PaintInvalidationState is available.
@@ -1622,7 +1629,7 @@ private:
 
     void invalidatePaintIncludingNonSelfPaintingLayerDescendantsInternal(const LayoutBoxModelObject& paintInvalidationContainer);
 
-    // The caller should ensure the enclosing layer has been setNeedsRepaint before calling this function.
+    // The caller should ensure the painting layer has been setNeedsRepaint before calling this function.
     void invalidatePaintOfPreviousPaintInvalidationRect(const LayoutBoxModelObject& paintInvalidationContainer, PaintInvalidationReason);
 
     LayoutRect previousSelectionRectForPaintInvalidation() const;

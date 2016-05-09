@@ -624,6 +624,15 @@ PaintLayer* LayoutObject::enclosingLayer() const
     return nullptr;
 }
 
+PaintLayer* LayoutObject::paintingLayer() const
+{
+    for (const LayoutObject* current = this; current; current = current->isColumnSpanAll() ? current->containingBlock() : current->parent()) {
+        if (current->hasLayer())
+            return toLayoutBoxModelObject(current)->layer()->enclosingSelfPaintingLayer();
+    }
+    return nullptr;
+}
+
 bool LayoutObject::scrollRectToVisible(const LayoutRect& rect, const ScrollAlignment& alignX, const ScrollAlignment& alignY, ScrollType scrollType, bool makeVisibleInVisualViewport)
 {
     LayoutBox* enclosingBox = this->enclosingBox();
@@ -1103,8 +1112,10 @@ const LayoutBoxModelObject* LayoutObject::enclosingCompositedContainer() const
     // FIXME: CompositingState is not necessarily up to date for many callers of this function.
     DisableCompositingQueryAsserts disabler;
 
-    if (PaintLayer* compositingLayer = enclosingLayer()->enclosingLayerForPaintInvalidationCrossingFrameBoundaries())
-        container = compositingLayer->layoutObject();
+    if (PaintLayer* paintingLayer = this->paintingLayer()) {
+        if (PaintLayer* compositingLayer = paintingLayer->enclosingLayerForPaintInvalidationCrossingFrameBoundaries())
+            container = compositingLayer->layoutObject();
+    }
     return container;
 }
 
@@ -1233,47 +1244,33 @@ void LayoutObject::invalidatePaintUsingContainer(const LayoutBoxModelObject& pai
 
 void LayoutObject::invalidateDisplayItemClient(const DisplayItemClient& displayItemClient) const
 {
-    if (PaintLayer* enclosingLayer = this->enclosingLayer()) {
+    if (PaintLayer* paintingLayer = this->paintingLayer()) {
         // This is valid because we want to invalidate the client in the display item list of the current backing.
         DisableCompositingQueryAsserts disabler;
-        if (const PaintLayer* paintInvalidationLayer = enclosingLayer->enclosingLayerForPaintInvalidationCrossingFrameBoundaries())
+        if (const PaintLayer* paintInvalidationLayer = paintingLayer->enclosingLayerForPaintInvalidationCrossingFrameBoundaries())
             paintInvalidationLayer->layoutObject()->invalidateDisplayItemClientOnBacking(displayItemClient, PaintInvalidationFull);
-        enclosingLayer->setNeedsRepaint();
+        paintingLayer->setNeedsRepaint();
     }
 }
 
-#if ENABLE(ASSERT)
-static void assertEnclosingSelfPaintingLayerHasSetNeedsRepaint(const LayoutObject& layoutObject)
+void LayoutObject::setPaintingLayerNeedsRepaint() const
 {
-    PaintLayer* enclosingSelfPaintingLayer = nullptr;
-    const LayoutObject* curr = &layoutObject;
-    while (curr) {
-        if (curr->hasLayer() && toLayoutBoxModelObject(curr)->hasSelfPaintingLayer()) {
-            enclosingSelfPaintingLayer = toLayoutBoxModelObject(curr)->layer();
-            break;
-        }
-        // Multi-column spanner is painted by the layer of the multi-column container instead of
-        // its enclosing layer (the layer of the multi-column flow thread).
-        curr = curr->isColumnSpanAll() ? curr->containingBlock() : curr->parent();
-    }
-    ASSERT(!enclosingSelfPaintingLayer || enclosingSelfPaintingLayer->needsRepaint());
+    if (PaintLayer* paintingLayer = this->paintingLayer())
+        paintingLayer->setNeedsRepaint();
 }
-#endif
 
 void LayoutObject::invalidateDisplayItemClients(const LayoutBoxModelObject& paintInvalidationContainer, PaintInvalidationReason invalidationReason) const
 {
     // It's caller's responsibility to ensure enclosingSelfPaintingLayer's needsRepaint is set.
     // Don't set the flag here because getting enclosingSelfPaintLayer has cost and the caller can use
     // various ways (e.g. PaintInvalidatinState::enclosingSelfPaintingLayer()) to reduce the cost.
-#if ENABLE(ASSERT)
-    assertEnclosingSelfPaintingLayerHasSetNeedsRepaint(*this);
-#endif
+    ASSERT(!paintingLayer() || paintingLayer()->needsRepaint());
     paintInvalidationContainer.invalidateDisplayItemClientOnBacking(*this, invalidationReason);
 }
 
 void LayoutObject::invalidateDisplayItemClientsWithPaintInvalidationState(const LayoutBoxModelObject& paintInvalidationContainer, const PaintInvalidationState& paintInvalidationState, PaintInvalidationReason invalidationReason) const
 {
-    paintInvalidationState.enclosingSelfPaintingLayer(*this).setNeedsRepaint();
+    paintInvalidationState.paintingLayer().setNeedsRepaint();
     invalidateDisplayItemClients(paintInvalidationContainer, invalidationReason);
 }
 
@@ -1296,8 +1293,7 @@ const LayoutBoxModelObject* LayoutObject::invalidatePaintRectangleInternal(const
 
 void LayoutObject::invalidatePaintRectangle(const LayoutRect& rect) const
 {
-    if (PaintLayer* enclosingLayer = this->enclosingLayer())
-        enclosingLayer->setNeedsRepaint();
+    setPaintingLayerNeedsRepaint();
     const LayoutBoxModelObject* paintInvalidationContainer = invalidatePaintRectangleInternal(rect);
     if (paintInvalidationContainer)
         invalidateDisplayItemClients(*paintInvalidationContainer, PaintInvalidationRectangle);
@@ -1330,8 +1326,13 @@ void LayoutObject::invalidateTreeIfNeeded(const PaintInvalidationState& paintInv
 
 void LayoutObject::invalidatePaintOfSubtreesIfNeeded(const PaintInvalidationState& childPaintInvalidationState)
 {
-    for (LayoutObject* child = slowFirstChild(); child; child = child->nextSibling())
+    for (LayoutObject* child = slowFirstChild(); child; child = child->nextSibling()) {
+        // Column spanners are invalidated through their placeholders.
+        // See LayoutMultiColumnSpannerPlaceholder::invalidatePaintOfSubtreesIfNeeded().
+        if (child->isColumnSpanAll())
+            continue;
         child->invalidateTreeIfNeeded(childPaintInvalidationState);
+    }
 }
 
 static PassOwnPtr<TracedValue> jsonObjectForOldAndNewRects(const LayoutRect& oldRect, const LayoutPoint& oldLocation, const LayoutRect& newRect, const LayoutPoint& newLocation)
@@ -1410,7 +1411,7 @@ PaintInvalidationReason LayoutObject::invalidatePaintIfNeeded(const PaintInvalid
     ASSERT(&paintInvalidationState.currentObject() == this);
 
     if (styleRef().hasOutline()) {
-        PaintLayer& layer = paintInvalidationState.enclosingSelfPaintingLayer(*this);
+        PaintLayer& layer = paintInvalidationState.paintingLayer();
         if (layer.layoutObject() != this)
             layer.setNeedsPaintPhaseDescendantOutlines();
     }
@@ -3561,14 +3562,9 @@ void LayoutObject::invalidateDisplayItemClientsIncludingNonCompositingDescendant
     // This is valid because we want to invalidate the client in the display item list of the current backing.
     DisableCompositingQueryAsserts disabler;
     if (!paintInvalidationContainer) {
-        // Not using enclosingCompositedContainer() directly because this object may be in an orphaned subtree.
-        PaintLayer* enclosingLayer = this->enclosingLayer();
-        if (!enclosingLayer)
+        paintInvalidationContainer = enclosingCompositedContainer();
+        if (!paintInvalidationContainer)
             return;
-        const PaintLayer* paintInvalidationLayer = enclosingLayer->enclosingLayerForPaintInvalidationCrossingFrameBoundaries();
-        if (!paintInvalidationLayer)
-            return;
-        paintInvalidationContainer = paintInvalidationLayer->layoutObject();
     }
 
     traverseNonCompositingDescendants(const_cast<LayoutObject&>(*this), [&paintInvalidationContainer, paintInvalidationReason](LayoutObject& object) {
@@ -3583,9 +3579,7 @@ void LayoutObject::invalidatePaintOfPreviousPaintInvalidationRect(const LayoutBo
     // It's caller's responsibility to ensure enclosingSelfPaintingLayer's needsRepaint is set.
     // Don't set the flag here because getting enclosingSelfPaintLayer has cost and the caller can use
     // various ways (e.g. PaintInvalidatinState::enclosingSelfPaintingLayer()) to reduce the cost.
-#if ENABLE(ASSERT)
-    assertEnclosingSelfPaintingLayerHasSetNeedsRepaint(*this);
-#endif
+    ASSERT(!paintingLayer() || paintingLayer()->needsRepaint());
 
     // These disablers are valid because we want to use the current compositing/invalidation status.
     DisablePaintInvalidationStateAsserts invalidationDisabler;
@@ -3637,8 +3631,7 @@ void LayoutObject::invalidatePaintIncludingNonSelfPaintingLayerDescendantsIntern
 
 void LayoutObject::invalidatePaintIncludingNonSelfPaintingLayerDescendants(const LayoutBoxModelObject& paintInvalidationContainer)
 {
-    if (PaintLayer* enclosingLayer = this->enclosingLayer())
-        enclosingLayer->setNeedsRepaint();
+    setPaintingLayerNeedsRepaint();
     invalidatePaintIncludingNonSelfPaintingLayerDescendantsInternal(paintInvalidationContainer);
 }
 

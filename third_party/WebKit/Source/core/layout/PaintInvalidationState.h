@@ -75,7 +75,7 @@ public:
     void pushDelayedPaintInvalidationTarget(LayoutObject& obj) const { m_pendingDelayedPaintInvalidations.append(&obj); }
     Vector<LayoutObject*>& pendingDelayedPaintInvalidationTargets() const { return m_pendingDelayedPaintInvalidations; }
 
-    PaintLayer& enclosingSelfPaintingLayer(const LayoutObject&) const;
+    PaintLayer& paintingLayer() const;
 
 #if ENABLE(ASSERT)
     const LayoutObject& currentObject() const { return m_currentObject; }
@@ -137,7 +137,7 @@ private:
 
     Vector<LayoutObject*>& m_pendingDelayedPaintInvalidations;
 
-    PaintLayer& m_enclosingSelfPaintingLayer;
+    PaintLayer& m_paintingLayer;
 
 #if ENABLE(ASSERT)
     bool m_didUpdateForChildren;

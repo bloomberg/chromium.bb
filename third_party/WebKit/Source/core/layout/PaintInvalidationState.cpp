@@ -39,7 +39,7 @@ PaintInvalidationState::PaintInvalidationState(const LayoutView& layoutView, Vec
     , m_paintInvalidationContainerForStackedContents(m_paintInvalidationContainer)
     , m_containerForAbsolutePosition(layoutView)
     , m_pendingDelayedPaintInvalidations(pendingDelayedPaintInvalidations)
-    , m_enclosingSelfPaintingLayer(*layoutView.layer())
+    , m_paintingLayer(*layoutView.layer())
 #if ENABLE(ASSERT)
     , m_didUpdateForChildren(false)
 #endif
@@ -74,7 +74,7 @@ PaintInvalidationState::PaintInvalidationState(const PaintInvalidationState& par
     , m_containerForAbsolutePosition(currentObject.canContainAbsolutePositionObjects() ? currentObject : parentState.m_containerForAbsolutePosition)
     , m_svgTransform(parentState.m_svgTransform)
     , m_pendingDelayedPaintInvalidations(parentState.pendingDelayedPaintInvalidationTargets())
-    , m_enclosingSelfPaintingLayer(parentState.enclosingSelfPaintingLayer(currentObject))
+    , m_paintingLayer(currentObject.hasLayer() && toLayoutBoxModelObject(currentObject).hasSelfPaintingLayer() ? *toLayoutBoxModelObject(currentObject).layer() : parentState.m_paintingLayer)
 #if ENABLE(ASSERT)
     , m_didUpdateForChildren(false)
 #endif
@@ -82,6 +82,8 @@ PaintInvalidationState::PaintInvalidationState(const PaintInvalidationState& par
     , m_canCheckFastPathSlowPathEquality(parentState.m_canCheckFastPathSlowPathEquality)
 #endif
 {
+    ASSERT(&m_paintingLayer == currentObject.paintingLayer());
+
     if (currentObject == parentState.m_currentObject) {
         // Sometimes we create a new PaintInvalidationState from parentState on the same object
         // (e.g. LayoutView, and the HorriblySlowRectMapping cases in LayoutBlock::invalidatePaintOfSubtreesIfNeeded()).
@@ -415,12 +417,10 @@ void PaintInvalidationState::addClipRectRelativeToPaintOffset(const LayoutRect& 
     }
 }
 
-PaintLayer& PaintInvalidationState::enclosingSelfPaintingLayer(const LayoutObject& layoutObject) const
+PaintLayer& PaintInvalidationState::paintingLayer() const
 {
-    if (layoutObject.hasLayer() && toLayoutBoxModelObject(layoutObject).hasSelfPaintingLayer())
-        return *toLayoutBoxModelObject(layoutObject).layer();
-
-    return m_enclosingSelfPaintingLayer;
+    ASSERT(&m_paintingLayer == m_currentObject.paintingLayer());
+    return m_paintingLayer;
 }
 
 #ifdef CHECK_FAST_PATH_SLOW_PATH_EQUALITY

@@ -1504,7 +1504,7 @@ PaintInvalidationReason LayoutBox::invalidatePaintIfNeeded(const PaintInvalidati
     if (hasBoxDecorationBackground()
         // We also paint overflow controls in background phase.
         || (hasOverflowClip() && getScrollableArea()->hasOverflowControls())) {
-        PaintLayer& layer = paintInvalidationState.enclosingSelfPaintingLayer(*this);
+        PaintLayer& layer = paintInvalidationState.paintingLayer();
         if (layer.layoutObject() != this)
             layer.setNeedsPaintPhaseDescendantBlockBackgrounds();
     }

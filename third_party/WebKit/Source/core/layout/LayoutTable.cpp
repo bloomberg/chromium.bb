@@ -1421,7 +1421,7 @@ PaintInvalidationReason LayoutTable::invalidatePaintIfNeeded(const PaintInvalida
     // Do it now instead of during painting to invalidate table cells if needed.
     recalcCollapsedBordersIfNeeded();
     if (collapseBorders() && !m_collapsedBorders.isEmpty())
-        paintInvalidationState.enclosingSelfPaintingLayer(*this).setNeedsPaintPhaseDescendantBlockBackgrounds();
+        paintInvalidationState.paintingLayer().setNeedsPaintPhaseDescendantBlockBackgrounds();
 
     return LayoutBlock::invalidatePaintIfNeeded(paintInvalidationState);
 }
