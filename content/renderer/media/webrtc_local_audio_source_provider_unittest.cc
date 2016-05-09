@@ -35,7 +35,7 @@ class WebRtcLocalAudioSourceProviderTest : public testing::Test {
     audio_source.initialize(blink::WebString::fromUTF8("dummy_source_id"),
                             blink::WebMediaStreamSource::TypeAudio,
                             blink::WebString::fromUTF8("dummy_source_name"),
-                            false /* remote */, true /* readonly */);
+                            false /* remote */);
     blink_track_.initialize(blink::WebString::fromUTF8("audio_track"),
                             audio_source);
     blink_track_.setExtraData(native_track.release());

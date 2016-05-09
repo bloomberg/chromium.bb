@@ -159,7 +159,7 @@ class WebRtcLocalAudioTrackTest : public ::testing::Test {
     MockConstraintFactory constraint_factory;
     blink_source_.initialize("dummy", blink::WebMediaStreamSource::TypeAudio,
                              "dummy",
-                             false /* remote */, true /* readonly */);
+                             false /* remote */);
     MediaStreamAudioSource* audio_source = new MediaStreamAudioSource();
     blink_source_.setExtraData(audio_source);
 

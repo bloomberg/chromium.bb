@@ -43,7 +43,7 @@ bool AddVideoTrackToMediaStream(
       blink::WebString::fromUTF8(base::GenerateGUID());
   web_media_stream_source.initialize(track_id,
                                      blink::WebMediaStreamSource::TypeVideo,
-                                     track_id, is_remote, is_readonly);
+                                     track_id, is_remote);
   // Takes ownership of |media_stream_source|.
   web_media_stream_source.setExtraData(media_stream_source);
 
@@ -82,7 +82,7 @@ bool AddAudioTrackToMediaStream(
       blink::WebString::fromUTF8(base::GenerateGUID());
   web_media_stream_source.initialize(track_id,
                                      blink::WebMediaStreamSource::TypeAudio,
-                                     track_id, is_remote, is_readonly);
+                                     track_id, is_remote);
 
   MediaStreamAudioSource* media_stream_source(new MediaStreamAudioSource(
       -1, StreamDeviceInfo(), MediaStreamSource::SourceStoppedCallback(),

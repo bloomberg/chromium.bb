@@ -252,13 +252,13 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
     audio_source.initialize(blink::WebString::fromUTF8(audio_track_label),
                             blink::WebMediaStreamSource::TypeAudio,
                             blink::WebString::fromUTF8("audio_track"),
-                            false /* remote */, true /* readonly */);
+                            false /* remote */);
     audio_source.setExtraData(new MediaStreamAudioSource());
     blink::WebMediaStreamSource video_source;
     video_source.initialize(blink::WebString::fromUTF8(video_track_label),
                             blink::WebMediaStreamSource::TypeVideo,
                             blink::WebString::fromUTF8("video_track"),
-                            false /* remote */, true /* readonly */);
+                            false /* remote */);
     MockMediaStreamVideoSource* native_video_source =
         new MockMediaStreamVideoSource(false);
     video_source.setExtraData(native_video_source);

@@ -43,7 +43,7 @@ MediaStreamAudioDestinationHandler::MediaStreamAudioDestinationHandler(AudioNode
     : AudioBasicInspectorHandler(NodeTypeMediaStreamAudioDestination, node, node.context()->sampleRate(), numberOfChannels)
     , m_mixBus(AudioBus::create(numberOfChannels, ProcessingSizeInFrames))
 {
-    m_source = MediaStreamSource::create("WebAudio-" + createCanonicalUUIDString(), MediaStreamSource::TypeAudio, "MediaStreamAudioDestinationNode", false, true, MediaStreamSource::ReadyStateLive, true);
+    m_source = MediaStreamSource::create("WebAudio-" + createCanonicalUUIDString(), MediaStreamSource::TypeAudio, "MediaStreamAudioDestinationNode", false, MediaStreamSource::ReadyStateLive, true);
     MediaStreamSourceVector audioSources;
     audioSources.append(m_source.get());
     MediaStreamSourceVector videoSources;

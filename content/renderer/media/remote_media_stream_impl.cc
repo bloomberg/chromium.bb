@@ -103,7 +103,7 @@ class RemoteMediaStreamTrackAdapter
     blink::WebString webkit_track_id(base::UTF8ToUTF16(id_));
     blink::WebMediaStreamSource webkit_source;
     webkit_source.initialize(webkit_track_id, type, webkit_track_id,
-                             true /* remote */, true /* readonly */);
+                             true /* remote */);
     webkit_track_.initialize(webkit_track_id, webkit_source);
     DCHECK(!webkit_track_.isNull());
   }

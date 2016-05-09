@@ -86,8 +86,7 @@ class MediaStreamVideoCapturerSourceTest : public testing::Test {
     webkit_source_.initialize(base::UTF8ToUTF16("dummy_source_id"),
                               blink::WebMediaStreamSource::TypeVideo,
                               base::UTF8ToUTF16("dummy_source_name"),
-                              false /* remote */,
-                              true /* readonly */);
+                              false /* remote */);
     webkit_source_.setExtraData(source_);
     webkit_source_id_ = webkit_source_.id();
   }
@@ -302,7 +301,7 @@ TEST_F(MediaStreamVideoCapturerSourceTest, Ended) {
   webkit_source_.initialize(base::UTF8ToUTF16("dummy_source_id"),
                             blink::WebMediaStreamSource::TypeVideo,
                             base::UTF8ToUTF16("dummy_source_name"),
-                            false /* remote */, true /* readonly */);
+                            false /* remote */);
   webkit_source_.setExtraData(source_);
   webkit_source_id_ = webkit_source_.id();
 

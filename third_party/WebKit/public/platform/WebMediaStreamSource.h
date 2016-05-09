@@ -90,7 +90,7 @@ public:
     BLINK_PLATFORM_EXPORT void assign(const WebMediaStreamSource&);
 
     BLINK_PLATFORM_EXPORT void initialize(const WebString& id, Type, const WebString& name); // DEPRECATED
-    BLINK_PLATFORM_EXPORT void initialize(const WebString& id, Type, const WebString& name, bool remote, bool readonly);
+    BLINK_PLATFORM_EXPORT void initialize(const WebString& id, Type, const WebString& name, bool remote);
     BLINK_PLATFORM_EXPORT void reset();
     bool isNull() const { return m_private.isNull(); }
 

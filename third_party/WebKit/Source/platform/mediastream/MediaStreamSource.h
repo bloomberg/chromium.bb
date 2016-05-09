@@ -69,13 +69,12 @@ public:
         ReadyStateEnded = 2
     };
 
-    static MediaStreamSource* create(const String& id, StreamType, const String& name, bool remote, bool readonly, ReadyState = ReadyStateLive, bool requiresConsumer = false);
+    static MediaStreamSource* create(const String& id, StreamType, const String& name, bool remote, ReadyState = ReadyStateLive, bool requiresConsumer = false);
 
     const String& id() const { return m_id; }
     StreamType type() const { return m_type; }
     const String& name() const { return m_name; }
     bool remote() const { return m_remote; }
-    bool readonly() const { return m_readonly; }
 
     void setReadyState(ReadyState);
     ReadyState getReadyState() const { return m_readyState; }
@@ -102,13 +101,12 @@ public:
     DECLARE_TRACE();
 
 private:
-    MediaStreamSource(const String& id, StreamType, const String& name, bool remote, bool readonly, ReadyState, bool requiresConsumer);
+    MediaStreamSource(const String& id, StreamType, const String& name, bool remote, ReadyState, bool requiresConsumer);
 
     String m_id;
     StreamType m_type;
     String m_name;
     bool m_remote;
-    bool m_readonly;
     ReadyState m_readyState;
     bool m_requiresConsumer;
     HeapHashSet<WeakMember<Observer>> m_observers;

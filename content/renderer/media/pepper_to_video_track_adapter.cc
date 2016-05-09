@@ -258,7 +258,7 @@ bool PepperToVideoTrackAdapter::Open(MediaStreamRegistryInterface* registry,
       blink::WebMediaStreamSource::TypeVideo;
   blink::WebString webkit_track_id = base::UTF8ToUTF16(track_id);
   webkit_source.initialize(webkit_track_id, type, webkit_track_id,
-                           false /* remote */, true /* readonly */);
+                           false /* remote */);
   webkit_source.setExtraData(writer);
 
   blink::WebMediaConstraints constraints;

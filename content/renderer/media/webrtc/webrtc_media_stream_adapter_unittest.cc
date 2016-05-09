@@ -47,7 +47,7 @@ class WebRtcMediaStreamAdapterTest : public ::testing::Test {
       audio_source.initialize("audio",
                               blink::WebMediaStreamSource::TypeAudio,
                               "audio",
-                              false /* remote */, true /* readonly */);
+                              false /* remote */);
       audio_source.setExtraData(new MediaStreamAudioSource());
 
       audio_track_vector[0].initialize(audio_source);
@@ -67,7 +67,7 @@ class WebRtcMediaStreamAdapterTest : public ::testing::Test {
       video_source.initialize("video",
                               blink::WebMediaStreamSource::TypeVideo,
                               "video",
-                              false /* remote */, true /* readonly */);
+                              false /* remote */);
       MediaStreamVideoSource* native_source =
           new MockMediaStreamVideoSource(false);
       video_source.setExtraData(native_source);
@@ -126,7 +126,7 @@ TEST_F(WebRtcMediaStreamAdapterTest,
   audio_source.initialize("audio source",
                           blink::WebMediaStreamSource::TypeAudio,
                           "something",
-                          false /* remote */, true /* readonly */);
+                          false /* remote */);
 
   blink::WebVector<blink::WebMediaStreamTrack> audio_tracks(
       static_cast<size_t>(1));
