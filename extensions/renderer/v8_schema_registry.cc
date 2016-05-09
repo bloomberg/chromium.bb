@@ -14,6 +14,7 @@
 #include "extensions/common/extension_api.h"
 #include "extensions/renderer/object_backed_native_handler.h"
 #include "extensions/renderer/script_context.h"
+#include "extensions/renderer/v8_helpers.h"
 
 using content::V8ValueConverter;
 
@@ -47,6 +48,9 @@ class SchemaRegistryNativeHandler : public ObjectBackedNativeHandler {
     RouteFunction("GetSchema",
                   base::Bind(&SchemaRegistryNativeHandler::GetSchema,
                              base::Unretained(this)));
+    RouteFunction("GetObjectType",
+                  base::Bind(&SchemaRegistryNativeHandler::GetObjectType,
+                             base::Unretained(this)));
   }
 
   ~SchemaRegistryNativeHandler() override { context_->Invalidate(); }
@@ -55,6 +59,19 @@ class SchemaRegistryNativeHandler : public ObjectBackedNativeHandler {
   void GetSchema(const v8::FunctionCallbackInfo<v8::Value>& args) {
     args.GetReturnValue().Set(
         registry_->GetSchema(*v8::String::Utf8Value(args[0])));
+  }
+
+  void GetObjectType(const v8::FunctionCallbackInfo<v8::Value>& args) {
+    CHECK(args.Length() == 1 && args[0]->IsObject());
+    std::string type;
+    if (args[0]->IsArray())
+      type = "array";
+    else if (args[0]->IsArrayBuffer())
+      type = "binary";
+    else
+      type = "object";
+    args.GetReturnValue().Set(
+        v8_helpers::ToV8StringUnsafe(context()->isolate(), type.c_str()));
   }
 
   std::unique_ptr<ScriptContext> context_;

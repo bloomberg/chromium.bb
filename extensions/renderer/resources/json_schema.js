@@ -38,8 +38,11 @@
 //   additional properties will be validated.
 //==============================================================================
 
-var loadTypeSchema = require('utils').loadTypeSchema;
-var CHECK = requireNative('logging').CHECK;
+var utils = require('utils');
+var loggingNative = requireNative('logging');
+var getObjectType = requireNative('schema_registry').GetObjectType;
+var CHECK = loggingNative.CHECK;
+var DCHECK = loggingNative.DCHECK;
 
 function isInstanceOfClass(instance, className) {
   while ((instance = instance.__proto__)) {
@@ -50,7 +53,7 @@ function isInstanceOfClass(instance, className) {
 }
 
 function isOptionalValue(value) {
-  return typeof(value) === 'undefined' || value === null;
+  return value === undefined || value === null;
 }
 
 function enumToString(enumValue) {
@@ -79,71 +82,68 @@ function JSONSchemaValidator() {
   this.errors = [];
   this.types = [];
 }
+$Object.setPrototypeOf(JSONSchemaValidator.prototype, null);
 
-JSONSchemaValidator.messages = {
-  invalidEnum: "Value must be one of: [*].",
-  propertyRequired: "Property is required.",
-  unexpectedProperty: "Unexpected property.",
-  arrayMinItems: "Array must have at least * items.",
-  arrayMaxItems: "Array must not have more than * items.",
-  itemRequired: "Item is required.",
-  stringMinLength: "String must be at least * characters long.",
-  stringMaxLength: "String must not be more than * characters long.",
-  stringPattern: "String must match the pattern: *.",
-  numberFiniteNotNan: "Value must not be *.",
-  numberMinValue: "Value must not be less than *.",
-  numberMaxValue: "Value must not be greater than *.",
-  numberIntValue: "Value must fit in a 32-bit signed integer.",
-  numberMaxDecimal: "Value must not have more than * decimal places.",
+var messages = {
+  __proto__: null,
+
+  invalidEnum: 'Value must be one of: [*].',
+  propertyRequired: 'Property is required.',
+  unexpectedProperty: 'Unexpected property.',
+  arrayMinItems: 'Array must have at least * items.',
+  arrayMaxItems: 'Array must not have more than * items.',
+  itemRequired: 'Item is required.',
+  stringMinLength: 'String must be at least * characters long.',
+  stringMaxLength: 'String must not be more than * characters long.',
+  stringPattern: 'String must match the pattern: *.',
+  numberFiniteNotNan: 'Value must not be *.',
+  numberMinValue: 'Value must not be less than *.',
+  numberMaxValue: 'Value must not be greater than *.',
+  numberIntValue: 'Value must fit in a 32-bit signed integer.',
+  numberMaxDecimal: 'Value must not have more than * decimal places.',
   invalidType: "Expected '*' but got '*'.",
   invalidTypeIntegerNumber:
       "Expected 'integer' but got 'number', consider using Math.round().",
-  invalidChoice: "Value does not match any valid type choices.",
-  invalidPropertyType: "Missing property type.",
-  schemaRequired: "Schema value required.",
-  unknownSchemaReference: "Unknown schema reference: *.",
-  notInstance: "Object must be an instance of *."
+  invalidChoice: 'Value does not match any valid type choices.',
+  invalidPropertyType: 'Missing property type.',
+  schemaRequired: 'Schema value required.',
+  unknownSchemaReference: 'Unknown schema reference: *.',
+  notInstance: 'Object must be an instance of *.',
 };
 
 /**
  * Builds an error message. Key is the property in the |errors| object, and
  * |opt_replacements| is an array of values to replace "*" characters with.
  */
-JSONSchemaValidator.formatError = function(key, opt_replacements) {
-  var message = this.messages[key];
+utils.defineProperty(JSONSchemaValidator, 'formatError',
+                     function(key, opt_replacements) {
+  var message = messages[key];
   if (opt_replacements) {
-    for (var i = 0; i < opt_replacements.length; i++) {
-      message = message.replace("*", opt_replacements[i]);
+    for (var i = 0; i < opt_replacements.length; ++i) {
+      DCHECK($String.indexOf(message, '*') != -1, message);
+      message = $String.replace(message, '*', opt_replacements[i]);
     }
   }
+  DCHECK($String.indexOf(message, '*') == -1)
   return message;
-};
+});
 
 /**
  * Classifies a value as one of the JSON schema primitive types. Note that we
  * don't explicitly disallow 'function', because we want to allow functions in
  * the input values.
  */
-JSONSchemaValidator.getType = function(value) {
+utils.defineProperty(JSONSchemaValidator, 'getType', function(value) {
+  // If we can determine the type safely in JS, it's fastest to do it here.
+  // However, Object types are difficult to classify, so we have to do it in
+  // C++.
   var s = typeof value;
-
-  if (s == "object") {
-    if (value === null) {
-      return "null";
-    } else if (Object.prototype.toString.call(value) == "[object Array]") {
-      return "array";
-    } else if (Object.prototype.toString.call(value) ==
-               "[object ArrayBuffer]") {
-      return "binary";
-    }
-  } else if (s == "number") {
-    if (value % 1 == 0) {
-      return "integer";
-    }
-  }
-
+  if (s === 'object')
+    return value === null ? 'null' : getObjectType(value);
+  if (s === 'number')
+    return value % 1 === 0 ? 'integer' : 'number';
   return s;
-};
+});
 
 /**
  * Add types that may be referenced by validated schemas that reference them
@@ -157,8 +157,8 @@ JSONSchemaValidator.prototype.addTypes = function(typeOrTypeList) {
     validator.types[type.id] = type;
   }
 
-  if (typeOrTypeList instanceof Array) {
-    for (var i = 0; i < typeOrTypeList.length; i++) {
+  if ($Array.isArray(typeOrTypeList)) {
+    for (var i = 0; i < typeOrTypeList.length; ++i) {
       addType(this, typeOrTypeList[i]);
     }
   } else {
@@ -174,7 +174,7 @@ JSONSchemaValidator.prototype.getAllTypesForSchema = function(schema) {
   if (schema.type)
     $Array.push(schemaTypes, schema.type);
   if (schema.choices) {
-    for (var i = 0; i < schema.choices.length; i++) {
+    for (var i = 0; i < schema.choices.length; ++i) {
       var choiceTypes = this.getAllTypesForSchema(schema.choices[i]);
       schemaTypes = $Array.concat(schemaTypes, choiceTypes);
     }
@@ -190,7 +190,7 @@ JSONSchemaValidator.prototype.getAllTypesForSchema = function(schema) {
 
 JSONSchemaValidator.prototype.getOrAddType = function(typeName) {
   if (!this.types[typeName])
-    this.types[typeName] = loadTypeSchema(typeName);
+    this.types[typeName] = utils.loadTypeSchema(typeName);
   return this.types[typeName];
 };
 
@@ -202,13 +202,13 @@ JSONSchemaValidator.prototype.isValidSchemaType = function(type, schema) {
     return true;
 
   // TODO(kalman): I don't understand this code. How can type be "null"?
-  if (schema.optional && (type == "null" || type == "undefined"))
+  if (schema.optional && (type == 'null' || type == 'undefined'))
     return true;
 
   var schemaTypes = this.getAllTypesForSchema(schema);
-  for (var i = 0; i < schemaTypes.length; i++) {
-    if (schemaTypes[i] == "any" || type == schemaTypes[i] ||
-        (type == "integer" && schemaTypes[i] == "number"))
+  for (var i = 0; i < schemaTypes.length; ++i) {
+    if (schemaTypes[i] == 'any' || type == schemaTypes[i] ||
+        (type == 'integer' && schemaTypes[i] == 'number'))
       return true;
   }
 
@@ -221,7 +221,7 @@ JSONSchemaValidator.prototype.isValidSchemaType = function(type, schema) {
  */
 JSONSchemaValidator.prototype.checkSchemaOverlap = function(schema1, schema2) {
   var schema1Types = this.getAllTypesForSchema(schema1);
-  for (var i = 0; i < schema1Types.length; i++) {
+  for (var i = 0; i < schema1Types.length; ++i) {
     if (this.isValidSchemaType(schema1Types[i], schema2))
       return true;
   }
@@ -234,10 +234,10 @@ JSONSchemaValidator.prototype.checkSchemaOverlap = function(schema1, schema2) {
  * |errors| property will contain a list of errors, if any.
  */
 JSONSchemaValidator.prototype.validate = function(instance, schema, opt_path) {
-  var path = opt_path || "";
+  var path = opt_path || '';
 
   if (!schema) {
-    this.addError(path, "schemaRequired");
+    this.addError(path, 'schemaRequired');
     return;
   }
 
@@ -252,10 +252,10 @@ JSONSchemaValidator.prototype.validate = function(instance, schema, opt_path) {
 
   // If the schema has a $ref property, the instance must validate against
   // that schema too. It must be present in this.types to be referenced.
-  var ref = schema["$ref"];
+  var ref = schema.$ref;
   if (ref) {
     if (!this.getOrAddType(ref))
-      this.addError(path, "unknownSchemaReference", [ ref ]);
+      this.addError(path, 'unknownSchemaReference', [ref]);
     else
       this.validate(instance, this.getOrAddType(ref), path)
   }
@@ -274,23 +274,23 @@ JSONSchemaValidator.prototype.validate = function(instance, schema, opt_path) {
       return;
   }
 
-  if (schema.type && schema.type != "any") {
+  if (schema.type && schema.type != 'any') {
     if (!this.validateType(instance, schema, path))
       return;
 
     // Type-specific validation.
     switch (schema.type) {
-      case "object":
+      case 'object':
         this.validateObject(instance, schema, path);
         break;
-      case "array":
+      case 'array':
         this.validateArray(instance, schema, path);
         break;
-      case "string":
+      case 'string':
         this.validateString(instance, schema, path);
         break;
-      case "number":
-      case "integer":
+      case 'number':
+      case 'integer':
         this.validateNumber(instance, schema, path);
         break;
     }
@@ -305,7 +305,7 @@ JSONSchemaValidator.prototype.validateChoices =
     function(instance, schema, path) {
   var originalErrors = this.errors;
 
-  for (var i = 0; i < schema.choices.length; i++) {
+  for (var i = 0; i < schema.choices.length; ++i) {
     this.errors = [];
     this.validate(instance, schema.choices[i], path);
     if (this.errors.length == 0) {
@@ -315,7 +315,7 @@ JSONSchemaValidator.prototype.validateChoices =
   }
 
   this.errors = originalErrors;
-  this.addError(path, "invalidChoice");
+  this.addError(path, 'invalidChoice');
 };
 
 /**
@@ -324,13 +324,13 @@ JSONSchemaValidator.prototype.validateChoices =
  * validates.
  */
 JSONSchemaValidator.prototype.validateEnum = function(instance, schema, path) {
-  for (var i = 0; i < schema.enum.length; i++) {
+  for (var i = 0; i < schema.enum.length; ++i) {
     if (instance === enumToString(schema.enum[i]))
       return true;
   }
 
-  this.addError(path, "invalidEnum",
-                [$Array.join($Array.map(schema.enum, enumToString), ", ")]);
+  this.addError(path, 'invalidEnum',
+                [$Array.join($Array.map(schema.enum, enumToString), ', ')]);
   return false;
 };
 
@@ -341,58 +341,45 @@ JSONSchemaValidator.prototype.validateEnum = function(instance, schema, path) {
 JSONSchemaValidator.prototype.validateObject =
     function(instance, schema, path) {
   if (schema.properties) {
-    for (var prop in schema.properties) {
-      // It is common in JavaScript to add properties to Object.prototype. This
-      // check prevents such additions from being interpreted as required
-      // schema properties.
-      // TODO(aa): If it ever turns out that we actually want this to work,
-      // there are other checks we could put here, like requiring that schema
-      // properties be objects that have a 'type' property.
-      if (!$Object.hasOwnProperty(schema.properties, prop))
-        continue;
-
-      var propPath = path ? path + "." + prop : prop;
+    $Array.forEach($Object.keys(schema.properties), function(prop) {
+      var propPath = path ? path + '.' + prop : prop;
       if (schema.properties[prop] == undefined) {
-        this.addError(propPath, "invalidPropertyType");
-      } else if (prop in instance && !isOptionalValue(instance[prop])) {
+        this.addError(propPath, 'invalidPropertyType');
+      } else if (instance[prop] !== undefined && instance[prop] !== null) {
         this.validate(instance[prop], schema.properties[prop], propPath);
       } else if (!schema.properties[prop].optional) {
-        this.addError(propPath, "propertyRequired");
+        this.addError(propPath, 'propertyRequired');
       }
-    }
+    }, this);
   }
 
   // If "instanceof" property is set, check that this object inherits from
   // the specified constructor (function).
   if (schema.isInstanceOf) {
     if (!isInstanceOfClass(instance, schema.isInstanceOf))
-      this.addError(propPath, "notInstance", [schema.isInstanceOf]);
+      this.addError(path || '', 'notInstance', [schema.isInstanceOf]);
   }
 
   // Exit early from additional property check if "type":"any" is defined.
   if (schema.additionalProperties &&
       schema.additionalProperties.type &&
-      schema.additionalProperties.type == "any") {
+      schema.additionalProperties.type == 'any') {
     return;
   }
 
   // By default, additional properties are not allowed on instance objects. This
   // can be overridden by setting the additionalProperties property to a schema
   // which any additional properties must validate against.
-  for (var prop in instance) {
-    if (schema.properties && prop in schema.properties)
-      continue;
+  $Array.forEach($Object.keys(instance), function(prop) {
+    if (schema.properties && $Object.hasOwnProperty(schema.properties, prop))
+      return;
 
-    // Any properties inherited through the prototype are ignored.
-    if (!$Object.hasOwnProperty(instance, prop))
-      continue;
-
-    var propPath = path ? path + "." + prop : prop;
+    var propPath = path ? path + '.' + prop : prop;
     if (schema.additionalProperties)
       this.validate(instance[prop], schema.additionalProperties, propPath);
     else
-      this.addError(propPath, "unexpectedProperty");
-  }
+      this.addError(propPath, 'unexpectedProperty');
+  }, this);
 };
 
 /**
@@ -404,40 +391,39 @@ JSONSchemaValidator.prototype.validateArray = function(instance, schema, path) {
 
   if (typeOfItems == 'object') {
     if (schema.minItems && instance.length < schema.minItems) {
-      this.addError(path, "arrayMinItems", [schema.minItems]);
+      this.addError(path, 'arrayMinItems', [schema.minItems]);
     }
 
-    if (typeof schema.maxItems != "undefined" &&
+    if (typeof schema.maxItems != 'undefined' &&
         instance.length > schema.maxItems) {
-      this.addError(path, "arrayMaxItems", [schema.maxItems]);
+      this.addError(path, 'arrayMaxItems', [schema.maxItems]);
     }
 
     // If the items property is a single schema, each item in the array must
     // have that schema.
-    for (var i = 0; i < instance.length; i++) {
-      this.validate(instance[i], schema.items, path + "." + i);
+    for (var i = 0; i < instance.length; ++i) {
+      this.validate(instance[i], schema.items, path + '.' + i);
     }
   } else if (typeOfItems == 'array') {
     // If the items property is an array of schemas, each item in the array must
     // validate against the corresponding schema.
-    for (var i = 0; i < schema.items.length; i++) {
-      var itemPath = path ? path + "." + i : String(i);
-      if (i in instance && !isOptionalValue(instance[i])) {
+    for (var i = 0; i < schema.items.length; ++i) {
+      var itemPath = path ? path + '.' + i : $String.self(i);
+      if ($Object.hasOwnProperty(instance, i) &&
+          !isOptionalValue(instance[i])) {
         this.validate(instance[i], schema.items[i], itemPath);
       } else if (!schema.items[i].optional) {
-        this.addError(itemPath, "itemRequired");
+        this.addError(itemPath, 'itemRequired');
       }
     }
 
     if (schema.additionalProperties) {
-      for (var i = schema.items.length; i < instance.length; i++) {
-        var itemPath = path ? path + "." + i : String(i);
+      for (var i = schema.items.length; i < instance.length; ++i) {
+        var itemPath = path ? path + '.' + i : $String.self(i);
         this.validate(instance[i], schema.additionalProperties, itemPath);
       }
-    } else {
-      if (instance.length > schema.items.length) {
-        this.addError(path, "arrayMaxItems", [schema.items.length]);
-      }
+    } else if (instance.length > schema.items.length) {
+      this.addError(path, 'arrayMaxItems', [schema.items.length]);
     }
   }
 };
@@ -448,13 +434,13 @@ JSONSchemaValidator.prototype.validateArray = function(instance, schema, path) {
 JSONSchemaValidator.prototype.validateString =
     function(instance, schema, path) {
   if (schema.minLength && instance.length < schema.minLength)
-    this.addError(path, "stringMinLength", [schema.minLength]);
+    this.addError(path, 'stringMinLength', [schema.minLength]);
 
   if (schema.maxLength && instance.length > schema.maxLength)
-    this.addError(path, "stringMaxLength", [schema.maxLength]);
+    this.addError(path, 'stringMaxLength', [schema.maxLength]);
 
   if (schema.pattern && !schema.pattern.test(instance))
-    this.addError(path, "stringPattern", [schema.pattern]);
+    this.addError(path, 'stringPattern', [schema.pattern]);
 };
 
 /**
@@ -469,20 +455,35 @@ JSONSchemaValidator.prototype.validateNumber =
   if (isNaN(instance) ||
       instance == Number.POSITIVE_INFINITY ||
       instance == Number.NEGATIVE_INFINITY )
-    this.addError(path, "numberFiniteNotNan", [instance]);
+    this.addError(path, 'numberFiniteNotNan', [instance]);
 
   if (schema.minimum !== undefined && instance < schema.minimum)
-    this.addError(path, "numberMinValue", [schema.minimum]);
+    this.addError(path, 'numberMinValue', [schema.minimum]);
 
   if (schema.maximum !== undefined && instance > schema.maximum)
-    this.addError(path, "numberMaxValue", [schema.maximum]);
+    this.addError(path, 'numberMaxValue', [schema.maximum]);
 
   // Check for integer values outside of -2^31..2^31-1.
-  if (schema.type === "integer" && (instance | 0) !== instance)
-    this.addError(path, "numberIntValue", []);
+  if (schema.type === 'integer' && (instance | 0) !== instance)
+    this.addError(path, 'numberIntValue', []);
 
-  if (schema.maxDecimal && instance * Math.pow(10, schema.maxDecimal) % 1)
-    this.addError(path, "numberMaxDecimal", [schema.maxDecimal]);
+  // We don't have a saved copy of Math, and it's not worth it just for a
+  // 10^x function.
+  var getPowerOfTen = function(pow) {
+    // '10' is kind of an arbitrary number of maximum decimal places, but it
+    // ensures we don't do anything crazy, and we should never need to restrict
+    // decimals to a number higher than that.
+    DCHECK(pow >= 1 && pow <= 10);
+    DCHECK(pow % 1 === 0);
+    var multiplier = 10;
+    while (--pow)
+      multiplier *= 10;
+    return multiplier;
+  };
+  if (schema.maxDecimal &&
+      (instance * getPowerOfTen(schema.maxDecimal)) % 1) {
+    this.addError(path, 'numberMaxDecimal', [schema.maxDecimal]);
+  }
 };
 
 /**
@@ -492,13 +493,13 @@ JSONSchemaValidator.prototype.validateNumber =
 JSONSchemaValidator.prototype.validateType = function(instance, schema, path) {
   var actualType = JSONSchemaValidator.getType(instance);
   if (schema.type == actualType ||
-      (schema.type == "number" && actualType == "integer")) {
+      (schema.type == 'number' && actualType == 'integer')) {
     return true;
-  } else if (schema.type == "integer" && actualType == "number") {
-    this.addError(path, "invalidTypeIntegerNumber");
+  } else if (schema.type == 'integer' && actualType == 'number') {
+    this.addError(path, 'invalidTypeIntegerNumber');
     return false;
   } else {
-    this.addError(path, "invalidType", [schema.type, actualType]);
+    this.addError(path, 'invalidType', [schema.type, actualType]);
     return false;
   }
 };
@@ -510,6 +511,7 @@ JSONSchemaValidator.prototype.validateType = function(instance, schema, path) {
  */
 JSONSchemaValidator.prototype.addError = function(path, key, replacements) {
   $Array.push(this.errors, {
+    __proto__: null,
     path: path,
     message: JSONSchemaValidator.formatError(key, replacements)
   });

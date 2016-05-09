@@ -12,29 +12,29 @@ var schemaValidator = new JSONSchemaValidator();
 // Validate arguments.
 function validate(args, parameterSchemas) {
   if (args.length > parameterSchemas.length)
-    throw new Error("Too many arguments.");
-  for (var i = 0; i < parameterSchemas.length; i++) {
-    if (i in args && args[i] !== null && args[i] !== undefined) {
+    throw new Error('Too many arguments.');
+  for (var i = 0; i < parameterSchemas.length; ++i) {
+    if ($Object.hasOwnProperty(args, i) && args[i] !== null &&
+        args[i] !== undefined) {
       schemaValidator.resetErrors();
       schemaValidator.validate(args[i], parameterSchemas[i]);
       if (schemaValidator.errors.length == 0)
         continue;
-      var message = "Invalid value for argument " + (i + 1) + ". ";
-      for (var i = 0, err;
-          err = schemaValidator.errors[i]; i++) {
+      var message = 'Invalid value for argument ' + (i + 1) + '. ';
+      $Array.forEach(schemaValidator.errors, function(err) {
         if (err.path) {
           message += "Property '" + err.path + "': ";
         }
         message += err.message;
         message = message.substring(0, message.length - 1);
-        message += ", ";
-      }
+        message += ', ';
+      });
       message = message.substring(0, message.length - 2);
-      message += ".";
+      message += '.';
       throw new Error(message);
     } else if (!parameterSchemas[i].optional) {
-      throw new Error("Parameter " + (i + 1) + " (" +
-          parameterSchemas[i].name + ") is required.");
+      throw new Error('Parameter ' + (i + 1) + ' (' +
+          parameterSchemas[i].name + ') is required.');
     }
   }
 }
@@ -45,7 +45,7 @@ function getSignatures(parameterSchemas) {
     return [[]];
   var signatures = [];
   var remaining = getSignatures($Array.slice(parameterSchemas, 1));
-  for (var i = 0; i < remaining.length; i++)
+  for (var i = 0; i < remaining.length; ++i)
     $Array.push(signatures, $Array.concat([parameterSchemas[0]], remaining[i]))
   if (parameterSchemas[0].optional)
     return $Array.concat(signatures, remaining);
@@ -56,10 +56,9 @@ function getSignatures(parameterSchemas) {
 function argumentsMatchSignature(args, candidateSignature) {
   if (args.length != candidateSignature.length)
     return false;
-  for (var i = 0; i < candidateSignature.length; i++) {
+  for (var i = 0; i < candidateSignature.length; ++i) {
     var argType =  JSONSchemaValidator.getType(args[i]);
-    if (!schemaValidator.isValidSchemaType(argType,
-        candidateSignature[i]))
+    if (!schemaValidator.isValidSchemaType(argType, candidateSignature[i]))
       return false;
   }
   return true;
@@ -68,7 +67,7 @@ function argumentsMatchSignature(args, candidateSignature) {
 // Finds the function signature for the given arguments.
 function resolveSignature(args, definedSignature) {
   var candidateSignatures = getSignatures(definedSignature);
-  for (var i = 0; i < candidateSignatures.length; i++) {
+  for (var i = 0; i < candidateSignatures.length; ++i) {
     if (argumentsMatchSignature(args, candidateSignatures[i]))
       return candidateSignatures[i];
   }
@@ -81,13 +80,13 @@ function resolveSignature(args, definedSignature) {
 function getParameterSignatureString(name, definedSignature) {
   var getSchemaTypeString = function(schema) {
     var schemaTypes = schemaValidator.getAllTypesForSchema(schema);
-    var typeName = schemaTypes.join(" or ") + " " + schema.name;
+    var typeName = $Array.join(schemaTypes, ' or ') + ' ' + schema.name;
     if (schema.optional)
-      return "optional " + typeName;
+      return 'optional ' + typeName;
     return typeName;
   };
   var typeNames = $Array.map(definedSignature, getSchemaTypeString);
-  return name + "(" + typeNames.join(", ") + ")";
+  return name + '(' + $Array.join(typeNames, ', ') + ')';
 };
 
 // Returns a string representing a call to an API function.
@@ -95,7 +94,7 @@ function getParameterSignatureString(name, definedSignature) {
 // "windows.get(int, function)"
 function getArgumentSignatureString(name, args) {
   var typeNames = $Array.map(args, JSONSchemaValidator.getType);
-  return name + "(" + typeNames.join(", ") + ")";
+  return name + '(' + $Array.join(typeNames, ', ') + ')';
 };
 
 // Finds the correct signature for the given arguments, then validates the
@@ -110,16 +109,16 @@ function normalizeArgumentsAndValidate(args, funDef) {
   var definedSignature = funDef.definition.parameters;
   var resolvedSignature = resolveSignature(args, definedSignature);
   if (!resolvedSignature)
-    throw new Error("Invocation of form " +
+    throw new Error('Invocation of form ' +
         getArgumentSignatureString(funDef.name, args) +
         " doesn't match definition " +
         getParameterSignatureString(funDef.name, definedSignature));
   validate(args, resolvedSignature);
   var normalizedArgs = [];
   var ai = 0;
-  for (var si = 0; si < definedSignature.length; si++) {
+  for (var si = 0; si < definedSignature.length; ++si) {
     // Handle integer -0 as 0.
-    if (JSONSchemaValidator.getType(args[ai]) === "integer" && args[ai] === 0)
+    if (JSONSchemaValidator.getType(args[ai]) === 'integer' && args[ai] === 0)
       args[ai] = 0;
     if (definedSignature[si] === resolvedSignature[ai])
       $Array.push(normalizedArgs, args[ai++]);
@@ -144,8 +143,8 @@ function isFunctionSignatureAmbiguous(functionDef) {
     return true;
   };
   var candidateSignatures = getSignatures(functionDef.parameters);
-  for (var i = 0; i < candidateSignatures.length; i++) {
-    for (var j = i + 1; j < candidateSignatures.length; j++) {
+  for (var i = 0; i < candidateSignatures.length; ++i) {
+    for (var j = i + 1; j < candidateSignatures.length; ++j) {
       if (signaturesAmbiguous(candidateSignatures[i], candidateSignatures[j]))
         return true;
     }
