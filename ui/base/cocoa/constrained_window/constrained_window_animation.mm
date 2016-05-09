@@ -223,6 +223,16 @@ void UpdateWindowShowHideAnimationState(NSWindow* window, CGFloat value) {
 
   if (progress >= 1.0) {
     [self setWindowStateForEnd];
+
+    // Starting in 10.10, the WindowServer forgets to draw the shadow on windows
+    // that animate in this way on retina screens. -[NSWindow invalidateShadow]
+    // doesn't fix it. Neither does toggling -setHasShadow:. But forcing an
+    // update to the window size, and then undoing it, seems to fix the problem.
+    // See http://crbug.com/436884.
+    // TODO(tapted): Find a better fix (this is horrible).
+    NSRect frame = [window_ frame];
+    [window_ setFrame:NSInsetRect(frame, 1, 1) display:NO animate:NO];
+    [window_ setFrame:frame display:NO animate:NO];
     return;
   }
   [self setWindowStateForValue:[self currentValue]];
