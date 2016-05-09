@@ -192,30 +192,6 @@ void InspectorSession::didClearDocumentOfWindowObject(LocalFrame* frame)
     frame->script().initializeMainWorld();
 }
 
-void InspectorSession::willProcessTask()
-{
-    ASSERT(isInstrumenting());
-    m_v8Session->profilerAgent()->idleFinished();
-}
-
-void InspectorSession::didProcessTask()
-{
-    ASSERT(isInstrumenting());
-    m_v8Session->profilerAgent()->idleStarted();
-}
-
-void InspectorSession::willEnterNestedRunLoop()
-{
-    ASSERT(isInstrumenting());
-    m_v8Session->profilerAgent()->idleStarted();
-}
-
-void InspectorSession::didLeaveNestedRunLoop()
-{
-    ASSERT(isInstrumenting());
-    m_v8Session->profilerAgent()->idleFinished();
-}
-
 void InspectorSession::startInstrumenting()
 {
     ASSERT(!isInstrumenting());

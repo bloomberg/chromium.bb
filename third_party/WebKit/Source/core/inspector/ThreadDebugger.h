@@ -27,6 +27,8 @@ public:
 
     static void willExecuteScript(v8::Isolate*, int scriptId);
     static void didExecuteScript(v8::Isolate*);
+    static void idleStarted(v8::Isolate*);
+    static void idleFinished(v8::Isolate*);
 
     // V8DebuggerClient implementation.
     void eventListeners(v8::Local<v8::Value>, V8EventListenerInfoList&) override;

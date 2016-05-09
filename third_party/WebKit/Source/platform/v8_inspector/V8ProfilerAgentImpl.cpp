@@ -292,18 +292,4 @@ bool V8ProfilerAgentImpl::isRecording() const
     return m_recordingCPUProfile || !m_startedProfiles.isEmpty();
 }
 
-void V8ProfilerAgentImpl::idleFinished()
-{
-    if (!isRecording())
-        return;
-    m_isolate->GetCpuProfiler()->SetIdle(false);
-}
-
-void V8ProfilerAgentImpl::idleStarted()
-{
-    if (!isRecording())
-        return;
-    m_isolate->GetCpuProfiler()->SetIdle(true);
-}
-
 } // namespace blink

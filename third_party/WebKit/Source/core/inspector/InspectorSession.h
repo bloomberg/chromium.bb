@@ -58,10 +58,6 @@ public:
     void asyncTaskFinished(void* task);
     void didStartProvisionalLoad(LocalFrame*);
     void didClearDocumentOfWindowObject(LocalFrame*);
-    void willProcessTask();
-    void didProcessTask();
-    void willEnterNestedRunLoop();
-    void didLeaveNestedRunLoop();
 
     DECLARE_TRACE();
 

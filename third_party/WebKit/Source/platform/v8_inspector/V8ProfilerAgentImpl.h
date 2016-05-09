@@ -40,9 +40,6 @@ public:
     void consoleProfile(const String16& title);
     void consoleProfileEnd(const String16& title);
 
-    void idleStarted() override;
-    void idleFinished() override;
-
 private:
     String16 nextProfileId();
 

@@ -421,9 +421,9 @@ void WorkerThread::runDebuggerTask(PassOwnPtr<CrossThreadClosure> task)
         MutexLocker lock(m_threadStateMutex);
         m_runningDebuggerTask = true;
     }
-    InspectorInstrumentation::willProcessTask(workerGlobalScope());
+    ThreadDebugger::idleFinished(isolate());
     (*task)();
-    InspectorInstrumentation::didProcessTask(workerGlobalScope());
+    ThreadDebugger::idleStarted(isolate());
     {
         MutexLocker lock(m_threadStateMutex);
         m_runningDebuggerTask = false;
@@ -437,7 +437,7 @@ void WorkerThread::runDebuggerTask(PassOwnPtr<CrossThreadClosure> task)
 void WorkerThread::startRunningDebuggerTasksOnPause()
 {
     m_pausedInDebugger = true;
-    InspectorInstrumentation::willEnterNestedRunLoop(m_workerGlobalScope.get());
+    ThreadDebugger::idleStarted(isolate());
     OwnPtr<CrossThreadClosure> task;
     do {
         {
@@ -448,7 +448,7 @@ void WorkerThread::startRunningDebuggerTasksOnPause()
             (*task)();
     // Keep waiting until execution is resumed.
     } while (task && m_pausedInDebugger);
-    InspectorInstrumentation::didLeaveNestedRunLoop(m_workerGlobalScope.get());
+    ThreadDebugger::idleFinished(isolate());
 }
 
 void WorkerThread::stopRunningDebuggerTasksOnPause()

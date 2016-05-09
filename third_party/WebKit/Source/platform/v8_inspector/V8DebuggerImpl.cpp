@@ -42,6 +42,7 @@
 #include "platform/v8_inspector/V8StackTraceImpl.h"
 #include "platform/v8_inspector/V8StringUtil.h"
 #include "platform/v8_inspector/public/V8DebuggerClient.h"
+#include <v8-profiler.h>
 
 namespace blink {
 
@@ -803,6 +804,16 @@ void V8DebuggerImpl::didExecuteScript(v8::Local<v8::Context> context)
 {
     if (V8DebuggerAgentImpl* agent = findEnabledDebuggerAgent(context))
         agent->didExecuteScript();
+}
+
+void V8DebuggerImpl::idleStarted()
+{
+    m_isolate->GetCpuProfiler()->SetIdle(true);
+}
+
+void V8DebuggerImpl::idleFinished()
+{
+    m_isolate->GetCpuProfiler()->SetIdle(false);
 }
 
 PassOwnPtr<V8StackTrace> V8DebuggerImpl::captureStackTrace(size_t maxStackSize)

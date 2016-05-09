@@ -112,6 +112,8 @@ public:
     void resetContextGroup(int contextGroupId) override;
     void willExecuteScript(v8::Local<v8::Context>, int scriptId) override;
     void didExecuteScript(v8::Local<v8::Context>) override;
+    void idleStarted() override;
+    void idleFinished() override;
     PassOwnPtr<V8StackTrace> createStackTrace(v8::Local<v8::StackTrace>, size_t maxStackSize) override;
     PassOwnPtr<V8StackTrace> captureStackTrace(size_t maxStackSize) override;
 

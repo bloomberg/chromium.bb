@@ -649,14 +649,14 @@ void WebDevToolsAgentImpl::willProcessTask()
 {
     if (!attached())
         return;
-    InspectorInstrumentation::willProcessTask(m_inspectedFrames->root());
+    ThreadDebugger::idleFinished(V8PerIsolateData::mainThreadIsolate());
 }
 
 void WebDevToolsAgentImpl::didProcessTask()
 {
     if (!attached())
         return;
-    InspectorInstrumentation::didProcessTask(m_inspectedFrames->root());
+    ThreadDebugger::idleStarted(V8PerIsolateData::mainThreadIsolate());
     flushPendingProtocolNotifications();
 }
 

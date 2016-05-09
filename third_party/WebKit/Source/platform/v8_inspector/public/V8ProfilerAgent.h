@@ -14,9 +14,6 @@ namespace blink {
 class PLATFORM_EXPORT V8ProfilerAgent : public protocol::Backend::Profiler, public V8Debugger::Agent<protocol::Frontend::Profiler> {
 public:
     virtual ~V8ProfilerAgent() { }
-
-    virtual void idleStarted() = 0;
-    virtual void idleFinished() = 0;
 };
 
 } // namespace blink

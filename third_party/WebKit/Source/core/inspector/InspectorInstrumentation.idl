@@ -250,24 +250,6 @@ class XMLHttpRequest;
     [Worker, PageConsole]
     void workerTerminated(ExecutionContext*, WorkerInspectorProxy* proxy);
 
-    [V8]
-    void willProcessTask(WorkerGlobalScope*);
-
-    [V8]
-    void didProcessTask(WorkerGlobalScope*);
-
-    [V8]
-    void willProcessTask(LocalFrame*);
-
-    [V8]
-    void didProcessTask(LocalFrame*);
-
-    [V8]
-    void willEnterNestedRunLoop(WorkerGlobalScope*);
-
-    [V8]
-    void didLeaveNestedRunLoop(WorkerGlobalScope*);
-
     [Resource]
     void didCreateWebSocket([Keep] Document*, unsigned long identifier, const KURL& requestURL, const String& protocol);
 
