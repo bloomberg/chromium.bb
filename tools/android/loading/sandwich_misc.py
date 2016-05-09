@@ -60,7 +60,6 @@ def PatchWpr(wpr_archive_path):
     logging.info('patching %s' % url_entry.url)
     # TODO(gabadie): may need to patch Last-Modified and If-Modified-Since.
     # TODO(gabadie): may need to delete ETag.
-    # TODO(gabadie): may need to patch Vary.
     # TODO(gabadie): may need to take care of x-cache.
     #
     # Override the cache-control header to set the resources max age to MAX_AGE.
@@ -72,6 +71,19 @@ def PatchWpr(wpr_archive_path):
     # choices but save absolutely all cached resources on disk so they survive
     # after killing chrome for cache save, modification and push.
     url_entry.SetResponseHeader('cache-control', CACHE_CONTROL)
+
+    # TODO(gabadie): May need to extend Vary blacklist (referer?)
+    #
+    # All of these Vary and Pragma possibilities need to be removed from
+    # response headers in order for Chrome to store a resource in HTTP cache and
+    # not to invalidate it.
+    #
+    # Note: HttpVaryData::Init() in Chrome adds an implicit 'Vary: cookie'
+    # header to any redirect.
+    # TODO(gabadie): Find a way to work around this issue.
+    url_entry.RemoveResponseHeaderDirectives('vary', {'*', 'cookie'})
+    url_entry.RemoveResponseHeaderDirectives('pragma', {'no-cache'})
+
   wpr_archive.Persist()
 
 

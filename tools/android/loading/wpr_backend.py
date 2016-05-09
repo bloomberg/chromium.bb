@@ -91,6 +91,28 @@ class WprUrlEntry(object):
     self._wpr_response.headers = \
         [x for x in self._wpr_response.headers if x[0].lower() != name]
 
+  def RemoveResponseHeaderDirectives(self, name, directives_blacklist):
+    """Removed a set of directives from response headers.
+
+    Also removes the cache header in case no more directives are left.
+    It is useful, for example, to remove 'no-cache' from 'pragma: no-cache'.
+
+    Args:
+      name: The name of the response header field to modify.
+      directives_blacklist: Set of lowered directives to remove from list.
+    """
+    response_headers = self.GetResponseHeadersDict()
+    if name not in response_headers:
+      return
+    new_value = []
+    for header_name in response_headers[name].split(','):
+      if header_name.strip().lower() not in directives_blacklist:
+        new_value.append(header_name)
+    if new_value:
+      self.SetResponseHeader(name, ','.join(new_value))
+    else:
+      self.DeleteResponseHeader(name)
+
   @classmethod
   def _ExtractUrl(cls, request_string):
     match = _PARSE_WPR_REQUEST_REGEX.match(request_string)

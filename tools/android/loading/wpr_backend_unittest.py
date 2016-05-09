@@ -29,7 +29,7 @@ class WprUrlEntryTest(unittest.TestCase):
     wpr_response = MockWprResponse(headers)
     return WprUrlEntry('GET http://a.com/', wpr_response)
 
-  def test_ExtractUrl(self):
+  def testExtractUrl(self):
     self.assertEquals('http://aa.bb/c',
                       WprUrlEntry._ExtractUrl('GET http://aa.bb/c'))
     self.assertEquals('http://aa.b/c',
@@ -43,7 +43,7 @@ class WprUrlEntryTest(unittest.TestCase):
     self.assertEquals('http://aa.bb',
                       WprUrlEntry._ExtractUrl('GET http://aa.bb FOO BAR'))
 
-  def test_GetResponseHeadersDict(self):
+  def testGetResponseHeadersDict(self):
     entry = self._CreateWprUrlEntry([('header0', 'value0'),
                                      ('header1', 'value1'),
                                      ('header0', 'value2'),
@@ -57,7 +57,7 @@ class WprUrlEntryTest(unittest.TestCase):
     self.assertEquals('value3', headers['header2'])
     self.assertEquals('VaLue4', headers['header3'])
 
-  def test_SetResponseHeader(self):
+  def testSetResponseHeader(self):
     entry = self._CreateWprUrlEntry([('header0', 'value0'),
                                      ('header1', 'value1')])
     entry.SetResponseHeader('new_header0', 'new_value0')
@@ -112,7 +112,7 @@ class WprUrlEntryTest(unittest.TestCase):
     self.assertEquals('header3', entry._wpr_response.headers[3][0])
     self.assertEquals('value4', entry._wpr_response.headers[3][1])
 
-  def test_DeleteResponseHeader(self):
+  def testDeleteResponseHeader(self):
     entry = self._CreateWprUrlEntry([('header0', 'value0'),
                                      ('header1', 'value1'),
                                      ('header0', 'value2'),
@@ -131,6 +131,23 @@ class WprUrlEntryTest(unittest.TestCase):
     entry.DeleteResponseHeader('header1')
     self.assertNotIn('header1', entry.GetResponseHeadersDict())
     self.assertEquals(2, len(entry.GetResponseHeadersDict()))
+
+  def testRemoveResponseHeaderDirectives(self):
+    entry = self._CreateWprUrlEntry([('hEAder0', 'keyWOrd0,KEYword1'),
+                                     ('heaDER1', 'value1'),
+                                     ('headeR2', 'value3')])
+    entry.RemoveResponseHeaderDirectives('header0', {'keyword1', 'keyword0'})
+    self.assertNotIn('header0', entry.GetResponseHeadersDict())
+
+    entry = self._CreateWprUrlEntry([('heADEr0', 'keYWOrd0'),
+                                     ('hEADERr1', 'value1'),
+                                     ('HEAder0', 'keywoRD1,keYwoRd2'),
+                                     ('hEADer2', 'value3')])
+    entry.RemoveResponseHeaderDirectives('header0', {'keyword1'})
+    self.assertEquals(
+        'keYWOrd0,keYwoRd2', entry.GetResponseHeadersDict()['header0'])
+    self.assertEquals(3, len(entry._wpr_response.headers))
+    self.assertEquals('keYWOrd0,keYwoRd2', entry._wpr_response.headers[0][1])
 
 
 class WprHostTest(unittest.TestCase):
