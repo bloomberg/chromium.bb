@@ -54,10 +54,13 @@ int GetThreadCount() {
   //
   // One less worker thread than the number of physical CPUs seems to be a
   // good value, both theoretically and experimentally. But always use at
-  // least three workers to prevent us from being too sensitive to I/O latency
+  // least some workers to prevent us from being too sensitive to I/O latency
   // on low-end systems.
+  //
+  // The minimum thread count is based on measuring the optimal threads for the
+  // Chrome build on a several-year-old 4-core MacBook.
   int num_cores = GetCPUCount() / 2;  // Almost all CPUs now are hyperthreaded.
-  return std::max(num_cores - 1, 3);
+  return std::max(num_cores - 1, 8);
 }
 
 }  // namespace

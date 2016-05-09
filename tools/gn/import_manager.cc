@@ -4,6 +4,7 @@
 
 #include "tools/gn/import_manager.h"
 
+#include "tools/gn/err.h"
 #include "tools/gn/parse_tree.h"
 #include "tools/gn/scheduler.h"
 #include "tools/gn/scope_per_file_provider.h"
@@ -41,7 +42,23 @@ std::unique_ptr<Scope> UncachedImport(const Settings* settings,
   return scope;
 }
 
-}  // namesapce
+}  // namespace
+
+struct ImportManager::ImportInfo {
+  ImportInfo() {}
+  ~ImportInfo() {}
+
+  // This lock protects the unique_ptr. Once the scope is computed,
+  // it is const and can be accessed read-only outside of the lock.
+  base::Lock load_lock;
+
+  std::unique_ptr<const Scope> scope;
+
+  // The result of loading the import. If the load failed, the scope will be
+  // null but this will be set to error. In this case the thread should not
+  // attempt to load the file, even if the scope is null.
+  Err load_result;
+};
 
 ImportManager::ImportManager() {
 }
@@ -55,39 +72,42 @@ bool ImportManager::DoImport(const SourceFile& file,
                              Err* err) {
   // See if we have a cached import, but be careful to actually do the scope
   // copying outside of the lock.
-  const Scope* imported_scope = nullptr;
+  ImportInfo* import_info = nullptr;
   {
-    base::AutoLock lock(lock_);
-    ImportMap::const_iterator found = imports_.find(file);
-    if (found != imports_.end())
-      imported_scope = found->second.get();
+    base::AutoLock lock(imports_lock_);
+    std::unique_ptr<ImportInfo>& info_ptr = imports_[file];
+    if (!info_ptr)
+      info_ptr.reset(new ImportInfo);
+
+    // Promote the ImportInfo to outside of the imports lock.
+    import_info = info_ptr.get();
   }
 
-  if (!imported_scope) {
-    // Do a new import of the file.
-    std::unique_ptr<Scope> new_imported_scope =
-        UncachedImport(scope->settings(), file, node_for_err, err);
-    if (!new_imported_scope)
-      return false;
+  // Now use the per-import-file lock to block this thread if another thread
+  // is already processing the import.
+  const Scope* import_scope = nullptr;
+  {
+    base::AutoLock lock(import_info->load_lock);
 
-    // We loaded the file outside the lock. This means that there could be a
-    // race and the file was already loaded on a background thread. Recover
-    // from this and use the existing one if that happens.
-    {
-      base::AutoLock lock(lock_);
-      ImportMap::const_iterator found = imports_.find(file);
-      if (found != imports_.end()) {
-        imported_scope = found->second.get();
-      } else {
-        imported_scope = new_imported_scope.get();
-        imports_[file] = std::move(new_imported_scope);
+    if (!import_info->scope) {
+      // Only load if the import hasn't already failed.
+      if (!import_info->load_result.has_error()) {
+        import_info->scope = UncachedImport(
+            scope->settings(), file, node_for_err, &import_info->load_result);
+      }
+      if (import_info->load_result.has_error()) {
+        *err = import_info->load_result;
+        return false;
       }
     }
+
+    // Promote the now-read-only scope to outside the load lock.
+    import_scope = import_info->scope.get();
   }
 
   Scope::MergeOptions options;
   options.skip_private_vars = true;
   options.mark_dest_used = true;  // Don't require all imported values be used.
-  return imported_scope->NonRecursiveMergeTo(scope, options, node_for_err,
-                                             "import", err);
+  return import_scope->NonRecursiveMergeTo(scope, options, node_for_err,
+                                           "import", err);
 }
