@@ -688,7 +688,7 @@ void MediaControls::computeWhichControlsFit()
 
     // Controls that we'll hide / show, in order of decreasing priority.
     MediaControlElement* elements[] = {
-        m_playButton.get(),
+        // Exclude m_playButton; we handle it specially.
         m_toggleClosedCaptionsButton.get(),
         m_fullScreenButton.get(),
         m_timeline.get(),
@@ -698,6 +698,17 @@ void MediaControls::computeWhichControlsFit()
         m_muteButton.get(),
         m_durationDisplay.get(),
     };
+
+    int usedWidth = 0;
+    // Assume that all controls require 48px.  Ideally, we could get this from
+    // the computed style, but that requires the controls to be shown.
+    const int minimumWidth = 48;
+
+    // Special-case the play button; it always fits.
+    if (m_playButton->isWanted()) {
+        m_playButton->setDoesFit(true);
+        usedWidth += minimumWidth;
+    }
 
     if (!m_panelWidth) {
         // No layout yet -- hide everything, then make them show up later.
@@ -711,11 +722,8 @@ void MediaControls::computeWhichControlsFit()
         return;
     }
 
-    int usedWidth = 0;
+    // For each control that fits, enable it in order of decreasing priority.
     bool droppedCastButton = false;
-    // Assume that all controls require 48px.  Ideally, we could get this
-    // the computed style, but that requires the controls to be shown.
-    const int minimumWidth = 48;
     for (MediaControlElement* element : elements) {
         if (!element)
             continue;

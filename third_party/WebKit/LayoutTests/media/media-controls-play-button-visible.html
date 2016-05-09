@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>video controls play button always visible</title>
+        <script src="../resources/testharness.js"></script>
+        <script src="../resources/testharnessreport.js"></script>
+        <script src="media-controls.js"></script>
+        <style>
+          audio {
+              width: 24px;
+          }
+        </style>
+    </head>
+    <body onload="async_test(testPlayButtonVisible)">
+        <div id="log"></div>
+        <video id="video" width="24px" controls></video>
+        <audio id="audio" controls></video>
+        <script>
+        function checkOneElement(test, id) {
+          var element = document.getElementById(id);
+
+          // Check that the play button is shown.
+          var playButton = mediaControlsButton(element, "play-button");
+          assert_true(getComputedStyle(playButton).display != "none",
+              "play button should not be hidden for " + id);
+
+          // Also check for something that should be hidden, just to be sure
+          // that things are being recomputed properly before the test runs.
+          // This only works with the new media playback UI, since the old one
+          // doesn't hide anything based on width.
+          if (window.internals.runtimeFlags.newMediaPlaybackUiEnabled) {
+              var timeline = mediaControlsButton(element, "timeline");
+              assert_true(getComputedStyle(timeline).display == "none",
+                  "timeline should be hidden for " + id);
+          }
+        }
+
+        function testPlayButtonVisible(test) {
+          checkOneElement(test, "video");
+          checkOneElement(test, "audio");
+          test.done();
+        }
+        </script>
+        </video>
+    </body>
+</html>
