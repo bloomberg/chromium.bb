@@ -45,12 +45,6 @@ public abstract class ChromeSwitches {
      */
     public static final String DISABLE_CRASH_DUMP_UPLOAD = "disable-dump-upload";
 
-    /** Enable debug logs for the video casting feature. */
-    public static final String ENABLE_CAST_DEBUG_LOGS = "enable-cast-debug";
-
-    /** Prevent automatic reconnection to current Cast video when Chrome restarts. */
-    public static final String DISABLE_CAST_RECONNECTION = "disable-cast-reconnection";
-
     /** Whether or not to enable the experimental tablet tab stack. */
     public static final String ENABLE_TABLET_TAB_STACK = "enable-tablet-tab-stack";
 

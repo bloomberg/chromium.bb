@@ -12,7 +12,7 @@ import android.os.SystemClock;
  * position.
  */
 public class PositionExtrapolator {
-    private static final String TAG = "PositionExtrapolator";
+    private static final String TAG = "MediaFling";
 
     private long mDuration;
     private long mLastKnownPosition;

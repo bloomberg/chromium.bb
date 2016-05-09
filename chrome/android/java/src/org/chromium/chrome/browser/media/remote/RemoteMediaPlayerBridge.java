@@ -6,11 +6,9 @@ package org.chromium.chrome.browser.media.remote;
 
 import android.graphics.Bitmap;
 
-import org.chromium.base.CommandLine;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.media.remote.RemoteVideoInfo.PlayerState;
 
 /**
@@ -27,7 +25,6 @@ public class RemoteMediaPlayerBridge {
     private final MediaRouteController mRouteController;
     private final String mOriginalSourceUrl;
     private final String mOriginalFrameUrl;
-    private final boolean mDebug;
     private String mFrameUrl;
     private String mSourceUrl;
     private final String mUserAgent;
@@ -43,7 +40,7 @@ public class RemoteMediaPlayerBridge {
     // remotely.
     private boolean mActive = false;
 
-    private static final String TAG = "RemoteMediaPlayerBridge";
+    private static final String TAG = "MediaFling";
 
     private final MediaRouteController.MediaStateListener mMediaStateListener =
             new MediaRouteController.MediaStateListener() {
@@ -173,9 +170,7 @@ public class RemoteMediaPlayerBridge {
 
     private RemoteMediaPlayerBridge(long nativeRemoteMediaPlayerBridge, String sourceUrl,
             String frameUrl, String userAgent) {
-        mDebug = CommandLine.getInstance().hasSwitch(ChromeSwitches.ENABLE_CAST_DEBUG_LOGS);
-
-        if (mDebug) Log.i(TAG, "Creating RemoteMediaPlayerBridge");
+        Log.d(TAG, "Creating RemoteMediaPlayerBridge");
         mNativeRemoteMediaPlayerBridge = nativeRemoteMediaPlayerBridge;
         mOriginalSourceUrl = sourceUrl;
         mOriginalFrameUrl = frameUrl;
@@ -198,7 +193,7 @@ public class RemoteMediaPlayerBridge {
      */
     @CalledByNative
     private void requestRemotePlayback(long startPositionMillis) {
-        if (mDebug) Log.i(TAG, "requestRemotePlayback at t=%d", startPositionMillis);
+        Log.d(TAG, "requestRemotePlayback at t=%d", startPositionMillis);
         if (mRouteController == null) return;
         // Clear out the state
         mPauseRequested = false;
@@ -213,27 +208,27 @@ public class RemoteMediaPlayerBridge {
      */
     @CalledByNative
     private void requestRemotePlaybackControl() {
-        if (mDebug) Log.i(TAG, "requestRemotePlaybackControl");
+        Log.d(TAG, "requestRemotePlaybackControl");
         RemoteMediaPlayerController.instance().requestRemotePlaybackControl(mMediaStateListener);
     }
 
     @CalledByNative
     private void setNativePlayer() {
-        if (mDebug) Log.i(TAG, "setNativePlayer");
+        Log.d(TAG, "setNativePlayer");
         if (mRouteController == null) return;
         mActive = true;
     }
 
     @CalledByNative
     private void onPlayerCreated() {
-        if (mDebug) Log.i(TAG, "onPlayerCreated");
+        Log.d(TAG, "onPlayerCreated");
         if (mRouteController == null) return;
         mRouteController.addMediaStateListener(mMediaStateListener);
     }
 
     @CalledByNative
     private void onPlayerDestroyed() {
-        if (mDebug) Log.i(TAG, "onPlayerDestroyed");
+        Log.d(TAG, "onPlayerDestroyed");
         if (mRouteController == null) return;
         mRouteController.removeMediaStateListener(mMediaStateListener);
     }
@@ -314,7 +309,7 @@ public class RemoteMediaPlayerBridge {
 
     @CalledByNative
     protected void destroy() {
-        if (mDebug) Log.i(TAG, "destroy");
+        Log.d(TAG, "destroy");
         if (mRouteController != null) {
             mRouteController.removeMediaStateListener(mMediaStateListener);
         }

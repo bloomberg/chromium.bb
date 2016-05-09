@@ -8,11 +8,9 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.text.TextUtils;
 
-import org.chromium.base.CommandLine;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.chrome.browser.ChromeSwitches;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -96,7 +94,7 @@ public class MediaUrlResolver extends AsyncTask<Void, Void, MediaUrlResolver.Res
         }
     }
 
-    private static final String TAG = "MediaUrlResolver";
+    private static final String TAG = "MediaFling";
 
     private static final String COOKIES_HEADER_NAME = "Cookies";
     private static final String USER_AGENT_HEADER_NAME = "User-Agent";
@@ -126,7 +124,6 @@ public class MediaUrlResolver extends AsyncTask<Void, Void, MediaUrlResolver.Res
     private static final String RANGE_HEADER_VALUE = "bytes=0-65536";
 
     private final Delegate mDelegate;
-    private final boolean mDebug;
 
     private final String mUserAgent;
     private final URLStreamHandler mStreamHandler;
@@ -142,7 +139,6 @@ public class MediaUrlResolver extends AsyncTask<Void, Void, MediaUrlResolver.Res
 
     @VisibleForTesting
     MediaUrlResolver(Delegate delegate, String userAgent, URLStreamHandler streamHandler) {
-        mDebug = CommandLine.getInstance().hasSwitch(ChromeSwitches.ENABLE_CAST_DEBUG_LOGS);
         mDelegate = delegate;
         mUserAgent = userAgent;
         mStreamHandler = streamHandler;

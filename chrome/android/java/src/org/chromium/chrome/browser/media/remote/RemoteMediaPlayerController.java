@@ -16,11 +16,11 @@ import android.support.v4.app.FragmentManager;
 import android.support.v7.app.MediaRouteChooserDialogFragment;
 import android.support.v7.app.MediaRouteControllerDialogFragment;
 import android.support.v7.app.MediaRouteDialogFactory;
-import android.util.Log;
 
 import com.google.android.gms.cast.CastMediaControlIntent;
 
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
@@ -39,7 +39,7 @@ public class RemoteMediaPlayerController implements MediaRouteController.UiListe
     // Singleton instance of the class. May only be accessed from UI thread.
     private static RemoteMediaPlayerController sInstance;
 
-    private static final String TAG = "VideoFling";
+    private static final String TAG = "MediaFling";
 
     private static final String DEFAULT_CASTING_MESSAGE = "Casting to Chromecast";
 
@@ -140,7 +140,7 @@ public class RemoteMediaPlayerController implements MediaRouteController.UiListe
             if (classNameString != null) {
                 String[] classNames = classNameString.split(",");
                 for (String className : classNames) {
-                    Log.i(TAG, "Adding remote media route controller " + className.trim());
+                    Log.d(TAG, "Adding remote media route controller %s", className.trim());
                     Class<?> mediaRouteControllerClass = Class.forName(className.trim());
                     Object mediaRouteController = mediaRouteControllerClass.newInstance();
                     assert mediaRouteController instanceof MediaRouteController;

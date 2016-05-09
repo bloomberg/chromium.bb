@@ -14,15 +14,14 @@ import android.support.v7.media.MediaItemStatus;
 import android.support.v7.media.MediaRouteSelector;
 import android.support.v7.media.MediaRouter;
 import android.support.v7.media.MediaRouter.RouteInfo;
-import android.util.Log;
 
 import com.google.android.gms.cast.CastMediaControlIntent;
 
 import org.chromium.base.ApplicationStatus;
-import org.chromium.base.CommandLine;
+import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.annotations.RemovableInRelease;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.media.remote.RemoteVideoInfo.PlayerState;
 import org.chromium.ui.widget.Toast;
 
@@ -61,23 +60,19 @@ public abstract class AbstractMediaRouteController implements MediaRouteControll
 
         @Override
         public void onRouteAdded(MediaRouter router, RouteInfo route) {
-            if (mDebug) Log.d(TAG, "Added route " + route.getName() + " " + route.getId());
+            logRoute("Added route", route);
             updateRouteAvailability();
         }
 
         @Override
         public void onRouteRemoved(MediaRouter router, RouteInfo route) {
-            if (mDebug) {
-                Log.d(TAG, "Removed route " + route.getName() + " " + route.getId());
-            }
+            logRoute("Removed route", route);
             updateRouteAvailability();
         }
 
         @Override
         public void onRouteChanged(MediaRouter router, RouteInfo route) {
-            if (mDebug) {
-                Log.d(TAG, "Changed route " + route.getName() + " " + route.getId());
-            }
+            logRoute("Changed route", route);
             updateRouteAvailability();
         }
 
@@ -88,9 +83,7 @@ public abstract class AbstractMediaRouteController implements MediaRouteControll
                     MediaRouter.AVAILABILITY_FLAG_IGNORE_DEFAULT_ROUTE);
             if (routesAvailable != mRoutesAvailable) {
                 mRoutesAvailable = routesAvailable;
-                if (mDebug) {
-                    Log.d(TAG, "Remote media route availability changed, updating listeners");
-                }
+                Log.d(TAG, "Remote media route availability changed, updating listeners");
                 for (MediaStateListener listener : mAvailableRouteListeners) {
                     listener.onRouteAvailabilityChanged(routesAvailable);
                 }
@@ -162,11 +155,10 @@ public abstract class AbstractMediaRouteController implements MediaRouteControll
     /** Number of ms to wait for reconnection, after which we call the failure callbacks. */
     protected static final long CONNECTION_FAILURE_NOTIFICATION_DELAY_MS = 10000L;
     private static final long END_OF_VIDEO_THRESHOLD_MS = 500L;
-    private static final String TAG = "AbstractMediaRouteController";
+    private static final String TAG = "MediaFling";
     private final Set<MediaStateListener> mAvailableRouteListeners;
     private final Context mContext;
     private RouteInfo mCurrentRoute;
-    private boolean mDebug;
     private final DeviceDiscoveryCallback mDeviceDiscoveryCallback;;
     private final DeviceSelectionCallback mDeviceSelectionCallback;
 
@@ -196,9 +188,6 @@ public abstract class AbstractMediaRouteController implements MediaRouteControll
     private long mMediaElementDetachedTimestampMs = 0;
 
     protected AbstractMediaRouteController() {
-
-        mDebug = CommandLine.getInstance().hasSwitch(ChromeSwitches.ENABLE_CAST_DEBUG_LOGS);
-
         mContext = ApplicationStatus.getApplicationContext();
         assert (getContext() != null);
 
@@ -236,7 +225,7 @@ public abstract class AbstractMediaRouteController implements MediaRouteControll
         if (mAvailableRouteListeners.isEmpty()) {
             getMediaRouter().addCallback(mMediaRouteSelector, mDeviceDiscoveryCallback,
                     MediaRouter.CALLBACK_FLAG_REQUEST_DISCOVERY);
-            if (mDebug) Log.d(TAG, "Started device discovery");
+            Log.d(TAG, "Started device discovery");
 
             // Get the initial state
             mRoutesAvailable = getMediaRouter().isRouteAvailable(
@@ -427,9 +416,13 @@ public abstract class AbstractMediaRouteController implements MediaRouteControll
 
     protected final void registerRoute(RouteInfo route) {
         mCurrentRoute = route;
+        logRoute("Selected route", route);
+    }
 
+    @RemovableInRelease
+    private void logRoute(String message, RouteInfo route) {
         if (route != null) {
-            if (mDebug) Log.d(TAG, "Selected route " + route.getId());
+            Log.d(TAG, message + " " + route.getName() + " " + route.getId());
         }
     }
 
@@ -444,7 +437,7 @@ public abstract class AbstractMediaRouteController implements MediaRouteControll
         mAvailableRouteListeners.remove(listener);
         if (mAvailableRouteListeners.isEmpty()) {
             getMediaRouter().removeCallback(mDeviceDiscoveryCallback);
-            if (mDebug) Log.d(TAG, "Stopped device discovery");
+            Log.d(TAG, "Stopped device discovery");
         }
     }
 
@@ -522,14 +515,14 @@ public abstract class AbstractMediaRouteController implements MediaRouteControll
         // Start listening
         getMediaRouter().addCallback(mMediaRouteSelector, mDeviceSelectionCallback,
                 MediaRouter.CALLBACK_FLAG_REQUEST_DISCOVERY);
-        if (mDebug) Log.d(TAG, "Started route selection discovery");
+        Log.d(TAG, "Started route selection discovery");
     }
 
     protected void stopWatchingRouteSelection() {
         mWatchingRouteSelection = false;
         if (getMediaRouter() != null) {
             getMediaRouter().removeCallback(mDeviceSelectionCallback);
-            if (mDebug) Log.d(TAG, "Stopped route selection discovery");
+            Log.d(TAG, "Stopped route selection discovery");
         }
     }
 
@@ -573,16 +566,12 @@ public abstract class AbstractMediaRouteController implements MediaRouteControll
     }
 
     protected void updateState(int state) {
-        if (mDebug) {
-            Log.d(TAG, "updateState oldState: " + mRemotePlayerState + " player state: " + state);
-        }
+        Log.d(TAG, "updateState oldState: %s player state: %s", mRemotePlayerState, state);
 
         PlayerState oldState = mRemotePlayerState;
         setPlayerStateForMediaItemState(state);
 
-        if (mDebug) {
-            Log.d(TAG, "updateState newState: " + mRemotePlayerState);
-        }
+        Log.d(TAG, "updateState newState: %s", mRemotePlayerState);
 
         if (oldState != mRemotePlayerState) {
             setDisplayedPlayerState(mRemotePlayerState);
