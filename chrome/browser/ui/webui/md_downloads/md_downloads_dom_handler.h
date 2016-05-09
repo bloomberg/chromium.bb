@@ -14,6 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/download/download_danger_prompt.h"
 #include "chrome/browser/ui/webui/md_downloads/downloads_list_tracker.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
 namespace base {
@@ -23,14 +24,14 @@ class ListValue;
 namespace content {
 class DownloadItem;
 class DownloadManager;
-class RenderViewHost;
 class WebContents;
 class WebUI;
 }
 
 // The handler for Javascript messages related to the "downloads" view,
 // also observes changes to the download manager.
-class MdDownloadsDOMHandler : public content::WebUIMessageHandler {
+class MdDownloadsDOMHandler : public content::WebContentsObserver,
+                              public content::WebUIMessageHandler {
  public:
   MdDownloadsDOMHandler(content::DownloadManager* download_manager,
                         content::WebUI* web_ui);
@@ -39,6 +40,9 @@ class MdDownloadsDOMHandler : public content::WebUIMessageHandler {
   // WebUIMessageHandler implementation.
   void RegisterMessages() override;
   void OnJavascriptDisallowed() override;
+
+  // WebContentsObserver implementation.
+  void RenderProcessGone(base::TerminationStatus status) override;
 
   // Callback for the "getDownloads" message.
   void HandleGetDownloads(const base::ListValue* args);

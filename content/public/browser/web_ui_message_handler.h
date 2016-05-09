@@ -44,6 +44,9 @@ class CONTENT_EXPORT WebUIMessageHandler {
   // from this handler.
   void AllowJavascript();
 
+  // Call this when a page should not receive JavaScript messages.
+  void DisallowJavascript();
+
   bool IsJavascriptAllowed() const;
 
   // Helper methods:
@@ -102,6 +105,9 @@ class CONTENT_EXPORT WebUIMessageHandler {
 
   // Called when a RenderView is reused to display a page (i.e. reload).
   void RenderViewReused();
+
+  // TODO(dbeam): disallow JavaScript when a renderer process crashes.
+  // http://crbug.com/610450
 
   // True if the page is for JavaScript calls from this handler.
   bool javascript_allowed_;

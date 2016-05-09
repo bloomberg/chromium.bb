@@ -21,6 +21,16 @@ void WebUIMessageHandler::AllowJavascript() {
   OnJavascriptAllowed();
 }
 
+void WebUIMessageHandler::DisallowJavascript() {
+  if (!javascript_allowed_)
+    return;
+
+  javascript_allowed_ = false;
+  DCHECK(!IsJavascriptAllowed());
+
+  OnJavascriptDisallowed();
+}
+
 bool WebUIMessageHandler::IsJavascriptAllowed() const {
   return javascript_allowed_ && web_ui() && web_ui()->CanCallJavascript();
 }
@@ -60,11 +70,7 @@ base::string16 WebUIMessageHandler::ExtractStringValue(
 }
 
 void WebUIMessageHandler::RenderViewReused() {
-  if (!javascript_allowed_)
-    return;
-
-  javascript_allowed_ = false;
-  OnJavascriptDisallowed();
+  DisallowJavascript();
 }
 
 }  // namespace content

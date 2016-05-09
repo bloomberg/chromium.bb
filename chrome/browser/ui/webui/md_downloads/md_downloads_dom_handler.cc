@@ -131,12 +131,20 @@ void MdDownloadsDOMHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("openDownloadsFolder",
       base::Bind(&MdDownloadsDOMHandler::HandleOpenDownloadsFolder,
                  weak_ptr_factory_.GetWeakPtr()));
+
+  Observe(GetWebUIWebContents());
 }
 
 void MdDownloadsDOMHandler::OnJavascriptDisallowed() {
   list_tracker_.Stop();
   list_tracker_.Reset();
   CheckForRemovedFiles();
+}
+
+void MdDownloadsDOMHandler::RenderProcessGone(base::TerminationStatus status) {
+  // TODO(dbeam): WebUI + WebUIMessageHandler should do this automatically.
+  // http://crbug.com/610450
+  DisallowJavascript();
 }
 
 void MdDownloadsDOMHandler::HandleGetDownloads(const base::ListValue* args) {
