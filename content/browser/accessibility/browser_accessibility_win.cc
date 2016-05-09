@@ -2137,11 +2137,15 @@ STDMETHODIMP BrowserAccessibilityWin::get_textAtOffset(
 
   // According to the IA2 Spec, only line boundaries should succeed when
   // the offset is one past the end of the text.
-  if (offset == text_len && boundary_type != IA2_TEXT_BOUNDARY_LINE) {
-    *start_offset = 0;
-    *end_offset = 0;
-    *text = nullptr;
-    return S_FALSE;
+  if (offset == text_len) {
+    if (boundary_type == IA2_TEXT_BOUNDARY_LINE) {
+      --offset;
+    } else {
+      *start_offset = 0;
+      *end_offset = 0;
+      *text = nullptr;
+      return S_FALSE;
+    }
   }
 
   *start_offset = FindBoundary(

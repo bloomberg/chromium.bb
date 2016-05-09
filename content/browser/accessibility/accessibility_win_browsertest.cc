@@ -1622,7 +1622,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
         L"Game theory is \"the study of \xFFFC of conflict and\n");
   }
 
-  for (LONG i = newline_offset + 1; i < n_characters; ++i) {
+  // For line boundaries, IA2 Spec allows for the offset to be equal to the
+  // text's length.
+  for (LONG i = newline_offset + 1; i <= n_characters; ++i) {
     CheckTextAtOffset(
         paragraph_text, i, IA2_TEXT_BOUNDARY_LINE, newline_offset + 1,
         n_characters,

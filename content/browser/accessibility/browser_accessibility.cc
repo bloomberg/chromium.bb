@@ -376,6 +376,7 @@ gfx::Rect BrowserAccessibility::GetLocalBoundsForRange(int start, int len)
 
   // Standard text fields such as textarea have an embedded div inside them that
   // holds all the text.
+  // TODO(nektar): This is fragile! Replace with code that flattens tree.
   if (IsSimpleTextControl() && InternalChildCount() == 1)
     return InternalGetChild(0)->GetLocalBoundsForRange(start, len);
 
@@ -540,32 +541,49 @@ int BrowserAccessibility::GetLineStartBoundary(
     int child_length = 1;
     if (child->IsTextOnlyObject())
       child_length = static_cast<int>(child->GetText().length());
-    line_length += child_length;
-    start -= child_length;
 
-    // Stop when we reach both the object containing our start offset and the
-    // end of the line on which this object is located.
-    if (start < 0 && !child->IsNextSiblingOnSameLine())
+    // Stop when we reach both the child containing our start offset and, in
+    // case we are searching forward, the child that is at the end of the line
+    // on which this object is located.
+    if (start < child_length && (direction == ui::BACKWARDS_DIRECTION ||
+                                 !child->IsNextSiblingOnSameLine())) {
+      // Recurse into the inline text boxes.
+      if (child->GetRole() == ui::AX_ROLE_STATIC_TEXT) {
+        switch (direction) {
+          case ui::FORWARDS_DIRECTION:
+            line_length +=
+                child->GetLineStartBoundary(std::max(start, 0), direction);
+            break;
+          case ui::BACKWARDS_DIRECTION:
+            line_start +=
+                child->GetLineStartBoundary(std::max(start, 0), direction);
+            break;
+        }
+      } else {
+        line_length += child_length;
+      }
+
       break;
+    }
+    line_length += child_length;
 
     if (!child->IsNextSiblingOnSameLine()) {
+      // We are on a new line.
       line_start += line_length;
       line_length = 0;
     }
+
+    start -= child_length;
   }
 
-  int result = 0;
   switch (direction) {
     case ui::FORWARDS_DIRECTION:
-      result = line_start + line_length;
-      break;
+      return line_start + line_length;
     case ui::BACKWARDS_DIRECTION:
-      result = line_start;
-      break;
-    default:
-      NOTREACHED();
+      return line_start;
   }
-  return result;
+  NOTREACHED();
+  return 0;
 }
 
 int BrowserAccessibility::GetWordStartBoundary(
@@ -643,6 +661,7 @@ int BrowserAccessibility::GetWordStartBoundary(
       const BrowserAccessibility* this_object = this;
       // Standard text fields such as textarea have an embedded div inside them
       // that should be skipped.
+      // TODO(nektar): This is fragile. Replace with code that flattens tree.
       if (IsSimpleTextControl() && InternalChildCount() == 1) {
         this_object = InternalGetChild(0);
       }
