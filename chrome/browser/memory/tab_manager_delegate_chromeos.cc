@@ -140,6 +140,18 @@ bool IsArcMemoryManagementEnabled() {
 
 }  // namespace
 
+std::ostream& operator<<(
+    std::ostream& out, const TabManagerDelegate::Candidate& candidate) {
+  if (candidate.is_arc_app) {
+    out << "app " << candidate.app->pid
+        << " (" << candidate.app->process_name << ")";
+  } else {
+    out << "tab " << candidate.tab->renderer_handle;
+  }
+  out << " with priority " << candidate.priority;
+  return out;
+}
+
 // Holds the info of a newly focused tab or app window. The focused process is
 // set to highest priority (lowest OOM score), but not immediately. To avoid
 // redundant settings the OOM score adjusting only happens after a timeout. If
@@ -383,6 +395,7 @@ void TabManagerDelegate::OnProcessInstanceReady() {
                "support DisableLowMemoryKiller() yet.";
     return;
   }
+  VLOG(2) << "Disable LowMemoryKiller";
   arc_process_instance_->DisableLowMemoryKiller();
 }
 
@@ -465,6 +478,8 @@ void TabManagerDelegate::AdjustFocusedTabScoreOnFileThread() {
     base::AutoLock oom_score_autolock(oom_score_lock_);
     oom_score_map_[pid] = chrome::kLowestRendererOomScore;
   }
+  VLOG(3) << "Set OOM score " << chrome::kLowestRendererOomScore
+          << " for focused tab " << pid;
   content::ZygoteHost::GetInstance()->AdjustRendererOOMScore(
       pid, chrome::kLowestRendererOomScore);
 }
@@ -631,17 +646,20 @@ void TabManagerDelegate::LowMemoryKillImpl(
     const TabStatsList& tab_list,
     const std::vector<arc::ArcProcess>& arc_processes) {
 
+  VLOG(2) << "LowMemoryKilleImpl";
   std::vector<TabManagerDelegate::Candidate> candidates =
       GetSortedCandidates(tab_list, arc_processes);
 
   int target_memory_to_free_kb = mem_stat_->TargetMemoryToFreeKB();
   for (const auto& entry : candidates) {
+    VLOG(3) << "Target memory to free: " << target_memory_to_free_kb << " KB";
     // Never kill selected tab or Android foreground app, regardless whether
     // they're in the active window. Since the user experience would be bad.
     if ((!entry.is_arc_app &&
          entry.priority >= ProcessPriority::CHROME_SELECTED) ||
         (entry.is_arc_app &&
          entry.priority >= ProcessPriority::ANDROID_TOP_INACTIVE)) {
+      VLOG(2) << "Skipped killing " << entry;
       continue;
     }
     if (entry.is_arc_app) {
@@ -650,6 +668,7 @@ void TabManagerDelegate::LowMemoryKillImpl(
         if (KillArcProcess(entry.app->nspid)) {
           target_memory_to_free_kb -= estimated_memory_freed_kb;
           uma_->ReportKill(estimated_memory_freed_kb);
+          VLOG(2) << "Killed " << entry;
         }
     } else {
       int64_t tab_id = entry.tab->tab_contents_id;
@@ -658,6 +677,7 @@ void TabManagerDelegate::LowMemoryKillImpl(
       if (KillTab(tab_id)) {
         target_memory_to_free_kb -= estimated_memory_freed_kb;
         uma_->ReportKill(estimated_memory_freed_kb);
+        VLOG(2) << "Killed " << entry;
       }
     }
     if (target_memory_to_free_kb < 0)
@@ -768,8 +788,10 @@ void TabManagerDelegate::DistributeOomScoreInRange(
         base::AutoLock oom_score_autolock(oom_score_lock_);
         cur_app_pid_score = oom_score_map_[cur->app->pid];
       }
-      if (cur_app_pid_score != score)
+      if (cur_app_pid_score != score) {
+        VLOG(3) << "Set OOM score " << score << " for " << *cur;
         SetOomScoreAdjForApp(cur->app->nspid, score);
+      }
     } else {
       base::ProcessHandle process_handle = cur->tab->renderer_handle;
       // 1. tab_list contains entries for already-discarded tabs. If the PID
@@ -785,8 +807,10 @@ void TabManagerDelegate::DistributeOomScoreInRange(
           base::AutoLock oom_score_autolock(oom_score_lock_);
           process_handle_score = oom_score_map_[process_handle];
         }
-        if (process_handle_score != score)
+        if (process_handle_score != score) {
           oom_score_for_tabs.push_back(std::make_pair(process_handle, score));
+          VLOG(3) << "Set OOM score " << score << " for " << *cur;
+        }
       } else {
         continue;  // Skip priority increment.
       }

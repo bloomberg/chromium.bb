@@ -132,29 +132,12 @@ class TabManagerDelegate : public arc::ArcBridgeService::Observer,
   FRIEND_TEST_ALL_PREFIXES(TabManagerDelegateTest, KillMultipleProcesses);
   FRIEND_TEST_ALL_PREFIXES(TabManagerDelegateTest, SetOomScoreAdj);
 
-  // On ARC enabled machines, either a tab or an app could be a possible
-  // victim of low memory kill process. This is a helper struct which holds a
-  // pointer to an app or a tab (but not both) to facilitate prioritizing the
-  // victims.
-  struct Candidate {
-    Candidate(const TabStats* _tab, int _priority)
-        : tab(_tab), priority(_priority), is_arc_app(false) {}
-    Candidate(const arc::ArcProcess* _app, int _priority)
-        : app(_app), priority(_priority), is_arc_app(true) {}
-    union {
-      const TabStats* tab;
-      const arc::ArcProcess* app;
-    };
-    int priority;
-    bool is_arc_app;
-
-    bool operator<(const Candidate& rhs) const {
-      return priority < rhs.priority;
-    }
-  };
-
+  struct Candidate;
   class FocusedProcess;
   class UmaReporter;
+
+  friend std::ostream& operator<<(
+      std::ostream& out, const Candidate& candidate);
 
   // content::NotificationObserver:
   void Observe(int type,
@@ -248,6 +231,28 @@ class TabManagerDelegate : public arc::ArcBridgeService::Observer,
   base::WeakPtrFactory<TabManagerDelegate> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TabManagerDelegate);
+};
+
+// On ARC enabled machines, either a tab or an app could be a possible
+// victim of low memory kill process. This is a helper struct which holds a
+// pointer to an app or a tab (but not both) to facilitate prioritizing the
+// victims.
+struct TabManagerDelegate::Candidate {
+  Candidate(const TabStats* _tab, int _priority)
+      : tab(_tab), priority(_priority), is_arc_app(false) {}
+  Candidate(const arc::ArcProcess* _app, int _priority)
+      : app(_app), priority(_priority), is_arc_app(true) {}
+
+  bool operator<(const Candidate& rhs) const {
+    return priority < rhs.priority;
+  }
+
+  union {
+    const TabStats* tab;
+    const arc::ArcProcess* app;
+  };
+  int priority;
+  bool is_arc_app;
 };
 
 // A thin wrapper over library process_metric.h to get memory status so unit
