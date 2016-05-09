@@ -87,7 +87,7 @@
     <color name="signin_head_background">#fff</color>
     <color name="signin_body_background">#fafafa</color>
     <color name="signin_border_line_color">#000</color>
-    <color name="signin_button_disabled_color">#4f4f4f</color>
+    <color name="signin_disabled_button_text_color">#42000000</color>
 
     <!-- Sad Tab colors -->
     <color name="sad_tab_header_text_color">#333333</color>

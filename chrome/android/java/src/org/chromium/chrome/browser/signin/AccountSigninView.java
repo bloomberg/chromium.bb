@@ -515,20 +515,14 @@ public class AccountSigninView extends FrameLayout implements ProfileDownloader.
     }
 
     private void setPositiveButtonEnabled() {
-        mPositiveButton.setButtonColor(
-                ApiCompatibilityUtils.getColor(getResources(), R.color.light_active_color));
         mPositiveButton.setTextColor(
                 ApiCompatibilityUtils.getColor(getResources(), R.color.signin_head_background));
-        mPositiveButton.setAlpha(1f);
         mPositiveButton.setEnabled(true);
     }
 
     private void setPositiveButtonDisabled() {
-        mPositiveButton.setButtonColor(ApiCompatibilityUtils.getColor(
-                getResources(), R.color.signin_button_disabled_color));
-        mPositiveButton.setTextColor(
-                ApiCompatibilityUtils.getColor(getResources(), R.color.fre_text_color));
-        mPositiveButton.setAlpha(0.26f);
+        mPositiveButton.setTextColor(ApiCompatibilityUtils.getColor(
+                getResources(), R.color.signin_disabled_button_text_color));
         mPositiveButton.setEnabled(false);
     }
 

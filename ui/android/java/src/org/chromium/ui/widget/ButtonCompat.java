@@ -43,7 +43,7 @@ import org.chromium.ui.R;
 public class ButtonCompat extends Button {
 
     private static final float PRE_L_PRESSED_BRIGHTNESS = 0.85f;
-    private static final int DISABLED_COLOR = 0x1F000000;
+    private static final int DISABLED_COLOR = 0x424F4F4F;
 
     private int mColor;
 
