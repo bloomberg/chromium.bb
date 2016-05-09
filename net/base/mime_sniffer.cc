@@ -98,7 +98,6 @@
 #include "net/base/mime_sniffer.h"
 
 #include "base/logging.h"
-#include "base/metrics/histogram.h"
 #include "base/strings/string_util.h"
 #include "url/gurl.h"
 
@@ -287,14 +286,6 @@ static const MagicNumber kSniffableTags[] = {
   MAGIC_HTML_TAG("p")  // Mozilla
 };
 
-static base::HistogramBase* UMASnifferHistogramGet(const char* name,
-                                                   int array_size) {
-  base::HistogramBase* counter =
-      base::LinearHistogram::FactoryGet(name, 1, array_size - 1, array_size,
-          base::HistogramBase::kUmaTargetedHistogramFlag);
-  return counter;
-}
-
 // Compare content header to a magic number where magic_entry can contain '.'
 // for single character of anything, allowing some bytes to be skipped.
 static bool MagicCmp(const char* magic_entry, const char* content, size_t len) {
@@ -368,13 +359,10 @@ static bool MatchMagicNumber(const char* content,
 
 static bool CheckForMagicNumbers(const char* content, size_t size,
                                  const MagicNumber* magic, size_t magic_len,
-                                 base::HistogramBase* counter,
                                  std::string* result) {
   for (size_t i = 0; i < magic_len; ++i) {
-    if (MatchMagicNumber(content, size, magic[i], result)) {
-      if (counter) counter->Add(static_cast<int>(i));
+    if (MatchMagicNumber(content, size, magic[i], result))
       return true;
-    }
   }
   return false;
 }
@@ -410,15 +398,9 @@ static bool SniffForHTML(const char* content,
     if (!base::IsAsciiWhitespace(*pos))
       break;
   }
-  static base::HistogramBase* counter(NULL);
-  if (!counter) {
-    counter = UMASnifferHistogramGet("mime_sniffer.kSniffableTags2",
-                                     arraysize(kSniffableTags));
-  }
   // |pos| now points to first non-whitespace character (or at end).
-  return CheckForMagicNumbers(pos, end - pos,
-                              kSniffableTags, arraysize(kSniffableTags),
-                              counter, result);
+  return CheckForMagicNumbers(pos, end - pos, kSniffableTags,
+                              arraysize(kSniffableTags), result);
 }
 
 // Returns true and sets result if the content matches any of kMagicNumbers.
@@ -430,14 +412,8 @@ static bool SniffForMagicNumbers(const char* content,
   *have_enough_content &= TruncateSize(kBytesRequiredForMagic, &size);
 
   // Check our big table of Magic Numbers
-  static base::HistogramBase* counter(NULL);
-  if (!counter) {
-    counter = UMASnifferHistogramGet("mime_sniffer.kMagicNumbers2",
-                                     arraysize(kMagicNumbers));
-  }
-  return CheckForMagicNumbers(content, size,
-                              kMagicNumbers, arraysize(kMagicNumbers),
-                              counter, result);
+  return CheckForMagicNumbers(content, size, kMagicNumbers,
+                              arraysize(kMagicNumbers), result);
 }
 
 // Returns true and sets result if the content matches any of
@@ -452,9 +428,8 @@ static bool SniffForOfficeDocs(const char* content,
 
   // Check our table of magic numbers for Office file types.
   std::string office_version;
-  if (!CheckForMagicNumbers(content, size,
-                            kOfficeMagicNumbers, arraysize(kOfficeMagicNumbers),
-                            NULL, &office_version))
+  if (!CheckForMagicNumbers(content, size, kOfficeMagicNumbers,
+                            arraysize(kOfficeMagicNumbers), &office_version))
     return false;
 
   OfficeDocType type = DOC_TYPE_NONE;
@@ -555,9 +530,8 @@ static bool SniffForInvalidOfficeDocs(const char* content,
   // Check our table of magic numbers for Office file types.  If it does not
   // match one, the MIME type was invalid.  Set it instead to a safe value.
   std::string office_version;
-  if (!CheckForMagicNumbers(content, size,
-                            kOfficeMagicNumbers, arraysize(kOfficeMagicNumbers),
-                            NULL, &office_version)) {
+  if (!CheckForMagicNumbers(content, size, kOfficeMagicNumbers,
+                            arraysize(kOfficeMagicNumbers), &office_version)) {
     *result = "application/octet-stream";
   }
 
@@ -599,11 +573,6 @@ static bool SniffXML(const char* content,
   // We want to skip XML processing instructions (of the form "<?xml ...")
   // and stop at the first "plain" tag, then make a decision on the mime-type
   // based on the name (or possibly attributes) of that tag.
-  static base::HistogramBase* counter(NULL);
-  if (!counter) {
-    counter = UMASnifferHistogramGet("mime_sniffer.kMagicXML2",
-                                     arraysize(kMagicXML));
-  }
   const int kMaxTagIterations = 5;
   for (int i = 0; i < kMaxTagIterations && pos < end; ++i) {
     pos = reinterpret_cast<const char*>(memchr(pos, '<', end - pos));
@@ -631,9 +600,8 @@ static bool SniffXML(const char* content,
       continue;
     }
 
-    if (CheckForMagicNumbers(pos, end - pos,
-                             kMagicXML, arraysize(kMagicXML),
-                             counter, result))
+    if (CheckForMagicNumbers(pos, end - pos, kMagicXML, arraysize(kMagicXML),
+                             result))
       return true;
 
     // TODO(evanm): handle RSS 1.0, which is an RDF format and more difficult
@@ -674,15 +642,9 @@ static bool SniffBinary(const char* content,
   const bool is_truncated = TruncateSize(kMaxBytesToSniff, &size);
 
   // First, we look for a BOM.
-  static base::HistogramBase* counter(NULL);
-  if (!counter) {
-    counter = UMASnifferHistogramGet("mime_sniffer.kByteOrderMark2",
-                                     arraysize(kByteOrderMark));
-  }
   std::string unused;
-  if (CheckForMagicNumbers(content, size,
-                           kByteOrderMark, arraysize(kByteOrderMark),
-                           counter, &unused)) {
+  if (CheckForMagicNumbers(content, size, kByteOrderMark,
+                           arraysize(kByteOrderMark), &unused)) {
     // If there is BOM, we think the buffer is not binary.
     result->assign("text/plain");
     return false;
@@ -715,20 +677,12 @@ static bool IsUnknownMimeType(const std::string& mime_type) {
     // Firefox rejects a mime type if it is exactly */*
     "*/*",
   };
-  static base::HistogramBase* counter(NULL);
-  if (!counter) {
-    counter = UMASnifferHistogramGet("mime_sniffer.kUnknownMimeTypes2",
-                                     arraysize(kUnknownMimeTypes) + 1);
-  }
   for (size_t i = 0; i < arraysize(kUnknownMimeTypes); ++i) {
-    if (mime_type == kUnknownMimeTypes[i]) {
-      counter->Add(i);
+    if (mime_type == kUnknownMimeTypes[i])
       return true;
-    }
   }
   if (mime_type.find('/') == std::string::npos) {
     // Firefox rejects a mime type if it does not contain a slash
-    counter->Add(arraysize(kUnknownMimeTypes));
     return true;
   }
   return false;
@@ -743,45 +697,24 @@ static bool SniffCRX(const char* content,
                      const std::string& type_hint,
                      bool* have_enough_content,
                      std::string* result) {
-  static base::HistogramBase* counter(NULL);
-  if (!counter)
-    counter = UMASnifferHistogramGet("mime_sniffer.kSniffCRX", 3);
-
   // Technically, the crx magic number is just Cr24, but the bytes after that
   // are a version number which changes infrequently. Including it in the
   // sniffing gives us less room for error. If the version number ever changes,
   // we can just add an entry to this list.
-  //
-  // TODO(aa): If we ever have another magic number, we'll want to pass a
-  // histogram into CheckForMagicNumbers(), below, to see which one matched.
   static const struct MagicNumber kCRXMagicNumbers[] = {
     MAGIC_NUMBER("application/x-chrome-extension", "Cr24\x02\x00\x00\x00")
   };
 
   // Only consider files that have the extension ".crx".
-  if (base::EndsWith(url.path_piece(), ".crx", base::CompareCase::SENSITIVE))
-    counter->Add(1);
-  else
+  if (!base::EndsWith(url.path_piece(), ".crx", base::CompareCase::SENSITIVE))
     return false;
 
   *have_enough_content &= TruncateSize(kBytesRequiredForMagic, &size);
-  if (CheckForMagicNumbers(content, size,
-                           kCRXMagicNumbers, arraysize(kCRXMagicNumbers),
-                           NULL, result)) {
-    counter->Add(2);
-  } else {
-    return false;
-  }
-
-  return true;
+  return CheckForMagicNumbers(content, size, kCRXMagicNumbers,
+                              arraysize(kCRXMagicNumbers), result);
 }
 
 bool ShouldSniffMimeType(const GURL& url, const std::string& mime_type) {
-  static base::HistogramBase* should_sniff_counter(NULL);
-  if (!should_sniff_counter) {
-    should_sniff_counter =
-        UMASnifferHistogramGet("mime_sniffer.ShouldSniffMimeType2", 3);
-  }
   bool sniffable_scheme = url.is_empty() ||
                           url.SchemeIsHTTPOrHTTPS() ||
                           url.SchemeIs("ftp") ||
@@ -790,10 +723,8 @@ bool ShouldSniffMimeType(const GURL& url, const std::string& mime_type) {
 #endif
                           url.SchemeIsFile() ||
                           url.SchemeIsFileSystem();
-  if (!sniffable_scheme) {
-    should_sniff_counter->Add(1);
+  if (!sniffable_scheme)
     return false;
-  }
 
   static const char* const kSniffableTypes[] = {
     // Many web servers are misconfigured to send text/plain for many
@@ -822,26 +753,15 @@ bool ShouldSniffMimeType(const GURL& url, const std::string& mime_type) {
     "application/vnd.ms-word.document.12",
     "application/vnd.msword",
   };
-  static base::HistogramBase* counter(NULL);
-  if (!counter) {
-    counter = UMASnifferHistogramGet("mime_sniffer.kSniffableTypes2",
-                                     arraysize(kSniffableTypes) + 1);
-  }
   for (size_t i = 0; i < arraysize(kSniffableTypes); ++i) {
-    if (mime_type == kSniffableTypes[i]) {
-      counter->Add(i);
-      should_sniff_counter->Add(2);
+    if (mime_type == kSniffableTypes[i])
       return true;
-    }
   }
   if (IsUnknownMimeType(mime_type)) {
     // The web server didn't specify a content type or specified a mime
     // type that we ignore.
-    counter->Add(arraysize(kSniffableTypes));
-    should_sniff_counter->Add(2);
     return true;
   }
-  should_sniff_counter->Add(1);
   return false;
 }
 
@@ -939,11 +859,11 @@ bool SniffMimeTypeFromLocalData(const char* content,
                                 std::string* result) {
   // First check the extra table.
   if (CheckForMagicNumbers(content, size, kExtraMagicNumbers,
-                           arraysize(kExtraMagicNumbers), NULL, result))
+                           arraysize(kExtraMagicNumbers), result))
     return true;
   // Finally check the original table.
   return CheckForMagicNumbers(content, size, kMagicNumbers,
-                              arraysize(kMagicNumbers), NULL, result);
+                              arraysize(kMagicNumbers), result);
 }
 
 bool LooksLikeBinary(const char* content, size_t size) {
