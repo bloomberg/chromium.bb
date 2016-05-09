@@ -2,15 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// TODO(markdittmer): This shouldn't be necessary.
-// Ensure that X11 headers don't poison environment before macro headers are
-// loaded.
-//
-// In particular, X11/Xlib.h defines "Status", which is the name of an enum
-// defined in "base/tracked_objects.h", which is eventually required by
-// "ipc/ipc_message_macros.h".
-#include "ipc/ipc_message_macros.h"
-
 #include "media/gpu/ipc/service/gpu_video_decode_accelerator.h"
 
 #include <memory>
@@ -28,6 +19,7 @@
 #include "gpu/command_buffer/service/gpu_preferences.h"
 #include "gpu/ipc/service/gpu_channel.h"
 #include "gpu/ipc/service/gpu_channel_manager.h"
+#include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_utils.h"
 #include "ipc/message_filter.h"
 #include "media/base/limits.h"

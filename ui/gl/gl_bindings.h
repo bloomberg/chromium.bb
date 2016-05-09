@@ -39,13 +39,13 @@
 #elif defined(USE_GLX)
 #include <GL/glx.h>
 #include <GL/glxext.h>
+#endif
 
 // Undefine some macros defined by X headers. This is why this file should only
 // be included in .cc files.
 #undef Bool
 #undef None
 #undef Status
-#endif
 
 
 // GLES2 defines not part of Desktop GL
