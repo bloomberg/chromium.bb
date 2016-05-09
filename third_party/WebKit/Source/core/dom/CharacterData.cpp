@@ -46,8 +46,6 @@ void CharacterData::setData(const String& data)
     if (m_data == nonNullData)
         return;
 
-    document().dataWillChange(*this);
-
     unsigned oldLength = length();
 
     setDataAndUpdate(nonNullData, 0, oldLength, nonNullData.length(), UpdateFromNonParser);
