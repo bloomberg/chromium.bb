@@ -800,7 +800,7 @@ public class CronetUrlRequestTest extends CronetTestBase {
         try {
             ByteBuffer readBuffer = ByteBuffer.allocateDirect(4);
             readBuffer.put("full".getBytes());
-            urlRequest.readNew(readBuffer);
+            urlRequest.read(readBuffer);
             fail("Exception not thrown");
         } catch (IllegalArgumentException e) {
             assertEquals("ByteBuffer is already full.",
@@ -810,7 +810,7 @@ public class CronetUrlRequestTest extends CronetTestBase {
         // Try to read using a non-direct buffer.
         try {
             ByteBuffer readBuffer = ByteBuffer.allocate(5);
-            urlRequest.readNew(readBuffer);
+            urlRequest.read(readBuffer);
             fail("Exception not thrown");
         } catch (IllegalArgumentException e) {
             assertEquals("byteBuffer must be a direct ByteBuffer.",
@@ -820,7 +820,7 @@ public class CronetUrlRequestTest extends CronetTestBase {
         // Finish the request with a direct ByteBuffer.
         callback.setAutoAdvance(true);
         ByteBuffer readBuffer = ByteBuffer.allocateDirect(5);
-        urlRequest.readNew(readBuffer);
+        urlRequest.read(readBuffer);
         callback.blockForDone();
         assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
         assertEquals("GET", callback.mResponseAsString);
@@ -1630,7 +1630,7 @@ public class CronetUrlRequestTest extends CronetTestBase {
         // Shutdown the executor, so posting the task will throw an exception.
         callback.shutdownExecutor();
         ByteBuffer readBuffer = ByteBuffer.allocateDirect(5);
-        urlRequest.readNew(readBuffer);
+        urlRequest.read(readBuffer);
         // Callback will never be called again because executor is shutdown,
         // but request will be destroyed from network thread.
         requestDestroyed.block();

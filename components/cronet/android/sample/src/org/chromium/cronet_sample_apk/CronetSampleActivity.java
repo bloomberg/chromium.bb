@@ -57,7 +57,7 @@ public class CronetSampleActivity extends Activity {
             Log.i(TAG, "****** Response Started ******");
             Log.i(TAG, "*** Headers Are *** %s", info.getAllHeaders());
 
-            request.readNew(ByteBuffer.allocateDirect(32 * 1024));
+            request.read(ByteBuffer.allocateDirect(32 * 1024));
         }
 
         @Override
@@ -72,7 +72,7 @@ public class CronetSampleActivity extends Activity {
                 Log.i(TAG, "IOException during ByteBuffer read. Details: ", e);
             }
             byteBuffer.clear();
-            request.readNew(byteBuffer);
+            request.read(byteBuffer);
         }
 
         @Override

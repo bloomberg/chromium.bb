@@ -635,7 +635,7 @@ final class JavaUrlRequest implements UrlRequest {
     private interface CheckedRunnable { void run() throws Exception; }
 
     @Override
-    public void readNew(final ByteBuffer buffer) {
+    public void read(final ByteBuffer buffer) {
         Preconditions.checkDirect(buffer);
         Preconditions.checkHasRemaining(buffer);
         transitionStates(State.AWAITING_READ, State.READING, new Runnable() {

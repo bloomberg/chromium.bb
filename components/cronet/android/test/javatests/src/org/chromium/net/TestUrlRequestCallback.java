@@ -61,7 +61,7 @@ class TestUrlRequestCallback extends UrlRequest.Callback {
             Executors.newSingleThreadExecutor(new ExecutorThreadFactory());
     private Thread mExecutorThread;
 
-    // position() of ByteBuffer prior to readNew() call.
+    // position() of ByteBuffer prior to read() call.
     private int mBufferPositionBeforeRead;
 
     private class ExecutorThreadFactory implements ThreadFactory {
@@ -254,7 +254,7 @@ class TestUrlRequestCallback extends UrlRequest.Callback {
 
     public void startNextRead(UrlRequest request, ByteBuffer buffer) {
         mBufferPositionBeforeRead = buffer.position();
-        request.readNew(buffer);
+        request.read(buffer);
     }
 
     public boolean isDone() {

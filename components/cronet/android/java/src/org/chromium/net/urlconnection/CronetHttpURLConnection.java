@@ -404,7 +404,7 @@ public class CronetHttpURLConnection extends HttpURLConnection {
      * ByteBuffer.
      */
     void getMoreData(ByteBuffer byteBuffer) throws IOException {
-        mRequest.readNew(byteBuffer);
+        mRequest.read(byteBuffer);
         mMessageLoop.loop();
     }
 

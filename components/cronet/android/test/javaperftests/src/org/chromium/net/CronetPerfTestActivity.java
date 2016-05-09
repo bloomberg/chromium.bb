@@ -414,7 +414,7 @@ public class CronetPerfTestActivity extends Activity {
                 @Override
                 public void onResponseStarted(UrlRequest request, UrlResponseInfo info) {
                     mBuffer.clear();
-                    request.readNew(mBuffer);
+                    request.read(mBuffer);
                 }
 
                 @Override
@@ -428,7 +428,7 @@ public class CronetPerfTestActivity extends Activity {
                         UrlRequest request, UrlResponseInfo info, ByteBuffer byteBuffer) {
                     mBytesReceived += byteBuffer.position();
                     mBuffer.clear();
-                    request.readNew(mBuffer);
+                    request.read(mBuffer);
                 }
 
                 @Override

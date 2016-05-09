@@ -271,7 +271,7 @@ final class CronetUrlRequest implements UrlRequest {
     }
 
     @Override
-    public void readNew(ByteBuffer buffer) {
+    public void read(ByteBuffer buffer) {
         Preconditions.checkHasRemaining(buffer);
         Preconditions.checkDirect(buffer);
         synchronized (mUrlRequestAdapterLock) {

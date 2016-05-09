@@ -310,8 +310,8 @@ public interface UrlRequest {
          * With the exception of {@link Callback#onCanceled onCanceled()},
          * no other {@link Callback} method will be invoked for the request,
          * including {@link Callback#onSucceeded onSucceeded()} and {@link
-         * Callback#onFailed onFailed()}, until {@link UrlRequest#readNew
-         * UrlRequest.readNew()} is called to attempt to start reading the response
+         * Callback#onFailed onFailed()}, until {@link UrlRequest#read
+         * UrlRequest.read()} is called to attempt to start reading the response
          * body.
          *
          * @param request Request that started to get response.
@@ -332,13 +332,13 @@ public interface UrlRequest {
          * no other {@link Callback} method will be invoked for the request,
          * including {@link Callback#onSucceeded onSucceeded()} and {@link
          * Callback#onFailed onFailed()}, until {@link
-         * UrlRequest#readNew UrlRequest.readNew()} is called to attempt to continue
+         * UrlRequest#read UrlRequest.read()} is called to attempt to continue
          * reading the response body.
          *
          * @param request Request that received data.
          * @param info Response information.
          * @param byteBuffer The buffer that was passed in to
-         *         {@link UrlRequest#readNew UrlRequest.readNew()}, now containing the
+         *         {@link UrlRequest#read UrlRequest.read()}, now containing the
          *         received data. The buffer's position is updated to the end of
          *         the received data. The buffer's limit is not changed.
          * @throws Exception if an error occurs while processing a read completion.
@@ -406,7 +406,7 @@ public interface UrlRequest {
          * This state corresponds to a resource load that has either not yet begun
          * or is idle waiting for the consumer to do something to move things along
          * (e.g. when the consumer of a {@link UrlRequest} has not called
-         * {@link UrlRequest#readNew readNew()} yet).
+         * {@link UrlRequest#read read()} yet).
          */
         public static final int IDLE = 0;
         /**
@@ -495,7 +495,7 @@ public interface UrlRequest {
          * the period after the response headers have been received and before all
          * of the response body has been downloaded. (NOTE: This state only applies
          * for an {@link UrlRequest} while there is an outstanding
-         * {@link UrlRequest#readNew readNew()} operation.)
+         * {@link UrlRequest#read read()} operation.)
          */
         public static final int READING_RESPONSE = 14;
 
@@ -647,8 +647,7 @@ public interface UrlRequest {
      *     position, limit, or data between its position and limit until the
      *     request calls back into the {@link Callback}.
      */
-    // TODO(pauljensen): Rename to read() once original read() is removed.
-    public void readNew(ByteBuffer buffer);
+    public void read(ByteBuffer buffer);
 
     /**
      * Cancels the request. Can be called at any time.
