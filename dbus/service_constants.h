@@ -882,6 +882,7 @@ const char kStableDeviceIdProperty[] = "StableDeviceId";
 // Signals.
 const char kOutputVolumeChanged[] = "OutputVolumeChanged";
 const char kOutputMuteChanged[] = "OutputMuteChanged";
+const char kOutputNodeVolumeChanged[] = "OutputNodeVolumeChanged";
 const char kNodeLeftRightSwappedChanged[] = "NodeLeftRightSwappedChanged";
 const char kInputGainChanged[] = "InputGainChanged";
 const char kInputMuteChanged[] = "InputMuteChanged";
