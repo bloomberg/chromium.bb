@@ -3,20 +3,8 @@
 // found in the LICENSE file.
 
 #include "modules/vr/VREyeParameters.h"
-#include "public/platform/modules/vr/WebVR.h"
 
 namespace blink {
-
-namespace {
-
-void setVecToFloat32Array(DOMFloat32Array* out, const WebVRVector3& vec)
-{
-    out->data()[0] = vec.x;
-    out->data()[1] = vec.y;
-    out->data()[2] = vec.z;
-}
-
-} // namespace
 
 VREyeParameters::VREyeParameters()
 {
@@ -26,12 +14,19 @@ VREyeParameters::VREyeParameters()
     m_renderHeight = 0;
 }
 
-void VREyeParameters::update(const WebVREyeParameters &eye_parameters)
+void VREyeParameters::update(const mojom::blink::VREyeParametersPtr& eyeParameters)
 {
-    setVecToFloat32Array(m_offset.get(), eye_parameters.eyeTranslation);
-    m_fieldOfView->setFromWebVRFieldOfView(eye_parameters.recommendedFieldOfView);
-    m_renderWidth = eye_parameters.renderRect.width;
-    m_renderHeight = eye_parameters.renderRect.height;
+    m_offset->data()[0] = eyeParameters->eyeTranslation->x;
+    m_offset->data()[1] = eyeParameters->eyeTranslation->y;
+    m_offset->data()[2] = eyeParameters->eyeTranslation->z;
+
+    m_fieldOfView->setUpDegrees(eyeParameters->recommendedFieldOfView->upDegrees);
+    m_fieldOfView->setDownDegrees(eyeParameters->recommendedFieldOfView->downDegrees);
+    m_fieldOfView->setLeftDegrees(eyeParameters->recommendedFieldOfView->leftDegrees);
+    m_fieldOfView->setRightDegrees(eyeParameters->recommendedFieldOfView->rightDegrees);
+
+    m_renderWidth = eyeParameters->renderRect->width;
+    m_renderHeight = eyeParameters->renderRect->height;
 }
 
 DEFINE_TRACE(VREyeParameters)

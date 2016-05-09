@@ -9,6 +9,7 @@
 #include "core/dom/DOMTypedArray.h"
 #include "modules/vr/VRFieldOfView.h"
 #include "platform/heap/Handle.h"
+#include "public/platform/modules/vr/vr_service.mojom-blink.h"
 
 #include "wtf/Forward.h"
 
@@ -26,7 +27,7 @@ public:
     unsigned long renderWidth() const { return m_renderWidth; }
     unsigned long renderHeight() const { return m_renderHeight; }
 
-    void update(const WebVREyeParameters&);
+    void update(const mojom::blink::VREyeParametersPtr&);
 
     DECLARE_VIRTUAL_TRACE()
 

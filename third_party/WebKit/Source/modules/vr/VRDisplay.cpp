@@ -52,10 +52,10 @@ VRController* VRDisplay::controller()
     return m_navigatorVR->controller();
 }
 
-void VRDisplay::updateFromWebVRDevice(const WebVRDevice& device)
+void VRDisplay::update(const mojom::blink::VRDeviceInfoPtr& device)
 {
-    m_displayId = device.index;
-    m_displayName = device.deviceName;
+    m_displayId = device->index;
+    m_displayName = device->deviceName;
     m_isConnected = true;
 
     // Defaults until the VR service has been update to query these.
@@ -65,9 +65,9 @@ void VRDisplay::updateFromWebVRDevice(const WebVRDevice& device)
     m_capabilities->setCanPresent(false);
     m_capabilities->setMaxLayers(0);
 
-    if (device.flags & WebVRDeviceTypeHMD) {
-        m_eyeParametersLeft->update(device.hmdInfo.leftEye);
-        m_eyeParametersRight->update(device.hmdInfo.rightEye);
+    if (!device->hmdInfo.is_null()) {
+        m_eyeParametersLeft->update(device->hmdInfo->leftEye);
+        m_eyeParametersRight->update(device->hmdInfo->rightEye);
     }
 
     m_stageParameters = nullptr;
@@ -86,11 +86,8 @@ VRPose* VRDisplay::getPose()
 
 VRPose* VRDisplay::getImmediatePose()
 {
-    WebHMDSensorState webPose;
-    controller()->getSensorState(m_displayId, webPose);
-
     VRPose* pose = VRPose::create();
-    pose->setPose(webPose);
+    pose->setPose(controller()->getSensorState(m_displayId));
     return pose;
 }
 

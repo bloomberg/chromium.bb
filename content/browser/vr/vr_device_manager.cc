@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/memory/singleton.h"
 #include "build/build_config.h"
-#include "third_party/WebKit/public/platform/modules/vr/WebVR.h"
 
 #if defined(OS_ANDROID)
 #include "content/browser/vr/android/cardboard/cardboard_vr_device_provider.h"

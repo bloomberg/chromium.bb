@@ -8,7 +8,7 @@
 #include "platform/heap/Handle.h"
 #include "public/platform/WebCallbacks.h"
 #include "public/platform/WebVector.h"
-#include "public/platform/modules/vr/WebVR.h"
+#include "public/platform/modules/vr/vr_service.mojom-blink.h"
 
 namespace blink {
 
@@ -16,14 +16,14 @@ class VRDisplayCollection;
 class ScriptPromiseResolver;
 
 // Success and failure callbacks for getDevices.
-using WebVRGetDevicesCallback = WebCallbacks<const WebVector<WebVRDevice>&, void>;
+using WebVRGetDevicesCallback = WebCallbacks<mojo::WTFArray<mojom::blink::VRDeviceInfoPtr>, void>;
 class VRGetDevicesCallback final : public WebVRGetDevicesCallback {
     USING_FAST_MALLOC(VRGetDevicesCallback);
 public:
     VRGetDevicesCallback(ScriptPromiseResolver*, VRDisplayCollection*);
     ~VRGetDevicesCallback() override;
 
-    void onSuccess(const WebVector<WebVRDevice>&) override;
+    void onSuccess(mojo::WTFArray<mojom::blink::VRDeviceInfoPtr>) override;
     void onError() override;
 
 private:

@@ -1594,8 +1594,6 @@
       'vr/VRPose.h',
       'vr/VRStageParameters.cpp',
       'vr/VRStageParameters.h',
-      'vr/VRTypeConverters.cc',
-      'vr/VRTypeConverters.h',
       'wake_lock/ScreenWakeLock.cpp',
       'wake_lock/ScreenWakeLock.h',
       'webaudio/AbstractAudioContext.cpp',

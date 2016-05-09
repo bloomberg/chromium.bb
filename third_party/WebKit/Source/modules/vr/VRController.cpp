@@ -50,14 +50,14 @@ void VRController::getDevices(std::unique_ptr<VRGetDevicesCallback> callback)
     m_service->GetDevices(sameThreadBindForMojo(&VRController::OnGetDevices, this));
 }
 
-void VRController::getSensorState(unsigned index, WebHMDSensorState& into)
+mojom::blink::VRSensorStatePtr VRController::getSensorState(unsigned index)
 {
     if (!m_service)
-        return;
+        return nullptr;
 
-    mojom::VRSensorStatePtr state;
+    mojom::blink::VRSensorStatePtr state;
     m_service->GetSensorState(index, &state);
-    into = state.To<WebHMDSensorState>();
+    return state;
 }
 
 void VRController::resetSensor(unsigned index)
@@ -72,17 +72,13 @@ void VRController::willDetachFrameHost()
     // TODO(kphanee): Detach from the mojo service connection.
 }
 
-void VRController::OnGetDevices(const mojo::Array<mojom::VRDeviceInfoPtr>& devices)
+void VRController::OnGetDevices(mojo::WTFArray<mojom::blink::VRDeviceInfoPtr> devices)
 {
-    WebVector<WebVRDevice> webDevices(devices.size());
-
     std::unique_ptr<VRGetDevicesCallback> callback = m_pendingGetDevicesCallbacks.takeFirst();
     if (!callback)
         return;
 
-    for (size_t i = 0; i < devices.size(); ++i)
-        webDevices[i] = devices[i].To<WebVRDevice>();
-    callback->onSuccess(webDevices);
+    callback->onSuccess(std::move(devices));
 }
 
 DEFINE_TRACE(VRController)

@@ -13,7 +13,7 @@
 #include "platform/heap/Handle.h"
 #include "public/platform/WebGraphicsContext3DProvider.h"
 #include "public/platform/WebThread.h"
-#include "public/platform/modules/vr/WebVR.h"
+#include "public/platform/modules/vr/vr_service.mojom-blink.h"
 #include "wtf/Forward.h"
 #include "wtf/text/WTFString.h"
 
@@ -76,7 +76,7 @@ protected:
 
     VRDisplay(NavigatorVR*);
 
-    void updateFromWebVRDevice(const WebVRDevice&);
+    void update(const mojom::blink::VRDeviceInfoPtr&);
 
     VRController* controller();
 

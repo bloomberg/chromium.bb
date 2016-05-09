@@ -8,7 +8,6 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/DOMTypedArray.h"
 #include "platform/heap/Handle.h"
-#include "public/platform/modules/vr/WebVR.h"
 #include "wtf/Forward.h"
 
 namespace blink {

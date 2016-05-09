@@ -13,18 +13,18 @@ VRDisplayCollection::VRDisplayCollection(NavigatorVR* navigatorVR)
 {
 }
 
-VRDisplayVector VRDisplayCollection::updateDisplays(const WebVector<WebVRDevice>& devices)
+VRDisplayVector VRDisplayCollection::updateDisplays(mojo::WTFArray<mojom::blink::VRDeviceInfoPtr> devices)
 {
     VRDisplayVector vrDevices;
 
-    for (const auto& device : devices) {
-        VRDisplay* display = getDisplayForIndex(device.index);
+    for (const auto& device : devices.PassStorage()) {
+        VRDisplay* display = getDisplayForIndex(device->index);
         if (!display) {
             display = new VRDisplay(m_navigatorVR);
             m_displays.append(display);
         }
 
-        display->updateFromWebVRDevice(device);
+        display->update(device);
         vrDevices.append(display);
     }
 

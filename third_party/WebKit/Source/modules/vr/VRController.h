@@ -8,8 +8,8 @@
 
 #include "core/frame/LocalFrameLifecycleObserver.h"
 #include "modules/ModulesExport.h"
-#include "modules/vr/VRTypeConverters.h"
 #include "platform/Supplementable.h"
+#include "public/platform/modules/vr/vr_service.mojom-blink.h"
 #include "wtf/Deque.h"
 
 #include <memory>
@@ -30,7 +30,7 @@ public:
 
     void getDevices(std::unique_ptr<VRGetDevicesCallback>);
 
-    void getSensorState(unsigned index, WebHMDSensorState& into);
+    mojom::blink::VRSensorStatePtr getSensorState(unsigned index);
 
     void resetSensor(unsigned index);
 
@@ -47,10 +47,10 @@ private:
     void willDetachFrameHost() override;
 
     // Binding callbacks.
-    void OnGetDevices(const mojo::Array<mojom::VRDeviceInfoPtr>&);
+    void OnGetDevices(mojo::WTFArray<mojom::blink::VRDeviceInfoPtr>);
 
     Deque<std::unique_ptr<VRGetDevicesCallback>> m_pendingGetDevicesCallbacks;
-    mojom::VRServicePtr m_service;
+    mojom::blink::VRServicePtr m_service;
 };
 
 } // namespace blink

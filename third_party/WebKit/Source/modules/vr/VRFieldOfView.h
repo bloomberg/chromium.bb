@@ -8,7 +8,6 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "modules/vr/VRFieldOfViewInit.h"
 #include "platform/heap/Handle.h"
-#include "public/platform/modules/vr/WebVR.h"
 #include "wtf/Forward.h"
 
 
@@ -59,32 +58,6 @@ public:
     void setDownDegrees(double value) { m_downDegrees = value; }
     void setLeftDegrees(double value) { m_leftDegrees = value; }
     void setRightDegrees(double value) { m_rightDegrees = value; }
-
-    void setFromWebVRFieldOfView(const WebVRFieldOfView& fov)
-    {
-        m_upDegrees = fov.upDegrees;
-        m_downDegrees = fov.downDegrees;
-        m_leftDegrees = fov.leftDegrees;
-        m_rightDegrees = fov.rightDegrees;
-    }
-
-    void setFromVRFieldOfView(const VRFieldOfView& fov)
-    {
-        m_upDegrees = fov.m_upDegrees;
-        m_downDegrees = fov.m_downDegrees;
-        m_leftDegrees = fov.m_leftDegrees;
-        m_rightDegrees = fov.m_rightDegrees;
-    }
-
-    WebVRFieldOfView toWebVRFieldOfView()
-    {
-        WebVRFieldOfView fov;
-        fov.upDegrees = m_upDegrees;
-        fov.downDegrees = m_downDegrees;
-        fov.leftDegrees = m_leftDegrees;
-        fov.rightDegrees = m_rightDegrees;
-        return fov;
-    }
 
     DEFINE_INLINE_TRACE() { }
 
