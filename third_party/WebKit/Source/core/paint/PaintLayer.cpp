@@ -904,8 +904,7 @@ PaintLayer* PaintLayer::enclosingTransformedAncestor() const
 LayoutPoint PaintLayer::computeOffsetFromTransformedAncestor() const
 {
     TransformState transformState(TransformState::ApplyTransformDirection, FloatPoint());
-    // FIXME: add a test that checks flipped writing mode and ApplyContainerFlip are correct.
-    layoutObject()->mapLocalToAncestor(transformAncestor() ? transformAncestor()->layoutObject() : nullptr, transformState, ApplyContainerFlip);
+    layoutObject()->mapLocalToAncestor(transformAncestor() ? transformAncestor()->layoutObject() : nullptr, transformState, 0);
     transformState.flatten();
     return LayoutPoint(transformState.lastPlanarPoint());
 }

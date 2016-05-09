@@ -93,6 +93,12 @@ enum MarkingBehavior {
 enum MapCoordinatesMode {
     IsFixed = 1 << 0,
     UseTransforms = 1 << 1,
+
+    // When walking up the containing block chain, applies a container flip for the first
+    // element found, if any, for which isFlippedBlocksWritingMode is true. This option should
+    // generally be used when mapping a source rect in the "physical coordinates with flipped
+    // block-flow" coordinate space (see LayoutBoxModelObject.h) to one in a physical
+    // destination space.
     ApplyContainerFlip = 1 << 2,
     TraverseDocumentBoundaries = 1 << 3,
 
