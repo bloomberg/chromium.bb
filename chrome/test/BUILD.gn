@@ -327,6 +327,8 @@ if (!is_android) {
 
     configs += [ "//build/config:precompiled_headers" ]
 
+    data_deps = []
+
     data = [
       "data/",
       "//content/test/data/",
@@ -342,7 +344,6 @@ if (!is_android) {
       "//third_party/zlib/google/test/data/",
       "//tools/metrics/histograms/histograms.xml",
       "$root_out_dir/pyproto/google/",
-      "$root_out_dir/resources.pak",
       "$root_out_dir/ui_test.pak",
     ]
     if (is_linux || is_win) {
@@ -357,6 +358,9 @@ if (!is_android) {
     }
     if (is_linux) {
       data += [ "$root_out_dir/libppapi_tests.so" ]
+    }
+    if (!is_mac) {
+      data_deps += [ "//chrome:packed_extra_resources" ]
     }
 
     defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
@@ -401,7 +405,7 @@ if (!is_android) {
     deps += [ "//extensions:chrome_extensions_interactive_uitests" ]
 
     # Runtime dependencies
-    data_deps = [
+    data_deps += [
       "//ppapi:ppapi_tests",
       "//third_party/mesa:osmesa",
     ]
@@ -873,7 +877,6 @@ if (!is_android) {
       "$root_out_dir/chrome_material_200_percent.pak",
       "$root_out_dir/locales/",
       "$root_out_dir/remoting/unittests/",
-      "$root_out_dir/resources.pak",
       "$root_out_dir/resources/extension/",
       "$root_out_dir/test_case.html",
       "$root_out_dir/test_case.html.mock-http-headers",
@@ -964,6 +967,10 @@ if (!is_android) {
       "//third_party/mesa:osmesa",
       "//third_party/widevine/cdm:widevine_test_license_server",
     ]
+
+    if (!is_mac) {
+      data_deps += [ "//chrome:packed_extra_resources" ]
+    }
 
     defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
 
@@ -1393,7 +1400,6 @@ if (!is_android) {
       "//third_party/pywebsocket/",
       "//third_party/tlslite/",
       "$root_out_dir/pyproto/",
-      "$root_out_dir/resources.pak",
     ]
 
     if (is_linux || is_win) {
@@ -1435,6 +1441,10 @@ if (!is_android) {
     data_deps = [
       "//third_party/mesa:osmesa",
     ]
+
+    if (!is_mac) {
+      data_deps += [ "//chrome:packed_extra_resources" ]
+    }
 
     if (is_mac) {
       # Dictionary sync is disabled on Mac.
@@ -1601,7 +1611,6 @@ test("unit_tests") {
     "//third_party/zlib/google/test/data/",
     "//tools/metrics/histograms/histograms.xml",
     "$root_out_dir/pyproto/google/",
-    "$root_out_dir/resources.pak",
   ]
   if (is_android || is_linux || is_win) {
     data += [
@@ -1699,6 +1708,13 @@ test("unit_tests") {
       "//ui/gl",
       "//v8",
     ]
+  }
+
+  if (is_mac) {
+    data_deps += [ "//chrome:chrome_framework" ]
+    data += [ "$root_out_dir/Chromium Framework.framework/" ]
+  } else {
+    data_deps += [ "//chrome:packed_extra_resources" ]
   }
 
   if (is_android) {

@@ -266,6 +266,9 @@ source_set("unit_tests") {
     "psl_matching_helper_unittest.cc",
     "statistics_table_unittest.cc",
   ]
+  if (is_mac) {
+    sources -= [ "password_store_default_unittest.cc" ]
+  }
   deps = [
     ":test_support",
     ":unit_tests_bundle_data",

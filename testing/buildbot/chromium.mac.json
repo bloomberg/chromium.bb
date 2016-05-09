@@ -14,6 +14,18 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "components_browsertests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "components_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "content_unittests"
       },
       {
@@ -33,6 +45,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "ui_base_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "unit_tests"
       }
     ]
   },
@@ -83,6 +101,18 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "components_browsertests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "components_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "content_browsertests"
       },
       {
@@ -96,6 +126,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "ui_base_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "unit_tests"
       }
     ]
   },

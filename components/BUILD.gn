@@ -15,7 +15,7 @@ if (is_ios) {
   import("//ios/build/config.gni")
 }
 
-if (is_ios || is_mac) {
+if (is_ios) {
   bundle_data("components_tests_pak_bundle_data") {
     public_deps = [
       ":components_tests_pak",
@@ -210,8 +210,12 @@ test("components_unittests") {
     ]
   }  # iOS/!iOS
 
-  if (is_ios || is_mac) {
+  if (is_ios) {
     deps += [ ":components_tests_pak_bundle_data" ]
+  }
+
+  if (is_mac) {
+    data_deps += [ "//content/shell:pak" ]
   }
 
   if (is_android) {
@@ -421,6 +425,7 @@ if (!is_ios) {
     ]
 
     if (is_mac) {
+      data_deps += [ "//content/shell:content_shell" ]
       data += [ "$root_out_dir/Content Shell.app/" ]
     }
 
