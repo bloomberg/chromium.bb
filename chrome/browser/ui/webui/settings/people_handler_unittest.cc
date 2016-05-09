@@ -220,6 +220,7 @@ class PeopleHandlerTest : public testing::Test {
     mock_pss_->Initialize();
 
     handler_.reset(new TestingPeopleHandler(&web_ui_, profile_));
+    handler_->AllowJavascript();
   }
 
   // Setup the expectations for calls made when displaying the config page.

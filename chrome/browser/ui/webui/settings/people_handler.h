@@ -54,6 +54,8 @@ class PeopleHandler : public SettingsPageUIHandler,
 
   // SettingsPageUIHandler implementation.
   void RegisterMessages() override;
+  void OnJavascriptAllowed() override;
+  void OnJavascriptDisallowed() override;
 
   // SyncStartupTracker::Observer implementation.
   void SyncStartupCompleted() override;

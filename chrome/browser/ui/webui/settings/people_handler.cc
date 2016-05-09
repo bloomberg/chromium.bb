@@ -173,19 +173,7 @@ const char PeopleHandler::kPassphraseFailedPageStatus[] = "passphraseFailed";
 PeopleHandler::PeopleHandler(Profile* profile)
     : profile_(profile),
       configuring_sync_(false),
-      sync_service_observer_(this) {
-  PrefService* prefs = profile_->GetPrefs();
-  profile_pref_registrar_.Init(prefs);
-  profile_pref_registrar_.Add(
-      prefs::kSigninAllowed,
-      base::Bind(&PeopleHandler::OnSigninAllowedPrefChange,
-                 base::Unretained(this)));
-
-  ProfileSyncService* sync_service(
-      ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile_));
-  if (sync_service)
-    sync_service_observer_.Add(sync_service);
-}
+      sync_service_observer_(this) {}
 
 PeopleHandler::~PeopleHandler() {
   // Early exit if running unit tests (no actual WebUI is attached).
@@ -239,6 +227,25 @@ void PeopleHandler::RegisterMessages() {
       "SyncSetupStartSignIn",
       base::Bind(&PeopleHandler::HandleStartSignin, base::Unretained(this)));
 #endif
+}
+
+void PeopleHandler::OnJavascriptAllowed() {
+  PrefService* prefs = profile_->GetPrefs();
+  profile_pref_registrar_.Init(prefs);
+  profile_pref_registrar_.Add(
+      prefs::kSigninAllowed,
+      base::Bind(&PeopleHandler::OnSigninAllowedPrefChange,
+                 base::Unretained(this)));
+
+  ProfileSyncService* sync_service(
+      ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile_));
+  if (sync_service)
+    sync_service_observer_.Add(sync_service);
+}
+
+void PeopleHandler::OnJavascriptDisallowed() {
+  profile_pref_registrar_.RemoveAll();
+  sync_service_observer_.RemoveAll();
 }
 
 #if !defined(OS_CHROMEOS)
@@ -330,9 +337,9 @@ void PeopleHandler::DisplaySpinner() {
                               base::TimeDelta::FromSeconds(kTimeoutSec), this,
                               &PeopleHandler::DisplayTimeout);
 
-  web_ui()->CallJavascriptFunction("cr.webUIListenerCallback",
-                                   base::StringValue("page-status-changed"),
-                                   base::StringValue(kSpinnerPageStatus));
+  CallJavascriptFunction("cr.webUIListenerCallback",
+                         base::StringValue("page-status-changed"),
+                         base::StringValue(kSpinnerPageStatus));
 }
 
 // TODO(kochi): Handle error conditions other than timeout.
@@ -344,9 +351,9 @@ void PeopleHandler::DisplayTimeout() {
   // Do not listen to sync startup events.
   sync_startup_tracker_.reset();
 
-  web_ui()->CallJavascriptFunction("cr.webUIListenerCallback",
-                                   base::StringValue("page-status-changed"),
-                                   base::StringValue(kTimeoutPageStatus));
+  CallJavascriptFunction("cr.webUIListenerCallback",
+                         base::StringValue("page-status-changed"),
+                         base::StringValue(kTimeoutPageStatus));
 }
 
 void PeopleHandler::OnDidClosePage(const base::ListValue* args) {
@@ -509,6 +516,8 @@ void PeopleHandler::HandleSetEncryption(const base::ListValue* args) {
 }
 
 void PeopleHandler::HandleShowSetupUI(const base::ListValue* args) {
+  AllowJavascript();
+
   if (!GetSyncService()) {
     CloseUI();
     return;
@@ -707,9 +716,9 @@ void PeopleHandler::FocusUI() {
 
 void PeopleHandler::CloseUI() {
   CloseSyncSetup();
-  web_ui()->CallJavascriptFunction("cr.webUIListenerCallback",
-                                   base::StringValue("page-status-changed"),
-                                   base::StringValue(kDonePageStatus));
+  CallJavascriptFunction("cr.webUIListenerCallback",
+                         base::StringValue("page-status-changed"),
+                         base::StringValue(kDonePageStatus));
 }
 
 void PeopleHandler::GoogleSigninSucceeded(const std::string& /* account_id */,
@@ -908,9 +917,8 @@ void PeopleHandler::PushSyncPrefs() {
                    GetStringUTF16(IDS_SYNC_FULL_ENCRYPTION_DATA));
   }
 
-  web_ui()->CallJavascriptFunction("cr.webUIListenerCallback",
-                                   base::StringValue("sync-prefs-changed"),
-                                   args);
+  CallJavascriptFunction("cr.webUIListenerCallback",
+                         base::StringValue("sync-prefs-changed"), args);
 
   // Make sure the tab used for the Gaia sign in does not cover the settings
   // tab.
@@ -922,9 +930,9 @@ LoginUIService* PeopleHandler::GetLoginUIService() const {
 }
 
 void PeopleHandler::UpdateSyncStatus() {
-  web_ui()->CallJavascriptFunction("cr.webUIListenerCallback",
-                                   base::StringValue("sync-status-changed"),
-                                   *GetSyncStatusDictionary());
+  CallJavascriptFunction("cr.webUIListenerCallback",
+                         base::StringValue("sync-status-changed"),
+                         *GetSyncStatusDictionary());
 }
 
 void PeopleHandler::OnSigninAllowedPrefChange() {
