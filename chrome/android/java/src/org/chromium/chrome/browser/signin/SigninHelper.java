@@ -8,12 +8,12 @@ import android.accounts.Account;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
-import android.preference.PreferenceManager;
 
 import com.google.android.gms.auth.AccountChangeEvent;
 import com.google.android.gms.auth.GoogleAuthException;
 import com.google.android.gms.auth.GoogleAuthUtil;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.invalidation.InvalidationServiceFactory;
@@ -144,7 +144,7 @@ public class SigninHelper {
                     PrefServiceBridge.getInstance().getSyncLastAccountName();
             if (lastSyncAccountName != null && !lastSyncAccountName.isEmpty()) return;
 
-            SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(mContext);
+            SharedPreferences sharedPrefs = ContextUtils.getAppSharedPreferences();
             boolean hasKnownAccountKeys = sharedPrefs.contains(ANDROID_ACCOUNTS_PREFS_KEY);
             // Nothing to do if Android accounts are not changed and already known to Chrome.
             if (hasKnownAccountKeys && !accountsChanged) return;
@@ -284,7 +284,7 @@ public class SigninHelper {
     public static void markAccountsChangedPref(Context context) {
         // The process may go away as soon as we return from onReceive but Android makes sure
         // that in-flight disk writes from apply() complete before changing component states.
-        PreferenceManager.getDefaultSharedPreferences(context)
+        ContextUtils.getAppSharedPreferences()
                 .edit().putBoolean(ACCOUNTS_CHANGED_PREFS_KEY, true).apply();
     }
 
@@ -292,12 +292,12 @@ public class SigninHelper {
      * @return The new account name of the current user. Null if it wasn't renamed.
      */
     public static String getNewSignedInAccountName(Context context) {
-        return (PreferenceManager.getDefaultSharedPreferences(context)
+        return (ContextUtils.getAppSharedPreferences()
                 .getString(ACCOUNT_RENAMED_PREFS_KEY, null));
     }
 
     private static void clearNewSignedInAccountName(Context context) {
-        PreferenceManager.getDefaultSharedPreferences(context)
+        ContextUtils.getAppSharedPreferences()
                 .edit()
                 .putString(ACCOUNT_RENAMED_PREFS_KEY, null)
                 .apply();
@@ -309,7 +309,7 @@ public class SigninHelper {
         //  1. The signed in account name known to the ChromeSigninController.
         //  2. A pending newly choosen name that is differed from the one known to
         //     ChromeSigninController but is stored in ACCOUNT_RENAMED_PREFS_KEY.
-        String name = PreferenceManager.getDefaultSharedPreferences(context).getString(
+        String name = ContextUtils.getAppSharedPreferences().getString(
                 ACCOUNT_RENAMED_PREFS_KEY, null);
 
         // If there is no pending rename, take the name known to ChromeSigninController.
@@ -330,7 +330,7 @@ public class SigninHelper {
         String newName = curName;
 
         // This is the last read index of all the account change event.
-        int eventIndex = PreferenceManager.getDefaultSharedPreferences(context).getInt(
+        int eventIndex = ContextUtils.getAppSharedPreferences().getInt(
                 ACCOUNT_RENAME_EVENT_INDEX_PREFS_KEY, 0);
 
         int newIndex = eventIndex;
@@ -346,8 +346,8 @@ public class SigninHelper {
                         // We have found a rename event of the current account.
                         // We need to check if that account is further renamed.
                         newName = name;
-                        if (!accountExists(context, AccountManagerHelper.get(context)
-                                                            .createAccountFromName(newName))) {
+                        if (!accountExists(
+                                context, AccountManagerHelper.createAccountFromName(newName))) {
                             newIndex = 0; // Start from the beginning of the new account.
                             continue outerLoop;
                         }
@@ -365,27 +365,27 @@ public class SigninHelper {
         }
 
         if (!curName.equals(newName)) {
-            PreferenceManager.getDefaultSharedPreferences(context)
+            ContextUtils.getAppSharedPreferences()
                     .edit().putString(ACCOUNT_RENAMED_PREFS_KEY, newName).apply();
         }
 
         if (newIndex != eventIndex) {
-            PreferenceManager.getDefaultSharedPreferences(context)
+            ContextUtils.getAppSharedPreferences()
                     .edit().putInt(ACCOUNT_RENAME_EVENT_INDEX_PREFS_KEY, newIndex).apply();
         }
     }
 
     @VisibleForTesting
     public static void resetAccountRenameEventIndex(Context context) {
-        PreferenceManager.getDefaultSharedPreferences(context)
+        ContextUtils.getAppSharedPreferences()
                 .edit().putInt(ACCOUNT_RENAME_EVENT_INDEX_PREFS_KEY, 0).apply();
     }
 
     public static boolean checkAndClearAccountsChangedPref(Context context) {
-        if (PreferenceManager.getDefaultSharedPreferences(context)
+        if (ContextUtils.getAppSharedPreferences()
                 .getBoolean(ACCOUNTS_CHANGED_PREFS_KEY, false)) {
             // Clear the value in prefs.
-            PreferenceManager.getDefaultSharedPreferences(context)
+            ContextUtils.getAppSharedPreferences()
                     .edit().putBoolean(ACCOUNTS_CHANGED_PREFS_KEY, false).apply();
             return true;
         } else {

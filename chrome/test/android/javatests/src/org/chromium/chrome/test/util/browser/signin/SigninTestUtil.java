@@ -7,8 +7,8 @@ package org.chromium.chrome.test.util.browser.signin;
 import android.accounts.Account;
 import android.app.Instrumentation;
 import android.content.Context;
-import android.preference.PreferenceManager;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.signin.AccountIdProvider;
 import org.chromium.chrome.browser.signin.AccountTrackerService;
@@ -129,7 +129,7 @@ public final class SigninTestUtil {
     public void resetSigninState() {
         // Clear cached signed account name and accounts list.
         ChromeSigninController.get(mContext).setSignedInAccountName(null);
-        PreferenceManager.getDefaultSharedPreferences(mContext.getApplicationContext())
+        ContextUtils.getAppSharedPreferences()
                 .edit()
                 .putStringSet(OAuth2TokenService.STORED_ACCOUNTS_KEY, new HashSet<String>())
                 .apply();

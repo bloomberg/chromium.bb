@@ -9,11 +9,11 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.text.SpannableString;
 import android.text.style.TypefaceSpan;
 import android.view.View;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.preferences.MainPreferences;
@@ -144,7 +144,7 @@ public class GeolocationSnackbarController implements SnackbarController {
     static boolean getGeolocationSnackbarShown(Context context) {
         if (sGeolocationSnackbarShown == null) {
             // Cache the preference value since this method is called often.
-            sGeolocationSnackbarShown = PreferenceManager.getDefaultSharedPreferences(context)
+            sGeolocationSnackbarShown = ContextUtils.getAppSharedPreferences()
                     .getBoolean(GEOLOCATION_SNACKBAR_SHOWN_PREF, false);
         }
 
@@ -152,7 +152,7 @@ public class GeolocationSnackbarController implements SnackbarController {
     }
 
     private static void setGeolocationSnackbarShown(Context context) {
-        PreferenceManager.getDefaultSharedPreferences(context).edit()
+        ContextUtils.getAppSharedPreferences().edit()
                 .putBoolean(GEOLOCATION_SNACKBAR_SHOWN_PREF, true).apply();
         sGeolocationSnackbarShown = Boolean.TRUE;
     }

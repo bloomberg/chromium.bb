@@ -12,7 +12,6 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Process;
 import android.os.StrictMode;
-import android.preference.PreferenceManager;
 import android.text.TextUtils;
 
 import com.squareup.leakcanary.LeakCanary;
@@ -166,14 +165,14 @@ public class ChromeBrowserInitializer {
             new AsyncTask<Void, Void, Void>() {
                 @Override
                 protected Void doInBackground(Void... params) {
-                    PreferenceManager.getDefaultSharedPreferences(mApplication);
+                    ContextUtils.getAppSharedPreferences();
                     DocumentTabModelImpl.warmUpSharedPrefs(mApplication);
                     ActivityAssigner.warmUpSharedPrefs(mApplication);
                     return null;
                 }
             }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         } else {
-            PreferenceManager.getDefaultSharedPreferences(mApplication);
+            ContextUtils.getAppSharedPreferences();
             DocumentTabModelImpl.warmUpSharedPrefs(mApplication);
             ActivityAssigner.warmUpSharedPrefs(mApplication);
         }

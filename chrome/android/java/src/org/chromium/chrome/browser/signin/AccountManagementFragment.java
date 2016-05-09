@@ -29,13 +29,13 @@ import android.os.UserManager;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceFragment;
-import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
 import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.Pair;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeApplication;
@@ -284,7 +284,7 @@ public class AccountManagementFragment extends PreferenceFragment
     }
 
     private void configureGoogleActivityControls() {
-        Preference pref = (Preference) findPreference(PREF_GOOGLE_ACTIVITY_CONTROLS);
+        Preference pref = findPreference(PREF_GOOGLE_ACTIVITY_CONTROLS);
         pref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
@@ -695,7 +695,7 @@ public class AccountManagementFragment extends PreferenceFragment
      * @return Whether the sign out is not disabled due to a child/EDU account.
      */
     private static boolean getSignOutAllowedPreferenceValue(Context context) {
-        return PreferenceManager.getDefaultSharedPreferences(context)
+        return ContextUtils.getAppSharedPreferences()
                 .getBoolean(SIGN_OUT_ALLOWED, true);
     }
 
@@ -706,7 +706,7 @@ public class AccountManagementFragment extends PreferenceFragment
      * @param isAllowed True if the sign out is not disabled due to a child/EDU account
      */
     public static void setSignOutAllowedPreferenceValue(Context context, boolean isAllowed) {
-        PreferenceManager.getDefaultSharedPreferences(context)
+        ContextUtils.getAppSharedPreferences()
                 .edit()
                 .putBoolean(SIGN_OUT_ALLOWED, isAllowed)
                 .apply();

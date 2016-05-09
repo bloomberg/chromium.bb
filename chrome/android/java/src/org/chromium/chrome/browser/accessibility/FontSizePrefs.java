@@ -6,8 +6,8 @@ package org.chromium.chrome.browser.accessibility;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
@@ -58,7 +58,7 @@ public class FontSizePrefs {
     private FontSizePrefs(Context context) {
         mFontSizePrefsAndroidPtr = nativeInit();
         mApplicationContext = context.getApplicationContext();
-        mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+        mSharedPreferences = ContextUtils.getAppSharedPreferences();
         mObserverList = new ObserverList<FontSizePrefsObserver>();
     }
 

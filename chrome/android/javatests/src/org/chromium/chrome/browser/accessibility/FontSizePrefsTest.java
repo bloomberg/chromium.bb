@@ -6,9 +6,9 @@ package org.chromium.chrome.browser.accessibility;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
 import android.test.suitebuilder.annotation.SmallTest;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.accessibility.FontSizePrefs.FontSizePrefsObserver;
@@ -41,8 +41,7 @@ public class FontSizePrefsTest extends NativeLibraryTestBase {
     }
 
     private void resetSharedPrefs() {
-        SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(
-                getInstrumentation().getTargetContext()).edit();
+        SharedPreferences.Editor editor = ContextUtils.getAppSharedPreferences().edit();
         editor.remove(FontSizePrefs.PREF_USER_SET_FORCE_ENABLE_ZOOM);
         editor.remove(FontSizePrefs.PREF_USER_FONT_SCALE_FACTOR);
         editor.apply();
@@ -145,8 +144,7 @@ public class FontSizePrefsTest extends NativeLibraryTestBase {
 
         // Delete PREF_USER_FONT_SCALE_FACTOR. This simulates the condition just after upgrading to
         // M51, when userFontScaleFactor was added.
-        SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(
-                getInstrumentation().getTargetContext()).edit();
+        SharedPreferences.Editor editor = ContextUtils.getAppSharedPreferences().edit();
         editor.remove(FontSizePrefs.PREF_USER_FONT_SCALE_FACTOR);
         editor.commit();
 

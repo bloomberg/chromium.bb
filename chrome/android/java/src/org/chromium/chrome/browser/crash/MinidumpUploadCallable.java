@@ -6,9 +6,9 @@ package org.chromium.chrome.browser.crash;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
 import android.support.annotation.IntDef;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.StreamUtil;
 import org.chromium.base.VisibleForTesting;
@@ -72,7 +72,7 @@ public class MinidumpUploadCallable implements Callable<Integer> {
     public MinidumpUploadCallable(File fileToUpload, File logfile, Context context) {
         this(fileToUpload, logfile, new HttpURLConnectionFactoryImpl(),
                 PrivacyPreferencesManager.getInstance(context));
-        removeOutdatedPrefs(PreferenceManager.getDefaultSharedPreferences(context));
+        removeOutdatedPrefs(ContextUtils.getAppSharedPreferences());
     }
 
     public MinidumpUploadCallable(File fileToUpload, File logfile,

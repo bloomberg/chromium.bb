@@ -15,7 +15,6 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
-import android.preference.PreferenceManager;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
@@ -23,6 +22,7 @@ import com.google.android.gms.gcm.GcmNetworkManager;
 import com.google.android.gms.gcm.OneoffTask;
 import com.google.android.gms.gcm.PeriodicTask;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.library_loader.LibraryLoader;
@@ -229,7 +229,7 @@ public class PrecacheController {
     @VisibleForTesting
     boolean isPrecachingEnabled() {
         assert mNonThreadSafe.calledOnValidThread();
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mAppContext);
+        SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
         return prefs.getBoolean(PREF_IS_PRECACHING_ENABLED, false);
     }
 
@@ -250,7 +250,7 @@ public class PrecacheController {
         boolean cancelRequired = !enabled && PrecacheController.hasInstance();
         Context appContext = context.getApplicationContext();
         Log.v(TAG, "setting precache enabled to %s", enabled);
-        Editor editor = PreferenceManager.getDefaultSharedPreferences(appContext).edit();
+        Editor editor = ContextUtils.getAppSharedPreferences().edit();
         editor.putBoolean(PREF_IS_PRECACHING_ENABLED, enabled);
         editor.apply();
 

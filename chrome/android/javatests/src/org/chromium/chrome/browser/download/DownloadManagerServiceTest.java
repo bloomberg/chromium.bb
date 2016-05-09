@@ -10,13 +10,13 @@ import android.content.Intent;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.HandlerThread;
-import android.preference.PreferenceManager;
 import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.util.Log;
 import android.util.Pair;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
@@ -552,7 +552,7 @@ public class DownloadManagerServiceTest extends InstrumentationTestCase {
                 }
             });
             Set<String> downloads = dService.getStoredDownloadInfo(
-                    PreferenceManager.getDefaultSharedPreferences(context),
+                    ContextUtils.getAppSharedPreferences(),
                     DownloadManagerService.PENDING_OMA_DOWNLOADS);
             assertEquals(1, downloads.size());
             DownloadManagerService.OMAEntry entry = DownloadManagerService.OMAEntry.parseOMAEntry(

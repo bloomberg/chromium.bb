@@ -14,9 +14,9 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Binder;
 import android.os.IBinder;
-import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.library_loader.ProcessInitException;
@@ -85,7 +85,7 @@ public class DownloadNotificationService extends Service {
         mContext = getApplicationContext();
         mNotificationManager = (NotificationManager) mContext.getSystemService(
                 Context.NOTIFICATION_SERVICE);
-        mSharedPrefs = PreferenceManager.getDefaultSharedPreferences(mContext);
+        mSharedPrefs = ContextUtils.getAppSharedPreferences();
         parseDownloadSharedPrefs();
         // Because this service is a started service and returns START_STICKY in
         // onStartCommand(), it will be restarted as soon as resources are available

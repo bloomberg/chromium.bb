@@ -6,9 +6,9 @@ package org.chromium.chrome.browser.tab;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
 
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 
@@ -92,7 +92,7 @@ public class TabIdManager {
         // Read the shared preference.  This has to be done on the critical path to ensure that the
         // myriad Activities that serve as entries into Chrome are all synchronized on the correct
         // maximum Tab ID.
-        mPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+        mPreferences = ContextUtils.getAppSharedPreferences();
         mIdCounter.set(mPreferences.getInt(PREF_NEXT_ID, 0));
     }
 }

@@ -10,10 +10,10 @@ import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
-import android.preference.PreferenceManager;
 import android.test.ServiceTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
@@ -113,7 +113,7 @@ public class DownloadNotificationServiceTest extends
         notifications.add(new DownloadSharedPreferenceEntry(2, true, true,
                 UUID.randomUUID().toString(), "test2").getSharedPreferenceString());
         SharedPreferences sharedPrefs =
-                PreferenceManager.getDefaultSharedPreferences(mockContext);
+                ContextUtils.getAppSharedPreferences();
         SharedPreferences.Editor editor = sharedPrefs.edit();
         editor.putStringSet(
                 DownloadNotificationService.PENDING_DOWNLOAD_NOTIFICATIONS, notifications);
@@ -143,7 +143,7 @@ public class DownloadNotificationServiceTest extends
         String guid2 = UUID.randomUUID().toString();
         notifications.add(new DownloadSharedPreferenceEntry(4, true, true, guid2, "failed")
                 .getSharedPreferenceString());
-        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(mockContext);
+        SharedPreferences sharedPrefs = ContextUtils.getAppSharedPreferences();
         SharedPreferences.Editor editor = sharedPrefs.edit();
         editor.putStringSet(
                 DownloadNotificationService.PENDING_DOWNLOAD_NOTIFICATIONS, notifications);
@@ -193,7 +193,7 @@ public class DownloadNotificationServiceTest extends
         String guid2 = UUID.randomUUID().toString();
         notifications.add(new DownloadSharedPreferenceEntry(4, true, true, guid2, "failed")
                 .getSharedPreferenceString());
-        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(mockContext);
+        SharedPreferences sharedPrefs = ContextUtils.getAppSharedPreferences();
         SharedPreferences.Editor editor = sharedPrefs.edit();
         editor.putStringSet(
                 DownloadNotificationService.PENDING_DOWNLOAD_NOTIFICATIONS, notifications);

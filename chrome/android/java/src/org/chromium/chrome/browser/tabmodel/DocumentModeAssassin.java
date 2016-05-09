@@ -9,10 +9,10 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Build;
-import android.preference.PreferenceManager;
 import android.util.Pair;
 
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.FileUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
@@ -151,7 +151,7 @@ public class DocumentModeAssassin {
         //   with a bunch of inaccessible document mode data instead of being stuck trying to
         //   migrate, which is a lesser evil.  This case will be caught by the check above to see if
         //   migration is even necessary.
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
+        SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
         int numMigrationAttempts = prefs.getInt(PREF_NUM_MIGRATION_ATTEMPTS, 0);
         if (numMigrationAttempts >= MAX_MIGRATION_ATTEMPTS_BEFORE_FAILURE) {
             Log.e(TAG, "Too many failures.  Migrating user to tabbed mode without data.");

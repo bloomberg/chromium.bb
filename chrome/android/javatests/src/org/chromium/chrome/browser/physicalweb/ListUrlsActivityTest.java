@@ -9,11 +9,11 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
-import android.preference.PreferenceManager;
 import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.view.View;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager;
@@ -65,8 +65,7 @@ public class ListUrlsActivityTest extends InstrumentationTestCase {
         super.setUp();
         mContext = getInstrumentation().getTargetContext();
         // Restore the onboarding state
-        PreferenceManager.getDefaultSharedPreferences(mContext).edit()
-                .putInt("physical_web", 2).apply();
+        ContextUtils.getAppSharedPreferences().edit().putInt("physical_web", 2).apply();
         UrlManager urlManager = UrlManager.getInstance(mContext);
         mMockPwsClient = new MockPwsClient();
         urlManager.overridePwsClientForTesting(mMockPwsClient);

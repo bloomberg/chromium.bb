@@ -10,13 +10,13 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Build;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.LinearLayout.LayoutParams;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
@@ -161,7 +161,7 @@ public class DataReductionPromoScreen extends Dialog implements View.OnClickList
      * @return Whether the Data Reduction Proxy promo has been displayed.
      */
     public static boolean getDisplayedDataReductionPromo(Context context) {
-        return PreferenceManager.getDefaultSharedPreferences(context).getBoolean(
+        return ContextUtils.getAppSharedPreferences().getBoolean(
                 SHARED_PREF_DISPLAYED_PROMO, false);
     }
 
@@ -174,7 +174,7 @@ public class DataReductionPromoScreen extends Dialog implements View.OnClickList
     public static void saveDataReductionPromoDisplayed(Context context) {
         AboutVersionStrings versionStrings =
                 PrefServiceBridge.getInstance().getAboutVersionStrings();
-        PreferenceManager.getDefaultSharedPreferences(context)
+        ContextUtils.getAppSharedPreferences()
                 .edit()
                 .putBoolean(SHARED_PREF_DISPLAYED_PROMO, true)
                 .putLong(SHARED_PREF_DISPLAYED_PROMO_TIME_MS, System.currentTimeMillis())
@@ -191,7 +191,7 @@ public class DataReductionPromoScreen extends Dialog implements View.OnClickList
      * @param boolean Whether the user opted out of using the Data Reduction Proxy.
      */
     public static void saveDataReductionFrePromoOptOut(Context context, boolean optOut) {
-        PreferenceManager.getDefaultSharedPreferences(context)
+        ContextUtils.getAppSharedPreferences()
                 .edit()
                 .putBoolean(SHARED_PREF_FRE_PROMO_OPT_OUT, optOut)
                 .apply();

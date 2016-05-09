@@ -14,7 +14,6 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Trace;
-import android.preference.PreferenceManager;
 
 import org.chromium.base.annotations.SuppressFBWarnings;
 
@@ -97,8 +96,7 @@ public class ResourceExtractor {
 
             beginTraceSection("checkPakTimeStamp");
             long curAppVersion = getApplicationVersion();
-            SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(
-                    mContext.getApplicationContext());
+            SharedPreferences sharedPrefs = ContextUtils.getAppSharedPreferences();
             long prevAppVersion = sharedPrefs.getLong(APP_VERSION_PREF, 0);
             boolean versionChanged = curAppVersion != prevAppVersion;
             endTraceSection();

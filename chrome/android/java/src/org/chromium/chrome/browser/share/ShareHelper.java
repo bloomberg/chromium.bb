@@ -24,7 +24,6 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
-import android.preference.PreferenceManager;
 import android.support.v7.app.AlertDialog;
 import android.util.Pair;
 import android.view.MenuItem;
@@ -35,6 +34,7 @@ import android.widget.AdapterView.OnItemClickListener;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.SuppressFBWarnings;
@@ -471,7 +471,7 @@ public class ShareHelper {
     }
 
     private static ComponentName getLastShareComponentName(Context context) {
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences preferences = ContextUtils.getAppSharedPreferences();
         String packageName = preferences.getString(PACKAGE_NAME_KEY, null);
         String className = preferences.getString(CLASS_NAME_KEY, null);
         if (packageName == null || className == null) return null;
@@ -479,7 +479,7 @@ public class ShareHelper {
     }
 
     private static void setLastShareComponentName(Context context, ComponentName component) {
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences preferences = ContextUtils.getAppSharedPreferences();
         SharedPreferences.Editor editor = preferences.edit();
         editor.putString(PACKAGE_NAME_KEY, component.getPackageName());
         editor.putString(CLASS_NAME_KEY, component.getClassName());

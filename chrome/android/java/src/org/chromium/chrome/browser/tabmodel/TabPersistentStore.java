@@ -9,13 +9,13 @@ import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.StrictMode;
 import android.os.SystemClock;
-import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v4.util.AtomicFile;
 import android.text.TextUtils;
 import android.util.Pair;
 import android.util.SparseIntArray;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.StreamUtil;
 import org.chromium.base.ThreadUtils;
@@ -184,7 +184,7 @@ public class TabPersistentStore extends TabPersister {
         mTabsToRestore = new ArrayDeque<TabRestoreDetails>();
         mSelectorIndex = selectorIndex;
         mObserver = observer;
-        mPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+        mPreferences = ContextUtils.getAppSharedPreferences();
         createMigrationTask();
     }
 

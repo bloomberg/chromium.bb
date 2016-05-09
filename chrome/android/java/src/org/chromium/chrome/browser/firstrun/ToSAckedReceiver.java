@@ -9,8 +9,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.sync.signin.AccountManagerHelper;
 
 import java.util.HashSet;
@@ -32,7 +32,7 @@ public class ToSAckedReceiver extends BroadcastReceiver {
         String accountName = args.getString(EXTRA_ACCOUNT_NAME, null);
         if (accountName == null) return;
 
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
         // Make sure to construct a new set so it can be modified safely. See crbug.com/568369.
         Set<String> accounts =
                 new HashSet<String>(prefs.getStringSet(TOS_ACKED_ACCOUNTS, new HashSet<String>()));
@@ -48,7 +48,7 @@ public class ToSAckedReceiver extends BroadcastReceiver {
      */
     public static boolean checkAnyUserHasSeenToS(Context context) {
         Set<String> toSAckedAccounts =
-                PreferenceManager.getDefaultSharedPreferences(context).getStringSet(
+                ContextUtils.getAppSharedPreferences().getStringSet(
                         TOS_ACKED_ACCOUNTS, null);
         if (toSAckedAccounts == null || toSAckedAccounts.isEmpty()) return false;
         AccountManagerHelper accountHelper = AccountManagerHelper.get(context);

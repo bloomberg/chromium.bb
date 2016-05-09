@@ -7,13 +7,13 @@ package org.chromium.chrome.browser.partnercustomizations;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Environment;
-import android.preference.PreferenceManager;
 import android.support.v7.widget.SwitchCompat;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
@@ -51,8 +51,7 @@ public class PartnerHomepageIntegrationTest extends BasePartnerBrowserCustomizat
             public void run() {
                 // TODO(newt): Remove this once SharedPreferences is cleared automatically at the
                 // beginning of every test. http://crbug.com/441859
-                SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(
-                        getInstrumentation().getTargetContext());
+                SharedPreferences sp = ContextUtils.getAppSharedPreferences();
                 sp.edit().clear().apply();
             }
         });

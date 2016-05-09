@@ -7,9 +7,9 @@ package org.chromium.chrome.browser.metrics;
 import android.content.ComponentCallbacks;
 import android.content.Context;
 import android.content.res.Configuration;
-import android.preference.PreferenceManager;
 import android.text.TextUtils;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.privacy.CrashReportingPermissionManager;
 import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager;
@@ -144,7 +144,7 @@ public class UmaSessionStats implements NetworkChangeNotifier.ConnectionTypeObse
 
         nativeUmaEndSession(sNativeUmaSessionStats);
         NetworkChangeNotifier.removeConnectionTypeObserver(this);
-        PreferenceManager.getDefaultSharedPreferences(mContext)
+        ContextUtils.getAppSharedPreferences()
                 .edit()
                 .putLong(LAST_USED_TIME_PREF, System.currentTimeMillis())
                 .apply();

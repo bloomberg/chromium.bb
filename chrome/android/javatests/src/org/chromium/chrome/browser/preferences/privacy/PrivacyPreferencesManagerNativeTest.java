@@ -6,11 +6,11 @@ package org.chromium.chrome.browser.preferences.privacy;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
 import android.test.UiThreadTest;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.CommandLine;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
@@ -45,7 +45,7 @@ public class PrivacyPreferencesManagerNativeTest extends NativeLibraryTestBase {
         CommandLine.init(null);
         PermissionContext context = new PermissionContext(getInstrumentation().getTargetContext());
         PrefServiceBridge prefBridge = PrefServiceBridge.getInstance();
-        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences pref = ContextUtils.getAppSharedPreferences();
 
         // Not a cellular experiment and prefs are out of sync for mobile devices.
         PrivacyPreferencesManager preferenceManager =

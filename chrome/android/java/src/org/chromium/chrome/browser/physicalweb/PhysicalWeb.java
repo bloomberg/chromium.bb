@@ -8,8 +8,8 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Build;
-import android.preference.PreferenceManager;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager;
@@ -85,7 +85,7 @@ public class PhysicalWeb {
      */
     public static void recordOptInNotification(Context context) {
         SharedPreferences sharedPreferences =
-                PreferenceManager.getDefaultSharedPreferences(context);
+                ContextUtils.getAppSharedPreferences();
         int value = sharedPreferences.getInt(PREF_PHYSICAL_WEB_NOTIFY_COUNT, 0);
         sharedPreferences.edit().putInt(PREF_PHYSICAL_WEB_NOTIFY_COUNT, value + 1).apply();
     }
@@ -99,7 +99,7 @@ public class PhysicalWeb {
      */
     public static int getOptInNotifyCount(Context context) {
         SharedPreferences sharedPreferences =
-                PreferenceManager.getDefaultSharedPreferences(context);
+                ContextUtils.getAppSharedPreferences();
         return sharedPreferences.getInt(PREF_PHYSICAL_WEB_NOTIFY_COUNT, 0);
     }
 

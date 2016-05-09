@@ -5,16 +5,26 @@
 package org.chromium.base;
 
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 
 import org.chromium.base.annotations.JNINamespace;
 
 /**
- * This class provides Android Context utility methods.
+ * This class provides Android application context related utility methods.
  */
 @JNINamespace("base::android")
 public class ContextUtils {
     private static final String TAG = "ContextUtils";
     private static Context sApplicationContext;
+
+    /**
+     * Initialization-on-demand holder. This exists for thread-safe lazy initialization.
+     */
+    private static class Holder {
+        // Not final for tests.
+        private static SharedPreferences sSharedPreferences = fetchAppSharedPreferences();
+    }
 
     /**
      * Get the Android application context.
@@ -60,6 +70,26 @@ public class ContextUtils {
     }
 
     /**
+     * Only called by the static holder class and tests.
+     *
+     * @return The application-wide shared preferences.
+     */
+    private static SharedPreferences fetchAppSharedPreferences() {
+        return PreferenceManager.getDefaultSharedPreferences(sApplicationContext);
+    }
+
+    /**
+     * This is used to ensure that we always use the application context to fetch the default shared
+     * preferences. This avoids needless I/O for android N and above. It also makes it clear that
+     * the app-wide shared preference is desired, rather than the potentially context-specific one.
+     *
+     * @return application-wide shared preferences.
+     */
+    public static SharedPreferences getAppSharedPreferences() {
+        return Holder.sSharedPreferences;
+    }
+
+    /**
      * Occasionally tests cannot ensure the application context doesn't change between tests (junit)
      * and sometimes specific tests has its own special needs, initApplicationContext should be used
      * as much as possible, but this method can be used to override it.
@@ -69,6 +99,7 @@ public class ContextUtils {
     @VisibleForTesting
     public static void initApplicationContextForTests(Context appContext) {
         initJavaSideApplicationContext(appContext);
+        Holder.sSharedPreferences = fetchAppSharedPreferences();
     }
 
     private static void initJavaSideApplicationContext(Context appContext) {

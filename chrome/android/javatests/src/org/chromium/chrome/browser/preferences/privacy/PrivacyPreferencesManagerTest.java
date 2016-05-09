@@ -6,12 +6,12 @@ package org.chromium.chrome.browser.preferences.privacy;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
 import android.test.InstrumentationTestCase;
 import android.test.UiThreadTest;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.CommandLine;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
@@ -150,6 +150,7 @@ public class PrivacyPreferencesManagerTest extends InstrumentationTestCase {
             boolean hasSetMetricsReporting, boolean isMetricsReportinEnabled,
             boolean uploadPermitted) {
         PermissionContext context = new PermissionContext(getInstrumentation().getTargetContext());
+        ContextUtils.initApplicationContextForTests(context.getApplicationContext());
         PrivacyPreferencesManager preferenceManager =
                 new MockPrivacyPreferencesManager(context, mobileCapable, isConnected, wifiOn,
                         hasSetMetricsReporting, isMetricsReportinEnabled);
@@ -173,7 +174,7 @@ public class PrivacyPreferencesManagerTest extends InstrumentationTestCase {
     }
 
     private void setUpUserPreferences(Context context, UserUploadPreference userPreference) {
-        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences pref = ContextUtils.getAppSharedPreferences();
         SharedPreferences.Editor ed = pref.edit()
                 .putString(PrivacyPreferencesManager.PREF_CRASH_DUMP_UPLOAD,
                         userPreference.toStringValue(context))

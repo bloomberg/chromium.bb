@@ -6,9 +6,9 @@ package org.chromium.chrome.browser.preferences;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
 import android.util.Log;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
@@ -145,7 +145,7 @@ public final class PrefServiceBridge {
      * Migrates (synchronously) the preferences to the most recent version.
      */
     public void migratePreferences(Context context) {
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences preferences = ContextUtils.getAppSharedPreferences();
         int currentVersion = preferences.getInt(MIGRATION_PREF_KEY, 0);
         if (currentVersion == MIGRATION_CURRENT_VERSION) return;
         if (currentVersion > MIGRATION_CURRENT_VERSION) {
@@ -184,7 +184,7 @@ public final class PrefServiceBridge {
             WebsitePreferenceBridge.nativeSetGeolocationSettingForOrigin(url, url,
                     allowed ? ContentSetting.ALLOW.toInt() : ContentSetting.BLOCK.toInt(), false);
             SharedPreferences sharedPreferences =
-                    PreferenceManager.getDefaultSharedPreferences(context);
+                    ContextUtils.getAppSharedPreferences();
             sharedPreferences.edit().putBoolean(LOCATION_AUTO_ALLOWED, true).apply();
         }
     }

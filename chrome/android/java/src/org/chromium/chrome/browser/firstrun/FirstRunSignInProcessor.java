@@ -8,10 +8,10 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.text.TextUtils;
 
 import org.chromium.base.CommandLine;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordUserAction;
@@ -129,7 +129,7 @@ public final class FirstRunSignInProcessor {
      */
     @VisibleForTesting
     public static boolean getFirstRunFlowSignInComplete(Context context) {
-        return PreferenceManager.getDefaultSharedPreferences(context)
+        return ContextUtils.getAppSharedPreferences()
                 .getBoolean(FIRST_RUN_FLOW_SIGNIN_COMPLETE, false);
     }
 
@@ -140,7 +140,7 @@ public final class FirstRunSignInProcessor {
      */
     @VisibleForTesting
     public static void setFirstRunFlowSignInComplete(Context context, boolean isComplete) {
-        PreferenceManager.getDefaultSharedPreferences(context)
+        ContextUtils.getAppSharedPreferences()
                 .edit()
                 .putBoolean(FIRST_RUN_FLOW_SIGNIN_COMPLETE, isComplete)
                 .apply();
@@ -151,7 +151,7 @@ public final class FirstRunSignInProcessor {
      * @param context A context
      */
     private static String getFirstRunFlowSignInAccountName(Context context) {
-        return PreferenceManager.getDefaultSharedPreferences(context)
+        return ContextUtils.getAppSharedPreferences()
                 .getString(FIRST_RUN_FLOW_SIGNIN_ACCOUNT_NAME, null);
     }
 
@@ -161,7 +161,7 @@ public final class FirstRunSignInProcessor {
      * @param accountName The account name, or null.
      */
     private static void setFirstRunFlowSignInAccountName(Context context, String accountName) {
-        PreferenceManager.getDefaultSharedPreferences(context)
+        ContextUtils.getAppSharedPreferences()
                 .edit()
                 .putString(FIRST_RUN_FLOW_SIGNIN_ACCOUNT_NAME, accountName)
                 .apply();
@@ -172,7 +172,7 @@ public final class FirstRunSignInProcessor {
      * @param context A context
      */
     private static boolean getFirstRunFlowSignInSetup(Context context) {
-        return PreferenceManager.getDefaultSharedPreferences(context).getBoolean(
+        return ContextUtils.getAppSharedPreferences().getBoolean(
                 FIRST_RUN_FLOW_SIGNIN_SETUP, false);
     }
 
@@ -182,7 +182,7 @@ public final class FirstRunSignInProcessor {
      * @param isComplete Whether the user selected to see the settings once signed in.
      */
     private static void setFirstRunFlowSignInSetup(Context context, boolean isComplete) {
-        PreferenceManager.getDefaultSharedPreferences(context)
+        ContextUtils.getAppSharedPreferences()
                 .edit()
                 .putBoolean(FIRST_RUN_FLOW_SIGNIN_SETUP, isComplete)
                 .apply();

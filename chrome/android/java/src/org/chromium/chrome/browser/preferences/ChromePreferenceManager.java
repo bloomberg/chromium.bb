@@ -6,8 +6,8 @@ package org.chromium.chrome.browser.preferences;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.crash.MinidumpUploadService.ProcessType;
@@ -59,7 +59,7 @@ public class ChromePreferenceManager {
 
     private ChromePreferenceManager(Context context) {
         mContext = context.getApplicationContext();
-        mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+        mSharedPreferences = ContextUtils.getAppSharedPreferences();
     }
 
     /**

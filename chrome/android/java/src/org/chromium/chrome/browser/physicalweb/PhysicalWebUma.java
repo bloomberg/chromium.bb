@@ -7,12 +7,11 @@ package org.chromium.chrome.browser.physicalweb;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
-import android.preference.PreferenceManager;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 
@@ -242,7 +241,7 @@ public class PhysicalWebUma {
         sUploadAllowed = true;
 
         // Read the metrics.
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
         if (prefs.getBoolean(HAS_DEFERRED_METRICS_KEY, false)) {
             AsyncTask.THREAD_POOL_EXECUTOR.execute(new UmaUploader(prefs));
         }
@@ -253,7 +252,7 @@ public class PhysicalWebUma {
     }
 
     private static void storeAction(Context context, String key) {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
         int count = prefs.getInt(key, 0);
         prefs.edit()
                 .putBoolean(HAS_DEFERRED_METRICS_KEY, true)
@@ -262,7 +261,7 @@ public class PhysicalWebUma {
     }
 
     private static void storeValue(Context context, String key, Object value) {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
         SharedPreferences.Editor prefsEditor = prefs.edit();
         JSONArray values = null;
         try {

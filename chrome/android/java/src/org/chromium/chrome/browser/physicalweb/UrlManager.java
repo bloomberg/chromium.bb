@@ -18,9 +18,9 @@ import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemClock;
-import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.VisibleForTesting;
@@ -29,7 +29,6 @@ import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.notifications.NotificationConstants;
 import org.chromium.chrome.browser.notifications.NotificationManagerProxy;
 import org.chromium.chrome.browser.notifications.NotificationManagerProxyImpl;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -284,7 +283,7 @@ class UrlManager {
     }
 
     private void initSharedPreferences() {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
+        SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
         int prefsVersion = prefs.getInt(PREFS_VERSION_KEY, 0);
 
         // Check the version.
@@ -308,7 +307,7 @@ class UrlManager {
 
     private List<UrlInfo> getUrlInfoListFromSharedPreferences(String preferenceName) {
         // Check the version.
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
+        SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
         List<UrlInfo> urls = new ArrayList<>();
         for (String serializedUrl : prefs.getStringSet(preferenceName, new HashSet<String>())) {
             try {
@@ -331,8 +330,7 @@ class UrlManager {
             }
         }
 
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
-        SharedPreferences.Editor editor = prefs.edit();
+        SharedPreferences.Editor editor = ContextUtils.getAppSharedPreferences().edit();
         editor.putStringSet(preferenceName, serializedUrls);
         editor.apply();
     }
@@ -396,7 +394,7 @@ class UrlManager {
      * @return the elapsed realtime since the most recent notification update.
      */
     public long getTimeSinceNotificationUpdate() {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
+        SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
         long timestamp = prefs.getLong(PREFS_NOTIFICATION_UPDATE_TIMESTAMP, 0);
         return SystemClock.elapsedRealtime() - timestamp;
     }
@@ -405,7 +403,7 @@ class UrlManager {
         // Record a timestamp.
         // This is useful for tracking whether a notification is pressed soon after an update or
         // much later.
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
+        SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
         SharedPreferences.Editor editor = prefs.edit();
         editor.putLong(PREFS_NOTIFICATION_UPDATE_TIMESTAMP, SystemClock.elapsedRealtime());
         editor.apply();
@@ -542,7 +540,7 @@ class UrlManager {
 
     @VisibleForTesting
     static void clearPrefsForTesting(Context context) {
-        PreferenceManager.getDefaultSharedPreferences(context).edit()
+        ContextUtils.getAppSharedPreferences().edit()
                 .remove(PREFS_VERSION_KEY)
                 .remove(PREFS_NEARBY_URLS_KEY)
                 .remove(PREFS_RESOLVED_URLS_KEY)

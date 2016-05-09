@@ -6,10 +6,10 @@ package org.chromium.chrome.browser.physicalweb;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
 import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.test.util.browser.notifications.MockNotificationManagerProxy;
 import org.chromium.chrome.test.util.browser.notifications.MockNotificationManagerProxy.NotificationEntry;
@@ -38,7 +38,7 @@ public class UrlManagerTest extends InstrumentationTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         Context context = getInstrumentation().getTargetContext().getApplicationContext();
-        mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+        mSharedPreferences = ContextUtils.getAppSharedPreferences();
         mSharedPreferences.edit().putInt(PREF_PHYSICAL_WEB, PHYSICAL_WEB_ON).apply();
         UrlManager.clearPrefsForTesting(context);
         mUrlManager = new UrlManager(context);

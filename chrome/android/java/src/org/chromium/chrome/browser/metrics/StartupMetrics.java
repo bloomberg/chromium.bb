@@ -4,12 +4,10 @@
 
 package org.chromium.chrome.browser.metrics;
 
-import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;
-import android.preference.PreferenceManager;
 
-import org.chromium.base.ApplicationStatus;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
 
 /**
@@ -124,8 +122,7 @@ public class StartupMetrics {
                     "MobileStartup.NonMainIntentAction";
             RecordHistogram.recordEnumeratedHistogram(histogramName, mFirstActionTaken, MAX_INDEX);
             mShouldRecordHistogram = false;
-            Context ctx = ApplicationStatus.getApplicationContext();
-            long lastUsedTimeMilli = PreferenceManager.getDefaultSharedPreferences(ctx).getLong(
+            long lastUsedTimeMilli = ContextUtils.getAppSharedPreferences().getLong(
                     UmaSessionStats.LAST_USED_TIME_PREF, 0);
             if (mIsMainIntent && (lastUsedTimeMilli > 0) && (mStartTimeMilli > lastUsedTimeMilli)
                     && (mStartTimeMilli - lastUsedTimeMilli > Integer.MAX_VALUE)) {

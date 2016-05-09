@@ -9,11 +9,11 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Handler;
-import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.widget.TextBubble;
 
@@ -63,7 +63,7 @@ public class TabSwitcherCallout extends TextBubble {
 
     /** @return Whether or not the tab switcher button callout needs to be shown. */
     public static boolean isTabSwitcherCalloutNecessary(Context context) {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
         return prefs.getBoolean(PREF_NEED_TO_SHOW_TAB_SWITCHER_CALLOUT, false);
     }
 
@@ -71,7 +71,7 @@ public class TabSwitcherCallout extends TextBubble {
      * Sets whether the tab switcher callout should be shown when the browser starts up.
      */
     public static void setIsTabSwitcherCalloutNecessary(Context context, boolean shouldShow) {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
         prefs.edit().putBoolean(PREF_NEED_TO_SHOW_TAB_SWITCHER_CALLOUT, shouldShow).apply();
     }
 

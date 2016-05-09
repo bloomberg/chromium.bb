@@ -12,10 +12,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.IBinder;
-import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.util.SparseIntArray;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.tab.Tab;
@@ -55,7 +55,7 @@ public class MediaCaptureNotificationService extends Service {
         mContext = getApplicationContext();
         mNotificationManager = (NotificationManager) mContext.getSystemService(
                 Context.NOTIFICATION_SERVICE);
-        mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+        mSharedPreferences = ContextUtils.getAppSharedPreferences();
         super.onCreate();
     }
 
@@ -244,7 +244,7 @@ public class MediaCaptureNotificationService extends Service {
     private static boolean shouldStartService(Context context, int mediaType, int tabId) {
         if (mediaType != MEDIATYPE_NO_MEDIA) return true;
         SharedPreferences sharedPreferences =
-                PreferenceManager.getDefaultSharedPreferences(context);
+                ContextUtils.getAppSharedPreferences();
         Set<String> notificationIds =
                 sharedPreferences.getStringSet(WEBRTC_NOTIFICATION_IDS, null);
         if (notificationIds != null
@@ -286,7 +286,7 @@ public class MediaCaptureNotificationService extends Service {
      */
     public static void clearMediaNotifications(Context context) {
         SharedPreferences sharedPreferences =
-                PreferenceManager.getDefaultSharedPreferences(context);
+                ContextUtils.getAppSharedPreferences();
         Set<String> notificationIds =
                 sharedPreferences.getStringSet(WEBRTC_NOTIFICATION_IDS, null);
         if (notificationIds == null || notificationIds.isEmpty()) return;

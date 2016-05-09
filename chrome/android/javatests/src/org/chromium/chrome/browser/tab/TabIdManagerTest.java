@@ -6,11 +6,11 @@ package org.chromium.chrome.browser.tab;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
 import android.test.InstrumentationTestCase;
 import android.test.UiThreadTest;
 import android.test.suitebuilder.annotation.SmallTest;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.test.util.AdvancedMockContext;
 
 /** Tests for the TabIdManager. */
@@ -27,7 +27,7 @@ public class TabIdManagerTest extends InstrumentationTestCase {
     @UiThreadTest
     @SmallTest
     public void testBasic() {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
+        SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
         SharedPreferences.Editor editor = prefs.edit();
         editor.putInt(TabIdManager.PREF_NEXT_ID, 11684);
         editor.apply();
@@ -43,7 +43,7 @@ public class TabIdManagerTest extends InstrumentationTestCase {
     @UiThreadTest
     @SmallTest
     public void testIncrementIdCounterTo() {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
+        SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
         SharedPreferences.Editor editor = prefs.edit();
         editor.putInt(TabIdManager.PREF_NEXT_ID, 11684);
         editor.apply();

@@ -10,7 +10,6 @@ import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.os.Build;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
 import android.view.LayoutInflater;
@@ -25,6 +24,7 @@ import android.widget.RadioButton;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.omnibox.geo.GeolocationHeader;
 import org.chromium.chrome.browser.preferences.website.ContentSetting;
@@ -247,7 +247,7 @@ public class SearchEngineAdapter extends BaseAdapter implements LoadListener, On
         // First clean up any automatically added permissions (if any) for the previously selected
         // search engine.
         SharedPreferences sharedPreferences =
-                PreferenceManager.getDefaultSharedPreferences(mContext);
+                ContextUtils.getAppSharedPreferences();
         if (sharedPreferences.getBoolean(PrefServiceBridge.LOCATION_AUTO_ALLOWED, false)) {
             if (locationEnabled(mSelectedSearchEnginePosition, false)) {
                 String url = TemplateUrlService.getInstance().getSearchEngineUrlFromTemplateUrl(

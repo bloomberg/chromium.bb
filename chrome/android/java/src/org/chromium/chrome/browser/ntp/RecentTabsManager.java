@@ -7,8 +7,8 @@ package org.chromium.chrome.browser.ntp;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
-import android.preference.PreferenceManager;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.favicon.FaviconHelper;
@@ -384,7 +384,7 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
             return false;
         }
 
-        if (PreferenceManager.getDefaultSharedPreferences(mContext).getBoolean(
+        if (ContextUtils.getAppSharedPreferences().getBoolean(
                 PREF_SIGNIN_PROMO_DECLINED, false)) {
             return false;
         }
@@ -397,7 +397,7 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
      */
     public void setSigninPromoDeclined() {
         SharedPreferences.Editor sharedPreferencesEditor =
-                PreferenceManager.getDefaultSharedPreferences(mContext).edit();
+                ContextUtils.getAppSharedPreferences().edit();
         sharedPreferencesEditor.putBoolean(PREF_SIGNIN_PROMO_DECLINED, true);
         sharedPreferencesEditor.apply();
     }

@@ -17,6 +17,7 @@ import com.google.ipc.invalidation.external.client.types.Invalidation;
 import com.google.ipc.invalidation.external.client.types.ObjectId;
 
 import org.chromium.base.CollectionUtil;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.PathUtils;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
@@ -66,6 +67,7 @@ public class InvalidationClientServiceTest extends
                 return new ComponentName(this, InvalidationClientServiceTest.class);
             }
         });
+        ContextUtils.initApplicationContextForTests(getContext().getApplicationContext());
         LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER).ensureInitialized(getContext());
         setupService();
     }

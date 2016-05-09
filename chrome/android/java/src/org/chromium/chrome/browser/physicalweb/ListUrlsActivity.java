@@ -17,7 +17,6 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.SystemClock;
-import android.preference.PreferenceManager;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
@@ -29,6 +28,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeApplication;
@@ -346,7 +346,7 @@ public class ListUrlsActivity extends AppCompatActivity implements AdapterView.O
     }
 
     private void initSharedPreferences() {
-        mSharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+        mSharedPrefs = ContextUtils.getAppSharedPreferences();
         int prefsVersion = mSharedPrefs.getInt(PREFS_VERSION_KEY, 0);
 
         if (prefsVersion == PREFS_VERSION) {

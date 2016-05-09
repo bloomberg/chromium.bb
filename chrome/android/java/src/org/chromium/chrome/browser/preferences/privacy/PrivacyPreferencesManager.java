@@ -8,9 +8,9 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.preference.PreferenceManager;
 
 import org.chromium.base.CommandLine;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeApplication;
@@ -50,7 +50,7 @@ public class PrivacyPreferencesManager implements CrashReportingPermissionManage
     @VisibleForTesting
     PrivacyPreferencesManager(Context context) {
         mContext = context;
-        mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+        mSharedPreferences = ContextUtils.getAppSharedPreferences();
 
         // Crash dump uploading preferences.
         // We default the command line flag to disable uploads unless altered on deferred startup
@@ -75,8 +75,7 @@ public class PrivacyPreferencesManager implements CrashReportingPermissionManage
      * @return String value of the preference.
      */
     public String getPrefCrashDumpUploadPreference() {
-        return mSharedPreferences.getString(PREF_CRASH_DUMP_UPLOAD,
-                mCrashDumpNeverUpload);
+        return mSharedPreferences.getString(PREF_CRASH_DUMP_UPLOAD, mCrashDumpNeverUpload);
     }
 
     /**

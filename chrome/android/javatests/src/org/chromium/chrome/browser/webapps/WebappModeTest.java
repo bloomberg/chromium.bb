@@ -9,11 +9,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
-import android.preference.PreferenceManager;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.view.View;
 
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
@@ -165,8 +165,7 @@ public class WebappModeTest extends MultiActivityTestBase {
      */
     @MediumTest
     public void testWebappTabIdsProperlyAssigned() throws Exception {
-        Context context = getInstrumentation().getTargetContext();
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
         SharedPreferences.Editor editor = prefs.edit();
         editor.putInt(TabIdManager.PREF_NEXT_ID, 11684);
         editor.apply();

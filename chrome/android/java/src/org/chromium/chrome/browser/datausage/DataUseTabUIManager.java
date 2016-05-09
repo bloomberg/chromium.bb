@@ -8,13 +8,13 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
-import android.preference.PreferenceManager;
 import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.TextView;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.EmbedContentViewActivity;
@@ -247,7 +247,7 @@ public class DataUseTabUIManager {
      */
     public static boolean shouldShowDataUseEndedSnackbar(Context context) {
         assert shouldShowDataUseEndedUI();
-        return PreferenceManager.getDefaultSharedPreferences(context).getBoolean(
+        return ContextUtils.getAppSharedPreferences().getBoolean(
                        SHARED_PREF_DATA_USE_DIALOG_OPT_OUT, false)
                 || DISABLE_DATA_USE_UI_PARAM_VALUE.equals(
                            VariationsAssociatedData.getVariationParamValue(
@@ -261,7 +261,7 @@ public class DataUseTabUIManager {
      * @param optedOut Whether the user has opted out of seeing the data use dialog.
      */
     private static void setOptedOutOfDataUseDialog(Context context, boolean optedOut) {
-        PreferenceManager.getDefaultSharedPreferences(context).edit()
+        ContextUtils.getAppSharedPreferences().edit()
                 .putBoolean(SHARED_PREF_DATA_USE_DIALOG_OPT_OUT, optedOut)
                 .apply();
         if (optedOut) {

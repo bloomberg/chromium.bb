@@ -6,8 +6,8 @@ package org.chromium.chrome.browser.preferences;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 
@@ -29,7 +29,7 @@ public class DocumentModeManager {
     private final SharedPreferences mSharedPreferences;
 
     private DocumentModeManager(Context context) {
-        mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+        mSharedPreferences = ContextUtils.getAppSharedPreferences();
     }
 
     /**

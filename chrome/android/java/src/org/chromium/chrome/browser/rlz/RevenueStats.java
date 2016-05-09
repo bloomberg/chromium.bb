@@ -6,9 +6,9 @@ package org.chromium.chrome.browser.rlz;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
 
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.tab.Tab;
@@ -46,7 +46,7 @@ public class RevenueStats {
      * Returns whether the RLZ provider has been notified that the first search has occurred.
      */
     protected static boolean getRlzNotified(Context context) {
-        return PreferenceManager.getDefaultSharedPreferences(context).getBoolean(
+        return ContextUtils.getAppSharedPreferences().getBoolean(
                 PREF_RLZ_NOTIFIED, false);
     }
 
@@ -56,7 +56,7 @@ public class RevenueStats {
      */
     protected static void setRlzNotified(Context context, boolean notified) {
         SharedPreferences.Editor sharedPreferencesEditor =
-                PreferenceManager.getDefaultSharedPreferences(context).edit();
+                ContextUtils.getAppSharedPreferences().edit();
         sharedPreferencesEditor.putBoolean(PREF_RLZ_NOTIFIED, notified);
         sharedPreferencesEditor.apply();
     }

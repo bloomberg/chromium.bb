@@ -21,12 +21,12 @@ import android.os.Build;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.os.UserHandle;
-import android.preference.PreferenceManager;
 import android.provider.BaseColumns;
 import android.text.TextUtils;
 import android.util.Log;
 import android.util.LongSparseArray;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
@@ -258,8 +258,6 @@ public class ChromeBrowserProvider extends ContentProvider {
                             }
                         });
 
-        // Pre-load shared preferences object, this happens on a separate thread
-        PreferenceManager.getDefaultSharedPreferences(getContext());
         return true;
     }
 
@@ -269,7 +267,7 @@ public class ChromeBrowserProvider extends ContentProvider {
     private long getLastModifiedBookmarkFolderId() {
         if (mLastModifiedBookmarkFolderId == INVALID_BOOKMARK_ID) {
             SharedPreferences sharedPreferences =
-                    PreferenceManager.getDefaultSharedPreferences(getContext());
+                    ContextUtils.getAppSharedPreferences();
             mLastModifiedBookmarkFolderId = sharedPreferences.getLong(
                     LAST_MODIFIED_BOOKMARK_FOLDER_ID_KEY, INVALID_BOOKMARK_ID);
         }
@@ -598,7 +596,7 @@ public class ChromeBrowserProvider extends ContentProvider {
 
         mLastModifiedBookmarkFolderId = id;
         SharedPreferences sharedPreferences =
-                PreferenceManager.getDefaultSharedPreferences(getContext());
+                ContextUtils.getAppSharedPreferences();
         sharedPreferences.edit()
                 .putLong(LAST_MODIFIED_BOOKMARK_FOLDER_ID_KEY, mLastModifiedBookmarkFolderId)
                 .apply();

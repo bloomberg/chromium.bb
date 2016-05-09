@@ -6,11 +6,11 @@ package org.chromium.chrome.browser.bookmarks;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.view.ViewGroup;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.signin.SigninAccessPoint;
 import org.chromium.chrome.browser.signin.SigninAndSyncView;
@@ -64,9 +64,9 @@ class BookmarkPromoHeader implements AndroidSyncSettingsObserver,
 
         updateShouldShow(false);
         if (shouldShow()) {
-            int promoShowCount = PreferenceManager.getDefaultSharedPreferences(mContext)
+            int promoShowCount = ContextUtils.getAppSharedPreferences()
                     .getInt(PREF_SIGNIN_PROMO_SHOW_COUNT, 0) + 1;
-            PreferenceManager.getDefaultSharedPreferences(mContext).edit()
+            ContextUtils.getAppSharedPreferences().edit()
                     .putInt(PREF_SIGNIN_PROMO_SHOW_COUNT, promoShowCount).apply();
             RecordUserAction.record("Stars_SignInPromoHeader_Displayed");
             RecordUserAction.record("Signin_Impression_FromBookmarkManager");
@@ -112,7 +112,7 @@ class BookmarkPromoHeader implements AndroidSyncSettingsObserver,
      * @return Whether user tapped "No" button on the signin promo header.
      */
     private boolean wasSigninPromoDeclined() {
-        return PreferenceManager.getDefaultSharedPreferences(mContext).getBoolean(
+        return ContextUtils.getAppSharedPreferences().getBoolean(
                 PREF_SIGNIN_PROMO_DECLINED, false);
     }
 
@@ -121,7 +121,7 @@ class BookmarkPromoHeader implements AndroidSyncSettingsObserver,
      */
     private void setSigninPromoDeclined() {
         SharedPreferences.Editor sharedPreferencesEditor =
-                PreferenceManager.getDefaultSharedPreferences(mContext).edit();
+                ContextUtils.getAppSharedPreferences().edit();
         sharedPreferencesEditor.putBoolean(PREF_SIGNIN_PROMO_DECLINED, true);
         sharedPreferencesEditor.apply();
     }
@@ -131,7 +131,7 @@ class BookmarkPromoHeader implements AndroidSyncSettingsObserver,
         mShouldShow = AndroidSyncSettings.isMasterSyncEnabled(mContext)
                 && mSignInManager.isSignInAllowed()
                 && !wasSigninPromoDeclined()
-                && PreferenceManager.getDefaultSharedPreferences(mContext).getInt(
+                && ContextUtils.getAppSharedPreferences().getInt(
                         PREF_SIGNIN_PROMO_SHOW_COUNT, 0) < MAX_SIGNIN_PROMO_SHOW_COUNT;
         if (oldIsShowing != mShouldShow && notifyUI) {
             mShowingChangeListener.onPromoHeaderShowingChanged(mShouldShow);

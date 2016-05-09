@@ -6,9 +6,9 @@ package org.chromium.chrome.browser.signin;
 
 import android.accounts.Account;
 import android.content.Context;
-import android.preference.PreferenceManager;
 import android.util.Log;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
@@ -359,7 +359,7 @@ public final class OAuth2TokenService
 
     private static String[] getStoredAccounts(Context context) {
         Set<String> accounts =
-                PreferenceManager.getDefaultSharedPreferences(context)
+                ContextUtils.getAppSharedPreferences()
                         .getStringSet(STORED_ACCOUNTS_KEY, null);
         return accounts == null ? new String[]{} : accounts.toArray(new String[accounts.size()]);
     }
@@ -367,7 +367,7 @@ public final class OAuth2TokenService
     @CalledByNative
     private static void saveStoredAccounts(Context context, String[] accounts) {
         Set<String> set = new HashSet<String>(Arrays.asList(accounts));
-        PreferenceManager.getDefaultSharedPreferences(context).edit()
+        ContextUtils.getAppSharedPreferences().edit()
                 .putStringSet(STORED_ACCOUNTS_KEY, set).apply();
     }
 

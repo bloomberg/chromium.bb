@@ -17,11 +17,11 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Environment;
 import android.os.Handler;
-import android.preference.PreferenceManager;
 import android.text.TextUtils;
 import android.util.LongSparseArray;
 import android.util.Pair;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
@@ -228,8 +228,7 @@ public class DownloadManagerService extends BroadcastReceiver implements
             Handler handler,
             long updateDelayInMillis) {
         mContext = context;
-        mSharedPrefs = PreferenceManager.getDefaultSharedPreferences(context
-                .getApplicationContext());
+        mSharedPrefs = ContextUtils.getAppSharedPreferences();
         mDownloadNotifier = downloadNotifier;
         mUpdateDelayInMillis = updateDelayInMillis;
         mHandler = handler;

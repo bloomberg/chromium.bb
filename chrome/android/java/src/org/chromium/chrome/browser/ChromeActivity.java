@@ -25,7 +25,6 @@ import android.os.Bundle;
 import android.os.Looper;
 import android.os.MessageQueue;
 import android.os.SystemClock;
-import android.preference.PreferenceManager;
 import android.support.v7.app.AlertDialog;
 import android.util.DisplayMetrics;
 import android.view.Menu;
@@ -48,6 +47,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.BaseSwitches;
 import org.chromium.base.CommandLine;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.SysUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
@@ -1660,13 +1660,12 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
      * in Chrome M41.
      */
     private void removeSnapshotDatabase() {
-        final Context appContext = getApplicationContext();
         new AsyncTask<Void, Void, Void>() {
             @Override
             protected Void doInBackground(Void... voids) {
                 synchronized (SNAPSHOT_DATABASE_LOCK) {
                     SharedPreferences prefs =
-                            PreferenceManager.getDefaultSharedPreferences(appContext);
+                            ContextUtils.getAppSharedPreferences();
                     if (!prefs.getBoolean(SNAPSHOT_DATABASE_REMOVED, false)) {
                         deleteDatabase(SNAPSHOT_DATABASE_NAME);
                         prefs.edit().putBoolean(SNAPSHOT_DATABASE_REMOVED, true).apply();

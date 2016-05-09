@@ -16,12 +16,12 @@ import android.content.IntentFilter;
 import android.graphics.Point;
 import android.os.Environment;
 import android.os.SystemClock;
-import android.preference.PreferenceManager;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
@@ -911,7 +911,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                PreferenceManager.getDefaultSharedPreferences(getActivity()).edit().clear().apply();
+                ContextUtils.getAppSharedPreferences().edit().clear().apply();
             }
         });
     }
