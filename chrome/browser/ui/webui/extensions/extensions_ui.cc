@@ -70,6 +70,12 @@ content::WebUIDataSource* CreateMdExtensionsSource() {
   source->AddLocalizedString("itemRemove", IDS_MD_EXTENSIONS_ITEM_REMOVE);
   source->AddLocalizedString("itemSource",
                              IDS_MD_EXTENSIONS_ITEM_SOURCE);
+  source->AddLocalizedString("itemSourcePolicy",
+                             IDS_MD_EXTENSIONS_ITEM_SOURCE_POLICY);
+  source->AddLocalizedString("itemSourceSideloaded",
+                             IDS_MD_EXTENSIONS_ITEM_SOURCE_SIDELOADED);
+  source->AddLocalizedString("itemSourceUnpacked",
+                             IDS_MD_EXTENSIONS_ITEM_SOURCE_UNPACKED);
   source->AddLocalizedString("itemVersion",
                              IDS_MD_EXTENSIONS_ITEM_SOURCE);
   source->AddLocalizedString("itemAllowOnFileUrls",

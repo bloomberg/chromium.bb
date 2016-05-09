@@ -3,7 +3,10 @@
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/load_time_data.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://extensions/icons.html">
 <link rel="import" href="chrome://extensions/strings.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/communication-icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-toggle-button/paper-toggle-button.html">
 
@@ -12,12 +15,20 @@
   <template>
     <div id="card-wrapper" class$="[[computeClasses_(data.state)]]">
       <div id="card">
+        <template is="dom-if"
+            if="[[computeSourceIndicatorIcon_(data.*)]]">
+          <div id="source-indicator">
+            <span>[[computeSourceIndicatorText_(data.*)]]</span>
+            <iron-icon icon="[[computeSourceIndicatorIcon_(data.*)]]">
+            </iron-icon>
+          </div>
+        </template>
         <div id="main">
           <div id="icon-wrapper">
             <img alt="" id="icon" src="[[data.iconUrl]]">
           </div>
           <div id="content">
-            <div class="layout horizontal justified center">
+            <div id="name-and-version" class="layout horizontal center">
               <div id="name">[[data.name]]</div>
               <template is="dom-if" if="[[inDevMode]]">
                 <span id="version">[[data.version]]</span>

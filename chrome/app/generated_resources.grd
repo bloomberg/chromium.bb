@@ -4493,6 +4493,15 @@ Even if you have downloaded files from this website before, the website might ha
         <message name="IDS_MD_EXTENSIONS_ITEM_SOURCE" desc="The label above an extension's source, which indicates where the extension came from (webstore, third-party, local disk, etc).">
           Source
         </message>
+        <message name="IDS_MD_EXTENSIONS_ITEM_SOURCE_POLICY" desc="The text to indicate that an extension has been added by enterprise policy.">
+          Added by policy
+        </message>
+        <message name="IDS_MD_EXTENSIONS_ITEM_SOURCE_SIDELOADED" desc="The text to indicate that an extension has been added by a third-party program on the user's machine.">
+          Added by a third-party
+        </message>
+        <message name="IDS_MD_EXTENSIONS_ITEM_SOURCE_UNPACKED" desc="The text to indicate that an extension is loaded as an unpacked extension, as is done by developers.">
+          Unpacked extension
+        </message>
         <message name="IDS_MD_EXTENSIONS_ITEM_VERSION" desc="The label above an extension's version.">
           Version
         </message>

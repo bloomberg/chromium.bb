@@ -70,6 +70,7 @@ cr.define('extension_item_tests', function() {
         'element visibility: after enabling developer mode',
     ClickableItems: 'clickable items',
     Warnings: 'warnings',
+    SourceIndicator: 'source indicator',
   };
 
   function registerTests() {
@@ -189,6 +190,34 @@ cr.define('extension_item_tests', function() {
         expectFalse(hasCorruptedWarning());
         expectFalse(hasSuspiciousWarning());
         expectFalse(hasBlacklistedWarning());
+      });
+
+      test(assert(TestNames.SourceIndicator), function() {
+        expectFalse(extension_test_util.isVisible(item, '#source-indicator'));
+        item.set('data.location', 'UNPACKED');
+        Polymer.dom.flush()
+        expectTrue(extension_test_util.isVisible(item, '#source-indicator'));
+        var icon = item.$$('#source-indicator iron-icon');
+        assertTrue(!!icon);
+        expectEquals('extensions-icons:unpacked', icon.icon);
+        extension_test_util.testIronIcons(item);
+
+        item.set('data.location', 'THIRD_PARTY');
+        Polymer.dom.flush();
+        expectTrue(extension_test_util.isVisible(item, '#source-indicator'));
+        expectEquals('input', icon.icon);
+        extension_test_util.testIronIcons(item);
+
+        item.set('data.location', 'FROM_STORE');
+        item.set('data.controlledInfo', {type: 'POLICY', text: 'policy'});
+        Polymer.dom.flush();
+        expectTrue(extension_test_util.isVisible(item, '#source-indicator'));
+        expectEquals('communication:business', icon.icon);
+        extension_test_util.testIronIcons(item);
+
+        item.set('data.controlledInfo', null);
+        Polymer.dom.flush();
+        expectFalse(extension_test_util.isVisible(item, '#source-indicator'));
       });
     });
   }

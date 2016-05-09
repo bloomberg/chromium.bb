@@ -122,10 +122,15 @@ TEST_F('CrExtensionsBrowserTest', 'ExtensionItemClickableItemsTest',
   mocha.grep(assert(TestNames.ClickableItems)).run();
 });
 
-TEST_F('CrExtensionsBrowserTest', 'ExtensionItemWarningsTest',
-       function() {
+TEST_F('CrExtensionsBrowserTest', 'ExtensionItemWarningsTest', function() {
   extension_item_tests.registerTests();
   mocha.grep(assert(extension_item_tests.TestNames.Warnings)).run();
+});
+
+TEST_F('CrExtensionsBrowserTest', 'ExtensionItemSourceIndicatorTest',
+       function() {
+  extension_item_tests.registerTests();
+  mocha.grep(assert(extension_item_tests.TestNames.SourceIndicator)).run();
 });
 
 ////////////////////////////////////////////////////////////////////////////////
