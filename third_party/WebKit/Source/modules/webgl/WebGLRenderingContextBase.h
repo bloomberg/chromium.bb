@@ -44,6 +44,8 @@
 #include "platform/graphics/gpu/DrawingBuffer.h"
 #include "platform/graphics/gpu/Extensions3DUtil.h"
 #include "platform/graphics/gpu/WebGLImageConversion.h"
+#include "public/platform/Platform.h"
+#include "public/platform/WebGraphicsContext3DProvider.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/text/WTFString.h"
@@ -83,6 +85,7 @@ class OESTextureFloatLinear;
 class OESTextureHalfFloat;
 class OESTextureHalfFloatLinear;
 class OESVertexArrayObject;
+class WaitableEvent;
 class WebGLActiveInfo;
 class WebGLBuffer;
 class WebGLCompressedTextureASTC;
@@ -1090,6 +1093,10 @@ protected:
 
 private:
     WebGLRenderingContextBase(HTMLCanvasElement*, OffscreenCanvas*, PassOwnPtr<WebGraphicsContext3DProvider>, const WebGLContextAttributes&);
+    static PassOwnPtr<WebGraphicsContext3DProvider> createContextProviderInternal(HTMLCanvasElement*, ScriptState*, WebGLContextAttributes, unsigned);
+    class ContextProviderCreationInfo;
+    static void createContextProviderOnMainThread(ContextProviderCreationInfo*, WaitableEvent*);
+    static PassOwnPtr<WebGraphicsContext3DProvider> createContextProviderOnWorkerThread(Platform::ContextAttributes, Platform::GraphicsInfo, ScriptState*);
 };
 
 DEFINE_TYPE_CASTS(WebGLRenderingContextBase, CanvasRenderingContext, context, context->is3d(), context.is3d());

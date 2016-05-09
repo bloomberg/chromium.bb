@@ -1,9 +1,9 @@
-Tests that the 2D context of OffscreenCanvas can be constructed on a worker thread.
+Tests that the 2D and webgl context of OffscreenCanvas can be constructed on a worker thread.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS getContext('2d') correctly returns [object OffscreenCanvasRenderingContext2D].
+PASS getContext('2d') and getContext('webgl') works on a worker thread
 PASS successfullyParsed is true
 
 TEST COMPLETE

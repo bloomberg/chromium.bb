@@ -87,6 +87,8 @@ public:
         return m_gl;
     }
 
+    bool bindToCurrentThread() override { return false; }
+
     void setLostContextCallback(WebClosure) override {}
     void setErrorMessageCallback(WebFunction<void(const char*, int32_t id)>) {}
 

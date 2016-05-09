@@ -38,6 +38,8 @@ class CONTENT_EXPORT WebGraphicsContext3DProviderImpl
     return provider_.get();
   }
 
+  bool bindToCurrentThread() override;
+
  private:
   scoped_refptr<ContextProviderCommandBuffer> provider_;
 };

@@ -8,12 +8,11 @@ self.onmessage = function(e) {
     var bCanvas = new OffscreenCanvas(50, 50);
     try {
       var ctx1 = aCanvas.getContext('2d');
-      //TODO(crbug.com/602391): implement get webgl context in worker
       var ctx2 = bCanvas.getContext('webgl');
-      if (toString.call(ctx1) != '[object OffscreenCanvasRenderingContext2D]') {
-          self.postMessage("aCanvas.getContext('2d') does not return [object OffscreenCanvasRenderingContext2D]");
-      } else if (toString.call(ctx2) != '[object Null]') {
-          self.postMessage("bCanvas.getContext('webgl') does not return [object Null]");
+      if (!(ctx1 instanceof OffscreenCanvasRenderingContext2D)) {
+          self.postMessage("aCanvas.getContext('2d') returns " + ctx1);
+      } else if (!(ctx2 instanceof WebGLRenderingContext)) {
+          self.postMessage("bCanvas.getContext('webgl') returns " + ctx2);
       } else {
           self.postMessage("success");
       }
@@ -25,7 +24,7 @@ self.onmessage = function(e) {
 
 <script>
 jsTestIsAsync = true;
-description("Tests that the 2D context of OffscreenCanvas can be constructed on a worker thread.");
+description("Tests that the 2D and webgl context of OffscreenCanvas can be constructed on a worker thread.");
 
 function makeWorker(script) {
   var blob = new Blob([script]);
@@ -35,7 +34,7 @@ function makeWorker(script) {
 function handleMessageFromWorker(msg)
 {
     if (msg.data == "success") {
-        testPassed("getContext('2d') correctly returns [object OffscreenCanvasRenderingContext2D].");
+        testPassed("getContext('2d') and getContext('webgl') works on a worker thread");
     } else {
         testFailed(msg.data);
     }

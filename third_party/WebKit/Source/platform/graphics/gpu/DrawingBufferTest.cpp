@@ -241,6 +241,7 @@ public:
     gpu::gles2::GLES2Interface* contextGL() override { return m_gl.get(); }
     // Not used by WebGL code.
     GrContext* grContext() override { return nullptr; }
+    bool bindToCurrentThread() override { return false; }
     gpu::Capabilities getCapabilities()
     {
         return gpu::Capabilities();

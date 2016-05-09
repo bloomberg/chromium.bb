@@ -1014,7 +1014,8 @@ RendererBlinkPlatformImpl::createOffscreenGraphicsContext3DProvider(
     const blink::Platform::ContextAttributes& web_attributes,
     const blink::WebURL& top_document_web_url,
     blink::WebGraphicsContext3DProvider* share_provider,
-    blink::Platform::GraphicsInfo* gl_info) {
+    blink::Platform::GraphicsInfo* gl_info,
+    blink::Platform::WillBindToCurrentThread will_bind_to_current_thread) {
   DCHECK(gl_info);
   if (!RenderThreadImpl::current()) {
     std::string error_message("Failed to run in Current RenderThreadImpl");
@@ -1035,6 +1036,9 @@ RendererBlinkPlatformImpl::createOffscreenGraphicsContext3DProvider(
   content::WebGraphicsContext3DProviderImpl* share_provider_impl =
       static_cast<content::WebGraphicsContext3DProviderImpl*>(share_provider);
   ContextProviderCommandBuffer* share_context = nullptr;
+
+  if (will_bind_to_current_thread == blink::Platform::DoNotBindToCurrentThread)
+    DCHECK(!share_provider_impl);
 
   // WebGL contexts must fail creation if the share group is lost.
   if (share_provider_impl) {
@@ -1078,11 +1082,13 @@ RendererBlinkPlatformImpl::createOffscreenGraphicsContext3DProvider(
           GURL(top_document_web_url), gpu_preference, automatic_flushes,
           gpu::SharedMemoryLimits(), attributes, share_context,
           command_buffer_metrics::OFFSCREEN_CONTEXT_FOR_WEBGL));
-  if (!provider->BindToCurrentThread()) {
-    // Collect Graphicsinfo if there is a context failure or it is failed
-    // purposefully in case of layout tests.
-    Collect3DContextInformationOnFailure(gl_info, gpu_info);
-    return nullptr;
+  if (will_bind_to_current_thread == blink::Platform::BindToCurrentThread) {
+    if (!provider->BindToCurrentThread()) {
+      // Collect Graphicsinfo if there is a context failure or it is failed
+      // purposefully in case of layout tests.
+      Collect3DContextInformationOnFailure(gl_info, gpu_info);
+      return nullptr;
+    }
   }
   return new WebGraphicsContext3DProviderImpl(std::move(provider));
 }

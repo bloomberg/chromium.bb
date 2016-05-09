@@ -66,7 +66,6 @@
 #include "modules/webgl/WebGLCompressedTexturePVRTC.h"
 #include "modules/webgl/WebGLCompressedTextureS3TC.h"
 #include "modules/webgl/WebGLContextAttributeHelpers.h"
-#include "modules/webgl/WebGLContextAttributes.h"
 #include "modules/webgl/WebGLContextEvent.h"
 #include "modules/webgl/WebGLContextGroup.h"
 #include "modules/webgl/WebGLDebugRendererInfo.h"
@@ -79,19 +78,18 @@
 #include "modules/webgl/WebGLRenderbuffer.h"
 #include "modules/webgl/WebGLShader.h"
 #include "modules/webgl/WebGLShaderPrecisionFormat.h"
-#include "modules/webgl/WebGLTexture.h"
 #include "modules/webgl/WebGLUniformLocation.h"
 #include "modules/webgl/WebGLVertexArrayObject.h"
 #include "modules/webgl/WebGLVertexArrayObjectOES.h"
 #include "platform/CheckedInt.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "platform/ThreadSafeFunctional.h"
+#include "platform/WaitableEvent.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/UnacceleratedImageBufferSurface.h"
 #include "platform/graphics/gpu/AcceleratedImageBufferSurface.h"
-#include "platform/graphics/gpu/DrawingBuffer.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebGraphicsContext3DProvider.h"
 #include "public/platform/functional/WebFunction.h"
 #include "wtf/Functional.h"
 #include "wtf/PassOwnPtr.h"
@@ -108,19 +106,29 @@ namespace {
 const double secondsBetweenRestoreAttempts = 1.0;
 const int maxGLErrorsAllowedToConsole = 256;
 const unsigned maxGLActiveContexts = 16;
+const unsigned maxGLActiveContextsOnWorker = 4;
+
+unsigned currentMaxGLContexts()
+{
+    return isMainThread() ? maxGLActiveContexts : maxGLActiveContextsOnWorker;
+}
 
 using WebGLRenderingContextBaseSet = PersistentHeapHashSet<WeakMember<WebGLRenderingContextBase>>;
 WebGLRenderingContextBaseSet& activeContexts()
 {
-    DEFINE_STATIC_LOCAL(WebGLRenderingContextBaseSet, activeContexts, ());
-    return activeContexts;
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<WebGLRenderingContextBaseSet>, activeContexts, new ThreadSpecific<WebGLRenderingContextBaseSet>());
+    if (!activeContexts.isSet())
+        activeContexts->registerAsStaticReference();
+    return *activeContexts;
 }
 
 using WebGLRenderingContextBaseMap = PersistentHeapHashMap<WeakMember<WebGLRenderingContextBase>, int>;
 WebGLRenderingContextBaseMap& forciblyEvictedContexts()
 {
-    DEFINE_STATIC_LOCAL(WebGLRenderingContextBaseMap, forciblyEvictedContexts, ());
-    return forciblyEvictedContexts;
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<WebGLRenderingContextBaseMap>, forciblyEvictedContexts, new ThreadSpecific<WebGLRenderingContextBaseMap>());
+    if (!forciblyEvictedContexts.isSet())
+        forciblyEvictedContexts->registerAsStaticReference();
+    return *forciblyEvictedContexts;
 }
 
 } // namespace
@@ -190,8 +198,9 @@ WebGLRenderingContextBase* WebGLRenderingContextBase::oldestEvictedContext()
 
 void WebGLRenderingContextBase::activateContext(WebGLRenderingContextBase* context)
 {
+    unsigned maxGLContexts = currentMaxGLContexts();
     unsigned removedContexts = 0;
-    while (activeContexts().size() >= maxGLActiveContexts && removedContexts < maxGLActiveContexts) {
+    while (activeContexts().size() >= maxGLContexts && removedContexts < maxGLContexts) {
         forciblyLoseOldestContext("WARNING: Too many active WebGL contexts. Oldest context will be lost.");
         removedContexts++;
     }
@@ -223,8 +232,9 @@ void WebGLRenderingContextBase::willDestroyContext(WebGLRenderingContextBase* co
     ASSERT(!forciblyEvictedContexts().contains(context));
     ASSERT(!activeContexts().contains(context));
 
+    unsigned maxGLContexts = currentMaxGLContexts();
     // Try to re-enable the oldest inactive contexts.
-    while (activeContexts().size() < maxGLActiveContexts && forciblyEvictedContexts().size()) {
+    while (activeContexts().size() < maxGLContexts && forciblyEvictedContexts().size()) {
         WebGLRenderingContextBase* evictedContext = oldestEvictedContext();
         if (!evictedContext->m_restoreAllowed) {
             forciblyEvictedContexts().remove(evictedContext);
@@ -520,17 +530,63 @@ static String extractWebGLContextCreationError(const Platform::GraphicsInfo& inf
     return statusMessage;
 }
 
-static PassOwnPtr<WebGraphicsContext3DProvider> createWebGraphicsContext3DProviderInternal(HTMLCanvasElement* canvas, ScriptState* scriptState, WebGLContextAttributes attributes, unsigned webGLVersion)
+class WebGLRenderingContextBase::ContextProviderCreationInfo {
+public:
+    ContextProviderCreationInfo(Platform::ContextAttributes contextAttributes, Platform::GraphicsInfo glInfo, ScriptState* scriptState)
+    {
+        m_contextAttributes = contextAttributes;
+        m_glInfo = glInfo;
+        m_scriptState = scriptState;
+    }
+    Platform::ContextAttributes contextAttributes() { return m_contextAttributes; }
+    Platform::GraphicsInfo glInfo() { return m_glInfo; }
+    ScriptState* scriptState() { return m_scriptState; }
+    void setContextProvider(PassOwnPtr<WebGraphicsContext3DProvider> provider) { m_provider = std::move(provider); }
+    PassOwnPtr<WebGraphicsContext3DProvider> releaseContextProvider() { return m_provider.release(); }
+private:
+    Platform::ContextAttributes m_contextAttributes;
+    Platform::GraphicsInfo m_glInfo;
+    ScriptState* m_scriptState;
+    OwnPtr<WebGraphicsContext3DProvider> m_provider;
+};
+
+void WebGLRenderingContextBase::createContextProviderOnMainThread(ContextProviderCreationInfo* creationInfo, WaitableEvent* waitableEvent)
+{
+    ASSERT(isMainThread());
+    Platform::GraphicsInfo glInfo = creationInfo->glInfo();
+    OwnPtr<WebGraphicsContext3DProvider> provider = adoptPtr(Platform::current()->createOffscreenGraphicsContext3DProvider(
+        creationInfo->contextAttributes(), creationInfo->scriptState()->getExecutionContext()->url(), 0, &glInfo, Platform::DoNotBindToCurrentThread));
+    creationInfo->setContextProvider(provider.release());
+    waitableEvent->signal();
+}
+
+PassOwnPtr<WebGraphicsContext3DProvider> WebGLRenderingContextBase::createContextProviderOnWorkerThread(Platform::ContextAttributes contextAttributes, Platform::GraphicsInfo glInfo, ScriptState* scriptState)
+{
+    WaitableEvent waitableEvent;
+    OwnPtr<ContextProviderCreationInfo> creationInfo = adoptPtr(new ContextProviderCreationInfo(contextAttributes, glInfo, scriptState));
+    WebTaskRunner* taskRunner = Platform::current()->mainThread()->getWebTaskRunner();
+    taskRunner->postTask(BLINK_FROM_HERE, threadSafeBind(&createContextProviderOnMainThread, AllowCrossThreadAccess(creationInfo.get()), AllowCrossThreadAccess(&waitableEvent)));
+    waitableEvent.wait();
+    return creationInfo->releaseContextProvider();
+}
+
+PassOwnPtr<WebGraphicsContext3DProvider> WebGLRenderingContextBase::createContextProviderInternal(HTMLCanvasElement* canvas, ScriptState* scriptState, WebGLContextAttributes attributes, unsigned webGLVersion)
 {
     Platform::ContextAttributes contextAttributes = toPlatformContextAttributes(attributes, webGLVersion);
     Platform::GraphicsInfo glInfo;
     OwnPtr<WebGraphicsContext3DProvider> contextProvider;
     if (canvas) {
         contextProvider = adoptPtr(Platform::current()->createOffscreenGraphicsContext3DProvider(
-            contextAttributes, canvas->document().topDocument().url(), 0, &glInfo));
+            contextAttributes, canvas->document().topDocument().url(), 0, &glInfo, Platform::BindToCurrentThread));
     } else {
-        contextProvider = adoptPtr(Platform::current()->createOffscreenGraphicsContext3DProvider(
-            contextAttributes, scriptState->getExecutionContext()->url(), 0, &glInfo));
+        if (isMainThread()) {
+            contextProvider = adoptPtr(Platform::current()->createOffscreenGraphicsContext3DProvider(
+                contextAttributes, scriptState->getExecutionContext()->url(), 0, &glInfo, Platform::BindToCurrentThread));
+        } else {
+            contextProvider = createContextProviderOnWorkerThread(contextAttributes, glInfo, scriptState);
+            if (!contextProvider->bindToCurrentThread())
+                return nullptr;
+        }
     }
     if (!contextProvider || shouldFailContextCreationForTesting) {
         shouldFailContextCreationForTesting = false;
@@ -544,7 +600,6 @@ static PassOwnPtr<WebGraphicsContext3DProvider> createWebGraphicsContext3DProvid
             canvas->dispatchEvent(WebGLContextEvent::create(EventTypeNames::webglcontextcreationerror, false, true, "OES_packed_depth_stencil support is required."));
         return nullptr;
     }
-
     return contextProvider.release();
 }
 
@@ -565,12 +620,12 @@ PassOwnPtr<WebGraphicsContext3DProvider> WebGLRenderingContextBase::createWebGra
         return nullptr;
     }
 
-    return createWebGraphicsContext3DProviderInternal(canvas, nullptr, attributes, webGLVersion);
+    return createContextProviderInternal(canvas, nullptr, attributes, webGLVersion);
 }
 
 PassOwnPtr<WebGraphicsContext3DProvider> WebGLRenderingContextBase::createWebGraphicsContext3DProvider(ScriptState* scriptState, WebGLContextAttributes attributes, unsigned webGLVersion)
 {
-    return createWebGraphicsContext3DProviderInternal(nullptr, scriptState, attributes, webGLVersion);
+    return createContextProviderInternal(nullptr, scriptState, attributes, webGLVersion);
 }
 
 void WebGLRenderingContextBase::forceNextWebGLContextCreationToFail()
@@ -5968,7 +6023,7 @@ void WebGLRenderingContextBase::maybeRestoreContext(Timer<WebGLRenderingContextB
     Platform::ContextAttributes attributes = toPlatformContextAttributes(m_requestedAttributes, version());
     Platform::GraphicsInfo glInfo;
     OwnPtr<WebGraphicsContext3DProvider> contextProvider = adoptPtr(Platform::current()->createOffscreenGraphicsContext3DProvider(
-        attributes, canvas()->document().topDocument().url(), 0, &glInfo));
+        attributes, canvas()->document().topDocument().url(), 0, &glInfo, Platform::BindToCurrentThread));
     RefPtr<DrawingBuffer> buffer;
     if (contextProvider) {
         // Construct a new drawing buffer with the new GL context.
