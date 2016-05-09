@@ -837,35 +837,144 @@ class PreCQCompletionStage(generic_stages.BuilderStage):
 class PublishUprevChangesStage(generic_stages.BuilderStage):
   """Makes uprev changes from pfq live for developers."""
 
-  def __init__(self, builder_run, success, temp_publish=False, **kwargs):
+  def __init__(self, builder_run, success, stage_push=False, **kwargs):
     """Constructor.
 
     Args:
       builder_run: BuilderRun object.
       success: Boolean indicating whether the build succeeded.
-      temp_publish: Indicating whether to push changes to a temp branch,
-                    default to False.
-                    This is not yet implemented, will include in CL:343573.
+      stage_push: Indicating whether to stage the push instead of pushing
+                  it to master, default to False.
     """
     super(PublishUprevChangesStage, self).__init__(builder_run, **kwargs)
     self.success = success
-    self.temp_publish = temp_publish
+    self.stage_push = stage_push
+
+  def CheckMasterBinhostTest(self, db, build_id):
+    """Check whether the master builder has passed BinhostTest stage.
+
+    Args:
+      db: cidb.CIDBConnection object.
+      build_id: build_id of the master build to check for.
+
+    Returns:
+      True if the status of the master build BinhostTest stage is 'pass';
+      else, False.
+    """
+    stage_name = 'BinhostTest'
+
+    if self._build_stage_id is not None and db is not None:
+      stages = db.GetBuildStages(build_id)
+
+      # No stages found. BinhostTest stage didn't start or got skipped,
+      # in both case we don't need to push commits to the temp pfq branch.
+      if not stages:
+        logging.warning('no %s stage found in build %s' % (
+            stage_name, build_id))
+        return False
+
+      stage_status = [s for s in stages if (
+          s['name'] == stage_name and
+          s['status'] == constants.BUILDER_STATUS_PASSED)]
+      if stage_status:
+        logging.info('build %s passed stage %s with %s' % (
+            build_id, stage_name, stage_status))
+        return True
+      else:
+        logging.warning('build %s stage %s result %s' % (
+            build_id, stage_name, stage_status))
+        return False
+
+    logging.warning('Not valid build_stage_id %s or db %s or no %s found' % (
+        self._build_stage_id, db, stage_name))
+    return False
+
+  def CheckSlaveUploadPrebuiltsTest(self, db, build_id):
+    """Check if the slaves have passed UploadPrebuilts stage.
+
+    Given the master build id, check if all the important slaves have passed
+    the UploadPrebuilts stage.
+
+    Args:
+      db: cidb.CIDBConnection object.
+      build_id: build_id of the master build to check for.
+
+    Returns:
+      True if all the important slaves have passed the stage;
+      True if it's in debug environment;
+      else, False.
+    """
+    stage_name = 'UploadPrebuilts'
+
+    if not self._run.config.master:
+      logging.warning('The build is not a master')
+      return False
+    elif self._run.options.buildbot and self._run.options.debug:
+      # If it's in debug environment, no slave builds would be triggered,
+      # in order to cover the testing on pushing commits to a remote
+      # temp branch, return True.
+      logging.info('In debug environment, return CheckSlaveUploadPrebuiltsTest'
+                   'as True')
+      return True
+    elif self._build_stage_id is not None and db is not None:
+      slave_configs = self._GetSlaveConfigs()
+      important_set = set([slave['name'] for slave in slave_configs])
+      stages = db.GetSlaveStages(build_id)
+
+      passed_set = set([s['build_config'] for s in stages if (
+          s['name'] == stage_name and
+          s['status'] == constants.BUILDER_STATUS_PASSED)])
+
+      if passed_set.issuperset(important_set):
+        logging.info('All the important slaves passed %s' % stage_name)
+        return True
+      else:
+        remaining_set = important_set.difference(passed_set)
+        logging.warning('slave %s didn\'t pass %s' % (
+            remaining_set, stage_name))
+        return False
+    else:
+      logging.warning('Not valid build_stage_id %s or db %s ' % (
+          self._build_stage_id, db))
+      return False
 
   def PerformStage(self):
     overlays, push_overlays = self._ExtractOverlays()
+
+    staging_branch = None
+    if self.stage_push:
+      if not config_lib.IsMasterChromePFQ(self._run.config):
+        raise ValueError('This build must be a master chrome PFQ build '
+                         'when stage_push is True.')
+      build_id, db = self._run.GetCIDBHandle()
+
+      # If the master passed BinHostTest and all the important slaves passed
+      # UploadPrebuiltsTest, push uprev commits to a staging_branch.
+      if (self.CheckMasterBinhostTest(db, build_id) and
+          self.CheckSlaveUploadPrebuiltsTest(db, build_id)):
+        staging_branch = ('refs/' + constants.PFQ_REF + '/' +
+                          constants.STAGING_PFQ_BRANCH_PREFIX + str(build_id))
+
     assert push_overlays, 'push_overlays must be set to run this stage'
 
     # If we're a commit queue, we should clean out our local changes, resync,
     # and reapply our uprevs. This is necessary so that 1) we are sure to point
     # at the remote SHA1s, not our local SHA1s; 2) we can avoid doing a
-    # rebase; 3) in the case of failure, we don't submit the changes that were
-    # committed locally.
+    # rebase; 3) in the case of failure and staging_branch is None, we don't
+    # submit the changes that were committed locally.
     #
     # If we're not a commit queue and the build succeeded, we can skip the
     # cleanup here. This is a cheap trick so that the Chrome PFQ pushes its
     # earlier uprev from the SyncChrome stage (it would be a bit tricky to
     # replicate the uprev here, so we'll leave it alone).
-    if config_lib.IsCQType(self._run.config.build_type) or not self.success:
+
+    # If we're not a commit queue and staging_branch is not None, we can skip
+    # the cleanup here. When staging_branch is not None, we're going to push
+    # the local commits generated in AFDOUpdateEbuild stage to the
+    # staging_branch, cleaning up repository here will wipe out the local
+    # commits.
+    if (config_lib.IsCQType(self._run.config.build_type) or
+        not (self.success or staging_branch is not None)):
       # Clean up our root and sync down the latest changes that were
       # submitted.
       commands.BuildRootGitCleanup(self._build_root)
@@ -880,9 +989,14 @@ class PublishUprevChangesStage(generic_stages.BuilderStage):
       if self._run.options.uprev and self._run.config.uprev:
         commands.UprevPackages(self._build_root, self._boards, overlays)
 
-    if self.success and self._run.config.prebuilts:
+    # When prebuilts is True, if it's a successful run or staging_branch is
+    # not None for a master-chrome-pfq run, update binhost conf
+    if (self._run.config.prebuilts and
+        (self.success or staging_branch is not None)):
       confwriter = prebuilts.BinhostConfWriter(self._run)
       confwriter.Perform()
 
     # Push the uprev and binhost commits.
-    commands.UprevPush(self._build_root, push_overlays, self._run.options.debug)
+    commands.UprevPush(self._build_root, push_overlays,
+                       self._run.options.debug,
+                       staging_branch=staging_branch)

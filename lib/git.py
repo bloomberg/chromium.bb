@@ -1302,7 +1302,8 @@ def SyncPushBranch(git_repo, remote, rebase_target):
 
 
 # TODO(build): Switch this to use the GitPush function.
-def PushWithRetry(branch, git_repo, dryrun=False, retries=5):
+def PushWithRetry(branch, git_repo, dryrun=False, retries=5,
+                  staging_branch=None):
   """General method to push local git changes.
 
   This method only works with branches created via the CreatePushBranch
@@ -1315,6 +1316,7 @@ def PushWithRetry(branch, git_repo, dryrun=False, retries=5):
     git_repo: Git repository to push from.
     dryrun: Git push --dry-run if set to True.
     retries: The number of times to retry before giving up, default: 5
+    staging_branch: Push change commits to the staging_branch if it's not None
 
   Raises:
     GitPushFailed if push was unsuccessful after retries
@@ -1329,10 +1331,10 @@ def PushWithRetry(branch, git_repo, dryrun=False, retries=5):
     raise Exception('Was asked to push to a non branch namespace: %s' %
                     remote_ref.ref)
 
-  push_command = ['push', remote_ref.remote, '%s:%s' %
-                  (branch, remote_ref.ref)]
+  reference = staging_branch if staging_branch is not None else remote_ref.ref
+  push_command = ['push', remote_ref.remote, '%s:%s' % (branch, reference)]
   logging.debug('Trying to push %s to %s:%s',
-                git_repo, branch, remote_ref.ref)
+                git_repo, branch, reference)
 
   if dryrun:
     push_command.append('--dry-run')
@@ -1350,7 +1352,7 @@ def PushWithRetry(branch, git_repo, dryrun=False, retries=5):
       raise
 
   logging.info('Successfully pushed %s to %s:%s',
-               git_repo, branch, remote_ref.ref)
+               git_repo, branch, reference)
 
 
 def CleanAndDetachHead(git_repo):

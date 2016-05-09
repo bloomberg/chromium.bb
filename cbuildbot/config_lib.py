@@ -91,6 +91,9 @@ def IsCanaryType(b_type):
   """Returns True if this build type is a Canary."""
   return b_type == constants.CANARY_TYPE
 
+def IsMasterChromePFQ(config):
+  """Returns True if this build is master chrome PFQ type."""
+  return config.build_type == constants.CHROME_PFQ_TYPE and config.master
 
 def OverrideConfigForTrybot(build_config, options):
   """Apply trybot-specific configuration settings.

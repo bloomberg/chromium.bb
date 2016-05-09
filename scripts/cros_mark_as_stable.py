@@ -87,7 +87,8 @@ def _DoWeHaveLocalCommits(stable_branch, tracking_branch, cwd):
 # ======================= End Global Helper Functions ========================
 
 
-def PushChange(stable_branch, tracking_branch, dryrun, cwd):
+def PushChange(stable_branch, tracking_branch, dryrun, cwd,
+               staging_branch=None):
   """Pushes commits in the stable_branch to the remote git repository.
 
   Pushes local commits from calls to CommitChange to the remote git
@@ -100,6 +101,7 @@ def PushChange(stable_branch, tracking_branch, dryrun, cwd):
     tracking_branch: The tracking branch of the local branch.
     dryrun: Use git push --dryrun to emulate a push.
     cwd: The directory to run commands in.
+    staging_branch: The staging branch to push for a failed PFQ run
 
   Raises:
     OSError: Error occurred while pushing.
@@ -151,7 +153,8 @@ def PushChange(stable_branch, tracking_branch, dryrun, cwd):
   git.RunGit(cwd, ['merge', '--squash', stable_branch])
   git.RunGit(cwd, ['commit', '-m', description])
   git.RunGit(cwd, ['config', 'push.default', 'tracking'])
-  git.PushWithRetry(constants.MERGE_BRANCH, cwd, dryrun=dryrun)
+  git.PushWithRetry(constants.MERGE_BRANCH, cwd, dryrun=dryrun,
+                    staging_branch=staging_branch)
 
 
 class GitBranch(object):
@@ -214,6 +217,8 @@ def GetParser():
                       help='Path to root src directory.')
   parser.add_argument('--verbose', action='store_true',
                       help='Prints out debug info.')
+  parser.add_argument('--staging_branch',
+                      help='The staging branch to push changes')
   parser.add_argument('command', choices=COMMAND_DICTIONARY.keys(),
                       help='Command to run.')
   return parser
@@ -278,7 +283,8 @@ def main(argv):
 
     if options.command == 'push':
       PushChange(constants.STABLE_EBUILD_BRANCH, tracking_branch,
-                 options.dryrun, cwd=overlay)
+                 options.dryrun, cwd=overlay,
+                 staging_branch=options.staging_branch)
     elif options.command == 'commit':
       existing_commit = git.GetGitRepoRevision(overlay)
       work_branch = GitBranch(constants.STABLE_EBUILD_BRANCH, tracking_branch,

@@ -902,6 +902,10 @@ ELASTIC_SEARCH_USE_HTTP = False
 STATSD_PROD_PREFIX = 'chromite'
 STATSD_DEBUG_PREFIX = 'chromite_debug'
 
+# Manual Uprev PFQ constants.
+STAGING_PFQ_BRANCH_PREFIX = 'staging_pfq_branch_'
+PFQ_REF = 'pfq'
+
 # Gmail Credentials.
 GMAIL_TOKEN_CACHE_FILE = os.path.expanduser('~/.gmail_credentials')
 GMAIL_TOKEN_JSON_FILE = '/creds/refresh_tokens/chromeos_gmail_alerts'

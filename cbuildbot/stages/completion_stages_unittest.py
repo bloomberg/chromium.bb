@@ -720,6 +720,14 @@ class MasterCommitQueueCompletionStageTest(BaseCommitQueueCompletionStageTest):
 class PublishUprevChangesStageTest(
     generic_stages_unittest.AbstractStageTestCase):
   """Tests for the PublishUprevChanges stage."""
+  BOT_ID = 'master-chromium-pfq'
+
+  def _Prepare(self, bot_id=None, **kwargs):
+    super(PublishUprevChangesStageTest, self)._Prepare(bot_id, **kwargs)
+
+    self._run.config['manifest_version'] = True
+    self._run.config['build_type'] = self.build_type
+    self._run.config['master'] = True
 
   def setUp(self):
     self.PatchObject(completion_stages.PublishUprevChangesStage,
@@ -728,6 +736,9 @@ class PublishUprevChangesStageTest(
                      '_ExtractOverlays', return_value=[['foo'], ['bar']])
     self.PatchObject(prebuilts.BinhostConfWriter, 'Perform')
     self.push_mock = self.PatchObject(commands, 'UprevPush')
+    self.build_type = constants.PFQ_TYPE
+
+    self._Prepare()
 
   def ConstructStage(self):
     return completion_stages.PublishUprevChangesStage(self._run, success=True)
@@ -740,4 +751,65 @@ class PublishUprevChangesStageTest(
                   extra_cmd_args=['--chrome_rev', constants.CHROME_REV_TOT])
     self._run.options.prebuilts = True
     self.RunStage()
-    self.push_mock.assert_called_once_with(self.build_root, ['bar'], False)
+    self.push_mock.assert_called_once_with(self.build_root, ['bar'], False,
+                                           staging_branch=None)
+
+  def testCheckSlaveUploadPrebuiltsTest(self):
+    """Tests for CheckSlaveUploadPrebuiltsTest."""
+    stage = self.ConstructStage()
+    stage._build_stage_id = 'test_build_stage_id'
+
+    build_id = 'test_master_build_id'
+    mock_cidb = mock.MagicMock()
+    cidb.CIDBConnectionFactory.SetupMockCidb(mock_cidb)
+
+    stage_name = 'UploadPrebuilts'
+
+    slave_a = 'slave_a'
+    slave_b = 'slave_b'
+    slave_c = 'slave_c'
+
+    slave_configs_a = [{'name': slave_a},
+                       {'name': slave_b}]
+    slave_stages_a = [{'name': stage_name,
+                       'build_config': slave_a,
+                       'status': constants.BUILDER_STATUS_PASSED},
+                      {'name': stage_name,
+                       'build_config': slave_b,
+                       'status': constants.BUILDER_STATUS_PASSED}]
+
+    self.PatchObject(completion_stages.PublishUprevChangesStage,
+                     '_GetSlaveConfigs', return_value=slave_configs_a)
+    self.PatchObject(mock_cidb, 'GetSlaveStages',
+                     return_value=slave_stages_a)
+
+    # All important slaves are covered
+    self.assertTrue(stage.CheckSlaveUploadPrebuiltsTest(
+        mock_cidb, build_id))
+
+    slave_stages_b = [{'name': stage_name,
+                       'build_config': slave_a,
+                       'status': constants.BUILDER_STATUS_FAILED},
+                      {'name': stage_name,
+                       'build_config': slave_b,
+                       'status': constants.BUILDER_STATUS_PASSED}]
+    self.PatchObject(completion_stages.PublishUprevChangesStage,
+                     '_GetSlaveConfigs', return_value=slave_configs_a)
+    self.PatchObject(mock_cidb, 'GetSlaveStages',
+                     return_value=slave_stages_b)
+
+    # Slave_a didn't pass the stage
+    self.assertFalse(stage.CheckSlaveUploadPrebuiltsTest(
+        mock_cidb, build_id))
+
+    slave_configs_b = [{'name': slave_a},
+                       {'name': slave_b},
+                       {'name': slave_c}]
+    self.PatchObject(completion_stages.PublishUprevChangesStage,
+                     '_GetSlaveConfigs', return_value=slave_configs_b)
+    self.PatchObject(mock_cidb, 'GetSlaveStages',
+                     return_value=slave_stages_a)
+
+    # No stage information for slave_c
+    self.assertFalse(stage.CheckSlaveUploadPrebuiltsTest(
+        mock_cidb, build_id))

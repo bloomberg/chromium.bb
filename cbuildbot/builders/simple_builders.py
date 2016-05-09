@@ -428,9 +428,7 @@ class DistributedBuilder(SimpleBuilder):
         without completing if it exits early with sys.exit(0).
       completion_successful: Whether the compeletion_stage succeeded.
     """
-    is_master_chrome_pfq = (self._run.config.master and
-                            self._run.config.build_type ==
-                            constants.CHROME_PFQ_TYPE)
+    is_master_chrome_pfq = config_lib.IsMasterChromePFQ(self._run.config)
 
     updateEbuild_successful = False
     try:
@@ -439,7 +437,7 @@ class DistributedBuilder(SimpleBuilder):
       # prepare for pushing commits to masters;
       # if it's a master_chrome_pfq build and compeletion_stage failed,
       # need to run AFDOUpdateEbuildStage to prepare for pushing commits
-      # to a temporary branch.
+      # to a staging branch.
       if ((completion_successful or is_master_chrome_pfq) and
           self._run.config.afdo_update_ebuild and
           not self._run.config.afdo_generate_min):
@@ -453,15 +451,15 @@ class DistributedBuilder(SimpleBuilder):
                    build_finished)
         # If this build is master chrome pfq, completion_stage failed,
         # AFDOUpdateEbuildStage passed, and the necessary build stages
-        # passed, it means publish is False and we need to push the commits
-        # to a temporary branch.
-        temp_publish = (is_master_chrome_pfq and
-                        not completion_successful and
-                        updateEbuild_successful and
-                        was_build_successful and
-                        build_finished)
+        # passed, it means publish is False and we need to stage the
+        # push to another branch instead of master.
+        stage_push = (is_master_chrome_pfq and
+                      not completion_successful and
+                      updateEbuild_successful and
+                      was_build_successful and
+                      build_finished)
         self._RunStage(completion_stages.PublishUprevChangesStage, publish,
-                       temp_publish)
+                       stage_push)
 
   def RunStages(self):
     """Runs simple builder logic and publishes information to overlays."""
