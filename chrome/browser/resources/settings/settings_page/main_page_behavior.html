@@ -13,6 +13,12 @@
       .expanded {
         min-height: 100%;
       }
+
+      .expanded.frozen {
+        /* Account for padding in settings_page.css. */
+        margin: -24px 0;
+        min-height: calc(100% + 48px);
+      }
     </style>
   </template>
 </dom-module>

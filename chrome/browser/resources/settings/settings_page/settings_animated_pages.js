@@ -111,8 +111,10 @@ Polymer({
       }
     }
 
-    this.$.animatedPages.selected =
-        newRouteIsSubpage ? newRoute.subpage.slice(-1)[0] : 'main';
+    if (newRouteIsSubpage && newRoute.section == this.section)
+      this.$.animatedPages.selected = newRoute.subpage.slice(-1)[0];
+    else
+      this.$.animatedPages.selected = 'main';
   },
 
   /**
