@@ -1129,6 +1129,13 @@ if (is_mac) {  # TODO(GYP) Mac build of remoting host.
     }
 
     if (is_win && is_chrome_branded) {
+      if (target_cpu == "x86") {
+        # The script uses "ia32" instead of "x86".
+        msi_script_arch = "ia32"
+      } else {
+        msi_script_arch = target_cpu
+      }
+
       # GYP version: remoting/remoting_host_win.gyp:remoting_host_installation
       action("remoting_host_installation") {
         deps = [
@@ -1144,7 +1151,7 @@ if (is_mac) {  # TODO(GYP) Mac build of remoting host.
           "--intermediate_dir",
           rebase_path("$root_gen_dir/installation", root_build_dir),
           "--target_arch",
-          "$target_cpu",
+          msi_script_arch,
           rebase_path("$root_out_dir/remoting-me2me-host-$current_os.zip",
                       root_build_dir),
           rebase_path(outputs[0], root_build_dir),
