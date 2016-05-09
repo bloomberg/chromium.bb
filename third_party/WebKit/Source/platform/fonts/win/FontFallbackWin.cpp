@@ -139,7 +139,7 @@ void initializeScriptFontMap(ScriptToFontMap& scriptFontMap, SkFontMgr* fontMana
     static const UChar* ethiopicFonts[] = { L"Nyala", L"Abyssinica SIL",
         L"Ethiopia Jiret", L"Visual Geez Unicode", L"GF Zemen Unicode",
         L"Ebrima", 0 };
-    static const UChar* georgianFonts[] = { L"Segoe UI", L"Sylfaen", 0 };
+    static const UChar* georgianFonts[] = { L"Sylfaen", L"Segoe UI", 0 };
     static const UChar* glagoliticFonts[] = { L"Segoe UI Historic",
         L"Segoe UI Symbol", 0 };
     static const UChar* gothicFonts[] = { L"Segoe UI Historic",
