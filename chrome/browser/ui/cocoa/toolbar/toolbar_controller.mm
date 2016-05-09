@@ -1055,8 +1055,8 @@ class NotificationBridge : public AppMenuBadgeController::Delegate {
 
 - (CGFloat)baseToolbarHeight {
   // Height of the toolbar in pixels when the bookmark bar is closed.
-  const CGFloat baseToolbarHeightNormal =
-      ui::MaterialDesignController::IsModeMaterial() ? 37 : 35;
+  const bool kIsModeMaterial = ui::MaterialDesignController::IsModeMaterial();
+  const CGFloat kBaseToolbarHeightNormal = kIsModeMaterial ? 37 : 35;
 
   // Not all lines are drawn at 2x normal height when running on Retina, which
   // causes the toolbar controls to be visually 1pt too high within the toolbar
@@ -1066,8 +1066,17 @@ class NotificationBridge : public AppMenuBadgeController::Delegate {
   // an offsetting change in -[BookmarkBarController preferredHeight] to
   // maintain the proper spacing between bookmark icons and toolbar items. See
   // https://crbug.com/326245 .
-  return [[self view] cr_lineWidth] == 0.5 ? baseToolbarHeightNormal - 1
-                                           : baseToolbarHeightNormal;
+  const CGFloat kLineWidth = [[self view] cr_lineWidth];
+  const BOOL kIsRetina = (kLineWidth < 1);
+  BOOL reduceHeight = YES;
+
+  // If Material Design and Retina, no height adjustment is needed.
+  if (kIsModeMaterial && kIsRetina) {
+    reduceHeight = NO;
+  }
+
+  return reduceHeight ? kBaseToolbarHeightNormal - 1
+                      : kBaseToolbarHeightNormal;
 }
 
 - (CGFloat)desiredHeightForCompression:(CGFloat)compressByHeight {

@@ -67,6 +67,7 @@
 #import "ui/base/cocoa/cocoa_base_utils.h"
 #import "ui/base/cocoa/nsview_additions.h"
 #include "ui/base/l10n/l10n_util_mac.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 #include "ui/resources/grit/ui_resources.h"
@@ -1029,14 +1030,27 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   if (!barIsEnabled_)
     return 0;
 
+  CGFloat lineWidth = 0;
+  BOOL isRetina = NO;
+  BOOL reduceHeight = YES;
+
   switch (currentState_) {
     case BookmarkBar::SHOW:
-      // When on a Retina display, -[ToolbarContrller baseToolbarHeight] reduces
-      // the height of the toolbar by 1pt. In this case the bookmark bar needs
-      // to be 1pt taller to maintain the proper spacing between bookmark icons
-      // and toolbar items. See https://crbug.com/326245 .
-      return [[self view] cr_lineWidth] == 0.5 ? chrome::kBookmarkBarHeight + 1
-                                               : chrome::kBookmarkBarHeight;
+      // When on a Retina display and not using Material Design,
+      // -[ToolbarController baseToolbarHeight] reduces the height of the
+      // toolbar by 1pt. In this case the bookmark bar needs to add 1pt of space
+      // above the bookmark icons in order to maintain the proper distance from
+      // toolbar items. See https://crbug.com/326245 .
+      lineWidth = [[self view] cr_lineWidth];
+      isRetina = (lineWidth < 1);
+
+      // If Material Design and Retina, no height adjustment is needed.
+      if (ui::MaterialDesignController::IsModeMaterial() && isRetina) {
+        reduceHeight = NO;
+      }
+
+      return reduceHeight ? chrome::kBookmarkBarHeight + 1
+                          : chrome::kBookmarkBarHeight;
     case BookmarkBar::DETACHED:
       return chrome::kNTPBookmarkBarHeight;
     case BookmarkBar::HIDDEN:

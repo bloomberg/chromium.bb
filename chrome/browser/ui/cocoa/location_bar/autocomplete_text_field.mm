@@ -23,7 +23,6 @@
 namespace {
 const CGFloat kAnimationDuration = 0.2;
 const CGFloat kShadowInset = 3;
-const CGFloat kShadowColor = 69 / 255.;
 
 }
 
@@ -86,11 +85,12 @@ const CGFloat kShadowColor = 69 / 255.;
   // and non-Retina screens there would have to be logic to add and remove the
   // view. It's easier just to always add it for Incognito mode and draw
   // nothing into it.
-  if (![[self window] inIncognitoMode] || [self cr_lineWidth] < 1) {
+  if (![[self window] inIncognitoModeWithSystemTheme] ||
+      [self cr_lineWidth] < 1) {
     return;
   }
   [[AutocompleteTextField shadowColor] set];
-  NSRectFill(rect);
+  NSRectFillUsingOperation(rect, NSCompositeSourceOver);
 }
 
 @end
@@ -104,7 +104,7 @@ const CGFloat kShadowColor = 69 / 255.;
 }
 
 + (NSColor*)shadowColor {
-  return [NSColor colorWithGenericGamma22White:kShadowColor alpha:1];
+  return [NSColor colorWithGenericGamma22White:0 alpha:0.14];
 }
 
 - (void)dealloc {
