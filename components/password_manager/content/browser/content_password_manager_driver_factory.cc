@@ -89,7 +89,6 @@ void ContentPasswordManagerDriverFactory::RenderFrameCreated(
     insertion_result.first->second =
         base::WrapUnique(new ContentPasswordManagerDriver(
             render_frame_host, password_client_, autofill_client_));
-    insertion_result.first->second->SendLoggingAvailability();
   }
 }
 
