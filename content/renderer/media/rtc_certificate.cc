@@ -11,9 +11,8 @@
 namespace content {
 
 RTCCertificate::RTCCertificate(
-    const blink::WebRTCKeyParams& key_params,
     const rtc::scoped_refptr<rtc::RTCCertificate>& certificate)
-    : key_params_(key_params), certificate_(certificate) {
+    : certificate_(certificate) {
   DCHECK(certificate_);
 }
 
@@ -21,15 +20,16 @@ RTCCertificate::~RTCCertificate() {
 }
 
 std::unique_ptr<blink::WebRTCCertificate> RTCCertificate::shallowCopy() const {
-  return base::WrapUnique(new RTCCertificate(key_params_, certificate_));
-}
-
-const blink::WebRTCKeyParams& RTCCertificate::keyParams() const {
-  return key_params_;
+  return base::WrapUnique(new RTCCertificate(certificate_));
 }
 
 uint64_t RTCCertificate::expires() const {
   return certificate_->Expires();
+}
+
+blink::WebRTCCertificatePEM RTCCertificate::toPEM() const {
+  rtc::RTCCertificatePEM pem = certificate_->ToPEM();
+  return blink::WebRTCCertificatePEM(pem.private_key(), pem.certificate());
 }
 
 bool RTCCertificate::equals(const blink::WebRTCCertificate& other) const {

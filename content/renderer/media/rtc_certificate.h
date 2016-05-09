@@ -9,7 +9,6 @@
 
 #include "base/macros.h"
 #include "third_party/WebKit/public/platform/WebRTCCertificate.h"
-#include "third_party/WebKit/public/platform/WebRTCKeyParams.h"
 #include "third_party/webrtc/base/rtccertificate.h"
 #include "third_party/webrtc/base/scoped_ref_ptr.h"
 
@@ -20,20 +19,18 @@ namespace content {
 // not have direct access to WebRTC.
 class RTCCertificate : public blink::WebRTCCertificate {
  public:
-  RTCCertificate(const blink::WebRTCKeyParams& key_params,
-                 const rtc::scoped_refptr<rtc::RTCCertificate>& certificate);
+  RTCCertificate(const rtc::scoped_refptr<rtc::RTCCertificate>& certificate);
   ~RTCCertificate() override;
 
   // blink::WebRTCCertificate implementation.
   std::unique_ptr<blink::WebRTCCertificate> shallowCopy() const override;
-  const blink::WebRTCKeyParams& keyParams() const override;
   uint64_t expires() const override;
+  blink::WebRTCCertificatePEM toPEM() const override;
   bool equals(const blink::WebRTCCertificate& other) const override;
 
   const rtc::scoped_refptr<rtc::RTCCertificate>& rtcCertificate() const;
 
  private:
-  blink::WebRTCKeyParams key_params_;
   rtc::scoped_refptr<rtc::RTCCertificate> certificate_;
 
   DISALLOW_COPY_AND_ASSIGN(RTCCertificate);

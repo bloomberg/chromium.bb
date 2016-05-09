@@ -115,7 +115,7 @@ class RTCCertificateIdentityObserver
         FROM_HERE,
         base::Bind(&RTCCertificateIdentityObserver::DoCallbackOnMainThread,
                    this, base::Passed(base::WrapUnique(
-                             new RTCCertificate(key_params_, certificate)))));
+                             new RTCCertificate(certificate)))));
   }
 
   void DoCallbackOnMainThread(
@@ -195,6 +195,16 @@ void RTCCertificateGenerator::generateCertificateWithOptionalExpiration(
 bool RTCCertificateGenerator::isSupportedKeyParams(
     const blink::WebRTCKeyParams& key_params) {
   return WebRTCKeyParamsToKeyParams(key_params).IsValid();
+}
+
+std::unique_ptr<blink::WebRTCCertificate> RTCCertificateGenerator::fromPEM(
+    const std::string& pem_private_key,
+    const std::string& pem_certificate) {
+  rtc::scoped_refptr<rtc::RTCCertificate> certificate =
+      rtc::RTCCertificate::FromPEM(
+          rtc::RTCCertificatePEM(pem_private_key, pem_certificate));
+  return std::unique_ptr<blink::WebRTCCertificate>(
+      new RTCCertificate(certificate));
 }
 
 }  // namespace content
