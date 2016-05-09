@@ -581,10 +581,12 @@ Resource* ResourceFetcher::createResourceForLoading(FetchRequest& request, const
 
 void ResourceFetcher::storeResourceTimingInitiatorInformation(Resource* resource)
 {
-    if (resource->options().initiatorInfo.name == FetchInitiatorTypeNames::internal)
+    const AtomicString& fetchInitiator = resource->options().initiatorInfo.name;
+    if (fetchInitiator == FetchInitiatorTypeNames::internal)
         return;
 
-    OwnPtr<ResourceTimingInfo> info = ResourceTimingInfo::create(resource->options().initiatorInfo.name, monotonicallyIncreasingTime(), resource->getType() == Resource::MainResource);
+    bool isMainResource = resource->getType() == Resource::MainResource;
+    OwnPtr<ResourceTimingInfo> info = ResourceTimingInfo::create(fetchInitiator, monotonicallyIncreasingTime(), isMainResource);
 
     if (resource->isCacheValidator()) {
         const AtomicString& timingAllowOrigin = resource->response().httpHeaderField(HTTPNames::Timing_Allow_Origin);
@@ -592,7 +594,7 @@ void ResourceFetcher::storeResourceTimingInitiatorInformation(Resource* resource
             info->setOriginalTimingAllowOrigin(timingAllowOrigin);
     }
 
-    if (resource->getType() != Resource::MainResource || context().updateTimingInfoForIFrameNavigation(info.get()))
+    if (!isMainResource || context().updateTimingInfoForIFrameNavigation(info.get()))
         m_resourceTimingInfoMap.add(resource, info.release());
 }
 
@@ -889,13 +891,11 @@ void ResourceFetcher::didFinishLoading(Resource* resource, double finishTime, in
 {
     TRACE_EVENT_ASYNC_END0("blink.net", "Resource", resource);
     // The ResourceLoader might be in |m_nonBlockingLoaders| for multipart responses.
+    ASSERT(resource);
     ASSERT(!(m_loaders && m_loaders->contains(resource->loader())));
 
-    if (resource && resource->response().isHTTP() && resource->response().httpStatusCode() < 400) {
-        ResourceTimingInfoMap::iterator it = m_resourceTimingInfoMap.find(resource);
-        if (it != m_resourceTimingInfoMap.end()) {
-            OwnPtr<ResourceTimingInfo> info = it->value.release();
-            m_resourceTimingInfoMap.remove(it);
+    if (OwnPtr<ResourceTimingInfo> info = m_resourceTimingInfoMap.take(resource)) {
+        if (resource->response().isHTTP() && resource->response().httpStatusCode() < 400) {
             populateResourceTiming(info.get(), resource);
             info->setLoadFinishTime(finishTime);
             if (resource->options().requestInitiatorContext == DocumentContext)
@@ -910,6 +910,7 @@ void ResourceFetcher::didFailLoading(const Resource* resource, const ResourceErr
 {
     TRACE_EVENT_ASYNC_END0("blink.net", "Resource", resource);
     removeResourceLoader(resource->loader());
+    m_resourceTimingInfoMap.take(const_cast<Resource*>(resource));
     bool isInternalRequest = resource->options().initiatorInfo.name == FetchInitiatorTypeNames::internal;
     context().dispatchDidFail(resource->identifier(), error, isInternalRequest);
 }
