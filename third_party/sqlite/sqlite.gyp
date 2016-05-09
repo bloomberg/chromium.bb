@@ -141,15 +141,6 @@
             ['OS != "win" and component == "shared_library"', {
               'defines': ['SQLITE_API=__attribute__((visibility("default")))'],
             }],
-            [ 'chromeos==1' , {
-              'defines': [
-                # Despite obvious warnings about not using this flag in
-                # deployment, we are turning off sync in ChromeOS and relying on
-                # the underlying journaling filesystem to do error recovery
-                # properly.  It's much faster.
-                'SQLITE_NO_SYNC',
-              ],
-            }],
             ['os_posix == 1', {
               'defines': [
                 # Allow xSleep() call on Unix to use usleep() rather than
