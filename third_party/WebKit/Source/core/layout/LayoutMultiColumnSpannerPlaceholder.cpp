@@ -59,6 +59,14 @@ void LayoutMultiColumnSpannerPlaceholder::updateMarginProperties()
     setStyle(newStyle);
 }
 
+void LayoutMultiColumnSpannerPlaceholder::insertedIntoTree()
+{
+    LayoutBox::insertedIntoTree();
+    // The object may previously have been laid out as a non-spanner, but since it's a spanner now,
+    // it needs to be relaid out.
+    m_layoutObjectInFlowThread->setNeedsLayoutAndPrefWidthsRecalc(LayoutInvalidationReason::ColumnsChanged);
+}
+
 void LayoutMultiColumnSpannerPlaceholder::willBeRemovedFromTree()
 {
     if (m_layoutObjectInFlowThread) {

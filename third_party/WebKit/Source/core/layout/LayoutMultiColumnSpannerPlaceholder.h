@@ -37,6 +37,7 @@ public:
     const char* name() const override { return "LayoutMultiColumnSpannerPlaceholder"; }
 
 protected:
+    void insertedIntoTree() override;
     void willBeRemovedFromTree() override;
     bool needsPreferredWidthsRecalculation() const override;
     LayoutUnit minPreferredLogicalWidth() const override;
