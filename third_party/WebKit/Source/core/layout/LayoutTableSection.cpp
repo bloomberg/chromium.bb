@@ -956,20 +956,29 @@ void LayoutTableSection::layoutRows()
 
     int vspacing = table()->vBorderSpacing();
     unsigned nEffCols = table()->numEffectiveColumns();
+    bool isPaginated = view()->layoutState()->isPaginated();
 
     LayoutState state(*this, locationOffset());
 
     for (unsigned r = 0; r < totalRows; r++) {
         // Set the row's x/y position and width/height.
         LayoutTableRow* rowLayoutObject = m_grid[r].rowLayoutObject;
+        int paginationStrutOnRow = 0;
         if (rowLayoutObject) {
             rowLayoutObject->setLocation(LayoutPoint(0, m_rowPos[r]));
             rowLayoutObject->setLogicalWidth(logicalWidth());
             rowLayoutObject->setLogicalHeight(LayoutUnit(m_rowPos[r + 1] - m_rowPos[r] - vspacing));
             rowLayoutObject->updateLayerTransformAfterLayout();
+            if (isPaginated) {
+                paginationStrutOnRow = paginationStrutForRow(rowLayoutObject, LayoutUnit(m_rowPos[r]));
+                if (paginationStrutOnRow) {
+                    for (unsigned rowIndex = r; rowIndex <= totalRows; rowIndex++)
+                        m_rowPos[rowIndex] += paginationStrutOnRow;
+                }
+            }
         }
 
-        int rowHeightIncreaseForPagination = 0;
+        int rowHeightIncreaseForPagination = INT_MIN;
 
         for (unsigned c = 0; c < nEffCols; c++) {
             CellStruct& cs = cellAt(r, c);
@@ -1051,8 +1060,7 @@ void LayoutTableSection::layoutRows()
                 // We'll also do a basic increase of the row height to accommodate the cell if it's bigger, but this isn't quite right
                 // either. It's at least stable though and won't result in an infinite # of relayouts that may never stabilize.
                 LayoutUnit oldLogicalHeight = cell->logicalHeight();
-                if (oldLogicalHeight > rHeight)
-                    rowHeightIncreaseForPagination = std::max<int>(rowHeightIncreaseForPagination, oldLogicalHeight - rHeight);
+                rowHeightIncreaseForPagination = std::max<int>(rowHeightIncreaseForPagination, oldLogicalHeight - rHeight);
                 cell->setLogicalHeight(LayoutUnit(rHeight));
                 cell->computeOverflow(oldLogicalHeight, false);
             }
@@ -1066,7 +1074,7 @@ void LayoutTableSection::layoutRows()
                     cell->setMayNeedPaintInvalidation();
             }
         }
-        if (rowHeightIncreaseForPagination) {
+        if (rowHeightIncreaseForPagination > INT_MIN) {
             for (unsigned rowIndex = r + 1; rowIndex <= totalRows; rowIndex++)
                 m_rowPos[rowIndex] += rowHeightIncreaseForPagination;
             for (unsigned c = 0; c < nEffCols; ++c) {
@@ -1087,6 +1095,29 @@ void LayoutTableSection::layoutRows()
     setLogicalHeight(LayoutUnit(m_rowPos[totalRows]));
 
     computeOverflowFromCells(totalRows, nEffCols);
+}
+
+int LayoutTableSection::paginationStrutForRow(LayoutTableRow* row, LayoutUnit logicalOffset) const
+{
+    if (row->getPaginationBreakability() == AllowAnyBreaks)
+        return 0;
+    LayoutUnit pageLogicalHeight = pageLogicalHeightForOffset(logicalOffset);
+    if (!pageLogicalHeight)
+        return 0;
+    // If the row is too tall for the page don't insert a strut.
+    LayoutUnit rowLogicalHeight = row->logicalHeight();
+    if (rowLogicalHeight > pageLogicalHeight)
+        return 0;
+    LayoutUnit remainingLogicalHeight = pageRemainingLogicalHeightForOffset(logicalOffset, LayoutBlock::AssociateWithLatterPage);
+    if (remainingLogicalHeight >= rowLogicalHeight)
+        return 0; // It fits fine where it is. No need to break.
+    LayoutUnit paginationStrut = calculatePaginationStrutToFitContent(logicalOffset, remainingLogicalHeight, rowLogicalHeight);
+    if (paginationStrut == remainingLogicalHeight && remainingLogicalHeight == pageLogicalHeight) {
+        // Don't break if we were at the top of a page, and we failed to fit the content
+        // completely. No point in leaving a page completely blank.
+        return 0;
+    }
+    return paginationStrut;
 }
 
 void LayoutTableSection::computeOverflowFromCells()

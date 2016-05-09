@@ -301,6 +301,8 @@ public:
     bool foregroundIsKnownToBeOpaqueInRect(const LayoutRect&, unsigned) const override { return false; }
     bool backgroundIsKnownToBeOpaqueInRect(const LayoutRect&) const override { return false; }
 
+    int paginationStrutForRow(LayoutTableRow*, LayoutUnit logicalOffset) const;
+
 protected:
     void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
     bool nodeAtPoint(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) override;

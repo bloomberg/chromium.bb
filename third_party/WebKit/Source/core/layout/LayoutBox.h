@@ -594,6 +594,18 @@ public:
     LayoutUnit pageLogicalOffset() const { return m_rareData ? m_rareData->m_pageLogicalOffset : LayoutUnit(); }
     void setPageLogicalOffset(LayoutUnit);
 
+    // Specify which page or column to associate with an offset, if said offset is exactly at a page
+    // or column boundary.
+    enum PageBoundaryRule { AssociateWithFormerPage, AssociateWithLatterPage };
+    LayoutUnit pageLogicalHeightForOffset(LayoutUnit) const;
+    LayoutUnit pageRemainingLogicalHeightForOffset(LayoutUnit, PageBoundaryRule) const;
+
+    // Calculate the strut to insert in order fit content of size |contentLogicalHeight|.
+    // |strutToNextPage| is the strut to add to |offset| to merely get to the top of the next page
+    // or column. This is what will be returned if the content can actually fit there. Otherwise,
+    // return the distance to the next fragmentainer that can fit this piece of content.
+    virtual LayoutUnit calculatePaginationStrutToFitContent(LayoutUnit offset, LayoutUnit strutToNextPage, LayoutUnit contentLogicalHeight) const;
+
     void positionLineBox(InlineBox*);
     void moveWithEdgeOfInlineContainerIfNecessary(bool isHorizontal);
 
