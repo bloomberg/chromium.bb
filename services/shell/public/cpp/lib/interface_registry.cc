@@ -29,15 +29,14 @@ mojom::InterfaceProviderPtr InterfaceRegistry::TakeClientHandle() {
 void InterfaceRegistry::GetInterface(const mojo::String& interface_name,
                                      mojo::ScopedMessagePipeHandle handle) {
   auto iter = name_to_binder_.find(interface_name);
-  if (iter == name_to_binder_.end() && connection_ &&
-      connection_->AllowsInterface(interface_name)) {
+  if (iter != name_to_binder_.end()) {
+    iter->second->BindInterface(connection_, interface_name, std::move(handle));
+  } else if (connection_ && connection_->AllowsInterface(interface_name)) {
     LOG(ERROR) << "Connection CapabilityFilter prevented binding to "
                << "interface: " << interface_name << " connection_name:"
                << connection_->GetConnectionName() << " remote_name:"
                << connection_->GetRemoteIdentity().name();
-    return;
   }
-  iter->second->BindInterface(connection_, interface_name, std::move(handle));
 }
 
 bool InterfaceRegistry::SetInterfaceBinderForName(
