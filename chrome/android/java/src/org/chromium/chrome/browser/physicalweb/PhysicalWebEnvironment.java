@@ -4,13 +4,13 @@
 
 package org.chromium.chrome.browser.physicalweb;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.ChromeApplication;
 
 /**
  * Tool that reports information about conflicting clients.
  */
 public class PhysicalWebEnvironment {
+    private static final Object INSTANCE_LOCK = new Object();
     private static PhysicalWebEnvironment sInstance = null;
 
     /**
@@ -20,9 +20,10 @@ public class PhysicalWebEnvironment {
      * @return an instance of this class (or subclass) as decided by the application parameter
      */
     public static PhysicalWebEnvironment getInstance(ChromeApplication chromeApplication) {
-        ThreadUtils.assertOnUiThread();
-        if (sInstance == null) {
-            sInstance = chromeApplication.createPhysicalWebEnvironment();
+        synchronized (INSTANCE_LOCK) {
+            if (sInstance == null) {
+                sInstance = chromeApplication.createPhysicalWebEnvironment();
+            }
         }
         return sInstance;
     }
