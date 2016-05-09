@@ -164,7 +164,7 @@ jboolean CronetBidirectionalStreamAdapter::WritevData(
     return JNI_FALSE;
   }
 
-  IOByteBufferList buffers;
+  IOBufferWithByteBufferList buffers;
   for (size_t i = 0; i < buffers_array_size; ++i) {
     ScopedJavaLocalRef<jobject> jbuffer(
         env, env->GetObjectArrayElement(jbyte_buffers, i));
@@ -258,26 +258,27 @@ void CronetBidirectionalStreamAdapter::OnDataSent() {
 
   JNIEnv* env = base::android::AttachCurrentThread();
   base::android::ScopedJavaLocalRef<jclass> byte_buffer_clazz(
-      env, env->GetObjectClass(write_buffer_list_[0]->byte_buffer()));
+      env, env->FindClass("java/nio/ByteBuffer"));
   size_t size = write_buffer_list_.size();
-  jobjectArray jbuffers =
+  jobjectArray jbuffer_array =
       env->NewObjectArray(size, byte_buffer_clazz.obj(), NULL);
   base::android::CheckException(env);
   std::vector<int> initial_positions;
   std::vector<int> initial_limits;
   for (size_t i = 0; i < size; ++i) {
-    env->SetObjectArrayElement(jbuffers, i,
+    env->SetObjectArrayElement(jbuffer_array, i,
                                write_buffer_list_[i]->byte_buffer());
     initial_positions.push_back(write_buffer_list_[i]->initial_position());
     initial_limits.push_back(write_buffer_list_[i]->initial_limit());
   }
+  ScopedJavaLocalRef<jobjectArray> jbuffers(env, jbuffer_array);
   ScopedJavaLocalRef<jintArray> jinitial_positions =
       base::android::ToJavaIntArray(env, initial_positions);
   ScopedJavaLocalRef<jintArray> jinitial_limits =
       base::android::ToJavaIntArray(env, initial_limits);
   // Call into Java.
   cronet::Java_CronetBidirectionalStream_onWritevCompleted(
-      env, owner_.obj(), jbuffers, jinitial_positions.obj(),
+      env, owner_.obj(), jbuffers.obj(), jinitial_positions.obj(),
       jinitial_limits.obj(), write_end_of_stream_);
   // Free the write buffers. This lets the Java ByteBuffer be freed, if the
   // embedder releases it, too.
@@ -339,7 +340,7 @@ void CronetBidirectionalStreamAdapter::ReadDataOnNetworkThread(
 }
 
 void CronetBidirectionalStreamAdapter::WritevDataOnNetworkThread(
-    const IOByteBufferList& write_buffer_list,
+    const IOBufferWithByteBufferList& write_buffer_list,
     bool end_of_stream) {
   DCHECK(context_->IsOnNetworkThread());
   DCHECK(write_buffer_list_.empty());
@@ -347,8 +348,8 @@ void CronetBidirectionalStreamAdapter::WritevDataOnNetworkThread(
   DCHECK(!write_end_of_stream_);
 
   if (stream_failed_) {
-    // If stream failed between the time when WriteData is invoked and
-    // WriteDataOnNetworkThread is executed, do not call into |bidi_stream_|
+    // If stream failed between the time when WritevData is invoked and
+    // WritevDataOnNetworkThread is executed, do not call into |bidi_stream_|
     // since the underlying stream might have been destroyed. Do not invoke
     // Java callback either, since onError is posted when |stream_failed_| is
     // set to true.

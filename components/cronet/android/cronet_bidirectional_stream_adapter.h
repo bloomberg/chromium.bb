@@ -94,7 +94,8 @@ class CronetBidirectionalStreamAdapter
                jboolean jsend_on_canceled);
 
  private:
-  typedef std::vector<scoped_refptr<IOBufferWithByteBuffer>> IOByteBufferList;
+  typedef std::vector<scoped_refptr<IOBufferWithByteBuffer>>
+      IOBufferWithByteBufferList;
   // net::BidirectionalStream::Delegate implementations:
   void OnStreamReady() override;
   void OnHeadersReceived(const net::SpdyHeaderBlock& response_headers) override;
@@ -108,7 +109,7 @@ class CronetBidirectionalStreamAdapter
   void ReadDataOnNetworkThread(
       scoped_refptr<IOBufferWithByteBuffer> read_buffer,
       int buffer_size);
-  void WritevDataOnNetworkThread(const IOByteBufferList& buffers,
+  void WritevDataOnNetworkThread(const IOBufferWithByteBufferList& buffers,
                                  bool end_of_stream);
   void DestroyOnNetworkThread(bool send_on_canceled);
   // Gets headers as a Java array.
@@ -126,7 +127,7 @@ class CronetBidirectionalStreamAdapter
   bool write_end_of_stream_;
 
   scoped_refptr<IOBufferWithByteBuffer> read_buffer_;
-  IOByteBufferList write_buffer_list_;
+  IOBufferWithByteBufferList write_buffer_list_;
   std::unique_ptr<net::BidirectionalStream> bidi_stream_;
 
   // Whether BidirectionalStream::Delegate::OnFailed callback is invoked.
