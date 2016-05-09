@@ -53,14 +53,4 @@ public class PaymentRequestNoShippingTest extends PaymentRequestTestBase {
         clickAndWait(R.id.button_secondary, mDismissed);
         expectResultContains(new String[] {"Request cancelled"});
     }
-
-    @MediumTest
-    public void testPayAndCancelDialog() throws InterruptedException, ExecutionException,
-            TimeoutException {
-        triggerUIAndWait(mReadyToPay);
-        clickAndWait(R.id.button_primary, mReadyToUnmask);
-        cancelCardUnmaskDialogAndWait(mReadyToUnmask.getTarget(), mResultReady);
-        clickAndWait(R.id.ok_button, mDismissed);
-        expectResultContains(new String[] {"Request cancelled"});
-    }
 }
