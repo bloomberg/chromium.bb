@@ -416,7 +416,7 @@ public class NewTabPageView extends FrameLayout
                 }
             });
             initializeSearchBoxRecyclerViewScrollHandling();
-            mRecyclerView.addItemDecoration(new SnippetItemDecoration());
+            mRecyclerView.addItemDecoration(new SnippetItemDecoration(getContext()));
             updatePeekingCard();
         } else {
             initializeSearchBoxScrollHandling();
