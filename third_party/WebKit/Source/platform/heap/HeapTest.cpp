@@ -514,20 +514,42 @@ public:
         ThreadedTesterBase::test(new ThreadedHeapTester);
     }
 
+    ~ThreadedHeapTester() override
+    {
+        // Verify that the threads cleared their CTPs when
+        // terminating, preventing access to a finalized heap.
+        for (auto& globalIntWrapper : m_crossPersistents) {
+            ASSERT(globalIntWrapper.get());
+            EXPECT_FALSE(globalIntWrapper.get()->get());
+        }
+    }
+
 protected:
     using GlobalIntWrapperPersistent = CrossThreadPersistent<IntWrapper>;
+
+    Mutex m_mutex;
+    Vector<OwnPtr<GlobalIntWrapperPersistent>> m_crossPersistents;
 
     PassOwnPtr<GlobalIntWrapperPersistent> createGlobalPersistent(int value)
     {
         return adoptPtr(new GlobalIntWrapperPersistent(IntWrapper::create(value)));
     }
 
+    void addGlobalPersistent()
+    {
+        MutexLocker lock(m_mutex);
+        m_crossPersistents.append(createGlobalPersistent(0x2a2a2a2a));
+    }
+
     void runThread() override
     {
-        OwnPtr<GlobalIntWrapperPersistent> longLivingPersistent;
         ThreadState::attachCurrentThread(false);
 
-        longLivingPersistent = createGlobalPersistent(0x2a2a2a2a);
+        // Add a cross-thread persistent from this thread; the test object
+        // verifies that it will have been cleared out after the threads
+        // have all detached, running their termination GCs while doing so.
+        addGlobalPersistent();
+
         int gcCount = 0;
         while (!done()) {
             ThreadState::current()->safePoint(BlinkGC::NoHeapPointersOnStack);
@@ -562,12 +584,6 @@ protected:
             SafePointScope scope(BlinkGC::NoHeapPointersOnStack);
             testing::yieldCurrentThread();
         }
-
-        // Intentionally leak the cross-thread persistent so as to verify
-        // that later GCs correctly handle cross-thread persistents that
-        // refer to finalized objects after their heaps have been detached
-        // and freed.
-        EXPECT_TRUE(longLivingPersistent.leakPtr());
 
         ThreadState::detachCurrentThread();
         atomicDecrement(&m_threadsToFinish);

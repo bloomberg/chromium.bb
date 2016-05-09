@@ -215,8 +215,7 @@ private:
                 initialize();
             return;
         }
-        if (m_persistentNode && crossThreadnessConfiguration != CrossThreadPersistentConfiguration)
-            uninitialize();
+        uninitialize();
     }
 
     NO_LAZY_SWEEP_SANITIZE_ADDRESS

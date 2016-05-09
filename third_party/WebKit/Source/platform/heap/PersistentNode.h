@@ -201,7 +201,12 @@ private:
     // because we don't want to virtualize performance-sensitive methods
     // such as PersistentRegion::allocate/freePersistentNode.
     OwnPtr<PersistentRegion> m_persistentRegion;
-    Mutex m_mutex;
+
+    // Recursive as prepareForThreadStateTermination() clears a PersistentNode's
+    // associated Persistent<> -- it in turn freeing the PersistentNode. And both
+    // CrossThreadPersistentRegion operations need a lock on the region before
+    // mutating.
+    RecursiveMutex m_mutex;
 };
 
 } // namespace blink
