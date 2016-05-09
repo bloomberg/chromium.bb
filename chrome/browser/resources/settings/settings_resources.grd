@@ -82,9 +82,6 @@
                  file="appearance_page/appearance_page.js"
                  type="chrome_html"
                  flattenhtml="true" />
-      <structure name="IDR_SETTINGS_APPEARANCE_SHARED_CSS"
-                 file="appearance_page/appearance_shared.css"
-                 type="chrome_html" />
       <structure name="IDR_SETTINGS_BASIC_PAGE_JS"
                  file="basic_page/basic_page.js"
                  type="chrome_html" />

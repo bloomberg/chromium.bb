@@ -16,8 +16,35 @@ var DropdownMenuOption;
 /** @typedef {!Array<!DropdownMenuOption>} */
 var DropdownMenuOptionList;
 
+/**
+ * Auto-repeat delays (in ms) for the corresponding slider values, from
+ * long to short. The values were chosen to provide a large range while giving
+ * several options near the defaults.
+ * @type {!Array<number>}
+ * @const
+ */
+var AUTO_REPEAT_DELAYS =
+    [2000, 1500, 1000, 500, 300, 200, 150];
+
+/**
+ * Auto-repeat intervals (in ms) for the corresponding slider values, from
+ * long to short. The slider itself is labeled "rate", the inverse of
+ * interval, and goes from slow (long interval) to fast (short interval).
+ * @type {!Array<number>}
+ * @const
+ */
+var AUTO_REPEAT_INTERVALS =
+    [2000, 1000, 500, 300, 200, 100, 50, 30, 20];
+
+var AUTO_REPEAT_DELAY_PREF = 'settings.language.xkb_auto_repeat_delay_r2';
+var AUTO_REPEAT_INTERVAL_PREF = 'settings.language.xkb_auto_repeat_interval_r2';
+
 Polymer({
   is: 'settings-keyboard',
+
+  behaviors: [
+    PrefsBehavior,
+  ],
 
   properties: {
     /** Preferences state. */
@@ -41,6 +68,13 @@ Polymer({
      */
     keyMapTargetsWithCapsLock_: Object,
   },
+
+  observers: [
+    'autoRepeatDelayPrefChanged_(' +
+        'prefs.' + AUTO_REPEAT_DELAY_PREF + '.*)',
+    'autoRepeatIntervalPrefChanged_(' +
+        'prefs.' + AUTO_REPEAT_INTERVAL_PREF + '.*)',
+  ],
 
   /** @override */
   ready: function() {
@@ -79,5 +113,79 @@ Polymer({
   onShowKeysChange_: function(showCapsLock, showDiamondKey) {
     this.showCapsLock_ = showCapsLock;
     this.showDiamondKey_ = showDiamondKey;
+  },
+
+  /** @private */
+  autoRepeatDelayPrefChanged_: function() {
+    var delay = /** @type number */(this.getPref(AUTO_REPEAT_DELAY_PREF).value);
+    this.$.delaySlider.value =
+        this.findNearestIndex_(AUTO_REPEAT_DELAYS, delay);
+  },
+
+  /** @private */
+  autoRepeatIntervalPrefChanged_: function() {
+    var interval = /** @type number */(
+        this.getPref(AUTO_REPEAT_INTERVAL_PREF).value);
+    this.$.repeatRateSlider.value =
+        this.findNearestIndex_(AUTO_REPEAT_INTERVALS, interval);
+  },
+
+  /** @private */
+  onDelaySliderChange_: function() {
+    var index = this.$.delaySlider.value;
+    assert(index >= 0 && index < AUTO_REPEAT_DELAYS.length);
+    this.setPrefValue(AUTO_REPEAT_DELAY_PREF, AUTO_REPEAT_DELAYS[index]);
+  },
+
+  /** @private */
+  onRepeatRateSliderChange_: function() {
+    var index = this.$.repeatRateSlider.value;
+    assert(index >= 0 && index < AUTO_REPEAT_INTERVALS.length);
+    this.setPrefValue(AUTO_REPEAT_INTERVAL_PREF, AUTO_REPEAT_INTERVALS[index]);
+  },
+
+  /**
+   * @return {number}
+   * @private
+   */
+  delayMaxTick_: function() {
+    return AUTO_REPEAT_DELAYS.length - 1;
+  },
+
+  /**
+   * @return {number}
+   * @private
+   */
+  repeatRateMaxTick_: function() {
+    return AUTO_REPEAT_INTERVALS.length - 1;
+  },
+
+  /**
+   * Returns the index of the item in |arr| closest to |value|. Same cost as
+   * Array.prototype.indexOf if an exact match exists.
+   * @param {!Array<number>} arr
+   * @param {number} value
+   * @return {number}
+   * @private
+   */
+  findNearestIndex_: function(arr, value) {
+    assert(arr.length);
+
+    // The common case has an exact match.
+    var closestIndex = arr.indexOf(value);
+    if (closestIndex != -1)
+      return closestIndex;
+
+    // No exact match. Find the element closest to |value|.
+    var minDifference = Number.MAX_VALUE;
+    for (var i = 0; i < arr.length; i++) {
+      var difference = Math.abs(arr[i] - value);
+      if (difference < minDifference) {
+        closestIndex = i;
+        minDifference = difference;
+      }
+    }
+
+    return closestIndex;
   },
 });

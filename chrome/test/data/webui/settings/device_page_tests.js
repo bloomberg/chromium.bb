@@ -69,7 +69,22 @@ cr.define('settings_device_page', function() {
             key: 'settings.language.send_function_keys',
             type: chrome.settingsPrivate.PrefType.BOOLEAN,
             value: false,
-          }
+          },
+          xkb_auto_repeat_enabled_r2: {
+            key: 'prefs.settings.language.xkb_auto_repeat_enabled_r2',
+            type: chrome.settingsPrivate.PrefType.BOOLEAN,
+            value: true,
+          },
+          xkb_auto_repeat_delay_r2: {
+            key: 'settings.language.xkb_auto_repeat_delay_r2',
+            type: chrome.settingsPrivate.PrefType.NUMBER,
+            value: 500,
+          },
+          xkb_auto_repeat_interval_r2: {
+            key: 'settings.language.xkb_auto_repeat_delay_r2',
+            type: chrome.settingsPrivate.PrefType.NUMBER,
+            value: 500,
+          },
         }
       }
     };
@@ -186,6 +201,77 @@ cr.define('settings_device_page', function() {
       Polymer.dom.flush();
       expectTrue(!!keyboardPage.$$('#capsLockKey'));
       expectTrue(!!keyboardPage.$$('#diamondKey'));
+
+      var collapse = keyboardPage.$$('iron-collapse');
+      assertTrue(!!collapse);
+      expectTrue(collapse.opened);
+
+      // Values are based on indices of auto-repeat options in keyboard.js.
+      expectEquals(keyboardPage.$.delaySlider.immediateValue, 3);
+      expectEquals(keyboardPage.$.repeatRateSlider.immediateValue, 2);
+
+      // Test interaction with slider.
+      MockInteractions.pressAndReleaseKeyOn(
+          keyboardPage.$.delaySlider, 37 /* left */);
+      MockInteractions.pressAndReleaseKeyOn(
+          keyboardPage.$.repeatRateSlider, 39 /* right */);
+      expectEquals(
+          fakePrefs.settings.language.xkb_auto_repeat_delay_r2.value, 1000);
+      expectEquals(
+          fakePrefs.settings.language.xkb_auto_repeat_interval_r2.value,
+          300);
+
+      // Test sliders change when prefs change.
+      devicePage.set(
+          'prefs.settings.language.xkb_auto_repeat_delay_r2.value', 1500);
+      expectEquals(keyboardPage.$.delaySlider.immediateValue, 1);
+      devicePage.set(
+          'prefs.settings.language.xkb_auto_repeat_interval_r2.value', 2000);
+      expectEquals(keyboardPage.$.repeatRateSlider.immediateValue, 0);
+
+      // Test sliders round to nearest value when prefs change.
+      devicePage.set(
+          'prefs.settings.language.xkb_auto_repeat_delay_r2.value', 600);
+      expectEquals(keyboardPage.$.delaySlider.immediateValue, 3 /* 500 */);
+      devicePage.set(
+          'prefs.settings.language.xkb_auto_repeat_interval_r2.value', 45);
+      expectEquals(keyboardPage.$.repeatRateSlider.immediateValue, 6 /* 50 */);
+
+      devicePage.set(
+          'prefs.settings.language.xkb_auto_repeat_enabled_r2.value', false);
+      expectFalse(collapse.opened);
+    });
+
+    // Test more edge cases for slider rounding logic.
+    // TODO(michaelpg): Move this test to settings-slider tests once that
+    // element is created.
+    test('keyboard sliders', function() {
+      var keyboardPage = showAndGetDeviceSubpage('keyboard');
+      assertTrue(!!keyboardPage);
+
+      var testArray = [80, 20, 350, 1000, 200, 100];
+      var testFindNearestIndex = function(expectedIndex, value) {
+        expectEquals(
+            expectedIndex, keyboardPage.findNearestIndex_(testArray, value));
+      };
+      testFindNearestIndex(0, 51);
+      testFindNearestIndex(0, 80);
+      testFindNearestIndex(0, 89);
+      testFindNearestIndex(1, -100);
+      testFindNearestIndex(1, 20);
+      testFindNearestIndex(1, 49);
+      testFindNearestIndex(2, 400);
+      testFindNearestIndex(2, 350);
+      testFindNearestIndex(2, 300);
+      testFindNearestIndex(3, 200000);
+      testFindNearestIndex(3, 1000);
+      testFindNearestIndex(3, 700);
+      testFindNearestIndex(4, 220);
+      testFindNearestIndex(4, 200);
+      testFindNearestIndex(4, 151);
+      testFindNearestIndex(5, 149);
+      testFindNearestIndex(5, 100);
+      testFindNearestIndex(5, 91);
     });
 
     test('display subpage', function() {

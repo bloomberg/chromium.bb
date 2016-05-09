@@ -8,16 +8,14 @@
 <link rel="import" href="chrome://md-settings/settings_shared_css.html">
 
 <dom-module id="settings-appearance-fonts-page">
-  <link rel="import" type="css"
-      href="chrome://md-settings/appearance_page/appearance_shared.css">
   <template>
     <style include="settings-shared"></style>
     <div class="settings-box first">
       <div class="start">$i18n{fontSize}</div>
-      <paper-slider class="slider-labels" id="sizeSlider"
-        value="{{fontSizeIndex_}}"
-        max="[[fontSizeRangeLimit_]]" max-markers="5"
-        immediate-value="{{immediateSizeIndex_}}" snaps>
+      <paper-slider class="always-on" id="sizeSlider"
+          value="{{fontSizeIndex_}}"
+          max="[[fontSizeRangeLimit_]]" max-markers="5"
+          immediate-value="{{immediateSizeIndex_}}" snaps>
       </paper-slider>
     </div>
     <div class="settings-box">
@@ -26,10 +24,10 @@
         <span>[[minimumFontSize_]]</span>:&nbsp;
         $i18n{quickBrownFox}
       </div>
-      <paper-slider class="slider-labels" id="minimumSizeSlider"
-        value="{{minimumSizeIndex_}}"
-        max="[[minimumFontSizeRangeLimit_]]" max-markers="5"
-        immediate-value="{{immediateMinimumSizeIndex_}}" snaps>
+      <paper-slider class="always-on" id="minimumSizeSlider"
+          value="{{minimumSizeIndex_}}"
+          max="[[minimumFontSizeRangeLimit_]]" max-markers="5"
+          immediate-value="{{immediateMinimumSizeIndex_}}" snaps>
     </paper-slider>
     </div>
     <div class="settings-box">

@@ -206,7 +206,8 @@
         padding: 0 20px;
       }
 
-      .settings-box.first {
+      .settings-box.first,
+      .settings-box.continuation {
         border-top: none;
       }
 
@@ -262,6 +263,13 @@
             var(--checkbox-margin-start) +
             var(--checkbox-size) +
             var(--checkbox-spacing));
+      }
+
+      /* Keep the slider color consistent throughout the range. */
+      paper-slider.always-on {
+        --paper-slider-knob-start-border-color: var(--google-blue-700);
+        --paper-slider-knob-start-color: var(--google-blue-700);
+        --paper-slider-pin-start-color: var(--google-blue-700);
       }
     </style>
   </template>
