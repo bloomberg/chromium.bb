@@ -66,6 +66,7 @@ interface HTMLInputElement : HTMLElement
     attribute speechSynthesis
     method gc
     method webkitResolveLocalFileSystemURL
+    method onerror
 
 # TODO(timvolodine): check screen orientation lock api
 # TODO(timvolodine): check notifications in service workers
