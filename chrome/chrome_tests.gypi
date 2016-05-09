@@ -638,6 +638,7 @@
     'chrome_browser_tests_ash_sources': [
       'browser/ui/ash/accelerator_commands_browsertest.cc',
       'browser/ui/ash/accelerator_controller_browsertest.cc',
+      'browser/ui/ash/chrome_new_window_delegate_browsertest.cc',
       'browser/ui/ash/keyboard_controller_browsertest.cc',
       'browser/ui/ash/launcher/chrome_launcher_controller_browsertest.cc',
       'browser/ui/ash/launcher/launcher_favicon_loader_browsertest.cc',

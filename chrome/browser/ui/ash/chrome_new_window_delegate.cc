@@ -97,7 +97,10 @@ void ChromeNewWindowDelegate::NewTab() {
 }
 
 void ChromeNewWindowDelegate::NewWindow(bool is_incognito) {
-  Profile* profile = ProfileManager::GetActiveUserProfile();
+  Browser* browser = GetBrowserForActiveWindow();
+  Profile* profile = (browser && browser->profile())
+                         ? browser->profile()->GetOriginalProfile()
+                         : ProfileManager::GetActiveUserProfile();
   chrome::NewEmptyWindow(is_incognito ? profile->GetOffTheRecordProfile()
                                       : profile);
 }
