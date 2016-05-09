@@ -12,7 +12,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import java.lang.reflect.Method;
+import java.lang.reflect.AnnotatedElement;
 import java.net.URL;
 
 /**
@@ -111,7 +111,7 @@ public class CronetTestBase extends AndroidTestCase {
         String packageName = getClass().getPackage().getName();
         if (packageName.equals("org.chromium.net.urlconnection")) {
             try {
-                Method method = getClass().getMethod(getName(), (Class[]) null);
+                AnnotatedElement method = getClass().getMethod(getName(), (Class[]) null);
                 if (method.isAnnotationPresent(CompareDefaultWithCronet.class)) {
                     // Run with the default HttpURLConnection implementation first.
                     mTestingSystemHttpURLConnection = true;
@@ -133,7 +133,7 @@ public class CronetTestBase extends AndroidTestCase {
             }
         } else if (packageName.equals("org.chromium.net")) {
             try {
-                Method method = getClass().getMethod(getName(), (Class[]) null);
+                AnnotatedElement method = getClass().getMethod(getName(), (Class[]) null);
                 super.runTest();
                 if (!method.isAnnotationPresent(OnlyRunNativeCronet.class)) {
                     if (mCronetTestFramework != null) {
