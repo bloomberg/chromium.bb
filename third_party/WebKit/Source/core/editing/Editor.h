@@ -282,7 +282,7 @@ private:
 
     void revealSelectionAfterEditingOperation(const ScrollAlignment& = ScrollAlignment::alignCenterIfNeeded, RevealExtentOption = DoNotRevealExtent);
     void changeSelectionAfterCommand(const VisibleSelection& newSelection, FrameSelection::SetSelectionOptions);
-    void notifyComponentsOnChangedSelection(const VisibleSelection& oldSelection, FrameSelection::SetSelectionOptions);
+    void notifyComponentsOnChangedSelection(const VisibleSelection& oldSelection);
 
     Element* findEventTargetFromSelection() const;
 
