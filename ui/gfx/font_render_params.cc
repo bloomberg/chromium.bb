@@ -22,38 +22,38 @@ FontRenderParams::FontRenderParams(const FontRenderParams& other) = default;
 FontRenderParams::~FontRenderParams() {}
 
 // static
-SkFontHost::LCDOrder FontRenderParams::SubpixelRenderingToSkiaLCDOrder(
+SkFontLCDConfig::LCDOrder FontRenderParams::SubpixelRenderingToSkiaLCDOrder(
     FontRenderParams::SubpixelRendering subpixel_rendering) {
   switch (subpixel_rendering) {
     case gfx::FontRenderParams::SUBPIXEL_RENDERING_NONE:
     case gfx::FontRenderParams::SUBPIXEL_RENDERING_RGB:
     case gfx::FontRenderParams::SUBPIXEL_RENDERING_VRGB:
-      return SkFontHost::kRGB_LCDOrder;
+      return SkFontLCDConfig::kRGB_LCDOrder;
     case gfx::FontRenderParams::SUBPIXEL_RENDERING_BGR:
     case gfx::FontRenderParams::SUBPIXEL_RENDERING_VBGR:
-      return SkFontHost::kBGR_LCDOrder;
+      return SkFontLCDConfig::kBGR_LCDOrder;
   }
 
   NOTREACHED();
-  return SkFontHost::kRGB_LCDOrder;
+  return SkFontLCDConfig::kRGB_LCDOrder;
 }
 
 // static
-SkFontHost::LCDOrientation
+SkFontLCDConfig::LCDOrientation
 FontRenderParams::SubpixelRenderingToSkiaLCDOrientation(
     FontRenderParams::SubpixelRendering subpixel_rendering) {
   switch (subpixel_rendering) {
     case gfx::FontRenderParams::SUBPIXEL_RENDERING_NONE:
     case gfx::FontRenderParams::SUBPIXEL_RENDERING_RGB:
     case gfx::FontRenderParams::SUBPIXEL_RENDERING_BGR:
-      return SkFontHost::kHorizontal_LCDOrientation;
+      return SkFontLCDConfig::kHorizontal_LCDOrientation;
     case gfx::FontRenderParams::SUBPIXEL_RENDERING_VRGB:
     case gfx::FontRenderParams::SUBPIXEL_RENDERING_VBGR:
-      return SkFontHost::kVertical_LCDOrientation;
+      return SkFontLCDConfig::kVertical_LCDOrientation;
   }
 
   NOTREACHED();
-  return SkFontHost::kHorizontal_LCDOrientation;
+  return SkFontLCDConfig::kHorizontal_LCDOrientation;
 }
 
 FontRenderParamsQuery::FontRenderParamsQuery()

@@ -21,6 +21,7 @@
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkSurface.h"
+#include "third_party/skia/include/core/SkTypeface.h"
 #include "ui/gfx/break_list.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"

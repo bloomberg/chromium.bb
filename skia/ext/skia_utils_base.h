@@ -7,7 +7,6 @@
 
 #include "base/pickle.h"
 #include "third_party/skia/include/ports/SkFontConfigInterface.h"
-#include "third_party/skia/include/core/SkFontHost.h"
 #include "third_party/skia/include/core/SkSurfaceProps.h"
 
 namespace skia {

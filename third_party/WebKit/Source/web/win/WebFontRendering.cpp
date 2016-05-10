@@ -46,15 +46,15 @@ void WebFontRendering::setStatusFontMetrics(const wchar_t* familyName, int32_t f
 }
 
 // static
-void WebFontRendering::setLCDOrder(SkFontHost::LCDOrder order)
+void WebFontRendering::setLCDOrder(SkFontLCDConfig::LCDOrder order)
 {
-    SkFontHost::SetSubpixelOrder(order);
+    SkFontLCDConfig::SetSubpixelOrder(order);
 }
 
 // static
-void WebFontRendering::setLCDOrientation(SkFontHost::LCDOrientation orientation)
+void WebFontRendering::setLCDOrientation(SkFontLCDConfig::LCDOrientation orientation)
 {
-    SkFontHost::SetSubpixelOrientation(orientation);
+    SkFontLCDConfig::SetSubpixelOrientation(orientation);
 }
 
 // static

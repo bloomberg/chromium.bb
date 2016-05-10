@@ -25,6 +25,7 @@
 #include "base/win/scoped_hdc.h"
 #include "base/win/scoped_select_object.h"
 #include "base/win/win_util.h"
+#include "third_party/skia/include/core/SkFontLCDConfig.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
@@ -590,10 +591,10 @@ PlatformFontWin::HFontRef* PlatformFontWin::CreateHFontRefFromSkia(
 
   gfx::FontRenderParams font_params =
       gfx::GetFontRenderParams(gfx::FontRenderParamsQuery(), nullptr);
-  SkFontHost::SetSubpixelOrder(
+  SkFontLCDConfig::SetSubpixelOrder(
       gfx::FontRenderParams::SubpixelRenderingToSkiaLCDOrder(
           font_params.subpixel_rendering));
-  SkFontHost::SetSubpixelOrientation(
+  SkFontLCDConfig::SetSubpixelOrientation(
       gfx::FontRenderParams::SubpixelRenderingToSkiaLCDOrientation(
           font_params.subpixel_rendering));
 
