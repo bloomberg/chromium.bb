@@ -842,6 +842,8 @@ PassOwnPtr<TracedValue> FrameView::analyzerCounters()
     OwnPtr<TracedValue> value = m_analyzer->toTracedValue();
     value->setString("host", layoutView()->document().location()->host());
     value->setString("frame", String::format("0x%" PRIxPTR, reinterpret_cast<uintptr_t>(m_frame.get())));
+    value->setInteger("contentsHeightAfterLayout", layoutView()->documentRect().height());
+    value->setInteger("visibleHeight", visibleHeight());
     return value.release();
 }
 
@@ -851,7 +853,8 @@ void FrameView::performLayout(bool inSubtreeLayout)
 {
     ASSERT(inSubtreeLayout || m_layoutSubtreeRootList.isEmpty());
 
-    TRACE_EVENT_BEGIN0(PERFORM_LAYOUT_TRACE_CATEGORIES, "FrameView::performLayout");
+    TRACE_EVENT_BEGIN1(PERFORM_LAYOUT_TRACE_CATEGORIES, "FrameView::performLayout",
+        "contentsHeightBeforeLayout", layoutView()->documentRect().height());
     prepareLayoutAnalyzer();
 
     ScriptForbiddenScope forbidScript;
