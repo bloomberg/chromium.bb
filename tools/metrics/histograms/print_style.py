@@ -68,7 +68,7 @@ LOWERCASE_NAME_FN = lambda n: n.attributes['name'].value.lower()
 TAGS_ALPHABETIZATION_RULES = {
     'histograms': ('histogram', LOWERCASE_NAME_FN),
     'enums': ('enum', LOWERCASE_NAME_FN),
-    'enum': ('int', lambda n: n.attributes['value'].value.lower()),
+    'enum': ('int', lambda n: int(n.attributes['value'].value)),
     'histogram_suffixes_list': ('histogram_suffixes', LOWERCASE_NAME_FN),
     'histogram_suffixes': ('affected-histogram', LOWERCASE_NAME_FN),
 }

@@ -8,6 +8,7 @@ The function PrettyPrintXml will be used for formatting both histograms.xml
 and actions.xml.
 """
 
+import sys
 import logging
 import textwrap
 import xml.dom.minidom
@@ -94,14 +95,22 @@ class XmlStyle(object):
       # Put subnodes in a list of node, key pairs to allow for custom sorting.
       subtag, key_function = self.tags_alphabetization_rules[node.tagName]
       subnodes = []
-      last_key = -1
+      sort_key = -1
+      pending_node_indices = []
       for c in node.childNodes:
         if (c.nodeType == xml.dom.minidom.Node.ELEMENT_NODE and
             c.tagName == subtag):
-          last_key = key_function(c)
-        # Subnodes that we don't want to rearrange use the last node's key,
-        # so they stay in the same relative position.
-        subnodes.append((c, last_key))
+          sort_key = key_function(c)
+          # Replace sort keys for delayed nodes.
+          for idx in pending_node_indices:
+            subnodes[idx][1] = sort_key
+          pending_node_indices = []
+        else:
+          # Subnodes that we don't want to rearrange use the next node's key,
+          # so they stay in the same relative position.
+          # Therefore we delay setting key until the next node is found.
+          pending_node_indices.append(len(subnodes))
+        subnodes.append( [c, sort_key] )
 
       # Sort the subnode list.
       subnodes.sort(key=lambda pair: pair[1])
