@@ -1092,7 +1092,7 @@ err_name:
 }
 
 static void
-weston_wayland_output_config_init(struct weston_wayland_backend_output_config *output,
+weston_wayland_output_config_init(struct weston_wayland_backend_output_config *output_config,
 				  struct weston_config_section *config_section,
 				  int option_width, int option_height,
 				  int option_scale)
@@ -1100,46 +1100,46 @@ weston_wayland_output_config_init(struct weston_wayland_backend_output_config *o
 	char *mode, *t, *str;
 	unsigned int slen;
 
-	weston_config_section_get_string(config_section, "name", &output->name,
+	weston_config_section_get_string(config_section, "name", &output_config->name,
 					 NULL);
-	if (output->name) {
-		slen = strlen(output->name);
+	if (output_config->name) {
+		slen = strlen(output_config->name);
 		slen += strlen(WINDOW_TITLE " - ");
 		str = malloc(slen + 1);
 		if (str)
 			snprintf(str, slen + 1, WINDOW_TITLE " - %s",
-				 output->name);
-		free(output->name);
-		output->name = str;
+				 output_config->name);
+		free(output_config->name);
+		output_config->name = str;
 	}
-	if (!output->name)
-		output->name = strdup(WINDOW_TITLE);
+	if (!output_config->name)
+		output_config->name = strdup(WINDOW_TITLE);
 
 	weston_config_section_get_string(config_section,
 					 "mode", &mode, "1024x600");
-	if (sscanf(mode, "%dx%d", &output->width, &output->height) != 2) {
+	if (sscanf(mode, "%dx%d", &output_config->width, &output_config->height) != 2) {
 		weston_log("Invalid mode \"%s\" for output %s\n",
-			   mode, output->name);
-		output->width = 1024;
-		output->height = 640;
+			   mode, output_config->name);
+		output_config->width = 1024;
+		output_config->height = 640;
 	}
 	free(mode);
 
 	if (option_width)
-		output->width = option_width;
+		output_config->width = option_width;
 	if (option_height)
-		output->height = option_height;
+		output_config->height = option_height;
 
-	weston_config_section_get_int(config_section, "scale", &output->scale, 1);
+	weston_config_section_get_int(config_section, "scale", &output_config->scale, 1);
 
 	if (option_scale)
-		output->scale = option_scale;
+		output_config->scale = option_scale;
 
 	weston_config_section_get_string(config_section,
 					 "transform", &t, "normal");
-	if (weston_parse_transform(t, &output->transform) < 0)
+	if (weston_parse_transform(t, &output_config->transform) < 0)
 		weston_log("Invalid transform \"%s\" for output %s\n",
-			   t, output->name);
+			   t, output_config->name);
 	free(t);
 
 }
