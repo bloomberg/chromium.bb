@@ -16,7 +16,7 @@ bool isReservedIPAddress(const String& host)
 {
     net::IPAddress address;
     StringUTF8Adaptor utf8(host);
-    if (!net::ParseURLHostnameToAddress(std::string(utf8.data(), utf8.length()), &address))
+    if (!net::ParseURLHostnameToAddress(utf8.asStringPiece(), &address))
         return false;
     return address.IsReserved();
 }
