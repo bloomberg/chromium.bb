@@ -16,8 +16,6 @@
 
 namespace chromeos {
 
-class ErrorScreenActor;
-
 // A class that handles the WebUI hooks for the app launch splash screen.
 class AppLaunchSplashScreenHandler
     : public BaseScreenHandler,
