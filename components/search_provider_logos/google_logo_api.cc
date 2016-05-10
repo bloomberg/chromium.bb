@@ -22,7 +22,8 @@ const char kResponsePreamble[] = ")]}'";
 
 GURL GoogleAppendQueryparamsToLogoURL(const GURL& logo_url,
                                       const std::string& fingerprint,
-                                      bool wants_cta) {
+                                      bool wants_cta,
+                                      bool transparent) {
   // Note: we can't just use net::AppendQueryParameter() because it escapes
   // ":" to "%3A", but the server requires the colon not to be escaped.
   // See: http://crbug.com/413845
@@ -35,14 +36,17 @@ GURL GoogleAppendQueryparamsToLogoURL(const GURL& logo_url,
       query += "&";
 
     query += "async=";
-    if (!fingerprint.empty()) {
-      query += "es_dfp:" + fingerprint;
-      if (wants_cta)
-        query += ",";
-    }
-    if (wants_cta) {
-      query += "cta:1";
-    }
+    std::vector<std::string> params;
+    if (!fingerprint.empty())
+      params.push_back("es_dfp:" + fingerprint);
+
+    if (wants_cta)
+      params.push_back("cta:1");
+
+    if (transparent)
+      params.push_back("transp:1");
+
+    query += base::JoinString(params, ",");
     GURL::Replacements replacements;
     replacements.SetQueryStr(query);
     return logo_url.ReplaceComponents(replacements);

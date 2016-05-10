@@ -18,7 +18,8 @@ namespace search_provider_logos {
 // doodles.
 GURL GoogleAppendQueryparamsToLogoURL(const GURL& logo_url,
                                       const std::string& fingerprint,
-                                      bool wants_cta);
+                                      bool wants_cta,
+                                      bool transparent);
 
 // Implements ParseLogoResponse, defined in logo_tracker.h, for Google doodles.
 std::unique_ptr<EncodedLogo> GoogleParseLogoResponse(

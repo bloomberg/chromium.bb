@@ -125,7 +125,8 @@ void LogoService::GetLogo(search_provider_logos::LogoObserver* observer) {
       GetGoogleDoodleURL(profile_),
       base::Bind(&search_provider_logos::GoogleParseLogoResponse),
       base::Bind(&search_provider_logos::GoogleAppendQueryparamsToLogoURL),
-      true);
+      true, /* wants_cta */
+      false /* transparent */);
   logo_tracker_->GetLogo(observer);
 }
 

@@ -92,7 +92,8 @@ void LogoTracker::SetServerAPI(
     const GURL& logo_url,
     const ParseLogoResponse& parse_logo_response_func,
     const AppendQueryparamsToLogoURL& append_queryparams_func,
-    bool wants_cta) {
+    bool wants_cta,
+    bool transparent) {
   if (logo_url == logo_url_)
     return;
 
@@ -102,6 +103,7 @@ void LogoTracker::SetServerAPI(
   parse_logo_response_func_ = parse_logo_response_func;
   append_queryparams_func_ = append_queryparams_func;
   wants_cta_ = wants_cta;
+  transparent_ = transparent;
 }
 
 void LogoTracker::GetLogo(LogoObserver* observer) {
@@ -212,7 +214,8 @@ void LogoTracker::FetchLogo() {
       cached_logo_->metadata.expiration_time >= clock_->Now()) {
     fingerprint = cached_logo_->metadata.fingerprint;
   }
-  url = append_queryparams_func_.Run(logo_url_, fingerprint, wants_cta_);
+  url = append_queryparams_func_.Run(
+      logo_url_, fingerprint, wants_cta_, transparent_);
 
   fetcher_ = net::URLFetcher::Create(url, net::URLFetcher::GET, this);
   fetcher_->SetRequestContext(request_context_getter_.get());
