@@ -17,7 +17,11 @@ namespace offline_pages {
 
 class OfflinePageModel;
 
-// A factory to create one unique OfflinePageModel.
+// A factory to create one unique OfflinePageModel. Offline pages are not
+// supported in incognito, and this class uses default implementation of
+// |GetBrowserContextToUse|.
+// TODO(fgorski): Add an integration test that ensures incognito users don't
+// save or open offline pages.
 class OfflinePageModelFactory : public BrowserContextKeyedServiceFactory {
  public:
   static OfflinePageModelFactory* GetInstance();
@@ -31,9 +35,6 @@ class OfflinePageModelFactory : public BrowserContextKeyedServiceFactory {
   ~OfflinePageModelFactory() override {}
 
   KeyedService* BuildServiceInstanceFor(
-      content::BrowserContext* context) const override;
-
-  content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const override;
 
   DISALLOW_COPY_AND_ASSIGN(OfflinePageModelFactory);

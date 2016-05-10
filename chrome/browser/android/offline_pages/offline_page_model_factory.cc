@@ -8,7 +8,6 @@
 
 #include "base/files/file_path.h"
 #include "base/memory/singleton.h"
-#include "base/path_service.h"
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
@@ -56,11 +55,6 @@ KeyedService* OfflinePageModelFactory::BuildServiceInstanceFor(
 
   return new OfflinePageModel(std::move(metadata_store), archives_dir,
                               background_task_runner);
-}
-
-content::BrowserContext* OfflinePageModelFactory::GetBrowserContextToUse(
-    content::BrowserContext* context) const {
-  return chrome::GetBrowserContextRedirectedInIncognito(context);
 }
 
 }  // namespace offline_pages
