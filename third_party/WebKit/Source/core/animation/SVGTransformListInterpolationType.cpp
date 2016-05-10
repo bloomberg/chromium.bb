@@ -277,7 +277,7 @@ SVGPropertyBase* SVGTransformListInterpolationType::appliedSVGValue(const Interp
     return result;
 }
 
-PairwiseInterpolationValue SVGTransformListInterpolationType::mergeSingleConversions(InterpolationValue&& start, InterpolationValue&& end) const
+PairwiseInterpolationValue SVGTransformListInterpolationType::maybeMergeSingles(InterpolationValue&& start, InterpolationValue&& end) const
 {
     if (!transformTypesMatch(start, end))
         return nullptr;

@@ -146,7 +146,7 @@ InterpolationValue CSSVisibilityInterpolationType::maybeConvertUnderlyingValue(c
     return createVisibilityValue(environment.state().style()->visibility());
 }
 
-PairwiseInterpolationValue CSSVisibilityInterpolationType::mergeSingleConversions(InterpolationValue&& start, InterpolationValue&& end) const
+PairwiseInterpolationValue CSSVisibilityInterpolationType::maybeMergeSingles(InterpolationValue&& start, InterpolationValue&& end) const
 {
     return PairwiseInterpolationValue(
         InterpolableNumber::create(0),

@@ -36,13 +36,13 @@ InterpolationValue SVGNumberListInterpolationType::maybeConvertSVGValue(const SV
     return InterpolationValue(result.release());
 }
 
-PairwiseInterpolationValue SVGNumberListInterpolationType::mergeSingleConversions(InterpolationValue&& start, InterpolationValue&& end) const
+PairwiseInterpolationValue SVGNumberListInterpolationType::maybeMergeSingles(InterpolationValue&& start, InterpolationValue&& end) const
 {
     size_t startLength = toInterpolableList(*start.interpolableValue).length();
     size_t endLength = toInterpolableList(*end.interpolableValue).length();
     if (startLength != endLength)
         return nullptr;
-    return InterpolationType::mergeSingleConversions(std::move(start), std::move(end));
+    return InterpolationType::maybeMergeSingles(std::move(start), std::move(end));
 }
 
 static void padWithZeroes(OwnPtr<InterpolableValue>& listPointer, size_t paddedLength)

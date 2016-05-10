@@ -198,7 +198,7 @@ InterpolationValue CSSImageSliceInterpolationType::maybeConvertUnderlyingValue(c
     return convertImageSlice(ImageSlicePropertyFunctions::getImageSlice(cssProperty(), style), style.effectiveZoom());
 }
 
-PairwiseInterpolationValue CSSImageSliceInterpolationType::mergeSingleConversions(InterpolationValue&& start, InterpolationValue&& end) const
+PairwiseInterpolationValue CSSImageSliceInterpolationType::maybeMergeSingles(InterpolationValue&& start, InterpolationValue&& end) const
 {
     const SliceTypes& startSliceTypes = toCSSImageSliceNonInterpolableValue(*start.nonInterpolableValue).types();
     const SliceTypes& endSliceTypes = toCSSImageSliceNonInterpolableValue(*end.nonInterpolableValue).types();

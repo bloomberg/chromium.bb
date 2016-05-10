@@ -92,7 +92,7 @@ InterpolationValue CSSBasicShapeInterpolationType::maybeConvertValue(const CSSVa
     return BasicShapeInterpolationFunctions::maybeConvertCSSValue(*list.item(0));
 }
 
-PairwiseInterpolationValue CSSBasicShapeInterpolationType::mergeSingleConversions(InterpolationValue&& start, InterpolationValue&& end) const
+PairwiseInterpolationValue CSSBasicShapeInterpolationType::maybeMergeSingles(InterpolationValue&& start, InterpolationValue&& end) const
 {
     if (!BasicShapeInterpolationFunctions::shapesAreCompatible(*start.nonInterpolableValue, *end.nonInterpolableValue))
         return nullptr;

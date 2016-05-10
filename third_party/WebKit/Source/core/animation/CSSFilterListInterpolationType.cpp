@@ -129,7 +129,7 @@ InterpolationValue CSSFilterListInterpolationType::maybeConvertUnderlyingValue(c
     return convertFilterList(FilterListPropertyFunctions::getFilterList(cssProperty(), style), style.effectiveZoom());
 }
 
-PairwiseInterpolationValue CSSFilterListInterpolationType::mergeSingleConversions(InterpolationValue&& start, InterpolationValue&& end) const
+PairwiseInterpolationValue CSSFilterListInterpolationType::maybeMergeSingles(InterpolationValue&& start, InterpolationValue&& end) const
 {
     NonInterpolableList& startNonInterpolableList = toNonInterpolableList(*start.nonInterpolableValue);
     NonInterpolableList& endNonInterpolableList = toNonInterpolableList(*end.nonInterpolableValue);

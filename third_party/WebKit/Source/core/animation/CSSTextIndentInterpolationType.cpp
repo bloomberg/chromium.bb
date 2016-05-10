@@ -159,7 +159,7 @@ InterpolationValue CSSTextIndentInterpolationType::maybeConvertUnderlyingValue(c
     return createValue(style.textIndent(), IndentMode(style), style.effectiveZoom());
 }
 
-PairwiseInterpolationValue CSSTextIndentInterpolationType::mergeSingleConversions(InterpolationValue&& start, InterpolationValue&& end) const
+PairwiseInterpolationValue CSSTextIndentInterpolationType::maybeMergeSingles(InterpolationValue&& start, InterpolationValue&& end) const
 {
     CSSTextIndentNonInterpolableValue& startNonInterpolableValue = toCSSTextIndentNonInterpolableValue(*start.nonInterpolableValue);
     CSSTextIndentNonInterpolableValue& endNonInterpolableValue = toCSSTextIndentNonInterpolableValue(*end.nonInterpolableValue);

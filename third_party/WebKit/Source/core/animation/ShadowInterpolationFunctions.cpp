@@ -53,7 +53,7 @@ bool ShadowInterpolationFunctions::nonInterpolableValuesAreCompatible(const NonI
     return toShadowNonInterpolableValue(*a).style() == toShadowNonInterpolableValue(*b).style();
 }
 
-PairwiseInterpolationValue ShadowInterpolationFunctions::mergeSingleConversions(InterpolationValue&& start, InterpolationValue&& end)
+PairwiseInterpolationValue ShadowInterpolationFunctions::maybeMergeSingles(InterpolationValue&& start, InterpolationValue&& end)
 {
     if (!nonInterpolableValuesAreCompatible(start.nonInterpolableValue.get(), end.nonInterpolableValue.get()))
         return nullptr;

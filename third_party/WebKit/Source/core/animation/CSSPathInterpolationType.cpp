@@ -81,9 +81,9 @@ InterpolationValue CSSPathInterpolationType::maybeConvertUnderlyingValue(const I
     return PathInterpolationFunctions::convertValue(environment.state().style()->svgStyle().d());
 }
 
-PairwiseInterpolationValue CSSPathInterpolationType::mergeSingleConversions(InterpolationValue&& start, InterpolationValue&& end) const
+PairwiseInterpolationValue CSSPathInterpolationType::maybeMergeSingles(InterpolationValue&& start, InterpolationValue&& end) const
 {
-    return PathInterpolationFunctions::mergeSingleConversions(std::move(start), std::move(end));
+    return PathInterpolationFunctions::maybeMergeSingles(std::move(start), std::move(end));
 }
 
 } // namespace blink

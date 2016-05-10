@@ -181,7 +181,7 @@ InterpolationValue CSSTransformInterpolationType::maybeConvertSingle(const Prope
     return result;
 }
 
-PairwiseInterpolationValue CSSTransformInterpolationType::mergeSingleConversions(InterpolationValue&& start, InterpolationValue&& end) const
+PairwiseInterpolationValue CSSTransformInterpolationType::maybeMergeSingles(InterpolationValue&& start, InterpolationValue&& end) const
 {
     return PairwiseInterpolationValue(
         InterpolableNumber::create(0),

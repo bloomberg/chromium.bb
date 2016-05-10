@@ -221,7 +221,7 @@ InterpolationValue CSSBorderImageLengthBoxInterpolationType::maybeConvertUnderly
     return convertBorderImageLengthBox(BorderImageLengthBoxPropertyFunctions::getBorderImageLengthBox(cssProperty(), style), style.effectiveZoom());
 }
 
-PairwiseInterpolationValue CSSBorderImageLengthBoxInterpolationType::mergeSingleConversions(InterpolationValue&& start, InterpolationValue&& end) const
+PairwiseInterpolationValue CSSBorderImageLengthBoxInterpolationType::maybeMergeSingles(InterpolationValue&& start, InterpolationValue&& end) const
 {
     const SideNumbers& startSideNumbers = toCSSBorderImageLengthBoxNonInterpolableValue(*start.nonInterpolableValue).sideNumbers();
     const SideNumbers& endSideNumbers = toCSSBorderImageLengthBoxNonInterpolableValue(*end.nonInterpolableValue).sideNumbers();

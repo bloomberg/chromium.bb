@@ -226,7 +226,7 @@ InterpolationValue CSSClipInterpolationType::maybeConvertUnderlyingValue(const I
     return createClipValue(environment.state().style()->clip(), environment.state().style()->effectiveZoom());
 }
 
-PairwiseInterpolationValue CSSClipInterpolationType::mergeSingleConversions(InterpolationValue&& start, InterpolationValue&& end) const
+PairwiseInterpolationValue CSSClipInterpolationType::maybeMergeSingles(InterpolationValue&& start, InterpolationValue&& end) const
 {
     const ClipAutos& startAutos = toCSSClipNonInterpolableValue(*start.nonInterpolableValue).clipAutos();
     const ClipAutos& endAutos = toCSSClipNonInterpolableValue(*end.nonInterpolableValue).clipAutos();

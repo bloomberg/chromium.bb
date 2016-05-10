@@ -143,7 +143,7 @@ InterpolationValue CSSRotateInterpolationType::maybeConvertSingle(const Property
     return result;
 }
 
-PairwiseInterpolationValue CSSRotateInterpolationType::mergeSingleConversions(InterpolationValue&& start, InterpolationValue&& end) const
+PairwiseInterpolationValue CSSRotateInterpolationType::maybeMergeSingles(InterpolationValue&& start, InterpolationValue&& end) const
 {
     return PairwiseInterpolationValue(
         InterpolableNumber::create(0),

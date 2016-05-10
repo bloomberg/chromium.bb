@@ -130,7 +130,7 @@ static bool pathSegTypesMatch(const Vector<SVGPathSegType>& a, const Vector<SVGP
     return true;
 }
 
-PairwiseInterpolationValue PathInterpolationFunctions::mergeSingleConversions(InterpolationValue&& start, InterpolationValue&& end)
+PairwiseInterpolationValue PathInterpolationFunctions::maybeMergeSingles(InterpolationValue&& start, InterpolationValue&& end)
 {
     const Vector<SVGPathSegType>& startTypes = toSVGPathNonInterpolableValue(*start.nonInterpolableValue).pathSegTypes();
     const Vector<SVGPathSegType>& endTypes = toSVGPathNonInterpolableValue(*end.nonInterpolableValue).pathSegTypes();

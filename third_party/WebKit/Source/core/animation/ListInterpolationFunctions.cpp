@@ -40,7 +40,7 @@ bool ListInterpolationFunctions::equalValues(const InterpolationValue& a, const 
     return true;
 }
 
-PairwiseInterpolationValue ListInterpolationFunctions::mergeSingleConversions(InterpolationValue&& start, InterpolationValue&& end, MergeSingleItemConversionsCallback mergeSingleItemConversions)
+PairwiseInterpolationValue ListInterpolationFunctions::maybeMergeSingles(InterpolationValue&& start, InterpolationValue&& end, MergeSingleItemConversionsCallback mergeSingleItemConversions)
 {
     size_t startLength = toInterpolableList(*start.interpolableValue).length();
     size_t endLength = toInterpolableList(*end.interpolableValue).length();

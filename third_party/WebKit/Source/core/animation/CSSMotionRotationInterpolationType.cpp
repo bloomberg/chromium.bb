@@ -108,7 +108,7 @@ InterpolationValue CSSMotionRotationInterpolationType::maybeConvertValue(const C
     return convertMotionRotation(StyleBuilderConverter::convertMotionRotation(value));
 }
 
-PairwiseInterpolationValue CSSMotionRotationInterpolationType::mergeSingleConversions(InterpolationValue&& start, InterpolationValue&& end) const
+PairwiseInterpolationValue CSSMotionRotationInterpolationType::maybeMergeSingles(InterpolationValue&& start, InterpolationValue&& end) const
 {
     const MotionRotationType& startType = toCSSMotionRotationNonInterpolableValue(*start.nonInterpolableValue).rotationType();
     const MotionRotationType& endType = toCSSMotionRotationNonInterpolableValue(*end.nonInterpolableValue).rotationType();

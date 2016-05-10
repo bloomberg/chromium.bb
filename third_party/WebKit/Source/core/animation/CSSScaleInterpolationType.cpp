@@ -166,7 +166,7 @@ InterpolationValue CSSScaleInterpolationType::maybeConvertSingle(const PropertyS
     return result;
 }
 
-PairwiseInterpolationValue CSSScaleInterpolationType::mergeSingleConversions(InterpolationValue&& start, InterpolationValue&& end) const
+PairwiseInterpolationValue CSSScaleInterpolationType::maybeMergeSingles(InterpolationValue&& start, InterpolationValue&& end) const
 {
     return PairwiseInterpolationValue(
         start.interpolableValue.release(),
