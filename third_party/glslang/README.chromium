@@ -11,3 +11,4 @@ An OpenGL and OpenGL ES shader front end and validator.
 
 Local Modifications:
 Added OWNERS, README.chromium.
+Ported build rules from CMake to GN.
