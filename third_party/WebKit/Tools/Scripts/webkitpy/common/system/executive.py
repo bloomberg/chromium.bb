@@ -97,26 +97,6 @@ class Executive(object):
         # shows up on Mac and Linux.
         return sys.platform not in ('win32', 'cygwin')
 
-    def _run_command_with_teed_output(self, args, teed_output, **kwargs):
-        child_process = self.popen(args,
-                                   stdout=self.PIPE,
-                                   stderr=self.STDOUT,
-                                   close_fds=self._should_close_fds(),
-                                   **kwargs)
-
-        # Use our own custom wait loop because Popen ignores a tee'd
-        # stderr/stdout.
-        # FIXME: This could be improved not to flatten output to stdout.
-        while True:
-            output_line = child_process.stdout.readline()
-            if output_line == "" and child_process.poll() != None:
-                # poll() is not threadsafe and can throw OSError due to:
-                # http://bugs.python.org/issue1731717
-                return child_process.poll()
-            # We assume that the child process wrote to us in utf-8,
-            # so no re-encoding is necessary before writing here.
-            teed_output.write(output_line)
-
     def cpu_count(self):
         return multiprocessing.cpu_count()
 
