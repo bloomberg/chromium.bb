@@ -23,16 +23,20 @@ class ToughVideoCasesPage(page_module.Page):
     action_runner.PlayMedia(playing_event_timeout_in_seconds=60,
                             ended_event_timeout_in_seconds=60)
 
-  def SeekBeforeAndAfterPlayhead(self, action_runner):
-    action_runner.PlayMedia(playing_event_timeout_in_seconds=60,
-                            ended_event_timeout_in_seconds=60)
-    # Wait for 1 second so that we know the play-head is at ~1s.
+  def SeekBeforeAndAfterPlayhead(self, action_runner,
+                                 action_timeout_in_seconds=60):
+    timeout = action_timeout_in_seconds
+    # Because an ended timeout is passed, this won't return until the media has
+    # played through.
+    action_runner.PlayMedia(playing_event_timeout_in_seconds=timeout,
+                            ended_event_timeout_in_seconds=timeout)
+    # Wait 1 second for no reason in particular.
     action_runner.Wait(1)
     # Seek to before the play-head location.
-    action_runner.SeekMedia(seconds=0.5, timeout_in_seconds=60,
+    action_runner.SeekMedia(seconds=0.5, timeout_in_seconds=timeout,
                             label='seek_warm')
     # Seek to after the play-head location.
-    action_runner.SeekMedia(seconds=9, timeout_in_seconds=60,
+    action_runner.SeekMedia(seconds=9, timeout_in_seconds=timeout,
                             label='seek_cold')
 
 
@@ -496,7 +500,8 @@ class Page36(ToughVideoCasesPage):
     self.add_browser_metrics = True
 
   def RunPageInteractions(self, action_runner):
-    self.SeekBeforeAndAfterPlayhead(action_runner)
+    self.SeekBeforeAndAfterPlayhead(action_runner,
+                                    action_timeout_in_seconds=120)
 
 class Page37(ToughVideoCasesPage):
 

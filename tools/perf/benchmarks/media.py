@@ -39,9 +39,8 @@ class _MSEMeasurement(legacy_page_test.LegacyPageTest):
 # android: See media.android.tough_video_cases below
 # win8: crbug.com/531618
 # win7: crbug.com/555079
-# mac: crbug.com/595665
 # crbug.com/565180: Only include cases that report time_to_play
-@benchmark.Disabled('android', 'win8', 'win7', 'mac')
+@benchmark.Disabled('android', 'win8', 'win7')
 class Media(perf_benchmark.PerfBenchmark):
   """Obtains media metrics for key user scenarios."""
   test = media.Media
