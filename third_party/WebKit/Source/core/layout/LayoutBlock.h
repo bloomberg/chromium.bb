@@ -374,8 +374,6 @@ protected:
     // isInline.
     bool isInlineBlockOrInlineTable() const final { return isInline() && isAtomicInlineLevel(); }
 
-    void invalidateDisplayItemClients(const LayoutBoxModelObject& paintInvalidationContainer, PaintInvalidationReason) const override;
-
 private:
     LayoutObjectChildList* virtualChildren() final { return children(); }
     const LayoutObjectChildList* virtualChildren() const final { return children(); }
