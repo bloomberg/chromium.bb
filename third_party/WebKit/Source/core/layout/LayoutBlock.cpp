@@ -1248,18 +1248,6 @@ LayoutUnit LayoutBlock::inlineDirectionOffset(const LayoutSize& offsetFromBlock)
     return isHorizontalWritingMode() ? offsetFromBlock.width() : offsetFromBlock.height();
 }
 
-LayoutRect LayoutBlock::logicalRectToPhysicalRect(const LayoutPoint& rootBlockPhysicalPosition, const LayoutRect& logicalRect) const
-{
-    LayoutRect result;
-    if (isHorizontalWritingMode())
-        result = logicalRect;
-    else
-        result = LayoutRect(logicalRect.y(), logicalRect.x(), logicalRect.height(), logicalRect.width());
-    flipForWritingMode(result);
-    result.moveBy(rootBlockPhysicalPosition);
-    return result;
-}
-
 LayoutUnit LayoutBlock::logicalLeftSelectionOffset(const LayoutBlock* rootBlock, LayoutUnit position) const
 {
     // The border can potentially be further extended by our containingBlock().
