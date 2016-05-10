@@ -70,7 +70,8 @@ KeyframeEffect* KeyframeEffect::create(ExecutionContext* executionContext, Eleme
     if (element)
         UseCounter::count(element->document(), UseCounter::AnimationConstructorKeyframeListEffectObjectTiming);
     Timing timing;
-    if (!TimingInput::convert(timingInput, timing, &element->document(), exceptionState))
+    Document* document = element ? &element->document() : nullptr;
+    if (!TimingInput::convert(timingInput, timing, document, exceptionState))
         return nullptr;
     return create(element, EffectInput::convert(element, effectInput, executionContext, exceptionState), timing);
 }
