@@ -94,8 +94,7 @@ public:
 
     const LayoutRect& visualOverflowRect() const { return m_visualOverflow; }
     void setVisualOverflow(const LayoutRect& rect) { m_visualOverflow = rect; }
-    // TODO(wangxianzhu): Should use normal LayoutRect::unite() which ignores empty rects.
-    void addVisualOverflow(const LayoutRect& rect) { m_visualOverflow.uniteEvenIfEmpty(rect); }
+    void addVisualOverflow(const LayoutRect& rect) { m_visualOverflow.unite(rect); }
 
     void move(LayoutUnit dx, LayoutUnit dy)
     {
@@ -148,8 +147,7 @@ public:
     void addLayoutOverflow(const LayoutRect& rect) { uniteLayoutOverflowRect(m_layoutOverflow, rect); }
 
     const LayoutRect& selfVisualOverflowRect() const { return m_selfVisualOverflow; }
-    // TODO(wangxianzhu): Should use normal LayoutRect::unite() which ignores empty rects.
-    void addSelfVisualOverflow(const LayoutRect& rect) { m_selfVisualOverflow.uniteEvenIfEmpty(rect); }
+    void addSelfVisualOverflow(const LayoutRect& rect) { m_selfVisualOverflow.unite(rect); }
 
     const LayoutRect& contentsVisualOverflowRect() const { return m_contentsVisualOverflow; }
     void addContentsVisualOverflow(const LayoutRect& rect) { m_contentsVisualOverflow.unite(rect); }

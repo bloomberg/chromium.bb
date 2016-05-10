@@ -354,8 +354,10 @@ LayoutRect LayoutTableCell::localOverflowRectForPaintInvalidation() const
             right = std::max(right, below->borderHalfRight(true));
         }
     }
-    LayoutPoint location(std::max(LayoutUnit(left), -visualOverflowRect().x()), std::max(LayoutUnit(top), -visualOverflowRect().y()));
-    return LayoutRect(-location.x(), -location.y(), location.x() + std::max(size().width() + right, visualOverflowRect().maxX()), location.y() + std::max(size().height() + bottom, visualOverflowRect().maxY()));
+
+    LayoutRect selfVisualOverflowRect = this->selfVisualOverflowRect();
+    LayoutPoint location(std::max(LayoutUnit(left), -selfVisualOverflowRect.x()), std::max(LayoutUnit(top), -selfVisualOverflowRect.y()));
+    return LayoutRect(-location.x(), -location.y(), location.x() + std::max(size().width() + right, selfVisualOverflowRect.maxX()), location.y() + std::max(size().height() + bottom, selfVisualOverflowRect.maxY()));
 }
 
 bool LayoutTableCell::mapToVisualRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect& r, VisualRectFlags visualRectFlags) const

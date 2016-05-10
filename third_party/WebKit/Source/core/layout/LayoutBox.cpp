@@ -1987,14 +1987,10 @@ bool LayoutBox::needsForcedBreakBefore(EBreak previousBreakAfterValue) const
 
 LayoutRect LayoutBox::localOverflowRectForPaintInvalidation() const
 {
-    if (style()->visibility() != VISIBLE) {
-        PaintLayer* layer = enclosingLayer();
-        layer->updateDescendantDependentFlags();
-        if (layer->subtreeIsInvisible())
-            return LayoutRect();
-    }
+    if (style()->visibility() != VISIBLE)
+        return LayoutRect();
 
-    return visualOverflowRect();
+    return selfVisualOverflowRect();
 }
 
 void LayoutBox::inflateVisualRectForReflectionAndFilterUnderContainer(LayoutRect& rect, const LayoutObject& container, const LayoutBoxModelObject* ancestorToStopAt) const
@@ -4454,8 +4450,7 @@ LayoutRect LayoutBox::visualOverflowRect() const
         return borderBoxRect();
     if (hasOverflowClip())
         return m_overflow->selfVisualOverflowRect();
-    // TODO(wangxianzhu): We should use normal unionRect() which ignores empty rects.
-    return unionRectEvenIfEmpty(m_overflow->selfVisualOverflowRect(), m_overflow->contentsVisualOverflowRect());
+    return unionRect(m_overflow->selfVisualOverflowRect(), m_overflow->contentsVisualOverflowRect());
 }
 
 LayoutUnit LayoutBox::offsetLeft() const

@@ -212,13 +212,13 @@ TEST_F(VisualRectMappingTest, ContainerFlippedWritingMode)
     checkPaintInvalidationStateRectMapping(rect, targetOverflowRect, *target, layoutView(), layoutView());
 
     LayoutRect containerOverflowRect = container->localOverflowRectForPaintInvalidation();
-    EXPECT_EQ(LayoutRect(-40, 0, 240, 110), containerOverflowRect);
+    EXPECT_EQ(LayoutRect(0, 0, 200, 100), containerOverflowRect);
     rect = containerOverflowRect;
     EXPECT_TRUE(container->mapToVisualRectInAncestorSpace(container, rect));
-    EXPECT_EQ(LayoutRect(0, 0, 240, 110), rect);
+    EXPECT_EQ(LayoutRect(0, 0, 200, 100), rect);
     rect = containerOverflowRect;
     EXPECT_TRUE(container->mapToVisualRectInAncestorSpace(&layoutView(), rect));
-    EXPECT_EQ(LayoutRect(222, 111, 240, 110), rect);
+    EXPECT_EQ(LayoutRect(222, 111, 200, 100), rect);
     checkPaintInvalidationStateRectMapping(rect, containerOverflowRect, *container, layoutView(), layoutView());
 }
 
