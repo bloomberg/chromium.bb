@@ -12,11 +12,9 @@
 #include "chrome/grit/generated_resources.h"
 #include "extensions/strings/grit/extensions_strings.h"
 
-using ColumnSpecifier = task_manager::browsertest_util::ColumnSpecifier;
-
 namespace task_manager {
 
-class LegacyTaskManagerTester : public browsertest_util::TaskManagerTester,
+class LegacyTaskManagerTester : public task_management::TaskManagerTester,
                                 public TaskManagerModelObserver {
  public:
   explicit LegacyTaskManagerTester(const base::Closure& on_resource_change)
@@ -87,7 +85,7 @@ class LegacyTaskManagerTester : public browsertest_util::TaskManagerTester,
   TaskManagerModel* model_;
 };
 
-std::unique_ptr<browsertest_util::TaskManagerTester>
+std::unique_ptr<task_management::TaskManagerTester>
 CreateLegacyTaskManagerTester(const base::Closure& callback) {
   return base::WrapUnique(new LegacyTaskManagerTester(callback));
 }

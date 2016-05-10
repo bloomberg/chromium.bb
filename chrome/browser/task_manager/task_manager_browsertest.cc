@@ -21,7 +21,7 @@
 #include "chrome/browser/notifications/notification_test_util.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/task_manager/resource_provider.h"
+#include "chrome/browser/task_management/task_manager_tester.h"
 #include "chrome/browser/task_manager/task_manager_browsertest_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -63,7 +63,6 @@ using task_manager::browsertest_util::MatchExtension;
 using task_manager::browsertest_util::MatchSubframe;
 using task_manager::browsertest_util::MatchTab;
 using task_manager::browsertest_util::MatchUtility;
-using task_manager::browsertest_util::TaskManagerTester;
 using task_manager::browsertest_util::WaitForTaskManagerRows;
 using task_manager::browsertest_util::WaitForTaskManagerStatToExceed;
 
@@ -79,13 +78,13 @@ class TaskManagerBrowserTest : public ExtensionBrowserTest {
   TaskManagerBrowserTest() {}
   ~TaskManagerBrowserTest() override {}
 
-  TaskManagerTester* model() { return model_.get(); }
+  task_management::TaskManagerTester* model() { return model_.get(); }
 
   void ShowTaskManager() {
     // Show the task manager. This populates the model, and helps with debugging
     // (you see the task manager).
     chrome::ShowTaskManager(browser());
-    model_ = task_manager::browsertest_util::GetTaskManagerTester();
+    model_ = task_management::TaskManagerTester::Create(base::Closure());
   }
 
   void HideTaskManager() {
@@ -134,7 +133,7 @@ class TaskManagerBrowserTest : public ExtensionBrowserTest {
   void TearDownOnMainThread() override { model_.reset(); }
 
  private:
-  std::unique_ptr<TaskManagerTester> model_;
+  std::unique_ptr<task_management::TaskManagerTester> model_;
   DISALLOW_COPY_AND_ASSIGN(TaskManagerBrowserTest);
 };
 

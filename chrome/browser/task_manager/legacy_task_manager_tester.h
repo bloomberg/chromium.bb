@@ -8,14 +8,14 @@
 #include <memory>
 
 #include "base/callback_forward.h"
-#include "chrome/browser/task_manager/task_manager_browsertest_util.h"
+#include "chrome/browser/task_management/task_manager_tester.h"
 
 namespace task_manager {
 
 // Create a LegacyTaskManagerTester for the old (deprecated, mac-only) task
 // manager. If you're writing a test, don't use this directly since it won't
 // work on other platforms. Use TaskManagerTester::Create() instead.
-std::unique_ptr<browsertest_util::TaskManagerTester>
+std::unique_ptr<task_management::TaskManagerTester>
 CreateLegacyTaskManagerTester(const base::Closure& callback);
 
 }  // namespace task_manager

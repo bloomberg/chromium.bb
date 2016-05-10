@@ -454,6 +454,8 @@
       'browser/task_management/providers/web_contents/extension_tag_browsertest.cc',
       'browser/task_management/providers/web_contents/subframe_task_browsertest.cc',
       'browser/task_management/providers/web_contents/tab_contents_tag_browsertest.cc',
+      'browser/task_management/task_manager_tester.cc',
+      'browser/task_management/task_manager_tester.h',
       'browser/task_manager/legacy_task_manager_tester.cc',
       'browser/task_manager/legacy_task_manager_tester.h',
       'browser/task_manager/task_manager_browsertest.cc',
