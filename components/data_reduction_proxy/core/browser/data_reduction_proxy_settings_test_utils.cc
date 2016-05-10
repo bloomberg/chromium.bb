@@ -158,10 +158,4 @@ void DataReductionProxySettingsTestBase::CheckDataReductionProxySyntheticTrial(
       synthetic_field_trials_["SyntheticDataReductionProxySetting"]);
 }
 
-void DataReductionProxySettingsTestBase::
-CheckDataReductionProxyLoFiSyntheticTrial(bool enabled) {
-  EXPECT_EQ(enabled ? "Enabled" : "Disabled",
-      synthetic_field_trials_["SyntheticDataReductionProxyLoFiSetting"]);
-}
-
 }  // namespace data_reduction_proxy

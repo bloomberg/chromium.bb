@@ -153,6 +153,17 @@ DataReductionProxyNetworkDelegate::SessionNetworkStatsInfoToValue() const {
   return dict;
 }
 
+void DataReductionProxyNetworkDelegate::OnBeforeURLRequestInternal(
+    net::URLRequest* request,
+    const net::CompletionCallback& callback,
+    GURL* new_url) {
+  // |data_reduction_proxy_io_data_| can be NULL for Webview.
+  if (data_reduction_proxy_io_data_ &&
+      (request->load_flags() & net::LOAD_MAIN_FRAME)) {
+    data_reduction_proxy_io_data_->SetLoFiModeActiveOnMainFrame(false);
+  }
+}
+
 void DataReductionProxyNetworkDelegate::OnBeforeSendProxyHeadersInternal(
     net::URLRequest* request,
     const net::ProxyInfo& proxy_info,
@@ -161,24 +172,31 @@ void DataReductionProxyNetworkDelegate::OnBeforeSendProxyHeadersInternal(
 
   if (proxy_info.is_empty())
     return;
+  if (!proxy_info.proxy_server().is_valid())
+    return;
+  if (proxy_info.proxy_server().is_direct())
+    return;
+  if (proxy_info.proxy_server().host_port_pair().IsEmpty())
+    return;
+  if (!data_reduction_proxy_config_->IsDataReductionProxy(
+          proxy_info.proxy_server().host_port_pair(), nullptr)) {
+    return;
+  }
 
   if (data_reduction_proxy_io_data_ &&
       data_reduction_proxy_io_data_->lofi_decider() && request) {
     LoFiDecider* lofi_decider = data_reduction_proxy_io_data_->lofi_decider();
-    bool is_using_lofi_mode = lofi_decider->MaybeAddLoFiDirectiveToHeaders(
-        *request, headers, proxy_info.proxy_server(),
-        data_reduction_proxy_config_);
+    bool is_using_lofi_mode =
+        lofi_decider->MaybeAddLoFiDirectiveToHeaders(*request, headers);
 
     if ((request->load_flags() & net::LOAD_MAIN_FRAME)) {
-      // TODO(megjablon): Need to switch to per page.
       data_reduction_proxy_io_data_->SetLoFiModeActiveOnMainFrame(
           is_using_lofi_mode);
     }
   }
 
   if (data_reduction_proxy_request_options_) {
-    data_reduction_proxy_request_options_->MaybeAddRequestHeader(
-        proxy_info.proxy_server(), headers);
+    data_reduction_proxy_request_options_->AddRequestHeader(headers);
   }
 }
 

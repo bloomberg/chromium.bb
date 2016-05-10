@@ -71,7 +71,6 @@ class DataReductionProxySettingsTestBase : public testing::Test {
   void InitWithStatisticsPrefs();
   void InitDataReductionProxy(bool enabled_at_startup);
   void CheckDataReductionProxySyntheticTrial(bool enabled);
-  void CheckDataReductionProxyLoFiSyntheticTrial(bool enabled);
   bool SyntheticFieldTrialRegistrationCallback(const std::string& trial_name,
                                                const std::string& group_name) {
     synthetic_field_trials_[trial_name] = group_name;

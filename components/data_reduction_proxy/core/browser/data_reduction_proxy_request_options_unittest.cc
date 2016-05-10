@@ -33,7 +33,6 @@
 
 namespace {
 const char kChromeProxyHeader[] = "chrome-proxy";
-const char kOtherProxy[] = "testproxy:17";
 
 const char kVersion[] = "0.1.2.3";
 const char kExpectedBuild[] = "2";
@@ -155,15 +154,10 @@ class DataReductionProxyRequestOptionsTest : public testing::Test {
     return request_options_.get();
   }
 
-  void VerifyExpectedHeader(const std::string& proxy_uri,
-                            const std::string& expected_header) {
+  void VerifyExpectedHeader(const std::string& expected_header) {
     test_context_->RunUntilIdle();
     net::HttpRequestHeaders headers;
-    request_options_->MaybeAddRequestHeader(
-        proxy_uri.empty() ? net::ProxyServer()
-                          : net::ProxyServer::FromURI(
-                                proxy_uri, net::ProxyServer::SCHEME_HTTP),
-        &headers);
+    request_options_->AddRequestHeader(&headers);
     if (expected_header.empty()) {
       EXPECT_FALSE(headers.HasHeader(kChromeProxyHeader));
       return;
@@ -206,22 +200,16 @@ TEST_F(DataReductionProxyRequestOptionsTest, AuthorizationOnIOThread) {
   // Now set a key.
   request_options()->SetKeyOnIO(kTestKey2);
 
-  // Don't write headers if the proxy is invalid.
-  VerifyExpectedHeader(std::string(), std::string());
-
-  // Don't write headers with a valid proxy, that's not a data reduction proxy.
-  VerifyExpectedHeader(kOtherProxy, std::string());
-
-  // Write headers with a valid data reduction proxy.
-  VerifyExpectedHeader(params()->DefaultOrigin(), expected_header);
+  // Write headers.
+  VerifyExpectedHeader(expected_header);
 
   // Fast forward 24 hours. The header should be the same.
   request_options()->set_offset(base::TimeDelta::FromSeconds(24 * 60 * 60));
-  VerifyExpectedHeader(params()->DefaultOrigin(), expected_header);
+  VerifyExpectedHeader(expected_header);
 
   // Fast forward one more second. The header should be new.
   request_options()->set_offset(base::TimeDelta::FromSeconds(24 * 60 * 60 + 1));
-  VerifyExpectedHeader(params()->DefaultOrigin(), expected_header2);
+  VerifyExpectedHeader(expected_header2);
 }
 
 TEST_F(DataReductionProxyRequestOptionsTest, AuthorizationIgnoresEmptyKey) {
@@ -230,12 +218,12 @@ TEST_F(DataReductionProxyRequestOptionsTest, AuthorizationIgnoresEmptyKey) {
                         kClientStr, kExpectedBuild, kExpectedPatch,
                         std::vector<std::string>(), &expected_header);
   CreateRequestOptions(kVersion);
-  VerifyExpectedHeader(params()->DefaultOrigin(), expected_header);
+  VerifyExpectedHeader(expected_header);
 
   // Now set an empty key. The auth handler should ignore that, and the key
   // remains |kTestKey|.
   request_options()->SetKeyOnIO(std::string());
-  VerifyExpectedHeader(params()->DefaultOrigin(), expected_header);
+  VerifyExpectedHeader(expected_header);
 }
 
 TEST_F(DataReductionProxyRequestOptionsTest, SecureSession) {
@@ -246,7 +234,7 @@ TEST_F(DataReductionProxyRequestOptionsTest, SecureSession) {
 
   CreateRequestOptions(kVersion);
   request_options()->SetSecureSession(kSecureSession);
-  VerifyExpectedHeader(params()->DefaultOrigin(), expected_header);
+  VerifyExpectedHeader(expected_header);
 }
 
 TEST_F(DataReductionProxyRequestOptionsTest, ParseExperiments) {
@@ -262,7 +250,7 @@ TEST_F(DataReductionProxyRequestOptionsTest, ParseExperiments) {
                         expected_experiments, &expected_header);
 
   CreateRequestOptions(kVersion);
-  VerifyExpectedHeader(params()->DefaultOrigin(), expected_header);
+  VerifyExpectedHeader(expected_header);
 }
 
 TEST_F(DataReductionProxyRequestOptionsTest, ParseExperimentsFromFieldTrial) {
@@ -318,7 +306,7 @@ TEST_F(DataReductionProxyRequestOptionsTest, ParseExperimentsFromFieldTrial) {
                           expected_experiments, &expected_header);
 
     CreateRequestOptions(kVersion);
-    VerifyExpectedHeader(params()->DefaultOrigin(), expected_header);
+    VerifyExpectedHeader(expected_header);
   }
 }
 

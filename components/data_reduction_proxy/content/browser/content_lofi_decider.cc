@@ -6,13 +6,11 @@
 
 #include <string>
 
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "content/public/browser/resource_request_info.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
-#include "net/proxy/proxy_server.h"
 #include "net/url_request/url_request.h"
 
 namespace data_reduction_proxy {
@@ -38,15 +36,7 @@ bool ContentLoFiDecider::IsUsingLoFiMode(const net::URLRequest& request) const {
 
 bool ContentLoFiDecider::MaybeAddLoFiDirectiveToHeaders(
     const net::URLRequest& request,
-    net::HttpRequestHeaders* headers,
-    const net::ProxyServer& proxy_server,
-    DataReductionProxyConfig* config) const {
-  if (!proxy_server.is_valid() || proxy_server.is_direct() ||
-      proxy_server.host_port_pair().IsEmpty() ||
-      !config->IsDataReductionProxy(proxy_server.host_port_pair(), nullptr)) {
-    return false;
-  }
-
+    net::HttpRequestHeaders* headers) const {
   const content::ResourceRequestInfo* request_info =
       content::ResourceRequestInfo::ForRequest(&request);
 

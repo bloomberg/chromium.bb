@@ -80,10 +80,8 @@ class DataReductionProxyRequestOptions {
   void Init();
 
   // Adds a 'Chrome-Proxy' header to |request_headers| with the data reduction
-  // proxy authentication credentials. Only adds this header if the
-  // provided |proxy_server| is a data reduction proxy.
-  void MaybeAddRequestHeader(const net::ProxyServer& proxy_server,
-                             net::HttpRequestHeaders* request_headers);
+  // proxy authentication credentials.
+  void AddRequestHeader(net::HttpRequestHeaders* request_headers);
 
   // Stores the supplied key and sets up credentials suitable for authenticating
   // with the data reduction proxy.
@@ -108,8 +106,6 @@ class DataReductionProxyRequestOptions {
       const net::HttpRequestHeaders& request_headers) const;
 
  protected:
-  void SetHeader(net::HttpRequestHeaders* headers);
-
   // Returns a UTF16 string that's the hash of the configured authentication
   // |key| and |salt|. Returns an empty UTF16 string if no key is configured or
   // the data reduction proxy feature isn't available.

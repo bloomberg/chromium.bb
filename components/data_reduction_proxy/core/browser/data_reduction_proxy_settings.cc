@@ -115,7 +115,6 @@ void DataReductionProxySettings::SetCallbackToRegisterSyntheticFieldTrial(
         on_data_reduction_proxy_enabled) {
   register_synthetic_field_trial_ = on_data_reduction_proxy_enabled;
   RegisterDataReductionProxyFieldTrial();
-  RegisterLoFiFieldTrial();
 }
 
 bool DataReductionProxySettings::IsDataReductionProxyEnabled() const {
@@ -172,9 +171,6 @@ void DataReductionProxySettings::SetLoFiModeActiveOnMainFrame(
     prefs_->SetBoolean(prefs::kLoFiWasUsedThisSession, true);
   lo_fi_load_image_requested_ = false;
   lo_fi_mode_active_ = lo_fi_mode_active;
-  if (!register_synthetic_field_trial_.is_null()) {
-    RegisterLoFiFieldTrial();
-  }
 }
 
 bool DataReductionProxySettings::WasLoFiModeActiveOnMainFrame() const {
@@ -221,19 +217,10 @@ void DataReductionProxySettings::RegisterDataReductionProxyFieldTrial() {
       IsDataReductionProxyEnabled() ? "Enabled" : "Disabled");
 }
 
-void DataReductionProxySettings::RegisterLoFiFieldTrial() {
-  register_synthetic_field_trial_.Run(
-      "SyntheticDataReductionProxyLoFiSetting",
-      IsDataReductionProxyEnabled() && WasLoFiModeActiveOnMainFrame()
-          ? "Enabled"
-          : "Disabled");
-}
-
 void DataReductionProxySettings::OnProxyEnabledPrefChange() {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!register_synthetic_field_trial_.is_null()) {
     RegisterDataReductionProxyFieldTrial();
-    RegisterLoFiFieldTrial();
   }
   if (!allowed_)
     return;

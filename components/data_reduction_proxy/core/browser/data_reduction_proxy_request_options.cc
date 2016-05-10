@@ -177,37 +177,21 @@ void DataReductionProxyRequestOptions::RandBytes(void* output,
   crypto::RandBytes(output, length);
 }
 
-void DataReductionProxyRequestOptions::MaybeAddRequestHeader(
-    const net::ProxyServer& proxy_server,
+void DataReductionProxyRequestOptions::AddRequestHeader(
     net::HttpRequestHeaders* request_headers) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  if (!proxy_server.is_valid())
-    return;
-  if (proxy_server.is_direct())
-    return;
-  if (proxy_server.host_port_pair().IsEmpty())
-    return;
-  if (data_reduction_proxy_config_->IsDataReductionProxy(
-          proxy_server.host_port_pair(), NULL)) {
-    SetHeader(request_headers);
-  }
-}
-
-void DataReductionProxyRequestOptions::SetHeader(
-    net::HttpRequestHeaders* headers) {
   base::Time now = Now();
   // Authorization credentials must be regenerated if they are expired.
   if (!use_assigned_credentials_ && (now > credentials_expiration_time_))
     UpdateCredentials();
   const char kChromeProxyHeader[] = "Chrome-Proxy";
   std::string header_value;
-  if (headers->HasHeader(kChromeProxyHeader)) {
-    headers->GetHeader(kChromeProxyHeader, &header_value);
-    headers->RemoveHeader(kChromeProxyHeader);
+  if (request_headers->HasHeader(kChromeProxyHeader)) {
+    request_headers->GetHeader(kChromeProxyHeader, &header_value);
+    request_headers->RemoveHeader(kChromeProxyHeader);
     header_value += ", ";
   }
   header_value += header_value_;
-  headers->SetHeader(kChromeProxyHeader, header_value);
+  request_headers->SetHeader(kChromeProxyHeader, header_value);
 }
 
 void DataReductionProxyRequestOptions::ComputeCredentials(

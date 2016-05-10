@@ -257,13 +257,6 @@ class DataReductionProxySettings : public DataReductionProxyServiceObserver {
   // "Enabled" or "Disabled". Indicates whether the proxy is turned on or not.
   void RegisterDataReductionProxyFieldTrial();
 
-  // Registers the trial "SyntheticDataReductionProxyLoFiSetting" with the group
-  // "Enabled" or "Disabled". Indicates whether Lo-Fi is turned on or not.
-  // The group won't be reported if it changes while compiling the report. It
-  // can be assumed that when no Lo-Fi group is reported, the user was in a
-  // mixed Lo-Fi state.
-  void RegisterLoFiFieldTrial();
-
   void OnProxyEnabledPrefChange();
 
   void ResetDataReductionStatistics();

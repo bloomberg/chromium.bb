@@ -27,6 +27,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_metrics.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
@@ -50,7 +51,7 @@ namespace {
 
 using TestNetworkDelegate = net::NetworkDelegateImpl;
 
-const char kChromeProxyHeader[] = "chrome-proxy";
+const char kOtherProxy[] = "testproxy:17";
 
 #if defined(OS_ANDROID)
 const Client kClient = Client::CHROME_ANDROID;
@@ -91,21 +92,18 @@ class TestLoFiDecider : public LoFiDecider {
 
   bool MaybeAddLoFiDirectiveToHeaders(
       const net::URLRequest& request,
-      net::HttpRequestHeaders* headers,
-      const net::ProxyServer& proxy_server,
-      DataReductionProxyConfig* config) const override {
+      net::HttpRequestHeaders* headers) const override {
     if (should_request_lofi_resource_) {
-      const char kChromeProxyHeader[] = "Chrome-Proxy";
       std::string header_value;
 
-      if (headers->HasHeader(kChromeProxyHeader)) {
-        headers->GetHeader(kChromeProxyHeader, &header_value);
-        headers->RemoveHeader(kChromeProxyHeader);
+      if (headers->HasHeader(chrome_proxy_header())) {
+        headers->GetHeader(chrome_proxy_header(), &header_value);
+        headers->RemoveHeader(chrome_proxy_header());
         header_value += ", ";
       }
 
       header_value += "q=low";
-      headers->SetHeader(kChromeProxyHeader, header_value);
+      headers->SetHeader(chrome_proxy_header(), header_value);
       return true;
     }
 
@@ -161,12 +159,14 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
     test_context_->EnableDataReductionProxyWithSecureProxyCheckSuccess();
   }
 
-  static void VerifyLoFiHeader(bool expected_lofi_used,
-                               const net::HttpRequestHeaders& headers) {
-    EXPECT_TRUE(headers.HasHeader(kChromeProxyHeader));
+  static void VerifyHeaders(bool expected_data_reduction_proxy_used,
+                            bool expected_lofi_used,
+                            const net::HttpRequestHeaders& headers) {
+    EXPECT_EQ(expected_data_reduction_proxy_used,
+              headers.HasHeader(chrome_proxy_header()));
     std::string header_value;
-    headers.GetHeader(kChromeProxyHeader, &header_value);
-    EXPECT_EQ(expected_lofi_used,
+    headers.GetHeader(chrome_proxy_header(), &header_value);
+    EXPECT_EQ(expected_data_reduction_proxy_used && expected_lofi_used,
               header_value.find("q=low") != std::string::npos);
   }
 
@@ -238,6 +238,10 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
     return test_context_->config();
   }
 
+  TestDataReductionProxyIOData* io_data() const {
+    return test_context_->io_data();
+  }
+
   TestLoFiDecider* lofi_decider() const { return lofi_decider_; }
 
  private:
@@ -281,9 +285,9 @@ TEST_F(DataReductionProxyNetworkDelegateTest, AuthenticationTest) {
   network_delegate()->NotifyBeforeSendProxyHeaders(
       fake_request.get(), data_reduction_proxy_info, &headers);
 
-  EXPECT_TRUE(headers.HasHeader(kChromeProxyHeader));
+  EXPECT_TRUE(headers.HasHeader(chrome_proxy_header()));
   std::string header_value;
-  headers.GetHeader(kChromeProxyHeader, &header_value);
+  headers.GetHeader(chrome_proxy_header(), &header_value);
   EXPECT_TRUE(header_value.find("ps=") != std::string::npos);
   EXPECT_TRUE(header_value.find("sid=") != std::string::npos);
 }
@@ -293,14 +297,24 @@ TEST_F(DataReductionProxyNetworkDelegateTest, LoFiTransitions) {
   const struct {
     bool lofi_switch_enabled;
     bool auto_lofi_enabled;
+    bool is_data_reduction_proxy;
   } tests[] = {
       {
-          // Lo-Fi enabled through switch.
-          true, false,
+          // Lo-Fi enabled through switch and not using a Data Reduction Proxy.
+          true, false, false,
       },
       {
-          // Lo-Fi enabled through field trial.
-          false, true,
+          // Lo-Fi enabled through switch and using a Data Reduction Proxy.
+          true, false, true,
+      },
+      {
+          // Lo-Fi enabled through field trial and not using a Data Reduction
+          // Proxy.
+          false, true, false,
+      },
+      {
+          // Lo-Fi enabled through field trial and using a Data Reduction Proxy.
+          false, true, true,
       },
   };
 
@@ -316,11 +330,15 @@ TEST_F(DataReductionProxyNetworkDelegateTest, LoFiTransitions) {
                                              "Enabled");
     }
     config()->SetNetworkProhibitivelySlow(tests[i].auto_lofi_enabled);
+    io_data()->SetLoFiModeActiveOnMainFrame(false);
 
     net::ProxyInfo data_reduction_proxy_info;
-    std::string data_reduction_proxy;
-    base::TrimString(params()->DefaultOrigin(), "/", &data_reduction_proxy);
-    data_reduction_proxy_info.UseNamedProxy(data_reduction_proxy);
+    std::string proxy;
+    if (tests[i].is_data_reduction_proxy)
+      base::TrimString(params()->DefaultOrigin(), "/", &proxy);
+    else
+      base::TrimString(kOtherProxy, "/", &proxy);
+    data_reduction_proxy_info.UseNamedProxy(proxy);
 
     {
       // Main frame loaded. Lo-Fi should be used.
@@ -333,8 +351,8 @@ TEST_F(DataReductionProxyNetworkDelegateTest, LoFiTransitions) {
           config()->ShouldEnableLoFiMode(*fake_request.get()));
       network_delegate()->NotifyBeforeSendProxyHeaders(
           fake_request.get(), data_reduction_proxy_info, &headers);
-      VerifyLoFiHeader(true, headers);
-      VerifyWasLoFiModeActiveOnMainFrame(true);
+      VerifyHeaders(tests[i].is_data_reduction_proxy, true, headers);
+      VerifyWasLoFiModeActiveOnMainFrame(tests[i].is_data_reduction_proxy);
     }
 
     {
@@ -345,10 +363,10 @@ TEST_F(DataReductionProxyNetworkDelegateTest, LoFiTransitions) {
       lofi_decider()->SetIsUsingLoFiMode(false);
       network_delegate()->NotifyBeforeSendProxyHeaders(
           fake_request.get(), data_reduction_proxy_info, &headers);
-      VerifyLoFiHeader(false, headers);
+      VerifyHeaders(tests[i].is_data_reduction_proxy, false, headers);
       // Not a mainframe request, WasLoFiModeActiveOnMainFrame should still be
-      // true.
-      VerifyWasLoFiModeActiveOnMainFrame(true);
+      // true if the proxy is a Data Reduction Proxy.
+      VerifyWasLoFiModeActiveOnMainFrame(tests[i].is_data_reduction_proxy);
     }
 
     {
@@ -360,15 +378,13 @@ TEST_F(DataReductionProxyNetworkDelegateTest, LoFiTransitions) {
       lofi_decider()->SetIsUsingLoFiMode(true);
       network_delegate()->NotifyBeforeSendProxyHeaders(
           fake_request.get(), data_reduction_proxy_info, &headers);
-      VerifyLoFiHeader(true, headers);
+      VerifyHeaders(tests[i].is_data_reduction_proxy, true, headers);
       // Not a mainframe request, WasLoFiModeActiveOnMainFrame should still be
-      // true.
-      VerifyWasLoFiModeActiveOnMainFrame(true);
+      // true if the proxy is a Data Reduction Proxy.
+      VerifyWasLoFiModeActiveOnMainFrame(tests[i].is_data_reduction_proxy);
     }
 
     {
-      // TODO(megjablon): Can remove the cases below once
-      // WasLoFiModeActiveOnMainFrame is fixed to be per-page.
       // Main frame request with Lo-Fi off. Lo-Fi should not be used.
       // State of Lo-Fi should persist until next page load.
       net::HttpRequestHeaders headers;
@@ -378,7 +394,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest, LoFiTransitions) {
       lofi_decider()->SetIsUsingLoFiMode(false);
       network_delegate()->NotifyBeforeSendProxyHeaders(
           fake_request.get(), data_reduction_proxy_info, &headers);
-      VerifyLoFiHeader(false, headers);
+      VerifyHeaders(tests[i].is_data_reduction_proxy, false, headers);
       VerifyWasLoFiModeActiveOnMainFrame(false);
     }
 
@@ -390,7 +406,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest, LoFiTransitions) {
       lofi_decider()->SetIsUsingLoFiMode(false);
       network_delegate()->NotifyBeforeSendProxyHeaders(
           fake_request.get(), data_reduction_proxy_info, &headers);
-      VerifyLoFiHeader(false, headers);
+      VerifyHeaders(tests[i].is_data_reduction_proxy, false, headers);
       // Not a mainframe request, WasLoFiModeActiveOnMainFrame should still be
       // false.
       VerifyWasLoFiModeActiveOnMainFrame(false);
@@ -406,8 +422,8 @@ TEST_F(DataReductionProxyNetworkDelegateTest, LoFiTransitions) {
           config()->ShouldEnableLoFiMode(*fake_request.get()));
       network_delegate()->NotifyBeforeSendProxyHeaders(
           fake_request.get(), data_reduction_proxy_info, &headers);
-      VerifyLoFiHeader(true, headers);
-      VerifyWasLoFiModeActiveOnMainFrame(true);
+      VerifyHeaders(tests[i].is_data_reduction_proxy, true, headers);
+      VerifyWasLoFiModeActiveOnMainFrame(tests[i].is_data_reduction_proxy);
     }
   }
 }
@@ -578,7 +594,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest, NullRequest) {
 
   network_delegate()->NotifyBeforeSendProxyHeaders(
       nullptr, data_reduction_proxy_info, &headers);
-  EXPECT_TRUE(headers.HasHeader(kChromeProxyHeader));
+  EXPECT_TRUE(headers.HasHeader(chrome_proxy_header()));
 }
 
 TEST_F(DataReductionProxyNetworkDelegateTest, OnCompletedInternalLoFi) {

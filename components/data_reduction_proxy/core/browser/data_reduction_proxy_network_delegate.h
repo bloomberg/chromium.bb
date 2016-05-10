@@ -13,6 +13,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_metrics.h"
+#include "net/base/completion_callback.h"
 #include "net/base/layered_network_delegate.h"
 #include "net/proxy/proxy_retry_info.h"
 
@@ -85,6 +86,11 @@ class DataReductionProxyNetworkDelegate : public net::LayeredNetworkDelegate {
   base::Value* SessionNetworkStatsInfoToValue() const;
 
  private:
+  // Resets if Lo-Fi has been used for the last main frame load to false.
+  void OnBeforeURLRequestInternal(net::URLRequest* request,
+                                  const net::CompletionCallback& callback,
+                                  GURL* new_url) override;
+
   // Called after a proxy connection. Allows the delegate to read/write
   // |headers| before they get sent out. |headers| is valid only until
   // OnCompleted or OnURLRequestDestroyed is called for this request.

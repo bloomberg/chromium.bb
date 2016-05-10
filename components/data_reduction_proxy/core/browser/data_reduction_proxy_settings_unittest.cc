@@ -309,31 +309,10 @@ TEST_F(DataReductionProxySettingsTest, TestSetDataReductionProxyEnabled) {
   settings_->SetDataReductionProxyEnabled(false);
   test_context_->RunUntilIdle();
   CheckDataReductionProxySyntheticTrial(false);
-  CheckDataReductionProxyLoFiSyntheticTrial(false);
 
   ExpectSetProxyPrefs(true, false);
   settings->SetDataReductionProxyEnabled(true);
   CheckDataReductionProxySyntheticTrial(true);
-  CheckDataReductionProxyLoFiSyntheticTrial(true);
-}
-
-TEST_F(DataReductionProxySettingsTest, TestEnableLoFiSyntheticTrial) {
-  MockSettings* settings = static_cast<MockSettings*>(settings_.get());
-  EXPECT_CALL(*settings, RecordStartupState(PROXY_ENABLED));
-  test_context_->SetDataReductionProxyEnabled(true);
-  InitDataReductionProxy(true);
-
-  // The Lo-Fi field trial will be set to "Disabled" until the first main frame
-  // request with Lo-Fi active.
-  CheckDataReductionProxyLoFiSyntheticTrial(false);
-
-  // Turn Lo-Fi on.
-  settings->SetLoFiModeActiveOnMainFrame(true);
-  CheckDataReductionProxyLoFiSyntheticTrial(true);
-
-  // Now turn it off.
-  settings->SetLoFiModeActiveOnMainFrame(false);
-  CheckDataReductionProxyLoFiSyntheticTrial(false);
 }
 
 TEST_F(DataReductionProxySettingsTest, TestLoFiImplicitOptOutClicksPerSession) {
