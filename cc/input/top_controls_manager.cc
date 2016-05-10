@@ -95,7 +95,9 @@ void TopControlsManager::UpdateTopControlsState(TopControlsState constraints,
 }
 
 void TopControlsManager::ScrollBegin() {
-  DCHECK(!pinch_gesture_active_);
+  if (pinch_gesture_active_)
+    return;
+
   ResetAnimations();
   ResetBaseline();
 }
@@ -132,7 +134,9 @@ gfx::Vector2dF TopControlsManager::ScrollBy(
 }
 
 void TopControlsManager::ScrollEnd() {
-  DCHECK(!pinch_gesture_active_);
+  if (pinch_gesture_active_)
+    return;
+
   StartAnimationIfNecessary();
 }
 
