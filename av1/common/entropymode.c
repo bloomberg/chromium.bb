@@ -146,21 +146,6 @@ const aom_prob av1_kf_y_mode_prob[INTRA_MODES][INTRA_MODES][INTRA_MODES - 1] =
           { 43, 81, 53, 140, 169, 204, 68, 84, 72 }     // left = tm
       } };
 
-#if !CONFIG_MISC_FIXES
-const aom_prob av1_kf_uv_mode_prob[INTRA_MODES][INTRA_MODES - 1] = {
-  { 144, 11, 54, 157, 195, 130, 46, 58, 108 },   // y = dc
-  { 118, 15, 123, 148, 131, 101, 44, 93, 131 },  // y = v
-  { 113, 12, 23, 188, 226, 142, 26, 32, 125 },   // y = h
-  { 120, 11, 50, 123, 163, 135, 64, 77, 103 },   // y = d45
-  { 113, 9, 36, 155, 111, 157, 32, 44, 161 },    // y = d135
-  { 116, 9, 55, 176, 76, 96, 37, 61, 149 },      // y = d117
-  { 115, 9, 28, 141, 161, 167, 21, 25, 193 },    // y = d153
-  { 120, 12, 32, 145, 195, 142, 32, 38, 86 },    // y = d207
-  { 116, 12, 64, 120, 140, 125, 49, 115, 121 },  // y = d63
-  { 102, 19, 66, 162, 182, 122, 35, 59, 128 }    // y = tm
-};
-#endif
-
 static const aom_prob default_if_y_probs[BLOCK_SIZE_GROUPS][INTRA_MODES - 1] = {
   { 65, 32, 18, 144, 162, 194, 41, 51, 98 },   // block_size < 8x8
   { 132, 68, 18, 165, 217, 196, 45, 40, 78 },  // block_size < 16x16
@@ -180,32 +165,6 @@ static const aom_prob default_uv_probs[INTRA_MODES][INTRA_MODES - 1] = {
   { 77, 7, 64, 116, 132, 122, 37, 126, 120 },   // y = d63
   { 101, 21, 107, 181, 192, 103, 19, 67, 125 }  // y = tm
 };
-
-#if !CONFIG_MISC_FIXES
-const aom_prob
-    av1_kf_partition_probs[PARTITION_CONTEXTS][PARTITION_TYPES - 1] = {
-      // 8x8 -> 4x4
-      { 158, 97, 94 },  // a/l both not split
-      { 93, 24, 99 },   // a split, l not split
-      { 85, 119, 44 },  // l split, a not split
-      { 62, 59, 67 },   // a/l both split
-      // 16x16 -> 8x8
-      { 149, 53, 53 },  // a/l both not split
-      { 94, 20, 48 },   // a split, l not split
-      { 83, 53, 24 },   // l split, a not split
-      { 52, 18, 18 },   // a/l both split
-      // 32x32 -> 16x16
-      { 150, 40, 39 },  // a/l both not split
-      { 78, 12, 26 },   // a split, l not split
-      { 67, 33, 11 },   // l split, a not split
-      { 24, 7, 5 },     // a/l both split
-      // 64x64 -> 32x32
-      { 174, 35, 49 },  // a/l both not split
-      { 68, 11, 27 },   // a split, l not split
-      { 57, 15, 9 },    // l split, a not split
-      { 12, 3, 3 },     // a/l both split
-    };
-#endif
 
 static const aom_prob
     default_partition_probs[PARTITION_CONTEXTS][PARTITION_TYPES - 1] = {

@@ -124,11 +124,6 @@ typedef struct FRAME_COUNTS {
 
 extern const aom_prob
     av1_kf_y_mode_prob[INTRA_MODES][INTRA_MODES][INTRA_MODES - 1];
-#if !CONFIG_MISC_FIXES
-extern const aom_prob av1_kf_uv_mode_prob[INTRA_MODES][INTRA_MODES - 1];
-extern const aom_prob
-    av1_kf_partition_probs[PARTITION_CONTEXTS][PARTITION_TYPES - 1];
-#endif
 
 extern const aom_tree_index av1_intra_mode_tree[TREE_SIZE(INTRA_MODES)];
 extern const aom_tree_index av1_inter_mode_tree[TREE_SIZE(INTER_MODES)];
