@@ -98,7 +98,6 @@ component("media") {
     "cdm/player_tracker_impl.h",
     "cdm/supported_cdm_versions.cc",
     "cdm/supported_cdm_versions.h",
-    "ffmpeg/ffmpeg_deleters.h",
     "filters/audio_clock.cc",
     "filters/audio_clock.h",
     "filters/audio_renderer_algorithm.cc",
@@ -244,10 +243,9 @@ component("media") {
 
   include_dirs = [ "." ]
   if (media_use_ffmpeg) {
+    public_deps += [ "//media/ffmpeg" ]
     deps += [ "//third_party/ffmpeg" ]
     sources += [
-      "ffmpeg/ffmpeg_common.cc",
-      "ffmpeg/ffmpeg_common.h",
       "filters/audio_file_reader.cc",
       "filters/audio_file_reader.h",
       "filters/blocking_url_protocol.cc",
@@ -566,6 +564,7 @@ test("media_unittests") {
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 
   deps = [
+    ":cdm_api",
     ":media",
     ":test_support",
     "//base/test:test_support",
@@ -609,8 +608,8 @@ test("media_unittests") {
   }
 
   if (media_use_ffmpeg) {
+    deps += [ "//media/ffmpeg:ffmpeg_unittests" ]
     sources += [
-      "ffmpeg/ffmpeg_common_unittest.cc",
       "filters/audio_decoder_unittest.cc",
       "filters/audio_file_reader_unittest.cc",
       "filters/blocking_url_protocol_unittest.cc",
@@ -721,6 +720,7 @@ test("audio_unittests") {
     ":test_support",
     "//base/test:test_support",
     "//media/audio:unittests",
+    "//media/base:test_support",
     "//ui/gfx:test_support",
   ]
 }
@@ -744,6 +744,7 @@ source_set("test_support") {
     "//skia",
     "//testing/gmock",
     "//testing/gtest",
+    "//ui/gfx",
   ]
 }
 
@@ -762,6 +763,7 @@ component("shared_memory_support") {
     "base/media_export.h",
     "base/vector_math.cc",
     "base/vector_math.h",
+    "base/vector_math_testing.h",
   ]
   configs += [
     ":media_config",
@@ -779,7 +781,6 @@ if (media_use_ffmpeg && !is_android) {
   test("ffmpeg_regression_tests") {
     sources = [
       "base/run_all_unittests.cc",
-      "ffmpeg/ffmpeg_regression_tests.cc",
     ]
 
     configs += [ "//media:media_config" ]
@@ -790,10 +791,10 @@ if (media_use_ffmpeg && !is_android) {
       "//media:test_support",
       "//media/audio:test_support",
       "//media/base:test_support",
+      "//media/ffmpeg:ffmpeg_regression_tests",
       "//media/test:pipeline_integration_tests",
       "//testing/gmock",
       "//testing/gtest",
-      "//third_party/ffmpeg",
       "//ui/gfx:test_support",
       "//ui/gfx/geometry",
     ]

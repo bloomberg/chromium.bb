@@ -10,13 +10,21 @@ import("//build/config/linux/pkg_config.gni")
 import("//media/media_options.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 
+config("base_config") {
+  configs = [
+    # This target uses the ALLOCATOR_SHIM define.
+    "//base/allocator:allocator_shim_define",
+    "//build/config:precompiled_headers",
+    "//build/config/compiler:no_size_t_to_int_warning",
+    "//media:media_config",
+    "//media:media_dependent_config",
+    "//media:media_implementation",
+  ]
+}
+
 source_set("base") {
   # This is part of the media component.
-  visibility = [
-    ":*",
-    "//media",
-    "//media/capture",
-  ]
+  visibility = [ "//media/*" ]
   sources = [
     "audio_block_fifo.cc",
     "audio_block_fifo.h",
@@ -248,13 +256,7 @@ source_set("base") {
     "//url:url",
   ]
   libs = []
-  configs += [
-    # This target uses the ALLOCATOR_SHIM define.
-    "//base/allocator:allocator_shim_define",
-    "//build/config:precompiled_headers",
-    "//media:media_config",
-    "//media:media_implementation",
-  ]
+  configs += [ ":base_config" ]
 
   if (media_use_ffmpeg) {
     if (!is_android) {
@@ -312,8 +314,6 @@ source_set("base") {
     ]
     deps += [ ":media_yasm" ]
   }
-
-  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 
   if (is_linux || is_win) {
     sources += [
