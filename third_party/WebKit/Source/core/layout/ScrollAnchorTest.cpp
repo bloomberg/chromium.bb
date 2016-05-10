@@ -84,6 +84,23 @@ TEST_F(ScrollAnchorTest, Basic)
     EXPECT_EQ(nullptr, scrollAnchor(viewport).anchorObject());
 }
 
+TEST_F(ScrollAnchorTest, FractionalOffsetsAreRoundedBeforeComparing)
+{
+    setBodyInnerHTML(
+        "<style> body { height: 1000px } </style>"
+        "<div id='block1' style='height: 50.4px'>abc</div>"
+        "<div id='block2' style='height: 100px'>def</div>");
+
+    ScrollableArea* viewport = layoutViewport();
+    scrollLayoutViewport(DoubleSize(0, 100));
+
+    document().getElementById("block1")->setAttribute(
+        HTMLNames::styleAttr, "height: 50.6px");
+    update();
+
+    EXPECT_EQ(101, viewport->scrollPosition().y());
+}
+
 TEST_F(ScrollAnchorTest, UMAMetricUpdated)
 {
     HistogramTester histogramTester;
