@@ -30,6 +30,33 @@ var gPropertyData = [
   { prop: "font-variant-caps", value: "small-caps all-small-caps", features: {"smcp": 0, "c2sc": 0}, invalid: true },
   { prop: "font-variant-caps", value: "small-cap", features: {"smcp": 0}, invalid: true },
 
+  // font-variant-ligatures
+  // valid values
+  { prop: "font-variant-ligatures", value: "none", features: {"liga": 0, "dlig": 0, "clig": 0, "calt": 0, "hlig": 0} },
+  { prop: "font-variant-ligatures", value: "normal", features: {"liga": 1, "dlig": 0} },
+  { prop: "font-variant-ligatures", value: "common-ligatures", features: {"liga": 1, "clig": 1, "dlig": 0, "hlig": 0, "calt": 1} },
+  { prop: "font-variant-ligatures", value: "no-common-ligatures", features: {"liga": 0, "clig": 0, "dlig": 0, "hlig": 0, "calt": 1} },
+  { prop: "font-variant-ligatures", value: "discretionary-ligatures", features: {"liga": 1, "clig": 1, "dlig": 1, "hlig": 0, "calt": 1} },
+  { prop: "font-variant-ligatures", value: "no-discretionary-ligatures", features: {"liga": 1, "clig": 1, "dlig": 0, "hlig": 0, "calt": 1} },
+  { prop: "font-variant-ligatures", value: "historical-ligatures", features: {"liga": 1, "clig": 1, "dlig": 0, "hlig": 1, "calt": 1} },
+  { prop: "font-variant-ligatures", value: "no-historical-ligatures", features: {"liga": 1, "clig": 1, "dlig": 0, "hlig": 0, "calt": 1} },
+  { prop: "font-variant-ligatures", value: "contextual", features: {"liga": 1, "clig": 1, "dlig": 0, "hlig": 0, "calt": 1} },
+  { prop: "font-variant-ligatures", value: "no-contextual", features: {"liga": 1, "clig": 1, "dlig": 0, "hlig": 0, "calt": 0} },
+  { prop: "font-variant-ligatures", value: "common-ligatures no-discretionary-ligatures", features: {"liga": 1, "clig": 1, "dlig": 0, "hlig": 0, "calt": 1} },
+  { prop: "font-variant-ligatures", value: "historical-ligatures no-common-ligatures", features: {"clig": 0, "liga": 0, "dlig": 0, "hlig": 1, "calt": 1} },
+  { prop: "font-variant-ligatures", value: "no-historical-ligatures discretionary-ligatures", features: {"liga": 1, "clig": 1, "dlig": 1, "hlig": 0, "calt": 1} },
+  { prop: "font-variant-ligatures", value: "common-ligatures no-discretionary-ligatures historical-ligatures no-contextual", features: {"clig": 1, "dlig": 0, "hlig": 1, "liga": 1, "calt": 0} },
+
+  // invalid values
+  { prop: "font-variant-ligatures", value: "common-ligatures none", features: {"liga": 1, "clig": 1, "dlig": 0}, invalid: true },
+  { prop: "font-variant-ligatures", value: "none common-ligatures", features: {"liga": 1, "clig": 1, "dlig": 0}, invalid: true },
+  { prop: "font-variant-ligatures", value: "common-ligatures normal", features: {"liga": 1, "clig": 1, "dlig": 0}, invalid: true },
+  { prop: "font-variant-ligatures", value: "common-ligatures no-common-ligatures", features: {"liga": 1, "clig": 1, "dlig": 0}, invalid: true },
+  { prop: "font-variant-ligatures", value: "common-ligatures common-ligatures", features: {"liga": 1, "clig": 1, "dlig": 0}, invalid: true },
+  { prop: "font-variant-ligatures", value: "no-historical-ligatures historical-ligatures", features: {"liga": 1, "clig": 1, "dlig": 0, "hlig": 0}, invalid: true },
+  { prop: "font-variant-ligatures", value: "no-contextual contextual", features: {"liga": 1, "clig": 1, "dlig": 0, "hlig": 0}, invalid: true },
+  { prop: "font-variant-ligatures", value: "no-discretionary-ligatures discretionary-ligatures", features: {"liga": 1, "clig": 1, "dlig": 0}, invalid: true },
+  { prop: "font-variant-ligatures", value: "common-ligatures no-discretionary-ligatures no-common-ligatures", features: {"liga": 1, "clig": 1, "dlig": 0}, invalid: true },
 ];
 
 // note: the code below requires an array "gFeatures" from :
