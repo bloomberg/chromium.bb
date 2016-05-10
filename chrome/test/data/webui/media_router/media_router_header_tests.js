@@ -7,6 +7,12 @@ cr.define('media_router_header', function() {
   function registerTests() {
     suite('MediaRouterHeader', function() {
       /**
+       * Media Router Container created before each test.
+       * @type {?MediaRouterContainer}
+       */
+      var container;
+
+      /**
        * Media Router Header created before each test.
        * @type {MediaRouterHeader}
        */
@@ -72,8 +78,9 @@ cr.define('media_router_header', function() {
         document.body.appendChild(container);
         header = container.$['container-header'];
 
-        // Allow for the media router header to be created and attached.
-        setTimeout(done);
+        // Allow for the media router container to be created, attached, and
+        // listeners registered in an afterNextRender() call.
+        Polymer.RenderStatus.afterNextRender(this, done);
       });
 
       // Tests for 'close-dialog' event firing when the close button is

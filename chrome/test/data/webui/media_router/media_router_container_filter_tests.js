@@ -135,8 +135,9 @@ cr.define('media_router_container_filter', function() {
 
         container.castModeList = test_base.fakeCastModeList;
 
-        // Allow for the media router container to be created and attached.
-        setTimeout(done);
+        // Allow for the media router container to be created, attached, and
+        // listeners registered in an afterNextRender() call.
+        Polymer.RenderStatus.afterNextRender(this, done);
       });
 
       // Tests that clicking the search icon will cause the container to enter
@@ -154,14 +155,12 @@ cr.define('media_router_container_filter', function() {
       // Tests that focusing the sink search input will cause the container to
       // enter filter view.
       test('focus sink search input', function(done) {
+        MockInteractions.focus(container.$['sink-search-input']);
         setTimeout(function() {
-          MockInteractions.focus(container.$['sink-search-input']);
-          setTimeout(function() {
-            checkCurrentView(media_router.MediaRouterView.FILTER);
-            assertEquals(container.$['sink-search-input'],
-                         container.shadowRoot.activeElement);
-            done();
-          });
+          checkCurrentView(media_router.MediaRouterView.FILTER);
+          assertEquals(container.$['sink-search-input'],
+                       container.shadowRoot.activeElement);
+          done();
         });
       });
 
@@ -181,13 +180,11 @@ cr.define('media_router_container_filter', function() {
       // Tests that pressing the Escape key in the FILTER view returns
       // |container| to the SINK_LIST view.
       test('filter view escape key', function(done) {
+        MockInteractions.tap(container.$['sink-search-icon']);
         setTimeout(function() {
-          MockInteractions.tap(container.$['sink-search-icon']);
-          setTimeout(function() {
-            pressEscapeOnElement(container);
-            checkCurrentView(media_router.MediaRouterView.SINK_LIST);
-            done();
-          });
+          pressEscapeOnElement(container);
+          checkCurrentView(media_router.MediaRouterView.SINK_LIST);
+          done();
         });
       });
 
@@ -195,26 +192,24 @@ cr.define('media_router_container_filter', function() {
       // keyboard focus returns |container| to the SINK_LIST view and focuses
       // the correct sink in the list.
       test('filter view escape key on menu item', function(done) {
+        container.allSinks = fakeSinkList;
+        MockInteractions.tap(container.$['sink-search-icon']);
         setTimeout(function() {
-          container.allSinks = fakeSinkList;
-          MockInteractions.tap(container.$['sink-search-icon']);
-          setTimeout(function() {
-            var item = container.$$('#search-results')
-                           .querySelectorAll('paper-item')[1];
-            item.focus();
-            var focusedSuccess = item.focused;
-            pressEscapeOnElement(item);
-            checkCurrentView(media_router.MediaRouterView.SINK_LIST);
-            setTimeout(function() {
-              item = container.$$('#sink-list-view')
+          var item = container.$$('#search-results')
                          .querySelectorAll('paper-item')[1];
-              // TODO(crbug.com/608551): This condition handles flakiness around
-              // the search item getting focus earlier. If it doesn't get focus,
-              // the logic that changes focus from a search item to a sink list
-              // item obviously won't do anything.
-              assertEquals(focusedSuccess, item.focused);
-              done();
-            });
+          item.focus();
+          var focusedSuccess = item.focused;
+          pressEscapeOnElement(item);
+          checkCurrentView(media_router.MediaRouterView.SINK_LIST);
+          setTimeout(function() {
+            item = container.$$('#sink-list-view')
+                       .querySelectorAll('paper-item')[1];
+            // TODO(crbug.com/608551): This condition handles flakiness around
+            // the search item getting focus earlier. If it doesn't get focus,
+            // the logic that changes focus from a search item to a sink list
+            // item obviously won't do anything.
+            assertEquals(focusedSuccess, item.focused);
+            done();
           });
         });
       });
@@ -223,25 +218,23 @@ cr.define('media_router_container_filter', function() {
       // not have keyboard focus returns |container| to the SINK_LIST view and
       // leaves focus where it is.
       test('filter view escape key on menu item other focus', function(done) {
+        container.allSinks = fakeSinkList;
+        MockInteractions.tap(container.$['sink-search-icon']);
         setTimeout(function() {
-          container.allSinks = fakeSinkList;
-          MockInteractions.tap(container.$['sink-search-icon']);
+          var item =
+              container.$$('#search-results')
+                  .querySelectorAll('paper-item')[1];
+          var closeButton = container.$['container-header'].$['close-button'];
+          closeButton.focus();
+          var focusedSuccess = closeButton.focused;
+          pressEscapeOnElement(item);
+          checkCurrentView(media_router.MediaRouterView.SINK_LIST);
           setTimeout(function() {
-            var item =
-                container.$$('#search-results')
-                    .querySelectorAll('paper-item')[1];
-            var closeButton = container.$['container-header'].$['close-button'];
-            closeButton.focus();
-            var focusedSuccess = closeButton.focused;
-            pressEscapeOnElement(item);
-            checkCurrentView(media_router.MediaRouterView.SINK_LIST);
-            setTimeout(function() {
-              // TODO(crbug.com/608551): This condition handles flakiness around
-              // the button initially getting focus. If it doesn't get focus
-              // earlier, it obviously shouldn't have it now.
-              assertEquals(focusedSuccess, closeButton.focused);
-              done();
-            });
+            // TODO(crbug.com/608551): This condition handles flakiness around
+            // the button initially getting focus. If it doesn't get focus
+            // earlier, it obviously shouldn't have it now.
+            assertEquals(focusedSuccess, closeButton.focused);
+            done();
           });
         });
       });

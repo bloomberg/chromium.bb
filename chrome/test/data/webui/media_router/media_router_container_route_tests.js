@@ -98,8 +98,9 @@ cr.define('media_router_container_route', function() {
 
         container.castModeList = test_base.fakeCastModeList;
 
-        // Allow for the media router container to be created and attached.
-        setTimeout(done);
+        // Allow for the media router container to be created, attached, and
+        // listeners registered in an afterNextRender() call.
+        Polymer.RenderStatus.afterNextRender(this, done);
       });
 
       // Tests for 'create-route' event firing when a sink with no associated
@@ -311,33 +312,31 @@ cr.define('media_router_container_route', function() {
       });
 
       test('creating route with selected cast mode', function(done) {
+        container.allSinks = fakeSinkList;
+        MockInteractions.tap(container.$['container-header'].
+            $['arrow-drop-icon']);
         setTimeout(function() {
-          container.allSinks = fakeSinkList;
-          MockInteractions.tap(container.$['container-header'].
-              $['arrow-drop-icon']);
+          // Select cast mode 2.
+          var castModeList =
+              container.$$('#cast-mode-list').querySelectorAll('paper-item');
+          MockInteractions.tap(castModeList[1]);
+          assertEquals(fakeCastModeList[1].description, container.headerText);
           setTimeout(function() {
-            // Select cast mode 2.
-            var castModeList =
-                container.$$('#cast-mode-list').querySelectorAll('paper-item');
-            MockInteractions.tap(castModeList[1]);
-            assertEquals(fakeCastModeList[1].description, container.headerText);
-            setTimeout(function() {
-              var sinkList =
-                  container.shadowRoot.getElementById('sink-list')
-                      .querySelectorAll('paper-item');
-              container.addEventListener('create-route', function(data) {
-                assertEquals(fakeSinkList[2].id, data.detail.sinkId);
-                // Cast mode 2 is used, since we selected it explicitly.
-                assertEquals(fakeCastModeList[1].type,
-                             data.detail.selectedCastModeValue);
-                done();
-              });
-              // All sinks are compatible with cast mode 2.
-              assertEquals(fakeSinkList.length, sinkList.length);
-              // Tap on a sink without a route, which should fire a
-              // 'create-route' event.
-              MockInteractions.tap(sinkList[2]);
+            var sinkList =
+                container.shadowRoot.getElementById('sink-list')
+                    .querySelectorAll('paper-item');
+            container.addEventListener('create-route', function(data) {
+              assertEquals(fakeSinkList[2].id, data.detail.sinkId);
+              // Cast mode 2 is used, since we selected it explicitly.
+              assertEquals(fakeCastModeList[1].type,
+                           data.detail.selectedCastModeValue);
+              done();
             });
+            // All sinks are compatible with cast mode 2.
+            assertEquals(fakeSinkList.length, sinkList.length);
+            // Tap on a sink without a route, which should fire a
+            // 'create-route' event.
+            MockInteractions.tap(sinkList[2]);
           });
         });
       });

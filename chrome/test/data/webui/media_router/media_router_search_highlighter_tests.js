@@ -46,9 +46,8 @@ cr.define('media_router_search_highlighter', function() {
         PolymerTest.clearBody();
         searchHighlighter =
             document.createElement('media-router-search-highlighter');
-
-
         document.body.appendChild(searchHighlighter);
+
         // Let the search highlighter be created and attached.
         setTimeout(done);
       });

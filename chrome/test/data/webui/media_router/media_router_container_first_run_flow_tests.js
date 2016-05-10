@@ -70,8 +70,9 @@ cr.define('media_router_container_first_run_flow', function() {
 
         container.castModeList = test_base.fakeCastModeList;
 
-        // Allow for the media router container to be created and attached.
-        setTimeout(done);
+        // Allow for the media router container to be created, attached, and
+        // listeners registered in an afterNextRender() call.
+        Polymer.RenderStatus.afterNextRender(this, done);
       });
 
       // Tests for 'acknowledge-first-run-flow' event firing when the

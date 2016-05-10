@@ -154,7 +154,9 @@ cr.define('media_router_container_search', function() {
             pseudoSink.iconType, undefined, pseudoSink.castModes);
         fakeSinkListWithPseudoSink = fakeSinkList.concat([pseudoSink]);
 
-        setTimeout(done);
+        // Allow for the media router container to be created, attached, and
+        // listeners registered in an afterNextRender() call.
+        Polymer.RenderStatus.afterNextRender(this, done);
       });
 
       test('pseudo sink hidden without filter input', function(done) {
