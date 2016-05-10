@@ -161,6 +161,7 @@ public class RemoteMediaPlayerController implements MediaRouteController.UiListe
 
         mNotificationControl = CastNotificationControl.getOrCreate(
                 mChromeVideoActivity.get(), controller);
+        mNotificationControl.setPosterBitmap(getPoster());
         controller.prepareMediaRoute();
 
         controller.addUiListener(this);
@@ -242,20 +243,6 @@ public class RemoteMediaPlayerController implements MediaRouteController.UiListe
         f.show(fm, "android.support.v7.mediarouter:MediaRouteControllerDialogFragment");
     }
 
-     /**
-     * Starts up the notification and lock screen with the given playback state.
-     *
-     * @param initialState the initial state of the notification
-     * @param mediaRouteController the mediaRouteController for which these are needed
-     */
-    public void startNotification(PlayerState initialState,
-            MediaRouteController mediaRouteController) {
-        mCurrentRouteController = mediaRouteController;
-        createNotificationControl();
-        CastNotificationControl notificationControl = getNotificationControl();
-        if (notificationControl != null) notificationControl.show(initialState);
-    }
-
     /**
      * @return the currently playing MediaRouteController
      */
@@ -275,25 +262,12 @@ public class RemoteMediaPlayerController implements MediaRouteController.UiListe
         return mNotificationControl;
     }
 
-    private void createNotificationControl() {
-        mNotificationControl = CastNotificationControl.getOrCreate(
-                mChromeVideoActivity.get(), mCurrentRouteController);
-        mNotificationControl.setPosterBitmap(getPoster());
-    }
-
     @Override
     public void onPrepared(MediaRouteController mediaRouteController) {
-
-        startNotification(PlayerState.PLAYING, mediaRouteController);
     }
 
     @Override
     public void onPlaybackStateChanged(PlayerState newState) {
-        if (newState == PlayerState.PLAYING || newState == PlayerState.LOADING
-                || newState == PlayerState.PAUSED) {
-            CastNotificationControl notificationControl = getNotificationControl();
-            if (notificationControl != null) notificationControl.show(newState);
-        }
     }
 
     @Override
