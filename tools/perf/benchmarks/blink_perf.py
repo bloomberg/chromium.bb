@@ -172,7 +172,6 @@ class BlinkPerfCSS(perf_benchmark.PerfBenchmark):
 
 
 @benchmark.Disabled('android-webview', # http://crbug.com/593200
-                    'android', # http://crbug.com/610384
                     'reference')  # http://crbug.com/576779
 class BlinkPerfCanvas(perf_benchmark.PerfBenchmark):
   tag = 'canvas'
