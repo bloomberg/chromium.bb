@@ -22928,10 +22928,8 @@
             "veyron_rialto"
         ],
         "buildslave_type": "gce_beefy",
-        "chrome_sdk": false,
         "chrome_sdk_build_chrome": false,
         "important": true,
-        "sync_chrome": false,
         "vm_tests": []
     },
     "veyron_rialto-release-afdo": {

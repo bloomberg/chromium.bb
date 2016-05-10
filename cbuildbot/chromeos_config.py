@@ -2404,14 +2404,6 @@ def GetConfig():
   ### Arm release configs.
 
   site_config.Add(
-      'veyron_rialto-release', _release,
-      _base_configs['veyron_rialto'],
-      # rialto does not use Chrome.
-      sync_chrome=False,
-      chrome_sdk=False,
-  )
-
-  site_config.Add(
       'smaug-release', _release,
       _base_configs['smaug'],
       images=['base', 'recovery', 'test'],
