@@ -340,8 +340,10 @@ class CONTENT_EXPORT RenderThreadImpl
   // A TaskRunner instance that runs tasks on the raster worker pool.
   base::TaskRunner* GetWorkerTaskRunner();
 
-  // Returns a shared worker context provider that can be used on any thread.
-  scoped_refptr<ContextProviderCommandBuffer> SharedWorkerContextProvider();
+  // Returns a worker context provider that will be bound on the compositor
+  // thread.
+  scoped_refptr<ContextProviderCommandBuffer>
+  SharedCompositorWorkerContextProvider();
 
   // Causes the idle handler to skip sending idle notifications
   // on the two next scheduled calls, so idle notifications are

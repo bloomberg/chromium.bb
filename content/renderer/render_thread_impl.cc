@@ -1405,34 +1405,40 @@ media::GpuVideoAcceleratorFactories* RenderThreadImpl::GetGpuFactories() {
 
   const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
 
+  scoped_refptr<gpu::GpuChannelHost> gpu_channel_host =
+      EstablishGpuChannelSync(CAUSE_FOR_GPU_LAUNCH_MEDIA_CONTEXT);
+  if (!gpu_channel_host)
+    return nullptr;
+  scoped_refptr<ContextProviderCommandBuffer> media_context_provider =
+      CreateOffscreenContext(
+          gpu_channel_host, command_buffer_metrics::RENDER_WORKER_CONTEXT,
+          gpu::GPU_STREAM_DEFAULT, gpu::GpuStreamPriority::NORMAL);
+  if (!media_context_provider->BindToCurrentThread())
+    return nullptr;
+  media_context_provider->SetupLock();
+
   scoped_refptr<base::SingleThreadTaskRunner> media_task_runner =
       GetMediaThreadTaskRunner();
-  scoped_refptr<ContextProviderCommandBuffer> shared_context_provider =
-      SharedWorkerContextProvider();
-  scoped_refptr<gpu::GpuChannelHost> gpu_channel_host = GetGpuChannel();
-  if (shared_context_provider && gpu_channel_host) {
-    const bool enable_video_accelerator =
-        !cmd_line->HasSwitch(switches::kDisableAcceleratedVideoDecode);
-    const bool enable_gpu_memory_buffer_video_frames =
+  const bool enable_video_accelerator =
+      !cmd_line->HasSwitch(switches::kDisableAcceleratedVideoDecode);
+  const bool enable_gpu_memory_buffer_video_frames =
 #if defined(OS_MACOSX) || defined(OS_LINUX)
-        !cmd_line->HasSwitch(switches::kDisableGpuMemoryBufferVideoFrames);
+      !cmd_line->HasSwitch(switches::kDisableGpuMemoryBufferVideoFrames);
 #else
-        cmd_line->HasSwitch(switches::kEnableGpuMemoryBufferVideoFrames);
+      cmd_line->HasSwitch(switches::kEnableGpuMemoryBufferVideoFrames);
 #endif
-    std::vector<unsigned> image_texture_targets;
-    std::string video_frame_image_texture_target_string =
-        cmd_line->GetSwitchValueASCII(switches::kVideoImageTextureTarget);
-    StringToUintVector(video_frame_image_texture_target_string,
-                       &image_texture_targets);
+  std::vector<unsigned> image_texture_targets;
+  std::string video_frame_image_texture_target_string =
+      cmd_line->GetSwitchValueASCII(switches::kVideoImageTextureTarget);
+  StringToUintVector(video_frame_image_texture_target_string,
+                     &image_texture_targets);
 
-    gpu_factories_.push_back(RendererGpuVideoAcceleratorFactories::Create(
-        std::move(gpu_channel_host), base::ThreadTaskRunnerHandle::Get(),
-        media_task_runner, shared_context_provider,
-        enable_gpu_memory_buffer_video_frames, image_texture_targets,
-        enable_video_accelerator));
-    return gpu_factories_.back();
-  }
-  return nullptr;
+  gpu_factories_.push_back(RendererGpuVideoAcceleratorFactories::Create(
+      std::move(gpu_channel_host), base::ThreadTaskRunnerHandle::Get(),
+      media_task_runner, std::move(media_context_provider),
+      enable_gpu_memory_buffer_video_frames, image_texture_targets,
+      enable_video_accelerator));
+  return gpu_factories_.back();
 }
 
 scoped_refptr<ContextProviderCommandBuffer>
@@ -1943,7 +1949,7 @@ base::TaskRunner* RenderThreadImpl::GetWorkerTaskRunner() {
 }
 
 scoped_refptr<ContextProviderCommandBuffer>
-RenderThreadImpl::SharedWorkerContextProvider() {
+RenderThreadImpl::SharedCompositorWorkerContextProvider() {
   DCHECK(IsMainThread());
   // Try to reuse existing shared worker context provider.
   if (shared_worker_context_provider_) {

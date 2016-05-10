@@ -750,7 +750,7 @@ std::unique_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface(
   }
 
   scoped_refptr<ContextProviderCommandBuffer> worker_context_provider =
-      RenderThreadImpl::current()->SharedWorkerContextProvider();
+      RenderThreadImpl::current()->SharedCompositorWorkerContextProvider();
   if (!worker_context_provider) {
     // Cause the compositor to wait and try again.
     return nullptr;

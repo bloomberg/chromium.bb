@@ -74390,6 +74390,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="20" label="Display compositor context">
     CAUSE_FOR_GPU_LAUNCH_DISPLAY_COMPOSITOR_CONTEXT
   </int>
+  <int value="21" label="Media worker context">
+    CAUSE_FOR_GPU_LAUNCH_MEDIA_CONTEXT
+  </int>
 </enum>
 
 <enum name="GzipEncodingFixupResult" type="int">
@@ -90020,6 +90023,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="VideoCapture"
       label="A VideoCapture GPU command buffer context"/>
   <suffix name="WebGL" label="A WebGL GPU command buffer context"/>
+  <suffix name="Media" label="The media worker command buffer context"/>
   <affected-histogram name="GPU.ContextLost"/>
 </histogram_suffixes>
 

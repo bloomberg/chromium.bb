@@ -112,6 +112,10 @@ void RecordContextLost(ContextType type,
       UMA_HISTOGRAM_ENUMERATION("GPU.ContextLost.WebGL", reason,
                                 CONTEXT_LOST_REASON_MAX_ENUM);
       break;
+    case MEDIA_CONTEXT:
+      UMA_HISTOGRAM_ENUMERATION("GPU.ContextLost.Media", reason,
+                                CONTEXT_LOST_REASON_MAX_ENUM);
+      break;
     case CONTEXT_TYPE_UNKNOWN:
       UMA_HISTOGRAM_ENUMERATION("GPU.ContextLost.Unknown", reason,
                                 CONTEXT_LOST_REASON_MAX_ENUM);
@@ -143,6 +147,8 @@ std::string ContextTypeToString(ContextType type) {
       return "Offscreen-CaptureThread";
     case OFFSCREEN_CONTEXT_FOR_WEBGL:
       return "Offscreen-For-WebGL";
+    case MEDIA_CONTEXT:
+      return "Media";
     default:
       NOTREACHED();
       return "unknown";
