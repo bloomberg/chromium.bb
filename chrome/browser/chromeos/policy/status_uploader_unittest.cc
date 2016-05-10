@@ -142,8 +142,9 @@ TEST_F(StatusUploaderTest, BasicTest) {
   EXPECT_TRUE(task_runner_->GetPendingTasks().empty());
   StatusUploader uploader(&client_, std::move(collector_), task_runner_);
   EXPECT_EQ(1U, task_runner_->GetPendingTasks().size());
-  // On startup, first update should happen immediately.
-  EXPECT_EQ(base::TimeDelta(), task_runner_->NextPendingTaskDelay());
+  // On startup, first update should happen in 1 minute.
+  EXPECT_EQ(base::TimeDelta::FromMinutes(1),
+            task_runner_->NextPendingTaskDelay());
 }
 
 TEST_F(StatusUploaderTest, DifferentFrequencyAtStart) {
@@ -157,8 +158,9 @@ TEST_F(StatusUploaderTest, DifferentFrequencyAtStart) {
   EXPECT_TRUE(task_runner_->GetPendingTasks().empty());
   StatusUploader uploader(&client_, std::move(collector_), task_runner_);
   ASSERT_EQ(1U, task_runner_->GetPendingTasks().size());
-  // On startup, first update should happen immediately.
-  EXPECT_EQ(base::TimeDelta(), task_runner_->NextPendingTaskDelay());
+  // On startup, first update should happen in 1 minute.
+  EXPECT_EQ(base::TimeDelta::FromMinutes(1),
+            task_runner_->NextPendingTaskDelay());
 
   EXPECT_CALL(*mock_collector, GetDeviceStatus(_)).WillRepeatedly(Return(true));
   EXPECT_CALL(*mock_collector, GetDeviceSessionStatus(_)).WillRepeatedly(

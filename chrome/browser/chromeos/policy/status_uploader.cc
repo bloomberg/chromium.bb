@@ -23,7 +23,10 @@
 #include "ui/base/user_activity/user_activity_detector.h"
 
 namespace {
+// Minimum delay between two consecutive uploads
 const int kMinUploadDelayMs = 60 * 1000;  // 60 seconds
+// Minimum delay after scheduling an upload
+const int kMinUploadScheduleDelayMs = 60 * 1000;  // 60 seconds
 }  // namespace
 
 namespace policy {
@@ -67,9 +70,9 @@ StatusUploader::StatusUploader(
   // Update the upload frequency from settings.
   RefreshUploadFrequency();
 
-  // Immediately schedule our next status upload (last_upload_ is set to the
-  // start of the epoch, so this will trigger an update in the immediate
-  // future).
+  // Schedule our next status upload in a minute (last_upload_ is set to the
+  // start of the epoch, so this will trigger an update in
+  // kMinUploadScheduleDelayMs from now).
   ScheduleNextStatusUpload();
 }
 
@@ -79,10 +82,10 @@ StatusUploader::~StatusUploader() {
 
 void StatusUploader::ScheduleNextStatusUpload() {
   // Calculate when to fire off the next update (if it should have already
-  // happened, this yields a TimeDelta of 0).
+  // happened, this yields a TimeDelta of kMinUploadScheduleDelayMs).
   base::TimeDelta delay = std::max(
       (last_upload_ + upload_frequency_) - base::Time::NowFromSystemTime(),
-      base::TimeDelta());
+      base::TimeDelta::FromMilliseconds(kMinUploadScheduleDelayMs));
   upload_callback_.Reset(base::Bind(&StatusUploader::UploadStatus,
                                     base::Unretained(this)));
   task_runner_->PostDelayedTask(FROM_HERE, upload_callback_.callback(), delay);
@@ -113,7 +116,8 @@ void StatusUploader::RefreshUploadFrequency() {
 
   // Schedule a new upload with the new frequency - only do this if we've
   // already performed the initial upload, because we want the initial upload
-  // to happen immediately on startup and not get cancelled by settings changes.
+  // to happen in a minute after startup and not get cancelled by settings
+  // changes.
   if (!last_upload_.is_null())
     ScheduleNextStatusUpload();
 }
