@@ -1522,6 +1522,34 @@ TEST_P(ParameterizedWebFrameTest, SetForceZeroLayoutHeight)
     EXPECT_LE(viewportHeight, webViewHelper.webViewImpl()->mainFrameImpl()->frameView()->layoutSize().height());
 }
 
+TEST_F(WebFrameTest, ToggleViewportMetaOnOff)
+{
+    registerMockedHttpURLLoad("viewport-device-width.html");
+
+    FixedLayoutTestWebViewClient client;
+    client.m_screenInfo.deviceScaleFactor = 1;
+    int viewportWidth = 640;
+    int viewportHeight = 480;
+
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    webViewHelper.initializeAndLoad(m_baseURL + "viewport-device-width.html", true, 0, &client);
+    WebSettings* settings = webViewHelper.webView()->settings();
+    settings->setViewportMetaEnabled(false);
+    settings->setViewportEnabled(true);
+    settings->setMainFrameResizesAreOrientationChanges(true);
+    settings->setShrinksViewportContentToFit(true);
+    webViewHelper.resize(WebSize(viewportWidth, viewportHeight));
+
+    Document* document = toLocalFrame(webViewHelper.webViewImpl()->page()->mainFrame())->document();
+    EXPECT_FALSE(document->viewportDescription().isLegacyViewportType());
+
+    settings->setViewportMetaEnabled(true);
+    EXPECT_TRUE(document->viewportDescription().isLegacyViewportType());
+
+    settings->setViewportMetaEnabled(false);
+    EXPECT_FALSE(document->viewportDescription().isLegacyViewportType());
+}
+
 TEST_F(WebFrameTest, SetForceZeroLayoutHeightWorksWithRelayoutsWhenHeightChanged)
 {
     // this unit test is an attempt to target a real world case where an app could

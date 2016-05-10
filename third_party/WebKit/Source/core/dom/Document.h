@@ -258,10 +258,10 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(selectstart);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(wheel);
 
-    bool shouldMergeWithLegacyDescription(ViewportDescription::Type);
-    bool shouldOverrideLegacyDescription(ViewportDescription::Type);
+    bool shouldMergeWithLegacyDescription(ViewportDescription::Type) const;
+    bool shouldOverrideLegacyDescription(ViewportDescription::Type) const;
     void setViewportDescription(const ViewportDescription&);
-    const ViewportDescription& viewportDescription() const { return m_viewportDescription; }
+    ViewportDescription viewportDescription() const;
     Length viewportDefaultMinWidth() const { return m_viewportDefaultMinWidth; }
 
     String outgoingReferrer() const override;
@@ -1389,7 +1389,7 @@ private:
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT Supplement<Document>;
 
-inline bool Document::shouldOverrideLegacyDescription(ViewportDescription::Type origin)
+inline bool Document::shouldOverrideLegacyDescription(ViewportDescription::Type origin) const
 {
     // The different (legacy) meta tags have different priorities based on the type
     // regardless of which order they appear in the DOM. The priority is given by the
