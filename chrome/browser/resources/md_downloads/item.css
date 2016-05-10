@@ -89,11 +89,11 @@
   width: 32px;
 }
 
-#danger-icon[icon='warning'] {
+#danger-icon[icon='downloads:warning'] {
   color: rgb(255, 193, 7);
 }
 
-#danger-icon[icon='remove-circle'] {
+#danger-icon[icon='downloads:remove-circle'] {
   color: rgb(244, 67, 54);
 }
 

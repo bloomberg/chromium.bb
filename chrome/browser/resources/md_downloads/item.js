@@ -129,9 +129,9 @@ cr.define('downloads', function() {
         case downloads.DangerType.DANGEROUS_URL:
         case downloads.DangerType.POTENTIALLY_UNWANTED:
         case downloads.DangerType.UNCOMMON_CONTENT:
-          return 'remove-circle';
+          return 'downloads:remove-circle';
         default:
-          return 'warning';
+          return 'downloads:warning';
       }
     },
 
