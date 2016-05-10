@@ -1120,7 +1120,7 @@ wayland_backend_config_add_new_output(struct weston_wayland_backend_config *new_
 
 static int
 load_wayland_backend_config(struct weston_compositor *compositor, int *argc,
-			    char *argv[], struct weston_config *config,
+			    char *argv[], struct weston_config *wc,
 			    struct weston_wayland_backend_config *out_config)
 {
 	struct weston_wayland_backend_config new_config = {{ 0, }};
@@ -1157,7 +1157,7 @@ load_wayland_backend_config(struct weston_compositor *compositor, int *argc,
 	new_config.base.struct_size = sizeof(struct weston_wayland_backend_config);
 	new_config.base.struct_version = WESTON_WAYLAND_BACKEND_CONFIG_VERSION;
 
-	section = weston_config_get_section(config, "shell", NULL, NULL);
+	section = weston_config_get_section(wc, "shell", NULL, NULL);
 	weston_config_section_get_string(section, "cursor-theme",
 					 &new_config.cursor_theme, NULL);
 	weston_config_section_get_int(section, "cursor-size",
@@ -1185,7 +1185,7 @@ load_wayland_backend_config(struct weston_compositor *compositor, int *argc,
 	}
 
 	section = NULL;
-	while (weston_config_next_section(config, &section, &section_name)) {
+	while (weston_config_next_section(wc, &section, &section_name)) {
 		if (!section_name || strcmp(section_name, "output") != 0)
 			continue;
 		weston_config_section_get_string(section, "name", &name, NULL);
