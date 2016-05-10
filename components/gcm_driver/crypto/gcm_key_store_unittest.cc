@@ -4,14 +4,18 @@
 
 #include "components/gcm_driver/crypto/gcm_key_store.h"
 
+#include <string>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
 #include "base/thread_task_runner_handle.h"
 #include "components/gcm_driver/crypto/p256_key_util.h"
+#include "net/test/gtest_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace gcm {
@@ -20,6 +24,8 @@ namespace {
 
 const char kFakeAppId[] = "my_app_id";
 const char kSecondFakeAppId[] = "my_other_app_id";
+const char kFakeAuthorizedEntity[] = "my_sender_id";
+const char kSecondFakeAuthorizedEntity[] = "my_other_sender_id";
 
 class GCMKeyStoreTest : public ::testing::Test {
  public:
@@ -73,10 +79,11 @@ TEST_F(GCMKeyStoreTest, EmptyByDefault) {
 
   KeyPair pair;
   std::string auth_secret;
-  gcm_key_store()->GetKeys(kFakeAppId,
-                           base::Bind(&GCMKeyStoreTest::GotKeys,
-                                      base::Unretained(this), &pair,
-                                      &auth_secret));
+  gcm_key_store()->GetKeys(
+      kFakeAppId, kFakeAuthorizedEntity,
+      false /* fallback_to_empty_authorized_entity */,
+      base::Bind(&GCMKeyStoreTest::GotKeys, base::Unretained(this), &pair,
+                 &auth_secret));
 
   base::RunLoop().RunUntilIdle();
 
@@ -91,10 +98,10 @@ TEST_F(GCMKeyStoreTest, EmptyByDefault) {
 TEST_F(GCMKeyStoreTest, CreateAndGetKeys) {
   KeyPair pair;
   std::string auth_secret;
-  gcm_key_store()->CreateKeys(kFakeAppId,
-                              base::Bind(&GCMKeyStoreTest::GotKeys,
-                                         base::Unretained(this), &pair,
-                                         &auth_secret));
+  gcm_key_store()->CreateKeys(
+      kFakeAppId, kFakeAuthorizedEntity,
+      base::Bind(&GCMKeyStoreTest::GotKeys, base::Unretained(this), &pair,
+                 &auth_secret));
 
   base::RunLoop().RunUntilIdle();
 
@@ -112,10 +119,11 @@ TEST_F(GCMKeyStoreTest, CreateAndGetKeys) {
 
   KeyPair read_pair;
   std::string read_auth_secret;
-  gcm_key_store()->GetKeys(kFakeAppId,
-                           base::Bind(&GCMKeyStoreTest::GotKeys,
-                                      base::Unretained(this), &read_pair,
-                                      &read_auth_secret));
+  gcm_key_store()->GetKeys(
+      kFakeAppId, kFakeAuthorizedEntity,
+      false /* fallback_to_empty_authorized_entity */,
+      base::Bind(&GCMKeyStoreTest::GotKeys, base::Unretained(this), &read_pair,
+                 &read_auth_secret));
 
   base::RunLoop().RunUntilIdle();
 
@@ -127,17 +135,101 @@ TEST_F(GCMKeyStoreTest, CreateAndGetKeys) {
 
   EXPECT_EQ(auth_secret, read_auth_secret);
 
-  histogram_tester()->ExpectBucketCount(
-      "GCM.Crypto.GetKeySuccessRate", 1, 1);  // failure
+  histogram_tester()->ExpectBucketCount("GCM.Crypto.GetKeySuccessRate", 1,
+                                        1);  // success
+
+  // GetKey should also succeed if fallback_to_empty_authorized_entity is true
+  // (fallback should not occur, since an exact match is found).
+  gcm_key_store()->GetKeys(
+      kFakeAppId, kFakeAuthorizedEntity,
+      true /* fallback_to_empty_authorized_entity */,
+      base::Bind(&GCMKeyStoreTest::GotKeys, base::Unretained(this), &read_pair,
+                 &read_auth_secret));
+
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_TRUE(read_pair.IsInitialized());
+
+  EXPECT_EQ(pair.type(), read_pair.type());
+  EXPECT_EQ(pair.private_key(), read_pair.private_key());
+  EXPECT_EQ(pair.public_key(), read_pair.public_key());
+
+  EXPECT_EQ(auth_secret, read_auth_secret);
+
+  histogram_tester()->ExpectBucketCount("GCM.Crypto.GetKeySuccessRate", 1,
+                                        2);  // another success
+}
+
+TEST_F(GCMKeyStoreTest, GetKeysFallback) {
+  KeyPair pair;
+  std::string auth_secret;
+  gcm_key_store()->CreateKeys(
+      kFakeAppId, "" /* empty authorized entity for non-InstanceID */,
+      base::Bind(&GCMKeyStoreTest::GotKeys, base::Unretained(this), &pair,
+                 &auth_secret));
+
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_TRUE(pair.IsInitialized());
+  ASSERT_TRUE(pair.has_private_key());
+  ASSERT_TRUE(pair.has_public_key());
+
+  EXPECT_GT(pair.public_key().size(), 0u);
+  EXPECT_GT(pair.private_key().size(), 0u);
+
+  ASSERT_GT(auth_secret.size(), 0u);
+
+  histogram_tester()->ExpectBucketCount("GCM.Crypto.CreateKeySuccessRate", 1,
+                                        1);  // success
+
+  // GetKeys should fail when fallback_to_empty_authorized_entity is false, as
+  // there is not an exact match for kFakeAuthorizedEntity.
+  KeyPair read_pair;
+  std::string read_auth_secret;
+  gcm_key_store()->GetKeys(
+      kFakeAppId, kFakeAuthorizedEntity,
+      false /* fallback_to_empty_authorized_entity */,
+      base::Bind(&GCMKeyStoreTest::GotKeys, base::Unretained(this), &read_pair,
+                 &read_auth_secret));
+
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_FALSE(read_pair.IsInitialized());
+  EXPECT_FALSE(read_pair.has_type());
+  EXPECT_EQ(0u, read_auth_secret.size());
+
+  histogram_tester()->ExpectBucketCount("GCM.Crypto.GetKeySuccessRate", 0,
+                                        1);  // failure
+
+  // GetKey should succeed when fallback_to_empty_authorized_entity is true, as
+  // falling back to empty authorized entity will match the created key.
+  gcm_key_store()->GetKeys(
+      kFakeAppId, kFakeAuthorizedEntity,
+      true /* fallback_to_empty_authorized_entity */,
+      base::Bind(&GCMKeyStoreTest::GotKeys, base::Unretained(this), &read_pair,
+                 &read_auth_secret));
+
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_TRUE(read_pair.IsInitialized());
+
+  EXPECT_EQ(pair.type(), read_pair.type());
+  EXPECT_EQ(pair.private_key(), read_pair.private_key());
+  EXPECT_EQ(pair.public_key(), read_pair.public_key());
+
+  EXPECT_EQ(auth_secret, read_auth_secret);
+
+  histogram_tester()->ExpectBucketCount("GCM.Crypto.GetKeySuccessRate", 1,
+                                        1);  // success
 }
 
 TEST_F(GCMKeyStoreTest, KeysPersistenceBetweenInstances) {
   KeyPair pair;
   std::string auth_secret;
-  gcm_key_store()->CreateKeys(kFakeAppId,
-                              base::Bind(&GCMKeyStoreTest::GotKeys,
-                                         base::Unretained(this), &pair,
-                                         &auth_secret));
+  gcm_key_store()->CreateKeys(
+      kFakeAppId, kFakeAuthorizedEntity,
+      base::Bind(&GCMKeyStoreTest::GotKeys, base::Unretained(this), &pair,
+                 &auth_secret));
 
   base::RunLoop().RunUntilIdle();
 
@@ -153,10 +245,11 @@ TEST_F(GCMKeyStoreTest, KeysPersistenceBetweenInstances) {
 
   KeyPair read_pair;
   std::string read_auth_secret;
-  gcm_key_store()->GetKeys(kFakeAppId,
-                           base::Bind(&GCMKeyStoreTest::GotKeys,
-                                      base::Unretained(this), &read_pair,
-                                      &read_auth_secret));
+  gcm_key_store()->GetKeys(
+      kFakeAppId, kFakeAuthorizedEntity,
+      false /* fallback_to_empty_authorized_entity */,
+      base::Bind(&GCMKeyStoreTest::GotKeys, base::Unretained(this), &read_pair,
+                 &read_auth_secret));
 
   base::RunLoop().RunUntilIdle();
 
@@ -173,10 +266,10 @@ TEST_F(GCMKeyStoreTest, KeysPersistenceBetweenInstances) {
 TEST_F(GCMKeyStoreTest, CreateAndRemoveKeys) {
   KeyPair pair;
   std::string auth_secret;
-  gcm_key_store()->CreateKeys(kFakeAppId,
-                              base::Bind(&GCMKeyStoreTest::GotKeys,
-                                         base::Unretained(this), &pair,
-                                         &auth_secret));
+  gcm_key_store()->CreateKeys(
+      kFakeAppId, kFakeAuthorizedEntity,
+      base::Bind(&GCMKeyStoreTest::GotKeys, base::Unretained(this), &pair,
+                 &auth_secret));
 
   base::RunLoop().RunUntilIdle();
 
@@ -184,80 +277,194 @@ TEST_F(GCMKeyStoreTest, CreateAndRemoveKeys) {
 
   KeyPair read_pair;
   std::string read_auth_secret;
-  gcm_key_store()->GetKeys(kFakeAppId,
-                           base::Bind(&GCMKeyStoreTest::GotKeys,
-                                      base::Unretained(this), &read_pair,
-                                      &read_auth_secret));
+  gcm_key_store()->GetKeys(
+      kFakeAppId, kFakeAuthorizedEntity,
+      false /* fallback_to_empty_authorized_entity */,
+      base::Bind(&GCMKeyStoreTest::GotKeys, base::Unretained(this), &read_pair,
+                 &read_auth_secret));
 
   base::RunLoop().RunUntilIdle();
 
   ASSERT_TRUE(read_pair.IsInitialized());
   EXPECT_TRUE(read_pair.has_type());
 
-  gcm_key_store()->RemoveKeys(kFakeAppId, base::Bind(&base::DoNothing));
+  gcm_key_store()->RemoveKeys(kFakeAppId, kFakeAuthorizedEntity,
+                              base::Bind(&base::DoNothing));
 
   base::RunLoop().RunUntilIdle();
 
   histogram_tester()->ExpectBucketCount(
       "GCM.Crypto.RemoveKeySuccessRate", 1, 1);  // success
 
-  gcm_key_store()->GetKeys(kFakeAppId,
-                           base::Bind(&GCMKeyStoreTest::GotKeys,
-                                      base::Unretained(this), &read_pair,
-                                      &read_auth_secret));
+  gcm_key_store()->GetKeys(
+      kFakeAppId, kFakeAuthorizedEntity,
+      false /* fallback_to_empty_authorized_entity */,
+      base::Bind(&GCMKeyStoreTest::GotKeys, base::Unretained(this), &read_pair,
+                 &read_auth_secret));
 
   base::RunLoop().RunUntilIdle();
 
   ASSERT_FALSE(read_pair.IsInitialized());
 }
 
-TEST_F(GCMKeyStoreTest, CreateAndRemoveKeysSynchronously) {
+TEST_F(GCMKeyStoreTest, CreateGetAndRemoveKeysSynchronously) {
   KeyPair pair;
   std::string auth_secret;
-  gcm_key_store()->CreateKeys(kFakeAppId,
-                              base::Bind(&GCMKeyStoreTest::GotKeys,
-                                         base::Unretained(this), &pair,
-                                         &auth_secret));
+  gcm_key_store()->CreateKeys(
+      kFakeAppId, kFakeAuthorizedEntity,
+      base::Bind(&GCMKeyStoreTest::GotKeys, base::Unretained(this), &pair,
+                 &auth_secret));
 
   // Continue synchronously, without running RunUntilIdle first.
-  gcm_key_store()->RemoveKeys(kFakeAppId, base::Bind(&base::DoNothing));
+  KeyPair pair_after_create;
+  std::string auth_secret_after_create;
+  gcm_key_store()->GetKeys(
+      kFakeAppId, kFakeAuthorizedEntity,
+      false /* fallback_to_empty_authorized_entity */,
+      base::Bind(&GCMKeyStoreTest::GotKeys, base::Unretained(this),
+                 &pair_after_create, &auth_secret_after_create));
+
+  // Continue synchronously, without running RunUntilIdle first.
+  gcm_key_store()->RemoveKeys(kFakeAppId, kFakeAuthorizedEntity,
+                              base::Bind(&base::DoNothing));
+
+  // Continue synchronously, without running RunUntilIdle first.
+  KeyPair pair_after_remove;
+  std::string auth_secret_after_remove;
+  gcm_key_store()->GetKeys(
+      kFakeAppId, kFakeAuthorizedEntity,
+      false /* fallback_to_empty_authorized_entity */,
+      base::Bind(&GCMKeyStoreTest::GotKeys, base::Unretained(this),
+                 &pair_after_remove, &auth_secret_after_remove));
+
+  base::RunLoop().RunUntilIdle();
+
+  histogram_tester()->ExpectBucketCount("GCM.Crypto.RemoveKeySuccessRate", 1,
+                                        1);  // success
+
+  KeyPair pair_after_idle;
+  std::string auth_secret_after_idle;
+  gcm_key_store()->GetKeys(
+      kFakeAppId, kFakeAuthorizedEntity,
+      false /* fallback_to_empty_authorized_entity */,
+      base::Bind(&GCMKeyStoreTest::GotKeys, base::Unretained(this),
+                 &pair_after_idle, &auth_secret_after_idle));
 
   base::RunLoop().RunUntilIdle();
 
   ASSERT_TRUE(pair.IsInitialized());
+  ASSERT_TRUE(pair_after_create.IsInitialized());
+  EXPECT_FALSE(pair_after_remove.IsInitialized());
+  EXPECT_FALSE(pair_after_idle.IsInitialized());
+
   EXPECT_TRUE(pair.has_type());
+  EXPECT_EQ(pair.type(), pair_after_create.type());
+  EXPECT_EQ(pair.private_key(), pair_after_create.private_key());
+  EXPECT_EQ(pair.public_key(), pair_after_create.public_key());
 
-  histogram_tester()->ExpectBucketCount(
-      "GCM.Crypto.RemoveKeySuccessRate", 1, 1);  // success
+  EXPECT_GT(auth_secret.size(), 0u);
+  EXPECT_EQ(auth_secret, auth_secret_after_create);
+  EXPECT_EQ("", auth_secret_after_remove);
+  EXPECT_EQ("", auth_secret_after_idle);
+}
 
-  KeyPair read_pair;
-  std::string read_auth_secret;
-  gcm_key_store()->GetKeys(kFakeAppId,
-                           base::Bind(&GCMKeyStoreTest::GotKeys,
-                                      base::Unretained(this), &read_pair,
-                                      &read_auth_secret));
+TEST_F(GCMKeyStoreTest, RemoveKeysWildcardAuthorizedEntity) {
+  KeyPair pair1, pair2, pair3;
+  std::string auth_secret1, auth_secret2, auth_secret3;
+  gcm_key_store()->CreateKeys(
+      kFakeAppId, kFakeAuthorizedEntity,
+      base::Bind(&GCMKeyStoreTest::GotKeys, base::Unretained(this), &pair1,
+                 &auth_secret1));
+  gcm_key_store()->CreateKeys(
+      kFakeAppId, kSecondFakeAuthorizedEntity,
+      base::Bind(&GCMKeyStoreTest::GotKeys, base::Unretained(this), &pair2,
+                 &auth_secret2));
+  gcm_key_store()->CreateKeys(
+      kSecondFakeAppId, kFakeAuthorizedEntity,
+      base::Bind(&GCMKeyStoreTest::GotKeys, base::Unretained(this), &pair3,
+                 &auth_secret3));
 
   base::RunLoop().RunUntilIdle();
 
-  ASSERT_FALSE(read_pair.IsInitialized());
+  ASSERT_TRUE(pair1.IsInitialized());
+  ASSERT_TRUE(pair2.IsInitialized());
+  ASSERT_TRUE(pair3.IsInitialized());
+
+  KeyPair read_pair1, read_pair2, read_pair3;
+  std::string read_auth_secret1, read_auth_secret2, read_auth_secret3;
+  gcm_key_store()->GetKeys(
+      kFakeAppId, kFakeAuthorizedEntity,
+      false /* fallback_to_empty_authorized_entity */,
+      base::Bind(&GCMKeyStoreTest::GotKeys, base::Unretained(this), &read_pair1,
+                 &read_auth_secret1));
+  gcm_key_store()->GetKeys(
+      kFakeAppId, kSecondFakeAuthorizedEntity,
+      false /* fallback_to_empty_authorized_entity */,
+      base::Bind(&GCMKeyStoreTest::GotKeys, base::Unretained(this), &read_pair2,
+                 &read_auth_secret2));
+  gcm_key_store()->GetKeys(
+      kSecondFakeAppId, kFakeAuthorizedEntity,
+      false /* fallback_to_empty_authorized_entity */,
+      base::Bind(&GCMKeyStoreTest::GotKeys, base::Unretained(this), &read_pair3,
+                 &read_auth_secret3));
+
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_TRUE(read_pair1.IsInitialized());
+  EXPECT_TRUE(read_pair1.has_type());
+  ASSERT_TRUE(read_pair2.IsInitialized());
+  EXPECT_TRUE(read_pair2.has_type());
+  ASSERT_TRUE(read_pair3.IsInitialized());
+  EXPECT_TRUE(read_pair3.has_type());
+
+  gcm_key_store()->RemoveKeys(kFakeAppId, "*" /* authorized_entity */,
+                              base::Bind(&base::DoNothing));
+
+  base::RunLoop().RunUntilIdle();
+
+  histogram_tester()->ExpectBucketCount("GCM.Crypto.RemoveKeySuccessRate", 1,
+                                        1);  // success
+
+  gcm_key_store()->GetKeys(
+      kFakeAppId, kFakeAuthorizedEntity,
+      false /* fallback_to_empty_authorized_entity */,
+      base::Bind(&GCMKeyStoreTest::GotKeys, base::Unretained(this), &read_pair1,
+                 &read_auth_secret1));
+  gcm_key_store()->GetKeys(
+      kFakeAppId, kSecondFakeAuthorizedEntity,
+      false /* fallback_to_empty_authorized_entity */,
+      base::Bind(&GCMKeyStoreTest::GotKeys, base::Unretained(this), &read_pair2,
+                 &read_auth_secret2));
+  gcm_key_store()->GetKeys(
+      kSecondFakeAppId, kFakeAuthorizedEntity,
+      false /* fallback_to_empty_authorized_entity */,
+      base::Bind(&GCMKeyStoreTest::GotKeys, base::Unretained(this), &read_pair3,
+                 &read_auth_secret3));
+
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(read_pair1.IsInitialized());
+  EXPECT_FALSE(read_pair2.IsInitialized());
+  ASSERT_TRUE(read_pair3.IsInitialized());
+  EXPECT_TRUE(read_pair3.has_type());
 }
 
 TEST_F(GCMKeyStoreTest, GetKeysMultipleAppIds) {
   KeyPair pair;
   std::string auth_secret;
-  gcm_key_store()->CreateKeys(kFakeAppId,
-                              base::Bind(&GCMKeyStoreTest::GotKeys,
-                                         base::Unretained(this), &pair,
-                                         &auth_secret));
+  gcm_key_store()->CreateKeys(
+      kFakeAppId, kFakeAuthorizedEntity,
+      base::Bind(&GCMKeyStoreTest::GotKeys, base::Unretained(this), &pair,
+                 &auth_secret));
 
   base::RunLoop().RunUntilIdle();
 
   ASSERT_TRUE(pair.IsInitialized());
 
-  gcm_key_store()->CreateKeys(kSecondFakeAppId,
-                              base::Bind(&GCMKeyStoreTest::GotKeys,
-                                         base::Unretained(this), &pair,
-                                         &auth_secret));
+  gcm_key_store()->CreateKeys(
+      kSecondFakeAppId, kSecondFakeAuthorizedEntity,
+      base::Bind(&GCMKeyStoreTest::GotKeys, base::Unretained(this), &pair,
+                 &auth_secret));
 
   base::RunLoop().RunUntilIdle();
 
@@ -265,10 +472,11 @@ TEST_F(GCMKeyStoreTest, GetKeysMultipleAppIds) {
 
   KeyPair read_pair;
   std::string read_auth_secret;
-  gcm_key_store()->GetKeys(kFakeAppId,
-                           base::Bind(&GCMKeyStoreTest::GotKeys,
-                                      base::Unretained(this), &read_pair,
-                                      &read_auth_secret));
+  gcm_key_store()->GetKeys(
+      kFakeAppId, kFakeAuthorizedEntity,
+      false /* fallback_to_empty_authorized_entity */,
+      base::Bind(&GCMKeyStoreTest::GotKeys, base::Unretained(this), &read_pair,
+                 &read_auth_secret));
 
   base::RunLoop().RunUntilIdle();
 
@@ -279,10 +487,10 @@ TEST_F(GCMKeyStoreTest, GetKeysMultipleAppIds) {
 TEST_F(GCMKeyStoreTest, SuccessiveCallsBeforeInitialization) {
   KeyPair pair;
   std::string auth_secret;
-  gcm_key_store()->CreateKeys(kFakeAppId,
-                              base::Bind(&GCMKeyStoreTest::GotKeys,
-                                         base::Unretained(this), &pair,
-                                         &auth_secret));
+  gcm_key_store()->CreateKeys(
+      kFakeAppId, kFakeAuthorizedEntity,
+      base::Bind(&GCMKeyStoreTest::GotKeys, base::Unretained(this), &pair,
+                 &auth_secret));
 
   // Deliberately do not run the message loop, so that the callback has not
   // been resolved yet. The following EXPECT() ensures this.
@@ -290,10 +498,11 @@ TEST_F(GCMKeyStoreTest, SuccessiveCallsBeforeInitialization) {
 
   KeyPair read_pair;
   std::string read_auth_secret;
-  gcm_key_store()->GetKeys(kFakeAppId,
-                           base::Bind(&GCMKeyStoreTest::GotKeys,
-                                      base::Unretained(this), &read_pair,
-                                      &read_auth_secret));
+  gcm_key_store()->GetKeys(
+      kFakeAppId, kFakeAuthorizedEntity,
+      false /* fallback_to_empty_authorized_entity */,
+      base::Bind(&GCMKeyStoreTest::GotKeys, base::Unretained(this), &read_pair,
+                 &read_auth_secret));
 
   EXPECT_FALSE(read_pair.IsInitialized());
 
@@ -304,6 +513,67 @@ TEST_F(GCMKeyStoreTest, SuccessiveCallsBeforeInitialization) {
 
   EXPECT_TRUE(pair.IsInitialized());
 }
+
+#if !defined(NDEBUG) && DCHECK_IS_ON()
+
+TEST_F(GCMKeyStoreTest, CannotShareAppIdFromGCMToInstanceID) {
+  KeyPair pair_unused;
+  std::string auth_secret_unused;
+  gcm_key_store()->CreateKeys(
+      kFakeAppId, "" /* empty authorized entity for non-InstanceID */,
+      base::Bind(&GCMKeyStoreTest::GotKeys, base::Unretained(this),
+                 &pair_unused, &auth_secret_unused));
+
+  base::RunLoop().RunUntilIdle();
+
+  static_assert(logging::LOG_DCHECK == logging::LOG_DFATAL,
+                "Unless these are equal, EXPECT_DFATAL will miss the DCHECK");
+  EXPECT_DFATAL(
+      {
+        gcm_key_store()->CreateKeys(
+            kFakeAppId, kFakeAuthorizedEntity,
+            base::Bind(&GCMKeyStoreTest::GotKeys, base::Unretained(this),
+                       &pair_unused, &auth_secret_unused));
+
+        base::RunLoop().RunUntilIdle();
+      },
+      "Instance ID tokens cannot share an app_id with a non-InstanceID GCM "
+      "registration");
+}
+
+TEST_F(GCMKeyStoreTest, CannotShareAppIdFromInstanceIDToGCM) {
+  KeyPair pair_unused;
+  std::string auth_secret_unused;
+  gcm_key_store()->CreateKeys(
+      kFakeAppId, kFakeAuthorizedEntity,
+      base::Bind(&GCMKeyStoreTest::GotKeys, base::Unretained(this),
+                 &pair_unused, &auth_secret_unused));
+
+  base::RunLoop().RunUntilIdle();
+
+  gcm_key_store()->CreateKeys(
+      kFakeAppId, kSecondFakeAuthorizedEntity,
+      base::Bind(&GCMKeyStoreTest::GotKeys, base::Unretained(this),
+                 &pair_unused, &auth_secret_unused));
+
+  base::RunLoop().RunUntilIdle();
+
+  static_assert(logging::LOG_DCHECK == logging::LOG_DFATAL,
+                "Unless these are equal, EXPECT_DFATAL will miss the DCHECK");
+  EXPECT_DFATAL(
+      {
+        gcm_key_store()->CreateKeys(
+            kFakeAppId, "" /* empty authorized entity for non-InstanceID */,
+            base::Bind(&GCMKeyStoreTest::GotKeys, base::Unretained(this),
+                       &pair_unused, &auth_secret_unused));
+
+        base::RunLoop().RunUntilIdle();
+      },
+      "Instance ID tokens cannot share an app_id with a non-InstanceID GCM "
+      "registration");
+}
+
+#endif  // !defined(NDEBUG) && DCHECK_IS_ON()
 
 }  // namespace
 

@@ -77,18 +77,22 @@ void GCMEncryptionProvider::Init(
 
 void GCMEncryptionProvider::GetEncryptionInfo(
     const std::string& app_id,
+    const std::string& authorized_entity,
     const EncryptionInfoCallback& callback) {
   DCHECK(key_store_);
-  key_store_->GetKeys(
-      app_id, base::Bind(&GCMEncryptionProvider::DidGetEncryptionInfo,
-                         weak_ptr_factory_.GetWeakPtr(), app_id, callback));
+  key_store_->GetKeys(app_id, authorized_entity,
+                      false /* fallback_to_empty_authorized_entity */,
+                      base::Bind(&GCMEncryptionProvider::DidGetEncryptionInfo,
+                                 weak_ptr_factory_.GetWeakPtr(), app_id,
+                                 authorized_entity, callback));
 }
 
 void GCMEncryptionProvider::RemoveEncryptionInfo(
     const std::string& app_id,
+    const std::string& authorized_entity,
     const base::Closure& callback) {
   DCHECK(key_store_);
-  key_store_->RemoveKeys(app_id, callback);
+  key_store_->RemoveKeys(app_id, authorized_entity, callback);
 }
 
 bool GCMEncryptionProvider::IsEncryptedMessage(const IncomingMessage& message)
@@ -155,23 +159,28 @@ void GCMEncryptionProvider::DecryptMessage(
     return;
   }
 
-  key_store_->GetKeys(
-      app_id, base::Bind(&GCMEncryptionProvider::DecryptMessageWithKey,
-                         weak_ptr_factory_.GetWeakPtr(), message,
-                         callback, encryption_header_values[0].salt,
-                         crypto_key_header_values[0].dh,
-                         encryption_header_values[0].rs));
+  // Use |fallback_to_empty_authorized_entity|, since this message might have
+  // been sent to either an InstanceID token or a non-InstanceID registration.
+  key_store_->GetKeys(app_id, message.sender_id /* authorized_entity */,
+                      true /* fallback_to_empty_authorized_entity */,
+                      base::Bind(&GCMEncryptionProvider::DecryptMessageWithKey,
+                                 weak_ptr_factory_.GetWeakPtr(), message,
+                                 callback, encryption_header_values[0].salt,
+                                 crypto_key_header_values[0].dh,
+                                 encryption_header_values[0].rs));
 }
 
 void GCMEncryptionProvider::DidGetEncryptionInfo(
     const std::string& app_id,
+    const std::string& authorized_entity,
     const EncryptionInfoCallback& callback,
     const KeyPair& pair,
     const std::string& auth_secret) {
   if (!pair.IsInitialized()) {
     key_store_->CreateKeys(
-        app_id, base::Bind(&GCMEncryptionProvider::DidCreateEncryptionInfo,
-                           weak_ptr_factory_.GetWeakPtr(), callback));
+        app_id, authorized_entity,
+        base::Bind(&GCMEncryptionProvider::DidCreateEncryptionInfo,
+                   weak_ptr_factory_.GetWeakPtr(), callback));
     return;
   }
 

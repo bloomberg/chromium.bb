@@ -165,7 +165,8 @@ void GCMDriver::Send(const std::string& app_id,
 void GCMDriver::GetEncryptionInfo(
     const std::string& app_id,
     const GetEncryptionInfoCallback& callback) {
-  encryption_provider_.GetEncryptionInfo(app_id, callback);
+  encryption_provider_.GetEncryptionInfo(app_id, "" /* authorized_entity */,
+                                         callback);
 }
 
 void GCMDriver::UnregisterWithSenderIdImpl(const std::string& app_id,
@@ -191,8 +192,9 @@ void GCMDriver::RegisterFinished(const std::string& app_id,
 void GCMDriver::RemoveEncryptionInfoAfterUnregister(const std::string& app_id,
                                                     GCMClient::Result result) {
   encryption_provider_.RemoveEncryptionInfo(
-      app_id, base::Bind(&GCMDriver::UnregisterFinished,
-                         weak_ptr_factory_.GetWeakPtr(), app_id, result));
+      app_id, "" /* authorized_entity */,
+      base::Bind(&GCMDriver::UnregisterFinished, weak_ptr_factory_.GetWeakPtr(),
+                 app_id, result));
 }
 
 void GCMDriver::UnregisterFinished(const std::string& app_id,

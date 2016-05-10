@@ -11,6 +11,7 @@
 
 #include "base/base64url.h"
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -29,6 +30,7 @@ namespace gcm {
 namespace {
 
 const char kExampleAppId[] = "my-app-id";
+const char kExampleAuthorizedEntity[] = "my-sender-id";
 const char kExampleMessage[] = "Hello, world, this is the GCM Driver!";
 
 const char kValidEncryptionHeader[] =
@@ -69,9 +71,11 @@ class GCMEncryptionProviderTest : public ::testing::Test {
     *auth_secret_out = auth_secret;
   }
 
-  // To be used as a callback for GCMKeyStore::CreateKeys().
-  void DidCreateKeys(KeyPair* pair_out, std::string* auth_secret_out,
-                     const KeyPair& pair, const std::string& auth_secret) {
+  // To be used as a callback for GCMKeyStore::{GetKeys,CreateKeys}.
+  void HandleKeysCallback(KeyPair* pair_out,
+                          std::string* auth_secret_out,
+                          const KeyPair& pair,
+                          const std::string& auth_secret) {
     *pair_out = pair;
     *auth_secret_out = auth_secret;
   }
@@ -89,6 +93,31 @@ class GCMEncryptionProviderTest : public ::testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
+  // Checks that the underlying key store has a key for the |kExampleAppId| +
+  // authorized entity pair if and only if |should_have_key| is true. Must wrap
+  // with ASSERT/EXPECT_NO_FATAL_FAILURE.
+  void CheckHasKey(const std::string& authorized_entity, bool should_have_key) {
+    KeyPair pair;
+    std::string auth_secret;
+    encryption_provider()->key_store_->GetKeys(
+        kExampleAppId, authorized_entity,
+        false /* fallback_to_empty_authorized_entity */,
+        base::Bind(&GCMEncryptionProviderTest::HandleKeysCallback,
+                   base::Unretained(this), &pair, &auth_secret));
+
+    base::RunLoop().RunUntilIdle();
+
+    if (should_have_key) {
+      ASSERT_GT(pair.public_key().size(), 0u);
+      ASSERT_GT(pair.private_key().size(), 0u);
+      ASSERT_GT(auth_secret.size(), 0u);
+    } else {
+      ASSERT_EQ(0u, pair.public_key().size());
+      ASSERT_EQ(0u, pair.private_key().size());
+      ASSERT_EQ(0u, auth_secret.size());
+    }
+  }
+
   // Returns the result of the previous decryption operation.
   GCMEncryptionProvider::DecryptionResult decryption_result() {
     return decryption_result_;
@@ -100,6 +129,11 @@ class GCMEncryptionProviderTest : public ::testing::Test {
   GCMEncryptionProvider* encryption_provider() {
     return encryption_provider_.get();
   }
+
+  // Performs a full round-trip test of the encryption feature. Must wrap this
+  // in ASSERT_NO_FATAL_FAILURE.
+  void TestEncryptionRoundTrip(const std::string& app_id,
+                               const std::string& authorized_entity);
 
  private:
   void DidDecryptMessage(GCMEncryptionProvider::DecryptionResult result,
@@ -207,7 +241,7 @@ TEST_F(GCMEncryptionProviderTest, VerifiesExistingKeys) {
 
   std::string public_key, auth_secret;
   encryption_provider()->GetEncryptionInfo(
-      kExampleAppId,
+      kExampleAppId, "" /* empty authorized entity for non-InstanceID */,
       base::Bind(&GCMEncryptionProviderTest::DidGetEncryptionInfo,
                  base::Unretained(this), &public_key, &auth_secret));
 
@@ -222,7 +256,162 @@ TEST_F(GCMEncryptionProviderTest, VerifiesExistingKeys) {
             decryption_result());
 }
 
-TEST_F(GCMEncryptionProviderTest, EncryptionRoundTrip) {
+TEST_F(GCMEncryptionProviderTest, VerifiesKeyRemovalGCMRegistration) {
+  // Removing encryption info for an InstanceID token shouldn't affect a
+  // non-InstanceID GCM registration.
+
+  // Non-InstanceID callers pass an empty string for authorized_entity.
+  std::string authorized_entity_gcm = "";
+  std::string authorized_entity_1 = kExampleAuthorizedEntity + std::string("1");
+  std::string authorized_entity_2 = kExampleAuthorizedEntity + std::string("2");
+
+  // Should create encryption info.
+  std::string public_key, auth_secret;
+  encryption_provider()->GetEncryptionInfo(
+      kExampleAppId, authorized_entity_gcm,
+      base::Bind(&GCMEncryptionProviderTest::DidGetEncryptionInfo,
+                 base::Unretained(this), &public_key, &auth_secret));
+
+  base::RunLoop().RunUntilIdle();
+
+  // Should get encryption info created above.
+  std::string read_public_key, read_auth_secret;
+  encryption_provider()->GetEncryptionInfo(
+      kExampleAppId, authorized_entity_gcm,
+      base::Bind(&GCMEncryptionProviderTest::DidGetEncryptionInfo,
+                 base::Unretained(this), &read_public_key, &read_auth_secret));
+
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_GT(public_key.size(), 0u);
+  EXPECT_GT(auth_secret.size(), 0u);
+  EXPECT_EQ(public_key, read_public_key);
+  EXPECT_EQ(auth_secret, read_auth_secret);
+
+  ASSERT_NO_FATAL_FAILURE(CheckHasKey(authorized_entity_gcm, true));
+
+  encryption_provider()->RemoveEncryptionInfo(
+      kExampleAppId, authorized_entity_1, base::Bind(&base::DoNothing));
+
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_NO_FATAL_FAILURE(CheckHasKey(authorized_entity_gcm, true));
+
+  encryption_provider()->RemoveEncryptionInfo(kExampleAppId, "*",
+                                              base::Bind(&base::DoNothing));
+
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_NO_FATAL_FAILURE(CheckHasKey(authorized_entity_gcm, true));
+
+  encryption_provider()->RemoveEncryptionInfo(
+      kExampleAppId, authorized_entity_gcm, base::Bind(&base::DoNothing));
+
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_NO_FATAL_FAILURE(CheckHasKey(authorized_entity_gcm, false));
+}
+
+TEST_F(GCMEncryptionProviderTest, VerifiesKeyRemovalInstanceIDToken) {
+  // Removing encryption info for a non-InstanceID GCM registration shouldn't
+  // affect an InstanceID token.
+
+  // Non-InstanceID callers pass an empty string for authorized_entity.
+  std::string authorized_entity_gcm = "";
+  std::string authorized_entity_1 = kExampleAuthorizedEntity + std::string("1");
+  std::string authorized_entity_2 = kExampleAuthorizedEntity + std::string("2");
+
+  std::string public_key_1, auth_secret_1;
+  encryption_provider()->GetEncryptionInfo(
+      kExampleAppId, authorized_entity_1,
+      base::Bind(&GCMEncryptionProviderTest::DidGetEncryptionInfo,
+                 base::Unretained(this), &public_key_1, &auth_secret_1));
+
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_GT(public_key_1.size(), 0u);
+  EXPECT_GT(auth_secret_1.size(), 0u);
+
+  ASSERT_NO_FATAL_FAILURE(CheckHasKey(authorized_entity_1, true));
+  ASSERT_NO_FATAL_FAILURE(CheckHasKey(authorized_entity_2, false));
+
+  std::string public_key_2, auth_secret_2;
+  encryption_provider()->GetEncryptionInfo(
+      kExampleAppId, authorized_entity_2,
+      base::Bind(&GCMEncryptionProviderTest::DidGetEncryptionInfo,
+                 base::Unretained(this), &public_key_2, &auth_secret_2));
+
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_GT(public_key_2.size(), 0u);
+  EXPECT_GT(auth_secret_2.size(), 0u);
+  EXPECT_NE(public_key_1, public_key_2);
+  EXPECT_NE(auth_secret_1, auth_secret_2);
+
+  ASSERT_NO_FATAL_FAILURE(CheckHasKey(authorized_entity_1, true));
+  ASSERT_NO_FATAL_FAILURE(CheckHasKey(authorized_entity_2, true));
+
+  std::string read_public_key_1, read_auth_secret_1;
+  encryption_provider()->GetEncryptionInfo(
+      kExampleAppId, authorized_entity_1,
+      base::Bind(&GCMEncryptionProviderTest::DidGetEncryptionInfo,
+                 base::Unretained(this), &read_public_key_1,
+                 &read_auth_secret_1));
+
+  base::RunLoop().RunUntilIdle();
+
+  // Should have returned existing info for authorized_entity_1.
+  EXPECT_EQ(public_key_1, read_public_key_1);
+  EXPECT_EQ(auth_secret_1, read_auth_secret_1);
+
+  encryption_provider()->RemoveEncryptionInfo(
+      kExampleAppId, authorized_entity_gcm, base::Bind(&base::DoNothing));
+
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_NO_FATAL_FAILURE(CheckHasKey(authorized_entity_1, true));
+  ASSERT_NO_FATAL_FAILURE(CheckHasKey(authorized_entity_2, true));
+
+  encryption_provider()->RemoveEncryptionInfo(
+      kExampleAppId, authorized_entity_1, base::Bind(&base::DoNothing));
+
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_NO_FATAL_FAILURE(CheckHasKey(authorized_entity_1, false));
+  ASSERT_NO_FATAL_FAILURE(CheckHasKey(authorized_entity_2, true));
+
+  std::string public_key_1_refreshed, auth_secret_1_refreshed;
+  encryption_provider()->GetEncryptionInfo(
+      kExampleAppId, authorized_entity_1,
+      base::Bind(&GCMEncryptionProviderTest::DidGetEncryptionInfo,
+                 base::Unretained(this), &public_key_1_refreshed,
+                 &auth_secret_1_refreshed));
+
+  base::RunLoop().RunUntilIdle();
+
+  // Since the info was removed, GetEncryptionInfo should have created new info.
+  EXPECT_GT(public_key_1_refreshed.size(), 0u);
+  EXPECT_GT(auth_secret_1_refreshed.size(), 0u);
+  EXPECT_NE(public_key_1, public_key_1_refreshed);
+  EXPECT_NE(auth_secret_1, auth_secret_1_refreshed);
+  EXPECT_NE(public_key_2, public_key_1_refreshed);
+  EXPECT_NE(auth_secret_2, auth_secret_1_refreshed);
+
+  ASSERT_NO_FATAL_FAILURE(CheckHasKey(authorized_entity_1, true));
+  ASSERT_NO_FATAL_FAILURE(CheckHasKey(authorized_entity_2, true));
+
+  encryption_provider()->RemoveEncryptionInfo(kExampleAppId, "*",
+                                              base::Bind(&base::DoNothing));
+
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_NO_FATAL_FAILURE(CheckHasKey(authorized_entity_1, false));
+  ASSERT_NO_FATAL_FAILURE(CheckHasKey(authorized_entity_2, false));
+}
+
+void GCMEncryptionProviderTest::TestEncryptionRoundTrip(
+    const std::string& app_id,
+    const std::string& authorized_entity) {
   // Performs a full round-trip of the encryption feature, including getting a
   // public/private key-pair and performing the cryptographic operations. This
   // is more of an integration test than a unit test.
@@ -234,13 +423,13 @@ TEST_F(GCMEncryptionProviderTest, EncryptionRoundTrip) {
   // that the GCMEncryptionProvider will only share the public key with users.
   // Also create a second pair, which will act as the server's keys.
   encryption_provider()->key_store_->CreateKeys(
-      kExampleAppId,
-      base::Bind(&GCMEncryptionProviderTest::DidCreateKeys,
+      app_id, authorized_entity,
+      base::Bind(&GCMEncryptionProviderTest::HandleKeysCallback,
                  base::Unretained(this), &pair, &auth_secret));
 
   encryption_provider()->key_store_->CreateKeys(
-      std::string(kExampleAppId) + "-server",
-      base::Bind(&GCMEncryptionProviderTest::DidCreateKeys,
+      "server-" + app_id, authorized_entity,
+      base::Bind(&GCMEncryptionProviderTest::HandleKeysCallback,
                  base::Unretained(this), &server_pair, &server_authentication));
 
   // Creating the public keys will be done asynchronously.
@@ -265,6 +454,8 @@ TEST_F(GCMEncryptionProviderTest, EncryptionRoundTrip) {
 
   IncomingMessage message;
   size_t record_size;
+
+  message.sender_id = kExampleAuthorizedEntity;
 
   // Encrypts the |kExampleMessage| using the generated shared key and the
   // random |salt|, storing the result in |record_size| and the message.
@@ -300,6 +491,20 @@ TEST_F(GCMEncryptionProviderTest, EncryptionRoundTrip) {
 
   EXPECT_TRUE(decrypted_message().decrypted);
   EXPECT_EQ(kExampleMessage, decrypted_message().raw_data);
+}
+
+TEST_F(GCMEncryptionProviderTest, EncryptionRoundTripGCMRegistration) {
+  // GCMEncryptionProvider::DecryptMessage should succeed when the message was
+  // sent to a non-InstanceID GCM registration (empty authorized_entity).
+  ASSERT_NO_FATAL_FAILURE(TestEncryptionRoundTrip(
+      kExampleAppId, "" /* empty authorized entity for non-InstanceID */));
+}
+
+TEST_F(GCMEncryptionProviderTest, EncryptionRoundTripInstanceIDToken) {
+  // GCMEncryptionProvider::DecryptMessage should succeed when the message was
+  // sent to an InstanceID token (non-empty authorized_entity).
+  ASSERT_NO_FATAL_FAILURE(
+      TestEncryptionRoundTrip(kExampleAppId, kExampleAuthorizedEntity));
 }
 
 }  // namespace gcm

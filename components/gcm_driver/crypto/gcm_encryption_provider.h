@@ -82,13 +82,19 @@ class GCMEncryptionProvider {
       const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner);
 
   // Retrieves the public key and authentication secret associated with the
-  // |app_id|. If none have been associated yet, they will be created.
+  // |app_id| + |authorized_entity| pair. Will create this info if necessary.
+  // |authorized_entity| should be the InstanceID token's authorized entity, or
+  // "" for non-InstanceID GCM registrations.
   void GetEncryptionInfo(const std::string& app_id,
+                         const std::string& authorized_entity,
                          const EncryptionInfoCallback& callback);
 
-  // Removes all encryption information associated with the |app_id|. Will
-  // invoke the |callback| when this has finished.
+  // Removes all encryption information associated with the |app_id| +
+  // |authorized_entity| pair, then invokes |callback|. |authorized_entity|
+  // should be the InstanceID token's authorized entity, or "*" to remove for
+  // all InstanceID tokens, or "" for non-InstanceID GCM registrations.
   void RemoveEncryptionInfo(const std::string& app_id,
+                            const std::string& authorized_entity,
                             const base::Closure& callback);
 
   // Determines whether |message| contains encrypted content.
@@ -103,9 +109,14 @@ class GCMEncryptionProvider {
                       const MessageCallback& callback);
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(GCMEncryptionProviderTest, EncryptionRoundTrip);
+  friend class GCMEncryptionProviderTest;
+  FRIEND_TEST_ALL_PREFIXES(GCMEncryptionProviderTest,
+                           EncryptionRoundTripGCMRegistration);
+  FRIEND_TEST_ALL_PREFIXES(GCMEncryptionProviderTest,
+                           EncryptionRoundTripInstanceIDToken);
 
   void DidGetEncryptionInfo(const std::string& app_id,
+                            const std::string& authorized_entity,
                             const EncryptionInfoCallback& callback,
                             const KeyPair& pair,
                             const std::string& auth_secret);

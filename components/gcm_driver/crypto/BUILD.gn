@@ -64,6 +64,7 @@ source_set("unit_tests") {
     "//components/gcm_driver/common",
     "//crypto",
     "//crypto:platform",
+    "//net:test_support",
     "//testing/gtest",
     "//third_party/protobuf:protobuf_lite",
   ]

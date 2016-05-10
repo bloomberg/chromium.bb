@@ -29,17 +29,23 @@ message KeyPair {
   optional bytes public_key = 4;
 }
 
-// Stores a vector of public/private key-pairs associated with an app id.
+// Stores a vector of public/private key-pairs associated with an app id and
+// optionally the authorized entity of an instance id token.
 //
-// In the current implementation, each app id will have a single encryption key-
-// pair associated with it at most. The message allows for multiple key pairs
-// in case we need to force-cycle all keys, allowing the old keys to remain
-// valid for a period of time enabling the web app to update.
+// In the current implementation, each (app_id, authorized_entity) pair will
+// have a single encryption key-pair associated with it at most. The message
+// allows for multiple key pairs in case we need to force-cycle all keys,
+// allowing the old keys to remain valid for a period of time enabling the web
+// app to update.
 //
-// Next tag: 4
+// Next tag: 5
 message EncryptionData {
   // The app id to whom this encryption data belongs.
   required string app_id = 1;
+
+  // The sender id of the instance id token that this encryption data belongs
+  // to. Must not be empty. Must be omitted for non-InstanceID registrations.
+  optional string authorized_entity = 4;
 
   // The actual public/private key-pairs.
   repeated KeyPair keys = 2;
