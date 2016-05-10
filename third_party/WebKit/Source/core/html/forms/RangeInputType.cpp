@@ -351,9 +351,11 @@ inline Element* RangeInputType::sliderTrackElement() const
 void RangeInputType::listAttributeTargetChanged()
 {
     m_tickMarkValuesDirty = true;
+    if (element().layoutObject())
+        element().layoutObject()->setShouldDoFullPaintInvalidationIncludingNonCompositingDescendants();
     Element* sliderTrackElement = this->sliderTrackElement();
     if (sliderTrackElement->layoutObject())
-        sliderTrackElement->layoutObject()->setNeedsLayoutAndFullPaintInvalidation(LayoutInvalidationReason::AttributeChanged);
+        sliderTrackElement->layoutObject()->setNeedsLayout(LayoutInvalidationReason::AttributeChanged);
 }
 
 static bool decimalCompare(const Decimal& a, const Decimal& b)
