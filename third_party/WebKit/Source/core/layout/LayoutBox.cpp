@@ -1201,6 +1201,12 @@ bool LayoutBox::nodeAtPoint(HitTestResult& result, const HitTestLocation& locati
             return false;
     }
 
+    bool shouldHitTestSelf = isInSelfHitTestingPhase(action);
+
+    if (shouldHitTestSelf && hasOverflowClip()
+        && hitTestOverflowControl(result, locationInContainer, adjustedLocation))
+        return true;
+
     // TODO(pdr): We should also check for css clip in the !isSelfPaintingLayer
     //            case, similar to overflow clip below.
     bool skipChildren = false;
@@ -1227,7 +1233,7 @@ bool LayoutBox::nodeAtPoint(HitTestResult& result, const HitTestLocation& locati
         return false;
 
     // Now hit test ourselves.
-    if (isInSelfHitTestingPhase(action) && visibleToHitTestRequest(result.hitTestRequest())) {
+    if (shouldHitTestSelf && visibleToHitTestRequest(result.hitTestRequest())) {
         LayoutRect boundsRect(adjustedLocation, size());
         if (locationInContainer.intersects(boundsRect)) {
             updateHitTestResult(result, flipForWritingMode(locationInContainer.point() - toLayoutSize(adjustedLocation)));

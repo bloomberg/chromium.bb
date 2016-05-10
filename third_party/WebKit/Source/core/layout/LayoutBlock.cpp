@@ -1489,20 +1489,16 @@ Node* LayoutBlock::nodeForHitTest() const
     return isAnonymousBlockContinuation() ? continuation()->node() : node();
 }
 
-bool LayoutBlock::nodeAtPoint(HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction hitTestAction)
+bool LayoutBlock::hitTestOverflowControl(HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& adjustedLocation)
 {
-    LayoutPoint adjustedLocation(accumulatedOffset + location());
-    LayoutSize localOffset = toLayoutSize(adjustedLocation);
-
-    if (isInSelfHitTestingPhase(hitTestAction)
-        && visibleToHitTestRequest(result.hitTestRequest())
+    if (visibleToHitTestRequest(result.hitTestRequest())
         && isPointInOverflowControl(result, locationInContainer.point(), adjustedLocation)) {
-        updateHitTestResult(result, locationInContainer.point() - localOffset);
+        updateHitTestResult(result, locationInContainer.point() - toLayoutSize(adjustedLocation));
         // FIXME: isPointInOverflowControl() doesn't handle rect-based tests yet.
         if (result.addNodeToListBasedTestResult(nodeForHitTest(), locationInContainer) == StopHitTesting)
             return true;
     }
-    return LayoutBox::nodeAtPoint(result, locationInContainer, accumulatedOffset, hitTestAction);
+    return false;
 }
 
 bool LayoutBlock::hitTestChildren(HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction hitTestAction)

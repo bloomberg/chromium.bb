@@ -238,8 +238,6 @@ public:
     LayoutUnit collapsedMarginBeforeForChild(const LayoutBox& child) const;
     LayoutUnit collapsedMarginAfterForChild(const LayoutBox& child) const;
 
-    bool nodeAtPoint(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) override;
-
     virtual void scrollbarsChanged(bool /*horizontalScrollbarChanged*/, bool /*verticalScrollbarChanged*/);
 
     LayoutUnit availableLogicalWidthForContent() const { return (logicalRightOffsetForContent() - logicalLeftOffsetForContent()).clampNegativeToZero(); }
@@ -322,6 +320,7 @@ protected:
     // this condition.
     virtual bool shouldIgnoreOverflowPropertyForInlineBlockBaseline() const { return false; }
 
+    bool hitTestOverflowControl(HitTestResult&, const HitTestLocation&, const LayoutPoint& adjustedLocation) override;
     bool hitTestChildren(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) override;
     void updateHitTestResult(HitTestResult&, const LayoutPoint&) override;
 
