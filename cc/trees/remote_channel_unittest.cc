@@ -9,7 +9,8 @@ namespace cc {
 
 class RemoteChannelTest : public LayerTreeTest {
  protected:
-  RemoteChannelTest() : calls_received_(0) {}
+  RemoteChannelTest()
+      : calls_received_(0), calls_received_on_both_server_and_client_(0) {}
 
   ~RemoteChannelTest() override {}
 
@@ -20,6 +21,11 @@ class RemoteChannelTest : public LayerTreeTest {
   virtual void BeginChannelTest() {}
 
   int calls_received_;
+
+  // Since LayerTreeHost on engine and client share a common LayerTreeHostClient
+  // for unit tests, there are some functions called twice. This variable keep
+  // tracks of those function calls.
+  int calls_received_on_both_server_and_client_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RemoteChannelTest);
@@ -140,8 +146,8 @@ class RemoteChannelTestCommit : public RemoteChannelTest {
   void DidCommitAndDrawFrame() override { EXPECT_EQ(3, calls_received_++); }
 
   void DidCompleteSwapBuffers() override {
-    EXPECT_EQ(4, calls_received_++);
-    EndTest();
+    if (++calls_received_on_both_server_and_client_ == 2)
+      EndTest();
   }
 
   void WillCommitCompleteOnThread(LayerTreeHostImpl* host_impl) override {
@@ -151,7 +157,8 @@ class RemoteChannelTestCommit : public RemoteChannelTest {
   }
 
   void AfterTest() override {
-    EXPECT_EQ(5, calls_received_);
+    EXPECT_EQ(4, calls_received_);
+    EXPECT_EQ(2, calls_received_on_both_server_and_client_);
   }
 
   const gfx::Size viewport_size_ = gfx::Size(5, 3);
