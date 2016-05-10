@@ -3700,7 +3700,7 @@ Press any key to continue exploring.
   </message>
   <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_SWITCH_INPUT_METHODS_HINT"
            desc="Explanatory message about how to switch input methods">
-    Press Alt+Shift to switch between input methods.
+    Press Ctrl+Shift+Space to switch between input methods.
   </message>
   <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_SELECT_PREVIOUS_INPUT_METHOD_HINT"
            desc="Explanatory message about how to select the previous input method">
