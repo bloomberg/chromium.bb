@@ -156,9 +156,9 @@ public class PhysicalWebDiagnosticsPage implements NativePage {
     private void appendUrlManagerReport(StringBuilder sb) {
         UrlManager urlManager = UrlManager.getInstance(mContext);
 
-        Set<UrlInfo> nearbyUrls = new HashSet<UrlInfo>(urlManager.getCachedNearbyUrls());
-        Set<UrlInfo> resolvedUrls = new HashSet<UrlInfo>(urlManager.getCachedResolvedUrls());
-        Set<UrlInfo> union = new HashSet<UrlInfo>(nearbyUrls);
+        Set<String> nearbyUrls = new HashSet<>(urlManager.getNearbyUrls());
+        Set<String> resolvedUrls = new HashSet<>(urlManager.getResolvedUrls());
+        Set<String> union = new HashSet<>(nearbyUrls);
         union.addAll(resolvedUrls);
 
         sb.append("<h2>Nearby web pages</h2>");
@@ -166,7 +166,7 @@ public class PhysicalWebDiagnosticsPage implements NativePage {
         if (union.isEmpty()) {
             sb.append("No nearby web pages found<br/>");
         } else {
-            for (UrlInfo url : union) {
+            for (String url : union) {
                 boolean isNearby = nearbyUrls.contains(url);
                 boolean isResolved = resolvedUrls.contains(url);
 
