@@ -122,10 +122,7 @@ action("build_version_inc") {
 }
 
 config("SPIRV-Tools_config") {
-  include_dirs = [
-    "src/include",
-    target_gen_dir,
-  ]
+  include_dirs = [ "src/include" ]
 
   defines = []
   if (is_linux) {
@@ -187,6 +184,8 @@ static_library("SPIRV-Tools") {
     "src/source/validate_ssa.cpp",
     "src/source/validate_types.cpp",
   ]
+
+  include_dirs = [ target_gen_dir ]
 
   all_dependent_configs = [ ":SPIRV-Tools_config" ]
 

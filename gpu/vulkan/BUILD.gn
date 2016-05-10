@@ -53,6 +53,7 @@ if (enable_vulkan) {
 
       deps = [
         "//base",
+        "//third_party/shaderc:libshaderc",
         "//ui/base",
         "//ui/gfx",
       ]
