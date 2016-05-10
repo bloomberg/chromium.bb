@@ -161,6 +161,12 @@ void TranslateManager::InitiateTranslation(const std::string& page_lang) {
     return;
   }
 
+  // In the 2016Q2 UI, enable the translate in language state once we reach
+  // the above check and let omnibar to display the translate icon.
+  if (base::FeatureList::IsEnabled(kTranslateUI2016Q2)) {
+    language_state_.SetTranslateEnabled(true);
+  }
+
   TranslateAcceptLanguages* accept_languages =
       translate_client_->GetTranslateAcceptLanguages();
   // Don't translate any user black-listed languages.
