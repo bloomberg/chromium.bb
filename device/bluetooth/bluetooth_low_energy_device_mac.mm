@@ -322,15 +322,11 @@ BluetoothLowEnergyDeviceMac::GetBluetoothRemoteGattService(
 void BluetoothLowEnergyDeviceMac::DidDisconnectPeripheral(
     BluetoothDevice::ConnectErrorCode error_code) {
   SetGattServicesDiscoveryComplete(false);
-  // Explicitly take and erase GATT services one by one to ensure that calling
-  // GetGattService on removed service in GattServiceRemoved returns null.
-  std::vector<std::string> service_keys;
-  for (const auto& gatt_service : gatt_services_) {
-    service_keys.push_back(gatt_service.first);
-  }
-  for (const auto& key : service_keys) {
-    gatt_services_.take_and_erase(key);
-  }
+  // Removing all services at once to ensure that calling GetGattService on
+  // removed service in GattServiceRemoved returns null.
+  GattServiceMap gatt_services_swapped;
+  gatt_services_swapped.swap(gatt_services_);
+  gatt_services_swapped.clear();
   if (create_gatt_connection_error_callbacks_.empty()) {
     // TODO(http://crbug.com/585897): Need to pass the error.
     DidDisconnectGatt();
