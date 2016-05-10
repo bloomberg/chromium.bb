@@ -39,7 +39,7 @@ VS_VERSION = None
 WIN_VERSION = None
 
 
-def BuildFileList():
+def BuildFileList(override_dir):
   result = []
 
   # Subset of VS corresponding roughly to VC.
@@ -49,12 +49,22 @@ def BuildFileList():
       'DIA SDK/include',
       'DIA SDK/lib',
       'VC/atlmfc',
-      'VC/bin',
       'VC/crt',
-      'VC/include',
-      'VC/lib',
       'VC/redist',
   ]
+
+  if override_dir:
+    paths += [
+        (os.path.join(override_dir, 'bin'), 'VC/bin'),
+        (os.path.join(override_dir, 'include'), 'VC/include'),
+        (os.path.join(override_dir, 'lib'), 'VC/lib'),
+    ]
+  else:
+    paths += [
+        'VC/bin',
+        'VC/include',
+        'VC/lib',
+    ]
 
   if VS_VERSION == '2013':
     paths += [
@@ -92,14 +102,18 @@ def BuildFileList():
 
   for path in paths:
     src = path[0] if isinstance(path, tuple) else path
-    combined = os.path.join(vs_path, src)
+    # Note that vs_path is ignored if src is an absolute path.
+    # normpath is needed to change '/' to '\\' characters.
+    combined = os.path.normpath(os.path.join(vs_path, src))
     assert os.path.exists(combined) and os.path.isdir(combined)
     for root, _, files in os.walk(combined):
       for f in files:
         final_from = os.path.normpath(os.path.join(root, f))
         if isinstance(path, tuple):
+          assert final_from.startswith(combined)
+          dest = final_from[len(combined) + 1:]
           result.append(
-              (final_from, os.path.normpath(os.path.join(path[1], f))))
+              (final_from, os.path.normpath(os.path.join(path[1], dest))))
         else:
           assert final_from.startswith(vs_path)
           dest = final_from[len(vs_path) + 1:]
@@ -140,61 +154,44 @@ def BuildFileList():
       result.append((combined, to))
 
   if VS_VERSION == '2015':
-    # The Windows 10 Universal C Runtime installers are needed when packaging
-    # VS 2015. They can be download from here:
-    # https://support.microsoft.com/en-us/kb/2999226
-    # and they must be downloaded to the current user's downloads directory.
-    # The versions needed are those for 64-bit Windows 7, Windows 8, and
-    # Windows 8.1. The 64-bit Server 2008 R2, Server 2012, and Server 2012 R2
-    # versions are identical (same name and contents).
-    universal_runtime_installers = [
-        'Windows6.1-KB2999226-x64.msu',
-        'Windows8-RT-KB2999226-x64.msu',
-        'Windows8.1-KB2999226-x64.msu',
+    # Copy the x86 ucrt DLLs to all directories with 32-bit binaries that are
+    # added to the path by SetEnv.cmd, and to sys32.
+    ucrt_paths = glob.glob(os.path.join(sdk_path, r'redist\ucrt\dlls\x86\*'))
+    for ucrt_path in ucrt_paths:
+      ucrt_file = os.path.split(ucrt_path)[1]
+      for dest_dir in [ r'win_sdk\bin\x86', 'sys32' ]:
+        result.append((ucrt_path, os.path.join(dest_dir, ucrt_file)))
+
+    # Copy the x64 ucrt DLLs to all directories with 64-bit binaries that are
+    # added to the path by SetEnv.cmd, and to sys64.
+    ucrt_paths = glob.glob(os.path.join(sdk_path, r'redist\ucrt\dlls\x64\*'))
+    for ucrt_path in ucrt_paths:
+      ucrt_file = os.path.split(ucrt_path)[1]
+      for dest_dir in [ r'VC\bin\amd64_x86', r'VC\bin\amd64',
+                        r'win_sdk\bin\x64', 'sys64']:
+        result.append((ucrt_path, os.path.join(dest_dir, ucrt_file)))
+
+    system_crt_files = [
+        # Needed to let debug binaries run.
+        'ucrtbased.dll',
     ]
-
-    for installer in universal_runtime_installers:
-      result.append((os.path.join(os.environ['userprofile'], 'downloads',
-                                  installer),
-                     os.path.join('installers', installer)))
-
-    if VS_VERSION == '2015':
-      # Copy the x86 ucrt DLLs to all directories with 32-bit binaries that are
-      # added to the path by SetEnv.cmd, and to sys32.
-      ucrt_paths = glob.glob(os.path.join(sdk_path, r'redist\ucrt\dlls\x86\*'))
-      for ucrt_path in ucrt_paths:
-        ucrt_file = os.path.split(ucrt_path)[1]
-        for dest_dir in [ r'win_sdk\bin\x86', 'sys32' ]:
-          result.append((ucrt_path, os.path.join(dest_dir, ucrt_file)))
-
-      # Copy the x64 ucrt DLLs to all directories with 64-bit binaries that are
-      # added to the path by SetEnv.cmd, and to sys64.
-      ucrt_paths = glob.glob(os.path.join(sdk_path, r'redist\ucrt\dlls\x64\*'))
-      for ucrt_path in ucrt_paths:
-        ucrt_file = os.path.split(ucrt_path)[1]
-        for dest_dir in [ r'VC\bin\amd64_x86', r'VC\bin\amd64',
-                          r'win_sdk\bin\x64', 'sys64']:
-          result.append((ucrt_path, os.path.join(dest_dir, ucrt_file)))
-
-      system_crt_files = [
-          # Needed to let debug binaries run.
-          'ucrtbased.dll',
-      ]
-      bitness = platform.architecture()[0]
-      # When running 64-bit python the x64 DLLs will be in System32
-      x64_path = 'System32' if bitness == '64bit' else 'Sysnative'
-      x64_path = os.path.join(r'C:\Windows', x64_path)
-      for system_crt_file in system_crt_files:
-          result.append((os.path.join(r'C:\Windows\SysWOW64', system_crt_file),
-                         os.path.join('sys32', system_crt_file)))
-          result.append((os.path.join(x64_path, system_crt_file),
-                         os.path.join('sys64', system_crt_file)))
+    bitness = platform.architecture()[0]
+    # When running 64-bit python the x64 DLLs will be in System32
+    x64_path = 'System32' if bitness == '64bit' else 'Sysnative'
+    x64_path = os.path.join(r'C:\Windows', x64_path)
+    for system_crt_file in system_crt_files:
+        result.append((os.path.join(r'C:\Windows\SysWOW64', system_crt_file),
+                        os.path.join('sys32', system_crt_file)))
+        result.append((os.path.join(x64_path, system_crt_file),
+                        os.path.join('sys64', system_crt_file)))
 
   # Generically drop all arm stuff that we don't need, and
-  # drop .msi files because we don't need installers.
+  # drop .msi files because we don't need installers, and drop windows.winmd
+  # because it is unneeded and is different on every machine.
   return [(f, t) for f, t in result if 'arm\\' not in f.lower() and
                                        'arm64\\' not in f.lower() and
-                                       not f.lower().endswith('.msi')]
+                                       not f.lower().endswith('.msi') and
+                                       not f.lower().endswith('windows.winmd')]
 
 
 def GenerateSetEnvCmd(target_dir):
@@ -329,6 +326,9 @@ def main():
   parser.add_option('-d', '--dryrun', action='store_true', dest='dryrun',
                     default=False,
                     help='scan for file existence and prints statistics')
+  parser.add_option('--override', action='store', type='string',
+                    dest='override_dir', default=None,
+                    help='Specify alternate bin/include/lib directory')
   (options, args) = parser.parse_args()
 
   if len(args) != 1 or args[0] not in ('2013', '2015'):
@@ -336,13 +336,20 @@ def main():
     parser.print_help();
     return 1
 
+  if options.override_dir:
+    if (not os.path.exists(os.path.join(options.override_dir, 'bin')) or
+        not os.path.exists(os.path.join(options.override_dir, 'include')) or
+        not os.path.exists(os.path.join(options.override_dir, 'lib'))):
+      print 'Invalid override directory - must contain bin/include/lib dirs'
+      return 1
+
   global VS_VERSION
   VS_VERSION = args[0]
   global WIN_VERSION
   WIN_VERSION = options.winver
 
   print 'Building file list for VS %s Windows %s...' % (VS_VERSION, WIN_VERSION)
-  files = BuildFileList()
+  files = BuildFileList(options.override_dir)
 
   AddEnvSetup(files)
 
