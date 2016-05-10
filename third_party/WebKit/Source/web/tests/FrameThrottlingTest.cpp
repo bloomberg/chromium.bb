@@ -513,6 +513,43 @@ TEST_F(FrameThrottlingTest, ScrollingCoordinatorShouldSkipThrottledFrame)
     EXPECT_TRUE(document().view()->shouldScrollOnMainThread());
 }
 
+TEST_F(FrameThrottlingTest, ScrollingCoordinatorShouldSkipThrottledLayer)
+{
+    webView().settings()->setJavaScriptEnabled(true);
+    webView().settings()->setAcceleratedCompositingEnabled(true);
+    webView().settings()->setPreferCompositingToLCDTextEnabled(true);
+
+    // Create a hidden frame which is throttled and has a touch handler inside a
+    // composited layer.
+    SimRequest mainResource("https://example.com/", "text/html");
+    SimRequest frameResource("https://example.com/iframe.html", "text/html");
+
+    loadURL("https://example.com/");
+    mainResource.complete("<iframe id=frame sandbox=allow-scripts src=iframe.html></iframe>");
+    frameResource.complete("<div id=div style='transform: translateZ(0)' ontouchstart='foo()'>touch handler</div>");
+
+    // Move the frame offscreen to throttle it.
+    auto* frameElement = toHTMLIFrameElement(document().getElementById("frame"));
+    frameElement->setAttribute(styleAttr, "transform: translateY(480px)");
+    EXPECT_FALSE(frameElement->contentDocument()->view()->canThrottleRendering());
+    compositeFrame();
+    EXPECT_TRUE(frameElement->contentDocument()->view()->canThrottleRendering());
+
+    // Change style of the frame's content to make it in VisualUpdatePending state.
+    frameElement->contentDocument()->body()->setAttribute(styleAttr, "background: green");
+    // Change root frame's layout so that the next lifecycle update will call
+    // ScrollingCoordinator::updateAfterCompositingChangeIfNeeded().
+    document().body()->setAttribute(styleAttr, "margin: 20px");
+    EXPECT_EQ(DocumentLifecycle::VisualUpdatePending, frameElement->contentDocument()->lifecycle().state());
+
+    DocumentLifecycle::AllowThrottlingScope throttlingScope(document().lifecycle());
+    // This will call ScrollingCoordinator::updateAfterCompositingChangeIfNeeded() and should not
+    // cause assert failure about isAllowedToQueryCompositingState() in the throttled frame.
+    document().view()->updateAllLifecyclePhases();
+    testing::runPendingTasks();
+    EXPECT_EQ(DocumentLifecycle::VisualUpdatePending, frameElement->contentDocument()->lifecycle().state());
+}
+
 TEST_F(FrameThrottlingTest, ScrollingCoordinatorShouldSkipCompositedThrottledFrame)
 {
     webView().settings()->setAcceleratedCompositingEnabled(true);
