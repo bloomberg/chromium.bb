@@ -88,6 +88,7 @@
 #include "content/renderer/context_menu_params_builder.h"
 #include "content/renderer/devtools/devtools_agent.h"
 #include "content/renderer/dom_automation_controller.h"
+#include "content/renderer/effective_connection_type_helper.h"
 #include "content/renderer/external_popup_menu.h"
 #include "content/renderer/geolocation_dispatcher.h"
 #include "content/renderer/gpu/gpu_benchmarking_extension.h"
@@ -1039,6 +1040,8 @@ RenderFrameImpl::RenderFrameImpl(const CreateParams& params)
       renderer_accessibility_(NULL),
       media_player_delegate_(NULL),
       is_using_lofi_(false),
+      effective_connection_type_(
+          blink::WebEffectiveConnectionType::TypeUnknown),
       is_pasting_(false),
       suppress_further_dialogs_(false),
       blame_context_(nullptr),
@@ -1104,8 +1107,10 @@ void RenderFrameImpl::Initialize() {
 
   RenderFrameImpl* parent_frame = RenderFrameImpl::FromWebFrame(
       frame_->parent());
-  if (parent_frame)
+  if (parent_frame) {
     is_using_lofi_ = parent_frame->IsUsingLoFi();
+    effective_connection_type_ = parent_frame->getEffectiveConnectionType();
+  }
 
   bool is_tracing = false;
   TRACE_EVENT_CATEGORY_GROUP_ENABLED("navigation", &is_tracing);
@@ -3134,10 +3139,16 @@ void RenderFrameImpl::didCommitProvisionalLoad(
       static_cast<NavigationStateImpl*>(document_state->navigation_state());
   WebURLResponseExtraDataImpl* extra_data =
       GetExtraDataFromResponse(frame->dataSource()->response());
-  // Only update LoFi state for new main frame documents. Subframes inherit from
-  // the main frame and should not change at commit time.
+  // Only update the Lo-Fi and effective connection type states for new main
+  // frame documents. Subframes inherit from the main frame and should not
+  // change at commit time.
   if (is_main_frame_ && !navigation_state->WasWithinSamePage()) {
     is_using_lofi_ = extra_data && extra_data->is_using_lofi();
+    if (extra_data) {
+      effective_connection_type_ =
+          EffectiveConnectionTypeToWebEffectiveConnectionType(
+              extra_data->effective_connection_type());
+    }
   }
 
   if (proxy_routing_id_ != MSG_ROUTING_NONE) {
@@ -3558,6 +3569,11 @@ void RenderFrameImpl::didChangeThemeColor() {
 
 void RenderFrameImpl::dispatchLoad() {
   Send(new FrameHostMsg_DispatchLoad(routing_id_));
+}
+
+blink::WebEffectiveConnectionType
+RenderFrameImpl::getEffectiveConnectionType() {
+  return effective_connection_type_;
 }
 
 void RenderFrameImpl::requestNotificationPermission(

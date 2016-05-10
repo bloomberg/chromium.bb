@@ -21,6 +21,7 @@
 #include "ipc/ipc_message_macros.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_response_info.h"
+#include "net/nqe/network_quality_estimator.h"
 #include "net/url_request/redirect_info.h"
 
 #ifndef CONTENT_COMMON_RESOURCE_MESSAGES_H_
@@ -108,6 +109,10 @@ IPC_ENUM_TRAITS_MAX_VALUE(content::FetchCredentialsMode,
 IPC_ENUM_TRAITS_MAX_VALUE(content::FetchRedirectMode,
                           content::FetchRedirectMode::LAST)
 
+IPC_ENUM_TRAITS_MAX_VALUE(
+    net::NetworkQualityEstimator::EffectiveConnectionType,
+    net::NetworkQualityEstimator::EFFECTIVE_CONNECTION_TYPE_LAST - 1)
+
 IPC_STRUCT_TRAITS_BEGIN(content::ResourceResponseHead)
 IPC_STRUCT_TRAITS_PARENT(content::ResourceResponseInfo)
   IPC_STRUCT_TRAITS_MEMBER(request_start)
@@ -153,6 +158,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::ResourceResponseInfo)
   IPC_STRUCT_TRAITS_MEMBER(cache_storage_cache_name)
   IPC_STRUCT_TRAITS_MEMBER(proxy_server)
   IPC_STRUCT_TRAITS_MEMBER(is_using_lofi)
+  IPC_STRUCT_TRAITS_MEMBER(effective_connection_type)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(net::RedirectInfo)

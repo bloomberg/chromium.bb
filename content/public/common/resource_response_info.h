@@ -18,6 +18,7 @@
 #include "net/base/load_timing_info.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
+#include "net/nqe/network_quality_estimator.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerResponseType.h"
 #include "url/gurl.h"
 
@@ -145,6 +146,11 @@ struct ResourceResponseInfo {
 
   // Whether or not the request was for a LoFi version of the resource.
   bool is_using_lofi;
+
+  // Effective connection type when the resource was fetched. This is populated
+  // only for responses that correspond to main frame requests.
+  net::NetworkQualityEstimator::EffectiveConnectionType
+      effective_connection_type;
 };
 
 }  // namespace content

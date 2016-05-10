@@ -1039,4 +1039,11 @@ LinkResource* FrameLoaderClientImpl::createServiceWorkerLinkResource(HTMLLinkEle
     return ServiceWorkerLinkResource::create(owner);
 }
 
+WebEffectiveConnectionType FrameLoaderClientImpl::getEffectiveConnectionType()
+{
+    if (m_webFrame->client())
+        return m_webFrame->client()->getEffectiveConnectionType();
+    return WebEffectiveConnectionType::TypeUnknown;
+}
+
 } // namespace blink

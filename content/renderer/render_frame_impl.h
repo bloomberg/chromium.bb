@@ -39,6 +39,7 @@
 #include "media/blink/webmediaplayer_params.h"
 #include "services/shell/public/interfaces/connector.mojom.h"
 #include "services/shell/public/interfaces/interface_provider.mojom.h"
+#include "third_party/WebKit/public/platform/WebEffectiveConnectionType.h"
 #include "third_party/WebKit/public/platform/WebFocusType.h"
 #include "third_party/WebKit/public/platform/WebLoadingBehaviorFlag.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayer.h"
@@ -515,6 +516,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void didUpdateCurrentHistoryItem() override;
   void didChangeThemeColor() override;
   void dispatchLoad() override;
+  blink::WebEffectiveConnectionType getEffectiveConnectionType() override;
   void requestNotificationPermission(
       const blink::WebSecurityOrigin& origin,
       blink::WebNotificationPermissionCallback* callback) override;
@@ -1184,6 +1186,9 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // Whether or not this RenderFrame is using Lo-Fi mode.
   bool is_using_lofi_;
+
+  // Effective connection type when the document of this frame was fetched.
+  blink::WebEffectiveConnectionType effective_connection_type_;
 
   // Whether or not this RenderFrame is currently pasting.
   bool is_pasting_;

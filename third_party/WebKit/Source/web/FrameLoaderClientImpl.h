@@ -184,6 +184,8 @@ public:
 
     LinkResource* createServiceWorkerLinkResource(HTMLLinkElement*) override;
 
+    WebEffectiveConnectionType getEffectiveConnectionType() override;
+
 private:
     explicit FrameLoaderClientImpl(WebLocalFrameImpl*);
 

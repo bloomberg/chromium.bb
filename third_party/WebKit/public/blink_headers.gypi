@@ -64,6 +64,7 @@
       "platform/WebDragData.h",
       "platform/WebDragOperation.h",
       'platform/WebEditingCommandType.h',
+      "platform/WebEffectiveConnectionType.h",
       "platform/WebEncryptedMediaClient.h",
       "platform/WebEncryptedMediaKeyInformation.h",
       "platform/WebEncryptedMediaRequest.h",

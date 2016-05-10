@@ -196,6 +196,8 @@
       'renderer/dom_storage/webstoragenamespace_impl.h',
       'renderer/drop_data_builder.cc',
       'renderer/drop_data_builder.h',
+      'renderer/effective_connection_type_helper.cc',
+      'renderer/effective_connection_type_helper.h',
       'renderer/fetchers/manifest_fetcher.cc',
       'renderer/fetchers/manifest_fetcher.h',
       'renderer/fetchers/multi_resolution_image_resource_fetcher.cc',

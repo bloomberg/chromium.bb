@@ -47,6 +47,7 @@
 #include "WebTextDirection.h"
 #include "public/platform/BlameContext.h"
 #include "public/platform/WebCommon.h"
+#include "public/platform/WebEffectiveConnectionType.h"
 #include "public/platform/WebFileSystem.h"
 #include "public/platform/WebFileSystemType.h"
 #include "public/platform/WebLoadingBehaviorFlag.h"
@@ -361,6 +362,9 @@ public:
     // Called to dispatch a load event for this frame in the FrameOwner of an
     // out-of-process parent frame.
     virtual void dispatchLoad() { }
+
+    // Returns the effective connection type when the frame was fetched.
+    virtual WebEffectiveConnectionType getEffectiveConnectionType() { return WebEffectiveConnectionType::TypeUnknown; }
 
     // Web Notifications ---------------------------------------------------
 

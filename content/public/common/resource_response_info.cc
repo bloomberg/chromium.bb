@@ -23,7 +23,9 @@ ResourceResponseInfo::ResourceResponseInfo()
       was_fallback_required_by_service_worker(false),
       response_type_via_service_worker(
           blink::WebServiceWorkerResponseTypeDefault),
-      is_using_lofi(false) {}
+      is_using_lofi(false),
+      effective_connection_type(
+          net::NetworkQualityEstimator::EFFECTIVE_CONNECTION_TYPE_UNKNOWN) {}
 
 ResourceResponseInfo::ResourceResponseInfo(const ResourceResponseInfo& other) =
     default;

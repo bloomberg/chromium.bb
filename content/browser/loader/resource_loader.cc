@@ -38,10 +38,12 @@
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
+#include "net/nqe/network_quality_estimator.h"
 #include "net/ssl/client_cert_store.h"
 #include "net/ssl/ssl_platform_key.h"
 #include "net/ssl/ssl_private_key.h"
 #include "net/url_request/redirect_info.h"
+#include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_status.h"
 
 using base::TimeDelta;
@@ -104,6 +106,18 @@ void PopulateResourceResponse(ResourceRequestInfoImpl* info,
       content::ResourceRequestInfo::ForRequest(request);
   if (request_info)
     response->head.is_using_lofi = request_info->IsUsingLoFi();
+
+  response->head.effective_connection_type =
+      net::NetworkQualityEstimator::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
+  if (info->IsMainFrame()) {
+    net::NetworkQualityEstimator* estimator =
+        request->context()->network_quality_estimator();
+    if (estimator) {
+      response->head.effective_connection_type =
+          estimator->GetEffectiveConnectionType();
+    }
+  }
+
   const ServiceWorkerResponseInfo* service_worker_info =
       ServiceWorkerResponseInfo::ForRequest(request);
   if (service_worker_info)

@@ -18,6 +18,7 @@
 #include "content/renderer/render_view_impl.h"
 #include "content/test/fake_compositor_dependencies.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/platform/WebEffectiveConnectionType.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/web/WebFrameOwnerProperties.h"
 #include "third_party/WebKit/public/web/WebHistoryItem.h"
@@ -78,6 +79,11 @@ class RenderFrameImplTest : public RenderViewTest {
 
   void SetIsUsingLoFi(RenderFrameImpl* frame, bool is_using_lofi) {
     frame->is_using_lofi_ = is_using_lofi;
+  }
+
+  void SetEffectionConnectionType(RenderFrameImpl* frame,
+                                  blink::WebEffectiveConnectionType type) {
+    frame->effective_connection_type_ = type;
   }
 
   RenderFrameImpl* GetMainRenderFrame() {
@@ -221,6 +227,67 @@ TEST_F(RenderFrameImplTest, LoFiNotUpdatedOnSubframeCommits) {
   // The subframe would be deleted here after a cross-document navigation. It
   // happens to be left around in this test because this does not simulate the
   // frame detach.
+}
+
+// Test that effective connection type only updates for new main frame
+// documents.
+TEST_F(RenderFrameImplTest, EffectiveConnectionType) {
+  EXPECT_EQ(blink::WebEffectiveConnectionType::TypeUnknown,
+            frame()->getEffectiveConnectionType());
+  EXPECT_EQ(blink::WebEffectiveConnectionType::TypeUnknown,
+            GetMainRenderFrame()->getEffectiveConnectionType());
+
+  const struct {
+    blink::WebEffectiveConnectionType type;
+  } tests[] = {{blink::WebEffectiveConnectionType::TypeUnknown},
+               {blink::WebEffectiveConnectionType::Type2G},
+               {blink::WebEffectiveConnectionType::TypeBroadband}};
+
+  for (size_t i = 0; i < arraysize(tests); ++i) {
+    SetEffectionConnectionType(GetMainRenderFrame(), tests[i].type);
+    SetEffectionConnectionType(frame(), tests[i].type);
+
+    EXPECT_EQ(tests[i].type, frame()->getEffectiveConnectionType());
+    EXPECT_EQ(tests[i].type,
+              GetMainRenderFrame()->getEffectiveConnectionType());
+
+    blink::WebHistoryItem item;
+    item.initialize();
+
+    // The main frame's and subframe's effective connection type should stay the
+    // same on navigations within the page.
+    frame()->didNavigateWithinPage(frame()->GetWebFrame(), item,
+                                   blink::WebStandardCommit);
+    EXPECT_EQ(tests[i].type, frame()->getEffectiveConnectionType());
+    GetMainRenderFrame()->didNavigateWithinPage(
+        GetMainRenderFrame()->GetWebFrame(), item, blink::WebStandardCommit);
+    EXPECT_EQ(tests[i].type, frame()->getEffectiveConnectionType());
+
+    // The subframe's effective connection type should not be reset on commit.
+    DocumentState* document_state =
+        DocumentState::FromDataSource(frame()->GetWebFrame()->dataSource());
+    static_cast<NavigationStateImpl*>(document_state->navigation_state())
+        ->set_was_within_same_page(false);
+
+    frame()->didCommitProvisionalLoad(frame()->GetWebFrame(), item,
+                                      blink::WebStandardCommit);
+    EXPECT_EQ(tests[i].type, frame()->getEffectiveConnectionType());
+
+    // The main frame's effective connection type should be reset on commit.
+    document_state = DocumentState::FromDataSource(
+        GetMainRenderFrame()->GetWebFrame()->dataSource());
+    static_cast<NavigationStateImpl*>(document_state->navigation_state())
+        ->set_was_within_same_page(false);
+
+    GetMainRenderFrame()->didCommitProvisionalLoad(
+        GetMainRenderFrame()->GetWebFrame(), item, blink::WebStandardCommit);
+    EXPECT_EQ(blink::WebEffectiveConnectionType::TypeUnknown,
+              GetMainRenderFrame()->getEffectiveConnectionType());
+
+    // The subframe would be deleted here after a cross-document navigation.
+    // It happens to be left around in this test because this does not simulate
+    // the frame detach.
+  }
 }
 
 }  // namespace
