@@ -3017,7 +3017,7 @@ static PassRefPtr<ComputedStyle> firstLineStyleForCachedUncachedType(StyleCacheS
         layoutObjectForFirstLineStyle = layoutObject->parent();
 
     if (layoutObjectForFirstLineStyle->canHaveFirstLineOrFirstLetterStyle()) {
-        if (LayoutBlock* firstLineBlock = toLayoutBlock(layoutObjectForFirstLineStyle)->enclosingFirstLineStyleBlock()) {
+        if (const LayoutBlock* firstLineBlock = toLayoutBlock(layoutObjectForFirstLineStyle)->enclosingFirstLineStyleBlock()) {
             if (type == Cached)
                 return firstLineBlock->getCachedPseudoStyle(PseudoIdFirstLine, style);
             return firstLineBlock->getUncachedPseudoStyle(PseudoStyleRequest(PseudoIdFirstLine), style, firstLineBlock == layoutObject ? style : 0);

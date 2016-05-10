@@ -1983,9 +1983,9 @@ int LayoutBlock::inlineBlockBaseline(LineDirectionMode lineDirection) const
     return -1;
 }
 
-LayoutBlock* LayoutBlock::enclosingFirstLineStyleBlock() const
+const LayoutBlock* LayoutBlock::enclosingFirstLineStyleBlock() const
 {
-    LayoutBlock* firstLineBlock = const_cast<LayoutBlock*>(this);
+    const LayoutBlock* firstLineBlock = this;
     bool hasPseudo = false;
     while (true) {
         hasPseudo = firstLineBlock->style()->hasPseudoStyle(PseudoIdFirstLine);
@@ -2008,10 +2008,10 @@ LayoutBlock* LayoutBlock::enclosingFirstLineStyleBlock() const
     return firstLineBlock;
 }
 
-LayoutBlockFlow* LayoutBlock::nearestInnerBlockWithFirstLine() const
+LayoutBlockFlow* LayoutBlock::nearestInnerBlockWithFirstLine()
 {
     if (childrenInline())
-        return toLayoutBlockFlow(const_cast<LayoutBlock*>(this));
+        return toLayoutBlockFlow(this);
     for (LayoutObject* child = firstChild(); child && !child->isFloatingOrOutOfFlowPositioned() && child->isLayoutBlockFlow(); child = toLayoutBlock(child)->firstChild()) {
         if (child->childrenInline())
             return toLayoutBlockFlow(child);

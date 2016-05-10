@@ -272,9 +272,9 @@ public:
     // </div>
 
     // Returns the nearest enclosing block (including this block) that contributes a first-line style to our first line.
-    LayoutBlock* enclosingFirstLineStyleBlock() const;
+    const LayoutBlock* enclosingFirstLineStyleBlock() const;
     // Returns this block or the nearest inner block containing the actual first line.
-    LayoutBlockFlow* nearestInnerBlockWithFirstLine() const;
+    LayoutBlockFlow* nearestInnerBlockWithFirstLine();
 
 protected:
     void willBeDestroyed() override;
