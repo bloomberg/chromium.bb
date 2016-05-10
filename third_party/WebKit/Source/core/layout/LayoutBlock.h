@@ -417,9 +417,6 @@ private:
 
     bool isSelectionRoot() const;
 
-    void absoluteRects(Vector<IntRect>&, const LayoutPoint& accumulatedOffset) const override;
-    void absoluteQuads(Vector<FloatQuad>&) const override;
-
 public:
     bool hasCursorCaret() const;
     bool hasDragCaret() const;

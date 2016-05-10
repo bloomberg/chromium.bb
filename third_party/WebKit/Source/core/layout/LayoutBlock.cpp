@@ -2019,41 +2019,6 @@ LayoutBlockFlow* LayoutBlock::nearestInnerBlockWithFirstLine()
     return nullptr;
 }
 
-void LayoutBlock::absoluteRects(Vector<IntRect>& rects, const LayoutPoint& accumulatedOffset) const
-{
-    // For blocks inside inlines, we go ahead and include margins so that we run right up to the
-    // inline boxes above and below us (thus getting merged with them to form a single irregular
-    // shape).
-    if (isAnonymousBlockContinuation()) {
-        // FIXME: This is wrong for vertical writing-modes.
-        // https://bugs.webkit.org/show_bug.cgi?id=46781
-        LayoutRect rect(accumulatedOffset, size());
-        rect.expand(collapsedMarginBoxLogicalOutsets());
-        rects.append(pixelSnappedIntRect(rect));
-        continuation()->absoluteRects(rects, accumulatedOffset - toLayoutSize(location() +
-            inlineElementContinuation()->containingBlock()->location()));
-    } else {
-        rects.append(pixelSnappedIntRect(accumulatedOffset, size()));
-    }
-}
-
-void LayoutBlock::absoluteQuads(Vector<FloatQuad>& quads) const
-{
-    // For blocks inside inlines, we go ahead and include margins so that we run right up to the
-    // inline boxes above and below us (thus getting merged with them to form a single irregular
-    // shape).
-    if (isAnonymousBlockContinuation()) {
-        // FIXME: This is wrong for vertical writing-modes.
-        // https://bugs.webkit.org/show_bug.cgi?id=46781
-        LayoutRect localRect(LayoutPoint(), size());
-        localRect.expand(collapsedMarginBoxLogicalOutsets());
-        quads.append(localToAbsoluteQuad(FloatRect(localRect)));
-        continuation()->absoluteQuads(quads);
-    } else {
-        quads.append(LayoutBox::localToAbsoluteQuad(FloatRect(0, 0, size().width().toFloat(), size().height().toFloat())));
-    }
-}
-
 LayoutObject* LayoutBlock::hoverAncestor() const
 {
     return isAnonymousBlockContinuation() ? continuation() : LayoutBox::hoverAncestor();

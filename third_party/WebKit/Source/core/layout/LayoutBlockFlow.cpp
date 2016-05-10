@@ -1936,6 +1936,40 @@ void LayoutBlockFlow::computeSelfHitTestRects(Vector<LayoutRect>& rects, const L
     }
 }
 
+void LayoutBlockFlow::absoluteRects(Vector<IntRect>& rects, const LayoutPoint& accumulatedOffset) const
+{
+    if (!isAnonymousBlockContinuation()) {
+        LayoutBlock::absoluteRects(rects, accumulatedOffset);
+        return;
+    }
+    // For blocks inside inlines, we go ahead and include margins so that we run right up to the
+    // inline boxes above and below us (thus getting merged with them to form a single irregular
+    // shape).
+    // FIXME: This is wrong for vertical writing-modes.
+    // https://bugs.webkit.org/show_bug.cgi?id=46781
+    LayoutRect rect(accumulatedOffset, size());
+    rect.expand(collapsedMarginBoxLogicalOutsets());
+    rects.append(pixelSnappedIntRect(rect));
+    continuation()->absoluteRects(rects, accumulatedOffset - toLayoutSize(location() + inlineElementContinuation()->containingBlock()->location()));
+}
+
+void LayoutBlockFlow::absoluteQuads(Vector<FloatQuad>& quads) const
+{
+    if (!isAnonymousBlockContinuation()) {
+        LayoutBlock::absoluteQuads(quads);
+        return;
+    }
+    // For blocks inside inlines, we go ahead and include margins so that we run right up to the
+    // inline boxes above and below us (thus getting merged with them to form a single irregular
+    // shape).
+    // FIXME: This is wrong for vertical writing-modes.
+    // https://bugs.webkit.org/show_bug.cgi?id=46781
+    LayoutRect localRect(LayoutPoint(), size());
+    localRect.expand(collapsedMarginBoxLogicalOutsets());
+    quads.append(localToAbsoluteQuad(FloatRect(localRect)));
+    continuation()->absoluteQuads(quads);
+}
+
 RootInlineBox* LayoutBlockFlow::createAndAppendRootInlineBox()
 {
     RootInlineBox* rootBox = createRootInlineBox();
