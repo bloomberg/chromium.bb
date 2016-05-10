@@ -60,10 +60,9 @@
   fast/history/same-document-iframes-changing-fragment.html [ Failure ]
   fast/history/same-document-iframes-changing-pushstate.html [ Failure ]
   http/tests/history/cross-origin-redirect-on-back.html [ Crash ]
-  http/tests/navigation/back-to-dynamic-iframe.html [ Failure ]
+  http/tests/navigation/back-to-dynamic-iframe.html [ Failure Crash ]
   http/tests/navigation/history-back-across-form-submission-to-fragment.html [ Timeout ]
   http/tests/navigation/redirect-on-reload-updates-history-item.html [ Failure ]
-  http/tests/navigation/same-and-different-back.html [ Crash ]
   imported/web-platform-tests/html/browsers/browsing-the-web/history-traversal/popstate_event.html [ Crash Failure Timeout ]
   imported/web-platform-tests/html/browsers/browsing-the-web/history-traversal/popstate_event.html [ Timeout ]
   imported/web-platform-tests/html/browsers/history/the-history-interface/004.html [ Failure ]
@@ -101,20 +100,24 @@
 
 # https://crbug.com/555418: Move `X-Frame-Options` and CSP's `frame-ancestor`
 # checks up out of the renderer.
+  http/tests/inspector/network/x-frame-options-deny.html [ Crash ]
   http/tests/security/contentSecurityPolicy/1.1/child-src/frame-redirect-blocked.html [ Timeout ]
   http/tests/security/contentSecurityPolicy/frame-src-redirect-blocked.html [ Timeout ]
   http/tests/security/contentSecurityPolicy/redirect-does-not-match-paths.html [ Timeout ]
   http/tests/security/XFrameOptions/x-frame-options-allowall.html [ Failure ]
+  http/tests/security/XFrameOptions/x-frame-options-deny-delete-frame-in-load-event.html [ Crash ]
   http/tests/security/XFrameOptions/x-frame-options-deny-meta-tag-in-body.html [ Failure ]
   http/tests/security/XFrameOptions/x-frame-options-deny-meta-tag-parent-same-origin-allow.html [ Failure ]
   http/tests/security/XFrameOptions/x-frame-options-deny-meta-tag-parent-same-origin-deny.html [ Failure ]
   http/tests/security/XFrameOptions/x-frame-options-deny-meta-tag.html [ Failure ]
-  http/tests/security/XFrameOptions/x-frame-options-deny.html [ Failure ]
+  http/tests/security/XFrameOptions/x-frame-options-deny-multiple-clients.html [ Crash ]
+  http/tests/security/XFrameOptions/x-frame-options-deny.html [ Failure Crash ]
   http/tests/security/XFrameOptions/x-frame-options-invalid.html [ Failure ]
-  http/tests/security/XFrameOptions/x-frame-options-multiple-headers-conflict.html [ Failure ]
-  http/tests/security/XFrameOptions/x-frame-options-multiple-headers-sameorigin-allow.html [ Failure ]
+  http/tests/security/XFrameOptions/x-frame-options-multiple-headers-conflict.html [ Failure Crash ]
+  http/tests/security/XFrameOptions/x-frame-options-multiple-headers-sameorigin-allow.html [ Failure Crash ]
   http/tests/security/XFrameOptions/x-frame-options-none.html [ Failure ]
   http/tests/security/XFrameOptions/x-frame-options-parent-same-origin-allow.html [ Failure ]
+  http/tests/security/XFrameOptions/x-frame-options-parent-same-origin-deny.html [ Crash ]
 
 # https://crbug.com/576270: Move mixed-content checks that happen during
 # navigation to the browser

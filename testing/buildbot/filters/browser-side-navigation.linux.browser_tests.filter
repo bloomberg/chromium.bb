@@ -58,12 +58,12 @@
 -ContentSettingsTest.RedirectCrossOrigin
 -ContentSettingsTest.RedirectLoopCookies
 -ContinueWhereILeftOffTest.Pos*
--CrashRecoveryBrowserTest.DoubleReloadWithError
--CrashRecoveryBrowserTest.LoadInNewTab
+-CrashRecoveryBrowserTest.*
 -DataSaverBrowserTest.DataSaverEnabled
 -DataSaverWithServerBrowserTest.ReloadPage
 -DevToolsPixelOutputTests.TestScreenshotRecording
 -DevToolsSanityTest.TestNetworkRawHeadersText
+-DevToolsReattachAfterCrashTest.*
 -DomDistillerTabUtilsBrowserTest.TestDistillIntoWebContents
 -DomDistillerTabUtilsBrowserTest.TestSwapWebContents
 -DomDistillerViewerSourceBrowserTest.DistillerJavaScriptExposed
@@ -310,6 +310,7 @@
 -StreamsPrivateApiTest.Navigate
 -StreamsPrivateApiTest.NavigateCrossSite
 -TabManagerTest.ProtectPDFPages
+-TaskManagerBrowserTest.*
 -TemplateURLScraperTest.ScrapeWithOnSubmit
 -UnloadTest.CrossSiteInfiniteBeforeUnloadAsync
 -WebNavigationApiTest.Crash
