@@ -1784,6 +1784,11 @@ const FeatureEntry kFeatureEntries[] = {
      ENABLE_DISABLE_VALUE_TYPE(
          extensions::switches::kEnableTabForDesktopShare,
          extensions::switches::kDisableTabForDesktopShare)},
+    {"disable-desktop-capture-picker-old-ui",
+     IDS_FLAG_DISABLE_DESKTOP_CAPTURE_PICKER_OLD_UI,
+     IDS_FLAG_DISABLE_DESKTOP_CAPTURE_PICKER_OLD_UI_DESCRIPTION, kOsAll,
+     SINGLE_VALUE_TYPE(
+         extensions::switches::kDisableDesktopCapturePickerOldUI)},
 #endif
 #if defined(OS_ANDROID)
     {"enable-ntp-snippets", IDS_FLAGS_ENABLE_NTP_SNIPPETS_NAME,

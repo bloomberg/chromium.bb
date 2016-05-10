@@ -130,7 +130,7 @@ const int kExcessButtonPadding = 6;
 
   // Set the dialog's title.
   NSString* titleText = l10n_util::GetNSStringF(
-      IDS_DESKTOP_MEDIA_PICKER_TITLE, appName);
+      IDS_DESKTOP_MEDIA_PICKER_TITLE_DEPRECATED, appName);
   [[self window] setTitle:titleText];
 
   // Set the dialog's description.

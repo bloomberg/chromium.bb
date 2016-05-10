@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/desktop_media_picker_views.h"
+#include "desktop_media_picker_views_deprecated.h"
 
 #include <stddef.h>
 #include <utility>
@@ -75,14 +75,15 @@ int GetMediaListViewHeightForRows(size_t rows) {
 
 }  // namespace
 
-DesktopMediaSourceView::DesktopMediaSourceView(
-    DesktopMediaListView* parent,
-    DesktopMediaID source_id)
+namespace deprecated {
+
+DesktopMediaSourceView::DesktopMediaSourceView(DesktopMediaListView* parent,
+                                               DesktopMediaID source_id)
     : parent_(parent),
       source_id_(source_id),
       image_view_(new views::ImageView()),
       label_(new views::Label()),
-      selected_(false)  {
+      selected_(false) {
   AddChildView(image_view_);
   AddChildView(label_);
   SetFocusBehavior(FocusBehavior::ALWAYS);
@@ -133,8 +134,8 @@ const char* DesktopMediaSourceView::GetClassName() const {
 }
 
 void DesktopMediaSourceView::Layout() {
-  image_view_->SetBounds(kThumbnailMargin, kThumbnailMargin,
-                         kThumbnailWidth, kThumbnailHeight);
+  image_view_->SetBounds(kThumbnailMargin, kThumbnailMargin, kThumbnailWidth,
+                         kThumbnailHeight);
   label_->SetBounds(kThumbnailMargin, kThumbnailHeight + kThumbnailMargin,
                     kThumbnailWidth, kLabelHeight);
 }
@@ -463,8 +464,8 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
       parent_web_contents &&
       !parent_web_contents->GetDelegate()->IsNeverVisible(parent_web_contents);
   if (modal_dialog) {
-    widget = constrained_window::ShowWebModalDialogViews(this,
-                                                         parent_web_contents);
+    widget =
+        constrained_window::ShowWebModalDialogViews(this, parent_web_contents);
   } else {
     widget = DialogDelegate::CreateDialogWidget(this, context, NULL);
     widget->Show();
@@ -505,7 +506,8 @@ ui::ModalType DesktopMediaPickerDialogView::GetModalType() const {
 }
 
 base::string16 DesktopMediaPickerDialogView::GetWindowTitle() const {
-  return l10n_util::GetStringFUTF16(IDS_DESKTOP_MEDIA_PICKER_TITLE, app_name_);
+  return l10n_util::GetStringFUTF16(
+      IDS_DESKTOP_MEDIA_PICKER_TITLE_DEPRECATED, app_name_);
 }
 
 bool DesktopMediaPickerDialogView::IsDialogButtonEnabled(
@@ -521,8 +523,9 @@ views::View* DesktopMediaPickerDialogView::GetInitiallyFocusedView() {
 
 base::string16 DesktopMediaPickerDialogView::GetDialogButtonLabel(
     ui::DialogButton button) const {
-  return l10n_util::GetStringUTF16(button == ui::DIALOG_BUTTON_OK ?
-      IDS_DESKTOP_MEDIA_PICKER_SHARE : IDS_CANCEL);
+  return l10n_util::GetStringUTF16(button == ui::DIALOG_BUTTON_OK
+                                       ? IDS_DESKTOP_MEDIA_PICKER_SHARE
+                                       : IDS_CANCEL);
 }
 
 bool DesktopMediaPickerDialogView::Accept() {
@@ -619,8 +622,7 @@ DesktopMediaPickerDialogView::GetMediaSourceViewForTesting(int index) const {
       sources_list_view_->child_at(index));
 }
 
-DesktopMediaPickerViews::DesktopMediaPickerViews() : dialog_(NULL) {
-}
+DesktopMediaPickerViews::DesktopMediaPickerViews() : dialog_(NULL) {}
 
 DesktopMediaPickerViews::~DesktopMediaPickerViews() {
   if (dialog_) {
@@ -656,13 +658,9 @@ void DesktopMediaPickerViews::NotifyDialogResult(DesktopMediaID source) {
 
   // Notify the |callback_| asynchronously because it may need to destroy
   // DesktopMediaPicker.
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI, FROM_HERE,
-      base::Bind(callback_, source));
+  content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
+                                   base::Bind(callback_, source));
   callback_.Reset();
 }
 
-// static
-std::unique_ptr<DesktopMediaPicker> DesktopMediaPicker::Create() {
-  return std::unique_ptr<DesktopMediaPicker>(new DesktopMediaPickerViews());
-}
+}  // namespace deprecated
