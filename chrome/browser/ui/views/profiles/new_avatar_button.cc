@@ -61,9 +61,7 @@ NewAvatarButton::NewAvatarButton(AvatarButtonDelegate* delegate,
   set_triggerable_event_flags(
       ui::EF_LEFT_MOUSE_BUTTON | ui::EF_RIGHT_MOUSE_BUTTON);
   set_animate_on_state_change(false);
-  SetTextColor(views::Button::STATE_NORMAL, SK_ColorWHITE);
-  SetTextColor(views::Button::STATE_HOVERED, SK_ColorWHITE);
-  SetTextColor(views::Button::STATE_PRESSED, SK_ColorWHITE);
+  SetEnabledTextColors(SK_ColorWHITE);
   SetTextSubpixelRenderingEnabled(false);
   SetHorizontalAlignment(gfx::ALIGN_CENTER);
 

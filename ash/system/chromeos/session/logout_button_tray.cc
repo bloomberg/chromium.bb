@@ -70,8 +70,7 @@ LogoutButton::LogoutButton(views::ButtonListener* listener)
     : views::LabelButton(listener, base::string16()) {
   SetupLabelForTray(label());
   SetFontList(label()->font_list());
-  for (size_t state = 0; state < views::Button::STATE_COUNT; ++state)
-    SetTextColor(static_cast<views::Button::ButtonState>(state), SK_ColorWHITE);
+  SetEnabledTextColors(SK_ColorWHITE);
 
   std::unique_ptr<views::LabelButtonAssetBorder> border(
       new views::LabelButtonAssetBorder(views::Button::STYLE_TEXTBUTTON));

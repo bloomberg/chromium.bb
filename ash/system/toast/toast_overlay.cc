@@ -118,9 +118,7 @@ ToastOverlayButton::ToastOverlayButton(views::ButtonListener* listener,
     : views::LabelButton(listener, label) {
   ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
 
-  SetTextColor(STATE_NORMAL, kButtonTextColor);
-  SetTextColor(STATE_HOVERED, kButtonTextColor);
-  SetTextColor(STATE_PRESSED, kButtonTextColor);
+  SetEnabledTextColors(kButtonTextColor);
   SetFontList(rb->GetFontList(kTextFontStyle));
   SetBorder(views::Border::NullBorder());
 }
