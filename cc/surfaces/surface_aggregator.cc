@@ -152,14 +152,22 @@ gfx::Rect SurfaceAggregator::DamageRectForSurface(
     const RenderPass& source,
     const gfx::Rect& full_rect) const {
   auto it = previous_contained_surfaces_.find(surface->surface_id());
-  if (it == previous_contained_surfaces_.end())
-    return full_rect;
+  if (it != previous_contained_surfaces_.end()) {
+    int previous_index = it->second;
+    if (previous_index == surface->frame_index())
+      return gfx::Rect();
+  }
+  SurfaceId previous_surface_id = surface->previous_frame_surface_id();
 
-  int previous_index = it->second;
-  if (previous_index == surface->frame_index())
-    return gfx::Rect();
-  if (previous_index == surface->frame_index() - 1)
-    return source.damage_rect;
+  if (surface->surface_id() != previous_surface_id) {
+    it = previous_contained_surfaces_.find(previous_surface_id);
+  }
+  if (it != previous_contained_surfaces_.end()) {
+    int previous_index = it->second;
+    if (previous_index == surface->frame_index() - 1)
+      return source.damage_rect;
+  }
+
   return full_rect;
 }
 

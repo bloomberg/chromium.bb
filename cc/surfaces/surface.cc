@@ -24,6 +24,7 @@ static const int kFrameIndexStart = 2;
 
 Surface::Surface(SurfaceId id, SurfaceFactory* factory)
     : surface_id_(id),
+      previous_frame_surface_id_(id),
       factory_(factory->AsWeakPtr()),
       frame_index_(kFrameIndexStart),
       destroyed_(false) {}
@@ -39,6 +40,12 @@ Surface::~Surface() {
   }
   if (!draw_callback_.is_null())
     draw_callback_.Run(SurfaceDrawStatus::DRAW_SKIPPED);
+}
+
+void Surface::SetPreviousFrameSurface(Surface* surface) {
+  DCHECK(surface);
+  frame_index_ = surface->frame_index() + 1;
+  previous_frame_surface_id_ = surface->surface_id();
 }
 
 void Surface::QueueFrame(std::unique_ptr<CompositorFrame> frame,
@@ -63,6 +70,8 @@ void Surface::QueueFrame(std::unique_ptr<CompositorFrame> frame,
   if (current_frame_ &&
       !current_frame_->delegated_frame_data->render_pass_list.empty())
     ++frame_index_;
+
+  previous_frame_surface_id_ = surface_id();
 
   std::vector<SurfaceId> new_referenced_surfaces;
   if (current_frame_) {

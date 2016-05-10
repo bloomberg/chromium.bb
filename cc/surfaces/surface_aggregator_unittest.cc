@@ -1446,6 +1446,113 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateDamageRect) {
   factory_.Destroy(child_surface_id);
 }
 
+// Check that damage is correctly calculated for surfaces with
+// SetPreviousFrameSurface.
+TEST_F(SurfaceAggregatorValidSurfaceTest, SwitchSurfaceDamage) {
+  test::Quad root_render_pass_quads[] = {test::Quad::SolidColorQuad(1)};
+
+  test::Pass root_passes[] = {test::Pass(root_render_pass_quads,
+                                         arraysize(root_render_pass_quads),
+                                         RenderPassId(2, 1))};
+
+  RenderPassList root_pass_list;
+  AddPasses(&root_pass_list, gfx::Rect(SurfaceSize()), root_passes,
+            arraysize(root_passes));
+
+  root_pass_list[0]->damage_rect = gfx::Rect(5, 5, 100, 100);
+
+  std::unique_ptr<DelegatedFrameData> root_frame_data(new DelegatedFrameData);
+  root_pass_list.swap(root_frame_data->render_pass_list);
+
+  std::unique_ptr<CompositorFrame> root_frame(new CompositorFrame);
+  root_frame->delegated_frame_data = std::move(root_frame_data);
+
+  factory_.SubmitCompositorFrame(root_surface_id_, std::move(root_frame),
+                                 SurfaceFactory::DrawCallback());
+
+  {
+    std::unique_ptr<CompositorFrame> aggregated_frame =
+        aggregator_.Aggregate(root_surface_id_);
+
+    ASSERT_TRUE(aggregated_frame);
+    ASSERT_TRUE(aggregated_frame->delegated_frame_data);
+
+    DelegatedFrameData* frame_data =
+        aggregated_frame->delegated_frame_data.get();
+
+    const RenderPassList& aggregated_pass_list = frame_data->render_pass_list;
+
+    ASSERT_EQ(1u, aggregated_pass_list.size());
+
+    // Damage rect for first aggregation should contain entire root surface.
+    EXPECT_TRUE(aggregated_pass_list[0]->damage_rect.Contains(
+        gfx::Rect(SurfaceSize())));
+  }
+
+  SurfaceId second_root_surface_id = allocator_.GenerateId();
+  {
+    test::Quad root_render_pass_quads[] = {test::Quad::SolidColorQuad(1)};
+
+    test::Pass root_passes[] = {test::Pass(root_render_pass_quads,
+                                           arraysize(root_render_pass_quads),
+                                           RenderPassId(2, 1))};
+
+    RenderPassList root_pass_list;
+    AddPasses(&root_pass_list, gfx::Rect(SurfaceSize()), root_passes,
+              arraysize(root_passes));
+
+    root_pass_list[0]->damage_rect = gfx::Rect(1, 2, 3, 4);
+
+    std::unique_ptr<DelegatedFrameData> root_frame_data(new DelegatedFrameData);
+    root_pass_list.swap(root_frame_data->render_pass_list);
+
+    std::unique_ptr<CompositorFrame> root_frame(new CompositorFrame);
+    root_frame->delegated_frame_data = std::move(root_frame_data);
+
+    factory_.Create(second_root_surface_id);
+    factory_.SubmitCompositorFrame(second_root_surface_id,
+                                   std::move(root_frame),
+                                   SurfaceFactory::DrawCallback());
+    factory_.SetPreviousFrameSurface(second_root_surface_id, root_surface_id_);
+  }
+  {
+    std::unique_ptr<CompositorFrame> aggregated_frame =
+        aggregator_.Aggregate(second_root_surface_id);
+
+    ASSERT_TRUE(aggregated_frame);
+    ASSERT_TRUE(aggregated_frame->delegated_frame_data);
+
+    DelegatedFrameData* frame_data =
+        aggregated_frame->delegated_frame_data.get();
+
+    const RenderPassList& aggregated_pass_list = frame_data->render_pass_list;
+
+    ASSERT_EQ(1u, aggregated_pass_list.size());
+
+    // Frame from SetPreviousFrameSurface was aggregated last, so damage rect
+    // from new surface should be used.
+    EXPECT_EQ(gfx::Rect(1, 2, 3, 4), aggregated_pass_list[0]->damage_rect);
+  }
+  {
+    std::unique_ptr<CompositorFrame> aggregated_frame =
+        aggregator_.Aggregate(second_root_surface_id);
+
+    ASSERT_TRUE(aggregated_frame);
+    ASSERT_TRUE(aggregated_frame->delegated_frame_data);
+
+    DelegatedFrameData* frame_data =
+        aggregated_frame->delegated_frame_data.get();
+
+    const RenderPassList& aggregated_pass_list = frame_data->render_pass_list;
+
+    ASSERT_EQ(1u, aggregated_pass_list.size());
+
+    // No new frame, so no new damage.
+    EXPECT_TRUE(aggregated_pass_list[0]->damage_rect.IsEmpty());
+  }
+  factory_.Destroy(second_root_surface_id);
+}
+
 class SurfaceAggregatorPartialSwapTest
     : public SurfaceAggregatorValidSurfaceTest {
  public:

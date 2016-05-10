@@ -53,6 +53,16 @@ void SurfaceFactory::Destroy(SurfaceId surface_id) {
   manager_->Destroy(std::move(surface));
 }
 
+void SurfaceFactory::SetPreviousFrameSurface(SurfaceId new_id,
+                                             SurfaceId old_id) {
+  OwningSurfaceMap::iterator it = surface_map_.find(new_id);
+  DCHECK(it != surface_map_.end());
+  Surface* old_surface = manager_->GetSurfaceForId(old_id);
+  if (old_surface) {
+    it->second->SetPreviousFrameSurface(old_surface);
+  }
+}
+
 void SurfaceFactory::SubmitCompositorFrame(
     SurfaceId surface_id,
     std::unique_ptr<CompositorFrame> frame,

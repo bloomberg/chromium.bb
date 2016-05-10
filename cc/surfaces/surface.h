@@ -44,6 +44,11 @@ class CC_SURFACES_EXPORT Surface {
   ~Surface();
 
   SurfaceId surface_id() const { return surface_id_; }
+  SurfaceId previous_frame_surface_id() const {
+    return previous_frame_surface_id_;
+  }
+
+  void SetPreviousFrameSurface(Surface* surface);
 
   void QueueFrame(std::unique_ptr<CompositorFrame> frame,
                   const DrawCallback& draw_callback);
@@ -88,6 +93,7 @@ class CC_SURFACES_EXPORT Surface {
   void ClearCopyRequests();
 
   SurfaceId surface_id_;
+  SurfaceId previous_frame_surface_id_;
   base::WeakPtr<SurfaceFactory> factory_;
   // TODO(jamesr): Support multiple frames in flight.
   std::unique_ptr<CompositorFrame> current_frame_;

@@ -49,6 +49,10 @@ class CC_SURFACES_EXPORT SurfaceFactory
   void Destroy(SurfaceId surface_id);
   void DestroyAll();
 
+  // Set that the current frame on new_id is to be treated as the successor to
+  // the current frame on old_id for the purposes of calculating damage.
+  void SetPreviousFrameSurface(SurfaceId new_id, SurfaceId old_id);
+
   // A frame can only be submitted to a surface created by this factory,
   // although the frame may reference surfaces created by other factories.
   // The callback is called the first time this frame is used to draw, or if
