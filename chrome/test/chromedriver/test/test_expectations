@@ -193,9 +193,6 @@ _OS_NEGATIVE_FILTER['android:chrome'] = [
     'CorrectEventFiringTest.testShouldEmitOnClickEventsWhenSelectingElements',
     'CorrectEventFiringTest.testSendingKeysToAnotherElementShouldCauseTheBlurEventToFire',
 
-    # https://code.google.com/p/chromedriver/issues/detail?id=998	
-    'ImplicitWaitTest.testShouldImplicitlyWaitForASingleElement',
-
     # https://code.google.com/p/chromedriver/issues/detail?id=1176
     'ChromeDriverTests.clientLogShouldBeEnabledByDefault',
 
