@@ -185,26 +185,9 @@ TEST_F(KeyboardTest, TestInsertNewline)
     EXPECT_STREQ("InsertNewline", interpretNewLine(noModifiers));
 }
 
-TEST_F(KeyboardTest, TestInsertNewline2)
-{
-    EXPECT_STREQ("InsertNewline", interpretNewLine(WebInputEvent::ControlKey));
-}
-
 TEST_F(KeyboardTest, TestInsertLineBreak)
 {
     EXPECT_STREQ("InsertLineBreak", interpretNewLine(WebInputEvent::ShiftKey));
-}
-
-TEST_F(KeyboardTest, TestInsertNewline3)
-{
-    EXPECT_STREQ("InsertNewline", interpretNewLine(WebInputEvent::AltKey));
-}
-
-TEST_F(KeyboardTest, TestInsertNewline4)
-{
-    int modifiers = WebInputEvent::AltKey | WebInputEvent::ShiftKey;
-    const char* result = interpretNewLine(modifiers);
-    EXPECT_STREQ("InsertNewline", result);
 }
 
 } // namespace blink

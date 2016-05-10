@@ -65,7 +65,7 @@ function performVerticalScrollingPasteTest()
     }
 }
 
-function performJumpAtTheEdgeTest(useCtrlKeyModifier)
+function performJumpAtTheEdgeTest()
 {
     var textArea = document.getElementById("input");
     textArea.focus();
@@ -74,7 +74,7 @@ function performJumpAtTheEdgeTest(useCtrlKeyModifier)
         var jumpDetected = false;
         for (var i = 0; i < 120; ++i) {
             previousScrollTop = document.documentElement.scrollTop;
-            eventSender.keyDown("\r", useCtrlKeyModifier ? ["ctrlKey"] : []);
+            eventSender.keyDown("\r", []);
             currentScrollTop = document.documentElement.scrollTop;
             // Smooth scrolls are allowed.
             if (Math.abs(previousScrollTop - currentScrollTop) > 24) {

@@ -173,10 +173,7 @@ static const KeyPressEntry keyPressEntries[] = {
     { '\t',   0,                  "InsertTab"                                 },
     { '\t',   ShiftKey,           "InsertBacktab"                             },
     { '\r',   0,                  "InsertNewline"                             },
-    { '\r',   CtrlKey,            "InsertNewline"                             },
     { '\r',   ShiftKey,           "InsertLineBreak"                           },
-    { '\r',   AltKey,             "InsertNewline"                             },
-    { '\r',   AltKey | ShiftKey,  "InsertNewline"                             },
 };
 
 const char* EditingBehavior::interpretKeyEvent(const KeyboardEvent& event) const
