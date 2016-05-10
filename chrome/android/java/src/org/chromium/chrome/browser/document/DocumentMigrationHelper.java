@@ -22,7 +22,7 @@ import android.util.Pair;
 import android.util.SparseArray;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.ApplicationStatus;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.ImportantFileWriterAndroid;
 import org.chromium.base.Log;
 import org.chromium.chrome.R;
@@ -149,7 +149,7 @@ public class DocumentMigrationHelper {
         MigrationTabModel(MigrationActivityDelegate activityDelegate,
                 StorageDelegate storageDelegate) {
             super(activityDelegate, storageDelegate, new MigrationTabCreatorManager(), false,
-                    Tab.INVALID_TAB_ID, ApplicationStatus.getApplicationContext());
+                    Tab.INVALID_TAB_ID, ContextUtils.getApplicationContext());
             startTabStateLoad();
             mTitleList = new SparseArray<String>();
             setLastShownId(activityDelegate.getSelectedTabId());
@@ -234,7 +234,7 @@ public class DocumentMigrationHelper {
      */
     public static void migrateTabsFromDocumentToClassic(final Activity activity,
             int finalizeMode) {
-        Context context = ApplicationStatus.getApplicationContext();
+        Context context = ContextUtils.getApplicationContext();
         // Before migration we remove all incognito tabs and also remove the
         // tabs that can not be reached through the {@link DocumentTabModel} instances.
         List<Integer> tabIdsToRemove = new ArrayList<Integer>();

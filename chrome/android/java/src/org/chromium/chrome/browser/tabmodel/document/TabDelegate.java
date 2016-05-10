@@ -10,7 +10,7 @@ import android.net.Uri;
 import android.text.TextUtils;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.ApplicationStatus;
+import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.TabState;
 import org.chromium.chrome.browser.UrlConstants;
@@ -163,7 +163,7 @@ public class TabDelegate extends TabCreator {
 
         Intent intent = createNewTabIntent(asyncParams, parentId);
         IntentHandler.startActivityForTrustedIntent(
-                intent, ApplicationStatus.getApplicationContext());
+                intent, ContextUtils.getApplicationContext());
     }
 
     private Intent createNewTabIntent(AsyncTabCreationParams asyncParams, int parentId) {
@@ -172,7 +172,7 @@ public class TabDelegate extends TabCreator {
 
         Intent intent = new Intent(
                 Intent.ACTION_VIEW, Uri.parse(asyncParams.getLoadUrlParams().getUrl()));
-        intent.setClass(ApplicationStatus.getApplicationContext(), ChromeLauncherActivity.class);
+        intent.setClass(ContextUtils.getApplicationContext(), ChromeLauncherActivity.class);
         intent.putExtra(IntentHandler.EXTRA_TAB_ID, assignedTabId);
         intent.putExtra(IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB, mIsIncognito);
         intent.putExtra(IntentHandler.EXTRA_PARENT_TAB_ID, parentId);
@@ -200,6 +200,6 @@ public class TabDelegate extends TabCreator {
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
                 | ApiCompatibilityUtils.getActivityNewDocumentFlag());
         IntentHandler.startActivityForTrustedIntent(intent,
-                ApplicationStatus.getApplicationContext());
+                ContextUtils.getApplicationContext());
     }
 }

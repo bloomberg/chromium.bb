@@ -28,6 +28,7 @@ import android.widget.FrameLayout;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.FieldTrialList;
 import org.chromium.base.ObserverList;
 import org.chromium.base.ObserverList.RewindableIterator;
@@ -3083,7 +3084,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
             }
         }
 
-        String packageName = ApplicationStatus.getApplicationContext().getPackageName();
+        String packageName = ContextUtils.getApplicationContext().getPackageName();
         Intent intent = new Intent(Intent.ACTION_MAIN);
         intent.putExtra(Browser.EXTRA_APPLICATION_ID, packageName);
         intent.putExtra(TabOpenType.BRING_TAB_TO_FRONT.name(), tabId);
@@ -3164,7 +3165,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      * @return Whether or not the tab was opened by an app other than Chrome.
      */
     public boolean isCreatedForExternalApp() {
-        String packageName = ApplicationStatus.getApplicationContext().getPackageName();
+        String packageName = ContextUtils.getApplicationContext().getPackageName();
         return getLaunchType() == TabLaunchType.FROM_EXTERNAL_APP
                 && !TextUtils.equals(getAppAssociatedWith(), packageName);
     }

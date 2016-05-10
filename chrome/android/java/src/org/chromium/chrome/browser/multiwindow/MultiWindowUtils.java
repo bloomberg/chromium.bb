@@ -10,7 +10,7 @@ import android.content.Intent;
 import android.os.Build;
 import android.text.TextUtils;
 
-import org.chromium.base.ApplicationStatus;
+import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.ChromeTabbedActivity2;
@@ -40,7 +40,7 @@ public class MultiWindowUtils {
     public static MultiWindowUtils getInstance() {
         if (sInstance.get() == null) {
             ChromeApplication application =
-                    (ChromeApplication) ApplicationStatus.getApplicationContext();
+                    (ChromeApplication) ContextUtils.getApplicationContext();
             sInstance.compareAndSet(null, application.createMultiWindowUtils());
         }
         return sInstance.get();

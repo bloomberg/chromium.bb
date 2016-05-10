@@ -10,7 +10,7 @@ import android.graphics.Bitmap;
 import android.media.AudioManager;
 import android.text.TextUtils;
 
-import org.chromium.base.ApplicationStatus;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -134,7 +134,7 @@ public class MediaSessionTabHelper {
                                 .setId(R.id.media_playback_notification)
                                 .setListener(mControlsListener);
 
-                MediaNotificationManager.show(ApplicationStatus.getApplicationContext(),
+                MediaNotificationManager.show(ContextUtils.getApplicationContext(),
                         mNotificationInfoBuilder.build());
 
                 Activity activity = getActivityFromTab(mTab);
@@ -179,7 +179,7 @@ public class MediaSessionTabHelper {
 
             mNotificationInfoBuilder.setLargeIcon(mFavicon);
             MediaNotificationManager.show(
-                    ApplicationStatus.getApplicationContext(), mNotificationInfoBuilder.build());
+                    ContextUtils.getApplicationContext(), mNotificationInfoBuilder.build());
         }
 
         @Override
@@ -203,7 +203,7 @@ public class MediaSessionTabHelper {
             mNotificationInfoBuilder.setOrigin(mOrigin);
             mNotificationInfoBuilder.setLargeIcon(mFavicon);
             MediaNotificationManager.show(
-                    ApplicationStatus.getApplicationContext(), mNotificationInfoBuilder.build());
+                    ContextUtils.getApplicationContext(), mNotificationInfoBuilder.build());
         }
 
         @Override
@@ -215,7 +215,7 @@ public class MediaSessionTabHelper {
             mFallbackMetadata.setTitle(sanitizeMediaTitle(mTab.getTitle()));
             mNotificationInfoBuilder.setMetadata(mFallbackMetadata);
 
-            MediaNotificationManager.show(ApplicationStatus.getApplicationContext(),
+            MediaNotificationManager.show(ContextUtils.getApplicationContext(),
                     mNotificationInfoBuilder.build());
         }
 

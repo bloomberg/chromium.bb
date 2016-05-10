@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.tab;
 import android.content.Context;
 import android.content.SharedPreferences;
 
-import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.tabmodel.TabModel;
@@ -43,7 +42,7 @@ public class TabIdManager {
 
     /** Returns the Singleton instance of the TabIdManager. */
     public static TabIdManager getInstance() {
-        return getInstance(ApplicationStatus.getApplicationContext());
+        return getInstance(ContextUtils.getApplicationContext());
     }
 
     /** Returns the Singleton instance of the TabIdManager. */

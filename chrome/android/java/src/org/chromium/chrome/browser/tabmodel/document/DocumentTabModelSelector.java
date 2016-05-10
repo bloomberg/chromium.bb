@@ -16,6 +16,7 @@ import android.os.Build;
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ApplicationStatus.ActivityStateListener;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.document.DocumentUtils;
@@ -96,7 +97,7 @@ public class DocumentTabModelSelector extends TabModelSelectorBase
         mRegularTabDelegate = regularTabDelegate;
         mIncognitoTabDelegate = incognitoTabDelegate;
 
-        final Context context = ApplicationStatus.getApplicationContext();
+        final Context context = ContextUtils.getApplicationContext();
         mRegularTabModel = new DocumentTabModelImpl(
                 mActivityDelegate, mStorageDelegate, this, false, sPrioritizedTabId, context);
         mIncognitoTabModel = new OffTheRecordDocumentTabModel(new OffTheRecordTabModelDelegate() {
@@ -151,7 +152,7 @@ public class DocumentTabModelSelector extends TabModelSelectorBase
 
     private int getLargestTaskIdFromRecents() {
         int biggestId = Tab.INVALID_TAB_ID;
-        Context context = ApplicationStatus.getApplicationContext();
+        Context context = ContextUtils.getApplicationContext();
         ActivityManager activityManager =
                 (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
         for (ActivityManager.AppTask task : activityManager.getAppTasks()) {
@@ -185,7 +186,7 @@ public class DocumentTabModelSelector extends TabModelSelectorBase
     public void selectModel(boolean incognito) {
         super.selectModel(incognito);
 
-        Context context = ApplicationStatus.getApplicationContext();
+        Context context = ContextUtils.getApplicationContext();
         SharedPreferences prefs = context.getSharedPreferences(PREF_PACKAGE, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
         editor.putBoolean(PREF_IS_INCOGNITO_SELECTED, incognito);

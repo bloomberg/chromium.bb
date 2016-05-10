@@ -9,7 +9,7 @@ import android.app.NotificationManager;
 import android.content.Context;
 import android.support.v4.app.NotificationCompat;
 
-import org.chromium.base.ApplicationStatus;
+import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
 
 /**
@@ -23,7 +23,7 @@ public class IncognitoNotificationManager {
      * Shows the close all incognito notification.
      */
     public static void showIncognitoNotification() {
-        Context context = ApplicationStatus.getApplicationContext();
+        Context context = ContextUtils.getApplicationContext();
         String actionMessage =
                 context.getResources().getString(R.string.close_all_incognito_notification);
         String title = context.getResources().getString(R.string.app_name);
@@ -47,7 +47,7 @@ public class IncognitoNotificationManager {
      * Dismisses the incognito notification.
      */
     public static void dismissIncognitoNotification() {
-        Context context = ApplicationStatus.getApplicationContext();
+        Context context = ContextUtils.getApplicationContext();
         NotificationManager nm =
                   (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         nm.cancel(INCOGNITO_TABS_OPEN_TAG, INCOGNITO_TABS_OPEN_ID);

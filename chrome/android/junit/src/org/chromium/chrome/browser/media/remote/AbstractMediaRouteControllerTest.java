@@ -29,9 +29,9 @@ import android.support.v7.media.MediaRouter.Callback;
 import android.support.v7.media.MediaRouter.ProviderInfo;
 import android.support.v7.media.MediaRouter.RouteInfo;
 
-import org.chromium.base.ApplicationStatus;
 import org.chromium.base.BaseChromiumApplication;
 import org.chromium.base.CommandLine;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.test.shadows.ShadowMultiDex;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.media.remote.MediaRouteController.MediaStateListener;
@@ -63,8 +63,7 @@ public class AbstractMediaRouteControllerTest {
         // see http://crbug.com/469649
         CommandLine.init(new String[] {});
 
-        // We need to initialize the ApplicationStatus to avoid DCHECKs
-        ApplicationStatus.initialize((BaseChromiumApplication) Robolectric.application);
+        ContextUtils.initApplicationContextForTests(Robolectric.application);
 
         ShadowMediaRouter.sMediaRouter = null;
         ShadowMediaRouter.sCallback = null;

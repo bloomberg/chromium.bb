@@ -7,7 +7,7 @@ package org.chromium.chrome.browser.banners;
 import android.content.Context;
 import android.text.TextUtils;
 
-import org.chromium.base.ApplicationStatus;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
@@ -46,7 +46,7 @@ public class AppBannerManager extends EmptyTabObserver {
      */
     public static boolean isEnabled() {
         if (sIsEnabled == null) {
-            Context context = ApplicationStatus.getApplicationContext();
+            Context context = ContextUtils.getApplicationContext();
             sIsEnabled = ShortcutHelper.isAddToHomeIntentSupported(context);
         }
         return sIsEnabled;
@@ -106,7 +106,7 @@ public class AppBannerManager extends EmptyTabObserver {
             String url, String packageName, String referrer, int iconSizeInDp) {
         if (sAppDetailsDelegate == null) return;
 
-        Context context = ApplicationStatus.getApplicationContext();
+        Context context = ContextUtils.getApplicationContext();
         int iconSizeInPx = Math.round(
                 context.getResources().getDisplayMetrics().density * iconSizeInDp);
         sAppDetailsDelegate.getAppDetailsAsynchronously(

@@ -8,7 +8,7 @@ import android.os.Environment;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.text.TextUtils;
 
-import org.chromium.base.ApplicationStatus;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
@@ -86,7 +86,7 @@ public class PopupTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     @Feature({"Popup"})
     public void testPopupWindowsAppearWhenAllowed() throws Exception {
         boolean isDocumentMode =
-                FeatureUtilities.isDocumentMode(ApplicationStatus.getApplicationContext());
+                FeatureUtilities.isDocumentMode(ContextUtils.getApplicationContext());
         final TabModelSelector selector = isDocumentMode
                 ? ChromeApplication.getDocumentTabModelSelector()
                 : getActivity().getTabModelSelector();

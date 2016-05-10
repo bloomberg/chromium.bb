@@ -11,7 +11,6 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.util.Pair;
 
-import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.FileUtils;
 import org.chromium.base.Log;
@@ -519,12 +518,12 @@ public class DocumentModeAssassin {
 
     /** @return Whether or not a migration to tabbed mode from document mode is necessary. */
     public boolean isMigrationNecessary() {
-        return FeatureUtilities.isDocumentMode(ApplicationStatus.getApplicationContext());
+        return FeatureUtilities.isDocumentMode(ContextUtils.getApplicationContext());
     }
 
     /** @return Context to use when grabbing SharedPreferences, Files, and other resources. */
     protected Context getContext() {
-        return ApplicationStatus.getApplicationContext();
+        return ContextUtils.getApplicationContext();
     }
 
     /** @return Interfaces with the Android ActivityManager. */

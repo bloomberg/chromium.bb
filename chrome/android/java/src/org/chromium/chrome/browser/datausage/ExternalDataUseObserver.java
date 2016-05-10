@@ -9,6 +9,7 @@ import android.text.TextUtils;
 
 import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.PackageUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
@@ -66,7 +67,7 @@ public class ExternalDataUseObserver {
             }
             boolean isControlAppInstalled =
                     PackageUtils.getPackageVersion(
-                            ApplicationStatus.getApplicationContext(), mControlAppPackageName)
+                            ContextUtils.getApplicationContext(), mControlAppPackageName)
                     != -1;
             if (isControlAppInstalled != mInstalled) {
                 mInstalled = isControlAppInstalled;

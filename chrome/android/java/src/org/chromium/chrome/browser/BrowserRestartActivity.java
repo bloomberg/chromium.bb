@@ -13,7 +13,7 @@ import android.os.Looper;
 import android.os.Process;
 import android.text.TextUtils;
 
-import org.chromium.base.ApplicationStatus;
+import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.util.IntentUtils;
 
 /**
@@ -82,7 +82,7 @@ public class BrowserRestartActivity extends Activity {
         boolean restart = IntentUtils.safeGetBooleanExtra(
                 intent, BrowserRestartActivity.EXTRA_RESTART, false);
         if (restart) {
-            Context context = ApplicationStatus.getApplicationContext();
+            Context context = ContextUtils.getApplicationContext();
             Intent restartIntent = new Intent(Intent.ACTION_MAIN);
             restartIntent.setPackage(context.getPackageName());
             restartIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);

@@ -9,7 +9,7 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.FileObserver;
 
-import org.chromium.base.ApplicationStatus;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.PathUtils;
 import org.chromium.base.metrics.RecordUserAction;
@@ -22,7 +22,7 @@ import java.io.File;
 public class MinidumpDirectoryObserver extends FileObserver {
 
     private static final String TAG = "MinidumpDirObserver";
-    private static Context sContext = ApplicationStatus.getApplicationContext();
+    private static Context sContext = ContextUtils.getApplicationContext();
 
     public static final String MINIDUMP_EXPERIMENT_NAME = "MinidumpDirectoryObserver";
 

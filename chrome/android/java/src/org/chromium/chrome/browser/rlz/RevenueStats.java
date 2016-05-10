@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.rlz;
 import android.content.Context;
 import android.content.SharedPreferences;
 
-import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.ChromeApplication;
@@ -31,7 +30,7 @@ public class RevenueStats {
     public static RevenueStats getInstance() {
         if (sInstance.get() == null) {
             ChromeApplication application =
-                    (ChromeApplication) ApplicationStatus.getApplicationContext();
+                    (ChromeApplication) ContextUtils.getApplicationContext();
             sInstance.compareAndSet(null, application.createRevenueStatsInstance());
         }
         return sInstance.get();

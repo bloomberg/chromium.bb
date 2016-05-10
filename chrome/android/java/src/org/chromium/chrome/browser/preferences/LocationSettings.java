@@ -10,7 +10,7 @@ import android.content.Intent;
 import android.location.LocationManager;
 import android.provider.Settings;
 
-import org.chromium.base.ApplicationStatus;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
@@ -48,7 +48,7 @@ public class LocationSettings {
         ThreadUtils.assertOnUiThread();
         if (sInstance == null) {
             ChromeApplication application =
-                    (ChromeApplication) ApplicationStatus.getApplicationContext();
+                    (ChromeApplication) ContextUtils.getApplicationContext();
             sInstance = application.createLocationSettings();
         }
         return sInstance;

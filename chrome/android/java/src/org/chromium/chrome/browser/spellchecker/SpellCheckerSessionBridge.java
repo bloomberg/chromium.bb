@@ -12,7 +12,7 @@ import android.view.textservice.SuggestionsInfo;
 import android.view.textservice.TextInfo;
 import android.view.textservice.TextServicesManager;
 
-import org.chromium.base.ApplicationStatus;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
 
 import java.util.ArrayList;
@@ -31,7 +31,7 @@ public class SpellCheckerSessionBridge implements SpellCheckerSessionListener {
     private SpellCheckerSessionBridge(long nativeSpellCheckerSessionBridge) {
         mNativeSpellCheckerSessionBridge = nativeSpellCheckerSessionBridge;
 
-        Context context = ApplicationStatus.getApplicationContext();
+        Context context = ContextUtils.getApplicationContext();
         final TextServicesManager textServicesManager =
                 (TextServicesManager) context.getSystemService(
                         Context.TEXT_SERVICES_MANAGER_SERVICE);

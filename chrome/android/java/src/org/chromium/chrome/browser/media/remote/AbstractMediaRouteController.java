@@ -17,7 +17,7 @@ import android.support.v7.media.MediaRouter.RouteInfo;
 
 import com.google.android.gms.cast.CastMediaControlIntent;
 
-import org.chromium.base.ApplicationStatus;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.RemovableInRelease;
@@ -188,7 +188,7 @@ public abstract class AbstractMediaRouteController implements MediaRouteControll
     private long mMediaElementDetachedTimestampMs = 0;
 
     protected AbstractMediaRouteController() {
-        mContext = ApplicationStatus.getApplicationContext();
+        mContext = ContextUtils.getApplicationContext();
         assert (getContext() != null);
 
         mHandler = new Handler();

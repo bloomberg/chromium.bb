@@ -7,8 +7,8 @@ package org.chromium.chrome.browser.device;
 import android.content.Context;
 import android.view.accessibility.AccessibilityManager;
 
-import org.chromium.base.ApplicationStatus;
 import org.chromium.base.CommandLine;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.SysUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -67,7 +67,7 @@ public class DeviceClassManager {
             mDisableDomainReliability = false;
         }
 
-        if (DeviceFormFactor.isTablet(ApplicationStatus.getApplicationContext())) {
+        if (DeviceFormFactor.isTablet(ContextUtils.getApplicationContext())) {
             mEnableAccessibilityLayout = false;
         }
 

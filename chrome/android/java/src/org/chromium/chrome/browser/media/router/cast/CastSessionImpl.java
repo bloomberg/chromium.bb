@@ -16,7 +16,7 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
 
-import org.chromium.base.ApplicationStatus;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.media.ui.MediaNotificationInfo;
@@ -25,7 +25,6 @@ import org.chromium.chrome.browser.media.ui.MediaNotificationManager;
 import org.chromium.chrome.browser.metrics.MediaNotificationUma;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content_public.common.MediaMetadata;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -107,7 +106,7 @@ public class CastSessionImpl implements MediaNotificationListener, CastSession {
         mMessageChannel = new CastMessagingChannel(this);
         updateNamespaces();
 
-        final Context context = ApplicationStatus.getApplicationContext();
+        final Context context = ContextUtils.getApplicationContext();
 
         if (mNamespaces.contains(CastMessageHandler.MEDIA_NAMESPACE)) {
             mMediaPlayer = new RemoteMediaPlayer();

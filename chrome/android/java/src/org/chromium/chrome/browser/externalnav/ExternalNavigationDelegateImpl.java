@@ -26,6 +26,7 @@ import android.util.Log;
 
 import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.PathUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.R;
@@ -171,7 +172,7 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
         assert Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
                 || !ThreadUtils.runningOnUiThread();
         try {
-            Context context = ApplicationStatus.getApplicationContext();
+            Context context = ContextUtils.getApplicationContext();
             PackageManager pm = context.getPackageManager();
             return pm.resolveActivity(intent, 0);
         } catch (RuntimeException e) {

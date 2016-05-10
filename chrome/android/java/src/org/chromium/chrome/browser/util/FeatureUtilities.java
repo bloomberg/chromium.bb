@@ -17,8 +17,8 @@ import android.os.UserManager;
 import android.speech.RecognizerIntent;
 import android.text.TextUtils;
 
-import org.chromium.base.ApplicationStatus;
 import org.chromium.base.CommandLine;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.FieldTrialList;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
@@ -210,7 +210,7 @@ public class FeatureUtilities {
      *         and its related switches.
      */
     public static String getHerbFlavor() {
-        Context context = ApplicationStatus.getApplicationContext();
+        Context context = ContextUtils.getApplicationContext();
         if (isHerbDisallowed(context)) return ChromeSwitches.HERB_FLAVOR_DISABLED;
 
         if (!sIsHerbFlavorCached) {
@@ -245,7 +245,7 @@ public class FeatureUtilities {
      * Caches which flavor of Herb the user prefers from native.
      */
     private static void cacheHerbFlavor() {
-        Context context = ApplicationStatus.getApplicationContext();
+        Context context = ContextUtils.getApplicationContext();
         if (isHerbDisallowed(context)) return;
 
         String oldFlavor = getHerbFlavor();

@@ -13,6 +13,7 @@ import android.os.Looper;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.invalidation.DelayedInvalidationsController;
@@ -96,7 +97,7 @@ public class PowerBroadcastReceiver extends BroadcastReceiver {
          * Executed when all of the system conditions are met.
          */
         public void runActions() {
-            Context context = ApplicationStatus.getApplicationContext();
+            Context context = ContextUtils.getApplicationContext();
             OmahaClient.onForegroundSessionStart(context);
             DelayedInvalidationsController.getInstance().notifyPendingInvalidations(context);
         }
@@ -116,7 +117,7 @@ public class PowerBroadcastReceiver extends BroadcastReceiver {
         ThreadUtils.assertOnUiThread();
         assert Looper.getMainLooper() == Looper.myLooper();
 
-        if (mPowerManagerHelper.isScreenOn(ApplicationStatus.getApplicationContext())) {
+        if (mPowerManagerHelper.isScreenOn(ContextUtils.getApplicationContext())) {
             mServiceRunnable.post();
         } else {
             registerReceiver();
@@ -154,7 +155,7 @@ public class PowerBroadcastReceiver extends BroadcastReceiver {
      */
     private void unregisterReceiver() {
         if (mIsRegistered.getAndSet(false)) {
-            ApplicationStatus.getApplicationContext().unregisterReceiver(this);
+            ContextUtils.getApplicationContext().unregisterReceiver(this);
         }
     }
 
@@ -164,7 +165,7 @@ public class PowerBroadcastReceiver extends BroadcastReceiver {
     private void registerReceiver() {
         assert Looper.getMainLooper() == Looper.myLooper();
         if (mIsRegistered.getAndSet(true)) return;
-        ApplicationStatus.getApplicationContext().registerReceiver(
+        ContextUtils.getApplicationContext().registerReceiver(
                 this, new IntentFilter(Intent.ACTION_SCREEN_ON));
     }
 

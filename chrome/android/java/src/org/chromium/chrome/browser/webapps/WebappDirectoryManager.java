@@ -17,7 +17,7 @@ import android.os.StrictMode;
 import android.os.SystemClock;
 import android.text.TextUtils;
 
-import org.chromium.base.ApplicationStatus;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.FileUtils;
 import org.chromium.base.Log;
 import org.chromium.base.metrics.RecordHistogram;
@@ -186,7 +186,7 @@ public class WebappDirectoryManager {
     protected Set<Intent> getBaseIntentsForAllTasks() {
         Set<Intent> baseIntents = new HashSet<Intent>();
 
-        Context context = ApplicationStatus.getApplicationContext();
+        Context context = ContextUtils.getApplicationContext();
         ActivityManager manager =
                 (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
         for (AppTask task : manager.getAppTasks()) {

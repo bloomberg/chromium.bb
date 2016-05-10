@@ -11,6 +11,7 @@ import android.os.Process;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.ContextUtils;
 
 import java.lang.ref.WeakReference;
 
@@ -63,7 +64,7 @@ class ChromeLifetimeController implements ApplicationLifetime.Observer,
     }
 
     private void fireBrowserRestartActivityIntent(String action) {
-        Context context = ApplicationStatus.getApplicationContext();
+        Context context = ContextUtils.getApplicationContext();
         Intent intent = new Intent();
         intent.setAction(action);
         intent.setClassName(

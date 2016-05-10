@@ -7,7 +7,6 @@ package org.chromium.base;
 import android.app.Activity;
 import android.app.Application;
 import android.app.Application.ActivityLifecycleCallbacks;
-import android.content.Context;
 import android.os.Bundle;
 
 import org.chromium.base.annotations.CalledByNative;
@@ -53,8 +52,6 @@ public class ApplicationStatus {
             return mListeners;
         }
     }
-
-    private static Application sApplication;
 
     private static Object sCachedApplicationStateLock = new Object();
     private static Integer sCachedApplicationState;
@@ -115,8 +112,6 @@ public class ApplicationStatus {
      * @param application The application whose status you wish to monitor.
      */
     public static void initialize(BaseChromiumApplication application) {
-        sApplication = application;
-
         application.registerWindowFocusChangedListener(
                 new BaseChromiumApplication.WindowFocusChangedListener() {
                     @Override
@@ -249,13 +244,6 @@ public class ApplicationStatus {
             activities.add(new WeakReference<Activity>(activity));
         }
         return activities;
-    }
-
-    /**
-     * @return The {@link Context} for the {@link Application}.
-     */
-    public static Context getApplicationContext() {
-        return sApplication != null ? sApplication.getApplicationContext() : null;
     }
 
     /**
@@ -406,7 +394,6 @@ public class ApplicationStatus {
             sCachedApplicationState = null;
         }
         sActivity = null;
-        sApplication = null;
         sNativeApplicationStateListener = null;
     }
 

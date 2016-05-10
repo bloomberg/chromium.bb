@@ -7,8 +7,8 @@ package org.chromium.components.signin;
 import android.accounts.Account;
 import android.content.Context;
 
-import org.chromium.base.ApplicationStatus;
 import org.chromium.base.Callback;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.sync.signin.AccountManagerHelper;
 
@@ -26,7 +26,7 @@ public final class ChildAccountInfoFetcher {
     @CalledByNative
     private static void fetch(final long nativeAccountFetcherService, final String accountId,
             final String accountName) {
-        Context app = ApplicationStatus.getApplicationContext();
+        Context app = ContextUtils.getApplicationContext();
         assert app != null;
         AccountManagerHelper helper = AccountManagerHelper.get(app);
         Account account = helper.createAccountFromName(accountName);
