@@ -459,6 +459,9 @@ def AddJUnitTestOptions(parser):
   group.add_argument(
       '--sdk-version', dest='sdk_version', type=int,
       help='The Android SDK version.')
+  group.add_argument(
+      '--coverage-dir', dest='coverage_dir',
+      help='Directory to store coverage info.')
   AddCommonOptions(parser)
 
 
