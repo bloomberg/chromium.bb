@@ -42,14 +42,6 @@ RendererWebSchedulerImpl::createWebViewScheduler(blink::WebView* web_view) {
       command_line->HasSwitch(switches::kDisableBackgroundTimerThrottling)));
 }
 
-void RendererWebSchedulerImpl::addPendingNavigation() {
-  renderer_scheduler_->AddPendingNavigation();
-}
-
-void RendererWebSchedulerImpl::removePendingNavigation() {
-  renderer_scheduler_->RemovePendingNavigation();
-}
-
 void RendererWebSchedulerImpl::onNavigationStarted() {
   renderer_scheduler_->OnNavigationStarted();
 }

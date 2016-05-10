@@ -63,8 +63,10 @@ class SCHEDULER_EXPORT RendererSchedulerImpl
   void DidAnimateForInputOnCompositorThread() override;
   void OnRendererBackgrounded() override;
   void OnRendererForegrounded() override;
-  void AddPendingNavigation() override;
-  void RemovePendingNavigation() override;
+  void AddPendingNavigation(
+      blink::WebScheduler::NavigatingFrameType type) override;
+  void RemovePendingNavigation(
+      blink::WebScheduler::NavigatingFrameType type) override;
   void OnNavigationStarted() override;
   bool IsHighPriorityWorkAnticipated() override;
   bool ShouldYieldForHighPriorityWork() override;

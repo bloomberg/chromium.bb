@@ -258,6 +258,7 @@ private:
 NavigationScheduler::NavigationScheduler(LocalFrame* frame)
     : m_frame(frame)
     , m_navigateTaskFactory(CancellableTaskFactory::create(this, &NavigationScheduler::navigateTask))
+    , m_frameType(m_frame->isMainFrame() ? WebScheduler::NavigatingFrameType::kMainFrame : WebScheduler::NavigatingFrameType::kChildFrame)
 {
 }
 
@@ -266,7 +267,7 @@ NavigationScheduler::~NavigationScheduler()
     // TODO(alexclarke): Can remove this if oilpan is on since any pending task should
     // keep the NavigationScheduler alive.
     if (m_navigateTaskFactory->isPending())
-        Platform::current()->currentThread()->scheduler()->removePendingNavigation();
+        Platform::current()->currentThread()->scheduler()->removePendingNavigation(m_frameType);
 }
 
 bool NavigationScheduler::locationChangePending()
@@ -384,7 +385,7 @@ void NavigationScheduler::scheduleReload()
 
 void NavigationScheduler::navigateTask()
 {
-    Platform::current()->currentThread()->scheduler()->removePendingNavigation();
+    Platform::current()->currentThread()->scheduler()->removePendingNavigation(m_frameType);
 
     if (!m_frame->page())
         return;
@@ -429,7 +430,7 @@ void NavigationScheduler::startTimer()
         return;
 
     WebScheduler* scheduler = Platform::current()->currentThread()->scheduler();
-    scheduler->addPendingNavigation();
+    scheduler->addPendingNavigation(m_frameType);
     scheduler->loadingTaskRunner()->postDelayedTask(
         BLINK_FROM_HERE, m_navigateTaskFactory->cancelAndCreate(), m_redirect->delay() * 1000.0);
 
@@ -439,7 +440,7 @@ void NavigationScheduler::startTimer()
 void NavigationScheduler::cancel()
 {
     if (m_navigateTaskFactory->isPending()) {
-        Platform::current()->currentThread()->scheduler()->removePendingNavigation();
+        Platform::current()->currentThread()->scheduler()->removePendingNavigation(m_frameType);
         InspectorInstrumentation::frameClearedScheduledNavigation(m_frame);
     }
     m_navigateTaskFactory->cancel();

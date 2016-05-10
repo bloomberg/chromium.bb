@@ -33,6 +33,7 @@
 
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
+#include "public/platform/WebScheduler.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
 #include "wtf/Noncopyable.h"
@@ -87,6 +88,7 @@ private:
     Member<LocalFrame> m_frame;
     OwnPtr<CancellableTaskFactory> m_navigateTaskFactory;
     Member<ScheduledNavigation> m_redirect;
+    WebScheduler::NavigatingFrameType m_frameType; // Exists because we can't deref m_frame in destructor.
 };
 
 class NavigationDisablerForBeforeUnload {

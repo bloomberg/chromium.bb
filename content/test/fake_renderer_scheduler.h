@@ -40,8 +40,10 @@ class FakeRendererScheduler : public scheduler::RendererScheduler {
   void DidAnimateForInputOnCompositorThread() override;
   void OnRendererBackgrounded() override;
   void OnRendererForegrounded() override;
-  void AddPendingNavigation() override;
-  void RemovePendingNavigation() override;
+  void AddPendingNavigation(
+      blink::WebScheduler::NavigatingFrameType type) override;
+  void RemovePendingNavigation(
+      blink::WebScheduler::NavigatingFrameType type) override;
   void OnNavigationStarted() override;
   bool IsHighPriorityWorkAnticipated() override;
   bool CanExceedIdleDeadlineIfRequired() const override;

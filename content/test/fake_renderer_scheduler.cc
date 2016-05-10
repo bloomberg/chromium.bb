@@ -86,10 +86,12 @@ void FakeRendererScheduler::OnRendererBackgrounded() {
 void FakeRendererScheduler::OnRendererForegrounded() {
 }
 
-void FakeRendererScheduler::AddPendingNavigation() {
+void FakeRendererScheduler::AddPendingNavigation(
+    blink::WebScheduler::NavigatingFrameType type) {
 }
 
-void FakeRendererScheduler::RemovePendingNavigation() {
+void FakeRendererScheduler::RemovePendingNavigation(
+    blink::WebScheduler::NavigatingFrameType type) {
 }
 
 void FakeRendererScheduler::OnNavigationStarted() {

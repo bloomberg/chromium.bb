@@ -79,12 +79,17 @@ public:
     // if the suspension count is zero and the current scheduler policy allows it.
     virtual void resumeTimerQueue() = 0;
 
+    enum class NavigatingFrameType {
+        kMainFrame,
+        kChildFrame
+    };
+
     // Tells the scheduler that a navigation task is pending.
     // TODO(alexclarke): Long term should this be a task trait?
-    virtual void addPendingNavigation() = 0;
+    virtual void addPendingNavigation(NavigatingFrameType) = 0;
 
     // Tells the scheduler that a navigation task is no longer pending.
-    virtual void removePendingNavigation() = 0;
+    virtual void removePendingNavigation(NavigatingFrameType) = 0;
 
     // Tells the scheduler that an expected navigation was started.
     virtual void onNavigationStarted() = 0;

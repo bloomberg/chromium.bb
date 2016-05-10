@@ -13,6 +13,7 @@
 #include "components/scheduler/child/single_thread_idle_task_runner.h"
 #include "components/scheduler/renderer/render_widget_scheduling_state.h"
 #include "components/scheduler/scheduler_export.h"
+#include "third_party/WebKit/public/platform/WebScheduler.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 
 namespace base {
@@ -128,14 +129,17 @@ class SCHEDULER_EXPORT RendererScheduler : public ChildScheduler {
   // Must be called on the main thread.
   virtual void OnRendererForegrounded() = 0;
 
-  // Tells the scheduler that a navigation task is pending. While any navigation
-  // tasks are pending, the scheduler will ensure that loading tasks are not
-  // blocked even if they are expensive. Must be called on the main thread.
-  virtual void AddPendingNavigation() = 0;
+  // Tells the scheduler that a navigation task is pending. While any main-frame
+  // navigation tasks are pending, the scheduler will ensure that loading tasks
+  // are not blocked even if they are expensive. Must be called on the main
+  // thread.
+  virtual void AddPendingNavigation(
+      blink::WebScheduler::NavigatingFrameType type) = 0;
 
   // Tells the scheduler that a navigation task is no longer pending.
   // Must be called on the main thread.
-  virtual void RemovePendingNavigation() = 0;
+  virtual void RemovePendingNavigation(
+      blink::WebScheduler::NavigatingFrameType type) = 0;
 
   // Tells the scheduler that a navigation has started.  The scheduler will
   // prioritize loading tasks for a short duration afterwards.

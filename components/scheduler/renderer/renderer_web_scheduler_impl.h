@@ -22,8 +22,6 @@ class SCHEDULER_EXPORT RendererWebSchedulerImpl : public WebSchedulerImpl {
   void resumeTimerQueue() override;
   std::unique_ptr<blink::WebViewScheduler> createWebViewScheduler(
       blink::WebView* web_view) override;
-  void addPendingNavigation() override;
-  void removePendingNavigation() override;
   void onNavigationStarted() override;
 
  private:

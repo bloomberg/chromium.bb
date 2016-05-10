@@ -44,8 +44,10 @@ class SCHEDULER_EXPORT WebSchedulerImpl : public blink::WebScheduler {
       blink::WebView*) override;
   void suspendTimerQueue() override {}
   void resumeTimerQueue() override {}
-  void addPendingNavigation() override {}
-  void removePendingNavigation() override {}
+  void addPendingNavigation(
+      blink::WebScheduler::NavigatingFrameType type) override {}
+  void removePendingNavigation(
+      blink::WebScheduler::NavigatingFrameType type) override {}
   void onNavigationStarted() override {}
 
  private:
