@@ -4,6 +4,7 @@
 
 #include "components/exo/wayland/server.h"
 
+#include <alpha-compositing-unstable-v1-server-protocol.h>
 #include <grp.h>
 #include <linux/input.h>
 #include <scaler-server-protocol.h>
@@ -111,6 +112,10 @@ DEFINE_WINDOW_PROPERTY_KEY(bool, kSurfaceHasViewportKey, false);
 // A property key containing a boolean set to true if a security object is
 // associated with window.
 DEFINE_WINDOW_PROPERTY_KEY(bool, kSurfaceHasSecurityKey, false);
+
+// A property key containing a boolean set to true if a blending object is
+// associated with window.
+DEFINE_WINDOW_PROPERTY_KEY(bool, kSurfaceHasBlendingKey, false);
 
 ////////////////////////////////////////////////////////////////////////////////
 // wl_buffer_interface:
@@ -1844,6 +1849,10 @@ void bind_seat(wl_client* client, void* data, uint32_t version, uint32_t id) {
 ////////////////////////////////////////////////////////////////////////////////
 // wl_viewport_interface:
 
+// Implements the viewport interface to a Surface. The "viewport"-state is set
+// to null upon destruction. A window property will be set during the lifetime
+// of this class to prevent multiple instances from being created for the same
+// Surface.
 class Viewport : public SurfaceObserver {
  public:
   explicit Viewport(Surface* surface) : surface_(surface) {
@@ -1963,6 +1972,10 @@ void bind_scaler(wl_client* client, void* data, uint32_t version, uint32_t id) {
 ////////////////////////////////////////////////////////////////////////////////
 // security_interface:
 
+// Implements the security interface to a Surface. The "only visible on secure
+// output"-state is set to false upon destruction. A window property will be set
+// during the lifetime of this class to prevent multiple instances from being
+// created for the same Surface.
 class Security : public SurfaceObserver {
  public:
   explicit Security(Surface* surface) : surface_(surface) {
@@ -2045,6 +2058,124 @@ void bind_secure_output(wl_client* client,
                                  nullptr);
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// blending_interface:
+
+// Implements the blending interface to a Surface. The "blend mode" and
+// "alpha"-state is set to SrcOver and 1 upon destruction. A window property
+// will be set during the lifetime of this class to prevent multiple instances
+// from being created for the same Surface.
+class Blending : public SurfaceObserver {
+ public:
+  explicit Blending(Surface* surface) : surface_(surface) {
+    surface_->AddSurfaceObserver(this);
+    surface_->SetProperty(kSurfaceHasBlendingKey, true);
+  }
+  ~Blending() override {
+    if (surface_) {
+      surface_->RemoveSurfaceObserver(this);
+      surface_->SetBlendMode(SkXfermode::kSrcOver_Mode);
+      surface_->SetAlpha(1.0f);
+      surface_->SetProperty(kSurfaceHasBlendingKey, false);
+    }
+  }
+
+  void SetBlendMode(SkXfermode::Mode blend_mode) {
+    if (surface_)
+      surface_->SetBlendMode(blend_mode);
+  }
+
+  void SetAlpha(float value) {
+    if (surface_)
+      surface_->SetAlpha(value);
+  }
+
+  // Overridden from SurfaceObserver:
+  void OnSurfaceDestroying(Surface* surface) override {
+    surface->RemoveSurfaceObserver(this);
+    surface_ = nullptr;
+  }
+
+ private:
+  Surface* surface_;
+
+  DISALLOW_COPY_AND_ASSIGN(Blending);
+};
+
+void blending_destroy(wl_client* client, wl_resource* resource) {
+  wl_resource_destroy(resource);
+}
+
+void blending_set_blending(wl_client* client,
+                           wl_resource* resource,
+                           uint32_t equation) {
+  switch (equation) {
+    case ZWP_BLENDING_V1_BLENDING_EQUATION_NONE:
+      GetUserDataAs<Blending>(resource)->SetBlendMode(SkXfermode::kSrc_Mode);
+      break;
+    case ZWP_BLENDING_V1_BLENDING_EQUATION_PREMULT:
+      GetUserDataAs<Blending>(resource)->SetBlendMode(
+          SkXfermode::kSrcOver_Mode);
+      break;
+    case ZWP_BLENDING_V1_BLENDING_EQUATION_COVERAGE:
+      NOTIMPLEMENTED();
+      break;
+    default:
+      DLOG(WARNING) << "Unsupported blending equation: " << equation;
+      break;
+  }
+}
+
+void blending_set_alpha(wl_client* client,
+                        wl_resource* resource,
+                        wl_fixed_t alpha) {
+  GetUserDataAs<Blending>(resource)->SetAlpha(wl_fixed_to_double(alpha));
+}
+
+const struct zwp_blending_v1_interface blending_implementation = {
+    blending_destroy, blending_set_blending, blending_set_alpha};
+
+////////////////////////////////////////////////////////////////////////////////
+// alpha_compositing_interface:
+
+void alpha_compositing_destroy(wl_client* client, wl_resource* resource) {
+  wl_resource_destroy(resource);
+}
+
+void alpha_compositing_get_blending(wl_client* client,
+                                    wl_resource* resource,
+                                    uint32_t id,
+                                    wl_resource* surface_resource) {
+  Surface* surface = GetUserDataAs<Surface>(surface_resource);
+  if (surface->GetProperty(kSurfaceHasBlendingKey)) {
+    wl_resource_post_error(resource,
+                           ZWP_ALPHA_COMPOSITING_V1_ERROR_BLENDING_EXISTS,
+                           "a blending object for that surface already exists");
+    return;
+  }
+
+  wl_resource* blending_resource =
+      wl_resource_create(client, &zwp_blending_v1_interface, 1, id);
+
+  SetImplementation(blending_resource, &blending_implementation,
+                    base::WrapUnique(new Blending(surface)));
+}
+
+const struct zwp_alpha_compositing_v1_interface
+    alpha_compositing_implementation = {alpha_compositing_destroy,
+                                        alpha_compositing_get_blending};
+
+void bind_alpha_compositing(wl_client* client,
+                            void* data,
+                            uint32_t version,
+                            uint32_t id) {
+  wl_resource* resource =
+      wl_resource_create(client, &zwp_alpha_compositing_v1_interface, 1, id);
+
+  wl_resource_set_implementation(resource, &alpha_compositing_implementation,
+                                 data, nullptr);
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2077,6 +2208,8 @@ Server::Server(Display* display)
                    display_, bind_scaler);
   wl_global_create(wl_display_.get(), &zwp_secure_output_v1_interface, 1,
                    display_, bind_secure_output);
+  wl_global_create(wl_display_.get(), &zwp_alpha_compositing_v1_interface, 1,
+                   display_, bind_alpha_compositing);
 }
 
 Server::~Server() {}

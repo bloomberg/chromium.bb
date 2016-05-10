@@ -14,6 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "third_party/skia/include/core/SkRegion.h"
+#include "third_party/skia/include/core/SkXfermode.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/compositor/compositor_observer.h"
@@ -87,6 +88,12 @@ class Surface : public aura::Window,
   // This sets the only visible on secure output flag, preventing it from
   // appearing in screenshots or from being viewed on non-secure displays.
   void SetOnlyVisibleOnSecureOutput(bool only_visible_on_secure_output);
+
+  // This sets the blend mode that will be used when drawing the surface.
+  void SetBlendMode(SkXfermode::Mode blend_mode);
+
+  // This sets the alpha value that will be applied to the whole surface.
+  void SetAlpha(float alpha);
 
   // Surface state (damage regions, attached buffers, etc.) is double-buffered.
   // A Commit() call atomically applies all pending state, replacing the
@@ -197,6 +204,12 @@ class Surface : public aura::Window,
 
   // The secure output visibility state to take effect when Commit() is called.
   bool pending_only_visible_on_secure_output_;
+
+  // The blend mode state to take effect when Commit() is called.
+  SkXfermode::Mode pending_blend_mode_;
+
+  // The alpha state to take effect when Commit() is called.
+  float pending_alpha_;
 
   // The buffer that is currently set as content of surface.
   base::WeakPtr<Buffer> current_buffer_;

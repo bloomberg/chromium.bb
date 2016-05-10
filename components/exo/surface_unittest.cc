@@ -153,6 +153,30 @@ TEST_F(SurfaceTest, SetOnlyVisibleOnSecureOutput) {
   release_callback->Run(gpu::SyncToken(), false);
 }
 
+TEST_F(SurfaceTest, SetBlendMode) {
+  gfx::Size buffer_size(1, 1);
+  std::unique_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  std::unique_ptr<Surface> surface(new Surface);
+
+  surface->Attach(buffer.get());
+  surface->SetBlendMode(SkXfermode::kSrc_Mode);
+  surface->Commit();
+
+  EXPECT_TRUE(surface->layer()->fills_bounds_opaquely());
+}
+
+TEST_F(SurfaceTest, SetAlpha) {
+  gfx::Size buffer_size(1, 1);
+  std::unique_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  std::unique_ptr<Surface> surface(new Surface);
+
+  surface->Attach(buffer.get());
+  surface->SetAlpha(0.5f);
+  surface->Commit();
+}
+
 TEST_F(SurfaceTest, Commit) {
   std::unique_ptr<Surface> surface(new Surface);
 

@@ -566,6 +566,11 @@ bool Layer::TextureFlipped() const {
   return texture_layer_->flipped();
 }
 
+void Layer::SetTextureAlpha(float alpha) {
+  DCHECK(texture_layer_.get());
+  texture_layer_->SetVertexOpacity(alpha, alpha, alpha, alpha);
+}
+
 void Layer::SetShowSurface(
     cc::SurfaceId surface_id,
     const cc::SurfaceLayer::SatisfyCallback& satisfy_callback,

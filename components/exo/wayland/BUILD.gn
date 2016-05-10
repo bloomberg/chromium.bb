@@ -34,6 +34,7 @@ source_set("wayland") {
     "//ipc:ipc",
     "//skia",
     "//third_party/wayland:wayland_server",
+    "//third_party/wayland-protocols:alpha_compositing_protocol",
     "//third_party/wayland-protocols:scaler_protocol",
     "//third_party/wayland-protocols:secure_output_protocol",
     "//third_party/wayland-protocols:xdg_shell_protocol",

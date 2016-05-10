@@ -136,6 +136,8 @@ Surface::Surface()
       pending_input_region_(SkIRect::MakeLargest()),
       pending_buffer_scale_(1.0f),
       pending_only_visible_on_secure_output_(false),
+      pending_blend_mode_(SkXfermode::kSrcOver_Mode),
+      pending_alpha_(1.0f),
       input_region_(SkIRect::MakeLargest()),
       needs_commit_surface_hierarchy_(false),
       update_contents_after_successful_compositing_(false),
@@ -314,6 +316,18 @@ void Surface::SetOnlyVisibleOnSecureOutput(bool only_visible_on_secure_output) {
   pending_only_visible_on_secure_output_ = only_visible_on_secure_output;
 }
 
+void Surface::SetBlendMode(SkXfermode::Mode blend_mode) {
+  TRACE_EVENT1("exo", "Surface::SetBlendMode", "blend_mode", blend_mode);
+
+  pending_blend_mode_ = blend_mode;
+}
+
+void Surface::SetAlpha(float alpha) {
+  TRACE_EVENT1("exo", "Surface::SetAlpha", "alpha", alpha);
+
+  pending_alpha_ = alpha;
+}
+
 void Surface::Commit() {
   TRACE_EVENT0("exo", "Surface::Commit");
 
@@ -363,8 +377,6 @@ void Surface::CommitSurfaceHierarchy() {
                                  contents_size);
       layer()->SetTextureFlipped(false);
       layer()->SetBounds(gfx::Rect(layer()->bounds().origin(), contents_size));
-      layer()->SetFillsBoundsOpaquely(pending_opaque_region_.contains(
-          gfx::RectToSkIRect(gfx::Rect(contents_size))));
     } else {
       // Show solid color content if no buffer is attached or we failed
       // to produce a texture mailbox for the currently attached buffer.
@@ -385,6 +397,16 @@ void Surface::CommitSurfaceHierarchy() {
 
   // Move pending frame callbacks to the end of |frame_callbacks_|.
   frame_callbacks_.splice(frame_callbacks_.end(), pending_frame_callbacks_);
+
+  // Update alpha compositing properties.
+  // TODO(reveman): Use a more reliable way to force blending off than setting
+  // fills-bounds-opaquely.
+  layer()->SetFillsBoundsOpaquely(
+      pending_blend_mode_ == SkXfermode::kSrc_Mode ||
+      pending_opaque_region_.contains(
+          gfx::RectToSkIRect(gfx::Rect(layer()->size()))));
+  if (layer()->has_external_content())
+    layer()->SetTextureAlpha(pending_alpha_);
 
   // Synchronize window hierarchy. This will position and update the stacking
   // order of all sub-surfaces after committing all pending state of sub-surface

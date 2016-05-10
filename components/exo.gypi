@@ -71,6 +71,7 @@
             '../base/base.gyp:base',
             '../ipc/ipc.gyp:ipc',
             '../skia/skia.gyp:skia',
+            '../third_party/wayland-protocols/wayland-protocols.gyp:alpha_compositing_protocol',
             '../third_party/wayland-protocols/wayland-protocols.gyp:scaler_protocol',
             '../third_party/wayland-protocols/wayland-protocols.gyp:secure_output_protocol',
             '../third_party/wayland-protocols/wayland-protocols.gyp:xdg_shell_protocol',
