@@ -18,12 +18,18 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/drive/file_system_util.h"
+#include "chrome/browser/chromeos/file_manager/open_util.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
+#include "chrome/browser/notifications/notifier_state_tracker.h"
+#include "chrome/browser/notifications/notifier_state_tracker_factory.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/login/login_state.h"
+#include "components/drive/chromeos/file_system_interface.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/user_metrics.h"
@@ -35,22 +41,11 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/strings/grit/ui_strings.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/drive/file_system_util.h"
-#include "chrome/browser/chromeos/file_manager/open_util.h"
-#include "chrome/browser/notifications/notifier_state_tracker.h"
-#include "chrome/browser/notifications/notifier_state_tracker_factory.h"
-#include "chromeos/login/login_state.h"
-#include "components/drive/chromeos/file_system_interface.h"
-#endif
-
 namespace {
 
 const char kNotificationId[] = "screenshot";
 
-#if defined(OS_CHROMEOS)
 const char kNotificationOriginUrl[] = "chrome://screenshot";
-#endif
 
 const char kImageClipboardFormatPrefix[] = "<img src='data:image/png;base64,";
 const char kImageClipboardFormatSuffix[] = "'>";
@@ -89,7 +84,6 @@ void ReadFileAndCopyToClipboardLocal(const base::FilePath& screenshot_path) {
       base::Bind(CopyScreenshotToClipboard, png_data));
 }
 
-#if defined(OS_CHROMEOS)
 void ReadFileAndCopyToClipboardDrive(
     drive::FileError error,
     const base::FilePath& file_path,
@@ -102,7 +96,6 @@ void ReadFileAndCopyToClipboardDrive(
   content::BrowserThread::GetBlockingPool()->PostTask(
       FROM_HERE, base::Bind(&ReadFileAndCopyToClipboardLocal, file_path));
 }
-#endif
 
 // Delegate for a notification. This class has two roles: to implement callback
 // methods for notification, and to provide an identity of the associated
@@ -125,9 +118,8 @@ class ScreenshotGrabberNotificationDelegate : public NotificationDelegate {
   void ButtonClick(int button_index) override {
     DCHECK(success_ && button_index == 0);
 
-// To avoid keeping the screenshot image on memory, it will re-read the
-// screenshot file and copy it to the clipboard.
-#if defined(OS_CHROMEOS)
+    // To avoid keeping the screenshot image on memory, it will re-read the
+    // screenshot file and copy it to the clipboard.
     if (drive::util::IsUnderDriveMountPoint(screenshot_path_)) {
       drive::FileSystemInterface* file_system =
           drive::util::GetFileSystemByProfile(profile_);
@@ -135,7 +127,7 @@ class ScreenshotGrabberNotificationDelegate : public NotificationDelegate {
                            base::Bind(&ReadFileAndCopyToClipboardDrive));
       return;
     }
-#endif
+
     content::BrowserThread::GetBlockingPool()->PostTask(
         FROM_HERE,
         base::Bind(&ReadFileAndCopyToClipboardLocal, screenshot_path_));
@@ -153,7 +145,6 @@ class ScreenshotGrabberNotificationDelegate : public NotificationDelegate {
   DISALLOW_COPY_AND_ASSIGN(ScreenshotGrabberNotificationDelegate);
 };
 
-#if defined(OS_CHROMEOS)
 int GetScreenshotNotificationTitle(
     ui::ScreenshotGrabberObserver::Result screenshot_result) {
   switch (screenshot_result) {
@@ -208,7 +199,6 @@ void EnsureDirectoryExistsCallback(
                    base::FilePath()));
   }
 }
-#endif
 
 bool ScreenshotsDisabled() {
   return g_browser_process->local_state()->GetBoolean(
@@ -216,23 +206,14 @@ bool ScreenshotsDisabled() {
 }
 
 bool ShouldUse24HourClock() {
-#if defined(OS_CHROMEOS)
   Profile* profile = ProfileManager::GetActiveUserProfile();
-  if (profile) {
+  if (profile)
     return profile->GetPrefs()->GetBoolean(prefs::kUse24HourClock);
-  }
-#endif
   return base::GetHourClockType() == base::k24HourClock;
 }
 
 bool GetScreenshotDirectory(base::FilePath* directory) {
-  bool is_logged_in = true;
-
-#if defined(OS_CHROMEOS)
-  is_logged_in = chromeos::LoginState::Get()->IsUserLoggedIn();
-#endif
-
-  if (is_logged_in) {
+  if (chromeos::LoginState::Get()->IsUserLoggedIn()) {
     DownloadPrefs* download_prefs = DownloadPrefs::FromBrowserContext(
         ProfileManager::GetActiveUserProfile());
     *directory = download_prefs->DownloadPath();
@@ -382,7 +363,6 @@ void ChromeScreenshotGrabber::PrepareFileAndRunOnBlockingPool(
     const base::FilePath& path,
     scoped_refptr<base::TaskRunner> blocking_task_runner,
     const FileCallback& callback) {
-#if defined(OS_CHROMEOS)
   Profile* profile = ProfileManager::GetActiveUserProfile();
   if (drive::util::IsUnderDriveMountPoint(path)) {
     drive::util::EnsureDirectoryExists(
@@ -390,7 +370,6 @@ void ChromeScreenshotGrabber::PrepareFileAndRunOnBlockingPool(
         base::Bind(&EnsureDirectoryExistsCallback, callback, profile, path));
     return;
   }
-#endif
   ui::ScreenshotGrabberDelegate::PrepareFileAndRunOnBlockingPool(
       path, blocking_task_runner, callback);
 }
@@ -398,7 +377,6 @@ void ChromeScreenshotGrabber::PrepareFileAndRunOnBlockingPool(
 void ChromeScreenshotGrabber::OnScreenshotCompleted(
     ui::ScreenshotGrabberObserver::Result result,
     const base::FilePath& screenshot_path) {
-#if defined(OS_CHROMEOS)
   // Do not show a notification that a screenshot was taken while no user is
   // logged in, since it is confusing for the user to get a message about it
   // after he logs in (crbug.com/235217).
@@ -416,10 +394,8 @@ void ChromeScreenshotGrabber::OnScreenshotCompleted(
     g_browser_process->notification_ui_manager()->Add(*notification,
                                                       GetProfile());
   }
-#endif
 }
 
-#if defined(OS_CHROMEOS)
 Notification* ChromeScreenshotGrabber::CreateNotification(
     ui::ScreenshotGrabberObserver::Result screenshot_result,
     const base::FilePath& screenshot_path) {
@@ -451,7 +427,6 @@ Notification* ChromeScreenshotGrabber::CreateNotification(
       new ScreenshotGrabberNotificationDelegate(success, GetProfile(),
                                                 screenshot_path));
 }
-#endif
 
 void ChromeScreenshotGrabber::SetProfileForTest(Profile* profile) {
   profile_for_test_ = profile;

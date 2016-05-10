@@ -17,7 +17,6 @@
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/native_desktop_media_list.h"
 #include "chrome/browser/media/tab_desktop_media_list.h"
-#include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/common/channel_info.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/render_frame_host.h"
@@ -146,10 +145,8 @@ bool DesktopCaptureChooseDesktopMediaFunctionBase::Execute(
     // Create a screens list.
     if (show_screens) {
 #if defined(USE_ASH)
-      if (chrome::IsNativeWindowInAsh(parent_window)) {
-        screen_list = base::WrapUnique(
-            new DesktopMediaListAsh(DesktopMediaListAsh::SCREENS));
-      }
+      screen_list = base::WrapUnique(
+          new DesktopMediaListAsh(DesktopMediaListAsh::SCREENS));
 #endif
       if (!screen_list) {
         webrtc::DesktopCaptureOptions options =
@@ -166,10 +163,8 @@ bool DesktopCaptureChooseDesktopMediaFunctionBase::Execute(
     // Create a windows list.
     if (show_windows) {
 #if defined(USE_ASH)
-      if (chrome::IsNativeWindowInAsh(parent_window)) {
-        window_list = base::WrapUnique(
-            new DesktopMediaListAsh(DesktopMediaListAsh::WINDOWS));
-      }
+      window_list = base::WrapUnique(
+          new DesktopMediaListAsh(DesktopMediaListAsh::WINDOWS));
 #endif
       if (!window_list) {
         webrtc::DesktopCaptureOptions options =

@@ -50,11 +50,9 @@ class ChromeScreenshotGrabber : public ash::ScreenshotDelegate,
  private:
   friend class ash::test::ChromeScreenshotGrabberTest;
 
-#if defined(OS_CHROMEOS)
   Notification* CreateNotification(
       ui::ScreenshotGrabberObserver::Result screenshot_result,
       const base::FilePath& screenshot_path);
-#endif
 
   void SetProfileForTest(Profile* profile);
   Profile* GetProfile();

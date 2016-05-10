@@ -1723,7 +1723,6 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, DISABLED_DragAndDrop) {
   generator.ReleaseLeftButton();
 }
 
-#if !defined(OS_WIN)
 // Used to test drag & drop an item between app list and shelf with multi
 // display environment.
 class ShelfAppBrowserTestWithMultiMonitor
@@ -1832,7 +1831,6 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTestWithMultiMonitor,
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(2, model_->item_count());
 }
-#endif
 
 // Do tests for removal of items from the shelf by dragging.
 // Disabled due to flake: http://crbug.com/448482

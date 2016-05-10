@@ -17,45 +17,16 @@
 namespace chrome {
 
 bool ShouldOpenAshOnStartup() {
-#if defined(OS_CHROMEOS)
   return !IsRunningInMash();
-#else
-  return false;
-#endif
 }
 
 bool IsRunningInMash() {
-#if defined(OS_CHROMEOS) && defined(MOJO_SHELL_CLIENT)
+#if defined(MOJO_SHELL_CLIENT)
   return content::MojoShellConnection::Get() &&
          content::MojoShellConnection::Get()->UsingExternalShell();
 #else
   return false;
 #endif
-}
-
-bool IsNativeViewInAsh(gfx::NativeView native_view) {
-#if defined(OS_CHROMEOS)
-  // Optimization. There is only ash on ChromeOS.
-  return true;
-#endif
-
-  if (!ash::Shell::HasInstance())
-    return false;
-
-  aura::Window::Windows root_windows =
-      ash::Shell::GetInstance()->GetAllRootWindows();
-
-  for (aura::Window::Windows::const_iterator it = root_windows.begin();
-       it != root_windows.end(); ++it) {
-    if ((*it)->Contains(native_view))
-      return true;
-  }
-
-  return false;
-}
-
-bool IsNativeWindowInAsh(gfx::NativeWindow native_window) {
-  return IsNativeViewInAsh(native_window);
 }
 
 bool IsAcceleratorDeprecated(const ui::Accelerator& accelerator) {

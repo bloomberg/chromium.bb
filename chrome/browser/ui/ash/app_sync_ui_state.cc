@@ -13,12 +13,9 @@
 #include "chrome/browser/ui/ash/app_sync_ui_state_observer.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/prefs/pref_service.h"
+#include "components/user_manager/user_manager.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
-
-#if defined(OS_CHROMEOS)
-#include "components/user_manager/user_manager.h"
-#endif
 
 namespace {
 
@@ -34,7 +31,6 @@ AppSyncUIState* AppSyncUIState::Get(Profile* profile) {
 
 // static
 bool AppSyncUIState::ShouldObserveAppSyncForProfile(Profile* profile) {
-#if defined(OS_CHROMEOS)
   if (user_manager::UserManager::Get()->IsLoggedInAsGuest())
     return false;
 
@@ -45,9 +41,6 @@ bool AppSyncUIState::ShouldObserveAppSyncForProfile(Profile* profile) {
     return false;
 
   return profile->IsNewProfile();
-#else
-  return false;
-#endif
 }
 
 AppSyncUIState::AppSyncUIState(Profile* profile)

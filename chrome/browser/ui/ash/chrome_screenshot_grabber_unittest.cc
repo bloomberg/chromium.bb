@@ -20,13 +20,10 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "chromeos/login/login_state.h"
 #include "content/public/test/test_utils.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/snapshot/screenshot_grabber.h"
-
-#if defined(OS_CHROMEOS)
-#include "chromeos/login/login_state.h"
-#endif
 
 namespace ash {
 namespace test {
@@ -104,12 +101,11 @@ class ChromeScreenshotGrabberTest : public AshTestBase,
 };
 
 TEST_F(ChromeScreenshotGrabberTest, TakeScreenshot) {
-#if defined(OS_CHROMEOS)
   // Note that within the test framework the LoginState object will always
   // claim that the user did log in.
   ASSERT_FALSE(chromeos::LoginState::IsInitialized());
   chromeos::LoginState::Initialize();
-#endif
+
   base::ScopedTempDir directory;
   ASSERT_TRUE(directory.CreateUniqueTempDir());
   EXPECT_TRUE(chrome_screenshot_grabber()->CanTakeScreenshot());
@@ -122,22 +118,18 @@ TEST_F(ChromeScreenshotGrabberTest, TakeScreenshot) {
 
   Wait();
 
-#if defined(OS_CHROMEOS)
   // Screenshot notifications on Windows not yet turned on.
   EXPECT_TRUE(g_browser_process->notification_ui_manager()->FindById(
                   std::string("screenshot"),
                   NotificationUIManager::GetProfileID(profile_)) != NULL);
   g_browser_process->notification_ui_manager()->CancelAll();
-#endif
 
   EXPECT_EQ(ScreenshotGrabberObserver::SCREENSHOT_SUCCESS, screenshot_result_);
 
   if (ScreenshotGrabberObserver::SCREENSHOT_SUCCESS == screenshot_result_)
     EXPECT_TRUE(base::PathExists(screenshot_path_));
 
-#if defined(OS_CHROMEOS)
   chromeos::LoginState::Shutdown();
-#endif
 }
 
 }  // namespace test

@@ -525,7 +525,7 @@ source_set("ui") {
                              ".",
                              "//chrome")
     }
-    if (!is_mac) {
+    if (!is_mac && !use_ash) {
       sources +=
           rebase_path(gypi_values.chrome_browser_ui_app_list_views_sources,
                       ".",

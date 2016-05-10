@@ -61,7 +61,6 @@
 #include "ash/wm/common/window_state.h"
 #include "ash/wm/window_state_aura.h"
 #include "chrome/browser/ui/ash/ash_init.h"
-#include "chrome/browser/ui/ash/ash_util.h"
 #endif
 
 // Helpers --------------------------------------------------------------------
@@ -307,8 +306,7 @@ gfx::ImageSkia* ChromeViewsDelegate::GetDefaultWindowIcon() const {
 #if defined(USE_ASH)
 views::NonClientFrameView* ChromeViewsDelegate::CreateDefaultNonClientFrameView(
     views::Widget* widget) {
-  return chrome::IsNativeViewInAsh(widget->GetNativeView()) ?
-      ash::Shell::GetInstance()->CreateDefaultNonClientFrameView(widget) : NULL;
+  return ash::Shell::GetInstance()->CreateDefaultNonClientFrameView(widget);
 }
 #endif
 

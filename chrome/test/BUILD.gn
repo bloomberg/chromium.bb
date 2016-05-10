@@ -2174,11 +2174,6 @@ test("unit_tests") {
             chrome_tests_unit_gypi_values.chrome_unit_tests_app_list_sources,
             ".",
             "//chrome")
-    if (is_mac) {
-      # This assumes the AppList is views-based but Mac only links browser parts
-      # for the Cocoa implementation."
-      sources -= [ "../browser/ui/app_list/app_list_shower_views_unittest.cc" ]
-    }
     deps += [ "//ui/app_list:test_support" ]
   }
   if (enable_app_list && is_chromeos) {

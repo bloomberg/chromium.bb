@@ -1605,7 +1605,6 @@
       'browser/ui/app_list/app_list_positioner_unittest.cc',
       'browser/ui/app_list/app_list_service_mac_unittest.mm',
       'browser/ui/app_list/app_list_service_unittest.cc',
-      'browser/ui/app_list/app_list_shower_views_unittest.cc',
       'browser/ui/app_list/app_list_test_util.cc',
       'browser/ui/app_list/app_list_test_util.h',
       'browser/ui/app_list/extension_app_model_builder_unittest.cc',

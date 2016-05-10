@@ -6,18 +6,13 @@
 
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "content/public/browser/browser_context.h"
-
-#if defined(OS_CHROMEOS)
 #include "components/user_manager/user_manager.h"
-#endif
+#include "content/public/browser/browser_context.h"
 
 ChromeShellContentState::ChromeShellContentState() {}
 ChromeShellContentState::~ChromeShellContentState() {}
 
 content::BrowserContext* ChromeShellContentState::GetActiveBrowserContext() {
-#if defined(OS_CHROMEOS)
   DCHECK(user_manager::UserManager::Get()->GetLoggedInUsers().size());
-#endif
   return ProfileManager::GetActiveUserProfile();
 }

@@ -17,15 +17,13 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
-namespace keyboard {
-class KeyboardUI;
-}
-
-#if defined(OS_CHROMEOS)
 namespace chromeos {
 class DisplayConfigurationObserver;
 }
-#endif
+
+namespace keyboard {
+class KeyboardUI;
+}
 
 class ChromeLauncherController;
 
@@ -90,10 +88,8 @@ class ChromeShellDelegate : public ash::ShellDelegate,
   // Proxies events from chrome/browser to ash::UserMetricsRecorder.
   std::unique_ptr<ChromeUserMetricsRecorder> chrome_user_metrics_recorder_;
 
-#if defined(OS_CHROMEOS)
   std::unique_ptr<chromeos::DisplayConfigurationObserver>
       display_configuration_observer_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(ChromeShellDelegate);
 };

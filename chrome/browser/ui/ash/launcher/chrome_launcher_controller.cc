@@ -25,6 +25,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/extension_app_icon_loader.h"
@@ -34,20 +35,27 @@
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_icon_loader.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/ash/app_sync_ui_state.h"
 #include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
+#include "chrome/browser/ui/ash/chrome_shell_delegate.h"
 #include "chrome/browser/ui/ash/launcher/app_shortcut_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/app_window_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/app_window_launcher_item_controller.h"
+#include "chrome/browser/ui/ash/launcher/arc_app_window_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/browser_shortcut_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/browser_status_monitor.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item_browser.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item_tab.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_types.h"
+#include "chrome/browser/ui/ash/launcher/launcher_arc_app_updater.h"
 #include "chrome/browser/ui/ash/launcher/launcher_controller_helper.h"
 #include "chrome/browser/ui/ash/launcher/launcher_extension_app_updater.h"
 #include "chrome/browser/ui/ash/launcher/launcher_item_controller.h"
+#include "chrome/browser/ui/ash/launcher/multi_profile_app_window_launcher_controller.h"
+#include "chrome/browser/ui/ash/launcher/multi_profile_browser_status_monitor.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
 #include "chrome/browser/ui/browser.h"
@@ -68,6 +76,7 @@
 #include "components/signin/core/account_id/account_id.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/syncable_prefs/pref_service_syncable.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_prefs.h"
@@ -89,18 +98,6 @@
 #include "ui/keyboard/keyboard_util.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/wm/core/window_animations.h"
-
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_icon_loader.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
-#include "chrome/browser/ui/ash/chrome_shell_delegate.h"
-#include "chrome/browser/ui/ash/launcher/arc_app_window_launcher_controller.h"
-#include "chrome/browser/ui/ash/launcher/launcher_arc_app_updater.h"
-#include "chrome/browser/ui/ash/launcher/multi_profile_app_window_launcher_controller.h"
-#include "chrome/browser/ui/ash/launcher/multi_profile_browser_status_monitor.h"
-#include "components/user_manager/user_manager.h"
-#endif
 
 using extensions::Extension;
 using extensions::UnloadedExtensionInfo;
@@ -184,9 +181,7 @@ bool IsAppForUserPinned(const std::string& app_id,
 }
 
 const char* const kPinProhibitedExtensionIds[] = {
-#if defined(OS_CHROMEOS)
     "cnbgggchhmkkdmeppjobngjoejnihlei",  // Arc Support
-#endif
 };
 
 const size_t kPinProhibitedExtensionIdsLength =
@@ -194,7 +189,6 @@ const size_t kPinProhibitedExtensionIdsLength =
 
 }  // namespace
 
-#if defined(OS_CHROMEOS)
 // A class to get events from ChromeOS when a user gets changed or added.
 class ChromeLauncherControllerUserSwitchObserver
     : public user_manager::UserManager::UserSessionStateObserver {
@@ -264,7 +258,6 @@ void ChromeLauncherControllerUserSwitchObserver::AddUser(Profile* profile) {
     chrome::MultiUserWindowManager::GetInstance()->AddUser(profile);
   controller_->AdditionalUserAddedToSession(profile->GetOriginalProfile());
 }
-#endif
 
 ChromeLauncherController::ChromeLauncherController(Profile* profile,
                                                    ash::ShelfModel* model)
@@ -296,7 +289,6 @@ ChromeLauncherController::ChromeLauncherController(Profile* profile,
   // here. If the instantiation fails, the manager is not needed.
   chrome::MultiUserWindowManager::CreateInstance();
 
-#if defined(OS_CHROMEOS)
   // On Chrome OS using multi profile we want to switch the content of the shelf
   // with a user change. Note that for unit tests the instance can be NULL.
   if (chrome::MultiUserWindowManager::GetMultiProfileMode() !=
@@ -327,15 +319,6 @@ ChromeLauncherController::ChromeLauncherController(Profile* profile,
   std::unique_ptr<AppWindowLauncherController> arc_app_window_controller;
   arc_app_window_controller.reset(new ArcAppWindowLauncherController(this));
   app_window_controllers_.push_back(std::move(arc_app_window_controller));
-#else
-  // Create our v1/v2 application / browser monitors which will inform the
-  // launcher of status changes.
-  browser_status_monitor_.reset(new BrowserStatusMonitor(this));
-  std::unique_ptr<AppWindowLauncherController> extension_app_window_controller;
-  extension_app_window_controller.reset(
-      new ExtensionAppWindowLauncherController(this));
-  app_window_controllers_.push_back(std::move(extension_app_window_controller));
-#endif
 
   // Right now ash::Shell isn't created for tests.
   // TODO(mukai): Allows it to observe display change and write tests.
@@ -398,11 +381,9 @@ void ChromeLauncherController::Init() {
   CreateBrowserShortcutLauncherItem();
   UpdateAppLaunchersFromPref();
 
-#if defined(OS_CHROMEOS)
   // TODO(sky): update unit test so that this test isn't necessary.
   if (ash::Shell::HasInstance())
     SetVirtualKeyboardBehaviorFromPrefs();
-#endif  // defined(OS_CHROMEOS)
 
   syncable_prefs::PrefServiceSyncable* prefs =
       PrefServiceSyncableFromProfile(profile_);
@@ -1030,9 +1011,8 @@ void ChromeLauncherController::ActiveUserChanged(
   // Update the user specific shell properties from the new user profile.
   UpdateAppLaunchersFromPref();
   SetShelfBehaviorsFromPrefs();
-#if defined(OS_CHROMEOS)
   SetVirtualKeyboardBehaviorFromPrefs();
-#endif  // defined(OS_CHROMEOS)
+
   // Restore the order of running, but unpinned applications for the activated
   // user.
   RestoreUnpinnedRunningApplicationOrder(user_email);
@@ -1347,10 +1327,8 @@ bool ChromeLauncherController::ShelfBoundsChangesProbablyWithUser(
 }
 
 void ChromeLauncherController::OnUserProfileReadyToSwitch(Profile* profile) {
-#if defined(OS_CHROMEOS)
   if (user_switch_observer_.get())
     user_switch_observer_->OnUserProfileReadyToSwitch(profile);
-#endif
 }
 
 void ChromeLauncherController::LauncherItemClosed(ash::ShelfID id) {
@@ -1598,7 +1576,6 @@ void ChromeLauncherController::SetShelfBehaviorsFromPrefs() {
   SetShelfAlignmentFromPrefs();
 }
 
-#if defined(OS_CHROMEOS)
 void ChromeLauncherController::SetVirtualKeyboardBehaviorFromPrefs() {
   const PrefService* service = profile_->GetPrefs();
   const bool was_enabled = keyboard::IsKeyboardEnabled();
@@ -1617,7 +1594,6 @@ void ChromeLauncherController::SetVirtualKeyboardBehaviorFromPrefs() {
   else if (is_enabled && !was_enabled)
     ash::Shell::GetInstance()->CreateKeyboard();
 }
-#endif  // defined(OS_CHROMEOS)
 
 ash::ShelfItemStatus ChromeLauncherController::GetAppState(
     const std::string& app_id) {
@@ -1845,11 +1821,9 @@ void ChromeLauncherController::AttachProfile(Profile* profile) {
           profile_, extension_misc::EXTENSION_ICON_SMALL, this));
   app_icon_loaders_.push_back(std::move(extension_app_icon_loader));
 
-#if defined(OS_CHROMEOS)
   std::unique_ptr<AppIconLoader> arc_app_icon_loader(new ArcAppIconLoader(
       profile_, extension_misc::EXTENSION_ICON_SMALL, this));
   app_icon_loaders_.push_back(std::move(arc_app_icon_loader));
-#endif
 
   pref_change_registrar_.Init(profile_->GetPrefs());
   pref_change_registrar_.Add(
@@ -1873,22 +1847,18 @@ void ChromeLauncherController::AttachProfile(Profile* profile) {
       prefs::kShelfPreferences,
       base::Bind(&ChromeLauncherController::SetShelfBehaviorsFromPrefs,
                  base::Unretained(this)));
-#if defined(OS_CHROMEOS)
   pref_change_registrar_.Add(
       prefs::kTouchVirtualKeyboardEnabled,
       base::Bind(&ChromeLauncherController::SetVirtualKeyboardBehaviorFromPrefs,
                  base::Unretained(this)));
-#endif  // defined(OS_CHROMEOS)
 
   std::unique_ptr<LauncherAppUpdater> extension_app_updater(
       new LauncherExtensionAppUpdater(this, profile_));
   app_updaters_.push_back(std::move(extension_app_updater));
 
-#if defined(OS_CHROMEOS)
   std::unique_ptr<LauncherAppUpdater> arc_app_updater(
       new LauncherArcAppUpdater(this, profile_));
   app_updaters_.push_back(std::move(arc_app_updater));
-#endif
 }
 
 void ChromeLauncherController::ReleaseProfile() {

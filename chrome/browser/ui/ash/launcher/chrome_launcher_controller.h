@@ -66,9 +66,7 @@ namespace ui {
 class BaseWindow;
 }
 
-#if defined(OS_CHROMEOS)
 class ChromeLauncherControllerUserSwitchObserver;
-#endif
 
 // A list of the elements which makes up a simple menu description.
 typedef ScopedVector<ChromeLauncherAppMenuItem> ChromeLauncherAppMenuItems;
@@ -427,10 +425,8 @@ class ChromeLauncherController
   // Sets both of auto-hide behavior and alignment from prefs.
   void SetShelfBehaviorsFromPrefs();
 
-#if defined(OS_CHROMEOS)
   // Sets whether the virtual keyboard is enabled from prefs.
   void SetVirtualKeyboardBehaviorFromPrefs();
-#endif  // defined(OS_CHROMEOS)
 
   // Returns the shelf item status for the given |app_id|, which can be either
   // STATUS_ACTIVE (if the app is active), STATUS_RUNNING (if there is such an
@@ -532,11 +528,9 @@ class ChromeLauncherController
   // The owned browser status monitor.
   std::unique_ptr<BrowserStatusMonitor> browser_status_monitor_;
 
-#if defined(OS_CHROMEOS)
   // A special observer class to detect user switches.
   std::unique_ptr<ChromeLauncherControllerUserSwitchObserver>
       user_switch_observer_;
-#endif
 
   // If true, incoming pinned state changes should be ignored.
   bool ignore_persist_pinned_state_change_;

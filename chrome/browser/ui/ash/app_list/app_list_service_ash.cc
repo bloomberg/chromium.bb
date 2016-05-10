@@ -140,7 +140,6 @@ base::FilePath AppListServiceAsh::GetProfilePath(
 void AppListServiceAsh::ShowForProfile(Profile* /*default_profile*/) {
   // This may not work correctly if the profile passed in is different from the
   // one the ash Shell is currently using.
-  // TODO(ananta): Handle profile changes correctly when !defined(OS_CHROMEOS).
   app_list_presenter_->Show(ash::Shell::GetTargetDisplayId());
 }
 
@@ -203,10 +202,6 @@ void AppListServiceAsh::DestroyAppList() {
   DismissAppList();
 }
 
-// Windows and Linux Ash additionally supports a native UI. See
-// app_list_service_{win,linux}.cc.
-#if defined(OS_CHROMEOS)
-
 // static
 AppListService* AppListService::Get() {
   return AppListServiceAsh::GetInstance();
@@ -217,5 +212,3 @@ void AppListService::InitAll(Profile* initial_profile,
                              const base::FilePath& profile_path) {
   AppListServiceAsh::GetInstance()->Init(initial_profile);
 }
-
-#endif  // !defined(OS_WIN)

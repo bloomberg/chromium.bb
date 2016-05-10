@@ -6,6 +6,7 @@
 
 #include "chrome/browser/extensions/extension_app_icon_loader.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_icon_loader.h"
 #include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_types.h"
 #include "chrome/browser/ui/ash/launcher/launcher_item_controller.h"
@@ -18,10 +19,6 @@
 #include "skia/public/type_converters.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/display/screen.h"
-
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/ui/app_list/arc/arc_app_icon_loader.h"
-#endif
 
 class ChromeShelfItemDelegate : public mash::shelf::mojom::ShelfItemDelegate {
  public:
@@ -101,11 +98,9 @@ void ChromeMashShelfController::Init() {
           profile, extension_misc::EXTENSION_ICON_SMALL, this));
   app_icon_loaders_.push_back(std::move(extension_app_icon_loader));
 
-#if defined(OS_CHROMEOS)
   std::unique_ptr<AppIconLoader> arc_app_icon_loader(new ArcAppIconLoader(
       profile, extension_misc::EXTENSION_ICON_SMALL, this));
   app_icon_loaders_.push_back(std::move(arc_app_icon_loader));
-#endif
 
   PinAppsFromPrefs();
 

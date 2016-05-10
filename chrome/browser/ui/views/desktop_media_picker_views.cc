@@ -13,7 +13,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/media/combined_desktop_media_list.h"
 #include "chrome/browser/media/desktop_media_list.h"
-#include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
@@ -59,6 +58,7 @@ const int kDesktopMediaSourceViewGroupId = 1;
 const char kDesktopMediaSourceViewClassName[] =
     "DesktopMediaPicker_DesktopMediaSourceView";
 
+#if !defined(USE_ASH)
 DesktopMediaID::Id AcceleratedWidgetToDesktopMediaId(
     gfx::AcceleratedWidget accelerated_widget) {
 #if defined(OS_WIN)
@@ -67,6 +67,7 @@ DesktopMediaID::Id AcceleratedWidgetToDesktopMediaId(
   return static_cast<DesktopMediaID::Id>(accelerated_widget);
 #endif
 }
+#endif
 
 int GetMediaListViewHeightForRows(size_t rows) {
   return kListItemHeight * rows;
@@ -478,16 +479,11 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
     dialog_window_id = DesktopMediaID::RegisterAuraWindow(
         DesktopMediaID::TYPE_WINDOW, widget->GetNativeWindow());
 
-    bool is_ash_window = false;
-#if defined(USE_ASH)
-    is_ash_window = chrome::IsNativeWindowInAsh(widget->GetNativeWindow());
-#endif
-
     // Set native window ID if the windows is outside Ash.
-    if (!is_ash_window) {
-      dialog_window_id.id = AcceleratedWidgetToDesktopMediaId(
-          widget->GetNativeWindow()->GetHost()->GetAcceleratedWidget());
-    }
+#if !defined(USE_ASH)
+    dialog_window_id.id = AcceleratedWidgetToDesktopMediaId(
+        widget->GetNativeWindow()->GetHost()->GetAcceleratedWidget());
+#endif
   }
 
   sources_list_view_->StartUpdating(dialog_window_id);

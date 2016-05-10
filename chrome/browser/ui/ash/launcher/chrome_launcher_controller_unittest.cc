@@ -19,6 +19,8 @@
 #include "ash/shelf/shelf_model_observer.h"
 #include "ash/shell.h"
 #include "ash/test/shelf_item_delegate_manager_test_api.h"
+#include "ash/test/test_session_state_delegate.h"
+#include "ash/test/test_shell_delegate.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
@@ -28,71 +30,60 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
+#include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
+#include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
+#include "chrome/browser/lifetime/scoped_keep_alive.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_test.h"
+#include "chrome/browser/ui/apps/chrome_app_delegate.h"
 #include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
+#include "chrome/browser/ui/ash/launcher/app_window_launcher_controller.h"
+#include "chrome/browser/ui/ash/launcher/browser_status_monitor.h"
 #include "chrome/browser/ui/ash/launcher/extension_app_window_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/launcher_application_menu_item_model.h"
 #include "chrome/browser/ui/ash/launcher/launcher_controller_helper.h"
 #include "chrome/browser/ui/ash/launcher/launcher_item_controller.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_chromeos.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
+#include "chrome/test/base/test_browser_window_aura.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/base/testing_profile_manager.h"
+#include "components/arc/common/app.mojom.h"
+#include "components/arc/test/fake_app_instance.h"
+#include "components/arc/test/fake_arc_bridge_service.h"
+#include "components/exo/shell_surface.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "components/syncable_prefs/testing_pref_service_syncable.h"
-#include "content/public/browser/web_contents.h"
-#include "extensions/common/extension.h"
-#include "extensions/common/manifest_constants.h"
-#include "testing/gtest/include/gtest/gtest.h"
-#include "ui/aura/client/window_tree_client.h"
-#include "ui/base/models/menu_model.h"
-#include "ui/views/widget/widget.h"
-
-#if defined(OS_CHROMEOS)
-#include "ash/test/test_session_state_delegate.h"
-#include "ash/test/test_shell_delegate.h"
-#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
-#include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
-#include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
-#include "chrome/browser/lifetime/scoped_keep_alive.h"
-#include "chrome/browser/ui/apps/chrome_app_delegate.h"
-#include "chrome/browser/ui/ash/launcher/app_window_launcher_controller.h"
-#include "chrome/browser/ui/ash/launcher/browser_status_monitor.h"
-#include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
-#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
-#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_chromeos.h"
-#include "chrome/common/chrome_constants.h"
-#include "chrome/common/chrome_switches.h"
-#include "chrome/test/base/testing_browser_process.h"
-#include "chrome/test/base/testing_profile_manager.h"
-#include "components/exo/shell_surface.h"
 #include "components/user_manager/fake_user_manager.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/test_utils.h"
 #include "content/public/test/web_contents_tester.h"
 #include "extensions/browser/app_window/app_window_contents.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/app_window/native_app_window.h"
+#include "extensions/common/extension.h"
+#include "extensions/common/manifest_constants.h"
+#include "testing/gtest/include/gtest/gtest.h"
+#include "ui/aura/client/window_tree_client.h"
 #include "ui/aura/window.h"
-#endif
-
-#if defined(USE_AURA)
-#include "chrome/test/base/test_browser_window_aura.h"
-#endif  // defined(USE_AURA)
-
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/ui/app_list/arc/arc_app_test.h"
-#include "components/arc/common/app.mojom.h"
-#include "components/arc/test/fake_app_instance.h"
-#include "components/arc/test/fake_arc_bridge_service.h"
-#endif  // defined(OS_CHROMEOS)
+#include "ui/base/models/menu_model.h"
+#include "ui/views/widget/widget.h"
 
 using base::ASCIIToUTF16;
 using extensions::Extension;
@@ -104,10 +95,8 @@ const char* offline_gmail_url = "https://mail.google.com/mail/mu/u";
 const char* gmail_url = "https://mail.google.com/mail/u";
 const char* kGmailLaunchURL = "https://mail.google.com/mail/ca";
 
-#if defined(OS_CHROMEOS)
 // An extension prefix.
 const char kCrxAppPrefix[] = "_crx_";
-#endif
 
 // ShelfModelObserver implementation that tracks what messages are invoked.
 class TestShelfModelObserver : public ash::ShelfModelObserver {
@@ -377,11 +366,8 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
                                     Extension::NO_FLAGS,
                                     "ffffffffffffffffffffffffffffffff",
                                     &error);
-
-#if defined(OS_CHROMEOS)
     arc_test_.SetUp(profile());
     arc_test_.bridge_service()->SetReady();
-#endif  // defined(OS_CHROMEOS)
   }
 
   // Creates a running V2 app (not pinned) of type |app_id|.
@@ -612,10 +598,8 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
             } else if (app == extension8_->id()) {
               result += "App8";
               EXPECT_TRUE(launcher_controller_->IsAppPinned(extension8_->id()));
-#if defined(OS_CHROMEOS)
             } else if (app == ArcAppTest::GetAppId(arc_test_.fake_apps()[0])) {
               result += arc_test_.fake_apps()[0].name;
-#endif  // defined(OS_CHROMEOS)
             } else {
               result += "unknown";
             }
@@ -653,7 +637,6 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
         account_id.GetUserEmail());
   }
 
-#if defined(OS_CHROMEOS)
   void InstallArcApps() {
     arc_test_.app_instance()->RefreshAppList();
     arc_test_.app_instance()->SendRefreshAppList(arc_test_.fake_apps());
@@ -680,8 +663,6 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
     return widget;
   }
 
-#endif  // defined(OS_CHROMEOS)
-
   // Needed for extension service & friends to work.
   scoped_refptr<Extension> extension1_;
   scoped_refptr<Extension> extension2_;
@@ -691,9 +672,8 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
   scoped_refptr<Extension> extension6_;
   scoped_refptr<Extension> extension7_;
   scoped_refptr<Extension> extension8_;
-#if defined(OS_CHROMEOS)
+
   ArcAppTest arc_test_;
-#endif  // defined(OS_CHROMEOS)
   std::unique_ptr<ChromeLauncherController> launcher_controller_;
   std::unique_ptr<TestShelfModelObserver> model_observer_;
   std::unique_ptr<ash::ShelfModel> model_;
@@ -719,8 +699,6 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
 
   DISALLOW_COPY_AND_ASSIGN(ChromeLauncherControllerTest);
 };
-
-#if defined(OS_CHROMEOS)
 
 // Watches WebContents and blocks until it is destroyed. This is needed for
 // the destruction of a V2 application.
@@ -997,8 +975,6 @@ class MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest
   DISALLOW_COPY_AND_ASSIGN(
       MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest);
 };
-#endif  // defined(OS_CHROMEOS)
-
 
 TEST_F(ChromeLauncherControllerTest, DefaultApps) {
   InitLauncherController();
@@ -1391,7 +1367,6 @@ TEST_F(ChromeLauncherControllerTest, CheckPinnedAppsStayAfterUnlock) {
   EXPECT_EQ(2, model_->item_count());
 }
 
-#if defined(OS_CHROMEOS)
 // Check that running applications wich are not pinned get properly restored
 // upon user change.
 TEST_F(ChromeLauncherControllerTest, CheckRunningAppOrder) {
@@ -1660,7 +1635,6 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
   launcher_controller_->ActivateWindowOrMinimizeIfActive(browser_window, false);
   EXPECT_TRUE(manager->IsWindowOnDesktopOfUser(window, current_user));
 }
-#endif
 
 // Check that lock -> pin -> unlock -> unpin does properly transition.
 TEST_F(ChromeLauncherControllerTest, CheckLockPinUnlockUnpin) {
@@ -2142,7 +2116,6 @@ TEST_F(ChromeLauncherControllerTest, BrowserMenuGeneration) {
   chrome::CloseTab(browser2.get());
 }
 
-#if defined(OS_CHROMEOS)
 // Check the multi profile case where only user related browsers should show
 // up.
 TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
@@ -2194,7 +2167,6 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
 
   chrome::CloseTab(browser2.get());
 }
-#endif  // defined(OS_CHROMEOS)
 
 // Check that V1 apps are correctly reflected in the launcher menu using the
 // refocus logic.
@@ -2272,7 +2244,6 @@ TEST_F(ChromeLauncherControllerTest, V1AppMenuGeneration) {
       launcher_controller_.get(), item_browser, 1, browser_menu_item2, false));
 }
 
-#if defined(OS_CHROMEOS)
 // Check the multi profile case where only user related apps should show up.
 TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
        V1AppMenuGenerationTwoUsers) {
@@ -2542,7 +2513,6 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
     EXPECT_EQ(2, model_->item_count());
   }
 }
-#endif  // defined(OS_CHROMEOS)
 
 // Checks that the generated menu list properly activates items.
 TEST_F(ChromeLauncherControllerTest, V1AppMenuExecution) {

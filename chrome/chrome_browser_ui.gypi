@@ -525,8 +525,6 @@
       'browser/ui/ash/chrome_launcher_prefs.h',
       'browser/ui/ash/chrome_new_window_delegate.cc',
       'browser/ui/ash/chrome_new_window_delegate.h',
-      'browser/ui/ash/chrome_new_window_delegate_chromeos.cc',
-      'browser/ui/ash/chrome_new_window_delegate_chromeos.h',
       'browser/ui/ash/chrome_screenshot_grabber.cc',
       'browser/ui/ash/chrome_screenshot_grabber.h',
       'browser/ui/ash/chrome_shell_content_state.cc',
@@ -534,7 +532,6 @@
       'browser/ui/ash/chrome_shell_content_state_chromeos.cc',
       'browser/ui/ash/chrome_shell_delegate.cc',
       'browser/ui/ash/chrome_shell_delegate.h',
-      'browser/ui/ash/chrome_shell_delegate_chromeos.cc',
       'browser/ui/ash/ime_controller_chromeos.cc',
       'browser/ui/ash/ime_controller_chromeos.h',
       'browser/ui/ash/launcher/app_shortcut_launcher_item_controller.cc',
@@ -587,6 +584,7 @@
       'browser/ui/ash/media_delegate_chromeos.h',
       'browser/ui/ash/metrics/chrome_user_metrics_recorder.cc',
       'browser/ui/ash/metrics/chrome_user_metrics_recorder.h',
+      'browser/ui/ash/multi_user/multi_user_context_menu.h',
       'browser/ui/ash/multi_user/multi_user_context_menu_chromeos.cc',
       'browser/ui/ash/multi_user/multi_user_notification_blocker_chromeos.cc',
       'browser/ui/ash/multi_user/multi_user_notification_blocker_chromeos.h',
@@ -614,8 +612,6 @@
       'browser/ui/ash/solid_color_user_wallpaper_delegate.h',
       'browser/ui/ash/system_tray_delegate_chromeos.cc',
       'browser/ui/ash/system_tray_delegate_chromeos.h',
-      'browser/ui/ash/system_tray_delegate_common.cc',
-      'browser/ui/ash/system_tray_delegate_common.h',
       'browser/ui/ash/system_tray_delegate_utils.cc',
       'browser/ui/ash/system_tray_delegate_utils.h',
       'browser/ui/ash/volume_controller_chromeos.cc',
@@ -628,16 +624,6 @@
       'browser/ui/views/ash/tab_scrubber.h',
       'browser/ui/views/touch_uma/touch_uma_ash.cc',
       'browser/ui/window_sizer/window_sizer_ash.cc',
-    ],
-    # Used when Ash is enabled but not ChromeOS.
-    'chrome_browser_ui_ash_non_chromeos': [
-      'browser/ui/ash/chrome_shell_content_state_views.cc',
-      'browser/ui/ash/chrome_shell_delegate_views.cc',
-      'browser/ui/ash/multi_user/multi_user_context_menu.cc',
-      'browser/ui/ash/multi_user/multi_user_context_menu.h',
-      'browser/ui/ash/session_state_delegate_views.cc',
-      'browser/ui/ash/session_state_delegate_views.h',
-      'browser/ui/views/chrome_views_delegate_ash.cc',
     ],
     # Ash + Views.
     'chrome_browser_ui_ash_views_sources': [
@@ -2998,11 +2984,6 @@
             '../ash/wm/common/ash_wm_common.gyp:ash_wm_common',
             '../components/components.gyp:user_manager',
             '../ui/app_list/presenter/app_list_presenter.gyp:app_list_presenter',
-          ],
-          'conditions': [
-            ['chromeos == 0', {
-              'sources': [ '<@(chrome_browser_ui_ash_non_chromeos)' ],
-            }],
           ],
         }, { # use_ash==0
           'sources': [ '<@(chrome_browser_ui_non_ash_sources)' ],

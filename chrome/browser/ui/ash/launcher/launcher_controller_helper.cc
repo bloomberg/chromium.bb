@@ -13,6 +13,8 @@
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
@@ -27,11 +29,6 @@
 #include "extensions/common/extension_set.h"
 #include "net/base/url_util.h"
 #include "ui/events/event_constants.h"
-
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
-#endif
 
 namespace {
 
@@ -109,7 +106,6 @@ base::string16 LauncherControllerHelper::GetAppTitle(
   if (app_id.empty())
     return title;
 
-#if defined(OS_CHROMEOS)
   // Get title if the app is an Arc app.
   ArcAppListPrefs* arc_prefs = ArcAppListPrefs::Get(profile);
   DCHECK(arc_prefs);
@@ -121,7 +117,6 @@ base::string16 LauncherControllerHelper::GetAppTitle(
       title = base::UTF8ToUTF16(app_info->name);
     return title;
   }
-#endif  // defined(OS_CHROMEOS)
 
   const extensions::Extension* extension = GetExtensionByID(profile, app_id);
   if (extension)
@@ -149,10 +144,8 @@ std::string LauncherControllerHelper::GetAppID(content::WebContents* tab) {
 }
 
 bool LauncherControllerHelper::IsValidIDForCurrentUser(const std::string& id) {
-#if defined(OS_CHROMEOS)
   if (ArcAppListPrefs::Get(profile_)->IsRegistered(id))
     return true;
-#endif
   return GetExtensionByID(profile_, id) != nullptr;
 }
 
@@ -163,12 +156,10 @@ void LauncherControllerHelper::SetCurrentUser(Profile* profile) {
 void LauncherControllerHelper::LaunchApp(const std::string& app_id,
                                          ash::LaunchSource source,
                                          int event_flags) {
-#if defined(OS_CHROMEOS)
   if (ArcAppListPrefs::Get(profile_)->IsRegistered(app_id)) {
     arc::LaunchApp(profile_, app_id);
     return;
   }
-#endif
 
   // |extension| could be null when it is being unloaded for updating.
   const extensions::Extension* extension = GetExtensionByID(profile_, app_id);

@@ -13,16 +13,13 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/ash/launcher/arc_launcher_context_menu.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/desktop_shell_launcher_context_menu.h"
 #include "chrome/browser/ui/ash/launcher/extension_launcher_context_menu.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/prefs/pref_service.h"
 #include "ui/aura/window_event_dispatcher.h"
-
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/ui/ash/launcher/arc_launcher_context_menu.h"
-#endif  // defined(OS_CHROMEOS)
 
 class LauncherContextMenuTest : public ash::test::AshTestBase {
  protected:
@@ -57,14 +54,12 @@ class LauncherContextMenuTest : public ash::test::AshTestBase {
     return LauncherContextMenu::Create(controller_.get(), item, shelf);
   }
 
-#if defined(OS_CHROMEOS)
   LauncherContextMenu* CreateLauncherContextMenuForArcApp() {
     ash::ShelfItem item;
     item.id = 1;  // dummy id
     ash::Shelf* shelf = ash::Shelf::ForWindow(CurrentContext());
     return new ArcLauncherContextMenu(controller_.get(), &item, shelf);
   }
-#endif
 
   Profile* profile() { return profile_.get(); }
 
@@ -133,18 +128,15 @@ TEST_F(LauncherContextMenuTest, DesktopShellLauncherContextMenuItemCheck) {
                                   LauncherContextMenu::MENU_ALIGNMENT_MENU));
   EXPECT_TRUE(
       menu->IsCommandIdEnabled(LauncherContextMenu::MENU_ALIGNMENT_MENU));
-#if defined(OS_CHROMEOS)
   // By default, screen is not locked and ChangeWallPaper item is added in
   // menu. ChangeWallPaper item is not enabled in default mode.
   EXPECT_TRUE(IsItemPresentInMenu(menu.get(),
                                   LauncherContextMenu::MENU_CHANGE_WALLPAPER));
   EXPECT_FALSE(
       menu->IsCommandIdEnabled(LauncherContextMenu::MENU_CHANGE_WALLPAPER));
-#endif
 }
 
 // Verifies contextmenu items for Arc app
-#if defined(OS_CHROMEOS)
 TEST_F(LauncherContextMenuTest, ArcLauncherContextMenuItemCheck) {
   std::unique_ptr<LauncherContextMenu> menu(
       CreateLauncherContextMenuForArcApp());
@@ -165,4 +157,3 @@ TEST_F(LauncherContextMenuTest, ArcLauncherContextMenuItemCheck) {
   EXPECT_FALSE(
       menu->IsCommandIdEnabled(LauncherContextMenu::MENU_CHANGE_WALLPAPER));
 }
-#endif
