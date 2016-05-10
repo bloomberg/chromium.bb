@@ -787,10 +787,12 @@ void AbstractAudioContext::releaseFinishedSourceNodes()
     ASSERT(isAudioThread());
     bool didRemove = false;
     for (AudioHandler* handler : m_finishedSourceHandlers) {
-        for (unsigned i = 0; i < m_activeSourceNodes.size(); ++i) {
-            if (handler == &m_activeSourceNodes[i]->handler()) {
+        for (AudioNode* node : m_activeSourceNodes) {
+            if (m_finishedSourceNodes.contains(node))
+                continue;
+            if (handler == &node->handler()) {
                 handler->breakConnection();
-                m_finishedSourceNodes.append(m_activeSourceNodes[i]);
+                m_finishedSourceNodes.add(node);
                 didRemove = true;
                 break;
             }
@@ -826,6 +828,12 @@ void AbstractAudioContext::handleStoppableSourceNodes()
 
     // Find AudioBufferSourceNodes to see if we can stop playing them.
     for (AudioNode* node : m_activeSourceNodes) {
+        // If the AudioNode has been marked as finished and released by
+        // the audio thread, but not yet removed by the main thread
+        // (see releaseActiveSourceNodes() above), |node| must not be
+        // touched as its handler may have been released already.
+        if (m_finishedSourceNodes.contains(node))
+            continue;
         if (node->handler().getNodeType() == AudioHandler::NodeTypeAudioBufferSource) {
             AudioBufferSourceNode* sourceNode = static_cast<AudioBufferSourceNode*>(node);
             sourceNode->audioBufferSourceHandler().handleStoppableSourceNode();
@@ -975,4 +983,3 @@ SecurityOrigin* AbstractAudioContext::getSecurityOrigin() const
 }
 
 } // namespace blink
-

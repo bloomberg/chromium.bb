@@ -320,7 +320,7 @@ private:
     // are performed by it. When the audio thread marks a source node as finished,
     // the nodes are added to |m_finishedSourceNodes| and scheduled for removal
     // from |m_activeSourceNodes| by the main thread.
-    Vector<UntracedMember<AudioNode>> m_finishedSourceNodes;
+    HashSet<UntracedMember<AudioNode>> m_finishedSourceNodes;
 
     // FIXME(dominicc): Move these to AudioContext because only
     // it creates these Promises.
