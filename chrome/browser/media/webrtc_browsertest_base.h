@@ -105,12 +105,22 @@ class WebRtcTestBase : public InProcessBrowserTest {
   // certificate.
   void SetupPeerconnectionWithLocalStream(
       content::WebContents* tab,
-      std::string certificate_keygen_algorithm = kUseDefaultCertKeygen) const;
-
+      const std::string& certificate_keygen_algorithm =
+          kUseDefaultCertKeygen) const;
   // Same as above but does not add the local stream.
   void SetupPeerconnectionWithoutLocalStream(
       content::WebContents* tab,
-      std::string certificate_keygen_algorithm = kUseDefaultCertKeygen) const;
+      const std::string& certificate_keygen_algorithm =
+          kUseDefaultCertKeygen) const;
+  // Same as |SetupPeerconnectionWithLocalStream| except a certificate is
+  // specified, which is a reference to an |RTCCertificate| object.
+  void SetupPeerconnectionWithCertificateAndLocalStream(
+      content::WebContents* tab,
+      const std::string& certificate) const;
+  // Same as above but does not add the local stream.
+  void SetupPeerconnectionWithCertificateWithoutLocalStream(
+      content::WebContents* tab,
+      const std::string& certificate) const;
 
   // Exchanges offers and answers between the peer connections in the
   // respective tabs. Before calling this, you must have prepared peer
@@ -151,6 +161,13 @@ class WebRtcTestBase : public InProcessBrowserTest {
 
   // Returns true if we're on win 8.
   bool OnWin8() const;
+
+  void OpenDatabase(content::WebContents* tab) const;
+  void CloseDatabase(content::WebContents* tab) const;
+  void DeleteDatabase(content::WebContents* tab) const;
+
+  void GenerateAndCloneCertificate(content::WebContents* tab,
+                                   const std::string& keygen_algorithm) const;
 
  private:
   void CloseInfoBarInTab(content::WebContents* tab_contents,

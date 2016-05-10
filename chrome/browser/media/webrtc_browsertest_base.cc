@@ -306,18 +306,32 @@ std::string WebRtcTestBase::ExecuteJavascript(
 
 void WebRtcTestBase::SetupPeerconnectionWithLocalStream(
     content::WebContents* tab,
-    std::string certificate_keygen_algorithm) const {
+    const std::string& certificate_keygen_algorithm) const {
   SetupPeerconnectionWithoutLocalStream(tab, certificate_keygen_algorithm);
   EXPECT_EQ("ok-added", ExecuteJavascript("addLocalStream()", tab));
 }
 
 void WebRtcTestBase::SetupPeerconnectionWithoutLocalStream(
     content::WebContents* tab,
-    std::string certificate_keygen_algorithm) const {
+    const std::string& certificate_keygen_algorithm) const {
   std::string javascript = base::StringPrintf(
       "preparePeerConnection(%s)", certificate_keygen_algorithm.c_str());
-  EXPECT_EQ("ok-peerconnection-created",
-            ExecuteJavascript(javascript, tab));
+  EXPECT_EQ("ok-peerconnection-created", ExecuteJavascript(javascript, tab));
+}
+
+void WebRtcTestBase::SetupPeerconnectionWithCertificateAndLocalStream(
+    content::WebContents* tab,
+    const std::string& certificate) const {
+  SetupPeerconnectionWithCertificateWithoutLocalStream(tab, certificate);
+  EXPECT_EQ("ok-added", ExecuteJavascript("addLocalStream()", tab));
+}
+
+void WebRtcTestBase::SetupPeerconnectionWithCertificateWithoutLocalStream(
+    content::WebContents* tab,
+    const std::string& certificate) const {
+  std::string javascript = base::StringPrintf(
+      "preparePeerConnectionWithCertificate(%s)", certificate.c_str());
+  EXPECT_EQ("ok-peerconnection-created", ExecuteJavascript(javascript, tab));
 }
 
 std::string WebRtcTestBase::CreateLocalOffer(
@@ -450,4 +464,31 @@ bool WebRtcTestBase::OnWin8() const {
 #else
   return false;
 #endif
+}
+
+void WebRtcTestBase::OpenDatabase(content::WebContents* tab) const {
+  std::string response = ExecuteJavascript("openDatabase()", tab);
+  EXPECT_EQ("ok-database-opened", response) << "Failed to open database: "
+      << response;
+}
+
+void WebRtcTestBase::CloseDatabase(content::WebContents* tab) const {
+  std::string response = ExecuteJavascript("closeDatabase()", tab);
+  EXPECT_EQ("ok-database-closed", response) << "Failed to close database: "
+      << response;
+}
+
+void WebRtcTestBase::DeleteDatabase(content::WebContents* tab) const {
+  std::string response = ExecuteJavascript("deleteDatabase()", tab);
+  EXPECT_EQ("ok-database-deleted", response) << "Failed to delete database: "
+      << response;
+}
+
+void WebRtcTestBase::GenerateAndCloneCertificate(
+    content::WebContents* tab, const std::string& keygen_algorithm) const {
+  std::string javascript = base::StringPrintf(
+      "generateAndCloneCertificate(%s)", keygen_algorithm.c_str());
+  std::string response = ExecuteJavascript(javascript, tab);
+  EXPECT_EQ("ok-generated-and-cloned", response) << "Failed to generate and "
+      "clone certificate: " << response;
 }
