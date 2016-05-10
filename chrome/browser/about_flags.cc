@@ -421,6 +421,16 @@ const FeatureEntry::Choice kV8CacheOptionsChoices[] = {
   { IDS_FLAGS_V8_CACHE_OPTIONS_CODE, switches::kV8CacheOptions, "code" },
 };
 
+const FeatureEntry::Choice kV8CacheStrategiesForCacheStorageChoices[] = {
+    {IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", ""},
+    {IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
+     switches::kV8CacheStrategiesForCacheStorage, "none"},
+    {IDS_FLAGS_V8_CACHE_STRATEGIES_FOR_CACHE_STORAGE_NORMAL,
+     switches::kV8CacheStrategiesForCacheStorage, "normal"},
+    {IDS_FLAGS_V8_CACHE_STRATEGIES_FOR_CACHE_STORAGE_AGGRESSIVE,
+     switches::kV8CacheStrategiesForCacheStorage, "aggressive"},
+};
+
 #if defined(OS_ANDROID)
 const FeatureEntry::Choice kProgressBarAnimationChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
@@ -882,9 +892,8 @@ const FeatureEntry kFeatureEntries[] = {
         IDS_FLAGS_ASH_ENABLE_MIRRORED_SCREEN_DESCRIPTION, kOsCrOS,
         SINGLE_VALUE_TYPE(ash::switches::kAshEnableMirroredScreen),
     },
-    {
-        "ash-md", IDS_FLAGS_ASH_MD, IDS_FLAGS_ASH_MD_DESCRIPTION, kOsCrOS,
-        MULTI_VALUE_TYPE(kAshMaterialDesignChoices)},
+    {"ash-md", IDS_FLAGS_ASH_MD, IDS_FLAGS_ASH_MD_DESCRIPTION, kOsCrOS,
+     MULTI_VALUE_TYPE(kAshMaterialDesignChoices)},
     {
         "ash-stable-overview-order", IDS_FLAGS_ASH_STABLE_OVERVIEW_ORDER_NAME,
         IDS_FLAGS_ASH_STABLE_OVERVIEW_ORDER_DESCRIPTION, kOsCrOS,
@@ -1528,8 +1537,7 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE(switches::kEnableWebRtcDtls12)},
 #endif
 #if defined(ENABLE_WEBRTC)
-    {"enable-webrtc-ecdsa",
-     IDS_FLAGS_WEBRTC_ECDSA_NAME,
+    {"enable-webrtc-ecdsa", IDS_FLAGS_WEBRTC_ECDSA_NAME,
      IDS_FLAGS_WEBRTC_ECDSA_DESCRIPTION, kOsAll,
      FEATURE_VALUE_TYPE(features::kWebRtcEcdsaDefault)},
 #endif
@@ -1564,6 +1572,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"v8-cache-options", IDS_FLAGS_V8_CACHE_OPTIONS_NAME,
      IDS_FLAGS_V8_CACHE_OPTIONS_DESCRIPTION, kOsAll,
      MULTI_VALUE_TYPE(kV8CacheOptionsChoices)},
+    {"v8-cache-strategies-for-cache-storage",
+     IDS_FLAGS_V8_CACHE_STRATEGIES_FOR_CACHE_STORAGE_NAME,
+     IDS_FLAGS_V8_CACHE_STRATEGIES_FOR_CACHE_STORAGE_DESCRIPTION, kOsAll,
+     MULTI_VALUE_TYPE(kV8CacheStrategiesForCacheStorageChoices)},
     {"enable-clear-browsing-data-counters",
      IDS_FLAGS_ENABLE_CLEAR_BROWSING_DATA_COUNTERS_NAME,
      IDS_FLAGS_ENABLE_CLEAR_BROWSING_DATA_COUNTERS_DESCRIPTION, kOsAll,
@@ -1840,20 +1852,17 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE(switches::kEnableFullscreenTabDetaching)},
 #endif
 #if defined(OS_ANDROID)
-    {"media-style-notification",
-     IDS_FLAGS_MEDIA_STYLE_NOTIFICATION_NAME,
+    {"media-style-notification", IDS_FLAGS_MEDIA_STYLE_NOTIFICATION_NAME,
      IDS_FLAGS_MEDIA_STYLE_NOTIFICATION_DESCRIPTION, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kMediaStyleNotification)},
-    {"important-sites-in-cbd",
-     IDS_FLAGS_IMPORTANT_SITES_IN_CBD_NAME,
+    {"important-sites-in-cbd", IDS_FLAGS_IMPORTANT_SITES_IN_CBD_NAME,
      IDS_FLAGS_IMPORTANT_SITES_IN_CBD_DESCRIPTION, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kImportantSitesInCBD)},
 #endif
     {"enable-pointer-events",  // FLAGS:RECORD_UMA
-      IDS_FLAGS_EXPERIMENTAL_POINTER_EVENT_NAME,
-      IDS_FLAGS_EXPERIMENTAL_POINTER_EVENT_DESCRIPTION,
-      kOsAll,
-      FEATURE_VALUE_TYPE(features::kPointerEvents)},
+     IDS_FLAGS_EXPERIMENTAL_POINTER_EVENT_NAME,
+     IDS_FLAGS_EXPERIMENTAL_POINTER_EVENT_DESCRIPTION, kOsAll,
+     FEATURE_VALUE_TYPE(features::kPointerEvents)},
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in
     // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.

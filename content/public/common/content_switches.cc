@@ -425,6 +425,10 @@ const char kV8NativesPassedByFD[] = "v8-natives-passed-by-fd";
 // process by a file descriptor.
 const char kV8SnapshotPassedByFD[] = "v8-snapshot-passed-by-fd";
 
+// Set strategies to cache V8 data in CacheStorage. (off, normal, or aggressive)
+const char kV8CacheStrategiesForCacheStorage[] =
+    "v8-cache-strategies-for-cache-storage";
+
 // Cause the OS X sandbox write to syslog every time an access to a resource
 // is denied by the sandbox.
 const char kEnableSandboxLogging[]          = "enable-sandbox-logging";

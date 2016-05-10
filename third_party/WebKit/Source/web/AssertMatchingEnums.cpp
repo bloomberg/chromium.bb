@@ -714,6 +714,11 @@ STATIC_ASSERT_ENUM(WebSettings::V8CacheOptionsNone, V8CacheOptionsNone);
 STATIC_ASSERT_ENUM(WebSettings::V8CacheOptionsParse, V8CacheOptionsParse);
 STATIC_ASSERT_ENUM(WebSettings::V8CacheOptionsCode, V8CacheOptionsCode);
 
+STATIC_ASSERT_ENUM(WebSettings::V8CacheStrategiesForCacheStorage::Default, V8CacheStrategiesForCacheStorage::Default);
+STATIC_ASSERT_ENUM(WebSettings::V8CacheStrategiesForCacheStorage::None, V8CacheStrategiesForCacheStorage::None);
+STATIC_ASSERT_ENUM(WebSettings::V8CacheStrategiesForCacheStorage::Normal, V8CacheStrategiesForCacheStorage::Normal);
+STATIC_ASSERT_ENUM(WebSettings::V8CacheStrategiesForCacheStorage::Aggressive, V8CacheStrategiesForCacheStorage::Aggressive);
+
 STATIC_ASSERT_ENUM(WebSecurityPolicy::PolicyAreaNone, SchemeRegistry::PolicyAreaNone);
 STATIC_ASSERT_ENUM(WebSecurityPolicy::PolicyAreaImage, SchemeRegistry::PolicyAreaImage);
 STATIC_ASSERT_ENUM(WebSecurityPolicy::PolicyAreaStyle, SchemeRegistry::PolicyAreaStyle);

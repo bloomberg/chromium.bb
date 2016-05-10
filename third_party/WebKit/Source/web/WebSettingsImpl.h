@@ -181,6 +181,7 @@ public:
     void setUseSolidColorScrollbars(bool) override;
     void setUseWideViewport(bool) override;
     void setV8CacheOptions(V8CacheOptions) override;
+    void setV8CacheStrategiesForCacheStorage(V8CacheStrategiesForCacheStorage) override;
     void setValidationMessageTimerMagnification(int) override;
     void setViewportEnabled(bool) override;
     void setViewportMetaEnabled(bool) override;

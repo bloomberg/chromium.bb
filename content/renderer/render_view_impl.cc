@@ -600,6 +600,26 @@ void ApplyBlinkSettings(const base::CommandLine& command_line,
   }
 }
 
+WebSettings::V8CacheStrategiesForCacheStorage
+GetV8CacheStrategiesForCacheStorage() {
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+  std::string v8_cache_strategies = command_line.GetSwitchValueASCII(
+      switches::kV8CacheStrategiesForCacheStorage);
+  if (v8_cache_strategies.empty())
+    v8_cache_strategies =
+        base::FieldTrialList::FindFullName("V8CacheStrategiesForCacheStorage");
+  if (v8_cache_strategies == "none") {
+    return WebSettings::V8CacheStrategiesForCacheStorage::None;
+  } else if (v8_cache_strategies == "normal") {
+    return WebSettings::V8CacheStrategiesForCacheStorage::Normal;
+  } else if (v8_cache_strategies == "aggressive") {
+    return WebSettings::V8CacheStrategiesForCacheStorage::Aggressive;
+  } else {
+    return WebSettings::V8CacheStrategiesForCacheStorage::Default;
+  }
+}
+
 }  // namespace
 
 RenderViewImpl::RenderViewImpl(CompositorDependencies* compositor_deps,
@@ -1039,6 +1059,9 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
 
   settings->setV8CacheOptions(
       static_cast<WebSettings::V8CacheOptions>(prefs.v8_cache_options));
+
+  settings->setV8CacheStrategiesForCacheStorage(
+      GetV8CacheStrategiesForCacheStorage());
 
   settings->setImageAnimationPolicy(
       static_cast<WebSettings::ImageAnimationPolicy>(prefs.animation_policy));

@@ -445,6 +445,17 @@
             }
         }
     ],
+    "V8CacheStrategiesForCacheStorage": [
+        {
+            "group_name": "none"
+        },
+        {
+            "group_name": "normal"
+        },
+        {
+            "group_name": "aggressive"
+        }
+    ],
     "VarationsServiceControl": [
         {
             "group_name": "Interval_30min",

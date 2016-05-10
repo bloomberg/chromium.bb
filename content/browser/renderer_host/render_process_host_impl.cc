@@ -1446,6 +1446,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kUseMobileUserAgent,
     switches::kUseRemoteCompositing,
     switches::kV,
+    switches::kV8CacheStrategiesForCacheStorage,
     switches::kVideoThreads,
     switches::kVideoUnderflowThresholdMs,
     switches::kVModule,

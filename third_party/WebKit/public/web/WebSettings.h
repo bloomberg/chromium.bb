@@ -66,6 +66,13 @@ public:
         V8CacheOptionsCode,
     };
 
+    enum class V8CacheStrategiesForCacheStorage {
+        Default,
+        None,
+        Normal,
+        Aggressive,
+    };
+
     // Selection strategy defines how the selection granularity changes when the
     // selection extent is moved.
     enum class SelectionStrategyType {
@@ -242,6 +249,7 @@ public:
     virtual void setUseWideViewport(bool) = 0;
     virtual void setUsesEncodingDetector(bool) = 0;
     virtual void setV8CacheOptions(V8CacheOptions) = 0;
+    virtual void setV8CacheStrategiesForCacheStorage(V8CacheStrategiesForCacheStorage) = 0;
     virtual void setValidationMessageTimerMagnification(int) = 0;
     virtual void setViewportEnabled(bool) = 0;
     virtual void setViewportMetaEnabled(bool) = 0;
