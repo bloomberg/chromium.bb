@@ -107,7 +107,7 @@ static bool fullscreenElementReady(const Element& element)
     // |element|'s node document's browsing context either has a browsing context container and the
     // fullscreen element ready check returns true for |element|'s node document's browsing
     // context's browsing context container, or it has no browsing context container.
-    if (const Element* owner = element.document().ownerElement()) {
+    if (const Element* owner = element.document().localOwner()) {
         if (!fullscreenElementReady(*owner))
             return false;
     }
@@ -248,7 +248,7 @@ void Fullscreen::requestFullscreen(Element& element, RequestType requestType)
 
         do {
             docs.prepend(currentDoc);
-            currentDoc = currentDoc->ownerElement() ? &currentDoc->ownerElement()->document() : nullptr;
+            currentDoc = currentDoc->localOwner() ? &currentDoc->localOwner()->document() : nullptr;
         } while (currentDoc);
 
         // 4. For each document in docs, run these substeps:
@@ -274,11 +274,11 @@ void Fullscreen::requestFullscreen(Element& element, RequestType requestType)
             // 3. Otherwise, if document's fullscreen element stack is either empty or its top element
             // is not following document's browsing context container,
             Element* topElement = fullscreenElementFrom(*currentDoc);
-            if (!topElement || topElement != followingDoc->ownerElement()) {
+            if (!topElement || topElement != followingDoc->localOwner()) {
                 // ...push following document's browsing context container on document's fullscreen element
                 // stack, and queue a task to fire an event named fullscreenchange with its bubbles attribute
                 // set to true on document.
-                from(*currentDoc).pushFullscreenElementStack(*followingDoc->ownerElement(), requestType);
+                from(*currentDoc).pushFullscreenElementStack(*followingDoc->localOwner(), requestType);
                 enqueueChangeEvent(*currentDoc, requestType);
                 continue;
             }
@@ -371,8 +371,8 @@ void Fullscreen::exitFullscreen()
 
         // 3. If doc's fullscreen element stack is empty and doc's browsing context has a browsing context
         // container, set doc to that browsing context container's node document.
-        if (!newTop && currentDoc->ownerElement()) {
-            currentDoc = &currentDoc->ownerElement()->document();
+        if (!newTop && currentDoc->localOwner()) {
+            currentDoc = &currentDoc->localOwner()->document();
             continue;
         }
 

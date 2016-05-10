@@ -273,7 +273,7 @@ void EventHandlerRegistry::documentDetached(Document& document)
         const EventTargetSet* targets = &m_targets[handlerClass];
         for (const auto& eventTarget : *targets) {
             if (Node* node = eventTarget.key->toNode()) {
-                for (Document* doc = &node->document(); doc; doc = doc->ownerElement() ? &doc->ownerElement()->document() : 0) {
+                for (Document* doc = &node->document(); doc; doc = doc->localOwner() ? &doc->localOwner()->document() : 0) {
                     if (doc == &document) {
                         targetsToRemove.append(eventTarget.key);
                         break;

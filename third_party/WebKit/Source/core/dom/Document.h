@@ -691,9 +691,9 @@ public:
     void updateViewportDescription();
     void processReferrerPolicy(const String& policy);
 
-    // Returns the owning element in the parent document.
-    // Returns nullptr if this is the top level document.
-    HTMLFrameOwnerElement* ownerElement() const;
+    // Returns the owning element in the parent document. Returns nullptr if
+    // this is the top level document or the owner is remote.
+    HTMLFrameOwnerElement* localOwner() const;
 
     // Returns true if this document belongs to a frame that the parent document
     // made invisible (for instance by setting as style display:none).
@@ -1066,6 +1066,8 @@ public:
 
     void setRootScroller(Element*, ExceptionState&);
     Element* rootScroller();
+
+    bool isInMainFrame() const;
 
 protected:
     Document(const DocumentInit&, DocumentClassFlags = DefaultDocumentClass);

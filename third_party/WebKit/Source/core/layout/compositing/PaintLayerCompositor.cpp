@@ -115,7 +115,7 @@ void PaintLayerCompositor::setCompositingModeEnabled(bool enable)
 
     // Schedule an update in the parent frame so the <iframe>'s layer in the owner
     // document matches the compositing state here.
-    if (HTMLFrameOwnerElement* ownerElement = m_layoutView.document().ownerElement())
+    if (HTMLFrameOwnerElement* ownerElement = m_layoutView.document().localOwner())
         ownerElement->setNeedsCompositingUpdate();
 }
 
@@ -1119,7 +1119,7 @@ void PaintLayerCompositor::attachRootLayer(RootLayerAttachment attachment)
         break;
     }
     case RootLayerAttachedViaEnclosingFrame: {
-        HTMLFrameOwnerElement* ownerElement = m_layoutView.document().ownerElement();
+        HTMLFrameOwnerElement* ownerElement = m_layoutView.document().localOwner();
         ASSERT(ownerElement);
         // The layer will get hooked up via CompositedLayerMapping::updateGraphicsLayerConfiguration()
         // for the frame's layoutObject in the parent document.
@@ -1145,7 +1145,7 @@ void PaintLayerCompositor::detachRootLayer()
         else
             m_rootContentLayer->removeFromParent();
 
-        if (HTMLFrameOwnerElement* ownerElement = m_layoutView.document().ownerElement())
+        if (HTMLFrameOwnerElement* ownerElement = m_layoutView.document().localOwner())
             ownerElement->setNeedsCompositingUpdate();
         break;
     }

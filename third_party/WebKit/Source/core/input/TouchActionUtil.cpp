@@ -36,7 +36,7 @@ const Node* parentNodeAcrossFrames(const Node* curNode)
 
     if (curNode->isDocumentNode()) {
         const Document* doc = toDocument(curNode);
-        return doc->ownerElement();
+        return doc->localOwner();
     }
 
     return nullptr;

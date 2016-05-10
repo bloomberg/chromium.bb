@@ -598,10 +598,10 @@ void Document::setRootScroller(Element* newScroller, ExceptionState& exceptionSt
 {
     DCHECK(newScroller);
 
-    if (ownerElement()) {
+    if (!frame() || !frame()->isMainFrame()) {
         exceptionState.throwDOMException(
             WrongDocumentError,
-            "Root scroller cannot be set on a document within a frame.");
+            "Root scroller can only be set on the top window's document.");
         return;
     }
 
@@ -628,7 +628,8 @@ void Document::setRootScroller(Element* newScroller, ExceptionState& exceptionSt
 
 Element* Document::rootScroller()
 {
-    if (ownerElement())
+    // TODO(bokan): Should child frames return the documentElement or nullptr?
+    if (!isInMainFrame())
         return documentElement();
 
     FrameHost* host = frameHost();
@@ -641,6 +642,11 @@ Element* Document::rootScroller()
     updateLayoutIgnorePendingStylesheets();
 
     return rootScroller->get();
+}
+
+bool Document::isInMainFrame() const
+{
+    return frame() && frame()->isMainFrame();
 }
 
 AtomicString Document::convertLocalName(const AtomicString& name)
@@ -1886,7 +1892,7 @@ void Document::updateLayout()
         return;
     }
 
-    if (HTMLFrameOwnerElement* owner = ownerElement())
+    if (HTMLFrameOwnerElement* owner = localOwner())
         owner->document().updateLayout();
 
     updateLayoutTree();
@@ -1924,9 +1930,9 @@ void Document::layoutUpdated()
             m_documentTiming.markFirstLayout();
     }
 
-    if (!ownerElement() && frameHost()) {
-        if (RootScroller* rootScroller = frameHost()->rootScroller())
-            rootScroller->didUpdateTopDocumentLayout();
+    if (isInMainFrame() && frameHost()) {
+        DCHECK(frameHost()->rootScroller());
+        frameHost()->rootScroller()->didUpdateTopDocumentLayout();
     }
 }
 
@@ -2649,7 +2655,7 @@ void Document::implicitClose()
     // We used to force a synchronous display and flush here.  This really isn't
     // necessary and can in fact be actively harmful if pages are loading at a rate of > 60fps
     // (if your platform is syncing flushes and limiting them to 60fps).
-    if (!ownerElement() || (ownerElement()->layoutObject() && !ownerElement()->layoutObject()->needsLayout())) {
+    if (!localOwner() || (localOwner()->layoutObject() && !localOwner()->layoutObject()->needsLayout())) {
         updateLayoutTree();
 
         // Always do a layout after loading if needed.
@@ -4031,7 +4037,7 @@ void Document::addListenerTypeIfNeeded(const AtomicString& eventType)
     }
 }
 
-HTMLFrameOwnerElement* Document::ownerElement() const
+HTMLFrameOwnerElement* Document::localOwner() const
 {
     if (!frame())
         return 0;
@@ -4041,9 +4047,10 @@ HTMLFrameOwnerElement* Document::ownerElement() const
 
 bool Document::isInInvisibleSubframe() const
 {
-    if (!ownerElement())
-        return false; // this is the root element
+    if (!localOwner())
+        return false; // this is a local root element
 
+    // TODO(bokan): This looks like it doesn't work in OOPIF.
     DCHECK(frame());
     return !frame()->ownerLayoutObject();
 }
@@ -4631,7 +4638,7 @@ Document& Document::topDocument() const
     // FIXME: Not clear what topDocument() should do in the OOPI case--should it return the topmost
     // available Document, or something else?
     Document* doc = const_cast<Document*>(this);
-    for (HTMLFrameOwnerElement* element = doc->ownerElement(); element; element = doc->ownerElement())
+    for (HTMLFrameOwnerElement* element = doc->localOwner(); element; element = doc->localOwner())
         doc = &element->document();
 
     DCHECK(doc);
@@ -5543,7 +5550,7 @@ void Document::updateHoverActiveState(const HitTestRequest& request, Element* in
     Element* innerElementInDocument = innerElement;
     while (innerElementInDocument && innerElementInDocument->document() != this) {
         innerElementInDocument->document().updateHoverActiveState(request, innerElementInDocument);
-        innerElementInDocument = innerElementInDocument->document().ownerElement();
+        innerElementInDocument = innerElementInDocument->document().localOwner();
     }
 
     updateDistribution();

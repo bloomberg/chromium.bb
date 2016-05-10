@@ -534,8 +534,8 @@ bool HTMLPlugInElement::shouldUsePlugin(const KURL& url, const String& mimeType,
 
 void HTMLPlugInElement::dispatchErrorEvent()
 {
-    if (document().isPluginDocument() && document().ownerElement())
-        document().ownerElement()->dispatchEvent(Event::create(EventTypeNames::error));
+    if (document().isPluginDocument() && document().localOwner())
+        document().localOwner()->dispatchEvent(Event::create(EventTypeNames::error));
     else
         dispatchEvent(Event::create(EventTypeNames::error));
 }
@@ -558,8 +558,8 @@ bool HTMLPlugInElement::allowedToLoadObject(const KURL& url, const String& mimeT
         return false;
     }
 
-    AtomicString declaredMimeType = document().isPluginDocument() && document().ownerElement() ?
-        document().ownerElement()->fastGetAttribute(HTMLNames::typeAttr) :
+    AtomicString declaredMimeType = document().isPluginDocument() && document().localOwner() ?
+        document().localOwner()->fastGetAttribute(HTMLNames::typeAttr) :
         fastGetAttribute(HTMLNames::typeAttr);
     if (!document().contentSecurityPolicy()->allowObjectFromSource(url)
         || !document().contentSecurityPolicy()->allowPluginTypeForDocument(document(), mimeType, declaredMimeType, url)) {

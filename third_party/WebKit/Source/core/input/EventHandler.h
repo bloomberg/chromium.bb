@@ -394,7 +394,7 @@ private:
     // the given element.
     bool slideFocusOnShadowHostIfNecessary(const Element&);
 
-    FrameHost* frameHost();
+    FrameHost* frameHost() const;
 
     // NOTE: If adding a new field to this class please ensure that it is
     // cleared in |EventHandler::clear()|.

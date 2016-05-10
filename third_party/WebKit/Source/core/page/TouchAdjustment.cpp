@@ -238,7 +238,7 @@ static inline Node* parentShadowHostOrOwner(const Node* node)
     if (Node* ancestor = node->parentOrShadowHostNode())
         return ancestor;
     if (node->isDocumentNode())
-        return toDocument(node)->ownerElement();
+        return toDocument(node)->localOwner();
     return nullptr;
 }
 

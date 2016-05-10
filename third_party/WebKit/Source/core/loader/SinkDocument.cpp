@@ -53,7 +53,7 @@ SinkDocument::SinkDocument(const DocumentInit& initializer)
     setCompatibilityMode(QuirksMode);
     lockCompatibilityMode();
     UseCounter::count(*this, UseCounter::SinkDocument);
-    if (ownerElement())
+    if (!isInMainFrame())
         UseCounter::count(*this, UseCounter::SinkDocumentInFrame);
 }
 

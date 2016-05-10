@@ -193,7 +193,7 @@ ImageDocument::ImageDocument(const DocumentInit& initializer)
     setCompatibilityMode(QuirksMode);
     lockCompatibilityMode();
     UseCounter::count(*this, UseCounter::ImageDocument);
-    if (ownerElement())
+    if (!isInMainFrame())
         UseCounter::count(*this, UseCounter::ImageDocumentInFrame);
 }
 

@@ -3059,7 +3059,7 @@ void Element::setContainsFullScreenElement(bool flag)
 static Element* parentCrossingFrameBoundaries(Element* element)
 {
     DCHECK(element);
-    return element->parentElement() ? element->parentElement() : element->document().ownerElement();
+    return element->parentElement() ? element->parentElement() : element->document().localOwner();
 }
 
 void Element::setContainsFullScreenElementOnAncestorsCrossingFrameBoundaries(bool flag)

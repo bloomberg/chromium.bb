@@ -552,7 +552,7 @@ CSSValue* CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropertyID propert
 
     bool forceFullLayout = isLayoutDependent(propertyID, style, layoutObject)
         || styledNode->isInShadowTree()
-        || (document.ownerElement() && document.ensureStyleResolver().hasViewportDependentMediaQueries());
+        || (document.localOwner() && document.ensureStyleResolver().hasViewportDependentMediaQueries());
 
     if (forceFullLayout) {
         document.updateLayoutIgnorePendingStylesheetsForNode(styledNode);

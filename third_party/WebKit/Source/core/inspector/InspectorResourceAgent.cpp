@@ -833,7 +833,7 @@ PassOwnPtr<protocol::Network::Initiator> InspectorResourceAgent::buildInitiatorO
     }
 
     while (document && !document->scriptableDocumentParser())
-        document = document->ownerElement() ? document->ownerElement()->ownerDocument() : nullptr;
+        document = document->localOwner() ? document->localOwner()->ownerDocument() : nullptr;
     if (document && document->scriptableDocumentParser()) {
         OwnPtr<protocol::Network::Initiator> initiatorObject = protocol::Network::Initiator::create()
             .setType(protocol::Network::Initiator::TypeEnum::Parser).build();

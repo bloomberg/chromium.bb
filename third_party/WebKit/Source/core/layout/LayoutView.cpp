@@ -500,7 +500,7 @@ bool LayoutView::mapToVisualRectInAncestorSpace(const LayoutBoxModelObject* ance
     if (ancestor == this)
         return true;
 
-    Element* owner = document().ownerElement();
+    Element* owner = document().localOwner();
     if (!owner)
         return true;
 
@@ -1018,7 +1018,7 @@ void LayoutView::updateFromStyle()
     LayoutBlockFlow::updateFromStyle();
 
     // LayoutView of the main frame is responsible for painting base background.
-    if (!document().ownerElement())
+    if (document().isInMainFrame())
         setHasBoxDecorationBackground(true);
 }
 

@@ -543,7 +543,7 @@ void LayoutBox::scrollRectToVisible(const LayoutRect& rect, const ScrollAlignmen
         newRect = getScrollableArea()->scrollIntoView(rect, alignX, alignY, scrollType);
     } else if (!parentBox && canBeProgramaticallyScrolled()) {
         if (FrameView* frameView = this->frameView()) {
-            HTMLFrameOwnerElement* ownerElement = document().ownerElement();
+            HTMLFrameOwnerElement* ownerElement = document().localOwner();
             if (!isDisallowedAutoscroll(ownerElement, frameView)) {
                 if (makeVisibleInVisualViewport) {
                     frameView->getScrollableArea()->scrollIntoView(rect, alignX, alignY, scrollType);
@@ -855,8 +855,8 @@ IntSize LayoutBox::calculateAutoscrollDirection(const IntPoint& pointInRootFrame
 LayoutBox* LayoutBox::findAutoscrollable(LayoutObject* layoutObject)
 {
     while (layoutObject && !(layoutObject->isBox() && toLayoutBox(layoutObject)->canAutoscroll())) {
-        if (!layoutObject->parent() && layoutObject->node() == layoutObject->document() && layoutObject->document().ownerElement())
-            layoutObject = layoutObject->document().ownerElement()->layoutObject();
+        if (!layoutObject->parent() && layoutObject->node() == layoutObject->document() && layoutObject->document().localOwner())
+            layoutObject = layoutObject->document().localOwner()->layoutObject();
         else
             layoutObject = layoutObject->parent();
     }

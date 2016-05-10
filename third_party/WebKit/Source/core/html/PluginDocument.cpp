@@ -168,7 +168,7 @@ PluginDocument::PluginDocument(const DocumentInit& initializer)
     setCompatibilityMode(QuirksMode);
     lockCompatibilityMode();
     UseCounter::count(*this, UseCounter::PluginDocument);
-    if (ownerElement())
+    if (!isInMainFrame())
         UseCounter::count(*this, UseCounter::PluginDocumentInFrame);
 }
 

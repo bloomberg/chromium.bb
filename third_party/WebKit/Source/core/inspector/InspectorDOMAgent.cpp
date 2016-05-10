@@ -1655,7 +1655,7 @@ Node* InspectorDOMAgent::innerParentNode(Node* node)
         Document* document = toDocument(node);
         if (HTMLImportLoader* loader = document->importLoader())
             return loader->firstImport()->link();
-        return document->ownerElement();
+        return document->localOwner();
     }
     return node->parentOrShadowHostNode();
 }
@@ -1679,7 +1679,7 @@ void InspectorDOMAgent::domContentLoadedEventFired(LocalFrame* frame)
 
 void InspectorDOMAgent::invalidateFrameOwnerElement(LocalFrame* frame)
 {
-    HTMLFrameOwnerElement* frameOwner = frame->document()->ownerElement();
+    HTMLFrameOwnerElement* frameOwner = frame->document()->localOwner();
     if (!frameOwner)
         return;
 

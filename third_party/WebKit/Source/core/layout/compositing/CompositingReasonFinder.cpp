@@ -40,8 +40,7 @@ bool CompositingReasonFinder::hasOverflowScrollTrigger() const
 
 bool CompositingReasonFinder::isMainFrame() const
 {
-    // FIXME: LocalFrame::isMainFrame() is probably better.
-    return !m_layoutView.document().ownerElement();
+    return m_layoutView.document().isInMainFrame();
 }
 
 CompositingReasons CompositingReasonFinder::directReasons(const PaintLayer* layer) const

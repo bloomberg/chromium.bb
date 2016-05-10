@@ -2038,7 +2038,7 @@ void InspectorCSSAgent::getBackgroundColors(ErrorString* errorString, int nodeId
         return;
     }
     Document& document = element->document();
-    bool isMainFrame = !document.ownerElement();
+    bool isMainFrame = document.isInMainFrame();
     bool foundOpaqueColor = false;
     if (isMainFrame && !view->isTransparent()) {
         // Start with the "default" page color (typically white).
@@ -2050,9 +2050,9 @@ void InspectorCSSAgent::getBackgroundColors(ErrorString* errorString, int nodeId
     foundOpaqueColor = getColorsFromRect(textBounds, element->document(), element, colors);
 
     if (!foundOpaqueColor && !isMainFrame) {
-        for (HTMLFrameOwnerElement* ownerElement = document.ownerElement();
+        for (HTMLFrameOwnerElement* ownerElement = document.localOwner();
             !foundOpaqueColor && ownerElement;
-            ownerElement = ownerElement->document().ownerElement()) {
+            ownerElement = ownerElement->document().localOwner()) {
             foundOpaqueColor = getColorsFromRect(textBounds, ownerElement->document(), nullptr, colors);
         }
     }

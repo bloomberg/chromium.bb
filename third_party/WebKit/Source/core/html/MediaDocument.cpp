@@ -235,7 +235,7 @@ MediaDocument::MediaDocument(const DocumentInit& initializer)
     setCompatibilityMode(QuirksMode);
     lockCompatibilityMode();
     UseCounter::count(*this, UseCounter::MediaDocument);
-    if (ownerElement())
+    if (!isInMainFrame())
         UseCounter::count(*this, UseCounter::MediaDocumentInFrame);
 }
 

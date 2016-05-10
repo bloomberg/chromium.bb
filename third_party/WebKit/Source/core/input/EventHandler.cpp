@@ -84,6 +84,7 @@
 #include "core/page/SpatialNavigation.h"
 #include "core/page/TouchAdjustment.h"
 #include "core/page/scrolling/OverscrollController.h"
+#include "core/page/scrolling/RootScroller.h"
 #include "core/page/scrolling/ScrollState.h"
 #include "core/paint/PaintLayer.h"
 #include "core/style/ComputedStyle.h"
@@ -2429,11 +2430,10 @@ bool EventHandler::isRootScroller(const Node& node) const
 {
     // The root scroller is the one Element on the page designated to perform
     // "viewport actions" like top controls movement and overscroll glow.
-
-    if (!node.isElementNode() || node.document().ownerElement())
+    if (!frameHost() || !frameHost()->rootScroller())
         return false;
 
-    return node.document().rootScroller() == toElement(&node);
+    return frameHost()->rootScroller()->get() == &node;
 }
 
 WebInputEventResult EventHandler::handleGestureScrollUpdate(const PlatformGestureEvent& gestureEvent)
@@ -3706,7 +3706,7 @@ PlatformEvent::Modifiers EventHandler::accessKeyModifiers()
 #endif
 }
 
-FrameHost* EventHandler::frameHost()
+FrameHost* EventHandler::frameHost() const
 {
     if (!m_frame->page())
         return nullptr;
