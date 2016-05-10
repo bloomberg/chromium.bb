@@ -315,8 +315,21 @@ void V8GCController::gcPrologue(v8::Isolate* isolate, v8::GCType type, v8::GCCal
     }
 }
 
+namespace {
+
+void UpdateCollectedPhantomHandles(v8::Isolate* isolate)
+{
+    ThreadHeapStats& heapStats = ThreadState::current()->heap().heapStats();
+    size_t count = isolate->NumberOfPhantomHandleResetsSinceLastCall();
+    heapStats.decreaseWrapperCount(count);
+    heapStats.increaseCollectedWrapperCount(count);
+}
+
+} // namespace
+
 void V8GCController::gcEpilogue(v8::Isolate* isolate, v8::GCType type, v8::GCCallbackFlags flags)
 {
+    UpdateCollectedPhantomHandles(isolate);
     switch (type) {
     case v8::kGCTypeScavenge:
         TRACE_EVENT_END1("devtools.timeline,v8", "MinorGC", "usedHeapSizeAfter", usedHeapSize(isolate));

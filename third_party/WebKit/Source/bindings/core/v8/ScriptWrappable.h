@@ -105,7 +105,7 @@ public:
         }
         m_wrapper.Reset(isolate, wrapper);
         wrapperTypeInfo->configureWrapper(&m_wrapper);
-        m_wrapper.SetWeak(this, &firstWeakCallback, v8::WeakCallbackType::kInternalFields);
+        m_wrapper.SetWeak();
         ASSERT(containsWrapper());
         return true;
     }
@@ -169,23 +169,6 @@ public:
     // already broken), we must not hit the RELEASE_ASSERT.
 
 private:
-    void disposeWrapper(const v8::WeakCallbackInfo<ScriptWrappable>& data)
-    {
-        auto scriptWrappable = reinterpret_cast<ScriptWrappable*>(data.GetInternalField(v8DOMWrapperObjectIndex));
-        SECURITY_CHECK(scriptWrappable == this);
-        RELEASE_ASSERT(containsWrapper());
-        m_wrapper.Reset();
-    }
-
-    static void firstWeakCallback(const v8::WeakCallbackInfo<ScriptWrappable>& data)
-    {
-        auto scriptWrappable = data.GetParameter();
-        scriptWrappable->disposeWrapper(data);
-
-        auto wrapperTypeInfo = reinterpret_cast<WrapperTypeInfo*>(data.GetInternalField(v8DOMWrapperTypeIndex));
-        wrapperTypeInfo->wrapperDestroyed();
-    }
-
     v8::Persistent<v8::Object> m_wrapper;
 };
 
