@@ -120,13 +120,13 @@ class TaskManagerTesterImpl : public TaskManagerTester {
   void ToggleColumnVisibility(ColumnSpecifier column) override {
     int column_id = 0;
     switch (column) {
-      case COLUMN_NONE:
+      case ColumnSpecifier::COLUMN_NONE:
         return;
-      case SQLITE_MEMORY_USED:
+      case ColumnSpecifier::SQLITE_MEMORY_USED:
         column_id = IDS_TASK_MANAGER_SQLITE_MEMORY_USED_COLUMN;
         break;
-      case V8_MEMORY_USED:
-      case V8_MEMORY:
+      case ColumnSpecifier::V8_MEMORY_USED:
+      case ColumnSpecifier::V8_MEMORY:
         column_id = IDS_TASK_MANAGER_JAVASCRIPT_MEMORY_ALLOCATED_COLUMN;
         break;
     }
@@ -140,15 +140,15 @@ class TaskManagerTesterImpl : public TaskManagerTester {
     bool success = false;
 
     switch (column) {
-      case COLUMN_NONE:
+      case ColumnSpecifier::COLUMN_NONE:
         break;
-      case V8_MEMORY:
+      case ColumnSpecifier::V8_MEMORY:
         success = task_manager()->GetV8Memory(task_id, &value, &ignored);
         break;
-      case V8_MEMORY_USED:
+      case ColumnSpecifier::V8_MEMORY_USED:
         success = task_manager()->GetV8Memory(task_id, &ignored, &value);
         break;
-      case SQLITE_MEMORY_USED:
+      case ColumnSpecifier::SQLITE_MEMORY_USED:
         value = task_manager()->GetSqliteMemoryUsed(task_id);
         success = true;
         break;
@@ -211,15 +211,15 @@ class LegacyTaskManagerTesterImpl : public TaskManagerTester,
     size_t value = 0;
     bool success = false;
     switch (column) {
-      case COLUMN_NONE:
+      case ColumnSpecifier::COLUMN_NONE:
         break;
-      case V8_MEMORY:
+      case ColumnSpecifier::V8_MEMORY:
         success = model_->GetV8Memory(row, &value);
         break;
-      case V8_MEMORY_USED:
+      case ColumnSpecifier::V8_MEMORY_USED:
         success = model_->GetV8MemoryUsed(row, &value);
         break;
-      case SQLITE_MEMORY_USED:
+      case ColumnSpecifier::SQLITE_MEMORY_USED:
         success = model_->GetSqliteMemoryUsedBytes(row, &value);
         break;
     }
@@ -337,13 +337,13 @@ class ResourceChangeObserver {
 
   const char* GetColumnName() {
     switch (column_specifier_) {
-      case COLUMN_NONE:
+      case ColumnSpecifier::COLUMN_NONE:
         return "N/A";
-      case V8_MEMORY:
+      case ColumnSpecifier::V8_MEMORY:
         return "V8 Memory";
-      case V8_MEMORY_USED:
+      case ColumnSpecifier::V8_MEMORY_USED:
         return "V8 Memory Used";
-      case SQLITE_MEMORY_USED:
+      case ColumnSpecifier::SQLITE_MEMORY_USED:
         return "SQLite Memory Used";
     }
     return "N/A";
@@ -400,7 +400,8 @@ std::unique_ptr<TaskManagerTester> GetTaskManagerTester() {
 void WaitForTaskManagerRows(int required_count,
                             const base::string16& title_pattern) {
   const int column_value_dont_care = 0;
-  ResourceChangeObserver observer(required_count, title_pattern, COLUMN_NONE,
+  ResourceChangeObserver observer(required_count, title_pattern,
+                                  ColumnSpecifier::COLUMN_NONE,
                                   column_value_dont_care);
   observer.RunUntilSatisfied();
 }

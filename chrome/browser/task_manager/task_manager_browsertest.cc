@@ -51,6 +51,7 @@
 #include "ui/base/page_transition_types.h"
 
 using content::WebContents;
+using task_manager::browsertest_util::ColumnSpecifier;
 using task_manager::browsertest_util::MatchAboutBlankTab;
 using task_manager::browsertest_util::MatchAnyApp;
 using task_manager::browsertest_util::MatchAnyExtension;
@@ -824,7 +825,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, ReloadExtension) {
 // http://crbug.com/241066
 IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, WebWorkerJSHeapMemory) {
   ShowTaskManager();
-  model()->ToggleColumnVisibility(task_manager::browsertest_util::V8_MEMORY);
+  model()->ToggleColumnVisibility(ColumnSpecifier::V8_MEMORY);
   ui_test_utils::NavigateToURL(browser(), GetTestURL());
   size_t minimal_heap_size = 4 * 1024 * 1024 * sizeof(void*);
   std::string test_js = base::StringPrintf(
@@ -848,10 +849,9 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, WebWorkerJSHeapMemory) {
   // The worker has allocated objects of at least |minimal_heap_size| bytes.
   // Wait for the heap stats to reflect this.
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerStatToExceed(
-      MatchTab("title1.html"), task_manager::browsertest_util::V8_MEMORY,
-      minimal_heap_size));
+      MatchTab("title1.html"), ColumnSpecifier::V8_MEMORY, minimal_heap_size));
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerStatToExceed(
-      MatchTab("title1.html"), task_manager::browsertest_util::V8_MEMORY_USED,
+      MatchTab("title1.html"), ColumnSpecifier::V8_MEMORY_USED,
       minimal_heap_size));
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyTab()));
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchTab("title1.html")));
@@ -873,15 +873,14 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, JSHeapMemory) {
       browser()->tab_strip_model()->GetActiveWebContents(), test_js, &ok));
   ASSERT_EQ("okay", ok);
 
-  model()->ToggleColumnVisibility(task_manager::browsertest_util::V8_MEMORY);
+  model()->ToggleColumnVisibility(ColumnSpecifier::V8_MEMORY);
 
   // The page's js has allocated objects of at least |minimal_heap_size| bytes.
   // Wait for the heap stats to reflect this.
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerStatToExceed(
-      MatchTab("title1.html"), task_manager::browsertest_util::V8_MEMORY,
-      minimal_heap_size));
+      MatchTab("title1.html"), ColumnSpecifier::V8_MEMORY, minimal_heap_size));
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerStatToExceed(
-      MatchTab("title1.html"), task_manager::browsertest_util::V8_MEMORY_USED,
+      MatchTab("title1.html"), ColumnSpecifier::V8_MEMORY_USED,
       minimal_heap_size));
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyTab()));
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchTab("title1.html")));
@@ -891,7 +890,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, JSHeapMemory) {
 IN_PROC_BROWSER_TEST_F(TaskManagerUtilityProcessBrowserTest,
                        UtilityJSHeapMemory) {
   ShowTaskManager();
-  model()->ToggleColumnVisibility(task_manager::browsertest_util::V8_MEMORY);
+  model()->ToggleColumnVisibility(ColumnSpecifier::V8_MEMORY);
 
   auto proxy_resolver_name =
       l10n_util::GetStringUTF16(IDS_UTILITY_PROCESS_PROXY_RESOLVER_NAME);
@@ -899,11 +898,11 @@ IN_PROC_BROWSER_TEST_F(TaskManagerUtilityProcessBrowserTest,
   // The PAC script is trivial, so don't expect a large heap.
   size_t minimal_heap_size = 1024;
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerStatToExceed(
-      MatchUtility(proxy_resolver_name),
-      task_manager::browsertest_util::V8_MEMORY, minimal_heap_size));
+      MatchUtility(proxy_resolver_name), ColumnSpecifier::V8_MEMORY,
+      minimal_heap_size));
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerStatToExceed(
-      MatchUtility(proxy_resolver_name),
-      task_manager::browsertest_util::V8_MEMORY_USED, minimal_heap_size));
+      MatchUtility(proxy_resolver_name), ColumnSpecifier::V8_MEMORY_USED,
+      minimal_heap_size));
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyUtility()));
   ASSERT_NO_FATAL_FAILURE(
       WaitForTaskManagerRows(1, MatchUtility(proxy_resolver_name)));
