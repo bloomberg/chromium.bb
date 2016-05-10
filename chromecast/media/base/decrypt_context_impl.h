@@ -12,10 +12,6 @@
 #include "chromecast/media/base/key_systems_common.h"
 #include "chromecast/public/media/decrypt_context.h"
 
-namespace crypto {
-class SymmetricKey;
-}
-
 namespace chromecast {
 namespace media {
 
@@ -31,11 +27,14 @@ class DecryptContextImpl : public DecryptContext {
 
   // DecryptContext implementation:
   CastKeySystem GetKeySystem() override;
-  bool Decrypt(CastDecoderBuffer* buffer,
-               std::vector<uint8_t>* output) override;
+  bool Decrypt(CastDecoderBuffer* buffer, uint8_t* output) override;
 
-  // Returns the clear key if available, NULL otherwise.
-  virtual crypto::SymmetricKey* GetKey() const;
+  // Returns whether the data can be decrypted into user memory.
+  // If the key system doesn't support secure output or the app explicitly
+  // requires non secure output, it should return true;
+  // If the key system doesn't allow clear content to be decrypted into user
+  // memory, it should return false.
+  virtual bool CanDecryptToBuffer() const;
 
  private:
   CastKeySystem key_system_;

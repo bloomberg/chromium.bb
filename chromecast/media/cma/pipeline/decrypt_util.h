@@ -15,6 +15,7 @@ namespace chromecast {
 namespace media {
 
 class DecoderBufferBase;
+class DecryptContextImpl;
 
 // Create a new buffer which corresponds to the clear version of |buffer|.
 // Note: the memory area corresponding to the ES data of the new buffer
@@ -23,7 +24,7 @@ class DecoderBufferBase;
 // in the sense it has some decryption info but the ES data is now in clear.
 scoped_refptr<DecoderBufferBase> DecryptDecoderBuffer(
     const scoped_refptr<DecoderBufferBase>& buffer,
-    crypto::SymmetricKey* key);
+    DecryptContextImpl* decrypt_ctxt);
 
 }  // namespace media
 }  // namespace chromecast

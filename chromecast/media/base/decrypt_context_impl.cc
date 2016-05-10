@@ -16,13 +16,12 @@ CastKeySystem DecryptContextImpl::GetKeySystem() {
   return key_system_;
 }
 
-bool DecryptContextImpl::Decrypt(CastDecoderBuffer* buffer,
-                                 std::vector<uint8_t>* output) {
+bool DecryptContextImpl::Decrypt(CastDecoderBuffer* buffer, uint8_t* output) {
   return false;
 }
 
-crypto::SymmetricKey* DecryptContextImpl::GetKey() const {
-  return NULL;
+bool DecryptContextImpl::CanDecryptToBuffer() const {
+  return false;
 }
 
 }  // namespace media

@@ -8,6 +8,10 @@
 #include "base/macros.h"
 #include "chromecast/media/base/decrypt_context_impl.h"
 
+namespace crypto {
+class SymmetricKey;
+}
+
 namespace chromecast {
 namespace media {
 
@@ -18,7 +22,10 @@ class DecryptContextImplClearKey : public DecryptContextImpl {
   ~DecryptContextImplClearKey() override;
 
   // DecryptContext implementation.
-  crypto::SymmetricKey* GetKey() const override;
+  bool Decrypt(CastDecoderBuffer* buffer, uint8_t* output) override;
+
+  // DecryptContextImpl implementation.
+  bool CanDecryptToBuffer() const override;
 
  private:
   crypto::SymmetricKey* const key_;

@@ -227,11 +227,10 @@ void AvPipelineImpl::ProcessPendingBuffer() {
       return;
     }
 
-    // If we do have the clear key, decrypt the pending buffer
-    // and reset the decryption context (not needed anymore).
-    crypto::SymmetricKey* key = decrypt_context->GetKey();
-    if (key != NULL) {
-      pending_buffer_ = DecryptDecoderBuffer(pending_buffer_, key);
+    // If we can get the clear content, decrypt the pending buffer
+    if (decrypt_context->CanDecryptToBuffer()) {
+      pending_buffer_ =
+          DecryptDecoderBuffer(pending_buffer_, decrypt_context.get());
       decrypt_context.reset();
     }
   }
