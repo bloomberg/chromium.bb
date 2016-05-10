@@ -265,12 +265,6 @@
   }
 
   function assertInterpolation(options, expectations) {
-    if (options.from) {
-      console.assert(CSS.supports(options.property, options.from));
-    }
-    if (options.to) {
-      console.assert(CSS.supports(options.property, options.to));
-    }
     interpolationTests.push({options, expectations});
   }
 
@@ -341,14 +335,21 @@ assertInterpolation({
 
   function createCompositionTestTargets(compositionContainer, compositionTest, rebaselineContainer) {
     var options = compositionTest.options;
-    console.assert('addFrom' in options !== 'replaceFrom' in options);
-    console.assert('addTo' in options !== 'replaceTo' in options);
     var property = options.property;
     var underlying = options.underlying;
     var from = options.addFrom || options.replaceFrom;
     var to = options.addTo || options.replaceTo;
     var fromComposite = 'addFrom' in options ? 'add' : 'replace';
     var toComposite = 'addTo' in options ? 'add' : 'replace';
+    if ('addFrom' in options === 'replaceFrom' in options
+      || 'addTo' in options === 'replaceTo' in options) {
+      test(function() {
+        assert_true('addFrom' in options !== 'replaceFrom' in options, 'addFrom xor replaceFrom must be specified');
+        assert_true('addTo' in options !== 'replaceTo' in options, 'addTo xor replaceTo must be specified');
+      }, `Composition tests must use addFrom xor replaceFrom, and addTo xor replaceTo`);
+    }
+    validateTestInputs(property, from, to, underlying);
+
     if (webAnimationsInterpolation.rebaseline) {
       var rebaseline = createElement(rebaselineContainer, 'pre');
       rebaseline.appendChild(document.createTextNode(`\
@@ -389,8 +390,29 @@ assertComposition({
     });
   }
 
+  function validateTestInputs(property, from, to, underlying) {
+    if (from && from !== neutralKeyframe && !CSS.supports(property, from)) {
+        test(function() {
+          assert_unreached('from value not supported');
+        }, `${property} supports [${from}]`);
+    }
+    if (to && to !== neutralKeyframe && !CSS.supports(property, to)) {
+        test(function() {
+          assert_unreached('to value not supported');
+        }, `${property} supports [${to}]`);
+    }
+    if (typeof underlying !== 'undefined' && !CSS.supports(property, underlying)) {
+        test(function() {
+          assert_unreached('underlying value not supported');
+        }, `${property} supports [${underlying}]`);
+    }
+  }
+
   function createTestTargets(interpolationMethods, interpolationTests, compositionTests, container, rebaselineContainer) {
     var targets = [];
+    for (var interpolationTest of interpolationTests) {
+      validateTestInputs(interpolationTest.options.property, interpolationTest.options.from, interpolationTest.options.to);
+    }
     for (var interpolationMethod of interpolationMethods) {
       var interpolationMethodContainer = createElement(container);
       for (var interpolationTest of interpolationTests) {

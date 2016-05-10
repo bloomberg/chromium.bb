@@ -53,7 +53,7 @@ assertComposition({
   {at:  1.2, is: '17 22'},
 ]);
 
-assertNoInterpolation({
+assertComposition({
   property: 'stroke-dasharray',
   underlying: '10 30',
   addFrom: 'none',
@@ -63,6 +63,7 @@ assertNoInterpolation({
   {at: -0.5, is: 'none'},
   {at:  0,   is: 'none'},
   {at:  0.4, is: 'none'},
+  {at:  0.5, is: '20 40'},
   {at:  0.6, is: '20 40'},
   {at:  1,   is: '20 40'},
   {at:  1.5, is: '20 40'},
