@@ -28,6 +28,7 @@ class TestDialog : public DialogDelegateView, public ButtonListener {
       : input_(new views::Textfield()),
         canceled_(false),
         accepted_(false),
+        closed_(false),
         closeable_(false),
         last_pressed_button_(nullptr),
         should_handle_escape_(false) {
@@ -57,6 +58,10 @@ class TestDialog : public DialogDelegateView, public ButtonListener {
     accepted_ = true;
     return closeable_;
   }
+  bool Close() override {
+    closed_ = true;
+    return closeable_;
+  }
 
   // DialogDelegateView overrides:
   gfx::Size GetPreferredSize() const override { return gfx::Size(200, 200); }
@@ -74,13 +79,18 @@ class TestDialog : public DialogDelegateView, public ButtonListener {
 
   Button* last_pressed_button() const { return last_pressed_button_; }
 
-  void CheckAndResetStates(bool canceled, bool accepted, Button* last_pressed) {
+  void CheckAndResetStates(bool canceled,
+                           bool accepted,
+                           bool closed,
+                           Button* last_pressed) {
     EXPECT_EQ(canceled, canceled_);
     canceled_ = false;
     EXPECT_EQ(accepted, accepted_);
     accepted_ = false;
     EXPECT_EQ(last_pressed, last_pressed_button_);
     last_pressed_button_ = nullptr;
+    EXPECT_EQ(closed, closed_);
+    closed_ = false;
   }
 
   void TearDown() {
@@ -99,6 +109,7 @@ class TestDialog : public DialogDelegateView, public ButtonListener {
   views::Textfield* input_;
   bool canceled_;
   bool accepted_;
+  bool closed_;
   // Prevent the dialog from closing, for repeated ok and cancel button clicks.
   bool closeable_;
   Button* last_pressed_button_;
@@ -146,33 +157,33 @@ TEST_F(DialogTest, AcceptAndCancel) {
   LabelButton* ok_button = client_view->ok_button();
   LabelButton* cancel_button = client_view->cancel_button();
 
-  // Check that return/escape accelerators accept/cancel dialogs.
+  // Check that return/escape accelerators accept/close dialogs.
   EXPECT_EQ(dialog()->input(), dialog()->GetFocusManager()->GetFocusedView());
   const ui::KeyEvent return_event(
       ui::ET_KEY_PRESSED, ui::VKEY_RETURN, ui::EF_NONE);
   SimulateKeyEvent(return_event);
-  dialog()->CheckAndResetStates(false, true, nullptr);
+  dialog()->CheckAndResetStates(false, true, false, nullptr);
   const ui::KeyEvent escape_event(
       ui::ET_KEY_PRESSED, ui::VKEY_ESCAPE, ui::EF_NONE);
   SimulateKeyEvent(escape_event);
-  dialog()->CheckAndResetStates(true, false, nullptr);
+  dialog()->CheckAndResetStates(false, false, true, nullptr);
 
   // Check ok and cancel button behavior on a directed return key events.
   ok_button->OnKeyPressed(return_event);
-  dialog()->CheckAndResetStates(false, true, nullptr);
+  dialog()->CheckAndResetStates(false, true, false, nullptr);
   cancel_button->OnKeyPressed(return_event);
-  dialog()->CheckAndResetStates(true, false, nullptr);
+  dialog()->CheckAndResetStates(true, false, false, nullptr);
 
   // Check that return accelerators cancel dialogs if cancel is focused.
   cancel_button->RequestFocus();
   EXPECT_EQ(cancel_button, dialog()->GetFocusManager()->GetFocusedView());
   SimulateKeyEvent(return_event);
-  dialog()->CheckAndResetStates(true, false, nullptr);
+  dialog()->CheckAndResetStates(true, false, false, nullptr);
 
   // Check that escape can be overridden.
   dialog()->set_should_handle_escape(true);
   SimulateKeyEvent(escape_event);
-  dialog()->CheckAndResetStates(false, false, nullptr);
+  dialog()->CheckAndResetStates(false, false, false, nullptr);
 }
 
 TEST_F(DialogTest, RemoveDefaultButton) {

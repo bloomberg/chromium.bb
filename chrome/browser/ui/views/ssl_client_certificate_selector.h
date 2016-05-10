@@ -9,6 +9,7 @@
 #include "chrome/browser/ssl/ssl_client_auth_observer.h"
 #include "chrome/browser/ssl/ssl_client_certificate_selector.h"
 #include "chrome/browser/ui/views/certificate_selector.h"
+#include "content/public/browser/web_contents_observer.h"
 
 // This header file exists only for testing.  Chrome should access the
 // certificate selector only through the cross-platform interface
@@ -24,7 +25,8 @@ class X509Certificate;
 }
 
 class SSLClientCertificateSelector : public chrome::CertificateSelector,
-                                     public SSLClientAuthObserver {
+                                     public SSLClientAuthObserver,
+                                     public content::WebContentsObserver {
  public:
   SSLClientCertificateSelector(
       content::WebContents* web_contents,
@@ -38,9 +40,11 @@ class SSLClientCertificateSelector : public chrome::CertificateSelector,
   void OnCertSelectedByNotification() override;
 
   // chrome::CertificateSelector:
-  bool Cancel() override;
+  void DeleteDelegate() override;
   bool Accept() override;
-  bool Close() override;
+
+  // content::WebContentsObserver:
+  void WebContentsDestroyed() override;
 
  private:
   // Callback after unlocking certificate slot.

@@ -31,10 +31,10 @@ SSLClientCertificateSelector::SSLClientCertificateSelector(
     : CertificateSelector(cert_request_info->client_certs, web_contents),
       SSLClientAuthObserver(web_contents->GetBrowserContext(),
                             cert_request_info,
-                            std::move(delegate)) {}
+                            std::move(delegate)),
+      WebContentsObserver(web_contents) {}
 
-SSLClientCertificateSelector::~SSLClientCertificateSelector() {
-}
+SSLClientCertificateSelector::~SSLClientCertificateSelector() {}
 
 void SSLClientCertificateSelector::Init() {
   StartObserving();
@@ -53,9 +53,13 @@ void SSLClientCertificateSelector::OnCertSelectedByNotification() {
   GetWidget()->Close();
 }
 
-bool SSLClientCertificateSelector::Cancel() {
+void SSLClientCertificateSelector::DeleteDelegate() {
+  // This is here and not in Cancel() to give WebContentsDestroyed a chance
+  // to abort instead of proceeding with a null certificate. (This will be
+  // ignored if there was a previous call to CertificateSelected or
+  // CancelCertificateSelection.)
   CertificateSelected(nullptr);
-  return true;
+  chrome::CertificateSelector::DeleteDelegate();
 }
 
 bool SSLClientCertificateSelector::Accept() {
@@ -80,13 +84,9 @@ bool SSLClientCertificateSelector::Accept() {
   return false;
 }
 
-bool SSLClientCertificateSelector::Close() {
-  // By default, closing the dialog calls the Cancel method. However, selecting
-  // cancel in the UI currently continues the request with no certificate,
-  // remembering the selection. If the dialog is closed by closing the
-  // containing tab, the request should abort.
+void SSLClientCertificateSelector::WebContentsDestroyed() {
+  // If the dialog is closed by closing the containing tab, abort the request.
   CancelCertificateSelection();
-  return true;
 }
 
 void SSLClientCertificateSelector::Unlocked(net::X509Certificate* cert) {

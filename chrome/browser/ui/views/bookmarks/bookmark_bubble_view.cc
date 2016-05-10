@@ -143,10 +143,6 @@ bool BookmarkBubbleView::AcceleratorPressed(
     HandleButtonPressed(remove_button_);
     return true;
   }
-  if (key_code == ui::VKEY_ESCAPE) {
-    remove_bookmark_ = newly_bookmarked_;
-    apply_edits_ = false;
-  }
 
   return LocationBarBubbleDelegateView::AcceleratorPressed(accelerator);
 }
@@ -219,7 +215,6 @@ void BookmarkBubbleView::Init() {
   AddAccelerator(ui::Accelerator(ui::VKEY_RETURN, ui::EF_NONE));
   AddAccelerator(ui::Accelerator(ui::VKEY_E, ui::EF_ALT_DOWN));
   AddAccelerator(ui::Accelerator(ui::VKEY_R, ui::EF_ALT_DOWN));
-  AddAccelerator(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
 }
 
 base::string16 BookmarkBubbleView::GetWindowTitle() const {
@@ -263,11 +258,11 @@ BookmarkBubbleView::BookmarkBubbleView(
       parent_model_(BookmarkModelFactory::GetForProfile(profile_),
                     BookmarkModelFactory::GetForProfile(profile_)
                         ->GetMostRecentlyAddedUserNodeForURL(url)),
-      remove_button_(NULL),
-      edit_button_(NULL),
-      close_button_(NULL),
-      title_tf_(NULL),
-      parent_combobox_(NULL),
+      remove_button_(nullptr),
+      edit_button_(nullptr),
+      close_button_(nullptr),
+      title_tf_(nullptr),
+      parent_combobox_(nullptr),
       remove_bookmark_(false),
       apply_edits_(true) {}
 

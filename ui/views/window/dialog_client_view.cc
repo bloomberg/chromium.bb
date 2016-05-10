@@ -215,10 +215,6 @@ void DialogClientView::Layout() {
 bool DialogClientView::AcceleratorPressed(const ui::Accelerator& accelerator) {
   DCHECK_EQ(accelerator.key_code(), ui::VKEY_ESCAPE);
 
-  // If there's a cancel button, it handles escape.
-  if (cancel_button_)
-    return cancel_button_->AcceleratorPressed(accelerator);
-
   GetWidget()->Close();
   return true;
 }
