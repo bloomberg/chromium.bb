@@ -58,9 +58,6 @@ public:
 private:
     PageDebuggerAgent(V8DebuggerAgent*, InspectedFrames*);
 
-    // V8DebuggerAgent::Client implemntation.
-    bool canExecuteScripts() const;
-
     Member<InspectedFrames> m_inspectedFrames;
     HashMap<String, String> m_compiledScriptURLs;
 };

@@ -32,7 +32,6 @@
 
 #include "bindings/core/v8/ScriptState.h"
 #include "core/inspector/InspectorTraceEvents.h"
-#include "platform/UserGestureIndicator.h"
 #include "platform/inspector_protocol/Values.h"
 #include "platform/v8_inspector/public/V8Debugger.h"
 #include "platform/v8_inspector/public/V8RuntimeAgent.h"
@@ -44,11 +43,10 @@ namespace InspectorRuntimeAgentState {
 static const char runtimeEnabled[] = "runtimeEnabled";
 };
 
-InspectorRuntimeAgent::InspectorRuntimeAgent(V8RuntimeAgent* agent, Client* client)
+InspectorRuntimeAgent::InspectorRuntimeAgent(V8RuntimeAgent* agent)
     : InspectorBaseAgent<InspectorRuntimeAgent, protocol::Frontend::Runtime>("Runtime")
     , m_enabled(false)
     , m_v8RuntimeAgent(agent)
-    , m_client(client)
 {
 }
 
@@ -92,9 +90,6 @@ void InspectorRuntimeAgent::evaluate(ErrorString* errorString,
     Maybe<bool>* wasThrown,
     Maybe<protocol::Runtime::ExceptionDetails>* exceptionDetails)
 {
-    Optional<UserGestureIndicator> userGestureIndicator;
-    if (userGesture.fromMaybe(false))
-        userGestureIndicator.emplace(DefinitelyProcessingNewUserGesture);
     m_v8RuntimeAgent->evaluate(errorString, expression, objectGroup, includeCommandLineAPI, doNotPauseOnExceptionsAndMuteConsole, executionContextId, returnByValue, generatePreview, userGesture, result, wasThrown, exceptionDetails);
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "UpdateCounters", TRACE_EVENT_SCOPE_THREAD, "data", InspectorUpdateCountersEvent::data());
 }
@@ -110,9 +105,6 @@ void InspectorRuntimeAgent::callFunctionOn(ErrorString* errorString,
     OwnPtr<protocol::Runtime::RemoteObject>* result,
     Maybe<bool>* wasThrown)
 {
-    Optional<UserGestureIndicator> userGestureIndicator;
-    if (userGesture.fromMaybe(false))
-        userGestureIndicator.emplace(DefinitelyProcessingNewUserGesture);
     m_v8RuntimeAgent->callFunctionOn(errorString, objectId, expression, optionalArguments, doNotPauseOnExceptionsAndMuteConsole, returnByValue, generatePreview, userGesture, result, wasThrown);
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "UpdateCounters", TRACE_EVENT_SCOPE_THREAD, "data", InspectorUpdateCountersEvent::data());
 }
@@ -141,7 +133,7 @@ void InspectorRuntimeAgent::releaseObjectGroup(ErrorString* errorString, const S
 
 void InspectorRuntimeAgent::run(ErrorString* errorString)
 {
-    m_client->resumeStartup();
+    m_v8RuntimeAgent->run(errorString);
 }
 
 void InspectorRuntimeAgent::setCustomObjectFormatterEnabled(ErrorString* errorString, bool enabled)

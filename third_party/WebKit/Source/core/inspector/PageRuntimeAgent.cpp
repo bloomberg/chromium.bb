@@ -43,8 +43,8 @@ using blink::protocol::Runtime::ExceptionDetails;
 
 namespace blink {
 
-PageRuntimeAgent::PageRuntimeAgent(Client* client, V8RuntimeAgent* agent, InspectedFrames* inspectedFrames)
-    : InspectorRuntimeAgent(agent, client)
+PageRuntimeAgent::PageRuntimeAgent(V8RuntimeAgent* agent, InspectedFrames* inspectedFrames)
+    : InspectorRuntimeAgent(agent)
     , m_inspectedFrames(inspectedFrames)
 {
 }

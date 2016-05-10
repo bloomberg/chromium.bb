@@ -93,6 +93,7 @@ public:
         bool installCommandLineAPI();
         bool installRemoteObjectAPI(const String16& objectGroupName);
         void ignoreExceptionsAndMuteConsole();
+        void pretendUserGesture();
         v8::Local<v8::Context> context() const { return m_context; }
         InjectedScript* injectedScript() const { return m_injectedScript; }
         const v8::TryCatch& tryCatch() const { return m_tryCatch; }
@@ -119,6 +120,7 @@ public:
         v8::MaybeLocal<v8::Object> m_global;
         bool m_ignoreExceptionsAndMuteConsole;
         V8DebuggerImpl::PauseOnExceptionsState m_previousPauseOnExceptionsState;
+        bool m_userGesture;
     };
 
     class ContextScope: public Scope {

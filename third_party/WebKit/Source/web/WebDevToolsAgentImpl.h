@@ -76,7 +76,6 @@ class WebDevToolsAgentImpl final
     , public InspectorEmulationAgent::Client
     , public InspectorTracingAgent::Client
     , public InspectorPageAgent::Client
-    , public InspectorRuntimeAgent::Client
     , public InspectorSession::Client
     , private WebThread::TaskObserver {
 public:
@@ -120,9 +119,6 @@ private:
     // InspectorEmulationAgent::Client implementation.
     void setCPUThrottlingRate(double) override;
 
-    // InspectorRuntimeAgent::Client implementation.
-    void resumeStartup() override;
-
     // InspectorPageAgent::Client implementation.
     void pageLayoutInvalidated(bool resized) override;
     void setPausedInDebuggerMessage(const String&) override;
@@ -130,6 +126,9 @@ private:
 
     // InspectorSession::Client implementation.
     void sendProtocolMessage(int sessionId, int callId, const String& response, const String& state) override;
+    void resumeStartup() override;
+    void profilingStarted() override;
+    void profilingStopped() override;
 
     // WebThread::TaskObserver implementation.
     void willProcessTask() override;

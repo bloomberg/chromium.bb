@@ -61,6 +61,16 @@ void ThreadDebugger::idleFinished(v8::Isolate* isolate)
         data->threadDebugger()->debugger()->idleFinished();
 }
 
+void ThreadDebugger::beginUserGesture()
+{
+    m_userGestureIndicator = adoptPtr(new UserGestureIndicator(DefinitelyProcessingNewUserGesture));
+}
+
+void ThreadDebugger::endUserGesture()
+{
+    m_userGestureIndicator.clear();
+}
+
 void ThreadDebugger::eventListeners(v8::Local<v8::Value> value, V8EventListenerInfoList& result)
 {
     InspectorDOMDebuggerAgent::eventListenersInfoForTarget(m_isolate, value, result);

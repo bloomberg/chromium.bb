@@ -25,6 +25,8 @@ public:
     virtual void unmuteWarningsAndDeprecations() = 0;
     virtual void muteConsole() = 0;
     virtual void unmuteConsole() = 0;
+    virtual void beginUserGesture() = 0;
+    virtual void endUserGesture() = 0;
     virtual void eventListeners(v8::Local<v8::Value>, V8EventListenerInfoList&) = 0;
     virtual bool callingContextCanAccessContext(v8::Local<v8::Context> calling, v8::Local<v8::Context> target) = 0;
     virtual String16 valueSubtype(v8::Local<v8::Value>) = 0;

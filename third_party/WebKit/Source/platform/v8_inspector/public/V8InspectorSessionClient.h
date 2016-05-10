@@ -16,6 +16,10 @@ public:
     virtual ~V8InspectorSessionClient() { }
     virtual void startInstrumenting() = 0;
     virtual void stopInstrumenting() = 0;
+    virtual void resumeStartup() = 0;
+    virtual bool canExecuteScripts() = 0;
+    virtual void profilingStarted() = 0;
+    virtual void profilingStopped() = 0;
 };
 
 } // namespace blink

@@ -54,7 +54,7 @@ class Frontend;
 class FrontendChannel;
 }
 
-class WorkerInspectorController final : public GarbageCollectedFinalized<WorkerInspectorController>, public InspectorRuntimeAgent::Client, public InspectorSession::Client {
+class WorkerInspectorController final : public GarbageCollectedFinalized<WorkerInspectorController>, public InspectorSession::Client {
     WTF_MAKE_NONCOPYABLE(WorkerInspectorController);
 public:
     static WorkerInspectorController* create(WorkerGlobalScope*);
@@ -71,11 +71,9 @@ public:
 private:
     WorkerInspectorController(WorkerGlobalScope*, WorkerThreadDebugger*);
 
-    // InspectorRuntimeAgent::Client implementation.
-    void resumeStartup() override;
-
     // InspectorSession::Client implementation.
     void sendProtocolMessage(int sessionId, int callId, const String& response, const String& state) override;
+    void resumeStartup() override;
 
     WorkerThreadDebugger* m_debugger;
     Member<WorkerGlobalScope> m_workerGlobalScope;

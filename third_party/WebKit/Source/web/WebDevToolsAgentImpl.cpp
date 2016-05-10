@@ -384,7 +384,7 @@ void WebDevToolsAgentImpl::initializeSession(int sessionId, const String& hostId
     v8::Isolate* isolate = V8PerIsolateData::mainThreadIsolate();
     m_v8Session = mainThreadDebugger->debugger()->connect(mainThreadDebugger->contextGroupId(m_inspectedFrames->root()));
 
-    m_session->append(PageRuntimeAgent::create(this, m_v8Session->runtimeAgent(), m_inspectedFrames.get()));
+    m_session->append(PageRuntimeAgent::create(m_v8Session->runtimeAgent(), m_inspectedFrames.get()));
 
     InspectorDOMAgent* domAgent = new InspectorDOMAgent(isolate, m_inspectedFrames.get(), m_v8Session.get(), m_overlay.get());
     m_domAgent = domAgent;
@@ -426,7 +426,7 @@ void WebDevToolsAgentImpl::initializeSession(int sessionId, const String& hostId
 
     m_session->append(InspectorInputAgent::create(m_inspectedFrames.get()));
 
-    m_session->append(InspectorProfilerAgent::create(m_v8Session->profilerAgent(), m_overlay.get()));
+    m_session->append(new InspectorProfilerAgent(m_v8Session->profilerAgent()));
 
     m_session->append(InspectorHeapProfilerAgent::create(m_v8Session->heapProfilerAgent()));
 
@@ -609,6 +609,18 @@ void WebDevToolsAgentImpl::resumeStartup()
         return;
     // Otherwise, pass to the client (embedded workers do it differently).
     m_client->resumeStartup();
+}
+
+void WebDevToolsAgentImpl::profilingStarted()
+{
+    if (m_overlay)
+        m_overlay->suspend();
+}
+
+void WebDevToolsAgentImpl::profilingStopped()
+{
+    if (m_overlay)
+        m_overlay->resume();
 }
 
 void WebDevToolsAgentImpl::pageLayoutInvalidated(bool resized)

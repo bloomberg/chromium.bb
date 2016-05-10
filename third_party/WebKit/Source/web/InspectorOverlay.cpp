@@ -659,13 +659,13 @@ void InspectorOverlay::overlayClearSelection(bool commitChanges)
     toChromeClientImpl(m_webViewImpl->page()->chromeClient()).setCursor(pointerCursor(), overlayMainFrame());
 }
 
-void InspectorOverlay::profilingStarted()
+void InspectorOverlay::suspend()
 {
     if (!m_suspendCount++)
         clear();
 }
 
-void InspectorOverlay::profilingStopped()
+void InspectorOverlay::resume()
 {
     --m_suspendCount;
 }

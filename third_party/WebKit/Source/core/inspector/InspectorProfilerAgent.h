@@ -46,14 +46,7 @@ class V8ProfilerAgent;
 class CORE_EXPORT InspectorProfilerAgent final : public InspectorBaseAgent<InspectorProfilerAgent, protocol::Frontend::Profiler>, public protocol::Backend::Profiler {
     WTF_MAKE_NONCOPYABLE(InspectorProfilerAgent);
 public:
-    class Client {
-    public:
-        virtual ~Client() { }
-        virtual void profilingStarted() { }
-        virtual void profilingStopped() { }
-    };
-
-    static InspectorProfilerAgent* create(V8ProfilerAgent*, Client*);
+    explicit InspectorProfilerAgent(V8ProfilerAgent*);
     ~InspectorProfilerAgent() override;
     DECLARE_VIRTUAL_TRACE();
 
@@ -69,9 +62,6 @@ public:
     void stop(ErrorString*, OwnPtr<protocol::Profiler::CPUProfile>*) override;
 
 private:
-    InspectorProfilerAgent(V8ProfilerAgent*, Client*);
-
-    Client* m_client;
     V8ProfilerAgent* m_v8ProfilerAgent;
 };
 

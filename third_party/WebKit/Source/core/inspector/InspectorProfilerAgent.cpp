@@ -39,14 +39,8 @@ namespace ProfilerAgentState {
 static const char profilerEnabled[] = "profilerEnabled";
 }
 
-InspectorProfilerAgent* InspectorProfilerAgent::create(V8ProfilerAgent* agent, Client* client)
-{
-    return new InspectorProfilerAgent(agent, client);
-}
-
-InspectorProfilerAgent::InspectorProfilerAgent(V8ProfilerAgent* agent, Client* client)
+InspectorProfilerAgent::InspectorProfilerAgent(V8ProfilerAgent* agent)
     : InspectorBaseAgent<InspectorProfilerAgent, protocol::Frontend::Profiler>("Profiler")
-    , m_client(client)
     , m_v8ProfilerAgent(agent)
 {
 }
@@ -98,14 +92,10 @@ void InspectorProfilerAgent::setSamplingInterval(ErrorString* error, int interva
 void InspectorProfilerAgent::start(ErrorString* error)
 {
     m_v8ProfilerAgent->start(error);
-    if (m_client && error->isEmpty())
-        m_client->profilingStarted();
 }
 
 void InspectorProfilerAgent::stop(ErrorString* errorString, OwnPtr<protocol::Profiler::CPUProfile>* profile)
 {
-    if (m_client)
-        m_client->profilingStopped();
     m_v8ProfilerAgent->stop(errorString, profile);
 }
 

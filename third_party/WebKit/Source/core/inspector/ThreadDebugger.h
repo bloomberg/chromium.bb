@@ -7,6 +7,7 @@
 
 #include "core/CoreExport.h"
 #include "platform/Timer.h"
+#include "platform/UserGestureIndicator.h"
 #include "platform/v8_inspector/public/V8Debugger.h"
 #include "platform/v8_inspector/public/V8DebuggerClient.h"
 #include "wtf/Forward.h"
@@ -31,6 +32,8 @@ public:
     static void idleFinished(v8::Isolate*);
 
     // V8DebuggerClient implementation.
+    void beginUserGesture() override;
+    void endUserGesture() override;
     void eventListeners(v8::Local<v8::Value>, V8EventListenerInfoList&) override;
     String16 valueSubtype(v8::Local<v8::Value>) override;
     bool formatAccessorsAsProperties(v8::Local<v8::Value>) override;
@@ -55,6 +58,7 @@ protected:
     HashMap<int, OwnPtr<Timer<ThreadDebugger>>> m_timers;
     HashMap<Timer<ThreadDebugger>*, OwnPtr<V8DebuggerClient::TimerCallback>> m_timerCallbacks;
     int m_lastTimerId;
+    OwnPtr<UserGestureIndicator> m_userGestureIndicator;
 };
 
 } // namespace blink

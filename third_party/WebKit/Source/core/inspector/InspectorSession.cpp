@@ -205,6 +205,26 @@ void InspectorSession::stopInstrumenting()
     m_instrumentingAgents->removeInspectorSession(this);
 }
 
+void InspectorSession::resumeStartup()
+{
+    m_client->resumeStartup();
+}
+
+bool InspectorSession::canExecuteScripts()
+{
+    return m_inspectedFrames ? m_inspectedFrames->root()->script().canExecuteScripts(NotAboutToExecuteScript) : true;
+}
+
+void InspectorSession::profilingStarted()
+{
+    m_client->profilingStarted();
+}
+
+void InspectorSession::profilingStopped()
+{
+    m_client->profilingStopped();
+}
+
 void InspectorSession::forceContextsInAllFrames()
 {
     if (!m_inspectedFrames)

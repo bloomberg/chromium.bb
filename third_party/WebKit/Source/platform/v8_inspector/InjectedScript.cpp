@@ -390,6 +390,7 @@ InjectedScript::Scope::Scope(ErrorString* errorString, V8DebuggerImpl* debugger,
     , m_tryCatch(debugger->isolate())
     , m_ignoreExceptionsAndMuteConsole(false)
     , m_previousPauseOnExceptionsState(V8DebuggerImpl::DontPauseOnExceptions)
+    , m_userGesture(false)
 {
 }
 
@@ -465,6 +466,13 @@ V8DebuggerImpl::PauseOnExceptionsState InjectedScript::Scope::setPauseOnExceptio
     return presentState;
 }
 
+void InjectedScript::Scope::pretendUserGesture()
+{
+    ASSERT(!m_userGesture);
+    m_userGesture = true;
+    m_debugger->client()->beginUserGesture();
+}
+
 void InjectedScript::Scope::cleanup()
 {
     v8::Local<v8::Object> global;
@@ -485,6 +493,8 @@ InjectedScript::Scope::~Scope()
         setPauseOnExceptionsState(m_previousPauseOnExceptionsState);
         m_debugger->client()->unmuteConsole();
     }
+    if (m_userGesture)
+        m_debugger->client()->endUserGesture();
     cleanup();
 }
 

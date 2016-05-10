@@ -99,6 +99,8 @@ void V8RuntimeAgentImpl::evaluate(
 
     if (doNotPauseOnExceptionsAndMuteConsole.fromMaybe(false))
         scope.ignoreExceptionsAndMuteConsole();
+    if (userGesture.fromMaybe(false))
+        scope.pretendUserGesture();
 
     if (includeCommandLineAPI.fromMaybe(false) && !scope.installCommandLineAPI())
         return;
@@ -161,6 +163,8 @@ void V8RuntimeAgentImpl::callFunctionOn(ErrorString* errorString,
 
     if (doNotPauseOnExceptionsAndMuteConsole.fromMaybe(false))
         scope.ignoreExceptionsAndMuteConsole();
+    if (userGesture.fromMaybe(false))
+        scope.pretendUserGesture();
 
     v8::MaybeLocal<v8::Value> maybeFunctionValue = m_debugger->compileAndRunInternalScript(scope.context(), toV8String(m_debugger->isolate(), "(" + expression + ")"));
     // Re-initialize after running client's code, as it could have destroyed context or session.
@@ -253,7 +257,7 @@ void V8RuntimeAgentImpl::releaseObjectGroup(ErrorString*, const String16& object
 
 void V8RuntimeAgentImpl::run(ErrorString* errorString)
 {
-    *errorString = "Not paused";
+    m_session->client()->resumeStartup();
 }
 
 void V8RuntimeAgentImpl::setCustomObjectFormatterEnabled(ErrorString*, bool enabled)

@@ -40,9 +40,9 @@ class WorkerGlobalScope;
 
 class WorkerRuntimeAgent final : public InspectorRuntimeAgent {
 public:
-    static WorkerRuntimeAgent* create(V8RuntimeAgent* agent, WorkerGlobalScope* context, InspectorRuntimeAgent::Client* client)
+    static WorkerRuntimeAgent* create(V8RuntimeAgent* agent, WorkerGlobalScope* context)
     {
-        return new WorkerRuntimeAgent(agent, context, client);
+        return new WorkerRuntimeAgent(agent, context);
     }
     ~WorkerRuntimeAgent() override;
     DECLARE_VIRTUAL_TRACE();
@@ -50,7 +50,7 @@ public:
     void enable(ErrorString*) final;
 
 private:
-    WorkerRuntimeAgent(V8RuntimeAgent*, WorkerGlobalScope*, InspectorRuntimeAgent::Client*);
+    WorkerRuntimeAgent(V8RuntimeAgent*, WorkerGlobalScope*);
 
     Member<WorkerGlobalScope> m_workerGlobalScope;
 };

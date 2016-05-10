@@ -210,13 +210,17 @@ bool V8DebuggerAgentImpl::enabled()
     return m_enabled;
 }
 
-void V8DebuggerAgentImpl::enable(ErrorString*)
+void V8DebuggerAgentImpl::enable(ErrorString* errorString)
 {
     if (enabled())
         return;
 
-    enable();
+    if (!m_session->client()->canExecuteScripts()) {
+        *errorString = "Script execution is prohibited";
+        return;
+    }
 
+    enable();
     ASSERT(m_frontend);
 }
 
@@ -281,6 +285,9 @@ void V8DebuggerAgentImpl::clearFrontend()
 void V8DebuggerAgentImpl::restore()
 {
     ASSERT(!m_enabled);
+    if (!m_session->client()->canExecuteScripts())
+        return;
+
     enable();
     ErrorString error;
 
