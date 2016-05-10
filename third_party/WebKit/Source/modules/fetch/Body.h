@@ -29,7 +29,7 @@ class ScriptState;
 // Encoding spec. The spec should be fixed shortly to be aligned with this
 // implementation.
 class MODULES_EXPORT Body
-    : public GarbageCollectedFinalized<Body>
+    : public GarbageCollected<Body>
     , public ScriptWrappable
     , public ActiveScriptWrappable
     , public ContextLifecycleObserver {
@@ -38,7 +38,6 @@ class MODULES_EXPORT Body
     USING_GARBAGE_COLLECTED_MIXIN(Body);
 public:
     explicit Body(ExecutionContext*);
-    ~Body() override { }
 
     ScriptPromise arrayBuffer(ScriptState*);
     ScriptPromise blob(ScriptState*);

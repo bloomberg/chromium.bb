@@ -43,6 +43,7 @@ class ImageBitmapOptions;
 
 class CORE_EXPORT HTMLImageElement final : public HTMLElement, public CanvasImageSource, public ImageBitmapSource, public ActiveScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
+    USING_GARBAGE_COLLECTED_MIXIN(HTMLImageElement);
 public:
     class ViewportChangeListener;
 

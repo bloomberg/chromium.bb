@@ -48,16 +48,15 @@ class ScriptPromiseResolver;
 
 class MODULES_EXPORT ServiceWorker final : public AbstractWorker, public ActiveScriptWrappable, public WebServiceWorkerProxy {
     DEFINE_WRAPPERTYPEINFO();
+    USING_GARBAGE_COLLECTED_MIXIN(ServiceWorker);
 public:
     static ServiceWorker* from(ExecutionContext*, PassOwnPtr<WebServiceWorker::Handle>);
 
     ~ServiceWorker() override;
+    DECLARE_VIRTUAL_TRACE();
 
     // Eager finalization needed to promptly release owned WebServiceWorker.
     EAGERLY_FINALIZE();
-
-    // Override 'operator new' to enforce allocation of eagerly finalized object.
-    DECLARE_EAGER_FINALIZATION_OPERATOR_NEW();
 
     void postMessage(ExecutionContext*, PassRefPtr<SerializedScriptValue> message, const MessagePortArray&, ExceptionState&);
 

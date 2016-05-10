@@ -31,8 +31,6 @@ class MODULES_EXPORT Request final : public Body {
     DEFINE_WRAPPERTYPEINFO();
     WTF_MAKE_NONCOPYABLE(Request);
 public:
-    ~Request() override {}
-
     // From Request.idl:
     static Request* create(ScriptState*, const RequestInfo&, const Dictionary&, ExceptionState&);
 

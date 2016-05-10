@@ -159,4 +159,9 @@ ServiceWorker::~ServiceWorker()
 {
 }
 
+DEFINE_TRACE(ServiceWorker)
+{
+    AbstractWorker::trace(visitor);
+}
+
 } // namespace blink

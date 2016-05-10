@@ -6,6 +6,7 @@
 #define ActiveScriptWrappable_h
 
 #include "core/CoreExport.h"
+#include "platform/heap/Handle.h"
 #include "wtf/Noncopyable.h"
 
 namespace blink {
@@ -18,7 +19,7 @@ class ScriptWrappableVisitor;
  * thread-specific list. They keep their wrappers and dependant objects alive
  * as long as they have pending activity.
  */
-class CORE_EXPORT ActiveScriptWrappable {
+class CORE_EXPORT ActiveScriptWrappable : public GarbageCollectedMixin {
     WTF_MAKE_NONCOPYABLE(ActiveScriptWrappable);
 public:
     explicit ActiveScriptWrappable(ScriptWrappable*);
@@ -28,9 +29,6 @@ public:
     virtual bool hasPendingActivity() const = 0;
 
     ScriptWrappable* toScriptWrappable() const;
-
-protected:
-    virtual ~ActiveScriptWrappable();
 
 private:
     ScriptWrappable* m_scriptWrappable;

@@ -32,8 +32,6 @@ class MODULES_EXPORT Response final : public Body {
     DEFINE_WRAPPERTYPEINFO();
     WTF_MAKE_NONCOPYABLE(Response);
 public:
-    ~Response() override { }
-
     // From Response.idl:
     static Response* create(ScriptState*, ExceptionState&);
     static Response* create(ScriptState*, ScriptValue body, const Dictionary&, ExceptionState&);

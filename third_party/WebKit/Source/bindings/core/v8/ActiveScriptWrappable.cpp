@@ -13,11 +13,13 @@ namespace blink {
 
 namespace {
 
-using ActiveScriptWrappableSetType = HashSet<const ActiveScriptWrappable*>;
+using ActiveScriptWrappableSetType = PersistentHeapHashSet<WeakMember<const ActiveScriptWrappable>>;
 
 ActiveScriptWrappableSetType& activeScriptWrappables()
 {
     DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<ActiveScriptWrappableSetType>, activeScriptWrappableSet, new ThreadSpecific<ActiveScriptWrappableSetType>());
+    if (!activeScriptWrappableSet.isSet())
+        activeScriptWrappableSet->registerAsStaticReference();
     return *activeScriptWrappableSet;
 }
 
@@ -27,11 +29,6 @@ ActiveScriptWrappable::ActiveScriptWrappable(ScriptWrappable* self)
     : m_scriptWrappable(self)
 {
     activeScriptWrappables().add(this);
-}
-
-ActiveScriptWrappable::~ActiveScriptWrappable()
-{
-    activeScriptWrappables().remove(this);
 }
 
 ScriptWrappable* ActiveScriptWrappable::toScriptWrappable() const

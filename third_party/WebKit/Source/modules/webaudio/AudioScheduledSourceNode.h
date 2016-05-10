@@ -122,6 +122,7 @@ private:
 };
 
 class AudioScheduledSourceNode : public AudioSourceNode, public ActiveScriptWrappable {
+    USING_GARBAGE_COLLECTED_MIXIN(AudioScheduledSourceNode);
 public:
     void start(ExceptionState&);
     void start(double when, ExceptionState&);
@@ -133,6 +134,8 @@ public:
 
     // ActiveScriptWrappable
     bool hasPendingActivity() const final;
+
+    DEFINE_INLINE_VIRTUAL_TRACE() { AudioSourceNode::trace(visitor); }
 
 protected:
     explicit AudioScheduledSourceNode(AbstractAudioContext&);

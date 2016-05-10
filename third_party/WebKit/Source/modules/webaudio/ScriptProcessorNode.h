@@ -93,6 +93,7 @@ private:
 
 class ScriptProcessorNode final : public AudioNode, public ActiveScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
+    USING_GARBAGE_COLLECTED_MIXIN(ScriptProcessorNode);
 public:
     // bufferSize must be one of the following values: 256, 512, 1024, 2048,
     // 4096, 8192, 16384.
@@ -109,6 +110,8 @@ public:
 
     // ActiveScriptWrappable
     bool hasPendingActivity() const final;
+
+    DEFINE_INLINE_VIRTUAL_TRACE() { AudioNode::trace(visitor); }
 
 private:
     ScriptProcessorNode(AbstractAudioContext&, float sampleRate, size_t bufferSize, unsigned numberOfInputChannels, unsigned numberOfOutputChannels);

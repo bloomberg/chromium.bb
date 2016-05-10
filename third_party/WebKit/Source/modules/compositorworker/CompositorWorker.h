@@ -18,6 +18,7 @@ class InProcessWorkerGlobalScopeProxy;
 
 class MODULES_EXPORT CompositorWorker final : public InProcessWorkerBase {
     DEFINE_WRAPPERTYPEINFO();
+    USING_GARBAGE_COLLECTED_MIXIN(CompositorWorker);
 public:
     static CompositorWorker* create(ExecutionContext*, const String& url, ExceptionState&);
     ~CompositorWorker() override;
