@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "net/quic/quic_flags.h"
+#include "net/quic/quic_utils.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 
 using base::StringPiece;
@@ -29,7 +30,7 @@ struct TestVector {
 
   // Expected output:
   const char* pt;  // An empty string "" means decryption succeeded and
-                   // the plaintext is zero-length. NULL means decryption
+                   // the plaintext is zero-length. nullptr means decryption
                    // failed.
 };
 
@@ -142,19 +143,14 @@ TEST(ChaCha20Poly1305DecrypterTest, Decrypt) {
     bool has_pt = test_vectors[i].pt;
 
     // Decode the test vector.
-    string key;
-    string iv;
-    string fixed;
-    string aad;
-    string ct;
+    string key = QuicUtils::HexDecode(test_vectors[i].key);
+    string iv = QuicUtils::HexDecode(test_vectors[i].iv);
+    string fixed = QuicUtils::HexDecode(test_vectors[i].fixed);
+    string aad = QuicUtils::HexDecode(test_vectors[i].aad);
+    string ct = QuicUtils::HexDecode(test_vectors[i].ct);
     string pt;
-    ASSERT_TRUE(DecodeHexString(test_vectors[i].key, &key));
-    ASSERT_TRUE(DecodeHexString(test_vectors[i].iv, &iv));
-    ASSERT_TRUE(DecodeHexString(test_vectors[i].fixed, &fixed));
-    ASSERT_TRUE(DecodeHexString(test_vectors[i].aad, &aad));
-    ASSERT_TRUE(DecodeHexString(test_vectors[i].ct, &ct));
     if (has_pt) {
-      ASSERT_TRUE(DecodeHexString(test_vectors[i].pt, &pt));
+      pt = QuicUtils::HexDecode(test_vectors[i].pt);
     }
 
     ChaCha20Poly1305Decrypter decrypter;

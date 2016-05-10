@@ -279,11 +279,10 @@ ostream& operator<<(ostream& os, const QuicPacketHeader& header) {
       os << header.public_header.versions[i] << " ";
     }
   }
-  os << ", diversification_nonce: "
-     << (header.public_header.nonce == nullptr
-             ? "none"
-             : "0x" + base::HexEncode(*header.public_header.nonce,
-                                      kDiversificationNonceSize));
+  if (header.public_header.nonce != nullptr) {
+    os << ", diversification_nonce: "
+       << QuicUtils::HexEncode(*header.public_header.nonce);
+  }
   os << ", fec_flag: " << header.fec_flag
      << ", entropy_flag: " << header.entropy_flag
      << ", entropy hash: " << static_cast<int>(header.entropy_hash)
