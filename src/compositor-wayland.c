@@ -2363,7 +2363,7 @@ load_wayland_backend_config(struct weston_compositor *compositor, int *argc,
 			    char *argv[], struct weston_config *config,
 			    struct weston_wayland_backend_config *out_config)
 {
-	struct weston_wayland_backend_config new_config = { 0, };
+	struct weston_wayland_backend_config new_config = {{ 0, }};
 	struct weston_config_section *section;
 	struct weston_wayland_backend_output_config *oc;
 	int count, width, height, scale;
@@ -2394,6 +2394,8 @@ load_wayland_backend_config(struct weston_compositor *compositor, int *argc,
 
 	new_config.cursor_size = 32;
 	new_config.cursor_theme = NULL;
+	new_config.base.struct_size = sizeof(struct weston_wayland_backend_config);
+	new_config.base.struct_version = WESTON_WAYLAND_BACKEND_CONFIG_VERSION;
 
 	section = weston_config_get_section(config, "shell", NULL, NULL);
 	weston_config_section_get_string(section, "cursor-theme",
@@ -2476,6 +2478,11 @@ err_outputs:
 	return -1;
 }
 
+static void
+config_init_to_defaults(struct weston_wayland_backend_config *config)
+{
+}
+
 WL_EXPORT int
 backend_init(struct weston_compositor *compositor, int *argc, char *argv[],
 	     struct weston_config *config,
@@ -2485,13 +2492,29 @@ backend_init(struct weston_compositor *compositor, int *argc, char *argv[],
 	struct wayland_output *output;
 	struct wayland_parent_output *poutput;
 	struct weston_wayland_backend_config new_config;
+	struct weston_wayland_backend_config foreign_config = {{ 0, }};
 	int x, count;
 
 	if (load_wayland_backend_config(compositor, argc, argv, config,
-					&new_config) < 0) {
-		wayland_backend_config_release(&new_config);
+					&foreign_config) < 0) {
+		wayland_backend_config_release(&foreign_config);
 		return -1;
 	}
+
+	/* temporary assign to prepare the following patch:
+	 * "compositor-wayland: move configuration parsing to weston" */
+	config_base = &foreign_config.base;
+
+	if (config_base == NULL ||
+	    config_base->struct_version != WESTON_WAYLAND_BACKEND_CONFIG_VERSION ||
+	    config_base->struct_size > sizeof(struct weston_wayland_backend_config)) {
+		weston_log("wayland backend config structure is invalid\n");
+		wayland_backend_config_release(&foreign_config);
+		return -1;
+	}
+
+	config_init_to_defaults(&new_config);
+	memcpy(&new_config, config_base, config_base->struct_size);
 
 	b = wayland_backend_create(compositor, &new_config, argc, argv, config);
 
