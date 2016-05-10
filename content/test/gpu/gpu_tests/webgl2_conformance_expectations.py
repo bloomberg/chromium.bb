@@ -317,6 +317,12 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/texturefiltering/cube_sizes_03.html',
         ['win'], bug=606021)
 
+    # Win / Release.
+    self.Flaky('deqp/functional/gles3/texturefiltering/cube_combinations_01',
+        ['win', 'release'], bug=607393)
+    self.Flaky('deqp/functional/gles3/texturefiltering/cube_combinations_05',
+        ['win', 'release'], bug=607393)
+
     # Win / AMD
     # It's unfortunate that this suppression needs to be so broad, but
     # basically any test that uses readPixels is potentially flaky, and
