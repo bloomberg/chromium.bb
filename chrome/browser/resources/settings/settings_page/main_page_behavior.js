@@ -264,7 +264,6 @@ var MainPageBehaviorImpl = {
    */
   playCollapseSection_: function(section) {
     var card = section.$.card;
-    var cardStyle = getComputedStyle(card);
 
     this.style.margin = '';
     section.$.header.hidden = false;
@@ -293,6 +292,12 @@ var MainPageBehaviorImpl = {
     // but account for scroll.
     var targetTop = card.getBoundingClientRect().top - this.scroller.scrollTop;
 
+    // Account for the section header.
+    var headerStyle = getComputedStyle(section.$.header);
+    targetTop += section.$.header.offsetHeight +
+        parseInt(headerStyle.marginBottom, 10) +
+        parseInt(headerStyle.marginTop, 10);
+
     var keyframes = [{
       top: startingTop + 'px',
       minHeight: cardHeightStart + 'px',
@@ -304,8 +309,7 @@ var MainPageBehaviorImpl = {
     var options = /** @type {!KeyframeEffectOptions} */({
       duration: EXPAND_DURATION
     });
-    var promise = this.animateElement('section', card, keyframes, options);
-    return promise;
+    return this.animateElement('section', card, keyframes, options);
   },
 };
 
