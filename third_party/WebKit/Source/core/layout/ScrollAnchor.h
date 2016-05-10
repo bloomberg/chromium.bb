@@ -41,8 +41,6 @@ public:
     enum class Corner {
         TopLeft = 0,
         TopRight,
-        BottomLeft,
-        BottomRight
     };
     // Which corner of the anchor object we are currently anchored to.
     // Only meaningful if anchorObject() is non-null.

@@ -48,16 +48,12 @@ static LayoutBoxItem scrollerLayoutBoxItem(const ScrollableArea* scroller)
     return box;
 }
 
-static Corner cornerFromCandidateRect(LayoutRect candidateRect, LayoutRect visibleRect)
+static Corner cornerFromCandidateRect(const LayoutObject* layoutObject)
 {
-    if (visibleRect.contains(candidateRect.minXMinYCorner()))
-        return Corner::TopLeft;
-    if (visibleRect.contains(candidateRect.maxXMinYCorner()))
+    ASSERT(layoutObject);
+    if (layoutObject->style()->isFlippedBlocksWritingMode()
+        || !layoutObject->style()->isLeftToRightDirection())
         return Corner::TopRight;
-    if (visibleRect.contains(candidateRect.minXMaxYCorner()))
-        return Corner::BottomLeft;
-    if (visibleRect.contains(candidateRect.maxXMaxYCorner()))
-        return Corner::BottomRight;
     return Corner::TopLeft;
 }
 
@@ -66,8 +62,6 @@ static LayoutPoint cornerPointOfRect(LayoutRect rect, Corner whichCorner)
     switch (whichCorner) {
     case Corner::TopLeft: return rect.minXMinYCorner();
     case Corner::TopRight: return rect.maxXMinYCorner();
-    case Corner::BottomLeft: return rect.minXMaxYCorner();
-    case Corner::BottomRight: return rect.maxXMaxYCorner();
     }
     ASSERT_NOT_REACHED();
     return LayoutPoint();
@@ -132,7 +126,7 @@ ScrollAnchor::ExamineResult ScrollAnchor::examine(const LayoutObject* candidate)
     if (occupiesSpace && visibleRect.intersects(candidateRect)) {
         return ExamineResult(
             visibleRect.contains(candidateRect) ? Return : Constrain,
-            cornerFromCandidateRect(candidateRect, visibleRect));
+            cornerFromCandidateRect(candidate));
     } else {
         return ExamineResult(Skip);
     }

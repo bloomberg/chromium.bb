@@ -309,10 +309,106 @@ TEST_F(ScrollAnchorCornerTest, Corners)
         "<div id=c></div>"
         "<div id=d></div>");
 
-    checkCorner("a", Corner::BottomRight, DoublePoint(20,  20),  DoubleSize(+400, +300));
-    checkCorner("b", Corner::BottomLeft,  DoublePoint(420, 20),  DoubleSize(-400, +300));
-    checkCorner("c", Corner::TopRight,    DoublePoint(20,  320), DoubleSize(+400, -300));
-    checkCorner("d", Corner::TopLeft,     DoublePoint(420, 320), DoubleSize(-400, -300));
+    checkCorner("a", Corner::TopLeft, DoublePoint(20,  20),  DoubleSize(0, 0));
+    checkCorner("b", Corner::TopLeft, DoublePoint(420, 20),  DoubleSize(-400, 0));
+    checkCorner("c", Corner::TopLeft, DoublePoint(20,  320), DoubleSize(0, -300));
+    checkCorner("d", Corner::TopLeft, DoublePoint(420, 320), DoubleSize(-400, -300));
+}
+
+TEST_F(ScrollAnchorCornerTest, CornersVerticalLR)
+{
+    setBodyInnerHTML(
+        "<style>"
+        "    html {"
+        "        writing-mode: vertical-lr;"
+        "    }"
+        "    body {"
+        "        position: absolute; border: 10px solid #ccc;"
+        "        width: 1220px; height: 920px;"
+        "    }"
+        "    #a, #b, #c, #d {"
+        "        position: absolute; background-color: #ace;"
+        "        width: 400px; height: 300px;"
+        "    }"
+        "    #a, #b { top: 0; }"
+        "    #a, #c { left: 0; }"
+        "    #b, #d { right: 0; }"
+        "    #c, #d { bottom: 0; }"
+        "    .big { width: 800px !important; height: 600px !important }"
+        "</style>"
+        "<div id=a></div>"
+        "<div id=b></div>"
+        "<div id=c></div>"
+        "<div id=d></div>");
+
+    checkCorner("a", Corner::TopLeft, DoublePoint(20,  20),  DoubleSize(0, 0));
+    checkCorner("b", Corner::TopLeft, DoublePoint(420, 20),  DoubleSize(-400, 0));
+    checkCorner("c", Corner::TopLeft, DoublePoint(20,  320), DoubleSize(0, -300));
+    checkCorner("d", Corner::TopLeft, DoublePoint(420, 320), DoubleSize(-400, -300));
+}
+
+TEST_F(ScrollAnchorCornerTest, CornersRTL)
+{
+    setBodyInnerHTML(
+        "<style>"
+        "    html {"
+        "        direction: rtl;"
+        "    }"
+        "    body {"
+        "        position: absolute; border: 10px solid #ccc;"
+        "        width: 1220px; height: 920px;"
+        "    }"
+        "    #a, #b, #c, #d {"
+        "        position: absolute; background-color: #ace;"
+        "        width: 400px; height: 300px;"
+        "    }"
+        "    #a, #b { top: 0; }"
+        "    #a, #c { left: 0; }"
+        "    #b, #d { right: 0; }"
+        "    #c, #d { bottom: 0; }"
+        "    .big { width: 800px !important; height: 600px !important }"
+        "</style>"
+        "<div id=a></div>"
+        "<div id=b></div>"
+        "<div id=c></div>"
+        "<div id=d></div>");
+
+    checkCorner("b", Corner::TopRight, DoublePoint(-20,  20),  DoubleSize(0, 0));
+    checkCorner("a", Corner::TopRight, DoublePoint(-420, 20),  DoubleSize(400, 0));
+    checkCorner("d", Corner::TopRight, DoublePoint(-20,  320), DoubleSize(0, -300));
+    checkCorner("c", Corner::TopRight, DoublePoint(-420, 320), DoubleSize(400, -300));
+}
+
+TEST_F(ScrollAnchorCornerTest, CornersVerticalRL)
+{
+    setBodyInnerHTML(
+        "<style>"
+        "    html {"
+        "        writing-mode: vertical-rl;"
+        "    }"
+        "    body {"
+        "        position: absolute; border: 10px solid #ccc;"
+        "        width: 1220px; height: 920px;"
+        "    }"
+        "    #a, #b, #c, #d {"
+        "        position: absolute; background-color: #ace;"
+        "        width: 400px; height: 300px;"
+        "    }"
+        "    #a, #b { top: 0; }"
+        "    #a, #c { left: 0; }"
+        "    #b, #d { right: 0; }"
+        "    #c, #d { bottom: 0; }"
+        "    .big { width: 800px !important; height: 600px !important }"
+        "</style>"
+        "<div id=a></div>"
+        "<div id=b></div>"
+        "<div id=c></div>"
+        "<div id=d></div>");
+
+    checkCorner("b", Corner::TopRight, DoublePoint(-20,  20),  DoubleSize(0, 0));
+    checkCorner("a", Corner::TopRight, DoublePoint(-420, 20),  DoubleSize(400, 0));
+    checkCorner("d", Corner::TopRight, DoublePoint(-20,  320), DoubleSize(0, -300));
+    checkCorner("c", Corner::TopRight, DoublePoint(-420, 320), DoubleSize(400, -300));
 }
 
 }
