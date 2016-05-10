@@ -116,13 +116,9 @@ void PlatformWindowMus::SetCursorById(mus::mojom::Cursor cursor) {
   }
 }
 
-void PlatformWindowMus::Show() {
-  mus_window_->SetVisible(true);
-}
+void PlatformWindowMus::Show() {}
 
-void PlatformWindowMus::Hide() {
-  mus_window_->SetVisible(false);
-}
+void PlatformWindowMus::Hide() {}
 
 void PlatformWindowMus::Close() {
   NOTIMPLEMENTED();

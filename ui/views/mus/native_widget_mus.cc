@@ -794,10 +794,11 @@ void NativeWidgetMus::Show() {
 }
 
 void NativeWidgetMus::Hide() {
-  if (!window_tree_host_)
+  if (!(window_ && window_tree_host_))
     return;
 
   window_tree_host_->Hide();
+  window_->SetVisible(false);
   GetNativeWindow()->Hide();
 }
 
@@ -807,10 +808,11 @@ void NativeWidgetMus::ShowMaximizedWithBounds(
 }
 
 void NativeWidgetMus::ShowWithWindowState(ui::WindowShowState state) {
-  if (!window_tree_host_)
+  if (!(window_ && window_tree_host_))
     return;
 
   window_tree_host_->Show();
+  window_->SetVisible(true);
   GetNativeWindow()->Show();
   if (native_widget_delegate_->CanActivate()) {
     if (state != ui::SHOW_STATE_INACTIVE)
@@ -1148,9 +1150,11 @@ void NativeWidgetMus::OnMusWindowVisibilityChanging(mus::Window* window) {
 void NativeWidgetMus::OnMusWindowVisibilityChanged(mus::Window* window) {
   if (window->visible()) {
     window_tree_host_->Show();
+    window_->SetVisible(true);
     GetNativeWindow()->Show();
   } else {
     window_tree_host_->Hide();
+    window_->SetVisible(false);
     GetNativeWindow()->Hide();
   }
   native_widget_delegate_->OnNativeWidgetVisibilityChanged(window->visible());
