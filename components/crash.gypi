@@ -434,6 +434,7 @@
         ['OS=="mac"', {
           'targets': [
             {
+              # GN version: //components/crash/content/app:breakpad_stubs
               'target_name': 'breakpad_stubs',
               'type': 'static_library',
               'dependencies': [

@@ -59,12 +59,6 @@ component("modules") {
 
   if (is_win) {
     cflags = [ "/wd4334" ]  # Result of 32-bit shift implicitly converted to 64 bits.
-    # TODO(GYP)
-    # Shard this taret into parts to work around linker limitations.
-    # on link time code generation builds.
-    #[buildtype=="Official"', {
-    #  'msvs_shard': 5,
-    #}],
   }
 
   if (remove_webcore_debug_symbols) {

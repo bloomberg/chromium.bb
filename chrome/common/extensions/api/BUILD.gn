@@ -40,7 +40,7 @@ json_schema_api("api_registration") {
     "//ui/accessibility:ax_gen",
   ]
   if (is_chromeos) {
-    # deps += [ "<(DEPTH)/chrome/chrome.gyp:drive_proto" ]  TODO(GYP)
+    deps += [ "//components/drive:proto" ]
   }
   deps += schema_dependencies
 

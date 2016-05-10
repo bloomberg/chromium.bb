@@ -127,34 +127,6 @@ component("crypto") {
   }
 }
 
-# TODO(GYP): TODO(dpranke), fix the compile errors for this stuff
-# and make it work.
-if (false && is_win) {
-  # A minimal crypto subset for hmac-related stuff that small standalone
-  # targets can use to reduce code size on Windows. This does not depend on
-  # OpenSSL/NSS but will use Windows APIs for that functionality.
-  source_set("crypto_minimal_win") {
-    sources = [
-      "crypto_export.h",
-      "hmac.cc",
-      "hmac.h",
-      "openssl_util.cc",
-      "openssl_util.h",
-      "secure_util.cc",
-      "secure_util.h",
-      "symmetric_key.cc",
-      "symmetric_key.h",
-    ]
-
-    deps = [
-      "//base",
-      "//base/third_party/dynamic_annotations",
-    ]
-
-    defines = [ "CRYPTO_IMPLEMENTATION" ]
-  }
-}
-
 test("crypto_unittests") {
   sources = [
     "aead_unittest.cc",

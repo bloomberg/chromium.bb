@@ -6,7 +6,7 @@ import("//build/config/chrome_build.gni")
 
 # Meta-target that forwards to the installer of the correct type (if any).
 group("installer") {
-  # TODO(GYP): Get the 32-bit build to work.
+  # We only make Linux installers for 64-bit desktop.
   if (is_desktop_linux && is_chrome_branded && target_cpu == "x64") {
     deps = [
       "//chrome/installer/linux",

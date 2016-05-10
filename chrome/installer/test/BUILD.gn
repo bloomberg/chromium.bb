@@ -58,6 +58,6 @@ test("upgrade_test") {
     "//testing/gtest",
   ]
   data_deps = [
-    # 'mini_installer.gyp:mini_installer',  TODO(GYP)
+    "//chrome/installer/mini_installer",
   ]
 }

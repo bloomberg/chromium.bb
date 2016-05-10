@@ -362,7 +362,7 @@ if (is_android) {
   }
 }
 
-# TODO(GYP): Delete this after we've converted everything to GN.
+# TODO(GYP_GONE): Delete this after we've converted everything to GN.
 # The _run targets exist only for compatibility w/ GYP.
 group("content_site_isolation_browsertests_run") {
   testonly = true

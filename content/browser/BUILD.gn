@@ -123,10 +123,11 @@ source_set("browser") {
                         ".",
                         "//content")
 
-  # TODO(GYP) these generated files are listed as sources in content_browser.
-  # This is a bit suspicious. The GN grit template will make a source set
-  # containing the generated code so it should be sufficient to just depend
-  # on the grit rule. But maybe some of these will need to be added?
+  # TODO(GYP_GONE) these generated files are listed as sources in
+  # content_browser.  This is a bit suspicious. The GN grit template will make
+  # a source set containing the generated code so it should be sufficient to
+  # just depend on the grit rule. But maybe some of these will need to be
+  # added?
   #
   # Need this annoying rebase_path call to match what happened with the
   # sources.
@@ -160,12 +161,6 @@ source_set("browser") {
     deps += [ "//printing" ]
   }
 
-  # TODO(GYP)
-  #   [chrome_multiple_dll!=1', {
-  #     'dependencies': [
-  #       '../third_party/WebKit/public/blink.gyp:blink',
-  #     ],
-  #   }],
   if (!is_mac) {
     deps += [ "//sandbox" ]
   }

@@ -5,34 +5,27 @@
 import("//build/config/chrome_build.gni")
 import("//testing/test.gni")
 
+assert(is_win)
+
 # This file only contains utility functions which must only depend on kernel32
 # and advapi32. Please don't add dependencies on other system libraries.
 static_library("install_static_util") {
+  sources = [
+    "install_util.cc",
+    "install_util.h",
+  ]
+
   deps = [
     "//base",
   ]
 
-  if (is_win) {
-    # TODO(GYP) install_static_util on Windows.
-    # This is a bit tricky. It seems that what's currently called
-    # install_static_nacl_win64 should be a different target with a different
-    # name ("installer_static_minimal"?) since it's not strictly the 64-bit
-    # build of that target.
-    sources = [
-      "install_util.cc",
-      "install_util.h",
-    ]
+  libs = [
+    "kernel32.lib",
+    "advapi32.lib",
+  ]
 
-    libs = [
-      "kernel32.lib",
-      "advapi32.lib",
-    ]
-
-    configs += [
-      "//build/config:precompiled_headers",
-
-      # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-      "//build/config/compiler:no_size_t_to_int_warning",
-    ]
-  }
+  configs += [
+    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+    "//build/config/compiler:no_size_t_to_int_warning",
+  ]
 }

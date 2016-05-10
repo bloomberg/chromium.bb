@@ -164,6 +164,7 @@ test("components_unittests") {
       "//components/autofill/content/renderer:unit_tests",
       "//components/cast_certificate:unit_tests",
       "//components/certificate_transparency:unit_tests",
+      "//components/crash/content/app:unit_tests",
       "//components/data_reduction_proxy/content/browser:unit_tests",
       "//components/data_use_measurement/content:unit_tests",
       "//components/devtools_http_handler:unit_tests",
@@ -270,9 +271,6 @@ test("components_unittests") {
     ]
   }
 
-  # TODO(GYP) need this target.
-  #'breakpad/app/crash_keys_win_unittest.cc',
-
   if (enable_configuration_policy) {
     deps += [
       "//components/policy/core/browser:unit_tests",
@@ -365,7 +363,7 @@ if (is_android) {
   }
 
   # GYP: //components/components_tests.gyp:components_junit_tests
-  # TODO(GYP): Delete this target once recipes no longer require it.
+  # TODO(GYP_GONE): Delete this target once recipes no longer require it.
   junit_binary("components_junit_tests") {
     java_files = [ "//testing/android/junit/DummyTest.java" ]
   }

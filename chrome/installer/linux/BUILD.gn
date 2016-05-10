@@ -48,7 +48,7 @@ group("linux") {
 # This target is provided for compatibility w/ GYP. Users should always
 # depend directly on :linux instead of this target (we set visibility
 # to the empty list to prevent unwanted callers).
-# TODO(GYP): Delete this target after we've migrated away from GYP and
+# TODO(GYP_GONE): Delete this target after we've migrated away from GYP and
 # updated the bots to build :linux instead.
 group("linux_packages_all") {
   visibility = []

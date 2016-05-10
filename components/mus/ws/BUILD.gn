@@ -222,6 +222,7 @@ test("mus_ws_unittests") {
     "//services/shell/public/cpp/test:run_all_shelltests",
     "//services/shell/public/interfaces",
     "//testing/gtest",
+    "//third_party/mesa:osmesa",
     "//ui/events",
     "//ui/gfx",
     "//ui/gfx:test_support",
@@ -230,10 +231,6 @@ test("mus_ws_unittests") {
     "//ui/mojo/geometry:interfaces",
     "//ui/mojo/geometry:util",
   ]
-
-  if (!is_android) {  # TODO(GYP) Enable on Android when osmesa links.
-    deps += [ "//third_party/mesa:osmesa" ]
-  }
 
   if (use_x11) {
     deps += [ "//tools/xdisplaycheck" ]

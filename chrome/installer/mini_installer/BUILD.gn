@@ -158,8 +158,6 @@ action("archive") {
   ]
 }
 
-# TODO(GYP) bug 521052: This target needs to be checked to make sure its the
-# same size as the GYP build.
 executable("mini_installer") {
   sources = [
     "mini_installer.cc",

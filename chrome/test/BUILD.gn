@@ -244,7 +244,7 @@ source_set("test_support") {
   }
 }
 
-# TODO(GYP): Delete this after we've converted everything to GN.
+# TODO(GYP_GONE): Delete this after we've converted everything to GN.
 # The _run targets exist only for compatibility w/ GYP.
 group("telemetry_gpu_test_run") {
   testonly = true
@@ -702,6 +702,17 @@ if (!is_android) {
         "data/webui/settings/easy_unlock_browsertest_chromeos.js",
       ]
     }
+    if (is_mac) {
+      sources -= [
+        # TODO(rouslan): This test depends on the custom dictionary UI,
+        # which is disabled on Mac.
+        "../browser/ui/webui/options/edit_dictionary_browsertest.js",
+
+        # TODO(rouslan): This test depends on hunspell and we cannot run it
+        # on Mac, which does not use hunspell by default.
+        "../browser/ui/webui/options/language_options_dictionary_download_browsertest.js",
+      ]
+    }
     if (!enable_app_list) {
       sources -= [ "../browser/ui/webui/app_list/start_page_browsertest.js" ]
     }
@@ -719,7 +730,7 @@ if (!is_android) {
     defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
   }
 
-  # TODO(GYP): Delete this after we've converted everything to GN.
+  # TODO(GYP_GONE): Delete this after we've converted everything to GN.
   # The _run targets exist only for compatibility w/ GYP.
   group("telemetry_perf_unittests_run") {
     testonly = true
@@ -742,7 +753,7 @@ if (!is_android) {
     ]
   }
 
-  # TODO(GYP): Delete this after we've converted everything to GN.
+  # TODO(GYP_GONE): Delete this after we've converted everything to GN.
   # The _run targets exist only for compatibility w/ GYP.
   group("telemetry_unittests_run") {
     testonly = true
@@ -801,7 +812,7 @@ if (!is_android) {
     ]
   }
 
-  # TODO(GYP): Delete this after we've converted everything to GN.
+  # TODO(GYP_GONE): Delete this after we've converted everything to GN.
   # The _run targets exist only for compatibility w/ GYP.
   group("tab_capture_end2end_tests_run") {
     testonly = true
@@ -810,7 +821,7 @@ if (!is_android) {
     ]
   }
 
-  # TODO(GYP): Delete this after we've converted everything to GN.
+  # TODO(GYP_GONE): Delete this after we've converted everything to GN.
   # The _run targets exist only for compatibility w/ GYP.
   group("mash_browser_tests_run") {
     testonly = true
@@ -973,11 +984,6 @@ if (!is_android) {
     }
 
     defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
-
-    # TODO(GYP) if (is_win) {
-    #       ['incremental_chrome_dll==1', {
-    #         'UseLibraryDependencyInputs': "true",
-    # }
 
     if (!enable_one_click_signin) {
       sources -= [ "../browser/ui/sync/one_click_signin_links_delegate_impl_browsertest.cc" ]
@@ -1193,10 +1199,23 @@ if (!is_android) {
       # chrome_resources.gyp:{packed_extra_resources,packed_resources},
       # and can build this target standalone much faster.
       deps += [
-        #'app_mode_app_support',  TODO(GYP)
         "//chrome",
+        "//chrome/common:app_mode_app_support",
 
-        #'../components/components.gyp:breakpad_stubs',  TODO(GYP)
+        # TODO(GYP) Mac: GYP has this dependency. Uncommenting this line
+        # generates duplicate symbols between
+        #   obj/components/crash/content/app/breakpad_stubs/crash_reporter_client.o
+        #   obj/components/crash/content/app/lib/crash_reporter_client.o
+        # It's not clear how this is supposed to work. The intent seems to be
+        # to not link breakpad in the tests. The dependency on .../app:lib
+        # seems to come from //chrome/app:test_support. That reference maybe
+        # should be a dependency on the stubs instead because it could be all
+        # tests might want them. Or it could be that we need to make a new
+        # "headers" target to make GN check happy, and then force each
+        # executable to link the correct implementation. Somebody with a
+        # higher-level understanding of Mac crash reporting needs to think
+        # about this.
+        # "//components/crash/content/app:breakpad_stubs",
         "//third_party/ocmock",
       ]
       sources += [
@@ -1207,16 +1226,6 @@ if (!is_android) {
         # TODO(groby): This test depends on hunspell and we cannot run it on
         # Mac, which does not use hunspell by default.
         "../browser/spellchecker/spellcheck_service_browsertest.cc",
-
-        # TODO(rouslan): This test depends on the custom dictionary UI,
-        # which is disabled on Mac.
-        # TODO(GYP): This should be added somewhere first ...
-        # "../browser/ui/webui/options/edit_dictionary_browsertest.js",
-
-        # TODO(rouslan): This test depends on hunspell and we cannot run it
-        # on Mac, which does use hunspell by default.
-        # TODO(GYP): This should be added somewhere first ...
-        # "../browser/ui/webui/options/language_options_dictionary_download_browsertest.js",
 
         # ProcessSingletonMac doesn"t do anything.
         "../browser/process_singleton_browsertest.cc",
@@ -1351,7 +1360,7 @@ if (!is_android) {
               chrome_tests_gypi_values.chrome_browser_tests_remoting_sources,
               ".",
               "//chrome")
-      #deps += [ "//remoting:remoting_webapp" ]  TODO(GYP)
+      deps += [ "//remoting/webapp" ]
     }
     if (use_x11) {
       deps += [ "//tools/xdisplaycheck" ]
@@ -1677,10 +1686,6 @@ test("unit_tests") {
   ]
   data_deps = []
 
-  # TODO(GYP) Windows stuff
-  # ['incremental_chrome_dll==1', {
-  #   'UseLibraryDependencyInputs': "true",
-
   if (!is_ios) {
     deps += [
       "//components/autofill/content/renderer:test_support",
@@ -1697,8 +1702,6 @@ test("unit_tests") {
       "//device/usb:mocks",
       "//gpu:test_support",
       "//media:test_support",
-
-      #'../ppapi/ppapi_internal.gyp:ppapi_unittest_shared',  TODO(GYP)
       "//third_party/leveldatabase",
       "//third_party/libaddressinput",
       "//third_party/libjingle",
@@ -2236,9 +2239,8 @@ if (safe_browsing_mode == 1 && is_mac) {
   }
 }
 
-if (is_win || is_mac || is_linux) {
-  # TODO(GYP): Figure out which of these work and are needed on other
-  # platforms.
+if (!is_android) {
+  # TODO(609855): Make this compile on Android and run on the bots.
   test("chrome_app_unittests") {
     sources = [
       "../app/chrome_watcher_client_unittest_win.cc",
@@ -2301,9 +2303,6 @@ if (is_win || (is_linux && !is_chromeos)) {
     } else {
       sources -= [
         "../app/chrome_command_ids.h",
-
-        #"../app/chrome_dll.rc",
-        #"../app/chrome_dll_resource.h",
         "../app/chrome_version.rc.version",
       ]
     }

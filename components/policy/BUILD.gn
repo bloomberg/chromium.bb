@@ -63,8 +63,9 @@ if (is_component_build) {
 }
 
 if (enable_configuration_policy) {
-  # TODO(brettw) this component should use target_gen_dir instead but the GYP
+  # TODO(GYP_GONE) this component should use target_gen_dir instead but the GYP
   # build puts everything into the following directory. We do the same for now.
+  # Fix when GYP is gone.
   policy_gen_dir = "$root_gen_dir/policy"
 
   # This protobuf is equivalent to chrome_settings.proto but shares messages

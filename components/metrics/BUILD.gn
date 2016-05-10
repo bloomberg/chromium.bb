@@ -369,4 +369,3 @@ source_set("unit_tests") {
     ]
   }
 }
-# TODO(GYP): metrics_chromeos

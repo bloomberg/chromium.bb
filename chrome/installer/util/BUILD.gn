@@ -52,11 +52,6 @@ static_library("with_no_strings") {
   allow_circular_includes_from = [ "//chrome/common:constants" ]
 
   if (is_win) {
-    # TODO(GYP) installer_util on Windows.
-    # This is a bit tricky. It seems that what's currently called
-    # installer_util_nacl_win64 should be a different target with a different
-    # name ("installer_util_minimal"?) since it's not strictly the 64-bit build
-    # of that target.
     sources = [
       "chrome_binaries_operations.cc",
       "chrome_binaries_operations.h",
@@ -134,7 +129,6 @@ static_library("with_no_strings") {
       "//build/config/compiler:no_size_t_to_int_warning",
     ]
 
-    # TODO(GYP) hook up corresponding version of installer_util_nacl_win64 in GN
     sources += [
       "advanced_firewall_manager_win.cc",
       "advanced_firewall_manager_win.h",
@@ -355,7 +349,5 @@ if (is_win) {
       "//chrome/test/data/extensions/",
       "//chrome/test/data/installer/",
     ]
-
-    # TODO(GYP) manifest: $(ProjectDir)\\installer\\mini_installer\\mini_installer.exe.manifest
   }
 }  # is_win
