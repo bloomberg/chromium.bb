@@ -252,8 +252,9 @@ void BluetoothLowEnergyDeviceMac::DidDiscoverPrimaryServices(NSError* error) {
     if (!gatt_service) {
       gatt_service = new BluetoothRemoteGattServiceMac(this, cb_service,
                                                        true /* is_primary */);
-      gatt_services_.add(gatt_service->GetIdentifier(),
-                         base::WrapUnique(gatt_service));
+      auto result_iter = gatt_services_.add(gatt_service->GetIdentifier(),
+                                            base::WrapUnique(gatt_service));
+      DCHECK(result_iter.second);
       adapter_->NotifyGattServiceAdded(gatt_service);
     }
   }
