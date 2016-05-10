@@ -999,6 +999,13 @@ MainThreadScrollingReasons ScrollingCoordinator::mainThreadScrollingReasons() co
         if (!frame->isLocalFrame())
             continue;
 
+        // TODO(alexmos,kenrb): For OOPIF, local roots that are different from
+        // the main frame can't be used in the calculation, since they use
+        // different compositors with unrelated state, which breaks some of the
+        // calculations below.
+        if (toLocalFrame(frame)->localFrameRoot() != m_page->mainFrame())
+            continue;
+
         FrameView* frameView = toLocalFrame(frame)->view();
         if (!frameView || frameView->shouldThrottleRendering())
             continue;
