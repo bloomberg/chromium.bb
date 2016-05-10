@@ -38,6 +38,8 @@ source_set("test_support") {
   sources = [
     "blob_cache/mock_blob_cache.cc",
     "blob_cache/mock_blob_cache.h",
+    "blob_cache/test_util.cc",
+    "blob_cache/test_util.h",
   ]
 
   deps = [

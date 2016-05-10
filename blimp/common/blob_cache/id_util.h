@@ -17,6 +17,7 @@ namespace blimp {
 // the same length.
 BLIMP_COMMON_EXPORT const BlobId CalculateBlobId(const void* data,
                                                  size_t data_size);
+BLIMP_COMMON_EXPORT const BlobId CalculateBlobId(const std::string& data);
 
 // Returns a hexadecimal string representation of a BlobId. The input must
 // be a valid BlobId.

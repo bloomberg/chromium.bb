@@ -17,8 +17,12 @@ const BlobId CalculateBlobId(const void* data, size_t data_size) {
       base::StringPiece(reinterpret_cast<const char*>(data), data_size));
 }
 
+const BlobId CalculateBlobId(const std::string& data) {
+  return crypto::SHA256HashString(data);
+}
+
 const std::string BlobIdToString(const BlobId& id) {
-  DCHECK(IsValidBlobId(id));
+  DCHECK(IsValidBlobId(id)) << "Invalid blob ID: " << id;
   return base::ToLowerASCII(base::HexEncode(id.data(), id.length()));
 }
 

@@ -107,6 +107,7 @@ source_set("unit_tests") {
     "blimp_message_output_buffer_unittest.cc",
     "blimp_message_pump_unittest.cc",
     "blimp_message_thread_pipe_unittest.cc",
+    "blob_channel/blob_channel_integration_test.cc",
     "blob_channel/blob_channel_receiver_unittest.cc",
     "blob_channel/blob_channel_sender_unittest.cc",
     "browser_connection_handler_unittest.cc",
