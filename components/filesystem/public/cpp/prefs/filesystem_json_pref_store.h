@@ -55,14 +55,14 @@ namespace filesystem {
 // Removing this class is a part of crbug.com/580652.
 class FilesystemJsonPrefStore
     : public PersistentPrefStore,
-      public filesystem::FileSystemClient,
+      public filesystem::mojom::FileSystemClient,
       public base::SupportsWeakPtr<FilesystemJsonPrefStore>,
       public base::NonThreadSafe {
  public:
   struct ReadResult;
 
   FilesystemJsonPrefStore(const std::string& pref_filename,
-                          filesystem::FileSystemPtr filesystem,
+                          filesystem::mojom::FileSystemPtr filesystem,
                           std::unique_ptr<PrefFilter> pref_filter);
 
   // PrefStore overrides:
@@ -138,24 +138,25 @@ class FilesystemJsonPrefStore
 
   // Callback method which verifies that there were no errors on opening the
   // filesystem, and if there aren't, invokes the passed in callback.
-  void OnOpenFilesystem(base::Closure callback, FileError err);
+  void OnOpenFilesystem(base::Closure callback, mojom::FileError err);
 
   // Asynchronous implementation details of PerformWrite().
   void OnTempFileWriteStart();
-  void OnTempFileWrite(FileError err);
-  void OnTempFileRenamed(FileError err);
+  void OnTempFileWrite(mojom::FileError err);
+  void OnTempFileRenamed(mojom::FileError err);
 
   // Asynchronous implementation details of ReadPrefsAsync().
   void OnPreferencesReadStart();
-  void OnPreferencesFileRead(FileError err, mojo::Array<uint8_t> contents);
+  void OnPreferencesFileRead(mojom::FileError err,
+                             mojo::Array<uint8_t> contents);
 
   const std::string path_;
-  mojo::Binding<filesystem::FileSystemClient> binding_;
-  filesystem::FileSystemPtr filesystem_;
+  mojo::Binding<filesystem::mojom::FileSystemClient> binding_;
+  filesystem::mojom::FileSystemPtr filesystem_;
 
   // |directory_| is only bound after the first attempt to access the
   // |filesystem. See OpenFilesystem().
-  DirectoryPtr directory_;
+  mojom::DirectoryPtr directory_;
 
   std::unique_ptr<base::DictionaryValue> prefs_;
 

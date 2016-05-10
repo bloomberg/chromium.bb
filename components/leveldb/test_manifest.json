@@ -4,7 +4,7 @@
   "display_name": "LevelDB Service Unittests",
   "capabilities": {
     "required": {
-      "mojo:filesystem": { "interfaces": [ "filesystem::FileSystem" ] },
+      "mojo:filesystem": { "interfaces": [ "filesystem::mojom::FileSystem" ] },
       "mojo:leveldb": { "interfaces":  [ "leveldb::LevelDBService" ] }
     }
   }

@@ -26,10 +26,10 @@ class UserService : public mojom::UserService {
   ~UserService() override;
 
   // Overridden from mojom::UserService:
-  void GetDirectory(filesystem::DirectoryRequest request,
+  void GetDirectory(filesystem::mojom::DirectoryRequest request,
                     const GetDirectoryCallback& callback) override;
   void GetSubDirectory(const mojo::String& sub_directory_path,
-                       filesystem::DirectoryRequest request,
+                       filesystem::mojom::DirectoryRequest request,
                        const GetSubDirectoryCallback& callback) override;
 
  private:

@@ -14,10 +14,10 @@ import "components/filesystem/public/interfaces/types.mojom";
 // the process so the only directory it has access to is the user's directory.
 interface UserService {
   // Returns the user profile directory.
-  GetDirectory(filesystem.Directory& dir) => ();
+  GetDirectory(filesystem.mojom.Directory& dir) => ();
 
   // Returns a subdirectory under the profile dir. Returns a filesystem error
   // when we fail to create the subdirectory.
-  GetSubDirectory(string dir_path, filesystem.Directory& dir)
-      => (filesystem.FileError err);
+  GetSubDirectory(string dir_path, filesystem.mojom.Directory& dir)
+      => (filesystem.mojom.FileError err);
 };

@@ -21,11 +21,11 @@ namespace filesystem {
 
 class LockTable;
 
-class DirectoryImpl : public Directory {
+class DirectoryImpl : public mojom::Directory {
  public:
   // Set |temp_dir| only if there's a temporary directory that should be deleted
   // when this object is destroyed.
-  DirectoryImpl(mojo::InterfaceRequest<Directory> request,
+  DirectoryImpl(mojo::InterfaceRequest<mojom::Directory> request,
                 base::FilePath directory_path,
                 scoped_refptr<SharedTempDir> temp_dir,
                 scoped_refptr<LockTable> lock_table);
@@ -38,16 +38,16 @@ class DirectoryImpl : public Directory {
   // |Directory| implementation:
   void Read(const ReadCallback& callback) override;
   void OpenFile(const mojo::String& path,
-                mojo::InterfaceRequest<File> file,
+                mojo::InterfaceRequest<mojom::File> file,
                 uint32_t open_flags,
                 const OpenFileCallback& callback) override;
   void OpenFileHandle(const mojo::String& path,
                       uint32_t open_flags,
                       const OpenFileHandleCallback& callback) override;
-  void OpenFileHandles(mojo::Array<FileOpenDetailsPtr> details,
+  void OpenFileHandles(mojo::Array<mojom::FileOpenDetailsPtr> details,
                        const OpenFileHandlesCallback& callback) override;
   void OpenDirectory(const mojo::String& path,
-                     mojo::InterfaceRequest<Directory> directory,
+                     mojo::InterfaceRequest<mojom::Directory> directory,
                      uint32_t open_flags,
                      const OpenDirectoryCallback& callback) override;
   void Rename(const mojo::String& path,
@@ -63,7 +63,7 @@ class DirectoryImpl : public Directory {
   void Flush(const FlushCallback& callback) override;
   void StatFile(const mojo::String& path,
                 const StatFileCallback& callback) override;
-  void Clone(mojo::InterfaceRequest<Directory> directory) override;
+  void Clone(mojo::InterfaceRequest<mojom::Directory> directory) override;
   void ReadEntireFile(const mojo::String& path,
                       const ReadEntireFileCallback& callback) override;
   void WriteFile(const mojo::String& path,
@@ -73,9 +73,9 @@ class DirectoryImpl : public Directory {
  private:
   mojo::ScopedHandle OpenFileHandleImpl(const mojo::String& raw_path,
                                         uint32_t open_flags,
-                                        FileError* error);
+                                        mojom::FileError* error);
 
-  mojo::StrongBinding<Directory> binding_;
+  mojo::StrongBinding<mojom::Directory> binding_;
   base::FilePath directory_path_;
   scoped_refptr<SharedTempDir> temp_dir_;
   scoped_refptr<LockTable> lock_table_;

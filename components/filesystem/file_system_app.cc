@@ -46,13 +46,13 @@ void FileSystemApp::Initialize(shell::Connector* connector,
 }
 
 bool FileSystemApp::AcceptConnection(shell::Connection* connection) {
-  connection->AddInterface<FileSystem>(this);
+  connection->AddInterface<mojom::FileSystem>(this);
   return true;
 }
 
 // |InterfaceFactory<Files>| implementation:
 void FileSystemApp::Create(shell::Connection* connection,
-                           mojo::InterfaceRequest<FileSystem> request) {
+                           mojo::InterfaceRequest<mojom::FileSystem> request) {
   new FileSystemImpl(connection, std::move(request), GetUserDataDir(),
                      lock_table_);
 }

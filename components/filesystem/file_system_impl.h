@@ -26,27 +26,26 @@ class FileSystemApp;
 class LockTable;
 
 // The base implementation of FileSystemImpl.
-class FileSystemImpl : public FileSystem {
+class FileSystemImpl : public mojom::FileSystem {
  public:
   // |persistent_dir| is the directory served to callers of
   // |OpenPersistentFileSystem().
   FileSystemImpl(shell::Connection* connection,
-                 mojo::InterfaceRequest<FileSystem> request,
+                 mojo::InterfaceRequest<mojom::FileSystem> request,
                  base::FilePath persistent_dir,
                  scoped_refptr<LockTable> lock_table);
   ~FileSystemImpl() override;
 
   // |Files| implementation:
-  void OpenTempDirectory(
-      mojo::InterfaceRequest<Directory> directory,
-      const OpenTempDirectoryCallback& callback) override;
+  void OpenTempDirectory(mojo::InterfaceRequest<mojom::Directory> directory,
+                         const OpenTempDirectoryCallback& callback) override;
   void OpenPersistentFileSystem(
-      mojo::InterfaceRequest<Directory> directory,
+      mojo::InterfaceRequest<mojom::Directory> directory,
       const OpenPersistentFileSystemCallback& callback) override;
 
  private:
   const std::string remote_application_name_;
-  mojo::StrongBinding<FileSystem> binding_;
+  mojo::StrongBinding<mojom::FileSystem> binding_;
   scoped_refptr<LockTable> lock_table_;
 
   base::FilePath persistent_dir_;

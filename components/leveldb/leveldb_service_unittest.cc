@@ -14,7 +14,7 @@
 #include "services/shell/public/cpp/shell_connection.h"
 #include "services/shell/public/cpp/shell_test.h"
 
-using filesystem::FileError;
+using filesystem::mojom::FileError;
 using mojo::Capture;
 
 namespace leveldb {
@@ -41,18 +41,18 @@ class LevelDBServiceTest : public shell::test::ShellTest {
 
   // Note: This has an out parameter rather than returning the |DirectoryPtr|,
   // since |ASSERT_...()| doesn't work with return values.
-  void GetTempDirectory(filesystem::DirectoryPtr* directory) {
+  void GetTempDirectory(filesystem::mojom::DirectoryPtr* directory) {
     FileError error = FileError::FAILED;
     files()->OpenTempDirectory(GetProxy(directory), mojo::Capture(&error));
     ASSERT_TRUE(files().WaitForIncomingResponse());
     ASSERT_EQ(FileError::OK, error);
   }
 
-  filesystem::FileSystemPtr& files() { return files_; }
+  filesystem::mojom::FileSystemPtr& files() { return files_; }
   LevelDBServicePtr& leveldb() { return leveldb_; }
 
  private:
-  filesystem::FileSystemPtr files_;
+  filesystem::mojom::FileSystemPtr files_;
   LevelDBServicePtr leveldb_;
 
   DISALLOW_COPY_AND_ASSIGN(LevelDBServiceTest);
@@ -190,11 +190,11 @@ TEST_F(LevelDBServiceTest, WriteBatch) {
 TEST_F(LevelDBServiceTest, Reconnect) {
   DatabaseError error;
 
-  filesystem::DirectoryPtr temp_directory;
+  filesystem::mojom::DirectoryPtr temp_directory;
   GetTempDirectory(&temp_directory);
 
   {
-    filesystem::DirectoryPtr directory;
+    filesystem::mojom::DirectoryPtr directory;
     temp_directory->Clone(GetProxy(&directory));
 
     LevelDBDatabasePtr database;
@@ -220,7 +220,7 @@ TEST_F(LevelDBServiceTest, Reconnect) {
   }
 
   {
-    filesystem::DirectoryPtr directory;
+    filesystem::mojom::DirectoryPtr directory;
     temp_directory->Clone(GetProxy(&directory));
 
     // Reconnect to the database.

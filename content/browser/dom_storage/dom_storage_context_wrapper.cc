@@ -108,7 +108,7 @@ class DOMStorageContextWrapper::MojoState {
   }
 
   // Part of our asynchronous directory opening called from OpenLocalStorage().
-  void OnDirectoryOpened(filesystem::FileError err);
+  void OnDirectoryOpened(filesystem::mojom::FileError err);
   void OnDatabaseOpened(leveldb::DatabaseError status);
 
   // The (possibly delayed) implementation of OpenLocalStorage(). Can be called
@@ -132,7 +132,7 @@ class DOMStorageContextWrapper::MojoState {
   std::unique_ptr<shell::Connection> user_service_connection_;
 
   user_service::mojom::UserServicePtr user_service_;
-  filesystem::DirectoryPtr directory_;
+  filesystem::mojom::DirectoryPtr directory_;
 
   leveldb::LevelDBServicePtr leveldb_service_;
   leveldb::LevelDBDatabasePtr database_;
@@ -190,8 +190,8 @@ void DOMStorageContextWrapper::MojoState::OpenLocalStorage(
 }
 
 void DOMStorageContextWrapper::MojoState::OnDirectoryOpened(
-    filesystem::FileError err) {
-  if (err != filesystem::FileError::OK) {
+    filesystem::mojom::FileError err) {
+  if (err != filesystem::mojom::FileError::OK) {
     // We failed to open the directory; continue with startup so that we create
     // the |level_db_wrappers_|.
     OnDatabaseOpened(leveldb::DatabaseError::IO_ERROR);

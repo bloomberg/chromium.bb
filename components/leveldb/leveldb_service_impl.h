@@ -19,12 +19,12 @@ class LevelDBServiceImpl : public LevelDBService {
   ~LevelDBServiceImpl() override;
 
   // Overridden from LevelDBService:
-  void Open(filesystem::DirectoryPtr directory,
+  void Open(filesystem::mojom::DirectoryPtr directory,
             const mojo::String& dbname,
             leveldb::LevelDBDatabaseRequest database,
             const OpenCallback& callback) override;
   void OpenWithOptions(leveldb::OpenOptionsPtr open_options,
-                       filesystem::DirectoryPtr directory,
+                       filesystem::mojom::DirectoryPtr directory,
                        const mojo::String& dbname,
                        leveldb::LevelDBDatabaseRequest database,
                        const OpenCallback& callback) override;

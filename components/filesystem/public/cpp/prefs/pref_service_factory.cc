@@ -25,7 +25,7 @@ void DoNothingHandleReadError(PersistentPrefStore::PrefReadError error) {}
 
 std::unique_ptr<PrefService> CreatePrefService(shell::Connector* connector,
                                                PrefRegistry* pref_registry) {
-  filesystem::FileSystemPtr filesystem;
+  filesystem::mojom::FileSystemPtr filesystem;
   connector->ConnectToInterface("mojo:filesystem", &filesystem);
 
   scoped_refptr<FilesystemJsonPrefStore> user_prefs =

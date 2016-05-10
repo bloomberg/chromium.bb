@@ -28,21 +28,22 @@ base::File GetFileFromHandle(mojo::ScopedHandle handle) {
 ResourceLoader::ResourceLoader() {}
 ResourceLoader::~ResourceLoader() {}
 
-bool ResourceLoader::OpenFiles(filesystem::DirectoryPtr directory,
+bool ResourceLoader::OpenFiles(filesystem::mojom::DirectoryPtr directory,
                                const std::set<std::string>& paths) {
-  mojo::Array<filesystem::FileOpenDetailsPtr> details(
-      mojo::Array<filesystem::FileOpenDetailsPtr>::New(paths.size()));
+  mojo::Array<filesystem::mojom::FileOpenDetailsPtr> details(
+      mojo::Array<filesystem::mojom::FileOpenDetailsPtr>::New(paths.size()));
   size_t i = 0;
   for (const auto& path : paths) {
-    filesystem::FileOpenDetailsPtr open_details(
-        filesystem::FileOpenDetails::New());
+    filesystem::mojom::FileOpenDetailsPtr open_details(
+        filesystem::mojom::FileOpenDetails::New());
     open_details->path = path;
-    open_details->open_flags = filesystem::kFlagOpen | filesystem::kFlagRead;
+    open_details->open_flags =
+        filesystem::mojom::kFlagOpen | filesystem::mojom::kFlagRead;
     details[i++] = std::move(open_details);
   }
 
-  mojo::Array<filesystem::FileOpenResultPtr> results(
-      mojo::Array<filesystem::FileOpenResultPtr>::New(paths.size()));
+  mojo::Array<filesystem::mojom::FileOpenResultPtr> results(
+      mojo::Array<filesystem::mojom::FileOpenResultPtr>::New(paths.size()));
   if (!directory->OpenFileHandles(std::move(details), &results))
     return false;
 

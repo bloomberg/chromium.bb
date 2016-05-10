@@ -549,7 +549,7 @@ void Shell::InitCatalog(mojom::ShellClientPtr catalog) {
   //             a bit of a chicken-and-egg problem.
   CapabilitySpec spec;
   Interfaces interfaces;
-  interfaces.insert("filesystem::Directory");
+  interfaces.insert("filesystem::mojom::Directory");
   spec.provided["app"] = interfaces;
   Instance* instance = CreateInstance(CreateShellIdentity(),
                                       CreateCatalogIdentity(),

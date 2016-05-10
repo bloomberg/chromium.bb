@@ -97,7 +97,7 @@ void MandolineUIServicesApp::InitializeResources(shell::Connector* connector) {
   resource_paths.insert(kResourceFile200);
 
   catalog::ResourceLoader loader;
-  filesystem::DirectoryPtr directory;
+  filesystem::mojom::DirectoryPtr directory;
   connector->ConnectToInterface("mojo:catalog", &directory);
   CHECK(loader.OpenFiles(std::move(directory), resource_paths));
 

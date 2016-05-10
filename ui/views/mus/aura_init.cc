@@ -78,7 +78,7 @@ void AuraInit::InitializeResources(shell::Connector* connector) {
   if (ui::ResourceBundle::HasSharedInstance())
     return;
   catalog::ResourceLoader loader;
-  filesystem::DirectoryPtr directory;
+  filesystem::mojom::DirectoryPtr directory;
   connector->ConnectToInterface("mojo:catalog", &directory);
   CHECK(loader.OpenFiles(std::move(directory),
         GetResourcePaths(resource_file_)));

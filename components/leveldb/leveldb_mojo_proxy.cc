@@ -14,16 +14,16 @@
 namespace leveldb {
 
 struct LevelDBMojoProxy::OpaqueLock {
-  filesystem::FilePtr lock_file;
+  filesystem::mojom::FilePtr lock_file;
 };
 
 struct LevelDBMojoProxy::OpaqueDir {
   explicit OpaqueDir(
-      mojo::InterfacePtrInfo<filesystem::Directory> directory_info) {
+      mojo::InterfacePtrInfo<filesystem::mojom::Directory> directory_info) {
     directory.Bind(std::move(directory_info));
   }
 
-  filesystem::DirectoryPtr directory;
+  filesystem::mojom::DirectoryPtr directory;
 };
 
 LevelDBMojoProxy::LevelDBMojoProxy(
@@ -31,7 +31,7 @@ LevelDBMojoProxy::LevelDBMojoProxy(
     : task_runner_(std::move(task_runner)), outstanding_opaque_dirs_(0) {}
 
 LevelDBMojoProxy::OpaqueDir* LevelDBMojoProxy::RegisterDirectory(
-    filesystem::DirectoryPtr directory) {
+    filesystem::mojom::DirectoryPtr directory) {
   OpaqueDir* out_dir = nullptr;
   RunInternal(base::Bind(&LevelDBMojoProxy::RegisterDirectoryImpl, this,
                          base::Passed(directory.PassInterface()),
@@ -54,9 +54,10 @@ base::File LevelDBMojoProxy::OpenFileHandle(OpaqueDir* dir,
   return file;
 }
 
-filesystem::FileError LevelDBMojoProxy::SyncDirectory(OpaqueDir* dir,
-                                                      const std::string& name) {
-  filesystem::FileError error = filesystem::FileError::FAILED;
+filesystem::mojom::FileError LevelDBMojoProxy::SyncDirectory(
+    OpaqueDir* dir,
+    const std::string& name) {
+  filesystem::mojom::FileError error = filesystem::mojom::FileError::FAILED;
   RunInternal(base::Bind(&LevelDBMojoProxy::SyncDirectoryImpl, this, dir,
                          name, &error));
   return error;
@@ -69,65 +70,67 @@ bool LevelDBMojoProxy::FileExists(OpaqueDir* dir, const std::string& name) {
   return exists;
 }
 
-filesystem::FileError LevelDBMojoProxy::GetChildren(
+filesystem::mojom::FileError LevelDBMojoProxy::GetChildren(
     OpaqueDir* dir,
     const std::string& path,
     std::vector<std::string>* result) {
-  filesystem::FileError error = filesystem::FileError::FAILED;
+  filesystem::mojom::FileError error = filesystem::mojom::FileError::FAILED;
   RunInternal(base::Bind(&LevelDBMojoProxy::GetChildrenImpl, this, dir,
                          path, result, &error));
   return error;
 }
 
-filesystem::FileError LevelDBMojoProxy::Delete(OpaqueDir* dir,
-                                               const std::string& path,
-                                               uint32_t delete_flags) {
-  filesystem::FileError error = filesystem::FileError::FAILED;
+filesystem::mojom::FileError LevelDBMojoProxy::Delete(OpaqueDir* dir,
+                                                      const std::string& path,
+                                                      uint32_t delete_flags) {
+  filesystem::mojom::FileError error = filesystem::mojom::FileError::FAILED;
   RunInternal(base::Bind(&LevelDBMojoProxy::DeleteImpl, this, dir, path,
                          delete_flags, &error));
   return error;
 }
 
-filesystem::FileError LevelDBMojoProxy::CreateDir(OpaqueDir* dir,
-                                                  const std::string& path) {
-  filesystem::FileError error = filesystem::FileError::FAILED;
+filesystem::mojom::FileError LevelDBMojoProxy::CreateDir(
+    OpaqueDir* dir,
+    const std::string& path) {
+  filesystem::mojom::FileError error = filesystem::mojom::FileError::FAILED;
   RunInternal(base::Bind(&LevelDBMojoProxy::CreateDirImpl, this, dir, path,
                          &error));
   return error;
 }
 
-filesystem::FileError LevelDBMojoProxy::GetFileSize(OpaqueDir* dir,
-                                                    const std::string& path,
-                                                    uint64_t* file_size) {
-  filesystem::FileError error = filesystem::FileError::FAILED;
+filesystem::mojom::FileError LevelDBMojoProxy::GetFileSize(
+    OpaqueDir* dir,
+    const std::string& path,
+    uint64_t* file_size) {
+  filesystem::mojom::FileError error = filesystem::mojom::FileError::FAILED;
   RunInternal(base::Bind(&LevelDBMojoProxy::GetFileSizeImpl, this, dir,
                          path, file_size, &error));
   return error;
 }
 
-filesystem::FileError LevelDBMojoProxy::RenameFile(
+filesystem::mojom::FileError LevelDBMojoProxy::RenameFile(
     OpaqueDir* dir,
     const std::string& old_path,
     const std::string& new_path) {
-  filesystem::FileError error = filesystem::FileError::FAILED;
+  filesystem::mojom::FileError error = filesystem::mojom::FileError::FAILED;
   RunInternal(base::Bind(&LevelDBMojoProxy::RenameFileImpl, this, dir,
                          old_path, new_path, &error));
   return error;
 }
 
-std::pair<filesystem::FileError, LevelDBMojoProxy::OpaqueLock*>
+std::pair<filesystem::mojom::FileError, LevelDBMojoProxy::OpaqueLock*>
 LevelDBMojoProxy::LockFile(OpaqueDir* dir, const std::string& path) {
-  filesystem::FileError error = filesystem::FileError::FAILED;
+  filesystem::mojom::FileError error = filesystem::mojom::FileError::FAILED;
   OpaqueLock* out_lock = nullptr;
   RunInternal(base::Bind(&LevelDBMojoProxy::LockFileImpl, this, dir, path,
                          &error, &out_lock));
   return std::make_pair(error, out_lock);
 }
 
-filesystem::FileError LevelDBMojoProxy::UnlockFile(OpaqueLock* lock) {
+filesystem::mojom::FileError LevelDBMojoProxy::UnlockFile(OpaqueLock* lock) {
   // Take ownership of the incoming lock so it gets destroyed whatever happens.
   std::unique_ptr<OpaqueLock> scoped_lock(lock);
-  filesystem::FileError error = filesystem::FileError::FAILED;
+  filesystem::mojom::FileError error = filesystem::mojom::FileError::FAILED;
   RunInternal(base::Bind(&LevelDBMojoProxy::UnlockFileImpl, this,
                          base::Passed(&scoped_lock), &error));
   return error;
@@ -159,7 +162,7 @@ void LevelDBMojoProxy::DoOnOtherThread(const base::Closure& c,
 }
 
 void LevelDBMojoProxy::RegisterDirectoryImpl(
-    mojo::InterfacePtrInfo<filesystem::Directory> directory_info,
+    mojo::InterfacePtrInfo<filesystem::mojom::Directory> directory_info,
     OpaqueDir** out_dir) {
   // Take the Directory pipe and bind it on this thread.
   *out_dir = new OpaqueDir(std::move(directory_info));
@@ -178,12 +181,12 @@ void LevelDBMojoProxy::OpenFileHandleImpl(OpaqueDir* dir,
                                           uint32_t open_flags,
                                           base::File* output_file) {
   mojo::ScopedHandle handle;
-  filesystem::FileError error = filesystem::FileError::FAILED;
+  filesystem::mojom::FileError error = filesystem::mojom::FileError::FAILED;
   bool completed = dir->directory->OpenFileHandle(mojo::String::From(name),
                                                   open_flags, &error, &handle);
   DCHECK(completed);
 
-  if (error != filesystem::FileError::OK) {
+  if (error != filesystem::mojom::FileError::OK) {
     *output_file = base::File(static_cast<base::File::Error>(error));
   } else {
     MojoPlatformHandle platform_handle;
@@ -199,16 +202,17 @@ void LevelDBMojoProxy::OpenFileHandleImpl(OpaqueDir* dir,
   }
 }
 
-void LevelDBMojoProxy::SyncDirectoryImpl(OpaqueDir* dir,
-                                         std::string name,
-                                         filesystem::FileError* out_error) {
-  filesystem::DirectoryPtr target;
+void LevelDBMojoProxy::SyncDirectoryImpl(
+    OpaqueDir* dir,
+    std::string name,
+    filesystem::mojom::FileError* out_error) {
+  filesystem::mojom::DirectoryPtr target;
   bool completed = dir->directory->OpenDirectory(
-      name, GetProxy(&target), filesystem::kFlagRead | filesystem::kFlagWrite,
-      out_error);
+      name, GetProxy(&target),
+      filesystem::mojom::kFlagRead | filesystem::mojom::kFlagWrite, out_error);
   DCHECK(completed);
 
-  if (*out_error != filesystem::FileError::OK)
+  if (*out_error != filesystem::mojom::FileError::OK)
     return;
 
   completed = target->Flush(out_error);
@@ -218,27 +222,28 @@ void LevelDBMojoProxy::SyncDirectoryImpl(OpaqueDir* dir,
 void LevelDBMojoProxy::FileExistsImpl(OpaqueDir* dir,
                                       std::string name,
                                       bool* exists) {
-  filesystem::FileError error = filesystem::FileError::FAILED;
+  filesystem::mojom::FileError error = filesystem::mojom::FileError::FAILED;
   bool completed =
       dir->directory->Exists(mojo::String::From(name), &error, exists);
   DCHECK(completed);
 }
 
-void LevelDBMojoProxy::GetChildrenImpl(OpaqueDir* dir,
-                                       std::string name,
-                                       std::vector<std::string>* out_contents,
-                                       filesystem::FileError* out_error) {
-  filesystem::DirectoryPtr target;
-  filesystem::DirectoryRequest proxy = GetProxy(&target);
+void LevelDBMojoProxy::GetChildrenImpl(
+    OpaqueDir* dir,
+    std::string name,
+    std::vector<std::string>* out_contents,
+    filesystem::mojom::FileError* out_error) {
+  filesystem::mojom::DirectoryPtr target;
+  filesystem::mojom::DirectoryRequest proxy = GetProxy(&target);
   bool completed = dir->directory->OpenDirectory(
-      name, std::move(proxy), filesystem::kFlagRead | filesystem::kFlagWrite,
-      out_error);
+      name, std::move(proxy),
+      filesystem::mojom::kFlagRead | filesystem::mojom::kFlagWrite, out_error);
   DCHECK(completed);
 
-  if (*out_error != filesystem::FileError::OK)
+  if (*out_error != filesystem::mojom::FileError::OK)
     return;
 
-  mojo::Array<filesystem::DirectoryEntryPtr> directory_contents;
+  mojo::Array<filesystem::mojom::DirectoryEntryPtr> directory_contents;
   completed = target->Read(out_error, &directory_contents);
   DCHECK(completed);
 
@@ -251,7 +256,7 @@ void LevelDBMojoProxy::GetChildrenImpl(OpaqueDir* dir,
 void LevelDBMojoProxy::DeleteImpl(OpaqueDir* dir,
                                   std::string name,
                                   uint32_t delete_flags,
-                                  filesystem::FileError* out_error) {
+                                  filesystem::mojom::FileError* out_error) {
   bool completed =
       dir->directory->Delete(mojo::String::From(name), delete_flags, out_error);
   DCHECK(completed);
@@ -259,19 +264,21 @@ void LevelDBMojoProxy::DeleteImpl(OpaqueDir* dir,
 
 void LevelDBMojoProxy::CreateDirImpl(OpaqueDir* dir,
                                      std::string name,
-                                     filesystem::FileError* out_error) {
+                                     filesystem::mojom::FileError* out_error) {
   bool completed = dir->directory->OpenDirectory(
       name, nullptr,
-      filesystem::kFlagRead | filesystem::kFlagWrite | filesystem::kFlagCreate,
+      filesystem::mojom::kFlagRead | filesystem::mojom::kFlagWrite |
+          filesystem::mojom::kFlagCreate,
       out_error);
   DCHECK(completed);
 }
 
-void LevelDBMojoProxy::GetFileSizeImpl(OpaqueDir* dir,
-                                       const std::string& path,
-                                       uint64_t* file_size,
-                                       filesystem::FileError* out_error) {
-  filesystem::FileInformationPtr info;
+void LevelDBMojoProxy::GetFileSizeImpl(
+    OpaqueDir* dir,
+    const std::string& path,
+    uint64_t* file_size,
+    filesystem::mojom::FileError* out_error) {
+  filesystem::mojom::FileInformationPtr info;
   bool completed = dir->directory->StatFile(path, out_error, &info);
   DCHECK(completed);
   if (info)
@@ -281,7 +288,7 @@ void LevelDBMojoProxy::GetFileSizeImpl(OpaqueDir* dir,
 void LevelDBMojoProxy::RenameFileImpl(OpaqueDir* dir,
                                       const std::string& old_path,
                                       const std::string& new_path,
-                                      filesystem::FileError* out_error) {
+                                      filesystem::mojom::FileError* out_error) {
   bool completed = dir->directory->Rename(
       mojo::String::From(old_path), mojo::String::From(new_path), out_error);
   DCHECK(completed);
@@ -289,26 +296,26 @@ void LevelDBMojoProxy::RenameFileImpl(OpaqueDir* dir,
 
 void LevelDBMojoProxy::LockFileImpl(OpaqueDir* dir,
                                     const std::string& path,
-                                    filesystem::FileError* out_error,
+                                    filesystem::mojom::FileError* out_error,
                                     OpaqueLock** out_lock) {
   // Since a lock is associated with a file descriptor, we need to open and
   // have a persistent file on the other side of the connection.
-  filesystem::FilePtr target;
-  filesystem::FileRequest proxy = GetProxy(&target);
+  filesystem::mojom::FilePtr target;
+  filesystem::mojom::FileRequest proxy = GetProxy(&target);
   bool completed = dir->directory->OpenFile(
       mojo::String::From(path), std::move(proxy),
-      filesystem::kFlagOpenAlways | filesystem::kFlagRead |
-          filesystem::kFlagWrite,
+      filesystem::mojom::kFlagOpenAlways | filesystem::mojom::kFlagRead |
+          filesystem::mojom::kFlagWrite,
       out_error);
   DCHECK(completed);
 
-  if (*out_error != filesystem::FileError::OK)
+  if (*out_error != filesystem::mojom::FileError::OK)
     return;
 
   completed = target->Lock(out_error);
   DCHECK(completed);
 
-  if (*out_error == filesystem::FileError::OK) {
+  if (*out_error == filesystem::mojom::FileError::OK) {
     OpaqueLock* l = new OpaqueLock;
     l->lock_file = std::move(target);
     *out_lock = l;
@@ -316,7 +323,7 @@ void LevelDBMojoProxy::LockFileImpl(OpaqueDir* dir,
 }
 
 void LevelDBMojoProxy::UnlockFileImpl(std::unique_ptr<OpaqueLock> lock,
-                                      filesystem::FileError* out_error) {
+                                      filesystem::mojom::FileError* out_error) {
   lock->lock_file->Unlock(out_error);
 }
 

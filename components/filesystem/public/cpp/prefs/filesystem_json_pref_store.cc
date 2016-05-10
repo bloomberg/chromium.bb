@@ -57,7 +57,7 @@ PersistentPrefStore::PrefReadError HandleReadErrors(const base::Value* value) {
 
 FilesystemJsonPrefStore::FilesystemJsonPrefStore(
     const std::string& pref_filename,
-    filesystem::FileSystemPtr filesystem,
+    filesystem::mojom::FileSystemPtr filesystem,
     std::unique_ptr<PrefFilter> pref_filter)
     : path_(pref_filename),
       binding_(this),
@@ -334,7 +334,7 @@ void FilesystemJsonPrefStore::PerformWrite() {
 }
 
 void FilesystemJsonPrefStore::OpenFilesystem(base::Closure callback) {
-  filesystem::FileSystemClientPtr client;
+  filesystem::mojom::FileSystemClientPtr client;
   binding_.Bind(GetProxy(&client));
 
   filesystem_->OpenFileSystem(
@@ -344,8 +344,8 @@ void FilesystemJsonPrefStore::OpenFilesystem(base::Closure callback) {
 }
 
 void FilesystemJsonPrefStore::OnOpenFilesystem(base::Closure callback,
-                                               FileError err) {
-  if (err != FileError::OK) {
+                                               mojom::FileError err) {
+  if (err != mojom::FileError::OK) {
     // Do real error checking.
     NOTIMPLEMENTED();
     return;
@@ -372,18 +372,17 @@ void FilesystemJsonPrefStore::OnTempFileWriteStart() {
       Bind(&FilesystemJsonPrefStore::OnTempFileWrite, AsWeakPtr()));
 }
 
-void FilesystemJsonPrefStore::OnTempFileWrite(FileError err) {
+void FilesystemJsonPrefStore::OnTempFileWrite(mojom::FileError err) {
   // TODO(erg): Error handling. The JsonPrefStore code assumes that writing the
   // file can never fail.
-  CHECK_EQ(FileError::OK, err);
+  CHECK_EQ(mojom::FileError::OK, err);
 
   directory_->Rename(
       "tmp", path_,
       Bind(&FilesystemJsonPrefStore::OnTempFileRenamed, AsWeakPtr()));
 }
 
-void FilesystemJsonPrefStore::OnTempFileRenamed(FileError err) {
-}
+void FilesystemJsonPrefStore::OnTempFileRenamed(mojom::FileError err) {}
 
 void FilesystemJsonPrefStore::OnPreferencesReadStart() {
   directory_->ReadEntireFile(
@@ -392,20 +391,20 @@ void FilesystemJsonPrefStore::OnPreferencesReadStart() {
 }
 
 void FilesystemJsonPrefStore::OnPreferencesFileRead(
-    FileError err,
+    mojom::FileError err,
     mojo::Array<uint8_t> contents) {
   std::unique_ptr<FilesystemJsonPrefStore::ReadResult> read_result(
       new FilesystemJsonPrefStore::ReadResult);
   // TODO(erg): Needs even better error handling.
   switch (err) {
-    case FileError::IN_USE:
-    case FileError::ACCESS_DENIED:
-    case FileError::NOT_A_FILE: {
+    case mojom::FileError::IN_USE:
+    case mojom::FileError::ACCESS_DENIED:
+    case mojom::FileError::NOT_A_FILE: {
       read_only_ = true;
       break;
     }
-    case FileError::FAILED:
-    case FileError::NOT_FOUND: {
+    case mojom::FileError::FAILED:
+    case mojom::FileError::NOT_FOUND: {
       // If the file just doesn't exist, maybe this is the first run. Just
       // don't pass a value.
       read_result->error = PREF_READ_ERROR_NO_FILE;

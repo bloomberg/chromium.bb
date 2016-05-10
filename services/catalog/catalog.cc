@@ -106,7 +106,7 @@ void Catalog::ScanSystemPackageDir() {
 
 bool Catalog::AcceptConnection(shell::Connection* connection) {
   connection->AddInterface<mojom::Catalog>(this);
-  connection->AddInterface<filesystem::Directory>(this);
+  connection->AddInterface<filesystem::mojom::Directory>(this);
   connection->AddInterface<shell::mojom::ShellResolver>(this);
   return true;
 }
@@ -126,7 +126,7 @@ void Catalog::Create(shell::Connection* connection,
 }
 
 void Catalog::Create(shell::Connection* connection,
-                     filesystem::DirectoryRequest request) {
+                     filesystem::mojom::DirectoryRequest request) {
   if (!lock_table_)
     lock_table_ = new filesystem::LockTable;
   base::FilePath resources_path =

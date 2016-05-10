@@ -21,7 +21,7 @@ class Connector;
 namespace filesystem {
 
 class FileSystemApp : public shell::ShellClient,
-                      public shell::InterfaceFactory<FileSystem> {
+                      public shell::InterfaceFactory<mojom::FileSystem> {
  public:
   FileSystemApp();
   ~FileSystemApp() override;
@@ -37,7 +37,7 @@ class FileSystemApp : public shell::ShellClient,
   bool AcceptConnection(shell::Connection* connection) override;
   // |InterfaceFactory<Files>| implementation:
   void Create(shell::Connection* connection,
-              mojo::InterfaceRequest<FileSystem> request) override;
+              mojo::InterfaceRequest<mojom::FileSystem> request) override;
 
   mojo::TracingImpl tracing_;
 

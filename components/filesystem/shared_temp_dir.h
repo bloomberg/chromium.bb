@@ -13,7 +13,7 @@ class ScopedTempDir;
 
 namespace filesystem {
 
-// A class to allow multiple Directory objects to hold a reference to a
+// A class to allow multiple mojom::Directory objects to hold a reference to a
 // temporary directory.
 class SharedTempDir : public base::RefCounted<SharedTempDir> {
  public:

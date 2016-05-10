@@ -24,11 +24,11 @@ void FilesTestBase::SetUp() {
   connector()->ConnectToInterface("mojo:filesystem", &files_);
 }
 
-void FilesTestBase::GetTemporaryRoot(DirectoryPtr* directory) {
-  FileError error = FileError::FAILED;
+void FilesTestBase::GetTemporaryRoot(mojom::DirectoryPtr* directory) {
+  mojom::FileError error = mojom::FileError::FAILED;
   files()->OpenTempDirectory(GetProxy(directory), mojo::Capture(&error));
   ASSERT_TRUE(files().WaitForIncomingResponse());
-  ASSERT_EQ(FileError::OK, error);
+  ASSERT_EQ(mojom::FileError::OK, error);
 }
 
 }  // namespace filesystem

@@ -7,7 +7,7 @@
 //    and sizes must always be non-negative)
 //  - buffer size parameters (for read/write) are uint32
 
-module filesystem;
+module filesystem.mojom;
 
 import "components/filesystem/public/interfaces/types.mojom";
 

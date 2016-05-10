@@ -61,11 +61,11 @@ struct OpenOptions {
 
 // Service which hands out databases.
 interface LevelDBService {
-  Open(filesystem.Directory directory,
+  Open(filesystem.mojom.Directory directory,
        string dbname,
        LevelDBDatabase& database) => (DatabaseError status);
   OpenWithOptions(OpenOptions options,
-                  filesystem.Directory directory,
+                  filesystem.mojom.Directory directory,
                   string dbname,
                   LevelDBDatabase& database) => (DatabaseError status);
 

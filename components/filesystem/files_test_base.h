@@ -23,12 +23,12 @@ class FilesTestBase : public shell::test::ShellTest {
  protected:
   // Note: This has an out parameter rather than returning the |DirectoryPtr|,
   // since |ASSERT_...()| doesn't work with return values.
-  void GetTemporaryRoot(DirectoryPtr* directory);
+  void GetTemporaryRoot(mojom::DirectoryPtr* directory);
 
-  FileSystemPtr& files() { return files_; }
+  mojom::FileSystemPtr& files() { return files_; }
 
  private:
-  FileSystemPtr files_;
+  mojom::FileSystemPtr files_;
 
   DISALLOW_COPY_AND_ASSIGN(FilesTestBase);
 };

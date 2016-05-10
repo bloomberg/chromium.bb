@@ -30,7 +30,7 @@ class ResourceLoader {
   // (Synchronously) opens all of the files in |paths| for reading. Use
   // TakeFile() subsequently to obtain base::Files to use. Returns true if the
   // sync operation completed, false if it did not.
-  bool OpenFiles(filesystem::DirectoryPtr directory,
+  bool OpenFiles(filesystem::mojom::DirectoryPtr directory,
                  const std::set<std::string>& paths);
 
   // Releases and returns the file wrapping the handle.

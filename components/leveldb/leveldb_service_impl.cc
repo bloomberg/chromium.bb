@@ -25,7 +25,7 @@ LevelDBServiceImpl::LevelDBServiceImpl(
 
 LevelDBServiceImpl::~LevelDBServiceImpl() {}
 
-void LevelDBServiceImpl::Open(filesystem::DirectoryPtr directory,
+void LevelDBServiceImpl::Open(filesystem::mojom::DirectoryPtr directory,
                               const mojo::String& dbname,
                               leveldb::LevelDBDatabaseRequest database,
                               const OpenCallback& callback) {
@@ -35,7 +35,7 @@ void LevelDBServiceImpl::Open(filesystem::DirectoryPtr directory,
 
 void LevelDBServiceImpl::OpenWithOptions(
     leveldb::OpenOptionsPtr open_options,
-    filesystem::DirectoryPtr directory,
+    filesystem::mojom::DirectoryPtr directory,
     const mojo::String& dbname,
     leveldb::LevelDBDatabaseRequest database,
     const OpenCallback& callback) {

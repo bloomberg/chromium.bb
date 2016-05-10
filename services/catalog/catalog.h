@@ -43,7 +43,7 @@ class Store;
 // can be passed to the Shell, potentially in a different process.
 class Catalog : public shell::ShellClient,
                 public shell::InterfaceFactory<mojom::Catalog>,
-                public shell::InterfaceFactory<filesystem::Directory>,
+                public shell::InterfaceFactory<filesystem::mojom::Directory>,
                 public shell::InterfaceFactory<shell::mojom::ShellResolver> {
  public:
   // |manifest_provider| may be null.
@@ -74,9 +74,9 @@ class Catalog : public shell::ShellClient,
   void Create(shell::Connection* connection,
               mojom::CatalogRequest request) override;
 
-  // shell::InterfaceFactory<filesystem::Directory>:
+  // shell::InterfaceFactory<filesystem::mojom::Directory>:
   void Create(shell::Connection* connection,
-              filesystem::DirectoryRequest request) override;
+              filesystem::mojom::DirectoryRequest request) override;
 
   Instance* GetInstanceForUserId(const std::string& user_id);
 

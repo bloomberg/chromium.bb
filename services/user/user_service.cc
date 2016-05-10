@@ -24,7 +24,7 @@ UserService::UserService(const base::FilePath& base_user_dir,
 
 UserService::~UserService() {}
 
-void UserService::GetDirectory(filesystem::DirectoryRequest request,
+void UserService::GetDirectory(filesystem::mojom::DirectoryRequest request,
                                const GetDirectoryCallback& callback) {
   new filesystem::DirectoryImpl(std::move(request), path_,
                                 scoped_refptr<filesystem::SharedTempDir>(),
@@ -33,7 +33,7 @@ void UserService::GetDirectory(filesystem::DirectoryRequest request,
 }
 
 void UserService::GetSubDirectory(const mojo::String& sub_directory_path,
-                                  filesystem::DirectoryRequest request,
+                                  filesystem::mojom::DirectoryRequest request,
                                   const GetSubDirectoryCallback& callback) {
   // Ensure that we've made |subdirectory| recursively under our user dir.
   base::FilePath subdir = path_.Append(
@@ -44,14 +44,14 @@ void UserService::GetSubDirectory(const mojo::String& sub_directory_path,
 #endif
   base::File::Error error;
   if (!base::CreateDirectoryAndGetError(subdir, &error)) {
-    callback.Run(static_cast<filesystem::FileError>(error));
+    callback.Run(static_cast<filesystem::mojom::FileError>(error));
     return;
   }
 
   new filesystem::DirectoryImpl(std::move(request), subdir,
                                 scoped_refptr<filesystem::SharedTempDir>(),
                                 lock_table_);
-  callback.Run(filesystem::FileError::OK);
+  callback.Run(filesystem::mojom::FileError::OK);
 }
 
 }  // namespace user_service
