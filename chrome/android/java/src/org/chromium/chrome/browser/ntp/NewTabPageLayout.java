@@ -100,11 +100,16 @@ public class NewTabPageLayout extends LinearLayout {
         // load and has enough space for the peeking card, push snippets to the bottom of the page
         // to show the peeking card.
         if (mCardsUiEnabled) {
-            int peekingCardHeight = getContext().getResources().getDimensionPixelSize(
+            int peekingCardHeight = getResources().getDimensionPixelSize(
                     R.dimen.snippets_padding_and_peeking_card_height);
-            if (mParentScrollViewportHeight >= getMeasuredHeight() + peekingCardHeight) {
+
+            // Height of the tabs for tablet. This will be zero for mobile.
+            int tabStripHeight = getResources().getDimensionPixelSize(R.dimen.tab_strip_height);
+
+            if (mParentScrollViewportHeight
+                    >= getMeasuredHeight() + peekingCardHeight + tabStripHeight) {
                 RecyclerView.LayoutParams params = (RecyclerView.LayoutParams) getLayoutParams();
-                params.height = mParentScrollViewportHeight - peekingCardHeight;
+                params.height = mParentScrollViewportHeight - peekingCardHeight - tabStripHeight;
             }
         }
         // TODO(https://crbug.com/609487): Push snippets below the fold when most likely
