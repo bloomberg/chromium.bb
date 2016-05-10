@@ -827,10 +827,10 @@ void RenderProcessHostImpl::CreateMessageFilters() {
       storage_partition_impl_->GetURLRequestContext());
   scoped_refptr<RenderMessageFilter> render_message_filter(
       new RenderMessageFilter(
-          GetID(), GetBrowserContext(),
-          request_context.get(),
+          GetID(), GetBrowserContext(), request_context.get(),
           widget_helper_.get(), audio_manager, media_internals,
-          storage_partition_impl_->GetDOMStorageContext()));
+          storage_partition_impl_->GetDOMStorageContext(),
+          storage_partition_impl_->GetCacheStorageContext()));
   AddFilter(render_message_filter.get());
   AddFilter(new RenderFrameMessageFilter(
       GetID(),

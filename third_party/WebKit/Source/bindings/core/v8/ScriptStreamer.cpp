@@ -279,6 +279,12 @@ private:
         // BOM can only occur at the beginning of the data.
         ASSERT(lengthOfBOM == 0 || m_queueTailPosition == 0);
 
+        if (!streamer->resource()->response().cacheStorageCacheName().isNull()) {
+            streamer->suppressStreaming();
+            cancel();
+            return;
+        }
+
         CachedMetadataHandler* cacheHandler = streamer->resource()->cacheHandler();
         if (cacheHandler && cacheHandler->cachedMetadata(V8ScriptRunner::tagForCodeCache(cacheHandler))) {
             // The resource has a code cache, so it's unnecessary to stream and

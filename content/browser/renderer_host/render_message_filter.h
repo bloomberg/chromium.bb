@@ -20,6 +20,7 @@
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "cc/resources/shared_bitmap_manager.h"
+#include "content/common/cache_storage/cache_storage_types.h"
 #include "content/common/gpu_process_launch_causes.h"
 #include "content/common/host_discardable_shared_memory_manager.h"
 #include "content/common/host_shared_bitmap_manager.h"
@@ -76,13 +77,20 @@ struct MediaLogEvent;
 }
 
 namespace net {
+class IOBuffer;
 class KeygenHandler;
 class URLRequestContext;
 class URLRequestContextGetter;
 }
 
+namespace url {
+class Origin;
+}
+
 namespace content {
 class BrowserContext;
+class CacheStorageContextImpl;
+class CacheStorageCache;
 class DOMStorageContextWrapper;
 class MediaInternals;
 class RenderWidgetHelper;
@@ -101,7 +109,8 @@ class CONTENT_EXPORT RenderMessageFilter : public BrowserMessageFilter {
                       RenderWidgetHelper* render_widget_helper,
                       media::AudioManager* audio_manager,
                       MediaInternals* media_internals,
-                      DOMStorageContextWrapper* dom_storage_context);
+                      DOMStorageContextWrapper* dom_storage_context,
+                      CacheStorageContextImpl* cache_storage_context);
 
   // BrowserMessageFilter methods:
   bool OnMessageReceived(const IPC::Message& message) override;
@@ -205,6 +214,18 @@ class CONTENT_EXPORT RenderMessageFilter : public BrowserMessageFilter {
   void OnCacheableMetadataAvailable(const GURL& url,
                                     base::Time expected_response_time,
                                     const std::vector<char>& data);
+  void OnCacheableMetadataAvailableForCacheStorage(
+      const GURL& url,
+      base::Time expected_response_time,
+      const std::vector<char>& data,
+      const url::Origin& cache_storage_origin,
+      const std::string& cache_storage_cache_name);
+  void OnCacheStorageOpenCallback(const GURL& url,
+                                  base::Time expected_response_time,
+                                  scoped_refptr<net::IOBuffer> buf,
+                                  int buf_len,
+                                  scoped_refptr<CacheStorageCache> cache,
+                                  CacheStorageError error);
   void OnKeygen(uint32_t key_size_index,
                 const std::string& challenge_string,
                 const GURL& url,
@@ -254,6 +275,7 @@ class CONTENT_EXPORT RenderMessageFilter : public BrowserMessageFilter {
 
   media::AudioManager* audio_manager_;
   MediaInternals* media_internals_;
+  CacheStorageContextImpl* cache_storage_context_;
 
   base::WeakPtrFactory<RenderMessageFilter> weak_ptr_factory_;
 

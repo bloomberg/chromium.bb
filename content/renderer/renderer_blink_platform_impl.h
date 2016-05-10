@@ -97,6 +97,13 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
                      int64_t,
                      const char*,
                      size_t) override;
+  void cacheMetadataInCacheStorage(
+      const blink::WebURL&,
+      int64_t,
+      const char*,
+      size_t,
+      const blink::WebSecurityOrigin& cacheStorageOrigin,
+      const blink::WebString& cacheStorageCacheName) override;
   blink::WebString defaultLocale() override;
   void suddenTerminationChanged(bool enabled) override;
   blink::WebStorageNamespace* createLocalStorageNamespace() override;

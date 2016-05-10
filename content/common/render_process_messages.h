@@ -14,6 +14,7 @@
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_utils.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 #if defined(OS_MACOSX)
 #include "content/common/mac/font_descriptor.h"
@@ -53,6 +54,16 @@ IPC_MESSAGE_CONTROL3(RenderProcessHostMsg_DidGenerateCacheableMetadata,
                      GURL /* url */,
                      base::Time /* expected_response_time */,
                      std::vector<char> /* data */)
+
+// Message sent from the renderer to the browser to request that the browser
+// cache |data| for the specified CacheStorage entry.
+IPC_MESSAGE_CONTROL5(
+    RenderProcessHostMsg_DidGenerateCacheableMetadataInCacheStorage,
+    GURL /* url */,
+    base::Time /* expected_response_time */,
+    std::vector<char> /* data */,
+    url::Origin /* cache_storage_origin*/,
+    std::string /* cache_storage_cache_name */)
 
 // Notify the browser that this render process can or can't be suddenly
 // terminated.

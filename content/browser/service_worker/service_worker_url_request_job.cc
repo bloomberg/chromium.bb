@@ -748,7 +748,8 @@ void ServiceWorkerURLRequestJob::CommitResponseHeader() {
     http_response_info_.reset(new net::HttpResponseInfo());
   http_response_info_->headers.swap(http_response_headers_);
   http_response_info_->vary_data = net::HttpVaryData();
-  http_response_info_->metadata = nullptr;
+  http_response_info_->metadata =
+      blob_request_ ? blob_request_->response_info().metadata : nullptr;
   NotifyHeadersComplete();
 }
 

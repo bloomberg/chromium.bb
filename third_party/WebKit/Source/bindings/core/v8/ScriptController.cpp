@@ -131,6 +131,20 @@ v8::Local<v8::Value> ScriptController::executeScriptAndReturnValue(v8::Local<v8:
         V8CacheOptions v8CacheOptions(V8CacheOptionsDefault);
         if (frame()->settings())
             v8CacheOptions = frame()->settings()->v8CacheOptions();
+        if (source.resource() && !source.resource()->response().cacheStorageCacheName().isNull()) {
+            switch (frame()->settings()->v8CacheStrategiesForCacheStorage()) {
+            case V8CacheStrategiesForCacheStorage::Default:
+            case V8CacheStrategiesForCacheStorage::None:
+                v8CacheOptions = V8CacheOptionsNone;
+                break;
+            case V8CacheStrategiesForCacheStorage::Normal:
+                v8CacheOptions = V8CacheOptionsCode;
+                break;
+            case V8CacheStrategiesForCacheStorage::Aggressive:
+                v8CacheOptions = V8CacheOptionsAlways;
+                break;
+            }
+        }
 
         // Isolate exceptions that occur when compiling and executing
         // the code. These exceptions should not interfere with

@@ -183,7 +183,7 @@ public:
     virtual void willNotFollowRedirect() {}
 
     virtual void responseReceived(const ResourceResponse&, PassOwnPtr<WebDataConsumerHandle>);
-    void setResponse(const ResourceResponse& response) { m_response = response; }
+    void setResponse(const ResourceResponse&);
     const ResourceResponse& response() const { return m_response; }
 
     virtual void reportResourceTimingToClients(const ResourceTimingInfo&) { }
@@ -303,8 +303,9 @@ protected:
     Timer<Resource> m_cancelTimer;
 
 private:
-    class CacheHandler;
     class ResourceCallback;
+    class CachedMetadataHandlerImpl;
+    class ServiceWorkerResponseCachedMetadataHandler;
 
     void cancelTimerFired(Timer<Resource>*);
 
@@ -315,12 +316,8 @@ private:
 
     bool unlock();
 
-    void setCachedMetadata(unsigned dataTypeID, const char*, size_t, CachedMetadataHandler::CacheType);
-    void clearCachedMetadata(CachedMetadataHandler::CacheType);
-    CachedMetadata* cachedMetadata(unsigned dataTypeID) const;
-
-    RefPtr<CachedMetadata> m_cachedMetadata;
-    Member<CacheHandler> m_cacheHandler;
+    Member<CachedMetadataHandlerImpl> m_cacheHandler;
+    RefPtr<SecurityOrigin> m_fetcherSecurityOrigin;
 
     ResourceError m_error;
 

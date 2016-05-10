@@ -308,6 +308,9 @@ fullscreenSupported initial=true
 # V8 supports different types of caching. Used by V8 bindings.
 v8CacheOptions type=V8CacheOptions, initial=V8CacheOptionsDefault
 
+# V8 code cache for CacheStorage supports three types of strategies (none, normal and aggressive).
+v8CacheStrategiesForCacheStorage type=V8CacheStrategiesForCacheStorage, initial=V8CacheStrategiesForCacheStorage::Default
+
 # These values are bit fields for the properties of available pointing devices
 # and may take on multiple values (e.g. laptop with touchpad and touchscreen
 # has pointerType coarse *and* fine).

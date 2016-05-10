@@ -244,17 +244,16 @@ TEST_F(RenderViewHostTest, RoutingIdSane) {
 
 class TestSaveImageFromDataURL : public RenderMessageFilter {
  public:
-  TestSaveImageFromDataURL(
-      BrowserContext* context)
-      : RenderMessageFilter(
-            0,
-            context,
-            BrowserContext::GetDefaultStoragePartition(context)->
-                GetURLRequestContext(),
-            nullptr,
-            nullptr,
-            nullptr,
-            nullptr) {
+  TestSaveImageFromDataURL(BrowserContext* context)
+      : RenderMessageFilter(0,
+                            context,
+                            BrowserContext::GetDefaultStoragePartition(context)
+                                ->GetURLRequestContext(),
+                            nullptr,
+                            nullptr,
+                            nullptr,
+                            nullptr,
+                            nullptr) {
     Reset();
   }
 

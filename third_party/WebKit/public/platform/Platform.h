@@ -308,7 +308,10 @@ public:
     virtual WebString userAgent() { return WebString(); }
 
     // A suggestion to cache this metadata in association with this URL.
-    virtual void cacheMetadata(const WebURL&, int64_t responseTime, const char* data, size_t dataSize) { }
+    virtual void cacheMetadata(const WebURL&, int64_t responseTime, const char* data, size_t dataSize) {}
+
+    // A suggestion to cache this metadata in association with this URL which resource is in CacheStorage.
+    virtual void cacheMetadataInCacheStorage(const WebURL&, int64_t responseTime, const char* data, size_t dataSize, const blink::WebSecurityOrigin& cacheStorageOrigin, const WebString& cacheStorageCacheName) {}
 
     // Returns the decoded data url if url had a supported mimetype and parsing was successful.
     virtual WebData parseDataURL(const WebURL&, WebString& mimetype, WebString& charset) { return WebData(); }

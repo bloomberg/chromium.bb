@@ -248,6 +248,9 @@ v8::MaybeLocal<v8::Script> postStreamCompile(V8CacheOptions cacheOptions, Cached
         V8ScriptRunner::setCacheTimeStamp(cacheHandler);
         break;
 
+    case V8CacheOptionsAlways:
+        // Currently V8CacheOptionsAlways doesn't support streaming.
+        ASSERT_NOT_REACHED();
     case V8CacheOptionsNone:
         break;
     }
@@ -295,14 +298,15 @@ PassOwnPtr<CompileFn> selectCompileFunction(V8CacheOptions cacheOptions, CachedM
         break;
 
     case V8CacheOptionsDefault:
-    case V8CacheOptionsCode: {
+    case V8CacheOptionsCode:
+    case V8CacheOptionsAlways: {
         // Use code caching for recently seen resources.
         // Use compression depending on the cache option.
         unsigned codeCacheTag = cacheTag(CacheTagCode, cacheHandler);
         CachedMetadata* codeCache = cacheHandler->cachedMetadata(codeCacheTag);
         if (codeCache)
             return bind(compileAndConsumeCache, cacheHandler, codeCacheTag, v8::ScriptCompiler::kConsumeCodeCache);
-        if (!isResourceHotForCaching(cacheHandler, hotHours)) {
+        if (cacheOptions != V8CacheOptionsAlways && !isResourceHotForCaching(cacheHandler, hotHours)) {
             V8ScriptRunner::setCacheTimeStamp(cacheHandler);
             return bind(compileWithoutOptions, V8CompileHistogram::Cacheable);
         }

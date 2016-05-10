@@ -399,6 +399,23 @@ void RendererBlinkPlatformImpl::cacheMetadata(const blink::WebURL& url,
           url, base::Time::FromInternalValue(response_time), copy));
 }
 
+void RendererBlinkPlatformImpl::cacheMetadataInCacheStorage(
+    const blink::WebURL& url,
+    int64_t response_time,
+    const char* data,
+    size_t size,
+    const blink::WebSecurityOrigin& cacheStorageOrigin,
+    const blink::WebString& cacheStorageCacheName) {
+  // Let the browser know we generated cacheable metadata for this resource in
+  // CacheStorage. The browser may cache it and return it on subsequent
+  // responses to speed the processing of this resource.
+  std::vector<char> copy(data, data + size);
+  RenderThread::Get()->Send(
+      new RenderProcessHostMsg_DidGenerateCacheableMetadataInCacheStorage(
+          url, base::Time::FromInternalValue(response_time), copy,
+          cacheStorageOrigin, cacheStorageCacheName.utf8()));
+}
+
 WebString RendererBlinkPlatformImpl::defaultLocale() {
   return base::ASCIIToUTF16(RenderThread::Get()->GetLocale());
 }

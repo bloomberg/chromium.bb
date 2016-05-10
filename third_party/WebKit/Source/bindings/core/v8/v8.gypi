@@ -111,6 +111,7 @@
             'V8Binding.h',
             'V8BindingMacros.h',
             'V8CacheOptions.h',
+            'V8CacheStrategiesForCacheStorage.h',
             'V8V0CustomElementLifecycleCallbacks.cpp',
             'V8V0CustomElementLifecycleCallbacks.h',
             'V8DOMActivityLogger.cpp',

@@ -21,6 +21,9 @@
 #include "base/threading/worker_pool.h"
 #include "build/build_config.h"
 #include "content/browser/browser_main_loop.h"
+#include "content/browser/cache_storage/cache_storage_cache.h"
+#include "content/browser/cache_storage/cache_storage_context_impl.h"
+#include "content/browser/cache_storage/cache_storage_manager.h"
 #include "content/browser/dom_storage/dom_storage_context_wrapper.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
 #include "content/browser/download/download_stats.h"
@@ -35,6 +38,7 @@
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_helper.h"
 #include "content/browser/resource_context_impl.h"
+#include "content/common/cache_storage/cache_storage_types.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/common/child_process_messages.h"
 #include "content/common/content_constants_internal.h"
@@ -121,6 +125,8 @@ void DownloadUrlOnUIThread(std::unique_ptr<DownloadUrlParameters> parameters) {
   download_manager->DownloadUrl(std::move(parameters));
 }
 
+void NoOpCacheStorageErrorCallback(CacheStorageError error) {}
+
 }  // namespace
 
 RenderMessageFilter::RenderMessageFilter(
@@ -130,7 +136,8 @@ RenderMessageFilter::RenderMessageFilter(
     RenderWidgetHelper* render_widget_helper,
     media::AudioManager* audio_manager,
     MediaInternals* media_internals,
-    DOMStorageContextWrapper* dom_storage_context)
+    DOMStorageContextWrapper* dom_storage_context,
+    CacheStorageContextImpl* cache_storage_context)
     : BrowserMessageFilter(kFilteredMessageClasses,
                            arraysize(kFilteredMessageClasses)),
       resource_dispatcher_host_(ResourceDispatcherHostImpl::Get()),
@@ -143,6 +150,7 @@ RenderMessageFilter::RenderMessageFilter(
       render_process_id_(render_process_id),
       audio_manager_(audio_manager),
       media_internals_(media_internals),
+      cache_storage_context_(cache_storage_context),
       weak_ptr_factory_(this) {
   DCHECK(request_context_.get());
 
@@ -210,6 +218,9 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER_DELAY_REPLY(RenderProcessHostMsg_Keygen, OnKeygen)
     IPC_MESSAGE_HANDLER(RenderProcessHostMsg_DidGenerateCacheableMetadata,
                         OnCacheableMetadataAvailable)
+    IPC_MESSAGE_HANDLER(
+        RenderProcessHostMsg_DidGenerateCacheableMetadataInCacheStorage,
+        OnCacheableMetadataAvailableForCacheStorage)
     IPC_MESSAGE_HANDLER(ViewHostMsg_GetAudioHardwareConfig,
                         OnGetAudioHardwareConfig)
 #if defined(OS_MACOSX)
@@ -559,6 +570,36 @@ void RenderMessageFilter::OnCacheableMetadataAvailable(
     memcpy(buf->data(), &data.front(), data.size());
   cache->WriteMetadata(url, kPriority, expected_response_time, buf.get(),
                        data.size());
+}
+
+void RenderMessageFilter::OnCacheableMetadataAvailableForCacheStorage(
+    const GURL& url,
+    base::Time expected_response_time,
+    const std::vector<char>& data,
+    const url::Origin& cache_storage_origin,
+    const std::string& cache_storage_cache_name) {
+  scoped_refptr<net::IOBuffer> buf(new net::IOBuffer(data.size()));
+  if (!data.empty())
+    memcpy(buf->data(), &data.front(), data.size());
+
+  cache_storage_context_->cache_manager()->OpenCache(
+      GURL(cache_storage_origin.Serialize()), cache_storage_cache_name,
+      base::Bind(&RenderMessageFilter::OnCacheStorageOpenCallback,
+                 weak_ptr_factory_.GetWeakPtr(), url, expected_response_time,
+                 buf, data.size()));
+}
+
+void RenderMessageFilter::OnCacheStorageOpenCallback(
+    const GURL& url,
+    base::Time expected_response_time,
+    scoped_refptr<net::IOBuffer> buf,
+    int buf_len,
+    scoped_refptr<CacheStorageCache> cache,
+    CacheStorageError error) {
+  if (error != CACHE_STORAGE_OK)
+    return;
+  cache->WriteSideData(base::Bind(&NoOpCacheStorageErrorCallback), url,
+                       expected_response_time, buf, buf_len);
 }
 
 void RenderMessageFilter::OnKeygen(uint32_t key_size_index,
