@@ -9,9 +9,9 @@
 #include "components/offline_pages/background/offliner.h"
 
 class GURL;
-class PrerenderManager;
 
 namespace content {
+class BrowserContext;
 class WebContents;
 class SessionStorageNamespace;
 }  // namespace content
@@ -31,24 +31,21 @@ class PrerenderingLoader {
                               content::WebContents*)>
       LoadPageCallback;
 
-  explicit PrerenderingLoader(PrerenderManager* prerender_manager);
-  ~PrerenderingLoader();
+  explicit PrerenderingLoader(content::BrowserContext* browser_context);
+  virtual ~PrerenderingLoader();
 
   // Loads a page in the background if possible and returns whether the
   // request was accepted. If so, the LoadPageCallback will be informed
   // of status. Only one load request may exist as a time. If a previous
   // request is still in progress it must be canceled before a new
   // request will be accepted.
-  bool LoadPage(const GURL& url,
-                content::SessionStorageNamespace* session_storage_namespace,
-                const gfx::Size& size,
-                const LoadPageCallback& callback);
+  virtual bool LoadPage(const GURL& url, const LoadPageCallback& callback);
 
   // Stops (completes or cancels) the load request. Must be called when
   // LoadPageCallback is done with consuming the contents.
   // This loader should also be responsible for stopping offline
   // prerenders when Chrome is transitioned to foreground.
-  void StopLoading();
+  virtual void StopLoading();
 };
 
 }  // namespace offline_pages

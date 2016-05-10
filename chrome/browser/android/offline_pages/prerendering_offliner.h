@@ -5,13 +5,15 @@
 #ifndef CHROME_BROWSER_ANDROID_OFFLINE_PAGES_PRERENDERING_OFFLINER_H_
 #define CHROME_BROWSER_ANDROID_OFFLINE_PAGES_PRERENDERING_OFFLINER_H_
 
+#include <memory>
+
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/android/offline_pages/prerendering_loader.h"
 #include "components/offline_pages/background/offliner.h"
 #include "components/offline_pages/offline_page_model.h"
 
-class PrerenderManager;
-
 namespace content {
+class BrowserContext;
 class WebContents;
 }  // namespace content
 
@@ -24,18 +26,35 @@ class OfflinerPolicy;
 // the OfflinePageModel to save it.
 class PrerenderingOffliner : public Offliner {
  public:
-  PrerenderingOffliner(const OfflinerPolicy* policy,
-                       PrerenderManager* prerender_manager,
+  PrerenderingOffliner(content::BrowserContext* browser_context,
+                       const OfflinerPolicy* policy,
                        OfflinePageModel* offline_page_model);
   ~PrerenderingOffliner() override;
 
+  // Offliner implementation.
   bool LoadAndSave(const SavePageRequest& request,
                    const CompletionCallback& callback) override;
-
   void Cancel() override;
 
+  // Allows a loader to be injected for testing. This may only be done once
+  // and must be called before any of the Offliner interface methods are called.
+  void SetLoaderForTesting(std::unique_ptr<PrerenderingLoader> loader);
+
  private:
+  void OnLoadPageDone(const Offliner::CompletionStatus load_status,
+                      content::WebContents* contents);
+
+  PrerenderingLoader* GetOrCreateLoader();
+
+  // Not owned.
+  content::BrowserContext* browser_context_;
+  // Not owned.
+  OfflinePageModel* offline_page_model_;
+  // Lazily created.
   std::unique_ptr<PrerenderingLoader> loader_;
+  base::WeakPtrFactory<PrerenderingOffliner> weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(PrerenderingOffliner);
 };
 
 }  // namespace offline_pages

@@ -35,7 +35,7 @@ Offliner* PrerenderingOfflinerFactory::GetOffliner(
     OfflinePageModel* model =
         OfflinePageModelFactory::GetInstance()->GetForBrowserContext(context_);
 
-    offliner_ = new PrerenderingOffliner(policy, nullptr, model);
+    offliner_ = new PrerenderingOffliner(context_, policy, model);
   }
 
   return offliner_;

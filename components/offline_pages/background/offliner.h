@@ -25,7 +25,7 @@ class Offliner {
 
   // Reports the completion status of a request.
   // TODO(dougarnett): consider passing back a request id instead of request.
-  typedef base::Callback<void(const SavePageRequest& request, CompletionStatus)>
+  typedef base::Callback<void(const SavePageRequest&, CompletionStatus)>
       CompletionCallback;
 
   Offliner() {}

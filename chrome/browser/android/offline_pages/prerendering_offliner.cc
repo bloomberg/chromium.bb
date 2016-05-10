@@ -4,23 +4,54 @@
 
 #include "chrome/browser/android/offline_pages/prerendering_offliner.h"
 
+#include "base/bind.h"
+#include "components/offline_pages/background/save_page_request.h"
+#include "content/public/browser/browser_context.h"
+
 namespace offline_pages {
 
-PrerenderingOffliner::PrerenderingOffliner(const OfflinerPolicy* policy,
-                                           PrerenderManager* prerender_manager,
-                                           OfflinePageModel* offline_page_model)
-    : loader_(new PrerenderingLoader(prerender_manager)) {}
+PrerenderingOffliner::PrerenderingOffliner(
+    content::BrowserContext* browser_context,
+    const OfflinerPolicy* policy,
+    OfflinePageModel* offline_page_model)
+    : browser_context_(browser_context),
+      offline_page_model_(offline_page_model),
+      weak_ptr_factory_(this) {}
 
 PrerenderingOffliner::~PrerenderingOffliner() {}
 
+void PrerenderingOffliner::OnLoadPageDone(
+    const Offliner::CompletionStatus load_status,
+    content::WebContents* contents) {
+  // TODO(dougarnett): Implement save attempt and running CompletionCallback.
+}
+
 bool PrerenderingOffliner::LoadAndSave(const SavePageRequest& request,
                                        const CompletionCallback& callback) {
-  // TODO(dougarnett): implement.
-  return false;
+  if (!offline_page_model_->CanSavePage(request.url()))
+    return false;
+
+  // Kick off load page attempt.
+  return GetOrCreateLoader()->LoadPage(
+      request.url(), base::Bind(&PrerenderingOffliner::OnLoadPageDone,
+                                weak_ptr_factory_.GetWeakPtr()));
 }
 
 void PrerenderingOffliner::Cancel() {
-  loader_->StopLoading();
+  GetOrCreateLoader()->StopLoading();
+}
+
+PrerenderingLoader* PrerenderingOffliner::GetOrCreateLoader() {
+  if (!loader_) {
+    loader_.reset(new PrerenderingLoader(browser_context_));
+  }
+  return loader_.get();
+}
+
+void PrerenderingOffliner::SetLoaderForTesting(
+    std::unique_ptr<PrerenderingLoader> loader) {
+  DCHECK(!loader_);
+  loader_ = std::move(loader);
 }
 
 }  // namespace offline_pages

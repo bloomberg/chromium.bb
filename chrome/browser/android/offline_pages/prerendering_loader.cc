@@ -4,19 +4,19 @@
 
 #include "chrome/browser/android/offline_pages/prerendering_loader.h"
 
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace offline_pages {
 
-PrerenderingLoader::PrerenderingLoader(PrerenderManager* prerender_manager) {}
+PrerenderingLoader::PrerenderingLoader(
+    content::BrowserContext* browser_context) {}
 
 PrerenderingLoader::~PrerenderingLoader() {}
 
 bool PrerenderingLoader::LoadPage(
     const GURL& url,
-    content::SessionStorageNamespace* session_storage_namespace,
-    const gfx::Size& size,
     const LoadPageCallback& callback) {
   // TODO(dougarnett): implement.
   return false;
