@@ -331,6 +331,8 @@ source_set("testing") {
     "$bindings_core_v8_output_dir/V8TypeConversions.h",
     "$bindings_core_v8_output_dir/V8UnionTypesTest.cpp",
     "$bindings_core_v8_output_dir/V8UnionTypesTest.h",
+    "$bindings_core_v8_output_dir/V8WorkerInternals.cpp",
+    "$bindings_core_v8_output_dir/V8WorkerInternals.h",
   ]
 }
 

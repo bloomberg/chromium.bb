@@ -3846,6 +3846,7 @@
             'testing/PrivateScriptTest.idl',
             'testing/TypeConversions.idl',
             'testing/UnionTypesTest.idl',
+            'testing/WorkerInternals.idl',
         ],
         # testing IDL files that have partial interfaces in modules.
         'webcore_testing_idl_with_modules_dependency_files': [
@@ -3894,6 +3895,8 @@
             'testing/UnionTypesTest.h',
             'testing/v8/WebCoreTestSupport.cpp',
             'testing/v8/WebCoreTestSupport.h',
+            'testing/WorkerInternals.cpp',
+            'testing/WorkerInternals.h',
         ],
         'core_unittest_files': [
             'animation/AnimationClockTest.cpp',

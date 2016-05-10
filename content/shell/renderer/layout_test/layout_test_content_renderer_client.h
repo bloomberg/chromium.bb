@@ -36,6 +36,8 @@ class LayoutTestContentRendererClient : public ShellContentRendererClient {
       RenderFrame* render_frame) override;
   std::unique_ptr<MediaStreamRendererFactory> CreateMediaStreamRendererFactory()
       override;
+  void DidInitializeWorkerContextOnWorkerThread(
+      v8::Local<v8::Context> context) override;
 
  private:
   std::unique_ptr<LayoutTestRenderThreadObserver> shell_observer_;

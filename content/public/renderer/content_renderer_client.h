@@ -343,6 +343,11 @@ class CONTENT_EXPORT ContentRendererClient {
   // Whether this renderer should enforce preferences related to the WebRTC
   // routing logic, i.e. allowing multiple routes and non-proxied UDP.
   virtual bool ShouldEnforceWebRTCRoutingPreferences();
+
+  // Notifies that a worker context has been created. This function is called
+  // from the worker thread.
+  virtual void DidInitializeWorkerContextOnWorkerThread(
+      v8::Local<v8::Context> context) {}
 };
 
 }  // namespace content

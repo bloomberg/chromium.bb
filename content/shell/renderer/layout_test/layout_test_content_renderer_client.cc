@@ -31,6 +31,7 @@
 #include "third_party/WebKit/public/platform/WebMediaStreamCenter.h"
 #include "third_party/WebKit/public/platform/modules/app_banner/WebAppBannerClient.h"
 #include "third_party/WebKit/public/web/WebPluginParams.h"
+#include "third_party/WebKit/public/web/WebTestingSupport.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "v8/include/v8.h"
 
@@ -206,6 +207,11 @@ LayoutTestContentRendererClient::CreateMediaStreamRendererFactory() {
 #else
   return nullptr;
 #endif
+}
+
+void LayoutTestContentRendererClient::DidInitializeWorkerContextOnWorkerThread(
+    v8::Local<v8::Context> context) {
+  blink::WebTestingSupport::injectInternalsObject(context);
 }
 
 }  // namespace content

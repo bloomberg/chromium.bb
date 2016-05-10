@@ -51,6 +51,8 @@
       '<(bindings_core_v8_output_dir)/V8InternalDictionary.h',
       '<(bindings_core_v8_output_dir)/V8InternalDictionaryDerived.cpp',
       '<(bindings_core_v8_output_dir)/V8InternalDictionaryDerived.h',
+      '<(bindings_core_v8_output_dir)/V8WorkerInternals.cpp',
+      '<(bindings_core_v8_output_dir)/V8WorkerInternals.h',
     ],
 
     'generated_core_additional_files': [

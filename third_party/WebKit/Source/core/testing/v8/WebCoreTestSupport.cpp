@@ -31,6 +31,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/testing/InternalSettings.h"
 #include "core/testing/Internals.h"
+#include "core/testing/WorkerInternals.h"
 
 using namespace blink;
 
@@ -43,6 +44,8 @@ v8::Local<v8::Value> createInternalsObject(v8::Local<v8::Context> context)
     ExecutionContext* executionContext = scriptState->getExecutionContext();
     if (executionContext->isDocument())
         return toV8(Internals::create(scriptState), global, scriptState->isolate());
+    if (executionContext->isWorkerGlobalScope())
+        return toV8(WorkerInternals::create(scriptState), global, scriptState->isolate());
     return v8::Local<v8::Value>();
 }
 

@@ -6,7 +6,9 @@
 
 #include "base/command_line.h"
 #include "components/web_cache/renderer/web_cache_impl.h"
+#include "content/shell/common/shell_switches.h"
 #include "content/shell/renderer/shell_render_view_observer.h"
+#include "third_party/WebKit/public/web/WebTestingSupport.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "v8/include/v8.h"
 
@@ -46,6 +48,14 @@ bool ShellContentRendererClient::IsPluginAllowedToUseDevChannelAPIs() {
 #else
   return false;
 #endif
+}
+
+void ShellContentRendererClient::DidInitializeWorkerContextOnWorkerThread(
+    v8::Local<v8::Context> context) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kExposeInternalsForTesting)) {
+    blink::WebTestingSupport::injectInternalsObject(context);
+  }
 }
 
 }  // namespace content

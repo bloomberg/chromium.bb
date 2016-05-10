@@ -57,6 +57,11 @@
 
 class GrContext;
 
+namespace v8 {
+class Context;
+template<class T> class Local;
+}
+
 namespace blink {
 
 class ServiceRegistry;
@@ -536,6 +541,7 @@ public:
 
     virtual void didStartWorkerThread() { }
     virtual void willStopWorkerThread() { }
+    virtual void workerContextCreated(const v8::Local<v8::Context>& worker) { }
 
     // WebCrypto ----------------------------------------------------------
 

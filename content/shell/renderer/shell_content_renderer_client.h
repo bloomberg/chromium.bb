@@ -30,6 +30,9 @@ class ShellContentRendererClient : public ContentRendererClient {
   bool IsPluginAllowedToUseCompositorAPI(const GURL& url) override;
   bool IsPluginAllowedToUseDevChannelAPIs() override;
 
+  void DidInitializeWorkerContextOnWorkerThread(
+      v8::Local<v8::Context> context) override;
+
  private:
   std::unique_ptr<web_cache::WebCacheImpl> web_cache_impl_;
 };

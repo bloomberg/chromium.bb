@@ -222,6 +222,8 @@ void WorkerThread::initialize(PassOwnPtr<WorkerThreadStartupData> startupData)
 
     if (m_workerGlobalScope->scriptController()->isContextInitialized()) {
         m_workerReportingProxy.didInitializeWorkerContext();
+        v8::HandleScope handleScope(isolate());
+        Platform::current()->workerContextCreated(m_workerGlobalScope->scriptController()->context());
     }
 
     CachedMetadataHandler* handler = workerGlobalScope()->createWorkerScriptCachedMetadataHandler(scriptURL, cachedMetaData.get());

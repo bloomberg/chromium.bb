@@ -176,6 +176,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     setter oncomplete
 [Worker]     setter onerror
 [Worker] [GLOBAL OBJECT]
+[Worker]     attribute internals
 [Worker]     getter caches
 [Worker]     getter onmessage
 [Worker]     method cancelAnimationFrame

@@ -1328,4 +1328,10 @@ RendererBlinkPlatformImpl::trialTokenValidator() {
   return &trial_token_validator_;
 }
 
+void RendererBlinkPlatformImpl::workerContextCreated(
+    const v8::Local<v8::Context>& worker) {
+  GetContentClient()->renderer()->DidInitializeWorkerContextOnWorkerThread(
+      worker);
+}
+
 }  // namespace content

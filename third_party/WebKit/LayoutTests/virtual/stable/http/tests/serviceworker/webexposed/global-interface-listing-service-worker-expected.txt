@@ -773,6 +773,7 @@ interface webkitIDBTransaction : EventTarget
     setter onerror
 global object
     attribute console
+    attribute internals
     getter caches
     getter clients
     getter onactivate
