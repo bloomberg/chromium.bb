@@ -13,15 +13,32 @@ _BUILD_REGEX = r'builds/(\d+)'
 _REVISION_REGEX = r'Cr-Commit-Position: refs/heads/master@{#(\d+)}'
 
 
-def _GetBuildRevisionRange(build_url, test_name):
-  data = urllib2.urlopen(build_url).read()
-  if not test_name in data:
-    raise Exception('Cannot find %s in %s' % (test_name, build_url))
-  if not ('failed ' + test_name) in data:
+class _Color(object):
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+
+
+def _PrintWithColor(text, *colors):
+  print ''.join(colors) + text + _Color.ENDC
+
+
+def _ExtractBuildRevisionRange(build_page_content, build_url, test_name):
+  if not test_name in build_page_content:
+    raise Exception(
+        'Cannot find %s in %s. If you think this is an exception step, please, '
+        'restart the process with build# = last test build - 1'
+        % (test_name, build_url))
+  if not ('failed ' + test_name) in build_page_content:
     return None
-  revisions = re.findall(_REVISION_REGEX, data)
+  revisions = re.findall(_REVISION_REGEX, build_page_content)
   revisions = list(int(r) for r in revisions)
-  return min(revisions), max(revisions)
+  return revisions
 
 
 def FindFirstFailureRange(build_url, test_name):
@@ -33,13 +50,23 @@ def FindFirstFailureRange(build_url, test_name):
   initial_build_url = build_url[:build_url.find('builds/')] + 'builds/'
   while True:
     current_build_url = initial_build_url + str(build_number)
-    failure_range = _GetBuildRevisionRange(current_build_url, test_name)
-    if failure_range == None:
-      return first_failure_range, first_failed_build
-    else:
-      first_failure_range = failure_range
-      first_failed_build = current_build_url
     build_number -= 1
+    print '\rProcess %s' % current_build_url,
+    sys.stdout.flush()
+    build_page_content = urllib2.urlopen(current_build_url).read()
+    if 'get perf test list' not in build_page_content:
+      print
+      _PrintWithColor(
+          'Warning: %s does not have "get perf test list" step.'
+          ' Skipping this build' % current_build_url, _Color.WARNING)
+      continue
+    failure_revisions = _ExtractBuildRevisionRange(
+        build_page_content, current_build_url, test_name)
+    if failure_revisions == None:
+      return first_failure_revisions, first_failed_build
+    else:
+      first_failure_revisions = failure_revisions
+      first_failed_build = current_build_url
 
 
 def Main(args):
@@ -50,11 +77,17 @@ def Main(args):
   parser.add_argument('build_url',
                       help='A build url which |test_name| is failing')
   options = parser.parse_args(args)
-  first_failure_range, first_failed_build = FindFirstFailureRange(
+  first_failure_revisions, first_failed_build = FindFirstFailureRange(
       options.build_url, options.test_name)
-  print 'First failure range: ', first_failure_range, (
-         '- %s CLs' % (first_failure_range[1] - first_failure_range[0] + 1))
-  print 'First failed build: ', first_failed_build
+  print
+  print
+  _PrintWithColor(
+      'First failure range: %s - %s CLs' % (
+          (min(first_failure_revisions), max(first_failure_revisions)),
+          len(set(first_failure_revisions))),
+      _Color.BOLD, _Color.OKGREEN)
+  _PrintWithColor('First failed build: %s' % first_failed_build,
+                  _Color.BOLD, _Color.OKGREEN)
   return 0
 
 
