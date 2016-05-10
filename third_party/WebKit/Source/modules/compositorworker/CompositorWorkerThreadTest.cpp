@@ -104,11 +104,10 @@ public:
             "//fake source code",
             nullptr,
             DontPauseWorkerGlobalScopeOnStart,
-            nullptr,
+            adoptPtr(new Vector<CSPHeaderAndType>()),
             m_securityOrigin.get(),
             clients,
             WebAddressSpaceLocal,
-            nullptr,
             V8CacheOptionsDefault));
         return workerThread.release();
     }

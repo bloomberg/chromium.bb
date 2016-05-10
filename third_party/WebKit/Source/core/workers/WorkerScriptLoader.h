@@ -84,8 +84,6 @@ public:
 
     WebAddressSpace responseAddressSpace() const { return m_responseAddressSpace; }
 
-    const Vector<String>* originTrialTokens() const { return m_originTrialTokens.get(); }
-
     // ThreadableLoaderClient
     void didReceiveResponse(unsigned long /*identifier*/, const ResourceResponse&, PassOwnPtr<WebDataConsumerHandle>) override;
     void didReceiveData(const char* data, unsigned dataLength) override;
@@ -126,7 +124,6 @@ private:
     WebURLRequest::RequestContext m_requestContext;
     Persistent<ContentSecurityPolicy> m_contentSecurityPolicy;
     WebAddressSpace m_responseAddressSpace;
-    std::unique_ptr<Vector<String>> m_originTrialTokens;
 };
 
 } // namespace blink

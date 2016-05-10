@@ -43,7 +43,6 @@
 #include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/WorkerInspectorController.h"
 #include "core/loader/ThreadableLoader.h"
-#include "core/origin_trials/OriginTrialContext.h"
 #include "core/workers/WorkerClients.h"
 #include "core/workers/WorkerThreadStartupData.h"
 #include "modules/EventTargetModules.h"
@@ -74,7 +73,6 @@ ServiceWorkerGlobalScope* ServiceWorkerGlobalScope::create(ServiceWorkerThread* 
     context->setV8CacheOptions(startupData->m_v8CacheOptions);
     context->applyContentSecurityPolicyFromVector(*startupData->m_contentSecurityPolicyHeaders);
     context->setAddressSpace(startupData->m_addressSpace);
-    OriginTrialContext::addTokens(context, startupData->m_originTrialTokens.get());
 
     return context;
 }

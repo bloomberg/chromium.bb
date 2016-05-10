@@ -35,19 +35,10 @@ class WebTrialTokenValidator;
 class CORE_EXPORT OriginTrialContext final : public GarbageCollectedFinalized<OriginTrialContext>, public Supplement<ExecutionContext> {
 USING_GARBAGE_COLLECTED_MIXIN(OriginTrialContext)
 public:
-    enum CreateMode {
-        CreateIfNotExists,
-        DontCreateIfNotExists
-    };
-
     explicit OriginTrialContext(ExecutionContext*);
 
     static const char* supplementName();
-
-    // Returns the OriginTrialContext for a specific ExecutionContext. If
-    // |create| is false, this returns null if no OriginTrialContext exists
-    // yet for the ExecutionContext.
-    static OriginTrialContext* from(ExecutionContext*, CreateMode = CreateIfNotExists);
+    static OriginTrialContext* from(ExecutionContext*);
 
     // Parses an Origin-Trial header as specified in
     // https://jpchase.github.io/OriginTrials/#header into individual tokens.
@@ -56,14 +47,8 @@ public:
     static std::unique_ptr<Vector<String>> parseHeaderValue(const String& headerValue);
 
     static void addTokensFromHeader(ExecutionContext*, const String& headerValue);
-    static void addTokens(ExecutionContext*, const Vector<String>* tokens);
-
-    // Returns the trial tokens that are active in a specific ExecutionContext.
-    // Returns null if no tokens were added to the ExecutionContext.
-    static std::unique_ptr<Vector<String>> getTokens(ExecutionContext*);
 
     void addToken(const String& token);
-    void addTokens(const Vector<String>& tokens);
 
     // Returns true if the feature should be considered enabled for the current
     // execution context. If non-null, the |errorMessage| parameter will be used

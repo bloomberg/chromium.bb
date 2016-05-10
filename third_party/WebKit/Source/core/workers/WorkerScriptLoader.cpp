@@ -30,7 +30,6 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/html/parser/TextResourceDecoder.h"
 #include "core/loader/WorkerThreadableLoader.h"
-#include "core/origin_trials/OriginTrialContext.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "platform/HTTPNames.h"
 #include "platform/network/ContentSecurityPolicyResponseHeaders.h"
@@ -137,7 +136,6 @@ void WorkerScriptLoader::didReceiveResponse(unsigned long identifier, const Reso
     m_responseEncoding = response.textEncodingName();
     m_appCacheID = response.appCacheID();
     processContentSecurityPolicy(response);
-    m_originTrialTokens = OriginTrialContext::parseHeaderValue(response.httpHeaderField(HTTPNames::Origin_Trial));
 
     if (NetworkUtils::isReservedIPAddress(response.remoteIPAddress())) {
         m_responseAddressSpace = SecurityOrigin::create(m_responseURL)->isLocalhost()

@@ -50,9 +50,9 @@ class CORE_EXPORT WorkerThreadStartupData final {
     WTF_MAKE_NONCOPYABLE(WorkerThreadStartupData);
     USING_FAST_MALLOC(WorkerThreadStartupData);
 public:
-    static PassOwnPtr<WorkerThreadStartupData> create(const KURL& scriptURL, const String& userAgent, const String& sourceCode, PassOwnPtr<Vector<char>> cachedMetaData, WorkerThreadStartMode startMode, const Vector<CSPHeaderAndType>* contentSecurityPolicyHeaders, const SecurityOrigin* starterOrigin, WorkerClients* workerClients, WebAddressSpace addressSpace, const Vector<String>* originTrialTokens, V8CacheOptions v8CacheOptions = V8CacheOptionsDefault)
+    static PassOwnPtr<WorkerThreadStartupData> create(const KURL& scriptURL, const String& userAgent, const String& sourceCode, PassOwnPtr<Vector<char>> cachedMetaData, WorkerThreadStartMode startMode, PassOwnPtr<Vector<CSPHeaderAndType>> contentSecurityPolicyHeaders, const SecurityOrigin* starterOrigin, WorkerClients* workerClients, WebAddressSpace addressSpace, V8CacheOptions v8CacheOptions = V8CacheOptionsDefault)
     {
-        return adoptPtr(new WorkerThreadStartupData(scriptURL, userAgent, sourceCode, std::move(cachedMetaData), startMode, contentSecurityPolicyHeaders, starterOrigin, workerClients, addressSpace, originTrialTokens, v8CacheOptions));
+        return adoptPtr(new WorkerThreadStartupData(scriptURL, userAgent, sourceCode, std::move(cachedMetaData), startMode, std::move(contentSecurityPolicyHeaders), starterOrigin, workerClients, addressSpace, v8CacheOptions));
     }
 
     ~WorkerThreadStartupData();
@@ -63,7 +63,6 @@ public:
     OwnPtr<Vector<char>> m_cachedMetaData;
     WorkerThreadStartMode m_startMode;
     OwnPtr<Vector<CSPHeaderAndType>> m_contentSecurityPolicyHeaders;
-    std::unique_ptr<Vector<String>> m_originTrialTokens;
 
 
     // The SecurityOrigin of the Document creating a Worker may have
@@ -92,7 +91,7 @@ public:
     V8CacheOptions m_v8CacheOptions;
 
 private:
-    WorkerThreadStartupData(const KURL& scriptURL, const String& userAgent, const String& sourceCode, PassOwnPtr<Vector<char>> cachedMetaData, WorkerThreadStartMode, const Vector<CSPHeaderAndType>* contentSecurityPolicyHeaders, const SecurityOrigin*, WorkerClients*, WebAddressSpace, const Vector<String>* originTrialTokens, V8CacheOptions);
+    WorkerThreadStartupData(const KURL& scriptURL, const String& userAgent, const String& sourceCode, PassOwnPtr<Vector<char>> cachedMetaData, WorkerThreadStartMode, PassOwnPtr<Vector<CSPHeaderAndType>> contentSecurityPolicyHeaders, const SecurityOrigin*, WorkerClients*, WebAddressSpace, V8CacheOptions);
 };
 
 } // namespace blink

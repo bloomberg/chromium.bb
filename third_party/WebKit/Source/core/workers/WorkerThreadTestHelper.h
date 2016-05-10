@@ -105,11 +105,10 @@ public:
             source,
             nullptr,
             DontPauseWorkerGlobalScopeOnStart,
-            headers.get(),
+            headers.release(),
             securityOrigin,
             clients,
             WebAddressSpaceLocal,
-            nullptr,
             V8CacheOptionsDefault));
     }
 

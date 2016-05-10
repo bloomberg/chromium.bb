@@ -411,11 +411,10 @@ void WebEmbeddedWorkerImpl::startWorkerThread()
         m_mainScriptLoader->script(),
         m_mainScriptLoader->releaseCachedMetadata(),
         startMode,
-        document->contentSecurityPolicy()->headers().get(),
+        document->contentSecurityPolicy()->headers(),
         starterOrigin,
         workerClients,
         m_mainScriptLoader->responseAddressSpace(),
-        m_mainScriptLoader->originTrialTokens(),
         static_cast<V8CacheOptions>(m_workerStartData.v8CacheOptions));
 
     m_mainScriptLoader.clear();
