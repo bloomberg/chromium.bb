@@ -375,6 +375,14 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ
       const base::Closure& callback,
       const device::BluetoothGattService::ErrorCallback& error_callback);
 
+  // Register application, ignoring the given errors. Used to register a GATT
+  // application even if a previous unregister application call fails.
+  void RegisterApplicationOnError(
+      const base::Closure& callback,
+      const device::BluetoothGattService::ErrorCallback& error_callback,
+      const std::string& error_name,
+      const std::string& error_message);
+
   InitCallback init_callback_;
 
   bool initialized_;

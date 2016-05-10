@@ -46,6 +46,7 @@
         'bluetooth/bluetooth_discovery_filter_unittest.cc',
         'bluetooth/bluetooth_local_gatt_characteristic_unittest.cc',
         'bluetooth/bluetooth_local_gatt_descriptor_unittest.cc',
+        'bluetooth/bluetooth_local_gatt_service_unittest.cc',
         'bluetooth/bluetooth_low_energy_win_unittest.cc',
         'bluetooth/bluetooth_remote_gatt_characteristic_unittest.cc',
         'bluetooth/bluetooth_remote_gatt_descriptor_unittest.cc',

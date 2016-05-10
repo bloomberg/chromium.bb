@@ -18,7 +18,7 @@ FakeBluetoothGattApplicationServiceProvider::
         const std::map<dbus::ObjectPath, BluetoothLocalGattServiceBlueZ*>&
             services)
     : object_path_(object_path) {
-  VLOG(1) << "Creating Bluetooth GATT service: " << object_path_.value();
+  VLOG(1) << "Creating Bluetooth GATT application: " << object_path_.value();
 
   FakeBluetoothGattManagerClient* fake_bluetooth_gatt_manager_client =
       static_cast<FakeBluetoothGattManagerClient*>(

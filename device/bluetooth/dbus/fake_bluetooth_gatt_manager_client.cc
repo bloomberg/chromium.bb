@@ -105,10 +105,14 @@ void FakeBluetoothGattManagerClient::RegisterApplication(
   VLOG(1) << "Register GATT application: " << application_path.value();
   ApplicationProvider* provider =
       GetApplicationServiceProvider(application_path);
-  if (!provider || provider->second)
+  if (!provider || provider->second) {
     error_callback.Run(bluetooth_gatt_service::kErrorFailed, "");
-  if (!VerifyProviderHierarchy(provider->first))
+    return;
+  }
+  if (!VerifyProviderHierarchy(provider->first)) {
     error_callback.Run(bluetooth_gatt_service::kErrorFailed, "");
+    return;
+  }
   provider->second = true;
   callback.Run();
 }
@@ -122,8 +126,10 @@ void FakeBluetoothGattManagerClient::UnregisterApplication(
   VLOG(1) << "Unregister GATT application: " << application_path.value();
   ApplicationProvider* provider =
       GetApplicationServiceProvider(application_path);
-  if (!provider || !provider->second)
+  if (!provider || !provider->second) {
     error_callback.Run(bluetooth_gatt_service::kErrorFailed, "");
+    return;
+  }
   provider->second = false;
   callback.Run();
 }
