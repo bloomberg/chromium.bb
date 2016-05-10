@@ -8,6 +8,7 @@
 #include <limits.h>
 #include <stdint.h>
 
+#include <climits>
 #include <limits>
 
 namespace base {
@@ -22,7 +23,7 @@ struct MaxExponent {
                 "Argument must be numeric.");
   static const int value = std::numeric_limits<NumericType>::is_iec559
                                ? std::numeric_limits<NumericType>::max_exponent
-                               : (sizeof(NumericType) * 8 + 1 -
+                               : (sizeof(NumericType) * CHAR_BIT + 1 -
                                   std::numeric_limits<NumericType>::is_signed);
 };
 
