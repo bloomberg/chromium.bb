@@ -6,7 +6,6 @@ import argparse
 import json
 import logging
 import os
-import re
 import sys
 
 from googleapiclient import discovery
@@ -18,14 +17,11 @@ from oauth2client.client import GoogleCredentials
 sys.path.insert(0,
     os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir,
                  os.pardir))
-import controller
 from cloud.common.clovis_task import ClovisTask
 from cloud.common.google_instance_helper import GoogleInstanceHelper
+from clovis_task_handler import ClovisTaskHandler
 from failure_database import FailureDatabase
 from google_storage_accessor import GoogleStorageAccessor
-import loading_trace
-from loading_trace_database import LoadingTraceDatabase
-import options
 
 
 class Worker(object):
@@ -57,31 +53,29 @@ class Worker(object):
         bucket_name=self._bucket_name)
 
     if self._instance_name:
-      trace_database_filename = 'trace_database_%s.json' % self._instance_name
       failure_database_filename = \
           'failure_database_%s.json' % self._instance_name
     else:
-      trace_database_filename = 'trace_database.json'
       failure_database_filename = 'failure_dabatase.json'
-    self._traces_dir = os.path.join(self._base_path_in_bucket, 'traces')
-    self._trace_database_path = os.path.join(self._traces_dir,
-                                             trace_database_filename)
-    self._failures_dir = os.path.join(self._base_path_in_bucket, 'failures')
-    self._failure_database_path = os.path.join(self._failures_dir,
+    self._failure_database_path = os.path.join(self._base_path_in_bucket,
                                                failure_database_filename)
 
-    # Recover any existing trace database and failures in case the worker died.
-    self._DownloadTraceDatabase()
+    # Recover any existing failures in case the worker died.
     self._DownloadFailureDatabase()
 
-    if self._trace_database.ToJsonDict() or self._failure_database.ToJsonDict():
+    if self._failure_database.ToJsonDict():
       # Script is restarting after a crash, or there are already files from a
       # previous run in the directory.
-      self._failure_database.AddFailure('startup_with_dirty_state')
-      self._UploadFailureDatabase()
+      self._failure_database.AddFailure(FailureDatabase.DIRTY_STATE_ERROR,
+                                        'failure_database')
 
-    # Initialize the global options that will be used during trace generation.
-    options.OPTIONS.ParseArgs(['--local_build_dir', config['binaries_path']])
+    self._clovis_task_handler = ClovisTaskHandler(
+        self._base_path_in_bucket, self._failure_database,
+        self._google_storage_accessor, config['binaries_path'], self._logger,
+        self._instance_name)
+
+    if self._failure_database.ToJsonDict():
+      self._UploadFailureDatabase()
 
   def Start(self):
     """Main worker loop.
@@ -104,27 +98,13 @@ class Worker(object):
         break
 
       self._logger.info('Processing task %s' % task_id)
-      self._ProcessClovisTask(clovis_task)
+      if not self._clovis_task_handler.Run(clovis_task):
+        self._UploadFailureDatabase()
       self._logger.debug('Deleting task %s' % task_id)
       task_api.tasks().delete(project=project, taskqueue=queue_name,
                               task=task_id).execute()
       self._logger.info('Finished task %s' % task_id)
     self._Finalize()
-
-  def _DownloadTraceDatabase(self):
-    """Downloads the trace database from CloudStorage."""
-    self._logger.info('Downloading trace database')
-    trace_database_string = self._google_storage_accessor.DownloadAsString(
-        self._trace_database_path) or '{}'
-    self._trace_database = LoadingTraceDatabase.FromJsonString(
-        trace_database_string)
-
-  def _UploadTraceDatabase(self):
-    """Uploads the trace database to CloudStorage."""
-    self._logger.info('Uploading trace database')
-    self._google_storage_accessor.UploadString(
-        self._trace_database.ToJsonString(),
-        self._trace_database_path)
 
   def _DownloadFailureDatabase(self):
     """Downloads the failure database from CloudStorage."""
@@ -205,144 +185,6 @@ class Worker(object):
         self._logger.error('Self destruction failed.')
     # Do not add anything after this line, as the instance might be killed at
     # any time.
-
-  def _GenerateTrace(self, url, emulate_device, emulate_network, filename,
-                     log_filename):
-    """ Generates a trace.
-
-    Args:
-      url: URL as a string.
-      emulate_device: Name of the device to emulate. Empty for no emulation.
-      emulate_network: Type of network emulation. Empty for no emulation.
-      filename: Name of the file where the trace is saved.
-      log_filename: Name of the file where standard output and errors are
-                    logged.
-
-    Returns:
-      A dictionary of metadata about the trace, including a 'succeeded' field
-      indicating whether the trace was successfully generated.
-    """
-    try:
-      os.remove(filename)  # Remove any existing trace for this URL.
-    except OSError:
-      pass  # Nothing to remove.
-
-    if not url.startswith('http') and not url.startswith('file'):
-      url = 'http://' + url
-
-    old_stdout = sys.stdout
-    old_stderr = sys.stderr
-
-    trace_metadata = { 'succeeded' : False, 'url' : url }
-    trace = None
-    with open(log_filename, 'w') as sys.stdout:
-      try:
-        sys.stderr = sys.stdout
-
-        # Set up the controller.
-        chrome_ctl = controller.LocalChromeController()
-        chrome_ctl.SetHeadless(True)
-        if emulate_device:
-          chrome_ctl.SetDeviceEmulation(emulate_device)
-        if emulate_network:
-          chrome_ctl.SetNetworkEmulation(emulate_network)
-
-        # Record and write the trace.
-        with chrome_ctl.Open() as connection:
-          connection.ClearCache()
-          trace = loading_trace.LoadingTrace.RecordUrlNavigation(
-              url, connection, chrome_ctl.ChromeMetadata())
-          trace_metadata['succeeded'] = True
-          trace_metadata.update(trace.ToJsonDict()[trace._METADATA_KEY])
-      except controller.ChromeControllerError as e:
-        e.Dump(sys.stderr)
-      except Exception as e:
-        sys.stderr.write(str(e))
-
-      if trace:
-        with open(filename, 'w') as f:
-          json.dump(trace.ToJsonDict(), f, sort_keys=True, indent=2)
-
-    sys.stdout = old_stdout
-    sys.stderr = old_stderr
-
-    return trace_metadata
-
-  def _HandleTraceGenerationResults(self, local_filename, log_filename,
-                                    remote_filename, trace_metadata):
-    """Updates the trace database and the failure database after a trace
-    generation. Uploads the trace and the log.
-    Results related to successful traces are uploaded in the _traces_dir
-    directory, and failures are uploaded in the _failures_dir directory.
-
-    Args:
-      local_filename (str): Path to the local file containing the trace.
-      log_filename (str): Path to the local file containing the log.
-      remote_filename (str): Name of the target remote file where the trace and
-                             the log (with a .log extension added) are uploaded.
-      trace_metadata (dict): Metadata associated with the trace generation.
-    """
-    if trace_metadata['succeeded']:
-      remote_trace_location = os.path.join(self._traces_dir, remote_filename)
-      full_cloud_storage_path = os.path.join('gs://' + self._bucket_name,
-                                             remote_trace_location)
-      self._trace_database.SetTrace(full_cloud_storage_path, trace_metadata)
-    else:
-      remote_trace_location = os.path.join(self._failures_dir, remote_filename)
-      self._failure_database.AddFailure('trace_collection',
-                                        trace_metadata['url'])
-
-    if os.path.isfile(local_filename):
-      self._logger.debug('Uploading: %s' % remote_trace_location)
-      self._google_storage_accessor.UploadFile(local_filename,
-                                               remote_trace_location)
-    else:
-      self._logger.warning('No trace found at: ' + local_filename)
-
-    self._logger.debug('Uploading analyze log')
-    remote_log_location = remote_trace_location + '.log'
-    self._google_storage_accessor.UploadFile(log_filename, remote_log_location)
-
-  def _ProcessClovisTask(self, clovis_task):
-    """Processes one clovis_task."""
-    if clovis_task.Action() != 'trace':
-      self._logger.error('Unsupported task action: %s' % clovis_task.Action())
-      return
-
-    # Extract the task parameters.
-    params = clovis_task.ActionParams()
-    urls = params['urls']
-    repeat_count = params.get('repeat_count', 1)
-    emulate_device = params.get('emulate_device')
-    emulate_network = params.get('emulate_network')
-
-    log_filename = 'analyze.log'
-    # Avoid special characters in storage object names
-    pattern = re.compile(r"[#\?\[\]\*/]")
-
-    failure_happened = False
-    success_happened = False
-
-    while len(urls) > 0:
-      url = urls.pop()
-      local_filename = pattern.sub('_', url)
-      for repeat in range(repeat_count):
-        self._logger.debug('Generating trace for URL: %s' % url)
-        trace_metadata = self._GenerateTrace(
-            url, emulate_device, emulate_network, local_filename, log_filename)
-        if trace_metadata['succeeded']:
-          success_happened = True
-        else:
-          self._logger.warning('Trace generation failed for URL: %s' % url)
-          failure_happened = True
-        remote_filename = os.path.join(local_filename, str(repeat))
-        self._HandleTraceGenerationResults(
-            local_filename, log_filename, remote_filename, trace_metadata)
-
-    if success_happened:
-      self._UploadTraceDatabase()
-    if failure_happened:
-      self._UploadFailureDatabase()
 
 if __name__ == '__main__':
   parser = argparse.ArgumentParser(

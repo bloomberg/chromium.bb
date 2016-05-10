@@ -6,6 +6,8 @@ import json
 
 class FailureDatabase(object):
   """Logs the failures happening in the Clovis backend."""
+  DIRTY_STATE_ERROR = 'startup_with_dirty_state'
+  CRITICAL_ERROR = 'critical_error'
 
   def __init__(self, json_string=None):
     """Loads a FailureDatabase from a string returned by ToJsonString()."""
