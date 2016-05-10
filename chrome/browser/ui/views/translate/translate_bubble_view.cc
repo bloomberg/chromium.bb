@@ -396,6 +396,8 @@ void TranslateBubbleView::HandleButtonPressed(
     TranslateBubbleView::ButtonID sender_id) {
   switch (sender_id) {
     case BUTTON_ID_TRANSLATE: {
+      if (always_translate_checkbox_)
+        model_->SetAlwaysTranslate(always_translate_checkbox_->checked());
       model_->Translate();
       ReportUiAction(translate::TRANSLATE_BUTTON_CLICKED);
       break;
