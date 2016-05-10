@@ -1104,7 +1104,7 @@ wayland_backend_config_release(struct weston_wayland_backend_config *new_config)
  * structure is NOT cleared nor set to default values.
  */
 static struct weston_wayland_backend_output_config *
-wayland_backend_config_add_new_output(struct weston_wayland_backend_config *new_config)
+weston_wayland_backend_config_add_new_output(struct weston_wayland_backend_config *new_config)
 {
 	struct weston_wayland_backend_output_config *outputs;
 	const size_t element_size = sizeof(struct weston_wayland_backend_output_config);
@@ -1168,7 +1168,7 @@ load_wayland_backend_config(struct weston_compositor *compositor, int *argc,
 	}
 
 	if (config->fullscreen) {
-		oc = wayland_backend_config_add_new_output(config);
+		oc = weston_wayland_backend_config_add_new_output(config);
 		if (!oc)
 			goto err_outputs;
 
@@ -1195,7 +1195,7 @@ load_wayland_backend_config(struct weston_compositor *compositor, int *argc,
 		}
 		free(name);
 
-		oc = wayland_backend_config_add_new_output(config);
+		oc = weston_wayland_backend_config_add_new_output(config);
 		if (!oc)
 			goto err_outputs;
 
@@ -1212,7 +1212,7 @@ load_wayland_backend_config(struct weston_compositor *compositor, int *argc,
 		scale = 1;
 
 	while (count > 0) {
-		oc = wayland_backend_config_add_new_output(config);
+		oc = weston_wayland_backend_config_add_new_output(config);
 		if (!oc)
 			goto err_outputs;
 
