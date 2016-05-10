@@ -24,6 +24,7 @@
 #include "base/metrics/statistics_recorder.h"
 #include "base/path_service.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/platform_thread.h"
@@ -333,7 +334,8 @@ void ChromeRenderThreadObserver::OnSetContentSettingRules(
 void ChromeRenderThreadObserver::OnSetFieldTrialGroup(
     const std::string& field_trial_name,
     const std::string& group_name,
-    base::ProcessId sender_pid) {
+    base::ProcessId sender_pid,
+    int32_t debug_token) {
   // Check that the sender's PID doesn't change between messages. We expect
   // these IPCs to always be delivered from the same browser process, whose pid
   // should not change.
@@ -341,6 +343,20 @@ void ChromeRenderThreadObserver::OnSetFieldTrialGroup(
   static base::ProcessId sender_pid_cached = sender_pid;
   CHECK_EQ(sender_pid_cached, sender_pid) << sender_pid_cached << "/"
                                           << sender_pid;
+  // Check that the sender's debug_token doesn't change between messages.
+  // TODO(asvitkine): Remove this after http://crbug.com/359406 is fixed.
+  static int32_t debug_token_cached = debug_token;
+  CHECK_EQ(debug_token_cached, debug_token) << debug_token_cached << "/"
+                                            << debug_token;
+  // The debug token should also correspond to what was specified on the
+  // --force-fieldtrials command line for DebugToken trial.
+  const std::string debug_token_trial_value =
+      base::FieldTrialList::FindFullName("DebugToken");
+  if (!debug_token_trial_value.empty()) {
+    CHECK_EQ(base::IntToString(debug_token), debug_token_trial_value)
+        << debug_token << "/" << debug_token_trial_value;
+  }
+
   base::FieldTrial* trial =
       base::FieldTrialList::CreateFieldTrial(field_trial_name, group_name);
   // TODO(asvitkine): Remove this after http://crbug.com/359406 is fixed.

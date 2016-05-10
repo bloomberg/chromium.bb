@@ -203,10 +203,11 @@ IPC_MESSAGE_CONTROL1(ChromeViewMsg_SetContentSettingRules,
 
 // Tells the renderer to create a FieldTrial, and by using a 100% probability
 // for the FieldTrial, forces the FieldTrial to have assigned group name.
-IPC_MESSAGE_CONTROL3(ChromeViewMsg_SetFieldTrialGroup,
+IPC_MESSAGE_CONTROL4(ChromeViewMsg_SetFieldTrialGroup,
                      std::string /* field trial name */,
                      std::string /* group name that was assigned. */,
-                     base::ProcessId /* for debugging, the sender process id */)
+                     base::ProcessId /* for debugging, the sender process id */,
+                     int32_t /* for debugging, the debug token */)
 
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_SetPageSequenceNumber,
                     int /* page_seq_no */)

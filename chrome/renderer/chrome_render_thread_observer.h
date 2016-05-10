@@ -63,7 +63,8 @@ class ChromeRenderThreadObserver : public content::RenderThreadObserver,
   void OnGetCacheResourceStats();
   void OnSetFieldTrialGroup(const std::string& fiel_trial_name,
                             const std::string& group_name,
-                            base::ProcessId sender_pid);
+                            base::ProcessId sender_pid,
+                            int32_t debug_token);
 
   static bool is_incognito_process_;
   std::unique_ptr<content::ResourceDispatcherDelegate> resource_delegate_;
