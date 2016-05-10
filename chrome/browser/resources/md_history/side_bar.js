@@ -21,4 +21,12 @@ Polymer({
     this.fire('unselect-all');
     this.selectedPage = e.detail.item.getAttribute('view-id');
   },
+
+  /**
+   * Relocates the user to the clear browsing data section of the settings page.
+   * @private
+   */
+  onClearBrowsingDataTap_: function() {
+    window.location.href = 'chrome://settings/clearBrowserData';
+  },
 });

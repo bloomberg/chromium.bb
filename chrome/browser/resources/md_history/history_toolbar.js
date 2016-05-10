@@ -94,14 +94,6 @@ Polymer({
     this.fire('unselect-all');
   },
 
-  /**
-   * Relocates the user to the clear browsing data section of the settings page.
-   * @private
-   */
-  onClearBrowsingDataTap_: function() {
-    window.location.href = 'chrome://settings/clearBrowserData';
-  },
-
   onDeleteTap_: function() {
     this.fire('delete-selected');
   },
