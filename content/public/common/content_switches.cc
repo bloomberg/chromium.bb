@@ -167,6 +167,9 @@ const char kDisableGpuMemoryBufferVideoFrames[] =
 // This switch is intended only for tests.
 const char kDisableGpuProcessCrashLimit[] = "disable-gpu-process-crash-limit";
 
+// Disable async GL worker context. Overrides kEnableGpuAsyncWorkerContext.
+const char kDisableGpuAsyncWorkerContext[] = "disable-gpu-async-worker-context";
+
 // Disable GPU rasterization, i.e. rasterize on the CPU only.
 // Overrides the kEnableGpuRasterization and kForceGpuRasterization flags.
 const char kDisableGpuRasterization[]       = "disable-gpu-rasterization";
@@ -367,6 +370,9 @@ const char kEnableFeatures[] = "enable-features";
 
 // Enable Web Bluetooth.
 const char kEnableWebBluetooth[] = "enable-web-bluetooth";
+
+// Makes the GL worker context run asynchronously by using a separate stream.
+const char kEnableGpuAsyncWorkerContext[] = "enable-gpu-async-worker-context";
 
 // Specify that all compositor resources should be backed by GPU memory buffers.
 const char kEnableGpuMemoryBufferCompositorResources[] =

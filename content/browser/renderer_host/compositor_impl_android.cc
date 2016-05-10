@@ -672,7 +672,8 @@ void CompositorImpl::CreateOutputSurface() {
     limits.mapped_memory_reclaim_limit = full_screen_texture_size_in_bytes;
 
     context_provider = new ContextProviderCommandBuffer(
-        std::move(gpu_channel_host), surface_handle_, url,
+        std::move(gpu_channel_host), gpu::GPU_STREAM_DEFAULT,
+        gpu::GpuStreamPriority::NORMAL, surface_handle_, url,
         gfx::PreferIntegratedGpu, automatic_flushes, limits, attributes,
         nullptr, command_buffer_metrics::DISPLAY_COMPOSITOR_ONSCREEN_CONTEXT);
     DCHECK(context_provider.get());

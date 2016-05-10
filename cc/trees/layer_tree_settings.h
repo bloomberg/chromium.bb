@@ -48,6 +48,7 @@ class CC_EXPORT LayerTreeSettings {
   bool use_distance_field_text;
   bool gpu_rasterization_enabled;
   bool gpu_rasterization_forced;
+  bool async_worker_context_enabled;
   int gpu_rasterization_msaa_sample_count;
   float gpu_rasterization_skewport_target_time_in_seconds;
   bool create_low_res_tiling;

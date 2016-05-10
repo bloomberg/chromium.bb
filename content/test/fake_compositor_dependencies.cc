@@ -29,6 +29,10 @@ bool FakeCompositorDependencies::IsGpuRasterizationEnabled() {
   return false;
 }
 
+bool FakeCompositorDependencies::IsAsyncWorkerContextEnabled() {
+  return false;
+}
+
 int FakeCompositorDependencies::GetGpuRasterizationMSAASampleCount() {
   return 0;
 }

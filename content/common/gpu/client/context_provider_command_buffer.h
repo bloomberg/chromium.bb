@@ -18,6 +18,7 @@
 #include "content/common/gpu/client/command_buffer_metrics.h"
 #include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
+#include "gpu/ipc/common/gpu_stream_constants.h"
 #include "gpu/ipc/common/surface_handle.h"
 #include "ui/gl/gpu_preference.h"
 #include "url/gurl.h"
@@ -47,6 +48,8 @@ class CONTENT_EXPORT ContextProviderCommandBuffer
  public:
   ContextProviderCommandBuffer(
       scoped_refptr<gpu::GpuChannelHost> channel,
+      int32_t stream_id,
+      gpu::GpuStreamPriority stream_priority,
       gpu::SurfaceHandle surface_handle,
       const GURL& active_url,
       gfx::GpuPreference gpu_preference,
@@ -99,6 +102,8 @@ class CONTENT_EXPORT ContextProviderCommandBuffer
   bool bind_succeeded_ = false;
   bool bind_failed_ = false;
 
+  int32_t stream_id_;
+  gpu::GpuStreamPriority stream_priority_;
   gpu::SurfaceHandle surface_handle_;
   GURL active_url_;
   gfx::GpuPreference gpu_preference_;

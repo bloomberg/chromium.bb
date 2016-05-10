@@ -293,6 +293,8 @@ void RenderWidgetCompositor::Initialize(float device_scale_factor) {
       compositor_deps_->IsGpuRasterizationForced();
   settings.gpu_rasterization_enabled =
       compositor_deps_->IsGpuRasterizationEnabled();
+  settings.async_worker_context_enabled =
+      compositor_deps_->IsAsyncWorkerContextEnabled();
 
   settings.can_use_lcd_text = compositor_deps_->IsLcdTextEnabled();
   settings.use_distance_field_text =

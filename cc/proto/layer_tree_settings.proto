@@ -69,4 +69,5 @@ message LayerTreeSettings {
   optional LayerTreeDebugState initial_debug_state = 49;
   optional bool use_mouse_wheel_gestures = 50;
   optional bool use_cached_picture_raster = 51;
+  optional bool async_worker_context_enabled = 52;
 }

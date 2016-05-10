@@ -26,6 +26,9 @@ CONTENT_EXPORT bool IsGpuMemoryBufferCompositorResourcesEnabled();
 // Returns true if gpu rasterization is on (via flags) for the renderer.
 CONTENT_EXPORT bool IsGpuRasterizationEnabled();
 
+// returns true if async worker context is on (via flags).
+CONTENT_EXPORT bool IsAsyncWorkerContextEnabled();
+
 // Returns the number of multisample antialiasing samples (via flags) for
 // GPU rasterization.
 CONTENT_EXPORT int GpuRasterizationMSAASampleCount();

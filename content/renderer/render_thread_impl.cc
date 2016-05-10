@@ -403,7 +403,9 @@ void StringToUintVector(const std::string& str, std::vector<unsigned>* vector) {
 
 scoped_refptr<ContextProviderCommandBuffer> CreateOffscreenContext(
     scoped_refptr<gpu::GpuChannelHost> gpu_channel_host,
-    command_buffer_metrics::ContextType type) {
+    command_buffer_metrics::ContextType type,
+    int32_t stream_id,
+    gpu::GpuStreamPriority stream_priority) {
   DCHECK(gpu_channel_host);
   // This is used to create a few different offscreen contexts:
   // - The shared main thread context (offscreen) used by blink for canvas.
@@ -418,9 +420,10 @@ scoped_refptr<ContextProviderCommandBuffer> CreateOffscreenContext(
   attributes.sample_buffers = 0;
   attributes.bind_generates_resource = false;
   attributes.lose_context_when_out_of_memory = true;
-  constexpr bool automatic_flushes = false;
+  const bool automatic_flushes = false;
   return make_scoped_refptr(new ContextProviderCommandBuffer(
-      std::move(gpu_channel_host), gpu::kNullSurfaceHandle,
+      std::move(gpu_channel_host), stream_id, stream_priority,
+      gpu::kNullSurfaceHandle,
       GURL("chrome://gpu/RenderThreadImpl::CreateOffscreenContext"),
       gfx::PreferIntegratedGpu, automatic_flushes, gpu::SharedMemoryLimits(),
       attributes, nullptr, type));
@@ -743,6 +746,8 @@ void RenderThreadImpl::Init(
       command_line.HasSwitch(switches::kEnableGpuRasterization);
   is_gpu_rasterization_forced_ =
       command_line.HasSwitch(switches::kForceGpuRasterization);
+  is_async_worker_context_enabled_ =
+      command_line.HasSwitch(switches::kEnableGpuAsyncWorkerContext);
 
   if (command_line.HasSwitch(switches::kGpuRasterizationMSAASampleCount)) {
     std::string string_value = command_line.GetSwitchValueASCII(
@@ -1447,7 +1452,8 @@ RenderThreadImpl::SharedMainThreadContextProvider() {
 
   shared_main_thread_contexts_ = CreateOffscreenContext(
       std::move(gpu_channel_host),
-      command_buffer_metrics::RENDERER_MAINTHREAD_CONTEXT);
+      command_buffer_metrics::RENDERER_MAINTHREAD_CONTEXT,
+      gpu::GPU_STREAM_DEFAULT, gpu::GpuStreamPriority::NORMAL);
   if (!shared_main_thread_contexts_->BindToCurrentThread())
     shared_main_thread_contexts_ = nullptr;
   return shared_main_thread_contexts_;
@@ -1525,6 +1531,10 @@ bool RenderThreadImpl::IsGpuRasterizationForced() {
 
 bool RenderThreadImpl::IsGpuRasterizationEnabled() {
   return is_gpu_rasterization_enabled_;
+}
+
+bool RenderThreadImpl::IsAsyncWorkerContextEnabled() {
+  return is_async_worker_context_enabled_;
 }
 
 int RenderThreadImpl::GetGpuRasterizationMSAASampleCount() {
@@ -1952,9 +1962,17 @@ RenderThreadImpl::SharedWorkerContextProvider() {
     return shared_worker_context_provider_;
   }
 
+  int32_t stream_id = gpu::GPU_STREAM_DEFAULT;
+  gpu::GpuStreamPriority stream_priority = gpu::GpuStreamPriority::NORMAL;
+  if (is_async_worker_context_enabled_) {
+    stream_id = gpu_channel_host->GenerateStreamID();
+    stream_priority = gpu::GpuStreamPriority::LOW;
+  }
+
   shared_worker_context_provider_ =
       CreateOffscreenContext(std::move(gpu_channel_host),
-                             command_buffer_metrics::RENDER_WORKER_CONTEXT);
+                             command_buffer_metrics::RENDER_WORKER_CONTEXT,
+                             stream_id, stream_priority);
   if (!shared_worker_context_provider_->BindToCurrentThread())
     shared_worker_context_provider_ = nullptr;
   if (shared_worker_context_provider_)

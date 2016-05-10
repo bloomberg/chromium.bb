@@ -64,7 +64,7 @@ CommandBufferProxyImpl::CommandBufferProxyImpl(
       weak_this_(AsWeakPtr()),
       callback_thread_(base::ThreadTaskRunnerHandle::Get()) {
   DCHECK(channel_);
-  DCHECK(stream_id);
+  DCHECK_NE(stream_id, GPU_STREAM_INVALID);
 }
 
 CommandBufferProxyImpl::~CommandBufferProxyImpl() {
@@ -584,7 +584,7 @@ bool CommandBufferProxyImpl::CanWaitUnverifiedSyncToken(
 
   // If waiting on a different stream, flush pending commands on that stream.
   const int32_t release_stream_id = sync_token->extra_data_field();
-  if (release_stream_id == 0)
+  if (release_stream_id == gpu::GPU_STREAM_INVALID)
     return false;
 
   if (release_stream_id != stream_id_)

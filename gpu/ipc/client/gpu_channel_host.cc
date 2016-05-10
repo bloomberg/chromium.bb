@@ -338,8 +338,8 @@ int32_t GpuChannelHost::GenerateRouteID() {
 
 int32_t GpuChannelHost::GenerateStreamID() {
   const int32_t stream_id = next_stream_id_.GetNext();
-  DCHECK_NE(0, stream_id);
-  DCHECK_NE(kDefaultStreamId, stream_id);
+  DCHECK_NE(gpu::GPU_STREAM_INVALID, stream_id);
+  DCHECK_NE(gpu::GPU_STREAM_DEFAULT, stream_id);
   return stream_id;
 }
 

@@ -64,6 +64,7 @@ LayerTreeSettings::LayerTreeSettings()
       use_distance_field_text(false),
       gpu_rasterization_enabled(false),
       gpu_rasterization_forced(false),
+      async_worker_context_enabled(false),
       gpu_rasterization_msaa_sample_count(0),
       gpu_rasterization_skewport_target_time_in_seconds(0.2f),
       create_low_res_tiling(false),
@@ -125,6 +126,7 @@ bool LayerTreeSettings::operator==(const LayerTreeSettings& other) const {
          use_distance_field_text == other.use_distance_field_text &&
          gpu_rasterization_enabled == other.gpu_rasterization_enabled &&
          gpu_rasterization_forced == other.gpu_rasterization_forced &&
+         async_worker_context_enabled == other.async_worker_context_enabled &&
          gpu_rasterization_msaa_sample_count ==
              other.gpu_rasterization_msaa_sample_count &&
          create_low_res_tiling == other.create_low_res_tiling &&
@@ -187,6 +189,7 @@ void LayerTreeSettings::ToProtobuf(proto::LayerTreeSettings* proto) const {
   proto->set_use_distance_field_text(use_distance_field_text);
   proto->set_gpu_rasterization_enabled(gpu_rasterization_enabled);
   proto->set_gpu_rasterization_forced(gpu_rasterization_forced);
+  proto->set_async_worker_context_enabled(async_worker_context_enabled);
   proto->set_gpu_rasterization_msaa_sample_count(
       gpu_rasterization_msaa_sample_count);
   proto->set_create_low_res_tiling(create_low_res_tiling);
@@ -248,6 +251,7 @@ void LayerTreeSettings::FromProtobuf(const proto::LayerTreeSettings& proto) {
   use_distance_field_text = proto.use_distance_field_text();
   gpu_rasterization_enabled = proto.gpu_rasterization_enabled();
   gpu_rasterization_forced = proto.gpu_rasterization_forced();
+  async_worker_context_enabled = proto.async_worker_context_enabled();
   gpu_rasterization_msaa_sample_count =
       proto.gpu_rasterization_msaa_sample_count();
   create_low_res_tiling = proto.create_low_res_tiling();

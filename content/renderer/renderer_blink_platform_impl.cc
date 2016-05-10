@@ -77,6 +77,7 @@
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
+#include "gpu/ipc/common/gpu_stream_constants.h"
 #include "ipc/ipc_sync_message_filter.h"
 #include "media/audio/audio_output_device.h"
 #include "media/base/audio_hardware_config.h"
@@ -1091,7 +1092,8 @@ RendererBlinkPlatformImpl::createOffscreenGraphicsContext3DProvider(
 
   scoped_refptr<ContextProviderCommandBuffer> provider(
       new ContextProviderCommandBuffer(
-          std::move(gpu_channel_host), gpu::kNullSurfaceHandle,
+          std::move(gpu_channel_host), gpu::GPU_STREAM_DEFAULT,
+          gpu::GpuStreamPriority::NORMAL, gpu::kNullSurfaceHandle,
           GURL(top_document_web_url), gpu_preference, automatic_flushes,
           gpu::SharedMemoryLimits(), attributes, share_context,
           command_buffer_metrics::OFFSCREEN_CONTEXT_FOR_WEBGL));

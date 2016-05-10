@@ -777,13 +777,19 @@ std::unique_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface(
 
   constexpr bool automatic_flushes = false;
 
-  // The compositor context shares resources with the worker context.
-  scoped_refptr<ContextProviderCommandBuffer> context_provider(
-      new ContextProviderCommandBuffer(
-          std::move(gpu_channel_host), gpu::kNullSurfaceHandle,
-          GetURLForGraphicsContext3D(), gfx::PreferIntegratedGpu,
-          automatic_flushes, limits, attributes, worker_context_provider.get(),
-          command_buffer_metrics::RENDER_COMPOSITOR_CONTEXT));
+    // The compositor context shares resources with the worker context unless
+    // the worker is async.
+    ContextProviderCommandBuffer* share_context = worker_context_provider.get();
+    if (compositor_deps_->IsAsyncWorkerContextEnabled())
+      share_context = nullptr;
+
+    scoped_refptr<ContextProviderCommandBuffer> context_provider(
+        new ContextProviderCommandBuffer(
+            std::move(gpu_channel_host), gpu::GPU_STREAM_DEFAULT,
+            gpu::GpuStreamPriority::NORMAL, gpu::kNullSurfaceHandle,
+            GetURLForGraphicsContext3D(), gfx::PreferIntegratedGpu,
+            automatic_flushes, limits, attributes, share_context,
+            command_buffer_metrics::RENDER_COMPOSITOR_CONTEXT));
 
 #if defined(OS_ANDROID)
   if (RenderThreadImpl::current()->sync_compositor_message_filter()) {

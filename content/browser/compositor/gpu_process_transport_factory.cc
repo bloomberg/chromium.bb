@@ -129,7 +129,8 @@ scoped_refptr<content::ContextProviderCommandBuffer> CreateContextCommon(
 
   GURL url("chrome://gpu/GpuProcessTransportFactory::CreateContextCommon");
   return make_scoped_refptr(new content::ContextProviderCommandBuffer(
-      std::move(gpu_channel_host), surface_handle, url,
+      std::move(gpu_channel_host), gpu::GPU_STREAM_DEFAULT,
+      gpu::GpuStreamPriority::NORMAL, surface_handle, url,
       gfx::PreferIntegratedGpu, automatic_flushes, gpu::SharedMemoryLimits(),
       attributes, shared_context_provider, type));
 }

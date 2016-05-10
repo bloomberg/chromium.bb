@@ -186,7 +186,8 @@ void GLHelperHolder::Initialize() {
   GURL url("chrome://gpu/RenderWidgetHostViewAndroid");
 
   provider_ = new ContextProviderCommandBuffer(
-      std::move(gpu_channel_host), gpu::kNullSurfaceHandle, url,
+      std::move(gpu_channel_host), gpu::GPU_STREAM_DEFAULT,
+      gpu::GpuStreamPriority::NORMAL, gpu::kNullSurfaceHandle, url,
       gfx::PreferIntegratedGpu, automatic_flushes, limits, attributes, nullptr,
       command_buffer_metrics::BROWSER_OFFSCREEN_MAINTHREAD_CONTEXT);
   if (!provider_->BindToCurrentThread())
