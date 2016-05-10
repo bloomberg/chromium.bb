@@ -1,6 +1,6 @@
+<link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="chrome://resources/cr_elements/network/cr_network_icon.html">
 <link rel="import" href="chrome://resources/cr_elements/network/cr_onc_types.html">
@@ -21,7 +21,7 @@
       </div>
       <div class="buttons"
           hidden$="[[!isListItemType_(listItemType, 'visible')]]">
-        <paper-icon-button icon="settings" on-tap="fireShowDetails_">
+        <paper-icon-button icon="cr:settings" on-tap="fireShowDetails_">
         </paper-icon-button>
       </div>
       <div class="known buttons"
@@ -32,7 +32,7 @@
             disabled$="[[isPolicyManaged_(networkState)]]"
             on-tap="fireTogglePreferred_">
         </paper-icon-button>
-        <paper-icon-button icon="clear"
+        <paper-icon-button icon="cr:clear"
             disabled$="[[isPolicyManaged_(networkState)]]"
             on-tap="fireRemove_">
         </paper-icon-button>

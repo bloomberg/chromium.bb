@@ -143,7 +143,7 @@ Polymer({
     var source = (networkState && networkState.Source) || '';
     var isShared = (source == CrOnc.Source.DEVICE ||
                     source == CrOnc.Source.DEVICE_POLICY);
-    return isShared ? 'check' : '';
+    return isShared ? 'cr:check' : '';
   },
 
   /**
@@ -153,7 +153,7 @@ Polymer({
    */
   preferredIcon_: function(networkState) {
     var isPreferred = networkState && networkState.Priority > 0;
-    return isPreferred ? 'star' : 'star-border';
+    return isPreferred ? 'cr:star' : 'cr:star-border';
   },
 
   /**
