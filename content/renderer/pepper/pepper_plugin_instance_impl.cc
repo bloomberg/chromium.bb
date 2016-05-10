@@ -778,13 +778,12 @@ void PepperPluginInstanceImpl::ScrollRect(int dx,
 void PepperPluginInstanceImpl::CommitTextureMailbox(
     const cc::TextureMailbox& texture_mailbox) {
   if (committed_texture_.IsValid() && !IsTextureInUse(committed_texture_)) {
-    committed_texture_graphics_3d_->ReturnFrontBuffer(
+    bound_graphics_3d_->ReturnFrontBuffer(
         committed_texture_.mailbox(), committed_texture_consumed_sync_token_,
         false);
   }
 
   committed_texture_ = texture_mailbox;
-  committed_texture_graphics_3d_ = bound_graphics_3d_;
   committed_texture_consumed_sync_token_ = gpu::SyncToken();
 
   if (!texture_layer_) {
@@ -805,8 +804,7 @@ void PepperPluginInstanceImpl::PassCommittedTextureToTextureLayer() {
   std::unique_ptr<cc::SingleReleaseCallback> callback(
       cc::SingleReleaseCallback::Create(base::Bind(
           &PepperPluginInstanceImpl::FinishedConsumingCommittedTexture,
-          weak_factory_.GetWeakPtr(), committed_texture_,
-          committed_texture_graphics_3d_)));
+          weak_factory_.GetWeakPtr(), committed_texture_)));
 
   IncrementTextureReferenceCount(committed_texture_);
   texture_layer_->SetTextureMailbox(committed_texture_, std::move(callback));
@@ -814,7 +812,6 @@ void PepperPluginInstanceImpl::PassCommittedTextureToTextureLayer() {
 
 void PepperPluginInstanceImpl::FinishedConsumingCommittedTexture(
     const cc::TextureMailbox& texture_mailbox,
-    scoped_refptr<PPB_Graphics3D_Impl> graphics_3d,
     const gpu::SyncToken& sync_token,
     bool is_lost) {
   bool removed = DecrementTextureReferenceCount(texture_mailbox);
@@ -827,8 +824,8 @@ void PepperPluginInstanceImpl::FinishedConsumingCommittedTexture(
   }
 
   if (removed && !is_committed_texture) {
-    graphics_3d->ReturnFrontBuffer(texture_mailbox.mailbox(), sync_token,
-                                   is_lost);
+    bound_graphics_3d_->ReturnFrontBuffer(texture_mailbox.mailbox(), sync_token,
+                                          is_lost);
   }
 }
 
