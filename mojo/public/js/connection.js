@@ -25,7 +25,7 @@ define("mojo/public/js/connection", [
     this.remote = remoteProxy;
 
     this.router_.setIncomingReceiver(localStub);
-    this.router_.setErrorHandler(() => {
+    this.router_.setErrorHandler(function() {
       if (StubBindings(this.local) &&
           StubBindings(this.local).connectionErrorHandler)
         StubBindings(this.local).connectionErrorHandler();
