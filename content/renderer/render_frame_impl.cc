@@ -712,29 +712,44 @@ class MHTMLPartsGenerationDelegate
   DISALLOW_COPY_AND_ASSIGN(MHTMLPartsGenerationDelegate);
 };
 
+// Returns true if a subresource certificate error (described by |url|
+// and |security_info|) is "interesting" to the browser process. The
+// browser process is interested in certificate errors that differ from
+// certificate errors encountered while loading the main frame's main
+// resource. In other words, it would be confusing to mark a page as
+// having displayed/run insecure content when the whole page has already
+// been marked as insecure for the same reason, so subresources with the
+// same certificate errors as the main resource are not sent to the
+// browser process.
 bool IsContentWithCertificateErrorsRelevantToUI(
+    blink::WebFrame* frame,
     const blink::WebURL& url,
-    const blink::WebCString& security_info,
-    const blink::WebURL& main_resource_url,
-    const blink::WebCString& main_resource_security_info) {
+    const blink::WebCString& security_info) {
+  blink::WebFrame* main_frame = frame->top();
+
+  // If the main frame is remote, then it must be cross-site and
+  // therefore this subresource's certificate errors are potentially
+  // interesting to the browser (not redundant with the main frame's
+  // main resource).
+  if (main_frame->isWebRemoteFrame())
+    return true;
+
+  WebDataSource* main_ds = main_frame->toWebLocalFrame()->dataSource();
   content::SSLStatus ssl_status;
   content::SSLStatus main_resource_ssl_status;
   CHECK(DeserializeSecurityInfo(security_info, &ssl_status));
-  CHECK(DeserializeSecurityInfo(main_resource_security_info,
+  CHECK(DeserializeSecurityInfo(main_ds->response().securityInfo(),
                                 &main_resource_ssl_status));
 
-  if (!GURL(main_resource_url).SchemeIsCryptographic())
-    return false;
-
-  // Do not handle subresource certificate errors if they are the same
+  // Do not send subresource certificate errors if they are the same
   // as errors that occured during the main page load. This compares
   // most, but not all, fields of SSLStatus. For example, this check
   // does not compare |content_status| because the navigation entry
   // might have mixed content but also have the exact same SSL
   // connection properties as the subresource, thereby making the
   // subresource errors duplicative.
-  return (!url::Origin(GURL(url))
-               .IsSameOriginWith(url::Origin(GURL(main_resource_url))) ||
+  return (!url::Origin(GURL(url)).IsSameOriginWith(
+              url::Origin(GURL(main_ds->request().url()))) ||
           main_resource_ssl_status.security_style !=
               ssl_status.security_style ||
           main_resource_ssl_status.cert_id != ssl_status.cert_id ||
@@ -3942,28 +3957,20 @@ void RenderFrameImpl::didRunInsecureContent(
 
 void RenderFrameImpl::didDisplayContentWithCertificateErrors(
     const blink::WebURL& url,
-    const blink::WebCString& security_info,
-    const blink::WebURL& main_resource_url,
-    const blink::WebCString& main_resource_security_info) {
-  if (!IsContentWithCertificateErrorsRelevantToUI(
-          url, security_info, main_resource_url, main_resource_security_info)) {
-    return;
+    const blink::WebCString& security_info) {
+  if (IsContentWithCertificateErrorsRelevantToUI(frame_, url, security_info)) {
+    Send(new FrameHostMsg_DidDisplayContentWithCertificateErrors(
+        routing_id_, url, security_info));
   }
-  Send(new FrameHostMsg_DidDisplayContentWithCertificateErrors(routing_id_, url,
-                                                               security_info));
 }
 
 void RenderFrameImpl::didRunContentWithCertificateErrors(
     const blink::WebURL& url,
-    const blink::WebCString& security_info,
-    const blink::WebURL& main_resource_url,
-    const blink::WebCString& main_resource_security_info) {
-  if (!IsContentWithCertificateErrorsRelevantToUI(
-          url, security_info, main_resource_url, main_resource_security_info)) {
-    return;
+    const blink::WebCString& security_info) {
+  if (IsContentWithCertificateErrorsRelevantToUI(frame_, url, security_info)) {
+    Send(new FrameHostMsg_DidRunContentWithCertificateErrors(routing_id_, url,
+                                                             security_info));
   }
-  Send(new FrameHostMsg_DidRunContentWithCertificateErrors(
-      routing_id_, GURL(main_resource_url).GetOrigin(), url, security_info));
 }
 
 void RenderFrameImpl::didChangePerformanceTiming() {

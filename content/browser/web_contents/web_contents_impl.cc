@@ -3417,6 +3417,14 @@ void WebContentsImpl::OnDidRunInsecureContent(const GURL& security_origin,
 void WebContentsImpl::OnDidDisplayContentWithCertificateErrors(
     const GURL& url,
     const std::string& security_info) {
+  // Check that the main frame navigation entry has a cryptographic
+  // scheme; the security UI is associated with the main frame rather
+  // than the subframe (if any) that actually displayed the subresource
+  // with errors.
+  NavigationEntry* entry = controller_.GetLastCommittedEntry();
+  if (!entry || !entry->GetURL().SchemeIsCryptographic())
+    return;
+
   SSLStatus ssl;
   if (!DeserializeSecurityInfo(security_info, &ssl)) {
     bad_message::ReceivedBadMessage(
@@ -3431,9 +3439,16 @@ void WebContentsImpl::OnDidDisplayContentWithCertificateErrors(
 }
 
 void WebContentsImpl::OnDidRunContentWithCertificateErrors(
-    const GURL& security_origin,
     const GURL& url,
     const std::string& security_info) {
+  // Check that the main frame navigation entry has a cryptographic
+  // scheme; the security UI is associated with the main frame rather
+  // than the subframe (if any) that actually displayed the subresource
+  // with errors.
+  NavigationEntry* entry = controller_.GetLastCommittedEntry();
+  if (!entry || !entry->GetURL().SchemeIsCryptographic())
+    return;
+
   SSLStatus ssl;
   if (!DeserializeSecurityInfo(security_info, &ssl)) {
     bad_message::ReceivedBadMessage(
@@ -3442,7 +3457,9 @@ void WebContentsImpl::OnDidRunContentWithCertificateErrors(
     return;
   }
 
-  controller_.ssl_manager()->DidRunInsecureContent(security_origin);
+  // TODO(estark): check that this does something reasonable for
+  // about:blank and sandboxed origins. https://crbug.com/609527
+  controller_.ssl_manager()->DidRunInsecureContent(entry->GetURL().GetOrigin());
   SSLManager::NotifySSLInternalStateChanged(
       GetController().GetBrowserContext());
 }

@@ -544,14 +544,10 @@ class CONTENT_EXPORT RenderFrameImpl
                              const blink::WebURL& target) override;
   void didDisplayContentWithCertificateErrors(
       const blink::WebURL& url,
-      const blink::WebCString& security_info,
-      const blink::WebURL& main_resource_url,
-      const blink::WebCString& main_resource_security_info) override;
+      const blink::WebCString& security_info) override;
   void didRunContentWithCertificateErrors(
       const blink::WebURL& url,
-      const blink::WebCString& security_info,
-      const blink::WebURL& main_resource_url,
-      const blink::WebCString& main_resource_security_info) override;
+      const blink::WebCString& security_info) override;
   void didChangePerformanceTiming() override;
   void didObserveLoadingBehavior(
       blink::WebLoadingBehaviorFlag behavior) override;

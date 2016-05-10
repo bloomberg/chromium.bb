@@ -1361,8 +1361,7 @@ IPC_MESSAGE_ROUTED2(FrameHostMsg_DidDisplayContentWithCertificateErrors,
 
 // Sent when the renderer runs content that was loaded with certificate
 // errors.
-IPC_MESSAGE_ROUTED3(FrameHostMsg_DidRunContentWithCertificateErrors,
-                    GURL /* security_origin */,
+IPC_MESSAGE_ROUTED2(FrameHostMsg_DidRunContentWithCertificateErrors,
                     GURL /* resource url */,
                     std::string /* serialized security info */)
 

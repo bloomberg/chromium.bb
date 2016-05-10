@@ -696,16 +696,16 @@ void FrameLoaderClientImpl::didDispatchPingLoader(const KURL& url)
         m_webFrame->client()->didDispatchPingLoader(url);
 }
 
-void FrameLoaderClientImpl::didDisplayContentWithCertificateErrors(const KURL& url, const CString& securityInfo, const WebURL& mainResourceUrl, const CString& mainResourceSecurityInfo)
+void FrameLoaderClientImpl::didDisplayContentWithCertificateErrors(const KURL& url, const CString& securityInfo)
 {
     if (m_webFrame->client())
-        m_webFrame->client()->didDisplayContentWithCertificateErrors(url, securityInfo, mainResourceUrl, mainResourceSecurityInfo);
+        m_webFrame->client()->didDisplayContentWithCertificateErrors(url, securityInfo);
 }
 
-void FrameLoaderClientImpl::didRunContentWithCertificateErrors(const KURL& url, const CString& securityInfo, const WebURL& mainResourceUrl, const CString& mainResourceSecurityInfo)
+void FrameLoaderClientImpl::didRunContentWithCertificateErrors(const KURL& url, const CString& securityInfo)
 {
     if (m_webFrame->client())
-        m_webFrame->client()->didRunContentWithCertificateErrors(url, securityInfo, mainResourceUrl, mainResourceSecurityInfo);
+        m_webFrame->client()->didRunContentWithCertificateErrors(url, securityInfo);
 }
 
 void FrameLoaderClientImpl::didChangePerformanceTiming()

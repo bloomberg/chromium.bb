@@ -895,8 +895,7 @@ private:
   void OnDidDisplayContentWithCertificateErrors(
       const GURL& url,
       const std::string& security_info);
-  void OnDidRunContentWithCertificateErrors(const GURL& security_origin,
-                                            const GURL& url,
+  void OnDidRunContentWithCertificateErrors(const GURL& url,
                                             const std::string& security_info);
   void OnDocumentLoadedInFrame();
   void OnDidFinishLoad(const GURL& url);

@@ -115,8 +115,8 @@ public:
     void didRunInsecureContent(SecurityOrigin*, const KURL& insecureURL) override;
     void didDetectXSS(const KURL&, bool didBlockEntirePage) override;
     void didDispatchPingLoader(const KURL&) override;
-    void didDisplayContentWithCertificateErrors(const KURL&, const CString& securityInfo, const WebURL& mainResourceUrl, const CString& mainResourceSecurityInfo) override;
-    void didRunContentWithCertificateErrors(const KURL&, const CString& securityInfo, const WebURL& mainResourceUrl, const CString& mainResourceSecurityInfo) override;
+    void didDisplayContentWithCertificateErrors(const KURL&, const CString& securityInfo) override;
+    void didRunContentWithCertificateErrors(const KURL&, const CString& securityInfo) override;
     void didChangePerformanceTiming() override;
     void didObserveLoadingBehavior(WebLoadingBehaviorFlag) override;
     void selectorMatchChanged(const Vector<String>& addedSelectors, const Vector<String>& removedSelectors) override;

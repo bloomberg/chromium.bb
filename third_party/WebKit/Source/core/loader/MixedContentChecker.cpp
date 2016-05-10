@@ -487,25 +487,19 @@ void MixedContentChecker::handleCertificateError(LocalFrame* frame, const Resour
     if (frameType == WebURLRequest::FrameTypeTopLevel || !effectiveFrame)
         return;
 
-    // TODO(estark): handle remote frames, perhaps by omitting security info when the effective frame is remote.
-    if (!effectiveFrame->isLocalFrame())
-        return;
-
-    LocalFrame* localEffectiveFrame = toLocalFrame(effectiveFrame);
-
     // Use the current local frame's client; the embedder doesn't
     // distinguish mixed content signals from different frames on the
     // same page.
     FrameLoaderClient* client = frame->loader().client();
     ContextType contextType = MixedContentChecker::contextTypeFromContext(requestContext, effectiveFrame);
     if (contextType == ContextTypeBlockable) {
-        client->didRunContentWithCertificateErrors(response.url(), response.getSecurityInfo(), mainResourceUrlForFrame(effectiveFrame), localEffectiveFrame->loader().documentLoader()->response().getSecurityInfo());
+        client->didRunContentWithCertificateErrors(response.url(), response.getSecurityInfo());
     } else {
         // contextTypeFromContext() never returns NotMixedContent (it
         // computes the type of mixed content, given that the content is
         // mixed).
         ASSERT(contextType != ContextTypeNotMixedContent);
-        client->didDisplayContentWithCertificateErrors(response.url(), response.getSecurityInfo(), mainResourceUrlForFrame(effectiveFrame), localEffectiveFrame->loader().documentLoader()->response().getSecurityInfo());
+        client->didDisplayContentWithCertificateErrors(response.url(), response.getSecurityInfo());
     }
 }
 

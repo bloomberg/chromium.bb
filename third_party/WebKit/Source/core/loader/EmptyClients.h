@@ -243,8 +243,8 @@ public:
     void didRunInsecureContent(SecurityOrigin*, const KURL&) override {}
     void didDetectXSS(const KURL&, bool) override {}
     void didDispatchPingLoader(const KURL&) override {}
-    void didDisplayContentWithCertificateErrors(const KURL&, const CString&, const WebURL& mainResourceUrl, const CString& mainResourceSecurityInfo) override {}
-    void didRunContentWithCertificateErrors(const KURL&, const CString&, const WebURL& mainResourceUrl, const CString& mainResourceSecurityInfo) override {}
+    void didDisplayContentWithCertificateErrors(const KURL&, const CString&) override {}
+    void didRunContentWithCertificateErrors(const KURL&, const CString&) override {}
     void selectorMatchChanged(const Vector<String>&, const Vector<String>&) override {}
     LocalFrame* createFrame(const FrameLoadRequest&, const AtomicString&, HTMLFrameOwnerElement*) override;
     Widget* createPlugin(HTMLPlugInElement*, const KURL&, const Vector<String>&, const Vector<String>&, const String&, bool, DetachedPluginPolicy) override;

@@ -77,8 +77,8 @@ namespace {
             : EmptyFrameLoaderClient()
         {
         }
-        MOCK_METHOD4(didDisplayContentWithCertificateErrors, void(const KURL&, const CString&, const WebURL&, const CString&));
-        MOCK_METHOD4(didRunContentWithCertificateErrors, void(const KURL&, const CString&, const WebURL&, const CString&));
+        MOCK_METHOD2(didDisplayContentWithCertificateErrors, void(const KURL&, const CString&));
+        MOCK_METHOD2(didRunContentWithCertificateErrors, void(const KURL&, const CString&));
     };
 
 } // namespace
@@ -96,7 +96,7 @@ TEST(MixedContentCheckerTest, HandleCertificateError)
     ResourceResponse response1;
     response1.setURL(ranUrl);
     response1.setSecurityInfo("security info1");
-    EXPECT_CALL(*client, didRunContentWithCertificateErrors(ranUrl, response1.getSecurityInfo(), WebURL(mainResourceUrl), CString()));
+    EXPECT_CALL(*client, didRunContentWithCertificateErrors(ranUrl, response1.getSecurityInfo()));
     MixedContentChecker::handleCertificateError(&dummyPageHolder->frame(), response1, WebURLRequest::FrameTypeNone, WebURLRequest::RequestContextScript);
 
     ResourceResponse response2;
@@ -104,7 +104,7 @@ TEST(MixedContentCheckerTest, HandleCertificateError)
     ASSERT_EQ(MixedContentChecker::ContextTypeOptionallyBlockable, MixedContentChecker::contextTypeFromContext(requestContext, &dummyPageHolder->frame()));
     response2.setURL(displayedUrl);
     response2.setSecurityInfo("security info2");
-    EXPECT_CALL(*client, didDisplayContentWithCertificateErrors(displayedUrl, response2.getSecurityInfo(), WebURL(mainResourceUrl), CString()));
+    EXPECT_CALL(*client, didDisplayContentWithCertificateErrors(displayedUrl, response2.getSecurityInfo()));
     MixedContentChecker::handleCertificateError(&dummyPageHolder->frame(), response2, WebURLRequest::FrameTypeNone, requestContext);
 }
 

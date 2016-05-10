@@ -79,7 +79,7 @@ public:
         : EmptyFrameLoaderClient()
     {
     }
-    MOCK_METHOD4(didDisplayContentWithCertificateErrors, void(const KURL&, const CString&, const WebURL&, const CString&));
+    MOCK_METHOD2(didDisplayContentWithCertificateErrors, void(const KURL&, const CString&));
 };
 
 class FrameFetchContextTest : public ::testing::Test {
@@ -144,7 +144,7 @@ protected:
         securityInfo = "security info";
         mainResourceUrl = KURL(KURL(), "https://www.example.test");
         MockFrameLoaderClient* client = new MockFrameLoaderClient;
-        EXPECT_CALL(*client, didDisplayContentWithCertificateErrors(url, securityInfo, WebURL(mainResourceUrl), CString()));
+        EXPECT_CALL(*client, didDisplayContentWithCertificateErrors(url, securityInfo));
         dummyPageHolder = DummyPageHolder::create(IntSize(500, 500), nullptr, client);
         dummyPageHolder->page().setDeviceScaleFactor(1.0);
         documentLoader = DocumentLoader::create(&dummyPageHolder->frame(), ResourceRequest(mainResourceUrl), SubstituteData());

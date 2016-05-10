@@ -133,12 +133,12 @@ public:
     virtual void didDetectXSS(const KURL&, bool didBlockEntirePage) = 0;
     virtual void didDispatchPingLoader(const KURL&) = 0;
 
-    // The given main resource displayed content with certificate errors
-    // with the given URL and security info.
-    virtual void didDisplayContentWithCertificateErrors(const KURL&, const CString& securityInfo, const WebURL& mainResourceUrl, const CString& mainResourceSecurityInfo) = 0;
-    // The given main resource ran content with certificate errors with
-    // the given URL and security info.
-    virtual void didRunContentWithCertificateErrors(const KURL&, const CString& securityInfo, const WebURL& mainResourceUrl, const CString& mainResourceSecurityInfo) = 0;
+    // The frame displayed content with certificate errors with the
+    // given URL and security info.
+    virtual void didDisplayContentWithCertificateErrors(const KURL&, const CString& securityInfo) = 0;
+    // The frame ran content with certificate errors with the given URL
+    // and security info.
+    virtual void didRunContentWithCertificateErrors(const KURL&, const CString& securityInfo) = 0;
 
     // Will be called when |PerformanceTiming| events are updated
     virtual void didChangePerformanceTiming() { }
