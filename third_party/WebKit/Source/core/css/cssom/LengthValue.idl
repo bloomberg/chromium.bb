@@ -14,7 +14,7 @@ enum LengthType {
     [RaisesException, NewObject] LengthValue multiply(double value);
     [RaisesException, NewObject] LengthValue divide(double value);
 
-    [RaisesException, NewObject] static LengthValue parse(DOMString cssString);
-    [RaisesException, NewObject] static LengthValue fromValue(double value, LengthType type);
-    [RaisesException, NewObject] static LengthValue fromDictionary(CalcDictionary dictionary);
+    [RaisesException, NewObject] static LengthValue from(DOMString cssString);
+    [RaisesException, NewObject] static LengthValue from(double value, LengthType type);
+    [RaisesException, NewObject] static LengthValue from(CalcDictionary dictionary);
 };

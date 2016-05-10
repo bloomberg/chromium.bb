@@ -20,18 +20,18 @@ CSSPrimitiveValue::UnitType LengthValue::unitFromName(const String& name)
     return CSSPrimitiveValue::fromName(name);
 }
 
-LengthValue* LengthValue::parse(const String& cssString, ExceptionState& exceptionState)
+LengthValue* LengthValue::from(const String& cssString, ExceptionState& exceptionState)
 {
     // TODO: Implement
     return nullptr;
 }
 
-LengthValue* LengthValue::fromValue(double value, const String& type, ExceptionState&)
+LengthValue* LengthValue::from(double value, const String& type, ExceptionState&)
 {
     return SimpleLength::create(value, unitFromName(type));
 }
 
-LengthValue* LengthValue::fromDictionary(const CalcDictionary& dictionary, ExceptionState& exceptionState)
+LengthValue* LengthValue::from(const CalcDictionary& dictionary, ExceptionState& exceptionState)
 {
     return StyleCalcLength::create(dictionary, exceptionState);
 }

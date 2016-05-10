@@ -4,18 +4,18 @@
 <script>
 
 test(function() {
-  var result = LengthValue.fromValue(5, 'px');
+  var result = LengthValue.from(5, 'px');
   assert_true(result instanceof SimpleLength);
   assert_equals(result.value, 5);
   assert_equals(result.type, 'px');
-}, "Test that LengthValue's static fromValue method produces a SimpleLength.");
+}, "Test that LengthValue's static from(double value, LengthType type) method produces a SimpleLength.");
 
 test(function() {
-  var result = LengthValue.fromDictionary({px: 1, percent: 2.5});
+  var result = LengthValue.from({px: 1, percent: 2.5});
   assert_true(result instanceof CalcLength);
   assert_equals(result.px, 1);
   assert_equals(result.percent, 2.5);
-}, "Test that LengthValue's static fromDictionary method produces a CalcLength.");
+}, "Test that LengthValue's static from(CalcDictionary dictionary) method produces a CalcLength.");
 
 </script>
 <body>

@@ -3453,8 +3453,7 @@ interface KeywordValue : StyleValue
     getter keywordValue
     method constructor
 interface LengthValue : StyleValue
-    static method fromDictionary
-    static method fromValue
+    static method from
     attribute @@toStringTag
     method add
     method constructor
