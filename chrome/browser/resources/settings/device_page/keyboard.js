@@ -53,6 +53,12 @@ Polymer({
       notify: true,
     },
 
+    /** The current active route. */
+    currentRoute: {
+      type: Object,
+      notify: true,
+    },
+
     /** @private Whether to show Caps Lock options. */
     showCapsLock_: Boolean,
 
@@ -79,7 +85,7 @@ Polymer({
   /** @override */
   ready: function() {
     cr.addWebUIListener('show-keys-changed', this.onShowKeysChange_.bind(this));
-    chrome.send('initializeKeyboardSettings');
+    settings.DevicePageBrowserProxyImpl.getInstance().initializeKeyboard();
     this.setUpKeyMapTargets_();
   },
 
@@ -113,6 +119,19 @@ Polymer({
   onShowKeysChange_: function(showCapsLock, showDiamondKey) {
     this.showCapsLock_ = showCapsLock;
     this.showDiamondKey_ = showDiamondKey;
+  },
+
+  onShowKeyboardShortcutsOverlayTap_: function() {
+    settings.DevicePageBrowserProxyImpl.getInstance()
+        .showKeyboardShortcutsOverlay();
+  },
+
+  onShowLanguageInputTap_: function() {
+    this.currentRoute = {
+      page: 'advanced',
+      section: 'languages',
+      subpage: [],
+    };
   },
 
   /** @private */

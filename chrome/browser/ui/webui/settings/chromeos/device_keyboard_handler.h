@@ -40,6 +40,9 @@ class KeyboardHandler
   // Initializes the page with the current keyboard information.
   void HandleInitialize(const base::ListValue* args);
 
+  // Shows the Ash keyboard shortcuts overlay.
+  void HandleShowKeyboardShortcutsOverlay(const base::ListValue* args) const;
+
   // Shows or hides the Caps Lock and Diamond key settings based on whether the
   // system status.
   void UpdateShowKeys() const;

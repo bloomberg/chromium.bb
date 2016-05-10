@@ -14,6 +14,12 @@ cr.define('settings', function() {
      * @param {!Event} e
      */
     handleLinkEvent: function(e) {},
+
+    /** Initializes the keyboard WebUI handler. */
+    initializeKeyboard: function() {},
+
+    /** Shows the Ash keyboard shortcuts overlay. */
+    showKeyboardShortcutsOverlay: function() {},
   };
 
   /**
@@ -30,6 +36,16 @@ cr.define('settings', function() {
       // when Enter is pressed.
       if (e.type != 'keydown' || e.keyCode == 13)
         e.stopPropagation();
+    },
+
+    /** @override */
+    initializeKeyboard: function() {
+      chrome.send('initializeKeyboardSettings');
+    },
+
+    /** @override */
+    showKeyboardShortcutsOverlay: function() {
+      chrome.send('showKeyboardShortcutsOverlay');
     },
   };
 

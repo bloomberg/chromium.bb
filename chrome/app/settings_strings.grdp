@@ -1234,6 +1234,12 @@
     <message name="IDS_SETTINGS_KEYBOARD_AUTO_REPEAT_FAST" desc="The label for the end of the auto-repeat rate slider, representing a fast repeat rate.">
       Fast
     </message>
+    <message name="IDS_SETTINGS_KEYBOARD_SHOW_KEYBOARD_SHORTCUTS_OVERLAY" desc="The link to open the keyboard shortuts overlay.">
+      View keyboard shortcuts
+    </message>
+    <message name="IDS_SETTINGS_KEYBOARD_SHOW_LANGUAGE_AND_INPUT" desc="The link to navigate to the language and input method settings.">
+      Change language and input settings
+    </message>
 
     <!-- Display -->
     <message name="IDS_SETTINGS_DISPLAY_TITLE" desc="In Device Settings, the title for display settings.">

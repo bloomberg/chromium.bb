@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/settings/chromeos/device_keyboard_handler.h"
 
+#include "ash/new_window_delegate.h"
+#include "ash/shell.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/values.h"
@@ -44,6 +46,10 @@ void KeyboardHandler::RegisterMessages() {
       "initializeKeyboardSettings",
       base::Bind(&KeyboardHandler::HandleInitialize,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "showKeyboardShortcutsOverlay",
+      base::Bind(&KeyboardHandler::HandleShowKeyboardShortcutsOverlay,
+                 base::Unretained(this)));
 }
 
 void KeyboardHandler::OnKeyboardDeviceConfigurationChanged() {
@@ -52,6 +58,11 @@ void KeyboardHandler::OnKeyboardDeviceConfigurationChanged() {
 
 void KeyboardHandler::HandleInitialize(const base::ListValue* args) {
   UpdateShowKeys();
+}
+
+void KeyboardHandler::HandleShowKeyboardShortcutsOverlay(
+    const base::ListValue* args) const {
+  ash::Shell::GetInstance()->new_window_delegate()->ShowKeyboardOverlay();
 }
 
 void KeyboardHandler::UpdateShowKeys() const {

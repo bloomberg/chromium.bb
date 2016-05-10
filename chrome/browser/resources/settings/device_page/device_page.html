@@ -41,7 +41,8 @@
       </template>
       <template is="dom-if" name="keyboard">
         <settings-subpage page-title="$i18n{keyboardTitle}">
-          <settings-keyboard prefs="{{prefs}}"></settings-keyboard>
+          <settings-keyboard prefs="{{prefs}}" current-route="{{currentRoute}}">
+          </settings-keyboard>
         </settings-subpage>
       </template>
       <template is="dom-if" name="display">

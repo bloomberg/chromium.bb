@@ -7,7 +7,9 @@ cr.define('settings_device_page', function() {
    * @constructor
    * @implements {settings.DevicePageBrowserProxy}
    */
-  function TestDevicePageBrowserProxy() {}
+  function TestDevicePageBrowserProxy() {
+    this.keyboardShortcutsOverlayShown_ = 0;
+  }
 
   TestDevicePageBrowserProxy.prototype = {
     /** @override */
@@ -16,6 +18,14 @@ cr.define('settings_device_page', function() {
           this, e);
       // Prevent opening the link, which can block the test.
       e.preventDefault();
+    },
+
+    /** override */
+    initializeKeyboard: function() {},
+
+    /** override */
+    showKeyboardShortcutsOverlay: function() {
+      this.keyboardShortcutsOverlayShown_++;
     },
   };
 
@@ -240,6 +250,13 @@ cr.define('settings_device_page', function() {
       devicePage.set(
           'prefs.settings.language.xkb_auto_repeat_enabled_r2.value', false);
       expectFalse(collapse.opened);
+
+      // Test keyboard shortcut overlay button.
+      MockInteractions.tap(keyboardPage.$$('#keyboardOverlay'));
+      expectEquals(
+          1,
+          settings.DevicePageBrowserProxyImpl.getInstance()
+              .keyboardShortcutsOverlayShown_);
     });
 
     // Test more edge cases for slider rounding logic.
