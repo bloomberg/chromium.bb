@@ -28,7 +28,17 @@ bool DataFetcherSharedMemory::Start(ConsumerType consumer_type, void* buffer) {
       sensor_manager_->StartFetchingDeviceOrientationData(
           static_cast<DeviceOrientationHardwareBuffer*>(buffer));
       return true;
-    case CONSUMER_TYPE_ORIENTATION_ABSOLUTE:
+    case CONSUMER_TYPE_ORIENTATION_ABSOLUTE: {
+      orientation_absolute_buffer_ =
+          static_cast<DeviceOrientationHardwareBuffer*>(buffer);
+      // Absolute device orientation not available on Chrome OS, let the
+      // implementation fire an all-null event to signal this to blink.
+      orientation_absolute_buffer_->seqlock.WriteBegin();
+      orientation_absolute_buffer_->data.absolute = true;
+      orientation_absolute_buffer_->data.allAvailableSensorsAreActive = true;
+      orientation_absolute_buffer_->seqlock.WriteEnd();
+      return false;
+    }
     case CONSUMER_TYPE_LIGHT:
       NOTIMPLEMENTED();
       return false;
@@ -44,6 +54,13 @@ bool DataFetcherSharedMemory::Stop(ConsumerType consumer_type) {
     case CONSUMER_TYPE_ORIENTATION:
       return sensor_manager_->StopFetchingDeviceOrientationData();
     case CONSUMER_TYPE_ORIENTATION_ABSOLUTE:
+      if (orientation_absolute_buffer_) {
+        orientation_absolute_buffer_->seqlock.WriteBegin();
+        orientation_absolute_buffer_->data.allAvailableSensorsAreActive = false;
+        orientation_absolute_buffer_->seqlock.WriteEnd();
+        orientation_absolute_buffer_ = nullptr;
+      }
+      return true;
     case CONSUMER_TYPE_LIGHT:
       NOTIMPLEMENTED();
       return false;
