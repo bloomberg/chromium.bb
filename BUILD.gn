@@ -308,6 +308,7 @@ group("both_gn_and_gyp") {
       "//base/android/linker:chromium_android_linker",
       "//build/android/gyp/test:hello_world",
       "//build/android/rezip",
+      "//chrome/android/webapk/shell_apk:webapk",
       "//components/invalidation/impl:components_invalidation_impl_junit_tests",
       "//components/policy/android:components_policy_junit_tests",
       "//content/public/android:content_junit_tests",

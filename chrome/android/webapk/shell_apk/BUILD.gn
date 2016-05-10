@@ -1,0 +1,60 @@
+# Copyright 2015 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/android/rules.gni")
+
+declare_args() {
+  # The origin URL of the WebAPK. Used to generate a unique package name for
+  # WebAPK. Example: "foo.com"
+  webapk_manifest_package_origin = "template"
+
+  # The URL that the WebAPK should navigate to when it is launched.
+  webapk_start_url = "https://www.template.com/home_page"
+
+  # The browser that the WebAPK will be bound to.
+  webapk_runtime_host = "com.google.android.apps.chrome"
+
+  # The message authentication code from Chrome for identity verification.
+  webapk_mac = "template"
+
+  # The scope of the urls that the WebAPK can navigate to.
+  webapk_scope = "https://www.template.com"
+}
+
+shell_apk_manifest_package =
+    "org.chromium.webapk.$webapk_manifest_package_origin"
+
+shell_apk_manifest = "$target_gen_dir/shell_apk_manifest/AndroidManifest.xml"
+
+jinja_template("shell_apk_manifest") {
+  input = "AndroidManifest.xml"
+  output = shell_apk_manifest
+
+  variables = [
+    "manifest_package=$shell_apk_manifest_package",
+    "host_url=$webapk_start_url",
+    "runtime_host=$webapk_runtime_host",
+    "mac=$webapk_mac",
+    "scope=$webapk_scope",
+  ]
+}
+
+android_resources("shell_apk_resources") {
+  resource_dirs = [ "res" ]
+  custom_package = "org.chromium.webapk.shell_apk"
+}
+
+# Template for WebAPK. When a WebAPK is generated:
+# - Android manifest is customized to the website.
+# - App icon is extracted from the website and added to the APK's resources.
+android_apk("webapk") {
+  android_manifest = shell_apk_manifest
+  apk_name = "WebApk.$webapk_manifest_package_origin"
+  java_files = [ "src/org/chromium/webapk/shell_apk/MainActivity.java" ]
+  deps = [
+    ":shell_apk_manifest",
+    ":shell_apk_resources",
+    "//chrome/android/webapk/libs/common",
+  ]
+}
