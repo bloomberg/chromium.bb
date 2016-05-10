@@ -246,6 +246,10 @@ class AccessibilityManager
   // chromeos/audio/chromeos_sounds.h.
   void PlayEarcon(int sound_key);
 
+  // Forward an accessibility gesture from the touch exploration controller
+  // to ChromeVox.
+  void HandleAccessibilityGesture(ui::AXGesture gesture);
+
   // Called by our widget observer when the ChromeVoxPanel is closing.
   void OnChromeVoxPanelClosing();
   void OnChromeVoxPanelDestroying();

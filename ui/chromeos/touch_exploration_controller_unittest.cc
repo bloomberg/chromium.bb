@@ -4,6 +4,7 @@
 
 #include "ui/chromeos/touch_exploration_controller.h"
 
+#include <math.h>
 #include <stddef.h>
 
 #include "base/macros.h"
@@ -78,14 +79,16 @@ class MockTouchExplorationControllerDelegate
   void PlayPassthroughEarcon() override { ++num_times_passthrough_played_; }
   void PlayExitScreenEarcon() override { ++num_times_exit_screen_played_; }
   void PlayEnterScreenEarcon() override { ++num_times_enter_screen_played_; }
-
-  const std::vector<float> VolumeChanges() { return volume_changes_; }
-  size_t NumAdjustSounds() { return num_times_adjust_sound_played_; }
-  size_t NumPassthroughSounds() { return num_times_passthrough_played_; }
-  size_t NumExitScreenSounds() { return num_times_exit_screen_played_; }
-  size_t NumEnterScreenSounds() {
-    return num_times_enter_screen_played_;
+  void HandleAccessibilityGesture(ui::AXGesture gesture) override {
+    last_gesture_ = gesture;
   }
+
+  const std::vector<float> VolumeChanges() const { return volume_changes_; }
+  size_t NumAdjustSounds() const { return num_times_adjust_sound_played_; }
+  size_t NumPassthroughSounds() const { return num_times_passthrough_played_; }
+  size_t NumExitScreenSounds() const { return num_times_exit_screen_played_; }
+  size_t NumEnterScreenSounds() const { return num_times_enter_screen_played_; }
+  ui::AXGesture GetLastGesture() const { return last_gesture_; }
 
   void ResetCountersToZero() {
     num_times_adjust_sound_played_ = 0;
@@ -100,6 +103,7 @@ class MockTouchExplorationControllerDelegate
   size_t num_times_passthrough_played_ = 0;
   size_t num_times_exit_screen_played_ = 0;
   size_t num_times_enter_screen_played_ = 0;
+  ui::AXGesture last_gesture_ = ui::AX_GESTURE_NONE;
 };
 
 }  // namespace
@@ -458,31 +462,6 @@ void ConfirmEventsAreKeyAndEqual(ui::Event* e1, ui::Event* e2) {
 // TODO(mfomitchev): Need to investigate why we don't get mouse enter/exit
 // events when running these tests as part of ui_base_unittests. We do get them
 // when the tests are run as part of ash unit tests.
-
-// If a swipe has been successfully completed, then six key events will be
-// dispatched that correspond to shift+search+direction
-void AssertDirectionalNavigationEvents(const ScopedVector<ui::Event>& events,
-                                       ui::KeyboardCode direction) {
-  ASSERT_EQ(6U, events.size());
-  ui::KeyEvent shift_pressed(
-      ui::ET_KEY_PRESSED, ui::VKEY_SHIFT, ui::EF_SHIFT_DOWN);
-  ui::KeyEvent search_pressed(
-      ui::ET_KEY_PRESSED, ui::VKEY_LWIN, ui::EF_SHIFT_DOWN);
-  ui::KeyEvent direction_pressed(
-      ui::ET_KEY_PRESSED, direction, ui::EF_SHIFT_DOWN);
-  ui::KeyEvent direction_released(
-      ui::ET_KEY_RELEASED, direction, ui::EF_SHIFT_DOWN);
-  ui::KeyEvent search_released(
-      ui::ET_KEY_RELEASED, VKEY_LWIN, ui::EF_SHIFT_DOWN);
-  ui::KeyEvent shift_released(
-      ui::ET_KEY_RELEASED, ui::VKEY_SHIFT, ui::EF_NONE);
-  CONFIRM_EVENTS_ARE_KEY_AND_EQUAL(&shift_pressed, events[0]);
-  CONFIRM_EVENTS_ARE_KEY_AND_EQUAL(&search_pressed, events[1]);
-  CONFIRM_EVENTS_ARE_KEY_AND_EQUAL(&direction_pressed, events[2]);
-  CONFIRM_EVENTS_ARE_KEY_AND_EQUAL(&direction_released, events[3]);
-  CONFIRM_EVENTS_ARE_KEY_AND_EQUAL(&search_released, events[4]);
-  CONFIRM_EVENTS_ARE_KEY_AND_EQUAL(&shift_released, events[5]);
-}
 
 TEST_F(TouchExplorationTest, EntersTouchToMouseModeAfterPressAndDelay) {
   SwitchTouchExplorationMode(true);
@@ -1292,79 +1271,61 @@ TEST_F(TouchExplorationTest, EnterGestureInProgressState) {
 // keyboard event.
 TEST_F(TouchExplorationTest, GestureSwipe) {
   SwitchTouchExplorationMode(true);
-  std::vector<ui::KeyboardCode> directions;
-  directions.push_back(ui::VKEY_RIGHT);
-  directions.push_back(ui::VKEY_LEFT);
-  directions.push_back(ui::VKEY_UP);
-  directions.push_back(ui::VKEY_DOWN);
+
+  // Test all four swipe directions with 1 to 4 fingers.
+  struct GestureInfo {
+    int move_x;
+    int move_y;
+    int num_fingers;
+    ui::AXGesture expected_gesture;
+  } gestures_to_test[] = {
+      {-1, 0, 1, ui::AX_GESTURE_SWIPE_LEFT_1},
+      {0, -1, 1, ui::AX_GESTURE_SWIPE_UP_1},
+      {1, 0, 1, ui::AX_GESTURE_SWIPE_RIGHT_1},
+      {0, 1, 1, ui::AX_GESTURE_SWIPE_DOWN_1},
+      {-1, 0, 2, ui::AX_GESTURE_SWIPE_LEFT_2},
+      {0, -1, 2, ui::AX_GESTURE_SWIPE_UP_2},
+      {1, 0, 2, ui::AX_GESTURE_SWIPE_RIGHT_2},
+      {0, 1, 2, ui::AX_GESTURE_SWIPE_DOWN_2},
+      {-1, 0, 3, ui::AX_GESTURE_SWIPE_LEFT_3},
+      {0, -1, 3, ui::AX_GESTURE_SWIPE_UP_3},
+      {1, 0, 3, ui::AX_GESTURE_SWIPE_RIGHT_3},
+      {0, 1, 3, ui::AX_GESTURE_SWIPE_DOWN_3},
+      {-1, 0, 4, ui::AX_GESTURE_SWIPE_LEFT_4},
+      {0, -1, 4, ui::AX_GESTURE_SWIPE_UP_4},
+      {1, 0, 4, ui::AX_GESTURE_SWIPE_RIGHT_4},
+      {0, 1, 4, ui::AX_GESTURE_SWIPE_DOWN_4},
+  };
 
   // This value was taken from gesture_recognizer_unittest.cc in a swipe
   // detector test, since it seems to be about the right amount to get a swipe.
   const int kSteps = 15;
 
-  // There are gestures supported with up to four fingers.
-  for (int num_fingers = 1; num_fingers <= 4; num_fingers++) {
+  for (size_t i = 0; i < arraysize(gestures_to_test); ++i) {
+    const float distance = 2 * gesture_detector_config_.touch_slop + 1;
+    int move_x = gestures_to_test[i].move_x * distance;
+    int move_y = gestures_to_test[i].move_y * distance;
+    int num_fingers = gestures_to_test[i].num_fingers;
+    ui::AXGesture expected_gesture = gestures_to_test[i].expected_gesture;
+
     std::vector<gfx::Point> start_points;
     for (int j = 0; j < num_fingers; j++) {
       start_points.push_back(gfx::Point(j * 10 + 100, j * 10 + 200));
     }
     gfx::Point* start_points_array = &start_points[0];
-    const float distance = gesture_detector_config_.touch_slop + 1;
-    // Iterate through each swipe direction for this number of fingers.
-    for (std::vector<ui::KeyboardCode>::const_iterator it = directions.begin();
-         it != directions.end();
-         ++it) {
-      int move_x = 0;
-      int move_y = 0;
-      ui::KeyboardCode direction = *it;
-      switch (direction) {
-        case ui::VKEY_RIGHT:
-          move_x = distance;
-          break;
-        case ui::VKEY_LEFT:
-          move_x = 0 - distance;
-          break;
-        case ui::VKEY_UP:
-          move_y = 0 - distance;
-          break;
-        case ui::VKEY_DOWN:
-          move_y = distance;
-          break;
-        default:
-          return;
-      }
 
-      // A swipe is made when a fling starts
-      float delta_time =
-          distance / gesture_detector_config_.maximum_fling_velocity;
-      // delta_time is in seconds, so we convert to ms.
-      int delta_time_ms = floor(delta_time * 1000);
-      generator_->GestureMultiFingerScroll(num_fingers,
-                                           start_points_array,
-                                           delta_time_ms,
-                                           kSteps,
-                                           move_x * 2,
-                                           move_y * 2);
-
-      // The swipe registered and sent the appropriate key events.
-      const ScopedVector<ui::Event>& captured_events = GetCapturedEvents();
-      if (num_fingers == 1)
-        AssertDirectionalNavigationEvents(captured_events, direction);
-      else {
-        // Most of the time this is 2 right now, but two of the two finger
-        // swipes are mapped to chromevox commands which dispatch 6 key events,
-        // and these will probably be remapped a lot as we're developing.
-        ASSERT_GE(captured_events.size(), 2U);
-        std::vector<ui::Event>::size_type i;
-        for (i = 0; i != captured_events.size(); i++) {
-          EXPECT_TRUE(captured_events[i]->IsKeyEvent());
-        }
-      }
-      EXPECT_TRUE(IsInNoFingersDownState());
-      EXPECT_FALSE(IsInTouchToMouseMode());
-      EXPECT_FALSE(IsInGestureInProgressState());
-      ClearCapturedEvents();
-    }
+    // A swipe is made when a fling starts
+    float delta_time =
+        distance / gesture_detector_config_.maximum_fling_velocity;
+    // delta_time is in seconds, so we convert to ms.
+    int delta_time_ms = floor(delta_time * 1000);
+    generator_->GestureMultiFingerScroll(num_fingers, start_points_array,
+                                         delta_time_ms, kSteps, move_x, move_y);
+    EXPECT_EQ(expected_gesture, delegate_.GetLastGesture());
+    EXPECT_TRUE(IsInNoFingersDownState());
+    EXPECT_FALSE(IsInTouchToMouseMode());
+    EXPECT_FALSE(IsInGestureInProgressState());
+    ClearCapturedEvents();
   }
 }
 

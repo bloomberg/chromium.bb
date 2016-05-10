@@ -419,6 +419,7 @@ enum HistogramValue {
   BLUETOOTH_LOW_ENERGY_ON_CHARACTERISTIC_WRITE_REQUEST,
   BLUETOOTH_LOW_ENERGY_ON_DESCRIPTOR_READ_REQUEST,
   BLUETOOTH_LOW_ENERGY_ON_DESCRIPTOR_WRITE_REQUEST,
+  ACCESSIBILITY_PRIVATE_ON_ACCESSIBILITY_GESTURE,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY

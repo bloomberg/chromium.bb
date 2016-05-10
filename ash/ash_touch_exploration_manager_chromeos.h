@@ -44,6 +44,7 @@ class ASH_EXPORT AshTouchExplorationManager
   void PlayPassthroughEarcon() override;
   void PlayExitScreenEarcon() override;
   void PlayEnterScreenEarcon() override;
+  void HandleAccessibilityGesture(ui::AXGesture gesture) override;
 
   // aura::client::ActivationChangeObserver overrides:
   void OnWindowActivated(

@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/default_tick_clock.h"
+#include "ui/accessibility/ax_enums.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -28,9 +29,6 @@ namespace {
 // Delay between adjustment sounds.
 const int kSoundDelayInMS = 150;
 
-// In ChromeOS, VKEY_LWIN is synonymous for the search key.
-const ui::KeyboardCode kChromeOSSearchKey = ui::VKEY_LWIN;
-
 }  // namespace
 
 TouchExplorationController::TouchExplorationController(
@@ -45,7 +43,6 @@ TouchExplorationController::TouchExplorationController(
       tick_clock_(NULL) {
   DCHECK(root_window);
   root_window->GetHost()->GetEventSource()->AddEventRewriter(this);
-  InitializeSwipeGestureMaps();
 }
 
 TouchExplorationController::~TouchExplorationController() {
@@ -873,22 +870,79 @@ void TouchExplorationController::OnSwipeEvent(ui::GestureEvent* swipe_gesture) {
   if (VLOG_on_)
     VLOG(0) << "\nSwipe with " << num_fingers << " fingers.";
 
-  if (num_fingers > 4)
-    return;
-
-  if (event_details.swipe_left() &&
-      !left_swipe_gestures_[num_fingers].is_null()) {
-    left_swipe_gestures_[num_fingers].Run();
-  } else if (event_details.swipe_right() &&
-             !right_swipe_gestures_[num_fingers].is_null()) {
-    right_swipe_gestures_[num_fingers].Run();
-  } else if (event_details.swipe_up() &&
-             !up_swipe_gestures_[num_fingers].is_null()) {
-    up_swipe_gestures_[num_fingers].Run();
-  } else if (event_details.swipe_down() &&
-             !down_swipe_gestures_[num_fingers].is_null()) {
-    down_swipe_gestures_[num_fingers].Run();
+  ui::AXGesture gesture = ui::AX_GESTURE_NONE;
+  if (event_details.swipe_left()) {
+    switch (num_fingers) {
+      case 1:
+        gesture = ui::AX_GESTURE_SWIPE_LEFT_1;
+        break;
+      case 2:
+        gesture = ui::AX_GESTURE_SWIPE_LEFT_2;
+        break;
+      case 3:
+        gesture = ui::AX_GESTURE_SWIPE_LEFT_3;
+        break;
+      case 4:
+        gesture = ui::AX_GESTURE_SWIPE_LEFT_4;
+        break;
+      default:
+        break;
+    }
+  } else if (event_details.swipe_up()) {
+    switch (num_fingers) {
+      case 1:
+        gesture = ui::AX_GESTURE_SWIPE_UP_1;
+        break;
+      case 2:
+        gesture = ui::AX_GESTURE_SWIPE_UP_2;
+        break;
+      case 3:
+        gesture = ui::AX_GESTURE_SWIPE_UP_3;
+        break;
+      case 4:
+        gesture = ui::AX_GESTURE_SWIPE_UP_4;
+        break;
+      default:
+        break;
+    }
+  } else if (event_details.swipe_right()) {
+    switch (num_fingers) {
+      case 1:
+        gesture = ui::AX_GESTURE_SWIPE_RIGHT_1;
+        break;
+      case 2:
+        gesture = ui::AX_GESTURE_SWIPE_RIGHT_2;
+        break;
+      case 3:
+        gesture = ui::AX_GESTURE_SWIPE_RIGHT_3;
+        break;
+      case 4:
+        gesture = ui::AX_GESTURE_SWIPE_RIGHT_4;
+        break;
+      default:
+        break;
+    }
+  } else if (event_details.swipe_down()) {
+    switch (num_fingers) {
+      case 1:
+        gesture = ui::AX_GESTURE_SWIPE_DOWN_1;
+        break;
+      case 2:
+        gesture = ui::AX_GESTURE_SWIPE_DOWN_2;
+        break;
+      case 3:
+        gesture = ui::AX_GESTURE_SWIPE_DOWN_3;
+        break;
+      case 4:
+        gesture = ui::AX_GESTURE_SWIPE_DOWN_4;
+        break;
+      default:
+        break;
+    }
   }
+
+  if (gesture != ui::AX_GESTURE_NONE)
+    delegate_->HandleAccessibilityGesture(gesture);
 }
 
 int TouchExplorationController::FindEdgesWithinBounds(gfx::Point point,
@@ -917,38 +971,6 @@ int TouchExplorationController::FindEdgesWithinBounds(gfx::Point point,
   if (point.y() > bottom_edge_limit)
     result |= BOTTOM_EDGE;
   return result;
-}
-
-void TouchExplorationController::DispatchShiftSearchKeyEvent(
-    const ui::KeyboardCode third_key) {
-  // In order to activate the shortcut shift+search+<arrow key>
-  // three KeyPressed events must be dispatched in succession along
-  // with three KeyReleased events.
-
-  ui::KeyEvent shift_down(
-      ui::ET_KEY_PRESSED, ui::VKEY_SHIFT, ui::EF_SHIFT_DOWN);
-  ui::KeyEvent search_down(
-      ui::ET_KEY_PRESSED, kChromeOSSearchKey, ui::EF_SHIFT_DOWN);
-  ui::KeyEvent third_key_down(ui::ET_KEY_PRESSED, third_key, ui::EF_SHIFT_DOWN);
-
-  ui::KeyEvent third_key_up(ui::ET_KEY_RELEASED, third_key, ui::EF_SHIFT_DOWN);
-  ui::KeyEvent search_up(
-      ui::ET_KEY_RELEASED, kChromeOSSearchKey, ui::EF_SHIFT_DOWN);
-  ui ::KeyEvent shift_up(ui::ET_KEY_RELEASED, ui::VKEY_SHIFT, ui::EF_NONE);
-
-  DispatchEvent(&shift_down);
-  DispatchEvent(&search_down);
-  DispatchEvent(&third_key_down);
-  DispatchEvent(&third_key_up);
-  DispatchEvent(&search_up);
-  DispatchEvent(&shift_up);
-}
-
-base::Closure TouchExplorationController::BindShiftSearchKeyEvent(
-    const ui::KeyboardCode third_key) {
-  return base::Bind(&TouchExplorationController::DispatchShiftSearchKeyEvent,
-                    base::Unretained(this),
-                    third_key);
 }
 
 void TouchExplorationController::DispatchKeyWithFlags(
@@ -1120,49 +1142,6 @@ const char* TouchExplorationController::EnumStateToString(State state) {
       return "TWO_FINGER_TAP";
   }
   return "Not a state";
-}
-
-// TODO(evy, lisayin) : Just call abstracted methods on the delegate (e.g.
-// Swipe(Direction direction, int num_fingers)), and add the DispatchXYZ
-// methods to the delegate. Avoid the middle step of dispatching keys at all,
-// and simply have ChromeVox/ChromeOS complete the required action.
-
-void TouchExplorationController::InitializeSwipeGestureMaps() {
-  // Gestures with one finger are used for navigation.
-  left_swipe_gestures_[1] = BindShiftSearchKeyEvent(ui::VKEY_LEFT);
-  right_swipe_gestures_[1] = BindShiftSearchKeyEvent(ui::VKEY_RIGHT);
-  up_swipe_gestures_[1] = BindShiftSearchKeyEvent(ui::VKEY_UP);
-  down_swipe_gestures_[1] = BindShiftSearchKeyEvent(ui::VKEY_DOWN);
-
-  // Gestures with two fingers.
-  left_swipe_gestures_[2] =
-      BindKeyEventWithFlags(ui::VKEY_BROWSER_BACK, ui::EF_NONE);
-  right_swipe_gestures_[2] =
-      BindKeyEventWithFlags(ui::VKEY_BROWSER_FORWARD, ui::EF_NONE);
-  // Jump to top.
-  up_swipe_gestures_[2] = BindShiftSearchKeyEvent(ui::VKEY_A);
-  // Read from here.
-  down_swipe_gestures_[2] = BindShiftSearchKeyEvent(ui::VKEY_R);
-
-  // Gestures with three fingers switch tabs left/right and scroll up/down.
-  left_swipe_gestures_[3] = BindKeyEventWithFlags(
-      ui::VKEY_TAB, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN);
-  right_swipe_gestures_[3] =
-      BindKeyEventWithFlags(ui::VKEY_TAB, ui::EF_CONTROL_DOWN);
-  up_swipe_gestures_[3] = BindKeyEventWithFlags(ui::VKEY_NEXT, ui::EF_NONE);
-  down_swipe_gestures_[3] = BindKeyEventWithFlags(ui::VKEY_PRIOR, ui::EF_NONE);
-
-  // Gestures with four fingers should probably eventually be used for rare
-  // needs that are hard to access through menus.
-  // Note that brightness levels are here because they can be important for low
-  // vision users. However, none of these mappings are permanent.
-  left_swipe_gestures_[4] =
-      BindKeyEventWithFlags(ui::VKEY_BRIGHTNESS_DOWN, ui::EF_NONE);
-  right_swipe_gestures_[4] =
-      BindKeyEventWithFlags(VKEY_BRIGHTNESS_UP, ui::EF_NONE);
-  up_swipe_gestures_[4] = BindKeyEventWithFlags(VKEY_BROWSER_HOME, ui::EF_NONE);
-  down_swipe_gestures_[4] =
-      BindKeyEventWithFlags(VKEY_BROWSER_REFRESH, ui::EF_NONE);
 }
 
 float TouchExplorationController::GetSplitTapTouchSlop() {

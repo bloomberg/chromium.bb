@@ -69248,6 +69248,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
       label="BLUETOOTH_LOW_ENERGY_ON_CHARACTERISTIC_WRITE_REQUEST"/>
   <int value="399" label="BLUETOOTH_LOW_ENERGY_ON_DESCRIPTOR_READ_REQUEST"/>
   <int value="400" label="BLUETOOTH_LOW_ENERGY_ON_DESCRIPTOR_WRITE_REQUEST"/>
+  <int value="401" label="ACCESSIBILITY_PRIVATE_ON_ACCESSIBILITY_GESTURE"/>
 </enum>
 
 <enum name="ExtensionFileWriteResult" type="int">

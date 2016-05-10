@@ -780,6 +780,22 @@ void AccessibilityManager::PlayEarcon(int sound_key) {
   ash::PlaySystemSoundIfSpokenFeedback(sound_key);
 }
 
+void AccessibilityManager::HandleAccessibilityGesture(ui::AXGesture gesture) {
+  extensions::EventRouter* event_router =
+      extensions::EventRouter::Get(profile());
+  CHECK(event_router);
+
+  std::unique_ptr<base::ListValue> event_args(new base::ListValue());
+  event_args->AppendString(ui::ToString(gesture));
+  std::unique_ptr<extensions::Event> event(new extensions::Event(
+      extensions::events::ACCESSIBILITY_PRIVATE_ON_ACCESSIBILITY_GESTURE,
+      extensions::api::accessibility_private::OnAccessibilityGesture::
+          kEventName,
+      std::move(event_args)));
+  event_router->DispatchEventWithLazyListener(
+      extension_misc::kChromeVoxExtensionId, std::move(event));
+}
+
 bool AccessibilityManager::IsHighContrastEnabled() {
   return high_contrast_enabled_;
 }

@@ -84,6 +84,12 @@ void AshTouchExplorationManager::PlayEnterScreenEarcon() {
       chromeos::SOUND_ENTER_SCREEN);
 }
 
+void AshTouchExplorationManager::HandleAccessibilityGesture(
+    ui::AXGesture gesture) {
+  Shell::GetInstance()->accessibility_delegate()->HandleAccessibilityGesture(
+      gesture);
+}
+
 void AshTouchExplorationManager::OnWindowActivated(
     aura::client::ActivationChangeObserver::ActivationReason reason,
     aura::Window* gained_active,

@@ -158,4 +158,7 @@ base::TimeDelta DefaultAccessibilityDelegate::PlayShutdownSound() const {
   return base::TimeDelta();
 }
 
+void DefaultAccessibilityDelegate::HandleAccessibilityGesture(
+    ui::AXGesture gesture) {}
+
 }  // namespace ash

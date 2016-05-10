@@ -53,6 +53,7 @@ class ASH_EXPORT DefaultAccessibilityDelegate : public AccessibilityDelegate {
   ui::AccessibilityAlert GetLastAccessibilityAlert() override;
   void PlayEarcon(int sound_key) override;
   base::TimeDelta PlayShutdownSound() const override;
+  void HandleAccessibilityGesture(ui::AXGesture gesture) override;
 
  private:
   bool spoken_feedback_enabled_ = false;

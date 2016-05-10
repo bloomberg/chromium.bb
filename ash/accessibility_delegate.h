@@ -7,6 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "base/time/time.h"
+#include "ui/accessibility/ax_enums.h"
 #include "ui/chromeos/accessibility_types.h"
 
 namespace ash {
@@ -124,6 +125,10 @@ class ASH_EXPORT AccessibilityDelegate {
 
   // Initiates play of shutdown sound and returns it's duration.
   virtual base::TimeDelta PlayShutdownSound() const = 0;
+
+  // Forward an accessibility gesture from the touch exploration controller to
+  // ChromeVox.
+  virtual void HandleAccessibilityGesture(ui::AXGesture gesture) = 0;
 };
 
 }  // namespace ash

@@ -301,6 +301,10 @@ class AccessibilityDelegateImpl : public ash::AccessibilityDelegate {
     return chromeos::AccessibilityManager::Get()->PlayShutdownSound();
   }
 
+  void HandleAccessibilityGesture(ui::AXGesture gesture) override {
+    chromeos::AccessibilityManager::Get()->HandleAccessibilityGesture(gesture);
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(AccessibilityDelegateImpl);
 };

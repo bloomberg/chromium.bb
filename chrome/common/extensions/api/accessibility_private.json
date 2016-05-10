@@ -31,6 +31,12 @@
           "width": {"type": "integer", "description": "Width in pixels."},
           "height": {"type": "integer", "description": "Height in pixels."}
         }
+      },
+      {
+        "id": "Gesture",
+        "type": "string",
+        "enum": [ "doubleTap", "swipeLeft1", "swipeUp1", "swipeRight1", "swipeDown1", "swipeLeft2", "swipeUp2", "swipeRight2", "swipeDown2", "swipeLeft3", "swipeUp3", "swipeRight3", "swipeDown3", "swipeLeft4", "swipeUp4", "swipeRight4", "swipeDown4" ],
+        "description": "Accessibility gestures fired by the touch exploration controller."
       }
     ],
     "functions": [
@@ -71,6 +77,7 @@
           },
           {
             "type": "boolean",
+
             "name": "capture",
             "description": "True if key events should be swallowed natively and not propagated if preventDefault() gets called by the extension's background page."
           }
@@ -82,6 +89,17 @@
         "name": "onIntroduceChromeVox",
         "type": "function",
         "description": "Fired whenever ChromeVox should output introduction."
+      },
+      {
+        "name": "onAccessibilityGesture",
+        "type": "function",
+        "description": "Fired when an accessibility gesture is detected by the touch exploration controller.",
+        "parameters": [
+          {
+            "name": "gesture",
+            "$ref": "Gesture"
+          }
+        ]
       }
     ]
   }

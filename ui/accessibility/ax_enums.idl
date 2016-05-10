@@ -471,4 +471,25 @@
     description_from_placeholder,
     description_from_related_element
   };
+
+  // Touch gestures on Chrome OS.
+  enum AXGesture {
+    double_tap,
+    swipe_left_1,
+    swipe_up_1,
+    swipe_right_1,
+    swipe_down_1,
+    swipe_left_2,
+    swipe_up_2,
+    swipe_right_2,
+    swipe_down_2,
+    swipe_left_3,
+    swipe_up_3,
+    swipe_right_3,
+    swipe_down_3,
+    swipe_left_4,
+    swipe_up_4,
+    swipe_right_4,
+    swipe_down_4,
+  };
 };

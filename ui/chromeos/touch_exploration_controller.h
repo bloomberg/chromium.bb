@@ -9,6 +9,7 @@
 #include "base/time/tick_clock.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
+#include "ui/accessibility/ax_enums.h"
 #include "ui/chromeos/ui_chromeos_export.h"
 #include "ui/events/event.h"
 #include "ui/events/event_rewriter.h"
@@ -56,6 +57,10 @@ class TouchExplorationControllerDelegate {
   // This function should be called when the enter screen earcon should be
   // played.
   virtual void PlayEnterScreenEarcon() = 0;
+
+  // Called when the user performed an accessibility gesture while in touch
+  // accessibility mode, that should be forwarded to ChromeVox.
+  virtual void HandleAccessibilityGesture(ui::AXGesture gesture) = 0;
 };
 
 // TouchExplorationController is used in tandem with "Spoken Feedback" to
@@ -261,13 +266,6 @@ class UI_CHROMEOS_EXPORT TouchExplorationController
 
   void SideSlideControl(ui::GestureEvent* gesture);
 
-  // Dispatches the keyboard short cut Shift+Search+<arrow key>
-  // outside the event rewritting flow.
-  void DispatchShiftSearchKeyEvent(const ui::KeyboardCode third_key);
-
-  // Binds DispatchShiftSearchKeyEvent to a specific third key.
-  base::Closure BindShiftSearchKeyEvent(const ui::KeyboardCode third_key);
-
   // Dispatches a single key with the given flags.
   void DispatchKeyWithFlags(const ui::KeyboardCode key, int flags);
 
@@ -414,10 +412,6 @@ class UI_CHROMEOS_EXPORT TouchExplorationController
   // Gets enum name from integer value.
   const char* EnumStateToString(State state);
 
-  // Maps each single/multi finger swipe to the function that dispatches
-  // the corresponding key events.
-  void InitializeSwipeGestureMaps();
-
   aura::Window* root_window_;
 
   // Handles volume control. Not owned.
@@ -480,13 +474,6 @@ class UI_CHROMEOS_EXPORT TouchExplorationController
   // When touch_exploration_controller gets time relative to real time during
   // testing, this clock is set to the simulated clock and used.
   base::TickClock* tick_clock_;
-
-  // Maps the number of fingers in a swipe to the resulting functions that
-  // dispatch key events.
-  std::map<int, base::Closure> left_swipe_gestures_;
-  std::map<int, base::Closure> right_swipe_gestures_;
-  std::map<int, base::Closure> up_swipe_gestures_;
-  std::map<int, base::Closure> down_swipe_gestures_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchExplorationController);
 };
