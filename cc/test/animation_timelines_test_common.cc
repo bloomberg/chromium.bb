@@ -30,6 +30,8 @@ void TestLayer::ClearMutatedProperties() {
   filters_ = FilterOperations();
   scroll_offset_ = gfx::ScrollOffset();
   transform_is_animating_ = false;
+  has_potential_opacity_animation_ = false;
+  opacity_is_currently_animating_ = false;
 
   for (int i = 0; i <= TargetProperty::LAST_TARGET_PROPERTY; ++i)
     mutated_properties_[i] = false;
@@ -130,6 +132,28 @@ void TestHostClient::ElementTransformIsPotentiallyAnimatingChanged(
     layer->set_transform_is_animating(is_animating);
 }
 
+void TestHostClient::ElementOpacityIsAnimatingChanged(
+    ElementId element_id,
+    ElementListType list_type,
+    AnimationChangeType change_type,
+    bool is_animating) {
+  TestLayer* layer = FindTestLayer(element_id, list_type);
+  if (layer) {
+    switch (change_type) {
+      case AnimationChangeType::POTENTIAL:
+        layer->set_has_potential_opacity_animation(is_animating);
+        break;
+      case AnimationChangeType::RUNNING:
+        layer->set_opacity_is_currently_animating(is_animating);
+        break;
+      case AnimationChangeType::BOTH:
+        layer->set_has_potential_opacity_animation(is_animating);
+        layer->set_opacity_is_currently_animating(is_animating);
+        break;
+    }
+  }
+}
+
 void TestHostClient::SetScrollOffsetForAnimation(
     const gfx::ScrollOffset& scroll_offset) {
   scroll_offset_ = scroll_offset;
@@ -207,6 +231,22 @@ bool TestHostClient::GetTransformIsAnimating(ElementId element_id,
   TestLayer* layer = FindTestLayer(element_id, list_type);
   EXPECT_TRUE(layer);
   return layer->transform_is_animating();
+}
+
+bool TestHostClient::GetOpacityIsCurrentlyAnimating(
+    ElementId element_id,
+    ElementListType list_type) const {
+  TestLayer* layer = FindTestLayer(element_id, list_type);
+  EXPECT_TRUE(layer);
+  return layer->opacity_is_currently_animating();
+}
+
+bool TestHostClient::GetHasPotentialOpacityAnimation(
+    ElementId element_id,
+    ElementListType list_type) const {
+  TestLayer* layer = FindTestLayer(element_id, list_type);
+  EXPECT_TRUE(layer);
+  return layer->has_potential_opacity_animation();
 }
 
 void TestHostClient::ExpectFilterPropertyMutated(ElementId element_id,

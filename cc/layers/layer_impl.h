@@ -96,6 +96,8 @@ class CC_EXPORT LayerImpl {
   void OnTransformAnimated(const gfx::Transform& transform);
   void OnScrollOffsetAnimated(const gfx::ScrollOffset& scroll_offset);
   void OnTransformIsPotentiallyAnimatingChanged(bool is_animating);
+  void OnOpacityIsCurrentlyAnimatingChanged(bool is_currently_animating);
+  void OnOpacityIsPotentiallyAnimatingChanged(bool has_potential_animation);
   bool IsActive() const;
   bool OpacityCanAnimateOnImplThread() const { return false; }
 

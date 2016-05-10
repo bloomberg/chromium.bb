@@ -1356,6 +1356,28 @@ void LayerTreeHost::ElementTransformIsPotentiallyAnimatingChanged(
   layer->OnTransformIsPotentiallyAnimatingChanged(is_animating);
 }
 
+void LayerTreeHost::ElementOpacityIsAnimatingChanged(
+    ElementId element_id,
+    ElementListType list_type,
+    AnimationChangeType change_type,
+    bool is_animating) {
+  Layer* layer = LayerById(element_id);
+  if (layer) {
+    switch (change_type) {
+      case AnimationChangeType::POTENTIAL:
+        layer->OnOpacityIsPotentiallyAnimatingChanged(is_animating);
+        break;
+      case AnimationChangeType::RUNNING:
+        layer->OnOpacityIsCurrentlyAnimatingChanged(is_animating);
+        break;
+      case AnimationChangeType::BOTH:
+        layer->OnOpacityIsPotentiallyAnimatingChanged(is_animating);
+        layer->OnOpacityIsCurrentlyAnimatingChanged(is_animating);
+        break;
+    }
+  }
+}
+
 gfx::ScrollOffset LayerTreeHost::GetScrollOffsetForAnimation(
     ElementId element_id) const {
   Layer* layer = LayerById(element_id);

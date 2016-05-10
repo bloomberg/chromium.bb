@@ -285,7 +285,8 @@ struct CC_EXPORT EffectNodeData {
   // TODO(jaydasika) : Delete this after implementation of
   // SetHideLayerAndSubtree is cleaned up. (crbug.com/595843)
   bool subtree_hidden;
-  bool has_animated_opacity;
+  bool has_potential_opacity_animation;
+  bool is_currently_animating_opacity;
   // We need to track changes to effects on the compositor to compute damage
   // rect.
   bool effect_changed;

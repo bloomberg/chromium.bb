@@ -18,6 +18,8 @@ using ElementId = int;
 
 enum class ElementListType { ACTIVE, PENDING };
 
+enum class AnimationChangeType { POTENTIAL, RUNNING, BOTH };
+
 class MutatorHostClient {
  public:
   virtual bool IsElementInList(ElementId element_id,
@@ -44,6 +46,11 @@ class MutatorHostClient {
       ElementId element_id,
       ElementListType list_type,
       bool is_animating) = 0;
+
+  virtual void ElementOpacityIsAnimatingChanged(ElementId element_id,
+                                                ElementListType list_type,
+                                                AnimationChangeType change_type,
+                                                bool is_animating) = 0;
 
   virtual void ScrollOffsetAnimationFinished() = 0;
   virtual gfx::ScrollOffset GetScrollOffsetForAnimation(

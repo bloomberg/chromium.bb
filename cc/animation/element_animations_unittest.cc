@@ -2925,6 +2925,224 @@ TEST_F(ElementAnimationsTest,
       client_.GetTransformIsAnimating(element_id_, ElementListType::ACTIVE));
 }
 
+TEST_F(ElementAnimationsTest, ObserverNotifiedWhenOpacityAnimationChanges) {
+  CreateTestLayer(true, true);
+  AttachTimelinePlayerLayer();
+  CreateImplTimelineAndPlayer();
+
+  scoped_refptr<ElementAnimations> animations = element_animations();
+  scoped_refptr<ElementAnimations> animations_impl = element_animations_impl();
+
+  auto events = host_impl_->CreateEvents();
+
+  EXPECT_FALSE(client_.GetHasPotentialOpacityAnimation(
+      element_id_, ElementListType::ACTIVE));
+  EXPECT_FALSE(client_.GetOpacityIsCurrentlyAnimating(element_id_,
+                                                      ElementListType::ACTIVE));
+  EXPECT_FALSE(client_impl_.GetHasPotentialOpacityAnimation(
+      element_id_, ElementListType::PENDING));
+  EXPECT_FALSE(client_impl_.GetOpacityIsCurrentlyAnimating(
+      element_id_, ElementListType::PENDING));
+  EXPECT_FALSE(client_impl_.GetHasPotentialOpacityAnimation(
+      element_id_, ElementListType::ACTIVE));
+  EXPECT_FALSE(client_impl_.GetOpacityIsCurrentlyAnimating(
+      element_id_, ElementListType::ACTIVE));
+
+  // Case 1: An animation that's allowed to run until its finish point.
+  AddOpacityTransitionToElementAnimations(animations.get(), 1.0, 0.f, 1.f,
+                                          false /*use_timing_function*/);
+  EXPECT_TRUE(client_.GetHasPotentialOpacityAnimation(element_id_,
+                                                      ElementListType::ACTIVE));
+  EXPECT_TRUE(client_.GetOpacityIsCurrentlyAnimating(element_id_,
+                                                     ElementListType::ACTIVE));
+
+  animations->PushPropertiesTo(animations_impl.get());
+  EXPECT_TRUE(client_impl_.GetHasPotentialOpacityAnimation(
+      element_id_, ElementListType::PENDING));
+  EXPECT_TRUE(client_impl_.GetOpacityIsCurrentlyAnimating(
+      element_id_, ElementListType::PENDING));
+  EXPECT_FALSE(client_impl_.GetHasPotentialOpacityAnimation(
+      element_id_, ElementListType::ACTIVE));
+  EXPECT_FALSE(client_impl_.GetOpacityIsCurrentlyAnimating(
+      element_id_, ElementListType::ACTIVE));
+
+  animations_impl->ActivateAnimations();
+  EXPECT_TRUE(client_impl_.GetHasPotentialOpacityAnimation(
+      element_id_, ElementListType::PENDING));
+  EXPECT_TRUE(client_impl_.GetOpacityIsCurrentlyAnimating(
+      element_id_, ElementListType::PENDING));
+  EXPECT_TRUE(client_impl_.GetHasPotentialOpacityAnimation(
+      element_id_, ElementListType::ACTIVE));
+  EXPECT_TRUE(client_impl_.GetOpacityIsCurrentlyAnimating(
+      element_id_, ElementListType::ACTIVE));
+
+  animations_impl->Animate(kInitialTickTime);
+  animations_impl->UpdateState(true, events.get());
+
+  animations->NotifyAnimationStarted(events->events_[0]);
+  events->events_.clear();
+
+  // Finish the animation.
+  animations->Animate(kInitialTickTime + TimeDelta::FromMilliseconds(1000));
+  animations->UpdateState(true, nullptr);
+  EXPECT_FALSE(client_.GetHasPotentialOpacityAnimation(
+      element_id_, ElementListType::ACTIVE));
+  EXPECT_FALSE(client_.GetOpacityIsCurrentlyAnimating(element_id_,
+                                                      ElementListType::ACTIVE));
+
+  animations->PushPropertiesTo(animations_impl.get());
+
+  // animations_impl hasn't yet ticked at/past the end of the animation.
+  EXPECT_TRUE(client_impl_.GetHasPotentialOpacityAnimation(
+      element_id_, ElementListType::PENDING));
+  EXPECT_TRUE(client_impl_.GetOpacityIsCurrentlyAnimating(
+      element_id_, ElementListType::PENDING));
+  EXPECT_TRUE(client_impl_.GetHasPotentialOpacityAnimation(
+      element_id_, ElementListType::ACTIVE));
+  EXPECT_TRUE(client_impl_.GetOpacityIsCurrentlyAnimating(
+      element_id_, ElementListType::ACTIVE));
+
+  animations_impl->Animate(kInitialTickTime +
+                           TimeDelta::FromMilliseconds(1000));
+  animations_impl->UpdateState(true, events.get());
+  EXPECT_FALSE(client_impl_.GetHasPotentialOpacityAnimation(
+      element_id_, ElementListType::PENDING));
+  EXPECT_FALSE(client_impl_.GetOpacityIsCurrentlyAnimating(
+      element_id_, ElementListType::PENDING));
+  EXPECT_FALSE(client_impl_.GetHasPotentialOpacityAnimation(
+      element_id_, ElementListType::ACTIVE));
+  EXPECT_FALSE(client_impl_.GetOpacityIsCurrentlyAnimating(
+      element_id_, ElementListType::ACTIVE));
+
+  // Case 2: An animation that's removed before it finishes.
+  int animation_id = AddOpacityTransitionToElementAnimations(
+      animations.get(), 10.0, 0.f, 1.f, false /*use_timing_function*/);
+  EXPECT_TRUE(client_.GetHasPotentialOpacityAnimation(element_id_,
+                                                      ElementListType::ACTIVE));
+  EXPECT_TRUE(client_.GetOpacityIsCurrentlyAnimating(element_id_,
+                                                     ElementListType::ACTIVE));
+
+  animations->PushPropertiesTo(animations_impl.get());
+  EXPECT_TRUE(client_impl_.GetHasPotentialOpacityAnimation(
+      element_id_, ElementListType::PENDING));
+  EXPECT_TRUE(client_impl_.GetOpacityIsCurrentlyAnimating(
+      element_id_, ElementListType::PENDING));
+  EXPECT_FALSE(client_impl_.GetHasPotentialOpacityAnimation(
+      element_id_, ElementListType::ACTIVE));
+  EXPECT_FALSE(client_impl_.GetOpacityIsCurrentlyAnimating(
+      element_id_, ElementListType::ACTIVE));
+
+  animations_impl->ActivateAnimations();
+  EXPECT_TRUE(client_impl_.GetHasPotentialOpacityAnimation(
+      element_id_, ElementListType::ACTIVE));
+  EXPECT_TRUE(client_impl_.GetOpacityIsCurrentlyAnimating(
+      element_id_, ElementListType::ACTIVE));
+
+  animations_impl->Animate(kInitialTickTime +
+                           TimeDelta::FromMilliseconds(2000));
+  animations_impl->UpdateState(true, events.get());
+
+  animations->NotifyAnimationStarted(events->events_[0]);
+  events->events_.clear();
+
+  animations->RemoveAnimation(animation_id);
+  EXPECT_FALSE(client_.GetHasPotentialOpacityAnimation(
+      element_id_, ElementListType::ACTIVE));
+  EXPECT_FALSE(client_.GetOpacityIsCurrentlyAnimating(element_id_,
+                                                      ElementListType::ACTIVE));
+
+  animations->PushPropertiesTo(animations_impl.get());
+  EXPECT_FALSE(client_impl_.GetHasPotentialOpacityAnimation(
+      element_id_, ElementListType::PENDING));
+  EXPECT_FALSE(client_impl_.GetOpacityIsCurrentlyAnimating(
+      element_id_, ElementListType::PENDING));
+  EXPECT_TRUE(client_impl_.GetHasPotentialOpacityAnimation(
+      element_id_, ElementListType::ACTIVE));
+  EXPECT_TRUE(client_impl_.GetOpacityIsCurrentlyAnimating(
+      element_id_, ElementListType::ACTIVE));
+
+  animations_impl->ActivateAnimations();
+  EXPECT_FALSE(client_impl_.GetHasPotentialOpacityAnimation(
+      element_id_, ElementListType::ACTIVE));
+  EXPECT_FALSE(client_impl_.GetOpacityIsCurrentlyAnimating(
+      element_id_, ElementListType::ACTIVE));
+
+  // Case 3: An animation that's aborted before it finishes.
+  animation_id = AddOpacityTransitionToElementAnimations(
+      animations.get(), 10.0, 0.f, 0.5f, false /*use_timing_function*/);
+  EXPECT_TRUE(client_.GetHasPotentialOpacityAnimation(element_id_,
+                                                      ElementListType::ACTIVE));
+  EXPECT_TRUE(client_.GetOpacityIsCurrentlyAnimating(element_id_,
+                                                     ElementListType::ACTIVE));
+
+  animations->PushPropertiesTo(animations_impl.get());
+  EXPECT_TRUE(client_impl_.GetHasPotentialOpacityAnimation(
+      element_id_, ElementListType::PENDING));
+  EXPECT_TRUE(client_impl_.GetOpacityIsCurrentlyAnimating(
+      element_id_, ElementListType::PENDING));
+  EXPECT_FALSE(client_impl_.GetHasPotentialOpacityAnimation(
+      element_id_, ElementListType::ACTIVE));
+  EXPECT_FALSE(client_impl_.GetOpacityIsCurrentlyAnimating(
+      element_id_, ElementListType::ACTIVE));
+
+  animations_impl->ActivateAnimations();
+  EXPECT_TRUE(client_impl_.GetHasPotentialOpacityAnimation(
+      element_id_, ElementListType::ACTIVE));
+  EXPECT_TRUE(client_impl_.GetOpacityIsCurrentlyAnimating(
+      element_id_, ElementListType::ACTIVE));
+
+  animations_impl->Animate(kInitialTickTime +
+                           TimeDelta::FromMilliseconds(2000));
+  animations_impl->UpdateState(true, events.get());
+
+  animations->NotifyAnimationStarted(events->events_[0]);
+  events->events_.clear();
+
+  animations_impl->AbortAnimations(TargetProperty::OPACITY);
+  EXPECT_FALSE(client_impl_.GetHasPotentialOpacityAnimation(
+      element_id_, ElementListType::PENDING));
+  EXPECT_FALSE(client_impl_.GetOpacityIsCurrentlyAnimating(
+      element_id_, ElementListType::PENDING));
+  EXPECT_FALSE(client_impl_.GetHasPotentialOpacityAnimation(
+      element_id_, ElementListType::ACTIVE));
+  EXPECT_FALSE(client_impl_.GetOpacityIsCurrentlyAnimating(
+      element_id_, ElementListType::ACTIVE));
+
+  animations_impl->Animate(kInitialTickTime +
+                           TimeDelta::FromMilliseconds(4000));
+  animations_impl->UpdateState(true, events.get());
+
+  animations->NotifyAnimationAborted(events->events_[0]);
+  EXPECT_FALSE(client_.GetHasPotentialOpacityAnimation(
+      element_id_, ElementListType::ACTIVE));
+  EXPECT_FALSE(client_.GetOpacityIsCurrentlyAnimating(element_id_,
+                                                      ElementListType::ACTIVE));
+
+  // Case 4 : An animation that's not in effect.
+  animation_id = AddOpacityTransitionToElementAnimations(
+      animations.get(), 1.0, 0.f, 0.5f, false /*use_timing_function*/);
+  animations->GetAnimationById(animation_id)
+      ->set_time_offset(base::TimeDelta::FromMilliseconds(-10000));
+  animations->GetAnimationById(animation_id)
+      ->set_fill_mode(Animation::FILL_MODE_NONE);
+
+  animations->PushPropertiesTo(animations_impl.get());
+  EXPECT_TRUE(client_impl_.GetHasPotentialOpacityAnimation(
+      element_id_, ElementListType::PENDING));
+  EXPECT_FALSE(client_impl_.GetOpacityIsCurrentlyAnimating(
+      element_id_, ElementListType::PENDING));
+  EXPECT_FALSE(client_impl_.GetHasPotentialOpacityAnimation(
+      element_id_, ElementListType::ACTIVE));
+  EXPECT_FALSE(client_impl_.GetOpacityIsCurrentlyAnimating(
+      element_id_, ElementListType::ACTIVE));
+
+  animations_impl->ActivateAnimations();
+  EXPECT_TRUE(client_impl_.GetHasPotentialOpacityAnimation(
+      element_id_, ElementListType::ACTIVE));
+  EXPECT_FALSE(client_impl_.GetOpacityIsCurrentlyAnimating(
+      element_id_, ElementListType::ACTIVE));
+}
+
 TEST_F(ElementAnimationsTest, ClippedOpacityValues) {
   CreateTestLayer(false, false);
   AttachTimelinePlayerLayer();

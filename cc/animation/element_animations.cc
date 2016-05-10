@@ -35,7 +35,11 @@ ElementAnimations::ElementAnimations()
       needs_to_start_animations_(false),
       scroll_offset_animation_was_interrupted_(false),
       potentially_animating_transform_for_active_elements_(false),
-      potentially_animating_transform_for_pending_elements_(false) {}
+      potentially_animating_transform_for_pending_elements_(false),
+      currently_running_opacity_animation_for_active_elements_(false),
+      currently_running_opacity_animation_for_pending_elements_(false),
+      potentially_animating_opacity_for_active_elements_(false),
+      potentially_animating_opacity_for_pending_elements_(false) {}
 
 ElementAnimations::~ElementAnimations() {}
 
@@ -67,12 +71,18 @@ void ElementAnimations::InitAffectedElementTypes() {
 void ElementAnimations::ClearAffectedElementTypes() {
   DCHECK(animation_host_);
 
-  if (has_element_in_active_list())
+  if (has_element_in_active_list()) {
     OnTransformIsPotentiallyAnimatingChanged(ElementListType::ACTIVE, false);
+    OnOpacityIsAnimatingChanged(ElementListType::ACTIVE,
+                                AnimationChangeType::BOTH, false);
+  }
   set_has_element_in_active_list(false);
 
-  if (has_element_in_pending_list())
+  if (has_element_in_pending_list()) {
     OnTransformIsPotentiallyAnimatingChanged(ElementListType::PENDING, false);
+    OnOpacityIsAnimatingChanged(ElementListType::PENDING,
+                                AnimationChangeType::BOTH, false);
+  }
   set_has_element_in_pending_list(false);
 
   animation_host_->DidDeactivateElementAnimations(this);
@@ -138,11 +148,15 @@ void ElementAnimations::PushPropertiesTo(
 void ElementAnimations::AddAnimation(std::unique_ptr<Animation> animation) {
   bool added_transform_animation =
       animation->target_property() == TargetProperty::TRANSFORM;
+  bool added_opacity_animation =
+      animation->target_property() == TargetProperty::OPACITY;
   animations_.push_back(std::move(animation));
   needs_to_start_animations_ = true;
   UpdateActivation(NORMAL_ACTIVATION);
   if (added_transform_animation)
     UpdatePotentiallyAnimatingTransform();
+  if (added_opacity_animation)
+    UpdateAnimatingOpacity();
 }
 
 void ElementAnimations::Animate(base::TimeTicks monotonic_time) {
@@ -154,6 +168,7 @@ void ElementAnimations::Animate(base::TimeTicks monotonic_time) {
     StartAnimations(monotonic_time);
   TickAnimations(monotonic_time);
   last_tick_time_ = monotonic_time;
+  UpdateAnimatingOpacity();
 }
 
 void ElementAnimations::AccumulatePropertyUpdates(
@@ -251,11 +266,15 @@ void ElementAnimations::UpdateState(bool start_ready_animations,
 
 void ElementAnimations::ActivateAnimations() {
   bool changed_transform_animation = false;
+  bool changed_opacity_animation = false;
   for (size_t i = 0; i < animations_.size(); ++i) {
     if (animations_[i]->affects_active_elements() !=
-            animations_[i]->affects_pending_elements() &&
-        animations_[i]->target_property() == TargetProperty::TRANSFORM)
-      changed_transform_animation = true;
+        animations_[i]->affects_pending_elements()) {
+      if (animations_[i]->target_property() == TargetProperty::TRANSFORM)
+        changed_transform_animation = true;
+      else if (animations_[i]->target_property() == TargetProperty::OPACITY)
+        changed_opacity_animation = true;
+    }
     animations_[i]->set_affects_active_elements(
         animations_[i]->affects_pending_elements());
   }
@@ -270,6 +289,8 @@ void ElementAnimations::ActivateAnimations() {
   UpdateActivation(NORMAL_ACTIVATION);
   if (changed_transform_animation)
     UpdatePotentiallyAnimatingTransform();
+  if (changed_opacity_animation)
+    UpdateAnimatingOpacity();
 }
 
 void ElementAnimations::NotifyAnimationStarted(const AnimationEvent& event) {
@@ -326,6 +347,7 @@ void ElementAnimations::NotifyAnimationTakeover(const AnimationEvent& event) {
 
 void ElementAnimations::NotifyAnimationAborted(const AnimationEvent& event) {
   bool aborted_transform_animation = false;
+  bool aborted_opacity_animation = false;
   for (size_t i = 0; i < animations_.size(); ++i) {
     if (animations_[i]->group() == event.group_id &&
         animations_[i]->target_property() == event.target_property) {
@@ -335,11 +357,15 @@ void ElementAnimations::NotifyAnimationAborted(const AnimationEvent& event) {
                                     event.group_id);
       if (event.target_property == TargetProperty::TRANSFORM)
         aborted_transform_animation = true;
+      else if (event.target_property == TargetProperty::OPACITY)
+        aborted_opacity_animation = true;
       break;
     }
   }
   if (aborted_transform_animation)
     UpdatePotentiallyAnimatingTransform();
+  if (aborted_opacity_animation)
+    UpdateAnimatingOpacity();
 }
 
 void ElementAnimations::NotifyAnimationPropertyUpdate(
@@ -597,6 +623,7 @@ static bool IsCompleted(
 void ElementAnimations::RemoveAnimationsCompletedOnMainThread(
     ElementAnimations* element_animations_impl) const {
   bool removed_transform_animation = false;
+  bool removed_opacity_animation = false;
   // Animations removed on the main thread should no longer affect pending
   // elements, and should stop affecting active elements after the next call
   // to ActivateAnimations. If already WAITING_FOR_DELETION, they can be removed
@@ -607,6 +634,8 @@ void ElementAnimations::RemoveAnimationsCompletedOnMainThread(
       animation->set_affects_pending_elements(false);
       if (animation->target_property() == TargetProperty::TRANSFORM)
         removed_transform_animation = true;
+      else if (animation->target_property() == TargetProperty::OPACITY)
+        removed_opacity_animation = true;
     }
   }
   auto affects_active_only_and_is_waiting_for_deletion =
@@ -621,6 +650,8 @@ void ElementAnimations::RemoveAnimationsCompletedOnMainThread(
 
   if (removed_transform_animation)
     element_animations_impl->UpdatePotentiallyAnimatingTransform();
+  if (removed_opacity_animation)
+    element_animations_impl->UpdateAnimatingOpacity();
 }
 
 void ElementAnimations::PushPropertiesToImplThread(
@@ -763,17 +794,21 @@ void ElementAnimations::PromoteStartedAnimations(base::TimeTicks monotonic_time,
 
 void ElementAnimations::MarkFinishedAnimations(base::TimeTicks monotonic_time) {
   bool finished_transform_animation = false;
+  bool finished_opacity_animation = false;
   for (size_t i = 0; i < animations_.size(); ++i) {
     if (!animations_[i]->is_finished() &&
         animations_[i]->IsFinishedAt(monotonic_time)) {
       animations_[i]->SetRunState(Animation::FINISHED, monotonic_time);
-      if (animations_[i]->target_property() == TargetProperty::TRANSFORM) {
+      if (animations_[i]->target_property() == TargetProperty::TRANSFORM)
         finished_transform_animation = true;
-      }
+      else if (animations_[i]->target_property() == TargetProperty::OPACITY)
+        finished_opacity_animation = true;
     }
   }
   if (finished_transform_animation)
     UpdatePotentiallyAnimatingTransform();
+  if (finished_opacity_animation)
+    UpdateAnimatingOpacity();
 }
 
 void ElementAnimations::MarkAnimationsForDeletion(
@@ -905,6 +940,7 @@ void ElementAnimations::MarkAnimationsForDeletion(
 void ElementAnimations::MarkAbortedAnimationsForDeletion(
     ElementAnimations* element_animations_impl) const {
   bool aborted_transform_animation = false;
+  bool aborted_opacity_animation = false;
   auto& animations_impl = element_animations_impl->animations_;
   for (const auto& animation_impl : animations_impl) {
     // If the animation has been aborted on the main thread, mark it for
@@ -915,15 +951,18 @@ void ElementAnimations::MarkAbortedAnimationsForDeletion(
                                     element_animations_impl->last_tick_time_);
         animation->SetRunState(Animation::WAITING_FOR_DELETION,
                                last_tick_time_);
-        if (animation_impl->target_property() == TargetProperty::TRANSFORM) {
+        if (animation_impl->target_property() == TargetProperty::TRANSFORM)
           aborted_transform_animation = true;
-        }
+        else if (animation_impl->target_property() == TargetProperty::OPACITY)
+          aborted_opacity_animation = true;
       }
     }
   }
 
   if (aborted_transform_animation)
     element_animations_impl->UpdatePotentiallyAnimatingTransform();
+  if (aborted_opacity_animation)
+    element_animations_impl->UpdateAnimatingOpacity();
 }
 
 void ElementAnimations::PurgeAnimationsMarkedForDeletion() {
@@ -1077,6 +1116,53 @@ void ElementAnimations::NotifyClientTransformIsPotentiallyAnimatingChanged(
         potentially_animating_transform_for_pending_elements_);
 }
 
+void ElementAnimations::NotifyClientOpacityAnimationChanged(
+    bool notify_active_elements_about_potential_animation,
+    bool notify_pending_elements_about_potential_animation,
+    bool notify_active_elements_about_running_animation,
+    bool notify_pending_elements_about_running_animation) {
+  bool notify_active_elements_about_potential_and_running_animation =
+      notify_active_elements_about_potential_animation &&
+      notify_active_elements_about_running_animation;
+  bool notify_pending_elements_about_potential_and_running_animation =
+      notify_pending_elements_about_potential_animation &&
+      notify_pending_elements_about_running_animation;
+  if (has_element_in_active_list()) {
+    if (notify_active_elements_about_potential_and_running_animation) {
+      DCHECK_EQ(potentially_animating_opacity_for_active_elements_,
+                currently_running_opacity_animation_for_active_elements_);
+      OnOpacityIsAnimatingChanged(
+          ElementListType::ACTIVE, AnimationChangeType::BOTH,
+          potentially_animating_opacity_for_active_elements_);
+    } else if (notify_active_elements_about_potential_animation) {
+      OnOpacityIsAnimatingChanged(
+          ElementListType::ACTIVE, AnimationChangeType::POTENTIAL,
+          potentially_animating_opacity_for_active_elements_);
+    } else if (notify_active_elements_about_running_animation) {
+      OnOpacityIsAnimatingChanged(
+          ElementListType::ACTIVE, AnimationChangeType::RUNNING,
+          currently_running_opacity_animation_for_active_elements_);
+    }
+  }
+  if (has_element_in_pending_list()) {
+    if (notify_pending_elements_about_potential_and_running_animation) {
+      DCHECK_EQ(potentially_animating_opacity_for_pending_elements_,
+                currently_running_opacity_animation_for_pending_elements_);
+      OnOpacityIsAnimatingChanged(
+          ElementListType::PENDING, AnimationChangeType::BOTH,
+          potentially_animating_opacity_for_pending_elements_);
+    } else if (notify_pending_elements_about_potential_animation) {
+      OnOpacityIsAnimatingChanged(
+          ElementListType::PENDING, AnimationChangeType::POTENTIAL,
+          potentially_animating_opacity_for_pending_elements_);
+    } else if (notify_pending_elements_about_running_animation) {
+      OnOpacityIsAnimatingChanged(
+          ElementListType::PENDING, AnimationChangeType::RUNNING,
+          currently_running_opacity_animation_for_pending_elements_);
+    }
+  }
+}
+
 void ElementAnimations::UpdatePotentiallyAnimatingTransform() {
   bool was_potentially_animating_transform_for_active_elements =
       potentially_animating_transform_for_active_elements_;
@@ -1108,6 +1194,65 @@ void ElementAnimations::UpdatePotentiallyAnimatingTransform() {
 
   NotifyClientTransformIsPotentiallyAnimatingChanged(
       changed_for_active_elements, changed_for_pending_elements);
+}
+
+void ElementAnimations::UpdateAnimatingOpacity() {
+  bool was_currently_running_opacity_animation_for_active_elements =
+      currently_running_opacity_animation_for_active_elements_;
+  bool was_currently_running_opacity_animation_for_pending_elements =
+      currently_running_opacity_animation_for_pending_elements_;
+  bool was_potentially_animating_opacity_for_active_elements =
+      potentially_animating_opacity_for_active_elements_;
+  bool was_potentially_animating_opacity_for_pending_elements =
+      potentially_animating_opacity_for_pending_elements_;
+
+  DCHECK(was_potentially_animating_opacity_for_active_elements ||
+         !was_currently_running_opacity_animation_for_active_elements);
+  DCHECK(was_potentially_animating_opacity_for_pending_elements ||
+         !was_currently_running_opacity_animation_for_pending_elements);
+  currently_running_opacity_animation_for_active_elements_ = false;
+  currently_running_opacity_animation_for_pending_elements_ = false;
+  potentially_animating_opacity_for_active_elements_ = false;
+  potentially_animating_opacity_for_pending_elements_ = false;
+
+  for (const auto& animation : animations_) {
+    if (!animation->is_finished() &&
+        animation->target_property() == TargetProperty::OPACITY) {
+      potentially_animating_opacity_for_active_elements_ |=
+          animation->affects_active_elements();
+      potentially_animating_opacity_for_pending_elements_ |=
+          animation->affects_pending_elements();
+      currently_running_opacity_animation_for_active_elements_ =
+          potentially_animating_opacity_for_active_elements_ &&
+          animation->InEffect(last_tick_time_);
+      currently_running_opacity_animation_for_pending_elements_ =
+          potentially_animating_opacity_for_pending_elements_ &&
+          animation->InEffect(last_tick_time_);
+    }
+  }
+
+  bool potentially_animating_changed_for_active_elements =
+      was_potentially_animating_opacity_for_active_elements !=
+      potentially_animating_opacity_for_active_elements_;
+  bool potentially_animating_changed_for_pending_elements =
+      was_potentially_animating_opacity_for_pending_elements !=
+      potentially_animating_opacity_for_pending_elements_;
+  bool currently_running_animation_changed_for_active_elements =
+      was_currently_running_opacity_animation_for_active_elements !=
+      currently_running_opacity_animation_for_active_elements_;
+  bool currently_running_animation_changed_for_pending_elements =
+      was_currently_running_opacity_animation_for_pending_elements !=
+      currently_running_opacity_animation_for_pending_elements_;
+  if (!potentially_animating_changed_for_active_elements &&
+      !potentially_animating_changed_for_pending_elements &&
+      !currently_running_animation_changed_for_active_elements &&
+      !currently_running_animation_changed_for_pending_elements)
+    return;
+  NotifyClientOpacityAnimationChanged(
+      potentially_animating_changed_for_active_elements,
+      potentially_animating_changed_for_pending_elements,
+      currently_running_animation_changed_for_active_elements,
+      currently_running_animation_changed_for_pending_elements);
 }
 
 bool ElementAnimations::HasActiveAnimation() const {
@@ -1164,6 +1309,7 @@ void ElementAnimations::PauseAnimation(int animation_id,
 
 void ElementAnimations::RemoveAnimation(int animation_id) {
   bool removed_transform_animation = false;
+  bool removed_opacity_animation = false;
   // Since we want to use the animations that we're going to remove, we need to
   // use a stable_parition here instead of remove_if. Remove_if leaves the
   // removed items in an unspecified state.
@@ -1178,6 +1324,9 @@ void ElementAnimations::RemoveAnimation(int animation_id) {
     } else if ((*it)->target_property() == TargetProperty::TRANSFORM &&
                !(*it)->is_finished()) {
       removed_transform_animation = true;
+    } else if ((*it)->target_property() == TargetProperty::OPACITY &&
+               !(*it)->is_finished()) {
+      removed_opacity_animation = true;
     }
   }
 
@@ -1185,19 +1334,26 @@ void ElementAnimations::RemoveAnimation(int animation_id) {
   UpdateActivation(NORMAL_ACTIVATION);
   if (removed_transform_animation)
     UpdatePotentiallyAnimatingTransform();
+  if (removed_opacity_animation)
+    UpdateAnimatingOpacity();
 }
 
 void ElementAnimations::AbortAnimation(int animation_id) {
   bool aborted_transform_animation = false;
+  bool aborted_opacity_animation = false;
   if (Animation* animation = GetAnimationById(animation_id)) {
     if (!animation->is_finished()) {
       animation->SetRunState(Animation::ABORTED, last_tick_time_);
       if (animation->target_property() == TargetProperty::TRANSFORM)
         aborted_transform_animation = true;
+      else if (animation->target_property() == TargetProperty::OPACITY)
+        aborted_opacity_animation = true;
     }
   }
   if (aborted_transform_animation)
     UpdatePotentiallyAnimatingTransform();
+  if (aborted_opacity_animation)
+    UpdateAnimatingOpacity();
 }
 
 void ElementAnimations::AbortAnimations(TargetProperty::Type target_property,
@@ -1206,6 +1362,7 @@ void ElementAnimations::AbortAnimations(TargetProperty::Type target_property,
     DCHECK(target_property == TargetProperty::SCROLL_OFFSET);
 
   bool aborted_transform_animation = false;
+  bool aborted_opacity_animation = false;
   for (size_t i = 0; i < animations_.size(); ++i) {
     if (animations_[i]->target_property() == target_property &&
         !animations_[i]->is_finished()) {
@@ -1219,10 +1376,14 @@ void ElementAnimations::AbortAnimations(TargetProperty::Type target_property,
       }
       if (target_property == TargetProperty::TRANSFORM)
         aborted_transform_animation = true;
+      else if (target_property == TargetProperty::OPACITY)
+        aborted_opacity_animation = true;
     }
   }
   if (aborted_transform_animation)
     UpdatePotentiallyAnimatingTransform();
+  if (aborted_opacity_animation)
+    UpdateAnimatingOpacity();
 }
 
 Animation* ElementAnimations::GetAnimation(
@@ -1296,6 +1457,19 @@ void ElementAnimations::OnTransformIsPotentiallyAnimatingChanged(
       ->mutator_host_client()
       ->ElementTransformIsPotentiallyAnimatingChanged(element_id(), list_type,
                                                       is_animating);
+}
+
+void ElementAnimations::OnOpacityIsAnimatingChanged(
+    ElementListType list_type,
+    AnimationChangeType change_type,
+    bool is_animating) {
+  if (!element_id())
+    return;
+  DCHECK(animation_host());
+  if (animation_host()->mutator_host_client()) {
+    animation_host()->mutator_host_client()->ElementOpacityIsAnimatingChanged(
+        element_id(), list_type, change_type, is_animating);
+  }
 }
 
 void ElementAnimations::NotifyPlayersAnimationStarted(

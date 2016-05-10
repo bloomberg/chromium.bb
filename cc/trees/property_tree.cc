@@ -500,7 +500,8 @@ EffectNodeData::EffectNodeData()
       double_sided(false),
       is_drawn(true),
       subtree_hidden(false),
-      has_animated_opacity(false),
+      has_potential_opacity_animation(false),
+      is_currently_animating_opacity(false),
       effect_changed(false),
       num_copy_requests_in_subtree(0),
       transform_id(0),
@@ -518,7 +519,10 @@ bool EffectNodeData::operator==(const EffectNodeData& other) const {
          hidden_by_backface_visibility == other.hidden_by_backface_visibility &&
          double_sided == other.double_sided && is_drawn == other.is_drawn &&
          subtree_hidden == other.subtree_hidden &&
-         has_animated_opacity == other.has_animated_opacity &&
+         has_potential_opacity_animation ==
+             other.has_potential_opacity_animation &&
+         is_currently_animating_opacity ==
+             other.is_currently_animating_opacity &&
          effect_changed == other.effect_changed &&
          num_copy_requests_in_subtree == other.num_copy_requests_in_subtree &&
          transform_id == other.transform_id && clip_id == other.clip_id &&
@@ -537,7 +541,8 @@ void EffectNodeData::ToProtobuf(proto::TreeNode* proto) const {
   data->set_double_sided(double_sided);
   data->set_is_drawn(is_drawn);
   data->set_subtree_hidden(subtree_hidden);
-  data->set_has_animated_opacity(has_animated_opacity);
+  data->set_has_potential_opacity_animation(has_potential_opacity_animation);
+  data->set_is_currently_animating_opacity(is_currently_animating_opacity);
   data->set_effect_changed(effect_changed);
   data->set_num_copy_requests_in_subtree(num_copy_requests_in_subtree);
   data->set_transform_id(transform_id);
@@ -558,7 +563,8 @@ void EffectNodeData::FromProtobuf(const proto::TreeNode& proto) {
   double_sided = data.double_sided();
   is_drawn = data.is_drawn();
   subtree_hidden = data.subtree_hidden();
-  has_animated_opacity = data.has_animated_opacity();
+  has_potential_opacity_animation = data.has_potential_opacity_animation();
+  is_currently_animating_opacity = data.is_currently_animating_opacity();
   effect_changed = data.effect_changed();
   num_copy_requests_in_subtree = data.num_copy_requests_in_subtree();
   transform_id = data.transform_id();
@@ -573,7 +579,8 @@ void EffectNodeData::AsValueInto(base::trace_event::TracedValue* value) const {
   value->SetBoolean("has_background_filters", has_background_filters);
   value->SetBoolean("double_sided", double_sided);
   value->SetBoolean("is_drawn", is_drawn);
-  value->SetBoolean("has_animated_opacity", has_animated_opacity);
+  value->SetBoolean("has_potential_opacity_animation",
+                    has_potential_opacity_animation);
   value->SetBoolean("effect_changed", effect_changed);
   value->SetInteger("num_copy_requests_in_subtree",
                     num_copy_requests_in_subtree);
@@ -1323,7 +1330,8 @@ void EffectTree::UpdateIsDrawn(EffectNode* node, EffectNode* parent_node) {
   if (node->data.has_copy_request)
     node->data.is_drawn = true;
   else if (EffectiveOpacity(node) == 0.f &&
-           (!node->data.has_animated_opacity || property_trees()->is_active) &&
+           (!node->data.has_potential_opacity_animation ||
+            property_trees()->is_active) &&
            !node->data.has_background_filters)
     node->data.is_drawn = false;
   else if (parent_node)

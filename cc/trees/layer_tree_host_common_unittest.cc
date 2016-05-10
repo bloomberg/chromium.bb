@@ -2552,6 +2552,8 @@ TEST_F(LayerTreeHostCommonTest, AnimationsForRenderSurfaceHierarchy) {
       grand_child_of_rs2, layer_transform, gfx::Point3F(0.25f, 0.f, 0.f),
       gfx::PointF(2.5f, 0.f), gfx::Size(10, 10), true, false, false);
 
+  parent->layer_tree_impl()->BuildPropertyTreesForTesting();
+
   // Put an animated opacity on the render surface.
   AddOpacityTransitionToLayerWithPlayer(render_surface1->id(), timeline_impl(),
                                         10.0, 1.f, 0.f, false);
@@ -2571,6 +2573,7 @@ TEST_F(LayerTreeHostCommonTest, AnimationsForRenderSurfaceHierarchy) {
   AddAnimatedTransformToLayerWithPlayer(grand_child_of_rs2->id(),
                                         timeline_impl(), 10.0, 30, 0);
 
+  parent->layer_tree_impl()->property_trees()->needs_rebuild = true;
   ExecuteCalculateDrawProperties(parent);
 
   // Only layers that are associated with render surfaces should have an actual
@@ -5151,18 +5154,19 @@ TEST_F(LayerTreeHostCommonTest, OpacityAnimatingOnPendingTree) {
   child->SetDrawsContent(true);
   child->SetOpacity(0.0f);
 
+  const int child_id = child->id();
+  root->AddChild(std::move(child));
+  root->SetHasRenderSurface(true);
+  LayerImpl* root_layer = root.get();
+  host_impl.pending_tree()->SetRootLayer(std::move(root));
+  host_impl.pending_tree()->BuildPropertyTreesForTesting();
   // Add opacity animation.
   scoped_refptr<AnimationTimeline> timeline =
       AnimationTimeline::Create(AnimationIdProvider::NextTimelineId());
   host_impl.animation_host()->AddAnimationTimeline(timeline);
 
-  AddOpacityTransitionToLayerWithPlayer(child->id(), timeline, 10.0, 0.0f, 1.0f,
+  AddOpacityTransitionToLayerWithPlayer(child_id, timeline, 10.0, 0.0f, 1.0f,
                                         false);
-
-  root->AddChild(std::move(child));
-  root->SetHasRenderSurface(true);
-  LayerImpl* root_layer = root.get();
-  host_impl.pending_tree()->SetRootLayer(std::move(root));
 
   LayerImplList render_surface_layer_list;
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
@@ -9812,6 +9816,58 @@ TEST_F(LayerTreeHostCommonTest, LargeTransformTest) {
   bool root_in_rsll =
       std::find(rsll->begin(), rsll->end(), root) != rsll->end();
   EXPECT_TRUE(root_in_rsll);
+}
+
+TEST_F(LayerTreeHostCommonTest, OpacityAnimationsTrackingTest) {
+  const gfx::Transform identity_matrix;
+  scoped_refptr<Layer> root = Layer::Create();
+  scoped_refptr<LayerWithForcedDrawsContent> animated =
+      make_scoped_refptr(new LayerWithForcedDrawsContent());
+  root->AddChild(animated);
+
+  host()->SetRootLayer(root);
+
+  SetLayerPropertiesForTesting(root.get(), identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(100, 100), true, false);
+  SetLayerPropertiesForTesting(animated.get(), identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(20, 20), true, false);
+
+  root->SetForceRenderSurfaceForTesting(true);
+  animated->SetOpacity(0.f);
+
+  scoped_refptr<AnimationPlayer> player =
+      AnimationPlayer::Create(AnimationIdProvider::NextPlayerId());
+  timeline()->AttachPlayer(player);
+  player->AttachElement(animated->id());
+
+  int animation_id = 0;
+  std::unique_ptr<Animation> animation = Animation::Create(
+      std::unique_ptr<AnimationCurve>(new FakeFloatTransition(1.0, 0.f, 1.f)),
+      animation_id, 1, TargetProperty::OPACITY);
+  animation->set_fill_mode(Animation::FILL_MODE_NONE);
+  animation->set_time_offset(base::TimeDelta::FromMilliseconds(-1000));
+  Animation* animation_ptr = animation.get();
+  AddAnimationToLayerWithExistingPlayer(animated->id(), timeline(),
+                                        std::move(animation));
+
+  ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
+
+  EffectTree& tree = root->layer_tree_host()->property_trees()->effect_tree;
+  EffectNode* node = tree.Node(animated->effect_tree_index());
+  EXPECT_FALSE(node->data.is_currently_animating_opacity);
+  EXPECT_TRUE(node->data.has_potential_opacity_animation);
+
+  animation_ptr->set_time_offset(base::TimeDelta::FromMilliseconds(0));
+  root->layer_tree_host()->AnimateLayers(
+      base::TimeTicks::FromInternalValue(std::numeric_limits<int64_t>::max()));
+  node = tree.Node(animated->effect_tree_index());
+  EXPECT_TRUE(node->data.is_currently_animating_opacity);
+  EXPECT_TRUE(node->data.has_potential_opacity_animation);
+
+  player->AbortAnimations(TargetProperty::OPACITY, false /*needs_completion*/);
+  node = tree.Node(animated->effect_tree_index());
+  EXPECT_FALSE(node->data.is_currently_animating_opacity);
+  EXPECT_FALSE(node->data.has_potential_opacity_animation);
 }
 
 TEST_F(LayerTreeHostCommonTest, SerializeScrollUpdateInfo) {

@@ -3931,6 +3931,31 @@ void LayerTreeHostImpl::ElementTransformIsPotentiallyAnimatingChanged(
                                                     is_animating);
   }
 }
+void LayerTreeHostImpl::ElementOpacityIsAnimatingChanged(
+    ElementId element_id,
+    ElementListType list_type,
+    AnimationChangeType change_type,
+    bool is_animating) {
+  LayerTreeImpl* tree =
+      list_type == ElementListType::ACTIVE ? active_tree() : pending_tree();
+  if (!tree)
+    return;
+  LayerImpl* layer = tree->LayerById(element_id);
+  if (layer) {
+    switch (change_type) {
+      case AnimationChangeType::POTENTIAL:
+        layer->OnOpacityIsPotentiallyAnimatingChanged(is_animating);
+        break;
+      case AnimationChangeType::RUNNING:
+        layer->OnOpacityIsCurrentlyAnimatingChanged(is_animating);
+        break;
+      case AnimationChangeType::BOTH:
+        layer->OnOpacityIsPotentiallyAnimatingChanged(is_animating);
+        layer->OnOpacityIsCurrentlyAnimatingChanged(is_animating);
+        break;
+    }
+  }
+}
 
 void LayerTreeHostImpl::ScrollOffsetAnimationFinished() {
   // TODO(majidvp): We should pass in the original starting scroll position here

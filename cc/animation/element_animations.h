@@ -34,6 +34,7 @@ class AnimationPlayer;
 class FilterOperations;
 class KeyframeValueList;
 enum class ElementListType;
+enum class AnimationChangeType;
 
 // An ElementAnimations owns a list of all AnimationPlayers, attached to
 // the element.
@@ -229,6 +230,14 @@ class CC_EXPORT ElementAnimations : public base::RefCounted<ElementAnimations> {
 
   void UpdatePotentiallyAnimatingTransform();
 
+  void NotifyClientOpacityAnimationChanged(
+      bool notify_active_elements_about_potential_animation,
+      bool notify_active_elements_about_running_animation,
+      bool notify_pending_elements_about_potential_aniamtion,
+      bool notify_pending_elements_about_running_animation);
+
+  void UpdateAnimatingOpacity();
+
   void OnFilterAnimated(ElementListType list_type,
                         const FilterOperations& filters);
   void OnOpacityAnimated(ElementListType list_type, float opacity);
@@ -239,6 +248,9 @@ class CC_EXPORT ElementAnimations : public base::RefCounted<ElementAnimations> {
   void OnAnimationWaitingForDeletion();
   void OnTransformIsPotentiallyAnimatingChanged(ElementListType list_type,
                                                 bool is_animating);
+  void OnOpacityIsAnimatingChanged(ElementListType list_type,
+                                   AnimationChangeType change_type,
+                                   bool is_animating);
   gfx::ScrollOffset ScrollOffsetForAnimation() const;
 
   void NotifyPlayersAnimationStarted(base::TimeTicks monotonic_time,
@@ -277,6 +289,11 @@ class CC_EXPORT ElementAnimations : public base::RefCounted<ElementAnimations> {
 
   bool potentially_animating_transform_for_active_elements_;
   bool potentially_animating_transform_for_pending_elements_;
+
+  bool currently_running_opacity_animation_for_active_elements_;
+  bool currently_running_opacity_animation_for_pending_elements_;
+  bool potentially_animating_opacity_for_active_elements_;
+  bool potentially_animating_opacity_for_pending_elements_;
 
   DISALLOW_COPY_AND_ASSIGN(ElementAnimations);
 };

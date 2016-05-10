@@ -627,12 +627,12 @@ bool AddTransformNodeIfNeeded(
   return true;
 }
 
-bool IsAnimatingOpacity(Layer* layer) {
+static inline bool HasPotentialOpacityAnimation(Layer* layer) {
   return layer->HasPotentiallyRunningOpacityAnimation() ||
          layer->OpacityCanAnimateOnImplThread();
 }
 
-bool IsAnimatingOpacity(LayerImpl* layer) {
+static inline bool HasPotentialOpacityAnimation(LayerImpl* layer) {
   return layer->HasPotentiallyRunningOpacityAnimation();
 }
 
@@ -805,14 +805,16 @@ bool AddEffectNodeIfNeeded(
     DataForRecursion<LayerType>* data_for_children) {
   const bool is_root = !layer->parent();
   const bool has_transparency = EffectiveOpacity(layer) != 1.f;
-  const bool has_animated_opacity = IsAnimatingOpacity(layer);
+  const bool has_potential_opacity_animation =
+      HasPotentialOpacityAnimation(layer);
   const bool should_create_render_surface = ShouldCreateRenderSurface(
       layer, data_from_ancestor.compound_transform_since_render_target,
       data_from_ancestor.axis_align_since_render_target);
   data_for_children->axis_align_since_render_target &=
       layer->AnimationsPreserveAxisAlignment();
 
-  bool requires_node = is_root || has_transparency || has_animated_opacity ||
+  bool requires_node = is_root || has_transparency ||
+                       has_potential_opacity_animation ||
                        should_create_render_surface;
 
   int parent_id = data_from_ancestor.effect_tree_parent;
@@ -831,9 +833,10 @@ bool AddEffectNodeIfNeeded(
   node.data.has_render_surface = should_create_render_surface;
   node.data.has_copy_request = layer->HasCopyRequest();
   node.data.has_background_filters = !layer->background_filters().IsEmpty();
-  node.data.has_animated_opacity = has_animated_opacity;
+  node.data.has_potential_opacity_animation = has_potential_opacity_animation;
   node.data.double_sided = DoubleSided(layer);
   node.data.subtree_hidden = HideLayerAndSubtree(layer);
+  node.data.is_currently_animating_opacity = layer->OpacityIsAnimating();
 
   if (!is_root) {
     // The effect node's transform id is used only when we create a render

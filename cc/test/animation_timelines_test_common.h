@@ -56,6 +56,20 @@ class TestLayer {
     transform_is_animating_ = is_animating;
   }
 
+  bool opacity_is_currently_animating() const {
+    return opacity_is_currently_animating_;
+  }
+  void set_opacity_is_currently_animating(bool is_animating) {
+    opacity_is_currently_animating_ = is_animating;
+  }
+
+  bool has_potential_opacity_animation() const {
+    return has_potential_opacity_animation_;
+  }
+  void set_has_potential_opacity_animation(bool is_animating) {
+    has_potential_opacity_animation_ = is_animating;
+  }
+
   bool is_property_mutated(TargetProperty::Type property) const {
     return mutated_properties_[property];
   }
@@ -68,6 +82,8 @@ class TestLayer {
   FilterOperations filters_;
   gfx::ScrollOffset scroll_offset_;
   bool transform_is_animating_;
+  bool has_potential_opacity_animation_;
+  bool opacity_is_currently_animating_;
 
   bool mutated_properties_[TargetProperty::LAST_TARGET_PROPERTY + 1];
 };
@@ -107,6 +123,11 @@ class TestHostClient : public MutatorHostClient {
       ElementListType list_type,
       bool is_animating) override;
 
+  void ElementOpacityIsAnimatingChanged(ElementId element_id,
+                                        ElementListType list_type,
+                                        AnimationChangeType change_type,
+                                        bool is_animating) override;
+
   void ScrollOffsetAnimationFinished() override {}
 
   void SetScrollOffsetForAnimation(const gfx::ScrollOffset& scroll_offset);
@@ -137,6 +158,10 @@ class TestHostClient : public MutatorHostClient {
                                     ElementListType list_type) const;
   bool GetTransformIsAnimating(ElementId element_id,
                                ElementListType list_type) const;
+  bool GetOpacityIsCurrentlyAnimating(ElementId element_id,
+                                      ElementListType list_type) const;
+  bool GetHasPotentialOpacityAnimation(ElementId element_id,
+                                       ElementListType list_type) const;
 
   void ExpectFilterPropertyMutated(ElementId element_id,
                                    ElementListType list_type,
