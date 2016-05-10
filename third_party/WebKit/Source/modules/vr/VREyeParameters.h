@@ -17,7 +17,7 @@ namespace blink {
 
 struct WebVREyeParameters;
 
-class VREyeParameters final : public GarbageCollectedFinalized<VREyeParameters>, public ScriptWrappable {
+class VREyeParameters final : public GarbageCollected<VREyeParameters>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     VREyeParameters();

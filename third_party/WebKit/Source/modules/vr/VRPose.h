@@ -13,7 +13,7 @@
 
 namespace blink {
 
-class VRPose final : public GarbageCollectedFinalized<VRPose>, public ScriptWrappable {
+class VRPose final : public GarbageCollected<VRPose>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static VRPose* create()

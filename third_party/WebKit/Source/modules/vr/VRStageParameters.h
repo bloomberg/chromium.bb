@@ -12,7 +12,7 @@
 
 namespace blink {
 
-class VRStageParameters final : public GarbageCollectedFinalized<VRStageParameters>, public ScriptWrappable {
+class VRStageParameters final : public GarbageCollected<VRStageParameters>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     VRStageParameters();
