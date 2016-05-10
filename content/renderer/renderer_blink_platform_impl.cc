@@ -994,11 +994,10 @@ blink::WebSpeechSynthesizer* RendererBlinkPlatformImpl::createSpeechSynthesizer(
 
 //------------------------------------------------------------------------------
 
-static void Collect3DContextInformationOnFailure(
+static void Collect3DContextInformation(
     blink::Platform::GraphicsInfo* gl_info,
     const gpu::GPUInfo& gpu_info) {
   DCHECK(gl_info);
-  std::string error_message("OffscreenContext Creation failed, ");
   gl_info->vendorId = gpu_info.gpu.vendor_id;
   gl_info->deviceId = gpu_info.gpu.device_id;
   switch (gpu_info.context_info_state) {
@@ -1016,13 +1015,10 @@ static void Collect3DContextInformationOnFailure(
       break;
     case gpu::kCollectInfoFatalFailure:
     case gpu::kCollectInfoNone:
-      error_message.append(
+      gl_info->errorMessage = WebString::fromUTF8(
           "Failed to collect gpu information, GLSurface or GLContext "
           "creation failed");
-      gl_info->errorMessage = WebString::fromUTF8(error_message);
       break;
-    default:
-      NOTREACHED();
   }
 }
 
@@ -1049,6 +1045,7 @@ RendererBlinkPlatformImpl::createOffscreenGraphicsContext3DProvider(
     gl_info->errorMessage = WebString::fromUTF8(error_message);
     return nullptr;
   }
+  Collect3DContextInformation(gl_info, gpu_channel_host->gpu_info());
 
   content::WebGraphicsContext3DProviderImpl* share_provider_impl =
       static_cast<content::WebGraphicsContext3DProviderImpl*>(share_provider);
@@ -1091,7 +1088,6 @@ RendererBlinkPlatformImpl::createOffscreenGraphicsContext3DProvider(
   bool automatic_flushes = true;
   // Prefer discrete GPU for WebGL.
   gfx::GpuPreference gpu_preference = gfx::PreferDiscreteGpu;
-  const auto& gpu_info = gpu_channel_host->gpu_info();
 
   scoped_refptr<ContextProviderCommandBuffer> provider(
       new ContextProviderCommandBuffer(
@@ -1101,9 +1097,10 @@ RendererBlinkPlatformImpl::createOffscreenGraphicsContext3DProvider(
           command_buffer_metrics::OFFSCREEN_CONTEXT_FOR_WEBGL));
   if (will_bind_to_current_thread == blink::Platform::BindToCurrentThread) {
     if (!provider->BindToCurrentThread()) {
-      // Collect Graphicsinfo if there is a context failure or it is failed
-      // purposefully in case of layout tests.
-      Collect3DContextInformationOnFailure(gl_info, gpu_info);
+      std::string error_message(
+          "ContextProviderCommandBuffer::BindToCurrentThread failed: ");
+      error_message.append(gl_info->errorMessage.utf8());
+      gl_info->errorMessage = WebString::fromUTF8(error_message);
       return nullptr;
     }
   }
