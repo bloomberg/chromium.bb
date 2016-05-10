@@ -150,7 +150,8 @@ void ArcAuthService::OnSignInComplete() {
   DCHECK(thread_checker.Get().CalledOnValidThread());
   DCHECK_EQ(state_, State::ACTIVE);
 
-  if (!profile_->GetPrefs()->HasPrefPath(prefs::kArcSignedIn)) {
+  if (!IsOptInVerificationDisabled() &&
+      !profile_->GetPrefs()->HasPrefPath(prefs::kArcSignedIn)) {
     playstore_launcher_.reset(
         new ArcAppLauncher(profile_, kPlayStoreAppId, true));
   }
