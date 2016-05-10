@@ -203,6 +203,10 @@
                   '|chrome/test/data/extensions/api_test/cast_'\
                   '|content/public/renderer/media_stream_',
     },
+    'cast_certificate': {
+      'filepath': 'components/cast_certificate/'\
+                  '|components/test/data/cast_certificate/',
+    },
     'certificate_transparency': {
       'filepath': 'components/certificate_transparency/'\
                   '|components/packed_ct_ev_whitelist/'\
@@ -1385,6 +1389,10 @@
              'jasonroberts+watch@google.com',
              'miu+watch@chromium.org',
              'xjz+watch@chromium.org'],
+    'cast_certificate': ['dougsteed+watch@chromium.org',
+                         'ryanchung+watch@chromium.org',
+                         'sheretov+watch@chromium.org',
+                         'vadimgo+watch@chromium.org'],
     'cc': ['cc-bugs@chromium.org'],
     'certificate_transparency': ['eranm@chromium.org', 'certificate-transparency-chrome@googlegroups.com'],
     'chrome_elf': ['caitkp+watch@chromium.org',],
