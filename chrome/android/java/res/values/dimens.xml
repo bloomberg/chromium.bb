@@ -153,7 +153,7 @@
     <!-- First Run Experience dimensions -->
     <dimen name="fre_content_margin">24dp</dimen>
     <dimen name="fre_vertical_spacing">32dp</dimen>
-    <dimen name="fre_button_bar_height">56dp</dimen>
+    <dimen name="fre_button_bar_height">52dp</dimen>
     <dimen name="fre_button_padding">12dp</dimen>
     <dimen name="fre_margin">24dp</dimen>
     <dimen name="fre_title_text_size">24sp</dimen>

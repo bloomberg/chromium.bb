@@ -140,8 +140,6 @@ public class AccountSigninView extends FrameLayout implements ProfileDownloader.
         });
 
         mPositiveButton = (ButtonCompat) findViewById(R.id.positive_button);
-        // Remove drop shadow effect.
-        mPositiveButton.setRaised(false);
         mNegativeButton = (Button) findViewById(R.id.negative_button);
 
         // A workaround for Android support library ignoring padding set in XML. b/20307607

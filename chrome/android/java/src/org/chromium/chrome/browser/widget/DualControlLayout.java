@@ -56,12 +56,11 @@ public final class DualControlLayout extends ViewGroup {
         int lightActiveColor = context.getResources().getColor(R.color.light_active_color);
 
         if (isPrimary) {
-            ButtonCompat primaryButton = new ButtonCompat(context, lightActiveColor);
+            ButtonCompat primaryButton = new ButtonCompat(context, lightActiveColor, false);
             primaryButton.setId(R.id.button_primary);
             primaryButton.setOnClickListener(listener);
             primaryButton.setText(text);
             primaryButton.setTextColor(Color.WHITE);
-            primaryButton.setRaised(false);
             return primaryButton;
         } else {
             Button secondaryButton = ButtonCompat.createBorderlessButton(context);

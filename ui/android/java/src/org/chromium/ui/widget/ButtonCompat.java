@@ -55,27 +55,30 @@ public class ButtonCompat extends Button {
     }
 
     /**
-     * Constructs a button with the given buttonColor as its background.
+     * Constructs a button with the given buttonColor as its background. The button is raised if
+     * buttonRaised is true.
      */
-    public ButtonCompat(Context context, int buttonColor) {
-        this(context, buttonColor, null);
+    public ButtonCompat(Context context, int buttonColor, boolean buttonRaised) {
+        this(context, buttonColor, buttonRaised, null);
     }
 
     /**
      * Constructor for inflating from XML.
      */
     public ButtonCompat(Context context, AttributeSet attrs) {
-        this(context, getColorFromAttributeSet(context, attrs), attrs);
+        this(context, getColorFromAttributeSet(context, attrs),
+                getRaisedStatusFromAttributeSet(context, attrs), attrs);
     }
 
-    private ButtonCompat(Context context, int buttonColor, AttributeSet attrs) {
+    private ButtonCompat(
+            Context context, int buttonColor, boolean buttonRaised, AttributeSet attrs) {
         // To apply the ButtonCompat style to this view, use a ContextThemeWrapper to overlay the
         // ButtonCompatThemeOverlay, which simply sets the buttonStyle to @style/ButtonCompat.
         super(new ContextThemeWrapper(context, R.style.ButtonCompatOverlay), attrs);
 
         getBackground().mutate();
         setButtonColor(buttonColor);
-        setRaised(true);
+        setRaised(buttonRaised);
     }
 
     /**
@@ -93,9 +96,11 @@ public class ButtonCompat extends Button {
     }
 
     /**
-     * Sets whether the button is raised (has a shadow), or flat (has no shadow).
-     */
-    public void setRaised(boolean raised) {
+    * Sets whether the button is raised (has a shadow), or flat (has no shadow).
+    * Note that this function (setStateListAnimator) can not be called more than once due to
+    * incompatibilities in older android versions, crbug.com/608248.
+    */
+    private void setRaised(boolean raised) {
         // All buttons are flat on pre-L devices.
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return;
 
@@ -171,5 +176,12 @@ public class ButtonCompat extends Button {
         int color = a.getColor(R.styleable.ButtonCompat_buttonColor, Color.WHITE);
         a.recycle();
         return color;
+    }
+
+    private static boolean getRaisedStatusFromAttributeSet(Context context, AttributeSet attrs) {
+        TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.ButtonCompat, 0, 0);
+        boolean raised = a.getBoolean(R.styleable.ButtonCompat_buttonRaised, true);
+        a.recycle();
+        return raised;
     }
 }
