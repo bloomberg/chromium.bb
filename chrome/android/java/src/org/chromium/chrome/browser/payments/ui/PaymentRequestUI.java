@@ -17,6 +17,7 @@ import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.support.v4.view.animation.FastOutLinearInInterpolator;
 import android.support.v4.view.animation.LinearOutSlowInInterpolator;
 import android.text.TextUtils.TruncateAt;
 import android.view.Gravity;
@@ -136,6 +137,9 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
 
     /** Length of the animation to either show the UI or expand it to full height. */
     private static final int DIALOG_ENTER_ANIMATION_MS = 225;
+
+    /** Length of the animation to hide the bottom sheet UI. */
+    private static final int DIALOG_EXIT_ANIMATION_MS = 195;
 
     private static PaymentRequestObserverForTest sObserverForTest;
 
@@ -341,7 +345,13 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
      */
     public void close(boolean paymentSuccess, final Runnable callback) {
         mIsClientClosing = true;
-        mResultUI.update(paymentSuccess, mDialog, callback);
+        mResultUI.update(paymentSuccess, new Runnable() {
+            @Override
+            public void run() {
+                dismissDialog(false);
+                if (callback != null) callback.run();
+            }
+        });
     }
 
     /**
@@ -420,7 +430,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         if (!isAcceptingCloseButton()) return;
 
         if (v == mCloseButton) {
-            mDialog.dismiss();
+            dismissDialog(true);
             return;
         }
 
@@ -445,21 +455,33 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
                     mPaymentMethodSectionInformation.getSelectedItem());
         } else if (v == mEditButton) {
             if (mIsShowingEditDialog) {
-                mDialog.dismiss();
+                dismissDialog(true);
             } else {
                 expand(mOrderSummarySection);
             }
-        } else if (v == mScrim) {
-            mDialog.dismiss();
-            return;
         }
 
         updatePayButtonEnabled();
     }
 
+    /**
+     * Dismiss the dialog.
+     *
+     * @param isAnimated If true, the dialog dismissal is animated.
+     */
+    private void dismissDialog(boolean isAnimated) {
+        if (mDialog.isShowing()) {
+            if (isAnimated) {
+                new DisappearingAnimator(true);
+            } else {
+                mDialog.dismiss();
+            }
+        }
+    }
+
     private void showResultDialog() {
-        // TODO(dfalcantara): Animate the bottom sheet going away and the new thing coming in.
-        mFullContainer.removeView(mBottomSheetContainer);
+        // Animate the bottom sheet going away, but keep the scrim visible.
+        new DisappearingAnimator(false);
 
         int floatingDialogWidth = PaymentResultUI.computeMaxWidth(
                 mContext, mScrim.getMeasuredWidth(), mScrim.getMeasuredHeight());
@@ -620,18 +642,8 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         }
 
         @Override
-        public void onAnimationStart(Animator animation) {
-            mScrim.setAlpha(0f);
-            mBottomSheetContainer.setAlpha(0f);
-            mBottomSheetContainer.setTranslationY(mAnimatorTranslation);
-        }
-
-        @Override
         public void onAnimationEnd(Animator animation) {
             mCurrentAnimator = null;
-            mScrim.setAlpha(1f);
-            mBottomSheetContainer.setAlpha(1f);
-            mBottomSheetContainer.setTranslationY(0);
             mIsInitialLayoutComplete = true;
             notifyReadyToClose();
             notifyReadyForInput();
@@ -702,20 +714,47 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
             mCurrentAnimator.playTogether(containerAnimator);
             mCurrentAnimator.addListener(new AnimatorListenerAdapter() {
                 @Override
-                public void onAnimationStart(Animator animation) {
-                    update(1.0f);
-                }
-
-                @Override
                 public void onAnimationEnd(Animator animation) {
                     mCurrentAnimator = null;
-                    update(0.0f);
                     notifyReadyToClose();
                     notifyReadyForInput();
                     notifyReadyToPay();
                 }
             });
             mCurrentAnimator.start();
+        }
+    }
+
+    /** Animates the bottom sheet (and optionally, the scrim) disappearing off screen. */
+    private class DisappearingAnimator extends AnimatorListenerAdapter {
+        private final boolean mIsDialogClosing;
+
+        public DisappearingAnimator(boolean removeDialog) {
+            mIsDialogClosing = removeDialog;
+
+            Animator sheetFader = ObjectAnimator.ofFloat(
+                    mBottomSheetContainer, View.ALPHA, mBottomSheetContainer.getAlpha(), 0f);
+            Animator sheetTranslator = ObjectAnimator.ofFloat(
+                    mBottomSheetContainer, View.TRANSLATION_Y, 0f, mAnimatorTranslation);
+            Animator scrimFader = ObjectAnimator.ofFloat(mScrim, View.ALPHA, mScrim.getAlpha(), 0f);
+
+            mCurrentAnimator = new AnimatorSet();
+            mCurrentAnimator.setDuration(DIALOG_EXIT_ANIMATION_MS);
+            mCurrentAnimator.setInterpolator(new FastOutLinearInInterpolator());
+            if (mIsDialogClosing) {
+                mCurrentAnimator.playTogether(sheetFader, sheetTranslator, scrimFader);
+            } else {
+                mCurrentAnimator.playTogether(sheetFader, sheetTranslator);
+            }
+            mCurrentAnimator.addListener(this);
+            mCurrentAnimator.start();
+        }
+
+        @Override
+        public void onAnimationEnd(Animator animation) {
+            mCurrentAnimator = null;
+            mFullContainer.removeView(mBottomSheetContainer);
+            if (mIsDialogClosing && mDialog.isShowing()) mDialog.dismiss();
         }
     }
 

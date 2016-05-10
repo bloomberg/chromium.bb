@@ -70,15 +70,6 @@
         android:layout_marginTop="@dimen/payments_section_largest_spacing"
         android:layout_marginBottom="@dimen/payments_section_small_spacing" />
 
-    <!-- Image that shows when the request was succesful. -->
-    <ImageView
-        android:id="@+id/waiting_success"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:src="@drawable/verify_checkmark"
-        android:visibility="gone"
-        android:contentDescription="@null" />
-
     <!-- Message describing the result of the request. -->
     <TextView
         android:id="@+id/waiting_message"

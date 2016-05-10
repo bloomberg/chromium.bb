@@ -4,10 +4,8 @@
 
 package org.chromium.chrome.browser.payments.ui;
 
-import android.app.Dialog;
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -22,11 +20,6 @@ import org.chromium.chrome.R;
  * Displays the status of a payment request to the user.
  */
 public class PaymentResultUI {
-    /**
-     * The number of milliseconds to display the "Payment processed" message.
-     */
-    private static final int SHOW_RESULT_DELAY_MS = 3000;
-
     private final ViewGroup mResultLayout;
 
     /**
@@ -49,37 +42,22 @@ public class PaymentResultUI {
      * Updates the UI to display whether or not the payment request was successful.
      *
      * @param paymentSuccess Whether or not the payment request was successful.
-     * @param dialog         Dialog that contains the layout.
      * @param callback       Callback to run upon dismissal.
      */
-    public void update(boolean paymentSuccess, final Dialog dialog, final Runnable callback) {
-        if (mResultLayout.getParent() == null) {
-            dismiss(dialog, callback);
-            return;
-        }
-
-        // We're done waiting.  Hide the progress bar.
-        View progressBar = mResultLayout.findViewById(R.id.waiting_progress);
-        progressBar.setVisibility(View.GONE);
-
-        // Show the result of the payment.
-        Context context = mResultLayout.getContext();
-        TextView resultMessage = (TextView) mResultLayout.findViewById(R.id.waiting_message);
-
-        if (paymentSuccess) {
-            View resultIcon = mResultLayout.findViewById(R.id.waiting_success);
-            resultIcon.setVisibility(View.VISIBLE);
-            resultMessage.setText(context.getString(R.string.payments_success_message));
-
-            // Automatically dismiss the dialog.
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    dismiss(dialog, callback);
-                }
-            }, SHOW_RESULT_DELAY_MS);
+    public void update(boolean paymentSuccess, final Runnable callback) {
+        if (mResultLayout.getParent() == null || paymentSuccess) {
+            // Dismiss the dialog immediately.
+            callback.run();
         } else {
-            // Show the error.
+            // Show the result of the payment.
+            Context context = mResultLayout.getContext();
+            TextView resultMessage = (TextView) mResultLayout.findViewById(R.id.waiting_message);
+
+            // Hide the progress bar.
+            View progressBar = mResultLayout.findViewById(R.id.waiting_progress);
+            progressBar.setVisibility(View.GONE);
+
+            // Describe the error.
             resultMessage.setText(context.getString(R.string.payments_error_message));
             resultMessage.setTextColor(ApiCompatibilityUtils.getColor(
                     context.getResources(), R.color.error_text_color));
@@ -90,7 +68,7 @@ public class PaymentResultUI {
             confirmButton.setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    dismiss(dialog, callback);
+                    callback.run();
                 }
             });
         }
@@ -129,10 +107,5 @@ public class PaymentResultUI {
         int multiplier = maxSize / baseUnit;
         int floatingDialogWidth = multiplier * baseUnit;
         return floatingDialogWidth;
-    }
-
-    private void dismiss(final Dialog dialog, final Runnable callback) {
-        if (dialog.isShowing()) dialog.dismiss();
-        if (callback != null) callback.run();
     }
 }
