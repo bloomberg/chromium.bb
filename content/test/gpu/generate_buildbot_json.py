@@ -868,6 +868,36 @@ TELEMETRY_TESTS = {
       '--webgl2-only=true',
     ],
   },
+  'webgl2_conformance_angle_tests': {
+    'tester_configs': [
+      {
+         # The WebGL 2.0 conformance tests take over an hour to run on
+         # the Debug bots, which is too long.
+        'build_configs': ['Release'],
+        'fyi_only': True,
+        'run_on_optional': False,
+        # Only run on the NVIDIA Release and New Intel Release Linux bots
+        'swarming_dimension_sets': [
+          {
+            'gpu': '10de:104a',
+            'os': 'Linux'
+          },
+          {
+            'gpu': '8086:0412',
+            'os': 'Linux'
+          },
+        ],
+      },
+    ],
+    'target_name': 'webgl_conformance',
+    'extra_browser_args': [
+      '--use-gl=angle',
+    ],
+    'args': [
+      '--webgl-conformance-version=2.0.0',
+      '--webgl2-only=true',
+    ],
+  },
 }
 
 def substitute_args(tester_config, args):
