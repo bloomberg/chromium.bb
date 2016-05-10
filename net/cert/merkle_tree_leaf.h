@@ -42,6 +42,10 @@ NET_EXPORT bool GetMerkleTreeLeaf(const X509Certificate* cert,
                                   const SignedCertificateTimestamp* sct,
                                   MerkleTreeLeaf* merkle_tree_leaf);
 
+// Sets |*out| to the hash of the Merkle |tree_leaf|, as defined in RFC6962.
+// Returns true if the hash was generated, false if an error occurred.
+NET_EXPORT bool Hash(const MerkleTreeLeaf& tree_leaf, std::string* out);
+
 }  // namespace ct
 
 }  // namespace net

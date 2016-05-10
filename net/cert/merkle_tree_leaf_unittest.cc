@@ -4,12 +4,16 @@
 
 #include "net/cert/merkle_tree_leaf.h"
 
+#include <string.h>
+
 #include <string>
 
+#include "base/strings/string_number_conversions.h"
 #include "net/base/test_data_directory.h"
 #include "net/cert/x509_certificate.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/ct_test_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -17,6 +21,28 @@ namespace net {
 namespace ct {
 
 namespace {
+
+MATCHER_P(HexEq, hexStr, "") {
+  std::vector<uint8_t> bytes;
+
+  if (!base::HexStringToBytes(hexStr, &bytes)) {
+    *result_listener << "expected value was not a valid hex string";
+    return false;
+  }
+
+  if (bytes.size() != arg.size()) {
+    *result_listener << "expected and actual are different lengths";
+    return false;
+  }
+
+  // Make sure we don't pass nullptrs to memcmp
+  if (arg.empty())
+    return true;
+
+  // Print hex string (easier to read than default GTest representation)
+  *result_listener << "a.k.a. 0x" << base::HexEncode(arg.data(), arg.size());
+  return memcmp(arg.data(), bytes.data(), bytes.size()) == 0;
+}
 
 class MerkleTreeLeafTest : public ::testing::Test {
  public:
@@ -75,6 +101,32 @@ TEST_F(MerkleTreeLeafTest, CreatesForPrecert) {
 TEST_F(MerkleTreeLeafTest, DoesNotCreateForEmbeddedSCTButNotPrecert) {
   MerkleTreeLeaf leaf;
   ASSERT_FALSE(GetMerkleTreeLeaf(test_cert_.get(), precert_sct_.get(), &leaf));
+}
+
+// Expected hashes calculated by:
+// 1. Writing the serialized tree leaves from
+//    CtSerialization::EncodesLogEntryFor{X509Cert,Precert} to files.
+// 2. Prepending a zero byte to both files.
+// 3. Passing each file through the sha256sum tool.
+
+TEST_F(MerkleTreeLeafTest, HashForX509Cert) {
+  MerkleTreeLeaf leaf;
+  ct::GetX509CertTreeLeaf(&leaf);
+
+  std::string hash;
+  ASSERT_TRUE(Hash(leaf, &hash));
+  EXPECT_THAT(hash, HexEq("452da788b3b8d15872ff0bb0777354b2a7f1c1887b5633201e76"
+                          "2ba5a4b143fc"));
+}
+
+TEST_F(MerkleTreeLeafTest, HashForPrecert) {
+  MerkleTreeLeaf leaf;
+  ct::GetPrecertTreeLeaf(&leaf);
+
+  std::string hash;
+  ASSERT_TRUE(Hash(leaf, &hash));
+  EXPECT_THAT(hash, HexEq("257ae85f08810445511e35e33f7aee99ee19407971e35e95822b"
+                          "bf42a74be223"));
 }
 
 }  // namespace
