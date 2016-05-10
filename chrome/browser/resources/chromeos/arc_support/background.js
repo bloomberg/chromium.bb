@@ -128,7 +128,8 @@ function showPage(pageDivId) {
     webview.src = 'https://accounts.google.com/o/oauth2/v2/auth?client_id=' +
                   '1070009224336-sdh77n7uot3oc99ais00jmuft6sk2fg9.apps.' +
                   'googleusercontent.com&response_type=code&redirect_uri=oob&' +
-                  'scope=https://www.google.com/accounts/OAuthLogin';
+                  'scope=https://www.google.com/accounts/OAuthLogin&' +
+                  'device_type=arc_plus_plus&device_id=0';
   }
   appWindow.show();
 }
