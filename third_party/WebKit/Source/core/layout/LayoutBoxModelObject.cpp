@@ -920,6 +920,7 @@ LayoutBoxModelObject* LayoutBoxModelObject::continuation() const
 void LayoutBoxModelObject::setContinuation(LayoutBoxModelObject* continuation)
 {
     if (continuation) {
+        ASSERT(continuation->isLayoutInline() || continuation->isLayoutBlockFlow());
         if (!continuationMap)
             continuationMap = new ContinuationMap;
         continuationMap->set(this, continuation);
