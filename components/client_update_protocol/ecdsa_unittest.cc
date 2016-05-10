@@ -46,11 +46,6 @@ class CupEcdsaTest : public testing::Test {
     ASSERT_TRUE(cup_.get());
   }
 
-  void OverrideNonce(uint32_t nonce) {
-    cup_->request_query_cup2key_ =
-        base::StringPrintf("%d:%u", cup_->pub_key_version_, nonce);
-  }
-
   Ecdsa& CUP() { return *cup_.get(); }
 
  private:
@@ -86,7 +81,7 @@ TEST_F(CupEcdsaTest, ValidateResponse_TestETagParsing) {
   // Invalid ETags must be gracefully rejected without a crash.
   std::string query_discard;
   CUP().SignRequest("Request_A", &query_discard);
-  OverrideNonce(12345);
+  CUP().OverrideNonceForTesting(8, 12345);
 
   // Expect a pass for a well-formed etag.
   EXPECT_TRUE(CUP().ValidateResponse(
@@ -238,7 +233,7 @@ TEST_F(CupEcdsaTest, ValidateResponse_TestETagParsing) {
 TEST_F(CupEcdsaTest, ValidateResponse_TestSigning) {
   std::string query_discard;
   CUP().SignRequest("Request_A", &query_discard);
-  OverrideNonce(12345);
+  CUP().OverrideNonceForTesting(8, 12345);
 
   // How to generate an ECDSA signature:
   //   echo -n Request_A | sha256sum | cut -d " " -f 1 > h

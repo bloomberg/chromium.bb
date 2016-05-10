@@ -1,3 +1,5 @@
 include_rules = [
+  "+components/client_update_protocol",
   "+components/prefs",
+  "+net",
 ]

@@ -268,15 +268,16 @@ void BrowserProcessImpl::StartTearDown() {
   tearing_down_ = true;
   DCHECK(IsShuttingDown());
   // We need to destroy the MetricsServicesManager, IntranetRedirectDetector,
-  // PromoResourceService, and SafeBrowsing ClientSideDetectionService (owned by
-  // the SafeBrowsingService) before the io_thread_ gets destroyed, since their
-  // destructors can call the URLFetcher destructor, which does a
-  // PostDelayedTask operation on the IO thread. (The IO thread will handle that
-  // URLFetcher operation before going away.)
+  // PromoResourceService, NetworkTimeTracker, and SafeBrowsing
+  // ClientSideDetectionService (owned by the SafeBrowsingService) before the
+  // io_thread_ gets destroyed, since their destructors can call the URLFetcher
+  // destructor, which does a PostDelayedTask operation on the IO thread. (The
+  // IO thread will handle that URLFetcher operation before going away.)
   metrics_services_manager_.reset();
   intranet_redirect_detector_.reset();
   if (safe_browsing_service_.get())
     safe_browsing_service()->ShutDown();
+  network_time_tracker_.reset();
 #if defined(ENABLE_PLUGIN_INSTALLATION)
   plugins_resource_service_.reset();
 #endif
@@ -747,7 +748,8 @@ network_time::NetworkTimeTracker* BrowserProcessImpl::network_time_tracker() {
   if (!network_time_tracker_) {
     network_time_tracker_.reset(new network_time::NetworkTimeTracker(
         base::WrapUnique(new base::DefaultClock()),
-        base::WrapUnique(new base::DefaultTickClock()), local_state()));
+        base::WrapUnique(new base::DefaultTickClock()), local_state(),
+        system_request_context()));
   }
   return network_time_tracker_.get();
 }

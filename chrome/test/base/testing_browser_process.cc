@@ -357,7 +357,7 @@ TestingBrowserProcess::network_time_tracker() {
     network_time_tracker_.reset(new network_time::NetworkTimeTracker(
         std::unique_ptr<base::Clock>(new base::DefaultClock()),
         std::unique_ptr<base::TickClock>(new base::DefaultTickClock()),
-        local_state_));
+        local_state_, system_request_context()));
   }
   return network_time_tracker_.get();
 }
