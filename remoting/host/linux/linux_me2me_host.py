@@ -42,6 +42,26 @@ LOG_FILE_ENV_VAR = "CHROME_REMOTE_DESKTOP_LOG_FILE"
 # list of sizes in this environment variable.
 DEFAULT_SIZES_ENV_VAR = "CHROME_REMOTE_DESKTOP_DEFAULT_DESKTOP_SIZES"
 
+# By default, this script launches Xvfb as the virtual X display. When this
+# environment variable is set, the script will instead launch an instance of
+# Xorg using the dummy display driver and void input device. In order for this
+# to work, both the dummy display driver and void input device need to be
+# installed:
+#
+#     sudo apt-get install xserver-xorg-video-dummy
+#     sudo apt-get install xserver-xorg-input-void
+#
+# TODO(rkjnsn): Add xserver-xorg-video-dummy and xserver-xorg-input-void as
+# package dependencies at the same time we switch the default to Xorg
+USE_XORG_ENV_VAR = "CHROME_REMOTE_DESKTOP_USE_XORG"
+
+# The amount of video RAM the dummy driver should claim to have, which limits
+# the maximum possible resolution.
+# 1048576 KiB = 1 GiB, which is the amount of video RAM needed to have a
+# 16384x16384 pixel frame buffer (the maximum size supported by VP8) with 32
+# bits per pixel.
+XORG_DUMMY_VIDEO_RAM = 1048576 # KiB
+
 # By default, provide a maximum size that is large enough to support clients
 # with large or multiple monitors. This is a comma-separated list of
 # resolutions that will be made available if the X server supports RANDR. These
@@ -89,6 +109,89 @@ MAX_LAUNCH_FAILURES = SHORT_BACKOFF_THRESHOLD + 10
 g_desktops = []
 g_host_hash = hashlib.md5(socket.gethostname()).hexdigest()
 
+def gen_xorg_config(sizes):
+  return (
+      # This causes X to load the default GLX module, even if a proprietary one
+      # is installed in a different directory.
+      'Section "Files"\n'
+      '  ModulePath "/usr/lib/xorg/modules"\n'
+      'EndSection\n'
+      '\n'
+      # Suppress device probing, which happens by default.
+      'Section "ServerFlags"\n'
+      '  Option "AutoAddDevices" "false"\n'
+      '  Option "AutoEnableDevices" "false"\n'
+      '  Option "DontVTSwitch" "true"\n'
+      '  Option "PciForceNone" "true"\n'
+      'EndSection\n'
+      '\n'
+      'Section "InputDevice"\n'
+      # The host looks for this name to check whether it's running in a virtual
+      # session
+      '  Identifier "Chrome Remote Desktop Input"\n'
+      # While the xorg.conf man page specifies that both of these options are
+      # deprecated synonyms for `Option "Floating" "false"`, it turns out that
+      # if both aren't specified, the Xorg server will automatically attempt to
+      # add additional devices.
+      '  Option "CoreKeyboard" "true"\n'
+      '  Option "CorePointer" "true"\n'
+      '  Driver "void"\n'
+      'EndSection\n'
+      '\n'
+      'Section "Device"\n'
+      '  Identifier "Chrome Remote Desktop Videocard"\n'
+      '  Driver "dummy"\n'
+      '  VideoRam {video_ram}\n'
+      'EndSection\n'
+      '\n'
+      'Section "Monitor"\n'
+      '  Identifier "Chrome Remote Desktop Monitor"\n'
+      # The horizontal sync rate was calculated from the vertical refresh rate
+      # and the modline template:
+      # (33000 (vert total) * 0.1 Hz = 3.3 kHz)
+      '  HorizSync   3.3\n' # kHz
+      # The vertical refresh rate was chosen both to be low enough to have an
+      # acceptable dot clock at high resolutions, and then bumped down a little
+      # more so that in the unlikely event that a low refresh rate would break
+      # something, it would break obviously.
+      '  VertRefresh 0.1\n' # Hz
+      '{modelines}'
+      'EndSection\n'
+      '\n'
+      'Section "Screen"\n'
+      '  Identifier "Chrome Remote Desktop Screen"\n'
+      '  Device "Chrome Remote Desktop Videocard"\n'
+      '  Monitor "Chrome Remote Desktop Monitor"\n'
+      '  DefaultDepth 24\n'
+      '  SubSection "Display"\n'
+      '    Viewport 0 0\n'
+      '    Depth 24\n'
+      '    Modes {modes}\n'
+      '  EndSubSection\n'
+      'EndSection\n'
+      '\n'
+      'Section "ServerLayout"\n'
+      '  Identifier   "Chrome Remote Desktop Layout"\n'
+      '  Screen       "Chrome Remote Desktop Screen"\n'
+      '  InputDevice  "Chrome Remote Desktop Input"\n'
+      'EndSection\n'.format(
+          # This Modeline template allows resolutions up to the dummy driver's
+          # max supported resolution of 32767x32767 without additional
+          # calculation while meeting the driver's dot clock requirements. Note
+          # that VP8 (and thus the amount of video RAM chosen) only support a
+          # maximum resolution of 16384x16384.
+          # 32767x32767 should be possible if we switch fully to VP9 and
+          # increase the video RAM to 4GiB.
+          # The dot clock was calculated to match the VirtRefresh chosen above.
+          # (33000 * 33000 * 0.1 Hz = 108.9 MHz)
+          # Changes this line require matching changes to HorizSync and
+          # VertRefresh.
+          modelines="".join(
+              '  Modeline "{0}x{1}" 108.9 {0} 32998 32999 33000 '
+              '{1} 32998 32999 33000\n'.format(w, h) for w, h in sizes),
+          modes=" ".join('"{0}x{1}"'.format(w, h) for w, h in sizes),
+          video_ram=XORG_DUMMY_VIDEO_RAM))
+
 
 def is_supported_platform():
   # Always assume that the system is supported if the config directory or
@@ -102,9 +205,9 @@ def is_supported_platform():
   return (distribution[0]).lower() == 'ubuntu'
 
 
-def get_randr_supporting_x_server():
-  """Returns a path to an X server that supports the RANDR extension, if this
-  is found on the system. Otherwise returns None."""
+def locate_xvfb_randr():
+  """Returns a path to our RANDR-supporting Xvfb server, if it is found on the
+  system. Otherwise returns None."""
 
   xvfb = "/usr/bin/Xvfb-randr"
   if os.path.exists(xvfb):
@@ -238,6 +341,7 @@ class Desktop:
     self.host_proc = None
     self.child_env = None
     self.sizes = sizes
+    self.xorg_conf = None
     self.pulseaudio_pipe = None
     self.server_supports_exact_resize = False
     self.host_ready = False
@@ -356,6 +460,59 @@ class Desktop:
     self.ssh_auth_sockname = ("/tmp/chromoting.%s.ssh_auth_sock" %
                               os.environ["USER"])
 
+  def _launch_xvfb(self, display, x_auth_file, extra_x_args):
+    max_width = max([width for width, height in self.sizes])
+    max_height = max([height for width, height in self.sizes])
+
+    xvfb = locate_xvfb_randr()
+    if xvfb:
+      self.server_supports_exact_resize = True
+    else:
+      xvfb = "Xvfb"
+      self.server_supports_exact_resize = False
+
+    logging.info("Starting %s on display :%d" % (xvfb, display))
+    screen_option = "%dx%dx24" % (max_width, max_height)
+    self.x_proc = subprocess.Popen(
+        [xvfb, ":%d" % display,
+         "-auth", x_auth_file,
+         "-nolisten", "tcp",
+         "-noreset",
+         "-screen", "0", screen_option
+        ] + extra_x_args)
+    if not self.x_proc.pid:
+      raise Exception("Could not start Xvfb.")
+
+  def _launch_xorg(self, display, x_auth_file, extra_x_args):
+    with tempfile.NamedTemporaryFile(
+        prefix="chrome_remote_desktop_",
+        suffix=".conf", delete=False) as config_file:
+      config_file.write(gen_xorg_config(self.sizes))
+
+    # For now, we don't support exact resize with Xorg+dummy
+    self.server_supports_exact_resize = False
+    self.xorg_conf = config_file.name
+
+    logging.info("Starting Xorg on display :%d" % display)
+    # We use the child environment so the Xorg server picks up the Mesa libGL
+    # instead of any proprietary versions that may be installed, thanks to
+    # LD_LIBRARY_PATH.
+    # Note: This prevents any environment variable the user has set from
+    # affecting the Xorg server.
+    self.x_proc = subprocess.Popen(
+        ["Xorg", ":%d" % display,
+         "-auth", x_auth_file,
+         "-nolisten", "tcp",
+         "-noreset",
+         # Disable logging to a file and instead bump up the stderr verbosity
+         # so the equivalent information gets logged in our main log file.
+         "-logfile", "/dev/null",
+         "-verbose", "3",
+         "-config", config_file.name
+        ] + extra_x_args, env=self.child_env)
+    if not self.x_proc.pid:
+      raise Exception("Could not start Xorg.")
+
   def _launch_x_server(self, extra_x_args):
     x_auth_file = os.path.expanduser("~/.Xauthority")
     self.child_env["XAUTHORITY"] = x_auth_file
@@ -369,16 +526,6 @@ class Desktop:
     if ret_code != 0:
       raise Exception("xauth failed with code %d" % ret_code)
 
-    max_width = max([width for width, height in self.sizes])
-    max_height = max([height for width, height in self.sizes])
-
-    xvfb = get_randr_supporting_x_server()
-    if xvfb:
-      self.server_supports_exact_resize = True
-    else:
-      xvfb = "Xvfb"
-      self.server_supports_exact_resize = False
-
     # Disable the Composite extension iff the X session is the default
     # Unity-2D, since it uses Metacity which fails to generate DAMAGE
     # notifications correctly. See crbug.com/166468.
@@ -387,17 +534,10 @@ class Desktop:
         x_session[1] == "/usr/bin/gnome-session --session=ubuntu-2d"):
       extra_x_args.extend(["-extension", "Composite"])
 
-    logging.info("Starting %s on display :%d" % (xvfb, display))
-    screen_option = "%dx%dx24" % (max_width, max_height)
-    self.x_proc = subprocess.Popen(
-        [xvfb, ":%d" % display,
-         "-auth", x_auth_file,
-         "-nolisten", "tcp",
-         "-noreset",
-         "-screen", "0", screen_option
-        ] + extra_x_args)
-    if not self.x_proc.pid:
-      raise Exception("Could not start Xvfb.")
+    if USE_XORG_ENV_VAR in os.environ:
+      self._launch_xorg(display, x_auth_file, extra_x_args)
+    else:
+      self._launch_xvfb(display, x_auth_file, extra_x_args)
 
     self.child_env["DISPLAY"] = ":%d" % display
     self.child_env["CHROME_REMOTE_DESKTOP_SESSION"] = "1"
@@ -419,9 +559,9 @@ class Desktop:
         break
       time.sleep(0.5)
     if retcode != 0:
-      raise Exception("Could not connect to Xvfb.")
+      raise Exception("Could not connect to X server.")
     else:
-      logging.info("Xvfb is active.")
+      logging.info("X server is active.")
 
     # The remoting host expects the server to use "evdev" keycodes, but Xvfb
     # starts configured to use the "base" ruleset, resulting in XKB configuring
@@ -831,7 +971,7 @@ def cleanup():
 
   global g_desktops
   for desktop in g_desktops:
-    for proc, name in [(desktop.x_proc, "Xvfb"),
+    for proc, name in [(desktop.x_proc, "X server"),
                        (desktop.session_proc, "session"),
                        (desktop.host_proc, "host")]:
       if proc is not None:
@@ -848,6 +988,8 @@ def cleanup():
           psutil_proc.kill()
         except psutil.Error:
           logging.error("Error terminating process")
+    if desktop.xorg_conf is not None:
+      os.remove(desktop.xorg_conf)
 
   g_desktops = []
   if ParentProcessLogger.instance():
@@ -1048,7 +1190,7 @@ Web Store: https://chrome.google.com/remotedesktop"""
   parser.add_option("-s", "--size", dest="size", action="append",
                     help="Dimensions of virtual desktop. This can be specified "
                     "multiple times to make multiple screen resolutions "
-                    "available (if the Xvfb server supports this).")
+                    "available (if the X server supports this).")
   parser.add_option("-f", "--foreground", dest="foreground", default=False,
                     action="store_true",
                     help="Don't run as a background daemon.")
@@ -1182,7 +1324,7 @@ Web Store: https://chrome.google.com/remotedesktop"""
 
   # If a RANDR-supporting Xvfb is not available, limit the default size to
   # something more sensible.
-  if get_randr_supporting_x_server():
+  if USE_XORG_ENV_VAR not in os.environ and locate_xvfb_randr():
     default_sizes = DEFAULT_SIZES
   else:
     default_sizes = DEFAULT_SIZE_NO_RANDR
