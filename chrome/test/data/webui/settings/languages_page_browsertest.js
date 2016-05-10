@@ -83,7 +83,7 @@ TEST_F('SettingsLanguagesPageBrowserTest', 'MAYBE_LanguagesPage', function() {
 
     test('language detail', function() {
       var languageButton = languagesPage.$.languagesCollapse.querySelector(
-          '.list-item paper-icon-button[icon=settings]');
+          '.list-item paper-icon-button[icon="cr:settings"]');
       assertTrue(!!languageButton);
       MockInteractions.tap(languageButton);
 

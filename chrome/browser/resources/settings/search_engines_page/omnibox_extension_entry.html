@@ -1,3 +1,4 @@
+<link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/html/icon.html">
 <link rel="import" href="chrome://md-settings/search_engines_page/search_engines_browser_proxy.html">
@@ -25,17 +26,18 @@
         <span class="name">[[engine.displayName]]</span>
       </div>
       <div class="keyword-column">[[engine.keyword]]</div>
-        <paper-icon-button icon="more-vert" toggles active="{{editMenuOpened}}">
-        </paper-icon-button>
-        <iron-dropdown opened="{{editMenuOpened}}" horizontal-align="right"
-            vertical-align="top">
-          <div class="dropdown-content">
-            <paper-item on-tap="onManageTap_" id="manage">
-                $i18n{searchEnginesManageExtension}</paper-item>
-            <paper-item on-tap="onDisableTap_" id="disable">
-                $i18n{disable}</paper-item>
-          <div>
-        </iron-dropdown>
+      <paper-icon-button icon="cr:more-vert" toggles
+          active="{{editMenuOpened}}">
+      </paper-icon-button>
+      <iron-dropdown opened="{{editMenuOpened}}" horizontal-align="right"
+          vertical-align="top">
+        <div class="dropdown-content">
+          <paper-item on-tap="onManageTap_" id="manage">
+              $i18n{searchEnginesManageExtension}</paper-item>
+          <paper-item on-tap="onDisableTap_" id="disable">
+              $i18n{disable}</paper-item>
+        <div>
+      </iron-dropdown>
     </div>
   </template>
   <script src="omnibox_extension_entry.js"></script>

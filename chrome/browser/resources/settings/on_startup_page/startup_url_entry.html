@@ -1,7 +1,7 @@
+<link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/html/icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-dropdown/iron-dropdown.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-item/paper-item.html">
 <link rel="import" href="chrome://md-settings/on_startup_page/startup_urls_page_browser_proxy.html">
@@ -34,7 +34,7 @@
         <div class="text-elide">[[model.title]]</div>
         <div class="text-elide secondary">[[model.url]]</div>
       </div>
-      <paper-icon-button id="dots" icon="more-vert" toggles
+      <paper-icon-button id="dots" icon="cr:more-vert" toggles
           active="{{menuOpened}}"></paper-icon-button>
       <template is="dom-if" if="[[menuOpened]]">
         <iron-dropdown vertical-align="top" horizontal-align="right"

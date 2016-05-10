@@ -1,7 +1,7 @@
+<link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-list/iron-list.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
@@ -30,8 +30,8 @@
             <div class="start" title="[[item.language.nativeDisplayName]]">
               [[item.language.displayName]]
             </div>
-            <paper-icon-button icon="clear" on-tap="onRemoveLanguageTap_"
-                hidden$="[[!item.removable]]">
+            <paper-icon-button icon="cr:clear"
+                on-tap="onRemoveLanguageTap_" hidden$="[[!item.removable]]">
             </paper-icon-button>
           </div>
         </template>

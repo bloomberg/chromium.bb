@@ -1,5 +1,5 @@
+<link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
 
 <dom-module id="network-proxy-exclusions">
   <link rel="import" type="css" href="network_proxy_exclusions.css">
@@ -8,7 +8,8 @@
       <template is="dom-repeat" items="[[exclusions]]">
         <div class="layout horizontal">
           <span class="flex">[[item]]</span>
-          <iron-icon icon="clear" on-tap="onRemoveTap_"></iron-icon>
+          <iron-icon icon="cr:clear" on-tap="onRemoveTap_">
+          </iron-icon>
         </div>
       </template>
     </div>

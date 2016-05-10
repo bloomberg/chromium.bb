@@ -547,7 +547,7 @@ Polymer({
    * @private
    */
   getPreferredIcon_: function(preferNetwork) {
-    return preferNetwork ? 'star' : 'star-border';
+    return preferNetwork ? 'cr:star' : 'cr:star-border';
   },
 
   /**

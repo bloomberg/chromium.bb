@@ -7,6 +7,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_expand_button/cr_expand_button.html">
+<link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://md-settings/settings_page/settings_animated_pages.html">
 <link rel="import" href="chrome://md-settings/settings_page/settings_subpage.html">
 <link rel="import" href="chrome://md-settings/settings_shared_css.html">
@@ -62,7 +63,7 @@
                   </iron-icon>
                 </div>
 </if>
-                <paper-icon-button icon="settings"
+                <paper-icon-button icon="cr:settings"
                     on-tap="onShowLanguageDetailTap_"></paper-icon-button>
               </div>
             </template>
@@ -97,7 +98,7 @@
                           item.id, languages.inputMethods.currentId)]]">
                   </iron-icon>
                 </div>
-                <paper-icon-button icon="settings"
+                <paper-icon-button icon="cr:settings"
                     on-tap="onInputMethodOptionsTap_"
                     hidden$="[[!item.hasOptionsPage]]">
                 </paper-icon-button>
@@ -131,7 +132,7 @@
                     [[item.language.displayName]]
                   </paper-checkbox>
                 </div>
-                <paper-icon-button icon="settings"
+                <paper-icon-button icon="cr:settings"
                     on-tap="onShowLanguageDetailTap_"></paper-icon-button>
               </div>
             </template>
