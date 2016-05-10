@@ -591,7 +591,7 @@ views::View* TranslateBubbleView::CreateViewBeforeTranslate() {
     layout->StartRow(0, COLUMN_SET_ID_MESSAGE);
     layout->SkipColumns(1);
     always_translate_checkbox_ = new views::Checkbox(
-        l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_ALWAYS));
+        l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_ALWAYS_DO_THIS));
     always_translate_checkbox_->SetChecked(
         model_->ShouldAlwaysTranslateBeCheckedByDefault());
     always_translate_checkbox_->set_id(BUTTON_ID_ALWAYS_TRANSLATE);

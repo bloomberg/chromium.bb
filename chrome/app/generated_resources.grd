@@ -11696,6 +11696,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
           Try again
         </message>
         <message name="IDS_TRANSLATE_BUBBLE_ALWAYS" desc="Text to show for the translate bubble checkbox to always translate from one language to another">
+          Always translate
+        </message>
+        <message name="IDS_TRANSLATE_BUBBLE_ALWAYS_DO_THIS" desc="Text to show for the translate bubble checkbox to always translate from one language to another in 2016Q2 UI">
           Always do this
         </message>
         <message name="IDS_TRANSLATE_BUBBLE_OPTIONS_MENU_BUTTON" desc="Text to show for the translate bubble 'Options' menu button">
