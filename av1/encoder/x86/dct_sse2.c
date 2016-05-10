@@ -153,7 +153,7 @@ static void fadst4_sse2(__m128i *in) {
 }
 
 void av1_fht4x4_sse2(const int16_t *input, tran_low_t *output, int stride,
-                      int tx_type) {
+                     int tx_type) {
   __m128i in[4];
 
   switch (tx_type) {
@@ -180,12 +180,14 @@ void av1_fht4x4_sse2(const int16_t *input, tran_low_t *output, int stride,
   }
 }
 
-void av1_fdct8x8_quant_sse2(
-    const int16_t *input, int stride, int16_t *coeff_ptr, intptr_t n_coeffs,
-    int skip_block, const int16_t *zbin_ptr, const int16_t *round_ptr,
-    const int16_t *quant_ptr, const int16_t *quant_shift_ptr,
-    int16_t *qcoeff_ptr, int16_t *dqcoeff_ptr, const int16_t *dequant_ptr,
-    uint16_t *eob_ptr, const int16_t *scan_ptr, const int16_t *iscan_ptr) {
+void av1_fdct8x8_quant_sse2(const int16_t *input, int stride,
+                            int16_t *coeff_ptr, intptr_t n_coeffs,
+                            int skip_block, const int16_t *zbin_ptr,
+                            const int16_t *round_ptr, const int16_t *quant_ptr,
+                            const int16_t *quant_shift_ptr, int16_t *qcoeff_ptr,
+                            int16_t *dqcoeff_ptr, const int16_t *dequant_ptr,
+                            uint16_t *eob_ptr, const int16_t *scan_ptr,
+                            const int16_t *iscan_ptr) {
   __m128i zero;
   int pass;
   // Constants
@@ -1130,7 +1132,7 @@ static void fadst8_sse2(__m128i *in) {
 }
 
 void av1_fht8x8_sse2(const int16_t *input, tran_low_t *output, int stride,
-                      int tx_type) {
+                     int tx_type) {
   __m128i in[8];
 
   switch (tx_type) {
@@ -2013,7 +2015,7 @@ static void fadst16_sse2(__m128i *in0, __m128i *in1) {
 }
 
 void av1_fht16x16_sse2(const int16_t *input, tran_low_t *output, int stride,
-                        int tx_type) {
+                       int tx_type) {
   __m128i in0[16], in1[16];
 
   switch (tx_type) {

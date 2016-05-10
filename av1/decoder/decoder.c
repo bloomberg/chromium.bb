@@ -151,8 +151,8 @@ static int equal_dimensions(const YV12_BUFFER_CONFIG *a,
 }
 
 aom_codec_err_t av1_copy_reference_dec(AV1Decoder *pbi,
-                                        AOM_REFFRAME ref_frame_flag,
-                                        YV12_BUFFER_CONFIG *sd) {
+                                       AOM_REFFRAME ref_frame_flag,
+                                       YV12_BUFFER_CONFIG *sd) {
   AV1_COMMON *cm = &pbi->common;
 
   /* TODO(jkoleszar): The decoder doesn't have any real knowledge of what the
@@ -180,8 +180,8 @@ aom_codec_err_t av1_copy_reference_dec(AV1Decoder *pbi,
 }
 
 aom_codec_err_t av1_set_reference_dec(AV1_COMMON *cm,
-                                       AOM_REFFRAME ref_frame_flag,
-                                       YV12_BUFFER_CONFIG *sd) {
+                                      AOM_REFFRAME ref_frame_flag,
+                                      YV12_BUFFER_CONFIG *sd) {
   RefBuffer *ref_buf = NULL;
   RefCntBuffer *const frame_bufs = cm->buffer_pool->frame_bufs;
 
@@ -266,7 +266,7 @@ static void swap_frame_buffers(AV1Decoder *pbi) {
 }
 
 int av1_receive_compressed_data(AV1Decoder *pbi, size_t size,
-                                 const uint8_t **psource) {
+                                const uint8_t **psource) {
   AV1_COMMON *volatile const cm = &pbi->common;
   BufferPool *volatile const pool = cm->buffer_pool;
   RefCntBuffer *volatile const frame_bufs = cm->buffer_pool->frame_bufs;
@@ -424,9 +424,9 @@ int av1_get_raw_frame(AV1Decoder *pbi, YV12_BUFFER_CONFIG *sd) {
 }
 
 aom_codec_err_t av1_parse_superframe_index(const uint8_t *data, size_t data_sz,
-                                            uint32_t sizes[8], int *count,
-                                            aom_decrypt_cb decrypt_cb,
-                                            void *decrypt_state) {
+                                           uint32_t sizes[8], int *count,
+                                           aom_decrypt_cb decrypt_cb,
+                                           void *decrypt_state) {
   // A chunk ending with a byte matching 0xc0 is an invalid chunk unless
   // it is a super frame index. If the last byte of real video compression
   // data is 0xc0 the encoder must add a 0 byte. If we have the marker but

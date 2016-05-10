@@ -826,8 +826,8 @@ static void build_y_mask(const loop_filter_info_n *const lfi_n,
 // by mi_row, mi_col.
 // TODO(JBB): This function only works for yv12.
 void av1_setup_mask(AV1_COMMON *const cm, const int mi_row, const int mi_col,
-                     MODE_INFO **mi, const int mode_info_stride,
-                     LOOP_FILTER_MASK *lfm) {
+                    MODE_INFO **mi, const int mode_info_stride,
+                    LOOP_FILTER_MASK *lfm) {
   int idx_32, idx_16, idx_8;
   const loop_filter_info_n *const lfi_n = &cm->lf_info;
   MODE_INFO **mip = mi;
@@ -1152,9 +1152,8 @@ static void highbd_filter_selectively_vert(
 #endif  // CONFIG_AOM_HIGHBITDEPTH
 
 void av1_filter_block_plane_non420(AV1_COMMON *cm,
-                                    struct macroblockd_plane *plane,
-                                    MODE_INFO **mi_8x8, int mi_row,
-                                    int mi_col) {
+                                   struct macroblockd_plane *plane,
+                                   MODE_INFO **mi_8x8, int mi_row, int mi_col) {
   const int ss_x = plane->subsampling_x;
   const int ss_y = plane->subsampling_y;
   const int row_step = 1 << ss_y;
@@ -1315,8 +1314,8 @@ void av1_filter_block_plane_non420(AV1_COMMON *cm,
 }
 
 void av1_filter_block_plane_ss00(AV1_COMMON *const cm,
-                                  struct macroblockd_plane *const plane,
-                                  int mi_row, LOOP_FILTER_MASK *lfm) {
+                                 struct macroblockd_plane *const plane,
+                                 int mi_row, LOOP_FILTER_MASK *lfm) {
   struct buf_2d *const dst = &plane->dst;
   uint8_t *const dst0 = dst->buf;
   int r;
@@ -1406,8 +1405,8 @@ void av1_filter_block_plane_ss00(AV1_COMMON *const cm,
 }
 
 void av1_filter_block_plane_ss11(AV1_COMMON *const cm,
-                                  struct macroblockd_plane *const plane,
-                                  int mi_row, LOOP_FILTER_MASK *lfm) {
+                                 struct macroblockd_plane *const plane,
+                                 int mi_row, LOOP_FILTER_MASK *lfm) {
   struct buf_2d *const dst = &plane->dst;
   uint8_t *const dst0 = dst->buf;
   int r, c;
@@ -1520,8 +1519,8 @@ void av1_filter_block_plane_ss11(AV1_COMMON *const cm,
 }
 
 void av1_loop_filter_rows(YV12_BUFFER_CONFIG *frame_buffer, AV1_COMMON *cm,
-                           struct macroblockd_plane planes[MAX_MB_PLANE],
-                           int start, int stop, int y_only) {
+                          struct macroblockd_plane planes[MAX_MB_PLANE],
+                          int start, int stop, int y_only) {
   const int num_planes = y_only ? 1 : MAX_MB_PLANE;
   enum lf_path path;
   LOOP_FILTER_MASK lfm;
@@ -1558,7 +1557,7 @@ void av1_loop_filter_rows(YV12_BUFFER_CONFIG *frame_buffer, AV1_COMMON *cm,
             break;
           case LF_PATH_SLOW:
             av1_filter_block_plane_non420(cm, &planes[plane], mi + mi_col,
-                                           mi_row, mi_col);
+                                          mi_row, mi_col);
             break;
         }
       }
@@ -1567,8 +1566,8 @@ void av1_loop_filter_rows(YV12_BUFFER_CONFIG *frame_buffer, AV1_COMMON *cm,
 }
 
 void av1_loop_filter_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
-                            MACROBLOCKD *xd, int frame_filter_level, int y_only,
-                            int partial_frame) {
+                           MACROBLOCKD *xd, int frame_filter_level, int y_only,
+                           int partial_frame) {
   int start_mi_row, end_mi_row, mi_rows_to_filter;
   if (!frame_filter_level) return;
   start_mi_row = 0;
@@ -1585,8 +1584,7 @@ void av1_loop_filter_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
 
 void av1_loop_filter_data_reset(
     LFWorkerData *lf_data, YV12_BUFFER_CONFIG *frame_buffer,
-    struct AV1Common *cm,
-    const struct macroblockd_plane planes[MAX_MB_PLANE]) {
+    struct AV1Common *cm, const struct macroblockd_plane planes[MAX_MB_PLANE]) {
   lf_data->frame_buffer = frame_buffer;
   lf_data->cm = cm;
   lf_data->start = 0;
@@ -1598,6 +1596,6 @@ void av1_loop_filter_data_reset(
 int av1_loop_filter_worker(LFWorkerData *const lf_data, void *unused) {
   (void)unused;
   av1_loop_filter_rows(lf_data->frame_buffer, lf_data->cm, lf_data->planes,
-                        lf_data->start, lf_data->stop, lf_data->y_only);
+                       lf_data->start, lf_data->stop, lf_data->y_only);
   return 1;
 }

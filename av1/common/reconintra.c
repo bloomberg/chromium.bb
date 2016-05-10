@@ -101,8 +101,8 @@ static const uint8_t *const orders[BLOCK_SIZES] = {
 };
 
 static int av1_has_right(BLOCK_SIZE bsize, int mi_row, int mi_col,
-                          int right_available, TX_SIZE txsz, int y, int x,
-                          int ss_x) {
+                         int right_available, TX_SIZE txsz, int y, int x,
+                         int ss_x) {
   if (y == 0) {
     int wl = mi_width_log2_lookup[bsize];
     int hl = mi_height_log2_lookup[bsize];
@@ -134,8 +134,8 @@ static int av1_has_right(BLOCK_SIZE bsize, int mi_row, int mi_col,
 }
 
 static int av1_has_bottom(BLOCK_SIZE bsize, int mi_row, int mi_col,
-                           int bottom_available, TX_SIZE txsz, int y, int x,
-                           int ss_y) {
+                          int bottom_available, TX_SIZE txsz, int y, int x,
+                          int ss_y) {
   if (x == 0) {
     int wl = mi_width_log2_lookup[bsize];
     int hl = mi_height_log2_lookup[bsize];
@@ -676,9 +676,9 @@ static void build_intra_predictors(const MACROBLOCKD *xd, const uint8_t *ref,
 }
 
 void av1_predict_intra_block(const MACROBLOCKD *xd, int bwl_in, int bhl_in,
-                              TX_SIZE tx_size, PREDICTION_MODE mode,
-                              const uint8_t *ref, int ref_stride, uint8_t *dst,
-                              int dst_stride, int aoff, int loff, int plane) {
+                             TX_SIZE tx_size, PREDICTION_MODE mode,
+                             const uint8_t *ref, int ref_stride, uint8_t *dst,
+                             int dst_stride, int aoff, int loff, int plane) {
   const int txw = (1 << tx_size);
   const int have_top = loff || xd->up_available;
   const int have_left = aoff || xd->left_available;
@@ -694,10 +694,10 @@ void av1_predict_intra_block(const MACROBLOCKD *xd, int bwl_in, int bhl_in,
   const int right_available =
       mi_col + (bw >> !pd->subsampling_x) < xd->tile.mi_col_end;
   const int have_right = av1_has_right(bsize, mi_row, mi_col, right_available,
-                                        tx_size, loff, aoff, pd->subsampling_x);
+                                       tx_size, loff, aoff, pd->subsampling_x);
   const int have_bottom =
       av1_has_bottom(bsize, mi_row, mi_col, xd->mb_to_bottom_edge > 0, tx_size,
-                      loff, aoff, pd->subsampling_y);
+                     loff, aoff, pd->subsampling_y);
   const int wpx = 4 * bw;
   const int hpx = 4 * bh;
   const int txpx = 4 * txw;

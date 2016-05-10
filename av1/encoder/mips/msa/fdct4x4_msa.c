@@ -15,7 +15,7 @@
 #include "av1/encoder/mips/msa/fdct_msa.h"
 
 void av1_fwht4x4_msa(const int16_t *input, int16_t *output,
-                      int32_t src_stride) {
+                     int32_t src_stride) {
   v8i16 in0, in1, in2, in3, in4;
 
   LD_SH4(input, src_stride, in0, in1, in2, in3);
@@ -47,7 +47,7 @@ void av1_fwht4x4_msa(const int16_t *input, int16_t *output,
 }
 
 void av1_fht4x4_msa(const int16_t *input, int16_t *output, int32_t stride,
-                     int32_t tx_type) {
+                    int32_t tx_type) {
   v8i16 in0, in1, in2, in3;
 
   LD_SH4(input, stride, in0, in1, in2, in3);

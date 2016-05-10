@@ -989,7 +989,7 @@ static const transform_2d FHT_16[] = {
 };
 
 void av1_fht4x4_c(const int16_t *input, tran_low_t *output, int stride,
-                   int tx_type) {
+                  int tx_type) {
   if (tx_type == DCT_DCT) {
     aom_fdct4x4_c(input, output, stride);
   } else {
@@ -1016,18 +1016,18 @@ void av1_fht4x4_c(const int16_t *input, tran_low_t *output, int stride,
 }
 
 void av1_fdct8x8_quant_c(const int16_t *input, int stride,
-                          tran_low_t *coeff_ptr, intptr_t n_coeffs,
-                          int skip_block, const int16_t *zbin_ptr,
-                          const int16_t *round_ptr, const int16_t *quant_ptr,
-                          const int16_t *quant_shift_ptr,
-                          tran_low_t *qcoeff_ptr, tran_low_t *dqcoeff_ptr,
-                          const int16_t *dequant_ptr, uint16_t *eob_ptr,
-                          const int16_t *scan, const int16_t *iscan
+                         tran_low_t *coeff_ptr, intptr_t n_coeffs,
+                         int skip_block, const int16_t *zbin_ptr,
+                         const int16_t *round_ptr, const int16_t *quant_ptr,
+                         const int16_t *quant_shift_ptr, tran_low_t *qcoeff_ptr,
+                         tran_low_t *dqcoeff_ptr, const int16_t *dequant_ptr,
+                         uint16_t *eob_ptr, const int16_t *scan,
+                         const int16_t *iscan
 #if CONFIG_AOM_QM
-                          ,
-                          const qm_val_t *qm_ptr, const qm_val_t *iqm_ptr
+                         ,
+                         const qm_val_t *qm_ptr, const qm_val_t *iqm_ptr
 #endif
-                          ) {
+                         ) {
   int eob = -1;
 
   int i, j;
@@ -1142,7 +1142,7 @@ void av1_fdct8x8_quant_c(const int16_t *input, int stride,
 }
 
 void av1_fht8x8_c(const int16_t *input, tran_low_t *output, int stride,
-                   int tx_type) {
+                  int tx_type) {
   if (tx_type == DCT_DCT) {
     aom_fdct8x8_c(input, output, stride);
   } else {
@@ -1225,7 +1225,7 @@ void av1_fwht4x4_c(const int16_t *input, tran_low_t *output, int stride) {
 }
 
 void av1_fht16x16_c(const int16_t *input, tran_low_t *output, int stride,
-                     int tx_type) {
+                    int tx_type) {
   if (tx_type == DCT_DCT) {
     aom_fdct16x16_c(input, output, stride);
   } else {
@@ -1253,22 +1253,22 @@ void av1_fht16x16_c(const int16_t *input, tran_low_t *output, int stride,
 
 #if CONFIG_AOM_HIGHBITDEPTH
 void av1_highbd_fht4x4_c(const int16_t *input, tran_low_t *output, int stride,
-                          int tx_type) {
+                         int tx_type) {
   av1_fht4x4_c(input, output, stride, tx_type);
 }
 
 void av1_highbd_fht8x8_c(const int16_t *input, tran_low_t *output, int stride,
-                          int tx_type) {
+                         int tx_type) {
   av1_fht8x8_c(input, output, stride, tx_type);
 }
 
 void av1_highbd_fwht4x4_c(const int16_t *input, tran_low_t *output,
-                           int stride) {
+                          int stride) {
   av1_fwht4x4_c(input, output, stride);
 }
 
-void av1_highbd_fht16x16_c(const int16_t *input, tran_low_t *output,
-                            int stride, int tx_type) {
+void av1_highbd_fht16x16_c(const int16_t *input, tran_low_t *output, int stride,
+                           int tx_type) {
   av1_fht16x16_c(input, output, stride, tx_type);
 }
 #endif  // CONFIG_AOM_HIGHBITDEPTH

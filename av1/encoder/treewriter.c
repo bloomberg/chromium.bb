@@ -28,7 +28,7 @@ static void tree2tok(struct av1_token *tokens, const aom_tree_index *tree,
 }
 
 void av1_tokens_from_tree(struct av1_token *tokens,
-                           const aom_tree_index *tree) {
+                          const aom_tree_index *tree) {
   tree2tok(tokens, tree, 0, 0, 0);
 }
 
@@ -53,7 +53,7 @@ static unsigned int convert_distribution(unsigned int i, aom_tree tree,
 }
 
 void av1_tree_probs_from_distribution(aom_tree tree,
-                                       unsigned int branch_ct[/* n-1 */][2],
-                                       const unsigned int num_events[/* n */]) {
+                                      unsigned int branch_ct[/* n-1 */][2],
+                                      const unsigned int num_events[/* n */]) {
   convert_distribution(0, tree, branch_ct, num_events);
 }

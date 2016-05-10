@@ -39,7 +39,7 @@ const aom_tree_index av1_mv_class0_tree[TREE_SIZE(CLASS0_SIZE)] = {
 };
 
 const aom_tree_index av1_mv_fp_tree[TREE_SIZE(MV_FP_SIZE)] = { -0, 2,  -1,
-                                                                4,  -2, -3 };
+                                                               4,  -2, -3 };
 
 static const nmv_context default_nmv_context = {
   { 32, 64, 96 },
@@ -211,8 +211,8 @@ void av1_adapt_mv_probs(AV1_COMMON *cm, int allow_hp) {
       aom_tree_merge_probs(av1_mv_fp_tree, pre_comp->fp, c->fp, comp->fp);
 
       if (allow_hp) {
-        comp->class0_hp = mode_mv_merge_probs(pre_comp->class0_hp,
-                                              c->class0_hp);
+        comp->class0_hp =
+            mode_mv_merge_probs(pre_comp->class0_hp, c->class0_hp);
         comp->hp = mode_mv_merge_probs(pre_comp->hp, c->hp);
       }
     }
@@ -256,8 +256,7 @@ void av1_adapt_mv_probs(AV1_COMMON *cm, int allow_hp) {
 void av1_init_mv_probs(AV1_COMMON *cm) {
 #if CONFIG_REF_MV
   int i;
-  for (i = 0; i < NMV_CONTEXTS; ++i)
-    cm->fc->nmvc[i] = default_nmv_context;
+  for (i = 0; i < NMV_CONTEXTS; ++i) cm->fc->nmvc[i] = default_nmv_context;
 #else
   cm->fc->nmvc = default_nmv_context;
 #endif

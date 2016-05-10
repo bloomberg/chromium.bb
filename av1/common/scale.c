@@ -45,11 +45,11 @@ MV32 av1_scale_mv(const MV *mv, int x, int y, const struct scale_factors *sf) {
 
 #if CONFIG_AOM_HIGHBITDEPTH
 void av1_setup_scale_factors_for_frame(struct scale_factors *sf, int other_w,
-                                        int other_h, int this_w, int this_h,
-                                        int use_highbd) {
+                                       int other_h, int this_w, int this_h,
+                                       int use_highbd) {
 #else
 void av1_setup_scale_factors_for_frame(struct scale_factors *sf, int other_w,
-                                        int other_h, int this_w, int this_h) {
+                                       int other_h, int this_w, int this_h) {
 #endif
   if (!valid_ref_frame_size(other_w, other_h, this_w, this_h)) {
     sf->x_scale_fp = REF_INVALID_SCALE;

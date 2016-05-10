@@ -88,8 +88,8 @@ BLOCK_ERROR_BLOCKSIZE_MSA(1024)
 /* clang-format on */
 
 int64_t av1_block_error_msa(const tran_low_t *coeff_ptr,
-                             const tran_low_t *dq_coeff_ptr, intptr_t blk_size,
-                             int64_t *ssz) {
+                            const tran_low_t *dq_coeff_ptr, intptr_t blk_size,
+                            int64_t *ssz) {
   int64_t err;
   const int16_t *coeff = (const int16_t *)coeff_ptr;
   const int16_t *dq_coeff = (const int16_t *)dq_coeff_ptr;

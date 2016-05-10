@@ -44,11 +44,11 @@ static int64_t try_filter_frame(const YV12_BUFFER_CONFIG *sd,
 
   if (cpi->num_workers > 1)
     av1_loop_filter_frame_mt(cm->frame_to_show, cm, cpi->td.mb.e_mbd.plane,
-                              filt_level, 1, partial_frame, cpi->workers,
-                              cpi->num_workers, &cpi->lf_row_sync);
+                             filt_level, 1, partial_frame, cpi->workers,
+                             cpi->num_workers, &cpi->lf_row_sync);
   else
     av1_loop_filter_frame(cm->frame_to_show, cm, &cpi->td.mb.e_mbd, filt_level,
-                           1, partial_frame);
+                          1, partial_frame);
 
 #if CONFIG_AOM_HIGHBITDEPTH
   if (cm->use_highbitdepth) {
@@ -147,7 +147,7 @@ static int search_filter_level(const YV12_BUFFER_CONFIG *sd, AV1_COMP *cpi,
 }
 
 void av1_pick_filter_level(const YV12_BUFFER_CONFIG *sd, AV1_COMP *cpi,
-                            LPF_PICK_METHOD method) {
+                           LPF_PICK_METHOD method) {
   AV1_COMMON *const cm = &cpi->common;
   struct loopfilter *const lf = &cm->lf;
 

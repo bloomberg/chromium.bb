@@ -122,7 +122,7 @@ void av1_write_prob_diff_update(aom_writer *w, aom_prob newp, aom_prob oldp) {
 }
 
 int av1_prob_diff_update_savings_search(const unsigned int *ct, aom_prob oldp,
-                                         aom_prob *bestp, aom_prob upd) {
+                                        aom_prob *bestp, aom_prob upd) {
   const int old_b = cost_branch256(ct, oldp);
   int bestsavings = 0;
   aom_prob newp, bestnewp = oldp;
@@ -142,9 +142,9 @@ int av1_prob_diff_update_savings_search(const unsigned int *ct, aom_prob oldp,
 }
 
 int av1_prob_diff_update_savings_search_model(const unsigned int *ct,
-                                               const aom_prob *oldp,
-                                               aom_prob *bestp, aom_prob upd,
-                                               int stepsize) {
+                                              const aom_prob *oldp,
+                                              aom_prob *bestp, aom_prob upd,
+                                              int stepsize) {
   int i, old_b, new_b, update_b, savings, bestsavings, step;
   int newp;
   aom_prob bestnewp, newplist[ENTROPY_NODES], oldplist[ENTROPY_NODES];
@@ -198,7 +198,7 @@ int av1_prob_diff_update_savings_search_model(const unsigned int *ct,
 }
 
 void av1_cond_prob_diff_update(aom_writer *w, aom_prob *oldp,
-                                const unsigned int ct[2]) {
+                               const unsigned int ct[2]) {
   const aom_prob upd = DIFF_UPDATE_PROB;
   aom_prob newp = get_binary_prob(ct[0], ct[1]);
   const int savings =
@@ -214,7 +214,7 @@ void av1_cond_prob_diff_update(aom_writer *w, aom_prob *oldp,
 }
 
 int av1_cond_prob_diff_update_savings(aom_prob *oldp,
-                                       const unsigned int ct[2]) {
+                                      const unsigned int ct[2]) {
   const aom_prob upd = DIFF_UPDATE_PROB;
   aom_prob newp = get_binary_prob(ct[0], ct[1]);
   const int savings =

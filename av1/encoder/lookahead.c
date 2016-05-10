@@ -44,13 +44,13 @@ void av1_lookahead_destroy(struct lookahead_ctx *ctx) {
 }
 
 struct lookahead_ctx *av1_lookahead_init(unsigned int width,
-                                          unsigned int height,
-                                          unsigned int subsampling_x,
-                                          unsigned int subsampling_y,
+                                         unsigned int height,
+                                         unsigned int subsampling_x,
+                                         unsigned int subsampling_y,
 #if CONFIG_AOM_HIGHBITDEPTH
-                                          int use_highbitdepth,
+                                         int use_highbitdepth,
 #endif
-                                          unsigned int depth) {
+                                         unsigned int depth) {
   struct lookahead_ctx *ctx = NULL;
 
   // Clamp the lookahead queue depth
@@ -85,11 +85,11 @@ bail:
 #define USE_PARTIAL_COPY 0
 
 int av1_lookahead_push(struct lookahead_ctx *ctx, YV12_BUFFER_CONFIG *src,
-                        int64_t ts_start, int64_t ts_end,
+                       int64_t ts_start, int64_t ts_end,
 #if CONFIG_AOM_HIGHBITDEPTH
-                        int use_highbitdepth,
+                       int use_highbitdepth,
 #endif
-                        unsigned int flags) {
+                       unsigned int flags) {
   struct lookahead_entry *buf;
 #if USE_PARTIAL_COPY
   int row, col, active_end;
@@ -147,7 +147,7 @@ int av1_lookahead_push(struct lookahead_ctx *ctx, YV12_BUFFER_CONFIG *src,
 
         // Only copy this active region.
         av1_copy_and_extend_frame_with_rect(src, &buf->img, row << 4, col << 4,
-                                             16, (active_end - col) << 4);
+                                            16, (active_end - col) << 4);
 
         // Start again from the end of this active region.
         col = active_end;
@@ -190,7 +190,7 @@ int av1_lookahead_push(struct lookahead_ctx *ctx, YV12_BUFFER_CONFIG *src,
 }
 
 struct lookahead_entry *av1_lookahead_pop(struct lookahead_ctx *ctx,
-                                           int drain) {
+                                          int drain) {
   struct lookahead_entry *buf = NULL;
 
   if (ctx && ctx->sz && (drain || ctx->sz == ctx->max_sz - MAX_PRE_FRAMES)) {
@@ -201,7 +201,7 @@ struct lookahead_entry *av1_lookahead_pop(struct lookahead_ctx *ctx,
 }
 
 struct lookahead_entry *av1_lookahead_peek(struct lookahead_ctx *ctx,
-                                            int index) {
+                                           int index) {
   struct lookahead_entry *buf = NULL;
 
   if (index >= 0) {

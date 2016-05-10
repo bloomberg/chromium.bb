@@ -33,18 +33,18 @@ void av1_disable_segmentation(struct segmentation *seg) {
 }
 
 void av1_set_segment_data(struct segmentation *seg, signed char *feature_data,
-                           unsigned char abs_delta) {
+                          unsigned char abs_delta) {
   seg->abs_delta = abs_delta;
 
   memcpy(seg->feature_data, feature_data, sizeof(seg->feature_data));
 }
 void av1_disable_segfeature(struct segmentation *seg, int segment_id,
-                             SEG_LVL_FEATURES feature_id) {
+                            SEG_LVL_FEATURES feature_id) {
   seg->feature_mask[segment_id] &= ~(1 << feature_id);
 }
 
 void av1_clear_segdata(struct segmentation *seg, int segment_id,
-                        SEG_LVL_FEATURES feature_id) {
+                       SEG_LVL_FEATURES feature_id) {
   seg->feature_data[segment_id][feature_id] = 0;
 }
 
@@ -278,8 +278,8 @@ void av1_choose_segmap_coding_method(AV1_COMMON *cm, MACROBLOCKD *xd) {
 
 #if CONFIG_MISC_FIXES
       av1_prob_diff_update_savings_search(temporal_predictor_count[i],
-                                           segp->pred_probs[i],
-                                           &t_nopred_prob[i], DIFF_UPDATE_PROB);
+                                          segp->pred_probs[i],
+                                          &t_nopred_prob[i], DIFF_UPDATE_PROB);
 #else
       t_nopred_prob[i] = get_binary_prob(count0, count1);
 #endif

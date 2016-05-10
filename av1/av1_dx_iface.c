@@ -574,7 +574,7 @@ static aom_codec_err_t decoder_decode(aom_codec_alg_priv_t *ctx,
   }
 
   res = av1_parse_superframe_index(data, data_sz, frame_sizes, &frame_count,
-                                    ctx->decrypt_cb, ctx->decrypt_state);
+                                   ctx->decrypt_cb, ctx->decrypt_state);
   if (res != AOM_CODEC_OK) return res;
 
   if (ctx->frame_parallel_decode) {
@@ -778,7 +778,7 @@ static aom_codec_err_t ctrl_set_reference(aom_codec_alg_priv_t *ctx,
     FrameWorkerData *const frame_worker_data = (FrameWorkerData *)worker->data1;
     image2yuvconfig(&frame->img, &sd);
     return av1_set_reference_dec(&frame_worker_data->pbi->common,
-                                  (AOM_REFFRAME)frame->frame_type, &sd);
+                                 (AOM_REFFRAME)frame->frame_type, &sd);
   } else {
     return AOM_CODEC_INVALID_PARAM;
   }
@@ -801,7 +801,7 @@ static aom_codec_err_t ctrl_copy_reference(aom_codec_alg_priv_t *ctx,
     FrameWorkerData *const frame_worker_data = (FrameWorkerData *)worker->data1;
     image2yuvconfig(&frame->img, &sd);
     return av1_copy_reference_dec(frame_worker_data->pbi,
-                                   (AOM_REFFRAME)frame->frame_type, &sd);
+                                  (AOM_REFFRAME)frame->frame_type, &sd);
   } else {
     return AOM_CODEC_INVALID_PARAM;
   }

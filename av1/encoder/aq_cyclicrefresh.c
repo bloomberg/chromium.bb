@@ -138,7 +138,7 @@ static int compute_deltaq(const AV1_COMP *cpi, int q, double rate_factor) {
   const CYCLIC_REFRESH *const cr = cpi->cyclic_refresh;
   const RATE_CONTROL *const rc = &cpi->rc;
   int deltaq = av1_compute_qdelta_by_rate(rc, cpi->common.frame_type, q,
-                                           rate_factor, cpi->common.bit_depth);
+                                          rate_factor, cpi->common.bit_depth);
   if ((-deltaq) > cr->max_qdelta_perc * q / 100) {
     deltaq = -cr->max_qdelta_perc * q / 100;
   }
@@ -150,7 +150,7 @@ static int compute_deltaq(const AV1_COMP *cpi, int q, double rate_factor) {
 // (with different delta-q). Note this function is called in the postencode
 // (called from rc_update_rate_correction_factors()).
 int av1_cyclic_refresh_estimate_bits_at_q(const AV1_COMP *cpi,
-                                           double correction_factor) {
+                                          double correction_factor) {
   const AV1_COMMON *const cm = &cpi->common;
   const CYCLIC_REFRESH *const cr = cpi->cyclic_refresh;
   int estimated_bits;
@@ -164,15 +164,15 @@ int av1_cyclic_refresh_estimate_bits_at_q(const AV1_COMP *cpi,
   estimated_bits =
       (int)((1.0 - weight_segment1 - weight_segment2) *
                 av1_estimate_bits_at_q(cm->frame_type, cm->base_qindex, mbs,
-                                        correction_factor, cm->bit_depth) +
+                                       correction_factor, cm->bit_depth) +
             weight_segment1 *
                 av1_estimate_bits_at_q(cm->frame_type,
-                                        cm->base_qindex + cr->qindex_delta[1],
-                                        mbs, correction_factor, cm->bit_depth) +
+                                       cm->base_qindex + cr->qindex_delta[1],
+                                       mbs, correction_factor, cm->bit_depth) +
             weight_segment2 *
                 av1_estimate_bits_at_q(cm->frame_type,
-                                        cm->base_qindex + cr->qindex_delta[2],
-                                        mbs, correction_factor, cm->bit_depth));
+                                       cm->base_qindex + cr->qindex_delta[2],
+                                       mbs, correction_factor, cm->bit_depth));
   return estimated_bits;
 }
 
@@ -182,7 +182,7 @@ int av1_cyclic_refresh_estimate_bits_at_q(const AV1_COMP *cpi,
 // Note: the segment map is set to either 0/CR_SEGMENT_ID_BASE (no refresh) or
 // to 1/CR_SEGMENT_ID_BOOST1 (refresh) for each superblock, prior to encoding.
 int av1_cyclic_refresh_rc_bits_per_mb(const AV1_COMP *cpi, int i,
-                                       double correction_factor) {
+                                      double correction_factor) {
   const AV1_COMMON *const cm = &cpi->common;
   CYCLIC_REFRESH *const cr = cpi->cyclic_refresh;
   int bits_per_mb;
@@ -197,13 +197,12 @@ int av1_cyclic_refresh_rc_bits_per_mb(const AV1_COMP *cpi, int i,
   // Compute delta-q corresponding to qindex i.
   int deltaq = compute_deltaq(cpi, i, cr->rate_ratio_qdelta);
   // Take segment weighted average for bits per mb.
-  bits_per_mb =
-      (int)((1.0 - weight_segment) * av1_rc_bits_per_mb(cm->frame_type, i,
-                                                         correction_factor,
-                                                         cm->bit_depth) +
-            weight_segment * av1_rc_bits_per_mb(cm->frame_type, i + deltaq,
-                                                 correction_factor,
-                                                 cm->bit_depth));
+  bits_per_mb = (int)((1.0 - weight_segment) *
+                          av1_rc_bits_per_mb(cm->frame_type, i,
+                                             correction_factor, cm->bit_depth) +
+                      weight_segment *
+                          av1_rc_bits_per_mb(cm->frame_type, i + deltaq,
+                                             correction_factor, cm->bit_depth));
   return bits_per_mb;
 }
 
@@ -211,9 +210,9 @@ int av1_cyclic_refresh_rc_bits_per_mb(const AV1_COMP *cpi, int i,
 // check if we should reset the segment_id, and update the cyclic_refresh map
 // and segmentation map.
 void av1_cyclic_refresh_update_segment(AV1_COMP *const cpi,
-                                        MB_MODE_INFO *const mbmi, int mi_row,
-                                        int mi_col, BLOCK_SIZE bsize,
-                                        int64_t rate, int64_t dist, int skip) {
+                                       MB_MODE_INFO *const mbmi, int mi_row,
+                                       int mi_col, BLOCK_SIZE bsize,
+                                       int64_t rate, int64_t dist, int skip) {
   const AV1_COMMON *const cm = &cpi->common;
   CYCLIC_REFRESH *const cr = cpi->cyclic_refresh;
   const int bw = num_8x8_blocks_wide_lookup[bsize];

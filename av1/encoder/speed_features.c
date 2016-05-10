@@ -568,8 +568,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi) {
   } else if (sf->mv.subpel_search_method == SUBPEL_TREE_PRUNED_MORE) {
     cpi->find_fractional_mv_step = av1_find_best_sub_pixel_tree_pruned_more;
   } else if (sf->mv.subpel_search_method == SUBPEL_TREE_PRUNED_EVENMORE) {
-    cpi->find_fractional_mv_step =
-        av1_find_best_sub_pixel_tree_pruned_evenmore;
+    cpi->find_fractional_mv_step = av1_find_best_sub_pixel_tree_pruned_evenmore;
   }
 
 #if !CONFIG_AOM_QM

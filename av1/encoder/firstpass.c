@@ -1129,7 +1129,7 @@ void av1_init_subsampling(AV1_COMP *cpi) {
 }
 
 void av1_calculate_coded_size(AV1_COMP *cpi, int *scaled_frame_width,
-                               int *scaled_frame_height) {
+                              int *scaled_frame_height) {
   RATE_CONTROL *const rc = &cpi->rc;
   *scaled_frame_width = rc->frame_width[rc->frame_size_selector];
   *scaled_frame_height = rc->frame_height[rc->frame_size_selector];
@@ -1330,8 +1330,7 @@ static void accumulate_frame_motion_stats(const FIRSTPASS_STATS *stats,
 }
 
 #define BASELINE_ERR_PER_MB 1000.0
-static double calc_frame_boost(AV1_COMP *cpi,
-                               const FIRSTPASS_STATS *this_frame,
+static double calc_frame_boost(AV1_COMP *cpi, const FIRSTPASS_STATS *this_frame,
                                double this_frame_mv_in_out, double max_boost) {
   double frame_boost;
   const double lq = av1_convert_qindex_to_q(
@@ -1360,8 +1359,8 @@ static double calc_frame_boost(AV1_COMP *cpi,
   return AOMMIN(frame_boost, max_boost * boost_q_correction);
 }
 
-static int calc_arf_boost(AV1_COMP *cpi, int offset, int f_frames,
-                          int b_frames, int *f_boost, int *b_boost) {
+static int calc_arf_boost(AV1_COMP *cpi, int offset, int f_frames, int b_frames,
+                          int *f_boost, int *b_boost) {
   TWO_PASS *const twopass = &cpi->twopass;
   int i;
   double boost_score = 0.0;
@@ -1748,10 +1747,10 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
   // Set a maximum and minimum interval for the GF group.
   // If the image appears almost completely static we can extend beyond this.
   {
-    int int_max_q = (int)(av1_convert_qindex_to_q(
-        twopass->active_worst_quality, cpi->common.bit_depth));
+    int int_max_q = (int)(av1_convert_qindex_to_q(twopass->active_worst_quality,
+                                                  cpi->common.bit_depth));
     int int_lbq = (int)(av1_convert_qindex_to_q(rc->last_boosted_qindex,
-                                                 cpi->common.bit_depth));
+                                                cpi->common.bit_depth));
     active_min_gf_interval = rc->min_gf_interval + AOMMIN(2, int_max_q / 200);
     if (active_min_gf_interval > rc->max_gf_interval)
       active_min_gf_interval = rc->max_gf_interval;

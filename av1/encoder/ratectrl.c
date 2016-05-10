@@ -165,7 +165,7 @@ double av1_convert_qindex_to_q(int qindex, aom_bit_depth_t bit_depth) {
 }
 
 int av1_rc_bits_per_mb(FRAME_TYPE frame_type, int qindex,
-                        double correction_factor, aom_bit_depth_t bit_depth) {
+                       double correction_factor, aom_bit_depth_t bit_depth) {
   const double q = av1_convert_qindex_to_q(qindex, bit_depth);
   int enumerator = frame_type == KEY_FRAME ? 2700000 : 1800000;
 
@@ -178,8 +178,8 @@ int av1_rc_bits_per_mb(FRAME_TYPE frame_type, int qindex,
 }
 
 int av1_estimate_bits_at_q(FRAME_TYPE frame_type, int q, int mbs,
-                            double correction_factor,
-                            aom_bit_depth_t bit_depth) {
+                           double correction_factor,
+                           aom_bit_depth_t bit_depth) {
   const int bpm =
       (int)(av1_rc_bits_per_mb(frame_type, q, correction_factor, bit_depth));
   return AOMMAX(FRAME_OVERHEAD_BITS,
@@ -239,7 +239,7 @@ static void update_buffer_level(AV1_COMP *cpi, int encoded_frame_size) {
 }
 
 int av1_rc_get_default_min_gf_interval(int width, int height,
-                                        double framerate) {
+                                       double framerate) {
   // Assume we do not need any constraint lower than 4K 20 fps
   static const double factor_safe = 3840 * 2160 * 20.0;
   const double factor = width * height * framerate;
@@ -424,8 +424,8 @@ void av1_rc_update_rate_correction_factors(AV1_COMP *cpi) {
         av1_cyclic_refresh_estimate_bits_at_q(cpi, rate_correction_factor);
   } else {
     projected_size_based_on_q =
-        av1_estimate_bits_at_q(cpi->common.frame_type, cm->base_qindex,
-                                cm->MBs, rate_correction_factor, cm->bit_depth);
+        av1_estimate_bits_at_q(cpi->common.frame_type, cm->base_qindex, cm->MBs,
+                               rate_correction_factor, cm->bit_depth);
   }
   // Work out a size correction factor.
   if (projected_size_based_on_q > FRAME_OVERHEAD_BITS)
@@ -470,7 +470,7 @@ void av1_rc_update_rate_correction_factors(AV1_COMP *cpi) {
 }
 
 int av1_rc_regulate_q(const AV1_COMP *cpi, int target_bits_per_frame,
-                       int active_best_quality, int active_worst_quality) {
+                      int active_best_quality, int active_worst_quality) {
   const AV1_COMMON *const cm = &cpi->common;
   int q = active_worst_quality;
   int last_error = INT_MAX;
@@ -723,7 +723,7 @@ static int rc_pick_q_and_bounds_one_pass_cbr(const AV1_COMP *cpi,
     q = rc->last_boosted_qindex;
   } else {
     q = av1_rc_regulate_q(cpi, rc->this_frame_target, active_best_quality,
-                           active_worst_quality);
+                          active_worst_quality);
     if (q > *top_index) {
       // Special case when we are targeting the max allowed rate
       if (rc->this_frame_target >= rc->max_frame_bandwidth)
@@ -888,7 +888,7 @@ static int rc_pick_q_and_bounds_one_pass_vbr(const AV1_COMP *cpi,
     q = rc->last_boosted_qindex;
   } else {
     q = av1_rc_regulate_q(cpi, rc->this_frame_target, active_best_quality,
-                           active_worst_quality);
+                          active_worst_quality);
     if (q > *top_index) {
       // Special case when we are targeting the max allowed rate
       if (rc->this_frame_target >= rc->max_frame_bandwidth)
@@ -919,13 +919,13 @@ int av1_frame_type_qdelta(const AV1_COMP *cpi, int rf_level, int q) {
   const AV1_COMMON *const cm = &cpi->common;
   int qdelta =
       av1_compute_qdelta_by_rate(&cpi->rc, frame_type[rf_level], q,
-                                  rate_factor_deltas[rf_level], cm->bit_depth);
+                                 rate_factor_deltas[rf_level], cm->bit_depth);
   return qdelta;
 }
 
 #define STATIC_MOTION_THRESH 95
-static int rc_pick_q_and_bounds_two_pass(const AV1_COMP *cpi,
-                                         int *bottom_index, int *top_index) {
+static int rc_pick_q_and_bounds_two_pass(const AV1_COMP *cpi, int *bottom_index,
+                                         int *top_index) {
   const AV1_COMMON *const cm = &cpi->common;
   const RATE_CONTROL *const rc = &cpi->rc;
   const AV1EncoderConfig *const oxcf = &cpi->oxcf;
@@ -950,15 +950,15 @@ static int rc_pick_q_and_bounds_two_pass(const AV1_COMP *cpi,
         qindex = AOMMIN(rc->last_kf_qindex, rc->last_boosted_qindex);
         active_best_quality = qindex;
         last_boosted_q = av1_convert_qindex_to_q(qindex, cm->bit_depth);
-        delta_qindex = av1_compute_qdelta(
-            rc, last_boosted_q, last_boosted_q * 1.25, cm->bit_depth);
+        delta_qindex = av1_compute_qdelta(rc, last_boosted_q,
+                                          last_boosted_q * 1.25, cm->bit_depth);
         active_worst_quality =
             AOMMIN(qindex + delta_qindex, active_worst_quality);
       } else {
         qindex = rc->last_boosted_qindex;
         last_boosted_q = av1_convert_qindex_to_q(qindex, cm->bit_depth);
-        delta_qindex = av1_compute_qdelta(
-            rc, last_boosted_q, last_boosted_q * 0.75, cm->bit_depth);
+        delta_qindex = av1_compute_qdelta(rc, last_boosted_q,
+                                          last_boosted_q * 0.75, cm->bit_depth);
         active_best_quality = AOMMAX(qindex + delta_qindex, rc->best_quality);
       }
     } else {
@@ -1053,8 +1053,8 @@ static int rc_pick_q_and_bounds_two_pass(const AV1_COMP *cpi,
   // Static forced key frames Q restrictions dealt with elsewhere.
   if (!(frame_is_intra_only(cm)) || !rc->this_key_frame_forced ||
       (cpi->twopass.last_kfgroup_zeromotion_pct < STATIC_MOTION_THRESH)) {
-    int qdelta = av1_frame_type_qdelta(
-        cpi, gf_group->rf_level[gf_group->index], active_worst_quality);
+    int qdelta = av1_frame_type_qdelta(cpi, gf_group->rf_level[gf_group->index],
+                                       active_worst_quality);
     active_worst_quality =
         AOMMAX(active_worst_quality + qdelta, active_best_quality);
   }
@@ -1085,7 +1085,7 @@ static int rc_pick_q_and_bounds_two_pass(const AV1_COMP *cpi,
     }
   } else {
     q = av1_rc_regulate_q(cpi, rc->this_frame_target, active_best_quality,
-                           active_worst_quality);
+                          active_worst_quality);
     if (q > active_worst_quality) {
       // Special case when we are targeting the max allowed rate.
       if (rc->this_frame_target >= rc->max_frame_bandwidth)
@@ -1107,7 +1107,7 @@ static int rc_pick_q_and_bounds_two_pass(const AV1_COMP *cpi,
 }
 
 int av1_rc_pick_q_and_bounds(const AV1_COMP *cpi, int *bottom_index,
-                              int *top_index) {
+                             int *top_index) {
   int q;
   if (cpi->oxcf.pass == 0) {
     if (cpi->oxcf.rc_mode == AOM_CBR)
@@ -1122,8 +1122,8 @@ int av1_rc_pick_q_and_bounds(const AV1_COMP *cpi, int *bottom_index,
 }
 
 void av1_rc_compute_frame_size_bounds(const AV1_COMP *cpi, int frame_target,
-                                       int *frame_under_shoot_limit,
-                                       int *frame_over_shoot_limit) {
+                                      int *frame_under_shoot_limit,
+                                      int *frame_over_shoot_limit) {
   if (cpi->oxcf.rc_mode == AOM_Q) {
     *frame_under_shoot_limit = 0;
     *frame_over_shoot_limit = INT_MAX;
@@ -1470,7 +1470,7 @@ void av1_rc_get_one_pass_cbr_params(AV1_COMP *cpi) {
 }
 
 int av1_compute_qdelta(const RATE_CONTROL *rc, double qstart, double qtarget,
-                        aom_bit_depth_t bit_depth) {
+                       aom_bit_depth_t bit_depth) {
   int start_index = rc->worst_quality;
   int target_index = rc->worst_quality;
   int i;
@@ -1491,8 +1491,8 @@ int av1_compute_qdelta(const RATE_CONTROL *rc, double qstart, double qtarget,
 }
 
 int av1_compute_qdelta_by_rate(const RATE_CONTROL *rc, FRAME_TYPE frame_type,
-                                int qindex, double rate_target_ratio,
-                                aom_bit_depth_t bit_depth) {
+                               int qindex, double rate_target_ratio,
+                               aom_bit_depth_t bit_depth) {
   int target_index = rc->worst_quality;
   int i;
 
@@ -1515,7 +1515,7 @@ int av1_compute_qdelta_by_rate(const RATE_CONTROL *rc, FRAME_TYPE frame_type,
 }
 
 void av1_rc_set_gf_interval_range(const AV1_COMP *const cpi,
-                                   RATE_CONTROL *const rc) {
+                                  RATE_CONTROL *const rc) {
   const AV1EncoderConfig *const oxcf = &cpi->oxcf;
 
   // Special case code for 1 pass fixed Q mode tests
@@ -1703,7 +1703,7 @@ int av1_resize_one_pass_cbr(AV1_COMP *cpi) {
                                 : rc->this_frame_target / tot_scale_change;
     active_worst_quality = calc_active_worst_quality_one_pass_cbr(cpi);
     qindex = av1_rc_regulate_q(cpi, target_bits_per_frame, rc->best_quality,
-                                active_worst_quality);
+                               active_worst_quality);
     // If resize is down, check if projected q index is close to worst_quality,
     // and if so, reduce the rate correction factor (since likely can afford
     // lower q for resized frame).

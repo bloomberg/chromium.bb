@@ -369,7 +369,7 @@ static const arg_def_t lossless =
 #if CONFIG_AOM_QM
 static const arg_def_t enable_qm =
     ARG_DEF(NULL, "enable_qm", 1,
-        "Enable quantisation matrices (0: false (default), 1: true)");
+            "Enable quantisation matrices (0: false (default), 1: true)");
 static const arg_def_t qm_min = ARG_DEF(
     NULL, "qm_min", 1, "Min quant matrix flatness (0..15), default is 8");
 static const arg_def_t qm_max = ARG_DEF(
@@ -1857,8 +1857,7 @@ int main(int argc, const char **argv_) {
   if (!input.filename) usage_exit();
 
   /* Decide if other chroma subsamplings than 4:2:0 are supported */
-  if (global.codec->fourcc == AV1_FOURCC)
-    input.only_i420 = 0;
+  if (global.codec->fourcc == AV1_FOURCC) input.only_i420 = 0;
 
   for (pass = global.pass ? global.pass - 1 : 0; pass < global.passes; pass++) {
     int frames_in = 0, seen_frames = 0;

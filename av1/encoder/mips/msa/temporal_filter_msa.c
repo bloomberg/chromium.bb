@@ -267,10 +267,10 @@ static void temporal_filter_apply_16size_msa(uint8_t *frm1_ptr, uint32_t stride,
 }
 
 void av1_temporal_filter_apply_msa(uint8_t *frame1_ptr, uint32_t stride,
-                                    uint8_t *frame2_ptr, uint32_t blk_w,
-                                    uint32_t blk_h, int32_t strength,
-                                    int32_t filt_wgt, uint32_t *accu,
-                                    uint16_t *cnt) {
+                                   uint8_t *frame2_ptr, uint32_t blk_w,
+                                   uint32_t blk_h, int32_t strength,
+                                   int32_t filt_wgt, uint32_t *accu,
+                                   uint16_t *cnt) {
   if (8 == (blk_w * blk_h)) {
     temporal_filter_apply_8size_msa(frame1_ptr, stride, frame2_ptr, strength,
                                     filt_wgt, accu, cnt);
@@ -279,6 +279,6 @@ void av1_temporal_filter_apply_msa(uint8_t *frame1_ptr, uint32_t stride,
                                      filt_wgt, accu, cnt);
   } else {
     av1_temporal_filter_apply_c(frame1_ptr, stride, frame2_ptr, blk_w, blk_h,
-                                 strength, filt_wgt, accu, cnt);
+                                strength, filt_wgt, accu, cnt);
   }
 }

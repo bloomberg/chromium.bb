@@ -85,7 +85,7 @@ void av1_fdct8x8_1_sse2(const int16_t *input, tran_low_t *output, int stride) {
 }
 
 void av1_fdct16x16_1_sse2(const int16_t *input, tran_low_t *output,
-                           int stride) {
+                          int stride) {
   __m128i in0, in1, in2, in3;
   __m128i u0, u1;
   __m128i sum = _mm_setzero_si128();
@@ -154,7 +154,7 @@ void av1_fdct16x16_1_sse2(const int16_t *input, tran_low_t *output,
 }
 
 void av1_fdct32x32_1_sse2(const int16_t *input, tran_low_t *output,
-                           int stride) {
+                          int stride) {
   __m128i in0, in1, in2, in3;
   __m128i u0, u1;
   __m128i sum = _mm_setzero_si128();

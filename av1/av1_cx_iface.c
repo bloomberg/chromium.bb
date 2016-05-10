@@ -651,7 +651,7 @@ static aom_codec_err_t ctrl_set_lossless(aom_codec_alg_priv_t *ctx,
 
 #if CONFIG_AOM_QM
 static aom_codec_err_t ctrl_set_enable_qm(aom_codec_alg_priv_t *ctx,
-                                         va_list args) {
+                                          va_list args) {
   struct av1_extracfg extra_cfg = ctx->extra_cfg;
   extra_cfg.enable_qm = CAST(AV1E_SET_ENABLE_QM, args);
   return update_extra_cfg(ctx, &extra_cfg);
@@ -972,7 +972,7 @@ static aom_codec_err_t encoder_encode(aom_codec_alg_priv_t *ctx,
       // Store the original flags in to the frame buffer. Will extract the
       // key frame flag when we actually encode this frame.
       if (av1_receive_raw_frame(cpi, flags | ctx->next_frame_flags, &sd,
-                                 dst_time_stamp, dst_end_time_stamp)) {
+                                dst_time_stamp, dst_end_time_stamp)) {
         res = update_error_state(ctx, &cpi->common.error);
       }
       ctx->next_frame_flags = 0;
@@ -999,8 +999,8 @@ static aom_codec_err_t encoder_encode(aom_codec_alg_priv_t *ctx,
 
     while (cx_data_sz >= ctx->cx_data_sz / 2 &&
            -1 != av1_get_compressed_data(cpi, &lib_flags, &size, cx_data,
-                                          &dst_time_stamp, &dst_end_time_stamp,
-                                          !img)) {
+                                         &dst_time_stamp, &dst_end_time_stamp,
+                                         !img)) {
       if (size) {
         aom_codec_cx_pkt_t pkt;
 
@@ -1094,8 +1094,8 @@ static aom_codec_err_t ctrl_set_reference(aom_codec_alg_priv_t *ctx,
     YV12_BUFFER_CONFIG sd;
 
     image2yuvconfig(&frame->img, &sd);
-    av1_set_reference_enc(ctx->cpi,
-                           ref_frame_to_av1_reframe(frame->frame_type), &sd);
+    av1_set_reference_enc(ctx->cpi, ref_frame_to_av1_reframe(frame->frame_type),
+                          &sd);
     return AOM_CODEC_OK;
   } else {
     return AOM_CODEC_INVALID_PARAM;
@@ -1111,7 +1111,7 @@ static aom_codec_err_t ctrl_copy_reference(aom_codec_alg_priv_t *ctx,
 
     image2yuvconfig(&frame->img, &sd);
     av1_copy_reference_enc(ctx->cpi,
-                            ref_frame_to_av1_reframe(frame->frame_type), &sd);
+                           ref_frame_to_av1_reframe(frame->frame_type), &sd);
     return AOM_CODEC_OK;
   } else {
     return AOM_CODEC_INVALID_PARAM;
@@ -1166,7 +1166,7 @@ static aom_codec_err_t ctrl_set_active_map(aom_codec_alg_priv_t *ctx,
 
   if (map) {
     if (!av1_set_active_map(ctx->cpi, map->active_map, (int)map->rows,
-                             (int)map->cols))
+                            (int)map->cols))
       return AOM_CODEC_OK;
     else
       return AOM_CODEC_INVALID_PARAM;
@@ -1181,7 +1181,7 @@ static aom_codec_err_t ctrl_get_active_map(aom_codec_alg_priv_t *ctx,
 
   if (map) {
     if (!av1_get_active_map(ctx->cpi, map->active_map, (int)map->rows,
-                             (int)map->cols))
+                            (int)map->cols))
       return AOM_CODEC_OK;
     else
       return AOM_CODEC_INVALID_PARAM;
@@ -1197,7 +1197,7 @@ static aom_codec_err_t ctrl_set_scale_mode(aom_codec_alg_priv_t *ctx,
   if (mode) {
     const int res =
         av1_set_internal_size(ctx->cpi, (AOM_SCALING)mode->h_scaling_mode,
-                               (AOM_SCALING)mode->v_scaling_mode);
+                              (AOM_SCALING)mode->v_scaling_mode);
     return (res == 0) ? AOM_CODEC_OK : AOM_CODEC_INVALID_PARAM;
   } else {
     return AOM_CODEC_INVALID_PARAM;

@@ -693,10 +693,8 @@ DECLARE_ALIGNED(16, static const int16_t, av1_default_iscan_32x32[1024]) = {
 const scan_order av1_default_scan_orders[TX_SIZES] = {
   { default_scan_4x4, av1_default_iscan_4x4, default_scan_4x4_neighbors },
   { default_scan_8x8, av1_default_iscan_8x8, default_scan_8x8_neighbors },
-  { default_scan_16x16, av1_default_iscan_16x16,
-    default_scan_16x16_neighbors },
-  { default_scan_32x32, av1_default_iscan_32x32,
-    default_scan_32x32_neighbors },
+  { default_scan_16x16, av1_default_iscan_16x16, default_scan_16x16_neighbors },
+  { default_scan_32x32, av1_default_iscan_32x32, default_scan_32x32_neighbors },
 };
 
 const scan_order av1_scan_orders[TX_SIZES][TX_TYPES] = {

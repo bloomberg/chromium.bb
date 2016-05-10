@@ -42,7 +42,7 @@ const aom_prob av1_cat3_prob[] = { 173, 148, 140 };
 const aom_prob av1_cat4_prob[] = { 176, 155, 140, 135 };
 const aom_prob av1_cat5_prob[] = { 180, 157, 141, 134, 130 };
 const aom_prob av1_cat6_prob[] = { 254, 254, 254, 252, 249, 243, 230,
-                                    196, 177, 153, 140, 133, 130, 129 };
+                                   196, 177, 153, 140, 133, 130, 129 };
 #if CONFIG_AOM_HIGHBITDEPTH
 const aom_prob av1_cat1_prob_high10[] = { 159 };
 const aom_prob av1_cat2_prob_high10[] = { 165, 145 };
@@ -58,8 +58,8 @@ const aom_prob av1_cat3_prob_high12[] = { 173, 148, 140 };
 const aom_prob av1_cat4_prob_high12[] = { 176, 155, 140, 135 };
 const aom_prob av1_cat5_prob_high12[] = { 180, 157, 141, 134, 130 };
 const aom_prob av1_cat6_prob_high12[] = { 255, 255, 255, 255, 254, 254,
-                                           254, 252, 249, 243, 230, 196,
-                                           177, 153, 140, 133, 130, 129 };
+                                          254, 252, 249, 243, 230, 196,
+                                          177, 153, 140, 133, 130, 129 };
 #endif
 
 const uint8_t av1_coefband_trans_8x8plus[1024] = {
@@ -111,7 +111,7 @@ const uint8_t av1_coefband_trans_4x4[16] = {
 };
 
 const uint8_t av1_pt_energy_class[ENTROPY_TOKENS] = { 0, 1, 2, 3, 3, 4,
-                                                       4, 5, 5, 5, 5, 5 };
+                                                      4, 5, 5, 5, 5, 5 };
 
 // Model obtained from a 2-sided zero-centerd distribuition derived
 // from a Pareto distribution. The cdf of the distribution is:

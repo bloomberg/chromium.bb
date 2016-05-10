@@ -32,7 +32,7 @@ void av1_clearall_segfeatures(struct segmentation *seg) {
 }
 
 void av1_enable_segfeature(struct segmentation *seg, int segment_id,
-                            SEG_LVL_FEATURES feature_id) {
+                           SEG_LVL_FEATURES feature_id) {
   seg->feature_mask[segment_id] |= 1 << feature_id;
 }
 
@@ -45,7 +45,7 @@ int av1_is_segfeature_signed(SEG_LVL_FEATURES feature_id) {
 }
 
 void av1_set_segdata(struct segmentation *seg, int segment_id,
-                      SEG_LVL_FEATURES feature_id, int seg_data) {
+                     SEG_LVL_FEATURES feature_id, int seg_data) {
   assert(seg_data <= seg_feature_data_max[feature_id]);
   if (seg_data < 0) {
     assert(seg_feature_data_signed[feature_id]);

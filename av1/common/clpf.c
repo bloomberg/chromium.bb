@@ -34,8 +34,8 @@ static void clpf_block(const uint8_t *src, uint8_t *dst, int sstride,
 
 // Iterate over blocks within a superblock
 static void av1_clpf_sb(const YV12_BUFFER_CONFIG *frame_buffer,
-                         const AV1_COMMON *cm, MACROBLOCKD *xd,
-                         MODE_INFO *const *mi_8x8, int xpos, int ypos) {
+                        const AV1_COMMON *cm, MACROBLOCKD *xd,
+                        MODE_INFO *const *mi_8x8, int xpos, int ypos) {
   // Temporary buffer (to allow SIMD parallelism)
   uint8_t buf_unaligned[BS * BS + 15];
   uint8_t *buf = (uint8_t *)(((intptr_t)buf_unaligned + 15) & ~15);
@@ -95,7 +95,7 @@ static void av1_clpf_sb(const YV12_BUFFER_CONFIG *frame_buffer,
 
 // Iterate over the superblocks of an entire frame
 void av1_clpf_frame(const YV12_BUFFER_CONFIG *frame, const AV1_COMMON *cm,
-                     MACROBLOCKD *xd) {
+                    MACROBLOCKD *xd) {
   int x, y;
 
   for (y = 0; y < cm->mi_rows; y += MI_BLOCK_SIZE)

@@ -64,8 +64,8 @@ void aom_highbd_ssim_parms_8x8_c(const uint16_t *s, int sp, const uint16_t *r,
 }
 #endif  // CONFIG_AOM_HIGHBITDEPTH
 
-static const int64_t cc1 = 26634;   // (64^2*(.01*255)^2
-static const int64_t cc2 = 239708;  // (64^2*(.03*255)^2
+static const int64_t cc1 = 26634;        // (64^2*(.01*255)^2
+static const int64_t cc2 = 239708;       // (64^2*(.03*255)^2
 static const int64_t cc1_10 = 428658;    // (64^2*(.01*1023)^2
 static const int64_t cc2_10 = 3857925;   // (64^2*(.03*1023)^2
 static const int64_t cc1_12 = 6868593;   // (64^2*(.01*4095)^2
@@ -186,7 +186,6 @@ double aom_calc_ssim(const YV12_BUFFER_CONFIG *source,
 
   return ssimv;
 }
-
 
 // traditional ssim as per: http://en.wikipedia.org/wiki/Structural_similarity
 //

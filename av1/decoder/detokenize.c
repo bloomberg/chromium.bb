@@ -259,8 +259,8 @@ static void dec_set_contexts(const MACROBLOCKD *xd,
 }
 
 int av1_decode_block_tokens(MACROBLOCKD *xd, int plane, const scan_order *sc,
-                             int x, int y, TX_SIZE tx_size, aom_reader *r,
-                             int seg_id) {
+                            int x, int y, TX_SIZE tx_size, aom_reader *r,
+                            int seg_id) {
   struct macroblockd_plane *const pd = &xd->plane[plane];
   const int16_t *const dequant = pd->seg_dequant[seg_id];
   const int ctx =
@@ -276,5 +276,3 @@ int av1_decode_block_tokens(MACROBLOCKD *xd, int plane, const scan_order *sc,
   dec_set_contexts(xd, pd, tx_size, eob > 0, x, y);
   return eob;
 }
-
-

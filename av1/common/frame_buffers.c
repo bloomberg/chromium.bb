@@ -39,7 +39,7 @@ void av1_free_internal_frame_buffers(InternalFrameBufferList *list) {
 }
 
 int av1_get_frame_buffer(void *cb_priv, size_t min_size,
-                          aom_codec_frame_buffer_t *fb) {
+                         aom_codec_frame_buffer_t *fb) {
   int i;
   InternalFrameBufferList *const int_fb_list =
       (InternalFrameBufferList *)cb_priv;

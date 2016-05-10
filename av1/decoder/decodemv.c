@@ -56,44 +56,34 @@ static PREDICTION_MODE read_inter_mode(AV1_COMMON *cm, MACROBLOCKD *xd,
   aom_prob mode_prob = cm->fc->newmv_prob[mode_ctx];
 
   if (aom_read(r, mode_prob) == 0) {
-    if (counts)
-      ++counts->newmv_mode[mode_ctx][0];
+    if (counts) ++counts->newmv_mode[mode_ctx][0];
     return NEWMV;
   }
-  if (counts)
-    ++counts->newmv_mode[mode_ctx][1];
+  if (counts) ++counts->newmv_mode[mode_ctx][1];
 
-  if (ctx & (1 << ALL_ZERO_FLAG_OFFSET))
-    return ZEROMV;
+  if (ctx & (1 << ALL_ZERO_FLAG_OFFSET)) return ZEROMV;
 
   mode_ctx = (ctx >> ZEROMV_OFFSET) & ZEROMV_CTX_MASK;
 
   mode_prob = cm->fc->zeromv_prob[mode_ctx];
   if (aom_read(r, mode_prob) == 0) {
-    if (counts)
-      ++counts->zeromv_mode[mode_ctx][0];
+    if (counts) ++counts->zeromv_mode[mode_ctx][0];
     return ZEROMV;
   }
-  if (counts)
-    ++counts->zeromv_mode[mode_ctx][1];
+  if (counts) ++counts->zeromv_mode[mode_ctx][1];
 
   mode_ctx = (ctx >> REFMV_OFFSET) & REFMV_CTX_MASK;
 
-  if (ctx & (1 << SKIP_NEARESTMV_OFFSET))
-    mode_ctx = 6;
-  if (ctx & (1 << SKIP_NEARMV_OFFSET))
-    mode_ctx = 7;
-  if (ctx & (1 << SKIP_NEARESTMV_SUB8X8_OFFSET))
-    mode_ctx = 8;
+  if (ctx & (1 << SKIP_NEARESTMV_OFFSET)) mode_ctx = 6;
+  if (ctx & (1 << SKIP_NEARMV_OFFSET)) mode_ctx = 7;
+  if (ctx & (1 << SKIP_NEARESTMV_SUB8X8_OFFSET)) mode_ctx = 8;
 
   mode_prob = cm->fc->refmv_prob[mode_ctx];
   if (aom_read(r, mode_prob) == 0) {
-    if (counts)
-      ++counts->refmv_mode[mode_ctx][0];
+    if (counts) ++counts->refmv_mode[mode_ctx][0];
     return NEARESTMV;
   } else {
-    if (counts)
-      ++counts->refmv_mode[mode_ctx][1];
+    if (counts) ++counts->refmv_mode[mode_ctx][1];
     return NEARMV;
   }
 
@@ -110,10 +100,8 @@ static PREDICTION_MODE read_inter_mode(AV1_COMMON *cm, MACROBLOCKD *xd,
 }
 
 #if CONFIG_REF_MV
-static void read_drl_idx(const AV1_COMMON *cm,
-                         MACROBLOCKD *xd,
-                         MB_MODE_INFO *mbmi,
-                         aom_reader *r) {
+static void read_drl_idx(const AV1_COMMON *cm, MACROBLOCKD *xd,
+                         MB_MODE_INFO *mbmi, aom_reader *r) {
   uint8_t ref_frame_type = av1_ref_frame_type(mbmi->ref_frame);
   mbmi->ref_mv_idx = 0;
 
@@ -125,13 +113,11 @@ static void read_drl_idx(const AV1_COMMON *cm,
         aom_prob drl_prob = cm->fc->drl_prob[drl_ctx];
         if (!aom_read(r, drl_prob)) {
           mbmi->ref_mv_idx = idx;
-          if (xd->counts)
-            ++xd->counts->drl_mode[drl_ctx][0];
+          if (xd->counts) ++xd->counts->drl_mode[drl_ctx][0];
           return;
         }
         mbmi->ref_mv_idx = idx + 1;
-        if (xd->counts)
-          ++xd->counts->drl_mode[drl_ctx][1];
+        if (xd->counts) ++xd->counts->drl_mode[drl_ctx][1];
       }
     }
   }
@@ -147,13 +133,11 @@ static void read_drl_idx(const AV1_COMMON *cm,
         aom_prob drl_prob = cm->fc->drl_prob[drl_ctx];
         if (!aom_read(r, drl_prob)) {
           mbmi->ref_mv_idx = idx - 1;
-          if (xd->counts)
-            ++xd->counts->drl_mode[drl_ctx][0];
+          if (xd->counts) ++xd->counts->drl_mode[drl_ctx][0];
           return;
         }
         mbmi->ref_mv_idx = idx;
-        if (xd->counts)
-          ++xd->counts->drl_mode[drl_ctx][1];
+        if (xd->counts) ++xd->counts->drl_mode[drl_ctx][1];
       }
     }
   }
@@ -559,8 +543,8 @@ static INLINE int assign_mv(AV1_COMMON *cm, MACROBLOCKD *xd,
 #if CONFIG_REF_MV
   MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
   BLOCK_SIZE bsize = mbmi->sb_type;
-  int_mv *pred_mv = (bsize >= BLOCK_8X8) ?
-      mbmi->pred_mv : xd->mi[0]->bmi[block].pred_mv;
+  int_mv *pred_mv =
+      (bsize >= BLOCK_8X8) ? mbmi->pred_mv : xd->mi[0]->bmi[block].pred_mv;
 #else
   (void)block;
 #endif
@@ -595,8 +579,7 @@ static INLINE int assign_mv(AV1_COMMON *cm, MACROBLOCKD *xd,
       if (is_compound) mv[1].as_int = nearest_mv[1].as_int;
 #if CONFIG_REF_MV
       pred_mv[0].as_int = nearest_mv[0].as_int;
-      if (is_compound)
-        pred_mv[1].as_int = nearest_mv[1].as_int;
+      if (is_compound) pred_mv[1].as_int = nearest_mv[1].as_int;
 #endif
       break;
     }
@@ -605,8 +588,7 @@ static INLINE int assign_mv(AV1_COMMON *cm, MACROBLOCKD *xd,
       if (is_compound) mv[1].as_int = near_mv[1].as_int;
 #if CONFIG_REF_MV
       pred_mv[0].as_int = near_mv[0].as_int;
-      if (is_compound)
-        pred_mv[1].as_int = near_mv[1].as_int;
+      if (is_compound) pred_mv[1].as_int = near_mv[1].as_int;
 #endif
       break;
     }
@@ -615,8 +597,7 @@ static INLINE int assign_mv(AV1_COMMON *cm, MACROBLOCKD *xd,
       if (is_compound) mv[1].as_int = 0;
 #if CONFIG_REF_MV
       pred_mv[0].as_int = 0;
-      if (is_compound)
-        pred_mv[1].as_int = 0;
+      if (is_compound) pred_mv[1].as_int = 0;
 #endif
       break;
     }
@@ -641,7 +622,7 @@ static int read_is_inter_block(AV1_COMMON *const cm, MACROBLOCKD *const xd,
 static void fpm_sync(void *const data, int mi_row) {
   AV1Decoder *const pbi = (AV1Decoder *)data;
   av1_frameworker_wait(pbi->frame_worker_owner, pbi->common.prev_frame,
-                        mi_row << MI_BLOCK_SIZE_LOG2);
+                       mi_row << MI_BLOCK_SIZE_LOG2);
 }
 
 static void read_inter_block_mode_info(AV1Decoder *const pbi,
@@ -676,20 +657,17 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
   for (ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ++ref_frame) {
     av1_find_mv_refs(cm, xd, mi, ref_frame,
 #if CONFIG_REF_MV
-                     &xd->ref_mv_count[ref_frame],
-                     xd->ref_mv_stack[ref_frame],
+                     &xd->ref_mv_count[ref_frame], xd->ref_mv_stack[ref_frame],
 #endif
-                     ref_mvs[ref_frame], mi_row, mi_col,
-                     fpm_sync, (void *)pbi, inter_mode_ctx);
+                     ref_mvs[ref_frame], mi_row, mi_col, fpm_sync, (void *)pbi,
+                     inter_mode_ctx);
   }
 
 #if CONFIG_REF_MV
   for (; ref_frame < MODE_CTX_REF_FRAMES; ++ref_frame) {
-    av1_find_mv_refs(cm, xd, mi, ref_frame,
-                     &xd->ref_mv_count[ref_frame],
-                     xd->ref_mv_stack[ref_frame],
-                     ref_mvs[ref_frame], mi_row, mi_col,
-                     fpm_sync, (void *)pbi, inter_mode_ctx);
+    av1_find_mv_refs(cm, xd, mi, ref_frame, &xd->ref_mv_count[ref_frame],
+                     xd->ref_mv_stack[ref_frame], ref_mvs[ref_frame], mi_row,
+                     mi_col, fpm_sync, (void *)pbi, inter_mode_ctx);
 
     if (xd->ref_mv_count[ref_frame] < 2) {
       MV_REFERENCE_FRAME rf[2];
@@ -704,8 +682,8 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
         inter_mode_ctx[ref_frame] &= ~(1 << ALL_ZERO_FLAG_OFFSET);
     }
   }
-  mode_ctx = av1_mode_context_analyzer(inter_mode_ctx,
-                                       mbmi->ref_frame, bsize, -1);
+  mode_ctx =
+      av1_mode_context_analyzer(inter_mode_ctx, mbmi->ref_frame, bsize, -1);
   mbmi->ref_mv_idx = 0;
 #else
   mode_ctx = inter_mode_ctx[mbmi->ref_frame[0]];
@@ -731,7 +709,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
   if (bsize < BLOCK_8X8 || mbmi->mode != ZEROMV) {
     for (ref = 0; ref < 1 + is_compound; ++ref) {
       av1_find_best_ref_mvs(allow_hp, ref_mvs[mbmi->ref_frame[ref]],
-                             &nearestmv[ref], &nearmv[ref]);
+                            &nearestmv[ref], &nearmv[ref]);
     }
   }
 
@@ -752,8 +730,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
       nearestmv[0] = xd->ref_mv_stack[ref_frame_type][0].this_mv;
       nearestmv[1] = xd->ref_mv_stack[ref_frame_type][0].comp_mv;
 
-      for (i = 0; i < 2; ++i)
-        lower_mv_precision(&nearestmv[i].as_mv, allow_hp);
+      for (i = 0; i < 2; ++i) lower_mv_precision(&nearestmv[i].as_mv, allow_hp);
     }
 
     if (xd->ref_mv_count[ref_frame_type] > 1) {
@@ -787,8 +764,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
         int_mv block[2];
         const int j = idy * 2 + idx;
 #if CONFIG_REF_MV
-        mode_ctx = av1_mode_context_analyzer(inter_mode_ctx,
-                                             mbmi->ref_frame,
+        mode_ctx = av1_mode_context_analyzer(inter_mode_ctx, mbmi->ref_frame,
                                              bsize, j);
 #endif
         b_mode = read_inter_mode(cm, xd, r, mode_ctx);
@@ -796,8 +772,8 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
         if (b_mode == NEARESTMV || b_mode == NEARMV) {
           for (ref = 0; ref < 1 + is_compound; ++ref)
             av1_append_sub8x8_mvs_for_idx(cm, xd, j, ref, mi_row, mi_col,
-                                           &nearest_sub8x8[ref],
-                                           &near_sub8x8[ref]);
+                                          &nearest_sub8x8[ref],
+                                          &near_sub8x8[ref]);
         }
 
         if (!assign_mv(cm, xd, b_mode, j, block, nearestmv, nearest_sub8x8,
@@ -828,9 +804,10 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
       int_mv ref_mv = nearestmv[ref];
       uint8_t ref_frame_type = av1_ref_frame_type(mbmi->ref_frame);
       if (xd->ref_mv_count[ref_frame_type] > 1) {
-        ref_mv = (ref == 0) ?
-            xd->ref_mv_stack[ref_frame_type][mbmi->ref_mv_idx].this_mv :
-            xd->ref_mv_stack[ref_frame_type][mbmi->ref_mv_idx].comp_mv;
+        ref_mv =
+            (ref == 0)
+                ? xd->ref_mv_stack[ref_frame_type][mbmi->ref_mv_idx].this_mv
+                : xd->ref_mv_stack[ref_frame_type][mbmi->ref_mv_idx].comp_mv;
         clamp_mv_ref(&ref_mv.as_mv, xd->n8_w << 3, xd->n8_h << 3, xd);
         lower_mv_precision(&ref_mv.as_mv, allow_hp);
       }
@@ -883,7 +860,7 @@ static void read_inter_frame_mode_info(AV1Decoder *const pbi,
 }
 
 void av1_read_mode_info(AV1Decoder *const pbi, MACROBLOCKD *xd, int mi_row,
-                         int mi_col, aom_reader *r, int x_mis, int y_mis) {
+                        int mi_col, aom_reader *r, int x_mis, int y_mis) {
   AV1_COMMON *const cm = &pbi->common;
   MODE_INFO *const mi = xd->mi[0];
   MV_REF *frame_mvs = cm->cur_frame->mvs + mi_row * cm->mi_cols + mi_col;

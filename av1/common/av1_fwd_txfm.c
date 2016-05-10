@@ -87,8 +87,7 @@ void av1_fdct4x4_1_c(const int16_t *input, tran_low_t *output, int stride) {
   output[1] = 0;
 }
 
-void av1_fdct8x8_c(const int16_t *input, tran_low_t *final_output,
-                    int stride) {
+void av1_fdct8x8_c(const int16_t *input, tran_low_t *final_output, int stride) {
   int i, j;
   tran_low_t intermediate[64];
   int pass;
@@ -773,42 +772,41 @@ void av1_fdct32x32_1_c(const int16_t *input, tran_low_t *output, int stride) {
 
 #if CONFIG_AOM_HIGHBITDEPTH
 void av1_highbd_fdct4x4_c(const int16_t *input, tran_low_t *output,
-                           int stride) {
+                          int stride) {
   av1_fdct4x4_c(input, output, stride);
 }
 
 void av1_highbd_fdct8x8_c(const int16_t *input, tran_low_t *final_output,
-                           int stride) {
+                          int stride) {
   av1_fdct8x8_c(input, final_output, stride);
 }
 
 void av1_highbd_fdct8x8_1_c(const int16_t *input, tran_low_t *final_output,
-                             int stride) {
+                            int stride) {
   av1_fdct8x8_1_c(input, final_output, stride);
 }
 
 void av1_highbd_fdct16x16_c(const int16_t *input, tran_low_t *output,
-                             int stride) {
+                            int stride) {
   av1_fdct16x16_c(input, output, stride);
 }
 
 void av1_highbd_fdct16x16_1_c(const int16_t *input, tran_low_t *output,
-                               int stride) {
+                              int stride) {
   av1_fdct16x16_1_c(input, output, stride);
 }
 
-void av1_highbd_fdct32x32_c(const int16_t *input, tran_low_t *out,
-                             int stride) {
+void av1_highbd_fdct32x32_c(const int16_t *input, tran_low_t *out, int stride) {
   av1_fdct32x32_c(input, out, stride);
 }
 
 void av1_highbd_fdct32x32_rd_c(const int16_t *input, tran_low_t *out,
-                                int stride) {
+                               int stride) {
   av1_fdct32x32_rd_c(input, out, stride);
 }
 
 void av1_highbd_fdct32x32_1_c(const int16_t *input, tran_low_t *out,
-                               int stride) {
+                              int stride) {
   av1_fdct32x32_1_c(input, out, stride);
 }
 #endif  // CONFIG_AOM_HIGHBITDEPTH

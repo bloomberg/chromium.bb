@@ -22,17 +22,17 @@
 #include "av1/encoder/rd.h"
 
 void av1_quantize_fp_c(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
-                        int skip_block, const int16_t *zbin_ptr,
-                        const int16_t *round_ptr, const int16_t *quant_ptr,
-                        const int16_t *quant_shift_ptr, tran_low_t *qcoeff_ptr,
-                        tran_low_t *dqcoeff_ptr, const int16_t *dequant_ptr,
-                        uint16_t *eob_ptr, const int16_t *scan,
-                        const int16_t *iscan
+                       int skip_block, const int16_t *zbin_ptr,
+                       const int16_t *round_ptr, const int16_t *quant_ptr,
+                       const int16_t *quant_shift_ptr, tran_low_t *qcoeff_ptr,
+                       tran_low_t *dqcoeff_ptr, const int16_t *dequant_ptr,
+                       uint16_t *eob_ptr, const int16_t *scan,
+                       const int16_t *iscan
 #if CONFIG_AOM_QM
-                        ,
-                        const qm_val_t *qm_ptr, const qm_val_t *iqm_ptr
+                       ,
+                       const qm_val_t *qm_ptr, const qm_val_t *iqm_ptr
 #endif
-                        ) {
+                       ) {
   int i, eob = -1;
   // TODO(jingning) Decide the need of these arguments after the
   // quantization process is completed.
@@ -79,18 +79,18 @@ void av1_quantize_fp_c(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
 
 #if CONFIG_AOM_HIGHBITDEPTH
 void av1_highbd_quantize_fp_c(const tran_low_t *coeff_ptr, intptr_t count,
-                               int skip_block, const int16_t *zbin_ptr,
-                               const int16_t *round_ptr,
-                               const int16_t *quant_ptr,
-                               const int16_t *quant_shift_ptr,
-                               tran_low_t *qcoeff_ptr, tran_low_t *dqcoeff_ptr,
-                               const int16_t *dequant_ptr, uint16_t *eob_ptr,
-                               const int16_t *scan, const int16_t *iscan
+                              int skip_block, const int16_t *zbin_ptr,
+                              const int16_t *round_ptr,
+                              const int16_t *quant_ptr,
+                              const int16_t *quant_shift_ptr,
+                              tran_low_t *qcoeff_ptr, tran_low_t *dqcoeff_ptr,
+                              const int16_t *dequant_ptr, uint16_t *eob_ptr,
+                              const int16_t *scan, const int16_t *iscan
 #if CONFIG_AOM_QM
-                               ,
-                               const qm_val_t *qm_ptr, const qm_val_t *iqm_ptr
+                              ,
+                              const qm_val_t *qm_ptr, const qm_val_t *iqm_ptr
 #endif
-                               ) {
+                              ) {
   int i;
   int eob = -1;
   // TODO(jingning) Decide the need of these arguments after the
@@ -138,18 +138,17 @@ void av1_highbd_quantize_fp_c(const tran_low_t *coeff_ptr, intptr_t count,
 // TODO(jingning) Refactor this file and combine functions with similar
 // operations.
 void av1_quantize_fp_32x32_c(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
-                              int skip_block, const int16_t *zbin_ptr,
-                              const int16_t *round_ptr,
-                              const int16_t *quant_ptr,
-                              const int16_t *quant_shift_ptr,
-                              tran_low_t *qcoeff_ptr, tran_low_t *dqcoeff_ptr,
-                              const int16_t *dequant_ptr, uint16_t *eob_ptr,
-                              const int16_t *scan, const int16_t *iscan
+                             int skip_block, const int16_t *zbin_ptr,
+                             const int16_t *round_ptr, const int16_t *quant_ptr,
+                             const int16_t *quant_shift_ptr,
+                             tran_low_t *qcoeff_ptr, tran_low_t *dqcoeff_ptr,
+                             const int16_t *dequant_ptr, uint16_t *eob_ptr,
+                             const int16_t *scan, const int16_t *iscan
 #if CONFIG_AOM_QM
-                              ,
-                              const qm_val_t *qm_ptr, const qm_val_t *iqm_ptr
+                             ,
+                             const qm_val_t *qm_ptr, const qm_val_t *iqm_ptr
 #endif
-                              ) {
+                             ) {
   int i, eob = -1;
   (void)zbin_ptr;
   (void)quant_shift_ptr;
@@ -260,7 +259,7 @@ void av1_highbd_quantize_fp_32x32_c(
 #endif
 
 void av1_regular_quantize_b_4x4(MACROBLOCK *x, int plane, int block,
-                                 const int16_t *scan, const int16_t *iscan) {
+                                const int16_t *scan, const int16_t *iscan) {
   MACROBLOCKD *const xd = &x->e_mbd;
   struct macroblock_plane *p = &x->plane[plane];
   struct macroblockd_plane *pd = &xd->plane[plane];
@@ -280,8 +279,7 @@ void av1_regular_quantize_b_4x4(MACROBLOCK *x, int plane, int block,
 #if !CONFIG_AOM_QM
                           &p->eobs[block], scan, iscan);
 #else
-                          &p->eobs[block], scan, iscan,
-                          qmatrix, iqmatrix);
+                          &p->eobs[block], scan, iscan, qmatrix, iqmatrix);
 #endif
     return;
   }
@@ -291,10 +289,9 @@ void av1_regular_quantize_b_4x4(MACROBLOCK *x, int plane, int block,
                  BLOCK_OFFSET(p->qcoeff, block),
                  BLOCK_OFFSET(pd->dqcoeff, block), pd->dequant, &p->eobs[block],
 #if !CONFIG_AOM_QM
-                          scan, iscan);
+                 scan, iscan);
 #else
-                          scan, iscan,
-                          qmatrix, iqmatrix);
+                 scan, iscan, qmatrix, iqmatrix);
 #endif
 }
 
@@ -312,12 +309,9 @@ static int get_qzbin_factor(int q, aom_bit_depth_t bit_depth) {
   const int quant = av1_dc_quant(q, 0, bit_depth);
 #if CONFIG_AOM_HIGHBITDEPTH
   switch (bit_depth) {
-    case AOM_BITS_8:
-      return q == 0 ? 64 : (quant < 148 ? 84 : 80);
-    case AOM_BITS_10:
-      return q == 0 ? 64 : (quant < 592 ? 84 : 80);
-    case AOM_BITS_12:
-      return q == 0 ? 64 : (quant < 2368 ? 84 : 80);
+    case AOM_BITS_8: return q == 0 ? 64 : (quant < 148 ? 84 : 80);
+    case AOM_BITS_10: return q == 0 ? 64 : (quant < 592 ? 84 : 80);
+    case AOM_BITS_12: return q == 0 ? 64 : (quant < 2368 ? 84 : 80);
     default:
       assert(0 && "bit_depth should be AOM_BITS_8, AOM_BITS_10 or AOM_BITS_12");
       return -1;

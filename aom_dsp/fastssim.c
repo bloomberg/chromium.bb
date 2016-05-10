@@ -418,8 +418,8 @@ static void fs_calc_structure(fs_ctx *_ctx, int _l, int bit_depth) {
  We drop the finest scale and renormalize the rest to sum to 1.*/
 
 static const double FS_WEIGHTS[FS_NLEVELS] = {
-    0.2989654541015625, 0.3141326904296875, 0.2473602294921875,
-    0.1395416259765625};
+  0.2989654541015625, 0.3141326904296875, 0.2473602294921875, 0.1395416259765625
+};
 
 static double fs_average(fs_ctx *_ctx, int _l) {
   double *ssim;

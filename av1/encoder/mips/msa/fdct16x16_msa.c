@@ -405,7 +405,7 @@ static void postproc_fdct16x8_1d_row(int16_t *intermediate, int16_t *output) {
 }
 
 void av1_fht16x16_msa(const int16_t *input, int16_t *output, int32_t stride,
-                       int32_t tx_type) {
+                      int32_t tx_type) {
   DECLARE_ALIGNED(32, int16_t, tmp[256]);
   DECLARE_ALIGNED(32, int16_t, trans_buf[256]);
   DECLARE_ALIGNED(32, int16_t, tmp_buf[128]);

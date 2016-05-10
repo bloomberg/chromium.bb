@@ -22,7 +22,7 @@
 
 #if HAVE_DSPR2
 void av1_iht8x8_64_add_dspr2(const int16_t *input, uint8_t *dest,
-                              int dest_stride, int tx_type) {
+                             int dest_stride, int tx_type) {
   int i, j;
   DECLARE_ALIGNED(32, int16_t, out[8 * 8]);
   int16_t *outptr = out;

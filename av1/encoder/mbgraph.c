@@ -49,7 +49,7 @@ static unsigned int do_16x16_motion_iteration(AV1_COMP *cpi, const MV *ref_mv,
 
   /*cpi->sf.search_method == HEX*/
   av1_hex_search(x, &ref_full, step_param, x->errorperbit, 0,
-                  cond_cost_list(cpi, cost_list), &v_fn_ptr, 0, ref_mv, dst_mv);
+                 cond_cost_list(cpi, cost_list), &v_fn_ptr, 0, ref_mv, dst_mv);
 
   // Try sub-pixel MC
   // if (bestsme > error_thresh && bestsme < INT_MAX)
@@ -143,8 +143,8 @@ static int find_best_16x16_intra(AV1_COMP *cpi, PREDICTION_MODE *pbest_mode) {
 
     xd->mi[0]->mbmi.mode = mode;
     av1_predict_intra_block(xd, 2, 2, TX_16X16, mode, x->plane[0].src.buf,
-                             x->plane[0].src.stride, xd->plane[0].dst.buf,
-                             xd->plane[0].dst.stride, 0, 0, 0);
+                            x->plane[0].src.stride, xd->plane[0].dst.buf,
+                            xd->plane[0].dst.stride, 0, 0, 0);
     err = aom_sad16x16(x->plane[0].src.buf, x->plane[0].src.stride,
                        xd->plane[0].dst.buf, xd->plane[0].dst.stride);
 

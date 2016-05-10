@@ -131,7 +131,7 @@ static INLINE void thread_loop_filter_rows(
             break;
           case LF_PATH_SLOW:
             av1_filter_block_plane_non420(cm, &planes[plane], mi + mi_col,
-                                           mi_row, mi_col);
+                                          mi_row, mi_col);
             break;
         }
       }
@@ -210,10 +210,10 @@ static void loop_filter_rows_mt(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
 }
 
 void av1_loop_filter_frame_mt(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
-                               struct macroblockd_plane planes[MAX_MB_PLANE],
-                               int frame_filter_level, int y_only,
-                               int partial_frame, AVxWorker *workers,
-                               int num_workers, AV1LfSync *lf_sync) {
+                              struct macroblockd_plane planes[MAX_MB_PLANE],
+                              int frame_filter_level, int y_only,
+                              int partial_frame, AVxWorker *workers,
+                              int num_workers, AV1LfSync *lf_sync) {
   int start_mi_row, end_mi_row, mi_rows_to_filter;
 
   if (!frame_filter_level) return;
@@ -248,7 +248,7 @@ static INLINE int get_sync_range(int width) {
 
 // Allocate memory for lf row synchronization
 void av1_loop_filter_alloc(AV1LfSync *lf_sync, AV1_COMMON *cm, int rows,
-                            int width, int num_workers) {
+                           int width, int num_workers) {
   lf_sync->rows = rows;
 #if CONFIG_MULTITHREAD
   {
@@ -312,7 +312,7 @@ void av1_loop_filter_dealloc(AV1LfSync *lf_sync) {
 
 // Accumulate frame counts.
 void av1_accumulate_frame_counts(AV1_COMMON *cm, FRAME_COUNTS *counts,
-                                  int is_dec) {
+                                 int is_dec) {
   int i, j, k, l, m;
 
   for (i = 0; i < BLOCK_SIZE_GROUPS; i++)
@@ -373,8 +373,7 @@ void av1_accumulate_frame_counts(AV1_COMMON *cm, FRAME_COUNTS *counts,
       cm->counts.refmv_mode[i][j] += counts->refmv_mode[i][j];
 
   for (i = 0; i < DRL_MODE_CONTEXTS; ++i)
-    for (j = 0; j < 2; ++j)
-      cm->counts.drl_mode[i][j] += counts->drl_mode[i][j];
+    for (j = 0; j < 2; ++j) cm->counts.drl_mode[i][j] += counts->drl_mode[i][j];
 #endif
 
   for (i = 0; i < INTER_MODE_CONTEXTS; i++)
@@ -429,8 +428,7 @@ void av1_accumulate_frame_counts(AV1_COMMON *cm, FRAME_COUNTS *counts,
         comps->hp[i] += comps_t->hp[i];
       }
 
-      for (i = 0; i < MV_CLASSES; i++)
-        comps->classes[i] += comps_t->classes[i];
+      for (i = 0; i < MV_CLASSES; i++) comps->classes[i] += comps_t->classes[i];
 
       for (i = 0; i < CLASS0_SIZE; i++) {
         comps->class0[i] += comps_t->class0[i];
@@ -439,11 +437,9 @@ void av1_accumulate_frame_counts(AV1_COMMON *cm, FRAME_COUNTS *counts,
       }
 
       for (i = 0; i < MV_OFFSET_BITS; i++)
-        for (j = 0; j < 2; j++)
-          comps->bits[i][j] += comps_t->bits[i][j];
+        for (j = 0; j < 2; j++) comps->bits[i][j] += comps_t->bits[i][j];
 
-      for (i = 0; i < MV_FP_SIZE; i++)
-        comps->fp[i] += comps_t->fp[i];
+      for (i = 0; i < MV_FP_SIZE; i++) comps->fp[i] += comps_t->fp[i];
     }
   }
 #else

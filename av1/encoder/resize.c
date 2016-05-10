@@ -427,8 +427,8 @@ static void fill_arr_to_col(uint8_t *img, int stride, int len, uint8_t *arr) {
 }
 
 void av1_resize_plane(const uint8_t *const input, int height, int width,
-                       int in_stride, uint8_t *output, int height2, int width2,
-                       int out_stride) {
+                      int in_stride, uint8_t *output, int height2, int width2,
+                      int out_stride) {
   int i;
   uint8_t *intbuf = (uint8_t *)malloc(sizeof(uint8_t) * width2 * height);
   uint8_t *tmpbuf =
@@ -716,8 +716,8 @@ static void highbd_fill_arr_to_col(uint16_t *img, int stride, int len,
 }
 
 void av1_highbd_resize_plane(const uint8_t *const input, int height, int width,
-                              int in_stride, uint8_t *output, int height2,
-                              int width2, int out_stride, int bd) {
+                             int in_stride, uint8_t *output, int height2,
+                             int width2, int out_stride, int bd) {
   int i;
   uint16_t *intbuf = (uint16_t *)malloc(sizeof(uint16_t) * width2 * height);
   uint16_t *tmpbuf =
@@ -741,81 +741,81 @@ void av1_highbd_resize_plane(const uint8_t *const input, int height, int width,
 #endif  // CONFIG_AOM_HIGHBITDEPTH
 
 void av1_resize_frame420(const uint8_t *const y, int y_stride,
-                          const uint8_t *const u, const uint8_t *const v,
-                          int uv_stride, int height, int width, uint8_t *oy,
-                          int oy_stride, uint8_t *ou, uint8_t *ov,
-                          int ouv_stride, int oheight, int owidth) {
+                         const uint8_t *const u, const uint8_t *const v,
+                         int uv_stride, int height, int width, uint8_t *oy,
+                         int oy_stride, uint8_t *ou, uint8_t *ov,
+                         int ouv_stride, int oheight, int owidth) {
   av1_resize_plane(y, height, width, y_stride, oy, oheight, owidth, oy_stride);
   av1_resize_plane(u, height / 2, width / 2, uv_stride, ou, oheight / 2,
-                    owidth / 2, ouv_stride);
+                   owidth / 2, ouv_stride);
   av1_resize_plane(v, height / 2, width / 2, uv_stride, ov, oheight / 2,
-                    owidth / 2, ouv_stride);
+                   owidth / 2, ouv_stride);
 }
 
 void av1_resize_frame422(const uint8_t *const y, int y_stride,
-                          const uint8_t *const u, const uint8_t *const v,
-                          int uv_stride, int height, int width, uint8_t *oy,
-                          int oy_stride, uint8_t *ou, uint8_t *ov,
-                          int ouv_stride, int oheight, int owidth) {
+                         const uint8_t *const u, const uint8_t *const v,
+                         int uv_stride, int height, int width, uint8_t *oy,
+                         int oy_stride, uint8_t *ou, uint8_t *ov,
+                         int ouv_stride, int oheight, int owidth) {
   av1_resize_plane(y, height, width, y_stride, oy, oheight, owidth, oy_stride);
   av1_resize_plane(u, height, width / 2, uv_stride, ou, oheight, owidth / 2,
-                    ouv_stride);
+                   ouv_stride);
   av1_resize_plane(v, height, width / 2, uv_stride, ov, oheight, owidth / 2,
-                    ouv_stride);
+                   ouv_stride);
 }
 
 void av1_resize_frame444(const uint8_t *const y, int y_stride,
-                          const uint8_t *const u, const uint8_t *const v,
-                          int uv_stride, int height, int width, uint8_t *oy,
-                          int oy_stride, uint8_t *ou, uint8_t *ov,
-                          int ouv_stride, int oheight, int owidth) {
+                         const uint8_t *const u, const uint8_t *const v,
+                         int uv_stride, int height, int width, uint8_t *oy,
+                         int oy_stride, uint8_t *ou, uint8_t *ov,
+                         int ouv_stride, int oheight, int owidth) {
   av1_resize_plane(y, height, width, y_stride, oy, oheight, owidth, oy_stride);
   av1_resize_plane(u, height, width, uv_stride, ou, oheight, owidth,
-                    ouv_stride);
+                   ouv_stride);
   av1_resize_plane(v, height, width, uv_stride, ov, oheight, owidth,
-                    ouv_stride);
+                   ouv_stride);
 }
 
 #if CONFIG_AOM_HIGHBITDEPTH
 void av1_highbd_resize_frame420(const uint8_t *const y, int y_stride,
-                                 const uint8_t *const u, const uint8_t *const v,
-                                 int uv_stride, int height, int width,
-                                 uint8_t *oy, int oy_stride, uint8_t *ou,
-                                 uint8_t *ov, int ouv_stride, int oheight,
-                                 int owidth, int bd) {
+                                const uint8_t *const u, const uint8_t *const v,
+                                int uv_stride, int height, int width,
+                                uint8_t *oy, int oy_stride, uint8_t *ou,
+                                uint8_t *ov, int ouv_stride, int oheight,
+                                int owidth, int bd) {
   av1_highbd_resize_plane(y, height, width, y_stride, oy, oheight, owidth,
-                           oy_stride, bd);
+                          oy_stride, bd);
   av1_highbd_resize_plane(u, height / 2, width / 2, uv_stride, ou, oheight / 2,
-                           owidth / 2, ouv_stride, bd);
+                          owidth / 2, ouv_stride, bd);
   av1_highbd_resize_plane(v, height / 2, width / 2, uv_stride, ov, oheight / 2,
-                           owidth / 2, ouv_stride, bd);
+                          owidth / 2, ouv_stride, bd);
 }
 
 void av1_highbd_resize_frame422(const uint8_t *const y, int y_stride,
-                                 const uint8_t *const u, const uint8_t *const v,
-                                 int uv_stride, int height, int width,
-                                 uint8_t *oy, int oy_stride, uint8_t *ou,
-                                 uint8_t *ov, int ouv_stride, int oheight,
-                                 int owidth, int bd) {
+                                const uint8_t *const u, const uint8_t *const v,
+                                int uv_stride, int height, int width,
+                                uint8_t *oy, int oy_stride, uint8_t *ou,
+                                uint8_t *ov, int ouv_stride, int oheight,
+                                int owidth, int bd) {
   av1_highbd_resize_plane(y, height, width, y_stride, oy, oheight, owidth,
-                           oy_stride, bd);
+                          oy_stride, bd);
   av1_highbd_resize_plane(u, height, width / 2, uv_stride, ou, oheight,
-                           owidth / 2, ouv_stride, bd);
+                          owidth / 2, ouv_stride, bd);
   av1_highbd_resize_plane(v, height, width / 2, uv_stride, ov, oheight,
-                           owidth / 2, ouv_stride, bd);
+                          owidth / 2, ouv_stride, bd);
 }
 
 void av1_highbd_resize_frame444(const uint8_t *const y, int y_stride,
-                                 const uint8_t *const u, const uint8_t *const v,
-                                 int uv_stride, int height, int width,
-                                 uint8_t *oy, int oy_stride, uint8_t *ou,
-                                 uint8_t *ov, int ouv_stride, int oheight,
-                                 int owidth, int bd) {
+                                const uint8_t *const u, const uint8_t *const v,
+                                int uv_stride, int height, int width,
+                                uint8_t *oy, int oy_stride, uint8_t *ou,
+                                uint8_t *ov, int ouv_stride, int oheight,
+                                int owidth, int bd) {
   av1_highbd_resize_plane(y, height, width, y_stride, oy, oheight, owidth,
-                           oy_stride, bd);
+                          oy_stride, bd);
   av1_highbd_resize_plane(u, height, width, uv_stride, ou, oheight, owidth,
-                           ouv_stride, bd);
+                          ouv_stride, bd);
   av1_highbd_resize_plane(v, height, width, uv_stride, ov, oheight, owidth,
-                           ouv_stride, bd);
+                          ouv_stride, bd);
 }
 #endif  // CONFIG_AOM_HIGHBITDEPTH

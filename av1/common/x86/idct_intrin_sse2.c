@@ -14,7 +14,7 @@
 #include "aom_ports/mem.h"
 
 void av1_iht4x4_16_add_sse2(const tran_low_t *input, uint8_t *dest, int stride,
-                             int tx_type) {
+                            int tx_type) {
   __m128i in[2];
   const __m128i zero = _mm_setzero_si128();
   const __m128i eight = _mm_set1_epi16(8);
@@ -77,7 +77,7 @@ void av1_iht4x4_16_add_sse2(const tran_low_t *input, uint8_t *dest, int stride,
 }
 
 void av1_iht8x8_64_add_sse2(const tran_low_t *input, uint8_t *dest, int stride,
-                             int tx_type) {
+                            int tx_type) {
   __m128i in[8];
   const __m128i zero = _mm_setzero_si128();
   const __m128i final_rounding = _mm_set1_epi16(1 << 4);
@@ -142,7 +142,7 @@ void av1_iht8x8_64_add_sse2(const tran_low_t *input, uint8_t *dest, int stride,
 }
 
 void av1_iht16x16_256_add_sse2(const tran_low_t *input, uint8_t *dest,
-                                int stride, int tx_type) {
+                               int stride, int tx_type) {
   __m128i in0[16], in1[16];
 
   load_buffer_8x16(input, in0);

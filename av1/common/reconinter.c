@@ -40,11 +40,11 @@ void av1_highbd_build_inter_predictor(
 }
 #endif  // CONFIG_AOM_HIGHBITDEPTH
 
-void av1_build_inter_predictor(const uint8_t *src, int src_stride,
-                                uint8_t *dst, int dst_stride, const MV *src_mv,
-                                const struct scale_factors *sf, int w, int h,
-                                int ref, const InterpKernel *kernel,
-                                enum mv_precision precision, int x, int y) {
+void av1_build_inter_predictor(const uint8_t *src, int src_stride, uint8_t *dst,
+                               int dst_stride, const MV *src_mv,
+                               const struct scale_factors *sf, int w, int h,
+                               int ref, const InterpKernel *kernel,
+                               enum mv_precision precision, int x, int y) {
   const int is_q4 = precision == MV_PRECISION_Q4;
   const MV mv_q4 = { is_q4 ? src_mv->row : src_mv->row * 2,
                      is_q4 ? src_mv->col : src_mv->col * 2 };
@@ -120,8 +120,8 @@ void build_inter_predictors(MACROBLOCKD *xd, int plane, int block, int bw,
   }
 }
 
-void av1_build_inter_predictor_sub8x8(MACROBLOCKD *xd, int plane, int i,
-                                       int ir, int ic, int mi_row, int mi_col) {
+void av1_build_inter_predictor_sub8x8(MACROBLOCKD *xd, int plane, int i, int ir,
+                                      int ic, int mi_row, int mi_col) {
   struct macroblockd_plane *const pd = &xd->plane[plane];
   MODE_INFO *const mi = xd->mi[0];
   const BLOCK_SIZE plane_bsize = get_plane_block_size(mi->mbmi.sb_type, pd);
@@ -194,30 +194,30 @@ static void build_inter_predictors_for_planes(MACROBLOCKD *xd, BLOCK_SIZE bsize,
 }
 
 void av1_build_inter_predictors_sby(MACROBLOCKD *xd, int mi_row, int mi_col,
-                                     BLOCK_SIZE bsize) {
+                                    BLOCK_SIZE bsize) {
   build_inter_predictors_for_planes(xd, bsize, mi_row, mi_col, 0, 0);
 }
 
 void av1_build_inter_predictors_sbp(MACROBLOCKD *xd, int mi_row, int mi_col,
-                                     BLOCK_SIZE bsize, int plane) {
+                                    BLOCK_SIZE bsize, int plane) {
   build_inter_predictors_for_planes(xd, bsize, mi_row, mi_col, plane, plane);
 }
 
 void av1_build_inter_predictors_sbuv(MACROBLOCKD *xd, int mi_row, int mi_col,
-                                      BLOCK_SIZE bsize) {
+                                     BLOCK_SIZE bsize) {
   build_inter_predictors_for_planes(xd, bsize, mi_row, mi_col, 1,
                                     MAX_MB_PLANE - 1);
 }
 
 void av1_build_inter_predictors_sb(MACROBLOCKD *xd, int mi_row, int mi_col,
-                                    BLOCK_SIZE bsize) {
+                                   BLOCK_SIZE bsize) {
   build_inter_predictors_for_planes(xd, bsize, mi_row, mi_col, 0,
                                     MAX_MB_PLANE - 1);
 }
 
 void av1_setup_dst_planes(struct macroblockd_plane planes[MAX_MB_PLANE],
-                           const YV12_BUFFER_CONFIG *src, int mi_row,
-                           int mi_col) {
+                          const YV12_BUFFER_CONFIG *src, int mi_row,
+                          int mi_col) {
   uint8_t *const buffers[MAX_MB_PLANE] = { src->y_buffer, src->u_buffer,
                                            src->v_buffer };
   const int strides[MAX_MB_PLANE] = { src->y_stride, src->uv_stride,
@@ -232,8 +232,8 @@ void av1_setup_dst_planes(struct macroblockd_plane planes[MAX_MB_PLANE],
 }
 
 void av1_setup_pre_planes(MACROBLOCKD *xd, int idx,
-                           const YV12_BUFFER_CONFIG *src, int mi_row,
-                           int mi_col, const struct scale_factors *sf) {
+                          const YV12_BUFFER_CONFIG *src, int mi_row, int mi_col,
+                          const struct scale_factors *sf) {
   if (src != NULL) {
     int i;
     uint8_t *const buffers[MAX_MB_PLANE] = { src->y_buffer, src->u_buffer,

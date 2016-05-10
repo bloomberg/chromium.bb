@@ -49,12 +49,12 @@ static void encode_mv_component(aom_writer *w, int comp,
 
   // Class
   av1_write_token(w, av1_mv_class_tree, mvcomp->classes,
-                   &mv_class_encodings[mv_class]);
+                  &mv_class_encodings[mv_class]);
 
   // Integer bits
   if (mv_class == MV_CLASS_0) {
     av1_write_token(w, av1_mv_class0_tree, mvcomp->class0,
-                     &mv_class0_encodings[d]);
+                    &mv_class0_encodings[d]);
   } else {
     int i;
     const int n = mv_class + CLASS0_BITS - 1;  // number of bits
@@ -63,8 +63,8 @@ static void encode_mv_component(aom_writer *w, int comp,
 
   // Fractional bits
   av1_write_token(w, av1_mv_fp_tree,
-                   mv_class == MV_CLASS_0 ? mvcomp->class0_fp[d] : mvcomp->fp,
-                   &mv_fp_encodings[fr]);
+                  mv_class == MV_CLASS_0 ? mvcomp->class0_fp[d] : mvcomp->fp,
+                  &mv_fp_encodings[fr]);
 
   // High precision bit
   if (usehp)
@@ -165,15 +165,15 @@ static void write_mv_update(const aom_tree_index *tree,
 }
 
 void av1_write_nmv_probs(AV1_COMMON *cm, int usehp, aom_writer *w,
-                          nmv_context_counts *const nmv_counts) {
+                         nmv_context_counts *const nmv_counts) {
   int i, j;
 #if CONFIG_REF_MV
   int nmv_ctx = 0;
   for (nmv_ctx = 0; nmv_ctx < NMV_CONTEXTS; ++nmv_ctx) {
     nmv_context *const mvc = &cm->fc->nmvc[nmv_ctx];
     nmv_context_counts *const counts = &nmv_counts[nmv_ctx];
-    write_mv_update(av1_mv_joint_tree, mvc->joints, counts->joints,
-                    MV_JOINTS, w);
+    write_mv_update(av1_mv_joint_tree, mvc->joints, counts->joints, MV_JOINTS,
+                    w);
 
     for (i = 0; i < 2; ++i) {
       nmv_component *comp = &mvc->comps[i];
@@ -209,8 +209,7 @@ void av1_write_nmv_probs(AV1_COMMON *cm, int usehp, aom_writer *w,
   nmv_context *const mvc = &cm->fc->nmvc;
   nmv_context_counts *const counts = nmv_counts;
 
-  write_mv_update(av1_mv_joint_tree, mvc->joints, counts->joints, MV_JOINTS,
-                  w);
+  write_mv_update(av1_mv_joint_tree, mvc->joints, counts->joints, MV_JOINTS, w);
 
   for (i = 0; i < 2; ++i) {
     nmv_component *comp = &mvc->comps[i];
@@ -244,15 +243,13 @@ void av1_write_nmv_probs(AV1_COMMON *cm, int usehp, aom_writer *w,
 #endif
 }
 
-
 void av1_encode_mv(AV1_COMP *cpi, aom_writer *w, const MV *mv, const MV *ref,
-                    const nmv_context *mvctx, int usehp) {
+                   const nmv_context *mvctx, int usehp) {
   const MV diff = { mv->row - ref->row, mv->col - ref->col };
   const MV_JOINT_TYPE j = av1_get_mv_joint(&diff);
   usehp = usehp && av1_use_mv_hp(ref);
 
-  av1_write_token(w, av1_mv_joint_tree, mvctx->joints,
-                   &mv_joint_encodings[j]);
+  av1_write_token(w, av1_mv_joint_tree, mvctx->joints, &mv_joint_encodings[j]);
   if (mv_joint_vertical(j))
     encode_mv_component(w, diff.row, &mvctx->comps[0], usehp);
 
@@ -268,7 +265,7 @@ void av1_encode_mv(AV1_COMP *cpi, aom_writer *w, const MV *mv, const MV *ref,
 }
 
 void av1_build_nmv_cost_table(int *mvjoint, int *mvcost[2],
-                               const nmv_context *ctx, int usehp) {
+                              const nmv_context *ctx, int usehp) {
   av1_cost_tokens(mvjoint, ctx->joints, av1_mv_joint_tree);
   build_nmv_component_cost_table(mvcost[0], &ctx->comps[0], usehp);
   build_nmv_component_cost_table(mvcost[1], &ctx->comps[1], usehp);

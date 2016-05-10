@@ -15,7 +15,7 @@
 #include "aom_dsp/mips/inv_txfm_msa.h"
 
 void av1_iht8x8_64_add_msa(const int16_t *input, uint8_t *dst,
-                            int32_t dst_stride, int32_t tx_type) {
+                           int32_t dst_stride, int32_t tx_type) {
   v8i16 in0, in1, in2, in3, in4, in5, in6, in7;
 
   /* load vector elements of 8x8 block */

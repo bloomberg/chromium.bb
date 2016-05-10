@@ -15,7 +15,7 @@
 #include "./av1_rtcd.h"
 
 int64_t av1_block_error_fp_neon(const int16_t *coeff, const int16_t *dqcoeff,
-                                 int block_size) {
+                                int block_size) {
   int64x2_t error = vdupq_n_s64(0);
 
   assert(block_size >= 8);
