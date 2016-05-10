@@ -806,6 +806,12 @@ void DocumentThreadableLoader::loadActualRequest()
 
     clearResource();
 
+    // Explicitly set the SkipServiceWorker flag here. Even if the page was not
+    // controlled by a SW when the preflight request was sent, a new SW may be
+    // controlling the page now by calling clients.claim(). We should not send
+    // the actual request to the SW. https://crbug.com/604583
+    actualRequest.setSkipServiceWorker(true);
+
     loadRequest(actualRequest, actualOptions);
     // |this| may be dead here in async mode.
 }
