@@ -133,6 +133,12 @@ class CC_EXPORT TextureLayer : public Layer {
       const TextureMailbox& mailbox,
       std::unique_ptr<SingleReleaseCallback> release_callback);
 
+  // Use this for special cases where the same texture is used to back the
+  // TextureLayer across all frames.
+  // WARNING: DON'T ACTUALLY USE THIS WHAT YOU ARE DOING IS WRONG.
+  // TODO(danakj): Remove this when pepper doesn't need it. crbug.com/350204
+  void SetTextureMailboxWithoutReleaseCallback(const TextureMailbox& mailbox);
+
   void SetNeedsDisplayRect(const gfx::Rect& dirty_rect) override;
 
   void SetLayerTreeHost(LayerTreeHost* layer_tree_host) override;

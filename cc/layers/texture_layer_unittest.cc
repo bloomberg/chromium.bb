@@ -332,6 +332,33 @@ TEST_F(TextureLayerWithMailboxTest, ReplaceMailboxOnMainThreadBeforeCommit) {
       SingleReleaseCallback::Create(test_data_.release_mailbox1_));
 }
 
+TEST_F(TextureLayerTest, SetTextureMailboxWithoutReleaseCallback) {
+  scoped_refptr<TextureLayer> test_layer =
+      TextureLayer::CreateForMailbox(nullptr);
+  ASSERT_TRUE(test_layer.get());
+
+  // These use the same gpu::Mailbox, but different sync points.
+  TextureMailbox mailbox1(MailboxFromChar('a'), SyncTokenFromUInt(1),
+                          GL_TEXTURE_2D);
+  TextureMailbox mailbox2(MailboxFromChar('a'), SyncTokenFromUInt(2),
+                          GL_TEXTURE_2D);
+
+  EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(AnyNumber());
+  layer_tree_host_->SetRootLayer(test_layer);
+  Mock::VerifyAndClearExpectations(layer_tree_host_.get());
+
+  // Set the mailbox the first time. It should cause a commit.
+  EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(AtLeast(1));
+  test_layer->SetTextureMailboxWithoutReleaseCallback(mailbox1);
+  Mock::VerifyAndClearExpectations(layer_tree_host_.get());
+
+  // Set the mailbox again with a new sync point, as the backing texture has
+  // been updated. It should cause a new commit.
+  EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(AtLeast(1));
+  test_layer->SetTextureMailboxWithoutReleaseCallback(mailbox2);
+  Mock::VerifyAndClearExpectations(layer_tree_host_.get());
+}
+
 class TextureLayerMailboxHolderTest : public TextureLayerTest {
  public:
   TextureLayerMailboxHolderTest()

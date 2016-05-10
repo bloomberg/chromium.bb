@@ -137,12 +137,7 @@ void CommandBufferImpl::CreateStreamTexture(
   NOTIMPLEMENTED();
 }
 
-void CommandBufferImpl::TakeFrontBuffer(const gpu::Mailbox& mailbox) {
-  NOTIMPLEMENTED();
-}
-
-void CommandBufferImpl::ReturnFrontBuffer(const gpu::Mailbox& mailbox,
-                                          bool is_lost) {
+void CommandBufferImpl::ProduceFrontBuffer(const gpu::Mailbox& mailbox) {
   NOTIMPLEMENTED();
 }
 

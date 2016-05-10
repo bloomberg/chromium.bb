@@ -51,8 +51,7 @@ interface CommandBuffer {
   DestroyImage(int32 id);
   CreateStreamTexture(uint32 client_texture_id)
       => (int32 stream_id, bool succeeded);
-  TakeFrontBuffer(gpu.mojom.Mailbox mailbox);
-  ReturnFrontBuffer(gpu.mojom.Mailbox mailbox, bool is_lost);
+  ProduceFrontBuffer(gpu.mojom.Mailbox mailbox);
   SignalQuery(uint32 query, uint32 signal_id);
   SignalSyncToken(gpu.mojom.SyncToken sync_token, uint32 signal_id);
   WaitForGetOffsetInRange(int32 start, int32 end)
