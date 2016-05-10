@@ -121,7 +121,7 @@ class SmoothnessKeyDesktopMoveCases(_Smoothness):
     return 'smoothness.key_desktop_move_cases'
 
 
-@benchmark.Disabled('all') # crbug.com/610338
+@benchmark.Enabled('android')
 class SmoothnessKeyMobileSites(_Smoothness):
   """Measures rendering statistics while scrolling down the key mobile sites.
 
