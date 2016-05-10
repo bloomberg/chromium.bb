@@ -8,6 +8,8 @@
 #include <limits.h>
 #include <stdint.h>
 
+#include <limits>
+
 namespace base {
 namespace internal {
 
@@ -16,6 +18,8 @@ namespace internal {
 // for accurate range comparisons between floating point and integer types.
 template <typename NumericType>
 struct MaxExponent {
+  static_assert(std::is_arithmetic<NumericType>::value,
+                "Argument must be numeric.");
   static const int value = std::numeric_limits<NumericType>::is_iec559
                                ? std::numeric_limits<NumericType>::max_exponent
                                : (sizeof(NumericType) * 8 + 1 -
