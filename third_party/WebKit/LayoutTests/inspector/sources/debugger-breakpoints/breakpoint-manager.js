@@ -219,9 +219,9 @@ InspectorTest.addUISourceCode = function(target, breakpointManager, url, doNotSe
     if (!doNotAddScript)
         InspectorTest.addScript(target, breakpointManager, url);
     InspectorTest.addResult("  Adding UISourceCode: " + url);
-    var contentProvider = new WebInspector.StaticContentProvider(WebInspector.resourceTypes.Script, "");
+    var contentProvider = new WebInspector.StaticContentProvider(WebInspector.resourceTypes.Script, "", url);
     var binding = breakpointManager._debuggerWorkspaceBinding;
-    var uiSourceCode = InspectorTest.testNetworkProject.addFileForURL(url, contentProvider, null);
+    var uiSourceCode = InspectorTest.testNetworkProject.addFile(contentProvider, null);
     InspectorTest.uiSourceCodes[url] = uiSourceCode;
     if (!doNotSetSourceMapping) {
         breakpointManager._debuggerWorkspaceBinding.setSourceMapping(target, uiSourceCode, breakpointManager.defaultMapping);

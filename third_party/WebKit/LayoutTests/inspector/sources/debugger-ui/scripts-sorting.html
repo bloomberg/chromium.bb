@@ -22,8 +22,8 @@ function test()
     var uiSourceCodes = [];
     function addUISourceCode(url, isContentScript)
     {
-        var contentProvider = new WebInspector.StaticContentProvider(WebInspector.resourceTypes.Script, "");
-        var uiSourceCode = InspectorTest.testNetworkProject.addFileForURL(url, contentProvider, InspectorTest.mainFrame(), isContentScript);
+        var contentProvider = new WebInspector.StaticContentProvider(WebInspector.resourceTypes.Script, "", url);
+        var uiSourceCode = InspectorTest.testNetworkProject.addFile(contentProvider, InspectorTest.mainFrame(), isContentScript);
         uiSourceCodes.push(uiSourceCode);
     }
 

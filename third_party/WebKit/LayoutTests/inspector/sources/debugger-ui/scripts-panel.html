@@ -22,7 +22,7 @@ function test()
 
     function createContentProvider(url)
     {
-        var contentProvider = new WebInspector.StaticContentProvider(WebInspector.resourceTypes.Script, "");
+        var contentProvider = new WebInspector.StaticContentProvider(WebInspector.resourceTypes.Script, "", url);
         contentProvider.requestContent = function()
         {
             InspectorTest.addResult("Source requested for " + url);
@@ -40,7 +40,7 @@ function test()
 
     function addNetworkFile(workspace, url)
     {
-        return InspectorTest.testNetworkProject.addFileForURL(url, createContentProvider(url), InspectorTest.mainFrame());
+        return InspectorTest.testNetworkProject.addFile(createContentProvider(url), InspectorTest.mainFrame());
     }
 
     function addDebuggerFile(workspace, url)

@@ -7,7 +7,7 @@ function test()
 
     function createContentProvider(url)
     {
-        var contentProvider = new WebInspector.StaticContentProvider(WebInspector.resourceTypes.Script, "");
+        var contentProvider = new WebInspector.StaticContentProvider(WebInspector.resourceTypes.Script, "", url);
         contentProvider.requestContent = function()
         {
             InspectorTest.addResult("Source requested for " + url);
@@ -21,7 +21,7 @@ function test()
 
     function addNetworkFile(url)
     {
-        return workspace.networkProject.addFileForURL(url, createContentProvider(url), InspectorTest.mainFrame());
+        return workspace.networkProject.addFile(createContentProvider(url), InspectorTest.mainFrame());
     }
 
     function dumpUISourceCodeDisplayName(url)

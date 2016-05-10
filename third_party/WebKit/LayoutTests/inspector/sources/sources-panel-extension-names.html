@@ -22,8 +22,8 @@ function test()
         function testAddExecutionContextBeforeFile(next)
         {
             InspectorTest.runtimeModel._executionContextCreated(mockExecutionContext);
-            var contentProvider = new WebInspector.StaticContentProvider(WebInspector.resourceTypes.Script, "");
-            WebInspector.NetworkProject.forTarget(InspectorTest.mainTarget).addFileForURL(mockContentScriptURL, contentProvider, InspectorTest.mainFrame(), true);
+            var contentProvider = new WebInspector.StaticContentProvider(WebInspector.resourceTypes.Script, "", mockContentScriptURL);
+            WebInspector.NetworkProject.forTarget(InspectorTest.mainTarget).addFile(contentProvider, InspectorTest.mainFrame(), true);
             InspectorTest.dumpNavigatorView(contentScriptsNavigatorView);
             next();
         },

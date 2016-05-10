@@ -9,8 +9,8 @@ function test()
     var uiSourceCodes = [];
     function addUISourceCode(url)
     {
-        var contentProvider = new WebInspector.StaticContentProvider(WebInspector.resourceTypes.Script, "");
-        var uiSourceCode = WebInspector.NetworkProject.forTarget(InspectorTest.mainTarget).addFileForURL(url, contentProvider, InspectorTest.mainFrame(), false);
+        var contentProvider = new WebInspector.StaticContentProvider(WebInspector.resourceTypes.Script, "", url);
+        var uiSourceCode = WebInspector.NetworkProject.forTarget(InspectorTest.mainTarget).addFile(contentProvider, InspectorTest.mainFrame(), false);
         uiSourceCodes.push(uiSourceCode);
     }
 

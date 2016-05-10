@@ -30,15 +30,15 @@ function test()
     var uiSourceCodes = [];
     function addUISourceCode(url, isContentScript, frame)
     {
-        var contentProvider = new WebInspector.StaticContentProvider(WebInspector.resourceTypes.Script, "");
-        var uiSourceCode = networkProject1.addFileForURL(url, contentProvider, frame || mainFrame);
+        var contentProvider = new WebInspector.StaticContentProvider(WebInspector.resourceTypes.Script, "", url);
+        var uiSourceCode = networkProject1.addFile(contentProvider, frame || mainFrame);
         uiSourceCodes.push(uiSourceCode);
     }
 
     function addUISourceCode2(url, isContentScript)
     {
-        var contentProvider = new WebInspector.StaticContentProvider(WebInspector.resourceTypes.Script, "");
-        var uiSourceCode = networkProject2.addFileForURL(url, contentProvider, target2.resourceTreeModel.mainFrame);
+        var contentProvider = new WebInspector.StaticContentProvider(WebInspector.resourceTypes.Script, "", url);
+        var uiSourceCode = networkProject2.addFile(contentProvider, target2.resourceTreeModel.mainFrame);
         uiSourceCodes.push(uiSourceCode);
     }
 
