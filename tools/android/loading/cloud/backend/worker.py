@@ -74,8 +74,7 @@ class Worker(object):
         self._google_storage_accessor, config['binaries_path'], self._logger,
         self._instance_name)
 
-    if self._failure_database.ToJsonDict():
-      self._UploadFailureDatabase()
+    self._UploadFailureDatabase()
 
   def Start(self):
     """Main worker loop.
@@ -98,8 +97,8 @@ class Worker(object):
         break
 
       self._logger.info('Processing task %s' % task_id)
-      if not self._clovis_task_handler.Run(clovis_task):
-        self._UploadFailureDatabase()
+      self._clovis_task_handler.Run(clovis_task)
+      self._UploadFailureDatabase()
       self._logger.debug('Deleting task %s' % task_id)
       task_api.tasks().delete(project=project, taskqueue=queue_name,
                               task=task_id).execute()
@@ -115,10 +114,13 @@ class Worker(object):
 
   def _UploadFailureDatabase(self):
     """Uploads the failure database to CloudStorage."""
+    if not self._failure_database.is_dirty:
+      return
     self._logger.info('Uploading failure database')
     self._google_storage_accessor.UploadString(
         self._failure_database.ToJsonString(),
         self._failure_database_path)
+    self._failure_database.is_dirty = False
 
   def _FetchClovisTask(self, project_name, task_api, queue_name):
     """Fetches a ClovisTask from the task queue.

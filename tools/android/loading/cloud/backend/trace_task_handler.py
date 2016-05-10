@@ -146,10 +146,11 @@ class TraceTaskHandler(object):
           remote_trace_location)
       self._trace_database.SetTrace(full_cloud_storage_path, trace_metadata)
     else:
+      url = trace_metadata['url']
+      self._logger.warning('Trace generation failed for URL: %s' % url)
       failures_dir = os.path.join(self._base_path, 'failures')
       remote_trace_location = os.path.join(failures_dir, remote_filename)
-      self._failure_database.AddFailure('trace_collection',
-                                        trace_metadata['url'])
+      self._failure_database.AddFailure('trace_collection', url)
 
     if os.path.isfile(local_filename):
       self._logger.debug('Uploading: %s' % remote_trace_location)
@@ -167,16 +168,12 @@ class TraceTaskHandler(object):
 
     Args:
       clovis_task(ClovisTask): The task to run.
-
-    Returns:
-      boolean: True in case of success, False if a failure has been added to the
-               failure database.
     """
     if clovis_task.Action() != 'trace':
       self._logger.error('Unsupported task action: %s' % clovis_task.Action())
       self._failure_database.AddFailure(FailureDatabase.CRITICAL_ERROR,
                                         'trace_task_handler_run')
-      return False
+      return
 
     # Extract the task parameters.
     params = clovis_task.ActionParams()
@@ -189,7 +186,6 @@ class TraceTaskHandler(object):
     # Avoid special characters in storage object names
     pattern = re.compile(r"[#\?\[\]\*/]")
 
-    failure_happened = False
     success_happened = False
 
     while len(urls) > 0:
@@ -201,15 +197,10 @@ class TraceTaskHandler(object):
             url, emulate_device, emulate_network, local_filename, log_filename)
         if trace_metadata['succeeded']:
           success_happened = True
-        else:
-          self._logger.warning('Trace generation failed for URL: %s' % url)
-          failure_happened = True
         remote_filename = os.path.join(local_filename, str(repeat))
         self._HandleTraceGenerationResults(
             local_filename, log_filename, remote_filename, trace_metadata)
 
     if success_happened:
       self._UploadTraceDatabase()
-
-    return not failure_happened
 

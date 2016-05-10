@@ -32,15 +32,11 @@ class ClovisTaskHandler(object):
 
     Args:
       clovis_task(ClovisTask): The task to run.
-
-    Returns:
-      boolean: True in case of success, False if a failure has been added to the
-               failure database.
     """
     handler = self._handlers.get(clovis_task.Action())
     if not handler:
       self._logger.error('Unsupported task action: %s' % clovis_task.Action())
       self._failure_database.AddFailure('unsupported_action',
                                         clovis_task.Action())
-      return False
-    return handler.Run(clovis_task)
+      return
+    handler.Run(clovis_task)
