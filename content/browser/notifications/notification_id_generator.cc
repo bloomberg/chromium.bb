@@ -6,9 +6,11 @@
 
 #include <sstream>
 
+#include "base/base64.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/sha1.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_context.h"
@@ -29,10 +31,12 @@ std::string ComputeBrowserContextHash(BrowserContext* browser_context) {
   const base::FilePath path = browser_context->GetPath();
 
 #if defined(OS_WIN)
-  return base::SHA1HashString(base::WideToUTF8(path.value()));
+  std::string path_hash = base::SHA1HashString(base::WideToUTF8(path.value()));
 #else
-  return base::SHA1HashString(path.value());
+  std::string path_hash = base::SHA1HashString(path.value());
 #endif
+
+  return base::HexEncode(path_hash.c_str(), path_hash.length());
 }
 
 }  // namespace
@@ -68,17 +72,17 @@ std::string NotificationIdGenerator::GenerateForPersistentNotification(
 
   stream << kPersistentPrefix;
   stream << ComputeBrowserContextHash(browser_context_);
-  stream << browser_context_->IsOffTheRecord();
+  stream << base::IntToString(browser_context_->IsOffTheRecord());
   stream << origin;
 
   // Persistent notification ids are unique for the lifetime of the notification
   // database, orthogonal to the renderer that created the notification.
 
-  stream << !!tag.size();
+  stream << base::IntToString(!tag.empty());
   if (tag.size())
     stream << tag;
   else
-    stream << persistent_notification_id;
+    stream << base::Int64ToString(persistent_notification_id);
 
   return stream.str();
 }
@@ -94,18 +98,18 @@ std::string NotificationIdGenerator::GenerateForNonPersistentNotification(
 
   stream << kNonPersistentPrefix;
   stream << ComputeBrowserContextHash(browser_context_);
-  stream << browser_context_->IsOffTheRecord();
+  stream << base::IntToString(browser_context_->IsOffTheRecord());
   stream << origin;
 
   // Non-persistent notification ids are unique per renderer process when no
   // tag is being used. Tags still identify uniqueness for the given origin.
 
-  stream << !!tag.size();
+  stream << base::IntToString(!tag.empty());
   if (!tag.size()) {
-    stream << render_process_id_;
+    stream << base::IntToString(render_process_id_);
     stream << kSeparator;
 
-    stream << non_persistent_notification_id;
+    stream << base::IntToString(non_persistent_notification_id);
   } else {
     stream << tag;
   }
