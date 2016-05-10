@@ -1086,7 +1086,7 @@ weston_wayland_output_config_init(struct weston_wayland_backend_output_config *o
 }
 
 static void
-wayland_backend_config_release(struct weston_wayland_backend_config *new_config)
+weston_wayland_backend_config_release(struct weston_wayland_backend_config *new_config)
 {
 	int i;
 
@@ -1228,7 +1228,7 @@ load_wayland_backend_config(struct weston_compositor *compositor, int *argc,
 	return 0;
 
 err_outputs:
-	wayland_backend_config_release(config);
+	weston_wayland_backend_config_release(config);
 	return -1;
 }
 
@@ -1246,7 +1246,7 @@ load_wayland_backend(struct weston_compositor *c, char const * backend,
 
 	/* load the actual wayland backend and configure it */
 	ret = load_backend_new(c, backend, &config.base);
-	wayland_backend_config_release(&config);
+	weston_wayland_backend_config_release(&config);
 	return ret;
 }
 
