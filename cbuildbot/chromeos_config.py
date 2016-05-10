@@ -1117,6 +1117,12 @@ def GetConfig():
       description='Informational Chromium Uprev & Build (public)',
   )
 
+  chromium_info_gn = site_config.AddTemplate(
+      'chromium-pfq-informational-gn',
+      chromium_info,
+      useflags=append_useflags(['gn']),
+  )
+
   chrome_info = site_config.AddTemplate(
       'chrome-pfq-informational',
       chromium_info,
@@ -1251,6 +1257,10 @@ def GetConfig():
       'amd64-generic',
   ])
 
+  _gn_boards = frozenset([
+      'amd64-generic',
+  ])
+
   def _AddFullConfigs():
     """Add x86 and arm full configs."""
     defaults = config_lib.DefaultSettings()
@@ -1266,6 +1276,13 @@ def GetConfig():
                             **external_overrides)
     _CreateConfigsForBoards(chromium_info, _all_full_boards,
                             'tot-chromium-pfq-informational',
+                            important=False,
+                            internal=defaults['internal'],
+                            manifest_repo_url=site_params['MANIFEST_URL'],
+                            overlays=constants.PUBLIC_OVERLAYS,
+                            **external_overrides)
+    _CreateConfigsForBoards(chromium_info_gn, _gn_boards,
+                            'tot-chromium-pfq-informational-gn',
                             important=False,
                             internal=defaults['internal'],
                             manifest_repo_url=site_params['MANIFEST_URL'],

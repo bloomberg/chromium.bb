@@ -44,6 +44,7 @@ CONFIG_TYPE_DUMP_ORDER = (
     'sdk',
     'chromium-pfq',
     'chromium-pfq-informational',
+    'chromium-pfq-informational-gn',
     'chrome-perf',
     'chrome-pfq',
     'chrome-pfq-informational',
