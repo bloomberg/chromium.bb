@@ -1322,8 +1322,11 @@ template class BLEPeripheralExtensionFunction<
     apibtle::SendRequestResponse::Params>;
 
 void BluetoothLowEnergySendRequestResponseFunction::DoWork() {
-  std::vector<uint8_t> uint8_vector(params_->response.value->begin(),
-                                    params_->response.value->end());
+  std::vector<uint8_t> uint8_vector;
+  if (params_->response.value) {
+    uint8_vector.assign(params_->response.value->begin(),
+                        params_->response.value->end());
+  }
   event_router_->HandleRequestResponse(
       extension(), params_->response.request_id, params_->response.is_error,
       uint8_vector);
