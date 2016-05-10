@@ -1170,7 +1170,7 @@ load_wayland_backend_config(struct weston_compositor *compositor, int *argc,
 	if (config->fullscreen) {
 		oc = weston_wayland_backend_config_add_new_output(config);
 		if (!oc)
-			goto err_outputs;
+			return -1;
 
 		oc->width = width;
 		oc->height = height;
@@ -1197,7 +1197,7 @@ load_wayland_backend_config(struct weston_compositor *compositor, int *argc,
 
 		oc = weston_wayland_backend_config_add_new_output(config);
 		if (!oc)
-			goto err_outputs;
+			return -1;
 
 		weston_wayland_output_config_init(oc, section, width,
 						  height, scale);
@@ -1214,7 +1214,7 @@ load_wayland_backend_config(struct weston_compositor *compositor, int *argc,
 	while (count > 0) {
 		oc = weston_wayland_backend_config_add_new_output(config);
 		if (!oc)
-			goto err_outputs;
+			return -1;
 
 		oc->width = width;
 		oc->height = height;
@@ -1226,10 +1226,6 @@ load_wayland_backend_config(struct weston_compositor *compositor, int *argc,
 	}
 
 	return 0;
-
-err_outputs:
-	weston_wayland_backend_config_release(config);
-	return -1;
 }
 
 static int
@@ -1241,6 +1237,7 @@ load_wayland_backend(struct weston_compositor *c, char const * backend,
 
 	ret = load_wayland_backend_config(c, argc, argv, wc, &config);
 	if(ret < 0) {
+		weston_wayland_backend_config_release(&config);
 		return ret;
 	}
 
