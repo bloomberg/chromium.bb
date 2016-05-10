@@ -27,10 +27,6 @@ const char* const kSearchProviderApi =
     "var external;"
     "if (!external)"
     "  external = {};"
-    "external.AddSearchProvider = function(name) {"
-    "  native function NativeAddSearchProvider();"
-    "  NativeAddSearchProvider(name);"
-    "};"
     "external.IsSearchProviderInstalled = function(name) {"
     "  native function NativeIsSearchProviderInstalled();"
     "  return NativeIsSearchProviderInstalled(name);"
@@ -53,10 +49,6 @@ class ExternalExtensionWrapper : public v8::Extension {
   // Helper function to find the RenderView. May return NULL.
   static RenderView* GetRenderView();
 
-  // Implementation of window.external.AddSearchProvider.
-  static void AddSearchProvider(
-      const v8::FunctionCallbackInfo<v8::Value>& args);
-
   // Implementation of window.external.IsSearchProviderInstalled.
   static void IsSearchProviderInstalled(
       const v8::FunctionCallbackInfo<v8::Value>& args);
@@ -73,9 +65,6 @@ v8::Local<v8::FunctionTemplate>
 ExternalExtensionWrapper::GetNativeFunctionTemplate(
     v8::Isolate* isolate,
     v8::Local<v8::String> name) {
-  if (name->Equals(v8::String::NewFromUtf8(isolate, "NativeAddSearchProvider")))
-    return v8::FunctionTemplate::New(isolate, AddSearchProvider);
-
   if (name->Equals(v8::String::NewFromUtf8(
           isolate, "NativeIsSearchProviderInstalled"))) {
     return v8::FunctionTemplate::New(isolate, IsSearchProviderInstalled);
@@ -97,33 +86,6 @@ RenderView* ExternalExtensionWrapper::GetRenderView() {
     return NULL;  // can happen during closing
 
   return RenderView::FromWebView(webview);
-}
-
-// static
-void ExternalExtensionWrapper::AddSearchProvider(
-    const v8::FunctionCallbackInfo<v8::Value>& args) {
-  if (!args.Length() || !args[0]->IsString())
-    return;
-
-  std::string osdd_string(*v8::String::Utf8Value(args[0]));
-  if (osdd_string.empty())
-    return;
-
-  RenderView* render_view = GetRenderView();
-  if (!render_view)
-    return;
-
-  WebLocalFrame* webframe = WebLocalFrame::frameForCurrentContext();
-  if (!webframe)
-    return;
-
-  GURL osdd_url = GURL(webframe->document().url()).Resolve(osdd_string);
-  if (osdd_url.is_valid()) {
-    webframe->didCallAddSearchProvider();
-    render_view->Send(new ChromeViewHostMsg_PageHasOSDD(
-        render_view->GetRoutingID(), webframe->document().url(), osdd_url,
-        search_provider::EXPLICIT_PROVIDER));
-  }
 }
 
 // static

@@ -208,11 +208,6 @@ class BrowserWindow : public ui::BaseWindow {
   // where we take care of it ourselves at the browser level).
   virtual gfx::Rect GetRootWindowResizerRect() const = 0;
 
-  // Shows a confirmation dialog box for adding a search engine described by
-  // |template_url|. Takes ownership of |template_url|.
-  virtual void ConfirmAddSearchProvider(TemplateURL* template_url,
-                                        Profile* profile) = 0;
-
   // Shows the Update Recommended dialog box.
   virtual void ShowUpdateChromeDialog() = 0;
 

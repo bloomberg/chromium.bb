@@ -30,7 +30,6 @@ mac_xib_bundle_data("chrome_xibs") {
     "DevicePermissionsPrompt.xib",
     "DownloadItem.xib",
     "DownloadShelf.xib",
-    "EditSearchEngine.xib",
     "ExclusiveAccessBubble.xib",
     "ExtensionInstallPrompt.xib",
     "ExtensionInstallPromptNoWarnings.xib",

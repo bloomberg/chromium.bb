@@ -128,7 +128,6 @@
 #include "chrome/browser/ui/search/search_delegate.h"
 #include "chrome/browser/ui/search/search_model.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
-#include "chrome/browser/ui/search_engines/search_engine_tab_helper.h"
 #include "chrome/browser/ui/settings_window_manager.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/status_bubble.h"
@@ -1990,14 +1989,6 @@ bool Browser::CanSaveContents(content::WebContents* web_contents) const {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// Browser, SearchEngineTabHelperDelegate implementation:
-
-void Browser::ConfirmAddSearchProvider(TemplateURL* template_url,
-                                       Profile* profile) {
-  window()->ConfirmAddSearchProvider(template_url, profile);
-}
-
-///////////////////////////////////////////////////////////////////////////////
 // Browser, SearchTabHelperDelegate implementation:
 
 void Browser::NavigateOnThumbnailClick(const GURL& url,
@@ -2477,7 +2468,6 @@ void Browser::SetAsDelegate(WebContents* web_contents, bool set_delegate) {
   WebContentsModalDialogManager::FromWebContents(web_contents)->
       SetDelegate(delegate);
   CoreTabHelper::FromWebContents(web_contents)->set_delegate(delegate);
-  SearchEngineTabHelper::FromWebContents(web_contents)->set_delegate(delegate);
   SearchTabHelper::FromWebContents(web_contents)->set_delegate(delegate);
   translate::ContentTranslateDriver& content_translate_driver =
       ChromeTranslateClient::FromWebContents(web_contents)->translate_driver();

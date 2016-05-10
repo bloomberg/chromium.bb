@@ -9,7 +9,6 @@
 #include "chrome/browser/search_engines/template_url_fetcher_factory.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/search_engines/edit_search_engine_controller.h"
-#include "chrome/browser/ui/search_engines/search_engine_tab_helper_delegate.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "components/search_engines/template_url.h"
@@ -106,31 +105,16 @@ bool SearchEngineTabHelper::OnMessageReceived(
 }
 
 SearchEngineTabHelper::SearchEngineTabHelper(WebContents* web_contents)
-    : content::WebContentsObserver(web_contents),
-      delegate_(nullptr),
-      weak_ptr_factory_(this) {
+    : content::WebContentsObserver(web_contents) {
   DCHECK(web_contents);
 }
 
 void SearchEngineTabHelper::OnPageHasOSDD(
     const GURL& page_url,
-    const GURL& osdd_url,
-    const search_provider::OSDDType& msg_provider_type) {
+    const GURL& osdd_url) {
   // Checks to see if we should generate a keyword based on the OSDD, and if
   // necessary uses TemplateURLFetcher to download the OSDD and create a
   // keyword.
-
-  TemplateURLFetcher::ProviderType provider_type =
-      (msg_provider_type == search_provider::AUTODETECTED_PROVIDER)
-          ? TemplateURLFetcher::AUTODETECTED_PROVIDER
-          : TemplateURLFetcher::EXPLICIT_PROVIDER;
-
-  if (provider_type == TemplateURLFetcher::EXPLICIT_PROVIDER) {
-    UMA_HISTOGRAM_ENUMERATION(
-        "Search.AddSearchProvider2",
-        EditSearchEngineController::ADD_SEARCH_PROVIDER_CALLED,
-        EditSearchEngineController::NUM_EDIT_SEARCH_ENGINE_ACTIONS);
-  }
 
   // Make sure that the page is the current page and other basic checks.
   // When |page_url| has file: scheme, this method doesn't work because of
@@ -159,28 +143,15 @@ void SearchEngineTabHelper::OnPageHasOSDD(
 
   // Autogenerate a keyword for the autodetected case; in the other cases we'll
   // generate a keyword later after fetching the OSDD.
-  base::string16 keyword;
-  if (provider_type == TemplateURLFetcher::AUTODETECTED_PROVIDER) {
-    keyword = GenerateKeywordFromNavigationEntry(entry);
-    if (keyword.empty())
-      return;
-  }
+  base::string16 keyword = GenerateKeywordFromNavigationEntry(entry);
+  if (keyword.empty())
+    return;
 
   // Download the OpenSearch description document. If this is successful, a
   // new keyword will be created when done.
   TemplateURLFetcherFactory::GetForProfile(profile)->ScheduleDownload(
       keyword, osdd_url, entry->GetFavicon().url,
-      base::Bind(&AssociateURLFetcherWithWebContents, web_contents()),
-      base::Bind(&SearchEngineTabHelper::OnDownloadedOSDD,
-                 weak_ptr_factory_.GetWeakPtr()),
-      provider_type);
-}
-
-void SearchEngineTabHelper::OnDownloadedOSDD(
-    std::unique_ptr<TemplateURL> template_url) {
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
-  delegate_->ConfirmAddSearchProvider(template_url.release(), profile);
+      base::Bind(&AssociateURLFetcherWithWebContents, web_contents()));
 }
 
 void SearchEngineTabHelper::GenerateKeywordIfNecessary(

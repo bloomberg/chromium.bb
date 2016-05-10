@@ -31,13 +31,6 @@ class TemplateURLFetcher : public KeyedService {
  public:
   typedef base::Callback<void(
       net::URLFetcher* url_fetcher)> URLFetcherCustomizeCallback;
-  typedef base::Callback<void(std::unique_ptr<TemplateURL> template_url)>
-      ConfirmAddSearchProviderCallback;
-
-  enum ProviderType {
-    AUTODETECTED_PROVIDER,
-    EXPLICIT_PROVIDER  // Supplied by Javascript.
-  };
 
   // Creates a TemplateURLFetcher.
   TemplateURLFetcher(TemplateURLService* template_url_service,
@@ -48,11 +41,9 @@ class TemplateURLFetcher : public KeyedService {
   // it is downloaded. If successful and the result can be parsed, a TemplateURL
   // is added to the TemplateURLService.
   //
-  // If |provider_type| is AUTODETECTED_PROVIDER, |keyword| must be non-empty,
-  // and if there's already a non-replaceable TemplateURL in the model for
-  // |keyword|, or we're already downloading an OSDD for this keyword, no
-  // download is started.  If |provider_type| is EXPLICIT_PROVIDER, |keyword| is
-  // ignored.
+  // |keyword| must be non-empty. If there's already a non-replaceable
+  // TemplateURL in the model for |keyword|, or we're already downloading an
+  // OSDD for this keyword, no download is started.
   //
   // If |url_fetcher_customize_callback| is not null, it's run after a
   // URLFetcher is created. This callback can be used to set additional
@@ -61,23 +52,23 @@ class TemplateURLFetcher : public KeyedService {
       const base::string16& keyword,
       const GURL& osdd_url,
       const GURL& favicon_url,
-      const URLFetcherCustomizeCallback& url_fetcher_customize_callback,
-      const ConfirmAddSearchProviderCallback& confirm_add_callback,
-      ProviderType provider_type);
+      const URLFetcherCustomizeCallback& url_fetcher_customize_callback);
 
   // The current number of outstanding requests.
   int requests_count() const { return requests_.size(); }
 
- private:
+ protected:
   // A RequestDelegate is created to download each OSDD. When done downloading
   // RequestCompleted is invoked back on the TemplateURLFetcher.
   class RequestDelegate;
+
+  // Invoked from the RequestDelegate when done downloading. Virtual for tests.
+  virtual void RequestCompleted(RequestDelegate* request);
+
+ private:
   friend class RequestDelegate;
 
   typedef ScopedVector<RequestDelegate> Requests;
-
-  // Invoked from the RequestDelegate when done downloading.
-  void RequestCompleted(RequestDelegate* request);
 
   TemplateURLService* template_url_service_;
   scoped_refptr<net::URLRequestContextGetter> request_context_;

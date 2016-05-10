@@ -47380,7 +47380,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Search.AddSearchProvider" enum="AddSearchProvider">
   <obsolete>
-    Use Search.AddSearchProvider2 instead.
+    Replaced by Search.AddSearchProvider2, which is also now obsolete.
   </obsolete>
   <owner>estade@chromium.org</owner>
   <summary>
@@ -47390,6 +47390,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Search.AddSearchProvider2" enum="AddSearchProvider">
+  <obsolete>
+    AddSearchProvider was removed 05/2016.
+  </obsolete>
   <owner>estade@chromium.org</owner>
   <summary>
     Measures usage of window.external.AddSearchProvider and user interaction

@@ -1430,33 +1430,9 @@ are declared in build/common.gypi.
                desc="Title of the description column in the search engines editor">
         Name
       </message>
-      <message name="IDS_SEARCH_ENGINES_EDITOR_DESCRIPTION_LABEL"
-               desc="Prefix before the search engine description text field">
-        Name:
-      </message>
-      <message name="IDS_SEARCH_ENGINES_EDITOR_KEYWORD_LABEL"
-               desc="Prefix before the search engine keyword text field">
-        Keyword:
-      </message>
-      <message name="IDS_SEARCH_ENGINES_EDITOR_URL_LABEL"
-               desc="Prefix before the URL text field">
-        URL:
-      </message>
-      <message name="IDS_SEARCH_ENGINES_EDITOR_URL_DESCRIPTION_LABEL"
-               desc="Describes how to escape the url">
-        Insert <ph name="SEARCH_TERMS_LITERAL">%s</ph> in the URL where the search terms should appear.
-      </message>
       <message name="IDS_SEARCH_ENGINES_EDITOR_MAKE_DEFAULT_BUTTON"
                desc="Text of the button that makes the selected endint the default search engine">
         Make default
-      </message>
-      <message name="IDS_SEARCH_ENGINES_EDITOR_EDIT_WINDOW_TITLE"
-               desc="Text of the window title when editing a search engine">
-        Edit Search Engine
-      </message>
-      <message name="IDS_SEARCH_ENGINES_EDITOR_NEW_WINDOW_TITLE"
-               desc="Text of the window title when adding a search engine">
-        Add Search Engine
       </message>
       <message name="IDS_SEARCH_ENGINES_INVALID_TITLE_TT"
                desc="Text of tooltip shown in the keyword editor when the title is invalid">

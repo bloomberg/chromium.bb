@@ -29,7 +29,6 @@
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 #include "chrome/browser/ui/profile_chooser_constants.h"
 #include "chrome/browser/ui/search/search_tab_helper_delegate.h"
-#include "chrome/browser/ui/search_engines/search_engine_tab_helper_delegate.h"
 #include "chrome/browser/ui/signin_view_controller.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
@@ -110,7 +109,6 @@ class WebContentsModalDialogHost;
 class Browser : public TabStripModelObserver,
                 public content::WebContentsDelegate,
                 public CoreTabHelperDelegate,
-                public SearchEngineTabHelperDelegate,
                 public SearchTabHelperDelegate,
                 public ChromeWebModalDialogManagerDelegate,
                 public BookmarkTabHelperDelegate,
@@ -689,10 +687,6 @@ class Browser : public TabStripModelObserver,
                        bool did_finish_load) override;
   bool CanReloadContents(content::WebContents* web_contents) const override;
   bool CanSaveContents(content::WebContents* web_contents) const override;
-
-  // Overridden from SearchEngineTabHelperDelegate:
-  void ConfirmAddSearchProvider(TemplateURL* template_url,
-                                Profile* profile) override;
 
   // Overridden from SearchTabHelperDelegate:
   void NavigateOnThumbnailClick(const GURL& url,

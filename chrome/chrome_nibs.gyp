@@ -89,8 +89,6 @@
         'browser/ui/cocoa/bookmarks/bookmark_name_folder_controller.mm',
         'browser/ui/cocoa/browser/avatar_menu_bubble_controller.h',
         'browser/ui/cocoa/browser/avatar_menu_bubble_controller.mm',
-        'browser/ui/cocoa/browser/edit_search_engine_cocoa_controller.h',
-        'browser/ui/cocoa/browser/edit_search_engine_cocoa_controller.mm',
         'browser/ui/cocoa/browser_window_controller.h',
         'browser/ui/cocoa/browser_window_controller.mm',
         'browser/ui/cocoa/browser_window_controller_private.h',

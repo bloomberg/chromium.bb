@@ -448,10 +448,9 @@ IPC_MESSAGE_ROUTED1(ChromeViewMsg_AppBannerDismissed,
 
 // Notification that the page has an OpenSearch description document
 // associated with it.
-IPC_MESSAGE_ROUTED3(ChromeViewHostMsg_PageHasOSDD,
+IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_PageHasOSDD,
                     GURL /* page_url */,
-                    GURL /* osdd_url */,
-                    search_provider::OSDDType)
+                    GURL /* osdd_url */)
 
 // Find out if the given url's security origin is installed as a search
 // provider.

@@ -307,8 +307,6 @@ class BrowserView : public BrowserWindow,
   bool IsTabStripEditable() const override;
   bool IsToolbarVisible() const override;
   gfx::Rect GetRootWindowResizerRect() const override;
-  void ConfirmAddSearchProvider(TemplateURL* template_url,
-                                Profile* profile) override;
   void ShowUpdateChromeDialog() override;
   void ShowBookmarkBubble(const GURL& url, bool already_bookmarked) override;
   void ShowBookmarkAppBubble(

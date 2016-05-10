@@ -326,8 +326,7 @@ void ChromeRenderFrameObserver::DidFinishLoad() {
   GURL osdd_url = frame->document().openSearchDescriptionURL();
   if (!osdd_url.is_empty()) {
     Send(new ChromeViewHostMsg_PageHasOSDD(
-        routing_id(), frame->document().url(), osdd_url,
-        search_provider::AUTODETECTED_PROVIDER));
+        routing_id(), frame->document().url(), osdd_url));
   }
 }
 

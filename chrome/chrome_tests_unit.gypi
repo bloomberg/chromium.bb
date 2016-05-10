@@ -1193,7 +1193,6 @@
       'browser/ui/cocoa/bookmarks/bookmark_model_observer_for_cocoa_unittest.mm',
       'browser/ui/cocoa/bookmarks/bookmark_name_folder_controller_unittest.mm',
       'browser/ui/cocoa/bookmarks/bookmark_tree_browser_cell_unittest.mm',
-      'browser/ui/cocoa/browser/edit_search_engine_cocoa_controller_unittest.mm',
       'browser/ui/cocoa/browser/zoom_bubble_controller_unittest.mm',
       'browser/ui/cocoa/browser_window_cocoa_unittest.mm',
       'browser/ui/cocoa/browser_window_controller_unittest.mm',

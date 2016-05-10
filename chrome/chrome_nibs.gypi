@@ -31,7 +31,6 @@
       'app/nibs/CookieDetailsView.xib',
       'app/nibs/DownloadItem.xib',
       'app/nibs/DownloadShelf.xib',
-      'app/nibs/EditSearchEngine.xib',
       'app/nibs/ExclusiveAccessBubble.xib',
       'app/nibs/ExtensionInstalledBubble.xib',
       'app/nibs/ExtensionInstallPromptNoWarnings.xib',
