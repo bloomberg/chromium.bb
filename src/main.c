@@ -1086,16 +1086,16 @@ weston_wayland_output_config_init(struct weston_wayland_backend_output_config *o
 }
 
 static void
-weston_wayland_backend_config_release(struct weston_wayland_backend_config *new_config)
+weston_wayland_backend_config_release(struct weston_wayland_backend_config *config)
 {
 	int i;
 
-	for (i = 0; i < new_config->num_outputs; ++i) {
-		free(new_config->outputs[i].name);
+	for (i = 0; i < config->num_outputs; ++i) {
+		free(config->outputs[i].name);
 	}
-	free(new_config->cursor_theme);
-	free(new_config->display_name);
-	free(new_config->outputs);
+	free(config->cursor_theme);
+	free(config->display_name);
+	free(config->outputs);
 }
 
 /*
