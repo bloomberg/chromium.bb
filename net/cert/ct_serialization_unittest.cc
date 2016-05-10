@@ -10,13 +10,17 @@
 #include "base/files/file_util.h"
 #include "net/base/test_completion_callback.h"
 #include "net/base/test_data_directory.h"
+#include "net/cert/merkle_tree_leaf.h"
 #include "net/cert/signed_certificate_timestamp.h"
 #include "net/cert/signed_tree_head.h"
 #include "net/cert/x509_certificate.h"
 #include "net/log/net_log.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/ct_test_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using ::testing::ElementsAreArray;
 
 namespace net {
 
@@ -79,7 +83,7 @@ TEST_F(CtSerializationTest, EncodesDigitallySigned) {
 
 TEST_F(CtSerializationTest, EncodesLogEntryForX509Cert) {
   ct::LogEntry entry;
-  GetX509CertLogEntry(&entry);
+  ct::GetX509CertLogEntry(&entry);
 
   std::string encoded;
   ASSERT_TRUE(ct::EncodeLogEntry(entry, &encoded));
@@ -90,6 +94,24 @@ TEST_F(CtSerializationTest, EncodesLogEntryForX509Cert) {
   // Note we use std::string comparison rather than ASSERT_STREQ due
   // to null characters in the buffer.
   EXPECT_EQ(expected_prefix, encoded.substr(0, 5));
+}
+
+TEST_F(CtSerializationTest, EncodesLogEntryForPrecert) {
+  ct::LogEntry entry;
+  ct::GetPrecertLogEntry(&entry);
+
+  std::string encoded;
+  ASSERT_TRUE(ct::EncodeLogEntry(entry, &encoded));
+  EXPECT_EQ(604u, encoded.size());
+  // First two bytes are the log entry type.
+  EXPECT_EQ(std::string("\x00\x01", 2), encoded.substr(0, 2));
+  // Next comes the 32-byte issuer key hash
+  EXPECT_THAT(encoded.substr(2, 32),
+              ElementsAreArray(entry.issuer_key_hash.data));
+  // Then the length of the TBS cert (604 bytes = 0x237)
+  EXPECT_EQ(std::string("\x00\x02\x37", 3), encoded.substr(34, 3));
+  // Then the TBS cert itself
+  EXPECT_EQ(entry.tbs_certificate, encoded.substr(37));
 }
 
 TEST_F(CtSerializationTest, EncodesV1SCTSignedData) {
@@ -162,6 +184,61 @@ TEST_F(CtSerializationTest, FailsDecodingInvalidSignedCertificateTimestamp) {
   base::StringPiece invalid_length_sct("\x0\xa\xb\xc", 4);
   ASSERT_FALSE(
       ct::DecodeSignedCertificateTimestamp(&invalid_length_sct, &sct));
+}
+
+TEST_F(CtSerializationTest, EncodesMerkleTreeLeafForX509Cert) {
+  ct::MerkleTreeLeaf tree_leaf;
+  ct::GetX509CertTreeLeaf(&tree_leaf);
+
+  std::string encoded;
+  ASSERT_TRUE(ct::EncodeTreeLeaf(tree_leaf, &encoded));
+  EXPECT_EQ(741u, encoded.size()) << "Merkle tree leaf encoded incorrectly";
+  EXPECT_EQ(std::string("\x00", 1), encoded.substr(0, 1)) <<
+      "Version encoded incorrectly";
+  EXPECT_EQ(std::string("\x00", 1), encoded.substr(1, 1)) <<
+      "Merkle tree leaf type encoded incorrectly";
+  EXPECT_EQ(std::string("\x00\x00\x01\x45\x3c\x5f\xb8\x35", 8),
+            encoded.substr(2, 8)) <<
+      "Timestamp encoded incorrectly";
+  EXPECT_EQ(std::string("\x00\x00", 2), encoded.substr(10, 2)) <<
+      "Log entry type encoded incorrectly";
+  EXPECT_EQ(std::string("\x00\x02\xce", 3), encoded.substr(12, 3)) <<
+      "Certificate length encoded incorrectly";
+  EXPECT_EQ(tree_leaf.log_entry.leaf_certificate, encoded.substr(15, 718)) <<
+      "Certificate encoded incorrectly";
+  EXPECT_EQ(std::string("\x00\x06", 2), encoded.substr(733, 2)) <<
+      "CT extensions length encoded incorrectly";
+  EXPECT_EQ(tree_leaf.extensions, encoded.substr(735, 6)) <<
+      "CT extensions encoded incorrectly";
+}
+
+TEST_F(CtSerializationTest, EncodesMerkleTreeLeafForPrecert) {
+  ct::MerkleTreeLeaf tree_leaf;
+  ct::GetPrecertTreeLeaf(&tree_leaf);
+
+  std::string encoded;
+  ASSERT_TRUE(ct::EncodeTreeLeaf(tree_leaf, &encoded));
+  EXPECT_EQ(622u, encoded.size()) << "Merkle tree leaf encoded incorrectly";
+  EXPECT_EQ(std::string("\x00", 1), encoded.substr(0, 1)) <<
+      "Version encoded incorrectly";
+  EXPECT_EQ(std::string("\x00", 1), encoded.substr(1, 1)) <<
+      "Merkle tree leaf type encoded incorrectly";
+  EXPECT_EQ(std::string("\x00\x00\x01\x45\x3c\x5f\xb8\x35", 8),
+            encoded.substr(2, 8)) <<
+      "Timestamp encoded incorrectly";
+  EXPECT_EQ(std::string("\x00\x01", 2), encoded.substr(10, 2)) <<
+      "Log entry type encoded incorrectly";
+  EXPECT_THAT(encoded.substr(12, 32),
+              ElementsAreArray(tree_leaf.log_entry.issuer_key_hash.data)) <<
+      "Issuer key hash encoded incorrectly";
+  EXPECT_EQ(std::string("\x00\x02\x37", 3), encoded.substr(44, 3)) <<
+      "TBS certificate length encoded incorrectly";
+  EXPECT_EQ(tree_leaf.log_entry.tbs_certificate, encoded.substr(47, 567)) <<
+      "TBS certificate encoded incorrectly";
+  EXPECT_EQ(std::string("\x00\x06", 2), encoded.substr(614, 2)) <<
+      "CT extensions length encoded incorrectly";
+  EXPECT_EQ(tree_leaf.extensions, encoded.substr(616, 6)) <<
+      "CT extensions encoded incorrectly";
 }
 
 TEST_F(CtSerializationTest, EncodesValidSignedTreeHead) {
