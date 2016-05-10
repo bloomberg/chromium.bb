@@ -3001,12 +3001,6 @@ static const GLEnums::EnumToString enum_to_string_table[] = {
         0x924A, "GL_OVERLAY_TRANSFORM_ROTATE_270_CHROMIUM",
     },
     {
-        0x924B, "GL_SUBSCRIBED_VALUES_BUFFER_CHROMIUM",
-    },
-    {
-        0x924C, "GL_MOUSE_POSITION_CHROMIUM",
-    },
-    {
         0x9250, "GL_SHADER_BINARY_DMP",
     },
     {

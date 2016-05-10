@@ -188,9 +188,9 @@ struct GPU_EXPORT ContextState {
   void RestoreVertexAttribs() const;
   void RestoreBufferBindings() const;
   void RestoreGlobalState(const ContextState* prev_state) const;
-  void RestoreProgramBindings() const;
+  void RestoreProgramSettings(const ContextState* prev_state,
+                              bool restore_transform_feedback_bindings) const;
   void RestoreRenderbufferBindings();
-  void RestoreTransformFeedbackBindings(const ContextState* prev_state);
   void RestoreIndexedUniformBufferBindings(const ContextState* prev_state);
   void RestoreTextureUnitBindings(
       GLuint unit, const ContextState* prev_state) const;

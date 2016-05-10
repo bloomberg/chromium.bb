@@ -618,7 +618,7 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   }
   void RestoreGlobalState() const override { state_.RestoreGlobalState(NULL); }
   void RestoreProgramBindings() const override {
-    state_.RestoreProgramBindings();
+    state_.RestoreProgramSettings(nullptr, false);
   }
   void RestoreTextureUnitBindings(unsigned unit) const override {
     state_.RestoreTextureUnitBindings(unit, NULL);
@@ -7998,27 +7998,35 @@ void GLES2DecoderImpl::DoUniformMatrix4x3fv(
 }
 
 void GLES2DecoderImpl::DoUseProgram(GLuint program_id) {
+  const char* function_name = "glUseProgram";
   GLuint service_id = 0;
-  Program* program = NULL;
+  Program* program = nullptr;
   if (program_id) {
-    program = GetProgramInfoNotShader(program_id, "glUseProgram");
+    program = GetProgramInfoNotShader(program_id, function_name);
     if (!program) {
       return;
     }
     if (!program->IsValid()) {
       // Program was not linked successfully. (ie, glLinkProgram)
       LOCAL_SET_GL_ERROR(
-          GL_INVALID_OPERATION, "glUseProgram", "program not linked");
+          GL_INVALID_OPERATION, function_name, "program not linked");
       return;
     }
     service_id = program->service_id();
+  }
+  if (state_.bound_transform_feedback.get() &&
+      state_.bound_transform_feedback->active() &&
+      !state_.bound_transform_feedback->paused()) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, function_name,
+        "transformfeedback is active and not paused");
+    return;
   }
   if (state_.current_program.get()) {
     program_manager()->UnuseProgram(shader_manager(),
                                     state_.current_program.get());
   }
   state_.current_program = program;
-  LogClientServiceMapping("glUseProgram", program_id, service_id);
+  LogClientServiceMapping(function_name, program_id, service_id);
   glUseProgram(service_id);
   if (state_.current_program.get()) {
     program_manager()->UseProgram(state_.current_program.get());
@@ -8672,7 +8680,6 @@ error::Error GLES2DecoderImpl::DoDrawElements(const char* function_name,
       } else {
         glDrawElementsInstancedANGLE(mode, count, type, indices, primcount);
       }
-
       if (state_.enable_flags.primitive_restart_fixed_index &&
           feature_info_->feature_flags().
               emulate_primitive_restart_fixed_index) {
