@@ -295,6 +295,9 @@ class BluetoothTestBase : public testing::Test {
   virtual void SimulateGattDescriptorWriteWillFailSynchronouslyOnce(
       BluetoothRemoteGattDescriptor* descriptor) {}
 
+  // Returns a list of local GATT services registered with the adapter.
+  virtual std::vector<BluetoothLocalGattService*> RegisteredGattServices();
+
   // Removes the device from the adapter and deletes it.
   virtual void DeleteDevice(BluetoothDevice* device);
 

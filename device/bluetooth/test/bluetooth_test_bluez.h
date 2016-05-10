@@ -35,7 +35,6 @@ class BluetoothTestBlueZ : public BluetoothTestBase {
   bool PlatformSupportsLowEnergy() override;
   void InitWithFakeAdapter() override;
   BluetoothDevice* DiscoverLowEnergyDevice(int device_ordinal) override;
-
   void SimulateLocalGattCharacteristicValueReadRequest(
       BluetoothLocalGattService* service,
       BluetoothLocalGattCharacteristic* characteristic,
@@ -47,7 +46,6 @@ class BluetoothTestBlueZ : public BluetoothTestBase {
       const std::vector<uint8_t>& value_to_write,
       const base::Closure& success_callback,
       const base::Closure& error_callback) override;
-
   void SimulateLocalGattDescriptorValueReadRequest(
       BluetoothLocalGattService* service,
       BluetoothLocalGattDescriptor* descriptor,
@@ -59,6 +57,7 @@ class BluetoothTestBlueZ : public BluetoothTestBase {
       const std::vector<uint8_t>& value_to_write,
       const base::Closure& success_callback,
       const base::Closure& error_callback) override;
+  std::vector<BluetoothLocalGattService*> RegisteredGattServices() override;
 
  private:
   bluez::FakeBluetoothDeviceClient* fake_bluetooth_device_client_;

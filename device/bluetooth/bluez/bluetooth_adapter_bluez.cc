@@ -121,6 +121,9 @@ void OnRegisterationErrorCallback(
       BluetoothGattServiceBlueZ::DBusErrorToServiceError(error_name));
 }
 
+void DoNothingOnError(
+    device::BluetoothGattService::GattErrorCode /*error_code*/) {}
+
 }  // namespace
 
 // static
@@ -1075,6 +1078,26 @@ void BluetoothAdapterBlueZ::AddLocalGattService(
   owned_gatt_services_[service->object_path()] = std::move(service);
 }
 
+void BluetoothAdapterBlueZ::RemoveLocalGattService(
+    BluetoothLocalGattServiceBlueZ* service) {
+  auto service_iter = owned_gatt_services_.find(service->object_path());
+  if (service_iter == owned_gatt_services_.end()) {
+    LOG(WARNING) << "Trying to remove service: "
+                 << service->object_path().value()
+                 << " from adapter: " << object_path_.value()
+                 << " that doesn't own it.";
+    return;
+  }
+
+  if (registered_gatt_services_.count(service->object_path()) != 0) {
+    registered_gatt_services_.erase(service->object_path());
+    UpdateRegisteredApplication(true, base::Bind(&base::DoNothing),
+                                base::Bind(&DoNothingOnError));
+  }
+
+  owned_gatt_services_.erase(service_iter);
+}
+
 void BluetoothAdapterBlueZ::RegisterGattService(
     BluetoothLocalGattServiceBlueZ* service,
     const base::Closure& callback,
@@ -1092,14 +1115,7 @@ void BluetoothAdapterBlueZ::RegisterGattService(
   // introduce a race since we will always have a period when we may have been
   // registered with BlueZ, but not know that the registration succeeded
   // because the callback hasn't come back yet.
-  bluez::BluezDBusManager::Get()
-      ->GetBluetoothGattManagerClient()
-      ->UnregisterApplication(
-          object_path_, GetApplicationObjectPath(),
-          base::Bind(&BluetoothAdapterBlueZ::RegisterApplication,
-                     weak_ptr_factory_.GetWeakPtr(), callback, error_callback),
-          base::Bind(&BluetoothAdapterBlueZ::RegisterApplicationOnError,
-                     weak_ptr_factory_.GetWeakPtr(), callback, error_callback));
+  UpdateRegisteredApplication(true, callback, error_callback);
 }
 
 void BluetoothAdapterBlueZ::UnregisterGattService(
@@ -1116,24 +1132,12 @@ void BluetoothAdapterBlueZ::UnregisterGattService(
   }
 
   registered_gatt_services_.erase(service->object_path());
-  // If we have no GATT services left, unregister our application.
-  if (registered_gatt_services_.size() == 0) {
-    bluez::BluezDBusManager::Get()
-        ->GetBluetoothGattManagerClient()
-        ->UnregisterApplication(
-            object_path_, GetApplicationObjectPath(), callback,
-            base::Bind(&OnRegisterationErrorCallback, error_callback, false));
-    return;
-  }
+  UpdateRegisteredApplication(false, callback, error_callback);
+}
 
-  // Re-register our current GATT application with the new set of services.
-  bluez::BluezDBusManager::Get()
-      ->GetBluetoothGattManagerClient()
-      ->UnregisterApplication(
-          object_path_, GetApplicationObjectPath(),
-          base::Bind(&BluetoothAdapterBlueZ::RegisterApplication,
-                     weak_ptr_factory_.GetWeakPtr(), callback, error_callback),
-          base::Bind(&OnRegisterationErrorCallback, error_callback, false));
+bool BluetoothAdapterBlueZ::IsGattServiceRegistered(
+    BluetoothLocalGattServiceBlueZ* service) {
+  return registered_gatt_services_.count(service->object_path()) != 0;
 }
 
 // Returns the object path of the adapter.
@@ -1575,12 +1579,39 @@ void BluetoothAdapterBlueZ::ProcessQueuedDiscoveryRequests() {
   }
 }
 
+void BluetoothAdapterBlueZ::UpdateRegisteredApplication(
+    bool ignore_unregister_failure,
+    const base::Closure& callback,
+    const device::BluetoothGattService::ErrorCallback& error_callback) {
+  // If ignore_unregister_failure is set, we'll forward the error_callback to
+  // the register call (to be called in case the register call fails). If not,
+  // we'll call the error callback if this unregister itself fails.
+  bluez::BluezDBusManager::Get()
+      ->GetBluetoothGattManagerClient()
+      ->UnregisterApplication(
+          object_path_, GetApplicationObjectPath(),
+          base::Bind(&BluetoothAdapterBlueZ::RegisterApplication,
+                     weak_ptr_factory_.GetWeakPtr(), callback, error_callback),
+          ignore_unregister_failure
+              ? base::Bind(&BluetoothAdapterBlueZ::RegisterApplicationOnError,
+                           weak_ptr_factory_.GetWeakPtr(), callback,
+                           error_callback)
+              : base::Bind(&OnRegisterationErrorCallback, error_callback,
+                           false));
+}
+
 void BluetoothAdapterBlueZ::RegisterApplication(
     const base::Closure& callback,
     const device::BluetoothGattService::ErrorCallback& error_callback) {
   // Recreate our application service provider with the currently registered
   // GATT services before we register it.
   gatt_application_provider_.reset();
+  // If we have no services registered, then leave the application unregistered
+  // and no application provider.
+  if (registered_gatt_services_.size() == 0) {
+    callback.Run();
+    return;
+  }
   gatt_application_provider_ = BluetoothGattApplicationServiceProvider::Create(
       bluez::BluezDBusManager::Get()->GetSystemBus(),
       GetApplicationObjectPath(), registered_gatt_services_);

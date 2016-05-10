@@ -150,6 +150,13 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothLocalGattService
   virtual void Unregister(const base::Closure& callback,
                           const ErrorCallback& error_callback) = 0;
 
+  // Returns if this service is currently registered.
+  virtual bool IsRegistered() = 0;
+
+  // Deletes this service, invaliding the weak pointer returned by create and
+  // unregistering the service if it was registered.
+  virtual void Delete() = 0;
+
   virtual BluetoothLocalGattCharacteristic* GetCharacteristic(
       const std::string& identifier) = 0;
 

@@ -72,6 +72,15 @@ void BluetoothLocalGattServiceBlueZ::Unregister(
   GetAdapter()->UnregisterGattService(this, callback, error_callback);
 }
 
+bool BluetoothLocalGattServiceBlueZ::IsRegistered() {
+  return GetAdapter()->IsGattServiceRegistered(this);
+}
+
+void BluetoothLocalGattServiceBlueZ::Delete() {
+  weak_ptr_factory_.InvalidateWeakPtrs();
+  GetAdapter()->RemoveLocalGattService(this);
+}
+
 device::BluetoothLocalGattCharacteristic*
 BluetoothLocalGattServiceBlueZ::GetCharacteristic(
     const std::string& identifier) {

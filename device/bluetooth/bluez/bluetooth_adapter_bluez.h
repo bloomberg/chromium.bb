@@ -159,6 +159,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ
   void AddLocalGattService(
       std::unique_ptr<BluetoothLocalGattServiceBlueZ> service);
 
+  // Removes a local GATT service from the list of services owned by this
+  // adapter and deletes it. If the service was registered, it is unregistered.
+  void RemoveLocalGattService(BluetoothLocalGattServiceBlueZ* service);
+
   // Register a GATT service. The service must belong to this adapter.
   void RegisterGattService(
       BluetoothLocalGattServiceBlueZ* service,
@@ -170,6 +174,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ
       BluetoothLocalGattServiceBlueZ* service,
       const base::Closure& callback,
       const device::BluetoothGattService::ErrorCallback& error_callback);
+
+  // Returns if a given service is currently registered.
+  bool IsGattServiceRegistered(BluetoothLocalGattServiceBlueZ* service);
 
   // Returns the object path of the adapter.
   dbus::ObjectPath GetApplicationObjectPath() const;
@@ -369,8 +376,16 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ
   // ended (with either success or failure).
   void ProcessQueuedDiscoveryRequests();
 
-  // Make the call to GattManager1 to register the services currently exported
-  // by the GATT Application service provider.
+  // Make the call to GattManager1 to unregister then re-register the GATT
+  // application. If the ignore_unregister_failure flag is set, we attempt to
+  // register even if the initial unregister call fails.
+  void UpdateRegisteredApplication(
+      bool ignore_unregister_failure,
+      const base::Closure& callback,
+      const device::BluetoothGattService::ErrorCallback& error_callback);
+
+  // Make the call to GattManager1 to register the services currently
+  // registered.
   void RegisterApplication(
       const base::Closure& callback,
       const device::BluetoothGattService::ErrorCallback& error_callback);

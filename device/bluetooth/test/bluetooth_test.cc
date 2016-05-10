@@ -68,6 +68,12 @@ BluetoothDevice* BluetoothTestBase::DiscoverLowEnergyDevice(
   return nullptr;
 }
 
+std::vector<BluetoothLocalGattService*>
+BluetoothTestBase::RegisteredGattServices() {
+  NOTIMPLEMENTED();
+  return std::vector<BluetoothLocalGattService*>();
+}
+
 void BluetoothTestBase::DeleteDevice(BluetoothDevice* device) {
   adapter_->DeleteDeviceForTesting(device->GetAddress());
 }

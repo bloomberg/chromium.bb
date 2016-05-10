@@ -239,4 +239,15 @@ void BluetoothTestBlueZ::SimulateLocalGattDescriptorValueWriteRequest(
   run_loop.Run();
 }
 
+std::vector<BluetoothLocalGattService*>
+BluetoothTestBlueZ::RegisteredGattServices() {
+  std::vector<BluetoothLocalGattService*> services;
+  bluez::BluetoothAdapterBlueZ* adapter_bluez =
+      static_cast<bluez::BluetoothAdapterBlueZ*>(adapter_.get());
+
+  for (const auto& iter : adapter_bluez->registered_gatt_services_)
+    services.push_back(iter.second);
+  return services;
+}
+
 }  // namespace device
