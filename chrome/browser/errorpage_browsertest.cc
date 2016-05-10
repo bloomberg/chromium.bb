@@ -11,6 +11,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
@@ -1287,7 +1288,8 @@ class ErrorPageOfflineTest : public ErrorPageTest {
       policy_map.Set(
           policy::key::kAllowDinosaurEasterEgg, policy::POLICY_LEVEL_MANDATORY,
           policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-          new base::FundamentalValue(value_of_allow_dinosaur_easter_egg_),
+          base::WrapUnique(
+              new base::FundamentalValue(value_of_allow_dinosaur_easter_egg_)),
           nullptr);
     }
     policy_provider_.UpdateChromePolicy(policy_map);

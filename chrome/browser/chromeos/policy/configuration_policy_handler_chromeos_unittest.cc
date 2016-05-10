@@ -5,10 +5,12 @@
 #include "chrome/browser/chromeos/policy/configuration_policy_handler_chromeos.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/callback.h"
 #include "base/json/json_reader.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
 #include "chrome/common/pref_names.h"
@@ -61,12 +63,9 @@ TEST_F(ScreenMagnifierPolicyHandlerTest, Default) {
 }
 
 TEST_F(ScreenMagnifierPolicyHandlerTest, Disabled) {
-  policy_.Set(key::kScreenMagnifierType,
-              POLICY_LEVEL_MANDATORY,
-              POLICY_SCOPE_USER,
-              POLICY_SOURCE_CLOUD,
-              new base::FundamentalValue(0),
-              NULL);
+  policy_.Set(key::kScreenMagnifierType, POLICY_LEVEL_MANDATORY,
+              POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+              base::WrapUnique(new base::FundamentalValue(0)), nullptr);
   handler_.ApplyPolicySettings(policy_, &prefs_);
 
   const base::Value* enabled = NULL;
@@ -82,12 +81,9 @@ TEST_F(ScreenMagnifierPolicyHandlerTest, Disabled) {
 }
 
 TEST_F(ScreenMagnifierPolicyHandlerTest, Enabled) {
-  policy_.Set(key::kScreenMagnifierType,
-              POLICY_LEVEL_MANDATORY,
-              POLICY_SCOPE_USER,
-              POLICY_SOURCE_CLOUD,
-              new base::FundamentalValue(1),
-              NULL);
+  policy_.Set(key::kScreenMagnifierType, POLICY_LEVEL_MANDATORY,
+              POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+              base::WrapUnique(new base::FundamentalValue(1)), nullptr);
   handler_.ApplyPolicySettings(policy_, &prefs_);
 
   const base::Value* enabled = NULL;
@@ -111,12 +107,9 @@ TEST(ExternalDataPolicyHandlerTest, Empty) {
 
 TEST(ExternalDataPolicyHandlerTest, WrongType) {
   PolicyMap policy_map;
-  policy_map.Set(key::kUserAvatarImage,
-                 POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER,
-                 POLICY_SOURCE_CLOUD,
-                 new base::FundamentalValue(false),
-                 NULL);
+  policy_map.Set(key::kUserAvatarImage, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+                 base::WrapUnique(new base::FundamentalValue(false)), nullptr);
   PolicyErrorMap errors;
   EXPECT_FALSE(ExternalDataPolicyHandler(key::kUserAvatarImage)
                    .CheckPolicySettings(policy_map, &errors));
@@ -127,12 +120,9 @@ TEST(ExternalDataPolicyHandlerTest, MissingURL) {
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
   dict->SetString("hash", "1234567890123456789012345678901234567890");
   PolicyMap policy_map;
-  policy_map.Set(key::kUserAvatarImage,
-                 POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER,
-                 POLICY_SOURCE_CLOUD,
-                 dict.release(),
-                 NULL);
+  policy_map.Set(key::kUserAvatarImage, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, std::move(dict),
+                 nullptr);
   PolicyErrorMap errors;
   EXPECT_FALSE(ExternalDataPolicyHandler(key::kUserAvatarImage)
                    .CheckPolicySettings(policy_map, &errors));
@@ -144,12 +134,9 @@ TEST(ExternalDataPolicyHandlerTest, InvalidURL) {
   dict->SetString("url", "http://");
   dict->SetString("hash", "1234567890123456789012345678901234567890");
   PolicyMap policy_map;
-  policy_map.Set(key::kUserAvatarImage,
-                 POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER,
-                 POLICY_SOURCE_CLOUD,
-                 dict.release(),
-                 NULL);
+  policy_map.Set(key::kUserAvatarImage, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, std::move(dict),
+                 nullptr);
   PolicyErrorMap errors;
   EXPECT_FALSE(ExternalDataPolicyHandler(key::kUserAvatarImage)
                    .CheckPolicySettings(policy_map, &errors));
@@ -160,12 +147,9 @@ TEST(ExternalDataPolicyHandlerTest, MissingHash) {
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
   dict->SetString("url", "http://localhost/");
   PolicyMap policy_map;
-  policy_map.Set(key::kUserAvatarImage,
-                 POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER,
-                 POLICY_SOURCE_CLOUD,
-                 dict.release(),
-                 NULL);
+  policy_map.Set(key::kUserAvatarImage, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, std::move(dict),
+                 nullptr);
   PolicyErrorMap errors;
   EXPECT_FALSE(ExternalDataPolicyHandler(key::kUserAvatarImage)
                    .CheckPolicySettings(policy_map, &errors));
@@ -177,12 +161,9 @@ TEST(ExternalDataPolicyHandlerTest, InvalidHash) {
   dict->SetString("url", "http://localhost/");
   dict->SetString("hash", "1234");
   PolicyMap policy_map;
-  policy_map.Set(key::kUserAvatarImage,
-                 POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER,
-                 POLICY_SOURCE_CLOUD,
-                 dict.release(),
-                 NULL);
+  policy_map.Set(key::kUserAvatarImage, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, std::move(dict),
+                 nullptr);
   PolicyErrorMap errors;
   EXPECT_FALSE(ExternalDataPolicyHandler(key::kUserAvatarImage)
                    .CheckPolicySettings(policy_map, &errors));
@@ -196,12 +177,9 @@ TEST(ExternalDataPolicyHandlerTest, Valid) {
       "hash",
       "1234567890123456789012345678901234567890123456789012345678901234");
   PolicyMap policy_map;
-  policy_map.Set(key::kUserAvatarImage,
-                 POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER,
-                 POLICY_SOURCE_CLOUD,
-                 dict.release(),
-                 NULL);
+  policy_map.Set(key::kUserAvatarImage, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, std::move(dict),
+                 nullptr);
   PolicyErrorMap errors;
   EXPECT_TRUE(ExternalDataPolicyHandler(key::kUserAvatarImage)
                   .CheckPolicySettings(policy_map, &errors));
@@ -257,12 +235,9 @@ TEST(NetworkConfigurationPolicyHandlerTest, ValidONC) {
       "}");
 
   PolicyMap policy_map;
-  policy_map.Set(key::kOpenNetworkConfiguration,
-                 POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER,
-                 POLICY_SOURCE_CLOUD,
-                 new base::StringValue(kTestONC),
-                 NULL);
+  policy_map.Set(key::kOpenNetworkConfiguration, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+                 base::WrapUnique(new base::StringValue(kTestONC)), nullptr);
   std::unique_ptr<NetworkConfigurationPolicyHandler> handler(
       NetworkConfigurationPolicyHandler::CreateForUserPolicy());
   PolicyErrorMap errors;
@@ -272,12 +247,9 @@ TEST(NetworkConfigurationPolicyHandlerTest, ValidONC) {
 
 TEST(NetworkConfigurationPolicyHandlerTest, WrongType) {
   PolicyMap policy_map;
-  policy_map.Set(key::kOpenNetworkConfiguration,
-                 POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER,
-                 POLICY_SOURCE_CLOUD,
-                 new base::FundamentalValue(false),
-                 NULL);
+  policy_map.Set(key::kOpenNetworkConfiguration, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+                 base::WrapUnique(new base::FundamentalValue(false)), nullptr);
   std::unique_ptr<NetworkConfigurationPolicyHandler> handler(
       NetworkConfigurationPolicyHandler::CreateForUserPolicy());
   PolicyErrorMap errors;
@@ -288,12 +260,9 @@ TEST(NetworkConfigurationPolicyHandlerTest, WrongType) {
 TEST(NetworkConfigurationPolicyHandlerTest, JSONParseError) {
   const std::string kTestONC("I'm not proper JSON!");
   PolicyMap policy_map;
-  policy_map.Set(key::kOpenNetworkConfiguration,
-                 POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER,
-                 POLICY_SOURCE_CLOUD,
-                 new base::StringValue(kTestONC),
-                 NULL);
+  policy_map.Set(key::kOpenNetworkConfiguration, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+                 base::WrapUnique(new base::StringValue(kTestONC)), nullptr);
   std::unique_ptr<NetworkConfigurationPolicyHandler> handler(
       NetworkConfigurationPolicyHandler::CreateForUserPolicy());
   PolicyErrorMap errors;
@@ -317,12 +286,9 @@ TEST(NetworkConfigurationPolicyHandlerTest, Sanitization) {
       "}");
 
   PolicyMap policy_map;
-  policy_map.Set(key::kOpenNetworkConfiguration,
-                 POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER,
-                 POLICY_SOURCE_CLOUD,
-                 new base::StringValue(kTestONC),
-                 NULL);
+  policy_map.Set(key::kOpenNetworkConfiguration, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+                 base::WrapUnique(new base::StringValue(kTestONC)), nullptr);
   std::unique_ptr<NetworkConfigurationPolicyHandler> handler(
       NetworkConfigurationPolicyHandler::CreateForUserPolicy());
   PolicyErrorMap errors;
@@ -345,7 +311,7 @@ TEST(PinnedLauncherAppsPolicyHandler, PrefTranslation) {
   PinnedLauncherAppsPolicyHandler handler;
 
   policy_map.Set(key::kPinnedLauncherApps, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, list.DeepCopy(),
+                 POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, list.CreateDeepCopy(),
                  nullptr);
   handler.ApplyPolicySettings(policy_map, &prefs);
   EXPECT_TRUE(prefs.GetValue(prefs::kPolicyPinnedLauncherApps, &value));
@@ -357,7 +323,7 @@ TEST(PinnedLauncherAppsPolicyHandler, PrefTranslation) {
   expected_pinned_apps.Append(entry1_dict);
   list.Append(entry1.DeepCopy());
   policy_map.Set(key::kPinnedLauncherApps, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, list.DeepCopy(),
+                 POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, list.CreateDeepCopy(),
                  nullptr);
   prefs.Clear();
   handler.ApplyPolicySettings(policy_map, &prefs);
@@ -375,12 +341,10 @@ TEST_F(LoginScreenPowerManagementPolicyHandlerTest, Empty) {
 
 TEST_F(LoginScreenPowerManagementPolicyHandlerTest, ValidPolicy) {
   PolicyMap policy_map;
-  policy_map.Set(
-      key::kDeviceLoginScreenPowerManagement, POLICY_LEVEL_MANDATORY,
-      POLICY_SCOPE_USER,
-      POLICY_SOURCE_CLOUD,
-      base::JSONReader::Read(kLoginScreenPowerManagementPolicy).release(),
-      NULL);
+  policy_map.Set(key::kDeviceLoginScreenPowerManagement, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+                 base::JSONReader::Read(kLoginScreenPowerManagementPolicy),
+                 nullptr);
   LoginScreenPowerManagementPolicyHandler handler(chrome_schema_);
   PolicyErrorMap errors;
   EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
@@ -389,12 +353,9 @@ TEST_F(LoginScreenPowerManagementPolicyHandlerTest, ValidPolicy) {
 
 TEST_F(LoginScreenPowerManagementPolicyHandlerTest, WrongType) {
   PolicyMap policy_map;
-  policy_map.Set(key::kDeviceLoginScreenPowerManagement,
-                 POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER,
-                 POLICY_SOURCE_CLOUD,
-                 new base::FundamentalValue(false),
-                 NULL);
+  policy_map.Set(key::kDeviceLoginScreenPowerManagement, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+                 base::WrapUnique(new base::FundamentalValue(false)), nullptr);
   LoginScreenPowerManagementPolicyHandler handler(chrome_schema_);
   PolicyErrorMap errors;
   EXPECT_FALSE(handler.CheckPolicySettings(policy_map, &errors));

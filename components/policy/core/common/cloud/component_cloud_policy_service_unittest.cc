@@ -128,17 +128,12 @@ class ComponentCloudPolicyServiceTest : public testing::Test {
     builder_.payload().set_download_url(kTestDownload);
     builder_.payload().set_secure_hash(crypto::SHA256HashString(kTestPolicy));
 
-    expected_policy_.Set("Name",
-                         POLICY_LEVEL_MANDATORY,
-                         POLICY_SCOPE_USER,
+    expected_policy_.Set(
+        "Name", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+        base::WrapUnique(new base::StringValue("disabled")), nullptr);
+    expected_policy_.Set("Second", POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER,
                          POLICY_SOURCE_CLOUD,
-                         new base::StringValue("disabled"),
-                         nullptr);
-    expected_policy_.Set("Second",
-                         POLICY_LEVEL_RECOMMENDED,
-                         POLICY_SCOPE_USER,
-                         POLICY_SOURCE_CLOUD,
-                         new base::StringValue("maybe"),
+                         base::WrapUnique(new base::StringValue("maybe")),
                          nullptr);
   }
 
@@ -515,12 +510,9 @@ TEST_F(ComponentCloudPolicyServiceTest, LoadInvalidPolicyFromCache) {
 
   PolicyBundle expected_bundle;
   const PolicyNamespace ns(POLICY_DOMAIN_EXTENSIONS, kTestExtension);
-  expected_bundle.Get(ns).Set("Name",
-                              POLICY_LEVEL_MANDATORY,
-                              POLICY_SCOPE_USER,
-                              POLICY_SOURCE_CLOUD,
-                              new base::StringValue("published"),
-                              nullptr);
+  expected_bundle.Get(ns).Set(
+      "Name", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+      base::WrapUnique(new base::StringValue("published")), nullptr);
   EXPECT_TRUE(service_->policy().Equals(expected_bundle));
 }
 

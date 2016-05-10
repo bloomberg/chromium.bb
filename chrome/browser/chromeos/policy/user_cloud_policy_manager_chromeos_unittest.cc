@@ -111,23 +111,27 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
     chrome::RegisterLocalState(prefs_.registry());
 
     // Set up a policy map for testing.
-    policy_map_.Set(key::kHomepageLocation, POLICY_LEVEL_MANDATORY,
-                    POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-                    new base::StringValue("http://chromium.org"), nullptr);
-    policy_map_.Set(key::kChromeOsMultiProfileUserBehavior,
-                    POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                    POLICY_SOURCE_ENTERPRISE_DEFAULT,
-                    new base::StringValue("primary-only"), nullptr);
+    policy_map_.Set(
+        key::kHomepageLocation, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+        POLICY_SOURCE_CLOUD,
+        base::WrapUnique(new base::StringValue("http://chromium.org")),
+        nullptr);
+    policy_map_.Set(
+        key::kChromeOsMultiProfileUserBehavior, POLICY_LEVEL_MANDATORY,
+        POLICY_SCOPE_USER, POLICY_SOURCE_ENTERPRISE_DEFAULT,
+        base::WrapUnique(new base::StringValue("primary-only")), nullptr);
     policy_map_.Set(key::kEasyUnlockAllowed, POLICY_LEVEL_MANDATORY,
                     POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-                    new base::FundamentalValue(false), nullptr);
-    policy_map_.Set(key::kCaptivePortalAuthenticationIgnoresProxy,
-                    POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                    POLICY_SOURCE_CLOUD, new base::FundamentalValue(false),
+                    base::WrapUnique(new base::FundamentalValue(false)),
                     nullptr);
+    policy_map_.Set(
+        key::kCaptivePortalAuthenticationIgnoresProxy, POLICY_LEVEL_MANDATORY,
+        POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+        base::WrapUnique(new base::FundamentalValue(false)), nullptr);
     policy_map_.Set(key::kAllowDinosaurEasterEgg, POLICY_LEVEL_MANDATORY,
                     POLICY_SCOPE_USER, POLICY_SOURCE_ENTERPRISE_DEFAULT,
-                    new base::FundamentalValue(false), nullptr);
+                    base::WrapUnique(new base::FundamentalValue(false)),
+                    nullptr);
     expected_bundle_.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
         .CopyFrom(policy_map_);
 

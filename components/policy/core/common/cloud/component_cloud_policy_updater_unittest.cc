@@ -109,18 +109,12 @@ void ComponentCloudPolicyUpdaterTest::SetUp() {
 
   PolicyNamespace ns(POLICY_DOMAIN_EXTENSIONS, kTestExtension);
   PolicyMap& policy = expected_bundle_.Get(ns);
-  policy.Set("Name",
-             POLICY_LEVEL_MANDATORY,
-             POLICY_SCOPE_USER,
+  policy.Set("Name", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
              POLICY_SOURCE_CLOUD,
-             new base::StringValue("disabled"),
-             NULL);
-  policy.Set("Second",
-             POLICY_LEVEL_RECOMMENDED,
-             POLICY_SCOPE_USER,
+             base::WrapUnique(new base::StringValue("disabled")), nullptr);
+  policy.Set("Second", POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER,
              POLICY_SOURCE_CLOUD,
-             new base::StringValue("maybe"),
-             NULL);
+             base::WrapUnique(new base::StringValue("maybe")), nullptr);
 }
 
 void ComponentCloudPolicyUpdaterTest::TearDown() {

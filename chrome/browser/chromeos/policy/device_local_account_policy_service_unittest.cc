@@ -13,6 +13,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -142,12 +143,10 @@ DeviceLocalAccountPolicyServiceTestBase::
 void DeviceLocalAccountPolicyServiceTestBase::SetUp() {
   chromeos::DeviceSettingsTestBase::SetUp();
 
-  expected_policy_map_.Set(key::kDisableSpdy,
-                           POLICY_LEVEL_MANDATORY,
-                           POLICY_SCOPE_USER,
-                           POLICY_SOURCE_CLOUD,
-                           new base::FundamentalValue(true),
-                           NULL);
+  expected_policy_map_.Set(key::kDisableSpdy, POLICY_LEVEL_MANDATORY,
+                           POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+                           base::WrapUnique(new base::FundamentalValue(true)),
+                           nullptr);
 
   device_local_account_policy_.payload().mutable_disablespdy()->set_value(
       true);
@@ -806,32 +805,24 @@ void DeviceLocalAccountPolicyProviderTest::SetUp() {
   provider_->AddObserver(&provider_observer_);
 
   // Values implicitly enforced for public accounts.
-  expected_policy_map_.Set(key::kLidCloseAction,
-                           POLICY_LEVEL_MANDATORY,
-                           POLICY_SCOPE_MACHINE,
-                           POLICY_SOURCE_PUBLIC_SESSION_OVERRIDE,
-                           new base::FundamentalValue(
-                               chromeos::PowerPolicyController::
-                                   ACTION_STOP_SESSION),
-                           NULL);
-  expected_policy_map_.Set(key::kShelfAutoHideBehavior,
-                           POLICY_LEVEL_MANDATORY,
-                           POLICY_SCOPE_MACHINE,
-                           POLICY_SOURCE_PUBLIC_SESSION_OVERRIDE,
-                           new base::StringValue("Never"),
-                           NULL);
-  expected_policy_map_.Set(key::kShowLogoutButtonInTray,
-                           POLICY_LEVEL_MANDATORY,
-                           POLICY_SCOPE_MACHINE,
-                           POLICY_SOURCE_PUBLIC_SESSION_OVERRIDE,
-                           new base::FundamentalValue(true),
-                           NULL);
-  expected_policy_map_.Set(key::kFullscreenAllowed,
-                           POLICY_LEVEL_MANDATORY,
-                           POLICY_SCOPE_MACHINE,
-                           POLICY_SOURCE_PUBLIC_SESSION_OVERRIDE,
-                           new base::FundamentalValue(false),
-                           NULL);
+  expected_policy_map_.Set(
+      key::kLidCloseAction, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+      POLICY_SOURCE_PUBLIC_SESSION_OVERRIDE,
+      base::WrapUnique(new base::FundamentalValue(
+          chromeos::PowerPolicyController::ACTION_STOP_SESSION)),
+      nullptr);
+  expected_policy_map_.Set(
+      key::kShelfAutoHideBehavior, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+      POLICY_SOURCE_PUBLIC_SESSION_OVERRIDE,
+      base::WrapUnique(new base::StringValue("Never")), nullptr);
+  expected_policy_map_.Set(
+      key::kShowLogoutButtonInTray, POLICY_LEVEL_MANDATORY,
+      POLICY_SCOPE_MACHINE, POLICY_SOURCE_PUBLIC_SESSION_OVERRIDE,
+      base::WrapUnique(new base::FundamentalValue(true)), nullptr);
+  expected_policy_map_.Set(
+      key::kFullscreenAllowed, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+      POLICY_SOURCE_PUBLIC_SESSION_OVERRIDE,
+      base::WrapUnique(new base::FundamentalValue(false)), nullptr);
 }
 
 void DeviceLocalAccountPolicyProviderTest::TearDown() {
@@ -891,14 +882,11 @@ TEST_F(DeviceLocalAccountPolicyProviderTest, Policy) {
   FlushDeviceSettings();
   Mock::VerifyAndClearExpectations(&provider_observer_);
 
-  expected_policy_bundle.Get(
-      PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
-      .Set(key::kDisableSpdy,
-           POLICY_LEVEL_MANDATORY,
-           POLICY_SCOPE_USER,
+  expected_policy_bundle
+      .Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
+      .Set(key::kDisableSpdy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
            POLICY_SOURCE_CLOUD,
-           new base::FundamentalValue(false),
-           NULL);
+           base::WrapUnique(new base::FundamentalValue(false)), nullptr);
   EXPECT_TRUE(expected_policy_bundle.Equals(provider_->policies()));
 
   // Any values set for the |ShelfAutoHideBehavior|, |ShowLogoutButtonInTray|

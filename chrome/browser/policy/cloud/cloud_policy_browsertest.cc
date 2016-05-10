@@ -150,104 +150,62 @@ std::string GetTestPolicy(const char* homepage, int key_version) {
 
 void GetExpectedDefaultPolicy(PolicyMap* policy_map) {
 #if defined(OS_CHROMEOS)
-  policy_map->Set(key::kChromeOsMultiProfileUserBehavior,
-                  POLICY_LEVEL_MANDATORY,
-                  POLICY_SCOPE_USER,
-                  POLICY_SOURCE_ENTERPRISE_DEFAULT,
-                  new base::StringValue("primary-only"),
-                  nullptr);
-  policy_map->Set(key::kEasyUnlockAllowed,
-                  POLICY_LEVEL_MANDATORY,
-                  POLICY_SCOPE_USER,
-                  POLICY_SOURCE_ENTERPRISE_DEFAULT,
-                  new base::FundamentalValue(false),
-                  nullptr);
+  policy_map->Set(
+      key::kChromeOsMultiProfileUserBehavior, POLICY_LEVEL_MANDATORY,
+      POLICY_SCOPE_USER, POLICY_SOURCE_ENTERPRISE_DEFAULT,
+      base::WrapUnique(new base::StringValue("primary-only")), nullptr);
+  policy_map->Set(key::kEasyUnlockAllowed, POLICY_LEVEL_MANDATORY,
+                  POLICY_SCOPE_USER, POLICY_SOURCE_ENTERPRISE_DEFAULT,
+                  base::WrapUnique(new base::FundamentalValue(false)), nullptr);
   policy_map->Set(key::kCaptivePortalAuthenticationIgnoresProxy,
-                  POLICY_LEVEL_MANDATORY,
-                  POLICY_SCOPE_USER,
+                  POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                   POLICY_SOURCE_ENTERPRISE_DEFAULT,
-                  new base::FundamentalValue(false),
-                  nullptr);
-  policy_map->Set(key::kAllowDinosaurEasterEgg,
-                  POLICY_LEVEL_MANDATORY,
-                  POLICY_SCOPE_USER,
+                  base::WrapUnique(new base::FundamentalValue(false)), nullptr);
+  policy_map->Set(key::kAllowDinosaurEasterEgg, POLICY_LEVEL_MANDATORY,
+                  POLICY_SCOPE_USER, POLICY_SOURCE_ENTERPRISE_DEFAULT,
+                  base::WrapUnique(new base::FundamentalValue(false)), nullptr);
+  policy_map->Set(key::kArcEnabled, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                   POLICY_SOURCE_ENTERPRISE_DEFAULT,
-                  new base::FundamentalValue(false),
-                  nullptr);
-  policy_map->Set(key::kArcEnabled,
-                  POLICY_LEVEL_MANDATORY,
-                  POLICY_SCOPE_USER,
-                  POLICY_SOURCE_ENTERPRISE_DEFAULT,
-                  new base::FundamentalValue(false),
-                  nullptr);
+                  base::WrapUnique(new base::FundamentalValue(false)), nullptr);
 #endif
 }
 
 void GetExpectedTestPolicy(PolicyMap* expected, const char* homepage) {
-  expected->Set(key::kShowHomeButton,
-                POLICY_LEVEL_MANDATORY,
-                POLICY_SCOPE_USER,
+  expected->Set(key::kShowHomeButton, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                 POLICY_SOURCE_CLOUD,
-                new base::FundamentalValue(true),
-                nullptr);
-  expected->Set(key::kRestoreOnStartup,
-                POLICY_LEVEL_MANDATORY,
-                POLICY_SCOPE_USER,
-                POLICY_SOURCE_CLOUD,
-                new base::FundamentalValue(4),
-                nullptr);
+                base::WrapUnique(new base::FundamentalValue(true)), nullptr);
+  expected->Set(key::kRestoreOnStartup, POLICY_LEVEL_MANDATORY,
+                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+                base::WrapUnique(new base::FundamentalValue(4)), nullptr);
   base::ListValue list;
   list.AppendString("dev.chromium.org");
   list.AppendString("youtube.com");
-  expected->Set(key::kURLBlacklist,
-                POLICY_LEVEL_MANDATORY,
-                POLICY_SCOPE_USER,
-                POLICY_SOURCE_CLOUD,
-                list.DeepCopy(),
-                nullptr);
-  expected->Set(key::kMaxInvalidationFetchDelay,
-                POLICY_LEVEL_MANDATORY,
-                POLICY_SCOPE_USER,
-                POLICY_SOURCE_CLOUD,
-                new base::FundamentalValue(1000),
-                nullptr);
-  expected->Set(key::kHomepageLocation,
-                POLICY_LEVEL_RECOMMENDED,
-                POLICY_SCOPE_USER,
-                POLICY_SOURCE_CLOUD,
-                new base::StringValue(homepage),
-                nullptr);
+  expected->Set(key::kURLBlacklist, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+                POLICY_SOURCE_CLOUD, list.CreateDeepCopy(), nullptr);
+  expected->Set(key::kMaxInvalidationFetchDelay, POLICY_LEVEL_MANDATORY,
+                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+                base::WrapUnique(new base::FundamentalValue(1000)), nullptr);
+  expected->Set(key::kHomepageLocation, POLICY_LEVEL_RECOMMENDED,
+                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+                base::WrapUnique(new base::StringValue(homepage)), nullptr);
 #if defined(OS_CHROMEOS)
-  expected->Set(key::kChromeOsMultiProfileUserBehavior,
-                POLICY_LEVEL_MANDATORY,
-                POLICY_SCOPE_USER,
-                POLICY_SOURCE_ENTERPRISE_DEFAULT,
-                new base::StringValue("primary-only"),
+  expected->Set(key::kChromeOsMultiProfileUserBehavior, POLICY_LEVEL_MANDATORY,
+                POLICY_SCOPE_USER, POLICY_SOURCE_ENTERPRISE_DEFAULT,
+                base::WrapUnique(new base::StringValue("primary-only")),
                 nullptr);
-  expected->Set(key::kEasyUnlockAllowed,
-                POLICY_LEVEL_MANDATORY,
-                POLICY_SCOPE_USER,
-                POLICY_SOURCE_ENTERPRISE_DEFAULT,
-                new base::FundamentalValue(false),
-                nullptr);
+  expected->Set(key::kEasyUnlockAllowed, POLICY_LEVEL_MANDATORY,
+                POLICY_SCOPE_USER, POLICY_SOURCE_ENTERPRISE_DEFAULT,
+                base::WrapUnique(new base::FundamentalValue(false)), nullptr);
   expected->Set(key::kCaptivePortalAuthenticationIgnoresProxy,
-                POLICY_LEVEL_MANDATORY,
-                POLICY_SCOPE_USER,
+                POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                 POLICY_SOURCE_ENTERPRISE_DEFAULT,
-                new base::FundamentalValue(false),
-                nullptr);
-  expected->Set(key::kAllowDinosaurEasterEgg,
-                POLICY_LEVEL_MANDATORY,
-                POLICY_SCOPE_USER,
+                base::WrapUnique(new base::FundamentalValue(false)), nullptr);
+  expected->Set(key::kAllowDinosaurEasterEgg, POLICY_LEVEL_MANDATORY,
+                POLICY_SCOPE_USER, POLICY_SOURCE_ENTERPRISE_DEFAULT,
+                base::WrapUnique(new base::FundamentalValue(false)), nullptr);
+  expected->Set(key::kArcEnabled, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                 POLICY_SOURCE_ENTERPRISE_DEFAULT,
-                new base::FundamentalValue(false),
-                nullptr);
-  expected->Set(key::kArcEnabled,
-                POLICY_LEVEL_MANDATORY,
-                POLICY_SCOPE_USER,
-                POLICY_SOURCE_ENTERPRISE_DEFAULT,
-                new base::FundamentalValue(false),
-                nullptr);
+                base::WrapUnique(new base::FundamentalValue(false)), nullptr);
 #endif
 }
 

@@ -4,6 +4,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "components/policy/core/common/external_data_fetcher.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "components/policy/core/common/policy_types.h"
@@ -53,12 +54,9 @@ TEST_F(ProxyPolicyProviderTest, Init) {
 TEST_F(ProxyPolicyProviderTest, Delegate) {
   PolicyBundle bundle;
   bundle.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
-      .Set("policy",
-           POLICY_LEVEL_MANDATORY,
-           POLICY_SCOPE_USER,
+      .Set("policy", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
            POLICY_SOURCE_CLOUD,
-           new base::StringValue("value"),
-           NULL);
+           base::WrapUnique(new base::StringValue("value")), nullptr);
   mock_provider_.UpdatePolicy(CopyBundle(bundle));
 
   EXPECT_CALL(observer_, OnUpdatePolicy(&proxy_provider_));
@@ -68,12 +66,9 @@ TEST_F(ProxyPolicyProviderTest, Delegate) {
 
   EXPECT_CALL(observer_, OnUpdatePolicy(&proxy_provider_));
   bundle.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
-      .Set("policy",
-           POLICY_LEVEL_MANDATORY,
-           POLICY_SCOPE_USER,
+      .Set("policy", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
            POLICY_SOURCE_CLOUD,
-           new base::StringValue("new value"),
-           NULL);
+           base::WrapUnique(new base::StringValue("new value")), nullptr);
   mock_provider_.UpdatePolicy(CopyBundle(bundle));
   Mock::VerifyAndClearExpectations(&observer_);
   EXPECT_TRUE(bundle.Equals(proxy_provider_.policies()));

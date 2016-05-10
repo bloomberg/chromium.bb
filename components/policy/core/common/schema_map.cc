@@ -71,7 +71,7 @@ void SchemaMap::FilterBundle(PolicyBundle* bundle) const {
     for (PolicyMap::const_iterator it_map = map->begin();
          it_map != map->end();) {
       const std::string& policy_name = it_map->first;
-      const base::Value* policy_value = it_map->second.value;
+      const base::Value* policy_value = it_map->second.value.get();
       Schema policy_schema = schema->GetProperty(policy_name);
       ++it_map;
       std::string error_path;

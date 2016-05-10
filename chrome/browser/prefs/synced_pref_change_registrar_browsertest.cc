@@ -6,6 +6,7 @@
 #include <string>
 
 #include "base/json/json_string_value_serializer.h"
+#include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
@@ -179,12 +180,9 @@ IN_PROC_BROWSER_TEST_F(SyncedPrefChangeRegistrarTest,
       base::Bind(&TestPrefChangeCallback, prefs(), &observer));
 
   policy::PolicyMap policies;
-  policies.Set(policy::key::kShowHomeButton,
-               policy::POLICY_LEVEL_MANDATORY,
-               policy::POLICY_SCOPE_USER,
-               policy::POLICY_SOURCE_CLOUD,
-               new base::FundamentalValue(true),
-               NULL);
+  policies.Set(policy::key::kShowHomeButton, policy::POLICY_LEVEL_MANDATORY,
+               policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
+               base::WrapUnique(new base::FundamentalValue(true)), nullptr);
   UpdateChromePolicy(policies);
 
   EXPECT_TRUE(prefs()->IsManagedPreference(prefs::kShowHomeButton));
@@ -201,12 +199,9 @@ IN_PROC_BROWSER_TEST_F(SyncedPrefChangeRegistrarTest,
       base::Bind(&TestPrefChangeCallback, prefs(), &observer));
 
   policy::PolicyMap policies;
-  policies.Set(policy::key::kShowHomeButton,
-               policy::POLICY_LEVEL_MANDATORY,
-               policy::POLICY_SCOPE_USER,
-               policy::POLICY_SOURCE_CLOUD,
-               new base::FundamentalValue(true),
-               NULL);
+  policies.Set(policy::key::kShowHomeButton, policy::POLICY_LEVEL_MANDATORY,
+               policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
+               base::WrapUnique(new base::FundamentalValue(true)), nullptr);
   UpdateChromePolicy(policies);
 
   EXPECT_TRUE(prefs()->IsManagedPreference(prefs::kShowHomeButton));

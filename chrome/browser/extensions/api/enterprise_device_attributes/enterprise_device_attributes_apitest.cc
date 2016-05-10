@@ -147,7 +147,7 @@ class EnterpriseDeviceAttributesTest :
     policy::PolicyMap policy;
     policy.Set(policy::key::kExtensionInstallForcelist,
                policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_MACHINE,
-               policy::POLICY_SOURCE_CLOUD, forcelist.release(), nullptr);
+               policy::POLICY_SOURCE_CLOUD, std::move(forcelist), nullptr);
 
     // Set the policy and wait until the extension is installed.
     extensions::TestExtensionRegistryObserver observer(

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chrome/browser/search/contextual_search_policy_handler_android.h"
 #include "chrome/common/pref_names.h"
@@ -24,12 +25,9 @@ TEST(ContextualSearchPolicyHandlerAndroidTest, Default) {
 
 TEST(ContextualSearchPolicyHandlerAndroidTest, Enabled) {
   PolicyMap policy;
-  policy.Set(key::kContextualSearchEnabled,
-             POLICY_LEVEL_MANDATORY,
-             POLICY_SCOPE_USER,
-             POLICY_SOURCE_PLATFORM,
-             new base::FundamentalValue(true),
-             NULL);
+  policy.Set(key::kContextualSearchEnabled, POLICY_LEVEL_MANDATORY,
+             POLICY_SCOPE_USER, POLICY_SOURCE_PLATFORM,
+             base::WrapUnique(new base::FundamentalValue(true)), nullptr);
   PrefValueMap prefs;
   ContextualSearchPolicyHandlerAndroid handler;
   handler.ApplyPolicySettings(policy, &prefs);
@@ -42,12 +40,9 @@ TEST(ContextualSearchPolicyHandlerAndroidTest, Enabled) {
 
 TEST(ContextualSearchPolicyHandlerAndroidTest, Disabled) {
   PolicyMap policy;
-  policy.Set(key::kContextualSearchEnabled,
-             POLICY_LEVEL_MANDATORY,
-             POLICY_SCOPE_USER,
-             POLICY_SOURCE_PLATFORM,
-             new base::FundamentalValue(false),
-             NULL);
+  policy.Set(key::kContextualSearchEnabled, POLICY_LEVEL_MANDATORY,
+             POLICY_SCOPE_USER, POLICY_SOURCE_PLATFORM,
+             base::WrapUnique(new base::FundamentalValue(false)), nullptr);
   PrefValueMap prefs;
   ContextualSearchPolicyHandlerAndroid handler;
   handler.ApplyPolicySettings(policy, &prefs);

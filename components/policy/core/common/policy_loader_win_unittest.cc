@@ -23,6 +23,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_writer.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/process/process_handle.h"
 #include "base/strings/string16.h"
@@ -810,12 +811,9 @@ TEST_F(PolicyLoaderWinTest, HKLMOverHKCU) {
 
   PolicyBundle expected;
   expected.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
-      .Set(test_keys::kKeyString,
-           POLICY_LEVEL_MANDATORY,
-           POLICY_SCOPE_MACHINE,
+      .Set(test_keys::kKeyString, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
            POLICY_SOURCE_PLATFORM,
-           new base::StringValue("hklm"),
-           NULL);
+           base::WrapUnique(new base::StringValue("hklm")), nullptr);
   EXPECT_TRUE(Matches(expected));
 }
 
@@ -865,30 +863,19 @@ TEST_F(PolicyLoaderWinTest, Merge3rdPartyPolicies) {
 
   PolicyBundle expected;
   PolicyMap& expected_policy = expected.Get(ns);
-  expected_policy.Set("a",
-                      POLICY_LEVEL_MANDATORY,
-                      POLICY_SCOPE_MACHINE,
-                      POLICY_SOURCE_PLATFORM,
-                      new base::StringValue(kMachineMandatory),
-                      NULL);
-  expected_policy.Set("b",
-                      POLICY_LEVEL_MANDATORY,
-                      POLICY_SCOPE_USER,
-                      POLICY_SOURCE_PLATFORM,
-                      new base::StringValue(kUserMandatory),
-                      NULL);
-  expected_policy.Set("c",
-                      POLICY_LEVEL_RECOMMENDED,
-                      POLICY_SCOPE_MACHINE,
-                      POLICY_SOURCE_PLATFORM,
-                      new base::StringValue(kMachineRecommended),
-                      NULL);
-  expected_policy.Set("d",
-                      POLICY_LEVEL_RECOMMENDED,
-                      POLICY_SCOPE_USER,
-                      POLICY_SOURCE_PLATFORM,
-                      new base::StringValue(kUserRecommended),
-                      NULL);
+  expected_policy.Set(
+      "a", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE, POLICY_SOURCE_PLATFORM,
+      base::WrapUnique(new base::StringValue(kMachineMandatory)), nullptr);
+  expected_policy.Set(
+      "b", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER, POLICY_SOURCE_PLATFORM,
+      base::WrapUnique(new base::StringValue(kUserMandatory)), nullptr);
+  expected_policy.Set(
+      "c", POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_MACHINE,
+      POLICY_SOURCE_PLATFORM,
+      base::WrapUnique(new base::StringValue(kMachineRecommended)), nullptr);
+  expected_policy.Set(
+      "d", POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER, POLICY_SOURCE_PLATFORM,
+      base::WrapUnique(new base::StringValue(kUserRecommended)), nullptr);
   EXPECT_TRUE(Matches(expected));
 }
 
@@ -1234,12 +1221,13 @@ TEST_F(PolicyLoaderWinTest, LBSSupport) {
 
   PolicyBundle expected;
   PolicyMap& expected_policy = expected.Get(ns);
-  expected_policy.Set("alternative_browser_path",
-                      POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
-                      POLICY_SOURCE_PLATFORM,
-                      new base::StringValue("c:\\legacy\\browser.exe"), NULL);
+  expected_policy.Set(
+      "alternative_browser_path", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+      POLICY_SOURCE_PLATFORM,
+      base::WrapUnique(new base::StringValue("c:\\legacy\\browser.exe")),
+      nullptr);
   expected_policy.Set("url_list", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
-                      POLICY_SOURCE_PLATFORM, list.DeepCopy(), nullptr);
+                      POLICY_SOURCE_PLATFORM, list.CreateDeepCopy(), nullptr);
   EXPECT_TRUE(Matches(expected));
 }
 

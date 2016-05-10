@@ -15,6 +15,7 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
@@ -264,12 +265,13 @@ void NetworkConfigurationPolicyHandler::PrepareForDisplaying(
   const PolicyMap::Entry* entry = policies->Get(policy_name());
   if (!entry)
     return;
-  base::Value* sanitized_config = SanitizeNetworkConfig(entry->value);
+  std::unique_ptr<base::Value> sanitized_config =
+      SanitizeNetworkConfig(entry->value.get());
   if (!sanitized_config)
-    sanitized_config = base::Value::CreateNullValue().release();
+    sanitized_config = base::Value::CreateNullValue();
 
-  policies->Set(policy_name(), entry->level, entry->scope,
-                entry->source, sanitized_config, nullptr);
+  policies->Set(policy_name(), entry->level, entry->scope, entry->source,
+                std::move(sanitized_config), nullptr);
 }
 
 NetworkConfigurationPolicyHandler::NetworkConfigurationPolicyHandler(
@@ -282,7 +284,8 @@ NetworkConfigurationPolicyHandler::NetworkConfigurationPolicyHandler(
 }
 
 // static
-base::Value* NetworkConfigurationPolicyHandler::SanitizeNetworkConfig(
+std::unique_ptr<base::Value>
+NetworkConfigurationPolicyHandler::SanitizeNetworkConfig(
     const base::Value* config) {
   std::string json_string;
   if (!config->GetAsString(&json_string))
@@ -303,7 +306,7 @@ base::Value* NetworkConfigurationPolicyHandler::SanitizeNetworkConfig(
 
   base::JSONWriter::WriteWithOptions(
       *toplevel_dict, base::JSONWriter::OPTIONS_PRETTY_PRINT, &json_string);
-  return new base::StringValue(json_string);
+  return base::WrapUnique(new base::StringValue(json_string));
 }
 
 PinnedLauncherAppsPolicyHandler::PinnedLauncherAppsPolicyHandler()

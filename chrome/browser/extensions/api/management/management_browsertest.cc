@@ -572,11 +572,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, ExternalPolicyRefresh) {
       kExtensionId, "http://localhost/autoupdate/manifest"));
   PolicyMap policies;
   policies.Set(policy::key::kExtensionInstallForcelist,
-               policy::POLICY_LEVEL_MANDATORY,
-               policy::POLICY_SCOPE_USER,
-               policy::POLICY_SOURCE_CLOUD,
-               forcelist.DeepCopy(),
-               NULL);
+               policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
+               policy::POLICY_SOURCE_CLOUD, forcelist.CreateDeepCopy(),
+               nullptr);
   extensions::TestExtensionRegistryObserver install_observer(registry);
   UpdateProviderPolicy(policies);
   install_observer.WaitForExtensionWillBeInstalled();
@@ -661,11 +659,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest,
       kExtensionId, "http://localhost/autoupdate/manifest"));
   PolicyMap policies;
   policies.Set(policy::key::kExtensionInstallForcelist,
-               policy::POLICY_LEVEL_MANDATORY,
-               policy::POLICY_SCOPE_USER,
-               policy::POLICY_SOURCE_CLOUD,
-               forcelist.DeepCopy(),
-               NULL);
+               policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
+               policy::POLICY_SOURCE_CLOUD, forcelist.CreateDeepCopy(),
+               nullptr);
   extensions::TestExtensionRegistryObserver install_observer(registry);
   UpdateProviderPolicy(policies);
   install_observer.WaitForExtensionWillBeInstalled();
@@ -704,11 +700,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest,
   // Install the policy again. It should overwrite the extension's location,
   // and force enable it too.
   policies.Set(policy::key::kExtensionInstallForcelist,
-               policy::POLICY_LEVEL_MANDATORY,
-               policy::POLICY_SCOPE_USER,
-               policy::POLICY_SOURCE_CLOUD,
-               forcelist.DeepCopy(),
-               NULL);
+               policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
+               policy::POLICY_SOURCE_CLOUD, forcelist.CreateDeepCopy(),
+               nullptr);
 
   extensions::TestExtensionRegistryObserver extension_observer(registry);
   UpdateProviderPolicy(policies);

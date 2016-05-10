@@ -17,6 +17,7 @@
 #include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
@@ -521,15 +522,11 @@ class PolicyPrefsTest : public InProcessBrowserTest {
       const PolicyDetails* policy_details = GetChromePolicyDetails(it.key());
       ASSERT_TRUE(policy_details);
       policy_map.Set(
-          it.key(),
-          level,
-          POLICY_SCOPE_USER,
-          POLICY_SOURCE_CLOUD,
-          it.value().DeepCopy(),
-          policy_details->max_external_data_size ?
-              new ExternalDataFetcher(base::WeakPtr<ExternalDataManager>(),
-                                      it.key()) :
-              NULL);
+          it.key(), level, POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+          it.value().CreateDeepCopy(),
+          base::WrapUnique(policy_details->max_external_data_size
+                               ? new ExternalDataFetcher(nullptr, it.key())
+                               : nullptr));
     }
     provider_.UpdateChromePolicy(policy_map);
     base::RunLoop().RunUntilIdle();

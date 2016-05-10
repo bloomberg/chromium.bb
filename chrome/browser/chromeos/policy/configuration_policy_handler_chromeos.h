@@ -65,7 +65,8 @@ class NetworkConfigurationPolicyHandler : public TypeCheckingPolicyHandler {
   // that contains a pretty-printed and sanitized version. In particular, we
   // remove any Passphrases that may be contained in the JSON. Ownership of the
   // return value is transferred to the caller.
-  static base::Value* SanitizeNetworkConfig(const base::Value* config);
+  static std::unique_ptr<base::Value> SanitizeNetworkConfig(
+      const base::Value* config);
 
   // The kind of ONC source that this handler represents. ONCSource
   // distinguishes between user and device policy.

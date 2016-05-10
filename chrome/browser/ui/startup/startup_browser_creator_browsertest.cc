@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
 #include "build/build_config.h"
@@ -1543,18 +1544,17 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
   // * RestoreOnStartup = RestoreOnStartupIsURLs
   // * RestoreOnStartupURLs = [ "/title1.html" ]
   policy_map_.Set(
-      policy::key::kRestoreOnStartup,
-      policy::POLICY_LEVEL_MANDATORY,
-      policy::POLICY_SCOPE_USER,
-      policy::POLICY_SOURCE_CLOUD,
-      new base::FundamentalValue(SessionStartupPref::kPrefValueURLs),
-      NULL);
+      policy::key::kRestoreOnStartup, policy::POLICY_LEVEL_MANDATORY,
+      policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
+      base::WrapUnique(
+          new base::FundamentalValue(SessionStartupPref::kPrefValueURLs)),
+      nullptr);
   base::ListValue startup_urls;
   startup_urls.Append(new base::StringValue(
       embedded_test_server()->GetURL("/title1.html").spec()));
   policy_map_.Set(policy::key::kRestoreOnStartupURLs,
                   policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-                  policy::POLICY_SOURCE_CLOUD, startup_urls.DeepCopy(),
+                  policy::POLICY_SOURCE_CLOUD, startup_urls.CreateDeepCopy(),
                   nullptr);
   provider_.UpdateChromePolicy(policy_map_);
   base::RunLoop().RunUntilIdle();

@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/device_local_account_external_data_manager.h"
@@ -59,40 +60,29 @@ DeviceLocalAccountPolicyProvider::Create(
     // suspend while leaving the session running, which is not desirable for
     // public sessions.
     chrome_policy_overrides->Set(
-        key::kLidCloseAction,
-        POLICY_LEVEL_MANDATORY,
-        POLICY_SCOPE_MACHINE,
+        key::kLidCloseAction, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
         POLICY_SOURCE_PUBLIC_SESSION_OVERRIDE,
-        new base::FundamentalValue(
-            chromeos::PowerPolicyController::ACTION_STOP_SESSION),
-        NULL);
+        base::WrapUnique(new base::FundamentalValue(
+            chromeos::PowerPolicyController::ACTION_STOP_SESSION)),
+        nullptr);
     // Force the |ShelfAutoHideBehavior| policy to |Never|, ensuring that the
     // ash shelf does not auto-hide.
     chrome_policy_overrides->Set(
-        key::kShelfAutoHideBehavior,
-        POLICY_LEVEL_MANDATORY,
-        POLICY_SCOPE_MACHINE,
-        POLICY_SOURCE_PUBLIC_SESSION_OVERRIDE,
-        new base::StringValue("Never"),
-        NULL);
+        key::kShelfAutoHideBehavior, POLICY_LEVEL_MANDATORY,
+        POLICY_SCOPE_MACHINE, POLICY_SOURCE_PUBLIC_SESSION_OVERRIDE,
+        base::WrapUnique(new base::StringValue("Never")), nullptr);
     // Force the |ShowLogoutButtonInTray| policy to |true|, ensuring that a big,
     // red logout button is shown in the ash system tray.
     chrome_policy_overrides->Set(
-        key::kShowLogoutButtonInTray,
-        POLICY_LEVEL_MANDATORY,
-        POLICY_SCOPE_MACHINE,
-        POLICY_SOURCE_PUBLIC_SESSION_OVERRIDE,
-        new base::FundamentalValue(true),
-        NULL);
+        key::kShowLogoutButtonInTray, POLICY_LEVEL_MANDATORY,
+        POLICY_SCOPE_MACHINE, POLICY_SOURCE_PUBLIC_SESSION_OVERRIDE,
+        base::WrapUnique(new base::FundamentalValue(true)), nullptr);
     // Force the |FullscreenAllowed| policy to |false|, ensuring that the ash
     // shelf cannot be hidden by entering fullscreen mode.
     chrome_policy_overrides->Set(
-        key::kFullscreenAllowed,
-        POLICY_LEVEL_MANDATORY,
-        POLICY_SCOPE_MACHINE,
+        key::kFullscreenAllowed, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
         POLICY_SOURCE_PUBLIC_SESSION_OVERRIDE,
-        new base::FundamentalValue(false),
-        NULL);
+        base::WrapUnique(new base::FundamentalValue(false)), nullptr);
   }
 
   std::unique_ptr<DeviceLocalAccountPolicyProvider> provider(
@@ -173,16 +163,10 @@ void DeviceLocalAccountPolicyProvider::UpdateFromBroker() {
   if (chrome_policy_overrides_) {
     PolicyMap& chrome_policy =
         bundle->Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()));
-    for (PolicyMap::const_iterator it(chrome_policy_overrides_->begin());
-         it != chrome_policy_overrides_->end();
-         ++it) {
-      const PolicyMap::Entry& entry = it->second;
-      chrome_policy.Set(it->first,
-                        entry.level,
-                        entry.scope,
-                        entry.source,
-                        entry.value->DeepCopy(),
-                        nullptr);
+    for (const auto& policy_override : *chrome_policy_overrides_) {
+      const PolicyMap::Entry& entry = policy_override.second;
+      chrome_policy.Set(policy_override.first, entry.level, entry.scope,
+                        entry.source, entry.value->CreateDeepCopy(), nullptr);
     }
   }
 

@@ -352,14 +352,11 @@ void CloudExternalDataPolicyObserverTest::SetRegularUserAvatarPolicy(
     const std::string& value) {
   PolicyMap policy_map;
   if (!value.empty()) {
-    policy_map.Set(
-        key::kUserAvatarImage,
-        POLICY_LEVEL_MANDATORY,
-        POLICY_SCOPE_USER,
-        POLICY_SOURCE_CLOUD,
-        new base::StringValue(value),
-        external_data_manager_.CreateExternalDataFetcher(
-            key::kUserAvatarImage).release());
+    policy_map.Set(key::kUserAvatarImage, POLICY_LEVEL_MANDATORY,
+                   POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+                   base::WrapUnique(new base::StringValue(value)),
+                   external_data_manager_.CreateExternalDataFetcher(
+                       key::kUserAvatarImage));
   }
   user_policy_provider_.UpdateChromePolicy(policy_map);
 }

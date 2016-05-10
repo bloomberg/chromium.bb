@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/policy/core/browser/autofill_policy_handler.h"
@@ -26,12 +27,9 @@ TEST_F(AutofillPolicyHandlerTest, Default) {
 
 TEST_F(AutofillPolicyHandlerTest, Enabled) {
   PolicyMap policy;
-  policy.Set(key::kAutoFillEnabled,
-             POLICY_LEVEL_MANDATORY,
-             POLICY_SCOPE_USER,
+  policy.Set(key::kAutoFillEnabled, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
              POLICY_SOURCE_CLOUD,
-             new base::FundamentalValue(true),
-             NULL);
+             base::WrapUnique(new base::FundamentalValue(true)), nullptr);
   PrefValueMap prefs;
   AutofillPolicyHandler handler;
   handler.ApplyPolicySettings(policy, &prefs);
@@ -42,12 +40,9 @@ TEST_F(AutofillPolicyHandlerTest, Enabled) {
 
 TEST_F(AutofillPolicyHandlerTest, Disabled) {
   PolicyMap policy;
-  policy.Set(key::kAutoFillEnabled,
-             POLICY_LEVEL_MANDATORY,
-             POLICY_SCOPE_USER,
+  policy.Set(key::kAutoFillEnabled, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
              POLICY_SOURCE_CLOUD,
-             new base::FundamentalValue(false),
-             NULL);
+             base::WrapUnique(new base::FundamentalValue(false)), nullptr);
   PrefValueMap prefs;
   AutofillPolicyHandler handler;
   handler.ApplyPolicySettings(policy, &prefs);

@@ -72,12 +72,9 @@ class DownloadDirPolicyHandlerTest
 TEST_F(DownloadDirPolicyHandlerTest, SetDownloadDirectory) {
   policy::PolicyMap policy;
   EXPECT_FALSE(store_->GetValue(prefs::kPromptForDownload, NULL));
-  policy.Set(policy::key::kDownloadDirectory,
-             policy::POLICY_LEVEL_MANDATORY,
-             policy::POLICY_SCOPE_USER,
-             policy::POLICY_SOURCE_CLOUD,
-             new base::StringValue(std::string()),
-             NULL);
+  policy.Set(policy::key::kDownloadDirectory, policy::POLICY_LEVEL_MANDATORY,
+             policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
+             base::WrapUnique(new base::StringValue(std::string())), nullptr);
   UpdateProviderPolicy(policy);
 
   // Setting a DownloadDirectory should disable the PromptForDownload pref.
@@ -96,12 +93,11 @@ TEST_F(DownloadDirPolicyHandlerTest, SetDownloadToDrive) {
   EXPECT_FALSE(store_->GetValue(prefs::kPromptForDownload, NULL));
 
   policy::PolicyMap policy;
-  policy.Set(policy::key::kDownloadDirectory,
-             policy::POLICY_LEVEL_MANDATORY,
-             policy::POLICY_SCOPE_USER,
-             policy::POLICY_SOURCE_CLOUD,
-             new base::StringValue(kDriveNamePolicyVariableName),
-             NULL);
+  policy.Set(
+      policy::key::kDownloadDirectory, policy::POLICY_LEVEL_MANDATORY,
+      policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
+      base::WrapUnique(new base::StringValue(kDriveNamePolicyVariableName)),
+      nullptr);
   UpdateProviderPolicy(policy);
 
   const base::Value* value = NULL;
@@ -123,22 +119,18 @@ TEST_F(DownloadDirPolicyHandlerTest, SetDownloadToDrive) {
   EXPECT_TRUE(value->GetAsString(&download_directory));
   EXPECT_EQ(GetExpectedDownloadDirectory(), download_directory);
 
-  policy.Set(policy::key::kDownloadDirectory,
-             policy::POLICY_LEVEL_MANDATORY,
-             policy::POLICY_SCOPE_USER,
-             policy::POLICY_SOURCE_CLOUD,
-             new base::StringValue(kUserIDHash),
-             NULL);
+  policy.Set(policy::key::kDownloadDirectory, policy::POLICY_LEVEL_MANDATORY,
+             policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
+             base::WrapUnique(new base::StringValue(kUserIDHash)), nullptr);
   UpdateProviderPolicy(policy);
   EXPECT_FALSE(recommended_store_->GetValue(drive::prefs::kDisableDrive, NULL));
 
-  policy.Set(policy::key::kDownloadDirectory,
-             policy::POLICY_LEVEL_RECOMMENDED,
-             policy::POLICY_SCOPE_USER,
-             policy::POLICY_SOURCE_CLOUD,
-             new base::StringValue(std::string(kDriveNamePolicyVariableName) +
-                                   kRelativeToDriveRoot),
-             NULL);
+  policy.Set(
+      policy::key::kDownloadDirectory, policy::POLICY_LEVEL_RECOMMENDED,
+      policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
+      base::WrapUnique(new base::StringValue(
+          std::string(kDriveNamePolicyVariableName) + kRelativeToDriveRoot)),
+      nullptr);
   UpdateProviderPolicy(policy);
 
   EXPECT_FALSE(recommended_store_->GetValue(prefs::kPromptForDownload, NULL));
@@ -151,12 +143,9 @@ TEST_F(DownloadDirPolicyHandlerTest, SetDownloadToDrive) {
   EXPECT_EQ(GetExpectedDownloadDirectory() + kRelativeToDriveRoot,
             download_directory);
 
-  policy.Set(policy::key::kDownloadDirectory,
-             policy::POLICY_LEVEL_RECOMMENDED,
-             policy::POLICY_SCOPE_USER,
-             policy::POLICY_SOURCE_CLOUD,
-             new base::StringValue(kUserIDHash),
-             NULL);
+  policy.Set(policy::key::kDownloadDirectory, policy::POLICY_LEVEL_RECOMMENDED,
+             policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
+             base::WrapUnique(new base::StringValue(kUserIDHash)), nullptr);
   UpdateProviderPolicy(policy);
 
   EXPECT_FALSE(recommended_store_->GetValue(prefs::kPromptForDownload, NULL));

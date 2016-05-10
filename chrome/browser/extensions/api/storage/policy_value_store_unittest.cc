@@ -125,10 +125,10 @@ TEST_F(PolicyValueStoreTest, DontProvideRecommendedPolicies) {
   base::FundamentalValue expected(123);
   policies.Set("must", policy::POLICY_LEVEL_MANDATORY,
                policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-               expected.DeepCopy(), nullptr);
+               expected.CreateDeepCopy(), nullptr);
   policies.Set("may", policy::POLICY_LEVEL_RECOMMENDED,
                policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-               new base::FundamentalValue(456), NULL);
+               base::WrapUnique(new base::FundamentalValue(456)), nullptr);
   store_->SetCurrentPolicy(policies);
   ValueStore::ReadResult result = store_->Get();
   ASSERT_TRUE(result->status().ok());
@@ -170,7 +170,7 @@ TEST_F(PolicyValueStoreTest, NotifyOnChanges) {
 
   policy::PolicyMap policies;
   policies.Set("aaa", policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-               policy::POLICY_SOURCE_CLOUD, value.DeepCopy(), nullptr);
+               policy::POLICY_SOURCE_CLOUD, value.CreateDeepCopy(), nullptr);
   store_->SetCurrentPolicy(policies);
   loop_.RunUntilIdle();
   Mock::VerifyAndClearExpectations(&observer_);
@@ -186,7 +186,7 @@ TEST_F(PolicyValueStoreTest, NotifyOnChanges) {
   }
 
   policies.Set("bbb", policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-               policy::POLICY_SOURCE_CLOUD, value.DeepCopy(), nullptr);
+               policy::POLICY_SOURCE_CLOUD, value.CreateDeepCopy(), nullptr);
   store_->SetCurrentPolicy(policies);
   loop_.RunUntilIdle();
   Mock::VerifyAndClearExpectations(&observer_);
@@ -204,7 +204,8 @@ TEST_F(PolicyValueStoreTest, NotifyOnChanges) {
   }
 
   policies.Set("bbb", policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-               policy::POLICY_SOURCE_CLOUD, new_value.DeepCopy(), nullptr);
+               policy::POLICY_SOURCE_CLOUD, new_value.CreateDeepCopy(),
+               nullptr);
   store_->SetCurrentPolicy(policies);
   loop_.RunUntilIdle();
   Mock::VerifyAndClearExpectations(&observer_);

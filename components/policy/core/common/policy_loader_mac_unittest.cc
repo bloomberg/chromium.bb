@@ -12,6 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/values.h"
 #include "components/policy/core/common/async_policy_provider.h"
@@ -193,12 +194,9 @@ TEST_F(PolicyLoaderMacTest, TestNonForcedValue) {
   loop_.RunUntilIdle();
   PolicyBundle expected_bundle;
   expected_bundle.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
-      .Set(test_keys::kKeyString,
-           POLICY_LEVEL_RECOMMENDED,
-           POLICY_SCOPE_USER,
+      .Set(test_keys::kKeyString, POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER,
            POLICY_SOURCE_PLATFORM,
-           new base::StringValue("string value"),
-           NULL);
+           base::WrapUnique(new base::StringValue("string value")), nullptr);
   EXPECT_TRUE(provider_->policies().Equals(expected_bundle));
 }
 

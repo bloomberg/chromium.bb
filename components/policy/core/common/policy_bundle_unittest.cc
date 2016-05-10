@@ -5,8 +5,10 @@
 #include "components/policy/core/common/policy_bundle.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/callback.h"
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "components/policy/core/common/external_data_fetcher.h"
 #include "components/policy/core/common/policy_map.h"
@@ -29,30 +31,22 @@ const char kExtension3[] = "extension-3";
 
 // Adds test policies to |policy|.
 void AddTestPolicies(PolicyMap* policy) {
-  policy->Set("mandatory-user",
-              POLICY_LEVEL_MANDATORY,
-              POLICY_SCOPE_USER,
+  policy->Set("mandatory-user", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
               POLICY_SOURCE_CLOUD,
-              new base::FundamentalValue(123),
-              NULL);
-  policy->Set("mandatory-machine",
-              POLICY_LEVEL_MANDATORY,
-              POLICY_SCOPE_MACHINE,
+              base::WrapUnique(new base::FundamentalValue(123)), nullptr);
+  policy->Set("mandatory-machine", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
               POLICY_SOURCE_CLOUD,
-              new base::StringValue("omg"),
-              NULL);
-  policy->Set("recommended-user",
-              POLICY_LEVEL_RECOMMENDED,
-              POLICY_SCOPE_USER,
+              base::WrapUnique(new base::StringValue("omg")), nullptr);
+  policy->Set("recommended-user", POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER,
               POLICY_SOURCE_CLOUD,
-              new base::FundamentalValue(true),
-              NULL);
-  base::DictionaryValue* dict = new base::DictionaryValue();
+              base::WrapUnique(new base::FundamentalValue(true)), nullptr);
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetBoolean("false", false);
   dict->SetInteger("int", 456);
   dict->SetString("str", "bbq");
   policy->Set("recommended-machine", POLICY_LEVEL_RECOMMENDED,
-              POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD, dict, nullptr);
+              POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD, std::move(dict),
+              nullptr);
 }
 
 // Adds test policies to |policy| based on the parameters:
@@ -64,20 +58,14 @@ void AddTestPoliciesWithParams(PolicyMap *policy,
                                int value,
                                PolicyLevel level,
                                PolicyScope scope) {
-  policy->Set(kPolicyClashing0,
-              POLICY_LEVEL_MANDATORY,
-              POLICY_SCOPE_USER,
+  policy->Set(kPolicyClashing0, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
               POLICY_SOURCE_CLOUD,
-              new base::FundamentalValue(value),
-              NULL);
+              base::WrapUnique(new base::FundamentalValue(value)), nullptr);
   policy->Set(kPolicyClashing1, level, scope, POLICY_SOURCE_CLOUD,
-              new base::FundamentalValue(value), nullptr);
-  policy->Set(name,
-              POLICY_LEVEL_MANDATORY,
-              POLICY_SCOPE_USER,
+              base::WrapUnique(new base::FundamentalValue(value)), nullptr);
+  policy->Set(name, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
               POLICY_SOURCE_CLOUD,
-              new base::FundamentalValue(value),
-              NULL);
+              base::WrapUnique(new base::FundamentalValue(value)), nullptr);
 }
 
 // Returns true if |bundle| is empty.
@@ -204,36 +192,21 @@ TEST(PolicyBundleTest, MergeFrom) {
   //   combination;
   // - kPolicyN are merged from each bundle.
   PolicyMap expected;
-  expected.Set(kPolicyClashing0,
-               POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER,
+  expected.Set(kPolicyClashing0, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                POLICY_SOURCE_CLOUD,
-               new base::FundamentalValue(0),
-               NULL);
-  expected.Set(kPolicyClashing1,
-               POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_MACHINE,
+               base::WrapUnique(new base::FundamentalValue(0)), nullptr);
+  expected.Set(kPolicyClashing1, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
                POLICY_SOURCE_CLOUD,
-               new base::FundamentalValue(1),
-               NULL);
-  expected.Set(kPolicy0,
-               POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER,
+               base::WrapUnique(new base::FundamentalValue(1)), nullptr);
+  expected.Set(kPolicy0, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                POLICY_SOURCE_CLOUD,
-               new base::FundamentalValue(0),
-               NULL);
-  expected.Set(kPolicy1,
-               POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER,
+               base::WrapUnique(new base::FundamentalValue(0)), nullptr);
+  expected.Set(kPolicy1, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                POLICY_SOURCE_CLOUD,
-               new base::FundamentalValue(1),
-               NULL);
-  expected.Set(kPolicy2,
-               POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER,
+               base::WrapUnique(new base::FundamentalValue(1)), nullptr);
+  expected.Set(kPolicy2, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                POLICY_SOURCE_CLOUD,
-               new base::FundamentalValue(2),
-               NULL);
+               base::WrapUnique(new base::FundamentalValue(2)), nullptr);
   EXPECT_TRUE(merged.Get(PolicyNamespace(POLICY_DOMAIN_CHROME,
                                          std::string())).Equals(expected));
   EXPECT_TRUE(merged.Get(PolicyNamespace(POLICY_DOMAIN_EXTENSIONS,
@@ -272,22 +245,16 @@ TEST(PolicyBundleTest, Equals) {
 
   other.CopyFrom(bundle);
   bundle.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
-      .Set(kPolicy0,
-           POLICY_LEVEL_MANDATORY,
-           POLICY_SCOPE_USER,
+      .Set(kPolicy0, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
            POLICY_SOURCE_CLOUD,
-           new base::FundamentalValue(123),
-           NULL);
+           base::WrapUnique(new base::FundamentalValue(123)), nullptr);
   EXPECT_FALSE(bundle.Equals(other));
   other.CopyFrom(bundle);
   EXPECT_TRUE(bundle.Equals(other));
   bundle.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
-      .Set(kPolicy0,
-           POLICY_LEVEL_MANDATORY,
-           POLICY_SCOPE_MACHINE,
+      .Set(kPolicy0, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
            POLICY_SOURCE_CLOUD,
-           new base::FundamentalValue(123),
-           NULL);
+           base::WrapUnique(new base::FundamentalValue(123)), nullptr);
   EXPECT_FALSE(bundle.Equals(other));
 
   // Test non-const Get().
@@ -296,12 +263,9 @@ TEST(PolicyBundleTest, Equals) {
   PolicyMap& policy_map =
       bundle.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()));
   EXPECT_TRUE(bundle.Equals(other));
-  policy_map.Set(kPolicy0,
-                 POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER,
+  policy_map.Set(kPolicy0, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                  POLICY_SOURCE_CLOUD,
-                 new base::FundamentalValue(123),
-                 NULL);
+                 base::WrapUnique(new base::FundamentalValue(123)), nullptr);
   EXPECT_FALSE(bundle.Equals(other));
 }
 

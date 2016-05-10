@@ -5,6 +5,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "chrome/browser/browser_process.h"
@@ -83,7 +84,8 @@ class QuicAllowedPolicyIsFalse: public QuicAllowedPolicyTestBase {
  protected:
   void GetQuicAllowedPolicy(PolicyMap* values) override {
     values->Set(key::kQuicAllowed, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
-        POLICY_SOURCE_CLOUD, new base::FundamentalValue(false), nullptr);
+                POLICY_SOURCE_CLOUD,
+                base::WrapUnique(new base::FundamentalValue(false)), nullptr);
   }
 
  private:
@@ -102,7 +104,8 @@ class QuicAllowedPolicyIsTrue: public QuicAllowedPolicyTestBase {
  protected:
   void GetQuicAllowedPolicy(PolicyMap* values) override {
     values->Set(key::kQuicAllowed, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
-        POLICY_SOURCE_CLOUD, new base::FundamentalValue(true), nullptr);
+                POLICY_SOURCE_CLOUD,
+                base::WrapUnique(new base::FundamentalValue(true)), nullptr);
   }
 
  private:

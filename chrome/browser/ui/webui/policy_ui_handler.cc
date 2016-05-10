@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
@@ -182,12 +184,12 @@ std::unique_ptr<base::Value> CopyAndConvert(const base::Value* value) {
   if (value->GetAsDictionary(&dict))
     return DictionaryToJSONString(*dict);
 
-  std::unique_ptr<base::Value> copy(value->DeepCopy());
+  std::unique_ptr<base::Value> copy = value->CreateDeepCopy();
   base::ListValue* list = NULL;
   if (copy->GetAsList(&list)) {
     for (size_t i = 0; i < list->GetSize(); ++i) {
       if (list->GetDictionary(i, &dict))
-        list->Set(i, DictionaryToJSONString(*dict).release());
+        list->Set(i, DictionaryToJSONString(*dict));
     }
   }
 
@@ -651,23 +653,22 @@ void PolicyUIHandler::SendPolicyValues() const {
 void PolicyUIHandler::GetPolicyValues(const policy::PolicyMap& map,
                                       policy::PolicyErrorMap* errors,
                                       base::DictionaryValue* values) const {
-  for (policy::PolicyMap::const_iterator entry = map.begin();
-       entry != map.end(); ++entry) {
-    base::DictionaryValue* value = new base::DictionaryValue;
-    value->Set("value", CopyAndConvert(entry->second.value).release());
-    if (entry->second.scope == policy::POLICY_SCOPE_USER)
+  for (const auto& entry : map) {
+    std::unique_ptr<base::DictionaryValue> value(new base::DictionaryValue);
+    value->Set("value", CopyAndConvert(entry.second.value.get()));
+    if (entry.second.scope == policy::POLICY_SCOPE_USER)
       value->SetString("scope", "user");
     else
       value->SetString("scope", "machine");
-    if (entry->second.level == policy::POLICY_LEVEL_RECOMMENDED)
+    if (entry.second.level == policy::POLICY_LEVEL_RECOMMENDED)
       value->SetString("level", "recommended");
     else
       value->SetString("level", "mandatory");
-    value->SetString("source", kPolicySources[entry->second.source].key);
-    base::string16 error = errors->GetErrors(entry->first);
+    value->SetString("source", kPolicySources[entry.second.source].key);
+    base::string16 error = errors->GetErrors(entry.first);
     if (!error.empty())
       value->SetString("error", error);
-    values->Set(entry->first, value);
+    values->Set(entry.first, std::move(value));
   }
 }
 

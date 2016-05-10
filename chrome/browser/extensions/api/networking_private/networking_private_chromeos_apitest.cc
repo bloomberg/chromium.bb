@@ -595,10 +595,10 @@ IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest, GetManagedProperties) {
       "}";
 
   policy::PolicyMap policy;
-  policy.Set(policy::key::kOpenNetworkConfiguration,
-             policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-             policy::POLICY_SOURCE_CLOUD,
-             new base::StringValue(user_policy_blob), nullptr);
+  policy.Set(
+      policy::key::kOpenNetworkConfiguration, policy::POLICY_LEVEL_MANDATORY,
+      policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
+      base::WrapUnique(new base::StringValue(user_policy_blob)), nullptr);
   provider_.UpdateChromePolicy(policy);
 
   content::RunAllPendingInMessageLoop();

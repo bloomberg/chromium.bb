@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -53,13 +54,13 @@ void FixDeprecatedPolicies(PolicyMap* policies) {
     if (entry) {
       if (entry->has_higher_priority_than(current_priority)) {
         proxy_settings->Clear();
-        current_priority = *entry;
+        current_priority = entry->DeepCopy();
         if (entry->source > inherited_source)  // Higher priority?
           inherited_source = entry->source;
       }
       if (!entry->has_higher_priority_than(current_priority) &&
           !current_priority.has_higher_priority_than(*entry)) {
-        proxy_settings->Set(kProxyPolicies[i], entry->value->DeepCopy());
+        proxy_settings->Set(kProxyPolicies[i], entry->value->CreateDeepCopy());
       }
       policies->Erase(kProxyPolicies[i]);
     }
@@ -69,12 +70,9 @@ void FixDeprecatedPolicies(PolicyMap* policies) {
   const PolicyMap::Entry* existing = policies->Get(key::kProxySettings);
   if (!proxy_settings->empty() &&
       (!existing || current_priority.has_higher_priority_than(*existing))) {
-    policies->Set(key::kProxySettings,
-                  current_priority.level,
-                  current_priority.scope,
-                  inherited_source,
-                  proxy_settings.release(),
-                  NULL);
+    policies->Set(key::kProxySettings, current_priority.level,
+                  current_priority.scope, inherited_source,
+                  std::move(proxy_settings), nullptr);
   }
 }
 

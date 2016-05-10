@@ -4,7 +4,9 @@
 
 #include "components/policy/core/browser/configuration_policy_pref_store.h"
 
+#include <memory>
 #include <string>
+#include <utility>
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
@@ -54,12 +56,12 @@ TEST_F(ConfigurationPolicyPrefStoreListTest, GetDefault) {
 }
 
 TEST_F(ConfigurationPolicyPrefStoreListTest, SetValue) {
-  base::ListValue* in_value = new base::ListValue();
+  std::unique_ptr<base::ListValue> in_value(new base::ListValue());
   in_value->Append(new base::StringValue("test1"));
   in_value->Append(new base::StringValue("test2,"));
   PolicyMap policy;
   policy.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-             POLICY_SOURCE_CLOUD, in_value, nullptr);
+             POLICY_SOURCE_CLOUD, in_value->CreateDeepCopy(), nullptr);
   UpdateProviderPolicy(policy);
   const base::Value* value = NULL;
   EXPECT_TRUE(store_->GetValue(kTestPref, &value));
@@ -83,12 +85,10 @@ TEST_F(ConfigurationPolicyPrefStoreStringTest, GetDefault) {
 
 TEST_F(ConfigurationPolicyPrefStoreStringTest, SetValue) {
   PolicyMap policy;
-  policy.Set(kTestPolicy,
-             POLICY_LEVEL_MANDATORY,
-             POLICY_SCOPE_USER,
+  policy.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
              POLICY_SOURCE_CLOUD,
-             new base::StringValue("http://chromium.org"),
-             NULL);
+             base::WrapUnique(new base::StringValue("http://chromium.org")),
+             nullptr);
   UpdateProviderPolicy(policy);
   const base::Value* value = NULL;
   EXPECT_TRUE(store_->GetValue(kTestPref, &value));
@@ -112,12 +112,9 @@ TEST_F(ConfigurationPolicyPrefStoreBooleanTest, GetDefault) {
 
 TEST_F(ConfigurationPolicyPrefStoreBooleanTest, SetValue) {
   PolicyMap policy;
-  policy.Set(kTestPolicy,
-             POLICY_LEVEL_MANDATORY,
-             POLICY_SCOPE_USER,
+  policy.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
              POLICY_SOURCE_CLOUD,
-             new base::FundamentalValue(false),
-             NULL);
+             base::WrapUnique(new base::FundamentalValue(false)), nullptr);
   UpdateProviderPolicy(policy);
   const base::Value* value = NULL;
   EXPECT_TRUE(store_->GetValue(kTestPref, &value));
@@ -127,12 +124,9 @@ TEST_F(ConfigurationPolicyPrefStoreBooleanTest, SetValue) {
   ASSERT_TRUE(result);
   EXPECT_FALSE(boolean_value);
 
-  policy.Set(kTestPolicy,
-             POLICY_LEVEL_MANDATORY,
-             POLICY_SCOPE_USER,
+  policy.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
              POLICY_SOURCE_CLOUD,
-             new base::FundamentalValue(true),
-             NULL);
+             base::WrapUnique(new base::FundamentalValue(true)), nullptr);
   UpdateProviderPolicy(policy);
   value = NULL;
   EXPECT_TRUE(store_->GetValue(kTestPref, &value));
@@ -158,12 +152,9 @@ TEST_F(ConfigurationPolicyPrefStoreIntegerTest, GetDefault) {
 
 TEST_F(ConfigurationPolicyPrefStoreIntegerTest, SetValue) {
   PolicyMap policy;
-  policy.Set(kTestPolicy,
-             POLICY_LEVEL_MANDATORY,
-             POLICY_SCOPE_USER,
+  policy.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
              POLICY_SOURCE_CLOUD,
-             new base::FundamentalValue(2),
-             NULL);
+             base::WrapUnique(new base::FundamentalValue(2)), nullptr);
   UpdateProviderPolicy(policy);
   const base::Value* value = NULL;
   EXPECT_TRUE(store_->GetValue(kTestPref, &value));
@@ -195,12 +186,10 @@ TEST_F(ConfigurationPolicyPrefStoreRefreshTest, Refresh) {
   EXPECT_FALSE(store_->GetValue(kTestPolicy, NULL));
 
   PolicyMap policy;
-  policy.Set(kTestPolicy,
-             POLICY_LEVEL_MANDATORY,
-             POLICY_SCOPE_USER,
+  policy.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
              POLICY_SOURCE_CLOUD,
-             new base::StringValue("http://www.chromium.org"),
-             NULL);
+             base::WrapUnique(new base::StringValue("http://www.chromium.org")),
+             nullptr);
   UpdateProviderPolicy(policy);
   observer_.VerifyAndResetChangedKey(kTestPref);
   EXPECT_TRUE(store_->GetValue(kTestPref, &value));

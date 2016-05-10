@@ -666,6 +666,7 @@ def _WritePolicyConstantSource(policies, os, f, riskTags):
           '#include <climits>\n'
           '\n'
           '#include "base/logging.h"\n'
+          '#include "base/memory/ptr_util.h"\n'
           '#include "policy/risk_tag.h"\n'
           '#include "components/policy/core/common/policy_types.h"\n'
           '#include "components/policy/core/common/schema_internal.h"\n'
@@ -753,7 +754,7 @@ def _WritePolicyConstantSource(policies, os, f, riskTags):
               '                    POLICY_LEVEL_MANDATORY,\n'
               '                    POLICY_SCOPE_USER,\n'
               '                    POLICY_SOURCE_ENTERPRISE_DEFAULT,\n'
-              '                    %s,\n'
+              '                    base::WrapUnique(%s),\n'
               '                    NULL);\n'
               '  }\n' % (policy.name, policy.name, creation_expression))
 
@@ -1003,11 +1004,13 @@ def _WriteCloudPolicyProtobuf(policies, os, f, riskTags):
 CPP_HEAD = '''
 #include <limits>
 #include <memory>
+#include <utility>
 #include <string>
 
 #include "base/callback.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "components/policy/core/common/cloud/cloud_external_data_manager.h"
@@ -1023,7 +1026,8 @@ namespace policy {
 
 namespace em = enterprise_management;
 
-base::Value* DecodeIntegerValue(google::protobuf::int64 value) {
+std::unique_ptr<base::Value> DecodeIntegerValue(
+    google::protobuf::int64 value) {
   if (value < std::numeric_limits<int>::min() ||
       value > std::numeric_limits<int>::max()) {
     LOG(WARNING) << "Integer value " << value
@@ -1031,20 +1035,19 @@ base::Value* DecodeIntegerValue(google::protobuf::int64 value) {
     return nullptr;
   }
 
-  return new base::FundamentalValue(static_cast<int>(value));
+  return base::WrapUnique(
+      new base::FundamentalValue(static_cast<int>(value)));
 }
 
-base::ListValue* DecodeStringList(const em::StringList& string_list) {
-  base::ListValue* list_value = new base::ListValue;
-  RepeatedPtrField<std::string>::const_iterator entry;
-  for (entry = string_list.entries().begin();
-       entry != string_list.entries().end(); ++entry) {
-    list_value->AppendString(*entry);
-  }
+std::unique_ptr<base::ListValue> DecodeStringList(
+    const em::StringList& string_list) {
+  std::unique_ptr<base::ListValue> list_value(new base::ListValue);
+  for (const auto& entry : string_list.entries())
+    list_value->AppendString(entry);
   return list_value;
 }
 
-base::Value* DecodeJson(const std::string& json) {
+std::unique_ptr<base::Value> DecodeJson(const std::string& json) {
   std::unique_ptr<base::Value> root =
       base::JSONReader::Read(json, base::JSON_ALLOW_TRAILING_COMMAS);
 
@@ -1053,7 +1056,7 @@ base::Value* DecodeJson(const std::string& json) {
 
   // Accept any Value type that parsed as JSON, and leave it to the handler to
   // convert and check the concrete type.
-  return root.release();
+  return root;
 }
 
 void DecodePolicy(const em::CloudPolicySettings& policy,
@@ -1086,7 +1089,7 @@ def _CreateValue(type, arg):
 def _CreateExternalDataFetcher(type, name):
   if type == 'TYPE_EXTERNAL':
     return 'new ExternalDataFetcher(external_data_manager, key::k%s)' % name
-  return 'NULL'
+  return 'nullptr'
 
 
 def _WritePolicyCode(f, policy):
@@ -1114,19 +1117,20 @@ def _WritePolicyCode(f, policy):
           '        }\n'
           '      }\n'
           '      if (do_set) {\n')
-  f.write('        base::Value* value = %s;\n' %
+  f.write('        std::unique_ptr<base::Value> value(%s);\n' %
           (_CreateValue(policy.policy_type, 'policy_proto.value()')))
   # TODO(bartfab): |value| == NULL indicates that the policy value could not be
   # parsed successfully. Surface such errors in the UI.
   f.write('        if (value) {\n')
-  f.write('          ExternalDataFetcher* external_data_fetcher = %s;\n' %
+  f.write('          std::unique_ptr<ExternalDataFetcher>\n')
+  f.write('              external_data_fetcher(%s);\n' %
           _CreateExternalDataFetcher(policy.policy_type, policy.name))
   f.write('          map->Set(key::k%s, \n' % policy.name)
   f.write('                   level, \n'
           '                   POLICY_SCOPE_USER, \n'
           '                   POLICY_SOURCE_CLOUD, \n'
-          '                   value, \n'
-          '                   external_data_fetcher);\n'
+          '                   std::move(value), \n'
+          '                   std::move(external_data_fetcher));\n'
           '        }\n'
           '      }\n'
           '    }\n'

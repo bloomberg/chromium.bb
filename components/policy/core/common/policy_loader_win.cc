@@ -148,10 +148,9 @@ void FilterUntrustedPolicy(PolicyMap* policy) {
       return;
 
     std::unique_ptr<base::ListValue> filtered_values(new base::ListValue);
-    for (base::ListValue::const_iterator list_entry(policy_list_value->begin());
-         list_entry != policy_list_value->end(); ++list_entry) {
+    for (const auto& list_entry : *policy_list_value) {
       std::string entry;
-      if (!(*list_entry)->GetAsString(&entry))
+      if (!list_entry->GetAsString(&entry))
         continue;
       size_t pos = entry.find(';');
       if (pos == std::string::npos)
@@ -166,10 +165,9 @@ void FilterUntrustedPolicy(PolicyMap* policy) {
       filtered_values->AppendString(entry);
     }
     if (invalid_policies) {
-      policy->Set(key::kExtensionInstallForcelist,
-                  map_entry->level, map_entry->scope, map_entry->source,
-                  filtered_values.release(),
-                  map_entry->external_data_fetcher);
+      PolicyMap::Entry filtered_entry = map_entry->DeepCopy();
+      filtered_entry.value = std::move(filtered_values);
+      policy->Set(key::kExtensionInstallForcelist, std::move(filtered_entry));
 
       const PolicyDetails* details = GetChromePolicyDetails(
           key::kExtensionInstallForcelist);

@@ -6,6 +6,7 @@
 #include <memory>
 #include <string>
 
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "components/policy/core/common/policy_details.h"
@@ -217,12 +218,10 @@ TEST(GeneratePolicySource, SetEnterpriseDefaults) {
   EXPECT_TRUE(expected.Equals(multiprof_behavior));
 
   // If policy already configured, it's not changed to enterprise defaults.
-  policy_map.Set(key::kChromeOsMultiProfileUserBehavior,
-                 POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER,
-                 POLICY_SOURCE_CLOUD,
-                 new base::StringValue("test_value"),
-                 NULL);
+  policy_map.Set(key::kChromeOsMultiProfileUserBehavior, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+                 base::WrapUnique(new base::StringValue("test_value")),
+                 nullptr);
   SetEnterpriseUsersDefaults(&policy_map);
   multiprof_behavior =
       policy_map.GetValue(key::kChromeOsMultiProfileUserBehavior);

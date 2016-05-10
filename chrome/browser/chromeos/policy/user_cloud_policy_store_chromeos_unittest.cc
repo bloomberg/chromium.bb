@@ -13,6 +13,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chromeos/dbus/mock_cryptohome_client.h"
@@ -118,7 +119,7 @@ class UserCloudPolicyStoreChromeOSTest : public testing::Test {
     const PolicyMap::Entry* entry =
         store_->policy_map().Get(key::kHomepageLocation);
     ASSERT_TRUE(entry);
-    EXPECT_TRUE(base::StringValue(expected_value).Equals(entry->value));
+    EXPECT_TRUE(base::StringValue(expected_value).Equals(entry->value.get()));
   }
 
   void StoreUserPolicyKey(const std::vector<uint8_t>& public_key) {
@@ -152,11 +153,10 @@ class UserCloudPolicyStoreChromeOSTest : public testing::Test {
     PolicyMap previous_policy;
     EXPECT_EQ(previous_value != NULL, store_->policy() != NULL);
     if (previous_value) {
-      previous_policy.Set(key::kHomepageLocation,
-                          POLICY_LEVEL_MANDATORY,
-                          POLICY_SCOPE_USER,
-                          POLICY_SOURCE_CLOUD,
-                          new base::StringValue(previous_value), NULL);
+      previous_policy.Set(
+          key::kHomepageLocation, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+          POLICY_SOURCE_CLOUD,
+          base::WrapUnique(new base::StringValue(previous_value)), nullptr);
     }
     EXPECT_TRUE(previous_policy.Equals(store_->policy_map()));
     EXPECT_EQ(CloudPolicyStore::STATUS_OK, store_->status());

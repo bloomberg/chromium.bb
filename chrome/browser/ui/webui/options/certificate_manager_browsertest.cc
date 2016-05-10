@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -48,12 +49,10 @@ class CertificateManagerBrowserTest : public options::OptionsUIBrowserTest {
     const std::string& user_policy_blob =
         chromeos::onc::test_utils::ReadTestData(filename);
     policy::PolicyMap policy;
-    policy.Set(policy::key::kOpenNetworkConfiguration,
-               policy::POLICY_LEVEL_MANDATORY,
-               policy::POLICY_SCOPE_USER,
-               policy::POLICY_SOURCE_CLOUD,
-               new base::StringValue(user_policy_blob),
-               NULL);
+    policy.Set(
+        policy::key::kOpenNetworkConfiguration, policy::POLICY_LEVEL_MANDATORY,
+        policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
+        base::WrapUnique(new base::StringValue(user_policy_blob)), nullptr);
     provider_.UpdateChromePolicy(policy);
     content::RunAllPendingInMessageLoop();
   }

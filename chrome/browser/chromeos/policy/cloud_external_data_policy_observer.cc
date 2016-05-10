@@ -147,11 +147,6 @@ CloudExternalDataPolicyObserver::CloudExternalDataPolicyObserver(
 CloudExternalDataPolicyObserver::~CloudExternalDataPolicyObserver() {
   if (device_local_account_policy_service_)
     device_local_account_policy_service_->RemoveObserver(this);
-  for (DeviceLocalAccountEntryMap::iterator it =
-           device_local_account_entries_.begin();
-       it != device_local_account_entries_.end(); ++it) {
-    it->second.DeleteOwnedMembers();
-  }
   device_local_account_entries_.clear();
 }
 
@@ -221,7 +216,6 @@ void CloudExternalDataPolicyObserver::OnPolicyUpdated(
     DeviceLocalAccountEntryMap::iterator it =
         device_local_account_entries_.find(user_id);
     if (it != device_local_account_entries_.end()) {
-      it->second.DeleteOwnedMembers();
       device_local_account_entries_.erase(it);
       HandleExternalDataPolicyUpdate(user_id, NULL);
     }
@@ -232,8 +226,7 @@ void CloudExternalDataPolicyObserver::OnPolicyUpdated(
   if (map_entry.Equals(*entry))
     return;
 
-  map_entry.DeleteOwnedMembers();
-  map_entry = *entry->DeepCopy();
+  map_entry = entry->DeepCopy();
   HandleExternalDataPolicyUpdate(user_id, entry);
 }
 
@@ -265,7 +258,6 @@ void CloudExternalDataPolicyObserver::RetrieveDeviceLocalAccounts() {
        it != device_local_account_entries_.end(); ) {
     if (!ContainsKey(device_local_accounts, it->first)) {
       const std::string user_id = it->first;
-      it->second.DeleteOwnedMembers();
       device_local_account_entries_.erase(it++);
       // When a device-local account whose external data reference was set is
       // removed, emit a notification that the external data reference has been

@@ -90,9 +90,9 @@ std::unique_ptr<base::DictionaryValue> CopyChromotingPoliciesIntoDictionary(
   const char kPolicyNameSubstring[] = "RemoteAccessHost";
   std::unique_ptr<base::DictionaryValue> policy_dict(
       new base::DictionaryValue());
-  for (auto it = current.begin(); it != current.end(); ++it) {
-    const std::string& key = it->first;
-    const base::Value* value = it->second.value;
+  for (const auto& entry : current) {
+    const std::string& key = entry.first;
+    const base::Value* value = entry.second.value.get();
 
     // Copying only Chromoting-specific policies helps avoid false alarms
     // raised by NormalizePolicies below (such alarms shutdown the host).

@@ -4,6 +4,7 @@
 
 #include "components/sync_driver/sync_policy_handler.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_types.h"
@@ -27,12 +28,9 @@ TEST_F(SyncPolicyHandlerTest, Default) {
 
 TEST_F(SyncPolicyHandlerTest, Enabled) {
   policy::PolicyMap policy;
-  policy.Set(policy::key::kSyncDisabled,
-             policy::POLICY_LEVEL_MANDATORY,
-             policy::POLICY_SCOPE_USER,
-             policy::POLICY_SOURCE_CLOUD,
-             new base::FundamentalValue(false),
-             NULL);
+  policy.Set(policy::key::kSyncDisabled, policy::POLICY_LEVEL_MANDATORY,
+             policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
+             base::WrapUnique(new base::FundamentalValue(false)), nullptr);
   SyncPolicyHandler handler;
   PrefValueMap prefs;
   handler.ApplyPolicySettings(policy, &prefs);
@@ -43,12 +41,9 @@ TEST_F(SyncPolicyHandlerTest, Enabled) {
 
 TEST_F(SyncPolicyHandlerTest, Disabled) {
   policy::PolicyMap policy;
-  policy.Set(policy::key::kSyncDisabled,
-             policy::POLICY_LEVEL_MANDATORY,
-             policy::POLICY_SCOPE_USER,
-             policy::POLICY_SOURCE_CLOUD,
-             new base::FundamentalValue(true),
-             NULL);
+  policy.Set(policy::key::kSyncDisabled, policy::POLICY_LEVEL_MANDATORY,
+             policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
+             base::WrapUnique(new base::FundamentalValue(true)), nullptr);
   SyncPolicyHandler handler;
   PrefValueMap prefs;
   handler.ApplyPolicySettings(policy, &prefs);

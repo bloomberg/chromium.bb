@@ -360,7 +360,7 @@ bool ComponentCloudPolicyStore::ParsePolicy(const std::string& data,
     // this must support a configurable scope; assuming POLICY_SCOPE_USER is
     // fine for now.
     policy->Set(it.key(), level, POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-                value.release(), nullptr);
+                std::move(value), nullptr);
   }
 
   return true;

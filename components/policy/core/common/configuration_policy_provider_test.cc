@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "components/policy/core/common/configuration_policy_provider.h"
 #include "components/policy/core/common/external_data_fetcher.h"
@@ -227,12 +228,9 @@ void ConfigurationPolicyProviderTest::CheckValue(
   loop_.RunUntilIdle();
   PolicyBundle expected_bundle;
   expected_bundle.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
-      .Set(policy_name,
-           test_harness_->policy_level(),
-           test_harness_->policy_scope(),
-           test_harness_->policy_source(),
-           expected_value.DeepCopy(),
-           NULL);
+      .Set(policy_name, test_harness_->policy_level(),
+           test_harness_->policy_scope(), test_harness_->policy_source(),
+           expected_value.CreateDeepCopy(), nullptr);
   EXPECT_TRUE(provider_->policies().Equals(expected_bundle));
   // TODO(joaodasilva): set the policy in the POLICY_DOMAIN_EXTENSIONS too,
   // and extend the |expected_bundle|, once all providers are ready.
@@ -344,12 +342,9 @@ TEST_P(ConfigurationPolicyProviderTest, RefreshPolicies) {
   Mock::VerifyAndClearExpectations(&observer);
 
   bundle.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
-      .Set(test_keys::kKeyString,
-           test_harness_->policy_level(),
-           test_harness_->policy_scope(),
-           test_harness_->policy_source(),
-           new base::StringValue("value"),
-           NULL);
+      .Set(test_keys::kKeyString, test_harness_->policy_level(),
+           test_harness_->policy_scope(), test_harness_->policy_source(),
+           base::WrapUnique(new base::StringValue("value")), nullptr);
   EXPECT_TRUE(provider_->policies().Equals(bundle));
   provider_->RemoveObserver(&observer);
 }
@@ -397,12 +392,10 @@ TEST_P(Configuration3rdPartyPolicyProviderTest, Load3rdParty) {
   loop_.RunUntilIdle();
 
   PolicyMap expected_policy;
-  expected_policy.Set(test_keys::kKeyDictionary,
-                      test_harness_->policy_level(),
+  expected_policy.Set(test_keys::kKeyDictionary, test_harness_->policy_level(),
                       test_harness_->policy_scope(),
                       test_harness_->policy_source(),
-                      policy_dict.DeepCopy(),
-                      NULL);
+                      policy_dict.CreateDeepCopy(), nullptr);
   PolicyBundle expected_bundle;
   expected_bundle.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
       .CopyFrom(expected_policy);

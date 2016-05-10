@@ -13,6 +13,7 @@
 #include "base/callback.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -204,7 +205,7 @@ void PreferencesBrowserTest::SetUserPolicies(
   policy::PolicyMap map;
   for (size_t i = 0; i < names.size(); ++i) {
     map.Set(names[i], level, policy::POLICY_SCOPE_USER,
-            policy::POLICY_SOURCE_CLOUD, values[i]->DeepCopy(), nullptr);
+            policy::POLICY_SOURCE_CLOUD, values[i]->CreateDeepCopy(), nullptr);
   }
   policy_provider_.UpdateChromePolicy(map);
 }
@@ -880,12 +881,9 @@ class ProxyPreferencesBrowserTest : public PreferencesBrowserTest {
         "}";
 
     policy::PolicyMap map;
-    map.Set(policy_name,
-            policy::POLICY_LEVEL_MANDATORY,
-            scope,
+    map.Set(policy_name, policy::POLICY_LEVEL_MANDATORY, scope,
             policy::POLICY_SOURCE_CLOUD,
-            new base::StringValue(onc_policy),
-            NULL);
+            base::WrapUnique(new base::StringValue(onc_policy)), nullptr);
     policy_provider_.UpdateChromePolicy(map);
 
     content::RunAllPendingInMessageLoop();

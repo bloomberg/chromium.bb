@@ -6,6 +6,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/sequenced_task_runner.h"
@@ -31,12 +32,9 @@ void SetPolicy(PolicyBundle* bundle,
                const std::string& name,
                const std::string& value) {
   bundle->Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
-      .Set(name,
-           POLICY_LEVEL_MANDATORY,
-           POLICY_SCOPE_USER,
+      .Set(name, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
            POLICY_SOURCE_PLATFORM,
-           new base::StringValue(value),
-           NULL);
+           base::WrapUnique(new base::StringValue(value)), nullptr);
 }
 
 class MockPolicyLoader : public AsyncPolicyLoader {
