@@ -277,6 +277,12 @@ public:
     LayoutBlockFlow* nearestInnerBlockWithFirstLine();
 
 protected:
+    // Reparent subsequent or preceding adjacent floating or out-of-flow siblings into this object.
+    // TODO(mstensho): This belongs in LayoutBlockFlow, but needs to live here until we have been
+    // able to move all callers down to LayoutBlockFlow first.
+    void reparentSubsequentFloatingOrOutOfFlowSiblings();
+    void reparentPrecedingFloatingOrOutOfFlowSiblings();
+
     void willBeDestroyed() override;
 
     void dirtyForLayoutFromPercentageHeightDescendants(SubtreeLayoutScope&);

@@ -284,35 +284,35 @@ static bool mergeContiguousAnonymousBlocks(LayoutObject* prev, LayoutObject*& ne
     return true;
 }
 
-static void addNextFloatingOrOutOfFlowSiblingsToBlock(LayoutBlock* block)
+void LayoutBlock::reparentSubsequentFloatingOrOutOfFlowSiblings()
 {
-    if (!block->parent() || !block->parent()->isLayoutBlockFlow())
+    if (!parent() || !parent()->isLayoutBlockFlow())
         return;
-    if (block->beingDestroyed() || block->documentBeingDestroyed())
+    if (beingDestroyed() || documentBeingDestroyed())
         return;
-
-    LayoutObject* child = block->nextSibling();
+    LayoutBlockFlow* parentBlockFlow = toLayoutBlockFlow(parent());
+    LayoutObject* child = nextSibling();
     while (child && child->isFloatingOrOutOfFlowPositioned()) {
         LayoutObject* sibling = child->nextSibling();
-        toLayoutBlock(block->parent())->moveChildTo(block, child, nullptr, false);
+        parentBlockFlow->moveChildTo(this, child, nullptr, false);
         child = sibling;
     }
 
-    LayoutObject* next = block->nextSibling();
-    mergeContiguousAnonymousBlocks(block, next);
+    LayoutObject* next = nextSibling();
+    mergeContiguousAnonymousBlocks(this, next);
 }
 
-static void addPreviousFloatingOrOutOfFlowSiblingsToBlock(LayoutBlock* block)
+void LayoutBlock::reparentPrecedingFloatingOrOutOfFlowSiblings()
 {
-    if (!block->parent() || !block->parent()->isLayoutBlockFlow())
+    if (!parent() || !parent()->isLayoutBlockFlow())
         return;
-    if (block->beingDestroyed() || block->documentBeingDestroyed())
+    if (beingDestroyed() || documentBeingDestroyed())
         return;
-
-    LayoutObject* child = block->previousSibling();
+    LayoutBlockFlow* parentBlockFlow = toLayoutBlockFlow(parent());
+    LayoutObject* child = previousSibling();
     while (child && child->isFloatingOrOutOfFlowPositioned()) {
         LayoutObject* sibling = child->previousSibling();
-        toLayoutBlock(block->parent())->moveChildTo(block, child, block->firstChild(), false);
+        parentBlockFlow->moveChildTo(this, child, firstChild(), false);
         child = sibling;
     }
 }
@@ -328,7 +328,7 @@ void LayoutBlock::styleDidChange(StyleDifference diff, const ComputedStyle* oldS
             LayoutBlock* newParent = toLayoutBlock(previousSibling());
             toLayoutBlock(parent())->moveChildTo(newParent, this, nullptr, false);
             // The anonymous block we've moved to may now be adjacent to former siblings of ours that it can contain also.
-            addNextFloatingOrOutOfFlowSiblingsToBlock(newParent);
+            newParent->reparentSubsequentFloatingOrOutOfFlowSiblings();
         } else if (nextSibling() && nextSibling()->isAnonymousBlock()) {
             toLayoutBlock(parent())->moveChildTo(toLayoutBlock(nextSibling()), this, nextSibling()->slowFirstChild(), false);
         }
@@ -451,9 +451,9 @@ void LayoutBlock::addChildIgnoringContinuation(LayoutObject* newChild, LayoutObj
             LayoutBlock* newBox = createAnonymousBlock();
             LayoutBox::addChild(newBox, beforeChild);
             // Reparent adjacent floating or out-of-flow siblings to the new box.
-            addPreviousFloatingOrOutOfFlowSiblingsToBlock(newBox);
+            newBox->reparentPrecedingFloatingOrOutOfFlowSiblings();
             newBox->addChild(newChild);
-            addNextFloatingOrOutOfFlowSiblingsToBlock(newBox);
+            newBox->reparentSubsequentFloatingOrOutOfFlowSiblings();
             return;
         }
     }
