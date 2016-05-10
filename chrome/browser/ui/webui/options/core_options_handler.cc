@@ -594,7 +594,7 @@ void CoreOptionsHandler::HandleSetPref(const base::ListValue* args,
       }
       temp_value = base::JSONReader::Read(json_string);
       value = temp_value.get();
-      if (!value->IsType(base::Value::TYPE_LIST)) {
+      if (!value || !value->IsType(base::Value::TYPE_LIST)) {
         NOTREACHED();
         return;
       }

@@ -223,7 +223,7 @@ void DevToolsEventForwarder::SetWhitelistedShortcuts(
     const std::string& message) {
   std::unique_ptr<base::Value> parsed_message = base::JSONReader::Read(message);
   base::ListValue* shortcut_list;
-  if (!parsed_message->GetAsList(&shortcut_list))
+  if (!parsed_message || !parsed_message->GetAsList(&shortcut_list))
       return;
   base::ListValue::iterator it = shortcut_list->begin();
   for (; it != shortcut_list->end(); ++it) {
