@@ -54,7 +54,7 @@ public class ToolbarProgressBar extends ClipDrawableProgressBar {
 
     // The amount of time in ms that the progress bar has to be stopped before the indeterminate
     // animation starts.
-    private static final long ANIMATION_START_THRESHOLD = 1000;
+    private static final long ANIMATION_START_THRESHOLD = 3000;
 
     private static final float THEMED_BACKGROUND_WHITE_FRACTION = 0.2f;
     private static final float THEMED_FOREGROUND_BLACK_FRACTION = 0.64f;

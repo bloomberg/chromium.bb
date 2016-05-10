@@ -99,13 +99,14 @@ public class ToolbarProgressBarAnimatingView extends ImageView {
         slowAnimation.addUpdateListener(mListener);
 
         mAnimatorSet.playSequentially(fastAnimation, slowAnimation);
-        mAnimatorSet.setStartDelay(ANIMATION_DELAY_MS);
 
         slowAnimation.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator a) {
                 // Replay the animation if it has not been canceled.
                 if (mIsCanceled) return;
+                // Repeats of the animation should have a start delay.
+                mAnimatorSet.setStartDelay(ANIMATION_DELAY_MS);
                 mAnimatorSet.start();
             }
         });
@@ -117,10 +118,14 @@ public class ToolbarProgressBarAnimatingView extends ImageView {
     public void startAnimation() {
         mIsCanceled = false;
         if (!mAnimatorSet.isStarted()) {
+            // Set the initial start delay to 0ms so it starts immediately.
+            mAnimatorSet.setStartDelay(0);
+
             // Reset position.
             setScaleX(0.0f);
             setTranslationX(0.0f);
             mAnimatorSet.start();
+
             // Fade in to look nice on sites that trigger many loads that end quickly.
             animate().alpha(1.0f)
                     .setDuration(500)
