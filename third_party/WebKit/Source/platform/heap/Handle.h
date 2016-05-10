@@ -227,15 +227,15 @@ private:
 
         TraceCallback traceCallback = TraceMethodDelegate<PersistentBase<T, weaknessConfiguration, crossThreadnessConfiguration>, &PersistentBase<T, weaknessConfiguration, crossThreadnessConfiguration>::trace>::trampoline;
         if (crossThreadnessConfiguration == CrossThreadPersistentConfiguration) {
-            m_persistentNode = ProcessHeap::crossThreadPersistentRegion().allocatePersistentNode(this, traceCallback);
-        } else {
-            ThreadState* state = ThreadStateFor<ThreadingTrait<T>::Affinity>::state();
-            ASSERT(state->checkThread());
-            m_persistentNode = state->getPersistentRegion()->allocatePersistentNode(this, traceCallback);
-#if ENABLE(ASSERT)
-            m_state = state;
-#endif
+            ProcessHeap::crossThreadPersistentRegion().allocatePersistentNode(m_persistentNode, this, traceCallback);
+            return;
         }
+        ThreadState* state = ThreadStateFor<ThreadingTrait<T>::Affinity>::state();
+        ASSERT(state->checkThread());
+        m_persistentNode = state->getPersistentRegion()->allocatePersistentNode(this, traceCallback);
+#if ENABLE(ASSERT)
+        m_state = state;
+#endif
     }
 
     void uninitialize()
@@ -245,13 +245,13 @@ private:
 
         if (crossThreadnessConfiguration == CrossThreadPersistentConfiguration) {
             ProcessHeap::crossThreadPersistentRegion().freePersistentNode(m_persistentNode);
-        } else {
-            ThreadState* state = ThreadStateFor<ThreadingTrait<T>::Affinity>::state();
-            ASSERT(state->checkThread());
-            // Persistent handle must be created and destructed in the same thread.
-            ASSERT(m_state == state);
-            state->freePersistentNode(m_persistentNode);
+            return;
         }
+        ThreadState* state = ThreadStateFor<ThreadingTrait<T>::Affinity>::state();
+        ASSERT(state->checkThread());
+        // Persistent handle must be created and destructed in the same thread.
+        ASSERT(m_state == state);
+        state->freePersistentNode(m_persistentNode);
         m_persistentNode = nullptr;
     }
 

@@ -174,16 +174,26 @@ class CrossThreadPersistentRegion final {
 public:
     CrossThreadPersistentRegion() : m_persistentRegion(adoptPtr(new PersistentRegion)) { }
 
-    PersistentNode* allocatePersistentNode(void* self, TraceCallback trace)
+    void allocatePersistentNode(PersistentNode*& persistentNode, void* self, TraceCallback trace)
     {
         MutexLocker lock(m_mutex);
-        return m_persistentRegion->allocatePersistentNode(self, trace);
+        persistentNode = m_persistentRegion->allocatePersistentNode(self, trace);
     }
 
-    void freePersistentNode(PersistentNode* persistentNode)
+    void freePersistentNode(PersistentNode*& persistentNode)
     {
         MutexLocker lock(m_mutex);
+        // When the thread that holds the heap object that the cross-thread persistent shuts down,
+        // prepareForThreadStateTermination() will clear out the associated CrossThreadPersistent<>
+        // and PersistentNode so as to avoid unsafe access. This can overlap with a holder of
+        // the CrossThreadPersistent<> also clearing the persistent and freeing the PersistentNode.
+        //
+        // The lock ensures the updating is ordered, but by the time lock has been acquired the
+        // PersistentNode reference may have been cleared out already; check for this.
+        if (!persistentNode)
+            return;
         m_persistentRegion->freePersistentNode(persistentNode);
+        persistentNode = nullptr;
     }
 
     void tracePersistentNodes(Visitor* visitor)
