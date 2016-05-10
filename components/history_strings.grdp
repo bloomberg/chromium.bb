@@ -28,6 +28,12 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
   <message name="IDS_HISTORY_DELETE_PRIOR_VISITS_WARNING_NO_INCOGNITO" desc="Warning shown before deleting from the history page">
     Are you sure you want to delete these pages from your history?
   </message>
+  <message name="IDS_HISTORY_ENTRY_ACCESSIBILITY_DELETE" desc="Name for the accessibility action to delete a history entry.">
+    Delete
+  </message>
+  <message name="IDS_HISTORY_ENTRY_ACCESSIBILITY_LABEL" desc="Accessibility label for a history entry. Summarizes fields in the history entry (title, domain, and time).">
+    <ph name="TITLE"><ex>PI: The Magical Number</ex>$1</ph>, <ph name="DOMAIN"><ex>pi.com</ex>$2</ph>, <ph name="TIME"><ex>3:14</ex>$3</ph>
+  </message>
   <message name="IDS_HISTORY_ENTRY_BOOKMARKED" desc="Whether a history entry is bookmarked.">
     Bookmarked
   </message>
