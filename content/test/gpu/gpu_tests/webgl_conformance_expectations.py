@@ -290,6 +290,10 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['linux', 'intel'], bug=540543)
     self.Fail('deqp/data/gles2/shaders/preprocessor.html',
         ['linux', 'intel'], bug=1312)  # ANGLE bug id. See also 598910
+    # The Mesa Intel driver has a scoping bug, see
+    # https://bugs.freedesktop.org/show_bug.cgi?id=95184
+    self.Fail('deqp/data/gles2/shaders/scoping.html',
+        ['linux', 'intel'], bug=610800)
     self.Fail('conformance/glsl/bugs/sampler-array-using-loop-index.html',
         ['linux', 'intel', 'opengl'], bug=598924)
     self.Skip('conformance/uniforms/gl-uniform-arrays.html',
