@@ -90,7 +90,7 @@ void SigninSupervisedUserImportHandler::OpenUrlInLastActiveProfileBrowser(
   DCHECK(success);
   content::OpenURLParams params(GURL(url),
                                 content::Referrer(),
-                                NEW_BACKGROUND_TAB,
+                                NEW_FOREGROUND_TAB,
                                 ui::PAGE_TRANSITION_LINK,
                                 false);
   // Get the browser owned by the last used profile.
