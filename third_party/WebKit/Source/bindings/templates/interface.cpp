@@ -167,6 +167,8 @@ static void indexedPropertyDeleterCallback(uint32_t index, const v8::PropertyCal
 {% set getter = named_property_getter %}
 static void namedPropertyGetter(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
+    if (!name->IsString())
+        return;
     auto nameString = name.As<v8::String>();
     {{cpp_class}}* impl = {{v8_class}}::toImpl(info.Holder());
     AtomicString propertyName = toCoreAtomicString(nameString);
@@ -220,6 +222,8 @@ static void namedPropertyGetterCallback(v8::Local<v8::Name> name, const v8::Prop
 {% set setter = named_property_setter %}
 static void namedPropertySetter(v8::Local<v8::Name> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
+    if (!name->IsString())
+        return;
     auto nameString = name.As<v8::String>();
     {% if setter.has_exception_state %}
     v8::String::Utf8Value namedProperty(nameString);
@@ -291,6 +295,8 @@ static void namedPropertySetterCallback(v8::Local<v8::Name> name, v8::Local<v8::
    communicate property attributes. #}
 static void namedPropertyQuery(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Integer>& info)
 {
+    if (!name->IsString())
+        return;
     {{cpp_class}}* impl = {{v8_class}}::toImpl(info.Holder());
     AtomicString propertyName = toCoreAtomicString(name.As<v8::String>());
     v8::String::Utf8Value namedProperty(name);
@@ -335,6 +341,8 @@ static void namedPropertyQueryCallback(v8::Local<v8::Name> name, const v8::Prope
 {% set deleter = named_property_deleter %}
 static void namedPropertyDeleter(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Boolean>& info)
 {
+    if (!name->IsString())
+        return;
     {{cpp_class}}* impl = {{v8_class}}::toImpl(info.Holder());
     AtomicString propertyName = toCoreAtomicString(name.As<v8::String>());
     {% if deleter.is_raises_exception %}
@@ -428,6 +436,8 @@ static void namedPropertyEnumeratorCallback(const v8::PropertyCallbackInfo<v8::A
 {% if has_origin_safe_method_setter %}
 static void {{cpp_class}}OriginSafeMethodSetter(v8::Local<v8::Name> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
+    if (!name->IsString())
+        return;
     v8::Local<v8::Object> holder = {{v8_class}}::findInstanceInPrototypeChain(info.This(), info.GetIsolate());
     if (holder.IsEmpty())
         return;

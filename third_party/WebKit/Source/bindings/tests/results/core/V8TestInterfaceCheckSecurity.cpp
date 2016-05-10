@@ -403,6 +403,8 @@ static void doNotCheckSecurityUnforgeableVoidMethodOriginSafeMethodGetterCallbac
 
 static void TestInterfaceCheckSecurityOriginSafeMethodSetter(v8::Local<v8::Name> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
+    if (!name->IsString())
+        return;
     v8::Local<v8::Object> holder = V8TestInterfaceCheckSecurity::findInstanceInPrototypeChain(info.This(), info.GetIsolate());
     if (holder.IsEmpty())
         return;

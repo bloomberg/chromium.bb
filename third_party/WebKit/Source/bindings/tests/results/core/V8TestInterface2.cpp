@@ -448,6 +448,8 @@ static void indexedPropertyDeleterCallback(uint32_t index, const v8::PropertyCal
 
 static void namedPropertyGetter(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
+    if (!name->IsString())
+        return;
     auto nameString = name.As<v8::String>();
     TestInterface2* impl = V8TestInterface2::toImpl(info.Holder());
     AtomicString propertyName = toCoreAtomicString(nameString);
@@ -468,6 +470,8 @@ static void namedPropertyGetterCallback(v8::Local<v8::Name> name, const v8::Prop
 
 static void namedPropertySetter(v8::Local<v8::Name> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
+    if (!name->IsString())
+        return;
     auto nameString = name.As<v8::String>();
     v8::String::Utf8Value namedProperty(nameString);
     ExceptionState exceptionState(ExceptionState::SetterContext, *namedProperty, "TestInterface2", info.Holder(), info.GetIsolate());
@@ -496,6 +500,8 @@ static void namedPropertySetterCallback(v8::Local<v8::Name> name, v8::Local<v8::
 
 static void namedPropertyQuery(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Integer>& info)
 {
+    if (!name->IsString())
+        return;
     TestInterface2* impl = V8TestInterface2::toImpl(info.Holder());
     AtomicString propertyName = toCoreAtomicString(name.As<v8::String>());
     v8::String::Utf8Value namedProperty(name);
@@ -515,6 +521,8 @@ static void namedPropertyQueryCallback(v8::Local<v8::Name> name, const v8::Prope
 
 static void namedPropertyDeleter(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Boolean>& info)
 {
+    if (!name->IsString())
+        return;
     TestInterface2* impl = V8TestInterface2::toImpl(info.Holder());
     AtomicString propertyName = toCoreAtomicString(name.As<v8::String>());
     v8::String::Utf8Value namedProperty(name);

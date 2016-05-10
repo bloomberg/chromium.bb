@@ -187,6 +187,9 @@ void V8CSSStyleDeclaration::namedPropertyQueryCustom(v8::Local<v8::Name> v8Name,
 
 void V8CSSStyleDeclaration::namedPropertyGetterCustom(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
+    if (!name->IsString())
+        return;
+
     // Search the style declaration.
     CSSPropertyID unresolvedProperty = cssPropertyInfo(name.As<v8::String>());
 

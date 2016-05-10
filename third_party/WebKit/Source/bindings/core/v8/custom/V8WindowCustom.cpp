@@ -282,6 +282,8 @@ static bool namedPropertyFromDebuggerScopeExtension(v8::Local<v8::Name> name, co
 
 void V8Window::namedPropertyGetterCustom(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
+    if (!name->IsString())
+        return;
     auto nameString = name.As<v8::String>();
     DOMWindow* window = V8Window::toImpl(info.Holder());
     if (!window)

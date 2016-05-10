@@ -500,6 +500,8 @@ static v8::Local<v8::Value> getNamedProperty(HTMLDocument* htmlDocument, const A
 
 static void getter(v8::Local<v8::Name> property, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
+    if (!property->IsString())
+        return;
     // FIXME: Consider passing StringImpl directly.
     AtomicString name = toCoreAtomicString(property.As<v8::String>());
     HTMLDocument* htmlDocument = V8HTMLDocument::toImpl(info.Holder());
