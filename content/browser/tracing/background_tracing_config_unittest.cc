@@ -283,12 +283,17 @@ TEST_F(BackgroundTracingConfigTest, ValidPreemptiveCategoryToString) {
       BackgroundTracingConfigImpl::BENCHMARK_IPC,
       BackgroundTracingConfigImpl::BENCHMARK_STARTUP,
       BackgroundTracingConfigImpl::BENCHMARK_BLINK_GC,
+      BackgroundTracingConfigImpl::BENCHMARK_EXECUTION_METRIC,
       BackgroundTracingConfigImpl::BLINK_STYLE,
   };
 
-  const char* category_strings[] = {"BENCHMARK",         "BENCHMARK_DEEP",
-                                    "BENCHMARK_GPU",     "BENCHMARK_IPC",
-                                    "BENCHMARK_STARTUP", "BENCHMARK_BLINK_GC",
+  const char* category_strings[] = {"BENCHMARK",
+                                    "BENCHMARK_DEEP",
+                                    "BENCHMARK_GPU",
+                                    "BENCHMARK_IPC",
+                                    "BENCHMARK_STARTUP",
+                                    "BENCHMARK_BLINK_GC",
+                                    "BENCHMARK_EXECUTION_METRIC",
                                     "BLINK_STYLE"};
   for (size_t i = 0;
        i <

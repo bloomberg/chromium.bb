@@ -518,6 +518,9 @@ BackgroundTracingManagerImpl::GetCategoryFilterStringForCategoryPreset(
              "disabled-by-default-ipc.flow";
     case BackgroundTracingConfigImpl::CategoryPreset::BENCHMARK_BLINK_GC:
       return "blink_gc,disabled-by-default-blink_gc";
+    case BackgroundTracingConfigImpl::CategoryPreset::
+        BENCHMARK_EXECUTION_METRIC:
+      return "blink.console,v8";
     case BackgroundTracingConfigImpl::CategoryPreset::BLINK_STYLE:
       return "blink_style";
   }
