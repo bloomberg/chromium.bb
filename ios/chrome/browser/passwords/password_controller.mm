@@ -241,6 +241,7 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
   base::scoped_nsobject<PasswordGenerationAgent> passwordGenerationAgent_;
 
   JsPasswordManager* passwordJsManager_;  // weak
+  web::WebState* webState_;               // weak
 
   // The pending form data.
   std::unique_ptr<autofill::PasswordFormFillData> formData_;
@@ -266,8 +267,7 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
   DCHECK(webState);
   self = [super init];
   if (self) {
-    webStateObserverBridge_.reset(
-        new web::WebStateObserverBridge(webState, self));
+    webState_ = webState;
     if (passwordManagerClient)
       passwordManagerClient_ = std::move(passwordManagerClient);
     else
@@ -288,6 +288,8 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
     passwordJsManager_ = base::mac::ObjCCastStrict<JsPasswordManager>(
         [webState->GetJSInjectionReceiver()
             instanceOfClass:[JsPasswordManager class]]);
+    webStateObserverBridge_.reset(
+        new web::WebStateObserverBridge(webState, self));
   }
   return self;
 }
@@ -303,10 +305,9 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
 }
 
 - (ios::ChromeBrowserState*)browserState {
-  return webStateObserverBridge_ && webStateObserverBridge_->web_state()
-             ? ios::ChromeBrowserState::FromBrowserState(
-                   webStateObserverBridge_->web_state()->GetBrowserState())
-             : nullptr;
+  return webState_ ? ios::ChromeBrowserState::FromBrowserState(
+                         webState_->GetBrowserState())
+                   : nullptr;
 }
 
 - (const GURL&)lastCommittedURL {
@@ -316,6 +317,7 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
 }
 
 - (void)detach {
+  webState_ = nullptr;
   webStateObserverBridge_.reset();
   passwordGenerationAgent_.reset();
   passwordGenerationManager_.reset();
