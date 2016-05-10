@@ -1215,6 +1215,7 @@ template("android_java_prebuilt") {
     forward_variables_from(invoker, "*")
     supports_android = true
     requires_android = true
+    strip_resource_classes = true
   }
 }
 

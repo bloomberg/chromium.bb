@@ -589,20 +589,38 @@ template("process_java_prebuilt") {
   set_sources_assignment_filter([])
   forward_variables_from(invoker, [ "testonly" ])
 
+  assert(invoker.build_config != "")
+  _build_config = invoker.build_config
+  _rebased_build_config = rebase_path(_build_config, root_build_dir)
+  assert(_rebased_build_config != "" || true)  # Mark used.
+
+  _proguard_preprocess =
+      defined(invoker.proguard_preprocess) && invoker.proguard_preprocess
   _input_jar_path = invoker.input_jar_path
   _output_jar_path = invoker.output_jar_path
 
-  assert(invoker.build_config != "")
+  _jar_excluded_patterns = []
+  if (defined(invoker.jar_excluded_patterns)) {
+    _jar_excluded_patterns = invoker.jar_excluded_patterns
+  }
 
-  if (defined(invoker.proguard_preprocess) && invoker.proguard_preprocess) {
-    _build_config = invoker.build_config
-    _rebased_build_config = rebase_path(_build_config, root_build_dir)
+  _strip_resource_classes =
+      defined(invoker.strip_resource_classes) && invoker.strip_resource_classes
+
+  if (_jar_excluded_patterns != [] || _strip_resource_classes) {
+    _filter_class_files_input_file = _input_jar_path
+    if (_proguard_preprocess) {
+      _filter_class_files_input_file =
+          "$target_out_dir/$target_name-proguarded.jar"
+    }
+  }
+
+  if (_proguard_preprocess) {
     _proguard_config_path = invoker.proguard_config
-    _output_jar_target = "${target_name}__proguard_process"
-    proguard(_output_jar_target) {
+    _proguard_target = "${target_name}__proguard_process"
+    proguard(_proguard_target) {
       forward_variables_from(invoker,
                              [
-                               "data_deps",
                                "deps",
                                "public_deps",
                              ])
@@ -612,6 +630,10 @@ template("process_java_prebuilt") {
         _proguard_config_path,
       ]
       output_jar_path = _output_jar_path
+      if (defined(_filter_class_files_input_file)) {
+        output_jar_path = _filter_class_files_input_file
+      }
+
       _rebased_input_paths = [ rebase_path(_input_jar_path, root_build_dir) ]
       _rebased_proguard_configs =
           [ rebase_path(_proguard_config_path, root_build_dir) ]
@@ -621,12 +643,11 @@ template("process_java_prebuilt") {
         "--classpath=@FileArg($_rebased_build_config:javac:classpath)",
       ]
     }
-  } else {
+  } else if (_jar_excluded_patterns == [] && !_strip_resource_classes) {
     _output_jar_target = "${target_name}__copy_jar"
     copy(_output_jar_target) {
       forward_variables_from(invoker,
                              [
-                               "data_deps",
                                "deps",
                                "public_deps",
                              ])
@@ -639,8 +660,48 @@ template("process_java_prebuilt") {
     }
   }
 
+  if (_jar_excluded_patterns != [] || _strip_resource_classes) {
+    _output_jar_target = "${target_name}__filter"
+    action(_output_jar_target) {
+      script = "//build/android/gyp/jar.py"
+      if (_proguard_preprocess) {
+        deps = [
+          ":$_proguard_target",
+        ]
+      } else {
+        forward_variables_from(invoker,
+                               [
+                                 "deps",
+                                 "public_deps",
+                               ])
+      }
+      inputs = [
+        _filter_class_files_input_file,
+      ]
+      outputs = [
+        _output_jar_path,
+      ]
+      args = [
+        "--input-jar",
+        rebase_path(_filter_class_files_input_file, root_build_dir),
+        "--jar-path",
+        rebase_path(_output_jar_path, root_build_dir),
+        "--excluded-classes=$_jar_excluded_patterns",
+      ]
+      if (_strip_resource_classes) {
+        args += [ "--strip-resource-classes-for=@FileArg($_rebased_build_config:javac:resource_packages)" ]
+      }
+    }
+  } else if (_proguard_preprocess) {
+    _output_jar_target = _proguard_target
+  }
+
   group(target_name) {
-    forward_variables_from(invoker, [ "visibility" ])
+    forward_variables_from(invoker,
+                           [
+                             "data_deps",
+                             "visibility",
+                           ])
     public_deps = [
       ":$_output_jar_target",
     ]
@@ -1308,6 +1369,11 @@ template("java_prebuilt_impl") {
   }
 
   process_java_prebuilt(_process_jar_target_name) {
+    forward_variables_from(invoker,
+                           [
+                             "jar_excluded_patterns",
+                             "strip_resource_classes",
+                           ])
     visibility = [
       ":$_ijar_target_name",
       ":$_template_name",
@@ -1419,11 +1485,6 @@ template("compile_java") {
 
   _build_config = invoker.build_config
 
-  _jar_excluded_patterns = []
-  if (defined(invoker.jar_excluded_patterns)) {
-    _jar_excluded_patterns += invoker.jar_excluded_patterns
-  }
-
   _chromium_code = false
   if (defined(invoker.chromium_code)) {
     _chromium_code = invoker.chromium_code
@@ -1507,7 +1568,6 @@ template("compile_java") {
       "--jar-path=$_rebased_jar_path",
       "--java-srcjars=$_rebased_java_srcjars",
       "--java-srcjars=@FileArg($_rebased_build_config:javac:srcjars)",
-      "--jar-excluded-classes=$_jar_excluded_patterns",
     ]
     if (_enable_incremental_javac) {
       args += [ "--incremental" ]
@@ -1544,6 +1604,7 @@ template("compile_java") {
   }
 
   process_java_prebuilt(_process_prebuilt_target_name) {
+    forward_variables_from(invoker, [ "jar_excluded_patterns" ])
     build_config = _build_config
     input_jar_path = _javac_jar_path
     output_jar_path = _process_prebuilt_jar_path

@@ -376,6 +376,11 @@ def main(argv):
     config['javac']['srcjars'] = [
         c['srcjar'] for c in direct_resources_deps if 'srcjar' in c]
 
+    # Used to strip out R.class for android_prebuilt()s.
+    if options.type == 'java_library':
+      config['javac']['resource_packages'] = [
+          c['package_name'] for c in all_resources_deps if 'package_name' in c]
+
   if options.type == 'android_apk':
     # Apks will get their resources srcjar explicitly passed to the java step.
     config['javac']['srcjars'] = []

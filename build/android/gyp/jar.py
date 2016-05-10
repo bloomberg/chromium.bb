@@ -11,6 +11,14 @@ import sys
 from util import build_utils
 
 
+_RESOURCE_CLASSES = [
+    "R.class",
+    "R##*.class",
+    "Manifest.class",
+    "Manifest##*.class",
+]
+
+
 def Jar(class_files, classes_dir, jar_path, manifest_file=None):
   jar_path = os.path.abspath(jar_path)
 
@@ -44,19 +52,39 @@ def JarDirectory(classes_dir, jar_path, manifest_file=None, predicate=None):
 def main():
   parser = optparse.OptionParser()
   parser.add_option('--classes-dir', help='Directory containing .class files.')
+  parser.add_option('--input-jar', help='Jar to include .class files from')
   parser.add_option('--jar-path', help='Jar output path.')
   parser.add_option('--excluded-classes',
-      help='List of .class file patterns to exclude from the jar.')
+      help='GYP list of .class file patterns to exclude from the jar.')
+  parser.add_option('--strip-resource-classes-for',
+      help='GYP list of java package names exclude R.class files in.')
   parser.add_option('--stamp', help='Path to touch on success.')
 
-  options, _ = parser.parse_args()
+  args = build_utils.ExpandFileArgs(sys.argv[1:])
+  options, _ = parser.parse_args(args)
+  # Current implementation supports just one or the other of these:
+  assert not options.classes_dir or not options.input_jar
 
-  predicate = None
+  excluded_classes = []
   if options.excluded_classes:
     excluded_classes = build_utils.ParseGypList(options.excluded_classes)
+
+  if options.strip_resource_classes_for:
+    packages = build_utils.ParseGypList(options.strip_resource_classes_for)
+    excluded_classes.extend(p.replace('.', '/') + '/' + f
+                            for p in packages for f in _RESOURCE_CLASSES)
+
+  predicate = None
+  if excluded_classes:
+    print excluded_classes
     predicate = lambda f: not build_utils.MatchesGlob(f, excluded_classes)
 
-  JarDirectory(options.classes_dir, options.jar_path, predicate=predicate)
+  with build_utils.TempDir() as temp_dir:
+    classes_dir = options.classes_dir
+    if options.input_jar:
+      build_utils.ExtractAll(options.input_jar, temp_dir)
+      classes_dir = temp_dir
+    JarDirectory(classes_dir, options.jar_path, predicate=predicate)
 
   if options.stamp:
     build_utils.Touch(options.stamp)
