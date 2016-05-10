@@ -261,6 +261,8 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 @property(nonatomic, copy) NSString* MIMEType;
 // The navigation type for the load.
 @property(nonatomic, assign) WKNavigationType navigationType;
+// HTTP request method for the load.
+@property(nonatomic, copy) NSString* HTTPMethod;
 // Whether the pending navigation has been directly cancelled before the
 // navigation is committed.
 // Cancelled navigations should be simply discarded without handling any
@@ -272,6 +274,7 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 @synthesize referrer = _referrer;
 @synthesize MIMEType = _MIMEType;
 @synthesize navigationType = _navigationType;
+@synthesize HTTPMethod = _HTTPMethod;
 @synthesize cancelled = _cancelled;
 
 - (instancetype)init {
@@ -1812,6 +1815,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     [_pendingNavigationInfo
         setReferrer:[self refererFromNavigationAction:action]];
     [_pendingNavigationInfo setNavigationType:action.navigationType];
+    [_pendingNavigationInfo setHTTPMethod:action.request.HTTPMethod];
   }
 }
 
@@ -1891,6 +1895,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
                              : WKNavigationTypeOther;
   holder->set_back_forward_list_item([_webView backForwardList].currentItem);
   holder->set_navigation_type(navigationType);
+  holder->set_http_method([_pendingNavigationInfo HTTPMethod]);
 
   // Only update the MIME type in the holder if there was MIME type information
   // as part of this pending load. It will be nil when doing a fast
@@ -5391,7 +5396,8 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
   web::WKBackForwardListItemHolder* holder =
       [self currentBackForwardListItemHolder];
-  BOOL isFormResubmission =
+  BOOL isFormPOSTResubmission =
+      [holder->http_method() isEqual:@"POST"] &&
       (holder->navigation_type() == WKNavigationTypeFormResubmitted ||
        holder->navigation_type() == WKNavigationTypeFormSubmitted);
   web::NavigationItemImpl* currentItem =
@@ -5401,7 +5407,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
   // If the request has POST data and is not a form resubmission, configure and
   // run the POST request.
-  if (POSTData.length && !isFormResubmission) {
+  if (POSTData.length && !isFormPOSTResubmission) {
     [request setHTTPMethod:@"POST"];
     [request setHTTPBody:POSTData];
     [request setAllHTTPHeaderFields:[self currentHTTPHeaders]];
@@ -5447,7 +5453,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // If the request is not a form submission or resubmission, or the user
   // doesn't need to confirm the load, then continue right away.
 
-  if (!isFormResubmission ||
+  if (!isFormPOSTResubmission ||
       currentItem->ShouldSkipResubmitDataConfirmation()) {
     webViewNavigationBlock();
     return;
@@ -5455,7 +5461,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
   // If the request is form submission or resubmission, then prompt the
   // user before proceeding.
-  DCHECK(isFormResubmission);
+  DCHECK(isFormPOSTResubmission);
   [self.delegate webController:self
       onFormResubmissionForRequest:nil
                      continueBlock:webViewNavigationBlock

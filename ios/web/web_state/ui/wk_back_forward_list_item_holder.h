@@ -42,6 +42,12 @@ class WKBackForwardListItemHolder : public base::SupportsUserData::Data {
   WKNavigationType navigation_type() const { return navigation_type_; }
   void set_navigation_type(WKNavigationType type) { navigation_type_ = type; }
 
+  // Gets/sets HTTP request method for this item.
+  NSString* http_method() const { return http_method_.get(); }
+  void set_http_method(NSString* http_method) {
+    http_method_.reset([http_method copy]);
+  }
+
   // Gets/sets the MIME type of the page corresponding to this item.
   NSString* mime_type() const { return mime_type_.get(); }
   void set_mime_type(NSString* mime_type) {
@@ -58,6 +64,9 @@ class WKBackForwardListItemHolder : public base::SupportsUserData::Data {
 
   // The navigation type for the associated NavigationItem.
   WKNavigationType navigation_type_;
+
+  // HTTP request method.
+  base::scoped_nsobject<NSString> http_method_;
 
   // The MIME type of the page content.
   base::scoped_nsobject<NSString> mime_type_;
