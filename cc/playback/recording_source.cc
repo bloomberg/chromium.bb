@@ -9,7 +9,6 @@
 #include <algorithm>
 
 #include "base/numerics/safe_math.h"
-#include "cc/base/histograms.h"
 #include "cc/base/region.h"
 #include "cc/layers/content_layer_client.h"
 #include "cc/playback/display_item_list.h"
@@ -25,15 +24,6 @@ const bool kDefaultClearCanvasSetting = false;
 #else
 const bool kDefaultClearCanvasSetting = true;
 #endif
-
-// Note that the name of the historgram doesn't match the class name
-// (DisplayListRecordingSource vs RecordingSource). This is due to the fact that
-// the histograms are being monitored under this particular name.
-// TODO(vmpstr): Update the histograms.
-DEFINE_SCOPED_UMA_HISTOGRAM_AREA_TIMER(
-    ScopedRecordingSourceUpdateTimer,
-    "Compositing.%s.DisplayListRecordingSource.UpdateUs",
-    "Compositing.%s.DisplayListRecordingSource.UpdateInvalidatedAreaPerMs");
 
 }  // namespace
 
@@ -133,7 +123,6 @@ bool RecordingSource::UpdateAndExpandInvalidation(
     const gfx::Size& layer_size,
     int frame_number,
     RecordingMode recording_mode) {
-  ScopedRecordingSourceUpdateTimer timer;
   bool updated = false;
 
   if (size_ != layer_size)
@@ -149,12 +138,6 @@ bool RecordingSource::UpdateAndExpandInvalidation(
     recorded_viewport_ = new_recorded_viewport;
     updated = true;
   }
-
-  // Count the area that is being invalidated.
-  Region recorded_invalidation(*invalidation);
-  recorded_invalidation.Intersect(recorded_viewport_);
-  for (Region::Iterator it(recorded_invalidation); it.has_rect(); it.next())
-    timer.AddArea(it.rect().size().GetCheckedArea());
 
   if (!updated && !invalidation->Intersects(recorded_viewport_))
     return false;

@@ -5502,6 +5502,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     name="Compositing.Browser.DisplayListRecordingSource.UpdateInvalidatedAreaPerMs"
     units="pixels/ms">
   <owner>paint-dev@chromium.org</owner>
+  <obsolete>
+    Deprecated 05/2016. See Blink.Paint.UpdateTime as a related alternate
+    metric.
+  </obsolete>
   <summary>
     Area of invalidated content, in pixels, divided by update (i.e. record), in
     milliseconds. Recorded when display list recording source is updated (in a
@@ -5511,6 +5515,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Compositing.Browser.DisplayListRecordingSource.UpdateUs"
     units="microseconds">
+  <obsolete>
+    Deprecated 05/2016. See Blink.Paint.UpdateTime as a related alternate
+    metric.
+  </obsolete>
   <owner>paint-dev@chromium.org</owner>
   <summary>
     Time spent updating (i.e. recording) a display list, in microseconds.
@@ -5743,6 +5751,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram
     name="Compositing.Renderer.DisplayListRecordingSource.UpdateInvalidatedAreaPerMs"
     units="pixels/ms">
+  <obsolete>
+    Deprecated 05/2016. See Blink.Paint.UpdateTime as a related alternate
+    metric.
+  </obsolete>
   <owner>paint-dev@chromium.org</owner>
   <summary>
     Area of invalidated content, in pixels, divided by update (i.e. record), in
@@ -5753,6 +5765,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Compositing.Renderer.DisplayListRecordingSource.UpdateUs"
     units="microseconds">
+  <obsolete>
+    Deprecated 05/2016. See Blink.Paint.UpdateTime as a related alternate
+    metric.
+  </obsolete>
   <owner>paint-dev@chromium.org</owner>
   <summary>
     Time spent updating (i.e. recording) a display list, in microseconds.
