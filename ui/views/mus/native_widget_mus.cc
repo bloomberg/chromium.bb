@@ -23,6 +23,7 @@
 #include "ui/base/hit_test.h"
 #include "ui/gfx/canvas.h"
 #include "ui/native_theme/native_theme_aura.h"
+#include "ui/platform_window/platform_window_delegate.h"
 #include "ui/views/mus/platform_window_mus.h"
 #include "ui/views/mus/surface_context_factory.h"
 #include "ui/views/mus/window_manager_constants_converters.h"
@@ -298,11 +299,11 @@ class NativeWidgetMus::MusWindowObserver : public mus::WindowObserver {
  public:
   explicit MusWindowObserver(NativeWidgetMus* native_widget_mus)
       : native_widget_mus_(native_widget_mus) {
-    native_widget_mus_->window_->AddObserver(this);
+    mus_window()->AddObserver(this);
   }
 
   ~MusWindowObserver() override {
-    native_widget_mus_->window_->RemoveObserver(this);
+    mus_window()->RemoveObserver(this);
   }
 
   // mus::WindowObserver:
@@ -312,8 +313,22 @@ class NativeWidgetMus::MusWindowObserver : public mus::WindowObserver {
   void OnWindowVisibilityChanged(mus::Window* window) override {
     native_widget_mus_->OnMusWindowVisibilityChanged(window);
   }
+  void OnWindowBoundsChanged(mus::Window* window,
+                             const gfx::Rect& old_bounds,
+                             const gfx::Rect& new_bounds) override {
+    platform_window_delegate()->OnBoundsChanged(new_bounds);
+  }
 
  private:
+  mus::Window* mus_window() { return native_widget_mus_->window(); }
+  WindowTreeHostMus* window_tree_host() {
+    return native_widget_mus_->window_tree_host();
+  }
+  ui::PlatformWindowDelegate* platform_window_delegate() {
+    return static_cast<ui::PlatformWindowDelegate*>(
+        native_widget_mus_->window_tree_host());
+  }
+
   NativeWidgetMus* native_widget_mus_;
 
   DISALLOW_COPY_AND_ASSIGN(MusWindowObserver);
@@ -722,7 +737,7 @@ std::string NativeWidgetMus::GetWorkspace() const {
 }
 
 void NativeWidgetMus::SetBounds(const gfx::Rect& bounds) {
-  if (!window_tree_host_)
+  if (!(window_ && window_tree_host_))
     return;
 
   gfx::Size size(bounds.size());
@@ -732,6 +747,7 @@ void NativeWidgetMus::SetBounds(const gfx::Rect& bounds) {
     size.SetToMin(max_size);
   size.SetToMax(min_size);
   window_tree_host_->SetBounds(gfx::Rect(bounds.origin(), size));
+  window_->SetBounds(gfx::Rect(bounds.origin(), size));
 }
 
 void NativeWidgetMus::SetSize(const gfx::Size& size) {

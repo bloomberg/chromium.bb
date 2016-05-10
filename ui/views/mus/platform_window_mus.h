@@ -31,6 +31,8 @@ class ViewProp;
 
 namespace views {
 
+// This class has been marked for deletion. Its implementation is being rolled
+// into views::NativeWidgetMus. See crbug.com/609555 for details.
 class VIEWS_MUS_EXPORT PlatformWindowMus
     : public NON_EXPORTED_BASE(ui::PlatformWindow),
       public mus::WindowObserver,
@@ -68,9 +70,6 @@ class VIEWS_MUS_EXPORT PlatformWindowMus
 
   // mus::WindowObserver:
   void OnWindowDestroyed(mus::Window* window) override;
-  void OnWindowBoundsChanged(mus::Window* window,
-                             const gfx::Rect& old_bounds,
-                             const gfx::Rect& new_bounds) override;
   void OnWindowFocusChanged(mus::Window* gained_focus,
                             mus::Window* lost_focus) override;
   void OnWindowPredefinedCursorChanged(mus::Window* window,

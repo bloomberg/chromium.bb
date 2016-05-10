@@ -128,9 +128,7 @@ void PlatformWindowMus::Close() {
   NOTIMPLEMENTED();
 }
 
-void PlatformWindowMus::SetBounds(const gfx::Rect& bounds) {
-  mus_window_->SetBounds(bounds);
-}
+void PlatformWindowMus::SetBounds(const gfx::Rect& bounds) {}
 
 gfx::Rect PlatformWindowMus::GetBounds() {
   return mus_window_->bounds();
@@ -198,12 +196,6 @@ void PlatformWindowMus::OnWindowDestroyed(mus::Window* window) {
 #ifndef NDEBUG
   DCHECK(!weak_ptr);
 #endif
-}
-
-void PlatformWindowMus::OnWindowBoundsChanged(mus::Window* window,
-                                              const gfx::Rect& old_bounds,
-                                              const gfx::Rect& new_bounds) {
-  delegate_->OnBoundsChanged(new_bounds);
 }
 
 void PlatformWindowMus::OnWindowFocusChanged(mus::Window* gained_focus,
