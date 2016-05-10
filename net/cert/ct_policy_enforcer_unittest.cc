@@ -81,15 +81,40 @@ class CTPolicyEnforcerTest : public ::testing::Test {
       else
         sct->log_id = std::string(crypto::kSHA256Length, static_cast<char>(i));
 
-      if (timestamp_past_enforcement_date)
+      if (timestamp_past_enforcement_date) {
         sct->timestamp =
             base::Time::FromUTCExploded({2015, 8, 0, 15, 0, 0, 0, 0});
-      else
+      } else {
         sct->timestamp =
             base::Time::FromUTCExploded({2015, 6, 0, 15, 0, 0, 0, 0});
+      }
 
       verified_scts->push_back(sct);
     }
+  }
+
+  void AddDisqualifiedLogSCT(
+      ct::SignedCertificateTimestamp::Origin desired_origin,
+      bool timestamp_after_disqualification_date,
+      ct::SCTList* verified_scts) {
+    static const char kCertlyLogID[] =
+        "\xcd\xb5\x17\x9b\x7f\xc1\xc0\x46\xfe\xea\x31\x13\x6a\x3f\x8f\x00\x2e"
+        "\x61\x82\xfa\xf8\x89\x6f\xec\xc8\xb2\xf5\xb5\xab\x60\x49\x00";
+    static_assert(arraysize(kCertlyLogID) - 1 == crypto::kSHA256Length,
+                  "Incorrect log ID length.");
+
+    scoped_refptr<ct::SignedCertificateTimestamp> sct(
+        new ct::SignedCertificateTimestamp());
+    sct->origin = desired_origin;
+    sct->log_id = std::string(kCertlyLogID, crypto::kSHA256Length);
+    if (timestamp_after_disqualification_date) {
+      sct->timestamp =
+          base::Time::FromUTCExploded({2016, 4, 0, 16, 0, 0, 0, 0});
+    } else {
+      sct->timestamp = base::Time::FromUTCExploded({2016, 4, 0, 1, 0, 0, 0, 0});
+    }
+
+    verified_scts->push_back(sct);
   }
 
   void FillListWithSCTsOfOrigin(
@@ -295,6 +320,119 @@ TEST_F(CTPolicyEnforcerTest, DoesNotConformToCTEVPolicyNotEnoughSCTs) {
   EXPECT_EQ(ct::EVPolicyCompliance::EV_POLICY_COMPLIES_VIA_WHITELIST,
             policy_enforcer_->DoesConformToCTEVPolicy(
                 chain_.get(), whitelist.get(), scts, BoundNetLog()));
+}
+
+TEST_F(CTPolicyEnforcerTest, DoesNotConformToCTEVPolicyNotEnoughFreshSCTs) {
+  ct::SCTList scts;
+
+  // The results should be the same before and after disqualification,
+  // regardless of the delivery method.
+
+  // SCT from before disqualification.
+  scts.clear();
+  FillListWithSCTsOfOrigin(
+      ct::SignedCertificateTimestamp::SCT_FROM_TLS_EXTENSION, 1, &scts);
+  AddDisqualifiedLogSCT(ct::SignedCertificateTimestamp::SCT_FROM_TLS_EXTENSION,
+                        false, &scts);
+  EXPECT_EQ(ct::CertPolicyCompliance::CERT_POLICY_NOT_DIVERSE_SCTS,
+            policy_enforcer_->DoesConformToCertPolicy(chain_.get(), scts,
+                                                      BoundNetLog()));
+  EXPECT_EQ(ct::EVPolicyCompliance::EV_POLICY_NOT_DIVERSE_SCTS,
+            policy_enforcer_->DoesConformToCTEVPolicy(chain_.get(), nullptr,
+                                                      scts, BoundNetLog()));
+
+  // SCT from after disqualification.
+  scts.clear();
+  FillListWithSCTsOfOrigin(
+      ct::SignedCertificateTimestamp::SCT_FROM_TLS_EXTENSION, 1, &scts);
+  AddDisqualifiedLogSCT(ct::SignedCertificateTimestamp::SCT_FROM_TLS_EXTENSION,
+                        true, &scts);
+  EXPECT_EQ(ct::CertPolicyCompliance::CERT_POLICY_NOT_DIVERSE_SCTS,
+            policy_enforcer_->DoesConformToCertPolicy(chain_.get(), scts,
+                                                      BoundNetLog()));
+  EXPECT_EQ(ct::EVPolicyCompliance::EV_POLICY_NOT_DIVERSE_SCTS,
+            policy_enforcer_->DoesConformToCTEVPolicy(chain_.get(), nullptr,
+                                                      scts, BoundNetLog()));
+
+  // Embedded SCT from before disqualification.
+  scts.clear();
+  FillListWithSCTsOfOrigin(
+      ct::SignedCertificateTimestamp::SCT_FROM_TLS_EXTENSION, 1, &scts);
+  AddDisqualifiedLogSCT(ct::SignedCertificateTimestamp::SCT_EMBEDDED, false,
+                        &scts);
+  EXPECT_EQ(ct::CertPolicyCompliance::CERT_POLICY_NOT_DIVERSE_SCTS,
+            policy_enforcer_->DoesConformToCertPolicy(chain_.get(), scts,
+                                                      BoundNetLog()));
+  EXPECT_EQ(ct::EVPolicyCompliance::EV_POLICY_NOT_DIVERSE_SCTS,
+            policy_enforcer_->DoesConformToCTEVPolicy(chain_.get(), nullptr,
+                                                      scts, BoundNetLog()));
+
+  // Embedded SCT from after disqualification.
+  scts.clear();
+  FillListWithSCTsOfOrigin(
+      ct::SignedCertificateTimestamp::SCT_FROM_TLS_EXTENSION, 1, &scts);
+  AddDisqualifiedLogSCT(ct::SignedCertificateTimestamp::SCT_EMBEDDED, true,
+                        &scts);
+  EXPECT_EQ(ct::CertPolicyCompliance::CERT_POLICY_NOT_DIVERSE_SCTS,
+            policy_enforcer_->DoesConformToCertPolicy(chain_.get(), scts,
+                                                      BoundNetLog()));
+  EXPECT_EQ(ct::EVPolicyCompliance::EV_POLICY_NOT_DIVERSE_SCTS,
+            policy_enforcer_->DoesConformToCTEVPolicy(chain_.get(), nullptr,
+                                                      scts, BoundNetLog()));
+}
+
+TEST_F(CTPolicyEnforcerTest,
+       ConformsWithDisqualifiedLogBeforeDisqualificationDate) {
+  ct::SCTList scts;
+  FillListWithSCTsOfOrigin(ct::SignedCertificateTimestamp::SCT_EMBEDDED, 4,
+                           &scts);
+  AddDisqualifiedLogSCT(ct::SignedCertificateTimestamp::SCT_EMBEDDED, false,
+                        &scts);
+
+  // |chain_| is valid for 10 years - over 121 months - so requires 5 SCTs.
+  EXPECT_EQ(ct::CertPolicyCompliance::CERT_POLICY_COMPLIES_VIA_SCTS,
+            policy_enforcer_->DoesConformToCertPolicy(chain_.get(), scts,
+                                                      BoundNetLog()));
+  EXPECT_EQ(ct::EVPolicyCompliance::EV_POLICY_COMPLIES_VIA_SCTS,
+            policy_enforcer_->DoesConformToCTEVPolicy(chain_.get(), nullptr,
+                                                      scts, BoundNetLog()));
+}
+
+TEST_F(CTPolicyEnforcerTest,
+       DoesNotConformWithDisqualifiedLogAfterDisqualificationDate) {
+  ct::SCTList scts;
+  FillListWithSCTsOfOrigin(ct::SignedCertificateTimestamp::SCT_EMBEDDED, 4,
+                           &scts);
+  AddDisqualifiedLogSCT(ct::SignedCertificateTimestamp::SCT_EMBEDDED, true,
+                        &scts);
+
+  // |chain_| is valid for 10 years - over 121 months - so requires 5 SCTs.
+  EXPECT_EQ(ct::CertPolicyCompliance::CERT_POLICY_NOT_ENOUGH_SCTS,
+            policy_enforcer_->DoesConformToCertPolicy(chain_.get(), scts,
+                                                      BoundNetLog()));
+  EXPECT_EQ(ct::EVPolicyCompliance::EV_POLICY_NOT_ENOUGH_SCTS,
+            policy_enforcer_->DoesConformToCTEVPolicy(chain_.get(), nullptr,
+                                                      scts, BoundNetLog()));
+}
+
+TEST_F(CTPolicyEnforcerTest,
+       DoesNotConformWithIssuanceDateAfterDisqualificationDate) {
+  ct::SCTList scts;
+  AddDisqualifiedLogSCT(ct::SignedCertificateTimestamp::SCT_EMBEDDED, true,
+                        &scts);
+  FillListWithSCTsOfOrigin(ct::SignedCertificateTimestamp::SCT_EMBEDDED, 4,
+                           &scts);
+  // Make sure all SCTs are after the disqualification date.
+  for (size_t i = 1; i < scts.size(); ++i)
+    scts[i]->timestamp = scts[0]->timestamp;
+
+  // |chain_| is valid for 10 years - over 121 months - so requires 5 SCTs.
+  EXPECT_EQ(ct::CertPolicyCompliance::CERT_POLICY_NOT_ENOUGH_SCTS,
+            policy_enforcer_->DoesConformToCertPolicy(chain_.get(), scts,
+                                                      BoundNetLog()));
+  EXPECT_EQ(ct::EVPolicyCompliance::EV_POLICY_NOT_ENOUGH_SCTS,
+            policy_enforcer_->DoesConformToCTEVPolicy(chain_.get(), nullptr,
+                                                      scts, BoundNetLog()));
 }
 
 TEST_F(CTPolicyEnforcerTest,
