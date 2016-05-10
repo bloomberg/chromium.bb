@@ -8,12 +8,12 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow DIV id='content'",
-          "rect": [137, 116, 655, 90],
+          "rect": [138, 116, 654, 90],
           "reason": "style change"
         },
         {
           "object": "LayoutBlockFlow P",
-          "rect": [137, 116, 655, 90],
+          "rect": [138, 116, 654, 90],
           "reason": "forced by layout"
         },
         {
@@ -23,22 +23,22 @@
         },
         {
           "object": "LayoutBlockFlow DIV id='content'",
-          "rect": [147, 116, 645, 108],
+          "rect": [148, 116, 644, 108],
           "reason": "style change"
         },
         {
           "object": "LayoutBlockFlow DIV id='content'",
-          "rect": [147, 116, 645, 108],
+          "rect": [148, 116, 644, 108],
           "reason": "style change"
         },
         {
           "object": "LayoutBlockFlow P",
-          "rect": [147, 116, 645, 108],
+          "rect": [148, 116, 644, 108],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutBlockFlow P",
-          "rect": [147, 116, 645, 108],
+          "rect": [148, 116, 644, 108],
           "reason": "forced by layout"
         },
         {
@@ -52,19 +52,19 @@
           "reason": "bounds change"
         },
         {
-          "object": "LayoutBlockFlow DIV id='content'",
+          "object": "LayoutText #text",
           "rect": [399, 116, 393, 162],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='content'",
+          "rect": [400, 116, 392, 162],
           "reason": "style change"
         },
         {
           "object": "LayoutBlockFlow P",
-          "rect": [399, 116, 393, 162],
+          "rect": [400, 116, 392, 162],
           "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [399, 116, 393, 162],
-          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow DIV id='left'",

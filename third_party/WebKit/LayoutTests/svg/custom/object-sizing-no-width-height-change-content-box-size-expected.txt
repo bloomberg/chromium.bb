@@ -8,13 +8,13 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow div id='contentBox'",
-          "rect": [8, 8, 402, 404],
+          "rect": [8, 8, 402, 402],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutSVGRect rect",
           "rect": [9, 9, 400, 400],
-          "reason": "location change"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutSVGRoot svg",
@@ -39,12 +39,12 @@
         {
           "object": "LayoutSVGEllipse circle",
           "rect": [169, 169, 80, 80],
-          "reason": "location change"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutSVGEllipse circle",
           "rect": [89, 189, 40, 40],
-          "reason": "location change"
+          "reason": "forced by layout"
         },
         {
           "object": "InlineBox",

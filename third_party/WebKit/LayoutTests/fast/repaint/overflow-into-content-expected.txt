@@ -13,7 +13,7 @@
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV",
-          "rect": [8, 261, 106, 3],
+          "rect": [8, 214, 106, 50],
           "reason": "incremental"
         },
         {
@@ -33,7 +33,17 @@
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV",
-          "rect": [111, 8, 3, 106],
+          "rect": [64, 8, 50, 106],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='target1' class='narrow'",
+          "rect": [61, 11, 50, 50],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='target2' class='short'",
+          "rect": [11, 211, 50, 50],
           "reason": "incremental"
         }
       ]

@@ -8,7 +8,7 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow DIV",
-          "rect": [9, 132, 293, 144],
+          "rect": [10, 132, 292, 144],
           "reason": "forced by layout"
         },
         {
@@ -18,13 +18,8 @@
         },
         {
           "object": "LayoutBlockFlow DIV",
-          "rect": [9, 132, 243, 180],
+          "rect": [10, 132, 242, 180],
           "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutTableCell TD id='col1'",
-          "rect": [9, 331, 243, 36],
-          "reason": "incremental"
         },
         {
           "object": "LayoutBlockFlow DIV",
@@ -45,11 +40,6 @@
           "object": "LayoutTableCell TD id='target'",
           "rect": [254, 132, 52, 235],
           "reason": "bounds change"
-        },
-        {
-          "object": "LayoutTableCell TD id='col1'",
-          "rect": [252, 132, 50, 199],
-          "reason": "incremental"
         },
         {
           "object": "LayoutTableCell TD id='col1'",

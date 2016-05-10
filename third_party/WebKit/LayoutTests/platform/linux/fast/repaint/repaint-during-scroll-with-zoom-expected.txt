@@ -18,11 +18,6 @@
           "reason": "full"
         },
         {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [2, 65, 235, 235],
-          "reason": "full"
-        },
-        {
           "object": "LayoutView #document",
           "rect": [2, 65, 235, 235],
           "reason": "full"
@@ -36,6 +31,11 @@
           "object": "LayoutView #document",
           "rect": [2, 300, 235, 15],
           "reason": "scroll"
+        },
+        {
+          "object": "LayoutBlockFlow HTML",
+          "rect": [2, 65, 225, 235],
+          "reason": "full"
         },
         {
           "object": "LayoutText #text",

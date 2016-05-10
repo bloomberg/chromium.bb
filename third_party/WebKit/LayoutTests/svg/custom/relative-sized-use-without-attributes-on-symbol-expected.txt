@@ -8,37 +8,47 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow div id='contentBox'",
-          "rect": [8, 68, 402, 405],
+          "rect": [8, 50, 402, 402],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutSVGContainer use",
-          "rect": [9, 69, 400, 400],
+          "rect": [27, 67, 364, 364],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGPath path",
+          "rect": [27, 67, 364, 364],
           "reason": "bounds change"
         },
         {
           "object": "LayoutSVGRoot svg",
-          "rect": [9, 69, 400, 400],
+          "rect": [27, 67, 364, 364],
           "reason": "bounds change"
         },
         {
-          "object": "LayoutSVGViewportContainer svg id='targetSymbol'",
-          "rect": [9, 69, 400, 400],
+          "object": "LayoutSVGViewportContainer svg id='gamesBorder'",
+          "rect": [27, 67, 364, 364],
           "reason": "bounds change"
         },
         {
-          "object": "LayoutSVGRect rect",
-          "rect": [209, 269, 200, 200],
+          "object": "LayoutSVGContainer use",
+          "rect": [13, 205, 92, 91],
           "reason": "bounds change"
         },
         {
-          "object": "LayoutSVGRect rect",
-          "rect": [9, 69, 200, 200],
+          "object": "LayoutSVGPath path",
+          "rect": [13, 205, 92, 91],
           "reason": "bounds change"
         },
         {
-          "object": "LayoutSVGRect rect",
-          "rect": [59, 269, 50, 50],
+          "object": "LayoutSVGRoot svg",
+          "rect": [13, 205, 92, 91],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGViewportContainer svg id='gamesBorder'",
+          "rect": [13, 205, 92, 91],
           "reason": "bounds change"
         },
         {

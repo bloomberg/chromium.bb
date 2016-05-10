@@ -12,11 +12,6 @@
           "reason": "forced by layout"
         },
         {
-          "object": "LayoutView #document",
-          "rect": [0, 742, 785, 94],
-          "reason": "incremental"
-        },
-        {
           "object": "LayoutBlockFlow (relative positioned) DIV class='relative paddingTop'",
           "rect": [8, 186, 769, 642],
           "reason": "bounds change"

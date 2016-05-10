@@ -8,7 +8,7 @@
       "paintInvalidations": [
         {
           "object": "LayoutMultiColumnFlowThread (anonymous)",
-          "rect": [9, 9, 525, 100],
+          "rect": [9, 9, 400, 100],
           "reason": "forced by layout"
         },
         {

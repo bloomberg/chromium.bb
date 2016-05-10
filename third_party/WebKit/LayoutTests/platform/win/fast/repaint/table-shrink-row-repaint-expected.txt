@@ -12,11 +12,6 @@
           "reason": "forced by layout"
         },
         {
-          "object": "LayoutView #document",
-          "rect": [0, 848, 785, 200],
-          "reason": "incremental"
-        },
-        {
           "object": "LayoutTableCell TD id='resizeMe'",
           "rect": [8, 115, 769, 205],
           "reason": "incremental"

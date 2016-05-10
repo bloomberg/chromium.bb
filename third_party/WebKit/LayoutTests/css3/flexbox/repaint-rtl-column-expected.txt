@@ -8,22 +8,12 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow DIV id='content'",
-          "rect": [8, 119, 200, 356],
+          "rect": [8, 116, 200, 252],
           "reason": "style change"
         },
         {
           "object": "LayoutBlockFlow DIV id='content'",
-          "rect": [8, 119, 200, 356],
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutBlockFlow DIV id='content'",
-          "rect": [8, 116, 200, 356],
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutBlockFlow DIV id='content'",
-          "rect": [8, 213, 200, 355],
+          "rect": [8, 119, 200, 249],
           "reason": "style change"
         },
         {

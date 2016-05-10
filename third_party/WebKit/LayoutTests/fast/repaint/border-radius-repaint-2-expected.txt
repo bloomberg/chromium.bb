@@ -8,24 +8,14 @@
       "backgroundColor": "#3F3F3F",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [0, 0, 874, 780],
-          "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutView #document",
-          "rect": [0, 600, 874, 180],
-          "reason": "incremental"
-        },
-        {
           "object": "LayoutBlockFlow DIV",
           "rect": [8, 8, 866, 764],
           "reason": "border box change"
         },
         {
-          "object": "LayoutBlockFlow BODY",
-          "rect": [8, 224, 866, 548],
-          "reason": "incremental"
+          "object": "LayoutBlockFlow HTML",
+          "rect": [0, 0, 800, 780],
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutBlockFlow BODY",

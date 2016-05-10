@@ -8,7 +8,7 @@
       "paintInvalidations": [
         {
           "object": "LayoutTableRow TR class='bla'",
-          "rect": [8, 218, 70, 26],
+          "rect": [8, 218, 70, 12],
           "reason": "style change"
         },
         {

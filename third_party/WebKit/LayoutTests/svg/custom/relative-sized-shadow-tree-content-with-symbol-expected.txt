@@ -8,27 +8,37 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow div id='contentBox'",
-          "rect": [8, 68, 402, 404],
+          "rect": [8, 68, 402, 402],
           "reason": "forced by layout"
         },
         {
-          "object": "LayoutSVGEllipse circle",
-          "rect": [48, 108, 322, 322],
-          "reason": "SVG resource change"
-        },
-        {
-          "object": "LayoutSVGRoot svg",
-          "rect": [48, 108, 322, 322],
+          "object": "LayoutSVGContainer use",
+          "rect": [9, 69, 400, 400],
           "reason": "bounds change"
         },
         {
-          "object": "LayoutSVGEllipse circle",
-          "rect": [9, 151, 100, 236],
-          "reason": "SVG resource change"
+          "object": "LayoutSVGRoot svg",
+          "rect": [9, 69, 400, 400],
+          "reason": "bounds change"
         },
         {
-          "object": "LayoutSVGRoot svg",
-          "rect": [9, 151, 100, 236],
+          "object": "LayoutSVGViewportContainer svg id='targetSymbol'",
+          "rect": [9, 69, 400, 400],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [209, 269, 200, 200],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [9, 69, 200, 200],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [59, 269, 50, 50],
           "reason": "bounds change"
         },
         {

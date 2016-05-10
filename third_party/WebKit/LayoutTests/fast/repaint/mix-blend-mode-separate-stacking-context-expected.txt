@@ -7,16 +7,6 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow (relative positioned) (floating) DIV",
-          "rect": [128, 88, 80, 20],
-          "reason": "incremental"
-        },
-        {
-          "object": "LayoutBlockFlow (relative positioned) (floating) DIV",
-          "rect": [28, 88, 80, 20],
-          "reason": "incremental"
-        },
-        {
           "object": "LayoutBlockFlow (floating) DIV",
           "rect": [348, 48, 60, 60],
           "reason": "style change"
@@ -45,16 +35,6 @@
           "object": "LayoutBlockFlow (floating) DIV id='first'",
           "rect": [48, 48, 60, 60],
           "reason": "style change"
-        },
-        {
-          "object": "LayoutBlockFlow (relative positioned) (floating) DIV",
-          "rect": [188, 28, 20, 80],
-          "reason": "incremental"
-        },
-        {
-          "object": "LayoutBlockFlow (relative positioned) (floating) DIV",
-          "rect": [88, 28, 20, 80],
-          "reason": "incremental"
         }
       ]
     }

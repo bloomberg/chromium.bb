@@ -25,12 +25,12 @@
               "paintInvalidations": [
                 {
                   "object": "LayoutFlexibleBox DIV",
-                  "rect": [570, 493, 89, 24],
+                  "rect": [576, 501, 70, 8],
                   "reason": "forced by layout"
                 },
                 {
                   "object": "LayoutSlider INPUT",
-                  "rect": [570, 493, 89, 24],
+                  "rect": [576, 501, 70, 8],
                   "reason": "full"
                 },
                 {

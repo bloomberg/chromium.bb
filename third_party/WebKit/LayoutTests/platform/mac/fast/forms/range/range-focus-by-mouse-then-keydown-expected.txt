@@ -13,12 +13,12 @@
         },
         {
           "object": "LayoutBlockFlow DIV id='track'",
-          "rect": [10, 10, 129, 16],
+          "rect": [10, 10, 129, 15],
           "reason": "full"
         },
         {
           "object": "LayoutFlexibleBox DIV",
-          "rect": [10, 10, 129, 16],
+          "rect": [10, 10, 129, 15],
           "reason": "full"
         },
         {

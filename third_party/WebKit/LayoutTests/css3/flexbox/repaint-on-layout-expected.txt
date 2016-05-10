@@ -7,27 +7,22 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow div id='contentBox'",
-          "rect": [8, 68, 402, 405],
+          "object": "LayoutBlockFlow (floating) DIV class='state'",
+          "rect": [712, 8, 80, 20],
           "reason": "forced by layout"
         },
         {
-          "object": "LayoutSVGImage image",
-          "rect": [109, 69, 300, 400],
-          "reason": "incremental"
-        },
-        {
-          "object": "LayoutSVGRoot svg",
-          "rect": [109, 69, 300, 400],
-          "reason": "incremental"
+          "object": "LayoutBlockFlow DIV id='badge'",
+          "rect": [712, 8, 80, 20],
+          "reason": "layoutObject removal"
         },
         {
           "object": "InlineBox",
           "reason": "full"
         },
         {
-          "object": "RootInlineBox",
-          "reason": "full"
+          "object": "LayoutText #text",
+          "reason": "bounds change"
         },
         {
           "object": "RootInlineBox",

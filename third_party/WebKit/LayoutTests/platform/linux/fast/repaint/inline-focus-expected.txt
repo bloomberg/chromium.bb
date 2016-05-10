@@ -12,19 +12,9 @@
           "reason": "style change"
         },
         {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [-1, -1, 801, 233],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutBlockFlow BODY",
-          "rect": [-1, -1, 801, 57],
-          "reason": "bounds change"
-        },
-        {
           "object": "LayoutBlockFlow (anonymous)",
           "rect": [-1, -1, 801, 21],
-          "reason": "bounds change"
+          "reason": "invalidate paint rectangle"
         },
         {
           "object": "LayoutBlockFlow P",
@@ -49,10 +39,6 @@
         },
         {
           "object": "InlineTextBox 'crbug.com/424078: ensure inline elements get their outline painted'",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
           "reason": "full"
         },
         {

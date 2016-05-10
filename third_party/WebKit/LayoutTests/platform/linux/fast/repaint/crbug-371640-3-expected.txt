@@ -7,41 +7,6 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow (floating) DIV id='container'",
-          "rect": [408, 88, 200, 300],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutBlockFlow (floating) DIV id='keep_outer' class='outer'",
-          "rect": [508, 88, 100, 300],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutBlockFlow (floating) DIV id='remove' class='outer'",
-          "rect": [508, 88, 100, 300],
-          "reason": "layoutObject removal"
-        },
-        {
-          "object": "LayoutBlockFlow (floating) DIV id='keep_outer' class='outer'",
-          "rect": [408, 88, 100, 300],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutBlockFlow (relative positioned) DIV id='keep_inner'",
-          "rect": [508, 88, 100, 220],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutBlockFlow (relative positioned) DIV id='keep_inner'",
-          "rect": [408, 88, 100, 220],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutBlockFlow (positioned) DIV id='abs_pos'",
-          "rect": [508, 208, 100, 100],
-          "reason": "bounds change"
-        },
-        {
           "object": "LayoutBlockFlow DIV id='keep_child'",
           "rect": [508, 208, 100, 100],
           "reason": "bounds change"
@@ -52,13 +17,28 @@
           "reason": "layoutObject removal"
         },
         {
-          "object": "LayoutBlockFlow (positioned) DIV id='abs_pos'",
+          "object": "LayoutBlockFlow DIV id='keep_child'",
           "rect": [408, 208, 100, 100],
           "reason": "bounds change"
         },
         {
-          "object": "LayoutBlockFlow DIV id='keep_child'",
-          "rect": [408, 208, 100, 100],
+          "object": "LayoutBlockFlow (floating) DIV id='container'",
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutBlockFlow (floating) DIV id='keep_outer' class='outer'",
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutBlockFlow (floating) DIV id='remove' class='outer'",
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='abs_pos'",
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutBlockFlow (relative positioned) DIV id='keep_inner'",
           "reason": "bounds change"
         }
       ]

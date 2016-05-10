@@ -7,19 +7,13 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow (anonymous)",
-          "rect": [7, 87, 86, 22],
-          "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutBlockFlow (positioned) DIV id='container'",
-          "rect": [7, 87, 86, 22],
-          "reason": "bounds change"
-        },
-        {
           "object": "LayoutInline SPAN id='outer'",
           "rect": [7, 87, 86, 22],
           "reason": "style change"
+        },
+        {
+          "object": "LayoutBlockFlow (anonymous)",
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutBlockFlow (anonymous)",

@@ -7,13 +7,12 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutImage IMG id='testTarget'",
-          "rect": [8, 58, 50, 50],
+          "object": "LayoutBlockFlow DIV id='targetImage'",
+          "rect": [8, 8, 50, 50],
           "reason": "full"
         },
         {
-          "object": "LayoutBlockFlow DIV id='targetImage'",
-          "rect": [8, 8, 50, 50],
+          "object": "LayoutImage IMG id='testTarget'",
           "reason": "full"
         }
       ]

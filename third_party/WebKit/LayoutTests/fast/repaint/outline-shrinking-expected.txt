@@ -7,11 +7,6 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow BODY",
-          "rect": [4, 16, 788, 200],
-          "reason": "bounds change"
-        },
-        {
           "object": "LayoutBlockFlow DIV id='t'",
           "rect": [4, 108, 108, 108],
           "reason": "style change"

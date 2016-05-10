@@ -8,18 +8,8 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow div id='contentBox'",
-          "rect": [8, 68, 402, 405],
+          "rect": [8, 50, 602, 422],
           "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutSVGRect rect id='targetRect'",
-          "rect": [109, 69, 300, 400],
-          "reason": "incremental"
-        },
-        {
-          "object": "LayoutSVGRoot svg",
-          "rect": [109, 69, 300, 400],
-          "reason": "incremental"
         },
         {
           "object": "InlineBox",

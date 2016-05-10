@@ -10,16 +10,6 @@ Tested locations: 1200,1500
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutView #document",
-          "rect": [1300, 0, 300, 585],
-          "reason": "incremental"
-        },
-        {
-          "object": "LayoutView #document",
-          "rect": [1000, 0, 300, 585],
-          "reason": "incremental"
-        },
-        {
           "object": "LayoutBlockFlow DIV id='box'",
           "rect": [1500, 0, 100, 100],
           "reason": "style change"

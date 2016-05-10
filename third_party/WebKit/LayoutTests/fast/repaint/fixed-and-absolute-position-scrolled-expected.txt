@@ -7,11 +7,6 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutView #document",
-          "rect": [0, 2016, 800, 3792],
-          "reason": "incremental"
-        },
-        {
           "object": "LayoutBlockFlow HTML",
           "rect": [0, 0, 800, 2016],
           "reason": "forced by layout"

@@ -7,24 +7,14 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [-60, 0, 860, 352],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutBlockFlow BODY",
-          "rect": [-60, 16, 860, 336],
-          "reason": "bounds change"
-        },
-        {
           "object": "LayoutGrid DIV id='container'",
-          "rect": [-60, 52, 260, 300],
-          "reason": "layoutObject removal"
+          "rect": [0, 52, 200, 300],
+          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutGrid DIV id='container'",
           "rect": [0, 52, 200, 300],
-          "reason": "layoutObject insertion"
+          "reason": "layoutObject removal"
         },
         {
           "object": "LayoutBlockFlow DIV class='item1'",

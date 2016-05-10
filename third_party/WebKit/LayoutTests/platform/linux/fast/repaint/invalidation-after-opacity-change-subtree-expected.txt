@@ -18,22 +18,22 @@
         },
         {
           "object": "LayoutBlockFlow P",
-          "rect": [8, 2196, 777, 107],
+          "rect": [8, 2200, 777, 100],
           "reason": "style change"
         },
         {
           "object": "LayoutBlockFlow P",
-          "rect": [8, 2196, 777, 107],
+          "rect": [8, 2200, 777, 100],
           "reason": "layer"
         },
         {
           "object": "LayoutBlockFlow P",
-          "rect": [8, 2046, 777, 107],
+          "rect": [8, 2050, 777, 100],
           "reason": "style change"
         },
         {
           "object": "LayoutBlockFlow P",
-          "rect": [8, 2046, 777, 107],
+          "rect": [8, 2050, 777, 100],
           "reason": "layer"
         },
         {

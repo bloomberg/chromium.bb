@@ -7,14 +7,9 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow BODY",
-          "rect": [7, 16, 785, 262],
-          "reason": "bounds change"
-        },
-        {
           "object": "LayoutBlockFlow DIV",
-          "rect": [7, 78, 201, 200],
-          "reason": "bounds change"
+          "rect": [7, 84, 201, 119],
+          "reason": "invalidate paint rectangle"
         },
         {
           "object": "LayoutText #text",
@@ -99,10 +94,6 @@
         },
         {
           "object": "InlineTextBox 'velit. Integer sollicitudin nisi'",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
           "reason": "full"
         },
         {

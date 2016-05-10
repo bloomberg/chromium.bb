@@ -7,11 +7,6 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV id='stacked'",
-          "rect": [19, 153, 200, 47],
-          "reason": "bounds change"
-        },
-        {
           "object": "LayoutText #text",
           "rect": [19, 153, 131, 47],
           "reason": "layoutObject removal"

@@ -8,18 +8,28 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow div id='contentBox'",
-          "rect": [8, 68, 402, 404],
+          "rect": [8, 68, 402, 402],
           "reason": "forced by layout"
         },
         {
-          "object": "LayoutSVGImage image",
-          "rect": [109, 69, 300, 400],
-          "reason": "incremental"
+          "object": "LayoutSVGEllipse circle",
+          "rect": [48, 108, 322, 322],
+          "reason": "SVG resource change"
         },
         {
           "object": "LayoutSVGRoot svg",
-          "rect": [109, 69, 300, 400],
-          "reason": "incremental"
+          "rect": [48, 108, 322, 322],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGEllipse circle",
+          "rect": [9, 151, 100, 236],
+          "reason": "SVG resource change"
+        },
+        {
+          "object": "LayoutSVGRoot svg",
+          "rect": [9, 151, 100, 236],
+          "reason": "bounds change"
         },
         {
           "object": "InlineBox",

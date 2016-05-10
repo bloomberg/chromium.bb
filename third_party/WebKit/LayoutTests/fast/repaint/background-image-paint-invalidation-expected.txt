@@ -7,13 +7,13 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutView #document",
-          "rect": [0, 0, 808, 2016],
+          "object": "LayoutBlockFlow BODY",
+          "rect": [8, 8, 800, 2000],
           "reason": "style change"
         },
         {
-          "object": "LayoutBlockFlow BODY",
-          "rect": [8, 8, 800, 2000],
+          "object": "LayoutView #document",
+          "rect": [0, 0, 785, 585],
           "reason": "style change"
         }
       ]

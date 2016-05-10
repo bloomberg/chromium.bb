@@ -7,31 +7,6 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow (floating) DIV",
-          "rect": [8, 8, 600, 100],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutBlockFlow (floating) DIV",
-          "rect": [308, 8, 300, 100],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutBlockFlow DIV",
-          "rect": [308, 8, 300, 100],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutBlockFlow (floating) DIV",
-          "rect": [8, 8, 300, 100],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutBlockFlow DIV",
-          "rect": [8, 8, 300, 100],
-          "reason": "bounds change"
-        },
-        {
           "object": "LayoutBlockFlow DIV",
           "rect": [308, 8, 100, 100],
           "reason": "bounds change"
@@ -42,8 +17,20 @@
           "reason": "bounds change"
         },
         {
+          "object": "LayoutBlockFlow (floating) DIV",
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutBlockFlow (floating) DIV",
+          "reason": "bounds change"
+        },
+        {
           "object": "LayoutBlockFlow (floating) DIV id='node'",
           "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutBlockFlow DIV",
+          "reason": "bounds change"
         }
       ]
     }

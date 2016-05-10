@@ -7,11 +7,6 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow (positioned) DIV",
-          "rect": [8, 8, 100, 100],
-          "reason": "forced by layout"
-        },
-        {
           "object": "LayoutBlockFlow DIV id='target'",
           "rect": [8, 8, 100, 100],
           "reason": "bounds change"
@@ -19,6 +14,10 @@
         {
           "object": "InlineBox",
           "reason": "full"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV",
+          "reason": "forced by layout"
         },
         {
           "object": "RootInlineBox",

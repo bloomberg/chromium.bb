@@ -7,46 +7,6 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow (floating) DIV id='container'",
-          "rect": [88, 84, 520, 100],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutBlockFlow (floating) DIV id='keep_outer' class='outer'",
-          "rect": [348, 84, 260, 100],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutBlockFlow (floating) DIV id='node' class='outer'",
-          "rect": [348, 84, 260, 100],
-          "reason": "layoutObject removal"
-        },
-        {
-          "object": "LayoutBlockFlow (relative positioned) (floating) DIV id='keep_inner' class='inner'",
-          "rect": [348, 84, 260, 100],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutBlockFlow (relative positioned) (floating) DIV id='to_remove_inner' class='inner'",
-          "rect": [348, 84, 260, 100],
-          "reason": "layoutObject removal"
-        },
-        {
-          "object": "LayoutBlockFlow (floating) DIV id='keep_outer' class='outer'",
-          "rect": [88, 84, 260, 100],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutBlockFlow (relative positioned) (floating) DIV id='keep_inner' class='inner'",
-          "rect": [88, 84, 260, 100],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutBlockFlow (positioned) DIV class='abs_pos'",
-          "rect": [348, 84, 100, 100],
-          "reason": "bounds change"
-        },
-        {
           "object": "LayoutBlockFlow DIV id='keep' class='item'",
           "rect": [348, 84, 100, 100],
           "reason": "bounds change"
@@ -55,11 +15,6 @@
           "object": "LayoutBlockFlow DIV id='to_remove' class='item'",
           "rect": [348, 84, 100, 100],
           "reason": "layoutObject removal"
-        },
-        {
-          "object": "LayoutBlockFlow (positioned) DIV class='abs_pos'",
-          "rect": [88, 84, 100, 100],
-          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow DIV id='keep' class='item'",
@@ -88,6 +43,30 @@
         {
           "object": "InlineTextBox '\u00A0'",
           "reason": "bounds change"
+        },
+        {
+          "object": "LayoutBlockFlow (floating) DIV id='container'",
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutBlockFlow (floating) DIV id='keep_outer' class='outer'",
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutBlockFlow (floating) DIV id='node' class='outer'",
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV class='abs_pos'",
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutBlockFlow (relative positioned) (floating) DIV id='keep_inner' class='inner'",
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutBlockFlow (relative positioned) (floating) DIV id='to_remove_inner' class='inner'",
+          "reason": "layoutObject removal"
         },
         {
           "object": "RootInlineBox",

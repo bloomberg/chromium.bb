@@ -7,16 +7,6 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow BODY",
-          "rect": [0, 2, 800, 350],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutGrid DIV id='container'",
-          "rect": [0, 2, 200, 350],
-          "reason": "bounds change"
-        },
-        {
           "object": "LayoutBlockFlow DIV",
           "rect": [0, 52, 200, 200],
           "reason": "bounds change"

@@ -7,14 +7,9 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [-2, -2, 802, 122],
-          "reason": "bounds change"
-        },
-        {
           "object": "LayoutBlockFlow BODY",
-          "rect": [-2, -2, 794, 120],
-          "reason": "bounds change"
+          "rect": [8, -2, 784, 120],
+          "reason": "invalidate paint rectangle"
         },
         {
           "object": "LayoutSVGRoot svg",
@@ -23,10 +18,6 @@
         },
         {
           "object": "InlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
           "reason": "full"
         },
         {

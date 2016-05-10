@@ -13,7 +13,7 @@
         },
         {
           "object": "LayoutListItem LI",
-          "rect": [30, 155, 762, 50],
+          "rect": [48, 155, 744, 50],
           "reason": "incremental"
         },
         {

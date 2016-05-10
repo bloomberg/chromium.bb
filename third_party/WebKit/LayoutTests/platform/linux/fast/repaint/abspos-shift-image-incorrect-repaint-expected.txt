@@ -42,11 +42,6 @@
           "reason": "bounds change"
         },
         {
-          "object": "LayoutView #document",
-          "rect": [1250, 0, 250, 585],
-          "reason": "incremental"
-        },
-        {
           "object": "LayoutImage IMG",
           "rect": [704, 0, 214, 232],
           "reason": "bounds change"

@@ -28,18 +28,13 @@
               "drawsContent": true,
               "paintInvalidations": [
                 {
-                  "object": "LayoutBlockFlow (relative positioned) DIV",
-                  "rect": [0, 52, 784, 49],
-                  "reason": "incremental"
-                },
-                {
                   "object": "LayoutBlockFlow DIV id='child'",
                   "rect": [1, 1, 100, 100],
                   "reason": "layer"
                 },
                 {
                   "object": "LayoutBlockFlow DIV id='target'",
-                  "rect": [1, 1, 100, 100],
+                  "rect": [1, 1, 50, 50],
                   "reason": "layer"
                 }
               ]
@@ -56,7 +51,7 @@
                 },
                 {
                   "object": "LayoutBlockFlow DIV id='target'",
-                  "rect": [0, 0, 100, 100],
+                  "rect": [0, 0, 50, 50],
                   "reason": "style change"
                 }
               ]

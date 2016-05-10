@@ -9,12 +9,12 @@
         {
           "object": "LayoutBlockFlow (anonymous)",
           "rect": [16, 148, 202, 23],
-          "reason": "bounds change"
+          "reason": "invalidate paint rectangle"
         },
         {
           "object": "LayoutBlockFlow (anonymous)",
           "rect": [16, 108, 202, 23],
-          "reason": "bounds change"
+          "reason": "invalidate paint rectangle"
         },
         {
           "object": "LayoutInline SPAN id='outer'",
@@ -49,14 +49,6 @@
         {
           "object": "LayoutInline SPAN id='outer'",
           "reason": "style change"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
         },
         {
           "object": "RootInlineBox",

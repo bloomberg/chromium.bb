@@ -8,7 +8,7 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow div id='contentBox'",
-          "rect": [8, 50, 402, 404],
+          "rect": [8, 50, 402, 402],
           "reason": "forced by layout"
         },
         {

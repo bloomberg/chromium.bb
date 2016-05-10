@@ -7,19 +7,19 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow (anonymous)",
-          "rect": [8, 116, 1410, 54],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutBlockFlow (anonymous)",
-          "rect": [8, 62, 1410, 54],
-          "reason": "bounds change"
-        },
-        {
           "object": "LayoutBlockFlow DIV id='container'",
           "rect": [8, 8, 769, 107],
           "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "LayoutBlockFlow (anonymous)",
+          "rect": [8, 116, 769, 54],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutBlockFlow (anonymous)",
+          "rect": [8, 62, 769, 54],
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow DIV id='container'",

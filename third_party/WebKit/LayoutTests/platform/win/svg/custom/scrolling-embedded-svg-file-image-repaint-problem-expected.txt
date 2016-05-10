@@ -7,14 +7,9 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV class='linkbar'",
-          "rect": [24, 1010, 737, 22],
-          "reason": "bounds change"
-        },
-        {
           "object": "LayoutBlockFlow P",
           "rect": [24, 1010, 737, 22],
-          "reason": "bounds change"
+          "reason": "invalidate paint rectangle"
         },
         {
           "object": "LayoutInline A",
@@ -43,10 +38,6 @@
         },
         {
           "object": "InlineTextBox '\u2192 script-handle-01-b'",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
           "reason": "full"
         },
         {
