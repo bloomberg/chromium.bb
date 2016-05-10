@@ -13,6 +13,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/time/default_tick_clock.h"
 #include "base/values.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/ntp_snippets/switches.h"
@@ -99,6 +100,7 @@ NTPSnippetsFetcher::NTPSnippetsFetcher(
     : url_request_context_getter_(url_request_context_getter),
       parse_json_callback_(parse_json_callback),
       is_stable_channel_(is_stable_channel),
+      tick_clock_(new base::DefaultTickClock()),
       weak_ptr_factory_(this) {}
 
 NTPSnippetsFetcher::~NTPSnippetsFetcher() {}
@@ -111,6 +113,7 @@ void NTPSnippetsFetcher::SetCallback(
 void NTPSnippetsFetcher::FetchSnippetsFromHosts(
     const std::set<std::string>& hosts, int count) {
   std::string host_restricts;
+  fetch_start_time_ = tick_clock_->NowTicks();
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDontRestrict)) {
     if (hosts.empty()) {
@@ -209,9 +212,13 @@ void NTPSnippetsFetcher::FetchFinished(OptionalSnippets snippets,
                                        const std::string& extra_message) {
   DCHECK(result == FetchResult::SUCCESS || !snippets);
   last_status_ = FetchResultToString(result) + extra_message;
+
+  UMA_HISTOGRAM_TIMES("NewTabPage.Snippets.FetchTime",
+                      tick_clock_->NowTicks() - fetch_start_time_);
   UMA_HISTOGRAM_ENUMERATION("NewTabPage.Snippets.FetchResult",
                             static_cast<int>(result),
                             static_cast<int>(FetchResult::RESULT_MAX));
+
   if (!snippets_available_callback_.is_null())
     snippets_available_callback_.Run(std::move(snippets));
 }

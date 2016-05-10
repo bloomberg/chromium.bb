@@ -13,6 +13,8 @@
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "base/time/tick_clock.h"
+#include "base/time/time.h"
 #include "components/ntp_snippets/ntp_snippet.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -78,6 +80,11 @@ class NTPSnippetsFetcher : public net::URLFetcherDelegate {
     return last_fetch_json_;
   }
 
+  // Overrides internal clock for testing purposes.
+  void SetTickClockForTesting(std::unique_ptr<base::TickClock> tick_clock) {
+    tick_clock_ = std::move(tick_clock);
+  }
+
  private:
   // URLFetcherDelegate implementation.
   void OnURLFetchComplete(const net::URLFetcher* source) override;
@@ -92,6 +99,7 @@ class NTPSnippetsFetcher : public net::URLFetcherDelegate {
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
 
   const ParseJSONCallback parse_json_callback_;
+  base::TimeTicks fetch_start_time_;
   std::string last_status_;
   std::string last_fetch_json_;
 
@@ -103,6 +111,9 @@ class NTPSnippetsFetcher : public net::URLFetcherDelegate {
 
   // Flag for picking the right (stable/non-stable) API key for Chrome Reader
   bool is_stable_channel_;
+
+  // Allow for an injectable tick clock for testing.
+  std::unique_ptr<base::TickClock> tick_clock_;
 
   base::WeakPtrFactory<NTPSnippetsFetcher> weak_ptr_factory_;
 

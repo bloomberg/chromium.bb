@@ -6,11 +6,11 @@
 
 #include "base/json/json_reader.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
-#include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/histogram_tester.h"
+#include "base/test/test_mock_time_task_runner.h"
 #include "base/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "components/ntp_snippets/ntp_snippet.h"
 #include "google_apis/google_api_keys.h"
@@ -34,6 +34,8 @@ using testing::StartsWith;
 
 const char kTestContentSnippetsServerFormat[] =
     "https://chromereader-pa.googleapis.com/v1/fetch?key=%s";
+// Artificial time delay for JSON parsing.
+const int64_t kTestJsonParsingLatencyMs = 20;
 
 MATCHER(HasValue, "") {
   return static_cast<bool>(arg);
@@ -79,25 +81,42 @@ void ParseJson(
     error_callback.Run(json_reader.GetErrorMessage());
 }
 
+void ParseJsonDelayed(
+    const std::string& json,
+    const ntp_snippets::NTPSnippetsFetcher::SuccessCallback& success_callback,
+    const ntp_snippets::NTPSnippetsFetcher::ErrorCallback& error_callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::Bind(&ParseJson, json, success_callback, error_callback),
+      base::TimeDelta::FromMilliseconds(kTestJsonParsingLatencyMs));
+}
+
 class NTPSnippetsFetcherTest : public testing::Test {
  public:
   NTPSnippetsFetcherTest()
-      : snippets_fetcher_(scoped_refptr<net::TestURLRequestContextGetter>(
-                              new net::TestURLRequestContextGetter(
-                                  base::ThreadTaskRunnerHandle::Get())),
-                          base::Bind(&ParseJson),
-                          /*is_stable_channel=*/true),
+      : mock_task_runner_(new base::TestMockTimeTaskRunner()),
+        mock_task_runner_handle_(mock_task_runner_),
+        snippets_fetcher_(
+            scoped_refptr<net::TestURLRequestContextGetter>(
+                new net::TestURLRequestContextGetter(mock_task_runner_.get())),
+            base::Bind(&ParseJsonDelayed),
+            /*is_stable_channel=*/true),
         test_url_(base::StringPrintf(kTestContentSnippetsServerFormat,
                                      google_apis::GetAPIKey().c_str())) {
     snippets_fetcher_.SetCallback(
         base::Bind(&MockSnippetsAvailableCallback::WrappedRun,
                    base::Unretained(&mock_callback_)));
+    snippets_fetcher_.SetTickClockForTesting(
+        mock_task_runner_->GetMockTickClock());
     test_hosts_.insert("www.somehost.com");
+    // Increase initial time such that ticks are non-zero.
+    mock_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(1234));
   }
 
   NTPSnippetsFetcher& snippets_fetcher() { return snippets_fetcher_; }
   MockSnippetsAvailableCallback& mock_callback() { return mock_callback_; }
-  void RunUntilIdle() { message_loop_.RunUntilIdle(); }
+  void FastForwardUntilNoTasksRemain() {
+    mock_task_runner_->FastForwardUntilNoTasksRemain();
+  }
   const GURL& test_url() { return test_url_; }
   const std::set<std::string>& test_hosts() const { return test_hosts_; }
   base::HistogramTester& histogram_tester() { return histogram_tester_; }
@@ -120,11 +139,11 @@ class NTPSnippetsFetcherTest : public testing::Test {
   }
 
  private:
+  scoped_refptr<base::TestMockTimeTaskRunner> mock_task_runner_;
+  base::ThreadTaskRunnerHandle mock_task_runner_handle_;
   FailingFakeURLFetcherFactory failing_url_fetcher_factory_;
   // Initialized lazily in SetFakeResponse().
   std::unique_ptr<net::FakeURLFetcherFactory> fake_url_fetcher_factory_;
-  // Needed to use ThreadTaskRunnerHandle.
-  base::MessageLoop message_loop_;
   NTPSnippetsFetcher snippets_fetcher_;
   MockSnippetsAvailableCallback mock_callback_;
   const GURL test_url_;
@@ -136,9 +155,11 @@ class NTPSnippetsFetcherTest : public testing::Test {
 
 TEST_F(NTPSnippetsFetcherTest, ShouldNotFetchOnCreation) {
   // The lack of registered baked in responses would cause any fetch to fail.
-  RunUntilIdle();
+  FastForwardUntilNoTasksRemain();
   EXPECT_THAT(histogram_tester().GetAllSamples(
                   "NewTabPage.Snippets.FetchHttpResponseOrErrorCode"),
+              IsEmpty());
+  EXPECT_THAT(histogram_tester().GetAllSamples("NewTabPage.Snippets.FetchTime"),
               IsEmpty());
   EXPECT_THAT(snippets_fetcher().last_status(), IsEmpty());
 }
@@ -159,12 +180,15 @@ TEST_F(NTPSnippetsFetcherTest, ShouldFetchSuccessfully) {
                   net::URLRequestStatus::SUCCESS);
   EXPECT_CALL(mock_callback(), Run(/*snippets=*/PointeeSizeIs(1))).Times(1);
   snippets_fetcher().FetchSnippetsFromHosts(test_hosts(), /*count=*/1);
-  RunUntilIdle();
+  FastForwardUntilNoTasksRemain();
   EXPECT_THAT(snippets_fetcher().last_status(), Eq("OK"));
   EXPECT_THAT(snippets_fetcher().last_json(), Eq(kJsonStr));
   EXPECT_THAT(histogram_tester().GetAllSamples(
                   "NewTabPage.Snippets.FetchHttpResponseOrErrorCode"),
               ElementsAre(base::Bucket(/*min=*/200, /*count=*/1)));
+  EXPECT_THAT(histogram_tester().GetAllSamples("NewTabPage.Snippets.FetchTime"),
+              ElementsAre(base::Bucket(/*min=*/kTestJsonParsingLatencyMs,
+                                       /*count=*/1)));
 }
 
 TEST_F(NTPSnippetsFetcherTest, ShouldFetchSuccessfullyEmptyList) {
@@ -173,7 +197,7 @@ TEST_F(NTPSnippetsFetcherTest, ShouldFetchSuccessfullyEmptyList) {
                   net::URLRequestStatus::SUCCESS);
   EXPECT_CALL(mock_callback(), Run(/*snippets=*/PointeeSizeIs(0))).Times(1);
   snippets_fetcher().FetchSnippetsFromHosts(test_hosts(), /*count=*/1);
-  RunUntilIdle();
+  FastForwardUntilNoTasksRemain();
   EXPECT_THAT(snippets_fetcher().last_status(), Eq("OK"));
   EXPECT_THAT(snippets_fetcher().last_json(), Eq(kJsonStr));
   EXPECT_THAT(
@@ -188,7 +212,7 @@ TEST_F(NTPSnippetsFetcherTest, ShouldReportEmptyHostsError) {
   EXPECT_CALL(mock_callback(), Run(/*snippets=*/Not(HasValue()))).Times(1);
   snippets_fetcher().FetchSnippetsFromHosts(/*hosts=*/std::set<std::string>(),
                                             /*count=*/1);
-  RunUntilIdle();
+  FastForwardUntilNoTasksRemain();
   EXPECT_THAT(snippets_fetcher().last_status(),
               Eq("Cannot fetch for empty hosts list."));
   EXPECT_THAT(snippets_fetcher().last_json(), IsEmpty());
@@ -198,6 +222,10 @@ TEST_F(NTPSnippetsFetcherTest, ShouldReportEmptyHostsError) {
   EXPECT_THAT(histogram_tester().GetAllSamples(
                   "NewTabPage.Snippets.FetchHttpResponseOrErrorCode"),
               IsEmpty());
+  // This particular error gets triggered prior to JSON parsing and hence tests
+  // observe no fetch latency.
+  EXPECT_THAT(histogram_tester().GetAllSamples("NewTabPage.Snippets.FetchTime"),
+              ElementsAre(base::Bucket(/*min=*/0, /*count=*/1)));
 }
 
 TEST_F(NTPSnippetsFetcherTest, ShouldRestrictToHosts) {
@@ -226,7 +254,7 @@ TEST_F(NTPSnippetsFetcherTest, ShouldReportUrlStatusError) {
                   net::URLRequestStatus::FAILED);
   EXPECT_CALL(mock_callback(), Run(/*snippets=*/Not(HasValue()))).Times(1);
   snippets_fetcher().FetchSnippetsFromHosts(test_hosts(), /*count=*/1);
-  RunUntilIdle();
+  FastForwardUntilNoTasksRemain();
   EXPECT_THAT(snippets_fetcher().last_status(),
               Eq("URLRequestStatus error -2"));
   EXPECT_THAT(snippets_fetcher().last_json(), IsEmpty());
@@ -236,6 +264,8 @@ TEST_F(NTPSnippetsFetcherTest, ShouldReportUrlStatusError) {
   EXPECT_THAT(histogram_tester().GetAllSamples(
                   "NewTabPage.Snippets.FetchHttpResponseOrErrorCode"),
               ElementsAre(base::Bucket(/*min=*/-2, /*count=*/1)));
+  EXPECT_THAT(histogram_tester().GetAllSamples("NewTabPage.Snippets.FetchTime"),
+              Not(IsEmpty()));
 }
 
 TEST_F(NTPSnippetsFetcherTest, ShouldReportHttpError) {
@@ -243,7 +273,7 @@ TEST_F(NTPSnippetsFetcherTest, ShouldReportHttpError) {
                   net::URLRequestStatus::SUCCESS);
   EXPECT_CALL(mock_callback(), Run(/*snippets=*/Not(HasValue()))).Times(1);
   snippets_fetcher().FetchSnippetsFromHosts(test_hosts(), /*count=*/1);
-  RunUntilIdle();
+  FastForwardUntilNoTasksRemain();
   EXPECT_THAT(snippets_fetcher().last_status(), Eq("HTTP error 404"));
   EXPECT_THAT(snippets_fetcher().last_json(), IsEmpty());
   EXPECT_THAT(
@@ -252,6 +282,8 @@ TEST_F(NTPSnippetsFetcherTest, ShouldReportHttpError) {
   EXPECT_THAT(histogram_tester().GetAllSamples(
                   "NewTabPage.Snippets.FetchHttpResponseOrErrorCode"),
               ElementsAre(base::Bucket(/*min=*/404, /*count=*/1)));
+  EXPECT_THAT(histogram_tester().GetAllSamples("NewTabPage.Snippets.FetchTime"),
+              Not(IsEmpty()));
 }
 
 TEST_F(NTPSnippetsFetcherTest, ShouldReportJsonError) {
@@ -260,7 +292,7 @@ TEST_F(NTPSnippetsFetcherTest, ShouldReportJsonError) {
                   net::URLRequestStatus::SUCCESS);
   EXPECT_CALL(mock_callback(), Run(/*snippets=*/Not(HasValue()))).Times(1);
   snippets_fetcher().FetchSnippetsFromHosts(test_hosts(), /*count=*/1);
-  RunUntilIdle();
+  FastForwardUntilNoTasksRemain();
   EXPECT_THAT(snippets_fetcher().last_status(),
               StartsWith("Received invalid JSON (error "));
   EXPECT_THAT(snippets_fetcher().last_json(), Eq(kInvalidJsonStr));
@@ -270,6 +302,9 @@ TEST_F(NTPSnippetsFetcherTest, ShouldReportJsonError) {
   EXPECT_THAT(histogram_tester().GetAllSamples(
                   "NewTabPage.Snippets.FetchHttpResponseOrErrorCode"),
               ElementsAre(base::Bucket(/*min=*/200, /*count=*/1)));
+  EXPECT_THAT(histogram_tester().GetAllSamples("NewTabPage.Snippets.FetchTime"),
+              ElementsAre(base::Bucket(/*min=*/kTestJsonParsingLatencyMs,
+                                       /*count=*/1)));
 }
 
 TEST_F(NTPSnippetsFetcherTest, ShouldReportJsonErrorForEmptyResponse) {
@@ -277,7 +312,7 @@ TEST_F(NTPSnippetsFetcherTest, ShouldReportJsonErrorForEmptyResponse) {
                   net::URLRequestStatus::SUCCESS);
   EXPECT_CALL(mock_callback(), Run(/*snippets=*/Not(HasValue()))).Times(1);
   snippets_fetcher().FetchSnippetsFromHosts(test_hosts(), /*count=*/1);
-  RunUntilIdle();
+  FastForwardUntilNoTasksRemain();
   EXPECT_THAT(snippets_fetcher().last_status(),
               StartsWith("Received invalid JSON (error "));
   EXPECT_THAT(snippets_fetcher().last_json(), std::string());
@@ -296,7 +331,7 @@ TEST_F(NTPSnippetsFetcherTest, ShouldReportInvalidListError) {
                   net::URLRequestStatus::SUCCESS);
   EXPECT_CALL(mock_callback(), Run(/*snippets=*/Not(HasValue()))).Times(1);
   snippets_fetcher().FetchSnippetsFromHosts(test_hosts(), /*count=*/1);
-  RunUntilIdle();
+  FastForwardUntilNoTasksRemain();
   EXPECT_THAT(snippets_fetcher().last_status(), Eq("Invalid / empty list."));
   EXPECT_THAT(snippets_fetcher().last_json(), Eq(kJsonStr));
   EXPECT_THAT(
@@ -305,6 +340,8 @@ TEST_F(NTPSnippetsFetcherTest, ShouldReportInvalidListError) {
   EXPECT_THAT(histogram_tester().GetAllSamples(
                   "NewTabPage.Snippets.FetchHttpResponseOrErrorCode"),
               ElementsAre(base::Bucket(/*min=*/200, /*count=*/1)));
+  EXPECT_THAT(histogram_tester().GetAllSamples("NewTabPage.Snippets.FetchTime"),
+              Not(IsEmpty()));
 }
 
 // This test actually verifies that the test setup itself is sane, to prevent
@@ -313,7 +350,7 @@ TEST_F(NTPSnippetsFetcherTest, ShouldReportHttpErrorForMissingBakedResponse) {
   InitFakeURLFetcherFactory();
   EXPECT_CALL(mock_callback(), Run(/*snippets=*/Not(HasValue()))).Times(1);
   snippets_fetcher().FetchSnippetsFromHosts(test_hosts(), /*count=*/1);
-  RunUntilIdle();
+  FastForwardUntilNoTasksRemain();
 }
 
 TEST_F(NTPSnippetsFetcherTest, ShouldCancelOngoingFetch) {
@@ -325,13 +362,16 @@ TEST_F(NTPSnippetsFetcherTest, ShouldCancelOngoingFetch) {
   // Second call to FetchSnippetsFromHosts() overrides/cancels the previous.
   // Callback is expected to be called once.
   snippets_fetcher().FetchSnippetsFromHosts(test_hosts(), /*count=*/1);
-  RunUntilIdle();
+  FastForwardUntilNoTasksRemain();
   EXPECT_THAT(
       histogram_tester().GetAllSamples("NewTabPage.Snippets.FetchResult"),
       ElementsAre(base::Bucket(/*min=*/0, /*count=*/1)));
   EXPECT_THAT(histogram_tester().GetAllSamples(
                   "NewTabPage.Snippets.FetchHttpResponseOrErrorCode"),
               ElementsAre(base::Bucket(/*min=*/200, /*count=*/1)));
+  EXPECT_THAT(histogram_tester().GetAllSamples("NewTabPage.Snippets.FetchTime"),
+              ElementsAre(base::Bucket(/*min=*/kTestJsonParsingLatencyMs,
+                                       /*count=*/1)));
 }
 
 }  // namespace
