@@ -399,8 +399,6 @@ private:
     TrackedLayoutBoxListHashSet* positionedObjectsInternal() const;
     TrackedLayoutBoxListHashSet* percentHeightDescendantsInternal() const;
 
-    Node* nodeForHitTest() const final;
-
     // Returns true if the positioned movement-only layout succeeded.
     bool tryLayoutDoingPositionedMovementOnly();
 

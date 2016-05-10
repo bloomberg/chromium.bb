@@ -2952,6 +2952,14 @@ LayoutUnit LayoutBlockFlow::nextFloatLogicalBottomBelowForBlock(LayoutUnit logic
     return m_floatingObjects->findNextFloatLogicalBottomBelowForBlock(logicalHeight);
 }
 
+Node* LayoutBlockFlow::nodeForHitTest() const
+{
+    // If we are in the margins of block elements that are part of a
+    // continuation we're actually still inside the enclosing element
+    // that was split. Use the appropriate inner node.
+    return isAnonymousBlockContinuation() ? continuation()->node() : node();
+}
+
 bool LayoutBlockFlow::hitTestChildren(HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction hitTestAction)
 {
     LayoutPoint scrolledOffset(hasOverflowClip() ? accumulatedOffset - scrolledContentOffset() : accumulatedOffset);

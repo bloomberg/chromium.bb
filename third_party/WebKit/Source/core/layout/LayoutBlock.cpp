@@ -1419,14 +1419,6 @@ bool LayoutBlock::isPointInOverflowControl(HitTestResult& result, const LayoutPo
     return layer()->getScrollableArea()->hitTestOverflowControls(result, roundedIntPoint(locationInContainer - toLayoutSize(accumulatedOffset)));
 }
 
-Node* LayoutBlock::nodeForHitTest() const
-{
-    // If we are in the margins of block elements that are part of a
-    // continuation we're actually still inside the enclosing element
-    // that was split. Use the appropriate inner node.
-    return isAnonymousBlockContinuation() ? continuation()->node() : node();
-}
-
 bool LayoutBlock::hitTestOverflowControl(HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& adjustedLocation)
 {
     if (visibleToHitTestRequest(result.hitTestRequest())

@@ -335,6 +335,7 @@ protected:
 
     PaintInvalidationReason invalidatePaintIfNeeded(const PaintInvalidationState&) override;
 
+    Node* nodeForHitTest() const final;
     bool hitTestChildren(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) override;
 
 private:
