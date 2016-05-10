@@ -30,9 +30,10 @@ class ConfigValues {
     const std::vector<SourceDir>& name() const { return name##_; } \
     std::vector<SourceDir>& name() { return name##_; }
 
-  // ==================================================================
-  // IMPORTANT: If you add a new one, be sure to update AppendValues().
-  // ==================================================================
+  // =================================================================
+  // IMPORTANT: If you add a new one, be sure to update AppendValues()
+  //            and command_desc.cc.
+  // =================================================================
   STRING_VALUES_ACCESSOR(arflags)
   STRING_VALUES_ACCESSOR(asmflags)
   STRING_VALUES_ACCESSOR(cflags)
@@ -44,9 +45,10 @@ class ConfigValues {
   DIR_VALUES_ACCESSOR   (include_dirs)
   STRING_VALUES_ACCESSOR(ldflags)
   DIR_VALUES_ACCESSOR   (lib_dirs)
-  // ==================================================================
-  // IMPORTANT: If you add a new one, be sure to update AppendValues().
-  // ==================================================================
+  // =================================================================
+  // IMPORTANT: If you add a new one, be sure to update AppendValues()
+  //            and command_desc.cc.
+  // =================================================================
 
 #undef STRING_VALUES_ACCESSOR
 #undef DIR_VALUES_ACCESSOR

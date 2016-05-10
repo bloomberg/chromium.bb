@@ -10,6 +10,7 @@
 #include "tools/gn/label_pattern.h"
 #include "tools/gn/setup.h"
 #include "tools/gn/standard_out.h"
+#include "tools/gn/switches.h"
 #include "tools/gn/target.h"
 
 namespace commands {
@@ -34,11 +35,7 @@ const char kLs_Help[] =
     "\n"
     TARGET_PRINTING_MODE_COMMAND_LINE_HELP
     "\n"
-    "  --all-toolchains\n"
-    "      Matches all toolchains. When set, if the label pattern does not\n"
-    "      specify an explicit toolchain, labels from all toolchains will be\n"
-    "      matched. When unset, only targets in the default toolchain will\n"
-    "      be matched unless an explicit toolchain in the label is set.\n"
+    ALL_TOOLCHAINS_SWITCH_HELP
     "\n"
     TARGET_TESTONLY_FILTER_COMMAND_LINE_HELP
     "\n"
@@ -81,7 +78,7 @@ int RunLs(const std::vector<std::string>& args) {
     return 1;
 
   const base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
-  bool all_toolchains = cmdline->HasSwitch("all-toolchains");
+  bool all_toolchains = cmdline->HasSwitch(switches::kAllToolchains);
 
   std::vector<const Target*> matches;
   if (args.size() > 1) {

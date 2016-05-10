@@ -436,74 +436,47 @@
 
 
 ```
-## **gn desc <out_dir> <target label> [<what to show>] [\--blame]**
+## **gn desc <out_dir> <label or pattern> [<what to show>] [\--blame]**
 
 ```
-  Displays information about a given labeled target for the given build.
-  The build parameters will be taken for the build in the given
-  <out_dir>.
+  Displays information about a given target or config. The build
+  build parameters will be taken for the build in the given <out_dir>.
+
+  The <label or pattern> can be a target label, a config label, or a
+  label pattern (see "gn help label_pattern"). A label pattern will
+  only match targets.
 
 ```
 
 ### **Possibilities for <what to show>**
+
 ```
   (If unspecified an overall summary will be displayed.)
 
-  sources
-      Source files.
-
-  inputs
-      Additional input dependencies.
-
-  public
-      Public header files.
-
-  check_includes
-      Whether "gn check" checks this target for include usage.
-
-  allow_circular_includes_from
-      Permit includes from these targets.
-
-  visibility
-      Prints which targets can depend on this one.
-
-  testonly
-      Whether this target may only be used in tests.
-
-  configs
-      Shows configs applied to the given target, sorted in the order
-      they're specified. This includes both configs specified in the
-      "configs" variable, as well as configs pushed onto this target
-      via dependencies specifying "all" or "direct" dependent
-      configs.
-
-  deps
-      Show immediate or recursive dependencies. See below for flags that
-      control deps printing.
-
-  public_configs
   all_dependent_configs
-      Shows the labels of configs applied to targets that depend on this
-      one (either directly or all of them).
-
-  script
+  allow_circular_includes_from
+  arflags [--blame]
   args
+  cflags [--blame]
+  cflags_cc [--blame]
+  cflags_cxx [--blame]
+  check_includes
+  configs [--tree] (see below)
+  defines [--blame]
   depfile
-      Actions only. The script and related values.
-
-  outputs
-      Outputs for script and copy target types.
-
-  defines       [--blame]
-  include_dirs  [--blame]
-  cflags        [--blame]
-  cflags_cc     [--blame]
-  cflags_cxx    [--blame]
-  ldflags       [--blame]
+  deps [--all] [--tree] (see below)
+  include_dirs [--blame]
+  inputs
+  ldflags [--blame]
   lib_dirs
   libs
-      Shows the given values taken from the target and all configs
-      applying. See "--blame" below.
+  outputs
+  public_configs
+  public
+  script
+  sources
+  testonly
+  visibility
 
   runtime_deps
       Compute all runtime deps for the given target. This is a
@@ -520,17 +493,49 @@
 ### **Shared flags**
 
 ```
+  --all-toolchains
+      Normally only inputs in the default toolchain will be included.
+      This switch will turn on matching all toolchains.
+
+      For example, a file is in a target might be compiled twice:
+      once in the default toolchain and once in a secondary one. Without
+      this flag, only the default toolchain one will be matched by
+      wildcards. With this flag, both will be matched.
+
+```
+
+### **Target flags**
+
+```
   --blame
-      Used with any value specified by a config, this will name
-      the config that specified the value. This doesn't currently work
-      for libs and lib_dirs because those are inherited and are more
-      complicated to figure out the blame (patches welcome).
+      Used with any value specified on a config, this will name
+      the config that cause that target to get the flag. This doesn't
+      currently work for libs and lib_dirs because those are inherited
+      and are more complicated to figure out the blame (patches
+      welcome).
 
 ```
 
-### **Flags that control how deps are printed**
+### **Configs**
 
 ```
+  The "configs" section will list all configs that apply. For targets
+  this will include configs specified in the "configs" variable of
+  the target, and also configs pushed onto this target via public
+  or "all dependent" configs.
+
+  Configs can have child configs. Specifying --tree will show the
+  hierarchy.
+
+```
+
+### **Printing deps**
+
+```
+  Deps will include all public, private, and data deps (TODO this could
+  be clarified and enhanced) sorted in order applying. The following
+  may be used:
+
   --all
       Collects all recursive dependencies and prints a sorted flat list.
       Also usable with --tree (see below).
@@ -760,10 +765,13 @@
           root build directory.
 
   --all-toolchains
-      Matches all toolchains. When set, if the label pattern does not
-      specify an explicit toolchain, labels from all toolchains will be
-      matched. When unset, only targets in the default toolchain will
-      be matched unless an explicit toolchain in the label is set.
+      Normally only inputs in the default toolchain will be included.
+      This switch will turn on matching all toolchains.
+
+      For example, a file is in a target might be compiled twice:
+      once in the default toolchain and once in a secondary one. Without
+      this flag, only the default toolchain one will be matched by
+      wildcards. With this flag, both will be matched.
 
   --testonly=(true|false)
       Restrict outputs to targets with the testonly flag set
@@ -892,10 +900,8 @@
 
       For example, a file is in a target might be compiled twice:
       once in the default toolchain and once in a secondary one. Without
-      this flag, only the default toolchain one will be matched and
-      printed (potentially with its recursive dependencies, depending on
-      the other options). With this flag, both will be printed
-      (potentially with both of their recursive dependencies).
+      this flag, only the default toolchain one will be matched by
+      wildcards. With this flag, both will be matched.
 
   --as=(buildfile|label|output)
       How to print targets.
@@ -4164,9 +4170,16 @@
   In some cases the static library might be the final desired output.
   For example, you may be producing a static library for distribution to
   third parties. In this case, the static library should include code
-  for all dependencies in one complete package. Since GN does not unpack
-  static libraries to forward their contents up the dependency chain,
-  it is an error for complete static libraries to depend on other static
+  for all dependencies in one complete package. However, complete static
+  libraries themselves are never linked into other complete static
+  libraries. All complete static libraries are for distribution and
+  linking them in would cause code duplication in this case. If the
+  static library is not for distribution, it should not be complete.
+
+  GN treats non-complete static libraries as source sets when they are
+  linked into complete static libraries. This is done because some tools
+  like AR do not handle dependent static libraries properly. This makes
+  it easier to write "alink" rules.
 
   In rare cases it makes sense to list a header in more than one
   target if it could be considered conceptually a member of both.
@@ -4330,7 +4343,7 @@
   generated files both in the "outputs" list as well as the "data"
   list.
 
-  By convention, directories are be listed with a trailing slash:
+  By convention, directories are listed with a trailing slash:
     data = [ "test/data/" ]
   However, no verification is done on these so GN doesn't enforce this.
   The paths are just rebased and passed along when requested.

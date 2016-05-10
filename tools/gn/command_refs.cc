@@ -17,6 +17,7 @@
 #include "tools/gn/item.h"
 #include "tools/gn/setup.h"
 #include "tools/gn/standard_out.h"
+#include "tools/gn/switches.h"
 #include "tools/gn/target.h"
 
 namespace commands {
@@ -315,16 +316,7 @@ const char kRefs_Help[] =
     "\n"
     "      When used with --tree, turns off eliding to show a complete tree.\n"
     "\n"
-    "  --all-toolchains\n"
-    "      Normally only inputs in the default toolchain will be included.\n"
-    "      This switch will turn on matching all toolchains.\n"
-    "\n"
-    "      For example, a file is in a target might be compiled twice:\n"
-    "      once in the default toolchain and once in a secondary one. Without\n"
-    "      this flag, only the default toolchain one will be matched and\n"
-    "      printed (potentially with its recursive dependencies, depending on\n"
-    "      the other options). With this flag, both will be printed\n"
-    "      (potentially with both of their recursive dependencies).\n"
+    ALL_TOOLCHAINS_SWITCH_HELP
     "\n"
     TARGET_PRINTING_MODE_COMMAND_LINE_HELP
     "\n"
@@ -397,7 +389,7 @@ int RunRefs(const std::vector<std::string>& args) {
   const base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
   bool tree = cmdline->HasSwitch("tree");
   bool all = cmdline->HasSwitch("all");
-  bool all_toolchains = cmdline->HasSwitch("all-toolchains");
+  bool all_toolchains = cmdline->HasSwitch(switches::kAllToolchains);
 
   Setup* setup = new Setup;
   setup->build_settings().set_check_for_bad_items(false);
