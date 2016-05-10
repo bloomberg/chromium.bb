@@ -597,9 +597,8 @@ CommonNavigationParams MakeCommonNavigationParams(
       base::TimeTicks::Now(), request->httpMethod().latin1());
 }
 
-media::Context3D GetSharedMainThreadContext3D() {
-  ContextProviderCommandBuffer* provider =
-      RenderThreadImpl::current()->SharedMainThreadContextProvider().get();
+media::Context3D GetSharedMainThreadContext3D(
+    scoped_refptr<ContextProviderCommandBuffer> provider) {
   if (!provider)
     return media::Context3D();
   return media::Context3D(provider->ContextGL(), provider->GrContext());
@@ -2467,8 +2466,14 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
       AudioDeviceFactory::NewSwitchableAudioRendererSink(
           AudioDeviceFactory::kSourceMediaElement, routing_id_, 0,
           sink_id.utf8(), frame_->getSecurityOrigin());
-  media::WebMediaPlayerParams::Context3DCB context_3d_cb =
-      base::Bind(&GetSharedMainThreadContext3D);
+  // We need to keep a reference to the context provider (see crbug.com/610527)
+  // but media/ can't depend on cc/, so for now, just keep a reference in the
+  // callback.
+  // TODO(piman): replace media::Context3D to scoped_refptr<ContextProvider> in
+  // media/ once ContextProvider is in gpu/.
+  media::WebMediaPlayerParams::Context3DCB context_3d_cb = base::Bind(
+      &GetSharedMainThreadContext3D,
+      RenderThreadImpl::current()->SharedMainThreadContextProvider());
 
   scoped_refptr<media::MediaLog> media_log(new RenderMediaLog());
 #if defined(OS_ANDROID)
