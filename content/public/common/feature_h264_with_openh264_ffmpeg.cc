@@ -9,7 +9,7 @@ namespace content {
 #if BUILDFLAG(RTC_USE_H264)
 
 const base::Feature kWebRtcH264WithOpenH264FFmpeg {
-  "WebRTC-H264WithOpenH264FFmpeg", base::FEATURE_DISABLED_BY_DEFAULT
+  "WebRTC-H264WithOpenH264FFmpeg", base::FEATURE_ENABLED_BY_DEFAULT
 };
 
 #endif  // BUILDFLAG(RTC_USE_H264)
