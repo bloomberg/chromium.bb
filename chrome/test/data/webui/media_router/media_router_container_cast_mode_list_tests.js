@@ -123,13 +123,12 @@ cr.define('media_router_container_cast_mode_list', function() {
       // Tests that |container| returns to SINK_LIST view and arrow drop icon
       // toggles after a cast mode is selected.
       test('select cast mode', function(done) {
-        setTimeout(function() {
+        Polymer.RenderStatus.afterNextRender(this, function() {
           container.castModeList = fakeCastModeListWithNonDefaultModesOnly;
 
           MockInteractions.tap(container.$['container-header'].
               $['arrow-drop-icon']);
           checkCurrentView(media_router.MediaRouterView.CAST_MODE_LIST);
-
           setTimeout(function() {
             var castModeList =
                 container.$$('#cast-mode-list').querySelectorAll('paper-item');
