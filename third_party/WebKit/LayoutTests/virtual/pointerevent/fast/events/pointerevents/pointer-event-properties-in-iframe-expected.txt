@@ -1,0 +1,70 @@
+
+This test verifies clientX/Y of pointer events inside iframe.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS successfullyParsed is true
+
+TEST COMPLETE
+===== scrollX=25, scrollY=100, zoomFactor=1
+pointerdown of touch is recieved:
+clientX = 150
+clientY = 100
+touchstart is recieved:
+clientX = 150
+clientY = 100
+pointermove of touch is recieved:
+clientX = 150
+clientY = 100
+touchmove is recieved:
+clientX = 150
+clientY = 100
+pointerup of touch is recieved:
+clientX = 150
+clientY = 100
+touchend is recieved:
+clientX = 150
+clientY = 100
+
+===== scrollX=40, scrollY=140, zoomFactor=1
+pointerdown of touch is recieved:
+clientX = 150
+clientY = 100
+touchstart is recieved:
+clientX = 150
+clientY = 100
+pointermove of touch is recieved:
+clientX = 150
+clientY = 100
+touchmove is recieved:
+clientX = 150
+clientY = 100
+pointerup of touch is recieved:
+clientX = 150
+clientY = 100
+touchend is recieved:
+clientX = 150
+clientY = 100
+
+===== scrollX=40, scrollY=140, zoomFactor=2
+pointerdown of touch is recieved:
+clientX = 50
+clientY = 0
+touchstart is recieved:
+clientX = 50
+clientY = 0
+pointermove of touch is recieved:
+clientX = 50
+clientY = 0
+touchmove is recieved:
+clientX = 50
+clientY = 0
+pointerup of touch is recieved:
+clientX = 50
+clientY = 0
+touchend is recieved:
+clientX = 50
+clientY = 0
+
+

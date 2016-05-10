@@ -37,7 +37,7 @@ public:
     PointerEvent* create(const AtomicString& type,
         const PlatformTouchPoint&, PlatformEvent::Modifiers,
         const FloatSize& pointRadius,
-        const FloatPoint& pagePoint);
+        const FloatPoint& clientPoint);
 
     PointerEvent* createPointerCancelEvent(
         const int pointerId, const WebPointerProperties::PointerType);

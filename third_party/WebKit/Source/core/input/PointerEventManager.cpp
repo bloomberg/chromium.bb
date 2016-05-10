@@ -422,13 +422,15 @@ void PointerEventManager::dispatchTouchPointerEvents(
         WebInputEventResult result = WebInputEventResult::NotHandled;
         // Do not send pointer events for stationary touches.
         if (touchPoint.state() != PlatformTouchPoint::TouchStationary) {
-            // TODO(crbug.com/608394): The adjustedPagePoint should be converted
-            // to client coordinates.
+            float scaleFactor = 1.0f / touchInfo.targetFrame->pageZoomFactor();
+            FloatPoint scrollPosition = touchInfo.targetFrame->view()->scrollPosition();
+            FloatPoint framePoint = touchInfo.contentPoint;
+            framePoint.moveBy(scrollPosition.scaledBy(-scaleFactor));
             PointerEvent* pointerEvent = m_pointerEventFactory.create(
                 pointerEventNameForTouchPointState(touchPoint.state()),
                 touchPoint, event.getModifiers(),
                 touchInfo.adjustedRadius,
-                touchInfo.adjustedPagePoint);
+                framePoint);
 
             // Consume the touch point if its pointer event is anything but NotHandled
             // (e.g. preventDefault is called in the listener for the pointer event).

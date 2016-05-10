@@ -177,7 +177,7 @@ WebInputEventResult TouchEventManager::dispatchTouchEvents(
             touchInfo.touchNode.get(),
             point.id(),
             point.screenPos(),
-            touchInfo.adjustedPagePoint,
+            touchInfo.contentPoint,
             touchInfo.adjustedRadius,
             point.rotationAngle(),
             point.force(),
@@ -381,7 +381,7 @@ void TouchEventManager::setAllPropertiesOfTouchInfos(
 
         touchInfo.touchNode = touchNode;
         touchInfo.targetFrame = targetFrame;
-        touchInfo.adjustedPagePoint = pagePoint.scaledBy(scaleFactor);
+        touchInfo.contentPoint = pagePoint.scaledBy(scaleFactor);
         touchInfo.adjustedRadius = touchInfo.point.radius().scaledBy(scaleFactor);
         touchInfo.knownTarget = knownTarget;
         touchInfo.consumed = false;

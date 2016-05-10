@@ -133,7 +133,7 @@ PointerEvent* PointerEventFactory::create(
 PointerEvent* PointerEventFactory::create(const AtomicString& type,
     const PlatformTouchPoint& touchPoint, PlatformEvent::Modifiers modifiers,
     const FloatSize& pointRadius,
-    const FloatPoint& pagePoint)
+    const FloatPoint& clientPoint)
 {
     const PlatformTouchPoint::TouchState pointState = touchPoint.state();
 
@@ -157,8 +157,8 @@ PointerEvent* PointerEventFactory::create(const AtomicString& type,
     pointerEventInit.setTiltY(touchPoint.pointerProperties().tiltY);
     pointerEventInit.setScreenX(touchPoint.screenPos().x());
     pointerEventInit.setScreenY(touchPoint.screenPos().y());
-    pointerEventInit.setClientX(pagePoint.x());
-    pointerEventInit.setClientY(pagePoint.y());
+    pointerEventInit.setClientX(clientPoint.x());
+    pointerEventInit.setClientY(clientPoint.y());
     pointerEventInit.setButton(pointerPressedOrReleased ? LeftButton: NoButton);
     pointerEventInit.setPressure(getPointerEventPressure(
         touchPoint.force(), pointerEventInit.buttons()));

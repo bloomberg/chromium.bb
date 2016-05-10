@@ -37,7 +37,7 @@ public:
         PlatformTouchPoint point;
         Member<Node> touchNode;
         Member<LocalFrame> targetFrame;
-        FloatPoint adjustedPagePoint;
+        FloatPoint contentPoint;
         FloatSize adjustedRadius;
         bool knownTarget;
         bool consumed;
