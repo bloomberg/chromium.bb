@@ -210,6 +210,10 @@ class SinglePage(story_module.Story):
     self.grouping_keys['phase'] = phase
 
   @property
+  def url(self):
+    return self._url
+
+  @property
   def browser_type(self):
     return self._browser_type
 
