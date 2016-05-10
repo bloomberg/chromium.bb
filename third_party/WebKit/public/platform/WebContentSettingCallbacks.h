@@ -7,7 +7,10 @@
 
 #include "WebPrivatePtr.h"
 
-namespace WTF { template <typename T> class PassOwnPtr; }
+#if INSIDE_BLINK
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
+#endif
 
 namespace blink {
 

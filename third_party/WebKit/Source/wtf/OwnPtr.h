@@ -23,6 +23,8 @@
 #define WTF_OwnPtr_h
 
 #include "wtf/Allocator.h"
+#include "wtf/Compiler.h"
+#include "wtf/Forward.h"
 #include "wtf/HashTableDeletedValueType.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/OwnPtrCommon.h"
@@ -31,20 +33,18 @@
 
 namespace WTF {
 
-template <typename T> class PassOwnPtr;
-
 template <typename T> class OwnPtr {
     USING_FAST_MALLOC(OwnPtr);
     WTF_MAKE_NONCOPYABLE(OwnPtr);
 public:
+    template <typename U> friend PassOwnPtr<U> adoptPtr(U* ptr);
+    template <typename U> friend PassOwnPtr<U[]> adoptArrayPtr(U* ptr);
+
     typedef typename std::remove_extent<T>::type ValueType;
     typedef ValueType* PtrType;
 
     OwnPtr() : m_ptr(nullptr) {}
     OwnPtr(std::nullptr_t) : m_ptr(nullptr) {}
-
-    OwnPtr(PassOwnPtr<T>&&);
-    template <typename U> OwnPtr(PassOwnPtr<U>&&, EnsurePtrConvertibleArgDecl(U, T));
 
     // Hash table deleted values, which are only constructed and never copied or
     // destroyed.
@@ -71,12 +71,10 @@ public:
     bool operator!() const { return !m_ptr; }
     explicit operator bool() const { return m_ptr; }
 
-    OwnPtr& operator=(PassOwnPtr<T>&&);
     OwnPtr& operator=(std::nullptr_t) { clear(); return *this; }
-    template <typename U> OwnPtr& operator=(PassOwnPtr<U>&&);
 
     OwnPtr(OwnPtr&&);
-    template <typename U> OwnPtr(OwnPtr<U>&&);
+    template <typename U, typename = typename std::enable_if<std::is_convertible<U*, T*>::value>::type> OwnPtr(OwnPtr<U>&&);
 
     OwnPtr& operator=(OwnPtr&&);
     template <typename U> OwnPtr& operator=(OwnPtr<U>&&);
@@ -86,6 +84,8 @@ public:
     static T* hashTableDeletedValue() { return reinterpret_cast<T*>(-1); }
 
 private:
+    explicit OwnPtr(PtrType ptr) : m_ptr(ptr) {}
+
     // We should never have two OwnPtrs for the same underlying object
     // (otherwise we'll get double-destruction), so these equality operators
     // should never be needed.
@@ -99,31 +99,9 @@ private:
         static_assert(!sizeof(U*), "OwnPtrs should never be equal");
         return false;
     }
-    template <typename U> bool operator==(const PassOwnPtr<U>&) const
-    {
-        static_assert(!sizeof(U*), "OwnPtrs should never be equal");
-        return false;
-    }
-    template <typename U> bool operator!=(const PassOwnPtr<U>&) const
-    {
-        static_assert(!sizeof(U*), "OwnPtrs should never be equal");
-        return false;
-    }
 
     PtrType m_ptr;
 };
-
-template <typename T> inline OwnPtr<T>::OwnPtr(PassOwnPtr<T>&& o)
-    : m_ptr(o.leakPtr())
-{
-}
-
-template <typename T>
-template <typename U> inline OwnPtr<T>::OwnPtr(PassOwnPtr<U>&& o, EnsurePtrConvertibleArgDefn(U, T))
-    : m_ptr(o.leakPtr())
-{
-    static_assert(!std::is_array<T>::value, "pointers to array must never be converted");
-}
 
 template <typename T> inline void OwnPtr<T>::clear()
 {
@@ -154,33 +132,13 @@ template <typename T> inline typename OwnPtr<T>::ValueType& OwnPtr<T>::operator[
     return m_ptr[i];
 }
 
-template <typename T> inline OwnPtr<T>& OwnPtr<T>::operator=(PassOwnPtr<T>&& o)
-{
-    PtrType ptr = m_ptr;
-    m_ptr = o.leakPtr();
-    ASSERT(!ptr || m_ptr != ptr);
-    OwnedPtrDeleter<T>::deletePtr(ptr);
-    return *this;
-}
-
-template <typename T>
-template <typename U> inline OwnPtr<T>& OwnPtr<T>::operator=(PassOwnPtr<U>&& o)
-{
-    static_assert(!std::is_array<T>::value, "pointers to array must never be converted");
-    PtrType ptr = m_ptr;
-    m_ptr = o.leakPtr();
-    ASSERT(!ptr || m_ptr != ptr);
-    OwnedPtrDeleter<T>::deletePtr(ptr);
-    return *this;
-}
-
 template <typename T> inline OwnPtr<T>::OwnPtr(OwnPtr<T>&& o)
     : m_ptr(o.leakPtr())
 {
 }
 
 template <typename T>
-template <typename U> inline OwnPtr<T>::OwnPtr(OwnPtr<U>&& o)
+template <typename U, typename> inline OwnPtr<T>::OwnPtr(OwnPtr<U>&& o)
     : m_ptr(o.leakPtr())
 {
     static_assert(!std::is_array<T>::value, "pointers to array must never be converted");

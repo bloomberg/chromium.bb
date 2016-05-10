@@ -110,10 +110,8 @@ struct FloatingObjectHashFunctions {
     STATIC_ONLY(FloatingObjectHashFunctions);
     static unsigned hash(FloatingObject* key) { return DefaultHash<LayoutBox*>::Hash::hash(key->layoutObject()); }
     static unsigned hash(const OwnPtr<FloatingObject>& key) { return hash(key.get()); }
-    static unsigned hash(const PassOwnPtr<FloatingObject>& key) { return hash(key.get()); }
     static bool equal(OwnPtr<FloatingObject>& a, FloatingObject* b) { return a->layoutObject() == b->layoutObject(); }
     static bool equal(OwnPtr<FloatingObject>& a, const OwnPtr<FloatingObject>& b) { return equal(a, b.get()); }
-    static bool equal(OwnPtr<FloatingObject>& a, const PassOwnPtr<FloatingObject>& b) { return equal(a, b.get()); }
 
     static const bool safeToCompareToEmptyOrDeleted = true;
 };

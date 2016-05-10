@@ -21,12 +21,20 @@
 #ifndef WTF_Forward_h
 #define WTF_Forward_h
 
+#include "wtf/Compiler.h"
 #include <stddef.h>
 
 namespace WTF {
 
 template <typename T> class OwnPtr;
-template <typename T> class PassOwnPtr;
+#if COMPILER(MSVC)
+#ifndef PassOwnPtr
+#define PassOwnPtr OwnPtr
+#endif
+#else
+template <typename T>
+using PassOwnPtr = OwnPtr<T>;
+#endif
 template <typename T> class PassRefPtr;
 template <typename T> class RefPtr;
 template <size_t size> class SizeSpecificPartitionAllocator;

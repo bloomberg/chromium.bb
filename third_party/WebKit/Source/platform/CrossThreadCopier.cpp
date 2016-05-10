@@ -120,11 +120,4 @@ static_assert((std::is_same<
     >::value),
     "PassOwnPtr test");
 
-// Verify that PassOwnPtr does not get passed through.
-static_assert((std::is_same<
-    int,
-    CrossThreadCopier<OwnPtr<float>>::Type
-    >::value),
-    "OwnPtr test");
-
 } // namespace blink

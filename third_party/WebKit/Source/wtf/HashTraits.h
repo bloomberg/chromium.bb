@@ -21,6 +21,7 @@
 #ifndef WTF_HashTraits_h
 #define WTF_HashTraits_h
 
+#include "wtf/Forward.h"
 #include "wtf/HashFunctions.h"
 #include "wtf/HashTableDeletedValueType.h"
 #include "wtf/StdLibExtras.h"
@@ -33,10 +34,7 @@
 
 namespace WTF {
 
-class String;
 template <bool isInteger, typename T> struct GenericHashTraitsBase;
-template <typename T> class OwnPtr;
-template <typename T> class PassOwnPtr;
 template <typename T> struct HashTraits;
 
 enum ShouldWeakPointersBeMarkedStrongly {

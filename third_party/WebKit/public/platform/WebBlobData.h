@@ -38,7 +38,8 @@
 #include "WebURL.h"
 
 #if INSIDE_BLINK
-namespace WTF { template <typename T> class PassOwnPtr; }
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
 #endif
 
 namespace blink {
