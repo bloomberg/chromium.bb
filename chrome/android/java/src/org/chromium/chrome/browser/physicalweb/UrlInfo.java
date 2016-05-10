@@ -15,19 +15,22 @@ import java.util.Locale;
 class UrlInfo implements Comparable<UrlInfo> {
     private static final String URL_KEY = "url";
     private static final String DISTANCE_KEY = "distance";
+    private static final String SCAN_TIMESTAMP_KEY = "scan_timestamp";
     private final String mUrl;
     private final double mDistance;
+    private final long mScanTimestamp;
 
-    public UrlInfo(String url, double distance) {
+    public UrlInfo(String url, double distance, long scanTimestamp) {
         mUrl = url;
         mDistance = distance;
+        mScanTimestamp = scanTimestamp;
     }
 
     /**
      * Constructs a simple UrlInfo with only a URL.
      */
     public UrlInfo(String url) {
-        this(url, -1.0);
+        this(url, -1.0, 0);
     }
 
     /**
@@ -47,6 +50,15 @@ class UrlInfo implements Comparable<UrlInfo> {
     }
 
     /**
+     * Gets the timestamp of when the URL was last scanned.
+     * This timestamp is recorded using System.currentTimeMillis().
+     * @return The scan timestamp.
+     */
+    public long getScanTimestamp() {
+        return mScanTimestamp;
+    }
+
+    /**
      * Creates a JSON object that represents this data structure.
      * @return a JSON serialization of this data structure.
      * @throws JSONException if the values cannot be deserialized.
@@ -54,7 +66,8 @@ class UrlInfo implements Comparable<UrlInfo> {
     public JSONObject jsonSerialize() throws JSONException {
         return new JSONObject()
                 .put(URL_KEY, mUrl)
-                .put(DISTANCE_KEY, mDistance);
+                .put(DISTANCE_KEY, mDistance)
+                .put(SCAN_TIMESTAMP_KEY, mScanTimestamp);
     }
 
     /**
@@ -64,7 +77,10 @@ class UrlInfo implements Comparable<UrlInfo> {
      * @throws JSONException if the values cannot be serialized.
      */
     public static UrlInfo jsonDeserialize(JSONObject jsonObject) throws JSONException {
-        return new UrlInfo(jsonObject.getString(URL_KEY), jsonObject.getDouble(DISTANCE_KEY));
+        return new UrlInfo(
+                jsonObject.getString(URL_KEY),
+                jsonObject.getDouble(SCAN_TIMESTAMP_KEY),
+                jsonObject.getLong(DISTANCE_KEY));
     }
 
     /**
@@ -75,6 +91,7 @@ class UrlInfo implements Comparable<UrlInfo> {
     public int hashCode() {
         int hash = 31 + mUrl.hashCode();
         hash = hash * 31 + (int) mDistance;
+        hash = hash * 31 + (int) mScanTimestamp;
         return hash;
     }
 
@@ -109,6 +126,11 @@ class UrlInfo implements Comparable<UrlInfo> {
         }
 
         compareValue = Double.compare(mDistance, other.mDistance);
+        if (compareValue != 0) {
+            return compareValue;
+        }
+
+        compareValue = Long.compare(mScanTimestamp, other.mScanTimestamp);
         if (compareValue != 0) {
             return compareValue;
         }

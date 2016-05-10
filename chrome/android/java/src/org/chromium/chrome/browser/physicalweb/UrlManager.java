@@ -37,6 +37,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -175,7 +176,7 @@ class UrlManager {
     // TODO(conleyo) we should remove this method after calling code only passes us a UrlInfo.
     @VisibleForTesting
     public void addUrl(String url) {
-        addUrl(new UrlInfo(url));
+        addUrl(new UrlInfo(url, -1.0, System.currentTimeMillis()));
     }
 
     /**
@@ -188,7 +189,13 @@ class UrlManager {
         Log.d(TAG, "URL lost: %s", urlInfo);
         boolean isOnboarding = PhysicalWeb.isOnboarding(mContext);
         List<UrlInfo> nearbyUrls = getCachedNearbyUrls();
-        nearbyUrls.remove(urlInfo);
+        for (Iterator<UrlInfo> iterator = nearbyUrls.iterator(); iterator.hasNext();) {
+            UrlInfo nearbyUrlInfo = iterator.next();
+            if (nearbyUrlInfo.getUrl().equals(urlInfo.getUrl())) {
+                iterator.remove();
+                break;
+            }
+        }
         putCachedNearbyUrls(nearbyUrls);
 
         int notificationUrlsAfter = isOnboarding ? nearbyUrls.size() : getUrls().size();
