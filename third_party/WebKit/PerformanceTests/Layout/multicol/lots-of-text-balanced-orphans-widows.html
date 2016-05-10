@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <script src="../../resources/runner.js"></script>
 <pre id="log"></pre>
-<div id="target" style="display:none; -webkit-columns:3; orphans:1; widows:1;">
+<div id="target" style="display:none; -webkit-columns:3; orphans:2; widows:2;">
     Tenderloin ham boudin tongue sausage venison short ribs sirloin, kielbasa beef ribs. Strip steak
     shank bresaola salami spare ribs kielbasa fatback, cow t-bone flank leberkas sirloin. Jowl pork
     belly ribeye, corned beef sirloin chicken salami tail. Rump swine ham shank corned beef short
@@ -662,7 +662,7 @@
     }
 
     PerfTestRunner.measureRunsPerSecond({
-        description: "Measures performance of multicol layout with lots of lines of text, with column balancing.",
+        description: "Measures performance of multicol layout with lots of lines of text, with column balancing, and orphans and widows values larger than 1.",
         run: test
     });
 </script>
