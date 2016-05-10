@@ -184,9 +184,12 @@ class VpxVideoDecoder::MemoryPool
                                    vpx_codec_frame_buffer* fb);
 
   // Callback that will be called by libvpx when the frame buffer is no longer
-  // being used by libvpx. Parameters:
+  // being used by libvpx. Can be called with NULL user data when decode stops
+  // because of an invalid bitstream.
+  // Parameters:
   // |user_priv|  Private data passed to libvpx (pointer to memory pool).
   // |fb|         Pointer to the frame buffer that's being released.
+  // Returns 0 on success. Returns < 0 on failure.
   static int32_t ReleaseVP9FrameBuffer(void* user_priv,
                                        vpx_codec_frame_buffer* fb);
 
@@ -291,6 +294,10 @@ int32_t VpxVideoDecoder::MemoryPool::ReleaseVP9FrameBuffer(
     vpx_codec_frame_buffer* fb) {
   DCHECK(user_priv);
   DCHECK(fb);
+
+  if (!fb->priv)
+    return -1;
+
   VP9FrameBuffer* frame_buffer = static_cast<VP9FrameBuffer*>(fb->priv);
   --frame_buffer->ref_cnt;
 
