@@ -1323,6 +1323,7 @@
     'appcache': ['michaeln@chromium.org'],
     'apps': ['tfarina@chromium.org', 'chromium-apps-reviews@chromium.org'],
     'arc': ['elijahtaylor+arcwatch@chromium.org',
+            'hidehiko+watch@chomium.org',
             'lhchavez+watch@chromium.org',
             'yusukes+watch@chromium.org'],
     'arc_net': ['abhishekbh@chromium.org',
