@@ -95,7 +95,7 @@ std::string SerializeProfiles(const std::vector<AutofillProfile*>& profiles) {
       result += AutofillType(type).ToString();
       result += kFieldSeparator;
       base::ReplaceFirstSubstringAfterOffset(
-          &value, 0, base::ASCIIToUTF16("\n"), base::ASCIIToUTF16("\\n"));
+          &value, 0, base::ASCIIToUTF16("\\n"), base::ASCIIToUTF16("\n"));
       result += base::UTF16ToUTF8(value);
       result += "\n";
     }
@@ -221,11 +221,14 @@ void AutofillMergeTest::MergeProfiles(const std::string& profiles,
     if (line != kProfileSeparator) {
       // Add a field to the current profile.
       size_t separator_pos = line.find(kFieldSeparator);
-      ASSERT_NE(std::string::npos, separator_pos);
+      ASSERT_NE(std::string::npos, separator_pos)
+          << "Wrong format for separator on line " << i;
       base::string16 field_type =
           base::UTF8ToUTF16(line.substr(0, separator_pos));
       base::string16 value =
           base::UTF8ToUTF16(line.substr(separator_pos + kFieldOffset));
+      base::ReplaceFirstSubstringAfterOffset(
+          &value, 0, base::ASCIIToUTF16("\\n"), base::ASCIIToUTF16("\n"));
 
       FormFieldData field;
       field.label = field_type;
