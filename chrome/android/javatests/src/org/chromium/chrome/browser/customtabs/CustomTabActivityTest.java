@@ -1258,14 +1258,14 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
                 assertNull(mActivity.getActivityTab());
             }
         });
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return getInstrumentation().checkMonitorHit(monitor, 1);
-            }
-        });
-        assertTrue(monitor.getLastActivity() instanceof ChromeActivity);
-        final ChromeActivity newActivity = (ChromeActivity) monitor.getLastActivity();
+        // Use the extended CriteriaHelper timeout to make sure we get an activity
+        final Activity lastActivity =
+                monitor.waitForActivityWithTimeout(CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL);
+        assertNotNull("Monitor did not get an activity before hitting the timeout", lastActivity);
+        assertTrue("Expected lastActivity to be a ChromeActivity, was "
+                + lastActivity.getClass().getName(),
+                lastActivity instanceof ChromeActivity);
+        final ChromeActivity newActivity = (ChromeActivity) lastActivity;
         CriteriaHelper.pollUiThread((new Criteria() {
             @Override
             public boolean isSatisfied() {
