@@ -33,6 +33,8 @@
 
 #if defined(LOGGING_INSIDE_WEBRTC)
 
+#include <errno.h>
+
 namespace rtc {
 
 // Note that |N| is the size *with* the null terminator.
