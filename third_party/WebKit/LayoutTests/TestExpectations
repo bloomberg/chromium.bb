@@ -925,6 +925,8 @@ crbug.com/498021 [ Linux ] fast/encoding/invalid-UTF-8.html [ Failure ]
 crbug.com/498021 [ Linux ] fast/text/emoticons.html [ Failure ]
 crbug.com/498021 [ Linux ] fast/text/international/hindi-spacing.html [ Failure ]
 
+crbug.com/610574 [ Win ] fast/text/unicode-fallback-font.html [ Failure ]
+
 # Significant Slimming Paint failure.
 crbug.com/459305 [ Mac ] svg/custom/foreign-object-skew.svg [ Failure ]
 
