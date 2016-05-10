@@ -28,7 +28,6 @@
 
 #include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
-#include "core/page/PageLifecycleObserver.h"
 #include "modules/EventTargetModules.h"
 #include "modules/ModulesExport.h"
 #include "modules/speech/SpeechGrammarList.h"
@@ -43,10 +42,11 @@ namespace blink {
 class ExceptionState;
 class ExecutionContext;
 class MediaStreamTrack;
+class Page;
 class SpeechRecognitionController;
 class SpeechRecognitionError;
 
-class MODULES_EXPORT SpeechRecognition final : public EventTargetWithInlineData, public PageLifecycleObserver, public ActiveScriptWrappable, public ActiveDOMObject {
+class MODULES_EXPORT SpeechRecognition final : public EventTargetWithInlineData, public ActiveScriptWrappable, public ActiveDOMObject {
     USING_GARBAGE_COLLECTED_MIXIN(SpeechRecognition);
     DEFINE_WRAPPERTYPEINFO();
 public:
@@ -93,8 +93,8 @@ public:
     // ActiveScriptWrappable.
     bool hasPendingActivity() const final;
 
-    // ActiveDOMObject.
-    void stop() override;
+    // ActiveDOMObject
+    void contextDestroyed() override;
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(audiostart);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(soundstart);
@@ -110,9 +110,6 @@ public:
 
     DECLARE_VIRTUAL_TRACE();
 
-    // PageLifecycleObserver
-    void contextDestroyed() override;
-
 private:
     SpeechRecognition(Page*, ExecutionContext*);
 
@@ -124,7 +121,6 @@ private:
     unsigned long m_maxAlternatives;
 
     Member<SpeechRecognitionController> m_controller;
-    bool m_stoppedByActiveDOMObject;
     bool m_started;
     bool m_stopping;
     HeapVector<Member<SpeechRecognitionResult>> m_finalResults;

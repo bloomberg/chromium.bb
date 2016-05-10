@@ -147,7 +147,9 @@ void SpeechRecognition::didEnd()
 {
     m_started = false;
     m_stopping = false;
-    if (!m_stoppedByActiveDOMObject)
+    // If m_controller is null, this is being aborted from the ExecutionContext
+    // being detached, so don't dispatch an event.
+    if (m_controller)
         dispatchEvent(Event::create(EventTypeNames::end));
 }
 
@@ -161,9 +163,9 @@ ExecutionContext* SpeechRecognition::getExecutionContext() const
     return ActiveDOMObject::getExecutionContext();
 }
 
-void SpeechRecognition::stop()
+void SpeechRecognition::contextDestroyed()
 {
-    m_stoppedByActiveDOMObject = true;
+    m_controller = nullptr;
     if (hasPendingActivity())
         abort();
 }
@@ -174,8 +176,7 @@ bool SpeechRecognition::hasPendingActivity() const
 }
 
 SpeechRecognition::SpeechRecognition(Page* page, ExecutionContext* context)
-    : PageLifecycleObserver(page)
-    , ActiveScriptWrappable(this)
+    : ActiveScriptWrappable(this)
     , ActiveDOMObject(context)
     , m_grammars(SpeechGrammarList::create()) // FIXME: The spec is not clear on the default value for the grammars attribute.
     , m_audioTrack(nullptr)
@@ -183,7 +184,6 @@ SpeechRecognition::SpeechRecognition(Page* page, ExecutionContext* context)
     , m_interimResults(false)
     , m_maxAlternatives(1)
     , m_controller(SpeechRecognitionController::from(page))
-    , m_stoppedByActiveDOMObject(false)
     , m_started(false)
     , m_stopping(false)
 {
@@ -194,12 +194,6 @@ SpeechRecognition::~SpeechRecognition()
 {
 }
 
-void SpeechRecognition::contextDestroyed()
-{
-    m_controller = nullptr;
-    PageLifecycleObserver::contextDestroyed();
-}
-
 DEFINE_TRACE(SpeechRecognition)
 {
     visitor->trace(m_grammars);
@@ -207,7 +201,6 @@ DEFINE_TRACE(SpeechRecognition)
     visitor->trace(m_controller);
     visitor->trace(m_finalResults);
     EventTargetWithInlineData::trace(visitor);
-    PageLifecycleObserver::trace(visitor);
     ActiveDOMObject::trace(visitor);
 }
 
