@@ -2287,6 +2287,52 @@ void LayoutBlockFlow::addChild(LayoutObject* newChild, LayoutObject* beforeChild
     LayoutBlock::addChild(newChild, beforeChild);
 }
 
+void LayoutBlockFlow::removeChild(LayoutObject* oldChild)
+{
+    // No need to waste time in merging or removing empty anonymous blocks.
+    // We can just bail out if our document is getting destroyed.
+    if (documentBeingDestroyed()) {
+        LayoutBox::removeChild(oldChild);
+        return;
+    }
+
+    LayoutBlock::removeChild(oldChild);
+    if (!firstChild()) {
+        // If this was our last child be sure to clear out our line boxes.
+        if (childrenInline())
+            deleteLineBoxTree();
+
+        // If we are an empty anonymous block in the continuation chain,
+        // we need to remove ourself and fix the continuation chain.
+        if (!beingDestroyed() && isAnonymousBlockContinuation() && !oldChild->isListMarker()) {
+            LayoutObject* containingBlockIgnoringAnonymous = containingBlock();
+            while (containingBlockIgnoringAnonymous && containingBlockIgnoringAnonymous->isAnonymous())
+                containingBlockIgnoringAnonymous = containingBlockIgnoringAnonymous->containingBlock();
+            for (LayoutObject* curr = this; curr; curr = curr->previousInPreOrder(containingBlockIgnoringAnonymous)) {
+                if (curr->virtualContinuation() != this)
+                    continue;
+
+                // Found our previous continuation. We just need to point it to
+                // |this|'s next continuation.
+                LayoutBoxModelObject* nextContinuation = continuation();
+                if (curr->isLayoutInline())
+                    toLayoutInline(curr)->setContinuation(nextContinuation);
+                else if (curr->isLayoutBlockFlow())
+                    toLayoutBlockFlow(curr)->setContinuation(nextContinuation);
+                else
+                    ASSERT_NOT_REACHED();
+
+                break;
+            }
+            setContinuation(nullptr);
+            destroy();
+        }
+    } else if (!beingDestroyed() && !oldChild->isFloatingOrOutOfFlowPositioned() && !oldChild->isAnonymousBlock()) {
+        // If the child we're removing means that we can now treat all children as inline without the need for anonymous blocks, then do that.
+        makeChildrenInlineIfPossible();
+    }
+}
+
 void LayoutBlockFlow::moveAllChildrenIncludingFloatsTo(LayoutBlock* toBlock, bool fullRemoveInsert)
 {
     LayoutBlockFlow* toBlockFlow = toLayoutBlockFlow(toBlock);

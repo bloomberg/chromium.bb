@@ -678,41 +678,6 @@ void LayoutBlock::removeChild(LayoutObject* oldChild)
         // box.
         collapseAnonymousBlockChild(this, toLayoutBlock(child));
     }
-
-    if (!firstChild()) {
-        // If this was our last child be sure to clear out our line boxes.
-        if (childrenInline())
-            deleteLineBoxTree();
-
-        // If we are an empty anonymous block in the continuation chain,
-        // we need to remove ourself and fix the continuation chain.
-        if (!beingDestroyed() && isAnonymousBlockContinuation() && !oldChild->isListMarker()) {
-            LayoutObject* containingBlockIgnoringAnonymous = containingBlock();
-            while (containingBlockIgnoringAnonymous && containingBlockIgnoringAnonymous->isAnonymous())
-                containingBlockIgnoringAnonymous = containingBlockIgnoringAnonymous->containingBlock();
-            for (LayoutObject* curr = this; curr; curr = curr->previousInPreOrder(containingBlockIgnoringAnonymous)) {
-                if (curr->virtualContinuation() != this)
-                    continue;
-
-                // Found our previous continuation. We just need to point it to
-                // |this|'s next continuation.
-                LayoutBoxModelObject* nextContinuation = continuation();
-                if (curr->isLayoutInline())
-                    toLayoutInline(curr)->setContinuation(nextContinuation);
-                else if (curr->isLayoutBlock())
-                    toLayoutBlock(curr)->setContinuation(nextContinuation);
-                else
-                    ASSERT_NOT_REACHED();
-
-                break;
-            }
-            setContinuation(nullptr);
-            destroy();
-        }
-    } else if (!beingDestroyed() && !oldChild->isFloatingOrOutOfFlowPositioned() && isLayoutBlockFlow() && !oldChild->isAnonymousBlock()) {
-        // If the child we're removing means that we can now treat all children as inline without the need for anonymous blocks, then do that.
-        makeChildrenInlineIfPossible();
-    }
 }
 
 void LayoutBlock::startDelayUpdateScrollInfo()
