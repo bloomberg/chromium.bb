@@ -77,7 +77,6 @@ SynchronousCompositorHost::SynchronousCompositorHost(
       use_in_process_zero_copy_software_draw_(use_in_proc_software_draw),
       is_active_(false),
       bytes_limit_(0u),
-      output_surface_id_from_last_draw_(0u),
       root_scroll_offset_updated_by_browser_(false),
       renderer_param_version_(0u),
       need_animate_scroll_(false),
@@ -135,9 +134,6 @@ SynchronousCompositor::Frame SynchronousCompositorHost::DemandDrawHw(
   }
   if (frame.frame) {
     UpdateFrameMetaData(frame.frame->metadata);
-    if (output_surface_id_from_last_draw_ != frame.output_surface_id)
-      returned_resources_.clear();
-    output_surface_id_from_last_draw_ = frame.output_surface_id;
   }
   return frame;
 }
@@ -312,14 +308,9 @@ void SynchronousCompositorHost::SendZeroMemory() {
 void SynchronousCompositorHost::ReturnResources(
     uint32_t output_surface_id,
     const cc::CompositorFrameAck& frame_ack) {
-  // If output_surface_id does not match, then renderer side has switched
-  // to a new OutputSurface, so dropping resources for old OutputSurface
-  // is allowed.
-  if (output_surface_id_from_last_draw_ != output_surface_id)
-    return;
-  returned_resources_.insert(returned_resources_.end(),
-                             frame_ack.resources.begin(),
-                             frame_ack.resources.end());
+  DCHECK(!frame_ack.resources.empty());
+  sender_->Send(new SyncCompositorMsg_ReclaimResources(
+      routing_id_, output_surface_id, frame_ack));
 }
 
 void SynchronousCompositorHost::SetMemoryPolicy(size_t bytes_limit) {
@@ -438,11 +429,7 @@ void SynchronousCompositorHost::OnOverScroll(
 void SynchronousCompositorHost::PopulateCommonParams(
     SyncCompositorCommonBrowserParams* params) {
   DCHECK(params);
-  DCHECK(params->ack.resources.empty());
   params->bytes_limit = bytes_limit_;
-  params->output_surface_id_for_returned_resources =
-      output_surface_id_from_last_draw_;
-  params->ack.resources.swap(returned_resources_);
   if (root_scroll_offset_updated_by_browser_) {
     params->root_scroll_offset = root_scroll_offset_;
     params->update_root_scroll_offset = root_scroll_offset_updated_by_browser_;

@@ -68,6 +68,7 @@ class SynchronousCompositorOutputSurface
   ~SynchronousCompositorOutputSurface() override;
 
   void SetSyncClient(SynchronousCompositorOutputSurfaceClient* compositor);
+  bool OnMessageReceived(const IPC::Message& message);
 
   // OutputSurface.
   bool BindToClient(cc::OutputSurfaceClient* surface_client) override;
@@ -85,17 +86,11 @@ class SynchronousCompositorOutputSurface
                     const gfx::Rect& clip,
                     const gfx::Rect& viewport_rect_for_tile_priority,
                     const gfx::Transform& transform_for_tile_priority);
-  void ReturnResources(uint32_t output_surface_id,
-                       const cc::CompositorFrameAck& frame_ack);
   void DemandDrawSw(SkCanvas* canvas);
   void SetMemoryPolicy(size_t bytes_limit);
   void SetTreeActivationCallback(const base::Closure& callback);
   void GetMessagesToDeliver(
       std::vector<std::unique_ptr<IPC::Message>>* messages);
-
-  size_t GetMemoryPolicy() const {
-    return memory_policy_.bytes_limit_when_visible;
-  }
 
  private:
   class SoftwareDevice;
@@ -109,6 +104,10 @@ class SynchronousCompositorOutputSurface
 
   void CancelFallbackTick();
   void FallbackTickFired();
+
+  // IPC handlers.
+  void OnReclaimResources(uint32_t output_surface_id,
+                          const cc::CompositorFrameAck& ack);
 
   const int routing_id_;
   const uint32_t output_surface_id_;

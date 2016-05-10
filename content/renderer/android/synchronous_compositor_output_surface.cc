@@ -11,12 +11,15 @@
 #include "cc/output/context_provider.h"
 #include "cc/output/output_surface_client.h"
 #include "cc/output/software_output_device.h"
+#include "content/common/android/sync_compositor_messages.h"
 #include "content/renderer/android/synchronous_compositor_external_begin_frame_source.h"
 #include "content/renderer/android/synchronous_compositor_registry.h"
 #include "content/renderer/gpu/frame_swap_message_queue.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/gpu_memory_allocation.h"
+#include "ipc/ipc_message.h"
+#include "ipc/ipc_message_macros.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/skia_util.h"
@@ -97,6 +100,16 @@ void SynchronousCompositorOutputSurface::SetSyncClient(
     SynchronousCompositorOutputSurfaceClient* compositor) {
   DCHECK(CalledOnValidThread());
   sync_client_ = compositor;
+}
+
+bool SynchronousCompositorOutputSurface::OnMessageReceived(
+    const IPC::Message& message) {
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(SynchronousCompositorOutputSurface, message)
+    IPC_MESSAGE_HANDLER(SyncCompositorMsg_ReclaimResources, OnReclaimResources)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  return handled;
 }
 
 bool SynchronousCompositorOutputSurface::BindToClient(
@@ -224,11 +237,14 @@ void SynchronousCompositorOutputSurface::InvokeComposite(
     client_->DidSwapBuffersComplete();
 }
 
-void SynchronousCompositorOutputSurface::ReturnResources(
+void SynchronousCompositorOutputSurface::OnReclaimResources(
     uint32_t output_surface_id,
-    const cc::CompositorFrameAck& frame_ack) {
-  if (output_surface_id_ == output_surface_id)
-    ReclaimResources(&frame_ack);
+    const cc::CompositorFrameAck& ack) {
+  // Ignore message if it's a stale one coming from a different output surface
+  // (e.g. after a lost context).
+  if (output_surface_id != output_surface_id_)
+    return;
+  ReclaimResources(&ack);
 }
 
 void SynchronousCompositorOutputSurface::SetMemoryPolicy(size_t bytes_limit) {

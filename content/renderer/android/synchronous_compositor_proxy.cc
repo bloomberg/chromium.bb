@@ -161,6 +161,9 @@ void SynchronousCompositorProxy::PopulateCommonParams(
 
 void SynchronousCompositorProxy::OnMessageReceived(
     const IPC::Message& message) {
+  if (output_surface_ && output_surface_->OnMessageReceived(message))
+    return;
+
   IPC_BEGIN_MESSAGE_MAP(SynchronousCompositorProxy, message)
     IPC_MESSAGE_HANDLER(SyncCompositorMsg_HandleInputEvent, HandleInputEvent)
     IPC_MESSAGE_HANDLER(SyncCompositorMsg_BeginFrame, BeginFrame)
@@ -421,11 +424,6 @@ void SynchronousCompositorProxy::ProcessCommonParams(
   }
   begin_frame_source_->SetBeginFrameSourcePaused(
       common_params.begin_frame_source_paused);
-  if (output_surface_ && !common_params.ack.resources.empty()) {
-    output_surface_->ReturnResources(
-        common_params.output_surface_id_for_returned_resources,
-        common_params.ack);
-  }
 }
 
 }  // namespace content
