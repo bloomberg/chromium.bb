@@ -26,6 +26,13 @@ SharkConnectionListener::~SharkConnectionListener() {
     controller_->RemoveObserver(this);
 }
 
+void SharkConnectionListener::ResetHostPairingController() {
+  if (controller_.get()) {
+    controller_->Reset();
+    controller_->RemoveObserver(this);
+  }
+}
+
 void SharkConnectionListener::PairingStageChanged(Stage new_stage) {
   if (new_stage == HostPairingController::STAGE_WAITING_FOR_CODE_CONFIRMATION
       // Code confirmation stage can be skipped if devices were paired before.

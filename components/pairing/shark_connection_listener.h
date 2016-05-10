@@ -31,6 +31,8 @@ class SharkConnectionListener : public HostPairingController::Observer {
       OnConnectedCallback callback);
   ~SharkConnectionListener() override;
 
+  void ResetHostPairingController();
+
  private:
   typedef HostPairingController::Stage Stage;
 

@@ -846,6 +846,9 @@ void WizardController::PerformOOBECompletedActions() {
   GetLocalState()->ClearPref(prefs::kTimesHIDDialogShown);
   StartupUtils::MarkOobeCompleted();
   oobe_marked_completed_ = true;
+
+  if (shark_connection_listener_.get())
+    shark_connection_listener_->ResetHostPairingController();
 }
 
 void WizardController::SetCurrentScreen(BaseScreen* new_current) {
