@@ -53,13 +53,15 @@ TEST(NinjaBuildWriter, TwoTargets) {
       "subninja toolchain.ninja\n"
       "\n";
   const char expected_targets[] =
+      "build bar: phony obj/bar/bar.stamp\n"
       "build foo$:bar: phony obj/foo/bar.stamp\n"
       "build bar$:bar: phony obj/bar/bar.stamp\n"
-      "build bar: phony obj/bar/bar.stamp\n"
       "\n";
   const char expected_root_target[] =
-      "build all: phony obj/foo/bar.stamp $\n"
+      "build all: phony $\n"
+      "    obj/foo/bar.stamp $\n"
       "    obj/bar/bar.stamp\n"
+      "\n"
       "default all\n";
   std::string out_str = ninja_out.str();
 #define EXPECT_SNIPPET(expected) \

@@ -8,6 +8,7 @@
 
 #include <fstream>
 #include <map>
+#include <sstream>
 
 #include "base/command_line.h"
 #include "base/files/file_util.h"
@@ -32,6 +33,16 @@
 #endif
 
 namespace {
+
+struct Counts {
+  Counts() : count(0), last_seen(nullptr) {}
+
+  // Number of targets of this type.
+  int count;
+
+  // The last one we encountered.
+  const Target* last_seen;
+};
 
 std::string GetSelfInvocationCommand(const BuildSettings* build_settings) {
   base::FilePath executable;
@@ -77,35 +88,6 @@ std::string GetSelfInvocationCommand(const BuildSettings* build_settings) {
 #else
   return cmdline.GetCommandLineString();
 #endif
-}
-
-OutputFile GetTargetOutputFile(const Target* target) {
-  OutputFile result(target->dependency_output_file());
-
-  // The output files may have leading "./" so normalize those away.
-  NormalizePath(&result.value());
-  return result;
-}
-
-bool HasOutputIdenticalToLabel(const Target* target,
-                               const std::string& short_name) {
-  if (target->output_type() != Target::ACTION &&
-      target->output_type() != Target::ACTION_FOREACH)
-    return false;
-
-  // Rather than convert all outputs to be relative to the build directory
-  // and then compare to the short name, convert the short name to look like a
-  // file in the output directory since this is only one conversion.
-  SourceFile short_name_as_source_file(
-      target->settings()->build_settings()->build_dir().value() + short_name);
-
-  std::vector<SourceFile> outputs_as_source;
-  target->action_values().GetOutputsAsSourceFiles(target, &outputs_as_source);
-  for (const SourceFile& output_as_source : outputs_as_source) {
-    if (output_as_source == short_name_as_source_file)
-      return true;
-  }
-  return false;
 }
 
 // Given an output that appears more than once, generates an error message
@@ -178,29 +160,24 @@ bool NinjaBuildWriter::RunAndWriteFile(
     Err* err) {
   ScopedTrace trace(TraceItem::TRACE_FILE_WRITE, "build.ninja");
 
-  base::FilePath ninja_file(build_settings->GetFullPath(
-      SourceFile(build_settings->build_dir().value() + "build.ninja")));
-  base::CreateDirectory(ninja_file.DirName());
-
-  std::ofstream file;
-  file.open(FilePathToUTF8(ninja_file).c_str(),
-            std::ios_base::out | std::ios_base::binary);
-  if (file.fail()) {
-    *err = Err(Location(), "Couldn't open build.ninja for writing");
-    return false;
-  }
-
-  std::ofstream depfile;
-  depfile.open((FilePathToUTF8(ninja_file) + ".d").c_str(),
-               std::ios_base::out | std::ios_base::binary);
-  if (depfile.fail()) {
-    *err = Err(Location(), "Couldn't open depfile for writing");
-    return false;
-  }
-
+  std::stringstream file;
+  std::stringstream depfile;
   NinjaBuildWriter gen(build_settings, all_settings, default_toolchain,
                        default_toolchain_targets, file, depfile);
-  return gen.Run(err);
+  if (!gen.Run(err))
+    return false;
+
+  base::FilePath ninja_file_name(build_settings->GetFullPath(
+      SourceFile(build_settings->build_dir().value() + "build.ninja")));
+  base::FilePath dep_file_name(build_settings->GetFullPath(
+      SourceFile(build_settings->build_dir().value() + "build.ninja.d")));
+  base::CreateDirectory(ninja_file_name.DirName());
+
+  if (!WriteFileIfChanged(ninja_file_name, file.str(), err) ||
+      !WriteFileIfChanged(dep_file_name, depfile.str(), err))
+    return false;
+
+  return true;
 }
 
 void NinjaBuildWriter::WriteNinjaRules() {
@@ -251,149 +228,166 @@ void NinjaBuildWriter::WriteSubninjas() {
 }
 
 bool NinjaBuildWriter::WritePhonyAndAllRules(Err* err) {
-  std::string all_rules;
-
   // Track rules as we generate them so we don't accidentally write a phony
   // rule that collides with something else.
   // GN internally generates an "all" target, so don't duplicate it.
-  std::set<std::string> written_rules;
+  base::hash_set<std::string> written_rules;
   written_rules.insert("all");
 
-  // Write phony rules for all uniquely-named targets in the default toolchain.
-  // Don't do other toolchains or we'll get naming conflicts, and if the name
-  // isn't unique, also skip it. The exception is for the toplevel targets
-  // which we also find.
-  std::map<std::string, int> small_name_count;
-  std::map<std::string, int> exe_count;
-  std::vector<const Target*> toplevel_targets;
-  base::hash_set<std::string> target_files;
-  for (const auto& target : default_toolchain_targets_) {
-    const Label& label = target->label();
-    small_name_count[label.name()]++;
+  // Set if we encounter a target named "//:default".
+  bool default_target_exists = false;
 
-    // Look for targets with a name of the form
-    //   dir = "//foo/", name = "foo"
-    // i.e. where the target name matches the top level directory. We will
-    // always write phony rules for these even if there is another target with
-    // the same short name.
+  // Targets in the root build file.
+  std::vector<const Target*> toplevel_targets;
+
+  // Targets with names matching their toplevel directories. For example
+  // "//foo:foo". Expect this is the naming scheme for "big components."
+  std::vector<const Target*> toplevel_dir_targets;
+
+  // Tracks the number of each target with the given short name, as well
+  // as the short names of executables (which will be a subset of short_names).
+  std::map<std::string, Counts> short_names;
+  std::map<std::string, Counts> exes;
+
+  for (const Target* target : default_toolchain_targets_) {
+    const Label& label = target->label();
+    const std::string& short_name = label.name();
+
+    if (label.dir().value() == "//" && label.name() == "default")
+      default_target_exists = true;
+
+    // Count the number of targets with the given short name.
+    Counts& short_names_counts = short_names[short_name];
+    short_names_counts.count++;
+    short_names_counts.last_seen = target;
+
+    // Count executables with the given short name.
+    if (target->output_type() == Target::EXECUTABLE) {
+      Counts& exes_counts = exes[short_name];
+      exes_counts.count++;
+      exes_counts.last_seen = target;
+    }
+
+    // Find targets in "important" directories.
     const std::string& dir_string = label.dir().value();
-    if (dir_string.size() == label.name().size() + 3 &&  // Size matches.
+    if (dir_string.size() == 2 &&
+        dir_string[0] == '/' && dir_string[1] == '/') {
+      toplevel_targets.push_back(target);
+    } else if (
+        dir_string.size() == label.name().size() + 3 &&  // Size matches.
         dir_string[0] == '/' && dir_string[1] == '/' &&  // "//" at beginning.
         dir_string[dir_string.size() - 1] == '/' &&  // "/" at end.
-        dir_string.compare(2, label.name().size(), label.name()) == 0)
-      toplevel_targets.push_back(target);
+        dir_string.compare(2, label.name().size(), label.name()) == 0) {
+      toplevel_dir_targets.push_back(target);
+    }
 
-    // Look for executables; later we will generate phony rules for them
-    // even if there are non-executable targets with the same name.
-    if (target->output_type() == Target::EXECUTABLE)
-      exe_count[label.name()]++;
-
-    // Add the files to the list of generated targets so we don't write phony
-    // rules that collide.
-    std::string target_file(target->dependency_output_file().value());
-    NormalizePath(&target_file);
-    written_rules.insert(target_file);
-  }
-
-  for (const auto& target : default_toolchain_targets_) {
-    const Label& label = target->label();
+    // Add the output files from each target to the written rules so that
+    // we don't write phony rules that collide with anything generated by the
+    // build.
+    //
+    // If at this point there is a collision (no phony rules have been
+    // generated yet), two targets make the same output so throw an error.
     for (const auto& output : target->computed_outputs()) {
-      if (!target_files.insert(output.value()).second) {
+      // Need to normalize because many toolchain outputs will be preceeded
+      // with "./".
+      std::string output_string(output.value());
+      NormalizePath(&output_string);
+      if (!written_rules.insert(output_string).second) {
         *err = GetDuplicateOutputError(default_toolchain_targets_, output);
         return false;
       }
     }
+  }
 
-    OutputFile target_file = GetTargetOutputFile(target);
+  // First prefer the short names of toplevel targets.
+  for (const Target* target : toplevel_targets) {
+    if (written_rules.insert(target->label().name()).second)
+      WritePhonyRule(target, target->label().name());
+  }
+
+  // Next prefer short names of toplevel dir targets.
+  for (const Target* target : toplevel_dir_targets) {
+    if (written_rules.insert(target->label().name()).second)
+      WritePhonyRule(target, target->label().name());
+  }
+
+  // Write out the names labels of executables. Many toolchains will produce
+  // executables in the root build directory with no extensions, so the names
+  // will already exist and this will be a no-op.  But on Windows such programs
+  // will have extensions, and executables may override the output directory to
+  // go into some other place.
+  //
+  // Putting this after the "toplevel" rules above also means that you can
+  // steal the short name from an executable by outputting the executable to
+  // a different directory or using a different output name, and writing a
+  // toplevel build rule.
+  for (const auto& pair : exes) {
+    const Counts& counts = pair.second;
+    const std::string& short_name = counts.last_seen->label().name();
+    if (counts.count == 1 && written_rules.insert(short_name).second)
+      WritePhonyRule(counts.last_seen, short_name);
+  }
+
+  // Write short names when those names are unique and not already taken.
+  for (const auto& pair : short_names) {
+    const Counts& counts = pair.second;
+    const std::string& short_name = counts.last_seen->label().name();
+    if (counts.count == 1 && written_rules.insert(short_name).second)
+      WritePhonyRule(counts.last_seen, short_name);
+  }
+
+  // Write the label variants of the target name.
+  for (const Target* target : default_toolchain_targets_) {
+    const Label& label = target->label();
+
     // Write the long name "foo/bar:baz" for the target "//foo/bar:baz".
     std::string long_name = label.GetUserVisibleName(false);
     base::TrimString(long_name, "/", &long_name);
-    WritePhonyRule(target, target_file, long_name, &written_rules);
+    if (written_rules.insert(long_name).second)
+      WritePhonyRule(target, long_name);
 
     // Write the directory name with no target name if they match
     // (e.g. "//foo/bar:bar" -> "foo/bar").
     if (FindLastDirComponent(label.dir()) == label.name()) {
-      std::string medium_name =  DirectoryWithNoLastSlash(label.dir());
+      std::string medium_name = DirectoryWithNoLastSlash(label.dir());
       base::TrimString(medium_name, "/", &medium_name);
       // That may have generated a name the same as the short name of the
       // target which we already wrote.
-      if (medium_name != label.name())
-        WritePhonyRule(target, target_file, medium_name, &written_rules);
+      if (medium_name != label.name() &&
+          written_rules.insert(medium_name).second)
+        WritePhonyRule(target, medium_name);
     }
 
-    // Write short names for ones which are either completely unique or there
-    // at least only one of them in the default toolchain that is an exe.
-    if (small_name_count[label.name()] == 1 ||
-        (target->output_type() == Target::EXECUTABLE &&
-         exe_count[label.name()] == 1)) {
-      // It's reasonable to generate output files in the root build directory
-      // with the same name as the target. Don't generate phony rules for
-      // these cases.
-      //
-      // All of this does not do the general checking of all target's outputs
-      // which may theoretically collide. But it's not very reasonable for
-      // a script target named "foo" to generate a file named "bar" with no
-      // extension in the root build directory while another target is named
-      // "bar". If this does occur, the user is likely to be confused when
-      // building "bar" that is builds foo anyway, so you probably just
-      // shouldn't do that.
-      //
-      // We should fix this however, and build up all generated script outputs
-      // and check everything against that. There are other edge cases that the
-      // current phony rule generator doesn't check. We may need to make a big
-      // set of every possible generated file in the build for this purpose.
-      if (!HasOutputIdenticalToLabel(target, label.name()))
-        WritePhonyRule(target, target_file, label.name(), &written_rules);
-    }
-
-    if (!all_rules.empty())
-      all_rules.append(" $\n    ");
-    all_rules.append(target_file.value());
+    // Write the short name if no other target shares that short name and
+    // non of the higher-priority rules above claimed it.
+    if (short_names[label.name()].count == 1 &&
+        written_rules.insert(label.name()).second)
+      WritePhonyRule(target, label.name());
   }
 
-  // Pick up phony rules for the toplevel targets with non-unique names (which
-  // would have been skipped in the above loop).
-  for (const auto& toplevel_target : toplevel_targets) {
-    if (small_name_count[toplevel_target->label().name()] > 1) {
-      WritePhonyRule(toplevel_target, toplevel_target->dependency_output_file(),
-                     toplevel_target->label().name(), &written_rules);
+  // Write the autogenerated "all" rule.
+  if (!default_toolchain_targets_.empty()) {
+    out_ << "\nbuild all: phony";
+
+    EscapeOptions ninja_escape;
+    ninja_escape.mode = ESCAPE_NINJA;
+    for (const Target* target : default_toolchain_targets_) {
+      out_ << " $\n    ";
+      path_output_.WriteFile(out_, target->dependency_output_file());
     }
   }
+  out_ << std::endl;
 
-  // Figure out if the BUILD file wants to declare a custom "default"
-  // target (rather than building 'all' by default). By convention
-  // we use group("default") but it doesn't have to be a group.
-  bool default_target_exists = false;
-  for (const auto& target : default_toolchain_targets_) {
-    const Label& label = target->label();
-    if (label.dir().value() == "//" && label.name() == "default")
-      default_target_exists = true;
-  }
-
-  if (!all_rules.empty()) {
-    out_ << "\nbuild all: phony " << all_rules << std::endl;
-  }
-
-  if (default_target_exists) {
-    out_ << "default default" << std::endl;
-  } else if (!all_rules.empty()) {
-    out_ << "default all" << std::endl;
-  }
+  if (default_target_exists)
+    out_ << "\ndefault default" << std::endl;
+  else if (!default_toolchain_targets_.empty())
+    out_ << "\ndefault all" << std::endl;
 
   return true;
 }
 
 void NinjaBuildWriter::WritePhonyRule(const Target* target,
-                                      const OutputFile& target_file,
-                                      const std::string& phony_name,
-                                      std::set<std::string>* written_rules) {
-  if (target_file.value() == phony_name)
-    return;  // No need for a phony rule.
-
-  if (written_rules->find(phony_name) != written_rules->end())
-    return;  // Already exists.
-  written_rules->insert(phony_name);
-
+                                      const std::string& phony_name) {
   EscapeOptions ninja_escape;
   ninja_escape.mode = ESCAPE_NINJA;
 
@@ -401,6 +395,6 @@ void NinjaBuildWriter::WritePhonyRule(const Target* target,
   std::string escaped = EscapeString(phony_name, ninja_escape, nullptr);
 
   out_ << "build " << escaped << ": phony ";
-  path_output_.WriteFile(out_, target_file);
+  path_output_.WriteFile(out_, target->dependency_output_file());
   out_ << std::endl;
 }
