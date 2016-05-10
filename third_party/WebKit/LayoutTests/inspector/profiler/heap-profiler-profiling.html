@@ -6,11 +6,13 @@
 
 function pageFunction() {
     (function () {
+        window.holder = [];
         // Allocate few MBs of data.
         for (var i = 0; i < 1000; ++i) {
-           var z = new Array(1000);
-           for (var j = 0; j < z.length; ++j)
-               z[j] = j;
+            var z = new Array(1000);
+            for (var j = 0; j < z.length; ++j)
+                z[j] = j;
+            window.holder.push(z);
         }
     })();
 }
@@ -48,7 +50,7 @@ function test()
             InspectorTest.showProfileWhenAdded("Profile 1");
             InspectorTest.waitUntilProfileViewIsShown("Profile 1", findPageFunctionInProfileView);
             InspectorTest.startSamplingHeapProfiler();
-            InspectorTest.evaluateInPage("pageFunction()", () => InspectorTest.stopSamplingHeapProfiler());
+            InspectorTest.evaluateInPage("pageFunction()", InspectorTest.stopSamplingHeapProfiler);
         }
     ]);
 }
