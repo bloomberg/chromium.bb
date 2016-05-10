@@ -315,8 +315,8 @@ void RenderWidgetHostViewChildFrame::UnlockCompositingSurface() {
 }
 
 void RenderWidgetHostViewChildFrame::RegisterSurfaceNamespaceId() {
-  DCHECK(host_);
-  if (host_->delegate() && host_->delegate()->GetInputEventRouter()) {
+  // If Destroy() has been called before we get here, host_ may be null.
+  if (host_ && host_->delegate() && host_->delegate()->GetInputEventRouter()) {
     RenderWidgetHostInputEventRouter* router =
         host_->delegate()->GetInputEventRouter();
     if (!router->is_registered(GetSurfaceIdNamespace()))
