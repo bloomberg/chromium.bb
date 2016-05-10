@@ -114,8 +114,8 @@ void NTPSnippetsFetcher::FetchSnippetsFromHosts(
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDontRestrict)) {
     if (hosts.empty()) {
-      FetchFinishedWithError(FetchResult::EMPTY_HOSTS,
-                             /*extra_message=*/std::string());
+      FetchFinished(OptionalSnippets(), FetchResult::EMPTY_HOSTS,
+                    /*extra_message=*/std::string());
       return;
     }
     for (const std::string& host : hosts)
@@ -159,12 +159,11 @@ void NTPSnippetsFetcher::OnURLFetchComplete(const URLFetcher* source) {
       status.is_success() ? source->GetResponseCode() : status.error());
 
   if (!status.is_success()) {
-    FetchFinishedWithError(
-        FetchResult::URL_REQUEST_STATUS_ERROR,
-        /*extra_message=*/base::StringPrintf(" %d", status.error()));
+    FetchFinished(OptionalSnippets(), FetchResult::URL_REQUEST_STATUS_ERROR,
+                  /*extra_message=*/base::StringPrintf(" %d", status.error()));
   } else if (source->GetResponseCode() != net::HTTP_OK) {
-    FetchFinishedWithError(
-        FetchResult::HTTP_ERROR,
+    FetchFinished(
+        OptionalSnippets(), FetchResult::HTTP_ERROR,
         /*extra_message=*/base::StringPrintf(" %d", source->GetResponseCode()));
   } else {
     bool stores_result_to_string = source->GetResponseAsString(
@@ -188,36 +187,33 @@ void NTPSnippetsFetcher::OnJsonParsed(std::unique_ptr<base::Value> parsed) {
       !top_dict->GetList("recos", &list) ||
       !NTPSnippet::AddFromListValue(*list, &snippets)) {
     LOG(WARNING) << "Received invalid snippets: " << last_fetch_json_;
-    FetchFinishedWithError(FetchResult::INVALID_SNIPPET_CONTENT_ERROR,
-                           /*extra_message=*/std::string());
+    FetchFinished(OptionalSnippets(),
+                  FetchResult::INVALID_SNIPPET_CONTENT_ERROR,
+                  /*extra_message=*/std::string());
   } else {
-    RecordUmaFetchResult(FetchResult::SUCCESS);
-    snippets_available_callback_.Run(std::move(snippets), std::string());
+    FetchFinished(OptionalSnippets(std::move(snippets)), FetchResult::SUCCESS,
+                  /*extra_message=*/std::string());
   }
 }
 
 void NTPSnippetsFetcher::OnJsonError(const std::string& error) {
   LOG(WARNING) << "Received invalid JSON (" << error << "): "
                << last_fetch_json_;
-  FetchFinishedWithError(
-      FetchResult::JSON_PARSE_ERROR,
+  FetchFinished(
+      OptionalSnippets(), FetchResult::JSON_PARSE_ERROR,
       /*extra_message=*/base::StringPrintf(" (error %s)", error.c_str()));
 }
 
-void NTPSnippetsFetcher::FetchFinishedWithError(
-    FetchResult result,
-    const std::string& extra_message) {
-  RecordUmaFetchResult(result);
-  if (!snippets_available_callback_.is_null()) {
-    snippets_available_callback_.Run(
-        NTPSnippet::PtrVector(), FetchResultToString(result) + extra_message);
-  }
-}
-
-void NTPSnippetsFetcher::RecordUmaFetchResult(FetchResult result) {
+void NTPSnippetsFetcher::FetchFinished(OptionalSnippets snippets,
+                                       FetchResult result,
+                                       const std::string& extra_message) {
+  DCHECK(result == FetchResult::SUCCESS || !snippets);
+  last_status_ = FetchResultToString(result) + extra_message;
   UMA_HISTOGRAM_ENUMERATION("NewTabPage.Snippets.FetchResult",
                             static_cast<int>(result),
                             static_cast<int>(FetchResult::RESULT_MAX));
+  if (!snippets_available_callback_.is_null())
+    snippets_available_callback_.Run(std::move(snippets));
 }
 
 }  // namespace ntp_snippets

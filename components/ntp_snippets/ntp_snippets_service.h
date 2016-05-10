@@ -83,7 +83,7 @@ class NTPSnippetsService : public KeyedService {
 
   // Returns the last status message from the snippets fetcher.
   const std::string& last_status() const {
-    return last_fetch_status_;
+    return snippets_fetcher_->last_status();
   }
 
   // Returns the last json from the snippets fetcher.
@@ -140,7 +140,7 @@ class NTPSnippetsService : public KeyedService {
 
  private:
   void OnSuggestionsChanged(const suggestions::SuggestionsProfile& suggestions);
-  void OnFetchFinished(NTPSnippetStorage snippets, const std::string& status);
+  void OnFetchFinished(NTPSnippetsFetcher::OptionalSnippets snippets);
 
   // Expects a top-level dictionary containing a "recos" list, each element of
   // which will be parsed as a snippet.
@@ -194,8 +194,6 @@ class NTPSnippetsService : public KeyedService {
 
   // The snippets fetcher.
   std::unique_ptr<NTPSnippetsFetcher> snippets_fetcher_;
-
-  std::string last_fetch_status_;
 
   // Timer that calls us back when the next snippet expires.
   base::OneShotTimer expiry_timer_;

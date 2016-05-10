@@ -50,8 +50,6 @@ const int kWifiFetchingHourMax = 22;
 
 const int kDefaultExpiryTimeMins = 24 * 60;
 
-const char kStatusMessageOK[] = "OK";
-
 base::TimeDelta GetFetchingInterval(const char* switch_name,
                                     int default_value_seconds) {
   int value_seconds = default_value_seconds;
@@ -325,18 +323,15 @@ void NTPSnippetsService::OnSuggestionsChanged(
   FetchSnippetsFromHosts(hosts);
 }
 
-void NTPSnippetsService::OnFetchFinished(NTPSnippetStorage snippets,
-                                         const std::string& status) {
-  if (!status.empty()) {
-    last_fetch_status_ = status;
-  } else {
-    last_fetch_status_ = kStatusMessageOK;
+void NTPSnippetsService::OnFetchFinished(
+    NTPSnippetsFetcher::OptionalSnippets snippets) {
+  if (snippets) {
     // Sparse histogram used because the number of snippets is small (bound by
     // kMaxSnippetCount).
-    DCHECK_LE(snippets.size(), static_cast<size_t>(kMaxSnippetCount));
+    DCHECK_LE(snippets->size(), static_cast<size_t>(kMaxSnippetCount));
     UMA_HISTOGRAM_SPARSE_SLOWLY("NewTabPage.Snippets.NumArticlesFetched",
-                                snippets.size());
-    MergeSnippets(std::move(snippets));
+                                snippets->size());
+    MergeSnippets(std::move(*snippets));
   }
   LoadingSnippetsFinished();
 }
