@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/tab_contents/origins_seen_service.h"
+#include "components/navigation_metrics/origins_seen_service.h"
 
+namespace navigation_metrics {
 namespace {
 const size_t kDefaultMRUCacheSize = 1000;
 }  // namespace
@@ -18,3 +19,4 @@ bool OriginsSeenService::Insert(const url::Origin& origin) {
   origins_seen_.Put(origin, true);
   return seen;
 }
+}  // namespace navigation_metrics

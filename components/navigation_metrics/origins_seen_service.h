@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_TAB_CONTENTS_ORIGINS_SEEN_SERVICE_H_
-#define CHROME_BROWSER_TAB_CONTENTS_ORIGINS_SEEN_SERVICE_H_
+#ifndef COMPONENTS_NAVIGATION_METRICS_ORIGINS_SEEN_SERVICE_H_
+#define COMPONENTS_NAVIGATION_METRICS_ORIGINS_SEEN_SERVICE_H_
 
 #include "base/containers/mru_cache.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "url/origin.h"
+
+namespace navigation_metrics {
 
 class OriginsSeenService : public KeyedService {
  public:
@@ -26,4 +28,6 @@ class OriginsSeenService : public KeyedService {
   base::MRUCache<url::Origin, bool> origins_seen_;
 };
 
-#endif  // CHROME_BROWSER_TAB_CONTENTS_ORIGINS_SEEN_SERVICE_H_
+}  // namespace navigation_metrics
+
+#endif  // COMPONENTS_NAVIGATION_METRICS_ORIGINS_SEEN_SERVICE_H_

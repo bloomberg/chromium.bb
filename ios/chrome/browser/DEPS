@@ -36,6 +36,7 @@ include_rules = [
   "+components/metrics",
   "+components/user_prefs",
   "+components/metrics_services_manager",
+  "+components/navigation_metrics",
   "+components/net_log",
   "+components/network_time",
   "+components/ntp_snippets",

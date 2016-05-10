@@ -6,11 +6,13 @@
 
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/navigation_metrics/origins_seen_service.h"
 
 // static
-OriginsSeenService* OriginsSeenServiceFactory::GetForBrowserContext(
+navigation_metrics::OriginsSeenService*
+OriginsSeenServiceFactory::GetForBrowserContext(
     content::BrowserContext* context) {
-  return static_cast<OriginsSeenService*>(
+  return static_cast<navigation_metrics::OriginsSeenService*>(
       GetInstance()->GetServiceForBrowserContext(context, true));
 }
 
@@ -22,7 +24,7 @@ OriginsSeenServiceFactory* OriginsSeenServiceFactory::GetInstance() {
 // static
 KeyedService* OriginsSeenServiceFactory::BuildInstanceFor(
     content::BrowserContext* context) {
-  return new OriginsSeenService();
+  return new navigation_metrics::OriginsSeenService();
 }
 
 OriginsSeenServiceFactory::OriginsSeenServiceFactory()

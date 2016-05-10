@@ -6,14 +6,15 @@
 #define CHROME_BROWSER_TAB_CONTENTS_ORIGINS_SEEN_SERVICE_FACTORY_H_
 
 #include "base/memory/singleton.h"
-#include "chrome/browser/tab_contents/origins_seen_service.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
+namespace navigation_metrics {
 class OriginsSeenService;
+}
 
 class OriginsSeenServiceFactory : public BrowserContextKeyedServiceFactory {
  public:
-  static OriginsSeenService* GetForBrowserContext(
+  static navigation_metrics::OriginsSeenService* GetForBrowserContext(
       content::BrowserContext* context);
 
   static OriginsSeenServiceFactory* GetInstance();

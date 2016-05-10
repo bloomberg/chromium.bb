@@ -611,8 +611,6 @@
       'browser/storage/storage_info_fetcher.h',
       'browser/tab_contents/navigation_metrics_recorder.cc',
       'browser/tab_contents/navigation_metrics_recorder.h',
-      'browser/tab_contents/origins_seen_service.cc',
-      'browser/tab_contents/origins_seen_service.h',
       'browser/tab_contents/origins_seen_service_factory.cc',
       'browser/tab_contents/origins_seen_service_factory.h',
       'browser/tab_contents/retargeting_details.h',

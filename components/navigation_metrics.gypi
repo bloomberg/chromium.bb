@@ -10,6 +10,7 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../url/url.gyp:url_lib',
+        'keyed_service_core',
       ],
       'include_dirs': [
         '..',
@@ -17,6 +18,8 @@
       'sources': [
         'navigation_metrics/navigation_metrics.cc',
         'navigation_metrics/navigation_metrics.h',
+        'navigation_metrics/origins_seen_service.cc',
+        'navigation_metrics/origins_seen_service.h',
       ],
     },
   ],
