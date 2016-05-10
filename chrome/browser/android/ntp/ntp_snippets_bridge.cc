@@ -137,16 +137,17 @@ void NTPSnippetsBridge::NTPSnippetsServiceLoaded() {
   std::vector<std::string> snippets;
   std::vector<int64_t> timestamps;
   std::vector<std::string> publishers;
-  for (const ntp_snippets::NTPSnippet& snippet : *ntp_snippets_service_) {
+  for (const std::unique_ptr<ntp_snippets::NTPSnippet>& snippet :
+       ntp_snippets_service_->snippets()) {
     // The url from source_info is a url for a site that is one of the
     // HOST_RESTRICT parameters, so this is preferred.
-    urls.push_back(snippet.best_source().url.spec());
-    amp_urls.push_back(snippet.best_source().amp_url.spec());
-    titles.push_back(snippet.title());
-    thumbnail_urls.push_back(snippet.salient_image_url().spec());
-    snippets.push_back(snippet.snippet());
-    timestamps.push_back(snippet.publish_date().ToJavaTime());
-    publishers.push_back(snippet.best_source().publisher_name);
+    urls.push_back(snippet->best_source().url.spec());
+    amp_urls.push_back(snippet->best_source().amp_url.spec());
+    titles.push_back(snippet->title());
+    thumbnail_urls.push_back(snippet->salient_image_url().spec());
+    snippets.push_back(snippet->snippet());
+    timestamps.push_back(snippet->publish_date().ToJavaTime());
+    publishers.push_back(snippet->best_source().publisher_name);
   }
 
   JNIEnv* env = base::android::AttachCurrentThread();

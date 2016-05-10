@@ -24,7 +24,6 @@
         'suggestions',
       ],
       'sources': [
-        'ntp_snippets/inner_iterator.h',
         'ntp_snippets/ntp_snippet.cc',
         'ntp_snippets/ntp_snippet.h',
         'ntp_snippets/ntp_snippets_fetcher.cc',

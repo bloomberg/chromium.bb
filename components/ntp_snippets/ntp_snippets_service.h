@@ -18,7 +18,6 @@
 #include "base/sequenced_task_runner.h"
 #include "base/timer/timer.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/ntp_snippets/inner_iterator.h"
 #include "components/ntp_snippets/ntp_snippet.h"
 #include "components/ntp_snippets/ntp_snippets_fetcher.h"
 #include "components/ntp_snippets/ntp_snippets_scheduler.h"
@@ -48,8 +47,6 @@ class NTPSnippetsServiceObserver;
 class NTPSnippetsService : public KeyedService {
  public:
   using NTPSnippetStorage = NTPSnippet::PtrVector;
-  using const_iterator =
-      InnerIterator<NTPSnippetStorage::const_iterator, const NTPSnippet>;
 
   using ImageFetchedCallback =
       base::Callback<void(const GURL&, const SkBitmap*)>;
@@ -81,6 +78,15 @@ class NTPSnippetsService : public KeyedService {
   // suggestions from the suggestion service) and adds them to the current ones.
   void FetchSnippetsFromHosts(const std::set<std::string>& hosts);
 
+  // Available snippets.
+  const NTPSnippetStorage& snippets() const { return snippets_; }
+
+  // Returns the list of snippets previously discarded by the user (that are
+  // not expired yet).
+  const NTPSnippetStorage& discarded_snippets() const {
+    return discarded_snippets_;
+  }
+
   // Returns the last status message from the snippets fetcher.
   const std::string& last_status() const {
     return snippets_fetcher_->last_status();
@@ -106,12 +112,6 @@ class NTPSnippetsService : public KeyedService {
   // a snippet was discarded.
   bool DiscardSnippet(const GURL& url);
 
-  // Returns the list of snippets previously discarded by the user (that are
-  // not expired yet).
-  const NTPSnippetStorage& discarded_snippets() const {
-    return discarded_snippets_;
-  }
-
   // Clears the lists of snippets previously discarded by the user.
   void ClearDiscardedSnippets();
 
@@ -121,19 +121,6 @@ class NTPSnippetsService : public KeyedService {
   // Observer accessors.
   void AddObserver(NTPSnippetsServiceObserver* observer);
   void RemoveObserver(NTPSnippetsServiceObserver* observer);
-
-  // Number of snippets available.
-  size_t size() const { return snippets_.size(); }
-
-  // The snippets can be iterated upon only via a const_iterator. Recommended
-  // way to iterate is as follows:
-  //
-  // NTPSnippetsService* service; // Assume is set.
-  //  for (auto& snippet : *service) {
-  //    // |snippet| here is a const object.
-  //  }
-  const_iterator begin() const { return const_iterator(snippets_.begin()); }
-  const_iterator end() const { return const_iterator(snippets_.end()); }
 
   // Returns the maximum number of snippets that will be shown at once.
   static int GetMaxSnippetCountForTesting();

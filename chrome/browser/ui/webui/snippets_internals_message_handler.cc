@@ -177,8 +177,9 @@ void SnippetsInternalsMessageHandler::SendSnippets() {
   std::unique_ptr<base::ListValue> snippets_list(new base::ListValue);
 
   int index = 0;
-  for (auto& snippet : *ntp_snippets_service_)
-    snippets_list->Append(PrepareSnippet(snippet, index++, false));
+  for (const std::unique_ptr<ntp_snippets::NTPSnippet>& snippet :
+       ntp_snippets_service_->snippets())
+    snippets_list->Append(PrepareSnippet(*snippet, index++, false));
 
   base::DictionaryValue result;
   result.Set("list", std::move(snippets_list));
@@ -194,7 +195,7 @@ void SnippetsInternalsMessageHandler::SendDiscardedSnippets() {
   std::unique_ptr<base::ListValue> snippets_list(new base::ListValue);
 
   int index = 0;
-  for (auto& snippet : ntp_snippets_service_->discarded_snippets())
+  for (const auto& snippet : ntp_snippets_service_->discarded_snippets())
     snippets_list->Append(PrepareSnippet(*snippet, index++, true));
 
   base::DictionaryValue result;

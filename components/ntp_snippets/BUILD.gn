@@ -5,7 +5,6 @@
 # GYP version: components/ntp_snippets.gypi:ntp_snippets
 source_set("ntp_snippets") {
   sources = [
-    "inner_iterator.h",
     "ntp_snippet.cc",
     "ntp_snippet.h",
     "ntp_snippets_fetcher.cc",
@@ -40,7 +39,6 @@ source_set("ntp_snippets") {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "inner_iterator_unittest.cc",
     "ntp_snippets_fetcher_unittest.cc",
     "ntp_snippets_service_unittest.cc",
   ]
