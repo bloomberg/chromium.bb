@@ -56,6 +56,14 @@ class _UserSatisfiedLens(object):
     """
     return 0
 
+  def SatisfiedMs(self):
+    """Returns user satisfied timestamp, in ms.
+
+    This is *not* a unix timestamp. It is relative to the same point in time
+    as the request_time field in request_track.Timing.
+    """
+    return self._satisfied_msec
+
 
 class RequestFingerprintLens(_UserSatisfiedLens):
   """A lens built using requests in a trace that match a set of fingerprints."""

@@ -8,16 +8,12 @@ import request_track
 import test_utils
 import user_satisfied_lens
 
-class UserSatisfiedLensTestCase(unittest.TestCase):
-  # We track all times in milliseconds, but raw trace events are in
-  # microseconds.
-  MILLI_TO_MICRO = 1000
 
-  def setUp(self):
-    super(UserSatisfiedLensTestCase, self).setUp()
+class TraceCreator(object):
+  def __init__(self):
     self._request_index = 1
 
-  def _RequestAt(self, timestamp_msec, duration=1):
+  def RequestAt(self, timestamp_msec, duration=1):
     timestamp_sec = float(timestamp_msec) / 1000
     rq = request_track.Request.FromJsonDict({
         'url': 'http://bla-%s-.com' % timestamp_msec,
@@ -31,38 +27,58 @@ class UserSatisfiedLensTestCase(unittest.TestCase):
     self._request_index += 1
     return rq
 
+  def CreateTrace(self, requests, events, main_frame_id):
+    loading_trace = test_utils.LoadingTraceFromEvents(
+        requests, trace_events=events)
+    loading_trace.tracing_track.SetMainFrameID(main_frame_id)
+    return loading_trace
+
+
+class UserSatisfiedLensTestCase(unittest.TestCase):
+  # We track all times in milliseconds, but raw trace events are in
+  # microseconds.
+  MILLI_TO_MICRO = 1000
+
+  def setUp(self):
+    super(UserSatisfiedLensTestCase, self).setUp()
+
   def testFirstContentfulPaintLens(self):
     MAINFRAME = 1
     SUBFRAME = 2
-    loading_trace = test_utils.LoadingTraceFromEvents(
-        [self._RequestAt(1), self._RequestAt(10), self._RequestAt(20)],
-        trace_events=[{'ts': 0, 'ph': 'I',
-                       'cat': 'blink.some_other_user_timing',
-                       'name': 'firstContentfulPaint'},
-                      {'ts': 30 * self.MILLI_TO_MICRO, 'ph': 'I',
-                       'cat': 'blink.user_timing',
-                       'name': 'firstDiscontentPaint'},
-                      {'ts': 5 * self.MILLI_TO_MICRO, 'ph': 'I',
-                       'cat': 'blink.user_timing',
-                       'name': 'firstContentfulPaint',
-                       'args': {'frame': SUBFRAME} },
-                      {'ts': 12 * self.MILLI_TO_MICRO, 'ph': 'I',
-                       'cat': 'blink.user_timing',
-                       'name': 'firstContentfulPaint',
-                       'args': {'frame': MAINFRAME}}])
-    loading_trace.tracing_track.SetMainFrameID(MAINFRAME)
+    trace_creator = TraceCreator()
+    requests = [trace_creator.RequestAt(1), trace_creator.RequestAt(10),
+                trace_creator.RequestAt(20)]
+    loading_trace = trace_creator.CreateTrace(
+        requests,
+        [{'ts': 0, 'ph': 'I',
+          'cat': 'blink.some_other_user_timing',
+          'name': 'firstContentfulPaint'},
+         {'ts': 30 * self.MILLI_TO_MICRO, 'ph': 'I',
+          'cat': 'blink.user_timing',
+          'name': 'firstDiscontentPaint'},
+         {'ts': 5 * self.MILLI_TO_MICRO, 'ph': 'I',
+          'cat': 'blink.user_timing',
+          'name': 'firstContentfulPaint',
+          'args': {'frame': SUBFRAME} },
+         {'ts': 12 * self.MILLI_TO_MICRO, 'ph': 'I',
+          'cat': 'blink.user_timing',
+          'name': 'firstContentfulPaint',
+          'args': {'frame': MAINFRAME}}], MAINFRAME)
     lens = user_satisfied_lens.FirstContentfulPaintLens(loading_trace)
     self.assertEqual(set(['0.1', '0.2']), lens.CriticalRequestIds())
     self.assertEqual(1, lens.PostloadTimeMsec())
 
   def testCantGetNoSatisfaction(self):
     MAINFRAME = 1
-    loading_trace = test_utils.LoadingTraceFromEvents(
-        [self._RequestAt(1), self._RequestAt(10), self._RequestAt(20)],
-        trace_events=[{'ts': 0, 'ph': 'I',
-                       'cat': 'not_my_cat',
-                       'name': 'someEvent',
-                       'args': {'frame': MAINFRAME}}])
+    trace_creator = TraceCreator()
+    requests = [trace_creator.RequestAt(1), trace_creator.RequestAt(10),
+                trace_creator.RequestAt(20)]
+    loading_trace = trace_creator.CreateTrace(
+        requests,
+        [{'ts': 0, 'ph': 'I',
+          'cat': 'not_my_cat',
+          'name': 'someEvent',
+          'args': {'frame': MAINFRAME}}], MAINFRAME)
     loading_trace.tracing_track.SetMainFrameID(MAINFRAME)
     lens = user_satisfied_lens.FirstContentfulPaintLens(loading_trace)
     self.assertEqual(set(['0.1', '0.2', '0.3']), lens.CriticalRequestIds())
@@ -71,60 +87,65 @@ class UserSatisfiedLensTestCase(unittest.TestCase):
   def testFirstTextPaintLens(self):
     MAINFRAME = 1
     SUBFRAME = 2
-    loading_trace = test_utils.LoadingTraceFromEvents(
-        [self._RequestAt(1), self._RequestAt(10), self._RequestAt(20)],
-        trace_events=[{'ts': 0, 'ph': 'I',
-                       'cat': 'blink.some_other_user_timing',
-                       'name': 'firstPaint'},
-                      {'ts': 30 * self.MILLI_TO_MICRO, 'ph': 'I',
-                       'cat': 'blink.user_timing',
-                       'name': 'firstishPaint',
-                       'args': {'frame': MAINFRAME}},
-                      {'ts': 3 * self.MILLI_TO_MICRO, 'ph': 'I',
-                       'cat': 'blink.user_timing',
-                       'name': 'firstPaint',
-                       'args': {'frame': SUBFRAME}},
-                      {'ts': 12 * self.MILLI_TO_MICRO, 'ph': 'I',
-                       'cat': 'blink.user_timing',
-                       'name': 'firstPaint',
-                       'args': {'frame': MAINFRAME}}])
+    trace_creator = TraceCreator()
+    requests = [trace_creator.RequestAt(1), trace_creator.RequestAt(10),
+                trace_creator.RequestAt(20)]
+    loading_trace = trace_creator.CreateTrace(
+        requests,
+        [{'ts': 0, 'ph': 'I',
+          'cat': 'blink.some_other_user_timing',
+          'name': 'firstPaint'},
+         {'ts': 30 * self.MILLI_TO_MICRO, 'ph': 'I',
+          'cat': 'blink.user_timing',
+          'name': 'firstishPaint',
+          'args': {'frame': MAINFRAME}},
+         {'ts': 3 * self.MILLI_TO_MICRO, 'ph': 'I',
+          'cat': 'blink.user_timing',
+          'name': 'firstPaint',
+          'args': {'frame': SUBFRAME}},
+         {'ts': 12 * self.MILLI_TO_MICRO, 'ph': 'I',
+          'cat': 'blink.user_timing',
+          'name': 'firstPaint',
+          'args': {'frame': MAINFRAME}}], MAINFRAME)
     loading_trace.tracing_track.SetMainFrameID(MAINFRAME)
     lens = user_satisfied_lens.FirstTextPaintLens(loading_trace)
     self.assertEqual(set(['0.1', '0.2']), lens.CriticalRequestIds())
     self.assertEqual(1, lens.PostloadTimeMsec())
 
   def testFirstSignificantPaintLens(self):
-    loading_trace = test_utils.LoadingTraceFromEvents(
-        [self._RequestAt(1), self._RequestAt(10),
-         self._RequestAt(15), self._RequestAt(20)],
-        trace_events=[{'ts': 0, 'ph': 'I',
-                       'cat': 'blink',
-                       'name': 'firstPaint'},
-                      {'ts': 9 * self.MILLI_TO_MICRO, 'ph': 'I',
-                       'cat': 'blink.user_timing',
-                       'name': 'FrameView::synchronizedPaint'},
-                      {'ts': 18 * self.MILLI_TO_MICRO, 'ph': 'I',
-                       'cat': 'blink',
-                       'name': 'FrameView::synchronizedPaint'},
-                      {'ts': 22 * self.MILLI_TO_MICRO, 'ph': 'I',
-                       'cat': 'blink',
-                       'name': 'FrameView::synchronizedPaint'},
-
-                      {'ts': 5 * self.MILLI_TO_MICRO, 'ph': 'I',
-                       'cat': 'foobar', 'name': 'biz',
-                       'args': {'counters': {
-                           'LayoutObjectsThatHadNeverHadLayout': 10
-                       } } },
-                      {'ts': 12 * self.MILLI_TO_MICRO, 'ph': 'I',
-                       'cat': 'foobar', 'name': 'biz',
-                       'args': {'counters': {
-                           'LayoutObjectsThatHadNeverHadLayout': 12
-                       } } },
-                      {'ts': 15 * self.MILLI_TO_MICRO, 'ph': 'I',
-                       'cat': 'foobar', 'name': 'biz',
-                       'args': {'counters': {
-                           'LayoutObjectsThatHadNeverHadLayout': 10
-                       } } } ])
+    MAINFRAME = 1
+    trace_creator = TraceCreator()
+    requests = [trace_creator.RequestAt(1), trace_creator.RequestAt(10),
+                trace_creator.RequestAt(15), trace_creator.RequestAt(20)]
+    loading_trace = trace_creator.CreateTrace(
+        requests,
+        [{'ts': 0, 'ph': 'I',
+          'cat': 'blink',
+          'name': 'firstPaint'},
+         {'ts': 9 * self.MILLI_TO_MICRO, 'ph': 'I',
+          'cat': 'blink.user_timing',
+          'name': 'FrameView::synchronizedPaint'},
+         {'ts': 18 * self.MILLI_TO_MICRO, 'ph': 'I',
+          'cat': 'blink',
+          'name': 'FrameView::synchronizedPaint'},
+         {'ts': 22 * self.MILLI_TO_MICRO, 'ph': 'I',
+          'cat': 'blink',
+          'name': 'FrameView::synchronizedPaint'},
+         {'ts': 5 * self.MILLI_TO_MICRO, 'ph': 'I',
+          'cat': 'foobar', 'name': 'biz',
+          'args': {'counters': {
+              'LayoutObjectsThatHadNeverHadLayout': 10
+          } } },
+         {'ts': 12 * self.MILLI_TO_MICRO, 'ph': 'I',
+          'cat': 'foobar', 'name': 'biz',
+          'args': {'counters': {
+              'LayoutObjectsThatHadNeverHadLayout': 12
+          } } },
+         {'ts': 15 * self.MILLI_TO_MICRO, 'ph': 'I',
+          'cat': 'foobar', 'name': 'biz',
+          'args': {'counters': {
+              'LayoutObjectsThatHadNeverHadLayout': 10
+          } } } ], MAINFRAME)
     lens = user_satisfied_lens.FirstSignificantPaintLens(loading_trace)
     self.assertEqual(set(['0.1', '0.2']), lens.CriticalRequestIds())
     self.assertEqual(7, lens.PostloadTimeMsec())
@@ -132,23 +153,25 @@ class UserSatisfiedLensTestCase(unittest.TestCase):
   def testRequestFingerprintLens(self):
     MAINFRAME = 1
     SUBFRAME = 2
-    loading_trace = test_utils.LoadingTraceFromEvents(
-        [self._RequestAt(1), self._RequestAt(10), self._RequestAt(20)],
-        trace_events=[{'ts': 0, 'ph': 'I',
-                       'cat': 'blink.some_other_user_timing',
-                       'name': 'firstContentfulPaint'},
-                      {'ts': 30 * self.MILLI_TO_MICRO, 'ph': 'I',
-                       'cat': 'blink.user_timing',
-                       'name': 'firstDiscontentPaint'},
-                      {'ts': 5 * self.MILLI_TO_MICRO, 'ph': 'I',
-                       'cat': 'blink.user_timing',
-                       'name': 'firstContentfulPaint',
-                       'args': {'frame': SUBFRAME} },
-                      {'ts': 12 * self.MILLI_TO_MICRO, 'ph': 'I',
-                       'cat': 'blink.user_timing',
-                       'name': 'firstContentfulPaint',
-                       'args': {'frame': MAINFRAME}}])
-    loading_trace.tracing_track.SetMainFrameID(MAINFRAME)
+    trace_creator = TraceCreator()
+    requests = [trace_creator.RequestAt(1), trace_creator.RequestAt(10),
+                trace_creator.RequestAt(20)]
+    loading_trace = trace_creator.CreateTrace(
+        requests,
+        [{'ts': 0, 'ph': 'I',
+          'cat': 'blink.some_other_user_timing',
+          'name': 'firstContentfulPaint'},
+         {'ts': 30 * self.MILLI_TO_MICRO, 'ph': 'I',
+          'cat': 'blink.user_timing',
+          'name': 'firstDiscontentPaint'},
+         {'ts': 5 * self.MILLI_TO_MICRO, 'ph': 'I',
+          'cat': 'blink.user_timing',
+          'name': 'firstContentfulPaint',
+          'args': {'frame': SUBFRAME} },
+         {'ts': 12 * self.MILLI_TO_MICRO, 'ph': 'I',
+          'cat': 'blink.user_timing',
+          'name': 'firstContentfulPaint',
+          'args': {'frame': MAINFRAME}}], MAINFRAME)
     lens = user_satisfied_lens.FirstContentfulPaintLens(loading_trace)
     self.assertEqual(set(['0.1', '0.2']), lens.CriticalRequestIds())
     self.assertEqual(1, lens.PostloadTimeMsec())
