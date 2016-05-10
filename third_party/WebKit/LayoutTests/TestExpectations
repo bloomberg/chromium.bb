@@ -473,6 +473,8 @@ crbug.com/596780 virtual/spv2/compositing/visibility/layer-visible-content.html 
 # This test has a paint invalidation failure that needs to be investigated.
 crbug.com/600618 virtual/spv2/svg/as-image/svg-image-with-data-uri.html [ Failure Crash ]
 
+crbug.com/610788 [ Win ] compositing/squashing/squash-with-ancestor-blending.html [ Failure Pass ]
+
 # In imported/web-platform-tests/html/, we prefer checking in failure
 # expectation files. The following tests with [ Failure ] don't have failure
 # expectation files because they contain local path names.
