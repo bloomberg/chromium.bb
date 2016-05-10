@@ -44,15 +44,6 @@ bool InitGlobalNt() {
   HMODULE ntdll = ::GetModuleHandle(kNtdllName);
   base::win::PEImage ntdll_image(ntdll);
 
-  // Bypass purify's interception.
-  wchar_t* loader_get = reinterpret_cast<wchar_t*>(
-                            ntdll_image.GetProcAddress("LdrGetDllHandle"));
-  if (loader_get) {
-    GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS |
-                          GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
-                      loader_get, &ntdll);
-  }
-
   INIT_GLOBAL_NT(AllocateVirtualMemory);
   INIT_GLOBAL_NT(Close);
   INIT_GLOBAL_NT(DuplicateObject);

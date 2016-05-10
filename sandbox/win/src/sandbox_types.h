@@ -93,6 +93,16 @@ enum ResultCode : int {
   SBOX_ERROR_CANNOT_GET_DESKTOP = 36,
   // Cannot query the security attributes of the current Desktop.
   SBOX_ERROR_CANNOT_QUERY_DESKTOP_SECURITY = 37,
+  // Cannot setup the interception manager config buffer.
+  SBOX_ERROR_CANNOT_SETUP_INTERCEPTION_CONFIG_BUFFER = 38,
+  // Cannot copy data to the child process.
+  SBOX_ERROR_CANNOT_COPY_DATA_TO_CHILD = 39,
+  // Cannot setup the interception thunk.
+  SBOX_ERROR_CANNOT_SETUP_INTERCEPTION_THUNK = 40,
+  // Cannot resolve the interception thunk.
+  SBOX_ERROR_CANNOT_RESOLVE_INTERCEPTION_THUNK = 41,
+  // Cannot write interception thunk to child process.
+  SBOX_ERROR_CANNOT_WRITE_INTERCEPTION_THUNK = 42,
   // Placeholder for last item of the enum.
   SBOX_ERROR_LAST
 };

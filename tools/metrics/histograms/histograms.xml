@@ -76444,6 +76444,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="35" label="SBOX_ERROR_CANNOT_QUERY_WINSTATION_SECURITY"/>
   <int value="36" label="SBOX_ERROR_CANNOT_GET_DESKTOP"/>
   <int value="37" label="SBOX_ERROR_CANNOT_QUERY_DESKTOP_SECURITY"/>
+  <int value="38" label="SBOX_ERROR_CANNOT_SETUP_INTERCEPTION_CONFIG_BUFFER"/>
+  <int value="39" label="SBOX_ERROR_CANNOT_COPY_DATA_TO_CHILD"/>
+  <int value="40" label="SBOX_ERROR_CANNOT_SETUP_INTERCEPTION_THUNK"/>
+  <int value="41" label="SBOX_ERROR_CANNOT_RESOLVE_INTERCEPTION_THUNK"/>
+  <int value="42" label="SBOX_ERROR_CANNOT_WRITE_INTERCEPTION_THUNK"/>
   <int value="1002" label="LAUNCH_RESULT_SUCCESS"/>
   <int value="1003" label="LAUNCH_RESULT_FAILURE"/>
 </enum>

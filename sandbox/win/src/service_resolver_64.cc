@@ -154,7 +154,7 @@ NTSTATUS ServiceResolverThunk::Setup(const void* target_module,
                                 thunk_buffer.get());
 
   if (!IsFunctionAService(&thunk->original))
-    return STATUS_UNSUCCESSFUL;
+    return STATUS_OBJECT_NAME_COLLISION;
 
   ret = PerformPatch(thunk, thunk_storage);
 
@@ -184,7 +184,7 @@ NTSTATUS ServiceResolverThunk::CopyThunk(const void* target_module,
   ServiceFullThunk* thunk = reinterpret_cast<ServiceFullThunk*>(thunk_storage);
 
   if (!IsFunctionAService(&thunk->original))
-    return STATUS_UNSUCCESSFUL;
+    return STATUS_OBJECT_NAME_COLLISION;
 
   if (NULL != storage_used)
     *storage_used = thunk_bytes;

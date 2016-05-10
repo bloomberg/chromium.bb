@@ -117,6 +117,8 @@ TEST(WinUtils, NtStatusToWin32Error) {
             GetLastErrorFromNtStatus(STATUS_SUCCESS));
   EXPECT_EQ(static_cast<DWORD>(ERROR_NOT_SUPPORTED),
             GetLastErrorFromNtStatus(STATUS_NOT_SUPPORTED));
+  EXPECT_EQ(static_cast<DWORD>(ERROR_ALREADY_EXISTS),
+            GetLastErrorFromNtStatus(STATUS_OBJECT_NAME_COLLISION));
   EXPECT_EQ(static_cast<DWORD>(ERROR_ACCESS_DENIED),
             GetLastErrorFromNtStatus(STATUS_ACCESS_DENIED));
 }

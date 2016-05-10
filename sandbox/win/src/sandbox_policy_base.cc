@@ -641,8 +641,9 @@ ResultCode PolicyBase::SetupAllInterceptions(TargetProcess* target) {
   if (!SetupBasicInterceptions(&manager, is_csrss_connected_))
     return SBOX_ERROR_SETUP_BASIC_INTERCEPTIONS;
 
-  if (!manager.InitializeInterceptions())
-    return SBOX_ERROR_INITIALIZE_INTERCEPTIONS;
+  ResultCode rc = manager.InitializeInterceptions();
+  if (rc != SBOX_ALL_OK)
+    return rc;
 
   // Finally, setup imports on the target so the interceptions can work.
   if (!SetupNtdllImports(target))
