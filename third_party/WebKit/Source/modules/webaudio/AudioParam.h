@@ -51,6 +51,8 @@ enum AudioParamType {
     ParamTypeAudioBufferSourceDetune,
     ParamTypeBiquadFilterFrequency,
     ParamTypeBiquadFilterQ,
+    ParamTypeBiquadFilterQLowpass,
+    ParamTypeBiquadFilterQHighpass,
     ParamTypeBiquadFilterGain,
     ParamTypeBiquadFilterDetune,
     ParamTypeDelayDelayTime,
@@ -75,6 +77,7 @@ enum AudioParamType {
 class AudioParamHandler final : public ThreadSafeRefCounted<AudioParamHandler>, public AudioSummingJunction {
 public:
     AudioParamType getParamType() const { return m_paramType; }
+    void setParamType(AudioParamType);
     // Return a nice name for the AudioParam.
     String getParamName() const;
 
@@ -127,12 +130,18 @@ public:
     void disconnect(AudioNodeOutput&);
 
     float intrinsicValue() const { return noBarrierLoad(&m_intrinsicValue); }
+
+    // Update any histograms with the given value.
+    void updateHistograms(float newValue);
+
 private:
     AudioParamHandler(AbstractAudioContext&, AudioParamType, double defaultValue);
 
     // sampleAccurate corresponds to a-rate (audio rate) vs. k-rate in the Web Audio specification.
     void calculateFinalValues(float* values, unsigned numberOfValues, bool sampleAccurate);
     void calculateTimelineValues(float* values, unsigned numberOfValues);
+
+    int computeQHistogramValue(float) const;
 
     // The type of AudioParam, indicating what this AudioParam represents and what node it belongs
     // to.  Mostly for informational purposes and doesn't affect implementation.
@@ -165,6 +174,7 @@ public:
     AbstractAudioContext* context() const { return m_context; }
 
     AudioParamType getParamType() const { return handler().getParamType(); }
+    void setParamType(AudioParamType);
     String getParamName() const;
 
     float value() const;

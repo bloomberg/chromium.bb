@@ -58721,6 +58721,28 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="WebAudio.BiquadFilter.Q.Highpass">
+  <owner>rtoy@chromium.org</owner>
+  <owner>hongchan@chromium.org</owner>
+  <summary>
+    The Q value (in 0.25 dB steps) used for a highpass BiquadFilter. Recorded
+    each time the value is set for a highpass filter via the .value setter or
+    the automation methods linearRampToValueAtTime, exponentialValueAtTime, and
+    setValueAtTime.
+  </summary>
+</histogram>
+
+<histogram name="WebAudio.BiquadFilter.Q.Lowpass">
+  <owner>rtoy@chromium.org</owner>
+  <owner>hongchan@chromium.org</owner>
+  <summary>
+    The Q value (in 0.25 dB steps) used for a lowpass BiquadFilter. Recorded
+    each time the value is set for a lowpass filter via the .value setter or the
+    automation methods linearRampToValueAtTime, exponentialValueAtTime, and
+    setValueAtTime.
+  </summary>
+</histogram>
+
 <histogram name="WebAudio.IIRFilterNode.Order">
   <owner>rtoy@chromium.org</owner>
   <owner>hongchan@chromium.org</owner>

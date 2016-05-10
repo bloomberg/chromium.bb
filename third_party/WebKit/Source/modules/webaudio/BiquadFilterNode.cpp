@@ -35,6 +35,10 @@ BiquadFilterNode::BiquadFilterNode(AbstractAudioContext& context, float sampleRa
     , m_detune(AudioParam::create(context, ParamTypeBiquadFilterDetune, 0.0))
 {
     setHandler(AudioBasicProcessorHandler::create(AudioHandler::NodeTypeBiquadFilter, *this, sampleRate, adoptPtr(new BiquadProcessor(sampleRate, 1, m_frequency->handler(), m_q->handler(), m_gain->handler(), m_detune->handler()))));
+
+    // Explicitly set the filter type so that any histograms get updated with the default value.
+    // Otherwise, the histogram won't ever show it.
+    setType("lowpass");
 }
 
 DEFINE_TRACE(BiquadFilterNode)
@@ -78,22 +82,31 @@ String BiquadFilterNode::type() const
 
 void BiquadFilterNode::setType(const String& type)
 {
-    if (type == "lowpass")
+    // For the Q histogram, we need to change the name of the AudioParam for the lowpass and
+    // highpass filters so we know to count the Q value when it is set. And explicitly set the value
+    // to itself so the histograms know the initial value.
+
+    if (type == "lowpass") {
         setType(BiquadProcessor::LowPass);
-    else if (type == "highpass")
+        m_q->setParamType(ParamTypeBiquadFilterQLowpass);
+        m_q->setValue(m_q->value());
+    } else if (type == "highpass") {
         setType(BiquadProcessor::HighPass);
-    else if (type == "bandpass")
+        m_q->setParamType(ParamTypeBiquadFilterQHighpass);
+        m_q->setValue(m_q->value());
+    } else if (type == "bandpass") {
         setType(BiquadProcessor::BandPass);
-    else if (type == "lowshelf")
+    } else if (type == "lowshelf") {
         setType(BiquadProcessor::LowShelf);
-    else if (type == "highshelf")
+    } else if (type == "highshelf") {
         setType(BiquadProcessor::HighShelf);
-    else if (type == "peaking")
+    } else if (type == "peaking") {
         setType(BiquadProcessor::Peaking);
-    else if (type == "notch")
+    } else if (type == "notch") {
         setType(BiquadProcessor::Notch);
-    else if (type == "allpass")
+    } else if (type == "allpass") {
         setType(BiquadProcessor::Allpass);
+    }
 }
 
 bool BiquadFilterNode::setType(unsigned type)

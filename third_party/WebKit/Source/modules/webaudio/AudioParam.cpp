@@ -27,6 +27,7 @@
 #include "modules/webaudio/AudioNode.h"
 #include "modules/webaudio/AudioNodeOutput.h"
 #include "platform/FloatConversion.h"
+#include "platform/Histogram.h"
 #include "platform/audio/AudioUtilities.h"
 #include "wtf/MathExtras.h"
 
@@ -53,6 +54,11 @@ AudioDestinationHandler& AudioParamHandler::destinationHandler() const
     return *m_destinationHandler;
 }
 
+void AudioParamHandler::setParamType(AudioParamType paramType)
+{
+    m_paramType = paramType;
+}
+
 String AudioParamHandler::getParamName() const
 {
     // The returned string should be the name of the node and the name of the AudioParam for
@@ -65,6 +71,10 @@ String AudioParamHandler::getParamName() const
     case ParamTypeBiquadFilterFrequency:
         return "BiquadFilter.frequency";
     case ParamTypeBiquadFilterQ:
+    case ParamTypeBiquadFilterQLowpass:
+    case ParamTypeBiquadFilterQHighpass:
+        // We don't really need separate names for the Q parameter for lowpass and highpass filters.
+        // The difference is only for the histograms.
         return "BiquadFilter.Q";
     case ParamTypeBiquadFilterGain:
         return "BiquadFilter.gain";
@@ -115,6 +125,7 @@ float AudioParamHandler::value()
 void AudioParamHandler::setValue(float value)
 {
     setIntrinsicValue(value);
+    updateHistograms(value);
 }
 
 float AudioParamHandler::smoothedValue()
@@ -247,6 +258,40 @@ void AudioParamHandler::disconnect(AudioNodeOutput& output)
     }
 }
 
+int AudioParamHandler::computeQHistogramValue(float newValue) const
+{
+    // For the Q value, assume a useful range is [0, 25] and that 0.25 dB resolution is good enough.
+    // Then, we can map the floating point Q value (in dB) to an integer just by multipling by 4 and
+    // rounding.
+    newValue = clampTo(newValue, 0.0, 25.0);
+    return static_cast<int>(4 * newValue + 0.5);
+}
+
+void AudioParamHandler::updateHistograms(float newValue)
+{
+    switch (m_paramType) {
+    case ParamTypeBiquadFilterQLowpass:
+        {
+            // The histogram for the Q value for a lowpass biquad filter.
+            DEFINE_STATIC_LOCAL(SparseHistogram, lowpassQHistogram, ("WebAudio.BiquadFilter.Q.Lowpass"));
+
+            lowpassQHistogram.sample(computeQHistogramValue(newValue));
+        }
+        break;
+    case ParamTypeBiquadFilterQHighpass:
+        {
+            // The histogram for the Q value for a highpass biquad filter.
+            DEFINE_STATIC_LOCAL(SparseHistogram, highpassQHistogram, ("WebAudio.BiquadFilter.Q.Highpass"));
+
+            highpassQHistogram.sample(computeQHistogramValue(newValue));
+        }
+        break;
+    default:
+        // Nothing to do for all other types.
+        break;
+    }
+}
+
 // ----------------------------------------------------------------
 
 AudioParam::AudioParam(AbstractAudioContext& context, AudioParamType paramType, double defaultValue)
@@ -280,9 +325,15 @@ float AudioParam::defaultValue() const
     return handler().defaultValue();
 }
 
+void AudioParam::setParamType(AudioParamType paramType)
+{
+    handler().setParamType(paramType);
+}
+
 AudioParam* AudioParam::setValueAtTime(float value, double time, ExceptionState& exceptionState)
 {
     handler().timeline().setValueAtTime(value, time, exceptionState);
+    handler().updateHistograms(value);
     return this;
 }
 
@@ -290,24 +341,41 @@ AudioParam* AudioParam::linearRampToValueAtTime(float value, double time, Except
 {
     handler().timeline().linearRampToValueAtTime(
         value, time, handler().intrinsicValue(), context()->currentTime(), exceptionState);
+
+    // This is probably the best we can do for the histogram.  We don't want to run the automation
+    // to get all the values and use them to update the histogram.
+    handler().updateHistograms(value);
+
     return this;
 }
 
 AudioParam* AudioParam::exponentialRampToValueAtTime(float value, double time, ExceptionState& exceptionState)
 {
     handler().timeline().exponentialRampToValueAtTime(value, time, handler().intrinsicValue(), context()->currentTime(), exceptionState);
+
+    // This is probably the best we can do for the histogram.  We don't want to run the automation
+    // to get all the values and use them to update the histogram.
+    handler().updateHistograms(value);
+
     return this;
 }
 
 AudioParam* AudioParam::setTargetAtTime(float target, double time, double timeConstant, ExceptionState& exceptionState)
 {
     handler().timeline().setTargetAtTime(target, time, timeConstant, exceptionState);
+
+    // Don't update the histogram here.  It's not clear in normal usage if the parameter value will
+    // actually reach |target|.
     return this;
 }
 
 AudioParam* AudioParam::setValueCurveAtTime(DOMFloat32Array* curve, double time, double duration, ExceptionState& exceptionState)
 {
     handler().timeline().setValueCurveAtTime(curve, time, duration, exceptionState);
+
+    // We could update the histogram with every value in the curve, due to interpolation, we'll
+    // probably be missing many values.  So we don't update the histogram.  setValueCurveAtTime is
+    // probably a fairly rare method anyway.
     return this;
 }
 
