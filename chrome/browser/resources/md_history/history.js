@@ -69,22 +69,6 @@ function setForeignSessions(sessionList, isTabSyncEnabled) {
 }
 
 /**
- * Called by the history backend when deletion was succesful.
- */
-function deleteComplete() {
-  var appElem = $('history-app');
-  waitForUpgrade(appElem).then(function() {
-    /** @type {HistoryAppElement} */(appElem).deleteComplete();
-  });
-}
-
-/**
- * Called by the history backend when the deletion failed.
- */
-function deleteFailed() {
-}
-
-/**
  * Called when the history is deleted by someone else.
  */
 function historyDeleted() {

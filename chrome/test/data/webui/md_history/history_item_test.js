@@ -65,18 +65,13 @@ cr.define('md_history.history_item_test', function() {
           var items =
               Polymer.dom(element.root).querySelectorAll('history-item');
 
-          element.set('historyData.3.selected', true);
-          items[3].onCheckboxSelected_();
-
-          element.removeDeletedHistory(1);
-          assertEquals(element.historyData.length, 5);
+          element.removeDeletedHistory_([element.historyData[3]]);
+          assertEquals(5, element.historyData.length);
 
           // Checks that a new time gap separator has been inserted.
           assertTrue(items[2].hasTimeGap);
 
-          element.set('historyData.3.selected', true);
-          items[3].onCheckboxSelected_();
-          element.removeDeletedHistory(1);
+          element.removeDeletedHistory_([element.historyData[3]]);
 
           // Checks time gap separator is removed.
           assertFalse(items[2].hasTimeGap);

@@ -28,8 +28,9 @@ MaterialHistoryBrowserTest.prototype = {
 
   extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
     'test_util.js',
-    'history_list_test.js',
+    'browser_service_test.js',
     'history_item_test.js',
+    'history_list_test.js',
     'history_overflow_menu_test.js',
     'history_supervised_user_test.js',
     'history_synced_tabs_test.js',
@@ -46,6 +47,11 @@ MaterialHistoryBrowserTest.prototype = {
     });
   },
 };
+
+TEST_F('MaterialHistoryBrowserTest', 'BrowserServiceTest', function() {
+  md_history.browser_service_test.registerTests();
+  mocha.run();
+});
 
 TEST_F('MaterialHistoryBrowserTest', 'HistoryItemTest', function() {
   md_history.history_item_test.registerTests();

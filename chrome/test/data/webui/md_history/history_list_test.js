@@ -99,46 +99,16 @@ cr.define('md_history.history_list_test', function() {
         });
       });
 
-      test('removeVisits for multiple items', function(done) {
-        element.addNewResults(TEST_HISTORY_RESULTS, '');
-        // Ensure that the correct identifying data is being used for removal.
-        registerMessageCallback('removeVisits', this, function (toBeRemoved) {
-
-          assertEquals(toBeRemoved[0].url, element.historyData[0].url);
-          assertEquals(toBeRemoved[1].url, element.historyData[1].url);
-          assertEquals(toBeRemoved[0].timestamps,
-                       element.historyData[0].allTimestamps);
-          assertEquals(toBeRemoved[1].timestamps,
-                       element.historyData[1].allTimestamps);
-
-          done();
-        });
-
-        flush(function() {
-          items = Polymer.dom(element.root).querySelectorAll('history-item');
-
-          MockInteractions.tap(items[0].$.checkbox);
-          MockInteractions.tap(items[1].$.checkbox);
-
-          toolbar.onDeleteTap_();
-        });
-      });
-
       test('deleting multiple items from view', function(done) {
         element.addNewResults(TEST_HISTORY_RESULTS, '');
         element.addNewResults(ADDITIONAL_RESULTS, '');
         flush(function() {
           items = Polymer.dom(element.root).querySelectorAll('history-item');
 
-          // Selects the checkboxes.
-          element.set('historyData.2.selected', true);
-          items[2].onCheckboxSelected_();
-          element.set('historyData.5.selected', true);
-          items[5].onCheckboxSelected_();
-          element.set('historyData.7.selected', true);
-          items[7].onCheckboxSelected_();
-
-          element.removeDeletedHistory(3);
+          element.removeDeletedHistory_([
+            element.historyData[2], element.historyData[5],
+            element.historyData[7]
+          ]);
 
           flush(function() {
             items = Polymer.dom(element.root).querySelectorAll('history-item');

@@ -60,6 +60,10 @@ content::WebUIDataSource* CreateMdHistoryUIHTMLSource(Profile* profile) {
   source->AddBoolean("allowDeletingHistory", allow_deleting_history);
   source->AddResourcePath("app.html", IDR_MD_HISTORY_APP_HTML);
   source->AddResourcePath("app.js", IDR_MD_HISTORY_APP_JS);
+  source->AddResourcePath("browser_service.html",
+                          IDR_MD_HISTORY_BROWSER_SERVICE_HTML);
+  source->AddResourcePath("browser_service.js",
+                          IDR_MD_HISTORY_BROWSER_SERVICE_JS);
   source->AddResourcePath("constants.html", IDR_MD_HISTORY_CONSTANTS_HTML);
   source->AddResourcePath("constants.js", IDR_MD_HISTORY_CONSTANTS_JS);
   source->AddResourcePath("history_item.html",

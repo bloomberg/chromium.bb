@@ -53,12 +53,7 @@ Polymer({
 
     // TODO(hsampson): add a popup to check whether the user definitely
     // wants to delete the selected items.
-
-    var historyList =
-        /** @type {HistoryListElement} */(this.$['history-list']);
-    var toolbar = /** @type {HistoryToolbarElement} */(this.$.toolbar);
-    var toBeRemoved = historyList.getSelectedItems(toolbar.count);
-    chrome.send('removeVisits', toBeRemoved);
+    /** @type {HistoryListElement} */(this.$['history-list']).deleteSelected();
   },
 
   /**
@@ -101,12 +96,5 @@ Polymer({
     var syncedDeviceManager =
         /** @type {HistorySyncedDeviceManagerElement} */(syncedDeviceElem);
     syncedDeviceManager.setSyncedHistory(sessionList);
-  },
-
-  deleteComplete: function() {
-    var historyList = /** @type {HistoryListElement} */(this.$['history-list']);
-    var toolbar = /** @type {HistoryToolbarElement} */(this.$.toolbar);
-    historyList.removeDeletedHistory(toolbar.count);
-    toolbar.count = 0;
   }
 });

@@ -58,19 +58,34 @@ Polymer({
   /**
    * Opens the overflow menu unless the menu is already open and the same button
    * is pressed.
-   * @param {{detail: {itemIdentifier: !Object}}} e
+   * @param {{detail: {item: !HistoryEntry, target: !HTMLElement}}} e
    * @private
    */
   toggleMenu_: function(e) {
     var target = e.detail.target;
     /** @type {CrSharedMenuElement} */(this.$.sharedMenu).toggleMenu(
-        target, e.detail.itemIdentifier);
+        target, e.detail.item);
   },
 
   /** @private */
   onMoreFromSiteTap_: function() {
     var menu = /** @type {CrSharedMenuElement} */(this.$.sharedMenu);
     this.fire('search-changed', {search: menu.itemData.domain});
+    menu.closeMenu();
+  },
+
+  /** @private */
+  onRemoveFromHistoryTap_: function() {
+    var menu = /** @type {CrSharedMenuElement} */(this.$.sharedMenu);
+    md_history.BrowserService.getInstance()
+        .deleteItems([menu.itemData])
+        .then(function(items) {
+          this.removeDeletedHistory_(items);
+          // This unselect-all is to reset the toolbar when deleting a selected
+          // item. TODO(tsergeant): Make this automatic based on observing list
+          // modifications.
+          this.fire('unselect-all');
+        }.bind(this));
     menu.closeMenu();
   },
 
@@ -153,31 +168,31 @@ Polymer({
   },
 
   /**
-   * Remove all selected items from the overall array so that they are also
-   * removed from view. Make sure that the card length and positioning is
-   * updated accordingly.
-   * @param {number} overallItemCount The number of items selected.
+   * Remove the given |items| from the list. Expected to be called after the
+   * items are removed from the backend.
+   * @param {!Array<!HistoryEntry>} removalList
+   * @private
    */
-  removeDeletedHistory: function(overallItemCount) {
+  removeDeletedHistory_: function(removalList) {
+    // This set is only for speed. Note that set inclusion for objects is by
+    // reference, so this relies on the HistoryEntry objects never being copied.
+    var deletedItems = new Set(removalList);
     var splices = [];
+
     for (var i = this.historyData.length - 1; i >= 0; i--) {
-      if (!this.historyData[i].selected)
-        continue;
-
-      // Removes the selected item from historyData. Use unshift so |splices|
-      // ends up in index order.
-      splices.unshift({
-        index: i,
-        removed: [this.historyData[i]],
-        addedCount: 0,
-        object: this.historyData,
-        type: 'splice'
-      });
-      this.historyData.splice(i, 1);
-
-      overallItemCount--;
-      if (overallItemCount == 0)
-        break;
+      var item = this.historyData[i];
+      if (deletedItems.has(item)) {
+        // Removes the selected item from historyData. Use unshift so
+        // |splices| ends up in index order.
+        splices.unshift({
+          index: i,
+          removed: [item],
+          addedCount: 0,
+          object: this.historyData,
+          type: 'splice'
+        });
+        this.historyData.splice(i, 1);
+      }
     }
     // notifySplices gives better performance than individually splicing as it
     // batches all of the updates together.
@@ -185,27 +200,19 @@ Polymer({
   },
 
   /**
-   * Based on which items are selected, collect an array of the info required
-   * for chrome.send('removeHistory', ...).
-   * @param {number} count The number of items that are selected.
-   * @return {Array<HistoryEntry>} toBeRemoved An array of objects which contain
-   * information on which history-items should be deleted.
+   * Performs a request to the backend to delete all selected items. If
+   * successful, removes them from the view.
    */
-  getSelectedItems: function(count) {
-    var toBeRemoved = [];
-    for (var i = 0; i < this.historyData.length; i++) {
-      if (this.historyData[i].selected) {
-        toBeRemoved.push({
-          url: this.historyData[i].url,
-          timestamps: this.historyData[i].allTimestamps
-        });
-
-        count--;
-        if (count == 0)
-          break;
-      }
-    }
-    return toBeRemoved;
+  deleteSelected: function() {
+    var toBeRemoved = this.historyData.filter(function(item) {
+      return item.selected;
+    });
+    md_history.BrowserService.getInstance()
+        .deleteItems(toBeRemoved)
+        .then(function(items) {
+          this.removeDeletedHistory_(items);
+          this.fire('unselect-all');
+        }.bind(this));
   },
 
   /**
