@@ -83,6 +83,20 @@ template("msvc_toolchain") {
     link = "link.exe"
   }
 
+  # If possible, pass system includes as flags to the compiler.  When that's
+  # not possible, load a full environment file (containing %INCLUDE% and
+  # %PATH%) -- e.g. 32-bit MSVS builds require %PATH% to be set and just passing
+  # in a list of include directories isn't enough.
+  if (defined(invoker.sys_include_flags)) {
+    env_wrapper = ""
+    sys_include_flags = "${invoker.sys_include_flags} "  # Note trailing space.
+  } else {
+    # clang-cl doesn't need this env hoop, so omit it there.
+    assert(!invoker.is_clang)
+    env_wrapper = "ninja -t msvc -e $env -- "  # Note trailing space.
+    sys_include_flags = ""
+  }
+
   toolchain(target_name) {
     # Make these apply to all tools below.
     lib_switch = ""
@@ -99,13 +113,13 @@ template("msvc_toolchain") {
       # Label names may have spaces in them so the pdbname must be quoted. The
       # source and output don't need to be quoted because GN knows they're a
       # full file name and will quote automatically when necessary.
-      command = "ninja -t msvc -e $env -- $cl /nologo /showIncludes /FC @$rspfile /c {{source}} /Fo{{output}} /Fd\"$pdbname\""
+      command = "$env_wrapper$cl /nologo /showIncludes /FC @$rspfile /c {{source}} /Fo{{output}} /Fd\"$pdbname\""
       depsformat = "msvc"
       description = "CC {{output}}"
       outputs = [
         "$object_subdir/{{source_name_part}}.obj",
       ]
-      rspfile_content = "{{defines}} {{include_dirs}} {{cflags}} {{cflags_c}}"
+      rspfile_content = "$sys_include_flags{{defines}} {{include_dirs}} {{cflags}} {{cflags_c}}"
     }
 
     tool("cxx") {
@@ -116,13 +130,13 @@ template("msvc_toolchain") {
       pdbname = "{{target_out_dir}}/{{label_name}}_cc.pdb"
 
       # See comment in CC tool about quoting.
-      command = "ninja -t msvc -e $env -- $cl /nologo /showIncludes /FC @$rspfile /c {{source}} /Fo{{output}} /Fd\"$pdbname\""
+      command = "$env_wrapper$cl /nologo /showIncludes /FC @$rspfile /c {{source}} /Fo{{output}} /Fd\"$pdbname\""
       depsformat = "msvc"
       description = "CXX {{output}}"
       outputs = [
         "$object_subdir/{{source_name_part}}.obj",
       ]
-      rspfile_content = "{{defines}} {{include_dirs}} {{cflags}} {{cflags_cc}}"
+      rspfile_content = "$sys_include_flags{{defines}} {{include_dirs}} {{cflags}} {{cflags_cc}}"
     }
 
     tool("rc") {
@@ -262,6 +276,13 @@ template("msvc_toolchain") {
   }
 }
 
+if (is_clang) {
+  sys_include_prefix = "-imsvc"
+} else {
+  # MSVC doesn't have the concept of system headers.
+  sys_include_prefix = "/I"
+}
+
 if (host_os == "win") {
   clang_cl = "clang-cl.exe"
 } else {
@@ -279,6 +300,7 @@ if (target_cpu == "x86") {
                                      windows_sdk_path,
                                      visual_studio_runtime_dirs,
                                      "x86",
+                                     "${sys_include_prefix}",
                                    ],
                                    "scope")
 
@@ -297,6 +319,7 @@ if (target_cpu == "x86") {
     cl = "${goma_prefix}$prefix/${clang_cl}"
     toolchain_os = "win"
     is_clang = true
+    sys_include_flags = "${x86_toolchain_data.include_flags}"
   }
 }
 
@@ -308,6 +331,7 @@ x64_toolchain_data = exec_script("setup_toolchain.py",
                                    windows_sdk_path,
                                    visual_studio_runtime_dirs,
                                    "x64",
+                                   "${sys_include_prefix}",
                                  ],
                                  "scope")
 
@@ -340,6 +364,7 @@ template("win_x64_toolchains") {
     cl = "${goma_prefix}$prefix/${clang_cl}"
     toolchain_os = "win"
     is_clang = true
+    sys_include_flags = "${x64_toolchain_data.include_flags}"
 
     # This shares a name with a global and forward_variables_from won't clobber
     # the existing value, so we need to set it explicitly.
