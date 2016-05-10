@@ -394,11 +394,6 @@
             ],
           },
         }],
-        [ 'OS=="android"', {
-          'dependencies': [
-            '../testing/android/native_test.gyp:native_test_native_code',
-          ],
-        }],
         [ 'chromeos==0', {
           'sources!': [
             'host/chromeos/aura_desktop_capturer_unittest.cc',
@@ -585,11 +580,6 @@
               # Linux, so we need the chrome_common.gypi dependency.
               'dependencies': [
                 '../chrome/common_constants.gyp:common_constants',
-              ],
-            }],
-            [ 'OS=="android"', {
-              'dependencies': [
-                '../testing/android/native_test.gyp:native_test_native_code',
               ],
             }],
           ],  # end of 'conditions'

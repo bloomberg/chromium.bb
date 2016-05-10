@@ -29,7 +29,6 @@
 
   'includes': [
     '../chrome/js_unittest_vars.gypi',
-    'remoting_android.gypi',
     'remoting_client.gypi',
     'remoting_host.gypi',
     'remoting_host_srcs.gypi',

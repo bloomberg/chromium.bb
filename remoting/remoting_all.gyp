@@ -39,18 +39,6 @@
             '../remoting/remoting.gyp:remoting_windows_resources',
           ],
         }],
-        ['OS=="android"', {
-          'dependencies': [
-            '../remoting/remoting.gyp:remoting_android_client_java',
-            '../remoting/remoting.gyp:remoting_android_resources',
-            '../remoting/remoting.gyp:remoting_apk',
-            '../remoting/remoting.gyp:remoting_apk_manifest',
-            '../remoting/remoting.gyp:remoting_client_jni',
-            '../remoting/remoting.gyp:remoting_jni_headers',
-            '../remoting/remoting.gyp:remoting_test_apk',
-            '../remoting/remoting.gyp:remoting_unittests_apk',
-          ],
-        }],
         ['enable_remoting_host==1', {
           'dependencies': [
             '../remoting/remoting.gyp:remoting_infoplist_strings',
