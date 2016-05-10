@@ -26,12 +26,6 @@ QuicP2PSession::QuicP2PSession(const QuicConfig& config,
       crypto_stream_(new QuicP2PCryptoStream(this, crypto_config)),
       read_buffer_(new IOBuffer(static_cast<size_t>(kMaxPacketSize))) {
   DCHECK(config.negotiated());
-
-  // Non-null IP address needs to be passed here because QuicConnection uses
-  // ToString() to format addresses for logging and ToString() is not allowed
-  // for empty addresses.
-  // TODO(sergeyu): Fix QuicConnection and remove SetSelfAddress() call below.
-  this->connection()->SetSelfAddress(IPEndPoint(IPAddress::IPv4AllZeros(), 0));
 }
 
 QuicP2PSession::~QuicP2PSession() {}
