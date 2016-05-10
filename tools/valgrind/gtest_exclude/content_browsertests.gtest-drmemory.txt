@@ -67,6 +67,7 @@ SitePerProcessBrowserTest.SubframeGestureEventRouting
 
 # https://crbug.com/603337
 SingleProcessMemoryTracingTest.ManyInterleavedDumps
+SingleProcessMemoryTracingTest.RendererInitiatedSingleDump
 
 # https://crbug.com/608081
 SitePerProcessBrowserTest.NavigateRemoteFrameToBlankAndDataURLs
