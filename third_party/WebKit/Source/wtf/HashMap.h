@@ -28,15 +28,6 @@ namespace WTF {
 
 template <typename KeyTraits, typename MappedTraits> struct HashMapValueTraits;
 
-template <typename T> struct ReferenceTypeMaker {
-    STATIC_ONLY(ReferenceTypeMaker);
-    typedef T& ReferenceType;
-};
-template <typename T> struct ReferenceTypeMaker<T&> {
-    STATIC_ONLY(ReferenceTypeMaker);
-    typedef T& ReferenceType;
-};
-
 struct KeyValuePairKeyExtractor {
     STATIC_ONLY(KeyValuePairKeyExtractor);
     template <typename T>
@@ -70,8 +61,6 @@ private:
     typedef typename MappedTraits::PassInType MappedPassInType;
     typedef typename MappedTraits::PassOutType MappedPassOutType;
     typedef typename MappedTraits::PeekOutType MappedPeekType;
-
-    typedef typename ReferenceTypeMaker<MappedPassInType>::ReferenceType MappedPassInReferenceType;
 
     typedef HashArg HashFunctions;
 
