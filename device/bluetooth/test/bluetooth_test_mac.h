@@ -37,10 +37,17 @@ class BluetoothTestMac : public BluetoothTestBase {
       BluetoothDevice* device,
       BluetoothDevice::ConnectErrorCode errorCode) override;
   void SimulateGattDisconnection(BluetoothDevice* device) override;
+  void SimulateGattServicesDiscovered(
+      BluetoothDevice* device,
+      const std::vector<std::string>& uuids) override;
+  void SimulateGattServiceRemoved(BluetoothRemoteGattService* service) override;
 
   // Callback for the bluetooth central manager mock.
   void OnFakeBluetoothDeviceConnectGattCalled();
   void OnFakeBluetoothGattDisconnect();
+
+  // Callback for the bluetooth peripheral mock.
+  void OnFakeBluetoothServiceDiscovery();
 
  protected:
   class ScopedMockCentralManager;

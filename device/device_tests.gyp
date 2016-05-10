@@ -66,6 +66,8 @@
         'bluetooth/test/bluetooth_test_win.cc',
         'bluetooth/test/mock_bluetooth_cbperipheral_mac.mm',
         'bluetooth/test/mock_bluetooth_cbperipheral_mac.h',
+        'bluetooth/test/mock_bluetooth_cbservice_mac.mm',
+        'bluetooth/test/mock_bluetooth_cbservice_mac.h',
         'bluetooth/test/mock_bluetooth_central_manager_mac.mm',
         'bluetooth/test/mock_bluetooth_central_manager_mac.h',
         'bluetooth/test/test_bluetooth_adapter_observer.cc',

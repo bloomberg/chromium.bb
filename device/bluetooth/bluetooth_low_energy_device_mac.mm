@@ -10,10 +10,13 @@
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/sdk_forward_declarations.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/sys_string_conversions.h"
 #include "device/bluetooth/bluetooth_adapter_mac.h"
 #include "device/bluetooth/bluetooth_device.h"
+#include "device/bluetooth/bluetooth_low_energy_peripheral_delegate.h"
+#include "device/bluetooth/bluetooth_remote_gatt_service_mac.h"
 
 using device::BluetoothDevice;
 using device::BluetoothLowEnergyDeviceMac;
@@ -27,6 +30,9 @@ BluetoothLowEnergyDeviceMac::BluetoothLowEnergyDeviceMac(
       peripheral_(peripheral, base::scoped_policy::RETAIN) {
   DCHECK(BluetoothAdapterMac::IsLowEnergyAvailable());
   DCHECK(peripheral_.get());
+  peripheral_delegate_.reset([[BluetoothLowEnergyPeripheralDelegate alloc]
+      initWithBluetoothLowEnergyDeviceMac:this]);
+  [peripheral_ setDelegate:peripheral_delegate_];
   identifier_ = GetPeripheralIdentifier(peripheral);
   hash_address_ = GetPeripheralHashAddress(peripheral);
   Update(advertisement_data, rssi);
@@ -230,6 +236,47 @@ void BluetoothLowEnergyDeviceMac::DisconnectGatt() {
   GetMacAdapter()->DisconnectGatt(this);
 }
 
+void BluetoothLowEnergyDeviceMac::DidDiscoverPrimaryServices(NSError* error) {
+  if (error) {
+    // TODO(http://crbug.com/609320): Need to pass the error.
+    // TODO(http://crbug.com/609844): Decide what to do if we fail to discover
+    // a device services.
+    VLOG(1) << "Can't discover primary services: "
+            << error.localizedDescription.UTF8String << " (" << error.domain
+            << ": " << error.code << ")";
+    return;
+  }
+  for (CBService* cb_service in GetPeripheral().services) {
+    BluetoothRemoteGattServiceMac* gatt_service =
+        GetBluetoothRemoteGattService(cb_service);
+    if (!gatt_service) {
+      gatt_service = new BluetoothRemoteGattServiceMac(this, cb_service,
+                                                       true /* is_primary */);
+      gatt_services_.add(gatt_service->GetIdentifier(),
+                         base::WrapUnique(gatt_service));
+      adapter_->NotifyGattServiceAdded(gatt_service);
+    }
+  }
+  // TODO(http://crbug.com/609064): Services are fully discovered once all
+  // characteristics have been found.
+  SetGattServicesDiscoveryComplete(true);
+  adapter_->NotifyGattServicesDiscovered(this);
+}
+
+void BluetoothLowEnergyDeviceMac::DidModifyServices(
+    NSArray* invalidatedServices) {
+  for (CBService* cb_service in invalidatedServices) {
+    BluetoothRemoteGattServiceMac* gatt_service =
+        GetBluetoothRemoteGattService(cb_service);
+    DCHECK(gatt_service);
+    std::unique_ptr<BluetoothRemoteGattService> scoped_service =
+        gatt_services_.take_and_erase(gatt_service->GetIdentifier());
+    adapter_->NotifyGattServiceRemoved(scoped_service.get());
+  }
+  SetGattServicesDiscoveryComplete(false);
+  [GetPeripheral() discoverServices:nil];
+}
+
 // static
 std::string BluetoothLowEnergyDeviceMac::GetPeripheralIdentifier(
     CBPeripheral* peripheral) {
@@ -258,8 +305,32 @@ CBPeripheral* BluetoothLowEnergyDeviceMac::GetPeripheral() {
   return peripheral_;
 }
 
+device::BluetoothRemoteGattServiceMac*
+BluetoothLowEnergyDeviceMac::GetBluetoothRemoteGattService(
+    CBService* cb_service) const {
+  for (GattServiceMap::const_iterator it = gatt_services_.begin();
+       it != gatt_services_.end(); ++it) {
+    device::BluetoothRemoteGattService* gatt_service = it->second;
+    device::BluetoothRemoteGattServiceMac* gatt_service_mac =
+        static_cast<BluetoothRemoteGattServiceMac*>(gatt_service);
+    if (gatt_service_mac->GetService() == cb_service)
+      return gatt_service_mac;
+  }
+  return nullptr;
+}
+
 void BluetoothLowEnergyDeviceMac::DidDisconnectPeripheral(
     BluetoothDevice::ConnectErrorCode error_code) {
+  SetGattServicesDiscoveryComplete(false);
+  // Explicitly take and erase GATT services one by one to ensure that calling
+  // GetGattService on removed service in GattServiceRemoved returns null.
+  std::vector<std::string> service_keys;
+  for (const auto& gatt_service : gatt_services_) {
+    service_keys.push_back(gatt_service.first);
+  }
+  for (const auto& key : service_keys) {
+    gatt_services_.take_and_erase(key);
+  }
   if (create_gatt_connection_error_callbacks_.empty()) {
     // TODO(http://crbug.com/585897): Need to pass the error.
     DidDisconnectGatt();

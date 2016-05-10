@@ -453,7 +453,7 @@ TEST_F(BluetoothTest,
 }
 #endif  // defined(OS_ANDROID) || defined(OS_MACOSX)
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_MACOSX)
 // Calls CreateGattConnection & DisconnectGatt, then checks that gatt services
 // have been cleaned up.
 TEST_F(BluetoothTest, BluetoothGattConnection_DisconnectGatt_Cleanup) {
@@ -504,7 +504,7 @@ TEST_F(BluetoothTest, BluetoothGattConnection_DisconnectGatt_Cleanup) {
   EXPECT_EQ(1u, device->GetGattServices().size());
   EXPECT_EQ(2, observer.gatt_services_discovered_count());
 }
-#endif  // defined(OS_ANDROID)
+#endif  // defined(OS_ANDROID) || defined(OS_MACOSX)
 
 #if defined(OS_ANDROID) || defined(OS_MACOSX)
 // Calls CreateGattConnection, but simulate errors connecting. Also, verifies
@@ -538,7 +538,7 @@ TEST_F(BluetoothTest, BluetoothGattConnection_ErrorAfterConnection) {
 }
 #endif  // defined(OS_ANDROID) || defined(OS_MACOSX)
 
-#if defined(OS_ANDROID) || defined(OS_WIN)
+#if defined(OS_ANDROID) || defined(OS_WIN) || defined(OS_MACOSX)
 TEST_F(BluetoothTest, GattServices_ObserversCalls) {
   if (!PlatformSupportsLowEnergy()) {
     LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
@@ -562,9 +562,9 @@ TEST_F(BluetoothTest, GattServices_ObserversCalls) {
   EXPECT_EQ(1, observer.gatt_services_discovered_count());
   EXPECT_EQ(2, observer.gatt_service_added_count());
 }
-#endif  // defined(OS_ANDROID) || defined(OS_WIN)
+#endif  // defined(OS_ANDROID) || defined(OS_WIN) || defined(OS_MACOSX)
 
-#if defined(OS_ANDROID) || defined(OS_WIN)
+#if defined(OS_ANDROID) || defined(OS_WIN) || defined(OS_MACOSX)
 TEST_F(BluetoothTest, GetGattServices_and_GetGattService) {
   if (!PlatformSupportsLowEnergy()) {
     LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
@@ -595,9 +595,9 @@ TEST_F(BluetoothTest, GetGattServices_and_GetGattService) {
   EXPECT_TRUE(device->GetGattService(service_id2));
   EXPECT_TRUE(device->GetGattService(service_id3));
 }
-#endif  // defined(OS_ANDROID) || defined(OS_WIN)
+#endif  // defined(OS_ANDROID) || defined(OS_WIN) || defined(OS_MACOSX)
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_MACOSX)
 TEST_F(BluetoothTest, GetGattServices_DiscoveryError) {
   if (!PlatformSupportsLowEnergy()) {
     LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
@@ -615,6 +615,6 @@ TEST_F(BluetoothTest, GetGattServices_DiscoveryError) {
   SimulateGattServicesDiscoveryError(device);
   EXPECT_EQ(0u, device->GetGattServices().size());
 }
-#endif  // defined(OS_ANDROID)
+#endif  // defined(OS_ANDROID) || defined(OS_MACOSX)
 
 }  // namespace device

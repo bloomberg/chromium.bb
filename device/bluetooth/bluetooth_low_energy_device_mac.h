@@ -22,10 +22,13 @@
 #include "crypto/sha2.h"
 #include "device/bluetooth/bluetooth_device_mac.h"
 
+@class BluetoothLowEnergyPeripheralDelegate;
+
 namespace device {
 
 class BluetoothAdapterMac;
 class BluetoothLowEnergyDiscoverManagerMac;
+class BluetoothRemoteGattServiceMac;
 
 class DEVICE_BLUETOOTH_EXPORT BluetoothLowEnergyDeviceMac
     : public BluetoothDeviceMac {
@@ -89,6 +92,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothLowEnergyDeviceMac
   void CreateGattConnectionImpl() override;
   void DisconnectGatt() override;
 
+  // Methods used by BluetoothLowEnergyPeripheralBridge.
+  void DidDiscoverPrimaryServices(NSError* error);
+  void DidModifyServices(NSArray* invalidatedServices);
+
   // Updates information about the device.
   virtual void Update(NSDictionary* advertisement_data, int rssi);
 
@@ -103,6 +110,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothLowEnergyDeviceMac
  private:
   friend class BluetoothAdapterMac;
   friend class BluetoothAdapterMacTest;
+  friend class BluetoothLowEnergyPeripheralBridge;
   friend class BluetoothTestMac;
 
   // Returns the Bluetooth adapter.
@@ -111,11 +119,19 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothLowEnergyDeviceMac
   // Returns the CoreBluetooth Peripheral.
   CBPeripheral* GetPeripheral();
 
+  // Returns BluetoothRemoteGattServiceMac based on the CBService.
+  BluetoothRemoteGattServiceMac* GetBluetoothRemoteGattService(
+      CBService* service) const;
+
   // Callback used when the CoreBluetooth Peripheral is disconnected.
   void DidDisconnectPeripheral(BluetoothDevice::ConnectErrorCode error_code);
 
   // CoreBluetooth data structure.
   base::scoped_nsobject<CBPeripheral> peripheral_;
+
+  // Objective-C delegate for the CBPeripheral.
+  base::scoped_nsobject<BluetoothLowEnergyPeripheralDelegate>
+      peripheral_delegate_;
 
   // RSSI value.
   int rssi_;

@@ -10,13 +10,21 @@
 
 #import <CoreBluetooth/CoreBluetooth.h>
 
+namespace device {
+
+class BluetoothTestMac;
+}
+
 // This class mocks the behavior of a CBPeripheral.
 @interface MockCBPeripheral : NSObject
 
 @property(nonatomic, readonly) CBPeripheralState state;
 @property(nonatomic, readonly) NSUUID* identifier;
 @property(nonatomic, readonly) NSString* name;
+@property(nonatomic, assign) id<CBPeripheralDelegate> delegate;
 @property(nonatomic, readonly) CBPeripheral* peripheral;
+@property(retain, readonly) NSArray* services;
+@property(nonatomic, assign) device::BluetoothTestMac* bluetoothTestMac;
 
 - (instancetype)init NS_UNAVAILABLE;
 - (instancetype)initWithIdentifier:(NSUUID*)identifier;
@@ -24,7 +32,12 @@
 - (instancetype)initWithIdentifier:(NSUUID*)identifier
                               name:(NSString*)name NS_DESIGNATED_INITIALIZER;
 
+// Methods for faking events.
 - (void)setState:(CBPeripheralState)state;
+- (void)removeAllServices;
+- (void)addServices:(NSArray*)services;
+- (void)didDiscoverWithError:(NSError*)error;
+- (void)removeService:(CBService*)uuid;
 
 @end
 
