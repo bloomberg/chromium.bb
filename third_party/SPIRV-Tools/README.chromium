@@ -12,3 +12,4 @@ SPIR-V modules.
 
 Local Modifications:
 Added OWNERS, README.chromium.
+Ported build rules from CMake to GN.
