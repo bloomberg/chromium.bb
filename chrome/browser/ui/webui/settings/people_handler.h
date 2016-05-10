@@ -52,45 +52,16 @@ class PeopleHandler : public SettingsPageUIHandler,
   explicit PeopleHandler(Profile* profile);
   ~PeopleHandler() override;
 
-  // SettingsPageUIHandler implementation.
-  void RegisterMessages() override;
-  void OnJavascriptAllowed() override;
-  void OnJavascriptDisallowed() override;
-
-  // SyncStartupTracker::Observer implementation.
-  void SyncStartupCompleted() override;
-  void SyncStartupFailed() override;
-
-  // LoginUIService::LoginUI implementation.
-  void FocusUI() override;
-  void CloseUI() override;
-
-  // SigninManagerBase::Observer implementation.
-  void GoogleSigninSucceeded(const std::string& account_id,
-                             const std::string& username,
-                             const std::string& password) override;
-  void GoogleSignedOut(const std::string& account_id,
-                       const std::string& username) override;
-
-  // sync_driver::SyncServiceObserver implementation.
-  void OnStateChanged() override;
-
   // Initializes the sync setup flow and shows the setup UI.
   void OpenSyncSetup(bool creating_supervised_user);
-
-  // Shows advanced configuration dialog without going through sign in dialog.
-  // Kicks the sync backend if necessary with showing spinner dialog until it
-  // gets ready.
-  void OpenConfigureSync();
 
   // Terminates the sync setup flow.
   void CloseSyncSetup();
 
-  // Returns a newly created dictionary with a number of properties that
-  // correspond to the status of sync.
-  std::unique_ptr<base::DictionaryValue> GetSyncStatusDictionary();
-
  protected:
+  bool is_configuring_sync() const { return configuring_sync_; }
+
+ private:
   friend class PeopleHandlerTest;
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest,
                            DisplayConfigureWithBackendDisabledAndCancel);
@@ -118,7 +89,37 @@ class PeopleHandler : public SettingsPageUIHandler,
                            SubmitAuthWithInvalidUsername);
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerFirstSigninTest, DisplayBasicLogin);
 
-  bool is_configuring_sync() const { return configuring_sync_; }
+  // SettingsPageUIHandler implementation.
+  void RegisterMessages() override;
+  void OnJavascriptAllowed() override;
+  void OnJavascriptDisallowed() override;
+
+  // SyncStartupTracker::Observer implementation.
+  void SyncStartupCompleted() override;
+  void SyncStartupFailed() override;
+
+  // LoginUIService::LoginUI implementation.
+  void FocusUI() override;
+  void CloseUI() override;
+
+  // SigninManagerBase::Observer implementation.
+  void GoogleSigninSucceeded(const std::string& account_id,
+                             const std::string& username,
+                             const std::string& password) override;
+  void GoogleSignedOut(const std::string& account_id,
+                       const std::string& username) override;
+
+  // sync_driver::SyncServiceObserver implementation.
+  void OnStateChanged() override;
+
+  // Shows advanced configuration dialog without going through sign in dialog.
+  // Kicks the sync backend if necessary with showing spinner dialog until it
+  // gets ready.
+  void OpenConfigureSync();
+
+  // Returns a newly created dictionary with a number of properties that
+  // correspond to the status of sync.
+  std::unique_ptr<base::DictionaryValue> GetSyncStatusDictionary();
 
   // Helper routine that gets the ProfileSyncService associated with the parent
   // profile.
@@ -127,7 +128,6 @@ class PeopleHandler : public SettingsPageUIHandler,
   // Returns the LoginUIService for the parent profile.
   LoginUIService* GetLoginUIService() const;
 
- private:
   // Callbacks from the page.
   void HandleGetProfileInfo(const base::ListValue* args);
   void OnDidClosePage(const base::ListValue* args);
@@ -178,9 +178,6 @@ class PeopleHandler : public SettingsPageUIHandler,
 
   // Sends the current sync status to the JavaScript WebUI code.
   void UpdateSyncStatus();
-
-  // Will be called when the kSigninAllowed pref has changed.
-  void OnSigninAllowedPrefChange();
 
   // Suppresses any further signin promos, since the user has signed in once.
   void MarkFirstSetupComplete();

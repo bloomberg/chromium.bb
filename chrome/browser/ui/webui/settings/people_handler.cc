@@ -223,8 +223,7 @@ void PeopleHandler::OnJavascriptAllowed() {
   profile_pref_registrar_.Init(prefs);
   profile_pref_registrar_.Add(
       prefs::kSigninAllowed,
-      base::Bind(&PeopleHandler::OnSigninAllowedPrefChange,
-                 base::Unretained(this)));
+      base::Bind(&PeopleHandler::UpdateSyncStatus, base::Unretained(this)));
 
   ProfileSyncService* sync_service(
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile_));
@@ -686,6 +685,7 @@ void PeopleHandler::OpenSyncSetup(bool creating_supervised_user) {
   // via the "Advanced..." button or through One-Click signin (cases 4-6), or
   // they are re-enabling sync after having disabled it (case 7).
   PushSyncPrefs();
+  FocusUI();
 }
 
 void PeopleHandler::OpenConfigureSync() {
@@ -693,6 +693,7 @@ void PeopleHandler::OpenConfigureSync() {
     return;
 
   PushSyncPrefs();
+  FocusUI();
 }
 
 void PeopleHandler::FocusUI() {
@@ -721,6 +722,10 @@ void PeopleHandler::GoogleSignedOut(const std::string& /* account_id */,
 
 void PeopleHandler::OnStateChanged() {
   UpdateSyncStatus();
+
+  // When the SyncService changes its state, we should also push the updated
+  // sync preferences.
+  PushSyncPrefs();
 }
 
 std::unique_ptr<base::DictionaryValue>
@@ -907,10 +912,6 @@ void PeopleHandler::PushSyncPrefs() {
 
   CallJavascriptFunction("cr.webUIListenerCallback",
                          base::StringValue("sync-prefs-changed"), args);
-
-  // Make sure the tab used for the Gaia sign in does not cover the settings
-  // tab.
-  FocusUI();
 }
 
 LoginUIService* PeopleHandler::GetLoginUIService() const {
@@ -921,10 +922,6 @@ void PeopleHandler::UpdateSyncStatus() {
   CallJavascriptFunction("cr.webUIListenerCallback",
                          base::StringValue("sync-status-changed"),
                          *GetSyncStatusDictionary());
-}
-
-void PeopleHandler::OnSigninAllowedPrefChange() {
-  UpdateSyncStatus();
 }
 
 void PeopleHandler::MarkFirstSetupComplete() {
