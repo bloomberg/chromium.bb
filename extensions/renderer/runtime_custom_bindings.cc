@@ -14,17 +14,10 @@
 #include "content/public/renderer/render_frame.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_messages.h"
-#include "extensions/common/features/feature.h"
-#include "extensions/common/features/feature_provider.h"
 #include "extensions/common/manifest.h"
-#include "extensions/renderer/api_activity_logger.h"
 #include "extensions/renderer/extension_frame_helper.h"
 #include "extensions/renderer/script_context.h"
-#include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
-#include "third_party/WebKit/public/web/WebView.h"
-
-using content::V8ValueConverter;
 
 namespace extensions {
 
@@ -73,6 +66,7 @@ void RuntimeCustomBindings::OpenChannelToExtension(
   bool include_tls_channel_id =
       args.Length() > 2 ? args[2]->BooleanValue() : false;
   int port_id = -1;
+  // TODO(devlin): This file is littered with sync IPCs. Yuck.
   renderframe->Send(new ExtensionHostMsg_OpenChannelToExtension(
       renderframe->GetRoutingID(), info, channel_name, include_tls_channel_id,
       &port_id));
@@ -81,24 +75,23 @@ void RuntimeCustomBindings::OpenChannelToExtension(
 
 void RuntimeCustomBindings::OpenChannelToNativeApp(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
+  // The Javascript code should validate/fill the arguments.
+  CHECK_EQ(args.Length(), 1);
+  CHECK(args[0]->IsString());
+
   // Verify that the extension has permission to use native messaging.
-  Feature::Availability availability =
-      FeatureProvider::GetPermissionFeatures()
-          ->GetFeature("nativeMessaging")
-          ->IsAvailableToContext(context()->extension(),
-                                 context()->context_type(), context()->url());
-  if (!availability.is_available())
+  if (!context()->GetAvailability("runtime.connectNative").is_available())
     return;
 
   content::RenderFrame* render_frame = context()->GetRenderFrame();
   if (!render_frame)
     return;
 
-  // The Javascript code should validate/fill the arguments.
-  CHECK(args.Length() >= 2 && args[0]->IsString() && args[1]->IsString());
+  const std::string& extension_id = context()->GetExtensionID();
+  // Should be caught by JS.
+  CHECK(!extension_id.empty());
 
-  std::string extension_id = *v8::String::Utf8Value(args[0]);
-  std::string native_app_name = *v8::String::Utf8Value(args[1]);
+  std::string native_app_name = *v8::String::Utf8Value(args[0]);
 
   int port_id = -1;
   render_frame->Send(new ExtensionHostMsg_OpenChannelToNativeApp(
@@ -110,18 +103,17 @@ void RuntimeCustomBindings::GetManifest(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
   CHECK(context()->extension());
 
-  std::unique_ptr<V8ValueConverter> converter(V8ValueConverter::create());
+  std::unique_ptr<content::V8ValueConverter> converter(
+      content::V8ValueConverter::create());
   args.GetReturnValue().Set(converter->ToV8Value(
       context()->extension()->manifest()->value(), context()->v8_context()));
 }
 
 void RuntimeCustomBindings::GetExtensionViews(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
-  if (args.Length() != 2)
-    return;
-
-  if (!args[0]->IsInt32() || !args[1]->IsString())
-    return;
+  CHECK_EQ(args.Length(), 2);
+  CHECK(args[0]->IsInt32());
+  CHECK(args[1]->IsString());
 
   // |browser_window_id| == extension_misc::kUnknownWindowId means getting
   // all views for the current extension.
@@ -146,11 +138,11 @@ void RuntimeCustomBindings::GetExtensionViews(
     view_type = VIEW_TYPE_LAUNCHER_PAGE;
   } else if (view_type_string == kViewTypePanel) {
     view_type = VIEW_TYPE_PANEL;
-  } else if (view_type_string != kViewTypeAll) {
-    return;
+  } else {
+    CHECK_EQ(view_type_string, kViewTypeAll);
   }
 
-  std::string extension_id = context()->GetExtensionID();
+  const std::string& extension_id = context()->GetExtensionID();
   if (extension_id.empty())
     return;
 
@@ -165,17 +157,20 @@ void RuntimeCustomBindings::GetExtensionViews(
     // main views, not any subframes. (Returning subframes can cause broken
     // behavior by treating an app window's iframe as its main frame, and maybe
     // other nastiness).
-    if (frame->GetWebFrame()->top() != frame->GetWebFrame())
+    blink::WebFrame* web_frame = frame->GetWebFrame();
+    if (web_frame->top() != web_frame)
       continue;
 
-    v8::Local<v8::Context> context =
-        frame->GetWebFrame()->mainWorldScriptContext();
+    if (!blink::WebFrame::scriptCanAccess(web_frame))
+      continue;
+
+    v8::Local<v8::Context> context = web_frame->mainWorldScriptContext();
     if (!context.IsEmpty()) {
       v8::Local<v8::Value> window = context->Global();
-      DCHECK(!window.IsEmpty());
+      CHECK(!window.IsEmpty());
       v8::Maybe<bool> maybe =
-        v8_views->CreateDataProperty(v8_context, v8_index++, window);
-      DCHECK(maybe.IsJust() && maybe.FromJust());
+          v8_views->CreateDataProperty(v8_context, v8_index++, window);
+      CHECK(maybe.IsJust() && maybe.FromJust());
     }
   }
 

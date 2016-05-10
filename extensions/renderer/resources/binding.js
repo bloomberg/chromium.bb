@@ -235,6 +235,7 @@ Binding.prototype = {
         return;
 
       hook({
+        __proto__: null,
         apiFunctions: this.apiFunctions_,
         schema: schema,
         compiledApi: api
