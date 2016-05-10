@@ -5,23 +5,28 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_BLUETOOTH_LOW_ENERGY_BLUETOOTH_LOW_ENERGY_EVENT_ROUTER_H_
 #define CHROME_BROWSER_EXTENSIONS_API_BLUETOOTH_LOW_ENERGY_BLUETOOTH_LOW_ENERGY_EVENT_ROUTER_H_
 
-#include <stdint.h>
-
+#include <cstddef>
+#include <cstdint>
 #include <map>
 #include <set>
 #include <string>
 #include <vector>
 
-#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/scoped_observer.h"
 #include "chrome/common/extensions/api/bluetooth_low_energy.h"
-#include "content/public/browser/notification_observer.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_device.h"
+#include "device/bluetooth/bluetooth_gatt_connection.h"
+#include "device/bluetooth/bluetooth_gatt_notify_session.h"
 #include "device/bluetooth/bluetooth_local_gatt_service.h"
 #include "device/bluetooth/bluetooth_remote_gatt_service.h"
+#include "device/bluetooth/bluetooth_uuid.h"
 #include "extensions/browser/extension_event_histogram_value.h"
+#include "extensions/browser/extension_registry_observer.h"
 
 namespace base {
 
@@ -37,8 +42,10 @@ class BrowserContext;
 
 namespace device {
 
-class BluetoothGattNotifySession;
 class BluetoothLocalGattCharacteristic;
+class BluetoothLocalGattDescriptor;
+class BluetoothRemoteGattCharacteristic;
+class BluetoothRemoteGattDescriptor;
 
 }  // namespace device
 
@@ -47,12 +54,14 @@ namespace extensions {
 class BluetoothLowEnergyConnection;
 class BluetoothLowEnergyNotifySession;
 class Extension;
+class ExtensionRegistry;
 
 // The BluetoothLowEnergyEventRouter is used by the bluetoothLowEnergy API to
 // interface with the internal Bluetooth API in device/bluetooth.
 class BluetoothLowEnergyEventRouter
     : public device::BluetoothAdapter::Observer,
-      public device::BluetoothLocalGattService::Delegate {
+      public device::BluetoothLocalGattService::Delegate,
+      public extensions::ExtensionRegistryObserver {
  public:
   struct AttributeValueRequest {
    public:
@@ -330,6 +339,12 @@ class BluetoothLowEnergyEventRouter
       const base::Closure& callback,
       const Delegate::ErrorCallback& error_callback) override;
 
+  // extensions::ExtensionRegistryObserver overrides:
+  void OnExtensionUnloaded(
+      content::BrowserContext* browser_context,
+      const extensions::Extension* extension,
+      extensions::UnloadedExtensionInfo::Reason reason) override;
+
   // Adds a mapping for a local characteristic ID to its service ID
   void AddLocalCharacteristic(const std::string& id,
                               const std::string& service_id);
@@ -337,6 +352,10 @@ class BluetoothLowEnergyEventRouter
   // Returns NULL, if the characteristic cannot be found.
   device::BluetoothLocalGattCharacteristic* GetLocalCharacteristic(
       const std::string& id) const;
+
+  // Adds a mapping for a service_id to the id of the app that owns it.
+  void AddServiceToApp(const std::string& app_id,
+                       const std::string& service_id);
 
   // Register a local GATT service.
   void RegisterGattService(const Extension* extension,
@@ -539,8 +558,15 @@ class BluetoothLowEnergyEventRouter
   // The last request ID we used.
   size_t last_callback_request_id_;
 
+  // Map of locally hosted GATT service ids created by app_id. Used for cleanup.
+  std::map<std::string, std::vector<std::string>> app_id_to_service_ids_;
+
   // BrowserContext passed during initialization.
   content::BrowserContext* browser_context_;
+
+  // Listen to extension unloaded notification.
+  ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
+      extension_registry_observer_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

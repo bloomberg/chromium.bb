@@ -1212,6 +1212,7 @@ void BluetoothLowEnergyCreateServiceFunction::DoWork() {
           device::BluetoothUUID(params_->service.uuid),
           params_->service.is_primary, nullptr, event_router_);
 
+  event_router_->AddServiceToApp(extension_id(), service->GetIdentifier());
   Respond(ArgumentList(
       apibtle::CreateService::Results::Create(service->GetIdentifier())));
 #else

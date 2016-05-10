@@ -1,18 +1,17 @@
 // Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
 #include "chrome/browser/extensions/api/bluetooth_low_energy/bluetooth_low_energy_event_router.h"
 
 #include <iterator>
 #include <utility>
 
 #include "base/bind.h"
-#include "base/callback_forward.h"
+#include "base/callback.h"
 #include "base/containers/hash_tables.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/memory/ref_counted.h"
-#include "base/values.h"
 #include "chrome/browser/extensions/api/bluetooth_low_energy/bluetooth_low_energy_connection.h"
 #include "chrome/browser/extensions/api/bluetooth_low_energy/bluetooth_low_energy_notify_session.h"
 #include "chrome/browser/extensions/api/bluetooth_low_energy/utils.h"
@@ -20,18 +19,14 @@
 #include "content/public/browser/browser_thread.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluetooth_gatt_characteristic.h"
-#include "device/bluetooth/bluetooth_gatt_connection.h"
-#include "device/bluetooth/bluetooth_gatt_notify_session.h"
 #include "device/bluetooth/bluetooth_gatt_service.h"
 #include "device/bluetooth/bluetooth_local_gatt_characteristic.h"
 #include "device/bluetooth/bluetooth_local_gatt_descriptor.h"
 #include "device/bluetooth/bluetooth_remote_gatt_characteristic.h"
 #include "device/bluetooth/bluetooth_remote_gatt_descriptor.h"
-#include "device/bluetooth/bluetooth_uuid.h"
 #include "extensions/browser/api/api_resource_manager.h"
 #include "extensions/browser/event_listener_map.h"
 #include "extensions/browser/event_router.h"
-#include "extensions/browser/extension_registry.h"
 #include "extensions/common/api/bluetooth/bluetooth_manifest_data.h"
 #include "extensions/common/extension.h"
 
@@ -231,6 +226,7 @@ BluetoothLowEnergyEventRouter::BluetoothLowEnergyEventRouter(
     : adapter_(NULL),
       last_callback_request_id_(0),
       browser_context_(context),
+      extension_registry_observer_(this),
       weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(browser_context_);
@@ -240,12 +236,26 @@ BluetoothLowEnergyEventRouter::BluetoothLowEnergyEventRouter(
     VLOG(1) << "Bluetooth not supported on the current platform.";
     return;
   }
+
+  // Register for unload event so we clean up created services for apps that
+  // get unloaded.
+  extension_registry_observer_.Add(ExtensionRegistry::Get(context));
 }
 
 BluetoothLowEnergyEventRouter::~BluetoothLowEnergyEventRouter() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!adapter_.get())
     return;
+
+  // Delete any services owned by any apps. This will also unregister them all.
+  for (const auto& services : app_id_to_service_ids_) {
+    for (const auto& service_id : services.second) {
+      device::BluetoothLocalGattService* service =
+          adapter_->GetGattService(service_id);
+      if (service)
+        service->Delete();
+    }
+  }
 
   adapter_->RemoveObserver(this);
   adapter_ = NULL;
@@ -1196,11 +1206,30 @@ void BluetoothLowEnergyEventRouter::OnDescriptorWriteRequest(
                                                 descriptor->GetIdentifier()));
 }
 
+void BluetoothLowEnergyEventRouter::OnExtensionUnloaded(
+    content::BrowserContext* browser_context,
+    const extensions::Extension* extension,
+    extensions::UnloadedExtensionInfo::Reason reason) {
+  const std::string& app_id = extension->id();
+  const auto& services = app_id_to_service_ids_.find(app_id);
+  if (services == app_id_to_service_ids_.end())
+    return;
+
+  // Find all services owned by this app and delete them.
+  for (const auto& service_id : services->second) {
+    device::BluetoothLocalGattService* service =
+        adapter_->GetGattService(service_id);
+    if (service)
+      service->Delete();
+  }
+  app_id_to_service_ids_.erase(services);
+}
+
 void BluetoothLowEnergyEventRouter::AddLocalCharacteristic(
     const std::string& id,
     const std::string& service_id) {
   if (chrc_id_to_service_id_.find(id) != chrc_id_to_service_id_.end())
-    VLOG(1) << "Local characteristic with id " << id
+    VLOG(2) << "Local characteristic with id " << id
             << " already exists. Replacing.";
   chrc_id_to_service_id_[id] = service_id;
 }
@@ -1221,6 +1250,19 @@ BluetoothLowEnergyEventRouter::GetLocalCharacteristic(
   }
 
   return service->GetCharacteristic(id);
+}
+
+void BluetoothLowEnergyEventRouter::AddServiceToApp(
+    const std::string& app_id,
+    const std::string& service_id) {
+  const auto& services = app_id_to_service_ids_.find(app_id);
+  if (services == app_id_to_service_ids_.end()) {
+    std::vector<std::string> service_ids;
+    service_ids.push_back(service_id);
+    app_id_to_service_ids_[app_id] = service_ids;
+  } else {
+    services->second.push_back(service_id);
+  }
 }
 
 void BluetoothLowEnergyEventRouter::RegisterGattService(
