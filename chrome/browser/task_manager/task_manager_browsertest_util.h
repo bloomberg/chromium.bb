@@ -15,8 +15,7 @@ namespace content {
 class WebContents;
 }
 
-// TODO(nick): Move everything here (except for LegacyTaskManagerTesterImpl)
-// into the task_management namespace.
+// TODO(nick): Move everything here into the task_management namespace.
 namespace task_manager {
 namespace browsertest_util {
 

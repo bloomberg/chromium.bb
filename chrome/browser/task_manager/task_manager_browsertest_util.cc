@@ -21,6 +21,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/task_management/task_manager_interface.h"
+#include "chrome/browser/task_manager/legacy_task_manager_tester.h"
 #include "chrome/browser/task_manager/resource_provider.h"
 #include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/browser/ui/browser_dialogs.h"
@@ -186,77 +187,6 @@ class TaskManagerTesterImpl : public TaskManagerTester {
 
 namespace {
 
-class LegacyTaskManagerTesterImpl : public TaskManagerTester,
-                                    public TaskManagerModelObserver {
- public:
-  explicit LegacyTaskManagerTesterImpl(const base::Closure& on_resource_change)
-      : on_resource_change_(on_resource_change),
-        model_(TaskManager::GetInstance()->model()) {
-    if (!on_resource_change_.is_null())
-      model_->AddObserver(this);
-  }
-  ~LegacyTaskManagerTesterImpl() override {
-    if (!on_resource_change_.is_null())
-      model_->RemoveObserver(this);
-  }
-
-  // TaskManagerTester:
-  int GetRowCount() override { return model_->ResourceCount(); }
-
-  base::string16 GetRowTitle(int row) override {
-    return model_->GetResourceTitle(row);
-  }
-
-  int64_t GetColumnValue(ColumnSpecifier column, int row) override {
-    size_t value = 0;
-    bool success = false;
-    switch (column) {
-      case ColumnSpecifier::COLUMN_NONE:
-        break;
-      case ColumnSpecifier::V8_MEMORY:
-        success = model_->GetV8Memory(row, &value);
-        break;
-      case ColumnSpecifier::V8_MEMORY_USED:
-        success = model_->GetV8MemoryUsed(row, &value);
-        break;
-      case ColumnSpecifier::SQLITE_MEMORY_USED:
-        success = model_->GetSqliteMemoryUsedBytes(row, &value);
-        break;
-    }
-    if (!success)
-      return 0;
-    return static_cast<int64_t>(value);
-  }
-
-  void ToggleColumnVisibility(ColumnSpecifier column) override {
-    // Doing nothing is okay here; the legacy TaskManager always collects all
-    // stats.
-  }
-
-  int32_t GetTabId(int row) override {
-    if (model_->GetResourceWebContents(row)) {
-      return SessionTabHelper::IdForTab(model_->GetResourceWebContents(row));
-    }
-    return -1;
-  }
-
-  void Kill(int row) override { TaskManager::GetInstance()->KillProcess(row); }
-
-  // TaskManagerModelObserver:
-  void OnModelChanged() override { OnResourceChange(); }
-  void OnItemsChanged(int start, int length) override { OnResourceChange(); }
-  void OnItemsAdded(int start, int length) override { OnResourceChange(); }
-  void OnItemsRemoved(int start, int length) override { OnResourceChange(); }
-
- private:
-  void OnResourceChange() {
-    if (!on_resource_change_.is_null())
-      on_resource_change_.Run();
-  }
-  base::Closure on_resource_change_;
-  TaskManagerModel* model_;
-};
-
 // Helper class to run a message loop until a TaskManagerTester is in an
 // expected state. If timeout occurs, an ASCII version of the task manager's
 // contents, along with a summary of the expected state, are dumped to test
@@ -277,7 +207,7 @@ class ResourceChangeObserver {
     if (IsNewTaskManagerViewEnabled())
       task_manager_tester_.reset(new TaskManagerTesterImpl(callback));
     else
-      task_manager_tester_.reset(new LegacyTaskManagerTesterImpl(callback));
+      task_manager_tester_ = CreateLegacyTaskManagerTester(callback);
   }
 
   void RunUntilSatisfied() {
@@ -394,7 +324,7 @@ std::unique_ptr<TaskManagerTester> GetTaskManagerTester() {
   if (IsNewTaskManagerViewEnabled())
     return base::WrapUnique(new TaskManagerTesterImpl(base::Closure()));
   else
-    return base::WrapUnique(new LegacyTaskManagerTesterImpl(base::Closure()));
+    return CreateLegacyTaskManagerTester(base::Closure());
 }
 
 void WaitForTaskManagerRows(int required_count,
