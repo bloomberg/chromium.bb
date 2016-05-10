@@ -2326,8 +2326,10 @@ wayland_backend_destroy(struct wayland_backend *b)
 }
 
 static void
-wayland_backend_config_release(struct weston_wayland_backend_config *new_config) {
+wayland_backend_config_release(struct weston_wayland_backend_config *new_config)
+{
 	int i;
+
 	for (i = 0; i < new_config->num_outputs; ++i) {
 		free(new_config->outputs[i].name);
 	}
@@ -2342,21 +2344,24 @@ wayland_backend_config_release(struct weston_wayland_backend_config *new_config)
  * structure is NOT cleared nor set to default values.
  */
 static struct weston_wayland_backend_output_config *
-wayland_backend_config_add_new_output(struct weston_wayland_backend_config *new_config) {
+wayland_backend_config_add_new_output(struct weston_wayland_backend_config *new_config)
+{
 	struct weston_wayland_backend_output_config *outputs;
+	const size_t element_size = sizeof(struct weston_wayland_backend_output_config);
+
 	outputs = realloc(new_config->outputs,
-			  (new_config->num_outputs+1)*sizeof(struct weston_wayland_backend_output_config));
+			  (new_config->num_outputs + 1) * element_size);
 	if (!outputs)
 		return NULL;
 	new_config->num_outputs += 1;
 	new_config->outputs = outputs;
-	return &(new_config->outputs[new_config->num_outputs-1]);
+	return &(new_config->outputs[new_config->num_outputs - 1]);
 }
 
 static int
-load_wayland_backend_config(struct weston_compositor *compositor, int *argc, char *argv[],
-	     struct weston_config *config,
-	     struct weston_wayland_backend_config *out_config)
+load_wayland_backend_config(struct weston_compositor *compositor, int *argc,
+			    char *argv[], struct weston_config *config,
+			    struct weston_wayland_backend_config *out_config)
 {
 	struct weston_wayland_backend_config new_config = { 0, };
 	struct weston_config_section *section;
