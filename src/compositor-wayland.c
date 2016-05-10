@@ -1092,10 +1092,10 @@ err_name:
 }
 
 static void
-wayland_output_init_from_config(struct weston_wayland_backend_output_config *output,
-				struct weston_config_section *config_section,
-				int option_width, int option_height,
-				int option_scale)
+weston_wayland_output_config_init(struct weston_wayland_backend_output_config *output,
+				  struct weston_config_section *config_section,
+				  int option_width, int option_height,
+				  int option_scale)
 {
 	char *mode, *t, *str;
 	unsigned int slen;
@@ -2441,8 +2441,8 @@ load_wayland_backend_config(struct weston_compositor *compositor, int *argc,
 		if (!oc)
 			goto err_outputs;
 
-		wayland_output_init_from_config(oc, section, width,
-						height, scale);
+		weston_wayland_output_config_init(oc, section, width,
+						  height, scale);
 		--count;
 	}
 
