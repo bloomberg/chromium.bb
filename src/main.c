@@ -1104,18 +1104,18 @@ weston_wayland_backend_config_release(struct weston_wayland_backend_config *conf
  * structure is NOT cleared nor set to default values.
  */
 static struct weston_wayland_backend_output_config *
-weston_wayland_backend_config_add_new_output(struct weston_wayland_backend_config *new_config)
+weston_wayland_backend_config_add_new_output(struct weston_wayland_backend_config *config)
 {
 	struct weston_wayland_backend_output_config *outputs;
 	const size_t element_size = sizeof(struct weston_wayland_backend_output_config);
 
-	outputs = realloc(new_config->outputs,
-			  (new_config->num_outputs + 1) * element_size);
+	outputs = realloc(config->outputs,
+			  (config->num_outputs + 1) * element_size);
 	if (!outputs)
 		return NULL;
-	new_config->num_outputs += 1;
-	new_config->outputs = outputs;
-	return &(new_config->outputs[new_config->num_outputs - 1]);
+	config->num_outputs += 1;
+	config->outputs = outputs;
+	return &(config->outputs[config->num_outputs - 1]);
 }
 
 static int
