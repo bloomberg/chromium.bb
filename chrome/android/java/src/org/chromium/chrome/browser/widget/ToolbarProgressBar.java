@@ -13,11 +13,9 @@ import android.util.AttributeSet;
 import android.view.ViewGroup;
 import android.widget.FrameLayout.LayoutParams;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.CommandLine;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.components.variations.VariationsAssociatedData;
@@ -57,10 +55,10 @@ public class ToolbarProgressBar extends ClipDrawableProgressBar {
     // The amount of time in ms that the progress bar has to be stopped before the indeterminate
     // animation starts.
     private static final long ANIMATION_START_THRESHOLD = 1000;
-    private static final float THEMED_BACKGROUND_ALPHA = 0.2f;
-    private static final float THEMED_DARKEN_FRACTION = 0.6f;
-    private static final float THEMED_COLOR_ALPHA = 0.4f;
-    private static final float MIN_COLOR_CONTRAST = 3.0f;
+
+    private static final float THEMED_BACKGROUND_WHITE_FRACTION = 0.2f;
+    private static final float THEMED_FOREGROUND_BLACK_FRACTION = 0.64f;
+    private static final float ANIMATION_WHITE_FRACTION = 0.4f;
 
     private static final long PROGRESS_FRAME_TIME_CAP_MS = 50;
     private long mAlphaAnimationDurationMs = 140;
@@ -321,24 +319,23 @@ public class ToolbarProgressBar extends ClipDrawableProgressBar {
         int animationColor;
         int foregroundColor;
 
-        int foregroundWhite = ApiCompatibilityUtils.getColor(getResources(),
-                R.color.progress_bar_foreground_white);
-
         if (!ColorUtils.shoudUseLightForegroundOnBackground(color) && !isIncognito) {
             // Light theme.
-            foregroundColor = ColorUtils.findDarkerColorWithMinContrast(color, MIN_COLOR_CONTRAST);
-            animationColor = ColorUtils.getColorWithOverlay(foregroundColor, foregroundWhite,
-                    THEMED_COLOR_ALPHA);
+            foregroundColor = ColorUtils.getColorWithOverlay(Color.BLACK, color,
+                    THEMED_FOREGROUND_BLACK_FRACTION);
+            animationColor = ColorUtils.getColorWithOverlay(Color.WHITE, foregroundColor,
+                    ANIMATION_WHITE_FRACTION);
         } else {
             // Dark theme.
-            foregroundColor = foregroundWhite;
-            animationColor = ColorUtils.getColorWithOverlay(color, foregroundWhite,
-                    1.0f - THEMED_COLOR_ALPHA);
+            foregroundColor = Color.WHITE;
+            animationColor = ColorUtils.getColorWithOverlay(Color.WHITE, color,
+                    ANIMATION_WHITE_FRACTION);
         }
 
         setForegroundColor(foregroundColor);
         setBackgroundColor(
-                ColorUtils.getColorWithOverlay(foregroundWhite, color, THEMED_BACKGROUND_ALPHA));
+                ColorUtils.getColorWithOverlay(Color.WHITE, color,
+                        THEMED_BACKGROUND_WHITE_FRACTION));
 
         if (mAnimatingView != null) mAnimatingView.setColor(animationColor);
     }
@@ -347,7 +344,8 @@ public class ToolbarProgressBar extends ClipDrawableProgressBar {
     public void setForegroundColor(int color) {
         super.setForegroundColor(color);
         if (mAnimatingView != null) {
-            mAnimatingView.setColor(ColorUtils.getColorWithOverlay(color, Color.WHITE, 0.4f));
+            mAnimatingView.setColor(ColorUtils.getColorWithOverlay(color, Color.WHITE,
+                    ANIMATION_WHITE_FRACTION));
         }
     }
 }

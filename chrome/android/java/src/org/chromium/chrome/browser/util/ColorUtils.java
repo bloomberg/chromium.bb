@@ -146,28 +146,4 @@ public class ColorUtils {
     public static boolean isUsingDefaultToolbarColor(Resources resources, int color) {
         return color == ApiCompatibilityUtils.getColor(resources, R.color.default_primary_color);
     }
-
-    /**
-     * Find a darker color based on the base color and target contrast. This is a pretty naive
-     * approach that tries to get an approximate color quickly; it starts by multiplying the
-     * base lightness by a number less than 1 and incrementally decreases the lightness if the
-     * desired contrast is not met.
-     * @param color The base color.
-     * @param minContrast The target contrast.
-     * @return A draker color.
-     */
-    public static int findDarkerColorWithMinContrast(int color, float minContrast) {
-        float[] hsl = new float[3];
-        android.support.v4.graphics.ColorUtils.colorToHSL(color, hsl);
-
-        hsl[2] *= 0.6;
-        int newColor = android.support.v4.graphics.ColorUtils.HSLToColor(hsl);
-        double contrast = android.support.v4.graphics.ColorUtils.calculateContrast(newColor, color);
-        for (int maxAttempt = 5; maxAttempt >= 0 && contrast < minContrast; maxAttempt--) {
-            hsl[2] *= 0.7f;
-            newColor = android.support.v4.graphics.ColorUtils.HSLToColor(hsl);
-            contrast = android.support.v4.graphics.ColorUtils.calculateContrast(color, newColor);
-        }
-        return newColor;
-    }
 }
