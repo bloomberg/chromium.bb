@@ -149,11 +149,6 @@ class _MemoryV8Benchmark(_MemoryInfra):
     return options
 
 
-# Disabled on reference builds because they don't support the new
-# Tracing.requestMemoryDump DevTools API.
-# For 'reference' see http://crbug.com/540022.
-# For 'android' see http://crbug.com/579546.
-@benchmark.Disabled('reference', 'android')
 class MemoryLongRunningIdleGmail(_MemoryV8Benchmark):
   """Use (recorded) real world web sites and measure memory consumption
   of long running idle Gmail page """
@@ -164,11 +159,6 @@ class MemoryLongRunningIdleGmail(_MemoryV8Benchmark):
     return 'memory.long_running_idle_gmail_tbmv2'
 
 
-# Disabled on reference builds because they don't support the new
-# Tracing.requestMemoryDump DevTools API.
-# For 'reference' see http://crbug.com/540022.
-# For 'android' see http://crbug.com/579546.
-@benchmark.Disabled('reference', 'android')
 class MemoryLongRunningIdleGmailBackground(_MemoryV8Benchmark):
   """Use (recorded) real world web sites and measure memory consumption
   of long running idle Gmail page """
