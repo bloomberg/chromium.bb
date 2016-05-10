@@ -1638,8 +1638,9 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 // Verify the tree of FrameNavigationEntries when a nested iframe commits inside
 // the initial blank page of an iframe with no committed entry.  Prevents
 // regression of https://crbug.com/600743.
+// Flaky test: See https://crbug.com/610801
 IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
-                       FrameNavigationEntry_NoCommitNestedAutoSubframe) {
+                       DISABLED_FrameNavigationEntry_NoCommitNestedAutoSubframe) {
   GURL main_url(embedded_test_server()->GetURL(
       "/navigation_controller/simple_page_1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
