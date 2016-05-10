@@ -295,6 +295,7 @@ struct ArraySerializer<MojomType,
                        ArraySerializerType::UNION> {
   using UserType = typename std::remove_const<MaybeConstUserType>::type;
   using Data = typename MojomType::Data_;
+  using Element = typename MojomType::Element;
   using Traits = ArrayTraits<UserType>;
 
   static_assert(std::is_same<typename MojomType::Element,
@@ -306,10 +307,10 @@ struct ArraySerializer<MojomType,
     size_t element_count = Traits::GetSize(input);
     size_t size = sizeof(Data);
     for (size_t i = 0; i < element_count; ++i) {
-      // Call GetSerializedSize_ with |inlined| set to false, so that it will
-      // account for both the data in the union and the space in the array used
-      // to hold the union.
-      size += GetSerializedSize_(Traits::GetAt(input, i), false, context);
+      // Call with |inlined| set to false, so that it will account for both the
+      // data in the union and the space in the array used to hold the union.
+      size +=
+          PrepareToSerialize<Element>(Traits::GetAt(input, i), false, context);
     }
     return size;
   }
@@ -322,8 +323,7 @@ struct ArraySerializer<MojomType,
     size_t size = Traits::GetSize(input);
     for (size_t i = 0; i < size; ++i) {
       typename Data::Element* result = output->storage() + i;
-      SerializeUnion_(std::move(Traits::GetAt(input, i)), buf, &result, true,
-                      context);
+      Serialize<Element>(Traits::GetAt(input, i), buf, &result, true, context);
       MOJO_INTERNAL_DLOG_SERIALIZATION_WARNING(
           !validate_params->element_is_nullable && output->at(i).is_null(),
           VALIDATION_ERROR_UNEXPECTED_NULL_POINTER,
@@ -341,8 +341,10 @@ struct ArraySerializer<MojomType,
       // Note that we rely on complete deserialization taking place in order to
       // transfer ownership of all encoded handles. Therefore we don't
       // short-circuit on failure here.
-      if (!Deserialize_(&input->at(i), &Traits::GetAt(*output, i), context))
+      if (!Deserialize<Element>(&input->at(i), &Traits::GetAt(*output, i),
+                                context)) {
         success = false;
+      }
     }
     return success;
   }

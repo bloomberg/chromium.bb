@@ -122,15 +122,16 @@ TEST(UnionTest, PodSerialization) {
   pod1->set_f_int8(10);
 
   mojo::internal::SerializationContext context;
-  size_t size = GetSerializedSize_(pod1, false, &context);
+  size_t size =
+      mojo::internal::PrepareToSerialize<PodUnionPtr>(pod1, false, &context);
   EXPECT_EQ(16U, size);
 
   mojo::internal::FixedBufferForTesting buf(size);
   internal::PodUnion_Data* data = nullptr;
-  SerializeUnion_(std::move(pod1), &buf, &data, false, &context);
+  mojo::internal::Serialize<PodUnionPtr>(pod1, &buf, &data, false, &context);
 
   PodUnionPtr pod2;
-  Deserialize_(data, &pod2, &context);
+  mojo::internal::Deserialize<PodUnionPtr>(data, &pod2, &context);
 
   EXPECT_EQ(10, pod2->get_f_int8());
   EXPECT_TRUE(pod2->is_f_int8());
@@ -141,15 +142,16 @@ TEST(UnionTest, EnumSerialization) {
   PodUnionPtr pod1(PodUnion::New());
   pod1->set_f_enum(AnEnum::SECOND);
 
-  size_t size = GetSerializedSize_(pod1, false, nullptr);
+  size_t size =
+      mojo::internal::PrepareToSerialize<PodUnionPtr>(pod1, false, nullptr);
   EXPECT_EQ(16U, size);
 
   mojo::internal::FixedBufferForTesting buf(size);
   internal::PodUnion_Data* data = nullptr;
-  SerializeUnion_(std::move(pod1), &buf, &data, false, nullptr);
+  mojo::internal::Serialize<PodUnionPtr>(pod1, &buf, &data, false, nullptr);
 
   PodUnionPtr pod2;
-  Deserialize_(data, &pod2, nullptr);
+  mojo::internal::Deserialize<PodUnionPtr>(data, &pod2, nullptr);
 
   EXPECT_EQ(AnEnum::SECOND, pod2->get_f_enum());
   EXPECT_TRUE(pod2->is_f_enum());
@@ -160,12 +162,13 @@ TEST(UnionTest, PodValidation) {
   PodUnionPtr pod(PodUnion::New());
   pod->set_f_int8(10);
 
-  size_t size = GetSerializedSize_(pod, false, nullptr);
+  size_t size =
+      mojo::internal::PrepareToSerialize<PodUnionPtr>(pod, false, nullptr);
   EXPECT_EQ(16U, size);
 
   mojo::internal::FixedBufferForTesting buf(size);
   internal::PodUnion_Data* data = nullptr;
-  SerializeUnion_(std::move(pod), &buf, &data, false, nullptr);
+  mojo::internal::Serialize<PodUnionPtr>(pod, &buf, &data, false, nullptr);
   data->EncodePointers();
 
   void* raw_buf = buf.Leak();
@@ -179,16 +182,18 @@ TEST(UnionTest, PodValidation) {
 TEST(UnionTest, SerializeNotNull) {
   PodUnionPtr pod(PodUnion::New());
   pod->set_f_int8(0);
-  size_t size = GetSerializedSize_(pod, false, nullptr);
+  size_t size =
+      mojo::internal::PrepareToSerialize<PodUnionPtr>(pod, false, nullptr);
   mojo::internal::FixedBufferForTesting buf(size);
   internal::PodUnion_Data* data = nullptr;
-  SerializeUnion_(std::move(pod), &buf, &data, false, nullptr);
+  mojo::internal::Serialize<PodUnionPtr>(pod, &buf, &data, false, nullptr);
   EXPECT_FALSE(data->is_null());
 }
 
 TEST(UnionTest, SerializeIsNullInlined) {
   PodUnionPtr pod;
-  size_t size = GetSerializedSize_(pod, false, nullptr);
+  size_t size =
+      mojo::internal::PrepareToSerialize<PodUnionPtr>(pod, false, nullptr);
   EXPECT_EQ(16U, size);
   mojo::internal::FixedBufferForTesting buf(size);
   internal::PodUnion_Data* data = internal::PodUnion_Data::New(&buf);
@@ -198,21 +203,22 @@ TEST(UnionTest, SerializeIsNullInlined) {
   data->tag = PodUnion::Tag::F_UINT16;
   data->data.f_f_int16 = 20;
 
-  SerializeUnion_(std::move(pod), &buf, &data, true, nullptr);
+  mojo::internal::Serialize<PodUnionPtr>(pod, &buf, &data, true, nullptr);
   EXPECT_TRUE(data->is_null());
 
   PodUnionPtr pod2;
-  Deserialize_(data, &pod2, nullptr);
+  mojo::internal::Deserialize<PodUnionPtr>(data, &pod2, nullptr);
   EXPECT_TRUE(pod2.is_null());
 }
 
 TEST(UnionTest, SerializeIsNullNotInlined) {
   PodUnionPtr pod;
-  size_t size = GetSerializedSize_(pod, false, nullptr);
+  size_t size =
+      mojo::internal::PrepareToSerialize<PodUnionPtr>(pod, false, nullptr);
   EXPECT_EQ(16U, size);
   mojo::internal::FixedBufferForTesting buf(size);
   internal::PodUnion_Data* data = nullptr;
-  SerializeUnion_(std::move(pod), &buf, &data, false, nullptr);
+  mojo::internal::Serialize<PodUnionPtr>(pod, &buf, &data, false, nullptr);
   EXPECT_EQ(nullptr, data);
 }
 
@@ -266,12 +272,13 @@ TEST(UnionTest, UnknownEnumValueValidation) {
   PodUnionPtr pod(PodUnion::New());
   pod->set_f_enum(static_cast<AnEnum>(0xFFFF));
 
-  size_t size = GetSerializedSize_(pod, false, nullptr);
+  size_t size =
+      mojo::internal::PrepareToSerialize<PodUnionPtr>(pod, false, nullptr);
   EXPECT_EQ(16U, size);
 
   mojo::internal::FixedBufferForTesting buf(size);
   internal::PodUnion_Data* data = nullptr;
-  SerializeUnion_(std::move(pod), &buf, &data, false, nullptr);
+  mojo::internal::Serialize<PodUnionPtr>(pod, &buf, &data, false, nullptr);
 
   void* raw_buf = buf.Leak();
   mojo::internal::BoundsChecker bounds_checker(data,
@@ -285,12 +292,13 @@ TEST(UnionTest, UnknownExtensibleEnumValueValidation) {
   PodUnionPtr pod(PodUnion::New());
   pod->set_f_extensible_enum(static_cast<AnExtensibleEnum>(0xFFFF));
 
-  size_t size = GetSerializedSize_(pod, false, nullptr);
+  size_t size =
+      mojo::internal::PrepareToSerialize<PodUnionPtr>(pod, false, nullptr);
   EXPECT_EQ(16U, size);
 
   mojo::internal::FixedBufferForTesting buf(size);
   internal::PodUnion_Data* data = nullptr;
-  SerializeUnion_(std::move(pod), &buf, &data, false, nullptr);
+  mojo::internal::Serialize<PodUnionPtr>(pod, &buf, &data, false, nullptr);
 
   void* raw_buf = buf.Leak();
   mojo::internal::BoundsChecker bounds_checker(data,
@@ -339,16 +347,17 @@ TEST(UnionTest, StringSerialization) {
   String hello("hello world");
   pod1->set_f_string(hello);
 
-  size_t size = GetSerializedSize_(pod1, false, nullptr);
+  size_t size =
+      mojo::internal::PrepareToSerialize<ObjectUnionPtr>(pod1, false, nullptr);
   mojo::internal::FixedBufferForTesting buf(size);
   internal::ObjectUnion_Data* data = nullptr;
-  SerializeUnion_(std::move(pod1), &buf, &data, false, nullptr);
+  mojo::internal::Serialize<ObjectUnionPtr>(pod1, &buf, &data, false, nullptr);
 
   data->EncodePointers();
   data->DecodePointers();
 
   ObjectUnionPtr pod2;
-  Deserialize_(data, &pod2, nullptr);
+  mojo::internal::Deserialize<ObjectUnionPtr>(data, &pod2, nullptr);
   EXPECT_EQ(hello, pod2->get_f_string());
   EXPECT_TRUE(pod2->is_f_string());
   EXPECT_EQ(pod2->which(), ObjectUnion::Tag::F_STRING);
@@ -535,14 +544,16 @@ TEST(UnionTest, Serialization_UnionOfPods) {
   small_struct->pod_union->set_f_int32(10);
 
   mojo::internal::SerializationContext context;
-  size_t size = GetSerializedSize_(small_struct, &context);
+  size_t size = mojo::internal::PrepareToSerialize<SmallStructPtr>(small_struct,
+                                                                   &context);
 
   mojo::internal::FixedBufferForTesting buf(size);
   internal::SmallStruct_Data* data = nullptr;
-  Serialize_(std::move(small_struct), &buf, &data, &context);
+  mojo::internal::Serialize<SmallStructPtr>(small_struct, &buf, &data,
+                                            &context);
 
   SmallStructPtr deserialized;
-  Deserialize_(data, &deserialized, &context);
+  mojo::internal::Deserialize<SmallStructPtr>(data, &deserialized, &context);
 
   EXPECT_EQ(10, deserialized->pod_union->get_f_int32());
 }
@@ -554,17 +565,19 @@ TEST(UnionTest, Serialization_UnionOfObjects) {
   String hello("hello world");
   obj_struct->obj_union->set_f_string(hello);
 
-  size_t size = GetSerializedSize_(obj_struct, nullptr);
+  size_t size = mojo::internal::PrepareToSerialize<SmallObjStructPtr>(
+      obj_struct, nullptr);
 
   mojo::internal::FixedBufferForTesting buf(size);
   internal::SmallObjStruct_Data* data = nullptr;
-  Serialize_(std::move(obj_struct), &buf, &data, nullptr);
+  mojo::internal::Serialize<SmallObjStructPtr>(obj_struct, &buf, &data,
+                                               nullptr);
 
   data->EncodePointers();
   data->DecodePointers();
 
   SmallObjStructPtr deserialized;
-  Deserialize_(data, &deserialized, nullptr);
+  mojo::internal::Deserialize<SmallObjStructPtr>(data, &deserialized, nullptr);
 
   EXPECT_EQ(hello, deserialized->obj_union->get_f_string());
 }
@@ -576,11 +589,13 @@ TEST(UnionTest, Validation_UnionsInStruct) {
   small_struct->pod_union->set_f_int32(10);
 
   mojo::internal::SerializationContext context;
-  size_t size = GetSerializedSize_(small_struct, &context);
+  size_t size = mojo::internal::PrepareToSerialize<SmallStructPtr>(small_struct,
+                                                                   &context);
 
   mojo::internal::FixedBufferForTesting buf(size);
   internal::SmallStruct_Data* data = nullptr;
-  Serialize_(std::move(small_struct), &buf, &data, &context);
+  mojo::internal::Serialize<SmallStructPtr>(small_struct, &buf, &data,
+                                            &context);
 
   data->EncodePointers();
 
@@ -598,11 +613,13 @@ TEST(UnionTest, Validation_PodUnionInStruct_Failure) {
   small_struct->pod_union->set_f_int32(10);
 
   mojo::internal::SerializationContext context;
-  size_t size = GetSerializedSize_(small_struct, &context);
+  size_t size = mojo::internal::PrepareToSerialize<SmallStructPtr>(small_struct,
+                                                                   &context);
 
   mojo::internal::FixedBufferForTesting buf(size);
   internal::SmallStruct_Data* data = nullptr;
-  Serialize_(std::move(small_struct), &buf, &data, &context);
+  mojo::internal::Serialize<SmallStructPtr>(small_struct, &buf, &data,
+                                            &context);
   data->pod_union.tag = static_cast<internal::PodUnion_Data::PodUnion_Tag>(100);
 
   data->EncodePointers();
@@ -619,7 +636,9 @@ TEST(UnionTest, Validation_NullUnion_Failure) {
   SmallStructNonNullableUnionPtr small_struct(
       SmallStructNonNullableUnion::New());
 
-  size_t size = GetSerializedSize_(small_struct, nullptr);
+  size_t size =
+      mojo::internal::PrepareToSerialize<SmallStructNonNullableUnionPtr>(
+          small_struct, nullptr);
 
   mojo::internal::FixedBufferForTesting buf(size);
   internal::SmallStructNonNullableUnion_Data* data =
@@ -638,11 +657,13 @@ TEST(UnionTest, Validation_NullableUnion) {
   SmallStructPtr small_struct(SmallStruct::New());
 
   mojo::internal::SerializationContext context;
-  size_t size = GetSerializedSize_(small_struct, &context);
+  size_t size = mojo::internal::PrepareToSerialize<SmallStructPtr>(small_struct,
+                                                                   &context);
 
   mojo::internal::FixedBufferForTesting buf(size);
   internal::SmallStruct_Data* data = nullptr;
-  Serialize_(std::move(small_struct), &buf, &data, &context);
+  mojo::internal::Serialize<SmallStructPtr>(small_struct, &buf, &data,
+                                            &context);
 
   data->EncodePointers();
 
@@ -738,18 +759,19 @@ TEST(UnionTest, StructInUnionSerialization) {
   ObjectUnionPtr obj(ObjectUnion::New());
   obj->set_f_dummy(std::move(dummy));
 
-  size_t size = GetSerializedSize_(obj, false, nullptr);
+  size_t size =
+      mojo::internal::PrepareToSerialize<ObjectUnionPtr>(obj, false, nullptr);
   EXPECT_EQ(32U, size);
 
   mojo::internal::FixedBufferForTesting buf(size);
   internal::ObjectUnion_Data* data = nullptr;
-  SerializeUnion_(std::move(obj), &buf, &data, false, nullptr);
+  mojo::internal::Serialize<ObjectUnionPtr>(obj, &buf, &data, false, nullptr);
 
   data->EncodePointers();
   data->DecodePointers();
 
   ObjectUnionPtr obj2;
-  Deserialize_(data, &obj2, nullptr);
+  mojo::internal::Deserialize<ObjectUnionPtr>(data, &obj2, nullptr);
   EXPECT_EQ(8, obj2->get_f_dummy()->f_int8);
 }
 
@@ -760,11 +782,12 @@ TEST(UnionTest, StructInUnionValidation) {
   ObjectUnionPtr obj(ObjectUnion::New());
   obj->set_f_dummy(std::move(dummy));
 
-  size_t size = GetSerializedSize_(obj, false, nullptr);
+  size_t size =
+      mojo::internal::PrepareToSerialize<ObjectUnionPtr>(obj, false, nullptr);
 
   mojo::internal::FixedBufferForTesting buf(size);
   internal::ObjectUnion_Data* data = nullptr;
-  SerializeUnion_(std::move(obj), &buf, &data, false, nullptr);
+  mojo::internal::Serialize<ObjectUnionPtr>(obj, &buf, &data, false, nullptr);
 
   data->EncodePointers();
 
@@ -782,11 +805,12 @@ TEST(UnionTest, StructInUnionValidationNonNullable) {
   ObjectUnionPtr obj(ObjectUnion::New());
   obj->set_f_dummy(std::move(dummy));
 
-  size_t size = GetSerializedSize_(obj, false, nullptr);
+  size_t size =
+      mojo::internal::PrepareToSerialize<ObjectUnionPtr>(obj, false, nullptr);
 
   mojo::internal::FixedBufferForTesting buf(size);
   internal::ObjectUnion_Data* data = nullptr;
-  SerializeUnion_(std::move(obj), &buf, &data, false, nullptr);
+  mojo::internal::Serialize<ObjectUnionPtr>(obj, &buf, &data, false, nullptr);
 
   data->EncodePointers();
 
@@ -804,11 +828,12 @@ TEST(UnionTest, StructInUnionValidationNullable) {
   ObjectUnionPtr obj(ObjectUnion::New());
   obj->set_f_nullable(std::move(dummy));
 
-  size_t size = GetSerializedSize_(obj, false, nullptr);
+  size_t size =
+      mojo::internal::PrepareToSerialize<ObjectUnionPtr>(obj, false, nullptr);
 
   mojo::internal::FixedBufferForTesting buf(size);
   internal::ObjectUnion_Data* data = nullptr;
-  SerializeUnion_(std::move(obj), &buf, &data, false, nullptr);
+  mojo::internal::Serialize<ObjectUnionPtr>(obj, &buf, &data, false, nullptr);
 
   data->EncodePointers();
 
@@ -840,18 +865,19 @@ TEST(UnionTest, ArrayInUnionSerialization) {
   ObjectUnionPtr obj(ObjectUnion::New());
   obj->set_f_array_int8(std::move(array));
 
-  size_t size = GetSerializedSize_(obj, false, nullptr);
+  size_t size =
+      mojo::internal::PrepareToSerialize<ObjectUnionPtr>(obj, false, nullptr);
   EXPECT_EQ(32U, size);
 
   mojo::internal::FixedBufferForTesting buf(size);
   internal::ObjectUnion_Data* data = nullptr;
-  SerializeUnion_(std::move(obj), &buf, &data, false, nullptr);
+  mojo::internal::Serialize<ObjectUnionPtr>(obj, &buf, &data, false, nullptr);
 
   data->EncodePointers();
   data->DecodePointers();
 
   ObjectUnionPtr obj2;
-  Deserialize_(data, &obj2, nullptr);
+  mojo::internal::Deserialize<ObjectUnionPtr>(data, &obj2, nullptr);
 
   EXPECT_EQ(8, obj2->get_f_array_int8()[0]);
   EXPECT_EQ(9, obj2->get_f_array_int8()[1]);
@@ -865,10 +891,11 @@ TEST(UnionTest, ArrayInUnionValidation) {
   ObjectUnionPtr obj(ObjectUnion::New());
   obj->set_f_array_int8(std::move(array));
 
-  size_t size = GetSerializedSize_(obj, false, nullptr);
+  size_t size =
+      mojo::internal::PrepareToSerialize<ObjectUnionPtr>(obj, false, nullptr);
   mojo::internal::FixedBufferForTesting buf(size);
   internal::ObjectUnion_Data* data = nullptr;
-  SerializeUnion_(std::move(obj), &buf, &data, false, nullptr);
+  mojo::internal::Serialize<ObjectUnionPtr>(obj, &buf, &data, false, nullptr);
 
   data->EncodePointers();
 
@@ -902,18 +929,19 @@ TEST(UnionTest, MapInUnionSerialization) {
   obj->set_f_map_int8(std::move(map));
 
   mojo::internal::SerializationContext context;
-  size_t size = GetSerializedSize_(obj, false, &context);
+  size_t size =
+      mojo::internal::PrepareToSerialize<ObjectUnionPtr>(obj, false, &context);
   EXPECT_EQ(112U, size);
 
   mojo::internal::FixedBufferForTesting buf(size);
   internal::ObjectUnion_Data* data = nullptr;
-  SerializeUnion_(std::move(obj), &buf, &data, false, &context);
+  mojo::internal::Serialize<ObjectUnionPtr>(obj, &buf, &data, false, &context);
 
   data->EncodePointers();
   data->DecodePointers();
 
   ObjectUnionPtr obj2;
-  Deserialize_(data, &obj2, &context);
+  mojo::internal::Deserialize<ObjectUnionPtr>(data, &obj2, &context);
 
   EXPECT_EQ(1, obj2->get_f_map_int8()["one"]);
   EXPECT_EQ(2, obj2->get_f_map_int8()["two"]);
@@ -928,12 +956,13 @@ TEST(UnionTest, MapInUnionValidation) {
   obj->set_f_map_int8(std::move(map));
 
   mojo::internal::SerializationContext context;
-  size_t size = GetSerializedSize_(obj, false, &context);
+  size_t size =
+      mojo::internal::PrepareToSerialize<ObjectUnionPtr>(obj, false, &context);
   EXPECT_EQ(112U, size);
 
   mojo::internal::FixedBufferForTesting buf(size);
   internal::ObjectUnion_Data* data = nullptr;
-  SerializeUnion_(std::move(obj), &buf, &data, false, &context);
+  mojo::internal::Serialize<ObjectUnionPtr>(obj, &buf, &data, false, &context);
 
   data->EncodePointers();
 
@@ -963,18 +992,19 @@ TEST(UnionTest, UnionInUnionSerialization) {
   ObjectUnionPtr obj(ObjectUnion::New());
   obj->set_f_pod_union(std::move(pod));
 
-  size_t size = GetSerializedSize_(obj, false, nullptr);
+  size_t size =
+      mojo::internal::PrepareToSerialize<ObjectUnionPtr>(obj, false, nullptr);
   EXPECT_EQ(32U, size);
 
   mojo::internal::FixedBufferForTesting buf(size);
   internal::ObjectUnion_Data* data = nullptr;
-  SerializeUnion_(std::move(obj), &buf, &data, false, nullptr);
+  mojo::internal::Serialize<ObjectUnionPtr>(obj, &buf, &data, false, nullptr);
 
   data->EncodePointers();
   data->DecodePointers();
 
   ObjectUnionPtr obj2;
-  Deserialize_(data, &obj2, nullptr);
+  mojo::internal::Deserialize<ObjectUnionPtr>(data, &obj2, nullptr);
   EXPECT_EQ(10, obj2->get_f_pod_union()->get_f_int8());
 }
 
@@ -985,12 +1015,13 @@ TEST(UnionTest, UnionInUnionValidation) {
   ObjectUnionPtr obj(ObjectUnion::New());
   obj->set_f_pod_union(std::move(pod));
 
-  size_t size = GetSerializedSize_(obj, false, nullptr);
+  size_t size =
+      mojo::internal::PrepareToSerialize<ObjectUnionPtr>(obj, false, nullptr);
   EXPECT_EQ(32U, size);
 
   mojo::internal::FixedBufferForTesting buf(size);
   internal::ObjectUnion_Data* data = nullptr;
-  SerializeUnion_(std::move(obj), &buf, &data, false, nullptr);
+  mojo::internal::Serialize<ObjectUnionPtr>(obj, &buf, &data, false, nullptr);
 
   data->EncodePointers();
 
@@ -1008,11 +1039,12 @@ TEST(UnionTest, UnionInUnionValidationNonNullable) {
   ObjectUnionPtr obj(ObjectUnion::New());
   obj->set_f_pod_union(std::move(pod));
 
-  size_t size = GetSerializedSize_(obj, false, nullptr);
+  size_t size =
+      mojo::internal::PrepareToSerialize<ObjectUnionPtr>(obj, false, nullptr);
 
   mojo::internal::FixedBufferForTesting buf(size);
   internal::ObjectUnion_Data* data = nullptr;
-  SerializeUnion_(std::move(obj), &buf, &data, false, nullptr);
+  mojo::internal::Serialize<ObjectUnionPtr>(obj, &buf, &data, false, nullptr);
   data->EncodePointers();
 
   void* raw_buf = buf.Leak();
@@ -1051,16 +1083,18 @@ TEST(UnionTest, HandleInUnionSerialization) {
   handle->set_f_message_pipe(std::move(pipe1));
 
   mojo::internal::SerializationContext context;
-  size_t size = GetSerializedSize_(handle, false, &context);
+  size_t size = mojo::internal::PrepareToSerialize<HandleUnionPtr>(
+      handle, false, &context);
   EXPECT_EQ(16U, size);
 
   mojo::internal::FixedBufferForTesting buf(size);
   internal::HandleUnion_Data* data = nullptr;
-  SerializeUnion_(std::move(handle), &buf, &data, false, &context);
+  mojo::internal::Serialize<HandleUnionPtr>(handle, &buf, &data, false,
+                                            &context);
   EXPECT_EQ(1U, context.handles.size());
 
   HandleUnionPtr handle2(HandleUnion::New());
-  Deserialize_(data, &handle2, &context);
+  mojo::internal::Deserialize<HandleUnionPtr>(data, &handle2, &context);
 
   std::string golden("hello world");
   WriteTextMessage(pipe0.get(), golden);
@@ -1081,12 +1115,14 @@ TEST(UnionTest, HandleInUnionValidation) {
   handle->set_f_message_pipe(std::move(pipe1));
 
   mojo::internal::SerializationContext context;
-  size_t size = GetSerializedSize_(handle, false, &context);
+  size_t size = mojo::internal::PrepareToSerialize<HandleUnionPtr>(
+      handle, false, &context);
   EXPECT_EQ(16U, size);
 
   mojo::internal::FixedBufferForTesting buf(size);
   internal::HandleUnion_Data* data = nullptr;
-  SerializeUnion_(std::move(handle), &buf, &data, false, &context);
+  mojo::internal::Serialize<HandleUnionPtr>(handle, &buf, &data, false,
+                                            &context);
 
   void* raw_buf = buf.Leak();
   mojo::internal::BoundsChecker bounds_checker(data,
@@ -1102,12 +1138,14 @@ TEST(UnionTest, HandleInUnionValidationNull) {
   handle->set_f_message_pipe(std::move(pipe));
 
   mojo::internal::SerializationContext context;
-  size_t size = GetSerializedSize_(handle, false, &context);
+  size_t size = mojo::internal::PrepareToSerialize<HandleUnionPtr>(
+      handle, false, &context);
   EXPECT_EQ(16U, size);
 
   mojo::internal::FixedBufferForTesting buf(size);
   internal::HandleUnion_Data* data = nullptr;
-  SerializeUnion_(std::move(handle), &buf, &data, false, &context);
+  mojo::internal::Serialize<HandleUnionPtr>(handle, &buf, &data, false,
+                                            &context);
 
   void* raw_buf = buf.Leak();
   mojo::internal::BoundsChecker bounds_checker(data,
@@ -1162,16 +1200,18 @@ TEST(UnionTest, InterfaceInUnionSerialization) {
   mojo::internal::SerializationContext context;
   HandleUnionPtr handle(HandleUnion::New());
   handle->set_f_small_cache(std::move(ptr));
-  size_t size = GetSerializedSize_(handle, false, &context);
+  size_t size = mojo::internal::PrepareToSerialize<HandleUnionPtr>(
+      handle, false, &context);
   EXPECT_EQ(16U, size);
 
   mojo::internal::FixedBufferForTesting buf(size);
   internal::HandleUnion_Data* data = nullptr;
-  SerializeUnion_(std::move(handle), &buf, &data, false, &context);
+  mojo::internal::Serialize<HandleUnionPtr>(handle, &buf, &data, false,
+                                            &context);
   EXPECT_EQ(1U, context.handles.size());
 
   HandleUnionPtr handle2(HandleUnion::New());
-  Deserialize_(data, &handle2, &context);
+  mojo::internal::Deserialize<HandleUnionPtr>(data, &handle2, &context);
 
   handle2->get_f_small_cache()->SetIntValue(10);
   run_loop.Run();

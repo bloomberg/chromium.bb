@@ -29,15 +29,13 @@
   decltype({{original_input_field}}) in_{{name}} = {{original_input_field}};
 {%-     endif %}
 
-{%-     if kind|is_struct_kind or kind|is_string_kind or kind|is_array_kind or
-           kind|is_map_kind %}
-{%-       set serializer_type = kind|unmapped_type_for_serializer %}
+{%-     set serializer_type = kind|unmapped_type_for_serializer %}
+{%-     if kind|is_union_kind %}
+  size += mojo::internal::PrepareToSerialize<{{serializer_type}}>(
+      {{input_field}}, true, {{context}});
+{%-     else %}
   size += mojo::internal::PrepareToSerialize<{{serializer_type}}>(
       {{input_field}}, {{context}});
-{%-     elif kind|is_union_kind %}
-  size += GetSerializedSize_({{input_field}}, true, {{context}});
-{%-     else %}
-  size += GetSerializedSize_({{input_field}}, {{context}});
 {%-     endif %}
 {%-   endfor %}
 {%- endmacro -%}
@@ -79,18 +77,15 @@
   const mojo::internal::ArrayValidateParams {{name}}_validate_params(
       {{kind|get_array_validate_params_ctor_args|indent(10)}});
   mojo::internal::Serialize<{{serializer_type}}>(
-          {{input_field}}, {{buffer}}, &{{output}}->{{name}}.ptr,
-          &{{name}}_validate_params, {{context}});
-{%-     elif kind|is_struct_kind or kind|is_string_kind %}
-  mojo::internal::Serialize<{{serializer_type}}>(
-      {{input_field}}, {{buffer}}, &{{output}}->{{name}}.ptr, {{context}});
+      {{input_field}}, {{buffer}}, &{{output}}->{{name}}.ptr,
+      &{{name}}_validate_params, {{context}});
 {%-     elif kind|is_union_kind %}
   auto {{name}}_ptr = &{{output}}->{{name}};
-  SerializeUnion_(std::move({{input_field}}), {{buffer}}, &{{name}}_ptr, true,
-                  {{context}});
+  mojo::internal::Serialize<{{serializer_type}}>(
+      {{input_field}}, {{buffer}}, &{{name}}_ptr, true, {{context}});
 {%-     else %}
-  Serialize_(std::move({{input_field}}), {{buffer}}, &{{output}}->{{name}}.ptr,
-             {{context}});
+  mojo::internal::Serialize<{{serializer_type}}>(
+      {{input_field}}, {{buffer}}, &{{output}}->{{name}}.ptr, {{context}});
 {%-     endif %}
 {%-     if not kind|is_nullable_kind %}
   MOJO_INTERNAL_DLOG_SERIALIZATION_WARNING(
@@ -169,19 +164,17 @@
     if ({{input}}->header_.version < {{pf.min_version}})
       break;
 {%-     endif %}
-{%-     if kind|is_struct_kind or kind|is_string_kind or kind|is_array_kind or
-           kind|is_map_kind %}
-{%-       set serializer_type = kind|unmapped_type_for_serializer %}
+{%-     set serializer_type = kind|unmapped_type_for_serializer %}
+{%-     if kind|is_union_kind %}
+    if (!mojo::internal::Deserialize<{{serializer_type}}>(
+            &{{input}}->{{name}}, &{{output_field}}, {{context}})) {
+      {{success}} = false;
+    }
+{%-     elif kind|is_object_kind %}
     if (!mojo::internal::Deserialize<{{serializer_type}}>(
             {{input}}->{{name}}.ptr, &{{output_field}}, {{context}})) {
       {{success}} = false;
     }
-{%-     elif kind|is_union_kind %}
-    if (!Deserialize_(&{{input}}->{{name}}, &{{output_field}}, {{context}}))
-      {{success}} = false;
-{%-     elif kind|is_object_kind %}
-    if (!Deserialize_({{input}}->{{name}}.ptr, &{{output_field}}, {{context}}))
-      {{success}} = false;
 {%-     elif kind|is_interface_kind %}
     mojo::internal::InterfaceDataToPointer(
         &{{input}}->{{name}}, &{{output_field}}, {{context}});

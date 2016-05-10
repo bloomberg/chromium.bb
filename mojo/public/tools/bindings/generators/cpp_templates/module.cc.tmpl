@@ -124,11 +124,6 @@ const {{constant.kind|cpp_pod_type}} {{struct.name}}::{{constant.name}} = {{cons
 {%-   include "interface_definition.tmpl" %}
 {%- endfor %}
 
-{#--- Union Serialization Helpers #}
-{%- for union in unions %}
-{%-   include "union_serialization_definition.tmpl" %}
-{%- endfor %}
-
 {%- if variant %}
 }  // namespace {{variant}}
 {%- endif %}
@@ -143,6 +138,11 @@ namespace mojo {
 {%-   if not struct|is_native_only_kind %}
 {%      include "struct_serialization_definition.tmpl" %}
 {%-   endif %}
+{%- endfor %}
+
+{#--- Union Serialization Helpers #}
+{%- for union in unions %}
+{%-   include "union_serialization_definition.tmpl" %}
 {%- endfor %}
 
 }  // namespace mojo

@@ -192,13 +192,6 @@ typedef mojo::StructPtr<{{union.name}}> {{union.name}}Ptr;
 {%    endif %}
 {%- endfor %}
 
-{#--- Union Serialization Helpers -#}
-{%  if unions %}
-{%    for union in unions %}
-{%      include "union_serialization_declaration.tmpl" %}
-{%-   endfor %}
-{%- endif %}
-
 {%- for struct in structs %}
 {%-   for enum in struct.enums %}
 {{enum_stream_operator(enum)}}
@@ -228,6 +221,13 @@ namespace mojo {
 {%      include "struct_serialization_declaration.tmpl" %}
 {%-   endif %}
 {%- endfor %}
+
+{#--- Union Serialization Helpers -#}
+{%  if unions %}
+{%-   for union in unions %}
+{%      include "union_serialization_declaration.tmpl" %}
+{%-   endfor %}
+{%- endif %}
 
 }  // namespace mojo
 
