@@ -1,5 +1,4 @@
 importScripts('../../serviceworker/resources/worker-testharness.js');
-importScripts('/resources/testharness-helpers.js');
 
 function createPushMessageData(data)
 {

@@ -15,7 +15,6 @@ resource under a different name, which is matched here.
 The following files are native to Blink and can be modified:
 
 * testharnessreport.js    integration with Blink's test runner
-* testharness-helpers.js  additions intended to be upstreamed
 
 See also:
 * https://www.chromium.org/blink/importing-the-w3c-tests

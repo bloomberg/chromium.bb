@@ -2,7 +2,6 @@
 <title>Tests that all geofencing methods exposed on a service worker registration always reject if no geofencing service is available.</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-<script src="../resources/testharness-helpers.js"></script>
 <script src="../serviceworker/resources/test-helpers.js"></script>
 <script>
 var sw_url = 'resources/emptyworker.js';
@@ -11,34 +10,37 @@ var sw_scope = 'resources/service-worker-scope' + window.location.pathname;
 testRunner.setGeofencingMockProvider(false);
 
 promise_test(function(test) {
-    return assert_promise_rejects(
+    return promise_rejects(
+      test,
+      'AbortError',
       service_worker_unregister_and_register(test, sw_url, sw_scope + '/register')
         .then(function(r) {
             return r.geofencing.registerRegion(
                 new CircularGeofencingRegion({latitude: 37.421999,
                                               longitude: -122.084015}));
         }),
-      'AbortError',
       'registerRegion should fail with an AbortError');
   }, 'registerRegion should fail');
 
 promise_test(function(test) {
-    return assert_promise_rejects(
+    return promise_rejects(
+      test,
+      'AbortError',
       service_worker_unregister_and_register(test, sw_url, sw_scope + '/unregister')
         .then(function(r) {
             return r.geofencing.unregisterRegion('');
         }),
-      'AbortError',
       'unregisterRegion should fail with an AbortError');
   }, 'unregisterRegion should fail');
 
 promise_test(function(test) {
-    return assert_promise_rejects(
+    return promise_rejects(
+      test,
+      'AbortError',
       service_worker_unregister_and_register(test, sw_url, sw_scope + '/getregions')
         .then(function(r) {
             return r.geofencing.getRegisteredRegions();
         }),
-      'AbortError',
       'getRegisteredRegions should fail with an AbortError');
   }, 'getRegisteredRegions should fail');
 

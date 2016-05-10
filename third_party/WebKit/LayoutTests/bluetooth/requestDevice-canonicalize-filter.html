@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <script src="../resources/testharness.js"></script>
-<script src="../resources/testharness-helpers.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 <script src="../resources/bluetooth/bluetooth-helpers.js"></script>
 <script>
@@ -9,19 +8,19 @@
 test(t => { assert_true(window.testRunner instanceof Object); t.done(); },
      'window.testRunner is required for the following tests.');
 
-promise_test(() => {
+promise_test(t => {
   return setBluetoothFakeAdapter('EmptyAdapter')
-    .then(() => assert_promise_rejects(requestDeviceWithKeyDown(),
-                                       new TypeError()));
+    .then(() => promise_rejects(t, new TypeError(),
+                                requestDeviceWithKeyDown()));
 }, 'Requires an argument.');
 
 [{}, {
   optionalServices: ['wrong_service']
 }].forEach(args => {
-  promise_test(() => {
+  promise_test(t => {
     return setBluetoothFakeAdapter('EmptyAdapter')
-      .then(() => assert_promise_rejects(requestDeviceWithKeyDown(args),
-                                         new TypeError()));
+      .then(() => promise_rejects(t, new TypeError(),
+                                  requestDeviceWithKeyDown(args)));
   }, 'RequestDeviceOptions requires a |filters| member.');
 });
 
@@ -33,12 +32,12 @@ promise_test(() => {
                     '\'filters\' member must be non-empty to find any devices.')));
 }, 'An empty |filters| member should result in a TypeError');
 
-promise_test(() => {
+promise_test(t => {
   return setBluetoothFakeAdapter('EmptyAdapter')
-    .then(() => assert_promise_rejects(
+    .then(() => promise_rejects(t, new TypeError(),
       requestDeviceWithKeyDown({
     filters: [{}]
-      }), new TypeError()));
+      })));
 }, 'A filter must restrict the devices in some way.');
 
 promise_test(() => {
@@ -156,20 +155,20 @@ function generateRequestDeviceArgsWithServices(services) {
 }
 
 generateRequestDeviceArgsWithServices([]).forEach(args => {
-  promise_test(() => {
+  promise_test(t => {
     return setBluetoothFakeAdapter('EmptyAdapter')
-      .then(() => assert_promise_rejects(
-        requestDeviceWithKeyDown(args),
-        new TypeError()));
+      .then(() => promise_rejects(t,
+        new TypeError(),
+        requestDeviceWithKeyDown(args)));
   }, 'Services member must contain at least one service.');
 });
 
 generateRequestDeviceArgsWithServices(['wrong_service']).forEach(args => {
-  promise_test(() => {
+  promise_test(t => {
     return setBluetoothFakeAdapter('EmptyAdapter')
-      .then(() => assert_promise_rejects(
-        requestDeviceWithKeyDown(args),
-        new SyntaxError()));
+      .then(() => promise_rejects(t,
+        new SyntaxError(),
+        requestDeviceWithKeyDown(args)));
   }, 'Invalid service must reject the promise.');
 });
 
@@ -194,11 +193,11 @@ generateRequestDeviceArgsWithServices(['wrong_service']).forEach(args => {
   filters: [{ namePrefix: '', name: 'Name', services: ['heart_rate']}],
   optionalServices: ['heart_rate']
 }].forEach(args => {
-  promise_test(() => {
+  promise_test(t => {
     return setBluetoothFakeAdapter('EmptyAdapter')
-      .then(() => assert_promise_rejects(
-        requestDeviceWithKeyDown(args),
-        new TypeError()));
+      .then(() => promise_rejects(t,
+        new TypeError(),
+        requestDeviceWithKeyDown(args)));
   }, 'A filter must restrict the devices in some way.');
 });
 
@@ -224,11 +223,11 @@ generateRequestDeviceArgsWithServices(['wrong_service']).forEach(args => {
   optionalServices: ['wrong_service'],
   filters: [{ namePrefix: 'Pre'}]
 }].forEach(args => {
-  promise_test(() => {
+  promise_test(t => {
     return setBluetoothFakeAdapter('EmptyAdapter')
-      .then(() => assert_promise_rejects(
-        requestDeviceWithKeyDown(args),
-        new SyntaxError()));
+      .then(() => promise_rejects(t,
+        new SyntaxError(),
+        requestDeviceWithKeyDown(args)));
   }, 'Invalid optional service must reject the promise.');
 });
 </script>

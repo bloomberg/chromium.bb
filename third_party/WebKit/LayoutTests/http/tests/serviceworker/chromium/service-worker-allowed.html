@@ -4,7 +4,6 @@
 -->
 <title>Service Worker: Service-Worker-Allowed header</title>
 <script src="../../resources/testharness.js"></script>
-<script src="../../resources/testharness-helpers.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
 <script src="../../resources/get-host-info.js"></script>
 <script src="../resources/test-helpers.js"></script>
@@ -51,9 +50,9 @@ promise_test(function(t) {
     var script = 'resources/service-worker-allowed-worker.php' +
       '?ServiceWorkerAllowed=/allowed-path';
     var scope = '/disallowed-path';
-    return assert_promise_rejects(
-        navigator.serviceWorker.register(script, {scope: scope}),
+    return promise_rejects(t,
         'SecurityError',
+        navigator.serviceWorker.register(script, {scope: scope}),
         'Registering outside Service-Worker-Allowed path should fail');
   }, 'Registering outside Service-Worker-Allowed path');
 
@@ -61,9 +60,9 @@ promise_test(function(t) {
     var script = 'resources/service-worker-allowed-worker.php' +
       '?ServiceWorkerAllowed=../allowed-path-with-parent';
     var scope = '/allowed-path-with-parent';
-    return assert_promise_rejects(
-        navigator.serviceWorker.register(script, {scope: scope}),
+    return promise_rejects(t,
         'SecurityError',
+        navigator.serviceWorker.register(script, {scope: scope}),
         'Registering outside Service-Worker-Allowed path with parent ' +
           'reference should fail');
   }, 'Registering outside Service-Worker-Allowed path with parent reference');
@@ -75,9 +74,9 @@ promise_test(function(t) {
       '?ServiceWorkerAllowed=' +
       host_info.HTTP_REMOTE_ORIGIN + '/cross-origin/';
     var scope = '/cross-origin/';
-    return assert_promise_rejects(
-        navigator.serviceWorker.register(script, {scope: scope}),
+    return promise_rejects(t,
         'SecurityError',
+        navigator.serviceWorker.register(script, {scope: scope}),
         'Registering cross-origin Service-Worker-Allowed should fail');
   }, 'Registering cross-origin Service-Worker-Allowed');
 

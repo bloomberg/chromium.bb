@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <script src=../../resources/testharness.js></script>
 <script src=../../resources/testharnessreport.js></script>
-<script src=../../resources/testharness-helpers.js></script>
 <script>
 
 // This test verifies that ImageCapture can be created (or not) with different
@@ -24,10 +23,11 @@ function makeAsyncTest(modifyTrack, message) {
 
       modifyTrack(videoTrack);
 
-      assert_promise_rejects(capturer.grabFrame(),
-                             'InvalidStateError',
-                             'Should throw InvalidStateError.')
-      .then(() => test.done());
+      promise_rejects(test,
+                      'InvalidStateError',
+                      capturer.grabFrame(),
+                      'Should throw InvalidStateError.')
+        .then(() => test.done());
     });
 
     const onError = test.unreached_func('Error creating MediaStream.');

@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <script src="../resources/testharness.js"></script>
-<script src="../resources/testharness-helpers.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 <script src="../resources/bluetooth/bluetooth-helpers.js"></script>
 <script>
@@ -60,11 +59,11 @@ let non_matching_namePrefix = 'Some';
     namePrefix: matching_namePrefix
   }]
 }].forEach(args => {
-  promise_test(() => {
+  promise_test(t => {
     return setBluetoothFakeAdapter('GlucoseHeartRateAdapter')
-      .then(() => assert_promise_rejects(
-        requestDeviceWithKeyDown(args),
-        new DOMException('', 'NotFoundError')));
+      .then(() => promise_rejects(t,
+        'NotFoundError',
+        requestDeviceWithKeyDown(args)));
   }, 'If at least one filter doesn\'t match the promise must reject.');
 });
 
@@ -96,11 +95,11 @@ let non_matching_namePrefix = 'Some';
     namePrefix: non_matching_namePrefix
   }]
 }].forEach(args => {
-  promise_test(() => {
+  promise_test(t => {
     return setBluetoothFakeAdapter('GlucoseHeartRateAdapter')
-      .then(() => assert_promise_rejects(
-        requestDeviceWithKeyDown(args),
-        new DOMException('', 'NotFoundError')));
+      .then(() => promise_rejects(t,
+        'NotFoundError',
+        requestDeviceWithKeyDown(args)));
   }, 'If a present filter\'s member doesn\'t match the device, ' +
      'the device doesn\'t match the filter.');
 });

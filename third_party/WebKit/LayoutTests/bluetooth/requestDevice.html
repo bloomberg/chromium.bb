@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <script src="../resources/testharness.js"></script>
-<script src="../resources/testharness-helpers.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 <script src="../resources/bluetooth/bluetooth-helpers.js"></script>
 <script>
@@ -82,15 +81,15 @@ promise_test(() => {
   });
 }, 'Mock will resolve.');
 
-promise_test(() => {
+promise_test(t => {
   return setBluetoothFakeAdapter('HeartRateAdapter')
-    .then(() => assert_promise_rejects(
+    .then(() => promise_rejects(t,
+      'SecurityError',
       navigator.bluetooth.requestDevice({
-        filters: [{services: ['heart_rate']}]}),
-      new DOMException('', 'SecurityError')));
+        filters: [{services: ['heart_rate']}]})));
 }, 'Requires a user gesture.');
 
-promise_test(() => {
+promise_test(t => {
   return setBluetoothFakeAdapter('HeartRateAdapter')
     .then(() => callWithKeyDown(() => {
       var first = navigator.bluetooth.requestDevice({
@@ -100,7 +99,7 @@ promise_test(() => {
       return Promise.all([
         first.then(device => assert_equals(
           device.constructor.name, 'BluetoothDevice')),
-        assert_promise_rejects(second, new DOMException('', 'SecurityError')),
+        promise_rejects(t, 'SecurityError', second),
       ]);
     }));
 }, 'Consumes a user gesture.');
@@ -194,15 +193,15 @@ promise_test(() => {
 }, 'We should only see UUID\'s that we\'ve been given permission for.')
 
 
-promise_test(() => {
+promise_test(t => {
   // Both devices support the Generic Access service, but things need to
   // support both services to pass the filter, and neither has a Battery
   // service.
   return setBluetoothFakeAdapter('GlucoseHeartRateAdapter')
-    .then(() => assert_promise_rejects(
+    .then(() => promise_rejects(t, 'NotFoundError',
       requestDeviceWithKeyDown({
     filters: [{services: ['heart_rate', 'battery_service']}]
-      }), new DOMException('', 'NotFoundError')));
+      })));
 }, 'Too-strict filters do prevent matching.');
 
 promise_test(() => {
