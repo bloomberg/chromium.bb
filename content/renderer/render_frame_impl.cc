@@ -4499,7 +4499,7 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(
       // If the zoom level is not found, then do nothing. In-page navigation
       // relies on not changing the zoom level in this case.
       if (host_zoom != render_view_->host_zoom_levels_.end())
-        render_view_->webview()->setZoomLevel(host_zoom->second);
+        render_view_->SetZoomLevel(host_zoom->second);
     }
 
     if (host_zoom != render_view_->host_zoom_levels_.end()) {

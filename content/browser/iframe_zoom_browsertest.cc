@@ -427,4 +427,40 @@ IN_PROC_BROWSER_TEST_F(IFrameZoomBrowserTest, SubframeRetainsZoomOnNavigation) {
   EXPECT_EQ(scale_one_child_width, new_child_width);
 }
 
+// http://crbug.com/609213
+#if !defined(OS_ANDROID)
+IN_PROC_BROWSER_TEST_F(IFrameZoomBrowserTest,
+                       RedirectToPageWithSubframeZoomsCorrectly) {
+  std::string initial_host("a.com");
+  std::string redirected_host("b.com");
+  EXPECT_TRUE(NavigateToURL(shell(), GURL(embedded_test_server()->GetURL(
+                                         initial_host, "/title2.html"))));
+  double main_frame_window_border = GetMainframeWindowBorder(web_contents());
+  EXPECT_DOUBLE_EQ(
+      1.0, GetMainFrameZoomFactor(web_contents(), main_frame_window_border));
+
+  // Set a zoom level for b.com before we navigate to it.
+  const double kZoomFactorForRedirectedHost = 1.5;
+  HostZoomMap* host_zoom_map = HostZoomMap::GetForWebContents(web_contents());
+  host_zoom_map->SetZoomLevelForHost(
+      redirected_host, ZoomFactorToZoomLevel(kZoomFactorForRedirectedHost));
+
+  // Navigation to a.com doesn't change the zoom level, but when it redirects
+  // to b.com, and then a subframe loads, the zoom should change.
+  GURL redirect_url(embedded_test_server()->GetURL(
+      redirected_host, "/cross_site_iframe_factory.html?b(b)"));
+  GURL url(embedded_test_server()->GetURL(
+      initial_host, "/client-redirect?" + redirect_url.spec()));
+
+  NavigateToURLBlockUntilNavigationsComplete(shell(), url, 2);
+  EXPECT_TRUE(IsLastCommittedEntryOfPageType(web_contents(), PAGE_TYPE_NORMAL));
+  EXPECT_EQ(redirect_url, web_contents()->GetLastCommittedURL());
+
+  EXPECT_NEAR(
+      kZoomFactorForRedirectedHost,
+      GetMainFrameZoomFactor(web_contents(), main_frame_window_border),
+      0.001);
+}
+#endif
+
 }  // namespace content
