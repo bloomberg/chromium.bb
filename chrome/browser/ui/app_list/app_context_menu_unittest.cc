@@ -4,6 +4,7 @@
 
 #include <map>
 #include <string>
+#include <unordered_set>
 #include <vector>
 
 #include "base/macros.h"
@@ -52,6 +53,17 @@ class FakeAppListControllerDelegate :
     pinnable_apps_[app_id] = type;
   }
 
+  void SetAppOpen(const std::string& app_id, bool open) {
+    if (open)
+      open_apps_.insert(app_id);
+    else
+      open_apps_.erase(app_id);
+  }
+
+  bool IsAppOpen(const std::string& app_id) const override {
+    return open_apps_.count(app_id) != 0;
+  }
+
   void SetCanCreateShortcuts(bool can_create_shortcuts) {
     can_create_shortcuts_ = can_create_shortcuts;
   }
@@ -73,6 +85,7 @@ class FakeAppListControllerDelegate :
 
  private:
   std::map<std::string, Pinnable> pinnable_apps_;
+  std::unordered_set<std::string> open_apps_;
   bool can_create_shortcuts_ = false;
   bool can_show_app_info_ = false;
 
@@ -376,12 +389,22 @@ TEST_F(AppContextMenuTest, ArcMenu) {
   ASSERT_EQ(1u, launch_requests.size());
   EXPECT_TRUE(launch_requests[0]->IsForApp(app_info));
 
+  controller()->SetAppOpen(app_id, true);
+  // It is not expected that menu model is unchanged on GetContextMenuModel. Arc
+  // app menu requires model to be recalculated.
+  menu = item.GetContextMenuModel();
+  ASSERT_EQ(1, menu->GetItemCount());
+  EXPECT_EQ(app_list::AppContextMenu::TOGGLE_PIN, menu->GetCommandIdAt(0));
+  EXPECT_TRUE(menu->IsEnabledAt(0));
+  EXPECT_FALSE(menu->IsItemCheckedAt(0));
+
   arc_test.app_instance()->RefreshAppList();
   arc_test.app_instance()->SendRefreshAppList(
       std::vector<arc::mojom::AppInfo>());
   item.SetReady(false);
+  controller()->SetAppOpen(app_id, false);
 
-  EXPECT_EQ(item.GetContextMenuModel(), menu);
+  menu = item.GetContextMenuModel();
   ASSERT_EQ(3, menu->GetItemCount());
   EXPECT_EQ(app_list::AppContextMenu::LAUNCH_NEW, menu->GetCommandIdAt(0));
   EXPECT_FALSE(menu->IsEnabledAt(0));

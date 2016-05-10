@@ -10558,7 +10558,7 @@ I don't think this site should be blocked!
         <if expr="chromeos">
           <message name="IDS_APP_CONTEXT_MENU_ACTIVATE_ARC"
                    desc="Text for the button that activates Android App. (In sentence case.)">
-            Activate
+            Open
           </message>
         </if>
       </if>
@@ -10615,7 +10615,7 @@ I don't think this site should be blocked!
         <if expr="chromeos">
           <message name="IDS_APP_CONTEXT_MENU_ACTIVATE_ARC"
                    desc="Text for the button that activates Android App. (In title case.)">
-            Activate
+            Open
           </message>
         </if>
       </if>

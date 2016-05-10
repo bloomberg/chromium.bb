@@ -18,23 +18,26 @@ void TestAppListControllerDelegate::DismissView() {
 }
 
 gfx::NativeWindow TestAppListControllerDelegate::GetAppListWindow() {
-  return NULL;
+  return nullptr;
 }
 
-bool TestAppListControllerDelegate::IsAppPinned(
-    const std::string& extension_id) {
+bool TestAppListControllerDelegate::IsAppPinned(const std::string& app_id) {
   return false;
 }
 
-void TestAppListControllerDelegate::PinApp(const std::string& extension_id) {
+void TestAppListControllerDelegate::PinApp(const std::string& app_id) {
 }
 
-void TestAppListControllerDelegate::UnpinApp(const std::string& extension_id) {
+void TestAppListControllerDelegate::UnpinApp(const std::string& app_id) {
 }
 
 AppListControllerDelegate::Pinnable TestAppListControllerDelegate::GetPinnable(
-    const std::string& extension_id) {
+    const std::string& app_id) {
   return NO_PIN;
+}
+
+bool TestAppListControllerDelegate::IsAppOpen(const std::string& app_id) const {
+  return false;
 }
 
 bool TestAppListControllerDelegate::CanDoCreateShortcutsFlow() {

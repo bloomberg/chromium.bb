@@ -19,10 +19,13 @@ ArcLauncherContextMenu::ArcLauncherContextMenu(
 ArcLauncherContextMenu::~ArcLauncherContextMenu() {}
 
 void ArcLauncherContextMenu::Init() {
-  AddItemWithStringId(MENU_OPEN_NEW, IDS_APP_CONTEXT_MENU_ACTIVATE_ARC);
-  AddSeparator(ui::NORMAL_SEPARATOR);
+  const bool app_is_open = controller()->IsOpen(item().id);
+  if (!app_is_open) {
+    AddItemWithStringId(MENU_OPEN_NEW, IDS_APP_CONTEXT_MENU_ACTIVATE_ARC);
+    AddSeparator(ui::NORMAL_SEPARATOR);
+  }
   AddPinMenu();
-  if (controller()->IsOpen(item().id))
+  if (app_is_open)
     AddItemWithStringId(MENU_CLOSE, IDS_LAUNCHER_CONTEXT_MENU_CLOSE);
   AddSeparator(ui::NORMAL_SEPARATOR);
   AddShelfOptionsMenu();

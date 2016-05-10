@@ -67,11 +67,8 @@ std::unique_ptr<SearchResult> ArcAppResult::Duplicate() const {
 }
 
 ui::MenuModel* ArcAppResult::GetContextMenuModel() {
-  if (!context_menu_) {
-    context_menu_.reset(new ArcAppContextMenu(
-        this, profile(), app_id(), controller()));
-  }
-
+  context_menu_.reset(new ArcAppContextMenu(
+      this, profile(), app_id(), controller()));
   return context_menu_->GetMenuModel();
 }
 

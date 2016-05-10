@@ -100,11 +100,9 @@ void ArcAppItem::OnIconUpdated(ArcAppIcon* icon) {
 }
 
 ui::MenuModel* ArcAppItem::GetContextMenuModel() {
-  if (!context_menu_) {
-    context_menu_.reset(new ArcAppContextMenu(this,
-                                              profile(),
-                                              id(),
-                                              GetController()));
-  }
+  context_menu_.reset(new ArcAppContextMenu(this,
+                                            profile(),
+                                            id(),
+                                            GetController()));
   return context_menu_->GetMenuModel();
 }

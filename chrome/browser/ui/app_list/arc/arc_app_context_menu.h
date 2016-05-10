@@ -33,6 +33,7 @@ class ArcAppContextMenu : public app_list::AppContextMenu {
   void ExecuteCommand(int command_id, int event_flags) override;
 
  private:
+  void IsAppOpen();
   void UninstallPackage();
 
   bool CanBeUninstalled() const;

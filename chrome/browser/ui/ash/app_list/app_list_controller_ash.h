@@ -24,10 +24,11 @@ class AppListControllerDelegateAsh : public AppListControllerDelegate {
   void DismissView() override;
   gfx::NativeWindow GetAppListWindow() override;
   gfx::Rect GetAppListBounds() override;
-  bool IsAppPinned(const std::string& extension_id) override;
-  void PinApp(const std::string& extension_id) override;
-  void UnpinApp(const std::string& extension_id) override;
-  Pinnable GetPinnable(const std::string& extension_id) override;
+  bool IsAppPinned(const std::string& app_id) override;
+  bool IsAppOpen(const std::string& app_id) const override;
+  void PinApp(const std::string& app_id) override;
+  void UnpinApp(const std::string& app_id) override;
+  Pinnable GetPinnable(const std::string& app_id) override;
   void OnShowChildDialog() override;
   void OnCloseChildDialog() override;
   bool CanDoCreateShortcutsFlow() override;

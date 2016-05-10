@@ -6,6 +6,7 @@
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_context_menu_delegate.h"
+#include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/grit/generated_resources.h"
@@ -22,9 +23,11 @@ ArcAppContextMenu::~ArcAppContextMenu() {
 }
 
 void ArcAppContextMenu::BuildMenu(ui::SimpleMenuModel* menu_model) {
-  menu_model->AddItemWithStringId(LAUNCH_NEW,
-                                  IDS_APP_CONTEXT_MENU_ACTIVATE_ARC);
-  menu_model->AddSeparator(ui::NORMAL_SEPARATOR);
+  if (!controller()->IsAppOpen(app_id())) {
+    menu_model->AddItemWithStringId(LAUNCH_NEW,
+                                    IDS_APP_CONTEXT_MENU_ACTIVATE_ARC);
+    menu_model->AddSeparator(ui::NORMAL_SEPARATOR);
+  }
   // Create default items.
   AppContextMenu::BuildMenu(menu_model);
   if (CanBeUninstalled()) {

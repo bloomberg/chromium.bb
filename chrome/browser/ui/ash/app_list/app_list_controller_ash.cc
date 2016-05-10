@@ -34,22 +34,29 @@ gfx::Rect AppListControllerDelegateAsh::GetAppListBounds() {
   return gfx::Rect();
 }
 
-bool AppListControllerDelegateAsh::IsAppPinned(
-    const std::string& extension_id) {
-  return ChromeLauncherController::instance()->IsAppPinned(extension_id);
+bool AppListControllerDelegateAsh::IsAppPinned(const std::string& app_id) {
+  return ChromeLauncherController::instance()->IsAppPinned(app_id);
 }
 
-void AppListControllerDelegateAsh::PinApp(const std::string& extension_id) {
-  ChromeLauncherController::instance()->PinAppWithID(extension_id);
+bool AppListControllerDelegateAsh::IsAppOpen(const std::string& app_id) const {
+  ChromeLauncherController* controller = ChromeLauncherController::instance();
+  ash::ShelfID id = controller->GetShelfIDForAppID(app_id);
+  if (!id)
+    return false;
+  return controller->IsOpen(id);
 }
 
-void AppListControllerDelegateAsh::UnpinApp(const std::string& extension_id) {
-  ChromeLauncherController::instance()->UnpinAppWithID(extension_id);
+void AppListControllerDelegateAsh::PinApp(const std::string& app_id) {
+  ChromeLauncherController::instance()->PinAppWithID(app_id);
+}
+
+void AppListControllerDelegateAsh::UnpinApp(const std::string& app_id) {
+  ChromeLauncherController::instance()->UnpinAppWithID(app_id);
 }
 
 AppListControllerDelegate::Pinnable AppListControllerDelegateAsh::GetPinnable(
-    const std::string& extension_id) {
-  return ChromeLauncherController::instance()->GetPinnable(extension_id);
+    const std::string& app_id) {
+  return ChromeLauncherController::instance()->GetPinnable(app_id);
 }
 
 void AppListControllerDelegateAsh::OnShowChildDialog() {

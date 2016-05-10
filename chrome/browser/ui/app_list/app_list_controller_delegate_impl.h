@@ -35,6 +35,7 @@ class AppListControllerDelegateImpl : public AppListControllerDelegate {
   void PinApp(const std::string& extension_id) override;
   void UnpinApp(const std::string& extension_id) override;
   Pinnable GetPinnable(const std::string& extension_id) override;
+  bool IsAppOpen(const std::string& extension_id) const override;
   bool CanDoCreateShortcutsFlow() override;
   void DoCreateShortcutsFlow(Profile* profile,
                              const std::string& extension_id) override;

@@ -13,11 +13,13 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_test.h"
 #include "chrome/browser/ui/ash/launcher/arc_launcher_context_menu.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/desktop_shell_launcher_context_menu.h"
 #include "chrome/browser/ui/ash/launcher/extension_launcher_context_menu.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/arc/test/fake_app_instance.h"
 #include "components/prefs/pref_service.h"
 #include "ui/aura/window_event_dispatcher.h"
 
@@ -30,6 +32,7 @@ class LauncherContextMenuTest : public ash::test::AshTestBase {
   LauncherContextMenuTest() : profile_(new TestingProfile()) {}
 
   void SetUp() override {
+    arc_test_.SetUp(profile_.get());
     ash::test::AshTestBase::SetUp();
     controller_.reset(new ChromeLauncherController(profile(), &shelf_model_));
   }
@@ -54,19 +57,17 @@ class LauncherContextMenuTest : public ash::test::AshTestBase {
     return LauncherContextMenu::Create(controller_.get(), item, shelf);
   }
 
-  LauncherContextMenu* CreateLauncherContextMenuForArcApp() {
-    ash::ShelfItem item;
-    item.id = 1;  // dummy id
-    ash::Shelf* shelf = ash::Shelf::ForWindow(CurrentContext());
-    return new ArcLauncherContextMenu(controller_.get(), &item, shelf);
-  }
+  ArcAppTest& arc_test() { return arc_test_; }
 
   Profile* profile() { return profile_.get(); }
+
+  ChromeLauncherController* controller() { return controller_.get(); }
 
  private:
   std::unique_ptr<TestingProfile> profile_;
   ash::ShelfModel shelf_model_;
   std::unique_ptr<ChromeLauncherController> controller_;
+  ArcAppTest arc_test_;
 
   DISALLOW_COPY_AND_ASSIGN(LauncherContextMenuTest);
 };
@@ -138,11 +139,28 @@ TEST_F(LauncherContextMenuTest, DesktopShellLauncherContextMenuItemCheck) {
 
 // Verifies contextmenu items for Arc app
 TEST_F(LauncherContextMenuTest, ArcLauncherContextMenuItemCheck) {
+  arc_test().app_instance()->RefreshAppList();
+  arc_test().app_instance()->SendRefreshAppList(arc_test().fake_apps());
+  const std::string app_id = ArcAppTest::GetAppId(arc_test().fake_apps()[0]);
+
+  controller()->PinAppWithID(app_id);
+
+  ash::ShelfItem item;
+  item.id = controller()->GetShelfIDForAppID(app_id);
+  ash::Shelf* shelf = ash::Shelf::ForWindow(CurrentContext());
+
   std::unique_ptr<LauncherContextMenu> menu(
-      CreateLauncherContextMenuForArcApp());
+      new ArcLauncherContextMenu(controller(), &item, shelf));
+
+  // Arc app is pinned but not running.
   EXPECT_TRUE(
       IsItemPresentInMenu(menu.get(), LauncherContextMenu::MENU_OPEN_NEW));
   EXPECT_TRUE(menu->IsCommandIdEnabled(LauncherContextMenu::MENU_OPEN_NEW));
+  EXPECT_TRUE(IsItemPresentInMenu(menu.get(), LauncherContextMenu::MENU_PIN));
+  EXPECT_TRUE(menu->IsCommandIdEnabled(LauncherContextMenu::MENU_PIN));
+  EXPECT_FALSE(
+      IsItemPresentInMenu(menu.get(), LauncherContextMenu::MENU_CLOSE));
+
   EXPECT_TRUE(
       IsItemPresentInMenu(menu.get(), LauncherContextMenu::MENU_AUTO_HIDE));
   EXPECT_TRUE(menu->IsCommandIdEnabled(LauncherContextMenu::MENU_AUTO_HIDE));
@@ -156,4 +174,15 @@ TEST_F(LauncherContextMenuTest, ArcLauncherContextMenuItemCheck) {
                                   LauncherContextMenu::MENU_CHANGE_WALLPAPER));
   EXPECT_FALSE(
       menu->IsCommandIdEnabled(LauncherContextMenu::MENU_CHANGE_WALLPAPER));
+
+  // Arc app is running.
+  arc_test().app_instance()->SendTaskCreated(1, arc_test().fake_apps()[0]);
+  menu.reset(new ArcLauncherContextMenu(controller(), &item, shelf));
+
+  EXPECT_FALSE(
+      IsItemPresentInMenu(menu.get(), LauncherContextMenu::MENU_OPEN_NEW));
+  EXPECT_TRUE(IsItemPresentInMenu(menu.get(), LauncherContextMenu::MENU_PIN));
+  EXPECT_TRUE(menu->IsCommandIdEnabled(LauncherContextMenu::MENU_PIN));
+  EXPECT_TRUE(IsItemPresentInMenu(menu.get(), LauncherContextMenu::MENU_CLOSE));
+  EXPECT_TRUE(menu->IsCommandIdEnabled(LauncherContextMenu::MENU_CLOSE));
 }

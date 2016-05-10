@@ -54,6 +54,11 @@ void FakeAppInstance::SendRefreshAppList(
   app_host_->OnAppListRefreshed(mojo::Array<mojom::AppInfoPtr>::From(apps));
 }
 
+void FakeAppInstance::SendTaskCreated(int32_t taskId,
+                                      const mojom::AppInfo& app) {
+  app_host_->OnTaskCreated(taskId, app.package_name, app.activity);
+}
+
 bool FakeAppInstance::GenerateAndSendIcon(const mojom::AppInfo& app,
                                           mojom::ScaleFactor scale_factor,
                                           std::string* png_data_as_string) {
