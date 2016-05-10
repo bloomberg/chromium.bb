@@ -24,7 +24,7 @@ namespace blink {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
-{{wrapper_type_info_const}}WrapperTypeInfo {{v8_class}}::wrapperTypeInfo = { gin::kEmbedderBlink, {{dom_template}}, {{v8_class}}::trace, {{to_active_scriptwrappable}}, {{visit_dom_wrapper}}, {{v8_class}}::preparePrototypeAndInterfaceObject,{% if has_conditional_attributes %} {{v8_class}}::installConditionallyEnabledProperties{% else %} nullptr{% endif %}, "{{interface_name}}", {{parent_wrapper_type_info}}, WrapperTypeInfo::{{wrapper_type_prototype}}, WrapperTypeInfo::{{wrapper_class_id}}, WrapperTypeInfo::{{event_target_inheritance}}, WrapperTypeInfo::{{lifetime}} };
+{{wrapper_type_info_const}}WrapperTypeInfo {{v8_class}}::wrapperTypeInfo = { gin::kEmbedderBlink, {{dom_template}}, {{v8_class}}::trace, {{v8_class}}::traceWrappers, {{to_active_scriptwrappable}}, {{visit_dom_wrapper}}, {{v8_class}}::preparePrototypeAndInterfaceObject,{% if has_conditional_attributes %} {{v8_class}}::installConditionallyEnabledProperties{% else %} nullptr{% endif %}, "{{interface_name}}", {{parent_wrapper_type_info}}, WrapperTypeInfo::{{wrapper_type_prototype}}, WrapperTypeInfo::{{wrapper_class_id}}, WrapperTypeInfo::{{event_target_inheritance}}, WrapperTypeInfo::{{lifetime}} };
 #if defined(COMPONENT_BUILD) && defined(WIN32) && COMPILER(CLANG)
 #pragma clang diagnostic pop
 #endif

@@ -32,6 +32,7 @@
 #include "core/events/EventTarget.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/V8AbstractEventListener.h"
 #include "bindings/core/v8/V8DOMActivityLogger.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/editing/Editor.h"
@@ -79,6 +80,22 @@ EventTargetData::~EventTargetData()
 DEFINE_TRACE(EventTargetData)
 {
     visitor->trace(eventListenerMap);
+}
+
+DEFINE_TRACE_WRAPPERS(EventTarget)
+{
+    EventListenerIterator iterator(const_cast<EventTarget*>(this));
+    while (EventListener* listener = iterator.nextListener()) {
+        if (listener->type() != EventListener::JSEventListenerType)
+            continue;
+        V8AbstractEventListener* v8listener = static_cast<V8AbstractEventListener*>(listener);
+        if (!v8listener->hasExistingListenerObject())
+            continue;
+
+        ScriptWrappableVisitor::markWrapper(
+            &(v8listener->existingListenerObjectPersistentHandle()),
+            v8listener->isolate());
+    }
 }
 
 EventTarget::EventTarget()

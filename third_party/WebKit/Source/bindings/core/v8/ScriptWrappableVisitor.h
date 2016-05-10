@@ -5,52 +5,17 @@
 #ifndef ScriptWrappableVisitor_h
 #define ScriptWrappableVisitor_h
 
-#include "platform/heap/HeapAllocator.h"
+#include "core/CoreExport.h"
+#include "platform/heap/WrapperVisitor.h"
+#include "wtf/Vector.h"
 #include <v8.h>
-#include <vector>
 
 
 namespace blink {
 
-class HeapObjectHeader;
 class ScriptWrappable;
-class ScriptWrappableHeapTracer;
-class NodeRareData;
-
-/**
- * Declares non-virtual traceWrappers method. Should be used on
- * non-ScriptWrappable classes which should participate in wrapper tracing (e.g.
- * NodeRareData):
- *
- *     class NodeRareData {
- *     public:
- *         DECLARE_TRACE_WRAPPERS();
- *     }
- */
-#define DECLARE_TRACE_WRAPPERS()                               \
-    void traceWrappers(const ScriptWrappableVisitor*) const
-
-/**
- * Declares virtual traceWrappers method. It is used in ScriptWrappable, can be
- * used to override the method in the subclasses, and can be used by
- * non-ScriptWrappable classes which expect to be inherited.
- */
-#define DECLARE_VIRTUAL_TRACE_WRAPPERS()                       \
-    virtual DECLARE_TRACE_WRAPPERS()
-
-/**
- * Provides definition of traceWrappers method. Custom code will usually call
- * visitor->traceWrappers with all objects which could contribute to the set of
- * reachable wrappers:
- *
- *     DEFINE_TRACE_WRAPPERS(NodeRareData)
- *     {
- *         visitor->traceWrappers(m_nodeLists);
- *         visitor->traceWrappers(m_mutationObserverData);
- *     }
- */
-#define DEFINE_TRACE_WRAPPERS(T)                              \
-    void T::traceWrappers(const ScriptWrappableVisitor* visitor) const
+class HeapObjectHeader;
+template<typename T> class Member;
 
 /**
  * ScriptWrappableVisitor is able to trace through the script wrappable
@@ -60,7 +25,7 @@ class NodeRareData;
  * repeatedly (as v8 discovers more wrappers) it will call TraceWrappersFrom,
  * and at the end it will call TraceEpilogue.
  */
-class ScriptWrappableVisitor : public v8::EmbedderHeapTracer {
+class CORE_EXPORT ScriptWrappableVisitor : public WrapperVisitor, public v8::EmbedderHeapTracer {
 public:
     ScriptWrappableVisitor(v8::Isolate* isolate) : m_isolate(isolate) {};
     ~ScriptWrappableVisitor() override;
@@ -72,20 +37,29 @@ public:
     /**
      * Mark given wrapper as alive in V8.
      */
-    static void markWrapper(const v8::Persistent<v8::Object>& handle, v8::Isolate*);
+    static void markWrapper(const v8::Persistent<v8::Object>* handle, v8::Isolate*);
 
     void TracePrologue() override;
     void TraceWrappersFrom(const std::vector<std::pair<void*, void*>>& internalFieldsOfPotentialWrappers) override;
     void TraceEpilogue() override;
 
-    inline void addHeaderToUnmark(HeapObjectHeader*) const;
-    void traceWrappers(const ScriptWrappable* wrappable) const;
-    void traceWrappers(const ScriptWrappable& wrappable) const;
+    void traceWrappersFrom(const ScriptWrappable*) const;
+
+    void markWrapper(const v8::Persistent<v8::Object>*) const;
+    virtual void dispatchTraceWrappers(const ScriptWrappable*) const;
+#define DECLARE_DISPATCH_TRACE_WRAPPERS(className)               \
+    virtual void dispatchTraceWrappers(const className*) const;
+
+    WRAPPER_VISITOR_SPECIAL_CLASSES(DECLARE_DISPATCH_TRACE_WRAPPERS);
+
+#undef DECLARE_DISPATCH_TRACE_WRAPPERS
+    virtual void dispatchTraceWrappers(const void*) const {}
+
 private:
+    virtual bool markWrapperHeader(const ScriptWrappable*, const void*) const;
+    virtual bool markWrapperHeader(const void* garbageCollected, const void*) const;
+    inline void addHeaderToUnmark(HeapObjectHeader*) const;
     inline void traceWrappersFrom(std::pair<void*, void*> internalFields);
-    inline void markHeader(const ScriptWrappable* scriptWrappable) const;
-    inline void markHeader(const void* garbageCollected) const;
-    inline bool isHeaderMarked(const void* garbageCollected) const;
     bool m_tracingInProgress = false;
     /**
      * Collection of headers we need to unmark after the tracing finished. We

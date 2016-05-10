@@ -10,6 +10,7 @@
 #include "platform/heap/InlinedGlobalMarkingVisitor.h"
 #include "platform/heap/StackFrameDepth.h"
 #include "platform/heap/Visitor.h"
+#include "platform/heap/WrapperVisitor.h"
 #include "wtf/Allocator.h"
 #include "wtf/Assertions.h"
 #include "wtf/Deque.h"
@@ -37,6 +38,13 @@ template<typename T>
 class AdjustAndMarkTrait<T, false> {
     STATIC_ONLY(AdjustAndMarkTrait);
 public:
+    static void markWrapper(const WrapperVisitor* visitor, const T* t)
+    {
+        if (visitor->markWrapperHeader(t)) {
+            visitor->dispatchTraceWrappers(t);
+        }
+    }
+
     template<typename VisitorDispatcher>
     static void mark(VisitorDispatcher visitor, const T* t)
     {
@@ -74,6 +82,11 @@ template<typename T>
 class AdjustAndMarkTrait<T, true> {
     STATIC_ONLY(AdjustAndMarkTrait);
 public:
+    static void markWrapper(const WrapperVisitor* visitor, const T* t)
+    {
+        t->adjustAndMarkWrapper(visitor);
+    }
+
     template<typename VisitorDispatcher>
     static void mark(VisitorDispatcher visitor, const T* self)
     {
@@ -157,6 +170,11 @@ class TraceTrait {
 public:
     static void trace(Visitor*, void* self);
     static void trace(InlinedGlobalMarkingVisitor, void* self);
+
+    static void markWrapper(const WrapperVisitor* visitor, const T* t)
+    {
+        AdjustAndMarkTrait<T>::markWrapper(visitor, t);
+    }
 
     template<typename VisitorDispatcher>
     static void mark(VisitorDispatcher visitor, const T* t)

@@ -35,20 +35,14 @@
 #include "bindings/core/v8/ScriptWrappableVisitor.h"
 #include "bindings/core/v8/V8AbstractEventListener.h"
 #include "bindings/core/v8/V8Binding.h"
-#include "bindings/core/v8/V8MutationObserver.h"
 #include "bindings/core/v8/V8Node.h"
 #include "bindings/core/v8/V8ScriptRunner.h"
 #include "bindings/core/v8/WrapperTypeInfo.h"
 #include "core/dom/Attr.h"
-#include "core/dom/Document.h"
-#include "core/dom/NodeTraversal.h"
-#include "core/dom/TemplateContentDocumentFragment.h"
-#include "core/dom/shadow/ElementShadow.h"
-#include "core/dom/shadow/ShadowRoot.h"
-#include "core/html/HTMLTemplateElement.h"
+#include "core/dom/Element.h"
+#include "core/dom/Node.h"
 #include "core/html/imports/HTMLImportsController.h"
 #include "core/inspector/InspectorTraceEvents.h"
-#include "core/svg/SVGElement.h"
 #include "platform/Histogram.h"
 #include "platform/TraceEvent.h"
 #include "public/platform/BlameContext.h"
@@ -166,7 +160,8 @@ public:
         ASSERT(V8DOMWrapper::hasInternalFieldsSet(wrapper));
 
         const WrapperTypeInfo* type = toWrapperTypeInfo(wrapper);
-        if (type->hasPendingActivity(wrapper)) {
+        if (!RuntimeEnabledFeatures::traceWrappablesEnabled()
+            && type->hasPendingActivity(wrapper)) {
             // If you hit this assert, you'll need to add a [DependentiLifetime]
             // extended attribute to the DOM interface. A DOM interface that
             // overrides hasPendingActivity must be marked as [DependentLifetime].
@@ -179,14 +174,16 @@ public:
             return;
 
         if (classId == WrapperTypeInfo::NodeClassId) {
-            ASSERT(V8Node::hasInstance(wrapper, m_isolate));
-            Node* node = V8Node::toImpl(wrapper);
-            if (node->hasEventListeners())
-                addReferencesForNodeWithEventListeners(m_isolate, node, v8::Persistent<v8::Object>::Cast(*value));
-            Node* root = V8GCController::opaqueRootForGC(m_isolate, node);
-            m_isolate->SetObjectGroupId(*value, v8::UniqueId(reinterpret_cast<intptr_t>(root)));
-            if (m_constructRetainedObjectInfos)
-                m_groupsWhichNeedRetainerInfo.append(root);
+            if (!RuntimeEnabledFeatures::traceWrappablesEnabled()) {
+                ASSERT(V8Node::hasInstance(wrapper, m_isolate));
+                Node* node = V8Node::toImpl(wrapper);
+                if (node->hasEventListeners())
+                    addReferencesForNodeWithEventListeners(m_isolate, node, v8::Persistent<v8::Object>::Cast(*value));
+                Node* root = V8GCController::opaqueRootForGC(m_isolate, node);
+                m_isolate->SetObjectGroupId(*value, v8::UniqueId(reinterpret_cast<intptr_t>(root)));
+                if (m_constructRetainedObjectInfos)
+                    m_groupsWhichNeedRetainerInfo.append(root);
+            }
         } else if (classId == WrapperTypeInfo::ObjectClassId) {
             type->visitDOMWrapper(m_isolate, toScriptWrappable(wrapper), v8::Persistent<v8::Object>::Cast(*value));
         } else {

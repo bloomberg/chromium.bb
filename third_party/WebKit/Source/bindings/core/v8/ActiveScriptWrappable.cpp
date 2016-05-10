@@ -5,6 +5,7 @@
 #include "bindings/core/v8/ActiveScriptWrappable.h"
 
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "bindings/core/v8/ScriptWrappableVisitor.h"
 #include "wtf/HashSet.h"
 #include "wtf/ThreadSpecific.h"
 #include "wtf/Threading.h"
@@ -42,7 +43,8 @@ void ActiveScriptWrappable::traceActiveScriptWrappables(ScriptWrappableVisitor* 
         if (!activeWrappable->hasPendingActivity())
             continue;
 
-        visitor->traceWrappers(activeWrappable->toScriptWrappable());
+        ScriptWrappable* wrappable = activeWrappable->toScriptWrappable();
+        wrappable->wrapperTypeInfo()->traceWrappers(visitor, wrappable);
     }
 }
 

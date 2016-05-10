@@ -5960,6 +5960,12 @@ DEFINE_TRACE(Document)
     SecurityContext::trace(visitor);
 }
 
+DEFINE_TRACE_WRAPPERS(Document)
+{
+    visitor->traceWrappers(m_importsController);
+    ContainerNode::traceWrappers(visitor);
+}
+
 template class CORE_TEMPLATE_EXPORT Supplement<Document>;
 
 } // namespace blink

@@ -22,7 +22,7 @@ namespace blink {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
-const WrapperTypeInfo V8TestInterfaceEventTarget::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceEventTarget::domTemplate, V8TestInterfaceEventTarget::trace, 0, 0, V8TestInterfaceEventTarget::preparePrototypeAndInterfaceObject, nullptr, "TestInterfaceEventTarget", &V8EventTarget::wrapperTypeInfo, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::InheritFromEventTarget, WrapperTypeInfo::Independent };
+const WrapperTypeInfo V8TestInterfaceEventTarget::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceEventTarget::domTemplate, V8TestInterfaceEventTarget::trace, V8TestInterfaceEventTarget::traceWrappers, 0, 0, V8TestInterfaceEventTarget::preparePrototypeAndInterfaceObject, nullptr, "TestInterfaceEventTarget", &V8EventTarget::wrapperTypeInfo, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::InheritFromEventTarget, WrapperTypeInfo::Independent };
 #if defined(COMPONENT_BUILD) && defined(WIN32) && COMPILER(CLANG)
 #pragma clang diagnostic pop
 #endif
@@ -42,7 +42,7 @@ namespace TestInterfaceEventTargetV8Internal {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
-const WrapperTypeInfo V8TestInterfaceEventTargetConstructor::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceEventTargetConstructor::domTemplate, V8TestInterfaceEventTarget::trace, 0, 0, V8TestInterfaceEventTarget::preparePrototypeAndInterfaceObject, nullptr, "TestInterfaceEventTarget", 0, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::InheritFromEventTarget, WrapperTypeInfo::Independent };
+const WrapperTypeInfo V8TestInterfaceEventTargetConstructor::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceEventTargetConstructor::domTemplate, V8TestInterfaceEventTarget::trace, V8TestInterfaceEventTarget::traceWrappers, 0, 0, V8TestInterfaceEventTarget::preparePrototypeAndInterfaceObject, nullptr, "TestInterfaceEventTarget", 0, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::InheritFromEventTarget, WrapperTypeInfo::Independent };
 #if defined(COMPONENT_BUILD) && defined(WIN32) && COMPILER(CLANG)
 #pragma clang diagnostic pop
 #endif

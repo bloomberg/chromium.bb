@@ -59,6 +59,8 @@ public:
 
     DECLARE_VIRTUAL_TRACE();
 
+    DECLARE_VIRTUAL_TRACE_WRAPPERS();
+
 private:
     Attr(Element&, const QualifiedName&);
     Attr(Document&, const QualifiedName&, const AtomicString& value);

@@ -146,6 +146,8 @@ public:
 
     DEFINE_INLINE_VIRTUAL_TRACE() { }
 
+    DECLARE_VIRTUAL_TRACE_WRAPPERS();
+
     virtual bool keepEventInNode(Event*) { return false; }
 
 protected:

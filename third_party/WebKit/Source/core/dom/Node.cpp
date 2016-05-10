@@ -2352,6 +2352,14 @@ DEFINE_TRACE(Node)
     EventTarget::trace(visitor);
 }
 
+DEFINE_TRACE_WRAPPERS(Node)
+{
+    visitor->traceWrappers(parentOrShadowHostOrTemplateHostNode());
+    visitor->traceWrappers(m_previous);
+    visitor->traceWrappers(m_next);
+    EventTarget::traceWrappers(visitor);
+}
+
 unsigned Node::lengthOfContents() const
 {
     // This switch statement must be consistent with that of Range::processContentsBetweenOffsets.

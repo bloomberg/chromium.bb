@@ -59,6 +59,10 @@ public:
     {% else %}
     {{exported}}static const WrapperTypeInfo wrapperTypeInfo;
     {% endif %}
+    static void traceWrappers(WrapperVisitor* visitor, ScriptWrappable* scriptWrappable)
+    {
+        visitor->traceWrappers(scriptWrappable->toImpl<{{cpp_class}}>());
+    }
     template<typename VisitorDispatcher>
     static void trace(VisitorDispatcher visitor, ScriptWrappable* scriptWrappable)
     {

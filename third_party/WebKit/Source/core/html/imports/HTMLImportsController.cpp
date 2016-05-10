@@ -149,4 +149,9 @@ DEFINE_TRACE(HTMLImportsController)
     visitor->trace(m_loaders);
 }
 
+DEFINE_TRACE_WRAPPERS(HTMLImportsController)
+{
+    visitor->traceWrappers(master());
+}
+
 } // namespace blink

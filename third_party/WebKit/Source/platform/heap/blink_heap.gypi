@@ -68,6 +68,7 @@
       'TraceTraits.h',
       'Visitor.cpp',
       'Visitor.h',
+      'WrapperVisitor.h',
     ],
     'platform_heap_test_files': [
       'HeapTest.cpp',

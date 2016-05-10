@@ -71,6 +71,8 @@ public:
 
     void dispose();
 
+    DECLARE_TRACE_WRAPPERS();
+
 private:
     explicit HTMLImportsController(Document&);
 

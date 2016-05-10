@@ -474,7 +474,7 @@ static void {{cpp_class}}OriginSafeMethodSetterCallback(v8::Local<v8::Name> name
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
-const WrapperTypeInfo {{v8_class}}Constructor::wrapperTypeInfo = { gin::kEmbedderBlink, {{v8_class}}Constructor::domTemplate, {{v8_class}}::trace, {{to_active_scriptwrappable}}, 0, {{v8_class}}::preparePrototypeAndInterfaceObject,{% if has_conditional_attributes_on_instance %} {{v8_class}}::installConditionallyEnabledProperties{% else %} nullptr{% endif %}, "{{interface_name}}", 0, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::{{wrapper_class_id}}, WrapperTypeInfo::{{event_target_inheritance}}, WrapperTypeInfo::{{lifetime}} };
+const WrapperTypeInfo {{v8_class}}Constructor::wrapperTypeInfo = { gin::kEmbedderBlink, {{v8_class}}Constructor::domTemplate, {{v8_class}}::trace, {{v8_class}}::traceWrappers, {{to_active_scriptwrappable}}, 0, {{v8_class}}::preparePrototypeAndInterfaceObject,{% if has_conditional_attributes_on_instance %} {{v8_class}}::installConditionallyEnabledProperties{% else %} nullptr{% endif %}, "{{interface_name}}", 0, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::{{wrapper_class_id}}, WrapperTypeInfo::{{event_target_inheritance}}, WrapperTypeInfo::{{lifetime}} };
 #if defined(COMPONENT_BUILD) && defined(WIN32) && COMPILER(CLANG)
 #pragma clang diagnostic pop
 #endif

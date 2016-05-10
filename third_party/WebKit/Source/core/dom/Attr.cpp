@@ -141,4 +141,10 @@ DEFINE_TRACE(Attr)
     Node::trace(visitor);
 }
 
+DEFINE_TRACE_WRAPPERS(Attr)
+{
+    visitor->traceWrappers(m_element);
+    Node::traceWrappers(visitor);
+}
+
 } // namespace blink

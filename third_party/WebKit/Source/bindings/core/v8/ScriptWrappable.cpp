@@ -5,6 +5,7 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 
 #include "bindings/core/v8/DOMDataStore.h"
+#include "bindings/core/v8/ScriptWrappableVisitor.h"
 #include "bindings/core/v8/V8DOMWrapper.h"
 
 namespace blink {
@@ -38,7 +39,7 @@ v8::Local<v8::Object> ScriptWrappable::associateWithWrapper(v8::Isolate* isolate
 void ScriptWrappable::markWrapper(v8::Isolate* isolate) const
 {
     if (containsWrapper())
-        ScriptWrappableVisitor::markWrapper(m_wrapper, isolate);
+        ScriptWrappableVisitor::markWrapper(&m_wrapper, isolate);
 }
 
 } // namespace blink

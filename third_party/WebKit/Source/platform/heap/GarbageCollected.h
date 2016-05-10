@@ -26,6 +26,7 @@ template<typename T, typename Traits> class HeapVectorBacking;
 template<typename Table> class HeapHashTableBacking;
 template<typename ValueArg, size_t inlineCapacity> class HeapListHashSetAllocator;
 class InlinedGlobalMarkingVisitor;
+class WrapperVisitor;
 template<typename T> class Persistent;
 
 // GC_PLUGIN_IGNORE is used to make the plugin ignore a particular class or
@@ -132,6 +133,7 @@ public:
     virtual void trace(Visitor*) { }
     virtual void adjustAndMark(InlinedGlobalMarkingVisitor) const = 0;
     virtual void trace(InlinedGlobalMarkingVisitor);
+    virtual void adjustAndMarkWrapper(const WrapperVisitor*) const = 0;
     virtual bool isHeapObjectAlive() const = 0;
 };
 
@@ -147,6 +149,18 @@ public:
             return;                                                     \
         }                                                               \
         visitor->mark(static_cast<const TYPE*>(this), &blink::TraceTrait<TYPE>::trace); \
+    }                                                                   \
+    private:
+
+#define DEFINE_GARBAGE_COLLECTED_MIXIN_WRAPPER_METHODS(TYPE)            \
+    public:                                                             \
+    void adjustAndMarkWrapper(const WrapperVisitor* visitor) const override \
+    {                                                                   \
+        typedef WTF::IsSubclassOfTemplate<typename std::remove_const<TYPE>::type, blink::GarbageCollected> IsSubclassOfGarbageCollected; \
+        static_assert(IsSubclassOfGarbageCollected::value, "only garbage collected objects can have garbage collected mixins"); \
+        if (visitor->markWrapperHeader(static_cast<const TYPE*>(this))) { \
+            visitor->dispatchTraceWrappers(static_cast<const TYPE*>(this)); \
+        }                                                               \
     }                                                                   \
     private:
 
@@ -205,11 +219,12 @@ public:
     IS_GARBAGE_COLLECTED_TYPE();                                        \
     DEFINE_GARBAGE_COLLECTED_MIXIN_METHODS(blink::Visitor*, TYPE)       \
     DEFINE_GARBAGE_COLLECTED_MIXIN_METHODS(blink::InlinedGlobalMarkingVisitor, TYPE) \
+    DEFINE_GARBAGE_COLLECTED_MIXIN_WRAPPER_METHODS(TYPE)                \
     DEFINE_GARBAGE_COLLECTED_MIXIN_CONSTRUCTOR_MARKER(TYPE)             \
 public:                                                                 \
     bool isHeapObjectAlive() const override                             \
     {                                                                   \
-        return ThreadHeap::isHeapObjectAlive(this);                           \
+        return ThreadHeap::isHeapObjectAlive(this);                     \
     }                                                                   \
 private:
 

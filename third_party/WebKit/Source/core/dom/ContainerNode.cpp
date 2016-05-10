@@ -446,6 +446,13 @@ DEFINE_TRACE(ContainerNode)
     Node::trace(visitor);
 }
 
+DEFINE_TRACE_WRAPPERS(ContainerNode)
+{
+    visitor->traceWrappers(m_firstChild);
+    visitor->traceWrappers(m_lastChild);
+    Node::traceWrappers(visitor);
+}
+
 Node* ContainerNode::removeChild(Node* oldChild, ExceptionState& exceptionState)
 {
     // NotFoundError: Raised if oldChild is not a child of this node.

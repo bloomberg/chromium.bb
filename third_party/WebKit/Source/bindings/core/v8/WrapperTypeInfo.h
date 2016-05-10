@@ -54,6 +54,7 @@ static const int v8PrototypeInternalFieldcount = 1;
 
 typedef v8::Local<v8::FunctionTemplate> (*DomTemplateFunction)(v8::Isolate*, const DOMWrapperWorld&);
 typedef void (*TraceFunction)(Visitor*, ScriptWrappable*);
+typedef void (*TraceWrappersFunction)(WrapperVisitor*, ScriptWrappable*);
 typedef ActiveScriptWrappable* (*ToActiveScriptWrappableFunction)(v8::Local<v8::Object>);
 typedef void (*ResolveWrapperReachabilityFunction)(v8::Isolate*, ScriptWrappable*, const v8::Persistent<v8::Object>&);
 typedef void (*PreparePrototypeAndInterfaceObjectFunction)(v8::Local<v8::Context>, const DOMWrapperWorld&, v8::Local<v8::Object>, v8::Local<v8::Function>, v8::Local<v8::FunctionTemplate>);
@@ -139,6 +140,12 @@ struct WrapperTypeInfo {
         return traceFunction(visitor, scriptWrappable);
     }
 
+    void traceWrappers(WrapperVisitor* visitor, ScriptWrappable* scriptWrappable) const
+    {
+        ASSERT(traceWrappersFunction);
+        return traceWrappersFunction(visitor, scriptWrappable);
+    }
+
     void preparePrototypeAndInterfaceObject(v8::Local<v8::Context> context, const DOMWrapperWorld& world, v8::Local<v8::Object> prototypeObject, v8::Local<v8::Function> interfaceObject, v8::Local<v8::FunctionTemplate> interfaceTemplate) const
     {
         if (preparePrototypeAndInterfaceObjectFunction)
@@ -178,6 +185,7 @@ struct WrapperTypeInfo {
 
     DomTemplateFunction domTemplateFunction;
     const TraceFunction traceFunction;
+    const TraceWrappersFunction traceWrappersFunction;
     const ToActiveScriptWrappableFunction toActiveScriptWrappableFunction;
     const ResolveWrapperReachabilityFunction visitDOMWrapperFunction;
     PreparePrototypeAndInterfaceObjectFunction preparePrototypeAndInterfaceObjectFunction;

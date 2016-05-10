@@ -5,12 +5,10 @@
 #include "bindings/core/v8/ScriptWrappableVisitor.h"
 
 #include "bindings/core/v8/ActiveScriptWrappable.h"
-#include "bindings/core/v8/DOMDataStore.h"
+#include "bindings/core/v8/DOMWrapperWorld.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/WrapperTypeInfo.h"
-#include "core/dom/NodeRareData.h"
-#include "core/events/EventListenerMap.h"
-#include "core/events/EventTarget.h"
+#include "core/html/imports/HTMLImportsController.h"
 #include "platform/heap/HeapPage.h"
 
 namespace blink {
@@ -37,6 +35,8 @@ void ScriptWrappableVisitor::TraceEpilogue()
 void ScriptWrappableVisitor::TraceWrappersFrom(const std::vector<std::pair<void*, void*>>& internalFieldsOfPotentialWrappers)
 {
     ASSERT(m_tracingInProgress);
+    // TODO(hlopko): Visit the vector in the V8 instead of passing it over if
+    // there is no performance impact
     for (auto pair : internalFieldsOfPotentialWrappers) {
         traceWrappersFrom(pair);
     }
@@ -44,33 +44,35 @@ void ScriptWrappableVisitor::TraceWrappersFrom(const std::vector<std::pair<void*
 
 void ScriptWrappableVisitor::traceWrappersFrom(std::pair<void*, void*> internalFields)
 {
-    if (reinterpret_cast<WrapperTypeInfo*>(internalFields.first)->ginEmbedder != gin::GinEmbedder::kEmbedderBlink)
+    WrapperTypeInfo* wrapperTypeInfo = reinterpret_cast<WrapperTypeInfo*>(internalFields.first);
+    if (wrapperTypeInfo->ginEmbedder != gin::GinEmbedder::kEmbedderBlink)
         return;
 
     ScriptWrappable* scriptWrappable = reinterpret_cast<ScriptWrappable*>(internalFields.second);
-    ASSERT(scriptWrappable->wrapperTypeInfo()->wrapperClassId == WrapperTypeInfo::NodeClassId
-        || scriptWrappable->wrapperTypeInfo()->wrapperClassId == WrapperTypeInfo::ObjectClassId);
+    ASSERT(wrapperTypeInfo->wrapperClassId == WrapperTypeInfo::NodeClassId
+        || wrapperTypeInfo->wrapperClassId == WrapperTypeInfo::ObjectClassId);
 
-    traceWrappers(scriptWrappable);
+    wrapperTypeInfo->traceWrappers(this, scriptWrappable);
 }
 
-bool ScriptWrappableVisitor::isHeaderMarked(const void* garbageCollected) const
+bool ScriptWrappableVisitor::markWrapperHeader(const void* garbageCollected, const void* objectTopPointer) const
 {
-    return HeapObjectHeader::fromPayload(garbageCollected)->isWrapperHeaderMarked();
-}
+    HeapObjectHeader* header = HeapObjectHeader::fromPayload(objectTopPointer);
+    if (header->isWrapperHeaderMarked())
+        return false;
 
-void ScriptWrappableVisitor::markHeader(const void* garbageCollected) const
-{
-    HeapObjectHeader* header = HeapObjectHeader::fromPayload(garbageCollected);
     header->markWrapperHeader();
     addHeaderToUnmark(header);
+    return true;
 }
 
-void ScriptWrappableVisitor::markHeader(const ScriptWrappable* scriptWrappable) const
+bool ScriptWrappableVisitor::markWrapperHeader(const ScriptWrappable* scriptWrappable, const void* objectTopPointer) const
 {
-    markHeader(static_cast<const void*>(scriptWrappable));
+    if (!markWrapperHeader(objectTopPointer, objectTopPointer))
+        return false;
 
     markWrappersInAllWorlds(scriptWrappable, m_isolate);
+    return true;
 }
 
 void ScriptWrappableVisitor::addHeaderToUnmark(HeapObjectHeader* header) const
@@ -78,9 +80,14 @@ void ScriptWrappableVisitor::addHeaderToUnmark(HeapObjectHeader* header) const
     m_headersToUnmark.append(header);
 }
 
-void ScriptWrappableVisitor::markWrapper(const v8::Persistent<v8::Object>& handle, v8::Isolate* isolate)
+void ScriptWrappableVisitor::markWrapper(const v8::Persistent<v8::Object>* handle, v8::Isolate* isolate)
 {
-    handle.RegisterExternalReference(isolate);
+    handle->RegisterExternalReference(isolate);
+}
+
+void ScriptWrappableVisitor::markWrapper(const v8::Persistent<v8::Object>* handle) const
+{
+    markWrapper(handle, m_isolate);
 }
 
 void ScriptWrappableVisitor::markWrappersInAllWorlds(const ScriptWrappable* scriptWrappable, v8::Isolate* isolate)
@@ -88,17 +95,19 @@ void ScriptWrappableVisitor::markWrappersInAllWorlds(const ScriptWrappable* scri
     DOMWrapperWorld::markWrappersInAllWorlds(const_cast<ScriptWrappable*>(scriptWrappable), isolate);
 }
 
-void ScriptWrappableVisitor::traceWrappers(const ScriptWrappable* wrappable) const
+void ScriptWrappableVisitor::dispatchTraceWrappers(const ScriptWrappable* wrappable) const
 {
-    if (wrappable && !isHeaderMarked(wrappable)) {
-        markHeader(wrappable);
-        wrappable->traceWrappers(this);
-    }
+    wrappable->traceWrappers(this);
 }
 
-void ScriptWrappableVisitor::traceWrappers(const ScriptWrappable& wrappable) const
-{
-    traceWrappers(&wrappable);
-}
+#define DEFINE_DISPATCH_TRACE_WRAPPERS(className)                 \
+void ScriptWrappableVisitor::dispatchTraceWrappers(const className* traceable) const \
+{                                                                 \
+    traceable->traceWrappers(this);                               \
+}                                                                 \
+
+WRAPPER_VISITOR_SPECIAL_CLASSES(DEFINE_DISPATCH_TRACE_WRAPPERS);
+
+#undef DEFINE_DISPATCH_TRACE_WRAPPERS
 
 } // namespace blink

@@ -1014,6 +1014,8 @@ public:
 
     DECLARE_VIRTUAL_TRACE();
 
+    DECLARE_VIRTUAL_TRACE_WRAPPERS();
+
     bool hasSVGFilterElementsRequiringLayerUpdate() const { return m_layerUpdateSVGFilterElements.size(); }
 
     AtomicString convertLocalName(const AtomicString&);
