@@ -29,7 +29,6 @@
 #include "core/inspector/NetworkResourcesData.h"
 
 #include "core/dom/DOMImplementation.h"
-#include "core/fetch/MemoryCache.h"
 #include "core/fetch/Resource.h"
 #include "platform/SharedBuffer.h"
 #include "platform/network/ResourceResponse.h"
@@ -114,6 +113,11 @@ unsigned NetworkResourcesData::ResourceData::evictContent()
 {
     m_isContentEvicted = true;
     return removeContent();
+}
+
+void NetworkResourcesData::ResourceData::setResource(Resource* cachedResource)
+{
+    m_cachedResource = cachedResource;
 }
 
 size_t NetworkResourcesData::ResourceData::dataLength() const
@@ -259,7 +263,6 @@ void NetworkResourcesData::maybeDecodeDataToContent(const String& requestId)
 
 void NetworkResourcesData::addResource(const String& requestId, Resource* cachedResource)
 {
-    ASSERT(memoryCache()->contains(cachedResource));
     ResourceData* resourceData = resourceDataForRequestId(requestId);
     if (!resourceData)
         return;

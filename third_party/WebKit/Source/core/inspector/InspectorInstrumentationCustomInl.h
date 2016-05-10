@@ -42,7 +42,7 @@ CORE_EXPORT bool collectingHTMLParseErrors(Document*);
 CORE_EXPORT void canceledAfterReceivedResourceResponse(LocalFrame*, DocumentLoader*, unsigned long identifier, const ResourceResponse&);
 CORE_EXPORT void continueWithPolicyIgnore(LocalFrame*, DocumentLoader*, unsigned long identifier, const ResourceResponse&);
 CORE_EXPORT bool consoleAgentEnabled(ExecutionContext*);
-CORE_EXPORT void removedResourceFromMemoryCache(Resource*);
+CORE_EXPORT void willDestroyResource(Resource*);
 
 } // namespace InspectorInstrumentation
 

@@ -74,8 +74,10 @@ private:
     CSSStyleSheetResource(const ResourceRequest&, const ResourceLoaderOptions&, const String& charset);
 
     bool canUseSheet(MIMETypeCheck) const;
-    void removedFromMemoryCache() override;
     void checkNotify() override;
+    void willDestroyResourceInternal() override;
+
+    void setParsedStyleSheetCache(StyleSheetContents*);
 
     String m_decodedSheetText;
 

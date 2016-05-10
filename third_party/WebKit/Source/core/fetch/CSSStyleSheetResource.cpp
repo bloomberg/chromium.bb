@@ -58,12 +58,18 @@ CSSStyleSheetResource::~CSSStyleSheetResource()
 {
 }
 
-void CSSStyleSheetResource::removedFromMemoryCache()
+void CSSStyleSheetResource::willDestroyResourceInternal()
+{
+    setParsedStyleSheetCache(nullptr);
+}
+
+void CSSStyleSheetResource::setParsedStyleSheetCache(StyleSheetContents* newSheet)
 {
     if (m_parsedStyleSheetCache)
-        m_parsedStyleSheetCache->removedFromMemoryCache();
-    m_parsedStyleSheetCache.clear();
-    Resource::removedFromMemoryCache();
+        m_parsedStyleSheetCache->setReferencedFromResource(false);
+    m_parsedStyleSheetCache = newSheet;
+    if (m_parsedStyleSheetCache)
+        m_parsedStyleSheetCache->setReferencedFromResource(true);
 }
 
 DEFINE_TRACE(CSSStyleSheetResource)
@@ -121,9 +127,7 @@ void CSSStyleSheetResource::destroyDecodedDataIfPossible()
     if (!m_parsedStyleSheetCache)
         return;
 
-    m_parsedStyleSheetCache->removedFromMemoryCache();
-    m_parsedStyleSheetCache.clear();
-
+    setParsedStyleSheetCache(nullptr);
     setDecodedSize(0);
 }
 
@@ -150,13 +154,12 @@ StyleSheetContents* CSSStyleSheetResource::restoreParsedStyleSheet(const CSSPars
     if (!m_parsedStyleSheetCache)
         return nullptr;
     if (m_parsedStyleSheetCache->hasFailedOrCanceledSubresources()) {
-        m_parsedStyleSheetCache->removedFromMemoryCache();
-        m_parsedStyleSheetCache.clear();
+        setParsedStyleSheetCache(nullptr);
         return nullptr;
     }
 
     ASSERT(m_parsedStyleSheetCache->isCacheable());
-    ASSERT(m_parsedStyleSheetCache->isInMemoryCache());
+    ASSERT(m_parsedStyleSheetCache->isReferencedFromResource());
 
     // Contexts must be identical so we know we would get the same exact result if we parsed again.
     if (m_parsedStyleSheetCache->parserContext() != context)
@@ -171,18 +174,13 @@ void CSSStyleSheetResource::saveParsedStyleSheet(StyleSheetContents* sheet)
 {
     ASSERT(sheet && sheet->isCacheable());
 
-    if (m_parsedStyleSheetCache)
-        m_parsedStyleSheetCache->removedFromMemoryCache();
-
     if (!memoryCache()->contains(this)) {
         // This stylesheet resource did conflict with another resource and was
         // not added to the cache.
-        m_parsedStyleSheetCache = nullptr;
+        setParsedStyleSheetCache(nullptr);
         return;
     }
-    m_parsedStyleSheetCache = sheet;
-    m_parsedStyleSheetCache->addedToMemoryCache();
-
+    setParsedStyleSheetCache(sheet);
     setDecodedSize(m_parsedStyleSheetCache->estimatedSizeInBytes());
 }
 

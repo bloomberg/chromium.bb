@@ -121,7 +121,7 @@ public:
         void setBuffer(PassRefPtr<SharedBuffer> buffer) { m_buffer = buffer; }
 
         Resource* cachedResource() const { return m_cachedResource.get(); }
-        void setResource(Resource* cachedResource) { m_cachedResource = cachedResource; }
+        void setResource(Resource*);
 
         XHRReplayData* xhrReplayData() const { return m_xhrReplayData.get(); }
         void setXHRReplayData(XHRReplayData* xhrReplayData) { m_xhrReplayData = xhrReplayData; }
@@ -153,7 +153,7 @@ public:
         OwnPtr<TextResourceDecoder> m_decoder;
 
         RefPtr<SharedBuffer> m_buffer;
-        Member<Resource> m_cachedResource;
+        WeakMember<Resource> m_cachedResource;
         RefPtr<BlobDataHandle> m_downloadedFileBlob;
     };
 

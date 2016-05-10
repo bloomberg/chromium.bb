@@ -62,7 +62,7 @@ StyleSheetContents::StyleSheetContents(StyleRuleImport* ownerRule, const String&
     , m_hasSyntacticallyValidCSSHeader(true)
     , m_didLoadErrorOccur(false)
     , m_isMutable(false)
-    , m_isInMemoryCache(false)
+    , m_isReferencedFromResource(false)
     , m_hasFontFaceRule(false)
     , m_hasMediaQueries(false)
     , m_hasSingleOwnerDocument(true)
@@ -81,7 +81,7 @@ StyleSheetContents::StyleSheetContents(const StyleSheetContents& o)
     , m_hasSyntacticallyValidCSSHeader(o.m_hasSyntacticallyValidCSSHeader)
     , m_didLoadErrorOccur(false)
     , m_isMutable(false)
-    , m_isInMemoryCache(false)
+    , m_isReferencedFromResource(false)
     , m_hasFontFaceRule(o.m_hasFontFaceRule)
     , m_hasMediaQueries(o.m_hasMediaQueries)
     , m_hasSingleOwnerDocument(true)
@@ -572,17 +572,11 @@ void StyleSheetContents::removeSheetFromCache(Document* document)
     document->styleEngine().removeSheet(this);
 }
 
-void StyleSheetContents::addedToMemoryCache()
+void StyleSheetContents::setReferencedFromResource(bool referenced)
 {
-    ASSERT(!m_isInMemoryCache);
+    ASSERT(referenced != m_isReferencedFromResource);
     ASSERT(isCacheable());
-    m_isInMemoryCache = true;
-}
-
-void StyleSheetContents::removedFromMemoryCache()
-{
-    ASSERT(isCacheable());
-    m_isInMemoryCache = false;
+    m_isReferencedFromResource = referenced;
 }
 
 RuleSet& StyleSheetContents::ensureRuleSet(const MediaQueryEvaluator& medium, AddRuleFlags addRuleFlags)

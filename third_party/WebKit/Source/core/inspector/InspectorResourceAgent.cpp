@@ -569,12 +569,11 @@ void InspectorResourceAgent::didReceiveResourceResponse(LocalFrame* frame, unsig
     if (type == InspectorPageAgent::DocumentResource && loader && loader->substituteData().isValid())
         return;
 
-    // It's only safe to reference a Resource in m_resourcesData if it's in the
-    // cache at this point. Resources are added to NetworkResourcesData here
-    // and removed in removedResourceFromMemoryCache(), so if the Resource isn't
-    // in the cache here, NetworkResourceData's strong reference to the
-    // Resource will keep it alive indefinitely.
-    if (cachedResource && memoryCache()->contains(cachedResource))
+    // Resources are added to NetworkResourcesData as a WeakMember here and
+    // removed in willDestroyResource() called in the prefinalizer of Resource.
+    // Because NetworkResourceData retains weak references only, it
+    // doesn't affect Resource lifetime.
+    if (cachedResource)
         m_resourcesData->addResource(requestId, cachedResource);
     String frameId = IdentifiersFactory::frameId(frame);
     String loaderId = loader ? IdentifiersFactory::loaderId(loader) : "";
@@ -778,7 +777,7 @@ void InspectorResourceAgent::didFinishEventSourceRequest(ThreadableLoaderClient*
     clearPendingRequestData();
 }
 
-void InspectorResourceAgent::removedResourceFromMemoryCache(Resource* cachedResource)
+void InspectorResourceAgent::willDestroyResource(Resource* cachedResource)
 {
     // Mark loaded resources or resources without the buffer as loaded.
     if (cachedResource->isLoaded() || !cachedResource->resourceBuffer()) {

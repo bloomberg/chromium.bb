@@ -141,9 +141,8 @@ public:
 
     void removeSheetFromCache(Document*);
 
-    bool isInMemoryCache() const { return m_isInMemoryCache; }
-    void addedToMemoryCache();
-    void removedFromMemoryCache();
+    bool isReferencedFromResource() const { return m_isReferencedFromResource; }
+    void setReferencedFromResource(bool);
 
     void setHasMediaQueries();
     bool hasMediaQueries() const { return m_hasMediaQueries; }
@@ -181,7 +180,7 @@ private:
     bool m_hasSyntacticallyValidCSSHeader : 1;
     bool m_didLoadErrorOccur : 1;
     bool m_isMutable : 1;
-    bool m_isInMemoryCache : 1;
+    bool m_isReferencedFromResource : 1;
     bool m_hasFontFaceRule : 1;
     bool m_hasMediaQueries : 1;
     bool m_hasSingleOwnerDocument : 1;

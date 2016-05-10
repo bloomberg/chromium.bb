@@ -110,7 +110,7 @@ public:
     void willDispatchEventSourceEvent(ThreadableLoaderClient*, const AtomicString& eventName, const AtomicString& eventId, const String& data);
     void didFinishEventSourceRequest(ThreadableLoaderClient*);
 
-    void removedResourceFromMemoryCache(Resource*);
+    void willDestroyResource(Resource*);
 
     void applyUserAgentOverride(String* userAgent);
 

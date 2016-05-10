@@ -72,7 +72,6 @@ DEFINE_TRACE(MemoryCacheEntry)
 
 void MemoryCacheEntry::dispose()
 {
-    m_resource->removedFromMemoryCache();
     m_resource.clear();
 }
 

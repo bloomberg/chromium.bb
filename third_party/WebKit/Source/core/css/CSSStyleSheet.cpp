@@ -138,7 +138,7 @@ CSSStyleSheet::~CSSStyleSheet()
 void CSSStyleSheet::willMutateRules()
 {
     // If we are the only client it is safe to mutate.
-    if (m_contents->clientSize() <= 1 && !m_contents->isInMemoryCache()) {
+    if (m_contents->clientSize() <= 1 && !m_contents->isReferencedFromResource()) {
         m_contents->clearRuleSet();
         if (Document* document = ownerDocument())
             m_contents->removeSheetFromCache(document);

@@ -23,6 +23,7 @@
 #include "core/fetch/ResourceFetcher.h"
 #include "core/testing/DummyPageHolder.h"
 #include "platform/heap/Handle.h"
+#include "platform/heap/Heap.h"
 #include "platform/network/ResourceRequest.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
@@ -144,10 +145,10 @@ TEST_F(CSSStyleSheetResourceTest, DuplicateResourceNotCached)
 
     // Verify that the cache will have a mapping for |imageResource| at |url|.
     // The underlying |contents| for the stylesheet resource must have a
-    // matching cache status.
+    // matching reference status.
     EXPECT_TRUE(memoryCache()->contains(imageResource));
     EXPECT_FALSE(memoryCache()->contains(cssResource));
-    EXPECT_FALSE(contents->isInMemoryCache());
+    EXPECT_FALSE(contents->isReferencedFromResource());
     EXPECT_FALSE(cssResource->restoreParsedStyleSheet(parserContext));
 }
 

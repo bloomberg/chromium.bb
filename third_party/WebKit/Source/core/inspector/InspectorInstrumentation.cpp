@@ -186,14 +186,14 @@ void continueWithPolicyIgnore(LocalFrame* frame, DocumentLoader* loader, unsigne
     didReceiveResourceResponseButCanceled(frame, loader, identifier, r);
 }
 
-void removedResourceFromMemoryCache(Resource* cachedResource)
+void willDestroyResource(Resource* cachedResource)
 {
     ASSERT(isMainThread());
     for (InstrumentingAgents* instrumentingAgents: instrumentingAgentsSet()) {
         if (!instrumentingAgents->hasInspectorResourceAgents())
             continue;
         for (InspectorResourceAgent* resourceAgent : instrumentingAgents->inspectorResourceAgents())
-            resourceAgent->removedResourceFromMemoryCache(cachedResource);
+            resourceAgent->willDestroyResource(cachedResource);
     }
 }
 
