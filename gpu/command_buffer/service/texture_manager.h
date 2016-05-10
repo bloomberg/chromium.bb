@@ -660,7 +660,9 @@ struct DecoderTextureState {
             workarounds.force_cube_map_positive_x_allocation),
         force_cube_complete(workarounds.force_cube_complete),
         unpack_alignment_workaround_with_unpack_buffer(
-            workarounds.unpack_alignment_workaround_with_unpack_buffer) {}
+            workarounds.unpack_alignment_workaround_with_unpack_buffer),
+        unpack_overlapping_rows_separately_unpack_buffer(
+            workarounds.unpack_overlapping_rows_separately_unpack_buffer) {}
 
   // This indicates all the following texSubImage*D calls that are part of the
   // failed texImage*D call should be ignored. The client calls have a lock
@@ -676,6 +678,7 @@ struct DecoderTextureState {
   bool force_cube_map_positive_x_allocation;
   bool force_cube_complete;
   bool unpack_alignment_workaround_with_unpack_buffer;
+  bool unpack_overlapping_rows_separately_unpack_buffer;
 };
 
 // This class keeps track of the textures and their sizes so we can do NPOT and
@@ -1081,10 +1084,25 @@ class GPU_EXPORT TextureManager : public base::trace_event::MemoryDumpProvider {
       TextureRef* texture_ref,
       const DoTexImageArguments& args);
 
+  // Reserve memory for the texture and set its attributes so it can be filled
+  // with TexSubImage. The image contents are undefined after this function,
+  // so make sure it's subsequently filled in its entirety.
+  void ReserveTexImageToBeFilled(DecoderTextureState* texture_state,
+                                 ContextState* state,
+                                 DecoderFramebufferState* framebuffer_state,
+                                 const char* function_name,
+                                 TextureRef* texture_ref,
+                                 const DoTexImageArguments& args);
+
   void DoTexSubImageWithAlignmentWorkaround(
       DecoderTextureState* texture_state,
       ContextState* state,
       const DoTexSubImageArguments& args);
+
+  void DoTexSubImageRowByRowWorkaround(DecoderTextureState* texture_state,
+                                       ContextState* state,
+                                       const DoTexSubImageArguments& args,
+                                       const PixelStoreParams& unpack_params);
 
   void StartTracking(TextureRef* texture);
   void StopTracking(TextureRef* texture);

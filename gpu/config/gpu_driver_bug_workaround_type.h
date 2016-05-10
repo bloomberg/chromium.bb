@@ -9,6 +9,9 @@
 
 #include "gpu/gpu_export.h"
 
+// Clang format is toggled off here so that newlines can be kept consistent
+// throughout the table.
+// clang-format off
 #define GPU_DRIVER_BUG_WORKAROUNDS(GPU_OP)                   \
   GPU_OP(AVDA_DONT_COPY_PICTURES,                            \
          avda_dont_copy_pictures)                            \
@@ -144,6 +147,8 @@
          unfold_short_circuit_as_ternary_operation)          \
   GPU_OP(UNPACK_ALIGNMENT_WORKAROUND_WITH_UNPACK_BUFFER,     \
          unpack_alignment_workaround_with_unpack_buffer)     \
+  GPU_OP(UNPACK_OVERLAPPING_ROWS_SEPARATELY_UNPACK_BUFFER,   \
+         unpack_overlapping_rows_separately_unpack_buffer)   \
   GPU_OP(IOSURFACE_READBACK_WORKAROUND,                      \
          iosurface_readback_workaround)                      \
   GPU_OP(UNROLL_FOR_LOOP_WITH_SAMPLER_ARRAY_INDEX,           \
@@ -164,6 +169,7 @@
          wake_up_gpu_before_drawing)                         \
   GPU_OP(USE_TESTING_GPU_DRIVER_WORKAROUND,                  \
          use_gpu_driver_workaround_for_testing)              \
+// clang-format on
 
 namespace gpu {
 

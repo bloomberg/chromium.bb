@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "8.64",
+  "version": "8.65",
   "entries": [
     {
       "id": 1,
@@ -1992,6 +1992,15 @@ LONG_STRING_CONST(
       "device_id": ["0x68b8"],
       "features": [
         "disable_webgl_multisampling_color_mask_usage"
+      ]
+    },
+    {
+      "id": 165,
+      "cr_bugs": [596774],
+      "description": "Unpacking overlapping rows from unpack buffers is unstable on NVIDIA GL driver",
+      "gl_vendor": "NVIDIA.*",
+      "features": [
+        "unpack_overlapping_rows_separately_unpack_buffer"
       ]
     }
   ]

@@ -406,8 +406,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux'], bug=483282)
     self.Fail('conformance2/rendering/draw-buffers.html',
         ['linux'], bug=483282)
-    self.Fail('conformance2/textures/misc/tex-unpack-params.html',
-        ['linux'], bug=483282)
     # We want to mark this Flaky for all of Linux however we currently skip
     # all the tests on Intel. Tag this with AMD and Nvidia to avoid an
     # expectation conflict that would make this test run on Intel.

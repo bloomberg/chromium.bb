@@ -2394,20 +2394,42 @@ void TextureManager::ValidateAndDoTexImage(
     }
   }
 
+  if (texture_state->unpack_overlapping_rows_separately_unpack_buffer &&
+      buffer) {
+    ContextState::Dimension dimension =
+        (args.command_type == DoTexImageArguments::kTexImage3D)
+            ? ContextState::k3D
+            : ContextState::k2D;
+    const PixelStoreParams unpack_params(state->GetUnpackParams(dimension));
+    if (unpack_params.row_length != 0 &&
+        unpack_params.row_length < args.width) {
+      // The rows overlap in unpack memory. Upload the texture row by row to
+      // work around driver bug.
+
+      ReserveTexImageToBeFilled(texture_state, state, framebuffer_state,
+                                function_name, texture_ref, args);
+
+      DoTexSubImageArguments sub_args = {
+          args.target, args.level, 0, 0, 0, args.width, args.height, args.depth,
+          args.format, args.type, args.pixels, args.pixels_size, args.padding,
+          args.command_type == DoTexImageArguments::kTexImage3D
+              ? DoTexSubImageArguments::kTexSubImage3D
+              : DoTexSubImageArguments::kTexSubImage2D};
+      DoTexSubImageRowByRowWorkaround(texture_state, state, sub_args,
+                                      unpack_params);
+
+      SetLevelCleared(texture_ref, args.target, args.level, true);
+      return;
+    }
+  }
+
   if (texture_state->unpack_alignment_workaround_with_unpack_buffer && buffer) {
     uint32_t buffer_size = static_cast<uint32_t>(buffer->size());
     if (buffer_size - args.pixels_size - ToGLuint(args.pixels) < args.padding) {
       // In ValidateTexImage(), we already made sure buffer size is no less
       // than offset + pixels_size.
-      glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
-      state->SetBoundBuffer(GL_PIXEL_UNPACK_BUFFER, nullptr);
-      DoTexImageArguments new_args = args;
-      new_args.pixels = nullptr;
-      // pixels_size might be incorrect, but it's not used in this case.
-      DoTexImage(texture_state, state, framebuffer_state, function_name,
-                 texture_ref, new_args);
-      glBindBuffer(GL_PIXEL_UNPACK_BUFFER, buffer->service_id());
-      state->SetBoundBuffer(GL_PIXEL_UNPACK_BUFFER, buffer);
+      ReserveTexImageToBeFilled(texture_state, state, framebuffer_state,
+                                function_name, texture_ref, args);
 
       DoTexSubImageArguments sub_args = {
           args.target, args.level, 0, 0, 0, args.width, args.height, args.depth,
@@ -2423,6 +2445,25 @@ void TextureManager::ValidateAndDoTexImage(
   }
   DoTexImage(texture_state, state, framebuffer_state,
              function_name, texture_ref, args);
+}
+
+void TextureManager::ReserveTexImageToBeFilled(
+    DecoderTextureState* texture_state,
+    ContextState* state,
+    DecoderFramebufferState* framebuffer_state,
+    const char* function_name,
+    TextureRef* texture_ref,
+    const DoTexImageArguments& args) {
+  Buffer* buffer = state->bound_pixel_unpack_buffer.get();
+  glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+  state->SetBoundBuffer(GL_PIXEL_UNPACK_BUFFER, nullptr);
+  DoTexImageArguments new_args = args;
+  new_args.pixels = nullptr;
+  // pixels_size might be incorrect, but it's not used in this case.
+  DoTexImage(texture_state, state, framebuffer_state, function_name,
+             texture_ref, new_args);
+  glBindBuffer(GL_PIXEL_UNPACK_BUFFER, buffer->service_id());
+  state->SetBoundBuffer(GL_PIXEL_UNPACK_BUFFER, buffer);
 }
 
 bool TextureManager::ValidateTexSubImage(ContextState* state,
@@ -2572,6 +2613,24 @@ void TextureManager::ValidateAndDoTexSubImage(
   }
 
   Buffer* buffer = state->bound_pixel_unpack_buffer.get();
+
+  if (texture_state->unpack_overlapping_rows_separately_unpack_buffer &&
+      buffer) {
+    ContextState::Dimension dimension =
+        (args.command_type == DoTexSubImageArguments::kTexSubImage3D)
+            ? ContextState::k3D
+            : ContextState::k2D;
+    const PixelStoreParams unpack_params(state->GetUnpackParams(dimension));
+    if (unpack_params.row_length != 0 &&
+        unpack_params.row_length < args.width) {
+      // The rows overlap in unpack memory. Upload the texture row by row to
+      // work around driver bug.
+      DoTexSubImageRowByRowWorkaround(texture_state, state, args,
+                                      unpack_params);
+      return;
+    }
+  }
+
   if (texture_state->unpack_alignment_workaround_with_unpack_buffer && buffer) {
     uint32_t buffer_size = static_cast<uint32_t>(buffer->size());
     if (buffer_size - args.pixels_size - ToGLuint(args.pixels) < args.padding) {
@@ -2717,6 +2776,58 @@ void TextureManager::DoTexSubImageWithAlignmentWorkaround(
     }
   }
   DCHECK_EQ(ToGLuint(args.pixels) + args.pixels_size, offset);
+}
+
+void TextureManager::DoTexSubImageRowByRowWorkaround(
+    DecoderTextureState* texture_state,
+    ContextState* state,
+    const DoTexSubImageArguments& args,
+    const PixelStoreParams& unpack_params) {
+  glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+  glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+  DCHECK_EQ(0, state->unpack_skip_pixels);
+  DCHECK_EQ(0, state->unpack_skip_rows);
+  DCHECK_EQ(0, state->unpack_skip_images);
+
+  GLenum format = AdjustTexFormat(args.format);
+
+  GLsizei row_bytes = unpack_params.row_length *
+                      GLES2Util::ComputeImageGroupSize(format, args.type);
+  GLsizei alignment_diff = row_bytes % unpack_params.alignment;
+  if (alignment_diff != 0) {
+    row_bytes += unpack_params.alignment - alignment_diff;
+  }
+  DCHECK_EQ(0, row_bytes % unpack_params.alignment);
+  if (args.command_type == DoTexSubImageArguments::kTexSubImage3D) {
+    GLsizei image_height = args.height;
+    if (unpack_params.image_height != 0) {
+      image_height = unpack_params.image_height;
+    }
+    GLsizei image_bytes = row_bytes * image_height;
+    for (GLsizei image = 0; image < args.depth; ++image) {
+      GLsizei image_byte_offset = image * image_bytes;
+      for (GLsizei row = 0; row < args.height; ++row) {
+        GLsizei byte_offset = image_byte_offset + row * row_bytes;
+        const GLubyte* row_pixels =
+            reinterpret_cast<const GLubyte*>(args.pixels) + byte_offset;
+        glTexSubImage3D(args.target, args.level, args.xoffset,
+                        row + args.yoffset, image + args.zoffset, args.width, 1,
+                        1, format, args.type, row_pixels);
+      }
+    }
+  } else {
+    for (GLsizei row = 0; row < args.height; ++row) {
+      GLsizei byte_offset = row * row_bytes;
+      const GLubyte* row_pixels =
+          reinterpret_cast<const GLubyte*>(args.pixels) + byte_offset;
+      glTexSubImage2D(args.target, args.level, args.xoffset, row + args.yoffset,
+                      args.width, 1, format, args.type, row_pixels);
+    }
+  }
+
+  // Restore unpack state
+  glPixelStorei(GL_UNPACK_ALIGNMENT, unpack_params.alignment);
+  glPixelStorei(GL_UNPACK_ROW_LENGTH, unpack_params.row_length);
 }
 
 GLenum TextureManager::AdjustTexInternalFormat(GLenum format) const {
