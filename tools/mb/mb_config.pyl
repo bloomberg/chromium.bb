@@ -204,6 +204,7 @@
       'MD Top Chrome Linux material': 'gn_debug_bot',
       'LTO Linux Perf': 'gn_official_goma_lto',
       'Libfuzzer Upload Linux ASan': 'gn_release_libfuzzer_asan',
+      'Libfuzzer Upload Linux ASan Debug': 'gn_debug_libfuzzer_asan',
       'Libfuzzer Upload Linux MSan': 'gn_release_libfuzzer_msan',
       'Libfuzzer Upload Linux UBSan': 'gn_release_libfuzzer_ubsan',
       'Linux ARM': 'swarming_gn_release_bot_arm',
@@ -1088,6 +1089,11 @@
 
     'gn_debug_bot_minimal_symbols_x86': [
       'gn', 'debug_bot_minimal_symbols', 'x86',
+    ],
+
+    'gn_debug_libfuzzer_asan': [
+      'gn', 'debug', 'libfuzzer', 'asan', 'proprietary_codecs', 'pdf_xfa',
+      'disable_nacl',
     ],
 
     'gn_debug_static_bot': [
