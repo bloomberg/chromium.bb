@@ -95,7 +95,11 @@ def _LoadToolchainEnv(cpu, sdk_dir):
     for k in env:
       entries = [os.path.join(*([os.path.join(sdk_dir, 'bin')] + e))
                  for e in env[k]]
-      env[k] = os.pathsep.join(entries)
+      # clang-cl wants INCLUDE to be ;-separated even on non-Windows,
+      # lld-link wants LIB to be ;-separated even on non-Windows.  Path gets :.
+      # The separator for INCLUDE here must match the one used in main() below.
+      sep = os.pathsep if k == 'PATH' else ';'
+      env[k] = sep.join(entries)
     # PATH is a bit of a special case, it's in addition to the current PATH.
     env['PATH'] = env['PATH'] + os.pathsep + os.environ['PATH']
     # Augment with the current env to pick up TEMP and friends.
@@ -198,6 +202,8 @@ def main():
         if os.path.exists(os.path.join(path, 'cl.exe')):
           vc_bin_dir = os.path.realpath(path)
           break
+      # The separator for INCLUDE here must match the one used in
+      # _LoadToolchainEnv() above.
       include = ' '.join([include_prefix + p
                           for p in env['INCLUDE'].split(';')])
 
