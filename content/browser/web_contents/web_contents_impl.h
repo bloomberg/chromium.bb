@@ -308,7 +308,7 @@ class CONTENT_EXPORT WebContentsImpl
   void WasShown() override;
   void WasHidden() override;
   bool NeedToFireBeforeUnload() override;
-  void DispatchBeforeUnload(bool for_cross_site_transition) override;
+  void DispatchBeforeUnload() override;
   void AttachToOuterWebContentsFrame(
       WebContents* outer_web_contents,
       RenderFrameHost* outer_contents_frame) override;

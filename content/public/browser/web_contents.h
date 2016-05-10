@@ -401,13 +401,9 @@ class WebContents : public PageNavigator,
   // Runs the beforeunload handler for the main frame. See also ClosePage and
   // SwapOut in RenderViewHost, which run the unload handler.
   //
-  // |for_cross_site_transition| indicates whether this call is for the current
-  // frame during a cross-process navigation. False means we're closing the
-  // entire tab.
-  //
   // TODO(creis): We should run the beforeunload handler for every frame that
   // has one.
-  virtual void DispatchBeforeUnload(bool for_cross_site_transition) = 0;
+  virtual void DispatchBeforeUnload() = 0;
 
   // Attaches this inner WebContents to its container frame
   // |outer_contents_frame| in |outer_web_contents|.
