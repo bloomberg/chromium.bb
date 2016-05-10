@@ -778,19 +778,14 @@ void SpellChecker::respondToChangedSelection(const VisibleSelection& oldSelectio
     bool isContinuousGrammarCheckingEnabled = isContinuousSpellCheckingEnabled;
     if (isContinuousSpellCheckingEnabled) {
         VisibleSelection newAdjacentWords;
-        VisibleSelection newSelectedSentence;
         bool caretBrowsing = frame().settings() && frame().settings()->caretBrowsingEnabled();
         const VisibleSelection newSelection = frame().selection().selection();
         if (isSelectionInTextFormControl(newSelection)) {
             Position newStart = newSelection.start();
             newAdjacentWords.setWithoutValidation(HTMLTextFormControlElement::startOfWord(newStart), HTMLTextFormControlElement::endOfWord(newStart));
-            if (isContinuousGrammarCheckingEnabled)
-                newSelectedSentence.setWithoutValidation(HTMLTextFormControlElement::startOfSentence(newStart), HTMLTextFormControlElement::endOfSentence(newStart));
         } else if (newSelection.isContentEditable() || caretBrowsing) {
             VisiblePosition newStart(newSelection.visibleStart());
             newAdjacentWords = VisibleSelection(startOfWord(newStart, LeftWordIfOnBoundary), endOfWord(newStart, RightWordIfOnBoundary));
-            if (isContinuousGrammarCheckingEnabled)
-                newSelectedSentence = VisibleSelection(startOfSentence(newStart), endOfSentence(newStart));
         }
 
         // Don't check spelling and grammar if the change of selection is triggered by spelling correction itself.
