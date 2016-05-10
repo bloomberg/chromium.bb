@@ -66,6 +66,10 @@ _VERSION_SPECIFIC_FILTER['HEAD'] = [
     # https://code.google.com/p/chromedriver/issues/detail?id=992
     'ChromeDownloadDirTest.testDownloadDirectoryOverridesExistingPreferences',
 ]
+_VERSION_SPECIFIC_FILTER['49'] = [
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1302
+    'ChromeDriverTest.testShadowDomStaleReference',
+]
 
 _OS_SPECIFIC_FILTER = {}
 _OS_SPECIFIC_FILTER['win'] = [
@@ -77,13 +81,8 @@ _OS_SPECIFIC_FILTER['win'] = [
 _OS_SPECIFIC_FILTER['linux'] = [
     # Xvfb doesn't support maximization.
     'ChromeDriverTest.testWindowMaximize',
-    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1302
-    'ChromeDriverTest.testShadowDomStaleReference',
 ]
-_OS_SPECIFIC_FILTER['mac'] = [
-    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1302
-    'ChromeDriverTest.testShadowDomStaleReference',
-]
+_OS_SPECIFIC_FILTER['mac'] = []
 
 _DESKTOP_NEGATIVE_FILTER = [
     # Desktop doesn't support touch (without --touch-events).
