@@ -25,6 +25,9 @@ class FakeProfileOAuth2TokenServiceIOSDelegate
       OAuth2AccessTokenConsumer* consumer) override;
 
   bool RefreshTokenIsAvailable(const std::string& account_id) const override;
+  bool RefreshTokenHasError(const std::string& account_id) const override;
+  void UpdateAuthError(const std::string& account_id,
+                       const GoogleServiceAuthError& error) override;
 
   std::vector<std::string> GetAccounts() override;
   void RevokeAllCredentials() override;
@@ -49,6 +52,8 @@ class FakeProfileOAuth2TokenServiceIOSDelegate
 
   // Maps account ids to their refresh token strings.
   std::map<std::string, std::string> refresh_tokens_;
+  // Maps account ids to their auth errors.
+  std::map<std::string, GoogleServiceAuthError> auth_errors_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeProfileOAuth2TokenServiceIOSDelegate);
 };

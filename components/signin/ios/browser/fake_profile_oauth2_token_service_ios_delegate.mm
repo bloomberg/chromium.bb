@@ -38,6 +38,21 @@ bool FakeProfileOAuth2TokenServiceIOSDelegate::RefreshTokenIsAvailable(
   return !GetRefreshToken(account_id).empty();
 }
 
+bool FakeProfileOAuth2TokenServiceIOSDelegate::RefreshTokenHasError(
+    const std::string& account_id) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  auto it = auth_errors_.find(account_id);
+  return it != auth_errors_.end() && IsError(it->second);
+}
+
+void FakeProfileOAuth2TokenServiceIOSDelegate::UpdateAuthError(
+    const std::string& account_id,
+    const GoogleServiceAuthError& error) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  auth_errors_.erase(account_id);
+  auth_errors_.emplace(account_id, error);
+}
+
 std::string FakeProfileOAuth2TokenServiceIOSDelegate::GetRefreshToken(
     const std::string& account_id) const {
   std::map<std::string, std::string>::const_iterator it =
@@ -101,9 +116,12 @@ void FakeProfileOAuth2TokenServiceIOSDelegate::IssueRefreshTokenForUser(
   ScopedBatchChange batch(this);
   if (token.empty()) {
     refresh_tokens_.erase(account_id);
+    auth_errors_.erase(account_id);
     FireRefreshTokenRevoked(account_id);
   } else {
     refresh_tokens_[account_id] = token;
+    auth_errors_.emplace(account_id,
+                         GoogleServiceAuthError(GoogleServiceAuthError::NONE));
     FireRefreshTokenAvailable(account_id);
   }
 }
