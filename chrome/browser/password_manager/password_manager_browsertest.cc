@@ -3015,4 +3015,27 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
   EXPECT_TRUE(form.skip_zero_click);
 }
 
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase, ReattachWebContents) {
+  auto detached_web_contents = base::WrapUnique(content::WebContents::Create(
+      content::WebContents::CreateParams(WebContents()->GetBrowserContext())));
+  NavigationObserver observer(detached_web_contents.get());
+  detached_web_contents->GetController().LoadURL(
+      embedded_test_server()->GetURL("/password/multi_frames.html"),
+      content::Referrer(), ::ui::PAGE_TRANSITION_AUTO_TOPLEVEL, std::string());
+  observer.Wait();
+  // Ensure that there is at least one more frame created than just the main
+  // frame.
+  EXPECT_LT(1u, detached_web_contents->GetAllFrames().size());
+
+  auto tab_strip_model = browser()->tab_strip_model();
+  // Check that the autofill and password manager driver factories are notified
+  // about all frames, not just the main one. The factories should receive
+  // messages for non-main frames, in particular
+  // AutofillHostMsg_PasswordFormsParsed. If that were the first time the
+  // factories hear about such frames, this would crash.
+  tab_strip_model->AddWebContents(detached_web_contents.release(), -1,
+                                  ::ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
+                                  TabStripModel::ADD_ACTIVE);
+}
+
 }  // namespace password_manager

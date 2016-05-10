@@ -4,6 +4,8 @@
 
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 
+#include <vector>
+
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
@@ -22,6 +24,8 @@ const char ContentAutofillDriverFactory::
     kContentAutofillDriverFactoryWebContentsUserDataKey[] =
         "web_contents_autofill_driver_factory";
 
+ContentAutofillDriverFactory::~ContentAutofillDriverFactory() {}
+
 // static
 void ContentAutofillDriverFactory::CreateForWebContentsAndDelegate(
     content::WebContents* contents,
@@ -31,10 +35,17 @@ void ContentAutofillDriverFactory::CreateForWebContentsAndDelegate(
   if (FromWebContents(contents))
     return;
 
-  contents->SetUserData(
-      kContentAutofillDriverFactoryWebContentsUserDataKey,
-      new ContentAutofillDriverFactory(contents, client, app_locale,
-                                       enable_download_manager));
+  auto new_factory = base::WrapUnique(new ContentAutofillDriverFactory(
+      contents, client, app_locale, enable_download_manager));
+  const std::vector<content::RenderFrameHost*> frames =
+      contents->GetAllFrames();
+  for (content::RenderFrameHost* frame : frames) {
+    if (frame->IsRenderFrameLive())
+      new_factory->RenderFrameCreated(frame);
+  }
+
+  contents->SetUserData(kContentAutofillDriverFactoryWebContentsUserDataKey,
+                        new_factory.release());
 }
 
 // static
@@ -52,15 +63,7 @@ ContentAutofillDriverFactory::ContentAutofillDriverFactory(
     : content::WebContentsObserver(web_contents),
       client_(client),
       app_locale_(app_locale),
-      enable_download_manager_(enable_download_manager) {
-  content::RenderFrameHost* main_frame = web_contents->GetMainFrame();
-  if (main_frame->IsRenderFrameLive()) {
-    frame_driver_map_[main_frame] = base::WrapUnique(new ContentAutofillDriver(
-        main_frame, client_, app_locale_, enable_download_manager_));
-  }
-}
-
-ContentAutofillDriverFactory::~ContentAutofillDriverFactory() {}
+      enable_download_manager_(enable_download_manager) {}
 
 ContentAutofillDriver* ContentAutofillDriverFactory::DriverForFrame(
     content::RenderFrameHost* render_frame_host) {

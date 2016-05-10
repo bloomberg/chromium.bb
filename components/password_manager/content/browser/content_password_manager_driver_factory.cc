@@ -5,6 +5,7 @@
 #include "components/password_manager/content/browser/content_password_manager_driver_factory.h"
 
 #include <utility>
+#include <vector>
 
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
@@ -41,10 +42,18 @@ void ContentPasswordManagerDriverFactory::CreateForWebContents(
   if (FromWebContents(web_contents))
     return;
 
+  auto new_factory = base::WrapUnique(new ContentPasswordManagerDriverFactory(
+      web_contents, password_client, autofill_client));
+  const std::vector<content::RenderFrameHost*> frames =
+      web_contents->GetAllFrames();
+  for (content::RenderFrameHost* frame : frames) {
+    if (frame->IsRenderFrameLive())
+      new_factory->RenderFrameCreated(frame);
+  }
+
   web_contents->SetUserData(
       kContentPasswordManagerDriverFactoryWebContentsUserDataKey,
-      new ContentPasswordManagerDriverFactory(web_contents, password_client,
-                                              autofill_client));
+      new_factory.release());
 }
 
 ContentPasswordManagerDriverFactory::ContentPasswordManagerDriverFactory(
@@ -53,14 +62,7 @@ ContentPasswordManagerDriverFactory::ContentPasswordManagerDriverFactory(
     autofill::AutofillClient* autofill_client)
     : content::WebContentsObserver(web_contents),
       password_client_(password_client),
-      autofill_client_(autofill_client) {
-  content::RenderFrameHost* main_frame = web_contents->GetMainFrame();
-  if (main_frame->IsRenderFrameLive()) {
-    frame_driver_map_[main_frame] =
-        base::WrapUnique(new ContentPasswordManagerDriver(
-            main_frame, password_client_, autofill_client_));
-  }
-}
+      autofill_client_(autofill_client) {}
 
 ContentPasswordManagerDriverFactory::~ContentPasswordManagerDriverFactory() {}
 
