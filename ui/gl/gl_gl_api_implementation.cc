@@ -106,6 +106,20 @@ static inline GLenum GetTexInternalFormat(GLenum internal_format,
     }
   }
 
+  if (gfx::g_version_info->IsAtLeastGL(2, 1) ||
+      gfx::g_version_info->IsAtLeastGLES(3, 0)) {
+    switch (internal_format) {
+      case GL_SRGB_EXT:
+        gl_internal_format = GL_SRGB8;
+        break;
+      case GL_SRGB_ALPHA_EXT:
+        gl_internal_format = GL_SRGB8_ALPHA8;
+        break;
+      default:
+        break;
+    }
+  }
+
   if (gfx::g_version_info->is_es)
     return gl_internal_format;
 
@@ -151,20 +165,6 @@ static inline GLenum GetTexInternalFormat(GLenum internal_format,
         break;
       default:
         NOTREACHED();
-        break;
-    }
-  }
-
-  if (gfx::g_version_info->IsAtLeastGL(2, 1) ||
-      gfx::g_version_info->IsAtLeastGLES(3, 0)) {
-    switch (internal_format) {
-      case GL_SRGB_EXT:
-        gl_internal_format = GL_SRGB8;
-        break;
-      case GL_SRGB_ALPHA_EXT:
-        gl_internal_format = GL_SRGB8_ALPHA8;
-        break;
-      default:
         break;
     }
   }
