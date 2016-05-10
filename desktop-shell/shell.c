@@ -2561,6 +2561,13 @@ shell_surface_set_fullscreen(struct wl_client *client,
 	struct shell_surface *shsurf = wl_resource_get_user_data(resource);
 	struct weston_output *output;
 
+	if (shsurf->fullscreen_output == shsurf->output &&
+	    shsurf->fullscreen.type == method &&
+	    shsurf->fullscreen.framerate == framerate) {
+		send_configure_for_surface(shsurf);
+		return;
+	}
+
 	if (output_resource)
 		output = wl_resource_get_user_data(output_resource);
 	else
