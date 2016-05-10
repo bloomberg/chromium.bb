@@ -22,9 +22,10 @@ void ShutdownKaskoReporter();
 // name (potential HWND and process id recycling).
 bool EnsureTargetProcessValidForCapture(const base::Process& process);
 
-// Dumps a process. A crash key will be added to the report, using the provided
-// key as name and "1" as its value.
-void DumpHungProcess(DWORD main_thread_id, const base::string16 &channel,
-                     const base::char16* key, const base::Process& process);
+// Dumps a process. A crash key will be added to the report, labelling it as a
+// hang report.
+void DumpHungProcess(DWORD main_thread_id, const base::string16& channel,
+                     const base::char16* hang_type,
+                     const base::Process& process);
 
 #endif  // CHROME_CHROME_WATCHER_KASKO_UTIL_H_

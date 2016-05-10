@@ -33,6 +33,9 @@
 
 namespace {
 
+// Labels a crash report to the server as a hang report.
+const wchar_t kHangReportCrashKey[] = L"hang-report";
+
 // Helper function for determining the crash server to use. Defaults to the
 // standard crash server, but can be overridden via an environment variable.
 // Enables easy integration testing.
@@ -258,11 +261,14 @@ bool EnsureTargetProcessValidForCapture(const base::Process& process) {
 }
 
 void DumpHungProcess(DWORD main_thread_id, const base::string16& channel,
-                     const base::char16* key, const base::Process& process) {
+                     const base::char16* hang_type,
+                     const base::Process& process) {
   // Read the Crashpad module annotations for the process.
   std::vector<kasko::api::CrashKey> annotations;
   crash_reporter::ReadMainModuleAnnotationsForKasko(process, &annotations);
-  AddCrashKey(key, L"1", &annotations);
+
+  // Label the report as a hang report.
+  AddCrashKey(kHangReportCrashKey, hang_type, &annotations);
 
   // Use the Wait Chain Traversal API to determine the hung thread. Defaults to
   // UI thread on error. The wait chain may point to a different thread in a
