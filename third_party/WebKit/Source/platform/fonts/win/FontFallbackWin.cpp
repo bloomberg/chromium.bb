@@ -413,7 +413,6 @@ const UChar* getFontBasedOnUnicodeBlock(UBlockCode blockCode, SkFontMgr* fontMan
     case UBLOCK_MISCELLANEOUS_SYMBOLS_AND_PICTOGRAPHS:
     case UBLOCK_TRANSPORT_AND_MAP_SYMBOLS:
     case UBLOCK_ALCHEMICAL_SYMBOLS:
-    case UBLOCK_RUNIC:
     case UBLOCK_DINGBATS:
     case UBLOCK_GOTHIC:
         return symbolFont;
