@@ -29,7 +29,7 @@ void HTMLMenuItemElement::defaultEventHandler(Event* event)
                 setAttribute(checkedAttr, "checked");
         } else if (equalIgnoringCase(fastGetAttribute(typeAttr), "radio")) {
             if (Element* parent = parentElement()) {
-                const AtomicString& group = fastGetAttribute(radiogroupAttr);
+                AtomicString group = fastGetAttribute(radiogroupAttr);
                 for (HTMLMenuItemElement& menuItem : Traversal<HTMLMenuItemElement>::childrenOf(*parent)) {
                     if (!menuItem.fastHasAttribute(checkedAttr))
                         continue;

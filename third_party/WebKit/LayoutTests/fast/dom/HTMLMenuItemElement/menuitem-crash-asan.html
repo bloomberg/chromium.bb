@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<body>
+Test passes if it does not crash on Linux ASan builds.
+<menuitem id="domfuzz" checked type="radio"><menuitem checked>
+<script>
+function fuzz() {
+  document.getElementById("domfuzz").addEventListener(
+      "fullscreenerror", function() { 
+    var elt = document.getElementById("domfuzz");
+    elt.setAttribute("radiogroup", "G1");
+  });
+  e = document.createEvent("Event");
+  var element = document.getElementById("domfuzz");
+  e.initEvent("fullscreenerror");
+  element.dispatchEvent(e);
+  e = document.createEvent("Event");
+  e.initEvent("click");
+  element.dispatchEvent(e);
+}
+if (window.testRunner) {
+    testRunner.dumpAsText();
+    fuzz();
+}
+</script>
+</body>
