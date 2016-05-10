@@ -481,14 +481,10 @@ void SingleThreadProxy::DidLoseOutputSurfaceOnImplThread() {
 
 void SingleThreadProxy::CommitVSyncParameters(base::TimeTicks timebase,
                                               base::TimeDelta interval) {
-  if (!authoritative_vsync_interval_.is_zero()) {
-    interval = authoritative_vsync_interval_;
-  } else if (interval.is_zero()) {
+  if (interval.is_zero()) {
     // TODO(brianderson): We should not be receiving 0 intervals.
     interval = BeginFrameArgs::DefaultInterval();
   }
-
-  last_vsync_timebase_ = timebase;
 
   if (synthetic_begin_frame_source_)
     synthetic_begin_frame_source_->OnUpdateVSyncParameters(timebase, interval);
@@ -719,15 +715,6 @@ bool SingleThreadProxy::MainFrameWillHappenForTesting() {
   if (!scheduler_on_impl_thread_)
     return false;
   return scheduler_on_impl_thread_->MainFrameForTestingWillHappen();
-}
-
-void SingleThreadProxy::SetAuthoritativeVSyncInterval(
-    const base::TimeDelta& interval) {
-  authoritative_vsync_interval_ = interval;
-  if (synthetic_begin_frame_source_) {
-    synthetic_begin_frame_source_->OnUpdateVSyncParameters(last_vsync_timebase_,
-                                                           interval);
-  }
 }
 
 void SingleThreadProxy::WillBeginImplFrame(const BeginFrameArgs& args) {

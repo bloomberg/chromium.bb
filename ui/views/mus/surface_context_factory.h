@@ -50,6 +50,8 @@ class VIEWS_MUS_EXPORT SurfaceContextFactory : public ui::ContextFactory {
   std::unique_ptr<cc::SurfaceIdAllocator> CreateSurfaceIdAllocator() override;
   void ResizeDisplay(ui::Compositor* compositor,
                      const gfx::Size& size) override;
+  void SetAuthoritativeVSyncInterval(ui::Compositor* compositor,
+                                     base::TimeDelta interval) override {}
 
   SurfaceBinding surface_binding_;
   uint32_t next_surface_id_namespace_;

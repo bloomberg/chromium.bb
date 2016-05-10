@@ -48,7 +48,7 @@ class CONTENT_EXPORT BrowserCompositorOutputSurface
   void OnUpdateVSyncParameters(base::TimeTicks timebase,
                                base::TimeDelta interval) override;
 
-  void OnUpdateVSyncParametersFromGpu(base::TimeTicks tiembase,
+  void OnUpdateVSyncParametersFromGpu(base::TimeTicks timebase,
                                       base::TimeDelta interval);
 
   void SetReflector(ReflectorImpl* reflector);
@@ -74,6 +74,10 @@ class CONTENT_EXPORT BrowserCompositorOutputSurface
   virtual void SetSurfaceSuspendedForRecycle(bool suspended) = 0;
   virtual bool SurfaceShouldNotShowFramesAfterSuspendForRecycle() const = 0;
 #endif
+
+  cc::SyntheticBeginFrameSource* begin_frame_source() {
+    return synthetic_begin_frame_source_.get();
+  }
 
  protected:
   // Constructor used by the accelerated implementation.

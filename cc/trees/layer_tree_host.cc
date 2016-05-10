@@ -1263,11 +1263,6 @@ SurfaceSequence LayerTreeHost::CreateSurfaceSequence() {
   return SurfaceSequence(surface_id_namespace_, next_surface_sequence_++);
 }
 
-void LayerTreeHost::SetAuthoritativeVSyncInterval(
-    const base::TimeDelta& interval) {
-  proxy_->SetAuthoritativeVSyncInterval(interval);
-}
-
 Layer* LayerTreeHost::LayerById(int id) const {
   LayerIdMap::const_iterator iter = layer_id_map_.find(id);
   return iter != layer_id_map_.end() ? iter->second : NULL;

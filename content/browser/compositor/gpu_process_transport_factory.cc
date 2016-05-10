@@ -628,6 +628,20 @@ void GpuProcessTransportFactory::ResizeDisplay(ui::Compositor* compositor,
     data->display_client->display()->Resize(size);
 }
 
+void GpuProcessTransportFactory::SetAuthoritativeVSyncInterval(
+    ui::Compositor* compositor,
+    base::TimeDelta interval) {
+  PerCompositorDataMap::iterator it = per_compositor_data_.find(compositor);
+  if (it == per_compositor_data_.end())
+    return;
+  PerCompositorData* data = it->second;
+  DCHECK(data);
+  if (data->surface) {
+    data->surface->begin_frame_source()->SetAuthoritativeVSyncInterval(
+        interval);
+  }
+}
+
 cc::SurfaceManager* GpuProcessTransportFactory::GetSurfaceManager() {
   return surface_manager_.get();
 }

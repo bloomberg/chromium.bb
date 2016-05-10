@@ -104,7 +104,6 @@ class CC_EXPORT ProxyMain : public Proxy {
   void Stop() override;
   bool SupportsImplScrolling() const override;
   bool MainFrameWillHappenForTesting() override;
-  void SetAuthoritativeVSyncInterval(const base::TimeDelta& interval) override;
   void ReleaseOutputSurface() override;
   void UpdateTopControlsState(TopControlsState constraints,
                               TopControlsState current,

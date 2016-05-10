@@ -58,7 +58,6 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   void Stop() override;
   bool SupportsImplScrolling() const override;
   bool MainFrameWillHappenForTesting() override;
-  void SetAuthoritativeVSyncInterval(const base::TimeDelta& interval) override;
   void UpdateTopControlsState(TopControlsState constraints,
                               TopControlsState current,
                               bool animate) override;
@@ -146,9 +145,6 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   std::unique_ptr<BeginFrameSource> unthrottled_begin_frame_source_;
   std::unique_ptr<SyntheticBeginFrameSource> synthetic_begin_frame_source_;
   std::unique_ptr<Scheduler> scheduler_on_impl_thread_;
-
-  base::TimeDelta authoritative_vsync_interval_;
-  base::TimeTicks last_vsync_timebase_;
 
   std::unique_ptr<BlockingTaskRunner::CapturePostTasks>
       commit_blocking_task_runner_;

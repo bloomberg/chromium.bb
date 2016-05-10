@@ -332,13 +332,11 @@ bool Compositor::IsVisible() {
 
 void Compositor::SetAuthoritativeVSyncInterval(
     const base::TimeDelta& interval) {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+  context_factory_->SetAuthoritativeVSyncInterval(this, interval);
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
          cc::switches::kEnableBeginFrameScheduling)) {
-    host_->SetAuthoritativeVSyncInterval(interval);
-    return;
+    vsync_manager_->SetAuthoritativeVSyncInterval(interval);
   }
-
-  vsync_manager_->SetAuthoritativeVSyncInterval(interval);
 }
 
 void Compositor::SetAcceleratedWidget(gfx::AcceleratedWidget widget) {

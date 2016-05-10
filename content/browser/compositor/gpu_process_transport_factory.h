@@ -64,6 +64,8 @@ class GpuProcessTransportFactory
   std::unique_ptr<cc::SurfaceIdAllocator> CreateSurfaceIdAllocator() override;
   void ResizeDisplay(ui::Compositor* compositor,
                      const gfx::Size& size) override;
+  void SetAuthoritativeVSyncInterval(ui::Compositor* compositor,
+                                     base::TimeDelta interval) override;
 
   // ImageTransportFactory implementation.
   ui::ContextFactory* GetContextFactory() override;

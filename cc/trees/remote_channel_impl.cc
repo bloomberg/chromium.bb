@@ -301,11 +301,6 @@ bool RemoteChannelImpl::SupportsImplScrolling() const {
   return true;
 }
 
-void RemoteChannelImpl::SetAuthoritativeVSyncInterval(
-    const base::TimeDelta& interval) {
-  NOTREACHED() << "Should not be called on the remote client LayerTreeHost";
-}
-
 void RemoteChannelImpl::UpdateTopControlsState(TopControlsState constraints,
                                                TopControlsState current,
                                                bool animate) {

@@ -58,6 +58,8 @@ class InProcessContextFactory : public ContextFactory {
   std::unique_ptr<cc::SurfaceIdAllocator> CreateSurfaceIdAllocator() override;
   void ResizeDisplay(ui::Compositor* compositor,
                      const gfx::Size& size) override;
+  void SetAuthoritativeVSyncInterval(ui::Compositor* compositor,
+                                     base::TimeDelta interval) override {}
 
  private:
   scoped_refptr<InProcessContextProvider> shared_main_thread_contexts_;

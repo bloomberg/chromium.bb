@@ -119,6 +119,9 @@ class COMPOSITOR_EXPORT ContextFactory {
   // Resize the display corresponding to this compositor to a particular size.
   virtual void ResizeDisplay(ui::Compositor* compositor,
                              const gfx::Size& size) = 0;
+
+  virtual void SetAuthoritativeVSyncInterval(ui::Compositor* compositor,
+                                             base::TimeDelta interval) = 0;
 };
 
 // This class represents a lock on the compositor, that can be used to prevent

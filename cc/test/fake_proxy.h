@@ -39,8 +39,6 @@ class FakeProxy : public Proxy {
   void Stop() override {}
   bool SupportsImplScrolling() const override;
   bool MainFrameWillHappenForTesting() override;
-  void SetAuthoritativeVSyncInterval(const base::TimeDelta& interval) override {
-  }
   void UpdateTopControlsState(TopControlsState constraints,
                               TopControlsState current,
                               bool animate) override {}

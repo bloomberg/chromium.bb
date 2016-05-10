@@ -421,10 +421,6 @@ bool ProxyMain::MainFrameWillHappenForTesting() {
   return main_frame_will_happen;
 }
 
-void ProxyMain::SetAuthoritativeVSyncInterval(const base::TimeDelta& interval) {
-  NOTREACHED() << "Only used by SingleProxyMain";
-}
-
 void ProxyMain::ReleaseOutputSurface() {
   DCHECK(IsMainThread());
   DCHECK(layer_tree_host_->output_surface_lost());

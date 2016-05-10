@@ -40,6 +40,8 @@ class StubContextFactory : public ui::ContextFactory {
   std::unique_ptr<cc::SurfaceIdAllocator> CreateSurfaceIdAllocator() override;
   void ResizeDisplay(ui::Compositor* compositor,
                      const gfx::Size& size) override;
+  void SetAuthoritativeVSyncInterval(ui::Compositor* compositor,
+                                     base::TimeDelta interval) override {}
 
   uint32_t next_surface_id_namespace_;
   std::unique_ptr<cc::SingleThreadTaskGraphRunner> task_graph_runner_;

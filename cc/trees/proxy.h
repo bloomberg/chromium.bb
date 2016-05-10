@@ -74,9 +74,6 @@ class CC_EXPORT Proxy {
 
   virtual bool SupportsImplScrolling() const = 0;
 
-  virtual void SetAuthoritativeVSyncInterval(
-      const base::TimeDelta& interval) = 0;
-
   virtual void UpdateTopControlsState(TopControlsState constraints,
                                       TopControlsState current,
                                       bool animate) = 0;
