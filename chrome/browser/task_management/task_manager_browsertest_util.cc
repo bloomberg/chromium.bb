@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/task_manager/task_manager_browsertest_util.h"
+#include "chrome/browser/task_management/task_manager_browsertest_util.h"
 
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
@@ -24,12 +24,10 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/table_model_observer.h"
 
-namespace task_manager {
+namespace task_management {
 namespace browsertest_util {
 
 namespace {
-
-using TaskManagerTester = task_management::TaskManagerTester;
 
 // Helper class to run a message loop until a TaskManagerTester is in an
 // expected state. If timeout occurs, an ASCII version of the task manager's
@@ -253,4 +251,4 @@ base::string16 MatchAnyUtility() {
 }
 
 }  // namespace browsertest_util
-}  // namespace task_manager
+}  // namespace task_management

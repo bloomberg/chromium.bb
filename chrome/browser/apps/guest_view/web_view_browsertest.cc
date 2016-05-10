@@ -25,8 +25,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
-#include "chrome/browser/task_management/mock_web_contents_task_manager.h"
-#include "chrome/browser/task_manager/task_manager_browsertest_util.h"
+#include "chrome/browser/task_management/task_manager_browsertest_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -94,15 +93,15 @@ using guest_view::TestGuestViewManager;
 using guest_view::TestGuestViewManagerFactory;
 using prerender::PrerenderLinkManager;
 using prerender::PrerenderLinkManagerFactory;
-using task_manager::browsertest_util::MatchAboutBlankTab;
-using task_manager::browsertest_util::MatchAnyApp;
-using task_manager::browsertest_util::MatchAnyBackground;
-using task_manager::browsertest_util::MatchAnyTab;
-using task_manager::browsertest_util::MatchAnyWebView;
-using task_manager::browsertest_util::MatchApp;
-using task_manager::browsertest_util::MatchBackground;
-using task_manager::browsertest_util::MatchWebView;
-using task_manager::browsertest_util::WaitForTaskManagerRows;
+using task_management::browsertest_util::MatchAboutBlankTab;
+using task_management::browsertest_util::MatchAnyApp;
+using task_management::browsertest_util::MatchAnyBackground;
+using task_management::browsertest_util::MatchAnyTab;
+using task_management::browsertest_util::MatchAnyWebView;
+using task_management::browsertest_util::MatchApp;
+using task_management::browsertest_util::MatchBackground;
+using task_management::browsertest_util::MatchWebView;
+using task_management::browsertest_util::WaitForTaskManagerRows;
 using ui::MenuModel;
 
 namespace {

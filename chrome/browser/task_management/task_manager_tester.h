@@ -5,20 +5,20 @@
 #ifndef CHROME_BROWSER_TASK_MANAGEMENT_TASK_MANAGER_TESTER_H_
 #define CHROME_BROWSER_TASK_MANAGEMENT_TASK_MANAGER_TESTER_H_
 
-#include <stddef.h>
+#include <stdint.h>
 
 #include <memory>
 
 #include "base/callback_forward.h"
 #include "base/strings/string16.h"
-#include "chrome/browser/task_manager/task_manager_browsertest_util.h"
+#include "chrome/browser/task_management/task_manager_browsertest_util.h"
 
 namespace task_management {
 
 // An adapter that abstracts away the difference of old vs. new task manager.
 class TaskManagerTester {
  public:
-  using ColumnSpecifier = task_manager::browsertest_util::ColumnSpecifier;
+  using ColumnSpecifier = browsertest_util::ColumnSpecifier;
 
   // Creates a TaskManagerTester backed by the current task manager. The task
   // manager should already be visible when you call this function. |callback|,

@@ -1,16 +1,21 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_TASK_MANAGER_TASK_MANAGER_BROWSERTEST_UTIL_H_
-#define CHROME_BROWSER_TASK_MANAGER_TASK_MANAGER_BROWSERTEST_UTIL_H_
+// These "task_management::browsertest_util" functions allow you to wait for a
+// task manager to show a particular state, enabling tests of the form "do
+// something that ought to create a process, then wait for that process to show
+// up in the Task Manager." They are intended to abstract away the details of
+// the platform's TaskManager UI.
+
+#ifndef CHROME_BROWSER_TASK_MANAGEMENT_TASK_MANAGER_BROWSERTEST_UTIL_H_
+#define CHROME_BROWSER_TASK_MANAGEMENT_TASK_MANAGER_BROWSERTEST_UTIL_H_
 
 #include <stddef.h>
 
 #include "base/strings/string16.h"
 
-// TODO(nick): Move everything here into the task_management namespace.
-namespace task_manager {
+namespace task_management {
 namespace browsertest_util {
 
 // Specifies some integer-valued column of numeric data reported by the task
@@ -69,6 +74,6 @@ base::string16 MatchUtility(const base::string16& title);
 base::string16 MatchAnyUtility();                   // "Utility: *"
 
 }  // namespace browsertest_util
-}  // namespace task_manager
+}  // namespace task_management
 
-#endif  // CHROME_BROWSER_TASK_MANAGER_TASK_MANAGER_BROWSERTEST_UTIL_H_
+#endif  // CHROME_BROWSER_TASK_MANAGEMENT_TASK_MANAGER_BROWSERTEST_UTIL_H_

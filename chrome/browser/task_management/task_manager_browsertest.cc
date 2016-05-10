@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,8 +21,8 @@
 #include "chrome/browser/notifications/notification_test_util.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/task_management/task_manager_browsertest_util.h"
 #include "chrome/browser/task_management/task_manager_tester.h"
-#include "chrome/browser/task_manager/task_manager_browsertest_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_dialogs.h"
@@ -51,20 +51,20 @@
 #include "ui/base/page_transition_types.h"
 
 using content::WebContents;
-using task_manager::browsertest_util::ColumnSpecifier;
-using task_manager::browsertest_util::MatchAboutBlankTab;
-using task_manager::browsertest_util::MatchAnyApp;
-using task_manager::browsertest_util::MatchAnyExtension;
-using task_manager::browsertest_util::MatchAnySubframe;
-using task_manager::browsertest_util::MatchAnyTab;
-using task_manager::browsertest_util::MatchAnyUtility;
-using task_manager::browsertest_util::MatchApp;
-using task_manager::browsertest_util::MatchExtension;
-using task_manager::browsertest_util::MatchSubframe;
-using task_manager::browsertest_util::MatchTab;
-using task_manager::browsertest_util::MatchUtility;
-using task_manager::browsertest_util::WaitForTaskManagerRows;
-using task_manager::browsertest_util::WaitForTaskManagerStatToExceed;
+using task_management::browsertest_util::ColumnSpecifier;
+using task_management::browsertest_util::MatchAboutBlankTab;
+using task_management::browsertest_util::MatchAnyApp;
+using task_management::browsertest_util::MatchAnyExtension;
+using task_management::browsertest_util::MatchAnySubframe;
+using task_management::browsertest_util::MatchAnyTab;
+using task_management::browsertest_util::MatchAnyUtility;
+using task_management::browsertest_util::MatchApp;
+using task_management::browsertest_util::MatchExtension;
+using task_management::browsertest_util::MatchSubframe;
+using task_management::browsertest_util::MatchTab;
+using task_management::browsertest_util::MatchUtility;
+using task_management::browsertest_util::WaitForTaskManagerRows;
+using task_management::browsertest_util::WaitForTaskManagerStatToExceed;
 
 namespace {
 

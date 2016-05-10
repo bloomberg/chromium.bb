@@ -53,8 +53,7 @@
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/task_management/mock_web_contents_task_manager.h"
 #include "chrome/browser/task_management/providers/web_contents/web_contents_tags_manager.h"
-#include "chrome/browser/task_manager/task_manager.h"
-#include "chrome/browser/task_manager/task_manager_browsertest_util.h"
+#include "chrome/browser/task_management/task_manager_browsertest_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -136,7 +135,7 @@ using net::NetworkChangeNotifier;
 using safe_browsing::LocalSafeBrowsingDatabaseManager;
 using safe_browsing::SafeBrowsingService;
 using safe_browsing::SBThreatType;
-using task_manager::browsertest_util::WaitForTaskManagerRows;
+using task_management::browsertest_util::WaitForTaskManagerRows;
 
 // Prerender tests work as follows:
 //
