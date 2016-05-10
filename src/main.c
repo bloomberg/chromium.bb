@@ -1121,9 +1121,8 @@ wayland_backend_config_add_new_output(struct weston_wayland_backend_config *new_
 static int
 load_wayland_backend_config(struct weston_compositor *compositor, int *argc,
 			    char *argv[], struct weston_config *wc,
-			    struct weston_wayland_backend_config *out_config)
+			    struct weston_wayland_backend_config *config)
 {
-	struct weston_wayland_backend_config new_config = {{ 0, }};
 	struct weston_config_section *section;
 	struct weston_wayland_backend_output_config *oc;
 	int count, width, height, scale;
@@ -1134,43 +1133,42 @@ load_wayland_backend_config(struct weston_compositor *compositor, int *argc,
 		{ WESTON_OPTION_INTEGER, "width", 0, &width },
 		{ WESTON_OPTION_INTEGER, "height", 0, &height },
 		{ WESTON_OPTION_INTEGER, "scale", 0, &scale },
-		{ WESTON_OPTION_STRING, "display", 0, &new_config.display_name },
-		{ WESTON_OPTION_BOOLEAN, "use-pixman", 0, &new_config.use_pixman },
+		{ WESTON_OPTION_STRING, "display", 0, &config->display_name },
+		{ WESTON_OPTION_BOOLEAN, "use-pixman", 0, &config->use_pixman },
 		{ WESTON_OPTION_INTEGER, "output-count", 0, &count },
-		{ WESTON_OPTION_BOOLEAN, "fullscreen", 0, &new_config.fullscreen },
-		{ WESTON_OPTION_BOOLEAN, "sprawl", 0, &new_config.sprawl },
+		{ WESTON_OPTION_BOOLEAN, "fullscreen", 0, &config->fullscreen },
+		{ WESTON_OPTION_BOOLEAN, "sprawl", 0, &config->sprawl },
 	};
 
 	width = 0;
 	height = 0;
 	scale = 0;
-	new_config.display_name = NULL;
-	new_config.use_pixman = 0;
+	config->display_name = NULL;
+	config->use_pixman = 0;
 	count = 1;
-	new_config.fullscreen = 0;
-	new_config.sprawl = 0;
+	config->fullscreen = 0;
+	config->sprawl = 0;
 	parse_options(wayland_options,
 		      ARRAY_LENGTH(wayland_options), argc, argv);
 
-	new_config.cursor_size = 32;
-	new_config.cursor_theme = NULL;
-	new_config.base.struct_size = sizeof(struct weston_wayland_backend_config);
-	new_config.base.struct_version = WESTON_WAYLAND_BACKEND_CONFIG_VERSION;
+	config->cursor_size = 32;
+	config->cursor_theme = NULL;
+	config->base.struct_size = sizeof(struct weston_wayland_backend_config);
+	config->base.struct_version = WESTON_WAYLAND_BACKEND_CONFIG_VERSION;
 
 	section = weston_config_get_section(wc, "shell", NULL, NULL);
 	weston_config_section_get_string(section, "cursor-theme",
-					 &new_config.cursor_theme, NULL);
+					 &config->cursor_theme, NULL);
 	weston_config_section_get_int(section, "cursor-size",
-				      &new_config.cursor_size, 32);
+				      &config->cursor_size, 32);
 
-	if (new_config.sprawl) {
+	if (config->sprawl) {
 		/* do nothing, everything is already set */
-		*out_config = new_config;
 		return 0;
 	}
 
-	if (new_config.fullscreen) {
-		oc = wayland_backend_config_add_new_output(&new_config);
+	if (config->fullscreen) {
+		oc = wayland_backend_config_add_new_output(config);
 		if (!oc)
 			goto err_outputs;
 
@@ -1180,7 +1178,6 @@ load_wayland_backend_config(struct weston_compositor *compositor, int *argc,
 		oc->transform = WL_OUTPUT_TRANSFORM_NORMAL;
 		oc->scale = 1;
 
-		*out_config = new_config;
 		return 0;
 	}
 
@@ -1198,8 +1195,7 @@ load_wayland_backend_config(struct weston_compositor *compositor, int *argc,
 		}
 		free(name);
 
-		oc = wayland_backend_config_add_new_output(&new_config);
-
+		oc = wayland_backend_config_add_new_output(config);
 		if (!oc)
 			goto err_outputs;
 
@@ -1214,10 +1210,9 @@ load_wayland_backend_config(struct weston_compositor *compositor, int *argc,
 		height = 640;
 	if (!scale)
 		scale = 1;
+
 	while (count > 0) {
-
-		oc = wayland_backend_config_add_new_output(&new_config);
-
+		oc = wayland_backend_config_add_new_output(config);
 		if (!oc)
 			goto err_outputs;
 
@@ -1230,11 +1225,10 @@ load_wayland_backend_config(struct weston_compositor *compositor, int *argc,
 		--count;
 	}
 
-	*out_config = new_config;
 	return 0;
 
 err_outputs:
-	wayland_backend_config_release(&new_config);
+	wayland_backend_config_release(config);
 	return -1;
 }
 
