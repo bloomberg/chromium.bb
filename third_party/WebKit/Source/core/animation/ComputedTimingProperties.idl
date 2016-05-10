@@ -4,7 +4,7 @@
 
 // https://w3c.github.io/web-animations/#the-computedtimingproperties-dictionary
 
-dictionary ComputedTimingProperties : KeyframeEffectOptions {
+dictionary ComputedTimingProperties : AnimationEffectTimingProperties {
     unrestricted double  endTime;
     unrestricted double  activeDuration;
     double?              localTime;

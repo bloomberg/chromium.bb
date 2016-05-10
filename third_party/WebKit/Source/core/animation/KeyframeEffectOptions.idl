@@ -1,22 +1,10 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 // https://w3c.github.io/web-animations/#the-keyframeeffectoptions-dictionary
 
-enum FillMode { "none", "forwards", "backwards", "both", "auto" };
-enum PlaybackDirection { "normal", "reverse", "alternate", "alternate-reverse" };
-
-dictionary KeyframeEffectOptions {
-    double                             delay = 0;
-    double                             endDelay = 0;
-    FillMode                           fill = "auto";
-    double                             iterationStart = 0.0;
-    unrestricted double                iterations = 1.0;
-    (unrestricted double or DOMString) duration = "auto";
-    // TODO(dstockwell): There is no playbackRate member in the spec.
-    double                             playbackRate = 1.0;
-    PlaybackDirection                  direction = "normal";
-    DOMString                          easing = "linear";
-    DOMString                          id = "";
+dictionary KeyframeEffectOptions : AnimationEffectTimingProperties {
+    // TODO(alancutter): Implement iterationComposite, composite and spacing.
+    DOMString id = "";
 };
