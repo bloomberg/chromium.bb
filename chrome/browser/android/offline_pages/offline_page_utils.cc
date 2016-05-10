@@ -19,7 +19,7 @@ namespace offline_pages {
 namespace {
 
 // Returns an offline page originated from the |online_url|.
-const OfflinePageItem* GetOfflinePageForOnlineURL(
+const OfflinePageItem* MaybeGetBestOfflinePageForOnlineURL(
     content::BrowserContext* browser_context,
     const GURL& online_url) {
   DCHECK(browser_context);
@@ -32,7 +32,7 @@ const OfflinePageItem* GetOfflinePageForOnlineURL(
   if (!offline_page_model)
     return nullptr;
 
-  return offline_page_model->MaybeGetPageByOnlineURL(online_url);
+  return offline_page_model->MaybeGetBestPageForOnlineURL(online_url);
 }
 
 // Returns an offline page that is stored as the |offline_url|.
@@ -74,7 +74,7 @@ GURL OfflinePageUtils::GetOfflineURLForOnlineURL(
     content::BrowserContext* browser_context,
     const GURL& online_url) {
   const OfflinePageItem* offline_page =
-      GetOfflinePageForOnlineURL(browser_context, online_url);
+      MaybeGetBestOfflinePageForOnlineURL(browser_context, online_url);
   if (!offline_page)
     return GURL();
 
@@ -124,7 +124,7 @@ bool OfflinePageUtils::HasOfflinePageForOnlineURL(
     content::BrowserContext* browser_context,
     const GURL& online_url) {
   const OfflinePageItem* offline_page =
-      GetOfflinePageForOnlineURL(browser_context, online_url);
+      MaybeGetBestOfflinePageForOnlineURL(browser_context, online_url);
   return offline_page && !offline_page->file_path.empty();
 }
 

@@ -66,7 +66,7 @@ class OfflinePageBridge : public OfflinePageModel::Observer,
       const base::android::JavaParamRef<jobject>& obj,
       jlong offline_id);
 
-  base::android::ScopedJavaLocalRef<jobject> GetPageByOnlineURL(
+  base::android::ScopedJavaLocalRef<jobject> GetBestPageForOnlineURL(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jstring>& online_url);

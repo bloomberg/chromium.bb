@@ -266,12 +266,12 @@ ScopedJavaLocalRef<jobject> OfflinePageBridge::GetPageByOfflineId(
   return CreateOfflinePageItem(env, *offline_page);
 }
 
-ScopedJavaLocalRef<jobject> OfflinePageBridge::GetPageByOnlineURL(
+ScopedJavaLocalRef<jobject> OfflinePageBridge::GetBestPageForOnlineURL(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jstring>& online_url) {
   const OfflinePageItem* offline_page =
-      offline_page_model_->MaybeGetPageByOnlineURL(
+      offline_page_model_->MaybeGetBestPageForOnlineURL(
           GURL(ConvertJavaStringToUTF8(env, online_url)));
   if (!offline_page)
     return ScopedJavaLocalRef<jobject>();

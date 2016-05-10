@@ -429,6 +429,26 @@ const OfflinePageItem* OfflinePageModel::MaybeGetPageByOfflineURL(
   return nullptr;
 }
 
+void OfflinePageModel::GetBestPageForOnlineURL(
+    const GURL& online_url,
+    const SingleOfflinePageItemCallback callback) {
+  RunWhenLoaded(
+      base::Bind(&OfflinePageModel::GetBestPageForOnlineURLWhenLoadDone,
+                 weak_ptr_factory_.GetWeakPtr(), online_url, callback));
+}
+
+void OfflinePageModel::GetBestPageForOnlineURLWhenLoadDone(
+    const GURL& online_url,
+    const SingleOfflinePageItemCallback& callback) const {
+  SingleOfflinePageItemResult result;
+
+  const OfflinePageItem* best_page = MaybeGetBestPageForOnlineURL(online_url);
+  if (best_page != nullptr)
+    result = *best_page;
+
+  callback.Run(result);
+}
+
 void OfflinePageModel::GetPagesByOnlineURL(
     const GURL& online_url,
     const MultipleOfflinePageItemCallback& callback) {
@@ -450,13 +470,16 @@ void OfflinePageModel::GetPagesByOnlineURLWhenLoadDone(
   callback.Run(result);
 }
 
-const OfflinePageItem* OfflinePageModel::MaybeGetPageByOnlineURL(
+const OfflinePageItem* OfflinePageModel::MaybeGetBestPageForOnlineURL(
     const GURL& online_url) const {
+  const OfflinePageItem* result = nullptr;
   for (const auto& id_page_pair : offline_pages_) {
-    if (id_page_pair.second.url == online_url)
-      return &(id_page_pair.second);
+    if (id_page_pair.second.url == online_url) {
+      if (!result || id_page_pair.second.creation_time > result->creation_time)
+        result = &(id_page_pair.second);
+    }
   }
-  return nullptr;
+  return result;
 }
 
 void OfflinePageModel::CheckForExternalFileDeletion() {

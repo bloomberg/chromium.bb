@@ -242,9 +242,19 @@ class OfflinePageModel : public KeyedService, public base::SupportsUserData {
   void GetPagesByOnlineURL(const GURL& online_url,
                            const MultipleOfflinePageItemCallback& callback);
 
+  // Returns via callback an offline page saved for |online_url|, if any. The
+  // best page is chosen based on creation date; a more recently created offline
+  // page will be preferred over an older one. This API function does not
+  // respect namespaces, as it is used to choose which page is rendered in a
+  // tab. Today all namespaces are treated equally for the purposes of this
+  // selection.
+  void GetBestPageForOnlineURL(const GURL& online_url,
+                               const SingleOfflinePageItemCallback callback);
+
   // Returns an offline page saved for |online_url|. A nullptr is returned if
-  // not found.
-  const OfflinePageItem* MaybeGetPageByOnlineURL(const GURL& online_url) const;
+  // not found.  See |GetBestPageForOnlineURL| for selection criteria.
+  const OfflinePageItem* MaybeGetBestPageForOnlineURL(
+      const GURL& online_url) const;
 
   // Checks that all of the offline pages have corresponding offline copies.
   // If a page is discovered to be missing an offline copy, its offline page
@@ -304,6 +314,9 @@ class OfflinePageModel : public KeyedService, public base::SupportsUserData {
       const MultipleOfflinePageItemCallback& callback) const;
   void GetPageByOfflineURLWhenLoadDone(
       const GURL& offline_url,
+      const SingleOfflinePageItemCallback& callback) const;
+  void GetBestPageForOnlineURLWhenLoadDone(
+      const GURL& online_url,
       const SingleOfflinePageItemCallback& callback) const;
 
   // Callback for checking whether we have offline pages.

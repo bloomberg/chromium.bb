@@ -123,7 +123,9 @@ class OfflinePageModelTest
 
   MultipleOfflinePageItemResult GetAllPages();
 
-  void SavePage(const GURL& url, ClientId client_id);
+  // Returns the offline ID of the saved page.
+  std::pair<SavePageResult, int64_t> SavePage(const GURL& url,
+                                              ClientId client_id);
 
   void SavePageWithArchiverResult(const GURL& url,
                                   ClientId client_id,
@@ -308,10 +310,13 @@ OfflinePageTestStore* OfflinePageModelTest::GetStore() {
   return static_cast<OfflinePageTestStore*>(model()->GetStoreForTesting());
 }
 
-void OfflinePageModelTest::SavePage(const GURL& url, ClientId client_id) {
+std::pair<SavePageResult, int64_t> OfflinePageModelTest::SavePage(
+    const GURL& url,
+    ClientId client_id) {
   SavePageWithArchiverResult(
       url, client_id,
       OfflinePageArchiver::ArchiverResult::SUCCESSFULLY_CREATED);
+  return std::make_pair(last_save_result_, last_save_offline_id_);
 }
 
 void OfflinePageModelTest::SavePageWithArchiverResult(
@@ -981,6 +986,27 @@ TEST_F(OfflinePageModelTest, ClearPagesFromOneSource) {
   EXPECT_EQ(1UL, GetStore()->GetAllPages().size());
   EXPECT_EQ(2, last_cleared_pages_count());
   EXPECT_EQ(DeletePageResult::SUCCESS, last_clear_page_result());
+}
+
+TEST_F(OfflinePageModelTest, GetBestPage) {
+  // We will save 3 pages - two for the same URL, and one for a different URL.
+  // Correct behavior will pick the most recently saved page for the correct
+  // URL.
+  std::pair<SavePageResult, int64_t> saved_pages[3];
+  saved_pages[0] = SavePage(kTestUrl, kTestClientId1);
+  saved_pages[1] = SavePage(kTestUrl, kTestClientId1);
+  saved_pages[2] = SavePage(kTestUrl2, kTestClientId2);
+
+  for (const auto& save_result : saved_pages) {
+    ASSERT_EQ(OfflinePageModel::SavePageResult::SUCCESS,
+              std::get<0>(save_result));
+  }
+
+  const OfflinePageItem* offline_page =
+      model()->MaybeGetBestPageForOnlineURL(kTestUrl);
+  ASSERT_TRUE(nullptr != offline_page);
+
+  EXPECT_EQ(std::get<1>(saved_pages[1]), offline_page->offline_id);
 }
 
 TEST(CommandLineFlagsTest, OfflineBookmarks) {

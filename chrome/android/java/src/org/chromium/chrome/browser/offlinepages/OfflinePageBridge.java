@@ -325,7 +325,7 @@ public class OfflinePageBridge {
                 // TODO(http://crbug.com/589526) This native API returns only one item, but in the
                 // future will return a list.
                 OfflinePageItem item =
-                        nativeGetPageByOnlineURL(mNativeOfflinePageBridge, onlineUrl);
+                        nativeGetBestPageForOnlineURL(mNativeOfflinePageBridge, onlineUrl);
                 if (item != null) {
                     result.add(item);
                 }
@@ -626,7 +626,7 @@ public class OfflinePageBridge {
 
     @VisibleForTesting
     native OfflinePageItem nativeGetPageByOfflineId(long nativeOfflinePageBridge, long offlineId);
-    private native OfflinePageItem nativeGetPageByOnlineURL(
+    private native OfflinePageItem nativeGetBestPageForOnlineURL(
             long nativeOfflinePageBridge, String onlineURL);
     private native OfflinePageItem nativeGetPageByOfflineUrl(
             long nativeOfflinePageBridge, String offlineUrl);
