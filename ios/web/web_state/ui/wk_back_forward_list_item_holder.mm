@@ -16,7 +16,8 @@ const char kBackForwardListItemIdentifierKey[] =
     "BackForwardListItemIdentifierKey";
 }
 
-WKBackForwardListItemHolder::WKBackForwardListItemHolder() {}
+WKBackForwardListItemHolder::WKBackForwardListItemHolder()
+    : navigation_type_(WKNavigationTypeOther) {}
 
 WKBackForwardListItemHolder::~WKBackForwardListItemHolder() {}
 
