@@ -24,6 +24,8 @@ expect_failure = (t) => {
       }
   }];
 
+  fetch_tests_from_worker(new Worker('resources/disabled-worker.js'));
+
   for (var i = 0; i < tests.length; ++i) {
     if (t)
       t.step(tests[i].code);
@@ -44,4 +46,6 @@ test(() => {
     assert_idl_attribute(window.internals, 'frobulateBindings');
     assert_true(window.internals.frobulateBindings, 'Attribute should return boolean value');
   }, 'Attribute should exist and return value');
+
+fetch_tests_from_worker(new Worker('resources/enabled-worker.js'));
 };

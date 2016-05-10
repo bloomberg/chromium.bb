@@ -61,7 +61,7 @@ String errorMessage;
 if (!{{member.origin_trial_enabled_function}}(executionContext, errorMessage)) {
     v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
     if (!errorMessage.isEmpty()) {
-        toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+        executionContext->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
     }
     return;
 }

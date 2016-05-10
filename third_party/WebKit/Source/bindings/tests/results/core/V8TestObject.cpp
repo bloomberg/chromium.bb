@@ -111,7 +111,7 @@ static void FEATURE1_ORIGIN_TRIAL_ENABLED_CONST1ConstantGetterCallback(v8::Local
     if (!OriginTrials::featureName1Enabled(executionContext, errorMessage)) {
         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
         if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+            executionContext->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
         }
         return;
     }
@@ -125,7 +125,7 @@ static void FEATURE1_ORIGIN_TRIAL_ENABLED_CONST2ConstantGetterCallback(v8::Local
     if (!OriginTrials::featureName1Enabled(executionContext, errorMessage)) {
         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
         if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+            executionContext->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
         }
         return;
     }
@@ -139,7 +139,7 @@ static void FEATURE2_ORIGIN_TRIAL_ENABLED_CONST1ConstantGetterCallback(v8::Local
     if (!OriginTrials::featureName2Enabled(executionContext, errorMessage)) {
         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
         if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+            executionContext->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
         }
         return;
     }
@@ -153,7 +153,7 @@ static void FEATURE2_ORIGIN_TRIAL_ENABLED_CONST2ConstantGetterCallback(v8::Local
     if (!OriginTrials::featureName2Enabled(executionContext, errorMessage)) {
         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
         if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+            executionContext->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
         }
         return;
     }
@@ -167,7 +167,7 @@ static void FEATURE3_ORIGIN_TRIAL_ENABLED_CONST1ConstantGetterCallback(v8::Local
     if (!OriginTrials::featureName3Enabled(executionContext, errorMessage)) {
         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
         if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+            executionContext->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
         }
         return;
     }
@@ -2696,7 +2696,7 @@ static void originTrialEnabledLongAttributeAttributeGetter(const v8::FunctionCal
     if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
         if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+            executionContext->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
         }
         return;
     }
@@ -2712,7 +2712,7 @@ static void originTrialEnabledLongAttributeAttributeGetterCallback(const v8::Fun
     if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
         if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+            executionContext->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
         }
         return;
     }
@@ -4577,7 +4577,7 @@ static void unscopeableOriginTrialEnabledLongAttributeAttributeGetter(const v8::
     if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
         if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+            executionContext->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
         }
         return;
     }
@@ -4593,7 +4593,7 @@ static void unscopeableOriginTrialEnabledLongAttributeAttributeGetterCallback(co
     if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
         if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+            executionContext->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
         }
         return;
     }
@@ -9849,7 +9849,7 @@ static void originTrialEnabledVoidMethodMethodCallback(const v8::FunctionCallbac
     if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
         if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+            executionContext->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
         }
         return;
     }
@@ -9869,7 +9869,7 @@ static void perWorldBindingsOriginTrialEnabledVoidMethodMethodCallback(const v8:
     if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
         if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+            executionContext->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
         }
         return;
     }
@@ -9889,7 +9889,7 @@ static void perWorldBindingsOriginTrialEnabledVoidMethodMethodCallbackForMainWor
     if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
         if (!errorMessage.isEmpty()) {
-            toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+            executionContext->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
         }
         return;
     }
