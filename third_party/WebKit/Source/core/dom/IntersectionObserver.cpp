@@ -175,7 +175,11 @@ void IntersectionObserver::observe(Element* target)
     if (target->ensureIntersectionObserverData().getObservationFor(*this))
         return;
 
-    bool shouldReportRootBounds = target->document().frame()->securityContext()->getSecurityOrigin()->canAccess(rootNode()->document().frame()->securityContext()->getSecurityOrigin());
+    bool shouldReportRootBounds = false;
+    LocalFrame* targetFrame = target->document().frame();
+    LocalFrame* rootFrame = rootNode()->document().frame();
+    if (targetFrame && rootFrame)
+        shouldReportRootBounds = targetFrame->securityContext()->getSecurityOrigin()->canAccess(rootFrame->securityContext()->getSecurityOrigin());
     IntersectionObservation* observation = new IntersectionObservation(*this, *target, shouldReportRootBounds);
     target->ensureIntersectionObserverData().addObservation(*observation);
     m_observations.add(observation);
