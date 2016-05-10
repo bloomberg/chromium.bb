@@ -2696,6 +2696,9 @@ TEST_F(RendererSchedulerImplTest,
        SYNCHRONIZED_GESTURE_TimerTaskThrottling_task_expensive) {
   SimulateCompositorGestureStart(TouchEventPolicy::SEND_TOUCH_START);
 
+  base::TimeTicks first_throttled_run_time =
+      ThrottlingHelper::ThrottledRunTime(clock_->NowTicks());
+
   size_t count = 0;
   // With the compositor task taking 10ms, there is not enough time to run this
   // 7ms timer task in the 16ms frame.
@@ -2724,11 +2727,18 @@ TEST_F(RendererSchedulerImplTest,
         base::Bind(&RendererSchedulerImplTest::SimulatedCompositorTaskPending,
                    base::Unretained(this)));
     EXPECT_EQ(UseCase::SYNCHRONIZED_GESTURE, CurrentUseCase()) << "i = " << i;
-    EXPECT_TRUE(scheduler_->TimerTaskRunner()->IsQueueEnabled()) << "i = " << i;
+
+    // Before the policy is updated the queue will be enabled. Subsequently it
+    // will be disabled until the throttled queue is pumped.
+    bool expect_queue_enabled =
+        (i == 0) || (clock_->NowTicks() > first_throttled_run_time);
+    EXPECT_EQ(expect_queue_enabled,
+              scheduler_->TimerTaskRunner()->IsQueueEnabled())
+        << "i = " << i;
   }
 
   // Task is throttled but not completely blocked.
-  EXPECT_EQ(13u, count);
+  EXPECT_EQ(12u, count);
 }
 
 TEST_F(RendererSchedulerImplTest,

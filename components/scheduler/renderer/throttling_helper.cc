@@ -53,6 +53,7 @@ void ThrottlingHelper::IncreaseThrottleRefCount(TaskQueue* task_queue) {
     // The insert was succesful so we need to throttle the queue.
     task_queue->SetTimeDomain(time_domain_.get());
     task_queue->SetPumpPolicy(TaskQueue::PumpPolicy::MANUAL);
+    task_queue->SetQueueEnabled(false);
 
     if (!task_queue->IsEmpty()) {
       if (task_queue->HasPendingImmediateWork()) {
@@ -76,6 +77,7 @@ void ThrottlingHelper::DecreaseThrottleRefCount(TaskQueue* task_queue) {
 
     task_queue->SetTimeDomain(renderer_scheduler_->real_time_domain());
     task_queue->SetPumpPolicy(TaskQueue::PumpPolicy::AUTO);
+    task_queue->SetQueueEnabled(true);
   }
 }
 
@@ -118,6 +120,7 @@ void ThrottlingHelper::PumpThrottledTasks() {
     if (task_queue->IsEmpty())
       continue;
 
+    task_queue->SetQueueEnabled(true);
     task_queue->PumpQueue(false);
   }
   // Make sure NextScheduledRunTime gives us an up-to date result.

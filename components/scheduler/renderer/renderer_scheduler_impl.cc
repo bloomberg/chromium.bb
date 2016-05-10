@@ -844,7 +844,10 @@ void RendererSchedulerImpl::ApplyTaskQueuePolicy(
     TaskQueue* task_queue,
     const TaskQueuePolicy& old_task_queue_policy,
     const TaskQueuePolicy& new_task_queue_policy) const {
-  task_queue->SetQueueEnabled(new_task_queue_policy.is_enabled);
+  // The ThrottlingHelper also calls SetQueueEnabled, so we can avoid calling
+  // this here.
+  if (new_task_queue_policy.time_domain_type != TimeDomainType::THROTTLED)
+    task_queue->SetQueueEnabled(new_task_queue_policy.is_enabled);
   if (old_task_queue_policy.priority != new_task_queue_policy.priority)
     task_queue->SetQueuePriority(new_task_queue_policy.priority);
 
