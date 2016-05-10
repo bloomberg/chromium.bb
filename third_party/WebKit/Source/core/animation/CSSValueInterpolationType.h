@@ -29,6 +29,12 @@ public:
         return nullptr;
     }
 
+    // As we override CSSInterpolationType::maybeConvertSingle, these are never called.
+    InterpolationValue maybeConvertNeutral(const InterpolationValue& underlying, ConversionCheckers&) const final { ASSERT_NOT_REACHED(); return nullptr; }
+    InterpolationValue maybeConvertInitial(const StyleResolverState&) const final { ASSERT_NOT_REACHED(); return nullptr; }
+    InterpolationValue maybeConvertInherit(const StyleResolverState&, ConversionCheckers&) const final { ASSERT_NOT_REACHED(); return nullptr; }
+    InterpolationValue maybeConvertValue(const CSSValue& value, const StyleResolverState&, ConversionCheckers&) const final { ASSERT_NOT_REACHED(); return nullptr; }
+
     void composite(UnderlyingValueOwner& underlyingValueOwner, double underlyingFraction, const InterpolationValue& value, double interpolationFraction) const final
     {
         underlyingValueOwner.set(*this, value);
