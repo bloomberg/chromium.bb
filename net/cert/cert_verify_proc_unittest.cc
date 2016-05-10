@@ -663,7 +663,8 @@ TEST_F(CertVerifyProcTest, TestHasTooLongValidity) {
   }
 }
 
-TEST_F(CertVerifyProcTest, TestKnownRoot) {
+// TODO(crbug.com/610546): Fix and re-enable this test.
+TEST_F(CertVerifyProcTest, DISABLED_TestKnownRoot) {
   if (!SupportsDetectingKnownRoots()) {
     LOG(INFO) << "Skipping this test on this platform.";
     return;
@@ -691,7 +692,8 @@ TEST_F(CertVerifyProcTest, TestKnownRoot) {
   EXPECT_TRUE(verify_result.is_issued_by_known_root);
 }
 
-TEST_F(CertVerifyProcTest, PublicKeyHashes) {
+// TODO(crbug.com/610546): Fix and re-enable this test.
+TEST_F(CertVerifyProcTest, DISABLED_PublicKeyHashes) {
   if (!SupportsReturningVerifiedChain()) {
     LOG(INFO) << "Skipping this test in this platform.";
     return;
