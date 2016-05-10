@@ -421,6 +421,7 @@ component("platform") {
     set_sources_assignment_filter([])
     sources += [
       "fonts/linux/FontPlatformDataLinux.cpp",
+      "fonts/linux/FontRenderStyle.cpp",
       "fonts/linux/FontRenderStyle.h",
     ]
     set_sources_assignment_filter(sources_assignment_filter)

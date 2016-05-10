@@ -137,7 +137,6 @@ private:
     void platformGlyphInit();
 
     PassRefPtr<SimpleFontData> createScaledFontData(const FontDescription&, float scaleFactor) const;
-    PassRefPtr<SimpleFontData> platformCreateScaledFontData(const FontDescription&, float scaleFactor) const;
 
     FontMetrics m_fontMetrics;
     float m_maxCharWidth;

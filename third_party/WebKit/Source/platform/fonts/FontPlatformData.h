@@ -134,16 +134,10 @@ public:
 
 #if OS(WIN)
     int paintTextFlags() const { return m_paintTextFlags; }
-#else
-    static void setHinting(SkPaint::Hinting);
-    static void setAutoHint(bool);
-    static void setUseBitmaps(bool);
-    static void setAntiAlias(bool);
-    static void setSubpixelRendering(bool);
 #endif
 
 private:
-#if !OS(MACOSX)
+#if OS(WIN)
     void querySystemForRenderStyle();
 #endif
 

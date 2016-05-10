@@ -33,7 +33,7 @@
 #include "core/layout/LayoutThemeFontProvider.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/fonts/FontDescription.h"
-#include "platform/fonts/FontPlatformData.h"
+#include "platform/fonts/linux/FontRenderStyle.h"
 
 using blink::FontDescription;
 using blink::FontPlatformData;
@@ -50,31 +50,31 @@ void WebFontRendering::setSkiaFontManager(SkFontMgr* fontMgr)
 // static
 void WebFontRendering::setHinting(SkPaint::Hinting hinting)
 {
-    FontPlatformData::setHinting(hinting);
+    FontRenderStyle::setHinting(hinting);
 }
 
 // static
 void WebFontRendering::setAutoHint(bool useAutoHint)
 {
-    FontPlatformData::setAutoHint(useAutoHint);
+    FontRenderStyle::setAutoHint(useAutoHint);
 }
 
 // static
 void WebFontRendering::setUseBitmaps(bool useBitmaps)
 {
-    FontPlatformData::setUseBitmaps(useBitmaps);
+    FontRenderStyle::setUseBitmaps(useBitmaps);
 }
 
 // static
 void WebFontRendering::setAntiAlias(bool useAntiAlias)
 {
-    FontPlatformData::setAntiAlias(useAntiAlias);
+    FontRenderStyle::setAntiAlias(useAntiAlias);
 }
 
 // static
 void WebFontRendering::setSubpixelRendering(bool useSubpixelRendering)
 {
-    FontPlatformData::setSubpixelRendering(useSubpixelRendering);
+    FontRenderStyle::setSubpixelRendering(useSubpixelRendering);
 }
 
 // static

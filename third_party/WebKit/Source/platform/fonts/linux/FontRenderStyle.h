@@ -30,7 +30,11 @@
 #ifndef FontRenderStyle_h
 #define FontRenderStyle_h
 
+#include "SkPaint.h"
+#include "SkTypeface.h"
+#include "platform/PlatformExport.h"
 #include "wtf/Allocator.h"
+#include "wtf/text/CString.h"
 
 namespace blink {
 
@@ -61,6 +65,15 @@ struct FontRenderStyle {
             && useSubpixelRendering == a.useSubpixelRendering
             && useSubpixelPositioning == a.useSubpixelPositioning;
     }
+
+    PLATFORM_EXPORT static void setHinting(SkPaint::Hinting);
+    PLATFORM_EXPORT static void setAutoHint(bool);
+    PLATFORM_EXPORT static void setUseBitmaps(bool);
+    PLATFORM_EXPORT static void setAntiAlias(bool);
+    PLATFORM_EXPORT static void setSubpixelRendering(bool);
+
+    static FontRenderStyle querySystem(const CString& family, float textSize, SkTypeface::Style typefaceStyle);
+    void applyToPaint(SkPaint&, float deviceScaleFactor) const;
 
     // Each of the use* members below can take one of three values:
     //   0: off

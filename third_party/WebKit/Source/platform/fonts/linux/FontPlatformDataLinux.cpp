@@ -28,112 +28,21 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "public/platform/Platform.h"
+#include "platform/fonts/FontPlatformData.h"
 
 #include "SkTypeface.h"
-#include "platform/LayoutTestSupport.h"
-#include "platform/RuntimeEnabledFeatures.h"
-#include "platform/fonts/FontPlatformData.h"
-#include "platform/graphics/GraphicsContext.h"
-#include "public/platform/linux/WebFontRenderStyle.h"
-#include "public/platform/linux/WebSandboxSupport.h"
 
 namespace blink {
 
-static SkPaint::Hinting skiaHinting = SkPaint::kNormal_Hinting;
-static bool useSkiaAutoHint = true;
-static bool useSkiaBitmaps = true;
-static bool useSkiaAntiAlias = true;
-static bool useSkiaSubpixelRendering = false;
-
-void FontPlatformData::setHinting(SkPaint::Hinting hinting)
-{
-    skiaHinting = hinting;
-}
-
-void FontPlatformData::setAutoHint(bool useAutoHint)
-{
-    useSkiaAutoHint = useAutoHint;
-}
-
-void FontPlatformData::setUseBitmaps(bool useBitmaps)
-{
-    useSkiaBitmaps = useBitmaps;
-}
-
-void FontPlatformData::setAntiAlias(bool useAntiAlias)
-{
-    useSkiaAntiAlias = useAntiAlias;
-}
-
-void FontPlatformData::setSubpixelRendering(bool useSubpixelRendering)
-{
-    useSkiaSubpixelRendering = useSubpixelRendering;
-}
-
 void FontPlatformData::setupPaint(SkPaint* paint, float deviceScaleFactor, const Font*) const
 {
-    paint->setAntiAlias(m_style.useAntiAlias);
-    paint->setHinting(static_cast<SkPaint::Hinting>(m_style.hintStyle));
-    paint->setEmbeddedBitmapText(m_style.useBitmaps);
-    paint->setAutohinted(m_style.useAutoHint);
-    if (m_style.useAntiAlias)
-        paint->setLCDRenderText(m_style.useSubpixelRendering);
-
-    // Do not enable subpixel text on low-dpi if full hinting is requested.
-    bool useSubpixelText = (paint->getHinting() != SkPaint::kFull_Hinting || deviceScaleFactor > 1.0f);
-
-    // TestRunner specifically toggles the subpixel positioning flag.
-    if (useSubpixelText && !LayoutTestSupport::isRunningLayoutTest())
-        paint->setSubpixelText(true);
-    else
-        paint->setSubpixelText(m_style.useSubpixelPositioning);
+    m_style.applyToPaint(*paint, deviceScaleFactor);
 
     const float ts = m_textSize >= 0 ? m_textSize : 12;
     paint->setTextSize(SkFloatToScalar(ts));
     paint->setTypeface(m_typeface.get());
     paint->setFakeBoldText(m_syntheticBold);
     paint->setTextSkewX(m_syntheticItalic ? -SK_Scalar1 / 4 : 0);
-}
-
-void FontPlatformData::querySystemForRenderStyle()
-{
-    WebFontRenderStyle style;
-#if OS(ANDROID)
-    style.setDefaults();
-#else
-    // If the font name is missing (i.e. probably a web font) or the sandbox is disabled, use the system defaults.
-    if (!m_family.length() || !Platform::current()->sandboxSupport()) {
-        style.setDefaults();
-    } else {
-        const int sizeAndStyle = (((int)m_textSize) << 2) | (m_typeface->style() & 3);
-        Platform::current()->sandboxSupport()->getWebFontRenderStyleForStrike(m_family.data(), sizeAndStyle, &style);
-    }
-#endif
-    style.toFontRenderStyle(&m_style);
-
-    // Fix FontRenderStyle::NoPreference to actual styles.
-    if (m_style.useAntiAlias == FontRenderStyle::NoPreference)
-        m_style.useAntiAlias = useSkiaAntiAlias;
-
-    if (!m_style.useHinting)
-        m_style.hintStyle = SkPaint::kNo_Hinting;
-    else if (m_style.useHinting == FontRenderStyle::NoPreference)
-        m_style.hintStyle = skiaHinting;
-
-    if (m_style.useBitmaps == FontRenderStyle::NoPreference)
-        m_style.useBitmaps = useSkiaBitmaps;
-    if (m_style.useAutoHint == FontRenderStyle::NoPreference)
-        m_style.useAutoHint = useSkiaAutoHint;
-    if (m_style.useAntiAlias == FontRenderStyle::NoPreference)
-        m_style.useAntiAlias = useSkiaAntiAlias;
-    if (m_style.useSubpixelRendering == FontRenderStyle::NoPreference)
-        m_style.useSubpixelRendering = useSkiaSubpixelRendering;
-
-    // TestRunner specifically toggles the subpixel positioning flag.
-    if (m_style.useSubpixelPositioning == FontRenderStyle::NoPreference
-        || LayoutTestSupport::isRunningLayoutTest())
-        m_style.useSubpixelPositioning = FontDescription::subpixelPositioning();
 }
 
 } // namespace blink

@@ -448,6 +448,7 @@
       'fonts/android/FontCacheAndroid.cpp',
       'fonts/linux/FontCacheLinux.cpp',
       'fonts/linux/FontPlatformDataLinux.cpp',
+      'fonts/linux/FontRenderStyle.cpp',
       'fonts/linux/FontRenderStyle.h',
       'fonts/mac/FontFamilyMatcherMac.h',
       'fonts/mac/FontFamilyMatcherMac.mm',

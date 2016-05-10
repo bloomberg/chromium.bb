@@ -116,7 +116,7 @@ FontPlatformData::FontPlatformData(const FontPlatformData& src, float textSize)
     , m_syntheticItalic(src.m_syntheticItalic)
     , m_orientation(src.m_orientation)
 #if OS(LINUX) || OS(ANDROID)
-    , m_style(src.m_style)
+    , m_style(FontRenderStyle::querySystem(m_family, m_textSize, m_typeface->style()))
 #endif
     , m_harfBuzzFace(nullptr)
     , m_isHashTableDeletedValue(false)
@@ -126,7 +126,7 @@ FontPlatformData::FontPlatformData(const FontPlatformData& src, float textSize)
     , m_minSizeForSubpixel(src.m_minSizeForSubpixel)
 #endif
 {
-#if !OS(MACOSX)
+#if OS(WIN)
     querySystemForRenderStyle();
 #endif
 }
@@ -142,6 +142,9 @@ FontPlatformData::FontPlatformData(PassRefPtr<SkTypeface> tf,
     , m_syntheticBold(syntheticBold)
     , m_syntheticItalic(syntheticItalic)
     , m_orientation(orientation)
+#if OS(LINUX) || OS(ANDROID)
+    , m_style(FontRenderStyle::querySystem(m_family, m_textSize, m_typeface->style()))
+#endif
     , m_isHashTableDeletedValue(false)
 #if OS(WIN)
     , m_paintTextFlags(0)
@@ -149,7 +152,7 @@ FontPlatformData::FontPlatformData(PassRefPtr<SkTypeface> tf,
     , m_minSizeForSubpixel(0)
 #endif
 {
-#if !OS(MACOSX)
+#if OS(WIN)
     querySystemForRenderStyle();
 #endif
 }
