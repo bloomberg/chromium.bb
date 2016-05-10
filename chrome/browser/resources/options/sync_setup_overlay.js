@@ -41,9 +41,7 @@ cr.exportPath('options');
  *             typedUrlsEnforced: boolean,
  *             typedUrlsRegistered: boolean,
  *             typedUrlsSynced: boolean,
- *             usePassphrase: boolean,
- *             wifiCredentialsEnforced: (boolean|undefined),
- *             wifiCredentialsSynced: (boolean|undefined)}}
+ *             usePassphrase: boolean}}
  */
 var SyncConfig;
 
@@ -354,8 +352,6 @@ cr.define('options', function() {
         'typedUrlsSynced': syncAll || $('typed-urls-checkbox').checked,
         'appsSynced': syncAll || $('apps-checkbox').checked,
         'tabsSynced': syncAll || $('tabs-checkbox').checked,
-        'wifiCredentialsSynced':
-            syncAll || $('wifi-credentials-checkbox').checked,
         'paymentsIntegrationEnabled': syncAll ||
             (autofillSynced && $('payments-integration-checkbox').checked),
         'encryptAllData': encryptAllData,
@@ -480,16 +476,6 @@ cr.define('options', function() {
         $('tabs-item').hidden = false;
       } else {
         $('tabs-item').hidden = true;
-      }
-      if (args.wifiCredentialsRegistered) {
-        $('wifi-credentials-checkbox').checked = args.wifiCredentialsSynced;
-        this.dataTypeBoxesChecked_['wifi-credentials-checkbox'] =
-            args.wifiCredentialsSynced;
-        this.dataTypeBoxesDisabled_['wifi-credentials-checkbox'] =
-            args.wifiCredentialsEnforced;
-        $('wifi-credentials-item').hidden = false;
-      } else {
-        $('wifi-credentials-item').hidden = true;
       }
 
       $('choose-data-types-body').onchange =

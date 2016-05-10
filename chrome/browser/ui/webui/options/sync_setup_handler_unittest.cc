@@ -100,8 +100,6 @@ std::string GetConfiguration(const base::DictionaryValue* extra_values,
   result.SetBoolean("tabsSynced", types.Has(syncer::PROXY_TABS));
   result.SetBoolean("themesSynced", types.Has(syncer::THEMES));
   result.SetBoolean("typedUrlsSynced", types.Has(syncer::TYPED_URLS));
-  result.SetBoolean("wifiCredentialsSynced",
-                    types.Has(syncer::WIFI_CREDENTIALS));
   result.SetBoolean("paymentsIntegrationEnabled",
                     payments_integration == PAYMENTS_INTEGRATION_ENABLED);
   std::string args;
@@ -151,8 +149,6 @@ void CheckConfigDataTypeArguments(const base::DictionaryValue* dictionary,
   CheckBool(dictionary, "tabsSynced", types.Has(syncer::PROXY_TABS));
   CheckBool(dictionary, "themesSynced", types.Has(syncer::THEMES));
   CheckBool(dictionary, "typedUrlsSynced", types.Has(syncer::TYPED_URLS));
-  CheckBool(dictionary, "wifiCredentialsSynced",
-            types.Has(syncer::WIFI_CREDENTIALS));
 }
 
 
@@ -801,7 +797,6 @@ TEST_F(SyncSetupHandlerTest, ShowSetupSyncEverything) {
   CheckBool(dictionary, "extensionsRegistered", true);
   CheckBool(dictionary, "passwordsRegistered", true);
   CheckBool(dictionary, "preferencesRegistered", true);
-  CheckBool(dictionary, "wifiCredentialsRegistered", true);
   CheckBool(dictionary, "tabsRegistered", true);
   CheckBool(dictionary, "themesRegistered", true);
   CheckBool(dictionary, "typedUrlsRegistered", true);

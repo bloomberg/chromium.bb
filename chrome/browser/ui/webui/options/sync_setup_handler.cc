@@ -257,7 +257,6 @@ void SyncSetupHandler::GetStaticLocalizedValues(
       {"extensions", IDS_SYNC_DATATYPE_EXTENSIONS},
       {"typedURLs", IDS_SYNC_DATATYPE_TYPED_URLS},
       {"apps", IDS_SYNC_DATATYPE_APPS},
-      {"wifiCredentials", IDS_SYNC_DATATYPE_WIFI_CREDENTIALS},
       {"openTabs", IDS_SYNC_DATATYPE_TABS},
       {"enablePaymentsIntegration", IDS_AUTOFILL_USE_PAYMENTS_DATA},
       {"serviceUnavailableError", IDS_SYNC_SETUP_ABORTED_BY_PENDING_CLEAR},

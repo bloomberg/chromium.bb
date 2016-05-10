@@ -1630,7 +1630,6 @@ void ProfileSyncService::UpdateSelectedTypesHistogram(
     sync_driver::user_selectable_type::TYPED_URLS,
     sync_driver::user_selectable_type::EXTENSIONS,
     sync_driver::user_selectable_type::APPS,
-    sync_driver::user_selectable_type::WIFI_CREDENTIAL,
     sync_driver::user_selectable_type::PROXY_TABS,
   };
 

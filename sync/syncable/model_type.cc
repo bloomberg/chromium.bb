@@ -155,7 +155,6 @@ const char* kUserSelectableDataTypeNames[] = {
   "typedUrls",
   "extensions",
   "apps",
-  "wifiCredentials",
   "tabs",
 };
 
@@ -459,7 +458,6 @@ ModelTypeSet UserSelectableTypes() {
   set.Put(TYPED_URLS);
   set.Put(EXTENSIONS);
   set.Put(APPS);
-  set.Put(WIFI_CREDENTIALS);
   set.Put(PROXY_TABS);
   return set;
 }

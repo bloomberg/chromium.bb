@@ -70,8 +70,6 @@ settings.SyncStatus;
  *   typedUrlsEnforced: boolean,
  *   typedUrlsRegistered: boolean,
  *   typedUrlsSynced: boolean,
- *   wifiCredentialsEnforced: (boolean|undefined),
- *   wifiCredentialsSynced: (boolean|undefined)
  * }}
  */
 settings.SyncPrefs;
