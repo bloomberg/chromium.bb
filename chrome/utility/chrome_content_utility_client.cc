@@ -175,12 +175,20 @@ bool ChromeContentUtilityClient::OnMessageReceived(
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
-  for (Handlers::iterator it = handlers_.begin();
-       !handled && it != handlers_.end(); ++it) {
-    handled = (*it)->OnMessageReceived(message);
+  if (handled)
+    return true;
+
+  for (const auto& handler : handlers_) {
+    // At least one of the utility process handlers adds a new handler to
+    // |handlers_| when it handles a message. This causes any iterator over
+    // |handlers_| to become invalid. Therefore, it is necessary to break the
+    // loop at this point instead of evaluating it as a loop condition (if the
+    // for loop was using iterators explicitly, as originally done).
+    if (handler->OnMessageReceived(message))
+      return true;
   }
 
-  return handled;
+  return false;
 }
 
 void ChromeContentUtilityClient::RegisterMojoServices(
