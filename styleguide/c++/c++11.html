@@ -393,14 +393,6 @@ template &lt;typename T&gt;<br/>void Function(T&& t) { ... }</code></td>
 </tr>
 
 <tr>
-<td>Lexicographical struct comparison</td>
-<td><code>tie(a, b, c) &lt;<br>&nbsp; tie(rhs.a, rhs.b, rhs.c)</code></td>
-<td>Idiom for <code>operator&lt;</code> implementation</td>
-<td><a href="http://en.cppreference.com/w/cpp/utility/tuple/tie">std::tie</a></td>
-<td>General use of <code>std::tie</code> for unpacking or multiple assignments is still not allowed. <a href="https://groups.google.com/a/chromium.org/d/topic/cxx/3DZ64dIMRTY/discussion">Discussion thread</a></td>
-</tr>
-
-<tr>
 <td>Math functions</td>
 <td>All C++11 features in <code>&lt;cmath&gt;</code>, e.g.:<br/>
 <code>INFINITY</code>, <code>NAN</code>, <code>FP_NAN</code><br/>
@@ -451,10 +443,10 @@ template &lt;typename T&gt;<br/>void Function(T&& t) { ... }</code></td>
 
 <tr>
 <td>Tuples</td>
-<td><code>std::tuple</code></td>
+<td>All C++11 features in <code>&lt;tuple&gt;</code>, e.g. <code>std::tie</code> and <code>std::tuple</code>.</td>
 <td>A fixed-size ordered collection of values of mixed types</td>
-<td><a href="http://en.cppreference.com/w/cpp/utility/tuple">std::tuple</a></td>
-<td>Prefer over <a href="https://crbug.com/554987">base::Tuple</a>.</td>
+<td><a href="http://en.cppreference.com/w/cpp/header/tuple">&lt;tuple&gt;</a></td>
+<td>Prefer <code>std::tuple</code> over <a href="https://crbug.com/554987"><code>base::Tuple</code></a>.</td>
 </tr>
 
 <tr>
