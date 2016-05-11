@@ -9,6 +9,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-menu/paper-menu.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-menu/paper-submenu.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-menu-button/paper-menu-button.html">
+<link rel="import" href="chrome://md-settings/icons.html">
 <link rel="import" href="chrome://md-settings/settings_shared_css.html">
 <link rel="import" href="chrome://md-settings/site_settings/constants.html">
 <link rel="import" href="chrome://md-settings/site_settings/site_settings_behavior.html">
@@ -40,7 +41,7 @@
               </paper-item-body>
 
               <paper-menu-button hidden$="[[allSites]]">
-                <paper-icon-button icon="menu"
+                <paper-icon-button icon="settings:menu"
                     class="dropdown-trigger"></paper-icon-button>
                 <paper-menu id="actionMenu" class="dropdown-content"
                     on-iron-activate="onActionMenuIronActivate_">

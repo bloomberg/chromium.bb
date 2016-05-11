@@ -2,8 +2,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/device-icons.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/image-icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-radio-button/paper-radio-button.html">
@@ -12,6 +10,7 @@
 <link rel="import" href="chrome://md-settings/controls/settings_dropdown_menu.html">
 <link rel="import" href="chrome://md-settings/controls/settings_input.html">
 <link rel="import" href="chrome://md-settings/controls/settings_radio_group.html">
+<link rel="import" href="chrome://md-settings/icons.html">
 <link rel="import" href="chrome://md-settings/settings_page/settings_animated_pages.html">
 <link rel="import" href="chrome://md-settings/settings_page/settings_subpage.html">
 <link rel="import" href="chrome://md-settings/settings_shared_css.html">
@@ -32,7 +31,7 @@
 <if expr="chromeos">
         <div class="settings-box first two-line" id="wallpaperButton"
             on-tap="openWallpaperManager_">
-          <iron-icon icon="device:wallpaper"></iron-icon>
+          <iron-icon icon="settings:wallpaper"></iron-icon>
           <div class="start">
             <div>$i18n{setWallpaper}</div>
             <div class="secondary">$i18n{openWallpaperApp}</div>
@@ -45,7 +44,7 @@
 </if>
           <div class="layout horizontal center flex"
               on-tap="openThemesGallery_">
-            <iron-icon icon="image:palette"></iron-icon>
+            <iron-icon icon="settings:palette"></iron-icon>
             <div>
               <div>$i18n{getThemes}</div>
               <div class="secondary">[[themeSublabel_]]</div>

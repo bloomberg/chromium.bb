@@ -5,6 +5,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-spinner/paper-spinner.html">
 <link rel="import" href="chrome://md-settings/settings_shared_css.html">
 <link rel="import" href="chrome://md-settings/bluetooth_page/bluetooth_dialog_shared_css.html">
+<link rel="import" href="chrome://md-settings/icons.html">
 
 <dom-module id="settings-bluetooth-add-device-dialog">
   <template>
@@ -15,7 +16,8 @@
         <span id="dialogTitle" class="flex"
             i18n-content="bluetoothAddDevicePageTitle">
         </span>
-        <paper-icon-button icon="close" on-tap="onCancelTap_" id="close">
+        <paper-icon-button icon="settings:close" on-tap="onCancelTap_"
+            id="close">
         </paper-icon-button>
       </div>
       <div class="settings-box flex">

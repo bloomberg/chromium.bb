@@ -2,6 +2,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="chrome://md-settings/icons.html">
 <link rel="import" href="chrome://md-settings/settings_shared_css.html">
 <link rel="import" href="chrome://md-settings/site_settings/constants.html">
 <link rel="import" href="chrome://md-settings/site_settings/site_details_permission.html">
@@ -20,7 +21,7 @@
       <h2 id="usage" hidden$="[[!storedData_]]">$i18n{siteSettingsUsage}</h2>
       <paper-item id="storage" hidden$="[[!storedData_]]">
         <div class="flex">[[storedData_]]</div>
-        <paper-icon-button icon="delete"
+        <paper-icon-button icon="settings:delete"
             on-tap="onClearStorage_"
             i18n-values="alt:siteSettingsDelete"></paper-icon-button>
       </paper-item>

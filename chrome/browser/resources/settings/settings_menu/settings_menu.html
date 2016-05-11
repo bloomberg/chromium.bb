@@ -1,19 +1,10 @@
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/av-icons.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/device-icons.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/hardware-icons.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/image-icons.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/social-icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-menu/paper-menu.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-menu/paper-submenu.html">
+<link rel="import" href="chrome://md-settings/icons.html">
 <link rel="import" href="chrome://md-settings/settings_shared_css.html">
-
-<if expr="chromeos">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/device-icons.html">
-</if>
 
 <dom-module id="settings-menu">
   <template>
@@ -87,21 +78,21 @@
             data-page="basic" id="basicMenu">
 <if expr="chromeos">
           <div data-section="internet" on-tap="openPage_">
-            <iron-icon icon="device:network-wifi"></iron-icon>
+            <iron-icon icon="settings:network-wifi"></iron-icon>
             <span i18n-content="internetPageTitle"></span>
           </div>
 </if>
           <div data-section="people" on-tap="openPage_">
-            <iron-icon icon="social:people"></iron-icon>
+            <iron-icon icon="settings:people"></iron-icon>
             <span i18n-content="peoplePageTitle"></span>
           </div>
           <div data-section="appearance" on-tap="openPage_">
-            <iron-icon icon="image:palette"></iron-icon>
+            <iron-icon icon="settings:palette"></iron-icon>
             <span i18n-content="appearancePageTitle"></span>
           </div>
 <if expr="chromeos">
           <div data-section="device" on-tap="openPage_">
-            <iron-icon icon="hardware:laptop-chromebook"></iron-icon>
+            <iron-icon icon="settings:laptop-chromebook"></iron-icon>
             <span i18n-content="devicePageTitle"></span>
           </div>
 </if>
@@ -111,12 +102,12 @@
           </div>
 <if expr="not chromeos">
           <div data-section="defaultBrowser" on-tap="openPage_">
-            <iron-icon icon="av:web"></iron-icon>
+            <iron-icon icon="settings:web"></iron-icon>
             <span i18n-content="defaultBrowser"></span>
           </div>
 </if>
           <div data-section="onStartup" on-tap="openPage_">
-            <iron-icon icon="icons:power-settings-new"></iron-icon>
+            <iron-icon icon="settings:power-settings-new"></iron-icon>
             <span i18n-content="onStartup"></span>
           </div>
         </paper-menu>
@@ -132,44 +123,46 @@
             data-page="advanced" id="advancedMenu">
 <if expr="chromeos">
           <div data-section="dateTime" on-tap="openPage_">
-            <iron-icon icon="device:access-time"></iron-icon>
+            <iron-icon icon="settings:access-time"></iron-icon>
             <span i18n-content="dateTimePageTitle"></span>
           </div>
 </if>
           <div data-section="privacy" on-tap="openPage_">
-            <iron-icon icon="hardware:security"></iron-icon>
+            <iron-icon icon="settings:security"></iron-icon>
             <span i18n-content="privacyPageTitle"></span>
           </div>
 <if expr="chromeos">
           <div data-section="bluetooth" on-tap="openPage_">
-            <iron-icon icon="device:bluetooth"></iron-icon>
+            <iron-icon icon="settings:bluetooth"></iron-icon>
             <span i18n-content="bluetoothPageTitle"></span>
           </div>
 </if>
           <div data-section="passwordsAndForms" on-tap="openPage_">
-            <iron-icon icon="icons:assignment"></iron-icon>
+            <iron-icon icon="settings:assignment"></iron-icon>
             <span i18n-content="passwordsAndAutofillPageTitle"></span>
           </div>
           <div data-section="languages" on-tap="openPage_">
-            <iron-icon icon="icons:language"></iron-icon>
+            <iron-icon icon="settings:language"></iron-icon>
             <span i18n-content="languagesPageTitle"></span>
           </div>
           <div data-section="downloads" on-tap="openPage_">
-            <iron-icon icon="icons:file-download"></iron-icon>
+            <iron-icon icon="settings:file-download">
+            </iron-icon>
             <span i18n-content="downloadsPageTitle"></span>
           </div>
           <div data-section="a11y" on-tap="openPage_">
-            <iron-icon icon="icons:accessibility"></iron-icon>
+            <iron-icon icon="settings:accessibility">
+            </iron-icon>
             <span i18n-content="a11yPageTitle"></span>
           </div>
 <if expr="not chromeos">
           <div data-section="system" on-tap="openPage_">
-            <iron-icon icon="icons:build"></iron-icon>
+            <iron-icon icon="settings:build"></iron-icon>
             <span i18n-content="systemPageTitle"></span>
           </div>
 </if>
           <div data-section="reset" on-tap="openPage_">
-            <iron-icon icon="icons:restore"></iron-icon>
+            <iron-icon icon="settings:restore"></iron-icon>
             <span i18n-content="resetPageTitle"></span>
           </div>
         </paper-menu>

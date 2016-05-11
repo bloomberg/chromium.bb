@@ -1,9 +1,9 @@
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/html/util.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/image-icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-spinner/paper-spinner.html">
+<link rel="import" href="chrome://md-settings/icons.html">
 <link rel="import" href="chrome://md-settings/settings_shared_css.html">
 
 <dom-module id="settings-camera">
@@ -18,13 +18,13 @@
         </div>
       </div>
       <div id="cameraControls">
-        <paper-icon-button id="flipPhoto" tabindex="2" icon="image:flip"
-            i18n-values="title:flipPhoto" on-tap="onTapFlipPhoto_"
-            disabled="[[!cameraOnline_]]">
+        <paper-icon-button id="flipPhoto" tabindex="2"
+            icon="settings:flip" i18n-values="title:flipPhoto"
+            on-tap="onTapFlipPhoto_" disabled="[[!cameraOnline_]]">
         </paper-icon-button>
-        <paper-icon-button id="takePhoto" tabindex="1" icon="image:camera-alt"
-            i18n-values="title:takePhoto" on-tap="takePhoto"
-            disabled="[[!cameraOnline_]]">
+        <paper-icon-button id="takePhoto" tabindex="1"
+            icon="settings:camera-alt" i18n-values="title:takePhoto"
+            on-tap="takePhoto" disabled="[[!cameraOnline_]]">
         </paper-icon-button>
       </div>
     </div>

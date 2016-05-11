@@ -1,8 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-item/paper-item.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/image-icons.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/communication-icons.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/social-icons.html">
+<link rel="import" href="chrome://md-settings/icons.html">
 <link rel="import" href="chrome://md-settings/site_settings/constants.html">
 <link rel="import" href="chrome://md-settings/site_settings/site_settings_behavior.html">
 <link rel="import" href="chrome://md-settings/site_settings/site_settings_prefs_browser_proxy.html">
@@ -14,7 +12,7 @@
       <div id="list" class="settings-list">
         <paper-icon-item category$="[[ALL_SITES]]"
             on-tap="onTapCategory">
-          <iron-icon icon="list" item-icon=""></iron-icon>
+          <iron-icon icon="settings:list" item-icon></iron-icon>
           <div class="flex category-header">
             $i18n{siteSettingsCategoryAllSites}
           </div>
@@ -23,7 +21,7 @@
         <paper-icon-item category$="[[ContentSettingsTypes.COOKIES]]"
             on-tap="onTapCategory">
           <iron-icon icon="[[computeIconForContentCategory(
-              ContentSettingsTypes.COOKIES)]]" item-icon=""></iron-icon>
+              ContentSettingsTypes.COOKIES)]]" item-icon></iron-icon>
           <div class="flex category-header">
             [[computeTitleForContentCategory(ContentSettingsTypes.COOKIES)]]
           </div>
@@ -33,7 +31,7 @@
         <paper-icon-item category$="[[ContentSettingsTypes.GEOLOCATION]]"
             on-tap="onTapCategory">
           <iron-icon icon="[[computeIconForContentCategory(
-              ContentSettingsTypes.GEOLOCATION)]]" item-icon=""></iron-icon>
+              ContentSettingsTypes.GEOLOCATION)]]" item-icon></iron-icon>
           <div class="flex category-header">
             [[computeTitleForContentCategory(ContentSettingsTypes.GEOLOCATION)]]
           </div>
@@ -43,7 +41,7 @@
         <paper-icon-item category$="[[ContentSettingsTypes.CAMERA]]"
             on-tap="onTapCategory">
           <iron-icon icon="[[computeIconForContentCategory(
-              ContentSettingsTypes.CAMERA)]]" item-icon=""></iron-icon>
+              ContentSettingsTypes.CAMERA)]]" item-icon></iron-icon>
           <div class="flex category-header">
             [[computeTitleForContentCategory(ContentSettingsTypes.CAMERA)]]
           </div>
@@ -53,7 +51,7 @@
         <paper-icon-item category$="[[ContentSettingsTypes.MIC]]"
             on-tap="onTapCategory">
           <iron-icon icon="[[computeIconForContentCategory(
-              ContentSettingsTypes.MIC)]]" item-icon=""></iron-icon>
+              ContentSettingsTypes.MIC)]]" item-icon></iron-icon>
           <div class="flex category-header">
             [[computeTitleForContentCategory(ContentSettingsTypes.MIC)]]
           </div>
@@ -63,7 +61,7 @@
         <paper-icon-item category$="[[ContentSettingsTypes.JAVASCRIPT]]"
             on-tap="onTapCategory">
           <iron-icon icon="[[computeIconForContentCategory(
-              ContentSettingsTypes.JAVASCRIPT)]]" item-icon=""></iron-icon>
+              ContentSettingsTypes.JAVASCRIPT)]]" item-icon></iron-icon>
           <div class="flex category-header">
             [[computeTitleForContentCategory(ContentSettingsTypes.JAVASCRIPT)]]
           </div>
@@ -73,7 +71,7 @@
         <paper-icon-item category$="[[ContentSettingsTypes.POPUPS]]"
             on-tap="onTapCategory">
           <iron-icon icon="[[computeIconForContentCategory(
-              ContentSettingsTypes.POPUPS)]]" item-icon=""></iron-icon>
+              ContentSettingsTypes.POPUPS)]]" item-icon></iron-icon>
           <div class="flex category-header">
             [[computeTitleForContentCategory(ContentSettingsTypes.POPUPS)]]
           </div>
@@ -83,7 +81,7 @@
         <paper-icon-item category$="[[ContentSettingsTypes.NOTIFICATIONS]]"
             on-tap="onTapCategory">
           <iron-icon icon="[[computeIconForContentCategory(
-              ContentSettingsTypes.NOTIFICATIONS)]]" item-icon=""></iron-icon>
+              ContentSettingsTypes.NOTIFICATIONS)]]" item-icon></iron-icon>
           <div class="flex category-header">
             [[computeTitleForContentCategory(
                 ContentSettingsTypes.NOTIFICATIONS)]]
@@ -94,7 +92,7 @@
         <paper-icon-item category$="[[ContentSettingsTypes.IMAGES]]"
             on-tap="onTapCategory">
           <iron-icon icon="[[computeIconForContentCategory(
-              ContentSettingsTypes.IMAGES)]]" item-icon=""></iron-icon>
+              ContentSettingsTypes.IMAGES)]]" item-icon></iron-icon>
           <div class="flex category-header">
             [[computeTitleForContentCategory(ContentSettingsTypes.IMAGES)]]
           </div>

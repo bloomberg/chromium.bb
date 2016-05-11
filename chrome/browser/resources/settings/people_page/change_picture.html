@@ -3,11 +3,10 @@
 <link rel="import" href="chrome://resources/html/util.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-a11y-keys/iron-a11y-keys.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/image-icons.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-selector/iron-selector.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="chrome://md-settings/i18n_setup.html">
+<link rel="import" href="chrome://md-settings/icons.html">
 <link rel="import" href="chrome://md-settings/people_page/camera.html">
 <link rel="import" href="chrome://md-settings/people_page/change_picture_browser_proxy.html">
 <link rel="import" href="chrome://md-settings/settings_shared_css.html">
@@ -25,11 +24,11 @@
             selected-item="{{selectedItem_}}">
           <iron-icon id="cameraImage"
               data-type$="[[selectionTypesEnum_.CAMERA]]"
-              icon="image:camera-alt" i18n-values="alt:takePhoto"
+              icon="settings:camera-alt" i18n-values="alt:takePhoto"
               hidden="[[!cameraPresent_]]">
           </iron-icon>
           <iron-icon data-type$="[[selectionTypesEnum_.FILE]]"
-              icon="folder" i18n-values="alt:chooseFile">
+              icon="settings:folder" i18n-values="alt:chooseFile">
           </iron-icon>
           <img id="profileImage"
               data-type$="[[selectionTypesEnum_.PROFILE]]"
@@ -57,8 +56,9 @@
         <img i18n-values="alt:previewAltText" src="[[selectedItem_.src]]"
             hidden="[[isPreviewImageHidden_(selectedItem_)]]">
         <div id="discardControlBar" hidden="[[isDiscardHidden_(selectedItem_)]]">
-          <paper-icon-button id="discardOldImage" tabindex="0" icon="delete"
-              i18n-values="title:discardPhoto" on-tap="onTapDiscardOldImage_">
+          <paper-icon-button id="discardOldImage" tabindex="0"
+              icon="settings:delete" i18n-values="title:discardPhoto"
+              on-tap="onTapDiscardOldImage_">
           </paper-icon-button>
         </div>
         <settings-camera id="camera"

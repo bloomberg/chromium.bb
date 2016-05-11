@@ -99,23 +99,23 @@ var SiteSettingsBehaviorImpl = {
   computeIconForContentCategory: function(category) {
     switch (category) {
       case settings.ContentSettingsTypes.CAMERA:
-        return 'av:videocam';
+        return 'settings:videocam';
       case settings.ContentSettingsTypes.COOKIES:
-        return 'md-settings-icons:cookie';
+        return 'settings:cookie';
       case settings.ContentSettingsTypes.FULLSCREEN:
-        return 'icons:fullscreen';
+        return 'settings:fullscreen';
       case settings.ContentSettingsTypes.GEOLOCATION:
-        return 'communication:location-on';
+        return 'settings:location-on';
       case settings.ContentSettingsTypes.IMAGES:
-        return 'image:photo';
+        return 'settings:photo';
       case settings.ContentSettingsTypes.JAVASCRIPT:
-        return 'icons:input';
+        return 'settings:input';
       case settings.ContentSettingsTypes.MIC:
-        return 'av:mic';
+        return 'settings:mic';
       case settings.ContentSettingsTypes.NOTIFICATIONS:
-        return 'social:notifications';
+        return 'settings:notifications';
       case settings.ContentSettingsTypes.POPUPS:
-        return 'icons:open-in-new';
+        return 'settings:open-in-new';
       default:
         assertNotReached('Invalid category: ' + category);
         return '';

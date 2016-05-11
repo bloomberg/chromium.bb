@@ -3,11 +3,11 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-collapse/iron-collapse.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_expand_button/cr_expand_button.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
+<link rel="import" href="chrome://md-settings/icons.html">
 <link rel="import" href="chrome://md-settings/settings_page/settings_animated_pages.html">
 <link rel="import" href="chrome://md-settings/settings_page/settings_subpage.html">
 <link rel="import" href="chrome://md-settings/settings_shared_css.html">
@@ -57,7 +57,7 @@
                   [[item.language.displayName]]
                 </div>
                 <div class="middle">
-                  <iron-icon icon="done"
+                  <iron-icon icon="settings:done"
                       hidden$="[[!isProspectiveUILanguage_(
                           item.language.code, prefs.intl.app_locale.value)]]">
                   </iron-icon>
@@ -93,7 +93,7 @@
                   on-tap="onInputMethodTap_">
                 <div>[[item.displayName]]</div>
                 <div class="middle">
-                  <iron-icon icon="done"
+                  <iron-icon icon="settings:done"
                       hidden$="[[!isCurrentInputMethod_(
                           item.id, languages.inputMethods.currentId)]]">
                   </iron-icon>
