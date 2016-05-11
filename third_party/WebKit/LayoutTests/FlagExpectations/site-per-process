@@ -1,6 +1,9 @@
 # These tests currently fail when they run with --site-per-process.
 # See https://crbug.com/477150.
 
+# https://crbug.com/611154 - DCHECK in NavigatorImpl::DidStartProvisionalLoad.
+http/tests/security/upgrade-insecure-requests/iframe-upgrade.https.html [ Crash ]
+
 # https://crbug.com/582494 - [sigsegv / av] blink::Document::styleEngine.
 http/tests/security/mixedContent/insecure-plugin-in-iframe.html [ Crash ]
 
