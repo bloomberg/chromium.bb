@@ -54,8 +54,7 @@ CreateDataReductionProxyChromeIOData(
     net::NetLog* net_log,
     PrefService* prefs,
     const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
-    const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner,
-    bool enable_quic) {
+    const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner) {
   DCHECK(net_log);
   DCHECK(prefs);
 
@@ -79,8 +78,7 @@ CreateDataReductionProxyChromeIOData(
       data_reduction_proxy_io_data(
           new data_reduction_proxy::DataReductionProxyIOData(
               DataReductionProxyChromeSettings::GetClient(), flags, net_log,
-              io_task_runner, ui_task_runner, enabled, enable_quic,
-              GetUserAgent()));
+              io_task_runner, ui_task_runner, enabled, GetUserAgent()));
 
   data_reduction_proxy_io_data->set_lofi_decider(
       base::WrapUnique(new data_reduction_proxy::ContentLoFiDecider()));

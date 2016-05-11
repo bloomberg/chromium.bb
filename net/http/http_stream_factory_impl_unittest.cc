@@ -684,7 +684,6 @@ TEST_P(HttpStreamFactoryTest, UnreachableQuicProxyMarkedAsBad) {
     HttpNetworkSession::Params params;
     params.enable_quic = true;
     params.quic_disable_preconnect_if_0rtt = false;
-    params.enable_quic_for_proxies = true;
     scoped_refptr<SSLConfigServiceDefaults> ssl_config_service(
         new SSLConfigServiceDefaults);
     HttpServerPropertiesImpl http_server_properties;
@@ -808,7 +807,6 @@ TEST_P(HttpStreamFactoryTest, QuicLossyProxyMarkedAsBad) {
 
   HttpNetworkSession::Params params;
   params.enable_quic = true;
-  params.enable_quic_for_proxies = true;
   params.quic_disable_preconnect_if_0rtt = false;
   scoped_refptr<SSLConfigServiceDefaults> ssl_config_service(
       new SSLConfigServiceDefaults);

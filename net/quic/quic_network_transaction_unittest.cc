@@ -755,7 +755,7 @@ TEST_P(QuicNetworkTransactionTest, ForceQuic) {
 }
 
 TEST_P(QuicNetworkTransactionTest, QuicProxy) {
-  params_.enable_quic_for_proxies = true;
+  params_.enable_quic = true;
   proxy_service_ =
       ProxyService::CreateFixedFromPacResult("QUIC mail.example.org:70");
 
@@ -794,7 +794,7 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyWithCert) {
   const std::string origin_host = "mail.example.com";
   const std::string proxy_host = "www.example.org";
 
-  params_.enable_quic_for_proxies = true;
+  params_.enable_quic = true;
   proxy_service_ =
       ProxyService::CreateFixedFromPacResult("QUIC " + proxy_host + ":70");
 

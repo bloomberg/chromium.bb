@@ -110,8 +110,6 @@ class NET_EXPORT HttpNetworkSession
     bool enable_quic;
     // Disable QUIC if a connection times out with open streams.
     bool disable_quic_on_timeout_with_open_streams;
-    // Enables QUIC for proxies.
-    bool enable_quic_for_proxies;
     // Instruct QUIC to use consistent ephemeral ports when talking to
     // the same server.
     bool enable_quic_port_selection;

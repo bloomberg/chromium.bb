@@ -184,9 +184,6 @@ class DataReductionProxyParams : public DataReductionProxyConfigValues {
 
   ~DataReductionProxyParams() override;
 
-  // If true, uses QUIC instead of SPDY to connect to proxies that use TLS.
-  void EnableQuic(bool enable);
-
   const std::vector<net::ProxyServer>& proxies_for_http() const override;
 
   const GURL& secure_proxy_check_url() const override;
@@ -198,8 +195,6 @@ class DataReductionProxyParams : public DataReductionProxyConfigValues {
   bool promo_allowed() const override;
 
   bool holdback() const override;
-
-  bool quic_enabled() const { return quic_enabled_; }
 
  protected:
   // Test constructor that optionally won't call Init();
@@ -235,8 +230,6 @@ class DataReductionProxyParams : public DataReductionProxyConfigValues {
   bool fallback_allowed_;
   bool promo_allowed_;
   bool holdback_;
-  bool quic_enabled_;
-  std::string override_quic_origin_;
 
   bool configured_on_command_line_;
 

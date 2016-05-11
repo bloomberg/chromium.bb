@@ -96,7 +96,6 @@ DataReductionProxyIOData::DataReductionProxyIOData(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
     bool enabled,
-    bool enable_quic,
     const std::string& user_agent)
     : client_(client),
       net_log_(net_log),
@@ -112,7 +111,6 @@ DataReductionProxyIOData::DataReductionProxyIOData(
   DCHECK(ui_task_runner_);
   std::unique_ptr<DataReductionProxyParams> params(
       new DataReductionProxyParams(param_flags));
-  params->EnableQuic(enable_quic);
   event_creator_.reset(new DataReductionProxyEventCreator(this));
   configurator_.reset(
       new DataReductionProxyConfigurator(net_log, event_creator_.get()));

@@ -31,7 +31,6 @@ CreateDataReductionProxyChromeIOData(
     net::NetLog* net_log,
     PrefService* prefs,
     const scoped_refptr<base::SingleThreadTaskRunner>& io_thread_runner,
-    const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread_runner,
-    bool enable_quic);
+    const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread_runner);
 
 #endif  // CHROME_BROWSER_NET_SPDYPROXY_DATA_REDUCTION_PROXY_CHROME_IO_DATA_H_

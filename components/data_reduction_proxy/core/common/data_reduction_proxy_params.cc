@@ -27,7 +27,6 @@ const char kControl[] = "Control";
 const char kDisabled[] = "Disabled";
 const char kPreview[] = "Enabled_Preview";
 const char kDefaultSpdyOrigin[] = "https://proxy.googlezip.net:443";
-const char kDefaultQuicOrigin[] = "quic://proxy.googlezip.net:443";
 // A one-off change, until the Data Reduction Proxy configuration service is
 // available.
 const char kCarrierTestOrigin[] =
@@ -288,20 +287,6 @@ const char* GetServerExperimentsFieldTrialName() {
 
 }  // namespace params
 
-void DataReductionProxyParams::EnableQuic(bool enable) {
-  quic_enabled_ = enable;
-  DCHECK(!quic_enabled_ || params::IsIncludedInQuicFieldTrial());
-  if (override_quic_origin_.empty() && quic_enabled_) {
-    origin_ = net::ProxyServer::FromURI(kDefaultQuicOrigin,
-                                        net::ProxyServer::SCHEME_HTTP);
-    proxies_for_http_.clear();
-    if (origin_.is_valid())
-      proxies_for_http_.push_back(origin_);
-    if (fallback_allowed_ && fallback_origin_.is_valid())
-      proxies_for_http_.push_back(fallback_origin_);
-  }
-}
-
 DataReductionProxyTypeInfo::DataReductionProxyTypeInfo() : is_fallback(false) {}
 
 DataReductionProxyTypeInfo::DataReductionProxyTypeInfo(
@@ -322,7 +307,6 @@ DataReductionProxyParams::DataReductionProxyParams(int flags,
       fallback_allowed_((flags & kFallbackAllowed) == kFallbackAllowed),
       promo_allowed_((flags & kPromoAllowed) == kPromoAllowed),
       holdback_((flags & kHoldback) == kHoldback),
-      quic_enabled_(false),
       configured_on_command_line_(false),
       use_override_proxies_for_http_(false) {
   if (should_call_init) {
@@ -393,7 +377,6 @@ void DataReductionProxyParams::InitWithoutChecks() {
 
   // Set from preprocessor constants those params that are not specified on the
   // command line.
-  override_quic_origin_ = origin;
   if (origin.empty())
     origin = GetDefaultOrigin();
   if (fallback_origin.empty())
@@ -457,8 +440,7 @@ std::string DataReductionProxyParams::GetDefaultOrigin() const {
       *base::CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kEnableDataReductionProxyCarrierTest))
     return kCarrierTestOrigin;
-  return quic_enabled_ ?
-      kDefaultQuicOrigin : kDefaultSpdyOrigin;
+  return kDefaultSpdyOrigin;
 }
 
 std::string DataReductionProxyParams::GetDefaultFallbackOrigin() const {

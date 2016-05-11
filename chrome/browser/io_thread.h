@@ -204,11 +204,6 @@ class IOThread : public content::BrowserThreadDelegate {
         bool is_quic_allowed_by_policy,
         net::HttpNetworkSession::Params* params);
 
-    // Returns true if QUIC should be enabled for data reduction proxy, either
-    // as a result of a field trial or a command line flag.
-    static bool ShouldEnableQuicForDataReductionProxy(
-        const base::CommandLine& command_line);
-
    private:
     // Map from name to value for all parameters associate with a field trial.
     using VariationParameters = std::map<std::string, std::string>;
@@ -271,13 +266,6 @@ class IOThread : public content::BrowserThreadDelegate {
     static bool ShouldEnableQuic(const base::CommandLine& command_line,
                                  base::StringPiece quic_trial_group,
                                  bool quic_allowed_by_policy);
-
-    // Returns true if QUIC should be enabled for proxies, either as a result of
-    // a field trial or a command line flag.
-    static bool ShouldEnableQuicForProxies(
-        const base::CommandLine& command_line,
-        base::StringPiece quic_trial_group,
-        bool quic_allowed_by_policy);
 
     // Returns true if the selection of the ephemeral port in bind() should be
     // performed by Chromium, and false if the OS should select the port.  The
@@ -428,10 +416,6 @@ class IOThread : public content::BrowserThreadDelegate {
   const net::HttpNetworkSession::Params& NetworkSessionParams() const;
 
   base::TimeTicks creation_time() const;
-
-  // Returns true if QUIC should be enabled for data reduction proxy, either as
-  // a result of a field trial or a command line flag.
-  static bool ShouldEnableQuicForDataReductionProxy();
 
   // Returns the callback for updating data use prefs.
   const metrics::UpdateUsagePrefCallbackType& GetMetricsDataUseForwarder();

@@ -45,7 +45,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_prefs.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_usage/core/data_use_aggregator.h"
 #include "components/data_usage/core/data_use_amortizer.h"
 #include "components/data_usage/core/data_use_annotator.h"
@@ -1176,13 +1175,6 @@ base::TimeTicks IOThread::creation_time() const {
 }
 
 // static
-bool IOThread::ShouldEnableQuicForDataReductionProxy() {
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  return NetworkSessionConfigurator::ShouldEnableQuicForDataReductionProxy(
-      command_line);
-}
-
 net::SSLConfigService* IOThread::GetSSLConfigService() {
   return ssl_config_service_manager_->Get();
 }
@@ -1246,8 +1238,6 @@ void IOThread::NetworkSessionConfigurator::ConfigureQuicParams(
                                          is_quic_allowed_by_policy);
   params->disable_quic_on_timeout_with_open_streams =
       ShouldDisableQuicWhenConnectionTimesOutWithOpenStreams(quic_trial_params);
-  params->enable_quic_for_proxies = ShouldEnableQuicForProxies(
-      command_line, quic_trial_group, is_quic_allowed_by_policy);
 
   if (ShouldQuicEnableAlternativeServicesForDifferentHost(command_line,
                                                           quic_trial_params)) {
@@ -1367,26 +1357,6 @@ bool IOThread::NetworkSessionConfigurator::ShouldEnableQuic(
 
   return quic_trial_group.starts_with(kQuicFieldTrialEnabledGroupName) ||
          quic_trial_group.starts_with(kQuicFieldTrialHttpsEnabledGroupName);
-}
-
-// static
-bool IOThread::NetworkSessionConfigurator::ShouldEnableQuicForProxies(
-    const base::CommandLine& command_line,
-    base::StringPiece quic_trial_group,
-    bool is_quic_allowed_by_policy) {
-  return ShouldEnableQuic(command_line, quic_trial_group,
-                          is_quic_allowed_by_policy) ||
-         ShouldEnableQuicForDataReductionProxy(command_line);
-}
-
-// static
-bool IOThread::NetworkSessionConfigurator::
-    ShouldEnableQuicForDataReductionProxy(
-        const base::CommandLine& command_line) {
-  if (command_line.HasSwitch(switches::kDisableQuic))
-    return false;
-
-  return data_reduction_proxy::params::IsIncludedInQuicFieldTrial();
 }
 
 // static

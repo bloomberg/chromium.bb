@@ -145,7 +145,6 @@ class IOSChromeIOThread : public web::WebThreadDelegate {
     Optional<bool> enable_priority_dependencies;
 
     Optional<bool> enable_quic;
-    Optional<bool> enable_quic_for_proxies;
     Optional<bool> quic_always_require_handshake_confirmation;
     Optional<bool> quic_disable_connection_pooling;
     Optional<float> quic_load_server_info_timeout_srtt_multiplier;
@@ -192,10 +191,6 @@ class IOSChromeIOThread : public web::WebThreadDelegate {
   void InitializeNetworkSessionParams(net::HttpNetworkSession::Params* params);
 
   base::TimeTicks creation_time() const;
-
-  // Returns true if QUIC should be enabled for data reduction proxy as a result
-  // of a field trial.
-  static bool ShouldEnableQuicForDataReductionProxy();
 
  private:
   // Map from name to value for all parameters associate with a field trial.
@@ -270,10 +265,6 @@ class IOSChromeIOThread : public web::WebThreadDelegate {
 
   // Returns true if QUIC should be enabled as a result of a field trial.
   static bool ShouldEnableQuic(base::StringPiece quic_trial_group);
-
-  // Returns true if QUIC should be enabled for proxies as a result of a
-  // field trial.
-  static bool ShouldEnableQuicForProxies(base::StringPiece quic_trial_group);
 
   // Returns true if QUIC should always require handshake confirmation during
   // the QUIC handshake.

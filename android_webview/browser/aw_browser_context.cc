@@ -213,7 +213,6 @@ void AwBrowserContext::PreMainMessageLoopRun() {
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
           false /* enable */,
-          false /* enable_quic */,
           GetUserAgent()));
   data_reduction_proxy_settings_.reset(
       new data_reduction_proxy::DataReductionProxySettings());

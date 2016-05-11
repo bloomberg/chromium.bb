@@ -88,12 +88,11 @@ CronetDataReductionProxy::CronetDataReductionProxy(
   // network thread.
   settings_.reset(
       new data_reduction_proxy::DataReductionProxySettings());
-  io_data_.reset(
-      new data_reduction_proxy::DataReductionProxyIOData(
-          data_reduction_proxy::Client::CRONET_ANDROID,
-          data_reduction_proxy::DataReductionProxyParams::kAllowed |
-              data_reduction_proxy::DataReductionProxyParams::kFallbackAllowed,
-          net_log, task_runner, task_runner, false, false, user_agent));
+  io_data_.reset(new data_reduction_proxy::DataReductionProxyIOData(
+      data_reduction_proxy::Client::CRONET_ANDROID,
+      data_reduction_proxy::DataReductionProxyParams::kAllowed |
+          data_reduction_proxy::DataReductionProxyParams::kFallbackAllowed,
+      net_log, task_runner, task_runner, false, user_agent));
   io_data_->request_options()->SetKeyOnIO(key);
 }
 

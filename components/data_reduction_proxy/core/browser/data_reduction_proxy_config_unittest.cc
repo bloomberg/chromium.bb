@@ -136,7 +136,6 @@ class DataReductionProxyConfigTest : public testing::Test {
 
   std::unique_ptr<DataReductionProxyConfig> BuildConfig(
       std::unique_ptr<DataReductionProxyParams> params) {
-    params->EnableQuic(false);
     return base::WrapUnique(new DataReductionProxyConfig(
         task_runner(), test_context_->net_log(), std::move(params),
         test_context_->configurator(), test_context_->event_creator()));

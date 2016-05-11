@@ -877,7 +877,7 @@ int HttpStreamFactoryImpl::Job::DoResolveProxyComplete(int result) {
         ProxyServer::SCHEME_HTTPS | ProxyServer::SCHEME_SOCKS4 |
         ProxyServer::SCHEME_SOCKS5;
 
-    if (session_->params().enable_quic_for_proxies)
+    if (session_->params().enable_quic)
       supported_proxies |= ProxyServer::SCHEME_QUIC;
 
     proxy_info_.RemoveProxiesWithoutScheme(supported_proxies);
@@ -959,7 +959,7 @@ int HttpStreamFactoryImpl::Job::DoInitConnection() {
 
   if (proxy_info_.is_quic()) {
     using_quic_ = true;
-    DCHECK(session_->params().enable_quic_for_proxies);
+    DCHECK(session_->params().enable_quic);
   }
 
   if (proxy_info_.is_https() || proxy_info_.is_quic()) {

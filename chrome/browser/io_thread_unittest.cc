@@ -14,7 +14,6 @@
 #include "chrome/browser/io_thread.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/policy/core/common/mock_policy_service.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -96,8 +95,6 @@ TEST_F(NetworkSessionConfiguratorTest, Defaults) {
   EXPECT_FALSE(params_.enable_npn);
   EXPECT_TRUE(params_.enable_priority_dependencies);
   EXPECT_FALSE(params_.enable_quic);
-  EXPECT_FALSE(params_.enable_quic_for_proxies);
-  EXPECT_FALSE(IOThread::ShouldEnableQuicForDataReductionProxy());
 }
 
 TEST_F(NetworkSessionConfiguratorTest, IgnoreCertificateErrors) {
@@ -241,7 +238,6 @@ TEST_F(NetworkSessionConfiguratorTest, EnableQuicFromFieldTrialGroup) {
 
   EXPECT_TRUE(params_.enable_quic);
   EXPECT_FALSE(params_.disable_quic_on_timeout_with_open_streams);
-  EXPECT_TRUE(params_.enable_quic_for_proxies);
   EXPECT_EQ(1350u, params_.quic_max_packet_length);
   EXPECT_EQ(net::QuicTagVector(), params_.quic_connection_options);
   EXPECT_FALSE(params_.quic_always_require_handshake_confirmation);
@@ -261,7 +257,6 @@ TEST_F(NetworkSessionConfiguratorTest, EnableQuicFromFieldTrialGroup) {
   EXPECT_FALSE(params_.quic_disable_preconnect_if_0rtt);
   EXPECT_FALSE(params_.quic_migrate_sessions_on_network_change);
   EXPECT_FALSE(params_.quic_migrate_sessions_early);
-  EXPECT_FALSE(IOThread::ShouldEnableQuicForDataReductionProxy());
   EXPECT_TRUE(params_.quic_host_whitelist.empty());
 
   net::HttpNetworkSession::Params default_params;
@@ -281,57 +276,12 @@ TEST_F(NetworkSessionConfiguratorTest,
   EXPECT_TRUE(params_.disable_quic_on_timeout_with_open_streams);
 }
 
-TEST_F(NetworkSessionConfiguratorTest, EnableQuicFromQuicProxyFieldTrialGroup) {
-  const struct {
-    std::string field_trial_group_name;
-    bool expect_enable_quic;
-  } tests[] = {
-      {
-          std::string(), false,
-      },
-      {
-          "NotEnabled", false,
-      },
-      {
-          "Control", false,
-      },
-      {
-          "Disabled", false,
-      },
-      {
-          "EnabledControl", true,
-      },
-      {
-          "Enabled", true,
-      },
-  };
-
-  field_trial_list_.reset();
-  for (size_t i = 0; i < arraysize(tests); ++i) {
-    base::FieldTrialList field_trial_list(new base::MockEntropyProvider());
-    base::FieldTrialList::CreateFieldTrial(
-        data_reduction_proxy::params::GetQuicFieldTrialName(),
-        tests[i].field_trial_group_name);
-
-    ParseFieldTrials();
-
-    EXPECT_FALSE(params_.enable_quic) << i;
-    EXPECT_EQ(tests[i].expect_enable_quic, params_.enable_quic_for_proxies)
-        << i;
-    EXPECT_EQ(tests[i].expect_enable_quic,
-              IOThread::ShouldEnableQuicForDataReductionProxy())
-        << i;
-  }
-}
-
 TEST_F(NetworkSessionConfiguratorTest, EnableQuicFromCommandLine) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch("enable-quic");
 
   ParseFieldTrialsAndCommandLine();
 
   EXPECT_TRUE(params_.enable_quic);
-  EXPECT_TRUE(params_.enable_quic_for_proxies);
-  EXPECT_FALSE(IOThread::ShouldEnableQuicForDataReductionProxy());
 }
 
 TEST_F(NetworkSessionConfiguratorTest,

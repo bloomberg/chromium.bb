@@ -77,10 +77,6 @@ void TestDataReductionProxyConfig::GetNetworkList(
     interfaces->push_back(network_interfaces_->at(i));
 }
 
-void TestDataReductionProxyConfig::EnableQuic(bool enable) {
-  test_params()->EnableQuic(enable);
-}
-
 void TestDataReductionProxyConfig::ResetParamFlagsForTest(int flags) {
   config_values_ = base::WrapUnique(new TestDataReductionProxyParams(
       flags, TestDataReductionProxyParams::HAS_EVERYTHING));

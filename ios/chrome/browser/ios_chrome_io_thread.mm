@@ -645,7 +645,6 @@ void IOSChromeIOThread::InitializeNetworkSessionParamsFromGlobals(
       &params->enable_priority_dependencies);
 
   globals.enable_quic.CopyToIfSet(&params->enable_quic);
-  globals.enable_quic_for_proxies.CopyToIfSet(&params->enable_quic_for_proxies);
   globals.quic_always_require_handshake_confirmation.CopyToIfSet(
       &params->quic_always_require_handshake_confirmation);
   globals.quic_disable_connection_pooling.CopyToIfSet(
@@ -752,8 +751,6 @@ void IOSChromeIOThread::ConfigureQuicGlobals(
     IOSChromeIOThread::Globals* globals) {
   bool enable_quic = ShouldEnableQuic(quic_trial_group);
   globals->enable_quic.set(enable_quic);
-  bool enable_quic_for_proxies = ShouldEnableQuicForProxies(quic_trial_group);
-  globals->enable_quic_for_proxies.set(enable_quic_for_proxies);
 
   if (ShouldQuicEnableAlternativeServicesForDifferentHost(quic_trial_params)) {
     globals->enable_alternative_service_with_different_host.set(true);
@@ -824,16 +821,6 @@ void IOSChromeIOThread::ConfigureQuicGlobals(
 bool IOSChromeIOThread::ShouldEnableQuic(base::StringPiece quic_trial_group) {
   return quic_trial_group.starts_with(kQuicFieldTrialEnabledGroupName) ||
          quic_trial_group.starts_with(kQuicFieldTrialHttpsEnabledGroupName);
-}
-
-bool IOSChromeIOThread::ShouldEnableQuicForProxies(
-    base::StringPiece quic_trial_group) {
-  return ShouldEnableQuic(quic_trial_group) ||
-         ShouldEnableQuicForDataReductionProxy();
-}
-
-bool IOSChromeIOThread::ShouldEnableQuicForDataReductionProxy() {
-  return data_reduction_proxy::params::IsIncludedInQuicFieldTrial();
 }
 
 net::QuicTagVector IOSChromeIOThread::GetQuicConnectionOptions(

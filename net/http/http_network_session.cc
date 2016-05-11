@@ -102,7 +102,6 @@ HttpNetworkSession::Params::Params()
       enable_priority_dependencies(true),
       enable_quic(false),
       disable_quic_on_timeout_with_open_streams(false),
-      enable_quic_for_proxies(false),
       enable_quic_port_selection(true),
       quic_always_require_handshake_confirmation(false),
       quic_disable_connection_pooling(false),
@@ -306,7 +305,6 @@ std::unique_ptr<base::Value> HttpNetworkSession::QuicInfoToValue() const {
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->Set("sessions", quic_stream_factory_.QuicStreamFactoryInfoToValue());
   dict->SetBoolean("quic_enabled", params_.enable_quic);
-  dict->SetBoolean("quic_enabled_for_proxies", params_.enable_quic_for_proxies);
   dict->SetBoolean("enable_quic_port_selection",
                    params_.enable_quic_port_selection);
   std::unique_ptr<base::ListValue> connection_options(new base::ListValue);

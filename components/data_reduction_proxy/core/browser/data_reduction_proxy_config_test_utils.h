@@ -62,9 +62,6 @@ class TestDataReductionProxyConfig : public DataReductionProxyConfig {
   void GetNetworkList(net::NetworkInterfaceList* interfaces,
                       int policy) override;
 
-  // If true, uses QUIC instead of SPDY to connect to proxies that use TLS.
-  void EnableQuic(bool enable);
-
   // Allows tests to reset the params being used for configuration.
   void ResetParamFlagsForTest(int flags);
 

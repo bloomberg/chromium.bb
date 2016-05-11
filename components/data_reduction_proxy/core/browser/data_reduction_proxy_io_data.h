@@ -57,7 +57,6 @@ class DataReductionProxyIOData : public DataReductionProxyEventStorageDelegate {
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
       bool enabled,
-      bool enable_quic,
       const std::string& user_agent);
 
   virtual ~DataReductionProxyIOData();

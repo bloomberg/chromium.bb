@@ -30,11 +30,14 @@
 #include "net/base/load_timing_info.h"
 #include "net/base/net_errors.h"
 #include "net/base/url_util.h"
+#include "net/http/http_network_session.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/proxy/proxy_server.h"
 #include "net/url_request/url_fetcher.h"
+#include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
 
 #if defined(USE_GOOGLE_API_KEYS)
@@ -135,6 +138,19 @@ void RecordAuthExpiredSessionKey(bool matches) {
       AUTH_EXPIRED_SESSION_KEY_BOUNDARY);
 }
 
+// Returns true if QUIC is enabled in the HTTP network session params tied to
+// |url_request_context_getter|. Should be called only on the IO thread.
+bool IsQuicEnabledGlobally(
+    net::URLRequestContextGetter* url_request_context_getter) {
+  return url_request_context_getter &&
+         url_request_context_getter->GetURLRequestContext() &&
+         url_request_context_getter->GetURLRequestContext()
+             ->GetNetworkSessionParams() &&
+         url_request_context_getter->GetURLRequestContext()
+             ->GetNetworkSessionParams()
+             ->enable_quic;
+}
+
 }  // namespace
 
 const net::BackoffEntry::Policy& GetBackoffPolicy() {
@@ -166,7 +182,8 @@ DataReductionProxyConfigServiceClient::DataReductionProxyConfigServiceClient(
       foreground_fetch_pending_(false),
 #endif
       previous_request_failed_authentication_(false),
-      failed_attempts_before_success_(0) {
+      failed_attempts_before_success_(0),
+      quic_enabled_(false) {
   DCHECK(request_options);
   DCHECK(config_values);
   DCHECK(config);
@@ -221,6 +238,9 @@ void DataReductionProxyConfigServiceClient::InitializeOnIOThread(
 #endif
   net::NetworkChangeNotifier::AddIPAddressObserver(this);
   url_request_context_getter_ = url_request_context_getter;
+
+  quic_enabled_ = params::IsIncludedInQuicFieldTrial() &&
+                  IsQuicEnabledGlobally(url_request_context_getter);
 }
 
 void DataReductionProxyConfigServiceClient::SetEnabled(bool enabled) {
@@ -479,7 +499,7 @@ bool DataReductionProxyConfigServiceClient::ParseAndApplyProxyConfig(
   // If QUIC is enabled, the scheme of the first proxy (if it is HTTPS) would
   // be changed to QUIC.
   if (proxies[0].scheme() == net::ProxyServer::SCHEME_HTTPS && params_ &&
-      params_->quic_enabled()) {
+      quic_enabled_) {
     proxies[0] = net::ProxyServer(net::ProxyServer::SCHEME_QUIC,
                                   proxies[0].host_port_pair());
     DCHECK_EQ(net::ProxyServer::SCHEME_QUIC, proxies[0].scheme());

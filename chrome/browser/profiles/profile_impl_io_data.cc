@@ -178,17 +178,11 @@ void ProfileImplIOData::Handle::Init(
   if (io_data_->domain_reliability_monitor_)
     io_data_->domain_reliability_monitor_->MoveToNetworkThread();
 
-  // TODO(tbansal): Move this to IO thread once the data reduction proxy
-  // params are unified into a single object.
-  bool enable_quic_for_data_reduction_proxy =
-      IOThread::ShouldEnableQuicForDataReductionProxy();
-
   io_data_->set_data_reduction_proxy_io_data(
       CreateDataReductionProxyChromeIOData(
           g_browser_process->io_thread()->net_log(), profile_->GetPrefs(),
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
-          enable_quic_for_data_reduction_proxy));
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI)));
 
   base::SequencedWorkerPool* pool = BrowserThread::GetBlockingPool();
   scoped_refptr<base::SequencedTaskRunner> db_task_runner =
