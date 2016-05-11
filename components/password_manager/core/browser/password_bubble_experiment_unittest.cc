@@ -139,7 +139,7 @@ class PasswordManagerPasswordBubbleExperimentTest : public testing::Test {
         ShouldShowSavePromptFirstRunExperience(sync_service(), prefs());
     if (test_case.first_run_experience ==
         SavePromptFirstRunExperience::PRESENT) {
-      EXPECT_TRUE(should_show_first_run_experience);
+      EXPECT_FALSE(should_show_first_run_experience);
     } else {
       EXPECT_FALSE(should_show_first_run_experience);
     }
@@ -235,7 +235,7 @@ TEST_F(PasswordManagerPasswordBubbleExperimentTest,
       {CustomPassphraseState::NONE, syncer::PASSWORDS, true,
        SavePromptFirstRunExperience::NONE},
       {CustomPassphraseState::NONE, syncer::PASSWORDS, false,
-       SavePromptFirstRunExperience::PRESENT},
+       SavePromptFirstRunExperience::NONE},
       {CustomPassphraseState::NONE, syncer::BOOKMARKS, true,
        SavePromptFirstRunExperience::NONE},
       {CustomPassphraseState::NONE, syncer::BOOKMARKS, false,

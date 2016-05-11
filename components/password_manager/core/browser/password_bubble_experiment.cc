@@ -71,10 +71,7 @@ bool IsSmartLockBrandingSavePromptEnabled(
 bool ShouldShowSavePromptFirstRunExperience(
     const sync_driver::SyncService* sync_service,
     PrefService* prefs) {
-  const bool was_first_run_experience_shown = prefs->GetBoolean(
-      password_manager::prefs::kWasSavePrompFirstRunExperienceShown);
-  return IsSmartLockBrandingEnabled(sync_service) &&
-         !was_first_run_experience_shown;
+  return false;
 }
 
 void RecordSavePromptFirstRunExperienceWasShown(PrefService* prefs) {
