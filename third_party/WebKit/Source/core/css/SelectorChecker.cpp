@@ -155,9 +155,17 @@ static bool shouldMatchHoverOrActive(const SelectorChecker::SelectorCheckingCont
         return true;
     if (context.isSubSelector)
         return true;
-    if (context.selector->relation() == CSSSelector::SubSelector && context.selector->tagHistory())
+    if (context.element->isLink())
         return true;
-    return context.element->isLink();
+    const CSSSelector* selector = context.selector;
+    while (selector->relation() == CSSSelector::SubSelector && selector->tagHistory()) {
+        selector = selector->tagHistory();
+        if (selector->match() != CSSSelector::PseudoClass)
+            return true;
+        if (selector->getPseudoType() != CSSSelector::PseudoHover && selector->getPseudoType() != CSSSelector::PseudoActive)
+            return true;
+    }
+    return false;
 }
 
 static bool isFirstChild(Element& element)
