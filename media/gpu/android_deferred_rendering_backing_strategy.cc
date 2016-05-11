@@ -448,8 +448,10 @@ bool AndroidDeferredRenderingBackingStrategy::ShouldCopyPictures() const {
   }
 
   // Samsung Galaxy Tab A, J3, and J1 Mini all like to crash on Lollipop in
-  // glEGLImageTargetTexture2DOES .  Exact models were SM-T280, SM-J320F,
-  // and SM-j105H.  For these devices, we must check based on the brand / model
+  // glEGLImageTargetTexture2DOES .  These include SM-J105, SM-J111, SM-J120,
+  // SM-T280, SM-T285, and SM-J320 with various suffixes.  All run lollipop and
+  // and have a Mali-400 gpu.
+  // For these devices, we must check based on the brand / model
   // number, since the strings used by FeatureInfo aren't populated.
   if (base::android::BuildInfo::GetInstance()->sdk_int() <= 22) {  // L MR1
     const std::string brand(
@@ -457,9 +459,12 @@ bool AndroidDeferredRenderingBackingStrategy::ShouldCopyPictures() const {
     if (brand == "samsung") {
       const std::string model(
           base::ToLowerASCII(base::android::BuildInfo::GetInstance()->model()));
-      if (model.find("sm-t280") != std::string::npos ||
-          model.find("sm-j320f") != std::string::npos ||
-          model.find("sm-j105") != std::string::npos)
+      if (model.find("sm-j105") != std::string::npos ||
+          model.find("sm-j111") != std::string::npos ||
+          model.find("sm-j120") != std::string::npos ||
+          model.find("sm-t280") != std::string::npos ||
+          model.find("sm-t285") != std::string::npos ||
+          model.find("sm-j320") != std::string::npos)
         return false;
     }
   }
