@@ -749,12 +749,14 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingServiceMetadataTest, MalwareImg) {
   GenUrlFullhashResultWithMetadata(img_url, &malware_full_hash);
   switch (GetParam()) {
     case ThreatPatternType::NONE:  // Falls through.
-    case ThreatPatternType::DISTRIBUTION:
+    case ThreatPatternType::MALWARE_DISTRIBUTION:
       EXPECT_CALL(observer_, OnSafeBrowsingHit(IsUnsafeResourceFor(img_url)))
           .Times(1);
       break;
-    case ThreatPatternType::LANDING:
+    case ThreatPatternType::MALWARE_LANDING:
       // No interstitial shown, so no notifications expected.
+      break;
+    default:
       break;
   }
   SetupResponseForUrl(img_url, malware_full_hash);
@@ -763,7 +765,7 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingServiceMetadataTest, MalwareImg) {
   // interstitial, the other types should.
   switch (GetParam()) {
     case ThreatPatternType::NONE:  // Falls through.
-    case ThreatPatternType::DISTRIBUTION:
+    case ThreatPatternType::MALWARE_DISTRIBUTION:
       EXPECT_TRUE(ShowingInterstitialPage());
       EXPECT_TRUE(got_hit_report());
       EXPECT_EQ(img_url, hit_report().malicious_url);
@@ -771,18 +773,21 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingServiceMetadataTest, MalwareImg) {
       EXPECT_EQ(GURL(), hit_report().referrer_url);
       EXPECT_TRUE(hit_report().is_subresource);
       break;
-    case ThreatPatternType::LANDING:
+    case ThreatPatternType::MALWARE_LANDING:
       EXPECT_FALSE(ShowingInterstitialPage());
       EXPECT_FALSE(got_hit_report());
+      break;
+    default:
       break;
   }
 }
 
-INSTANTIATE_TEST_CASE_P(MaybeSetMetadata,
-                        SafeBrowsingServiceMetadataTest,
-                        testing::Values(ThreatPatternType::NONE,
-                                        ThreatPatternType::LANDING,
-                                        ThreatPatternType::DISTRIBUTION));
+INSTANTIATE_TEST_CASE_P(
+    MaybeSetMetadata,
+    SafeBrowsingServiceMetadataTest,
+    testing::Values(ThreatPatternType::NONE,
+                    ThreatPatternType::MALWARE_LANDING,
+                    ThreatPatternType::MALWARE_DISTRIBUTION));
 
 IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, UnwantedImgIgnored) {
   GURL main_url = embedded_test_server()->GetURL(kMalwarePage);

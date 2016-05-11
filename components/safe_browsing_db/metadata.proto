@@ -15,9 +15,22 @@ package safe_browsing;
 // Metadata for the goog-malware-shavar list.
 message MalwarePatternType {
   enum PATTERN_TYPE {
+    TYPE_UNSPECIFIED = 0;
     LANDING = 1;
     DISTRIBUTION = 2;
   }
 
   required PATTERN_TYPE pattern_type = 1;
+}
+
+// Metadata for the goog-phish-shavar list.
+message SocialEngineeringPatternType {
+  enum PATTERN_TYPE {
+    TYPE_UNSPECIFIED = 0;
+    SOCIAL_ENGINEERING_ADS = 1;
+    SOCIAL_ENGINEERING_LANDING = 2;
+    PHISHING = 3;
+  }
+
+  optional PATTERN_TYPE pattern_type = 1;
 }

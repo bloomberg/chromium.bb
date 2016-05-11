@@ -27,9 +27,12 @@ const char kJsonKeyThreatType[] = "threat_type";
 // SB2RemoteCallThreatSubType.
 enum UmaThreatSubType {
   UMA_THREAT_SUB_TYPE_NOT_SET = 0,
-  UMA_THREAT_SUB_TYPE_LANDING = 1,
-  UMA_THREAT_SUB_TYPE_DISTRIBUTION = 2,
+  UMA_THREAT_SUB_TYPE_POTENTIALLY_HALMFUL_APP_LANDING = 1,
+  UMA_THREAT_SUB_TYPE_POTENTIALLY_HALMFUL_APP_DISTRIBUTION = 2,
   UMA_THREAT_SUB_TYPE_UNKNOWN = 3,
+  UMA_THREAT_SUB_TYPE_SOCIAL_ENGINEERING_ADS = 4,
+  UMA_THREAT_SUB_TYPE_SOCIAL_ENGINEERING_LANDING = 5,
+  UMA_THREAT_SUB_TYPE_PHISHING = 6,
   UMA_THREAT_SUB_TYPE_MAX_VALUE
 };
 
@@ -64,15 +67,37 @@ ThreatPatternType ParseThreatSubType(
     return ThreatPatternType::NONE;
   }
 
-  if (pattern_type == "LANDING") {
-    ReportUmaThreatSubType(threat_type, UMA_THREAT_SUB_TYPE_LANDING);
-    return ThreatPatternType::LANDING;
-  } else if (pattern_type == "DISTRIBUTION") {
-    ReportUmaThreatSubType(threat_type, UMA_THREAT_SUB_TYPE_DISTRIBUTION);
-    return ThreatPatternType::DISTRIBUTION;
+  if (threat_type == SB_THREAT_TYPE_URL_MALWARE) {
+    if (pattern_type == "LANDING") {
+      ReportUmaThreatSubType(
+          threat_type, UMA_THREAT_SUB_TYPE_POTENTIALLY_HALMFUL_APP_LANDING);
+      return ThreatPatternType::MALWARE_LANDING;
+    } else if (pattern_type == "DISTRIBUTION") {
+      ReportUmaThreatSubType(
+          threat_type,
+          UMA_THREAT_SUB_TYPE_POTENTIALLY_HALMFUL_APP_DISTRIBUTION);
+      return ThreatPatternType::MALWARE_DISTRIBUTION;
+    } else {
+      ReportUmaThreatSubType(threat_type, UMA_THREAT_SUB_TYPE_UNKNOWN);
+      return ThreatPatternType::NONE;
+    }
   } else {
-    ReportUmaThreatSubType(threat_type, UMA_THREAT_SUB_TYPE_UNKNOWN);
-    return ThreatPatternType::NONE;
+    DCHECK(threat_type == SB_THREAT_TYPE_URL_PHISHING);
+    if (pattern_type == "SOCIAL_ENGINEERING_ADS") {
+      ReportUmaThreatSubType(threat_type,
+                             UMA_THREAT_SUB_TYPE_SOCIAL_ENGINEERING_ADS);
+      return ThreatPatternType::SOCIAL_ENGINEERING_ADS;
+    } else if (pattern_type == "SOCIAL_ENGINEERING_LANDING") {
+      ReportUmaThreatSubType(threat_type,
+                             UMA_THREAT_SUB_TYPE_SOCIAL_ENGINEERING_LANDING);
+      return ThreatPatternType::SOCIAL_ENGINEERING_LANDING;
+    } else if (pattern_type == "PHISHING") {
+      ReportUmaThreatSubType(threat_type, UMA_THREAT_SUB_TYPE_PHISHING);
+      return ThreatPatternType::PHISHING;
+    } else {
+      ReportUmaThreatSubType(threat_type, UMA_THREAT_SUB_TYPE_UNKNOWN);
+      return ThreatPatternType::NONE;
+    }
   }
 }
 
@@ -116,8 +141,8 @@ SBThreatType JavaToSBThreatType(int java_threat_num) {
 // Valid examples:
 // {"matches":[{"threat_type":"5"}]}
 //   or
-// {"matches":[{"threat_type":"4"},
-//             {"threat_type":"5", "se_pattern_type":"LANDING"}]}
+// {"matches":[{"threat_type":"4", "pha_pattern_type":"LANDING"},
+//             {"threat_type":"5"}]}
 //   or
 // {"matches":[{"threat_type":"4", "UserPopulation":"YXNvZWZpbmFqO..."}]
 UmaRemoteCallResult ParseJsonFromGMSCore(const std::string& metadata_str,

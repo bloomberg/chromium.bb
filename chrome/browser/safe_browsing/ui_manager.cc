@@ -159,7 +159,7 @@ void SafeBrowsingUIManager::DisplayBlockingPage(
     if (resource.threat_type == SB_THREAT_TYPE_URL_UNWANTED ||
         (resource.threat_type == SB_THREAT_TYPE_URL_MALWARE &&
          resource.threat_metadata.threat_pattern_type ==
-         ThreatPatternType::LANDING)) {
+             ThreatPatternType::MALWARE_LANDING)) {
       if (!resource.callback.is_null()) {
         DCHECK(resource.callback_thread);
         resource.callback_thread->PostTask(FROM_HERE,

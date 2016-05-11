@@ -92,7 +92,7 @@ class V4GetHashProtocolManager : public net::URLFetcherDelegate,
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingV4GetHashProtocolManagerTest,
                            TestParseHashResponseWrongThreatEntryType);
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingV4GetHashProtocolManagerTest,
-                           TestParseHashResponseSocialEngineeringThreatType);
+                           TestParseHashThreatPatternType);
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingV4GetHashProtocolManagerTest,
                            TestParseHashResponseNonPermissionMetadata);
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingV4GetHashProtocolManagerTest,

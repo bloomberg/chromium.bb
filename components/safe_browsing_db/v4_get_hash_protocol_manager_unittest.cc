@@ -259,33 +259,79 @@ TEST_F(SafeBrowsingV4GetHashProtocolManagerTest,
   EXPECT_EQ(0ul, full_hashes.size());
 }
 
-// Adds an entry with a SOCIAL_ENGINEERING threat type.
+// Adds entries with a ThreatPatternType metadata.
 TEST_F(SafeBrowsingV4GetHashProtocolManagerTest,
-       TestParseHashResponseSocialEngineeringThreatType) {
+       TestParseHashThreatPatternType) {
   std::unique_ptr<V4GetHashProtocolManager> pm(CreateProtocolManager());
 
-  FindFullHashesResponse res;
-  res.mutable_negative_cache_duration()->set_seconds(600);
-  ThreatMatch* m = res.add_matches();
-  m->set_threat_type(SOCIAL_ENGINEERING);
-  m->set_platform_type(CHROME_PLATFORM);
-  m->set_threat_entry_type(URL_EXPRESSION);
-  m->mutable_threat()->set_hash(
-      SBFullHashToString(SBFullHashForString("Not to fret.")));
-  ThreatEntryMetadata::MetadataEntry* e =
-      m->mutable_threat_entry_metadata()->add_entries();
-  e->set_key("permission");
-  e->set_value("IGNORED");
+  // Test social engineering pattern type.
+  FindFullHashesResponse se_res;
+  se_res.mutable_negative_cache_duration()->set_seconds(600);
+  ThreatMatch* se = se_res.add_matches();
+  se->set_threat_type(SOCIAL_ENGINEERING_PUBLIC);
+  se->set_platform_type(CHROME_PLATFORM);
+  se->set_threat_entry_type(URL_EXPRESSION);
+  SBFullHash hash_string = SBFullHashForString("Everything's shiny, Cap'n.");
+  se->mutable_threat()->set_hash(SBFullHashToString(hash_string));
+  ThreatEntryMetadata::MetadataEntry* se_meta =
+      se->mutable_threat_entry_metadata()->add_entries();
+  se_meta->set_key("se_pattern_type");
+  se_meta->set_value("SOCIAL_ENGINEERING_LANDING");
 
-  // Serialize.
-  std::string res_data;
-  res.SerializeToString(&res_data);
+  std::string se_data;
+  se_res.SerializeToString(&se_data);
 
   std::vector<SBFullHashResult> full_hashes;
   base::TimeDelta cache_lifetime;
-  EXPECT_FALSE(pm->ParseHashResponse(res_data, &full_hashes, &cache_lifetime));
+  EXPECT_TRUE(pm->ParseHashResponse(se_data, &full_hashes, &cache_lifetime));
 
   EXPECT_EQ(base::TimeDelta::FromSeconds(600), cache_lifetime);
+  EXPECT_EQ(1ul, full_hashes.size());
+  EXPECT_TRUE(SBFullHashEqual(hash_string, full_hashes[0].hash));
+  EXPECT_EQ(ThreatPatternType::SOCIAL_ENGINEERING_LANDING,
+            full_hashes[0].metadata.threat_pattern_type);
+
+  // Test potentially harmful application pattern type.
+  FindFullHashesResponse pha_res;
+  pha_res.mutable_negative_cache_duration()->set_seconds(600);
+  ThreatMatch* pha = pha_res.add_matches();
+  pha->set_threat_type(POTENTIALLY_HARMFUL_APPLICATION);
+  pha->set_threat_entry_type(URL_EXPRESSION);
+  pha->set_platform_type(CHROME_PLATFORM);
+  hash_string = SBFullHashForString("Not to fret.");
+  pha->mutable_threat()->set_hash(SBFullHashToString(hash_string));
+  ThreatEntryMetadata::MetadataEntry* pha_meta =
+      pha->mutable_threat_entry_metadata()->add_entries();
+  pha_meta->set_key("pha_pattern_type");
+  pha_meta->set_value("LANDING");
+
+  std::string pha_data;
+  pha_res.SerializeToString(&pha_data);
+  full_hashes.clear();
+  EXPECT_TRUE(pm->ParseHashResponse(pha_data, &full_hashes, &cache_lifetime));
+  EXPECT_EQ(1ul, full_hashes.size());
+  EXPECT_TRUE(SBFullHashEqual(hash_string, full_hashes[0].hash));
+  EXPECT_EQ(ThreatPatternType::MALWARE_LANDING,
+            full_hashes[0].metadata.threat_pattern_type);
+
+  // Test invalid pattern type.
+  FindFullHashesResponse invalid_res;
+  invalid_res.mutable_negative_cache_duration()->set_seconds(600);
+  ThreatMatch* invalid = invalid_res.add_matches();
+  invalid->set_threat_type(POTENTIALLY_HARMFUL_APPLICATION);
+  invalid->set_threat_entry_type(URL_EXPRESSION);
+  invalid->set_platform_type(CHROME_PLATFORM);
+  invalid->mutable_threat()->set_hash(SBFullHashToString(hash_string));
+  ThreatEntryMetadata::MetadataEntry* invalid_meta =
+      invalid->mutable_threat_entry_metadata()->add_entries();
+  invalid_meta->set_key("pha_pattern_type");
+  invalid_meta->set_value("INVALIDE_VALUE");
+
+  std::string invalid_data;
+  invalid_res.SerializeToString(&invalid_data);
+  full_hashes.clear();
+  EXPECT_FALSE(
+      pm->ParseHashResponse(invalid_data, &full_hashes, &cache_lifetime));
   EXPECT_EQ(0ul, full_hashes.size());
 }
 
@@ -313,16 +359,10 @@ TEST_F(SafeBrowsingV4GetHashProtocolManagerTest,
 
   std::vector<SBFullHashResult> full_hashes;
   base::TimeDelta cache_lifetime;
-  EXPECT_TRUE(pm->ParseHashResponse(res_data, &full_hashes, &cache_lifetime));
+  EXPECT_FALSE(pm->ParseHashResponse(res_data, &full_hashes, &cache_lifetime));
 
   EXPECT_EQ(base::TimeDelta::FromSeconds(600), cache_lifetime);
-  EXPECT_EQ(1ul, full_hashes.size());
-
-  EXPECT_TRUE(SBFullHashEqual(SBFullHashForString("Not to fret."),
-                              full_hashes[0].hash));
-  // Metadata should be empty.
-  EXPECT_EQ(0ul, full_hashes[0].metadata.api_permissions.size());
-  EXPECT_EQ(base::TimeDelta::FromSeconds(0), full_hashes[0].cache_duration);
+  EXPECT_EQ(0ul, full_hashes.size());
 }
 
 TEST_F(SafeBrowsingV4GetHashProtocolManagerTest,

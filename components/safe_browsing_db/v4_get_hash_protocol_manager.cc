@@ -44,9 +44,12 @@ enum ParseResultType {
   // with the other matches.
   INCONSISTENT_THREAT_TYPE_ERROR = 5,
 
+  // A match in the response contained a metadata, but the metadata is invalid.
+  UNEXPECTED_METADATA_VALUE_ERROR = 6,
+
   // Memory space for histograms is determined by the max.  ALWAYS
   // ADD NEW VALUES BEFORE THIS ONE.
-  PARSE_RESULT_TYPE_MAX = 6
+  PARSE_RESULT_TYPE_MAX = 7,
 };
 
 // Record parsing errors of a GetHash result.
@@ -225,6 +228,9 @@ bool V4GetHashProtocolManager::ParseHashResponse(
                match.threat_entry_metadata().entries()) {
             if (m.key() == "permission") {
               result.metadata.api_permissions.push_back(m.value());
+            } else {
+              RecordParseGetHashResult(UNEXPECTED_METADATA_VALUE_ERROR);
+              return false;
             }
           }
         } else {
@@ -234,6 +240,48 @@ bool V4GetHashProtocolManager::ParseHashResponse(
       } else {
         RecordParseGetHashResult(UNEXPECTED_PLATFORM_TYPE_ERROR);
         return false;
+      }
+    } else if (match.threat_type() == MALWARE_THREAT ||
+               match.threat_type() == POTENTIALLY_HARMFUL_APPLICATION) {
+      for (const ThreatEntryMetadata::MetadataEntry& m :
+           match.threat_entry_metadata().entries()) {
+        // TODO: Need to confirm the below key/value pairs with CSD backend.
+        if (m.key() == "pha_pattern_type" ||
+            m.key() == "malware_pattern_type") {
+          if (m.value() == "LANDING") {
+            result.metadata.threat_pattern_type =
+                ThreatPatternType::MALWARE_LANDING;
+            break;
+          } else if (m.value() == "DISTRIBUTION") {
+            result.metadata.threat_pattern_type =
+                ThreatPatternType::MALWARE_DISTRIBUTION;
+            break;
+          } else {
+            RecordParseGetHashResult(UNEXPECTED_METADATA_VALUE_ERROR);
+            return false;
+          }
+        }
+      }
+    } else if (match.threat_type() == SOCIAL_ENGINEERING_PUBLIC) {
+      for (const ThreatEntryMetadata::MetadataEntry& m :
+           match.threat_entry_metadata().entries()) {
+        if (m.key() == "se_pattern_type") {
+          if (m.value() == "SOCIAL_ENGINEERING_ADS") {
+            result.metadata.threat_pattern_type =
+                ThreatPatternType::SOCIAL_ENGINEERING_ADS;
+            break;
+          } else if (m.value() == "SOCIAL_ENGINEERING_LANDING") {
+            result.metadata.threat_pattern_type =
+                ThreatPatternType::SOCIAL_ENGINEERING_LANDING;
+            break;
+          } else if (m.value() == "PHISHING") {
+            result.metadata.threat_pattern_type = ThreatPatternType::PHISHING;
+            break;
+          } else {
+            RecordParseGetHashResult(UNEXPECTED_METADATA_VALUE_ERROR);
+            return false;
+          }
+        }
       }
     } else {
       RecordParseGetHashResult(UNEXPECTED_THREAT_TYPE_ERROR);

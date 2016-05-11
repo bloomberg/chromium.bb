@@ -86,7 +86,7 @@ TEST_F(SafeBrowsingApiHandlerUtilTest, PhaSubType) {
             ResetAndParseJson("{\"matches\":[{\"threat_type\":\"4\", "
                               "\"pha_pattern_type\":\"LANDING\"}]}"));
   EXPECT_EQ(SB_THREAT_TYPE_URL_MALWARE, threat_);
-  expected.threat_pattern_type = ThreatPatternType::LANDING;
+  expected.threat_pattern_type = ThreatPatternType::MALWARE_LANDING;
   EXPECT_EQ(expected, meta_);
   // Test the ThreatMetadata comparitor for this field.
   EXPECT_NE(empty_meta_, meta_);
@@ -95,7 +95,7 @@ TEST_F(SafeBrowsingApiHandlerUtilTest, PhaSubType) {
             ResetAndParseJson("{\"matches\":[{\"threat_type\":\"4\", "
                               "\"pha_pattern_type\":\"DISTRIBUTION\"}]}"));
   EXPECT_EQ(SB_THREAT_TYPE_URL_MALWARE, threat_);
-  expected.threat_pattern_type = ThreatPatternType::DISTRIBUTION;
+  expected.threat_pattern_type = ThreatPatternType::MALWARE_DISTRIBUTION;
   EXPECT_EQ(expected, meta_);
 
   EXPECT_EQ(UMA_STATUS_UNSAFE,
@@ -107,18 +107,27 @@ TEST_F(SafeBrowsingApiHandlerUtilTest, PhaSubType) {
 TEST_F(SafeBrowsingApiHandlerUtilTest, SocialEngineeringSubType) {
   ThreatMetadata expected;
 
-  EXPECT_EQ(UMA_STATUS_UNSAFE,
-            ResetAndParseJson("{\"matches\":[{\"threat_type\":\"5\", "
-                              "\"se_pattern_type\":\"LANDING\"}]}"));
+  EXPECT_EQ(
+      UMA_STATUS_UNSAFE,
+      ResetAndParseJson("{\"matches\":[{\"threat_type\":\"5\", "
+                        "\"se_pattern_type\":\"SOCIAL_ENGINEERING_ADS\"}]}"));
   EXPECT_EQ(SB_THREAT_TYPE_URL_PHISHING, threat_);
-  expected.threat_pattern_type = ThreatPatternType::LANDING;
+  expected.threat_pattern_type = ThreatPatternType::SOCIAL_ENGINEERING_ADS;
+  EXPECT_EQ(expected, meta_);
+
+  EXPECT_EQ(UMA_STATUS_UNSAFE,
+            ResetAndParseJson(
+                "{\"matches\":[{\"threat_type\":\"5\", "
+                "\"se_pattern_type\":\"SOCIAL_ENGINEERING_LANDING\"}]}"));
+  EXPECT_EQ(SB_THREAT_TYPE_URL_PHISHING, threat_);
+  expected.threat_pattern_type = ThreatPatternType::SOCIAL_ENGINEERING_LANDING;
   EXPECT_EQ(expected, meta_);
 
   EXPECT_EQ(UMA_STATUS_UNSAFE,
             ResetAndParseJson("{\"matches\":[{\"threat_type\":\"5\", "
-                              "\"se_pattern_type\":\"DISTRIBUTION\"}]}"));
+                              "\"se_pattern_type\":\"PHISHING\"}]}"));
   EXPECT_EQ(SB_THREAT_TYPE_URL_PHISHING, threat_);
-  expected.threat_pattern_type = ThreatPatternType::DISTRIBUTION;
+  expected.threat_pattern_type = ThreatPatternType::PHISHING;
   EXPECT_EQ(expected, meta_);
 
   EXPECT_EQ(UMA_STATUS_UNSAFE,

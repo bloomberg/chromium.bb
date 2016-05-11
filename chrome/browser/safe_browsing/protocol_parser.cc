@@ -137,18 +137,9 @@ class BufferReader {
   DISALLOW_COPY_AND_ASSIGN(BufferReader);
 };
 
-// Parse the |raw_metadata| string based on the |list_type| and populate
-// the appropriate field of |metadata|.  For Pver3 (which this file implements),
-// we only fill in threat_pattern_type.  Others are populated for Pver4.
-void InterpretMetadataString(const std::string& raw_metadata,
-                             ListType list_type,
-                             ThreatMetadata* metadata) {
-  if (list_type != UNWANTEDURL && list_type != MALWARE)
-    return;
-
-  if (raw_metadata.empty())
-    return;
-
+// Helper function to parse malware metadata string
+void InterpretMalwareMetadataString(const std::string& raw_metadata,
+                                    ThreatMetadata* metadata) {
   MalwarePatternType proto;
   if (!proto.ParseFromString(raw_metadata)) {
     DCHECK(false) << "Bad MalwarePatternType";
@@ -159,14 +150,53 @@ void InterpretMetadataString(const std::string& raw_metadata,
   // proto in Pver4).
   switch (proto.pattern_type()) {
     case MalwarePatternType::LANDING:
-      metadata->threat_pattern_type = ThreatPatternType::LANDING;
+      metadata->threat_pattern_type = ThreatPatternType::MALWARE_LANDING;
       break;
     case MalwarePatternType::DISTRIBUTION:
-      metadata->threat_pattern_type = ThreatPatternType::DISTRIBUTION;
+      metadata->threat_pattern_type = ThreatPatternType::MALWARE_DISTRIBUTION;
       break;
     default:
       metadata->threat_pattern_type = ThreatPatternType::NONE;
   }
+}
+
+// Helper function to parse social engineering metadata string.
+void InterpretSocEngMetadataString(const std::string& raw_metadata,
+                                   ThreatMetadata* metadata) {
+  SocialEngineeringPatternType proto;
+  if (!proto.ParseFromString(raw_metadata)) {
+    DCHECK(false) << "Bad SocialEngineeringPatternType";
+    return;
+  }
+
+  switch (proto.pattern_type()) {
+    case SocialEngineeringPatternType::SOCIAL_ENGINEERING_ADS:
+      metadata->threat_pattern_type = ThreatPatternType::SOCIAL_ENGINEERING_ADS;
+      break;
+    case SocialEngineeringPatternType::SOCIAL_ENGINEERING_LANDING:
+      metadata->threat_pattern_type =
+          ThreatPatternType::SOCIAL_ENGINEERING_LANDING;
+      break;
+    case SocialEngineeringPatternType::PHISHING:
+      metadata->threat_pattern_type = ThreatPatternType::PHISHING;
+      break;
+    default:
+      metadata->threat_pattern_type = ThreatPatternType::NONE;
+  }
+}
+
+// Parse the |raw_metadata| string based on the |list_type| and populate
+// the appropriate field of |metadata|.  For Pver3 (which this file implements),
+// we only fill in threat_pattern_type.  Others are populated for Pver4.
+void InterpretMetadataString(const std::string& raw_metadata,
+                             ListType list_type,
+                             ThreatMetadata* metadata) {
+  if (raw_metadata.empty())
+    return;
+  if (list_type == MALWARE)
+    InterpretMalwareMetadataString(raw_metadata, metadata);
+  else if (list_type == PHISH)
+    InterpretSocEngMetadataString(raw_metadata, metadata);
 }
 
 bool ParseGetHashMetadata(

@@ -55,9 +55,14 @@ enum SBThreatType {
 
 // Metadata that indicates what kind of URL match this is.
 enum class ThreatPatternType {
-  NONE,          // Pattern type didn't appear in the metadata
-  LANDING,       // The match is a landing page
-  DISTRIBUTION,  // The match is a distribution page
+  NONE = 0,                        // Pattern type didn't appear in the metadata
+  MALWARE_LANDING = 1,             // The match is a malware landing page
+  MALWARE_DISTRIBUTION = 2,        // The match is a malware distribution page
+  SOCIAL_ENGINEERING_ADS = 3,      // The match is a social engineering ads page
+  SOCIAL_ENGINEERING_LANDING = 4,  // The match is a social engineering landing
+                                   // page
+  PHISHING = 5,                    // The match is a phishing page
+  THREAT_PATTERN_TYPE_MAX_VALUE
 };
 
 // Metadata that was returned by a GetFullHash call. This is the parsed version

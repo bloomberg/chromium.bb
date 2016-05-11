@@ -20,6 +20,7 @@ namespace {
 
 const char kDefaultPhishList[] = "goog-phish-shavar";
 const char kDefaultMalwareList[] = "goog-malware-shavar";
+const char kDefaultUwSList[] = "goog-unwanted-shavar";
 
 }  // namespace
 
@@ -434,15 +435,21 @@ TEST(SafeBrowsingProtocolParsingTest, TestGetHash) {
   EXPECT_EQ(MALWARE, full_hashes[2].list_id);
 
   // Test metadata parsing. Make some metadata protos to fill in the message.
-  MalwarePatternType proto;
+  MalwarePatternType malware_proto;
 
-  proto.set_pattern_type(MalwarePatternType::LANDING);
+  malware_proto.set_pattern_type(MalwarePatternType::LANDING);
   std::string metadata_pb_landing;
-  ASSERT_TRUE(proto.SerializeToString(&metadata_pb_landing));
+  ASSERT_TRUE(malware_proto.SerializeToString(&metadata_pb_landing));
 
-  proto.set_pattern_type(MalwarePatternType::DISTRIBUTION);
+  malware_proto.set_pattern_type(MalwarePatternType::DISTRIBUTION);
   std::string metadata_pb_distribution;
-  ASSERT_TRUE(proto.SerializeToString(&metadata_pb_distribution));
+  ASSERT_TRUE(malware_proto.SerializeToString(&metadata_pb_distribution));
+
+  SocialEngineeringPatternType se_proto;
+  se_proto.set_pattern_type(
+      SocialEngineeringPatternType::SOCIAL_ENGINEERING_ADS);
+  std::string metadata_pb_se_ads;
+  ASSERT_TRUE(se_proto.SerializeToString(&metadata_pb_se_ads));
 
   const std::string get_hash3(base::StringPrintf(
       "45\n"
@@ -451,38 +458,45 @@ TEST(SafeBrowsingProtocolParsingTest, TestGetHash) {
       "00112233445566778899aabbccddeeff"
       "%zu\n%s"  // meta 1
       "%zu\n%s"  // meta 2
+      "%s:32:1:m\n"
+      "cafebeefcafebeefdeaddeaddeaddead"
+      "%zu\n%s"  // meta 3
       "%s:32:1\n"
-      "cafebeefcafebeefdeaddeaddeaddead",
-      kDefaultMalwareList,
-      metadata_pb_landing.size(),
-      metadata_pb_landing.c_str(),
-      metadata_pb_distribution.size(),
-      metadata_pb_distribution.c_str(),
-      kDefaultPhishList));
+      "dafebeefcafebeefdeaddeaddeaddead",
+      kDefaultMalwareList, metadata_pb_landing.size(),
+      metadata_pb_landing.c_str(), metadata_pb_distribution.size(),
+      metadata_pb_distribution.c_str(), kDefaultPhishList,
+      metadata_pb_se_ads.size(), metadata_pb_se_ads.c_str(), kDefaultUwSList));
   EXPECT_TRUE(ParseGetHash(get_hash3.data(), get_hash3.length(),
                            &cache_lifetime, &full_hashes));
 
-  ASSERT_EQ(3U, full_hashes.size());
+  ASSERT_EQ(4U, full_hashes.size());
   EXPECT_EQ(memcmp(&full_hashes[0].hash,
                    "zzzzyyyyxxxxwwwwvvvvuuuuttttssss",
                    sizeof(SBFullHash)), 0);
   EXPECT_EQ(MALWARE, full_hashes[0].list_id);
-  EXPECT_EQ(ThreatPatternType::LANDING,
+  EXPECT_EQ(ThreatPatternType::MALWARE_LANDING,
             full_hashes[0].metadata.threat_pattern_type);
 
   EXPECT_EQ(memcmp(&full_hashes[1].hash,
                    "00112233445566778899aabbccddeeff",
                    sizeof(SBFullHash)), 0);
   EXPECT_EQ(MALWARE, full_hashes[1].list_id);
-  EXPECT_EQ(ThreatPatternType::DISTRIBUTION,
+  EXPECT_EQ(ThreatPatternType::MALWARE_DISTRIBUTION,
             full_hashes[1].metadata.threat_pattern_type);
 
   EXPECT_EQ(memcmp(&full_hashes[2].hash,
                    "cafebeefcafebeefdeaddeaddeaddead",
                    sizeof(SBFullHash)), 0);
   EXPECT_EQ(PHISH, full_hashes[2].list_id);
-  EXPECT_EQ(ThreatPatternType::NONE,
+  EXPECT_EQ(ThreatPatternType::SOCIAL_ENGINEERING_ADS,
             full_hashes[2].metadata.threat_pattern_type);
+  EXPECT_EQ(memcmp(&full_hashes[3].hash, "dafebeefcafebeefdeaddeaddeaddead",
+                   sizeof(SBFullHash)),
+            0);
+  EXPECT_EQ(UNWANTEDURL, full_hashes[3].list_id);
+  EXPECT_EQ(ThreatPatternType::NONE,
+            full_hashes[3].metadata.threat_pattern_type);
 }
 
 TEST(SafeBrowsingProtocolParsingTest, TestGetHashWithUnknownList) {
