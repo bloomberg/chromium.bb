@@ -868,8 +868,8 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      */
     reset: function(takeFocus, forceOnline) {
       // Reload and show the sign-in UI if needed.
+      this.gaiaAuthHost_.resetStates_();
       if (takeFocus) {
-        this.gaiaAuthHost_.resetStates_();
         if (!forceOnline && this.isOffline()) {
           // Show 'Cancel' button to allow user to return to the main screen
           // (e.g. this makes sense when connection is back).

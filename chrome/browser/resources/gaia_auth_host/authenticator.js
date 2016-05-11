@@ -121,6 +121,7 @@ cr.define('cr.login', function() {
     this.webview_ = typeof webview == 'string' ? $(webview) : webview;
     assert(this.webview_);
 
+    this.isLoaded_ = false;
     this.email_ = null;
     this.password_ = null;
     this.gaiaId_ = null,
@@ -192,6 +193,7 @@ cr.define('cr.login', function() {
    * would not result in an infinite loop.
    */
   Authenticator.prototype.resetStates_ = function() {
+    this.isLoaded_ = false;
     this.email_ = null;
     this.gaiaId_ = null;
     this.password_ = null;
@@ -256,6 +258,7 @@ cr.define('cr.login', function() {
     }
 
     this.webview_.src = this.reloadUrl_;
+    this.isLoaded_ = true;
   };
 
   /**
@@ -264,6 +267,7 @@ cr.define('cr.login', function() {
   Authenticator.prototype.reload = function() {
     this.resetStates_();
     this.webview_.src = this.reloadUrl_;
+    this.isLoaded_ = true;
   };
 
   Authenticator.prototype.constructInitialFrameUrl_ = function(data) {
@@ -702,11 +706,13 @@ cr.define('cr.login', function() {
    * @private
    */
   Authenticator.prototype.onInsecureContentBlocked_ = function(e) {
-    if (this.insecureContentBlockedCallback) {
+    if (!this.isLoaded_)
+      return;
+
+    if (this.insecureContentBlockedCallback)
       this.insecureContentBlockedCallback(e.detail.url);
-    } else {
+    else
       console.error('Authenticator: Insecure content blocked.');
-    }
   };
 
   /**
@@ -714,6 +720,9 @@ cr.define('cr.login', function() {
    * @private
    */
   Authenticator.prototype.onAuthPageLoaded_ = function(e) {
+    if (!this.isLoaded_)
+      return;
+
     if (!e.detail.isSAMLPage)
       return;
 
