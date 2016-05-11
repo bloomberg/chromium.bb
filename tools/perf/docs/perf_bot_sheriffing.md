@@ -165,7 +165,12 @@ be investigated. When a test fails:
     ensure that the bug title reflects something like "Fix and re-enable
     testname".
 4.  Investigate the failure. Some tips for investigating:
-    *   [Debugging telemetry failures](https://www.chromium.org/developers/telemetry/diagnosing-test-failures)
+    *   If it's a non flaky failure, indentify the first failed
+        build so you can narrow down the range of CLs that causes the failure.
+        You can use the
+        [diagnose_test_failure](https://code.google.com/p/chromium/codesearch#chromium/src/tools/perf/diagnose_test_failure)
+        script to automatically find the first failed build and the good & bad
+        revisions (which can also be used for return code bisect).
     *   If you suspect a specific CL in the range, you can revert it locally and
         run the test on the
         [perf trybots](https://www.chromium.org/developers/telemetry/performance-try-bots).
@@ -177,6 +182,7 @@ be investigated. When a test fails:
         3.  Type the **Bug ID** from step 1, the **Good Revision** the last
             commit pos data was received from, the **Bad Revision** the last
             commit pos and set **Bisect mode** to `return_code`.
+    *   [Debugging telemetry failures](https://www.chromium.org/developers/telemetry/diagnosing-test-failures)
     *   On Android and Mac, you can view platform-level screenshots of the
         device screen for failing tests, links to which are printed in the logs.
         Often this will immediately reveal failure causes that are opaque from
