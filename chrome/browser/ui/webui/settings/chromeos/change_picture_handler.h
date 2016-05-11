@@ -41,6 +41,8 @@ class ChangePictureHandler : public ::settings::SettingsPageUIHandler,
 
   // WebUIMessageHandler implementation.
   void RegisterMessages() override;
+  void OnJavascriptAllowed() override;
+  void OnJavascriptDisallowed() override;
 
   // CameraPresenceNotifier::Observer implementation:
   void OnCameraPresenceCheckDone(bool is_camera_present) override;

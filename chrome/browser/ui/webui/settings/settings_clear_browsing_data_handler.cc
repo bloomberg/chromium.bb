@@ -22,6 +22,7 @@ namespace settings {
 
 ClearBrowsingDataHandler::ClearBrowsingDataHandler(content::WebUI* webui)
     : sync_service_(nullptr),
+      sync_service_observer_(this),
       remover_(nullptr),
       should_show_history_footer_(false),
       weak_ptr_factory_(this) {
@@ -29,10 +30,6 @@ ClearBrowsingDataHandler::ClearBrowsingDataHandler(content::WebUI* webui)
   clear_plugin_lso_data_enabled_.Init(prefs::kClearPluginLSODataEnabled, prefs);
   pepper_flash_settings_enabled_.Init(prefs::kPepperFlashSettingsEnabled,
                                       prefs);
-  allow_deleting_browser_history_.Init(
-      prefs::kAllowDeletingBrowserHistory, prefs,
-      base::Bind(&ClearBrowsingDataHandler::OnBrowsingHistoryPrefChanged,
-                 base::Unretained(this)));
   sync_service_ =
         ProfileSyncServiceFactory::GetForProfile(Profile::FromWebUI(webui));
 }
@@ -55,13 +52,19 @@ void ClearBrowsingDataHandler::RegisterMessages() {
 }
 
 void ClearBrowsingDataHandler::OnJavascriptAllowed() {
+  PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
+  allow_deleting_browser_history_.Init(
+      prefs::kAllowDeletingBrowserHistory, prefs,
+      base::Bind(&ClearBrowsingDataHandler::OnBrowsingHistoryPrefChanged,
+                 base::Unretained(this)));
+
   if (sync_service_)
-    sync_service_->AddObserver(this);
+    sync_service_observer_.Add(sync_service_);
 }
 
 void ClearBrowsingDataHandler::OnJavascriptDisallowed() {
-  if (sync_service_)
-    sync_service_->RemoveObserver(this);
+  allow_deleting_browser_history_.Destroy();
+  sync_service_observer_.RemoveAll();
 }
 
 void ClearBrowsingDataHandler::HandleClearBrowsingData(
@@ -168,7 +171,7 @@ void ClearBrowsingDataHandler::OnBrowsingDataRemoverDone() {
 }
 
 void ClearBrowsingDataHandler::OnBrowsingHistoryPrefChanged() {
-  web_ui()->CallJavascriptFunction(
+  CallJavascriptFunction(
       "cr.webUIListenerCallback",
       base::StringValue("browsing-history-pref-changed"),
       base::FundamentalValue(*allow_deleting_browser_history_));
@@ -181,7 +184,7 @@ void ClearBrowsingDataHandler::HandleInitialize(const base::ListValue* args) {
 }
 
 void ClearBrowsingDataHandler::OnStateChanged() {
-  web_ui()->CallJavascriptFunction(
+  CallJavascriptFunction(
       "cr.webUIListenerCallback",
       base::StringValue("update-footer"),
       base::FundamentalValue(sync_service_ && sync_service_->IsSyncActive()),

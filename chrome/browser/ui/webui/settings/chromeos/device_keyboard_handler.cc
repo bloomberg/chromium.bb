@@ -33,12 +33,9 @@ namespace chromeos {
 namespace settings {
 
 KeyboardHandler::KeyboardHandler(content::WebUI* webui)
-    : profile_(Profile::FromWebUI(webui)) {
-  ui::DeviceDataManager::GetInstance()->AddObserver(this);
-}
+    : profile_(Profile::FromWebUI(webui)), observer_(this) {}
 
 KeyboardHandler::~KeyboardHandler() {
-  ui::DeviceDataManager::GetInstance()->RemoveObserver(this);
 }
 
 void KeyboardHandler::RegisterMessages() {
@@ -52,11 +49,20 @@ void KeyboardHandler::RegisterMessages() {
                  base::Unretained(this)));
 }
 
+void KeyboardHandler::OnJavascriptAllowed() {
+  observer_.Add(ui::DeviceDataManager::GetInstance());
+}
+
+void KeyboardHandler::OnJavascriptDisallowed() {
+  observer_.RemoveAll();
+}
+
 void KeyboardHandler::OnKeyboardDeviceConfigurationChanged() {
   UpdateShowKeys();
 }
 
 void KeyboardHandler::HandleInitialize(const base::ListValue* args) {
+  AllowJavascript();
   UpdateShowKeys();
 }
 
@@ -65,15 +71,14 @@ void KeyboardHandler::HandleShowKeyboardShortcutsOverlay(
   ash::Shell::GetInstance()->new_window_delegate()->ShowKeyboardOverlay();
 }
 
-void KeyboardHandler::UpdateShowKeys() const {
+void KeyboardHandler::UpdateShowKeys() {
   const base::FundamentalValue has_caps_lock(HasExternalKeyboard());
   const base::FundamentalValue has_diamond_key(
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kHasChromeOSDiamondKey));
-  web_ui()->CallJavascriptFunction("cr.webUIListenerCallback",
-                                   base::StringValue("show-keys-changed"),
-                                   has_caps_lock,
-                                   has_diamond_key);
+  CallJavascriptFunction("cr.webUIListenerCallback",
+                         base::StringValue("show-keys-changed"), has_caps_lock,
+                         has_diamond_key);
 }
 
 }  // namespace settings

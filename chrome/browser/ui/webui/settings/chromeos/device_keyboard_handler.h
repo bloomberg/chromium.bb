@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_SETTINGS_CHROMEOS_DEVICE_KEYBOARD_HANDLER_H_
 
 #include "base/macros.h"
+#include "base/scoped_observer.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "ui/events/devices/input_device_event_observer.h"
 
@@ -15,6 +16,10 @@ class ListValue;
 
 namespace content {
 class WebUI;
+}
+
+namespace ui {
+class DeviceDataManager;
 }
 
 class Profile;
@@ -32,6 +37,8 @@ class KeyboardHandler
 
   // SettingsPageUIHandler implementation.
   void RegisterMessages() override;
+  void OnJavascriptAllowed() override;
+  void OnJavascriptDisallowed() override;
 
   // ui::InputDeviceEventObserver implementation.
   void OnKeyboardDeviceConfigurationChanged() override;
@@ -45,9 +52,11 @@ class KeyboardHandler
 
   // Shows or hides the Caps Lock and Diamond key settings based on whether the
   // system status.
-  void UpdateShowKeys() const;
+  void UpdateShowKeys();
 
   Profile* profile_;  // Weak pointer.
+
+  ScopedObserver<ui::DeviceDataManager, KeyboardHandler> observer_;
 
   DISALLOW_COPY_AND_ASSIGN(KeyboardHandler);
 };

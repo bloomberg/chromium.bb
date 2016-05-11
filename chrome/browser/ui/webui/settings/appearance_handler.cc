@@ -23,14 +23,9 @@ namespace settings {
 
 AppearanceHandler::AppearanceHandler(content::WebUI* webui)
     : profile_(Profile::FromWebUI(webui)) {
-  registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
-                 content::Source<ThemeService>(
-                     ThemeServiceFactory::GetForProfile(profile_)));
 }
 
-AppearanceHandler::~AppearanceHandler() {
-  registrar_.RemoveAll();
-}
+AppearanceHandler::~AppearanceHandler() {}
 
 void AppearanceHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
@@ -48,16 +43,25 @@ void AppearanceHandler::RegisterMessages() {
 #endif
 }
 
+void AppearanceHandler::OnJavascriptAllowed() {
+  registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
+                 content::Source<ThemeService>(
+                     ThemeServiceFactory::GetForProfile(profile_)));
+}
+
+void AppearanceHandler::OnJavascriptDisallowed() {
+  registrar_.RemoveAll();
+}
+
 void AppearanceHandler::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_BROWSER_THEME_CHANGED: {
-      web_ui()->CallJavascriptFunction(
-          "cr.webUIListenerCallback",
-          base::StringValue("reset-theme-enabled-changed"),
-          base::FundamentalValue(ResetThemeEnabled()));
+      CallJavascriptFunction("cr.webUIListenerCallback",
+                             base::StringValue("reset-theme-enabled-changed"),
+                             base::FundamentalValue(ResetThemeEnabled()));
       break;
     }
     default:
@@ -76,6 +80,8 @@ bool AppearanceHandler::ResetThemeEnabled() const {
 
 void AppearanceHandler::HandleGetResetThemeEnabled(
     const base::ListValue* args) {
+  AllowJavascript();
+
   CHECK_EQ(1U, args->GetSize());
   const base::Value* callback_id;
   CHECK(args->Get(0, &callback_id));

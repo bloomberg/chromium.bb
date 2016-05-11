@@ -31,6 +31,8 @@ class AppearanceHandler : public SettingsPageUIHandler,
 
   // SettingsPageUIHandler implementation.
   void RegisterMessages() override;
+  void OnJavascriptAllowed() override;
+  void OnJavascriptDisallowed() override;
 
  private:
   // content::NotificationObserver implementation.

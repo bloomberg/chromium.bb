@@ -80,13 +80,6 @@ ChangePictureHandler::ChangePictureHandler()
     : previous_image_url_(url::kAboutBlankURL),
       previous_image_index_(user_manager::User::USER_IMAGE_INVALID),
       camera_observer_(this) {
-  registrar_.Add(this, chrome::NOTIFICATION_PROFILE_IMAGE_UPDATED,
-                 content::NotificationService::AllSources());
-  registrar_.Add(this, chrome::NOTIFICATION_PROFILE_IMAGE_UPDATE_FAILED,
-                 content::NotificationService::AllSources());
-  registrar_.Add(this, chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED,
-                 content::NotificationService::AllSources());
-
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   media::SoundsManager* manager = media::SoundsManager::Get();
   manager->Initialize(SOUND_OBJECT_DELETE,
@@ -119,6 +112,19 @@ void ChangePictureHandler::RegisterMessages() {
                                 base::Unretained(this)));
 }
 
+void ChangePictureHandler::OnJavascriptAllowed() {
+  registrar_.Add(this, chrome::NOTIFICATION_PROFILE_IMAGE_UPDATED,
+                 content::NotificationService::AllSources());
+  registrar_.Add(this, chrome::NOTIFICATION_PROFILE_IMAGE_UPDATE_FAILED,
+                 content::NotificationService::AllSources());
+  registrar_.Add(this, chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED,
+                 content::NotificationService::AllSources());
+}
+
+void ChangePictureHandler::OnJavascriptDisallowed() {
+  registrar_.RemoveAll();
+}
+
 void ChangePictureHandler::SendDefaultImages() {
   base::ListValue image_urls;
   for (int i = default_user_image::kFirstDefaultImageIndex;
@@ -136,9 +142,9 @@ void ChangePictureHandler::SendDefaultImages() {
                           default_user_image::GetDefaultImageDescription(i));
     image_urls.Append(image_data.release());
   }
-  web_ui()->CallJavascriptFunction("cr.webUIListenerCallback",
-                                   base::StringValue("default-images-changed"),
-                                   image_urls);
+  CallJavascriptFunction("cr.webUIListenerCallback",
+                         base::StringValue("default-images-changed"),
+                         image_urls);
 }
 
 void ChangePictureHandler::HandleChooseFile(const base::ListValue* args) {
@@ -191,6 +197,8 @@ void ChangePictureHandler::HandlePhotoTaken(const base::ListValue* args) {
 void ChangePictureHandler::HandlePageInitialized(const base::ListValue* args) {
   DCHECK(args && args->empty());
 
+  AllowJavascript();
+
   CameraPresenceNotifier* camera = CameraPresenceNotifier::GetInstance();
   if (!camera_observer_.IsObserving(camera))
     camera_observer_.Add(camera);
@@ -225,9 +233,9 @@ void ChangePictureHandler::SendSelectedImage() {
         // User has image from the current set of default images.
         base::StringValue image_url(
             default_user_image::GetDefaultImageUrl(previous_image_index_));
-        web_ui()->CallJavascriptFunction(
-            "cr.webUIListenerCallback",
-            base::StringValue("selected-image-changed"), image_url);
+        CallJavascriptFunction("cr.webUIListenerCallback",
+                               base::StringValue("selected-image-changed"),
+                               image_url);
       } else {
         // User has an old default image, so present it in the same manner as a
         // previous image from file.
@@ -242,9 +250,9 @@ void ChangePictureHandler::SendProfileImage(const gfx::ImageSkia& image,
                                             bool should_select) {
   base::StringValue data_url(webui::GetBitmapDataUrl(*image.bitmap()));
   base::FundamentalValue select(should_select);
-  web_ui()->CallJavascriptFunction("cr.webUIListenerCallback",
-                                   base::StringValue("profile-image-changed"),
-                                   data_url, select);
+  CallJavascriptFunction("cr.webUIListenerCallback",
+                         base::StringValue("profile-image-changed"), data_url,
+                         select);
 }
 
 void ChangePictureHandler::UpdateProfileImage() {
@@ -262,8 +270,8 @@ void ChangePictureHandler::UpdateProfileImage() {
 void ChangePictureHandler::SendOldImage(const std::string& image_url) {
   previous_image_url_ = image_url;
   base::StringValue url(image_url);
-  web_ui()->CallJavascriptFunction("cr.webUIListenerCallback",
-                                   base::StringValue("old-image-changed"), url);
+  CallJavascriptFunction("cr.webUIListenerCallback",
+                         base::StringValue("old-image-changed"), url);
 }
 
 void ChangePictureHandler::HandleSelectImage(const base::ListValue* args) {
@@ -357,9 +365,9 @@ void ChangePictureHandler::SetImageFromCamera(const gfx::ImageSkia& photo) {
 }
 
 void ChangePictureHandler::SetCameraPresent(bool present) {
-  web_ui()->CallJavascriptFunction("cr.webUIListenerCallback",
-                                   base::StringValue("camera-presence-changed"),
-                                   base::FundamentalValue(present));
+  CallJavascriptFunction("cr.webUIListenerCallback",
+                         base::StringValue("camera-presence-changed"),
+                         base::FundamentalValue(present));
 }
 
 void ChangePictureHandler::OnCameraPresenceCheckDone(bool is_camera_present) {

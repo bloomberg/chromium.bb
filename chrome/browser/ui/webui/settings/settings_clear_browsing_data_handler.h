@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"
+#include "base/scoped_observer.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
@@ -64,6 +65,8 @@ class ClearBrowsingDataHandler : public SettingsPageUIHandler,
 
   // ProfileSyncService to observe sync state changes.
   ProfileSyncService* sync_service_;
+  ScopedObserver<ProfileSyncService, sync_driver::SyncServiceObserver>
+      sync_service_observer_;
 
   // If non-null it means removal is in progress.
   BrowsingDataRemover* remover_;
