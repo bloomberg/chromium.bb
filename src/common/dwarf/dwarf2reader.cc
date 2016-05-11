@@ -266,7 +266,9 @@ void CompilationUnit::ReadHeader() {
   header_.abbrev_offset = reader_->ReadOffset(headerptr);
   headerptr += reader_->OffsetSize();
 
-  assert(headerptr + 1 < buffer_ + buffer_length_);
+  // Compare against less than or equal because this may be the last
+  // section in the file.
+  assert(headerptr + 1 <= buffer_ + buffer_length_);
   header_.address_size = reader_->ReadOneByte(headerptr);
   reader_->SetAddressSize(header_.address_size);
   headerptr += 1;
