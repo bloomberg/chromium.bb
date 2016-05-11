@@ -38,16 +38,18 @@ void AwRenderViewHostExt::DocumentHasImages(DocumentHasImagesResult result) {
     result.Run(false);
     return;
   }
-  static int next_id = 1;
-  int this_id = next_id++;
-  pending_document_has_images_requests_[this_id] = result;
+  static uint32_t next_id = 1;
+  uint32_t this_id = next_id++;
   // Send the message to the main frame, instead of the whole frame tree,
   // because it only makes sense on the main frame.
-  // TODO(hush): deal with the case where the receiving RenderView is gone or
-  // inactive.
-  // crbug.com/570906
-  Send(new AwViewMsg_DocumentHasImages(
-      web_contents()->GetMainFrame()->GetRoutingID(), this_id));
+  if (Send(new AwViewMsg_DocumentHasImages(
+          web_contents()->GetMainFrame()->GetRoutingID(), this_id))) {
+    pending_document_has_images_requests_[this_id] = result;
+  } else {
+    // Still have to respond to the API call WebView#docuemntHasImages.
+    // Otherwise the listener of the response may be starved.
+    result.Run(false);
+  }
 }
 
 void AwRenderViewHostExt::ClearCache() {

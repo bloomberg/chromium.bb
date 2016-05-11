@@ -47,7 +47,7 @@ IPC_MESSAGE_CONTROL0(AwViewMsg_ClearCache)
 // elements.  The id should be passed in the response message so the response
 // can be associated with the request.
 IPC_MESSAGE_ROUTED1(AwViewMsg_DocumentHasImages,
-                    int /* id */)
+                    uint32_t /* id */)
 
 // Do hit test at the given webview coordinate. "Webview" coordinates are
 // physical pixel values with the 0,0 at the top left of the current displayed

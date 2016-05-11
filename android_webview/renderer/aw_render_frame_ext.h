@@ -37,7 +37,7 @@ class AwRenderFrameExt : public content::RenderFrameObserver {
   bool OnMessageReceived(const IPC::Message& message) override;
   void FocusedNodeChanged(const blink::WebNode& node) override;
 
-  void OnDocumentHasImagesRequest(int id);
+  void OnDocumentHasImagesRequest(uint32_t id);
   void OnDoHitTest(const gfx::PointF& touch_center,
                    const gfx::SizeF& touch_area);
 
