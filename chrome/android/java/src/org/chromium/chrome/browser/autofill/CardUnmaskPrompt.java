@@ -11,6 +11,7 @@ import android.graphics.Color;
 import android.graphics.ColorFilter;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Handler;
 import android.support.v4.view.MarginLayoutParamsCompat;
@@ -50,8 +51,6 @@ public class CardUnmaskPrompt
     private final CardUnmaskObserverForTest mObserverForTest;
     private final AlertDialog mDialog;
     private boolean mShouldRequestExpirationDate;
-    private final int mThisYear;
-    private final int mThisMonth;
 
     private final View mMainView;
     private final TextView mInstructions;
@@ -69,6 +68,10 @@ public class CardUnmaskPrompt
     private final View mVerificationOverlay;
     private final ProgressBar mVerificationProgressBar;
     private final TextView mVerificationView;
+
+    private int mThisYear;
+    private int mThisMonth;
+    private boolean mValidationWaitsForCalendarTask;
 
     /**
      * An interface to handle the interaction with an CardUnmaskPrompt object.
@@ -164,8 +167,26 @@ public class CardUnmaskPrompt
         mDialog.setOnDismissListener(this);
 
         mShouldRequestExpirationDate = shouldRequestExpirationDate;
-        mThisYear = Calendar.getInstance().get(Calendar.YEAR);
-        mThisMonth = Calendar.getInstance().get(Calendar.MONTH) + 1;
+        mThisYear = -1;
+        mThisMonth = -1;
+        if (mShouldRequestExpirationDate) new CalendarTask().execute();
+    }
+
+    /**
+     * Avoids disk reads for timezone when getting the default instance of Calendar.
+     */
+    private class CalendarTask extends AsyncTask<Void, Void, Calendar> {
+        @Override
+        protected Calendar doInBackground(Void... unused) {
+            return Calendar.getInstance();
+        }
+
+        @Override
+        protected void onPostExecute(Calendar result) {
+            mThisYear = result.get(Calendar.YEAR);
+            mThisMonth = result.get(Calendar.MONTH) + 1;
+            if (mValidationWaitsForCalendarTask) validate();
+        }
     }
 
     public void show() {
@@ -252,6 +273,10 @@ public class CardUnmaskPrompt
 
     @Override
     public void afterTextChanged(Editable s) {
+        validate();
+    }
+
+    private void validate() {
         mDialog.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(areInputsValid());
     }
 
@@ -352,6 +377,11 @@ public class CardUnmaskPrompt
 
     private boolean areInputsValid() {
         if (mShouldRequestExpirationDate) {
+            if (mThisYear == -1 || mThisMonth == -1) {
+                mValidationWaitsForCalendarTask = true;
+                return false;
+            }
+
             int month = -1;
             try {
                 month = Integer.parseInt(mMonthInput.getText().toString());
