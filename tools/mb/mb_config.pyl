@@ -134,6 +134,8 @@
       'ClangToTLinux (dbg)': 'swarming_clang_tot_shared_debug',
       'ClangToTLinuxASan': 'swarming_gyp_clang_tot_asan_lsan_static_release',
       'ClangToTLinuxASan tester': 'none',
+      'ClangToTLinuxLLD': 'swarming_clang_tot_lld_release_shared',
+      'ClangToTLinuxLLD tester': 'none',
       'ClangToTLinuxUBSanVptr':
         'swarming_gyp_clang_tot_edge_ubsan_no_recover_hack_static_release',
       'ClangToTLinuxUBSanVptr tester': 'none',
@@ -1511,6 +1513,11 @@
 
     'swarming_gn_debug_bot_minimal_symbols_x64': [
       'swarming', 'gn', 'debug_bot_minimal_symbols', 'x64',
+    ],
+
+    'swarming_clang_tot_lld_release_shared': [
+      # TODO(crbug.com/605819): Enable debug info in release builds.
+      'swarming', 'gn', 'clang_tot', 'release', 'shared', 'use_lld',
     ],
 
     'swarming_gn_debug_trybot': [
