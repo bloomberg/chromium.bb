@@ -751,7 +751,9 @@ TriState EditingStyle::triStateOfStyle(const VisibleSelection& selection) const
         if (node.layoutObject() && node.hasEditableStyle()) {
             CSSComputedStyleDeclaration* nodeStyle = CSSComputedStyleDeclaration::create(&node);
             if (nodeStyle) {
-                TriState nodeState = triStateOfStyle(nodeStyle, node.isTextNode() ? EditingStyle::DoNotIgnoreTextOnlyProperties : EditingStyle::IgnoreTextOnlyProperties);
+                // Pass EditingStyle::DoNotIgnoreTextOnlyProperties without checking if node.isTextNode()
+                // because the node can be an element node. See bug http://crbug.com/584939.
+                TriState nodeState = triStateOfStyle(nodeStyle, EditingStyle::DoNotIgnoreTextOnlyProperties);
                 if (nodeIsStart) {
                     state = nodeState;
                     nodeIsStart = false;
