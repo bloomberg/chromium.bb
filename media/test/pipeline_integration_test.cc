@@ -1098,6 +1098,23 @@ TEST_F(PipelineIntegrationTest, BasicPlayback_MediaSource_VP9_WebM) {
   Stop();
 }
 
+TEST_F(PipelineIntegrationTest, BasicPlayback_MediaSource_VP9_BlockGroup_WebM) {
+  MockMediaSource source("bear-vp9-blockgroup.webm", kWebMVP9, 67871);
+  StartPipelineWithMediaSource(&source);
+  source.EndOfStream();
+
+  EXPECT_EQ(1u, pipeline_->GetBufferedTimeRanges().size());
+  EXPECT_EQ(0, pipeline_->GetBufferedTimeRanges().start(0).InMilliseconds());
+  EXPECT_EQ(kVP9WebMFileDurationMs,
+            pipeline_->GetBufferedTimeRanges().end(0).InMilliseconds());
+
+  Play();
+
+  ASSERT_TRUE(WaitUntilOnEnded());
+  source.Shutdown();
+  Stop();
+}
+
 TEST_F(PipelineIntegrationTest, BasicPlayback_MediaSource_VP8A_WebM) {
   MockMediaSource source("bear-vp8a.webm", kVideoOnlyWebM, kAppendWholeFile);
   StartPipelineWithMediaSource(&source);

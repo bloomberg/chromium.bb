@@ -43,6 +43,11 @@ static const uint8_t kBlockGroupHeaderWithoutBlockDuration[] = {
     0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // Block(size = 0)
 };
 
+static const uint8_t kBlockGroupReferenceBlock[] = {
+    0xFB,        // ReferenceBlock ID
+    0x81, 0x00,  // ReferenceBlock (size=1, value=0)
+};
+
 enum {
   kClusterSizeOffset = 4,
   kClusterTimecodeOffset = 14,
@@ -102,17 +107,21 @@ void ClusterBuilder::AddBlockGroup(int track_num,
                                    int64_t timecode,
                                    int duration,
                                    int flags,
+                                   bool is_key_frame,
                                    const uint8_t* data,
                                    int size) {
-  AddBlockGroupInternal(track_num, timecode, true, duration, flags, data, size);
+  AddBlockGroupInternal(track_num, timecode, true, duration, flags,
+                        is_key_frame, data, size);
 }
 
 void ClusterBuilder::AddBlockGroupWithoutBlockDuration(int track_num,
                                                        int64_t timecode,
                                                        int flags,
+                                                       bool is_key_frame,
                                                        const uint8_t* data,
                                                        int size) {
-  AddBlockGroupInternal(track_num, timecode, false, 0, flags, data, size);
+  AddBlockGroupInternal(track_num, timecode, false, 0, flags, is_key_frame,
+                        data, size);
 }
 
 void ClusterBuilder::AddBlockGroupInternal(int track_num,
@@ -120,6 +129,7 @@ void ClusterBuilder::AddBlockGroupInternal(int track_num,
                                            bool include_block_duration,
                                            int duration,
                                            int flags,
+                                           bool is_key_frame,
                                            const uint8_t* data,
                                            int size) {
   int block_size = size + 4;
@@ -128,6 +138,9 @@ void ClusterBuilder::AddBlockGroupInternal(int track_num,
     bytes_needed += sizeof(kBlockGroupHeader);
   } else {
     bytes_needed += sizeof(kBlockGroupHeaderWithoutBlockDuration);
+  }
+  if (!is_key_frame) {
+    bytes_needed += sizeof(kBlockGroupReferenceBlock);
   }
 
   int block_group_size = bytes_needed - 9;
@@ -158,6 +171,11 @@ void ClusterBuilder::AddBlockGroupInternal(int track_num,
   flags &= 0x0f;
 
   WriteBlock(buf, track_num, timecode, flags, data, size);
+  buf += size + 4;
+
+  if (!is_key_frame) {
+    memcpy(buf, kBlockGroupReferenceBlock, sizeof(kBlockGroupReferenceBlock));
+  }
 
   bytes_used_ += bytes_needed;
 }

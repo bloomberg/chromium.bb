@@ -617,7 +617,8 @@ class ChunkDemuxerTest : public ::testing::Test {
         } else {
           cb.AddBlockGroup(blocks[i].track_number, blocks[i].timestamp_in_ms,
                            blocks[i].duration, blocks[i].flags,
-                           &data[0], data.size());
+                           blocks[i].flags & kWebMFlagKeyframe, &data[0],
+                           data.size());
         }
       } else {
         cb.AddSimpleBlock(blocks[i].track_number, blocks[i].timestamp_in_ms,
@@ -1010,7 +1011,8 @@ class ChunkDemuxerTest : public ::testing::Test {
         (flags & kWebMFlagKeyframe) != 0 ? kVP8Keyframe : kVP8Interframe;
     int size = (flags & kWebMFlagKeyframe) != 0 ? sizeof(kVP8Keyframe) :
         sizeof(kVP8Interframe);
-    cb->AddBlockGroup(track_num, timecode, duration, flags, data, size);
+    cb->AddBlockGroup(track_num, timecode, duration, flags,
+                      flags & kWebMFlagKeyframe, data, size);
   }
 
   std::unique_ptr<Cluster> GenerateCluster(int first_audio_timecode,
@@ -1096,7 +1098,8 @@ class ChunkDemuxerTest : public ::testing::Test {
                          kWebMFlagKeyframe);
     } else {
       cb.AddBlockGroup(track_number, timecode, block_duration,
-                       kWebMFlagKeyframe, &data[0], data.size());
+                       kWebMFlagKeyframe, static_cast<bool>(kWebMFlagKeyframe),
+                       &data[0], data.size());
     }
 
     return cb.Finish();

@@ -262,6 +262,7 @@ WebMParserClient* WebMClusterParser::OnListStart(int id) {
     block_duration_ = -1;
     discard_padding_ = -1;
     discard_padding_set_ = false;
+    reference_block_set_ = false;
   } else if (id == kWebMIdBlockAdditions) {
     block_add_id_ = -1;
     block_additional_data_.reset();
@@ -281,10 +282,10 @@ bool WebMClusterParser::OnListEnd(int id) {
     return false;
   }
 
-  bool result = ParseBlock(false, block_data_.get(), block_data_size_,
-                           block_additional_data_.get(),
-                           block_additional_data_size_, block_duration_,
-                           discard_padding_set_ ? discard_padding_ : 0);
+  bool result = ParseBlock(
+      false, block_data_.get(), block_data_size_, block_additional_data_.get(),
+      block_additional_data_size_, block_duration_,
+      discard_padding_set_ ? discard_padding_ : 0, reference_block_set_);
   block_data_.reset();
   block_data_size_ = -1;
   block_duration_ = -1;
@@ -293,6 +294,7 @@ bool WebMClusterParser::OnListEnd(int id) {
   block_additional_data_size_ = 0;
   discard_padding_ = -1;
   discard_padding_set_ = false;
+  reference_block_set_ = false;
   return result;
 }
 
@@ -323,7 +325,8 @@ bool WebMClusterParser::ParseBlock(bool is_simple_block,
                                    const uint8_t* additional,
                                    int additional_size,
                                    int duration,
-                                   int64_t discard_padding) {
+                                   int64_t discard_padding,
+                                   bool reference_block_set) {
   if (size < 4)
     return false;
 
@@ -349,17 +352,24 @@ bool WebMClusterParser::ParseBlock(bool is_simple_block,
   if (timecode & 0x8000)
     timecode |= ~0xffff;
 
+  // The first bit of the flags is set when a SimpleBlock contains only
+  // keyframes. If this is a Block, then keyframe is inferred by the absence of
+  // the ReferenceBlock Element.
+  // http://www.matroska.org/technical/specs/index.html
+  bool is_keyframe =
+      is_simple_block ? (flags & 0x80) != 0 : !reference_block_set;
+
   const uint8_t* frame_data = buf + 4;
   int frame_size = size - (frame_data - buf);
-  return OnBlock(is_simple_block, track_num, timecode, duration, flags,
-                 frame_data, frame_size, additional, additional_size,
-                 discard_padding);
+  return OnBlock(is_simple_block, track_num, timecode, duration, frame_data,
+                 frame_size, additional, additional_size, discard_padding,
+                 is_keyframe);
 }
 
 bool WebMClusterParser::OnBinary(int id, const uint8_t* data, int size) {
   switch (id) {
     case kWebMIdSimpleBlock:
-      return ParseBlock(true, data, size, NULL, 0, -1, 0);
+      return ParseBlock(true, data, size, NULL, 0, -1, 0, false);
 
     case kWebMIdBlock:
       if (block_data_) {
@@ -406,6 +416,13 @@ bool WebMClusterParser::OnBinary(int id, const uint8_t* data, int size) {
 
       return true;
     }
+    case kWebMIdReferenceBlock: {
+      // We use ReferenceBlock to determine whether the current Block contains a
+      // keyframe or not. Other than that, we don't care about the value of the
+      // ReferenceBlock element itself.
+      reference_block_set_ = true;
+      return true;
+    }
     default:
       return true;
   }
@@ -415,12 +432,12 @@ bool WebMClusterParser::OnBlock(bool is_simple_block,
                                 int track_num,
                                 int timecode,
                                 int block_duration,
-                                int flags,
                                 const uint8_t* data,
                                 int size,
                                 const uint8_t* additional,
                                 int additional_size,
-                                int64_t discard_padding) {
+                                int64_t discard_padding,
+                                bool is_keyframe) {
   DCHECK_GE(size, 0);
   if (cluster_timecode_ == -1) {
     MEDIA_LOG(ERROR, media_log_) << "Got a block before cluster timecode.";
@@ -476,13 +493,6 @@ bool WebMClusterParser::OnBlock(bool is_simple_block,
 
   scoped_refptr<StreamParserBuffer> buffer;
   if (buffer_type != DemuxerStream::TEXT) {
-    // The first bit of the flags is set when a SimpleBlock contains only
-    // keyframes. If this is a Block, then inspection of the payload is
-    // necessary to determine whether it contains a keyframe or not.
-    // http://www.matroska.org/technical/specs/index.html
-    bool is_keyframe =
-        is_simple_block ? (flags & 0x80) != 0 : track->IsKeyframe(data, size);
-
     // Every encrypted Block has a signal byte and IV prepended to it. Current
     // encrypted WebM request for comments specification is here
     // http://wiki.webmproject.org/encryption/webm-encryption-rfc
@@ -727,29 +737,6 @@ void WebMClusterParser::Track::Reset() {
   ClearReadyBuffers();
   buffers_.clear();
   last_added_buffer_missing_duration_ = NULL;
-}
-
-bool WebMClusterParser::Track::IsKeyframe(const uint8_t* data, int size) const {
-  // For now, assume that all blocks are keyframes for datatypes other than
-  // video. This is a valid assumption for Vorbis, WebVTT, & Opus.
-  if (!is_video_)
-    return true;
-
-  // Make sure the block is big enough for the minimal keyframe header size.
-  if (size < 7)
-    return false;
-
-  // The LSb of the first byte must be a 0 for a keyframe.
-  // http://tools.ietf.org/html/rfc6386 Section 19.1
-  if ((data[0] & 0x01) != 0)
-    return false;
-
-  // Verify VP8 keyframe startcode.
-  // http://tools.ietf.org/html/rfc6386 Section 19.1
-  if (data[3] != 0x9d || data[4] != 0x01 || data[5] != 0x2a)
-    return false;
-
-  return true;
 }
 
 bool WebMClusterParser::Track::QueueBuffer(
