@@ -10,6 +10,7 @@
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "chromecast/chromecast_features.h"
 #include "chromecast/public/cast_egl_platform.h"
 #include "chromecast/public/cast_egl_platform_shlib.h"
 #include "ui/ozone/common/native_display_delegate_ozone.h"
@@ -87,10 +88,10 @@ class OzonePlatformCast : public OzonePlatform {
     // or if we're an audio-only build.
     // Note: switch is kDisableGpu from content/public/common/content_switches.h
     bool enable_dummy_software_rendering = true;
-#if !defined(DISABLE_DISPLAY)
+#if !BUILDFLAG(DISABLE_DISPLAY)
     enable_dummy_software_rendering =
         base::CommandLine::ForCurrentProcess()->HasSwitch("disable-gpu");
-#endif
+#endif  // BUILDFLAG(DISABLE_DISPLAY)
 
     if (enable_dummy_software_rendering)
       surface_factory_.reset(new SurfaceFactoryCast());
