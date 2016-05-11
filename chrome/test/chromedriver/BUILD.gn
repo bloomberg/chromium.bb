@@ -174,6 +174,10 @@ source_set("lib") {
     configs += [ "//build/config/linux:x11" ]
     deps += [ "//ui/gfx/x" ]
   }
+
+  if (is_mac) {
+    libs = [ "Carbon.framework" ]
+  }
 }
 
 executable("chromedriver") {

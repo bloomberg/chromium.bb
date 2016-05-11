@@ -76,6 +76,9 @@ static_library("serial") {
       "//dbus",
     ]
   }
+  if (is_mac) {
+    libs = [ "IOKit.framework" ]
+  }
 }
 
 # GYP version: device/serial/serial.gyp:device_serial_test_util

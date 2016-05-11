@@ -347,7 +347,7 @@
     'chromium.mac': {
       'Mac Builder': 'swarming_gpu_tests_gyp_release_bot',
       'Mac Builder (dbg)': 'swarming_gyp_debug_bot',
-      'Mac GN (dbg)': 'gn_debug_static_bot',
+      'Mac GN (dbg)': 'gn_debug_bot',
       'Mac GN': 'gn_release_bot',
       'Mac10.10 Tests': 'none',
       'Mac10.11 Tests': 'none',
@@ -762,7 +762,7 @@
       'mac_chromium_compile_dbg_ng': 'swarming_gyp_debug_trybot',
       'mac_chromium_compile_rel_ng': 'swarming_gpu_tests_gyp_release_trybot',
       'mac_chromium_dbg_ng': 'swarming_gyp_debug_trybot',
-      'mac_chromium_gn_dbg': 'gn_debug_static_bot',
+      'mac_chromium_gn_dbg': 'gn_debug_bot',
       'mac_chromium_gn_rel': 'gn_release_trybot',
       'mac_chromium_gn_upload': 'gn_release_bot',
       'mac_chromium_rel_ng': 'swarming_gpu_tests_gyp_release_trybot',
@@ -1094,10 +1094,6 @@
     'gn_debug_libfuzzer_asan': [
       'gn', 'debug', 'libfuzzer', 'asan', 'proprietary_codecs', 'pdf_xfa',
       'disable_nacl',
-    ],
-
-    'gn_debug_static_bot': [
-      'gn', 'debug_static_bot',
     ],
 
     'gn_debug_static_bot_chrome_with_codecs': [
