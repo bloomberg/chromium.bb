@@ -130,6 +130,11 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         void onPaymentRequestReadyToPay(PaymentRequestUI ui);
 
         /**
+         * Called when the result UI is showing.
+         */
+        void onPaymentRequestResultReady(PaymentRequestUI ui);
+
+        /**
          * Called when the UI is gone.
          */
         void onPaymentRequestDismiss();
@@ -352,6 +357,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
                 if (callback != null) callback.run();
             }
         });
+        if (mObserverForTest != null) mObserverForTest.onPaymentRequestResultReady(this);
     }
 
     /**
