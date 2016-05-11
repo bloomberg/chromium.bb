@@ -6,10 +6,13 @@
 
 #include <stddef.h>
 
+#include <algorithm>
 #include <list>
+#include <numeric>
 #include <utility>
 
 #include "base/message_loop/message_loop.h"
+#include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -18,13 +21,32 @@
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/event_utils.h"
+#include "ui/gfx/animation/animation_delegate.h"
+#include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/message_center/fake_message_center.h"
+#include "ui/message_center/message_center_style.h"
 #include "ui/message_center/views/desktop_popup_alignment_delegate.h"
 #include "ui/message_center/views/toast_contents_view.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
+
+namespace {
+
+std::unique_ptr<message_center::Notification> CreateTestNotification(
+    std::string id,
+    std::string text) {
+  return base::WrapUnique(new message_center::Notification(
+      message_center::NOTIFICATION_TYPE_BASE_FORMAT, id,
+      base::UTF8ToUTF16("test title"), base::ASCIIToUTF16(text), gfx::Image(),
+      base::string16() /* display_source */, GURL(),
+      message_center::NotifierId(message_center::NotifierId::APPLICATION, id),
+      message_center::RichNotificationData(),
+      new message_center::NotificationDelegate()));
+}
+
+}  // namespace
 
 namespace message_center {
 namespace test {
@@ -126,11 +148,164 @@ class MessagePopupCollectionTest : public views::ViewsTestBase {
     return collection_->GetToastRectAt(index);
   }
 
+  // Checks:
+  //  1) sizes of toast and corresponding widget are equal;
+  //  2) widgets do not owerlap;
+  //  3) after animation is done, aligment is propper;
+  class CheckedAnimationDelegate : public gfx::AnimationDelegate {
+   public:
+    explicit CheckedAnimationDelegate(MessagePopupCollectionTest* test);
+
+    // returns first encountered error
+    const base::Optional<std::string>& error_msg() const { return error_msg_; }
+
+    // gfx::AnimationDelegate overrides
+    void AnimationEnded(const gfx::Animation* animation) override;
+    void AnimationProgressed(const gfx::Animation* animation) override;
+    void AnimationCanceled(const gfx::Animation* animation) override;
+
+   private:
+    // we attach ourselves to the last toast, because we accept
+    // invalidation of invariants during intermidiate
+    // notification updates.
+    ToastContentsView& animation_delegate() { return *toasts_->back(); }
+    const ToastContentsView& animation_delegate() const {
+      return *toasts_->back();
+    }
+
+    void CheckWidgetLEView(const std::string& calling_func);
+    void CheckToastsAreAligned(const std::string& calling_func);
+    void CheckToastsDontOverlap(const std::string& calling_func);
+
+    static int ComputeYDistance(const ToastContentsView& top,
+                                const ToastContentsView& bottom);
+
+    MessagePopupCollection::Toasts* toasts_;
+
+    // first encountered error
+    base::Optional<std::string> error_msg_;
+
+    DISALLOW_COPY_AND_ASSIGN(CheckedAnimationDelegate);
+  };
+
+  static std::string YPositionsToString(
+      const MessagePopupCollection::Toasts& toasts);
+
  private:
   std::unique_ptr<MessagePopupCollection> collection_;
   std::unique_ptr<DesktopPopupAlignmentDelegate> alignment_delegate_;
   int id_;
 };
+
+MessagePopupCollectionTest::CheckedAnimationDelegate::CheckedAnimationDelegate(
+    MessagePopupCollectionTest* test)
+    : toasts_(&test->collection_->toasts_) {
+  DCHECK(!toasts_->empty());
+  animation_delegate().bounds_animation_->set_delegate(this);
+}
+
+void MessagePopupCollectionTest::CheckedAnimationDelegate::AnimationEnded(
+    const gfx::Animation* animation) {
+  animation_delegate().AnimationEnded(animation);
+  CheckWidgetLEView("AnimationEnded");
+  CheckToastsAreAligned("AnimationEnded");
+}
+
+void MessagePopupCollectionTest::CheckedAnimationDelegate::AnimationProgressed(
+    const gfx::Animation* animation) {
+  animation_delegate().AnimationProgressed(animation);
+  CheckWidgetLEView("AnimationProgressed");
+  CheckToastsDontOverlap("AnimationProgressed");
+}
+
+void MessagePopupCollectionTest::CheckedAnimationDelegate::AnimationCanceled(
+    const gfx::Animation* animation) {
+  animation_delegate().AnimationCanceled(animation);
+  CheckWidgetLEView("AnimationCanceled");
+  CheckToastsDontOverlap("AnimationCanceled");
+}
+
+void MessagePopupCollectionTest::CheckedAnimationDelegate::CheckWidgetLEView(
+    const std::string& calling_func) {
+  if (error_msg_)
+    return;
+  for (ToastContentsView* toast : *toasts_) {
+    auto* widget = toast->GetWidget();
+    DCHECK(widget) << "no widget for: " << toast->id();
+    if (toast->bounds().height() < widget->GetWindowBoundsInScreen().height()) {
+      error_msg_ = calling_func + " CheckWidgetSizeLEView: id: " + toast->id() +
+                   "\ntoast size: " + toast->bounds().size().ToString() +
+                   "\nwidget size: " +
+                   widget->GetWindowBoundsInScreen().size().ToString();
+      return;
+    }
+  }
+};
+
+void MessagePopupCollectionTest::CheckedAnimationDelegate::
+    CheckToastsAreAligned(const std::string& calling_func) {
+  if (error_msg_)
+    return;
+  auto poorly_aligned = std::adjacent_find(
+      toasts_->begin(), toasts_->end(),
+      [this](ToastContentsView* top, ToastContentsView* bottom) {
+        return ComputeYDistance(*top, *bottom) != kMarginBetweenItems;
+      });
+  if (poorly_aligned != toasts_->end())
+    error_msg_ = calling_func + " CheckToastsAreAligned: distance between: " +
+                 (*poorly_aligned)->id() + ' ' +
+                 (*std::next(poorly_aligned))->id() + ": " +
+                 std::to_string(ComputeYDistance(**poorly_aligned,
+                                                 **std::next(poorly_aligned))) +
+                 " expected: " + std::to_string(kMarginBetweenItems) +
+                 "\nLayout:\n" + YPositionsToString(*toasts_);
+}
+
+void MessagePopupCollectionTest::CheckedAnimationDelegate::
+    CheckToastsDontOverlap(const std::string& calling_func) {
+  if (error_msg_)
+    return;
+  auto poorly_aligned = std::adjacent_find(
+      toasts_->begin(), toasts_->end(),
+      [this](ToastContentsView* top, ToastContentsView* bottom) {
+        return ComputeYDistance(*top, *bottom) < 0;
+      });
+  if (poorly_aligned != toasts_->end())
+    error_msg_ = calling_func + " CheckToastsDontOverlap: distance between: " +
+                 (*poorly_aligned)->id() + ' ' +
+                 (*std::next(poorly_aligned))->id() + ": " +
+                 std::to_string(ComputeYDistance(**poorly_aligned,
+                                                 **std::next(poorly_aligned))) +
+                 "\nLayout:\n" + YPositionsToString(*toasts_);
+}
+
+// static
+std::string MessagePopupCollectionTest::YPositionsToString(
+    const MessagePopupCollection::Toasts& toasts) {
+  return std::accumulate(toasts.begin(), toasts.end(), std::string(),
+                         [](std::string res, const ToastContentsView* toast) {
+                           const auto& bounds =
+                               toast->GetWidget()->GetWindowBoundsInScreen();
+                           res += toast->id();
+                           res += ' ';
+                           res += std::to_string(bounds.y());
+                           res += ", ";
+                           res += std::to_string(bounds.y() + bounds.height());
+                           res += '\n';
+                           return res;
+                         });
+}
+
+// static
+int MessagePopupCollectionTest::CheckedAnimationDelegate::ComputeYDistance(
+    const ToastContentsView& top,
+    const ToastContentsView& bottom) {
+  const auto* top_widget = top.GetWidget();
+  const auto* bottom_widget = bottom.GetWidget();
+  const auto& top_bounds = top_widget->GetWindowBoundsInScreen();
+  const auto& bottom_bounds = bottom_widget->GetWindowBoundsInScreen();
+  return bottom_bounds.y() - (top_bounds.y() + top_bounds.height());
+}
 
 #if defined(OS_CHROMEOS)
 TEST_F(MessagePopupCollectionTest, DismissOnClick) {
@@ -266,11 +441,6 @@ TEST_F(MessagePopupCollectionTest, DefaultPositioningWithRightTaskbar) {
 
   CloseAllToasts();
   EXPECT_EQ(0u, GetToastCounts());
-
-  // Restore simulated taskbar position to bottom.
-  SetDisplayInfo(gfx::Rect(0, 0, 600, 390),  // Work-area.
-                 gfx::Rect(0, 0, 600, 400)); // Display-bounds.
-
   WaitForTransitionsDone();
 }
 
@@ -297,10 +467,6 @@ TEST_F(MessagePopupCollectionTest, TopDownPositioningWithTopTaskbar) {
   CloseAllToasts();
   EXPECT_EQ(0u, GetToastCounts());
   WaitForTransitionsDone();
-
-  // Restore simulated taskbar position to bottom.
-  SetDisplayInfo(gfx::Rect(0, 0, 600, 390),   // Work-area.
-                 gfx::Rect(0, 0, 600, 400));  // Display-bounds.
 }
 
 TEST_F(MessagePopupCollectionTest, TopDownPositioningWithLeftAndTopTaskbar) {
@@ -329,10 +495,6 @@ TEST_F(MessagePopupCollectionTest, TopDownPositioningWithLeftAndTopTaskbar) {
   CloseAllToasts();
   EXPECT_EQ(0u, GetToastCounts());
   WaitForTransitionsDone();
-
-  // Restore simulated taskbar position to bottom.
-  SetDisplayInfo(gfx::Rect(0, 0, 600, 390),   // Work-area.
-                 gfx::Rect(0, 0, 600, 400));  // Display-bounds.
 }
 
 TEST_F(MessagePopupCollectionTest, TopDownPositioningWithBottomAndTopTaskbar) {
@@ -361,10 +523,6 @@ TEST_F(MessagePopupCollectionTest, TopDownPositioningWithBottomAndTopTaskbar) {
   CloseAllToasts();
   EXPECT_EQ(0u, GetToastCounts());
   WaitForTransitionsDone();
-
-  // Restore simulated taskbar position to bottom.
-  SetDisplayInfo(gfx::Rect(0, 0, 600, 390),   // Work-area.
-                 gfx::Rect(0, 0, 600, 400));  // Display-bounds.
 }
 
 TEST_F(MessagePopupCollectionTest, LeftPositioningWithLeftTaskbar) {
@@ -393,10 +551,6 @@ TEST_F(MessagePopupCollectionTest, LeftPositioningWithLeftTaskbar) {
   CloseAllToasts();
   EXPECT_EQ(0u, GetToastCounts());
   WaitForTransitionsDone();
-
-  // Restore simulated taskbar position to bottom.
-  SetDisplayInfo(gfx::Rect(0, 0, 600, 390),   // Work-area.
-                 gfx::Rect(0, 0, 600, 400));  // Display-bounds.
 }
 
 TEST_F(MessagePopupCollectionTest, DetectMouseHover) {
@@ -519,6 +673,58 @@ TEST_F(MessagePopupCollectionTest, CloseNonClosableNotifications) {
 }
 
 #endif  // defined(OS_CHROMEOS)
+
+// When notifications were displayed on top, change of notification
+// size didn't affect corresponding widget.
+TEST_F(MessagePopupCollectionTest, ChangingNotificationSize) {
+  // Simulate a taskbar at the top.
+  SetDisplayInfo(gfx::Rect(0, 10, 600, 390),  // Work-area.
+                 gfx::Rect(0, 0, 600, 400));  // Display-bounds.
+
+  struct TestCase {
+    std::string name;
+    std::string text;
+  };
+  std::vector<TestCase> updates = {
+      {"shrinking", ""},
+      {"enlarging", "abc\ndef\nghk\n"},
+      {"restoring", "abc\ndef\n"},
+  };
+
+  std::vector<std::string> notification_ids;
+  // adding notifications
+  {
+    constexpr int max_visible_popup_notifications = 3;
+    notification_ids.reserve(max_visible_popup_notifications);
+    for (int i = 0; i < max_visible_popup_notifications; ++i) {
+      notification_ids.push_back(std::to_string(i));
+      auto notification =
+          CreateTestNotification(notification_ids.back(), updates.back().text);
+      MessageCenter::Get()->AddNotification(std::move(notification));
+    }
+  }
+
+  WaitForTransitionsDone();
+
+  // updating notifications one by one
+  for (const std::string& id : notification_ids) {
+    for (const auto& update : updates) {
+      MessageCenter::Get()->UpdateNotification(
+          id, CreateTestNotification(id, update.text));
+
+      CheckedAnimationDelegate checked_animation(this);
+
+      WaitForTransitionsDone();
+
+      EXPECT_FALSE(checked_animation.error_msg())
+          << "Animation error, test case: " << id << ' ' << update.name << ":\n"
+          << *checked_animation.error_msg();
+    }
+  }
+
+  CloseAllToasts();
+  WaitForTransitionsDone();
+}
 
 }  // namespace test
 }  // namespace message_center
