@@ -535,21 +535,11 @@ static void {{method.name}}OriginSafeMethodGetter{{world_suffix}}(const v8::Prop
     // Return the function by default, unless the user script has overwritten it.
     v8SetReturnValue(info, methodTemplate->GetFunction(info.GetIsolate()->GetCurrentContext()).ToLocalChecked());
 
-    // Check whether or not the user script has overwritten the property, which
-    // is stored in a private value (aka hidden value).
-    //
-    // It is unsafe to use info.Holder() because OriginSafeMethodGetter is called
-    // back without checking the type of info.Holder().
-    v8::Local<v8::Object> holder = info.This()->FindInstanceInPrototypeChain(interfaceTemplate);
-    if (holder.IsEmpty()) {
-        return;
-    }
-    {{cpp_class}}* impl = {{v8_class}}::toImpl(holder);
+    {{cpp_class}}* impl = {{v8_class}}::toImpl(info.Holder());
     if (!BindingSecurity::shouldAllowAccessTo(info.GetIsolate(), callingDOMWindow(info.GetIsolate()), impl, DoNotReportSecurityError)) {
         return;
     }
 
-    {# The findInstanceInPrototypeChain() call above only returns a non-empty handle if info.This() is an Object. #}
     v8::Local<v8::Value> hiddenValue = V8HiddenValue::getHiddenValue(ScriptState::current(info.GetIsolate()), v8::Local<v8::Object>::Cast(info.This()), v8AtomicString(info.GetIsolate(), "{{method.name}}"));
     if (!hiddenValue.IsEmpty()) {
         v8SetReturnValue(info, hiddenValue);
