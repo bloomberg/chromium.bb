@@ -46,12 +46,15 @@
             }
         }
     ],
-    "DocumentWriteEvaluator": [
+    "DisallowFetchForDocWrittenScriptsInMainFrame": [
         {
             "enable_features": [
                 "DocumentWriteEvaluator"
             ],
-            "group_name": "Enabled"
+            "group_name": "DocumentWriteEvaluatorGroup",
+            "params": {
+                "disallowFetchForDocWrittenScriptsInMainFrame": "false"
+            }
         }
     ],
     "EnableGoogleCachedCopyTextExperiment": [

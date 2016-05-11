@@ -41,6 +41,17 @@
             }
         }
     ],
+    "DisallowFetchForDocWrittenScriptsInMainFrame": [
+        {
+            "disable_features": [
+                "DocumentWriteEvaluator"
+            ],
+            "group_name": "DocumentWriteScriptBlockGroup",
+            "params": {
+                "disallowFetchForDocWrittenScriptsInMainFrame": "true"
+            }
+        }
+    ],
     "EnableGoogleCachedCopyTextExperiment": [
         {
             "group_name": "Button"
