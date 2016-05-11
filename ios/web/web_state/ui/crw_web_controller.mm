@@ -1536,12 +1536,11 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 - (BOOL)isCurrentNavigationItemPOST {
   // |_pendingNavigationInfo| will be nil if the decidePolicy* delegate methods
   // were not called.
-  WKNavigationType type =
+  NSString* HTTPMethod =
       _pendingNavigationInfo
-          ? [_pendingNavigationInfo navigationType]
-          : [self currentBackForwardListItemHolder]->navigation_type();
-  return type == WKNavigationTypeFormSubmitted ||
-         type == WKNavigationTypeFormResubmitted;
+          ? [_pendingNavigationInfo HTTPMethod]
+          : [self currentBackForwardListItemHolder]->http_method();
+  return [HTTPMethod isEqual:@"POST"];
 }
 
 - (BOOL)isLinkNavigation:(WKNavigationType)navigationType {
