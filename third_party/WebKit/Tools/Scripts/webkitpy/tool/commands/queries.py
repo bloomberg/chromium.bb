@@ -183,8 +183,7 @@ class PrintBaselines(Command):
         if options.include_virtual_tests:
             tests = sorted(default_port.tests(args))
         else:
-            # FIXME: make real_tests() a public method.
-            tests = sorted(default_port._real_tests(args))
+            tests = sorted(default_port.real_tests(args))
 
         for port_name in port_names:
             if port_name != port_names[0]:

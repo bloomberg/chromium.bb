@@ -747,7 +747,7 @@ class Port(object):
 
     def tests(self, paths):
         """Return the list of tests found matching paths."""
-        tests = self._real_tests(paths)
+        tests = self.real_tests(paths)
 
         suites = self.virtual_test_suites()
         if paths:
@@ -756,7 +756,7 @@ class Port(object):
             tests.extend(self._all_virtual_tests(suites))
         return tests
 
-    def _real_tests(self, paths):
+    def real_tests(self, paths):
         # When collecting test cases, skip these directories
         skipped_directories = set(['.svn', '_svn', 'platform', 'resources', 'support', 'script-tests', 'reference', 'reftest'])
         files = find_files.find(self._filesystem, self.layout_tests_dir(), paths,
@@ -1606,7 +1606,7 @@ class Port(object):
 
     def _populate_virtual_suite(self, suite):
         if not suite.tests:
-            base_tests = self._real_tests([suite.base])
+            base_tests = self.real_tests([suite.base])
             suite.tests = {}
             for test in base_tests:
                 suite.tests[test.replace(suite.base, suite.name, 1)] = test
