@@ -33,23 +33,47 @@
       }
 
       #drawer {
+        --paper-header-panel-shadow: {
+          /* Polymer's style transformation chokes on :host() and :not() (and
+           * many other things, it seems). Just hide the built-in shadow and
+           * duplicate its style. */
+          display: none;
+        };
         /* Explicitly set this so that transitions work and look good. */
         background-color: var(--settings-background-color);
       }
 
+      #drawer .toolbar::after {
+        box-shadow: inset 0px 5px 6px -3px rgba(0, 0, 0, 0.4);
+        content: '';
+        display: block;
+        height: 6px;
+      }
+
       #drawer,
-      #drawer .toolbar {
-        transition: background-color .3s, color .3s;
+      #drawer .toolbar,
+      #drawer .toolbar::after {
+        transition: background-color .3s, color .3s, height .3s;
+      }
+
+      :host(:not(.narrowing)) [narrow] #drawer,
+      :host(:not(.narrowing)) [narrow] #drawer .toolbar,
+      :host(:not(.narrowing)) [narrow] #drawer .toolbar::after {
+        transition: none;  /* Transition only when removing [narrow]. */
       }
 
       :host(:not(.narrowing)) [narrow] #drawer,
       :host(:not(.narrowing)) [narrow] #drawer .toolbar {
         background-color: white;
-        transition: none;  /* Transition only when removing [narrow]. */
       }
 
       :host(:not(.narrowing)) [narrow] #drawer .toolbar {
-        color: black;
+        color: var(--settings-nav-grey);
+      }
+
+      :host(:not(.narrowing)) [narrow] #drawer .toolbar::after {
+        border-bottom: var(--settings-separator-line);
+        height: 0;
       }
 
       paper-icon-button {
