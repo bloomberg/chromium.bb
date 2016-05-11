@@ -18,7 +18,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/win/scoped_comptr.h"
 #include "base/win/scoped_variant.h"
 
