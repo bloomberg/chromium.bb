@@ -31,6 +31,14 @@
             "group_name": "Enabled"
         }
     ],
+    "NetworkTimeQueries": [
+        {
+            "enable_features": [
+                "NetworkTimeServiceQuerying"
+            ],
+            "group_name": "NetworkTimeQueriesEnabled"
+        }
+    ],
     "PageRevisitInstrumentation": [
         {
             "group_name": "Enabled"
