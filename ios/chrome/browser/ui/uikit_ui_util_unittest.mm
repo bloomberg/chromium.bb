@@ -103,6 +103,20 @@ TEST(UIKitUIUtilTest, TestResizeImageInvalidInput) {
   EXPECT_FALSE(actual);
 }
 
+TEST(UIKitUIUtilTest, TintImageKeepsImageProperties) {
+  UIImage* image = testImage(CGSizeMake(100, 75));
+  UIImage* tintedImage = TintImage(image, [UIColor blueColor]);
+  EXPECT_EQ(image.size.width, tintedImage.size.width);
+  EXPECT_EQ(image.size.height, tintedImage.size.height);
+  EXPECT_EQ(image.scale, tintedImage.scale);
+  EXPECT_EQ(image.capInsets.top, tintedImage.capInsets.top);
+  EXPECT_EQ(image.capInsets.left, tintedImage.capInsets.left);
+  EXPECT_EQ(image.capInsets.bottom, tintedImage.capInsets.bottom);
+  EXPECT_EQ(image.capInsets.right, tintedImage.capInsets.right);
+  EXPECT_EQ(image.flipsForRightToLeftLayoutDirection,
+            tintedImage.flipsForRightToLeftLayoutDirection);
+}
+
 TEST(UIKitUIUtilTest, TestInterpolateFromColorToColor) {
   CGFloat colorOne = 50.0f / 255.0f;
   CGFloat colorTwo = 100.0f / 255.0f;

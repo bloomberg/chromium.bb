@@ -146,6 +146,12 @@ UIImage* BlurImage(UIImage* image,
                    CGFloat saturationDeltaFactor,
                    UIImage* maskImage);
 
+// Returns an output image where each pixel has RGB values equal to a color and
+// the alpha value sampled from the given image. The RGB values of the image are
+// ignored. If the color has alpha value of less than one, then the entire
+// output image's alpha is scaled by the color's alpha value.
+UIImage* TintImage(UIImage* image, UIColor* color);
+
 // Returns a cropped image using |cropRect| on |image|.
 UIImage* CropImage(UIImage* image, const CGRect& cropRect);
 

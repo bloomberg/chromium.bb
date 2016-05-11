@@ -400,6 +400,48 @@ UIImage* BlurImage(UIImage* image,
   return outputImage;
 }
 
+UIImage* TintImage(UIImage* image, UIColor* color) {
+  DCHECK(image);
+  DCHECK(image.CGImage);
+  DCHECK_GE(image.size.width * image.size.height, 1);
+  DCHECK(color);
+
+  CGRect rect = {CGPointZero, image.size};
+
+  UIGraphicsBeginImageContextWithOptions(rect.size /* bitmap size */,
+                                         NO /* opaque? */,
+                                         0.0 /* main screen scale */);
+  CGContextRef imageContext = UIGraphicsGetCurrentContext();
+  CGContextSetShouldAntialias(imageContext, true);
+  CGContextSetInterpolationQuality(imageContext, kCGInterpolationHigh);
+
+  // CoreGraphics and UIKit uses different axis. UIKit's y points downards,
+  // while CoreGraphic's points upwards. To keep the image correctly oriented,
+  // apply a mirror around the X axis by inverting the Y coordinates.
+  CGContextScaleCTM(imageContext, 1, -1);
+  CGContextTranslateCTM(imageContext, 0, -rect.size.height);
+
+  CGContextDrawImage(imageContext, rect, image.CGImage);
+  CGContextSetBlendMode(imageContext, kCGBlendModeSourceIn);
+  CGContextSetFillColorWithColor(imageContext, color.CGColor);
+  CGContextFillRect(imageContext, rect);
+
+  UIImage* outputImage = UIGraphicsGetImageFromCurrentImageContext();
+  UIGraphicsEndImageContext();
+
+  // Port the cap insets to the new image.
+  if (!UIEdgeInsetsEqualToEdgeInsets(image.capInsets, UIEdgeInsetsZero)) {
+    outputImage = [outputImage resizableImageWithCapInsets:image.capInsets];
+  }
+
+  // Port the flipping status to the new image.
+  if (image.flipsForRightToLeftLayoutDirection) {
+    outputImage = [outputImage imageFlippedForRightToLeftLayoutDirection];
+  }
+
+  return outputImage;
+}
+
 UIImage* CropImage(UIImage* image, const CGRect& cropRect) {
   CGImageRef cgImage = CGImageCreateWithImageInRect([image CGImage], cropRect);
   UIImage* result = [UIImage imageWithCGImage:cgImage];
