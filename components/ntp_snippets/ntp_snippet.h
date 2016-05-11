@@ -108,6 +108,9 @@ class NTPSnippet {
            !best_source().publisher_name.empty();
   }
 
+  float score() const { return score_; }
+  void set_score(float score) { score_ = score; }
+
   // Public for testing.
   static base::Time TimeFromJsonString(const std::string& timestamp_str);
   static std::string TimeToJsonString(const base::Time& time);
@@ -120,6 +123,7 @@ class NTPSnippet {
   base::Time publish_date_;
   base::Time expiry_date_;
   GURL amp_url_;
+  float score_;
   size_t best_source_index_;
 
   std::vector<SnippetSource> sources_;

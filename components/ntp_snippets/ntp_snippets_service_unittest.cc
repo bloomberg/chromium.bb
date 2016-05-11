@@ -24,6 +24,10 @@
 #include "components/ntp_snippets/ntp_snippets_scheduler.h"
 #include "components/ntp_snippets/switches.h"
 #include "components/prefs/testing_pref_service.h"
+#include "components/signin/core/browser/account_tracker_service.h"
+#include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
+#include "components/signin/core/browser/fake_signin_manager.h"
+#include "components/signin/core/browser/test_signin_client.h"
 #include "google_apis/google_api_keys.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_test_util.h"
@@ -205,7 +209,12 @@ class NTPSnippetsServiceTest : public testing::Test {
             /*default_factory=*/&failing_url_fetcher_factory_),
         test_url_(base::StringPrintf(kTestContentSnippetsServerFormat,
                                      google_apis::GetAPIKey().c_str())),
-        pref_service_(new TestingPrefServiceSimple()) {
+        pref_service_(new TestingPrefServiceSimple()),
+        signin_client_(new TestSigninClient(nullptr)),
+        account_tracker_(new AccountTrackerService()),
+        fake_signin_manager_(new FakeSigninManagerBase(signin_client_.get(),
+                                                       account_tracker_.get())),
+        fake_token_service_(new FakeProfileOAuth2TokenService()) {
     NTPSnippetsService::RegisterProfilePrefs(pref_service_->registry());
     // Since no SuggestionsService is injected in tests, we need to force the
     // service to fetch from all hosts.
@@ -230,8 +239,10 @@ class NTPSnippetsServiceTest : public testing::Test {
         pref_service_.get(), nullptr, task_runner, std::string("fr"),
         &scheduler_,
         base::WrapUnique(new NTPSnippetsFetcher(
+            fake_signin_manager_.get(), fake_token_service_.get(),
             std::move(request_context_getter), base::Bind(&ParseJson),
-            /*is_stable_channel=*/true)), /*image_fetcher=*/nullptr));
+            /*is_stable_channel=*/true)),
+        /*image_fetcher=*/nullptr));
     service_->Init(enabled);
   }
 
@@ -254,7 +265,11 @@ class NTPSnippetsServiceTest : public testing::Test {
   net::FakeURLFetcherFactory fake_url_fetcher_factory_;
   const GURL test_url_;
   std::unique_ptr<TestingPrefServiceSimple> pref_service_;
+  std::unique_ptr<TestSigninClient> signin_client_;
+  std::unique_ptr<AccountTrackerService> account_tracker_;
   std::unique_ptr<NTPSnippetsService> service_;
+  std::unique_ptr<SigninManagerBase> fake_signin_manager_;
+  std::unique_ptr<OAuth2TokenService> fake_token_service_;
   MockScheduler scheduler_;
 
   DISALLOW_COPY_AND_ASSIGN(NTPSnippetsServiceTest);

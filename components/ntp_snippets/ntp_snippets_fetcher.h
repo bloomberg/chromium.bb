@@ -16,17 +16,26 @@
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "components/ntp_snippets/ntp_snippet.h"
+#include "google_apis/gaia/oauth2_token_service.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_context_getter.h"
 
+class SigninManagerBase;
+
 namespace base {
 class Value;
-}
+}  // namespace base
+
+namespace net {
+class HttpRequestHeaders;
+}  // namespace net
 
 namespace ntp_snippets {
 
-// Fetches snippet data for the NTP from the server
-class NTPSnippetsFetcher : public net::URLFetcherDelegate {
+// Fetches snippet data for the NTP from the server.
+class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
+                           public OAuth2TokenService::Observer,
+                           public net::URLFetcherDelegate {
  public:
   // Callbacks for JSON parsing, needed because the parsing is platform-
   // dependent.
@@ -55,6 +64,8 @@ class NTPSnippetsFetcher : public net::URLFetcherDelegate {
   };
 
   NTPSnippetsFetcher(
+      SigninManagerBase* signin_manager,
+      OAuth2TokenService* oauth2_token_service,
       scoped_refptr<net::URLRequestContextGetter> url_request_context_getter,
       const ParseJSONCallback& parse_json_callback,
       bool is_stable_channel);
@@ -70,7 +81,9 @@ class NTPSnippetsFetcher : public net::URLFetcherDelegate {
   // If an ongoing fetch exists, it will be cancelled and a new one started,
   // without triggering an additional callback (i.e. not noticeable by
   // subscriber of SetCallback()).
-  void FetchSnippetsFromHosts(const std::set<std::string>& hosts, int count);
+  void FetchSnippetsFromHosts(const std::set<std::string>& hosts,
+                              const std::string& language_code,
+                              int count);
 
   // Debug string representing the status/result of the last fetch attempt.
   const std::string& last_status() const { return last_status_; }
@@ -86,6 +99,29 @@ class NTPSnippetsFetcher : public net::URLFetcherDelegate {
   }
 
  private:
+  enum class Variant { kRestrictedPersonalized, kRestricted, kPersonalized };
+
+  void FetchSnippetsImpl(const GURL& url,
+                         const std::string& auth_header,
+                         const std::string& request);
+  std::string GetHostRestricts() const;
+  bool UseHostRestriction() const;
+  bool UseAuthentication() const;
+  void FetchSnippetsNonAuthenticated();
+  void FetchSnippetsAuthenticated(const std::string& account_id,
+                                  const std::string& oauth_access_token);
+  void StartTokenRequest();
+
+  // OAuth2TokenService::Consumer overrides:
+  void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
+                         const std::string& access_token,
+                         const base::Time& expiration_time) override;
+  void OnGetTokenFailure(const OAuth2TokenService::Request* request,
+                         const GoogleServiceAuthError& error) override;
+
+  // OAuth2TokenService::Observer overrides:
+  void OnRefreshTokenAvailable(const std::string& account_id) override;
+
   // URLFetcherDelegate implementation.
   void OnURLFetchComplete(const net::URLFetcher* source) override;
 
@@ -95,6 +131,12 @@ class NTPSnippetsFetcher : public net::URLFetcherDelegate {
                      FetchResult result,
                      const std::string& extra_message);
 
+  // Authorization for signed-in users.
+  SigninManagerBase* signin_manager_;
+  OAuth2TokenService* token_service_;
+  std::unique_ptr<OAuth2TokenService::Request> oauth_request_;
+  bool waiting_for_refresh_token_;
+
   // Holds the URL request context.
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
 
@@ -103,14 +145,26 @@ class NTPSnippetsFetcher : public net::URLFetcherDelegate {
   std::string last_status_;
   std::string last_fetch_json_;
 
+  // Hosts to restrict the snippets to.
+  std::set<std::string> hosts_;
+
+  // Count of snippets to fetch.
+  int count_to_fetch_;
+
+  // Language code to restrict to for personalized results.
+  std::string locale_;
+
   // The fetcher for downloading the snippets.
   std::unique_ptr<net::URLFetcher> url_fetcher_;
 
   // The callback to notify when new snippets get fetched.
   SnippetsAvailableCallback snippets_available_callback_;
 
-  // Flag for picking the right (stable/non-stable) API key for Chrome Reader
+  // Flag for picking the right (stable/non-stable) API key for Chrome Reader.
   bool is_stable_channel_;
+
+  // The variant of the fetching to use.
+  Variant variant_;
 
   // Allow for an injectable tick clock for testing.
   std::unique_ptr<base::TickClock> tick_clock_;

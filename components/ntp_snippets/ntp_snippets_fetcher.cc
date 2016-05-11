@@ -4,6 +4,8 @@
 
 #include "components/ntp_snippets/ntp_snippets_fetcher.h"
 
+#include <stdlib.h>
+
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -16,13 +18,20 @@
 #include "base/time/default_tick_clock.h"
 #include "base/values.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
+#include "components/ntp_snippets/ntp_snippets_constants.h"
 #include "components/ntp_snippets/switches.h"
+#include "components/signin/core/browser/profile_oauth2_token_service.h"
+#include "components/signin/core/browser/signin_manager.h"
+#include "components/signin/core/browser/signin_manager_base.h"
+#include "components/variations/variations_associated_data.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_fetcher.h"
+#include "third_party/icu/source/common/unicode/uloc.h"
+#include "third_party/icu/source/common/unicode/utypes.h"
 
 using net::URLFetcher;
 using net::URLRequestContextGetter;
@@ -33,16 +42,29 @@ namespace ntp_snippets {
 
 namespace {
 
-const char kContentSnippetsServerFormat[] =
-    "https://chromereader-pa.googleapis.com/v1/fetch?key=%s";
+const char kApiScope[] = "https://www.googleapis.com/auth/webhistory";
+const char kSnippetsServer[] =
+    "https://chromereader-pa.googleapis.com/v1/fetch";
+const char kSnippetsServerNonAuthorizedFormat[] = "%s?key=%s";
+const char kAuthorizationRequestHeaderFormat[] = "Bearer %s";
+
+// Variation parameter for the variant of fetching to use.
+const char kVariantName[] = "fetching_variant";
+
+// Constants listing possible values of the "fetching_variant" parameter.
+const char kVariantRestrictedString[] = "restricted";
+const char kVariantPersonalizedString[] = "personalized";
+const char kVariantRestrictedPersonalizedString[] = "restricted_personalized";
 
 const char kRequestParameterFormat[] =
     "{"
     "  \"response_detail_level\": \"STANDARD\","
+    "%s"  // If authenticated - an obfuscated Gaia ID will be inserted here.
     "  \"advanced_options\": {"
     "    \"local_scoring_params\": {"
     "      \"content_params\": {"
     "        \"only_return_personalized_results\": false"
+    "%s"  // If authenticated - user segment (lang code) will be inserted here.
     "      },"
     "      \"content_restricts\": {"
     "        \"type\": \"METADATA\","
@@ -56,14 +78,17 @@ const char kRequestParameterFormat[] =
     "        \"type\": \"METADATA\","
     "        \"value\": \"THUMBNAIL\""
     "      }"
-    "%s"
+    "%s"  // If host restricted - host restrictions will be inserted here.
     "    },"
     "    \"global_scoring_params\": {"
-    "      \"num_to_return\": %i"
+    "      \"num_to_return\": %i,"
+    "      \"sort_type\": 1"
     "    }"
     "  }"
     "}";
 
+const char kGaiaIdFormat[] = "  \"obfuscated_gaia_id\": \"%s\",";
+const char kUserSegmentFormat[] = "        ,\"user_segment\": \"%s\"";
 const char kHostRestrictFormat[] =
     "      ,\"content_selectors\": {"
     "        \"type\": \"HOST_RESTRICT\","
@@ -94,16 +119,39 @@ std::string FetchResultToString(NTPSnippetsFetcher::FetchResult result) {
 }  // namespace
 
 NTPSnippetsFetcher::NTPSnippetsFetcher(
+    SigninManagerBase* signin_manager,
+    OAuth2TokenService* token_service,
     scoped_refptr<URLRequestContextGetter> url_request_context_getter,
     const ParseJSONCallback& parse_json_callback,
     bool is_stable_channel)
-    : url_request_context_getter_(url_request_context_getter),
+    : OAuth2TokenService::Consumer("ntp_snippets"),
+      signin_manager_(signin_manager),
+      token_service_(token_service),
+      waiting_for_refresh_token_(false),
+      url_request_context_getter_(url_request_context_getter),
       parse_json_callback_(parse_json_callback),
       is_stable_channel_(is_stable_channel),
       tick_clock_(new base::DefaultTickClock()),
-      weak_ptr_factory_(this) {}
+      weak_ptr_factory_(this) {
+  // Parse the variation parameters and set the defaults if missing.
+  std::string variant = variations::GetVariationParamValue(
+      ntp_snippets::kStudyName, kVariantName);
+  if (variant == kVariantRestrictedString) {
+    variant_ = Variant::kRestricted;
+  } else if (variant == kVariantPersonalizedString) {
+    variant_ = Variant::kPersonalized;
+  } else {
+    variant_ = Variant::kRestrictedPersonalized;
+    LOG_IF(WARNING,
+           !variant.empty() && variant != kVariantRestrictedPersonalizedString)
+        << "Unknown fetching variant provided: " << variant;
+  }
+}
 
-NTPSnippetsFetcher::~NTPSnippetsFetcher() {}
+NTPSnippetsFetcher::~NTPSnippetsFetcher() {
+  if (waiting_for_refresh_token_)
+    token_service_->RemoveObserver(this);
+}
 
 void NTPSnippetsFetcher::SetCallback(
     const SnippetsAvailableCallback& callback) {
@@ -111,43 +159,168 @@ void NTPSnippetsFetcher::SetCallback(
 }
 
 void NTPSnippetsFetcher::FetchSnippetsFromHosts(
-    const std::set<std::string>& hosts, int count) {
-  std::string host_restricts;
+    const std::set<std::string>& hosts,
+    const std::string& language_code,
+    int count) {
+  hosts_ = hosts;
   fetch_start_time_ = tick_clock_->NowTicks();
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDontRestrict)) {
-    if (hosts.empty()) {
-      FetchFinished(OptionalSnippets(), FetchResult::EMPTY_HOSTS,
-                    /*extra_message=*/std::string());
-      return;
-    }
-    for (const std::string& host : hosts)
-      host_restricts += base::StringPrintf(kHostRestrictFormat, host.c_str());
+
+  if (UseHostRestriction() && hosts_.empty()) {
+    FetchFinished(OptionalSnippets(), FetchResult::EMPTY_HOSTS,
+                  /*extra_message=*/std::string());
+    return;
   }
-  const std::string& key = is_stable_channel_
-                               ? google_apis::GetAPIKey()
-                               : google_apis::GetNonStableAPIKey();
-  std::string url =
-      base::StringPrintf(kContentSnippetsServerFormat, key.c_str());
-  url_fetcher_ = URLFetcher::Create(GURL(url), URLFetcher::POST, this);
+
+  // Translate the BCP 47 |language_code| into a posix locale string.
+  char locale[ULOC_FULLNAME_CAPACITY];
+  UErrorCode error;
+  uloc_forLanguageTag(language_code.c_str(), locale, ULOC_FULLNAME_CAPACITY,
+                      nullptr, &error);
+  DLOG_IF(WARNING, U_ZERO_ERROR != error)
+      << "Error in translating language code to a locale string: " << error;
+  locale_ = locale;
+
+  count_to_fetch_ = count;
+
+  bool use_authentication = UseAuthentication();
+
+  if (use_authentication && signin_manager_->IsAuthenticated()) {
+    // Signed-in: get OAuth token --> fetch snippets.
+    StartTokenRequest();
+  } else if (use_authentication && signin_manager_->AuthInProgress()) {
+    // Currently signing in: wait for auth to finish (the refresh token) -->
+    //     get OAuth token --> fetch snippets.
+    if (!waiting_for_refresh_token_) {
+      // Wait until we get a refresh token.
+      waiting_for_refresh_token_ = true;
+      token_service_->AddObserver(this);
+    }
+  } else {
+    // Not signed in: fetch snippets (without authentication).
+    FetchSnippetsNonAuthenticated();
+  }
+}
+
+void NTPSnippetsFetcher::FetchSnippetsImpl(const GURL& url,
+                                           const std::string& auth_header,
+                                           const std::string& request) {
+  url_fetcher_ = URLFetcher::Create(url, URLFetcher::POST, this);
+
   url_fetcher_->SetRequestContext(url_request_context_getter_.get());
   url_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
                              net::LOAD_DO_NOT_SAVE_COOKIES);
+
   data_use_measurement::DataUseUserData::AttachToFetcher(
       url_fetcher_.get(), data_use_measurement::DataUseUserData::NTP_SNIPPETS);
+
   HttpRequestHeaders headers;
+  if (!auth_header.empty())
+    headers.SetHeader("Authorization", auth_header);
   headers.SetHeader("Content-Type", "application/json; charset=UTF-8");
   url_fetcher_->SetExtraRequestHeaders(headers.ToString());
-  url_fetcher_->SetUploadData("application/json",
-                              base::StringPrintf(kRequestParameterFormat,
-                                                 host_restricts.c_str(),
-                                                 count));
-
+  url_fetcher_->SetUploadData("application/json", request);
   // Fetchers are sometimes cancelled because a network change was detected.
   url_fetcher_->SetAutomaticallyRetryOnNetworkChanges(3);
   // Try to make fetching the files bit more robust even with poor connection.
   url_fetcher_->SetMaxRetriesOn5xx(3);
   url_fetcher_->Start();
+}
+
+std::string NTPSnippetsFetcher::GetHostRestricts() const {
+  std::string host_restricts;
+  if (UseHostRestriction()) {
+    for (const std::string& host : hosts_)
+      host_restricts += base::StringPrintf(kHostRestrictFormat, host.c_str());
+  }
+  return host_restricts;
+}
+
+bool NTPSnippetsFetcher::UseHostRestriction() const {
+  return (variant_ == Variant::kRestricted ||
+          variant_ == Variant::kRestrictedPersonalized) &&
+         !base::CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kDontRestrict);
+}
+
+bool NTPSnippetsFetcher::UseAuthentication() const {
+  return (variant_ == Variant::kPersonalized ||
+          variant_ == Variant::kRestrictedPersonalized);
+}
+
+void NTPSnippetsFetcher::FetchSnippetsNonAuthenticated() {
+  // When not providing OAuth token, we need to pass the Google API key.
+  const std::string& key = is_stable_channel_
+                               ? google_apis::GetAPIKey()
+                               : google_apis::GetNonStableAPIKey();
+  GURL url(base::StringPrintf(kSnippetsServerNonAuthorizedFormat,
+                              kSnippetsServer, key.c_str()));
+
+  FetchSnippetsImpl(
+      url, std::string(),
+      base::StringPrintf(kRequestParameterFormat, "", "",
+                         GetHostRestricts().c_str(), count_to_fetch_));
+}
+
+void NTPSnippetsFetcher::FetchSnippetsAuthenticated(
+    const std::string& account_id,
+    const std::string& oauth_access_token) {
+  std::string auth = base::StringPrintf(kGaiaIdFormat, account_id.c_str());
+  std::string user_segment =
+      base::StringPrintf(kUserSegmentFormat, locale_.c_str());
+
+  FetchSnippetsImpl(
+      GURL(kSnippetsServer),
+      base::StringPrintf(kAuthorizationRequestHeaderFormat,
+                         oauth_access_token.c_str()),
+      base::StringPrintf(kRequestParameterFormat, auth.c_str(),
+                         user_segment.c_str(), GetHostRestricts().c_str(),
+                         count_to_fetch_));
+}
+
+void NTPSnippetsFetcher::StartTokenRequest() {
+  OAuth2TokenService::ScopeSet scopes;
+  scopes.insert(kApiScope);
+  oauth_request_ = token_service_->StartRequest(
+      signin_manager_->GetAuthenticatedAccountId(), scopes, this);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// OAuth2TokenService::Consumer overrides
+void NTPSnippetsFetcher::OnGetTokenSuccess(
+    const OAuth2TokenService::Request* request,
+    const std::string& access_token,
+    const base::Time& expiration_time) {
+  // Delete the request after we leave this method.
+  std::unique_ptr<OAuth2TokenService::Request> oauth_request(
+      std::move(oauth_request_));
+  DCHECK_EQ(oauth_request.get(), request)
+      << "Got tokens from some previous request";
+
+  FetchSnippetsAuthenticated(oauth_request->GetAccountId(), access_token);
+}
+
+void NTPSnippetsFetcher::OnGetTokenFailure(
+    const OAuth2TokenService::Request* request,
+    const GoogleServiceAuthError& error) {
+  oauth_request_.reset();
+  DLOG(ERROR) << "Unable to get token: " << error.ToString()
+              << " - fetching the snippets without authentication.";
+
+  // Fallback to fetching non-authenticated tokens.
+  FetchSnippetsNonAuthenticated();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// OAuth2TokenService::Observer overrides
+void NTPSnippetsFetcher::OnRefreshTokenAvailable(
+    const std::string& account_id) {
+  // Only react on tokens for the account the user has signed in with.
+  if (account_id != signin_manager_->GetAuthenticatedAccountId())
+    return;
+
+  token_service_->RemoveObserver(this);
+  waiting_for_refresh_token_ = false;
+  StartTokenRequest();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -165,6 +338,11 @@ void NTPSnippetsFetcher::OnURLFetchComplete(const URLFetcher* source) {
     FetchFinished(OptionalSnippets(), FetchResult::URL_REQUEST_STATUS_ERROR,
                   /*extra_message=*/base::StringPrintf(" %d", status.error()));
   } else if (source->GetResponseCode() != net::HTTP_OK) {
+    // TODO(jkrcal): https://crbug.com/609084
+    // We need to deal with the edge case again where the auth
+    // token expires just before we send the request (in which case we need to
+    // fetch a new auth token). We should extract that into a common class
+    // instead of adding it to every single class that uses auth tokens.
     FetchFinished(
         OptionalSnippets(), FetchResult::HTTP_ERROR,
         /*extra_message=*/base::StringPrintf(" %d", source->GetResponseCode()));

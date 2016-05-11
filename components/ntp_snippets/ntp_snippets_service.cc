@@ -209,7 +209,8 @@ void NTPSnippetsService::FetchSnippets() {
 
 void NTPSnippetsService::FetchSnippetsFromHosts(
     const std::set<std::string>& hosts) {
-  snippets_fetcher_->FetchSnippetsFromHosts(hosts, kMaxSnippetCount);
+  snippets_fetcher_->FetchSnippetsFromHosts(hosts, application_language_code_,
+                                            kMaxSnippetCount);
 }
 
 void NTPSnippetsService::RescheduleFetching() {

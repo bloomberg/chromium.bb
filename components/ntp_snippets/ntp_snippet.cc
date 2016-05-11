@@ -10,6 +10,7 @@
 
 namespace {
 
+const char kScore[] = "score";
 const char kContentInfo[] = "contentInfo";
 
 const char kUrl[] = "url";
@@ -28,7 +29,8 @@ const char kAmpUrl[] = "ampUrl";
 
 namespace ntp_snippets {
 
-NTPSnippet::NTPSnippet(const GURL& url) : url_(url), best_source_index_(0) {
+NTPSnippet::NTPSnippet(const GURL& url)
+    : url_(url), score_(0), best_source_index_(0) {
   DCHECK(url_.is_valid());
 }
 
@@ -142,6 +144,10 @@ std::unique_ptr<NTPSnippet> NTPSnippet::CreateFromDictionary(
     return nullptr;
   }
 
+  double score;
+  if (dict.GetDouble(kScore, &score))
+    snippet->set_score(score);
+
   return snippet;
 }
 
@@ -197,6 +203,8 @@ std::unique_ptr<base::DictionaryValue> NTPSnippet::ToDictionary() const {
 
   std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue);
   result->Set(kContentInfo, std::move(dict));
+
+  result->SetDouble(kScore, score_);
 
   return result;
 }

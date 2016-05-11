@@ -80,4 +80,5 @@ td.title-link {
   color: gray;
   font-size: 90%;
   padding: 4px;
+  word-break: break-all;
 }

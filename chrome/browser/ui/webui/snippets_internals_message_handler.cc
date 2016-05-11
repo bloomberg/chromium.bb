@@ -45,6 +45,7 @@ std::unique_ptr<base::DictionaryValue> PrepareSnippet(
   entry->SetString("url", snippet.url().spec());
   entry->SetString("ampUrl", snippet.best_source().amp_url.spec());
   entry->SetString("salientImageUrl", snippet.salient_image_url().spec());
+  entry->SetDouble("score", snippet.score());
 
   if (discarded)
     entry->SetString("id", "discarded-snippet-" + base::IntToString(index));

@@ -13,6 +13,10 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "components/ntp_snippets/ntp_snippet.h"
+#include "components/signin/core/browser/account_tracker_service.h"
+#include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
+#include "components/signin/core/browser/fake_signin_manager.h"
+#include "components/signin/core/browser/test_signin_client.h"
 #include "google_apis/google_api_keys.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_test_util.h"
@@ -95,11 +99,19 @@ class NTPSnippetsFetcherTest : public testing::Test {
   NTPSnippetsFetcherTest()
       : mock_task_runner_(new base::TestMockTimeTaskRunner()),
         mock_task_runner_handle_(mock_task_runner_),
+        signin_client_(new TestSigninClient(nullptr)),
+        account_tracker_(new AccountTrackerService()),
+        fake_signin_manager_(new FakeSigninManagerBase(signin_client_.get(),
+                                                       account_tracker_.get())),
+        fake_token_service_(new FakeProfileOAuth2TokenService()),
         snippets_fetcher_(
+            fake_signin_manager_.get(),
+            fake_token_service_.get(),
             scoped_refptr<net::TestURLRequestContextGetter>(
                 new net::TestURLRequestContextGetter(mock_task_runner_.get())),
             base::Bind(&ParseJsonDelayed),
             /*is_stable_channel=*/true),
+        test_lang_("en-US"),
         test_url_(base::StringPrintf(kTestContentSnippetsServerFormat,
                                      google_apis::GetAPIKey().c_str())) {
     snippets_fetcher_.SetCallback(
@@ -117,6 +129,7 @@ class NTPSnippetsFetcherTest : public testing::Test {
   void FastForwardUntilNoTasksRemain() {
     mock_task_runner_->FastForwardUntilNoTasksRemain();
   }
+  const std::string& test_lang() const { return test_lang_; }
   const GURL& test_url() { return test_url_; }
   const std::set<std::string>& test_hosts() const { return test_hosts_; }
   base::HistogramTester& histogram_tester() { return histogram_tester_; }
@@ -144,8 +157,13 @@ class NTPSnippetsFetcherTest : public testing::Test {
   FailingFakeURLFetcherFactory failing_url_fetcher_factory_;
   // Initialized lazily in SetFakeResponse().
   std::unique_ptr<net::FakeURLFetcherFactory> fake_url_fetcher_factory_;
+  std::unique_ptr<TestSigninClient> signin_client_;
+  std::unique_ptr<AccountTrackerService> account_tracker_;
+  std::unique_ptr<SigninManagerBase> fake_signin_manager_;
+  std::unique_ptr<OAuth2TokenService> fake_token_service_;
   NTPSnippetsFetcher snippets_fetcher_;
   MockSnippetsAvailableCallback mock_callback_;
+  const std::string test_lang_;
   const GURL test_url_;
   std::set<std::string> test_hosts_;
   base::HistogramTester histogram_tester_;
@@ -179,7 +197,8 @@ TEST_F(NTPSnippetsFetcherTest, ShouldFetchSuccessfully) {
   SetFakeResponse(/*data=*/kJsonStr, net::HTTP_OK,
                   net::URLRequestStatus::SUCCESS);
   EXPECT_CALL(mock_callback(), Run(/*snippets=*/PointeeSizeIs(1))).Times(1);
-  snippets_fetcher().FetchSnippetsFromHosts(test_hosts(), /*count=*/1);
+  snippets_fetcher().FetchSnippetsFromHosts(test_hosts(), test_lang(),
+                                            /*count=*/1);
   FastForwardUntilNoTasksRemain();
   EXPECT_THAT(snippets_fetcher().last_status(), Eq("OK"));
   EXPECT_THAT(snippets_fetcher().last_json(), Eq(kJsonStr));
@@ -196,7 +215,8 @@ TEST_F(NTPSnippetsFetcherTest, ShouldFetchSuccessfullyEmptyList) {
   SetFakeResponse(/*data=*/kJsonStr, net::HTTP_OK,
                   net::URLRequestStatus::SUCCESS);
   EXPECT_CALL(mock_callback(), Run(/*snippets=*/PointeeSizeIs(0))).Times(1);
-  snippets_fetcher().FetchSnippetsFromHosts(test_hosts(), /*count=*/1);
+  snippets_fetcher().FetchSnippetsFromHosts(test_hosts(), test_lang(),
+                                            /*count=*/1);
   FastForwardUntilNoTasksRemain();
   EXPECT_THAT(snippets_fetcher().last_status(), Eq("OK"));
   EXPECT_THAT(snippets_fetcher().last_json(), Eq(kJsonStr));
@@ -211,6 +231,7 @@ TEST_F(NTPSnippetsFetcherTest, ShouldFetchSuccessfullyEmptyList) {
 TEST_F(NTPSnippetsFetcherTest, ShouldReportEmptyHostsError) {
   EXPECT_CALL(mock_callback(), Run(/*snippets=*/Not(HasValue()))).Times(1);
   snippets_fetcher().FetchSnippetsFromHosts(/*hosts=*/std::set<std::string>(),
+                                            /*language_code=*/"en-US",
                                             /*count=*/1);
   FastForwardUntilNoTasksRemain();
   EXPECT_THAT(snippets_fetcher().last_status(),
@@ -230,7 +251,8 @@ TEST_F(NTPSnippetsFetcherTest, ShouldReportEmptyHostsError) {
 
 TEST_F(NTPSnippetsFetcherTest, ShouldRestrictToHosts) {
   net::TestURLFetcherFactory test_url_fetcher_factory;
-  snippets_fetcher().FetchSnippetsFromHosts(test_hosts(), /*count=*/17);
+  snippets_fetcher().FetchSnippetsFromHosts(test_hosts(), test_lang(),
+                                            /*count=*/17);
   net::TestURLFetcher* fetcher = test_url_fetcher_factory.GetFetcherByID(0);
   ASSERT_THAT(fetcher, NotNull());
   std::unique_ptr<base::Value> value =
@@ -253,7 +275,8 @@ TEST_F(NTPSnippetsFetcherTest, ShouldReportUrlStatusError) {
   SetFakeResponse(/*data=*/std::string(), net::HTTP_NOT_FOUND,
                   net::URLRequestStatus::FAILED);
   EXPECT_CALL(mock_callback(), Run(/*snippets=*/Not(HasValue()))).Times(1);
-  snippets_fetcher().FetchSnippetsFromHosts(test_hosts(), /*count=*/1);
+  snippets_fetcher().FetchSnippetsFromHosts(test_hosts(), test_lang(),
+                                            /*count=*/1);
   FastForwardUntilNoTasksRemain();
   EXPECT_THAT(snippets_fetcher().last_status(),
               Eq("URLRequestStatus error -2"));
@@ -272,9 +295,9 @@ TEST_F(NTPSnippetsFetcherTest, ShouldReportHttpError) {
   SetFakeResponse(/*data=*/std::string(), net::HTTP_NOT_FOUND,
                   net::URLRequestStatus::SUCCESS);
   EXPECT_CALL(mock_callback(), Run(/*snippets=*/Not(HasValue()))).Times(1);
-  snippets_fetcher().FetchSnippetsFromHosts(test_hosts(), /*count=*/1);
+  snippets_fetcher().FetchSnippetsFromHosts(test_hosts(), test_lang(),
+                                            /*count=*/1);
   FastForwardUntilNoTasksRemain();
-  EXPECT_THAT(snippets_fetcher().last_status(), Eq("HTTP error 404"));
   EXPECT_THAT(snippets_fetcher().last_json(), IsEmpty());
   EXPECT_THAT(
       histogram_tester().GetAllSamples("NewTabPage.Snippets.FetchResult"),
@@ -291,7 +314,8 @@ TEST_F(NTPSnippetsFetcherTest, ShouldReportJsonError) {
   SetFakeResponse(/*data=*/kInvalidJsonStr, net::HTTP_OK,
                   net::URLRequestStatus::SUCCESS);
   EXPECT_CALL(mock_callback(), Run(/*snippets=*/Not(HasValue()))).Times(1);
-  snippets_fetcher().FetchSnippetsFromHosts(test_hosts(), /*count=*/1);
+  snippets_fetcher().FetchSnippetsFromHosts(test_hosts(), test_lang(),
+                                            /*count=*/1);
   FastForwardUntilNoTasksRemain();
   EXPECT_THAT(snippets_fetcher().last_status(),
               StartsWith("Received invalid JSON (error "));
@@ -311,10 +335,9 @@ TEST_F(NTPSnippetsFetcherTest, ShouldReportJsonErrorForEmptyResponse) {
   SetFakeResponse(/*data=*/std::string(), net::HTTP_OK,
                   net::URLRequestStatus::SUCCESS);
   EXPECT_CALL(mock_callback(), Run(/*snippets=*/Not(HasValue()))).Times(1);
-  snippets_fetcher().FetchSnippetsFromHosts(test_hosts(), /*count=*/1);
+  snippets_fetcher().FetchSnippetsFromHosts(test_hosts(), test_lang(),
+                                            /*count=*/1);
   FastForwardUntilNoTasksRemain();
-  EXPECT_THAT(snippets_fetcher().last_status(),
-              StartsWith("Received invalid JSON (error "));
   EXPECT_THAT(snippets_fetcher().last_json(), std::string());
   EXPECT_THAT(
       histogram_tester().GetAllSamples("NewTabPage.Snippets.FetchResult"),
@@ -330,9 +353,9 @@ TEST_F(NTPSnippetsFetcherTest, ShouldReportInvalidListError) {
   SetFakeResponse(/*data=*/kJsonStr, net::HTTP_OK,
                   net::URLRequestStatus::SUCCESS);
   EXPECT_CALL(mock_callback(), Run(/*snippets=*/Not(HasValue()))).Times(1);
-  snippets_fetcher().FetchSnippetsFromHosts(test_hosts(), /*count=*/1);
+  snippets_fetcher().FetchSnippetsFromHosts(test_hosts(), test_lang(),
+                                            /*count=*/1);
   FastForwardUntilNoTasksRemain();
-  EXPECT_THAT(snippets_fetcher().last_status(), Eq("Invalid / empty list."));
   EXPECT_THAT(snippets_fetcher().last_json(), Eq(kJsonStr));
   EXPECT_THAT(
       histogram_tester().GetAllSamples("NewTabPage.Snippets.FetchResult"),
@@ -349,7 +372,8 @@ TEST_F(NTPSnippetsFetcherTest, ShouldReportInvalidListError) {
 TEST_F(NTPSnippetsFetcherTest, ShouldReportHttpErrorForMissingBakedResponse) {
   InitFakeURLFetcherFactory();
   EXPECT_CALL(mock_callback(), Run(/*snippets=*/Not(HasValue()))).Times(1);
-  snippets_fetcher().FetchSnippetsFromHosts(test_hosts(), /*count=*/1);
+  snippets_fetcher().FetchSnippetsFromHosts(test_hosts(), test_lang(),
+                                            /*count=*/1);
   FastForwardUntilNoTasksRemain();
 }
 
@@ -358,10 +382,12 @@ TEST_F(NTPSnippetsFetcherTest, ShouldCancelOngoingFetch) {
   SetFakeResponse(/*data=*/kJsonStr, net::HTTP_OK,
                   net::URLRequestStatus::SUCCESS);
   EXPECT_CALL(mock_callback(), Run(/*snippets=*/PointeeSizeIs(0))).Times(1);
-  snippets_fetcher().FetchSnippetsFromHosts(test_hosts(), /*count=*/1);
+  snippets_fetcher().FetchSnippetsFromHosts(test_hosts(), test_lang(),
+                                            /*count=*/1);
   // Second call to FetchSnippetsFromHosts() overrides/cancels the previous.
   // Callback is expected to be called once.
-  snippets_fetcher().FetchSnippetsFromHosts(test_hosts(), /*count=*/1);
+  snippets_fetcher().FetchSnippetsFromHosts(test_hosts(), test_lang(),
+                                            /*count=*/1);
   FastForwardUntilNoTasksRemain();
   EXPECT_THAT(
       histogram_tester().GetAllSamples("NewTabPage.Snippets.FetchResult"),
