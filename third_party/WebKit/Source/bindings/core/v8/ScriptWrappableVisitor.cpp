@@ -20,7 +20,7 @@ ScriptWrappableVisitor::~ScriptWrappableVisitor()
 void ScriptWrappableVisitor::TracePrologue()
 {
     m_tracingInProgress = true;
-    ActiveScriptWrappable::traceActiveScriptWrappables(this);
+    ActiveScriptWrappable::traceActiveScriptWrappables(m_isolate, this);
 }
 
 void ScriptWrappableVisitor::TraceEpilogue()

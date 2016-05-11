@@ -9,6 +9,10 @@
 #include "platform/heap/Handle.h"
 #include "wtf/Noncopyable.h"
 
+namespace v8 {
+class Isolate;
+}
+
 namespace blink {
 
 class ScriptWrappable;
@@ -24,11 +28,11 @@ class CORE_EXPORT ActiveScriptWrappable : public GarbageCollectedMixin {
 public:
     explicit ActiveScriptWrappable(ScriptWrappable*);
 
-    static void traceActiveScriptWrappables(ScriptWrappableVisitor*);
+    static void traceActiveScriptWrappables(v8::Isolate*, ScriptWrappableVisitor*);
 
     virtual bool hasPendingActivity() const = 0;
 
-    ScriptWrappable* toScriptWrappable() const;
+    ScriptWrappable* toScriptWrappable() const { return m_scriptWrappable; }
 
 private:
     ScriptWrappable* m_scriptWrappable;

@@ -190,6 +190,8 @@ void V8PerIsolateData::willBeDestroyed(v8::Isolate* isolate)
     // Clear any data that may have handles into the heap,
     // prior to calling ThreadState::detach().
     data->clearEndOfScopeTasks();
+
+    data->m_activeScriptWrappables.clear();
 }
 
 // destroy() clear things that should be cleared after ThreadState::detach()
@@ -339,6 +341,14 @@ void V8PerIsolateData::setThreadDebugger(PassOwnPtr<ThreadDebugger> threadDebugg
 ThreadDebugger* V8PerIsolateData::threadDebugger()
 {
     return m_threadDebugger.get();
+}
+
+void V8PerIsolateData::addActiveScriptWrappable(ActiveScriptWrappable* wrappable)
+{
+    if (!m_activeScriptWrappables)
+        m_activeScriptWrappables = new ActiveScriptWrappableSet();
+
+    m_activeScriptWrappables->add(wrappable);
 }
 
 } // namespace blink

@@ -522,6 +522,8 @@ public:
 
     void callThreadShutdownHooks();
 
+    v8::Isolate* isolate() const { return m_isolate; }
+
 private:
     enum SnapshotType {
         HeapSnapshot,

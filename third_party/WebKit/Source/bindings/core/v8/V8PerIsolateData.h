@@ -33,6 +33,7 @@
 #include "core/CoreExport.h"
 #include "gin/public/isolate_holder.h"
 #include "gin/public/v8_idle_task_runner.h"
+#include "platform/heap/Handle.h"
 #include "wtf/HashMap.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/OwnPtr.h"
@@ -41,6 +42,7 @@
 
 namespace blink {
 
+class ActiveScriptWrappable;
 class DOMDataStore;
 class ThreadDebugger;
 class StringCache;
@@ -138,6 +140,10 @@ public:
     void setThreadDebugger(PassOwnPtr<ThreadDebugger>);
     ThreadDebugger* threadDebugger();
 
+    using ActiveScriptWrappableSet = HeapHashSet<WeakMember<ActiveScriptWrappable>>;
+    void addActiveScriptWrappable(ActiveScriptWrappable*);
+    const ActiveScriptWrappableSet& activeScriptWrappables() const { return *m_activeScriptWrappables; }
+
 private:
     V8PerIsolateData();
     ~V8PerIsolateData();
@@ -177,6 +183,8 @@ private:
 
     Vector<OwnPtr<EndOfScopeTask>> m_endOfScopeTasks;
     OwnPtr<ThreadDebugger> m_threadDebugger;
+
+    Persistent<ActiveScriptWrappableSet> m_activeScriptWrappables;
 };
 
 } // namespace blink
