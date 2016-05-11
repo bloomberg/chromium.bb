@@ -81,8 +81,8 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
     PRERENDER_MODE_EXPERIMENT_NO_USE_GROUP = 5,
     PRERENDER_MODE_EXPERIMENT_MULTI_PRERENDER_GROUP = 6,
     PRERENDER_MODE_EXPERIMENT_15MIN_TTL_GROUP = 7,
-    PRERENDER_MODE_EXPERIMENT_MATCH_COMPLETE_GROUP = 8,
-    PRERENDER_MODE_MAX
+    // Obsolete: PRERENDER_MODE_EXPERIMENT_MATCH_COMPLETE_GROUP = 8,
+    PRERENDER_MODE_MAX = 9
   };
 
   // One or more of these flags must be passed to ClearData() to specify just
@@ -334,10 +334,6 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
                   base::TimeTicks expiry_time);
 
     ~PrerenderData();
-
-    // Turn this PrerenderData into a Match Complete replacement for itself,
-    // placing the current prerender contents into |to_delete_prerenders_|.
-    void MakeIntoMatchCompleteReplacement();
 
     // A new PrerenderHandle has been created for this PrerenderData.
     void OnHandleCreated(PrerenderHandle* prerender_handle);

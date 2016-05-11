@@ -665,10 +665,6 @@ class TestPrerender : public PrerenderContents::Observer,
       load_waiter_->Quit();
   }
 
-  void OnPrerenderCreatedMatchCompleteReplacement(
-      PrerenderContents* contents,
-      PrerenderContents* replacement) override {}
-
  private:
   TestPrerenderContents* contents_;
   int number_of_loads_;
@@ -3317,35 +3313,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, ControlGroupRendererInitiated) {
   OpenDestURLViaClick();
 }
 
-// Make sure that the MatchComplete dummy works in the normal case.  Once
-// a prerender is cancelled because of a script, a dummy must be created to
-// account for the MatchComplete case, and it must have a final status of
-// FINAL_STATUS_WOULD_HAVE_BEEN_USED.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, MatchCompleteDummy) {
-  RestorePrerenderMode restore_prerender_mode;
-  PrerenderManager::SetMode(
-      PrerenderManager::PRERENDER_MODE_EXPERIMENT_MATCH_COMPLETE_GROUP);
-
-  std::vector<FinalStatus> expected_final_status_queue;
-  expected_final_status_queue.push_back(FINAL_STATUS_INVALID_HTTP_METHOD);
-  expected_final_status_queue.push_back(FINAL_STATUS_WOULD_HAVE_BEEN_USED);
-  PrerenderTestURL("/prerender/prerender_xhr_put.html",
-                   expected_final_status_queue, 1);
-  histogram_tester().ExpectTotalCount("Prerender.none_PerceivedPLT", 1);
-  histogram_tester().ExpectTotalCount("Prerender.none_PerceivedPLTMatched", 0);
-  histogram_tester().ExpectTotalCount(
-      "Prerender.none_PerceivedPLTMatchedComplete", 0);
-  histogram_tester().ExpectTotalCount(
-      "Prerender.websame_PrerenderNotSwappedInPLT", 1);
-
-  NavigateToDestURL();
-  histogram_tester().ExpectTotalCount("Prerender.websame_PerceivedPLT", 1);
-  histogram_tester().ExpectTotalCount("Prerender.websame_PerceivedPLTMatched",
-                                      0);
-  histogram_tester().ExpectTotalCount(
-      "Prerender.websame_PerceivedPLTMatchedComplete", 1);
-}
-
 // Checks that the referrer policy is used when prerendering.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderReferrerPolicy) {
   set_loader_path("/prerender/prerender_loader_with_referrer_policy.html");
@@ -3470,10 +3437,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTestWithExtensions, TabsApi) {
 // Test that prerenders abort when navigating to a stream.
 // See chrome/browser/extensions/api/streams_private/streams_private_apitest.cc
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTestWithExtensions, StreamsTest) {
-  RestorePrerenderMode restore_prerender_mode;
-  PrerenderManager::SetMode(
-      PrerenderManager::PRERENDER_MODE_EXPERIMENT_MATCH_COMPLETE_GROUP);
-
   ASSERT_TRUE(StartEmbeddedTestServer());
 
   const extensions::Extension* extension = LoadExtension(
@@ -3489,10 +3452,12 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTestWithExtensions, StreamsTest) {
 
   // Sanity-check that the extension would have picked up the stream in a normal
   // navigation had prerender not intercepted it.
-  // streams_private/handle_mime_type reports success if it has handled the
-  // application/msword type.
+  // The extension streams_private/handle_mime_type reports success if it has
+  // handled the application/msword type.
+  // Note: NavigateToDestURL() cannot be used because of the assertion shecking
+  //     for non-null PrerenderContents.
   extensions::ResultCatcher catcher;
-  NavigateToDestURL();
+  ui_test_utils::NavigateToURL(current_browser(), dest_url());
   EXPECT_TRUE(catcher.GetNextResult());
 }
 
@@ -3663,28 +3628,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
                    FINAL_STATUS_OPEN_URL, 1);
 }
 
-// Checks that canceling a MatchComplete dummy doesn't result in two
-// stop events.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, CancelMatchCompleteDummy) {
-  RestorePrerenderMode restore_prerender_mode;
-  PrerenderManager::SetMode(
-      PrerenderManager::PRERENDER_MODE_EXPERIMENT_MATCH_COMPLETE_GROUP);
-
-  std::vector<FinalStatus> expected_final_status_queue;
-  expected_final_status_queue.push_back(FINAL_STATUS_JAVASCRIPT_ALERT);
-  expected_final_status_queue.push_back(FINAL_STATUS_CANCELLED);
-  ScopedVector<TestPrerender> prerenders =
-      PrerenderTestURL("/prerender/prerender_alert_before_onload.html",
-                       expected_final_status_queue, 0);
-
-  // Cancel the MatchComplete dummy.
-  GetPrerenderManager()->CancelAllPrerenders();
-  prerenders[1]->WaitForStop();
-
-  // Check the referring page only got one copy of the event.
-  EXPECT_FALSE(HadPrerenderEventErrors());
-}
-
 // Checks that a deferred redirect to an image is not loaded until the page is
 // visible. Also test the right histogram events are emitted in this case.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderDeferredImage) {
@@ -3774,15 +3717,11 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   NavigateToDestURL();
 }
 
-// Checks that deferred redirects in a synchronous XHR abort the
-// prerender.
+// Checks that deferred redirects in a synchronous XHR abort the prerender.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderDeferredSynchronousXHR) {
-  RestorePrerenderMode restore_prerender_mode;
-  PrerenderManager::SetMode(
-      PrerenderManager::PRERENDER_MODE_EXPERIMENT_MATCH_COMPLETE_GROUP);
   PrerenderTestURL("/prerender/prerender_deferred_sync_xhr.html",
                    FINAL_STATUS_BAD_DEFERRED_REDIRECT, 0);
-  NavigateToDestURL();
+  ui_test_utils::NavigateToURL(current_browser(), dest_url());
 }
 
 // Checks that prerenders are not swapped for navigations with extra headers.

@@ -86,10 +86,6 @@ class PrerenderContents : public content::NotificationObserver,
     // destroyed.
     virtual void OnPrerenderStop(PrerenderContents* contents) = 0;
 
-    // Signals that this prerender has just become a MatchComplete replacement.
-    virtual void OnPrerenderCreatedMatchCompleteReplacement(
-        PrerenderContents* contents, PrerenderContents* replacement);
-
    protected:
     Observer();
     virtual ~Observer() = 0;
@@ -100,6 +96,8 @@ class PrerenderContents : public content::NotificationObserver,
   // all prerenders and control group prerenders) or MatchComplete (record
   // running prerenders only in the way they would have been recorded in the
   // control group).
+  // TODO(pasko): Remove the dead code associated with non-default
+  // MatchCompleteStatus.
   enum MatchCompleteStatus {
     // A regular prerender which will be recorded both in Match and
     // MatchComplete.
@@ -285,8 +283,6 @@ class PrerenderContents : public content::NotificationObserver,
   void NotifyPrerenderStopLoading();
   void NotifyPrerenderDomContentLoaded();
   void NotifyPrerenderStop();
-  void NotifyPrerenderCreatedMatchCompleteReplacement(
-      PrerenderContents* replacement);
 
   // Called whenever a RenderViewHost is created for prerendering.  Only called
   // once the RenderViewHost has a RenderView and RenderWidgetHostView.

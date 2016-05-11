@@ -114,22 +114,6 @@ void PrerenderHandle::OnPrerenderStop(PrerenderContents* prerender_contents) {
     observer_->OnPrerenderStop(this);
 }
 
-void PrerenderHandle::OnPrerenderCreatedMatchCompleteReplacement(
-    PrerenderContents* contents, PrerenderContents* replacement) {
-  DCHECK(CalledOnValidThread());
-
-  // This should occur in the middle of the surgery on the PrerenderData, and
-  // so we expect to not have our new contents in our PrerenderData yet. The
-  // switch occurs in
-  // PrerenderManager::PrerenderData::MakeIntoMatchCompleteReplacement, so
-  // this method only needs to switch observing.
-
-  contents->RemoveObserver(this);
-  replacement->AddObserver(this);
-  if (observer_)
-    observer_->OnPrerenderCreatedMatchCompleteReplacement(this);
-}
-
 bool PrerenderHandle::RepresentingSamePrerenderAs(
     PrerenderHandle* other) const {
   return other && other->prerender_data_.get() && prerender_data_.get()

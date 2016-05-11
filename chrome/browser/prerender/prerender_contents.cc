@@ -184,10 +184,6 @@ void PrerenderContents::Observer::OnPrerenderDomContentLoaded(
     PrerenderContents* contents) {
 }
 
-void PrerenderContents::Observer::OnPrerenderCreatedMatchCompleteReplacement(
-    PrerenderContents* contents, PrerenderContents* replacement) {
-}
-
 PrerenderContents::Observer::Observer() {
 }
 
@@ -216,29 +212,6 @@ PrerenderContents::PrerenderContents(
       origin_(origin),
       network_bytes_(0) {
   DCHECK(prerender_manager != NULL);
-}
-
-PrerenderContents* PrerenderContents::CreateMatchCompleteReplacement() {
-  PrerenderContents* new_contents = prerender_manager_->CreatePrerenderContents(
-      prerender_url(), referrer(), origin());
-
-  new_contents->load_start_time_ = load_start_time_;
-  new_contents->session_storage_namespace_id_ = session_storage_namespace_id_;
-  new_contents->set_match_complete_status(
-      PrerenderContents::MATCH_COMPLETE_REPLACEMENT_PENDING);
-
-  const bool did_init = new_contents->Init();
-  DCHECK(did_init);
-  DCHECK_EQ(alias_urls_.front(), new_contents->alias_urls_.front());
-  DCHECK_EQ(1u, new_contents->alias_urls_.size());
-  new_contents->alias_urls_ = alias_urls_;
-  // Erase all but the first alias URL; the replacement has adopted the
-  // remainder without increasing the renderer-side reference count.
-  alias_urls_.resize(1);
-  new_contents->set_match_complete_status(
-      PrerenderContents::MATCH_COMPLETE_REPLACEMENT);
-  NotifyPrerenderCreatedMatchCompleteReplacement(new_contents);
-  return new_contents;
 }
 
 bool PrerenderContents::Init() {
@@ -475,13 +448,6 @@ void PrerenderContents::NotifyPrerenderStop() {
   observer_list_.Clear();
 }
 
-void PrerenderContents::NotifyPrerenderCreatedMatchCompleteReplacement(
-    PrerenderContents* replacement) {
-  FOR_EACH_OBSERVER(Observer, observer_list_,
-                    OnPrerenderCreatedMatchCompleteReplacement(this,
-                                                               replacement));
-}
-
 bool PrerenderContents::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   // The following messages we do want to consume.
@@ -640,16 +606,8 @@ void PrerenderContents::Destroy(FinalStatus final_status) {
   prerender_manager_->AddToHistory(this);
   prerender_manager_->MoveEntryToPendingDelete(this, final_status);
 
-  // Note that if this PrerenderContents was made into a MatchComplete
-  // replacement by MoveEntryToPendingDelete, NotifyPrerenderStop will
-  // not reach the PrerenderHandle. Rather
-  // OnPrerenderCreatedMatchCompleteReplacement will propogate that
-  // information to the referer.
-  if (!prerender_manager_->IsControlGroup() &&
-      (prerendering_has_started() ||
-       match_complete_status() == MATCH_COMPLETE_REPLACEMENT)) {
+  if (!prerender_manager_->IsControlGroup() && prerendering_has_started())
     NotifyPrerenderStop();
-  }
 }
 
 base::ProcessMetrics* PrerenderContents::MaybeGetProcessMetrics() {
