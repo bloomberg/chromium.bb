@@ -68,6 +68,7 @@
 <translation id="1842969606798536927">Оплатити</translation>
 <translation id="1853692000353488670">Нова анонімна вкладка</translation>
 <translation id="189172778771606813">Закрити панель навігації</translation>
+<translation id="1924956916668006832">Вибрати адресу доставки</translation>
 <translation id="194341124344773587">Увімкніть дозвіл для Chrome у <ph name="BEGIN_LINK" />налаштуваннях Android<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Зберігання паролів</translation>
 <translation id="1944384637046898011">Зашифрувати всі дані за допомогою пароля Google із <ph name="TIME" />.</translation>
@@ -98,6 +99,7 @@
 <translation id="2268044343513325586">Уточнити</translation>
 <translation id="2315043854645842844">Операційна система не підтримує сертифікат, вибраний на стороні клієнта.</translation>
 <translation id="2321958826496381788">Перетягуйте повзунок, доки розмір тексту не стане зручним для читання. Якщо двічі торкнутись абзацу, розмір тексту має стати принаймні таким, як цей.</translation>
+<translation id="2329597144923131178">Увійдіть, щоб мати доступ до закладок, історії, паролів та інших налаштувань на всіх своїх пристроях.</translation>
 <translation id="2343328333327081434">Встановлення…</translation>
 <translation id="2351097562818989364">Налаштування перекладу скинуто.</translation>
 <translation id="2359808026110333948">Продовжити</translation>
@@ -133,6 +135,7 @@
 <translation id="2762000892062317888">щойно</translation>
 <translation id="2770465223704140727">Видалити зі списку</translation>
 <translation id="278029852808208386">Пристроїв Bluetooth не знайдено. <ph name="BEGIN_LINK" />Пошукайте ще раз<ph name="END_LINK" />.</translation>
+<translation id="2781389167600714117">Вибрати варіант доставки</translation>
 <translation id="2811892995384186721">Немає вашого пристрою? <ph name="BEGIN_LINK" />Перегляньте довідку<ph name="END_LINK" />.</translation>
 <translation id="2836148919159985482">Щоб вийти з повноекранного режиму, торкніться кнопки "Назад".</translation>
 <translation id="2842985007712546952">Батьківська папка</translation>
@@ -158,7 +161,6 @@
 <translation id="3137521801621304719">Вийти з режиму анонімного перегляду</translation>
 <translation id="3149891296864842641">Варіант доставки</translation>
 <translation id="3162882791484435636">Вибрати варіант доставки</translation>
-<translation id="3173438333156928404">Помилка під час обробки платежу</translation>
 <translation id="3177909033752230686">Мова сторінки:</translation>
 <translation id="3190152372525844641">Увімкніть дозволи для Chrome у <ph name="BEGIN_LINK" />налаштуваннях Android<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> збережених даних</translation>
@@ -194,7 +196,6 @@
 Щоб змінити пошуковий термін, натисніть і утримуйте його. Щоб уточнити пошуковий запит, пересуньте панель угору та торкніться вікна пошуку.</translation>
 <translation id="3623048332793834136">Закладки з Chrome Canary</translation>
 <translation id="363596933471559332">Автоматично входити в облікові записи на веб-сайтах за допомогою збережених даних. Якщо цю функцію вимкнено, потрібно вводити облікові дані під час кожного входу на сайтах.</translation>
-<translation id="3653742808139624888">Щоб мати доступ до закладок на всіх своїх пристроях, увійдіть в обліковий запис Chrome</translation>
 <translation id="3656115297268584622">Увімкніть службу локації в <ph name="BEGIN_LINK" />налаштуваннях Android<ph name="END_LINK" />.</translation>
 <translation id="3661699943263275414">Сторонні веб-сайти можуть зберігати та розпізнавати дані файлів cookie</translation>
 <translation id="3672452749423051839">Пропозиції у випадку помилок навігації</translation>
@@ -226,6 +227,7 @@
 <translation id="4170011742729630528">Служба не доступна. Повторіть спробу пізніше.</translation>
 <translation id="4195643157523330669">Відкрити в новій вкладці</translation>
 <translation id="423410644998903704">Chrome потрібен доступ до дозволів, щоб дозволити цьому сайту використовувати їх.</translation>
+<translation id="4242533952199664413">Відкрити налаштування</translation>
 <translation id="424864128008805179">Вийти з Chrome?</translation>
 <translation id="4254813446494774748">Мова перекладу:</translation>
 <translation id="4256782883801055595">Ліцензії ПЗ з відкритим кодом</translation>
@@ -524,14 +526,12 @@
 <translation id="8007176423574883786">Вимкнено для цього пристрою</translation>
 <translation id="8026334261755873520">Очистити дані веб-перегляду</translation>
 <translation id="8035133914807600019">Нова папка…</translation>
+<translation id="8063895661287329888">Не вдалося додати закладку.</translation>
 <translation id="8068648041423924542">Не вдалося вибрати сертифікат.</translation>
 <translation id="8069239273282989646">Після стиснення</translation>
 <translation id="8073388330009372546">Відкрити в новій вкладці</translation>
 <translation id="8076014560081431679">Збережені налаштування, які можуть стосуватися ваших зацікавлень в Інтернеті, не буде видалено. <ph name="BEGIN_LINK" />Докладніше<ph name="END_LINK" /></translation>
 <translation id="8087000398470557479">Це вміст із сайту <ph name="DOMAIN_NAME" />, який доставляє Google.</translation>
-<translation id="8098570222830891427">Пристрої поруч транслюють веб-сторінки через Bluetooth. Chrome шукатиме та показуватиме сторінки, коли ви активуєте пристрій. Google оброблятиме ці сторінки, щоб покращити якість результатів.
-
-Ви можете керувати сервісом Інтернет навколо нас у налаштуваннях Chrome.</translation>
 <translation id="8106211421800660735">Номер кредитної картки</translation>
 <translation id="813082847718468539">Перегляд інформації про сайт</translation>
 <translation id="8137558756159375272">Функція пошуку дотиком надсилає слово та поточну сторінку як додаткові дані в Пошук Google. Її можна вимкнути в <ph name="BEGIN_LINK" />налаштуваннях<ph name="END_LINK" />.</translation>

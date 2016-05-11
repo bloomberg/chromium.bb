@@ -42,6 +42,7 @@
 <translation id="1254117744268754948">Escolher Pasta</translation>
 <translation id="1285320974508926690">Nunca traduzir este site</translation>
 <translation id="129553762522093515">Fechados recentemente</translation>
+<translation id="129863573139666797"><ph name="BEGIN_LINK" />Experimente limpar os cookies<ph name="END_LINK" /></translation>
 <translation id="1339601241726513588">Domínio de inscrição:</translation>
 <translation id="1344588688991793829">Definições de preenchimento automático do Chromium…</translation>
 <translation id="1374468813861204354">sugestões</translation>
@@ -198,6 +199,7 @@
 <translation id="2969319727213777354">Para estabelecer uma ligação segura, o relógio tem de ser definido corretamente. Isto deve-se ao facto de os certificados que os Websites utilizam para se identificarem serem apenas válidos para períodos de tempo específicos. Uma vez que o relógio do seu dispositivo está incorreto, o Google Chrome não consegue validar estes certificados.</translation>
 <translation id="2972581237482394796">&amp;Repetir</translation>
 <translation id="2985306909656435243">Se ativada, o Chromium armazena uma cópia do seu cartão neste dispositivo para preencher formulários mais rapidamente.</translation>
+<translation id="2989984781570875765">Introduza a data de validade e o Código de Segurança/CVC de três dígitos que se encontra no verso do seu <ph name="CREDIT_CARD" /></translation>
 <translation id="2991174974383378012">Partilha com Websites</translation>
 <translation id="3005723025932146533">Mostrar cópia guardada</translation>
 <translation id="3010559122411665027">Entrada da lista "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
@@ -281,6 +283,7 @@
 <translation id="3717027428350673159"><ph name="BEGIN_LINK" />Verificar a configuração do proxy, da firewall e de DNS<ph name="END_LINK" /></translation>
 <translation id="3739623965217189342">Link copiado por si</translation>
 <translation id="3744899669254331632">Não pode visitar <ph name="SITE" /> neste momento, porque o Website enviou credenciais baralhadas que o Chromium não consegue processar. Os erros de rede e os ataques são geralmente temporários, pelo que esta página deverá funcionar mais tarde.</translation>
+<translation id="3748071062818261683">Validar cartão</translation>
 <translation id="3748412725338508953">Houve demasiados redireccionamentos.</translation>
 <translation id="375403751935624634">A tradução falhou devido a um erro do servidor.</translation>
 <translation id="3759461132968374835">Não tem comunicado falhas recentemente. As falhas que tenham ocorrido enquanto a criação de relatórios de falha esteve desativada não surgem aqui.</translation>
@@ -309,6 +312,7 @@
 <translation id="4103249731201008433">Número de série do dispositivo é inválido</translation>
 <translation id="4103763322291513355">Visite &lt;strong&gt;chrome://policy&lt;/strong&gt; para ver os URLs que foram colocados na lista negra e outras políticas aplicadas pelo administrador do sistema.</translation>
 <translation id="4117700440116928470">O âmbito da política não é suportado.</translation>
+<translation id="4130226655945681476">Verificar os cabos de rede, o modem e o router</translation>
 <translation id="4147376274874979956">Não é possível aceder ao ficheiro.</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">Pretende que o Chromium guarde este cartão?</translation>
@@ -343,11 +347,15 @@
 <translation id="450710068430902550">Partilha com o administrador</translation>
 <translation id="4522570452068850558">Detalhes</translation>
 <translation id="4535734014498033861">A ligação ao servidor proxy falhou.</translation>
+<translation id="4553532082208702698">Introduza o Código de Segurança/CVC de quatro dígitos que se encontra na frente do seu <ph name="CREDIT_CARD" /></translation>
+<translation id="4558551763791394412">Experimente desativar as extensões.</translation>
 <translation id="4587425331216688090">Pretende remover o endereço do Chrome?</translation>
 <translation id="4592951414987517459">A sua ligação a <ph name="DOMAIN" /> está encriptada através de um conjunto de cifras moderno.</translation>
 <translation id="4594403342090139922">&amp;Anular eliminação</translation>
 <translation id="4668929960204016307">,</translation>
+<translation id="4670097147947922288">Está a ver a página de uma extensão.</translation>
 <translation id="467662567472608290">Este servidor não conseguiu provar que é o domínio <ph name="DOMAIN" />; o respetivo certificado de segurança contém erros. Isto pode ser o resultado de uma configuração incorreta ou de um invasor a intercetar a sua ligação.</translation>
+<translation id="4683417246209150705">Introduza o Código de Segurança/CVC de três dígitos que se encontra no verso do seu <ph name="CREDIT_CARD" /></translation>
 <translation id="4697214168136963651"><ph name="URL" /> foi bloqueado</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">A ligação foi interrompida</translation>
@@ -432,6 +440,8 @@
 <translation id="5650551054760837876">Nenhum resultado de pesquisa encontrado.</translation>
 <translation id="5663999524854166235">Introduza o Código de Segurança/CVC de três dígitos que se encontra no verso do cartão para validação</translation>
 <translation id="5677928146339483299">Bloqueado</translation>
+<translation id="5696590819423335174">Introduza a data de validade e o Código de Segurança/CVC de quatro dígitos que se encontram na frente do seu <ph name="CREDIT_CARD" /></translation>
+<translation id="5699278517904102888">Introduza o Código de Segurança/CVC de três dígitos que se encontra no verso do seu <ph name="CREDIT_CARD" /> para validação</translation>
 <translation id="5710435578057952990">A identidade deste Web site não foi verificada.</translation>
 <translation id="5720705177508910913">Utilizador atual</translation>
 <translation id="5785756445106461925">Além disso, esta página inclui outros recursos que não são seguros. Estes recursos podem ser vistos por outros utilizadores em trânsito e modificados por um utilizador mal intencionado com o intuito de alterar o aspeto da página.</translation>
@@ -555,7 +565,6 @@
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> não respeita os padrões de segurança.</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /> sobre este problema.</translation>
 <translation id="7219179957768738017">A ligação utiliza <ph name="SSL_VERSION" />.</translation>
-<translation id="7225807090967870017">ID de compilação</translation>
 <translation id="7231308970288859235">Ups! Tens de perguntar ao teu encarregado de educação se podes aceder a esta página.</translation>
 <translation id="7246609911581847514">Está a ver esta mensagem porque o seu gestor necessita de aprovar os sites novos sempre que o visita pela primeira vez.</translation>
 <translation id="725866823122871198">Não é possível estabelecer uma ligação privada a <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, porque a data e a hora do computador (<ph name="DATE_AND_TIME" />) estão incorretas.</translation>
@@ -596,6 +605,7 @@ O modo de navegação anónima <ph name="SHORTCUT_KEY" /> pode ser útil da pró
 <translation id="7610193165460212391">O valor está fora do intervalo <ph name="VALUE" /> .</translation>
 <translation id="7613889955535752492">Exp.: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Já tem dados encriptados usando uma versão diferente da palavra-passe da sua Conta Google. Introduza-a abaixo.</translation>
+<translation id="7633887239437305289">Introduza o Código de Segurança/CVC de quatro dígitos que se encontra na frente do seu <ph name="CREDIT_CARD" /> para validação</translation>
 <translation id="7634554953375732414">A sua ligação a este site não é privada.</translation>
 <translation id="7637571805876720304">Pretende remover o cartão de crédito do Chromium?</translation>
 <translation id="7643817847124207232">A ligação à Internet perdeu-se.</translation>

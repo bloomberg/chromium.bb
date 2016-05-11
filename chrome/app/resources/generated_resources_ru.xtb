@@ -152,6 +152,10 @@
 <translation id="1202596434010270079">Киоск-приложение обновлено. Извлеките USB-накопитель.</translation>
 <translation id="1205489148908752564">Просмотр и изменение белого списка пользователей</translation>
 <translation id="1208421848177517699">Транслитерация (namaste → નમસ્તે)</translation>
+<translation id="1208881655517375167">Чтобы профиль <ph name="NEW_PROFILE_NAME" /> не смог получить доступ к вашему аккаунту, при выходе из Chrome нажмите на свое имя профиля в правом верхнем углу и выберите "Выйти и заблокировать".
+<ph name="BEGIN_LINK" />Подробнее…<ph name="END_LINK" />
+
+Подробные инструкции отправлены на адрес <ph name="ACCOUNT_EMAIL" />.</translation>
 <translation id="1209796539517632982">Автоматические серверы имен</translation>
 <translation id="1215411991991485844">Добавлено фоновое приложение</translation>
 <translation id="1216659994753476700">К сожалению, у нас нет доступа к вашему профилю. Файлы и данные на этом устройстве, скорее всего, были утеряны.<ph name="BR" />
@@ -296,7 +300,6 @@
 <translation id="1429740407920618615">Мощность сигнала:</translation>
 <translation id="143027896309062157">Просмотр и изменение данных на вашем компьютере и посещаемых сайтах</translation>
 <translation id="1430915738399379752">Печать</translation>
-<translation id="1433423644370450034">Уведомления MediaStyle</translation>
 <translation id="1434696352799406980">Будут сброшены настройки главной страницы, страницы быстрого доступа и поисковой системы, а также откреплены все вкладки. Кроме того, система отключит все расширения и удалит все временные данные, такие как файлы cookie. Ваши закладки, история просмотров и пароли будут сохранены.</translation>
 <translation id="1434886155212424586">В качестве главной страницы установлена страница быстрого доступа.</translation>
 <translation id="1435550882135542937">Новое оформление панели инструментов расширений</translation>
@@ -600,7 +603,6 @@
 <translation id="1835339313324024">Автоматическое развертывание виртуальной клавиатуры</translation>
 <translation id="1838374766361614909">Удалить условия поиска</translation>
 <translation id="1839704667838141620">Измените настройки доступа к файлу.</translation>
-<translation id="1839913225882990152">Описание проблемы</translation>
 <translation id="1842969606798536927">Оплатить</translation>
 <translation id="184456654378801210">(Оригинал)</translation>
 <translation id="1844692022597038441">Этот файл недоступен в автономном режиме.</translation>
@@ -1231,6 +1233,7 @@
 <translation id="2772936498786524345">Ниндзя</translation>
 <translation id="2773948261276885771">Добавить</translation>
 <translation id="2776441542064982094">Устройства для регистрации в сети не найдены. Если ваше устройство включено и подключено к Интернету, зарегистрируйте его согласно инструкциям, содержащимся в его руководстве по эксплуатации.</translation>
+<translation id="277674485549860058">Применяет Material Design к элементам системного интерфейса Chrome OS.</translation>
 <translation id="2778459533137481732">Черный список разрешений</translation>
 <translation id="2779552785085366231">Эту страницу можно добавить на панель запуска приложений</translation>
 <translation id="2781645665747935084">Бельгийская</translation>
@@ -1593,6 +1596,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="32330993344203779">Ваше устройство зарегистрировано для использования на предприятии.</translation>
 <translation id="3234666976984236645">Всегда находить важный контент на этом сайте</translation>
 <translation id="3236997602556743698">3 Set (Sebeolsik 390)</translation>
+<translation id="3237784613213365159">Создан контролируемый профиль: <ph name="NEW_PROFILE_NAME" /></translation>
 <translation id="3239019276325325404">Возобновление загрузки</translation>
 <translation id="324056286105023296">Не <ph name="PROFILE_NAME" />?</translation>
 <translation id="3241680850019875542">Выберите корневой каталог упаковываемого расширения. Для обновления расширения также укажите закрытый ключ.</translation>
@@ -1920,7 +1924,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3656059567098593256"><ph name="APP_NAME" /> хочет предоставить <ph name="TARGET_NAME" /> доступ к вашему экрану. Выберите окно, которое вы хотите показать.</translation>
 <translation id="3657468915905674858">Использовать закрытую среду Win32k для плагинов PPAPI</translation>
 <translation id="3660234220361471169">Недоверенный</translation>
-<translation id="3665371460012342183">Для сенсорных экранов. Показывает всплывающее окно с увеличенной областью просмотра при случайном нажатии на несколько ссылок одновременно.</translation>
 <translation id="3665589677786828986">Некоторые настройки Chrome недавно были изменены посторонней программой. Браузер восстановил их значения по умолчанию.</translation>
 <translation id="3665842570601375360">Безопасность:</translation>
 <translation id="3668570675727296296">Настройки языка</translation>
@@ -1941,7 +1944,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3690976161240450479">Ошибка входа. Обратитесь к системному администратору или повторите попытку.</translation>
 <translation id="3693415264595406141">Пароль:</translation>
 <translation id="3694027410380121301">Выбрать предыдущую вкладку</translation>
-<translation id="3694122362646626770">Сайты</translation>
 <translation id="3694678678240097321">Если расширение запрашивает разрешение на запуск скрипта на страницах любого сайта, требуется согласие пользователя.</translation>
 <translation id="3695919544155087829">Введите пароль, который использовался для шифрования этого файла сертификата.</translation>
 <translation id="3696411085566228381">нет</translation>
@@ -1955,6 +1957,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3707020109030358290">Не является центром сертификации.</translation>
 <translation id="3709244229496787112">Браузер был закрыт до завершения скачивания.</translation>
 <translation id="3711486163272428582">Включить автоматическое определение часового пояса в зависимости от местоположения.</translation>
+<translation id="3711895659073496551">Спящий режим</translation>
 <translation id="3712897371525859903">Сохранить страницу &amp;как...</translation>
 <translation id="3714633008798122362">веб-календарь</translation>
 <translation id="3715597595485130451">Подключение к Wi-Fi</translation>
@@ -2812,7 +2815,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="5038863510258510803">Активация...</translation>
 <translation id="5039512255859636053">$1 ТБ</translation>
 <translation id="5039804452771397117">Разрешить</translation>
-<translation id="5043851552150732346">Выбран 1 каталог</translation>
 <translation id="5045550434625856497">Неправильный пароль</translation>
 <translation id="5048179823246820836">Нордическая</translation>
 <translation id="5053604404986157245">Отсутствует сгенерированный пароль доверенного платформенного модуля (в результате применения процесса Powerwash).</translation>
@@ -2864,6 +2866,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="5129301143853688736">Подключение не защищено. Злоумышленники могут пытаться похитить ваши данные (например, пароли, сообщения или номера банковских карт) в домене <ph name="DOMAIN" />.</translation>
 <translation id="5129662217315786329">Польский</translation>
 <translation id="5130080518784460891">Этен</translation>
+<translation id="5134856901811723984">Material Design в системном интерфейсе Chrome OS</translation>
 <translation id="5135533361271311778">Не удалось создать закладку.</translation>
 <translation id="5136529877787728692">F7</translation>
 <translation id="5137501176474113045">Удалить</translation>
@@ -2928,7 +2931,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="5212461935944305924">Исключения для файлов cookie и данных сайтов</translation>
 <translation id="521582610500777512">Фотография удалена.</translation>
 <translation id="5218183485292899140">Швейцарская (французская)</translation>
-<translation id="5218766986344577658">Всплывающее окно для выбора ссылки</translation>
 <translation id="5220992698394817380">Включение меню настроек IME</translation>
 <translation id="5222676887888702881">Выйти</translation>
 <translation id="5225324770654022472">Показывать кнопку "Сервисы"</translation>
@@ -3436,6 +3438,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="5925147183566400388">Указатель на регламент удостоверяющего центра</translation>
 <translation id="5930693802084567591">Данные зашифрованы <ph name="TIME" /> с помощью пароля Google. Введите его в поле ниже.</translation>
 <translation id="5931146425219109062">Просмотр и изменение ваших данных на посещаемых сайтах</translation>
+<translation id="5932881020239635062">Серийный номер</translation>
 <translation id="5934281776477898549">Обновлений нет</translation>
 <translation id="5937843713457938680">Позволяет выбрать режим кеширования для V8 (движка JavaScript).</translation>
 <translation id="5939518447894949180">Сбросить</translation>
@@ -3644,6 +3647,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="626568068055008686">Неправильный пароль или поврежденный файл.</translation>
 <translation id="6267166720438879315">Выберите сертификат для аутентификации на <ph name="HOST_NAME" /></translation>
 <translation id="6267909379545953750">Экспериментальные функции JavaScript</translation>
+<translation id="6268252012308737255">Открыть в приложении <ph name="APP" /></translation>
 <translation id="6268747994388690914">Импорт закладок из файла HTML</translation>
 <translation id="6272765239698781406">Агрессивная стратегия отключения кеша</translation>
 <translation id="6273677812470008672">Качество</translation>
@@ -3790,6 +3794,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="6485352695865682479">Статус подключения</translation>
 <translation id="648927581764831596">Отсутствуют</translation>
 <translation id="6490936204492416398">Установите новые расширения в Интернет-магазине</translation>
+<translation id="6491376743066338510">Не удалось выполнить авторизацию</translation>
 <translation id="6492313032770352219">Объем на диске:</translation>
 <translation id="6498249116389603658">&amp;Все языки</translation>
 <translation id="6499143127267478107">Разрешение хоста в скрипте прокси-сервера...</translation>
@@ -4444,6 +4449,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="749028671485790643">Пользователь <ph name="VALUE" /></translation>
 <translation id="7491962110804786152">tab</translation>
 <translation id="7493386493263658176">Расширение "<ph name="EXTENSION_NAME" />" может сохранять любой текст, который вы вводите, в том числе пароли и данные банковских карт. Начать работу?</translation>
+<translation id="7495424355577885780">Если параметр включен, при отправке отзыва используется интерфейс Material Design.</translation>
 <translation id="7495778526395737099">Забыли пароль?</translation>
 <translation id="7503191893372251637">Тип сертификата Netscape</translation>
 <translation id="7503821294401948377">Не удалось загрузить значок "<ph name="ICON" />" для действия браузера.</translation>
@@ -4710,7 +4716,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="7896906914454843592">Раскладка США (расширенная)</translation>
 <translation id="7897900149154324287">В будущем, прежде чем отключать накопитель, воспользуйтесь командой "Извлечь" в приложении "Файлы", чтобы не потерять данные.</translation>
 <translation id="7898627924844766532">Сохранить на панели инструментов</translation>
-<translation id="7898725031477653577">Всегда переводить</translation>
 <translation id="7899177175067029110">Телефон не обнаружен. Убедитесь, что устройство <ph name="DEVICE_TYPE" /> подключено к Интернету. &lt;a&gt;Подробнее…&lt;/a&gt;</translation>
 <translation id="7900476766547206086">Пользователи, выполнившие вход, должны ввести пароль, так как для одного или нескольких из них включен этот параметр.</translation>
 <translation id="7903128267494448252">Удалить пользователя</translation>
@@ -4844,6 +4849,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="8088137642766812908">Внимание! Непредсказуемые последствия</translation>
 <translation id="8089520772729574115">менее 1 МБ</translation>
 <translation id="8090234456044969073">Список самых посещаемых сайтов</translation>
+<translation id="8091655032047076676">Экспериментальная функция</translation>
 <translation id="8094917007353911263">Возможно, вам нужно перейти на страницу <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" /> используемой сети.</translation>
 <translation id="8098352321677019742">Оповещения <ph name="PRODUCT_NAME" /></translation>
 <translation id="8098975406164436557">Использовать этот телефон для разблокировки устройства <ph name="DEVICE_TYPE" />?</translation>
@@ -4997,6 +5003,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="8286227656784970313">Использовать системный словарь</translation>
 <translation id="8286817579635702504">Включает строгую проверку смешанного контента и усиленную блокировку для защиты контекста. Из-за этого регулярно посещаемые веб-страницы могут отображаться некорректно. Подумайте о возможных неудобствах, прежде чем включать эту функцию.</translation>
 <translation id="8288342810474863437">Включает функции импорта и экспорта паролей в настройках.</translation>
+<translation id="8294431847097064396">Источник</translation>
 <translation id="8297012244086013755">Корейская раскладка (Sebeolsik без Shift)</translation>
 <translation id="8298115750975731693">Возможно, вам нужно перейти на страницу <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" /> сети Wi-Fi (<ph name="WIFI_NAME" />).</translation>
 <translation id="8299269255470343364">Японский</translation>
@@ -5083,6 +5090,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="8427933533533814946">Автор фотографии:</translation>
 <translation id="8428213095426709021">Настройки</translation>
 <translation id="8432745813735585631">Американская раскладка (Colemak)</translation>
+<translation id="8433057134996913067">На большинстве сайтов будет выполнен выход из аккаунта.</translation>
 <translation id="8434177709403049435">&amp;Кодировка</translation>
 <translation id="8434480141477525001">Порт отладки NaCl</translation>
 <translation id="8435334418765210033">Знакомые сети</translation>
@@ -5119,6 +5127,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="8479179092158736425">Активные директивы</translation>
 <translation id="8480417584335382321">Масштаб страницы:</translation>
 <translation id="8481940801237642152">Подключение к веб-сайту защищено, но посторонний пользователь может изменить вид страницы</translation>
+<translation id="8485942541756487200">Отзыв Material Design</translation>
 <translation id="8487678622945914333">Увеличить</translation>
 <translation id="8487693399751278191">Импортировать закладки...</translation>
 <translation id="8487700953926739672">Доступно в автономном режиме</translation>
@@ -5214,7 +5223,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="8642171459927087831">Токен доступа</translation>
 <translation id="8642947597466641025">Увеличить размер шрифта</translation>
 <translation id="8651196026455635717">Перенаправлять запросы с рабочего стола Windows в поисковую систему по умолчанию.</translation>
-<translation id="8651324101757295372">Написать сообщение в чате</translation>
 <translation id="8651585100578802546">Принудительно обновить страницу</translation>
 <translation id="8652139471850419555">Предпочитаемые сети</translation>
 <translation id="8652487083013326477">переключатель диапазона страниц</translation>
@@ -5534,8 +5542,10 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="9092426026094675787">Помечать незащищенные источники как небезопасные</translation>
 <translation id="9094033019050270033">Обновить пароль</translation>
 <translation id="9100765901046053179">Дополнительные настройки</translation>
+<translation id="910077499156148110">Добавьте сайт в список исключений</translation>
 <translation id="9100825730060086615">Тип клавиатуры</translation>
 <translation id="9101691533782776290">Запустить</translation>
+<translation id="9101960725093302061">Чтобы ограничить профилю <ph name="NEW_PROFILE_NAME" /> доступ к каким-либо страницам, перейдите по этой ссылке: <ph name="BEGIN_LINK" /><ph name="DISPLAY_LINK" /><ph name="END_LINK" />. Если вы оставите настройки по умолчанию, профиль <ph name="NEW_PROFILE_NAME" /> сможет открывать все сайты.</translation>
 <translation id="9103001804464916031">{NUM_DOWNLOAD,plural, =1{Выполняется загрузка}one{Выполняется загрузка}few{Выполняется загрузка}many{Выполняется загрузка}other{Выполняется загрузка}}</translation>
 <translation id="9105212490906037469">F2</translation>
 <translation id="9106577689055281370">Заряда батареи хватит на <ph name="HOUR" />:<ph name="MINUTE" /></translation>
@@ -5581,7 +5591,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="9157697743260533322">Не удалось настроить автоматические обновления для всех пользователей (ошибка <ph name="ERROR_NUMBER" />)</translation>
 <translation id="9158715103698450907">Во время аутентификации возникла ошибка. Проверьте сетевое подключение и повторите попытку.</translation>
 <translation id="9159562891634783594">Разрешает регистрацию незарегистрированных виртуальных принтеров в ходе предварительного просмотра.</translation>
-<translation id="9166510596677678112">Отправить сообщение электронной почты</translation>
 <translation id="916745092148443205">Выделение жестов-прикосновений</translation>
 <translation id="9169496697824289689">Просмотреть быстрые клавиши</translation>
 <translation id="9169664750068251925">Всегда блокировать на этом сайте</translation>

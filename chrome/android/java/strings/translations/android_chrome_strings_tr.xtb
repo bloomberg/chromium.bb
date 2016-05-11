@@ -68,6 +68,7 @@ Fiziksel Web'i kullanabilmeniz için Bluetooth ve Konum özelliklerinin açık o
 <translation id="1842969606798536927">Ödeme</translation>
 <translation id="1853692000353488670">Yeni gizli sekme</translation>
 <translation id="189172778771606813">Gezinme çekmecesini kapat</translation>
+<translation id="1924956916668006832">Gönderim adresi seç</translation>
 <translation id="194341124344773587"><ph name="BEGIN_LINK" />Android Ayarları<ph name="END_LINK" />'nda Chrome için izni açın.</translation>
 <translation id="1943432128510653496">Şifreleri kaydetme</translation>
 <translation id="1944384637046898011"><ph name="TIME" /> itibariyle tüm Google şifrelerini şifrele</translation>
@@ -98,6 +99,7 @@ Fiziksel Web'i kullanabilmeniz için Bluetooth ve Konum özelliklerinin açık o
 <translation id="2268044343513325586">Hassaslaştır</translation>
 <translation id="2315043854645842844">İstemci tarafı sertifika seçimi, işletim sistemi tarafından desteklenmiyor.</translation>
 <translation id="2321958826496381788">Bu yazıyı rahatça okuyana kadar kaydırma çubuğunu sürükleyin. Bir paragrafa iki kez hafifçe dokunduğunuzda metin en az bunun kadar büyük görünmelidir.</translation>
+<translation id="2329597144923131178">Yer işaretlerinize, geçmişinize ve diğer ayarlarınıza tüm cihazlarınızdan erişmek için oturum açın.</translation>
 <translation id="2343328333327081434">Yükleniyor…</translation>
 <translation id="2351097562818989364">Çeviri ayarlarınız sıfırlandı.</translation>
 <translation id="2359808026110333948">Devam Et</translation>
@@ -133,6 +135,7 @@ Fiziksel Web'i kullanabilmeniz için Bluetooth ve Konum özelliklerinin açık o
 <translation id="2762000892062317888">az önce</translation>
 <translation id="2770465223704140727">Listeden kaldır</translation>
 <translation id="278029852808208386">Bluetooth cihaz bulunamadı. <ph name="BEGIN_LINK" />Tekrar arayın<ph name="END_LINK" />.</translation>
+<translation id="2781389167600714117">Gönderimi seç</translation>
 <translation id="2811892995384186721">Cihazınızı görmüyor musunuz? <ph name="BEGIN_LINK" />Yardım alın<ph name="END_LINK" /></translation>
 <translation id="2836148919159985482">Tam ekrandan çıkmak için geri düğmesine dokunun.</translation>
 <translation id="2842985007712546952">Ana klasör</translation>
@@ -158,7 +161,6 @@ Fiziksel Web'i kullanabilmeniz için Bluetooth ve Konum özelliklerinin açık o
 <translation id="3137521801621304719">Gizli moddan çık</translation>
 <translation id="3149891296864842641">Gönderim seçeneği</translation>
 <translation id="3162882791484435636">Gönderim seçeneğini belirleyin</translation>
-<translation id="3173438333156928404">Ödeme işlenirken hata oluştu</translation>
 <translation id="3177909033752230686">Sayfanın Dili:</translation>
 <translation id="3190152372525844641"><ph name="BEGIN_LINK" />Android Ayarları<ph name="END_LINK" />'nda Chrome için izinleri açın.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> depolanmış veri</translation>
@@ -194,7 +196,6 @@ Yönetilen bir hesapla oturum açıyor ve hesabın yöneticisine Chrome profilin
 Arama teriminizi düzeltmek için uzun basarak terimi seçin. Aramanızı ayrıntılı hale getirmek için paneli tümüyle yukarı kaydırın ve arama kutusuna dokunun.</translation>
 <translation id="3623048332793834136">Chrome Canary yer işaretleri</translation>
 <translation id="363596933471559332">Depolanmış kimlik bilgileriyle web sitelerinde otomatik olarak oturum açın. Bu özellik kapatıldığında, bir web sitesinde oturum açmadan önce her defasında doğrulama yapmanız istenir.</translation>
-<translation id="3653742808139624888">Yer işaretlerinizi tüm cihazlarınızda almak için Chrome'da oturum açın</translation>
 <translation id="3656115297268584622"><ph name="BEGIN_LINK" />Android Ayarları<ph name="END_LINK" />'nda konumu açın.</translation>
 <translation id="3661699943263275414">Üçüncü taraf web siteleri, çerez verilerini kaydedebilir ve okuyabilir.</translation>
 <translation id="3672452749423051839">Gezinme hataları ile ilgili öneriler</translation>
@@ -226,6 +227,7 @@ Arama teriminizi düzeltmek için uzun basarak terimi seçin. Aramanızı ayrın
 <translation id="4170011742729630528">Hizmet kullanılamıyor, daha sonra tekrar deneyin.</translation>
 <translation id="4195643157523330669">Yeni sekmede aç</translation>
 <translation id="423410644998903704">Chrome'un bu siteyle paylaşımda bulunabilmesi için izin erişimine ihtiyacı var.</translation>
+<translation id="4242533952199664413">Ayarları aç</translation>
 <translation id="424864128008805179">Chrome oturumu kapatılsın mı?</translation>
 <translation id="4254813446494774748">Çeviri Dili:</translation>
 <translation id="4256782883801055595">Açık kaynak lisansları</translation>
@@ -524,14 +526,12 @@ Diğer Google hizmetlerinden yapılan aramalar ve etkinlikler gibi Google hesab�
 <translation id="8007176423574883786">Bu cihaz için kapatıldı</translation>
 <translation id="8026334261755873520">Tarama verilerini temizle</translation>
 <translation id="8035133914807600019">Yeni klasör…</translation>
+<translation id="8063895661287329888">Yer işareti eklenemedi.</translation>
 <translation id="8068648041423924542">Sertifika seçilemiyor.</translation>
 <translation id="8069239273282989646">Sıkıştırmadan sonra</translation>
 <translation id="8073388330009372546">Resmi yeni sekmede aç</translation>
 <translation id="8076014560081431679">Kayıtlı site ayarları silinmez ve web'e göz atma alışkanlıklarınızı yansıtabilir. <ph name="BEGIN_LINK" />Daha fazla bilgi edinin<ph name="END_LINK" /></translation>
 <translation id="8087000398470557479">Bu içerik Google tarafından <ph name="DOMAIN_NAME" /> adresinden sağlanmaktadır.</translation>
-<translation id="8098570222830891427">Bluetooth üzerinden web sayfaları yayınlayan size yakın cihazlar. Cihazınız uyku modunda olmadığında Chrome yakındaki sayfaları tarar ve gösterir. Bu sayfalar, sayfa sonuçlarının kalitesini iyileştirmek amacıyla bir Google hizmeti üzerinden gönderilir.
-
-Fiziksel Web'i Chrome gizlilik ayarlarından kontrol edebilirsiniz.</translation>
 <translation id="8106211421800660735">Kredi kartı numarası</translation>
 <translation id="813082847718468539">Site bilgilerini görüntüle</translation>
 <translation id="8137558756159375272">Dokun ve Ara, seçilen kelimeyi ve geçerli sayfayı Google Arama'ya bağlam olarak gönderir. Bu özelliği <ph name="BEGIN_LINK" />Ayarlar<ph name="END_LINK" />'da kapatabilirsiniz.</translation>

@@ -152,6 +152,10 @@
 <translation id="1202596434010270079">Kiosk 應用程式已更新，請移除 USB 隨身碟。</translation>
 <translation id="1205489148908752564">讀取及變更使用者許可清單</translation>
 <translation id="1208421848177517699">音譯 (namaste → નમસ્તે)</translation>
+<translation id="1208881655517375167">為防止「<ph name="NEW_PROFILE_NAME" />」存取您的帳戶，當您不使用 Chrome 時，請務必結束程式並執行 Childlock，方法是按一下畫面右上角的個人資料名稱，然後選取 [結束並執行 Childlock]。
+<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" />
+
+如需進一步操作說明，請登入您的 <ph name="ACCOUNT_EMAIL" /> 帳戶，查看系統寄給您的電子郵件。</translation>
 <translation id="1209796539517632982">自動名稱伺服器</translation>
 <translation id="1215411991991485844">已新增新的背景應用程式</translation>
 <translation id="1216659994753476700">很抱歉，系統無法存取您的設定檔。儲存在這個裝置上的檔案和資料可能已經遺失。<ph name="BR" />
@@ -296,7 +300,6 @@
 <translation id="1429740407920618615">訊號強度：</translation>
 <translation id="143027896309062157">讀取及變更您的電腦和造訪過的網站上的所有資料</translation>
 <translation id="1430915738399379752">列印</translation>
-<translation id="1433423644370450034">媒體樣式通知</translation>
 <translation id="1434696352799406980">這項功能會重設您的起始網頁、新分頁、搜尋引擎和固定分頁，同時停用所有擴充功能並清除 Cookie 等暫存資料，但不會清除您的書籤、歷史紀錄和已儲存的密碼。</translation>
 <translation id="1434886155212424586">首頁是新分頁</translation>
 <translation id="1435550882135542937">新的擴充功能工具列設計</translation>
@@ -600,7 +603,6 @@
 <translation id="1835339313324024">虛擬鍵盤智慧部署功能</translation>
 <translation id="1838374766361614909">清除搜尋</translation>
 <translation id="1839704667838141620">變更這些檔案的共用方式。</translation>
-<translation id="1839913225882990152">將發生的狀況告訴我們。</translation>
 <translation id="1842969606798536927">支付</translation>
 <translation id="184456654378801210">(原生)</translation>
 <translation id="1844692022597038441">這個檔案無法離線瀏覽。</translation>
@@ -1229,6 +1231,7 @@
 <translation id="2772936498786524345">忍者</translation>
 <translation id="2773948261276885771">設定網頁</translation>
 <translation id="2776441542064982094">網路上沒有可註冊的裝置，如果您的裝置已開啟並連上網際網路，請依照操作說明手冊中的指示進行註冊。</translation>
+<translation id="277674485549860058">在 Chrome 作業系統使用者介面中設定 Material Design 元素。</translation>
 <translation id="2778459533137481732">權限黑名單</translation>
 <translation id="2779552785085366231">您可以將這個網頁加入應用程式啟動器</translation>
 <translation id="2781645665747935084">比利時文</translation>
@@ -1591,6 +1594,7 @@
 <translation id="32330993344203779">您的裝置已成功註冊企業管理。</translation>
 <translation id="3234666976984236645">一律偵測這個網站的重要內容</translation>
 <translation id="3236997602556743698">韓文 3 Set (390)</translation>
+<translation id="3237784613213365159">「<ph name="NEW_PROFILE_NAME" />」現已成為受監管的使用者</translation>
 <translation id="3239019276325325404">下載續傳功能</translation>
 <translation id="324056286105023296">您不是「<ph name="PROFILE_NAME" />」嗎？</translation>
 <translation id="3241680850019875542">請選取要封裝的擴充功能根目錄。如要更新擴充功能，請一併選取要重複使用的秘密金鑰。</translation>
@@ -1918,7 +1922,6 @@
 <translation id="3656059567098593256">「<ph name="APP_NAME" />」要求與 <ph name="TARGET_NAME" /> 分享您的螢幕內容，請選擇您要分享的內容類型。</translation>
 <translation id="3657468915905674858">啟用 PPAPI Win32k 鎖定。</translation>
 <translation id="3660234220361471169">不受信任</translation>
-<translation id="3665371460012342183">啟用可縮放的泡泡 (在觸控螢幕上不慎一次輕觸多個連結時顯示)。</translation>
 <translation id="3665589677786828986">Chrome 偵測到另一個程式竄改了部分瀏覽器設定，現已將這些設定重設為原始預設值。</translation>
 <translation id="3665842570601375360">安全性：</translation>
 <translation id="3668570675727296296">語言設定</translation>
@@ -1939,7 +1942,6 @@
 <translation id="3690976161240450479">登入失敗，請與您的管理員聯絡或再試一次。</translation>
 <translation id="3693415264595406141">密碼：</translation>
 <translation id="3694027410380121301">選取前一個分頁</translation>
-<translation id="3694122362646626770">網站</translation>
 <translation id="3694678678240097321">如果擴充功能要求在所有網址上執行的權限，則需獲得使用者同意才能在網頁上執行指令碼。</translation>
 <translation id="3695919544155087829">請輸入對這個憑證檔案進行加密時使用的密碼。</translation>
 <translation id="3696411085566228381">無</translation>
@@ -1953,6 +1955,7 @@
 <translation id="3707020109030358290">這不是憑證授權單位。</translation>
 <translation id="3709244229496787112">瀏覽器在下載尚未完成時遭到關閉。</translation>
 <translation id="3711486163272428582">啟用使用者設定，讓系統自動根據目前地理位置選取時區。</translation>
+<translation id="3711895659073496551">暫停</translation>
 <translation id="3712897371525859903">另存網頁為(&amp;A)...</translation>
 <translation id="3714633008798122362">網路日曆</translation>
 <translation id="3715597595485130451">連線至 Wi-Fi</translation>
@@ -2805,7 +2808,6 @@
 <translation id="5038863510258510803">啟用中...</translation>
 <translation id="5039512255859636053">$1 TB</translation>
 <translation id="5039804452771397117">允許</translation>
-<translation id="5043851552150732346">已選取 1 個目錄</translation>
 <translation id="5045550434625856497">密碼不正確</translation>
 <translation id="5048179823246820836">北歐語系</translation>
 <translation id="5053604404986157245">無法使用隨機產生的 TPM 密碼。在執行 Powerwash 之後，這是正常情況。</translation>
@@ -2857,6 +2859,7 @@
 <translation id="5129301143853688736">您與這個網站之間的連線不是私人連線。攻擊者可能會嘗試從 <ph name="DOMAIN" /> 竊取您的資訊 (例如相片、密碼、郵件和信用卡資訊)。</translation>
 <translation id="5129662217315786329">波蘭文</translation>
 <translation id="5130080518784460891">倚天</translation>
+<translation id="5134856901811723984">在 Chrome 作業系統使用者介面啟用/停用 Material Design</translation>
 <translation id="5135533361271311778">無法建立書籤項目。</translation>
 <translation id="5136529877787728692">F7</translation>
 <translation id="5137501176474113045">刪除此項目</translation>
@@ -2920,7 +2923,6 @@
 <translation id="5212461935944305924">Cookie 和網站資料例外情況</translation>
 <translation id="521582610500777512">已捨棄相片</translation>
 <translation id="5218183485292899140">瑞士法文</translation>
-<translation id="5218766986344577658">連結去除混淆彈出式泡泡</translation>
 <translation id="5220992698394817380">允許選用輸入法編輯器選單</translation>
 <translation id="5222676887888702881">登出</translation>
 <translation id="5225324770654022472">顯示應用程式捷徑</translation>
@@ -3428,6 +3430,7 @@
 <translation id="5925147183566400388">憑證實務作業基準指標</translation>
 <translation id="5930693802084567591">您已在 <ph name="TIME" />使用 Google 密碼對資料進行加密，請在下方輸入密碼。</translation>
 <translation id="5931146425219109062">讀取及變更您造訪過的網站上的所有資料</translation>
+<translation id="5932881020239635062">序列</translation>
 <translation id="5934281776477898549">沒有更新</translation>
 <translation id="5937843713457938680">V8 JavaScript 引擎的快取模式。</translation>
 <translation id="5939518447894949180">重設</translation>
@@ -3636,6 +3639,7 @@
 <translation id="626568068055008686">密碼不正確或檔案已毀損。</translation>
 <translation id="6267166720438879315">請選取您在 <ph name="HOST_NAME" /> 的驗證憑證</translation>
 <translation id="6267909379545953750">實驗性 JavaScript</translation>
+<translation id="6268252012308737255">使用「<ph name="APP" />」開啟</translation>
 <translation id="6268747994388690914">從 HTML 檔案匯入書籤...</translation>
 <translation id="6272765239698781406">主動釋放快取記憶體策略</translation>
 <translation id="6273677812470008672">品質</translation>
@@ -3781,6 +3785,7 @@
 <translation id="6485352695865682479">連線狀態：</translation>
 <translation id="648927581764831596">沒有可用的裝置</translation>
 <translation id="6490936204492416398">從線上應用程式商店安裝新的擴充功能</translation>
+<translation id="6491376743066338510">授權失敗</translation>
 <translation id="6492313032770352219">磁碟大小：</translation>
 <translation id="6498249116389603658">所選全部語言(&amp;A)</translation>
 <translation id="6499143127267478107">正在解析 Proxy 指令碼主機...</translation>
@@ -4432,6 +4437,7 @@
 <translation id="749028671485790643">人員 <ph name="VALUE" /></translation>
 <translation id="7491962110804786152">分頁</translation>
 <translation id="7493386493263658176"><ph name="EXTENSION_NAME" /> 擴充功能可能會收集您輸入的所有文字，包括密碼和信用卡號碼等個人資料。您要使用這個擴充功能嗎？</translation>
+<translation id="7495424355577885780">啟用後，當您要回報問題時，系統就會載入 Material Design 意見回饋使用者介面。</translation>
 <translation id="7495778526395737099">忘記舊密碼了嗎？</translation>
 <translation id="7503191893372251637">Netscape 憑證類型</translation>
 <translation id="7503821294401948377">無法載入瀏覽器動作的圖示「<ph name="ICON" />」。</translation>
@@ -4697,7 +4703,6 @@
 <translation id="7896906914454843592">美式改良鍵盤</translation>
 <translation id="7897900149154324287">往後請務必先從「檔案」應用程式中退出卸除式裝置再拔出，以免遺失資料。</translation>
 <translation id="7898627924844766532">固定在工具列中</translation>
-<translation id="7898725031477653577">一律翻譯</translation>
 <translation id="7899177175067029110">找不到您的手機。請確認您的 <ph name="DEVICE_TYPE" /> 是否已連上網際網路。&lt;a&gt;瞭解詳情&lt;/a&gt;</translation>
 <translation id="7900476766547206086">一或多個使用者已開啟這項設定，因此登入的使用者需提供密碼。</translation>
 <translation id="7903128267494448252">刪除這個使用者</translation>
@@ -4831,6 +4836,7 @@
 <translation id="8088137642766812908">小心，這項功能可能出現異常</translation>
 <translation id="8089520772729574115">不到 1 MB</translation>
 <translation id="8090234456044969073">讀取最常造訪的網站清單</translation>
+<translation id="8091655032047076676">實驗性</translation>
 <translation id="8094917007353911263">目前使用的網路可能會要求您造訪 <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />。</translation>
 <translation id="8098352321677019742"><ph name="PRODUCT_NAME" /> 通知</translation>
 <translation id="8098975406164436557">使用這個手機為您的 <ph name="DEVICE_TYPE" /> 解鎖？</translation>
@@ -4937,7 +4943,7 @@
 <translation id="8226742006292257240">以下是您的電腦專用的 TPM 密碼 (由系統隨機產生)：</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />、<ph name="TYPE_2" /></translation>
 <translation id="8230421197304563332">攻擊者目前可能會試圖透過 <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> 在您的電腦上安裝危險程式，藉此竊取或刪除您的資訊 (例如相片、密碼、郵件或信用卡資料)。</translation>
-<translation id="8233254008506535819">包含在「清除瀏覽資料」對話方塊中將重要網站新增至許可清單的選項。</translation>
+<translation id="8233254008506535819">包含以下選項：在「清除瀏覽資料」對話方塊中將重要網站新增至許可清單。</translation>
 <translation id="8236231079192337250">專門尋找印表機驅動程式的「Chrome 線上應用程式商店擴充功能庫」應用程式</translation>
 <translation id="8238649969398088015">說明提示</translation>
 <translation id="8240697550402899963">使用傳統主題</translation>
@@ -4984,6 +4990,7 @@
 <translation id="8286227656784970313">使用系統字典</translation>
 <translation id="8286817579635702504">啟用多項可能會每天阻止您造訪一或多個網頁的安全性功能 (例如嚴格的混合內容檢查功能)，並鎖定一些強大的功能以確保網路內容安全無虞。這項標記很可能會讓您覺得上網時受到干擾。</translation>
 <translation id="8288342810474863437">密碼設定中的匯入及匯出功能。</translation>
+<translation id="8294431847097064396">來源</translation>
 <translation id="8297012244086013755">韓文 3 Set (No Shift)</translation>
 <translation id="8298115750975731693">目前使用的 Wi-Fi 網路 (<ph name="WIFI_NAME" />) 可能會要求您造訪 <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />。</translation>
 <translation id="8299269255470343364">日文</translation>
@@ -5070,6 +5077,7 @@
 <translation id="8427933533533814946">拍攝者：</translation>
 <translation id="8428213095426709021">設定</translation>
 <translation id="8432745813735585631">美式 Colemak 鍵盤</translation>
+<translation id="8433057134996913067">您會因此登出大多數網站。</translation>
 <translation id="8434177709403049435">編碼(&amp;E)</translation>
 <translation id="8434480141477525001">NaCl 偵錯通訊埠</translation>
 <translation id="8435334418765210033">已經記錄的網路</translation>
@@ -5106,6 +5114,7 @@
 <translation id="8479179092158736425">使用中指令</translation>
 <translation id="8480417584335382321">頁面縮放：</translation>
 <translation id="8481940801237642152">您與這個網站建立了私人連線，但網路上的其他人可能可以變更網頁的外觀。</translation>
+<translation id="8485942541756487200">啟用 Material Design 意見回饋</translation>
 <translation id="8487678622945914333">放大</translation>
 <translation id="8487693399751278191">立即匯入書籤...</translation>
 <translation id="8487700953926739672">可離線使用</translation>
@@ -5201,7 +5210,6 @@
 <translation id="8642171459927087831">存取憑證</translation>
 <translation id="8642947597466641025">放大文字</translation>
 <translation id="8651196026455635717">將 Windows 桌面搜尋重新導向到預設的搜尋引擎。</translation>
-<translation id="8651324101757295372">與這位使用者即時通訊</translation>
 <translation id="8651585100578802546">強制重新載入此網頁</translation>
 <translation id="8652139471850419555">慣用網路</translation>
 <translation id="8652487083013326477">頁面範圍圓形按鈕</translation>
@@ -5521,8 +5529,10 @@
 <translation id="9092426026094675787">將不安全的來源標示為不安全</translation>
 <translation id="9094033019050270033">更新密碼</translation>
 <translation id="9100765901046053179">進階設定</translation>
+<translation id="910077499156148110">將特定網站加到例外狀況中</translation>
 <translation id="9100825730060086615">鍵盤類型</translation>
 <translation id="9101691533782776290">啟動應用程式</translation>
+<translation id="9101960725093302061">如要設定「<ph name="NEW_PROFILE_NAME" />」可瀏覽哪些網站，您可以前往 <ph name="BEGIN_LINK" /><ph name="DISPLAY_LINK" /><ph name="END_LINK" /> 修改限制與設定。如果您並未變更預設設定，那麼「<ph name="NEW_PROFILE_NAME" />」則可瀏覽網路上的所有網站。</translation>
 <translation id="9103001804464916031">{NUM_DOWNLOAD,plural, =1{正在執行一項下載作業}other{正在執行多項下載作業}}</translation>
 <translation id="9105212490906037469">F2</translation>
 <translation id="9106577689055281370">電量尚餘 <ph name="HOUR" /> 小時 <ph name="MINUTE" /> 分鐘</translation>
@@ -5568,7 +5578,6 @@
 <translation id="9157697743260533322">無法為所有使用者設定自動更新作業 (預先啟動錯誤：<ph name="ERROR_NUMBER" />)</translation>
 <translation id="9158715103698450907">糟糕！驗證過程中發生網路通訊問題，請檢查您的網路連線，然後再試一次。</translation>
 <translation id="9159562891634783594">允許透過預覽列印為尚未註冊的雲端印表機註冊。</translation>
-<translation id="9166510596677678112">傳送電子郵件給此人</translation>
 <translation id="916745092148443205">手勢輕觸反白</translation>
 <translation id="9169496697824289689">查看鍵盤快速鍵</translation>
 <translation id="9169664750068251925">永遠禁止在這個網站執行</translation>

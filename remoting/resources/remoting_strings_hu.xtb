@@ -220,6 +220,7 @@ gazdagép</translation>
 <translation id="6542902059648396432">Hiba bejelentése…</translation>
 <translation id="6550675742724504774">Beállítások</translation>
 <translation id="6570205395680337606">Alkalmazás visszaállítása. A nem mentett munkája el fog veszni.</translation>
+<translation id="6572345186230665992">Mac típusú számítógépekhez (OS X Mavericks 10.9 és újabb)</translation>
 <translation id="6612717000975622067">Ctrl-Alt-Del küldése</translation>
 <translation id="6640610550128933069">utoljára ekkor volt online: <ph name="DATE" /></translation>
 <translation id="6668065415969892472">A PIN-kód frissült.</translation>
@@ -286,6 +287,7 @@ gazdagép</translation>
 <translation id="8759753423332885148">További információ.</translation>
 <translation id="8791202241915690908">Chromoting gazdagép-telepítő letöltése</translation>
 <translation id="894763922177556086">Jó</translation>
+<translation id="895780780740011433">Windows 7 és újabb rendszerhez</translation>
 <translation id="897805526397249209">Ahhoz, hogy engedélyezhesse a távoli kapcsolatokat egy másik számítógépen, telepítse a gépre a Chromoting alkalmazást, majd kattintson a következő gombra: „<ph name="BUTTON_NAME" />”.</translation>
 <translation id="8998327464021325874">Chrome távoliasztal-szolgáltatás – gazdagépvezérlő</translation>
 <translation id="9016232822027372900">Csatlakozás mindenképp</translation>

@@ -516,6 +516,22 @@ Falls die Richtlinie auf "false" gesetzt wird, kann eine verzögerungsfreie auto
           Bei den Einträgen in dieser Liste handelt es sich um auf die Erweiterung angepasste Übereinstimmungsmuster (siehe https://developer.chrome.com/extensions/match_patterns). Wenn eine URL mit einem Eintrag in dieser Liste übereinstimmt, können Nutzer ihn ganz einfach über diese URL installieren. Sowohl der Speicherort der CRX-Datei als auch die Seite, über die der Download gestartet wird (der Referrer), müssen durch diese Muster zugelassen sein.
 
           "ExtensionInstallBlacklist" hat Vorrang vor dieser Richtlinie. Eine Erweiterung auf der schwarzen Liste wird folglich nicht installiert, auch wenn sie von einer Website auf dieser Liste stammt.</translation>
+<translation id="2813740161943223811">Diese Richtlinie ist veraltet. Verwenden Sie stattdessen "ProxyMode".
+
+          Mit dieser Richtlinie können Sie angeben, welcher Proxyserver von <ph name="PRODUCT_NAME" /> verwendet werden soll, und verhindern, dass Nutzer die Proxy-Einstellungen ändern. Dieser Proxyserver kann auch von ARC-Apps verwendet werden.
+
+          Wenn Sie festlegen, dass nie ein Proxyserver verwendet, sondern immer eine direkte Verbindung hergestellt wird, werden alle anderen Optionen ignoriert.
+
+          Falls Sie bestimmen, dass die Proxy-Einstellungen des Systems verwendet werden sollen oder der Proxyserver automatisch erkannt werden soll, werden ebenfalls alle anderen Optionen ignoriert.
+
+          Bei der Auswahl manueller Proxy-Einstellungen können Sie in "Adresse oder URL des Proxyservers", "URL einer PAC-Proxy-Datei" und "Kommagetrennte Liste der Proxy-Umgehungsregeln" weitere Optionen angeben. Nur der HTTP-Proxyserver mit der höchsten Priorität ist für ARC-Apps verfügbar.
+
+          Ausführliche Beispiele erhalten Sie unter
+          <ph name="PROXY_HELP_URL" />.
+
+          Wenn Sie diese Einstellung aktivieren, werden von <ph name="PRODUCT_NAME" /> alle Proxy-Optionen ignoriert, die in der Befehlszeile angegeben werden.
+
+          Wenn die Richtlinie nicht konfiguriert ist, können Nutzer die Proxy-Einstellungen selbst konfigurieren.</translation>
 <translation id="2824715612115726353">Inkognitomodus aktivieren</translation>
 <translation id="2844404652289407061">Durch diese Richtlinie wird die Verfügbarkeit von "Zum Suchen tippen" in der Inhaltsansicht von <ph name="PRODUCT_NAME" /> aktiviert.
 
@@ -622,6 +638,18 @@ Falls die Richtlinie auf "false" gesetzt oder nicht festgelegt wird, treten bei 
           </translation>
 <translation id="3205825995289802549">Erstes Browserfenster bei der ersten Ausführung maximieren</translation>
 <translation id="3206731874112238027">Druckvorschau deaktivieren (eingestellt)</translation>
+<translation id="3208854390109736596">Darüber können Sie festlegen, welcher Proxyserver von <ph name="PRODUCT_NAME" /> verwendet werden soll, und verhindern, dass Nutzer Proxy-Einstellungen ändern. Dieser Proxyserver kann auch von ARC-Apps verwendet werden.
+
+      Wenn Sie festlegen, dass kein Proxyserver verwendet, sondern immer eine direkte Verbindung hergestellt werden soll, werden alle anderen Optionen ignoriert.
+
+      Wenn Sie festlegen, dass der Proxyserver automatisch erkannt werden soll, werden alle anderen Optionen ebenfalls ignoriert.
+
+      Ausführliche Beispiele finden Sie unter
+      <ph name="PROXY_HELP_URL" />.
+
+      Wenn Sie diese Einstellung aktivieren, werden von <ph name="PRODUCT_NAME" /> und den ARC-Apps alle Proxy-Optionen ignoriert, die in der Befehlszeile angegeben werden.
+
+      Wenn die Richtlinie nicht konfiguriert ist, so können Nutzer die Proxy-Einstellungen selbst konfigurieren.</translation>
 <translation id="3213821784736959823">Legt fest, ob der integrierte DNS-Client von <ph name="PRODUCT_NAME" /> verwendet werden soll.
 
       Wenn diese Richtlinie auf "true" gesetzt wurde, wird, falls verfügbar, der integrierte DNS-Client verwendet.
@@ -672,6 +700,9 @@ Falls die Richtlinie auf "false" gesetzt oder nicht festgelegt wird, treten bei 
 
       Ist die Richtlinie auf "false" eingestellt, können in <ph name="PRODUCT_OS_NAME" /> keine Gastsitzungen gestartet werden.</translation>
 <translation id="3428247105888806363">Netzwerkvervollständigung aktivieren</translation>
+<translation id="3449886121729668969">Hiermit werden die Proxy-Einstellungen für <ph name="PRODUCT_NAME" /> konfiguriert. Diese Proxy-Einstellungen können auch von ARC-Apps verwendet werden.
+
+      Diese Richtlinie ist noch nicht einsatzbereit und sollte daher nicht verwendet werden.</translation>
 <translation id="3460784402832014830">Gibt die URL an, die eine Suchmaschine zum Bereitstellen der "Neuer Tab"-Seite verwendet.
 
           Diese Richtlinie ist optional. Ist sie nicht festgelegt, wird keine "Neuer Tab"-Seite bereitgestellt.
@@ -681,6 +712,14 @@ Falls die Richtlinie auf "false" gesetzt oder nicht festgelegt wird, treten bei 
           Wenn diese Richtlinie auf "true" gesetzt ist, wie die erste Aktivität des Nutzers in einer Sitzung als Ausgangspunkt für Verzögerungen beim Energiesparmodus und Begrenzungen der Sitzungslänge verwendet.
 
           Ist die Richtlinie auf "false" gesetzt oder nicht definiert, wird der Start der Sitzung als Ausgangspunkt für Verzögerungen beim Energiesparmodus und Begrenzungen der Sitzungslänge verwendet.</translation>
+<translation id="3469657928310999477">Von <ph name="PRODUCT_NAME" /> werden für die Liste der hier angegebenen Hosts alle Proxys umgangen. Diese Liste kann auch von ARC-Apps als eine Umgehungsregelliste verwendet werden.
+
+          Diese Richtlinie tritt nur dann in Kraft, wenn Sie bei "Auswählen, wie Proxyserver-Einstellungen angegeben werden" manuelle Proxy-Einstellungen angegeben haben.
+
+          Sie sollten diese Richtlinie nicht konfigurieren, wenn Sie sich für eine andere Methode zur Festlegung der Proxy-Richtlinien entschieden haben.
+
+          Ausführliche Beispiele erhalten Sie unter
+          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="3478024346823118645">Nutzerdaten bei Abmeldung löschen</translation>
 <translation id="348495353354674884">Bildschirmtastatur aktivieren</translation>
 <translation id="3496296378755072552">Passwortmanager</translation>
@@ -1290,6 +1329,9 @@ Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, wird kein Proxy 
       Diese Richtlinie gilt für alle Arten von Speichermedien, wie USB-Speichersticks, externe Festplatten, SD-Karten und andere Speicherkarten sowie optische Speichermedien. Der interne Speicher ist nicht betroffen, im Downloadordner gespeicherte Dateien können darum weiterhin abgerufen werden. Diese Richtlinie hat ebenfalls keine Auswirkungen auf Google Drive.
 
       Ist diese Einstellung deaktiviert oder nicht konfiguriert, können die Nutzer alle unterstützten externen Speichermedien auf ihrem Gerät verwenden.</translation>
+<translation id="6076099373507468537">Hiermit wird die Liste der USB-Geräte definiert, die vom jeweiligen Kerneltreiber getrennt werden können, um über die chrome.usb API direkt in einer Webanwendung eingesetzt zu werden. Die Einträge bestehen aus der USB-Hersteller-ID und der Produkt-ID, über die die Hardware identifiziert werden kann.
+
+      Wenn diese Richtlinie nicht konfiguriert ist, ist die Liste der trennbaren USB-Geräte leer.</translation>
 <translation id="6095999036251797924">Gibt die Zeitdauer ohne Nutzeraktivität an, nach der der Bildschirm im Netz- oder Akkubetrieb gesperrt wird.
 
           Wenn ein Wert über null angegeben wird, steht dieser Wert für die Zeitdauer, für die ein Nutzer inaktiv sein muss, bevor der Bildschirm durch <ph name="PRODUCT_OS_NAME" /> gesperrt wird.
@@ -1777,6 +1819,14 @@ Speicherinformationen werden unabhängig von der gewählten Option an die Seite 
       nicht gesendet. Wird für die Richtlinie "true" festgelegt oder wird sie nicht konfiguriert,
       werden Sitzungsinformationen gesendet.</translation>
 <translation id="7774768074957326919">System-Proxy-Einstellungen verwenden</translation>
+<translation id="7775831859772431793">Hier können Sie die URL des Proxyservers angeben.
+
+          Die Richtlinie tritt nur dann in Kraft, wenn bei "Auswählen, wie Proxyserver-Einstellungen angegeben werden" manuelle Proxy-Einstellungen festgelegt wurden.
+
+          Sie sollten diese Richtlinie nicht konfigurieren, wenn Sie eine andere Methode zur Festlegung der Proxy-Richtlinien ausgewählt haben.
+
+          Weitere Optionen und ausführliche Beispiele finden Sie unter
+          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7788511847830146438">Nach Profil</translation>
 <translation id="7796141075993499320">Ermöglicht die Zusammenstellung einer Liste mit URL-Mustern, die Websites angeben, denen die Ausführung von Plug-ins gestattet ist. Wenn diese Richtlinie nicht konfiguriert ist, kommt für alle Websites entweder der globale Standardwert der Richtlinie "DefaultPluginsSetting", sofern konfiguriert, oder der persönlichen Konfiguration des Nutzers zu Einsatz.</translation>
 <translation id="7818131573217430250">Standardstatus für den Modus mit hohem Kontrast auf der Anmeldeseite festlegen</translation>
@@ -1807,6 +1857,14 @@ Speicherinformationen werden unabhängig von der gewählten Option an die Seite 
       Bestimmt die ID der Erweiterung, die als Bildschirmschoner auf der Anmeldeseite verwendet werden soll. Die Erweiterung muss Teil des App-Pakets sein, das in der DeviceAppPack-Richtlinie für diese Domain konfiguriert wurde.</translation>
 <translation id="7882890448959833986">Warnung für nicht unterstützte Betriebssysteme unterdrücken</translation>
 <translation id="7912255076272890813">Zulässige App- bzw. Erweiterungstypen konfigurieren</translation>
+<translation id="7915236031252389808">Hier können Sie eine URL zu einer Proxy-PAC-Datei angeben.
+
+          Diese Richtlinie tritt nur dann in Kraft, wenn Sie bei "Auswählen, wie Proxyserver-Einstellungen angegeben werden" manuelle Proxy-Einstellungen angegeben haben.
+
+          Sie sollten diese Richtlinie nicht konfigurieren, wenn Sie sich für eine andere Methode zur Festlegung der Proxy-Richtlinien entschieden haben.
+
+          Ausführliche Beispiele erhalten Sie unter
+          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="793134539373873765">Gibt an, ob P2P für die Nutzdaten von Betriebssystem-Updates verwendet werden soll. Falls auf "True" gesetzt, teilen die Geräte Update-Nutzdaten im LAN und versuchen, die Daten von dort zu laden. Dadurch wird potenziell weniger Internetbandbreite verbraucht und es kommt seltener zu Datenstaus. Wenn die Update-Nutzdaten nicht im LAN verfügbar sind, lädt das Gerät sie ersatzweise von einem Updateserver herunter. Ist diese Option auf "False" gesetzt oder nicht konfiguriert, wird P2P nicht verwendet.</translation>
 <translation id="7933141401888114454">Erstellung von betreuten Nutzern aktivieren</translation>
 <translation id="7936098023732125869">Ermöglicht die Verwendung einer Standardsuchmaschine
@@ -1944,6 +2002,11 @@ Wenn eine Erweiterung nicht in der Liste enthalten ist oder keine Liste festgele
 <translation id="8382184662529825177">Verwendung von Remote-Bescheinigung (Remote Attestation) zum Schutz von Inhalten für das Gerät aktivieren</translation>
 <translation id="838870586332499308">Daten-Roaming aktivieren</translation>
 <translation id="8412312801707973447">Ob online OCSP-/CRL-Prüfungen durchgeführt werden</translation>
+<translation id="8413348101535146315">Ermöglicht das Beenden von Prozessen im Task-Manager von <ph name="PRODUCT_NAME" />.
+
+      Wenn diese Option auf "false" gesetzt ist, ist die Schaltfläche "Prozess beenden" im Task-Manager deaktiviert.
+
+      Wenn diese Option auf "true" gesetzt oder nicht konfiguriert ist, kann der Nutzer Prozesse im Task-Manager beenden.</translation>
 <translation id="8424255554404582727">Standarddrehung des Bildschirms festlegen, die bei jedem Neustart erneut angewendet wird</translation>
 <translation id="8426231401662877819">Bildschirm um 90 Grad im Uhrzeigersinn drehen</translation>
 <translation id="8451988835943702790">"Neuer Tab"-Seite als Startseite verwenden</translation>
@@ -2152,6 +2215,24 @@ Wenn eine Erweiterung nicht in der Liste enthalten ist oder keine Liste festgele
 <translation id="9112897538922695510">Damit können Sie eine Liste mit Protokoll-Handlern registrieren, wobei dies lediglich eine empfohlene Richtlinie sein kann. Für die Eigenschaft |protocol| sollte ein Schema wie "mailto" und für die Eigenschaft |url| das URL-Muster der Anwendung festgelegt werden, die das Schema verwaltet. Das Muster kann "%s" enthalten, was später durch die jeweilige URL ersetzt wird.
 
           Die von der Richtlinie registrierten Protokoll-Handler werden mit den Protokoll-Handlern zusammengeführt, die vom Nutzer registriert wurden, und können gemeinsam verwendet werden. Der Nutzer kann die durch die Richtlinie installierten Protokoll-Handler durch Installieren eines neuen standardmäßigen Handlers überschreiben. Ein von der Richtlinie registrierter Protokoll-Handler kann jedoch nicht entfernt werden.</translation>
+<translation id="913138516158420759">Mit dieser Richtlinie können Sie angeben, welchen Proxyserver <ph name="PRODUCT_NAME" /> verwenden soll, und verhindern, dass Nutzer die Proxy-Einstellungen ändern. Dieser Proxyserver kann auch von ARC-Apps verwendet werden.
+
+          Wenn Sie festlegen, dass nie ein Proxyserver verwendet, sondern immer eine direkte Verbindung hergestellt wird, werden alle anderen Optionen ignoriert.
+
+          Falls Sie sich für die Verwendung der Proxy-Einstellungen des Systems entscheiden, werden alle anderen Optionen ignoriert.
+
+          Falls Sie bestimmen, dass der Proxyserver automatisch erkannt werden soll, werden ebenfalls alle anderen Optionen ignoriert.
+
+          Bei Auswahl des Modus mit festem Proxyserver können Sie in "Adresse oder URL des Proxyservers" und "Kommagetrennte Liste der Proxy-Umgehungsregeln" weitere Optionen angeben. Nur der HTTP-Proxyserver mit der höchsten Priorität ist für ARC-Apps verfügbar.
+
+          Zur Verwendung eines PAC-Proxy-Skripts müssen Sie die URL des Skripts im Feld "URL einer PAC-Proxy-Datei" angeben.
+
+          Ausführliche Beispiele finden Sie unter
+          <ph name="PROXY_HELP_URL" />.
+
+          Wenn Sie diese Einstellung aktivieren, werden in <ph name="PRODUCT_NAME" /> und den ARC-Apps alle Proxy-Optionen ignoriert, die in der Eingabeaufforderung angegeben werden.
+
+          Sind diese Richtlinien nicht konfiguriert, können Nutzer ihre eigenen Proxy-Einstellungen auswählen.</translation>
 <translation id="913195841488580904">Zugriff auf aufgelistete URLs blockieren</translation>
 <translation id="9135033364005346124"><ph name="CLOUD_PRINT_NAME" />-Proxy aktivieren</translation>
 <translation id="9147029539363974059">Systemprotokolle an den Verwaltungsserver senden, um Administratoren die

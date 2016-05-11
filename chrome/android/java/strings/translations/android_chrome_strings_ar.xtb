@@ -68,6 +68,7 @@
 <translation id="1842969606798536927">الدفع</translation>
 <translation id="1853692000353488670">علامة تبويب جديدة للتصفح المتخفي</translation>
 <translation id="189172778771606813">إغلاق لائحة التنقل</translation>
+<translation id="1924956916668006832">تحديد عنوان الشحن</translation>
 <translation id="194341124344773587">‏تشغيل الإذن لـ Chrome في <ph name="BEGIN_LINK" />إعدادات Android<ph name="END_LINK" /></translation>
 <translation id="1943432128510653496">حفظ كلمات المرور</translation>
 <translation id="1944384637046898011">‏ترميز الكل باستخدام كلمة مرور Google بدءًا من <ph name="TIME" /></translation>
@@ -98,6 +99,7 @@
 <translation id="2268044343513325586">تحسين</translation>
 <translation id="2315043854645842844">لا يدعم نظام التشغيل تحديد الشهادة من جانب العميل.</translation>
 <translation id="2321958826496381788">يمكنك سحب شريط التمرير حتى تتمكن من قراءة هذا النص بسهولة. يجب أن يظهر النص بهذا الحجم على الأقل بعد النقر مرتين على إحدى الفقرات.</translation>
+<translation id="2329597144923131178">سجّل الدخول للحصول على الإشارات المرجعية، والسجل، وكلمات المرور، والإعدادات الأخرى على كل أجهزتك.</translation>
 <translation id="2343328333327081434">جارٍ التثبيت...</translation>
 <translation id="2351097562818989364">تم إعادة ضبط إعداداتك للترجمة.</translation>
 <translation id="2359808026110333948">المتابعة</translation>
@@ -133,6 +135,7 @@
 <translation id="2762000892062317888">الآن</translation>
 <translation id="2770465223704140727">إزالة من القائمة</translation>
 <translation id="278029852808208386">لم يتم العثور على أجهزة بلوتوث. <ph name="BEGIN_LINK" />ابحث مرة أخرى<ph name="END_LINK" />.</translation>
+<translation id="2781389167600714117">تحديد خيارات الشحن</translation>
 <translation id="2811892995384186721">ألا ترى جهازك؟ <ph name="BEGIN_LINK" />احصل على المساعدة<ph name="END_LINK" />.</translation>
 <translation id="2836148919159985482">المس زر الرجوع للخروج من وضع ملء الشاشة.</translation>
 <translation id="2842985007712546952">المجلد الرئيسي</translation>
@@ -158,7 +161,6 @@
 <translation id="3137521801621304719">مغادرة وضع التصفح المتخفي</translation>
 <translation id="3149891296864842641">خيار الشحن</translation>
 <translation id="3162882791484435636">حدد خيار الشحن</translation>
-<translation id="3173438333156928404">حدث خطأ أثناء معالجة عملية الدفع</translation>
 <translation id="3177909033752230686">لغة الصفحة:</translation>
 <translation id="3190152372525844641">‏تشغيل الأذونات لـ Chrome في <ph name="BEGIN_LINK" />إعدادات Android<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> من البيانات المخزنة</translation>
@@ -192,7 +194,6 @@
 لضبط عبارة البحث، اضغط مع الاستمرار للتحديد. لتحسين البحث، مرّر اللوحة للأعلى والمس مربع البحث.</translation>
 <translation id="3623048332793834136">‏الإشارات المرجعية لمتصفح Chrome Canary</translation>
 <translation id="363596933471559332">يمكن تسجيل الدخول تلقائيًا إلى مواقع الويب باستخدم الاعتمادات المخزّنة. وعندما تكون الميزة معطّلة، فسيُطلب منك التحقق كل مرة قبل تسجيل الدخول إلى مواقع الويب.</translation>
-<translation id="3653742808139624888">‏للحصول على الإشارات المرجعية على جميع أجهزتك، سجِّل الدخول إلى Chrome</translation>
 <translation id="3656115297268584622">‏تشغيل الموقع في <ph name="BEGIN_LINK" />إعدادات Android<ph name="END_LINK" />.</translation>
 <translation id="3661699943263275414">يمكن لمواقع الويب التابعة لجهات خارجية حفظ بيانات ملفات تعريف الارتباط وقراءتها</translation>
 <translation id="3672452749423051839">اقتراحات أخطاء التنقل</translation>
@@ -224,6 +225,7 @@
 <translation id="4170011742729630528">الخدمة غير متاحة، أعد المحاولة لاحقًا.</translation>
 <translation id="4195643157523330669">فتح الإشارة في علامة تبويب جديدة</translation>
 <translation id="423410644998903704">‏يحتاج Chrome إلى الحصول على حق الوصول إلى الأذونات لمشاركتها مع موقع الويب هذا.</translation>
+<translation id="4242533952199664413">فتح الإعدادات</translation>
 <translation id="424864128008805179">‏هل تريد الخروج من Chrome؟</translation>
 <translation id="4254813446494774748">لغة الترجمة:</translation>
 <translation id="4256782883801055595">تراخيص البرامج مفتوحة المصدر</translation>
@@ -523,14 +525,12 @@
 <translation id="8007176423574883786">تم إيقافه لهذا الجهاز</translation>
 <translation id="8026334261755873520">محو بيانات التصفُّح</translation>
 <translation id="8035133914807600019">مجلد جديد...</translation>
+<translation id="8063895661287329888">أخفقت إضافة الإشارة المرجعية.</translation>
 <translation id="8068648041423924542">يتعذر تحديد الشهادة.</translation>
 <translation id="8069239273282989646">بعد الضغط</translation>
 <translation id="8073388330009372546">فتح الصورة بعلامة تبويب جديدة</translation>
 <translation id="8076014560081431679">لن يتم حذف إعدادات موقع الويب المحفوظة وقد تعكس عادات التصفح. <ph name="BEGIN_LINK" />مزيد من المعلومات<ph name="END_LINK" /></translation>
 <translation id="8087000398470557479">‏هذا المحتوى من <ph name="DOMAIN_NAME" />، وتم عرضه من قبل Google.</translation>
-<translation id="8098570222830891427">‏تبث الأجهزة المجاورة لك صفحات ويب عبر بلوتوث. سيعمل Chrome على فحص الصفحات وعرضها عند تشغيل جهازك. وستمر هذه الصفحات عبر خدمة Google لتحسين جودة نتائج الصفحات.
-
-يمكنك التحكم في الشبكة المادية من خلال إعدادات Chrome.</translation>
 <translation id="8106211421800660735">رقم بطاقة الائتمان</translation>
 <translation id="813082847718468539">عرض معلومات الموقع</translation>
 <translation id="8137558756159375272">‏يرسل "المس للبحث" الكلمة المحددة والصفحة الحالية كسياق إلى بحث Google. يمكنك إيقافه في <ph name="BEGIN_LINK" />الإعدادات<ph name="END_LINK" />.</translation>

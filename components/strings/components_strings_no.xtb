@@ -316,7 +316,7 @@
 <translation id="4176463684765177261">Deaktivert</translation>
 <translation id="4196861286325780578">&amp;Flytt likevel</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Sjekk brannmur- og antiviruskonfigurasjonen<ph name="END_LINK" /></translation>
-<translation id="4220128509585149162">Programstopp</translation>
+<translation id="4220128509585149162">Kræsj</translation>
 <translation id="4250680216510889253">Nei</translation>
 <translation id="425582637250725228">Det kan hende endringene dine ikke er lagret.</translation>
 <translation id="4258748452823770588">Dårlig signatur</translation>
@@ -555,7 +555,6 @@
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> retter seg ikke etter sikkerhetsstandardene.</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Mer informasjon<ph name="END_LINK" /> om dette problemet.</translation>
 <translation id="7219179957768738017">Tilkoblingen bruker <ph name="SSL_VERSION" />.</translation>
-<translation id="7225807090967870017">Versjons-ID</translation>
 <translation id="7231308970288859235">Beklager, du må spørre en av foreldrene dine om det er greit at du besøker denne siden.</translation>
 <translation id="7246609911581847514">Du ser denne meldingen fordi administratoren din må godkjenne nye nettsteder den første gangen du åpner dem.</translation>
 <translation id="725866823122871198">En privat forbindelse til <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> kan ikke opprettes fordi datoen og klokkeslettet (<ph name="DATE_AND_TIME" />) på datamaskinen er feil.</translation>
@@ -666,7 +665,7 @@ Forresten: Inkognitomodus (<ph name="SHORTCUT_KEY" />) kan være kjekt neste gan
 <translation id="8349305172487531364">Bokmerkerad</translation>
 <translation id="8363502534493474904">Slå av flymodus</translation>
 <translation id="8364627913115013041">Ikke angitt.</translation>
-<translation id="8412145213513410671">Programstopp (<ph name="CRASH_COUNT" />)</translation>
+<translation id="8412145213513410671">Kræsj (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Du må angi den samme passordfrasen to ganger.</translation>
 <translation id="8428213095426709021">Innstillinger</translation>
 <translation id="8437238597147034694">&amp;Angre flyttingen</translation>

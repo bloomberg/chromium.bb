@@ -68,6 +68,7 @@ Tem de ter a Localização e o Bluetooth ativados para poder utilizar a Web fís
 <translation id="1842969606798536927">Pagar</translation>
 <translation id="1853692000353488670">Novo separador de navegação anónima</translation>
 <translation id="189172778771606813">Fechar a gaveta de navegação</translation>
+<translation id="1924956916668006832">Selecionar morada para envio</translation>
 <translation id="194341124344773587">Ative a autorização para o Chrome nas <ph name="BEGIN_LINK" />Definições do Android<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Guardar palavras-passe</translation>
 <translation id="1944384637046898011">Encriptar tudo com uma palavra-passe do Google a partir de <ph name="TIME" /></translation>
@@ -98,6 +99,7 @@ Tem de ter a Localização e o Bluetooth ativados para poder utilizar a Web fís
 <translation id="2268044343513325586">Refinar</translation>
 <translation id="2315043854645842844">O sistema operativo não suporta a seleção do certificado do lado do cliente.</translation>
 <translation id="2321958826496381788">Arraste o controlo de deslize até conseguir ler confortavelmente. O texto deve ter, pelo menos, este tamanho depois de tocar duas vezes num parágrafo.</translation>
+<translation id="2329597144923131178">Inicie sessão para aceder aos marcadores, ao histórico, às palavras-passe e a outras definições em todos os dispositivos.</translation>
 <translation id="2343328333327081434">A instalar...</translation>
 <translation id="2351097562818989364">As definições de tradução foram repostas.</translation>
 <translation id="2359808026110333948">Continuar</translation>
@@ -133,6 +135,7 @@ Tem de ter a Localização e o Bluetooth ativados para poder utilizar a Web fís
 <translation id="2762000892062317888">agora mesmo</translation>
 <translation id="2770465223704140727">Remover da lista</translation>
 <translation id="278029852808208386">Não foram encontrados dispositivos Bluetooth. <ph name="BEGIN_LINK" />Procure novamente<ph name="END_LINK" />.</translation>
+<translation id="2781389167600714117">Selecionar envio</translation>
 <translation id="2811892995384186721">Não vê o seu dispositivo? <ph name="BEGIN_LINK" />Obter ajuda<ph name="END_LINK" /></translation>
 <translation id="2836148919159985482">Toque no botão de retrocesso para sair do ecrã inteiro.</translation>
 <translation id="2842985007712546952">Pasta superior</translation>
@@ -158,7 +161,6 @@ Tem de ter a Localização e o Bluetooth ativados para poder utilizar a Web fís
 <translation id="3137521801621304719">Sair do modo de navegação anónima</translation>
 <translation id="3149891296864842641">Opção de envio</translation>
 <translation id="3162882791484435636">Selecionar opção de envio</translation>
-<translation id="3173438333156928404">Erro ao processar o pagamento</translation>
 <translation id="3177909033752230686">Idioma da página:</translation>
 <translation id="3190152372525844641">Ative as autorizações para o Chrome nas <ph name="BEGIN_LINK" />Definições do Android<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> de dados armazenados</translation>
@@ -194,7 +196,6 @@ Está a iniciar sessão com uma conta gerida e a atribuir ao respetivo administr
 Para ajustar o termo de pesquisa, prima continuamente para selecionar. Para refinar a sua pesquisa, deslize lentamente o painel totalmente para cima e toque na caixa de pesquisa.</translation>
 <translation id="3623048332793834136">Marcadores do Chrome Canary</translation>
 <translation id="363596933471559332">Inicie automaticamente sessão em Websites com as credenciais armazenadas. Quando a funcionalidade está desativada, é-lhe sempre pedida validação antes de iniciar sessão num Website.</translation>
-<translation id="3653742808139624888">Para obter os seus marcadores em todos os dispositivos, inicie sessão no Chrome</translation>
 <translation id="3656115297268584622">Ative a localização nas <ph name="BEGIN_LINK" />Definições do Android<ph name="END_LINK" />.</translation>
 <translation id="3661699943263275414">Os Websites de terceiros podem guardar e ler dados de cookies</translation>
 <translation id="3672452749423051839">Sugestões de erros de navegação</translation>
@@ -226,6 +227,7 @@ Para ajustar o termo de pesquisa, prima continuamente para selecionar. Para refi
 <translation id="4170011742729630528">O serviço não está disponível. Tente novamente mais tarde.</translation>
 <translation id="4195643157523330669">Abrir num novo separador</translation>
 <translation id="423410644998903704">O Chrome necessita de acesso às autorizações para as partilhar com este site.</translation>
+<translation id="4242533952199664413">Abrir definições</translation>
 <translation id="424864128008805179">Pretende terminar sessão no Chrome?</translation>
 <translation id="4254813446494774748">Idioma de tradução:</translation>
 <translation id="4256782883801055595">Licenças de código aberto</translation>
@@ -524,14 +526,12 @@ A sua Conta Google pode ter outras formas do histórico de navegação, como pes
 <translation id="8007176423574883786">Desativada para este dispositivo</translation>
 <translation id="8026334261755873520">Limpar dados de navegação</translation>
 <translation id="8035133914807600019">Nova pasta…</translation>
+<translation id="8063895661287329888">Falha ao adicionar marcador.</translation>
 <translation id="8068648041423924542">Não é possível selecionar o certificado.</translation>
 <translation id="8069239273282989646">Após compressão</translation>
 <translation id="8073388330009372546">Abrir imagem num novo separad.</translation>
 <translation id="8076014560081431679">As definições de sites guardadas não são eliminadas e podem refletir os seus hábitos de navegação. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="8087000398470557479">Este conteúdo é proveniente de <ph name="DOMAIN_NAME" />, fornecido pela Google.</translation>
-<translation id="8098570222830891427">Existem dispositivos próximos de si a transmitir páginas Web através de Bluetooth. O Chrome procura páginas e apresenta-as quando reativar o dispositivo. Estas páginas passam por um serviço Google para melhorar a qualidade dos resultados da página.
-
-Pode controlar a Web física nas definições do Chrome.</translation>
 <translation id="8106211421800660735">Número de cartão de crédito</translation>
 <translation id="813082847718468539">Ver informações do Web site</translation>
 <translation id="8137558756159375272">Tocar para pesquisar envia a palavra selecionada e a página atual como contexto para a Pesquisa Google. Pode desativá-la em <ph name="BEGIN_LINK" />Definições<ph name="END_LINK" />.</translation>

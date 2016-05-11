@@ -42,6 +42,7 @@
 <translation id="1254117744268754948">Pumili ng Folder</translation>
 <translation id="1285320974508926690">Huwag isalin kailanman ang site na ito</translation>
 <translation id="129553762522093515">Kamakailang isinara</translation>
+<translation id="129863573139666797"><ph name="BEGIN_LINK" />Subukang i-clear ang iyong cookies<ph name="END_LINK" /></translation>
 <translation id="1339601241726513588">Domain ng pagpapatala:</translation>
 <translation id="1344588688991793829">Mga setting ng Autofill ng Chromium...</translation>
 <translation id="1374468813861204354">mga suhestiyon</translation>
@@ -198,6 +199,7 @@
 <translation id="2969319727213777354">Upang makapagtatag ng secure na koneksyon, kailangang itakda nang tama ang iyong orasan. Ito ay dahil sa may-bisa lang ang mga certificate na ginagamit ng mga website upang tukuyin ang mga sarili ng mga ito sa loob ng mga partikular na tagal ng panahon. Dahil mali ang orasan ng iyong device, hindi ma-verify ng Google Chrome ang mga certificate na ito.</translation>
 <translation id="2972581237482394796">&amp;I-redo</translation>
 <translation id="2985306909656435243">Kung naka-enable, mag-iimbak ang Chromium ng kopya ng iyong card sa device na ito para sa mas mabilis na pagsagot sa form.</translation>
+<translation id="2989984781570875765">Ilagay ang expiration date at ang 3 digit na CVC mula sa likod ng iyong <ph name="CREDIT_CARD" /></translation>
 <translation id="2991174974383378012">Pagbabahagi sa Mga Website</translation>
 <translation id="3005723025932146533">Ipakita ang naka-save na kopya</translation>
 <translation id="3010559122411665027">Listahan ng entry na "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
@@ -281,6 +283,7 @@
 <translation id="3717027428350673159"><ph name="BEGIN_LINK" />Suriin ang configuration ng proxy, firewall at DNS<ph name="END_LINK" /></translation>
 <translation id="3739623965217189342">Link na kinopya mo</translation>
 <translation id="3744899669254331632">Hindi mo maaaring bisitahin ang <ph name="SITE" /> sa ngayon dahil nagpadala ang website ng mga pinaghalong kredensyal na hindi maproseso ng Chromium. Karaniwang pansamantala ang mga error at pag-atake sa network, kaya malamang na gagana ang page na ito sa ibang pagkakataon.</translation>
+<translation id="3748071062818261683">I-verify ang Card</translation>
 <translation id="3748412725338508953">Masyadong maraming mga na-redirect.</translation>
 <translation id="375403751935624634">Nabigo ang translation dahil sa error sa server.</translation>
 <translation id="3759461132968374835">Wala kang kamakailang iniulat na mga pag-crash. Hindi lilitaw dito ang mga pag-crash na naganap kapag hindi pinagana ang pag-uulat ng pag-crash.</translation>
@@ -309,6 +312,7 @@
 <translation id="4103249731201008433">Di-wasto ang serial number ng device</translation>
 <translation id="4103763322291513355">Bisitahin ang &lt;strong&gt;chrome://policy&lt;/strong&gt; upang makita ang listahan ng mga naka-blacklist na URL at iba pang mga patakaran na ipinapatupad ng iyong system administrator.</translation>
 <translation id="4117700440116928470">Hindi sinusuportahan ang saklaw ng patakaran.</translation>
+<translation id="4130226655945681476">Suriin ang mga cable, modem at router ng network</translation>
 <translation id="4147376274874979956">Hindi ma-access ang file.</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">Gusto mo bang i-save ng Chromium ang card na ito?</translation>
@@ -343,11 +347,15 @@
 <translation id="450710068430902550">Pagbabahagi sa Administrator</translation>
 <translation id="4522570452068850558">Mga Detalye</translation>
 <translation id="4535734014498033861">Nabigo ang koneksyon sa server ng proxy.</translation>
+<translation id="4553532082208702698">Ilagay ang 4 na digit na CVC mula sa harap ng iyong <ph name="CREDIT_CARD" /></translation>
+<translation id="4558551763791394412">Subukang i-disable ang iyong mga extension.</translation>
 <translation id="4587425331216688090">Alisin ang address sa Chrome?</translation>
 <translation id="4592951414987517459">Naka-encrypt ang iyong koneksyon sa <ph name="DOMAIN" /> gamit ang isang makabagong cipher suite.</translation>
 <translation id="4594403342090139922">&amp;I-undo ang Pagtanggal</translation>
 <translation id="4668929960204016307">,</translation>
+<translation id="4670097147947922288">Isang page ng extension ang iyong tinitingnan.</translation>
 <translation id="467662567472608290">Hindi mapatunayan ng server na ito na ito ay <ph name="DOMAIN" />; naglalaman ng mga error ang certificate ng seguridad nito. Maaaring dulot ito ng maling configuration o isang umaatake na hinahadlangan ang iyong koneksyon.</translation>
+<translation id="4683417246209150705">Ilagay ang 3 digit na CVC mula sa likod ng iyong <ph name="CREDIT_CARD" /></translation>
 <translation id="4697214168136963651">Na-block ang <ph name="URL" /></translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">Naputol ang iyong koneksyon</translation>
@@ -432,6 +440,8 @@
 <translation id="5650551054760837876">Walang nahanap na mga resulta sa paghahanap</translation>
 <translation id="5663999524854166235">Ilagay ang 3 digit na CVC mula sa likod ng iyong card para sa pag-verify</translation>
 <translation id="5677928146339483299">Naka-block</translation>
+<translation id="5696590819423335174">Ilagay ang expiration date at ang 4 na digit na CVC mula sa harap ng iyong <ph name="CREDIT_CARD" /></translation>
+<translation id="5699278517904102888">Ilagay ang 3 digit na CVC mula sa likod ng iyong <ph name="CREDIT_CARD" /> para sa pag-verify</translation>
 <translation id="5710435578057952990">Ang pagkilala ng website na ito ay hindi natukoy.</translation>
 <translation id="5720705177508910913">Kasalukuyang user</translation>
 <translation id="5785756445106461925">Bukod pa rito, ang page na ito ay may iba pang mga mapagkukunang hindi secure. Makikita ng iba ang mga mapagkukunang ito habang ipinadadala, at maaaring baguhin ng isang umaatake upang baguhin ang hitsura ng page.</translation>
@@ -555,7 +565,6 @@
 <translation id="7210863904660874423">Hindi sumusunod ang <ph name="HOST_NAME" /> sa mga pamantayan sa seguridad.</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Dagdagan ang nalalaman<ph name="END_LINK" /> tungkol sa problemang ito.</translation>
 <translation id="7219179957768738017">Gumagamit ng <ph name="SSL_VERSION" /> ang koneksyon.</translation>
-<translation id="7225807090967870017">ID ng Build</translation>
 <translation id="7231308970288859235">Oops! Kailangan mong tanungin ang iyong magulang kung OK lang na bisitahin ang page na ito.</translation>
 <translation id="7246609911581847514">Nakikita mo ang mensaheng ito dahil kailangang aprubahan ng iyong manager ang mga bagong site sa una mong pagbisita.</translation>
 <translation id="725866823122871198">Hindi makapagtatag ng pribadong koneksyon sa <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> dahil mali ang petsa at oras ng iyong computer (<ph name="DATE_AND_TIME" />).</translation>
@@ -596,6 +605,7 @@ Psst! Maaaring maging kapaki-pakinabang ang mode na incognito <ph name="SHORTCUT
 <translation id="7610193165460212391">Wala sa sakop ang halaga <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">Exp: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Mayroon ka nang data na na-encrypt gamit ang ibang bersyon ng iyong password ng Google Account. Pakilagay ito sa ibaba.</translation>
+<translation id="7633887239437305289">Ilagay ang 4 na digit na CVC mula sa harap ng iyong <ph name="CREDIT_CARD" /> para sa pag-verify</translation>
 <translation id="7634554953375732414">Hindi pribado ang iyong koneksyon sa site na ito.</translation>
 <translation id="7637571805876720304">Gusto mo bang alisin ang credit card sa Chromium?</translation>
 <translation id="7643817847124207232">Ang koneksyon sa Internet ay nawawala.</translation>

@@ -42,6 +42,7 @@
 <translation id="1254117744268754948">Mappa kiválasztása</translation>
 <translation id="1285320974508926690">Ezt a webhelyet soha ne fordítsa le</translation>
 <translation id="129553762522093515">Mostanában bezárt</translation>
+<translation id="129863573139666797"><ph name="BEGIN_LINK" />Próbálkozzon a cookie-k törlésével<ph name="END_LINK" /></translation>
 <translation id="1339601241726513588">Regisztrációs domain:</translation>
 <translation id="1344588688991793829">A Chromium Automatikus kitöltési beállításai…</translation>
 <translation id="1374468813861204354">javaslatok</translation>
@@ -198,6 +199,7 @@
 <translation id="2969319727213777354">Biztonságos kapcsolat létrehozásához az órát pontosan be kell állítani. Ez azért szükséges, mert a webhelyek által az azonosításukra használt tanúsítványok csak adott ideig érvényesek. Mivel az eszköz órája nem pontos, a Google Chrome nem tudja ellenőrizni ezeket a tanúsítványokat.</translation>
 <translation id="2972581237482394796">&amp;Újra</translation>
 <translation id="2985306909656435243">Ha engedélyezi, a Chromium megőrzi a kártya másolatát ezen az eszközön a gyorsabb űrlapkitöltés érdekében.</translation>
+<translation id="2989984781570875765">Adja meg <ph name="CREDIT_CARD" /> kártyája lejárati dátumát és a kártya hátoldalán szereplő háromjegyű CVC-kódot.</translation>
 <translation id="2991174974383378012">Megosztás webhelyekkel</translation>
 <translation id="3005723025932146533">Mentett másolat megjelenítése</translation>
 <translation id="3010559122411665027">"<ph name="ENTRY_INDEX" />." listabejegyzés: <ph name="ERROR" /></translation>
@@ -279,6 +281,7 @@
 <translation id="3717027428350673159"><ph name="BEGIN_LINK" />A proxy, a tűzfal és a DNS-konfiguráció ellenőrzése<ph name="END_LINK" /></translation>
 <translation id="3739623965217189342">Átmásolt link</translation>
 <translation id="3744899669254331632">Most nem keresheti fel a(z) <ph name="SITE" /> webhelyet, mert az zavaros, a Chromium által nem feldolgozható hitelesítő adatokat küldött. A hálózati hibák és támadások általában ideiglenesek, úgyhogy az oldal később valószínűleg megfelelően fog működni.</translation>
+<translation id="3748071062818261683">Kártya igazolása</translation>
 <translation id="3748412725338508953">Túl sok átirányítás történt.</translation>
 <translation id="375403751935624634">A fordítás a szerver hibája miatt nem sikerült.</translation>
 <translation id="3759461132968374835">Nincs a közelmúltban bejelentett rendszerösszeomlás. A kikapcsolt jelentésküldés során történt összeomlások nem jelennek meg itt.</translation>
@@ -307,6 +310,7 @@
 <translation id="4103249731201008433">Az eszköz sorozatszáma érvénytelen</translation>
 <translation id="4103763322291513355">Látogasson el a &lt;strong&gt;chrome://policy&lt;/strong&gt; oldalra a feketelistán lévő URL-ek és egyéb, a rendszergazda által előírt szabályok megtekintéséhez.</translation>
 <translation id="4117700440116928470">Az irányelv hatásköre nem támogatott.</translation>
+<translation id="4130226655945681476">A hálózati kábelek, a modem és a router ellenőrzése</translation>
 <translation id="4147376274874979956">Nem sikerült elérni a fájlt.</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">Szeretné, hogy a Chromium mentse ezt a kártyát?</translation>
@@ -341,11 +345,15 @@
 <translation id="450710068430902550">Megosztás a rendszergazdával</translation>
 <translation id="4522570452068850558">Részletek</translation>
 <translation id="4535734014498033861">A proxyszerver-csatlakozás sikertelen.</translation>
+<translation id="4553532082208702698">Adja meg a <ph name="CREDIT_CARD" /> kártyája elején szereplő négyjegyű CVC-kódot.</translation>
+<translation id="4558551763791394412">Próbálkozzon a bővítmények letiltásával.</translation>
 <translation id="4587425331216688090">Eltávolítja a címet a Chrome-ból?</translation>
 <translation id="4592951414987517459">A(z) <ph name="DOMAIN" /> domainnel való kapcsolata modern kriptográfiával van titkosítva.</translation>
 <translation id="4594403342090139922">&amp;Törlés visszavonása</translation>
 <translation id="4668929960204016307">,</translation>
+<translation id="4670097147947922288">Egy bővítményoldalt tekint meg.</translation>
 <translation id="467662567472608290">A szerver nem tudta bizonyítani, hogy valóban a(z) <ph name="DOMAIN" /> domainbe tartozik; biztonsági tanúsítványa hibákat tartalmaz. Ennek oka lehet konfigurációs hiba, vagy hogy egy támadó eltérítette az Ön kapcsolódását.</translation>
+<translation id="4683417246209150705">Adja meg a(z) <ph name="CREDIT_CARD" /> kártyája hátoldalán szereplő háromjegyű CVC-kódot.</translation>
 <translation id="4697214168136963651"><ph name="URL" /> blokkolva volt</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">Kapcsolata megszakadt</translation>
@@ -430,6 +438,8 @@
 <translation id="5650551054760837876">Nincs találat</translation>
 <translation id="5663999524854166235">Adja meg a kártya hátoldalán szereplő háromjegyű CVC-kódot az ellenőrzéshez</translation>
 <translation id="5677928146339483299">Letiltva</translation>
+<translation id="5696590819423335174">Adja meg az <ph name="CREDIT_CARD" /> kártyája elején szereplő lejárati dátumot és négyjegyű CVC-kódot.</translation>
+<translation id="5699278517904102888">Adja meg a(z) <ph name="CREDIT_CARD" /> kártya hátoldalán szereplő háromjegyű CVC-kódot az ellenőrzéshez.</translation>
 <translation id="5710435578057952990">A webhely valódiságát nem ellenőriztük.</translation>
 <translation id="5720705177508910913">Jelenlegi felhasználó</translation>
 <translation id="5785756445106461925">Emellett az oldal azonban más forrásokat is tartalmaz, amelyek nem biztonságosak. Ezeket a forrásokat mások is megtekinthetik átvitel közben, és megváltoztatásukkal a támadók módosíthatják az oldal viselkedését.</translation>
@@ -552,7 +562,6 @@
 <translation id="7210863904660874423">A(z) <ph name="HOST_NAME" /> nem felel meg a biztonsági szabványoknak.</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />További információ<ph name="END_LINK" /> erről a hibáról.</translation>
 <translation id="7219179957768738017">A kapcsolat a következőt használja: <ph name="SSL_VERSION" />.</translation>
-<translation id="7225807090967870017">Buildazonosító</translation>
 <translation id="7231308970288859235">Hoppá! Meg kell kérdeznie szülőjét, hogy meglátogathatja-e ezt az oldalt.</translation>
 <translation id="7246609911581847514">Azért látja ezt az üzenetet, mert kezelőjének jóvá kell hagynia az új webhelyeket az első látogatáskor.</translation>
 <translation id="725866823122871198">Nem hozható létre privát kapcsolat a következővel: <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, mert a számítógép dátum- és időbeállítása helytelen (<ph name="DATE_AND_TIME" />).</translation>
@@ -593,6 +602,7 @@ Pszt! Az inkognitómód (<ph name="SHORTCUT_KEY" />) hasznos lehet a következő
 <translation id="7610193165460212391">Az érték kívül esik a következő tartományon: <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">Lejárat: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Már rendelkezik olyan adattal, amely Google-fiókja jelszavának egy másik verziójával van titkosítva. Kérjük, lentebb adja azt meg.</translation>
+<translation id="7633887239437305289">Adja meg az <ph name="CREDIT_CARD" /> kártya elején szereplő négyjegyű CVC-kódot az ellenőrzéshez.</translation>
 <translation id="7634554953375732414">A webhellyel való kapcsolata nem privát.</translation>
 <translation id="7637571805876720304">Eltávolítja a hitelkártyát a Chromiumból?</translation>
 <translation id="7643817847124207232">Elveszett az internetes kapcsolat.</translation>

@@ -68,6 +68,7 @@ Da biste upotrebljavali Fizički web, morate uključiti Bluetooth i Lokaciju.</t
 <translation id="1842969606798536927">Plaćanje</translation>
 <translation id="1853692000353488670">Nova anonimna kartica</translation>
 <translation id="189172778771606813">Zatvori ladicu za navigaciju</translation>
+<translation id="1924956916668006832">Odaberite adresu za dostavu</translation>
 <translation id="194341124344773587">Uključite dopuštenje za Chrome u <ph name="BEGIN_LINK" />Postavkama Androida<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Spremanje zaporki</translation>
 <translation id="1944384637046898011">Kriptiraj sve pomoću Googleove zaporke od <ph name="TIME" /></translation>
@@ -98,6 +99,7 @@ Da biste upotrebljavali Fizički web, morate uključiti Bluetooth i Lokaciju.</t
 <translation id="2268044343513325586">Pročišćavanje</translation>
 <translation id="2315043854645842844">Operativni sustav ne podržava odabir klijentskog certifikata.</translation>
 <translation id="2321958826496381788">Pomičite klizač dok ne budete mogli čitati ovaj tekst bez poteškoća. Tekst bi trebao biti barem ovoliko velik nakon što dvaput dodirnete odlomak.</translation>
+<translation id="2329597144923131178">Prijavite se da biste imali svoje oznake, povijest, zaporke i druge postavke na svim svojim uređajima.</translation>
 <translation id="2343328333327081434">Instaliranje…</translation>
 <translation id="2351097562818989364">Vaše su postavke prevođenja vraćene na zadano.</translation>
 <translation id="2359808026110333948">Nastavi</translation>
@@ -133,6 +135,7 @@ Da biste upotrebljavali Fizički web, morate uključiti Bluetooth i Lokaciju.</t
 <translation id="2762000892062317888">upravo sada</translation>
 <translation id="2770465223704140727">Ukloni s popisa</translation>
 <translation id="278029852808208386">Nije pronađen nijedan Bluetooth uređaj. <ph name="BEGIN_LINK" />Pretražite ponovo<ph name="END_LINK" />.</translation>
+<translation id="2781389167600714117">Odaberite dostavu</translation>
 <translation id="2811892995384186721">Ne vidite svoj uređaj? <ph name="BEGIN_LINK" />Potražite pomoć<ph name="END_LINK" /></translation>
 <translation id="2836148919159985482">Dodirnite gumb Natrag da biste zatvorili prikaz na cijelom zaslonu.</translation>
 <translation id="2842985007712546952">Nadređena mapa</translation>
@@ -158,7 +161,6 @@ Da biste upotrebljavali Fizički web, morate uključiti Bluetooth i Lokaciju.</t
 <translation id="3137521801621304719">Izlaz iz anonimnog načina</translation>
 <translation id="3149891296864842641">Opcija otpreme</translation>
 <translation id="3162882791484435636">Odaberite opciju otpreme</translation>
-<translation id="3173438333156928404">Pogreška prilikom obrade plaćanja</translation>
 <translation id="3177909033752230686">Jezik stranice:</translation>
 <translation id="3190152372525844641">Uključite dopuštenja za Chrome u <ph name="BEGIN_LINK" />Postavkama Androida<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905">Pohranjeni podaci: <ph name="STORAGE_AMOUNT" /></translation>
@@ -194,7 +196,6 @@ Prijavljujete se svojim upravljanim računom i njenom administratoru dajete nadz
 Da biste prilagodili pojam za pretraživanje, dugo pritisnite za odabir. Da biste precizirali pretraživanje, kliznite ploču prema gore do vrha i dodirnite okvir za pretraživanje.</translation>
 <translation id="3623048332793834136">Oznake iz preglednika Chrome Canary</translation>
 <translation id="363596933471559332">Automatski se prijavite na web-lokacije pomoću spremljenih vjerodajnica. Kada je ta značajka isključena, tražit će se potvrda prije svakog prijavljivanja na web-lokaciju.</translation>
-<translation id="3653742808139624888">Da biste imali svoje oznake na svim svojim uređajima, prijavite se na Chrome</translation>
 <translation id="3656115297268584622">Uključite lokaciju u <ph name="BEGIN_LINK" />Postavkama Androida<ph name="END_LINK" />.</translation>
 <translation id="3661699943263275414">Web-lokacije trećih strana mogu spremati i čitati podatke kolačića</translation>
 <translation id="3672452749423051839">Prijedlozi pogreške kretanja</translation>
@@ -226,6 +227,7 @@ Da biste prilagodili pojam za pretraživanje, dugo pritisnite za odabir. Da bist
 <translation id="4170011742729630528">Usluga nije dostupna, pokušajte ponovo kasnije.</translation>
 <translation id="4195643157523330669">Otvori u novoj kartici</translation>
 <translation id="423410644998903704">Chrome treba imati pristup dopuštenjima da bi ih dijelio s ovom web-lokacijom.</translation>
+<translation id="4242533952199664413">Otvori postavke</translation>
 <translation id="424864128008805179">Želite li se odjaviti s Chromea?</translation>
 <translation id="4254813446494774748">Jezik prijevoda:</translation>
 <translation id="4256782883801055595">Licence otvorenog koda</translation>
@@ -524,14 +526,12 @@ Na Google računu možda postoje drugi oblici povijesti pregledavanja, primjeric
 <translation id="8007176423574883786">Isključeno za ovaj uređaj</translation>
 <translation id="8026334261755873520">Brisanje podataka o pregledavanju</translation>
 <translation id="8035133914807600019">Nova mapa…</translation>
+<translation id="8063895661287329888">Dodavanje oznake nije uspjelo.</translation>
 <translation id="8068648041423924542">Ne može se odabrati certifikat.</translation>
 <translation id="8069239273282989646">Nakon kompresije</translation>
 <translation id="8073388330009372546">Otvori sliku u novoj kartici</translation>
 <translation id="8076014560081431679">Spremljene postavke web-lokacije neće se izbrisati i mogu odražavati vaše navike prilikom pregledavanja. <ph name="BEGIN_LINK" />Saznajte više<ph name="END_LINK" /></translation>
 <translation id="8087000398470557479">Sadržaj potječe s domene <ph name="DOMAIN_NAME" />, a omogućuje ga Google.</translation>
-<translation id="8098570222830891427">Uređaji u blizini emitiraju web-stranice Bluetoothom. Chrome će tražiti stranice i prikazati ih kada aktivirate uređaj. Googleova služba obradit će te stranice radi poboljšanja kvalitete rezultata stranica.
-
-Fizičkim webom možete upravljati u Chromeovim postavkama.</translation>
 <translation id="8106211421800660735">Broj kreditne kartice</translation>
 <translation id="813082847718468539">Prikaz informacija o web-mjestu</translation>
 <translation id="8137558756159375272">Značajka Dodirnite za pretraživanje Google pretraživanju šalje odabranu riječ i trenutačnu stranicu kao kontekst. Možete je isključiti u <ph name="BEGIN_LINK" />Postavkama<ph name="END_LINK" />.</translation>

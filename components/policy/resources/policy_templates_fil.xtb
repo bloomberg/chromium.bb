@@ -560,6 +560,22 @@
           Ang bawat item sa listahang ito ay isang match pattern na uri ng extension (tingnan ang https://developer.chrome.com/extensions/match_patterns). Madaling makakapag-install ang mga user ng mga item mula sa anumang URL na tumutugma sa isang item sa listahang ito. Dapat parehong payagan ng mga pattern na ito ang lokasyon ng *.crx file at ang page kung saan nagsimula ang pag-download (i.e. ang referrer).
 
           Binibigyang-halaga ang ExtensionInstallBlacklist sa patakarang ito. Dahil dito, hindi mai-install ang extension sa blacklist, kahit na mangyari ito mula sa isang site sa listahang ito.</translation>
+<translation id="2813740161943223811">Hindi na ginagamit ang patakarang ito, gamitin na lang ang ProxyMode.
+
+          Nagbibigay-daan sa iyong itakda ang proxy server na ginagamit ng <ph name="PRODUCT_NAME" /> at pinipigilan ang mga user na baguhin ang mga setting ng proxy. Magagamit din ng mga ARC app ang proxy server na ito.
+
+          Kung pipiliin mong huwag kailanman gumamit ng proxy server at palaging direktang kumonekta, mababalewala ang lahat ng iba pang opsyon.
+
+          Kung pipiliin mong gumamit ng mga setting ng proxy ng system o awtomatikong tukuyin ang proxy server, mababalewala ang lahat ng iba ang opsyon.
+
+          Kung pipiliin mo ang mga setting ng manual na proxy, makakapagtakda ka ng iba pang mga opsyon sa 'Address o URL ng proxy server,' 'URL sa isang proxy .pac file' at 'Listahan ng mga panuntunan sa pag-bypass ng proxy na pinaghihiwalay ng mga kuwit.' Tanging ang HTTP na proxy server lang na may pinakamataas na priyoridad ang available para sa mga ARC app.
+
+          Upang makakita ng mga detalyadong halimbawa, bisitahin ang:
+          <ph name="PROXY_HELP_URL" />.
+
+          Kung ie-enable mo ang setting na ito, babalewalain ng <ph name="PRODUCT_NAME" /> ang lahat ng nakasaad na opsyong nauugnay sa proxy sa linya ng command.
+
+          Kapag hindi mo itinakda ang patakarang ito, mabibigyang-daan ang mga user na piliin ang mga setting ng proxy nang mag-isa.</translation>
 <translation id="2824715612115726353">Paganahin ang Incognito mode</translation>
 <translation id="2844404652289407061">Ine-enable ang availability ng Pindutin upang Hanapin sa view ng content ng <ph name="PRODUCT_NAME" />.
 
@@ -672,6 +688,18 @@
           </translation>
 <translation id="3205825995289802549">I-maximize ang unang window ng browser sa unang pagtakbo</translation>
 <translation id="3206731874112238027">I-disable ang Preview ng Pag-print (hindi na ginagamit)</translation>
+<translation id="3208854390109736596">Nagbibigay-daan sa iyong itakda ang proxy server na ginagamit ng <ph name="PRODUCT_NAME" /> at pinipigilan ang mga user na baguhin ang mga setting ng proxy. Magagamit din ng mga ARC app ang proxy server na ito.
+
+      Kung pipiliin mong huwag kailanman gumamit ng proxy server at palaging direktang kumonekta, mababalewala ang lahat ng iba pang opsyon.
+
+      Kung pipiliin mong awtomatikong tukuyin ang proxy server, mababalewala ang lahat ng iba ang opsyon.
+
+      Upang makakita ng mga detalyadong halimbawa, bisitahin ang:
+      <ph name="PROXY_HELP_URL" />.
+
+      Kung ie-enable mo ang setting na ito, babalewalain ng <ph name="PRODUCT_NAME" /> at mga ARC app ang lahat ng nakasaad na opsyong nauugnay sa proxy sa linya ng command.
+
+      Kapag hindi mo itinakda ang patakarang ito, mabibigyang-daan ang mga user na piliin ang mga setting ng proxy nang mag-isa.</translation>
 <translation id="3213821784736959823">Kinokontrol kung gagamitin ang built-in na DNS client sa <ph name="PRODUCT_NAME" />.
 
       Kung nakatakda sa true ang patakarang ito, gagamitin ang built-in na DNS client, kung available.
@@ -727,6 +755,9 @@
 
       Kung nakatakda sa false ang patakarang ito, hindi papayagan ng <ph name="PRODUCT_OS_NAME" /> na masimulan ang mga session ng bisita.</translation>
 <translation id="3428247105888806363">Paganahin ang paghula sa network</translation>
+<translation id="3449886121729668969">Nagko-configure sa mga setting ng proxy para sa <ph name="PRODUCT_NAME" />. Magiging available din ang mga setting ng proxy na ito para sa mga ARC app.
+
+      Ang patakarang ito ay hindi pa handa para sa paggamit, mangyaring huwag muna itong gamitin.</translation>
 <translation id="3460784402832014830">Tinutukoy ang URL na ginagamit ng isang search engine upang magbigay ng pahina ng bagong tab.
 
           Opsyonal ang patakarang ito. Kung hindi nakatakda, walang ibibigay na pahina ng bagong tab.
@@ -737,6 +768,14 @@
           Kung nakatakda ang patakarang ito sa True, hindi magsisimulang tumakbo ang mga pagkaantala sa pamamahala sa power management at ang limitasyon sa haba ng session hanggang makita ang unang aktibidad ng user sa isang session.
 
           Kung nakatakda ang patakarang ito sa False o iniwang hindi nakatakda, agad na tatakbo ang mga pagkaantala sa pamamahala sa power at ang limitasyon sa haba ng session sa pagsisimula ng session.</translation>
+<translation id="3469657928310999477">Iba-bypass ng <ph name="PRODUCT_NAME" /> ang anumang proxy para sa listahan ng mga host na nakasaad dito. Magagamit ng mga ARC app ang listahang ito bilang isang listahan ng mga panuntunan sa pag-bypass.
+
+          Magkakaroon lang ng bisa ang patakarang ito kung pinili mo ang mga setting ng manual na proxy sa 'Piliin kung paano itatakda ang mga setting ng proxy server.'
+
+          Hindi mo dapat itakda ang patakarang ito kung pumili ka ng iba pang mode para sa pagtatakda ng mga patakaran ng proxy.
+
+          Upang makakita ng iba pang mga detalyadong halimbawa, bisitahin ang:
+          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="3478024346823118645">I-wipe ang data ng user sa pag-sign-out</translation>
 <translation id="348495353354674884">Paganahin ang virtual keyboard</translation>
 <translation id="3496296378755072552">Tagapamahala ng password</translation>
@@ -1412,6 +1451,9 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Naaapektuhan ng patakarang ito ang lahat ng uri ng storage media. Halimbawa: Mga USB flash drive, panlabas na hard drive, SD at iba pang mga memory card, optical storage atbp. Hindi naaapektuhan ang panloob na storage, samakatuwid, maa-access pa rin ang mga file na naka-save sa folder ng Download. Hindi rin naaapektuhan ng patakarang ito ang Google Drive.
 
       Kung hindi pinapagana ang setting na ito o hindi naka-configure, magagamit ng mga user ang lahat ng sinusuportahang uri ng panlabas na storage sa kanilang device.</translation>
+<translation id="6076099373507468537">Inilalarawan ang listahan ng mga USB device na pinahihintulutang i-detach mula sa kernel driver ng mga ito upang magamit sa chrome.usb API sa mismong web application. Ang mga entry ay mga pares ng Identifier ng USB Vendor at Identifier ng Produkto na magagamit sa pagtukoy ng isang partikular na hardware.
+
+      Kung hindi mako-configure ang patakarang ito, hindi magkakaroon ng laman ang listahan ng mga nade-detach na USB device.</translation>
 <translation id="6095999036251797924">Tinutukoy kung gaano katagal dapat na walang input mula sa user bago ma-lock ang screen kapag AC power o baterya ang ginagamit
 
           Kapag itinakda ang haba ng oras sa value na mas malaki sa zero, katumbas nito ang tagal ng pagiging idle ng user bago i-lock ng <ph name="PRODUCT_OS_NAME" /> ang screen.
@@ -1947,6 +1989,14 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       session. Kung itatakda sa true o kung sadyang hindi itatakda, iuulat ang impormasyon
       ng session.</translation>
 <translation id="7774768074957326919">Gumamit ng mga setting ng proxy ng system</translation>
+<translation id="7775831859772431793">Maaari mong itakda rito ang URL ng proxy server.
+
+          Magkakaroon lang ng bisa ang patakarang ito kung pinili mo ang mga setting ng manual na proxy sa 'Piliin kung paano itatakda ang mga setting ng proxy server.'
+
+          Hindi mo dapat itakda ang patakarang ito kung pumili ka ng iba pang mode para sa pagtatakda ng mga patakaran ng proxy.
+
+          Upang makakita ng iba pang mga opsyon at detalyadong halimbawa, bisitahin ang:
+          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7788511847830146438">Bawat Profile</translation>
 <translation id="7796141075993499320">Binibigyang-daan kang magtakda ng isang listahan ng mga pattern ng url na tumutukoy ng mga site na pinapayagang magpatakbo ng mga plugin.
 
@@ -1979,6 +2029,14 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Tinutukoy ang id ng extension na gagamitin bilang isang screen saver sa screen sa pag-sign-in. Ang extension ay dapat na bahagi ng AppPack na naka-configure para sa domain na ito sa pamamagitan ng patakarang AppPacks.</translation>
 <translation id="7882890448959833986">Pigilan ang babala ng hindi sinusuportahang OS</translation>
 <translation id="7912255076272890813">I-configure ang mga pinapayagang uri ng app/extension</translation>
+<translation id="7915236031252389808">Makakapagtakda ka rito ng URL sa isang proxy .pac file.
+
+          Magkakaroon lang ng bisa ang patakarang ito kung pinili mo ang mga setting ng manual na proxy sa 'Piliin kung paano itatakda ang mga setting ng proxy server.'
+
+          Hindi mo dapat itakda ang patakarang ito kung pumili ka ng iba pang mode para sa pagtatakda ng mga patakaran ng proxy.
+
+          Upang makakita ng mga detalyadong halimbawa, bisitahin ang:
+          <ph name="PROXY_HELP_URL" /></translation>
 <translation id="793134539373873765">Tinutukoy kung gagamitin ang p2p para sa mga payload sa pag-update ng OS. Kung nakatakda sa True, ang mga device ay magbabahagi at susubukang gamitin ang mga payload sa pag-update sa LAN, na malamang na babawasan ang paggamit at pagsikip sa Internet bandwidth. Kung hindi available sa LAN ang payload sa pag-update, babalik ang device sa pag-download mula sa server sa pag-update. Kung nakatakda sa False o hindi naka-configure, hindi gagamitin ang p2p.</translation>
 <translation id="7933141401888114454">I-enable ang paggawa ng mga pinapangasiwaang user</translation>
 <translation id="7936098023732125869">Ine-enable ang paggamit ng default na search provider.
@@ -2129,6 +2187,11 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="8382184662529825177">I-enable ang paggamit ng malayuang pagpapatotoo para sa pagprotekta sa nilalaman para sa device</translation>
 <translation id="838870586332499308">Payagan ang roaming ng data</translation>
 <translation id="8412312801707973447">Kung isinasagawa ang mga online na pagsusuri sa OCSP/CRL</translation>
+<translation id="8413348101535146315">Ine-enable ang pagwawakas ng mga proseso sa Task Manager ng <ph name="PRODUCT_NAME" />.
+
+      Kung itatakda ito sa false, madi-disable ang button na 'Wakasan ang proseso' sa Task Manager.
+
+      Kung itatakda ito sa true o kung hindi ito mako-configure, magagawa ng user na wakasan ang mga proseso sa Task Manager.</translation>
 <translation id="8424255554404582727">Itakda ang default na pag-rotate ng display, muling ilalapat sa bawat pag-reboot</translation>
 <translation id="8426231401662877819">I-rotate ang screen pakanan nang 90 degrees</translation>
 <translation id="8451988835943702790">Gamitin ang Pahina ng Bagong Tab bilang homepage</translation>
@@ -2355,6 +2418,24 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="9112897538922695510">Nagbibigay-daan sa iyong magrehistro ng isang listahan ng mga tagapangasiwa ng protocol. Dapat ay isa itong inirerekomendang patakaran. Dapat itakda ang property na |protocol| sa scheme gaya ng 'mailto' at dapat itakda ang property na |url| sa pattern ng URL ng application na nangangasiwa sa scheme. Maaaring maglaman ng '%s' ang pattern, at kung mayroon nito, papalitan ito ng pinapangasiwaang URL.
 
           Ang mga tagapangasiwa ng protocol na irerehistro ng patakaran ay isasama sa mga inirehistro ng user, at available gamitin ang dalawang ito. Maaaring i-override ng user ang mga tagapangasiwa ng protocol na na-install ng patakaran sa pamamagitan ng pag-i-install ng bagong default na tagapangasiwa, ngunit hindi nila maaalis ang isang tagapangasiwa ng protocol na inirehistro ng patakaran.</translation>
+<translation id="913138516158420759">Nagbibigay-daan sa iyong itakda ang proxy server na ginagamit ng <ph name="PRODUCT_NAME" /> at pinipigilan ang mga user na baguhin ang mga setting ng proxy. Magagamit din ng mga ARC app ang proxy server na ito.
+
+          Kung pipiliin mong huwag kailanman gumamit ng proxy server at palaging direktang kumonekta, mababalewala ang lahat ng iba pang opsyon.
+
+          Kung pipiliin mong gumamit ng mga setting ng proxy ng system, mababalewala ang lahat ng iba ang opsyon.
+
+          Kung pipiliin mong awtomatikong tukuyin ang proxy server, mababalewala ang lahat ng iba ang opsyon.
+
+          Kung pipiliin mo ang proxy mode ng hindi nagbabagong server, makakapagtakda ka ng iba pang mga opsyon sa 'Address o URL ng proxy server' at 'Listahan ng mga panuntunan sa pag-bypass ng proxy na pinaghihiwalay ng mga kuwit.' Tanging ang HTTP na proxy server lang na may pinakamataas na priyoridad ang available para sa mga ARC app.
+
+          Kung pipiliin mong gumamit ng .pac proxy script, dapat mong itakda ang URL sa script sa 'URL sa isang proxy .pac file.'
+
+          Upang makakita ng mga detalyadong halimbawa, bisitahin ang:
+          <ph name="PROXY_HELP_URL" />.
+
+          Kung ie-enable mo ang setting na ito, babalewalain ng <ph name="PRODUCT_NAME" /> at mga ARC app ang lahat ng nakasaad na opsyong nauugnay sa proxy sa linya ng command.
+
+          Kapag hindi mo itinakda ang patakarang ito, mabibigyang-daan ang mga user na piliin ang mga setting ng proxy nang mag-isa.</translation>
 <translation id="913195841488580904">I-block ang access sa isang listahan ng mga URL</translation>
 <translation id="9135033364005346124">Paganahin ang <ph name="CLOUD_PRINT_NAME" /> proxy</translation>
 <translation id="9147029539363974059">Magpadala ng mga log ng system sa server sa pamamahala, upang payagan

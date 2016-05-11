@@ -68,6 +68,7 @@ Bạn phải bật Bluetooth và Vị trí để sử dụng Web trong cuộc s�
 <translation id="1842969606798536927">Thanh toán</translation>
 <translation id="1853692000353488670">Tab ẩn danh mới</translation>
 <translation id="189172778771606813">Đóng ngăn điều hướng</translation>
+<translation id="1924956916668006832">Chọn địa chỉ giao hàng</translation>
 <translation id="194341124344773587">Bật quyền cho Chrome trong <ph name="BEGIN_LINK" />Cài đặt Android<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Lưu mật khẩu</translation>
 <translation id="1944384637046898011">Mã hóa tất cả dữ liệu bằng mật khẩu Google kể từ <ph name="TIME" /></translation>
@@ -98,6 +99,7 @@ Bạn phải bật Bluetooth và Vị trí để sử dụng Web trong cuộc s�
 <translation id="2268044343513325586">Tinh chỉnh</translation>
 <translation id="2315043854645842844">Lựa chọn chứng chỉ phía ứng dụng khách không được hệ điều hành hỗ trợ.</translation>
 <translation id="2321958826496381788">Kéo thanh trượt cho đến khi bạn có thể đọc nội dung này thoải mái. Chữ tối thiểu phải to như này sau khi bấm đúp vào một đoạn.</translation>
+<translation id="2329597144923131178">Đăng nhập để nhận dấu trang, lịch sử, mật khẩu và các cài đặt khác trên tất cả các thiết bị của bạn.</translation>
 <translation id="2343328333327081434">Đang cài đặt…</translation>
 <translation id="2351097562818989364">Đã đặt lại cài đặt dịch của bạn.</translation>
 <translation id="2359808026110333948">Tiếp tục</translation>
@@ -133,6 +135,7 @@ Bạn phải bật Bluetooth và Vị trí để sử dụng Web trong cuộc s�
 <translation id="2762000892062317888">vừa xong</translation>
 <translation id="2770465223704140727">Xóa khỏi danh sách</translation>
 <translation id="278029852808208386">Không tìm thấy thiết bị bluetooth. <ph name="BEGIN_LINK" />Tìm kiếm lại<ph name="END_LINK" />.</translation>
+<translation id="2781389167600714117">Chọn giao hàng</translation>
 <translation id="2811892995384186721">Không thấy thiết bị của bạn? <ph name="BEGIN_LINK" />Nhận trợ giúp<ph name="END_LINK" /></translation>
 <translation id="2836148919159985482">Chạm vào nút quay lại để thoát khỏi chế độ toàn màn hình.</translation>
 <translation id="2842985007712546952">Thư mục gốc</translation>
@@ -158,7 +161,6 @@ Bạn phải bật Bluetooth và Vị trí để sử dụng Web trong cuộc s�
 <translation id="3137521801621304719">Thoát chế độ ẩn danh</translation>
 <translation id="3149891296864842641">Tùy chọn giao hàng</translation>
 <translation id="3162882791484435636">Chọn tùy chọn giao hàng</translation>
-<translation id="3173438333156928404">Đã xảy ra lỗi khi xử lý thanh toán</translation>
 <translation id="3177909033752230686">Ngôn ngữ trang:</translation>
 <translation id="3190152372525844641">Bật quyền cho Chrome trong <ph name="BEGIN_LINK" />Cài đặt Android<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> dữ liệu được lưu trữ</translation>
@@ -194,7 +196,6 @@ Bạn đang đăng nhập bằng tài khoản được quản lý và cung cấp
 Để điều chỉnh cụm từ tìm kiếm của bạn, nhấn và giữ để chọn. Để tinh chỉnh tìm kiếm của bạn, trượt bảng điều khiển theo mọi hướng lên trên rồi chạm vào hộp tìm kiếm.</translation>
 <translation id="3623048332793834136">Dấu trang Chrome Canary</translation>
 <translation id="363596933471559332">Tự động đăng nhập vào các trang web bằng thông tin đăng nhập được lưu trữ. Khi tính năng này tắt, bạn sẽ luôn được yêu cầu xác minh trước khi đăng nhập vào trang web.</translation>
-<translation id="3653742808139624888">Để nhận dấu trang trên tất cả các thiết bị của bạn, hãy đăng nhập vào Chrome</translation>
 <translation id="3656115297268584622">Bật vị trí trong <ph name="BEGIN_LINK" />Cài đặt Android<ph name="END_LINK" />.</translation>
 <translation id="3661699943263275414">Các trang web của bên thứ ba có thể lưu và đọc dữ liệu cookie</translation>
 <translation id="3672452749423051839">Đề xuất lỗi điều hướng</translation>
@@ -226,6 +227,7 @@ Bạn đang đăng nhập bằng tài khoản được quản lý và cung cấp
 <translation id="4170011742729630528">Dịch vụ không khả dụng; thử lại sau.</translation>
 <translation id="4195643157523330669">Mở bằng tab mới</translation>
 <translation id="423410644998903704">Chrome cần quyền truy cập quyền để chia sẻ quyền với trang web này.</translation>
+<translation id="4242533952199664413">Mở cài đặt</translation>
 <translation id="424864128008805179">Đăng xuất khỏi Chrome?</translation>
 <translation id="4254813446494774748">Ngôn ngữ dịch:</translation>
 <translation id="4256782883801055595">Giấy phép nguồn mở</translation>
@@ -524,14 +526,12 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="8007176423574883786">Tắt cho thiết bị này</translation>
 <translation id="8026334261755873520">Xóa dữ liệu duyệt web</translation>
 <translation id="8035133914807600019">Thư mục mới...</translation>
+<translation id="8063895661287329888">Không thêm được dấu trang.</translation>
 <translation id="8068648041423924542">Không thể chọn chứng chỉ.</translation>
 <translation id="8069239273282989646">Sau khi nén</translation>
 <translation id="8073388330009372546">Mở ảnh trong tab mới</translation>
 <translation id="8076014560081431679">Cài đặt trang web đã lưu sẽ không bị xóa và có thể phản ánh thói quen duyệt web của bạn. <ph name="BEGIN_LINK" />Tìm hiểu thêm<ph name="END_LINK" /></translation>
 <translation id="8087000398470557479">Nội dung này đến từ <ph name="DOMAIN_NAME" />, do Google phân phối.</translation>
-<translation id="8098570222830891427">Các thiết bị lân cận mà bạn đang truyền trang web qua Bluetooth. Chrome sẽ quét tìm các trang và hiển thị chúng khi bạn khởi động thiết bị của mình. Các trang này sẽ được chuyển tới một dịch vụ của Google để cải thiện chất lượng của kết quả trang.
-
-Bạn có thể kiểm soát cài đặt Web trong cuộc sống trên Chrome.</translation>
 <translation id="8106211421800660735">Số thẻ tín dụng</translation>
 <translation id="813082847718468539">Xem thông tin trang web</translation>
 <translation id="8137558756159375272">Chạm để tìm kiếm sẽ gửi từ đã chọn và trang hiện tại làm ngữ cảnh cho Google Tìm kiếm. Bạn có thể tắt tính năng này trong <ph name="BEGIN_LINK" />Cài đặt<ph name="END_LINK" />.</translation>

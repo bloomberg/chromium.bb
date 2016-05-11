@@ -42,6 +42,7 @@
 <translation id="1254117744268754948">Sélectionner un dossier</translation>
 <translation id="1285320974508926690">Ne jamais traduire ce site</translation>
 <translation id="129553762522093515">Récemment fermés</translation>
+<translation id="129863573139666797"><ph name="BEGIN_LINK" />Essayez de supprimer les cookies.<ph name="END_LINK" /></translation>
 <translation id="1339601241726513588">Domaine d'enregistrement :</translation>
 <translation id="1344588688991793829">Paramètres de saisie automatique de Chromium…</translation>
 <translation id="1374468813861204354">suggestions</translation>
@@ -198,6 +199,7 @@
 <translation id="2969319727213777354">Afin d'établir une connexion sécurisée, votre horloge doit être réglée correctement. Les certificats permettant aux sites Web de s'identifier sont en effet valides pendant une période précise. Comme l'horloge de votre appareil est incorrecte, Google Chrome n'est pas en mesure de vérifier la validité des certificats.</translation>
 <translation id="2972581237482394796">&amp;Rétablir</translation>
 <translation id="2985306909656435243">Si cette option est activée, Chromium enregistre une copie de votre carte sur cet appareil pour vous permettre de remplir plus rapidement les formulaires.</translation>
+<translation id="2989984781570875765">Saisissez la date d'expiration et le code CVC à trois chiffres indiqué au dos de votre carte <ph name="CREDIT_CARD" />.</translation>
 <translation id="2991174974383378012">Partage avec les sites Web</translation>
 <translation id="3005723025932146533">Afficher la copie enregistrée</translation>
 <translation id="3010559122411665027">Entrée de la liste "<ph name="ENTRY_INDEX" />" : <ph name="ERROR" /></translation>
@@ -281,6 +283,7 @@
 <translation id="3717027428350673159"><ph name="BEGIN_LINK" />Vérifier les configurations du proxy, du pare-feu et du DNS<ph name="END_LINK" /></translation>
 <translation id="3739623965217189342">Lien copié</translation>
 <translation id="3744899669254331632"><ph name="SITE" /> est actuellement inaccessible. Le site Web a envoyé des identifiants brouillés inutilisables par Chromium. Les erreurs de réseau et les attaques étant généralement temporaires, cette page devrait à nouveau fonctionner ultérieurement.</translation>
+<translation id="3748071062818261683">Valider la carte</translation>
 <translation id="3748412725338508953">Trop de redirections</translation>
 <translation id="375403751935624634">Échec de la traduction en raison d'une erreur de serveur</translation>
 <translation id="3759461132968374835">Aucune erreur n'a été signalée récemment. Les erreurs n'apparaissent ici que lorsque l'envoi de rapports d'erreur est activé.</translation>
@@ -309,6 +312,7 @@
 <translation id="4103249731201008433">Le numéro de série de l'appareil n'est pas valide.</translation>
 <translation id="4103763322291513355">Accédez à &lt;strong&gt;chrome://policy&lt;/strong&gt; pour consulter une liste des URL ajoutées à la liste noire et des autres règles définies par votre administrateur système.</translation>
 <translation id="4117700440116928470">La portée de la règle n'est pas compatible.</translation>
+<translation id="4130226655945681476">Vérifiez les câbles réseau, le modem et le routeur.</translation>
 <translation id="4147376274874979956">Impossible d'accéder au fichier.</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">Voulez-vous que cette carte soit enregistrée dans Chromium ?</translation>
@@ -343,11 +347,15 @@
 <translation id="450710068430902550">Partage avec l'administrateur</translation>
 <translation id="4522570452068850558">Détails</translation>
 <translation id="4535734014498033861">Échec de la connexion au serveur proxy.</translation>
+<translation id="4553532082208702698">Saisissez le code CVC à quatre chiffres indiqué au recto de votre carte <ph name="CREDIT_CARD" />.</translation>
+<translation id="4558551763791394412">Essayez de désactiver les extensions.</translation>
 <translation id="4587425331216688090">Supprimer l'adresse de Chrome ?</translation>
 <translation id="4592951414987517459">Votre connexion à <ph name="DOMAIN" /> est chiffrée à l'aide d'une méthode de chiffrement récente.</translation>
 <translation id="4594403342090139922">&amp;Annuler la suppression</translation>
 <translation id="4668929960204016307">,</translation>
+<translation id="4670097147947922288">Vous consultez actuellement une page d'extension.</translation>
 <translation id="467662567472608290">Impossible de vérifier sur le serveur qu'il s'agit bien du domaine <ph name="DOMAIN" />, car son certificat de sécurité contient des erreurs. Cela peut être dû à une mauvaise configuration ou bien à l'interception de votre connexion par un pirate informatique.</translation>
+<translation id="4683417246209150705">Saisissez le code CVC à trois chiffres indiqué au dos de votre carte <ph name="CREDIT_CARD" />.</translation>
 <translation id="4697214168136963651">L'adresse <ph name="URL" /> a été bloquée</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">Votre connexion a été interrompue</translation>
@@ -432,6 +440,8 @@
 <translation id="5650551054760837876">Aucun résultat de recherche trouvé</translation>
 <translation id="5663999524854166235">Saisissez le code CVC à trois chiffres indiqué au dos de votre carte.</translation>
 <translation id="5677928146339483299">Bloqué</translation>
+<translation id="5696590819423335174">Saisissez la date d'expiration et le code CVC à quatre chiffres indiqué au recto de votre carte <ph name="CREDIT_CARD" />.</translation>
+<translation id="5699278517904102888">Saisissez le code CVC à trois chiffres indiqué au dos de votre carte <ph name="CREDIT_CARD" />.</translation>
 <translation id="5710435578057952990">L'identité de ce site Web n'a pas été vérifiée.</translation>
 <translation id="5720705177508910913">Utilisateur actuel</translation>
 <translation id="5785756445106461925">De plus, cette page inclut d'autres ressources qui ne sont pas sécurisées. Ces ressources peuvent être consultées par des tiers pendant leur transfert, et modifiées par un pirate informatique dans le but de changer l'aspect de cette page.</translation>
@@ -555,7 +565,6 @@
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> ne respecte pas les normes de sécurité.</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /> sur ce problème.</translation>
 <translation id="7219179957768738017">La connexion utilise <ph name="SSL_VERSION" />.</translation>
-<translation id="7225807090967870017">ID de build</translation>
 <translation id="7231308970288859235">Petit problème… Tu dois demander à ton papa/ta maman l'autorisation de consulter cette page.</translation>
 <translation id="7246609911581847514">Ce message s'affiche, car votre responsable doit approuver les nouveaux sites lorsque vous les consultez pour la première fois.</translation>
 <translation id="725866823122871198">Impossible d'établir une connexion privée à <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> : la date et l'heure de votre ordinateur (<ph name="DATE_AND_TIME" />) sont incorrectes.</translation>
@@ -596,6 +605,7 @@ Conseil : Le mode navigation privée (<ph name="SHORTCUT_KEY" />) pourra vous �
 <translation id="7610193165460212391">La valeur <ph name="VALUE" /> est hors limites.</translation>
 <translation id="7613889955535752492">Date d'expiration : <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Vous disposez déjà de données chiffrées à l'aide d'une autre version de votre mot de passe de compte Google. Veuillez saisir celui-ci ci-dessous.</translation>
+<translation id="7633887239437305289">Saisissez le code CVC à quatre chiffres indiqué au recto de votre carte <ph name="CREDIT_CARD" />.</translation>
 <translation id="7634554953375732414">Votre connexion à ce site n'est pas privée.</translation>
 <translation id="7637571805876720304">Supprimer les données de carte de paiement de Chromium ?</translation>
 <translation id="7643817847124207232">La connexion Internet a été interrompue.</translation>

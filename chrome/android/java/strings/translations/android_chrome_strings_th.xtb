@@ -68,6 +68,7 @@
 <translation id="1842969606798536927">จ่าย</translation>
 <translation id="1853692000353488670">แท็บใหม่ที่ไม่ระบุตัวตน</translation>
 <translation id="189172778771606813">ปิดลิ้นชักการนำทาง</translation>
+<translation id="1924956916668006832">เลือกที่อยู่สำหรับจัดส่ง</translation>
 <translation id="194341124344773587">เปิดการใช้สิทธิ์สำหรับ Chrome ใน<ph name="BEGIN_LINK" />การตั้งค่า Android<ph name="END_LINK" /></translation>
 <translation id="1943432128510653496">บันทึกรหัสผ่าน</translation>
 <translation id="1944384637046898011">เข้ารหัสทั้งหมดด้วยรหัสผ่าน Google ตั้งแต่วันที่ <ph name="TIME" /></translation>
@@ -98,6 +99,7 @@
 <translation id="2268044343513325586">ปรับแต่ง</translation>
 <translation id="2315043854645842844">ระบบปฏิบัติการไม่สนับสนุนการเลือกใบรับรองฝั่งลูกค้า</translation>
 <translation id="2321958826496381788">ลากแถบเลื่อนจนกว่าคุณจะสามารถอ่านได้อย่างสะดวก ข้อความควรมีขนาดเท่านี้เป็นอย่างน้อยหลังจากแตะ 2 ครั้งบนย่อหน้า</translation>
+<translation id="2329597144923131178">ลงชื่อเข้าใช้เพื่อรับบุ๊กมาร์ก ประวัติ รหัสผ่าน และการตั้งค่าอื่นๆ ในอุปกรณ์ทั้งหมด</translation>
 <translation id="2343328333327081434">กำลังติดตั้ง…</translation>
 <translation id="2351097562818989364">รีเซ็ตการตั้งค่าการแปลภาษาของคุณแล้ว</translation>
 <translation id="2359808026110333948">ดำเนินการต่อ</translation>
@@ -133,6 +135,7 @@
 <translation id="2762000892062317888">เมื่อสักครู่</translation>
 <translation id="2770465223704140727">ลบจากรายการ</translation>
 <translation id="278029852808208386">ไม่พบอุปกรณ์บลูทูธ โปรด<ph name="BEGIN_LINK" />ค้นหาอีกครั้ง<ph name="END_LINK" /></translation>
+<translation id="2781389167600714117">เลือกการจัดส่ง</translation>
 <translation id="2811892995384186721">หากไม่เห็นอุปกรณ์ของคุณ โปรด<ph name="BEGIN_LINK" />ขอความช่วยเหลือ<ph name="END_LINK" /></translation>
 <translation id="2836148919159985482">แตะปุ่มกลับเพื่อออกจากโหมดเต็มหน้าจอ</translation>
 <translation id="2842985007712546952">โฟลเดอร์ระดับบนสุด</translation>
@@ -158,7 +161,6 @@
 <translation id="3137521801621304719">ออกจากโหมดไม่ระบุตัวตน</translation>
 <translation id="3149891296864842641">ตัวเลือกการจัดส่ง</translation>
 <translation id="3162882791484435636">เลือกตัวเลือกในการจัดส่ง</translation>
-<translation id="3173438333156928404">เกิดข้อผิดพลาดในการดำเนินการการชำระเงิน</translation>
 <translation id="3177909033752230686">ภาษาหน้าเว็บ:</translation>
 <translation id="3190152372525844641">เปิดการใช้สิทธิ์สำหรับ Chrome ใน<ph name="BEGIN_LINK" />การตั้งค่า Android<ph name="END_LINK" /></translation>
 <translation id="3198916472715691905">ข้อมูลที่จัดเก็บมี <ph name="STORAGE_AMOUNT" /></translation>
@@ -194,7 +196,6 @@
 หากต้องการแก้ไขข้อความค้นหา ให้กดค้างไว้เพื่อเลือก หากต้องการปรับการค้นหา ให้เลื่อนแผงขึ้นและแตะช่องค้นหา</translation>
 <translation id="3623048332793834136">บุ๊กมาร์กของ Chrome Canary</translation>
 <translation id="363596933471559332">ลงชื่อเข้าใช้เว็บไซต์โดยอัตโนมัติโดยใช้ข้อมูลรับรองที่เก็บไว้ เมื่อคุณลักษณะนี้ปิดอยู่ ระบบจะขอให้คุณยืนยันทุกครั้งก่อนที่จะลงชื่อเข้าใช้เว็บไซต์</translation>
-<translation id="3653742808139624888">ลงชื่อเข้าใช้ Chrome เพื่อรับบุ๊กมาร์กในอุปกรณ์ทั้งหมดของคุณ</translation>
 <translation id="3656115297268584622">เปิดตำแหน่งใน<ph name="BEGIN_LINK" />การตั้งค่า Android<ph name="END_LINK" /></translation>
 <translation id="3661699943263275414">เว็บไซต์ของบุคคลที่สามสามารถบันทึกและอ่านข้อมูลคุกกี้ได้</translation>
 <translation id="3672452749423051839">คำแนะนำเมื่อเกิดข้อผิดพลาดในการนำทาง</translation>
@@ -226,6 +227,7 @@
 <translation id="4170011742729630528">บริการนี้ยังไม่สามารถใช้ได้ โปรดลองอีกครั้งในภายหลัง</translation>
 <translation id="4195643157523330669">เปิดในแท็บใหม่</translation>
 <translation id="423410644998903704">Chrome ต้องการเข้าถึงสิทธิ์เพื่อแชร์กับเว็บไซต์นี้</translation>
+<translation id="4242533952199664413">เปิดการตั้งค่า</translation>
 <translation id="424864128008805179">ต้องการออกจากระบบ Chrome ไหม</translation>
 <translation id="4254813446494774748">ภาษาที่แปล:</translation>
 <translation id="4256782883801055595">ใบอนุญาตโอเพนซอร์ส</translation>
@@ -514,7 +516,7 @@
 <translation id="7846076177841592234">ยกเลิกการเลือก</translation>
 <translation id="7851858861565204677">อุปกรณ์อื่นๆ</translation>
 <translation id="7876243839304621966">ลบทั้งหมด</translation>
-<translation id="7902333740914687335">ดำเนินการการชำระเงินแล้ว</translation>
+<translation id="7902333740914687335">ดำเนินการชำระเงินแล้ว</translation>
 <translation id="7947953824732555851">ยอมรับและลงชื่อเข้าใช้</translation>
 <translation id="7949961459945740081">รับคุณลักษณะล่าสุด</translation>
 <translation id="7963646190083259054">ผู้ขาย:</translation>
@@ -524,14 +526,12 @@
 <translation id="8007176423574883786">ปิดสำหรับอุปกรณ์นี้</translation>
 <translation id="8026334261755873520">ล้างข้อมูลการท่องเว็บ</translation>
 <translation id="8035133914807600019">โฟลเดอร์ใหม่…</translation>
+<translation id="8063895661287329888">เพิ่มบุ๊กมาร์กไม่สำเร็จ</translation>
 <translation id="8068648041423924542">เลือกใบรับรองไม่ได้</translation>
 <translation id="8069239273282989646">หลังการบีบอัด</translation>
 <translation id="8073388330009372546">เปิดภาพในแท็บใหม่</translation>
 <translation id="8076014560081431679">การตั้งค่าเว็บไซต์ที่บันทึกไว้จะไม่ถูกลบและอาจส่งผลกับลักษณะการท่องเว็บของคุณ <ph name="BEGIN_LINK" />เรียนรู้เพิ่มเติม<ph name="END_LINK" /></translation>
 <translation id="8087000398470557479">เนื้อหานี้มาจาก <ph name="DOMAIN_NAME" /> และนำส่งโดย Google</translation>
-<translation id="8098570222830891427">อุปกรณ์ใกล้เคียงคุณกำลังเผยแพร่หน้าเว็บผ่านบลูทูธ Chrome จะสแกนหาและแสดงหน้าเว็บดังกล่าวเมื่อคุณเรียกให้อุปกรณ์ทำงาน หน้าเหล่านี้จะแสดงผ่านบริการของ Google เพื่อปรับปรุงคุณภาพผลการค้นหาหน้าเว็บ
-
-คุณควบคุม Physical Web ได้ในการตั้งค่า Chrome</translation>
 <translation id="8106211421800660735">หมายเลขบัตรเครดิต</translation>
 <translation id="813082847718468539">ดูข้อมูลเว็บไซต์</translation>
 <translation id="8137558756159375272">แตะเพื่อค้นหาจะส่งคำที่เลือกและหน้าปัจจุบันเป็นบริบทไปยัง Google Search คุณสามารถปิดคุณลักษณะนี้ใน<ph name="BEGIN_LINK" />การตั้งค่า<ph name="END_LINK" /></translation>

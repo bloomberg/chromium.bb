@@ -220,6 +220,7 @@ Desktop Host</translation>
 <translation id="6542902059648396432">Report an issue…</translation>
 <translation id="6550675742724504774">Options</translation>
 <translation id="6570205395680337606">Reset the application. You will lose any unsaved work.</translation>
+<translation id="6572345186230665992">For Mac (OS X Mavericks 10.9 and above)</translation>
 <translation id="6612717000975622067">Send Ctrl-Alt-Del</translation>
 <translation id="6640610550128933069">last online <ph name="DATE" /></translation>
 <translation id="6668065415969892472">Your PIN has been updated.</translation>
@@ -286,6 +287,7 @@ Desktop Host</translation>
 <translation id="8759753423332885148">Learn more.</translation>
 <translation id="8791202241915690908">Download Chromoting Host Installer</translation>
 <translation id="894763922177556086">Good</translation>
+<translation id="895780780740011433">For Windows 7 and above</translation>
 <translation id="897805526397249209">To enable remote connections to a different computer, install Chromoting there and click “<ph name="BUTTON_NAME" />”.</translation>
 <translation id="8998327464021325874">Chrome Remote Desktop Host Controller</translation>
 <translation id="9016232822027372900">Connect anyway</translation>

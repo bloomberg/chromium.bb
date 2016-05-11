@@ -68,6 +68,7 @@ A Fizikai web használatához be kell kapcsolnia a Bluetooth funkciót és a hel
 <translation id="1842969606798536927">Fizetés</translation>
 <translation id="1853692000353488670">Új inkognitólap</translation>
 <translation id="189172778771606813">Navigációs fiók bezárása</translation>
+<translation id="1924956916668006832">Szállítási cím kiválasztása</translation>
 <translation id="194341124344773587">A Chrome-ra vonatkozó engedély aktiválása az <ph name="BEGIN_LINK" />Android beállításaiban<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Jelszavak mentése</translation>
 <translation id="1944384637046898011">Az összes titkosítása Google-jelszóval ekkortól: <ph name="TIME" /></translation>
@@ -98,6 +99,7 @@ A Fizikai web használatához be kell kapcsolnia a Bluetooth funkciót és a hel
 <translation id="2268044343513325586">Pontosítás</translation>
 <translation id="2315043854645842844">Az ügyféloldali tanúsítványválasztást az operációs rendszer nem támogatja.</translation>
 <translation id="2321958826496381788">Húzza a csúszkát, amíg kényelmesen nem tudja olvasni a szöveget; legalább ekkorának kell lennie, miután duplán koppint a bekezdésre.</translation>
+<translation id="2329597144923131178">Jelentkezzen be, hogy könyvjelzőit, előzményeit, jelszavait és más beállításait az összes eszközén elérje.</translation>
 <translation id="2343328333327081434">Telepítés…</translation>
 <translation id="2351097562818989364">A fordítási beállítások visszaállítása megtörtént.</translation>
 <translation id="2359808026110333948">Folytatás</translation>
@@ -133,6 +135,7 @@ A Fizikai web használatához be kell kapcsolnia a Bluetooth funkciót és a hel
 <translation id="2762000892062317888">éppen most</translation>
 <translation id="2770465223704140727">Eltávolítás a listából</translation>
 <translation id="278029852808208386">Nem találhatók Bluetooth-eszközök. <ph name="BEGIN_LINK" />Újbóli keresés<ph name="END_LINK" /></translation>
+<translation id="2781389167600714117">Szállítási lehetőségek kiválasztása</translation>
 <translation id="2811892995384186721">Nem látja eszközét? <ph name="BEGIN_LINK" />Kérjen segítséget<ph name="END_LINK" />.</translation>
 <translation id="2836148919159985482">A teljes képernyős megjelenítésből való kilépéshez koppintson a vissza gombra.</translation>
 <translation id="2842985007712546952">Szülőmappa</translation>
@@ -158,7 +161,6 @@ A Fizikai web használatához be kell kapcsolnia a Bluetooth funkciót és a hel
 <translation id="3137521801621304719">Kilépés inkognitómódból</translation>
 <translation id="3149891296864842641">Szállítási lehetőség</translation>
 <translation id="3162882791484435636">Szállítási lehetőség kiválasztása</translation>
-<translation id="3173438333156928404">Hiba a fizetés feldolgozása során</translation>
 <translation id="3177909033752230686">Az oldal nyelve</translation>
 <translation id="3190152372525844641">A Chrome-ra vonatkozó engedélyek aktiválása az <ph name="BEGIN_LINK" />Android beállításaiban<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> tárolt adat</translation>
@@ -194,7 +196,6 @@ A Fizikai web használatához be kell kapcsolnia a Bluetooth funkciót és a hel
 A keresési kifejezés módosításához hosszú nyomva tartással hajthat végre kiválasztást. A keresés finomításához csúsztassa a panelt teljesen fel, majd érintse meg a keresőmezőt.</translation>
 <translation id="3623048332793834136">Chrome Canary-könyvjelzők</translation>
 <translation id="363596933471559332">Automatikus bejelentkezés webhelyekre a tárolt hitelesítő adatokkal. Ha ez a funkció ki van kapcsolva, mindig meg kell adnia hitelesítő adatait, amikor egy webhelyre szeretne bejelentkezni.</translation>
-<translation id="3653742808139624888">Ha az összes eszközén szeretné elérni könyvjelzőit, jelentkezzen be a Chrome-ba</translation>
 <translation id="3656115297268584622">Kapcsolja be a helyszolgáltatást az <ph name="BEGIN_LINK" />Android-beállításokban<ph name="END_LINK" />.</translation>
 <translation id="3661699943263275414">A hamardik felek webhelyei menthetik és olvashatják a cookie-adatokat</translation>
 <translation id="3672452749423051839">Navigálási hibákkal kapcsolatos javaslatok</translation>
@@ -226,6 +227,7 @@ A keresési kifejezés módosításához hosszú nyomva tartással hajthat végr
 <translation id="4170011742729630528">A szolgáltatás nem érhető el, próbálja újra később.</translation>
 <translation id="4195643157523330669">Megnyitás új lapon</translation>
 <translation id="423410644998903704">A Chrome-nak rendelkeznie kell hozzáférési engedélyekkel, hogy megoszthassa őket ezzel a webhellyel.</translation>
+<translation id="4242533952199664413">Beállítások megnyitása</translation>
 <translation id="424864128008805179">Kijelentkezés a Chrome-ból</translation>
 <translation id="4254813446494774748">A fordítás nyelve</translation>
 <translation id="4256782883801055595">Nyílt forráskódú licencek</translation>
@@ -524,14 +526,12 @@ Előfordulhat, hogy Google-fiókjában (a <ph name="BEGIN_LINK" />history.google
 <translation id="8007176423574883786">Kikapcsolva ezen az eszközön</translation>
 <translation id="8026334261755873520">Böngészési adatok törlése</translation>
 <translation id="8035133914807600019">Új mappa…</translation>
+<translation id="8063895661287329888">A könyvjelző hozzáadása sikertelen volt.</translation>
 <translation id="8068648041423924542">A tanúsítvány kiválasztása nem sikerült.</translation>
 <translation id="8069239273282989646">Tömörítés után</translation>
 <translation id="8073388330009372546">Kép megnyitása új lapon</translation>
 <translation id="8076014560081431679">A mentett webhelybeállítások nem törlődnek, és tájékozódási alapul szolgálhatnak böngészési szokásait illetően. <ph name="BEGIN_LINK" />További információ.<ph name="END_LINK" /></translation>
 <translation id="8087000398470557479">Ez a Google által megjelenített tartalom a(z) <ph name="DOMAIN_NAME" /> domainről származik.</translation>
-<translation id="8098570222830891427">Az Ön közelében található eszközök weboldalakat sugároznak Bluetooth-on keresztül. A Chrome megkeresi és megjeleníti ezeket a weboldalakat, miután Ön felébresztette eszközét. Ezek az oldalak egy adott Google-szolgáltatáson mennek keresztül az oldaltalálatok minőségének javítása érdekében.
-
-A Fizikai webet a Chrome-beállításokban szabályozhatja.</translation>
 <translation id="8106211421800660735">Hitelkártya száma</translation>
 <translation id="813082847718468539">Az oldalinformációk megtekintése</translation>
 <translation id="8137558756159375272">Az Érintéssel keresés elküldi a kiválasztott szót és az aktuális oldalt kontextusként a Google Keresés számára. A funkciót a <ph name="BEGIN_LINK" />Beállítások<ph name="END_LINK" /> szakaszban kikapcsolhatja.</translation>

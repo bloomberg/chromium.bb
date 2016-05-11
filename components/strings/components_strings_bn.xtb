@@ -42,6 +42,7 @@
 <translation id="1254117744268754948">ফোল্ডার চয়ন করুন</translation>
 <translation id="1285320974508926690">কখনই এই সাইটটিকে অনুবাদ করবেন না</translation>
 <translation id="129553762522093515">সম্প্রতি বন্ধ হয়েছে</translation>
+<translation id="129863573139666797"><ph name="BEGIN_LINK" />আপনার কুকিজ সাফ করে দেখুন<ph name="END_LINK" /></translation>
 <translation id="1339601241726513588">ডোমেন নথিভুক্ত করুন:</translation>
 <translation id="1344588688991793829">Chromium স্বতঃপূর্ণ সেটিংস...</translation>
 <translation id="1374468813861204354">প্রস্তাবনাগুলি</translation>
@@ -199,6 +200,7 @@
 <translation id="2969319727213777354">নিরাপদ নেটওয়ার্ক সংযোগ স্থাপন করতে আপনার ঘড়িকে সঠিকভাবে সেট করতে হবে। এমন হওয়ার কারণ হলো, নিরাপদ সংযোগ স্থাপন করার জন্য নিজেদের সনাক্ত করার জন্য ওয়েবসাইটগুলি যে শংসাপত্রগুলি ব্যবহার করে, সেগুলি শুধুমাত্র নির্দিষ্ট সময়ের জন্য বৈধ থাকে। যেহেতু আপনার ডিভাইসের ঘড়িটি ভুল, সেই জন্য Google Chrome সঠিকভাবে শংসাপত্রগুলি পরীক্ষা করতে পারছে না।</translation>
 <translation id="2972581237482394796">&amp;পুনরায় করুন</translation>
 <translation id="2985306909656435243">সক্ষম করা হলে, ফর্ম পূরনের কাজ দ্রুত করতে Chromium এই ডিভাইসে আপনার কার্ডের একটি প্রতিলিপি সংরক্ষণ করবে।</translation>
+<translation id="2989984781570875765">আপনার <ph name="CREDIT_CARD" /> এর পিছনে থাকা মেয়াদ শেষের তারিখ এবং ৩ সংখ্যার CVC লিখুন</translation>
 <translation id="2991174974383378012">ওয়েবসাইটের সাথে ভাগ করছে</translation>
 <translation id="3005723025932146533">সংরক্ষিত প্রতিলিপি দেখান</translation>
 <translation id="3010559122411665027">তালিকার এন্ট্রি " <ph name="ENTRY_INDEX" /> ": <ph name="ERROR" /></translation>
@@ -282,6 +284,7 @@
 <translation id="3717027428350673159"><ph name="BEGIN_LINK" />প্রক্সি, ফায়ারওয়াল এবং DNS কনফিগারেশন পরীক্ষা করে দেখুন<ph name="END_LINK" /></translation>
 <translation id="3739623965217189342">আপনার অনুলিপি করা লিঙ্ক</translation>
 <translation id="3744899669254331632">এই মূহুর্তে আপনি <ph name="SITE" />-এ যেতে পারবেন না কারণ ওয়েবসাইটি মিশ্রিত প্রমাণপত্রাদি পাঠিয়েছে যা Chromium প্রক্রিয়া করতে পারেনা৷ নেটওয়ার্ক ত্রুটি এবং আক্রমণ সাধারণত অস্থায়ী, তাই এই পৃষ্ঠাটি সম্ভবত পরে কাজ করবে৷</translation>
+<translation id="3748071062818261683">কার্ড যাচাই করুন</translation>
 <translation id="3748412725338508953">অত্যধিক পুনঃনির্দেশ ছিল৷</translation>
 <translation id="375403751935624634">একটি সার্ভার ত্রুটির কারণে অনুবাদ ব্যর্থ হয়েছে৷</translation>
 <translation id="3759461132968374835">আপনার কাছে সাম্প্রতিক প্রতিবেদন করা কোনও ক্র্যাশ নেই৷ ক্র্যাশ প্রতিবেদন অক্ষম থাকাকালীন ঘটা ক্র্যাশ এখানে উপস্থিত হবে না৷</translation>
@@ -310,6 +313,7 @@
 <translation id="4103249731201008433">ডিভাইসের ক্রমিক সংখ্যা অবৈধ</translation>
 <translation id="4103763322291513355">নিবারিত URLগুলির তালিকা এবং আপনার সিস্টেম প্রশাসকের দ্বারা জারি করা অন্যান্য নীতিগুলি দেখার জন্য &lt;strong&gt;chrome://policy&lt;/strong&gt; এ যান৷</translation>
 <translation id="4117700440116928470">নীতির সুযোগটি সমর্থিত নয়৷</translation>
+<translation id="4130226655945681476">নেটওয়ার্কের তার, মডেম, এবং রাউটার পরীক্ষা করুন</translation>
 <translation id="4147376274874979956">ফাইল অ্যাক্সেস করতে অক্ষম৷</translation>
 <translation id="4148925816941278100">আমেরিকান এক্সপ্রেস</translation>
 <translation id="4169947484918424451">আপনি কি চান যে Chromium এই কার্ড সংরক্ষণ করুক?</translation>
@@ -344,11 +348,15 @@
 <translation id="450710068430902550">প্রশাসকের সাথে ভাগ করছে</translation>
 <translation id="4522570452068850558">বিশদ বিবরণ</translation>
 <translation id="4535734014498033861">প্রক্সি সার্ভার  যোগাযোগ  ব্যর্থ৷</translation>
+<translation id="4553532082208702698">আপনার <ph name="CREDIT_CARD" /> এর সামনে থেকে ৪ সংখ্যার CVC লিখুন</translation>
+<translation id="4558551763791394412">আপনার এক্সটেনশানগুলি অক্ষম করে দেখুন।</translation>
 <translation id="4587425331216688090">Chrome থেকে ঠিকানা সরাবেন?</translation>
 <translation id="4592951414987517459">একটি আধুনিক সাইফার স্যুট ব্যবহার করে <ph name="DOMAIN" />-এ আপনার সংযোগ এনক্রিপ্ট করা হয়েছে।</translation>
 <translation id="4594403342090139922">&amp;মুছে ফেলাকে পূর্বাবস্থায় ফেরান</translation>
 <translation id="4668929960204016307">,</translation>
+<translation id="4670097147947922288">আপনি একটি এক্সটেনশান পৃষ্ঠা দেখছেন।</translation>
 <translation id="467662567472608290">এই সার্ভার প্রমাণ করতে পারেনি যে এটি <ph name="DOMAIN" />; এর নিরাপত্তা শংসাপত্রে কিছু ত্রুটি আছে। কোনো ভুল কনফিগারেশনের কারণে অথবা কোনো আক্রমণকারী আপনার সংযোগ মাঝপথে আটকে দিচ্ছে বলে এমনটা হতে পারে।</translation>
+<translation id="4683417246209150705">আপনার <ph name="CREDIT_CARD" /> এর পিছনে থাকা ৩ সংখ্যার CVC লিখুন</translation>
 <translation id="4697214168136963651"><ph name="URL" /> অবরোধ করা হয়েছে</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">আপনার সংযোগ বাধাপ্রাপ্ত হয়েছে</translation>
@@ -433,6 +441,8 @@
 <translation id="5650551054760837876">কোনো অনুসন্ধান ফলাফল পাওয়া যায় নি৷</translation>
 <translation id="5663999524854166235">নিশ্চিতকরণের জন্য আপনার কার্ডের পিছনে থাকা ৩ সংখ্যার CVC লিখুন</translation>
 <translation id="5677928146339483299">অবরুদ্ধ</translation>
+<translation id="5696590819423335174">আপনার <ph name="CREDIT_CARD" /> এর সামনে থাকা মেয়াদ শেষের তারিখ এবং ৪ সংখ্যার CVC লিখুন</translation>
+<translation id="5699278517904102888">নিশ্চিতকরণের জন্য আপনার <ph name="CREDIT_CARD" /> এর পিছনে থাকা ৩ সংখ্যার CVC লিখুন</translation>
 <translation id="5710435578057952990">এই ওয়েবসাইটির পরিচয় যাচাই করা হয় নি৷</translation>
 <translation id="5720705177508910913">বর্তমান ব্যবহারকারী</translation>
 <translation id="5785756445106461925">উপরন্তু, এই পৃষ্ঠাতে অন্যান্য সংস্থান অন্তর্ভুক্ত রয়েছে যা নিরাপদ নয়৷ এই সংস্থানগুলি ট্রানজিটের সময় অন্যরা দেখতে পাবে এবং পৃষ্ঠাটির চেহারাটি পরিবর্তন করতে কোনও আক্রমণকারী এর পরিবর্তন করতে পারেন৷</translation>
@@ -555,7 +565,6 @@
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> নিরাপত্তা মান মেনে চলে না।</translation>
 <translation id="721197778055552897">এই সমস্যাটি সম্পর্কে <ph name="BEGIN_LINK" />আরো জানুন<ph name="END_LINK" />৷</translation>
 <translation id="7219179957768738017">এই সংযোগটি <ph name="SSL_VERSION" />টি ব্যবহার করে</translation>
-<translation id="7225807090967870017">বিল্ড ID</translation>
 <translation id="7231308970288859235">উফ! এই পৃষ্ঠাটি দেখা ঠিক হবে কিনা তা আপনার পিতা বা মাতাকে জিজ্ঞাসা করা প্রয়োজন৷</translation>
 <translation id="7246609911581847514">নতুন সাইটগুলি আপনি প্রথম বারের মত ঘুরে দেখার সময় আপনার পরিচালকের সেগুলি অনুমোদন দেওয়ার প্রয়োজন হওয়ার কারণে আপনি এই বার্তাটি দেখতে পাচ্ছেন।</translation>
 <translation id="725866823122871198"><ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> এ একটি ব্যক্তিগত সংযোগ স্থাপন করা যায়নি কারণ আপনার কম্পিউটারের তারিখ এবং সময় (<ph name="DATE_AND_TIME" />) সঠিক নয়৷</translation>
@@ -596,6 +605,7 @@
 <translation id="7610193165460212391">সীমার বাইরে মান <ph name="VALUE" />৷</translation>
 <translation id="7613889955535752492">মেয়াদোত্তীর্ণ: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">আপনার কাছে ইতিমধ্যেই এমন ডেটা আছে যা Google অ্যাকাউন্টের পাসওয়ার্ডের কোনো ভিন্ন সংস্করণ ব্যবহারের দ্বারা এনক্রিপ্ট করা হয়৷ দয়া করে এটিকে নীচে লিখুন৷</translation>
+<translation id="7633887239437305289">নিশ্চিতকরণের জন্য আপনার <ph name="CREDIT_CARD" /> এর সামনে লেখা ৪ সংখ্যার CVC লিখুন</translation>
 <translation id="7634554953375732414">এই সাইটে আপনার সংযোগ ব্যক্তিগত নয়।</translation>
 <translation id="7637571805876720304">Chromium থেকে ক্রেডিট কার্ড সরাবেন?</translation>
 <translation id="7643817847124207232">ইন্টারনেট কানেকশন বিচ্ছিন্ন হয়েছে৷</translation>

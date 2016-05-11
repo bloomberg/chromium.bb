@@ -503,6 +503,22 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
       Cada item da lista é um padrão de correspondência de estilo de extensões (ver http://code.google.com/chrome/extensions/match_patterns.html). Os usuários podem instalar itens com facilidade a partir de qualquer URL que corresponda a um item desta lista. Tanto a localização do arquivo *.crx como a página a partir da qual o download é iniciado (ou seja, a referência) devem ser autorizados por esses padrões. 
 
       ExtensionInstallBlacklist tem precedência sobre esta política. Ou seja, as extensões da lista negra não são instaladas, mesmo que sejam de um site desta lista.</translation>
+<translation id="2813740161943223811">O uso desta política foi suspenso. Use o ProxyMode em vez dela.
+
+          Permite que você especifique o servidor proxy usado por <ph name="PRODUCT_NAME" /> e impede que os usuários alterem as configurações de proxy. Os apps ARC também poderão usar esse servidor proxy.
+
+          Se você optar por nunca usar um servidor proxy e sempre se conectar diretamente, todas as outras opções serão ignoradas.
+
+          Se você optar por usar as configurações de proxy do sistema ou detectar automaticamente o servidor proxy, todas as outras opções serão ignoradas.
+
+          Se você optar pelas configurações de proxy manuais, será possível especificar outras opções no "Endereço ou URL do servidor proxy", "URL de um arquivo proxy .pac" e "Lista separada por vírgulas das regras de proxies ignoráveis". Apenas o servidor proxy HTTP com a maior prioridade está disponível para apps ARC.
+
+          Para ver exemplos detalhados, visite:
+          <ph name="PROXY_HELP_URL" />.
+
+          Se você ativar essa configuração, o <ph name="PRODUCT_NAME" /> ignorará todas as opções relacionadas ao proxy especificadas na linha de comando.
+
+          Se esta política não for definida, os usuários poderão escolher as configurações de proxy por conta própria.</translation>
 <translation id="2824715612115726353">Ativar o modo de navegação anônima</translation>
 <translation id="2844404652289407061">Ativa a disponibilidade de "Tocar para pesquisar" na visualização de conteúdo do <ph name="PRODUCT_NAME" />.
 
@@ -609,6 +625,18 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
           </translation>
 <translation id="3205825995289802549">Maximizar a primeira janela do navegador na primeira execução</translation>
 <translation id="3206731874112238027">Desativar a visualização de impressão (uso suspenso)</translation>
+<translation id="3208854390109736596">Permite que você especifique o servidor proxy usado por <ph name="PRODUCT_NAME" /> e impede que os usuários alterem as configurações de proxy. Os apps ARC também poderão usar esse servidor proxy.
+
+      Se você optar por nunca usar um servidor proxy e sempre se conectar diretamente, todas as outras opções serão ignoradas.
+
+      Se você optar por detectar automaticamente o servidor proxy, todas as outras opções serão ignoradas.
+
+      Para ver exemplos detalhados, visite:
+      <ph name="PROXY_HELP_URL" />.
+
+      Se você ativar essa configuração, o <ph name="PRODUCT_NAME" /> e os apps ARC ignorarão todas as opções relacionadas ao proxy especificadas na linha de comando.
+
+      Se esta política não for definida, os usuários poderão escolher as configurações de proxy por conta própria.</translation>
 <translation id="3213821784736959823">Controla se o cliente DNS integrado é usado no <ph name="PRODUCT_NAME" />.
 
       Se esta política estiver definida como verdadeira, o cliente DNS integrado será usado, se disponível.
@@ -636,6 +664,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
      Se essa configuração estiver ativada ou não configurada, os usuários poderão ativar o proxy de impressão em nuvem pela autenticação com sua Conta do Google.
 
       Se essa configuração for desativada, os usuários não poderão ativar o proxy, e a máquina não terá permissão para compartilhar as impressoras com o <ph name="CLOUD_PRINT_NAME" />.</translation>
+<translation id="3297010562646015826">Permite a finalização de processos no Gerenciador de tarefas</translation>
 <translation id="3322771899429619102">Permite que você defina uma lista de padrões de URL que especificam sites que têm permissão para usar a geração de chaves. Se um padrão de URL está na política "KeygenBlockedForUrls", essa política substitui essas exceções.
 
           Se esta política não for definida, o valor padrão global será utilizado para todos os sites a partir da política "DefaultKeygenSetting", caso ela tenha sido definida, ou a partir das configurações pessoais do usuário, caso não tenha sido definida.</translation>
@@ -656,6 +685,9 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
       não apenas a câmera integrada.</translation>
 <translation id="3417418267404583991">Se esta política for definida como true ou não for configurada, o <ph name="PRODUCT_OS_NAME" /> permitirá o login de visitantes. Os logins de visitantes são sessões anônimas de usuários e não requerem uma senha. Se esta política for configurada para false, o <ph name="PRODUCT_OS_NAME" /> não permitirá que sejam iniciadas sessões de visitantes.</translation>
 <translation id="3428247105888806363">Ativar previsão de rede</translation>
+<translation id="3449886121729668969">Define as configurações de proxy para <ph name="PRODUCT_NAME" />. Essas configurações de proxy também ficarão disponíveis para apps ARC.
+
+      Esta política não está pronta para uso, portanto, não a use.</translation>
 <translation id="3460784402832014830">Especifica o URL que um mecanismo de busca usa para exibir uma página "Nova guia".
 
           Esta política é opcional. Se não for definida, nenhuma página "Nova guia" será exibida.
@@ -666,6 +698,14 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
           Se esta política for definida como verdadeira, os intervalos de gerenciamento de energia e o limite de duração da sessão só começarão a ser contados depois que a primeira atividade do usuário for detectada em uma sessão.
 
           Se esta política for definida como "Falsa" ou não for definida, os intervalos de gerenciamento de energia e o limite de duração da sessão começarão a ser contados imediatamente após o início da sessão.</translation>
+<translation id="3469657928310999477">O <ph name="PRODUCT_NAME" /> ignorará qualquer proxy da lista de hosts apresentada aqui. Os apps ARC poderão usar essa lista como uma lista de regras de ignoráveis.
+
+          Esta política só entrará em vigor se você tiver selecionado as configurações de proxy manuais em "Escolha como especificar as configurações do servidor proxy".
+
+          Deixe esta política sem definição, caso você tenha selecionado qualquer outro modo de definição de políticas de proxy.
+
+          Para ver exemplos mais detalhados, visite:
+          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="3478024346823118645">Limpa os dados do usuário ao sair</translation>
 <translation id="348495353354674884">Ativar teclado virtual</translation>
 <translation id="3496296378755072552">Gerenciador de senhas</translation>
@@ -1267,6 +1307,9 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
       Esta política afeta todos os tipos de mídia de armazenamento, como por exemplo: USB flash drivers, unidades de disco rígido externas, cartões SD e outros cartões de memória, armazenamento óptico, etc. O armazenamento interno não é afetado; portanto, os arquivos salvos na pasta "Download" podem ser acessados. O Google Drive também não é afetado por esta política. 
 
       Se esta configuração for desativada ou não for configurada, os usuários poderão usar todos os tipos de armazenamento externo suportados no dispositivo.</translation>
+<translation id="6076099373507468537">Define a lista de dispositivos USB que estão autorizados a serem removidos do driver de kernel deles para uso pela API chrome.usb diretamente dentro de um app da Web. As entradas são pares de um identificador de fornecedor e um identificador do produto USB para identificar um hardware específico.
+
+      Se esta política não for configurada, a lista de dispositivos USB removíveis ficará vazia.</translation>
 <translation id="6095999036251797924">Especifica o período de tempo de inatividade após o qual a tela deve ser bloqueada, quando o dispositivo é executado em energia AC ou bateria.
 
           Quando o período de tempo é definido para um valor maior que zero representa o período de tempo que o usuário precisa ficar inativo antes que o <ph name="PRODUCT_OS_NAME" /> bloqueie a tela.
@@ -1759,6 +1802,14 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
       comunicadas. Se definida como "true" ou não configurada, as informações da sessão são 
       comunicadas.</translation>
 <translation id="7774768074957326919">Usar configurações de proxy do sistema</translation>
+<translation id="7775831859772431793">É possível especificar o URL do servidor proxy aqui.
+
+          Esta política só entrará em vigor se você tiver selecionado as configurações manuais de proxy em "Escolha como especificar as configurações do servidor proxy".
+
+          Deixe esta política sem definição, caso você tenha selecionado qualquer outro modo de definição de políticas proxy.
+
+          Para ver mais opções e exemplos detalhados, visite:
+          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7788511847830146438">Por perfil</translation>
 <translation id="7796141075993499320">Permite que você defina uma lista de padrões de URL que especificam sites com permissão para executar plug-ins. Se esta política for deixada sem definição, o valor padrão global será utilizado para todos os sites a partir da política "DefaultPluginsSetting", caso esta tenha sido definida, ou a partir das configurações pessoais do usuário, caso não tenha sido definida.</translation>
 <translation id="7818131573217430250">Definir o estado padrão do modo de alto contraste na tela de login</translation>
@@ -1789,6 +1840,14 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
       Determina a identificação da extensão a ser usada como protetor de tela na tela de login. A extensão deve ser parte do AppPack configurado para este domínio por meio da política DeviceAppPack.</translation>
 <translation id="7882890448959833986">Remover o aviso de SO não compatível</translation>
 <translation id="7912255076272890813">Configurar tipos permitidos de aplicativo/extensão</translation>
+<translation id="7915236031252389808">É possível especificar um URL para um arquivo proxy .pac aqui.
+
+          Esta política só entrará em vigor se você tiver selecionado as configurações manuais de proxy em "Escolha como especificar as configurações do servidor proxy".
+
+          Deixe esta política sem definição, caso você tenha selecionado qualquer outro modo de definição de políticas proxy
+
+          Para ver exemplos detalhados, visite:
+          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="793134539373873765">Especifica se p2p deve ser usado para cargas de atualização do sistema operacional. Se for definido como verdadeiro, os dispositivos compartilharão e tentarão consumir as cargas de atualização na LAN, possivelmente reduzindo o uso de largura de banda de Internet e o congestionamento. Se a carga de atualização não estiver disponível na LAN, o dispositivo voltará a fazer download a partir de um servidor de atualização. Se for definido como falso ou não for configurado, o p2p não será usado.</translation>
 <translation id="7933141401888114454">Ativar a criação de usuários supervisionados</translation>
 <translation id="7936098023732125869">Ativa o uso de um provedor de pesquisa padrão.
@@ -1912,6 +1971,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
           Se esta política não for definida, será usada a política "BlockKeygen", mas o usuário poderá modificá-la.</translation>
 <translation id="8329984337216493753">Esta política é ativa somente no modo de varejo. Quando o DeviceIdleLogoutTimeout for especificado, esta política definirá a duração da caixa de aviso com contagem regressiva que será mostrada ao usuário antes da desconexão. O valor da política deve ser especificado em milésimos de segundos.</translation>
 <translation id="8344454543174932833">Importar favoritos do navegador padrão na primeira execução</translation>
+<translation id="8359734107661430198">Ativar a API ExampleDeprecatedFeature até 02/09/2008</translation>
 <translation id="8360452361555133173">Ativar a exibição da página de boas-vindas na primeira inicialização do navegador após a atualização do sistema operacional.
 
       Se esta política está é definida como "true", o navegador exibe novamente a página de boas-vindas na primeira inicialização após uma atualização do sistema operacional.
@@ -1921,6 +1981,11 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="8382184662529825177">Permitir o uso de declaração remota para proteção de conteúdo no dispositivo</translation>
 <translation id="838870586332499308">Ativa roaming de dados</translation>
 <translation id="8412312801707973447">Define se as verificações on-line de OCSP/CRL devem ser executadas</translation>
+<translation id="8413348101535146315">Permite o encerramento de processos no Gerenciador de tarefas do <ph name="PRODUCT_NAME" />.
+
+      Se esta política for configurada como "false", o botão "Encerrar processo" ficará desativado no Gerenciador de tarefas.
+
+      Se configurada como "true" ou se não for configurada, o usuário poderá encerrar processos no Gerenciador de tarefas.</translation>
 <translation id="8424255554404582727">Definir rotação padrão da tela, reaplicada em cada reinicialização</translation>
 <translation id="8426231401662877819">Girar tela no sentido horário em 90 graus</translation>
 <translation id="8451988835943702790">Usar a página "Nova guia" como página inicial</translation>
@@ -2127,6 +2192,24 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="9112897538922695510">Permite registrar uma lista de gerenciadores de protocolo. Essa política só pode ser uma política recomendada. A propriedade |protocolo| deve ser definida para o esquema, por exemplo, 'mailto', e a propriedade |url| deve ser definida para o padrão URL do aplicativo que administra o esquema. O padrão pode incluir '%s', que, se presente, será substituído por um URL administrado.
 
           Os gerenciadores de protocolos registrados pela política são misturados com os registrados pelo usuário, e ambos estão disponíveis para uso. O usuário pode substituir os gerenciadores de protocolos instalados por política, instalando um novo administrador padrão. Entretanto, o usuário não pode remover um gerenciador de protocolos registrado pela política.</translation>
+<translation id="913138516158420759">Permite que você especifique o servidor proxy usado por <ph name="PRODUCT_NAME" /> e impede que os usuários alterem as configurações de proxy. Os apps ARC também poderão usar este servidor proxy.
+
+          Se você optar por nunca usar um servidor proxy e sempre se conectar diretamente, todas as outras opções serão ignoradas.
+
+          Se você optar por usar as configurações de proxy do sistema, todas as outras opções serão ignoradas.
+
+          Se você optar por detectar automaticamente o servidor proxy, todas as outras opções serão ignoradas.
+
+          Se você optar pelo modo fixo de servidor proxy, poderá especificar outras opções no "Endereço ou URL do servidor proxy" e na "Lista separada por vírgulas de regras de proxy ignoráveis". Apenas o servidor proxy HTTP com a maior prioridade ficará disponível para apps ARC.
+
+          Se você optar por usar um script de proxy .pac, deverá especificar o URL para o script em "URL de um arquivo proxy .pac".
+
+          Para ver exemplos detalhados, visite:
+          <ph name="PROXY_HELP_URL" />.
+
+          Se você ativar esta configuração, o <ph name="PRODUCT_NAME" /> e os apps ARC ignorarão todas as opções relacionadas ao proxy especificadas na linha de comando.
+
+          Se esta política não for configurada, os usuários poderão escolher as configurações de proxy por conta própria.</translation>
 <translation id="913195841488580904">Bloquear acesso a uma lista de URLs</translation>
 <translation id="9135033364005346124">Ativar proxy do <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="9147029539363974059">Enviar registros de sistema para o servidor de gerenciamento, a fim de permitir

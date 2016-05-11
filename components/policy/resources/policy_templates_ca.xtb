@@ -520,6 +520,22 @@ Cada entrada de la llista especifica un identificador, que s'utilitza internamen
           Tots els elements d'aquesta llista són un patró que coincideix amb l'estil de l'extensió (consulteu https://developer.chrome.com/extensions/match_patterns). Els usuaris podran instal·lar fàcilment els elements de qualsevol URL que coincideixi amb un element d'aquesta llista. Aquests patrons han de permetre tant la ubicació del fitxer *.crx com la pàgina on comença la baixada (p. ex., l'URL de referència).
 
           ExtensionInstallBlacklist té prioritat davant d'aquesta política. Això vol dir que no s'instal·larà cap extensió de la llista negra, encara que provingui d'un lloc inclòs en aquesta llista.</translation>
+<translation id="2813740161943223811">Aquesta política està obsoleta; substituïu-la per ProxyMode.
+
+          Us permet especificar el servidor intermediari que <ph name="PRODUCT_NAME" /> utilitza i impedeix que els usuaris en canviïn la configuració. Les aplicacions ARC també podran fer servir aquest servidor.
+
+          Si decidiu connectar-vos sempre a la xarxa directament en comptes d'utilitzar un servidor intermediari, la resta d'opcions s'ignoren.
+
+          Si decidiu detectar automàticament el servidor intermediari o utilitzar-ne la configuració del sistema, la resta d'opcions s'ignoren.
+
+          Si trieu manualment la configuració del servidor intermediari, podeu especificar més opcions a Adreça o URL del servidor intermediari, a URL d'un fitxer .pac d'un servidor intermediari i a Llista de regles d'evitació de servidors intermediaris separada per comes. Les aplicacions ARC només poden utilitzar el servidor intermediari HTTP amb la prioritat més alta.
+
+          Per veure exemples detallats, aneu a:
+          <ph name="PROXY_HELP_URL" />.
+
+          Si activeu aquesta opció de configuració, <ph name="PRODUCT_NAME" /> ignora totes les opcions relacionades amb el servidor intermediari que s'han especificat des de la línia d'ordres.
+
+          Si deixeu aquesta política sense establir, els usuaris poden triar pel seu compte la configuració del servidor intermediari.</translation>
 <translation id="2824715612115726353">Activa el mode d'incògnit</translation>
 <translation id="2844404652289407061">Permet que la funció Toca per cercar estigui disponible a la visualització de contingut de <ph name="PRODUCT_NAME" />.
 
@@ -626,6 +642,18 @@ Cada entrada de la llista especifica un identificador, que s'utilitza internamen
           </translation>
 <translation id="3205825995289802549">Maximitza la primera finestra del navegador en iniciar-lo per primera vegada</translation>
 <translation id="3206731874112238027">Desactiva la previsualització d'impressió (opció obsoleta)</translation>
+<translation id="3208854390109736596">Us permet especificar el servidor intermediari que <ph name="PRODUCT_NAME" /> utilitza i impedeix que els usuaris en canviïn la configuració. Les aplicacions ARC també podran fer servir aquest servidor.
+
+          Si decidiu connectar-vos sempre a la xarxa directament en comptes d'utilitzar un servidor intermediari, la resta d'opcions s'ignoren.
+
+          Si decidiu detectar automàticament el servidor intermediari, la resta d'opcions s'ignoren.
+
+          Per veure exemples detallats, aneu a:
+          <ph name="PROXY_HELP_URL" />.
+
+          Si activeu aquesta opció de configuració, <ph name="PRODUCT_NAME" /> i les aplicacions ARC ignoren totes les opcions relacionades amb el servidor intermediari que s'han especificat des de la línia d'ordres.
+
+          Si deixeu aquestes polítiques sense establir, els usuaris poden triar pel seu compte la configuració del servidor intermediari.</translation>
 <translation id="3213821784736959823">Controla si el client DNS integrat s'utilitza a <ph name="PRODUCT_NAME" />.
 
 Si aquesta política s'activa, s'utilitzarà el client DNS integrat, si està disponible.
@@ -670,6 +698,9 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 
       Si aquesta política es defineix a «false» (fals), <ph name="PRODUCT_OS_NAME" /> no permetrà que s'iniciïn les sessions de convidat.</translation>
 <translation id="3428247105888806363">Activa la predicció de xarxa</translation>
+<translation id="3449886121729668969">Configura el servidor intermediari per a <ph name="PRODUCT_NAME" />. Aquesta configuració del servidor també estarà disponible per a les aplicacions ARC.
+
+      Aquesta política encara no està llesta; no la feu servir.</translation>
 <translation id="3460784402832014830">Permet especificar l'URL que fa servir un motor de cerca per proporcionar una pestanya nova.
 
           Aquesta política és opcional. Si no es configura, no es proporcionarà cap pestanya nova.
@@ -680,6 +711,14 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
           Si la política s'estableix com a True, els retards de la gestió de l'energia i el límit de la durada de la sessió no s'executen fins que l'usuari no realitza la primera acció en una sessió.
 
           Si la política s'estableix com a False o no s'estableix, els retards de la gestió de l'energia i el límit de la durada de la sessió s'executen tan bon punt s'inicia la sessió.</translation>
+<translation id="3469657928310999477"><ph name="PRODUCT_NAME" /> evitarà qualsevol servidor intermediari de la llista d'amfitrions proporcionada. Les aplicacions ARC podran utilitzar aquesta enumeració com a llista de regles d'evitació.
+
+          Aquesta política només té efecte si heu seleccionat la configuració manual del servidor intermediari a Tria com vols especificar la configuració del servidor intermediari.
+
+          Deixeu-la sense establir si heu seleccionat qualsevol altra manera d'establir les polítiques del servidor intermediari.
+
+          Per veure exemples més detallats, aneu a:
+          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="3478024346823118645">Esborra les dades de l'usuari en tancar la sessió</translation>
 <translation id="348495353354674884">Activa el teclat virtual</translation>
 <translation id="3496296378755072552">Gestor de contrasenyes</translation>
@@ -1290,6 +1329,9 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
       Aquesta política afecta tots els tipus de mitjans d'emmagatzematge. Per exemple: unitats flaix USB, discos durs externs, SD i altres targetes de memòria, emmagatzematge òptic, etc. Aquesta política no afecta l''emmagatzematge intern, o sigui que podreu continuar accedint als fitxers desats a la carpeta Baixades. Aquesta política tampoc no afecta Google Drive.
 
       Si desactiveu o no configureu aquest paràmetre, els usuaris podran utilitzar tots els tipus d'emmagatzematge extern compatibles al seu dispositiu.</translation>
+<translation id="6076099373507468537">Defineix la llista de dispositius USB que està permès separar del programa de control de kernel per tal d'utilitzar-los mitjançant l'API de chrome.usb directament dins d'una aplicació web. Les entrades són parells de l'identificador del producte i de l'identificador del proveïdor dels USB, que permeten identificar un maquinari concret.
+
+      Si aquesta política no està configurada, la llista de dispositius USB que es poden separar està buida.</translation>
 <translation id="6095999036251797924">Especifica la quantitat de temps que ha de passar sense cap interacció de l'usuari abans que la pantalla no es bloquegi quan s'utilitza amb connexió a la corrent CA o amb una bateria.
 
           Si aquesta quantitat de temps s'estableix en un valor més gran que zero, representa el temps d'inactivitat de l'usuari abans que no es bloquegi la pantalla de <ph name="PRODUCT_OS_NAME" />.
@@ -1787,6 +1829,14 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
       de la sessió. Si s'estableix en "true" o no s'estableix, s'ofereix informació
       de la sessió.</translation>
 <translation id="7774768074957326919">Utilitza la configuració del servidor intermediari del sistema</translation>
+<translation id="7775831859772431793">Permet especificar l'URL del servidor intermediari.
+
+          Aquesta política només té efecte si heu seleccionat la configuració manual del servidor intermediari a Tria com vols especificar la configuració del servidor intermediari.
+
+          Deixeu-la sense establir si heu seleccionat qualsevol altra manera d'establir les polítiques del servidor intermediari.
+
+          Per obtenir més opcions i exemples detallats, aneu a:
+          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7788511847830146438">Per perfil</translation>
 <translation id="7796141075993499320">Us permet definir una llista de patrons d'URL que especifiquen els llocs en què està permès executar connectors. Si no es defineix aquesta política, s'utilitzarà el valor global predeterminat per a tots els llocs tant de la política "DefaultPluginsSetting", si es defineix, com d'un altre tipus de configuració personal de l'usuari.</translation>
 <translation id="7818131573217430250">Estableix l'estat predeterminat del mode de contrast elevat a la pantalla d'inici de sessió</translation>
@@ -1817,6 +1867,14 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
       Determina l'identificador de l'extensió que s'ha d'utilitzar com a protector de pantalla a la pantalla d'inici de sessió. L'extensió ha de formar part de l'AppPack, que està configurat per a aquest domini a través de la política DeviceAppPack.</translation>
 <translation id="7882890448959833986">Suprimeix l'advertiment de sistema operatiu no compatible</translation>
 <translation id="7912255076272890813">Configuració dels tipus d'aplicacions i d'extensions permeses</translation>
+<translation id="7915236031252389808">Permet especificar l'URL d'un fitxer .pac del servidor intermediari.
+
+          Aquesta política només té efecte si heu seleccionat la configuració manual del servidor intermediari a Tria com vols especificar la configuració del servidor intermediari.
+
+          Deixeu-la sense establir si heu seleccionat qualsevol altra manera d'establir les polítiques del servidor intermediari.
+
+          Per obtenir exemples detallats, aneu a:
+          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="793134539373873765">Permet especificar si s'utilitzarà la tecnologia d'igual a igual (P2P) per a les càrregues útils d'actualització del sistema operatiu. Si el valor s'estableix com a True, els dispositius compartiran i provaran de consumir les càrregues útils d'actualització a la xarxa LAN, amb la qual cosa és possible que es redueixi l'ús i la congestió de l'amplada de banda d'Internet. Si la càrrega útil d'actualització no està disponible a la xarxa LAN, el dispositiu farà les baixades des d'un servidor d'actualitzacions. Si el valor s'estableix com a False o si no es configura, no es farà servir P2P.</translation>
 <translation id="7933141401888114454">Activa la creació d'usuaris supervisats.</translation>
 <translation id="7936098023732125869">Activa la utilització d'un proveïdor de cerca predeterminat.
@@ -1954,6 +2012,11 @@ Aquesta política s'ignora en els comptes d'usuari normals.</translation>
 <translation id="8382184662529825177">Activa l'ús del testimoni remot del contingut protegit al dispositiu.</translation>
 <translation id="838870586332499308">Activa la itinerància de dades</translation>
 <translation id="8412312801707973447">Si es realitzen comprovacions OCSP/CRL en línia</translation>
+<translation id="8413348101535146315">Permet finalitzar processos al gestor de tasques de <ph name="PRODUCT_NAME" />.
+
+      Si s'estableix en "false", es desactiva el botó Finalitza el procés al gestor de tasques.
+
+      Si s'estableix en "true" o no es configura, l'usuari pot finalitzar processos al gestor de tasques.</translation>
 <translation id="8424255554404582727">Estableix la rotació predeterminada de la visualització, que es tornarà a aplicar cada cop que es reiniciï el dispositiu</translation>
 <translation id="8426231401662877819">Gira la pantalla 90 graus en el sentit de les agulles del rellotge</translation>
 <translation id="8451988835943702790">Fes servir la pàgina de pestanya nova com a pàgina d'inici</translation>
@@ -2163,6 +2226,24 @@ Aquesta política s'ignora en els comptes d'usuari normals.</translation>
 <translation id="9112897538922695510">Us permet registrar una llista de gestors de protocol. Això només pot ser una política recomanada. El |protocol| de la propietat s'ha de definir a l'esquema, com ara "mailto" i l'|url| de la propietat s'ha de definir al patró d'URL de l'aplicació que gestiona l'esquema. El patró pot incloure "%s" i, en cas que s'hi inclogui, se substituirà per l'URL gestionat.
 
           Els gestors de protocol registrats amb la política es combinen amb els que ha registrat l'usuari i tots dos es poden fer servir. L'usuari pot substituir els gestors de protocol que s'han instal·lat amb la política si instal·la un nou gestor de protocol predeterminat, però no pot suprimir un gestor de protocol que s'hagi registrat amb la política.</translation>
+<translation id="913138516158420759">Us permet especificar el servidor intermediari que <ph name="PRODUCT_NAME" /> utilitza i impedeix que els usuaris en canviïn la configuració. Les aplicacions ARC també podran fer servir aquest servidor.
+
+          Si decidiu connectar-vos sempre a la xarxa directament en comptes d'utilitzar un servidor intermediari, la resta d'opcions s'ignoren.
+
+          Si decidiu fer servir la configuració del servidor intermediari del sistema, la resta d'opcions s'ignoren.
+
+          Si decidiu detectar automàticament el servidor intermediari, la resta d'opcions s'ignoren.
+
+          Si trieu el mode de servidor intermediari fix, podeu especificar més opcions a Adreça o URL del servidor intermediari i a Llista de regles d'evitació de servidors intermediaris separada per comes. Les aplicacions ARC només poden utilitzar el servidor intermediari HTTP amb la prioritat més alta.
+
+          Si decidiu fer servir un script de servidor intermediari .pac, heu d'especificar l'URL de l'script a URL d'un fitxer .pac d'un servidor intermediari.
+
+          Per veure exemples detallats, aneu a:
+          <ph name="PROXY_HELP_URL" />.
+
+          Si activeu aquesta opció de configuració, <ph name="PRODUCT_NAME" /> i les aplicacions ARC ignoren totes les opcions relacionades amb el servidor intermediari que s'han especificat des de la línia d'ordres.
+
+          Si deixeu aquesta política sense establir, els usuaris poden triar pel seu compte la configuració del servidor intermediari.</translation>
 <translation id="913195841488580904">Bloqueja l'accés a una llista d'URL</translation>
 <translation id="9135033364005346124">Activa el servidor intermediari <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="9147029539363974059">Envia registres del sistema al servidor de gestió, perquè

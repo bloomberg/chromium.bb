@@ -68,6 +68,7 @@ Ak chcete používať Fyzický web, musíte mať zapnuté rozhranie Bluetooth a�
 <translation id="1842969606798536927">Zaplatiť</translation>
 <translation id="1853692000353488670">Nová karta inkognito</translation>
 <translation id="189172778771606813">Zavrieť navigačný vysúvací panel</translation>
+<translation id="1924956916668006832">Vybrať dodaciu adresu</translation>
 <translation id="194341124344773587">Zapnite povolenie pre Chrome v <ph name="BEGIN_LINK" />nastaveniach Androidu<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Ukladanie hesiel</translation>
 <translation id="1944384637046898011">Šifrovať všetko pomocou hesla Google od <ph name="TIME" /></translation>
@@ -98,6 +99,7 @@ Ak chcete používať Fyzický web, musíte mať zapnuté rozhranie Bluetooth a�
 <translation id="2268044343513325586">Upraviť</translation>
 <translation id="2315043854645842844">Operačný systém nepodporuje výber certifikátu na strane klienta.</translation>
 <translation id="2321958826496381788">Presúvajte posúvač, dokým nebude čítanie tohto textu pohodlné. Po dvojitom klepnutí na odsek by mal byť text aspoň takto veľký.</translation>
+<translation id="2329597144923131178">Prihláste sa a získajte tak svoje záložky, históriu, heslá a ďalšie nastavenia na všetkých svojich zariadeniach.</translation>
 <translation id="2343328333327081434">Inštaluje sa…</translation>
 <translation id="2351097562818989364">Nastavenia prekladov boli resetované.</translation>
 <translation id="2359808026110333948">Pokračovať</translation>
@@ -133,6 +135,7 @@ Ak chcete používať Fyzický web, musíte mať zapnuté rozhranie Bluetooth a�
 <translation id="2762000892062317888">práve teraz</translation>
 <translation id="2770465223704140727">Odstrániť zo zoznamu</translation>
 <translation id="278029852808208386">Nenašli sa žiadne zariadenia Bluetooth. <ph name="BEGIN_LINK" />Vyhľadať znova<ph name="END_LINK" /></translation>
+<translation id="2781389167600714117">Vybrať možnosť dodania</translation>
 <translation id="2811892995384186721">Nezobrazuje sa vaše zariadenie? <ph name="BEGIN_LINK" />Získať pomoc<ph name="END_LINK" /></translation>
 <translation id="2836148919159985482">Ukončite režim celej obrazovky klepnutím na tlačidlo Späť.</translation>
 <translation id="2842985007712546952">Nadradený priečinok</translation>
@@ -158,7 +161,6 @@ Ak chcete používať Fyzický web, musíte mať zapnuté rozhranie Bluetooth a�
 <translation id="3137521801621304719">Ukončiť režim inkognito</translation>
 <translation id="3149891296864842641">Možnosť dodania</translation>
 <translation id="3162882791484435636">Vybrať možnosť dodania</translation>
-<translation id="3173438333156928404">Chyba pri spracovaní platby</translation>
 <translation id="3177909033752230686">Jazyk stránky:</translation>
 <translation id="3190152372525844641">Zapnite povolenia pre Chrome v <ph name="BEGIN_LINK" />nastaveniach Androidu<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> uložených údajov</translation>
@@ -194,7 +196,6 @@ Prihlasujete sa pomocou spravovaného účtu a jeho správcovi tak umožňujete 
 Ak chcete upraviť hľadaný výraz, vyberte ho dlhým stlačením. Ak chcete vyhľadávanie spresniť, posuňte panel úplne hore a klepnite na vyhľadávacie pole.</translation>
 <translation id="3623048332793834136">Záložky Chrome Canary</translation>
 <translation id="363596933471559332">Povolí automatické prihlasovanie na webové stránky pomocou uložených poverení. Keď je funkcia vypnutá, zobrazí sa výzva na overenie vždy pred prihlásením na web.</translation>
-<translation id="3653742808139624888">Ak chcete mať záložky vo všetkých svojich zariadeniach, prihláste sa do prehliadača Chrome.</translation>
 <translation id="3656115297268584622">Zapnúť polohu v <ph name="BEGIN_LINK" />nastaveniach systému Android<ph name="END_LINK" />.</translation>
 <translation id="3661699943263275414">Webové stránky tretej strany môžu ukladať a čítať údaje súborov cookie</translation>
 <translation id="3672452749423051839">Návrhy v prípade chýb navigácie</translation>
@@ -226,6 +227,7 @@ Ak chcete upraviť hľadaný výraz, vyberte ho dlhým stlačením. Ak chcete vy
 <translation id="4170011742729630528">Služba nie je k dispozícii. Skúste to znova neskôr.</translation>
 <translation id="4195643157523330669">Otvoriť na novej karte</translation>
 <translation id="423410644998903704">Na to, aby Chrome mohol s týmito webovými stránkami zdieľať povolenia, musí mať k ním prístup.</translation>
+<translation id="4242533952199664413">Otvoriť nastavenia</translation>
 <translation id="424864128008805179">Odhlásiť sa z prehliadača Chrome?</translation>
 <translation id="4254813446494774748">Jazyk prekladu:</translation>
 <translation id="4256782883801055595">Licencie open source</translation>
@@ -524,14 +526,12 @@ Váš účet Google môže mať na adrese <ph name="BEGIN_LINK" />history.google
 <translation id="8007176423574883786">Vypnuté v tomto zariadení</translation>
 <translation id="8026334261755873520">Vymazať dáta prehliadania</translation>
 <translation id="8035133914807600019">Nový priečinok…</translation>
+<translation id="8063895661287329888">Záložku sa nepodarilo pridať.</translation>
 <translation id="8068648041423924542">Nedá sa vybrať certifikát</translation>
 <translation id="8069239273282989646">Po kompresii</translation>
 <translation id="8073388330009372546">Otvoriť obrázok na novej karte</translation>
 <translation id="8076014560081431679">Uložené nastavenia webov sa neodstránia a môžu odrážať vaše návyky prehliadania. <ph name="BEGIN_LINK" />Ďalšie informácie<ph name="END_LINK" /></translation>
 <translation id="8087000398470557479">Tento obsah pochádza z domény <ph name="DOMAIN_NAME" /> a bol doručený Googlom.</translation>
-<translation id="8098570222830891427">Zariadenia vo vašom okolí vysielajú webové stránky prostredníctvom funkcie Bluetooth. Chrome bude vyhľadávať stránky a zobrazí ich, keď zariadenie prebudíte z režimu spánku. Tieto stránky bude s cieľom zlepšenia kvality vyhľadávania spracovávať Google.
-
-Predvoľby Fyzického webu môžete ovládať v Nastaveniach Chromu.</translation>
 <translation id="8106211421800660735">Číslo kreditnej karty</translation>
 <translation id="813082847718468539">Zobraziť informácie o stránkach</translation>
 <translation id="8137558756159375272">Funkcia vyhľadávania klepnutím odošle vybrané slovo a súčasnú stránku ako kontext do Vyhľadávania Google. Môžete ju vypnúť v <ph name="BEGIN_LINK" />Nastaveniach<ph name="END_LINK" />.</translation>

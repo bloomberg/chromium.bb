@@ -68,6 +68,7 @@
 <translation id="1842969606798536927">پرداخت</translation>
 <translation id="1853692000353488670">برگه جدید ناشناس</translation>
 <translation id="189172778771606813">بستن کشوی پیمایش</translation>
+<translation id="1924956916668006832">انتخاب آدرس تحویل کالا</translation>
 <translation id="194341124344773587">‏مجوز Chrome را در <ph name="BEGIN_LINK" />تنظیمات Android <ph name="END_LINK" /> روشن کنید.</translation>
 <translation id="1943432128510653496">ذخیره گذرواژه‌ها</translation>
 <translation id="1944384637046898011">‏رمزگذاری همه با گذرواژه Google از تاریخ <ph name="TIME" /></translation>
@@ -98,6 +99,7 @@
 <translation id="2268044343513325586">فیلتر</translation>
 <translation id="2315043854645842844">انتخاب گواهی سمت کلاینت توسط سیستم‌عامل پشتیبانی نمی‌شود.</translation>
 <translation id="2321958826496381788">لغزنده را بکشید تا زمانی که بتوانید این متن را به راحتی بخوانید. بعد از دو ضربه متوالی روی یک پاراگراف، اندازه نوشتار حداقل باید به این بزرگی باشد.</translation>
+<translation id="2329597144923131178">برای دریافت نشانک‌ها، سابقه، گذرواژه‌ها و سایر تنظیماتتان در همه دستگاه‌ها، وارد سیستم شوید.</translation>
 <translation id="2343328333327081434">در حال نصب…</translation>
 <translation id="2351097562818989364">تنظیمات ترجمه شما بازنشانی شده است.</translation>
 <translation id="2359808026110333948">ادامه</translation>
@@ -133,6 +135,7 @@
 <translation id="2762000892062317888">هم‌اکنون</translation>
 <translation id="2770465223704140727">حذف از فهرست</translation>
 <translation id="278029852808208386">دستگاه بلوتوثی پیدا نشد. <ph name="BEGIN_LINK" />دوباره جستجو کنید<ph name="END_LINK" />.</translation>
+<translation id="2781389167600714117">انتخاب تحویل کالا</translation>
 <translation id="2811892995384186721">دستگاهتان را نمی‌بینید؟ <ph name="BEGIN_LINK" />دریافت راهنمایی<ph name="END_LINK" /></translation>
 <translation id="2836148919159985482">برای خروج از حالت تمام صفحه، دکمه برگشت را لمس کنید.</translation>
 <translation id="2842985007712546952">پوشه اصلی</translation>
@@ -158,7 +161,6 @@
 <translation id="3137521801621304719">خروج از حالت ناشناس</translation>
 <translation id="3149891296864842641">گزینه ارسال</translation>
 <translation id="3162882791484435636">انتخاب گزینه ارسال</translation>
-<translation id="3173438333156928404">خطا در پردازش پرداخت</translation>
 <translation id="3177909033752230686">زبان صفحه:</translation>
 <translation id="3190152372525844641">‏مجوزهای Chrome را در <ph name="BEGIN_LINK" />تنظیمات Android <ph name="END_LINK" /> روشن کنید.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> داده‌های ذخیره شده</translation>
@@ -194,7 +196,6 @@
 برای تنظیم عبارت جستجویتان، به مدت طولانی فشار دهید تا انتخاب شود. برای تصحیح جستجویتان، پانل را به‌طور کامل به بالا بلغزانید و کادر جستجو را لمس کنید.</translation>
 <translation id="3623048332793834136">‏نشانک‌های Chrome Canary</translation>
 <translation id="363596933471559332">با استفاده از اعتبارنامه‌های ذخیره شده، به‌طور خودکار به سیستم وب‌سایت‌ها وارد شوید. وقتی این قابلیت خاموش است، هر بار قبل از وارد شدن به سیستم وب‌سایت از شما خواسته می‌شود اطلاعات را تأیید کنید.</translation>
-<translation id="3653742808139624888">‏برای اینکه نشانک‌ها را در همه دستگاه‌هایتان دریافت کنید وارد سیستم Chrome شوید</translation>
 <translation id="3656115297268584622">‏مکان را در <ph name="BEGIN_LINK" />تنظیمات Android<ph name="END_LINK" /> روشن کنید.</translation>
 <translation id="3661699943263275414">وب‌سایت‌های طرف ثالث می‌توانند داده‌های کوکی را ذخیره کنند و بخوانند</translation>
 <translation id="3672452749423051839">پیشنهادات خطای پیمایش</translation>
@@ -226,6 +227,7 @@
 <translation id="4170011742729630528">این سرویس در دسترس نیست؛ بعداً دوباره امتحان کنید.</translation>
 <translation id="4195643157523330669">باز کردن در برگهٔ جدید</translation>
 <translation id="423410644998903704">‏Chrome باید به مجوزها دسترسی داشته باشد تا آن‌ها را با این سایت به اشتراک بگذارد.</translation>
+<translation id="4242533952199664413">باز کردن تنظیمات</translation>
 <translation id="424864128008805179">‏از سیستم Chrome خارج می شوید؟</translation>
 <translation id="4254813446494774748">زبان ترجمه:</translation>
 <translation id="4256782883801055595">مجوزهای منبع آزاد</translation>
@@ -523,14 +525,12 @@
 <translation id="8007176423574883786">برای این دستگاه غیرفعال شد</translation>
 <translation id="8026334261755873520">پاک کردن داده‌های مرور</translation>
 <translation id="8035133914807600019">پوشه جدید…</translation>
+<translation id="8063895661287329888">نشانک اضافه نشد.</translation>
 <translation id="8068648041423924542">انتخاب گواهی ممکن نیست.</translation>
 <translation id="8069239273282989646">بعد از فشرده‌سازی</translation>
 <translation id="8073388330009372546">باز کردن تصویر در برگه جدید</translation>
 <translation id="8076014560081431679">تنظیمات ذخیره‌شده سایت حذف نمی‌شوند و احتمالاً عادات مرور شما را نشان می‌دهند. <ph name="BEGIN_LINK" />بیشتر بدانید<ph name="END_LINK" /></translation>
 <translation id="8087000398470557479">‏این محتوا از <ph name="DOMAIN_NAME" /> است و توسط Google ارائه می‌شود.</translation>
-<translation id="8098570222830891427">‏دستگاه‌ای نزدیک شما درحال پخش صفحه‌های وب ازطریق بلوتوث هستند. وقتی دستگاهتان را فعال می‌کنید، Chrome برای صفحه‌های وب جستجو می‌کند و آنها را نشان می‌دهد. این صفحه‌ها از یکی از سرویس‌های Google عبور می‌کنند تا کیفیت نتایج صفحه بهتر شود.
-
-می‌توانید «وب فیزیکی» را در تنظیمات حریم خصوصی Chrome کنترل کنید.</translation>
 <translation id="8106211421800660735">شماره کارت اعتباری</translation>
 <translation id="813082847718468539">مشاهدهٔ اطلاعات سایت</translation>
 <translation id="8137558756159375272">‏«لمس برای جستجو» کلمه انتخاب شده و صفحه کنونی را به عنوان محتوای زمینه به جستجوی Google ارسال می‌کند. می‌توانید آن را در <ph name="BEGIN_LINK" />تنظیمات<ph name="END_LINK" /> خاموش کنید.</translation>

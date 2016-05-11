@@ -152,6 +152,10 @@
 <translation id="1202596434010270079">કિઓસ્ક એપ્લિકેશન અપડેટ કરી. કૃપા કરીને USB સ્ટીક અપડેટ કરો.</translation>
 <translation id="1205489148908752564">વ્હાઇટલિસ્ટ કરેલ વપરાશકર્તાઓને વાંચો અને બદલો</translation>
 <translation id="1208421848177517699">લિવ્યંતરણ (namaste → નમસ્તે)</translation>
+<translation id="1208881655517375167"><ph name="NEW_PROFILE_NAME" /> ને તમારા એકાઉન્ટ ઍક્સેસ કરવાથી અટકાવવા માટે, તો જ્યારે તમે Chrome નો ઉપયોગ કરી રહ્યાં ન હોવ ત્યારે બહાર નીકળીને ચાઇલ્ડ લૉક કર્યા હોવાની ખાતરી કરો. આ કરવા માટે, ઉપલા-જમણા ખૂણામાં તમારા પ્રોફાઇલ નામને ક્લિક કરો અને "બહાર નીકળો અને ચાઇલ્ડ લૉક" પસંદ કરો.
+<ph name="BEGIN_LINK" />વધુ જાણો<ph name="END_LINK" />
+
+વધુ સૂચનો માટે કૃપા કરીને <ph name="ACCOUNT_EMAIL" /> પર તમારી ઇમેઇલને તપાસો.</translation>
 <translation id="1209796539517632982">સ્વયંચાલિત નામ સર્વર્સ</translation>
 <translation id="1215411991991485844">નવી પૃષ્ઠભૂમિ એપ્લિકેશન ઉમેરી છે</translation>
 <translation id="1216659994753476700">અમે દિલગીર છીએ. અમે તમારી પ્રોફાઇલ ઍક્સેસ કરી શકતાં નથી. આ ઉપકરણ પર સંગ્રહિત કરવામાં આવેલ ફાઇલો અને ડેટા ગુમ થઈ શકે છે.<ph name="BR" />
@@ -296,7 +300,6 @@
 <translation id="1429740407920618615">સિગ્નલ ક્ષમતા:</translation>
 <translation id="143027896309062157">તમે મુલાકાત લો છો તે વેબસાઇટ્સ અને તમારા કમ્પ્યુટર પરના તમારા ડેટાને વાંચો અને બદલો</translation>
 <translation id="1430915738399379752">છાપો</translation>
-<translation id="1433423644370450034">મીડિયા શૈલી સૂચના</translation>
 <translation id="1434696352799406980">આ તમારા સ્ટાર્ટઅપ પૃષ્ઠ, નવું ટેબ પૃષ્ઠ, શોધ એંજિન અને પિન કરેલ ટેબને ફરીથી સેટ કરશે. તે તમામ એક્સટેન્શન્સને પણ અક્ષમ કરશે અને કુકીઝ જેવો અસ્થાયી ડેટા પણ સાફ કરશે. તમારા બુકમાર્ક્સ, ઇતિહાસ અને સાચવેલ પાસવર્ડ્સ સાફ કરવામાં આવશે નહીં.</translation>
 <translation id="1434886155212424586">હોમપેજ એ નવું ટેબ પૃષ્ઠ છે</translation>
 <translation id="1435550882135542937">એક્સ્ટેન્શન ટુલબાર ફરીથી ડિઝાઇન</translation>
@@ -596,7 +599,6 @@
 <translation id="1835339313324024">વર્ચ્યુઅલ કીબોર્ડની સ્માર્ટ ડિપ્લૉઇમેન્ટ</translation>
 <translation id="1838374766361614909">શોધ સાફ કરો</translation>
 <translation id="1839704667838141620">આ ફાઇલ જે રીતે શેર કરેલી છે તે બદલો</translation>
-<translation id="1839913225882990152">શું થઈ રહ્યું છે તે અમને કહો.</translation>
 <translation id="1842969606798536927">ચુકવણી કરો</translation>
 <translation id="184456654378801210">(મૂળ)</translation>
 <translation id="1844692022597038441">આ ફાઇલ ઑફલાઇન ઉપલબ્ધ નથી.</translation>
@@ -1226,6 +1228,7 @@
 <translation id="2772936498786524345">સ્નીકી</translation>
 <translation id="2773948261276885771">પૃષ્ઠોને સેટ કરો</translation>
 <translation id="2776441542064982094">એવું લાગે છે કે નેટવર્ક પર કોઈ નોંધવા માટે કોઈ ઉપકરણો ઉપલબ્ધ નથી. જો તમારું ઉપકરણ ચાલુ છે અને ઇન્ટરનેટથી કનેક્ટ કરેલું છે, તો તેને તેના સૂચના મેન્યુઅલમાંની સૂચનાઓનો ઉપયોગ કરીને નોંધવાનો પ્રયાસ કરો.</translation>
+<translation id="277674485549860058">Chrome OS સિસ્ટમ UI માં સામગ્રી ડિઝાઇન તત્વોને સેટ કરે છે.</translation>
 <translation id="2778459533137481732">પરવાનગીઓની બ્લેકલિસ્ટ</translation>
 <translation id="2779552785085366231">આ પૃષ્ઠ એપ લૉન્ચરમાં ઉમેરી શકાય છે</translation>
 <translation id="2781645665747935084">બેલ્જિયન</translation>
@@ -1588,6 +1591,7 @@
 <translation id="32330993344203779">તમારું ઉપકરણ સંગઠન સંચાલન માટે સફળતાપૂર્વક નોંધાઈ ગયું છે.</translation>
 <translation id="3234666976984236645">હંમેશા આ સાઇટ પરની મહત્વની સામગ્રી શોધો</translation>
 <translation id="3236997602556743698">3 સેટ (390)</translation>
+<translation id="3237784613213365159"><ph name="NEW_PROFILE_NAME" />, હવે એક નિરીક્ષિત વપરાશકર્તા છે</translation>
 <translation id="3239019276325325404">ડાઉનલોડ પુનઃપ્રારંભ</translation>
 <translation id="324056286105023296"><ph name="PROFILE_NAME" /> નથી?</translation>
 <translation id="3241680850019875542">પૅક કરવા માટે એક્સ્ટેંશનની રૂટ ડાયરેક્ટરી પસંદ કરો. એક્સ્ટેંશનને અપડેટ કરવા માટે, ફરી ઉપયોગ કરવા ખાનગી કી ફાઇલ પણ પસંદ કરો.</translation>
@@ -1916,7 +1920,6 @@
 <translation id="3656059567098593256"><ph name="APP_NAME" /> તમારી સ્ક્રીનની સામગ્રીને <ph name="TARGET_NAME" /> સાથે શેર કરવા માગે છે. તમે શું શેર કરવા માગો છો તે પસંદ કરો.</translation>
 <translation id="3657468915905674858">PPAPI Win32k લોકડાઉન સક્ષમ કરો.</translation>
 <translation id="3660234220361471169">અવિશ્વસનીય</translation>
-<translation id="3665371460012342183">ઝૂમ કરેલ ફુગા સક્ષમ કરો કે જે આકસ્મિક રીતે કોઇ લિંકને એકથી વધુ વખત ટચ કરવા પર ટચસ્ક્રીન પર દેખાય છે.</translation>
 <translation id="3665589677786828986">Chrome ને જાણ થઈ છે કે તમારી કેટલીક સેટિંગ્સ બીજા પ્રોગ્રામ દ્વારા દૂષિત કરવામાં આવેલી અને તેમને તેમના મૂળ ડિફોલ્ટ્સ પર ફરીથી સેટ કરી છે.</translation>
 <translation id="3665842570601375360">સુરક્ષા:</translation>
 <translation id="3668570675727296296">ભાષા સેટિંગ્સ</translation>
@@ -1937,7 +1940,6 @@
 <translation id="3690976161240450479">સાઇન-ઇન નિષ્ફળ થયું. કૃપા કરીને તમારા વ્યવસ્થાપકનો સંપર્ક કરો અથવા ફરી પ્રયાસ કરો.</translation>
 <translation id="3693415264595406141">પાસવર્ડ:</translation>
 <translation id="3694027410380121301">પહેલાનું ટૅબ પસંદ કરો</translation>
-<translation id="3694122362646626770">વેબસાઇટ્સ</translation>
 <translation id="3694678678240097321">જો એક્સ્ટેન્શને બધા url પર ચાલવા માટેની પરવાનગીની વિનંતી કરી છે, તો પૃષ્ઠ પર ચાલી રહેલા એક્સ્ટેન્શન માટે વપરાશકર્તા સંમતિની જરૂર રહે છે.</translation>
 <translation id="3695919544155087829">કૃપા કરીને આ પ્રમાણપત્ર ફાઇલને એન્ક્રિપ્ટ કરવા માટે ઉપયોગમાં લેવાયો હતો તે પાસવર્ડ દાખલ કરો.</translation>
 <translation id="3696411085566228381">કોઈ નહીં</translation>
@@ -1951,6 +1953,7 @@
 <translation id="3707020109030358290">કોઈ પ્રમાણન અધિકારી નથી</translation>
 <translation id="3709244229496787112">ડાઉનલોડ પૂર્ણ થાય તે પહેલાં આ બ્રાઉઝર બંધ થયું હતું.</translation>
 <translation id="3711486163272428582">વર્તમાન ભૌગોલિક સ્થાન દ્વારા સમયઝોનને આપમેળે પસંદ કરવા માટે વપરાશકર્તા સેટિંગને સક્ષમ કરે છે.</translation>
+<translation id="3711895659073496551">સસ્પેન્ડ કરો</translation>
 <translation id="3712897371525859903">પૃષ્ઠ આ &amp;રીતે સાચવો...</translation>
 <translation id="3714633008798122362">વેબ કેલેન્ડર</translation>
 <translation id="3715597595485130451">Wi-Fi થી કનેક્ટ કરો</translation>
@@ -2807,7 +2810,6 @@
 <translation id="5038863510258510803">સક્ષમ કરી રહ્યું છે...</translation>
 <translation id="5039512255859636053">$1 TB</translation>
 <translation id="5039804452771397117">મંજૂરી આપો</translation>
-<translation id="5043851552150732346">1 નિર્દેશિકા પસંદ કરી</translation>
 <translation id="5045550434625856497">ખોટો પાસવર્ડ</translation>
 <translation id="5048179823246820836">નોર્ડિક</translation>
 <translation id="5053604404986157245">રેન્ડમલી બનાવેલ TPM પાસવર્ડ ઉપલબ્ધ નથી. Powerwash પછી આ સામાન્ય હોય છે.</translation>
@@ -2859,6 +2861,7 @@
 <translation id="5129301143853688736">આ સાઇટ પરનું તમારું કનેક્શન ખાનગી નથી. હુમલાખોરો <ph name="DOMAIN" /> માંથી તમારી માહિતી (ઉદાહરણ તરીકે, ફોટા, પાસવર્ડ્સ, સંદેશા અને ક્રેડિટ કાર્ડ્સ) ચોરી કરવાનો પ્રયાસ કરી શકે છે.</translation>
 <translation id="5129662217315786329">પોલીશ</translation>
 <translation id="5130080518784460891">ઇટેન</translation>
+<translation id="5134856901811723984">Chrome OS સિસ્ટમ UI માં સામગ્રી ડિઝાઇન</translation>
 <translation id="5135533361271311778">બુકમાર્ક આઇટમ બનાવી શકાઈ નથી.</translation>
 <translation id="5136529877787728692">F7</translation>
 <translation id="5137501176474113045">આ આઇટમ કાઢી નાખો</translation>
@@ -2921,7 +2924,6 @@
 <translation id="5212461935944305924">કૂકી અને સાઇટ ડેટા અપવાદો</translation>
 <translation id="521582610500777512">ફોટો નિકાળવામાં આવ્યો હતો</translation>
 <translation id="5218183485292899140">સ્વિસ ફ્રેંચ</translation>
-<translation id="5218766986344577658">લિંક વિભાવના પૉપઅપ</translation>
 <translation id="5220992698394817380">IME પસંદ કરો મેનૂને સક્ષમ કરો</translation>
 <translation id="5222676887888702881">સાઇન આઉટ</translation>
 <translation id="5225324770654022472">એપ્લિકેશનો શોર્ટકટ બતાવો</translation>
@@ -3430,6 +3432,7 @@
 <translation id="5925147183566400388">સર્ટિફિકેશન પ્રેક્ટીસ સ્ટેટમેન્ટ પોઇન્ટર</translation>
 <translation id="5930693802084567591">તમારો ડેટા <ph name="TIME" /> ના રોજ તમારા Google પાસવર્ડ સાથે એન્ક્રિપ્ટ કરાયો છે. કૃપા કરી તેને નીચે દાખલ કરો.</translation>
 <translation id="5931146425219109062">તમે મુલાકાત લો છો તે વેબસાઇટ્સ પરના તમારા ડેટાને વાંચો અને બદલો</translation>
+<translation id="5932881020239635062">શ્રૃંખલા</translation>
 <translation id="5934281776477898549">કોઇ અપડેટ નથી</translation>
 <translation id="5937843713457938680">V8 JavaScript એન્જિન માટે કેશિંગ મોડ.</translation>
 <translation id="5939518447894949180">રીસેટ કરો</translation>
@@ -3638,6 +3641,7 @@
 <translation id="626568068055008686">ખોટો પાસવર્ડ અથવા દૂષિત ફાઇલ. </translation>
 <translation id="6267166720438879315"><ph name="HOST_NAME" /> પર પોતાને પ્રમાણિત કરવા માટે એક પ્રમાણપત્ર પસંદ કરો</translation>
 <translation id="6267909379545953750">પ્રાયોગિક JavaScript</translation>
+<translation id="6268252012308737255"><ph name="APP" /> સાથે ખોલો</translation>
 <translation id="6268747994388690914">HTML ફાઇલમાંથી બુકમાર્ક્સ આયાત કરો...</translation>
 <translation id="6272765239698781406">પ્રબળ કેશ રીલિઝ વ્યૂહરચના</translation>
 <translation id="6273677812470008672">ગુણવત્તા</translation>
@@ -3784,6 +3788,7 @@
 <translation id="6485352695865682479">કનેક્શન સ્થિતિ:</translation>
 <translation id="648927581764831596">કંઈપણ ઉપલબ્ધ નથી</translation>
 <translation id="6490936204492416398">વેબદુકાનમાંથી નવા ઇન્સ્ટોલ કરો</translation>
+<translation id="6491376743066338510">પ્રમાણીકરણ નિષ્ફળ થયું</translation>
 <translation id="6492313032770352219">ડિસ્ક પરનું કદ:</translation>
 <translation id="6498249116389603658">&amp;તમારી બધી ભાષાઓ</translation>
 <translation id="6499143127267478107">પ્રોક્સી સ્ક્રિપ્ટમાં હોસ્ટને રિઝોલ્વ કરી રહ્યું છે...</translation>
@@ -4439,6 +4444,7 @@
 <translation id="749028671485790643">વ્યક્તિ <ph name="VALUE" /></translation>
 <translation id="7491962110804786152">ટેબ</translation>
 <translation id="7493386493263658176"><ph name="EXTENSION_NAME" /> એક્સટેન્શન પાસવર્ડ્સ અને ક્રેડિટ કાર્ડ નંબર્સ સહિત, તમે ટાઇપ કરો તે બધી ટેક્સ્ટને એકત્રિત કરી શકે છે. શું તમે આ એક્સટેન્શનનો ઉપયોગ કરવા માંગો છો?</translation>
+<translation id="7495424355577885780">જો સક્ષમ કરેલ હોય, તો સમસ્યાની જાણ કરવી સામગ્રી ડિઝાઇન પ્રતિસાદ UI ને લોડ કરશે.</translation>
 <translation id="7495778526395737099">તમારો જૂનો પાસવર્ડ ભૂલી ગયા છો?</translation>
 <translation id="7503191893372251637">નેટસ્કેપ પ્રમાણપત્રનો પ્રકાર</translation>
 <translation id="7503821294401948377">બ્રાઉઝર ક્રિયા માટે આયકન '<ph name="ICON" />' લોડ કરી શકાયું નથી.</translation>
@@ -4705,7 +4711,6 @@
 <translation id="7896906914454843592">યુએસ વિસ્તૃત કીબોર્ડ</translation>
 <translation id="7897900149154324287">ભવિષ્યમાં, તમારા કાઢવાયોગ્ય ઉપકરણને અનપ્લગ કરતાં પહેલાં ફાઇલ્સ એપ્લિકેશનમાં તેને બહાર કાઢવાનું યાદ રાખો. અન્યથા, તમે ડેટા ગુમાવી શકો છો.</translation>
 <translation id="7898627924844766532">ટુલબારમાં રાખો</translation>
-<translation id="7898725031477653577">હંમેશાં અનુવાદ કરો</translation>
 <translation id="7899177175067029110">તમારો ફોન શોધી શકાતો નથી. ખાતરી કરો કે તમારું <ph name="DEVICE_TYPE" /> ઇન્ટરનેટથી કનેક્ટ કરેલું છે. &lt;a&gt;વધુ જાણો&lt;/a&gt;</translation>
 <translation id="7900476766547206086">સાઇન-ઇન કરેલ વપરાશકર્તાઓ માટે પાસવર્ડ્સ આવશ્યક છે, કેમકે એક અથવા વધુ વપરાશકર્તાઓએ આ સેટિંગ ચાલુ કરી છે.</translation>
 <translation id="7903128267494448252">આ વ્યક્તિને કાઢી નાખો</translation>
@@ -4834,6 +4839,7 @@
 <translation id="8088137642766812908">સાવધાન, આ સુવિધા નુકસાન પહોંચાડી શકે છે</translation>
 <translation id="8089520772729574115">1 MB કરતાં ઓછું</translation>
 <translation id="8090234456044969073">તમારી મોટાભાગની અવારનાવર મુલાકાત લીધેલ વેબસાઇટ્સની સૂચિ વાંચો</translation>
+<translation id="8091655032047076676">પ્રાયોગિક</translation>
 <translation id="8094917007353911263">તમે ઉપયોગ કરી રહ્યાં છો તે નેટવર્કને <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" /> ની મુલાકાત લેવાની જરૂર પડી શકે છે.</translation>
 <translation id="8098352321677019742"><ph name="PRODUCT_NAME" /> સૂચનાઓ</translation>
 <translation id="8098975406164436557">તમારા <ph name="DEVICE_TYPE" /> ને અનલૉક કરવા માટે આ ફોનનો ઉપયોગ કરીએ?</translation>
@@ -4988,6 +4994,7 @@
 <translation id="8286227656784970313">સિસ્ટમ શબ્દકોશનો ઉપયોગ કરો</translation>
 <translation id="8286817579635702504">કેટલીક સુરક્ષા સુવિધાઓને સક્ષમ કરે છે જે તમે દૈનિક ધોરણે મુલાકાત લો છો તે એક અથવા વધુ પૃષ્ઠોને સંભવિત રૂપે ભંગ કરશે. ઉદાહરણ તરીકે, સખત મિશ્રિત સામગ્રી તપાસ. અને સંદર્ભોને સુરક્ષિત કરવા માટે સશક્ત સુવિધાઓને લૉક કરવી. આ ચિહ્ન તમને કદાચ હેરાન કરશે.</translation>
 <translation id="8288342810474863437">પાસવર્ડ સેટિંગ્સમાં આયાત અને નિકાસ કાર્યક્ષમતા.</translation>
+<translation id="8294431847097064396">સ્રોત</translation>
 <translation id="8297012244086013755">હંગુલ 3 સેટ (Shift નહીં)</translation>
 <translation id="8298115750975731693">તમે ઉપયોગ કરી રહ્યાં છો તે Wi-Fi (<ph name="WIFI_NAME" />) ને <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" /> ની મુલાકાત લેવાની જરૂર પડી શકે છે.</translation>
 <translation id="8299269255470343364">જાપાનીઝ</translation>
@@ -5076,6 +5083,7 @@
 <translation id="8427933533533814946">આમના દ્વારા ફોટો</translation>
 <translation id="8428213095426709021">સેટિંગ્સ</translation>
 <translation id="8432745813735585631">યુએસ કોલમેક કીબોર્ડ</translation>
+<translation id="8433057134996913067">આ તમને મોટાભાગની વેબસાઇટ્સમાંથી સાઇન આઉટ કરશે.</translation>
 <translation id="8434177709403049435">&amp;એન્કોંડિંગ</translation>
 <translation id="8434480141477525001">NaCl ડિબગ પોર્ટ</translation>
 <translation id="8435334418765210033">યાદ રાખેલા નેટવર્ક્સ</translation>
@@ -5112,6 +5120,7 @@
 <translation id="8479179092158736425">સક્રિય નિર્દેશો</translation>
 <translation id="8480417584335382321">પૃષ્ઠ ઝૂમ કરો:</translation>
 <translation id="8481940801237642152">આ સાઇટ પરનું તમારું કનેક્શન ખાનગી છે, પરંતુ નેટવર્ક પરની કોઈ વ્યક્તિ પૃષ્ઠનો દેખાવ બદલવા માટે સમર્થ હોઈ શકે છે.</translation>
+<translation id="8485942541756487200">સામગ્રી ડિઝાઇન પ્રતિસાદ સક્ષમ કરો</translation>
 <translation id="8487678622945914333">ઝૂમ વધારો</translation>
 <translation id="8487693399751278191">હમણાં બુકમાર્ક્સ આયાત કરો...</translation>
 <translation id="8487700953926739672">ઑફલાઇન ઉપલબ્ધ</translation>
@@ -5207,7 +5216,6 @@
 <translation id="8642171459927087831">ઍક્સેસ ટોકન</translation>
 <translation id="8642947597466641025">ટેક્સ્ટ મોટો કરો</translation>
 <translation id="8651196026455635717">Windows ડેસ્કટૉપ શોધના રીડાયરેક્શનને ડિફોલ્ટ શોધ એંજિન પર સક્ષમ કરે છે.</translation>
-<translation id="8651324101757295372">આ વ્યક્તિ સાથે ચેટ કરો</translation>
 <translation id="8651585100578802546">આ પૃષ્ઠ ફરીથી લોડ કરવા દબાણ કરો</translation>
 <translation id="8652139471850419555">પસંદીદા નેટવર્ક્સ</translation>
 <translation id="8652487083013326477">પૃષ્ઠ રેંજ રેડિઓ બટન</translation>
@@ -5527,8 +5535,10 @@
 <translation id="9092426026094675787">બિન-સુરક્ષિત મૂળને બિન-સુરક્ષિત તરીકે ચિહ્નિત કરો</translation>
 <translation id="9094033019050270033">પાસવર્ડ અપડેટ કરો</translation>
 <translation id="9100765901046053179">વિગતવાર સેટિંગ્સ</translation>
+<translation id="910077499156148110">કોઈ સાઇટ માટે અપવાદ ઉમેરો</translation>
 <translation id="9100825730060086615">કીબોર્ડ પ્રકાર</translation>
 <translation id="9101691533782776290">એપ્લિકેશન લોન્ચ કરો</translation>
+<translation id="9101960725093302061">કઈ વેબસાઇટ્સને <ph name="NEW_PROFILE_NAME" /> જોઈ શકે છે તે સેટ કરવા માટે, તમે પ્રતિબંધો અને સેટિંગ્સને <ph name="BEGIN_LINK" /><ph name="DISPLAY_LINK" /><ph name="END_LINK" /> ની મુલાકાત લઈને ગોઠવી શકો છો. જો તમે ડિફોલ્ટ સેટિંગ્સ બદલતાં નથી, તો <ph name="NEW_PROFILE_NAME" /> વેબ પર તમામ વસ્તુઓને બ્રાઉઝ કરી શકે છે.</translation>
 <translation id="9103001804464916031">{NUM_DOWNLOAD,plural, =1{ડાઉનલોડ ચાલુ છે}one{ડાઉનલોડ્સ ચાલુ છે}other{ડાઉનલોડ્સ ચાલુ છે}}</translation>
 <translation id="9105212490906037469">F2</translation>
 <translation id="9106577689055281370">બૅટરી
@@ -5575,7 +5585,6 @@
 <translation id="9157697743260533322">તમામ વપરાશકર્તાઓ માટે સ્વચલિત અપડેટ્સને સેટ કરવામાં નિષ્ફળ થયાં (પ્રીફ્લાઇટ લોંચની ભૂલ: <ph name="ERROR_NUMBER" />)</translation>
 <translation id="9158715103698450907">અરે! નેટવર્ક સંચાર સમસ્યા પ્રમાણીકરણ દરમિયાન આવી છે. કૃપા કરીને તમારું નેટવર્ક કનેક્શન તપાસો અને ફરી પ્રયાસ કરો.</translation>
 <translation id="9159562891634783594">છાપ પૂર્વાવલોકનથી બિનનોંધાયેલા મેઘ પ્રિન્ટર્સને નોંધવાનું સક્ષમ કરો.</translation>
-<translation id="9166510596677678112">આ વ્યક્તિને ઇમેઇલ કરો</translation>
 <translation id="916745092148443205">જેસ્ચર ટૅપ હાઇલાઇટ કરવું</translation>
 <translation id="9169496697824289689">કીબોર્ડ શૉર્ટકટ્સ જુઓ</translation>
 <translation id="9169664750068251925">હંમેશા આ સાઇટ પર અવરોધિત કરો</translation>

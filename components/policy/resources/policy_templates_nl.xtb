@@ -551,6 +551,22 @@
           Elk item in deze lijst is een overeenkomstpatroon op basis van extensies (zie https://developer.chrome.com/extensions/match_patterns). Gebruikers kunnen items gemakkelijk installeren vanaf elke URL die overeenkomt met een item in deze lijst. De locatie van het CRX-bestand en de pagina waar de download wordt gestart (dat wil zeggen, de verwijzing), moeten beide zijn toegestaan op basis van deze patronen.
 
           ExtensionInstallBlacklist krijgt voorrang op dit beleid. Dat wil zeggen, een extensie op de zwarte lijst wordt niet geïnstalleerd, zelfs niet als de installatie wordt gestart vanaf een site in deze lijst.</translation>
+<translation id="2813740161943223811">Dit beleid is beëindigd. Gebruik in plaats daarvan ProxyMode.
+
+          Hiermee kun je de proxyserver specificeren die wordt gebruikt door <ph name="PRODUCT_NAME" /> en voorkom je dat gebruikers de proxyinstellingen kunnen aanpassen. Ook ARC-apps kunnen deze proxyserver gebruiken.
+
+          Als je ervoor kiest nooit een proxyserver te gebruiken en altijd rechtstreeks verbinding te maken, worden alle andere opties genegeerd.
+
+          Als je ervoor kiest de proxyinstellingen van het systeem te gebruiken of de proxyserver automatisch te detecteren, worden alle andere opties genegeerd.
+
+          Als je handmatige proxyinstellingen kiest, kun je verdere opties specificeren via 'Adres of URL van proxyserver', 'URL naar een PAC-bestand voor de proxy' en 'Door komma's gescheiden lijst van regels voor proxyomzeiling'. Alleen de HTTP-proxyserver met de hoogste prioriteit is beschikbaar voor ARC-apps.
+
+          Ga voor gedetailleerde voorbeelden naar:
+          <ph name="PROXY_HELP_URL" />.
+
+          Als je deze instelling inschakelt, negeert <ph name="PRODUCT_NAME" /> alle aan proxy's gerelateerde opties die worden gespecificeerd in de opdrachtregel.
+
+          Als je dit beleid niet instelt, kunnen gebruikers zelf proxyinstellingen selecteren.</translation>
 <translation id="2824715612115726353">Incognitomodus inschakelen</translation>
 <translation id="2844404652289407061">Hiermee wordt de beschikbaarheid van 'Tikken om te zoeken' ingeschakeld in de inhoudsweergave van <ph name="PRODUCT_NAME" />.
 
@@ -663,6 +679,18 @@
           </translation>
 <translation id="3205825995289802549">Het eerste browservenster maximaliseren bij eerste uitvoering</translation>
 <translation id="3206731874112238027">Afdrukvoorbeeld uitschakelen (verouderd)</translation>
+<translation id="3208854390109736596">Hiermee kun je de proxyserver specificeren die wordt gebruikt door <ph name="PRODUCT_NAME" /> en voorkom je dat gebruikers proxyinstellingen kunnen wijzigen. Ook ARC-apps kunnen deze proxyserver gebruiken.
+
+      Als je ervoor kiest nooit een proxyserver te gebruiken en altijd rechtstreeks verbinding te maken, worden alle andere opties genegeerd.
+
+      Als je ervoor kiest de proxyserver automatisch te detecteren, worden alle andere opties genegeerd.
+
+      Ga voor gedetailleerde voorbeelden naar:
+      <ph name="PROXY_HELP_URL" />.
+
+      Als je deze instelling inschakelt, negeren <ph name="PRODUCT_NAME" /> en ARC-apps alle aan proxy's gerelateerde opties die worden gespecificeerd in de opdrachtregel.
+
+      Als je dit beleid niet instelt, kunnen gebruikers zelf proxyinstellingen selecteren.</translation>
 <translation id="3213821784736959823">Hiermee wordt bepaald of de ingebouwde DNS-client wordt gebruikt in <ph name="PRODUCT_NAME" />.
 
       Als dit beleid is ingesteld op 'waar', wordt de ingebouwde DNS-client gebruikt (indien beschikbaar).
@@ -710,6 +738,9 @@
 
       Als dit beleid is ingesteld op 'false', staat <ph name="PRODUCT_OS_NAME" /> niet toe dat er gastensessies worden gestart.</translation>
 <translation id="3428247105888806363">Netwerkvoorspelling inschakelen</translation>
+<translation id="3449886121729668969">Hiermee configureer je de proxyinstellingen voor <ph name="PRODUCT_NAME" />. Deze proxyinstellingen zijn ook beschikbaar voor ARC-apps.
+
+      Dit beleid is nog niet klaar voor gebruik. Gebruik het dus niet.</translation>
 <translation id="3460784402832014830">Specificeert de URL die een zoekmachine gebruikt om een nieuwe tabbladpagina weer te geven.
 
           Dit beleid is optioneel. Als het niet wordt ingesteld, wordt er geen nieuwe tabbladpagina weergegeven.
@@ -720,6 +751,14 @@
           Als dit beleid is ingesteld op 'True', worden vertragingen in energiebeheer en de limiet voor sessielengte pas gestart nadat de eerste gebruikersactiviteit in een sessie is gedetecteerd.
 
           Als dit beleid is ingesteld op 'False', worden vertragingen in energiebeheer en de limiet voor sessielengte gestart bij het starten van de sessie.</translation>
+<translation id="3469657928310999477"><ph name="PRODUCT_NAME" /> omzeilt elke proxy voor de lijst met hosts die hier wordt gespecificeerd. ARC-apps kunnen deze lijst gebruiken als lijst met regels voor omzeiling.
+
+          Dit beleid wordt alleen van kracht als je handmatige proxyinstellingen hebt geselecteerd bij 'Kies hoe je proxyserverinstellingen wilt opgeven'.
+
+          Stel dit beleid niet in als je een andere modus voor het instellen van je proxybeleid hebt geselecteerd.
+
+          Ga voor meer gedetailleerde voorbeelden naar:
+          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="3478024346823118645">Gebruikersgegevens wissen bij uitloggen</translation>
 <translation id="348495353354674884">Virtueel toetsenbord inschakelen</translation>
 <translation id="3496296378755072552">Wachtwoordbeheer</translation>
@@ -1401,6 +1440,9 @@
       Dit beleid is van toepassing op alle typen opslagmedia. Bijvoorbeeld: USB-flashstations, externe vaste schijven, SD-kaarten en andere geheugenkaarten, optische opslag, enzovoort. Dit is niet van toepassing op interne opslag, dus bestanden die zijn opgeslagen in de downloadmap, zijn nog steeds toegankelijk. Dit beleid is ook niet van toepassing op Google Drive.
 
       Als deze instelling is uitgeschakeld of niet is geconfigureerd, kunnen gebruikers alle ondersteunde typen externe opslag gebruiken op hun apparaat.</translation>
+<translation id="6076099373507468537">Hiermee wordt de lijst met USB-apparaten gedefinieerd die mogen worden ontkoppeld van hun kernel-driver, zodat ze via de chrome.usb-API rechtstreeks kunnen worden gebruikt in een webapplicatie. Items zijn paren van de ID van de USB-leverancier en de ID van het product, zodat specifieke hardware kan worden geïdentificeerd.
+
+      Als dit beleid niet is geconfigureerd, is de lijst met USB-apparaten die kunnen worden ontkoppeld leeg.</translation>
 <translation id="6095999036251797924">Specificeert de periode zonder gebruikersinvoer waarna het scherm wordt vergrendeld wanneer het apparaat op netstroom of op de accu werkt.
 
           Wanneer de periode is ingesteld op een waarde groter dan nul, is dit de tijd dat de gebruiker inactief moet zijn voordat <ph name="PRODUCT_OS_NAME" /> het scherm vergrendelt.
@@ -1928,6 +1970,14 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
       gerapporteerd. Als het beleid is ingesteld op 'waar' of als er geen beleid is
       ingesteld, worden de sessiegegevens gerapporteerd.</translation>
 <translation id="7774768074957326919">Proxyinstellingen van het systeem gebruiken</translation>
+<translation id="7775831859772431793">Je kunt de URL van de proxyserver hier opgeven.
+
+          Dit beleid wordt alleen van kracht als je handmatige proxyinstellingen hebt geselecteerd bij 'Kies hoe je proxyserverinstellingen wilt opgeven'.
+
+          Stel dit beleid niet in als je een andere modus hebt geselecteerd voor het instellen van het proxybeleid.
+
+          Ga voor meer opties en gedetailleerde voorbeelden naar:
+          <ph name="PROXY_HELP_URL" /></translation>
 <translation id="7788511847830146438">Per profiel</translation>
 <translation id="7796141075993499320">Hiermee kun je een lijst met URL-patronen instellen waarmee sites worden gespecificeerd waarop plug-ins mogen worden uitgevoerd.
 
@@ -1962,6 +2012,14 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
       Hiermee bepaal je de ID van de extensie die moet worden gebruikt als schermbeveiliging voor het inlogvenster. De extensie moet onderdeel zijn van het AppPack dat is geconfigureerd voor dit domein via het beleid DeviceAppPack.</translation>
 <translation id="7882890448959833986">De waarschuwing voor een niet-ondersteund besturingssysteem negeren</translation>
 <translation id="7912255076272890813">Toegestane typen apps/extensies configureren</translation>
+<translation id="7915236031252389808">Je kunt hier een URL naar een PAC-bestand voor de proxy opgeven.
+
+          Dit beleid wordt alleen van kracht als je handmatige proxyinstellingen hebt geselecteerd bij 'Kies hoe je proxyserverinstellingen wilt opgeven'.
+
+          Stel dit beleid niet in als een je andere modus hebt geselecteerd voor het instellen van je proxybeleid.
+
+          Ga voor gedetailleerde voorbeelden naar:
+          <ph name="PROXY_HELP_URL" /></translation>
 <translation id="793134539373873765">Specificeert of p2p wordt gebruikt voor netto-updateladingen voor het besturingssysteem. Als dit is ingesteld op 'Waar', proberen apparaten netto-updateladingen (payloads) op te halen via het LAN, waardoor bandbreedtegebruik en vertraging kunnen worden verminderd. Als de netto-updatelading niet beschikbaar is via het LAN, gaat het apparaat over tot downloaden via een updateserver. Als deze instelling is ingesteld op 'Niet waar' of niet is geconfigureerd, wordt 2p2 niet gebruikt.</translation>
 <translation id="7933141401888114454">Maken van bewaakte gebruikers inschakelen</translation>
 <translation id="7936098023732125869">Hiermee wordt het gebruik van een standaardzoekprovider ingeschakeld.
@@ -2111,6 +2169,11 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="8382184662529825177">Het gebruik van externe verificatie inschakelen voor het beveiligen van inhoud voor het apparaat</translation>
 <translation id="838870586332499308">Gegevensroaming inschakelen</translation>
 <translation id="8412312801707973447">Uitvoer van online OCSP/CRL-controles</translation>
+<translation id="8413348101535146315">Hiermee wordt het beëindigen van processen in Taakbeheer van <ph name="PRODUCT_NAME" /> mogelijk gemaakt.
+
+      Als deze optie is ingesteld op 'onwaar' (false), is de knop 'Proces beëindigen' uitgeschakeld in Taakbeheer.
+
+      Als deze optie is ingesteld op 'waar' (true) of niet is geconfigureerd, kan de gebruiker processen in Taakbeheer beëindigen.</translation>
 <translation id="8424255554404582727">Standaard displayrotatie instellen, wordt telkens toegepast na opnieuw opstarten</translation>
 <translation id="8426231401662877819">Scherm 90 graden met de klok mee draaien</translation>
 <translation id="8451988835943702790">De pagina 'Nieuw tabblad' als startpagina gebruiken</translation>
@@ -2327,6 +2390,24 @@ Als dit beleid niet is ingesteld, wordt geen enkele URL op de zwarte lijst van d
 <translation id="9112897538922695510">Hiermee kun je een lijst met protocolhandlers registreren. Dit kan alleen een aanbevolen beleid zijn. De eigenschap |protocol| moet worden ingesteld op het schema, zoals 'mailto', en de eigenschap |url| moet worden ingesteld op het URL-patroon van de app die het schema verwerkt. Het patroon kan een '%s' bevatten, die indien aanwezig wordt vervangen door de verwerkte URL.
 
           De protocolhandlers die door het beleid zijn geregistreerd, worden samengevoegd met de handlers die door de gebruiker zijn geregistreerd en kunnen beide worden gebruikt. De gebruiker kan de protocolhandlers die door het beleid zijn geïnstalleerd, overschrijven door een nieuwe standaardhandler te installeren. Een protocolhandler die door het beleid is geregistreerd, kan echter niet worden verwijderd.</translation>
+<translation id="913138516158420759">Hiermee kun je de proxyserver specificeren die wordt gebruikt door <ph name="PRODUCT_NAME" /> en voorkom je dat gebruikers proxyinstellingen kunnen wijzigen.
+
+          Als je ervoor kiest nooit een proxyserver te gebruiken en altijd rechtstreeks verbinding te maken, worden alle andere opties genegeerd.
+
+          Als je ervoor kiest de proxyinstellingen van het systeem te gebruiken, worden alle andere opties genegeerd.
+
+          Als je ervoor kiest de proxyserver automatisch te detecteren, worden alle andere opties genegeerd.
+
+          Als je de modus voor een vaste proxyserver kiest, kun je verdere opties specificeren in 'Adres of URL van proxyserver' en 'Door komma's gescheiden lijst van regels voor proxyomzeiling'. Alleen de HTTP-proxyserver met de hoogste prioriteit is beschikbaar voor ARC-apps.
+
+          Als je een PAC-script voor de proxy gebruikt, moet je de URL naar het script opgeven bij 'URL naar een PAC-bestand voor de proxy'.
+
+          Ga voor gedetailleerde voorbeelden naar:
+          <ph name="PROXY_HELP_URL" />.
+
+          Als je deze instelling inschakelt, negeren <ph name="PRODUCT_NAME" /> en ARC-apps alle aan proxy's gerelateerde opties die worden gespecificeerd in de opdrachtregel.
+
+          Als dit beleid niet is ingesteld, kunnen gebruikers zelf de proxyinstellingen kiezen.</translation>
 <translation id="913195841488580904">Toegang blokkeren voor een lijst met URL's</translation>
 <translation id="9135033364005346124">Proxy voor <ph name="CLOUD_PRINT_NAME" /> inschakelen</translation>
 <translation id="9147029539363974059">Systeemlogboeken naar de beheerserver verzenden om

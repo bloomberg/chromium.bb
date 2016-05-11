@@ -42,6 +42,7 @@
 <translation id="1254117744268754948">Izbira mape</translation>
 <translation id="1285320974508926690">Nikoli ne prevedi tega spletnega mesta</translation>
 <translation id="129553762522093515">Nedavno zaprto</translation>
+<translation id="129863573139666797"><ph name="BEGIN_LINK" />Poskusite izbrisati piškotke<ph name="END_LINK" /></translation>
 <translation id="1339601241726513588">Domena za prijavo:</translation>
 <translation id="1344588688991793829">Nastavitve samodejnega izpolnjevanja v Chromiumu …</translation>
 <translation id="1374468813861204354">predlogi</translation>
@@ -199,6 +200,7 @@
 <translation id="2969319727213777354">Če želite vzpostaviti varno povezavo, mora biti ura pravilno nastavljena. Potrdila, ki jih uporabljajo spletna mesta za prepoznavanje, namreč veljajo samo določen čas. Ker je ura naprave nepravilna, Google Chrome teh potrdil ne more preveriti.</translation>
 <translation id="2972581237482394796">&amp;Uveljavi</translation>
 <translation id="2985306909656435243">Če je to omogočeno, Chromium shrani kopijo kartice v tej napravi zaradi hitrejšega izpolnjevanja obrazcev.</translation>
+<translation id="2989984781570875765">Vnesite datum poteka in trimestno kodo CVC na hrbtni strani kartice <ph name="CREDIT_CARD" /></translation>
 <translation id="2991174974383378012">Deljenje s spletnimi mesti</translation>
 <translation id="3005723025932146533">Pokaži shranjeno kopijo</translation>
 <translation id="3010559122411665027">Vnos na sznamu »<ph name="ENTRY_INDEX" />«: <ph name="ERROR" /></translation>
@@ -282,6 +284,7 @@
 <translation id="3717027428350673159"><ph name="BEGIN_LINK" />preveriti strežnik proxy, požarni zid in konfiguracijo DNS-ja<ph name="END_LINK" /></translation>
 <translation id="3739623965217189342">Povezava, ki ste jo kopirali</translation>
 <translation id="3744899669254331632">Spletnega mesta <ph name="SITE" /> trenutno ne morete obiskati, ker je poslalo šifrirane poverilnice, ki jih Chromium ne more obdelati. Napake v omrežju in napadi so običajno začasni, zato bo ta stran verjetno delovala pozneje.</translation>
+<translation id="3748071062818261683">Preverjanje kartice</translation>
 <translation id="3748412725338508953">Bilo je preveč preusmeritev.</translation>
 <translation id="375403751935624634">Prevajanje ni uspelo zaradi napake strežnika.</translation>
 <translation id="3759461132968374835">Nimate nedavnih poročil o zrušitvah. Zrušitve, do katerih je prišlo, ko je bilo poročanje onemogočeno, ne bodo prikazane zukaj.</translation>
@@ -310,6 +313,7 @@
 <translation id="4103249731201008433">Neveljavna serijska številka naprave</translation>
 <translation id="4103763322291513355">Na &lt;strong&gt;chrome://policy&lt;/strong&gt; si lahko ogledate seznam blokiranih URL-jev in drugih pravilnikov, ki jih uveljavlja skrbnik sistema.</translation>
 <translation id="4117700440116928470">Obseg pravilnika ni podprt.</translation>
+<translation id="4130226655945681476">preveriti omrežne kable, modem in usmerjevalnik</translation>
 <translation id="4147376274874979956">Do datoteke ni mogoče dostopati.</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">Ali želite, da Chromium shrani to kartico?</translation>
@@ -344,11 +348,15 @@
 <translation id="450710068430902550">Deljenje s skrbnikom</translation>
 <translation id="4522570452068850558">Podrobnosti</translation>
 <translation id="4535734014498033861">Povezave s strežnikom proxy ni bilo mogoče vzpostaviti.</translation>
+<translation id="4553532082208702698">Vnesite štirimestno kodo CVC na sprednji strani kartice <ph name="CREDIT_CARD" /></translation>
+<translation id="4558551763791394412">Poskusite onemogočiti razširitve.</translation>
 <translation id="4587425331216688090">Želite odstraniti naslov iz Chroma?</translation>
 <translation id="4592951414987517459">Povezava z domeno <ph name="DOMAIN" /> je šifrirana s sodobno šifrirno zbirko.</translation>
 <translation id="4594403342090139922">&amp;Razveljavi izbris</translation>
 <translation id="4668929960204016307">,</translation>
+<translation id="4670097147947922288">Ogledujete si stran z razširitvami.</translation>
 <translation id="467662567472608290">Strežniku ni uspelo dokazati, da je <ph name="DOMAIN" />; njegovo varnostno potrdilo vsebuje napake. Razlog za to je lahko napačna konfiguracija ali napadalčevo prestrezanje povezave.</translation>
+<translation id="4683417246209150705">Vnesite trimestno kodo CVC na hrbtni strani kartice <ph name="CREDIT_CARD" /></translation>
 <translation id="4697214168136963651"><ph name="URL" /> je bil blokiran</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">Povezava je bila prekinjena</translation>
@@ -433,6 +441,8 @@
 <translation id="5650551054760837876">Najden ni bil noben rezultat iskanja.</translation>
 <translation id="5663999524854166235">Zaradi preverjanja vnesite trimestno kodo CVC na hrbtni strani kartice</translation>
 <translation id="5677928146339483299">Blokirano</translation>
+<translation id="5696590819423335174">Vnesite datum poteka in štirimestno kodo CVC na sprednji strani kartice <ph name="CREDIT_CARD" /></translation>
+<translation id="5699278517904102888">Zaradi preverjanja vnesite trimestno kodo CVC na hrbtni strani kartice <ph name="CREDIT_CARD" /></translation>
 <translation id="5710435578057952990">Identiteta tega spletnega mesta ni bila potrjena.</translation>
 <translation id="5720705177508910913">Trenutni uporabnik</translation>
 <translation id="5785756445106461925">Poleg tega so na tej strani druga sredstva, ki niso varna. Ta sredstva lahko med prenosom pregledujejo drugi, morebitni napadalec pa jih lahko spremeni, tako da se spremeni videz strani.</translation>
@@ -556,7 +566,6 @@
 <translation id="7210863904660874423">Spletno mesto <ph name="HOST_NAME" /> ne upošteva varnostnih standardov.</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Več o<ph name="END_LINK" /> tej težavi.</translation>
 <translation id="7219179957768738017">Povezava uporablja <ph name="SSL_VERSION" />.</translation>
-<translation id="7225807090967870017">ID delovne različice</translation>
 <translation id="7231308970288859235">Ojoj! Vprašaj starše, ali smeš obiskati to stran.</translation>
 <translation id="7246609911581847514">To sporočilo je prikazano, ker mora skrbnik odobriti nova spletna mesta ob prvem obisku.</translation>
 <translation id="725866823122871198">Zasebne povezave z domeno <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> ni mogoče vzpostaviti, ker sta datum in ura (<ph name="DATE_AND_TIME" />) v računalniku nepravilna.</translation>
@@ -597,6 +606,7 @@ Pst! Naslednjič vam lahko pride prav bližnjica <ph name="SHORTCUT_KEY" /> za n
 <translation id="7610193165460212391">Vrednost je zunaj obsega <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">Veljavnost do: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Podatke, ki so šifrirani z drugo različico gesla za Google Račun, že imate. Geslo vnesite spodaj.</translation>
+<translation id="7633887239437305289">Zaradi preverjanja vnesite štirimestno kodo CVC na sprednji strani kartice <ph name="CREDIT_CARD" /></translation>
 <translation id="7634554953375732414">Povezava s tem mestom ni zasebna.</translation>
 <translation id="7637571805876720304">Želite kreditno kartico odstraniti iz Chromiuma?</translation>
 <translation id="7643817847124207232">Internetna povezava je prekinjena.</translation>

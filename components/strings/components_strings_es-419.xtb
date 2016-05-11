@@ -20,6 +20,7 @@
 <translation id="112840717907525620">Caché de política correcta</translation>
 <translation id="113188000913989374"><ph name="SITE" /> dice:</translation>
 <translation id="1132774398110320017">Configuración de la función Autocompletar de Chrome…</translation>
+<translation id="113770840981343808">Ingresa el CVC de 4 dígitos que figura en el frente de la tarjeta para verificarla.</translation>
 <translation id="1146673768181266552">ID del fallo: <ph name="CRASH_ID" /> (<ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="1150979032973867961">Este servidor no pudo probar que su dominio es <ph name="DOMAIN" />; el sistema operativo de la computadora no confía en el certificado de seguridad. Es posible que esto se deba a una configuración incorrecta o a que un atacante interceptó la conexión.</translation>
 <translation id="1152921474424827756">Accede a una <ph name="BEGIN_LINK" />copia almacenada en caché<ph name="END_LINK" /> de <ph name="URL" />.</translation>
@@ -40,6 +41,7 @@
 <translation id="1254117744268754948">Seleccionar carpeta</translation>
 <translation id="1285320974508926690">Nunca traducir este sitio</translation>
 <translation id="129553762522093515">Cerrado recientemente</translation>
+<translation id="129863573139666797"><ph name="BEGIN_LINK" />Intenta borrar tus cookies<ph name="END_LINK" /></translation>
 <translation id="1339601241726513588">Inscripción de dominio:</translation>
 <translation id="1344588688991793829">Configuración de la función Autocompletar de Chromium…</translation>
 <translation id="1374468813861204354">sugerencias</translation>
@@ -129,6 +131,7 @@
 <translation id="2317259163369394535"><ph name="DOMAIN" /> requiere un nombre de usuario y una contraseña.</translation>
 <translation id="2328300916057834155">Marcador no válido ignorado en el índice <ph name="ENTRY_INDEX" /></translation>
 <translation id="2354001756790975382">Otros marcadores</translation>
+<translation id="2357783041215512127">Pagar con la tarjeta <ph name="CREDIT_CARD" /></translation>
 <translation id="2359808026110333948">Continuar</translation>
 <translation id="2367567093518048410">Nivel</translation>
 <translation id="237718015863234333">No hay alternativas de interfaz de usuario disponibles.</translation>
@@ -195,6 +198,7 @@
 <translation id="2969319727213777354">Para establecer una conexión segura, el reloj se debe configurar correctamente. Esto se debe a que los certificados que usan los sitios web para su identificación solo son válidos por períodos de tiempo específicos. Debido a que la configuración del reloj del dispositivo es incorrecta, Google Chrome no puede verificar estos certificados.</translation>
 <translation id="2972581237482394796">&amp;Rehacer</translation>
 <translation id="2985306909656435243">Si se habilita esta opción, Chromium almacenará una copia de la tarjeta en el dispositivo para completar más rápidamente los formularios.</translation>
+<translation id="2989984781570875765">Ingresa la fecha de vencimiento y el CVC de 3 dígitos que figura en el dorso de tu tarjeta <ph name="CREDIT_CARD" /></translation>
 <translation id="2991174974383378012">Compartir con los sitios web</translation>
 <translation id="3005723025932146533">Mostrar copia guardada</translation>
 <translation id="3010559122411665027">Entrada de lista "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
@@ -279,6 +283,7 @@
 <translation id="3717027428350673159"><ph name="BEGIN_LINK" />Comprobar la configuración del proxy, firewall o DNS<ph name="END_LINK" />.</translation>
 <translation id="3739623965217189342">Vínculo copiado</translation>
 <translation id="3744899669254331632">No puedes visitar <ph name="SITE" /> en este momento porque el sitio web envió credenciales encriptadas que Chromium no puede procesar. Los ataques y errores de red generalmente son temporales, por lo que esta página probablemente funcionará de nuevo más tarde.</translation>
+<translation id="3748071062818261683">Verificar la tarjeta</translation>
 <translation id="3748412725338508953">Demasiados redireccionamientos.</translation>
 <translation id="375403751935624634">Falló la traducción debido a un error de servidor.</translation>
 <translation id="3759461132968374835">No has notificado ningún bloqueo recientemente. Los bloqueos que se hayan producido mientras la función de notificación de bloqueos estaba desactivada no aparecerán en esta página.</translation>
@@ -307,6 +312,7 @@
 <translation id="4103249731201008433">El número de serie del dispositivo no es válido.</translation>
 <translation id="4103763322291513355">Visita &lt;strong&gt;chrome://policy&lt;/strong&gt; para ver las URL en lista negra y otras políticas que estableció el administrador del sistema.</translation>
 <translation id="4117700440116928470">No se admite el alcance de la política.</translation>
+<translation id="4130226655945681476">Comprobar los cables de red, el módem y el router</translation>
 <translation id="4147376274874979956">No es posible acceder al archivo.</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">¿Quieres que Chromium guarde esta tarjeta?</translation>
@@ -341,11 +347,15 @@
 <translation id="450710068430902550">Compartir con el administrador</translation>
 <translation id="4522570452068850558">Detalles</translation>
 <translation id="4535734014498033861">Falló la conexión del servidor proxy.</translation>
+<translation id="4553532082208702698">Ingresa el CVC de 4 dígitos que figura en el frente de tu tarjeta <ph name="CREDIT_CARD" /></translation>
+<translation id="4558551763791394412">Intenta inhabilitar tus extensiones.</translation>
 <translation id="4587425331216688090">¿Confirmas que quieres quitar la dirección de Chrome?</translation>
 <translation id="4592951414987517459">Tu conexión a <ph name="DOMAIN" /> está encriptada con un conjunto de cifrado moderno.</translation>
 <translation id="4594403342090139922">&amp;Deshacer Eliminar</translation>
 <translation id="4668929960204016307">,</translation>
+<translation id="4670097147947922288">Estás viendo la página de una extensión.</translation>
 <translation id="467662567472608290">Este servidor no pudo probar que su dominio es <ph name="DOMAIN" />; el certificado de seguridad contiene errores. Es posible que esto se deba a una configuración incorrecta o a que un atacante interceptó la conexión.</translation>
+<translation id="4683417246209150705">Ingresa el CVC de 3 dígitos que figura en el dorso de tu tarjeta <ph name="CREDIT_CARD" /></translation>
 <translation id="4697214168136963651">Se bloqueó <ph name="URL" />.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">Se interrumpió la conexión</translation>
@@ -428,7 +438,10 @@
 <translation id="5629630648637658800">Error al cargar la configuración de la política</translation>
 <translation id="5631439013527180824">Token de administración de dispositivos no válido</translation>
 <translation id="5650551054760837876">No se han encontrado resultados de búsqueda.</translation>
+<translation id="5663999524854166235">Ingresa el CVC de 3 dígitos que figura en el dorso de la tarjeta para verificarla.</translation>
 <translation id="5677928146339483299">Bloqueado</translation>
+<translation id="5696590819423335174">Ingresa la fecha de vencimiento y el CVC de 4 dígitos que figura en el frente de tu tarjeta <ph name="CREDIT_CARD" /></translation>
+<translation id="5699278517904102888">Ingresa el CVC de 3 dígitos que figura en el dorso de tu tarjeta <ph name="CREDIT_CARD" /> para verificarla</translation>
 <translation id="5710435578057952990">No se ha verificado la identidad de este sitio web.</translation>
 <translation id="5720705177508910913">Usuario actual</translation>
 <translation id="5785756445106461925">Además, esta página incluye otros recursos que no son seguros. Otras personas pueden ver estos recursos mientras se encuentran en tránsito, y un atacante puede modificarlos para cambiar la apariencia de la página.</translation>
@@ -550,7 +563,6 @@
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> no cumple con los estándares de seguridad.</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /> acerca de este problema.</translation>
 <translation id="7219179957768738017">La conexión usa <ph name="SSL_VERSION" />.</translation>
-<translation id="7225807090967870017">Id. de compilación</translation>
 <translation id="7231308970288859235">Debes preguntar a tus padres si puedes visitar esta página.</translation>
 <translation id="7246609911581847514">Estás viendo este mensaje porque tu administrador tiene que aprobar nuevos sitios en tu primera visita.</translation>
 <translation id="725866823122871198">No se puede establecer una conexión privada a <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> porque la fecha y la hora del equipo (<ph name="DATE_AND_TIME" />) son incorrectas.</translation>
@@ -591,6 +603,7 @@
 <translation id="7610193165460212391">El valor <ph name="VALUE" /> está fuera del rango.</translation>
 <translation id="7613889955535752492">Vencimiento: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Ya has utilizado otra versión de la contraseña de tu cuenta de Google para encriptar contenido. Ingrésala a continuación.</translation>
+<translation id="7633887239437305289">Ingresa el CVC de 4 dígitos que figura en el frente de tu tarjeta <ph name="CREDIT_CARD" /> para verificarla</translation>
 <translation id="7634554953375732414">Tu conexión con este sitio no es privada.</translation>
 <translation id="7637571805876720304">¿Confirmas que quieres quitar la tarjeta de crédito de Chromium?</translation>
 <translation id="7643817847124207232">Se ha perdido la conexión a Internet.</translation>

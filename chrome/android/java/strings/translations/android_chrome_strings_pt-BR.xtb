@@ -60,6 +60,7 @@
 <translation id="1742134235943978220">Traduzido para <ph name="TARGET_LANGUAGE" />.</translation>
 <translation id="1749561566933687563">Sincronize seus favoritos</translation>
 <translation id="17513872634828108">Guias abertas</translation>
+<translation id="1756600373018374892">Toque neste botão para acessar rapidamente suas guias.</translation>
 <translation id="1807246157184219062">Claro</translation>
 <translation id="1825719650605518411">Tela de apresentação</translation>
 <translation id="1829244130665387512">Encontrar na página</translation>
@@ -67,9 +68,11 @@
 <translation id="1842969606798536927">Pagar</translation>
 <translation id="1853692000353488670">Nova guia anônima</translation>
 <translation id="189172778771606813">Fechar gaveta de navegação</translation>
+<translation id="1924956916668006832">Selecionar um endereço para envio</translation>
 <translation id="194341124344773587">Ative a permissão para o Chrome nas <ph name="BEGIN_LINK" />configurações do Android<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Salvar senhas</translation>
 <translation id="1944384637046898011">Criptografar tudo com senha do Google a partir de <ph name="TIME" /></translation>
+<translation id="1946005195648379376">Controle a maneira como o Google usa seu histórico de navegação para personalizar a Pesquisa e outros serviços do Google.</translation>
 <translation id="1959930595721737608">Permitir o JavaScript no site a seguir.</translation>
 <translation id="1966710179511230534">Atualize seus detalhes de login.</translation>
 <translation id="1974060860693918893">Avançado</translation>
@@ -96,6 +99,7 @@
 <translation id="2268044343513325586">Refinar</translation>
 <translation id="2315043854645842844">A seleção de certificado do cliente não é compatível com o sistema operacional.</translation>
 <translation id="2321958826496381788">Arraste o controle deslizante até que você possa ler confortavelmente. O texto deve ter pelo menos este tamanho após um toque duplo em um parágrafo.</translation>
+<translation id="2329597144923131178">Faça login para que favoritos, histórico, senhas e outras configurações fiquem disponíveis em todos os seus dispositivos.</translation>
 <translation id="2343328333327081434">Instalando...</translation>
 <translation id="2351097562818989364">As configurações de tradução foram redefinidas.</translation>
 <translation id="2359808026110333948">Continuar</translation>
@@ -131,11 +135,13 @@
 <translation id="2762000892062317888">agora mesmo</translation>
 <translation id="2770465223704140727">Remover da lista</translation>
 <translation id="278029852808208386">Nenhum dispositivo Bluetooth foi encontrado. <ph name="BEGIN_LINK" />Pesquisar novamente<ph name="END_LINK" />.</translation>
+<translation id="2781389167600714117">Selecionar envio</translation>
 <translation id="2811892995384186721">Não está vendo seu dispositivo? <ph name="BEGIN_LINK" />Receba ajuda<ph name="END_LINK" /></translation>
 <translation id="2836148919159985482">Toque no botão "Voltar" para sair da tela cheia.</translation>
 <translation id="2842985007712546952">Pasta mãe</translation>
 <translation id="2870560284913253234">Site</translation>
 <translation id="2888126860611144412">Sobre o Google Chrome</translation>
+<translation id="2889768325388591707">Alternar guias rapidamente</translation>
 <translation id="2891154217021530873">Para de carregar a página</translation>
 <translation id="2902702728133930130">O Chrome falhou durante a inicialização devido a um erro inesperado.</translation>
 <translation id="2903493209154104877">Endereços</translation>
@@ -153,6 +159,8 @@
 <translation id="3089395242580810162">Abrir em guia anônima</translation>
 <translation id="3090193911106258841">Acessando entrada de áudio e vídeo</translation>
 <translation id="3137521801621304719">Sair do modo de navegação anônima</translation>
+<translation id="3149891296864842641">Opção de envio</translation>
+<translation id="3162882791484435636">Selecionar opção de envio</translation>
 <translation id="3177909033752230686">Idioma da página:</translation>
 <translation id="3190152372525844641">Ative as permissões para o Chrome nas <ph name="BEGIN_LINK" />configurações do Android<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> de dados armazenados</translation>
@@ -188,7 +196,6 @@ Você está fazendo login com uma conta gerenciada e fornecendo ao administrador
 Para ajustar seu termo de pesquisa, mantenha-o pressionado para selecionar. Para refinar sua pesquisa, deslize o painel totalmente para cima e toque na caixa de pesquisa.</translation>
 <translation id="3623048332793834136">Favoritos do Chrome Canary</translation>
 <translation id="363596933471559332">Faça login automaticamente nos websites usando as credenciais armazenadas. Se o recurso estiver desativado, será preciso fazer a verificação sempre antes de fazer login em um website.</translation>
-<translation id="3653742808139624888">Para ter seus favoritos em todos os seus dispositivos, faça login no Chrome</translation>
 <translation id="3656115297268584622">Ative o local nas <ph name="BEGIN_LINK" />Configurações do Android<ph name="END_LINK" />.</translation>
 <translation id="3661699943263275414">Websites de terceiros podem salvar e ler dados de cookies</translation>
 <translation id="3672452749423051839">Sugestões de erro de navegação</translation>
@@ -220,6 +227,7 @@ Para ajustar seu termo de pesquisa, mantenha-o pressionado para selecionar. Para
 <translation id="4170011742729630528">O serviço não está disponível. Tente novamente mais tarde.</translation>
 <translation id="4195643157523330669">Abrir em uma nova guia</translation>
 <translation id="423410644998903704">O Chrome precisa ter acesso às permissões para compartilhá-las com este site.</translation>
+<translation id="4242533952199664413">Abrir configurações.</translation>
 <translation id="424864128008805179">Sair do Google Chrome?</translation>
 <translation id="4254813446494774748">Idioma de tradução:</translation>
 <translation id="4256782883801055595">Licenças de código aberto</translation>
@@ -267,6 +275,7 @@ Para ajustar seu termo de pesquisa, mantenha-o pressionado para selecionar. Para
 <translation id="4875622588773761625">Deseja que <ph name="PASSWORD_MANAGER_BRAND" /> atualize sua senha para este site?</translation>
 <translation id="4881695831933465202">Abrir</translation>
 <translation id="4885273946141277891">Número de instâncias do Google Chrome não suportado.</translation>
+<translation id="4923459931733593730">Pagamento</translation>
 <translation id="4943872375798546930">Nenhum resultado</translation>
 <translation id="497421865427891073">Avançar</translation>
 <translation id="4996978546172906250">Compartilhar via</translation>
@@ -452,6 +461,7 @@ Por exemplo, alguns websites podem responder a esta solicitação mostrando anú
 <translation id="7180611975245234373">Atualizar</translation>
 <translation id="7191430249889272776">Guia aberta no plano de fundo.</translation>
 <translation id="7208788139759694678">Economia de dados desativada</translation>
+<translation id="7220786058474068424">Processando</translation>
 <translation id="7243308994586599757">Opções disponíveis perto da parte inferior da tela</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> usa sua localização para mostrar resultados de pesquisa locais</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />Ajuda<ph name="END_LINK" /></translation>
@@ -505,6 +515,7 @@ Por exemplo, alguns websites podem responder a esta solicitação mostrando anú
 <translation id="7846076177841592234">Cancelar seleção</translation>
 <translation id="7851858861565204677">Outros dispositivos</translation>
 <translation id="7876243839304621966">Remover tudo</translation>
+<translation id="7902333740914687335">Pagamento processado</translation>
 <translation id="7947953824732555851">Aceitar/fazer login</translation>
 <translation id="7949961459945740081">Atualizar recursos</translation>
 <translation id="7963646190083259054">Fornecedor:</translation>
@@ -514,20 +525,19 @@ Por exemplo, alguns websites podem responder a esta solicitação mostrando anú
 <translation id="8007176423574883786">Desativado neste dispositivo</translation>
 <translation id="8026334261755873520">Limpar dados de navegação</translation>
 <translation id="8035133914807600019">Nova pasta...</translation>
+<translation id="8063895661287329888">Falha ao adicionar favorito.</translation>
 <translation id="8068648041423924542">Não foi possível selecionar certificado.</translation>
 <translation id="8069239273282989646">Após compactação</translation>
 <translation id="8073388330009372546">Abrir imagem em nova guia</translation>
 <translation id="8076014560081431679">As configurações salvas em sites não são excluídas e podem refletir seus hábitos de navegação. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="8087000398470557479">Este conteúdo é de <ph name="DOMAIN_NAME" />, veiculado pelo Google.</translation>
-<translation id="8098570222830891427">Dispositivos próximos a você estão transmitindo páginas da Web por Bluetooth. O Chrome procurará e exibirá páginas quando você ativar seu dispositivo. Elas passarão por um serviço do Google para melhorar a qualidade dos resultados de páginas.
-
-É possível controlar a Web física nas configurações do Chrome.</translation>
 <translation id="8106211421800660735">Número do cartão de crédito</translation>
 <translation id="813082847718468539">Visualizar informações do site</translation>
 <translation id="8137558756159375272">"Toque para pesquisar" envia a palavra selecionada e a página atual como contexto para a Pesquisa Google. Desative esse recurso em <ph name="BEGIN_LINK" />Configurações<ph name="END_LINK" />.</translation>
 <translation id="8168435359814927499">Conteúdo</translation>
 <translation id="8173098127580644436">desde o começo</translation>
 <translation id="8200772114523450471">Retomar</translation>
+<translation id="8202097416529803614">Resumo do pedido</translation>
 <translation id="8209050860603202033">Abrir imagem</translation>
 <translation id="8215250379351058554"><ph name="SITE" /> deseja se conectar a:</translation>
 <translation id="8218346974737627104">Confirmar login</translation>
@@ -583,6 +593,7 @@ Para receber novas licenças, conecte-se à Internet e use seu conteúdo baixado
 <translation id="8942627711005830162">Abrir em outra janela</translation>
 <translation id="8959122750345127698">A Navegação GPS está inacessível: <ph name="URL" /></translation>
 <translation id="8979340629087822094">do dia anterior</translation>
+<translation id="8981454092730389528">Controles de atividades do Google</translation>
 <translation id="8986494364107987395">Enviar automaticamente estatísticas de uso e relatórios de erros ao Google</translation>
 <translation id="8987061207681586800">O Chrome é seu</translation>
 <translation id="9019902583201351841">Gerenciado pelos seus pais</translation>

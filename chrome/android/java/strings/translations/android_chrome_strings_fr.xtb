@@ -68,6 +68,7 @@ Vous devez activer le Bluetooth et les services de localisation pour utiliser le
 <translation id="1842969606798536927">Paiement</translation>
 <translation id="1853692000353488670">Nouvel onglet de navigation privée</translation>
 <translation id="189172778771606813">Fermer le panneau de navigation</translation>
+<translation id="1924956916668006832">Sélectionner une adresse de livraison</translation>
 <translation id="194341124344773587">Activer l'autorisation pour Chrome dans les <ph name="BEGIN_LINK" />paramètres Android<ph name="END_LINK" /></translation>
 <translation id="1943432128510653496">Enregistrer les mots de passe</translation>
 <translation id="1944384637046898011">Tout chiffrer avec le mot de passe Google à compter du <ph name="TIME" /></translation>
@@ -98,6 +99,7 @@ Vous devez activer le Bluetooth et les services de localisation pour utiliser le
 <translation id="2268044343513325586">Affiner</translation>
 <translation id="2315043854645842844">La sélection de certificat côté client n'est pas compatible avec le système d'exploitation.</translation>
 <translation id="2321958826496381788">Faites glisser le curseur pour lire le texte aisément. Sa taille doit être similaire à celle-ci lorsque vous appuyez deux fois sur un paragraphe.</translation>
+<translation id="2329597144923131178">Connectez-vous pour synchroniser favoris, historique, mots de passe et autres sur vos appareils. </translation>
 <translation id="2343328333327081434">Installation…</translation>
 <translation id="2351097562818989364">Les paramètres de traduction ont été réinitialisés.</translation>
 <translation id="2359808026110333948">Continuer</translation>
@@ -133,6 +135,7 @@ Vous devez activer le Bluetooth et les services de localisation pour utiliser le
 <translation id="2762000892062317888">à l'instant</translation>
 <translation id="2770465223704140727">Retirer de la liste</translation>
 <translation id="278029852808208386">Aucun appareil Bluetooth trouvé. <ph name="BEGIN_LINK" />Relancez la recherche<ph name="END_LINK" />.</translation>
+<translation id="2781389167600714117">Sélectionner une option de livraison</translation>
 <translation id="2811892995384186721">Votre appareil ne s'affiche pas ? <ph name="BEGIN_LINK" />Obtenir de l'aide<ph name="END_LINK" /></translation>
 <translation id="2836148919159985482">Appuyez sur le bouton Retour pour quitter le mode plein écran.</translation>
 <translation id="2842985007712546952">Dossier parent</translation>
@@ -158,7 +161,6 @@ Vous devez activer le Bluetooth et les services de localisation pour utiliser le
 <translation id="3137521801621304719">Désactiver le mode navigation privée</translation>
 <translation id="3149891296864842641">Option d'expédition</translation>
 <translation id="3162882791484435636">Sélectionner une option d'expédition</translation>
-<translation id="3173438333156928404">Erreur lors du traitement de votre paiement.</translation>
 <translation id="3177909033752230686">Langue de la page :</translation>
 <translation id="3190152372525844641">Activer les autorisations pour Chrome dans les <ph name="BEGIN_LINK" />paramètres Android<ph name="END_LINK" /></translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> de données stockées</translation>
@@ -194,7 +196,6 @@ Vous vous connectez avec un compte géré, et vous donnez à l'administrateur le
 Pour modifier le terme de recherche, appuyez sur celui-ci de manière prolongée afin de le sélectionner. Pour affiner la recherche, faites glisser le panneau jusqu'en haut et appuyez sur le champ de recherche.</translation>
 <translation id="3623048332793834136">Favoris de Chrome Canary</translation>
 <translation id="363596933471559332">Connexion automatique aux sites Web à l'aide des identifiants enregistrés. Lorsque la fonctionnalité est désactivée, vous êtes invité à effectuer la validation avant chaque connexion à un site Web.</translation>
-<translation id="3653742808139624888">Connectez-vous à Chrome pour synchroniser vos favoris sur tous vos appareils.</translation>
 <translation id="3656115297268584622">Activez le service de localisation dans les <ph name="BEGIN_LINK" />paramètres Android<ph name="END_LINK" />.</translation>
 <translation id="3661699943263275414">Les sites tiers peuvent enregistrer et lire les données des cookies.</translation>
 <translation id="3672452749423051839">Suggestions en cas d'erreur de navigation</translation>
@@ -226,6 +227,7 @@ Pour modifier le terme de recherche, appuyez sur celui-ci de manière prolongée
 <translation id="4170011742729630528">Service indisponible. Veuillez réessayer plus tard.</translation>
 <translation id="4195643157523330669">Ouvrir dans un nouvel onglet</translation>
 <translation id="423410644998903704">Chrome doit disposer de l'accès à certaines autorisations pour les partager avec ce site.</translation>
+<translation id="4242533952199664413">Ouvrir les paramètres</translation>
 <translation id="424864128008805179">Se déconnecter de Chrome ?</translation>
 <translation id="4254813446494774748">Langue de traduction :</translation>
 <translation id="4256782883801055595">Licences Open Source</translation>
@@ -525,14 +527,12 @@ Votre compte Google conserve peut-être d'autres formes d'historique de navigati
 <translation id="8007176423574883786">Désactivée pour cet appareil</translation>
 <translation id="8026334261755873520">Effacer les données de navigation</translation>
 <translation id="8035133914807600019">Nouveau dossier…</translation>
+<translation id="8063895661287329888">Échec de l'ajout du favori</translation>
 <translation id="8068648041423924542">Impossible de sélectionner le certificat</translation>
 <translation id="8069239273282989646">Après compression</translation>
 <translation id="8073388330009372546">Ouvrir image dans autre onglet</translation>
 <translation id="8076014560081431679">Les paramètres de site enregistrés ne seront pas supprimés et peuvent donner des indications sur vos habitudes de navigation. <ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /></translation>
 <translation id="8087000398470557479">Ce contenu est issu de <ph name="DOMAIN_NAME" />. Il est diffusé par Google.</translation>
-<translation id="8098570222830891427">Des appareils à proximité diffusent des pages Web via le Bluetooth. Chrome recherche les pages à proximité et les affiche lorsque vous réactivez votre l'appareil. Ces pages sont analysées par un service Google pour améliorer la qualité des résultats.
-
-Vous pouvez contrôler le Web physique dans les paramètres de Chrome.</translation>
 <translation id="8106211421800660735">N° de carte</translation>
 <translation id="813082847718468539">Afficher des informations à propos du site</translation>
 <translation id="8137558756159375272">La fonction "Appuyer pour rechercher" transmet le mot sélectionné et la page actuelle en tant que contexte vers la fonction de recherche Google. Vous pouvez la désactiver dans les <ph name="BEGIN_LINK" />paramètres<ph name="END_LINK" />.</translation>

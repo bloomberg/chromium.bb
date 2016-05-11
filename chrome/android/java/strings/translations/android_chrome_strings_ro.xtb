@@ -68,6 +68,7 @@ Pentru a folosi Webul material, trebuie să activezi Bluetooth și Locația.</tr
 <translation id="1842969606798536927">Plătiți</translation>
 <translation id="1853692000353488670">Filă incognito nouă</translation>
 <translation id="189172778771606813">Închide panoul de navigare</translation>
+<translation id="1924956916668006832">Selectează adresa de expediere</translation>
 <translation id="194341124344773587">Activează permisiunea pentru Chrome din <ph name="BEGIN_LINK" />Setări Android<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Parole salvate</translation>
 <translation id="1944384637046898011">Criptează toate datele folosind parola Google din data de <ph name="TIME" /></translation>
@@ -93,11 +94,12 @@ Pentru a folosi Webul material, trebuie să activezi Bluetooth și Locația.</tr
 <translation id="2139186145475833000">Adaugă pe ecran pornire</translation>
 <translation id="2154710561487035718">Copiați adresa URL</translation>
 <translation id="21570240866965662">Conexiune lentă</translation>
-<translation id="219985413780390209">Protecție împotriva site-urilor periculoase, pentru tine și pentru dispozitivele tale</translation>
+<translation id="219985413780390209">Protecție împotriva site-urilor periculoase</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, aplicație web. <ph name="APP_URL" /></translation>
 <translation id="2268044343513325586">Rafinează</translation>
 <translation id="2315043854645842844">Selectarea certificatelor pe partea de client nu este acceptată de sistemul de operare.</translation>
 <translation id="2321958826496381788">Trage cursorul până poți citi textul cu ușurință. Textul trebuie să fie cel puțin la fel de mare ca acesta după o atingere dublă pe un paragraf.</translation>
+<translation id="2329597144923131178">Conectează-te și accesează marcajele, istoricul, parolele și alte setări pe toate dispozitivele.</translation>
 <translation id="2343328333327081434">Se instalează…</translation>
 <translation id="2351097562818989364">Setările de traducere au fost resetate.</translation>
 <translation id="2359808026110333948">Continuă</translation>
@@ -133,6 +135,7 @@ Pentru a folosi Webul material, trebuie să activezi Bluetooth și Locația.</tr
 <translation id="2762000892062317888">adineauri</translation>
 <translation id="2770465223704140727">Elimină din listă</translation>
 <translation id="278029852808208386">Nu s-a găsit niciun dispozitiv Bluetooth. <ph name="BEGIN_LINK" />Caută din nou<ph name="END_LINK" />.</translation>
+<translation id="2781389167600714117">Selectează expedierea</translation>
 <translation id="2811892995384186721">Dispozitivul nu apare? <ph name="BEGIN_LINK" />Obține ajutor<ph name="END_LINK" /></translation>
 <translation id="2836148919159985482">Atinge butonul Înapoi pentru a ieși din ecranul complet.</translation>
 <translation id="2842985007712546952">Dosar părinte</translation>
@@ -158,7 +161,6 @@ Pentru a folosi Webul material, trebuie să activezi Bluetooth și Locația.</tr
 <translation id="3137521801621304719">Ieși din modul incognito</translation>
 <translation id="3149891296864842641">Opțiune de expediere</translation>
 <translation id="3162882791484435636">Selectează opțiunea de expediere</translation>
-<translation id="3173438333156928404">Eroare la procesarea plății</translation>
 <translation id="3177909033752230686">Limba paginii:</translation>
 <translation id="3190152372525844641">Activează permisiunile pentru Chrome din <ph name="BEGIN_LINK" />Setări Android<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905">Date stocate: <ph name="STORAGE_AMOUNT" /></translation>
@@ -194,7 +196,6 @@ Urmează să vă conectați cu un cont gestionat și să acordați administrator
 Pentru a ajusta termenii căutării, apasă lung pentru a selecta. Pentru a rafina căutarea, glisează panoul până în partea de sus și atinge caseta de căutare.</translation>
 <translation id="3623048332793834136">Marcaje Chrome Canary</translation>
 <translation id="363596933471559332">Te conectezi automat la site-uri folosind datele de conectare stocate. Când funcția este dezactivată, ți se va solicita verificarea de fiecare dată înainte de a te conecta la un site.</translation>
-<translation id="3653742808139624888">Pentru a accesa marcajele pe toate dispozitivele, conectează-te la Chrome</translation>
 <translation id="3656115297268584622">Activează localizarea din <ph name="BEGIN_LINK" />Setările Android<ph name="END_LINK" />.</translation>
 <translation id="3661699943263275414">Site-urile terță parte pot să salveze și să citească datele asociate cookie-urilor</translation>
 <translation id="3672452749423051839">Sugestii pentru erori de navigare</translation>
@@ -226,6 +227,7 @@ Pentru a ajusta termenii căutării, apasă lung pentru a selecta. Pentru a rafi
 <translation id="4170011742729630528">Serviciul nu este disponibil. Încercați din nou mai târziu.</translation>
 <translation id="4195643157523330669">Deschide în filă nouă</translation>
 <translation id="423410644998903704">Chrome are nevoie de acces la permisiuni pentru a-l acorda acestui site.</translation>
+<translation id="4242533952199664413">Deschide setările</translation>
 <translation id="424864128008805179">Te deconectezi de la Chrome?</translation>
 <translation id="4254813446494774748">Limba traducerii:</translation>
 <translation id="4256782883801055595">Licențe open source</translation>
@@ -524,14 +526,12 @@ Contul Google poate să ofere alte forme ale istoricului de navigare, cum ar fi 
 <translation id="8007176423574883786">Dezactivată pentru acest dispozitiv</translation>
 <translation id="8026334261755873520">Șterge datele de navigare</translation>
 <translation id="8035133914807600019">Dosar nou…</translation>
+<translation id="8063895661287329888">Marcajul nu a putut fi adăugat.</translation>
 <translation id="8068648041423924542">Certificatul nu poate fi selectat.</translation>
 <translation id="8069239273282989646">După comprimare</translation>
 <translation id="8073388330009372546">Vedeți imaginea în filă nouă</translation>
 <translation id="8076014560081431679">Setările salvate pentru site-uri nu vor fi șterse și pot reflecta obiceiurile de navigare. <ph name="BEGIN_LINK" />Află mai multe<ph name="END_LINK" /></translation>
 <translation id="8087000398470557479">Acest conținut provine de pe <ph name="DOMAIN_NAME" />, oferit de Google.</translation>
-<translation id="8098570222830891427">Dispozitive din apropierea ta difuzează pagini web prin Bluetooth. Chrome va căuta astfel de pagini și le va afișa când activezi dispozitivul. Aceste pagini vor fi procesate de un serviciu Google pentru a îmbunătăți calitatea rezultatelor cu pagini.
-
-Poți să controlezi Webul material din Setările Chrome.</translation>
 <translation id="8106211421800660735">Numărul cardului de credit</translation>
 <translation id="813082847718468539">Afișează informațiile privind site-ul</translation>
 <translation id="8137558756159375272">Funcția Atinge pentru a căuta trimite cuvântul selectat și pagina actuală drept context către Căutare Google. Poți dezactiva această funcție din <ph name="BEGIN_LINK" />Setări<ph name="END_LINK" />.</translation>
@@ -596,7 +596,7 @@ Pentru licențe noi, conectează-te la internet și redă conținutul descărcat
 <translation id="8959122750345127698">Navigarea nu este accesibilă: <ph name="URL" /></translation>
 <translation id="8979340629087822094">din ultima zi</translation>
 <translation id="8981454092730389528">Opțiuni privind activitatea Google</translation>
-<translation id="8986494364107987395">Trimite automat statisticile de utilizare și rapoartele de blocare la Google</translation>
+<translation id="8986494364107987395">Trimite automat la Google statistici de utilizare și rapoarte de blocare</translation>
 <translation id="8987061207681586800">Personalizează Chrome</translation>
 <translation id="9019902583201351841">Gestionat de părinții tăi</translation>
 <translation id="9020607083536754075">Închide fila actuală și revino la aplicația anterioară</translation>

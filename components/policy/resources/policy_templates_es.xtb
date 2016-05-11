@@ -561,6 +561,22 @@ Si se inhabilita o no se configura esta opción, los usuarios podrán decidir si
           Todos los elementos de esta lista son patrones que coinciden con el estilo de las extensiones (consulta la página https://developer.chrome.com/extensions/match_patterns). Los usuarios podrán instalar fácilmente elementos procedentes de cualquier URL que coincida con un elemento de la lista. Estos patrones deben permitir tanto la ubicación del archivo *.crx como la página en la que se inicia la descarga (es decir, la URL de referencia).
 
           ExtensionInstallBlacklist prevalece sobre esta política, lo que significa que las extensiones incluidas en la lista negra no se instalarán aunque procedan de un sitio incluido en esta lista.</translation>
+<translation id="2813740161943223811">Esta política está obsoleta. Te recomendamos que utilices ProxyMode en su lugar.
+
+          Permite especificar el servidor proxy que utiliza <ph name="PRODUCT_NAME" /> e impide que los usuarios cambien la configuración del proxy. Las aplicaciones ARC también pueden utilizar este servidor proxy.
+
+          Si eliges la opción de establecer siempre conexión directamente en lugar de utilizar un servidor proxy, se ignorarán las demás opciones.
+
+          Si eliges la opción de utilizar la configuración de proxy del sistema o detectar automáticamente el servidor proxy, se ignorarán las demás opciones.
+
+          Si decides configurar el servidor proxy manualmente, puedes especificar más opciones en Dirección o URL del servidor proxy, URL de un archivo .pac de proxy y Lista de reglas de omisión de proxy separadas por comas. Solo el servidor proxy HTTP con la mayor prioridad está disponible para las aplicaciones ARC.
+
+          Puedes consultar ejemplos detallados en la siguiente página:
+          <ph name="PROXY_HELP_URL" />.
+
+          Si habilitas esta opción, <ph name="PRODUCT_NAME" /> ignorará todas las opciones relacionadas con el proxy especificadas en la línea de comandos.
+
+          Si no se establece esta política, los usuarios podrán elegir la configuración de proxy que quieran.</translation>
 <translation id="2824715612115726353">Habilitar modo de incógnito</translation>
 <translation id="2844404652289407061">Permite que Tocar para buscar esté disponible en la vista de contenido de <ph name="PRODUCT_NAME" />.
 
@@ -673,6 +689,18 @@ Si se inhabilita o no se configura esta opción, los usuarios podrán decidir si
           </translation>
 <translation id="3205825995289802549">Maximizar la primera ventana del navegador en la primera ejecución</translation>
 <translation id="3206731874112238027">Inhabilitar vista previa de impresión (obsoleto)</translation>
+<translation id="3208854390109736596">Permite especificar el servidor proxy que utiliza <ph name="PRODUCT_NAME" /> e impide que los usuarios cambien la configuración del proxy. Las aplicaciones ARC también pueden utilizar este servidor proxy.
+
+      Si eliges la opción de establecer siempre conexión directamente en lugar de utilizar un servidor proxy, se ignorarán las demás opciones.
+
+      Si eliges la opción de detectar automáticamente el servidor proxy, se ignorarán las demás opciones.
+
+      Puedes consultar ejemplos detallados en la siguiente página:
+      <ph name="PROXY_HELP_URL" />.
+
+      Si habilitas esta opción, <ph name="PRODUCT_NAME" /> y las aplicaciones ARC ignorarán todas las opciones relacionadas con el proxy especificadas en la línea de comandos.
+
+      Si no se establece esta política, los usuarios podrán elegir su propia configuración del proxy.</translation>
 <translation id="3213821784736959823">Permite controlar si el cliente DNS integrado se utiliza en <ph name="PRODUCT_NAME" />.
 
       Si esta política se establece en verdadera, se utilizará el cliente DNS integrado, si está disponible.
@@ -704,7 +732,7 @@ Si se inhabilita o no se configura esta opción, los usuarios podrán decidir si
       Si esta opción se habilita o no se configura, los usuarios podrán habilitar el proxy de Google Cloud Print si realizan el proceso de autenticación con sus cuentas de Google.
 
       Si se inhabilita esta opción, los usuarios no podrán habilitar el proxy y el ordenador no podrá compartir las impresoras conectadas con <ph name="CLOUD_PRINT_NAME" />.</translation>
-<translation id="3297010562646015826">Permite finalizar precesos en el Administrador de tareas</translation>
+<translation id="3297010562646015826">Permite finalizar procesos en el administrador de tareas</translation>
 <translation id="3322771899429619102">Te permite establecer una lista de patrones de URL para especificar los sitios web que pueden utilizar la generación de claves. Si un patrón de URL está en KeygenBlockedForUrls, se anularán estas excepciones.
 
        Si no se establece esta política, se utilizará el valor general predeterminado de la política DefaultKeygenSetting (si está configurada) para todos los sitios web. De lo contrario, se utilizará la configuración personalizada que haya definido el usuario.</translation>
@@ -727,6 +755,9 @@ Si se inhabilita o no se configura esta opción, los usuarios podrán decidir si
 
       Si el valor correspondiente a esta política se establece en "false", <ph name="PRODUCT_OS_NAME" /> no permitirá el inicio de sesiones de invitados.</translation>
 <translation id="3428247105888806363">Habilitar predicción de red</translation>
+<translation id="3449886121729668969">Permite establecer los valores de configuración de proxy de <ph name="PRODUCT_NAME" />. Esta configuración también está disponible para las aplicaciones ARC.
+
+      Esta política aún no está lista para su uso, así que no debes utilizarla.</translation>
 <translation id="3460784402832014830">Especifica la URL que utiliza un motor de búsqueda para mostrar una página Nueva pestaña.
 
           Esta política es opcional. Si no se establece, no se mostrará una página Nueva pestaña.
@@ -737,6 +768,14 @@ Si se inhabilita o no se configura esta opción, los usuarios podrán decidir si
           Si esta política se establece en true, los retrasos de administración de energía y el límite de duración de sesión no se ejecutarán hasta que se haya detectado actividad por parte del usuario en una sesión.
 
           Si esta política se establece en false o no se establece, los retrasos de administración de energía y el límite de duración de sesión se ejecutarán inmediatamente al iniciar la sesión.</translation>
+<translation id="3469657928310999477"><ph name="PRODUCT_NAME" /> omitirá cualquier proxy que se incluya en la lista de hosts especificada. Las aplicaciones ARC pueden utilizar esta lista como una lista de reglas de omisión.
+
+          Esta política solo tendrá validez si has seleccionado una configuración manual del proxy en la opción Seleccionar la forma de especificar la configuración del servidor proxy.
+
+          No se debe establecer esta política si se ha seleccionado cualquier otro modo de configuración de políticas de proxy.
+
+          Puedes consultar ejemplos detallados en la siguiente página:
+          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="3478024346823118645">Eliminar los datos del usuario al cerrar sesión</translation>
 <translation id="348495353354674884">Habilitar teclado virtual</translation>
 <translation id="3496296378755072552">Administrador de contraseñas</translation>
@@ -1418,6 +1457,9 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
       Esta política afecta a todos los tipos de soportes de almacenamiento (por ejemplo, memorias USB, discos duros externos, tarjetas de memoria SD y de otro tipo o almacenamiento óptico, entre otras opciones). El almacenamiento interno no se ve afectado, por lo que aún se puede acceder a los archivos guardados en la carpeta de descargas. Esta política tampoco afecta a Google Drive.
 
       Si se inhabilita o no se configura esta opción, los usuarios podrán utilizar todos los tipos admitidos de almacenamiento externo en su dispositivo.</translation>
+<translation id="6076099373507468537">Define la lista de dispositivos USB que pueden separarse de su controlador de kernel para utilizarse en la API chrome.usb directamente en una aplicación web. Las entradas son pares del identificador de producto y el identificador de proveedor del USB que permiten reconocer hardware específico.
+
+      Si no se configura esta política, la lista de dispositivos USB que se pueden separar está vacía.</translation>
 <translation id="6095999036251797924">Permite especificar el tiempo transcurrido hasta el bloqueo de la pantalla (sin que el usuario realice ninguna acción) cuando el usuario está conectado a la red o utiliza la batería.
 
           Cuando el tiempo transcurrido se establece en un valor superior a cero, especifica el tiempo en que el usuario debe permanecer inactivo antes de que <ph name="PRODUCT_OS_NAME" /> bloquee la pantalla.
@@ -1944,6 +1986,14 @@ Si esta opción no está establecida o está establecida en True, los dispositiv
       
 Si se asigna el valor false a la política, no se proporcionará información sobre la sesión. Si se asigna el valor true o si la política no se configura, sí se proporcionará información sobre la sesión.</translation>
 <translation id="7774768074957326919">Utilizar configuración de proxy del sistema</translation>
+<translation id="7775831859772431793">Permite especificar la URL del servidor proxy.
+
+          Esta política solo tendrá validez si has seleccionado una configuración manual del proxy en la opción Seleccionar la forma de especificar la configuración del servidor proxy.
+
+          No se debe establecer esta política si se ha seleccionado cualquier otro modo de configuración de políticas de proxy.
+
+          Puedes consultar ejemplos detallados en la siguiente página:
+          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7788511847830146438">Por perfil</translation>
 <translation id="7796141075993499320">Permite establecer una lista de patrones de URL que especifiquen sitios que puedan ejecutar complementos.
 
@@ -1978,6 +2028,14 @@ Si se asigna el valor false a la política, no se proporcionará información so
       Permite determinar el ID de la extensión que se debe utilizar como salvapantallas en la pantalla de inicio de sesión. La extensión debe formar parte del paquete AppPack configurado para ese dominio a través de la política DeviceAppPack.</translation>
 <translation id="7882890448959833986">Suprimir la advertencia de SO no admitido</translation>
 <translation id="7912255076272890813">Configurar tipos de extensiones o aplicaciones permitidos</translation>
+<translation id="7915236031252389808">Permite especificar la URL de un archivo .pac de proxy.
+
+          Esta política solo tendrá validez si has seleccionado una configuración manual del proxy en la opción Seleccionar la forma de especificar la configuración del servidor proxy.
+
+          No se debe establecer esta política si se ha seleccionado cualquier otro modo de configuración de políticas de proxy.
+
+          Puedes consultar ejemplos detallados en la siguiente página:
+          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="793134539373873765">Especifica si la conexión P2P se debe utilizar para cargas útiles de actualizaciones del sistema operativo. Si esta política se establece en True, los dispositivos compartirán e intentarán consumir cargas útiles de actualizaciones en la red LAN, reduciendo de forma potencial la congestión y el uso del ancho de banda. Si la carga útil de actualizaciones no está disponible en la red LAN, el dispositivo deberá realizar la descarga desde un servidor de actualizaciones. Si se establece en False o no se configura, no se utilizará la conexión P2P.</translation>
 <translation id="7933141401888114454">Habilitar la creación de usuarios supervisados</translation>
 <translation id="7936098023732125869">Permite habilitar el uso de un proveedor de búsqueda predeterminado.
@@ -2126,6 +2184,11 @@ Si la política está establecida en False, no se informará sobre la lista de i
 <translation id="8382184662529825177">Habilitar el uso de la confirmación remota para la protección del contenido del dispositivo</translation>
 <translation id="838870586332499308">Habilitar la itinerancia de datos</translation>
 <translation id="8412312801707973447">Se realizan comprobaciones OCSP/CRL si estás online</translation>
+<translation id="8413348101535146315">Permite finalizar procesos en el administrador de tareas de <ph name="PRODUCT_NAME" />.
+
+      Si se establece el valor false, se inhabilita el botón Finalizar proceso en el administrador de tareas.
+
+      Si se establece el valor true o no se configura, el usuario puede finalizar procesos en el administrador de tareas.</translation>
 <translation id="8424255554404582727">Establecer rotación de pantalla predeterminada y volver a aplicarla cada vez que se reinicie el dispositivo</translation>
 <translation id="8426231401662877819">Rotar la pantalla 90 grados hacia la derecha</translation>
 <translation id="8451988835943702790">Utilizar página Nueva pestaña como página principal</translation>
@@ -2353,6 +2416,24 @@ En todas las plataformas, salvo en <ph name="PRODUCT_OS_NAME" />, el modo kiosco
 <translation id="9112897538922695510">Te permite registrar una lista de controladores de protocolos. Solo puede tratarse de una política recomendada. La propiedad |protocol| se debe establecer según el esquema (por ejemplo, mailto), y la propiedad |url| se debe establecer según el patrón de URL de la aplicación que procesa el esquema. El patrón puede incluir un %s, que si está presente se sustituirá por la URL procesada.
 
 Los controladores de protocolos registrados por la política se combinan con los registrados por el usuario, y ambos pueden utilizarse. El usuario puede anular los controladores de protocolos instalados por la política. Para ello, debe instalar un nuevo controlador predeterminado, pero no puede eliminar un controlador de protocolo registrado por la política.</translation>
+<translation id="913138516158420759">Permite especificar el servidor proxy que utiliza <ph name="PRODUCT_NAME" /> e impide que los usuarios cambien la configuración del proxy. Las aplicaciones ARC también pueden utilizar este servidor proxy.
+
+          Si eliges la opción de establecer siempre conexión directamente en lugar de utilizar un servidor proxy, se ignorarán las demás opciones.
+
+          Si eliges la opción de usar la configuración de proxy del sistema, se ignorarán las demás opciones.
+
+          Si eliges la opción de detectar automáticamente el servidor proxy, se ignorarán las demás opciones.
+
+         Si decides configurar el servidor proxy manualmente, puedes especificar más opciones en Dirección o URL de servidor proxy y en Lista de reglas de omisión de proxy separadas por comas. Solo el servidor proxy HTTP con la mayor prioridad está disponible para las aplicaciones ARC.
+
+          Si decides usar una secuencia de comandos .pac de proxy, deberás especificar la URL de la secuencia en URL de un archivo .pac de proxy.
+
+          Puedes consultar ejemplos detallados en la siguiente página:
+          <ph name="PROXY_HELP_URL" />.
+
+          Si habilitas esta opción, <ph name="PRODUCT_NAME" /> y las aplicaciones ARC ignorarán todas las opciones relacionadas con el proxy especificadas en la línea de comandos.
+
+          Si no se establece esta política, los usuarios podrán elegir su propia configuración del proxy.</translation>
 <translation id="913195841488580904">Bloquear el acceso a una lista de URL</translation>
 <translation id="9135033364005346124">Habilitar el proxy de <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="9147029539363974059">Envía registros del sistema al servidor de administración para permitir que

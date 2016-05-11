@@ -42,6 +42,7 @@
 <translation id="1254117744268754948">フォルダの選択</translation>
 <translation id="1285320974508926690">このサイトは翻訳しない</translation>
 <translation id="129553762522093515">最近閉じたタブ</translation>
+<translation id="129863573139666797"><ph name="BEGIN_LINK" />Cookie を消去してみてください<ph name="END_LINK" /></translation>
 <translation id="1339601241726513588">登録ドメイン:</translation>
 <translation id="1344588688991793829">Chromium の自動入力設定...</translation>
 <translation id="1374468813861204354">ヒント</translation>
@@ -197,6 +198,7 @@
 <translation id="2969319727213777354">安全な接続を確立するには、時計が正しく設定されている必要があります。これは、ウェブサイトが自身を証明するために使用する証明書には有効期限があるためです。デバイスの時計が正しくないため、Google Chrome でこれらの証明書を確認することができません。</translation>
 <translation id="2972581237482394796">やり直し(&amp;R)</translation>
 <translation id="2985306909656435243">有効にすると、Chromium がカード情報をこの端末に保存するためフォームにすばやく入力できるようになります。</translation>
+<translation id="2989984781570875765"><ph name="CREDIT_CARD" /> の裏面に記載されている有効期限と 3 桁の CVC コードを入力してください</translation>
 <translation id="2991174974383378012">ウェブサイトとの共有</translation>
 <translation id="3005723025932146533">保存済みのコピーを表示</translation>
 <translation id="3010559122411665027">リスト エントリ「<ph name="ENTRY_INDEX" />」: <ph name="ERROR" /></translation>
@@ -280,6 +282,7 @@
 <translation id="3717027428350673159"><ph name="BEGIN_LINK" />プロキシ、ファイアウォール、DNS の設定を確認する<ph name="END_LINK" /></translation>
 <translation id="3739623965217189342">コピーしたリンク</translation>
 <translation id="3744899669254331632"><ph name="SITE" /> から送信された暗号化済みの認証情報を Chromium で処理できないため、現在このウェブサイトにアクセスできません。通常、ネットワーク エラーやネットワークへの攻撃は一時的なものです。しばらくするとページにアクセスできるようになります。</translation>
+<translation id="3748071062818261683">カードの確認</translation>
 <translation id="3748412725338508953">リダイレクトが多すぎます。</translation>
 <translation id="375403751935624634">サーバー エラーのため翻訳できませんでした。</translation>
 <translation id="3759461132968374835">最近発生した障害はありません。障害レポートが無効になっているときに発生した障害は、ここには表示されません。</translation>
@@ -308,6 +311,7 @@
 <translation id="4103249731201008433">デバイスのシリアル番号が無効です</translation>
 <translation id="4103763322291513355">&lt;strong&gt;chrome://policy&lt;/strong&gt; にアクセスして、ブラックリストに登録されている URL とシステム管理者が設定した他のポリシーを確認できます。</translation>
 <translation id="4117700440116928470">ポリシーの適用範囲がサポートされていません。</translation>
+<translation id="4130226655945681476">ネットワーク ケーブル、モデム、ルーターを確認する</translation>
 <translation id="4147376274874979956">ファイルにアクセスすることができません。</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">Chromium にこのカードを保存しますか？</translation>
@@ -342,11 +346,15 @@
 <translation id="450710068430902550">管理者との共有</translation>
 <translation id="4522570452068850558">詳細</translation>
 <translation id="4535734014498033861">プロキシ サーバーとの接続に失敗しました。</translation>
+<translation id="4553532082208702698"><ph name="CREDIT_CARD" /> の表側に記載されている 4 桁の CVC コードを入力してください</translation>
+<translation id="4558551763791394412">拡張機能を無効にしてみてください。</translation>
 <translation id="4587425331216688090">Chrome からアドレスを削除してもよろしいですか？</translation>
 <translation id="4592951414987517459"><ph name="DOMAIN" /> への接続は新しい暗号スイートにより暗号化されています。</translation>
 <translation id="4594403342090139922">削除の取り消し（&amp;U）</translation>
 <translation id="4668929960204016307">,</translation>
+<translation id="4670097147947922288">拡張機能のページを表示しています。</translation>
 <translation id="467662567472608290">このサーバーが <ph name="DOMAIN" /> であることを確認できませんでした。このサーバーのセキュリティ証明書にはエラーがあります。原因としては、不適切な設定や、悪意のあるユーザーによる接続妨害が考えられます。</translation>
+<translation id="4683417246209150705"><ph name="CREDIT_CARD" /> の裏面に記載されている 3 桁の CVC コードを入力してください</translation>
 <translation id="4697214168136963651"><ph name="URL" /> はブロックされました</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">接続が中断されました</translation>
@@ -431,6 +439,8 @@
 <translation id="5650551054760837876">一致する情報はありません。</translation>
 <translation id="5663999524854166235">確認のため、カードの裏面に記載されている 3 桁の CVC を入力してください</translation>
 <translation id="5677928146339483299">ブロック</translation>
+<translation id="5696590819423335174"><ph name="CREDIT_CARD" /> の表側に記載されている有効期限と 4 桁の CVC コードを入力してください</translation>
+<translation id="5699278517904102888">確認のため、<ph name="CREDIT_CARD" /> の裏面に記載されている 3 桁の CVC コードを入力してください</translation>
 <translation id="5710435578057952990">このウェブサイトの ID は確認されていません。</translation>
 <translation id="5720705177508910913">現在のユーザー</translation>
 <translation id="5785756445106461925">加えて、このページには安全でない他のリソースが含まれています。このリソースは送信中に他のユーザーから見られる可能性があります。また、悪意のあるユーザーによって改変されページの見た目が変わる可能性もあります。</translation>
@@ -553,7 +563,6 @@
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> ではセキュリティ規格が遵守されていません。</translation>
 <translation id="721197778055552897">この問題の詳細については、<ph name="BEGIN_LINK" />こちら<ph name="END_LINK" />をご覧ください。</translation>
 <translation id="7219179957768738017">この接続には <ph name="SSL_VERSION" /> を使用しています。</translation>
-<translation id="7225807090967870017">ビルド ID</translation>
 <translation id="7231308970288859235">このページを開いてもよいか保護者にたずねる必要があります。</translation>
 <translation id="7246609911581847514">新しいサイトに初めて訪問する際は管理者の承認が必要です。</translation>
 <translation id="725866823122871198">パソコンの日時（<ph name="DATE_AND_TIME" />）が正しくないため、<ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> へのプライベート接続を確立できません。</translation>
@@ -594,6 +603,7 @@
 <translation id="7610193165460212391">値（<ph name="VALUE" />）が範囲外です。</translation>
 <translation id="7613889955535752492">有効期限: <ph name="EXPIRATION_MONTH" /> / <ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">別の Google アカウント パスワードを使って暗号化したデータが既にあります。パスワードを以下に入力してください。</translation>
+<translation id="7633887239437305289">確認のため、<ph name="CREDIT_CARD" /> の表側に記載されている 4 桁の CVC コードを入力してください</translation>
 <translation id="7634554953375732414">このサイトへの接続はプライベート接続ではありません。</translation>
 <translation id="7637571805876720304">Chromium からクレジット カードを削除してもよろしいですか？</translation>
 <translation id="7643817847124207232">インターネットに接続できません。</translation>

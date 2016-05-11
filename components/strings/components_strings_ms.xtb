@@ -42,6 +42,7 @@
 <translation id="1254117744268754948">Pilih Folder</translation>
 <translation id="1285320974508926690">Jangan sekali-kali menterjemahkan tapak ini</translation>
 <translation id="129553762522093515">Ditutup baru-baru ini</translation>
+<translation id="129863573139666797"><ph name="BEGIN_LINK" />Cuba kosongkan kuki anda<ph name="END_LINK" /></translation>
 <translation id="1339601241726513588">Domain pendaftaran:</translation>
 <translation id="1344588688991793829">Tetapan Auto Isi Chromium...</translation>
 <translation id="1374468813861204354">cadangan</translation>
@@ -198,6 +199,7 @@
 <translation id="2969319727213777354">Untuk mewujudkan sambungan yang selamat, jam anda perlu ditetapkan dengan betul. Perkara ini perlu dilakukan kerana sijil yang digunakan laman web untuk mengenal pastinya hanya sah untuk tempoh masa yang tertentu. Memandangkan jam peranti anda tidak betul, Google Chrome tidak boleh mengesahkan sijil ini.</translation>
 <translation id="2972581237482394796">&amp;Buat Semula</translation>
 <translation id="2985306909656435243">Jika didayakan, Chromium akan menyimpan salinan kad anda pada peranti ini untuk pengisian borang yang lebih cepat.</translation>
+<translation id="2989984781570875765">Masukkan tarikh tamat tempoh dan CVC 3 digit dari bahagian belakang <ph name="CREDIT_CARD" /> anda</translation>
 <translation id="2991174974383378012">Berkongsi dengan Tapak Web</translation>
 <translation id="3005723025932146533">Paparkan salinan disimpan</translation>
 <translation id="3010559122411665027">Masukan senarai "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
@@ -282,6 +284,7 @@
 <translation id="3717027428350673159"><ph name="BEGIN_LINK" />Menyemak proksi, tembok api dan konfigurasi DNS<ph name="END_LINK" /></translation>
 <translation id="3739623965217189342">Pautan yang anda salin</translation>
 <translation id="3744899669254331632">Anda tidak boleh melawat <ph name="SITE" /> sekarang kerana tapak web telah menghantar bukti kelayakan hancur yang tidak boleh diproses oleh Chromium. Ralat dan serangan rangkaian biasanya sementara. Oleh itu halaman ini mungkin akan berfungsi kemudian.</translation>
+<translation id="3748071062818261683">Sahkan Kad</translation>
 <translation id="3748412725338508953">Terlalu banyak penghalaan semula.</translation>
 <translation id="375403751935624634">Gagal menterjemah disebabkan ralat pelayan.</translation>
 <translation id="3759461132968374835">Tiada laporan nahas yang dibuat baru-baru ini.  Nahas yang berlaku apabila laporan nahas dilumpuhkan tidak akan kelihatan di sini.</translation>
@@ -310,6 +313,7 @@
 <translation id="4103249731201008433">Nombor siri peranti tidak sah</translation>
 <translation id="4103763322291513355">Lawati &lt;strong&gt;chrome://policy&lt;/strong&gt; untuk melihat senarai URL yang disenarai hitam dan dasar lain yang dikuatkuasakan oleh pentadbir sistem anda.</translation>
 <translation id="4117700440116928470">Skop dasar tidak disokong.</translation>
+<translation id="4130226655945681476">Memeriksa kabel rangkaian, modem dan penghala</translation>
 <translation id="4147376274874979956">Tidak dapat mengakses fail tersebut.</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">Adakah anda mahu Chromium menyimpan kad ini?</translation>
@@ -344,11 +348,15 @@
 <translation id="450710068430902550">Berkongsi dengan Pentadbir</translation>
 <translation id="4522570452068850558">Butiran</translation>
 <translation id="4535734014498033861">Sambungan pelayan proksi gagal.</translation>
+<translation id="4553532082208702698">Masukkan CVC 4 digit dari bahagian depan <ph name="CREDIT_CARD" /> anda</translation>
+<translation id="4558551763791394412">Cuba lumpuhkan sambungan anda.</translation>
 <translation id="4587425331216688090">Alih keluar alamat daripada Chrome?</translation>
 <translation id="4592951414987517459">Sambungan anda ke <ph name="DOMAIN" /> disulitkan menggunakan suit sifer moden.</translation>
 <translation id="4594403342090139922">&amp;Buat asal Pemadaman</translation>
 <translation id="4668929960204016307">,</translation>
+<translation id="4670097147947922288">Anda sedang melihat halaman sambungan.</translation>
 <translation id="467662567472608290">Pelayan ini tidak dapat membuktikan bahawa domainnya ialah <ph name="DOMAIN" />; sijil keselamatannya mengandungi ralat. Ini mungkin disebabkan oleh kesilapan konfigurasi atau penyerang yang memintas sambungan anda.</translation>
+<translation id="4683417246209150705">Masukkan CVC 3 digit dari bahagian belakang <ph name="CREDIT_CARD" /> anda</translation>
 <translation id="4697214168136963651"><ph name="URL" /> telah disekat</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">Sambungan anda tergendala</translation>
@@ -433,6 +441,8 @@
 <translation id="5650551054760837876">Tiada hasil carian ditemui.</translation>
 <translation id="5663999524854166235">Masukkan CVC 3 digit dari bahagian belakang kad anda untuk pengesahan</translation>
 <translation id="5677928146339483299">Disekat</translation>
+<translation id="5696590819423335174">Masukkan tarikh tamat tempoh dan CVC 4 digit dari bahagian depan <ph name="CREDIT_CARD" /> anda</translation>
+<translation id="5699278517904102888">Masukkan CVC 3 digit dari bahagian belakang <ph name="CREDIT_CARD" /> anda untuk pengesahan</translation>
 <translation id="5710435578057952990">Identiti tapak web ini belum disahkan.</translation>
 <translation id="5720705177508910913">Pengguna semasa</translation>
 <translation id="5785756445106461925">Selain itu, halaman ini mengandungi sumber lain yang tidak selamat. Sumber ini boleh dilihat oleh orang lain semasa dalam transit dan boleh diubah oleh penyerang untuk menukar penampilan halaman.</translation>
@@ -556,7 +566,6 @@
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> tidak mematuhi piawaian keselamatan.</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Ketahui lebih lanjut<ph name="END_LINK" /> mengenai masalah ini.</translation>
 <translation id="7219179957768738017">Sambungan menggunakan <ph name="SSL_VERSION" />.</translation>
-<translation id="7225807090967870017">ID Pembinaan</translation>
 <translation id="7231308970288859235">Op! Anda perlu bertanya kepada ibu bapa anda sama ada anda boleh melawat halaman ini.</translation>
 <translation id="7246609911581847514">Anda melihat mesej ini kerana pengurus anda perlu meluluskan tapak baharu pada lawatan pertama anda.</translation>
 <translation id="725866823122871198">Sambungan peribadi ke <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> tidak boleh diwujudkan kerana tarikh dan masa komputer anda (<ph name="DATE_AND_TIME" />) tidak betul.</translation>
@@ -597,6 +606,7 @@ Psst! <ph name="SHORTCUT_KEY" /> mod Inkognito mungkin akan berguna pada masa ak
 <translation id="7610193165460212391">Nilai berada di luar julat <ph name="VALUE" /></translation>
 <translation id="7613889955535752492">Tamat: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Anda sudah mempunyai data yang disulitkan menggunakan versi kata laluan Akaun Google anda yang berbeza. Sila masukkannya di bawah.</translation>
+<translation id="7633887239437305289">Masukkan CVC 4 digit dari bahagian depan <ph name="CREDIT_CARD" /> anda untuk pengesahan</translation>
 <translation id="7634554953375732414">Sambungan anda ke tapak ini tidak berciri peribadi.</translation>
 <translation id="7637571805876720304">Alih keluar kad kredit daripada Chromium?</translation>
 <translation id="7643817847124207232">Sambungan Internet terputus.</translation>

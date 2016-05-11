@@ -42,6 +42,7 @@
 <translation id="1254117744268754948">Valitse kansio</translation>
 <translation id="1285320974508926690">Älä käännä tätä sivustoa</translation>
 <translation id="129553762522093515">Hiljattain suljetut välilehdet</translation>
+<translation id="129863573139666797"><ph name="BEGIN_LINK" />Tyhjennä evästeet.<ph name="END_LINK" /></translation>
 <translation id="1339601241726513588">Käyttöönoton verkkotunnus:</translation>
 <translation id="1344588688991793829">Chromiumin automaattisen täytön asetukset…</translation>
 <translation id="1374468813861204354">ehdotuksia</translation>
@@ -197,6 +198,7 @@
 <translation id="2969319727213777354">Kellosi täytyy asettaa oikeaan aikaan, jotta salattu yhteys voidaan muodostaa. Tämä johtuu siitä, että verkkosivustojen tunnistamisessa käytettävät varmenteet ovat voimassa vain tiettyinä aikoina. Chrome ei voi vahvistaa varmenteita, koska laitteesi kello on väärässä ajassa.</translation>
 <translation id="2972581237482394796">&amp;Tee uudelleen</translation>
 <translation id="2985306909656435243">Jos tämä on käytössä, Chromium tallentaa kortin kopion tälle laitteelle nopeuttaakseen lomakkeiden täyttöä.</translation>
+<translation id="2989984781570875765">Anna vanhenemispäivä ja kolminumeroinen CVC kortin <ph name="CREDIT_CARD" /> takapuolelta.</translation>
 <translation id="2991174974383378012">Jakaminen verkkosivustojen kanssa</translation>
 <translation id="3005723025932146533">Näytä tallennettu kopio</translation>
 <translation id="3010559122411665027">Luettelokohde "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
@@ -281,6 +283,7 @@
 <translation id="3717027428350673159"><ph name="BEGIN_LINK" />Tarkista välityspalvelimen, palomuurin ja nimipalvelun määritykset<ph name="END_LINK" />.</translation>
 <translation id="3739623965217189342">Kopioimasi linkki</translation>
 <translation id="3744899669254331632">Et voi siirtyä sivustoon <ph name="SITE" /> tällä hetkellä, koska sivusto lähetti salatut kirjautumistiedot, joita Chromium ei osaa käsitellä. Verkkovirheet ja hyökkäykset ovat yleensä väliaikaisia, joten sivu toimii luultavasti myöhemmin.</translation>
+<translation id="3748071062818261683">Vahvista kortti</translation>
 <translation id="3748412725338508953">Uudelleenohjauksia oli liian monta.</translation>
 <translation id="375403751935624634">Käännös epäonnistui palvelinvirheen vuoksi.</translation>
 <translation id="3759461132968374835">Ei viimeaikaisia kaatumisilmoituksia. Jos selain kaatui kaatumisilmoitusten ollessa pois käytöstä, ilmoituksia ei näytetä täällä.</translation>
@@ -309,6 +312,7 @@
 <translation id="4103249731201008433">Laitteen sarjanumero on virheellinen</translation>
 <translation id="4103763322291513355">Voit lukea listan kielletyistä URL-osoitteista ja muut järjestelmänvalvojasi määräämät käytännöt osoitteessa &lt;strong&gt;chrome://policy&lt;/strong&gt;.</translation>
 <translation id="4117700440116928470">Käytännön laajuutta ei tueta.</translation>
+<translation id="4130226655945681476">Tarkista verkkojohdot, modeemi ja reititin.</translation>
 <translation id="4147376274874979956">Tiedostoa ei voi käyttää.</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">Haluatko, että Chromium tallentaa tämän kortin?</translation>
@@ -343,11 +347,15 @@
 <translation id="450710068430902550">Jakaminen järjestelmänvalvojan kanssa</translation>
 <translation id="4522570452068850558">Tiedot</translation>
 <translation id="4535734014498033861">Välityspalvelinyhteys epäonnistui.</translation>
+<translation id="4553532082208702698">Anna nelinumeroinen CVC kortin <ph name="CREDIT_CARD" /> etupuolelta.</translation>
+<translation id="4558551763791394412">Poista laajennukset käytöstä.</translation>
 <translation id="4587425331216688090">Poistetaanko osoite Chromen tiedoista?</translation>
 <translation id="4592951414987517459">Yhteytesi kohteeseen <ph name="DOMAIN" /> on salattu nykyaikaisella salaustekniikalla.</translation>
 <translation id="4594403342090139922">K&amp;umoa poisto</translation>
 <translation id="4668929960204016307">,</translation>
+<translation id="4670097147947922288">Katselet laajennussivua.</translation>
 <translation id="467662567472608290">Palvelin ei voinut todistaa olevansa <ph name="DOMAIN" />; sen suojausvarmenne sisältää virheitä. Tämä voi johtua määritysvirheestä tai verkkoyhteytesi siepanneesta hyökkääjästä.</translation>
+<translation id="4683417246209150705">Anna kolminumeroinen CVC kortin <ph name="CREDIT_CARD" /> takapuolelta.</translation>
 <translation id="4697214168136963651"><ph name="URL" /> estettiin</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">Yhteys keskeytyi</translation>
@@ -432,6 +440,8 @@
 <translation id="5650551054760837876">Hakutuloksia ei löytynyt.</translation>
 <translation id="5663999524854166235">Anna korttisi takapuolella oleva kolminumeroinen CVC-koodi maksun vahvistusta varten.</translation>
 <translation id="5677928146339483299">Estetty</translation>
+<translation id="5696590819423335174">Anna vanhenemispäivä ja nelinumeroinen CVC kortin <ph name="CREDIT_CARD" /> etupuolelta.</translation>
+<translation id="5699278517904102888">Anna kolminumeroinen CVC kortin <ph name="CREDIT_CARD" /> takapuolelta vahvistusta varten.</translation>
 <translation id="5710435578057952990">Tämän sivuston identiteettiä ei ole vahvistettu.</translation>
 <translation id="5720705177508910913">Nykyinen käyttäjä</translation>
 <translation id="5785756445106461925">Tällä sivulla on kuitenkin muita osia, jotka eivät ole suojattuja. Muut voivat tarkastella näitä osia siirron aikana, ja hyökkääjä voi muuttaa sivun ulkoasua muokkaamalla näitä osia.</translation>
@@ -554,7 +564,6 @@
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> ei noudata tietoturvastandardeja.</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Lisätietoja<ph name="END_LINK" /> ongelmasta.</translation>
 <translation id="7219179957768738017">Yhteys käyttää protokollaa <ph name="SSL_VERSION" />.</translation>
-<translation id="7225807090967870017">Ohjelmistoversion tunnus</translation>
 <translation id="7231308970288859235">Hups! Sinun on pyydettävä vanhemmaltasi lupa tällä sivulla käymiseen.</translation>
 <translation id="7246609911581847514">Tämä viesti näytetään, koska ylläpitäjän täytyy hyväksyä uudet sivustot ennen ensimmäistä lataamista.</translation>
 <translation id="725866823122871198">Verkkotunnukseen <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> ei voi muodostaa salattua yhteyttä, koska tietokoneesi aika ja päivämäärä (<ph name="DATE_AND_TIME" />) ovat virheelliset.</translation>
@@ -595,6 +604,7 @@ Psst! Suosittelemme käyttämään ensi kerralla incognito-tilaa <ph name="SHORT
 <translation id="7610193165460212391">Arvo on alueen ulkopuolella (<ph name="VALUE" />).</translation>
 <translation id="7613889955535752492">Vanhenee: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Tietojasi on jo salattu Google-tilisi salasanan muulla versiolla. Syötä salasana alla.</translation>
+<translation id="7633887239437305289">Anna nelinumeroinen CVC kortin <ph name="CREDIT_CARD" /> etupuolelta vahvistusta varten.</translation>
 <translation id="7634554953375732414">Sivustoon ei ole muodostettu salattua yhteyttä.</translation>
 <translation id="7637571805876720304">Poistetaanko luottokortti Chromiumista?</translation>
 <translation id="7643817847124207232">Internetyhteys on katkennut.</translation>

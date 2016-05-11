@@ -68,6 +68,7 @@
 <translation id="1842969606798536927">お支払い</translation>
 <translation id="1853692000353488670">新しいシークレット タブ</translation>
 <translation id="189172778771606813">操作パネルを閉じる</translation>
+<translation id="1924956916668006832">配送先住所を選択</translation>
 <translation id="194341124344773587"><ph name="BEGIN_LINK" />Android の設定<ph name="END_LINK" />で Chrome の権限を有効にしてください。</translation>
 <translation id="1943432128510653496">パスワードを保存する</translation>
 <translation id="1944384637046898011"><ph name="TIME" />時点の Google パスワードですべてのデータを暗号化する</translation>
@@ -98,6 +99,7 @@
 <translation id="2268044343513325586">絞り込み</translation>
 <translation id="2315043854645842844">オペレーティング システムでサポートされていないため、クライアント側で証明書を選択することはできません。</translation>
 <translation id="2321958826496381788">読みやすくなるまでスライダをドラッグしてください。段落をダブルタップするとテキストがこれより大きくなります。</translation>
+<translation id="2329597144923131178">ログインすると、お使いのどのデバイスでも同じブックマーク、履歴、パスワード、その他の設定を利用できるようになります。</translation>
 <translation id="2343328333327081434">インストール中...</translation>
 <translation id="2351097562818989364">翻訳設定をリセットしました。</translation>
 <translation id="2359808026110333948">続行</translation>
@@ -133,6 +135,7 @@
 <translation id="2762000892062317888">たった今</translation>
 <translation id="2770465223704140727">リストから削除</translation>
 <translation id="278029852808208386">Bluetooth デバイスが見つかりませんでした。<ph name="BEGIN_LINK" />もう一度検索してください<ph name="END_LINK" />。</translation>
+<translation id="2781389167600714117">配送方法を選択</translation>
 <translation id="2811892995384186721">お使いの端末が表示されない場合は、<ph name="BEGIN_LINK" />ヘルプ<ph name="END_LINK" />をご覧ください。</translation>
 <translation id="2836148919159985482">全画面表示を終了するには戻るボタンをタップします。</translation>
 <translation id="2842985007712546952">親フォルダ</translation>
@@ -158,7 +161,6 @@
 <translation id="3137521801621304719">シークレット モードを終了</translation>
 <translation id="3149891296864842641">配送オプション</translation>
 <translation id="3162882791484435636">配送オプションを選択</translation>
-<translation id="3173438333156928404">お支払いの処理中にエラーが発生しました</translation>
 <translation id="3177909033752230686">ページの言語:</translation>
 <translation id="3190152372525844641"><ph name="BEGIN_LINK" />Android の設定<ph name="END_LINK" />で Chrome の権限を有効にしてください。</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> の保存データ</translation>
@@ -194,7 +196,6 @@
 検索用語を押し続けるとその用語が選択され、選択範囲を調整できます。検索結果を絞り込むには、パネルを上にスライドして検索ボックスをタップします。</translation>
 <translation id="3623048332793834136">Chrome Canary のブックマーク</translation>
 <translation id="363596933471559332">保存されている認証情報を使用してウェブサイトに自動的にログインします。この機能がオフの場合は、ウェブサイトにログインするときに毎回確認を求められます。</translation>
-<translation id="3653742808139624888">お使いのどの端末でも同じブックマークを使用するには、Chrome にログインします。</translation>
 <translation id="3656115297268584622"><ph name="BEGIN_LINK" />Android 設定<ph name="END_LINK" />で位置情報サービスを有効にしてください。</translation>
 <translation id="3661699943263275414">サードパーティのウェブサイトに Cookie データの保存と読み取りを許可する</translation>
 <translation id="3672452749423051839">アクセスエラー時の候補表示</translation>
@@ -226,6 +227,7 @@
 <translation id="4170011742729630528">このサービスはご利用になれません。しばらくしてからもう一度お試しください。</translation>
 <translation id="4195643157523330669">新しいタブで開く</translation>
 <translation id="423410644998903704">このサイトと機能を共有するには Chrome にアクセスを許可する必要があります。</translation>
+<translation id="4242533952199664413">設定を開く</translation>
 <translation id="424864128008805179">Chrome からログアウトしますか？</translation>
 <translation id="4254813446494774748">翻訳言語:</translation>
 <translation id="4256782883801055595">オープンソース ライセンス</translation>
@@ -524,14 +526,12 @@
 <translation id="8007176423574883786">このデバイスに対して無効</translation>
 <translation id="8026334261755873520">閲覧履歴データを消去する</translation>
 <translation id="8035133914807600019">新しいフォルダ...</translation>
+<translation id="8063895661287329888">ブックマークを追加できませんでした。</translation>
 <translation id="8068648041423924542">証明書を選択できません</translation>
 <translation id="8069239273282989646">圧縮後</translation>
 <translation id="8073388330009372546">新しいタブで画像を開く</translation>
 <translation id="8076014560081431679">保存済みのサイト設定は削除されず、普段の閲覧行動を反映した設定などが残る場合があります。<ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
 <translation id="8087000398470557479"><ph name="DOMAIN_NAME" /> のコンテンツを Google から配信しています。</translation>
-<translation id="8098570222830891427">近くのデバイスから Bluetooth を介してウェブページが送信されています。端末がアクティブになったとき、Chrome ではこうしたページがスキャンされ、表示されます。スキャンされたページは Google サービスに送られ、ページ結果の品質向上に使用されます。
-
-フィジカル ウェブの管理は Chrome のプライバシー設定で行うことができます。</translation>
 <translation id="8106211421800660735">クレジットカード番号</translation>
 <translation id="813082847718468539">サイト情報を表示</translation>
 <translation id="8137558756159375272">「タップして検索」では選択したキーワードと現在のページがコンテキストとして Google 検索に送信されます。これは [<ph name="BEGIN_LINK" />設定<ph name="END_LINK" />] で無効にすることができます。</translation>

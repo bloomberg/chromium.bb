@@ -42,6 +42,7 @@
 <translation id="1254117744268754948">Pasirinkti aplanką</translation>
 <translation id="1285320974508926690">Niekada neversti šios svetainės</translation>
 <translation id="129553762522093515">Neseniai uždarytas</translation>
+<translation id="129863573139666797"><ph name="BEGIN_LINK" />Pabandykite išvalyti slapukus<ph name="END_LINK" /></translation>
 <translation id="1339601241726513588">Registracijos domenas:</translation>
 <translation id="1344588688991793829">„Chromium“ automatinio pildymo nustatymai...</translation>
 <translation id="1374468813861204354">pasiūlymai</translation>
@@ -198,6 +199,7 @@
 <translation id="2969319727213777354">Kad užmegztumėte saugų ryšį, turėsite tinkamai nustatyti laikrodį. To reikia, nes svetainių tapatybei įrodyti naudojami sertifikatai galioja tik tam tikru laikotarpiu. Įrenginio laikrodis nustatytas netinkamai, todėl „Google Chrome“ negali patvirtinti šių sertifikatų.</translation>
 <translation id="2972581237482394796">&amp;Atlikti iš naujo</translation>
 <translation id="2985306909656435243">Jei šis nustatymas įgalintas, „Chromium“ išsaugos kortelės kopiją įrenginyje, kad galėtumėte greičiau užpildyti formas.</translation>
+<translation id="2989984781570875765">Įveskite galiojimo pabaigos datą ir 3 skaitmenų kortelės saugos kodą (CVC), nurodytą kitoje „<ph name="CREDIT_CARD" />“ kortelės pusėje</translation>
 <translation id="2991174974383378012">Bendrinimas su svetainėmis</translation>
 <translation id="3005723025932146533">Rodyti išsaugotą kopiją</translation>
 <translation id="3010559122411665027">Sąrašo įrašas „<ph name="ENTRY_INDEX" />“: <ph name="ERROR" /></translation>
@@ -282,6 +284,7 @@
 <translation id="3717027428350673159"><ph name="BEGIN_LINK" />Patikrinti tarpinio serverio, užkardos ir DNS konfigūraciją<ph name="END_LINK" /></translation>
 <translation id="3739623965217189342">Nukopijuota nuoroda</translation>
 <translation id="3744899669254331632">Negalite dabar apsilankyti svetainėje <ph name="SITE" />, nes ji atsiuntė užšifruotus prisijungimo duomenis, kurių „Chromium“ negali apdoroti. Tinklo klaidos ir užpuolimai dažniausiai yra laikini, todėl šis puslapis vėliau tikriausiai veiks.</translation>
+<translation id="3748071062818261683">Patvirtinti kortelę</translation>
 <translation id="3748412725338508953">Pernelyg daug nukreipimų.</translation>
 <translation id="375403751935624634">Vertimas nepavyko dėl serverio klaidos.</translation>
 <translation id="3759461132968374835">Nėra strigčių, apie kurias buvo neseniai pranešta. Strigtys, įvykusios tuo metu, kai strigčių ataskaitų teikimas buvo išjungtas, čia rodomos nebus.</translation>
@@ -310,6 +313,7 @@
 <translation id="4103249731201008433">Netinkamas įrenginio serijos numeris</translation>
 <translation id="4103763322291513355">Apsilankykite &lt;strong&gt;chrome://policy&lt;/strong&gt;, kad peržiūrėtumėte į juodąjį sąrašą įtrauktų URL sąrašą ir kitą politiką, kurią priverstinai paleido sistemos administratorius.</translation>
 <translation id="4117700440116928470">Politikos aprėptis nepalaikoma.</translation>
+<translation id="4130226655945681476">Patikrinti tinklo laidus, modemą ir maršruto parinktuvą</translation>
 <translation id="4147376274874979956">Nepavyko pasiekti failo.</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">Ar norite, kad „Chromium“ išsaugotų šią kortelę?</translation>
@@ -344,11 +348,15 @@
 <translation id="450710068430902550">Bendrinimas su administratoriumi</translation>
 <translation id="4522570452068850558">Išsami informacija</translation>
 <translation id="4535734014498033861">Nepavyko užmegzti įgaliotojo serverio ryšio.</translation>
+<translation id="4553532082208702698">Įveskite 4 skaitmenų kortelės saugos kodą (CVC), nurodytą kortelės „<ph name="CREDIT_CARD" />“ priekyje</translation>
+<translation id="4558551763791394412">Pabandykite išjungti plėtinius.</translation>
 <translation id="4587425331216688090">Pašalinti adresą iš „Chrome“?</translation>
 <translation id="4592951414987517459">Ryšys su <ph name="DOMAIN" /> užšifruotas naudojant modernų šifravimo paketą.</translation>
 <translation id="4594403342090139922">&amp;Anuliuoti ištrynimą</translation>
 <translation id="4668929960204016307">,</translation>
+<translation id="4670097147947922288">Peržiūrite plėtinio puslapį.</translation>
 <translation id="467662567472608290">Šiam serveriui nepavyko patvirtinti, kad tai yra <ph name="DOMAIN" />; jo saugos sertifikate yra klaidų. Taip gali nutikti dėl netinkamos konfigūracijos ar dėl ryšį pertraukusio užgrobėjo.</translation>
+<translation id="4683417246209150705">Įveskite 3 skaitmenų kortelės saugos kodą (CVC), nurodytą kitoje kortelės „<ph name="CREDIT_CARD" />“ pusėje</translation>
 <translation id="4697214168136963651"><ph name="URL" /> užblokuotas</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">Ryšys nutrauktas</translation>
@@ -433,6 +441,8 @@
 <translation id="5650551054760837876">Nerasta paieškos rezultatų.</translation>
 <translation id="5663999524854166235">Įveskite kitoje kortelės pusėje nurodytą 3 skaitmenų kortelės saugos kodą (CVC), kad patvirtintumėte</translation>
 <translation id="5677928146339483299">Užblokuota</translation>
+<translation id="5696590819423335174">Įveskite galiojimo pabaigos datą ir 4 skaitmenų kortelės saugos kodą (CVC), nurodytą kortelės „<ph name="CREDIT_CARD" />“ priekyje</translation>
+<translation id="5699278517904102888">Įveskite kitoje kortelės „<ph name="CREDIT_CARD" />“ pusėje nurodytą 3 skaitmenų kortelės saugos kodą (CVC), kad patvirtintumėte</translation>
 <translation id="5710435578057952990">Šio tinklalapio tapatybė nenustatyta.</translation>
 <translation id="5720705177508910913">Dabartinis naudotojas</translation>
 <translation id="5785756445106461925">Be to, šiame puslapyje yra kitų nesaugių išteklių. Perduodant duomenis šiuos išteklius gali peržiūrėti kiti asmenys ir keisti atakuojanti programa, siekianti pakeisti puslapio išvaizdą.</translation>
@@ -556,7 +566,6 @@
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> nesilaikoma saugos standartų.</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Sužinokite daugiau<ph name="END_LINK" /> apie šią problemą.</translation>
 <translation id="7219179957768738017">Ryšiui naudojama <ph name="SSL_VERSION" />.</translation>
-<translation id="7225807090967870017">Versijos ID</translation>
 <translation id="7231308970288859235">Oi, turite paprašyti vieno iš tėvų leidimo apsilankyti šiame puslapyje.</translation>
 <translation id="7246609911581847514">Matote šį pranešimą, nes valdytojas turi patvirtinti naujas svetaines, kai lankotės pirmą kartą.</translation>
 <translation id="725866823122871198">Nepavyksta užmegzti privataus ryšio su <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, nes kompiuterio data ir laikas (<ph name="DATE_AND_TIME" />) yra netinkami.</translation>
@@ -597,6 +606,7 @@ Ei! Kitą kartą gali būti naudinga naudoti inkognito režimą (<ph name="SHORT
 <translation id="7610193165460212391">Vertė nepatenka į diapazoną <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">Galioja iki: <ph name="EXPIRATION_YEAR" />-<ph name="EXPIRATION_MONTH" /></translation>
 <translation id="7615602087246926389">Jau turite duomenų, kurie šifruojami naudojant kitos versijos „Google“ paskyros slaptažodį. Įveskite juos toliau.</translation>
+<translation id="7633887239437305289">Įveskite kortelės „<ph name="CREDIT_CARD" />“ priekyje nurodytą 4 skaitmenų kortelės saugos kodą (CVC), kad patvirtintumėte</translation>
 <translation id="7634554953375732414">Jūsų ryšys su šia svetaine nėra privatus.</translation>
 <translation id="7637571805876720304">Pašalinti kredito kortelės informaciją iš „Chromium“?</translation>
 <translation id="7643817847124207232">Dingo interneto ryšys.</translation>

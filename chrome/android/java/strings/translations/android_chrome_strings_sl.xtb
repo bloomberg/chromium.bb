@@ -68,6 +68,7 @@
 <translation id="1842969606798536927">Plačilo</translation>
 <translation id="1853692000353488670">Nov zavihek brez beleženja zgodovine</translation>
 <translation id="189172778771606813">Zapri predal za krmarjenje</translation>
+<translation id="1924956916668006832">Izbira naslova za pošiljanje</translation>
 <translation id="194341124344773587">V <ph name="BEGIN_LINK" />nastavitvah za Android<ph name="END_LINK" /> vklopite dovoljenje za Chrome.</translation>
 <translation id="1943432128510653496">Shranjevanje gesel</translation>
 <translation id="1944384637046898011">Šifriranje vsega z geslom za Google Račun z dne <ph name="TIME" /></translation>
@@ -98,6 +99,7 @@
 <translation id="2268044343513325586">Izboljšaj iskanje</translation>
 <translation id="2315043854645842844">Operacijski sistem ne podpira izbire potrdila pri odjemalcu.</translation>
 <translation id="2321958826496381788">Drsnik povlecite do želene velikosti pisave. Besedilo naj bo po dvakratnem dotiku odstavka videti vsaj tolikšno.</translation>
+<translation id="2329597144923131178">Prijavite se, da boste lahko dostopali do zaznamkov, zgodovine, gesel in drugih nastavitev v vseh napravah.</translation>
 <translation id="2343328333327081434">Nameščanje ...</translation>
 <translation id="2351097562818989364">Nastavitve za prevajanje so ponastavljene.</translation>
 <translation id="2359808026110333948">Nadaljuj</translation>
@@ -133,6 +135,7 @@
 <translation id="2762000892062317888">pravkar</translation>
 <translation id="2770465223704140727">Odstrani s seznama</translation>
 <translation id="278029852808208386">Najdena ni bila nobena naprava Bluetooth. <ph name="BEGIN_LINK" />Iščite znova<ph name="END_LINK" />.</translation>
+<translation id="2781389167600714117">Izbira pošiljanja</translation>
 <translation id="2811892995384186721">Vaša naprava ni prikazana? <ph name="BEGIN_LINK" />Poiščite pomoč<ph name="END_LINK" /></translation>
 <translation id="2836148919159985482">Dotaknite se gumba za nazaj, če želite zapreti celozaslonski način.</translation>
 <translation id="2842985007712546952">Nadrejena mapa</translation>
@@ -158,7 +161,6 @@
 <translation id="3137521801621304719">Izklop načina brez beleženja zgodovine</translation>
 <translation id="3149891296864842641">Možnost pošiljanja</translation>
 <translation id="3162882791484435636">Izbira možnosti pošiljanja</translation>
-<translation id="3173438333156928404">Napaka pri obdelavi plačila</translation>
 <translation id="3177909033752230686">Jezik strani:</translation>
 <translation id="3190152372525844641">V <ph name="BEGIN_LINK" />nastavitvah za Android<ph name="END_LINK" /> vklopite dovoljenja za Chrome.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> shranjenih podatkov</translation>
@@ -194,7 +196,6 @@ Prijavljate se z upravljanim računom in s tem njegovemu skrbniku omogočate nad
 Če želite prilagoditi iskalno poizvedbo, jo izberite z daljšim dotikom. Če želite podrobneje nastaviti iskanje, potisnite podokno povsem navzgor in se dotaknite iskalnega polja.</translation>
 <translation id="3623048332793834136">Zaznamki iz Chroma Canary</translation>
 <translation id="363596933471559332">Samodejna prijava v spletna mesta s shranjenimi poverilnicami. Ko je ta funkcija izklopljena, bo pri vsaki prijavi v spletno mesto potrebno preverjanje.</translation>
-<translation id="3653742808139624888">Če želite dostopati do zaznamkov v vseh napravah, se prijavite v Chrome</translation>
 <translation id="3656115297268584622">Lokacijsko storitev vklopite v <ph name="BEGIN_LINK" />nastavitvah sistema Android<ph name="END_LINK" />.</translation>
 <translation id="3661699943263275414">Druga spletna mesta lahko shranjujejo in berejo podatke piškotkov</translation>
 <translation id="3672452749423051839">Predlogi za napake pri krmarjenju</translation>
@@ -226,6 +227,7 @@ Prijavljate se z upravljanim računom in s tem njegovemu skrbniku omogočate nad
 <translation id="4170011742729630528">Storitev ni na voljo; poskusite znova pozneje.</translation>
 <translation id="4195643157523330669">Odpri v novem zavihku</translation>
 <translation id="423410644998903704">Chrome potrebuje dostop do dovoljenj, če želite, da temu spletnemu mestu omogoči dostop do njih.</translation>
+<translation id="4242533952199664413">Odpri nastavitve</translation>
 <translation id="424864128008805179">Se želite odjaviti iz Chroma?</translation>
 <translation id="4254813446494774748">Jezik prevoda:</translation>
 <translation id="4256782883801055595">Odprtokodne licence</translation>
@@ -524,14 +526,12 @@ V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in deja
 <translation id="8007176423574883786">Izklopljeno za to napravo</translation>
 <translation id="8026334261755873520">Izbriši podatke brskanja</translation>
 <translation id="8035133914807600019">Nova mapa …</translation>
+<translation id="8063895661287329888">Zaznamka ni bilo mogoče dodati.</translation>
 <translation id="8068648041423924542">Izbira potrdila ni mogoča</translation>
 <translation id="8069239273282989646">Po stiskanju</translation>
 <translation id="8073388330009372546">Odpri sliko na novem zavihku</translation>
 <translation id="8076014560081431679">Shranjene nastavitve spletnih mest ne bodo izbrisane in morda odražajo vaše brskalne navade. <ph name="BEGIN_LINK" />Več o tem<ph name="END_LINK" /></translation>
 <translation id="8087000398470557479">Ta vsebina je iz domene <ph name="DOMAIN_NAME" /> in jo prikazuje Google.</translation>
-<translation id="8098570222830891427">Naprave v vaši bližini oddajajo spletne strani prek Bluetootha. Chrome bo iskal strani in jih prikazal, ko preklopite napravo iz stanja pripravljenosti. Te strani bo zaradi izboljšanja kakovosti rezultatov za strani obdelala Googlova storitev.
-
-Fizični splet lahko nadzirate v Chromovih nastavitvah.</translation>
 <translation id="8106211421800660735">Številka kreditne kartice</translation>
 <translation id="813082847718468539">Ogled podatkov o mestu</translation>
 <translation id="8137558756159375272">»Dotaknite se za iskanje« pošlje izbrano besedo in trenutno strank kot kontekst Iskanju Google. To lahko izklopite v <ph name="BEGIN_LINK" />nastavitvah<ph name="END_LINK" />.</translation>

@@ -502,6 +502,22 @@ Se la norma non viene impostata l'impostazione verrà attivata ma gli utenti pot
           Ogni voce presente in questo elenco è uno schema di corrispondenza in stile di estensione (vedi l'indirizzo https://developer.chrome.com/extensions/match_patterns). Gli utenti potranno installare facilmente elementi dagli URL corrispondenti a una voce nell'elenco. Questi schemi devono consentire sia la posizione del file *.crx sia la pagina da cui viene avviato il download (il referrer).
 
           La norma ExtensionInstallBlacklist ha la precedenza su questa norma. Ciò significa che un'estensione presente nella blacklist non verrà installata, anche se è di un sito presente in questo elenco.</translation>
+<translation id="2813740161943223811">Questa norma è obsoleta; utilizza ProxyMode al suo posto.
+
+          Consente di specificare il server proxy utilizzato da <ph name="PRODUCT_NAME" /> e impedisce agli utenti di modificare le impostazioni proxy. Anche le app ARC potranno utilizzare il server proxy.
+
+          Se scegli di non utilizzare mai un server proxy e di connetterti sempre direttamente, tutte le altre opzioni vengono ignorate.
+
+          Se scegli di utilizzare le impostazioni proxy del sistema o di rilevare automaticamente il server proxy, tutte le altre opzioni vengono ignorate.
+
+          Se scegli le impostazioni proxy manuali, puoi specificare ulteriori opzioni in "Indirizzo o URL del server proxy", "URL per file proxy .pac" ed "Elenco separato da virgole delle regole bypass proxy". Le app ARC utilizzeranno solo il server proxy HTTP con la priorità più alta.
+
+          Per esempi dettagliati visita la pagina:
+          <ph name="PROXY_HELP_URL" />.
+
+          Se attivi questa impostazione, <ph name="PRODUCT_NAME" /> ignora tutte le opzioni relative al proxy specificate dalla riga di comando.
+
+          Se questa norma non viene impostata, gli utenti potranno scegliere autonomamente le impostazioni proxy.</translation>
 <translation id="2824715612115726353">Attiva modalità di navigazione in incognito</translation>
 <translation id="2844404652289407061">Consente di attivare la disponibilità della funzione Tocca per cercare nella visualizzazione contenuti di <ph name="PRODUCT_NAME" />.
 
@@ -608,6 +624,18 @@ Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearch
           </translation>
 <translation id="3205825995289802549">Ingrandisci la prima finestra del browser alla prima esecuzione</translation>
 <translation id="3206731874112238027">Disattiva anteprima di stampa (ritirata)</translation>
+<translation id="3208854390109736596">Consente di specificare il server proxy utilizzato da <ph name="PRODUCT_NAME" /> e impedisce agli utenti di modificare le impostazioni proxy. Anche le app ARC potranno utilizzare il server proxy.
+
+      Se scegli di non utilizzare mai un server proxy e di connetterti sempre direttamente, tutte le altre opzioni vengono ignorate.
+
+      Se scegli di rilevare automaticamente il server proxy, tutte le altre opzioni vengono ignorate.
+
+      Per esempi dettagliati, visita la pagina:
+      <ph name="PROXY_HELP_URL" />.
+
+      Se attivi questa impostazione, <ph name="PRODUCT_NAME" /> e le app ARC ignorano tutte le opzioni relative al proxy specificate dalla riga di comando.
+
+      Se questa norme non vengono impostate, gli utenti potranno scegliere autonomamente le impostazioni proxy.</translation>
 <translation id="3213821784736959823">Controlla se il client DNS integrato è in uso in <ph name="PRODUCT_NAME" />.
 
       Se il criterio è impostato su True, verrà utilizzato il client DNS integrato, se disponibile.
@@ -651,6 +679,9 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 
       Se questa norma viene impostata su false, in <ph name="PRODUCT_OS_NAME" /> non sarà possibile avviare sessioni Ospite.</translation>
 <translation id="3428247105888806363">Attiva previsione di rete</translation>
+<translation id="3449886121729668969">Consente di configurare le impostazioni proxy per <ph name="PRODUCT_NAME" />. Le impostazioni proxy saranno disponibili anche per le app ARC.
+
+      Questa norma non è ancora pronta per essere utilizzata, pertanto invitiamo a non utilizzarla.</translation>
 <translation id="3460784402832014830">Consente di specificare l'URL utilizzato da un motore di ricerca per fornire una pagina Nuova scheda.
 
 Questa norma è facoltativa. Se non viene impostata non verrà fornita una pagina Nuova scheda.
@@ -661,6 +692,14 @@ Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearch
 Se questa norma viene impostata su True, i ritardi di gestione dell'alimentazione e il limite di durata delle sessioni non iniziano fino al termine del rilevamento dell'attività del primo utente in una sessione.
 
 Se questa norma viene impostata su False o non viene impostata, i ritardi di gestione dell'alimentazione e il limite di durata delle sessioni iniziano immediatamente all'avvio della sessione.</translation>
+<translation id="3469657928310999477"><ph name="PRODUCT_NAME" /> ignorerà i proxy relativi all'elenco di host specificato qui. Le app ARC potranno utilizzare l'elenco come un elenco di regole di bypass.
+
+          Questa norma viene applicata soltanto se sono state selezionate le impostazioni proxy manuali in "Scegli come specificare le impostazioni del server proxy".
+
+          Se hai selezionato un'altra modalità per l'impostazione delle norme relative al proxy, non devi impostare questa norma.
+
+          Per esempi più dettagliati, visita la pagina:
+          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="3478024346823118645">Cancella dati utente all'uscita</translation>
 <translation id="348495353354674884">Attiva tastiera virtuale</translation>
 <translation id="3496296378755072552">Gestione password</translation>
@@ -1261,6 +1300,9 @@ Se la norma non viene impostata, il puntatore grande viene disattivato alla prim
       Questa norma riguarda tutti i tipi di supporti di memorizzazione. Ad esempio: unità flash USB, dischi rigidi esterni, schede di memoria SD e di altro tipo, memorie ottiche e così via. La memoria interna non è interessata, quindi i file salvati nella cartella Download rimangono accessibili. Anche Google Drive non è interessato da questa norma.
 
       Se questa impostazione è disattivata o non è configurata, gli utenti possono utilizzare tutti i tipi supportati di memorie esterne sul proprio dispositivo.</translation>
+<translation id="6076099373507468537">Definisce l'elenco di dispositivi USB che possono essere scollegati dal driver del kernel per essere utilizzati tramite l'API chrome.usb direttamente all'interno di un'applicazione web. Le voci sono coppie costituite dall'ID fornitore USB e dall'ID prodotto per identificare un hardware specifico.
+
+      Se la norma non è configurata, l'elenco di dispositivi USB scollegabili è vuoto.</translation>
 <translation id="6095999036251797924">Consente di specificare il periodo di tempo senza input dell'utente trascorso il quale lo schermo viene bloccato durante l'utilizzo di alimentazione CA o batteria.
 
 Se il periodo di tempo viene impostato su un valore maggiore di zero, questo valore rappresenta il periodo di tempo per cui l'utente deve rimanere inattivo prima che <ph name="PRODUCT_OS_NAME" /> blocchi lo schermo.
@@ -1738,6 +1780,14 @@ Nota. Attualmente i riavvii automatici vengono attivati soltanto durante la visu
 
       Se la norma viene impostata su false, le informazioni relative alla sessione non vengono segnalate. Se viene impostata su true o non viene impostata, tali informazioni vengono segnalate.</translation>
 <translation id="7774768074957326919">Utilizza le impostazioni proxy di sistema</translation>
+<translation id="7775831859772431793">Qui puoi specificare l'URL del server proxy.
+
+          Questa norma viene applicata soltanto se sono state selezionate le impostazioni proxy manuali in "Scegli come specificare le impostazioni del server proxy".
+
+          Se hai selezionato un'altra modalità per l'impostazione delle norme relative al proxy, non devi impostare questa norma.
+
+          Per ulteriori opzioni ed esempi dettagliati, visita la pagina:
+          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7788511847830146438">Per profilo</translation>
 <translation id="7796141075993499320">Consente di impostare un elenco di pattern URL che specificano i siti in cui è consentita l'esecuzione dei plug-in. Se questa norma non viene impostata, per tutti i siti verrà utilizzato il valore predefinito globale della norma "DefaultPluginsSetting", se è impostata, oppure verrà utilizzata la configurazione personale dell'utente.</translation>
 <translation id="7818131573217430250">Impostazione stato predefinito modalità ad alto contrasto nella schermata di accesso</translation>
@@ -1768,6 +1818,14 @@ Se questa norma non viene impostata, <ph name="PRODUCT_NAME" /> utilizzerà il v
       Consente di stabilire l'ID dell'estensione da utilizzare come screensaver nella schermata di accesso. L'estensione deve far parte dell'AppPack configurato per il dominio tramite la norma DeviceAppPack.</translation>
 <translation id="7882890448959833986">Elimina l'avviso di sistema operativo non supportato</translation>
 <translation id="7912255076272890813">Configura tipi di app/estensioni consentiti</translation>
+<translation id="7915236031252389808">Qui puoi specificare un URL che rimanda a un file proxy .pac.
+
+          Questa norma viene applicata soltanto se sono state selezionate le impostazioni proxy manuali in "Scegli come specificare le impostazioni del server proxy".
+
+          Se hai selezionato un'altra modalità per l'impostazione delle norme relative al proxy, non devi impostare questa norma.
+
+          Per esempi dettagliati, visita la pagina:
+          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="793134539373873765">Consente di specificare se p2p deve essere utilizzato per i payload di aggiornamento del sistema operativo. Se questa norma viene impostata su True, i dispositivi condivideranno e proveranno a consumare i payload di aggiornamento sulla LAN, riducendo potenzialmente l'utilizzo e la congestione della larghezza di banda Internet. Se il payload di aggiornamento non è disponibile sulla LAN, il dispositivo ripiegherà sul download da un server di aggiornamento. Se la norma viene impostata su False o non viene configurata, non verrà utilizzato p2p.</translation>
 <translation id="7933141401888114454">Attivazione della creazione di utenti controllati</translation>
 <translation id="7936098023732125869">Consente di attivare l'utilizzo di un provider di ricerca predefinito.
@@ -1901,6 +1959,11 @@ Se questa norma non viene impostata, le pagine saranno sottoposte a scansione pe
 <translation id="8382184662529825177">Attiva l'utilizzo dell'attestazione remota per la protezione dei contenuti per il dispositivo</translation>
 <translation id="838870586332499308">Attiva roaming dati</translation>
 <translation id="8412312801707973447">Esecuzione dei controlli OCSP/CRL online</translation>
+<translation id="8413348101535146315">Consente di terminare i processi nella funzione Task Manager di <ph name="PRODUCT_NAME" />.
+
+      Se questa norma è impostata su false, il pulsante "Termina processo" in Task Manager viene disabilitato.
+
+      Se questa norma è impostata su true o non è configurata, l'utente può terminare i processi in Task Manager.</translation>
 <translation id="8424255554404582727">Imposta la rotazione predefinita dello schermo, riapplicata a ogni riavvio</translation>
 <translation id="8426231401662877819">Ruota lo schermo in senso orario di 90°</translation>
 <translation id="8451988835943702790">Usa la pagina Nuova scheda come Pagina iniziale</translation>
@@ -2086,6 +2149,24 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 <translation id="9112897538922695510">Ti consente di registrare un elenco di gestori di protocolli. Questa può essere soltanto una norma consigliata. Per la proprietà |protocol| dovrebbe essere impostato lo schema, ad esempio "mailto", e per la proprietà |url| dovrebbe essere impostato il pattern URL dell'applicazione che gestisce lo schema. Il pattern può includere "%s" che, se presente, verrà sostituito dall'URL gestito.
 
           I gestori di protocolli registrati tramite la norma vengono uniti a quelli registrati dall'utente e possono essere utilizzati entrambi i tipi. L'utente può sostituire i gestori di protocolli installati tramite la norma installando un nuovo gestore predefinito, ma non può rimuovere un gestore di protocollo registrato tramite la norma.</translation>
+<translation id="913138516158420759">Consente di specificare il server proxy utilizzato da <ph name="PRODUCT_NAME" /> e impedisce agli utenti di modificare le impostazioni proxy. Anche le app ARC potranno utilizzare il server proxy.
+
+          Se scegli di non utilizzare mai un server proxy e di collegarti sempre direttamente, tutte le altre opzioni vengono ignorate.
+
+          Se scegli di utilizzare le impostazioni proxy del sistema, tutte le altre opzioni vengono ignorate.
+
+          Se scegli di rilevare automaticamente il server proxy, utte le altre opzioni vengono ignorate.
+
+          Se scegli di utilizzare la modalità server proxy definito, puoi specificare ulteriori opzioni in "Indirizzo o URL del server proxy" ed "Elenco separato da virgole delle regole bypass proxy". Le app ARC utilizzeranno solo il server proxy HTTP con la priorità più alta.
+
+          Se scegli di utilizzare uno script proxy .pac, devi specificare l'URL per lo script in "URL per file proxy .pac".
+
+          Per esempi dettagliati, visita la pagina:
+          <ph name="PROXY_HELP_URL" />.
+
+          Se viene attivata questa impostazione, <ph name="PRODUCT_NAME" /> e le app ARC ignorano tutte le opzioni relative al proxy specificate dalla riga di comando.
+
+          Se questa norma non viene impostata, gli utenti potranno scegliere autonomamente le impostazioni proxy.</translation>
 <translation id="913195841488580904">Blocca l'accesso a un elenco di URL</translation>
 <translation id="9135033364005346124">Attiva proxy <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="9147029539363974059">Consente di inviare log di sistema al server di gestione per consentire

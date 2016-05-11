@@ -68,6 +68,7 @@ Bluetooth och Plats måste vara aktiverade om du vill använda Physical Web-tjä
 <translation id="1842969606798536927">Betala</translation>
 <translation id="1853692000353488670">Ny inkognitoflik</translation>
 <translation id="189172778771606813">Stäng navigeringspanelen</translation>
+<translation id="1924956916668006832">Välj leveransadress</translation>
 <translation id="194341124344773587">Aktivera behörighet för Chrome i <ph name="BEGIN_LINK" />Android-inställningar<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Spara lösenord</translation>
 <translation id="1944384637046898011">Kryptera alla med Google-lösenordet från <ph name="TIME" /></translation>
@@ -98,6 +99,7 @@ Bluetooth och Plats måste vara aktiverade om du vill använda Physical Web-tjä
 <translation id="2268044343513325586">Finjustera</translation>
 <translation id="2315043854645842844">Val av certifikat på klienten stöds inte av operativsystemet.</translation>
 <translation id="2321958826496381788">Flytta reglaget tills du kan läsa texten ordentligt. Texten bör bli åtminstone så här stor när du trycker två gånger på ett stycke.</translation>
+<translation id="2329597144923131178">Logga in så blir bokmärken, historik, lösenord med mera tillgängligt på alla dina enheter.</translation>
 <translation id="2343328333327081434">Installerar …</translation>
 <translation id="2351097562818989364">Översättningsinställningarna har återställts.</translation>
 <translation id="2359808026110333948">Fortsätt</translation>
@@ -133,6 +135,7 @@ Bluetooth och Plats måste vara aktiverade om du vill använda Physical Web-tjä
 <translation id="2762000892062317888">nyss</translation>
 <translation id="2770465223704140727">Ta bort från listan</translation>
 <translation id="278029852808208386">Inga Bluetooth-enheter hittades. <ph name="BEGIN_LINK" />Gör om sökningen<ph name="END_LINK" />.</translation>
+<translation id="2781389167600714117">Välj frakt</translation>
 <translation id="2811892995384186721">Visas inte enheten? <ph name="BEGIN_LINK" />Få hjälp<ph name="END_LINK" /></translation>
 <translation id="2836148919159985482">Tryck på bakåtknappen om du vill lämna helskärmsläget.</translation>
 <translation id="2842985007712546952">Överordnad mapp</translation>
@@ -158,7 +161,6 @@ Bluetooth och Plats måste vara aktiverade om du vill använda Physical Web-tjä
 <translation id="3137521801621304719">Inaktivera inkognitoläge</translation>
 <translation id="3149891296864842641">Fraktalternativ</translation>
 <translation id="3162882791484435636">Välj fraktalternativ</translation>
-<translation id="3173438333156928404">Det gick inte att bearbeta betalningen</translation>
 <translation id="3177909033752230686">Sidans språk:</translation>
 <translation id="3190152372525844641">Aktivera behörigheter för Chrome i <ph name="BEGIN_LINK" />Android-inställningar<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> sparad data</translation>
@@ -194,7 +196,6 @@ Du loggar in med ett hanterat konto, vilket innebär att administratören kontro
 Om du vill ändra söktermen trycker du länge för att välja. Om du vill förfina sökningen drar du panelen ända upp och trycker på sökrutan.</translation>
 <translation id="3623048332793834136">Bokmärken i Chrome Canary</translation>
 <translation id="363596933471559332">Logga in automatiskt på webbplatser med hjälp av lagrade inloggningsuppgifter. När funktionen är inaktiverad måste du verifiera dina uppgifter varje gång du besöker webbplatsen innan du kan logga in.</translation>
-<translation id="3653742808139624888">Logga in i Chrome om du vill få tillgång till samma bokmärken på alla dina enheter</translation>
 <translation id="3656115297268584622">Aktivera plats i <ph name="BEGIN_LINK" />Android-inställningarna<ph name="END_LINK" />.</translation>
 <translation id="3661699943263275414">Webbplatser från tredje part kan spara och läsa cookiedata</translation>
 <translation id="3672452749423051839">Förslag vid navigeringsfel</translation>
@@ -226,6 +227,7 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="4170011742729630528">Tjänsten är inte tillgänglig, försök igen senare.</translation>
 <translation id="4195643157523330669">Öppna i ny flik</translation>
 <translation id="423410644998903704">Chrome behöver tillgång till behörigheter för att kunna dela dem på den här webbplatsen.</translation>
+<translation id="4242533952199664413">Öppna Inställningar</translation>
 <translation id="424864128008805179">Vill du logga ut från Chrome?</translation>
 <translation id="4254813446494774748">Översättningsspråk:</translation>
 <translation id="4256782883801055595">Licenser för öppen källkod</translation>
@@ -524,14 +526,12 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="8007176423574883786">Inaktiverad för den här enheten</translation>
 <translation id="8026334261755873520">Rensa webbinformation</translation>
 <translation id="8035133914807600019">Ny mapp …</translation>
+<translation id="8063895661287329888">Det gick inte att lägga till bokmärket.</translation>
 <translation id="8068648041423924542">Det går inte att välja certifikat.</translation>
 <translation id="8069239273282989646">Efter komprimering</translation>
 <translation id="8073388330009372546">Öppna bild i ny flik</translation>
 <translation id="8076014560081431679">Sparade webbplatsinställningar raderas inte och kan visa dina surfvanor. <ph name="BEGIN_LINK" />Läs mer<ph name="END_LINK" /></translation>
 <translation id="8087000398470557479">Innehållet kommer från <ph name="DOMAIN_NAME" /> via Google.</translation>
-<translation id="8098570222830891427">Webbsidor sänds via Bluetooth av enheter i närheten. Chrome söker efter sidor och visar dem när du startar enheten. Sidorna skickas via en tjänst från Google för att förbättra kvaliteten på sidresultaten.
-
-Du kan styra Physical Web i inställningarna för Chrome.</translation>
 <translation id="8106211421800660735">Kreditkortsnummer</translation>
 <translation id="813082847718468539">Visa information om webbplatsen</translation>
 <translation id="8137558756159375272">Funktionen Tryck för att söka skickar det markerade ordet till Google Sök med den aktuella sidan som kontext. Du kan stänga av funktionen i <ph name="BEGIN_LINK" />Inställningar<ph name="END_LINK" />.</translation>

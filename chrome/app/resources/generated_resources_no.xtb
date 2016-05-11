@@ -296,7 +296,6 @@
 <translation id="1429740407920618615">Signalstyrke:</translation>
 <translation id="143027896309062157">lese og endre alle dataene på datamaskinen din og nettstedene du besøker</translation>
 <translation id="1430915738399379752">Skriv ut</translation>
-<translation id="1433423644370450034">Mediestil-varsling</translation>
 <translation id="1434696352799406980">Dette tilbakestiller oppstartssiden, nye faner, søkemotoren og eventuelle festede faner. I tillegg slår det av alle utvidelser og fjerner midlertidige data, for eksempel informasjonskapsler. Bokmerker, loggoppføringer og lagrede passord slettes ikke.</translation>
 <translation id="1434886155212424586">Startsiden er Ny fane-siden</translation>
 <translation id="1435550882135542937">Nydesignet verktøylinje for utvidelse</translation>
@@ -597,7 +596,6 @@
 <translation id="1835339313324024">Smart implementering av det virtuelle tastaturet</translation>
 <translation id="1838374766361614909">Fjern søket</translation>
 <translation id="1839704667838141620">Endre hvordan denne filen deles.</translation>
-<translation id="1839913225882990152">Fortell oss hva som skjer.</translation>
 <translation id="1842969606798536927">Betal</translation>
 <translation id="184456654378801210">(innebygd)</translation>
 <translation id="1844692022597038441">Denne filen er ikke tilgjengelig utenfor Internett.</translation>
@@ -1913,7 +1911,6 @@ Fra <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3656059567098593256"><ph name="APP_NAME" /> ønsker å dele innholdet på skjermen din med <ph name="TARGET_NAME" />. Velg hva du ønsker å dele.</translation>
 <translation id="3657468915905674858">Slå på Win32k-låsing for PPAPI.</translation>
 <translation id="3660234220361471169">Uklarert</translation>
-<translation id="3665371460012342183">Aktivér den zoomete boblen som vises på berøringsskjermer når flere enn én link berøres samtidig ved et uhell.</translation>
 <translation id="3665589677786828986">Chrome har oppdaget at noen av innstillingene ble ødelagt av et annet program og tilbakestille dem til originalinnstillingene.</translation>
 <translation id="3665842570601375360">Sikkerhet:</translation>
 <translation id="3668570675727296296">Språkinnstillinger</translation>
@@ -1934,7 +1931,6 @@ Fra <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3690976161240450479">Påloggingen mislyktes. Kontakt administratoren din, eller prøv på nytt.</translation>
 <translation id="3693415264595406141">Passord:</translation>
 <translation id="3694027410380121301">Velg forrige fane</translation>
-<translation id="3694122362646626770">Nettsteder</translation>
 <translation id="3694678678240097321">Krev brukerens samtykke for en utvidelse som kjører et skript på siden, hvis utvidelsen ber om tillatelse til å kjøre på alle nettadresser.</translation>
 <translation id="3695919544155087829">Angi passordet som ble brukt til å kryptere denne sertifikatfilen.</translation>
 <translation id="3696411085566228381">ingen</translation>
@@ -1948,6 +1944,7 @@ Fra <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3707020109030358290">Ikke en sertifiseringsinstans.</translation>
 <translation id="3709244229496787112">Nettleseren ble lukket før nedlastingen var ferdig.</translation>
 <translation id="3711486163272428582">Slår på brukerinnstillingen for å velge tidssone automatisk basert på den gjeldende geolokaliseringen.</translation>
+<translation id="3711895659073496551">Suspender</translation>
 <translation id="3712897371525859903">L&amp;agre side som...</translation>
 <translation id="3714633008798122362">nettkalender</translation>
 <translation id="3715597595485130451">Tilkobling til Wi-Fi</translation>
@@ -2483,7 +2480,7 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="4552678318981539154">Kjøp mer lagringsplass</translation>
 <translation id="4554591392113183336">Den eksterne utvidelsen har samme eller lavere versjonsnummer som den eksisterende utvidelsen.</translation>
 <translation id="4554796861933393312">Animasjonshastighet for materialdesign – blekkdråpe</translation>
-<translation id="4555670907822902621">Slå på lagring av sider som er satt som bokmerker, for bruk uten nettilkobling.</translation>
+<translation id="4555670907822902621">Slå på lagring av sider som er satt som bokmerker, for bruk utenfor Internett.</translation>
 <translation id="4555769855065597957">Skygge</translation>
 <translation id="4556110439722119938">Bokmerkene, loggoppføringene, passordene og de andre innstillingene dine blir synkronisert med Google-kontoen din, slik at du kan bruke dem på alle enhetene dine.</translation>
 <translation id="4557136421275541763">Advarsel:</translation>
@@ -2801,7 +2798,6 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="5038863510258510803">Aktiverer …</translation>
 <translation id="5039512255859636053">$1 TB</translation>
 <translation id="5039804452771397117">Tillat</translation>
-<translation id="5043851552150732346">1 katalog er valgt</translation>
 <translation id="5045550434625856497">Feil passord</translation>
 <translation id="5048179823246820836">Nordisk</translation>
 <translation id="5053604404986157245">Tilfeldig genererte TPM-passord er ikke tilgjengelige. Dette er vanlig etter en Powerwash.</translation>
@@ -2915,7 +2911,6 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="5212461935944305924">Unntak for informasjonskapsler og nettsteddata</translation>
 <translation id="521582610500777512">Bildet er forkastet</translation>
 <translation id="5218183485292899140">Sveitsisk fransk</translation>
-<translation id="5218766986344577658">Forgrunnsvindu for valg av linker</translation>
 <translation id="5220992698394817380">Slå på den valgfrie IME-menyen</translation>
 <translation id="5222676887888702881">Logg av</translation>
 <translation id="5225324770654022472">Vis appsnarveien</translation>
@@ -4000,7 +3995,7 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="6847758263950452722">Lagre siden som MHTML</translation>
 <translation id="6853388645642883916">Oppdatereringsprogrammet er i hvilemodus</translation>
 <translation id="68541483639528434">Lukk andre faner</translation>
-<translation id="6856701878604560493">Slå på bokmerker for bruk uten nettilkobling</translation>
+<translation id="6856701878604560493">Slå på bokmerker for bruk utenfor Internett</translation>
 <translation id="6860097299815761905">Innstillinger for proxy-tjener</translation>
 <translation id="6860427144121307915">Åpne i en fane</translation>
 <translation id="6862635236584086457">Alle filene som lagres i denne mappen, blir automatisk sikkerhetskopiert på nettet</translation>
@@ -4202,7 +4197,7 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="713888829801648570">Beklager. Passordet ditt kunne ikke bekreftes fordi du ikke har nettilkobling.</translation>
 <translation id="7140928199327930795">Ingen andre tilgjengelige enheter.</translation>
 <translation id="7141105143012495934">Påloggingen mislyktes fordi kontoopplysningene dine ikke kunne hentes ut. Kontakt administratoren din, eller prøv på nytt.</translation>
-<translation id="7141331524324591758">Slår på delvis eksperimentell støtte for Pointer Events API. Dette er bare beregnet brukt av nettutviklere til testformål og kommer til å føre til at enkelte nettsteder ikke fungerer som de skal.</translation>
+<translation id="7141331524324591758">Slår på delvis eksperimentell støtte for Pointer Events API. Denne API-en er bare ment å brukes av nettutviklere til testing, og den fører til at enkelte nettsteder ikke fungerer som de skal.</translation>
 <translation id="7143207342074048698">Kobler til</translation>
 <translation id="7144878232160441200">Prøv på nytt</translation>
 <translation id="7148311641502571842"><ph name="PLUGIN_NAME" /> er deaktivert. Gå til <ph name="CHROME_PLUGINS_LINK" /> for å aktivere det på nytt.</translation>
@@ -4688,7 +4683,6 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="7896906914454843592">USA-tastatur (utvidet)</translation>
 <translation id="7897900149154324287">I fremtiden må du sørge for å løse ut den flyttbare enheten i Filer-appen, før du kobler den fra. Ellers kan du miste data.</translation>
 <translation id="7898627924844766532">Behold i verktøyraden</translation>
-<translation id="7898725031477653577">Oversett alltid</translation>
 <translation id="7899177175067029110">Telefonen din ble ikke funnet. Kontrollér at <ph name="DEVICE_TYPE" />-enheten din er koblet til Internett. &lt;a&gt;Finn ut mer&lt;/a&gt;</translation>
 <translation id="7900476766547206086">Passord er nødvendig for påloggede brukere, fordi én eller flere brukere har denne innstillingen aktivert.</translation>
 <translation id="7903128267494448252">Slett denne personen</translation>
@@ -4975,6 +4969,7 @@ Oppbevar nøkkelfilen på et trygt sted. Du får bruk for den når du skal oppre
 <translation id="8286227656784970313">Bruk systemordlisten</translation>
 <translation id="8286817579635702504">Slår på flere sikkerhetsfunksjoner som sannsynligvis kommer til å ødelegge visningen av en eller flere sider du besøker daglig. Et eksempel på disse funksjonene er streng kontroll av blandet innhold. I tillegg blir kraftige funksjoner låst for å sikre konteksten. Dette flagget kommer sannsynligvis til å irritere deg.</translation>
 <translation id="8288342810474863437">Import- og eksportfunksjonalitet i passordinnstillingene.</translation>
+<translation id="8294431847097064396">Kilde</translation>
 <translation id="8297012244086013755">Hangul 3-sett (ikke skift)</translation>
 <translation id="8298115750975731693">Det kan hende at Wi-Fi-nettverket du bruker (<ph name="WIFI_NAME" />), krever at du besøker <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
 <translation id="8299269255470343364">Japansk</translation>
@@ -5061,6 +5056,7 @@ Oppbevar nøkkelfilen på et trygt sted. Du får bruk for den når du skal oppre
 <translation id="8427933533533814946">Bilde tatt av</translation>
 <translation id="8428213095426709021">Innstillinger</translation>
 <translation id="8432745813735585631">Amerikansk tastatur (Colemak)</translation>
+<translation id="8433057134996913067">Dette logger deg av de fleste nettsteder.</translation>
 <translation id="8434177709403049435">&amp;Koding</translation>
 <translation id="8434480141477525001">Feilsøkingsport for NaCl</translation>
 <translation id="8435334418765210033">Lagrede nettverk</translation>
@@ -5192,7 +5188,6 @@ Oppbevar nøkkelfilen på et trygt sted. Du får bruk for den når du skal oppre
 <translation id="8642171459927087831">Tilgangstoken</translation>
 <translation id="8642947597466641025">Forstørr teksten</translation>
 <translation id="8651196026455635717">Slår på viderekobling av søk til standardsøkemotoren på Windows-datamaskiner.</translation>
-<translation id="8651324101757295372">Ta en nettprat med denne personen</translation>
 <translation id="8651585100578802546">Tving ny innlasting av siden</translation>
 <translation id="8652139471850419555">Foretrukne nettverk</translation>
 <translation id="8652487083013326477">alternativknapp for sideomfang</translation>
@@ -5560,7 +5555,6 @@ Oppbevar nøkkelfilen på et trygt sted. Du får bruk for den når du skal oppre
 <translation id="9157697743260533322">Kunne ikke konfigurere automatiske oppdateringer for alle brukerne (feil ved start av forhåndskontroll: <ph name="ERROR_NUMBER" />)</translation>
 <translation id="9158715103698450907">Beklager. Det oppsto et kommunikasjonsproblem på nettverket under godkjenningen. Sjekk nettverksforbindelsen din, og prøv på nytt.</translation>
 <translation id="9159562891634783594">Aktiver registrering av uregistrerte nettskyskrivere fra utskriftsforhåndsvisningen.</translation>
-<translation id="9166510596677678112">Send en e-post til denne personen</translation>
 <translation id="916745092148443205">Utheving av bevegelsestrykk</translation>
 <translation id="9169496697824289689">Se tastaturets hurtigtaster</translation>
 <translation id="9169664750068251925">Blokkér alltid på dette nettstedet</translation>

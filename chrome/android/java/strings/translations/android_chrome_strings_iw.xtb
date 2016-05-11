@@ -68,6 +68,7 @@
 <translation id="1842969606798536927">שלם</translation>
 <translation id="1853692000353488670">כרטיסייה חדשה לגלישה בסתר</translation>
 <translation id="189172778771606813">סגור את חלונית ההזזה לניווט</translation>
+<translation id="1924956916668006832">בחר כתובת למשלוח</translation>
 <translation id="194341124344773587">‏הפעל הרשאה בשביל Chrome ב<ph name="BEGIN_LINK" />הגדרות Android<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">שמור סיסמאות</translation>
 <translation id="1944384637046898011">‏הצפן הכל באמצעות סיסמת Google החל מ-<ph name="TIME" /></translation>
@@ -98,6 +99,7 @@
 <translation id="2268044343513325586">צמצם</translation>
 <translation id="2315043854645842844">מערכת ההפעלה אינה תומכת בבחירת אישור בצד הלקוח.</translation>
 <translation id="2321958826496381788">גרור את המחוון עד שתוכל לקרוא את הקטע הזה בצורה נוחה. לאחר שתקיש פעמיים על פיסקה, הטקסט אמור להיות מוצג בגודל הזה לפחות.</translation>
+<translation id="2329597144923131178">היכנס כדי לקבל גישה אל הסימניות, ההיסטוריה, הסיסמאות והגדרות נוספות בכל המכשירים שברשותך.</translation>
 <translation id="2343328333327081434">מתקין...</translation>
 <translation id="2351097562818989364">הגדרות התרגום שלך אופסו.</translation>
 <translation id="2359808026110333948">המשך</translation>
@@ -133,6 +135,7 @@
 <translation id="2762000892062317888">ברגע זה</translation>
 <translation id="2770465223704140727">הסר מהרשימה</translation>
 <translation id="278029852808208386">‏לא נמצאו מכשירי Bluetooth. <ph name="BEGIN_LINK" />חפש שוב<ph name="END_LINK" />.</translation>
+<translation id="2781389167600714117">בחר אפשרויות משלוח</translation>
 <translation id="2811892995384186721">אינך רואה את המכשיר? <ph name="BEGIN_LINK" />קבל עזרה<ph name="END_LINK" /></translation>
 <translation id="2836148919159985482">כדי לצאת ממסך מלא, גע בלחצן 'הקודם'.</translation>
 <translation id="2842985007712546952">תיקיית אב</translation>
@@ -158,7 +161,6 @@
 <translation id="3137521801621304719">צא ממצב גלישה בסתר</translation>
 <translation id="3149891296864842641">אפשרויות משלוח</translation>
 <translation id="3162882791484435636">בחר באפשרות משלוח</translation>
-<translation id="3173438333156928404">שגיאה בעיבוד התשלום</translation>
 <translation id="3177909033752230686">שפת הדף:</translation>
 <translation id="3190152372525844641">‏הפעל הרשאות בשביל Chrome ב<ph name="BEGIN_LINK" />הגדרות Android<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905">נתונים מאוחסנים בנפח <ph name="STORAGE_AMOUNT" /></translation>
@@ -194,7 +196,6 @@
 כדי לשנות את מונח החיפוש, גע נגיעה ארוכה במונח כדי לבחור בו. כדי לצמצם את החיפוש, הסט את החלונית עד למעלה וגע בתיבת החיפוש.</translation>
 <translation id="3623048332793834136">‏סימניות של Chrome בגירסה הניסיונית</translation>
 <translation id="363596933471559332">היכנס באופן אוטומטי לאתרים באמצעות פרטי כניסה מאוחסנים. כשתכונה זו כבויה, תתבקש לבצע אימות לפני כל כניסה לאתר.</translation>
-<translation id="3653742808139624888">‏כדי שהסימניות שלך יופיעו בכל המכשירים, היכנס ל-Chrome</translation>
 <translation id="3656115297268584622">‏הפעל מיקום ב<ph name="BEGIN_LINK" />הגדרות Android<ph name="END_LINK" />.</translation>
 <translation id="3661699943263275414">‏אתרים של צד שלישי יוכלו לשמור ולקרוא נתונים של קובצי Cookie</translation>
 <translation id="3672452749423051839">הצעות לשגיאת ניווט</translation>
@@ -226,6 +227,7 @@
 <translation id="4170011742729630528">השירות אינו זמין. נסה שוב מאוחר יותר.</translation>
 <translation id="4195643157523330669">פתח בכרטיסייה חדשה</translation>
 <translation id="423410644998903704">‏Chrome זקוק לגישה אל ההרשאות כדי לשתף אותן עם האתר הזה.</translation>
+<translation id="4242533952199664413">פתח את 'הגדרות'</translation>
 <translation id="424864128008805179">‏האם לצאת מ-Chrome?</translation>
 <translation id="4254813446494774748">שפת התרגום:</translation>
 <translation id="4256782883801055595">רישיונות קוד פתוח</translation>
@@ -524,14 +526,12 @@
 <translation id="8007176423574883786">כבוי בשביל המכשיר הזה</translation>
 <translation id="8026334261755873520">נקה נתוני גלישה</translation>
 <translation id="8035133914807600019">תיקייה חדשה…</translation>
+<translation id="8063895661287329888">הוספת הכרטיסייה נכשלה.</translation>
 <translation id="8068648041423924542">אין אפשרות לבחור אישור.</translation>
 <translation id="8069239273282989646">לאחר דחיסה</translation>
 <translation id="8073388330009372546">פתח את התמונה בכרטיסייה חדשה</translation>
 <translation id="8076014560081431679">הגדרות אתרים שנשמרו לא יימחקו ועשויות לשקף את הרגלי הגלישה שלך. <ph name="BEGIN_LINK" />למידע נוסף<ph name="END_LINK" /></translation>
 <translation id="8087000398470557479">‏התוכן הזה הוא מ-<ph name="DOMAIN_NAME" />, ומוגש על-ידי Google.</translation>
-<translation id="8098570222830891427">‏בסביבה הקרובה יש מכשירים שמשדרים דפי אינטרנט בתקשורת Bluetooth. ‏Chrome יאתר את הדפים האלו בסריקה ויציג אותם כשתוציא את המכשיר ממצב שינה. הדפים יעברו דרך שירות של Google כדי לשפר את איכות התוצאות.
-
-ניתן לשלוט על האינטרנט הווירטופיזי בהגדרות של Chrome.</translation>
 <translation id="8106211421800660735">מספר כרטיס אשראי</translation>
 <translation id="813082847718468539">הצג נתוני אתר</translation>
 <translation id="8137558756159375272">‏'גע כדי לחפש' שולח אל חיפוש Google את המילה הנבחרת, יחד עם הדף הנוכחי בתור הקשר. תוכל לכבות זאת ב<ph name="BEGIN_LINK" />הגדרות<ph name="END_LINK" />.</translation>

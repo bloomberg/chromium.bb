@@ -68,6 +68,7 @@
 <translation id="1842969606798536927">付款</translation>
 <translation id="1853692000353488670">新的隐身标签页</translation>
 <translation id="189172778771606813">关闭抽屉式导航栏</translation>
+<translation id="1924956916668006832">选择送货地址</translation>
 <translation id="194341124344773587">在 <ph name="BEGIN_LINK" />Android 设置<ph name="END_LINK" />中为 Chrome 启用这项权限。</translation>
 <translation id="1943432128510653496">保存密码</translation>
 <translation id="1944384637046898011">自 <ph name="TIME" />起，使用 Google 密码加密所有数据</translation>
@@ -98,6 +99,7 @@
 <translation id="2268044343513325586">优化</translation>
 <translation id="2315043854645842844">操作系统不支持选择客户端证书。</translation>
 <translation id="2321958826496381788">拖动该滑块，将文字调整到适合您阅读的大小。点按两次某段落后，显示的文字至少应是这么大。</translation>
+<translation id="2329597144923131178">登录后可获取您所有设备上保存的书签、历史记录、密码和其他设置。</translation>
 <translation id="2343328333327081434">正在安装…</translation>
 <translation id="2351097562818989364">您的翻译设置已重置。</translation>
 <translation id="2359808026110333948">继续</translation>
@@ -133,6 +135,7 @@
 <translation id="2762000892062317888">刚刚</translation>
 <translation id="2770465223704140727">从列表中移除</translation>
 <translation id="278029852808208386">未发现任何蓝牙设备。<ph name="BEGIN_LINK" />重新搜索<ph name="END_LINK" />。</translation>
+<translation id="2781389167600714117">选择送货</translation>
 <translation id="2811892995384186721">没看到您的设备？<ph name="BEGIN_LINK" />寻求帮助<ph name="END_LINK" /></translation>
 <translation id="2836148919159985482">触摸“返回”按钮即可退出全屏模式。</translation>
 <translation id="2842985007712546952">父文件夹</translation>
@@ -158,7 +161,6 @@
 <translation id="3137521801621304719">退出隐身模式</translation>
 <translation id="3149891296864842641">送货方式</translation>
 <translation id="3162882791484435636">选择送货方式</translation>
-<translation id="3173438333156928404">处理付款时出错</translation>
 <translation id="3177909033752230686">网页语言：</translation>
 <translation id="3190152372525844641">在 <ph name="BEGIN_LINK" />Android 设置<ph name="END_LINK" />中为 Chrome 启用这些权限。</translation>
 <translation id="3198916472715691905">已存储 <ph name="STORAGE_AMOUNT" /> 数据</translation>
@@ -194,7 +196,6 @@
 要调整搜索字词，请长按将其选中。要缩小搜索范围，请将面板向上滑动到顶部，然后触摸搜索框。</translation>
 <translation id="3623048332793834136">Chrome Canary 版书签</translation>
 <translation id="363596933471559332">使用存储的凭据自动登录网站。当该功能处于停用状态时，系统会在您每次登录网站之前要求您进行验证。</translation>
-<translation id="3653742808139624888">要将您的书签同步到自己的所有设备上，请登录 Chrome</translation>
 <translation id="3656115297268584622">在 <ph name="BEGIN_LINK" />Android 设置<ph name="END_LINK" />部分开启位置信息服务。</translation>
 <translation id="3661699943263275414">第三方网站可以保存和读取 Cookie 数据</translation>
 <translation id="3672452749423051839">导航错误建议</translation>
@@ -226,6 +227,7 @@
 <translation id="4170011742729630528">此服务目前无法使用，请稍后再试。</translation>
 <translation id="4195643157523330669">在新标签页中打开</translation>
 <translation id="423410644998903704">Chrome 需要具有这些功能的使用权限，才能批准此网站的分享请求。</translation>
+<translation id="4242533952199664413">打开“设置”</translation>
 <translation id="424864128008805179">退出 Chrome？</translation>
 <translation id="4254813446494774748">翻译语言：</translation>
 <translation id="4256782883801055595">开放源代码许可</translation>
@@ -524,14 +526,12 @@
 <translation id="8007176423574883786">已对此设备停用</translation>
 <translation id="8026334261755873520">清除浏览数据</translation>
 <translation id="8035133914807600019">新建文件夹…</translation>
+<translation id="8063895661287329888">无法添加书签。</translation>
 <translation id="8068648041423924542">无法选择证书。</translation>
 <translation id="8069239273282989646">压缩后</translation>
 <translation id="8073388330009372546">在新标签页中打开图片</translation>
 <translation id="8076014560081431679">已保存的网站设置将不会遭到删除，并且可能会反映您的浏览习惯。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>
 <translation id="8087000398470557479">此内容来自 <ph name="DOMAIN_NAME" />（由 Google 提供）。</translation>
-<translation id="8098570222830891427">附近有设备在通过蓝牙播报网页。当您唤醒自己的设备时，Chrome 将会搜索并显示这些网页。这些网页将经由 Google 服务进行处理，以让网页搜索结果的展示更理想。
-
-您可以在 Chrome 设置部分控制实物网。</translation>
 <translation id="8106211421800660735">信用卡号</translation>
 <translation id="813082847718468539">查看网站信息</translation>
 <translation id="8137558756159375272">“触摸搜索”会将所选字词和当前页面（作为上下文）一起发送给 Google 搜索。您可以在<ph name="BEGIN_LINK" />设置<ph name="END_LINK" />中停用此功能。</translation>

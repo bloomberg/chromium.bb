@@ -564,6 +564,22 @@ Si cette règle est définie sur "False", les utilisateurs ne pourront pas jouer
           Chaque élément de cette liste est un schéma de correspondance de style extension (voir https://developer.chrome.com/extensions/match_patterns). Les utilisateurs pourront facilement installer des éléments depuis n'importe quelle URL correspondant à un élément de cette liste. L'emplacement du fichier *.crx et la page de téléchargement (page de provenance) doivent tous deux être autorisés par ces schémas.
 
           ExtensionInstallBlacklist reste prioritaire face à cette règle : une extension figurant dans la liste noire ne sera pas installée, même si elle provient d'un site mentionné dans cette liste.</translation>
+<translation id="2813740161943223811">Cette règle a été abandonnée. Utilisez plutôt le mode proxy.
+
+          Permet de préciser le serveur proxy utilisé par <ph name="PRODUCT_NAME" /> et d'empêcher les utilisateurs de modifier les paramètres de proxy. Les applications ARC peuvent également utiliser ce serveur proxy.
+
+          Si vous choisissez de ne jamais utiliser de serveur proxy et de toujours vous connecter directement, toutes les autres options sont ignorées.
+
+          Si vous optez pour les paramètres de proxy du système ou la détection automatique du serveur proxy, toutes les autres options sont ignorées.
+
+          Si vous sélectionnez les paramètres de proxy manuels, vous pouvez indiquer des options supplémentaires dans "Adresse ou URL du serveur proxy", "URL d'un fichier .pac de proxy" et "Liste de règles de contournement de proxy séparées par des virgules". Seul le serveur proxy HTTP ayant la priorité la plus élevée est disponible pour les applications ARC.
+
+          Pour consulter des exemples détaillés, rendez-vous sur :
+          <ph name="PROXY_HELP_URL" />
+
+          Si vous activez ce paramètre, <ph name="PRODUCT_NAME" /> ignore toutes les options liées au proxy indiquées à partir de la ligne de commande.
+
+          Si cette règle n'est pas configurée, les utilisateurs peuvent choisir eux-mêmes leurs paramètres de proxy.</translation>
 <translation id="2824715612115726353">Activer le mode navigation privée</translation>
 <translation id="2844404652289407061">Active la fonctionnalité Appuyer pour rechercher dans l'affichage du contenu de <ph name="PRODUCT_NAME" />.
 
@@ -676,6 +692,18 @@ Si cette règle n'est pas configurée, l'utilisateur peut installer n'importe qu
           </translation>
 <translation id="3205825995289802549">Agrandir la première fenêtre du navigateur à la première exécution</translation>
 <translation id="3206731874112238027">Désactiver l'aperçu avant impression (abandonné)</translation>
+<translation id="3208854390109736596">Permet de préciser le serveur proxy utilisé par <ph name="PRODUCT_NAME" /> et d'empêcher les utilisateurs de modifier les paramètres de proxy. Les applications ARC peuvent également utiliser ce serveur proxy.
+
+      Si vous choisissez de ne jamais utiliser de serveur proxy et de toujours vous connecter directement, toutes les autres options sont ignorées.
+
+      Si vous optez pour la détection automatique du serveur proxy, toutes les autres options sont ignorées.
+
+      Pour consulter des exemples détaillés, rendez-vous sur :
+      <ph name="PROXY_HELP_URL" />
+
+      Si vous activez ce paramètre, <ph name="PRODUCT_NAME" /> et les applications ARC ignorent toutes les options liées au proxy indiquées à partir de la ligne de commande.
+
+      Si ces règles ne sont pas configurées, les utilisateurs peuvent choisir eux-mêmes leurs paramètres de proxy.</translation>
 <translation id="3213821784736959823">Définit si le client DNS intégré est utilisé dans <ph name="PRODUCT_NAME" />.
 
       Si cette règle est définie sur "True", le client DNS intégré est utilisé, si disponible.
@@ -730,6 +758,9 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
 
        Si cette règle est définie sur "false", <ph name="PRODUCT_OS_NAME" /> n'autorise pas les sessions en mode invité.</translation>
 <translation id="3428247105888806363">Activer la prédiction réseau</translation>
+<translation id="3449886121729668969">Permet de configurer les paramètres de proxy pour <ph name="PRODUCT_NAME" />. Ces paramètres de proxy sont également disponibles pour les applications ARC.
+
+      Cette règle n'est pas encore prête. Nous vous invitons donc à ne pas l'utiliser pour le moment.</translation>
 <translation id="3460784402832014830">Indiquer l'URL utilisée par les moteurs de recherche pour afficher une page Nouvel onglet
 
           Cette règle est facultative. Si elle n'est pas définie, aucune page Nouvel onglet ne s'affiche.
@@ -740,6 +771,14 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
           Si la règle est définie sur "True", les délais liés à la gestion de l'alimentation et la limite relative à la durée de la session ne sont activés que lorsque l'utilisateur a effectué une première activité au cours d'une session.
 
           Si la règle est définie sur "False" ou si elle n'a pas été configurée, les délais liés à la gestion de l'alimentation et la limite relative à la durée de la session sont activés dès que la session débute.</translation>
+<translation id="3469657928310999477">Permet de définir une liste d'hôtes pour lesquels <ph name="PRODUCT_NAME" /> contournera le serveur proxy. Les applications ARC peuvent également utiliser cette liste comme liste de règles de contournement.
+
+          Cette règle n'est applicable que si vous avez sélectionné les paramètres de proxy manuels pour l'option "Sélectionner le mode de spécification des paramètres de serveur proxy".
+
+          Ne configurez pas cette règle si vous avez sélectionné un autre mode de spécification des règles de proxy.
+
+          Pour consulter des exemples détaillés, rendez-vous sur :
+          <ph name="PROXY_HELP_URL" /></translation>
 <translation id="3478024346823118645">Effacer les données utilisateur à la déconnexion</translation>
 <translation id="348495353354674884">Activer le clavier virtuel</translation>
 <translation id="3496296378755072552">Gestionnaire de mots de passe</translation>
@@ -1428,6 +1467,9 @@ Si cette règle n'est pas configurée, le moteur de rendu par défaut est utilis
       Cette règle concerne tous les types de support de stockage (clés USB, disques durs externes, cartes SD, autres cartes mémoire, etc.). Elle ne concerne pas Google Drive ni le stockage interne. Dès lors, les fichiers enregistrés dans le dossier de téléchargement restent accessibles.
 
       En cas de désactivation ou de non-configuration de ce paramètre, l'appareil fonctionne avec tous les supports de stockage externe compatibles.</translation>
+<translation id="6076099373507468537">Définit la liste des appareils USB autorisés à être dissociés de leur pilote de noyau afin d'être utilisés directement au sein d'une application Web via l'API chrome.usb. Les entrées sont des paires composées d'un identifiant de fournisseur USB et d'un identifiant produit associé à un appareil spécifique.
+
+      Si cette règle n'est pas configurée, la liste des appareils USB amovibles est vide.</translation>
 <translation id="6095999036251797924">Indique la période sans activité de la part de l'utilisateur à l'issue de laquelle l'écran est verrouillé lorsque l'appareil est branché sur une prise de courant alternatif ou fonctionne sur batterie.
 
           Lorsque cette période est définie sur une valeur supérieure à zéro, elle représente la durée d'inactivité de l'utilisateur avant que l'écran ne soit verrouillé par <ph name="PRODUCT_OS_NAME" />.
@@ -1960,6 +2002,14 @@ Si cette règle n'est pas configurée, la règle "AllowImages" est utilisée, et
       pas transmises. Si elle est définie sur "True" ou si elle n'est pas configurée,
       les informations sur la session seront transmises.</translation>
 <translation id="7774768074957326919">Utiliser les paramètres proxy du système</translation>
+<translation id="7775831859772431793">Vous pouvez indiquer ici l'URL du serveur proxy.
+
+          Cette règle n'est applicable que si vous avez sélectionné les paramètres de proxy manuels pour l'option "Sélectionner le mode de spécification des paramètres de serveur proxy".
+
+          Ne configurez pas cette règle si vous avez sélectionné un autre mode de spécification des règles de proxy.
+
+          Pour plus d'informations sur les autres options et pour consulter des exemples détaillés, rendez-vous sur :
+           <ph name="PROXY_HELP_URL" /></translation>
 <translation id="7788511847830146438">Par profil</translation>
 <translation id="7796141075993499320">Permet de définir une liste de formats d'URL spécifiant les sites qui sont autorisés à exécuter des plug-ins. 
 
@@ -1994,6 +2044,14 @@ Si cette règle n'est pas configurée, la valeur par défaut globale est utilis�
        Détermine l'identifiant de l'extension à utiliser comme économiseur d'écran sur l'écran de connexion. L'extension doit faire partie de l'AppPack configuré pour ce domaine via la règle DeviceAppPack.</translation>
 <translation id="7882890448959833986">Supprimer l'avertissement relatif au système d'exploitation non compatible</translation>
 <translation id="7912255076272890813">Configurer les types d'applications ou d'extensions autorisés</translation>
+<translation id="7915236031252389808">Vous pouvez indiquer ici une URL pointant vers un fichier .pac de proxy.
+
+          Cette règle n'est applicable que si vous avez sélectionné les paramètres de proxy manuels pour l'option "Sélectionner le mode de spécification des paramètres de serveur proxy".
+
+          Ne configurez pas cette règle si vous avez sélectionné un autre mode de spécification des règles de proxy.
+
+          Pour consulter des exemples détaillés, rendez-vous sur :
+<ph name="PROXY_HELP_URL" /></translation>
 <translation id="793134539373873765">Indiquer si une connexion P2P doit être utilisée pour les charges utiles de mise à jour de l'OS. Si le paramètre est défini sur "True", les charges utiles de mise à jour sur le réseau local sont partagées et utilisées par les appareils, ce qui peut avoir pour effet de réduire la quantité de bande passante utilisée et l'encombrement sur Internet. Si la charge utile de mise à jour n'est pas disponible sur le réseau local, le téléchargement est effectué sur l'appareil à partir d'un serveur de mise à jour. Si le paramètre est défini sur "False", ou s'il n'est pas configuré, la connexion P2P n'est pas utilisée.</translation>
 <translation id="7933141401888114454">Autoriser la création de comptes utilisateurs supervisés</translation>
 <translation id="7936098023732125869">Active l'utilisation d'un fournisseur de moteur de recherche par défaut.
@@ -2144,6 +2202,11 @@ Si ce paramètre n'est pas défini, l'utilisateur peut décider d'utiliser cette
 <translation id="8382184662529825177">Autoriser l'utilisation de l'attestation à distance pour assurer la protection du contenu de l'appareil</translation>
 <translation id="838870586332499308">Activer l'itinérance des données</translation>
 <translation id="8412312801707973447">Si des contrôles OCSP/CRL en ligne sont effectués</translation>
+<translation id="8413348101535146315">Permet de mettre fin aux processus dans le gestionnaire des tâches de <ph name="PRODUCT_NAME" />.
+
+      Si cette règle est définie sur "false", le bouton "Arrêter le processus" est désactivé dans le gestionnaire des tâches.
+
+      Si cette règle est définie sur "true" ou si elle n'est pas configurée, l'utilisateur peut mettre fin à des processus dans le gestionnaire des tâches.</translation>
 <translation id="8424255554404582727">Définir la rotation de l'écran par défaut (réappliquée à chaque redémarrage)</translation>
 <translation id="8426231401662877819">Faire pivoter l'écran vers la droite de 90 degrés</translation>
 <translation id="8451988835943702790">Utiliser la page "Nouvel onglet" comme page d'accueil</translation>
@@ -2374,6 +2437,24 @@ Si vous désactivez ce paramètre ou s'il n'est pas défini, le nom canonique du
 <translation id="9112897538922695510">Permettre d'inscrire une liste de gestionnaires de protocoles. Cette règle ne peut être qu'une recommandation. La propriété |protocol| doit être définie sur un schéma tel que "mailto", et la propriété |url| doit être définie sur le format d'URL de l'application qui gère le schéma. Le modèle peut inclure une variable "%s", qui sera remplacée par l'URL traitée le cas échéant.
 
           Les gestionnaires de protocoles inscrits via la règle sont fusionnés avec ceux inscrits par l'utilisateur, et tous sont disponibles. L'utilisateur peut remplacer les gestionnaires de protocoles installés via la règle en installant un nouveau gestionnaire par défaut, mais il ne peut pas supprimer un gestionnaire de protocoles inscrit via la règle.</translation>
+<translation id="913138516158420759">Permet de préciser le serveur proxy utilisé par <ph name="PRODUCT_NAME" /> et d'empêcher les utilisateurs de modifier les paramètres de proxy. Les applications ARC peuvent également utiliser ce serveur proxy.
+
+          Si vous choisissez de ne jamais utiliser de serveur proxy et de toujours vous connecter directement, toutes les autres options sont ignorées.
+
+          Si vous décidez d'utiliser les paramètres de proxy du système, toutes les autres options sont ignorées.
+
+          Si vous optez pour la détection automatique du serveur proxy, toutes les autres options sont ignorées.
+
+          Si vous choisissez le mode serveur proxy déterminé, vous pouvez définir des options supplémentaires dans "Adresse ou URL du serveur proxy" et "Liste de règles de contournement de proxy séparées par des virgules". Seul le serveur proxy HTTP ayant la priorité la plus élevée est disponible pour les applications ARC.
+
+          Si vous décidez d'utiliser un script de proxy .pac, vous devez indiquer l'URL du script dans "URL d'un fichier .pac de proxy".
+
+          Pour consulter des exemples détaillés, rendez-vous sur :
+          <ph name="PROXY_HELP_URL" />.
+
+          Si vous activez ce paramètre, <ph name="PRODUCT_NAME" /> et les applications ARC ignorent toutes les options liées au proxy indiquées à partir de la ligne de commande.
+
+          Si cette règle n'est pas configurée, les utilisateurs peuvent choisir eux-mêmes leurs paramètres de proxy.</translation>
 <translation id="913195841488580904">Bloquer l'accès à une liste d'URL</translation>
 <translation id="9135033364005346124">Activer le proxy <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="9147029539363974059">Envoyer des journaux système vers le serveur de gestion pour permettre

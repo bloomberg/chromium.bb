@@ -531,6 +531,22 @@ Počínaje prohlížečem <ph name="PRODUCT_NAME" /> 21 je instalace rozšířen
 Každá položka v tomto seznamu představuje vzor odpovídající typu rozšíření (viz stránky https://developer.chrome.com/extensions/match_patterns). Uživatelé budou moci jednoduše instalovat položky z jakékoli adresy, která odpovídá položce v tomto seznamu. V těchto vzorech musí být povoleno umístění souboru *.crx i stránka, ze které bude zahájeno stahování (tj. zdroj odkazu).
 
 Seznam zakázaných položek ExtensionInstallBlacklist je této zásadě nadřazen. Rozšíření v seznamu zakázaných položek nebude nainstalováno ani v případě, že bude pocházet ze stránek, které jsou uvedeny v tomto seznamu.</translation>
+<translation id="2813740161943223811">Podpora této zásady byla ukončena, použijte místo ní zásadu ProxyMode.
+
+          Umožňuje zadat proxy server, který bude prohlížeč <ph name="PRODUCT_NAME" /> používat, a brání uživatelům ve změně nastavení proxy serveru. Tento proxy server budou moci používat i aplikace ARC.
+
+          Pokud zvolíte, že proxy server nikdy používat nechcete a chcete se vždy připojovat přímo, všechny další možnosti budou ignorovány. 
+
+          Pokud zvolíte, že chcete použít systémové nastavení proxy serveru nebo jej zjistit automaticky, všechny další možnosti budou ignorovány.
+
+          Pokud zvolíte ruční nastavení proxy serveru, můžete v zásadách „Adresa (nebo adresa URL) proxy serveru“, „Adresa URL souboru PAC proxy serveru“ a „Seznam pravidel vynechání proxy serveru oddělených čárkami“ zadat další možnosti. Aplikacím ARC je k dispozici pouze proxy server HTTP s nejvyšší prioritou.
+
+          Podrobné příklady naleznete na následující stránce:
+          <ph name="PROXY_HELP_URL" />
+
+          Pokud aktivujete toto nastavení, prohlížeč <ph name="PRODUCT_NAME" /> bude ignorovat veškeré možnosti související s proxy serverem zadané na příkazovém řádku.
+
+          Pokud tato zásada nebude nastavena, uživatelé budou moci nastavení proxy serveru zvolit sami.</translation>
 <translation id="2824715612115726353">Povolit anonymní režim</translation>
 <translation id="2844404652289407061">Aktivuje dostupnost Vyhledání klepnutím v zobrazení obsahu prohlížeče <ph name="PRODUCT_NAME" />.
 
@@ -643,6 +659,18 @@ Tato zásada zatím není připravena k použití. Nepoužívejte ji prosím.
           </translation>
 <translation id="3205825995289802549">Při prvním spuštění maximalizovat první okno prohlížeče</translation>
 <translation id="3206731874112238027">Deaktivovat náhled tisku (podpora ukončena)</translation>
+<translation id="3208854390109736596">Umožňuje zadat proxy server, který bude prohlížeč <ph name="PRODUCT_NAME" /> používat, a brání uživatelům ve změně nastavení proxy serveru. Tento proxy server budou moci používat i aplikace ARC.
+
+      Pokud zvolíte, že proxy server nikdy používat nechcete a chcete se vždy připojovat přímo, všechny další možnosti budou ignorovány.
+
+      Pokud zvolíte, že chcete nastavení proxy serveru zjistit automaticky, všechny další možnosti budou ignorovány.
+
+      Podrobné příklady naleznete na následující stránce:
+      <ph name="PROXY_HELP_URL" />.
+
+      Pokud aktivujete toto nastavení, prohlížeč <ph name="PRODUCT_NAME" /> a aplikace ARC budou ignorovat veškeré možnosti související s proxy serverem zadané na příkazovém řádku.
+
+      Pokud tyto zásady ponecháte nenastavené, uživatelé budou moci zvolit vlastní nastavení proxy serveru.</translation>
 <translation id="3213821784736959823">Řídí, zda se v prohlížeči <ph name="PRODUCT_NAME" /> používá integrovaný klient DNS.
 
       Pokud je tato zásada nastavena na hodnotu true, bude použit integrovaný klient DNS (pokud je k dispozici).
@@ -690,6 +718,9 @@ Mimo aplikace ARC má tato zásada dopad na všechny typy vstupů videa, nejen n
 
       Je-li tato zásada nastavena na hodnotu False, systém <ph name="PRODUCT_OS_NAME" /> spuštění relací hosta nepovolí.</translation>
 <translation id="3428247105888806363">Aktivovat předvídání akcí sítě</translation>
+<translation id="3449886121729668969">Konfiguruje nastavení proxy serveru pro prohlížeč <ph name="PRODUCT_NAME" />. Tato nastavení proxy serveru budou k dispozici i aplikacím ARC.
+
+      Tato zásada zatím není připravena k použití. Nepoužívejte ji prosím.</translation>
 <translation id="3460784402832014830">Určuje adresu URL, kterou výchozí vyhledávač použije na stránce nové karty.
 
           Tato zásada je nepovinná. Pokud ji nenastavíte, žádná stránka nové karty se nezobrazí.
@@ -700,6 +731,15 @@ Mimo aplikace ARC má tato zásada dopad na všechny typy vstupů videa, nejen n
           Pokud je tato zásada nastavena na hodnotu True, prodlevy systému správy napájení a limit délky relace začnou běžet až poté, co je v relaci zaznamenána první aktivita uživatele.
 
           Pokud je tato zásada nastavena na hodnotu False nebo je ponechána nenastavená, prodlevy správy obsahu a limit délky relace začnou běžet ihned po zahájení relace.</translation>
+<translation id="3469657928310999477">U hostitelů v tomto seznamu prohlížeč <ph name="PRODUCT_NAME" /> obejde všechny proxy servery. 
+Aplikace ARC tento seznam budou moci používat jako seznam pravidel obcházení.
+
+          Tato zásada bude použita pouze v případě, že jste v zásadě „Zvolit způsob konfigurace nastavení proxy serveru“ zvolili ruční nastavení.
+
+          Pokud jste vybrali jiný režim nastavení zásad proxy serveru, tuto zásadu byste nastavovat neměli.
+
+          Podrobnější příklady naleznete na následující stránce:
+          <ph name="PROXY_HELP_URL" /></translation>
 <translation id="3478024346823118645">Při odhlášení smazat uživatelská data</translation>
 <translation id="348495353354674884">Aktivovat virtuální klávesnici</translation>
 <translation id="3496296378755072552">Správce hesel</translation>
@@ -1377,6 +1417,9 @@ Pokud je zásada nastavena na hodnotu false, hardwarová akcelerace bude zakáz�
       Tato zásada se vztahuje na všechny typy paměťových médií, například na jednotky USB flash, externí harddisky, SD karty a další typy paměťových karet, optická úložiště apod. Na interní úložiště se nevztahuje, tudíž soubory uložené ve složce Stažené soubory lze i přesto otevřít. Tato zásada také nemá žádný vliv na Disk Google.
 
       Je-li toto nastavení vypnuto, nebo není nakonfigurováno, uživatelé mohou ve svém zařízení používat všechny podporované typy externích úložišť.</translation>
+<translation id="6076099373507468537">Definuje seznam zařízení USB, která lze odpojit od ovladače jádra a použít přímo ve webové aplikaci prostřednictvím rozhraní chrome.usb API. Hodnotami jsou páry identifikátorů (dodavatel a produkt), které určují konkrétní hardwarové zařízení.
+
+      Pokud tato zásada není nastavena, seznam odpojitelných zařízení USB je prázdný.</translation>
 <translation id="6095999036251797924">Udává dobu bez interakce uživatele, po jejímž uplynutí se při napájení ze sítě nebo z baterie uzamkne obrazovka.
 
           Pokud je tato doba nastavena na hodnotu vyšší než nula, udává, jak dlouho musí být uživatel neaktivní, než systém <ph name="PRODUCT_OS_NAME" /> uzamkne obrazovku.
@@ -1900,6 +1943,14 @@ Tato zásada je určena k internímu použití prohlížečem <ph name="PRODUCT_
 
 Pokud je tato zásada nastavena na hodnotu False, informace o relaci se hlásit nebudou. Pokud je nastavena na hodnotu True nebo nastavena není, informace o relaci se hlásit budou.</translation>
 <translation id="7774768074957326919">Použít systémová nastavení proxy serveru</translation>
+<translation id="7775831859772431793">Zde můžete zadat adresu URL proxy serveru.
+
+          Tato zásada bude použita pouze v případě, že jste v zásadě „Zvolit způsob konfigurace nastavení proxy serveru“ zvolili ruční nastavení.
+
+          Pokud jste vybrali jiný režim nastavení zásad proxy serveru, tuto zásadu byste nastavovat neměli.
+
+          Další možnosti a podrobné příklady naleznete na následující stránce:
+          <ph name="PROXY_HELP_URL" /></translation>
 <translation id="7788511847830146438">Podle profilu</translation>
 <translation id="7796141075993499320">Umožňuje nastavit seznam vzorů adres URL určujících stránky, které mohou spouštět pluginy.
           
@@ -1933,6 +1984,14 @@ Pokud je tato zásada nastavena na hodnotu False, informace o relaci se hlásit
       Určuje ID rozšíření, které se použije jako spořič obrazovky na přihlašovací obrazovce. Rozšíření musí být součásti balíčku AppPack, který je pro tuto doménu nakonfigurován v rámci zásady DeviceAppPack.</translation>
 <translation id="7882890448959833986">Potlačit upozornění ohledně nepodporovaného operačního systému</translation>
 <translation id="7912255076272890813">Konfigurovat povolené typy aplikací nebo rozšíření</translation>
+<translation id="7915236031252389808">Zde můžete zadat adresu URL souboru PAC proxy serveru.
+
+          Tato zásada bude použita pouze v případě, že jste v části „Zvolte způsob konfigurace nastavení proxy serveru“ zvolili ruční nastavení proxy serveru.
+
+          Pokud jste vybrali jiný režim nastavení zásad proxy serveru, tuto zásadu byste nastavovat neměli.
+
+          Podrobné příklady naleznete na následující adrese:
+          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="793134539373873765">Určuje, zda má být pro datové části aktualizací operačního systému použita síť p2p. Pokud zásadu nastavíte na hodnotu True, zařízení budou sdílet pokus o využití datových částí aktualizace v síti LAN, což může vést ke snížení zahlcení a míry využití připojení k internetu. Pokud datová část aktualizace není v síti LAN k dispozici, zařízení přepne zpět na stahování ze serveru aktualizace. Pokud tuto zásadu nenakonfigurujete nebo ji nastavíte na hodnotu False, síť p2p nebude použita.</translation>
 <translation id="7933141401888114454">Povolit vytváření dozorovaných uživatelů</translation>
 <translation id="7936098023732125869">Umožňuje použít výchozího poskytovatele vyhledávání.
@@ -2078,6 +2137,11 @@ Pokud je tato zásada nastavena na hodnotu false, prohlížeč uvítací stránk
 <translation id="8382184662529825177">Povolit použití vzdáleného ověření identity k ochraně obsahu v zařízení</translation>
 <translation id="838870586332499308">Povolit datový roaming</translation>
 <translation id="8412312801707973447">Zda se budou provádět online kontroly OCSP/CRL</translation>
+<translation id="8413348101535146315">Umožňuje ukončování procesů ve Správci úloh prohlížeče <ph name="PRODUCT_NAME" />.
+
+      Pokud je tato zásada nastavena na hodnotu False, je tlačítko Ukončit proces ve Správci úloh deaktivováno.
+
+      Pokud je tato zásada nastavena na hodnotu True nebo není nakonfigurována, uživatel ve Správci úloh může ukončovat úlohy.</translation>
 <translation id="8424255554404582727">Nastavit výchozí otočení displeje, které se použije při každém restartu</translation>
 <translation id="8426231401662877819">Otočit obrazovku ve směru hodinových ručiček o 90 stupňů</translation>
 <translation id="8451988835943702790">Jako domovskou použít stránku Nová karta</translation>
@@ -2278,6 +2342,24 @@ Pokud je tato zásada nastavena na hodnotu True, sledovací pakety heartbeat bud
 <translation id="9112897538922695510">Umožňuje zaregistrovat seznam obslužných nástrojů protokolů. Tato zásada může být pouze doporučena. Vlastnost |protocol| musí být nastavena na schéma jako „mailto“ a vlastnost |url| musí být nastavena na vzorec adresy URL aplikace, která schéma zpracovává. Vzorec může obsahovat specifikátor „%s“, který (bude-li zadán) bude nahrazen zpracovanou adresou URL.
 
           Obslužné nástroje protokolů zaregistrované pomocí této zásady budou sloučeny s obslužnými nástroji zaregistrovanými uživatelem a k dispozici budou všechny. Obslužné nástroje protokolů nainstalované zásadou může uživatel přepsat tím, že nainstaluje nový výchozí obslužný nástroj, avšak nemůže je odstranit.</translation>
+<translation id="913138516158420759">Umožňuje zadat proxy server, který bude prohlížeč <ph name="PRODUCT_NAME" /> používat, a brání uživatelům ve změně nastavení proxy serveru. Tento proxy server budou moci používat i aplikace ARC.
+
+          Pokud zvolíte, že proxy server nikdy používat nechcete a chcete se vždy připojovat přímo, všechny další možnosti budou ignorovány. 
+
+          Pokud zvolíte, že chcete použít systémové nastavení proxy serveru, všechny další možnosti budou ignorovány.
+
+          Pokud zvolíte, že se má proxy server zjistit automaticky, všechny další možnosti budou ignorovány.
+
+          Pokud zvolíte režim proxy s pevně daným serverem, můžete v zásadách „Adresa (nebo adresa URL) proxy serveru“ a „Seznam pravidel vynechání proxy serveru oddělených čárkami“ zadat další možnosti. Aplikacím ARC je k dispozici pouze proxy server HTTP s nejvyšší prioritou.
+
+          Pokud zvolíte, že chcete používat skript .pac proxy serveru, musíte v zásadě Adresa URL souboru PAC proxy serveru zadat adresu URL skriptu.
+
+          Podrobné příklady naleznete na následující stránce:
+          <ph name="PROXY_HELP_URL" />
+
+          Pokud aktivujete toto nastavení, prohlížeč <ph name="PRODUCT_NAME" /> a aplikace ARC budou ignorovat veškeré možnosti související s proxy serverem zadané na příkazovém řádku.
+
+          Pokud tato zásada nebude nastavena, uživatelé budou moci nastavení proxy serveru zvolit sami.</translation>
 <translation id="913195841488580904">Blokování přístupu k seznamu adres URL</translation>
 <translation id="9135033364005346124">Aktivovat proxy server služby <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="9147029539363974059">Odesílá systémové protokoly na server správy, což umožňuje jejich kontrolu ze strany administrátorů.

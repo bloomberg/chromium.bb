@@ -42,6 +42,7 @@
 <translation id="1254117744268754948">Klasör Seçin</translation>
 <translation id="1285320974508926690">Bu siteyi hiçbir zaman çevirme</translation>
 <translation id="129553762522093515">Son kapatılan</translation>
+<translation id="129863573139666797"><ph name="BEGIN_LINK" />Çerezlerinizi temizlemeyi deneyin<ph name="END_LINK" /></translation>
 <translation id="1339601241726513588">Kayıt alan adı:</translation>
 <translation id="1344588688991793829">Chromium Otomatik Doldurma ayarları...</translation>
 <translation id="1374468813861204354">öneriler</translation>
@@ -197,6 +198,7 @@
 <translation id="2969319727213777354">Güvenli bir bağlantı kurmak için saatinizin doğru ayarlanmış olması gerekir. Bunun sebebi, web sitelerinin kendilerini tanımlamak için kullandıkları sertifikaların sadece belli süreler için geçerli olmasıdır. Cihazınızın saati yanlış olduğundan, Google Chrome bu sertifikaları doğrulayamıyor.</translation>
 <translation id="2972581237482394796">&amp;Yinele</translation>
 <translation id="2985306909656435243">Bu seçenek etkinleştirildiğinde Chromium, formları daha hızlı doldurmak için kartınızın bir kopyasını bu cihazda saklar.</translation>
+<translation id="2989984781570875765"><ph name="CREDIT_CARD" /> numaralı kredi kartınızın son kullanma tarihini ve kartın arkasındaki 3 basamaklı CVC'yi girin</translation>
 <translation id="2991174974383378012">Web Siteleriyle Paylaşma</translation>
 <translation id="3005723025932146533">Kaydedilen kopyayı göster</translation>
 <translation id="3010559122411665027">Liste girişi "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
@@ -280,6 +282,7 @@
 <translation id="3717027428350673159"><ph name="BEGIN_LINK" />Proxy, güvenlik duvarı ve DNS yapılandırmasını kontrol etme<ph name="END_LINK" /></translation>
 <translation id="3739623965217189342">Kopyaladığınız bağlantı</translation>
 <translation id="3744899669254331632">Web sitesi Chromium'un işleyemediği karışık kimlik bilgileri gönderdiğinden <ph name="SITE" /> sitesini şu anda ziyaret edemezsiniz. Ağ hataları ve saldırılar genellikle geçici türdendir, dolayısıyla bu sayfa muhtemelen daha sonra çalışacaktır.</translation>
+<translation id="3748071062818261683">Kartı Doğrulayın</translation>
 <translation id="3748412725338508953">Çok fazla yeniden yönlendirme vardı.</translation>
 <translation id="375403751935624634">Çeviri, bir sunucu hatası nedeniyle başarısız oldu.</translation>
 <translation id="3759461132968374835">Son zamanda herhangi bir kilitlenme bildirmediniz. Kilitlenme bildirme özelliği devre dışıyken oluşan kilitlenmeler burada görünmez.</translation>
@@ -308,6 +311,7 @@
 <translation id="4103249731201008433">Cihazın seri numarası geçersiz</translation>
 <translation id="4103763322291513355">Kara listeye alınmış URL'lerin ve sistem yöneticinizin zorunlu tuttuğu diğer politikaların listesini görmek için &lt;strong&gt;chrome://policy&lt;/strong&gt; adresini ziyaret edin.</translation>
 <translation id="4117700440116928470">Politika kapsamı desteklenmiyor.</translation>
+<translation id="4130226655945681476">Ağ kabloları, modem ve yönlendirici kontrol ediliyor</translation>
 <translation id="4147376274874979956">Dosyaya erişilemiyor.</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">Chromium'un bu kartı kaydetmesini istiyor musunuz?</translation>
@@ -342,11 +346,15 @@
 <translation id="450710068430902550">Yöneticiyle Paylaşma</translation>
 <translation id="4522570452068850558">Ayrıntılar</translation>
 <translation id="4535734014498033861">Proxy sunucu bağlantısı başarısız oldu.</translation>
+<translation id="4553532082208702698"><ph name="CREDIT_CARD" /> numaralı kredi kartınızın önündeki 4 basamaklı CVC'yi girin</translation>
+<translation id="4558551763791394412">Uzantılarınızı devre dışı bırakmayı deneyin</translation>
 <translation id="4587425331216688090">Adres Chrome'dan kaldırılsın mı?</translation>
 <translation id="4592951414987517459"><ph name="DOMAIN" /> ile olan bağlantınız modern bir şifre seti kullanılarak şifrelendi.</translation>
 <translation id="4594403342090139922">Silmeyi &amp;Geri Al</translation>
 <translation id="4668929960204016307">,</translation>
+<translation id="4670097147947922288">Bir uzantı sayfası görüntülüyorsunuz.</translation>
 <translation id="467662567472608290">Bu sunucu <ph name="DOMAIN" /> olduğunu kanıtlayamadı. Güvenlik sertifikasında hatalar var. Bu durum, bir yanlış yapılandırmadan veya bağlantıya müdahale eden bir saldırgandan kaynaklanıyor olabilir.</translation>
+<translation id="4683417246209150705"><ph name="CREDIT_CARD" /> numaralı kredi kartınızın arkasındaki 3 basamaklı CVC'yi girin</translation>
 <translation id="4697214168136963651"><ph name="URL" /> engellendi</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">Bağlantınız kesildi</translation>
@@ -431,6 +439,8 @@
 <translation id="5650551054760837876">Arama sonucu bulunamadı.</translation>
 <translation id="5663999524854166235">Doğrulama için kartınızın arkasındaki 3 basamaklı CVC'yi girin</translation>
 <translation id="5677928146339483299">Engellenenler</translation>
+<translation id="5696590819423335174"><ph name="CREDIT_CARD" /> numaralı kredi kartınızın son kullanma tarihini ve kartın önündeki 3 basamaklı CVC'yi girin</translation>
+<translation id="5699278517904102888">Doğrulama için <ph name="CREDIT_CARD" /> kredi kartınızın arkasındaki 3 basamaklı CVC'yi girin</translation>
 <translation id="5710435578057952990">Bu web sitesinin kimliği doğrulanmadı.</translation>
 <translation id="5720705177508910913">Geçerli kullanıcı</translation>
 <translation id="5785756445106461925">Ayrıca, bu sayfa güvenli olmayan başka kaynaklar içeriyor. Bu kaynaklar, aktarım sırasında başkaları tarafından görülebilir ve bir saldırgan tarafından sayfanın görünüşünü değiştirmek üzere kullanılabilir.</translation>
@@ -554,7 +564,6 @@
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> güvenlik standartlarına uymuyor.</translation>
 <translation id="721197778055552897">Bu sorun hakkında <ph name="BEGIN_LINK" />daha fazla<ph name="END_LINK" /> bilgi edinin.</translation>
 <translation id="7219179957768738017">Bağlantı <ph name="SSL_VERSION" /> kullanıyor.</translation>
-<translation id="7225807090967870017">Yapı Kimliği</translation>
 <translation id="7231308970288859235">Hata! Bu sayfayı ziyaret etmenizin uygun olup olmadığını ebeveyninize sormanız gerekiyor.</translation>
 <translation id="7246609911581847514">İlk kez ziyaret ettiğiniz yeni siteleri önce yöneticinizin onaylaması gerektiği için bu iletiyi görüyorsunuz.</translation>
 <translation id="725866823122871198">Bilgisayarınızın tarih ve saati (<ph name="DATE_AND_TIME" />) yanlış olduğundan <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> alan adına gizli bir bağlantı kurulamıyor.</translation>
@@ -595,6 +604,7 @@ Hatırlatma! Bir dahaki sefere Gizli mod <ph name="SHORTCUT_KEY" /> kullanışl�
 <translation id="7610193165460212391">Değer aralık dışında: <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">Son kullanım tarihi: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Google Hesabı şifrenizin farklı bir sürümü kullanılarak şifrelenmiş verileriniz zaten var. Lütfen bu şifreyi aşağıya girin.</translation>
+<translation id="7633887239437305289">Doğrulama için <ph name="CREDIT_CARD" /> numaralı kredi kartınızın önündeki 4 basamaklı CVC'yi girin</translation>
 <translation id="7634554953375732414">Bu siteye bağlantınız gizli değil.</translation>
 <translation id="7637571805876720304">Kredi kartı Chromium'dan kaldırılsın mı?</translation>
 <translation id="7643817847124207232">İnternet bağlantısı kaybedildi.</translation>

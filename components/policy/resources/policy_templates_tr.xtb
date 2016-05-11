@@ -565,6 +565,22 @@
           Bu listedeki her öğe bir uzantı stili eşleşme kalıbıdır (http://code.google.com/chrome/extensions/match_patterns.html sayfasına (yalnızca İngilizce) bakın). Kullanıcılar, bu listedeki bir öğeyle eşleşen herhangi bir URL'deki öğeleri kolayca yükleyebilirler. Bu kalıplar hem *.crx dosyasının konumuna, hem de indirmenin başlatıldığı sayfaya (başka deyişle yönlendirene) izin vermelidir.
 
           ExtensionInstallBlacklist, bu politikaya göre daha önceliklidir. Diğer bir deyişle, kara listedeki bir uzantı bu listedeki bir sitede bulunsa bile yüklenmeyecektir.</translation>
+<translation id="2813740161943223811">Bu politika kullanımdan kaldırılmıştır. Bunun yerine ProxyMode politikasını kullanın.
+
+          <ph name="PRODUCT_NAME" /> tarafından kullanılan proxy sunucuyu belirtmenize olanak tanır ve kullanıcıların proxy ayarlarını değiştirmelerini önler. ARC uygulamaları da bu proxy sunucuyu kullanabilir.
+
+          Hiçbir zaman proxy sunucu kullanmamayı ve her zaman doğrudan bağlanmayı seçerseniz diğer tüm seçenekler göz ardı edilir.
+
+          Sistem proxy ayarlarını kullanmayı veya proxy sunucuyu otomatik olarak algılamayı seçerseniz diğer tüm seçenekler göz ardı edilir.
+
+          Manuel proxy ayarlarını seçerseniz "Proxy sunucunun adresi veya URL'si", "Bir proxy .pac dosyasının URL'si" ve "Virgülle ayrılmış proxy atlama kuralları listesi"nde daha ayrıntılı seçenekler belirtebilirsiniz. ARC uygulamaları için yalnızca en yüksek önceliğe sahip HTTP proxy sunucusu kullanılabilir.
+
+          Ayrıntılı örnekler için şu adresi ziyaret edin:
+          <ph name="PROXY_HELP_URL" />.
+
+          Bu ayarı etkinleştirirseniz <ph name="PRODUCT_NAME" />, komut satırında proxy ile ilgili belirtilen tüm seçenekleri göz ardı eder.
+
+          Bu politikanın ayarlanmadan bırakılması, kullanıcıların proxy ayarlarını kendi başlarına seçmelerine olanak tanır.</translation>
 <translation id="2824715612115726353">Gizli modu etkinleştir</translation>
 <translation id="2844404652289407061"><ph name="PRODUCT_NAME" /> ürününün içerik görünümünde Dokun ve Ara özelliğinin kullanılabilmesini sağlar.
 
@@ -677,6 +693,18 @@
           </translation>
 <translation id="3205825995289802549">İlk çalıştırmada ilk tarayıcı penceresini ekranı kaplayacak şekilde büyüt</translation>
 <translation id="3206731874112238027">Yazdırma Önizlemeyi Devre Dışı Bırak (kullanımdan kaldırıldı)</translation>
+<translation id="3208854390109736596"><ph name="PRODUCT_NAME" /> tarafından kullanılan proxy sunucuyu belirtmenize olanak tanır ve kullanıcıların proxy ayarlarını değiştirmelerini önler. ARC uygulamaları da bu proxy sunucuyu kullanabilir.
+
+      Hiçbir zaman proxy sunucu kullanmamayı ve her zaman doğrudan bağlanmayı seçerseniz diğer tüm seçenekler göz ardı edilir.
+
+      Proxy sunucuyu otomatik olarak algılamayı seçerseniz diğer tüm seçenekler göz ardı edilir.
+
+      Ayrıntılı örnekler için şu adresi ziyaret edin:
+      <ph name="PROXY_HELP_URL" />.
+
+      Bu ayarı etkinleştirirseniz <ph name="PRODUCT_NAME" /> ve ARC uygulamaları, komut satırında proxy ile ilgili belirtilen tüm seçenekleri göz ardı eder.
+
+      Bu politikaların ayarlanmadan bırakılması, kullanıcıların proxy ayarlarını kendi başlarına seçmelerine olanak tanır.</translation>
 <translation id="3213821784736959823"><ph name="PRODUCT_NAME" /> ürününde dahili DNS istemcisinin kullanılıp kullanılmayacağını kontrol eder.
 
       Bu politika doğru seçeneğine ayarlandığında, dahili DNS istemcisi (varsa) kullanılır.
@@ -724,6 +752,9 @@
 
       Bu politika false değerine ayarlanırsa, <ph name="PRODUCT_OS_NAME" /> misafir oturumlarının başlamasına izin vermez.</translation>
 <translation id="3428247105888806363">Ağ tahminini etkinleştir</translation>
+<translation id="3449886121729668969"><ph name="PRODUCT_NAME" /> ve ARC uygulamaları için proxy ayarlarını yapılandırır. Bu proxy ayarları, ARC uygulamaları için de kullanılabilir.
+
+      Bu politika henüz kullanıma hazır değildir, lütfen kullanmayın.</translation>
 <translation id="3460784402832014830">Bir arama motorunun yeni bir sekme sayfası sağlamak için kullandığı URL'yi belirtir.
 
           Bu politika isteğe bağlıdır. Ayarlanmazsa hiçbir yeni sekme sayfası sağlanmaz.
@@ -734,6 +765,14 @@
           Bu politika Doğru seçeneğine ayarlanırsa bir oturumda güç yönetimi gecikmeleri ve oturum süresi sınırı kullanıcının ilk etkinliğinin gözlenmesine kadar çalışmaya başlamaz.
 
          Bu politika Yanlış seçeneğine ayarlanır veya ayarlanmadan bırakılırsa güç yönetimi gecikmeleri ve oturum süresi sınırı oturumun başında hemen çalışmaya başlar.</translation>
+<translation id="3469657928310999477"><ph name="PRODUCT_NAME" />, burada belirtilen ana makine listesi için tüm proxy'leri atlar. ARC uygulamaları, bu listeyi bir atlama kuralları listesi olarak kullanabilir.
+
+          Bu politika yalnızca "Proxy sunucu ayarlarının nasıl belirtileceğini seçin" alanında manuel proxy ayarlarını seçtiyseniz uygulanır.
+
+          Proxy politikalarının ayarlanmasıyla ilgili olarak başka bir mod seçtiyseniz, bu politikayı ayarlamadan bırakmanız gerekir.
+
+          Daha ayrıntılı örnekler için şu adresi ziyaret edin:
+          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="3478024346823118645">Çıkışta kullanıcı verilerini sil</translation>
 <translation id="348495353354674884">Sanal klavyeyi etkinleştir</translation>
 <translation id="3496296378755072552">Şifre yöneticisi</translation>
@@ -1408,6 +1447,9 @@ politikayı geçersiz kılamaz.
       Bu politika tüm depolama ortamı türlerini etkiler. Örneğin: USB flaş sürücüleri, harici sabit sürücüler, SD ve diğer bellek kartları, optik depolama birimleri vb. Dahili depolama birimi bu politikadan etkilenmez, dolayısıyla İndirilenler klasörüne kaydedilen dosyalara erişilebilir. Google Drive da bu politikadan etkilenmez.
 
       Bu ayar devre dışı bırakılırsa veya yapılandırılmazsa, kullanıcılar cihazlarında desteklenen tüm harici depolama birimi türlerini kullanabilir.</translation>
+<translation id="6076099373507468537">chrome.usb API'sı aracılığıyla doğrudan bir web uygulaması içinde kullanılması için çekirdek sürücüsünden çıkarılmasına izin verilen USB cihazlarının listesini tanımlar. Girişler, belirli bir donanımı tanımlamak için kullanılan USB Tedarikçi Tanımlayıcısı ve Ürün Tanımlayıcısı çiftlerinden oluşmaktadır.
+
+      Bu politika yapılandırılmazsa, çıkarılabilecek USB cihazları listesi boş olur.</translation>
 <translation id="6095999036251797924">AC gücü veya pil gücü kullanılırken, ekranın kilitlenmesinden önce kullanıcı girişi olmadan geçmesi gereken süreyi belirtir.
 
           Bu süre sıfırdan büyük bir değere ayarlanırsa <ph name="PRODUCT_OS_NAME" /> ekranı kilitlemeden önce, kullanıcının işlem yapmadan geçirmesi gereken süreyi gösterir.
@@ -1941,6 +1983,14 @@ Ayrıca, RemoteAccessHostClientDomain konusuna bakın.</translation>
       edilmez. Doğru seçeneğine ayarlanırsa veya ayarlanmadan
       bırakılırsa oturum bilgileri rapor edilir.</translation>
 <translation id="7774768074957326919">Sistem proxy ayarlarını kullan</translation>
+<translation id="7775831859772431793">Proxy sunucunun URL'sini burada belirtebilirsiniz.
+
+          Bu politika yalnızca "Proxy sunucu ayarlarının nasıl belirtileceğini seçin" alanı için manuel proxy ayarlarını seçtiyseniz etkili olur.
+
+          Proxy politikalarını ayarlamak için başka bir mod seçtiyseniz bu politikayı ayarlamadan bırakmanız gerekir.
+
+          Diğer seçenekler ve ayrıntılı örnekler için şu sayfayı ziyaret edin:
+          <ph name="PROXY_HELP_URL" /></translation>
 <translation id="7788511847830146438">Her Profil İçin Ayrı</translation>
 <translation id="7796141075993499320">Eklentileri çalıştırmalarına izin verilen sitelerin belirtildiği bir URL kalıpları listesi ayarlamanıza olanak tanır.
 
@@ -1973,6 +2023,14 @@ Ayrıca, RemoteAccessHostClientDomain konusuna bakın.</translation>
       Oturum açma ekranında ekran koruyucu olarak kullanılacak uzantının kimliğini belirler. Uzantı, DeviceAppPack politikası kullanılarak bu alan adı için yapılandırılmış AppPack'in bir parçası olmalıdır.</translation>
 <translation id="7882890448959833986">Desteklenmeyen OS uyarısını gizle</translation>
 <translation id="7912255076272890813">İzin verilen uygulama/uzantı türlerini yapılandır</translation>
+<translation id="7915236031252389808">Bir proxy .pac dosyasının URL'sini burada belirtebilirsiniz.
+
+          Bu politika yalnızca "Proxy sunucu ayarlarının nasıl belirtileceğini seçin" alanında manuel proxy ayarlarını seçtiyseniz etkili olur.
+
+          Proxy politikalarının ayarlanmasıyla ilgili başka bir mod seçtiyseniz bu politikayı ayarlamadan bırakmanız gerekir.
+
+          Ayrıntılı örnekler için şu adresi ziyaret edin:
+          <ph name="PROXY_HELP_URL" /></translation>
 <translation id="793134539373873765">OS güncelleme yükleri için p2p'nin kullanılıp kullanılmayacağını belirtir. Doğru seçeneğine ayarlanırsa, cihazlar LAN üzerindeki yükleri paylaşır ve kullanmaya çalışır, bu da İnternet bant genişliği kullanımını ve tıkanıklığını potansiyel olarak azaltır. Güncelleme yükü LAN'da kullanılamıyorsa, cihaz bir güncelleme sunucusundan indirme işlemine geçer. Yanlış seçeneğine ayarlanırsa veya yapılandırılmazsa p2p kullanılmaz.</translation>
 <translation id="7933141401888114454">Denetlenen kullanıcılar oluşturmayı etkinleştir</translation>
 <translation id="7936098023732125869">Varsayılan bir arama sağlayıcısının kullanılmasına izin verir.
@@ -2121,6 +2179,11 @@ Ayrıca, RemoteAccessHostClientDomain konusuna bakın.</translation>
 <translation id="8382184662529825177">Cihazda içerik koruma için uzak onay kullanımını etkinleştir</translation>
 <translation id="838870586332499308">Veri dolaşımını etkinleştir</translation>
 <translation id="8412312801707973447">Çevrimiçi OCSP/CRL denetimlerinin yapılıp yapılmayacağı</translation>
+<translation id="8413348101535146315"><ph name="PRODUCT_NAME" /> Görev Yöneticisi'ndeki işlemlerin sona erdirilebilmesini sağlar.
+
+      Yanlış (false) değerine ayarlanırsa Görev Yöneticisi'nde "İşlemi sonlandır" düğmesi devre dışı bırakılır.
+
+      Doğru (true) değerine ayarlanır veya yapılandırılmazsa kullanıcı, Görev Yöneticisi'ndeki işlemleri sona erdirebilir.</translation>
 <translation id="8424255554404582727">Her yeniden başlatmada tekrar uygulanacak varsayılan ekran döndürmesini ayarla</translation>
 <translation id="8426231401662877819">Ekranı saat yönünde 90 derece döndür</translation>
 <translation id="8451988835943702790">Ana sayfa olarak Yeni Sekme Sayfası'nı kullan</translation>
@@ -2340,6 +2403,24 @@ Ayrıca, RemoteAccessHostClientDomain konusuna bakın.</translation>
 <translation id="9112897538922695510">Bir protokol işleyicileri listesini kaydetmenize olanak tanır. Bu, yalnızca önerilen bir politika olabilir. |protocol| özelliğinin "mailto" gibi şemaya ayarlanması ve |url| özelliğinin de şemayı işleyen uygulamanın URL kalıbına ayarlanması gerekir. Kalıp bir "%s" makrosu içerebilir; bu durumda, makro işlenen URL tarafından değiştirilir.
 
           Politika tarafından kaydedilen protokol işleyicileri, kullanıcı tarafından kaydedilenlerle birleştirilir ve her ikisi de kullanılabilir. Kullanıcı, yeni bir varsayılan işleyici yükleyerek politika tarafından yüklenen politika işleyicilerini geçersiz kılabilir, ancak politika tarafından kaydedilen bir protokol işleyicisini kaldıramaz.</translation>
+<translation id="913138516158420759"><ph name="PRODUCT_NAME" /> tarafından kullanılan proxy sunucuyu belirtmenize olanak tanır ve kullanıcıların proxy ayarlarını değiştirmelerini önler. ARC uygulamaları da bu proxy sunucuyu kullanabilir.
+
+          Hiçbir zaman proxy sunucu kullanmamayı ve her zaman doğrudan bağlanmayı seçerseniz diğer tüm seçenekler göz ardı edilir.
+
+          Sistem proxy ayarlarını kullanmayı seçerseniz diğer tüm seçenekler göz ardı edilir.
+
+          Proxy sunucuyu otomatik olarak algılamayı seçerseniz diğer tüm seçenekler göz ardı edilir.
+
+          Sabit sunucu proxy modunu seçerseniz "Proxy sunucunun adresi veya URL'si" ve "Virgülle ayrılmış proxy atlama kuralları listesi"nde daha ayrıntılı seçenekler belirtebilirsiniz. ARC uygulamaları için yalnızca en yüksek önceliğe sahip HTTP proxy sunucusu kullanılabilir.
+
+          Bir .pac proxy komut dosyası kullanmayı seçerseniz "Bir proxy .pac dosyasının URL'si" alanındaki komut dosyasına URL'yi belirtmeniz gerekir.
+
+          Ayrıntılı örnekler için şu adresi ziyaret edin:
+          <ph name="PROXY_HELP_URL" />.
+
+          Bu ayarı etkinleştirirseniz <ph name="PRODUCT_NAME" /> ve ARC uygulamaları, komut satırında proxy ile ilgili belirtilen tüm seçenekleri göz ardı eder.
+
+          Bu politikanın ayarlanmadan bırakılması, kullanıcıların proxy ayarlarını kendi başlarına seçmelerine olanak tanır.</translation>
 <translation id="913195841488580904">URL listesine erişimi engelle</translation>
 <translation id="9135033364005346124"><ph name="CLOUD_PRINT_NAME" /> proxy'sini etkinleştir</translation>
 <translation id="9147029539363974059">Yöneticilerin sistem günlüklerini izlemesine olanak vermek için

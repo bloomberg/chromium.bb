@@ -220,6 +220,7 @@ US英語以外のキーボードを使用しているリモートパソコンで
 <translation id="6542902059648396432">問題を報告…</translation>
 <translation id="6550675742724504774">オプション</translation>
 <translation id="6570205395680337606">アプリケーションをリセットします。保存されていない作業は失われます。</translation>
+<translation id="6572345186230665992">Mac 版（OS X Mavericks 10.9 以上）</translation>
 <translation id="6612717000975622067">Ctrl-Alt-Del を送信</translation>
 <translation id="6640610550128933069">前回のインターネット接続日: <ph name="DATE" /></translation>
 <translation id="6668065415969892472">PIN を更新しました。</translation>
@@ -286,6 +287,7 @@ US英語以外のキーボードを使用しているリモートパソコンで
 <translation id="8759753423332885148">詳細</translation>
 <translation id="8791202241915690908">Chromoting ホスト インストーラのダウンロード</translation>
 <translation id="894763922177556086">良い</translation>
+<translation id="895780780740011433">Windows 版（7 以上）</translation>
 <translation id="897805526397249209">別のパソコンへのリモート接続を有効にするには、対象となるパソコンに Chromoting をインストールし、[<ph name="BUTTON_NAME" />] をクリックしてください。</translation>
 <translation id="8998327464021325874">Chrome リモート デスクトップ ホスト コントローラ</translation>
 <translation id="9016232822027372900">このまま接続する</translation>

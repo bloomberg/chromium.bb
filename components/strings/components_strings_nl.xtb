@@ -39,6 +39,7 @@
 <translation id="1254117744268754948">Map kiezen</translation>
 <translation id="1285320974508926690">Deze site nooit vertalen</translation>
 <translation id="129553762522093515">Recent gesloten</translation>
+<translation id="129863573139666797"><ph name="BEGIN_LINK" />Probeer je cookies te wissen<ph name="END_LINK" /></translation>
 <translation id="1339601241726513588">Inschrijvingsdomein:</translation>
 <translation id="1344588688991793829">Instellingen voor automatisch aanvullen in Chromium...</translation>
 <translation id="1374468813861204354">suggesties</translation>
@@ -188,6 +189,7 @@
 <translation id="2969319727213777354">Als je een beveiligde verbinding tot stand wilt brengen, moet je klok correct zijn ingesteld. Dit moet omdat de certificaten die deze websites gebruiken om zichzelf te identificeren, slechts gedurende bepaalde perioden geldig zijn. Aangezien de klok van je apparaat niet goed is ingesteld, kan Chrome deze certificaten niet verifiëren.</translation>
 <translation id="2972581237482394796">&amp;Opnieuw</translation>
 <translation id="2985306909656435243">Als deze instelling is ingeschakeld, slaat Chromium een kopie van je kaart op dit apparaat op zodat formulieren sneller kunnen worden ingevuld.</translation>
+<translation id="2989984781570875765">Geef de vervaldatum en driecijferige CVC-code op die op de achterkant van je <ph name="CREDIT_CARD" /> staan</translation>
 <translation id="2991174974383378012">Delen met websites</translation>
 <translation id="3005723025932146533">Opgeslagen kopie weergeven</translation>
 <translation id="3010559122411665027">Lijstitem '<ph name="ENTRY_INDEX" />': <ph name="ERROR" /></translation>
@@ -267,6 +269,7 @@
 <translation id="3717027428350673159"><ph name="BEGIN_LINK" />Controleer de proxy, firewall en DNS-configuratie<ph name="END_LINK" /></translation>
 <translation id="3739623965217189342">Link die je hebt gekopieerd</translation>
 <translation id="3744899669254331632">Je kunt <ph name="SITE" /> op dit moment niet bezoeken, omdat de website gecodeerde inloggegevens heeft verstuurd die niet door Chromium kunnen worden verwerkt. Aangezien netwerkfouten en aanvallen doorgaans van tijdelijke aard zijn, zal deze pagina later waarschijnlijk wel werken.</translation>
+<translation id="3748071062818261683">Kaart verifiëren</translation>
 <translation id="3748412725338508953">Er zijn te veel omleidingen.</translation>
 <translation id="375403751935624634">Het vertalen is mislukt wegens een serverfout.</translation>
 <translation id="3759461132968374835">Je hebt geen onlangs gemelde crashes. Crashes die zich voordeden toen de crashrapportage was uitgeschakeld, worden hier niet weergegeven.</translation>
@@ -295,6 +298,7 @@
 <translation id="4103249731201008433">Serienummer van apparaat is ongeldig</translation>
 <translation id="4103763322291513355">Ga naar &lt;strong&gt;chrome://policy&lt;/strong&gt; om de lijst met URL's op de zwarte lijst en andere beleidsregels te bekijken die worden afgedwongen door je systeembeheerder.</translation>
 <translation id="4117700440116928470">Beleidsbereik wordt niet ondersteund.</translation>
+<translation id="4130226655945681476">Controleer de netwerkkabels, modem en router</translation>
 <translation id="4147376274874979956">Kan het bestand niet openen.</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">Wil je dat Chromium deze kaart opslaat?</translation>
@@ -329,11 +333,15 @@
 <translation id="450710068430902550">Delen met beheerder</translation>
 <translation id="4522570452068850558">Details</translation>
 <translation id="4535734014498033861">Proxyserververbinding mislukt.</translation>
+<translation id="4553532082208702698">Geef de viercijferige CVC-code op die op de voorkant van je <ph name="CREDIT_CARD" /> staat</translation>
+<translation id="4558551763791394412">Probeer je extensies uit te schakelen.</translation>
 <translation id="4587425331216688090">Adres verwijderen uit Chrome?</translation>
 <translation id="4592951414987517459">Je verbinding met <ph name="DOMAIN" /> is versleuteld via een moderne Cipher Suite.</translation>
 <translation id="4594403342090139922">&amp;Verwijderen ongedaan maken</translation>
 <translation id="4668929960204016307">,</translation>
+<translation id="4670097147947922288">Je bekijkt nu een extensiepagina.</translation>
 <translation id="467662567472608290">De server kan niet bewijzen dat dit <ph name="DOMAIN" /> is. Het beveiligingscertificaat van de server bevat fouten. Dit kan worden veroorzaakt door een verkeerde configuratie of een aanvaller die je verbinding onderschept.</translation>
+<translation id="4683417246209150705">Geef de driecijferige CVC-code op die op de achterkant van je <ph name="CREDIT_CARD" /> staat</translation>
 <translation id="4697214168136963651"><ph name="URL" /> wordt geblokkeerd</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">Je verbinding is onderbroken</translation>
@@ -418,6 +426,8 @@
 <translation id="5650551054760837876">Geen zoekresultaten gevonden.</translation>
 <translation id="5663999524854166235">Geef de driecijferige CVC-code op de achterkant van je kaart op ter verificatie</translation>
 <translation id="5677928146339483299">Geblokkeerd</translation>
+<translation id="5696590819423335174">Geef de vervaldatum en viercijferige CVC-code op die op de voorkant van je <ph name="CREDIT_CARD" /> staan</translation>
+<translation id="5699278517904102888">Geef de driecijferige CVC-code op de achterkant van je <ph name="CREDIT_CARD" /> op ter verificatie</translation>
 <translation id="5710435578057952990">De identiteit van deze website is niet geverifieerd.</translation>
 <translation id="5720705177508910913">Huidige gebruiker</translation>
 <translation id="5785756445106461925">Bovendien bevat deze pagina bronnen die niet beveiligd zijn. Deze bronnen kunnen tijdens verzending door anderen worden bekeken en kunnen door een aanvaller worden gewijzigd om het uiterlijk van de pagina aan te passen.</translation>
@@ -534,7 +544,6 @@
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> voldoet niet aan de beveiligingsnormen.</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Meer informatie<ph name="END_LINK" /> over dit probleem.</translation>
 <translation id="7219179957768738017">De verbinding maakt gebruik van <ph name="SSL_VERSION" />.</translation>
-<translation id="7225807090967870017">Build-ID</translation>
 <translation id="7231308970288859235">Je moet je vader of moeder vragen of je deze pagina mag bezoeken.</translation>
 <translation id="7246609911581847514">Dit bericht wordt weergegeven omdat je beheerder nieuwe sites moet goedkeuren wanneer je ze voor het eerst bezoekt.</translation>
 <translation id="725866823122871198">Er kan geen privéverbinding met <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> tot stand worden gebracht, omdat de datum en tijd van de computer (<ph name="DATE_AND_TIME" />) onjuist zijn.</translation>
@@ -575,6 +584,7 @@ De volgende keer kan het handig zijn de incognitomodus <ph name="SHORTCUT_KEY" /
 <translation id="7610193165460212391">Waarde <ph name="VALUE" /> is buiten bereik.</translation>
 <translation id="7613889955535752492">Vervaldatum: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Je hebt al gegevens die zijn gecodeerd met een andere versie van het wachtwoord voor je Google-account. Geef dit wachtwoord hieronder op.</translation>
+<translation id="7633887239437305289">Geef de viercijferige CVC-code op de voorkant van je <ph name="CREDIT_CARD" /> op ter verificatie</translation>
 <translation id="7634554953375732414">Je verbinding met deze site is niet privé.</translation>
 <translation id="7637571805876720304">Creditcard verwijderen uit Chromium?</translation>
 <translation id="7643817847124207232">De internetverbinding is verbroken.</translation>

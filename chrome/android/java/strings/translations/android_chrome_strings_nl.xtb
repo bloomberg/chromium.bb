@@ -68,6 +68,7 @@ Je moet Bluetooth en Locatie hebben ingeschakeld om het Fysieke web te gebruiken
 <translation id="1842969606798536927">Betalen</translation>
 <translation id="1853692000353488670">Nieuw incognitotabblad</translation>
 <translation id="189172778771606813">Zijmenu sluiten</translation>
+<translation id="1924956916668006832">Verzendadres selecteren</translation>
 <translation id="194341124344773587">Schakel het recht in voor Chrome via de <ph name="BEGIN_LINK" />Android-instellingen<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Wachtwoorden opslaan</translation>
 <translation id="1944384637046898011">Alles versleutelen met Google-wachtwoord vanaf <ph name="TIME" /></translation>
@@ -98,6 +99,7 @@ Je moet Bluetooth en Locatie hebben ingeschakeld om het Fysieke web te gebruiken
 <translation id="2268044343513325586">Verfijnen</translation>
 <translation id="2315043854645842844">Certificaatselectie aan clientzijde wordt niet ondersteund door het besturingssysteem.</translation>
 <translation id="2321958826496381788">Sleep de schuifknop tot je deze tekst prettig kunt lezen. De tekst moet minimaal deze grootte hebben nadat je op een alinea hebt dubbelgetikt.</translation>
+<translation id="2329597144923131178">Log in om je bladwijzers, geschiedenis, wachtwoorden en andere instellingen op al je apparaten te gebruiken.</translation>
 <translation id="2343328333327081434">Installeren…</translation>
 <translation id="2351097562818989364">Je vertaalinstellingen zijn opnieuw ingesteld.</translation>
 <translation id="2359808026110333948">Doorgaan</translation>
@@ -133,6 +135,7 @@ Je moet Bluetooth en Locatie hebben ingeschakeld om het Fysieke web te gebruiken
 <translation id="2762000892062317888">zojuist</translation>
 <translation id="2770465223704140727">Verwijderen uit lijst</translation>
 <translation id="278029852808208386">Geen Bluetooth-apparaten gevonden. <ph name="BEGIN_LINK" />Zoek nogmaals<ph name="END_LINK" />.</translation>
+<translation id="2781389167600714117">Verzendoptie selecteren</translation>
 <translation id="2811892995384186721">Wordt je apparaat niet weergegeven? <ph name="BEGIN_LINK" />Raadpleeg de Help<ph name="END_LINK" /></translation>
 <translation id="2836148919159985482">Tik op de knop Terug om het volledige scherm te sluiten.</translation>
 <translation id="2842985007712546952">Bovenliggende map</translation>
@@ -158,7 +161,6 @@ Je moet Bluetooth en Locatie hebben ingeschakeld om het Fysieke web te gebruiken
 <translation id="3137521801621304719">Incognitomodus verlaten</translation>
 <translation id="3149891296864842641">Verzendoptie</translation>
 <translation id="3162882791484435636">Verzendoptie selecteren</translation>
-<translation id="3173438333156928404">Fout bij verwerken van betaling</translation>
 <translation id="3177909033752230686">Brontaal:</translation>
 <translation id="3190152372525844641">Schakel rechten in voor Chrome via de <ph name="BEGIN_LINK" />Android-instellingen<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> opgeslagen gegevens</translation>
@@ -194,7 +196,6 @@ Je logt in met een beheerd account en geeft de beheerder controle over je Chrome
 Als je de zoekterm wilt aanpassen, houd je deze aangeraakt om de term te selecteren. Als je je zoekopdracht wilt verfijnen, veeg je het deelvenster helemaal naar boven en tik je op het zoekvak.</translation>
 <translation id="3623048332793834136">Chrome Canary-bladwijzers</translation>
 <translation id="363596933471559332">Automatisch inloggen bij websites met de opgeslagen inloggegevens. Wanneer de functie is uitgeschakeld, word je elke keer om verificatie gevraagd voordat je wordt ingelogd bij een website.</translation>
-<translation id="3653742808139624888">Log in bij Chrome om al je bladwijzers op al je apparaten te bekijken</translation>
 <translation id="3656115297268584622">Schakel de locatie in de <ph name="BEGIN_LINK" />Android-instellingen<ph name="END_LINK" /> in.</translation>
 <translation id="3661699943263275414">Websites van derden kunnen cookiegegevens opslaan en lezen</translation>
 <translation id="3672452749423051839">Suggesties bij navigatiefouten</translation>
@@ -226,6 +227,7 @@ Als je de zoekterm wilt aanpassen, houd je deze aangeraakt om de term te selecte
 <translation id="4170011742729630528">De service is niet beschikbaar. Probeer het later opnieuw.</translation>
 <translation id="4195643157523330669">Openen op nieuw tabblad</translation>
 <translation id="423410644998903704">Chrome heeft rechten nodig om het item te delen met deze site.</translation>
+<translation id="4242533952199664413">Instellingen openen</translation>
 <translation id="424864128008805179">Uitloggen bij Chrome?</translation>
 <translation id="4254813446494774748">Doeltaal:</translation>
 <translation id="4256782883801055595">Open-sourcelicenties</translation>
@@ -524,14 +526,12 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="8007176423574883786">Uitgeschakeld voor dit apparaat</translation>
 <translation id="8026334261755873520">Browsegegevens wissen</translation>
 <translation id="8035133914807600019">Nieuwe map…</translation>
+<translation id="8063895661287329888">Kan bladwijzer niet toevoegen.</translation>
 <translation id="8068648041423924542">Kan certificaat niet selecteren.</translation>
 <translation id="8069239273282989646">Na compressie</translation>
 <translation id="8073388330009372546">Openen op nieuw tabblad</translation>
 <translation id="8076014560081431679">Opgeslagen site-instellingen worden niet verwijderd en kunnen je browsegedrag weerspiegelen. <ph name="BEGIN_LINK" />Meer informatie<ph name="END_LINK" /></translation>
 <translation id="8087000398470557479">Deze content is afkomstig van <ph name="DOMAIN_NAME" />, geleverd door Google.</translation>
-<translation id="8098570222830891427">Apparaten bij je in de buurt verzenden webpagina's via Bluetooth. Chrome zoekt naar pagina's en geeft ze weer wanneer je je apparaat activeert uit de slaapstand. Deze pagina's worden verwerkt door een Google-servcice om de kwaliteit van paginaresultaten te verbeteren.
-
-Je kunt het Fysieke web beheren via de instellingen van Chrome.</translation>
 <translation id="8106211421800660735">Creditcardnummer</translation>
 <translation id="813082847718468539">Sitegegevens bekijken</translation>
 <translation id="8137558756159375272">Met 'Tikken om te zoeken' worden het geselecteerde woord en de huidige pagina als context naar Google Zoeken verzonden. Je kunt deze functie uitschakelen via <ph name="BEGIN_LINK" />Instellingen<ph name="END_LINK" />.</translation>

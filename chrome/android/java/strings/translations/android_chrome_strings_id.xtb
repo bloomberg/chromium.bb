@@ -68,6 +68,7 @@ Anda harus mengaktifkan Bluetooth dan Lokasi agar dapat menggunakan Web Fisik.</
 <translation id="1842969606798536927">Bayar</translation>
 <translation id="1853692000353488670">Tab penyamaran baru</translation>
 <translation id="189172778771606813">Tutup panel samping navigasi</translation>
+<translation id="1924956916668006832">Pilih alamat pengiriman</translation>
 <translation id="194341124344773587">Aktifkan izin untuk Chrome di <ph name="BEGIN_LINK" />Setelan Android<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Menyimpan sandi</translation>
 <translation id="1944384637046898011">Enkripsikan semua dengan sandi Google mulai tanggal <ph name="TIME" /></translation>
@@ -98,6 +99,7 @@ Anda harus mengaktifkan Bluetooth dan Lokasi agar dapat menggunakan Web Fisik.</
 <translation id="2268044343513325586">Saring</translation>
 <translation id="2315043854645842844">Pilihan sertifikat sisi klien tidak didukung oleh sistem operasi.</translation>
 <translation id="2321958826496381788">Seret penggeser sampai Anda dapat membacanya dengan nyaman. Teks harus terlihat setidaknya sebesar ini setelah paragraf diketuk dua kali.</translation>
+<translation id="2329597144923131178">Masuk untuk mendapatkan bookmark, riwayat, sandi, dan setelan Anda lainnya di semua perangkat.</translation>
 <translation id="2343328333327081434">Memasang...</translation>
 <translation id="2351097562818989364">Setelan terjemah telah disetel ulang.</translation>
 <translation id="2359808026110333948">Lanjut</translation>
@@ -133,6 +135,7 @@ Anda harus mengaktifkan Bluetooth dan Lokasi agar dapat menggunakan Web Fisik.</
 <translation id="2762000892062317888">baru saja</translation>
 <translation id="2770465223704140727">Hapus dari daftar</translation>
 <translation id="278029852808208386">Tidak ditemukan perangkat bluetooth. <ph name="BEGIN_LINK" />Telusuri lagi<ph name="END_LINK" />.</translation>
+<translation id="2781389167600714117">Pilih pengiriman</translation>
 <translation id="2811892995384186721">Tidak melihat perangkat? <ph name="BEGIN_LINK" />Dapatkan bantuan<ph name="END_LINK" /></translation>
 <translation id="2836148919159985482">Ketuk tombol kembali untuk keluar dari mode layar penuh.</translation>
 <translation id="2842985007712546952">Folder induk</translation>
@@ -158,7 +161,6 @@ Anda harus mengaktifkan Bluetooth dan Lokasi agar dapat menggunakan Web Fisik.</
 <translation id="3137521801621304719">Tutup mode penyamaran</translation>
 <translation id="3149891296864842641">Opsi pengiriman</translation>
 <translation id="3162882791484435636">Pilih opsi pengiriman</translation>
-<translation id="3173438333156928404">Terjadi kesalahan saat memproses pembayaran</translation>
 <translation id="3177909033752230686">Bahasa Laman:</translation>
 <translation id="3190152372525844641">Aktifkan izin untuk Chrome di <ph name="BEGIN_LINK" />Setelan Android<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> data tersimpan</translation>
@@ -194,7 +196,6 @@ Anda masuk dengan akun yang dikelola dan memberikan administratornya kontrol ata
 Untuk menyesuaikan istilah penelusuran, tekan lama untuk memilih. Untuk menyaring penelusuran, geser panel ke atas kemudian sentuh kotak telusur.</translation>
 <translation id="3623048332793834136">Bookmark Chrome Canary</translation>
 <translation id="363596933471559332">Otomatis masuk ke situs web menggunakan kredensial yang tersimpan. Saat fitur dinonaktifkan, Anda akan diminta untuk memverifikasi setiap kali hendak masuk ke situs web.</translation>
-<translation id="3653742808139624888">Untuk mendapatkan bookmark di semua perangkat Anda, masuk ke Chrome</translation>
 <translation id="3656115297268584622">Aktifkan lokasi di <ph name="BEGIN_LINK" />Setelan Android<ph name="END_LINK" />.</translation>
 <translation id="3661699943263275414">Situs web pihak ketiga dapat menyimpan dan membaca data cookie</translation>
 <translation id="3672452749423051839">Saran kesalahan navigasi</translation>
@@ -226,6 +227,7 @@ Untuk menyesuaikan istilah penelusuran, tekan lama untuk memilih. Untuk menyarin
 <translation id="4170011742729630528">Layanan tidak tersedia; coba lagi nanti.</translation>
 <translation id="4195643157523330669">Buka di tab baru</translation>
 <translation id="423410644998903704">Chrome memerlukan akses izin untuk berbagi dengan situs ini.</translation>
+<translation id="4242533952199664413">Buka setelan</translation>
 <translation id="424864128008805179">Keluar dari Chrome?</translation>
 <translation id="4254813446494774748">Bahasa Terjemahan:</translation>
 <translation id="4256782883801055595">Lisensi sumber terbuka</translation>
@@ -460,7 +462,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="7180611975245234373">Segarkan</translation>
 <translation id="7191430249889272776">Tab dibuka di latar belakang.</translation>
 <translation id="7208788139759694678">Penghemat Data dinonaktifkan</translation>
-<translation id="7220786058474068424">Memproses</translation>
+<translation id="7220786058474068424">Dalam proses</translation>
 <translation id="7243308994586599757">Opsi terdapat di dekat bagian bawah layar</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> menggunakan lokasi Anda untuk menampilkan hasil penelusuran lokal</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />Bantuan<ph name="END_LINK" /></translation>
@@ -524,14 +526,12 @@ Akun Google Anda mungkin memiliki bentuk riwayat penjelajahan lain seperti penel
 <translation id="8007176423574883786">Dinonaktifkan untuk perangkat ini</translation>
 <translation id="8026334261755873520">Hapus data penjelajahan</translation>
 <translation id="8035133914807600019">Folder baru…</translation>
+<translation id="8063895661287329888">Gagal menambahkan bookmark.</translation>
 <translation id="8068648041423924542">Tidak dapat memilih sertifikat.</translation>
 <translation id="8069239273282989646">Setelah kompresi</translation>
 <translation id="8073388330009372546">Buka gambar di tab baru</translation>
 <translation id="8076014560081431679">Setelan situs yang disimpan tidak akan dihapus dan dapat mencerminkan kebiasaan penjelajahan Anda. <ph name="BEGIN_LINK" />Pelajari lebih lanjut<ph name="END_LINK" /></translation>
 <translation id="8087000398470557479">Konten ini dari <ph name="DOMAIN_NAME" />, dikirimkan oleh Google.</translation>
-<translation id="8098570222830891427">Perangkat di sekitar Anda sedang mentransmisi laman web melalui Bluetooth. Chrome akan memindai laman dan menampilkannya saat Anda membangunkan perangkat. Laman ini akan melalui layanan Google untuk meningkatkan kualitas hasil laman.
-
-Anda dapat mengontrol Web Fisik di Setelan Chrome.</translation>
 <translation id="8106211421800660735">Nomor kartu kredit</translation>
 <translation id="813082847718468539">Lihat informasi situs</translation>
 <translation id="8137558756159375272">Sentuh untuk Menelusuri mengirimkan kata yang dipilih dan laman yang dibuka sebagai konteks ke Google Penelusuran. Anda dapat menonaktifkannya di <ph name="BEGIN_LINK" />Setelan<ph name="END_LINK" />.</translation>

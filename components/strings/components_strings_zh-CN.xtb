@@ -40,6 +40,7 @@
 <translation id="1254117744268754948">选择文件夹</translation>
 <translation id="1285320974508926690">一律不翻译此网站</translation>
 <translation id="129553762522093515">最近关闭的标签页</translation>
+<translation id="129863573139666797"><ph name="BEGIN_LINK" />尝试清除 Cookie<ph name="END_LINK" /></translation>
 <translation id="1339601241726513588">注册域：</translation>
 <translation id="1344588688991793829">Chromium自动填充设置…</translation>
 <translation id="1374468813861204354">建议</translation>
@@ -190,6 +191,7 @@
 <translation id="2969319727213777354">要建立安全连接，您的时钟设置必须正确。这是因为，网站用于证明身份的证书仅在特定时间段有效。由于您设备的时钟不正确，因此 Google Chrome 无法验证这些证书。</translation>
 <translation id="2972581237482394796">重做(&amp;R)</translation>
 <translation id="2985306909656435243">启用后，Chromium 会将您的信用卡副本存储在此设备上，以加快表单填写速度。</translation>
+<translation id="2989984781570875765">请输入 <ph name="CREDIT_CARD" /> 背面显示的到期日期和 3 位数银行卡验证码 (CVC)</translation>
 <translation id="2991174974383378012">与网站分享</translation>
 <translation id="3005723025932146533">显示已保存的版本</translation>
 <translation id="3010559122411665027">列表条目“<ph name="ENTRY_INDEX" />”：<ph name="ERROR" /></translation>
@@ -270,6 +272,7 @@
 <translation id="3717027428350673159"><ph name="BEGIN_LINK" />检查代理服务器、防火墙和 DNS 配置<ph name="END_LINK" /></translation>
 <translation id="3739623965217189342">您复制的链接</translation>
 <translation id="3744899669254331632">您目前无法访问 <ph name="SITE" />，因为此网站发送了 Chromium 无法处理的杂乱凭据。网络错误和攻击通常是暂时的，因此，此网页稍后可能会恢复正常。</translation>
+<translation id="3748071062818261683">验证信用卡</translation>
 <translation id="3748412725338508953">重定向过多。</translation>
 <translation id="375403751935624634">由于服务器出错，翻译失败。</translation>
 <translation id="3759461132968374835">您最近未收到崩溃报告。崩溃报告停用时发生的崩溃不会在此处显示。</translation>
@@ -298,6 +301,7 @@
 <translation id="4103249731201008433">设备序列号无效</translation>
 <translation id="4103763322291513355">请访问 &lt;strong&gt;chrome:// 政策&lt;/strong&gt;，查看列入黑名单的网址列表以及您的系统管理员强制要求执行的其他政策。</translation>
 <translation id="4117700440116928470">政策范围不受支持。</translation>
+<translation id="4130226655945681476">检查网线、调制解调器和路由器</translation>
 <translation id="4147376274874979956">无法访问该文件。</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">您希望 Chromium 保存此信用卡吗？</translation>
@@ -332,11 +336,15 @@
 <translation id="450710068430902550">与管理员分享</translation>
 <translation id="4522570452068850558">详细信息</translation>
 <translation id="4535734014498033861">代理服务器连接失败。</translation>
+<translation id="4553532082208702698">请输入 <ph name="CREDIT_CARD" /> 正面显示的 4 位数银行卡验证码 (CVC)</translation>
+<translation id="4558551763791394412">尝试停用扩展程序。</translation>
 <translation id="4587425331216688090">从 Chrome 中移除地址？</translation>
 <translation id="4592951414987517459">您与 <ph name="DOMAIN" /> 之间的连接采用新型加密套件进行了加密。</translation>
 <translation id="4594403342090139922">撤消删除(&amp;U)</translation>
 <translation id="4668929960204016307">,</translation>
+<translation id="4670097147947922288">您正在查看的是扩展程序页面。</translation>
 <translation id="467662567472608290">此服务器无法证明它是<ph name="DOMAIN" />；其安全证书有误。出现此问题的原因可能是配置有误或您的连接被拦截了。</translation>
+<translation id="4683417246209150705">请输入 <ph name="CREDIT_CARD" /> 背面显示的 3 位数银行卡验证码 (CVC)</translation>
 <translation id="4697214168136963651">已阻止 <ph name="URL" /></translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /><ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">您的连接已中断</translation>
@@ -421,6 +429,8 @@
 <translation id="5650551054760837876">未找到搜索结果。</translation>
 <translation id="5663999524854166235">请输入信用卡背面显示的 3 位数银行卡验证码 (CVC) 以进行验证</translation>
 <translation id="5677928146339483299">已屏蔽</translation>
+<translation id="5696590819423335174">请输入 <ph name="CREDIT_CARD" /> 正面显示的到期日期和 4 位数银行卡验证码 (CVC)</translation>
+<translation id="5699278517904102888">请输入 <ph name="CREDIT_CARD" /> 背面显示的 3 位数银行卡验证码 (CVC) 以进行验证</translation>
 <translation id="5710435578057952990">此网站尚未经过身份验证。</translation>
 <translation id="5720705177508910913">当前用户</translation>
 <translation id="5785756445106461925">而且，此页中包含其他不安全的资源。他人能在这些资源传输过程中进行查看，攻击者也可以修改这些资源，从而改变此页的外观。</translation>
@@ -537,7 +547,6 @@
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> 不符合相关安全标准。</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />详细了解<ph name="END_LINK" />此问题。</translation>
 <translation id="7219179957768738017">该连接使用 <ph name="SSL_VERSION" />。</translation>
-<translation id="7225807090967870017">版本号 ID</translation>
 <translation id="7231308970288859235">糟糕！您必须先征得家长同意，然后才能访问此网页。</translation>
 <translation id="7246609911581847514">您之所以看到这条消息，是因为您第一次访问新的网站时需要获得管理员的批准。</translation>
 <translation id="725866823122871198">您计算机的日期和时间（<ph name="DATE_AND_TIME" />）不正确，因此无法与 <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> 建立私密连接。</translation>
@@ -578,6 +587,7 @@
 <translation id="7610193165460212391">值超出了范围 (<ph name="VALUE" />)。</translation>
 <translation id="7613889955535752492">过期时间：<ph name="EXPIRATION_YEAR" /> 年 <ph name="EXPIRATION_MONTH" /> 月</translation>
 <translation id="7615602087246926389">您已经使用不同版本的 Google 帐户密码加密了数据。请在下方输入。</translation>
+<translation id="7633887239437305289">请输入 <ph name="CREDIT_CARD" /> 正面显示的 4 位数银行卡验证码 (CVC) 以进行验证</translation>
 <translation id="7634554953375732414">您与此网站建立的不是私密连接。</translation>
 <translation id="7637571805876720304">要从 Chromium 中移除信用卡吗？</translation>
 <translation id="7643817847124207232">互联网连接已中断。</translation>

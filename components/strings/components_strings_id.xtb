@@ -42,6 +42,7 @@
 <translation id="1254117744268754948">Pilih Folder</translation>
 <translation id="1285320974508926690">Jangan pernah terjemahkan situs ini</translation>
 <translation id="129553762522093515">Barusan ditutup</translation>
+<translation id="129863573139666797"><ph name="BEGIN_LINK" />Coba hapus cookie Anda<ph name="END_LINK" /></translation>
 <translation id="1339601241726513588">Domain pendaftaran:</translation>
 <translation id="1344588688991793829">Setelan IsiOtomatis Chromium...</translation>
 <translation id="1374468813861204354">saran</translation>
@@ -198,6 +199,7 @@
 <translation id="2969319727213777354">Untuk membuat sambungan aman, jam perlu disetel dengan benar. Itu karena sertifikat yang digunakan situs web untuk mengidentifikasi situs web tersebut hanya valid untuk jangka waktu tertentu. Karena jam perangkat tidak benar, Google Chrome tidak dapat memverifikasi sertifikat ini.</translation>
 <translation id="2972581237482394796">&amp;Ulang</translation>
 <translation id="2985306909656435243">Jika diaktifkan, Chromium akan menyimpan salinan kartu Anda di perangkat ini untuk pengisian formulir yang lebih cepat.</translation>
+<translation id="2989984781570875765">Masukkan tanggal masa berlaku habis dan 3 digit CVC yang ada di bagian belakang <ph name="CREDIT_CARD" /></translation>
 <translation id="2991174974383378012">Berbagi dengan Situs Web</translation>
 <translation id="3005723025932146533">Tampilkan salinan yang disimpan</translation>
 <translation id="3010559122411665027">Entri daftar "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
@@ -281,6 +283,7 @@
 <translation id="3717027428350673159"><ph name="BEGIN_LINK" />Periksa proxy, firewall, dan konfigurasi DNS<ph name="END_LINK" /></translation>
 <translation id="3739623965217189342">Tautan yang Anda salin</translation>
 <translation id="3744899669254331632">Anda tidak dapat mengunjungi <ph name="SITE" /> sekarang karena situs web mengirim kredensial tak beraturan yang tidak dapat diproses Chromium. Kesalahan jaringan dan serangan biasanya bersifat sementara, sehingga laman ini mungkin akan bekerja nanti.</translation>
+<translation id="3748071062818261683">Verifikasi Kartu</translation>
 <translation id="3748412725338508953">Terlalu banyak arahan ulang.</translation>
 <translation id="375403751935624634">Terjemahan gagal karena kesalahan server.</translation>
 <translation id="3759461132968374835">Tidak ada laporan kondisi ngadat saat ini. Kondisi ngadat yang terjadi saat pelaporan kondisi ngadat tidak diaktifkan tidak akan tampil di sini.</translation>
@@ -309,6 +312,7 @@
 <translation id="4103249731201008433">Nomor seri perangkat tidak valid</translation>
 <translation id="4103763322291513355">Kunjungi &lt;strong&gt;chrome://policy&lt;/strong&gt; untuk melihat daftar URL yang masuk daftar hitam dan kebijakan lain yang diterapkan oleh administrator sistem Anda.</translation>
 <translation id="4117700440116928470">Lingkup kebijakan tidak didukung.</translation>
+<translation id="4130226655945681476">Periksa kabel jaringan, modem, dan router</translation>
 <translation id="4147376274874979956">Tidak dapat mengakses file.</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">Ingin Chromium menyimpan kartu ini?</translation>
@@ -343,11 +347,15 @@
 <translation id="450710068430902550">Berbagi dengan Administrator</translation>
 <translation id="4522570452068850558">Detail</translation>
 <translation id="4535734014498033861">Sambungan server proxy gagal.</translation>
+<translation id="4553532082208702698">Masukkan 4 digit CVC yang ada di bagian depan <ph name="CREDIT_CARD" /></translation>
+<translation id="4558551763791394412">Coba nonaktifkan ekstensi.</translation>
 <translation id="4587425331216688090">Hapus alamat dari Chrome?</translation>
 <translation id="4592951414987517459">Sambungan Anda ke <ph name="DOMAIN" /> dienkripsi menggunakan cipher suite modern.</translation>
 <translation id="4594403342090139922">&amp;Urungkan Penghapusan</translation>
 <translation id="4668929960204016307">,</translation>
+<translation id="4670097147947922288">Anda melihat laman ekstensi.</translation>
 <translation id="467662567472608290">Server ini tidak dapat membuktikan bahwa ini adalah <ph name="DOMAIN" />; sertifikat keamanannya berisi kesalahan. Hal ini dapat disebabkan oleh kesalahan konfigurasi atau penyerang memotong sambungan Anda.</translation>
+<translation id="4683417246209150705">Masukkan 3 digit CVC yang ada di bagian belakang <ph name="CREDIT_CARD" /></translation>
 <translation id="4697214168136963651"><ph name="URL" /> dicekal</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">Sambungan Anda terganggu</translation>
@@ -432,6 +440,8 @@
 <translation id="5650551054760837876">Tak ada hasil penelusuran yang ditemukan.</translation>
 <translation id="5663999524854166235">Masukkan 3 digit CVC dari bagian belakang kartu untuk verifikasi</translation>
 <translation id="5677928146339483299">Dicekal</translation>
+<translation id="5696590819423335174">Masukkan tanggal masa berlaku habis dan 4 digit CVC yang ada di bagian depan <ph name="CREDIT_CARD" /></translation>
+<translation id="5699278517904102888">Masukkan 3 digit CVC yang ada di bagian belakang <ph name="CREDIT_CARD" /> untuk verifikasi</translation>
 <translation id="5710435578057952990">Identitas situs Web ini belum diverifikasi.</translation>
 <translation id="5720705177508910913">Pengguna saat ini</translation>
 <translation id="5785756445106461925">Selain itu, laman ini berisi sumber daya lainnya yang tidak aman. Sumber daya ini dapat dilihat oleh orang lain saat transit dan dapat dimodifikasi oleh penyerang untuk mengubah tampilan perangkat.</translation>
@@ -555,7 +565,6 @@
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> tidak mematuhi standar keamanan.</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Selengkapnya<ph name="END_LINK" /> tentang masalah ini.</translation>
 <translation id="7219179957768738017">Koneksi menggunakan <ph name="SSL_VERSION" />.</translation>
-<translation id="7225807090967870017">Buat ID</translation>
 <translation id="7231308970288859235">Ups! Anda perlu izin orang tua untuk mengunjungi laman ini.</translation>
 <translation id="7246609911581847514">Anda melihat pesan ini karena Anda baru pertama kali mengunjungi situs ini dan pengelola harus menyetujuinya terlebih dahulu.</translation>
 <translation id="725866823122871198">Sambungan pribadi ke <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> tidak dapat dibuat karena tanggal dan waktu (<ph name="DATE_AND_TIME" />) komputer Anda tidak benar.</translation>
@@ -596,6 +605,7 @@ Ssst! <ph name="SHORTCUT_KEY" /> mode penyamaran mungkin berguna suatu saat nant
 <translation id="7610193165460212391">Nilai di luar jangkauan <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">Masa berlaku habis: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Anda sudah memiliki data yang dienkripsi menggunakan versi sandi Akun Google yang berbeda. Masukkan sandi di bawah.</translation>
+<translation id="7633887239437305289">Masukkan 4 digit CVC yang ada di bagian depan <ph name="CREDIT_CARD" /> untuk verifikasi</translation>
 <translation id="7634554953375732414">Sambungan Anda ke situs ini tidak bersifat pribadi.</translation>
 <translation id="7637571805876720304">Hapus kartu kredit dari Chromium?</translation>
 <translation id="7643817847124207232">Sambungan Internet telah terputus.</translation>

@@ -519,6 +519,22 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
          Alle elementerne på denne liste er en slags udvidelse til matchmønstret (se https://developer.chrome.com/extensions/match_patterns). Brugerne vil være i stand til nemt at installere elementer fra enhver webadresse, der matcher et element på denne liste. Både placeringen af *.crx-filen og siden, hvor downloaden er startet fra (dvs. henvisningswebadressen), skal tillades af disse mønstre.
 
          ExtensionInstallBlacklist har forrang i forhold til denne politik. Dvs. at en sortlistet udvidelse ikke vil blive installeret, selvom det sker fra et website på denne liste.</translation>
+<translation id="2813740161943223811">Denne politik er udfaset. Brug ProxyMode i stedet.
+
+          Giver dig mulighed for at angive den proxyserver, der anvendes af <ph name="PRODUCT_NAME" />, og forhindrer brugerne i at ændre proxyindstillingerne. ARC-apps vil også kunne anvende denne proxyserver.
+
+          Hvis du vælger aldrig at bruge en proxyserver og altid at oprette direkte forbindelse, ignoreres alle andre valgmuligheder.
+
+          Hvis du vælger at bruge systemets proxyindstillinger eller registrere proxyserveren automatisk, ignoreres alle andre valgmuligheder.
+
+          Hvis du vælger manuelle proxyindstillinger, kan du angive yderligere valgmuligheder i "Adresse eller webadresse til proxyserveren", "Webadresse til en proxyfil af typen .pac" og "Kommasepareret liste over regler for omgåelse af proxy". Det er kun HTTP-proxyserveren med den højeste prioritet, der er tilgængelig for ARC-apps.
+
+          Få detaljerede eksempler på:
+          <ph name="PROXY_HELP_URL" />.
+
+          Hvis du aktiverer denne indstilling, ignorerer <ph name="PRODUCT_NAME" /> alle proxyrelaterede valgmuligheder, der angives på kommandolinjen.
+
+          Hvis denne politik ikke angives, kan brugerne selv vælge proxyindstillingerne.</translation>
 <translation id="2824715612115726353">Aktiver inkognitotilstand</translation>
 <translation id="2844404652289407061">Aktiverer tilgængeligheden af funktionen "Tryk for at søge" i indholdsvisningen i <ph name="PRODUCT_NAME" />.
 
@@ -629,6 +645,18 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
           </translation>
 <translation id="3205825995289802549">Maksimer det første browservindue ved første kørsel</translation>
 <translation id="3206731874112238027">Deaktiver Vis udskrift (udfaset)</translation>
+<translation id="3208854390109736596">Giver dig mulighed for at angive den proxyserver, der anvendes af <ph name="PRODUCT_NAME" />, og forhindrer brugerne i at ændre proxyindstillingerne. ARC-apps vil også kunne anvende denne proxyserver.
+
+      Hvis du vælger aldrig at bruge en proxyserver og altid at oprette direkte forbindelse, ignoreres alle andre valgmuligheder.
+
+      Hvis du vælger at registrere proxyserveren automatisk, ignoreres alle andre valgmuligheder.
+
+      Få detaljerede eksempler på:
+      <ph name="PROXY_HELP_URL" />.
+
+      Hvis du aktiverer denne indstilling, ignorerer <ph name="PRODUCT_NAME" /> og ARC-apps alle proxyrelaterede valgmuligheder, der angives på kommandolinjen.
+
+      Hvis denne politik ikke angives, kan brugerne selv vælge proxyindstillingerne.</translation>
 <translation id="3213821784736959823">Styrer, om den indbyggede DNS-klient bruges i <ph name="PRODUCT_NAME" />.
 
       Hvis denne politik er angivet som Sand, anvendes den indbyggede DNS-klient, hvis den er tilgængelig.
@@ -679,6 +707,9 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 
       Hvis denne politik er angivet til falsk, vil <ph name="PRODUCT_OS_NAME" /> ikke tillade, at der startes gæstesessioner.</translation>
 <translation id="3428247105888806363">Aktivér forudsigelse af netværk</translation>
+<translation id="3449886121729668969">Konfigurerer proxyindstillinger for <ph name="PRODUCT_NAME" />. Disse proxyindstillinger vil også være tilgængelige for ARC-apps.
+
+      Denne politik er endnu ikke klar til brug, så undlad at bruge den.</translation>
 <translation id="3460784402832014830">Angiver den webadresse, som en søgemaskine anvender til at angive siden Ny fane.
 
           Denne politik er valgfri. Hvis den ikke er angivet, leveres siden Ny fane ikke.
@@ -689,6 +720,14 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
           Hvis denne politik er indstillet til Sand, begynder strømstyringsforsinkelser og begrænsing af sessionslængden først at køre, efter den første brugeraktivitet er blevet registreret i en session.
 
           Hvis denne politik er indstillet til Falsk eller ikke er indstillet, begynder strømstyringsforsinkelser og begræsning af sessionslængden straks at køre ved sessionstart.</translation>
+<translation id="3469657928310999477"><ph name="PRODUCT_NAME" /> omgår alle proxyservere for den liste over hosts, der vises her. ARC-apps vil kunne bruge denne liste som en liste over regler for omgåelse.
+
+          Denne politik træder kun i kraft, hvis du har valgt manuelle proxyindstillinger i "Vælg, hvordan indstillinger for proxyservere skal angives".
+
+          Denne politik bør ikke angives, hvis du har valgt en anden tilstand til angivelse af proxypolitikker.
+
+          Få flere detaljerede eksempler på:
+          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="3478024346823118645">Slet alle brugerdata, når der logges ud</translation>
 <translation id="348495353354674884">Aktivér virtuelt tastatur</translation>
 <translation id="3496296378755072552">Adgangskodemanager</translation>
@@ -1309,6 +1348,9 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
       Denne politik omfatter alle typer lagermedier, f.eks. USB-flashdrev, eksterne harddiske, SD- og andre hukommelseskort, optisk lagring m.v. Internt lager påvirkes ikke, derfor er der stadig adgang til filer, der er gemt i mappen Download. Google Drev er heller ikke omfattet af denne politik.
 
       Hvis denne indstilling deaktiveres eller ikke konfigureres, kan brugerne benytte alle understøttede eksterne lagertyper på deres enhed.</translation>
+<translation id="6076099373507468537">Definerer listen over USB-enheder, der gerne må frigøres fra deres kernedriver, så de kan bruges via chrome.usb API direkte i en webapplikation. Poster er par bestående af et USB-leverandør-id og et produkt-id til identifikation af en bestemt hardware.
+
+      Hvis denne politik ikke konfigureres, er listen over USB-enheder, der kan frigøres, tom.</translation>
 <translation id="6095999036251797924">Angiver det tidsrum uden input fra brugeren, der går, før skærmen låses, når enheden kører på strømforsyning eller batteri.
 
           Når der er angivet et tidsrum over nul, angiver værdien, hvor lang tid brugeren skal være inaktiv, før <ph name="PRODUCT_OS_NAME" /> låser skærmen.
@@ -1802,6 +1844,14 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
       ikke. Hvis den angives til sand eller ikke angives, rapporteres 
       terminaloplysningerne.</translation>
 <translation id="7774768074957326919">Brug systemets proxyindstillinger</translation>
+<translation id="7775831859772431793">Du kan angive webadressen til proxyserveren her.
+
+          Denne politik træder kun i kraft, hvis du har valgt manuelle proxyindstillinger i "Vælg, hvordan indstillinger for proxyservere skal angives".
+
+          Du bør ikke angive denne politik, hvis du har valgt en anden tilstand til angivelse af proxypolitikker.
+
+          Du kan finde flere valgmuligheder og detaljerede eksempler på:
+          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7788511847830146438">Pr. profil</translation>
 <translation id="7796141075993499320">Giver dig mulighed for at oprette en liste over webadressemønstre, der angiver websites, som må køre plugins. Hvis denne politik ikke angives, anvendes den globale standardværdi på alle websites, enten fra politikken "DefaultPluginsSetting", hvis den er angivet, eller brugerens personlige konfiguration.</translation>
 <translation id="7818131573217430250">Indstil standardtilstanden for høj kontrast på loginskærmen</translation>
@@ -1832,6 +1882,14 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
       Bestemmer id'et for den udvidelse, der skal bruges som pauseskærm på loginskærmen. Udvidelsen skal være en del af den AppPack, der er konfigureret til dette domæne via politikken DeviceAppPack.</translation>
 <translation id="7882890448959833986">Ignorer advarslen om manglende understøttelse af OS</translation>
 <translation id="7912255076272890813">Konfigurer tilladte app-/udvidelsestyper</translation>
+<translation id="7915236031252389808">Du kan angive en webadresse til en proxyfil af typen .pac her.
+
+          Denne politik fungerer kun, hvis du har valgt manuelle proxyindstillinger i "Vælg, hvordan indstillinger for proxyservere skal angives".
+
+          Du bør ikke angive denne politik, hvis du har valgt en anden tilstand for angivelse af proxypolitikker.
+
+          Få detaljerede eksempler på:
+          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="793134539373873765">Angiver, om p2p skal anvendes til OS-opdateringsdata. Hvis denne politik angives til Sand, vil enheder dele og forsøge at forbruge opdateringsdata på LAN-netværket, hvor den potentielt kan reducere forbruget og overbelastningen af internetbåndbredden. Hvis opdateringsdata ikke er tilgængelige på LAN-netværket, vil enheden i stedet downloade fra en opdateringsserver. Hvis den angives til Falsk eller ikke konfigureres, vil p2p ikke blive anvendt.</translation>
 <translation id="7933141401888114454">Aktivér oprettelse af administrerede brugere</translation>
 <translation id="7936098023732125869">Giver brugeren mulighed for at benytte en standardsøgemaskine.
@@ -1969,6 +2027,11 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 <translation id="8382184662529825177">Aktivér brug af fjernattestering til indholdsbeskyttelse for enheden.</translation>
 <translation id="838870586332499308">Aktivér dataroaming</translation>
 <translation id="8412312801707973447">Om der udføres online kontrol af OCSP/CRL</translation>
+<translation id="8413348101535146315">Aktiverer mulighed for at afslutte processer i Jobliste for <ph name="PRODUCT_NAME" />.
+
+      Hvis den er angivet som falsk, er knappen "Afslut proces" deaktiveret i Jobliste.
+
+      Hvis den er angivet som sand eller ikke er konfigureret, kan brugeren afslutte processer i Jobliste.</translation>
 <translation id="8424255554404582727">Angiv en standardrotation for visningen, som genanvendes ved hver genstart</translation>
 <translation id="8426231401662877819">Roter skærmen 90 grader med uret</translation>
 <translation id="8451988835943702790">Brug siden Ny fane som startside</translation>
@@ -2182,6 +2245,24 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 <translation id="9112897538922695510">Giver dig mulighed for at registrere en liste over protokolhandlere. Dette kan kun være en anbefalet politik. Egenskaben |protocol| skal indstilles til ordningen, f.eks. "mailto", og egenskaben |url| bør indstilles til webadressemønsteret for den applikation, der handler ordningen. Dette mønster kan omfatte et "%s", som, hvis det findes, erstattes med den handlede webadresse.
 
           De protokolhandlere, der er registreret via politikker, flettes med dem, der er registreret af brugeren, og begge er tilgængelige og kan anvendes. Brugeren kan tilsidesætte protokolhandlere, der er installeret via en politik, ved at installere en ny standardhandler, men kan ikke fjerne en protokolhandler, der er registreret via en politik.</translation>
+<translation id="913138516158420759">Giver dig mulighed for at angive den proxyserver, der anvendes af <ph name="PRODUCT_NAME" />, og forhindrer brugerne i at ændre proxyindstillingerne. ARC-apps vil også kunne anvende denne proxyserver.
+
+          Hvis du vælger aldrig at bruge en proxyserver og altid at oprette direkte forbindelse, ignoreres alle andre valgmuligheder.
+
+          Hvis du vælger at bruge systemets proxyindstillinger, ignoreres alle andre valgmuligheder.
+
+          Hvis du vælger at registrere proxyserveren automatisk, ignoreres alle andre valgmuligheder.
+
+          Hvis du vælger tilstanden for en fast proxyserver, kan du angive yderligere valgmuligheder i "Adresse eller webadresse til proxyserveren" og "Kommasepareret liste over regler for omgåelse af proxy". Det er kun HTTP-proxyserveren med den højeste prioritet, der er tilgængelig for ARC-apps.
+
+          Hvis du vælger at bruge et proxyscript af typen .pac, skal du angive webadressen til scriptet i "Webadresse til en proxyfil af typen .pac".
+
+          Få detaljerede eksempler på:
+          <ph name="PROXY_HELP_URL" />.
+
+          Hvis du aktiverer denne indstilling, ignorerer <ph name="PRODUCT_NAME" /> og ARC-apps alle proxyrelaterede valgmuligheder, der angives på kommandolinjen.
+
+          Hvis denne politik ikke angives, kan brugerne selv vælge proxyindstillingerne.</translation>
 <translation id="913195841488580904">Bloker adgang til en liste over webadresser</translation>
 <translation id="9135033364005346124">Aktiver <ph name="CLOUD_PRINT_NAME" />-proxyen</translation>
 <translation id="9147029539363974059">Send systemlogfiler til administrationsserveren for at tillade,

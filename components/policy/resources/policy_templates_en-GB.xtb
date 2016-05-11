@@ -561,6 +561,22 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
           Each item in this list is an extension-style match pattern (see https://developer.chrome.com/extensions/match_patterns). Users will be able to easily install items from any URL that matches an item in this list. Both the location of the *.crx file and the page where the download is started from (i.e. the referrer) must be allowed by these patterns.
 
           ExtensionInstallBlacklist takes precedence over this policy. That is, an extension on the blacklist won't be installed, even if it happens from a site on this list.</translation>
+<translation id="2813740161943223811">This policy is deprecated, use ProxyMode instead.
+
+          Allows you to specify the proxy server used by <ph name="PRODUCT_NAME" /> and prevents users from changing proxy settings. ARC-apps will be able to use this proxy server too.
+
+          If you choose to never use a proxy server and always connect directly, all other options are ignored.
+
+          If you choose to use system proxy settings or auto detect the proxy server, all other options are ignored.
+
+          If you choose manual proxy settings, you can specify further options in 'Address or URL of proxy server', 'URL to a proxy .pac file' and 'Comma-separated list of proxy bypass rules'. Only the HTTP proxy server with the highest priority is available for ARC-apps.
+
+          For detailed examples, visit:
+          <ph name="PROXY_HELP_URL" />.
+
+          If you enable this setting, <ph name="PRODUCT_NAME" /> ignores all proxy-related options specified from the command line.
+
+          Leaving this policy unset will allow the users to choose the proxy settings on their own.</translation>
 <translation id="2824715612115726353">Enable Incognito mode</translation>
 <translation id="2844404652289407061">Enables the availability of Touch to Search in <ph name="PRODUCT_NAME" />'s content view.
 
@@ -673,6 +689,18 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
           </translation>
 <translation id="3205825995289802549">Maximise the first browser window on first run</translation>
 <translation id="3206731874112238027">Disable Print Preview (deprecated)</translation>
+<translation id="3208854390109736596">Allows you to specify the proxy server used by <ph name="PRODUCT_NAME" /> and prevents users from changing proxy settings. ARC-apps will be able to use this proxy server too.
+
+      If you choose to never use a proxy server and always connect directly, all other options are ignored.
+
+      If you choose to auto detect the proxy server, all other options are ignored.
+
+      For detailed examples, visit:
+      <ph name="PROXY_HELP_URL" />.
+
+      If you enable this setting, <ph name="PRODUCT_NAME" /> and ARC-apps ignore all proxy-related options specified from the command line.
+
+      Leaving these policies unset will allow the users to choose the proxy settings on their own.</translation>
 <translation id="3213821784736959823">Controls whether the built-in DNS client is used in <ph name="PRODUCT_NAME" />.
 
       If this policy is set to true, the built-in DNS client will be used, if available.
@@ -727,6 +755,9 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 
       If this policy is set to false, <ph name="PRODUCT_OS_NAME" /> will not allow guest sessions to be started.</translation>
 <translation id="3428247105888806363">Enable network prediction.</translation>
+<translation id="3449886121729668969">Configures the proxy settings for <ph name="PRODUCT_NAME" />. These proxy settings will be available for ARC-apps too.
+
+      This policy isn't ready for usage yet, please don't use it.</translation>
 <translation id="3460784402832014830">Specifies the URL that a search engine uses to provide a new tab page.
 
           This policy is optional. If not set, no new tab page will be provided.
@@ -737,6 +768,14 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
           If this policy is set to True, power management delays and the session length limit do not start running until after the first user activity has been observed in a session.
 
           If this policy is set to False or left unset, power management delays and the session length limit start running immediately on session start.</translation>
+<translation id="3469657928310999477"><ph name="PRODUCT_NAME" /> will bypass any proxy for the list of hosts given here. ARC-apps will be able to use this list as a bypass rules list.
+
+          This policy only takes effect if you have selected manual proxy settings at 'Choose how to specify proxy server settings'.
+
+          You should leave this policy unset if you have selected any other mode for setting proxy policies.
+
+          For more detailed examples, visit:
+          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="3478024346823118645">Wipe user data on sign-out</translation>
 <translation id="348495353354674884">Enable virtual keyboard</translation>
 <translation id="3496296378755072552">Password manager</translation>
@@ -1423,6 +1462,9 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       This policy affects all types of storage media. For example: USB flash drives, external hard drives, SD and other memory cards, optical storage etc. Internal storage is not affected, therefore files saved in the Download folder can still be accessed. Google Drive is also not affected by this policy.
 
       If this setting is disabled or not configured then users can use all supported types of external storage on their device.</translation>
+<translation id="6076099373507468537">Defines the list of USB devices that are allowed to be detached from their kernel driver in order to be used through the chrome.usb API directly inside a web application. Entries are pairs of USB Vendor Identifier and Product Identifier to identify a specific hardware.
+
+      If this policy is not configured, the list of a detachable USB devices is empty.</translation>
 <translation id="6095999036251797924">Specifies the length of time without user input after which the screen is locked when running on AC power or battery.
 
           When the length of time is set to a value greater than zero, it represents the length of time that the user must remain idle before <ph name="PRODUCT_OS_NAME" /> locks the screen.
@@ -1959,6 +2001,14 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       reported. If set to true or left unset, session information will be
       reported.</translation>
 <translation id="7774768074957326919">Use system proxy settings</translation>
+<translation id="7775831859772431793">You can specify the URL of the proxy server here.
+
+          This policy only takes effect if you have selected manual proxy settings at 'Choose how to specify proxy server settings'.
+
+          You should leave this policy not set if you have selected any other mode for setting proxy policies.
+
+          For more options and detailed examples, visit:
+          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7788511847830146438">Per Profile</translation>
 <translation id="7796141075993499320">Allows you to set a list of url patterns that specify sites which are allowed to run plug-ins.
 
@@ -1993,6 +2043,14 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       Determines the id of the extension to be used as a screen saver on the sign-in screen. The extension must be part of the AppPack that is configured for this domain through the DeviceAppPack policy.</translation>
 <translation id="7882890448959833986">Suppress the unsupported OS warning</translation>
 <translation id="7912255076272890813">Configure allowed app/extension types</translation>
+<translation id="7915236031252389808">You can specify a URL to a proxy .pac file here.
+
+          This policy only takes effect if you have selected manual proxy settings at 'Choose how to specify proxy server settings'.
+
+          You should leave this policy unset if you have selected any other mode for setting proxy policies.
+
+          For detailed examples, visit:
+          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="793134539373873765">Specifies whether p2p is to be used for OS update payloads. If set to True, devices will share and attempt to consume update payloads on the LAN, potentially reducing Internet bandwidth usage and congestion. If the update payload is not available on the LAN, the device will fall back to downloading from an update server. If set to False or not configured, p2p will not be used.</translation>
 <translation id="7933141401888114454">Enable creation of supervised users</translation>
 <translation id="7936098023732125869">Enables the use of a default search provider.
@@ -2143,6 +2201,11 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="8382184662529825177">Enable the use of remote attestation for content protection for the device</translation>
 <translation id="838870586332499308">Enable data roaming</translation>
 <translation id="8412312801707973447">Whether online OCSP/CRL checks are performed</translation>
+<translation id="8413348101535146315">Enables ending processes in <ph name="PRODUCT_NAME" />'s Task Manager.
+
+      If set to false, the 'End process' button is disabled in the Task Manager.
+
+      If set to true or not configured, the user can end processes in the Task Manager.</translation>
 <translation id="8424255554404582727">Set default display rotation, reapplied on every reboot</translation>
 <translation id="8426231401662877819">Rotate screen clockwise by 90 degrees</translation>
 <translation id="8451988835943702790">Use New Tab Page as homepage</translation>
@@ -2357,6 +2420,24 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="9112897538922695510">Allows you to register a list of protocol handlers. This can only be a recommended policy. The property |protocol| should be set to the scheme such as 'mailto' and the property |url| should be set to the URL pattern of the application that handles the scheme. The pattern can include a '%s', which if present will be replaced by the handled URL.
 
           The protocol handlers registered by policy are merged with the ones registered by the user and both are available for use. The user can override the protocol handlers installed by policy by installing a new default handler, but cannot remove a protocol handler registered by policy.</translation>
+<translation id="913138516158420759">Allows you to specify the proxy server used by <ph name="PRODUCT_NAME" /> and prevents users from changing proxy settings. ARC-apps will be able to use this proxy server, too.
+
+          If you choose to never use a proxy server and always connect directly, all other options are ignored.
+
+          If you choose to use system proxy settings, all other options are ignored.
+
+          If you choose to auto detect the proxy server, all other options are ignored.
+
+          If you choose fixed server proxy mode, you can specify further options in 'Address or URL of proxy server' and 'Comma-separated list of proxy bypass rules'. Only the HTTP proxy server with the highest priority is available for ARC-apps.
+
+          If you choose to use a .pac proxy script, you must specify the URL to the script in 'URL to a proxy .pac file'.
+
+          For detailed examples, visit:
+          <ph name="PROXY_HELP_URL" />.
+
+          If you enable this setting, <ph name="PRODUCT_NAME" /> and ARC-apps ignore all proxy-related options specified from the command line.
+
+          Leaving this policy unset will allow the users to choose the proxy settings on their own.</translation>
 <translation id="913195841488580904">Block access to a list of URLs</translation>
 <translation id="9135033364005346124">Enable <ph name="CLOUD_PRINT_NAME" /> proxy</translation>
 <translation id="9147029539363974059">Send system logs to the management server, to allow

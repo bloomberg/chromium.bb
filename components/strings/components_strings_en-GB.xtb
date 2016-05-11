@@ -42,6 +42,7 @@
 <translation id="1254117744268754948">Choose Folder</translation>
 <translation id="1285320974508926690">Never translate this site</translation>
 <translation id="129553762522093515">Recently closed</translation>
+<translation id="129863573139666797"><ph name="BEGIN_LINK" />Try clearing your cookies<ph name="END_LINK" /></translation>
 <translation id="1339601241726513588">Enrolment domain:</translation>
 <translation id="1344588688991793829">Chromium Auto-fill settings...</translation>
 <translation id="1374468813861204354">suggestions</translation>
@@ -198,6 +199,7 @@
 <translation id="2969319727213777354">To establish a secure connection, your clock needs to be set correctly. This is because the certificates that websites use to identify themselves are only valid for specific periods of time. Since your device's clock is incorrect, Google Chrome cannot verify these certificates.</translation>
 <translation id="2972581237482394796">&amp;Redo</translation>
 <translation id="2985306909656435243">If enabled, Chromium will store a copy of your card on this device for faster form filling.</translation>
+<translation id="2989984781570875765">Enter the expiration date and 3-digit CVC from the back of your <ph name="CREDIT_CARD" /></translation>
 <translation id="2991174974383378012">Sharing with Websites</translation>
 <translation id="3005723025932146533">Show saved copy</translation>
 <translation id="3010559122411665027">List entry "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
@@ -281,6 +283,7 @@
 <translation id="3717027428350673159"><ph name="BEGIN_LINK" />Checking the proxy, firewall and DNS configuration<ph name="END_LINK" /></translation>
 <translation id="3739623965217189342">Link that you copied</translation>
 <translation id="3744899669254331632">You cannot visit <ph name="SITE" /> right now because the website sent scrambled credentials that Chromium cannot process. Network errors and attacks are usually temporary, so this page will probably work later.</translation>
+<translation id="3748071062818261683">Verify Card</translation>
 <translation id="3748412725338508953">There were too many redirects.</translation>
 <translation id="375403751935624634">The translation failed because of a server error.</translation>
 <translation id="3759461132968374835">You have no recently reported crashes.  Crashes that occurred when crash reporting was disabled will not appear here.</translation>
@@ -309,6 +312,7 @@
 <translation id="4103249731201008433">Device serial number is invalid</translation>
 <translation id="4103763322291513355">Visit &lt;strong&gt;chrome://policy&lt;/strong&gt; to see the list of blacklisted URLs and other policies enforced by your system administrator.</translation>
 <translation id="4117700440116928470">Policy scope is not supported.</translation>
+<translation id="4130226655945681476">Checking the network cables, modem and router</translation>
 <translation id="4147376274874979956">Unable to access the file.</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">Do you want Chromium to save this card?</translation>
@@ -343,11 +347,15 @@
 <translation id="450710068430902550">Sharing with Administrator</translation>
 <translation id="4522570452068850558">Details</translation>
 <translation id="4535734014498033861">Proxy server connection failed.</translation>
+<translation id="4553532082208702698">Enter the 4-digit CVC from the front of your <ph name="CREDIT_CARD" /></translation>
+<translation id="4558551763791394412">Try disabling your extensions.</translation>
 <translation id="4587425331216688090">Remove address from Chrome?</translation>
 <translation id="4592951414987517459">Your connection to <ph name="DOMAIN" /> is encrypted using a modern cipher suite.</translation>
 <translation id="4594403342090139922">&amp;Undo Delete</translation>
 <translation id="4668929960204016307">,</translation>
+<translation id="4670097147947922288">You are viewing an extension page.</translation>
 <translation id="467662567472608290">This server could not prove that it is <ph name="DOMAIN" />; its security certificate contains errors. This may be caused by a misconfiguration or an attacker intercepting your connection.</translation>
+<translation id="4683417246209150705">Enter the 3-digit CVC from the back of your <ph name="CREDIT_CARD" /></translation>
 <translation id="4697214168136963651"><ph name="URL" /> was blocked</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">Your connection was interrupted</translation>
@@ -432,6 +440,8 @@
 <translation id="5650551054760837876">No search results found.</translation>
 <translation id="5663999524854166235">Enter the 3-digit CVC from the back of your card for verification</translation>
 <translation id="5677928146339483299">Blocked</translation>
+<translation id="5696590819423335174">Enter the expiration date and 4-digit CVC from the front of your <ph name="CREDIT_CARD" /></translation>
+<translation id="5699278517904102888">Enter the 3-digit CVC from the back of your <ph name="CREDIT_CARD" /> for verification</translation>
 <translation id="5710435578057952990">The identity of this website has not been verified.</translation>
 <translation id="5720705177508910913">Current user</translation>
 <translation id="5785756445106461925">Further, this page includes other resources which are not secure. These resources can be viewed by others while in transit, and can be modified by an attacker to change the look of the page.</translation>
@@ -555,7 +565,6 @@
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> doesn't adhere to security standards.</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Learn more<ph name="END_LINK" /> about this problem.</translation>
 <translation id="7219179957768738017">The connection uses <ph name="SSL_VERSION" />.</translation>
-<translation id="7225807090967870017">Build ID</translation>
 <translation id="7231308970288859235">Oops! You need to ask your parent if it's OK to visit this page.</translation>
 <translation id="7246609911581847514">You're seeing this message because your manager needs to approve new sites on your first visit.</translation>
 <translation id="725866823122871198">A private connection to <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> can't be established because your computer's date and time (<ph name="DATE_AND_TIME" />) are incorrect.</translation>
@@ -596,6 +605,7 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY" /> may come in handy next time.</tr
 <translation id="7610193165460212391">Value is out of range <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">Exp: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">You already have data that is encrypted using a different version of your Google Account password. Please enter it below.</translation>
+<translation id="7633887239437305289">Enter the 4-digit CVC from the front of your <ph name="CREDIT_CARD" /> for verification</translation>
 <translation id="7634554953375732414">Your connection to this site is not private.</translation>
 <translation id="7637571805876720304">Remove credit card from Chromium?</translation>
 <translation id="7643817847124207232">The Internet connection has been lost.</translation>

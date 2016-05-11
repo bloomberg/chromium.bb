@@ -21,7 +21,7 @@
 <translation id="112840717907525620">정책 캐시 확인</translation>
 <translation id="113188000913989374"><ph name="SITE" /> 내용:</translation>
 <translation id="1132774398110320017">Chrome 자동완성 설정...</translation>
-<translation id="113770840981343808">인증을 위해 카드 앞면의 4자리 CVC를 입력하세요.</translation>
+<translation id="113770840981343808">인증을 위해 카드 앞면의 CVC 4자리를 입력하세요.</translation>
 <translation id="1146673768181266552">오류 ID <ph name="CRASH_ID" />(<ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="1150979032973867961">이 서버가 <ph name="DOMAIN" />임을 입증할 수 없으며 컴퓨터의 운영체제에서 신뢰하는 보안 인증서가 아닙니다. 서버를 잘못 설정했거나 불법 사용자가 연결을 가로채고 있기 때문일 수 있습니다.</translation>
 <translation id="1152921474424827756"><ph name="URL" />의 <ph name="BEGIN_LINK" />캐시된 사본<ph name="END_LINK" />에 액세스</translation>
@@ -42,6 +42,7 @@
 <translation id="1254117744268754948">폴더 선택</translation>
 <translation id="1285320974508926690">이 사이트 번역 안함</translation>
 <translation id="129553762522093515">최근에 닫은 탭</translation>
+<translation id="129863573139666797"><ph name="BEGIN_LINK" />쿠키 삭제해 보기<ph name="END_LINK" /></translation>
 <translation id="1339601241726513588">등록 도메인:</translation>
 <translation id="1344588688991793829">Chromium 자동완성 설정...</translation>
 <translation id="1374468813861204354">제안사항</translation>
@@ -198,6 +199,7 @@
 <translation id="2969319727213777354">보안 연결을 설정하려면 시계가 올바로 설정되어 있어야 합니다. 웹사이트가 자신을 식별하는 데 사용하는 인증서는 특정 기간에만 유효하기 때문입니다. 기기의 시계가 잘못 설정되어 Chrome에서 이 인증서를 확인할 수 없습니다.</translation>
 <translation id="2972581237482394796">다시 실행(&amp;R)</translation>
 <translation id="2985306909656435243">선택하면 이 기기에 카드 사본이 저장되어 Chromium에서 양식을 더 빠르게 작성할 수 있습니다.</translation>
+<translation id="2989984781570875765"><ph name="CREDIT_CARD" /> 카드의 유효기간과 카드 뒷면의 3자리 CVC를 입력하세요.</translation>
 <translation id="2991174974383378012">웹사이트와 공유</translation>
 <translation id="3005723025932146533">저장된 사본 표시</translation>
 <translation id="3010559122411665027">목록 항목 '<ph name="ENTRY_INDEX" />': <ph name="ERROR" /></translation>
@@ -281,6 +283,7 @@
 <translation id="3717027428350673159"><ph name="BEGIN_LINK" />프록시, 방화벽, DNS 설정 확인<ph name="END_LINK" /></translation>
 <translation id="3739623965217189342">복사한 링크</translation>
 <translation id="3744899669254331632">웹사이트가 Chromium이 처리할 수 없는 암호화된 사용자 인증 정보를 전송하였으므로 지금은 <ph name="SITE" />에 방문할 수 없습니다. 네트워크 오류와 공격은 대체로 일시적인 문제이기 때문에 이후에는 이 페이지가 제대로 작동할 가능성이 높습니다.</translation>
+<translation id="3748071062818261683">카드 인증</translation>
 <translation id="3748412725338508953">리디렉션이 너무 많습니다.</translation>
 <translation id="375403751935624634">서버 오류가 발생하여 번역하지 못했습니다.</translation>
 <translation id="3759461132968374835">최근에 보고된 충돌이 없습니다. 충돌 보고를 사용 중지했을 때 발생한 충돌은 여기에 표시되지 않습니다.</translation>
@@ -309,6 +312,7 @@
 <translation id="4103249731201008433">기기 일련번호가 잘못됨</translation>
 <translation id="4103763322291513355">차단된 URL 및 시스템 관리자가 설정한 기타 정책 목록을 확인하려면 &lt;strong&gt;chrome://policy&lt;/strong&gt;를 방문하세요.</translation>
 <translation id="4117700440116928470">지원되지 않는 정책 범위입니다.</translation>
+<translation id="4130226655945681476">네트워크 케이블, 모뎀, 라우터 확인</translation>
 <translation id="4147376274874979956">파일에 액세스할 수 없습니다.</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">Chromium에서 이 카드를 저장하도록 하시겠습니까?</translation>
@@ -343,11 +347,15 @@
 <translation id="450710068430902550">관리자와 공유</translation>
 <translation id="4522570452068850558">세부정보</translation>
 <translation id="4535734014498033861">프록시 서버가 연결에 실패했습니다.</translation>
+<translation id="4553532082208702698"><ph name="CREDIT_CARD" /> 카드 앞면의 4자리 CVC를 입력하세요.</translation>
+<translation id="4558551763791394412">확장 프로그램 사용 중지해 보기</translation>
 <translation id="4587425331216688090">Chrome에서 주소를 삭제하시겠습니까?</translation>
 <translation id="4592951414987517459"><ph name="DOMAIN" />에 대한 연결은 최신 암호화 기술을 사용하여 암호화됩니다.</translation>
 <translation id="4594403342090139922">삭제 실행 취소(&amp;U)</translation>
 <translation id="4668929960204016307">,</translation>
+<translation id="4670097147947922288">지금 확장 프로그램 페이지를 보고 있습니다.</translation>
 <translation id="467662567472608290">이 서버가 <ph name="DOMAIN" />임을 입증할 수 없으며 서버의 보안 인증서에 오류가 있습니다. 서버를 잘못 설정했거나 불법 사용자가 연결을 가로채고 있기 때문일 수 있습니다.</translation>
+<translation id="4683417246209150705"><ph name="CREDIT_CARD" /> 카드 뒷면의 3자리 CVC를 입력하세요.</translation>
 <translation id="4697214168136963651"><ph name="URL" />이(가) 차단됨</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">연결이 끊김</translation>
@@ -430,8 +438,10 @@
 <translation id="5629630648637658800">정책 설정 로드 실패</translation>
 <translation id="5631439013527180824">잘못된 기기 관리 토큰</translation>
 <translation id="5650551054760837876">검색결과를 찾지 못했습니다.</translation>
-<translation id="5663999524854166235">인증을 위해 카드 뒷면의 3자리 CVC를 입력하세요.</translation>
+<translation id="5663999524854166235">인증을 위해 카드 뒷면의 CVC 3자리를 입력하세요.</translation>
 <translation id="5677928146339483299">차단됨</translation>
+<translation id="5696590819423335174"><ph name="CREDIT_CARD" /> 카드의 유효기간과 카드 앞면의 4자리 CVC를 입력하세요.</translation>
+<translation id="5699278517904102888">인증을 위해 <ph name="CREDIT_CARD" /> 카드 뒷면의 3자리 CVC를 입력하세요.</translation>
 <translation id="5710435578057952990">이 웹사이트의 주소가 확인되지 않았습니다.</translation>
 <translation id="5720705177508910913">현재 사용자</translation>
 <translation id="5785756445106461925">또한 이 페이지에는 안전하지 않은 다른 리소스가 포함되어 있습니다. 이러한 리소스는 전송 중에 다른 사람이 볼 수 있으며 페이지의 모양을 변경하기 위해 공격자가 수정할 수 있습니다.</translation>
@@ -555,7 +565,6 @@
 <translation id="7210863904660874423"><ph name="HOST_NAME" />에서 보안 기준을 준수하지 않습니다.</translation>
 <translation id="721197778055552897">이 문제에 대해 <ph name="BEGIN_LINK" />자세히 알아보기<ph name="END_LINK" /></translation>
 <translation id="7219179957768738017"><ph name="SSL_VERSION" /> 연결입니다.</translation>
-<translation id="7225807090967870017">빌드 ID</translation>
 <translation id="7231308970288859235">이 페이지를 방문해도 괜찮은지 부모님께 확인해야 합니다.</translation>
 <translation id="7246609911581847514">이 알림은 새로운 사이트를 처음으로 방문할 때 관리자의 승인이 필요하므로 표시되었습니다.</translation>
 <translation id="725866823122871198">컴퓨터의 날짜와 시간(<ph name="DATE_AND_TIME" />)이 잘못되어 <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />에 대한 비공개 연결을 설정할 수 없습니다.</translation>
@@ -596,6 +605,7 @@
 <translation id="7610193165460212391">값(<ph name="VALUE" />)이 범위를 벗어났습니다.</translation>
 <translation id="7613889955535752492">만료일: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">다른 Google 계정 비밀번호 버전을 사용하여 암호화된 데이터가 이미 있습니다. 아래에 암호를 입력하시기 바랍니다.</translation>
+<translation id="7633887239437305289">인증을 위해 <ph name="CREDIT_CARD" /> 카드 앞면의 4자리 CVC를 입력하세요.</translation>
 <translation id="7634554953375732414">이 사이트에 대한 연결은 비공개가 아닙니다.</translation>
 <translation id="7637571805876720304">Chromium에서 신용카드를 삭제하시겠습니까?</translation>
 <translation id="7643817847124207232">인터넷 연결이 끊어졌습니다.</translation>

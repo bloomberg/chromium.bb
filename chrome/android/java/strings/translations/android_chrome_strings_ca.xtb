@@ -68,6 +68,7 @@ Heu de tenir activats el Bluetooth i la ubicació per poder utilitzar el Web fí
 <translation id="1842969606798536927">Pagament</translation>
 <translation id="1853692000353488670">Pestanya d'incògnit nova</translation>
 <translation id="189172778771606813">Tanca el tauler de navegació</translation>
+<translation id="1924956916668006832">Mostra les adreces d'enviament</translation>
 <translation id="194341124344773587">Activeu el permís per a Chrome a la <ph name="BEGIN_LINK" />configuració d'Android<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Desa les contrasenyes</translation>
 <translation id="1944384637046898011">Encripta totes les dades amb la contrasenya de Google del dia <ph name="TIME" /></translation>
@@ -98,6 +99,7 @@ Heu de tenir activats el Bluetooth i la ubicació per poder utilitzar el Web fí
 <translation id="2268044343513325586">Restringeix</translation>
 <translation id="2315043854645842844">El sistema operatiu no permet seleccionar el certificat del client.</translation>
 <translation id="2321958826496381788">Arrossegueu el control lliscant fins que ho pugueu llegir còmodament. El text ha de ser almenys així de gran després de tocar dos cops un paràgraf.</translation>
+<translation id="2329597144923131178">Inicieu la sessió per tenir adreces d'interès, historial, contrasenyes i altres opcions de configuració en tots els dispositius.</translation>
 <translation id="2343328333327081434">Instal·lant…</translation>
 <translation id="2351097562818989364">S'ha restablert la configuració de traducció.</translation>
 <translation id="2359808026110333948">Continua</translation>
@@ -133,6 +135,7 @@ Heu de tenir activats el Bluetooth i la ubicació per poder utilitzar el Web fí
 <translation id="2762000892062317888">ara mateix</translation>
 <translation id="2770465223704140727">Suprimeix de la llista</translation>
 <translation id="278029852808208386">No s'ha trobat cap dispositiu Bluetooth. <ph name="BEGIN_LINK" />Torneu a fer la cerca<ph name="END_LINK" />.</translation>
+<translation id="2781389167600714117">Mostra les opcions d'enviament</translation>
 <translation id="2811892995384186721">No veieu el vostre dispositiu? <ph name="BEGIN_LINK" />Obteniu ajuda<ph name="END_LINK" /></translation>
 <translation id="2836148919159985482">Toqueu el botó Enrere per sortir de la pantalla completa.</translation>
 <translation id="2842985007712546952">Carpeta principal</translation>
@@ -158,7 +161,6 @@ Heu de tenir activats el Bluetooth i la ubicació per poder utilitzar el Web fí
 <translation id="3137521801621304719">Surt del mode d'incògnit</translation>
 <translation id="3149891296864842641">Opció d'enviament</translation>
 <translation id="3162882791484435636">Seleccioneu l'opció d'enviament</translation>
-<translation id="3173438333156928404">S'ha produït un error en processar el pagament</translation>
 <translation id="3177909033752230686">Idioma de la pàgina:</translation>
 <translation id="3190152372525844641">Activeu els permisos per a Chrome a la <ph name="BEGIN_LINK" />configuració d'Android<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> de dades desades</translation>
@@ -194,7 +196,6 @@ Inicieu la sessió amb un compte gestionat, de manera que concediu al seu admini
 Per ajustar el terme de la cerca, manteniu-lo premut per seleccionar-lo. Per definir millor la cerca, feu lliscar el tauler cap amunt tot el que pugueu i toqueu el quadre de cerca.</translation>
 <translation id="3623048332793834136">Adreces d'interès de Chrome Canary</translation>
 <translation id="363596933471559332">Inicia la sessió automàticament als llocs web amb les credencials emmagatzemades. Si la funció està desactivada, se us demana sempre que les verifiqueu per iniciar la sessió en un lloc web.</translation>
-<translation id="3653742808139624888">Inicieu la sessió a Chrome per accedir a les adreces d'interès des de tots els dispositius</translation>
 <translation id="3656115297268584622">Activeu la ubicació a la <ph name="BEGIN_LINK" />configuració d'Android<ph name="END_LINK" />.</translation>
 <translation id="3661699943263275414">Els llocs web de tercers poden desar i llegir les dades de les galetes</translation>
 <translation id="3672452749423051839">Suggeriments d'errors de navegació</translation>
@@ -226,6 +227,7 @@ Per ajustar el terme de la cerca, manteniu-lo premut per seleccionar-lo. Per def
 <translation id="4170011742729630528">El servei no està disponible. Torneu-ho a provar més tard.</translation>
 <translation id="4195643157523330669">Obre en una pestanya nova</translation>
 <translation id="423410644998903704">Chrome necessita accés als permisos per compartir-los amb aquest lloc web.</translation>
+<translation id="4242533952199664413">Obre la configuració</translation>
 <translation id="424864128008805179">Voleu tancar la sessió de Chrome?</translation>
 <translation id="4254813446494774748">Idioma de la traducció:</translation>
 <translation id="4256782883801055595">Llicències de programari lliure</translation>
@@ -524,20 +526,18 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="8007176423574883786">Aquesta ubicació està desactivada per a aquest dispositiu</translation>
 <translation id="8026334261755873520">Esborra les dades de navegació</translation>
 <translation id="8035133914807600019">Carpeta nova…</translation>
+<translation id="8063895661287329888">L'adreça d'interès no s'ha pogut afegir.</translation>
 <translation id="8068648041423924542">No es pot seleccionar el certificat.</translation>
 <translation id="8069239273282989646">Després de la compressió</translation>
 <translation id="8073388330009372546">Obre en una pestanya nova</translation>
 <translation id="8076014560081431679">La configuració desada del lloc no se suprimirà i és possible que reflecteixi els vostres hàbits de navegació. <ph name="BEGIN_LINK" />Més informació<ph name="END_LINK" /></translation>
 <translation id="8087000398470557479">Aquest contingut és del domini <ph name="DOMAIN_NAME" />, publicat per Google.</translation>
-<translation id="8098570222830891427">Hi ha dispositius a prop que estan emetent pàgines web per Bluetooth. Quan activeu el vostre dispositiu, Chrome cercarà pàgines i us les mostrarà. A més, es processaran mitjançant un servei de Google per millorar la qualitat dels resultats.
-
-Podeu controlar el Web físic a la configuració de Chrome.</translation>
 <translation id="8106211421800660735">Número de targeta de crèdit</translation>
 <translation id="813082847718468539">Mostra la informació del lloc</translation>
 <translation id="8137558756159375272">La funció Toca per cercar envia la paraula seleccionada i la pàgina actual com a context a la Cerca de Google. La podeu desactivar a <ph name="BEGIN_LINK" />Configuració<ph name="END_LINK" />.</translation>
 <translation id="8168435359814927499">Contingut</translation>
 <translation id="8173098127580644436">des de l'inici (totes)</translation>
-<translation id="8200772114523450471">Reempren</translation>
+<translation id="8200772114523450471">Reprèn</translation>
 <translation id="8202097416529803614">Resum de la comanda</translation>
 <translation id="8209050860603202033">Obre la imatge</translation>
 <translation id="8215250379351058554"><ph name="SITE" /> vol connectar amb:</translation>

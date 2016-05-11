@@ -516,6 +516,22 @@
           Każda pozycja na liście to wzorzec dopasowania rozszerzenia (zobacz na https://developer.chrome.com/extensions/match_patterns). Użytkownicy mogą łatwo instalować elementy z każdego URL-a, który pasuje do pozycji na liście. Wzorce muszą zezwalać na dostęp zarówno do lokalizacji pliku CRX, jak i strony, na której rozpoczyna się pobieranie (strony odsyłającej).
 
           ExtensionInstallBlacklist ma pierwszeństwo przed tą zasadą. Oznacza to, że rozszerzenie z czarnej listy nie zostanie zainstalowane, nawet jeśli pochodzi ze strony wymienionej w tej zasadzie.</translation>
+<translation id="2813740161943223811">Ta zasada jest wycofana. Zamiast niej użyj ProxyMode.
+
+          Pozwala określić serwer proxy używany przez <ph name="PRODUCT_NAME" /> i uniemożliwia użytkownikom zmianę jego ustawień. Tego serwera proxy będą mogły używać też aplikacje ARC.
+
+          Jeśli wybierzesz, że serwer proxy ma nie być używany, a połączenie ma być zawsze bezpośrednie, wszystkie pozostałe opcje zostaną zignorowane.
+
+          Jeśli wybierzesz korzystanie z systemowych ustawień serwera proxy lub automatyczne wykrywanie serwera proxy, wszystkie pozostałe opcje zostaną zignorowane.
+
+          Jeśli wybierzesz ręczne ustawienia serwera proxy, możesz podać kolejne opcje w polach „Adres IP lub URL serwera proxy”, „Adres URL pliku PAC serwera proxy” i „Lista rozdzielanych przecinkami reguł omijania serwera proxy”. Dla aplikacji ARC jest dostępny tylko serwer proxy HTTP o najwyższym priorytecie.
+
+          Szczegółowe informacje znajdziesz na:
+          <ph name="PROXY_HELP_URL" />.
+
+          Jeśli włączysz to ustawienie, <ph name="PRODUCT_NAME" /> zignoruje wszystkie opcje związane z serwerem proxy podane w wierszu poleceń.
+
+          Jeśli ta zasada pozostanie nieustawiona, użytkownicy będą mogli samodzielnie wybrać ustawienia serwera proxy.</translation>
 <translation id="2824715612115726353">Włącz tryb incognito</translation>
 <translation id="2844404652289407061">Pozwala korzystać z funkcji „Dotknij, by wyszukać” w widoku treści w <ph name="PRODUCT_NAME" />.
 
@@ -622,6 +638,18 @@
           </translation>
 <translation id="3205825995289802549">Zmaksymalizuj pierwsze okno wyświetlone przy pierwszym uruchomieniu przeglądarki</translation>
 <translation id="3206731874112238027">Wyłącz podgląd wydruku (wycofane)</translation>
+<translation id="3208854390109736596">Pozwala określić serwer proxy używany przez <ph name="PRODUCT_NAME" /> i uniemożliwia użytkownikom zmianę jego ustawień. Tego serwera proxy będą mogły używać też aplikacje ARC.
+
+          Jeśli wybierzesz, że serwer proxy ma nie być używany, a połączenie ma być zawsze bezpośrednie, wszystkie pozostałe opcje zostaną zignorowane.
+
+          Jeśli wybierzesz automatyczne wykrywanie serwera proxy, wszystkie pozostałe opcje zostaną zignorowane.
+
+      Szczegółowe przykłady znajdziesz na:
+      <ph name="PROXY_HELP_URL" />.
+
+      Jeśli włączysz to ustawienie, <ph name="PRODUCT_NAME" /> i aplikacje ARC będą ignorować wszystkie opcje związane z serwerem proxy podane w wierszu poleceń.
+
+          Jeśli te zasady pozostaną nieustawione, użytkownicy będą mogli samodzielnie wybrać ustawienia serwera proxy.</translation>
 <translation id="3213821784736959823">Określa, czy w <ph name="PRODUCT_NAME" /> jest używany wbudowany klient DNS.
 
       W przypadku włączenia tej opcji będzie używany wbudowany klient DNS (jeśli będzie dostępny).
@@ -673,6 +701,9 @@
 
       W przypadku wyłączenia tej zasady <ph name="PRODUCT_OS_NAME" /> nie będzie zezwalać na uruchamianie sesji gościa.</translation>
 <translation id="3428247105888806363">Włącz przewidywanie działań sieciowych</translation>
+<translation id="3449886121729668969">Konfiguruje ustawienia serwera proxy dla <ph name="PRODUCT_NAME" />. Będą one też dostępne dla aplikacji ARC.
+
+      Zasada nie jest jeszcze gotowa, więc nie należy jej używać.</translation>
 <translation id="3460784402832014830">Określa adres URL, którego wyszukiwarka ma używać do otwierania strony nowej karty.
 
           Ta zasada jest opcjonalna. Jeśli jej nie skonfigurujesz, na stronie nowej karty nie będzie otwierana żadna strona.
@@ -683,6 +714,14 @@
           W przypadku włączenia tej zasady odliczanie opóźnień związanych z zarządzaniem energią oraz czasu związanego z limitem długości sesji nie będzie rozpoczynane do momentu zarejestrowania pierwszej aktywności użytkownika w sesji.
 
          Jeśli ta zasada będzie wyłączona lub nieustawiona, odliczanie opóźnień związanych z zarządzaniem energią oraz czasu związanego z limitem długości sesji będzie rozpoczynane od razu po rozpoczęciu sesji.</translation>
+<translation id="3469657928310999477">W przypadku hostów wymienionych na tej liście <ph name="PRODUCT_NAME" /> omija serwer proxy.
+
+          Ta zasada obowiązuje tylko wtedy, gdy ręcznie wprowadzisz ustawienia serwera proxy za pomocą opcji „Wybierz sposób określenia ustawień serwera proxy”.
+
+          Jeśli został wybrany inny tryb ustawiania zasad proxy, nie ustawiaj tej zasady.
+
+          Szczegółowe przykłady znajdziesz na:
+          <ph name="PROXY_HELP_URL" /></translation>
 <translation id="3478024346823118645">Wyczyść dane użytkownika przy wylogowaniu</translation>
 <translation id="348495353354674884">Włącz wirtualną klawiaturę</translation>
 <translation id="3496296378755072552">Menedżer haseł</translation>
@@ -1294,6 +1333,9 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
       Ta zasada dotyczy wszystkich typów nośników pamięci, takich jak na przykład napędy flash USB, zewnętrzne dyski twarde, karty pamięci SD i inne, pamięci optyczne itd. Pamięć wewnętrzna nie podlega tej zasadzie, więc nadal będzie można otwierać pliki z folderu Pobrane. Ta zasada nie dotyczy również Dysku Google.
 
       W przypadku wyłączenia lub nieskonfigurowania tego ustawienia użytkownicy będą mogli korzystać na urządzeniu ze wszystkich obsługiwanych typów pamięci zewnętrznych.</translation>
+<translation id="6076099373507468537">Definiuje listę urządzeń USB, które można odłączać od sterownika jądra i stosować za pomocą interfejsu chrome.usb API bezpośrednio w aplikacji internetowej. W celu wskazania konkretnego urządzenia lista obejmuje pary identyfikatora dostawcy urządzenia USB i identyfikatora produktu.
+
+      Jeśli nie skonfigurujesz tej zasady, lista odłączanych urządzeń USB będzie pusta.</translation>
 <translation id="6095999036251797924">Określa czas, po jakim ekran jest blokowany przy pracy na zasilaniu sieciowym lub bateryjnym, jeśli użytkownik jest nieaktywny.
 
           Gdy ustawisz czas większy od zera, określa on, jak długo użytkownik musi pozostać nieaktywny, zanim <ph name="PRODUCT_OS_NAME" /> zablokuje ekran.
@@ -1778,6 +1820,14 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
       Jeśli zasada jest włączona lub nieustawiona, informacje o sesji
       będą przesyłane.</translation>
 <translation id="7774768074957326919">Używaj systemowych ustawień serwera proxy</translation>
+<translation id="7775831859772431793">W tym miejscu możesz podać URL serwera proxy.
+
+          Ta zasada obowiązuje tylko wtedy, gdy zdecydujesz się ręcznie wprowadzić ustawienia serwera proxy za pomocą opcji „Wybierz sposób określenia ustawień serwera proxy”.
+
+          Nie ustawiaj tej zasady w przypadku wybrania innego trybu ustawiania zasad proxy.
+
+Więcej opcji i szczegółowych przykładów znajdziesz na:
+          <ph name="PROXY_HELP_URL" /></translation>
 <translation id="7788511847830146438">Według profilu</translation>
 <translation id="7796141075993499320">Umożliwia skonfigurowanie listy wzorcowych URL-i określających witryny, w których mogą być uruchamiane wtyczki. Jeśli ta zasada nie zostanie skonfigurowana, dla wszystkich witryn będzie używana globalna wartość domyślna pochodząca z zasady „DefaultPluginsSetting” (jeśli została skonfigurowana) lub z osobistej konfiguracji użytkownika.</translation>
 <translation id="7818131573217430250">Ustaw domyślny stan trybu wysokiego kontrastu na ekranie logowania</translation>
@@ -1808,6 +1858,14 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
       Określa identyfikator rozszerzenia używanego jako wygaszacz ekranu na ekranie logowania. Rozszerzenie musi być częścią pakietu aplikacji skonfigurowanego dla tej domeny przez zasadę DeviceAppPack.</translation>
 <translation id="7882890448959833986">Ukryj ostrzeżenie o nieobsługiwanym systemie operacyjnym</translation>
 <translation id="7912255076272890813">Skonfiguruj dozwolone typy aplikacji/rozszerzeń</translation>
+<translation id="7915236031252389808">W tym miejscu możesz podać URL pliku PAC serwera proxy.
+
+          Ta zasada obowiązuje tylko po wybraniu ręcznego konfigurowania ustawień proxy za pomocą opcji „Wybierz sposób określenia ustawień serwera proxy”.
+
+          Nie ustawiaj tej zasady w przypadku wybrania innego trybu ustawiania zasad proxy.
+
+          Szczegółowe przykłady znajdziesz na:
+          <ph name="PROXY_HELP_URL" /></translation>
 <translation id="793134539373873765">Określa, czy do pobierania aktualizacji systemu operacyjnego ma być używana sieć P2P. Jeśli w tej opcji ustawisz wartość Prawda, urządzenia będą dzieliły aktualizacje w sieci LAN i próbowały pobierać je z tej sieci, co może zmniejszyć wykorzystanie i obciążenie łącza internetowego. Jeśli aktualizacje nie będą dostępne w sieci LAN, urządzenie przełączy się na pobieranie aktualizacji z serwera. Jeśli ustawisz w tej opcji wartość Fałsz, sieć P2P nie będzie używana.</translation>
 <translation id="7933141401888114454">Włącz tworzenie użytkowników nadzorowanych</translation>
 <translation id="7936098023732125869">Włącza korzystanie z usług domyślnego dostawcy usługi wyszukiwania.
@@ -1945,6 +2003,11 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="8382184662529825177">Włącz używanie zaświadczania zdalnego do ochrony treści na urządzeniu</translation>
 <translation id="838870586332499308">Włącz dane w roamingu</translation>
 <translation id="8412312801707973447">Czy wykonywane jest sprawdzanie OCSP/CRL online</translation>
+<translation id="8413348101535146315">Umożliwia kończenie procesów w Menedżerze zadań <ph name="PRODUCT_NAME" />.
+
+      Jeśli ta zasada jest wyłączona, przycisk „Zakończ proces” w Menedżerze zadań jest nieaktywny.
+
+      Jeśli ta zasada jest włączona lub nie jest skonfigurowana, użytkownik może kończyć procesy w Menedżerze zadań.</translation>
 <translation id="8424255554404582727">Ustaw domyślny obrót ekranu stosowany po każdym ponownym uruchomieniu</translation>
 <translation id="8426231401662877819">Obróć ekran w prawo o 90 stopni</translation>
 <translation id="8451988835943702790">Używaj strony Nowa karta jako strony początkowej</translation>
@@ -2149,6 +2212,24 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="9112897538922695510">Umożliwia zarejestrowanie listy modułów obsługi protokołów. Ta zasada może być tylko zalecana. We właściwości |protocol| należy wskazać schemat taki jak „mailto”, a we właściwości |url| należy wskazać wzorzec adresu URL aplikacji obsługującej ten schemat. Wzorzec może obejmować „%s”, który – jeśli występuje – zostanie zastąpiony przez obsługiwany adres URL.
 
           Moduły obsługi protokołów zarejestrowane przez zasadę są łączone z modułami zarejestrowanymi przez użytkownika i oba te typy są dostępne do użycia. Użytkownik może zastąpić moduły obsługi protokołów zainstalowane przez zasadę, instalując nowy moduł domyślny, ale nie może usunąć modułów zarejestrowanych przez zasadę.</translation>
+<translation id="913138516158420759">Pozwala określić serwer proxy używany przez <ph name="PRODUCT_NAME" /> i uniemożliwia użytkownikom zmianę jego ustawień. Tego serwera proxy będą mogły używać też aplikacje ARC.
+
+          Jeśli wybierzesz, że serwer proxy ma nie być używany, a połączenie ma być zawsze bezpośrednie, wszystkie pozostałe opcje zostaną zignorowane.
+
+          Jeśli wybierzesz korzystanie z systemowych ustawień serwera proxy, wszystkie pozostałe opcje zostaną zignorowane.
+
+          Jeśli wybierzesz automatyczne wykrywanie serwera proxy, wszystkie pozostałe opcje zostaną zignorowane.
+
+          Jeśli wybierzesz tryb stałego serwera proxy, możesz podać kolejne opcje w polach „Adres IP lub URL serwera proxy” i „Lista rozdzielanych przecinkami reguł omijania serwera proxy”. Dla aplikacji ARC jest dostępny tylko serwer proxy HTTP o najwyższym priorytecie.
+
+          Jeśli wybierzesz korzystanie ze skryptu PAC serwera proxy, w polu „Adres URL pliku PAC serwera proxy” musisz podać adres URL skryptu.
+
+          Szczegółowe informacje znajdziesz na:
+          <ph name="PROXY_HELP_URL" />
+
+          Jeśli włączysz to ustawienie, <ph name="PRODUCT_NAME" /> i aplikacje ARC zignorują wszystkie opcje związane z serwerem proxy podane w wierszu poleceń.
+
+          Jeśli ta zasada pozostanie nieustawiona, użytkownicy będą mogli samodzielnie wybrać ustawienia serwera proxy.</translation>
 <translation id="913195841488580904">Blokuj dostęp do listy adresów URL</translation>
 <translation id="9135033364005346124">Włącz serwer proxy usługi <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="9147029539363974059">Wysyła dzienniki systemowe na serwer zarządzania, by umożliwić monitorowanie ich przez administratorów.

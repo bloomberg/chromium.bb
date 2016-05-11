@@ -42,6 +42,7 @@
 <translation id="1254117744268754948">Kausta valimine</translation>
 <translation id="1285320974508926690">Ära kunagi seda saiti tõlgi</translation>
 <translation id="129553762522093515">Viimati suletud</translation>
+<translation id="129863573139666797"><ph name="BEGIN_LINK" />Kustutage küpsisefailid<ph name="END_LINK" /></translation>
 <translation id="1339601241726513588">Registreerimisdomeen:</translation>
 <translation id="1344588688991793829">Chromiumi automaattäite seaded ...</translation>
 <translation id="1374468813861204354">soovitused</translation>
@@ -198,6 +199,7 @@
 <translation id="2969319727213777354">Turvalise ühenduse loomiseks peab kell olema õigesti seadistatud, kuna sertifikaadid, mida veebisaidid kasutavad enda tuvastamiseks, kehtivad ainult teatud perioodi jooksul. Kuna teie seadme kell on vale, ei saa Chrome neid sertifikaate kinnitada.</translation>
 <translation id="2972581237482394796">&amp;Tee uuesti</translation>
 <translation id="2985306909656435243">Kui see on lubatud, salvestab Chromium teie kaardi koopia vormide kiiremaks täitmiseks sellesse seadmesse.</translation>
+<translation id="2989984781570875765">Sisestage aegumiskuupäev ja 3-kohaline CVC kaardi <ph name="CREDIT_CARD" /> tagaküljelt</translation>
 <translation id="2991174974383378012">Veebisaitidega jagamine</translation>
 <translation id="3005723025932146533">Kuva salvestatud koopia</translation>
 <translation id="3010559122411665027">Loendi kirje „<ph name="ENTRY_INDEX" />”: <ph name="ERROR" /></translation>
@@ -281,6 +283,7 @@
 <translation id="3717027428350673159"><ph name="BEGIN_LINK" />Kontrollige puhverserveri, tulemüüri ja DNS-i seadistust<ph name="END_LINK" /></translation>
 <translation id="3739623965217189342">Teie kopeeritud link</translation>
 <translation id="3744899669254331632">Te ei saa saiti <ph name="SITE" /> praegu külastada, sest veebisait saatis tagasi arusaamatud mandaadid, mida Chromium ei saa töödelda. Võrguvead ja -rünnakud on tavaliselt ajutised, nii et leht tõenäoliselt hiljem töötab.</translation>
+<translation id="3748071062818261683">Kaardi kinnitamine</translation>
 <translation id="3748412725338508953">Liiga palju ümbersuunamisi.</translation>
 <translation id="375403751935624634">Tõlkimine ebaõnnestus serverivea tõttu.</translation>
 <translation id="3759461132968374835">Hiljuti teatatud krahhe ei ole. Siin ei ilmu krahhid, mis toimusid siis, kui krahhide aruandlus oli keelatud.</translation>
@@ -309,6 +312,7 @@
 <translation id="4103249731201008433">Seadme seerianumber on kehtetu</translation>
 <translation id="4103763322291513355">Külastage saiti &lt;strong&gt;chrome://policy&lt;/strong&gt;, et näha mustas nimekirjas olevate URL-ide loendit ja teisi reegleid, mille on jõustanud teie süsteemiadministraator.</translation>
 <translation id="4117700440116928470">Reegli ulatust ei toetata.</translation>
+<translation id="4130226655945681476">Kontrollige võrgukaableid, modemit ja ruuterit</translation>
 <translation id="4147376274874979956">Faili juurde ei õnnestu pääseda.</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">Kas soovite, et Chromium salvestaks selle kaardi?</translation>
@@ -343,11 +347,15 @@
 <translation id="450710068430902550">Administraatoriga jagamine</translation>
 <translation id="4522570452068850558">Üksikasjad</translation>
 <translation id="4535734014498033861">Puhverserveri ühendus nurjus.</translation>
+<translation id="4553532082208702698">Sisestage 4-kohaline CVC kaardi <ph name="CREDIT_CARD" /> esiküljelt</translation>
+<translation id="4558551763791394412">Keelake laiendused.</translation>
 <translation id="4587425331216688090">Kas eemaldada Chrome'ist aadress?</translation>
 <translation id="4592951414987517459">Teie ühendus domeeniga <ph name="DOMAIN" /> on krüpteeritud tänapäevase šifreerimiskomplektiga.</translation>
 <translation id="4594403342090139922">&amp;Võta kustutamine tagasi</translation>
 <translation id="4668929960204016307">,</translation>
+<translation id="4670097147947922288">Vaatate laienduste lehte.</translation>
 <translation id="467662567472608290">Server ei suutnud tõestada, et see on domeen <ph name="DOMAIN" />, selle turvasertifikaat sisaldab vigu. Selle põhjuseks võib olla vale seadistus või ründaja, kes on sekkunud teie ühendusse.</translation>
+<translation id="4683417246209150705">Sisestage 3-kohaline CVC kaardi <ph name="CREDIT_CARD" /> tagaküljelt</translation>
 <translation id="4697214168136963651"><ph name="URL" /> oli blokeeritud</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">Teie ühendus katkes</translation>
@@ -432,6 +440,8 @@
 <translation id="5650551054760837876">Otsingutulemusi ei leitud.</translation>
 <translation id="5663999524854166235">Kinnitamiseks sisestage 3-kohaline CVC kaardi tagaküljelt</translation>
 <translation id="5677928146339483299">Blokeeritud</translation>
+<translation id="5696590819423335174">Sisestage aegumiskuupäev ja 4-kohaline CVC kaardi <ph name="CREDIT_CARD" /> esiküljelt</translation>
+<translation id="5699278517904102888">Kinnitamiseks sisestage 3-kohaline CVC kaardi <ph name="CREDIT_CARD" /> tagaküljelt</translation>
 <translation id="5710435578057952990">Selle veebisaidi identiteeti pole kinnitanud.</translation>
 <translation id="5720705177508910913">Praegune kasutaja</translation>
 <translation id="5785756445106461925">Lisaks sisaldab see leht teisi ressursse, mis pole turvalised. Edastamise ajal võivad ressursse vaadata ka teised ja ründajad saavad lehe välimuse muutmiseks ressursse muuta.</translation>
@@ -555,7 +565,6 @@
 <translation id="7210863904660874423">Host <ph name="HOST_NAME" /> ei pea turvastandarditest kinni.</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Lisateave<ph name="END_LINK" /> selle probleemi kohta.</translation>
 <translation id="7219179957768738017">Ühendus kasutab protokolli <ph name="SSL_VERSION" />.</translation>
-<translation id="7225807090967870017">Järgu ID</translation>
 <translation id="7231308970288859235">Vabandust! Peate küsima oma vanemalt, kas võite seda lehte külastada.</translation>
 <translation id="7246609911581847514">Näete seda sõnumit, kuna teie haldur peab uued saidid esmakordsel külastusel kinnitama.</translation>
 <translation id="725866823122871198">Privaatset ühendust ei saa domeeniga <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> luua, kuna arvuti kuupäev ja kellaaeg (<ph name="DATE_AND_TIME" />) on valed.</translation>
@@ -596,6 +605,7 @@ Inkognito režiim <ph name="SHORTCUT_KEY" /> võib järgmisel korral kasulikuks 
 <translation id="7610193165460212391">Väärtus on vahemikust (<ph name="VALUE" />) väljaspool.</translation>
 <translation id="7613889955535752492">Aegub: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Teil on juba andmed, mis on krüpteeritud Google'i konto parooli teise versiooniga. Sisestage see allpool.</translation>
+<translation id="7633887239437305289">Kinnitamiseks sisestage 4-kohaline CVC kaardi <ph name="CREDIT_CARD" /> esiküljelt</translation>
 <translation id="7634554953375732414">Teie ühendus selle saidiga pole privaatne.</translation>
 <translation id="7637571805876720304">Kas eemaldada Chromiumist krediitkaart?</translation>
 <translation id="7643817847124207232">Interneti-ühendus kadus.</translation>

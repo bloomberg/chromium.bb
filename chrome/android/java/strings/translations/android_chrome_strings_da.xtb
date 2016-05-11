@@ -60,7 +60,7 @@ Du skal aktivere Bluetooth og Placering for at kunne bruge Fysisk web.</translat
 <translation id="1742134235943978220">Oversat til <ph name="TARGET_LANGUAGE" />.</translation>
 <translation id="1749561566933687563">Synkroniser dine bogmærker</translation>
 <translation id="17513872634828108">Åbne faner</translation>
-<translation id="1756600373018374892">Tryk på denne knap for hurtig at få adgang til dine faner.</translation>
+<translation id="1756600373018374892">Tryk på denne knap for hurtigt at få adgang til dine faner.</translation>
 <translation id="1807246157184219062">Lys</translation>
 <translation id="1825719650605518411">Førstegangsoplevelse</translation>
 <translation id="1829244130665387512">Find på side</translation>
@@ -68,6 +68,7 @@ Du skal aktivere Bluetooth og Placering for at kunne bruge Fysisk web.</translat
 <translation id="1842969606798536927">Betal</translation>
 <translation id="1853692000353488670">Ny inkognitofane</translation>
 <translation id="189172778771606813">Luk sidemenuen</translation>
+<translation id="1924956916668006832">Vælg leveringsadresse</translation>
 <translation id="194341124344773587">Aktivér tilladelse for Chrome i <ph name="BEGIN_LINK" />indstillingerne for Android<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Gem adgangskoder</translation>
 <translation id="1944384637046898011">Kryptér alle med Google-adgangskoden fra <ph name="TIME" /></translation>
@@ -98,6 +99,7 @@ Du skal aktivere Bluetooth og Placering for at kunne bruge Fysisk web.</translat
 <translation id="2268044343513325586">Juster</translation>
 <translation id="2315043854645842844">Klientens certifikatvalg understøttes ikke af operativsystemet.</translation>
 <translation id="2321958826496381788">Træk i skyderen, indtil du kan læse dette uden problemer. Når du trykker to gange på et afsnit, skal teksten som minimum være på denne størrelse.</translation>
+<translation id="2329597144923131178">Log ind for at hente bogmærker, historik, adgangskoder og andre indstillinger på alle dine enheder.</translation>
 <translation id="2343328333327081434">Installerer…</translation>
 <translation id="2351097562818989364">Dine oversættelsesindstillinger er nulstillet.</translation>
 <translation id="2359808026110333948">Fortsæt</translation>
@@ -133,6 +135,7 @@ Du skal aktivere Bluetooth og Placering for at kunne bruge Fysisk web.</translat
 <translation id="2762000892062317888">lige nu</translation>
 <translation id="2770465223704140727">Fjern fra listen</translation>
 <translation id="278029852808208386">Der blev ikke fundet nogen enheder. <ph name="BEGIN_LINK" />Søg igen<ph name="END_LINK" />.</translation>
+<translation id="2781389167600714117">Vælg forsendelse</translation>
 <translation id="2811892995384186721">Kan du ikke se din enhed? <ph name="BEGIN_LINK" />Få hjælp<ph name="END_LINK" /></translation>
 <translation id="2836148919159985482">Tryk på tilbageknappen for at afslutte fuld skærm.</translation>
 <translation id="2842985007712546952">Overordnet mappe</translation>
@@ -158,7 +161,6 @@ Du skal aktivere Bluetooth og Placering for at kunne bruge Fysisk web.</translat
 <translation id="3137521801621304719">Slå inkognitotilstand fra</translation>
 <translation id="3149891296864842641">Forsendelsesmuligheder</translation>
 <translation id="3162882791484435636">Vælg forsendelsesmulighed</translation>
-<translation id="3173438333156928404">Der opstod fejl under behandlingen af betalingen</translation>
 <translation id="3177909033752230686">Sidens sprog:</translation>
 <translation id="3190152372525844641">Aktivér tilladelse for Chrome i <ph name="BEGIN_LINK" />Indstillinger for Android<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> gemte data</translation>
@@ -194,7 +196,6 @@ Du logger ind med en administreret konto, og du giver administratoren kontrol ov
 Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgrænse din søgning ved at skyde panelet hele vejen op og trykke på søgefeltet.</translation>
 <translation id="3623048332793834136">Bogmærker fra Chrome Canary</translation>
 <translation id="363596933471559332">Log automatisk ind på websites med gemte loginoplysninger. Når funktionen er slået fra, bliver du bedt om at bekræfte, hver gang du vil logge ind på et website.</translation>
-<translation id="3653742808139624888">Log ind på Chrome for at se dine bogmærker på alle dine enheder.</translation>
 <translation id="3656115297268584622">Slå placering til i <ph name="BEGIN_LINK" />Android Indstillinger<ph name="END_LINK" />.</translation>
 <translation id="3661699943263275414">Tredjepartswebsites kan gemme og læse cookiedata</translation>
 <translation id="3672452749423051839">Forslag ved navigationsfejl</translation>
@@ -226,6 +227,7 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="4170011742729630528">Tjenesten er ikke tilgængelig. Prøv igen senere.</translation>
 <translation id="4195643157523330669">Åbn på ny fane</translation>
 <translation id="423410644998903704">Chrome skal have adgangstilladelse for at kunne dele dem med dette website.</translation>
+<translation id="4242533952199664413">Åbn Indstillinger</translation>
 <translation id="424864128008805179">Vil du logge ud af Chrome?</translation>
 <translation id="4254813446494774748">Sprog, der skal oversættes til:</translation>
 <translation id="4256782883801055595">Open source-licenser</translation>
@@ -524,14 +526,12 @@ Din Google-konto kan have andre former for browserhistorik, f.eks. søgninger og
 <translation id="8007176423574883786">Deaktiveret på denne enhed</translation>
 <translation id="8026334261755873520">Ryd browserdata</translation>
 <translation id="8035133914807600019">Ny mappe…</translation>
+<translation id="8063895661287329888">Bogmærket kunne ikke tilføjes.</translation>
 <translation id="8068648041423924542">Certifikatet kunne ikke vælges.</translation>
 <translation id="8069239273282989646">Efter komprimering</translation>
 <translation id="8073388330009372546">Åbn billede på ny fane</translation>
 <translation id="8076014560081431679">Gemte websiteindstillinger slettes ikke og kan afspejle dine søgevaner. <ph name="BEGIN_LINK" />Få flere oplysninger<ph name="END_LINK" /></translation>
 <translation id="8087000398470557479">Dette indhold er fra <ph name="DOMAIN_NAME" />, som leveres af Google.</translation>
-<translation id="8098570222830891427">Der er enheder i nærheden, som udsender websider via Bluetooth. Chrome scanner efter disse sider og viser dem, når du starter din enhed. Siderne går gennem en Google-tjeneste for at forbedre kvaliteten af sideresultaterne.
-
-Du kan kontrollere Fysisk web i Chrome-indstillingerne.</translation>
 <translation id="8106211421800660735">Kreditkortnummer</translation>
 <translation id="813082847718468539">Se websiteoplysninger</translation>
 <translation id="8137558756159375272">Funktionen "Tryk for at søge" sender det markerede ord og den aktuelle side som kontekst til Google Søgning. Du kan slå den fra under <ph name="BEGIN_LINK" />Indstillinger<ph name="END_LINK" />.</translation>

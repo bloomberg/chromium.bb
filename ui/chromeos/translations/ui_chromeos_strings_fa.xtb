@@ -47,7 +47,7 @@
 <translation id="6312403991423642364">خطای شبکه ناشناخته</translation>
 <translation id="6490455614072479501">اتصال به «<ph name="NAME" />» انجام نشد: <ph name="DETAILS" />
         پیام سرور: <ph name="SERVER_MSG" /></translation>
-<translation id="6549021752953852991">هیچ شبکه سلولی دردسترس نیست</translation>
+<translation id="6549021752953852991">هیچ شبکه سلولی در دسترس نیست</translation>
 <translation id="6732801395666424405">گواهی‌ها بارگیری نشدند</translation>
 <translation id="6857811139397017780">فعال سازی <ph name="NETWORKSERVICE" /></translation>
 <translation id="6935521024859866267">وارونه</translation>

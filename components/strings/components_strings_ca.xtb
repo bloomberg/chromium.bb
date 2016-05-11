@@ -39,6 +39,7 @@
 <translation id="1254117744268754948">Selecció de la carpeta</translation>
 <translation id="1285320974508926690">No tradueixis mai aquest lloc</translation>
 <translation id="129553762522093515">Tancades recentment</translation>
+<translation id="129863573139666797"><ph name="BEGIN_LINK" />Esborreu les galetes<ph name="END_LINK" /></translation>
 <translation id="1339601241726513588">Domini d'inscripció:</translation>
 <translation id="1344588688991793829">Configuració d'Emplenament automàtic de Chromium...</translation>
 <translation id="1374468813861204354">suggeriments</translation>
@@ -195,6 +196,7 @@
 <translation id="2969319727213777354">Per establir una connexió segura, heu de tenir el rellotge ben configurat, ja que els certificats que els llocs web fan servir per identificar-se només són vàlids durant períodes de temps concrets. Com que el rellotge del dispositiu no està ben configurat, Google Chrome no pot verificar aquests certificats.</translation>
 <translation id="2972581237482394796">&amp;Refés</translation>
 <translation id="2985306909656435243">Si s'activa aquesta opció, Chromium desa una còpia de la vostra targeta en aquest dispositiu per agilitzar l'emplenament de formularis.</translation>
+<translation id="2989984781570875765">Introduïu la data de caducitat i el CVC de tres dígits que trobareu a la part posterior de la targeta <ph name="CREDIT_CARD" /></translation>
 <translation id="2991174974383378012">Comparteix informació amb llocs web</translation>
 <translation id="3005723025932146533">Mostra la còpia desada</translation>
 <translation id="3010559122411665027">Entrada de llista "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
@@ -278,6 +280,7 @@
 <translation id="3717027428350673159"><ph name="BEGIN_LINK" />Comproveu el servidor intermediari, el tallafoc i la configuració de DNS<ph name="END_LINK" /></translation>
 <translation id="3739623965217189342">Enllaç que heu copiat</translation>
 <translation id="3744899669254331632">En aquest moments no podeu visitar la pàgina <ph name="SITE" /> perquè el lloc web ha enviat credencials aleatòries que Chromium no pot processar. Els atacs i els errors de xarxa acostumen a ser temporals, o sigui que probablement la pàgina funcionarà més endavant.</translation>
+<translation id="3748071062818261683">Verifiqueu la targeta</translation>
 <translation id="3748412725338508953">Hi havia massa redireccionaments.</translation>
 <translation id="375403751935624634">S'ha produït un error en el procés de traducció a causa d'un error del servidor.</translation>
 <translation id="3759461132968374835">No heu informat de cap bloqueig recentment. Els bloquejos que es van produir mentre la creació d'informes de bloqueig estava desactivada no apareixeran aquí.</translation>
@@ -306,6 +309,7 @@
 <translation id="4103249731201008433">El número de sèrie del dispositiu no és vàlid</translation>
 <translation id="4103763322291513355">Visiteu &lt;strong&gt;chrome://policy&lt;/strong&gt; per veure la llista d'URL inclosos a la llista negra i altres polítiques aplicades per l'administrador del sistema.</translation>
 <translation id="4117700440116928470">L'àmbit de la política no s'admet.</translation>
+<translation id="4130226655945681476">Comproveu els cables de xarxa, el mòdem i l'encaminador</translation>
 <translation id="4147376274874979956">No es pot accedir al fitxer.</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">Voleu que Chromium desi aquesta targeta?</translation>
@@ -340,11 +344,15 @@
 <translation id="450710068430902550">Comparteix informació amb l'administrador</translation>
 <translation id="4522570452068850558">Detalls</translation>
 <translation id="4535734014498033861">S'ha produït un error en connectar amb el servidor intermediari.</translation>
+<translation id="4553532082208702698">Introduïu el CVC de quatre dígits que trobareu a la part davantera de la targeta <ph name="CREDIT_CARD" /></translation>
+<translation id="4558551763791394412">Desactiveu les extensions</translation>
 <translation id="4587425331216688090">Voleu suprimir l'adreça de Chrome?</translation>
 <translation id="4592951414987517459">La connexió a <ph name="DOMAIN" /> s'ha encriptat amb un sistema de xifratge modern.</translation>
 <translation id="4594403342090139922">&amp;Desfés la supressió</translation>
 <translation id="4668929960204016307">,</translation>
+<translation id="4670097147947922288">Esteu consultant una pàgina d'extensions.</translation>
 <translation id="467662567472608290">El servidor no ha pogut comprovar que sigui <ph name="DOMAIN" /> perquè el seu certificat de seguretat conté errors. Això pot ser a causa d'una configuració incorrecta o d'un atacant que intercepta la vostra connexió.</translation>
+<translation id="4683417246209150705">Introduïu el CVC de tres dígits que trobareu a la part posterior de la targeta <ph name="CREDIT_CARD" /></translation>
 <translation id="4697214168136963651"><ph name="URL" /> s'ha bloquejat</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">La connexió s'ha interromput</translation>
@@ -429,6 +437,8 @@
 <translation id="5650551054760837876">No s'han trobat resultats de cerca.</translation>
 <translation id="5663999524854166235">Per verificar la targeta, introduïu el CVC de tres dígits que hi ha a la part posterior</translation>
 <translation id="5677928146339483299">Bloquejat</translation>
+<translation id="5696590819423335174">Introduïu la data de caducitat i el CVC de quatre dígits que trobareu a la part davantera de la targeta <ph name="CREDIT_CARD" /></translation>
+<translation id="5699278517904102888">Per verificar la targeta <ph name="CREDIT_CARD" />, introduïu el CVC de tres dígits que hi ha a la part posterior</translation>
 <translation id="5710435578057952990">La identitat d'aquest lloc web no ha estat verificada.</translation>
 <translation id="5720705177508910913">Usuari actual</translation>
 <translation id="5785756445106461925">A més, aquesta pàgina conté altres recursos que no són segurs. La resta d'usuaris poden visualitzar-los mentre estan en trànsit, i algun atacant podria modificar-los per canviar l'aparença de la pàgina.</translation>
@@ -552,7 +562,6 @@
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> no compleix la normativa de seguretat.</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Més informació<ph name="END_LINK" /> sobre aquest problema.</translation>
 <translation id="7219179957768738017">La connexió utilitza <ph name="SSL_VERSION" />.</translation>
-<translation id="7225807090967870017">ID de la versió</translation>
 <translation id="7231308970288859235">S'ha de demanar permís als pares per poder visitar aquesta pàgina.</translation>
 <translation id="7246609911581847514">Veieu aquest missatge perquè el gestor ha d'aprovar els llocs que visiteu per primera vegada.</translation>
 <translation id="725866823122871198">No s'ha pogut establir una connexió privada amb <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> perquè la data i l'hora (<ph name="DATE_AND_TIME" />) de l'ordinador no són correctes.</translation>
@@ -593,6 +602,7 @@ El mode d'incògnit, <ph name="SHORTCUT_KEY" />, us pot resultar pràctic la pro
 <translation id="7610193165460212391">El valor es troba fora de l'interval <ph name="VALUE" /> .</translation>
 <translation id="7613889955535752492">Data de caducitat: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Ja teniu dades encriptades amb una versió diferent de la contrasenya del vostre compte de Google. Introduïu-la a continuació.</translation>
+<translation id="7633887239437305289">Per verificar la targeta <ph name="CREDIT_CARD" />, introduïu el CVC de quatre dígits que hi ha a la part davantera</translation>
 <translation id="7634554953375732414">La vostra connexió amb aquest lloc no és privada.</translation>
 <translation id="7637571805876720304">Voleu suprimir la targeta de crèdit de Chromium?</translation>
 <translation id="7643817847124207232">S'ha perdut la connexió a Internet.</translation>

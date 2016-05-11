@@ -68,6 +68,7 @@ Lai izmantotu fizisko tīmekli, ir jābūt ieslēgtam Bluetooth savienojumam un 
 <translation id="1842969606798536927">Maksāt</translation>
 <translation id="1853692000353488670">Jauna inkognito cilne</translation>
 <translation id="189172778771606813">Aizvērt navigācijas atvilktni</translation>
+<translation id="1924956916668006832">Atlasīt piegādes adresi</translation>
 <translation id="194341124344773587"><ph name="BEGIN_LINK" />Android iestatījumos<ph name="END_LINK" /> ieslēdziet atļauju pārlūkam Chrome.</translation>
 <translation id="1943432128510653496">Paroļu saglabāšana</translation>
 <translation id="1944384637046898011">Šifrēt visu ar Google paroli, sākot no: <ph name="TIME" /></translation>
@@ -98,6 +99,7 @@ Lai izmantotu fizisko tīmekli, ir jābūt ieslēgtam Bluetooth savienojumam un 
 <translation id="2268044343513325586">Uzlabot</translation>
 <translation id="2315043854645842844">Operētājsistēma neatbalsta klienta puses sertifikāta atlasi.</translation>
 <translation id="2321958826496381788">Velciet slīdni, kamēr varat ērti lasīt. Pēc dubultskāriena rindkopai tekstam ir jābūt vismaz šādā lielumā.</translation>
+<translation id="2329597144923131178">Pierakstieties, lai grāmatzīmes, vēsture, paroles u.c. būtu pieejamas visās jūsu ierīcēs.</translation>
 <translation id="2343328333327081434">Instalēšana...</translation>
 <translation id="2351097562818989364">Tulkošanas iestatījumi ir atiestatīti.</translation>
 <translation id="2359808026110333948">Turpināt</translation>
@@ -133,6 +135,7 @@ Lai izmantotu fizisko tīmekli, ir jābūt ieslēgtam Bluetooth savienojumam un 
 <translation id="2762000892062317888">tikko</translation>
 <translation id="2770465223704140727">Noņemt no saraksta</translation>
 <translation id="278029852808208386">Netika atrasta neviena Bluetooth ierīce. <ph name="BEGIN_LINK" />Meklējiet vēlreiz<ph name="END_LINK" />.</translation>
+<translation id="2781389167600714117">Atlasīt piegādes iespējas</translation>
 <translation id="2811892995384186721">Vai jūsu ierīce netiek rādīta? <ph name="BEGIN_LINK" />Saņemiet palīdzību<ph name="END_LINK" />.</translation>
 <translation id="2836148919159985482">Lai izietu no pilnekrāna režīma, pieskarieties pogai Atpakaļ.</translation>
 <translation id="2842985007712546952">Vecākmape</translation>
@@ -158,7 +161,6 @@ Lai izmantotu fizisko tīmekli, ir jābūt ieslēgtam Bluetooth savienojumam un 
 <translation id="3137521801621304719">Iziet no inkognito režīma</translation>
 <translation id="3149891296864842641">Piegādes iespēja</translation>
 <translation id="3162882791484435636">Atlasīt piegādes iespēju</translation>
-<translation id="3173438333156928404">Kļūda, apstrādājot maksājumu</translation>
 <translation id="3177909033752230686">Lapas valoda:</translation>
 <translation id="3190152372525844641"><ph name="BEGIN_LINK" />Android iestatījumos<ph name="END_LINK" /> ieslēdziet atļaujas pārlūkam Chrome.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> saglabātu datu</translation>
@@ -194,7 +196,6 @@ Jūs pierakstāties, izmantojot pārvaldītu kontu, un ļaujat šī konta admini
 Lai pielāgotu meklēšanas vienumu, nospiediet un turiet to. Lai veiktu precīzāku meklēšanu, velciet paneli augšup līdz galam un pieskarieties meklēšanas lodziņam.</translation>
 <translation id="3623048332793834136">Chrome Canary grāmatzīmes</translation>
 <translation id="363596933471559332">Automātiski pierakstīties vietnēs, izmantojot saglabātos akreditācijas datus. Ja funkcija ir izslēgta, verifikācija būs jāveic ikreiz, kad pierakstīsieties vietnē.</translation>
-<translation id="3653742808139624888">Pierakstieties pārlūkā Chrome, lai grāmatzīmes būtu pieejamas visās jūsu ierīcēs.</translation>
 <translation id="3656115297268584622">Ieslēdziet atrašanās vietas pakalpojumu <ph name="BEGIN_LINK" />Android iestatījumos<ph name="END_LINK" />.</translation>
 <translation id="3661699943263275414">Trešo pušu vietnes var saglabāt un lasīt sīkfailu datus</translation>
 <translation id="3672452749423051839">Navigācijas kļūdu ieteikumi</translation>
@@ -226,6 +227,7 @@ Lai pielāgotu meklēšanas vienumu, nospiediet un turiet to. Lai veiktu precīz
 <translation id="4170011742729630528">Pakalpojums nav pieejams. Vēlāk mēģiniet vēlreiz.</translation>
 <translation id="4195643157523330669">Atvērt jaunā cilnē</translation>
 <translation id="423410644998903704">Pārlūkam Chrome ir nepieciešama piekļuve atļaujām, lai kopīgotu tās ar šo vietni.</translation>
+<translation id="4242533952199664413">Atvērt iestatījumus</translation>
 <translation id="424864128008805179">Vai izrakstīties no pārlūka Chrome?</translation>
 <translation id="4254813446494774748">Tulkojuma valoda:</translation>
 <translation id="4256782883801055595">Atklātā pirmkoda licences</translation>
@@ -524,14 +526,12 @@ Jūsu Google kontam vietnē <ph name="BEGIN_LINK" />history.google.com<ph name=
 <translation id="8007176423574883786">Izslēgts šai ierīcei</translation>
 <translation id="8026334261755873520">Notīrīt pārlūkošanas datus</translation>
 <translation id="8035133914807600019">Jauna mape…</translation>
+<translation id="8063895661287329888">Neizdevās pievienot grāmatzīmi.</translation>
 <translation id="8068648041423924542">Nevar atlasīt sertifikātu.</translation>
 <translation id="8069239273282989646">Pēc saspiešanas</translation>
 <translation id="8073388330009372546">Atvērt attēlu jaunā cilnē</translation>
 <translation id="8076014560081431679">Saglabātie vietņu iestatījumi netiks dzēsti, un tie var atspoguļot jūsu pārlūkošanas ieradumus. <ph name="BEGIN_LINK" />Uzziniet vairāk<ph name="END_LINK" />.</translation>
 <translation id="8087000398470557479">Šis saturs ir no vietnes <ph name="DOMAIN_NAME" />, ko nodrošina Google.</translation>
-<translation id="8098570222830891427">Jūsu tuvumā esošās ierīces pārraida tīmekļa lapas, izmantojot Bluetooth savienojumu. Chrome meklēs lapas un parādīs tās, kad aktivizēsiet savu ierīci. Šīs lapas tiks pārbaudītas Google pakalpojumā, lai uzlabotu lapu rezultātu kvalitāti.
-
-Fizisko tīmekli varat kontrolēt Chrome iestatījumos.</translation>
 <translation id="8106211421800660735">Kredītkartes numurs</translation>
 <translation id="813082847718468539">Skatīt informāciju par vietni</translation>
 <translation id="8137558756159375272">Izmantojot meklēšanu pieskaroties, atlasītais vārds un pašreiz skatītā lapa tiek nosūtīta kā konteksts pakalpojumam Google meklēšana. Varat to izslēgt lapā <ph name="BEGIN_LINK" />Iestatījumi<ph name="END_LINK" />.</translation>

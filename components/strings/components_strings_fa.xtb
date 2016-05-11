@@ -42,6 +42,7 @@
 <translation id="1254117744268754948">انتخاب پوشه</translation>
 <translation id="1285320974508926690">این سایت هرگز ترجمه نشود</translation>
 <translation id="129553762522093515">اخیراً بسته شده</translation>
+<translation id="129863573139666797"><ph name="BEGIN_LINK" />کوکی‌ها را پاک کنید<ph name="END_LINK" /></translation>
 <translation id="1339601241726513588">دامنه ثبت‌نام:</translation>
 <translation id="1344588688991793829">‏تنظیمات تکمیل خودکار Chromium...</translation>
 <translation id="1374468813861204354">پیشنهادات</translation>
@@ -198,6 +199,7 @@
 <translation id="2969319727213777354">‏برای برقراری یک اتصال امن، لازم است ساعت شما درست تنظیم شده باشد. زیرا گواهی‌هایی که وب‌سایت‌ها برای شناسایی خودشان استفاده می‌کنند، تنها برای دوره‌های زمانی خاصی معتبرند. از آنجا که ساعت دستگاه شما نادرست است، Google Chrome نمی‌تواند این گواهی‌ها را تأیید کند.</translation>
 <translation id="2972581237482394796">انجام مجدد</translation>
 <translation id="2985306909656435243">‏اگر فعال شود، Chromium برای پر کردن سریع‌تر فرم، یک کپی از کارت شما در این دستگاه ذخیره می‌کند.</translation>
+<translation id="2989984781570875765">‏تاریخ انقضا و کد تأیید سه رقمی CVC را از پشت کارت‌ <ph name="CREDIT_CARD" /> خود وارد کنید</translation>
 <translation id="2991174974383378012">اشتراک‌گذاری با وب‌سایت‌ها</translation>
 <translation id="3005723025932146533">نمایش کپی ذخیره شده</translation>
 <translation id="3010559122411665027">ورودی فهرست "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
@@ -281,6 +283,7 @@
 <translation id="3717027428350673159">‏<ph name="BEGIN_LINK" />بررسی پروکسی، دیوار آتش و پیکربندی DNS<ph name="END_LINK" /></translation>
 <translation id="3739623965217189342">پیوندی که کپی کرده‌اید</translation>
 <translation id="3744899669254331632">‏نمی‌توانید اکنون از <ph name="SITE" /> دیدن کنید زیرا وب‌سایت اعتبارنامه‌های درهمی ارسال کرده که Chromium نمی‌تواند پردازش کند. خطاها و حمله‌های شبکه معمولاً موقتی هستند، بنابراین احتمالاً این صفحه بعداً کار می‌کند.</translation>
+<translation id="3748071062818261683">تأیید کارت</translation>
 <translation id="3748412725338508953">تغییر مسیرهای زیادی وجود دارد.</translation>
 <translation id="375403751935624634">بدلیل خطای سرور ترجمه انجام نشد.</translation>
 <translation id="3759461132968374835">شما اخیراً گزارش خرابی ارسال نکرده‌اید. مشکلاتی که در هنگام غیرفعال بودن ویژگی ارائه گزارش خرابی ایجاد شده است، در اینجا نمایش داده نمی‌شود.</translation>
@@ -309,6 +312,7 @@
 <translation id="4103249731201008433">شماره سریال دستگاه نامعتبر است</translation>
 <translation id="4103763322291513355">‏برای مشاهده فهرست نشانی‌های وب ممنوع و سایر خط‌مشی‌های اجباری براساس تصمیم سرپرست سیستم خود از &lt;strong&gt;chrome://policy&lt;/strong&gt; بازدید نمایید.</translation>
 <translation id="4117700440116928470">محدوده خط‌مشی پشتیبانی نمی‌شود.</translation>
+<translation id="4130226655945681476">بررسی کابل‌های شبکه، مودم یا رهیاب</translation>
 <translation id="4147376274874979956">دسترسی به فایل ممکن نیست.</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">‏می‌خواهید Chromium این کارت را ذخیره کند؟</translation>
@@ -343,11 +347,15 @@
 <translation id="450710068430902550">اشتراک‌گذاری با سرپرست سیستم</translation>
 <translation id="4522570452068850558">جزئیات</translation>
 <translation id="4535734014498033861">اتصال به سرور پراکسی انجام نشد.</translation>
+<translation id="4553532082208702698">‏کد چهار رقمی CVC را از روی کارت‌ <ph name="CREDIT_CARD" /> خود وارد کنید</translation>
+<translation id="4558551763791394412">افزونه‌ها را غیرفعال کنید.</translation>
 <translation id="4587425331216688090">‏آدرس از Chrome پاک شود؟</translation>
 <translation id="4592951414987517459">اتصال شما به <ph name="DOMAIN" /> با استفاده از یک مجموعه رمز مدرن، رمزگذاری شده است.</translation>
 <translation id="4594403342090139922">&amp;واگرد حذف</translation>
 <translation id="4668929960204016307">،</translation>
+<translation id="4670097147947922288">درحال مشاهده یک صفحه افزونه هستید.</translation>
 <translation id="467662567472608290">این سرور نتوانست اثبات کند که این <ph name="DOMAIN" /> است؛ گواهی امنیتی آن خطاهایی دارد. ممکن است علت این موضوع پیکربندی اشتباه باشد یا مهاجمی اتصال شما را قطع کرده است.</translation>
+<translation id="4683417246209150705">‏کد سه رقمی CVC را از پشت کارت‌ <ph name="CREDIT_CARD" />خود  وارد کنید</translation>
 <translation id="4697214168136963651"><ph name="URL" /> مسدود شد</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">اتصال شما قطع شد</translation>
@@ -432,6 +440,8 @@
 <translation id="5650551054760837876">هیچ نتیجه‌ای برای جستجو یافت نشد.</translation>
 <translation id="5663999524854166235">‏کد راستی‌آزمایی سه رقمی CVC را از پشت کارت‌تان وارد کنید</translation>
 <translation id="5677928146339483299">مسدود است</translation>
+<translation id="5696590819423335174">‏تاریخ انقضا و کد تأیید چهار رقمی CVC را از روی کارت‌ <ph name="CREDIT_CARD" /> خود وارد کنید</translation>
+<translation id="5699278517904102888">‏کد راستی‌آزمایی سه رقمی CVC را از پشت کارت‌ <ph name="CREDIT_CARD" /> خود وارد کنید</translation>
 <translation id="5710435578057952990">هویت این وب سایت تأیید نشده است.</translation>
 <translation id="5720705177508910913">کاربر کنونی</translation>
 <translation id="5785756445106461925">علاوه بر این، این صفحه دارای منابع دیگری است که امن نیستند. دیگران می‌توانند در حین انتقال، این منابع را ببینند و این منابع می‌توانند برای تغییر قفل صفحه، توسط یک مهاجم تغییر داده شوند.</translation>
@@ -555,7 +565,6 @@
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> از استانداردهای امنیتی پیروی نمی‌کند.</translation>
 <translation id="721197778055552897">دربارهٔ این مشکل <ph name="BEGIN_LINK" />بیشتر بیاموزید<ph name="END_LINK" />.</translation>
 <translation id="7219179957768738017">اتصال از <ph name="SSL_VERSION" /> استفاده می‌کند.</translation>
-<translation id="7225807090967870017">شناسه تولید</translation>
 <translation id="7231308970288859235">وای! باید از والدینتان بپرسید آیا اجازه بازدید از این صفحه را دارید.</translation>
 <translation id="7246609911581847514">این پیام را به این دلیل می‌بینید که مدیرتان باید اولین باری که از سایت جدیدی بازدید می‌کنید آن را تأیید کند.</translation>
 <translation id="725866823122871198">اتصال خصوصی به <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> برقرار نمی‌شود زیرا تاریخ و زمان رایانه شما (<ph name="DATE_AND_TIME" />) نادرست است.</translation>
@@ -596,6 +605,7 @@
 <translation id="7610193165460212391">مقدار خارج از محدوده <ph name="VALUE" /> است.</translation>
 <translation id="7613889955535752492">انقضا: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">‏شما در حال حاضر داده‌هایی دارید که با استفاده از نسخه دیگری از گذرواژه حساب Google شما رمزگذاری شده‌اند. لطفاً آن را در زیر وارد کنید.</translation>
+<translation id="7633887239437305289">‏کد راستی‌آزمایی چهار رقمی CVC را از روی کارت <ph name="CREDIT_CARD" /> خود وارد کنید</translation>
 <translation id="7634554953375732414">اتصال شما به این سایت خصوصی نیست.</translation>
 <translation id="7637571805876720304">‏کارت اعتباری از Chromium پاک شود؟</translation>
 <translation id="7643817847124207232">اتصال اینترنت قطع شده است.</translation>

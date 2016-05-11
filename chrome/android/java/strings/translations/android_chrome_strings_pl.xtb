@@ -68,6 +68,7 @@ Aby korzystać z internetu rzeczy, musisz włączyć Bluetooth i Lokalizację.</
 <translation id="1842969606798536927">Zapłać</translation>
 <translation id="1853692000353488670">Nowa karta incognito</translation>
 <translation id="189172778771606813">Zamknij panel nawigacji</translation>
+<translation id="1924956916668006832">Wybierz adres dostawy</translation>
 <translation id="194341124344773587">Przyznaj Chrome uprawnienie w <ph name="BEGIN_LINK" />ustawieniach Androida<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Zapisuj hasła</translation>
 <translation id="1944384637046898011">Zaszyfruj wszystko za pomocą hasła do Google z <ph name="TIME" /></translation>
@@ -98,6 +99,7 @@ Aby korzystać z internetu rzeczy, musisz włączyć Bluetooth i Lokalizację.</
 <translation id="2268044343513325586">Zawęź</translation>
 <translation id="2315043854645842844">Wybieranie certyfikatu klienta nie jest obsługiwane przez ten system operacyjny.</translation>
 <translation id="2321958826496381788">Przeciągaj suwak, by umożliwić wygodne czytanie. Gdy dwukrotnie klikniesz akapit, tekst powiększy się co najmniej do tej wielkości.</translation>
+<translation id="2329597144923131178">Zaloguj się, by korzystać z zakładek, historii, haseł i innych ustawień na wszystkich swoich urządzeniach.</translation>
 <translation id="2343328333327081434">Instaluję…</translation>
 <translation id="2351097562818989364">Ustawienia tłumaczenia zostały zresetowane.</translation>
 <translation id="2359808026110333948">Kontynuuj</translation>
@@ -133,6 +135,7 @@ Aby korzystać z internetu rzeczy, musisz włączyć Bluetooth i Lokalizację.</
 <translation id="2762000892062317888">przed chwilą</translation>
 <translation id="2770465223704140727">Usuń z listy</translation>
 <translation id="278029852808208386">Nie znaleziono urządzeń Bluetooth. <ph name="BEGIN_LINK" />Wyszukaj ponownie<ph name="END_LINK" />.</translation>
+<translation id="2781389167600714117">Wybierz dostawę</translation>
 <translation id="2811892995384186721">Nie widzisz swojego urządzenia? <ph name="BEGIN_LINK" />Skorzystaj z pomocy<ph name="END_LINK" /></translation>
 <translation id="2836148919159985482">Kliknij przycisk Wstecz, by wyjść z trybu pełnoekranowego.</translation>
 <translation id="2842985007712546952">Folder nadrzędny</translation>
@@ -158,7 +161,6 @@ Aby korzystać z internetu rzeczy, musisz włączyć Bluetooth i Lokalizację.</
 <translation id="3137521801621304719">Wyłącz tryb incognito</translation>
 <translation id="3149891296864842641">Sposób dostawy</translation>
 <translation id="3162882791484435636">Wybierz sposób dostawy</translation>
-<translation id="3173438333156928404">Błąd przetwarzania płatności</translation>
 <translation id="3177909033752230686">Język strony:</translation>
 <translation id="3190152372525844641">Przyznaj Chrome uprawnienia w <ph name="BEGIN_LINK" />ustawieniach Androida<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> zapisanych danych</translation>
@@ -194,7 +196,6 @@ Logujesz się na zarządzane konto i dajesz jego administratorowi kontrolę nad 
 Aby dostosować wyszukiwane hasło, naciśnij je i przytrzymaj, by je zaznaczyć. Aby doprecyzować wyszukiwanie, przesuń panel do samej góry i kliknij pole wyszukiwania.</translation>
 <translation id="3623048332793834136">Zakładki z Chrome Canary</translation>
 <translation id="363596933471559332">Automatycznie loguj się na stronach, używając zapisanych danych logowania. Gdy ta funkcja jest wyłączona, przed każdym zalogowaniem się zobaczysz prośbę o weryfikację.</translation>
-<translation id="3653742808139624888">Aby korzystać ze swoich zakładek na wszystkich urządzeniach, zaloguj się w Chrome</translation>
 <translation id="3656115297268584622">Włącz lokalizację w <ph name="BEGIN_LINK" />ustawieniach Androida<ph name="END_LINK" />.</translation>
 <translation id="3661699943263275414">Witryny innych firm mogą zapisywać dane w plikach cookie i je odczytywać</translation>
 <translation id="3672452749423051839">Podpowiedzi przy błędach nawigacji</translation>
@@ -226,6 +227,7 @@ Aby dostosować wyszukiwane hasło, naciśnij je i przytrzymaj, by je zaznaczyć
 <translation id="4170011742729630528">Usługa jest niedostępna. Spróbuj ponownie później.</translation>
 <translation id="4195643157523330669">Otwórz w nowej karcie</translation>
 <translation id="423410644998903704">Aby zezwolić stronie na wykorzystanie uprawnień, Chrome musi je mieć.</translation>
+<translation id="4242533952199664413">Otwórz ustawienia</translation>
 <translation id="424864128008805179">Wylogować z Chrome?</translation>
 <translation id="4254813446494774748">Język tłumaczenia:</translation>
 <translation id="4256782883801055595">Licencje open source</translation>
@@ -524,14 +526,12 @@ Inne rodzaje historii przeglądania, takie jak wyszukiwania i aktywność w inny
 <translation id="8007176423574883786">Wyłączona na tym urządzeniu</translation>
 <translation id="8026334261755873520">Wyczyść dane przeglądania</translation>
 <translation id="8035133914807600019">Nowy folder…</translation>
+<translation id="8063895661287329888">Nie udało się dodać zakładki.</translation>
 <translation id="8068648041423924542">Nie można wybrać certyfikatu.</translation>
 <translation id="8069239273282989646">Po skompresowaniu</translation>
 <translation id="8073388330009372546">Otwórz grafikę w nowej karcie</translation>
 <translation id="8076014560081431679">Zapisane ustawienia witryn nie zostaną usunięte i mogą zawierać informacje o Twoim korzystaniu z przeglądarki. <ph name="BEGIN_LINK" />Więcej informacji<ph name="END_LINK" /></translation>
 <translation id="8087000398470557479">Treść z <ph name="DOMAIN_NAME" /> dostarczana przez Google.</translation>
-<translation id="8098570222830891427">Urządzenia w pobliżu przekazują strony internetowe przy użyciu Bluetooth. Chrome wyszuka te strony i wyświetli je, gdy wybudzisz urządzenie. Następnie trafią one do usługi Google, która zwiększy trafność wyników.
-
-Internet rzeczy możesz skonfigurować w ustawieniach Chrome.</translation>
 <translation id="8106211421800660735">Numer karty kredytowej</translation>
 <translation id="813082847718468539">Wyświetl informacje o witrynie</translation>
 <translation id="8137558756159375272">Funkcja „Dotknij, by wyszukać” wysyła zaznaczone słowo i bieżącą stronę jako kontekst do wyszukiwarki Google. Możesz ją wyłączyć w <ph name="BEGIN_LINK" />ustawieniach<ph name="END_LINK" />.</translation>

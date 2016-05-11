@@ -98,6 +98,7 @@ Du må ha slått på Bluetooth og Posisjon for å bruke det fysiske nettet.</tra
 <translation id="2268044343513325586">Finstem</translation>
 <translation id="2315043854645842844">Operativsystemet har ikke støtte for sertifikatvalg på klientsiden.</translation>
 <translation id="2321958826496381788">Dra glidebryteren til du kan lese dette uten problemer. Når du har dobbelttrykket på et avsnitt, bør teksten være minst like stor som dette.</translation>
+<translation id="2329597144923131178">Logg på for å få bokmerkene, loggen, passordene og de andre innstillingene dine på alle enhetene du bruker.</translation>
 <translation id="2343328333327081434">Installerer …</translation>
 <translation id="2351097562818989364">Oversettelsesinnstillingene dine er tilbakestilt.</translation>
 <translation id="2359808026110333948">Fortsett</translation>
@@ -158,7 +159,6 @@ Du må ha slått på Bluetooth og Posisjon for å bruke det fysiske nettet.</tra
 <translation id="3137521801621304719">Avslutt inkognitomodus</translation>
 <translation id="3149891296864842641">Fraktalternativ</translation>
 <translation id="3162882791484435636">Velg fraktalternativ</translation>
-<translation id="3173438333156928404">Feil under behandlingen av betalingen</translation>
 <translation id="3177909033752230686">Språket siden er på:</translation>
 <translation id="3190152372525844641">Slå på tillatelsene for Chrome i <ph name="BEGIN_LINK" />Android-innstillingene<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> lagrede data</translation>
@@ -194,7 +194,6 @@ Du logger på med en administrert konto, og gir administratoren kontroll over Ch
 Hvis du vil endre søkeordet, kan du trykke på det og holde for å merke det. Hvis du vil finstemme søket, kan du dra panelet helt opp til toppen og trykke på søkefeltet.</translation>
 <translation id="3623048332793834136">Bokmerker fra Chrome Canary</translation>
 <translation id="363596933471559332">Du logges på nettsteder automatisk ved hjelp av lagret legitimasjon. Når funksjonen er slått av, blir du bedt om å oppgi legitimasjonen din hver gang du logger på et nettsted.</translation>
-<translation id="3653742808139624888">Logg på Chrome for å få bokmerkene dine på alle enhetene du bruker</translation>
 <translation id="3656115297268584622">Slå på posisjonstjenesten i <ph name="BEGIN_LINK" />Android-innstillingene<ph name="END_LINK" />.</translation>
 <translation id="3661699943263275414">Tredjepartsnettsteder kan lagre og lese data i informasjonskapsler.</translation>
 <translation id="3672452749423051839">Forslag ved navigasjonsfeil</translation>
@@ -529,9 +528,6 @@ Det kan hende Google-kontoen din har andre typer nettlesingslogger, for eksempel
 <translation id="8073388330009372546">Åpne bildet i en ny fane</translation>
 <translation id="8076014560081431679">Lagrede nettstedsinnstillinger slettes ikke og kan gjenspeile nettleserbruken din. <ph name="BEGIN_LINK" />Finn ut mer<ph name="END_LINK" /></translation>
 <translation id="8087000398470557479">Dette innholdet er fra <ph name="DOMAIN_NAME" /> og er levert av Google.</translation>
-<translation id="8098570222830891427">Enheter i nærheten av deg kringkaster nettsider via Bluetooth. Chrome søker etter sider og viser dem når du vekker enheten. Disse sidene går gjennom en Google-tjeneste for å forbedre kvaliteten på sideresultatene.
-
-Du kan kontrollere det fysiske nettet i Chrome-innstillingene.</translation>
 <translation id="8106211421800660735">Kredittkortnummer</translation>
 <translation id="813082847718468539">Vis nettstedsinformasjon</translation>
 <translation id="8137558756159375272">Trykk for å søke sender det valgte ordet og den aktive siden som kontekst til Google Søk. Du kan slå av dette i <ph name="BEGIN_LINK" />Innstillinger<ph name="END_LINK" />.</translation>

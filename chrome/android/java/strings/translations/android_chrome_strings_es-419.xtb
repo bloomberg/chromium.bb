@@ -60,6 +60,7 @@ Debes activar Bluetooth y la Ubicación para poder utilizar la Web física.</tra
 <translation id="1742134235943978220">Traducido al <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="1749561566933687563">Sincroniza tus marcadores</translation>
 <translation id="17513872634828108">Pestañas abiertas</translation>
+<translation id="1756600373018374892">Presiona este botón para acceder de forma rápida a tus pestañas.</translation>
 <translation id="1807246157184219062">Claro</translation>
 <translation id="1825719650605518411">Primera experiencia de ejecución</translation>
 <translation id="1829244130665387512">Buscar en la página</translation>
@@ -67,9 +68,11 @@ Debes activar Bluetooth y la Ubicación para poder utilizar la Web física.</tra
 <translation id="1842969606798536927">Pagar</translation>
 <translation id="1853692000353488670">Nueva pestaña de incógnito</translation>
 <translation id="189172778771606813">Cerrar panel lateral de navegación</translation>
+<translation id="1924956916668006832">Seleccionar la dirección de envío</translation>
 <translation id="194341124344773587">Activa el permiso para Chrome en <ph name="BEGIN_LINK" />Configuración de Android<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Guardar contraseñas</translation>
 <translation id="1944384637046898011">Encriptar todo con la contraseña de Google a partir del <ph name="TIME" /></translation>
+<translation id="1946005195648379376">Controla la forma en que Google usa tu historial de navegación para personalizar Búsqueda y otros servicios de Google.</translation>
 <translation id="1959930595721737608">Permitir JavaScript en el siguiente sitio</translation>
 <translation id="1966710179511230534">Actualiza los datos de acceso.</translation>
 <translation id="1974060860693918893">Avanzada</translation>
@@ -96,6 +99,7 @@ Debes activar Bluetooth y la Ubicación para poder utilizar la Web física.</tra
 <translation id="2268044343513325586">Definir mejor</translation>
 <translation id="2315043854645842844">El sistema operativo no admite la selección de certificados del lado del cliente.</translation>
 <translation id="2321958826496381788">Arrastra el control deslizante hasta que puedas leer esto cómodamente. El texto debería verse, al menos, de este tamaño al tocar dos veces un párrafo.</translation>
+<translation id="2329597144923131178">Accede a tu cuenta para ver los marcadores, el historial, las contraseñas y otras opciones de configuración en todos los dispositivos.</translation>
 <translation id="2343328333327081434">Instalando…</translation>
 <translation id="2351097562818989364">Se restableció la configuración de traducción.</translation>
 <translation id="2359808026110333948">Continuar</translation>
@@ -131,11 +135,13 @@ Debes activar Bluetooth y la Ubicación para poder utilizar la Web física.</tra
 <translation id="2762000892062317888">recién</translation>
 <translation id="2770465223704140727">Eliminar de la lista</translation>
 <translation id="278029852808208386">No se encontraron dispositivos Bluetooth. <ph name="BEGIN_LINK" />Vuelve a buscar<ph name="END_LINK" />.</translation>
+<translation id="2781389167600714117">Seleccionar el envío</translation>
 <translation id="2811892995384186721">¿No ves el dispositivo? <ph name="BEGIN_LINK" />Obtén ayuda<ph name="END_LINK" /></translation>
 <translation id="2836148919159985482">Toca el botón Atrás para salir de la pantalla completa.</translation>
 <translation id="2842985007712546952">Carpeta principal</translation>
 <translation id="2870560284913253234">Sitio</translation>
 <translation id="2888126860611144412">Acerca de Chrome</translation>
+<translation id="2889768325388591707">Cambiar de pestañas de forma rápida</translation>
 <translation id="2891154217021530873">Detener la carga de la página</translation>
 <translation id="2902702728133930130">Se produjo un error inesperado durante el inicio de Chrome.</translation>
 <translation id="2903493209154104877">Direcciones</translation>
@@ -153,6 +159,8 @@ Debes activar Bluetooth y la Ubicación para poder utilizar la Web física.</tra
 <translation id="3089395242580810162">Abrir en pestaña de incógnito</translation>
 <translation id="3090193911106258841">Accediendo a la entrada de video y de audio</translation>
 <translation id="3137521801621304719">Salir del modo de navegación de incógnito</translation>
+<translation id="3149891296864842641">Opción de envío</translation>
+<translation id="3162882791484435636">Seleccionar la opción de envío</translation>
 <translation id="3177909033752230686">Idioma de la página:</translation>
 <translation id="3190152372525844641">Activa los permisos para Chrome en <ph name="BEGIN_LINK" />Configuración de Android<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905">Datos almacenados: <ph name="STORAGE_AMOUNT" /></translation>
@@ -188,7 +196,6 @@ Vas a acceder con una cuenta administrada, lo que significa que proporcionarás 
 Para ajustar el término de búsqueda, mantén presionado el texto y selecciónalo. Para perfeccionar la búsqueda, desliza el panel hacia arriba y toca el cuadro de búsqueda.</translation>
 <translation id="3623048332793834136">Marcadores de Chrome Canary</translation>
 <translation id="363596933471559332">Permite acceder automáticamente a los sitios web con las credenciales almacenadas Si la función está desactivada, siempre se solicitará verificación antes de acceder a un sitio web.</translation>
-<translation id="3653742808139624888">Para usar tus marcadores en todos los dispositivos, accede a Chrome</translation>
 <translation id="3656115297268584622">Activar ubicación en <ph name="BEGIN_LINK" />Configuración de Android<ph name="END_LINK" /></translation>
 <translation id="3661699943263275414">Los sitios web de terceros pueden guardar y leer datos de cookies.</translation>
 <translation id="3672452749423051839">Sugerencias relacionadas con errores de navegación</translation>
@@ -220,6 +227,7 @@ Para ajustar el término de búsqueda, mantén presionado el texto y seleccióna
 <translation id="4170011742729630528">El servicio no se encuentra disponible; vuelve a intentarlo más tarde.</translation>
 <translation id="4195643157523330669">Abrir en una pestaña nueva</translation>
 <translation id="423410644998903704">Chrome necesita acceso a los permisos para compartirlos con este sitio.</translation>
+<translation id="4242533952199664413">Abrir el menú de configuración</translation>
 <translation id="424864128008805179">¿Quieres salir de Chrome?</translation>
 <translation id="4254813446494774748">Idioma de la traducción:</translation>
 <translation id="4256782883801055595">Licencias de código abierto</translation>
@@ -267,6 +275,7 @@ Para ajustar el término de búsqueda, mantén presionado el texto y seleccióna
 <translation id="4875622588773761625">¿Quieres que <ph name="PASSWORD_MANAGER_BRAND" /> actualice tu contraseña para este sitio?</translation>
 <translation id="4881695831933465202">Abrir</translation>
 <translation id="4885273946141277891">Cantidad de instancias de Chrome no admitidas</translation>
+<translation id="4923459931733593730">Pago</translation>
 <translation id="4943872375798546930">Sin resultados</translation>
 <translation id="497421865427891073">Avanzar</translation>
 <translation id="4996978546172906250">Compartir mediante</translation>
@@ -454,6 +463,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="7180611975245234373">Actualizar</translation>
 <translation id="7191430249889272776">Pestaña abierta en segundo plano</translation>
 <translation id="7208788139759694678">Extensión Reducir datos inhabilitada</translation>
+<translation id="7220786058474068424">Procesando</translation>
 <translation id="7243308994586599757">Opciones disponibles junto a la parte inferior de la pantalla</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> usa tu ubicación para mostrar resultados de la búsqueda a nivel local.</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />Ayuda<ph name="END_LINK" /></translation>
@@ -507,6 +517,7 @@ Es posible que tu cuenta de Google tenga otros formularios del historial de nave
 <translation id="7846076177841592234">Cancelar la selección</translation>
 <translation id="7851858861565204677">Otros dispositivos</translation>
 <translation id="7876243839304621966">Eliminar todo</translation>
+<translation id="7902333740914687335">Pago procesado</translation>
 <translation id="7947953824732555851">Aceptar y acceder</translation>
 <translation id="7949961459945740081">Obtén últimas características</translation>
 <translation id="7963646190083259054">Proveedor:</translation>
@@ -516,20 +527,19 @@ Es posible que tu cuenta de Google tenga otros formularios del historial de nave
 <translation id="8007176423574883786">Desactivado para este dispositivo</translation>
 <translation id="8026334261755873520">Eliminar datos de navegación</translation>
 <translation id="8035133914807600019">Nueva carpeta…</translation>
+<translation id="8063895661287329888">Se produjo un error al agregar el marcador.</translation>
 <translation id="8068648041423924542">No es posible seleccionar un certificado</translation>
 <translation id="8069239273282989646">Poscompresión</translation>
 <translation id="8073388330009372546">Abrir imagen en pestaña nueva</translation>
 <translation id="8076014560081431679">Las opciones de configuración de sitios guardadas no se borrarán y es posible que reflejen tus hábitos de navegación. <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
 <translation id="8087000398470557479">Este contenido es de <ph name="DOMAIN_NAME" />, publicado por Google.</translation>
-<translation id="8098570222830891427">Los dispositivos cercanos están transmitiendo páginas web a través de Bluetooth. Chrome buscará páginas y las mostrará cuando actives tu dispositivo. Estas páginas pasarán por un servicio de Google que mejorará la calidad de los resultados.
-
-Puedes controlar la Web física desde la configuración de Chrome.</translation>
 <translation id="8106211421800660735">Número de tarjeta de crédito</translation>
 <translation id="813082847718468539">Consulta la información del sitio</translation>
 <translation id="8137558756159375272">La función Tocar para buscar envía la palabra seleccionada y la página actual como contexto a la Búsqueda de Google. Para desactivarla, accede a <ph name="BEGIN_LINK" />Configuración<ph name="END_LINK" />.</translation>
 <translation id="8168435359814927499">Contenido</translation>
 <translation id="8173098127580644436">el principio</translation>
 <translation id="8200772114523450471">Reanudar</translation>
+<translation id="8202097416529803614">Resumen del pedido</translation>
 <translation id="8209050860603202033">Abrir imagen</translation>
 <translation id="8215250379351058554"><ph name="SITE" /> quiere conectarse a:</translation>
 <translation id="8218346974737627104">Confirmar acceso</translation>
@@ -586,6 +596,7 @@ Conéctate a Internet y reproduce el contenido descargado para obtener licencias
 <translation id="8942627711005830162">Abrir en otra ventana</translation>
 <translation id="8959122750345127698">Navegación inaccesible: <ph name="URL" /></translation>
 <translation id="8979340629087822094">ayer</translation>
+<translation id="8981454092730389528">Controles de actividad de Google</translation>
 <translation id="8986494364107987395">Enviar automáticamente estadísticas de uso e informes sobre fallos a Google</translation>
 <translation id="8987061207681586800">Personaliza Chrome</translation>
 <translation id="9019902583201351841">Administrado por tus padres</translation>

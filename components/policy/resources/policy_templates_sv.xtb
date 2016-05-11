@@ -565,6 +565,22 @@
           Varje objekt i listan motsvarar en matchning i form av ett tillägg (se http://code.google.com/chrome/extensions/match_patterns.html). Användarna kan enkelt installera objekt från alla webbadresser som matchar ett objekt i listan. Både *.crx-filens plats och sidan där objektet hämtas (dvs. referenten) måste tillåtas enligt matchningsmönstren.
 
           ExtensionInstallBlacklist har företräde framför den här principen. Det innebär att ett tillägg på den svarta listan inte kommer att installeras även om det sker från en webbplats på den här listan.</translation>
+<translation id="2813740161943223811">Den här principen är utfasad. Använd ProxyMode i stället.
+
+          Innebär att du kan ange vilken proxyserver som ska användas av <ph name="PRODUCT_NAME" /> och förhindra att användarna ändrar proxyinställningarna. Den här proxyservern kan också användas av ARC-appar.
+
+          Om du väljer att aldrig använda en proxyserver och alltid ansluta direkt ignoreras alla andra alternativ.
+
+          Om du väljer att använda datorns proxyinställningar eller identifiera proxyserver automatiskt ignoreras alla andra alternativ.
+
+          Om du väljer manuella proxyinställningar kan du ange fler alternativ i fälten Proxyserverns adress eller webbadress och Kommaavgränsad lista med regler för proxybypass. ARC-appar kan bara använda den HTTP-proxyserver som har högst prioritet.
+
+          Mer ingående exempel hittar du på:
+          <ph name="PROXY_HELP_URL" />.
+
+          Om du aktiverar inställningen ignorerar <ph name="PRODUCT_NAME" /> alla proxyrelaterade alternativ som har angetts i kommandoraden.
+
+          Om du inte anger inställningarna kan användarna själva välja proxyinställningar.</translation>
 <translation id="2824715612115726353">Aktivera inkognitoläge</translation>
 <translation id="2844404652289407061">Aktiverar tillgången till Tryck för att söka i innehållsvyn i <ph name="PRODUCT_NAME" />.
 
@@ -677,6 +693,18 @@
           </translation>
 <translation id="3205825995289802549">Maximera det först visade fönstret första gången som webbläsaren körs</translation>
 <translation id="3206731874112238027">Inaktivera förhandsgranskning av utskrift (har fasats ut)</translation>
+<translation id="3208854390109736596">Innebär att du kan ange vilken proxyserver som ska användas av <ph name="PRODUCT_NAME" /> och förhindra att användarna ändrar proxyinställningarna. Den här proxyservern kan också användas av ARC-appar.
+
+      Om du väljer att aldrig använda en proxyserver och alltid ansluta direkt ignoreras alla andra alternativ.
+
+      Om du väljer att identifiera proxyservern automatiskt ignoreras alla andra alternativ.
+
+      Mer ingående exempel hittar du på:
+      <ph name="PROXY_HELP_URL" />.
+
+      Om du aktiverar inställningen ignorerar <ph name="PRODUCT_NAME" /> alla proxyrelaterade alternativ som har angetts i kommandoraden.
+
+      Om du inte anger inställningarna kan användarna själva välja proxyinställningar.</translation>
 <translation id="3213821784736959823">Styr huruvida den inbyggda DNS-klienten används i <ph name="PRODUCT_NAME" />.
 
       Om policyn tillämpas används den inbyggda DNS-klienten om den är tillgänglig.
@@ -731,6 +759,9 @@
 
       Om policyn är inställd på falskt går det inte att starta gästsessioner i <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="3428247105888806363">Aktivera nätverksförslag</translation>
+<translation id="3449886121729668969">Konfigurerar proxyinställningarna för <ph name="PRODUCT_NAME" />. Dessa proxyinställningar blir också tillgängliga för ARC-appar.
+
+      Använd inte den här principen. Den är inte färdig ännu.</translation>
 <translation id="3460784402832014830">Anger webbadressen som en sökmotor använder för att tillhandahålla en ny fliksida.
 
           Policyn är valfri. Om den inte anges tillhandahålls ingen ny fliksida.
@@ -741,6 +772,14 @@
           Om Sant har angetts för den här policyn börjar inte fördröjningar i energisparfunktionen och begränsningar i sessionslängden förrän den första användaraktiviteten har observerats i sessionen.
 
           Om Falskt har angetts för den här policyn, eller om ingenting har angetts, påbörjas fördröjningar i energisparfunktionen och begränsningar i sessionslängden så fort sessionen har påbörjats.</translation>
+<translation id="3469657928310999477"><ph name="PRODUCT_NAME" /> förbigår proxyn för listan med värdenheter som anges här. Listan kan användas av ARC-appar som en regellista för proxybypass.
+
+          Den här principen används bara om du har valt manuella proxyinställningar i Välj hur inställningar för proxyserver ska anges.
+
+          Ange inte den här principen om du har valt något annat läge för inställning av proxyprinciper.
+
+          Mer ingående exempel hittar du på:
+          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="3478024346823118645">Ta bort användardata vid utloggning</translation>
 <translation id="348495353354674884">Aktivera virtuellt tangentbord</translation>
 <translation id="3496296378755072552">Lösenordshanteraren</translation>
@@ -1425,6 +1464,9 @@
       Policyn påverkar alla typer av lagringsmedia. Till exempel USB-flashminnen, externa hårddiskar, SD-kort och andra minneskort, optisk lagring osv. Den interna lagringen påverkas inte och du kan därmed komma åt filer som sparats i mappen Hämtade filer. Google Drive påverkas inte heller av den här policyn.
 
       Om inställningen inaktiveras eller inte konfigureras kan användare använda alla typer av extern lagring som stöds på deras enhet.</translation>
+<translation id="6076099373507468537">Definierar vilka USB-enheter som får kopplas bort från sina kärndrivrutiner så att de kan användas direkt i en webbapp med API:et chrome.usb. Posterna i listan består av id-par för USB, leverantörs-id och produkt-id, som tillsammans identifierar maskinvaran.
+
+      Om principen inte har konfigurerats är listan med frånkopplingsbara USB-enheter tom.</translation>
 <translation id="6095999036251797924">Anger efter hur lång tid skärmen släcks när användaren är inaktiv och enheten drivs med batteri eller ström.
 
           När tidslängden är inställd på ett tal som är högre än noll anges hur lång tid användaren måste vara inaktiv innan <ph name="PRODUCT_OS_NAME" /> låser skärmen.
@@ -1963,6 +2005,14 @@
       Om principen är inställd på falskt rapporteras inte den här sessionsinformationen.
       Om principen är inställd på sant eller inte har angetts rapporteras sessionsinformation.</translation>
 <translation id="7774768074957326919">Använd systemets proxyinställningar</translation>
+<translation id="7775831859772431793">Här kan du ange proxyserverns webbadress.
+
+          Den här principen används bara om du har valt manuella proxyinställningar under Välj hur inställningar för proxyserver ska anges.
+
+          Ställ inte in den här principen om du har valt något annat läge för inställningar av proxyprinciper.
+
+          Fler alternativ och ingående exempel hittar du på:
+          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7788511847830146438">Per profil</translation>
 <translation id="7796141075993499320">Policyn gör att du kan ange en lista med webbadressmönster som får köra plugin-program.
 
@@ -1997,6 +2047,14 @@
       Avgör ID för det tillägg som ska användas som skärmsläckare på inloggningsskärmen. Tillägget måste finnas i det AppPack som är konfigurerat för domänen i policyn DeviceAppPack.</translation>
 <translation id="7882890448959833986">Ignorera varningar för operativsystem som inte stöds</translation>
 <translation id="7912255076272890813">Konfigurera tillåtna app- och tilläggstyper</translation>
+<translation id="7915236031252389808">Här kan du ange webbadressen till en PAC-fil för proxy.
+
+          Den här principen används bara om du har valt manuella proxyinställningar i Välj hur inställningar för proxyserver ska anges.
+
+          Ange inte den här principen om du har valt något annat läge för inställning av proxyprinciper.
+
+          Mer ingående exempel hittar du på:
+          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="793134539373873765">Anger om p2p ska användas för uppdateringar av betalningar i operativsystemet. Om policyn är inställd på Sant kommer enheterna att dela och försöka använda uppdateringar av betalningar i det lokala nätverket och eventuellt reducera användningen av bandbredd och överbelastning. Om uppdateringar av betalningar inte är tillgängliga i det lokala nätverket kommer enheten att återgå till att ladda ned från en uppdateringsserver. Om policyn är inställd på Falskt eller inte konfigurerad kommer p2p inte att användas.</translation>
 <translation id="7933141401888114454">Aktivera alternativet att skapa övervakade användare</translation>
 <translation id="7936098023732125869">Gör det möjligt att använda en standardsökleverantör.
@@ -2147,6 +2205,11 @@
 <translation id="8382184662529825177">Aktivera användning av fjärrattestering för innehållsskydd för enheten</translation>
 <translation id="838870586332499308">Aktivera dataroaming</translation>
 <translation id="8412312801707973447">Anger huruvida OCSP/CRL-onlinekontroller ska utföras</translation>
+<translation id="8413348101535146315">Gör det möjligt att avsluta aktiviteter i Aktivitetshanteraren i <ph name="PRODUCT_NAME" />.
+
+      När principen har värdet falskt är knappen Avsluta aktivitet inaktiverad i Aktivitetshanteraren.
+
+      När principen har värdet sant eller inte har konfigurerats kan användaren avsluta aktiviteter i Aktivitetshanteraren.</translation>
 <translation id="8424255554404582727">Ange standardrotation efter omstart för skärmen</translation>
 <translation id="8426231401662877819">Rotera skärmen 90 grader medurs</translation>
 <translation id="8451988835943702790">Använd sidan Ny flik som startsida</translation>
@@ -2378,6 +2441,24 @@
 <translation id="9112897538922695510">Gör att du kan registrera en lista över protokollhanterare. Detta kan bara vara en rekommenderad policy. Egendomen |protokoll| ska anges till systemet som "mailto" och egendomen |webbadress| ska anges till webbadressmönstret i appen som hanterar systemet. Mönstret kan innehålla "%s", som ersätts av den hanterade webbadressen vid förekomst.
 
           Protokollhanterare som registreras av policyn slås ihop med de som registreras av användaren och båda går att använda. Användare kan åsidosätta protokollhanterarna som har installerats av policyn genom att installera en ny standardhanterare, men användare kan inte ta bort en protokollhanterare som har registrerats av policyn.</translation>
+<translation id="913138516158420759">Innebär att du kan ange vilken proxyserver som ska användas av <ph name="PRODUCT_NAME" /> och förhindra att användarna ändrar proxyinställningarna. Den här proxyservern kan också användas av ARC-appar.
+
+          Om du väljer att aldrig använda en proxyserver och alltid ansluta direkt ignoreras alla andra alternativ.
+
+          Om du väljer att använda datorns proxyinställningar ignoreras alla andra alternativ.
+
+          Om du väljer att identifiera proxyserver automatiskt ignoreras alla andra alternativ.
+
+          Om du väljer läget för fast serverproxy kan du ange fler alternativ i fälten Proxyserverns adress eller webbadress och Kommaavgränsad lista med regler för proxybypass. ARC-appar använder bara den HTTP-proxyserver som har högst prioritet.
+
+          Om du väljer att använda ett pac-proxyskript måste du ange webbadressen till skriptet i fältet Webbadress till en pac-proxyfil.
+
+          Mer ingående exempel hittar du på: 
+          <ph name="PROXY_HELP_URL" />.
+
+          Om du aktiverar inställningen ignorerar <ph name="PRODUCT_NAME" /> och ARC-appar alla proxyrelaterade alternativ som har angetts i kommandoraden.
+
+          Om du inte anger inställningarna kan användarna själva välja proxyinställningar.</translation>
 <translation id="913195841488580904">Blockera åtkomst till en lista med webbadresser</translation>
 <translation id="9135033364005346124">Aktivera <ph name="CLOUD_PRINT_NAME" />-proxy</translation>
 <translation id="9147029539363974059">Skickar systemloggar till hanteringsservern så att administratörer kan

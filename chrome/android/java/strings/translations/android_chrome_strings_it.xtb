@@ -68,6 +68,7 @@ Per poter utilizzare il Physical Web, devi attivare il Bluetooth e la geolocaliz
 <translation id="1842969606798536927">Paga</translation>
 <translation id="1853692000353488670">Nuova scheda in incognito</translation>
 <translation id="189172778771606813">Chiudi riquadro di navigazione a scomparsa</translation>
+<translation id="1924956916668006832">Seleziona indirizzo di spedizione</translation>
 <translation id="194341124344773587">Abilita l'autorizzazione per Chrome in <ph name="BEGIN_LINK" />Impostazioni Android<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Salva password</translation>
 <translation id="1944384637046898011">Cripta tutto con la password Google a partire dal <ph name="TIME" /></translation>
@@ -98,6 +99,7 @@ Per poter utilizzare il Physical Web, devi attivare il Bluetooth e la geolocaliz
 <translation id="2268044343513325586">Perfeziona</translation>
 <translation id="2315043854645842844">La selezione del certificato lato client non è supportata dal sistema operativo.</translation>
 <translation id="2321958826496381788">Trascina il cursore finché leggi il testo senza problemi. Il testo dovrebbe avere queste dimensioni minime quando tocchi due volte un paragrafo.</translation>
+<translation id="2329597144923131178">Accedi per visualizzare i tuoi Preferiti, la cronologia, le password e altre impostazioni su tutti i tuoi dispositivi.</translation>
 <translation id="2343328333327081434">Installazione…</translation>
 <translation id="2351097562818989364">Le impostazioni di traduzione sono state reimpostate.</translation>
 <translation id="2359808026110333948">Continua</translation>
@@ -133,6 +135,7 @@ Per poter utilizzare il Physical Web, devi attivare il Bluetooth e la geolocaliz
 <translation id="2762000892062317888">in questo istante</translation>
 <translation id="2770465223704140727">Rimuovi dall'elenco</translation>
 <translation id="278029852808208386">Nessun dispositivo Bluetooth trovato. <ph name="BEGIN_LINK" />Esegui di nuovo la ricerca<ph name="END_LINK" />.</translation>
+<translation id="2781389167600714117">Seleziona spedizione</translation>
 <translation id="2811892995384186721">Non trovi il tuo dispositivo? <ph name="BEGIN_LINK" />Ricevi assistenza<ph name="END_LINK" />.</translation>
 <translation id="2836148919159985482">Tocca il pulsante Indietro per uscire dalla modalità a schermo intero.</translation>
 <translation id="2842985007712546952">Cartella principale</translation>
@@ -158,7 +161,6 @@ Per poter utilizzare il Physical Web, devi attivare il Bluetooth e la geolocaliz
 <translation id="3137521801621304719">Esci dalla modalità di navigazione in incognito</translation>
 <translation id="3149891296864842641">Opzione di spedizione</translation>
 <translation id="3162882791484435636">Seleziona un'opzione di spedizione</translation>
-<translation id="3173438333156928404">Errore durante l'elaborazione del pagamento</translation>
 <translation id="3177909033752230686">Lingua della pagina:</translation>
 <translation id="3190152372525844641">Abilita le autorizzazioni per Chrome in <ph name="BEGIN_LINK" />Impostazioni Android<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> di dati memorizzati</translation>
@@ -194,7 +196,6 @@ Stai per eseguire l'accesso con un account gestito e consentire al relativo ammi
 Per modificare il termine di ricerca, premi a lungo per selezionarlo. Per perfezionare la ricerca, fai scorrere completamente il riquadro verso l'alto e tocca la casella di ricerca.</translation>
 <translation id="3623048332793834136">Preferiti di Chrome Canary</translation>
 <translation id="363596933471559332">Accedi automaticamente ai siti web utilizzando credenziali memorizzate. Quando la funzione non è attiva, ti viene chiesta la verifica prima di ogni accesso ai siti web.</translation>
-<translation id="3653742808139624888">Accedi a Chrome per trovare i tuoi preferiti su tutti i dispositivi</translation>
 <translation id="3656115297268584622">Attiva la geolocalizzazione nelle <ph name="BEGIN_LINK" />Impostazioni Android<ph name="END_LINK" />.</translation>
 <translation id="3661699943263275414">I siti web di terze parti possono salvare e leggere i dati dei cookie</translation>
 <translation id="3672452749423051839">Suggerimenti per gli errori di navigazione</translation>
@@ -226,6 +227,7 @@ Per modificare il termine di ricerca, premi a lungo per selezionarlo. Per perfez
 <translation id="4170011742729630528">Il servizio non è disponibile, riprova più tardi.</translation>
 <translation id="4195643157523330669">Apri in un'altra scheda</translation>
 <translation id="423410644998903704">Chrome deve avere accesso alle autorizzazioni per condividerle con questo sito.</translation>
+<translation id="4242533952199664413">Apri le impostazioni</translation>
 <translation id="424864128008805179">Uscire da Chrome?</translation>
 <translation id="4254813446494774748">Lingua della traduzione:</translation>
 <translation id="4256782883801055595">Licenze open source</translation>
@@ -524,14 +526,12 @@ Il tuo account Google potrebbe avere altre forme di cronologia di navigazione, a
 <translation id="8007176423574883786">Disattivata per questo dispositivo</translation>
 <translation id="8026334261755873520">Cancella dati di navigazione</translation>
 <translation id="8035133914807600019">Nuova cartella…</translation>
+<translation id="8063895661287329888">Impossibile aggiungere preferito.</translation>
 <translation id="8068648041423924542">Impossibile selezionare il certificato.</translation>
 <translation id="8069239273282989646">Dopo la compressione</translation>
 <translation id="8073388330009372546">Immagine in nuova scheda</translation>
 <translation id="8076014560081431679">Le impostazioni del sito salvate non verranno eliminate e potrebbero rispecchiare le tue abitudini di navigazione. <ph name="BEGIN_LINK" />Ulteriori informazioni<ph name="END_LINK" /></translation>
 <translation id="8087000398470557479">Questi contenuti derivano da <ph name="DOMAIN_NAME" /> e sono offerti da Google.</translation>
-<translation id="8098570222830891427">Alcuni dispositivi nelle tue vicinanze stanno trasmettendo pagine web tramite Bluetooth. Chrome cerca pagine nelle vicinanze quando attivi il tuo dispositivo. Tali pagine passeranno attraverso un servizio di Google per migliorare la qualità dei risultati.
-
-Puoi gestire il Physical Web nelle impostazioni di Chrome.</translation>
 <translation id="8106211421800660735">Numero carta di credito</translation>
 <translation id="813082847718468539">Visualizza informazioni sul sito</translation>
 <translation id="8137558756159375272">La funzione Tocca per cercare invia la parola selezionata e la pagina corrente come contesto alla Ricerca Google. Puoi disattivare la funzione nelle <ph name="BEGIN_LINK" />Impostazioni<ph name="END_LINK" />.</translation>

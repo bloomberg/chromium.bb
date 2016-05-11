@@ -42,6 +42,7 @@
 <translation id="1254117744268754948">اختيار مجلد</translation>
 <translation id="1285320974508926690">عدم ترجمة هذا الموقع مطلقًا</translation>
 <translation id="129553762522093515">المغلقة حديثًا</translation>
+<translation id="129863573139666797"><ph name="BEGIN_LINK" />جرّب محو ملفات تعريف الارتباط<ph name="END_LINK" /></translation>
 <translation id="1339601241726513588">نطاق التسجيل:</translation>
 <translation id="1344588688991793829">‏إعدادات الملء التلقائي في Chromium...</translation>
 <translation id="1374468813861204354">اقتراحات</translation>
@@ -198,6 +199,7 @@
 <translation id="2969319727213777354">‏لإنشاء اتصال آمن، فإنك بحاجة إلى ضبط ساعتك بشكل صحيح. وذلك لأن الشهادات التي تستخدمها مواقع الويب لتعريف نفسها تكون صالحة فقط لفترات محددة من الوقت. فإذا كانت ساعة جهازك غير صحيحة، فلن يتمكن Google Chrome من التحقق من هذه الشهادات.</translation>
 <translation id="2972581237482394796">إعا&amp;دة</translation>
 <translation id="2985306909656435243">‏عند التمكين، سيُخزن Chromium نسخة من بطاقتك على هذا الجهاز لتعبئة النماذج بشكل أسرع.</translation>
+<translation id="2989984781570875765">‏أدخل تاريخ انتهاء الصلاحية ورمز التحقق من البطاقة (CVC) المكوّن من ثلاثة أرقام من الجزء الخلفي من <ph name="CREDIT_CARD" /></translation>
 <translation id="2991174974383378012">المشاركة مع مواقع الويب</translation>
 <translation id="3005723025932146533">عرض نسخة محفوظة</translation>
 <translation id="3010559122411665027">إدخال القائمة "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
@@ -281,6 +283,7 @@
 <translation id="3717027428350673159"><ph name="BEGIN_LINK" />التحقق من تهيئة الخادم الوكيل والجدار الناري ونظام أسماء النطاقات<ph name="END_LINK" /></translation>
 <translation id="3739623965217189342">الرابط الذي نسخته</translation>
 <translation id="3744899669254331632">‏لا يمكنك زيارة <ph name="SITE" /> في الوقت الحالي لأن الموقع أرسل اعتمادات مختلطة حيث لا يستطيع Chromium المعالجة. أخطاء الشبكة وهجماتها عادةً ما تكون مؤقتة، لذلك من المحتمل أن تعمل هذه الصفحة في وقت لاحق.</translation>
+<translation id="3748071062818261683">التحقق من البطاقة</translation>
 <translation id="3748412725338508953">هناك عدد كبير من عمليات إعادة التوجيه.</translation>
 <translation id="375403751935624634">أخفقت الترجمة بسبب حدوث خطأ في الخادم.</translation>
 <translation id="3759461132968374835">ليس لديك أي أعطال تم الإبلاغ عنها مؤخرًا. الأعطال التي حدثت عندما تم تعطيل الإبلاغ عن الأعطال لن تظهر هنا.</translation>
@@ -309,6 +312,7 @@
 <translation id="4103249731201008433">الرقم التسلسلي للجهاز غير صالح</translation>
 <translation id="4103763322291513355">‏انتقل إلى &lt;strong&gt;chrome://policy&lt;/strong&gt; لمشاهدة قائمة بعناوين URL المضافة إلى القائمة السوداء والسياسات الأخرى التي فرضها مشرف النظام.</translation>
 <translation id="4117700440116928470">نطاق السياسة غير متوافق.</translation>
+<translation id="4130226655945681476">التحقق من كابلات الشبكة، والمودم، وجهاز التوجيه</translation>
 <translation id="4147376274874979956">تعذر الدخول إلى الملف.</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">‏هل تريد من Chromium حفظ هذه البطاقة؟</translation>
@@ -343,11 +347,15 @@
 <translation id="450710068430902550">المشاركة مع المشرف</translation>
 <translation id="4522570452068850558">التفاصيل</translation>
 <translation id="4535734014498033861">أخفق اتصال الخادم الوكيل.</translation>
+<translation id="4553532082208702698">‏أدخل رمز التحقق من البطاقة (CVC) المكوّن من أربعة أرقام من الجزء الأمامي من <ph name="CREDIT_CARD" /></translation>
+<translation id="4558551763791394412">جرّب تعطيل الإضافات.</translation>
 <translation id="4587425331216688090">‏هل تريد إزالة العنوان من Chrome؟</translation>
 <translation id="4592951414987517459">يتم ترميز اتصالك بالنطاق <ph name="DOMAIN" /> باستخدام مجموعة تشفير حديثة.</translation>
 <translation id="4594403342090139922">تراجع عن الحذ&amp;ف</translation>
 <translation id="4668929960204016307">،</translation>
+<translation id="4670097147947922288">أنت تعرض حاليًا صفحة إضافة.</translation>
 <translation id="467662567472608290">هذا الخادم لم يتمكن من إثبات أن ذلك <ph name="DOMAIN" />؛ بل إنه شهادة أمان تحتوي على أخطاء. وربما يكون السبب في ذلك خطأ في التكوين أو مهاجمًا يعترض اتصالك.</translation>
+<translation id="4683417246209150705">‏أدخل رمز التحقق من البطاقة (CVC) المكوّن من ثلاثة أرقام من الجزء الخلفي من <ph name="CREDIT_CARD" /></translation>
 <translation id="4697214168136963651">تم حظر <ph name="URL" /></translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" />‏ <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">تم قطع اتصالك</translation>
@@ -432,6 +440,8 @@
 <translation id="5650551054760837876">لم يتمّ العثور على أي نتائج بحث.</translation>
 <translation id="5663999524854166235">‏أدخل رمز التحقق من البطاقة (CVC) المكون من ثلاثة أرقام من الجزء الخلفي من بطاقتك للتحقق</translation>
 <translation id="5677928146339483299">تم المنع</translation>
+<translation id="5696590819423335174">‏أدخل تاريخ انتهاء الصلاحية ورمز التحقق من البطاقة (CVC) المكوّن من أربعة أرقام من الجزء الأمامي من <ph name="CREDIT_CARD" /></translation>
+<translation id="5699278517904102888">‏أدخل رمز التحقق من البطاقة (CVC) المكوّن من ثلاثة أرقام من الجزء الخلفي من <ph name="CREDIT_CARD" /> للتحقق منها</translation>
 <translation id="5710435578057952990">لم  يتمّ التحقق من هوية هذا الموقع.</translation>
 <translation id="5720705177508910913">المستخدم الحالي</translation>
 <translation id="5785756445106461925">إضافة إلى ذلك، تتضمن هذه الصفحة موارد أخرى غير آمنة. ويستطيع الآخرون مشاهدة هذه الموارد أثناء نقلها، كما يستطيع أي مهاجم تعديلها لتغيير مظهر الصفحة.</translation>
@@ -554,7 +564,6 @@
 <translation id="7210863904660874423">لا يلتزم <ph name="HOST_NAME" /> بمعايير الأمان.</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />مزيد من المعلومات<ph name="END_LINK" /> حول هذه المشكلة.</translation>
 <translation id="7219179957768738017">الاتصال يستخدم <ph name="SSL_VERSION" />.</translation>
-<translation id="7225807090967870017">إنشاء معرّف</translation>
 <translation id="7231308970288859235">عفوًا! عليك أن تسأل والديك ما إذا كان مناسبًا لك زيارة هذه الصفحة.</translation>
 <translation id="7246609911581847514">ظهرت لك هذه الرسالة نظرًا لحاجة مديرك للموافقة على المواقع الجديدة عند زيارتك الأولى.</translation>
 <translation id="725866823122871198">تعذر إنشاء اتصال خاص بـ <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> نظرًا لأن التاريخ والوقت لجهاز الكمبيوتر (<ph name="DATE_AND_TIME" />) غير صحيحين.</translation>
@@ -595,6 +604,7 @@
 <translation id="7610193165460212391">القيمة خارج النطاق <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">تاريخ انتهاء الصلاحية: <ph name="EXPIRATION_MONTH" /> / <ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">‏لديك فعلاً بيانات تم تشفيرها باستخدام نسخة أخرى من كلمة مرور حسابك في Google. الرجاء إدخالها أدناه.</translation>
+<translation id="7633887239437305289">‏أدخل رمز التحقق من البطاقة (CVC) المكوّن من أربعة أرقام من الجزء الأمامي من <ph name="CREDIT_CARD" /> للتحقق منها</translation>
 <translation id="7634554953375732414">إن اتصالك بهذا الموقع ليس له خصوصية.</translation>
 <translation id="7637571805876720304">‏هل تريد إزالة بطاقة الائتمان من Chromium؟</translation>
 <translation id="7643817847124207232">انقطع الاتصال بالإنترنت.</translation>

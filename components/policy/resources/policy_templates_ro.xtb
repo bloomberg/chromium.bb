@@ -527,6 +527,22 @@
           Fiecare element din această listă este un model de potrivire pentru stilul extensiei (consultă https://developer.chrome.com/extensions/match_patterns). Utilizatorii vor putea instala cu ușurință elemente de la orice adresă URL care se potrivește cu un element din această listă. Aceste modele trebuie să permită atât locația fișierului *.crx, cât și pagina de pe care a început instalarea (adică adresa URL sursă).
 
           ExtensionInstallBlacklist are prioritate față de această politică. Aceasta înseamnă că o extensie de pe lista neagră nu va fi instalată, chiar dacă provine de la un site de pe această listă.</translation>
+<translation id="2813740161943223811">Această politică este învechită, folosește ProxyMode.
+
+          Îți permite să specifici serverul proxy folosit de <ph name="PRODUCT_NAME" /> și împiedică utilizatorii să modifice setările de proxy. De asemenea, aplicațiile ARC vor putea folosi acest server proxy.
+
+          Dacă alegi să nu folosești niciodată un server proxy și să te conectezi întotdeauna direct, toate celelalte opțiuni sunt ignorate.
+
+          Dacă alegi să folosești setările de proxy ale sistemului sau detectarea automată a serverului proxy, toate celelalte opțiuni sunt ignorate.
+
+          Dacă alegi setările de proxy manuale, poți specifica opțiuni suplimentare în „Adresa IP sau adresa URL a serverului proxy”, „Adresa URL a unui fișier .pac pentru proxy” și „Lista cu valori separate prin virgulă a regulilor de ocolire a proxy-ului”. Aplicațiile ARC vor putea folosi numai serverul proxy HTTP cu cea mai mare prioritate.
+
+          Pentru exemple detaliate, accesează:
+          <ph name="PROXY_HELP_URL" />.
+
+          Dacă activezi această setare, <ph name="PRODUCT_NAME" /> va ignora toate opțiunile privind serverul proxy specificate din linia de comandă.
+
+          Dacă nu configurezi politica, utilizatorii vor avea permisiunea să aleagă setările de proxy.</translation>
 <translation id="2824715612115726353">Activează modul incognito</translation>
 <translation id="2844404652289407061">Activează disponibilitatea funcției Atinge pentru a căuta în timpul afișării conținutului din <ph name="PRODUCT_NAME" />.
 
@@ -633,6 +649,18 @@
           </translation>
 <translation id="3205825995289802549">Maximizează prima fereastră din browser la prima rulare</translation>
 <translation id="3206731874112238027">Dezactivează previzualizarea înainte de printare (învechită)</translation>
+<translation id="3208854390109736596">Îți permite să specifici serverul proxy folosit de <ph name="PRODUCT_NAME" /> și împiedică utilizatorii să modifice setările de proxy. De asemenea, aplicațiile ARC vor putea folosi acest server proxy.
+
+      Dacă alegi să nu folosești niciodată un server proxy și să te conectezi întotdeauna direct, toate celelalte opțiuni sunt ignorate.
+
+      Dacă alegi detectarea automată a serverului proxy, toate celelalte opțiuni sunt ignorate.
+
+      Pentru exemple detaliate, accesează:
+      <ph name="PROXY_HELP_URL" />.
+
+      Dacă activezi această setare, <ph name="PRODUCT_NAME" /> și aplicațiile ARC vor ignora toate opțiunile privind serverul proxy specificate din linia de comandă.
+
+      Dacă nu configurezi politicile, utilizatorii vor avea permisiunea să aleagă setările de proxy.</translation>
 <translation id="3213821784736959823">Stabilește dacă clientul DNS integrat este utilizat în <ph name="PRODUCT_NAME" />.
 
       Dacă această politică este activată, va fi utilizat clientul DNS integrat, atunci când este disponibil.
@@ -683,6 +711,9 @@
 
       Dacă această politică nu este activată, <ph name="PRODUCT_OS_NAME" /> nu va permite începerea unor sesiuni pentru invitați.</translation>
 <translation id="3428247105888806363">Activați predicția rețelei</translation>
+<translation id="3449886121729668969">Configurează setările de proxy pentru <ph name="PRODUCT_NAME" />. Aceste setări de proxy vor fi disponibile și pentru aplicațiile ARC.
+
+      Această politică încă nu este gata pentru utilizare. Nu o folosi.</translation>
 <translation id="3460784402832014830">Specifică adresa URL utilizată de un motor de căutare pentru a furniza o pagină Filă nouă.
 
           Politica este opțională. Dacă nu este configurată, nu va fi furnizată o pagină Filă nouă.
@@ -693,6 +724,14 @@
           Dacă politica este activată, întârzierile din managementul alimentării cu energie și limita de durată a sesiunii nu încep să ruleze decât după ce a fost detectată prima activitate a utilizatorului într-o sesiune.
 
           Dacă politica este dezactivată sau este lăsată nesetată, întârzierile din managementul alimentării cu energie și limita de durată a sesiunii încep să ruleze imediat după începutul sesiunii.</translation>
+<translation id="3469657928310999477"><ph name="PRODUCT_NAME" /> va ocoli toate proxy-urile pentru lista de gazde indicată aici. Aplicațiile ARC vor putea folosi această listă ca o listă cu reguli pentru ocolire.
+
+          Această politică are efect doar dacă ai selectat setările de proxy manuale la „Alege modul de specificare a setărilor serverului proxy”.
+
+          Ar trebui să lași această politică neconfigurată dacă ai selectat oricare alt mod de setare a politicilor de proxy.
+
+          Pentru mai multe exemple detaliate, accesează:
+          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="3478024346823118645">Ștergeți datele utilizatorului la deconectare</translation>
 <translation id="348495353354674884">Activați tastatura virtuală</translation>
 <translation id="3496296378755072552">Manager de parole</translation>
@@ -1312,6 +1351,9 @@
       Această politică afectează toate tipurile de suporturi de stocare. De exemplu: unități flash USB, hard diskuri externe, carduri de memorie SD și de alt tip, stocarea optică etc. Stocarea internă nu este afectată. Prin urmare, fișierele salvate în dosarul Descărcare pot fi în continuare accesate. Nici Disc Google nu este afectat de această politică.
 
       Dacă această setare este dezactivată sau nu este configurată, atunci utilizatorii pot folosi toate tipurile acceptate de dispozitive de stocare externe.</translation>
+<translation id="6076099373507468537">Definește lista de dispozitive USB care pot fi detașate de driverul kernel pentru a fi folosite prin API-ul chrome.usb direct într-o aplicație web. Pentru a se identifica un anumit hardware, intrările sunt perechi formate din Identificatorul furnizorului USB și Identificatorul produsului USB.
+
+      Dacă această politică nu este configurată, lista de dispozitive USB detașabile este necompletată.</translation>
 <translation id="6095999036251797924">Indică intervalul de timp fără intervenția utilizatorului după care ecranul este blocat atunci când dispozitivul funcționează pe c.a. sau pe baterie.
 
           Dacă intervalul de timp este setat la o valoare mai mare decât zero, reprezintă intervalul de timp pentru care utilizatorul trebuie să fie inactiv înainte ca <ph name="PRODUCT_OS_NAME" /> să blocheze ecranul.
@@ -1807,6 +1849,14 @@ nu poate fi stabilit de utilizator din setările browserului.
       raportate. Dacă politica este activată sau nu este configurată, informațiile privind sesiunea vor fi 
       reportate.</translation>
 <translation id="7774768074957326919">Utilizează setările proxy-ului pentru sistem</translation>
+<translation id="7775831859772431793">Poți specifica adresa URL a serverului proxy aici.
+
+          Această politică are efect doar dacă ai selectat setările de proxy manuale la „Alege modul de specificare a setărilor serverului proxy”.
+
+          Ar trebui să lași această politică neconfigurată dacă ai selectat oricare alt mod de setare a politicilor de proxy.
+
+          Pentru mai multe opțiuni și exemple detaliate, accesează: 
+          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7788511847830146438">Per profil</translation>
 <translation id="7796141075993499320">Vă permite să setați o listă cu modele pentru adresele URL ce specifică site-urile care au permisiunea de a rula pluginuri. Dacă această politică nu este setată, valoarea prestabilită la nivel global va fi folosită pentru toate site-urile, fie din politica „DefaultPluginsSetting”, în cazul în care aceasta este setată, fie din configurația personală a utilizatorului, în caz contrar.</translation>
 <translation id="7818131573217430250">Setați modul de contrast ridicat pe ecranul de conectare ca stare prestabilită</translation>
@@ -1839,6 +1889,14 @@ nu poate fi stabilit de utilizator din setările browserului.
       Politica stabilește codul extensiei de utilizat ca screen saver pentru ecranul de conectare. Extensia trebuie să facă parte din pachetul de aplicații care este configurat pentru acest domeniu prin intermediul politicii DeviceAppPack.</translation>
 <translation id="7882890448959833986">Elimină avertismentul privind sistemul de operare neacceptat</translation>
 <translation id="7912255076272890813">Configurați tipurile de aplicații/extensii permise</translation>
+<translation id="7915236031252389808">Poți specifica adresa URL a unui fișier .pac pentru proxy aici.
+
+          Această politică are efect doar dacă ai selectat setările de proxy manuale la „Alege modul de specificare a setărilor serverului proxy”.
+
+          Ar trebui să lași această politică neconfigurată dacă ai selectat oricare alt mod de setare a politicilor de proxy.
+
+          Pentru exemple detaliate, accesează:
+          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="793134539373873765">Specifică dacă trebuie utilizată o rețea p2p pentru încărcările utile ale actualizărilor sistemului de operare. Dacă politica este activată, dispozitivele vor utiliza în comun și vor încerca să consume încărcările utile ale actualizărilor în rețeaua LAN, ceea ce ar putea reduce utilizarea lățimii de bandă de internet și ar evita congestionarea traficului. Dacă încărcarea utilă a actualizărilor nu este disponibilă în rețeaua LAN, dispozitivul va utiliza pentru descărcare un server cu actualizări. Dacă politica nu este activată sau nu este configurată, nu va fi utilizată o rețea p2p.</translation>
 <translation id="7933141401888114454">Permiteți crearea de utilizatori monitorizați</translation>
 <translation id="7936098023732125869">Activează folosirea unui furnizor de căutare prestabilit. 
@@ -1976,6 +2034,11 @@ nu poate fi stabilit de utilizator din setările browserului.
 <translation id="8382184662529825177">Permiteți utilizarea atestării la distanță pentru protejarea conținutului pe dispozitiv</translation>
 <translation id="838870586332499308">Activează roamingul de date</translation>
 <translation id="8412312801707973447">Această politică stabilește dacă sunt efectuate verificări OCSP/CRL online</translation>
+<translation id="8413348101535146315">Activează oprirea proceselor în Managerul de activități din <ph name="PRODUCT_NAME" />.
+
+      Dacă politica este dezactivată, butonul „Oprește procesul” este dezactivat în Managerul de activități.
+
+      Dacă politica este activată sau nu este configurată, utilizatorul poate opri procesele în Managerul de activități.</translation>
 <translation id="8424255554404582727">Setează rotirea prestabilită a ecranului, reaplicată la fiecare repornire</translation>
 <translation id="8426231401662877819">Rotește ecranul la 90 de grade în sensul acelor de ceasornic</translation>
 <translation id="8451988835943702790">Utilizează pagina Filă nouă ca pagină de pornire</translation>
@@ -2188,6 +2251,24 @@ nu poate fi stabilit de utilizator din setările browserului.
 <translation id="9112897538922695510">Vă permite să înregistrați o listă de handlere de protocol. Aceasta poate fi doar o politică recomandată. Valoarea proprietății |protocol| trebuie setată la o schemă ca „mailto”, iar valoarea proprietății |url| trebuie setată la șablonul adresei URL al aplicației care gestionează schema. Șablonul poate include „%s”, care, dacă este prezent, va fi înlocuit cu adresa URL gestionată.
 
           Handlerele de protocol înregistrate de politică sunt combinate cu cele înregistrate de utilizator și ambele sunt disponibile pentru a fi utilizate. Utilizatorul poate înlocui handlerele de protocol instalate de politică instalând un nou handler prestabilit, dar nu poate elimina un handler de protocol înregistrat de politică.</translation>
+<translation id="913138516158420759">Îți permite să specifici serverul proxy folosit de <ph name="PRODUCT_NAME" /> și împiedică utilizatorii să modifice setările de proxy. De asemenea, aplicațiile ARC vor putea folosi acest server proxy.
+
+          Dacă alegi să nu folosești niciodată un server proxy și să te conectezi întotdeauna direct, toate celelalte opțiuni sunt ignorate.
+
+          Dacă alegi să folosești setările de proxy ale sistemului, toate celelalte opțiuni sunt ignorate.
+
+          Dacă alegi detectarea automată a serverului proxy, toate celelalte opțiuni sunt ignorate.
+
+          Dacă alegi modul server proxy fix, poți specifica opțiuni suplimentare în „Adresa IP sau adresa URL a serverului proxy” și „Lista cu valori separate prin virgulă a regulilor de ocolire a proxy-ului”. Aplicațiile ARC vor putea folosi numai serverul proxy HTTP cu cea mai mare prioritate.
+
+          Dacă alegi să folosești un script .pac pentru proxy, trebuie să specifici adresa URL a scriptului în „Adresa URL a unui fișier .pac pentru proxy”.
+
+          Pentru exemple detaliate, accesează:
+          <ph name="PROXY_HELP_URL" />.
+
+          Dacă activezi această setare, <ph name="PRODUCT_NAME" /> și aplicațiile ARC vor ignora toate opțiunile privind serverul proxy specificate din linia de comandă.
+
+          Dacă nu configurezi politica, utilizatorii vor avea permisiunea să aleagă setările de proxy.</translation>
 <translation id="913195841488580904">Blocați accesul la o listă de adrese URL</translation>
 <translation id="9135033364005346124">Activează proxy-ul <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="9147029539363974059">Trimite jurnalele de sistem pe serverul de gestionare, pentru ca administratorii

@@ -520,6 +520,22 @@
 Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam daftar ini dengan mudah. Lokasi file *.crx dan laman tempat unduhan dimulai (perujuk) harus diizinkan dengan pola ini.
 
           ExtensionInstallBlacklist lebih diutamakan dibandingkan dengan kebijakan ini. Artinya, ekstensi dalam daftar hitam tidak akan dipasang, meskipun berasal dari situs dalam daftar ini.</translation>
+<translation id="2813740161943223811">Kebijakan ini tidak lagi digunakan, gunakan ProxyMode sebagai gantinya.
+
+          Memungkinkan Anda menetapkan server proxy yang digunakan <ph name="PRODUCT_NAME" /> dan mencegah pengguna mengubah setelan proxy. Aplikasi ARC juga dapat menggunakan server proxy ini.
+
+          Jika Anda memilih untuk tidak pernah menggunakan server proxy dan selalu tersambung secara langsung, semua opsi lainnya akan diabaikan.
+
+          Jika Anda memilih untuk menggunakan setelan proxy sistem atau mendeteksi server proxy secara otomatis, semua opsi lainnya akan diabaikan.
+
+          Jika memilih setelan proxy manual, Anda dapat menetapkan opsi lebih lanjut di 'Alamat atau URL server proxy', 'URL ke file .pac proxy', dan 'Daftar aturan pengabaian proxy yang dipisahkan koma'. Hanya server proxy HTTP dengan prioritas tertinggi yang tersedia untuk aplikasi ARC.
+
+          Untuk contoh mendetail, kunjungi:
+          <ph name="PROXY_HELP_URL" />.
+
+          Jika Anda mengaktifkan setelan ini, <ph name="PRODUCT_NAME" /> akan mengabaikan semua opsi terkait proxy yang ditetapkan dari baris perintah.
+
+          Membiarkan kebijakan ini tidak disetel akan memungkinkan pengguna memilih setelan proxy sendiri.</translation>
 <translation id="2824715612115726353">Aktifkan mode Penyamaran</translation>
 <translation id="2844404652289407061">Mengaktifkan ketersediaan Sentuh untuk Menelusuri di tampilan konten <ph name="PRODUCT_NAME" />.
 
@@ -626,6 +642,18 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
           </translation>
 <translation id="3205825995289802549">Maksimalkan jendela browser pertama di percobaan pertama</translation>
 <translation id="3206731874112238027">Menonaktifkan Pratinjau Cetak (tak lagi digunakan)</translation>
+<translation id="3208854390109736596">Memungkinkan Anda menetapkan server proxy tang digunakan <ph name="PRODUCT_NAME" /> dan mencegah pengguna mengubah setelan proxy. Aplikasi ARC juga dapat menggunakan server proxy ini.
+
+      Jika Anda memilih untuk tidak pernah menggunakan server proxy dan selalu tersambung secara langsung, semua opsi lainnya akan diabaikan.
+
+      Jika Anda memilih untuk mendeteksi server proxy secara otomatis, semua opsi lainnya akan diabaikan.
+
+      Untuk contoh mendetail, kunjungi:
+      <ph name="PROXY_HELP_URL" />.
+
+      Jika Anda mengaktifkan setelan ini, <ph name="PRODUCT_NAME" /> dan aplikasi ARC akan mengabaikan semua opsi terkait proxy yang ditetapkan dari baris perintah.
+
+      Membiarkan kebijakan ini tidak disetel akan memungkinkan pengguna memilih setelan proxy sendiri.</translation>
 <translation id="3213821784736959823">Mengontrol apakah klien DNS di dalamnya digunakan di <ph name="PRODUCT_NAME" />.
 
       Jika kebijakan ini disetel ke benar, klien DNS yang ada di dalamnya akan digunakan, jika tersedia.
@@ -676,6 +704,9 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 
       Jika kebijakan ini disetel ke false, <ph name="PRODUCT_OS_NAME" /> tidak akan mengizinkan dimulainya sesi tamu.</translation>
 <translation id="3428247105888806363">Aktifkan prediksi jaringan</translation>
+<translation id="3449886121729668969">Mengonfigurasi setelan proxy untuk <ph name="PRODUCT_NAME" />. Setelan proxy ini juga akan tersedia untuk aplikasi ARC.
+
+      Kebijakan ini belum siap untuk digunakan, jangan menggunakannya.</translation>
 <translation id="3460784402832014830">Menentukan URL yang digunakan oleh mesin telusur untuk memberikan laman tab baru.
 
           Kebijakan ini bersifat opsional. Jika tidak disetel, laman tab baru tidak akan diberikan.
@@ -686,6 +717,14 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
           Jika kebijakan disetel ke True, penundaan pengelolaan daya dan batas lama sesi tidak mulai berjalan sampai aktivitas pengguna pertama teramati dalam sebuah sesi.
 
           Jika kebijakan ini disetel ke False atau dibiarkan tidak disetel, penundaan pengelolaan daya dan batas lama sesi mulai berjalan langsung saat sesi dimulai.</translation>
+<translation id="3469657928310999477"><ph name="PRODUCT_NAME" /> akan mengabaikan proxy apa pun untuk daftar host yang diberikan di sini. Aplikasi ARC dapat menggunakan daftar ini sebagai daftar aturan pengabaian.
+
+          Kebijakan ini hanya berlaku jika Anda telah memilih setelan proxy manual di 'Pilih cara menetapkan setelan server proxy'.
+
+          Sebaiknya biarkan kebijakan ini tidak disetel jika Anda telah memilih mode lain untuk menyetel kebijakan proxy.
+
+          Untuk contoh yang lebih mendetail, kunjungi:
+          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="3478024346823118645">Hapus data pengguna saat keluar</translation>
 <translation id="348495353354674884">Aktifkan keyboard virtual</translation>
 <translation id="3496296378755072552">Pengelola sandi</translation>
@@ -1295,6 +1334,9 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
       Kebijakan ini berpengaruh pada semua jenis media penyimpanan. Contohnya: flash disk USB, hard disk eksternal, kartu memori SD dan kartu memori lainnya, penyimpanan optik, dll. Penyimpanan internal tidak dipengaruhi oleh kebijakan ini, jadi file yang disimpan pada folder Unduhan tetap dapat diakses. Google Drive juga tidak dipengaruhi oleh kebijakan ini.
 
       Jika setelan ini dinonaktifkan atau tidak dikonfigurasi, pengguna dapat menggunakan semua jenis penyimpanan eksternal yang didukung di perangkat mereka.</translation>
+<translation id="6076099373507468537">Menjelaskan daftar perangkat USB yang diizinkan untuk dilepas dari driver kernelnya, agar dapat langsung digunakan melalui API chrome.usb dalam aplikasi web. Entri berupa pasangan Pengenal Vendor USB dan Pengenal Produk untuk mengidentifikasi perangkat keras tertentu.
+
+      Jika kebijakan ini tidak dikonfigurasi, daftar perangkat USB yang dapat dilepas akan kosong.</translation>
 <translation id="6095999036251797924">Menentukan lamanya waktu tanpa masukan pengguna sebelum layar dikunci saat berjalan menggunakan daya AC atau baterai.
 
           Jika lamanya waktu disetel ke nilai yang lebih besar dari nol, nilai tersebut mewakili lamanya waktu pengguna tetap menganggur sebelum <ph name="PRODUCT_OS_NAME" /> mengunci layar.
@@ -1789,6 +1831,14 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
       Jika disetel ke True atau tidak disetel, informasi sesi akan
      dilaporkan.</translation>
 <translation id="7774768074957326919">Gunakan setelan proxy sistem</translation>
+<translation id="7775831859772431793">Anda dapat menetapkan URL server proxy di sini.
+
+          Kebijakan ini hanya berlaku jika Anda telah memilih setelan proxy manual di 'Pilih cara menetapkan setelan server proxy'.
+
+          Sebaiknya biarkan kebijakan ini tidak disetel jika Anda telah memilih mode lainnya untuk menyetel kebijakan proxy.
+
+          Untuk opsi lain dan contoh mendetailnya, kunjungi:
+          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7788511847830146438">Per Profil</translation>
 <translation id="7796141075993499320">Memungkinkan Anda menyetel daftar pola url yang menentukan situs yang diizinkan untuk menjalankan plugin. Jika kebijakan ini tidak disetel, nilai default global akan digunakan untuk semua situs, baik dari kebijakan 'DefaultPluginsSetting', jika disetel, atau konfigurasi pribadi pengguna.</translation>
 <translation id="7818131573217430250">Menyetel status default mode kontras tinggi di layar masuk</translation>
@@ -1819,6 +1869,14 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
       Menentukan id ekstensi untuk digunakan sebagai tirai layar pada layar masuk. Ekstensi haruslah bagian dari AppPack yang dikonfigurasi untuk domain ini melalui kebijakan DeviceAppPack.</translation>
 <translation id="7882890448959833986">Sembunyikan peringatan OS tidak didukung</translation>
 <translation id="7912255076272890813">Konfigurasikan jenis aplikasi/ekstensi yang diizinkan</translation>
+<translation id="7915236031252389808">Anda dapat menetapkan URL ke file .pac proxy di sini.
+
+          Kebijakan ini hanya berpengaruh jika Anda telah memilih setelan proxy manual di 'Pilih cara menetapkan setelan server proxy'.
+
+          Sebaiknya biarkan kebijakan ini tidak disetel jika Anda telah memilih mode lainnya untuk menyetel kebijakan proxy.
+
+          Untuk contoh mendetail, kunjungi:
+          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="793134539373873765">Tentukan apakah p2p akan digunakan untuk payload pembaruan OS. Jika disetel ke True, perangkat akan membagi dan berusaha menggunakan payload pembaruan pada LAN, serta berpotensi mengurangi penggunaan dan kepadatan bandwidth internet. Jika payload pembaruan tidak tersedia di LAN, perangkat tersebut akan kembali mengunduh dari server yang diperbarui. Jika disetel ke False atau tidak dikonfigurasi, p2p tidak akan digunakan.</translation>
 <translation id="7933141401888114454">Mengaktifkan pembuatan pengguna yang dilindungi</translation>
 <translation id="7936098023732125869">Mengaktifkan penggunaan penyedia penelusuran default.
@@ -1956,6 +2014,11 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 <translation id="8382184662529825177">Mengaktifkan penggunaan pengesahan jarak jauh untuk perlindungan konten bagi perangkat</translation>
 <translation id="838870586332499308">Aktifkan roaming data</translation>
 <translation id="8412312801707973447">Apakah pemeriksaan OCSP/CRL online dilakukan atau tidak</translation>
+<translation id="8413348101535146315">Memungkinkan proses diakhiri di Pengelola Tugas <ph name="PRODUCT_NAME" />.
+
+      Jika disetel ke false, tombol 'Akhiri proses' akan dinonaktifkan di Pengelola Tugas.
+
+      Jika disetel ke true atau tidak dikonfigurasi, pengguna dapat mengakhiri proses di Pengelola Tugas.</translation>
 <translation id="8424255554404582727">Setel pemutaran layar default, diterapkan kembali setiap kali melakukan boot ulang</translation>
 <translation id="8426231401662877819">Putar layar searah jarum jam sebesar 90 derajat</translation>
 <translation id="8451988835943702790">Gunakan Laman Tab Baru sebagai beranda</translation>
@@ -2162,6 +2225,24 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 <translation id="9112897538922695510">Memungkinkan Anda mendaftarkan daftar penangan protokol. Ini hanya dapat menjadi kebijakan yang disarankan. Properti |protokol| sebaiknya disetel ke skema seperti 'mailto' dan properti |url| sebaiknya disetel ke pola URL aplikasi yang menangani skema. Pola tersebut dapat berisi '%s', yang apabila disajikan akan menggantikan URL yang ditangani.
 
           Penangan protokol yang didaftarkan oleh kebijakan digabung dengan penangan protokol yang didaftarkan oleh pengguna dan keduanya tersedia untuk digunakan. Pengguna dapat mengganti penangan protokol yang dipasang oleh kebijakan dengan memasang penangan default baru, namun pengguna tidak dapat membuang penangan protokol yang didaftarkan oleh kebijakan.</translation>
+<translation id="913138516158420759">Memungkinkan Anda menetapkan server proxy yang digunakan <ph name="PRODUCT_NAME" /> dan mencegah pengguna mengubah setelan proxy. Aplikasi ARC juga dapat menggunakan server proxy ini.
+
+          Jika Anda memilih untuk tidak pernah menggunakan server proxy dan selalu tersambung secara langsung, semua opsi lainnya akan diabaikan.
+
+          Jika Anda memilih untuk menggunakan setelan proxy sistem, semua opsi lainnya akan diabaikan.
+
+          Jika Anda memilih untuk mendeteksi server proxy secara otomatis, semua opsi lainnya akan diabaikan.
+
+          Jika memilih setelan proxy manual, Anda dapat menetapkan opsi lebih lanjut di 'Alamat atau URL server proxy' dan 'Daftar aturan pengabaian proxy yang dipisahkan koma'. Hanya server proxy HTTP dengan prioritas tertinggi yang tersedia untuk aplikasi ARC.
+
+          Jika memilih untuk menggunakan skrip proxy .pac, Anda harus menetapkan URL ke skrip di 'URL ke file .pac proxy'.
+
+          Untuk contoh mendetail, kunjungi:
+          <ph name="PROXY_HELP_URL" />.
+
+          Jika Anda mengaktifkan setelan ini, <ph name="PRODUCT_NAME" /> dan aplikasi ARC akan mengabaikan semua opsi terkait proxy yang ditetapkan dari baris perintah.
+
+          Membiarkan kebijakan ini tidak disetel akan memungkinkan pengguna memilih setelan proxy sendiri.</translation>
 <translation id="913195841488580904">Cekal akses ke daftar URL</translation>
 <translation id="9135033364005346124">Mengaktifkan proxy <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="9147029539363974059">Mengirim log sistem ke server pengelolaan, untuk memungkinkan

@@ -68,6 +68,7 @@ Kad galėtumėte naudoti Fizinį žiniatinklį, būtina įgalinti „Bluetooth�
 <translation id="1842969606798536927">Mokėti</translation>
 <translation id="1853692000353488670">Naujas inkognito skirtukas</translation>
 <translation id="189172778771606813">Uždaryti naršymo skydelį</translation>
+<translation id="1924956916668006832">Pasirinkti pristatymo adresą</translation>
 <translation id="194341124344773587">Įjunkite „Chrome“ leidimą <ph name="BEGIN_LINK" />„Android“ nustatymuose<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Slaptažodžių išsaugojimas</translation>
 <translation id="1944384637046898011">Šifruoti viską nuo <ph name="TIME" /> taikant „Google“ slaptažodį</translation>
@@ -98,6 +99,7 @@ Kad galėtumėte naudoti Fizinį žiniatinklį, būtina įgalinti „Bluetooth�
 <translation id="2268044343513325586">Patikslinti</translation>
 <translation id="2315043854645842844">Kliento pasirinkto sertifikato nepalaiko operacinė sistema.</translation>
 <translation id="2321958826496381788">Vilkite šliaužiklį, kol bus patogu skaityti šį tekstą. Du kartus palietus pastraipą, tekstas turėtų būti mažiausiai tokio dydžio.</translation>
+<translation id="2329597144923131178">Pris. ir pas. žymių, ist., slapt. bei kitų nust. duom. visuose įreng.</translation>
 <translation id="2343328333327081434">Diegiama...</translation>
 <translation id="2351097562818989364">Vertimo nustatymai buvo nustatyti iš naujo.</translation>
 <translation id="2359808026110333948">Tęsti</translation>
@@ -133,6 +135,7 @@ Kad galėtumėte naudoti Fizinį žiniatinklį, būtina įgalinti „Bluetooth�
 <translation id="2762000892062317888">ką tik</translation>
 <translation id="2770465223704140727">Pašalinti iš sąrašo</translation>
 <translation id="278029852808208386">Nerasta „Bluetooth“ įrenginių. <ph name="BEGIN_LINK" />Ieškokite dar kartą<ph name="END_LINK" />.</translation>
+<translation id="2781389167600714117">Pasirinkti pristatymą</translation>
 <translation id="2811892995384186721">Nematote savo įrenginio? <ph name="BEGIN_LINK" />Gaukite pagalbos<ph name="END_LINK" /></translation>
 <translation id="2836148919159985482">Palieskite mygtuką „Atgal“, kad išeitumėte iš viso ekrano režimo.</translation>
 <translation id="2842985007712546952">Viršaplankis</translation>
@@ -157,8 +160,7 @@ Kad galėtumėte naudoti Fizinį žiniatinklį, būtina įgalinti „Bluetooth�
 <translation id="3090193911106258841">Pasiekiama garso ir vaizdo įrašų įvestis</translation>
 <translation id="3137521801621304719">Išjungti inkognito režimą</translation>
 <translation id="3149891296864842641">Pristatymo parinktis</translation>
-<translation id="3162882791484435636">Pasirinkite pristatymo parinktį</translation>
-<translation id="3173438333156928404">Apdorojant mokėjimą įvyko klaida</translation>
+<translation id="3162882791484435636">Pasirinkti pristatymo parinktį</translation>
 <translation id="3177909033752230686">Puslapio kalba:</translation>
 <translation id="3190152372525844641">Įjunkite „Chrome“ leidimus <ph name="BEGIN_LINK" />„Android“ nustatymuose<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905">Išsaugota duomenų: <ph name="STORAGE_AMOUNT" /></translation>
@@ -194,7 +196,6 @@ Prisijungiate naudodami valdomą paskyrą ir leidžiate administratoriui valdyti
 Jei norite koreguoti paieškos terminą, paspauskite ir laikykite, kad jį pasirinktumėte. Kad patikslintumėte paiešką, slinkite skydeliu į viršų ir palieskite paieškos laukelį.</translation>
 <translation id="3623048332793834136">„Chrome Canary“ žymės</translation>
 <translation id="363596933471559332">Automatiškai prisijungti prie svetainių naudojant išsaugotus prisijungimo duomenis. Kai funkcija išjungta, kaskart prisijungiant prie svetainės prašoma patvirtinti.</translation>
-<translation id="3653742808139624888">Prisijunkite naršyklėje „Chrome“, kad pasiektumėte žymes visuose įrenginiuose</translation>
 <translation id="3656115297268584622">Įjunkite vietovę <ph name="BEGIN_LINK" />„Android“ nustatymuose<ph name="END_LINK" />.</translation>
 <translation id="3661699943263275414">Trečiųjų šalių svetainės gali saugoti ir nuskaityti slapukų duomenis</translation>
 <translation id="3672452749423051839">Naršymo klaidų pasiūlymai</translation>
@@ -226,6 +227,7 @@ Jei norite koreguoti paieškos terminą, paspauskite ir laikykite, kad jį pasir
 <translation id="4170011742729630528">Paslauga nepasiekiama; vėliau bandykite dar kartą.</translation>
 <translation id="4195643157523330669">Atidaryti naujame skirtuke</translation>
 <translation id="423410644998903704">„Chrome“ reikia pasiekiamumo leidimų, kad juos būtų galima bendrinti su šia svetaine.</translation>
+<translation id="4242533952199664413">Atidaryti nustatymus</translation>
 <translation id="424864128008805179">Atsijungti nuo „Chrome“?</translation>
 <translation id="4254813446494774748">Vertimo kalba:</translation>
 <translation id="4256782883801055595">Atvirojo šaltinio licencijos</translation>
@@ -525,14 +527,12 @@ Adresu <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> gali bū
 <translation id="8007176423574883786">Išjungta šiame įrenginyje</translation>
 <translation id="8026334261755873520">Išvalyti naršymo duomenis</translation>
 <translation id="8035133914807600019">Naujas aplankas…</translation>
+<translation id="8063895661287329888">Nepavyko pridėti žymės.</translation>
 <translation id="8068648041423924542">Nepavyko pasirinkti sertifikato.</translation>
 <translation id="8069239273282989646">Suglaudinus</translation>
 <translation id="8073388330009372546">Atid. vaizdą nauj. skirt. lap.</translation>
 <translation id="8076014560081431679">Išsaugoti svetainių nustatymai nebus ištrinti ir gali nurodyti naršymo įpročius. <ph name="BEGIN_LINK" />Sužinokite daugiau<ph name="END_LINK" /></translation>
 <translation id="8087000398470557479">Šis turinys yra iš domeno <ph name="DOMAIN_NAME" />, kurį teikia „Google“.</translation>
-<translation id="8098570222830891427">Netoliese esantys įrenginiai transliuoja tinklalapius „Bluetooth“ ryšiu. Kai suaktyvinsite įrenginį, „Chrome“ nuskaitys puslapius ir rodys juos. Šie puslapiai bus siunčiami naudojant „Google“ paslaugą siekiant patobulinti puslapių rezultatų kokybę.
-
-Fizinį žiniatinklį galite valdyti „Chrome“ nustatymuose.</translation>
 <translation id="8106211421800660735">Kredito kortelės numeris</translation>
 <translation id="813082847718468539">Žiūrėti svetainės informaciją</translation>
 <translation id="8137558756159375272">Paieška palietus siunčia pasirinktą žodį ir esamą puslapį kaip kontekstą „Google“ paieškai. Galite išjungti šią funkciją <ph name="BEGIN_LINK" />nustatymuose<ph name="END_LINK" />.</translation>

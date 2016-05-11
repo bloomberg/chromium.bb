@@ -68,6 +68,7 @@ Bluetooothin ja sijaintipalvelun on oltava päällä, jotta Fyysistä webiä voi
 <translation id="1842969606798536927">Maksa</translation>
 <translation id="1853692000353488670">Uusi incognito-välilehti</translation>
 <translation id="189172778771606813">Sulje navigoinnin vetopaneeli</translation>
+<translation id="1924956916668006832">Valitse toimitusosoite</translation>
 <translation id="194341124344773587">Ota käyttöoikeus käyttöön Chromelle <ph name="BEGIN_LINK" />Android-asetuksissa<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Salasanojen tallentaminen</translation>
 <translation id="1944384637046898011">Salaa kaikki tiedot Google-salasanalla, joka on asetettu <ph name="TIME" />.</translation>
@@ -98,6 +99,7 @@ Bluetooothin ja sijaintipalvelun on oltava päällä, jotta Fyysistä webiä voi
 <translation id="2268044343513325586">Tarkenna</translation>
 <translation id="2315043854645842844">Käyttöjärjestelmä ei tue palvelimen varmennevalintaa.</translation>
 <translation id="2321958826496381788">Vedä liukusäädintä, kunnes voit lukea tämän mukavasti. Tekstin tulisi olla vähintään näin suurta kaksoisnapautettuasi kappaletta.</translation>
+<translation id="2329597144923131178">Kirjaudu ja käytä kirjanm., historiaa, salasan. ja muita asetuksia kaikissa laitteissasi.</translation>
 <translation id="2343328333327081434">Asennetaan…</translation>
 <translation id="2351097562818989364">Käännösasetukset on nollattu.</translation>
 <translation id="2359808026110333948">Jatka</translation>
@@ -133,6 +135,7 @@ Bluetooothin ja sijaintipalvelun on oltava päällä, jotta Fyysistä webiä voi
 <translation id="2762000892062317888">äsken</translation>
 <translation id="2770465223704140727">Poista luettelosta</translation>
 <translation id="278029852808208386">Bluetooth-laitteita ei löytynyt. <ph name="BEGIN_LINK" />Hae uudelleen<ph name="END_LINK" />.</translation>
+<translation id="2781389167600714117">Valitse toimitusvaihtoehdot</translation>
 <translation id="2811892995384186721">Etkö näe laitettasi? <ph name="BEGIN_LINK" />Tutustu ohjeisiin.<ph name="END_LINK" /></translation>
 <translation id="2836148919159985482">Poistu koko näytön tilasta Takaisin-painikkeella.</translation>
 <translation id="2842985007712546952">Ylätason kansio</translation>
@@ -158,7 +161,6 @@ Bluetooothin ja sijaintipalvelun on oltava päällä, jotta Fyysistä webiä voi
 <translation id="3137521801621304719">Poistu incognito-tilasta</translation>
 <translation id="3149891296864842641">Toimitustapa</translation>
 <translation id="3162882791484435636">Valitse toimitustapa</translation>
-<translation id="3173438333156928404">Maksua käsiteltäessä tapahtui virhe.</translation>
 <translation id="3177909033752230686">Sivun kieli:</translation>
 <translation id="3190152372525844641">Ota käyttöoikeudet käyttöön Chromelle <ph name="BEGIN_LINK" />Android-asetuksissa<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> tallennettua tietoa</translation>
@@ -194,7 +196,6 @@ Olet kirjautumassa hallinnoituun tiliin, jonka hallinnoijalla on oikeus muokata 
 Muokkaa hakutermiä valitsemalla se pitkällä painalluksella. Tarkenna hakua liu'uttamalla paneeli yläasentoon ja koskettamalla hakukenttää.</translation>
 <translation id="3623048332793834136">Chrome Canaryn kirjanmerkit</translation>
 <translation id="363596933471559332">Kirjaudu automaattisesti verkkosivustoille käyttämällä tallennettuja kirjautumistietoja. Jos tämä toiminto ei ole käytössä, sinua pyydetään vahvistamaan kirjautuminen aina, kun kirjaudut sivustolle.</translation>
-<translation id="3653742808139624888">Kirjaudu sisään Chromeen, niin voit käyttää kirjanmerkkejäsi kaikilla laitteilla.</translation>
 <translation id="3656115297268584622">Ota sijainti käyttöön <ph name="BEGIN_LINK" />Android-asetuksissa<ph name="END_LINK" />.</translation>
 <translation id="3661699943263275414">Kolmannen osapuolen verkkosivustot voivat tallentaa ja lukea evästeiden tietoja.</translation>
 <translation id="3672452749423051839">Selausvirheiden ehdotukset</translation>
@@ -226,6 +227,7 @@ Muokkaa hakutermiä valitsemalla se pitkällä painalluksella. Tarkenna hakua li
 <translation id="4170011742729630528">Palvelu ei ole käytettävissä. Yritä myöhemmin uudelleen.</translation>
 <translation id="4195643157523330669">Avaa uudessa välilehdessä</translation>
 <translation id="423410644998903704">Chrome tarvitsee käyttöoikeuksien käyttöoikeuden voidakseen jakaa sen tämän sivuston kanssa.</translation>
+<translation id="4242533952199664413">Avaa asetukset</translation>
 <translation id="424864128008805179">Kirjaudutaanko ulos Chromesta?</translation>
 <translation id="4254813446494774748">Käännöksen kieli:</translation>
 <translation id="4256782883801055595">Avoimen lähdekoodin käyttöluvat</translation>
@@ -524,14 +526,12 @@ Google-tililläsi voi olla muita selaushistoriatietoja, kuten hakuja ja toiminta
 <translation id="8007176423574883786">Ei käytössä tällä laitteella</translation>
 <translation id="8026334261755873520">Poista selaustiedot</translation>
 <translation id="8035133914807600019">Uusi kansio…</translation>
+<translation id="8063895661287329888">Kirjanmerkin lisääminen epäonnistui.</translation>
 <translation id="8068648041423924542">Varmenteen valinta epäonnistui</translation>
 <translation id="8069239273282989646">Pakkaamisen jälkeen</translation>
 <translation id="8073388330009372546">Avaa kuva uudessa välilehdessä</translation>
 <translation id="8076014560081431679">Tallennettuja sivustoasetuksia ei poisteta, ja ne saattavat sisältää tietoa selaustavoistasi. <ph name="BEGIN_LINK" />Lisätietoja<ph name="END_LINK" /></translation>
 <translation id="8087000398470557479">Google on toimittanut tämän sisällön osoitteesta <ph name="DOMAIN_NAME" />.</translation>
-<translation id="8098570222830891427">Lähelläsi olevat laitteet lähettävät verkkosivuja Bluetoothin kautta. Kun herätät laitteen lepotilasta, Chrome etsii sivuja ja näyttää ne. Google käsittelee sivut palvelussaan parantaakseen tulosten laatua.
-
-Voit hallinnoida Fyysisen webin ominaisuuksia Chromen asetuksissa.</translation>
 <translation id="8106211421800660735">Luottokortin numero</translation>
 <translation id="813082847718468539">Näytä sivuston tiedot</translation>
 <translation id="8137558756159375272">Koskettamalla hakeminen lähettää valitun sanan ja nykyisen sivun Google-haulle haun kontekstina. Voit poistaa ominaisuuden käytöstä <ph name="BEGIN_LINK" />asetuksissa<ph name="END_LINK" />.</translation>

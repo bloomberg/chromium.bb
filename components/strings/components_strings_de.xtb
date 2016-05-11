@@ -43,6 +43,7 @@
 <translation id="1254117744268754948">Ordner wählen</translation>
 <translation id="1285320974508926690">Diese Website nie übersetzen</translation>
 <translation id="129553762522093515">Kürzlich geschlossen</translation>
+<translation id="129863573139666797"><ph name="BEGIN_LINK" />Löschen Sie Ihre Cookies<ph name="END_LINK" /></translation>
 <translation id="1339601241726513588">Anmeldedomain:</translation>
 <translation id="1344588688991793829">AutoFill-Einstellungen für Chromium...</translation>
 <translation id="1374468813861204354">Vorschläge</translation>
@@ -199,6 +200,7 @@
 <translation id="2969319727213777354">Zum Herstellen einer sicheren Verbindung muss die Uhrzeit richtig eingestellt sein. Der Grund hierfür ist, dass Websites sich mithilfe von Zertifikaten identifizieren, die nur für einen bestimmten Zeitraum gelten. Da die Uhrzeit Ihres Geräts falsch ist, kann Google Chrome diese Zertifikate nicht bestätigen.</translation>
 <translation id="2972581237482394796">&amp;Wiederholen</translation>
 <translation id="2985306909656435243">Wenn Sie diese Option auswählen, speichert Chromium eine Kopie Ihrer Karte auf diesem Gerät, damit Formulare schneller ausgefüllt werden können.</translation>
+<translation id="2989984781570875765">Geben Sie das Ablaufdatum und den dreistelligen CVC-Code auf der Rückseite Ihrer <ph name="CREDIT_CARD" /> ein.</translation>
 <translation id="2991174974383378012">Datenfreigabe an Websites</translation>
 <translation id="3005723025932146533">Gespeicherte Kopie anzeigen</translation>
 <translation id="3010559122411665027">Listeneintrag "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
@@ -281,6 +283,7 @@
 <translation id="3717027428350673159"><ph name="BEGIN_LINK" />Proxy, Firewall und DNS-Konfiguration prüfen<ph name="END_LINK" /></translation>
 <translation id="3739623965217189342">Von Ihnen kopierter Link</translation>
 <translation id="3744899669254331632">Sie können <ph name="SITE" /> zurzeit nicht aufrufen, weil die Website verschlüsselte Anmeldedaten gesendet hat, die von Chromium nicht verarbeitet werden können. Netzwerkfehler und Angriffe sind in der Regel nur vorübergehend, sodass die Seite wahrscheinlich später wieder funktioniert.</translation>
+<translation id="3748071062818261683">Karte bestätigen</translation>
 <translation id="3748412725338508953">Zu viele Umleitungen.</translation>
 <translation id="375403751935624634">Aufgrund eines Serverfehlers ist die Übersetzung fehlgeschlagen.</translation>
 <translation id="3759461132968374835">Es liegen keine kürzlich gemeldeten Abstürze vor. Abstürze, die bei deaktivierter Absturzberichtsfunktion aufgetreten sind, werden hier nicht angezeigt.</translation>
@@ -309,6 +312,7 @@
 <translation id="4103249731201008433">Seriennummer des Geräts ist ungültig.</translation>
 <translation id="4103763322291513355">Unter &lt;strong&gt;chrome://policy&lt;/strong&gt; finden Sie eine Liste der blockierten URLs und andere Richtlinien, die durch Ihren Systemadministrator erzwungen werden.</translation>
 <translation id="4117700440116928470">Richtlinienbereich wird nicht unterstützt.</translation>
+<translation id="4130226655945681476">Prüfen Sie Netzwerkkabel, Modem und Router</translation>
 <translation id="4147376274874979956">Kein Zugriff auf die Datei</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">Möchten Sie, dass Chromium diese Karte speichert?</translation>
@@ -343,11 +347,15 @@
 <translation id="450710068430902550">Datenfreigabe an Administrator</translation>
 <translation id="4522570452068850558">Details</translation>
 <translation id="4535734014498033861">Proxyserver-Verbindung fehlgeschlagen</translation>
+<translation id="4553532082208702698">Geben Sie den vierstelligen CVC-Code auf der Vorderseite Ihrer <ph name="CREDIT_CARD" /> ein</translation>
+<translation id="4558551763791394412">Deaktivieren Sie Ihre Erweiterungen.</translation>
 <translation id="4587425331216688090">Adresse aus Chrome entfernen?</translation>
 <translation id="4592951414987517459">Ihre Verbindung zu <ph name="DOMAIN" /> ist mit einer modernen Codier-Suite verschlüsselt.</translation>
 <translation id="4594403342090139922">&amp;Löschen rückgängig machen</translation>
 <translation id="4668929960204016307">,</translation>
+<translation id="4670097147947922288">Sie sehen sich eine Erweiterungsseite an.</translation>
 <translation id="467662567472608290">Dieser Server konnte nicht beweisen, dass er <ph name="DOMAIN" /> ist. Sein Sicherheitszertifikat enthält Fehler. Mögliche Gründe sind eine fehlerhafte Konfiguration oder ein Angreifer, der Ihre Verbindung abfängt.</translation>
+<translation id="4683417246209150705">Geben Sie den dreistelligen CVC-Code auf der Rückseite Ihrer <ph name="CREDIT_CARD" /> ein</translation>
 <translation id="4697214168136963651"><ph name="URL" /> wurde blockiert.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">Ihre Verbindung wurde unterbrochen</translation>
@@ -432,6 +440,8 @@
 <translation id="5650551054760837876">Keine Suchergebnisse gefunden.</translation>
 <translation id="5663999524854166235">Geben Sie zur Bestätigung den dreistelligen CVC-Code auf der Rückseite Ihrer Karte ein</translation>
 <translation id="5677928146339483299">Blockiert</translation>
+<translation id="5696590819423335174">Geben Sie das Ablaufdatum und den vierstelligen CVC-Code auf der Vorderseite Ihrer <ph name="CREDIT_CARD" /> ein</translation>
+<translation id="5699278517904102888">Geben Sie zur Bestätigung den dreistelligen CVC-Code auf der Rückseite Ihrer <ph name="CREDIT_CARD" /> ein</translation>
 <translation id="5710435578057952990">Die Identität dieser Website wurde nicht verifiziert.</translation>
 <translation id="5720705177508910913">Aktueller Nutzer</translation>
 <translation id="5785756445106461925">Außerdem enthält diese Seite andere, nicht sichere Ressourcen. Diese Ressourcen können während der Übertragung von anderen Nutzern angezeigt und von Angreifern bearbeitet werden, die das Layout der Seite verändern.</translation>
@@ -555,7 +565,6 @@
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> erfüllt die Sicherheitsstandards nicht.</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Weitere Informationen<ph name="END_LINK" /> zu diesem Problem.</translation>
 <translation id="7219179957768738017">Die Verbindung verwendet <ph name="SSL_VERSION" />.</translation>
-<translation id="7225807090967870017">Build-ID</translation>
 <translation id="7231308970288859235">Hoppla. Du musst einen Elternteil fragen, ob du diese Seite besuchen darfst.</translation>
 <translation id="7246609911581847514">Diese Nachricht wird Ihnen angezeigt, weil Ihr Administrator neue Websites zuerst genehmigen muss, bevor Sie diese öffnen können.</translation>
 <translation id="725866823122871198">Es kann keine private Verbindung zu <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> hergestellt werden, weil Datum und Uhrzeit Ihres Computers falsch sind (<ph name="DATE_AND_TIME" />).</translation>
@@ -596,6 +605,7 @@ Geheimtipp: Verwenden Sie nächstes Mal den Inkognitomodus (<ph name="SHORTCUT_K
 <translation id="7610193165460212391">Wert liegt außerhalb des zulässigen Bereichs (<ph name="VALUE" />).</translation>
 <translation id="7613889955535752492">Gültig bis: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Sie verfügen bereits über Daten, die mit einem vorherigen Passwort für Ihr Google-Konto verschlüsselt wurden. Bitte geben Sie dieses Passwort unten ein.</translation>
+<translation id="7633887239437305289">Geben Sie zur Bestätigung den vierstelligen CVC-Code auf der Vorderseite Ihrer <ph name="CREDIT_CARD" /> ein</translation>
 <translation id="7634554953375732414">Die Verbindung zu dieser Website ist nicht sicher.</translation>
 <translation id="7637571805876720304">Kreditkarte aus Chromium entfernen?</translation>
 <translation id="7643817847124207232">Die Internetverbindung wurde unterbrochen.</translation>

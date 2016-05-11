@@ -558,6 +558,22 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
           Každá položka v tomto zozname predstavuje vzor zodpovedajúci typu rozšírenia (viac informácií na stránkach http://code.google.com/chrome/extensions/match_patterns.html). Používatelia budú môcť jednoducho inštalovať položky z akejkoľvek adresy, ktorá zodpovedá položke v tomto zozname. V týchto vzoroch musí byť povolené umiestnenie súboru *.crx aj stránka, z ktorej sa spustí sťahovanie (t. j. zdroj odkazu).
 
           Zoznam zakázaných položiek ExtensionInstallBlacklist je tomuto pravidlu nadradený. Rozšírenie v zozname zakázaných položiek nebude nainštalované ani v prípade, že bude pochádzať zo stránok, ktoré sú uvedené v tomto zozname.</translation>
+<translation id="2813740161943223811">Podpora tohto pravidla bola ukončená, použite namiesto neho nastavenie ProxyMode.
+
+          Umožňuje určiť proxy server používaný prehliadačom <ph name="PRODUCT_NAME" /> a zabrániť používateľom meniť nastavenia proxy servera. Tento proxy server budú môcť používať aj aplikácie s podporou ARC.
+
+          Ak sa rozhodnete nikdy nepoužiť proxy server a vždy sa pripájať priamo, všetky ďalšie možnosti budú ignorované.
+
+          Ak sa rozhodnete používať nastavenia proxy servera vášho systému alebo automaticky rozpoznávať proxy server, všetky ďalšie možnosti budú ignorované.
+
+          Ak vyberiete manuálne nastavenia proxy servera, ďalšie možnosti môžete špecifikovať v poliach „Adresa alebo webová adresa proxy servera“, „Webová adresa na súbor .pac proxy servera“ a „Zoznam pravidiel vynechania proxy servera oddelených čiarkami“. Pre aplikácie s podporou ARC je k dispozícii iba proxy server HTTP s najvyššou prioritou.
+
+          Podrobné príklady nájdete na adrese:
+          <ph name="PROXY_HELP_URL" />.
+
+          Ak toto nastavenie povolíte, prehliadač <ph name="PRODUCT_NAME" /> bude ignorovať všetky možnosti súvisiace s proxy severom zadané do príkazového riadka.
+
+          Ak toto nastavenie nepoužijete, používatelia si budú môcť vybrať vlastné nastavenia proxy servera.</translation>
 <translation id="2824715612115726353">Povoliť režim inkognito</translation>
 <translation id="2844404652289407061">Povolí dostupnosť Vyhľadávania klepnutím v zobrazení obsahu v prehliadači <ph name="PRODUCT_NAME" />.
 
@@ -670,6 +686,18 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
           </translation>
 <translation id="3205825995289802549">Maximalizovať prvé okno prehliadača pri prvom spustení</translation>
 <translation id="3206731874112238027">Zakázať ukážku pred tlačou (zastarané)</translation>
+<translation id="3208854390109736596">Umožňuje určiť proxy server používaný prehliadačom <ph name="PRODUCT_NAME" /> a zabrániť používateľom meniť nastavenia proxy servera. Tento proxy server budú môcť používať aj aplikácie s podporou ARC.
+
+      Ak sa rozhodnete nikdy nepoužiť proxy server a vždy sa pripájať priamo, všetky ďalšie možnosti budú ignorované.
+
+      Ak sa rozhodnete automaticky rozpoznávať proxy server, všetky ďalšie možnosti budú ignorované.
+
+      Podrobné príklady nájdete na adrese:
+      <ph name="PROXY_HELP_URL" />.
+
+      Ak toto nastavenie povolíte, prehliadač <ph name="PRODUCT_NAME" /> a aplikácie s podporou ARC budú ignorovať všetky možnosti súvisiace s proxy serverom zadané do príkazového riadka.
+
+      Ak tieto nastavenia nepoužijete, používatelia si budú môcť vybrať vlastné nastavenia proxy servera.</translation>
 <translation id="3213821784736959823">Ovláda, či sa v prehliadači <ph name="PRODUCT_NAME" /> používa vstavaný klient DNS.
 
       Ak je toto pravidlo nastavené na hodnotu True, vstavaný klient DNS sa použije (pokiaľ je k dispozícii).
@@ -725,6 +753,9 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 
       Ak je toto pravidlo nastavené na hodnotu false, systém <ph name="PRODUCT_OS_NAME" /> nepovolí spustenie relácií hosťa.</translation>
 <translation id="3428247105888806363">Povolenie predpovede siete</translation>
+<translation id="3449886121729668969">Nakonfiguruje nastavenia proxy servera pre prehliadač <ph name="PRODUCT_NAME" />. Tieto nastavenia proxy servera budú k dispozícii aj pre aplikácie s podporou ARC.
+
+      Toto pravidlo ešte nie je pripravené na používanie, preto ho radšej nepoužívajte.</translation>
 <translation id="3460784402832014830">Určuje webovú adresu, ktorú použije vyhľadávač na poskytnutie stránky Nová karta.
 
           Toto pravidlo je voliteľné. Ak sa nenastaví, neposkytne sa žiadna stránka Nová karta.
@@ -735,6 +766,14 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
           Ak je toto pravidlo nastavené na hodnotu True, oneskorenia správy napájania a limit dĺžky relácie sa nespustia po zaznamenaní prvej aktivity používateľa v relácii.
 
           Ak je toto pravidlo nastavené na hodnotu False alebo nastavené nie je, oneskorenia správy napájania a limit dĺžky relácie sa spustia hneď na začiatku relácie.</translation>
+<translation id="3469657928310999477">Pri hostiteľoch v uvedenom zozname prehliadač <ph name="PRODUCT_NAME" /> vynechá všetky servery proxy. Aplikácie s podporou ARC budú môcť použiť tento zoznam ako zoznam pravidiel pravidiel vynechania servera.
+
+          Toto pravidlo sa prejaví len v prípade, ak ste v časti „Zvoľte spôsob konfigurácie nastavení proxy servera“ zvolili ručné nastavenia proxy servera.
+
+          Ak ste zvolili akýkoľvek iný režim nastavenia pravidiel proxy, mali by ste toto pravidlo ponechať nenastavené.
+
+          Ďalšie podrobné príklady nájdete na adrese:
+          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="3478024346823118645">Vymazať údaje používateľa po odhlásení</translation>
 <translation id="348495353354674884">Povoliť virtuálnu klávesnicu</translation>
 <translation id="3496296378755072552">Správca hesiel</translation>
@@ -1411,6 +1450,9 @@ Pozrite si tiež pravidlo RemoteAccessHostDomain.</translation>
       Toto pravidlo sa vzťahuje na všetky typy pamäťových médií, ako sú prenosné disky USB, externé pevné disky, SD karty a ďalšie typy pamäťových kariet, optické ukladacie priestory a pod. Na interný ukladací priestor sa nevzťahuje, takže súbory uložené v priečinku Stiahnuté súbory je možné otvoriť. Toto pravidlo tiež nemá žiadny vplyv na službu Disk Google.
 
       Ak je toto nastavenie zakázané alebo nie je nakonfigurované, používatelia môžu vo svojom zariadení používať všetky podporované typy externých ukladacích priestorov.</translation>
+<translation id="6076099373507468537">Definuje zoznam zariadení USB, ktoré je možné odpojiť od ovládača jadra, aby sa dali použiť prostredníctvom rozhrania chrome.usb API priamo vo webovej aplikácii. Vstupné hodnoty sú páry identifikátor dodávateľa USB – identifikátor produktu na určenie konkrétneho hardvéru.
+
+      Ak toto pravidlo nenakonfigurujete, zoznam odpojiteľných zariadení USB bude prázdny.</translation>
 <translation id="6095999036251797924">Stanovuje čas, počas ktorého nebol zadaný žiadny vstup používateľa, a po ktorého uplynutí sa pri používaní napájacieho zdroja alebo batérie uzamkne obrazovka.
           Ak je tento čas nastavený na hodnotu väčšiu ako nula, stanovuje, ako dlho musí byť používateľ nečinný, než systém <ph name="PRODUCT_OS_NAME" /> uzamkne obrazovku.
 
@@ -1944,6 +1986,14 @@ Pozrite si tiež pravidlo RemoteAccessHostClientDomain.</translation>
       nahlasovať. Ak je pravidlo nastavené na možnosť True alebo nie je nastavené vôbec, informácie o relácii sa budú
       nahlasovať.</translation>
 <translation id="7774768074957326919">Použiť systémové nastavenia servera proxy</translation>
+<translation id="7775831859772431793">Tu môžete zadať webovú adresu proxy servera.
+
+          Toto pravidlo sa prejaví len v prípade, ak ste v časti „Zvoľte spôsob konfigurácie nastavení proxy servera“ zvolili ručné nastavenia proxy servera.
+
+          Ak ste zvolili akýkoľvek iný režim nastavenia pravidiel proxy servera, mali by ste toto pravidlo ponechať nenastavené.
+
+          Ďalšie podrobné príklady nájdete na adrese:
+          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7788511847830146438">Podľa profilu</translation>
 <translation id="7796141075993499320">Umožňuje nastaviť zoznam vzorov webových adries určujúcich webové stránky, ktoré môžu spúšťať doplnky.
 
@@ -1976,6 +2026,14 @@ Pozrite si tiež pravidlo RemoteAccessHostClientDomain.</translation>
       Určuje identifikátor rozšírenia, ktoré sa má použiť ako šetrič obrazovky na prihlasovacej obrazovke. Rozšírenie musí byť súčasťou balíka AppPack, ktorý bol pre túto doménu nakonfigurovaný v rámci pravidla DeviceAppPack.</translation>
 <translation id="7882890448959833986">Zrušenie zobrazovania upozornenia na nepodporovaný operačný systém</translation>
 <translation id="7912255076272890813">Nakonfigurovať povolené typy aplikácií/rozšírení</translation>
+<translation id="7915236031252389808">Tu môžete zadať webovú adresu súboru .pac proxy servera.
+
+          Toto pravidlo sa prejaví len v prípade, ak ste v časti „Zvoľte spôsob konfigurácie nastavení proxy servera“ zvolili ručné nastavenia proxy servera.
+
+          Ak ste zvolili akýkoľvek iný režim nastavenia pravidiel proxy servera, mali by ste toto pravidlo ponechať nenastavené.
+
+          Podrobné príklady nájdete na adrese:
+          <ph name="PROXY_HELP_URL" /></translation>
 <translation id="793134539373873765">Určuje, či sa pri aktualizovaní OS má použiť protokol p2p. Ak je táto možnosť nastavená na hodnotu True, zariadenia budú zdieľať aktualizácie a pokúsia sa ich sťahovať v sieti LAN, čím potenciálne znížia využitie a preťaženie rýchlosti pripojenia. Ak sa aktualizácie nedajú vykonať v sieti LAN, zariadenie ich prevezme z aktualizačného servera. Ak je táto možnosť nastavená na hodnotu False alebo nie je nakonfigurovaná, protokol p2p sa nepoužije.</translation>
 <translation id="7933141401888114454">Povoliť vytváranie kontrolovaných používateľov</translation>
 <translation id="7936098023732125869">Aktivuje použitie predvoleného poskytovateľa vyhľadávania.
@@ -2126,6 +2184,11 @@ Pozrite si tiež pravidlo RemoteAccessHostClientDomain.</translation>
 <translation id="8382184662529825177">Povoliť použitie vzdialeného overenia na ochranu obsahu pre zariadenie</translation>
 <translation id="838870586332499308">Povoliť roaming pre dátové prenosy</translation>
 <translation id="8412312801707973447">Či sa majú vykonávať kontroly OCSP/CRL online</translation>
+<translation id="8413348101535146315">Umožňuje ukončiť procesy v Správcovi úloh prehliadača <ph name="PRODUCT_NAME" />.
+
+      Ak toto pravidlo nastavíte na hodnotu False, tlačidlo Ukončiť proces bude v Správcovi úloh zakázané.
+
+      Ak toto pravidlo nastavíte na hodnotu True alebo ho nenakonfigurujete, používateľ bude môcť ukončovať procesy v Správcovi úloh.</translation>
 <translation id="8424255554404582727">Nastaviť predvolené otočenie obrazovky, ktoré sa opakovane použije pri každom reštarte</translation>
 <translation id="8426231401662877819">Otočiť obrazovku v smere hodinových ručičiek o 90 stupňov</translation>
 <translation id="8451988835943702790">Použiť stránku Nová karta ako domovskú stránku</translation>
@@ -2339,6 +2402,24 @@ Odporúčaný spôsob nastavenia pravidiel v systéme Windows je prostredníctv
 <translation id="9112897538922695510">Umožňuje zaregistrovať zoznam obslužných nástrojov protokolu. Môže to byť iba odporúčané pravidlo. Vlastnosť |protocol| by mala byť nastavená na schému, ako napríklad „mailto“, a vlasnosť |url| by mala byť nastavená na vzor webovej adresy aplikácie, ktorá danú schému obsluhuje. Vzor môže zahrnovať reťazec „%s“, ktorý bude nahradený obsluhovanou webovou adresou (ak bude použitý).
 
           Obslužné nástroje protokolu, ktoré sú registrované týmto pravidlom, budú zlúčené s nástrojmi registrovanými používateľom a budú všetky k dispozícii na použitie. Používateľ môže prepísať obslužné nástroje protokolu nainštalované pravidlom inštaláciou nového predvoleného obslužného nástroja. Obslužný protokol registrovaný pravidlom však nie je možné odstrániť.</translation>
+<translation id="913138516158420759">Umožňuje určiť proxy server používaný prehliadačom <ph name="PRODUCT_NAME" /> a zabrániť používateľom meniť nastavenia proxy servera. Tento proxy server budú môcť používať aj aplikácie s podporou ARC.
+
+          Ak sa rozhodnete nikdy nepoužiť proxy server a vždy sa pripájať priamo, všetky ďalšie možnosti budú ignorované.
+
+          Ak sa rozhodnete používať nastavenia proxy servera systému, všetky ďalšie možnosti budú ignorované.
+
+          Ak sa rozhodnete automaticky rozpoznávať proxy server, všetky ďalšie možnosti budú ignorované.
+
+          Ak vyberiete pevne stanovený režim proxy servera, môžete určiť ďalšie možnosti v poliach „Adresa alebo webová adresa proxy servera“ a „Zoznam pravidiel vynechania proxy servera oddelených čiarkami“. Pre aplikácie s podporou ARC je k dispozícii iba proxy server HTTP s najvyššou prioritou.
+
+          Ak sa rozhodnete použiť skript .pac proxy servera, musíte v poli „Webová adresa na súbor .pac proxy servera“ uviesť webovú adresu na príslušný skript.
+
+          Podrobné príklady nájdete na adrese:
+          <ph name="PROXY_HELP_URL" />.
+
+          Ak toto nastavenie povolíte, prehliadač <ph name="PRODUCT_NAME" /> a aplikácie s podporou ARC budú ignorovať všetky možnosti súvisiace s proxy serverom zadané do príkazového riadka.
+
+          Ak toto nastavenie nepoužijete, používatelia si budú môcť vybrať vlastné nastavenia proxy servera.</translation>
 <translation id="913195841488580904">Blokovať prístup k zoznamu webových adries</translation>
 <translation id="9135033364005346124">Povoliť server proxy <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="9147029539363974059">Odosielajte denníky systému na správcovský server, čím umožníte

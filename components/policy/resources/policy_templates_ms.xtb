@@ -561,6 +561,22 @@
           Setiap item dalam senarai ini merupakan pola padanan ala sambungan (lihat https://developer.chrome.com/extensions/match_patterns). Pengguna akan dapat memasang item daripada mana-mana URL yang sepadan dengan item dalam senarai ini dengan mudah. Kedua-dua lokasi fail *.crx dan halaman tempat muat turun dimulakan (contohnya perujuk) mestilah dibenarkan oleh pola ini.
 
           ExtensionInstallBlacklist diberikan keutamaan melebihi dasar ini. Bermakna, sambungan pada senarai hitam tidak akan dipasang walaupun sambungan tersebut berasal daripada tapak pada senarai ini.</translation>
+<translation id="2813740161943223811">Dasar ini sudah tidak digunakan lagi, sebaliknya gunakan ProxyMode.
+
+          Membenarkan anda menentukan pelayan proksi yang digunakan oleh <ph name="PRODUCT_NAME" /> dan menghalang pengguna daripada menukar tetapan proksi. Apl ARC turut dapat menggunakan pelayan proksi ini.
+
+          Jika anda memilih untuk tidak menggunakan pelayan proksi dan sentiasa disambungkan terus, semua pilihan lain akan diabaikan.
+
+          Jika anda memilih untuk menggunakan tetapan proksi sistem atau mengesan pelayan proksi secara automatik, semua pilihan lain akan diabaikan.
+
+          Jika anda memilih tetapan proksi manual, anda boleh menetapkan pilihan lanjutan dalam 'Alamat atau URL pelayan proksi', 'URL kepada fail .pac proksi' dan 'Senarai dipisahkan koma peraturan pintasan proksi'. Hanya pelayan proksi HTTP dengan keutamaan tertinggi tersedia untuk apl ARC.
+
+          Untuk melihat contoh terperinci, lawati:
+          <ph name="PROXY_HELP_URL" />.
+
+          Jika anda mendayakan tetapan ini, <ph name="PRODUCT_NAME" /> akan mengabaikan semua pilihan berkaitan proksi yang ditetapkan daripada baris perintah.
+
+          Jika dasar ini dibiarkan tanpa tidak ditetapkan, pengguna boleh memilih tetapan proksi mereka sendiri.</translation>
 <translation id="2824715612115726353">Dayakan mod Inkognito</translation>
 <translation id="2844404652289407061">Mendayakan ketersediaan Sentuh untuk Cari dalam paparan kandungan <ph name="PRODUCT_NAME" />.
 
@@ -674,6 +690,18 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
           </translation>
 <translation id="3205825995289802549">Maksimumkan tetingkap penyemak imbas pertama pada kendalian pertama</translation>
 <translation id="3206731874112238027">Lumpuhkan Pratonton Cetak (ditamatkan)</translation>
+<translation id="3208854390109736596">Membenarkan anda menentukan pelayan proksi yang digunakan oleh <ph name="PRODUCT_NAME" /> dan menghalang pengguna daripada menukar tetapan proksi. Apl ARC turut dapat menggunakan pelayan proksi ini.
+
+      Jika anda memilih untuk tidak menggunakan pelayan proksi dan sentiasa disambungkan terus, semua pilihan lain akan diabaikan.
+
+      Jika anda memilih untuk mengesan pelayan proksi secara automatik, semua pilihan lain akan diabaikan.
+
+      Untuk melhat contoh terperinci, lawati:
+      <ph name="PROXY_HELP_URL" />.
+
+      Jika anda mendayakan tetapan ini, <ph name="PRODUCT_NAME" /> dan apl ARC akan mengabaikan semua pilihan berkaitan proksi yang ditetapkan daripada baris perintah.
+
+      Jika dasar ini dibiarkan tanpa ditetapkan, pengguna boleh memilih tetapan proksi mereka sendiri.</translation>
 <translation id="3213821784736959823">Mengawal sama ada pelanggan DNS terbina dalam digunakan dalam <ph name="PRODUCT_NAME" />.
 
       Jika dasar ini ditetapkan kepada benar, pelanggan DNS terbina dalam akan digunakan, jika tersedia.
@@ -728,6 +756,9 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
 
       Jika dasar ini ditetapkan kepada palsu, <ph name="PRODUCT_OS_NAME" /> tidak akan membenarkan sesi tetamu dimulakan.</translation>
 <translation id="3428247105888806363">Dayakan ramalan rangkaian</translation>
+<translation id="3449886121729668969">Mengkonfigurasikan tetapan proksi untuk <ph name="PRODUCT_NAME" />. Tetapan proksi ini turut tersedia untuk apl ARC.
+
+      Dasar ini belum sedia untuk digunakan lagi, oleh itu jangan gunakannya.</translation>
 <translation id="3460784402832014830">Menentukan URL yang enjin carian gunakan untuk menyediakan halaman tab baharu.
 
           Dasar ini merupakan pilihan. Jika tidak ditetapkan, tiada halaman tab baharu akan disediakan.
@@ -738,6 +769,14 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
           Jika dasar ini ditetapkan kepada Benar, lengah pengurusan kuasa dan had tempoh sesi tidak mula dijalankan sehingga selepas aktiviti pengguna pertama telah diperhatikan dalam sesi.
 
           Jika dasar ini ditetapkan kepada Palsu atau dibiarkan tanpa ditetapkan, lengah pengurusan kuasa dan had tempoh sesi akan mula dijalankan serta merta pada permulaan sesi.</translation>
+<translation id="3469657928310999477"><ph name="PRODUCT_NAME" /> akan memintas mana-mana proksi untuk hos yang disenaraikan di sini. Apl ARC akan dapat menggunakan senarai ini sebagai senarai peraturan pintasan.
+
+          Dasar ini hanya berkuat kuasa jika anda telah memilih tetapan proksi manual pada 'Pilih cara untuk menentukan tetapan pelayan proksi'.
+
+          Anda harus membiarkan dasar ini tanpa ditetapkan jika anda telah memilih mana-mana mod lain untuk menetapkan dasar proksi.
+
+          Untuk melihat contoh terperinci, lawati:
+          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="3478024346823118645">Hapuskan data pengguna semasa log keluar</translation>
 <translation id="348495353354674884">Dayakan papan kekunci maya</translation>
 <translation id="3496296378755072552">Pengurus kata laluan</translation>
@@ -1418,6 +1457,9 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
       Dasar ini mempengaruhi semua jenis media storan. Contohnya: pemacu flash USB, pemacu keras luaran, kad SD dan kad memori lain, storan optik dsb. Storan dalaman tidak terjejas, oleh itu, fail yang disimpan dalam folder Muat Turun masih boleh diakses. Google Drive juga tidak terjejas oleh dasar ini.
 
       Jika tetapan ini dilumpuhkan atau tidak dikonfigurasi, maka pengguna boleh menggunakan semua jenis storan luaran yang disokong pada peranti mereka.</translation>
+<translation id="6076099373507468537">Menentukan senarai peranti USB yang dibenarkan untuk ditanggalkan daripada pemacu inti peranti tersebut untuk digunakan menerusi API chrome.usb terus dalam aplikasi web. Entri ialah pasangan Pengecam Vendor USB dan Pengecam Produk untuk mengenal pasti perkakasan khusus.
+
+      Jika dasar ini tidak dikonfigurasikan, senarai peranti USB yang boleh ditanggalkan ditetapkan sebagai kosong.</translation>
 <translation id="6095999036251797924">Menyatakan tempoh masa tanpa input pengguna yang selepas itu skrin dikunci semasa berfungsi dengan kuasa AC atau bateri.
 
           Apabila tempoh masa ditetapkan kepada nilai yang lebih besar daripada sifar, nilai tersebut menunjukkan tempoh masa pengguna harus kekal melahu sebelum <ph name="PRODUCT_OS_NAME" /> mengunci skrin.
@@ -1954,6 +1996,14 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
       akan dilaporkan. Jika ditetapkan kepada benar atau dibiarkan
       tanpa ditetapkan, maklumat sesi akan dilaporkan.</translation>
 <translation id="7774768074957326919">Gunakan tetapan sistem proksi</translation>
+<translation id="7775831859772431793">Anda boleh menetapkan URL pelayan proksi di sini.
+
+          Dasar ini hanya berkuat kuasa jika anda telah memilih tetapan proksi manual pada 'Pilih cara untuk menentukan tetapan pelayan proksi'.
+
+          Anda harus membiarkan dasar ini tanpa ditetapkan jika anda telah memilih mana-mana mod lain untuk menetapkan dasar proksi.
+
+          Untuk melihat lebih banyak pilihan dan contoh terperinci, lawati:
+          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7788511847830146438">Setiap Profil</translation>
 <translation id="7796141075993499320">Membolehkan anda menentukan senarai pola url yang dibenarkan untuk menjalankan pemalam.
 
@@ -1988,6 +2038,14 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
       Menentukan id sambungan untuk digunakan sebagai penyelamat skrin pada skrin log masuk. Sambungan mestilah sebahagian daripada AppPack yang dikonfigurasikan untuk domain ini melalui dasar DeviceAppPack.</translation>
 <translation id="7882890448959833986">Sekat amaran OS yang tidak disokong</translation>
 <translation id="7912255076272890813">Konfigurasi jenis apl/sambungan yang dibenarkan</translation>
+<translation id="7915236031252389808">Anda boleh menetapkan URL untuk fail .pac proksi di sini.
+
+          Dasar ini hanya berkuat kuasa jika anda telah memilih tetapan proksi manual pada 'Pilih cara untuk menentukan tetapan pelayan proksi'.
+
+          Anda harus membiarkan dasar ini tanpa ditetapkan jika anda telah memilih mana-mana mod lain untuk menetapkan dasar proksi.
+
+          Untuk melihat contoh terperinci, lawati:
+          <ph name="PROXY_HELP_URL" /></translation>
 <translation id="793134539373873765">Menentukan sama ada p2p akan digunakan untuk beban bayar kemas kini OS. Jika ditetapkan kepada Benar, peranti akan berkongsi dan cuba menggunakan beban bayar kemas kini pada LAN, berkemungkinan mengurangkan penggunaan dan kesesakan lebar jalur Internet. Jika beban bayar kemas kini tidak tersedia pada LAN, peranti ini akan kembali kepada memuat turun dari pelayan kemas kini. Jika ditetapkan kepada Palsu atau tidak dikonfigurasi, p2p tidak akan digunakan.</translation>
 <translation id="7933141401888114454">Dayakan penghasilan pengguna di bawah seliaan</translation>
 <translation id="7936098023732125869">Membolehkan penggunaan penyedia carian lalai.
@@ -2139,6 +2197,11 @@ Halaman yang dibuka semasa permulaan dikawal oleh dasar RestoreOnStartup.
 <translation id="8382184662529825177">Dayakan penggunaan pembuktian jauh untuk perlindungan kandungan bagi peranti</translation>
 <translation id="838870586332499308">Dayakan perayauan data</translation>
 <translation id="8412312801707973447">Sama ada semakan OCSP/CRL dalam talian dilaksanakan</translation>
+<translation id="8413348101535146315">Membolehkan penamatan proses dalam Pengurus Tugas <ph name="PRODUCT_NAME" />.
+
+      Jika ditetapkan kepada palsu, butang 'Tamatkan proses' dilumpuhkan dalam Pengurus Tugas.
+
+      Jika ditetapkan kepada benar atau tidak dikonfigurasikan, pengguna boleh menamatkan proses dalam Pengurus Tugas.</translation>
 <translation id="8424255554404582727">Tetapkan putaran paparan lalai yang digunakan semula pada setiap but semula</translation>
 <translation id="8426231401662877819">Putar skrin 90 darjah mengikut arah jam</translation>
 <translation id="8451988835943702790">Gunakan Halaman Tab Baharu sebagai halaman utama</translation>
@@ -2371,6 +2434,24 @@ Jika dasar ini dibiarkan tidak ditetapkan mana-mana pemalam yang sepadan dengan 
 <translation id="9112897538922695510">Membolehkan anda mendaftar senarai pengendali protokol. Langkah ini hanya boleh menjadi dasar yang disyorkan. Sifat |protocol| hendaklah ditetapkan kepada skema seperti 'mailto' dan sifat |url| hendaklah ditetapkan kepada corak URL aplikasi yang mengendalikan skema. Corak boleh mengandungi '%s', di mana apabila disertakan akan digantikan oleh URL yang dikendalikan.
 
           Pengendali protokol yang didaftarkan oleh dasar digabungkan dengan protokol yang didaftarkan oleh pengguna dan kedua-duanya tersedia untuk digunakan. Pengguna boleh mengatasi pengendali protokol yang dipasang oleh dasar dengan memasang pengendali lalai baharu tetapi tidak boleh mengalih keluar pengendali protokol yang didaftarkan oleh dasar.</translation>
+<translation id="913138516158420759">Membenarkan anda menentukan pelayan proksi yang digunakan oleh <ph name="PRODUCT_NAME" /> dan menghalang pengguna daripada menukar tetapan proksi. Apl ARC turut dapat menggunakan pelayan proksi ini.
+
+          Jika anda memilih untuk tidak menggunakan pelayan proksi dan sentiasa disambungkan terus, semua pilihan lain akan diabaikan.
+
+          Jika anda memilih untuk menggunakan tetapan proksi sistem, semua pilihan lain akan diabaikan.
+
+          Jika anda memilih untuk mengesan pelayan proksi secara automatik, semua pilihan lain akan  diabaikan.
+
+          Jika anda memilih mod proksi pelayan tetap, anda boleh menetapkan pilihan lanjutan dalam 'Alamat atau URL pelayan proksi', dan 'Senarai dipisahkan koma peraturan pintasan proksi'. Hanya pelayan proksi HTTP dengan keutamaan tertinggi tersedia untuk apl ARC.
+
+          Jika anda memilih untuk menggunakan skrip proksi .pac, anda mesti menetapkan URL kepada skrip tersebut dalam 'URL kepada fail .pac proksi'.
+
+          Untuk melihat contoh terperinci, lawati:
+          <ph name="PROXY_HELP_URL" />.
+
+          Jika anda mendayakan tetapan ini, <ph name="PRODUCT_NAME" /> dan apl ARC akan mengabaikan semua pilihan berkaitan proksi yang ditetapkan daripada baris perintah.
+
+          Jika dasar ini dibiarkan tanpa tidak ditetapkan, pengguna dapat memilih tetapan proksi mereka sendiri.</translation>
 <translation id="913195841488580904">Sekat akses kepada senarai URL</translation>
 <translation id="9135033364005346124">Dayakan proksi <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="9147029539363974059">Hantar log sistem ke pelayan pengurusan, untuk membolehkan

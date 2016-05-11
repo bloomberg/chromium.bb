@@ -39,6 +39,7 @@
 <translation id="1254117744268754948">Výběr složky</translation>
 <translation id="1285320974508926690">Tento web nikdy nepřekládat</translation>
 <translation id="129553762522093515">Nedávno zavřené</translation>
+<translation id="129863573139666797"><ph name="BEGIN_LINK" />Zkuste vymazat soubory cookie<ph name="END_LINK" /></translation>
 <translation id="1339601241726513588">Doména registrace:</translation>
 <translation id="1344588688991793829">Nastavení Automatického vyplňování v prohlížeči Chromium...</translation>
 <translation id="1374468813861204354">návrhy</translation>
@@ -188,6 +189,7 @@
 <translation id="2969319727213777354">Aby bylo možné navázat zabezpečené spojení, musejí být správně nastaveny hodiny. Důvodem je, že certifikáty, pomocí kterých se weby identifikují, platí pouze pro konkrétní období. Jelikož hodiny v zařízení nejsou nastaveny správně, Google Chrome tyto certifikáty nemůže ověřit.</translation>
 <translation id="2972581237482394796">&amp;Opakovat</translation>
 <translation id="2985306909656435243">Pokud je tato možnost aktivována, prohlížeč Chromium do zařízení uloží kopii karty za účelem rychlejšího vyplňování formulářů.</translation>
+<translation id="2989984781570875765">Zadejte datum vypršení platnosti a trojmístný kód CVC ze zadní strany karty <ph name="CREDIT_CARD" />.</translation>
 <translation id="2991174974383378012">Sdílení s weby</translation>
 <translation id="3005723025932146533">Zobrazit uloženou kopii</translation>
 <translation id="3010559122411665027">Položka seznamu „<ph name="ENTRY_INDEX" />“: <ph name="ERROR" /></translation>
@@ -267,6 +269,7 @@
 <translation id="3717027428350673159"><ph name="BEGIN_LINK" />Zkontrolovat proxy server, firewall a konfiguraci DNS<ph name="END_LINK" /></translation>
 <translation id="3739623965217189342">Zkopírovaný odkaz</translation>
 <translation id="3744899669254331632">Web <ph name="SITE" /> nyní nelze navštívit, protože tento web odeslal nesprávné identifikační údaje, které prohlížeč Chromium nedokáže zpracovat. Síťové chyby a útoky jsou obvykle dočasné, tato stránka pravděpodobně později bude fungovat.</translation>
+<translation id="3748071062818261683">Ověření karty</translation>
 <translation id="3748412725338508953">Proběhlo příliš mnoho přesměrování.</translation>
 <translation id="375403751935624634">Z důvodu chyby serveru se překlad nezdařil.</translation>
 <translation id="3759461132968374835">Nemáte žádná nedávno hlášená selhání. Selhání, ke kterým došlo, když byla služba hlášení o selháních vypnutá, se zde nezobrazují.</translation>
@@ -295,6 +298,7 @@
 <translation id="4103249731201008433">Sériové číslo zařízení je neplatné</translation>
 <translation id="4103763322291513355">Na stránce &lt;strong&gt;chrome://policy&lt;/strong&gt; naleznete seznam zakázaných adres URL a další zásady vynucené vaším správcem systému.</translation>
 <translation id="4117700440116928470">Rozsah zásady není podporován.</translation>
+<translation id="4130226655945681476">Zkontrolovat síťové kabely, modem a směrovač</translation>
 <translation id="4147376274874979956">K souboru nelze získat přístup.</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">Chcete, aby prohlížeč Chromium tuto kartu uložil?</translation>
@@ -329,11 +333,15 @@
 <translation id="450710068430902550">Sdílení s administrátorem</translation>
 <translation id="4522570452068850558">Podrobnosti</translation>
 <translation id="4535734014498033861">Připojení k proxy serveru se nezdařilo.</translation>
+<translation id="4553532082208702698">Zadejte čtyřmístný kód CVC z přední strany karty <ph name="CREDIT_CARD" />.</translation>
+<translation id="4558551763791394412">Zkuste zakázat rozšíření.</translation>
 <translation id="4587425331216688090">Odstranit adresu z Chromu?</translation>
 <translation id="4592951414987517459">Vaše připojení k doméně <ph name="DOMAIN" /> je šifrováno za použití moderní šifrovací sady.</translation>
 <translation id="4594403342090139922">&amp;Vrátit smazání zpět</translation>
 <translation id="4668929960204016307">,</translation>
+<translation id="4670097147947922288">Prohlížíte si stránku rozšíření.</translation>
 <translation id="467662567472608290">Server nedokázal prokázat, že patří doméně <ph name="DOMAIN" />, protože jeho bezpečnostní certifikát obsahuje chyby. Může to být způsobeno nesprávnou konfigurací nebo tím, že vaše připojení zachytává útočník.</translation>
+<translation id="4683417246209150705">Zadejte trojmístný kód CVC uvedený na zadní straně karty <ph name="CREDIT_CARD" />.</translation>
 <translation id="4697214168136963651">Adresa <ph name="URL" /> byla blokována</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">Připojení bylo přerušeno</translation>
@@ -418,6 +426,8 @@ Kontaktujte administrátora systému.</translation>
 <translation id="5650551054760837876">Nebyly nalezeny žádné výsledky vyhledávání.</translation>
 <translation id="5663999524854166235">K ověření zadejte třípísmenný kód CVC uvedený na zadní straně karty</translation>
 <translation id="5677928146339483299">Zablokováno</translation>
+<translation id="5696590819423335174">Zadejte datum vypršení platnosti a čtyřmístný kód CVC z přední strany karty <ph name="CREDIT_CARD" />.</translation>
+<translation id="5699278517904102888">K ověření zadejte trojmístný kód CVC uvedený na zadní straně karty <ph name="CREDIT_CARD" />.</translation>
 <translation id="5710435578057952990">Identita těchto webových stránek nebyla ověřena.</translation>
 <translation id="5720705177508910913">Aktuální uživatel</translation>
 <translation id="5785756445106461925">Tato stránka obsahuje ještě další nezabezpečené zdroje. Tyto zdroje budou během přenosu moci zobrazit jiní uživatelé a případní útočníci je mohou upravit a změnit tak vzhled stránky.</translation>
@@ -534,7 +544,6 @@ Kontaktujte administrátora systému.</translation>
 <translation id="7210863904660874423">Web <ph name="HOST_NAME" /> nevyhovuje bezpečnostním standardům.</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Další informace<ph name="END_LINK" /> o tomto problému.</translation>
 <translation id="7219179957768738017">Připojení používá protokol <ph name="SSL_VERSION" />.</translation>
-<translation id="7225807090967870017">ID sestavení</translation>
 <translation id="7231308970288859235">Jejda! K návštěvě této stránky potřebujete souhlas rodičů.</translation>
 <translation id="7246609911581847514">Tato zpráva se zobrazila, protože je potřeba, aby při první návštěvě nového webu povolil přístup správce.</translation>
 <translation id="725866823122871198">Soukromé připojení k doméně <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> nelze navázat, protože máte v počítači nastaveno chybné datum a čas (<ph name="DATE_AND_TIME" />).</translation>
@@ -575,6 +584,7 @@ Pssst! Příště by se vám mohl hodit anonymní režim (<ph name="SHORTCUT_KEY
 <translation id="7610193165460212391">Hodnota <ph name="VALUE" /> je mimo rozsah.</translation>
 <translation id="7613889955535752492">Vypršení platnosti: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Již máte údaje, které jsou šifrovány pomocí jiné verze vašeho hesla k účtu Google. Zadejte toto heslo prosím níže.</translation>
+<translation id="7633887239437305289">K ověření zadejte čtyřmístný kód CVC z přední strany karty <ph name="CREDIT_CARD" />.</translation>
 <translation id="7634554953375732414">Spojení s tímto webem není soukromé.</translation>
 <translation id="7637571805876720304">Odstranit platební kartu z prohlížeče Chromium?</translation>
 <translation id="7643817847124207232">Internetové spojení se ztratilo.</translation>

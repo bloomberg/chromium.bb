@@ -68,6 +68,7 @@ Dapat na na-on mo ang Bluetooth at Lokasyon upang magamit ang Pisikal na Web.</t
 <translation id="1842969606798536927">Magbayad</translation>
 <translation id="1853692000353488670">Bagong tab na incognito</translation>
 <translation id="189172778771606813">Isara ang navigation drawer</translation>
+<translation id="1924956916668006832">Pumili ng address sa pagpapadala</translation>
 <translation id="194341124344773587">I-on ang pahintulot para sa Chrome sa <ph name="BEGIN_LINK" />Mga Setting ng Android<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">I-save ang mga password</translation>
 <translation id="1944384637046898011">I-encrypt lahat gamit ang password ng Google simula sa <ph name="TIME" /></translation>
@@ -98,6 +99,7 @@ Dapat na na-on mo ang Bluetooth at Lokasyon upang magamit ang Pisikal na Web.</t
 <translation id="2268044343513325586">Pinuhin</translation>
 <translation id="2315043854645842844">Hindi sinusuportahan ng operating system ang pagpipilian ng certificate sa panig ng kliyente.</translation>
 <translation id="2321958826496381788">I-drag ang slider hanggang sa mabasa mo ito nang kumportable. Dapat ay halos ganito kalaki ang text pagkatapos mag-double tap sa isang talata.</translation>
+<translation id="2329597144923131178">Mag-sign in upang makuha ang iyong mga bookmark, history, password at ibang mga setting sa lahat ng iyong device.</translation>
 <translation id="2343328333327081434">Ini-install…</translation>
 <translation id="2351097562818989364">Na-reset ang iyong mga setting sa pag-translate.</translation>
 <translation id="2359808026110333948">Magpatuloy</translation>
@@ -133,6 +135,7 @@ Dapat na na-on mo ang Bluetooth at Lokasyon upang magamit ang Pisikal na Web.</t
 <translation id="2762000892062317888">ngayon lang</translation>
 <translation id="2770465223704140727">Alisin sa listahan</translation>
 <translation id="278029852808208386">Walang nakitang mga bluetooth device. <ph name="BEGIN_LINK" />Muling maghanap<ph name="END_LINK" />.</translation>
+<translation id="2781389167600714117">Pumili ng pagpapadala</translation>
 <translation id="2811892995384186721">Hindi mo ba nakikita ang iyong device? <ph name="BEGIN_LINK" />Humingi ng tulong<ph name="END_LINK" /></translation>
 <translation id="2836148919159985482">Pindutin ang button na bumalik upang lumabas sa full screen.</translation>
 <translation id="2842985007712546952">Pangunahing folder</translation>
@@ -158,7 +161,6 @@ Dapat na na-on mo ang Bluetooth at Lokasyon upang magamit ang Pisikal na Web.</t
 <translation id="3137521801621304719">Umalis sa mode na incognito</translation>
 <translation id="3149891296864842641">Opsyon sa pagpapadala</translation>
 <translation id="3162882791484435636">Pumili ng opsyon sa pagpapadala</translation>
-<translation id="3173438333156928404">Nagkaroon ng error sa pagproseso sa pagbabayad</translation>
 <translation id="3177909033752230686">Wika ng Page:</translation>
 <translation id="3190152372525844641">I-on ang mga pahintulot para sa Chrome sa <ph name="BEGIN_LINK" />Mga Setting ng Android<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> ang nakaimbak na data</translation>
@@ -194,7 +196,6 @@ Nagsa-sign in ka sa isang pinamamahalaang account at nagbibigay sa administrator
 Upang baguhin ang iyong termino para sa paghahanap, pindutin ito nang matagal upang mapili ito. Upang pinuhin ang iyong paghahanap, i-slide ang panel hanggang sa pinakaitaas at pindutin ang box para sa paghahanap.</translation>
 <translation id="3623048332793834136">Mga bookmark ng Chrome Canary</translation>
 <translation id="363596933471559332">Awtomatikong mag-sign in sa mga website gamit ang mga nakaimbak na kredensyal. Kapag naka-off ang feature, hihilingin sa iyong mag-verify sa tuwing magsa-sign in ka sa isang website.</translation>
-<translation id="3653742808139624888">Upang makuha ang iyong mga bookmark sa lahat ng iyong device, mag-sign in sa Chrome</translation>
 <translation id="3656115297268584622">I-on ang lokasyon sa <ph name="BEGIN_LINK" />Mga Setting ng Android<ph name="END_LINK" />.</translation>
 <translation id="3661699943263275414">Maaaring mag-save at magbasa ng data ng cookie ang mga third-party na website</translation>
 <translation id="3672452749423051839">Mga suhestyon para sa error sa pag-navigate</translation>
@@ -226,6 +227,7 @@ Upang baguhin ang iyong termino para sa paghahanap, pindutin ito nang matagal up
 <translation id="4170011742729630528">Hindi available ang serbisyo; subukang muli sa ibang pagkakataon.</translation>
 <translation id="4195643157523330669">Buksan sa bagong tab</translation>
 <translation id="423410644998903704">Kailangan ng Chrome ng access sa pahintulot upang maibahagi ang mga ito sa site na ito.</translation>
+<translation id="4242533952199664413">Buksan ang mga setting</translation>
 <translation id="424864128008805179">Mag-sign out sa Chrome?</translation>
 <translation id="4254813446494774748">Wika ng Pagsasalin:</translation>
 <translation id="4256782883801055595">Mga lisensya ng open source</translation>
@@ -524,14 +526,12 @@ Maaaring mayroong ibang mga uri ng history ng pagba-browse ang iyong Google acco
 <translation id="8007176423574883786">Naka-off para sa device na ito</translation>
 <translation id="8026334261755873520">I-clear ang data ng pagba-browse</translation>
 <translation id="8035133914807600019">Bagong folder…</translation>
+<translation id="8063895661287329888">Hindi naidagdag ang bookmark.</translation>
 <translation id="8068648041423924542">Hindi makapili ng certificate.</translation>
 <translation id="8069239273282989646">Pagkatapos ng compression</translation>
 <translation id="8073388330009372546">Buksan ang larawan sa bagong tab</translation>
 <translation id="8076014560081431679">Hindi made-delete ang mga naka-save na setting ng site at maaari nitong ipakita ang iyong mga gawi sa pagba-browse. <ph name="BEGIN_LINK" />Matuto nang higit pa<ph name="END_LINK" /></translation>
 <translation id="8087000398470557479">Ang content na ito ay mula sa <ph name="DOMAIN_NAME" />, na ipinadala ng Google.</translation>
-<translation id="8098570222830891427">May mga device na malapit sa iyo na nagbo-broadcast ng mga web page sa pamamagitan ng Bluetooth. Maghahanap ang Chrome ng mga page at ipapakita ang mga ito sa iyo kapag ginamit mo ang iyong device. Dadaan ang mga page na ito sa isang serbisyo ng Google upang pahusayin ang kalidad ng mga resulta ng page.
-
-Makokontrol mo ang Pisikal na Web sa Mga Setting ng Chrome.</translation>
 <translation id="8106211421800660735">Numero ng credit card</translation>
 <translation id="813082847718468539">Tingnan ang impormasyon ng site</translation>
 <translation id="8137558756159375272">Ipinadadala ng Pindutin upang Hanapin ang piniling salita at ang kasalukuyang page bilang konteksto sa Paghahanap sa Google. Maaari mo itong i-off sa <ph name="BEGIN_LINK" />Mga Setting<ph name="END_LINK" />.</translation>

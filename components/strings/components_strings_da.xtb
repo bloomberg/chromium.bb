@@ -42,6 +42,7 @@
 <translation id="1254117744268754948">Vælg mappe</translation>
 <translation id="1285320974508926690">Oversæt aldrig dette website</translation>
 <translation id="129553762522093515">Senest lukkede</translation>
+<translation id="129863573139666797"><ph name="BEGIN_LINK" />Prøv at rydde dine cookies<ph name="END_LINK" /></translation>
 <translation id="1339601241726513588">Registreringsdomæne:</translation>
 <translation id="1344588688991793829">Indstillinger for AutoFyld i Chromium...</translation>
 <translation id="1374468813861204354">forslag</translation>
@@ -198,6 +199,7 @@
 <translation id="2969319727213777354">Uret på din enhed skal være indstillet korrekt, før du kan oprette en sikker forbindelse. Dette er vigtigt, da de certifikater, websites bruger til at identificere sig selv, kun er gyldige i bestemte perioder. Da uret på din enhed er indstillet forkert, kan Chrome ikke bekræfte disse certifikater.</translation>
 <translation id="2972581237482394796">&amp;Annuller fortryd</translation>
 <translation id="2985306909656435243">Hvis denne indstilling er slået til, gemmer Chromium en kopi af dit kort på denne enhed for at gøre det hurtigere at udfylde formularer.</translation>
+<translation id="2989984781570875765">Indtast udløbsdatoen og den trecifrede kontrolkode, som står på bagsiden af dit <ph name="CREDIT_CARD" /></translation>
 <translation id="2991174974383378012">Deling med websites</translation>
 <translation id="3005723025932146533">Vis gemt kopi</translation>
 <translation id="3010559122411665027">Angiv posten "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
@@ -281,6 +283,7 @@
 <translation id="3717027428350673159"><ph name="BEGIN_LINK" />Tjekke proxy-, firewall- og DNS-konfigurationen<ph name="END_LINK" /></translation>
 <translation id="3739623965217189342">Link, du har kopieret</translation>
 <translation id="3744899669254331632">Du kan ikke gå til <ph name="SITE" /> lige nu, da websitet sendte krypterede loginoplysninger, som Chromium ikke kan behandle. Netværksfejl og angreb er normalt midlertidige, så denne side vil sandsynligvis fungere igen senere.</translation>
+<translation id="3748071062818261683">Bekræft kortet</translation>
 <translation id="3748412725338508953">Der var for mange omdirigeringer.</translation>
 <translation id="375403751935624634">Oversættelsen mislykkedes på grund af en serverfejl.</translation>
 <translation id="3759461132968374835">Du har ingen nyligt rapporterede nedbrud. Nedbrud, der opstod, mens rapportering om nedbrud var deaktiveret, vises ikke her.</translation>
@@ -309,6 +312,7 @@
 <translation id="4103249731201008433">Enhedens serienummer er ugyldigt</translation>
 <translation id="4103763322291513355">Gå til &lt;strong&gt;chrome://policy&lt;/strong&gt; for at se listen over sortlistede webadresser og andre politikker, din systemadministrator har igangsat.</translation>
 <translation id="4117700440116928470">Politikkens omfang understøttes ikke.</translation>
+<translation id="4130226655945681476">Kontrollere netværkskabler, modem og routeren</translation>
 <translation id="4147376274874979956">Der kunne ikke opnås adgang til filen.</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">Skal Chromium gemme dette kort?</translation>
@@ -343,11 +347,15 @@
 <translation id="450710068430902550">Deling med administrator</translation>
 <translation id="4522570452068850558">Detaljer</translation>
 <translation id="4535734014498033861">Der kunne ikke oprettes forbindelse til proxyserveren.</translation>
+<translation id="4553532082208702698">Indtast den firecifrede kontrolkode, som står på forsiden af dit <ph name="CREDIT_CARD" /></translation>
+<translation id="4558551763791394412">Prøv at deaktivere dine udvidelser.</translation>
 <translation id="4587425331216688090">Vil du fjerne adressen fra Chrome?</translation>
 <translation id="4592951414987517459">Din forbindelse til <ph name="DOMAIN" /> er krypteret ved hjælp af en moderne krypteringspakke.</translation>
 <translation id="4594403342090139922">&amp;Fortryd sletning</translation>
 <translation id="4668929960204016307">,</translation>
+<translation id="4670097147947922288">Du er i øjeblikket på en udvidelsesside.</translation>
 <translation id="467662567472608290">Denne server kunne ikke bevise, at den er <ph name="DOMAIN" />, da sikkerhedscertifikatet indeholder fejl. Dette kan skyldes en fejlkonfiguration, eller at en hacker har opfanget din forbindelse.</translation>
+<translation id="4683417246209150705">Indtast den trecifrede kontrolkode, som står på bagsiden af dit <ph name="CREDIT_CARD" /></translation>
 <translation id="4697214168136963651"><ph name="URL" /> blev blokeret</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">Din forbindelse blev afbrudt</translation>
@@ -432,6 +440,8 @@
 <translation id="5650551054760837876">Ingen søgeresultater fundet.</translation>
 <translation id="5663999524854166235">Indtast den trecifrede kontrolkode, som står på bagsiden af dit kort, for at bekræfte</translation>
 <translation id="5677928146339483299">Blokeret</translation>
+<translation id="5696590819423335174">Indtast udløbsdatoen og den firecifrede kontrolkode, som står på forsiden af dit <ph name="CREDIT_CARD" /></translation>
+<translation id="5699278517904102888">Indtast den trecifrede kontrolkode, som står på bagsiden af dit <ph name="CREDIT_CARD" />, for at bekræfte</translation>
 <translation id="5710435578057952990">Dette websites identitet er ikke blevet bekræftet.</translation>
 <translation id="5720705177508910913">Aktuel bruger</translation>
 <translation id="5785756445106461925">Desuden indeholder denne side andre ressourcer, som ikke er sikre. Disse ressourcer kan ses af andre under overførslen og kan ændres af en hacker, så siden ser anderledes ud.</translation>
@@ -555,7 +565,6 @@
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> overholder ikke sikkerhedsstandarderne.</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Få flere oplysninger<ph name="END_LINK" /> om dette problem.</translation>
 <translation id="7219179957768738017">Forbindelsen bruger <ph name="SSL_VERSION" />.</translation>
-<translation id="7225807090967870017">Build-id</translation>
 <translation id="7231308970288859235">Ups! Du skal spørge en af dine forældre, om det er i orden, at du besøger dette website.</translation>
 <translation id="7246609911581847514">Denne meddelelse vises, fordi din administrator skal godkende nye websites, første gang du besøger dem.</translation>
 <translation id="725866823122871198">Der kunne ikke oprettes en privat forbindelse til <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, da dato og tid (<ph name="DATE_AND_TIME" />) på din enhed er forkerte.</translation>
@@ -596,6 +605,7 @@ Psst! Prøv at bruge Inkognitotilstand <ph name="SHORTCUT_KEY" /> næste gang.</
 <translation id="7610193165460212391">Værdien er uden for intervallet <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">Udløbsdato: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Du har allerede data, der er krypteret med en anden version af adgangskoden til din Google-konto. Indtast adgangskoden i feltet nedenfor.</translation>
+<translation id="7633887239437305289">Indtast den firecifrede kontrolkode, som står på forsiden af dit <ph name="CREDIT_CARD" />, for at bekræfte</translation>
 <translation id="7634554953375732414">Din forbindelse til dette website er ikke privat.</translation>
 <translation id="7637571805876720304">Vil du fjerne kreditkortet fra Chromium?</translation>
 <translation id="7643817847124207232">Forbindelsen til internettet er tabt.</translation>

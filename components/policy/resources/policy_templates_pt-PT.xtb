@@ -519,6 +519,22 @@
           Cada item desta lista é um padrão de correspondência do estilo de extensão (ver https://developer.chrome.com/extensions/match_patterns). Os utilizadores poderão instalar itens facilmente a partir de qualquer URL que corresponda a um item desta lista. Tanto a localização do ficheiro *.crx como a página a partir da qual foi iniciada a transferência (ou seja, o referenciador) têm de ser permitidas por estes padrões.
 
           O ExtensionInstallBlacklist tem prioridade sobre esta política. Isto é, uma extensão na lista negra não será instalada mesmo que seja proveniente de um Website incluído nesta lista.</translation>
+<translation id="2813740161943223811">Esta política foi descontinuada. Em alternativa, utilize o ProxyMode.
+
+          O ProxyMode permite-lhe especificar o servidor proxy que o <ph name="PRODUCT_NAME" /> utiliza e impede que os utilizadores alterem as definições de proxy. As aplicações ARC também podem utilizar este servidor proxy.
+
+          Se optar por nunca utilizar um servidor proxy e estabelecer sempre ligação diretamente, todas as outras opções são ignoradas.
+
+          Se optar por utilizar definições de proxy do sistema ou por detetar automaticamente o servidor proxy, todas as outras opções são ignoradas.
+
+          Se escolher as definições de proxy manuais, pode especificar mais opções em "Endereço ou URL do servidor proxy", "URL para um ficheiro .pac de proxy" e "Lista separada por vírgulas das regras para ignorar o proxy". Apenas o servidor proxy HTTP com a prioridade mais elevada está disponível para aplicações ARC.
+
+          Para obter exemplos detalhados, aceda a:
+          <ph name="PROXY_HELP_URL" />.
+
+          Se ativar esta definição, o <ph name="PRODUCT_NAME" /> ignora todas as opções relacionadas com o proxy especificadas a partir da linha de comandos.
+
+          Se deixar esta política por definir, permite que os utilizadores escolham as definições de proxy conforme pretendam.</translation>
 <translation id="2824715612115726353">Ativar o modo de navegação anónima</translation>
 <translation id="2844404652289407061">Ativa a disponibilidade de Tocar para pesquisar na vista de conteúdo do <ph name="PRODUCT_NAME" />.
 
@@ -625,6 +641,18 @@
           </translation>
 <translation id="3205825995289802549">Maximizar a primeira janela do navegador na primeira execução</translation>
 <translation id="3206731874112238027">Desativar a pré-visualização de impressão (descontinuado)</translation>
+<translation id="3208854390109736596">Permite-lhe especificar o servidor proxy que o <ph name="PRODUCT_NAME" /> utiliza e impede que os utilizadores alterem as definições de proxy. As aplicações ARC também podem utilizar este servidor proxy.
+
+      Se optar por nunca utilizar um servidor proxy e estabelecer sempre ligação diretamente, todas as outras opções são ignoradas.
+
+      Se optar por detetar automaticamente o servidor proxy, todas as outras opções são ignoradas.
+
+      Para obter exemplos detalhados, aceda a:
+      <ph name="PROXY_HELP_URL" />.
+
+      Se ativar esta definição, o <ph name="PRODUCT_NAME" /> e as aplicações ARC ignoram todas as opções relacionadas com o proxy especificadas a partir da linha de comandos.
+
+      Se deixar estas políticas por definir, permite que os utilizadores escolham as definições de proxy conforme pretendam.</translation>
 <translation id="3213821784736959823">Controla se o cliente DNS incorporado é utilizado no <ph name="PRODUCT_NAME" />.
 
       Se esta política estiver definida como verdadeira, será utilizado o cliente DNS incorporado, caso esteja disponível.
@@ -675,6 +703,9 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
      Se esta política estiver definida como falsa, o <ph name="PRODUCT_OS_NAME" /> não permitirá que sejam iniciadas sessões de convidado.</translation>
 <translation id="3428247105888806363">Ativar predição de rede</translation>
+<translation id="3449886121729668969">Configura as definições de proxy para o <ph name="PRODUCT_NAME" />. Estas definições de proxy também estão disponíveis para aplicações ARC.
+
+      Esta política ainda não está pronta para ser utilizada, por isso, não a utilize.</translation>
 <translation id="3460784402832014830">Especifica o URL que um motor de pesquisa utiliza para fornecer uma página Novo separador.
 
           Esta política é opcional. Se não for definida, não será fornecida nenhuma página novo separador.
@@ -685,6 +716,14 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
           Se esta política estiver definida como Verdadeira, os atrasos de gestão de energia e o limite de duração da sessão só começarão após ter sido observada a primeira atividade do utilizador numa sessão.
 
           Se esta política estiver definida como Falsa ou não estiver definida, os atrasos de gestão de energia e o limite de duração da sessão começarão imediatamente após o início da sessão.</translation>
+<translation id="3469657928310999477">O <ph name="PRODUCT_NAME" /> ignora qualquer proxy para a lista de anfitriões aqui indicada. As aplicações ARC podem utilizar esta lista como uma lista de regras para ignorar.
+
+          Esta política só é aplicada se tiver selecionado as definições de proxy manuais em "Escolher como especificar as definições do servidor proxy".
+
+          Deixe esta política por definir se tiver selecionado qualquer outro modo para definir políticas de proxy.
+
+          Para obter exemplos mais detalhados, aceda a:
+          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="3478024346823118645">Limpar os dados do utilizador ao terminar sessão</translation>
 <translation id="348495353354674884">Ativar teclado virtual</translation>
 <translation id="3496296378755072552">Gestor de palavras-passe</translation>
@@ -1294,6 +1333,9 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Esta política afeta todos os tipos de suporte de armazenamento. Por exemplo: unidades flash USB, discos rígidos externos, cartões SD e outros cartões de memória, armazenamento ótico, etc. O armazenamento interno não é afetado, pelo que continua a ser possível aceder aos ficheiros guardados na pasta Transferência. O Google Drive também não é afetado por esta política.
 
       Se esta definição estiver desativada ou não estiver configurada, os utilizadores poderão utilizar todos os tipos de armazenamento externo suportados no respetivo dispositivo.</translation>
+<translation id="6076099373507468537">Define a lista de dispositivos USB que estão autorizados a ser desligados do respetivo controlador de kernel para serem utilizados diretamente através da API chrome.usb numa aplicação Web. As entradas são pares de identificador de fornecedor de USB e identificador de produto para identificar um hardware específico.
+
+      Se esta política não estiver configurada, a lista de dispositivos USB amovíveis fica vazia.</translation>
 <translation id="6095999036251797924">Especifica o período de tempo sem atividade do utilizador após o qual o ecrã é bloqueado durante o funcionamento com corrente alternada ou bateria.
 
           Quando o período de tempo é definido para um valor superior a zero, representa o período de tempo durante o qual o utilizador se tem de manter inativo até o <ph name="PRODUCT_OS_NAME" /> bloquear o ecrã.
@@ -1788,6 +1830,14 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       comunicadas. Se for definida como verdadeira ou deixada por definir, as informações da sessão são
       comunicadas.</translation>
 <translation id="7774768074957326919">Utilizar definições de proxy do sistema</translation>
+<translation id="7775831859772431793">Pode especificar o URL do servidor proxy aqui.
+
+          Esta política só é aplicada se tiver selecionado as definições de proxy manuais em "Escolher como especificar as definições do servidor proxy".
+
+          Deixe esta política por definir se tiver selecionado qualquer outro modo para definir políticas de proxy.
+
+          Para obter mais opções e exemplos detalhados, aceda a:
+          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7788511847830146438">Por Perfil</translation>
 <translation id="7796141075993499320">Permite definir uma lista de padrões de URL que especificam os Web sites autorizados a executar plug-ins. Se esta política não for definida, será utilizado o valor global predefinido para todos os Web sites, seja a partir da política "DefaultPluginsSetting", caso esteja definida, ou a partir da configuração pessoal do utilizador.</translation>
 <translation id="7818131573217430250">Predefinir o estado do modo de alto contraste no ecrã de início de sessão</translation>
@@ -1818,6 +1868,14 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Determina a ID da extensão a utilizar como proteção de ecrã no ecrã de início de sessão. A extensão deve ser parte do AppPack que está configurado para este domínio através da política DeviceAppPack.</translation>
 <translation id="7882890448959833986">Suprimir o aviso de SO não suportado</translation>
 <translation id="7912255076272890813">Configurar tipos de aplicações/extensões permitidos</translation>
+<translation id="7915236031252389808">Pode especificar um URL para um ficheiro .pac de proxy aqui.
+
+          Esta política só é aplicada se tiver selecionado as definições de proxy manuais em "Escolher como especificar as definições do servidor proxy".
+
+          Deixe esta política por definir se tiver selecionado qualquer outro modo para definir políticas de proxy.
+
+          Para obter exemplos detalhados, aceda a:
+          <ph name="PROXY_HELP_URL" /></translation>
 <translation id="793134539373873765">Especifica se o p2p será utilizado para cargas úteis de atualização do SO. Se estiver definido como Verdadeiro, os dispositivos irão partilhar e tentar consumir cargas úteisde atualização na LAN, reduzindo potencialmente a utilização e o congestionamento da largura de banda da Internet. Se a carga útil de atualização não estiver disponível na LAN, o dispositivo irá regressar à transferência a partir de um servidor de atualização. Se estiver definido como Falso ou se não estiver configurado, o p2p não será utilizado.</translation>
 <translation id="7933141401888114454">Permitir a criação de utilizadores supervisionados</translation>
 <translation id="7936098023732125869">Permite a utilização de um fornecedor de pesquisa predefinido.
@@ -1954,6 +2012,11 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="8382184662529825177">Ativar a utilização da comprovação remota para proteção de conteúdo no dispositivo</translation>
 <translation id="838870586332499308">Ativar roaming de dados</translation>
 <translation id="8412312801707973447">Se são ou não efetuadas verificações OCSP/CRL on-line</translation>
+<translation id="8413348101535146315">Ativa a conclusão de processos no Gestor de tarefas do <ph name="PRODUCT_NAME" />.
+
+      Se estiver definido como falso, o botão "Terminar processo" está desativado no Gestor de tarefas.
+
+      Se estiver definido como verdadeiro ou se não estiver configurado, o utilizador pode terminar processos no Gestor de tarefas.</translation>
 <translation id="8424255554404582727">Definir a rotação predefinida do ecrã, aplicada novamente em todos os reinícios</translation>
 <translation id="8426231401662877819">Rodar o ecrã 90 graus para a direita</translation>
 <translation id="8451988835943702790">Utilizar a página Novo separador como página inicial</translation>
@@ -2161,6 +2224,24 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="9112897538922695510">Permite-lhe registar uma lista de controladores de protocolos. Esta apenas pode ser uma política recomendada. A propriedade |protocol| deve ser definida para um esquema como "mailto" e a propriedade |url| deve ser definida para o padrão do URL da aplicação que controla o esquema. O padrão pode incluir um "%s" que, caso esteja presente, é substituído pelo URL controlado.
 
           Os controladores de protocolos registados pela política são unidos com os que são registados pelo utilizador e ambos estão disponíveis para utilização. O utilizador pode substituir os controladores de protocolos instalados pela política ao instalar um novo controlador predefinido, mas não pode remover um controlador de protocolos registado pela política.</translation>
+<translation id="913138516158420759">Permite-lhe especificar o servidor proxy que o <ph name="PRODUCT_NAME" /> utiliza e impede que os utilizadores alterem as definições de proxy. As aplicações ARC também podem utilizar este servidor proxy.
+
+          Se optar por nunca utilizar um servidor proxy e estabelecer sempre ligação diretamente, todas as outras opções são ignoradas.
+
+          Se optar por utilizar as definições de proxy do sistema, todas as outras opções são ignoradas.
+
+          Se optar por detetar automaticamente o servidor proxy, todas as outras opções são ignoradas.
+
+          Se escolher o modo de servidor proxy fixo, pode especificar outras opções em "Endereço ou URL do servidor proxy" e "Lista separada por vírgulas de regras para ignorar o proxy". Apenas o servidor proxy HTTP com a prioridade mais elevada está disponível para aplicações ARC.
+
+          Se optar por utilizar um script de proxy .pac, tem de especificar o URL para o script em "URL para um ficheiro .pac de proxy".
+
+          Para obter exemplos mais detalhados, aceda a:
+          <ph name="PROXY_HELP_URL" />.
+
+          Se ativar esta definição, o <ph name="PRODUCT_NAME" /> e as aplicações ARC ignoram todas as opções relacionadas com o proxy especificadas a partir da linha de comandos.
+
+          Se deixar esta política por definir, permite que os utilizadores escolham as definições de proxy conforme pretendam.</translation>
 <translation id="913195841488580904">Bloquear o acesso a uma lista de URLs</translation>
 <translation id="9135033364005346124">Ativar proxy <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="9147029539363974059">Enviar registos do sistema para o servidor de gestão para permitir aos
