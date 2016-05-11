@@ -64,14 +64,15 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
     private List<PaymentApp> mApps;
     private PaymentRequestClient mClient;
     private Set<String> mSupportedMethods;
-    private List<PaymentItem> mPaymentItems;
     private List<LineItem> mLineItems;
-    private SectionInformation mShippingOptions;
+    private List<PaymentItem> mPaymentItems;
+    private List<ShippingOption> mShippingOptions;
+    private SectionInformation mShippingOptionsSection;
     private JSONObject mData;
-    private SectionInformation mShippingAddresses;
+    private SectionInformation mShippingAddressesSection;
     private List<PaymentApp> mPendingApps;
     private List<PaymentInstrument> mPendingInstruments;
-    private SectionInformation mPaymentMethods;
+    private SectionInformation mPaymentMethodsSection;
     private PaymentRequestUI mUI;
     private Callback<PaymentInformation> mPaymentInformationCallback;
     private Pattern mRegionCodePattern;
@@ -159,7 +160,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         // If the merchant requests shipping and does not provide shipping options here, then the
         // merchant needs the shipping address to calculate shipping price and availability.
         boolean requestShipping = options != null && options.requestShipping;
-        mMerchantNeedsShippingAddress = requestShipping && mShippingOptions.isEmpty();
+        mMerchantNeedsShippingAddress = requestShipping && mShippingOptionsSection.isEmpty();
 
         mData = getValidatedData(mSupportedMethods, stringifiedData);
         if (mData == null) {
@@ -182,11 +183,12 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         }
 
         if (addresses.isEmpty()) {
-            mShippingAddresses = new SectionInformation();
-        } else if (mShippingOptions.getSelectedItem() != null) {
-            mShippingAddresses = new SectionInformation(0, addresses);
+            mShippingAddressesSection = new SectionInformation();
+        } else if (mShippingOptionsSection.getSelectedItem() != null) {
+            mShippingAddressesSection = new SectionInformation(0, addresses);
         } else {
-            mShippingAddresses = new SectionInformation(SectionInformation.NO_SELECTION, addresses);
+            mShippingAddressesSection =
+                    new SectionInformation(SectionInformation.NO_SELECTION, addresses);
         }
 
         mPendingApps = new ArrayList<>(mApps);
@@ -205,7 +207,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
             }
         }
 
-        if (!isGettingInstruments) mPaymentMethods = new SectionInformation();
+        if (!isGettingInstruments) mPaymentMethodsSection = new SectionInformation();
 
         mUI = PaymentRequestUI.show(mContext, this, requestShipping, mMerchantName, mOrigin);
         if (mFavicon != null) mUI.setTitleBitmap(mFavicon);
@@ -230,13 +232,13 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
 
         // Empty shipping options means the merchant cannot ship to the user's selected shipping
         // address.
-        if (mShippingOptions.isEmpty() && !mMerchantNeedsShippingAddress) {
+        if (mShippingOptionsSection.isEmpty() && !mMerchantNeedsShippingAddress) {
             disconnectFromClientWithDebugMessage("Merchant indicates inablity to ship although "
                     + "originally indicated that can ship anywhere");
         }
 
         mUI.updateOrderSummarySection(mLineItems);
-        mUI.updateShippingOptionsSection(mShippingOptions);
+        mUI.updateShippingOptionsSection(mShippingOptionsSection);
     }
 
     private boolean setLineItemsAndShippingOptionsOrDisconnectFromClient(PaymentDetails details) {
@@ -247,12 +249,13 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         }
         mPaymentItems = Arrays.asList(details.items);
 
-        mShippingOptions =
+        mShippingOptionsSection =
                 getValidatedShippingOptions(details.items[0].amount.currencyCode, details);
-        if (mShippingOptions == null) {
+        if (mShippingOptionsSection == null) {
             disconnectFromClientWithDebugMessage("Invalid shipping options");
             return false;
         }
+        mShippingOptions = Arrays.asList(details.shippingOptions);
 
         return true;
     }
@@ -319,7 +322,6 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         CurrencyStringFormatter formatter =
                 new CurrencyStringFormatter(itemsCurrencyCode, Locale.getDefault());
 
-        List<PaymentOption> result = new ArrayList<>();
         for (int i = 0; i < details.shippingOptions.length; i++) {
             ShippingOption option = details.shippingOptions[i];
 
@@ -333,7 +335,29 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
                     || !formatter.isValidAmountValue(option.amount.value)) {
                 return null;
             }
+        }
 
+        boolean isSameAsCurrentOptions = true;
+        if (mShippingOptions == null || mShippingOptions.size() != details.shippingOptions.length) {
+            isSameAsCurrentOptions = false;
+        } else {
+            for (int i = 0; i < details.shippingOptions.length; i++) {
+                ShippingOption newOption = details.shippingOptions[i];
+                ShippingOption currentOption = mShippingOptions.get(i);
+                if (!newOption.id.equals(currentOption.id)
+                        || !newOption.label.equals(currentOption.label)
+                        || !newOption.amount.currencyCode.equals(currentOption.amount.currencyCode)
+                        || !newOption.amount.value.equals(currentOption.amount.value)) {
+                    isSameAsCurrentOptions = false;
+                    break;
+                }
+            }
+        }
+        if (isSameAsCurrentOptions) return mShippingOptionsSection;
+
+        List<PaymentOption> result = new ArrayList<>();
+        for (int i = 0; i < details.shippingOptions.length; i++) {
+            ShippingOption option = details.shippingOptions[i];
             result.add(new PaymentOption(option.id, option.label,
                     formatter.format(option.amount.value), PaymentOption.NO_ICON));
         }
@@ -372,7 +396,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
     public void getDefaultPaymentInformation(Callback<PaymentInformation> callback) {
         mPaymentInformationCallback = callback;
 
-        if (mPaymentMethods == null) return;
+        if (mPaymentMethodsSection == null) return;
 
         new Handler().post(new Runnable() {
             @Override
@@ -384,8 +408,9 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
 
     private void provideDefaultPaymentInformation() {
         mPaymentInformationCallback.onResult(new PaymentInformation(
-                mLineItems.get(mLineItems.size() - 1), mShippingAddresses.getSelectedItem(),
-                mShippingOptions.getSelectedItem(), mPaymentMethods.getSelectedItem()));
+                mLineItems.get(mLineItems.size() - 1), mShippingAddressesSection.getSelectedItem(),
+                mShippingOptionsSection.getSelectedItem(),
+                mPaymentMethodsSection.getSelectedItem()));
         mPaymentInformationCallback = null;
     }
 
@@ -404,7 +429,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         new Handler().post(new Runnable() {
             @Override
             public void run() {
-                callback.onResult(mShippingAddresses);
+                callback.onResult(mShippingAddressesSection);
             }
         });
     }
@@ -414,18 +439,18 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         new Handler().post(new Runnable() {
             @Override
             public void run() {
-                callback.onResult(mShippingOptions);
+                callback.onResult(mShippingOptionsSection);
             }
         });
     }
 
     @Override
     public void getPaymentMethods(final Callback<SectionInformation> callback) {
-        assert mPaymentMethods != null;
+        assert mPaymentMethodsSection != null;
         new Handler().post(new Runnable() {
             @Override
             public void run() {
-                callback.onResult(mPaymentMethods);
+                callback.onResult(mPaymentMethodsSection);
             }
         });
     }
@@ -433,7 +458,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
     @Override
     public void onShippingAddressChanged(PaymentOption selectedShippingAddress) {
         assert selectedShippingAddress instanceof AutofillAddress;
-        mShippingAddresses.setSelectedItem(selectedShippingAddress);
+        mShippingAddressesSection.setSelectedItem(selectedShippingAddress);
         if (mMerchantNeedsShippingAddress) {
             mClient.onShippingAddressChange(
                     ((AutofillAddress) selectedShippingAddress).toShippingAddress());
@@ -442,14 +467,14 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
 
     @Override
     public void onShippingOptionChanged(PaymentOption selectedShippingOption) {
-        mShippingOptions.setSelectedItem(selectedShippingOption);
+        mShippingOptionsSection.setSelectedItem(selectedShippingOption);
         mClient.onShippingOptionChange(selectedShippingOption.getIdentifier());
     }
 
     @Override
     public void onPaymentMethodChanged(PaymentOption selectedPaymentMethod) {
         assert selectedPaymentMethod instanceof PaymentInstrument;
-        mPaymentMethods.setSelectedItem(selectedPaymentMethod);
+        mPaymentMethodsSection.setSelectedItem(selectedPaymentMethod);
     }
 
     @Override
@@ -522,9 +547,9 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
 
         if (mPendingApps.isEmpty()) {
             if (mPendingInstruments.isEmpty()) {
-                mPaymentMethods = new SectionInformation();
+                mPaymentMethodsSection = new SectionInformation();
             } else {
-                mPaymentMethods = new SectionInformation(0, mPendingInstruments);
+                mPaymentMethodsSection = new SectionInformation(0, mPendingInstruments);
                 mPendingInstruments.clear();
             }
 
@@ -541,7 +566,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         response.methodName = methodName;
         response.stringifiedDetails = stringifiedDetails;
 
-        PaymentOption selectedShippingAddress = mShippingAddresses.getSelectedItem();
+        PaymentOption selectedShippingAddress = mShippingAddressesSection.getSelectedItem();
         if (selectedShippingAddress != null) {
             // Shipping addresses are created in show(). The should all be instances of
             // AutofillAddress.
@@ -550,7 +575,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
                     ((AutofillAddress) selectedShippingAddress).toShippingAddress();
         }
 
-        PaymentOption selectedShippingOption = mShippingOptions.getSelectedItem();
+        PaymentOption selectedShippingOption = mShippingOptionsSection.getSelectedItem();
         if (selectedShippingOption != null && selectedShippingOption.getIdentifier() != null) {
             response.shippingOptionId = selectedShippingOption.getIdentifier();
         }
@@ -588,13 +613,13 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
             mUI = null;
         }
 
-        if (mPaymentMethods != null) {
-            for (int i = 0; i < mPaymentMethods.getSize(); i++) {
-                PaymentOption option = mPaymentMethods.getItem(i);
+        if (mPaymentMethodsSection != null) {
+            for (int i = 0; i < mPaymentMethodsSection.getSize(); i++) {
+                PaymentOption option = mPaymentMethodsSection.getItem(i);
                 assert option instanceof PaymentInstrument;
                 ((PaymentInstrument) option).dismiss();
             }
-            mPaymentMethods = null;
+            mPaymentMethodsSection = null;
         }
     }
 
