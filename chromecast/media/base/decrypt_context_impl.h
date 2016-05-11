@@ -34,7 +34,7 @@ class DecryptContextImpl : public DecryptContext {
   // Decrypts the given buffer. Returns true/false for success/failure,
   // and places the decrypted data in |output| if successful.
   // Decrypted data in |output| has the same length as |buffer|.
-  virtual bool Decrypt(CastDecoderBuffer* buffer, uint8_t* output) = 0;
+  virtual bool Decrypt(CastDecoderBuffer* buffer, uint8_t* output);
 
   // Returns whether the data can be decrypted into user memory.
   // If the key system doesn't support secure output or the app explicitly
