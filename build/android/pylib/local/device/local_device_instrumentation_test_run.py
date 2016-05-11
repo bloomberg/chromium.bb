@@ -268,7 +268,13 @@ class LocalDeviceInstrumentationTestRun(
         logging.info('  %s', l)
       if (not self._env.skip_clear_data
           and self._test_instance.package_info):
-        device.ClearApplicationState(self._test_instance.package_info.package)
+        permissions = (
+            self._test_instance.apk_under_test.GetPermissions()
+            if self._test_instance.apk_under_test
+            else None)
+        device.ClearApplicationState(self._test_instance.package_info.package,
+                                     permissions=permissions)
+
     else:
       logging.debug('raw output from %s:', test_display_name)
       for l in output:
