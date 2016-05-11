@@ -36,7 +36,6 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeA
     protected final PaymentsCallbackHelper<PaymentRequestUI> mReadyForInput;
     protected final PaymentsCallbackHelper<PaymentRequestUI> mReadyToPay;
     protected final PaymentsCallbackHelper<PaymentRequestUI> mReadyToClose;
-    protected final PaymentsCallbackHelper<PaymentRequestUI> mResultReady;
     protected final PaymentsCallbackHelper<CardUnmaskPrompt> mReadyToUnmask;
     protected final CallbackHelper mDismissed;
     private final AtomicReference<ContentViewCore> mViewCoreRef;
@@ -49,7 +48,6 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeA
         mReadyForInput = new PaymentsCallbackHelper<>();
         mReadyToPay = new PaymentsCallbackHelper<>();
         mReadyToClose = new PaymentsCallbackHelper<>();
-        mResultReady = new PaymentsCallbackHelper<>();
         mReadyToUnmask = new PaymentsCallbackHelper<>();
         mDismissed = new CallbackHelper();
         mViewCoreRef = new AtomicReference<>();
@@ -155,13 +153,6 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeA
         ThreadUtils.assertOnUiThread();
         mReadyToClose.notifyCalled(ui);
     }
-
-    @Override
-    public void onPaymentRequestResultReady(PaymentRequestUI ui) {
-        ThreadUtils.assertOnUiThread();
-        mResultReady.notifyCalled(ui);
-    }
-
 
     @Override
     public void onPaymentRequestDismiss() {

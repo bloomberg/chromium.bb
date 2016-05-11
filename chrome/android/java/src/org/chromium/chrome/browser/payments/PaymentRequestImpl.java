@@ -497,7 +497,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
      */
     @Override
     public void abort() {
-        closeClient();
+        mClient = null;
         closeUI(false);
     }
 
@@ -514,7 +514,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
      */
     @Override
     public void close() {
-        closeClient();
+        mClient = null;
         closeUI(false);
     }
 
@@ -523,7 +523,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
      */
     @Override
     public void onConnectionError(MojoException e) {
-        closeClient();
+        mClient = null;
         closeUI(false);
     }
 
@@ -595,7 +595,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
     private void disconnectFromClientWithDebugMessage(String debugMessage) {
         Log.d(TAG, debugMessage);
         mClient.onError();
-        closeClient();
+        mClient = null;
     }
 
     /**
@@ -606,8 +606,9 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
             mUI.close(paymentSuccess, new Runnable() {
                 @Override
                 public void run() {
-                    if (mClient != null) mClient.onComplete();
-                    closeClient();
+                    if (mClient == null) return;
+                    mClient.onComplete();
+                    mClient = null;
                 }
             });
             mUI = null;
@@ -621,10 +622,5 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
             }
             mPaymentMethodsSection = null;
         }
-    }
-
-    private void closeClient() {
-        if (mClient != null) mClient.close();
-        mClient = null;
     }
 }
