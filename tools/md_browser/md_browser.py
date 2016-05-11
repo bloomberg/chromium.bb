@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # Copyright 2015 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -25,12 +26,16 @@ def main(argv):
   parser = argparse.ArgumentParser(prog='md_browser')
   parser.add_argument('-p', '--port', type=int, default=8080,
                       help='port to run on (default = %(default)s)')
+  parser.add_argument('-d', '--directory', type=str, default=SRC_DIR)
   args = parser.parse_args(argv)
 
   try:
-    s = Server(args.port, SRC_DIR)
+    s = Server(args.port, args.directory)
     print("Listening on http://localhost:%s/" % args.port)
-    print(" Try loading http://localhost:%s/docs/README.md" % args.port)
+    if os.path.isfile(os.path.join(args.directory, 'docs', 'README.md')):
+      print(" Try loading http://localhost:%s/docs/README.md" % args.port)
+    elif os.path.isfile(os.path.join(args.directory, 'README.md')):
+      print(" Try loading http://localhost:%s/README.md" % args.port)
     s.serve_forever()
     s.shutdown()
     return 0
@@ -71,7 +76,7 @@ class Server(SocketServer.TCPServer):
   def __init__(self, port, top_level):
     SocketServer.TCPServer.__init__(self, ('0.0.0.0', port), Handler)
     self.port = port
-    self.top_level = top_level
+    self.top_level = os.path.abspath(top_level)
 
   def server_bind(self):
     self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -89,7 +94,7 @@ class Handler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 
     full_path = os.path.abspath(os.path.join(self.server.top_level, path[1:]))
 
-    if not full_path.startswith(SRC_DIR):
+    if not full_path.startswith(self.server.top_level):
       self._DoUnknown()
     elif path == '/doc.css':
       self._DoCSS('doc.css')
@@ -142,9 +147,11 @@ class Handler(SimpleHTTPServer.SimpleHTTPRequestHandler):
     self.wfile.write('<html><body>I do not know how to serve %s.</body>'
                        '</html>' % self.path)
 
-  def _Read(self, relpath):
+  def _Read(self, relpath, relative_to=None):
+    if relative_to is None:
+      relative_to = self.server.top_level
     assert not relpath.startswith(os.sep)
-    path = os.path.join(self.server.top_level, relpath)
+    path = os.path.join(relative_to, relpath)
     with codecs.open(path, encoding='utf-8') as fp:
       return fp.read()
 
@@ -154,7 +161,8 @@ class Handler(SimpleHTTPServer.SimpleHTTPRequestHandler):
     self.end_headers()
 
   def _WriteTemplate(self, template):
-    contents = self._Read(os.path.join('tools', 'md_browser', template))
+    contents = self._Read(os.path.join('tools', 'md_browser', template),
+                          relative_to=SRC_DIR)
     self.wfile.write(contents.encode('utf-8'))
 
 
