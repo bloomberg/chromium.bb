@@ -279,6 +279,7 @@
         'internal_api/public/data_type_association_stats.h',
         'internal_api/public/data_type_debug_info_listener.cc',
         'internal_api/public/data_type_debug_info_listener.h',
+        'internal_api/public/data_type_error_handler.h',
         'internal_api/public/delete_journal.h',
         'internal_api/public/engine/model_safe_worker.cc',
         'internal_api/public/engine/model_safe_worker.h',

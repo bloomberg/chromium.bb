@@ -13,7 +13,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
-#include "components/sync_driver/data_type_error_handler.h"
 #include "sync/api/sync_change_processor.h"
 #include "sync/api/sync_data.h"
 #include "sync/api/sync_error.h"
@@ -22,6 +21,7 @@
 #include "sync/internal_api/public/engine/model_safe_worker.h"
 
 namespace syncer {
+class DataTypeErrorHandler;
 class SyncableService;
 struct UserShare;
 }  // namespace syncer
@@ -31,7 +31,6 @@ namespace sync_driver {
 class ChangeProcessor;
 class GenericChangeProcessor;
 class GenericChangeProcessorFactory;
-class DataTypeErrorHandler;
 class SyncClient;
 
 // A ref-counted wrapper around a GenericChangeProcessor for use with datatypes
@@ -66,7 +65,7 @@ class SharedChangeProcessor
       SyncClient* sync_client,
       GenericChangeProcessorFactory* processor_factory,
       syncer::UserShare* user_share,
-      DataTypeErrorHandler* error_handler,
+      syncer::DataTypeErrorHandler* error_handler,
       syncer::ModelType type,
       const base::WeakPtr<syncer::SyncMergeResult>& merge_result);
 
@@ -135,7 +134,7 @@ class SharedChangeProcessor
   // Used only on |backend_loop_|.
   GenericChangeProcessor* generic_change_processor_;
 
-  DataTypeErrorHandler* error_handler_;
+  syncer::DataTypeErrorHandler* error_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(SharedChangeProcessor);
 };

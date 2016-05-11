@@ -310,7 +310,7 @@ BookmarkModelAssociator::BookmarkModelAssociator(
     BookmarkModel* bookmark_model,
     sync_driver::SyncClient* sync_client,
     syncer::UserShare* user_share,
-    sync_driver::DataTypeErrorHandler* unrecoverable_error_handler,
+    syncer::DataTypeErrorHandler* unrecoverable_error_handler,
     bool expect_mobile_bookmarks_folder)
     : bookmark_model_(bookmark_model),
       sync_client_(sync_client),

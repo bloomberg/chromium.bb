@@ -13,6 +13,7 @@
 
 namespace syncer {
 class AttachmentService;
+class DataTypeErrorHandler;
 class SyncableService;
 class SyncMergeResult;
 struct UserShare;
@@ -20,7 +21,6 @@ struct UserShare;
 
 namespace sync_driver {
 
-class DataTypeErrorHandler;
 class GenericChangeProcessor;
 class SyncClient;
 
@@ -40,7 +40,7 @@ class GenericChangeProcessorFactory {
   virtual std::unique_ptr<GenericChangeProcessor> CreateGenericChangeProcessor(
       syncer::ModelType type,
       syncer::UserShare* user_share,
-      DataTypeErrorHandler* error_handler,
+      syncer::DataTypeErrorHandler* error_handler,
       const base::WeakPtr<syncer::SyncableService>& local_service,
       const base::WeakPtr<syncer::SyncMergeResult>& merge_result,
       SyncClient* sync_client);

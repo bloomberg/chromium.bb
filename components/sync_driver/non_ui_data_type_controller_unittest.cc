@@ -68,13 +68,14 @@ class SharedChangeProcessorMock : public SharedChangeProcessor {
  public:
   SharedChangeProcessorMock() {}
 
-  MOCK_METHOD6(Connect, base::WeakPtr<syncer::SyncableService>(
-      SyncClient*,
-      GenericChangeProcessorFactory*,
-      syncer::UserShare*,
-      DataTypeErrorHandler*,
-      syncer::ModelType,
-      const base::WeakPtr<syncer::SyncMergeResult>&));
+  MOCK_METHOD6(Connect,
+               base::WeakPtr<syncer::SyncableService>(
+                   SyncClient*,
+                   GenericChangeProcessorFactory*,
+                   syncer::UserShare*,
+                   syncer::DataTypeErrorHandler*,
+                   syncer::ModelType,
+                   const base::WeakPtr<syncer::SyncMergeResult>&));
   MOCK_METHOD0(Disconnect, bool());
   MOCK_METHOD2(ProcessSyncChanges,
                syncer::SyncError(const tracked_objects::Location&,

@@ -14,7 +14,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
-#include "components/sync_driver/data_type_error_handler_mock.h"
 #include "components/sync_driver/fake_sync_client.h"
 #include "components/sync_driver/local_device_info_provider.h"
 #include "components/sync_driver/sync_api_component_factory.h"
@@ -30,6 +29,7 @@
 #include "sync/internal_api/public/read_node.h"
 #include "sync/internal_api/public/read_transaction.h"
 #include "sync/internal_api/public/sync_encryption_handler.h"
+#include "sync/internal_api/public/test/data_type_error_handler_mock.h"
 #include "sync/internal_api/public/test/test_user_share.h"
 #include "sync/internal_api/public/user_share.h"
 #include "sync/internal_api/public/write_node.h"
@@ -112,7 +112,7 @@ class MockSyncApiComponentFactory : public SyncApiComponentFactory {
   }
   SyncComponents CreateBookmarkSyncComponents(
       sync_driver::SyncService* sync_service,
-      sync_driver::DataTypeErrorHandler* error_handler) override {
+      syncer::DataTypeErrorHandler* error_handler) override {
     return SyncComponents(nullptr, nullptr);
   }
 
@@ -233,7 +233,7 @@ class SyncGenericChangeProcessorTest : public testing::Test {
   base::WeakPtrFactory<syncer::FakeSyncableService>
       syncable_service_ptr_factory_;
 
-  DataTypeErrorHandlerMock data_type_error_handler_;
+  syncer::DataTypeErrorHandlerMock data_type_error_handler_;
   std::unique_ptr<syncer::TestUserShare> test_user_share_;
   MockAttachmentService* mock_attachment_service_;
   FakeSyncClient sync_client_;

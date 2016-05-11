@@ -6,9 +6,8 @@
 
 namespace sync_driver {
 
-ChangeProcessor::ChangeProcessor(DataTypeErrorHandler* error_handler)
-    : error_handler_(error_handler),
-      share_handle_(NULL) {}
+ChangeProcessor::ChangeProcessor(syncer::DataTypeErrorHandler* error_handler)
+    : error_handler_(error_handler), share_handle_(NULL) {}
 
 ChangeProcessor::~ChangeProcessor() {
 }
@@ -22,7 +21,7 @@ void ChangeProcessor::Start(syncer::UserShare* share_handle) {
 // Not implemented by default.
 void ChangeProcessor::CommitChangesFromSyncModel() {}
 
-DataTypeErrorHandler* ChangeProcessor::error_handler() const {
+syncer::DataTypeErrorHandler* ChangeProcessor::error_handler() const {
   return error_handler_;
 }
 

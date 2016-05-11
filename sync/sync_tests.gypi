@@ -183,6 +183,7 @@
         'test_support_sync_core',
       ],
       'sources': [
+        'internal_api/public/test/data_type_error_handler_mock.h',
         'internal_api/public/test/fake_model_type_connector.h',
         'internal_api/public/test/fake_model_type_processor.h',
         'internal_api/public/test/fake_sync_manager.h',
@@ -191,6 +192,7 @@
         'internal_api/public/test/test_entry_factory.h',
         'internal_api/public/test/test_internal_components_factory.h',
         'internal_api/public/test/test_user_share.h',
+        'internal_api/test/data_type_error_handler_mock.cc',
         'internal_api/test/fake_model_type_connector.cc',
         'internal_api/test/fake_model_type_processor.cc',
         'internal_api/test/fake_sync_manager.cc',

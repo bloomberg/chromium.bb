@@ -20,6 +20,7 @@
 #include "sync/api/syncable_service.h"
 #include "sync/internal_api/public/base_node.h"
 #include "sync/internal_api/public/change_record.h"
+#include "sync/internal_api/public/data_type_error_handler.h"
 #include "sync/internal_api/public/read_node.h"
 #include "sync/internal_api/public/read_transaction.h"
 #include "sync/internal_api/public/util/unrecoverable_error_handler.h"
@@ -107,7 +108,7 @@ syncer::SyncData BuildRemoteSyncData(
 
 GenericChangeProcessor::GenericChangeProcessor(
     syncer::ModelType type,
-    DataTypeErrorHandler* error_handler,
+    syncer::DataTypeErrorHandler* error_handler,
     const base::WeakPtr<syncer::SyncableService>& local_service,
     const base::WeakPtr<syncer::SyncMergeResult>& merge_result,
     syncer::UserShare* user_share,
@@ -327,7 +328,7 @@ syncer::SyncError LogLookupFailure(
     const tracked_objects::Location& from_here,
     const std::string& error_prefix,
     syncer::ModelType type,
-    DataTypeErrorHandler* error_handler) {
+    syncer::DataTypeErrorHandler* error_handler) {
   switch (lookup_result) {
     case syncer::BaseNode::INIT_FAILED_ENTRY_NOT_GOOD: {
       syncer::SyncError error;
@@ -377,7 +378,7 @@ syncer::SyncError AttemptDelete(const syncer::SyncChange& change,
                                 syncer::ModelType type,
                                 const std::string& type_str,
                                 syncer::WriteNode* node,
-                                DataTypeErrorHandler* error_handler) {
+                                syncer::DataTypeErrorHandler* error_handler) {
   DCHECK_EQ(change.change_type(), syncer::SyncChange::ACTION_DELETE);
   if (change.sync_data().IsLocal()) {
     const std::string& tag = syncer::SyncDataLocal(change.sync_data()).GetTag();

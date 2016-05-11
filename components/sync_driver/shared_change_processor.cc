@@ -12,6 +12,7 @@
 #include "components/sync_driver/sync_client.h"
 #include "sync/api/sync_change.h"
 #include "sync/api/syncable_service.h"
+#include "sync/internal_api/public/data_type_error_handler.h"
 
 using base::AutoLock;
 
@@ -53,7 +54,7 @@ base::WeakPtr<syncer::SyncableService> SharedChangeProcessor::Connect(
     SyncClient* sync_client,
     GenericChangeProcessorFactory* processor_factory,
     syncer::UserShare* user_share,
-    DataTypeErrorHandler* error_handler,
+    syncer::DataTypeErrorHandler* error_handler,
     syncer::ModelType type,
     const base::WeakPtr<syncer::SyncMergeResult>& merge_result) {
   DCHECK(sync_client);

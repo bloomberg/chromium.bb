@@ -60,7 +60,7 @@ using browser_sync::SessionDataTypeController;
 using browser_sync::SyncBackendHost;
 using browser_sync::TypedUrlDataTypeController;
 using sync_driver::DataTypeController;
-using sync_driver::DataTypeErrorHandler;
+using syncer::DataTypeErrorHandler;
 using sync_driver::DataTypeManager;
 using sync_driver::DataTypeManagerImpl;
 using sync_driver::DataTypeManagerObserver;
@@ -374,7 +374,7 @@ ProfileSyncComponentsFactoryImpl::CreateAttachmentService(
 sync_driver::SyncApiComponentFactory::SyncComponents
 ProfileSyncComponentsFactoryImpl::CreateBookmarkSyncComponents(
     sync_driver::SyncService* sync_service,
-    sync_driver::DataTypeErrorHandler* error_handler) {
+    syncer::DataTypeErrorHandler* error_handler) {
   BookmarkModel* bookmark_model =
       sync_service->GetSyncClient()->GetBookmarkModel();
   syncer::UserShare* user_share = sync_service->GetUserShare();

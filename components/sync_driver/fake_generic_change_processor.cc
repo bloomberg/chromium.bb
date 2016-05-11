@@ -77,7 +77,7 @@ std::unique_ptr<GenericChangeProcessor>
 FakeGenericChangeProcessorFactory::CreateGenericChangeProcessor(
     syncer::ModelType type,
     syncer::UserShare* user_share,
-    DataTypeErrorHandler* error_handler,
+    syncer::DataTypeErrorHandler* error_handler,
     const base::WeakPtr<syncer::SyncableService>& local_service,
     const base::WeakPtr<syncer::SyncMergeResult>& merge_result,
     SyncClient* sync_client) {

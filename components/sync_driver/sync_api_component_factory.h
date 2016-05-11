@@ -32,6 +32,7 @@ class InvalidationService;
 
 namespace syncer {
 class DataTypeDebugInfoListener;
+class DataTypeErrorHandler;
 class SyncableService;
 
 struct UserShare;
@@ -42,7 +43,6 @@ namespace sync_driver {
 class AssociatorInterface;
 class ChangeProcessor;
 class DataTypeEncryptionHandler;
-class DataTypeErrorHandler;
 class DataTypeManager;
 class DataTypeManagerObserver;
 class DataTypeStatusTable;
@@ -117,7 +117,7 @@ class SyncApiComponentFactory {
   // Legacy datatypes that need to be converted to the SyncableService API.
   virtual SyncComponents CreateBookmarkSyncComponents(
       sync_driver::SyncService* sync_service,
-      sync_driver::DataTypeErrorHandler* error_handler) = 0;
+      syncer::DataTypeErrorHandler* error_handler) = 0;
 
   // Creates attachment service.
   // Note: Should only be called from the model type thread.

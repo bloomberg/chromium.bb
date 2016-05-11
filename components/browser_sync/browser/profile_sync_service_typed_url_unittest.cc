@@ -31,10 +31,10 @@
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/typed_url_data_type_controller.h"
 #include "components/signin/core/browser/signin_manager.h"
-#include "components/sync_driver/data_type_error_handler_mock.h"
 #include "components/sync_driver/data_type_manager_impl.h"
 #include "sync/internal_api/public/read_node.h"
 #include "sync/internal_api/public/read_transaction.h"
+#include "sync/internal_api/public/test/data_type_error_handler_mock.h"
 #include "sync/internal_api/public/write_node.h"
 #include "sync/internal_api/public/write_transaction.h"
 #include "sync/protocol/typed_url_specifics.pb.h"
@@ -381,7 +381,7 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
  private:
   scoped_refptr<HistoryBackendMock> history_backend_;
   std::unique_ptr<HistoryServiceMock> history_service_;
-  sync_driver::DataTypeErrorHandlerMock error_handler_;
+  syncer::DataTypeErrorHandlerMock error_handler_;
   TypedUrlDataTypeController* data_type_controller;
   std::unique_ptr<TestTypedUrlSyncableService> syncable_service_;
   std::unique_ptr<sync_driver::FakeSyncClient> sync_client_;

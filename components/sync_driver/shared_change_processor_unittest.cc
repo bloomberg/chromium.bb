@@ -14,7 +14,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
-#include "components/sync_driver/data_type_error_handler_mock.h"
 #include "components/sync_driver/fake_sync_client.h"
 #include "components/sync_driver/generic_change_processor.h"
 #include "components/sync_driver/generic_change_processor_factory.h"
@@ -25,6 +24,7 @@
 #include "sync/api/fake_syncable_service.h"
 #include "sync/internal_api/public/attachments/attachment_service_impl.h"
 #include "sync/internal_api/public/base/model_type.h"
+#include "sync/internal_api/public/test/data_type_error_handler_mock.h"
 #include "sync/internal_api/public/test/test_user_share.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -67,7 +67,7 @@ class TestSyncApiComponentFactory : public SyncApiComponentFactory {
   }
   SyncApiComponentFactory::SyncComponents CreateBookmarkSyncComponents(
       sync_driver::SyncService* sync_service,
-      sync_driver::DataTypeErrorHandler* error_handler) override {
+      syncer::DataTypeErrorHandler* error_handler) override {
     return SyncApiComponentFactory::SyncComponents(nullptr, nullptr);
   }
   std::unique_ptr<syncer::AttachmentService> CreateAttachmentService(
@@ -207,7 +207,7 @@ class SyncSharedChangeProcessorTest :
   TestSyncApiComponentFactory factory_;
 
   scoped_refptr<SharedChangeProcessor> shared_change_processor_;
-  StrictMock<DataTypeErrorHandlerMock> error_handler_;
+  StrictMock<syncer::DataTypeErrorHandlerMock> error_handler_;
 
   GenericChangeProcessorFactory processor_factory_;
   bool did_connect_;

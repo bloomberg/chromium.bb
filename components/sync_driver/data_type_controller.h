@@ -13,8 +13,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_delete_on_message_loop.h"
 #include "base/sequenced_task_runner_helpers.h"
-#include "components/sync_driver/data_type_error_handler.h"
 #include "sync/internal_api/public/base/model_type.h"
+#include "sync/internal_api/public/data_type_error_handler.h"
 #include "sync/internal_api/public/util/unrecoverable_error_handler.h"
 
 namespace base {
@@ -33,7 +33,7 @@ class BackendDataTypeConfigurer;
 // need to run model associator or change processor on other threads.
 class DataTypeController
     : public base::RefCountedDeleteOnMessageLoop<DataTypeController>,
-      public DataTypeErrorHandler {
+      public syncer::DataTypeErrorHandler {
  public:
   enum State {
     NOT_RUNNING,     // The controller has never been started or has previously

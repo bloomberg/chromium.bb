@@ -8,12 +8,12 @@
 #include <stdint.h>
 
 #include "base/macros.h"
-#include "components/sync_driver/data_type_error_handler.h"
 #include "sync/internal_api/public/base_transaction.h"
 #include "sync/internal_api/public/change_record.h"
 #include "sync/internal_api/public/user_share.h"
 
 namespace syncer {
+class DataTypeErrorHandler;
 class UnrecoverableErrorHandler;
 }  // namespace syncer
 
@@ -25,7 +25,7 @@ class ModelAssociator;
 // native model.  This does not currently distinguish between model data types.
 class ChangeProcessor {
  public:
-  explicit ChangeProcessor(DataTypeErrorHandler* error_handler);
+  explicit ChangeProcessor(syncer::DataTypeErrorHandler* error_handler);
   virtual ~ChangeProcessor();
 
   // Call when the processor should accept changes from either provided model
@@ -56,11 +56,11 @@ class ChangeProcessor {
   // implementation-specific work.
   virtual void StartImpl() = 0;
 
-  DataTypeErrorHandler* error_handler() const;
+  syncer::DataTypeErrorHandler* error_handler() const;
   virtual syncer::UserShare* share_handle() const;
 
  private:
-  DataTypeErrorHandler* error_handler_;  // Guaranteed to outlive us.
+  syncer::DataTypeErrorHandler* error_handler_;  // Guaranteed to outlive us.
 
   // The sync model we are processing changes from.
   syncer::UserShare* share_handle_;
