@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "base/single_thread_task_runner.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 
 namespace mojo {

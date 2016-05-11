@@ -11,7 +11,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/perf_time_logger.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "mojo/edk/test/mojo_test_base.h"
 #include "mojo/edk/test/scoped_ipc_support.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
