@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "ios/web/public/test/scoped_testing_web_client.h"
 #include "ios/web/public/web_client.h"
 #include "net/url_request/url_request_test_util.h"

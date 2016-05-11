@@ -7,7 +7,7 @@
 #include "base/json/json_reader.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "components/image_fetcher/image_fetcher.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"

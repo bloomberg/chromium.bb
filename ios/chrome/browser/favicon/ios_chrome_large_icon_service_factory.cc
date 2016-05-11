@@ -6,7 +6,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/favicon/core/large_icon_service.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
