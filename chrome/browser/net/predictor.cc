@@ -27,7 +27,6 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/io_thread.h"
-#include "chrome/browser/net/preconnect.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/common/chrome_switches.h"
@@ -36,6 +35,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/resource_hints.h"
 #include "net/base/address_list.h"
 #include "net/base/completion_callback.h"
 #include "net/base/host_port_pair.h"
@@ -866,13 +866,44 @@ void Predictor::PreconnectUrlOnIOThread(
   // Skip the HSTS redirect.
   GURL url = GetHSTSRedirectOnIOThread(original_url);
 
+  // TODO(csharrison): The observer should only be notified after the null check
+  // for the URLRequestContextGetter. The predictor tests should be fixed to
+  // allow for this, as they currently expect a callback with no getter.
+  // URLRequestContextGetter is null. Tests rely on this behavior.
   if (observer_) {
     observer_->OnPreconnectUrl(
         url, first_party_for_cookies, motivation, count);
   }
 
-  PreconnectOnIOThread(url, first_party_for_cookies, motivation, count,
-                       url_request_context_getter_.get(), allow_credentials);
+  net::URLRequestContextGetter* getter = url_request_context_getter_.get();
+  if (!getter)
+    return;
+
+  // Translate the motivation from UrlRequest motivations to HttpRequest
+  // motivations.
+  net::HttpRequestInfo::RequestMotivation request_motivation =
+      net::HttpRequestInfo::NORMAL_MOTIVATION;
+  switch (motivation) {
+    case UrlInfo::OMNIBOX_MOTIVATED:
+      request_motivation = net::HttpRequestInfo::OMNIBOX_MOTIVATED;
+      break;
+    case UrlInfo::LEARNED_REFERAL_MOTIVATED:
+      request_motivation = net::HttpRequestInfo::PRECONNECT_MOTIVATED;
+      break;
+    case UrlInfo::MOUSE_OVER_MOTIVATED:
+    case UrlInfo::SELF_REFERAL_MOTIVATED:
+    case UrlInfo::EARLY_LOAD_MOTIVATED:
+      request_motivation = net::HttpRequestInfo::EARLY_LOAD_MOTIVATED;
+      break;
+    default:
+      // Other motivations should never happen here.
+      NOTREACHED();
+      break;
+  }
+  UMA_HISTOGRAM_ENUMERATION("Net.PreconnectMotivation", motivation,
+                            UrlInfo::MAX_MOTIVATED);
+  content::PreconnectUrl(getter, url, first_party_for_cookies, count,
+                         allow_credentials, request_motivation);
 }
 
 void Predictor::PredictFrameSubresources(const GURL& url,

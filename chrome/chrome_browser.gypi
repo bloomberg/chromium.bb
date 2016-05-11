@@ -2134,8 +2134,6 @@
       'browser/net/net_error_tab_helper.h',
       'browser/net/net_pref_observer.cc',
       'browser/net/net_pref_observer.h',
-      'browser/net/preconnect.cc',
-      'browser/net/preconnect.h',
       'browser/net/prediction_options.cc',
       'browser/net/prediction_options.h',
       'browser/net/predictor.cc',

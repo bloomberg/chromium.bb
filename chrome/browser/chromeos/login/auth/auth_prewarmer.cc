@@ -9,13 +9,13 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/net/preconnect.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/resource_hints.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "url/gurl.h"
 
@@ -93,21 +93,15 @@ void AuthPrewarmer::Observe(int type,
 
 void AuthPrewarmer::DoPrewarm() {
   const int kConnectionsNeeded = 1;
-
-  std::vector<GURL> urls;
-  urls.push_back(GaiaUrls::GetInstance()->service_login_url());
-
-  for (size_t i = 0; i < urls.size(); ++i) {
-    chrome_browser_net::PreconnectOnUIThread(
-        urls[i],
-        urls[i],
-        chrome_browser_net::UrlInfo::EARLY_LOAD_MOTIVATED,
-        kConnectionsNeeded,
-        GetRequestContext());
-  }
+  const GURL& url = GaiaUrls::GetInstance()->service_login_url();
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO, FROM_HERE,
+      base::Bind(&content::PreconnectUrl,
+                 base::RetainedRef(GetRequestContext()), url, url,
+                 kConnectionsNeeded, true,
+                 net::HttpRequestInfo::EARLY_LOAD_MOTIVATED));
   if (!completion_callback_.is_null()) {
-    content::BrowserThread::PostTask(content::BrowserThread::UI,
-                                     FROM_HERE,
+    content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
                                      completion_callback_);
   }
 }
