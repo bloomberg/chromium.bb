@@ -11,7 +11,7 @@
 #include "mash/wm/bridge/wm_globals_mus.h"
 #include "mash/wm/bridge/wm_window_mus.h"
 #include "mash/wm/root_window_controller.h"
-#include "ui/gfx/display.h"
+#include "ui/display/display.h"
 #include "ui/views/mus/native_widget_mus.h"
 #include "ui/views/widget/widget.h"
 
@@ -64,7 +64,7 @@ gfx::Point WmRootWindowControllerMus::ConvertPointFromScreen(
   return target->GetRootWindow()->ConvertPointToTarget(target, result);
 }
 
-const gfx::Display& WmRootWindowControllerMus::GetDisplay() const {
+const display::Display& WmRootWindowControllerMus::GetDisplay() const {
   return root_window_controller_->display();
 }
 

@@ -62,11 +62,11 @@
 #include "third_party/WebKit/public/web/WebView.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "ui/display/display_switches.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/skia_util.h"
-#include "ui/gfx/switches.h"
 
 #if defined(__linux__) || defined(ANDROID)
 #include "third_party/WebKit/public/web/linux/WebFontRendering.h"

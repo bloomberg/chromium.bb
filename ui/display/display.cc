@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/gfx/display.h"
+#include "ui/display/display.h"
 
 #include <algorithm>
 
@@ -11,13 +11,13 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
+#include "ui/display/display_switches.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/size_conversions.h"
-#include "ui/gfx/switches.h"
 
-namespace gfx {
+namespace display {
 namespace {
 
 // This variable tracks whether the forced device scale factor switch needs to
@@ -77,8 +77,7 @@ Display::Display()
     : id_(kInvalidDisplayID),
       device_scale_factor_(GetForcedDeviceScaleFactor()),
       rotation_(ROTATE_0),
-      touch_support_(TOUCH_SUPPORT_UNKNOWN) {
-}
+      touch_support_(TOUCH_SUPPORT_UNKNOWN) {}
 
 Display::Display(const Display& other) = default;
 
@@ -100,8 +99,7 @@ Display::Display(int64_t id, const gfx::Rect& bounds)
 #endif
 }
 
-Display::~Display() {
-}
+Display::~Display() {}
 
 int Display::RotationAsDegree() const {
   switch (rotation_) {
@@ -114,7 +112,6 @@ int Display::RotationAsDegree() const {
     case ROTATE_270:
       return 270;
   }
-
   NOTREACHED();
   return 0;
 }
@@ -139,17 +136,15 @@ void Display::SetRotationAsDegree(int rotation) {
   }
 }
 
-Insets Display::GetWorkAreaInsets() const {
-  return gfx::Insets(work_area_.y() - bounds_.y(),
-                     work_area_.x() - bounds_.x(),
+gfx::Insets Display::GetWorkAreaInsets() const {
+  return gfx::Insets(work_area_.y() - bounds_.y(), work_area_.x() - bounds_.x(),
                      bounds_.bottom() - work_area_.bottom(),
                      bounds_.right() - work_area_.right());
 }
 
-void Display::SetScaleAndBounds(
-    float device_scale_factor,
-    const gfx::Rect& bounds_in_pixel) {
-  Insets insets = bounds_.InsetsFrom(work_area_);
+void Display::SetScaleAndBounds(float device_scale_factor,
+                                const gfx::Rect& bounds_in_pixel) {
+  gfx::Insets insets = bounds_.InsetsFrom(work_area_);
   if (!HasForceDeviceScaleFactor()) {
 #if defined(OS_MACOSX)
     // Unless an explicit scale factor was provided for testing, ensure the
@@ -186,10 +181,8 @@ gfx::Size Display::GetSizeInPixel() const {
 std::string Display::ToString() const {
   return base::StringPrintf(
       "Display[%lld] bounds=%s, workarea=%s, scale=%f, %s",
-      static_cast<long long int>(id_),
-      bounds_.ToString().c_str(),
-      work_area_.ToString().c_str(),
-      device_scale_factor_,
+      static_cast<long long int>(id_), bounds_.ToString().c_str(),
+      work_area_.ToString().c_str(), device_scale_factor_,
       IsInternal() ? "internal" : "external");
 }
 
@@ -219,4 +212,4 @@ bool Display::HasInternalDisplay() {
   return internal_display_id_ != kInvalidDisplayID;
 }
 
-}  // namespace gfx
+}  // namespace display

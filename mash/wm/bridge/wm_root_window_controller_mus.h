@@ -9,7 +9,7 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 
-namespace gfx {
+namespace display {
 class Display;
 }
 
@@ -47,7 +47,7 @@ class WmRootWindowControllerMus : public ash::wm::WmRootWindowController {
   gfx::Point ConvertPointFromScreen(const WmWindowMus* target,
                                     const gfx::Point& point) const;
 
-  const gfx::Display& GetDisplay() const;
+  const display::Display& GetDisplay() const;
 
   // WmRootWindowController:
   bool HasShelf() override;

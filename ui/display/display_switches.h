@@ -9,14 +9,14 @@
 #include "build/build_config.h"
 #include "ui/display/display_export.h"
 
-namespace ui {
 namespace switches {
+
+DISPLAY_EXPORT extern const char kForceDeviceScaleFactor[];
 
 #if defined(OS_CHROMEOS)
 DISPLAY_EXPORT extern const char kDisableDisplayColorCalibration[];
 #endif
 
 }  // namespace switches
-}  // namespace ui
 
-#endif  // UI_BASE_UI_BASE_SWITCHES_H_
+#endif  // UI_DISPLAY_DISPLAY_SWITCHES_H_

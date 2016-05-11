@@ -7,8 +7,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/display/display.h"
+#include "ui/display/display_switches.h"
 #include "ui/events/event_constants.h"
-#include "ui/gfx/switches.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"

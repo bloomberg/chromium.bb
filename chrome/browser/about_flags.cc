@@ -841,7 +841,7 @@ const FeatureEntry kFeatureEntries[] = {
         IDS_FLAGS_DISPLAY_COLOR_CALIBRATION_NAME,
         IDS_FLAGS_DISPLAY_COLOR_CALIBRATION_DESCRIPTION, kOsCrOS,
         SINGLE_DISABLE_VALUE_TYPE(
-            ui::switches::kDisableDisplayColorCalibration),
+            ::switches::kDisableDisplayColorCalibration),
     },
     {
         "disable-quirks-client", IDS_FLAGS_DISABLE_QUIRKS_CLIENT_NAME,

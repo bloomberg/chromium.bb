@@ -10,13 +10,12 @@
 #include "ui/display/display_export.h"
 
 namespace gfx {
-class Display;
 class Point;
 class Rect;
 }
 
 namespace display {
-using Display = gfx::Display;
+class Display;
 
 // Returns the display in |displays| closest to |point|.
 DISPLAY_EXPORT const Display* FindDisplayNearestPoint(

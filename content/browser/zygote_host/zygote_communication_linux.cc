@@ -25,6 +25,7 @@
 #include "content/public/common/result_codes.h"
 #include "sandbox/linux/services/namespace_sandbox.h"
 #include "sandbox/linux/suid/client/setuid_sandbox_host.h"
+#include "ui/display/display_switches.h"
 #include "ui/gfx/switches.h"
 
 namespace content {

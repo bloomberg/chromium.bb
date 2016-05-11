@@ -12,12 +12,8 @@
 
 #include "base/macros.h"
 
-namespace gfx {
-class Display;
-}
-
 namespace display {
-using Display = gfx::Display;
+class Display;
 }
 
 namespace extensions {

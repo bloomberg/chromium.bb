@@ -10,12 +10,8 @@
 #include "ui/wm/core/native_cursor_manager_delegate.h"
 #include "ui/wm/wm_export.h"
 
-namespace gfx {
-class Display;
-}
-
 namespace display {
-using Display = gfx::Display;
+class Display;
 }
 
 namespace wm {

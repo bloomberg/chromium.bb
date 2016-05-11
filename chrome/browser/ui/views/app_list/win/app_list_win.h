@@ -9,15 +9,14 @@ namespace app_list {
 class AppListView;
 }
 
-namespace gfx {
+namespace display {
 class Display;
+}
+
+namespace gfx {
 class Point;
 class Rect;
 class Size;
-}
-
-namespace display {
-using Display = gfx::Display;
 }
 
 // Responsible for positioning an AppListView on Windows.

@@ -28,12 +28,8 @@ class ScreenPositionClient;
 }
 }
 
-namespace gfx {
-class Display;
-}
-
 namespace display {
-using Display = gfx::Display;
+class Display;
 }
 
 namespace ui {

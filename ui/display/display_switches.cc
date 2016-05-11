@@ -5,8 +5,10 @@
 #include "build/build_config.h"
 #include "ui/display/display_switches.h"
 
-namespace ui {
 namespace switches {
+
+// Overrides the device scale factor for the browser UI and the contents.
+const char kForceDeviceScaleFactor[] = "force-device-scale-factor";
 
 #if defined(OS_CHROMEOS)
 const char kDisableDisplayColorCalibration[] =
@@ -14,4 +16,3 @@ const char kDisableDisplayColorCalibration[] =
 #endif
 
 }  // namespace switches
-}  // namespace ui

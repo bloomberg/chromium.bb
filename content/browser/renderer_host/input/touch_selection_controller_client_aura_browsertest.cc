@@ -17,9 +17,9 @@
 #include "content/shell/browser/shell.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/display/display_switches.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/test/event_generator.h"
-#include "ui/gfx/switches.h"
 #include "ui/touch_selection/touch_selection_controller_test_api.h"
 
 namespace content {

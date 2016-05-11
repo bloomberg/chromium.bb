@@ -8,14 +8,13 @@
 #include "base/macros.h"
 #include "ui/gfx/native_widget_types.h"
 
-namespace gfx {
+namespace display {
 class Display;
-class Point;
-class Rect;
 }
 
-namespace display {
-using Display = gfx::Display;
+namespace gfx {
+class Point;
+class Rect;
 }
 
 namespace autofill {

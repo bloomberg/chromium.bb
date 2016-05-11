@@ -20,12 +20,8 @@ class Value;
 template <typename T> class JSONValueConverter;
 }
 
-namespace gfx {
-class Display;
-}
-
 namespace display {
-using Display = gfx::Display;
+class Display;
 
 // An identifier used to manage display layout in DisplayManager /
 // DisplayLayoutStore.

@@ -18,13 +18,12 @@ namespace aura {
 class Window;
 }
 
-namespace gfx {
-class Point;
+namespace display {
 class Display;
 }
 
-namespace display {
-using Display = gfx::Display;
+namespace gfx {
+class Point;
 }
 
 namespace ash {

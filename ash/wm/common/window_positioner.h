@@ -9,13 +9,12 @@
 #include "base/macros.h"
 #include "ui/base/ui_base_types.h"
 
-namespace gfx {
+namespace display {
 class Display;
-class Rect;
 }
 
-namespace display {
-using Display = gfx::Display;
+namespace gfx {
+class Rect;
 }
 
 namespace ash {

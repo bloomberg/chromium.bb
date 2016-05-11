@@ -8,12 +8,8 @@
 #include "base/macros.h"
 #include "media/capture/video/linux/video_capture_device_linux.h"
 
-namespace gfx {
-class Display;
-}  // namespace gfx
-
 namespace display {
-using Display = gfx::Display;
+class Display;
 }  // namespace display
 
 namespace media {

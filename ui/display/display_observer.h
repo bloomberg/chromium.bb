@@ -9,12 +9,8 @@
 
 #include "ui/display/display_export.h"
 
-namespace gfx {
-class Display;
-}
-
 namespace display {
-using Display = gfx::Display;
+class Display;
 
 // Observers for display configuration changes.
 // TODO(oshima): consolidate |WorkAreaWatcherObserver| and

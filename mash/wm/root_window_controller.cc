@@ -47,7 +47,7 @@ RootWindowController* RootWindowController::CreateFromDisplay(
     mus::mojom::DisplayPtr display,
     mojo::InterfaceRequest<mus::mojom::WindowTreeClient> client_request) {
   RootWindowController* controller = new RootWindowController(app);
-  controller->display_ = display.To<gfx::Display>();
+  controller->display_ = display.To<display::Display>();
   mus::WindowTreeConnection::CreateForWindowManager(
       controller, std::move(client_request),
       mus::WindowTreeConnection::CreateType::DONT_WAIT_FOR_EMBED,

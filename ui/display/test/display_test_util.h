@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_GFX_TEST_DISPLAY_UTIL_H_
-#define UI_GFX_TEST_DISPLAY_UTIL_H_
+#ifndef UI_DISPLAY_TEST_DISPLAY_TEST_UTIL_H_
+#define UI_DISPLAY_TEST_DISPLAY_TEST_UTIL_H_
 
-#include "ui/gfx/display.h"
+#include "ui/display/display.h"
 
-namespace gfx {
+namespace display {
 
 inline bool operator==(const Display& lhs, const Display& rhs) {
   return lhs.id() == rhs.id() &&
@@ -18,6 +18,10 @@ inline bool operator==(const Display& lhs, const Display& rhs) {
          lhs.touch_support() == rhs.touch_support();
 }
 
-}  // namespace gfx
+void PrintTo(const Display& display, ::std::ostream* os) {
+  *os << display.ToString();
+}
 
-#endif  // UI_GFX_TEST_DISPLAY_UTIL_H_
+}  // namespace display
+
+#endif  // UI_DISPLAY_TEST_DISPLAY_TEST_UTIL_H_

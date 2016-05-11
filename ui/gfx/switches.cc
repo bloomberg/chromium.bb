@@ -7,9 +7,6 @@
 
 namespace switches {
 
-// Overrides the device scale factor for the browser UI and the contents.
-const char kForceDeviceScaleFactor[] = "force-device-scale-factor";
-
 #if defined(OS_WIN)
 // Disables DirectWrite font rendering for general UI elements.
 const char kDisableDirectWriteForUI[] = "disable-directwrite-for-ui";

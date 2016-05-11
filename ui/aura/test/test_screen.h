@@ -37,7 +37,7 @@ class TestScreen : public display::Screen, public WindowObserver {
   void SetUIScale(float ui_scale);
   void SetWorkAreaInsets(const gfx::Insets& insets);
 
-  // gfx::Screen overrides:
+  // display::Screen overrides:
   display::Display GetPrimaryDisplay() const override;
 
  protected:

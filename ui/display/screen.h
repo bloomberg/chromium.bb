@@ -13,13 +13,12 @@
 #include "ui/gfx/native_widget_types.h"
 
 namespace gfx {
-class Display;
 class Point;
 class Rect;
 }
 
 namespace display {
-using Display = gfx::Display;
+class Display;
 class DisplayObserver;
 
 // A utility class for getting various info about screen size, displays,

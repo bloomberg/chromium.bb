@@ -14,15 +14,14 @@
 #include "ui/wm/core/window_animations.h"
 #include "ui/wm/public/window_types.h"
 
-namespace gfx {
+namespace display {
 class Display;
+}
+
+namespace gfx {
 class Point;
 class Rect;
 class Size;
-}
-
-namespace display {
-using Display = gfx::Display;
 }
 
 namespace ui {

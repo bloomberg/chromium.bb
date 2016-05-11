@@ -11,15 +11,14 @@ namespace app_list {
 class AppListView;
 }
 
-namespace gfx {
+namespace display {
 class Display;
+}
+
+namespace gfx {
 class Point;
 class Size;
 }  // namespace gfx
-
-namespace display {
-using Display = gfx::Display;
-}
 
 // Responsible for positioning an AppListView on Linux.
 // TODO(tapted): Shouldn't be a class - move the static member functions out.

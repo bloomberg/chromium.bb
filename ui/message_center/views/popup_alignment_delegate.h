@@ -8,13 +8,12 @@
 #include "ui/message_center/message_center_export.h"
 
 namespace gfx {
-class Display;
 class Point;
 class Rect;
 }
 
 namespace display {
-using Display = gfx::Display;
+class Display;
 }
 
 namespace message_center {

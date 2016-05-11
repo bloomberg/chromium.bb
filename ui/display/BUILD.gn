@@ -33,6 +33,7 @@ component("display") {
     "chromeos/x11/native_display_delegate_x11.h",
     "chromeos/x11/native_display_event_dispatcher_x11.cc",
     "chromeos/x11/native_display_event_dispatcher_x11.h",
+    "display.cc",
     "display.h",
     "display_change_notifier.cc",
     "display_change_notifier.h",
@@ -142,6 +143,7 @@ source_set("test_support") {
     "chromeos/test/test_display_layout_manager.h",
     "chromeos/test/test_native_display_delegate.cc",
     "chromeos/test/test_native_display_delegate.h",
+    "test/display_test_util.h",
     "test/test_screen.cc",
     "test/test_screen.h",
   ]

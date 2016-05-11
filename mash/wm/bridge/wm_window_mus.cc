@@ -18,7 +18,7 @@
 #include "mash/wm/property_util.h"
 #include "ui/aura/mus/mus_util.h"
 #include "ui/base/hit_test.h"
-#include "ui/gfx/display.h"
+#include "ui/display/display.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 

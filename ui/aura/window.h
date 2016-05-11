@@ -30,12 +30,8 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/wm/public/window_types.h"
 
-namespace gfx {
-class Display;
-}
-
 namespace display {
-using Display = gfx::Display;
+class Display;
 }
 
 namespace gfx {

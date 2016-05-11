@@ -11,14 +11,13 @@ namespace aura {
 class Window;
 }
 
-namespace gfx {
+namespace display {
 class Display;
-class Rect;
-class Transform;
 }
 
-namespace display {
-using Display = gfx::Display;
+namespace gfx {
+class Rect;
+class Transform;
 }
 
 namespace ash {

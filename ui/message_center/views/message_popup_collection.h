@@ -26,16 +26,12 @@ namespace base {
 class RunLoop;
 }
 
-namespace views {
-class Widget;
-}
-
-namespace gfx {
+namespace display {
 class Display;
 }
 
-namespace display {
-using Display = gfx::Display;
+namespace views {
+class Widget;
 }
 
 namespace message_center {

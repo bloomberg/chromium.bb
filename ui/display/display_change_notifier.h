@@ -11,12 +11,8 @@
 #include "base/observer_list.h"
 #include "ui/display/display_export.h"
 
-namespace gfx {
-class Display;
-}
-
 namespace display {
-using Display = gfx::Display;
+class Display;
 class DisplayObserver;
 
 // DisplayChangeNotifier is a class implementing the handling of DisplayObserver

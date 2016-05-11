@@ -10,12 +10,8 @@
 #include "ui/base/cursor/cursor.h"
 #include "ui/gfx/native_widget_types.h"
 
-namespace gfx {
-class Display;
-}
-
 namespace display {
-using Display = gfx::Display;
+class Display;
 }
 
 namespace ui {

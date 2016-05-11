@@ -115,6 +115,7 @@ component("test_runner") {
     "//net",
     "//skia",
     "//third_party/WebKit/public:blink",
+    "//ui/display",
     "//ui/events:dom_keycode_converter",
     "//ui/events:events_base",
     "//ui/gfx",

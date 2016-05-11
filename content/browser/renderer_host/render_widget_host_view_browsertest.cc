@@ -37,8 +37,8 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/base/layout.h"
 #include "ui/base/ui_base_switches.h"
+#include "ui/display/display_switches.h"
 #include "ui/gfx/geometry/size_conversions.h"
-#include "ui/gfx/switches.h"
 #include "ui/gl/gl_switches.h"
 
 #if defined(OS_WIN)

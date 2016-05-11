@@ -37,7 +37,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
-#include "ui/gfx/switches.h"
+#include "ui/display/display_switches.h"
 
 using guest_view::GuestViewManager;
 using guest_view::TestGuestViewManager;

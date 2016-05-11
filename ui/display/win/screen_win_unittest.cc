@@ -18,13 +18,13 @@
 #include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/display.h"
+#include "ui/display/display_switches.h"
 #include "ui/display/screen.h"
+#include "ui/display/test/display_test_util.h"
 #include "ui/display/win/display_info.h"
 #include "ui/display/win/dpi.h"
 #include "ui/display/win/screen_win_display.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/switches.h"
-#include "ui/gfx/test/display_util.h"
 
 namespace display {
 namespace win {

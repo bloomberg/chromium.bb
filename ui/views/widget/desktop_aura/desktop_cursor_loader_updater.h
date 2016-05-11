@@ -13,12 +13,8 @@ namespace aura {
 class RootWindow;
 }
 
-namespace gfx {
-class Display;
-}
-
 namespace display {
-using Display = gfx::Display;
+class Display;
 }
 
 namespace ui {

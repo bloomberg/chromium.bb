@@ -16,13 +16,12 @@
 
 @class AppListAnimationController;
 
-namespace gfx {
+namespace display {
 class Display;
-class Point;
 }
 
-namespace display {
-using Display = gfx::Display;
+namespace gfx {
+class Point;
 }
 
 // AppListServiceMac manages global resources needed for the app list to

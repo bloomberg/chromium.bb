@@ -222,7 +222,7 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   // |wm::GetActiveWindow()->GetRootWindow()|.
   static aura::Window* GetTargetRootWindow();
 
-  // Returns the id of the gfx::Display corresponding to the window returned
+  // Returns the id of the display::Display corresponding to the window returned
   // by |GetTargetRootWindow()|
   static int64_t GetTargetDisplayId();
 
