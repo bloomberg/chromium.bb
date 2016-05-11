@@ -113,13 +113,13 @@ InspectorTest.waitForWorkspaceUISourceCodeRemovedEvent = function(callback, coun
 
 InspectorTest.addMockUISourceCodeToWorkspace = function(url, type, content)
 {
-    var mockContentProvider = new WebInspector.StaticContentProvider(url, type, Promise.resolve(content));
+    var mockContentProvider = WebInspector.StaticContentProvider.fromString(url, type, content);
     InspectorTest.testNetworkProject.addFile(mockContentProvider, null, false);
 }
 
 InspectorTest.addMockUISourceCodeViaNetwork = function(url, type, content, target)
 {
-    var mockContentProvider = new WebInspector.StaticContentProvider(url, type, Promise.resolve(content));
+    var mockContentProvider = WebInspector.StaticContentProvider.fromString(url, type, content);
     InspectorTest.testNetworkProject.addFile(mockContentProvider, target.resourceTreeModel.mainFrame, false);
 }
 

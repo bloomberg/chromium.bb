@@ -22,7 +22,7 @@ function test()
 
     function createContentProvider(url)
     {
-        var contentProvider = new WebInspector.StaticContentProvider(url, WebInspector.resourceTypes.Script, Promise.resolve(""));
+        var contentProvider = WebInspector.StaticContentProvider.fromString(url, WebInspector.resourceTypes.Script, "");
         contentProvider.requestContent = function()
         {
             InspectorTest.addResult("Source requested for " + url);

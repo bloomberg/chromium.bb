@@ -36,6 +36,12 @@ div {}
 
 function test()
 {
+    InspectorTest.addSniffer(WebInspector.CSSModel.prototype, "_originalContentRequestedForTest", onOriginalContentRequested, true);
+    function onOriginalContentRequested(header)
+    {
+        InspectorTest.addResult("original content loaded for header: " + header.sourceURL);
+    }
+
     var headers = InspectorTest.cssModel.styleSheetHeaders();
     InspectorTest.runTestSuite([
         function testSetStyle(next)
