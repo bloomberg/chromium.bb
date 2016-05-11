@@ -554,9 +554,6 @@ class CC_EXPORT LayerImpl {
 
   void ValidateQuadResourcesInternal(DrawQuad* quad) const;
 
-  void NoteLayerPropertyChangedForDescendantsInternal();
-  void PushLayerPropertyChangedForSubtreeInternal();
-
   virtual const char* LayerTypeAsString() const;
 
   // Properties internal to LayerImpl

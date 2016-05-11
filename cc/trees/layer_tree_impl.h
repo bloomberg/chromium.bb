@@ -170,6 +170,9 @@ class CC_EXPORT LayerTreeImpl {
 
   void AddToElementMap(LayerImpl* layer);
   void RemoveFromElementMap(LayerImpl* layer);
+
+  void AddToOpacityAnimationsMap(int id, float opacity);
+
   ElementLayers GetMutableLayers(uint64_t element_id);
   int source_frame_number() const { return source_frame_number_; }
   void set_source_frame_number(int frame_number) {
@@ -533,6 +536,8 @@ class CC_EXPORT LayerTreeImpl {
   std::unordered_set<LayerImpl*> layers_that_should_push_properties_;
 
   std::unordered_map<uint64_t, ElementLayers> element_layers_map_;
+
+  std::unordered_map<int, float> opacity_animations_map_;
 
   // Maps from clip layer ids to scroll layer ids.  Note that this only includes
   // the subset of clip layers that act as scrolling containers.  (This is

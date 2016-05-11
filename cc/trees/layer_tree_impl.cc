@@ -484,6 +484,10 @@ void LayerTreeImpl::RemoveFromElementMap(LayerImpl* layer) {
     element_layers_map_.erase(layer->element_id());
 }
 
+void LayerTreeImpl::AddToOpacityAnimationsMap(int id, float opacity) {
+  opacity_animations_map_[id] = opacity;
+}
+
 LayerTreeImpl::ElementLayers LayerTreeImpl::GetMutableLayers(
     uint64_t element_id) {
   auto iter = element_layers_map_.find(element_id);
@@ -562,6 +566,18 @@ void LayerTreeImpl::UpdatePropertyTreeScrollingAndAnimationFromMainThread() {
   // frame to a newly-committed property tree.
   if (!root_layer())
     return;
+  for (auto& layer_id_to_opacity : opacity_animations_map_) {
+    if (LayerImpl* layer = LayerById(layer_id_to_opacity.first)) {
+      EffectNode* node =
+          property_trees_.effect_tree.Node(layer->effect_tree_index());
+      if (node->owner_id != layer->id() ||
+          !node->data.is_currently_animating_opacity)
+        continue;
+      node->data.opacity = layer_id_to_opacity.second;
+      property_trees_.effect_tree.set_needs_update(true);
+    }
+  }
+  opacity_animations_map_.clear();
   LayerTreeHostCommon::CallFunctionForEveryLayer(this, [](LayerImpl* layer) {
     layer->UpdatePropertyTreeForScrollingAndAnimationIfNeeded();
   });
