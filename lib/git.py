@@ -1142,7 +1142,8 @@ def RevertPath(git_repo, filename, rev):
   RunGit(git_repo, ['checkout', rev, '--', filename])
 
 
-def Commit(git_repo, message, amend=False, allow_empty=False):
+def Commit(git_repo, message, amend=False, allow_empty=False,
+           reset_author=False):
   """Commit with git.
 
   Args:
@@ -1150,6 +1151,7 @@ def Commit(git_repo, message, amend=False, allow_empty=False):
     message: Commit message to use.
     amend: Whether to 'amend' the CL, default False
     allow_empty: Whether to allow an empty commit. Default False.
+    reset_author: Whether to reset author according to current config.
 
   Returns:
     The Gerrit Change-ID assigned to the CL if it exists.
@@ -1159,6 +1161,8 @@ def Commit(git_repo, message, amend=False, allow_empty=False):
     cmd.append('--amend')
   if allow_empty:
     cmd.append('--allow-empty')
+  if reset_author:
+    cmd.append('--reset-author')
   RunGit(git_repo, cmd)
 
   log = RunGit(git_repo, ['log', '-n', '1', '--format=format:%B']).output
