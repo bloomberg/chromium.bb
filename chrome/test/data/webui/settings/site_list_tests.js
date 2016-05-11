@@ -231,7 +231,7 @@ cr.define('site_list', function() {
        *     should be hidden.
        */
       function assertMenuActionHidden(parentElement, textForHiddenAction) {
-        var listItem = parentElement.$.listContainer.items[0];
+        var listItem = parentElement.$.listContainer.children[0];
         var menuItems =
             listItem.querySelectorAll('paper-menu-button paper-item');
         assertNotEquals(0, menuItems.length);
@@ -303,7 +303,7 @@ cr.define('site_list', function() {
 
             assertEquals(
                 settings.PermissionValues.ALLOW, testElement.categorySubtype);
-            assertEquals('Allow - 0', testElement.$.header.innerText);
+            assertEquals('Allow - 0', testElement.$.header.innerText.trim());
 
             // Site list should not show, no matter what category default is set
             // to.
@@ -313,7 +313,8 @@ cr.define('site_list', function() {
             return browserProxy.whenCalled('getExceptionList').then(
               function(contentType) {
                 assertTrue(testElement.$.category.hidden);
-                assertEquals('Exceptions - 0', testElement.$.header.innerText);
+                assertEquals('Exceptions - 0',
+                    testElement.$.header.innerText.trim());
             });
           });
       });
@@ -332,7 +333,7 @@ cr.define('site_list', function() {
                 settings.PermissionValues.ALLOW, testElement.categorySubtype);
             Polymer.dom.flush();  // Populates action menu.
             assertMenuActionHidden(testElement, 'Allow');
-            assertEquals('Allow - 2', testElement.$.header.innerText);
+            assertEquals('Allow - 2', testElement.$.header.innerText.trim());
 
             // Site list should show, no matter what category default is set to.
             assertFalse(testElement.$.category.hidden);
@@ -361,7 +362,7 @@ cr.define('site_list', function() {
                 settings.PermissionValues.BLOCK, testElement.categorySubtype);
             Polymer.dom.flush();  // Populates action menu.
             assertMenuActionHidden(testElement, 'Block');
-            assertEquals('Block - 2', testElement.$.header.innerText);
+            assertEquals('Block - 2', testElement.$.header.innerText.trim());
 
             // Site list should only show when category default is enabled.
             assertFalse(testElement.$.category.hidden);
@@ -391,8 +392,8 @@ cr.define('site_list', function() {
             assertEquals(undefined, testElement.selectedOrigin);
 
             // Validate that the sites are shown in UI and can be selected.
-            var firstItem = testElement.$.listContainer.items[0];
-            var clickable = firstItem.querySelector('.flex paper-item-body');
+            var firstItem = testElement.$.listContainer.children[0];
+            var clickable = firstItem.querySelector('.middle');
             assertNotEquals(undefined, clickable);
             MockInteractions.tap(clickable);
             assertEquals(prefs.exceptions.geolocation[1].origin,
@@ -411,6 +412,7 @@ cr.define('site_list', function() {
 
             assertFalse(testElement.$.category.hidden);
             assertTrue(testElement.$.category.opened);
+        }).then(function() {
             assertNotEquals(0, testElement.$.listContainer.offsetHeight);
         });
       });
@@ -440,6 +442,7 @@ cr.define('site_list', function() {
 
             assertFalse(testElement.$.category.hidden);
             assertTrue(testElement.$.category.opened);
+        }).then(function() {
             assertNotEquals(0, testElement.$.listContainer.offsetHeight);
         });
       });
@@ -454,6 +457,7 @@ cr.define('site_list', function() {
 
             assertFalse(testElement.$.category.hidden);
             assertTrue(testElement.$.category.opened);
+        }).then(function() {
             assertNotEquals(0, testElement.$.listContainer.offsetHeight);
         });
       });
@@ -517,8 +521,8 @@ cr.define('site_list', function() {
               assertEquals(undefined, testElement.selectedOrigin);
 
               // Validate that the sites are shown in UI and can be selected.
-              var firstItem = testElement.$.listContainer.items[1];
-              var clickable = firstItem.querySelector('.flex paper-item-body');
+              var firstItem = testElement.$.listContainer.children[1];
+              var clickable = firstItem.querySelector('.middle');
               assertNotEquals(undefined, clickable);
               MockInteractions.tap(clickable);
               assertEquals(prefsVarious.exceptions.geolocation[0].origin,
@@ -557,8 +561,8 @@ cr.define('site_list', function() {
 
               assertEquals(undefined, testElement.selectedOrigin);
               // Validate that the sites are shown in UI and can be selected.
-              var firstItem = testElement.$.listContainer.items[0];
-              var clickable = firstItem.querySelector('.flex paper-item-body');
+              var firstItem = testElement.$.listContainer.children[0];
+              var clickable = firstItem.querySelector('.middle');
               assertNotEquals(undefined, clickable);
               MockInteractions.tap(clickable);
               assertEquals(

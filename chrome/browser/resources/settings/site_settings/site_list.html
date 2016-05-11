@@ -1,11 +1,8 @@
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-item/paper-item.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-item/paper-item-body.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-menu/paper-menu.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-menu/paper-submenu.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-menu-button/paper-menu-button.html">
@@ -16,50 +13,54 @@
 <link rel="import" href="chrome://md-settings/site_settings/site_settings_prefs_browser_proxy.html">
 
 <dom-module id="settings-site-list">
-  <link rel="import" type="css" href="site_list.css">
   <template>
-    <style include="settings-shared"></style>
-    <paper-submenu id="category" hidden on-paper-submenu-open="onToggle_"
-        on-paper-submenu-close="onToggle_">
-      <paper-item class="menu-trigger" hidden$="[[allSites]]">
-        <div class="site-header horizontal layout">
-          <div class="flex" id="header"
-              >[[computeSiteListHeader_(sites, categoryEnabled)]]</div>
-          <iron-icon id="icon" icon="cr:expand-more"></iron-icon>
+    <style include="settings-shared">
+    paper-menu-button {
+      left: 8px;
+      margin: 0;
+      padding: 0;
+    }
+    </style>
+    <paper-submenu id="category" hidden
+        on-paper-submenu-open="onToggle_" on-paper-submenu-close="onToggle_">
+      <div class="menu-trigger settings-box" hidden$="[[allSites]]">
+        <div class="flex" id="header">
+          [[computeSiteListHeader_(sites, categoryEnabled)]]
         </div>
-      </paper-item>
+        <iron-icon id="icon" icon="cr:expand-more"></iron-icon>
+      </div>
 
-      <paper-menu class="menu-content" id="listContainer">
+      <div class="list-frame menu-content vertical-list" id="listContainer">
         <template is="dom-repeat" items="[[sites]]">
-          <div class="site-list horizontal layout center">
-            <paper-item class="flex">
-              <div class="website-icon" style$="[[computeSiteIcon(item)]]">
-              </div>
-              <paper-item-body two-line on-tap="onOriginTap_" class="origin">
-                <div>[[item.originForDisplay]]</div>
-                <div secondary>[[item.embeddingOriginForDisplay]]</div>
-              </paper-item-body>
-
-              <paper-menu-button hidden$="[[allSites]]">
-                <paper-icon-button icon="settings:menu"
-                    class="dropdown-trigger"></paper-icon-button>
-                <paper-menu id="actionMenu" class="dropdown-content"
-                    on-iron-activate="onActionMenuIronActivate_">
-                  <paper-item value="[[actions_.ALLOW]]"
-                      hidden="[[!showAllowAction_]]"
-                      >[[i18n_.allowAction]]</paper-item>
-                  <paper-item value="[[actions_.BLOCK]]"
-                      hidden="[[!showBlockAction_]]"
-                      >[[i18n_.blockAction]]</paper-item>
-                  <paper-item value="[[actions_.RESET]]"
-                      >[[i18n_.resetAction]]</paper-item>
-                </paper-menu>
-              </paper-menu-button>
-            </paper-item>
+          <div class="list-item underscore">
+            <div class="favicon-image" style$="[[computeSiteIcon(item)]]"
+                on-tap="onOriginTap_"></div>
+            <div class="middle" on-tap="onOriginTap_">
+              <div>[[item.originForDisplay]]</div>
+              <div class="secondary">[[item.embeddingOriginForDisplay]]</div>
+            </div>
+            <paper-menu-button hidden$="[[allSites]]">
+              <paper-icon-button icon="settings:more-vert"
+                  class="dropdown-trigger">
+              </paper-icon-button>
+              <paper-menu id="actionMenu" class="dropdown-content"
+                  on-iron-activate="onActionMenuIronActivate_">
+                <paper-item value="[[actions_.ALLOW]]"
+                    hidden="[[!showAllowAction_]]">
+                  [[i18n_.allowAction]]
+                </paper-item>
+                <paper-item value="[[actions_.BLOCK]]"
+                    hidden="[[!showBlockAction_]]">
+                  [[i18n_.blockAction]]
+                </paper-item>
+                <paper-item value="[[actions_.RESET]]">
+                  [[i18n_.resetAction]]
+                </paper-item>
+              </paper-menu>
+            </paper-menu-button>
           </div>
         </template>
-
-      </paper-menu>
+      </div>
     </paper-submenu>
   </template>
   <script src="site_list.js"></script>
