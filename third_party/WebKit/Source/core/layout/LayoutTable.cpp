@@ -1432,8 +1432,7 @@ void LayoutTable::invalidatePaintOfSubtreesIfNeeded(const PaintInvalidationState
                 // Table cells paint container's background on the container's backing instead of its own (if any),
                 // so we must invalidate it by the containers.
                 bool invalidated = false;
-                if (childPaintInvalidationState.forcedSubtreeFullInvalidationWithinContainer()
-                    || (columnGroup && columnGroup->shouldDoFullPaintInvalidation())
+                if ((columnGroup && columnGroup->shouldDoFullPaintInvalidation())
                     || (column && column->shouldDoFullPaintInvalidation())
                     || section->shouldDoFullPaintInvalidation()) {
                     section->invalidateDisplayItemClient(*cell);

@@ -7,7 +7,6 @@
 
 #include "core/CoreExport.h"
 #include "platform/geometry/LayoutRect.h"
-#include "platform/graphics/PaintInvalidationReason.h"
 #include "platform/transforms/AffineTransform.h"
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
@@ -52,17 +51,13 @@ public:
     // local space (border box space for LayoutBoxes). After invalidation of the current object,
     // before invalidation of the subtrees, this method must be called to apply clip and scroll offset
     // etc. for creating child PaintInvalidationStates.
-    void updateForChildren(PaintInvalidationReason);
+    void updateForChildren();
 
-    bool hasForcedSubtreeInvalidationFlags() const { return m_forcedSubtreeInvalidationFlags; }
+    bool forcedSubtreeInvalidationWithinContainer() const { return m_forcedSubtreeInvalidationWithinContainer; }
+    void setForceSubtreeInvalidationWithinContainer() { m_forcedSubtreeInvalidationWithinContainer = true; }
 
-    bool forcedSubtreeInvalidationCheckingWithinContainer() const { return m_forcedSubtreeInvalidationFlags & InvalidationChecking; }
-    void setForceSubtreeInvalidationCheckingWithinContainer() { m_forcedSubtreeInvalidationFlags |= InvalidationChecking; }
-
-    bool forcedSubtreeFullInvalidationWithinContainer() const { return m_forcedSubtreeInvalidationFlags & FullInvalidation; }
-
-    bool forcedSubtreeInvalidationRectUpdateWithinContainerOnly() const { return m_forcedSubtreeInvalidationFlags == InvalidationRectUpdate; }
-    void setForceSubtreeInvalidationRectUpdateWithinContainer() { m_forcedSubtreeInvalidationFlags |= InvalidationRectUpdate; }
+    bool forcedSubtreeInvalidationRectUpdateWithinContainer() const { return m_forcedSubtreeInvalidationRectUpdateWithinContainer; }
+    void setForceSubtreeInvalidationRectUpdateWithinContainer() { m_forcedSubtreeInvalidationRectUpdateWithinContainer = true; }
 
     const LayoutBoxModelObject& paintInvalidationContainer() const { return *m_paintInvalidationContainer; }
 
@@ -100,13 +95,8 @@ private:
 
     const LayoutObject& m_currentObject;
 
-    enum ForcedSubtreeInvalidationFlag {
-        InvalidationChecking = 1 << 0,
-        InvalidationRectUpdate = 1 << 1,
-        FullInvalidation = 1 << 2,
-        FullInvalidationForStackedContents = 1 << 3,
-    };
-    unsigned m_forcedSubtreeInvalidationFlags;
+    bool m_forcedSubtreeInvalidationWithinContainer;
+    bool m_forcedSubtreeInvalidationRectUpdateWithinContainer;
 
     bool m_clipped;
     bool m_clippedForAbsolutePosition;

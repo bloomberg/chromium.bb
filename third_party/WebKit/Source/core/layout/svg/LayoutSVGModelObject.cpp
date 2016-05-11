@@ -140,10 +140,10 @@ void LayoutSVGModelObject::invalidateTreeIfNeeded(const PaintInvalidationState& 
         return;
 
     PaintInvalidationState newPaintInvalidationState(paintInvalidationState, *this);
-    PaintInvalidationReason reason = invalidatePaintIfNeeded(newPaintInvalidationState);
+    invalidatePaintIfNeeded(newPaintInvalidationState);
     clearPaintInvalidationFlags(newPaintInvalidationState);
 
-    newPaintInvalidationState.updateForChildren(reason);
+    newPaintInvalidationState.updateForChildren();
     invalidatePaintOfSubtreesIfNeeded(newPaintInvalidationState);
 }
 

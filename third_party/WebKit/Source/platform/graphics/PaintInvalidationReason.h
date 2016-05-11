@@ -29,7 +29,7 @@ enum PaintInvalidationReason {
     PaintInvalidationScroll,
     PaintInvalidationSelection,
     PaintInvalidationOutline,
-    PaintInvalidationSubtree,
+    PaintInvalidationLayer,
     PaintInvalidationLayoutObjectInsertion,
     PaintInvalidationLayoutObjectRemoval,
     PaintInvalidationSVGResourceChange,

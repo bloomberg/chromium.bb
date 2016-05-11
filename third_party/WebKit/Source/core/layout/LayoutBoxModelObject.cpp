@@ -166,7 +166,7 @@ void LayoutBoxModelObject::styleWillChange(StyleDifference diff, const ComputedS
     FloatStateForStyleChange::setWasFloating(this, isFloating());
 
     if (const ComputedStyle* oldStyle = style()) {
-        if (parent() && diff.needsPaintInvalidationSubtree()) {
+        if (parent() && diff.needsPaintInvalidationLayer()) {
             if (oldStyle->hasAutoClip() != newStyle.hasAutoClip()
                 || oldStyle->clip() != newStyle.clip())
                 layer()->clipper().clearClipRectsIncludingDescendants();
@@ -398,14 +398,17 @@ void LayoutBoxModelObject::invalidateTreeIfNeeded(const PaintInvalidationState& 
     PaintInvalidationReason reason = invalidatePaintIfNeeded(newPaintInvalidationState);
     clearPaintInvalidationFlags(newPaintInvalidationState);
 
+    if (reason == PaintInvalidationDelayedFull)
+        paintInvalidationState.pushDelayedPaintInvalidationTarget(*this);
+
     if (previousPosition != previousPositionFromPaintInvalidationBacking())
-        newPaintInvalidationState.setForceSubtreeInvalidationCheckingWithinContainer();
+        newPaintInvalidationState.setForceSubtreeInvalidationWithinContainer();
 
     // TODO(wangxianzhu): Combine this function into LayoutObject::invalidateTreeIfNeeded() when removing the following workarounds.
 
     // TODO(wangxianzhu): This is a workaround for crbug.com/533277. Will remove when we enable paint offset caching.
     if (reason != PaintInvalidationNone && hasPercentageTransform(styleRef()))
-        newPaintInvalidationState.setForceSubtreeInvalidationCheckingWithinContainer();
+        newPaintInvalidationState.setForceSubtreeInvalidationWithinContainer();
 
     // TODO(wangxianzhu): This is a workaround for crbug.com/490725. We don't have enough saved information to do accurate check
     // of clipping change. Will remove when we remove rect-based paint invalidation.
@@ -415,7 +418,7 @@ void LayoutBoxModelObject::invalidateTreeIfNeeded(const PaintInvalidationState& 
         && hasOverflowClip())
         newPaintInvalidationState.setForceSubtreeInvalidationRectUpdateWithinContainer();
 
-    newPaintInvalidationState.updateForChildren(reason);
+    newPaintInvalidationState.updateForChildren();
     invalidatePaintOfSubtreesIfNeeded(newPaintInvalidationState);
 }
 
