@@ -53,6 +53,9 @@ public:
     int baselinePosition(FontBaseline, bool firstLine, LineDirectionMode, LinePositionMode = PositionOnContainingLine) const override;
     int firstLineBoxBaseline() const override;
     int inlineBlockBaseline(LineDirectionMode) const override;
+    IntSize originAdjustmentForScrollbars() const override;
+    bool hasTopOverflow() const override;
+    bool hasLeftOverflow() const override;
 
     void paintChildren(const PaintInfo&, const LayoutPoint&) const final;
 

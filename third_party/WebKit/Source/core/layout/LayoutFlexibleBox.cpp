@@ -241,6 +241,64 @@ int LayoutFlexibleBox::inlineBlockBaseline(LineDirectionMode direction) const
     return synthesizedBaselineFromContentBox(*this, direction) + marginAscent;
 }
 
+IntSize LayoutFlexibleBox::originAdjustmentForScrollbars() const
+{
+    IntSize size;
+    int adjustmentWidth = verticalScrollbarWidth();
+    int adjustmentHeight = horizontalScrollbarHeight();
+    if (!adjustmentWidth && !adjustmentHeight)
+        return size;
+
+    EFlexDirection flexDirection = style()->flexDirection();
+    TextDirection textDirection = style()->direction();
+    WritingMode writingMode = style()->getWritingMode();
+
+    if (flexDirection == FlowRow) {
+        if (textDirection == RTL) {
+            if (writingMode == TopToBottomWritingMode)
+                size.expand(adjustmentWidth, 0);
+            else
+                size.expand(0, adjustmentHeight);
+        }
+        if (writingMode == RightToLeftWritingMode)
+            size.expand(adjustmentWidth, 0);
+    } else if (flexDirection == FlowRowReverse) {
+        if (textDirection == LTR) {
+            if (writingMode == TopToBottomWritingMode)
+                size.expand(adjustmentWidth, 0);
+            else
+                size.expand(0, adjustmentHeight);
+        }
+        if (writingMode == RightToLeftWritingMode)
+            size.expand(adjustmentWidth, 0);
+    } else if (flexDirection == FlowColumn) {
+        if (writingMode == RightToLeftWritingMode)
+            size.expand(adjustmentWidth, 0);
+    } else {
+        if (writingMode == TopToBottomWritingMode)
+            size.expand(0, adjustmentHeight);
+        else if (writingMode == LeftToRightWritingMode)
+            size.expand(adjustmentWidth, 0);
+    }
+    return size;
+}
+
+bool LayoutFlexibleBox::hasTopOverflow() const
+{
+    EFlexDirection flexDirection = style()->flexDirection();
+    if (isHorizontalWritingMode())
+        return flexDirection == FlowColumnReverse;
+    return flexDirection == (style()->isLeftToRightDirection() ? FlowRowReverse : FlowRow);
+}
+
+bool LayoutFlexibleBox::hasLeftOverflow() const
+{
+    EFlexDirection flexDirection = style()->flexDirection();
+    if (isHorizontalWritingMode())
+        return flexDirection == (style()->isLeftToRightDirection() ? FlowRowReverse : FlowRow);
+    return flexDirection == FlowColumnReverse;
+}
+
 void LayoutFlexibleBox::removeChild(LayoutObject* child)
 {
     LayoutBlock::removeChild(child);
@@ -1532,10 +1590,12 @@ void LayoutFlexibleBox::layoutAndPlaceChildren(LayoutUnit& crossAxisOffset, cons
     LayoutUnit autoMarginOffset = autoMarginOffsetInMainAxis(children, availableFreeSpace);
     LayoutUnit mainAxisOffset = flowAwareBorderStart() + flowAwarePaddingStart();
     mainAxisOffset += initialJustifyContentOffset(availableFreeSpace, position, distribution, numberOfChildrenForJustifyContent);
-    if (style()->flexDirection() == FlowRowReverse)
+    if (style()->flexDirection() == FlowRowReverse && shouldPlaceBlockDirectionScrollbarOnLogicalLeft())
         mainAxisOffset += isHorizontalFlow() ? verticalScrollbarWidth() : horizontalScrollbarHeight();
 
     LayoutUnit totalMainExtent = mainAxisExtent();
+    if (!shouldPlaceBlockDirectionScrollbarOnLogicalLeft())
+        totalMainExtent -= isHorizontalFlow() ? verticalScrollbarWidth() : horizontalScrollbarHeight();
     LayoutUnit maxAscent, maxDescent; // Used when align-items: baseline.
     LayoutUnit maxChildCrossAxisExtent;
     size_t seenInFlowPositionedChildren = 0;
@@ -1599,7 +1659,6 @@ void LayoutFlexibleBox::layoutAndPlaceChildren(LayoutUnit& crossAxisOffset, cons
         // This will be fixed later in flipForRightToLeftColumn.
         LayoutPoint childLocation(shouldFlipMainAxis ? totalMainExtent - mainAxisOffset - childMainExtent : mainAxisOffset,
             crossAxisOffset + flowAwareMarginBeforeForChild(*child));
-
         setFlowAwareLocationForChild(*child, childLocation);
         mainAxisOffset += childMainExtent + flowAwareMarginEndForChild(*child);
 
@@ -1827,6 +1886,8 @@ void LayoutFlexibleBox::flipForRightToLeftColumn()
         // For vertical flows, setFlowAwareLocationForChild will transpose x and y,
         // so using the y axis for a column cross axis extent is correct.
         location.setY(crossExtent - crossAxisExtentForChild(*child) - location.y());
+        if (!isHorizontalWritingMode())
+            location.move(LayoutSize(0, -horizontalScrollbarHeight()));
         setFlowAwareLocationForChild(*child, location);
     }
 }

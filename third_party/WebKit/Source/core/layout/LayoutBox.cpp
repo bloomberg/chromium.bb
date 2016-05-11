@@ -950,12 +950,27 @@ bool LayoutBox::needsPreferredWidthsRecalculation() const
     return style()->paddingStart().hasPercent() || style()->paddingEnd().hasPercent();
 }
 
+IntSize LayoutBox::originAdjustmentForScrollbars() const
+{
+    IntSize size;
+    int adjustmentWidth = verticalScrollbarWidth();
+    if (hasFlippedBlocksWritingMode()
+        || (isHorizontalWritingMode() && shouldPlaceBlockDirectionScrollbarOnLogicalLeft())) {
+        size.expand(adjustmentWidth, 0);
+    }
+    return size;
+}
+
 IntSize LayoutBox::scrolledContentOffset() const
 {
     ASSERT(hasOverflowClip());
     ASSERT(hasLayer());
     // FIXME: Return DoubleSize here. crbug.com/414283.
-    return flooredIntSize(getScrollableArea()->scrollOffset());
+    PaintLayerScrollableArea* scrollableArea = getScrollableArea();
+    IntSize result = flooredIntSize(scrollableArea->scrollOffset()) + originAdjustmentForScrollbars();
+    if (isHorizontalWritingMode() && shouldPlaceBlockDirectionScrollbarOnLogicalLeft())
+        result.expand(-verticalScrollbarWidth(), 0);
+    return result;
 }
 
 bool LayoutBox::mapScrollingContentsRectToBoxSpace(LayoutRect& rect, ApplyOverflowClipFlag applyOverflowClip, VisualRectFlags visualRectFlags) const
@@ -4129,6 +4144,16 @@ void LayoutBox::addOverflowFromChild(LayoutBox* child, const LayoutSize& delta)
     addContentsVisualOverflow(childVisualOverflowRect);
 }
 
+bool LayoutBox::hasTopOverflow() const
+{
+    return !style()->isLeftToRightDirection() && !isHorizontalWritingMode();
+}
+
+bool LayoutBox::hasLeftOverflow() const
+{
+    return !style()->isLeftToRightDirection() && isHorizontalWritingMode();
+}
+
 void LayoutBox::addLayoutOverflow(const LayoutRect& rect)
 {
     if (rect.isEmpty())
@@ -4144,24 +4169,14 @@ void LayoutBox::addLayoutOverflow(const LayoutRect& rect)
         // Overflow is in the block's coordinate space and thus is flipped for vertical-rl writing
         // mode.  At this stage that is actually a simplification, since we can treat vertical-lr/rl
         // as the same.
-        bool hasTopOverflow = !style()->isLeftToRightDirection() && !isHorizontalWritingMode();
-        bool hasLeftOverflow = !style()->isLeftToRightDirection() && isHorizontalWritingMode();
-        if (isFlexibleBox() && style()->isReverseFlexDirection()) {
-            LayoutFlexibleBox* flexibleBox = toLayoutFlexibleBox(this);
-            if (flexibleBox->isHorizontalFlow())
-                hasLeftOverflow = true;
-            else
-                hasTopOverflow = true;
-        }
-
-        if (!hasTopOverflow)
-            overflowRect.shiftYEdgeTo(std::max(overflowRect.y(), clientBox.y()));
-        else
+        if (hasTopOverflow())
             overflowRect.shiftMaxYEdgeTo(std::min(overflowRect.maxY(), clientBox.maxY()));
-        if (!hasLeftOverflow)
-            overflowRect.shiftXEdgeTo(std::max(overflowRect.x(), clientBox.x()));
         else
+            overflowRect.shiftYEdgeTo(std::max(overflowRect.y(), clientBox.y()));
+        if (hasLeftOverflow())
             overflowRect.shiftMaxXEdgeTo(std::min(overflowRect.maxX(), clientBox.maxX()));
+        else
+            overflowRect.shiftXEdgeTo(std::max(overflowRect.x(), clientBox.x()));
 
         // Now re-test with the adjusted rectangle and see if it has become unreachable or fully
         // contained.

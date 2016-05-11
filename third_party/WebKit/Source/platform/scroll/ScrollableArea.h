@@ -128,6 +128,7 @@ public:
 
     virtual CompositorAnimationTimeline* compositorAnimationTimeline() const { return nullptr; }
 
+    // See Source/core/layout/README.md for an explanation of scroll origin.
     const IntPoint& scrollOrigin() const { return m_scrollOrigin; }
     bool scrollOriginChanged() const { return m_scrollOriginChanged; }
 

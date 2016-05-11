@@ -380,6 +380,13 @@ public:
     LayoutRect selfVisualOverflowRect() const { return m_overflow ? m_overflow->selfVisualOverflowRect() : borderBoxRect(); }
     LayoutRect contentsVisualOverflowRect() const { return m_overflow ? m_overflow->contentsVisualOverflowRect() : LayoutRect(); }
 
+    // These methods don't mean the box *actually* has top/left overflow.  They mean that
+    // *if* the box overflows, it will overflow to the top/left rather than the bottom/right.
+    // This happens when child content is laid out right-to-left (e.g. direction:rtl) or
+    // or bottom-to-top (e.g. direction:rtl writing-mode:vertical-rl).
+    virtual bool hasTopOverflow() const;
+    virtual bool hasLeftOverflow() const;
+
     void addLayoutOverflow(const LayoutRect&);
     void addSelfVisualOverflow(const LayoutRect&);
     void addContentsVisualOverflow(const LayoutRect&);
@@ -871,6 +878,8 @@ public:
 
     virtual bool needsPreferredWidthsRecalculation() const;
 
+    // See README.md for an explanation of scroll origin.
+    virtual IntSize originAdjustmentForScrollbars() const;
     IntSize scrolledContentOffset() const;
 
     // Maps a rect in scrolling contents space to box space and apply overflow clip if needed.

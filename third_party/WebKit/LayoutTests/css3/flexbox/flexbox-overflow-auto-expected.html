@@ -34,11 +34,9 @@
     <p>Scrollbars should work in all the flexboxes.</p>
 </body>
 <script>
-// The -almost values are cases where we don't scroll all the way because of
-// https://bugs.webkit.org/show_bug.cgi?id=76129 .
 var results = [
     'left top', 'left top', 'right top', 'left bottom',
-    'right-almost top', 'right-almost top', 'right-almost bottom', 'left top',
+    'right top', 'right top', 'right bottom', 'left top',
     'left top', 'left top', 'left bottom', 'right top'];
 
 var testContents = '';
@@ -65,14 +63,6 @@ Array.prototype.forEach.call(document.querySelectorAll(".right"), function(eleme
 
 Array.prototype.forEach.call(document.querySelectorAll(".bottom"), function(element) {
     element.firstChild.scrollTop = 1000;
-});
-
-Array.prototype.forEach.call(document.querySelectorAll(".right-almost"), function(element) {
-    element.firstChild.scrollLeft = element.firstChild.scrollWidth - element.firstChild.offsetWidth;
-});
-
-Array.prototype.forEach.call(document.querySelectorAll(".bottom-almost"), function(element) {
-    element.firstChild.scrollTop = element.firstChild.scrollHeight - element.firstChild.offsetHeight;
 });
 
 </script>
