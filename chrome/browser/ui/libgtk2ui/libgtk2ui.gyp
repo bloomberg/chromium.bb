@@ -24,6 +24,7 @@
         '../../../../ui/base/ime/ui_base_ime.gyp:ui_base_ime',
         '../../../../ui/base/ui_base.gyp:ui_base',
         '../../../../ui/base/x/ui_base_x.gyp:ui_base_x',
+        '../../../../ui/display/display.gyp:display',
         '../../../../ui/events/events.gyp:events',
         '../../../../ui/events/events.gyp:events_base',
         '../../../../ui/events/keycodes/events_keycodes.gyp:keycodes_x11',

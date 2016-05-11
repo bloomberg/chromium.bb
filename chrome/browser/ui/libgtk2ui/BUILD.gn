@@ -106,6 +106,7 @@ component("libgtk2ui") {
     "//ui/aura",
     "//ui/base",
     "//ui/base/ime",
+    "//ui/display",
     "//ui/events",
     "//ui/events:events_base",
     "//ui/gfx",
