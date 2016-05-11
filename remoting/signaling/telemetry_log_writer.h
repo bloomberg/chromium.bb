@@ -15,6 +15,7 @@
 #include "base/values.h"
 #include "remoting/base/url_request.h"
 #include "remoting/signaling/chromoting_event.h"
+#include "remoting/signaling/chromoting_event_log_writer.h"
 
 namespace remoting {
 
@@ -23,7 +24,8 @@ namespace remoting {
 // Logs to be sent will be queued and sent when it is available. Logs failed
 // to send will be retried for a few times and dropped if they still can't be
 // sent.
-class TelemetryLogWriter : public base::NonThreadSafe {
+class TelemetryLogWriter :  public ChromotingEventLogWriter,
+                            public base::NonThreadSafe {
  public:
   TelemetryLogWriter(const std::string& telemetry_base_url,
                      std::unique_ptr<UrlRequestFactory> request_factory);
@@ -31,18 +33,18 @@ class TelemetryLogWriter : public base::NonThreadSafe {
   // "Authorization:Bearer {TOKEN}" will be added if auth_token is not empty.
   // After this function is called, the log writer will try to send out pending
   // logs if the list is not empty.
-  void SetAuthToken(const std::string& auth_token);
+  void SetAuthToken(const std::string& auth_token) override;
 
   // The closure will be called when the request fails with unauthorized error
   // code. The closure should call SetAuthToken to set the token.
   // If the closure is not set, the log writer will try to resend the logs
   // immediately.
-  void SetAuthClosure(base::Closure closure);
+  void SetAuthClosure(const base::Closure& closure) override;
 
   // Push the log entry to the pending list and send out all the pending logs.
-  void Log(const ChromotingEvent& entry);
+  void Log(const ChromotingEvent& entry) override;
 
-  virtual ~TelemetryLogWriter();
+  ~TelemetryLogWriter() override;
 
  private:
   void SendPendingEntries();

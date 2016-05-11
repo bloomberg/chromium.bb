@@ -288,6 +288,8 @@
       'client/client_context.h',
       'client/client_status_logger.cc',
       'client/client_status_logger.h',
+      'client/client_telemetry_logger.cc',
+      'client/client_telemetry_logger.h',
       'client/client_user_interface.h',
       'client/empty_cursor_filter.cc',
       'client/empty_cursor_filter.h',

@@ -30,6 +30,7 @@ source_set("client") {
   if (is_nacl) {
     sources -= [
       "client_status_logger.cc",
+      "client_telemetry_logger.cc",
       "server_log_entry_client.cc",
     ]
   } else {
@@ -50,6 +51,7 @@ source_set("unit_tests") {
     "audio_player_unittest.cc",
     "chromoting_client_runtime_unittest.cc",
     "client_status_logger_unittest.cc",
+    "client_telemetry_logger_unittest.cc",
     "empty_cursor_filter_unittest.cc",
     "key_event_mapper_unittest.cc",
     "normalizing_input_filter_cros_unittest.cc",

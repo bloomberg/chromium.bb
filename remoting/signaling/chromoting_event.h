@@ -86,6 +86,28 @@ class ChromotingEvent {
     SIGNAL_STRATEGY_PROGRESS = 9
   };
 
+  static const char kCaptureLatencyKey[];
+  static const char kConnectionErrorKey[];
+  static const char kCpuKey[];
+  static const char kDecodeLatencyKey[];
+  static const char kEncodeLatencyKey[];
+  static const char kMaxCaptureLatencyKey[];
+  static const char kMaxDecodeLatencyKey[];
+  static const char kMaxEncodeLatencyKey[];
+  static const char kMaxRenderLatencyKey[];
+  static const char kMaxRoundtripLatencyKey[];
+  static const char kModeKey[];
+  static const char kOsKey[];
+  static const char kOsVersionKey[];
+  static const char kRenderLatencyKey[];
+  static const char kRoleKey[];
+  static const char kRoundtripLatencyKey[];
+  static const char kSessionDurationKey[];
+  static const char kSessionIdKey[];
+  static const char kSessionStateKey[];
+  static const char kTypeKey[];
+  static const char kVideoBandwidthKey[];
+
   ChromotingEvent();
   explicit ChromotingEvent(Type type);
   ChromotingEvent(const ChromotingEvent& other);
@@ -125,4 +147,5 @@ class ChromotingEvent {
 };
 
 }  // namespace remoting
+
 #endif  // REMOTING_SIGNALING_CHROMOTING_EVENT_H_

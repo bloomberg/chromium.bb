@@ -8,19 +8,32 @@
 
 namespace remoting {
 
-namespace {
-
-const char kKeyType[] = "type";
-const char kKeyCpu[] = "cpu";
-const char kKeyOs[] = "os";
-const char kKeyOsVersion[] = "os_version";
-
-}  // namespace
+const char ChromotingEvent::kCaptureLatencyKey[] = "capture_latency";
+const char ChromotingEvent::kConnectionErrorKey[] = "connection_error";
+const char ChromotingEvent::kCpuKey[] = "cpu";
+const char ChromotingEvent::kDecodeLatencyKey[] = "decode_latency";
+const char ChromotingEvent::kEncodeLatencyKey[] = "encode_latency";
+const char ChromotingEvent::kMaxCaptureLatencyKey[] = "max_capture_latency";
+const char ChromotingEvent::kMaxDecodeLatencyKey[] = "max_decode_latency";
+const char ChromotingEvent::kMaxEncodeLatencyKey[] = "max_encode_latency";
+const char ChromotingEvent::kMaxRenderLatencyKey[] = "max_render_latency";
+const char ChromotingEvent::kMaxRoundtripLatencyKey[] = "max_roundtrip_latency";
+const char ChromotingEvent::kModeKey[] = "mode";
+const char ChromotingEvent::kOsKey[] = "os";
+const char ChromotingEvent::kOsVersionKey[] = "os_version";
+const char ChromotingEvent::kRenderLatencyKey[] = "render_latency";
+const char ChromotingEvent::kRoleKey[] = "role";
+const char ChromotingEvent::kRoundtripLatencyKey[] = "roundtrip_latency";
+const char ChromotingEvent::kSessionDurationKey[] = "session_duration";
+const char ChromotingEvent::kSessionIdKey[] = "session_id";
+const char ChromotingEvent::kSessionStateKey[] = "session_state";
+const char ChromotingEvent::kTypeKey[] = "type";
+const char ChromotingEvent::kVideoBandwidthKey[] = "video_bandwidth";
 
 ChromotingEvent::ChromotingEvent() : values_map_(new base::DictionaryValue()) {}
 
 ChromotingEvent::ChromotingEvent(Type type) : ChromotingEvent() {
-  SetEnum(kKeyType, type);
+  SetEnum(kTypeKey, type);
 }
 
 ChromotingEvent::ChromotingEvent(const ChromotingEvent& other) {
@@ -67,8 +80,8 @@ void ChromotingEvent::SetDouble(const std::string& key, double value) {
 }
 
 void ChromotingEvent::AddSystemInfo() {
-  SetString(kKeyCpu, base::SysInfo::OperatingSystemArchitecture());
-  SetString(kKeyOsVersion, base::SysInfo::OperatingSystemVersion());
+  SetString(kCpuKey, base::SysInfo::OperatingSystemArchitecture());
+  SetString(kOsVersionKey, base::SysInfo::OperatingSystemVersion());
   std::string osName = base::SysInfo::OperatingSystemName();
 #if defined(OS_LINUX)
   Os os = Os::CHROMOTING_LINUX;
@@ -85,7 +98,7 @@ void ChromotingEvent::AddSystemInfo() {
 #else
   Os os = Os::OTHER;
 #endif
-  SetEnum(kKeyOs, os);
+  SetEnum(kOsKey, os);
 }
 
 void ChromotingEvent::IncrementTryCount() {

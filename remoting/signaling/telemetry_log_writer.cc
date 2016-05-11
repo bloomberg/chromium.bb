@@ -27,7 +27,7 @@ void TelemetryLogWriter::SetAuthToken(const std::string& auth_token) {
   SendPendingEntries();
 }
 
-void TelemetryLogWriter::SetAuthClosure(base::Closure closure) {
+void TelemetryLogWriter::SetAuthClosure(const base::Closure& closure) {
   DCHECK(CalledOnValidThread());
   auth_closure_ = closure;
 }
