@@ -29,7 +29,7 @@ define("mojo/public/js/connection", [
       if (StubBindings(this.local) &&
           StubBindings(this.local).connectionErrorHandler)
         StubBindings(this.local).connectionErrorHandler();
-    });
+    }.bind(this));
     if (this.remote)
       this.remote.receiver_ = router;
 
