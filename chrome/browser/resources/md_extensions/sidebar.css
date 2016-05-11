@@ -3,9 +3,13 @@
  * found in the LICENSE file. */
 
 :host {
-  -webkit-margin-start: 30px;
   margin-top: 30px;
   white-space: nowrap;
+}
+
+#section-menu,
+.section-item {
+  -webkit-margin-start: 20px;
 }
 
 #section-menu {
@@ -20,30 +24,36 @@
   padding: 0;
 }
 
+#more-extensions {
+  display: flex;
+  text-decoration: none;
+}
+
 paper-item {
-  -webkit-margin-start: 0;
-  -webkit-padding-start: 0;
   color: #5A5A5A;
   cursor: pointer;
   font-size: 88%;
+  padding: 0;
 }
 
-.section-menu-item span {
-  -webkit-margin-start: 15px;
-}
-
-#devtools-container {
-  border-bottom: 1px solid #C5C5C5;
-  border-top: 1px solid #C5C5C5;
-  margin: 10px 0;
+.section-menu-item iron-icon,
+.section-item iron-icon {
+  -webkit-margin-end: 15px;
 }
 
 #developer-mode-checkbox {
   --paper-checkbox-checked-color: rgb(66, 133, 244);
   --primary-text-color: #5A5A5A;
-  -webkit-margin-start: 10px;
+}
+
+#developer-mode {
+  display: flex;
+}
+
+#developer-mode span {
+  flex-grow: 1;
 }
 
 #devtools-controls {
-  -webkit-margin-start: 20px;
+  border-top: 1px solid grey;
 }
