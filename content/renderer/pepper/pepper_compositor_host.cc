@@ -30,6 +30,7 @@
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_image_data_api.h"
 #include "third_party/khronos/GLES2/gl2.h"
+#include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/transform.h"
 
 using ppapi::host::HostMessageContext;
@@ -222,14 +223,22 @@ void PepperCompositorHost::UpdateLayer(
     std::unique_ptr<base::SharedMemory> image_shm) {
   // Always update properties on cc::Layer, because cc::Layer
   // will ignore any setting with unchanged value.
+  gfx::SizeF size(PP_ToGfxSize(new_layer->common.size));
+  gfx::RectF clip_rect(PP_ToGfxRect(new_layer->common.clip_rect));
+
+  // Pepper API uses DIP, so we must scale the layer's coordinates to
+  // viewport in use-zoom-for-dsf.
+  float dip_to_viewport_scale = 1 / viewport_to_dip_scale_;
+  size.Scale(dip_to_viewport_scale);
+  clip_rect.Scale(dip_to_viewport_scale);
+
   layer->SetIsDrawable(true);
   layer->SetBlendMode(SkXfermode::kSrcOver_Mode);
   layer->SetOpacity(new_layer->common.opacity);
-  layer->SetBounds(PP_ToGfxSize(new_layer->common.size));
-  layer->SetTransformOrigin(gfx::Point3F(new_layer->common.size.width / 2,
-                                         new_layer->common.size.height / 2,
-                                         0.0f));
 
+  layer->SetBounds(gfx::ToRoundedSize(size));
+  layer->SetTransformOrigin(
+      gfx::Point3F(size.width() / 2, size.height() / 2, 0.0f));
   gfx::Transform transform(gfx::Transform::kSkipInitialization);
   transform.matrix().setColMajorf(new_layer->common.transform.matrix);
   layer->SetTransform(transform);
@@ -248,10 +257,9 @@ void PepperCompositorHost::UpdateLayer(
       layer_->ReplaceChild(layer.get(), clip_parent);
       clip_parent->AddChild(layer);
     }
-    auto position =
-        gfx::PointF(PP_ToGfxPoint(new_layer->common.clip_rect.point));
+    auto position = clip_rect.origin();
     clip_parent->SetPosition(position);
-    clip_parent->SetBounds(PP_ToGfxSize(new_layer->common.clip_rect.size));
+    clip_parent->SetBounds(gfx::ToRoundedSize(clip_rect.size()));
     layer->SetPosition(gfx::PointF(-position.x(), -position.y()));
   } else if (layer->parent() != layer_.get()) {
     // Remove the clip parent layer.

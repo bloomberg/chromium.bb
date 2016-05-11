@@ -1673,6 +1673,13 @@ void PepperPluginInstanceImpl::SendDidChangeView() {
   if (module()->is_crashed())
     return;
 
+  if (bound_compositor_)
+    bound_compositor_->set_viewport_to_dip_scale(viewport_to_dip_scale_);
+
+  if (bound_graphics_2d_platform_)
+    bound_graphics_2d_platform_->set_viewport_to_dip_scale(
+        viewport_to_dip_scale_);
+
   // During the first view update, initialize the throttler.
   if (!sent_initial_did_change_view_) {
     if (is_flash_plugin_ && RenderThread::Get()) {

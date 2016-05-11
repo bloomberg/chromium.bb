@@ -94,6 +94,11 @@ class CONTENT_EXPORT PepperGraphics2DHost
 
   void ClearCache();
 
+  void set_viewport_to_dip_scale(float viewport_to_dip_scale) {
+    DCHECK_LT(0, viewport_to_dip_scale_);
+    viewport_to_dip_scale_ = viewport_to_dip_scale;
+  }
+
  private:
   PepperGraphics2DHost(RendererPpapiHost* host,
                        PP_Instance instance,
@@ -202,6 +207,9 @@ class CONTENT_EXPORT PepperGraphics2DHost
   // Set to the scale between what the plugin considers to be one pixel and one
   // DIP
   float scale_;
+
+  // The scale between the viewport and dip.
+  float viewport_to_dip_scale_ = 1.0f;
 
   ppapi::host::ReplyMessageContext flush_reply_context_;
 

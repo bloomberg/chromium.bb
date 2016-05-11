@@ -653,11 +653,15 @@ int32_t PepperGraphics2DHost::Flush(PP_Resource* old_image_data) {
     // is visible to determine how to deal with the callback.
     if (bound_instance_ && !op_rect.IsEmpty()) {
       gfx::Point scroll_delta(operation.scroll_dx, operation.scroll_dy);
-      if (!ConvertToLogicalPixels(scale_,
-                                  &op_rect,
+      // In use-zoom-for-dsf mode, the viewport (thus cc) uses native
+      // pixels, so the damage and rects have to be scaled.
+      gfx::Rect op_rect_in_viewport = op_rect;
+      ConvertToLogicalPixels(scale_, &op_rect, nullptr);
+      if (!ConvertToLogicalPixels(scale_ / viewport_to_dip_scale_,
+                                  &op_rect_in_viewport,
                                   operation.type == QueuedOperation::SCROLL
                                       ? &scroll_delta
-                                      : NULL)) {
+                                      : nullptr)) {
         // Conversion requires falling back to InvalidateRect.
         operation.type = QueuedOperation::PAINT;
       }
@@ -675,10 +679,10 @@ int32_t PepperGraphics2DHost::Flush(PP_Resource* old_image_data) {
       // partially or completely off-screen.
       if (operation.type == QueuedOperation::SCROLL) {
         bound_instance_->ScrollRect(
-            scroll_delta.x(), scroll_delta.y(), op_rect);
+            scroll_delta.x(), scroll_delta.y(), op_rect_in_viewport);
       } else {
-        if (!op_rect.IsEmpty())
-          bound_instance_->InvalidateRect(op_rect);
+        if (!op_rect_in_viewport.IsEmpty())
+          bound_instance_->InvalidateRect(op_rect_in_viewport);
       }
       texture_mailbox_modified_ = true;
     }

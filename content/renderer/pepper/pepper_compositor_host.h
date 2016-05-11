@@ -51,6 +51,11 @@ class PepperCompositorHost : public ppapi::host::ResourceHost {
 
   void ViewInitiatedPaint();
 
+  void set_viewport_to_dip_scale(float viewport_to_dip_scale) {
+    DCHECK_LT(0, viewport_to_dip_scale_);
+    viewport_to_dip_scale_ = viewport_to_dip_scale;
+  }
+
  private:
   void ImageReleased(int32_t id,
                      std::unique_ptr<base::SharedMemory> shared_memory,
@@ -101,6 +106,10 @@ class PepperCompositorHost : public ppapi::host::ResourceHost {
   std::vector<LayerData> layers_;
 
   ppapi::host::ReplyMessageContext commit_layers_reply_context_;
+
+  // The scale between the viewport and dip. This differs in
+  // use-zoom-for-dsf mode where the content is scaled by zooming.
+  float viewport_to_dip_scale_ = 1.0f;
 
   base::WeakPtrFactory<PepperCompositorHost> weak_factory_;
 
