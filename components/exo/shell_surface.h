@@ -207,8 +207,12 @@ class ShellSurface : public SurfaceDelegate,
   // resize direction into account.
   gfx::Point GetSurfaceOrigin() const;
 
-  // Update bounds of widget to match the current surface bounds.
+  // Updates the bounds of widget to match the current surface bounds.
   void UpdateWidgetBounds();
+
+  // Updates the transparent insets for the purposes of darkening the shelf
+  // appropriately.
+  void UpdateTransparentInsets();
 
   views::Widget* widget_;
   Surface* surface_;
