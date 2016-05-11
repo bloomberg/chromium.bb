@@ -48,8 +48,11 @@ void ResourceLoaderSet::cancelAll()
 {
     HeapVector<Member<ResourceLoader>> loadersCopy;
     copyToVector(m_set, loadersCopy);
-    for (const auto& loader : loadersCopy)
-        loader->cancel();
+    for (const auto& loader : loadersCopy) {
+        // cancelAll() can reenter. Don't cancel the same ResourceLoader twice.
+        if (m_set.contains(loader))
+            loader->cancel();
+    }
 }
 
 void ResourceLoaderSet::setAllDefersLoading(bool defers)

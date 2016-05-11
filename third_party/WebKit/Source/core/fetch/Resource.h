@@ -172,8 +172,6 @@ public:
 
     bool isEligibleForIntegrityCheck(SecurityOrigin*) const;
 
-    void clearLoader();
-
     SharedBuffer* resourceBuffer() const { return m_data.get(); }
     void setResourceBuffer(PassRefPtr<SharedBuffer>);
 

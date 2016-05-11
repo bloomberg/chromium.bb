@@ -425,6 +425,7 @@ void Resource::error(const ResourceError& error)
     setStatus(LoadError);
     ASSERT(errorOccurred());
     m_data.clear();
+    m_loader = nullptr;
     checkNotify();
     markClientsAndObserversFinished();
 }
@@ -435,6 +436,7 @@ void Resource::finish(double loadFinishTime)
     m_loadFinishTime = loadFinishTime;
     if (!errorOccurred())
         m_status = Cached;
+    m_loader = nullptr;
     checkNotify();
     markClientsAndObserversFinished();
 }
@@ -651,11 +653,6 @@ String Resource::reasonNotDeletable() const
     return builder.toString();
 }
 
-void Resource::clearLoader()
-{
-    m_loader = nullptr;
-}
-
 void Resource::didAddClient(ResourceClient* c)
 {
     if (isLoaded()) {
@@ -774,10 +771,8 @@ void Resource::allClientsAndObserversRemoved()
 void Resource::cancelTimerFired(Timer<Resource>* timer)
 {
     ASSERT_UNUSED(timer, timer == &m_cancelTimer);
-    if (hasClientsOrObservers() || !m_loader)
-        return;
-    m_loader->cancelIfNotFinishing();
-    memoryCache()->remove(this);
+    if (!hasClientsOrObservers() && m_loader)
+        m_loader->cancel();
 }
 
 void Resource::setDecodedSize(size_t decodedSize)

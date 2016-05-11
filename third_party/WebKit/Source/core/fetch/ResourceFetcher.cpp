@@ -728,17 +728,7 @@ ResourceFetcher::RevalidationPolicy ResourceFetcher::determineRevalidationPolicy
     if (type != Resource::Raw) {
         if (!context().isLoadComplete() && m_validatedURLs.contains(existingResource->url()))
             return Use;
-        // TODO(japhet): existingResource->isLoading() and existingResource->loader() are not identical,
-        // which is lame.
-        // Being in the loading state and having a ResourceLoader* are subtly diffent cases, either of which
-        // should indicate reuse. A resource can have isLoading() return true without a ResourceLoader* if
-        // it is a font that defers actually loading until the font is required. On the other hand,
-        // a Resource can have a non-null ResourceLoader* but have isLoading() return false in a narrow window
-        // during completion, because we set loading to false before notifying ResourceClients, but don't
-        // clear the ResourceLoader pointer until the stack unwinds. If, inside the ResourceClient callbacks,
-        // an event fires synchronously and an event handler re-requests the resource, we can reach this point
-        // while not loading but having a ResourceLoader.
-        if (existingResource->isLoading() || existingResource->loader())
+        if (existingResource->isLoading())
             return Use;
     }
 

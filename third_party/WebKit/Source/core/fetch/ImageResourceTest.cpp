@@ -166,7 +166,7 @@ TEST(ImageResourceTest, MultipartImage)
     ASSERT_EQ(cachedImage->resourceBuffer()->size(), strlen(secondPart) - 1);
 
     // This part finishes. The image is created, callbacks are sent, and the data buffer is cleared.
-    cachedImage->finish();
+    cachedImage->loader()->didFinishLoading(nullptr, 0.0, 0);
     ASSERT_FALSE(cachedImage->resourceBuffer());
     ASSERT_FALSE(cachedImage->errorOccurred());
     ASSERT_TRUE(cachedImage->hasImage());
@@ -291,9 +291,9 @@ TEST(ImageResourceTest, ReloadIfLoFi)
     ASSERT_TRUE(cachedImage->hasImage());
     ASSERT_EQ(client.imageChangedCount(), 3);
 
-    cachedImage->responseReceived(resourceResponse, nullptr);
-    cachedImage->appendData(reinterpret_cast<const char*>(jpeg.data()), jpeg.size());
-    cachedImage->finish();
+    cachedImage->loader()->didReceiveResponse(nullptr, WrappedResourceResponse(resourceResponse), nullptr);
+    cachedImage->loader()->didReceiveData(nullptr, reinterpret_cast<const char*>(jpeg.data()), jpeg.size(), jpeg.size());
+    cachedImage->loader()->didFinishLoading(nullptr, 0.0, jpeg.size());
     ASSERT_FALSE(cachedImage->errorOccurred());
     ASSERT_TRUE(cachedImage->hasImage());
     ASSERT_FALSE(cachedImage->getImage()->isNull());

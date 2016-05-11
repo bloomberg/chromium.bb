@@ -6,6 +6,9 @@ chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
   if (message.type == "xhr") {
     var xhr = new XMLHttpRequest();
     xhr.open(message.method, message.url);
+    // This header will be enough to avoid serving the XHR from blink's
+    // MemoryCache (which the test requires), but should have no other effect.
+    xhr.setRequestHeader("X-Bust-Blink-MemoryCache", Math.random());
     xhr.send();
   } else {
     console.error("Unknown message: " + JSON.stringify(message));

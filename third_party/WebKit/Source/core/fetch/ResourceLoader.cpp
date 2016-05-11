@@ -78,12 +78,8 @@ void ResourceLoader::releaseResources()
     ASSERT(m_state != ConnectionStateReleased);
     ASSERT(m_notifiedLoadComplete);
     m_fetcher->didLoadResource(m_resource.get());
-    if (m_state == ConnectionStateReleased)
-        return;
-    m_resource->clearLoader();
-    m_resource = nullptr;
-
     ASSERT(m_state != ConnectionStateReleased);
+    m_resource = nullptr;
     m_state = ConnectionStateReleased;
     if (m_loader) {
         m_loader->cancel();
@@ -129,7 +125,7 @@ void ResourceLoader::didDownloadData(WebURLLoader*, int length, int encodedDataL
 void ResourceLoader::didFinishLoadingOnePart(double finishTime, int64_t encodedDataLength)
 {
     ASSERT(m_state != ConnectionStateReleased);
-    if (isFinishing()) {
+    if (m_state == ConnectionStateFinishedLoading) {
         m_fetcher->removeResourceLoader(this);
     } else {
         // When loading a multipart resource, make the loader non-block when
@@ -154,13 +150,6 @@ void ResourceLoader::didChangePriority(ResourceLoadPriority loadPriority, int in
         m_loader->didChangePriority(static_cast<WebURLRequest::Priority>(loadPriority), intraPriorityValue);
 }
 
-void ResourceLoader::cancelIfNotFinishing()
-{
-    if (isFinishing())
-        return;
-    cancel();
-}
-
 void ResourceLoader::cancel()
 {
     cancel(ResourceError());
@@ -168,18 +157,8 @@ void ResourceLoader::cancel()
 
 void ResourceLoader::cancel(const ResourceError& error)
 {
-    // If the load has already completed - succeeded, failed, or previously cancelled - do nothing.
-    if (m_state == ConnectionStateReleased)
-        return;
-    if (isFinishing()) {
-        releaseResources();
-        return;
-    }
-
-    ResourceError nonNullError = error.isNull() ? ResourceError::cancelledError(m_resource->lastResourceRequest().url()) : error;
-
-    WTF_LOG(ResourceLoading, "Cancelled load of '%s'.\n", m_resource->url().getString().latin1().data());
-    m_state = ConnectionStateCanceled;
+    ASSERT(m_state != ConnectionStateFinishedLoading);
+    ASSERT(m_state != ConnectionStateReleased);
 
     // If we don't immediately clear m_loader when cancelling, we might get
     // unexpected reentrancy. m_resource->error() can trigger JS events, which
@@ -187,21 +166,12 @@ void ResourceLoader::cancel(const ResourceError& error)
     // and prevent receiving messages for a cancelled ResourceLoader, but
     // m_fetcher->didFailLoading() severs the connection by which all of a
     // page's loads are deferred. A response can then arrive, see m_state
-    // is ConnectionStateCanceled, and ASSERT or break in other ways.
+    // is ConnectionStateFinishedLoading, and ASSERT or break in other ways.
     if (m_loader) {
         m_loader->cancel();
         m_loader.clear();
     }
-
-    if (!m_notifiedLoadComplete) {
-        m_notifiedLoadComplete = true;
-        m_fetcher->didFailLoading(m_resource.get(), nonNullError);
-    }
-
-    if (m_state != ConnectionStateReleased)
-        m_resource->error(nonNullError);
-    if (m_state != ConnectionStateReleased)
-        releaseResources();
+    didFail(nullptr, error.isNull() ? ResourceError::cancelledError(m_resource->lastResourceRequest().url()) : error);
 }
 
 void ResourceLoader::willFollowRedirect(WebURLLoader*, WebURLRequest& passedNewRequest, const WebURLResponse& passedRedirectResponse)
@@ -218,7 +188,8 @@ void ResourceLoader::willFollowRedirect(WebURLLoader*, WebURLRequest& passedNewR
         m_resource->willFollowRedirect(newRequest, redirectResponse);
     } else {
         m_resource->willNotFollowRedirect();
-        cancel(ResourceError::cancelledDueToAccessCheckError(newRequest.url()));
+        if (m_state != ConnectionStateReleased)
+            cancel(ResourceError::cancelledDueToAccessCheckError(newRequest.url()));
     }
 }
 
@@ -316,40 +287,23 @@ void ResourceLoader::didReceiveData(WebURLLoader*, const char* data, int length,
 
 void ResourceLoader::didFinishLoading(WebURLLoader*, double finishTime, int64_t encodedDataLength)
 {
-
     RELEASE_ASSERT(m_state == ConnectionStateReceivedResponse || m_state == ConnectionStateReceivingData);
     m_state = ConnectionStateFinishedLoading;
-    WTF_LOG(ResourceLoading, "Received '%s'.", m_resource->url().getString().latin1().data());
     didFinishLoadingOnePart(finishTime, encodedDataLength);
-    if (m_state == ConnectionStateReleased)
-        return;
+    ASSERT(m_state != ConnectionStateReleased);
     m_resource->finish(finishTime);
-
-    // If the load has been cancelled by a delegate in response to didFinishLoad(), do not release
-    // the resources a second time, they have been released by cancel.
-    if (m_state == ConnectionStateReleased)
-        return;
     releaseResources();
 }
 
 void ResourceLoader::didFail(WebURLLoader*, const WebURLError& error)
 {
-
+    ASSERT(m_state != ConnectionStateFinishedLoading);
     ASSERT(m_state != ConnectionStateReleased);
-    m_state = ConnectionStateFailed;
-    WTF_LOG(ResourceLoading, "Failed to load '%s'.\n", m_resource->url().getString().latin1().data());
-    if (!m_notifiedLoadComplete) {
-        m_notifiedLoadComplete = true;
-        m_fetcher->didFailLoading(m_resource.get(), error);
-    }
-    if (m_state == ConnectionStateReleased)
-        return;
-
+    m_state = ConnectionStateFinishedLoading;
+    m_notifiedLoadComplete = true;
+    m_fetcher->didFailLoading(m_resource.get(), error);
+    ASSERT(m_state != ConnectionStateReleased);
     m_resource->error(error);
-
-    if (m_state == ConnectionStateReleased)
-        return;
-
     releaseResources();
 }
 

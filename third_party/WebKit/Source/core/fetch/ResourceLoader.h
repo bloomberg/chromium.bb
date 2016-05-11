@@ -55,7 +55,6 @@ public:
 
     void cancel();
     void cancel(const ResourceError&);
-    void cancelIfNotFinishing();
 
     Resource* cachedResource() { return m_resource.get(); }
 
@@ -99,11 +98,8 @@ private:
         ConnectionStateReceivedResponse,
         ConnectionStateReceivingData,
         ConnectionStateFinishedLoading,
-        ConnectionStateCanceled,
-        ConnectionStateFailed,
         ConnectionStateReleased
     };
-    bool isFinishing() { return m_state >= ConnectionStateFinishedLoading && m_state <= ConnectionStateFailed; }
 
     Member<Resource> m_resource;
 
