@@ -1,0 +1,10 @@
+include_rules = [
+  # Nothing from base except the includes listed below.
+  "-base",
+  "+base/macros.h",
+  "+base/strings/string16.h",
+  "+build/build_config.h",
+  # Nothing from chrome.
+  "-chrome",
+  "+chrome/install_static/install_util.h",
+]

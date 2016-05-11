@@ -1729,6 +1729,11 @@
             '../ash/ash.gyp:ash_interactive_ui_test_support',
           ],
         }],
+        ['OS=="win"', {
+          'dependencies': [
+            'chrome.gyp:install_static_util',
+          ],
+        }],
         ['OS=="mac"', {
           'dependencies': [
             'chrome'
@@ -2284,7 +2289,12 @@
                 'browser/ui/views/ime/ime_warning_bubble_browsertest.cc',
                 'browser/ui/views/ime/ime_window_browsertest.cc',
               ],
-            }]
+            }],
+            ['OS=="win"', {
+              'dependencies': [
+                'chrome.gyp:install_static_util',
+              ],
+            }],
           ]
         }],
         ['enable_wifi_display==1', {

@@ -130,6 +130,7 @@
             ['OS=="win"', {
               'dependencies': [
                 '<(DEPTH)/chrome_elf/chrome_elf.gyp:chrome_elf',
+                '<(DEPTH)/chrome/chrome.gyp:install_static_util',
                 '<(DEPTH)/components/components.gyp:policy',
               ],
             }],

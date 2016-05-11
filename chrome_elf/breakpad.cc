@@ -10,6 +10,7 @@
 #include <sddl.h>
 
 #include "base/macros.h"
+#include "base/strings/string16.h"
 #include "breakpad/src/client/windows/handler/exception_handler.h"
 #include "chrome/common/chrome_version.h"
 #include "chrome/install_static/install_util.h"
@@ -38,12 +39,13 @@ const wchar_t kSystemPrincipalSid[] = L"S-1-5-18";
 const wchar_t kNoErrorDialogs[] = L"noerrdialogs";
 
 google_breakpad::CustomClientInfo* GetCustomInfo() {
-  base::string16 process = IsNonBrowserProcess() ? L"renderer" : L"browser";
+  base::string16 process =
+      install_static::IsNonBrowserProcess() ? L"renderer" : L"browser";
 
   wchar_t exe_path[MAX_PATH] = {};
   base::string16 channel;
   if (GetModuleFileName(NULL, exe_path, arraysize(exe_path)) &&
-      IsCanary(exe_path)) {
+      install_static::IsSxSChrome(exe_path)) {
     channel = L"canary";
   }
 
@@ -146,20 +148,22 @@ void InitializeCrashReporting() {
   base::string16 pipe_name;
 
   bool enabled_by_policy = false;
-  bool use_policy = ReportingIsEnforcedByPolicy(&enabled_by_policy);
+  bool use_policy =
+      install_static::ReportingIsEnforcedByPolicy(&enabled_by_policy);
 
   if (!use_policy && IsHeadless()) {
     pipe_name = kChromePipeName;
-  } else if (use_policy ?
-                 enabled_by_policy :
-                 (is_official_chrome_build && AreUsageStatsEnabled(exe_path))) {
+  } else if (use_policy ? enabled_by_policy
+                        : (is_official_chrome_build &&
+                           install_static::GetCollectStatsConsent())) {
     // Build the pipe name. It can be one of:
     // 32-bit system: \\.\pipe\GoogleCrashServices\S-1-5-18
     // 32-bit user: \\.\pipe\GoogleCrashServices\<user SID>
     // 64-bit system: \\.\pipe\GoogleCrashServices\S-1-5-18-x64
     // 64-bit user: \\.\pipe\GoogleCrashServices\<user SID>-x64
-    base::string16 user_sid = IsSystemInstall(exe_path) ? kSystemPrincipalSid :
-                                                          GetUserSidString();
+    base::string16 user_sid = install_static::IsSystemInstall(exe_path)
+                                  ? kSystemPrincipalSid
+                                  : GetUserSidString();
     if (user_sid.empty())
       return;
 

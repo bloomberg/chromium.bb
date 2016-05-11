@@ -191,6 +191,7 @@ source_set("test_support") {
   if (is_win) {
     sources += [ "//chrome/app/chrome_crash_reporter_client_win.cc" ]
     public_deps += [
+      "//chrome/install_static:install_static_util",
       "//components/crash/content/app",
       "//third_party/wtl",
     ]
@@ -516,6 +517,7 @@ if (!is_android) {
               "//chrome")
       deps += [
         "//chrome:other_version",
+        "//chrome/install_static:install_static_util",
         "//third_party/isimpledom",
         "//third_party/wtl",
         "//ui/resources",
@@ -2090,6 +2092,7 @@ test("unit_tests") {
                     "//chrome")
     deps += [
       "//chrome:other_version",
+      "//chrome/install_static:install_static_util",
       "//chrome/installer/util:strings",
       "//chrome_elf:blacklist_test_dll_1",
       "//third_party/iaccessible2",
