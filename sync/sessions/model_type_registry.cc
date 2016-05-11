@@ -11,7 +11,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/observer_list.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "sync/engine/commit_queue.h"
 #include "sync/engine/directory_commit_contributor.h"
 #include "sync/engine/directory_update_handler.h"

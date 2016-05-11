@@ -12,7 +12,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/run_loop.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "sync/api/attachments/attachment.h"
 #include "sync/api/attachments/attachment_store.h"
 #include "sync/internal_api/public/attachments/attachment_util.h"

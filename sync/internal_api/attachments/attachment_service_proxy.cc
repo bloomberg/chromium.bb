@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 
 namespace syncer {
 

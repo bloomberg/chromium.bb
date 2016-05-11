@@ -15,7 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/mock_timer.h"
 #include "sync/api/attachments/attachment_store_backend.h"
 #include "sync/internal_api/public/attachments/attachment_util.h"

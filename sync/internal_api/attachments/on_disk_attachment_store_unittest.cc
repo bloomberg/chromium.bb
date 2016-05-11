@@ -15,7 +15,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "sync/internal_api/attachments/attachment_store_test_template.h"
 #include "sync/internal_api/attachments/proto/attachment_store.pb.h"

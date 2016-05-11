@@ -12,7 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "sync/api/attachments/attachment.h"
 #include "sync/api/attachments/attachment_id.h"
 #include "sync/api/attachments/attachment_store_backend.h"

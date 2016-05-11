@@ -11,7 +11,7 @@
 #include "base/location.h"
 #include "base/message_loop/message_loop.h"
 #include "base/sequenced_task_runner.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "sync/internal_api/public/attachments/attachment_store_frontend.h"
 #include "sync/internal_api/public/attachments/in_memory_attachment_store.h"
 #include "sync/internal_api/public/attachments/on_disk_attachment_store.h"
