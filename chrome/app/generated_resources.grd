@@ -14833,15 +14833,6 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
     </if>
 
     <if expr="is_android">
-      <message name="IDS_FLAGS_ENABLE_NTP_TRANSPARENT_DOODLE_NAME" desc="Name for the flag to enable transparent doodle request." translateable="false">
-        Request transparent Doodle
-      </message>
-      <message name="IDS_FLAGS_ENABLE_NTP_TRANSPARENT_DOODLE_DESCRIPTION" desc="Description for the flag to enable transparent doodle requests." translateable="false">
-        Request a transparent Doodle from Google servers.
-      </message>
-    </if>
-
-    <if expr="is_android">
       <message name="IDS_FLAGS_IME_THREAD_NAME" desc="Name for the flag to use IME thread.">
         Run IME on its own thread.
       </message>

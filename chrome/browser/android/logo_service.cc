@@ -128,7 +128,7 @@ void LogoService::GetLogo(search_provider_logos::LogoObserver* observer) {
       base::Bind(&search_provider_logos::GoogleParseLogoResponse),
       base::Bind(&search_provider_logos::GoogleAppendQueryparamsToLogoURL),
       true, /* wants_cta */
-      base::FeatureList::IsEnabled(chrome::android::kNTPTransparentDoodle));
+      base::FeatureList::IsEnabled(chrome::android::kNTPMaterialDesign));
   logo_tracker_->GetLogo(observer);
 }
 
