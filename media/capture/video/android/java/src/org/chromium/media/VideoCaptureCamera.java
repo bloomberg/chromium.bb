@@ -28,6 +28,15 @@ import java.util.concurrent.locks.ReentrantLock;
 @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1)
 public abstract class VideoCaptureCamera
         extends VideoCapture implements android.hardware.Camera.PreviewCallback {
+    private static final String TAG = "VideoCapture";
+    protected static final int GL_TEXTURE_EXTERNAL_OES = 0x8D65;
+
+    private final Object mPhotoTakenCallbackLock = new Object();
+
+    // Storage of takePicture() callback Id. There can be one such request in flight at most, and
+    // needs to be exercised either in case of error or sucess.
+    private long mPhotoTakenCallbackId = 0;
+
     protected android.hardware.Camera mCamera;
     // Lock to mutually exclude execution of OnPreviewFrame() and {start/stop}Capture().
     protected ReentrantLock mPreviewBufferLock = new ReentrantLock();
@@ -36,9 +45,6 @@ public abstract class VideoCaptureCamera
 
     protected int[] mGlTextures = null;
     protected SurfaceTexture mSurfaceTexture = null;
-    protected static final int GL_TEXTURE_EXTERNAL_OES = 0x8D65;
-
-    private static final String TAG = "VideoCapture";
 
     protected static android.hardware.Camera.CameraInfo getCameraInfo(int id) {
         android.hardware.Camera.CameraInfo cameraInfo = new android.hardware.Camera.CameraInfo();
@@ -63,6 +69,37 @@ public abstract class VideoCaptureCamera
         }
         return parameters;
     }
+
+    private class CrErrorCallback implements android.hardware.Camera.ErrorCallback {
+        @Override
+        public void onError(int error, android.hardware.Camera camera) {
+            nativeOnError(mNativeVideoCaptureDeviceAndroid, "Error id: " + error);
+
+            synchronized (mPhotoTakenCallbackLock) {
+                if (mPhotoTakenCallbackId == 0) return;
+                nativeOnPhotoTaken(
+                        mNativeVideoCaptureDeviceAndroid, mPhotoTakenCallbackId, new byte[0]);
+                mPhotoTakenCallbackId = 0;
+            }
+        }
+    }
+
+    private class CrPictureCallback implements android.hardware.Camera.PictureCallback {
+        @Override
+        public void onPictureTaken(byte[] data, android.hardware.Camera camera) {
+            synchronized (mPhotoTakenCallbackLock) {
+                if (mPhotoTakenCallbackId != 0) {
+                    nativeOnPhotoTaken(
+                            mNativeVideoCaptureDeviceAndroid, mPhotoTakenCallbackId, data);
+                }
+                mPhotoTakenCallbackId = 0;
+            }
+            android.hardware.Camera.Parameters parameters = getCameraParameters(mCamera);
+            parameters.setRotation(0);
+            mCamera.setParameters(parameters);
+            camera.startPreview();
+        }
+    };
 
     VideoCaptureCamera(Context context, int id, long nativeVideoCaptureDeviceAndroid) {
         super(context, id, nativeVideoCaptureDeviceAndroid);
@@ -202,6 +239,8 @@ public abstract class VideoCaptureCamera
             return false;
         }
 
+        mCamera.setErrorCallback(new CrErrorCallback());
+
         allocateBuffers();
         return true;
     }
@@ -209,7 +248,7 @@ public abstract class VideoCaptureCamera
     @Override
     public boolean startCapture() {
         if (mCamera == null) {
-            Log.e(TAG, "startCapture: camera is null");
+            Log.e(TAG, "startCapture: mCamera is null");
             return false;
         }
 
@@ -235,7 +274,7 @@ public abstract class VideoCaptureCamera
     @Override
     public boolean stopCapture() {
         if (mCamera == null) {
-            Log.e(TAG, "stopCapture: camera is null");
+            Log.e(TAG, "stopCapture: mCamera is null");
             return true;
         }
 
@@ -251,6 +290,31 @@ public abstract class VideoCaptureCamera
 
         mCamera.stopPreview();
         setPreviewCallback(null);
+        return true;
+    }
+
+    @Override
+    public boolean takePhoto(final long callbackId) {
+        if (mCamera == null || !mIsRunning) {
+            Log.e(TAG, "takePhoto: mCamera is null or is not running");
+            return false;
+        }
+
+        // Only one picture can be taken at once.
+        synchronized (mPhotoTakenCallbackLock) {
+            if (mPhotoTakenCallbackId != 0) return false;
+            mPhotoTakenCallbackId = callbackId;
+        }
+
+        android.hardware.Camera.Parameters parameters = getCameraParameters(mCamera);
+        parameters.setRotation(getCameraRotation());
+        mCamera.setParameters(parameters);
+        try {
+            mCamera.takePicture(null, null, null, new CrPictureCallback());
+        } catch (RuntimeException ex) {
+            Log.e(TAG, "takePicture ", ex);
+            return false;
+        }
         return true;
     }
 

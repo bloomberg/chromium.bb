@@ -241,10 +241,13 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
       const media::VideoCaptureParams& params,
       std::unique_ptr<media::VideoCaptureDevice::Client> client);
 
-  // Stops and destroys the VideoCaptureDevice held in
-  // |device|.
+  // Stops and destroys the VideoCaptureDevice held in |device|.
   void DoStopDeviceOnDeviceThread(
       std::unique_ptr<media::VideoCaptureDevice> device);
+
+  void DoTakePhotoOnDeviceThread(
+      media::VideoCaptureDevice* device,
+      const media::VideoCaptureDevice::TakePhotoCallback& photo_callback);
 
   media::VideoCaptureDeviceInfo* FindDeviceInfoById(
       const std::string& id,

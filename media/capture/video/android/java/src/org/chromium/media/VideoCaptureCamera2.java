@@ -459,6 +459,13 @@ public class VideoCaptureCamera2 extends VideoCapture {
     }
 
     @Override
+    public boolean takePhoto(final long callbackId) {
+        Log.e(TAG, "Not implemented");
+        nativeOnPhotoTaken(mNativeVideoCaptureDeviceAndroid, callbackId, new byte[0]);
+        return false;
+    }
+
+    @Override
     public void deallocate() {
         Log.d(TAG, "deallocate");
     }

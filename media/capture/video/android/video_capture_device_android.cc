@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/android/jni_android.h"
+#include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/strings/string_number_conversions.h"
 #include "jni/VideoCapture_jni.h"
@@ -40,6 +41,13 @@ VideoCaptureDeviceAndroid::VideoCaptureDeviceAndroid(const Name& device_name)
 
 VideoCaptureDeviceAndroid::~VideoCaptureDeviceAndroid() {
   StopAndDeAllocate();
+  // If there are still |photo_callbacks_|, resolve them with empty datas.
+  std::for_each(photo_callbacks_.begin(), photo_callbacks_.end(),
+                [](const std::unique_ptr<TakePhotoCallback>& callback) {
+                  std::unique_ptr<std::vector<uint8_t>> empty_data(
+                      new std::vector<uint8_t>());
+                  callback->Run("", std::move(empty_data));
+                });
 }
 
 bool VideoCaptureDeviceAndroid::Init() {
@@ -134,6 +142,25 @@ void VideoCaptureDeviceAndroid::StopAndDeAllocate() {
   Java_VideoCapture_deallocate(env, j_capture_.obj());
 }
 
+bool VideoCaptureDeviceAndroid::TakePhoto(const TakePhotoCallback& callback) {
+  {
+    base::AutoLock lock(lock_);
+    if (state_ != kCapturing)
+      return false;
+  }
+
+  JNIEnv* env = AttachCurrentThread();
+
+  // Make copy on the heap so we can pass the pointer through JNI.
+  std::unique_ptr<TakePhotoCallback> cb(new TakePhotoCallback(callback));
+  const intptr_t callback_id = reinterpret_cast<intptr_t>(cb.get());
+  if (!Java_VideoCapture_takePhoto(env, j_capture_.obj(), callback_id))
+    return false;
+
+  photo_callbacks_.push_back(std::move(cb));
+  return true;
+}
+
 void VideoCaptureDeviceAndroid::OnFrameAvailable(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
@@ -177,6 +204,34 @@ void VideoCaptureDeviceAndroid::OnError(JNIEnv* env,
                                         const JavaParamRef<jstring>& message) {
   SetErrorState(FROM_HERE,
                 base::android::ConvertJavaStringToUTF8(env, message));
+}
+
+void VideoCaptureDeviceAndroid::OnPhotoTaken(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    jlong callback_id,
+    const base::android::JavaParamRef<jbyteArray>& data) {
+  DCHECK(callback_id);
+
+  TakePhotoCallback* const cb =
+      reinterpret_cast<TakePhotoCallback*>(callback_id);
+  // Search for the pointer |cb| in the list of |photo_callbacks_|.
+  const auto reference_it =
+      std::find_if(photo_callbacks_.begin(), photo_callbacks_.end(),
+                   [cb](const std::unique_ptr<TakePhotoCallback>& callback) {
+                     return callback.get() == cb;
+                   });
+  if (reference_it == photo_callbacks_.end()) {
+    NOTREACHED() << "|callback_id| not found.";
+    return;
+  }
+
+  std::unique_ptr<std::vector<uint8_t>> native_data(new std::vector<uint8_t>());
+  base::android::JavaByteArrayToByteVector(env, data.obj(), native_data.get());
+
+  cb->Run(native_data->size() ? "image/jpeg" : "", std::move(native_data));
+
+  photo_callbacks_.erase(reference_it);
 }
 
 VideoPixelFormat VideoCaptureDeviceAndroid::GetColorspace() {

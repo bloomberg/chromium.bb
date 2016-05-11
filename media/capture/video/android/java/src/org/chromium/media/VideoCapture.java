@@ -42,13 +42,14 @@ public abstract class VideoCapture {
     @CalledByNative
     public abstract boolean allocate(int width, int height, int frameRate);
 
-    // Starts actual capture.
     @CalledByNative
     public abstract boolean startCapture();
 
-    // Stops current capture.
     @CalledByNative
     public abstract boolean stopCapture();
+
+    @CalledByNative
+    public abstract boolean takePhoto(final long callbackId);
 
     @CalledByNative
     public abstract void deallocate();
@@ -117,4 +118,8 @@ public abstract class VideoCapture {
 
     // Method for VideoCapture implementations to signal an asynchronous error.
     public native void nativeOnError(long nativeVideoCaptureDeviceAndroid, String message);
+
+    // Method for VideoCapture implementations to send Photos back to.
+    public native void nativeOnPhotoTaken(
+            long nativeVideoCaptureDeviceAndroid, long callbackId, byte[] data);
 }
