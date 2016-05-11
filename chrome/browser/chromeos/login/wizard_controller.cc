@@ -848,7 +848,7 @@ void WizardController::PerformOOBECompletedActions() {
   oobe_marked_completed_ = true;
 
   if (shark_connection_listener_.get())
-    shark_connection_listener_->ResetHostPairingController();
+    shark_connection_listener_->ResetController();
 }
 
 void WizardController::SetCurrentScreen(BaseScreen* new_current) {

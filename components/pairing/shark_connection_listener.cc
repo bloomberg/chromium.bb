@@ -26,7 +26,7 @@ SharkConnectionListener::~SharkConnectionListener() {
     controller_->RemoveObserver(this);
 }
 
-void SharkConnectionListener::ResetHostPairingController() {
+void SharkConnectionListener::ResetController() {
   if (controller_.get()) {
     controller_->Reset();
     controller_->RemoveObserver(this);
