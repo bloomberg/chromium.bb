@@ -121,4 +121,10 @@ NSString* gSslKeyLogFileName = nil;
   return nil;
 }
 
+// This is a non-public dummy method that prevents the linker from stripping out
+// the otherwise non-referenced methods from 'cronet_bidirectional_stream.cc'.
++ (void)preventStrippingCronetBidirectionalStream {
+  cronet_bidirectional_stream_create(NULL, 0, 0);
+}
+
 @end

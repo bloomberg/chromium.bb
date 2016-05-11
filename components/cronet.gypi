@@ -797,6 +797,52 @@
           ],
         },
         {
+          'target_name': 'cronet_framework',
+          'product_name': 'Cronet',
+          'type': 'shared_library',
+          'mac_bundle': 1,
+          'sources': [
+            'cronet/ios/Cronet.h',
+            'cronet/ios/cronet_c_for_grpc.h',
+            'cronet/ios/empty.cc',
+          ],
+          'mac_framework_headers': [
+            'cronet/ios/Cronet.h',
+            'cronet/ios/cronet_c_for_grpc.h',
+          ],
+          'link_settings': {
+            'libraries': [
+              'Foundation.framework',
+            ],
+          },
+          'xcode_settings': {
+            'DEBUGGING_SYMBOLS': 'YES',
+            'INFOPLIST_FILE': 'cronet/ios/Info.plist',
+            'LD_DYLIB_INSTALL_NAME': '@loader_path/Frameworks/Cronet.framework/Cronet',
+          },
+          'dependencies': [
+            'cronet_static',
+            '../base/base.gyp:base',
+          ],
+          'configurations': {
+            'Debug_Base': {
+              'xcode_settings': {
+                'DEPLOYMENT_POSTPROCESSING': 'NO',
+                'DEBUG_INFORMATION_FORMAT': 'dwarf',
+                'STRIP_INSTALLED_PRODUCT': 'NO',
+              }
+            },
+            'Release_Base': {
+              'xcode_settings': {
+                'DEPLOYMENT_POSTPROCESSING': 'YES',
+                'DEBUG_INFORMATION_FORMAT': 'dwarf-with-dsym',
+                'STRIP_INSTALLED_PRODUCT': 'YES',
+                'STRIP_STYLE': 'non-global',
+              }
+            },
+          },
+        },
+        {
           'target_name': 'cronet_test',
           'type': 'executable',
           'dependencies': [
