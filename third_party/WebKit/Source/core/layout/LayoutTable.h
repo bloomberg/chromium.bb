@@ -213,7 +213,6 @@ public:
     void recalcBordersInRowDirection();
 
     void addChild(LayoutObject* child, LayoutObject* beforeChild = nullptr) override;
-    void addChildIgnoringContinuation(LayoutObject* newChild, LayoutObject* beforeChild = nullptr) override;
 
     struct ColumnStruct {
         DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();

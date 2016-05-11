@@ -394,8 +394,6 @@ private:
 
     void dirtyLinesFromChangedChild(LayoutObject* child) final { m_lineBoxes.dirtyLinesFromChangedChild(LineLayoutItem(this), LineLayoutItem(child)); }
 
-    void addChildIgnoringContinuation(LayoutObject* newChild, LayoutObject* beforeChild) override;
-
     TrackedLayoutBoxListHashSet* positionedObjectsInternal() const;
     TrackedLayoutBoxListHashSet* percentHeightDescendantsInternal() const;
 

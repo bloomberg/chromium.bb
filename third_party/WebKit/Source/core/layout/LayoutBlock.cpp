@@ -377,7 +377,7 @@ bool LayoutBlock::allowsOverflowClip() const
     return node() != document().viewportDefiningElement();
 }
 
-void LayoutBlock::addChildIgnoringContinuation(LayoutObject* newChild, LayoutObject* beforeChild)
+void LayoutBlock::addChild(LayoutObject* newChild, LayoutObject* beforeChild)
 {
     if (beforeChild && beforeChild->parent() != this) {
         LayoutObject* beforeChildContainer = beforeChild->parent();
@@ -463,11 +463,6 @@ void LayoutBlock::addChildIgnoringContinuation(LayoutObject* newChild, LayoutObj
     if (madeBoxesNonInline && parent() && isAnonymousBlock() && parent()->isLayoutBlock())
         toLayoutBlock(parent())->removeLeftoverAnonymousBlock(this);
     // this object may be dead here
-}
-
-void LayoutBlock::addChild(LayoutObject* newChild, LayoutObject* beforeChild)
-{
-    addChildIgnoringContinuation(newChild, beforeChild);
 }
 
 static void getInlineRun(LayoutObject* start, LayoutObject* boundary,

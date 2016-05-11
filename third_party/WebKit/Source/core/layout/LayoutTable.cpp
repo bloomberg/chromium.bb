@@ -206,16 +206,6 @@ void LayoutTable::addChild(LayoutObject* child, LayoutObject* beforeChild)
     section->addChild(child);
 }
 
-void LayoutTable::addChildIgnoringContinuation(LayoutObject* newChild, LayoutObject* beforeChild)
-{
-    // We need to bypass the LayoutBlock implementation and instead do a normal addChild() (or we
-    // won't get there at all), so that any missing anonymous table part layoutObjects are
-    // inserted. Otherwise we might end up with an insane layout tree with inlines or blocks as
-    // direct children of a table, which will break assumptions made all over the code, which may
-    // lead to crashers and security issues.
-    addChild(newChild, beforeChild);
-}
-
 void LayoutTable::addCaption(const LayoutTableCaption* caption)
 {
     ASSERT(m_captions.find(caption) == kNotFound);
