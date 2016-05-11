@@ -107,7 +107,7 @@ HTMLInputElement::HTMLInputElement(Document& document, HTMLFormElement* form, bo
     , m_minLength(-1)
     , m_maxResults(-1)
     , m_isChecked(false)
-    , m_reflectsCheckedAttribute(true)
+    , m_dirtyCheckedness(false)
     , m_isIndeterminate(false)
     , m_isActivatedSubmit(false)
     , m_autocomplete(Uninitialized)
@@ -699,9 +699,9 @@ void HTMLInputElement::parseAttribute(const QualifiedName& name, const AtomicStr
         // restore. We shouldn't call setChecked() even if this has the checked
         // attribute. So, delay the setChecked() call until
         // finishParsingChildren() is called if parsing is in progress.
-        if (!m_parsingInProgress && m_reflectsCheckedAttribute) {
+        if (!m_parsingInProgress && !m_dirtyCheckedness) {
             setChecked(!value.isNull());
-            m_reflectsCheckedAttribute = true;
+            m_dirtyCheckedness = false;
         }
         pseudoStateChanged(CSSSelector::PseudoDefault);
     } else if (name == maxlengthAttr) {
@@ -795,7 +795,7 @@ void HTMLInputElement::finishParsingChildren()
         bool checked = hasAttribute(checkedAttr);
         if (checked)
             setChecked(checked);
-        m_reflectsCheckedAttribute = true;
+        m_dirtyCheckedness = false;
     }
 }
 
@@ -877,7 +877,7 @@ void HTMLInputElement::resetImpl()
     }
 
     setChecked(hasAttribute(checkedAttr));
-    m_reflectsCheckedAttribute = true;
+    m_dirtyCheckedness = false;
 }
 
 bool HTMLInputElement::isTextField() const
@@ -899,7 +899,7 @@ bool HTMLInputElement::checked() const
 
 void HTMLInputElement::setChecked(bool nowChecked, TextFieldEventBehavior eventBehavior)
 {
-    m_reflectsCheckedAttribute = false;
+    m_dirtyCheckedness = true;
     if (checked() == nowChecked)
         return;
 
@@ -963,7 +963,7 @@ void HTMLInputElement::copyNonAttributePropertiesFromElement(const Element& sour
 
     m_valueIfDirty = sourceElement.m_valueIfDirty;
     setChecked(sourceElement.m_isChecked);
-    m_reflectsCheckedAttribute = sourceElement.m_reflectsCheckedAttribute;
+    m_dirtyCheckedness = sourceElement.m_dirtyCheckedness;
     m_isIndeterminate = sourceElement.m_isIndeterminate;
 
     HTMLTextFormControlElement::copyNonAttributePropertiesFromElement(source);

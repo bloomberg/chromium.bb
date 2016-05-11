@@ -381,8 +381,10 @@ private:
     int m_maxLength;
     int m_minLength;
     short m_maxResults;
+    // https://html.spec.whatwg.org/multipage/forms.html#concept-fe-checked
     unsigned m_isChecked : 1;
-    unsigned m_reflectsCheckedAttribute : 1;
+    // https://html.spec.whatwg.org/multipage/forms.html#concept-input-checked-dirty-flag
+    unsigned m_dirtyCheckedness : 1;
     unsigned m_isIndeterminate : 1;
     unsigned m_isActivatedSubmit : 1;
     unsigned m_autocomplete : 2; // AutoCompleteSetting
