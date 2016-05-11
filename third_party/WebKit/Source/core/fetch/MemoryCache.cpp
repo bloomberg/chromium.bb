@@ -514,7 +514,9 @@ void MemoryCache::makeLive(Resource* resource)
 {
     if (!contains(resource))
         return;
-    ASSERT(m_deadSize >= resource->size());
+    // TODO(hiroshige): RELEASE_ASSERT() is used here to check whether
+    // crbug.com/570043 was fixed and should be reverted before going to beta.
+    RELEASE_ASSERT(m_deadSize >= resource->size());
     m_liveSize += resource->size();
     m_deadSize -= resource->size();
 }
@@ -523,6 +525,9 @@ void MemoryCache::makeDead(Resource* resource)
 {
     if (!contains(resource))
         return;
+    // TODO(hiroshige): RELEASE_ASSERT() is used here to check whether
+    // crbug.com/570043 was fixed and should be reverted before going to beta.
+    RELEASE_ASSERT(m_liveSize >= resource->size());
     m_liveSize -= resource->size();
     m_deadSize += resource->size();
     removeFromLiveDecodedResourcesList(getEntryForResource(resource));
@@ -544,11 +549,13 @@ void MemoryCache::update(Resource* resource, size_t oldSize, size_t newSize, boo
         insertInLRUList(entry, lruListFor(entry->m_accessCount, newSize));
 
     ptrdiff_t delta = newSize - oldSize;
+    // TODO(hiroshige): RELEASE_ASSERT()s are used below to check whether
+    // crbug.com/570043 was fixed and should be reverted before going to beta.
     if (resource->hasClientsOrObservers()) {
-        ASSERT(delta >= 0 || m_liveSize >= static_cast<size_t>(-delta) );
+        RELEASE_ASSERT(delta >= 0 || m_liveSize >= static_cast<size_t>(-delta) );
         m_liveSize += delta;
     } else {
-        ASSERT(delta >= 0 || m_deadSize >= static_cast<size_t>(-delta) );
+        RELEASE_ASSERT(delta >= 0 || m_deadSize >= static_cast<size_t>(-delta) );
         m_deadSize += delta;
     }
 }
