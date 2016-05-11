@@ -135,6 +135,15 @@ CSSStyleSheet::~CSSStyleSheet()
 {
 }
 
+#if ENABLE(ASSERT)
+
+static bool isStyleElement(const Node* node)
+{
+    return node && (isHTMLStyleElement(node) || isSVGStyleElement(node));
+}
+
+#endif // ENABLE(ASSERT)
+
 void CSSStyleSheet::willMutateRules()
 {
     // If we are the only client it is safe to mutate.
@@ -146,7 +155,8 @@ void CSSStyleSheet::willMutateRules()
         return;
     }
     // Only cacheable stylesheets should have multiple clients.
-    ASSERT(m_contents->isCacheable());
+    ASSERT((isStyleElement(ownerNode()) && m_contents->isCacheableForStyleElement())
+        || m_contents->isCacheableForResource());
 
     // Copy-on-write.
     m_contents->unregisterClient(this);

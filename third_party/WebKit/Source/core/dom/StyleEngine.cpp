@@ -493,21 +493,6 @@ void StyleEngine::markDocumentDirty()
         document().importsController()->master()->styleEngine().markDocumentDirty();
 }
 
-static bool isCacheableForStyleElement(const StyleSheetContents& contents)
-{
-    // FIXME: Support copying import rules.
-    if (!contents.importRules().isEmpty())
-        return false;
-    // Until import rules are supported in cached sheets it's not possible for loading to fail.
-    DCHECK(!contents.didLoadErrorOccur());
-    // It is not the original sheet anymore.
-    if (contents.isMutable())
-        return false;
-    if (!contents.hasSyntacticallyValidCSSHeader())
-        return false;
-    return true;
-}
-
 CSSStyleSheet* StyleEngine::createSheet(Element* e, const String& text, TextPosition startPosition)
 {
     CSSStyleSheet* styleSheet = nullptr;
@@ -519,14 +504,14 @@ CSSStyleSheet* StyleEngine::createSheet(Element* e, const String& text, TextPosi
     HeapHashMap<AtomicString, Member<StyleSheetContents>>::AddResult result = m_textToSheetCache.add(textContent, nullptr);
     if (result.isNewEntry || !result.storedValue->value) {
         styleSheet = StyleEngine::parseSheet(e, text, startPosition);
-        if (result.isNewEntry && isCacheableForStyleElement(*styleSheet->contents())) {
+        if (result.isNewEntry && styleSheet->contents()->isCacheableForStyleElement()) {
             result.storedValue->value = styleSheet->contents();
             m_sheetToTextCache.add(styleSheet->contents(), textContent);
         }
     } else {
         StyleSheetContents* contents = result.storedValue->value;
         DCHECK(contents);
-        DCHECK(isCacheableForStyleElement(*contents));
+        DCHECK(contents->isCacheableForStyleElement());
         DCHECK_EQ(contents->singleOwnerDocument(), e->document());
         styleSheet = CSSStyleSheet::createInline(contents, e, startPosition);
     }

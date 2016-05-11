@@ -70,7 +70,8 @@ public:
     void parseString(const String&);
     void parseStringAtPosition(const String&, const TextPosition&);
 
-    bool isCacheable() const;
+    bool isCacheableForResource() const;
+    bool isCacheableForStyleElement() const;
 
     bool isLoading() const;
 

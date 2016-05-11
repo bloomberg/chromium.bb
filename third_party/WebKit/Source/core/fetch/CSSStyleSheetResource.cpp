@@ -158,7 +158,7 @@ StyleSheetContents* CSSStyleSheetResource::restoreParsedStyleSheet(const CSSPars
         return nullptr;
     }
 
-    ASSERT(m_parsedStyleSheetCache->isCacheable());
+    ASSERT(m_parsedStyleSheetCache->isCacheableForResource());
     ASSERT(m_parsedStyleSheetCache->isReferencedFromResource());
 
     // Contexts must be identical so we know we would get the same exact result if we parsed again.
@@ -172,7 +172,7 @@ StyleSheetContents* CSSStyleSheetResource::restoreParsedStyleSheet(const CSSPars
 
 void CSSStyleSheetResource::saveParsedStyleSheet(StyleSheetContents* sheet)
 {
-    ASSERT(sheet && sheet->isCacheable());
+    ASSERT(sheet && sheet->isCacheableForResource());
 
     if (!memoryCache()->contains(this)) {
         // This stylesheet resource did conflict with another resource and was

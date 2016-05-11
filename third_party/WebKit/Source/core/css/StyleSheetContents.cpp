@@ -87,8 +87,6 @@ StyleSheetContents::StyleSheetContents(const StyleSheetContents& o)
     , m_hasSingleOwnerDocument(true)
     , m_parserContext(o.m_parserContext)
 {
-    ASSERT(o.isCacheable());
-
     // FIXME: Copy import rules.
     ASSERT(o.m_importRules.isEmpty());
 
@@ -109,7 +107,7 @@ void StyleSheetContents::setHasSyntacticallyValidCSSHeader(bool isValidCss)
     m_hasSyntacticallyValidCSSHeader = isValidCss;
 }
 
-bool StyleSheetContents::isCacheable() const
+bool StyleSheetContents::isCacheableForResource() const
 {
     // This would require dealing with multiple clients for load callbacks.
     if (!loadCompleted())
@@ -138,6 +136,22 @@ bool StyleSheetContents::isCacheable() const
         return false;
     return true;
 }
+
+bool StyleSheetContents::isCacheableForStyleElement() const
+{
+    // FIXME: Support copying import rules.
+    if (!importRules().isEmpty())
+        return false;
+    // Until import rules are supported in cached sheets it's not possible for loading to fail.
+    DCHECK(!didLoadErrorOccur());
+    // It is not the original sheet anymore.
+    if (isMutable())
+        return false;
+    if (!hasSyntacticallyValidCSSHeader())
+        return false;
+    return true;
+}
+
 
 void StyleSheetContents::parserAppendRule(StyleRuleBase* rule)
 {
@@ -500,7 +514,7 @@ static bool childRulesHaveFailedOrCanceledSubresources(const HeapVector<Member<S
 
 bool StyleSheetContents::hasFailedOrCanceledSubresources() const
 {
-    ASSERT(isCacheable());
+    ASSERT(isCacheableForResource());
     return childRulesHaveFailedOrCanceledSubresources(m_childRules);
 }
 
@@ -575,7 +589,7 @@ void StyleSheetContents::removeSheetFromCache(Document* document)
 void StyleSheetContents::setReferencedFromResource(bool referenced)
 {
     ASSERT(referenced != m_isReferencedFromResource);
-    ASSERT(isCacheable());
+    ASSERT(isCacheableForResource());
     m_isReferencedFromResource = referenced;
 }
 

@@ -531,7 +531,7 @@ void LinkStyle::setCSSStyleSheet(const String& href, const KURL& baseURL, const 
     DEFINE_STATIC_LOCAL(EnumerationHistogram, restoredCachedStyleSheet2Histogram, ("Blink.RestoredCachedStyleSheet2", StyleSheetCacheStatusCount));
 
     if (StyleSheetContents* restoredSheet = const_cast<CSSStyleSheetResource*>(cachedStyleSheet)->restoreParsedStyleSheet(parserContext)) {
-        ASSERT(restoredSheet->isCacheable());
+        ASSERT(restoredSheet->isCacheableForResource());
         ASSERT(!restoredSheet->isLoading());
 
         if (m_sheet)
@@ -568,7 +568,7 @@ void LinkStyle::setCSSStyleSheet(const String& href, const KURL& baseURL, const 
     styleSheet->notifyLoadedSheet(cachedStyleSheet);
     styleSheet->checkLoaded();
 
-    if (styleSheet->isCacheable())
+    if (styleSheet->isCacheableForResource())
         const_cast<CSSStyleSheetResource*>(cachedStyleSheet)->saveParsedStyleSheet(styleSheet);
     clearResource();
 }
