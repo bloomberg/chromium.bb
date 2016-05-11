@@ -42,6 +42,7 @@ UrlData::UrlData(const GURL& url,
                  CORSMode cors_mode,
                  const base::WeakPtr<UrlIndex>& url_index)
     : url_(url),
+      have_data_origin_(false),
       cors_mode_(cors_mode),
       url_index_(url_index),
       length_(kPositionNotSpecified),
@@ -67,16 +68,18 @@ void UrlData::MergeFrom(const scoped_refptr<UrlData>& other) {
   // We're merging from another UrlData that refers to the *same*
   // resource, so when we merge the metadata, we can use the most
   // optimistic values.
-  DCHECK(thread_checker_.CalledOnValidThread());
-  valid_until_ = std::max(valid_until_, other->valid_until_);
-  // set_length() will not override the length if already known.
-  set_length(other->length_);
-  cacheable_ |= other->cacheable_;
-  range_supported_ |= other->range_supported_;
-  if (last_modified_.is_null()) {
-    last_modified_ = other->last_modified_;
+  if (ValidateDataOrigin(other->data_origin_)) {
+    DCHECK(thread_checker_.CalledOnValidThread());
+    valid_until_ = std::max(valid_until_, other->valid_until_);
+    // set_length() will not override the length if already known.
+    set_length(other->length_);
+    cacheable_ |= other->cacheable_;
+    range_supported_ |= other->range_supported_;
+    if (last_modified_.is_null()) {
+      last_modified_ = other->last_modified_;
+    }
+    multibuffer()->MergeFrom(other->multibuffer());
   }
-  multibuffer()->MergeFrom(other->multibuffer());
 }
 
 void UrlData::set_cacheable(bool cacheable) {
@@ -121,6 +124,19 @@ void UrlData::OnRedirect(const RedirectCB& cb) {
 void UrlData::Use() {
   DCHECK(thread_checker_.CalledOnValidThread());
   last_used_ = base::Time::Now();
+}
+
+bool UrlData::ValidateDataOrigin(const GURL& origin) {
+  if (!have_data_origin_) {
+    data_origin_ = origin;
+    have_data_origin_ = true;
+    return true;
+  }
+  if (cors_mode_ == UrlData::CORS_UNSPECIFIED) {
+    return data_origin_ == origin;
+  }
+  // The actual cors checks is done in the net layer.
+  return true;
 }
 
 void UrlData::OnEmpty() {

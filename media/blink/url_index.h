@@ -97,6 +97,12 @@ class MEDIA_BLINK_EXPORT UrlData : public base::RefCounted<UrlData> {
   // this is not called regularly.
   void Use();
 
+  // Call this before we add some data to the multibuffer().
+  // If the multibuffer is empty, the data origin is set from
+  // |origin| and returns true. If not, it compares |origin|
+  // to the previous origin and returns wheather they match or not.
+  bool ValidateDataOrigin(const GURL& origin);
+
   // Setters.
   void set_length(int64_t length);
   void set_cacheable(bool cacheable);
@@ -147,6 +153,11 @@ class MEDIA_BLINK_EXPORT UrlData : public base::RefCounted<UrlData> {
   // Url we represent, note that there may be multiple UrlData for
   // the same url.
   const GURL url_;
+
+  // Origin of the data, should only be different from the url_.GetOrigin()
+  // when service workers are involved.
+  GURL data_origin_;
+  bool have_data_origin_;
 
   // Cross-origin access mode.
   const CORSMode cors_mode_;

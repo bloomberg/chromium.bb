@@ -254,7 +254,6 @@ TEST_F(ResourceMultiBufferDataProviderTest, BadHttpResponse) {
   response.setHTTPStatusCode(404);
   response.setHTTPStatusText("Not Found\n");
   loader_->didReceiveResponse(url_loader_, response);
-  StopWhenLoad();
 }
 
 // Tests that partial content is requested but not fulfilled.
@@ -262,7 +261,6 @@ TEST_F(ResourceMultiBufferDataProviderTest, NotPartialResponse) {
   Initialize(kHttpUrl, 100);
   Start();
   FullResponse(1024, false);
-  StopWhenLoad();
 }
 
 // Tests that a 200 response is received.
@@ -319,7 +317,6 @@ TEST_F(ResourceMultiBufferDataProviderTest, InvalidPartialResponse) {
   response.setExpectedContentLength(10);
   response.setHTTPStatusCode(kHttpPartialContent);
   loader_->didReceiveResponse(url_loader_, response);
-  StopWhenLoad();
 }
 
 TEST_F(ResourceMultiBufferDataProviderTest, TestRedirects) {

@@ -190,12 +190,10 @@ void MultibufferDataSource::OnRedirect(
           FROM_HERE,
           base::Bind(&MultibufferDataSource::StartCallback, weak_ptr_));
     } else {
-      {
-        base::AutoLock auto_lock(lock_);
-        StopInternal_Locked();
-      }
-      StopLoader();
+      base::AutoLock auto_lock(lock_);
+      StopInternal_Locked();
     }
+    StopLoader();
     return;
   }
   if (url_data_->url().GetOrigin() != destination->url().GetOrigin()) {

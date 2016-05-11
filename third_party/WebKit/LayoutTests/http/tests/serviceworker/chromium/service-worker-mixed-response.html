@@ -68,6 +68,8 @@ function create_success_audio_test(frame, url) {
 // URL of it. And when it receives the succeeding response, it checks the origin
 // of the new response. If the origin is not same as the origin of the first
 // response, the response must be treated as an error.
+
+var request_num = 1;
 function audio_test(frame, original, first_byte, second_byte, expect_success) {
   var url;
   var HOST_INFO = get_host_info();
@@ -79,6 +81,8 @@ function audio_test(frame, original, first_byte, second_byte, expect_success) {
     url = HOST_INFO['HTTP_REMOTE_ORIGIN'] + AUDIO_PATH;
   }
   url += '&SW_FIRST=' + first_byte + '&SW_SECOND=' + second_byte;
+  url += '&prevent_cache=' + request_num;
+  request_num += 1;
   if (expect_success) {
     return create_success_audio_test(frame, url);
   } else {
