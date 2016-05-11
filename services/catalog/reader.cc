@@ -12,7 +12,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/task_runner_util.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "services/catalog/constants.h"
 #include "services/catalog/entry.h"
 #include "services/catalog/manifest_provider.h"

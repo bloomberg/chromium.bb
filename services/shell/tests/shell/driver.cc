@@ -17,7 +17,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/process/process.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"

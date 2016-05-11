@@ -18,7 +18,7 @@
 #include "base/process/launch.h"
 #include "base/synchronization/lock.h"
 #include "base/task_runner.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/interface_ptr_info.h"
 #include "mojo/public/cpp/system/core.h"
