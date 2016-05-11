@@ -75,7 +75,8 @@ public class AccountSigninActivity extends AppCompatActivity
         mAccessPoint = getIntent().getIntExtra(INTENT_SIGNIN_ACCESS_POINT, -1);
         assert mAccessPoint == SigninAccessPoint.BOOKMARK_MANAGER
                 || mAccessPoint == SigninAccessPoint.RECENT_TABS
-                || mAccessPoint == SigninAccessPoint.SETTINGS : "invalid access point";
+                || mAccessPoint == SigninAccessPoint.SETTINGS
+                : "invalid access point: " + mAccessPoint;
 
         mView = (AccountSigninView) LayoutInflater.from(this).inflate(
                 R.layout.account_signin_view, null);
