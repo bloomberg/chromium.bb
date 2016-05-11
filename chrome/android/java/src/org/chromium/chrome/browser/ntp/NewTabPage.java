@@ -525,16 +525,17 @@ public class NewTabPage
 
         @Override
         public void onLoadingComplete(MostVisitedItem[] items) {
+            if (mIsDestroyed) return;
+
             long loadTimeMs = (System.nanoTime() - mConstructedTimeNs) / 1000000;
             RecordHistogram.recordTimesHistogram(
                     "Tab.NewTabOnload", loadTimeMs, TimeUnit.MILLISECONDS);
             mIsLoaded = true;
+            // TODO(mastiz): revisit the logic for mIsLoaded and mIsVisible, since setting
+            // mIsVisible to true seems wrong here.
             mIsVisible = true;
             StartupMetrics.getInstance().recordOpenedNTP();
             NewTabPageUma.recordNTPImpression(NewTabPageUma.NTP_IMPRESSION_REGULAR);
-
-            if (mIsDestroyed) return;
-
             recordNTPShown();
 
             int tileTypes[] = new int[items.length];
