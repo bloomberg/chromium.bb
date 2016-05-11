@@ -24,15 +24,15 @@
             selected-item="{{selectedItem_}}">
           <iron-icon id="cameraImage"
               data-type$="[[selectionTypesEnum_.CAMERA]]"
-              icon="settings:camera-alt" i18n-values="alt:takePhoto"
+              icon="settings:camera-alt" alt="$i18n{takePhoto}"
               hidden="[[!cameraPresent_]]">
           </iron-icon>
           <iron-icon data-type$="[[selectionTypesEnum_.FILE]]"
-              icon="settings:folder" i18n-values="alt:chooseFile">
+              icon="settings:folder" alt="$i18n{chooseFile}">
           </iron-icon>
           <img id="profileImage"
               data-type$="[[selectionTypesEnum_.PROFILE]]"
-              src="[[profileImageUrl_]]" i18n-values="alt:profilePhotoLoading">
+              src="[[profileImageUrl_]]" alt="$i18n{profilePhotoLoading}">
           <img id="oldImage" data-type$="[[selectionTypesEnum_.OLD]]"
               src="[[oldImageUrl_]]" hidden="[[!oldImageUrl_]]">
           <template is="dom-repeat" items="[[defaultImages_]]">
@@ -53,11 +53,12 @@
         </template>
       </div>
       <div id="previewPane">
-        <img i18n-values="alt:previewAltText" src="[[selectedItem_.src]]"
+        <img alt="$i18n{previewAltText}" src="[[selectedItem_.src]]"
             hidden="[[isPreviewImageHidden_(selectedItem_)]]">
-        <div id="discardControlBar" hidden="[[isDiscardHidden_(selectedItem_)]]">
+        <div id="discardControlBar"
+            hidden="[[isDiscardHidden_(selectedItem_)]]">
           <paper-icon-button id="discardOldImage" tabindex="0"
-              icon="settings:delete" i18n-values="title:discardPhoto"
+              icon="settings:delete" title="$i18n{discardPhoto}"
               on-tap="onTapDiscardOldImage_">
           </paper-icon-button>
         </div>

@@ -139,7 +139,7 @@
 
         <div class="settings-box">
           <settings-checkbox pref="{{prefs.settings.enable_screen_lock}}"
-              i18n-values="label:enableScreenlock">
+              label="$i18n{enableScreenlock}">
           </settings-checkbox>
         </div>
 
@@ -162,7 +162,7 @@
                       if="[[easyUnlockProximityDetectionAllowed_]]">
                     <settings-checkbox
                         pref="{{prefs.easy_unlock.proximity_required}}"
-                        i18n-values="label:easyUnlockRequireProximityLabel">
+                        label="$i18n{easyUnlockRequireProximityLabel}">
                     </settings-checkbox>
                   </template>
                 </template>
@@ -187,8 +187,8 @@
 </if>
 
         <div class="settings-box">
-          <paper-button class="primary-button" i18n-content="manageOtherPeople"
-              on-tap="onManageOtherPeople_">
+          <paper-button class="primary-button" on-tap="onManageOtherPeople_">
+            $i18n{manageOtherPeople}
           </paper-button>
         </div>
       </neon-animatable>
@@ -222,18 +222,18 @@
     </settings-animated-pages>
 
     <paper-dialog modal id="disconnectDialog">
-      <h2 i18n-content="syncDisconnectTitle"></h2>
-      <div i18n-values=".innerHTML:syncDisconnectExplanation"></div>
+      <h2>$i18n{syncDisconnectTitle}</h2>
+      <div>$i18nRaw{syncDisconnectExplanation}"</div>
 <if expr="(not chromeos and is_posix) or is_win or is_macosx">
-      <paper-checkbox id="deleteProfile"
-          i18n-content="syncDisconnectDeleteProfile">
+      <paper-checkbox id="deleteProfile">
+        $i18n{syncDisconnectDeleteProfile}
       </paper-checkbox>
 </if>
       <div class="button-strip">
-        <paper-button dialog-dismiss i18n-content="cancel">
-        </paper-button>
+        <paper-button dialog-dismiss>$i18n{cancel}</paper-button>
         <paper-button dialog-confirm class="action-button"
-            on-tap="onDisconnectConfirm_" i18n-content="syncDisconnectConfirm">
+            on-tap="onDisconnectConfirm_">
+          $i18n{syncDisconnectConfirm}
         </paper-button>
       </div>
     </paper-dialog>

@@ -12,26 +12,28 @@
   <link rel="import" type="css" href="users_page.css">
   <template>
     <style include="settings-shared"></style>
-    <div class="settings-box" i18n-content="usersModifiedByOwnerLabel"
+    <div class="settings-box"
         hidden$="{{computeHideOwnerLabel_(isOwner, isWhitelistManaged)}}">
+      $i18n{usersModifiedByOwnerLabel}
     </div>
-    <div class="settings-box" i18n-content="settingsManagedLabel"
+    <div class="settings-box"
         hidden$="{{computeHideManagedLabel_(isOwner, isWhitelistManaged)}}">
+      $i18n{settingsManagedLabel}
     </div>
     <div class="settings-box">
       <settings-checkbox
           pref="{{prefs.cros.accounts.allowBWSI}}"
-          i18n-values="label:guestBrowsingLabel"
+          label="$i18n{guestBrowsingLabel}"
           disabled="{{editingDisabled}}">
       </settings-checkbox>
       <settings-checkbox
           pref="{{prefs.cros.accounts.supervisedUsersEnabled}}"
-          i18n-values="label:supervisedUsersLabel"
+          label="$i18n{supervisedUsersLabel}"
           disabled="{{editingDisabled}}">
       </settings-checkbox>
       <settings-checkbox
           pref="{{prefs.cros.accounts.showUserNamesOnSignIn}}"
-          i18n-values="label:showOnSigninLabel"
+          label="$i18n{showOnSigninLabel}"
           disabled="{{editingDisabled}}">
       </settings-checkbox>
     </div>
@@ -39,7 +41,7 @@
       <settings-checkbox
           pref="{{prefs.cros.accounts.allowGuest}}"
           id="restrictSignIn"
-          i18n-values="label:restrictSigninLabel"
+          label="$i18n{restrictSigninLabel}"
           disabled="{{editingDisabled}}" inverted>
       </settings-checkbox>
       <div class="users">
@@ -49,12 +51,13 @@
           </settings-user-list>
         </div>
         <div>
-          <paper-input id="addUserInput" i18n-values="label:addUsersLabel"
+          <paper-input id="addUserInput" label="$i18n{addUsersLabel}"
               disabled="[[editingUsersDisabled]]">
           </paper-input>
           <div class="add-user-button layout horizontal end-justified">
-            <paper-button i18n-content="add" on-tap="addUser_"
-                disabled="[[editingUsersDisabled]]" class="action-button">
+            <paper-button on-tap="addUser_" disabled="[[editingUsersDisabled]]"
+                class="action-button">
+              $i18n{add}
             </paper-button>
           </div>
         </div>
