@@ -42,6 +42,7 @@ typedef const blink::WebInputEvent* WebInputEventPointer;
 template <>
 struct ParamTraits<WebInputEventPointer> {
   typedef WebInputEventPointer param_type;
+  static void GetSize(base::PickleSizer* s, const param_type& p);
   static void Write(base::Pickle* m, const param_type& p);
   // Note: upon read, the event has the lifetime of the message.
   static bool Read(const base::Pickle* m,

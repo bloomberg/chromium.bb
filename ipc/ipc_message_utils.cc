@@ -635,6 +635,12 @@ void ParamTraits<base::DictionaryValue>::Log(const param_type& p,
 }
 
 #if defined(OS_POSIX)
+void ParamTraits<base::FileDescriptor>::GetSize(base::PickleSizer* sizer,
+                                                const param_type& p) {
+  GetParamSize(sizer, p.fd >= 0);
+  sizer->AddAttachment();
+}
+
 void ParamTraits<base::FileDescriptor>::Write(base::Pickle* m,
                                               const param_type& p) {
   const bool valid = p.fd >= 0;
@@ -687,6 +693,13 @@ void ParamTraits<base::FileDescriptor>::Log(const param_type& p,
 #endif  // defined(OS_POSIX)
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
+void ParamTraits<base::SharedMemoryHandle>::GetSize(base::PickleSizer* sizer,
+                                                    const param_type& p) {
+  GetParamSize(sizer, p.GetMemoryObject());
+  uint32_t dummy = 0;
+  GetParamSize(sizer, dummy);
+}
+
 void ParamTraits<base::SharedMemoryHandle>::Write(base::Pickle* m,
                                                   const param_type& p) {
   MachPortMac mach_port_mac(p.GetMemoryObject());
@@ -726,6 +739,16 @@ void ParamTraits<base::SharedMemoryHandle>::Log(const param_type& p,
 }
 
 #elif defined(OS_WIN)
+void ParamTraits<base::SharedMemoryHandle>::GetSize(base::PickleSizer* s,
+                                                    const param_type& p) {
+  GetParamSize(s, p.NeedsBrokering());
+  if (p.NeedsBrokering()) {
+    GetParamSize(s, p.GetHandle());
+  } else {
+    GetParamSize(s, HandleToLong(p.GetHandle()));
+  }
+}
+
 void ParamTraits<base::SharedMemoryHandle>::Write(base::Pickle* m,
                                                   const param_type& p) {
   m->WriteBool(p.NeedsBrokering());

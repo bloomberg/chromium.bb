@@ -49,6 +49,7 @@ namespace IPC {
 template <>
 struct ParamTraits<cc::FilterOperation> {
   typedef cc::FilterOperation param_type;
+  static void GetSize(base::PickleSizer* s, const param_type& p);
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,
@@ -59,6 +60,7 @@ struct ParamTraits<cc::FilterOperation> {
 template <>
 struct ParamTraits<cc::FilterOperations> {
   typedef cc::FilterOperations param_type;
+  static void GetSize(base::PickleSizer* s, const param_type& p);
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,
@@ -69,6 +71,7 @@ struct ParamTraits<cc::FilterOperations> {
 template <>
 struct ParamTraits<sk_sp<SkImageFilter> > {
   typedef sk_sp<SkImageFilter> param_type;
+  static void GetSize(base::PickleSizer* s, const param_type& p);
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,
@@ -119,6 +122,7 @@ struct CONTENT_EXPORT ParamTraits<cc::DelegatedFrameData> {
 template <>
 struct CONTENT_EXPORT ParamTraits<cc::DrawQuad::Resources> {
   typedef cc::DrawQuad::Resources param_type;
+  static void GetSize(base::PickleSizer* s, const param_type& p);
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,
@@ -129,6 +133,7 @@ struct CONTENT_EXPORT ParamTraits<cc::DrawQuad::Resources> {
 template <>
 struct CONTENT_EXPORT ParamTraits<cc::StreamVideoDrawQuad::OverlayResources> {
   typedef cc::StreamVideoDrawQuad::OverlayResources param_type;
+  static void GetSize(base::PickleSizer* s, const param_type& p);
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,
@@ -139,6 +144,7 @@ struct CONTENT_EXPORT ParamTraits<cc::StreamVideoDrawQuad::OverlayResources> {
 template <>
 struct CONTENT_EXPORT ParamTraits<cc::TextureDrawQuad::OverlayResources> {
   typedef cc::TextureDrawQuad::OverlayResources param_type;
+  static void GetSize(base::PickleSizer* s, const param_type& p);
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,

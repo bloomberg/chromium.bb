@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "ipc/ipc_message.h"
+#include "ipc/ipc_message_utils.h"
 
 namespace device {
 
@@ -95,6 +96,11 @@ void PrintTo(const BluetoothUUID& uuid, std::ostream* out) {
 }
 
 }  // namespace device
+
+void IPC::ParamTraits<device::BluetoothUUID>::GetSize(base::PickleSizer* s,
+                                                      const param_type& p) {
+  IPC::GetParamSize(s, p.canonical_value());
+}
 
 void IPC::ParamTraits<device::BluetoothUUID>::Write(base::Pickle* m,
                                                     const param_type& p) {

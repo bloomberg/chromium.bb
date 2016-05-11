@@ -249,6 +249,9 @@ bool Message::WriteAttachment(
       &index, &brokerable);
   DCHECK(success);
 
+  // NOTE: If you add more data to the pickle, make sure to update
+  // PickleSizer::AddAttachment.
+
   // Write the type of descriptor.
   WriteBool(brokerable);
 

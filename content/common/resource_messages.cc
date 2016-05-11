@@ -9,6 +9,16 @@
 
 namespace IPC {
 
+void ParamTraits<scoped_refptr<net::HttpResponseHeaders>>::GetSize(
+    base::PickleSizer* s, const param_type& p) {
+  GetParamSize(s, p.get() != NULL);
+  if (p.get()) {
+    base::Pickle temp;
+    p->Persist(&temp, net::HttpResponseHeaders::PERSIST_SANS_COOKIES);
+    s->AddBytes(temp.payload_size());
+  }
+}
+
 void ParamTraits<scoped_refptr<net::HttpResponseHeaders>>::Write(
     base::Pickle* m,
     const param_type& p) {
@@ -34,6 +44,49 @@ bool ParamTraits<scoped_refptr<net::HttpResponseHeaders>>::Read(
 void ParamTraits<scoped_refptr<net::HttpResponseHeaders> >::Log(
     const param_type& p, std::string* l) {
   l->append("<HttpResponseHeaders>");
+}
+
+void ParamTraits<storage::DataElement>::GetSize(base::PickleSizer* s,
+                                                const param_type& p) {
+  GetParamSize(s, static_cast<int>(p.type()));
+  switch (p.type()) {
+    case storage::DataElement::TYPE_BYTES: {
+      s->AddData(static_cast<int>(p.length()));
+      break;
+    }
+    case storage::DataElement::TYPE_BYTES_DESCRIPTION: {
+      GetParamSize(s, p.length());
+      break;
+    }
+    case storage::DataElement::TYPE_FILE: {
+      GetParamSize(s, p.path());
+      GetParamSize(s, p.offset());
+      GetParamSize(s, p.length());
+      GetParamSize(s, p.expected_modification_time());
+      break;
+    }
+    case storage::DataElement::TYPE_FILE_FILESYSTEM: {
+      GetParamSize(s, p.filesystem_url());
+      GetParamSize(s, p.offset());
+      GetParamSize(s, p.length());
+      GetParamSize(s, p.expected_modification_time());
+      break;
+    }
+    case storage::DataElement::TYPE_BLOB: {
+      GetParamSize(s, p.blob_uuid());
+      GetParamSize(s, p.offset());
+      GetParamSize(s, p.length());
+      break;
+    }
+    case storage::DataElement::TYPE_DISK_CACHE_ENTRY: {
+      NOTREACHED() << "Can't be sent by IPC.";
+      break;
+    }
+    case storage::DataElement::TYPE_UNKNOWN: {
+      NOTREACHED();
+      break;
+    }
+  }
 }
 
 void ParamTraits<storage::DataElement>::Write(base::Pickle* m,
@@ -162,6 +215,19 @@ void ParamTraits<storage::DataElement>::Log(const param_type& p,
   l->append("<storage::DataElement>");
 }
 
+void ParamTraits<scoped_refptr<content::ResourceDevToolsInfo>>::GetSize(
+    base::PickleSizer* s, const param_type& p) {
+  GetParamSize(s, p.get() != NULL);
+  if (p.get()) {
+    GetParamSize(s, p->http_status_code);
+    GetParamSize(s, p->http_status_text);
+    GetParamSize(s, p->request_headers);
+    GetParamSize(s, p->response_headers);
+    GetParamSize(s, p->request_headers_text);
+    GetParamSize(s, p->response_headers_text);
+  }
+}
+
 void ParamTraits<scoped_refptr<content::ResourceDevToolsInfo>>::Write(
     base::Pickle* m,
     const param_type& p) {
@@ -204,6 +270,30 @@ void ParamTraits<scoped_refptr<content::ResourceDevToolsInfo> >::Log(
     LogParam(p->response_headers, l);
   }
   l->append(")");
+}
+
+void ParamTraits<net::LoadTimingInfo>::GetSize(base::PickleSizer* s,
+                                               const param_type& p) {
+  GetParamSize(s, p.socket_log_id);
+  GetParamSize(s, p.socket_reused);
+  GetParamSize(s, p.request_start_time.is_null());
+  if (p.request_start_time.is_null())
+    return;
+  GetParamSize(s, p.request_start_time);
+  GetParamSize(s, p.request_start);
+  GetParamSize(s, p.proxy_resolve_start);
+  GetParamSize(s, p.proxy_resolve_end);
+  GetParamSize(s, p.connect_timing.dns_start);
+  GetParamSize(s, p.connect_timing.dns_end);
+  GetParamSize(s, p.connect_timing.connect_start);
+  GetParamSize(s, p.connect_timing.connect_end);
+  GetParamSize(s, p.connect_timing.ssl_start);
+  GetParamSize(s, p.connect_timing.ssl_end);
+  GetParamSize(s, p.send_start);
+  GetParamSize(s, p.send_end);
+  GetParamSize(s, p.receive_headers_end);
+  GetParamSize(s, p.push_start);
+  GetParamSize(s, p.push_end);
 }
 
 void ParamTraits<net::LoadTimingInfo>::Write(base::Pickle* m,
@@ -297,6 +387,15 @@ void ParamTraits<net::LoadTimingInfo>::Log(const param_type& p,
   l->append(", ");
   LogParam(p.push_end, l);
   l->append(")");
+}
+
+void ParamTraits<scoped_refptr<content::ResourceRequestBody>>::GetSize(
+    base::PickleSizer* s, const param_type& p) {
+  GetParamSize(s, p.get() != NULL);
+  if (p.get()) {
+    GetParamSize(s, *p->elements());
+    GetParamSize(s, p->identifier());
+  }
 }
 
 void ParamTraits<scoped_refptr<content::ResourceRequestBody>>::Write(

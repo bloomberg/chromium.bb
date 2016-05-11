@@ -5,6 +5,13 @@
 // Get basic type definitions.
 #include "media/gpu/ipc/common/media_param_traits.h"
 
+// Generate param traits size methods.
+#include "ipc/param_traits_size_macros.h"
+namespace IPC {
+#undef MEDIA_GPU_IPC_COMMON_MEDIA_PARAM_TRAITS_MACROS_H_
+#include "media/gpu/ipc/common/media_param_traits_macros.h"
+}
+
 // Generate param traits write methods.
 #include "ipc/param_traits_write_macros.h"
 namespace IPC {

@@ -71,6 +71,7 @@ class IPC_EXPORT MachPortMac {
 template <>
 struct IPC_EXPORT ParamTraits<MachPortMac> {
   typedef MachPortMac param_type;
+  static void GetSize(base::PickleSizer* s, const param_type& p);
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,

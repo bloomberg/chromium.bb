@@ -47,6 +47,7 @@ namespace IPC {
 template <>
 struct CONTENT_EXPORT ParamTraits<url::Origin> {
   typedef url::Origin param_type;
+  static void GetSize(base::PickleSizer* s, const param_type& p);
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,
@@ -57,6 +58,7 @@ struct CONTENT_EXPORT ParamTraits<url::Origin> {
 template<>
 struct CONTENT_EXPORT ParamTraits<net::HostPortPair> {
   typedef net::HostPortPair param_type;
+  static void GetSize(base::PickleSizer* s, const param_type& p);
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,
@@ -67,6 +69,7 @@ struct CONTENT_EXPORT ParamTraits<net::HostPortPair> {
 template <>
 struct CONTENT_EXPORT ParamTraits<net::IPEndPoint> {
   typedef net::IPEndPoint param_type;
+  static void GetSize(base::PickleSizer* s, const param_type& p);
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,
@@ -77,6 +80,7 @@ struct CONTENT_EXPORT ParamTraits<net::IPEndPoint> {
 template <>
 struct CONTENT_EXPORT ParamTraits<net::IPAddress> {
   typedef net::IPAddress param_type;
+  static void GetSize(base::PickleSizer* s, const param_type& p);
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,
@@ -87,6 +91,7 @@ struct CONTENT_EXPORT ParamTraits<net::IPAddress> {
 template <>
 struct CONTENT_EXPORT ParamTraits<content::PageState> {
   typedef content::PageState param_type;
+  static void GetSize(base::PickleSizer* s, const param_type& p);
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,

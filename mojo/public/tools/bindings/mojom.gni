@@ -212,6 +212,7 @@ template("mojom") {
     }
 
     action(type_mappings_target_name) {
+      inputs = _bindings_configuration_files
       outputs = [
         type_mappings_path,
       ]

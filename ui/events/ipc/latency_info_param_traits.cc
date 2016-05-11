@@ -4,6 +4,13 @@
 
 #include "ui/events/ipc/latency_info_param_traits_macros.h"
 
+// Generate param traits size methods.
+#include "ipc/param_traits_size_macros.h"
+namespace IPC {
+#undef UI_EVENTS_IPC_LATENCY_INFO_PARAM_TRAITS_MACROS_H_
+#include "ui/events/ipc/latency_info_param_traits_macros.h"
+}
+
 // Generate param traits write methods.
 #include "ipc/param_traits_write_macros.h"
 namespace IPC {
@@ -29,6 +36,19 @@ namespace IPC {
 #include "ui/events/ipc/latency_info_param_traits.h"
 
 namespace IPC {
+
+void ParamTraits<ui::LatencyInfo>::GetSize(base::PickleSizer* s,
+                                           const param_type& p) {
+  GetParamSize(s, p.trace_name_);
+  GetParamSize(s, p.latency_components_);
+  GetParamSize(s, p.input_coordinates_size_);
+  for (size_t i = 0; i < p.input_coordinates_size_; i++) {
+    GetParamSize(s, p.input_coordinates_[i]);
+  }
+  GetParamSize(s, p.trace_id_);
+  GetParamSize(s, p.terminated_);
+}
+
 void ParamTraits<ui::LatencyInfo>::Write(base::Pickle* m, const param_type& p) {
   WriteParam(m, p.trace_name_);
   WriteParam(m, p.latency_components_);

@@ -19,6 +19,7 @@ namespace IPC {
 template <>
 struct CONTENT_EXPORT ParamTraits<media::AudioParameters> {
   typedef media::AudioParameters param_type;
+  static void GetSize(base::PickleSizer* s, const param_type& p);
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,
@@ -29,6 +30,7 @@ struct CONTENT_EXPORT ParamTraits<media::AudioParameters> {
 template <>
 struct CONTENT_EXPORT ParamTraits<media::VideoCaptureFormat> {
   typedef media::VideoCaptureFormat param_type;
+  static void GetSize(base::PickleSizer* s, const param_type& p);
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,

@@ -12,6 +12,11 @@
 
 namespace IPC {
 
+void ParamTraits<WebInputEventPointer>::GetSize(base::PickleSizer* s,
+                                                const param_type& p) {
+  s->AddData(p->size);
+}
+
 void ParamTraits<WebInputEventPointer>::Write(base::Pickle* m,
                                               const param_type& p) {
   m->WriteData(reinterpret_cast<const char*>(p), p->size);
@@ -58,6 +63,13 @@ void ParamTraits<WebInputEventPointer>::Log(const param_type& p,
 }
 
 }  // namespace IPC
+
+// Generate param traits size methods.
+#include "ipc/param_traits_size_macros.h"
+namespace IPC {
+#undef CONTENT_COMMON_CONTENT_PARAM_TRAITS_MACROS_H_
+#include "content/common/content_param_traits_macros.h"
+}
 
 // Generate param traits write methods.
 #include "ipc/param_traits_write_macros.h"

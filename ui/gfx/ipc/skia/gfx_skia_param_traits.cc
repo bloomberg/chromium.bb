@@ -52,6 +52,11 @@ struct SkBitmap_Data {
 
 namespace IPC {
 
+void ParamTraits<SkBitmap>::GetSize(base::PickleSizer* s, const param_type& p) {
+  s->AddData(sizeof(SkBitmap_Data));
+  s->AddData(static_cast<int>(p.getSize()));
+}
+
 void ParamTraits<SkBitmap>::Write(base::Pickle* m, const SkBitmap& p) {
   size_t fixed_size = sizeof(SkBitmap_Data);
   SkBitmap_Data bmp_data;
@@ -89,6 +94,11 @@ bool ParamTraits<SkBitmap>::Read(const base::Pickle* m,
 
 void ParamTraits<SkBitmap>::Log(const SkBitmap& p, std::string* l) {
   l->append("<SkBitmap>");
+}
+
+void ParamTraits<gfx::Transform>::GetSize(base::PickleSizer* s,
+                                          const param_type& p) {
+  s->AddBytes(sizeof(SkMScalar) * 16);
 }
 
 void ParamTraits<gfx::Transform>::Write(base::Pickle* m, const param_type& p) {

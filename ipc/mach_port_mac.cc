@@ -12,6 +12,12 @@
 namespace IPC {
 
 // static
+void ParamTraits<MachPortMac>::GetSize(base::PickleSizer* s,
+                                       const param_type& p) {
+  s->AddAttachment();
+}
+
+// static
 void ParamTraits<MachPortMac>::Write(base::Pickle* m, const param_type& p) {
   if (!m->WriteAttachment(
           new IPC::internal::MachPortAttachmentMac(p.get_mach_port()))) {

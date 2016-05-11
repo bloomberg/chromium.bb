@@ -30,6 +30,35 @@ using blink::WebIDBKeyTypeString;
 
 namespace IPC {
 
+void ParamTraits<IndexedDBKey>::GetSize(base::PickleSizer* s,
+                                        const param_type& p) {
+  GetParamSize(s, static_cast<int>(p.type()));
+  switch (p.type()) {
+    case WebIDBKeyTypeArray:
+      GetParamSize(s, p.array());
+      return;
+    case WebIDBKeyTypeBinary:
+      GetParamSize(s, p.binary());
+      return;
+    case WebIDBKeyTypeString:
+      GetParamSize(s, p.string());
+      return;
+    case WebIDBKeyTypeDate:
+      GetParamSize(s, p.date());
+      return;
+    case WebIDBKeyTypeNumber:
+      GetParamSize(s, p.number());
+      return;
+    case WebIDBKeyTypeInvalid:
+    case WebIDBKeyTypeNull:
+      return;
+    case WebIDBKeyTypeMin:
+    default:
+      NOTREACHED();
+      return;
+  }
+}
+
 void ParamTraits<IndexedDBKey>::Write(base::Pickle* m, const param_type& p) {
   WriteParam(m, static_cast<int>(p.type()));
   switch (p.type()) {
@@ -153,6 +182,24 @@ void ParamTraits<IndexedDBKey>::Log(const param_type& p, std::string* l) {
   l->append(")");
 }
 
+void ParamTraits<IndexedDBKeyPath>::GetSize(base::PickleSizer* s,
+                                            const param_type& p) {
+  GetParamSize(s, static_cast<int>(p.type()));
+  switch (p.type()) {
+    case WebIDBKeyPathTypeArray:
+      GetParamSize(s, p.array());
+      return;
+    case WebIDBKeyPathTypeString:
+      GetParamSize(s, p.string());
+      return;
+    case WebIDBKeyPathTypeNull:
+      return;
+    default:
+      NOTREACHED();
+      return;
+  }
+}
+
 void ParamTraits<IndexedDBKeyPath>::Write(base::Pickle* m,
                                           const param_type& p) {
   WriteParam(m, static_cast<int>(p.type()));
@@ -229,6 +276,14 @@ void ParamTraits<IndexedDBKeyPath>::Log(const param_type& p, std::string* l) {
       break;
   }
   l->append(")");
+}
+
+void ParamTraits<IndexedDBKeyRange>::GetSize(base::PickleSizer* s,
+                                             const param_type& p) {
+  GetParamSize(s, p.lower());
+  GetParamSize(s, p.upper());
+  GetParamSize(s, p.lower_open());
+  GetParamSize(s, p.upper_open());
 }
 
 void ParamTraits<IndexedDBKeyRange>::Write(base::Pickle* m,

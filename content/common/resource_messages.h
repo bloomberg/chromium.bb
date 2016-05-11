@@ -40,6 +40,7 @@ namespace IPC {
 template <>
 struct ParamTraits<scoped_refptr<net::HttpResponseHeaders> > {
   typedef scoped_refptr<net::HttpResponseHeaders> param_type;
+  static void GetSize(base::PickleSizer* s, const param_type& p);
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,
@@ -50,6 +51,7 @@ struct ParamTraits<scoped_refptr<net::HttpResponseHeaders> > {
 template <>
 struct CONTENT_EXPORT ParamTraits<storage::DataElement> {
   typedef storage::DataElement param_type;
+  static void GetSize(base::PickleSizer* s, const param_type& p);
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,
@@ -60,6 +62,7 @@ struct CONTENT_EXPORT ParamTraits<storage::DataElement> {
 template <>
 struct ParamTraits<scoped_refptr<content::ResourceDevToolsInfo> > {
   typedef scoped_refptr<content::ResourceDevToolsInfo> param_type;
+  static void GetSize(base::PickleSizer* s, const param_type& p);
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,
@@ -70,6 +73,7 @@ struct ParamTraits<scoped_refptr<content::ResourceDevToolsInfo> > {
 template <>
 struct ParamTraits<net::LoadTimingInfo> {
   typedef net::LoadTimingInfo param_type;
+  static void GetSize(base::PickleSizer* s, const param_type& p);
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,
@@ -80,6 +84,7 @@ struct ParamTraits<net::LoadTimingInfo> {
 template <>
 struct ParamTraits<scoped_refptr<content::ResourceRequestBody> > {
   typedef scoped_refptr<content::ResourceRequestBody> param_type;
+  static void GetSize(base::PickleSizer* s, const param_type& p);
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,

@@ -20,6 +20,18 @@ using media::VideoCaptureFormat;
 
 namespace IPC {
 
+void ParamTraits<AudioParameters>::GetSize(base::PickleSizer* s,
+                                           const AudioParameters& p) {
+  GetParamSize(s, p.format());
+  GetParamSize(s, p.channel_layout());
+  GetParamSize(s, p.sample_rate());
+  GetParamSize(s, p.bits_per_sample());
+  GetParamSize(s, p.frames_per_buffer());
+  GetParamSize(s, p.channels());
+  GetParamSize(s, p.effects());
+  GetParamSize(s, p.mic_positions());
+}
+
 void ParamTraits<AudioParameters>::Write(base::Pickle* m,
                                          const AudioParameters& p) {
   WriteParam(m, p.format());
@@ -62,6 +74,14 @@ bool ParamTraits<AudioParameters>::Read(const base::Pickle* m,
 void ParamTraits<AudioParameters>::Log(const AudioParameters& p,
                                        std::string* l) {
   l->append(base::StringPrintf("<AudioParameters>"));
+}
+
+void ParamTraits<VideoCaptureFormat>::GetSize(base::PickleSizer* s,
+                                              const VideoCaptureFormat& p) {
+  GetParamSize(s, p.frame_size);
+  GetParamSize(s, p.frame_rate);
+  GetParamSize(s, p.pixel_format);
+  GetParamSize(s, p.pixel_storage);
 }
 
 void ParamTraits<VideoCaptureFormat>::Write(base::Pickle* m,

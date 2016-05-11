@@ -21,6 +21,7 @@ namespace IPC {
 template <>
 struct ParamTraits<content::IndexedDBKey> {
   typedef content::IndexedDBKey param_type;
+  static void GetSize(base::PickleSizer* s, const param_type& p);
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,
@@ -31,6 +32,7 @@ struct ParamTraits<content::IndexedDBKey> {
 template <>
 struct ParamTraits<content::IndexedDBKeyRange> {
   typedef content::IndexedDBKeyRange param_type;
+  static void GetSize(base::PickleSizer* s, const param_type& p);
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,
@@ -41,6 +43,7 @@ struct ParamTraits<content::IndexedDBKeyRange> {
 template <>
 struct ParamTraits<content::IndexedDBKeyPath> {
   typedef content::IndexedDBKeyPath param_type;
+  static void GetSize(base::PickleSizer* s, const param_type& p);
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,

@@ -28,6 +28,14 @@ std::unique_ptr<content::SyntheticGestureParams> ReadGestureParams(
 }
 }  // namespace
 
+void ParamTraits<content::ScopedWebInputEvent>::GetSize(base::PickleSizer* s,
+                                                        const param_type& p) {
+  bool valid_web_event = !!p;
+  GetParamSize(s, valid_web_event);
+  if (valid_web_event)
+    GetParamSize(s, static_cast<WebInputEventPointer>(p.get()));
+}
+
 void ParamTraits<content::ScopedWebInputEvent>::Write(base::Pickle* m,
                                                       const param_type& p) {
   bool valid_web_event = !!p;

@@ -554,6 +554,7 @@ struct IPC_EXPORT ParamTraits<base::DictionaryValue> {
 template<>
 struct IPC_EXPORT ParamTraits<base::FileDescriptor> {
   typedef base::FileDescriptor param_type;
+  static void GetSize(base::PickleSizer* sizer, const param_type& p);
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,
@@ -566,6 +567,7 @@ struct IPC_EXPORT ParamTraits<base::FileDescriptor> {
 template <>
 struct IPC_EXPORT ParamTraits<base::SharedMemoryHandle> {
   typedef base::SharedMemoryHandle param_type;
+  static void GetSize(base::PickleSizer* sizer, const param_type& p);
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,
