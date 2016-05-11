@@ -29,6 +29,7 @@
 #include "core/loader/FrameLoaderStateMachine.h"
 
 #include "wtf/Assertions.h"
+#include "wtf/text/WTFString.h"
 
 namespace blink {
 
@@ -62,6 +63,23 @@ void FrameLoaderStateMachine::advanceTo(State state)
 {
     ASSERT(m_state < state);
     m_state = state;
+}
+
+String FrameLoaderStateMachine::toString() const
+{
+    switch (m_state) {
+    case CreatingInitialEmptyDocument:
+        return "CreatingInitialEmptyDocument";
+    case DisplayingInitialEmptyDocument:
+        return "DisplayingInitialEmptyDocument";
+    case CommittedFirstRealLoad:
+        return "CommittedFirstRealLoad";
+    case CommittedMultipleRealLoads:
+        return "CommittedMultipleRealLoads";
+    default:
+        ASSERT_NOT_REACHED();
+    }
+    return "";
 }
 
 } // namespace blink

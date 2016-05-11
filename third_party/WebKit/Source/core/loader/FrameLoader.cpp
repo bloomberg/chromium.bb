@@ -86,6 +86,7 @@
 #include "platform/Logging.h"
 #include "platform/PluginScriptForbiddenScope.h"
 #include "platform/ScriptForbiddenScope.h"
+#include "platform/TraceEvent.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/network/HTTPParsers.h"
 #include "platform/network/ResourceRequest.h"
@@ -173,6 +174,8 @@ FrameLoader::FrameLoader(LocalFrame* frame)
     , m_dispatchingDidClearWindowObjectInMainWorld(false)
     , m_protectProvisionalLoader(false)
 {
+    TRACE_EVENT_OBJECT_CREATED_WITH_ID("loading", "FrameLoader", this);
+    takeObjectSnapshot();
 }
 
 FrameLoader::~FrameLoader()
@@ -201,6 +204,7 @@ void FrameLoader::init()
     m_provisionalDocumentLoader->startLoadingMainResource();
     m_frame->document()->cancelParsing();
     m_stateMachine.advanceTo(FrameLoaderStateMachine::DisplayingInitialEmptyDocument);
+    takeObjectSnapshot();
 }
 
 FrameLoaderClient* FrameLoader::client() const
@@ -311,6 +315,8 @@ void FrameLoader::clear()
 
     if (m_stateMachine.isDisplayingInitialEmptyDocument())
         m_stateMachine.advanceTo(FrameLoaderStateMachine::CommittedFirstRealLoad);
+
+    takeObjectSnapshot();
 }
 
 // This is only called by ScriptController::executeScriptIfJavaScriptURL
@@ -438,6 +444,8 @@ void FrameLoader::receivedFirstData()
     InspectorInstrumentation::didCommitLoad(m_frame, m_documentLoader.get());
     m_frame->page()->didCommitLoad(m_frame);
     dispatchDidClearDocumentOfWindowObject();
+
+    takeObjectSnapshot();
 }
 
 void FrameLoader::didInstallNewDocument(bool dispatchWindowObjectAvailable)
@@ -748,6 +756,7 @@ void FrameLoader::loadInSameDocument(const KURL& url, PassRefPtr<SerializedScrip
     // We need to scroll to the fragment whether or not a hash change occurred, since
     // the user might have scrolled since the previous navigation.
     processFragment(url, NavigationWithinSameDocument);
+    takeObjectSnapshot();
 }
 
 void FrameLoader::setReferrerForFrameRequest(ResourceRequest& request, ShouldSendReferrer shouldSendReferrer, Document* originDocument)
@@ -1027,6 +1036,7 @@ void FrameLoader::stopAllLoaders()
         loadFailed(m_documentLoader.get(), ResourceError::cancelledError(m_documentLoader->url()));
 
     m_inStopAllLoaders = false;
+    takeObjectSnapshot();
 }
 
 void FrameLoader::didAccessInitialDocument()
@@ -1105,6 +1115,7 @@ bool FrameLoader::prepareForCommit()
     if (m_frame->document())
         m_frame->document()->detach();
     m_documentLoader = m_provisionalDocumentLoader.release();
+    takeObjectSnapshot();
 
     return true;
 }
@@ -1231,6 +1242,8 @@ void FrameLoader::detach()
         m_progressTracker->dispose();
         m_progressTracker.clear();
     }
+
+    TRACE_EVENT_OBJECT_DELETED_WITH_ID("loading", "FrameLoader", this);
 }
 
 void FrameLoader::loadFailed(DocumentLoader* loader, const ResourceError& error)
@@ -1422,6 +1435,8 @@ void FrameLoader::startLoad(FrameLoadRequest& frameLoadRequest, FrameLoadType ty
     client()->dispatchDidStartProvisionalLoad(triggeringEventTime);
     ASSERT(m_provisionalDocumentLoader);
     m_provisionalDocumentLoader->startLoadingMainResource();
+
+    takeObjectSnapshot();
 }
 
 void FrameLoader::applyUserAgent(ResourceRequest& request)
@@ -1535,6 +1550,24 @@ SecurityContext::InsecureNavigationsSet* FrameLoader::insecureNavigationsToUpgra
 
     ASSERT(toLocalFrame(parentFrame)->document());
     return toLocalFrame(parentFrame)->document()->insecureNavigationsToUpgrade();
+}
+
+PassOwnPtr<TracedValue> FrameLoader::toTracedValue() const
+{
+    OwnPtr<TracedValue> tracedValue = TracedValue::create();
+    tracedValue->beginDictionary("frame");
+    tracedValue->setString("id_ref", String::format("0x%" PRIx64, static_cast<uint64_t>(reinterpret_cast<uintptr_t>(m_frame.get()))));
+    tracedValue->endDictionary();
+    tracedValue->setBoolean("isLoadingMainFrame", isLoadingMainFrame());
+    tracedValue->setString("stateMachine", m_stateMachine.toString());
+    tracedValue->setString("provisionalDocumentLoaderURL", m_provisionalDocumentLoader ? m_provisionalDocumentLoader->url() : String());
+    tracedValue->setString("documentLoaderURL", m_documentLoader ? m_documentLoader->url() : String());
+    return tracedValue.release();
+}
+
+inline void FrameLoader::takeObjectSnapshot() const
+{
+    TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID("loading", "FrameLoader", this, toTracedValue());
 }
 
 } // namespace blink

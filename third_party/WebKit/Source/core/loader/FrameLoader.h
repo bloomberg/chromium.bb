@@ -43,6 +43,7 @@
 #include "core/loader/HistoryItem.h"
 #include "core/loader/NavigationPolicy.h"
 #include "platform/Timer.h"
+#include "platform/TracedValue.h"
 #include "platform/heap/Handle.h"
 #include "platform/network/ResourceRequest.h"
 #include "wtf/Forward.h"
@@ -217,6 +218,9 @@ private:
     void scheduleCheckCompleted();
 
     void detachDocumentLoader(Member<DocumentLoader>&);
+
+    PassOwnPtr<TracedValue> toTracedValue() const;
+    void takeObjectSnapshot() const;
 
     Member<LocalFrame> m_frame;
 

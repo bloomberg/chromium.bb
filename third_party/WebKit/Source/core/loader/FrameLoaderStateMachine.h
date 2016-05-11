@@ -32,6 +32,7 @@
 #include "core/CoreExport.h"
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
+#include "wtf/text/WTFString.h"
 
 namespace blink {
 
@@ -58,6 +59,8 @@ public:
     bool isDisplayingInitialEmptyDocument() const;
     bool committedMultipleRealLoads() const;
     void advanceTo(State);
+
+    String toString() const;
 
 private:
     State m_state;
