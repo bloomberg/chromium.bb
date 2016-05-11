@@ -419,7 +419,6 @@ private:
 
     void computeBlockPreferredLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const;
 
-    void updateDragState(bool dragOn) final;
     void childBecameNonInline(LayoutObject* child) final;
 
     bool isSelectionRoot() const;

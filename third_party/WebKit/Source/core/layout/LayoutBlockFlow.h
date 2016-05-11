@@ -315,6 +315,7 @@ protected:
     void absoluteRects(Vector<IntRect>&, const LayoutPoint& accumulatedOffset) const override;
     void absoluteQuads(Vector<FloatQuad>&) const override;
     LayoutObject* hoverAncestor() const final;
+    void updateDragState(bool dragOn) final;
 
     LayoutUnit logicalRightOffsetForLine(LayoutUnit logicalTop, LayoutUnit fixedOffset, IndentTextOrNot applyTextIndent, LayoutUnit logicalHeight = LayoutUnit()) const
     {

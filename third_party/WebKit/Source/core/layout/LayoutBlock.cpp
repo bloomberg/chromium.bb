@@ -1947,13 +1947,6 @@ LayoutBlockFlow* LayoutBlock::nearestInnerBlockWithFirstLine()
     return nullptr;
 }
 
-void LayoutBlock::updateDragState(bool dragOn)
-{
-    LayoutBox::updateDragState(dragOn);
-    if (LayoutBoxModelObject* continuation = this->continuation())
-        continuation->updateDragState(dragOn);
-}
-
 void LayoutBlock::childBecameNonInline(LayoutObject*)
 {
     makeChildrenNonInline();
