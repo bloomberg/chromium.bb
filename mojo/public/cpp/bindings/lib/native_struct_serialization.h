@@ -42,6 +42,12 @@ struct NativeStructSerializerImpl {
     base::Pickle pickle;
     Traits::Write(&pickle, value);
 
+#if DCHECK_IS_ON()
+    base::PickleSizer sizer;
+    Traits::GetSize(&sizer, value);
+    DCHECK_EQ(sizer.payload_size(), pickle.payload_size());
+#endif
+
     size_t total_size = pickle.payload_size() + sizeof(ArrayHeader);
     DCHECK_LT(total_size, std::numeric_limits<uint32_t>::max());
 
