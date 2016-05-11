@@ -17,6 +17,7 @@
           'type': 'loadable_module',
           'dependencies': [
             'gcapi_lib',
+            '../chrome/common_constants.gyp:version_header',
           ],
           'include_dirs': [
             '..',
@@ -24,6 +25,42 @@
           'sources': [
             'installer/gcapi/gcapi.def',
             'installer/gcapi/gcapi_dll.cc',
+            'installer/gcapi/gcapi_dll_version.rc.version',
+          ],
+          'copies': [{
+            'destination': '<(PRODUCT_DIR)',
+            'files': [
+              'installer/gcapi/gcapi.h',
+            ],
+          }],
+          'rules': [
+            {
+              'rule_name': 'gcapi_version',
+              'extension': 'version',
+              'variables': {
+                'version_py_path': '<(DEPTH)/build/util/version.py',
+                'template_input_path': 'installer/gcapi/gcapi_dll_version.rc.version',
+              },
+              'inputs': [
+                '<(template_input_path)',
+                '<(version_path)',
+                '<(lastchange_path)',
+                '<(branding_dir)/BRANDING',
+              ],
+              'outputs': [
+                '<(SHARED_INTERMEDIATE_DIR)/gcapi/gcapi_dll_version.rc',
+              ],
+              'action': [
+                'python', '<(version_py_path)',
+                '-f', '<(version_path)',
+                '-f', '<(lastchange_path)',
+                '-f', '<(branding_dir)/BRANDING',
+                '<(template_input_path)',
+                '<@(_outputs)',
+              ],
+              'process_outputs_as_sources': 1,
+              'message': 'Generating version information'
+            },
           ],
         },
         {

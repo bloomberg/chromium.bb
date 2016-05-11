@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//chrome/version.gni")
 import("//testing/test.gni")
 
 assert(is_win)
@@ -12,12 +13,29 @@ shared_library("gcapi") {
   sources = [
     "gcapi.def",
     "gcapi_dll.cc",
+    "gcapi_dll_version.rc.version",
   ]
 
   deps = [
+    ":copy_gcapi_header",
+    ":gcapi_dll_version",
     ":lib",
     "//base",
   ]
+}
+
+copy("copy_gcapi_header") {
+  sources = [
+    "gcapi.h",
+  ]
+  outputs = [
+    "$root_out_dir/{{source_file_part}}",
+  ]
+}
+
+process_version("gcapi_dll_version") {
+  template_file = "gcapi_dll_version.rc.version"
+  output = "$target_gen_dir/gcapi_dll_version.rc"
 }
 
 source_set("lib") {
