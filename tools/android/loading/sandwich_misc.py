@@ -87,8 +87,15 @@ def PatchWpr(wpr_archive_path):
   wpr_archive.Persist()
 
 
-def _FilterOutDataRequests(requests):
+def _FilterOutDataAndIncompleteRequests(requests):
   for request in filter(lambda r: not r.IsDataRequest(), requests):
+    # The protocol is only known once the response has been received. But the
+    # trace recording might have been stopped with still some JavaScript
+    # originated requests that have not received any responses yet.
+    if request.protocol is None:
+      assert not request.HasReceivedResponse()
+      assert request.initiator['type'] == 'script'
+      continue
     if request.protocol not in {'http/0.9', 'http/1.0', 'http/1.1'}:
       raise RuntimeError('Unknown request protocol {}'.format(request.protocol))
     yield request
@@ -133,10 +140,9 @@ def ExtractDiscoverableUrls(loading_trace_path, subresource_discoverer):
   else:
     assert False
 
-  # Prune out data:// requests.
   whitelisted_urls = set()
   logging.info('white-listing %s' % first_resource_request.url)
-  for request in _FilterOutDataRequests(discovered_requests):
+  for request in _FilterOutDataAndIncompleteRequests(discovered_requests):
     logging.info('white-listing %s' % request.url)
     whitelisted_urls.add(request.url)
   return whitelisted_urls
@@ -179,7 +185,8 @@ def ListUrlRequests(trace, request_kind):
     set([str])
   """
   urls = set()
-  for request_event in _FilterOutDataRequests(trace.request_track.GetEvents()):
+  for request_event in _FilterOutDataAndIncompleteRequests(
+      trace.request_track.GetEvents()):
     if (request_kind == RequestOutcome.ServedFromCache and
         request_event.from_disk_cache):
       urls.add(request_event.url)
@@ -297,7 +304,7 @@ def ReadSubresourceMapFromBenchmarkOutput(benchmark_output_directory_path):
       continue
     logging.info('lists resources of %s from %s' % (trace.url, trace_path))
     urls_set = set()
-    for request_event in _FilterOutDataRequests(
+    for request_event in _FilterOutDataAndIncompleteRequests(
         trace.request_track.GetEvents()):
       if request_event.url not in urls_set:
         logging.info('  %s' % request_event.url)

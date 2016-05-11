@@ -296,6 +296,9 @@ class Request(object):
   def IsDataRequest(self):
     return self.protocol == 'data'
 
+  def HasReceivedResponse(self):
+    return self.status is not None
+
   def GetCacheControlDirective(self, directive_name):
     """Returns the value of a Cache-Control directive, or None."""
     cache_control_str = self.GetHTTPResponseHeader('Cache-Control')
