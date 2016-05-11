@@ -346,9 +346,9 @@ void V8HeapProfilerAgentImpl::startSampling(ErrorString* errorString, const Mayb
     m_state->setNumber(HeapProfilerAgentState::samplingHeapProfilerInterval, samplingIntervalValue);
     m_state->setBoolean(HeapProfilerAgentState::samplingHeapProfilerEnabled, true);
 #if V8_MAJOR_VERSION * 1000 + V8_MINOR_VERSION >= 5002
-    profiler->StartSamplingHeapProfiler(static_cast<uint64_t>(samplingIntervalValue), 32, v8::HeapProfiler::kSamplingForceGC);
+    profiler->StartSamplingHeapProfiler(static_cast<uint64_t>(samplingIntervalValue), 128, v8::HeapProfiler::kSamplingForceGC);
 #else
-    profiler->StartSamplingHeapProfiler(static_cast<uint64_t>(samplingIntervalValue));
+    profiler->StartSamplingHeapProfiler(static_cast<uint64_t>(samplingIntervalValue), 128);
 #endif
 #endif
 }
