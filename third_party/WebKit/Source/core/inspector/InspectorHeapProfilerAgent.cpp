@@ -35,11 +35,6 @@
 
 namespace blink {
 
-InspectorHeapProfilerAgent* InspectorHeapProfilerAgent::create(V8HeapProfilerAgent* agent)
-{
-    return new InspectorHeapProfilerAgent(agent);
-}
-
 InspectorHeapProfilerAgent::InspectorHeapProfilerAgent(V8HeapProfilerAgent* agent)
     : InspectorBaseAgent<InspectorHeapProfilerAgent, protocol::Frontend::HeapProfiler>("HeapProfiler")
     , m_v8HeapProfilerAgent(agent)

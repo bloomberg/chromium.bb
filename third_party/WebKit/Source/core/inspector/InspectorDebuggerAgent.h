@@ -43,6 +43,7 @@ class CORE_EXPORT InspectorDebuggerAgent
     : public InspectorBaseAgent<InspectorDebuggerAgent, protocol::Frontend::Debugger>
     , public protocol::Backend::Debugger {
 public:
+    explicit InspectorDebuggerAgent(V8DebuggerAgent*);
     ~InspectorDebuggerAgent() override;
     DECLARE_VIRTUAL_TRACE();
 
@@ -82,8 +83,6 @@ public:
     void restore() override;
 
 protected:
-    explicit InspectorDebuggerAgent(V8DebuggerAgent*);
-
     V8DebuggerAgent* m_v8DebuggerAgent;
 };
 

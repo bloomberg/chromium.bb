@@ -53,14 +53,13 @@
 #include "core/inspector/InspectorResourceAgent.h"
 #include "core/inspector/InspectorResourceContainer.h"
 #include "core/inspector/InspectorResourceContentLoader.h"
+#include "core/inspector/InspectorRuntimeAgent.h"
 #include "core/inspector/InspectorTaskRunner.h"
 #include "core/inspector/InspectorTracingAgent.h"
 #include "core/inspector/InspectorWorkerAgent.h"
 #include "core/inspector/LayoutEditor.h"
 #include "core/inspector/MainThreadDebugger.h"
 #include "core/inspector/PageConsoleAgent.h"
-#include "core/inspector/PageDebuggerAgent.h"
-#include "core/inspector/PageRuntimeAgent.h"
 #include "core/layout/api/LayoutViewItem.h"
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
@@ -384,7 +383,7 @@ void WebDevToolsAgentImpl::initializeSession(int sessionId, const String& hostId
     v8::Isolate* isolate = V8PerIsolateData::mainThreadIsolate();
     m_v8Session = mainThreadDebugger->debugger()->connect(mainThreadDebugger->contextGroupId(m_inspectedFrames->root()));
 
-    m_session->append(PageRuntimeAgent::create(m_v8Session->runtimeAgent(), m_inspectedFrames.get()));
+    m_session->append(new InspectorRuntimeAgent(m_v8Session->runtimeAgent()));
 
     InspectorDOMAgent* domAgent = new InspectorDOMAgent(isolate, m_inspectedFrames.get(), m_v8Session.get(), m_overlay.get());
     m_domAgent = domAgent;
@@ -409,7 +408,7 @@ void WebDevToolsAgentImpl::initializeSession(int sessionId, const String& hostId
 
     m_session->append(InspectorIndexedDBAgent::create(m_inspectedFrames.get()));
 
-    InspectorDebuggerAgent* debuggerAgent = PageDebuggerAgent::create(m_v8Session->debuggerAgent(), m_inspectedFrames.get());
+    InspectorDebuggerAgent* debuggerAgent = new InspectorDebuggerAgent(m_v8Session->debuggerAgent());
     m_session->append(debuggerAgent);
 
     PageConsoleAgent* pageConsoleAgent = new PageConsoleAgent(m_v8Session.get(), m_domAgent, m_inspectedFrames.get());
@@ -428,7 +427,7 @@ void WebDevToolsAgentImpl::initializeSession(int sessionId, const String& hostId
 
     m_session->append(new InspectorProfilerAgent(m_v8Session->profilerAgent()));
 
-    m_session->append(InspectorHeapProfilerAgent::create(m_v8Session->heapProfilerAgent()));
+    m_session->append(new InspectorHeapProfilerAgent(m_v8Session->heapProfilerAgent()));
 
     InspectorPageAgent* pageAgent = InspectorPageAgent::create(m_inspectedFrames.get(), this, m_resourceContentLoader.get(), m_v8Session.get());
     m_pageAgent = pageAgent;

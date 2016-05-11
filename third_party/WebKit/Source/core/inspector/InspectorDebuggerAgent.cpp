@@ -37,10 +37,6 @@ namespace blink {
 
 using protocol::Maybe;
 
-namespace DebuggerAgentState {
-static const char debuggerEnabled[] = "debuggerEnabled";
-}
-
 InspectorDebuggerAgent::InspectorDebuggerAgent(V8DebuggerAgent* agent)
     : InspectorBaseAgent<InspectorDebuggerAgent, protocol::Frontend::Debugger>("Debugger")
     , m_v8DebuggerAgent(agent)
@@ -60,12 +56,10 @@ DEFINE_TRACE(InspectorDebuggerAgent)
 void InspectorDebuggerAgent::enable(ErrorString* errorString)
 {
     m_v8DebuggerAgent->enable(errorString);
-    m_state->setBoolean(DebuggerAgentState::debuggerEnabled, true);
 }
 
 void InspectorDebuggerAgent::disable(ErrorString* errorString)
 {
-    m_state->setBoolean(DebuggerAgentState::debuggerEnabled, false);
     m_v8DebuggerAgent->disable(errorString);
 }
 
@@ -271,11 +265,7 @@ void InspectorDebuggerAgent::dispose()
 
 void InspectorDebuggerAgent::restore()
 {
-    if (!m_state->booleanProperty(DebuggerAgentState::debuggerEnabled, false))
-        return;
     m_v8DebuggerAgent->restore();
-    ErrorString errorString;
-    enable(&errorString);
 }
 
 } // namespace blink

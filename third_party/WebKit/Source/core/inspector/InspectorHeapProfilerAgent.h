@@ -45,7 +45,7 @@ class V8HeapProfilerAgent;
 class CORE_EXPORT InspectorHeapProfilerAgent final : public InspectorBaseAgent<InspectorHeapProfilerAgent, protocol::Frontend::HeapProfiler>, public protocol::Backend::HeapProfiler {
     WTF_MAKE_NONCOPYABLE(InspectorHeapProfilerAgent);
 public:
-    static InspectorHeapProfilerAgent* create(V8HeapProfilerAgent*);
+    explicit InspectorHeapProfilerAgent(V8HeapProfilerAgent*);
     ~InspectorHeapProfilerAgent() override;
 
     // InspectorBaseAgent overrides.
@@ -66,8 +66,6 @@ public:
     void stopSampling(ErrorString*, OwnPtr<protocol::HeapProfiler::SamplingHeapProfile>*) override;
 
 private:
-    explicit InspectorHeapProfilerAgent(V8HeapProfilerAgent*);
-
     V8HeapProfilerAgent* m_v8HeapProfilerAgent;
 };
 

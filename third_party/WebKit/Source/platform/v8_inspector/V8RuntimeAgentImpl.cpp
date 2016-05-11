@@ -43,6 +43,7 @@ namespace blink {
 
 namespace V8RuntimeAgentImplState {
 static const char customObjectFormatterEnabled[] = "customObjectFormatterEnabled";
+static const char runtimeEnabled[] = "runtimeEnabled";
 };
 
 using protocol::Runtime::ExceptionDetails;
@@ -365,6 +366,8 @@ void V8RuntimeAgentImpl::clearFrontend()
 
 void V8RuntimeAgentImpl::restore()
 {
+    if (!m_state->booleanProperty(V8RuntimeAgentImplState::runtimeEnabled, false))
+        return;
     m_frontend->executionContextsCleared();
     ErrorString error;
     enable(&error);
@@ -378,6 +381,7 @@ void V8RuntimeAgentImpl::enable(ErrorString* errorString)
         return;
     m_session->changeInstrumentationCounter(+1);
     m_enabled = true;
+    m_state->setBoolean(V8RuntimeAgentImplState::runtimeEnabled, true);
     v8::HandleScope handles(m_debugger->isolate());
     m_session->reportAllContexts(this);
 }
@@ -387,6 +391,7 @@ void V8RuntimeAgentImpl::disable(ErrorString* errorString)
     if (!m_enabled)
         return;
     m_enabled = false;
+    m_state->setBoolean(V8RuntimeAgentImplState::runtimeEnabled, false);
     m_session->discardInjectedScripts();
     reset();
     m_session->changeInstrumentationCounter(-1);

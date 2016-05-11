@@ -35,10 +35,6 @@
 
 namespace blink {
 
-namespace ProfilerAgentState {
-static const char profilerEnabled[] = "profilerEnabled";
-}
-
 InspectorProfilerAgent::InspectorProfilerAgent(V8ProfilerAgent* agent)
     : InspectorBaseAgent<InspectorProfilerAgent, protocol::Frontend::Profiler>("Profiler")
     , m_v8ProfilerAgent(agent)
@@ -65,22 +61,16 @@ void InspectorProfilerAgent::dispose()
 
 void InspectorProfilerAgent::restore()
 {
-    if (!m_state->booleanProperty(ProfilerAgentState::profilerEnabled, false))
-        return;
     m_v8ProfilerAgent->restore();
-    ErrorString errorString;
-    enable(&errorString);
 }
 
 void InspectorProfilerAgent::enable(ErrorString* errorString)
 {
     m_v8ProfilerAgent->enable(errorString);
-    m_state->setBoolean(ProfilerAgentState::profilerEnabled, true);
 }
 
 void InspectorProfilerAgent::disable(ErrorString* errorString)
 {
-    m_state->setBoolean(ProfilerAgentState::profilerEnabled, false);
     m_v8ProfilerAgent->disable(errorString);
 }
 

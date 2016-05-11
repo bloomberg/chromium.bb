@@ -16,6 +16,7 @@ namespace blink {
 namespace ProfilerAgentState {
 static const char samplingInterval[] = "samplingInterval";
 static const char userInitiatedProfiling[] = "userInitiatedProfiling";
+static const char profilerEnabled[] = "profilerEnabled";
 }
 
 namespace {
@@ -183,6 +184,7 @@ void V8ProfilerAgentImpl::enable(ErrorString*)
     if (m_enabled)
         return;
     m_enabled = true;
+    m_state->setBoolean(ProfilerAgentState::profilerEnabled, true);
     m_session->changeInstrumentationCounter(+1);
 }
 
@@ -196,6 +198,7 @@ void V8ProfilerAgentImpl::disable(ErrorString* errorString)
     m_startedProfiles.clear();
     stop(nullptr, nullptr);
     m_enabled = false;
+    m_state->setBoolean(ProfilerAgentState::profilerEnabled, false);
 }
 
 void V8ProfilerAgentImpl::setSamplingInterval(ErrorString* error, int interval)
@@ -219,6 +222,8 @@ void V8ProfilerAgentImpl::clearFrontend()
 void V8ProfilerAgentImpl::restore()
 {
     ASSERT(!m_enabled);
+    if (!m_state->booleanProperty(ProfilerAgentState::profilerEnabled, false))
+        return;
     m_enabled = true;
     m_session->changeInstrumentationCounter(+1);
     int interval = 0;

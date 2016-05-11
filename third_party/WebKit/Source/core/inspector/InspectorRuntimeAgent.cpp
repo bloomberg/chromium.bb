@@ -39,13 +39,8 @@
 
 namespace blink {
 
-namespace InspectorRuntimeAgentState {
-static const char runtimeEnabled[] = "runtimeEnabled";
-};
-
 InspectorRuntimeAgent::InspectorRuntimeAgent(V8RuntimeAgent* agent)
     : InspectorBaseAgent<InspectorRuntimeAgent, protocol::Frontend::Runtime>("Runtime")
-    , m_enabled(false)
     , m_v8RuntimeAgent(agent)
 {
 }
@@ -70,11 +65,7 @@ void InspectorRuntimeAgent::dispose()
 
 void InspectorRuntimeAgent::restore()
 {
-    if (!m_state->booleanProperty(InspectorRuntimeAgentState::runtimeEnabled, false))
-        return;
     m_v8RuntimeAgent->restore();
-    ErrorString errorString;
-    enable(&errorString);
 }
 
 void InspectorRuntimeAgent::evaluate(ErrorString* errorString,
@@ -166,21 +157,11 @@ void InspectorRuntimeAgent::runScript(ErrorString* errorString,
 
 void InspectorRuntimeAgent::enable(ErrorString* errorString)
 {
-    if (m_enabled)
-        return;
-
-    m_enabled = true;
-    m_state->setBoolean(InspectorRuntimeAgentState::runtimeEnabled, true);
     m_v8RuntimeAgent->enable(errorString);
 }
 
 void InspectorRuntimeAgent::disable(ErrorString* errorString)
 {
-    if (!m_enabled)
-        return;
-
-    m_enabled = false;
-    m_state->setBoolean(InspectorRuntimeAgentState::runtimeEnabled, false);
     m_v8RuntimeAgent->disable(errorString);
 }
 

@@ -46,6 +46,7 @@ static const char javaScriptBreakpoints[] = "javaScriptBreakopints";
 static const char pauseOnExceptionsState[] = "pauseOnExceptionsState";
 static const char asyncCallStackDepth[] = "asyncCallStackDepth";
 static const char blackboxPattern[] = "blackboxPattern";
+static const char debuggerEnabled[] = "debuggerEnabled";
 
 // Breakpoint properties.
 static const char url[] = "url";
@@ -193,6 +194,7 @@ void V8DebuggerAgentImpl::enable()
     // debugger().addListener may result in reporting all parsed scripts to
     // the agent so it should already be in enabled state by then.
     m_enabled = true;
+    m_state->setBoolean(DebuggerAgentState::debuggerEnabled, true);
     debugger().debuggerAgentEnabled();
 
     protocol::Vector<V8DebuggerParsedScript> compiledScripts;
@@ -254,9 +256,10 @@ void V8DebuggerAgentImpl::disable(ErrorString*)
     m_skippedStepFrameCount = 0;
     m_recursionLevelForStepFrame = 0;
     m_skipAllPauses = false;
-    m_enabled = false;
     m_blackboxPattern = nullptr;
     m_state->remove(DebuggerAgentState::blackboxPattern);
+    m_enabled = false;
+    m_state->setBoolean(DebuggerAgentState::debuggerEnabled, false);
 }
 
 void V8DebuggerAgentImpl::internalSetAsyncCallStackDepth(int depth)
@@ -285,6 +288,8 @@ void V8DebuggerAgentImpl::clearFrontend()
 void V8DebuggerAgentImpl::restore()
 {
     ASSERT(!m_enabled);
+    if (!m_state->booleanProperty(DebuggerAgentState::debuggerEnabled, false))
+        return;
     if (!m_session->client()->canExecuteScripts())
         return;
 

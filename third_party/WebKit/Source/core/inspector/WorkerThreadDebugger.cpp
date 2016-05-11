@@ -32,7 +32,6 @@
 
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8ScriptRunner.h"
-#include "core/inspector/WorkerDebuggerAgent.h"
 #include "core/workers/WorkerThread.h"
 #include <v8.h>
 

@@ -32,12 +32,12 @@
 
 #include "core/InstrumentingAgents.h"
 #include "core/inspector/InspectorConsoleAgent.h"
+#include "core/inspector/InspectorDebuggerAgent.h"
 #include "core/inspector/InspectorHeapProfilerAgent.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorProfilerAgent.h"
+#include "core/inspector/InspectorRuntimeAgent.h"
 #include "core/inspector/WorkerConsoleAgent.h"
-#include "core/inspector/WorkerDebuggerAgent.h"
-#include "core/inspector/WorkerRuntimeAgent.h"
 #include "core/inspector/WorkerThreadDebugger.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerReportingProxy.h"
@@ -77,10 +77,10 @@ void WorkerInspectorController::connectFrontend()
     m_session = new InspectorSession(this, nullptr, m_instrumentingAgents.get(), 0, true /* autoFlush */);
     m_v8Session = m_debugger->debugger()->connect(m_debugger->contextGroupId());
 
-    m_session->append(WorkerRuntimeAgent::create(m_v8Session->runtimeAgent(), m_workerGlobalScope));
-    m_session->append(WorkerDebuggerAgent::create(m_v8Session->debuggerAgent(), m_workerGlobalScope));
+    m_session->append(new InspectorRuntimeAgent(m_v8Session->runtimeAgent()));
+    m_session->append(new InspectorDebuggerAgent(m_v8Session->debuggerAgent()));
     m_session->append(new InspectorProfilerAgent(m_v8Session->profilerAgent()));
-    m_session->append(InspectorHeapProfilerAgent::create(m_v8Session->heapProfilerAgent()));
+    m_session->append(new InspectorHeapProfilerAgent(m_v8Session->heapProfilerAgent()));
     m_session->append(new WorkerConsoleAgent(m_v8Session.get(), m_workerGlobalScope));
 
     m_session->attach(m_v8Session.get(), nullptr);
