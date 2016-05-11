@@ -18,13 +18,12 @@
 namespace blink {
 
 WebLayerTreeViewImplForTesting::WebLayerTreeViewImplForTesting()
+    : WebLayerTreeViewImplForTesting(defaultLayerTreeSettings())
 {
-    cc::LayerTreeSettings settings;
+}
 
-    // For web contents, layer transforms should scale up the contents of layers
-    // to keep content always crisp when possible.
-    settings.layer_transforms_should_scale_layer_contents = true;
-
+WebLayerTreeViewImplForTesting::WebLayerTreeViewImplForTesting(const cc::LayerTreeSettings& settings)
+{
     cc::LayerTreeHost::InitParams params;
     params.client = this;
     params.settings = &settings;
@@ -35,6 +34,18 @@ WebLayerTreeViewImplForTesting::WebLayerTreeViewImplForTesting()
 }
 
 WebLayerTreeViewImplForTesting::~WebLayerTreeViewImplForTesting() {}
+
+// static
+cc::LayerTreeSettings WebLayerTreeViewImplForTesting::defaultLayerTreeSettings()
+{
+    cc::LayerTreeSettings settings;
+
+    // For web contents, layer transforms should scale up the contents of layers
+    // to keep content always crisp when possible.
+    settings.layer_transforms_should_scale_layer_contents = true;
+
+    return settings;
+}
 
 void WebLayerTreeViewImplForTesting::setRootLayer(const blink::WebLayer& root)
 {

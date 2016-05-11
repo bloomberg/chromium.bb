@@ -4,11 +4,17 @@
 
 #include "platform/graphics/compositing/PaintArtifactCompositor.h"
 
+#include "base/test/test_simple_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "cc/layers/layer.h"
+#include "cc/test/fake_output_surface.h"
+#include "cc/trees/layer_tree_host.h"
+#include "cc/trees/layer_tree_settings.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/paint/PaintArtifact.h"
 #include "platform/testing/PictureMatchers.h"
 #include "platform/testing/TestPaintArtifact.h"
+#include "platform/testing/WebLayerTreeViewImplForTesting.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -347,6 +353,79 @@ TEST_F(PaintArtifactCompositorTest, ForeignLayerPassesThrough)
     EXPECT_EQ(layer, rootLayer()->child_at(0));
     EXPECT_EQ(gfx::Size(400, 300), layer->bounds());
     EXPECT_EQ(translation(50, 100), layer->transform());
+}
+
+// Similar to the above, but for the path where we build cc property trees
+// directly. This will eventually supersede the above.
+
+class WebLayerTreeViewWithOutputSurface : public WebLayerTreeViewImplForTesting {
+public:
+    WebLayerTreeViewWithOutputSurface(const cc::LayerTreeSettings& settings)
+        : WebLayerTreeViewImplForTesting(settings) {}
+
+    // cc::LayerTreeHostClient
+    void RequestNewOutputSurface() override
+    {
+        layerTreeHost()->SetOutputSurface(cc::FakeOutputSurface::CreateDelegating3d());
+    }
+};
+
+class PaintArtifactCompositorTestWithPropertyTrees : public PaintArtifactCompositorTest {
+protected:
+    PaintArtifactCompositorTestWithPropertyTrees()
+        : m_taskRunner(new base::TestSimpleTaskRunner)
+        , m_taskRunnerHandle(m_taskRunner)
+    {
+    }
+
+    void SetUp() override
+    {
+        PaintArtifactCompositorTest::SetUp();
+
+        cc::LayerTreeSettings settings = WebLayerTreeViewImplForTesting::defaultLayerTreeSettings();
+        settings.single_thread_proxy_scheduler = false;
+        settings.use_layer_lists = true;
+        m_webLayerTreeView = adoptPtr(new WebLayerTreeViewWithOutputSurface(settings));
+        m_webLayerTreeView->setRootLayer(*getPaintArtifactCompositor().getWebLayer());
+    }
+
+    const cc::PropertyTrees& propertyTrees()
+    {
+        return *m_webLayerTreeView->layerTreeHost()->property_trees();
+    }
+
+    void update(const PaintArtifact& artifact)
+    {
+        PaintArtifactCompositorTest::update(artifact);
+        m_webLayerTreeView->layerTreeHost()->LayoutAndUpdateLayers();
+    }
+
+private:
+    scoped_refptr<base::TestSimpleTaskRunner> m_taskRunner;
+    base::ThreadTaskRunnerHandle m_taskRunnerHandle;
+    OwnPtr<WebLayerTreeViewWithOutputSurface> m_webLayerTreeView;
+};
+
+TEST_F(PaintArtifactCompositorTestWithPropertyTrees, EmptyPaintArtifact)
+{
+    PaintArtifact emptyArtifact;
+    update(emptyArtifact);
+    EXPECT_TRUE(rootLayer()->children().empty());
+}
+
+TEST_F(PaintArtifactCompositorTestWithPropertyTrees, OneChunkWithAnOffset)
+{
+    TestPaintArtifact artifact;
+    artifact.chunk(PaintChunkProperties())
+        .rectDrawing(FloatRect(50, -50, 100, 100), Color::white);
+    update(artifact.build());
+
+    ASSERT_EQ(1u, rootLayer()->children().size());
+    const cc::Layer* child = rootLayer()->child_at(0);
+    EXPECT_THAT(child->GetPicture(),
+        Pointee(drawsRectangle(FloatRect(0, 0, 100, 100), Color::white)));
+    EXPECT_EQ(translation(50, -50), child->screen_space_transform());
+    EXPECT_EQ(gfx::Size(100, 100), child->bounds());
 }
 
 } // namespace

@@ -11,6 +11,7 @@
 #include "cc/playback/display_item_list_settings.h"
 #include "cc/playback/drawing_display_item.h"
 #include "cc/playback/transform_display_item.h"
+#include "cc/trees/layer_tree_host.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/paint/ClipPaintPropertyNode.h"
 #include "platform/graphics/paint/DisplayItem.h"
@@ -257,11 +258,88 @@ scoped_refptr<cc::Layer> foreignLayerForPaintChunk(const PaintArtifact& paintArt
     return layer;
 }
 
+static const int kInvalidNodeId = -1;
+static const int kRealRootNodeId = 0;
+static const int kSecondaryRootNodeId = 1;
+static const int kPropertyTreeSequenceNumber = 1;
+
+// Creates a minimal set of property trees for the compositor.
+void setMinimalPropertyTrees(cc::PropertyTrees* propertyTrees, int ownerId)
+{
+    // cc's property trees expect a child of the actual root to be used. So we
+    // need to create and populate an additional node for each type of tree.
+
+    cc::TransformTree& transformTree = propertyTrees->transform_tree;
+    if (transformTree.size() < 2) {
+        transformTree.Insert(cc::TransformNode(), kRealRootNodeId);
+        cc::TransformNode& transformNode = *transformTree.back();
+        transformNode.data.target_id = kRealRootNodeId;
+        transformNode.data.content_target_id = kSecondaryRootNodeId;
+        transformNode.data.source_node_id = kRealRootNodeId;
+        transformNode.data.needs_local_transform_update = true;
+        transformNode.owner_id = ownerId;
+        transformTree.set_needs_update(true);
+    }
+    DCHECK_EQ(transformTree.size(), 2u);
+
+    cc::ClipTree& clipTree = propertyTrees->clip_tree;
+    if (clipTree.size() < 2) {
+        clipTree.Insert(cc::ClipNode(), kRealRootNodeId);
+        cc::ClipNode& clipNode = *clipTree.back();
+        clipNode.data.transform_id = kSecondaryRootNodeId;
+        clipNode.data.target_id = kSecondaryRootNodeId;
+        clipNode.owner_id = ownerId;
+        clipTree.set_needs_update(true);
+    }
+    DCHECK_EQ(clipTree.size(), 2u);
+
+    cc::EffectTree& effectTree = propertyTrees->effect_tree;
+    if (effectTree.size() < 2) {
+        // This matches what cc does right now: the secondary root isn't a child
+        // of the first root (at index 0). This may not have been intentional.
+        effectTree.Insert(cc::EffectNode(), kInvalidNodeId);
+        cc::EffectNode& effectNode = *effectTree.back();
+        effectNode.data.has_render_surface = true;
+        effectNode.data.transform_id = kRealRootNodeId;
+        effectNode.data.clip_id = kRealRootNodeId;
+        effectNode.owner_id = ownerId;
+        effectTree.set_needs_update(true);
+    }
+    DCHECK_EQ(effectTree.size(), 2u);
+
+    cc::ScrollTree& scrollTree = propertyTrees->scroll_tree;
+    if (scrollTree.size() < 2) {
+        scrollTree.Insert(cc::ScrollNode(), kRealRootNodeId);
+        cc::ScrollNode& scrollNode = *scrollTree.back();
+        scrollNode.data.scrollable = false;
+        scrollNode.data.transform_id = kSecondaryRootNodeId;
+        scrollNode.owner_id = ownerId;
+        scrollTree.set_needs_update(true);
+    }
+    DCHECK_EQ(scrollTree.size(), 2u);
+}
+
 } // namespace
 
 void PaintArtifactCompositor::update(const PaintArtifact& paintArtifact)
 {
     ASSERT(m_rootLayer);
+
+    // If the compositor is configured to expect using flat layer lists plus
+    // property trees, then we should provide that format.
+    cc::LayerTreeHost* host = m_rootLayer->layer_tree_host();
+    const bool useLayerLists = host && host->settings().use_layer_lists;
+
+    if (useLayerLists) {
+        // The root layer must be the owner so that the render surface
+        // validation works. It's expected to own at least the effect node.
+        setMinimalPropertyTrees(host->property_trees(), m_rootLayer->id());
+        m_rootLayer->set_property_tree_sequence_number(kPropertyTreeSequenceNumber);
+        m_rootLayer->SetTransformTreeIndex(kSecondaryRootNodeId);
+        m_rootLayer->SetClipTreeIndex(kSecondaryRootNodeId);
+        m_rootLayer->SetEffectTreeIndex(kSecondaryRootNodeId);
+        m_rootLayer->SetScrollTreeIndex(kSecondaryRootNodeId);
+    }
 
     // TODO(jbroman): This should be incremental.
     m_rootLayer->RemoveAllChildren();
@@ -270,13 +348,44 @@ void PaintArtifactCompositor::update(const PaintArtifact& paintArtifact)
     m_contentLayerClients.reserveCapacity(paintArtifact.paintChunks().size());
     ClipLayerManager clipLayerManager(m_rootLayer.get());
     for (const PaintChunk& paintChunk : paintArtifact.paintChunks()) {
-        cc::Layer* parent = clipLayerManager.switchToNewClipLayer(paintChunk.properties.clip.get());
-        // TODO(jbroman): Same as above. This assumes the transform space of the current clip is
-        // an ancestor of the chunk. It is not necessarily true. crbug.com/597156
-        gfx::Transform transform = transformToTransformSpace(paintChunk.properties.transform.get(), localTransformSpace(paintChunk.properties.clip.get()));
+        cc::Layer* parent;
+        gfx::Transform transform;
+        if (useLayerLists) {
+            parent = m_rootLayer.get();
+        } else {
+            parent = clipLayerManager.switchToNewClipLayer(paintChunk.properties.clip.get());
+            // TODO(jbroman): Same as above. This assumes the transform space of the current clip is
+            // an ancestor of the chunk. It is not necessarily true. crbug.com/597156
+            transform = transformToTransformSpace(paintChunk.properties.transform.get(), localTransformSpace(paintChunk.properties.clip.get()));
+        }
+
         scoped_refptr<cc::Layer> layer = layerForPaintChunk(paintArtifact, paintChunk, transform);
+        if (useLayerLists) {
+            // This is only good enough to get trivial 2D translations working.
+            // We'll need to actually create more cc transform nodes to do any
+            // more; then we'll express offset-to-transform-parent relative to
+            // that transform node.
+            // TODO(jbroman): ^ Do that.
+            layer->set_offset_to_transform_parent(
+                transformToTransformSpace(paintChunk.properties.transform.get(), nullptr).To2dTranslation()
+                + layer->transform().To2dTranslation());
+        }
         layer->SetNeedsDisplay();
-        parent->AddChild(std::move(layer));
+        parent->AddChild(layer);
+
+        if (useLayerLists) {
+            layer->set_property_tree_sequence_number(kPropertyTreeSequenceNumber);
+            layer->SetTransformTreeIndex(kSecondaryRootNodeId);
+            layer->SetClipTreeIndex(kSecondaryRootNodeId);
+            layer->SetEffectTreeIndex(kSecondaryRootNodeId);
+            layer->SetScrollTreeIndex(kSecondaryRootNodeId);
+        }
+    }
+
+    if (useLayerLists) {
+        // Mark the property trees as having been rebuilt.
+        host->property_trees()->sequence_number = kPropertyTreeSequenceNumber;
+        host->property_trees()->needs_rebuild = false;
     }
 }
 
@@ -317,6 +426,5 @@ scoped_refptr<cc::Layer> PaintArtifactCompositor::layerForPaintChunk(const Paint
     m_contentLayerClients.append(contentLayerClient.release());
     return layer;
 }
-
 
 } // namespace blink
