@@ -217,6 +217,7 @@ class CredentialManagerImplTest : public content::RenderViewHostTestHarness {
 
     form_.username_value = base::ASCIIToUTF16("Username");
     form_.display_name = base::ASCIIToUTF16("Display Name");
+    form_.icon_url = GURL("https://example.com/icon.png");
     form_.password_value = base::ASCIIToUTF16("Password");
     form_.origin = web_contents()->GetLastCommittedURL().GetOrigin();
     form_.signon_realm = form_.origin.spec();
@@ -414,6 +415,40 @@ TEST_F(CredentialManagerImplTest, CredentialManagerOnStore) {
   EXPECT_EQ(form_.password_value, new_form.password_value);
   EXPECT_EQ(form_.origin, new_form.origin);
   EXPECT_EQ(form_.signon_realm, new_form.signon_realm);
+  EXPECT_TRUE(new_form.federation_origin.unique());
+  EXPECT_EQ(form_.icon_url, new_form.icon_url);
+  EXPECT_EQ(autofill::PasswordForm::SCHEME_HTML, new_form.scheme);
+}
+
+TEST_F(CredentialManagerImplTest, CredentialManagerOnStoreFederated) {
+  EXPECT_CALL(*client_, PromptUserToSavePasswordPtr(
+                            _, CredentialSourceType::CREDENTIAL_SOURCE_API))
+      .Times(testing::Exactly(1));
+  EXPECT_CALL(*client_, NotifyStorePasswordCalled());
+
+  bool called = false;
+  form_.federation_origin = url::Origin(GURL("https://google.com/"));
+  form_.password_value = base::string16();
+  form_.signon_realm = "federation://example.com/google.com";
+  CredentialInfo info(form_, CredentialType::CREDENTIAL_TYPE_FEDERATED);
+  CallStore(info, base::Bind(&RespondCallback, &called));
+
+  // Allow the PasswordFormManager to talk to the password store, determine
+  // that the form is new, and set it as pending.
+  RunAllPendingTasks();
+
+  EXPECT_TRUE(called);
+  EXPECT_TRUE(client_->pending_manager()->HasCompletedMatching());
+
+  autofill::PasswordForm new_form =
+      client_->pending_manager()->pending_credentials();
+  EXPECT_EQ(form_.username_value, new_form.username_value);
+  EXPECT_EQ(form_.display_name, new_form.display_name);
+  EXPECT_EQ(form_.password_value, new_form.password_value);
+  EXPECT_EQ(form_.origin, new_form.origin);
+  EXPECT_EQ(form_.signon_realm, new_form.signon_realm);
+  EXPECT_EQ(form_.federation_origin, new_form.federation_origin);
+  EXPECT_EQ(form_.icon_url, new_form.icon_url);
   EXPECT_EQ(autofill::PasswordForm::SCHEME_HTML, new_form.scheme);
 }
 
@@ -476,6 +511,7 @@ TEST_F(CredentialManagerImplTest,
   client_->set_zero_click_enabled(true);
   client_->set_first_run_seen(true);
   form_.federation_origin = url::Origin(GURL("https://example.com/"));
+  form_.password_value = base::string16();
   form_.skip_zero_click = true;
   form_.signon_realm = "federation://example.com/example.com";
   store_->AddLogin(form_);
@@ -740,6 +776,7 @@ TEST_F(CredentialManagerImplTest,
 TEST_F(CredentialManagerImplTest,
        CredentialManagerOnRequestCredentialFederatedMatch) {
   form_.federation_origin = url::Origin(GURL("https://example.com/"));
+  form_.password_value = base::string16();
   store_->AddLogin(form_);
   client_->set_first_run_seen(true);
 
@@ -755,6 +792,7 @@ TEST_F(CredentialManagerImplTest,
 TEST_F(CredentialManagerImplTest,
        CredentialManagerOnRequestCredentialFederatedNoMatch) {
   form_.federation_origin = url::Origin(GURL("https://example.com/"));
+  form_.password_value = base::string16();
   store_->AddLogin(form_);
   client_->set_first_run_seen(true);
 
@@ -809,6 +847,7 @@ TEST_F(CredentialManagerImplTest,
        CredentialManagerOnRequestCredentialAffiliatedFederatedMatch) {
   affiliated_form1_.federation_origin =
       url::Origin(GURL("https://example.com/"));
+  affiliated_form1_.password_value = base::string16();
   store_->AddLogin(affiliated_form1_);
   client_->set_first_run_seen(true);
   auto mock_helper = base::WrapUnique(new MockAffiliatedMatchHelper);
@@ -831,6 +870,7 @@ TEST_F(CredentialManagerImplTest,
        CredentialManagerOnRequestCredentialAffiliatedFederatedNoMatch) {
   affiliated_form1_.federation_origin =
       url::Origin(GURL("https://example.com/"));
+  affiliated_form1_.password_value = base::string16();
   store_->AddLogin(affiliated_form1_);
   client_->set_first_run_seen(true);
   auto mock_helper = base::WrapUnique(new MockAffiliatedMatchHelper);
@@ -1192,6 +1232,7 @@ TEST_F(CredentialManagerImplTest, BlacklistPasswordCredential) {
 
 TEST_F(CredentialManagerImplTest, BlacklistFederatedCredential) {
   form_.federation_origin = url::Origin(GURL("https://example.com/"));
+  form_.password_value = base::string16();
   form_.signon_realm = "federation://example.com/example.com";
 
   EXPECT_CALL(*client_, PromptUserToSavePasswordPtr(
@@ -1251,6 +1292,7 @@ TEST_F(CredentialManagerImplTest, RespectBlacklistingFederatedCredential) {
   store_->AddLogin(blacklisted);
 
   form_.federation_origin = url::Origin(GURL("https://example.com/"));
+  form_.password_value = base::string16();
   form_.signon_realm = "federation://example.com/example.com";
   CredentialInfo info(form_, CredentialType::CREDENTIAL_TYPE_FEDERATED);
   bool called = false;

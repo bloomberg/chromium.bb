@@ -1153,6 +1153,8 @@ void PasswordFormManager::CreatePendingCredentials() {
     pending_credentials_.federation_origin =
         provisionally_saved_form_->federation_origin;
     pending_credentials_.icon_url = provisionally_saved_form_->icon_url;
+    // Take the correct signon_realm for federated credentials.
+    pending_credentials_.signon_realm = provisionally_saved_form_->signon_realm;
   }
 
   if (user_action_ == kUserActionOverridePassword &&
