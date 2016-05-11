@@ -13,7 +13,7 @@
 #include "base/test/histogram_tester.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/test/test_simple_task_runner.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/proximity_auth/logging/logging.h"
 #include "components/proximity_auth/proximity_monitor_observer.h"

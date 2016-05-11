@@ -6,7 +6,7 @@
 
 #include <algorithm>
 
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/invalidation/public/ack_handle.h"
 #include "components/invalidation/public/invalidation.h"
 

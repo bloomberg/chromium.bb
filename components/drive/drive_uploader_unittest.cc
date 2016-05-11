@@ -17,7 +17,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "components/drive/service/dummy_drive_service.h"
 #include "google_apis/drive/drive_api_parser.h"

@@ -13,7 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/version.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/update_client/crx_update_item.h"

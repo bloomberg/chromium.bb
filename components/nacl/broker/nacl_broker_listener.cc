@@ -12,7 +12,7 @@
 #include "base/process/launch.h"
 #include "base/process/process.h"
 #include "base/process/process_handle.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/nacl/common/nacl_cmd_line.h"
 #include "components/nacl/common/nacl_debug_exception_handler_win.h"
 #include "components/nacl/common/nacl_messages.h"

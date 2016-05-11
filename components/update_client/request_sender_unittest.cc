@@ -10,7 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/update_client/test_configurator.h"
 #include "components/update_client/url_request_post_interceptor.h"
 #include "net/url_request/url_fetcher.h"

@@ -4,7 +4,7 @@
 
 #include "components/proximity_auth/proximity_auth_system.h"
 
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/proximity_auth/logging/logging.h"
 #include "components/proximity_auth/proximity_auth_client.h"
 #include "components/proximity_auth/remote_device_life_cycle_impl.h"

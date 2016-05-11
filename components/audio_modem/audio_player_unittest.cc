@@ -12,7 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/test/test_message_loop.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/audio_modem/audio_player_impl.h"
 #include "components/audio_modem/public/audio_modem_types.h"
 #include "components/audio_modem/test/random_samples.h"

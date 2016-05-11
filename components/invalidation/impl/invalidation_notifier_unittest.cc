@@ -7,7 +7,7 @@
 #include <memory>
 #include <utility>
 
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/invalidation/impl/fake_invalidation_handler.h"
 #include "components/invalidation/impl/fake_invalidation_state_tracker.h"
 #include "components/invalidation/impl/invalidation_state_tracker.h"

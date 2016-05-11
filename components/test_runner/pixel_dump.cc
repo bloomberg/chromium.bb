@@ -10,7 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/logging.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "components/test_runner/layout_test_runtime_flags.h"
 // FIXME: Including platform_canvas.h here is a layering violation.

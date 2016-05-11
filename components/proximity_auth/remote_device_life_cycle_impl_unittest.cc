@@ -12,7 +12,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/test/test_simple_task_runner.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/proximity_auth/authenticator.h"
 #include "components/proximity_auth/connection_finder.h"
 #include "components/proximity_auth/fake_connection.h"

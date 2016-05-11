@@ -19,7 +19,7 @@
 #include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/sequenced_worker_pool_owner.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "components/component_updater/component_updater_service_internal.h"
 #include "components/update_client/test_configurator.h"

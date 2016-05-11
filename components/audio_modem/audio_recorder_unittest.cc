@@ -13,7 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/aligned_memory.h"
 #include "base/run_loop.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/audio_modem/audio_recorder_impl.h"
 #include "components/audio_modem/public/audio_modem_types.h"

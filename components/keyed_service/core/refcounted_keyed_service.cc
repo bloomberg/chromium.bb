@@ -5,7 +5,7 @@
 #include "components/keyed_service/core/refcounted_keyed_service.h"
 
 #include "base/location.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 
 namespace impl {
 

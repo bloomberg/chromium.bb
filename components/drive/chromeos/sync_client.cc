@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/drive/chromeos/file_cache.h"
 #include "components/drive/chromeos/file_system/download_operation.h"
 #include "components/drive/chromeos/file_system/operation_delegate.h"

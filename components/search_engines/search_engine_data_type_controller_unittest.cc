@@ -12,7 +12,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/tracked_objects.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/sync_driver/data_type_controller_mock.h"

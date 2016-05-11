@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/sync_driver/generic_change_processor.h"
 #include "components/sync_driver/generic_change_processor_factory.h"
 #include "components/sync_driver/sync_client.h"

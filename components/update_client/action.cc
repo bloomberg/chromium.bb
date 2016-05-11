@@ -11,7 +11,7 @@
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/update_client/action_update.h"
 #include "components/update_client/action_wait.h"
 #include "components/update_client/configurator.h"

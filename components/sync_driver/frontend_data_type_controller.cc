@@ -5,7 +5,7 @@
 #include "components/sync_driver/frontend_data_type_controller.h"
 
 #include "base/logging.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/sync_driver/change_processor.h"
 #include "components/sync_driver/model_associator.h"
 #include "components/sync_driver/sync_client.h"

@@ -11,7 +11,7 @@
 #include "base/logging.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task_runner_util.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/drive/chromeos/file_cache.h"
 #include "components/drive/chromeos/file_system/download_operation.h"
 #include "components/drive/chromeos/file_system/operation_delegate.h"

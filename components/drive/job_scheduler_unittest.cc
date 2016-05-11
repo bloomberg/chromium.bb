@@ -16,7 +16,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/drive/chromeos/drive_test_util.h"
 #include "components/drive/drive_pref_names.h"
 #include "components/drive/event_logger.h"

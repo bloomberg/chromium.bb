@@ -23,7 +23,7 @@
 #include "base/profiler/stack_sampling_profiler.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/metrics/proto/chrome_user_metrics_extension.pb.h"
 

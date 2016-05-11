@@ -13,7 +13,7 @@
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/client_update_protocol/ecdsa.h"
 #include "components/update_client/configurator.h"
 #include "components/update_client/utils.h"

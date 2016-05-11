@@ -9,8 +9,8 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
-#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/sessions/core/base_session_service_delegate.h"
 #include "components/sessions/core/session_backend.h"
 

@@ -5,7 +5,7 @@
 #include "components/mus/gles2/command_buffer_task_runner.h"
 
 #include "base/bind.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/mus/gles2/command_buffer_driver.h"
 
 namespace mus {

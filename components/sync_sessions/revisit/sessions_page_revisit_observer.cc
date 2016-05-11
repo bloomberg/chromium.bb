@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/metrics/histogram_macros.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/sessions/core/session_types.h"
 #include "components/sync_sessions/revisit/current_tab_matcher.h"

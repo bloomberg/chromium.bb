@@ -12,7 +12,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/offline_pages/offline_page_item.h"
 #include "sql/connection.h"
 #include "sql/statement.h"

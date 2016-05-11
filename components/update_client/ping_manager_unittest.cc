@@ -9,7 +9,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/version.h"
 #include "components/update_client/crx_update_item.h"
 #include "components/update_client/test_configurator.h"

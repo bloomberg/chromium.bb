@@ -8,7 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/update_client/update_engine.h"
 
 namespace update_client {

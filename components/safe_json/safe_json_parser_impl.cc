@@ -8,8 +8,8 @@
 
 #include "base/sequenced_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/thread_task_runner_handle.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/tuple.h"
 #include "base/values.h"
 #include "content/public/browser/browser_thread.h"

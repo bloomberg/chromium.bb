@@ -17,7 +17,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/invalidation/impl/gcm_network_channel.h"
 #include "components/invalidation/impl/gcm_network_channel_delegate.h"
 #include "components/invalidation/impl/push_client_channel.h"

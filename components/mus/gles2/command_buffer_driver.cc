@@ -9,7 +9,7 @@
 
 #include "base/bind.h"
 #include "base/memory/shared_memory.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/mus/gles2/gl_surface_adapter.h"
 #include "components/mus/gles2/gpu_memory_tracker.h"

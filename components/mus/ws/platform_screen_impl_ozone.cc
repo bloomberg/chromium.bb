@@ -8,7 +8,7 @@
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/sys_info.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "ui/display/types/display_snapshot.h"
 #include "ui/display/types/native_display_delegate.h"
 #include "ui/ozone/public/ozone_platform.h"

@@ -8,7 +8,7 @@
 #include "base/feature_list.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/ssl_config/ssl_config_prefs.h"

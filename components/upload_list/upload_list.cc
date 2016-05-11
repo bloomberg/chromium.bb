@@ -14,8 +14,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "base/thread_task_runner_handle.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "base/threading/thread_task_runner_handle.h"
 
 UploadList::UploadInfo::UploadInfo(const std::string& upload_id,
                                    const base::Time& upload_time,

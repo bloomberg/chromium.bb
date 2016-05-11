@@ -8,7 +8,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/translate/content/browser/browser_cld_data_provider.h"
 #include "components/translate/content/browser/browser_cld_data_provider_factory.h"
 #include "components/translate/content/common/translate_messages.h"

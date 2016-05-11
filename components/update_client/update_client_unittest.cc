@@ -17,7 +17,7 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/test/sequenced_worker_pool_owner.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "base/version.h"
 #include "components/prefs/testing_pref_service.h"

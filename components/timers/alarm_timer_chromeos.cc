@@ -16,8 +16,8 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/pending_task.h"
-#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 
 namespace timers {

@@ -10,7 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/task_runner_util.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/drive/chromeos/file_cache.h"
 #include "components/drive/chromeos/file_system/create_file_operation.h"
 #include "components/drive/chromeos/file_system/download_operation.h"

@@ -8,7 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/stl_util.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/prefs/pref_service.h"
 #include "components/update_client/action_update_check.h"
