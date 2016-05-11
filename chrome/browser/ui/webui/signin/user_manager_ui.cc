@@ -31,7 +31,7 @@ UserManagerUI::UserManagerUI(content::WebUI* web_ui)
   GetLocalizedStrings(&localized_strings);
 
   Profile* profile = Profile::FromWebUI(web_ui);
-  // Set up the chrome://user-chooser/ source.
+  // Set up the chrome://user-manager/ source.
   content::WebUIDataSource::Add(profile, CreateUIDataSource(localized_strings));
 
 #if defined(ENABLE_THEMES)
