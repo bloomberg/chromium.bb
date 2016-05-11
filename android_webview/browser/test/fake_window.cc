@@ -9,8 +9,8 @@
 #include "android_webview/browser/render_thread_manager.h"
 #include "base/location.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "ui/gl/gl_bindings.h"
 
 namespace android_webview {

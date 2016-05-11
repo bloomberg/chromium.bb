@@ -10,7 +10,7 @@
 #include "android_webview/browser/child_frame.h"
 #include "android_webview/browser/render_thread_manager.h"
 #include "base/location.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "cc/output/compositor_frame.h"
 #include "content/public/test/test_synchronous_compositor_android.h"
 
