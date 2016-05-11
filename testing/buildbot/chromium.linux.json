@@ -32,6 +32,12 @@
         "test": "blimp_unittests"
       },
       {
+        "override_compile_targets": [
+          "breakpad_unittests"
+        ],
+        "test": "breakpad_unittests"
+      },
+      {
         "test": "cc_unittests"
       },
       {
@@ -119,6 +125,12 @@
         "test": "net_unittests"
       },
       {
+        "override_compile_targets": [
+          "sandbox_linux_unittests"
+        ],
+        "test": "sandbox_linux_unittests"
+      },
+      {
         "test": "sql_unittests"
       },
       {
@@ -135,6 +147,23 @@
       },
       {
         "test": "unit_tests"
+      }
+    ],
+    "instrumentation_tests": [
+      {
+        "test": "android_webview_test_apk"
+      },
+      {
+        "test": "chrome_public_test_apk"
+      },
+      {
+        "test": "chrome_sync_shell_test_apk"
+      },
+      {
+        "test": "content_shell_test_apk"
+      },
+      {
+        "test": "mojo_test_apk"
       }
     ],
     "junit_tests": [
