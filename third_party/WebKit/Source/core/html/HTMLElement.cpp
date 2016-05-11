@@ -271,8 +271,6 @@ const AtomicString& HTMLElement::eventNameForAttributeName(const QualifiedName& 
             { onanimationendAttr, EventTypeNames::animationend },
             { onanimationiterationAttr, EventTypeNames::animationiteration },
             { onanimationstartAttr, EventTypeNames::animationstart },
-            { onautocompleteAttr, EventTypeNames::autocomplete },
-            { onautocompleteerrorAttr, EventTypeNames::autocompleteerror },
             { onbeforecopyAttr, EventTypeNames::beforecopy },
             { onbeforecutAttr, EventTypeNames::beforecut },
             { onbeforepasteAttr, EventTypeNames::beforepaste },

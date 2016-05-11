@@ -266,8 +266,6 @@ public:
 
     WebCookieJar* cookieJar() const override { return 0; }
 
-    void didRequestAutocomplete(HTMLFormElement*) override;
-
     PassOwnPtr<WebServiceWorkerProvider> createServiceWorkerProvider() override;
     bool isControlledByServiceWorker(DocumentLoader&) override { return false; }
     int64_t serviceWorkerID(DocumentLoader&) override { return -1; }

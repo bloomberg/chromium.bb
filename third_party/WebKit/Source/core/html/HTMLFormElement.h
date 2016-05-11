@@ -35,7 +35,6 @@ namespace blink {
 
 class Event;
 class FormAssociatedElement;
-class GenericEventQueue;
 class HTMLFormControlElement;
 class HTMLFormControlsCollection;
 class HTMLImageElement;
@@ -93,19 +92,6 @@ public:
     bool reportValidity();
     bool matchesValidityPseudoClasses() const final;
     bool isValidElement() final;
-
-    enum AutocompleteResult {
-        AutocompleteResultSuccess,
-        AutocompleteResultErrorDisabled,
-        AutocompleteResultErrorCancel,
-        AutocompleteResultErrorInvalid,
-    };
-
-    void requestAutocomplete();
-    void finishRequestAutocomplete(AutocompleteResult);
-
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(autocomplete);
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(autocompleteerror);
 
     RadioButtonGroupScope& radioButtonGroupScope() { return m_radioButtonGroupScope; }
 
@@ -177,8 +163,6 @@ private:
     bool m_isInResetFunction : 1;
 
     bool m_wasDemoted : 1;
-
-    Member<GenericEventQueue> m_pendingAutocompleteEventsQueue;
 };
 
 } // namespace blink

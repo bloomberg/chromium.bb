@@ -166,8 +166,6 @@ onabort
 onanimationstart
 onanimationiteration
 onanimationend
-onautocomplete
-onautocompleteerror
 onbeforecopy
 onbeforecut
 onbeforepaste

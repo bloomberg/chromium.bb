@@ -161,8 +161,6 @@ public:
 
     void dispatchWillStartUsingPeerConnectionHandler(WebRTCPeerConnectionHandler*) override;
 
-    void didRequestAutocomplete(HTMLFormElement*) override;
-
     bool allowWebGL(bool enabledPerSettings) override;
 
     void dispatchWillInsertBody() override;

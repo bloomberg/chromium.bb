@@ -203,10 +203,6 @@ interface AudioProcessingEvent : Event
     getter outputBuffer
     getter playbackTime
     method constructor
-interface AutocompleteErrorEvent : Event
-    attribute @@toStringTag
-    getter reason
-    method constructor
 interface BarProp
     attribute @@toStringTag
     getter visible

@@ -239,8 +239,7 @@ PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "A
 FAIL Should throw NOT_SUPPORTED_ERR for non-legacy event interface "AudioProcessingEvent" assert_throws: function "function () {
         var evt = document.createEvent(even..." did not throw
 PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "AudioProcessingEvents" 
-FAIL Should throw NOT_SUPPORTED_ERR for non-legacy event interface "AutocompleteErrorEvent" assert_throws: function "function () {
-        var evt = document.createEvent(even..." did not throw
+PASS Should throw NOT_SUPPORTED_ERR for non-legacy event interface "AutocompleteErrorEvent" 
 PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "AutocompleteErrorEvents" 
 FAIL Should throw NOT_SUPPORTED_ERR for non-legacy event interface "BeforeInstallPromptEvent" assert_throws: function "function () {
         var evt = document.createEvent(even..." did not throw

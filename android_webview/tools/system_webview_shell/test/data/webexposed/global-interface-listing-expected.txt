@@ -184,9 +184,6 @@ interface AudioProcessingEvent : Event
     getter outputBuffer
     getter playbackTime
     method constructor
-interface AutocompleteErrorEvent : Event
-    getter reason
-    method constructor
 interface BarProp
     getter visible
     method constructor

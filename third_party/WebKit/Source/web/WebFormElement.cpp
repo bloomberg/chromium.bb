@@ -75,16 +75,6 @@ void WebFormElement::getFormControlElements(WebVector<WebFormControlElement>& re
     result.assign(formControlElements);
 }
 
-bool WebFormElement::checkValidity()
-{
-    return unwrap<HTMLFormElement>()->checkValidity();
-}
-
-void WebFormElement::finishRequestAutocomplete(WebFormElement::AutocompleteResult result)
-{
-    unwrap<HTMLFormElement>()->finishRequestAutocomplete(static_cast<HTMLFormElement::AutocompleteResult>(result));
-}
-
 WebFormElement::WebFormElement(HTMLFormElement* e)
     : WebElement(e)
 {

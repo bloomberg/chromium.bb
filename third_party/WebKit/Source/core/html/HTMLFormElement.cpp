@@ -32,9 +32,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/NodeListsNodeData.h"
-#include "core/events/AutocompleteErrorEvent.h"
 #include "core/events/Event.h"
-#include "core/events/GenericEventQueue.h"
 #include "core/events/ScopedEventQueue.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
@@ -73,7 +71,6 @@ HTMLFormElement::HTMLFormElement(Document& document)
     , m_shouldSubmit(false)
     , m_isInResetFunction(false)
     , m_wasDemoted(false)
-    , m_pendingAutocompleteEventsQueue(GenericEventQueue::create(this))
 {
 }
 
@@ -93,7 +90,6 @@ DEFINE_TRACE(HTMLFormElement)
     visitor->trace(m_radioButtonGroupScope);
     visitor->trace(m_associatedElements);
     visitor->trace(m_imageElements);
-    visitor->trace(m_pendingAutocompleteEventsQueue);
     HTMLElement::trace(visitor);
 }
 
@@ -448,43 +444,6 @@ void HTMLFormElement::reset()
     m_isInResetFunction = false;
 }
 
-void HTMLFormElement::requestAutocomplete()
-{
-    String errorMessage;
-
-    if (!document().frame())
-        errorMessage = "requestAutocomplete: form is not owned by a displayed document.";
-    else if (!shouldAutocomplete())
-        errorMessage = "requestAutocomplete: form autocomplete attribute is set to off.";
-    else if (!UserGestureIndicator::utilizeUserGesture())
-        errorMessage = "requestAutocomplete: must be called in response to a user gesture.";
-
-    if (!errorMessage.isEmpty()) {
-        document().addConsoleMessage(ConsoleMessage::create(RenderingMessageSource, LogMessageLevel, errorMessage));
-        finishRequestAutocomplete(AutocompleteResultErrorDisabled);
-    } else {
-        document().frame()->loader().client()->didRequestAutocomplete(this);
-    }
-}
-
-void HTMLFormElement::finishRequestAutocomplete(AutocompleteResult result)
-{
-    Event* event = nullptr;
-    if (result == AutocompleteResultSuccess)
-        event = Event::createBubble(EventTypeNames::autocomplete);
-    else if (result == AutocompleteResultErrorDisabled)
-        event = AutocompleteErrorEvent::create("disabled");
-    else if (result == AutocompleteResultErrorCancel)
-        event = AutocompleteErrorEvent::create("cancel");
-    else if (result == AutocompleteResultErrorInvalid)
-        event = AutocompleteErrorEvent::create("invalid");
-    else
-        ASSERT_NOT_REACHED();
-
-    event->setTarget(this);
-    m_pendingAutocompleteEventsQueue->enqueueEvent(event);
-}
-
 void HTMLFormElement::parseAttribute(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& value)
 {
     if (name == actionAttr) {
@@ -506,10 +465,6 @@ void HTMLFormElement::parseAttribute(const QualifiedName& name, const AtomicStri
         m_attributes.updateEncodingType(value);
     } else if (name == accept_charsetAttr) {
         m_attributes.setAcceptCharset(value);
-    } else if (name == onautocompleteAttr) {
-        setAttributeEventListener(EventTypeNames::autocomplete, createAttributeEventListener(this, name, value, eventParameterName()));
-    } else if (name == onautocompleteerrorAttr) {
-        setAttributeEventListener(EventTypeNames::autocompleteerror, createAttributeEventListener(this, name, value, eventParameterName()));
     } else {
         HTMLElement::parseAttribute(name, oldValue, value);
     }

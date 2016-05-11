@@ -22,7 +22,6 @@
 #include "content/public/common/common_param_traits_macros.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_utils.h"
-#include "third_party/WebKit/public/web/WebFormElement.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/ipc/gfx_param_traits.h"
 #include "ui/gfx/ipc/skia/gfx_skia_param_traits.h"
@@ -102,10 +101,6 @@ IPC_STRUCT_TRAITS_BEGIN(autofill::PasswordAndRealm)
   IPC_STRUCT_TRAITS_MEMBER(password)
   IPC_STRUCT_TRAITS_MEMBER(realm)
 IPC_STRUCT_TRAITS_END()
-
-IPC_ENUM_TRAITS_MAX_VALUE(
-    blink::WebFormElement::AutocompleteResult,
-    blink::WebFormElement::AutocompleteResultErrorInvalid)
 
 // Singly-included section for type definitions.
 #ifndef COMPONENTS_AUTOFILL_CONTENT_COMMON_AUTOFILL_MESSAGES_H_

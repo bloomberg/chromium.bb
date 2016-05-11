@@ -34,8 +34,6 @@
     NoInterfaceObject, // Always used on target of 'implements'
 ] interface GlobalEventHandlers {
     attribute EventHandler onabort;
-    [RuntimeEnabled=RequestAutocomplete] attribute EventHandler onautocomplete;
-    [RuntimeEnabled=RequestAutocomplete] attribute EventHandler onautocompleteerror;
     attribute EventHandler onblur;
     attribute EventHandler oncancel;
     attribute EventHandler oncanplay;

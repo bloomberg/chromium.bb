@@ -163,10 +163,6 @@ void EmptyTextCheckerClient::requestCheckingOfString(TextCheckingRequest*)
 {
 }
 
-void EmptyFrameLoaderClient::didRequestAutocomplete(HTMLFormElement*)
-{
-}
-
 PassOwnPtr<WebServiceWorkerProvider> EmptyFrameLoaderClient::createServiceWorkerProvider()
 {
     return nullptr;

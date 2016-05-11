@@ -226,8 +226,6 @@ public:
 
     virtual void dispatchWillStartUsingPeerConnectionHandler(WebRTCPeerConnectionHandler*) { }
 
-    virtual void didRequestAutocomplete(HTMLFormElement*) = 0;
-
     virtual bool allowWebGL(bool enabledPerSettings) { return enabledPerSettings; }
 
     // If an HTML document is being loaded, informs the embedder that the document will have its <body> attached soon.

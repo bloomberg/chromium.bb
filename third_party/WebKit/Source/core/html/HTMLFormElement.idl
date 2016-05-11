@@ -43,6 +43,4 @@
     [CustomElementCallbacks] void reset();
     boolean checkValidity();
     boolean reportValidity();
-
-    [RuntimeEnabled=RequestAutocomplete, MeasureAs=RequestAutocomplete] void requestAutocomplete();
 };

@@ -123,9 +123,6 @@ PASS document.createEvent('CloseEvent').constructor === window.CloseEvent is tru
 PASS document.createEvent('TouchEvent') instanceof window.TouchEvent is true
 PASS document.createEvent('TouchEvent') instanceof window.Event is true
 PASS document.createEvent('TouchEvent').constructor === window.TouchEvent is true
-PASS document.createEvent('AutocompleteErrorEvent') instanceof window.AutocompleteErrorEvent is true
-PASS document.createEvent('AutocompleteErrorEvent') instanceof window.Event is true
-PASS document.createEvent('AutocompleteErrorEvent').constructor === window.AutocompleteErrorEvent is true
 PASS allEventInterfacesCreateEvents is true
 PASS successfullyParsed is true
 

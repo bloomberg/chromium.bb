@@ -265,10 +265,6 @@ interface AudioTrackList : EventTarget
     setter onaddtrack
     setter onchange
     setter onremovetrack
-interface AutocompleteErrorEvent : Event
-    attribute @@toStringTag
-    getter reason
-    method constructor
 interface BarProp
     attribute @@toStringTag
     getter visible
@@ -1094,8 +1090,6 @@ interface Document : Node
     getter lastModified
     getter links
     getter onabort
-    getter onautocomplete
-    getter onautocompleteerror
     getter onbeforecopy
     getter onbeforecut
     getter onbeforepaste
@@ -1259,8 +1253,6 @@ interface Document : Node
     setter dir
     setter domain
     setter onabort
-    setter onautocomplete
-    setter onautocompleteerror
     setter onbeforecopy
     setter onbeforecut
     setter onbeforepaste
@@ -1978,8 +1970,6 @@ interface HTMLElement : Element
     getter offsetTop
     getter offsetWidth
     getter onabort
-    getter onautocomplete
-    getter onautocompleteerror
     getter onblur
     getter oncancel
     getter oncanplay
@@ -2063,8 +2053,6 @@ interface HTMLElement : Element
     setter innerText
     setter lang
     setter onabort
-    setter onautocomplete
-    setter onautocompleteerror
     setter onblur
     setter oncancel
     setter oncanplay
@@ -2196,7 +2184,6 @@ interface HTMLFormElement : HTMLElement
     method checkValidity
     method constructor
     method reportValidity
-    method requestAutocomplete
     method reset
     method submit
     setter acceptCharset
@@ -4693,8 +4680,6 @@ interface SVGElement : Element
     attribute @@toStringTag
     getter className
     getter onabort
-    getter onautocomplete
-    getter onautocompleteerror
     getter onblur
     getter oncancel
     getter oncanplay
@@ -4765,8 +4750,6 @@ interface SVGElement : Element
     method constructor
     method focus
     setter onabort
-    setter onautocomplete
-    setter onautocompleteerror
     setter onblur
     setter oncancel
     setter oncanplay
@@ -7508,8 +7491,6 @@ interface webkitURL
     attribute onanimationend
     attribute onanimationiteration
     attribute onanimationstart
-    attribute onautocomplete
-    attribute onautocompleteerror
     attribute onbeforeunload
     attribute onblur
     attribute oncancel

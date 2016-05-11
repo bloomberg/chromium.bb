@@ -52,7 +52,6 @@
 #include "third_party/WebKit/public/web/WebCache.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
-#include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
 #include "third_party/WebKit/public/web/WebSecurityPolicy.h"
 #include "third_party/WebKit/public/web/WebView.h"
 
@@ -61,7 +60,6 @@
 #endif
 
 using blink::WebCache;
-using blink::WebRuntimeFeatures;
 using blink::WebSecurityPolicy;
 using blink::WebString;
 using content::RenderThread;
@@ -244,10 +242,6 @@ ChromeRenderThreadObserver::ChromeRenderThreadObserver()
     : weak_factory_(this) {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
-
-#if defined(ENABLE_AUTOFILL_DIALOG)
-  WebRuntimeFeatures::enableRequestAutocomplete(true);
-#endif
 
   RenderThread* thread = RenderThread::Get();
   resource_delegate_.reset(new RendererResourceDelegate());
