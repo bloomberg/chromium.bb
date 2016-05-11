@@ -114,7 +114,7 @@
       'CrWin7Goma(dbg)': 'gyp_debug_bot_minimal_symbols_x86',
       'CrWin7Goma(dll)': 'gyp_shared_release_bot_minimal_symbols_x86',
       'CrWinClang':
-        'swarming_gn_clang_official_release_bot_minimal_symbols_x86',
+        'swarming_gyp_clang_official_release_bot_minimal_symbols_x86',
       'CrWinClang(dbg)':
         'swarming_gyp_clang_debug_bot_minimal_symbols_x86',
       'CrWinClang(dbg) tester': 'none',
@@ -1686,8 +1686,8 @@
       'minimal_symbols', 'x64',
     ],
 
-    'swarming_gn_clang_official_release_bot_minimal_symbols_x86': [
-      'swarming', 'gn', 'clang', 'official', 'release_bot',
+    'swarming_gyp_clang_official_release_bot_minimal_symbols_x86': [
+      'swarming', 'gyp', 'clang', 'official', 'release_bot',
       'minimal_symbols', 'x86',
     ],
 
