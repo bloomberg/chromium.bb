@@ -165,6 +165,10 @@ void TextureLayerImpl::AppendQuads(RenderPass* render_pass,
   if (visible_quad_rect.IsEmpty())
     return;
 
+  if (!vertex_opacity_[0] && !vertex_opacity_[1] && !vertex_opacity_[2] &&
+      !vertex_opacity_[3])
+    return;
+
   if (!texture_mailbox_.secure_output_only() ||
       (layer_tree_impl()->OutputIsSecure() && !InsideCopyRequest())) {
     TextureDrawQuad* quad =
