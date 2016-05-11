@@ -119,6 +119,7 @@
 #include "third_party/WebKit/public/web/WebView.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "ui/events/blink/blink_event_util.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_rep.h"
 #include "ui/gfx/range/range.h"
@@ -2621,10 +2622,12 @@ void PepperPluginInstanceImpl::SetTickmarks(PP_Instance instance,
   blink::WebVector<blink::WebRect> tickmarks_converted(
       static_cast<size_t>(count));
   for (uint32_t i = 0; i < count; ++i) {
-    tickmarks_converted[i] = blink::WebRect(tickmarks[i].point.x,
-                                            tickmarks[i].point.y,
-                                            tickmarks[i].size.width,
-                                            tickmarks[i].size.height);
+    gfx::RectF tickmark(tickmarks[i].point.x,
+                        tickmarks[i].point.y,
+                        tickmarks[i].size.width,
+                        tickmarks[i].size.height);
+    tickmark.Scale(1 / viewport_to_dip_scale_);
+    tickmarks_converted[i] = blink::WebRect(gfx::ToEnclosedRect(tickmark));
   }
   blink::WebLocalFrame* frame = render_frame_->GetWebFrame();
   frame->setTickmarks(tickmarks_converted);
