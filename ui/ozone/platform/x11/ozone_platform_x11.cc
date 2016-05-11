@@ -12,8 +12,8 @@
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "ui/events/platform/x11/x11_event_source_libevent.h"
-#include "ui/ozone/common/native_display_delegate_ozone.h"
 #include "ui/ozone/common/stub_overlay_manager.h"
+#include "ui/ozone/platform/x11/native_display_delegate_ozone_x11.h"
 #include "ui/ozone/platform/x11/x11_cursor_factory_ozone.h"
 #include "ui/ozone/platform/x11/x11_surface_factory.h"
 #include "ui/ozone/public/gpu_platform_support.h"
@@ -90,7 +90,7 @@ class OzonePlatformX11 : public OzonePlatform {
 
   std::unique_ptr<NativeDisplayDelegate> CreateNativeDisplayDelegate()
       override {
-    return base::WrapUnique(new NativeDisplayDelegateOzone());
+    return base::WrapUnique(new NativeDisplayDelegateOzoneX11());
   }
 
   void InitializeUI() override {

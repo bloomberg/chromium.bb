@@ -8,6 +8,8 @@ source_set("x11") {
   sources = [
     "client_native_pixmap_factory_x11.cc",
     "client_native_pixmap_factory_x11.h",
+    "native_display_delegate_ozone_x11.cc",
+    "native_display_delegate_ozone_x11.h",
     "ozone_platform_x11.cc",
     "ozone_platform_x11.h",
     "x11_cursor_factory_ozone.cc",
