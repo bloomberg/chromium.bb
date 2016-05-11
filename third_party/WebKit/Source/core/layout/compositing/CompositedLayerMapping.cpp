@@ -2144,7 +2144,8 @@ void CompositedLayerMapping::doPaintTask(const GraphicsLayerPaintInfo& paintInfo
     }
 
 #if ENABLE(ASSERT)
-    paintInfo.paintLayer->layoutObject()->assertSubtreeIsLaidOut();
+    if (!layoutObject()->view()->frame() || !layoutObject()->view()->frame()->shouldThrottleRendering())
+        paintInfo.paintLayer->layoutObject()->assertSubtreeIsLaidOut();
 #endif
 
     float deviceScaleFactor = blink::deviceScaleFactor(paintInfo.paintLayer->layoutObject()->frame());

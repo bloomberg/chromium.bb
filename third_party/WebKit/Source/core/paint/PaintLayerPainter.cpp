@@ -81,7 +81,7 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintLayer(GraphicsContext& co
     if (shouldSuppressPaintingLayer(m_paintLayer))
         return FullyPainted;
 
-    if (m_paintLayer.layoutObject()->isLayoutView() && toLayoutView(m_paintLayer.layoutObject())->frameView()->shouldThrottleRendering())
+    if (m_paintLayer.layoutObject()->view()->frame() && m_paintLayer.layoutObject()->view()->frame()->shouldThrottleRendering())
         return FullyPainted;
 
     // If this layer is totally invisible then there is nothing to paint.
@@ -275,7 +275,7 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerContents(GraphicsCon
     if (paintFlags & PaintLayerPaintingRootBackgroundOnly && !m_paintLayer.layoutObject()->isLayoutView() && !m_paintLayer.layoutObject()->isDocumentElement())
         return result;
 
-    if (m_paintLayer.layoutObject()->isLayoutView() && toLayoutView(m_paintLayer.layoutObject())->frameView()->shouldThrottleRendering())
+    if (m_paintLayer.layoutObject()->view()->frame() && m_paintLayer.layoutObject()->view()->frame()->shouldThrottleRendering())
         return result;
 
     // Ensure our lists are up-to-date.

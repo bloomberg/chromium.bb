@@ -778,4 +778,35 @@ TEST_F(FrameThrottlingTest, ThrottleSubtreeAtomically)
     EXPECT_TRUE(childFrameElement->contentDocument()->view()->canThrottleRendering());
 }
 
+TEST_F(FrameThrottlingTest, SkipPaintingLayersInThrottledFrames)
+{
+    webView().settings()->setAcceleratedCompositingEnabled(true);
+    webView().settings()->setPreferCompositingToLCDTextEnabled(true);
+
+    SimRequest mainResource("https://example.com/", "text/html");
+    SimRequest frameResource("https://example.com/iframe.html", "text/html");
+
+    loadURL("https://example.com/");
+    mainResource.complete("<iframe id=frame sandbox src=iframe.html></iframe>");
+    frameResource.complete("<div id=div style='transform: translateZ(0); background: red'>layer</div>");
+    auto displayItems = compositeFrame();
+    EXPECT_TRUE(displayItems.contains(SimCanvas::Rect, "red"));
+
+    auto* frameElement = toHTMLIFrameElement(document().getElementById("frame"));
+    frameElement->setAttribute(styleAttr, "transform: translateY(480px)");
+    compositeFrame();
+    EXPECT_TRUE(frameElement->contentDocument()->view()->canThrottleRendering());
+
+    auto* frameDocument = frameElement->contentDocument();
+    EXPECT_EQ(DocumentLifecycle::PaintClean, frameDocument->lifecycle().state());
+
+    // Simulate the paint for a graphics layer being externally invalidated
+    // (e.g., by video playback).
+    frameDocument->view()->layoutView()->invalidatePaintForViewAndCompositedLayers();
+
+    // The layer inside the throttled frame should not get painted.
+    auto displayItems2 = compositeFrame();
+    EXPECT_FALSE(displayItems2.contains(SimCanvas::Rect, "red"));
+}
+
 } // namespace blink
