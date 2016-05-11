@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/debug/stack_trace.h"
+#include "base/feature_list.h"
 #include "base/i18n/icu_util.h"
 #include "base/location.h"
 #include "base/macros.h"
@@ -272,6 +273,24 @@ void BrowserTestBase::SetUp() {
   ContentBrowserSanityChecker scoped_enable_sanity_checks;
 
   SetUpInProcessBrowserTestFixture();
+
+  // At this point, copy features to the command line, since BrowserMain will
+  // wipe out the current feature list.
+  std::string enabled_features;
+  std::string disabled_features;
+  if (base::FeatureList::GetInstance())
+    base::FeatureList::GetInstance()->GetFeatureOverrides(&enabled_features,
+                                                          &disabled_features);
+  if (!enabled_features.empty())
+    command_line->AppendSwitchASCII(switches::kEnableFeatures,
+                                    enabled_features);
+  if (!disabled_features.empty())
+    command_line->AppendSwitchASCII(switches::kDisableFeatures,
+                                    disabled_features);
+
+  // Need to wipe feature list clean, since BrowserMain calls
+  // FeatureList::SetInstance, which expects no instance to exist.
+  base::FeatureList::ClearInstanceForTesting();
 
   base::Closure* ui_task =
       new base::Closure(
