@@ -171,7 +171,8 @@ ScriptPromise CredentialsContainer::store(ScriptState* scriptState, Credential* 
     if (!checkBoilerplate(resolver))
         return promise;
 
-    CredentialManagerClient::from(scriptState->getExecutionContext())->dispatchStore(WebCredential::create(credential->getPlatformCredential()), new NotificationCallbacks(resolver));
+    auto web_credential = WebCredential::create(credential->getPlatformCredential());
+    CredentialManagerClient::from(scriptState->getExecutionContext())->dispatchStore(*web_credential, new NotificationCallbacks(resolver));
     return promise;
 }
 
