@@ -19,7 +19,6 @@ namespace media {
 // information needed to decrypt frames with a given key id.
 // Each CDM should implement this and add fields needed to fully describe a
 // decryption context.
-//
 class DecryptContextImpl : public DecryptContext {
  public:
   explicit DecryptContextImpl(CastKeySystem key_system);
@@ -27,7 +26,15 @@ class DecryptContextImpl : public DecryptContext {
 
   // DecryptContext implementation:
   CastKeySystem GetKeySystem() override;
-  bool Decrypt(CastDecoderBuffer* buffer, uint8_t* output) override;
+  bool Decrypt(CastDecoderBuffer* buffer,
+               std::vector<uint8_t>* output) final;
+
+  // TODO(yucliu): replace DecryptContext::Decrypt with this one in next
+  // public api releasing.
+  // Decrypts the given buffer. Returns true/false for success/failure,
+  // and places the decrypted data in |output| if successful.
+  // Decrypted data in |output| has the same length as |buffer|.
+  virtual bool Decrypt(CastDecoderBuffer* buffer, uint8_t* output) = 0;
 
   // Returns whether the data can be decrypted into user memory.
   // If the key system doesn't support secure output or the app explicitly

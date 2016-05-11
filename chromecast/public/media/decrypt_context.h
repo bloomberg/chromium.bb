@@ -6,6 +6,7 @@
 #define CHROMECAST_PUBLIC_MEDIA_DECRYPT_CONTEXT_H_
 
 #include <stdint.h>
+#include <vector>
 
 #include "cast_key_system.h"
 
@@ -21,10 +22,10 @@ class DecryptContext {
   // Get the key system to use for decryption.
   virtual CastKeySystem GetKeySystem() = 0;
 
-  // Decrypts the given buffer. Returns true/false for success/failure,
-  // and places the decrypted data in |output| if successful.
-  // Decrypted data in |output| has the same length as |buffer|.
-  virtual bool Decrypt(CastDecoderBuffer* buffer, uint8_t* output) = 0;
+  // Decrypts the given buffer.  Returns true/false for success/failure,
+  // and places the decrypted data in output if successful.
+  virtual bool Decrypt(CastDecoderBuffer* buffer,
+                       std::vector<uint8_t>* output) = 0;
 };
 
 }  // namespace media
