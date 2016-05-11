@@ -15,7 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chromecast/base/chromecast_switches.h"
 #include "chromecast/media/cma/backend/alsa/alsa_wrapper.h"
 #include "chromecast/media/cma/backend/alsa/stream_mixer_alsa_input_impl.h"

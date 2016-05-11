@@ -13,7 +13,7 @@
 #include "base/location.h"
 #include "base/memory/shared_memory.h"
 #include "base/single_thread_task_runner.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chromecast/base/task_runner_impl.h"
 #include "chromecast/common/media/shared_memory_chunk.h"
 #include "chromecast/media/base/media_caps.h"

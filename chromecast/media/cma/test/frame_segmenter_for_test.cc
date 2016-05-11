@@ -10,7 +10,7 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/run_loop.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chromecast/media/cma/base/decoder_buffer_adapter.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/demuxer.h"

@@ -12,7 +12,7 @@
 #include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chromecast/media/cma/base/balanced_media_task_runner_factory.h"
 #include "chromecast/media/cma/base/cma_logging.h"
 #include "chromecast/media/cma/base/demuxer_stream_adapter.h"

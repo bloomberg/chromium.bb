@@ -12,7 +12,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chromecast/media/cma/base/cma_logging.h"
 #include "chromecast/media/cma/ipc/media_memory_chunk.h"
 #include "chromecast/media/cma/ipc/media_message.h"

@@ -10,7 +10,7 @@
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chromecast/media/base/media_resource_tracker.h"
 #include "media/base/cdm_key_information.h"
 #include "media/base/cdm_promise.h"
