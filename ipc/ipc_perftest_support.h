@@ -12,7 +12,7 @@
 
 #include "base/macros.h"
 #include "base/test/test_io_thread.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "ipc/ipc_test_base.h"
 

@@ -10,7 +10,7 @@
 #include "base/base_paths.h"
 #include "base/files/file.h"
 #include "base/message_loop/message_loop.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "ipc/ipc_test_base.h"
 #include "ipc/mojo/ipc.mojom.h"
