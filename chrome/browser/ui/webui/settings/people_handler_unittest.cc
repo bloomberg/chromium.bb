@@ -61,8 +61,7 @@ syncer::ModelTypeSet GetAllTypes() {
 
 enum SyncAllDataConfig {
   SYNC_ALL_DATA,
-  CHOOSE_WHAT_TO_SYNC,
-  SYNC_NOTHING
+  CHOOSE_WHAT_TO_SYNC
 };
 
 enum EncryptAllConfig {
@@ -82,7 +81,6 @@ std::string GetConfiguration(const base::DictionaryValue* extra_values,
   if (extra_values)
     result.MergeDictionary(extra_values);
   result.SetBoolean("syncAllDataTypes", sync_all == SYNC_ALL_DATA);
-  result.SetBoolean("syncNothing", sync_all == SYNC_NOTHING);
   result.SetBoolean("encryptAllData", encrypt_all == ENCRYPT_ALL_DATA);
   if (!passphrase.empty())
     result.SetString("passphrase", passphrase);
@@ -133,7 +131,6 @@ void CheckConfigDataTypeArguments(const base::DictionaryValue* dictionary,
                                   SyncAllDataConfig config,
                                   syncer::ModelTypeSet types) {
   CheckBool(dictionary, "syncAllDataTypes", config == SYNC_ALL_DATA);
-  CheckBool(dictionary, "syncNothing", config == SYNC_NOTHING);
   CheckBool(dictionary, "appsSynced", types.Has(syncer::APPS));
   CheckBool(dictionary, "autofillSynced", types.Has(syncer::AUTOFILL));
   CheckBool(dictionary, "bookmarksSynced", types.Has(syncer::BOOKMARKS));
@@ -521,19 +518,6 @@ TEST_F(PeopleHandlerTest, TestSyncEverything) {
       .WillRepeatedly(Return(false));
   SetupInitializedProfileSyncService();
   EXPECT_CALL(*mock_pss_, OnUserChoseDatatypes(true, _));
-  handler_->HandleSetDatatypes(&list_args);
-
-  ExpectPageStatusResponse(PeopleHandler::kConfigurePageStatus);
-}
-
-TEST_F(PeopleHandlerTest, TestSyncNothing) {
-  std::string args = GetConfiguration(
-      NULL, SYNC_NOTHING, GetAllTypes(), std::string(), ENCRYPT_PASSWORDS);
-  base::ListValue list_args;
-  list_args.Append(new base::StringValue(kTestCallbackId));
-  list_args.Append(new base::StringValue(args));
-  EXPECT_CALL(*mock_pss_, RequestStop(ProfileSyncService::CLEAR_DATA));
-  SetupInitializedProfileSyncService();
   handler_->HandleSetDatatypes(&list_args);
 
   ExpectPageStatusResponse(PeopleHandler::kConfigurePageStatus);

@@ -31,7 +31,6 @@ cr.exportPath('options');
  *             preferencesSynced: boolean,
  *             showPassphrase: boolean,
  *             syncAllDataTypes: boolean,
- *             syncNothing: boolean,
  *             tabsEnforced: boolean,
  *             tabsRegistered: boolean,
  *             tabsSynced: boolean,
@@ -53,7 +52,6 @@ var SyncConfig;
 options.DataTypeSelection = {
   SYNC_EVERYTHING: 0,
   CHOOSE_WHAT_TO_SYNC: 1,
-  SYNC_NOTHING: 2
 };
 
 cr.define('options', function() {
@@ -337,12 +335,9 @@ cr.define('options', function() {
       // sync_setup_handler.cc:GetConfiguration().
       var syncAll = $('sync-select-datatypes').selectedIndex ==
                     options.DataTypeSelection.SYNC_EVERYTHING;
-      var syncNothing = $('sync-select-datatypes').selectedIndex ==
-                        options.DataTypeSelection.SYNC_NOTHING;
       var autofillSynced = syncAll || $('autofill-checkbox').checked;
       var result = JSON.stringify({
         'syncAllDataTypes': syncAll,
-        'syncNothing': syncNothing,
         'bookmarksSynced': syncAll || $('bookmarks-checkbox').checked,
         'preferencesSynced': syncAll || $('preferences-checkbox').checked,
         'themesSynced': syncAll || $('themes-checkbox').checked,
@@ -539,20 +534,15 @@ cr.define('options', function() {
       // between its drop-down menu items as follows:
       // "Sync everything": Show encryption and passphrase sections, and disable
       // and check all data type checkboxes.
-      // "Sync nothing": Hide encryption and passphrase sections, and disable
-      // and uncheck all data type checkboxes.
       // "Choose what to sync": Show encryption and passphrase sections, enable
       // data type checkboxes, and restore their checked state to the last time
       // the "Choose what to sync" was selected while the dialog was still up.
       datatypeSelect.onchange = function() {
-        if (this.selectedIndex == options.DataTypeSelection.SYNC_NOTHING) {
-          self.showSyncNothingPage_();
+        self.showCustomizePage_(self.syncConfigureArgs_, this.selectedIndex);
+        if (this.selectedIndex == options.DataTypeSelection.SYNC_EVERYTHING) {
+          self.checkAllDataTypeCheckboxes_(true);
         } else {
-          self.showCustomizePage_(self.syncConfigureArgs_, this.selectedIndex);
-          if (this.selectedIndex == options.DataTypeSelection.SYNC_EVERYTHING)
-            self.checkAllDataTypeCheckboxes_(true);
-          else
-            self.restoreDataTypeCheckboxes_();
+          self.restoreDataTypeCheckboxes_();
         }
       };
 
@@ -614,31 +604,6 @@ cr.define('options', function() {
 
       if (!this.useEncryptEverything_ && !this.usePassphrase_)
         $('basic-encryption-option').checked = true;
-    },
-
-    /**
-     * Reveals the UI for when the user chooses not to sync any data types.
-     * This happens when the user signs in and selects "Sync nothing" in the
-     * advanced sync settings dialog.
-     * @private
-     */
-    showSyncNothingPage_: function() {
-      // Reset the selection to 'Sync nothing'.
-      $('sync-select-datatypes').selectedIndex =
-          options.DataTypeSelection.SYNC_NOTHING;
-
-      // Uncheck and disable the individual data type checkboxes.
-      this.checkAllDataTypeCheckboxes_(false);
-      this.setDataTypeCheckboxesEnabled_(false);
-
-      // Hide the encryption section.
-      $('customize-sync-encryption-new').hidden = true;
-      $('personalize-google-services').hidden = true;
-      $('sync-custom-passphrase-container').hidden = true;
-      $('sync-existing-passphrase-container').hidden = true;
-
-      // Hide the "use default settings" link.
-      $('use-default-link').hidden = true;
     },
 
     /**
