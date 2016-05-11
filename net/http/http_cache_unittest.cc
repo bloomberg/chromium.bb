@@ -2980,7 +2980,7 @@ TEST(HttpCache, SimplePOST_WithRanges) {
   EXPECT_EQ(0, cache.disk_cache()->create_count());
 }
 
-// Tests that a POST is cached separately from a previously cached GET.
+// Tests that a POST is cached separately from a GET.
 TEST(HttpCache, SimplePOST_SeparateCache) {
   MockHttpCache cache;
 
