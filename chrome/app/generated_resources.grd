@@ -4463,6 +4463,9 @@ Even if you have downloaded files from this website before, the website might ha
         <message name="IDS_MD_EXTENSIONS_ITEM_PERMISSIONS" desc="The label above the list of an extension's permissions.">
           Permissions
         </message>
+        <message name="IDS_MD_EXTENSIONS_ITEM_PERMISSIONS_EMPTY" desc="The text to indicate that an extension does not have any special permissions.">
+          This extension requires no special permissions.
+        </message>
         <message name="IDS_MD_EXTENSIONS_ITEM_REMOVE" desc="The label of the button to remove an extension.">
           Remove
         </message>

@@ -62,6 +62,14 @@ cr.define('extensions', function() {
      * @return {boolean}
      * @private
      */
+    hasPermissions_: function() {
+      return this.data.permissions.length > 0;
+    },
+
+    /**
+     * @return {boolean}
+     * @private
+     */
     shouldShowOptionsSection_: function() {
       return this.data.incognitoAccess.isEnabled ||
              this.data.fileAccess.isEnabled ||

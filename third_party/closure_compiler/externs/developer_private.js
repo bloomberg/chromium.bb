@@ -300,6 +300,7 @@ chrome.developerPrivate.DependentExtension;
  *   offlineEnabled: boolean,
  *   optionsPage: (!chrome.developerPrivate.OptionsPage|undefined),
  *   path: (string|undefined),
+ *   permissions: !Array<string>,
  *   prettifiedPath: (string|undefined),
  *   runOnAllUrls: !chrome.developerPrivate.AccessModifier,
  *   runtimeErrors: !Array<!chrome.developerPrivate.RuntimeError>,

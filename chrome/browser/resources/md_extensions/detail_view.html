@@ -51,7 +51,7 @@
         --paper-checkbox-checked-color: var(--google-blue-500);
         --primary-text-color: var(--paper-grey-800);
       }
-      #dependent-extensions-list {
+      ul {
         -webkit-padding-start: 20px;
         margin: 0;
       }
@@ -76,7 +76,18 @@
       </div>
       <div class="section">
         <div class="section-title">$i18n{itemPermissions}</div>
-        <div class="section-content">TODO</div>
+        <div class="section-content">
+          <span id="no-permissions"
+              hidden$="[[hasPermissions_(data.permissions.splices)]]">
+            $i18n{itemPermissionsEmpty}
+          </span>
+          <ul id="permissions-list"
+              hidden$="[[!hasPermissions_(data.permissions.splices)]]">
+            <template is="dom-repeat" items="[[data.permissions]]">
+              <li>[[item]]</li>
+            </template>
+          </ul>
+        </div>
       </div>
       <template is="dom-if"
           if="[[hasDependentExtensions_(data.dependentExtensions.splices)]]">

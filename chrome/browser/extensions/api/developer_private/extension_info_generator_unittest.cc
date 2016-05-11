@@ -29,6 +29,8 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/feature_switch.h"
+#include "extensions/common/permissions/permission_message.h"
+#include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/value_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -189,7 +191,8 @@ TEST_F(ExtensionInfoGeneratorUnitTest, BasicInfoTest) {
           .Set("version", kVersion)
           .Set("manifest_version", 2)
           .Set("description", "an extension")
-          .Set("permissions", ListBuilder().Append("file://*/*").Build())
+          .Set("permissions",
+               ListBuilder().Append("file://*/*").Append("tabs").Build())
           .Build();
   std::unique_ptr<base::DictionaryValue> manifest_copy(manifest->DeepCopy());
   scoped_refptr<const Extension> extension =
@@ -235,6 +238,14 @@ TEST_F(ExtensionInfoGeneratorUnitTest, BasicInfoTest) {
   EXPECT_FALSE(info->file_access.is_active);
   EXPECT_TRUE(info->incognito_access.is_enabled);
   EXPECT_FALSE(info->incognito_access.is_active);
+  PermissionMessages messages =
+      extension->permissions_data()->GetPermissionMessages();
+  ASSERT_EQ(messages.size(), info->permissions.size());
+  size_t i = 0;
+  for (const PermissionMessage& message : messages) {
+    EXPECT_EQ(message.message(), base::UTF8ToUTF16(info->permissions[i]));
+    ++i;
+  }
   ASSERT_EQ(2u, info->runtime_errors.size());
   const api::developer_private::RuntimeError& runtime_error =
       info->runtime_errors[0];

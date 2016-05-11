@@ -208,6 +208,7 @@ namespace developerPrivate {
     boolean offlineEnabled;
     OptionsPage? optionsPage;
     DOMString? path;
+    DOMString[] permissions;
     DOMString? prettifiedPath;
     AccessModifier runOnAllUrls;
     RuntimeError[] runtimeErrors;

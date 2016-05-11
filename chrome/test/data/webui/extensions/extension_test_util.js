@@ -120,6 +120,7 @@ cr.define('extension_test_util', function() {
       incognitoAccess: {isEnabled: true, isActive: false},
       location: 'FROM_STORE',
       name: 'Wonderful Extension',
+      permissions: [],
       state: 'ENABLED',
       type: 'EXTENSION',
       version: '2.0',

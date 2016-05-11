@@ -93,6 +93,16 @@ cr.define('extension_detail_view_tests', function() {
         expectEquals(2,
                      item.$$('#dependent-extensions-list').querySelectorAll(
                          'li').length);
+
+        expectFalse(testIsVisible('#permissions-list'));
+        expectTrue(testIsVisible('#no-permissions'));
+        item.set('data.permissions', ['Permission 1', 'Permission 2']);
+        Polymer.dom.flush();
+        expectTrue(testIsVisible('#permissions-list'));
+        expectEquals(2,
+                     item.$$('#permissions-list').querySelectorAll('li').
+                         length);
+        expectFalse(testIsVisible('#no-permissions'));
       });
 
       test(assert(TestNames.ClickableElements), function() {

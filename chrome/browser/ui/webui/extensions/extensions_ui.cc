@@ -71,6 +71,8 @@ content::WebUIDataSource* CreateMdExtensionsSource() {
   source->AddLocalizedString("itemDetails", IDS_MD_EXTENSIONS_ITEM_DETAILS);
   source->AddLocalizedString("itemPermissions",
                              IDS_MD_EXTENSIONS_ITEM_PERMISSIONS);
+  source->AddLocalizedString("itemPermissionsEmpty",
+                             IDS_MD_EXTENSIONS_ITEM_PERMISSIONS_EMPTY);
   source->AddLocalizedString("itemRemove", IDS_MD_EXTENSIONS_ITEM_REMOVE);
   source->AddLocalizedString("itemSource",
                              IDS_MD_EXTENSIONS_ITEM_SOURCE);

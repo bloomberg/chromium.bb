@@ -503,6 +503,14 @@ void ExtensionInfoGenerator::CreateExtensionInfoHelper(
       extensions::path_util::PrettifyPath(extension.path()).AsUTF8Unsafe()));
   }
 
+  // Permissions.
+  PermissionMessages messages =
+      extension.permissions_data()->GetPermissionMessages();
+  // TODO(devlin): We need to include retained device/file info. We also need
+  // to indicate which can be removed and which can't.
+  for (const PermissionMessage& message : messages)
+    info->permissions.push_back(base::UTF16ToUTF8(message.message()));
+
   // Runs on all urls.
   ScriptingPermissionsModifier permissions_modifier(
       browser_context_, make_scoped_refptr(&extension));
