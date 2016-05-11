@@ -118,12 +118,21 @@
         --paper-input-max-width: 200px;
       }
 
+      paper-header-panel {
+        --paper-header-panel-shadow: {
+          z-index: 1;
+        };
+        --paper-header-panel-standard-container: {
+          z-index: 0;
+        };
+      }
+
       paper-toolbar {
         --paper-toolbar-height: 56px;
         --paper-toolbar-sm-height: 56px;
         --paper-toolbar-content: {
           font-size: 123.08%; /* go to 16px from 13px */
-        }
+        };
         --paper-toolbar: {
           background-color: var(--settings-title-bar-background-color);
         };
