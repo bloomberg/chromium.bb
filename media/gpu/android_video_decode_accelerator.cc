@@ -1411,7 +1411,7 @@ AndroidVideoDecodeAccelerator::GetCapabilities(
     SupportedProfile profile;
     profile.profile = media::VP8PROFILE_ANY;
     profile.min_resolution.SetSize(0, 0);
-    profile.max_resolution.SetSize(1920, 1088);
+    profile.max_resolution.SetSize(3840, 2160);
     // If we know MediaCodec will just create a software codec, prefer our
     // internal software decoder instead. It's more up to date and secured
     // within the renderer sandbox. However if the content is encrypted, we
@@ -1425,7 +1425,7 @@ AndroidVideoDecodeAccelerator::GetCapabilities(
   if (media::MediaCodecUtil::IsVp9DecoderAvailable()) {
     SupportedProfile profile;
     profile.min_resolution.SetSize(0, 0);
-    profile.max_resolution.SetSize(1920, 1088);
+    profile.max_resolution.SetSize(3840, 2160);
     // If we know MediaCodec will just create a software codec, prefer our
     // internal software decoder instead. It's more up to date and secured
     // within the renderer sandbox. However if the content is encrypted, we
