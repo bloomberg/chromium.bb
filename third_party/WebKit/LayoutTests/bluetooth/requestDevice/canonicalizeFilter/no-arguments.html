@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharness-helpers.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<script src="../../../resources/bluetooth/bluetooth-helpers.js"></script>
+<script>
+'use strict';
+promise_test(t => {
+  return setBluetoothFakeAdapter('EmptyAdapter')
+    .then(() => promise_rejects(
+      t, new TypeError(), requestDeviceWithKeyDown()));
+}, 'requestDevice() requires an argument.');
+</script>

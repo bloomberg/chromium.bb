@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<script src="../../../resources/bluetooth/bluetooth-helpers.js"></script>
+<script>
+'use strict';
+promise_test(t => {
+  return setBluetoothFakeAdapter('EmptyAdapter')
+    .then(() => promise_rejects(
+      t, new TypeError(), requestDeviceWithKeyDown({filters: [{}]})));
+}, 'A filter must restrict the devices in some way.');
+</script>

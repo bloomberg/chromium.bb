@@ -305,23 +305,35 @@ class EventCatcher {
   }
 }
 
+function generateRequestDeviceArgsWithServices(services = ['heart_rate']) {
+  return [{
+    filters: [{ services: services }]
+  }, {
+    filters: [{ services: services, name: 'Name' }]
+  }, {
+    filters: [{ services: services, namePrefix: 'Pre' }]
+  }, {
+    filters: [{ services: services, name: 'Name', namePrefix: 'Pre' }]
+  }, {
+    filters: [{ services: services }],
+    optionalServices: ['heart_rate']
+  }, {
+    filters: [{ services: services, name: 'Name' }],
+    optionalServices: ['heart_rate']
+  }, {
+    filters: [{ services: services, namePrefix: 'Pre' }],
+    optionalServices: ['heart_rate']
+  }, {
+    filters: [{ services: services, name: 'Name', namePrefix: 'Pre' }],
+    optionalServices: ['heart_rate']
+  }];
+}
+
 // Bluetooth tests sometimes have left-over state that could leak into the
 // next test. add_result_callback which is exposed by testharness.js allows us
-// to clean up this state after each test. In the future we will split tests
-// into separate files so that we don't have to add this callback ourselves.
-// TODO(ortuno): Split tests into separate files.
-// https://crbug.com/554240
+// to clean up this state after each test. Once the move to Mojo is complete
+// we will no longer need to clean up the state manually.
+// https://crbug.com/508771
 add_result_callback(() => {
-  // At the end of each test we clean up all the leftover data in the browser,
-  // including revoking permissions. This happens before the test document is
-  // detached. Once the document is detached any device that connected tries
-  // to disconnect but by then the document no longer has permission to
-  // interact with the device. So before we clean up the browser data
-  // we change the visibility which results in all devices disconnecing.
-  // TODO(ortuno): Remove setPageVisibility hack. In the future, the browser
-  // will notify the renderer that the device disconnected so we won't need
-  // this hack.
-  // https://crbug.com/581855
-  testRunner.setBluetoothManualChooser(false);
   setBluetoothFakeAdapter('');
 });

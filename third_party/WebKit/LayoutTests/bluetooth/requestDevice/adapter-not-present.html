@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../../resources/bluetooth/bluetooth-helpers.js"></script>
+<script>
+'use strict';
+promise_test(() => {
+  return setBluetoothFakeAdapter('NotPresentAdapter')
+    .then(() => assert_promise_rejects_with_message(
+      requestDeviceWithKeyDown({filters: [{services: ['generic_access']}]}),
+      new DOMException('Bluetooth adapter not available.', 'NotFoundError'),
+      'Bluetooth adapter is not present.'));
+}, 'Reject with NotFoundError if the adapter is not present.');
+</script>

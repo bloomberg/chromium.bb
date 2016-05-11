@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../../resources/bluetooth/bluetooth-helpers.js"></script>
+<script>
+'use strict';
+promise_test(t => {
+  return setBluetoothFakeAdapter('HeartRateAdapter')
+    .then(() => callWithKeyDown(() => {
+      var first = navigator.bluetooth.requestDevice({
+        filters: [{services: ['heart_rate']}]});
+      var second = navigator.bluetooth.requestDevice({
+        filters: [{services: ['heart_rate']}]});
+      return Promise.all([
+        first.then(device => assert_equals(
+          device.constructor.name, 'BluetoothDevice')),
+        promise_rejects(t, 'SecurityError', second)
+      ]);
+    }));
+}, 'Consumes a user gesture.');
+</script>

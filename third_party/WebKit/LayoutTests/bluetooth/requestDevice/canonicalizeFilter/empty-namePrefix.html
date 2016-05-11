@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<script src="../../../resources/bluetooth/bluetooth-helpers.js"></script>
+<script>
+
+let test_specs = [{
+  filters: [{ namePrefix: ''}]
+}, {
+  filters: [{ namePrefix: '', name: 'Name'}]
+}, {
+  filters: [{ namePrefix: '', services: ['heart_rate']}]
+}, {
+  filters: [{ namePrefix: '', name: 'Name', services: ['heart_rate']}]
+}, {
+  filters: [{ namePrefix: ''}],
+  optionalServices: ['heart_rate']
+}, {
+  filters: [{ namePrefix: '', name: 'Name'}],
+  optionalServices: ['heart_rate']
+}, {
+  filters: [{ namePrefix: '', services: ['heart_rate']}],
+  optionalServices: ['heart_rate']
+}, {
+  filters: [{ namePrefix: '', name: 'Name', services: ['heart_rate']}],
+  optionalServices: ['heart_rate']
+}];
+
+promise_test(t => {
+  return setBluetoothFakeAdapter('EmptyAdapter')
+    .then(() => {
+      let test_promises = Promise.resolve();
+      test_specs.forEach(args => {
+        test_promises = test_promises
+            .then(() => promise_rejects(
+              t, new TypeError(), requestDeviceWithKeyDown(args)));
+      });
+      return test_promises;
+    });
+}, 'requestDevice with empty namePrefix. Should reject with TypeError.');
+</script>

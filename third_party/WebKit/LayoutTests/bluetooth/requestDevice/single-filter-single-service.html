@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../../resources/bluetooth/bluetooth-helpers.js"></script>
+<script>
+'use strict';
+promise_test(() => {
+  return setBluetoothFakeAdapter('GlucoseHeartRateAdapter')
+    .then(() => requestDeviceWithKeyDown({
+      filters: [{services: ['glucose']}]}))
+    .then(device => assert_equals(device.name, 'Glucose Device'));
+}, 'Simple filter selects matching device.');
+</script>

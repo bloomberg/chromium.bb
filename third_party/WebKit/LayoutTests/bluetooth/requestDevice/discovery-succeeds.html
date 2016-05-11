@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../../resources/bluetooth/bluetooth-helpers.js"></script>
+<script>
+'use strict';
+promise_test(() => {
+  let devices = [];
+  let push = device => devices.push(device);
+  // We can't use Promise.all() because Chrome will always close
+  // the previous chooser in the process of handling a user gesture
+  // for the next request.
+  return setBluetoothFakeAdapter('HeartRateAdapter')
+    .then(() => requestDeviceWithKeyDown({
+      filters: [{services: [heart_rate.alias]}]}))
+    .then(push)
+    .then(() => requestDeviceWithKeyDown({
+      filters: [{services: [heart_rate.name]}]}))
+    .then(push)
+    .then(() => requestDeviceWithKeyDown({
+      filters: [{services: [heart_rate.uuid]}]}))
+    .then(push)
+    .then(() => {
+      devices.forEach(device => {
+        assert_equals(device.constructor.name, 'BluetoothDevice');
+      });
+    });
+}, 'Mock will resolve.');
+</script>
