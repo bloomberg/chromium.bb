@@ -5,6 +5,7 @@
 #include "courgette/disassembler_elf_32_x86.h"
 
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "base/logging.h"
@@ -185,7 +186,7 @@ CheckBool DisassemblerElf32X86::ParseRel32RelocsFromSection(
       RVA target_rva = typed_rel32_rva->rva() +
           typed_rel32_rva->relative_target();
       if (IsValidTargetRVA(target_rva)) {
-        rel32_locations_.push_back(typed_rel32_rva.release());
+        rel32_locations_.push_back(std::move(typed_rel32_rva));
 #if COURGETTE_HISTOGRAM_TARGETS
         ++rel32_target_rvas_[target_rva];
 #endif

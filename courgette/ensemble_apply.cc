@@ -9,6 +9,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+#include <utility>
+
 #include "base/files/file_util.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/logging.h"
@@ -26,7 +29,7 @@ namespace courgette {
 class EnsemblePatchApplication {
  public:
   EnsemblePatchApplication();
-  ~EnsemblePatchApplication();
+  ~EnsemblePatchApplication() = default;
 
   Status ReadHeader(SourceStream* header_stream);
 
@@ -68,7 +71,7 @@ class EnsemblePatchApplication {
   uint32_t target_checksum_;
   uint32_t final_patch_input_size_prediction_;
 
-  std::vector<TransformationPatcher*> patchers_;
+  std::vector<std::unique_ptr<TransformationPatcher>> patchers_;
 
   SinkStream corrected_parameters_storage_;
   SinkStream corrected_elements_storage_;
@@ -79,12 +82,6 @@ class EnsemblePatchApplication {
 EnsemblePatchApplication::EnsemblePatchApplication()
     : source_checksum_(0), target_checksum_(0),
       final_patch_input_size_prediction_(0) {
-}
-
-EnsemblePatchApplication::~EnsemblePatchApplication() {
-  for (size_t i = 0;  i < patchers_.size();  ++i) {
-    delete patchers_[i];
-  }
 }
 
 Status EnsemblePatchApplication::ReadHeader(SourceStream* header_stream) {
@@ -138,28 +135,21 @@ Status EnsemblePatchApplication::ReadInitialParameters(
     if (!transformation_parameters->ReadVarint32(&kind))
       return C_BAD_ENSEMBLE_HEADER;
 
-    TransformationPatcher* patcher = NULL;
+    std::unique_ptr<TransformationPatcher> patcher;
 
-    switch (kind)
-    {
-      case EXE_WIN_32_X86:
-        patcher = new PatcherX86_32(base_region_);
-        break;
+    switch (kind) {
+      case EXE_WIN_32_X86:  // Fall through.
       case EXE_ELF_32_X86:
-        patcher = new PatcherX86_32(base_region_);
-        break;
       case EXE_ELF_32_ARM:
-        patcher = new PatcherX86_32(base_region_);
-        break;
       case EXE_WIN_32_X64:
-        patcher = new PatcherX86_32(base_region_);
+        patcher.reset(new PatcherX86_32(base_region_));
         break;
+      default:
+        return C_BAD_ENSEMBLE_HEADER;
     }
 
-    if (patcher)
-      patchers_.push_back(patcher);
-    else
-      return C_BAD_ENSEMBLE_HEADER;
+    DCHECK(patcher);
+    patchers_.push_back(std::move(patcher));
   }
 
   for (size_t i = 0;  i < patchers_.size();  ++i) {

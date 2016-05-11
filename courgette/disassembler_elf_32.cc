@@ -5,6 +5,7 @@
 #include "courgette/disassembler_elf_32.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/logging.h"
 #include "courgette/assembly_program.h"
@@ -273,8 +274,8 @@ CheckBool DisassemblerElf32::RVAsToFileOffsets(
 }
 
 CheckBool DisassemblerElf32::RVAsToFileOffsets(
-    ScopedVector<TypedRVA>* typed_rvas) {
-  for (TypedRVA* typed_rva : *typed_rvas) {
+    std::vector<std::unique_ptr<TypedRVA>>* typed_rvas) {
+  for (auto& typed_rva : *typed_rvas) {
     FileOffset file_offset = RVAToFileOffset(typed_rva->rva());
     if (file_offset == kNoFileOffset)
       return false;
@@ -305,8 +306,10 @@ CheckBool DisassemblerElf32::ParseFile(AssemblyProgram* program) {
   std::vector<FileOffset>::iterator current_abs_offset = abs_offsets.begin();
   std::vector<FileOffset>::iterator end_abs_offset = abs_offsets.end();
 
-  ScopedVector<TypedRVA>::iterator current_rel = rel32_locations_.begin();
-  ScopedVector<TypedRVA>::iterator end_rel = rel32_locations_.end();
+  std::vector<std::unique_ptr<TypedRVA>>::iterator current_rel =
+      rel32_locations_.begin();
+  std::vector<std::unique_ptr<TypedRVA>>::iterator end_rel =
+      rel32_locations_.end();
 
   // Visit section headers ordered by file offset.
   for (Elf32_Half section_id : section_header_file_offset_order_) {
@@ -374,8 +377,8 @@ CheckBool DisassemblerElf32::ParseProgbitsSection(
     const Elf32_Shdr* section_header,
     std::vector<FileOffset>::iterator* current_abs_offset,
     std::vector<FileOffset>::iterator end_abs_offset,
-    ScopedVector<TypedRVA>::iterator* current_rel,
-    ScopedVector<TypedRVA>::iterator end_rel,
+    std::vector<std::unique_ptr<TypedRVA>>::iterator* current_rel,
+    std::vector<std::unique_ptr<TypedRVA>>::iterator end_rel,
     AssemblyProgram* program) {
   // Walk all the bytes in the file, whether or not in a section.
   FileOffset file_offset = section_header->sh_offset;

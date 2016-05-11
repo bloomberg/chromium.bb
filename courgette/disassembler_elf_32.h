@@ -8,10 +8,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "courgette/disassembler.h"
 #include "courgette/image_utils.h"
 #include "courgette/memory_allocator.h"
@@ -46,9 +46,7 @@ class DisassemblerElf32 : public Disassembler {
     void set_relative_target(RVA relative_target) {
       relative_target_ = relative_target;
     }
-    void set_file_offset(FileOffset file_offset) {
-      file_offset_ = file_offset;
-    }
+    void set_file_offset(FileOffset file_offset) { file_offset_ = file_offset; }
 
     // Computes the relative jump's offset from the op in p.
     virtual CheckBool ComputeRelativeTarget(const uint8_t* op_pointer) = 0;
@@ -61,12 +59,14 @@ class DisassemblerElf32 : public Disassembler {
     virtual uint16_t op_size() const = 0;
 
     // Comparator for sorting, which assumes uniqueness of RVAs.
-    static bool IsLessThanByRVA(TypedRVA* a, TypedRVA* b) {
+    static bool IsLessThanByRVA(const std::unique_ptr<TypedRVA>& a,
+                                const std::unique_ptr<TypedRVA>& b) {
       return a->rva() < b->rva();
     }
 
     // Comparator for sorting, which assumes uniqueness of file offsets.
-    static bool IsLessThanByFileOffset(TypedRVA* a, TypedRVA* b) {
+    static bool IsLessThanByFileOffset(const std::unique_ptr<TypedRVA>& a,
+                                       const std::unique_ptr<TypedRVA>& b) {
       return a->file_offset() < b->file_offset();
     }
 
@@ -92,8 +92,10 @@ class DisassemblerElf32 : public Disassembler {
   virtual e_machine_values ElfEM() const = 0;
 
   // Public for unittests only
-  std::vector<RVA> &Abs32Locations() { return abs32_locations_; }
-  ScopedVector<TypedRVA> &Rel32Locations() { return rel32_locations_; }
+  std::vector<RVA>& Abs32Locations() { return abs32_locations_; }
+  std::vector<std::unique_ptr<TypedRVA>>& Rel32Locations() {
+    return rel32_locations_;
+  }
 
  protected:
   bool UpdateLength();
@@ -139,7 +141,8 @@ class DisassemblerElf32 : public Disassembler {
   CheckBool RVAsToFileOffsets(const std::vector<RVA>& rvas,
                               std::vector<FileOffset>* file_offsets);
 
-  CheckBool RVAsToFileOffsets(ScopedVector<TypedRVA>* typed_rvas);
+  CheckBool RVAsToFileOffsets(
+      std::vector<std::unique_ptr<TypedRVA>>* typed_rvas);
 
   // Parsing code for Disassemble().
 
@@ -156,8 +159,8 @@ class DisassemblerElf32 : public Disassembler {
       const Elf32_Shdr* section_header,
       std::vector<FileOffset>::iterator* current_abs_offset,
       std::vector<FileOffset>::iterator end_abs_offset,
-      ScopedVector<TypedRVA>::iterator* current_rel,
-      ScopedVector<TypedRVA>::iterator end_rel,
+      std::vector<std::unique_ptr<TypedRVA>>::iterator* current_rel,
+      std::vector<std::unique_ptr<TypedRVA>>::iterator end_rel,
       AssemblyProgram* program) WARN_UNUSED_RESULT;
 
   CheckBool ParseSimpleRegion(FileOffset start_file_offset,
@@ -189,7 +192,7 @@ class DisassemblerElf32 : public Disassembler {
   size_t default_string_section_size_;
 
   std::vector<RVA> abs32_locations_;
-  ScopedVector<TypedRVA> rel32_locations_;
+  std::vector<std::unique_ptr<TypedRVA>> rel32_locations_;
 
   DISALLOW_COPY_AND_ASSIGN(DisassemblerElf32);
 };

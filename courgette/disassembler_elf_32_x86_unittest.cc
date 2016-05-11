@@ -67,7 +67,6 @@ class DisassemblerElf32X86Test : public BaseTest {
 void DisassemblerElf32X86Test::TestExe(const char* file_name,
                                        size_t expected_abs_count,
                                        size_t expected_rel_count) const {
-  using TypedRVA = DisassemblerElf32::TypedRVA;
   std::string file1 = FileContents(file_name);
 
   std::unique_ptr<TestDisassemblerElf32X86> disassembler(
@@ -98,7 +97,7 @@ void DisassemblerElf32X86Test::TestExe(const char* file_name,
   // Flatten the list typed rel32 to a list of rel32 RVAs.
   std::vector<RVA> rel32_list;
   rel32_list.reserve(disassembler->Rel32Locations().size());
-  for (TypedRVA* typed_rel32 : disassembler->Rel32Locations())
+  for (auto& typed_rel32 : disassembler->Rel32Locations())
     rel32_list.push_back(typed_rel32->rva());
 
   EXPECT_EQ(expected_abs_count, abs32_list.size());
