@@ -11,7 +11,7 @@
 
 #include "base/callback_helpers.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "content/renderer/media/android/renderer_demuxer_android.h"
 #include "media/base/android/demuxer_stream_player_params.h"
 #include "media/base/bind_to_current_loop.h"

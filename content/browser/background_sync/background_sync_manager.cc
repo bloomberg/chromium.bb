@@ -11,7 +11,7 @@
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_clock.h"
 #include "build/build_config.h"
 #include "content/browser/background_sync/background_sync_metrics.h"

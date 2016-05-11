@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/md5.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "content/common/media/media_stream_track_metrics_host_messages.h"
 #include "content/renderer/render_thread_impl.h"
 #include "third_party/webrtc/api/mediastreaminterface.h"

@@ -9,7 +9,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "content/child/child_process.h"
 #include "content/renderer/media/media_stream_video_track.h"
 #include "content/renderer/media/mock_media_stream_video_sink.h"

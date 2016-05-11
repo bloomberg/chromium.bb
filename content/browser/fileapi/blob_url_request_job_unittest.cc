@@ -16,7 +16,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/run_loop.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "content/browser/fileapi/mock_url_request_delegate.h"
 #include "content/public/test/async_file_test_helper.h"

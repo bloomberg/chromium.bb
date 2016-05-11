@@ -19,7 +19,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "content/browser/fileapi/mock_file_change_observer.h"
 #include "content/public/test/async_file_test_helper.h"

@@ -17,7 +17,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/stl_util.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "content/child/child_process.h"
 #include "content/common/media/video_capture_messages.h"
 #include "gpu/ipc/client/gpu_memory_buffer_impl.h"

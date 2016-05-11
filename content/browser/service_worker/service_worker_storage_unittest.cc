@@ -13,7 +13,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"

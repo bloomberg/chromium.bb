@@ -15,7 +15,7 @@
 #include "base/pickle.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/appcache/appcache_storage.h"
 #include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"

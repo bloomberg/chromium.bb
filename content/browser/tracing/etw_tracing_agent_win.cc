@@ -11,7 +11,7 @@
 #include "base/lazy_instance.h"
 #include "base/memory/singleton.h"
 #include "base/strings/stringprintf.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event_impl.h"
 #include "content/public/browser/browser_thread.h"

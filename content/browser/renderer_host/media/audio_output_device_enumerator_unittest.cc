@@ -13,7 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "media/audio/audio_device_description.h"
 #include "media/audio/fake_audio_log_factory.h"

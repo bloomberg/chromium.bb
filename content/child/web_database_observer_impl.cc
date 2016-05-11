@@ -8,7 +8,7 @@
 #include "base/metrics/histogram.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string16.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "content/child/storage_util.h"
 #include "content/common/database_messages.h"
 #include "storage/common/database/database_identifier.h"

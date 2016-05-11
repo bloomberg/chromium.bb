@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "content/renderer/media/webrtc_identity_service.h"
 #include "content/renderer/render_thread_impl.h"
 

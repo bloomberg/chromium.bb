@@ -7,8 +7,8 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "storage/common/database/database_connections.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -11,7 +11,7 @@
 #include "base/atomic_sequence_num.h"
 #include "base/bind.h"
 #include "base/memory/scoped_vector.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/message_port_message_filter.h"
 #include "content/browser/service_worker/embedded_worker_instance.h"
 #include "content/browser/service_worker/embedded_worker_registry.h"

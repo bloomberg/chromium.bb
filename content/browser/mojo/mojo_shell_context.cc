@@ -14,7 +14,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/single_thread_task_runner.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/mojo/browser_shell_connection.h"
 #include "content/browser/mojo/constants.h"

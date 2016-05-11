@@ -8,7 +8,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "cc/test/fake_external_begin_frame_source.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "ui/gfx/buffer_types.h"

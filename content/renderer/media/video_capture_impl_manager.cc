@@ -27,7 +27,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "content/child/child_process.h"
 #include "content/renderer/media/video_capture_impl.h"
 #include "content/renderer/media/video_capture_message_filter.h"

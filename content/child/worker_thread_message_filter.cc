@@ -4,7 +4,7 @@
 
 #include "content/child/worker_thread_message_filter.h"
 
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/child/worker_thread_registry.h"
 #include "ipc/ipc_message_macros.h"

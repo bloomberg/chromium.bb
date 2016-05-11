@@ -11,7 +11,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "content/child/indexed_db/indexed_db_dispatcher.h"
 #include "content/child/indexed_db/indexed_db_key_builders.h"

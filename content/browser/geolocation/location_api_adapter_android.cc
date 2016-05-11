@@ -9,7 +9,7 @@
 #include "base/android/jni_string.h"
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/geolocation/location_provider_android.h"
 #include "jni/LocationProviderAdapter_jni.h"
 

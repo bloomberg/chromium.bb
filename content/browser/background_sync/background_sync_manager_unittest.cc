@@ -19,7 +19,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/test/mock_entropy_provider.h"
 #include "base/test/simple_test_clock.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/background_sync/background_sync_network_observer.h"
 #include "content/browser/background_sync/background_sync_status.h"
 #include "content/browser/browser_thread_impl.h"

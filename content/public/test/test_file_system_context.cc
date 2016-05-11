@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/memory/scoped_vector.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "content/public/test/mock_special_storage_policy.h"
 #include "content/public/test/test_file_system_backend.h"
 #include "content/public/test/test_file_system_options.h"

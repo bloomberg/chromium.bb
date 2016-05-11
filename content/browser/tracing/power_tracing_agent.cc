@@ -5,7 +5,7 @@
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/memory/singleton.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event_impl.h"
 #include "content/browser/tracing/power_tracing_agent.h"
 #include "tools/battor_agent/battor_finder.h"

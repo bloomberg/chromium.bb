@@ -8,7 +8,7 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "content/common/media/peer_connection_tracker_messages.h"
 #include "content/renderer/media/rtc_peer_connection_handler.h"
 #include "content/renderer/render_thread_impl.h"

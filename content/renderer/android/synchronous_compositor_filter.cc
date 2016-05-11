@@ -8,7 +8,7 @@
 
 #include "base/callback.h"
 #include "base/stl_util.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "content/common/android/sync_compositor_messages.h"
 #include "content/common/input_messages.h"
 #include "content/renderer/android/synchronous_compositor_proxy.h"

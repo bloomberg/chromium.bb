@@ -17,7 +17,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/strings/string_split.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/fileapi/chrome_blob_storage_context.h"
 #include "content/browser/fileapi/mock_url_request_delegate.h"
 #include "content/browser/quota/mock_quota_manager_proxy.h"

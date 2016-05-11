@@ -13,7 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/test/test_simple_task_runner.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "content/renderer/p2p/empty_network_manager.h"
 #include "media/base/media_permission.h"
 #include "testing/gtest/include/gtest/gtest.h"

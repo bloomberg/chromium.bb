@@ -12,7 +12,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
 #include "storage/browser/database/database_quota_client.h"

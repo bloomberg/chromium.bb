@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "content/child/child_thread_impl.h"
 #include "content/child/fileapi/file_system_dispatcher.h"
 #include "content/public/child/worker_thread.h"

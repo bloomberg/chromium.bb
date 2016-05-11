@@ -9,7 +9,7 @@
 #include "base/location.h"
 #include "base/memory/singleton.h"
 #include "base/single_thread_task_runner.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/geofencing/geofencing_provider.h"
 #include "content/browser/geofencing/geofencing_registration_delegate.h"
 #include "content/public/browser/browser_thread.h"

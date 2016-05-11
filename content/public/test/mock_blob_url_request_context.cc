@@ -5,7 +5,7 @@
 #include "content/public/test/mock_blob_url_request_context.h"
 
 #include "base/memory/ptr_util.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/blob/blob_url_request_job.h"

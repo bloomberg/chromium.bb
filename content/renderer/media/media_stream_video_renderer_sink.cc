@@ -5,7 +5,7 @@
 #include "content/renderer/media/media_stream_video_renderer_sink.h"
 
 #include "base/single_thread_task_runner.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/video_frame.h"

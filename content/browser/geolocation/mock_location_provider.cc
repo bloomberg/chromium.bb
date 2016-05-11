@@ -13,7 +13,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 
 namespace content {
 MockLocationProvider* MockLocationProvider::instance_ = NULL;

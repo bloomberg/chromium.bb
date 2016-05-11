@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/macros.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/test/fake_output_surface_client.h"
 #include "testing/gtest/include/gtest/gtest.h"

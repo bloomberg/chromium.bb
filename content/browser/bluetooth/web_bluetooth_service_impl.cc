@@ -13,7 +13,7 @@
 
 #include <algorithm>
 
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/bluetooth/bluetooth_blacklist.h"
 #include "content/browser/bluetooth/bluetooth_dispatcher_host.h"
 #include "content/browser/bluetooth/frame_connected_bluetooth_devices.h"

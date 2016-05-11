@@ -8,7 +8,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/synchronization/lock.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "content/renderer/media/audio_device_factory.h"
 #include "content/renderer/media/media_stream_audio_track.h"

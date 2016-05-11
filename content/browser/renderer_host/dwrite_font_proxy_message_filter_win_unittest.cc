@@ -10,7 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/test/test_simple_task_runner.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/win/windows_version.h"
 #include "content/common/dwrite_font_proxy_messages.h"
 #include "content/public/test/test_browser_thread_bundle.h"
