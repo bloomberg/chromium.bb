@@ -1141,6 +1141,19 @@
           ],
         },
         {
+          'target_name': 'quic_packet_printer',
+          'type': 'executable',
+          'dependencies': [
+            '../base/base.gyp:base',
+            'net',
+            'net_quic_proto',
+            'simple_quic_tools',
+          ],
+          'sources': [
+            'tools/quic/quic_packet_printer_bin.cc',
+          ],
+        },
+        {
           'target_name': 'quic_server',
           'type': 'executable',
           'dependencies': [
