@@ -609,10 +609,6 @@ Window* WindowTreeClientImpl::NewTopLevelWindow(
   return window;
 }
 
-ConnectionSpecificId WindowTreeClientImpl::GetConnectionId() {
-  return connection_id_;
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // WindowTreeClientImpl, WindowTreeClient implementation:
 

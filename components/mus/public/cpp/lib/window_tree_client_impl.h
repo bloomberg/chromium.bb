@@ -176,7 +176,6 @@ class WindowTreeClientImpl : public WindowTreeConnection,
   Window* NewWindow(const Window::SharedProperties* properties) override;
   Window* NewTopLevelWindow(
       const Window::SharedProperties* properties) override;
-  ConnectionSpecificId GetConnectionId() override;
   void AddObserver(WindowTreeConnectionObserver* observer) override;
   void RemoveObserver(WindowTreeConnectionObserver* observer) override;
 
