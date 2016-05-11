@@ -29,8 +29,7 @@ static bool supportsCachedOffsets(const LayoutObject& object)
 
 PaintInvalidationState::PaintInvalidationState(const LayoutView& layoutView, Vector<LayoutObject*>& pendingDelayedPaintInvalidations)
     : m_currentObject(layoutView)
-    , m_forcedSubtreeInvalidationWithinContainer(false)
-    , m_forcedSubtreeInvalidationRectUpdateWithinContainer(false)
+    , m_forcedSubtreeInvalidationFlags(0)
     , m_clipped(false)
     , m_clippedForAbsolutePosition(false)
     , m_cachedOffsetsEnabled(true)
@@ -59,8 +58,7 @@ PaintInvalidationState::PaintInvalidationState(const LayoutView& layoutView, Vec
 
 PaintInvalidationState::PaintInvalidationState(const PaintInvalidationState& parentState, const LayoutObject& currentObject)
     : m_currentObject(currentObject)
-    , m_forcedSubtreeInvalidationWithinContainer(parentState.m_forcedSubtreeInvalidationWithinContainer)
-    , m_forcedSubtreeInvalidationRectUpdateWithinContainer(parentState.m_forcedSubtreeInvalidationRectUpdateWithinContainer)
+    , m_forcedSubtreeInvalidationFlags(parentState.m_forcedSubtreeInvalidationFlags)
     , m_clipped(parentState.m_clipped)
     , m_clippedForAbsolutePosition(parentState.m_clippedForAbsolutePosition)
     , m_clipRect(parentState.m_clipRect)
@@ -119,6 +117,8 @@ PaintInvalidationState::PaintInvalidationState(const PaintInvalidationState& par
         //   descendants if possible; or
         // - Track offset between the two paintInvalidationContainers.
         m_cachedOffsetsEnabled = false;
+        if (m_forcedSubtreeInvalidationFlags & FullInvalidationForStackedContents)
+            m_forcedSubtreeInvalidationFlags |= FullInvalidation;
     }
 
     if (!currentObject.isBoxModelObject() && !currentObject.isSVG())
@@ -144,21 +144,25 @@ PaintInvalidationState::PaintInvalidationState(const PaintInvalidationState& par
         // continue forcing a check for paint invalidation, since we're
         // descending into a different invalidation container. (For instance if
         // our parents were moved, the entire container will just move.)
-        m_forcedSubtreeInvalidationWithinContainer = false;
-        m_forcedSubtreeInvalidationRectUpdateWithinContainer = false;
-
-        if (currentObject == m_paintInvalidationContainerForStackedContents
-            && currentObject != m_containerForAbsolutePosition
-            && m_cachedOffsetsForAbsolutePositionEnabled
-            && m_cachedOffsetsEnabled) {
-            // The current object is the new paintInvalidationContainer for absolute-position descendants but is not their container.
-            // Call updateForCurrentObject() before resetting m_paintOffset to get paint offset of the current object
-            // from the original paintInvalidationContainerForStackingContents, then use this paint offset to adjust
-            // m_paintOffsetForAbsolutePosition.
-            updateForCurrentObject(parentState);
-            m_paintOffsetForAbsolutePosition -= m_paintOffset;
-            if (m_clippedForAbsolutePosition)
-                m_clipRectForAbsolutePosition.move(-m_paintOffset);
+        if (currentObject != m_paintInvalidationContainerForStackedContents) {
+            // However, we need to keep the FullInvalidationForStackedContents flag
+            // if the current object isn't the paint invalidation container of
+            // stacked contents.
+            m_forcedSubtreeInvalidationFlags &= FullInvalidationForStackedContents;
+        } else {
+            m_forcedSubtreeInvalidationFlags = 0;
+            if (currentObject != m_containerForAbsolutePosition
+                && m_cachedOffsetsForAbsolutePositionEnabled
+                && m_cachedOffsetsEnabled) {
+                // The current object is the new paintInvalidationContainer for absolute-position descendants but is not their container.
+                // Call updateForCurrentObject() before resetting m_paintOffset to get paint offset of the current object
+                // from the original paintInvalidationContainerForStackingContents, then use this paint offset to adjust
+                // m_paintOffsetForAbsolutePosition.
+                updateForCurrentObject(parentState);
+                m_paintOffsetForAbsolutePosition -= m_paintOffset;
+                if (m_clippedForAbsolutePosition)
+                    m_clipRectForAbsolutePosition.move(-m_paintOffset);
+            }
         }
 
         m_clipped = false; // Will be updated in updateForChildren().
@@ -231,12 +235,26 @@ void PaintInvalidationState::updateForCurrentObject(const PaintInvalidationState
         m_paintOffset += toLayoutBoxModelObject(m_currentObject).layer()->offsetForInFlowPosition();
 }
 
-void PaintInvalidationState::updateForChildren()
+void PaintInvalidationState::updateForChildren(PaintInvalidationReason reason)
 {
 #if ENABLE(ASSERT)
     ASSERT(!m_didUpdateForChildren);
     m_didUpdateForChildren = true;
 #endif
+
+    switch (reason) {
+    case PaintInvalidationDelayedFull:
+        pushDelayedPaintInvalidationTarget(const_cast<LayoutObject&>(m_currentObject));
+        break;
+    case PaintInvalidationSubtree:
+        m_forcedSubtreeInvalidationFlags |= (FullInvalidation | FullInvalidationForStackedContents);
+        break;
+    case PaintInvalidationSVGResourceChange:
+        setForceSubtreeInvalidationCheckingWithinContainer();
+        break;
+    default:
+        break;
+    }
 
     updateForNormalChildren();
 

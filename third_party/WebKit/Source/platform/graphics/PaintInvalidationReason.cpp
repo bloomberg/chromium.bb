@@ -47,8 +47,8 @@ const char* paintInvalidationReasonToString(PaintInvalidationReason reason)
         return "selection";
     case PaintInvalidationOutline:
         return "outline";
-    case PaintInvalidationLayer:
-        return "layer";
+    case PaintInvalidationSubtree:
+        return "subtree";
     case PaintInvalidationLayoutObjectInsertion:
         return "layoutObject insertion";
     case PaintInvalidationLayoutObjectRemoval:

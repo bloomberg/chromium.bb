@@ -1925,7 +1925,7 @@ private:
 
     bool diffNeedsFullLayoutAndPaintInvalidation(const ComputedStyle& other) const;
     bool diffNeedsFullLayout(const ComputedStyle& other) const;
-    bool diffNeedsPaintInvalidationLayer(const ComputedStyle& other) const;
+    bool diffNeedsPaintInvalidationSubtree(const ComputedStyle& other) const;
     bool diffNeedsPaintInvalidationObject(const ComputedStyle& other) const;
     void updatePropertySpecificDifferences(const ComputedStyle& other, StyleDifference&) const;
 

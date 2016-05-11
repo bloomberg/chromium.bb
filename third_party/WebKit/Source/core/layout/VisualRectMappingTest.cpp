@@ -27,11 +27,11 @@ protected:
         Vector<LayoutObject*> pendingDelayedPaintInvalidations;
         paintInvalidationStates[0].emplace(layoutView, pendingDelayedPaintInvalidations);
         if (layoutView != object)
-            paintInvalidationStates[0]->updateForChildren();
+            paintInvalidationStates[0]->updateForChildren(PaintInvalidationFull);
         for (size_t i = 1; i < paintInvalidationStates.size(); ++i) {
             paintInvalidationStates[i].emplace(*paintInvalidationStates[i - 1], *ancestors[ancestors.size() - i]);
             if (paintInvalidationStates[i]->m_currentObject != object)
-                paintInvalidationStates[i]->updateForChildren();
+                paintInvalidationStates[i]->updateForChildren(PaintInvalidationFull);
         }
 
         const PaintInvalidationState& paintInvalidationState = *paintInvalidationStates.last();

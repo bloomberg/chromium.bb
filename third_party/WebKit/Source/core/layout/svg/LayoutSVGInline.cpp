@@ -154,13 +154,7 @@ void LayoutSVGInline::invalidateTreeIfNeeded(const PaintInvalidationState& paint
     PaintInvalidationReason reason = invalidatePaintIfNeeded(newPaintInvalidationState);
     clearPaintInvalidationFlags(newPaintInvalidationState);
 
-    if (reason == PaintInvalidationDelayedFull)
-        paintInvalidationState.pushDelayedPaintInvalidationTarget(*this);
-
-    if (reason == PaintInvalidationSVGResourceChange)
-        newPaintInvalidationState.setForceSubtreeInvalidationWithinContainer();
-
-    newPaintInvalidationState.updateForChildren();
+    newPaintInvalidationState.updateForChildren(reason);
     invalidatePaintOfSubtreesIfNeeded(newPaintInvalidationState);
 }
 
