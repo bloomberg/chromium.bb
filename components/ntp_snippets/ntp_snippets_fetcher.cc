@@ -173,7 +173,7 @@ void NTPSnippetsFetcher::FetchSnippetsFromHosts(
 
   // Translate the BCP 47 |language_code| into a posix locale string.
   char locale[ULOC_FULLNAME_CAPACITY];
-  UErrorCode error;
+  UErrorCode error = U_ZERO_ERROR;
   uloc_forLanguageTag(language_code.c_str(), locale, ULOC_FULLNAME_CAPACITY,
                       nullptr, &error);
   DLOG_IF(WARNING, U_ZERO_ERROR != error)
