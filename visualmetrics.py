@@ -820,21 +820,25 @@ def calculate_speed_index(progress):
 
 def calculate_perceptual_speed_index(progress, directory):
     from ssim import compute_ssim
-    per_si = 0
-    last_ms = progress[0]['time']
     x = len(progress)
-    # Full Path of the Target Frame
     dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), directory)
+    first_paint_frame = os.path.join(dir, "ms_{0:06d}.png".format(progress[1]["time"]))
     target_frame = os.path.join(dir, "ms_{0:06d}.png".format(progress[x - 1]["time"]))
+    ssim_1 = compute_ssim(first_paint_frame, target_frame)
+    per_si = float(progress[1]['time'] ) 
+    last_ms = progress[1]['time']
+    # Full Path of the Target Frame
     logging.debug("Target image for perSI is %s" % target_frame)
-    for p in progress:
+    ssim = ssim_1
+    for p in progress[1:]:
         elapsed = p['time'] - last_ms
+        #print '*******elapsed %f'%elapsed
         # Full Path of the Current Frame
         current_frame = os.path.join(dir, "ms_{0:06d}.png".format(p["time"]))
         logging.debug("Current Image is %s" % current_frame)
         # Takes full path of PNG frames to compute SSIM value
-        ssim = compute_ssim(current_frame, target_frame)
         per_si += elapsed * (1.0 - ssim)
+        ssim = compute_ssim(current_frame, target_frame)
         last_ms = p['time']
     return int(per_si)
 
