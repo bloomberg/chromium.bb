@@ -40,6 +40,20 @@ def _ExtractBuildRevisionRange(build_page_content, build_url, test_name):
   revisions = list(int(r) for r in revisions)
   return revisions
 
+def _ShouldSkipBuild(build_page_content, build_url):
+  _GLOBAL_FAILURE = [
+    'failed sharded perf tests',
+    'exception sharded perf tests',
+  ]
+  for failure in _GLOBAL_FAILURE:
+    if failure in build_page_content:
+      print
+      _PrintWithColor(
+          "Warning: %s has '%s'."
+          ' Skipping this build' % (build_url, failure), _Color.WARNING)
+      return True
+  return False
+
 
 def FindFirstFailureRange(build_url, test_name):
   build_number = re.findall(_BUILD_REGEX, build_url)
@@ -54,11 +68,7 @@ def FindFirstFailureRange(build_url, test_name):
     print '\rProcess %s' % current_build_url,
     sys.stdout.flush()
     build_page_content = urllib2.urlopen(current_build_url).read()
-    if 'get perf test list' not in build_page_content:
-      print
-      _PrintWithColor(
-          'Warning: %s does not have "get perf test list" step.'
-          ' Skipping this build' % current_build_url, _Color.WARNING)
+    if _ShouldSkipBuild(build_page_content, build_url):
       continue
     failure_revisions = _ExtractBuildRevisionRange(
         build_page_content, current_build_url, test_name)
