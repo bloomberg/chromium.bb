@@ -7,7 +7,7 @@
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/extensions/api/gcd_private/privet_v3_context_getter.h"
 #include "chrome/browser/extensions/api/gcd_private/privet_v3_session.h"
 #include "chrome/browser/local_discovery/endpoint_resolver.h"

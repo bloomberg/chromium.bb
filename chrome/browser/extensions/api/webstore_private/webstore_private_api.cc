@@ -14,7 +14,7 @@
 #include "base/metrics/histogram.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "base/version.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher.h"

@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/test_timeouts.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "extensions/browser/api/socket/udp_socket.h"
 #include "net/base/io_buffer.h"

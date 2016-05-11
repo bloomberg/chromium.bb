@@ -8,7 +8,7 @@
 #include "base/files/file.h"
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/file_system_provider/notification_manager_interface.h"

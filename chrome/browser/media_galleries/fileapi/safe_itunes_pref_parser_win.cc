@@ -5,7 +5,7 @@
 #include "chrome/browser/media_galleries/fileapi/safe_itunes_pref_parser_win.h"
 
 #include "base/single_thread_task_runner.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/common/extensions/chrome_utility_extensions_messages.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_thread.h"

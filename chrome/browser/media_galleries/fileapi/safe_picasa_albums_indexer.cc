@@ -6,7 +6,7 @@
 
 #include "base/files/file_util.h"
 #include "base/single_thread_task_runner.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/media_galleries/fileapi/media_file_system_backend.h"
 #include "chrome/common/extensions/chrome_utility_extensions_messages.h"
 #include "chrome/grit/generated_resources.h"

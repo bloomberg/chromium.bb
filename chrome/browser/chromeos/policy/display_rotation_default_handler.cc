@@ -14,7 +14,7 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/settings/cros_settings_names.h"
 
 namespace policy {

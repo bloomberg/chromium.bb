@@ -9,7 +9,7 @@
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/browser/printing/cloud_print/gcd_api_flow_impl.h"
 #include "content/public/test/test_browser_thread.h"

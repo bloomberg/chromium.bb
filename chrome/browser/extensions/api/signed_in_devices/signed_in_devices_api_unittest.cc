@@ -10,7 +10,7 @@
 
 #include "base/guid.h"
 #include "base/memory/ptr_util.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_api_unittest.h"
 #include "chrome/browser/extensions/test_extension_prefs.h"

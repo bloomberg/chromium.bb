@@ -10,7 +10,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/gpu/arc_gpu_video_decode_accelerator.h"
 #include "chrome/gpu/arc_video_accelerator.h"
 #include "components/arc/common/video_accelerator.mojom.h"

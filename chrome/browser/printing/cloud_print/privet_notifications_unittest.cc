@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/printing/cloud_print/privet_http_asynchronous_factory.h"
 #include "chrome/browser/printing/cloud_print/privet_http_impl.h"
 #include "net/url_request/test_url_fetcher_factory.h"

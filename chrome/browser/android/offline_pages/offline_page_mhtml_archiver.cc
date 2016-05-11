@@ -12,7 +12,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/ssl/chrome_security_state_model_client.h"
 #include "components/security_state/security_state_model.h"
 #include "content/public/browser/web_contents.h"

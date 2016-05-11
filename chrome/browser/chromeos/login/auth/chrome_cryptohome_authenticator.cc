@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/login/auth/chrome_cryptohome_authenticator.h"
 
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"

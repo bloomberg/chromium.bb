@@ -59,7 +59,7 @@
 #include "ash/display/display_manager.h"
 #include "ash/shell.h"
 #include "base/linux_util.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_key_manager.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_reauth.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"

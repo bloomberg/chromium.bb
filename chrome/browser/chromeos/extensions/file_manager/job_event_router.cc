@@ -6,7 +6,7 @@
 
 #include <cmath>
 
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/drive/file_system_core_util.h"

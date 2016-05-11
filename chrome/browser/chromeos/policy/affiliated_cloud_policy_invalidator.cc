@@ -5,7 +5,7 @@
 #include "chrome/browser/chromeos/policy/affiliated_cloud_policy_invalidator.h"
 
 #include "base/logging.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
 #include "chrome/browser/policy/cloud/cloud_policy_invalidator.h"

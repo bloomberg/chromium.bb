@@ -16,7 +16,7 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/media_galleries/fileapi/media_file_system_backend.h"
 #include "content/public/test/mock_special_storage_policy.h"

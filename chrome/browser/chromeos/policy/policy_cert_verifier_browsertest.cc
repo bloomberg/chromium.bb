@@ -11,7 +11,7 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/net/cert_verify_proc_chromeos.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"

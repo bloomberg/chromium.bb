@@ -11,7 +11,7 @@
 #include "base/files/file_util.h"
 #include "base/process/launch.h"
 #include "base/single_thread_task_runner.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/browser.h"

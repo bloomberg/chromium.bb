@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/test/test_mock_time_task_runner.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/certificate_provider/certificate_provider.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_data_directory.h"

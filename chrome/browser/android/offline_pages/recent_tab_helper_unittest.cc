@@ -6,7 +6,7 @@
 
 #include "base/run_loop.h"
 #include "base/test/test_mock_time_task_runner.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/android/offline_pages/offline_page_model_factory.h"
 #include "chrome/browser/android/offline_pages/test_offline_page_model_builder.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"

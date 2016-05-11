@@ -13,7 +13,7 @@
 #include "base/logging.h"
 #include "base/process/process_handle.h"
 #include "base/single_thread_task_runner.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/common/chrome_utility_messages.h"
 #include "chrome/common/extensions/chrome_utility_extensions_messages.h"
 #include "chrome/grit/generated_resources.h"

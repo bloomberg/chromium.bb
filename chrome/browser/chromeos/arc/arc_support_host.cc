@@ -7,7 +7,7 @@
 #include "ash/system/chromeos/devicetype_utils.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/grit/generated_resources.h"

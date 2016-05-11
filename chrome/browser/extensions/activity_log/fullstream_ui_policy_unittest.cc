@@ -19,7 +19,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/test/simple_test_clock.h"
 #include "base/test/test_timeouts.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/activity_log/activity_log.h"
 #include "chrome/browser/extensions/extension_service.h"

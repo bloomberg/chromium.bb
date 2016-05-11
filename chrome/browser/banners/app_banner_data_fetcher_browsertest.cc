@@ -10,7 +10,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/task_runner.h"
 #include "base/test/histogram_tester.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/banners/app_banner_data_fetcher_desktop.h"
 #include "chrome/browser/banners/app_banner_metrics.h"
 #include "chrome/browser/banners/app_banner_settings_helper.h"

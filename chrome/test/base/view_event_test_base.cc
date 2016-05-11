@@ -8,7 +8,7 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/test/base/chrome_unit_test_suite.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/testing_browser_process.h"

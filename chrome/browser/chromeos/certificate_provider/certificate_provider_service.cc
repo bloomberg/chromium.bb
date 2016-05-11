@@ -18,7 +18,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/task_runner.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/certificate_provider/certificate_provider.h"
 #include "net/base/net_errors.h"
 #include "net/ssl/client_key_store.h"

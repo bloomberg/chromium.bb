@@ -5,7 +5,7 @@
 #include "chrome/renderer/media/cast_session.h"
 
 #include "base/run_loop.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/renderer/chrome_content_renderer_client.h"
 #include "chrome/test/base/chrome_render_view_test.h"
 

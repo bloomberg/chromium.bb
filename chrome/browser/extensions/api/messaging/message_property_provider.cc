@@ -9,7 +9,7 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/strings/string_piece.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"

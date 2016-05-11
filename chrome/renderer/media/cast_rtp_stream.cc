@@ -20,7 +20,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/timer.h"
 #include "base/trace_event/trace_event.h"
 #include "chrome/common/chrome_switches.h"

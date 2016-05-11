@@ -18,7 +18,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/os_crypt/ie7_password_win.h"

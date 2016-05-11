@@ -21,7 +21,7 @@
 #include "base/test/scoped_path_override.h"
 #include "base/test/test_reg_util_win.h"
 #include "base/test/test_simple_task_runner.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/version.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_comptr.h"

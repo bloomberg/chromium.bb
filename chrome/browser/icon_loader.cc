@@ -5,7 +5,7 @@
 #include "chrome/browser/icon_loader.h"
 
 #include "base/bind.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;

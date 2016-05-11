@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/views/app_list/linux/app_list_service_linux.h"
 
 #include "base/memory/singleton.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/shell_integration_linux.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"

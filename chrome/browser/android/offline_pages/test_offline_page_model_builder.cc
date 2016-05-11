@@ -8,7 +8,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/common/chrome_constants.h"
 #include "components/offline_pages/offline_page_model.h"
 #include "components/offline_pages/offline_page_test_store.h"

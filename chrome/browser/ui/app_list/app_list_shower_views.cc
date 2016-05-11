@@ -8,7 +8,7 @@
 #include "base/location.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/single_thread_task_runner.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/lifetime/keep_alive_types.h"
 #include "chrome/browser/lifetime/scoped_keep_alive.h"
 #include "chrome/browser/profiles/profile.h"

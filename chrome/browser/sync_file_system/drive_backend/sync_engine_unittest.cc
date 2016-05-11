@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/sequenced_worker_pool_owner.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/sync_file_system/drive_backend/callback_helper.h"
 #include "chrome/browser/sync_file_system/drive_backend/fake_sync_worker.h"
 #include "chrome/browser/sync_file_system/drive_backend/sync_worker_interface.h"

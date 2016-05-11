@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/free_deleter.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/win/object_watcher.h"
 #include "base/win/scoped_bstr.h"
 #include "base/win/scoped_comptr.h"

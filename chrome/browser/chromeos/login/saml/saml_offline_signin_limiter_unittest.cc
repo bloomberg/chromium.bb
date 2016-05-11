@@ -8,7 +8,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/test/simple_test_clock.h"
 #include "base/test/test_simple_task_runner.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/clock.h"
 #include "chrome/browser/chromeos/login/saml/saml_offline_signin_limiter_factory.h"
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"

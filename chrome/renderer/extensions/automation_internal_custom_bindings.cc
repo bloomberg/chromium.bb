@@ -11,7 +11,7 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/common/extensions/chrome_extension_messages.h"
 #include "chrome/common/extensions/manifest_handlers/automation.h"

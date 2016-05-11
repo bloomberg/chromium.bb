@@ -14,7 +14,7 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/sync_file_system/local/canned_syncable_file_system.h"
 #include "chrome/browser/sync_file_system/local/local_file_sync_context.h"
 #include "chrome/browser/sync_file_system/local/sync_file_system_backend.h"

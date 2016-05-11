@@ -5,7 +5,7 @@
 #include "chrome/browser/browsing_data/browsing_data_indexed_db_helper.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"

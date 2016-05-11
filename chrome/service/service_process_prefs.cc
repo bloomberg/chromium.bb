@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "components/prefs/pref_filter.h"
 

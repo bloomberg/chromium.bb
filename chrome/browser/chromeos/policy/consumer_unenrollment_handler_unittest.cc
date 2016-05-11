@@ -9,7 +9,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/ownership/fake_owner_settings_service.h"
 #include "chrome/browser/chromeos/policy/consumer_management_service.h"
 #include "chrome/browser/chromeos/policy/consumer_management_stage.h"

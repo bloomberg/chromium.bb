@@ -10,7 +10,7 @@
 
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
 #include "chrome/browser/chromeos/policy/fake_affiliated_invalidation_service_provider.h"
 #include "chrome/browser/chromeos/policy/proto/chrome_device_policy.pb.h"

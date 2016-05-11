@@ -25,7 +25,7 @@
 #include "base/scoped_observer.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_util.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/value_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
