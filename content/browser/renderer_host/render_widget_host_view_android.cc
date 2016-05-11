@@ -724,7 +724,9 @@ bool RenderWidgetHostViewAndroid::OnTouchEvent(
 
   blink::WebTouchEvent web_event = ui::CreateWebTouchEventFromMotionEvent(
       event, result.moved_beyond_slop_region);
-  host_->ForwardTouchEventWithLatencyInfo(web_event, ui::LatencyInfo());
+  ui::LatencyInfo latency_info;
+  latency_info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_UI_COMPONENT, 0, 0);
+  host_->ForwardTouchEventWithLatencyInfo(web_event, latency_info);
 
   // Send a proactive BeginFrame for this vsync to reduce scroll latency for
   // scroll-inducing touch events. Note that Android's Choreographer ensures
@@ -1653,8 +1655,11 @@ void RenderWidgetHostViewAndroid::SendMouseEvent(
 
 void RenderWidgetHostViewAndroid::SendMouseWheelEvent(
     const blink::WebMouseWheelEvent& event) {
-  if (host_)
-    host_->ForwardWheelEvent(event);
+  if (host_) {
+    ui::LatencyInfo latency_info;
+    latency_info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_UI_COMPONENT, 0, 0);
+    host_->ForwardWheelEventWithLatencyInfo(event, latency_info);
+  }
 }
 
 void RenderWidgetHostViewAndroid::SendGestureEvent(
