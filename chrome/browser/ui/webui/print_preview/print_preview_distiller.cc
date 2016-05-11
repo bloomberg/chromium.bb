@@ -136,6 +136,14 @@ class PrintPreviewDistiller::WebContentsDelegateImpl
         render_frame_host->GetRoutingID(), true));
   }
 
+  void DidFinishLoad(content::RenderFrameHost* render_frame_host,
+                     const GURL& validated_url) override {
+    // Notify distiller that print preview is using it.
+    dom_distiller::RunIsolatedJavaScript(
+        web_contents()->GetMainFrame(),
+        "var isPrintPreviewDistiller = true;");
+  }
+
   void DoPrintPreview() {
     RenderViewHost* rvh = web_contents()->GetRenderViewHost();
     rvh->Send(new PrintMsg_InitiatePrintPreview(rvh->GetRoutingID(), false));
