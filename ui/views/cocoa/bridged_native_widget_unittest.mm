@@ -304,7 +304,10 @@ NSString* BridgedNativeWidgetTest::GetActualText() {
 }
 
 NSString* BridgedNativeWidgetTest::GetExpectedText() {
-  return [dummy_text_view_ string];
+  NSRange range = NSMakeRange(0, NSUIntegerMax);
+  return
+      [[dummy_text_view_ attributedSubstringForProposedRange:range
+                                                 actualRange:nullptr] string];
 }
 
 NSRange BridgedNativeWidgetTest::GetActualSelectionRange() {
@@ -618,21 +621,50 @@ TEST_F(BridgedNativeWidgetTest, TextInput_GetEndingSubstring) {
   EXPECT_EQ_RANGE_3(NSMakeRange(8, 3), expected_range, actual_range);
 }
 
-// Todo(karandeepb): Update this test to use |dummy_text_view_| expectations
-// once behavior of attributedSubstringForProposedRange:actualRange: is made
-// consistent with NSTextView.
 // Test getting empty substring using text input protocol.
 TEST_F(BridgedNativeWidgetTest, TextInput_GetEmptySubstring) {
   const std::string test_string = "foo bar baz";
   InstallTextField(test_string);
 
+  // Try with EmptyRange(). This behaves specially and should return the
+  // complete string and the corresponding text range.
   NSRange range = EmptyRange();
-  NSRange actual_range;
-  NSAttributedString* text =
+  NSRange actual_range = EmptyRange();
+  NSRange expected_range = EmptyRange();
+  NSAttributedString* actual_text =
       [ns_view_ attributedSubstringForProposedRange:range
                                         actualRange:&actual_range];
-  EXPECT_EQ("", SysNSStringToUTF8([text string]));
-  EXPECT_EQ_RANGE(range, actual_range);
+  NSAttributedString* expected_text =
+      [dummy_text_view_ attributedSubstringForProposedRange:range
+                                                actualRange:&expected_range];
+  EXPECT_NSEQ_3(@"foo bar baz", [expected_text string], [actual_text string]);
+  EXPECT_EQ_RANGE_3(NSMakeRange(0, test_string.length()), expected_range,
+                    actual_range);
+
+  // Try with a valid empty range.
+  range = NSMakeRange(2, 0);
+  actual_range = EmptyRange();
+  expected_range = EmptyRange();
+  actual_text = [ns_view_ attributedSubstringForProposedRange:range
+                                                  actualRange:&actual_range];
+  expected_text =
+      [dummy_text_view_ attributedSubstringForProposedRange:range
+                                                actualRange:&expected_range];
+  EXPECT_NSEQ_3(nil, [expected_text string], [actual_text string]);
+  EXPECT_EQ_RANGE_3(range, expected_range, actual_range);
+
+  // Try with an out of bounds empty range.
+  range = NSMakeRange(20, 0);
+  actual_range = EmptyRange();
+  expected_range = EmptyRange();
+  actual_text = [ns_view_ attributedSubstringForProposedRange:range
+                                                  actualRange:&actual_range];
+  expected_text =
+      [dummy_text_view_ attributedSubstringForProposedRange:range
+                                                actualRange:&expected_range];
+
+  EXPECT_NSEQ_3(nil, [expected_text string], [actual_text string]);
+  EXPECT_EQ_RANGE_3(NSMakeRange(0, 0), expected_range, actual_range);
 }
 
 // Test inserting text using text input protocol.
@@ -732,13 +764,13 @@ TEST_F(BridgedNativeWidgetTest, TextInput_DeleteBackward) {
 
   // Delete one character.
   PerformCommand(@selector(deleteBackward:));
-  EXPECT_NSEQ_3(@"", GetExpectedText(), GetActualText());
+  EXPECT_NSEQ_3(nil, GetExpectedText(), GetActualText());
   EXPECT_EQ_RANGE_3(NSMakeRange(0, 0), GetExpectedSelectionRange(),
                     GetActualSelectionRange());
 
   // Try to delete again on an empty string.
   PerformCommand(@selector(deleteBackward:));
-  EXPECT_NSEQ_3(@"", GetExpectedText(), GetActualText());
+  EXPECT_NSEQ_3(nil, GetExpectedText(), GetActualText());
   EXPECT_EQ_RANGE_3(NSMakeRange(0, 0), GetExpectedSelectionRange(),
                     GetActualSelectionRange());
 }
@@ -758,7 +790,7 @@ TEST_F(BridgedNativeWidgetTest, TextInput_DeleteForward) {
   // Should succeed after moving left first.
   PerformCommand(@selector(moveLeft:));
   PerformCommand(@selector(deleteForward:));
-  EXPECT_NSEQ_3(@"", GetExpectedText(), GetActualText());
+  EXPECT_NSEQ_3(nil, GetExpectedText(), GetActualText());
   EXPECT_EQ_RANGE_3(NSMakeRange(0, 0), GetExpectedSelectionRange(),
                     GetActualSelectionRange());
 }

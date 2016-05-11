@@ -163,6 +163,40 @@ gfx::Rect GetFirstRectForRangeHelper(const ui::TextInputClient* client,
   return union_rect;
 }
 
+// Returns the string corresponding to |requested_range| for the given |client|.
+// If a gfx::Range::InvalidRange() is passed, the full string stored by |client|
+// is returned. Sets |actual_range| corresponding to the returned string.
+base::string16 AttributedSubstringForRangeHelper(
+    const ui::TextInputClient* client,
+    const gfx::Range& requested_range,
+    gfx::Range* actual_range) {
+  // NSRange doesn't support reversed ranges.
+  DCHECK(!requested_range.is_reversed());
+  DCHECK(actual_range);
+
+  base::string16 substring;
+  gfx::Range text_range;
+  *actual_range = gfx::Range::InvalidRange();
+  if (!client || !client->GetTextRange(&text_range))
+    return substring;
+
+  // gfx::Range::Intersect() behaves a bit weirdly. If B is an empty range
+  // contained inside a non-empty range A, B intersection A returns
+  // gfx::Range::InvalidRange(), instead of returning B.
+  *actual_range = text_range.Contains(requested_range)
+                      ? requested_range
+                      : text_range.Intersect(requested_range);
+
+  // This is a special case for which the complete string should should be
+  // returned. NSTextView also follows this, though the same is not mentioned in
+  // NSTextInputClient documentation.
+  if (!requested_range.IsValid())
+    *actual_range = text_range;
+
+  client->GetTextFromRange(*actual_range, &substring);
+  return substring;
+}
+
 }  // namespace
 
 @interface BridgedContentView ()
@@ -818,17 +852,20 @@ gfx::Rect GetFirstRectForRangeHelper(const ui::TextInputClient* client,
 - (NSAttributedString*)
     attributedSubstringForProposedRange:(NSRange)range
                             actualRange:(NSRangePointer)actualRange {
-  base::string16 substring;
-  if (textInputClient_) {
-    gfx::Range textRange;
-    textInputClient_->GetTextRange(&textRange);
-    gfx::Range subrange = textRange.Intersect(gfx::Range(range));
-    textInputClient_->GetTextFromRange(subrange, &substring);
-    if (actualRange)
-      *actualRange = subrange.ToNSRange();
+  gfx::Range actual_range;
+  base::string16 substring = AttributedSubstringForRangeHelper(
+      textInputClient_, gfx::Range(range), &actual_range);
+  if (actualRange) {
+    // To maintain consistency with NSTextView, return range {0,0} for an out of
+    // bounds requested range.
+    *actualRange =
+        actual_range.IsValid() ? actual_range.ToNSRange() : NSMakeRange(0, 0);
   }
-  return [[[NSAttributedString alloc]
-      initWithString:base::SysUTF16ToNSString(substring)] autorelease];
+  return substring.empty()
+             ? nil
+             : [[[NSAttributedString alloc]
+                   initWithString:base::SysUTF16ToNSString(substring)]
+                   autorelease];
 }
 
 - (NSUInteger)characterIndexForPoint:(NSPoint)aPoint {
