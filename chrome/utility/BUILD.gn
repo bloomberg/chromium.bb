@@ -31,7 +31,7 @@ static_library("utility") {
     "//chrome:strings",
     "//chrome/common",
     "//chrome/common:mojo_bindings",
-    "//components/safe_json:safe_json_parser_message_filter",
+    "//components/safe_json/utility",
     "//components/search_engines",
     "//components/strings",
     "//components/url_formatter",

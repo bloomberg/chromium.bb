@@ -17,8 +17,6 @@
       'utility/image_decoder_impl.h',
       'utility/printing_handler.cc',
       'utility/printing_handler.h',
-      'utility/safe_json_parser_handler.cc',
-      'utility/safe_json_parser_handler.h',
       'utility/shell_handler_win.cc',
       'utility/shell_handler_win.h',
       'utility/utility_message_handler.h',
@@ -112,7 +110,7 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../components/components_strings.gyp:components_strings',
-        '../components/components.gyp:safe_json_parser_message_filter',
+        '../components/components.gyp:safe_json_parser_mojo',
         '../components/components.gyp:search_engines',
         '../components/url_formatter/url_formatter.gyp:url_formatter',
         '../content/content.gyp:content_common',
