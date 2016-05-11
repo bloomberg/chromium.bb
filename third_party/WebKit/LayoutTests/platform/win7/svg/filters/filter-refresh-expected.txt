@@ -110,7 +110,7 @@ CONSOLE WARNING: SVG's SMIL animations (<animate>, <set>, etc.) are deprecated a
         {
           "object": "LayoutSVGRect rect id='rect'",
           "rect": [90, 170, 30, 30],
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutSVGRect rect id='rect'",
@@ -120,7 +120,7 @@ CONSOLE WARNING: SVG's SMIL animations (<animate>, <set>, etc.) are deprecated a
         {
           "object": "LayoutSVGRect rect id='rect'",
           "rect": [90, 130, 30, 30],
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutSVGRect rect id='rect'",
@@ -130,7 +130,7 @@ CONSOLE WARNING: SVG's SMIL animations (<animate>, <set>, etc.) are deprecated a
         {
           "object": "LayoutSVGRect rect id='rect'",
           "rect": [90, 90, 30, 30],
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutSVGRect rect id='rect'",
@@ -140,7 +140,7 @@ CONSOLE WARNING: SVG's SMIL animations (<animate>, <set>, etc.) are deprecated a
         {
           "object": "LayoutSVGRect rect id='rect'",
           "rect": [90, 50, 30, 30],
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutSVGRect rect id='rect'",
@@ -150,7 +150,7 @@ CONSOLE WARNING: SVG's SMIL animations (<animate>, <set>, etc.) are deprecated a
         {
           "object": "LayoutSVGRect rect id='rect'",
           "rect": [50, 170, 30, 30],
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutSVGRect rect id='rect'",
@@ -160,7 +160,7 @@ CONSOLE WARNING: SVG's SMIL animations (<animate>, <set>, etc.) are deprecated a
         {
           "object": "LayoutSVGRect rect id='rect'",
           "rect": [50, 130, 30, 30],
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutSVGRect rect id='rect'",
@@ -170,7 +170,7 @@ CONSOLE WARNING: SVG's SMIL animations (<animate>, <set>, etc.) are deprecated a
         {
           "object": "LayoutSVGRect rect id='rect'",
           "rect": [50, 90, 30, 30],
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutSVGRect rect id='rect'",
@@ -180,7 +180,7 @@ CONSOLE WARNING: SVG's SMIL animations (<animate>, <set>, etc.) are deprecated a
         {
           "object": "LayoutSVGRect rect id='rect'",
           "rect": [50, 50, 30, 30],
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutSVGRect rect id='rect'",
@@ -190,7 +190,7 @@ CONSOLE WARNING: SVG's SMIL animations (<animate>, <set>, etc.) are deprecated a
         {
           "object": "LayoutSVGRect rect id='rect'",
           "rect": [10, 170, 30, 30],
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutSVGRect rect id='rect'",
@@ -200,7 +200,7 @@ CONSOLE WARNING: SVG's SMIL animations (<animate>, <set>, etc.) are deprecated a
         {
           "object": "LayoutSVGRect rect id='rect'",
           "rect": [10, 130, 30, 30],
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutSVGRect rect id='rect'",
@@ -210,7 +210,7 @@ CONSOLE WARNING: SVG's SMIL animations (<animate>, <set>, etc.) are deprecated a
         {
           "object": "LayoutSVGRect rect id='rect'",
           "rect": [10, 90, 30, 30],
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutSVGRect rect id='rect'",
@@ -220,7 +220,7 @@ CONSOLE WARNING: SVG's SMIL animations (<animate>, <set>, etc.) are deprecated a
         {
           "object": "LayoutSVGRect rect id='rect'",
           "rect": [10, 50, 30, 30],
-          "reason": "location change"
+          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutSVGRect rect id='rect'",
