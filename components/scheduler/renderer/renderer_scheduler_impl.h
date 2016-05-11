@@ -111,6 +111,7 @@ class SCHEDULER_EXPORT RendererSchedulerImpl
   void RunIdleTasksForTesting(const base::Closure& callback);
   void EndIdlePeriodForTesting(const base::Closure& callback,
                                base::TimeTicks time_remaining);
+  bool PolicyNeedsUpdateForTesting();
 
   base::TickClock* tick_clock() const;
 
@@ -261,10 +262,6 @@ class SCHEDULER_EXPORT RendererSchedulerImpl
   UseCase ComputeCurrentUseCase(
       base::TimeTicks now,
       base::TimeDelta* expected_use_case_duration) const;
-
-  // Works out if a gesture appears to be in progress based on the current
-  // input signals. Can be called from any thread.
-  bool InputSignalsSuggestGestureInProgress(base::TimeTicks now) const;
 
   // An input event of some sort happened, the policy may need updating.
   void UpdateForInputEventOnCompositorThread(blink::WebInputEvent::Type type,

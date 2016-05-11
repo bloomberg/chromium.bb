@@ -404,6 +404,10 @@ void RendererSchedulerImpl::EndIdlePeriodForTesting(
   callback.Run();
 }
 
+bool RendererSchedulerImpl::PolicyNeedsUpdateForTesting() {
+  return policy_may_need_update_.IsSet();
+}
+
 // static
 bool RendererSchedulerImpl::ShouldPrioritizeInputEvent(
     const blink::WebInputEvent& web_input_event) {
@@ -458,7 +462,9 @@ void RendererSchedulerImpl::UpdateForInputEventOnCompositorThread(
                "type", static_cast<int>(type), "input_event_state",
                InputEventStateToString(input_event_state));
 
-  bool gesture_already_in_progress = InputSignalsSuggestGestureInProgress(now);
+  base::TimeDelta unused_policy_duration;
+  UseCase previous_use_case =
+      ComputeCurrentUseCase(now, &unused_policy_duration);
   bool was_awaiting_touch_start_response =
       AnyThread().awaiting_touch_start_response;
 
@@ -493,6 +499,8 @@ void RendererSchedulerImpl::UpdateForInputEventOnCompositorThread(
 
       case blink::WebInputEvent::GesturePinchUpdate:
       case blink::WebInputEvent::GestureScrollUpdate:
+        // If we see events for an established gesture, we can lock it to the
+        // appropriate thread as the gesture can no longer be cancelled.
         AnyThread().last_gesture_was_compositor_driven =
             input_event_state == InputEventState::EVENT_CONSUMED_BY_COMPOSITOR;
         AnyThread().awaiting_touch_start_response = false;
@@ -515,8 +523,10 @@ void RendererSchedulerImpl::UpdateForInputEventOnCompositorThread(
     }
   }
 
-  // Avoid unnecessary policy updates, while a gesture is already in progress.
-  if (!gesture_already_in_progress ||
+  // Avoid unnecessary policy updates if the use case did not change.
+  UseCase use_case = ComputeCurrentUseCase(now, &unused_policy_duration);
+
+  if (use_case != previous_use_case ||
       was_awaiting_touch_start_response !=
           AnyThread().awaiting_touch_start_response) {
     EnsureUrgentPolicyUpdatePostedOnMainThread(FROM_HERE);
@@ -799,6 +809,11 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
   TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"), "use_case",
                  use_case);
   TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
+                 "touchstart_expected_soon",
+                 MainThreadOnly().touchstart_expected_soon);
+  TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
+                 "expensive_task_policy", expensive_task_policy);
+  TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
                  "RendererScheduler.loading_tasks_seem_expensive",
                  MainThreadOnly().loading_tasks_seem_expensive);
   TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
@@ -860,22 +875,6 @@ void RendererSchedulerImpl::ApplyTaskQueuePolicy(
       throttling_helper_->DecreaseThrottleRefCount(task_queue);
     }
   }
-}
-
-bool RendererSchedulerImpl::InputSignalsSuggestGestureInProgress(
-    base::TimeTicks now) const {
-  base::TimeDelta unused_policy_duration;
-  switch (ComputeCurrentUseCase(now, &unused_policy_duration)) {
-    case UseCase::COMPOSITOR_GESTURE:
-    case UseCase::MAIN_THREAD_GESTURE:
-    case UseCase::SYNCHRONIZED_GESTURE:
-    case UseCase::TOUCHSTART:
-      return true;
-
-    default:
-      break;
-  }
-  return false;
 }
 
 RendererSchedulerImpl::UseCase RendererSchedulerImpl::ComputeCurrentUseCase(

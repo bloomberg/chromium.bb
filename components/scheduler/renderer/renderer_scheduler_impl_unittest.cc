@@ -361,7 +361,11 @@ class RendererSchedulerImplTest : public testing::Test {
         RendererScheduler::InputEventState::EVENT_CONSUMED_BY_COMPOSITOR);
   }
 
-  void SimulateMainThreadGestureWithCancelledScroll() {
+  // Simulate a gesture where there is an active compositor scroll, but no
+  // scroll updates are generated. Instead, the main thread handles
+  // non-canceleable touch events, making this an effectively main thread
+  // driven gesture.
+  void SimulateMainThreadGestureWithoutScrollUpdates() {
     scheduler_->DidHandleInputEventOnCompositorThread(
         FakeInputEvent(blink::WebInputEvent::TouchStart),
         RendererScheduler::InputEventState::EVENT_FORWARDED_TO_MAIN_THREAD);
@@ -374,6 +378,53 @@ class RendererSchedulerImplTest : public testing::Test {
     scheduler_->DidHandleInputEventOnCompositorThread(
         FakeInputEvent(blink::WebInputEvent::TouchMove),
         RendererScheduler::InputEventState::EVENT_FORWARDED_TO_MAIN_THREAD);
+  }
+
+  // Simulate a gesture where the main thread handles touch events but does not
+  // preventDefault(), allowing the gesture to turn into a compositor driven
+  // gesture. This function also verifies the necessary policy updates are
+  // scheduled.
+  void SimulateMainThreadGestureWithoutPreventDefault() {
+    scheduler_->DidHandleInputEventOnCompositorThread(
+        FakeInputEvent(blink::WebInputEvent::TouchStart),
+        RendererScheduler::InputEventState::EVENT_FORWARDED_TO_MAIN_THREAD);
+
+    // Touchstart policy update.
+    EXPECT_TRUE(scheduler_->PolicyNeedsUpdateForTesting());
+    EXPECT_EQ(UseCase::TOUCHSTART, ForceUpdatePolicyAndGetCurrentUseCase());
+    EXPECT_FALSE(scheduler_->PolicyNeedsUpdateForTesting());
+
+    scheduler_->DidHandleInputEventOnCompositorThread(
+        FakeInputEvent(blink::WebInputEvent::TouchMove),
+        RendererScheduler::InputEventState::EVENT_FORWARDED_TO_MAIN_THREAD);
+    scheduler_->DidHandleInputEventOnCompositorThread(
+        FakeInputEvent(blink::WebInputEvent::GestureTapCancel),
+        RendererScheduler::InputEventState::EVENT_FORWARDED_TO_MAIN_THREAD);
+    scheduler_->DidHandleInputEventOnCompositorThread(
+        FakeInputEvent(blink::WebInputEvent::GestureScrollBegin),
+        RendererScheduler::InputEventState::EVENT_CONSUMED_BY_COMPOSITOR);
+
+    // Main thread gesture policy update.
+    EXPECT_TRUE(scheduler_->PolicyNeedsUpdateForTesting());
+    EXPECT_EQ(UseCase::MAIN_THREAD_GESTURE,
+              ForceUpdatePolicyAndGetCurrentUseCase());
+    EXPECT_FALSE(scheduler_->PolicyNeedsUpdateForTesting());
+
+    scheduler_->DidHandleInputEventOnCompositorThread(
+        FakeInputEvent(blink::WebInputEvent::GestureScrollUpdate),
+        RendererScheduler::InputEventState::EVENT_CONSUMED_BY_COMPOSITOR);
+    scheduler_->DidHandleInputEventOnCompositorThread(
+        FakeInputEvent(blink::WebInputEvent::TouchScrollStarted),
+        RendererScheduler::InputEventState::EVENT_FORWARDED_TO_MAIN_THREAD);
+    scheduler_->DidHandleInputEventOnCompositorThread(
+        FakeInputEvent(blink::WebInputEvent::TouchMove),
+        RendererScheduler::InputEventState::EVENT_FORWARDED_TO_MAIN_THREAD);
+
+    // Compositor thread gesture policy update.
+    EXPECT_TRUE(scheduler_->PolicyNeedsUpdateForTesting());
+    EXPECT_EQ(UseCase::COMPOSITOR_GESTURE,
+              ForceUpdatePolicyAndGetCurrentUseCase());
+    EXPECT_FALSE(scheduler_->PolicyNeedsUpdateForTesting());
   }
 
   void SimulateMainThreadGestureStart(TouchEventPolicy touch_event_policy,
@@ -814,19 +865,35 @@ TEST_F(RendererSchedulerImplTest,
 }
 
 TEST_F(RendererSchedulerImplTest,
-       TestCompositorPolicy_MainThreadHandlesInput_WithCancelledScroll) {
+       TestCompositorPolicy_MainThreadHandlesInput_WithoutScrollUpdates) {
   std::vector<std::string> run_order;
   PostTestTasks(&run_order, "L1 I1 D1 C1 D2 C2");
 
   scheduler_->SetHasVisibleRenderWidgetWithTouchHandler(true);
   EnableIdleTasks();
-  SimulateMainThreadGestureWithCancelledScroll();
+  SimulateMainThreadGestureWithoutScrollUpdates();
   RunUntilIdle();
   EXPECT_THAT(run_order,
               testing::ElementsAre(std::string("C1"), std::string("C2"),
                                    std::string("L1"), std::string("D1"),
                                    std::string("D2"), std::string("I1")));
   EXPECT_EQ(RendererScheduler::UseCase::MAIN_THREAD_GESTURE, CurrentUseCase());
+}
+
+TEST_F(RendererSchedulerImplTest,
+       TestCompositorPolicy_MainThreadHandlesInput_WithoutPreventDefault) {
+  std::vector<std::string> run_order;
+  PostTestTasks(&run_order, "L1 I1 D1 C1 D2 C2");
+
+  scheduler_->SetHasVisibleRenderWidgetWithTouchHandler(true);
+  EnableIdleTasks();
+  SimulateMainThreadGestureWithoutPreventDefault();
+  RunUntilIdle();
+  EXPECT_THAT(run_order,
+              testing::ElementsAre(std::string("L1"), std::string("D1"),
+                                   std::string("D2"), std::string("I1"),
+                                   std::string("C1"), std::string("C2")));
+  EXPECT_EQ(RendererScheduler::UseCase::COMPOSITOR_GESTURE, CurrentUseCase());
 }
 
 TEST_F(RendererSchedulerImplTest,
