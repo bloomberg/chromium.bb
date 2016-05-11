@@ -277,6 +277,14 @@ public:
     LayoutBlockFlow* nearestInnerBlockWithFirstLine();
 
 protected:
+    // Merge children of |siblingThatMayBeDeleted| into this object if possible, and delete
+    // |siblingThatMayBeDeleted|. Returns true if we were able to merge. In that case,
+    // |siblingThatMayBeDeleted| will be dead. We'll only be able to merge if both blocks are
+    // anonymous.
+    // TODO(mstensho): This belongs in LayoutBlockFlow, but needs to live here until we have been
+    // able to move all callers down to LayoutBlockFlow.
+    bool mergeSiblingContiguousAnonymousBlock(LayoutBlockFlow* siblingThatMayBeDeleted);
+
     // Reparent subsequent or preceding adjacent floating or out-of-flow siblings into this object.
     // TODO(mstensho): This belongs in LayoutBlockFlow, but needs to live here until we have been
     // able to move all callers down to LayoutBlockFlow first.
