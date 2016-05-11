@@ -12,7 +12,7 @@
 #include "ash/wm/window_animations.h"
 #include "base/bind.h"
 #include "base/strings/string16.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "ui/aura/window.h"
 #include "ui/events/event.h"
