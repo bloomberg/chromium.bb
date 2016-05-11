@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "device/serial/data_stream.mojom.h"
 #include "device/serial/serial.mojom.h"
 #include "mojo/public/cpp/bindings/interface_request.h"

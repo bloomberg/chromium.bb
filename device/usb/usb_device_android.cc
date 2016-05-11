@@ -8,7 +8,7 @@
 #include "base/android/jni_string.h"
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "device/usb/usb_configuration_android.h"
 #include "device/usb/usb_device_handle.h"
 #include "device/usb/usb_interface_android.h"

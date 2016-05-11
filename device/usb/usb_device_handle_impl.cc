@@ -17,7 +17,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/synchronization/lock.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/device_event_log/device_event_log.h"
 #include "device/usb/usb_context.h"
 #include "device/usb/usb_descriptors.h"

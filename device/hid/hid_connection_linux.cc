@@ -18,8 +18,8 @@
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_pump_libevent.h"
 #include "base/posix/eintr_wrapper.h"
-#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/device_event_log/device_event_log.h"
 #include "device/hid/hid_service.h"
 

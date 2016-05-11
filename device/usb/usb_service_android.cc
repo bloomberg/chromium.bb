@@ -10,7 +10,7 @@
 #include "base/android/context_utils.h"
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "device/usb/usb_device_android.h"
 #include "jni/ChromeUsbService_jni.h"
 
