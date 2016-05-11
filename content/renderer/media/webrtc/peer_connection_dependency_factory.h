@@ -47,7 +47,11 @@ namespace content {
 
 class IpcNetworkManager;
 class IpcPacketSocketFactory;
+class MediaStreamAudioSource;
+class WebAudioCapturerSource;
+class WebRtcAudioCapturer;
 class WebRtcAudioDeviceImpl;
+class WebRtcLocalAudioTrack;
 class WebRtcLoggingHandlerImpl;
 class WebRtcLoggingMessageFilter;
 class WebRtcVideoCapturerAdapter;
@@ -74,10 +78,25 @@ class CONTENT_EXPORT PeerConnectionDependencyFactory
   virtual scoped_refptr<webrtc::MediaStreamInterface>
       CreateLocalMediaStream(const std::string& label);
 
+  // InitializeMediaStreamAudioSource initialize a MediaStream source object
+  // for audio input.
+  bool InitializeMediaStreamAudioSource(
+      int render_frame_id,
+      const blink::WebMediaConstraints& audio_constraints,
+      MediaStreamAudioSource* source_data);
+
   // Creates an implementation of a cricket::VideoCapturer object that can be
   // used when creating a libjingle webrtc::VideoTrackSourceInterface object.
   virtual WebRtcVideoCapturerAdapter* CreateVideoCapturer(
       bool is_screen_capture);
+
+  // Creates an instance of WebRtcLocalAudioTrack and stores it
+  // in the extraData field of |track|.
+  void CreateLocalAudioTrack(const blink::WebMediaStreamTrack& track);
+
+  // Creates an instance of MediaStreamRemoteAudioTrack and associates with the
+  // |track| object.
+  void CreateRemoteAudioTrack(const blink::WebMediaStreamTrack& track);
 
   // Asks the PeerConnection factory to create a Local VideoTrack object.
   virtual scoped_refptr<webrtc::VideoTrackInterface> CreateLocalVideoTrack(
@@ -121,15 +140,20 @@ class CONTENT_EXPORT PeerConnectionDependencyFactory
 
   void EnsureInitialized();
   scoped_refptr<base::SingleThreadTaskRunner> GetWebRtcWorkerThread() const;
-  virtual scoped_refptr<base::SingleThreadTaskRunner> GetWebRtcSignalingThread()
-      const;
+  scoped_refptr<base::SingleThreadTaskRunner> GetWebRtcSignalingThread() const;
 
-  // Called by ProcessedLocalAudioSource to have the PeerConnection factory
-  // create the corresponding WebRtc-internal instance.
+ protected:
+  // Asks the PeerConnection factory to create a Local Audio Source.
   virtual scoped_refptr<webrtc::AudioSourceInterface> CreateLocalAudioSource(
       const cricket::AudioOptions& options);
 
- protected:
+  // Creates a media::AudioCapturerSource with an implementation that is
+  // specific for a WebAudio source. The created WebAudioCapturerSource
+  // instance will function as audio source instead of the default
+  // WebRtcAudioCapturer. Ownership of the new WebAudioCapturerSource is
+  // transferred to |source|.
+  virtual void CreateWebAudioSource(blink::WebMediaStreamSource* source);
+
   // Asks the PeerConnection factory to create a Local VideoTrack object with
   // the video source using |capturer|.
   virtual scoped_refptr<webrtc::VideoTrackInterface>
@@ -140,8 +164,14 @@ class CONTENT_EXPORT PeerConnectionDependencyFactory
       GetPcFactory();
   virtual bool PeerConnectionFactoryCreated();
 
-  // Helper method to create a WebRtcAudioDeviceImpl.
-  void EnsureWebRtcAudioDeviceImpl();
+  // Returns a new capturer or existing capturer based on the |render_frame_id|
+  // and |device_info|; if both are valid, it reuses existing capture if any --
+  // otherwise it creates a new capturer.
+  virtual std::unique_ptr<WebRtcAudioCapturer> CreateAudioCapturer(
+      int render_frame_id,
+      const StreamDeviceInfo& device_info,
+      const blink::WebMediaConstraints& constraints,
+      MediaStreamAudioSource* audio_source);
 
  private:
   // Implement base::MessageLoop::DestructionObserver.
@@ -168,6 +198,9 @@ class CONTENT_EXPORT PeerConnectionDependencyFactory
   void CreateIpcNetworkManagerOnWorkerThread(base::WaitableEvent* event);
   void DeleteIpcNetworkManager();
   void CleanupPeerConnectionFactory();
+
+  // Helper method to create a WebRtcAudioDeviceImpl.
+  void EnsureWebRtcAudioDeviceImpl();
 
   // We own network_manager_, must be deleted on the worker thread.
   // The network manager uses |p2p_socket_dispatcher_|.

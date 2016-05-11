@@ -11,7 +11,6 @@
 #include "content/renderer/media/media_stream_video_track.h"
 #include "content/renderer/media/track_audio_renderer.h"
 #include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
-#include "content/renderer/media/webrtc/peer_connection_remote_audio_source.h"
 #include "content/renderer/media/webrtc_audio_renderer.h"
 #include "content/renderer/render_thread_impl.h"
 #include "media/base/audio_hardware_config.h"
@@ -115,7 +114,11 @@ MediaStreamRendererFactoryImpl::GetAudioRenderer(
 
   // If the track has a local source, or is a remote track that does not use the
   // WebRTC audio pipeline, return a new TrackAudioRenderer instance.
-  if (!PeerConnectionRemoteAudioTrack::From(audio_track)) {
+  //
+  // TODO(miu): In a soon up-coming change, I'll introduce a cleaner way (i.e.,
+  // rather than calling GetAudioAdapter()) to determine whether a remote source
+  // is via WebRTC or something else.
+  if (audio_track->is_local_track() || !audio_track->GetAudioAdapter()) {
     // TODO(xians): Add support for the case where the media stream contains
     // multiple audio tracks.
     DVLOG(1) << "Creating TrackAudioRenderer for "

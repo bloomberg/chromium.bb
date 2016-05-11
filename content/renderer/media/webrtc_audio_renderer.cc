@@ -6,9 +6,6 @@
 
 #include <utility>
 
-#include "base/bind.h"
-#include "base/bind_helpers.h"
-#include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_util.h"
@@ -16,8 +13,11 @@
 #include "build/build_config.h"
 #include "content/renderer/media/audio_device_factory.h"
 #include "content/renderer/media/media_stream_audio_track.h"
-#include "content/renderer/media/webrtc/peer_connection_remote_audio_source.h"
+#include "content/renderer/media/media_stream_dispatcher.h"
+#include "content/renderer/media/media_stream_track.h"
+#include "content/renderer/media/webrtc_audio_device_impl.h"
 #include "content/renderer/media/webrtc_logging.h"
+#include "content/renderer/render_frame_impl.h"
 #include "media/audio/sample_rates.h"
 #include "media/base/audio_capturer_source.h"
 #include "media/base/audio_parameters.h"
@@ -595,16 +595,14 @@ void WebRtcAudioRenderer::OnPlayStateChanged(
   media_stream.audioTracks(web_tracks);
 
   for (const blink::WebMediaStreamTrack& web_track : web_tracks) {
+    MediaStreamAudioTrack* track = MediaStreamAudioTrack::From(web_track);
     // WebRtcAudioRenderer can only render audio tracks received from a remote
     // peer. Since the actual MediaStream is mutable from JavaScript, we need
     // to make sure |web_track| is actually a remote track.
-    PeerConnectionRemoteAudioTrack* const remote_track =
-        PeerConnectionRemoteAudioTrack::From(
-            MediaStreamAudioTrack::From(web_track));
-    if (!remote_track)
+    if (track->is_local_track())
       continue;
     webrtc::AudioSourceInterface* source =
-        remote_track->track_interface()->GetSource();
+        track->GetAudioAdapter()->GetSource();
     DCHECK(source);
     if (!state->playing()) {
       if (RemovePlayingState(source, state))

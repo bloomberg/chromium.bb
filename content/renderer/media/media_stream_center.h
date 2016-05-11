@@ -27,8 +27,6 @@ class PeerConnectionDependencyFactory;
 class CONTENT_EXPORT MediaStreamCenter
     : NON_EXPORTED_BASE(public blink::WebMediaStreamCenter) {
  public:
-  // TODO(miu): Remove these constructor args. They are no longer used.
-  // http://crbug.com/577874
   MediaStreamCenter(blink::WebMediaStreamCenterClient* client,
                     PeerConnectionDependencyFactory* factory);
   ~MediaStreamCenter() override;
@@ -59,6 +57,10 @@ class CONTENT_EXPORT MediaStreamCenter
   bool didRemoveMediaStreamTrack(
       const blink::WebMediaStream& stream,
       const blink::WebMediaStreamTrack& track) override;
+
+  // |rtc_factory_| is a weak pointer and is owned by the RenderThreadImpl.
+  // It is valid as long as  RenderThreadImpl exist.
+  PeerConnectionDependencyFactory* rtc_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamCenter);
 };

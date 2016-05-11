@@ -30,15 +30,15 @@ const char MediaAudioConstraints::kEchoCancellation[] = "echoCancellation";
 const char MediaAudioConstraints::kGoogEchoCancellation[] =
     "googEchoCancellation";
 const char MediaAudioConstraints::kGoogExperimentalEchoCancellation[] =
-    "googExperimentalEchoCancellation";
+    "googEchoCancellation2";
 const char MediaAudioConstraints::kGoogAutoGainControl[] =
     "googAutoGainControl";
 const char MediaAudioConstraints::kGoogExperimentalAutoGainControl[] =
-    "googExperimentalAutoGainControl";
+    "googAutoGainControl2";
 const char MediaAudioConstraints::kGoogNoiseSuppression[] =
     "googNoiseSuppression";
 const char MediaAudioConstraints::kGoogExperimentalNoiseSuppression[] =
-    "googExperimentalNoiseSuppression";
+    "googNoiseSuppression2";
 const char MediaAudioConstraints::kGoogBeamforming[] = "googBeamforming";
 const char MediaAudioConstraints::kGoogArrayGeometry[] = "googArrayGeometry";
 const char MediaAudioConstraints::kGoogHighpassFilter[] = "googHighpassFilter";

@@ -5,11 +5,9 @@
 #ifndef CONTENT_RENDERER_MEDIA_WEBRTC_WEBRTC_MEDIA_STREAM_ADAPTER_H_
 #define CONTENT_RENDERER_MEDIA_WEBRTC_WEBRTC_MEDIA_STREAM_ADAPTER_H_
 
-#include <memory>
-#include <vector>
-
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_vector.h"
 #include "content/common/content_export.h"
 #include "content/renderer/media/media_stream.h"
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
@@ -19,7 +17,6 @@ namespace content {
 
 class PeerConnectionDependencyFactory;
 class MediaStreamVideoWebRtcSink;
-class WebRtcAudioSink;
 
 // WebRtcMediaStreamAdapter is an adapter between a blink::WebMediaStream
 // object and a webrtc MediaStreams that is currently sent on a PeerConnection.
@@ -36,11 +33,11 @@ class CONTENT_EXPORT WebRtcMediaStreamAdapter
                            PeerConnectionDependencyFactory* factory);
   ~WebRtcMediaStreamAdapter() override;
 
-  bool IsEqual(const blink::WebMediaStream& web_stream) const {
+  bool IsEqual(const blink::WebMediaStream& web_stream) {
     return web_stream_.getExtraData() == web_stream.getExtraData();
   }
 
-  webrtc::MediaStreamInterface* webrtc_media_stream() const {
+  webrtc::MediaStreamInterface* webrtc_media_stream() {
     return webrtc_media_stream_.get();
   }
 
@@ -50,8 +47,8 @@ class CONTENT_EXPORT WebRtcMediaStreamAdapter
   void TrackRemoved(const blink::WebMediaStreamTrack& track) override;
 
  private:
-  void AddAudioSinkToTrack(const blink::WebMediaStreamTrack& track);
-  void AddVideoSinkToTrack(const blink::WebMediaStreamTrack& track);
+  void CreateAudioTrack(const blink::WebMediaStreamTrack& track);
+  void CreateVideoTrack(const blink::WebMediaStreamTrack& track);
 
   const blink::WebMediaStream web_stream_;
 
@@ -60,8 +57,7 @@ class CONTENT_EXPORT WebRtcMediaStreamAdapter
   PeerConnectionDependencyFactory* const factory_;
 
   scoped_refptr<webrtc::MediaStreamInterface> webrtc_media_stream_;
-  std::vector<std::unique_ptr<WebRtcAudioSink>> audio_sinks_;
-  std::vector<std::unique_ptr<MediaStreamVideoWebRtcSink>> video_sinks_;
+  ScopedVector<MediaStreamVideoWebRtcSink> video_adapters_;
 
   DISALLOW_COPY_AND_ASSIGN (WebRtcMediaStreamAdapter);
 };
