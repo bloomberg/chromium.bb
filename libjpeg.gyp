@@ -25,7 +25,6 @@
       ],
       'defines': [
         'WITH_SIMD',
-        'MOTION_JPEG_SUPPORTED',
         'NO_GETENV',
       ],
       'sources': [
