@@ -22,6 +22,10 @@
         'externs': ['<(EXTERNS_DIR)/chrome_send.js'],
       },
       'includes': ['../../../../third_party/closure_compiler/compile_js.gypi'],
+    },
+    {
+      'target_name': 'quick_unlock/pin_keyboard',
+      'includes': ['../../../../third_party/closure_compiler/compile_js.gypi'],
     }
   ],
 }

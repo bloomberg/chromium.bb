@@ -15,6 +15,7 @@
 
 <if expr="chromeos">
 <link rel="import" href="chrome://md-settings/people_page/change_picture.html">
+<link rel="import" href="chrome://md-settings/people_page/pin_keyboard.html">
 <link rel="import" href="chrome://md-settings/people_page/easy_unlock_browser_proxy.html">
 <link rel="import" href="chrome://md-settings/people_page/easy_unlock_turn_off_dialog.html">
 <link rel="import" href="chrome://md-settings/people_page/users_page.html">
@@ -126,6 +127,16 @@
         </div>
 
 <if expr="chromeos">
+        <!-- TODO(jdufault): Confirm if this goes above or below easy unlock
+             settings. -->
+        <template is="dom-if" if=[[pinUnlockAllowed_]]>
+          <div class="settings-box">
+            <!-- TODO(jdufault): i18n -->
+            <p>Quick Unlock PIN</p>
+            <pin-keyboard></pin-keyboard>
+          </div>
+        </template>
+
         <div class="settings-box">
           <settings-checkbox pref="{{prefs.settings.enable_screen_lock}}"
               i18n-values="label:enableScreenlock">

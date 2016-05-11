@@ -63,6 +63,18 @@ Polymer({
     },
 
 <if expr="chromeos">
+    /**
+     * True if Pin Unlock is allowed on this machine.
+     */
+    pinUnlockAllowed_: {
+      type: Boolean,
+      value: function() {
+        /* TODO(jdufault): Return a real value via quickUnlockPrivate API. */
+        return false;
+      },
+      readOnly: true,
+    },
+
     /** @private {!settings.EasyUnlockBrowserProxyImpl} */
     easyUnlockBrowserProxy_: {
       type: Object,

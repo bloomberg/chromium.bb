@@ -732,6 +732,13 @@ cr.define('login', function() {
             'keydown',
             this.handleRemoveUserConfirmationKeyDown_.bind(this));
 
+      var pinKeyboard = $('pin-keyboard');
+      // The pin keyboard is not present on the md user manager.
+      if (pinKeyboard) {
+        pinKeyboard.addEventListener('submit',
+            this.handlePinSubmitted_.bind(this));
+      }
+
       var customIcon = this.customIconElement;
       customIcon.parentNode.replaceChild(new UserPodCustomIcon(), customIcon);
     },
@@ -762,6 +769,16 @@ cr.define('login', function() {
       // Note: the |mainInput| can be the pod itself.
       this.mainInput.tabIndex = -1;
       this.tabIndex = UserPodTabOrder.POD_INPUT;
+    },
+
+    /**
+     * Handles the user hitting 'submit' on the PIN keyboard.
+     * @param {Event} e Submit event object.
+     * @private
+     */
+    handlePinSubmitted_: function(e) {
+      var pin = e.detail.pin;
+      chrome.send('authenticateUserWithPin', [this.user.username, pin]);
     },
 
     /**

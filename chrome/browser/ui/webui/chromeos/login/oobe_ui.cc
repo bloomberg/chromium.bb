@@ -102,9 +102,17 @@ const char kCustomElementsHTMLPath[] = "custom_elements.html";
 const char kCustomElementsJSPath[] = "custom_elements.js";
 
 // Paths for deferred resource loading.
+const char kCustomElementsPinKeyboardHTMLPath[] =
+    "custom_elements/pin_keyboard.html";
+const char kCustomElementsPinKeyboardJSPath[] =
+    "custom_elements/pin_keyboard.js";
 const char kEnrollmentHTMLPath[] = "enrollment.html";
 const char kEnrollmentCSSPath[] = "enrollment.css";
 const char kEnrollmentJSPath[] = "enrollment.js";
+
+// Shared parameter with JS that enables or disables the PIN screen. This needs
+// to stay synchronized with the JS definition.
+const char kShowPinKey[] = "showPin";
 
 // Creates a WebUIDataSource for chrome://oobe
 content::WebUIDataSource* CreateOobeUIDataSource(
@@ -127,6 +135,13 @@ content::WebUIDataSource* CreateOobeUIDataSource(
     source->AddResourcePath(kCustomElementsHTMLPath,
                             IDR_CUSTOM_ELEMENTS_LOCK_HTML);
     source->AddResourcePath(kCustomElementsJSPath, IDR_CUSTOM_ELEMENTS_LOCK_JS);
+    source->AddResourcePath(kCustomElementsPinKeyboardHTMLPath,
+                            IDR_CUSTOM_ELEMENTS_PIN_KEYBOARD_HTML);
+    source->AddResourcePath(kCustomElementsPinKeyboardJSPath,
+                            IDR_CUSTOM_ELEMENTS_PIN_KEYBOARD_JS);
+
+    // TODO(jdufault): Dynamically show pin when it is enabled.
+    source->AddBoolean(kShowPinKey, false);
   } else {
     source->SetDefaultResource(IDR_LOGIN_HTML);
     source->AddResourcePath(kLoginJSPath, IDR_LOGIN_JS);

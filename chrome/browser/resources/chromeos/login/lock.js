@@ -8,6 +8,34 @@
 
 <include src="login_shared.js">
 
+// Lazy load polymer.
+(function() {
+  'use strict';
+
+  // Register loader for custom elements.
+  cr.ui.login.ResourceLoader.registerAssets({
+    id: 'custom-elements',
+    html: [{ url: 'chrome://oobe/custom_elements.html' }]
+  });
+
+  // Called after polymer has been loaded. Fades the pin element in.
+  var onPolymerLoaded = function() {
+    var pinContainer = $('pin-container');
+    pinContainer.style.opacity = 1;
+  };
+
+  // We only load the PIN element when it is actually shown so that lock screen
+  // load times remain low when the user is not using a PIN.
+  //
+  // Loading the PIN element blocks the DOM, which will interrupt any running
+  // animations. We load the PIN after an idle notification to allow the pod
+  // fly-in animation to complete without interruption.
+  if (loadTimeData.getBoolean('showPin')) {
+    cr.ui.login.ResourceLoader.loadAssetsOnIdle('custom-elements',
+                                                onPolymerLoaded);
+  }
+})();
+
 cr.define('cr.ui.Oobe', function() {
   return {
     /**

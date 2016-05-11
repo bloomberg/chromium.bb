@@ -21,6 +21,11 @@
   -webkit-perspective: 600px;
 }
 
+#pin-container {
+  opacity: 0; /* Opacity is set to 1 after the pin element is loaded. */
+  transition: opacity 200ms ease-in-out;
+}
+
 #scroll-container {
   bottom: 0;        /* Allows content overlap with control bar. */
   left: 0;

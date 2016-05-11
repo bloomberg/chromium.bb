@@ -325,6 +325,8 @@ class SigninScreenHandler
   void HandleGetUsers();
   void HandleAuthenticateUser(const AccountId& account_id,
                               const std::string& password);
+  void HandleAuthenticateUserWithPin(const AccountId& account_id,
+                                     const std::string& password);
   void HandleAttemptUnlock(const std::string& username);
   void HandleLaunchIncognito();
   void HandleLaunchPublicSession(const AccountId& account_id,

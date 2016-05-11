@@ -468,6 +468,8 @@ void SigninScreenHandler::DeclareLocalizedValues(
 
 void SigninScreenHandler::RegisterMessages() {
   AddCallback("authenticateUser", &SigninScreenHandler::HandleAuthenticateUser);
+  AddCallback("authenticateUserWithPin",
+              &SigninScreenHandler::HandleAuthenticateUserWithPin);
   AddCallback("launchIncognito", &SigninScreenHandler::HandleLaunchIncognito);
   AddCallback("showSupervisedUserCreationScreen",
               &SigninScreenHandler::HandleShowSupervisedUserCreationScreen);
@@ -1006,6 +1008,17 @@ void SigninScreenHandler::HandleAuthenticateUser(const AccountId& account_id,
   UserContext user_context(account_id);
   user_context.SetKey(Key(password));
   delegate_->Login(user_context, SigninSpecifics());
+}
+
+void SigninScreenHandler::HandleAuthenticateUserWithPin(
+    const AccountId& account_id, const std::string& password) {
+  if (!delegate_)
+    return;
+  DCHECK_EQ(account_id.GetUserEmail(),
+            gaia::SanitizeEmail(account_id.GetUserEmail()));
+
+  // TODO(jdufault): Implement this.
+  NOTIMPLEMENTED();
 }
 
 void SigninScreenHandler::HandleLaunchIncognito() {
