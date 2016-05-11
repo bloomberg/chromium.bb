@@ -11,6 +11,8 @@ AC_INIT([weston],
         [weston],
         [http://wayland.freedesktop.org])
 
+WAYLAND_PREREQ_VERSION="1.10.0"
+
 AC_SUBST([WESTON_VERSION_MAJOR], [weston_major_version])
 AC_SUBST([WESTON_VERSION_MINOR], [weston_minor_version])
 AC_SUBST([WESTON_VERSION_MICRO], [weston_micro_version])
@@ -60,7 +62,7 @@ AC_CHECK_HEADERS([execinfo.h])
 
 AC_CHECK_FUNCS([mkostemp strchrnul initgroups posix_fallocate])
 
-COMPOSITOR_MODULES="wayland-server >= 1.10.0 pixman-1 >= 0.25.2"
+COMPOSITOR_MODULES="wayland-server >= $WAYLAND_PREREQ_VERSION pixman-1 >= 0.25.2"
 
 AC_CONFIG_FILES([doc/doxygen/tools.doxygen doc/doxygen/tooldev.doxygen])
 
@@ -193,7 +195,7 @@ AM_CONDITIONAL(ENABLE_WAYLAND_COMPOSITOR,
 if test x$enable_wayland_compositor = xyes -a x$enable_egl = xyes; then
   AC_DEFINE([BUILD_WAYLAND_COMPOSITOR], [1],
 	    [Build the Wayland (nested) compositor])
-  PKG_CHECK_MODULES(WAYLAND_COMPOSITOR, [wayland-client >= 1.5.91 wayland-egl wayland-cursor])
+  PKG_CHECK_MODULES(WAYLAND_COMPOSITOR, [wayland-client >= $WAYLAND_PREREQ_VERSION wayland-egl wayland-cursor])
 fi
 
 
@@ -335,7 +337,7 @@ AM_CONDITIONAL(ENABLE_VAAPI_RECORDER, test "x$have_libva" = xyes)
 
 PKG_CHECK_MODULES(CAIRO, [cairo])
 
-PKG_CHECK_MODULES(TEST_CLIENT, [wayland-client >= 1.10.0])
+PKG_CHECK_MODULES(TEST_CLIENT, [wayland-client >= $WAYLAND_PREREQ_VERSION])
 
 AC_ARG_ENABLE(simple-clients,
               AS_HELP_STRING([--disable-simple-clients],
@@ -389,9 +391,9 @@ AM_CONDITIONAL(BUILD_CLIENTS, test x$enable_clients = xyes)
 if test x$enable_clients = xyes; then
   AC_DEFINE([BUILD_CLIENTS], [1], [Build the Wayland clients])
 
-  PKG_CHECK_MODULES(CLIENT, [wayland-client >= 1.5.91 cairo >= 1.10.0 xkbcommon wayland-cursor])
+  PKG_CHECK_MODULES(CLIENT, [wayland-client >= $WAYLAND_PREREQ_VERSION cairo >= 1.10.0 xkbcommon wayland-cursor])
   PKG_CHECK_MODULES(SERVER, [wayland-server])
-  PKG_CHECK_MODULES(WESTON_INFO, [wayland-client >= 1.5.91])
+  PKG_CHECK_MODULES(WESTON_INFO, [wayland-client >= $WAYLAND_PREREQ_VERSION])
 
   # Only check for cairo-egl if a GL or GLES renderer requested
   AS_IF([test "x$cairo_modules" = "xcairo-gl" -o "x$cairo_modules" = "xcairo-glesv2"], [
