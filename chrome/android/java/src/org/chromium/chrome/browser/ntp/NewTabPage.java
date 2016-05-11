@@ -574,10 +574,10 @@ public class NewTabPage
 
         @Override
         public void fetchSnippetImage(
-                String snippetUrl, SnippetsBridge.FetchSnippetImageCallback callback) {
+                SnippetArticle snippet, SnippetsBridge.FetchSnippetImageCallback callback) {
             if (mIsDestroyed) return;
 
-            mSnippetsBridge.fetchSnippetImage(snippetUrl, callback);
+            mSnippetsBridge.fetchSnippetImage(snippet, callback);
         }
     };
 

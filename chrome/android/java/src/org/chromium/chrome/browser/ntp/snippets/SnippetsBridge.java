@@ -81,14 +81,14 @@ public class SnippetsBridge {
      */
     public void discardSnippet(SnippetArticle snippet) {
         assert mNativeSnippetsBridge != 0;
-        nativeDiscardSnippet(mNativeSnippetsBridge, snippet.mUrl);
+        nativeDiscardSnippet(mNativeSnippetsBridge, snippet.mId);
     }
 
     /**
      * Fetches the thumbnail image for a snippet.
      */
-    public void fetchSnippetImage(String snippetUrl, FetchSnippetImageCallback callback) {
-        nativeFetchImage(mNativeSnippetsBridge, snippetUrl, callback);
+    public void fetchSnippetImage(SnippetArticle snippet, FetchSnippetImageCallback callback) {
+        nativeFetchImage(mNativeSnippetsBridge, snippet.mId, callback);
     }
 
     /**
@@ -124,16 +124,16 @@ public class SnippetsBridge {
     }
 
     @CalledByNative
-    private void onSnippetsAvailable(String[] titles, String[] urls, String[] ampUrls,
+    private void onSnippetsAvailable(String[] ids, String[] titles, String[] urls, String[] ampUrls,
             String[] thumbnailUrls, String[] previewText, long[] timestamps, String[] publishers) {
         // Don't notify observer if we've already been destroyed.
         if (mNativeSnippetsBridge == 0) return;
         assert mObserver != null;
 
-        List<SnippetArticle> newSnippets = new ArrayList<>(titles.length);
-        for (int i = 0; i < titles.length; i++) {
-            newSnippets.add(new SnippetArticle(titles[i], publishers[i], previewText[i], urls[i],
-                    ampUrls[i], thumbnailUrls[i], timestamps[i], i));
+        List<SnippetArticle> newSnippets = new ArrayList<>(ids.length);
+        for (int i = 0; i < ids.length; i++) {
+            newSnippets.add(new SnippetArticle(ids[i], titles[i], publishers[i], previewText[i],
+                    urls[i], ampUrls[i], thumbnailUrls[i], timestamps[i], i));
         }
 
         mObserver.onSnippetsReceived(newSnippets);
@@ -143,10 +143,10 @@ public class SnippetsBridge {
     private native void nativeDestroy(long nativeNTPSnippetsBridge);
     private static native void nativeFetchSnippets();
     private static native void nativeRescheduleFetching();
-    private native void nativeDiscardSnippet(long nativeNTPSnippetsBridge, String snippetUrl);
+    private native void nativeDiscardSnippet(long nativeNTPSnippetsBridge, String snippetId);
     private native void nativeSetObserver(long nativeNTPSnippetsBridge, SnippetsBridge bridge);
     private static native void nativeSnippetVisited(long nativeNTPSnippetsBridge,
             Callback<Boolean> callback, String url);
     private native void nativeFetchImage(
-            long nativeNTPSnippetsBridge, String snippetUrl, FetchSnippetImageCallback callback);
+            long nativeNTPSnippetsBridge, String snippetId, FetchSnippetImageCallback callback);
 }

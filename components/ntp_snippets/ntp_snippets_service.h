@@ -49,7 +49,7 @@ class NTPSnippetsService : public KeyedService {
   using NTPSnippetStorage = NTPSnippet::PtrVector;
 
   using ImageFetchedCallback =
-      base::Callback<void(const GURL&, const SkBitmap*)>;
+      base::Callback<void(const std::string& snippet_id, const SkBitmap*)>;
 
   // |application_language_code| should be a ISO 639-1 compliant string, e.g.
   // 'en' or 'en-US'. Note that this code should only specify the language, not
@@ -101,16 +101,18 @@ class NTPSnippetsService : public KeyedService {
   // the schedule depends on the time of day.
   void RescheduleFetching();
 
-  // Fetches the image for the given URL and notifies the observer afterwards.
-  void FetchSnippetImage(const GURL& snippet_url,
+  // Fetches the image for the snippet with the given |snippet_id| and runs the
+  // |callback|. If that snippet doesn't exist or the fetch fails, the callback
+  // gets a null image.
+  void FetchSnippetImage(const std::string& snippet_id,
                          const ImageFetchedCallback& callback);
 
   // Deletes all currently stored snippets.
   void ClearSnippets();
 
-  // Discards the snippet with the given |url|, if it exists. Returns true iff
-  // a snippet was discarded.
-  bool DiscardSnippet(const GURL& url);
+  // Discards the snippet with the given |snippet_id|, if it exists. Returns
+  // true iff a snippet was discarded.
+  bool DiscardSnippet(const std::string& snippet_id);
 
   // Clears the lists of snippets previously discarded by the user.
   void ClearDiscardedSnippets();

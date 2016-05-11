@@ -11,7 +11,7 @@ import org.chromium.chrome.browser.ntp.cards.NewTabPageListItem;
  * Represents the data for an article card on the NTP.
  */
 public class SnippetArticle implements NewTabPageListItem {
-
+    public final String mId;
     public final String mTitle;
     public final String mPublisher;
     public final String mPreviewText;
@@ -35,8 +35,9 @@ public class SnippetArticle implements NewTabPageListItem {
      * @param timestamp the time in ms when this article was published
      * @param position the position of this article in the list of snippets
      */
-    public SnippetArticle(String title, String publisher, String previewText, String url,
+    public SnippetArticle(String id, String title, String publisher, String previewText, String url,
             String ampUrl, String thumbnailUrl, long timestamp, int position) {
+        mId = id;
         mTitle = title;
         mPublisher = publisher;
         mPreviewText = previewText;
@@ -50,12 +51,12 @@ public class SnippetArticle implements NewTabPageListItem {
     @Override
     public boolean equals(Object other) {
         if (!(other instanceof SnippetArticle)) return false;
-        return mUrl.equals(((SnippetArticle) other).mUrl);
+        return mId.equals(((SnippetArticle) other).mId);
     }
 
     @Override
     public int hashCode() {
-        return mUrl.hashCode();
+        return mId.hashCode();
     }
 
     @Override

@@ -30,14 +30,12 @@ struct SnippetSource {
   GURL amp_url;
 };
 
-// Stores and vend fresh content data for the NTP. This is a dumb class with no
-// smarts at all, all the logic is in the service.
 class NTPSnippet {
  public:
   using PtrVector = std::vector<std::unique_ptr<NTPSnippet>>;
 
-  // Creates a new snippet with the given URL. URL must be valid.
-  NTPSnippet(const GURL& url);
+  // Creates a new snippet with the given |id|.
+  NTPSnippet(const std::string& id);
 
   ~NTPSnippet();
 
@@ -55,8 +53,11 @@ class NTPSnippet {
 
   std::unique_ptr<base::DictionaryValue> ToDictionary() const;
 
-  // URL of the page described by this snippet.
-  const GURL& url() const { return url_; }
+  // A unique ID for identifying the snippet. If initialized by
+  // CreateFromDictionary() the relevant key is 'url'.
+  // TODO(treib): For now, the ID has to be a valid URL spec, otherwise
+  // fetching the salient image will fail. See TODO in ntp_snippets_service.cc.
+  const std::string& id() const { return id_; }
 
   // Title of the snippet.
   const std::string& title() const { return title_; }
@@ -102,7 +103,7 @@ class NTPSnippet {
 
   // If this snippet has all the data we need to show a full card to the user
   bool is_complete() const {
-    return url().is_valid() && !sources().empty() && !title().empty() &&
+    return !id().empty() && !sources().empty() && !title().empty() &&
            !snippet().empty() && salient_image_url().is_valid() &&
            !publish_date().is_null() && !expiry_date().is_null() &&
            !best_source().publisher_name.empty();
@@ -116,13 +117,12 @@ class NTPSnippet {
   static std::string TimeToJsonString(const base::Time& time);
 
  private:
-  GURL url_;
+  std::string id_;
   std::string title_;
   GURL salient_image_url_;
   std::string snippet_;
   base::Time publish_date_;
   base::Time expiry_date_;
-  GURL amp_url_;
   float score_;
   size_t best_source_index_;
 

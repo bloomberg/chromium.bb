@@ -91,20 +91,19 @@ void NTPSnippetsBridge::SetObserver(JNIEnv* env,
 
 void NTPSnippetsBridge::FetchImage(JNIEnv* env,
                                    const JavaParamRef<jobject>& obj,
-                                   const JavaParamRef<jstring>& snippet_url_str,
+                                   const JavaParamRef<jstring>& snippet_id,
                                    const JavaParamRef<jobject>& j_callback) {
-  GURL snippet_url(ConvertJavaStringToUTF8(env, snippet_url_str));
   base::android::ScopedJavaGlobalRef<jobject> callback(j_callback);
   ntp_snippets_service_->FetchSnippetImage(
-      snippet_url, base::Bind(&NTPSnippetsBridge::OnImageFetched,
-                              weak_ptr_factory_.GetWeakPtr(), callback));
+      ConvertJavaStringToUTF8(env, snippet_id),
+      base::Bind(&NTPSnippetsBridge::OnImageFetched,
+                 weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
 void NTPSnippetsBridge::DiscardSnippet(JNIEnv* env,
                                        const JavaParamRef<jobject>& obj,
-                                       const JavaParamRef<jstring>& url) {
-  ntp_snippets_service_->DiscardSnippet(
-      GURL(ConvertJavaStringToUTF8(env, url)));
+                                       const JavaParamRef<jstring>& id) {
+  ntp_snippets_service_->DiscardSnippet(ConvertJavaStringToUTF8(env, id));
 }
 
 void NTPSnippetsBridge::SnippetVisited(JNIEnv* env,
@@ -126,6 +125,7 @@ void NTPSnippetsBridge::NTPSnippetsServiceLoaded() {
   if (observer_.is_null())
     return;
 
+  std::vector<std::string> ids;
   std::vector<std::string> titles;
   // URL for the article. This will also be used to find the favicon for the
   // article.
@@ -139,11 +139,12 @@ void NTPSnippetsBridge::NTPSnippetsServiceLoaded() {
   std::vector<std::string> publishers;
   for (const std::unique_ptr<ntp_snippets::NTPSnippet>& snippet :
        ntp_snippets_service_->snippets()) {
+    ids.push_back(snippet->id());
+    titles.push_back(snippet->title());
     // The url from source_info is a url for a site that is one of the
     // HOST_RESTRICT parameters, so this is preferred.
     urls.push_back(snippet->best_source().url.spec());
     amp_urls.push_back(snippet->best_source().amp_url.spec());
-    titles.push_back(snippet->title());
     thumbnail_urls.push_back(snippet->salient_image_url().spec());
     snippets.push_back(snippet->snippet());
     timestamps.push_back(snippet->publish_date().ToJavaTime());
@@ -152,7 +153,8 @@ void NTPSnippetsBridge::NTPSnippetsServiceLoaded() {
 
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_SnippetsBridge_onSnippetsAvailable(
-      env, observer_.obj(), ToJavaArrayOfStrings(env, titles).obj(),
+      env, observer_.obj(), ToJavaArrayOfStrings(env, ids).obj(),
+      ToJavaArrayOfStrings(env, titles).obj(),
       ToJavaArrayOfStrings(env, urls).obj(),
       ToJavaArrayOfStrings(env, amp_urls).obj(),
       ToJavaArrayOfStrings(env, thumbnail_urls).obj(),
@@ -167,7 +169,7 @@ void NTPSnippetsBridge::NTPSnippetsServiceShutdown() {
 }
 
 void NTPSnippetsBridge::OnImageFetched(ScopedJavaGlobalRef<jobject> callback,
-                                       const GURL& snippet_url,
+                                       const std::string& snippet_id,
                                        const SkBitmap* bitmap) {
   JNIEnv* env = AttachCurrentThread();
 

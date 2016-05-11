@@ -13,7 +13,7 @@ namespace {
 const char kScore[] = "score";
 const char kContentInfo[] = "contentInfo";
 
-const char kUrl[] = "url";
+const char kId[] = "url";
 const char kTitle[] = "title";
 const char kSalientImageUrl[] = "thumbnailUrl";
 const char kSnippet[] = "snippet";
@@ -29,10 +29,8 @@ const char kAmpUrl[] = "ampUrl";
 
 namespace ntp_snippets {
 
-NTPSnippet::NTPSnippet(const GURL& url)
-    : url_(url), score_(0), best_source_index_(0) {
-  DCHECK(url_.is_valid());
-}
+NTPSnippet::NTPSnippet(const std::string& id)
+    : id_(id), score_(0), best_source_index_(0) {}
 
 NTPSnippet::~NTPSnippet() {}
 
@@ -44,14 +42,11 @@ std::unique_ptr<NTPSnippet> NTPSnippet::CreateFromDictionary(
     return nullptr;
 
   // Need at least the url.
-  std::string url_str;
-  if (!content->GetString("url", &url_str))
-    return nullptr;
-  GURL url(url_str);
-  if (!url.is_valid())
+  std::string id;
+  if (!content->GetString(kId, &id))
     return nullptr;
 
-  std::unique_ptr<NTPSnippet> snippet(new NTPSnippet(url));
+  std::unique_ptr<NTPSnippet> snippet(new NTPSnippet(id));
 
   std::string title;
   if (content->GetString(kTitle, &title))
@@ -79,7 +74,7 @@ std::unique_ptr<NTPSnippet> NTPSnippet::CreateFromDictionary(
   for (base::Value* value : *corpus_infos_list) {
     const base::DictionaryValue* dict_value = nullptr;
     if (!value->GetAsDictionary(&dict_value)) {
-      DLOG(WARNING) << "Invalid source info for article " << url_str;
+      DLOG(WARNING) << "Invalid source info for article " << id;
       continue;
     }
 
@@ -140,7 +135,7 @@ std::unique_ptr<NTPSnippet> NTPSnippet::CreateFromDictionary(
   snippet->set_source_index(best_source_index);
 
   if (snippet->sources_.empty()) {
-    DLOG(WARNING) << "No sources found for article " << url_str;
+    DLOG(WARNING) << "No sources found for article " << id;
     return nullptr;
   }
 
@@ -171,7 +166,7 @@ bool NTPSnippet::AddFromListValue(const base::ListValue& list,
 std::unique_ptr<base::DictionaryValue> NTPSnippet::ToDictionary() const {
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
 
-  dict->SetString(kUrl, url_.spec());
+  dict->SetString(kId, id_);
   if (!title_.empty())
     dict->SetString(kTitle, title_);
   if (salient_image_url_.is_valid())

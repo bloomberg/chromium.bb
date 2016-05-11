@@ -30,13 +30,13 @@ class NTPSnippetsBridge : public ntp_snippets::NTPSnippetsServiceObserver {
 
   void FetchImage(JNIEnv* env,
                   const base::android::JavaParamRef<jobject>& obj,
-                  const base::android::JavaParamRef<jstring>& snippet_url_str,
+                  const base::android::JavaParamRef<jstring>& snippet_id,
                   const base::android::JavaParamRef<jobject>& j_callback);
 
-  // Discards the snippet with the given URL.
+  // Discards the snippet with the given ID.
   void DiscardSnippet(JNIEnv* env,
                       const base::android::JavaParamRef<jobject>& obj,
-                      const base::android::JavaParamRef<jstring>& url);
+                      const base::android::JavaParamRef<jstring>& snippet_id);
 
   // Checks if the URL has been visited.
   void SnippetVisited(JNIEnv* env,
@@ -54,7 +54,7 @@ class NTPSnippetsBridge : public ntp_snippets::NTPSnippetsServiceObserver {
   void NTPSnippetsServiceShutdown() override;
 
   void OnImageFetched(base::android::ScopedJavaGlobalRef<jobject> callback,
-                      const GURL& snippet_url,
+                      const std::string& snippet_id,
                       const SkBitmap* bitmap);
 
   ntp_snippets::NTPSnippetsService* ntp_snippets_service_;

@@ -137,11 +137,18 @@ std::unique_ptr<base::ListValue> SnippetsToListValue(
 
 bool ContainsSnippet(const NTPSnippetsService::NTPSnippetStorage& haystack,
                      const std::unique_ptr<NTPSnippet>& needle) {
-  const GURL& url = needle->url();
+  const std::string& id = needle->id();
   return std::find_if(haystack.begin(), haystack.end(),
-                      [&url](const std::unique_ptr<NTPSnippet>& snippet) {
-                        return snippet->url() == url;
+                      [&id](const std::unique_ptr<NTPSnippet>& snippet) {
+                        return snippet->id() == id;
                       }) != haystack.end();
+}
+
+void WrapImageFetchedCallback(
+    const NTPSnippetsService::ImageFetchedCallback& callback,
+    const GURL& snippet_id_url,
+    const SkBitmap* bitmap) {
+  callback.Run(snippet_id_url.spec(), bitmap);
 }
 
 }  // namespace
@@ -229,20 +236,24 @@ void NTPSnippetsService::RescheduleFetching() {
 }
 
 void NTPSnippetsService::FetchSnippetImage(
-    const GURL& url,
+    const std::string& snippet_id,
     const ImageFetchedCallback& callback) {
-  auto it = std::find_if(snippets_.begin(), snippets_.end(),
-                         [&url](const std::unique_ptr<NTPSnippet>& snippet) {
-                           return snippet->url() == url;
-                         });
+  auto it =
+      std::find_if(snippets_.begin(), snippets_.end(),
+                   [&snippet_id](const std::unique_ptr<NTPSnippet>& snippet) {
+                     return snippet->id() == snippet_id;
+                   });
   if (it == snippets_.end()) {
-    callback.Run(url, nullptr);
+    callback.Run(snippet_id, nullptr);
     return;
   }
 
   const NTPSnippet& snippet = *it->get();
+  // TODO(treib): Make ImageFetcher take a string instead of a GURL as an
+  // identifier.
   image_fetcher_->StartOrQueueNetworkRequest(
-      snippet.url(), snippet.salient_image_url(), callback);
+      GURL(snippet.id()), snippet.salient_image_url(),
+      base::Bind(WrapImageFetchedCallback, callback));
   // TODO(treib): Cache/persist the snippet image.
 }
 
@@ -265,12 +276,12 @@ std::set<std::string> NTPSnippetsService::GetSuggestionsHosts() const {
       suggestions_service_->GetSuggestionsDataFromCache());
 }
 
-bool NTPSnippetsService::DiscardSnippet(const GURL& url) {
-  auto it = std::find_if(snippets_.begin(), snippets_.end(),
-                         [&url](const std::unique_ptr<NTPSnippet>& snippet) {
-                           return snippet->url() == url ||
-                                  snippet->best_source().url == url;
-                         });
+bool NTPSnippetsService::DiscardSnippet(const std::string& snippet_id) {
+  auto it =
+      std::find_if(snippets_.begin(), snippets_.end(),
+                   [&snippet_id](const std::unique_ptr<NTPSnippet>& snippet) {
+                     return snippet->id() == snippet_id;
+                   });
   if (it == snippets_.end())
     return false;
   discarded_snippets_.push_back(std::move(*it));
@@ -308,10 +319,12 @@ void NTPSnippetsService::OnSuggestionsChanged(
     return;
 
   // Remove existing snippets that aren't in the suggestions anymore.
+  // TODO(treib,maybelle): If there is another source with an allowed host,
+  // then we should fall back to that.
   snippets_.erase(
       std::remove_if(snippets_.begin(), snippets_.end(),
                      [&hosts](const std::unique_ptr<NTPSnippet>& snippet) {
-                       return !hosts.count(snippet->url().host());
+                       return !hosts.count(snippet->best_source().url.host());
                      }),
       snippets_.end());
 

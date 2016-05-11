@@ -239,10 +239,10 @@ public class NewTabPageView extends FrameLayout
 
         /**
          * Gets the thumbnail image for a snippet.
-         * @param snippetUrl URL of the snippet for which we want to fetch the image.
+         * @param snippet The snippet for which we want to fetch the image.
          * @param callback Callback to run after fetching completes (successful or not).
          */
-        void fetchSnippetImage(String snippetUrl, FetchSnippetImageCallback callback);
+        void fetchSnippetImage(SnippetArticle snippet, FetchSnippetImageCallback callback);
     }
 
     /**

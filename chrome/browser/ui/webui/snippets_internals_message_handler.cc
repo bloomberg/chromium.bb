@@ -35,6 +35,7 @@ std::unique_ptr<base::DictionaryValue> PrepareSnippet(
     int index,
     bool discarded) {
   std::unique_ptr<base::DictionaryValue> entry(new base::DictionaryValue);
+  entry->SetString("snippetId", snippet.id());
   entry->SetString("title", snippet.title());
   entry->SetString("siteTitle", snippet.best_source().publisher_name);
   entry->SetString("snippet", snippet.snippet());
@@ -42,7 +43,7 @@ std::unique_ptr<base::DictionaryValue> PrepareSnippet(
                    TimeFormatShortDateAndTime(snippet.publish_date()));
   entry->SetString("expires",
                    TimeFormatShortDateAndTime(snippet.expiry_date()));
-  entry->SetString("url", snippet.url().spec());
+  entry->SetString("url", snippet.best_source().url.spec());
   entry->SetString("ampUrl", snippet.best_source().amp_url.spec());
   entry->SetString("salientImageUrl", snippet.salient_image_url().spec());
   entry->SetDouble("score", snippet.score());

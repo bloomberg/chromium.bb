@@ -45,8 +45,8 @@ namespace ntp_snippets {
 
 namespace {
 
-MATCHER_P(UrlEq, value, "") {
-  return arg->url() == GURL(value);
+MATCHER_P(IdEq, value, "") {
+  return arg->id() == value;
 }
 
 const base::Time::Exploded kDefaultCreationTime = {2015, 11, 4, 25, 13, 46, 45};
@@ -297,7 +297,7 @@ TEST_F(NTPSnippetsServiceTest, Full) {
   LoadFromJSONString(json_str);
   ASSERT_THAT(service()->snippets(), SizeIs(1));
   const NTPSnippet& snippet = *service()->snippets().front();
-  EXPECT_EQ(snippet.url(), GURL("http://localhost/foobar"));
+  EXPECT_EQ(snippet.id(), "http://localhost/foobar");
   EXPECT_EQ(snippet.best_source().publisher_name, "Foo News");
   EXPECT_EQ(snippet.title(), "Title");
   EXPECT_EQ(snippet.snippet(), "Snippet");
@@ -343,7 +343,7 @@ TEST_F(NTPSnippetsServiceTest, InsertAtFront) {
 
   LoadFromJSONString(json_str);
 
-  EXPECT_THAT(service()->snippets(), ElementsAre(UrlEq("http://first")));
+  EXPECT_THAT(service()->snippets(), ElementsAre(IdEq("http://first")));
 
   json_str = base::StringPrintf(
       json_str_format, "http://second",
@@ -354,7 +354,7 @@ TEST_F(NTPSnippetsServiceTest, InsertAtFront) {
 
   // The snippet loaded last should be at the first position in the list now.
   EXPECT_THAT(service()->snippets(),
-              ElementsAre(UrlEq("http://second"), UrlEq("http://first")));
+              ElementsAre(IdEq("http://second"), IdEq("http://first")));
 }
 
 TEST_F(NTPSnippetsServiceTest, LimitNumSnippets) {
@@ -445,11 +445,11 @@ TEST_F(NTPSnippetsServiceTest, Discard) {
   ASSERT_THAT(service()->snippets(), SizeIs(1));
 
   // Discarding a non-existent snippet shouldn't do anything.
-  EXPECT_FALSE(service()->DiscardSnippet(GURL("http://othersite.com")));
+  EXPECT_FALSE(service()->DiscardSnippet("http://othersite.com"));
   EXPECT_THAT(service()->snippets(), SizeIs(1));
 
   // Discard the snippet.
-  EXPECT_TRUE(service()->DiscardSnippet(GURL("http://localhost/foobar")));
+  EXPECT_TRUE(service()->DiscardSnippet("http://localhost/foobar"));
   EXPECT_THAT(service()->snippets(), IsEmpty());
 
   // Make sure that fetching the same snippet again does not re-add it.
@@ -473,12 +473,12 @@ TEST_F(NTPSnippetsServiceTest, GetDiscarded) {
   LoadFromJSONString(GetTestJson());
 
   // For the test, we need the snippet to get discarded.
-  ASSERT_TRUE(service()->DiscardSnippet(GURL("http://localhost/foobar")));
+  ASSERT_TRUE(service()->DiscardSnippet("http://localhost/foobar"));
   const NTPSnippetsService::NTPSnippetStorage& snippets =
       service()->discarded_snippets();
   EXPECT_EQ(1u, snippets.size());
   for (auto& snippet : snippets) {
-    EXPECT_EQ(GURL("http://localhost/foobar"), snippet->url());
+    EXPECT_EQ("http://localhost/foobar", snippet->id());
   }
 
   // There should be no discarded snippet after clearing the list.
@@ -492,7 +492,7 @@ TEST_F(NTPSnippetsServiceTest, CreationTimestampParseFail) {
   LoadFromJSONString(json_str);
   ASSERT_THAT(service()->snippets(), SizeIs(1));
   const NTPSnippet& snippet = *service()->snippets().front();
-  EXPECT_EQ(snippet.url(), GURL("http://localhost/foobar"));
+  EXPECT_EQ(snippet.id(), "http://localhost/foobar");
   EXPECT_EQ(snippet.title(), "Title");
   EXPECT_EQ(snippet.snippet(), "Snippet");
   EXPECT_EQ(base::Time::UnixEpoch(), snippet.publish_date());
@@ -516,7 +516,8 @@ TEST_F(NTPSnippetsServiceTest, TestSingleSource) {
   LoadFromJSONString(json_str);
   ASSERT_THAT(service()->snippets(), SizeIs(1));
   const NTPSnippet& snippet = *service()->snippets().front();
-  EXPECT_EQ(snippet.url(), GURL("http://localhost/foobar"));
+  EXPECT_EQ(snippet.sources().size(), 1u);
+  EXPECT_EQ(snippet.id(), "http://localhost/foobar");
   EXPECT_EQ(snippet.best_source().url, GURL("http://source1.com"));
   EXPECT_EQ(snippet.best_source().publisher_name, std::string("Source 1"));
   EXPECT_EQ(snippet.best_source().amp_url, GURL("http://source1.amp.com"));
@@ -562,7 +563,7 @@ TEST_F(NTPSnippetsServiceTest, TestMultipleSources) {
   const NTPSnippet& snippet = *service()->snippets().front();
   // Expect the first source to be chosen
   EXPECT_EQ(snippet.sources().size(), 2u);
-  EXPECT_EQ(snippet.url(), GURL("http://localhost/foobar"));
+  EXPECT_EQ(snippet.id(), "http://localhost/foobar");
   EXPECT_EQ(snippet.best_source().url, GURL("http://source1.com"));
   EXPECT_EQ(snippet.best_source().publisher_name, std::string("Source 1"));
   EXPECT_EQ(snippet.best_source().amp_url, GURL("http://source1.amp.com"));
@@ -586,7 +587,7 @@ TEST_F(NTPSnippetsServiceTest, TestMultipleIncompleteSources) {
   {
     const NTPSnippet& snippet = *service()->snippets().front();
     EXPECT_EQ(snippet.sources().size(), 2u);
-    EXPECT_EQ(snippet.url(), GURL("http://localhost/foobar"));
+    EXPECT_EQ(snippet.id(), "http://localhost/foobar");
     EXPECT_EQ(snippet.best_source().url, GURL("http://source2.com"));
     EXPECT_EQ(snippet.best_source().publisher_name, std::string("Source 2"));
     EXPECT_EQ(snippet.best_source().amp_url, GURL());
@@ -611,7 +612,7 @@ TEST_F(NTPSnippetsServiceTest, TestMultipleIncompleteSources) {
   {
     const NTPSnippet& snippet = *service()->snippets().front();
     EXPECT_EQ(snippet.sources().size(), 2u);
-    EXPECT_EQ(snippet.url(), GURL("http://localhost/foobar"));
+    EXPECT_EQ(snippet.id(), "http://localhost/foobar");
     EXPECT_EQ(snippet.best_source().url, GURL("http://source1.com"));
     EXPECT_EQ(snippet.best_source().publisher_name, std::string("Source 1"));
     EXPECT_EQ(snippet.best_source().amp_url, GURL());
@@ -656,7 +657,7 @@ TEST_F(NTPSnippetsServiceTest, TestMultipleCompleteSources) {
   {
     const NTPSnippet& snippet = *service()->snippets().front();
     EXPECT_EQ(snippet.sources().size(), 3u);
-    EXPECT_EQ(snippet.url(), GURL("http://localhost/foobar"));
+    EXPECT_EQ(snippet.id(), "http://localhost/foobar");
     EXPECT_EQ(snippet.best_source().url, GURL("http://source1.com"));
     EXPECT_EQ(snippet.best_source().publisher_name, std::string("Source 1"));
     EXPECT_EQ(snippet.best_source().amp_url, GURL("http://source1.amp.com"));
@@ -683,7 +684,7 @@ TEST_F(NTPSnippetsServiceTest, TestMultipleCompleteSources) {
   {
     const NTPSnippet& snippet = *service()->snippets().front();
     EXPECT_EQ(snippet.sources().size(), 3u);
-    EXPECT_EQ(snippet.url(), GURL("http://localhost/foobar"));
+    EXPECT_EQ(snippet.id(), "http://localhost/foobar");
     EXPECT_EQ(snippet.best_source().url, GURL("http://source2.com"));
     EXPECT_EQ(snippet.best_source().publisher_name, std::string("Source 2"));
     EXPECT_EQ(snippet.best_source().amp_url, GURL("http://source2.amp.com"));
@@ -710,7 +711,7 @@ TEST_F(NTPSnippetsServiceTest, TestMultipleCompleteSources) {
   {
     const NTPSnippet& snippet = *service()->snippets().front();
     EXPECT_EQ(snippet.sources().size(), 3u);
-    EXPECT_EQ(snippet.url(), GURL("http://localhost/foobar"));
+    EXPECT_EQ(snippet.id(), "http://localhost/foobar");
     EXPECT_EQ(snippet.best_source().url, GURL("http://source2.com"));
     EXPECT_EQ(snippet.best_source().publisher_name, std::string("Source 2"));
     EXPECT_EQ(snippet.best_source().amp_url, GURL("http://source2.amp.com"));
@@ -752,7 +753,7 @@ TEST_F(NTPSnippetsServiceTest, LogNumArticlesHistogram) {
       IsEmpty());
   // Discarding a snippet should decrease the list size. This will only be
   // logged after the next fetch.
-  EXPECT_TRUE(service()->DiscardSnippet(GURL("http://localhost/foobar")));
+  EXPECT_TRUE(service()->DiscardSnippet("http://localhost/foobar"));
   LoadFromJSONString(GetTestJson());
   EXPECT_THAT(tester.GetAllSamples("NewTabPage.Snippets.NumArticles"),
               ElementsAre(base::Bucket(/*min=*/0, /*count=*/3),
