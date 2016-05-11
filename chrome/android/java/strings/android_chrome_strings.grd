@@ -1034,7 +1034,7 @@ To obtain new licenses, connect to the internet and play your downloaded content
         To get your tabs from your other devices, turn on sync.
       </message>
       <message name="IDS_RECENT_TABS_SYNC_PROMO_ENABLE_ANDROID_SYNC" desc="Text that displayed in a textview encouraging the user to enable sync in the android settings.">
-        To get your tabs from your other devices, turn on "Auto-sync data" in Android account setting.
+        To get your tabs from your other devices, turn on "Auto-sync data" in Android account settings.
       </message>
       <message name="IDS_NTP_RECENT_TABS_SYNC_PROMO_INSTRUCTIONS" desc="Information about sync displayed on the NTP when the user has signed in on mobile but not on desktop">
         Tabs that you've opened in Chrome on your other devices will appear here.
