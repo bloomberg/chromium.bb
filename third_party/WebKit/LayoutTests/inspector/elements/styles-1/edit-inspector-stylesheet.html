@@ -7,24 +7,18 @@
 
 function test()
 {
-    var inspectorResource;
+    InspectorTest.selectNodeAndWaitForStyles("inspected", onStylesSelected);
 
-    InspectorTest.selectNodeAndWaitForStyles("inspected", step1);
-
-    function step1(node)
+    function onStylesSelected(node)
     {
-        InspectorTest.addNewRule("#inspected", stylesReceived);
-
-        function stylesReceived()
-        {
-            // UISourceCode.prototype.addRevision() must finish before step2 is called.
-            InspectorTest.showScriptSource("inspector-stylesheet", step2);
-        }
+        WebInspector.workspace.addEventListener(WebInspector.Workspace.Events.WorkingCopyCommitted, onWorkingCopyCommitted);
+        InspectorTest.addNewRule("#inspected", new Function());
     }
 
-    function step2(sourceFrame)
+    function onWorkingCopyCommitted(event)
     {
-        var uiSourceCode = sourceFrame._uiSourceCode;
+        WebInspector.workspace.removeEventListener(WebInspector.UISourceCode.Events.WorkingCopyCommitted, onWorkingCopyCommitted);
+        var uiSourceCode = event.data.uiSourceCode;
         InspectorTest.addResult("Inspector stylesheet URL: " + uiSourceCode.displayName());
         uiSourceCode.requestContent().then(printContent(onContent))
 
@@ -33,11 +27,11 @@ function test()
             InspectorTest.addResult("\nSetting new content");
             uiSourceCode.setWorkingCopy("#inspected { background-color: green; }");
             uiSourceCode.commitWorkingCopy();
-            step3(uiSourceCode);
+            onUpdatedWorkingCopy(uiSourceCode);
         }
     }
 
-    function step3(uiSourceCode)
+    function onUpdatedWorkingCopy(uiSourceCode)
     {
         uiSourceCode.requestContent().then(printContent(selectNode));
         function selectNode()

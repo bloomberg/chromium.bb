@@ -16,7 +16,7 @@ function test()
     InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(cssUISourceCodeAdded);
     const styleSheetURL = "http://localhost:8000/inspector/resources/example.css";
     const sourceMapURL = "example.css.map";
-    const styleSheetId = 1;
+    const styleSheetId = "1";
 
     InspectorTest.addSniffer(WebInspector.CSSWorkspaceBinding.HeaderInfo.prototype, "_updateLocations", locationsUpdated, true);
     cssModel._styleSheetAdded(createMockStyleSheetHeader(styleSheetURL, sourceMapURL));

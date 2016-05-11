@@ -50,9 +50,12 @@ function test()
 
         InspectorTest.addResult("\n>> Modifying keyframe rule");
         var style = new WebInspector.CSSStyleDeclaration(InspectorTest.cssModel, null, animationsPayload[1].keyframes[0].style, WebInspector.CSSStyleDeclaration.Type.Regular);
-        style.setText("width: 123px");
+        style.setText("width: 123px").then(onStyleEdited);
 
-        InspectorTest.CSSAgent.getMatchedStylesForNode(nodeId, onModifiedAnimations);
+        function onStyleEdited()
+        {
+            InspectorTest.CSSAgent.getMatchedStylesForNode(nodeId, onModifiedAnimations);
+        }
     }
 
     function onModifiedAnimations(error, inlinePayload, attributesPayload, matchedPayload, pseudoPayload, inheritedPayload, animationsPayload)

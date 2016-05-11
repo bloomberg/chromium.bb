@@ -65,7 +65,7 @@ function test()
 
     function addNetworkUISourceCode(url, content)
     {
-        var contentProvider = new WebInspector.StaticContentProvider(WebInspector.resourceTypes.Script, content, url);
+        var contentProvider = new WebInspector.StaticContentProvider(url, WebInspector.resourceTypes.Script, Promise.resolve(content));
         var networkProject = WebInspector.NetworkProject.forTarget(WebInspector.targetManager.mainTarget());
         var uiSourceCode = networkProject.addFile(contentProvider, InspectorTest.mainFrame(), false);
         return uiSourceCode;

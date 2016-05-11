@@ -30,14 +30,14 @@ function test()
     var uiSourceCodes = [];
     function addUISourceCode(url, isContentScript, frame)
     {
-        var contentProvider = new WebInspector.StaticContentProvider(WebInspector.resourceTypes.Script, "", url);
+        var contentProvider = new WebInspector.StaticContentProvider(url, WebInspector.resourceTypes.Script, Promise.resolve(""));
         var uiSourceCode = networkProject1.addFile(contentProvider, frame || mainFrame);
         uiSourceCodes.push(uiSourceCode);
     }
 
     function addUISourceCode2(url, isContentScript)
     {
-        var contentProvider = new WebInspector.StaticContentProvider(WebInspector.resourceTypes.Script, "", url);
+        var contentProvider = new WebInspector.StaticContentProvider(url, WebInspector.resourceTypes.Script, Promise.resolve(""));
         var uiSourceCode = networkProject2.addFile(contentProvider, target2.resourceTreeModel.mainFrame);
         uiSourceCodes.push(uiSourceCode);
     }

@@ -1,0 +1,40 @@
+Verifies that CSSStyleSheetHeader.originalContentProvider() indeed returns original content.
+
+
+Running: testSetStyle
+== Original ==
+div { color: red; }
+== Current ==
+div {EDITED: EDITED}
+
+Running: testSetSelector
+== Original ==
+div {}
+== Current ==
+EDITED {}
+
+Running: testSetMedia
+== Original ==
+@media (all) { }
+== Current ==
+@media EDITED { }
+
+Running: testSetKeyframeKey
+== Original ==
+@keyframes animation { 100% { color: red; } }
+== Current ==
+@keyframes animation { from { color: red; } }
+
+Running: testAddRule
+== Original ==
+div {}
+== Current ==
+EDITED {}
+div {}
+
+Running: testSetStyleSheetText
+== Original ==
+div {}
+== Current ==
+EDITED {}
+
