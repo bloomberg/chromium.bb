@@ -552,7 +552,7 @@ void CompositorImpl::RequestNewOutputSurface() {
 
   BrowserGpuChannelHostFactory* factory =
       BrowserGpuChannelHostFactory::instance();
-  if (!factory->GetGpuChannel() || factory->GetGpuChannel()->IsLost()) {
+  if (!factory->GetGpuChannel()) {
     factory->EstablishGpuChannel(
         CAUSE_FOR_GPU_LAUNCH_DISPLAY_COMPOSITOR_CONTEXT,
         base::Bind(&CompositorImpl::OnGpuChannelEstablished,
@@ -641,13 +641,14 @@ void CompositorImpl::CreateOutputSurface() {
 
     BrowserGpuChannelHostFactory* factory =
         BrowserGpuChannelHostFactory::instance();
-    // This channel might be lost (and even if it isn't right now, it might
-    // still get marked as lost from the IO thread, at any point in time
-    // really).
-    // But from here on just try and always lead to either
-    // DidInitializeOutputSurface() or DidFailToInitializeOutputSurface().
     scoped_refptr<gpu::GpuChannelHost> gpu_channel_host(
         factory->GetGpuChannel());
+    // If the channel was already lost, we'll get null back here and need to
+    // try again.
+    if (!gpu_channel_host) {
+      RequestNewOutputSurface();
+      return;
+    }
 
     GURL url("chrome://gpu/CompositorImpl::CreateOutputSurface");
     constexpr bool automatic_flushes = false;
