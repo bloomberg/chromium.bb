@@ -299,4 +299,102 @@ TEST(DisplayLayoutTest, MultipleDisplays) {
   EXPECT_EQ(gfx::Rect(300, 0, 100, 100), display_list[6].bounds());
 }
 
+namespace {
+
+class TwoDisplaysBottomRightReference
+  : public testing::TestWithParam<std::tuple<
+        // Primary Display Bounds
+        gfx::Rect,
+        // Secondary Display Bounds
+        gfx::Rect,
+        // Secondary Layout Position
+        DisplayPlacement::Position,
+        // Secondary Layout Offset
+        int,
+        // Minimum Offset Overlap
+        int,
+        // Expected Primary Display Bounds
+        gfx::Rect,
+        // Expected Secondary Display Bounds
+        gfx::Rect>> {
+ public:
+  TwoDisplaysBottomRightReference() = default;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TwoDisplaysBottomRightReference);
+};
+
+}  // namespace
+
+TEST_P(TwoDisplaysBottomRightReference, Placement) {
+  gfx::Rect primary_display_bounds = std::get<0>(GetParam());
+  gfx::Rect secondary_display_bounds = std::get<1>(GetParam());
+  DisplayPlacement::Position position = std::get<2>(GetParam());
+  int offset = std::get<3>(GetParam());
+  int minimum_offset_overlap = std::get<4>(GetParam());
+  gfx::Rect expected_primary_display_bounds = std::get<5>(GetParam());
+  gfx::Rect expected_secondary_display_bounds = std::get<6>(GetParam());
+
+  DisplayList display_list;
+  display_list.emplace_back(0, primary_display_bounds);
+  display_list.emplace_back(1, secondary_display_bounds);
+  std::vector<int64_t> updated_ids;
+
+  DisplayLayoutBuilder builder(0);
+  DisplayPlacement placement;
+  placement.display_id = 1;
+  placement.parent_display_id = 0;
+  placement.position = position;
+  placement.offset = offset;
+  placement.offset_reference = DisplayPlacement::OffsetReference::BOTTOM_RIGHT;
+  builder.AddDisplayPlacement(placement);
+  std::unique_ptr<DisplayLayout> display_layout(builder.Build());
+  display_layout->ApplyToDisplayList(
+      &display_list, &updated_ids, minimum_offset_overlap);
+
+  ASSERT_EQ(1u, updated_ids.size());
+  EXPECT_EQ(1u, updated_ids[0]);
+  ASSERT_EQ(2u, display_list.size());
+  EXPECT_EQ(expected_primary_display_bounds, display_list[0].bounds());
+  EXPECT_EQ(expected_secondary_display_bounds, display_list[1].bounds());
+}
+
+INSTANTIATE_TEST_CASE_P(DisplayLayoutTestZero, TwoDisplaysBottomRightReference,
+    testing::Values(
+        std::make_tuple(
+            gfx::Rect(0, 0, 800, 600), gfx::Rect(0, 0, 1024, 768),
+            DisplayPlacement::Position::LEFT, 0, 0,
+            gfx::Rect(0, 0, 800, 600), gfx::Rect(-1024, -168, 1024, 768)),
+        std::make_tuple(
+            gfx::Rect(0, 0, 800, 600), gfx::Rect(0, 0, 1024, 768),
+            DisplayPlacement::Position::TOP, 0, 0,
+            gfx::Rect(0, 0, 800, 600), gfx::Rect(-224, -768, 1024, 768)),
+        std::make_tuple(
+            gfx::Rect(0, 0, 800, 600), gfx::Rect(0, 0, 1024, 768),
+            DisplayPlacement::Position::RIGHT, 0, 0,
+            gfx::Rect(0, 0, 800, 600), gfx::Rect(800, -168, 1024, 768)),
+        std::make_tuple(
+            gfx::Rect(0, 0, 800, 600), gfx::Rect(0, 0, 1024, 768),
+            DisplayPlacement::Position::BOTTOM, 0, 0,
+            gfx::Rect(0, 0, 800, 600), gfx::Rect(-224, 600, 1024, 768))));
+
+INSTANTIATE_TEST_CASE_P(DisplayLayoutTestOffset,
+    TwoDisplaysBottomRightReference, testing::Values(
+        std::make_tuple(
+            gfx::Rect(0, 0, 800, 600), gfx::Rect(0, 0, 1024, 768),
+            DisplayPlacement::Position::LEFT, 7, 0,
+            gfx::Rect(0, 0, 800, 600), gfx::Rect(-1024, -175, 1024, 768)),
+        std::make_tuple(
+            gfx::Rect(0, 0, 800, 600), gfx::Rect(0, 0, 1024, 768),
+            DisplayPlacement::Position::TOP, 7, 0,
+            gfx::Rect(0, 0, 800, 600), gfx::Rect(-231, -768, 1024, 768)),
+        std::make_tuple(
+            gfx::Rect(0, 0, 800, 600), gfx::Rect(0, 0, 1024, 768),
+            DisplayPlacement::Position::RIGHT, 7, 0,
+            gfx::Rect(0, 0, 800, 600), gfx::Rect(800, -175, 1024, 768)),
+        std::make_tuple(
+            gfx::Rect(0, 0, 800, 600), gfx::Rect(0, 0, 1024, 768),
+            DisplayPlacement::Position::BOTTOM, 7, 0,
+            gfx::Rect(0, 0, 800, 600), gfx::Rect(-231, 600, 1024, 768))));
+
 }  // namespace display

@@ -38,6 +38,10 @@ class DISPLAY_EXPORT DisplayLayoutBuilder final {
                                             DisplayPlacement::Position position,
                                             int offset);
 
+  // Adds a display placement.
+  DisplayLayoutBuilder& AddDisplayPlacement(
+      const DisplayPlacement& placement);
+
   // Sets the display placement for the secondary display.
   DisplayLayoutBuilder& SetSecondaryPlacement(
       int64_t secondary_id,

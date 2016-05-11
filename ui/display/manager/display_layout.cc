@@ -49,16 +49,38 @@ display::Display* FindDisplayById(DisplayList* display_list, int64_t id) {
 // DisplayPlacement
 
 DisplayPlacement::DisplayPlacement()
-    : display_id(display::Display::kInvalidDisplayID),
-      parent_display_id(display::Display::kInvalidDisplayID),
-      position(DisplayPlacement::RIGHT),
-      offset(0) {}
+    : DisplayPlacement(display::Display::kInvalidDisplayID,
+                       display::Display::kInvalidDisplayID,
+                       DisplayPlacement::RIGHT,
+                       0,
+                       DisplayPlacement::TOP_LEFT) {}
 
-DisplayPlacement::DisplayPlacement(Position pos, int offset)
-    : display_id(display::Display::kInvalidDisplayID),
-      parent_display_id(display::Display::kInvalidDisplayID),
-      position(pos),
-      offset(offset) {
+DisplayPlacement::DisplayPlacement(Position position, int offset)
+    : DisplayPlacement(display::Display::kInvalidDisplayID,
+                       display::Display::kInvalidDisplayID,
+                       position,
+                       offset,
+                       DisplayPlacement::TOP_LEFT) {}
+
+DisplayPlacement::DisplayPlacement(Position position,
+                                   int offset,
+                                   OffsetReference offset_reference)
+    : DisplayPlacement(display::Display::kInvalidDisplayID,
+                       display::Display::kInvalidDisplayID,
+                       position,
+                       offset,
+                       offset_reference) {}
+
+DisplayPlacement::DisplayPlacement(int64_t display_id,
+                                   int64_t parent_display_id,
+                                   Position position,
+                                   int offset,
+                                   OffsetReference offset_reference)
+    : display_id(display_id),
+      parent_display_id(parent_display_id),
+      position(position),
+      offset(offset),
+      offset_reference(offset_reference) {
   DCHECK_LE(TOP, position);
   DCHECK_GE(LEFT, position);
   // Set the default value to |position| in case position is invalid.  DCHECKs
@@ -73,7 +95,8 @@ DisplayPlacement::DisplayPlacement(const DisplayPlacement& placement)
     : display_id(placement.display_id),
       parent_display_id(placement.parent_display_id),
       position(placement.position),
-      offset(placement.offset) {}
+      offset(placement.offset),
+      offset_reference(placement.offset_reference) {}
 
 DisplayPlacement& DisplayPlacement::Swap() {
   switch (position) {
@@ -308,11 +331,17 @@ bool DisplayLayout::ApplyDisplayPlacement(const DisplayPlacement& placement,
   int offset = placement.offset;
   if (position == DisplayPlacement::TOP ||
       position == DisplayPlacement::BOTTOM) {
+    if (placement.offset_reference == DisplayPlacement::BOTTOM_RIGHT)
+      offset = parent_bounds.width() - offset - target_bounds.width();
+
     offset = std::min(
         offset, parent_bounds.width() - minimum_offset_overlap);
     offset = std::max(
         offset, -target_bounds.width() + minimum_offset_overlap);
   } else {
+    if (placement.offset_reference == DisplayPlacement::BOTTOM_RIGHT)
+      offset = parent_bounds.height() - offset - target_bounds.height();
+
     offset = std::min(
         offset, parent_bounds.height() - minimum_offset_overlap);
     offset = std::max(

@@ -44,6 +44,12 @@ DisplayLayoutBuilder& DisplayLayoutBuilder::AddDisplayPlacement(
   placement.offset = offset;
   placement.display_id = display_id;
   placement.parent_display_id = parent_display_id;
+  AddDisplayPlacement(placement);
+  return *this;
+}
+
+DisplayLayoutBuilder& DisplayLayoutBuilder::AddDisplayPlacement(
+    const DisplayPlacement& placement) {
   layout_->placement_list.push_back(placement);
   return *this;
 }
