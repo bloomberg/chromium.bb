@@ -10,7 +10,7 @@
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "remoting/base/url_request.h"
 #include "remoting/protocol/http_ice_config_request.h"
 #include "remoting/protocol/jingle_info_request.h"

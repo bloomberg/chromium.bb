@@ -11,7 +11,7 @@
 #include "base/guid.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "google_apis/google_api_keys.h"
 #include "remoting/host/pin_hash.h"

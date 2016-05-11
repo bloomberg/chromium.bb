@@ -11,7 +11,7 @@
 #include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/google_api_keys.h"
 #include "net/url_request/url_fetcher.h"

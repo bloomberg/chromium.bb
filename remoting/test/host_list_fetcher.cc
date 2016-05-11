@@ -8,7 +8,7 @@
 #include "base/callback_helpers.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_fetcher.h"

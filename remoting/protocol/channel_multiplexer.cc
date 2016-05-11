@@ -16,7 +16,7 @@
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "net/base/net_errors.h"
 #include "remoting/protocol/message_serialization.h"
 #include "remoting/protocol/p2p_stream_socket.h"

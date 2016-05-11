@@ -14,7 +14,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/mock_timer.h"
 #include "base/values.h"
 #include "net/base/io_buffer.h"

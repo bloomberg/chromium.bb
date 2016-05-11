@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "remoting/protocol/video_stream.h"
 
 namespace remoting {

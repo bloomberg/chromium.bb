@@ -18,7 +18,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/task_runner_util.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "jingle/glue/thread_wrapper.h"
 #include "remoting/protocol/authenticator.h"
 #include "remoting/protocol/port_allocator_factory.h"

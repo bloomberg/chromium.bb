@@ -5,7 +5,7 @@
 #include "remoting/protocol/fake_session.h"
 
 #include "base/location.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "remoting/protocol/fake_authenticator.h"
 #include "third_party/webrtc/libjingle/xmllite/xmlelement.h"
 

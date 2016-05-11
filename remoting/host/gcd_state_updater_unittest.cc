@@ -12,7 +12,7 @@
 #include "base/strings/stringize_macros.h"
 #include "base/test/simple_test_clock.h"
 #include "base/test/test_mock_time_task_runner.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "remoting/base/constants.h"
 #include "remoting/host/fake_oauth_token_getter.h"

@@ -14,7 +14,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/timer.h"
 #include "remoting/codec/video_encoder.h"
 #include "remoting/codec/video_encoder_verbatim.h"
