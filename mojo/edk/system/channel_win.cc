@@ -80,11 +80,6 @@ class ChannelWin : public Channel,
         io_task_runner_(io_task_runner) {
     sentinel_ = ~reinterpret_cast<uintptr_t>(this);
     CHECK(handle_.is_valid());
-    memset(&read_context_, 0, sizeof(read_context_));
-    read_context_.handler = this;
-
-    memset(&write_context_, 0, sizeof(write_context_));
-    write_context_.handler = this;
   }
 
   void Start() override {

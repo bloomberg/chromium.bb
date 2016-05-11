@@ -40,14 +40,10 @@ FileStream::Context::Context(const scoped_refptr<base::TaskRunner>& task_runner)
     : async_in_progress_(false),
       orphaned_(false),
       task_runner_(task_runner),
-      io_context_(),
       async_read_initiated_(false),
       async_read_completed_(false),
       io_complete_for_read_received_(false),
-      result_(0) {
-  io_context_.handler = this;
-  memset(&io_context_.overlapped, 0, sizeof(io_context_.overlapped));
-}
+      result_(0) {}
 
 FileStream::Context::Context(base::File file,
                              const scoped_refptr<base::TaskRunner>& task_runner)
@@ -55,13 +51,10 @@ FileStream::Context::Context(base::File file,
       async_in_progress_(false),
       orphaned_(false),
       task_runner_(task_runner),
-      io_context_(),
       async_read_initiated_(false),
       async_read_completed_(false),
       io_complete_for_read_received_(false),
       result_(0) {
-  io_context_.handler = this;
-  memset(&io_context_.overlapped, 0, sizeof(io_context_.overlapped));
   if (file_.IsValid()) {
     DCHECK(file_.async());
     OnFileOpened();

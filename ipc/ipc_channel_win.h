@@ -82,10 +82,10 @@ class ChannelWin : public Channel,
 
  private:
   struct State {
-    explicit State(ChannelWin* channel);
+    State();
     ~State();
     base::MessageLoopForIO::IOContext context;
-    bool is_pending;
+    bool is_pending = false;
   };
 
   State input_state_;

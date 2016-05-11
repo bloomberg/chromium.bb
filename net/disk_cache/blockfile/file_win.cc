@@ -62,8 +62,6 @@ void CompletionHandler::OnIOCompleted(
 
 MyOverlapped::MyOverlapped(disk_cache::File* file, size_t offset,
                            disk_cache::FileIOCallback* callback) {
-  memset(this, 0, sizeof(*this));
-  context_.handler = g_completion_handler.Pointer();
   context_.overlapped.Offset = static_cast<DWORD>(offset);
   file_ = file;
   callback_ = callback;

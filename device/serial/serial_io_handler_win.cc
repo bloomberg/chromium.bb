@@ -239,16 +239,8 @@ bool SerialIoHandlerWin::PostOpen() {
                                                        this);
 
   comm_context_.reset(new base::MessageLoopForIO::IOContext());
-  comm_context_->handler = this;
-  memset(&comm_context_->overlapped, 0, sizeof(comm_context_->overlapped));
-
   read_context_.reset(new base::MessageLoopForIO::IOContext());
-  read_context_->handler = this;
-  memset(&read_context_->overlapped, 0, sizeof(read_context_->overlapped));
-
   write_context_.reset(new base::MessageLoopForIO::IOContext());
-  write_context_->handler = this;
-  memset(&write_context_->overlapped, 0, sizeof(write_context_->overlapped));
 
   scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner =
       base::ThreadTaskRunnerHandle::Get();

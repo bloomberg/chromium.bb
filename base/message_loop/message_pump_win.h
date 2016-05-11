@@ -148,48 +148,16 @@ class BASE_EXPORT MessagePumpForUI : public MessagePumpWin {
 //
 class BASE_EXPORT MessagePumpForIO : public MessagePumpWin {
  public:
-  struct IOContext;
+  struct BASE_EXPORT IOContext {
+    IOContext();
+    OVERLAPPED overlapped;
+  };
 
   // Clients interested in receiving OS notifications when asynchronous IO
   // operations complete should implement this interface and register themselves
   // with the message pump.
   //
   // Typical use #1:
-  //   // Use only when there are no user's buffers involved on the actual IO,
-  //   // so that all the cleanup can be done by the message pump.
-  //   class MyFile : public IOHandler {
-  //     MyFile() {
-  //       ...
-  //       context_ = new IOContext;
-  //       context_->handler = this;
-  //       message_pump->RegisterIOHandler(file_, this);
-  //     }
-  //     ~MyFile() {
-  //       if (pending_) {
-  //         // By setting the handler to NULL, we're asking for this context
-  //         // to be deleted when received, without calling back to us.
-  //         context_->handler = NULL;
-  //       } else {
-  //         delete context_;
-  //      }
-  //     }
-  //     virtual void OnIOCompleted(IOContext* context, DWORD bytes_transfered,
-  //                                DWORD error) {
-  //         pending_ = false;
-  //     }
-  //     void DoSomeIo() {
-  //       ...
-  //       // The only buffer required for this operation is the overlapped
-  //       // structure.
-  //       ConnectNamedPipe(file_, &context_->overlapped);
-  //       pending_ = true;
-  //     }
-  //     bool pending_;
-  //     IOContext* context_;
-  //     HANDLE file_;
-  //   };
-  //
-  // Typical use #2:
   //   class MyFile : public IOHandler {
   //     MyFile() {
   //       ...
@@ -207,15 +175,12 @@ class BASE_EXPORT MessagePumpForIO : public MessagePumpWin {
   //     void DoSomeIo() {
   //       ...
   //       IOContext* context = new IOContext;
-  //       // This is not used for anything. It just prevents the context from
-  //       // being considered "abandoned".
-  //       context->handler = this;
-  //       ReadFile(file_, buffer, num_bytes, &read, &context->overlapped);
+  //       ReadFile(file_, buffer, num_bytes, &read, &context);
   //     }
   //     HANDLE file_;
   //   };
   //
-  // Typical use #3:
+  // Typical use #2:
   // Same as the previous example, except that in order to deal with the
   // requirement stated for the destructor, the class calls WaitForIOCompletion
   // from the destructor to block until all IO finishes.
@@ -233,20 +198,6 @@ class BASE_EXPORT MessagePumpForIO : public MessagePumpWin {
     // on error.
     virtual void OnIOCompleted(IOContext* context, DWORD bytes_transfered,
                                DWORD error) = 0;
-  };
-
-  // The extended context that should be used as the base structure on every
-  // overlapped IO operation. |handler| must be set to the registered IOHandler
-  // for the given file when the operation is started, and it can be set to NULL
-  // before the operation completes to indicate that the handler should not be
-  // called anymore, and instead, the IOContext should be deleted when the OS
-  // notifies the completion of this operation. Please remember that any buffers
-  // involved with an IO operation should be around until the callback is
-  // received, so this technique can only be used for IO that do not involve
-  // additional buffers (other than the overlapped structure itself).
-  struct IOContext {
-    OVERLAPPED overlapped;
-    IOHandler* handler;
   };
 
   MessagePumpForIO();
@@ -284,11 +235,6 @@ class BASE_EXPORT MessagePumpForIO : public MessagePumpWin {
     IOContext* context;
     DWORD bytes_transfered;
     DWORD error;
-
-    // In some cases |context| can be a non-pointer value casted to a pointer.
-    // |has_valid_io_context| is true if |context| is a valid IOContext
-    // pointer, and false otherwise.
-    bool has_valid_io_context;
   };
 
   void DoRunLoop() override;
@@ -296,14 +242,6 @@ class BASE_EXPORT MessagePumpForIO : public MessagePumpWin {
   bool MatchCompletedIOItem(IOHandler* filter, IOItem* item);
   bool GetIOItem(DWORD timeout, IOItem* item);
   bool ProcessInternalIOItem(const IOItem& item);
-
-  // Converts an IOHandler pointer to a completion port key.
-  // |has_valid_io_context| specifies whether completion packets posted to
-  // |handler| will have valid OVERLAPPED pointers.
-  static ULONG_PTR HandlerToKey(IOHandler* handler, bool has_valid_io_context);
-
-  // Converts a completion port key to an IOHandler pointer.
-  static IOHandler* KeyToHandler(ULONG_PTR key, bool* has_valid_io_context);
 
   // The completion port associated with this thread.
   win::ScopedHandle port_;
