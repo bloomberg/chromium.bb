@@ -126,7 +126,7 @@ void BluetoothTestWin::StartLowEnergyDiscoverySession() {
   FinishPendingTasks();
 }
 
-BluetoothDevice* BluetoothTestWin::DiscoverLowEnergyDevice(int device_ordinal) {
+BluetoothDevice* BluetoothTestWin::SimulateLowEnergyDevice(int device_ordinal) {
   if (device_ordinal > 4 || device_ordinal < 1)
     return nullptr;
 

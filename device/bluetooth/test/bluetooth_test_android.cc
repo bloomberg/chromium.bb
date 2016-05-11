@@ -73,10 +73,10 @@ bool BluetoothTestAndroid::DenyPermission() {
   return true;
 }
 
-BluetoothDevice* BluetoothTestAndroid::DiscoverLowEnergyDevice(
+BluetoothDevice* BluetoothTestAndroid::SimulateLowEnergyDevice(
     int device_ordinal) {
   TestBluetoothAdapterObserver observer(adapter_);
-  Java_FakeBluetoothAdapter_discoverLowEnergyDevice(
+  Java_FakeBluetoothAdapter_simulateLowEnergyDevice(
       AttachCurrentThread(), j_fake_bluetooth_adapter_.obj(), device_ordinal);
   return observer.last_device();
 }

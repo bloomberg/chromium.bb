@@ -62,7 +62,7 @@ bool BluetoothTestBase::DenyPermission() {
   return false;
 }
 
-BluetoothDevice* BluetoothTestBase::DiscoverLowEnergyDevice(
+BluetoothDevice* BluetoothTestBase::SimulateLowEnergyDevice(
     int device_ordinal) {
   NOTIMPLEMENTED();
   return nullptr;

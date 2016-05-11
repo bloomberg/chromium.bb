@@ -85,7 +85,7 @@ void BluetoothTestBlueZ::InitWithFakeAdapter() {
   run_loop.Run();
 }
 
-BluetoothDevice* BluetoothTestBlueZ::DiscoverLowEnergyDevice(
+BluetoothDevice* BluetoothTestBlueZ::SimulateLowEnergyDevice(
     int device_ordinal) {
   if (device_ordinal > 4 || device_ordinal < 1)
     return nullptr;

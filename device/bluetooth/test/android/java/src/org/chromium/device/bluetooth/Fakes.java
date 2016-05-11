@@ -75,7 +75,7 @@ class Fakes {
          * Creates and discovers a new device.
          */
         @CalledByNative("FakeBluetoothAdapter")
-        public void discoverLowEnergyDevice(int deviceOrdinal) {
+        public void simulateLowEnergyDevice(int deviceOrdinal) {
             if (mFakeScanner == null) {
                 return;
             }

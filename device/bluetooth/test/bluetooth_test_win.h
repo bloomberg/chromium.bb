@@ -32,7 +32,7 @@ class BluetoothTestWin : public BluetoothTestBase,
   void InitWithFakeAdapter() override;
   bool DenyPermission() override;
   void StartLowEnergyDiscoverySession() override;
-  BluetoothDevice* DiscoverLowEnergyDevice(int device_ordinal) override;
+  BluetoothDevice* SimulateLowEnergyDevice(int device_ordinal) override;
   void SimulateGattConnection(BluetoothDevice* device) override;
   void SimulateGattServicesDiscovered(
       BluetoothDevice* device,

@@ -109,7 +109,7 @@ void BluetoothTestMac::InitWithFakeAdapter() {
   }
 }
 
-BluetoothDevice* BluetoothTestMac::DiscoverLowEnergyDevice(int device_ordinal) {
+BluetoothDevice* BluetoothTestMac::SimulateLowEnergyDevice(int device_ordinal) {
   TestBluetoothAdapterObserver observer(adapter_);
   CBCentralManager* central_manager = adapter_mac_->low_energy_central_manager_;
   BluetoothLowEnergyCentralManagerDelegate* central_manager_delegate =

@@ -570,7 +570,7 @@ TEST_F(BluetoothTest, DiscoverLowEnergyDevice) {
 
   // Start discovery and find a device.
   StartLowEnergyDiscoverySession();
-  DiscoverLowEnergyDevice(1);
+  SimulateLowEnergyDevice(1);
   EXPECT_EQ(1, observer.device_added_count());
   BluetoothDevice* device = adapter_->GetDevice(observer.last_device_address());
   EXPECT_TRUE(device);
@@ -589,14 +589,14 @@ TEST_F(BluetoothTest, DiscoverLowEnergyDeviceTwice) {
 
   // Start discovery and find a device.
   StartLowEnergyDiscoverySession();
-  DiscoverLowEnergyDevice(1);
+  SimulateLowEnergyDevice(1);
   EXPECT_EQ(1, observer.device_added_count());
   BluetoothDevice* device = adapter_->GetDevice(observer.last_device_address());
   EXPECT_TRUE(device);
 
   // Find the same device again. This should not create a new device object.
   observer.Reset();
-  DiscoverLowEnergyDevice(1);
+  SimulateLowEnergyDevice(1);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0, observer.device_added_count());
   EXPECT_EQ(1u, adapter_->GetDevices().size());
@@ -615,7 +615,7 @@ TEST_F(BluetoothTest, DiscoverLowEnergyDeviceWithUpdatedUUIDs) {
 
   // Start discovery and find a device.
   StartLowEnergyDiscoverySession();
-  BluetoothDevice* device = DiscoverLowEnergyDevice(1);
+  BluetoothDevice* device = SimulateLowEnergyDevice(1);
 
   // Check the initial UUIDs:
   EXPECT_TRUE(
@@ -625,7 +625,7 @@ TEST_F(BluetoothTest, DiscoverLowEnergyDeviceWithUpdatedUUIDs) {
 
   // Discover same device again with updated UUIDs:
   observer.Reset();
-  DiscoverLowEnergyDevice(2);
+  SimulateLowEnergyDevice(2);
   EXPECT_EQ(0, observer.device_added_count());
   EXPECT_EQ(1, observer.device_changed_count());
   EXPECT_EQ(1u, adapter_->GetDevices().size());
@@ -639,7 +639,7 @@ TEST_F(BluetoothTest, DiscoverLowEnergyDeviceWithUpdatedUUIDs) {
 
   // Discover same device again with empty UUIDs:
   observer.Reset();
-  DiscoverLowEnergyDevice(3);
+  SimulateLowEnergyDevice(3);
   EXPECT_EQ(0, observer.device_added_count());
 #if defined(OS_MACOSX)
   // TODO(scheib): Call DeviceChanged only if UUIDs change. crbug.com/547106
@@ -666,8 +666,8 @@ TEST_F(BluetoothTest, DiscoverMultipleLowEnergyDevices) {
 
   // Start discovery and find a device.
   StartLowEnergyDiscoverySession();
-  DiscoverLowEnergyDevice(1);
-  DiscoverLowEnergyDevice(4);
+  SimulateLowEnergyDevice(1);
+  SimulateLowEnergyDevice(4);
   EXPECT_EQ(2, observer.device_added_count());
   EXPECT_EQ(2u, adapter_->GetDevices().size());
 }

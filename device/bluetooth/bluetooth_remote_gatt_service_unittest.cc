@@ -32,8 +32,8 @@ TEST_F(BluetoothRemoteGattServiceTest, GetIdentifier) {
   InitWithFakeAdapter();
   StartLowEnergyDiscoverySession();
   // 2 devices to verify unique IDs across them.
-  BluetoothDevice* device1 = DiscoverLowEnergyDevice(3);
-  BluetoothDevice* device2 = DiscoverLowEnergyDevice(4);
+  BluetoothDevice* device1 = SimulateLowEnergyDevice(3);
+  BluetoothDevice* device2 = SimulateLowEnergyDevice(4);
   device1->CreateGattConnection(GetGattConnectionCallback(Call::EXPECTED),
                                 GetConnectErrorCallback(Call::NOT_EXPECTED));
   device2->CreateGattConnection(GetGattConnectionCallback(Call::EXPECTED),
@@ -73,7 +73,7 @@ TEST_F(BluetoothRemoteGattServiceTest, GetUUID) {
   }
   InitWithFakeAdapter();
   StartLowEnergyDiscoverySession();
-  BluetoothDevice* device = DiscoverLowEnergyDevice(3);
+  BluetoothDevice* device = SimulateLowEnergyDevice(3);
   device->CreateGattConnection(GetGattConnectionCallback(Call::EXPECTED),
                                GetConnectErrorCallback(Call::NOT_EXPECTED));
   SimulateGattConnection(device);
@@ -99,7 +99,7 @@ TEST_F(BluetoothRemoteGattServiceTest, GetCharacteristics_FindNone) {
   }
   InitWithFakeAdapter();
   StartLowEnergyDiscoverySession();
-  BluetoothDevice* device = DiscoverLowEnergyDevice(3);
+  BluetoothDevice* device = SimulateLowEnergyDevice(3);
   device->CreateGattConnection(GetGattConnectionCallback(Call::EXPECTED),
                                GetConnectErrorCallback(Call::NOT_EXPECTED));
   SimulateGattConnection(device);
@@ -119,7 +119,7 @@ TEST_F(BluetoothRemoteGattServiceTest,
        GetCharacteristics_and_GetCharacteristic) {
   InitWithFakeAdapter();
   StartLowEnergyDiscoverySession();
-  BluetoothDevice* device = DiscoverLowEnergyDevice(3);
+  BluetoothDevice* device = SimulateLowEnergyDevice(3);
   device->CreateGattConnection(GetGattConnectionCallback(Call::EXPECTED),
                                GetConnectErrorCallback(Call::NOT_EXPECTED));
   SimulateGattConnection(device);
@@ -168,7 +168,7 @@ TEST_F(BluetoothRemoteGattServiceTest,
        GetCharacteristic_CharacteristicRemoved) {
   InitWithFakeAdapter();
   StartLowEnergyDiscoverySession();
-  BluetoothDevice* device = DiscoverLowEnergyDevice(3);
+  BluetoothDevice* device = SimulateLowEnergyDevice(3);
   device->CreateGattConnection(GetGattConnectionCallback(Call::EXPECTED),
                                GetConnectErrorCallback(Call::NOT_EXPECTED));
   SimulateGattConnection(device);
@@ -228,7 +228,7 @@ TEST_F(BluetoothRemoteGattServiceTest, SimulateGattServiceRemove) {
   }
   InitWithFakeAdapter();
   StartLowEnergyDiscoverySession();
-  BluetoothDevice* device = DiscoverLowEnergyDevice(3);
+  BluetoothDevice* device = SimulateLowEnergyDevice(3);
   device->CreateGattConnection(GetGattConnectionCallback(Call::EXPECTED),
                                GetConnectErrorCallback(Call::NOT_EXPECTED));
   SimulateGattConnection(device);
