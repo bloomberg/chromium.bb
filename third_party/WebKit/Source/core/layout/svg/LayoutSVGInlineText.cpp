@@ -197,7 +197,7 @@ inline bool isValidSurrogatePair(const TextRun& run, unsigned index)
 {
     if (!U16_IS_LEAD(run[index]))
         return false;
-    if (index + 1 >= static_cast<unsigned>(run.charactersLength()))
+    if (index + 1 >= static_cast<unsigned>(run.length()))
         return false;
     return U16_IS_TRAIL(run[index + 1]);
 }
