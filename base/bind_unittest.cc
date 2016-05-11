@@ -802,6 +802,12 @@ TEST_F(BindTest, Owned) {
   EXPECT_EQ(1, deletes);
 }
 
+TEST_F(BindTest, UniquePtrReceiver) {
+  std::unique_ptr<StrictMock<NoRef>> no_ref(new StrictMock<NoRef>);
+  EXPECT_CALL(*no_ref, VoidMethod0()).Times(1);
+  Bind(&NoRef::VoidMethod0, std::move(no_ref)).Run();
+}
+
 // Tests for Passed() wrapper support:
 //   - Passed() can be constructed from a pointer to scoper.
 //   - Passed() can be constructed from a scoper rvalue.

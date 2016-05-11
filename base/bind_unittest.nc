@@ -68,7 +68,7 @@ template <typename T>
 void VoidPolymorphic1(T t) {
 }
 
-#if defined(NCTEST_METHOD_ON_CONST_OBJECT)  // [r"fatal error: cannot initialize a variable of type 'base::NoRef \*' with an rvalue of type 'const base::HasRef \*'"]
+#if defined(NCTEST_METHOD_ON_CONST_OBJECT)  // [r"fatal error: binding value of type 'const base::HasRef' to reference to type 'base::NoRef' drops 'const' qualifier"]
 
 // Method bound to const-object.
 //
