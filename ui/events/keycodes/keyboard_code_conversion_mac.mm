@@ -788,7 +788,25 @@ KeyboardCode KeyboardCodeFromNSEvent(NSEvent* event) {
   return KeyboardCodeFromKeyCode([event keyCode]);
 }
 
+int ISOKeyboardKeyCodeMap(int nativeKeyCode) {
+  // OS X will swap 'Backquote' and 'IntlBackslash' if it's an ISO keyboard.
+  // https://crbug.com/600607
+  switch (nativeKeyCode) {
+    case kVK_ISO_Section:
+      return kVK_ANSI_Grave;
+    case kVK_ANSI_Grave:
+      return kVK_ISO_Section;
+    default:
+      return nativeKeyCode;
+  }
+}
+
 DomCode DomCodeFromNSEvent(NSEvent* event) {
+  if (KBGetLayoutType(LMGetKbdType()) == kKeyboardISO) {
+    return ui::KeycodeConverter::NativeKeycodeToDomCode(
+        ISOKeyboardKeyCodeMap([event keyCode]));
+  }
+
   return ui::KeycodeConverter::NativeKeycodeToDomCode([event keyCode]);
 }
 
