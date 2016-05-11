@@ -49,7 +49,7 @@ TEST_F(WebStateDelegateBridgeTest, LoadProgressChanged) {
 TEST_F(WebStateDelegateBridgeTest, HandleContextMenu) {
   EXPECT_EQ(nil, [delegate_ contextMenuParams]);
   web::ContextMenuParams contextMenuParams;
-  contextMenuParams.menu_title = base::UTF8ToUTF16("Menu title");
+  contextMenuParams.menu_title.reset([@"Menu title" copy]);
   contextMenuParams.link_url = GURL("http://www.url.com");
   contextMenuParams.src_url = GURL("http://www.url.com/image.jpeg");
   contextMenuParams.referrer_policy = web::ReferrerPolicyOrigin;

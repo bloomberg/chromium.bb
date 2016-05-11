@@ -21,7 +21,7 @@ struct ContextMenuParams {
   ~ContextMenuParams();
 
   // The title of the menu.
-  base::string16 menu_title;
+  base::scoped_nsobject<NSString> menu_title;
 
   // The URL of the link that encloses the node the context menu was invoked on.
   GURL link_url;

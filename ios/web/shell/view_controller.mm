@@ -277,7 +277,7 @@ using web::NavigationManager;
   }
 
   UIAlertController* alert = [UIAlertController
-      alertControllerWithTitle:SysUTF16ToNSString(params.menu_title)
+      alertControllerWithTitle:params.menu_title
                        message:nil
                 preferredStyle:UIAlertControllerStyleActionSheet];
   alert.popoverPresentationController.sourceView = params.view;

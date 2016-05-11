@@ -1342,7 +1342,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
                             inView:_webView];
   } else {
     web::ContextMenuParams params;
-    params.menu_title = base::SysNSStringToUTF16(info[web::kContextTitle]);
+    params.menu_title.reset([info[web::kContextTitle] copy]);
     NSString* linkUrl = info[web::kContextLinkURLString];
     if (linkUrl) {
       params.link_url = GURL(base::SysNSStringToUTF8(linkUrl));
