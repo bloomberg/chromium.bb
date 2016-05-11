@@ -1342,10 +1342,15 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // Navigate iframe to a data URL. The navigation happens from a script in the
   // parent frame, so the data URL should be committed in the same SiteInstance
   // as the parent frame.
+  RenderFrameDeletedObserver deleted_observer1(
+      root->child_at(0)->current_frame_host());
   GURL data_url("data:text/html,dataurl");
   NavigateIframeToURL(shell()->web_contents(), "child-0", data_url);
   EXPECT_TRUE(observer.last_navigation_succeeded());
   EXPECT_EQ(data_url, observer.last_navigation_url());
+
+  // Wait for the old process to exit, to verify that the proxies go away.
+  deleted_observer1.WaitUntilDeleted();
 
   // Ensure that we have navigated using the top level process.
   EXPECT_EQ(
@@ -1373,10 +1378,15 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // Navigate iframe to about:blank. The navigation happens from a script in the
   // parent frame, so it should be committed in the same SiteInstance as the
   // parent frame.
+  RenderFrameDeletedObserver deleted_observer2(
+      root->child_at(0)->current_frame_host());
   GURL about_blank_url("about:blank");
   NavigateIframeToURL(shell()->web_contents(), "child-0", about_blank_url);
   EXPECT_TRUE(observer.last_navigation_succeeded());
   EXPECT_EQ(about_blank_url, observer.last_navigation_url());
+
+  // Wait for the old process to exit, to verify that the proxies go away.
+  deleted_observer2.WaitUntilDeleted();
 
   // Ensure that we have navigated using the top level process.
   EXPECT_EQ(
@@ -1703,9 +1713,13 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ProcessTransferAfterError) {
   // ends up on the original site.
   EXPECT_EQ(2, shell()->web_contents()->GetController().GetEntryCount());
   {
+    RenderFrameDeletedObserver deleted_observer(child->current_frame_host());
     TestNavigationObserver back_load_observer(shell()->web_contents());
     shell()->web_contents()->GetController().GoBack();
     back_load_observer.Wait();
+
+    // Wait for the old process to exit, to verify that the proxies go away.
+    deleted_observer.WaitUntilDeleted();
   }
   EXPECT_EQ(
       " Site A\n"
@@ -3747,10 +3761,14 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, RFPHDestruction) {
       DepictFrameTree(root));
 
   // Navigate back to the parent's origin.
+  RenderFrameDeletedObserver deleted_observer(child->current_frame_host());
   url = embedded_test_server()->GetURL("/title1.html");
   NavigateFrameToURL(child, url);
   EXPECT_EQ(url, observer.last_navigation_url());
   EXPECT_TRUE(observer.last_navigation_succeeded());
+
+  // Wait for the old process to exit, to verify that the proxies go away.
+  deleted_observer.WaitUntilDeleted();
   EXPECT_EQ(
       " Site A\n"
       "   |--Site A\n"
@@ -6486,6 +6504,65 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   web_contents()->GetController().GoBack();
   frame_observer.WaitForCommit();
   EXPECT_EQ(orig_site_instance, child->current_frame_host()->GetSiteInstance());
+}
+
+// Tests that there are no crashes if a subframe is detached in its unload
+// handler. See https://crbug.com/590054.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, DetachInUnloadHandler) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b(b))"));
+  NavigateToURL(shell(), main_url);
+
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  EXPECT_EQ(
+      " Site A ------------ proxies for B\n"
+      "   +--Site B ------- proxies for A\n"
+      "        +--Site B -- proxies for A\n"
+      "Where A = http://a.com/\n"
+      "      B = http://b.com/",
+      DepictFrameTree(root));
+
+  int child_count = 0;
+  EXPECT_TRUE(ExecuteScriptAndExtractInt(
+      root->child_at(0)->current_frame_host(),
+      "window.domAutomationController.send(frames.length);", &child_count));
+  EXPECT_EQ(1, child_count);
+
+  RenderFrameDeletedObserver deleted_observer(
+      root->child_at(0)->child_at(0)->current_frame_host());
+
+  // Add an unload handler to the grandchild that causes it to be synchronously
+  // detached, then navigate it.
+  EXPECT_TRUE(ExecuteScript(
+      root->child_at(0)->child_at(0)->current_frame_host(),
+      "window.onunload=function(e){\n"
+      "    window.parent.document.getElementById('child-0').remove();\n"
+      "};\n"));
+  std::string script =
+      std::string("window.document.getElementById('child-0').src = \"") +
+      embedded_test_server()
+          ->GetURL("c.com", "/cross_site_iframe_factory.html?c")
+          .spec() +
+      "\"";
+  EXPECT_TRUE(
+      ExecuteScript(root->child_at(0)->current_frame_host(), script.c_str()));
+
+  deleted_observer.WaitUntilDeleted();
+
+  EXPECT_TRUE(ExecuteScriptAndExtractInt(
+      root->child_at(0)->current_frame_host(),
+      "window.domAutomationController.send(frames.length);", &child_count));
+  EXPECT_EQ(0, child_count);
+
+  EXPECT_EQ(
+      " Site A ------------ proxies for B\n"
+      "   +--Site B ------- proxies for A\n"
+      "Where A = http://a.com/\n"
+      "      B = http://b.com/",
+      DepictFrameTree(root));
 }
 
 }  // namespace content

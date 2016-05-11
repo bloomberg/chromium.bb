@@ -1593,8 +1593,6 @@ void RenderFrameImpl::OnSwapOut(
         blink::WebPageVisibilityStateHidden, false);
   }
 
-  Send(new FrameHostMsg_SwapOut_ACK(routing_id_));
-
   RenderViewImpl* render_view = render_view_.get();
   bool is_main_frame = is_main_frame_;
   int routing_id = GetRoutingID();
@@ -1608,9 +1606,10 @@ void RenderFrameImpl::OnSwapOut(
   // TODO(creis): WebFrame::swap() can return false.  Most of those cases
   // should be due to the frame being detached during unload (in which case
   // the necessary cleanup has happened anyway), but it might be possible for
-  // it to return false without detaching.  Catch those cases below to track
-  // down https://crbug.com/575245.
-  frame_->swap(proxy->web_frame());
+  // it to return false without detaching.  Catch any cases that the
+  // RenderView's main_render_frame_ isn't cleared below (whether swap returns
+  // false or not), to track down https://crbug.com/575245.
+  bool success = frame_->swap(proxy->web_frame());
 
   // For main frames, the swap should have cleared the RenderView's pointer to
   // this frame.
@@ -1622,6 +1621,16 @@ void RenderFrameImpl::OnSwapOut(
     base::debug::SetCrashKeyValue(
         "swapout_view_id", base::IntToString(render_view->GetRoutingID()));
     CHECK(!render_view->main_render_frame_);
+  }
+
+  if (!success) {
+    // The swap can fail when the frame is detached during swap (this can
+    // happen while running the unload handlers). When that happens, delete
+    // the proxy.
+    // TODO(lfg): Handle the case where a navigation started during swap.
+    // See https://crbug.com/590054 for more details.
+    proxy->frameDetached(blink::WebRemoteFrameClient::DetachType::Swap);
+    return;
   }
 
   if (is_loading)
@@ -1636,6 +1645,10 @@ void RenderFrameImpl::OnSwapOut(
   // the process based on the lifetime of this RenderFrameImpl object.
   if (is_main_frame)
     render_view->WasSwappedOut();
+
+  // Notify the browser that this frame was swapped. Use the RenderThread
+  // directly because |this| is deleted.
+  RenderThread::Get()->Send(new FrameHostMsg_SwapOut_ACK(routing_id));
 }
 
 void RenderFrameImpl::OnDeleteFrame() {
