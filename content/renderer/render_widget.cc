@@ -761,13 +761,10 @@ std::unique_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface(
     return nullptr;
   }
 
-  gpu::SharedMemoryLimits limits;
   // The renderer compositor context doesn't do a lot of stuff, so we don't
   // expect it to need a lot of space for commands or transfer. Raster and
   // uploads happen on the worker context instead.
-  limits.command_buffer_size = 64 * 1024;
-  limits.start_transfer_buffer_size = 64 * 1024;
-  limits.min_transfer_buffer_size = 64 * 1024;
+  gpu::SharedMemoryLimits limits = gpu::SharedMemoryLimits::ForMailboxContext();
 
   // This is for an offscreen context for the compositor. So the default
   // framebuffer doesn't need alpha, depth, stencil, antialiasing.

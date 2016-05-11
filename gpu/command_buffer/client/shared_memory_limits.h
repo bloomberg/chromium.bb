@@ -17,6 +17,16 @@ struct SharedMemoryLimits {
 
   static constexpr uint32_t kNoLimit = 0;
   uint32_t mapped_memory_reclaim_limit = kNoLimit;
+
+  // These are limits for contexts only used for creating textures, mailboxing
+  // them and dealing with synchronization.
+  static SharedMemoryLimits ForMailboxContext() {
+    SharedMemoryLimits limits;
+    limits.command_buffer_size = 64 * 1024;
+    limits.start_transfer_buffer_size = 64 * 1024;
+    limits.min_transfer_buffer_size = 64 * 1024;
+    return limits;
+  }
 };
 
 }  // namespace gpu

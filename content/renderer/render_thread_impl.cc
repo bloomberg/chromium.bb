@@ -406,6 +406,7 @@ void StringToUintVector(const std::string& str, std::vector<unsigned>* vector) {
 
 scoped_refptr<ContextProviderCommandBuffer> CreateOffscreenContext(
     scoped_refptr<gpu::GpuChannelHost> gpu_channel_host,
+    const gpu::SharedMemoryLimits& limits,
     command_buffer_metrics::ContextType type,
     int32_t stream_id,
     gpu::GpuStreamPriority stream_priority) {
@@ -428,8 +429,8 @@ scoped_refptr<ContextProviderCommandBuffer> CreateOffscreenContext(
       std::move(gpu_channel_host), stream_id, stream_priority,
       gpu::kNullSurfaceHandle,
       GURL("chrome://gpu/RenderThreadImpl::CreateOffscreenContext"),
-      gfx::PreferIntegratedGpu, automatic_flushes, gpu::SharedMemoryLimits(),
-      attributes, nullptr, type));
+      gfx::PreferIntegratedGpu, automatic_flushes, limits, attributes, nullptr,
+      type));
 }
 
 }  // namespace
@@ -1414,10 +1415,14 @@ media::GpuVideoAcceleratorFactories* RenderThreadImpl::GetGpuFactories() {
       EstablishGpuChannelSync(CAUSE_FOR_GPU_LAUNCH_MEDIA_CONTEXT);
   if (!gpu_channel_host)
     return nullptr;
+  // This context is only used to create textures and mailbox them, so
+  // use lower limits than the default.
+  gpu::SharedMemoryLimits limits = gpu::SharedMemoryLimits::ForMailboxContext();
   scoped_refptr<ContextProviderCommandBuffer> media_context_provider =
-      CreateOffscreenContext(
-          gpu_channel_host, command_buffer_metrics::RENDER_WORKER_CONTEXT,
-          gpu::GPU_STREAM_DEFAULT, gpu::GpuStreamPriority::NORMAL);
+      CreateOffscreenContext(gpu_channel_host, limits,
+                             command_buffer_metrics::RENDER_WORKER_CONTEXT,
+                             gpu::GPU_STREAM_DEFAULT,
+                             gpu::GpuStreamPriority::NORMAL);
   if (!media_context_provider->BindToCurrentThread())
     return nullptr;
   media_context_provider->SetupLock();
@@ -1462,7 +1467,7 @@ RenderThreadImpl::SharedMainThreadContextProvider() {
   }
 
   shared_main_thread_contexts_ = CreateOffscreenContext(
-      std::move(gpu_channel_host),
+      std::move(gpu_channel_host), gpu::SharedMemoryLimits(),
       command_buffer_metrics::RENDERER_MAINTHREAD_CONTEXT,
       gpu::GPU_STREAM_DEFAULT, gpu::GpuStreamPriority::NORMAL);
   if (!shared_main_thread_contexts_->BindToCurrentThread())
@@ -1968,10 +1973,10 @@ RenderThreadImpl::SharedCompositorWorkerContextProvider() {
     stream_priority = gpu::GpuStreamPriority::LOW;
   }
 
-  shared_worker_context_provider_ =
-      CreateOffscreenContext(std::move(gpu_channel_host),
-                             command_buffer_metrics::RENDER_WORKER_CONTEXT,
-                             stream_id, stream_priority);
+  shared_worker_context_provider_ = CreateOffscreenContext(
+      std::move(gpu_channel_host), gpu::SharedMemoryLimits(),
+      command_buffer_metrics::RENDER_WORKER_CONTEXT, stream_id,
+      stream_priority);
   if (!shared_worker_context_provider_->BindToCurrentThread())
     shared_worker_context_provider_ = nullptr;
   if (shared_worker_context_provider_)
