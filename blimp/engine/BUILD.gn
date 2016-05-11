@@ -55,6 +55,10 @@ source_set("app") {
     "app/blimp_content_main_delegate.h",
   ]
 
+  public_deps = [
+    ":app_metrics",
+  ]
+
   deps = [
     ":app_config",
     ":app_net",
@@ -95,6 +99,30 @@ source_set("app_config") {
     "//content/public/common",
     "//ui/gl",
     "//ui/native_theme",
+  ]
+}
+
+source_set("app_metrics") {
+  sources = [
+    "app/blimp_metrics_service_client.cc",
+    "app/blimp_metrics_service_client.h",
+  ]
+
+  public_deps = [
+    "//components/metrics",
+    "//content/public/browser",
+  ]
+
+  deps = [
+    "//base",
+    "//base:i18n",
+    "//components/metrics:gpu",
+    "//components/metrics:net",
+    "//components/metrics:profiler",
+    "//components/metrics:ui",
+    "//components/prefs",
+    "//components/version_info",
+    "//net",
   ]
 }
 
@@ -201,11 +229,15 @@ source_set("common") {
   ]
 
   deps = [
+    ":app_metrics",
     ":app_net",
     ":app_permissions",
     ":common_user_agent",
     "//base",
-    "//content/public/browser",
+    "//components/metrics",
+    "//components/pref_registry",
+    "//components/prefs",
+    "//components/version_info",
     "//content/public/common",
     "//net",
     "//ui/base",
@@ -334,6 +366,7 @@ source_set("app_unit_tests") {
 
   sources = [
     "app/blimp_engine_config_unittest.cc",
+    "app/blimp_metrics_service_client_unittest.cc",
     "app/blimp_system_url_request_context_getter_unittest.cc",
     "app/settings_manager_unittest.cc",
     "app/ui/blimp_screen_unittest.cc",
@@ -342,6 +375,7 @@ source_set("app_unit_tests") {
   deps = [
     ":app",
     ":app_config",
+    ":app_metrics",
     ":app_net",
     ":app_settings",
     ":app_switches",
@@ -349,11 +383,36 @@ source_set("app_unit_tests") {
     "//base/test:run_all_unittests",
     "//base/test:test_support",
     "//blimp/engine:app_ui",
+    "//components/metrics:metrics",
+    "//components/pref_registry:pref_registry",
+    "//components/prefs:prefs",
     "//content/test:test_support",
+    "//net:test_support",
     "//testing/gmock",
     "//testing/gtest",
     "//ui/display",
     "//ui/gfx:test_support",
+  ]
+}
+
+source_set("common_unit_tests") {
+  testonly = true
+
+  sources = [
+    "common/blimp_browser_context_unittest.cc",
+  ]
+
+  deps = [
+    ":common",
+    "//base",
+    "//base/test:run_all_unittests",
+    "//base/test:test_support",
+    "//components/metrics:metrics",
+    "//content/public/browser",
+    "//content/test:test_support",
+    "//net:test_support",
+    "//testing/gmock",
+    "//testing/gtest",
   ]
 }
 
@@ -390,6 +449,7 @@ source_set("unit_tests") {
 
   deps = [
     ":app_unit_tests",
+    ":common_unit_tests",
     ":feature_unit_tests",
   ]
 }
