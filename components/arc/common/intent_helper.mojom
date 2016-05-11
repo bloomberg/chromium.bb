@@ -4,6 +4,8 @@
 
 module arc.mojom;
 
+import "scale_factor.mojom";
+
 // Describes a package that can handle a URL.
 struct UrlHandlerInfo {
   string name;
@@ -11,8 +13,25 @@ struct UrlHandlerInfo {
   string activity_name;  // A hint for retrieving the package's icon.
 };
 
+// Describes an activity.
+struct ActivityName {
+  string package_name;
+  string activity_name;
+};
+
+// Describes an icon for the activity.
+struct ActivityIcon {
+  ActivityName activity;
+  uint32 width;  // in px
+  uint32 height;  // in px
+  array<uint8> icon;  // in BGRA8888 format
+};
+
 // Handles intents from ARC in Chrome.
 interface IntentHelperHost {
+  // Called when icons associated with the package are no longer up to date.
+  [MinVersion=3] OnIconInvalidated@1(string package_name);
+
   // Opens the url with Chrome for Chrome OS.
   OnOpenUrl@0(string url);
 };
@@ -25,6 +44,12 @@ interface IntentHelperInstance {
 
   // Establishes full-duplex communication with the host.
   Init@0(IntentHelperHost host_ptr);
+
+  // Requests 48dp * 48dp icons of the |activities| suitable for the
+  // |scale_factor|. An array of icon data will be returned.
+  [MinVersion=3] RequestActivityIcons@4(array<ActivityName> activities,
+                                        ScaleFactor scale_factor)
+      => (array<ActivityIcon> icons);
 
   // Requests a list of packages that can handle the URL.
   [MinVersion=2] RequestUrlHandlerList@3(string url)

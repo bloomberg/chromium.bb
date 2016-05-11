@@ -14,6 +14,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "components/arc/arc_bridge_service.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace arc {
 
@@ -23,7 +24,8 @@ ArcServiceLauncher::~ArcServiceLauncher() {}
 
 void ArcServiceLauncher::Initialize() {
   // Create ARC service manager.
-  arc_service_manager_.reset(new ArcServiceManager());
+  arc_service_manager_.reset(
+      new ArcServiceManager(content::BrowserThread::GetBlockingPool()));
   arc_service_manager_->AddService(base::WrapUnique(
       new ArcAuthService(arc_service_manager_->arc_bridge_service())));
   arc_service_manager_->AddService(base::WrapUnique(

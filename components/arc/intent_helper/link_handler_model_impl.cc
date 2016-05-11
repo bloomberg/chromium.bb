@@ -18,7 +18,9 @@ const int kMinInstanceVersion = 2;  // see intent_helper.mojom
 
 }  // namespace
 
-LinkHandlerModelImpl::LinkHandlerModelImpl() : weak_ptr_factory_(this) {}
+LinkHandlerModelImpl::LinkHandlerModelImpl(
+    scoped_refptr<ActivityIconLoader> icon_loader)
+    : icon_loader_(icon_loader), weak_ptr_factory_(this) {}
 
 LinkHandlerModelImpl::~LinkHandlerModelImpl() {}
 
@@ -74,14 +76,39 @@ mojom::IntentHelperInstance* LinkHandlerModelImpl::GetIntentHelper() {
 void LinkHandlerModelImpl::OnUrlHandlerList(
     mojo::Array<mojom::UrlHandlerInfoPtr> handlers) {
   handlers_ = std::move(handlers);
-  NotifyObserver();
+
+  if (icon_loader_) {
+    std::vector<ActivityIconLoader::ActivityName> activities;
+    for (size_t i = 0; i < handlers_.size(); ++i) {
+      activities.emplace_back(handlers_[i]->package_name,
+                              handlers_[i]->activity_name);
+    }
+    icon_loader_->GetActivityIcons(
+        activities, base::Bind(&LinkHandlerModelImpl::NotifyObserver,
+                               weak_ptr_factory_.GetWeakPtr()));
+  } else {
+    // Call NotifyObserver() without icon information.
+    NotifyObserver(nullptr);
+  }
 }
 
-void LinkHandlerModelImpl::NotifyObserver() {
+void LinkHandlerModelImpl::NotifyObserver(
+    std::unique_ptr<ActivityIconLoader::ActivityToIconsMap> icons) {
+  if (icons) {
+    icons_.insert(icons->begin(), icons->end());
+    icons.reset();
+  }
+
   std::vector<ash::LinkHandlerInfo> handlers;
   for (size_t i = 0; i < handlers_.size(); ++i) {
+    gfx::Image icon;
+    const ActivityIconLoader::ActivityName activity(
+        handlers_[i]->package_name, handlers_[i]->activity_name);
+    const auto it = icons_.find(activity);
+    if (it != icons_.end())
+      icon = it->second.icon16;
     // Use the handler's index as an ID.
-    ash::LinkHandlerInfo handler = {handlers_[i]->name.get(), gfx::Image(), i};
+    ash::LinkHandlerInfo handler = {handlers_[i]->name.get(), icon, i};
     handlers.push_back(handler);
   }
   FOR_EACH_OBSERVER(Observer, observer_list_, ModelChanged(handlers));

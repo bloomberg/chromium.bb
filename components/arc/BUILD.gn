@@ -34,6 +34,8 @@ static_library("arc") {
     "ime/arc_ime_bridge_impl.h",
     "ime/arc_ime_service.cc",
     "ime/arc_ime_service.h",
+    "intent_helper/activity_icon_loader.cc",
+    "intent_helper/activity_icon_loader.h",
     "intent_helper/arc_intent_helper_bridge.cc",
     "intent_helper/arc_intent_helper_bridge.h",
     "intent_helper/font_size_util.cc",
@@ -102,6 +104,7 @@ mojom("arc_bindings") {
     "common/policy.mojom",
     "common/power.mojom",
     "common/process.mojom",
+    "common/scale_factor.mojom",
     "common/video.mojom",
     "common/video_accelerator.mojom",
     "common/window_manager.mojom",
@@ -136,6 +139,7 @@ source_set("unit_tests") {
   sources = [
     "arc_bridge_service_unittest.cc",
     "ime/arc_ime_service_unittest.cc",
+    "intent_helper/activity_icon_loader_unittest.cc",
     "intent_helper/font_size_util_unittest.cc",
   ]
 

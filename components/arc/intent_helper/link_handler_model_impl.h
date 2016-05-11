@@ -5,17 +5,21 @@
 #ifndef COMPONENTS_ARC_INTENT_HELPER_LINK_HANDLER_MODEL_IMPL_H_
 #define COMPONENTS_ARC_INTENT_HELPER_LINK_HANDLER_MODEL_IMPL_H_
 
+#include <memory>
+
 #include "ash/link_handler_model.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "components/arc/arc_service.h"
 #include "components/arc/common/intent_helper.mojom.h"
+#include "components/arc/intent_helper/activity_icon_loader.h"
 
 namespace arc {
 
 class LinkHandlerModelImpl : public ash::LinkHandlerModel {
  public:
-  LinkHandlerModelImpl();
+  explicit LinkHandlerModelImpl(scoped_refptr<ActivityIconLoader> icon_loader);
   ~LinkHandlerModelImpl() override;
 
   // ash::LinkHandlerModel overrides:
@@ -30,10 +34,19 @@ class LinkHandlerModelImpl : public ash::LinkHandlerModel {
  private:
   mojom::IntentHelperInstance* GetIntentHelper();
   void OnUrlHandlerList(mojo::Array<mojom::UrlHandlerInfoPtr> handlers);
-  void NotifyObserver();
+  void NotifyObserver(
+      std::unique_ptr<ActivityIconLoader::ActivityToIconsMap> icons);
 
   base::ObserverList<Observer> observer_list_;
+
+  // Url handler info passed from ARC.
   mojo::Array<mojom::UrlHandlerInfoPtr> handlers_;
+  // Activity icon info passed from ARC.
+  ActivityIconLoader::ActivityToIconsMap icons_;
+
+  // Use refptr to retain the object even if ArcIntentHelperBridge is destructed
+  // first.
+  scoped_refptr<ActivityIconLoader> icon_loader_;
 
   // Always keep this the last member of this class to make sure it's the
   // first thing to be destructed.

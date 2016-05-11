@@ -9,6 +9,8 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
+#include "base/task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "components/signin/core/account_id/account_id.h"
 
@@ -21,7 +23,8 @@ class ArcService;
 // instance via the ArcBridgeService.
 class ArcServiceManager {
  public:
-  ArcServiceManager();
+  explicit ArcServiceManager(
+      scoped_refptr<base::TaskRunner> blocking_task_runner);
   virtual ~ArcServiceManager();
 
   // |arc_bridge_service| can only be accessed on the thread that this
@@ -44,6 +47,10 @@ class ArcServiceManager {
   // Called to shut down all ARC services.
   void Shutdown();
 
+  scoped_refptr<base::TaskRunner> blocking_task_runner() const {
+    return blocking_task_runner_;
+  }
+
   // Set ArcBridgeService instance for testing. Call before ArcServiceManager
   // creation. ArcServiceManager owns |arc_bridge_service|.
   static void SetArcBridgeServiceForTesting(
@@ -51,6 +58,8 @@ class ArcServiceManager {
 
  private:
   base::ThreadChecker thread_checker_;
+  scoped_refptr<base::TaskRunner> blocking_task_runner_;
+
   std::unique_ptr<ArcBridgeService> arc_bridge_service_;
   std::vector<std::unique_ptr<ArcService>> services_;
 
