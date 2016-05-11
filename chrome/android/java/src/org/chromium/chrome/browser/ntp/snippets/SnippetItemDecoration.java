@@ -62,9 +62,13 @@ public class SnippetItemDecoration extends RecyclerView.ItemDecoration {
      */
     private boolean shouldPlaceSeparator(View view, RecyclerView parent) {
         int childPos = parent.getChildAdapterPosition(view);
-        Adapter adapter = parent.getAdapter();
+        Adapter<?> adapter = parent.getAdapter();
 
-        if (childPos == adapter.getItemCount() - 1) return false;
+        // childPos can be NO_POSITION if the method is called with a view being removed from the
+        // RecyclerView, for example when dismissing an item.
+        if (childPos == adapter.getItemCount() - 1 || childPos == RecyclerView.NO_POSITION) {
+            return false;
+        }
 
         return adapter.getItemViewType(childPos) == NewTabPageListItem.VIEW_TYPE_SNIPPET
                 && adapter.getItemViewType(childPos + 1) == NewTabPageListItem.VIEW_TYPE_SNIPPET;
