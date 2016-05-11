@@ -103,7 +103,7 @@ DesktopAutomationHandler.prototype = {
     if (node.root.role == RoleType.desktop ||
         !prevRange ||
         prevRange.start.node.root != node.root)
-      ChromeVoxState.instance.refreshMode(node.root.docUrl || '');
+      ChromeVoxState.instance.refreshMode(node.root);
 
     // Don't process nodes inside of web content if ChromeVox Next is inactive.
     if (node.root.role != RoleType.desktop &&
@@ -213,7 +213,7 @@ DesktopAutomationHandler.prototype = {
    * @param {!AutomationEvent} evt
    */
   onLoadComplete: function(evt) {
-    ChromeVoxState.instance.refreshMode(evt.target.docUrl);
+    ChromeVoxState.instance.refreshMode(evt.target);
 
     // Don't process nodes inside of web content if ChromeVox Next is inactive.
     if (evt.target.root.role != RoleType.desktop &&

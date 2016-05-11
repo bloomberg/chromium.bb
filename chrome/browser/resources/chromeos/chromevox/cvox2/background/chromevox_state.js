@@ -59,17 +59,13 @@ ChromeVoxState.prototype = {
    * @param {boolean=} opt_injectClassic Injects ChromeVox classic into tabs;
    *                                     defaults to false.
    */
-  setMode: function(mode, opt_injectClassic) {
-    throw new Error('setMode must be implemented by subclass.');
-  },
+  setMode: goog.abstractMethod,
 
   /**
-   * Refreshes the current mode based on a url.
-   * @param {string} url
+   * Refreshes the current mode based on a node.
+   * @param {!chrome.automation.AutomationNode} url
    */
-  refreshMode: function(url) {
-    throw new Error('refresthMode must be implemented by subclass.');
-  },
+  refreshMode: goog.abstractMethod,
 
   /** @type {cursors.Range} */
   get currentRange() {
@@ -87,7 +83,5 @@ ChromeVoxState.prototype = {
   /**
    * @param {cursors.Range} newRange The new range.
    */
-  setCurrentRange: function(newRange) {
-    throw new Error('setCurrentRange must be implemented by subclass.');
-  },
+  setCurrentRange: goog.abstractMethod,
 };

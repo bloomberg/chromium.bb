@@ -284,7 +284,20 @@ Background.prototype = {
    *    reliable.
    * @override
    */
-  refreshMode: function(url) {
+  refreshMode: function(node) {
+    // Mode changes are based upon the top level web root.
+    var root = node.root;
+    while (root &&
+        root.parent &&
+        root.parent.root &&
+        root.parent.root.role != RoleType.desktop) {
+      root = root.parent.root;
+    }
+
+    var url = '';
+    if (root && root.role == RoleType.rootWebArea)
+      url = root.docUrl;
+
     var mode = this.mode_;
     if (mode != ChromeVoxMode.FORCE_NEXT) {
       if (this.isWhitelistedForNext_(url)) {

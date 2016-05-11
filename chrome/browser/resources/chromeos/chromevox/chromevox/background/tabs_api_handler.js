@@ -214,7 +214,7 @@ cvox.TabsApiHandler.prototype = {
       if (!tab)
         return;
 
-      global.backgroundObj.refreshMode(tab.docUrl);
+      global.backgroundObj.refreshMode(tab);
     });
   },
 
