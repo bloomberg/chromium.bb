@@ -1,6 +1,0 @@
-PASS The difference of counter "numberOfLiveDocuments" before and after the cycle is under the threshold of 0.
-PASS The difference of counter "numberOfLiveAXObjects" before and after the cycle is under the threshold of 0.
-PASS successfullyParsed is true
-
-TEST COMPLETE
-

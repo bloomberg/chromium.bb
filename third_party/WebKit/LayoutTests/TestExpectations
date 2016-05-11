@@ -170,7 +170,6 @@ crbug.com/526594 [ Win ] plugins/webview-plugin-lifecycle.html [ Failure ]
 crbug.com/519001 storage/indexeddb/pending-version-change-stuck-works-with-terminate.html [ Pass Timeout ]
 crbug.com/519002 storage/indexeddb/pending-version-change-stuck.html [ Pass Timeout ]
 crbug.com/410949 http/tests/security/local-image-from-remote-whitelisted.html [ Failure Pass ]
-crbug.com/518902 accessibility/AccessibilityScrollbar-leak.html [ Failure Pass ]
 crbug.com/518915 [ Android ] accessibility/aria-labelledby-on-input.html [ Crash Pass ]
 crbug.com/445100 fast/block/float/marquee-shrink-to-avoid-floats.html [ Failure Pass ]
 
