@@ -1317,10 +1317,7 @@ void LayoutObject::invalidateTreeIfNeeded(const PaintInvalidationState& paintInv
     PaintInvalidationReason reason = invalidatePaintIfNeeded(newPaintInvalidationState);
     clearPaintInvalidationFlags(newPaintInvalidationState);
 
-    if (reason == PaintInvalidationDelayedFull)
-        newPaintInvalidationState.pushDelayedPaintInvalidationTarget(*this);
-
-    newPaintInvalidationState.updateForChildren();
+    newPaintInvalidationState.updateForChildren(reason);
     invalidatePaintOfSubtreesIfNeeded(newPaintInvalidationState);
 }
 
@@ -1440,12 +1437,12 @@ PaintInvalidationReason LayoutObject::invalidatePaintIfNeeded(const PaintInvalid
     if (!RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
         setPreviousPositionFromPaintInvalidationBacking(newLocation);
 
-    if (!shouldCheckForPaintInvalidationRegardlessOfPaintInvalidationState() && !paintInvalidationState.forcedSubtreeInvalidationWithinContainer()) {
-        ASSERT(paintInvalidationState.forcedSubtreeInvalidationRectUpdateWithinContainer());
+    if (!shouldCheckForPaintInvalidationRegardlessOfPaintInvalidationState() && paintInvalidationState.forcedSubtreeInvalidationRectUpdateWithinContainerOnly()) {
+        // We are done updating the paint invalidation rect. No other paint invalidation work to do for this object.
         return PaintInvalidationNone;
     }
 
-    PaintInvalidationReason invalidationReason = getPaintInvalidationReason(paintInvalidationContainer, oldBounds, oldLocation, newBounds, newLocation);
+    PaintInvalidationReason invalidationReason = getPaintInvalidationReason(paintInvalidationState, oldBounds, oldLocation, newBounds, newLocation);
 
     // We need to invalidate the selection before checking for whether we are doing a full invalidation.
     // This is because we need to update the old rect regardless.
@@ -1466,7 +1463,7 @@ PaintInvalidationReason LayoutObject::invalidatePaintIfNeeded(const PaintInvalid
         // mutation, but incurs no pixel difference (i.e. bounds stay the same) so no rect-based
         // invalidation is issued. See crbug.com/508383 and crbug.com/515977.
         // This is a workaround to force display items to update paint offset.
-        if (!RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled() && paintInvalidationState.forcedSubtreeInvalidationWithinContainer())
+        if (!RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled() && paintInvalidationState.forcedSubtreeInvalidationCheckingWithinContainer())
             invalidateDisplayItemClientsWithPaintInvalidationState(paintInvalidationContainer, paintInvalidationState, invalidationReason);
 
         return invalidationReason;
@@ -1481,10 +1478,13 @@ PaintInvalidationReason LayoutObject::invalidatePaintIfNeeded(const PaintInvalid
     return invalidationReason;
 }
 
-PaintInvalidationReason LayoutObject::getPaintInvalidationReason(const LayoutBoxModelObject& paintInvalidationContainer,
+PaintInvalidationReason LayoutObject::getPaintInvalidationReason(const PaintInvalidationState& paintInvalidationState,
     const LayoutRect& oldBounds, const LayoutPoint& oldPositionFromPaintInvalidationBacking,
     const LayoutRect& newBounds, const LayoutPoint& newPositionFromPaintInvalidationBacking) const
 {
+    if (paintInvalidationState.forcedSubtreeFullInvalidationWithinContainer())
+        return PaintInvalidationSubtree;
+
     if (shouldDoFullPaintInvalidation())
         return m_bitfields.fullPaintInvalidationReason();
 
@@ -1791,28 +1791,28 @@ StyleDifference LayoutObject::adjustStyleDifference(StyleDifference diff) const
         // Text nodes share style with their parents but transforms don't apply to them,
         // hence the !isText() check.
         if (!isText() && (!hasLayer() || !toLayoutBoxModelObject(this)->layer()->hasStyleDeterminedDirectCompositingReasons()))
-            diff.setNeedsPaintInvalidationLayer();
+            diff.setNeedsPaintInvalidationSubtree();
     }
 
     // If opacity or zIndex changed, and the layer does not paint into its own separate backing, then we need to invalidate paints (also
     // ignoring text nodes)
     if (diff.opacityChanged() || diff.zIndexChanged()) {
         if (!isText() && (!hasLayer() || !toLayoutBoxModelObject(this)->layer()->hasStyleDeterminedDirectCompositingReasons()))
-            diff.setNeedsPaintInvalidationLayer();
+            diff.setNeedsPaintInvalidationSubtree();
     }
 
     // If filter changed, and the layer does not paint into its own separate backing or it paints with filters, then we need to invalidate paints.
     if (diff.filterChanged() && hasLayer()) {
         PaintLayer* layer = toLayoutBoxModelObject(this)->layer();
         if (!layer->hasStyleDeterminedDirectCompositingReasons() || layer->paintsWithFilters())
-            diff.setNeedsPaintInvalidationLayer();
+            diff.setNeedsPaintInvalidationSubtree();
     }
 
     // If backdrop filter changed, and the layer does not paint into its own separate backing or it paints with filters, then we need to invalidate paints.
     if (diff.backdropFilterChanged() && hasLayer()) {
         PaintLayer* layer = toLayoutBoxModelObject(this)->layer();
         if (!layer->hasStyleDeterminedDirectCompositingReasons() || layer->paintsWithBackdropFilters())
-            diff.setNeedsPaintInvalidationLayer();
+            diff.setNeedsPaintInvalidationSubtree();
     }
 
     // Optimization: for decoration/color property changes, invalidation is only needed if we have style or text affected by these properties.
@@ -1837,12 +1837,6 @@ StyleDifference LayoutObject::adjustStyleDifference(StyleDifference diff) const
         bool requiresLayer = toLayoutBoxModelObject(this)->layerTypeRequired() != NoPaintLayer;
         if (hasLayer() != requiresLayer)
             diff.setNeedsFullLayout();
-    }
-
-    // If we have no layer(), just treat a PaintInvalidationLayer hint as a normal paint invalidation.
-    if (diff.needsPaintInvalidationLayer() && !hasLayer()) {
-        diff.clearNeedsPaintInvalidation();
-        diff.setNeedsPaintInvalidationObject();
     }
 
     return diff;
@@ -1998,7 +1992,7 @@ void LayoutObject::setStyle(PassRefPtr<ComputedStyle> style)
             setNeedsLayoutAndPrefWidthsRecalc(LayoutInvalidationReason::StyleChange);
     }
 
-    if (diff.needsPaintInvalidationLayer() || updatedDiff.needsPaintInvalidationLayer())
+    if (diff.needsPaintInvalidationSubtree() || updatedDiff.needsPaintInvalidationSubtree())
         setShouldDoFullPaintInvalidationIncludingNonCompositingDescendants();
     else if (diff.needsPaintInvalidationObject() || updatedDiff.needsPaintInvalidationObject())
         setShouldDoFullPaintInvalidation();
@@ -3465,7 +3459,7 @@ void LayoutObject::clearPaintInvalidationFlags(const PaintInvalidationState& pai
 {
     // paintInvalidationStateIsDirty should be kept in sync with the
     // booleans that are cleared below.
-    ASSERT(paintInvalidationState.forcedSubtreeInvalidationWithinContainer() || paintInvalidationState.forcedSubtreeInvalidationRectUpdateWithinContainer() || paintInvalidationStateIsDirty());
+    ASSERT(!shouldCheckForPaintInvalidationRegardlessOfPaintInvalidationState() || paintInvalidationStateIsDirty());
     clearShouldDoFullPaintInvalidation();
     m_bitfields.setChildShouldCheckForPaintInvalidation(false);
     m_bitfields.setNeededLayoutBecauseOfChildren(false);
@@ -3604,23 +3598,20 @@ void LayoutObject::invalidatePaintIncludingNonCompositingDescendants()
     traverseNonCompositingDescendants(*this, [&paintInvalidationContainer](LayoutObject& object) {
         if (object.hasLayer())
             toLayoutBoxModelObject(object).layer()->setNeedsRepaint();
-        object.invalidatePaintOfPreviousPaintInvalidationRect(paintInvalidationContainer, PaintInvalidationLayer);
+        object.invalidatePaintOfPreviousPaintInvalidationRect(paintInvalidationContainer, PaintInvalidationSubtree);
     });
 }
 
-// FIXME: If we had a flag to force invalidations in a whole subtree, we could get rid of this function (crbug.com/410097).
 void LayoutObject::setShouldDoFullPaintInvalidationIncludingNonCompositingDescendants()
 {
-    // Need to access the current compositing status.
-    DisableCompositingQueryAsserts disabler;
-    traverseNonCompositingDescendants(*this, [](LayoutObject& object) {
-        object.setShouldDoFullPaintInvalidation();
-    });
+    // Clear first because PaintInvalidationSubtree overrides other full paint invalidation reasons.
+    clearShouldDoFullPaintInvalidation();
+    setShouldDoFullPaintInvalidation(PaintInvalidationSubtree);
 }
 
 void LayoutObject::invalidatePaintIncludingNonSelfPaintingLayerDescendantsInternal(const LayoutBoxModelObject& paintInvalidationContainer)
 {
-    invalidatePaintOfPreviousPaintInvalidationRect(paintInvalidationContainer, PaintInvalidationLayer);
+    invalidatePaintOfPreviousPaintInvalidationRect(paintInvalidationContainer, PaintInvalidationSubtree);
     for (LayoutObject* child = slowFirstChild(); child; child = child->nextSibling()) {
         if (child->hasLayer())
             toLayoutBoxModelObject(child)->layer()->setNeedsRepaint();

@@ -479,8 +479,8 @@ StyleDifference ComputedStyle::visualInvalidationDiff(const ComputedStyle& other
             diff.setNeedsPositionedMovementLayout();
     }
 
-    if (diffNeedsPaintInvalidationLayer(other))
-        diff.setNeedsPaintInvalidationLayer();
+    if (diffNeedsPaintInvalidationSubtree(other))
+        diff.setNeedsPaintInvalidationSubtree();
     else if (diffNeedsPaintInvalidationObject(other))
         diff.setNeedsPaintInvalidationObject();
 
@@ -703,7 +703,7 @@ bool ComputedStyle::diffNeedsFullLayout(const ComputedStyle& other) const
     return false;
 }
 
-bool ComputedStyle::diffNeedsPaintInvalidationLayer(const ComputedStyle& other) const
+bool ComputedStyle::diffNeedsPaintInvalidationSubtree(const ComputedStyle& other) const
 {
     if (position() != StaticPosition && (visual->clip != other.visual->clip || visual->hasAutoClip != other.visual->hasAutoClip))
         return true;

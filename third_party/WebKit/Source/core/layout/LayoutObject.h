@@ -1365,11 +1365,7 @@ public:
 
     bool shouldCheckForPaintInvalidation(const PaintInvalidationState& paintInvalidationState) const
     {
-        // Should check for paint invalidation if some ancestor changed location, because this object
-        // may also change paint offset or location in paint invalidation container, even if there is
-        // no paint invalidation flag set.
-        return paintInvalidationState.forcedSubtreeInvalidationWithinContainer()
-            || paintInvalidationState.forcedSubtreeInvalidationRectUpdateWithinContainer()
+        return paintInvalidationState.hasForcedSubtreeInvalidationFlags()
             || shouldCheckForPaintInvalidationRegardlessOfPaintInvalidationState();
     }
 
@@ -1521,7 +1517,7 @@ protected:
 
     void setPreviousPaintInvalidationRect(const LayoutRect& rect) { m_previousPaintInvalidationRect = rect; }
 
-    virtual PaintInvalidationReason getPaintInvalidationReason(const LayoutBoxModelObject& paintInvalidationContainer,
+    virtual PaintInvalidationReason getPaintInvalidationReason(const PaintInvalidationState&,
         const LayoutRect& oldPaintInvalidationRect, const LayoutPoint& oldPositionFromPaintInvalidationBacking,
         const LayoutRect& newPaintInvalidationRect, const LayoutPoint& newPositionFromPaintInvalidationBacking) const;
 
