@@ -666,9 +666,11 @@ void FrameFetchContext::upgradeInsecureRequest(FetchRequest& fetchRequest)
     if (fetchRequest.resourceRequest().frameType() != WebURLRequest::FrameTypeNone)
         fetchRequest.mutableResourceRequest().addHTTPHeaderField("Upgrade-Insecure-Requests", "1");
 
-    if (m_document && m_document->getInsecureRequestsPolicy() == SecurityContext::InsecureRequestsUpgrade && url.protocolIs("http")) {
-        ASSERT(m_document->insecureNavigationsToUpgrade());
+    // If we don't yet have an |m_document| (because we're loading an iframe, for instance), check the FrameLoader's policy.
+    SecurityContext::InsecureRequestsPolicy relevantPolicy = m_document ? m_document->getInsecureRequestsPolicy() : frame()->loader().getInsecureRequestsPolicy();
+    SecurityContext::InsecureNavigationsSet* relevantNavigationSet = m_document ? m_document->insecureNavigationsToUpgrade() : frame()->loader().insecureNavigationsToUpgrade();
 
+    if (url.protocolIs("http") && relevantPolicy == SecurityContext::InsecureRequestsUpgrade) {
         // We always upgrade requests that meet any of the following criteria:
         //
         // 1. Are for subresources (including nested frames).
@@ -678,7 +680,7 @@ void FrameFetchContext::upgradeInsecureRequest(FetchRequest& fetchRequest)
         if (request.frameType() == WebURLRequest::FrameTypeNone
             || request.frameType() == WebURLRequest::FrameTypeNested
             || request.requestContext() == WebURLRequest::RequestContextForm
-            || (!url.host().isNull() && m_document->insecureNavigationsToUpgrade()->contains(url.host().impl()->hash())))
+            || (!url.host().isNull() && relevantNavigationSet->contains(url.host().impl()->hash())))
         {
             UseCounter::count(m_document, UseCounter::UpgradeInsecureRequestsUpgradedRequest);
             url.setProtocol("https");

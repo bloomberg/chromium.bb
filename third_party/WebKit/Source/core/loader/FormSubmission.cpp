@@ -34,6 +34,7 @@
 #include "core/InputTypeNames.h"
 #include "core/dom/Document.h"
 #include "core/events/Event.h"
+#include "core/frame/UseCounter.h"
 #include "core/html/FormData.h"
 #include "core/html/HTMLFormControlElement.h"
 #include "core/html/HTMLFormElement.h"
@@ -196,6 +197,14 @@ FormSubmission* FormSubmission::create(HTMLFormElement* form, const Attributes& 
 
     Document& document = form->document();
     KURL actionURL = document.completeURL(copiedAttributes.action().isEmpty() ? document.url().getString() : copiedAttributes.action());
+
+    if (document.getInsecureRequestsPolicy() == SecurityContext::InsecureRequestsUpgrade && actionURL.protocolIs("http")) {
+        UseCounter::count(document, UseCounter::UpgradeInsecureRequestsUpgradedRequest);
+        actionURL.setProtocol("https");
+        if (actionURL.port() == 80)
+            actionURL.setPort(443);
+    }
+
     bool isMailtoForm = actionURL.protocolIs("mailto");
     bool isMultiPartForm = false;
     AtomicString encodingType = copiedAttributes.encodingType();
