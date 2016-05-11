@@ -41,7 +41,7 @@ namespace web {
 WebTest::WebTest() : web_client_(base::WrapUnique(new TestWebClient)) {
   static dispatch_once_t onceToken;
   dispatch_once(&onceToken, ^{
-    RegisterWebSchemes(true);
+    RegisterWebSchemes(false);
   });
 }
 
