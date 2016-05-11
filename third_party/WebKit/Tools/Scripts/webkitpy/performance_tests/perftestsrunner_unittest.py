@@ -613,7 +613,6 @@ class IntegrationTest(unittest.TestCase):
             "buildTime": "2013-02-08T15:19:37.460000", "tests": self._event_target_wrapper_and_inspector_results,
             "revisions": {"chromium": {"timestamp": "2013-02-01 08:48:05 +0000", "revision": "5678"}}}])
         self.assertTrue(filesystem.isfile(filesystem.splitext(output_json_path)[0] + '.html'))
-        pass
 
     def test_run_generates_and_show_results_page(self):
         runner, port = self.create_runner_and_setup_results_template(args=['--output-json-path=/mock-checkout/output.json'])

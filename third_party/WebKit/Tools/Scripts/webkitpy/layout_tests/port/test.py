@@ -27,8 +27,6 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import base64
-import copy
-import sys
 import time
 
 from webkitpy.layout_tests.port.base import Port, VirtualTestSuite

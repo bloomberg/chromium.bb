@@ -26,7 +26,6 @@ from contextlib import contextmanager
 import filecmp
 import fnmatch
 import os
-import re
 import shutil
 import sys
 import tempfile
@@ -47,7 +46,10 @@ import bindings.scripts.compute_interfaces_info_overall
 from bindings.scripts.compute_interfaces_info_overall import compute_interfaces_info_overall, interfaces_info
 from bindings.scripts.idl_compiler import IdlCompilerDictionaryImpl, IdlCompilerV8
 from bindings.scripts.idl_reader import IdlReader
-from bindings.scripts.utilities import ComponentInfoProviderCore, ComponentInfoProviderModules, idl_filename_to_component, write_file
+from bindings.scripts.utilities import ComponentInfoProviderCore
+from bindings.scripts.utilities import ComponentInfoProviderModules
+from bindings.scripts.utilities import idl_filename_to_component
+from bindings.scripts.utilities import write_file
 
 
 PASS_MESSAGE = 'All tests PASS!'

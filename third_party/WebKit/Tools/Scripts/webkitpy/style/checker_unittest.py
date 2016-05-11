@@ -38,7 +38,8 @@ import os
 import unittest
 
 import checker as style
-from webkitpy.common.system.logtesting import LogTesting, TestLogStream
+from webkitpy.common.system.logtesting import LogTesting
+from webkitpy.common.system.logtesting import TestLogStream
 from checker import _BASE_FILTER_RULES
 from checker import _MAX_REPORTS_PER_CATEGORY
 from checker import _PATH_RULES_SPECIFIER as PATH_RULES_SPECIFIER

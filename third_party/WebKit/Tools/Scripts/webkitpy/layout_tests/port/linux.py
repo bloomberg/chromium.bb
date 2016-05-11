@@ -27,7 +27,6 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import logging
-import re
 
 from webkitpy.common.webkit_finder import WebKitFinder
 from webkitpy.layout_tests.breakpad.dump_reader_multipart import DumpReaderLinux

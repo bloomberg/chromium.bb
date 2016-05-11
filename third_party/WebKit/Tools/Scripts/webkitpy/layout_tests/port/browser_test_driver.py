@@ -27,8 +27,6 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 from webkitpy.layout_tests.port import driver
-import time
-import shutil
 
 
 class BrowserTestDriver(driver.Driver):

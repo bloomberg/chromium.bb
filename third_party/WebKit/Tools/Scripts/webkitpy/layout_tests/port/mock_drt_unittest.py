@@ -29,7 +29,6 @@
 """Unit tests for MockDRT."""
 
 import io
-import sys
 import unittest
 
 from webkitpy.common.system.systemhost_mock import MockSystemHost

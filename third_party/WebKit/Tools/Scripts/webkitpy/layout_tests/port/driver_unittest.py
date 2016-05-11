@@ -31,7 +31,8 @@ import unittest
 from webkitpy.common.system.systemhost_mock import MockSystemHost
 
 from webkitpy.layout_tests.port.base import Port
-from webkitpy.layout_tests.port.driver import Driver, DriverOutput
+from webkitpy.layout_tests.port.driver import Driver
+from webkitpy.layout_tests.port.driver import DriverOutput
 from webkitpy.layout_tests.port.server_process_mock import MockServerProcess
 
 # FIXME: remove the dependency on TestWebKitPort

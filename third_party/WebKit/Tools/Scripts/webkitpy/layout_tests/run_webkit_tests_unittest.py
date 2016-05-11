@@ -28,18 +28,12 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import Queue
 import StringIO
-import codecs
 import json
-import logging
 import os
-import platform
 import re
 import sys
 import thread
-import time
-import threading
 import unittest
 
 from webkitpy.common.system import outputcapture, path

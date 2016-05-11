@@ -28,7 +28,6 @@
 
 import unittest
 
-import cgi
 
 from webkitpy.common.host import Host
 from webkitpy.common.host_mock import MockHost

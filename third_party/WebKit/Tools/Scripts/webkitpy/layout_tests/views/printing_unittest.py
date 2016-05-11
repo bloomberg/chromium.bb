@@ -31,7 +31,6 @@
 import StringIO
 import optparse
 import sys
-import time
 import unittest
 
 from webkitpy.common.host_mock import MockHost

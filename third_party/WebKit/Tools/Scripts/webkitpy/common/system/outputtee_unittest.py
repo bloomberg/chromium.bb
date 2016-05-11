@@ -29,7 +29,8 @@
 import StringIO
 import unittest
 
-from webkitpy.common.system.outputtee import Tee, OutputTee
+from webkitpy.common.system.outputtee import OutputTee
+from webkitpy.common.system.outputtee import Tee
 
 
 class SimpleTeeTest(unittest.TestCase):

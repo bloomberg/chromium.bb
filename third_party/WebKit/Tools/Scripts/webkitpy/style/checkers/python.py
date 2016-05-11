@@ -26,7 +26,6 @@ import os
 import re
 import sys
 
-from StringIO import StringIO
 
 from webkitpy.common.system.filesystem import FileSystem
 from webkitpy.common.system.executive import Executive

@@ -31,8 +31,10 @@ import unittest
 from webkitpy.common.system.systemhost_mock import MockSystemHost
 
 from webkitpy.layout_tests.port.base import Port
-from webkitpy.layout_tests.port.driver import Driver, DriverOutput
-from webkitpy.layout_tests.port import browser_test, browser_test_driver
+from webkitpy.layout_tests.port.driver import Driver
+from webkitpy.layout_tests.port.driver import DriverOutput
+from webkitpy.layout_tests.port import browser_test
+from webkitpy.layout_tests.port import browser_test_driver
 from webkitpy.layout_tests.port.server_process_mock import MockServerProcess
 
 from webkitpy.layout_tests.port.port_testcase import TestWebKitPort

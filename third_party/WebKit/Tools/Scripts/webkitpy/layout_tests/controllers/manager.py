@@ -37,7 +37,6 @@ including crash logs, and mismatches with expectations.
 The Manager object has a constructor and one main method called run.
 """
 
-import datetime
 import json
 import logging
 import random

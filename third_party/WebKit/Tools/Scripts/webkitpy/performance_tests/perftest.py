@@ -32,12 +32,7 @@ import errno
 import logging
 import math
 import re
-import os
 import signal
-import socket
-import subprocess
-import sys
-import time
 
 from webkitpy.layout_tests.controllers.test_result_writer import TestResultWriter
 from webkitpy.layout_tests.port.driver import DriverInput

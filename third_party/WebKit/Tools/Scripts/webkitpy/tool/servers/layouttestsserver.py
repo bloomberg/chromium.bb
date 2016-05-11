@@ -31,7 +31,7 @@ import time
 import json
 import BaseHTTPServer
 import subprocess
-from subprocess import Popen, PIPE, STDOUT
+from subprocess import STDOUT
 
 from webkitpy.common.webkit_finder import WebKitFinder
 from webkitpy.common.system.filesystem import FileSystem

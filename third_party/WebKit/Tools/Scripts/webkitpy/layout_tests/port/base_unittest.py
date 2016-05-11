@@ -26,23 +26,24 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import logging
 import optparse
-import sys
 import tempfile
 import unittest
 
-from webkitpy.common.system.executive import Executive, ScriptError
+from webkitpy.common.system.executive import Executive
+from webkitpy.common.system.executive import ScriptError
 from webkitpy.common.system import executive_mock
 from webkitpy.common.system.filesystem_mock import MockFileSystem
 from webkitpy.common.system.outputcapture import OutputCapture
 from webkitpy.common.system.path import abspath_to_uri
 from webkitpy.tool.mocktool import MockOptions
-from webkitpy.common.system.executive_mock import MockExecutive, MockExecutive2
+from webkitpy.common.system.executive_mock import MockExecutive
+from webkitpy.common.system.executive_mock import MockExecutive2
 from webkitpy.common.system.systemhost import SystemHost
 from webkitpy.common.system.systemhost_mock import MockSystemHost
 
-from webkitpy.layout_tests.port.driver import Driver, DriverOutput
+from webkitpy.layout_tests.port.driver import Driver
+from webkitpy.layout_tests.port.driver import DriverOutput
 from webkitpy.layout_tests.port.base import Port, VirtualTestSuite
 from webkitpy.layout_tests.port.test import add_unit_tests_to_mock_filesystem, TestPort
 

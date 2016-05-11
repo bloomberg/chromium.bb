@@ -29,7 +29,6 @@
 
 import datetime
 import logging
-import os
 import re
 
 import webkitpy.common.config
