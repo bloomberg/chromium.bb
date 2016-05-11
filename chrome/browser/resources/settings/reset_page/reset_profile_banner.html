@@ -15,13 +15,14 @@
       </div>
       <div id="main-body">
         <span id="description">
-          <span i18n-content="resetProfileBannerDescription"></span>
+          $i18n{resetProfileBannerDescription}
           <a id="learnMore"
-             i18n-values="href:resetProfileBannerLearnMoreUrl"
-             i18n-content="learnMore" target="_blank"></a>
+             href="$i18nRaw{resetProfileBannerLearnMoreUrl}"
+             target="_blank">$i18n{learnMore}</a>
         </span>
-        <paper-button id="reset" on-tap="showDialog_"
-            i18n-content="resetProfileBannerButton"></paper-button>
+        <paper-button id="reset" on-tap="showDialog_">
+          $i18n{resetProfileBannerButton}
+        </paper-button>
       </div>
     </div>
     <template is="dom-if" if="[[showResetProfileDialog_]]">

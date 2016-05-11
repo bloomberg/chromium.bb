@@ -31,52 +31,52 @@
         section="privacy">
       <neon-animatable id="main">
         <div class="settings-box block first">
-          <p class="privacy-explanation"
-              i18n-values=".innerHTML:improveBrowsingExperience">
+          <p class="privacy-explanation">
+            $i18n{improveBrowsingExperience}
           </p>
           <settings-checkbox
               pref="{{prefs.alternate_error_pages.enabled}}"
-              i18n-values="label:linkDoctorPref">
+              label="$i18n{linkDoctorPref}">
           </settings-checkbox>
           <settings-checkbox
               pref="{{prefs.search.suggest_enabled}}"
-              i18n-values="label:searchSuggestPref">
+              label="$i18n{searchSuggestPref}">
           </settings-checkbox>
           <settings-checkbox
               pref="{{prefs.net.network_prediction_options}}"
-              i18n-values="label:networkPredictionEnabled">
+              label="$i18n{networkPredictionEnabled}">
           </settings-checkbox>
           <settings-checkbox
               pref="{{prefs.safebrowsing.extended_reporting_enabled}}"
-              i18n-values="label:safeBrowsingEnableExtendedReporting">
+              label="$i18n{safeBrowsingEnableExtendedReporting}">
           </settings-checkbox>
           <settings-checkbox pref="{{prefs.safebrowsing.enabled}}"
-              i18n-values="label:safeBrowsingEnableProtection">
+              label="$i18n{safeBrowsingEnableProtection}">
           </settings-checkbox>
 <if expr="_google_chrome">
           <settings-checkbox
               pref="{{prefs.spellcheck.use_spelling_service}}"
-              i18n-values="label:spellingPref">
+              label="$i18n{spellingPref}">
           </settings-checkbox>
 <if expr="chromeos">
         <settings-checkbox
               pref="{{prefs.cros.metrics.reportingEnabled}}"
-              i18n-values="label:enableLogging">
+              label="$i18n{enableLogging}">
           </settings-checkbox>
 </if>
           <!-- TODO(jlklein): Add non-chromeos metrics box. -->
 </if>
           <settings-checkbox pref="{{prefs.enable_do_not_track}}"
-              i18n-values="label:doNotTrack">
+              label="$i18n{doNotTrack}">
           </settings-checkbox>
 <if expr="chromeos">
           <settings-checkbox
               pref="{{prefs.cros.device.attestation_for_content_protection_enabled}}"
-              i18n-values="label:enableContentProtectionAttestation">
+              label="$i18n{enableContentProtectionAttestation}">
           </settings-checkbox>
           <settings-checkbox
               pref="{{prefs.settings.internet.wake_on_wifi_darkconnect}}"
-              i18n-values="label:wakeOnWifi">
+              label="$i18n{wakeOnWifi}">
           </settings-checkbox>
 </if>
         </div>
@@ -84,7 +84,7 @@
         <div id="manageCertificates" class="settings-box two-line"
             on-tap="onManageCertificatesTap_">
           <div class="start">
-            <div i18n-content="manageCertificates"></div>
+            <div>$i18n{manageCertificates}</div>
             <div class="secondary">
               <!-- TODO(dschuyler): replace this placeholder text -->
               Contrary to popular belief, Lorem Ipsum is not simply random text.
@@ -94,7 +94,7 @@
 </if>
         <div class="settings-box two-line" on-tap="onSiteSettingsTap_">
           <div class="start">
-            <div i18n-content="siteSettings"></div>
+            <div>$i18n{siteSettings}</div>
             <div class="secondary">
               <!-- TODO(dschuyler): replace this placeholder text -->
               Contrary to popular belief, Lorem Ipsum is not simply random text.
@@ -102,8 +102,8 @@
           </div>
         </div>
         <div class="settings-box">
-          <paper-button on-tap="onClearBrowsingDataTap_" class="primary-button"
-              i18n-content="clearBrowsingData">
+          <paper-button on-tap="onClearBrowsingDataTap_" class="primary-button">
+            $i18n{clearBrowsingData}
           </paper-button>
         </div>
       </neon-animatable>

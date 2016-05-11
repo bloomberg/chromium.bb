@@ -13,16 +13,16 @@
     <div class="settings-box first two-line" id="resetProfile"
         on-tap="onShowResetProfileDialog_">
       <div>
-        <div i18n-content="resetPageTitle"></div>
-        <div class="secondary" i18n-content="resetPageDescription"></div>
+        <div>$i18n{resetPageTitle}</div>
+        <div class="secondary">$i18n{resetPageDescription}</div>
       </div>
     </div>
 <if expr="chromeos">
     <div class="settings-box two-line" id="powerwash"
         on-tap="onShowPowerwashDialog_" hidden="[[!allowPowerwash_]]">
       <div>
-        <div i18n-content="powerwashTitle"></div>
-        <div class="secondary" i18n-content="powerwashDescription"></div>
+        <div>$i18n{powerwashTitle}</div>
+        <div class="secondary">$i18n{powerwashDescription}</div>
       </div>
     </div>
 </if>

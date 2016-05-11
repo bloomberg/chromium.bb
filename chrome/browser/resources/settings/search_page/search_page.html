@@ -44,7 +44,7 @@
         section="search">
       <neon-animatable id="main">
         <div class="settings-box first">
-          <p class="start" i18n-content="searchExplanation"></p>
+          <p class="start">$i18n{searchExplanation}</p>
           <paper-dropdown-menu>
             <paper-listbox class="dropdown-content"
                 selected="[[getSelectedSearchEngineIndex_(searchEngines_)]]"
@@ -56,8 +56,9 @@
           </paper-dropdown-menu>
         </div>
         <div class="settings-box">
-          <paper-button i18n-content="searchEnginesManage"
-              on-tap="onManageSearchEnginesTap_" class="primary-button">
+          <paper-button on-tap="onManageSearchEnginesTap_"
+              class="primary-button">
+            $i18n{searchEnginesManage}
           </paper-button>
         </div>
       </neon-animatable>

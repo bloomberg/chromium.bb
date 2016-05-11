@@ -10,75 +10,70 @@
     <style include="settings-shared"></style>
 <if expr="chromeos">
     <div class="settings-box row first">
-      <span i18n-content="a11yExplanation"></span>
-      <a i18n-values="href:a11yLearnMoreUrl" i18n-content="learnMore"
-          target="_blank"></a>
+      $i18n{a11yExplanation}&nbsp;
+      <a href="$i18nRaw{a11yLearnMoreUrl}"
+          target="_blank">$i18n{learnMore}</a>
     </div>
 
     <div class="settings-box block">
-      <settings-checkbox i18n-values="label:optionsInMenuLabel"
+      <settings-checkbox label="$i18n{optionsInMenuLabel}"
           pref="{{prefs.settings.a11y.enable_menu}}">
       </settings-checkbox>
-      <settings-checkbox i18n-values="label:largeMouseCursorLabel"
+      <settings-checkbox label="$i18n{largeMouseCursorLabel}"
           pref="{{prefs.settings.a11y.large_cursor_enabled}}">
       </settings-checkbox>
-      <settings-checkbox i18n-values="label:highContrastLabel"
+      <settings-checkbox label="$i18n{highContrastLabel}"
           pref="{{prefs.settings.a11y.high_contrast_enabled}}">
       </settings-checkbox>
       <settings-checkbox
           pref="{{prefs.settings.a11y.sticky_keys_enabled}}"
-          i18n-values="label:stickyKeysLabel">
+          label="$i18n{stickyKeysLabel}">
       </settings-checkbox>
       <settings-checkbox pref="{{prefs.settings.accessibility}}"
-          i18n-values="label:chromeVoxLabel">
+          label="$i18n{chromeVoxLabel}">
       </settings-checkbox>
-      <settings-checkbox i18n-values="label:screenMagnifierLabel"
+      <settings-checkbox label="$i18n{screenMagnifierLabel}"
           pref="{{prefs.settings.a11y.screen_magnifier}}">
       </settings-checkbox>
-      <settings-checkbox i18n-values="label:tapDraggingLabel"
+      <settings-checkbox label="$i18n{tapDraggingLabel}"
           pref="{{prefs.settings.touchpad.enable_tap_dragging}}">
       </settings-checkbox>
-      <settings-checkbox i18n-values="label:clickOnStopLabel"
+      <settings-checkbox label="$i18n{clickOnStopLabel}"
           pref="{{prefs.settings.a11y.autoclick}}">
       </settings-checkbox>
 
       <div class="list-item settings-checkbox-spacer">
-        <div i18n-content="delayBeforeClickLabel"></div>
+        <div>$i18n{delayBeforeClickLabel}</div>
         <select value="{{prefs.settings.a11y.autoclick_delay_ms::change}}">
-          <option value="200" i18n-content="delayBeforeClickExtremelyShort">
-          </option>
-          <option value="400" i18n-content="delayBeforeClickVeryShort">
-          </option>
-          <option value="600" i18n-content="delayBeforeClickShort">
-          </option>
-          <option value="800" i18n-content="delayBeforeClickLong">
-          </option>
-          <option value="1000" i18n-content="delayBeforeClickVeryLong">
-          </option>
+          <option value="200">$i18n{delayBeforeClickExtremelyShort}</option>
+          <option value="400">$i18n{delayBeforeClickVeryShort}</option>
+          <option value="600">$i18n{delayBeforeClickShort}</option>
+          <option value="800">$i18n{delayBeforeClickLong}</option>
+          <option value="1000">$i18n{delayBeforeClickVeryLong}</option>
         </select>
       </div>
 
       <settings-checkbox pref="{{prefs.settings.a11y.virtual_keyboard}}"
-          i18n-values="label:onScreenKeyboardLabel">
+          label="$i18n{onScreenKeyboardLabel}">
       </settings-checkbox>
       <settings-checkbox pref="{{prefs.settings.a11y.mono_audio}}"
-          i18n-values="label:monoAudioLabel">
+          label="$i18n{monoAudioLabel}">
       </settings-checkbox>
       <template is="dom-if" if="[[showExperimentalFeatures_]]">
         <settings-checkbox pref="{{prefs.settings.a11y.caret_highlight}}"
-            i18n-values="label:caretHighlightLabel">
+            label="$i18n{caretHighlightLabel}">
         </settings-checkbox>
         <settings-checkbox pref="{{prefs.settings.a11y.cursor_highlight}}"
-            i18n-values="label:cursorHighlightLabel">
+            label="$i18n{cursorHighlightLabel}">
         </settings-checkbox>
         <settings-checkbox pref="{{prefs.settings.a11y.focus_highlight}}"
-            i18n-values="label:focusHighlightLabel">
+            label="$i18n{focusHighlightLabel}">
         </settings-checkbox>
         <settings-checkbox pref="{{prefs.settings.a11y.select_to_speak}}"
-            i18n-values="label:selectToSpeakLabel">
+            label="$i18n{selectToSpeakLabel}">
         </settings-checkbox>
         <settings-checkbox pref="{{prefs.settings.a11y.switch_access}}"
-            i18n-values="label:switchAccessLabel">
+            label="$i18n{switchAccessLabel}">
         </settings-checkbox>
       </template>
     </div>
@@ -91,8 +86,8 @@
     <div class="settings-box first">
 </if>
       <div class="button-strip">
-        <paper-button i18n-content="moreFeaturesLink" class="primary-button"
-            on-tap="onMoreFeaturesTap_"></paper-button>
+        <paper-button class="primary-button"
+            on-tap="onMoreFeaturesTap_">$i18n{moreFeaturesLink}</paper-button>
       </div>
     </div>
   </template>

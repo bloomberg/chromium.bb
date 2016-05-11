@@ -18,25 +18,24 @@
       }
     </style>
     <settings-dialog id="dialog">
-      <div class="title" i18n-content="resetPageTitle"></div>
+      <div class="title">$i18n{resetPageTitle}</div>
       <div class="body">
-        <span i18n-content="resetPageExplanation"></span>
-        <a i18n-values="href:resetPageLearnMoreUrl"
-            i18n-content="learnMore" target="_blank"></a>
+        $i18n{resetPageExplanation}&nbsp;
+        <a href="$i18nRaw{resetPageLearnMoreUrl}"
+            target="_blank">$i18n{learnMore}</a>
       </div>
       <div class="button-container">
         <paper-spinner id="resetSpinner"></paper-spinner>
         <paper-button class="cancel-button" on-tap="onCancelTap_"
-            id="cancel" i18n-content="cancel"></paper-button>
+            id="cancel">$i18n{cancel}</paper-button>
         <paper-button class="action-button" on-tap="onResetTap_"
-            id="reset" i18n-content="resetPageCommit"></paper-button>
+            id="reset">$i18n{resetPageCommit}</paper-button>
       </div>
       <div class="footer">
-        <paper-checkbox id="sendSettings" i18n-content="resetPageFeedback"
-            checked>
-        </paper-checkbox>
-        <a is="action-link" i18n-content="viewReportedSettings"
-            on-tap="onShowReportedSettingsTap_"></a>
+        <paper-checkbox id="sendSettings"
+            checked>$i18n{resetPageFeedback}</paper-checkbox>
+        <a is="action-link"
+            on-tap="onShowReportedSettingsTap_">$i18n{viewReportedSettings}</a>
       </div>
     </settings-dialog>
   </template>

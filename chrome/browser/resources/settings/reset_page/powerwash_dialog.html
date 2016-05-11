@@ -11,18 +11,17 @@
   <template>
     <style include="settings-shared"></style>
     <settings-dialog id="dialog">
-      <div class="title" i18n-content="powerwashDialogTitle"></div>
+      <div class="title">$i18n{powerwashDialogTitle}</div>
       <div class="body">
-        <span i18n-content="powerwashDialogExplanation"></span>
-        <a i18n-values="href:powerwashLearnMoreUrl"
-            i18n-content="learnMore" target="_blank"></a>
+        $i18n{powerwashDialogExplanation}&nbsp;
+        <a href="$i18nRaw{powerwashLearnMoreUrl}"
+            target="_blank">$i18n{learnMore}</a>
       </div>
       <div class="button-container">
         <paper-button class="cancel-button" on-tap="onCancelTap_"
-            id="cancel" i18n-content="cancel"></paper-button>
+            id="cancel">$i18n{cancel}</paper-button>
         <paper-button class="action-button" id="powerwash"
-            on-tap="onRestartTap_" i18n-content="powerwashDialogButton">
-        </paper-button>
+            on-tap="onRestartTap_">$i18n{powerwashDialogButton}</paper-button>
       </div>
     </settings-dialog>
   </template>
