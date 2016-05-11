@@ -10,11 +10,9 @@ crbug.com/597572 [ Debug ] http/tests/inspector/resource-tree/resource-tree-relo
 
 crbug.com/569901 crbug.com/24182 [ Debug ] jquery/manipulation.html [ Timeout Pass ]
 
-crbug.com/299010 [ Win Linux ] fast/forms/text/text-font-height-mismatch.html [ Pass Failure ]
-crbug.com/581990 [ Win ] fast/writing-mode/english-lr-text.html [ Pass Failure ]
-
-# See also crbug.com/521730 for the these two text/emphasis tests (non-Oilpan) Win10 failures.
-crbug.com/574660 [ Win7 ] fast/text/emphasis-combined-text.html [ Pass Failure ]
+crbug.com/299010 [ Win ] fast/forms/text/text-font-height-mismatch.html [ NeedsRebaseline ]
+crbug.com/581990 [ Win ] fast/writing-mode/english-lr-text.html [ NeedsRebaseline ]
+crbug.com/574660 [ Win10 Win7 ] fast/text/emphasis-combined-text.html [ NeedsRebaseline ]
 
 # ====== Oilpan-only failures until here ======
 
@@ -1095,7 +1093,6 @@ crbug.com/521730 [ Win10 ] printing/simultaneous-position-float-change.html [ Fa
 crbug.com/521730 [ Win10 ] printing/webgl-repeated-printing-preservedrawingbuffer.html [ Failure ]
 crbug.com/521730 [ Win10 ] virtual/threaded/printing/simultaneous-position-float-change.html [ Failure ]
 crbug.com/521730 [ Win10 ] virtual/threaded/printing/webgl-repeated-printing-preservedrawingbuffer.html [ Failure ]
-crbug.com/521730 [ Win10 ] fast/text/emphasis-combined-text.html [ Failure ]
 crbug.com/521730 [ Win10 ] fast/writing-mode/border-vertical-lr.html [ Failure ]
 crbug.com/521730 [ Win10 ] media/track/track-cue-rendering-vertical.html [ Failure ]
 crbug.com/521730 [ Win10 ] fast/forms/month/month-appearance-pseudo-elements.html [ Failure ]
