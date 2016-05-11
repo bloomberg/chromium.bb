@@ -34,9 +34,8 @@
 namespace blink {
 
 class LocalFrame;
-class LocalFrameLifecycleNotifier;
 
-class CORE_EXPORT LocalFrameLifecycleObserver : public LifecycleObserver<LocalFrame, LocalFrameLifecycleObserver, LocalFrameLifecycleNotifier> {
+class CORE_EXPORT LocalFrameLifecycleObserver : public LifecycleObserver<LocalFrame, LocalFrameLifecycleObserver> {
 public:
     virtual void willDetachFrameHost() { }
     virtual void contextDestroyed()

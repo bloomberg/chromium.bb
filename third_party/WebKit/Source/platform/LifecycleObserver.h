@@ -31,7 +31,7 @@
 
 namespace blink {
 
-template<typename T, typename Observer, typename Notifier>
+template<typename T, typename Observer>
 class LifecycleObserver : public GarbageCollectedMixin {
 public:
     using Context = T;
@@ -63,16 +63,16 @@ private:
     WeakMember<Context> m_lifecycleContext;
 };
 
-template<typename T, typename Observer, typename Notifier>
-inline void LifecycleObserver<T, Observer, Notifier>::setContext(typename LifecycleObserver<T, Observer, Notifier>::Context* context)
+template<typename T, typename Observer>
+inline void LifecycleObserver<T, Observer>::setContext(Context* context)
 {
     if (m_lifecycleContext)
-        static_cast<Notifier*>(m_lifecycleContext.get())->removeObserver(static_cast<Observer*>(this));
+        m_lifecycleContext->removeObserver(static_cast<Observer*>(this));
 
     m_lifecycleContext = context;
 
     if (m_lifecycleContext)
-        static_cast<Notifier*>(m_lifecycleContext.get())->addObserver(static_cast<Observer*>(this));
+        m_lifecycleContext->addObserver(static_cast<Observer*>(this));
 }
 
 } // namespace blink

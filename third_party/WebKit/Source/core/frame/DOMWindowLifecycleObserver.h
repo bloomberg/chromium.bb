@@ -34,9 +34,7 @@
 
 namespace blink {
 
-class DOMWindowLifecycleNotifier;
-
-class CORE_EXPORT DOMWindowLifecycleObserver : public LifecycleObserver<LocalDOMWindow, DOMWindowLifecycleObserver, DOMWindowLifecycleNotifier> {
+class CORE_EXPORT DOMWindowLifecycleObserver : public LifecycleObserver<LocalDOMWindow, DOMWindowLifecycleObserver> {
 public:
     virtual void didAddEventListener(LocalDOMWindow*, const AtomicString&) { }
     virtual void didRemoveEventListener(LocalDOMWindow*, const AtomicString&) { }
