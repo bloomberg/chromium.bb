@@ -54,18 +54,28 @@ class WebRtcFrameScheduler : public webrtc::DesktopCapturer::Callback {
   static std::unique_ptr<VideoPacket> EncodeFrame(
       VideoEncoder* encoder,
       std::unique_ptr<webrtc::DesktopFrame> frame,
-      bool key_frame_request);
+      uint32_t target_bitrate,
+      bool key_frame_request,
+      int64_t capture_time_ms);
   void OnFrameEncoded(std::unique_ptr<VideoPacket> packet);
 
   void SetKeyFrameRequest();
   bool ClearAndGetKeyFrameRequest();
+  void SetTargetBitrate(int bitrate);
 
-  // Protects |key_frame_request_|.
+  // Protects |key_frame_request_| and |target_bitrate_kbps_|.
   base::Lock lock_;
   bool key_frame_request_ = false;
+  uint32_t target_bitrate_kbps_;
+  int last_quantizer_;
 
   bool capture_pending_ = false;
   bool encode_pending_ = false;
+
+  // Last time capture was completed.
+  base::TimeTicks last_capture_completed_ticks_;
+  // Last time capture was started.
+  base::TimeTicks last_capture_started_ticks_;
 
   webrtc::DesktopSize frame_size_;
   webrtc::DesktopVector frame_dpi_;
@@ -87,7 +97,6 @@ class WebRtcFrameScheduler : public webrtc::DesktopCapturer::Callback {
   std::unique_ptr<VideoEncoder> encoder_;
 
   base::ThreadChecker thread_checker_;
-  base::TimeTicks last_capture_ticks_;
 
   base::WeakPtrFactory<WebRtcFrameScheduler> weak_factory_;
 

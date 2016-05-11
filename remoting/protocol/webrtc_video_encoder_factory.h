@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_PROTOCOL_WEBRTC_VIDEO_ENCODER_H_
-#define REMOTING_PROTOCOL_WEBRTC_VIDEO_ENCODER_H_
+#ifndef REMOTING_PROTOCOL_WEBRTC_VIDEO_ENCODER_FACTORY_H_
+#define REMOTING_PROTOCOL_WEBRTC_VIDEO_ENCODER_FACTORY_H_
 
 #include <memory>
 #include <vector>
@@ -15,6 +15,8 @@
 #include "third_party/webrtc/modules/video_coding/include/video_codec_interface.h"
 
 namespace remoting {
+
+using TargetBitrateCallback = base::Callback<void(int)>;
 
 // This is the interface between the WebRtc engine and the external encoder
 // provided by remoting. WebRtc provides feedback on network bandwidth, latency
@@ -39,19 +41,20 @@ class WebRtcVideoEncoder : public webrtc::VideoEncoder {
   int32_t SetChannelParameters(uint32_t packet_loss, int64_t rtt) override;
   int32_t SetRates(uint32_t bitrate, uint32_t framerate) override;
 
-  int SendEncodedFrame(int64_t capture_timestamp_ms,
-                       std::unique_ptr<VideoPacket> pkt);
+  int SendEncodedFrame(std::unique_ptr<VideoPacket> pkt);
   void SetKeyFrameRequestCallback(const base::Closure& key_frame_request);
+  void SetTargetBitrateCallback(const TargetBitrateCallback& target_bitrate_cb);
 
  private:
-  // Protects |encoded_callback_|, |key_frame_request_| and |state_|.
+  // Protects |encoded_callback_|, |key_frame_request_|,
+  // |target_bitrate_cb_| and |state_|.
   base::Lock lock_;
   State state_;
   webrtc::EncodedImageCallback* encoded_callback_;
 
   base::Closure key_frame_request_;
+  TargetBitrateCallback target_bitrate_cb_;
   webrtc::VideoCodecType video_codec_type_;
-  uint32_t target_bitrate_;
 };
 
 // This is the external encoder factory implementation that is passed to
@@ -71,19 +74,20 @@ class WebRtcVideoEncoderFactory : public cricket::WebRtcVideoEncoderFactory {
   bool EncoderTypeHasInternalSource(webrtc::VideoCodecType type) const override;
   void DestroyVideoEncoder(webrtc::VideoEncoder* encoder) override;
 
-  int SendEncodedFrame(int64_t capture_timestamp_ms,
-                       std::unique_ptr<VideoPacket> pkt);
+  int SendEncodedFrame(std::unique_ptr<VideoPacket> pkt);
 
   void SetKeyFrameRequestCallback(const base::Closure& key_frame_request);
+  void SetTargetBitrateCallback(const TargetBitrateCallback& target_bitrate_cb);
 
  private:
-  // Protects |key_frame_request_|.
+  // Protects |key_frame_request_| and |target_bitrate_cb_|.
   base::Lock lock_;
   base::Closure key_frame_request_;
+  TargetBitrateCallback target_bitrate_cb_;
   std::vector<cricket::WebRtcVideoEncoderFactory::VideoCodec> codecs_;
   std::vector<std::unique_ptr<WebRtcVideoEncoder>> encoders_;
 };
 
 }  // namespace remoting
 
-#endif  // REMOTING_PROTOCOL_WEBRTC_VIDEO_ENCODER_H_
+#endif  // REMOTING_PROTOCOL_WEBRTC_VIDEO_ENCODER_FACTORY_H_

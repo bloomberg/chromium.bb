@@ -39,6 +39,7 @@ class VideoEncoder {
 
   static std::unique_ptr<VideoEncoder> Create(
       const protocol::SessionConfig& config);
+  virtual void UpdateTargetBitrate(int bitrate_kbps) {}
 };
 
 }  // namespace remoting

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/protocol/webrtc_video_encoder.h"
+#include "remoting/protocol/webrtc_video_encoder_factory.h"
 
 #include <algorithm>
 #include <vector>
@@ -44,7 +44,6 @@ int32_t WebRtcVideoEncoder::InitEncode(const webrtc::VideoCodec* codec_settings,
       }
     }
   }
-  target_bitrate_ = codec_settings->startBitrate;
   state_ = kInitialized;
   return WEBRTC_VIDEO_CODEC_OK;
 }
@@ -84,14 +83,14 @@ int32_t WebRtcVideoEncoder::SetChannelParameters(uint32_t packet_loss,
 int32_t WebRtcVideoEncoder::SetRates(uint32_t bitrate, uint32_t framerate) {
   VLOG(1) << "WebRtcVideoEncoder::SetRates bitrate:framerate " << bitrate << ":"
           << framerate;
-  target_bitrate_ = bitrate;
+  if (!target_bitrate_cb_.is_null())
+    target_bitrate_cb_.Run(bitrate);
   // framerate is not expected to be valid given we never report captured
   // frames
   return WEBRTC_VIDEO_CODEC_OK;
 }
 
-int WebRtcVideoEncoder::SendEncodedFrame(int64_t capture_timestamp_ms,
-                                         std::unique_ptr<VideoPacket> frame) {
+int WebRtcVideoEncoder::SendEncodedFrame(std::unique_ptr<VideoPacket> frame) {
   uint8_t* buffer =
       reinterpret_cast<uint8_t*>(const_cast<char*>(frame->data().data()));
   size_t buffer_size = frame->data().size();
@@ -107,8 +106,9 @@ int WebRtcVideoEncoder::SendEncodedFrame(int64_t capture_timestamp_ms,
   encoded_image._completeFrame = true;
   encoded_image._frameType =
       frame->key_frame() ? webrtc::kVideoFrameKey : webrtc::kVideoFrameDelta;
-  encoded_image.capture_time_ms_ = capture_timestamp_ms;
-  encoded_image._timeStamp = static_cast<uint32_t>(capture_timestamp_ms * 90);
+  encoded_image.capture_time_ms_ = frame->capture_time_ms();
+  encoded_image._timeStamp =
+      static_cast<uint32_t>(frame->capture_time_ms() * 90);
 
   webrtc::CodecSpecificInfo codec_specific_info;
   memset(&codec_specific_info, 0, sizeof(codec_specific_info));
@@ -144,6 +144,12 @@ void WebRtcVideoEncoder::SetKeyFrameRequestCallback(
   key_frame_request_ = key_frame_request;
 }
 
+void WebRtcVideoEncoder::SetTargetBitrateCallback(
+    const TargetBitrateCallback& target_bitrate_cb) {
+  base::AutoLock lock(lock_);
+  target_bitrate_cb_ = target_bitrate_cb;
+}
+
 WebRtcVideoEncoderFactory::WebRtcVideoEncoderFactory() {
   // TODO(isheriff): These do not really affect anything internally
   // in webrtc.
@@ -162,6 +168,7 @@ webrtc::VideoEncoder* WebRtcVideoEncoderFactory::CreateVideoEncoder(
   WebRtcVideoEncoder* encoder = new WebRtcVideoEncoder(type);
   base::AutoLock lock(lock_);
   encoder->SetKeyFrameRequestCallback(key_frame_request_);
+  encoder->SetTargetBitrateCallback(target_bitrate_cb_);
   VLOG(1) << "Created " << encoder;
   encoders_.push_back(base::WrapUnique(encoder));
   return encoder;
@@ -196,14 +203,12 @@ void WebRtcVideoEncoderFactory::DestroyVideoEncoder(
 }
 
 int WebRtcVideoEncoderFactory::SendEncodedFrame(
-    int64_t capture_timestamp_ms,
     std::unique_ptr<VideoPacket> frame) {
   if (encoders_.size() != 1) {
     LOG(ERROR) << "Unexpected number of encoders " << encoders_.size();
     return -1;
   }
-  return encoders_.front()->SendEncodedFrame(capture_timestamp_ms,
-                                             std::move(frame));
+  return encoders_.front()->SendEncodedFrame(std::move(frame));
 }
 
 void WebRtcVideoEncoderFactory::SetKeyFrameRequestCallback(
@@ -214,6 +219,19 @@ void WebRtcVideoEncoderFactory::SetKeyFrameRequestCallback(
     encoders_.front()->SetKeyFrameRequestCallback(key_frame_request);
   } else {
     LOG(ERROR) << "Dropping key frame request callback with unexpected"
+                  " number of encoders"
+               << encoders_.size();
+  }
+}
+
+void WebRtcVideoEncoderFactory::SetTargetBitrateCallback(
+    const TargetBitrateCallback& target_bitrate_cb) {
+  base::AutoLock lock(lock_);
+  target_bitrate_cb_ = target_bitrate_cb;
+  if (encoders_.size() == 1) {
+    encoders_.front()->SetTargetBitrateCallback(target_bitrate_cb);
+  } else {
+    LOG(ERROR) << "Dropping target bitrate request callback with unexpected"
                   " number of encoders"
                << encoders_.size();
   }

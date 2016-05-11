@@ -41,6 +41,8 @@ source_set("codec") {
       "video_encoder_verbatim.h",
       "video_encoder_vpx.cc",
       "video_encoder_vpx.h",
+      "webrtc_video_encoder_vpx.cc",
+      "webrtc_video_encoder_vpx.h",
     ]
   }
 }

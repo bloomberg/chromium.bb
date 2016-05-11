@@ -11,8 +11,7 @@
 #include "jingle/glue/thread_wrapper.h"
 #include "net/base/io_buffer.h"
 #include "remoting/codec/video_encoder.h"
-#include "remoting/codec/video_encoder_verbatim.h"
-#include "remoting/codec/video_encoder_vpx.h"
+#include "remoting/codec/webrtc_video_encoder_vpx.h"
 #include "remoting/protocol/audio_writer.h"
 #include "remoting/protocol/clipboard_stub.h"
 #include "remoting/protocol/host_control_dispatcher.h"
@@ -79,7 +78,8 @@ void WebrtcConnectionToClient::OnInputEventReceived(int64_t timestamp) {
 std::unique_ptr<VideoStream> WebrtcConnectionToClient::StartVideoStream(
     std::unique_ptr<webrtc::DesktopCapturer> desktop_capturer) {
   // TODO(isheriff): make this codec independent
-  std::unique_ptr<VideoEncoder> video_encoder = VideoEncoderVpx::CreateForVP8();
+  std::unique_ptr<VideoEncoder> video_encoder =
+      WebRtcVideoEncoderVpx::CreateForVP8();
   std::unique_ptr<WebrtcVideoStream> stream(new WebrtcVideoStream());
   if (!stream->Start(std::move(desktop_capturer), transport_.get(),
                      video_encode_task_runner_, std::move(video_encoder))) {
