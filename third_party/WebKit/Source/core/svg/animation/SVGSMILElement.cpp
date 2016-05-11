@@ -1222,8 +1222,11 @@ void SVGSMILElement::notifyDependentsIntervalChanged()
     ASSERT(m_interval.begin.isFinite());
     // |loopBreaker| is used to avoid infinite recursions which may be caused from:
     // |notifyDependentsIntervalChanged| -> |createInstanceTimesFromSyncbase| -> |add{Begin,End}Time| -> |{begin,end}TimeChanged| -> |notifyDependentsIntervalChanged|
-    // |loopBreaker| is defined as a Persistent<HeapHashSet<Member<SVGSMILElement>>>. This won't cause leaks because it is guaranteed to be empty after the root |notifyDependentsIntervalChanged| has exited.
-    DEFINE_STATIC_LOCAL(HeapHashSet<Member<SVGSMILElement>>, loopBreaker, (new HeapHashSet<Member<SVGSMILElement>>));
+    //
+    // As the set here records SVGSMILElements on the stack, it is acceptable to
+    // use a HashSet of untraced heap references -- any conservative GC which
+    // strikes before unwinding will find these elements on the stack.
+    DEFINE_STATIC_LOCAL(HashSet<UntracedMember<SVGSMILElement>>, loopBreaker, ());
     if (!loopBreaker.add(this).isNewEntry)
         return;
 
