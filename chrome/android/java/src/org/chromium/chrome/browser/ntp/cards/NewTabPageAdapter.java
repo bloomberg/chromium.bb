@@ -121,10 +121,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
 
         mNewTabPageListItems.clear();
         mNewTabPageListItems.add(mAboveTheFoldListItem);
-        // TODO(https://crbug.com/608918): Remove this for now as we need to come up with a better
-        // way to visibly not affect the layout of the page when not shown as currently pixels are
-        // allocated even though visibility is set to GONE.
-        // mNewTabPageListItems.add(new SnippetHeaderListItem());
+        mNewTabPageListItems.add(new SnippetHeaderListItem());
         mNewTabPageListItems.addAll(listSnippets);
 
         notifyDataSetChanged();

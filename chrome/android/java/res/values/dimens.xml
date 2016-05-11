@@ -261,6 +261,7 @@
     <dimen name="snippets_thumbnail_size">72dp</dimen>
     <dimen name="snippets_padding_and_peeking_card_height">16dp</dimen>
     <dimen name="snippets_vertical_spacing">1dp</dimen>
+    <dimen name="snippets_article_header_height">56dp</dimen>
 
     <!-- Interests page -->
     <dimen name="ntp_interest_item_text_size">20sp</dimen>

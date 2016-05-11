@@ -418,6 +418,7 @@ public class NewTabPageView extends FrameLayout
             initializeSearchBoxRecyclerViewScrollHandling();
             mRecyclerView.addItemDecoration(new SnippetItemDecoration(getContext()));
             updatePeekingCard();
+            updateSnippetsHeaderDisplay();
         } else {
             initializeSearchBoxScrollHandling();
         }
@@ -452,54 +453,104 @@ public class NewTabPageView extends FrameLayout
         return mUseCardsUi ? mRecyclerView : mScrollView;
     }
 
+    private View getFirstViewMatchingViewType(int newTabPageListItemViewType) {
+        int adapterSize = mNewTabPageAdapter.getItemCount();
+        for (int i = 0; i < adapterSize; i++) {
+            if (mNewTabPageAdapter.getItemViewType(i) == newTabPageListItemViewType) {
+                return mRecyclerView.getLayoutManager().findViewByPosition(i);
+            }
+        }
+        return null;
+    }
+
     /**
      * Calculate the peeking card/first snippet bleed and padding when scrolling if it is visible.
      */
     private void updatePeekingCard() {
         // Get the first snippet that could display to make the peeking card transition.
-        ViewGroup firstSnippet = null;
-        int adapterSize = mNewTabPageAdapter.getItemCount();
-        for (int i = 0; i < adapterSize; i++) {
-            if (mNewTabPageAdapter.getItemViewType(i) == NewTabPageListItem.VIEW_TYPE_SNIPPET) {
-                firstSnippet =
-                        (ViewGroup) mRecyclerView.getLayoutManager().findViewByPosition(i);
-                break;
-            }
-        }
+        ViewGroup firstSnippet =
+                (ViewGroup) getFirstViewMatchingViewType(NewTabPageListItem.VIEW_TYPE_SNIPPET);
+
+        if (firstSnippet == null || !firstSnippet.isShown()) return;
 
         // If first snippet exists change the parameters from peeking card with bleed to full page
         // card when scrolling.
-        if (firstSnippet != null && firstSnippet.isShown()) {
-            // Value used for max peeking card height and padding.
-            int maxPadding = getResources().getDimensionPixelSize(
-                    R.dimen.snippets_padding_and_peeking_card_height);
+        // Value used for max peeking card height and padding.
+        int maxPadding = getResources().getDimensionPixelSize(
+                R.dimen.snippets_padding_and_peeking_card_height);
 
-            // As the user scrolls, the bleed increases or decreases.
-            int bleed = maxPadding - (getVerticalScroll() - mPeekingCardVerticalScrollStart);
+        // As the user scrolls, the bleed increases or decreases.
+        int bleed = maxPadding - (getVerticalScroll() - mPeekingCardVerticalScrollStart);
 
-            // Never let the bleed go into negative digits.
-            bleed = Math.max(bleed, 0);
-            // Never let the bleed be greater than the maxPadding.
-            bleed = Math.min(bleed, maxPadding);
+        // Never let the bleed go into negative digits.
+        bleed = Math.max(bleed, 0);
+        // Never let the bleed be greater than the maxPadding.
+        bleed = Math.min(bleed, maxPadding);
 
-            // Modify the padding so as the margin increases, the padding decreases so the cards
-            // content does not shift. Top and bottom remain the same.
-            firstSnippet.setPadding(
-                    maxPadding - bleed, maxPadding, maxPadding - bleed, maxPadding);
+        // Modify the padding so as the margin increases, the padding decreases so the cards
+        // content does not shift. Top and bottom remain the same.
+        firstSnippet.setPadding(
+                maxPadding - bleed, maxPadding, maxPadding - bleed, maxPadding);
 
-            // Modify the margin to grow the card from bleed to full width.
-            RecyclerView.LayoutParams params =
-                    (RecyclerView.LayoutParams) firstSnippet.getLayoutParams();
-            params.leftMargin = bleed;
-            params.rightMargin = bleed;
+        // Modify the margin to grow the card from bleed to full width.
+        RecyclerView.LayoutParams params =
+                (RecyclerView.LayoutParams) firstSnippet.getLayoutParams();
+        params.leftMargin = bleed;
+        params.rightMargin = bleed;
 
-            // Set the opacity of the card content to be 0 when peeking and 1 when full width.
-            int firstSnippetChildCount = firstSnippet.getChildCount();
-            for (int i = 0; i < firstSnippetChildCount; ++i) {
-                View snippetChild = firstSnippet.getChildAt(i);
-                snippetChild.setAlpha((maxPadding - bleed) / (float) maxPadding);
-            }
+        // Set the opacity of the card content to be 0 when peeking and 1 when full width.
+        int firstSnippetChildCount = firstSnippet.getChildCount();
+        for (int i = 0; i < firstSnippetChildCount; ++i) {
+            View snippetChild = firstSnippet.getChildAt(i);
+            snippetChild.setAlpha((maxPadding - bleed) / (float) maxPadding);
         }
+    }
+
+    /**
+     * Show the snippets header when the user scrolls down and snippet articles starts reaching the
+     * top of the screen.
+     */
+    private void updateSnippetsHeaderDisplay() {
+        // Get the snippet header view.
+        View snippetHeader = getFirstViewMatchingViewType(NewTabPageListItem.VIEW_TYPE_HEADER);
+
+        if (snippetHeader == null || !snippetHeader.isShown()) return;
+
+        // Start doing the calculations if the snippet header is currently shown on screen.
+        RecyclerView.LayoutParams params =
+                (RecyclerView.LayoutParams) snippetHeader.getLayoutParams();
+        float headerAlpha = 0;
+        int headerHeight = 0;
+
+        // Get the max snippet header height.
+        int maxSnippetHeaderHeight =
+                getResources().getDimensionPixelSize(R.dimen.snippets_article_header_height);
+        // Measurement used to multiply the max snippet height to get a range on when to start
+        // modifying the display of article header.
+        final int numberHeaderHeight = 2;
+        // Used to indicate when to start modifying the snippet header.
+        int heightToStartChangingHeader = maxSnippetHeaderHeight * numberHeaderHeight;
+        int snippetHeaderTop = snippetHeader.getTop();
+        int omniBoxHeight = mNewTabPageLayout.getPaddingTop();
+
+        // Check if snippet header top is within range to start showing the snippet header.
+        if (snippetHeaderTop < omniBoxHeight + heightToStartChangingHeader) {
+            // The amount of space the article header has scrolled into the
+            // |heightToStartChangingHeader|.
+            int amountScrolledIntoHeaderSpace =
+                    heightToStartChangingHeader - (snippetHeaderTop - omniBoxHeight);
+
+            // Remove the |numberHeaderHeight| to get the actual header height we want to
+            // display. Never let the height be more than the |maxSnippetHeaderHeight|.
+            headerHeight = Math.min(
+                    amountScrolledIntoHeaderSpace / numberHeaderHeight, maxSnippetHeaderHeight);
+
+            // Get the alpha for the snippet header.
+            headerAlpha = (float) headerHeight / maxSnippetHeaderHeight;
+        }
+        snippetHeader.setAlpha(headerAlpha);
+        params.height = headerHeight;
+        snippetHeader.setLayoutParams(params);
     }
 
     /**
@@ -517,7 +568,7 @@ public class NewTabPageView extends FrameLayout
                 // Luckily, we only need to perform the calculations if the first item is visible.
                 if (!mRecyclerView.isFirstItemVisible()) return;
 
-                final int currentScroll = mRecyclerView.computeVerticalScrollOffset();
+                final int currentScroll = getVerticalScroll();
 
                 // If snapping to Most Likely or to Articles, the omnibox will be at the top of the
                 // page, so offset the scroll so the scroll targets appear below it.
@@ -565,6 +616,7 @@ public class NewTabPageView extends FrameLayout
                 }
                 updateSearchBoxOnScroll();
                 updatePeekingCard();
+                updateSnippetsHeaderDisplay();
             }
         });
 

@@ -74,8 +74,8 @@ public class NewTabPageAdapterTest {
 
         List<NewTabPageListItem> loadedItems = ntpa.getItemsForTesting();
         assertEquals(NewTabPageListItem.VIEW_TYPE_ABOVE_THE_FOLD, ntpa.getItemViewType(0));
-        //assertEquals(NewTabPageListItem.VIEW_TYPE_HEADER, ntpa.getItemViewType(1));
-        assertEquals(snippets, loadedItems.subList(1, loadedItems.size()));
+        assertEquals(NewTabPageListItem.VIEW_TYPE_HEADER, ntpa.getItemViewType(1));
+        assertEquals(snippets, loadedItems.subList(2, loadedItems.size()));
         assertNull(mSnippetsObserver);
     }
 
@@ -103,8 +103,8 @@ public class NewTabPageAdapterTest {
         mSnippetsObserver.onSnippetsReceived(snippets);
         List<NewTabPageListItem> loadedItems = ntpa.getItemsForTesting();
         assertEquals(NewTabPageListItem.VIEW_TYPE_ABOVE_THE_FOLD, ntpa.getItemViewType(0));
-        //assertEquals(NewTabPageListItem.VIEW_TYPE_HEADER, ntpa.getItemViewType(1));
-        assertEquals(snippets, loadedItems.subList(1, loadedItems.size()));
+        assertEquals(NewTabPageListItem.VIEW_TYPE_HEADER, ntpa.getItemViewType(1));
+        assertEquals(snippets, loadedItems.subList(2, loadedItems.size()));
         assertNull(mSnippetsObserver);
     }
 }
