@@ -97,6 +97,26 @@ void WebFormControlElement::setValue(const WebString& value, bool sendEvents)
         unwrap<HTMLSelectElement>()->setValue(value, sendEvents);
 }
 
+void WebFormControlElement::setAutofillValue(const WebString& value)
+{
+    // The input and change events will be sent in setValue.
+    if (isHTMLInputElement(*m_private) || isHTMLTextAreaElement(*m_private)) {
+        if (!focused())
+            unwrap<Element>()->dispatchFocusEvent(nullptr, WebFocusTypeForward, nullptr);
+        unwrap<Element>()->dispatchScopedEvent(Event::createBubble(EventTypeNames::keydown));
+        unwrap<HTMLTextFormControlElement>()->setValue(value, DispatchInputAndChangeEvent);
+        unwrap<Element>()->dispatchScopedEvent(Event::createBubble(EventTypeNames::keyup));
+        if (!focused())
+            unwrap<Element>()->dispatchBlurEvent(nullptr, WebFocusTypeForward, nullptr);
+    } else if (isHTMLSelectElement(*m_private)) {
+        if (!focused())
+            unwrap<Element>()->dispatchFocusEvent(nullptr, WebFocusTypeForward, nullptr);
+        unwrap<HTMLSelectElement>()->setValue(value, true);
+        if (!focused())
+            unwrap<Element>()->dispatchBlurEvent(nullptr, WebFocusTypeForward, nullptr);
+    }
+}
+
 WebString WebFormControlElement::value() const
 {
     if (isHTMLInputElement(*m_private))

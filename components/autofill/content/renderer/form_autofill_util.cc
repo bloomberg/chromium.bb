@@ -890,7 +890,7 @@ void FillFormField(const FormFieldData& data,
       // returns the default maxlength value.
       TruncateString(&value, input_element->maxLength());
     }
-    field->setValue(value, true);
+    field->setAutofillValue(value);
   }
   // Setting the form might trigger JavaScript, which is capable of
   // destroying the frame.

@@ -103,6 +103,66 @@ static const char kTestPasswordFormString[] =
     "<input type=\"submit\" value=\"Submit\">"
     "</form>";
 
+// TODO(crbug.com/609861): Remove the autocomplete attribute from the textarea
+// field when the bug is fixed.
+static const char kTestEventFormString[] =
+    "<script type=\"text/javascript\">"
+    "var inputfocus = false;"
+    "var inputkeydown = false;"
+    "var inputinput = false;"
+    "var inputchange = false;"
+    "var inputkeyup = false;"
+    "var inputblur = false;"
+    "var textfocus = false;"
+    "var textkeydown = false;"
+    "var textinput= false;"
+    "var textchange = false;"
+    "var textkeyup = false;"
+    "var textblur = false;"
+    "var selectfocus = false;"
+    "var selectinput = false;"
+    "var selectchange = false;"
+    "var selectblur = false;"
+    "</script>"
+    "<form action=\"http://www.example.com/\" method=\"POST\">"
+    "<label for=\"firstname\">First name:</label>"
+    " <input type=\"text\" id=\"firstname\""
+    "        onfocus=\"domAutomationController.send(true)\"><br>"
+    "<label for=\"lastname\">Last name:</label>"
+    " <input type=\"text\" id=\"lastname\""
+    " onfocus=\"inputfocus = true\" onkeydown=\"inputkeydown = true\""
+    " oninput=\"inputinput = true\" onchange=\"inputchange = true\""
+    " onkeyup=\"inputkeyup = true\" onblur=\"inputblur = true\" ><br>"
+    "<label for=\"address1\">Address line 1:</label>"
+    " <input type=\"text\" id=\"address1\"><br>"
+    "<label for=\"address2\">Address line 2:</label>"
+    " <input type=\"text\" id=\"address2\"><br>"
+    "<label for=\"city\">City:</label>"
+    " <textarea rows=\"4\" cols=\"50\" id=\"city\" name=\"city\""
+    " autocomplete=\"address-level2\" onfocus=\"textfocus = true\""
+    " onkeydown=\"textkeydown = true\" oninput=\"textinput = true\""
+    " onchange=\"textchange = true\" onkeyup=\"textkeyup = true\""
+    " onblur=\"textblur = true\"></textarea><br>"
+    "<label for=\"state\">State:</label>"
+    " <select id=\"state\""
+    " onfocus=\"selectfocus = true\" oninput=\"selectinput = true\""
+    " onchange=\"selectchange = true\" onblur=\"selectblur = true\" >"
+    " <option value=\"\" selected=\"yes\">--</option>"
+    " <option value=\"CA\">California</option>"
+    " <option value=\"TX\">Texas</option>"
+    " </select><br>"
+    "<label for=\"zip\">ZIP code:</label>"
+    " <input type=\"text\" id=\"zip\"><br>"
+    "<label for=\"country\">Country:</label>"
+    " <select id=\"country\">"
+    " <option value=\"\" selected=\"yes\">--</option>"
+    " <option value=\"CA\">Canada</option>"
+    " <option value=\"US\">United States</option>"
+    " </select><br>"
+    "<label for=\"phone\">Phone number:</label>"
+    " <input type=\"text\" id=\"phone\"><br>"
+    "</form>";
+
 // AutofillManagerTestDelegateImpl --------------------------------------------
 
 class AutofillManagerTestDelegateImpl
@@ -1178,6 +1238,105 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, AutofillAfterReload) {
 
   // Invoke Autofill.
   TryBasicFormFill();
+}
+
+// Test that filling a form sends all the expected events to the different
+// fields being filled.
+IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, AutofillEvents) {
+  CreateTestProfile();
+
+  // Load the test page.
+  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(
+      browser(), GURL(std::string(kDataURIPrefix) + kTestEventFormString)));
+
+  // Invoke Autofill.
+  TryBasicFormFill();
+
+  // Checks that all the events were fired for the input field.
+  bool input_focus_triggered;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+      GetRenderViewHost(), "domAutomationController.send(inputfocus);",
+      &input_focus_triggered));
+  EXPECT_TRUE(input_focus_triggered);
+  bool input_keydown_triggered;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+      GetRenderViewHost(), "domAutomationController.send(inputkeydown);",
+      &input_keydown_triggered));
+  EXPECT_TRUE(input_keydown_triggered);
+  bool input_input_triggered;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+      GetRenderViewHost(), "domAutomationController.send(inputinput);",
+      &input_input_triggered));
+  EXPECT_TRUE(input_input_triggered);
+  bool input_change_triggered;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+      GetRenderViewHost(), "domAutomationController.send(inputchange);",
+      &input_change_triggered));
+  EXPECT_TRUE(input_change_triggered);
+  bool input_keyup_triggered;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+      GetRenderViewHost(), "domAutomationController.send(inputkeyup);",
+      &input_keyup_triggered));
+  EXPECT_TRUE(input_keyup_triggered);
+  bool input_blur_triggered;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+      GetRenderViewHost(), "domAutomationController.send(inputblur);",
+      &input_blur_triggered));
+  EXPECT_TRUE(input_blur_triggered);
+
+  // Checks that all the events were fired for the textarea field.
+  bool text_focus_triggered;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+      GetRenderViewHost(), "domAutomationController.send(textfocus);",
+      &text_focus_triggered));
+  EXPECT_TRUE(text_focus_triggered);
+  bool text_keydown_triggered;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+      GetRenderViewHost(), "domAutomationController.send(textkeydown);",
+      &text_keydown_triggered));
+  EXPECT_TRUE(text_keydown_triggered);
+  bool text_input_triggered;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+      GetRenderViewHost(), "domAutomationController.send(textinput);",
+      &text_input_triggered));
+  EXPECT_TRUE(text_input_triggered);
+  bool text_change_triggered;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+      GetRenderViewHost(), "domAutomationController.send(textchange);",
+      &text_change_triggered));
+  EXPECT_TRUE(text_change_triggered);
+  bool text_keyup_triggered;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+      GetRenderViewHost(), "domAutomationController.send(textkeyup);",
+      &text_keyup_triggered));
+  EXPECT_TRUE(text_keyup_triggered);
+  bool text_blur_triggered;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+      GetRenderViewHost(), "domAutomationController.send(textblur);",
+      &text_blur_triggered));
+  EXPECT_TRUE(text_blur_triggered);
+
+  // Checks that all the events were fired for the select field.
+  bool select_focus_triggered;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+      GetRenderViewHost(), "domAutomationController.send(selectfocus);",
+      &select_focus_triggered));
+  EXPECT_TRUE(select_focus_triggered);
+  bool select_input_triggered;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+      GetRenderViewHost(), "domAutomationController.send(selectinput);",
+      &select_input_triggered));
+  EXPECT_TRUE(select_input_triggered);
+  bool select_change_triggered;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+      GetRenderViewHost(), "domAutomationController.send(selectchange);",
+      &select_change_triggered));
+  EXPECT_TRUE(select_change_triggered);
+  bool select_blur_triggered;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+      GetRenderViewHost(), "domAutomationController.send(selectblur);",
+      &select_blur_triggered));
+  EXPECT_TRUE(select_blur_triggered);
 }
 
 // Test fails on Linux ASAN, see http://crbug.com/532737
