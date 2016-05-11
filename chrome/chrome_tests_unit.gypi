@@ -2064,7 +2064,6 @@
             '<(DEPTH)/third_party/wtl/include',
           ],
           'dependencies': [
-            'chrome.gyp:install_static_util',
             '../components/components.gyp:crash_component',
             '../third_party/crashpad/crashpad/handler/handler.gyp:crashpad_handler',
             '../win8/win8.gyp:test_registrar_constants',

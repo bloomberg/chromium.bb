@@ -331,7 +331,7 @@ bool Initialize(bool force) {
     return false;
 
   // Check to see if this is a non-browser process, abort if so.
-  if (install_static::IsNonBrowserProcess())
+  if (IsNonBrowserProcess())
     return false;
 
   // Check to see if the blacklist beacon is still set to running (indicating a

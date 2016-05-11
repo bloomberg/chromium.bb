@@ -3,8 +3,6 @@ include_rules = [
   # "-chrome" rule in a parent dir.
   "+chrome/grit/chromium_strings.h",
 
-  "+chrome/install_static/install_util.h",
-
   "+components/metrics",
 
   # TODO(fdoray): Remove this once the PreRead field trial has expired.
