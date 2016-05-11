@@ -312,7 +312,7 @@ class LocalDeviceGtestRun(local_device_test_run.LocalDeviceTestRun):
         on_failure=self._env.BlacklistDevice)
     def list_tests(dev):
       tests = self._delegate.Run(
-          None, dev, flags='--gtest_list_tests', timeout=20)
+          None, dev, flags='--gtest_list_tests', timeout=30)
       tests = gtest_test_instance.ParseGTestListTests(tests)
       tests = self._test_instance.FilterTests(tests)
       return tests
