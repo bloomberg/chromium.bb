@@ -654,6 +654,16 @@ bool AutofillProfile::SaveAdditionalInfo(const AutofillProfile& profile,
                                  abbreviation))
           continue;
       }
+
+      // Special case for company names to support cannonicalized variations.
+      if (field_type == COMPANY_NAME) {
+        if (compare.StringsEqual(
+                CanonicalizeProfileString(profile.GetRawInfo(field_type)),
+                CanonicalizeProfileString(GetRawInfo(field_type)))) {
+          continue;
+        }
+      }
+
       if (!compare.StringsEqual(profile.GetRawInfo(field_type),
                                 GetRawInfo(field_type))) {
         return false;
