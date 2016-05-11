@@ -86,11 +86,12 @@ std::string DetermineTextLanguage(const base::string16& text,
   const int num_utf8_bytes = static_cast<int>(utf8_text.size());
   const char* raw_utf8_bytes = utf8_text.c_str();
 
-  CLD2::Language language3[3];
-  int percent3[3];
+  CLD2::Language language3[3] = {
+    CLD2::UNKNOWN_LANGUAGE, CLD2::UNKNOWN_LANGUAGE, CLD2::UNKNOWN_LANGUAGE};
+  int percent3[3] = {0, 0, 0};
   int flags = 0;   // No flags, see compact_lang_det.h for details.
   int text_bytes;  // Amount of non-tag/letters-only text (assumed 0).
-  double normalized_score3[3];
+  double normalized_score3[3] = {0.0, 0.0, 0.0};
 
   const char* tld_hint = "";
   int encoding_hint = CLD2::UNKNOWN_ENCODING;
