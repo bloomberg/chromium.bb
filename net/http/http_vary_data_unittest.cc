@@ -120,32 +120,12 @@ TEST(HttpVaryDataTest, DoesntVary2) {
   EXPECT_TRUE(v.MatchesRequest(b.request, *b.response.get()));
 }
 
-TEST(HttpVaryDataTest, ImplicitCookieForRedirect) {
+TEST(HttpVaryDataTest, DoesntVaryByCookieForRedirect) {
   TestTransaction a;
   a.Init("Cookie: 1", "HTTP/1.1 301 Moved\nLocation: x\n\n");
 
-  TestTransaction b;
-  b.Init("Cookie: 2", "HTTP/1.1 301 Moved\nLocation: x\n\n");
-
   HttpVaryData v;
-  EXPECT_TRUE(v.Init(a.request, *a.response.get()));
-
-  EXPECT_FALSE(v.MatchesRequest(b.request, *b.response.get()));
-}
-
-TEST(HttpVaryDataTest, ImplicitCookieForRedirect2) {
-  // This should be no different than the test above
-
-  TestTransaction a;
-  a.Init("Cookie: 1", "HTTP/1.1 301 Moved\nLocation: x\nVary: coOkie\n\n");
-
-  TestTransaction b;
-  b.Init("Cookie: 2", "HTTP/1.1 301 Moved\nLocation: x\nVary: cooKie\n\n");
-
-  HttpVaryData v;
-  EXPECT_TRUE(v.Init(a.request, *a.response.get()));
-
-  EXPECT_FALSE(v.MatchesRequest(b.request, *b.response.get()));
+  EXPECT_FALSE(v.Init(a.request, *a.response.get()));
 }
 
 }  // namespace net
