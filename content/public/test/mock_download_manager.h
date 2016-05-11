@@ -36,6 +36,7 @@ class MockDownloadManager : public DownloadManager {
     base::FilePath target_path;
     std::vector<GURL> url_chain;
     GURL referrer_url;
+    GURL site_url;
     GURL tab_url;
     GURL tab_referrer_url;
     std::string mime_type;
@@ -58,6 +59,7 @@ class MockDownloadManager : public DownloadManager {
                               const base::FilePath& target_path,
                               const std::vector<GURL>& url_chain,
                               const GURL& referrer_url,
+                              const GURL& site_url,
                               const GURL& tab_url,
                               const GURL& tab_refererr_url,
                               const std::string& mime_type,
@@ -117,6 +119,7 @@ class MockDownloadManager : public DownloadManager {
                                    const base::FilePath& target_path,
                                    const std::vector<GURL>& url_chain,
                                    const GURL& referrer_url,
+                                   const GURL& site_url,
                                    const GURL& tab_url,
                                    const GURL& tab_refererr_url,
                                    const std::string& mime_type,

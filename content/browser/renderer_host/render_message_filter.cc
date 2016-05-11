@@ -412,7 +412,7 @@ void RenderMessageFilter::DownloadUrl(int render_view_id,
 
   std::unique_ptr<DownloadUrlParameters> parameters(
       new DownloadUrlParameters(url, render_process_id_, render_view_id,
-                                render_frame_id, resource_context_));
+                                render_frame_id, request_context_.get()));
   parameters->set_content_initiated(true);
   parameters->set_suggested_name(suggested_name);
   parameters->set_prompt(use_prompt);

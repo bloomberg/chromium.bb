@@ -21,6 +21,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/resource_response.h"
 
@@ -39,12 +40,16 @@ static void StartOnUIThread(
     std::unique_ptr<DownloadCreateInfo> info,
     std::unique_ptr<DownloadResourceHandler::DownloadTabInfo> tab_info,
     std::unique_ptr<ByteStreamReader> stream,
+    int render_process_id,
+    int render_frame_id,
     const DownloadUrlParameters::OnStartedCallback& started_cb) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
+  RenderFrameHost* frame_host =
+      RenderFrameHost::FromID(render_process_id, render_frame_id);
   DownloadManager* download_manager =
       info->request_handle->GetDownloadManager();
-  if (!download_manager) {
+  if (!download_manager || !frame_host) {
     // NULL in unittests or if the page closed right after starting the
     // download.
     if (!started_cb.is_null())
@@ -58,6 +63,7 @@ static void StartOnUIThread(
 
   info->tab_url = tab_info->tab_url;
   info->tab_referrer_url = tab_info->tab_referrer_url;
+  info->site_url = frame_host->GetSiteInstance()->GetSiteURL();
 
   download_manager->StartDownload(std::move(info), std::move(stream),
                                   started_cb);
@@ -189,11 +195,15 @@ void DownloadResourceHandler::OnStart(
   create_info->request_handle.reset(new DownloadRequestHandle(
       AsWeakPtr(), request_info->GetWebContentsGetterForRequest()));
 
+  int render_process_id = -1;
+  int render_frame_id = -1;
+  request_info->GetAssociatedRenderFrame(&render_process_id, &render_frame_id);
+
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&StartOnUIThread, base::Passed(&create_info),
                  base::Passed(&tab_info_), base::Passed(&stream_reader),
-                 callback));
+                 render_process_id, render_frame_id, callback));
 }
 
 void DownloadResourceHandler::OnReadyToRead() {

@@ -637,7 +637,7 @@ TEST_F(HistoryBackendDBTest, MigrateTabUrls) {
     {
       sql::Statement s(db.GetUniqueStatement(
           "INSERT INTO downloads_url_chains (id, chain_index, url) VALUES "
-          "(4, 0, 'url')"));
+          "(1, 0, 'url')"));
       ASSERT_TRUE(s.Run());
     }
   }
@@ -669,6 +669,59 @@ TEST_F(HistoryBackendDBTest, MigrateTabUrls) {
   }
 }
 
+TEST_F(HistoryBackendDBTest, MigrateDownloadSiteInstanceUrl) {
+  ASSERT_NO_FATAL_FAILURE(CreateDBVersion(31));
+  {
+    sql::Connection db;
+    ASSERT_TRUE(db.Open(history_dir_.Append(kHistoryFilename)));
+    {
+      sql::Statement s(db.GetUniqueStatement(
+          "INSERT INTO downloads ("
+          "    id, guid, current_path, target_path, start_time, received_bytes,"
+          "    total_bytes, state, danger_type, interrupt_reason, hash,"
+          "    end_time, opened, referrer, tab_url, tab_referrer_url,"
+          "    http_method, by_ext_id, by_ext_name, etag, last_modified,"
+          "    mime_type, original_mime_type)"
+          "VALUES("
+          "    1, '435A5C7A-F6B7-4DF2-8696-22E4FCBA3EB2', 'foo.txt', 'foo.txt',"
+          "    13104873187307670, 11, 11, 1, 0, 0, X'', 13104873187521021, 0,"
+          "    'http://example.com/dl/', '', '', '', '', '', '', '',"
+          "    'text/plain', 'text/plain')"));
+      ASSERT_TRUE(s.Run());
+    }
+    {
+      sql::Statement s(db.GetUniqueStatement(
+          "INSERT INTO downloads_url_chains (id, chain_index, url) VALUES "
+          "(1, 0, 'url')"));
+      ASSERT_TRUE(s.Run());
+    }
+  }
+
+  // Re-open the db using the HistoryDatabase, which should migrate to the
+  // current version, creating the site_url column.
+  CreateBackendAndDatabase();
+  DeleteBackend();
+  {
+    // Re-open the db for manual manipulation.
+    sql::Connection db;
+    ASSERT_TRUE(db.Open(history_dir_.Append(kHistoryFilename)));
+    // The version should have been updated.
+    int cur_version = HistoryDatabase::GetCurrentVersion();
+    ASSERT_LE(31, cur_version);
+    {
+      sql::Statement s(db.GetUniqueStatement(
+          "SELECT value FROM meta WHERE key = 'version'"));
+      EXPECT_TRUE(s.Step());
+      EXPECT_EQ(cur_version, s.ColumnInt(0));
+    }
+    {
+      sql::Statement s(db.GetUniqueStatement("SELECT site_url from downloads"));
+      EXPECT_TRUE(s.Step());
+      EXPECT_EQ(std::string(), s.ColumnString(0));
+    }
+  }
+}
+
 TEST_F(HistoryBackendDBTest, DownloadCreateAndQuery) {
   CreateBackendAndDatabase();
 
@@ -685,7 +738,8 @@ TEST_F(HistoryBackendDBTest, DownloadCreateAndQuery) {
   DownloadRow download_A(
       base::FilePath(FILE_PATH_LITERAL("/path/1")),
       base::FilePath(FILE_PATH_LITERAL("/path/2")), url_chain,
-      GURL("http://example.com/referrer"), GURL("http://example.com/tab-url"),
+      GURL("http://example.com/referrer"), GURL("http://example.com"),
+      GURL("http://example.com/tab-url"),
       GURL("http://example.com/tab-referrer"), "GET", "mime/type",
       "original/mime-type", start_time, end_time, "etag1", "last_modified_1",
       100, 1000, DownloadState::INTERRUPTED, DownloadDangerType::NOT_DANGEROUS,
@@ -702,7 +756,8 @@ TEST_F(HistoryBackendDBTest, DownloadCreateAndQuery) {
   DownloadRow download_B(
       base::FilePath(FILE_PATH_LITERAL("/path/3")),
       base::FilePath(FILE_PATH_LITERAL("/path/4")), url_chain,
-      GURL("http://example.com/referrer2"), GURL("http://example.com/tab-url2"),
+      GURL("http://example.com/referrer2"), GURL("http://2.example.com"),
+      GURL("http://example.com/tab-url2"),
       GURL("http://example.com/tab-referrer2"), "POST", "mime/type2",
       "original/mime-type2", start_time2, end_time2, "etag2", "last_modified_2",
       1001, 1001, DownloadState::COMPLETE, DownloadDangerType::DANGEROUS_FILE,
@@ -741,7 +796,8 @@ TEST_F(HistoryBackendDBTest, DownloadCreateAndUpdate_VolatileFields) {
   DownloadRow download(
       base::FilePath(FILE_PATH_LITERAL("/path/1")),
       base::FilePath(FILE_PATH_LITERAL("/path/2")), url_chain,
-      GURL("http://example.com/referrer"), GURL("http://example.com/tab-url"),
+      GURL("http://example.com/referrer"), GURL("http://example.com"),
+      GURL("http://example.com/tab-url"),
       GURL("http://example.com/tab-referrer"), "GET", "mime/type",
       "original/mime-type", start_time, end_time, "etag1", "last_modified_1",
       100, 1000, DownloadState::INTERRUPTED, DownloadDangerType::NOT_DANGEROUS,
@@ -840,11 +896,11 @@ TEST_F(HistoryBackendDBTest, DownloadNukeRecordsMissingURLs) {
       base::FilePath(FILE_PATH_LITERAL("foo-path")),
       base::FilePath(FILE_PATH_LITERAL("foo-path")), url_chain,
       GURL(std::string()), GURL(std::string()), GURL(std::string()),
-      std::string(), "application/octet-stream", "application/octet-stream",
-      now, now, std::string(), std::string(), 0, 512, DownloadState::COMPLETE,
-      DownloadDangerType::NOT_DANGEROUS, kTestDownloadInterruptReasonNone,
-      std::string(), 1, "05AF6C8E-E4E0-45D7-B5CE-BC99F7019918", 0, "by_ext_id",
-      "by_ext_name");
+      GURL(std::string()), std::string(), "application/octet-stream",
+      "application/octet-stream", now, now, std::string(), std::string(), 0,
+      512, DownloadState::COMPLETE, DownloadDangerType::NOT_DANGEROUS,
+      kTestDownloadInterruptReasonNone, std::string(), 1,
+      "05AF6C8E-E4E0-45D7-B5CE-BC99F7019918", 0, "by_ext_id", "by_ext_name");
 
   // Creating records without any urls should fail.
   EXPECT_FALSE(db_->CreateDownload(download));

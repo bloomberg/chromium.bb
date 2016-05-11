@@ -115,8 +115,9 @@ std::unique_ptr<net::URLRequest> DownloadRequestCore::CreateRequestOnIOThread(
   // DownloadUrlParameters can-not include resource_dispatcher_host_impl.h, so
   // we must down cast. RDHI is the only subclass of RDH as of 2012 May 4.
   std::unique_ptr<net::URLRequest> request(
-      params->resource_context()->GetRequestContext()->CreateRequest(
-          params->url(), net::DEFAULT_PRIORITY, nullptr));
+      params->url_request_context_getter()
+          ->GetURLRequestContext()
+          ->CreateRequest(params->url(), net::DEFAULT_PRIORITY, nullptr));
   request->set_method(params->method());
 
   if (!params->post_body().empty()) {
@@ -184,7 +185,7 @@ std::unique_ptr<net::URLRequest> DownloadRequestCore::CreateRequestOnIOThread(
     request->SetExtraRequestHeaderByName(header.first, header.second,
                                          false /*overwrite*/);
 
-  DownloadRequestData::Attach(request.get(), std::move(params), download_id);
+  DownloadRequestData::Attach(request.get(), params, download_id);
   return request;
 }
 

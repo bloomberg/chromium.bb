@@ -26,6 +26,7 @@ struct DownloadRow {
               const base::FilePath& target_path,
               const std::vector<GURL>& url_chain,
               const GURL& referrer_url,
+              const GURL& site_url,
               const GURL& tab_url,
               const GURL& tab_referrer_url,
               const std::string& http_method,
@@ -66,6 +67,9 @@ struct DownloadRow {
 
   // The URL that referred us. Is not changed by UpdateDownload().
   GURL referrer_url;
+
+  // The site URL for the site instance that initiated the download.
+  GURL site_url;
 
   // The URL of the tab that initiated the download, if any. Not changed by
   // UpdateDownload().

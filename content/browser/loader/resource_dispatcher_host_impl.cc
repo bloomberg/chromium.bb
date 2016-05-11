@@ -781,7 +781,7 @@ DownloadInterruptReason ResourceDispatcherHostImpl::BeginDownload(
 
   request_id_--;
 
-  const net::URLRequestContext* request_context = context->GetRequestContext();
+  const net::URLRequestContext* request_context = request->context();
   if (!request_context->job_factory()->IsHandledURL(url)) {
     DVLOG(1) << "Download request for unsupported protocol: "
              << url.possibly_invalid_spec();

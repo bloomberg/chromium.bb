@@ -47,6 +47,7 @@ public:
       const base::FilePath& target_path,
       const std::vector<GURL>& url_chain,
       const GURL& referrer_url,
+      const GURL& site_url,
       const GURL& tab_url,
       const GURL& tab_refererr_url,
       const std::string& mime_type,

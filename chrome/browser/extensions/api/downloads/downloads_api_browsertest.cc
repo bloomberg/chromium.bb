@@ -46,6 +46,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/download_test_observer.h"
+#include "content/public/test/test_download_request_handler.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/notification_types.h"
 #include "net/base/data_url.h"
@@ -427,15 +428,10 @@ class DownloadExtensionTest : public ExtensionApiTest {
     url_chain.push_back(GURL());
     for (size_t i = 0; i < count; ++i) {
       DownloadItem* item = GetOnRecordManager()->CreateDownloadItem(
-          base::GenerateGUID(),
-          content::DownloadItem::kInvalidId + 1 + i,
+          base::GenerateGUID(), content::DownloadItem::kInvalidId + 1 + i,
           downloads_directory().Append(history_info[i].filename),
-          downloads_directory().Append(history_info[i].filename),
-          url_chain,
-          GURL(),
-          GURL(),
-          GURL(),
-          std::string(),
+          downloads_directory().Append(history_info[i].filename), url_chain,
+          GURL(), GURL(), GURL(), GURL(), std::string(),
           std::string(),  // mime_type, original_mime_type
           current,
           current,  // start_time, end_time
@@ -1518,6 +1514,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
   ASSERT_TRUE(item);
   ScopedCancellingItem canceller(item);
   ASSERT_EQ(download_url, item->GetOriginalUrl().spec());
+  ASSERT_EQ(GetExtensionURL(), item->GetSiteUrl().spec());
 
   ASSERT_TRUE(WaitFor(downloads::OnCreated::kEventName,
                       base::StringPrintf(
@@ -1586,6 +1583,51 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                           "    \"current\": \"complete\","
                           "    \"previous\": \"in_progress\"}}]",
                           result_id)));
+}
+
+IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
+                       DownloadExtensionTest_Download_InterruptAndResume) {
+  LoadExtension("downloads_split");
+  content::TestDownloadRequestHandler download_request_handler;
+  download_request_handler.StartServing(
+      content::TestDownloadRequestHandler::Parameters::
+          WithSingleInterruption());
+  GURL download_url = download_request_handler.url();
+
+  // Start downloading a file.
+  std::unique_ptr<base::Value> result(RunFunctionAndReturnResult(
+      new DownloadsDownloadFunction(),
+      base::StringPrintf("[{\"url\": \"%s\"}]", download_url.spec().c_str())));
+  ASSERT_TRUE(result.get());
+  int result_id = -1;
+  ASSERT_TRUE(result->GetAsInteger(&result_id));
+  DownloadItem* item = GetCurrentManager()->GetDownload(result_id);
+  ASSERT_TRUE(item);
+  ScopedCancellingItem canceller(item);
+  ASSERT_EQ(download_url, item->GetOriginalUrl());
+  EXPECT_EQ(GetExtensionURL(), item->GetSiteUrl().spec());
+
+  ASSERT_TRUE(WaitFor(downloads::OnChanged::kEventName,
+                      base::StringPrintf("[{\"id\":%d,"
+                                         "  \"state\": {"
+                                         "    \"current\": \"interrupted\","
+                                         "    \"previous\": \"in_progress\"}}]",
+                                         result_id)));
+
+  EXPECT_TRUE(RunFunction(new DownloadsResumeFunction(),
+                          DownloadItemIdAsArgList(item)));
+  ASSERT_TRUE(WaitFor(downloads::OnChanged::kEventName,
+                      base::StringPrintf("[{\"id\":%d,"
+                                         "  \"state\": {"
+                                         "    \"current\": \"in_progress\","
+                                         "    \"previous\": \"interrupted\"}}]",
+                                         result_id)));
+  ASSERT_TRUE(WaitFor(downloads::OnChanged::kEventName,
+                      base::StringPrintf("[{\"id\":%d,"
+                                         "  \"state\": {"
+                                         "    \"current\": \"complete\","
+                                         "    \"previous\": \"in_progress\"}}]",
+                                         result_id)));
 }
 
 #if defined(OS_WIN)

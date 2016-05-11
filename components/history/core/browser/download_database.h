@@ -87,6 +87,10 @@ class DownloadDatabase {
   // download table.
   bool MigrateDownloadTabUrl();
 
+  // Returns true if able to add the site_url column to the download
+  // table.
+  bool MigrateDownloadSiteInstanceUrl();
+
   // Creates the downloads table if needed.
   bool InitDownloadTable();
 

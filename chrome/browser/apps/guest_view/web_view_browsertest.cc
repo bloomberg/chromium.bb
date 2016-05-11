@@ -3,13 +3,19 @@
 // found in the LICENSE file.
 
 #include <queue>
+#include <set>
 #include <utility>
 
+#include "base/callback_helpers.h"
+#include "base/files/file_util.h"
+#include "base/files/scoped_temp_dir.h"
+#include "base/guid.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "base/process/process.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
@@ -18,6 +24,10 @@
 #include "chrome/browser/apps/app_browsertest_util.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/download/download_history.h"
+#include "chrome/browser/download/download_prefs.h"
+#include "chrome/browser/download/download_service.h"
+#include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/pdf/pdf_extension_test_util.h"
 #include "chrome/browser/prerender/prerender_link_manager.h"
@@ -47,6 +57,7 @@
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/download_test_observer.h"
 #include "content/public/test/fake_speech_recognition_manager.h"
 #include "content/public/test/test_renderer_host.h"
 #include "extensions/browser/api/declarative/rules_registry.h"
@@ -308,7 +319,7 @@ class MockDownloadWebContentsDelegate : public content::WebContentsDelegate {
     orig_delegate_->CanDownload(
         url, request_method,
         base::Bind(&MockDownloadWebContentsDelegate::DownloadDecided,
-                   base::Unretained(this)));
+                   base::Unretained(this), callback));
   }
 
   void WaitForCanDownload(bool expect_allow) {
@@ -325,7 +336,7 @@ class MockDownloadWebContentsDelegate : public content::WebContentsDelegate {
     message_loop_runner_->Run();
   }
 
-  void DownloadDecided(bool allow) {
+  void DownloadDecided(const base::Callback<void(bool)>& callback, bool allow) {
     EXPECT_FALSE(decision_made_);
     decision_made_ = true;
 
@@ -333,9 +344,11 @@ class MockDownloadWebContentsDelegate : public content::WebContentsDelegate {
       EXPECT_EQ(expect_allow_, allow);
       if (message_loop_runner_.get())
         message_loop_runner_->Quit();
+      callback.Run(allow);
       return;
     }
     last_download_allowed_ = allow;
+    callback.Run(allow);
   }
 
   void Reset() {
@@ -2202,6 +2215,17 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, DownloadPermission) {
                 "web_view/download");
   ASSERT_TRUE(guest_web_contents);
 
+  base::ScopedTempDir temporary_download_dir;
+  ASSERT_TRUE(temporary_download_dir.CreateUniqueTempDir());
+  DownloadPrefs::FromBrowserContext(guest_web_contents->GetBrowserContext())
+      ->SetDownloadPath(temporary_download_dir.path());
+
+  std::unique_ptr<content::DownloadTestObserver> completion_observer(
+      new content::DownloadTestObserverTerminal(
+          content::BrowserContext::GetDownloadManager(
+              guest_web_contents->GetBrowserContext()),
+          1, content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL));
+
   // Replace WebContentsDelegate with mock version so we can intercept download
   // requests.
   content::WebContentsDelegate* delegate = guest_web_contents->GetDelegate();
@@ -2226,6 +2250,344 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, DownloadPermission) {
   EXPECT_TRUE(content::ExecuteScript(guest_web_contents,
                                      "startDownload('download-link-3')"));
   mock_delegate->WaitForCanDownload(false); // Expect to not allow.
+  completion_observer->WaitForFinished();
+}
+
+namespace {
+
+const char kDownloadPathPrefix[] = "/download_cookie_isolation_test";
+
+// EmbeddedTestServer request handler for use with DownloadCookieIsolation test.
+// Responds with the next status code in |status_codes| if the 'Cookie' header
+// sent with the request matches the query() part of the URL. Otherwise, fails
+// the request with an HTTP 403. The body of the response is the value of the
+// Cookie header.
+std::unique_ptr<net::test_server::HttpResponse> HandleDownloadRequestWithCookie(
+    std::queue<net::HttpStatusCode>* status_codes,
+    const net::test_server::HttpRequest& request) {
+  if (request.relative_url.find(kDownloadPathPrefix) != 0) {
+    return std::unique_ptr<net::test_server::HttpResponse>();
+  }
+
+  std::string cookie_to_expect = request.GetURL().query();
+  const auto cookie_header_it = request.headers.find("cookie");
+  std::unique_ptr<net::test_server::BasicHttpResponse> response;
+
+  // Return a 403 if there's no cookie or if the cookie doesn't match.
+  if (cookie_header_it == request.headers.end() ||
+      cookie_header_it->second != cookie_to_expect) {
+    response.reset(new net::test_server::BasicHttpResponse);
+    response->set_code(net::HTTP_FORBIDDEN);
+    response->set_content_type("text/plain");
+    response->set_content("Forbidden");
+    return std::move(response);
+  }
+
+  DCHECK(!status_codes->empty());
+
+  // We have a cookie. Send some content along with the next status code.
+  response.reset(new net::test_server::BasicHttpResponse);
+  response->set_code(status_codes->front());
+  response->set_content_type("application/octet-stream");
+  response->set_content(cookie_to_expect);
+  status_codes->pop();
+  return std::move(response);
+}
+
+class DownloadHistoryWaiter : public DownloadHistory::Observer {
+ public:
+  explicit DownloadHistoryWaiter(content::BrowserContext* browser_context) {
+    DownloadService* service =
+        DownloadServiceFactory::GetForBrowserContext(browser_context);
+    download_history_ = service->GetDownloadHistory();
+    download_history_->AddObserver(this);
+  }
+
+  ~DownloadHistoryWaiter() override { download_history_->RemoveObserver(this); }
+
+  void WaitForStored(size_t download_count) {
+    if (stored_downloads_.size() >= download_count)
+      return;
+    stored_download_target_ = download_count;
+    Wait();
+  }
+
+  void WaitForHistoryLoad() {
+    if (history_query_complete_)
+      return;
+    Wait();
+  }
+
+ private:
+  void Wait() {
+    base::RunLoop run_loop;
+    quit_closure_ = run_loop.QuitClosure();
+    run_loop.Run();
+  }
+
+  void OnDownloadStored(content::DownloadItem* item,
+                        const history::DownloadRow& info) override {
+    stored_downloads_.insert(item);
+    if (!quit_closure_.is_null() &&
+        stored_downloads_.size() >= stored_download_target_) {
+      base::ResetAndReturn(&quit_closure_).Run();
+    }
+  }
+
+  void OnHistoryQueryComplete() override {
+    history_query_complete_ = true;
+    if (!quit_closure_.is_null())
+      base::ResetAndReturn(&quit_closure_).Run();
+  }
+
+  std::unordered_set<content::DownloadItem*> stored_downloads_;
+  size_t stored_download_target_ = 0;
+  bool history_query_complete_ = false;
+  base::Closure quit_closure_;
+  DownloadHistory* download_history_ = nullptr;
+};
+
+}  // namespace
+
+// Downloads initiated from isolated guest parititons should use their
+// respective cookie stores. In addition, if those downloads are resumed, they
+// should continue to use their respective cookie stores.
+IN_PROC_BROWSER_TEST_P(WebViewTest, DownloadCookieIsolation) {
+  // These are the status codes to be returned by
+  // HandleDownloadRequestWithCookie. The first two requests are going to result
+  // in interrupted downloads. The next two requests are going to succeed.
+  std::queue<net::HttpStatusCode> status_codes;
+  status_codes.push(net::HTTP_INTERNAL_SERVER_ERROR);
+  status_codes.push(net::HTTP_INTERNAL_SERVER_ERROR);
+  status_codes.push(net::HTTP_OK);
+  status_codes.push(net::HTTP_OK);
+
+  embedded_test_server()->RegisterRequestHandler(
+      base::Bind(&HandleDownloadRequestWithCookie, &status_codes));
+  ASSERT_TRUE(StartEmbeddedTestServer());  // For serving guest pages.
+  LoadAndLaunchPlatformApp("web_view/download_cookie_isolation",
+                           "created-webviews");
+
+  content::WebContents* web_contents = GetFirstAppWindowWebContents();
+  ASSERT_TRUE(web_contents);
+
+  base::ScopedTempDir temporary_download_dir;
+  ASSERT_TRUE(temporary_download_dir.CreateUniqueTempDir());
+  DownloadPrefs::FromBrowserContext(web_contents->GetBrowserContext())
+      ->SetDownloadPath(temporary_download_dir.path());
+
+  content::DownloadManager* download_manager =
+      content::BrowserContext::GetDownloadManager(
+          web_contents->GetBrowserContext());
+
+  std::unique_ptr<content::DownloadTestObserver> interrupted_observer(
+      new content::DownloadTestObserverInterrupted(
+          download_manager, 2,
+          content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL));
+
+  EXPECT_TRUE(content::ExecuteScript(
+      web_contents,
+      base::StringPrintf(
+          "startDownload('first', '%s?cookie=first')",
+          embedded_test_server()->GetURL(kDownloadPathPrefix).spec().c_str())));
+
+  EXPECT_TRUE(content::ExecuteScript(
+      web_contents,
+      base::StringPrintf(
+          "startDownload('second', '%s?cookie=second')",
+          embedded_test_server()->GetURL(kDownloadPathPrefix).spec().c_str())));
+
+  // Both downloads should fail due to the HTTP_INTERNAL_SERVER_ERROR that was
+  // injected above to the request handler. This maps to
+  // DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED.
+  interrupted_observer->WaitForFinished();
+
+  content::DownloadManager::DownloadVector downloads;
+  download_manager->GetAllDownloads(&downloads);
+  ASSERT_EQ(2u, downloads.size());
+
+  CloseAppWindow(GetFirstAppWindow());
+
+  std::unique_ptr<content::DownloadTestObserver> completion_observer(
+      new content::DownloadTestObserverTerminal(
+          download_manager, 2,
+          content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL));
+
+  for (auto& download : downloads) {
+    ASSERT_TRUE(download->CanResume());
+    EXPECT_EQ(content::DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED,
+              download->GetLastReason());
+    download->Resume();
+  }
+
+  completion_observer->WaitForFinished();
+
+  std::set<std::string> cookies;
+  for (auto& download : downloads) {
+    ASSERT_EQ(content::DownloadItem::COMPLETE, download->GetState());
+    ASSERT_TRUE(base::PathExists(download->GetTargetFilePath()));
+    std::string content;
+    ASSERT_TRUE(
+        base::ReadFileToString(download->GetTargetFilePath(), &content));
+    // Note that the contents of the file is the value of the cookie.
+    EXPECT_EQ(content, download->GetURL().query());
+    cookies.insert(content);
+  }
+
+  ASSERT_EQ(2u, cookies.size());
+  ASSERT_TRUE(cookies.find("cookie=first") != cookies.end());
+  ASSERT_TRUE(cookies.find("cookie=second") != cookies.end());
+}
+
+IN_PROC_BROWSER_TEST_P(WebViewTest, PRE_DownloadCookieIsolation_CrossSession) {
+  // These are the status codes to be returned by
+  // HandleDownloadRequestWithCookie. The first two requests are going to result
+  // in interrupted downloads. The next two requests are going to succeed.
+  std::queue<net::HttpStatusCode> status_codes;
+  status_codes.push(net::HTTP_INTERNAL_SERVER_ERROR);
+  status_codes.push(net::HTTP_INTERNAL_SERVER_ERROR);
+
+  embedded_test_server()->RegisterRequestHandler(
+      base::Bind(&HandleDownloadRequestWithCookie, &status_codes));
+  ASSERT_TRUE(StartEmbeddedTestServer());  // For serving guest pages.
+  LoadAndLaunchPlatformApp("web_view/download_cookie_isolation",
+                           "created-webviews");
+
+  content::WebContents* web_contents = GetFirstAppWindowWebContents();
+  ASSERT_TRUE(web_contents);
+
+  base::ScopedTempDir temporary_download_dir;
+  ASSERT_TRUE(temporary_download_dir.CreateUniqueTempDir());
+  DownloadPrefs::FromBrowserContext(web_contents->GetBrowserContext())
+      ->SetDownloadPath(temporary_download_dir.path());
+
+  content::DownloadManager* download_manager =
+      content::BrowserContext::GetDownloadManager(
+          web_contents->GetBrowserContext());
+
+  DownloadHistoryWaiter history_waiter(web_contents->GetBrowserContext());
+
+  std::unique_ptr<content::DownloadTestObserver> interrupted_observer(
+      new content::DownloadTestObserverInterrupted(
+          download_manager, 2,
+          content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL));
+
+  EXPECT_TRUE(content::ExecuteScript(
+      web_contents,
+      base::StringPrintf(
+          "startDownload('first', '%s?cookie=first')",
+          embedded_test_server()->GetURL(kDownloadPathPrefix).spec().c_str())));
+
+  // Note that the second webview uses an in-memory partition.
+  EXPECT_TRUE(content::ExecuteScript(
+      web_contents,
+      base::StringPrintf(
+          "startDownload('second', '%s?cookie=second')",
+          embedded_test_server()->GetURL(kDownloadPathPrefix).spec().c_str())));
+
+  // Both downloads should fail due to the HTTP_INTERNAL_SERVER_ERROR that was
+  // injected above to the request handler. This maps to
+  // DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED.
+  interrupted_observer->WaitForFinished();
+
+  // Wait for both downloads to be stored.
+  history_waiter.WaitForStored(2);
+
+  // Leak the temporary download directory. We'll retake ownership in the next
+  // browser session.
+  temporary_download_dir.Take();
+}
+
+IN_PROC_BROWSER_TEST_P(WebViewTest, DownloadCookieIsolation_CrossSession) {
+  std::queue<net::HttpStatusCode> status_codes;
+  status_codes.push(net::HTTP_OK);
+  status_codes.push(net::HTTP_OK);
+
+  embedded_test_server()->RegisterRequestHandler(
+      base::Bind(&HandleDownloadRequestWithCookie, &status_codes));
+  ASSERT_TRUE(StartEmbeddedTestServer());  // For serving guest pages.
+
+  content::BrowserContext* browser_context = profile();
+  content::DownloadManager* download_manager =
+      content::BrowserContext::GetDownloadManager(browser_context);
+
+  DownloadHistoryWaiter history_waiter(browser_context);
+  history_waiter.WaitForHistoryLoad();
+
+  base::ScopedTempDir temporary_download_dir;
+  ASSERT_TRUE(temporary_download_dir.Set(
+      DownloadPrefs::FromBrowserContext(browser_context)->DownloadPath()));
+
+  content::DownloadManager::DownloadVector saved_downloads;
+  download_manager->GetAllDownloads(&saved_downloads);
+  ASSERT_EQ(2u, saved_downloads.size());
+
+  content::DownloadManager::DownloadVector downloads;
+  // We can't trivially resume the previous downloads because they are going to
+  // try to talk to the old EmbeddedTestServer instance. We need to update the
+  // URL to point to the new instance, which should only differ by the port
+  // number.
+  for (auto& download : saved_downloads) {
+    const std::string port_string =
+        base::UintToString(embedded_test_server()->port());
+    url::Replacements<char> replacements;
+    replacements.SetPort(port_string.c_str(),
+                         url::Component(0, port_string.size()));
+    std::vector<GURL> url_chain;
+    url_chain.push_back(download->GetURL().ReplaceComponents(replacements));
+
+    downloads.push_back(download_manager->CreateDownloadItem(
+        base::GenerateGUID(), download->GetId() + 2, download->GetFullPath(),
+        download->GetTargetFilePath(), url_chain, download->GetReferrerUrl(),
+        download->GetSiteUrl(), download->GetTabUrl(),
+        download->GetTabReferrerUrl(), download->GetMimeType(),
+        download->GetOriginalMimeType(), download->GetStartTime(),
+        download->GetEndTime(), download->GetETag(),
+        download->GetLastModifiedTime(), download->GetReceivedBytes(),
+        download->GetTotalBytes(), download->GetHash(), download->GetState(),
+        download->GetDangerType(), download->GetLastReason(),
+        download->GetOpened()));
+  }
+
+  std::unique_ptr<content::DownloadTestObserver> completion_observer(
+      new content::DownloadTestObserverTerminal(
+          download_manager, 2,
+          content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL));
+
+  for (auto& download : downloads) {
+    ASSERT_TRUE(download->CanResume());
+    ASSERT_TRUE(
+        temporary_download_dir.path().IsParent(download->GetTargetFilePath()));
+    ASSERT_TRUE(download->GetFullPath().empty());
+    EXPECT_EQ(content::DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED,
+              download->GetLastReason());
+    download->Resume();
+  }
+
+  completion_observer->WaitForFinished();
+
+  // Of the two downloads, ?cookie=first will succeed and ?cookie=second will
+  // fail. The latter fails because the underlying storage partition was not
+  // persisted.
+
+  content::DownloadItem* succeeded_download = downloads[0];
+  content::DownloadItem* failed_download = downloads[1];
+
+  if (downloads[0]->GetState() == content::DownloadItem::INTERRUPTED)
+    std::swap(succeeded_download, failed_download);
+
+  ASSERT_EQ(content::DownloadItem::COMPLETE, succeeded_download->GetState());
+  ASSERT_TRUE(base::PathExists(succeeded_download->GetTargetFilePath()));
+  std::string content;
+  ASSERT_TRUE(base::ReadFileToString(succeeded_download->GetTargetFilePath(),
+                                     &content));
+  // This is the cookie that should've been stored in the persisted storage
+  // partition.
+  EXPECT_STREQ("cookie=first", content.c_str());
+
+  ASSERT_EQ(content::DownloadItem::INTERRUPTED, failed_download->GetState());
+  EXPECT_EQ(content::DOWNLOAD_INTERRUPT_REASON_SERVER_FORBIDDEN,
+            failed_download->GetLastReason());
 }
 
 // This test makes sure loading <webview> does not crash when there is an

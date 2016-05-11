@@ -219,10 +219,10 @@ class DownloadHistoryTest : public testing::Test {
       const history::DownloadRow& row = infos->at(index);
       content::MockDownloadManager::CreateDownloadItemAdapter adapter(
           row.guid, history::ToContentDownloadId(row.id), row.current_path,
-          row.target_path, row.url_chain, row.referrer_url, row.tab_url,
-          row.tab_referrer_url, row.mime_type, row.original_mime_type,
-          row.start_time, row.end_time, row.etag, row.last_modified,
-          row.received_bytes, row.total_bytes, std::string(),
+          row.target_path, row.url_chain, row.referrer_url, row.site_url,
+          row.tab_url, row.tab_referrer_url, row.mime_type,
+          row.original_mime_type, row.start_time, row.end_time, row.etag,
+          row.last_modified, row.received_bytes, row.total_bytes, std::string(),
           history::ToContentDownloadState(row.state),
           history::ToContentDownloadDangerType(row.danger_type),
           history::ToContentDownloadInterruptReason(row.interrupt_reason),
@@ -328,7 +328,7 @@ class DownloadHistoryTest : public testing::Test {
     url_chain.push_back(url);
     InitItem(base::GenerateGUID(), static_cast<uint32_t>(items_.size() + 1),
              base::FilePath(path), base::FilePath(path), url_chain, referrer,
-             GURL("http://example.com/tab-url"),
+             GURL("http://example.com"), GURL("http://example.com/tab-url"),
              GURL("http://example.com/tab-referrer-url"),
              "application/octet-stream", "application/octet-stream",
              (base::Time::Now() - base::TimeDelta::FromMinutes(10)),
@@ -345,6 +345,7 @@ class DownloadHistoryTest : public testing::Test {
                 const base::FilePath& target_path,
                 const std::vector<GURL>& url_chain,
                 const GURL& referrer,
+                const GURL& site_url,
                 const GURL& tab_url,
                 const GURL& tab_referrer_url,
                 const std::string& mime_type,
@@ -372,6 +373,7 @@ class DownloadHistoryTest : public testing::Test {
     info->target_path = target_path;
     info->url_chain = url_chain;
     info->referrer_url = referrer;
+    info->site_url = site_url;
     info->tab_url = tab_url;
     info->tab_referrer_url = tab_referrer_url;
     info->mime_type = mime_type;
@@ -408,6 +410,8 @@ class DownloadHistoryTest : public testing::Test {
         original_mime_type));
     EXPECT_CALL(item(index), GetReferrerUrl())
         .WillRepeatedly(ReturnRefOfCopy(referrer));
+    EXPECT_CALL(item(index), GetSiteUrl())
+        .WillRepeatedly(ReturnRefOfCopy(site_url));
     EXPECT_CALL(item(index), GetTabUrl())
         .WillRepeatedly(ReturnRefOfCopy(tab_url));
     EXPECT_CALL(item(index), GetTabReferrerUrl())

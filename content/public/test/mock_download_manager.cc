@@ -16,6 +16,7 @@ MockDownloadManager::CreateDownloadItemAdapter::CreateDownloadItemAdapter(
     const base::FilePath& target_path,
     const std::vector<GURL>& url_chain,
     const GURL& referrer_url,
+    const GURL& site_url,
     const GURL& tab_url,
     const GURL& tab_referrer_url,
     const std::string& mime_type,
@@ -37,6 +38,7 @@ MockDownloadManager::CreateDownloadItemAdapter::CreateDownloadItemAdapter(
       target_path(target_path),
       url_chain(url_chain),
       referrer_url(referrer_url),
+      site_url(site_url),
       tab_url(tab_url),
       tab_referrer_url(tab_referrer_url),
       mime_type(mime_type),
@@ -59,6 +61,7 @@ MockDownloadManager::CreateDownloadItemAdapter::CreateDownloadItemAdapter(
       target_path(rhs.target_path),
       url_chain(rhs.url_chain),
       referrer_url(rhs.referrer_url),
+      site_url(rhs.site_url),
       tab_url(rhs.tab_url),
       tab_referrer_url(rhs.tab_referrer_url),
       start_time(rhs.start_time),
@@ -79,8 +82,9 @@ bool MockDownloadManager::CreateDownloadItemAdapter::operator==(
   return (
       guid == rhs.guid && id == rhs.id && current_path == rhs.current_path &&
       target_path == rhs.target_path && url_chain == rhs.url_chain &&
-      referrer_url == rhs.referrer_url && tab_url == rhs.tab_url &&
-      tab_referrer_url == rhs.tab_referrer_url && mime_type == rhs.mime_type &&
+      referrer_url == rhs.referrer_url && site_url == rhs.site_url &&
+      tab_url == rhs.tab_url && tab_referrer_url == rhs.tab_referrer_url &&
+      mime_type == rhs.mime_type &&
       original_mime_type == rhs.original_mime_type &&
       start_time == rhs.start_time && end_time == rhs.end_time &&
       etag == rhs.etag && last_modified == rhs.last_modified &&
@@ -107,6 +111,7 @@ DownloadItem* MockDownloadManager::CreateDownloadItem(
     const base::FilePath& target_path,
     const std::vector<GURL>& url_chain,
     const GURL& referrer_url,
+    const GURL& site_url,
     const GURL& tab_url,
     const GURL& tab_referrer_url,
     const std::string& mime_type,
@@ -123,9 +128,9 @@ DownloadItem* MockDownloadManager::CreateDownloadItem(
     DownloadInterruptReason interrupt_reason,
     bool opened) {
   CreateDownloadItemAdapter adapter(
-      guid, id, current_path, target_path, url_chain, referrer_url, tab_url,
-      tab_referrer_url, mime_type, original_mime_type, start_time, end_time,
-      etag, last_modified, received_bytes, total_bytes, hash, state,
+      guid, id, current_path, target_path, url_chain, referrer_url, site_url,
+      tab_url, tab_referrer_url, mime_type, original_mime_type, start_time,
+      end_time, etag, last_modified, received_bytes, total_bytes, hash, state,
       danger_type, interrupt_reason, opened);
   return MockCreateDownloadItem(adapter);
 }

@@ -24,6 +24,7 @@ DownloadRow::DownloadRow(const base::FilePath& current_path,
                          const base::FilePath& target_path,
                          const std::vector<GURL>& url_chain,
                          const GURL& referrer_url,
+                         const GURL& site_url,
                          const GURL& tab_url,
                          const GURL& tab_referrer_url,
                          const std::string& http_method,
@@ -48,6 +49,7 @@ DownloadRow::DownloadRow(const base::FilePath& current_path,
       target_path(target_path),
       url_chain(url_chain),
       referrer_url(referrer_url),
+      site_url(site_url),
       tab_url(tab_url),
       tab_referrer_url(tab_referrer_url),
       http_method(http_method),
@@ -76,7 +78,8 @@ DownloadRow::~DownloadRow() {}
 bool DownloadRow::operator==(const DownloadRow& rhs) const {
   return current_path == rhs.current_path && target_path == rhs.target_path &&
          url_chain == rhs.url_chain && referrer_url == rhs.referrer_url &&
-         tab_url == rhs.tab_url && tab_referrer_url == rhs.tab_referrer_url &&
+         site_url == rhs.site_url && tab_url == rhs.tab_url &&
+         tab_referrer_url == rhs.tab_referrer_url &&
          http_method == rhs.http_method && mime_type == rhs.mime_type &&
          original_mime_type == rhs.original_mime_type &&
          start_time == rhs.start_time && end_time == rhs.end_time &&

@@ -52,6 +52,7 @@
 #include "content/public/browser/download_danger_type.h"
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_url_parameters.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/referrer.h"
 
@@ -113,6 +114,7 @@ DownloadItemImpl::DownloadItemImpl(DownloadItemImplDelegate* delegate,
                                    const base::FilePath& target_path,
                                    const std::vector<GURL>& url_chain,
                                    const GURL& referrer_url,
+                                   const GURL& site_url,
                                    const GURL& tab_url,
                                    const GURL& tab_refererr_url,
                                    const std::string& mime_type,
@@ -134,6 +136,7 @@ DownloadItemImpl::DownloadItemImpl(DownloadItemImplDelegate* delegate,
       target_path_(target_path),
       url_chain_(url_chain),
       referrer_url_(referrer_url),
+      site_url_(site_url),
       tab_url_(tab_url),
       tab_referrer_url_(tab_refererr_url),
       mime_type_(mime_type),
@@ -174,6 +177,7 @@ DownloadItemImpl::DownloadItemImpl(DownloadItemImplDelegate* delegate,
                               : TARGET_DISPOSITION_OVERWRITE),
       url_chain_(info.url_chain),
       referrer_url_(info.referrer_url),
+      site_url_(info.site_url),
       tab_url_(info.tab_url),
       tab_referrer_url_(info.tab_referrer_url),
       suggested_filename_(base::UTF16ToUTF8(info.save_info->suggested_name)),
@@ -532,6 +536,10 @@ const GURL& DownloadItemImpl::GetReferrerUrl() const {
   return referrer_url_;
 }
 
+const GURL& DownloadItemImpl::GetSiteUrl() const {
+  return site_url_;
+}
+
 const GURL& DownloadItemImpl::GetTabUrl() const {
   return tab_url_;
 }
@@ -810,24 +818,20 @@ std::string DownloadItemImpl::DebugString(bool verbose) const {
         " etag = '%s'"
         " has_download_file = %s"
         " url_chain = \n\t\"%s\"\n\t"
-        " current_path = \"%" PRFilePath "\"\n\t"
-        " target_path = \"%" PRFilePath "\""
-        " referrer = \"%s\"",
-        GetTotalBytes(),
-        GetReceivedBytes(),
+        " current_path = \"%" PRFilePath
+        "\"\n\t"
+        " target_path = \"%" PRFilePath
+        "\""
+        " referrer = \"%s\""
+        " site_url = \"%s\"",
+        GetTotalBytes(), GetReceivedBytes(),
         DownloadInterruptReasonToString(last_reason_).c_str(),
-        IsPaused() ? 'T' : 'F',
-        DebugResumeModeString(GetResumeMode()),
-        auto_resume_count_,
-        GetDangerType(),
-        AllDataSaved() ? 'T' : 'F',
-        GetLastModifiedTime().c_str(),
-        GetETag().c_str(),
-        download_file_.get() ? "true" : "false",
-        url_list.c_str(),
-        GetFullPath().value().c_str(),
-        GetTargetFilePath().value().c_str(),
-        GetReferrerUrl().spec().c_str());
+        IsPaused() ? 'T' : 'F', DebugResumeModeString(GetResumeMode()),
+        auto_resume_count_, GetDangerType(), AllDataSaved() ? 'T' : 'F',
+        GetLastModifiedTime().c_str(), GetETag().c_str(),
+        download_file_.get() ? "true" : "false", url_list.c_str(),
+        GetFullPath().value().c_str(), GetTargetFilePath().value().c_str(),
+        GetReferrerUrl().spec().c_str(), GetSiteUrl().spec().c_str());
   } else {
     description += base::StringPrintf(" url = \"%s\"", url_list.c_str());
   }
@@ -1901,13 +1905,17 @@ void DownloadItemImpl::ResumeInterruptedDownload() {
     hash_state_.reset();
   }
 
+  StoragePartition* storage_partition =
+      BrowserContext::GetStoragePartitionForSite(GetBrowserContext(),
+                                                 site_url_);
+
   // Avoid using the WebContents even if it's still around. Resumption requests
   // are consistently routed through the no-renderer code paths so that the
   // request will not be dropped if the WebContents (and by extension, the
   // associated renderer) goes away before a response is received.
   std::unique_ptr<DownloadUrlParameters> download_params(
       new DownloadUrlParameters(GetURL(), -1, -1, -1,
-                                GetBrowserContext()->GetResourceContext()));
+                                storage_partition->GetURLRequestContext()));
   download_params->set_file_path(GetFullPath());
   download_params->set_offset(GetReceivedBytes());
   download_params->set_last_modified(GetLastModifiedTime());

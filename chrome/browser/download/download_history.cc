@@ -128,7 +128,8 @@ history::DownloadRow GetDownloadRow(
 
   return history::DownloadRow(
       item->GetFullPath(), item->GetTargetFilePath(), item->GetUrlChain(),
-      item->GetReferrerUrl(), item->GetTabUrl(), item->GetTabReferrerUrl(),
+      item->GetReferrerUrl(), item->GetSiteUrl(), item->GetTabUrl(),
+      item->GetTabReferrerUrl(),
       std::string(),  // HTTP method (not available yet)
       item->GetMimeType(), item->GetOriginalMimeType(), item->GetStartTime(),
       item->GetEndTime(), item->GetETag(), item->GetLastModifiedTime(),
@@ -143,8 +144,8 @@ history::DownloadRow GetDownloadRow(
 
 bool ShouldUpdateHistory(const history::DownloadRow* previous,
                          const history::DownloadRow& current) {
-  // Ignore url_chain, referrer, http_method, mime_type, original_mime_type,
-  // start_time, id, guid, which don't change.
+  // Ignore url_chain, referrer, site_url, http_method, mime_type,
+  // original_mime_type, start_time, id, and guid. These fields don't change.
   return ((previous == NULL) ||
           (previous->current_path != current.current_path) ||
           (previous->target_path != current.target_path) ||
@@ -263,9 +264,9 @@ void DownloadHistory::QueryCallback(std::unique_ptr<InfoVector> infos) {
     loading_id_ = history::ToContentDownloadId(it->id);
     content::DownloadItem* item = notifier_.GetManager()->CreateDownloadItem(
         it->guid, loading_id_, it->current_path, it->target_path, it->url_chain,
-        it->referrer_url, it->tab_url, it->tab_referrer_url, it->mime_type,
-        it->original_mime_type, it->start_time, it->end_time, it->etag,
-        it->last_modified, it->received_bytes, it->total_bytes,
+        it->referrer_url, it->site_url, it->tab_url, it->tab_referrer_url,
+        it->mime_type, it->original_mime_type, it->start_time, it->end_time,
+        it->etag, it->last_modified, it->received_bytes, it->total_bytes,
         std::string(),  // TODO(asanka): Need to persist and restore hash of
                         // partial file for an interrupted download. No need to
                         // store hash for a completed file.

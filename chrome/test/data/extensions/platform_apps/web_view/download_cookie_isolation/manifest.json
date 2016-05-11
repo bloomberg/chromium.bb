@@ -1,0 +1,10 @@
+{
+ "name": "Platform API Test: Cookie Isolation Across Multiple webviews",
+  "version": "0.0.1",
+  "permissions": ["webview"],
+  "app": {
+    "background": {
+      "scripts": [ "background.js"]
+    }
+  }
+}

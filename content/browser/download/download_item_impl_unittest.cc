@@ -28,8 +28,6 @@
 #include "content/public/browser/download_url_parameters.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/mock_download_item.h"
-#include "content/public/test/mock_download_item.h"
-#include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/web_contents_tester.h"
@@ -402,12 +400,12 @@ class DownloadItemTest : public testing::Test {
   BrowserContext* browser_context() { return &browser_context_; }
 
  private:
+  TestBrowserThreadBundle thread_bundle_;
   StrictMock<MockDelegate> delegate_;
   std::set<DownloadItem*> allocated_downloads_;
   std::unique_ptr<DownloadCreateInfo> create_info_;
   uint32_t next_download_id_ = DownloadItem::kInvalidId + 1;
   TestBrowserContext browser_context_;
-  TestBrowserThreadBundle thread_bundle_;
 };
 
 // Tests to ensure calls that change a DownloadItem generate an update to

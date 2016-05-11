@@ -52,6 +52,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -665,11 +666,15 @@ void WebstoreInstaller::StartDownload(const std::string& extension_id,
   int render_process_host_id = contents->GetRenderProcessHost()->GetID();
   int render_view_host_routing_id =
       contents->GetRenderViewHost()->GetRoutingID();
-  content::ResourceContext* resource_context =
-      controller.GetBrowserContext()->GetResourceContext();
+
+  content::RenderFrameHost* render_frame_host = contents->GetMainFrame();
+  content::StoragePartition* storage_partition =
+      BrowserContext::GetStoragePartition(profile_,
+                                          render_frame_host->GetSiteInstance());
   std::unique_ptr<DownloadUrlParameters> params(new DownloadUrlParameters(
       download_url_, render_process_host_id, render_view_host_routing_id,
-      contents->GetMainFrame()->GetRoutingID(), resource_context));
+      render_frame_host->GetRoutingID(),
+      storage_partition->GetURLRequestContext()));
   params->set_file_path(file);
   if (controller.GetVisibleEntry())
     params->set_referrer(content::Referrer::SanitizeForRequest(

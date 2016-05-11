@@ -46,6 +46,9 @@ struct CONTENT_EXPORT DownloadCreateInfo {
   // The URL that referred us.
   GURL referrer_url;
 
+  // Site URL for the site instance that initiated the download.
+  GURL site_url;
+
   // The URL of the tab that started us.
   GURL tab_url;
 

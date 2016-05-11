@@ -273,7 +273,8 @@ class LastDownloadFinderTest : public testing::Test {
     return history::DownloadRow(
         base::FilePath(file_path), base::FilePath(file_path),
         std::vector<GURL>(1, GURL("http://www.google.com")),  // url_chain
-        GURL("http://referrer.example.com/"),        // referrer
+        GURL("http://referrer.example.com/"),                 // referrer
+        GURL("http://site-url.example.com/"),        // site instance URL
         GURL("http://tab-url.example.com/"),         // tab URL
         GURL("http://tab-referrer.example.com/"),    // tab referrer URL
         std::string(),                               // HTTP method
@@ -292,9 +293,9 @@ class LastDownloadFinderTest : public testing::Test {
         std::string(),                                 // hash
         download_id_++,                                // id
         base::GenerateGUID(),                          // GUID
-        false,           // download_opened
-        std::string(),   // ext_id
-        std::string());  // ext_name
+        false,                                         // download_opened
+        std::string(),                                 // ext_id
+        std::string());                                // ext_name
   }
 
   content::TestBrowserThreadBundle browser_thread_bundle_;

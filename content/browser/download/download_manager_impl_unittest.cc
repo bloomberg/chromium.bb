@@ -87,6 +87,7 @@ class MockDownloadItemImpl : public DownloadItemImpl {
                          GURL(),
                          GURL(),
                          GURL(),
+                         GURL(),
                          "application/octet-stream",
                          "application/octet-stream",
                          base::Time(),
@@ -251,6 +252,7 @@ class MockDownloadItemFactory
       const base::FilePath& target_path,
       const std::vector<GURL>& url_chain,
       const GURL& referrer_url,
+      const GURL& site_url,
       const GURL& tab_url,
       const GURL& tab_referrer_url,
       const std::string& mime_type,
@@ -322,6 +324,7 @@ DownloadItemImpl* MockDownloadItemFactory::CreatePersistedItem(
     const base::FilePath& target_path,
     const std::vector<GURL>& url_chain,
     const GURL& referrer_url,
+    const GURL& site_url,
     const GURL& tab_url,
     const GURL& tab_referrer_url,
     const std::string& mime_type,
@@ -751,27 +754,13 @@ TEST_F(DownloadManagerTest, GetDownloadByGuid) {
 
   const char kGuid[] = "8DF158E8-C980-4618-BB03-EBA3242EB48B";
   DownloadItem* persisted_item = download_manager_->CreateDownloadItem(
-      kGuid,
-      10,
-      base::FilePath(),
-      base::FilePath(),
-      std::vector<GURL>(),
-      GURL("http://example.com/a"),
-      GURL("http://example.com/a"),
-      GURL("http://example.com/a"),
-      "application/octet-stream",
-      "application/octet-stream",
-      base::Time::Now(),
-      base::Time::Now(),
-      std::string(),
-      std::string(),
-      10,
-      10,
-      std::string(),
-      DownloadItem::INTERRUPTED,
-      DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
-      DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED,
-      false);
+      kGuid, 10, base::FilePath(), base::FilePath(), std::vector<GURL>(),
+      GURL("http://example.com/a"), GURL("http://example.com/a"),
+      GURL("http://example.com/a"), GURL("http://example.com/a"),
+      "application/octet-stream", "application/octet-stream", base::Time::Now(),
+      base::Time::Now(), std::string(), std::string(), 10, 10, std::string(),
+      DownloadItem::INTERRUPTED, DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+      DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED, false);
   ASSERT_TRUE(persisted_item);
 
   ASSERT_EQ(persisted_item, download_manager_->GetDownloadByGuid(kGuid));

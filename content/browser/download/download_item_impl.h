@@ -58,6 +58,7 @@ class CONTENT_EXPORT DownloadItemImpl
                    const base::FilePath& target_path,
                    const std::vector<GURL>& url_chain,
                    const GURL& referrer_url,
+                   const GURL& site_url,
                    const GURL& tab_url,
                    const GURL& tab_referrer_url,
                    const std::string& mime_type,
@@ -77,8 +78,6 @@ class CONTENT_EXPORT DownloadItemImpl
 
   // Constructing for a regular download.
   // |bound_net_log| is constructed externally for our use.
-  // TODO(asanka): Get rid of the DownloadCreateInfo parameter since active
-  // downloads end up at Start() immediately after creation.
   DownloadItemImpl(DownloadItemImplDelegate* delegate,
                    uint32_t id,
                    const DownloadCreateInfo& info,
@@ -121,6 +120,7 @@ class CONTENT_EXPORT DownloadItemImpl
   const std::vector<GURL>& GetUrlChain() const override;
   const GURL& GetOriginalUrl() const override;
   const GURL& GetReferrerUrl() const override;
+  const GURL& GetSiteUrl() const override;
   const GURL& GetTabUrl() const override;
   const GURL& GetTabReferrerUrl() const override;
   std::string GetSuggestedFilename() const override;
@@ -525,6 +525,9 @@ class CONTENT_EXPORT DownloadItemImpl
 
   // The URL of the page that initiated the download.
   GURL referrer_url_;
+
+  // Site URL for the site instance that initiated this download.
+  GURL site_url_;
 
   // The URL of the tab that initiated the download.
   GURL tab_url_;
