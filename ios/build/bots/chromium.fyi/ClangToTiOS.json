@@ -19,5 +19,9 @@
   "configuration": "Release",
   "sdk": "iphoneos9.0",
   "tests": [
+    {
+      "app": "ios_web_shell_test",
+      "host": "ios_web_shell_test_host"
+    }
   ]
 }
