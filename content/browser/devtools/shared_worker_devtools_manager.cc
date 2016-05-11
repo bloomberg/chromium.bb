@@ -60,7 +60,7 @@ void SharedWorkerDevToolsManager::WorkerReadyForInspection(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   const WorkerId id(worker_process_id, worker_route_id);
   AgentHostMap::iterator it = workers_.find(id);
-  if (it == workers_.end())
+  if (it == workers_.end() || it->second->IsTerminated())
     return;
   it->second->WorkerReadyForInspection();
 }
@@ -71,7 +71,7 @@ void SharedWorkerDevToolsManager::WorkerDestroyed(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   const WorkerId id(worker_process_id, worker_route_id);
   AgentHostMap::iterator it = workers_.find(id);
-  if (it == workers_.end())
+  if (it == workers_.end() || it->second->IsTerminated())
     return;
   scoped_refptr<SharedWorkerDevToolsAgentHost> agent_host(it->second);
   agent_host->WorkerDestroyed();
