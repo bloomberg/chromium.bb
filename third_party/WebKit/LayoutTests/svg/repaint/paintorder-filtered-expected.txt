@@ -65,6 +65,10 @@
           "object": "LayoutSVGEllipse circle id='t4'",
           "rect": [46, 28, 7, 7],
           "reason": "style change"
+        },
+        {
+          "object": "LayoutSVGViewportContainer svg id='poly2'",
+          "reason": "none"
         }
       ]
     }

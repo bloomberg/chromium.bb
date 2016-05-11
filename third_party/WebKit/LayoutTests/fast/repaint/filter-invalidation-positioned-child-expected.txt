@@ -9,12 +9,12 @@
         {
           "object": "LayoutBlockFlow DIV id='box'",
           "rect": [8, 8, 429, 229],
-          "reason": "style change"
+          "reason": "subtree"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='positioned'",
           "rect": [400, 400, 379, 179],
-          "reason": "style change"
+          "reason": "subtree"
         }
       ]
     }

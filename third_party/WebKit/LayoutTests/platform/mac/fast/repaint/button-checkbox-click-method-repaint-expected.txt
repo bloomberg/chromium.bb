@@ -9,7 +9,7 @@
         {
           "object": "LayoutBlockFlow INPUT id='checkbox'",
           "rect": [10, 61, 31, 30],
-          "reason": "full"
+          "reason": "subtree"
         }
       ]
     }

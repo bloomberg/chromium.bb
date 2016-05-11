@@ -9,7 +9,7 @@
         {
           "object": "LayoutBlockFlow DIV id='square'",
           "rect": [10, 10, 100, 100],
-          "reason": "style change"
+          "reason": "subtree"
         }
       ]
     }

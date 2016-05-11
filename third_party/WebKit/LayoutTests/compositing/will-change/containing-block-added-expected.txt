@@ -9,7 +9,7 @@
         {
           "object": "LayoutBlockFlow (positioned) DIV class='fixed'",
           "rect": [50, 50, 75, 75],
-          "reason": "layer"
+          "reason": "subtree"
         }
       ],
       "children": [

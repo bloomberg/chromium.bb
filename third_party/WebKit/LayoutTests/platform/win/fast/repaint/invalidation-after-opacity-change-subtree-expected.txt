@@ -9,92 +9,92 @@
         {
           "object": "LayoutBlockFlow (positioned) DIV id='absolute'",
           "rect": [8, 2000, 777, 350],
-          "reason": "style change"
+          "reason": "subtree"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='absolute'",
           "rect": [8, 2000, 777, 350],
-          "reason": "layer"
+          "reason": "subtree"
         },
         {
           "object": "LayoutBlockFlow P",
           "rect": [8, 2200, 777, 100],
-          "reason": "style change"
+          "reason": "subtree"
         },
         {
           "object": "LayoutBlockFlow P",
           "rect": [8, 2200, 777, 100],
-          "reason": "layer"
+          "reason": "subtree"
         },
         {
           "object": "LayoutBlockFlow P",
           "rect": [8, 2050, 777, 100],
-          "reason": "style change"
+          "reason": "subtree"
         },
         {
           "object": "LayoutBlockFlow P",
           "rect": [8, 2050, 777, 100],
-          "reason": "layer"
+          "reason": "subtree"
         },
         {
           "object": "LayoutText #text",
           "rect": [8, 2047, 774, 106],
-          "reason": "style change"
+          "reason": "subtree"
         },
         {
           "object": "LayoutText #text",
           "rect": [8, 2047, 774, 106],
-          "reason": "layer"
+          "reason": "subtree"
         },
         {
           "object": "LayoutText #text",
           "rect": [8, 2197, 653, 106],
-          "reason": "style change"
+          "reason": "subtree"
         },
         {
           "object": "LayoutText #text",
           "rect": [8, 2197, 653, 106],
-          "reason": "layer"
+          "reason": "subtree"
         },
         {
           "object": "InlineTextBox 'This test checks that switching opacity'",
-          "reason": "style change"
+          "reason": "subtree"
         },
         {
           "object": "InlineTextBox 'This test checks that switching opacity'",
-          "reason": "layer"
+          "reason": "subtree"
         },
         {
           "object": "InlineTextBox 'This text should be visible in the'",
-          "reason": "style change"
+          "reason": "subtree"
         },
         {
           "object": "InlineTextBox 'This text should be visible in the'",
-          "reason": "layer"
+          "reason": "subtree"
         },
         {
           "object": "InlineTextBox 'invalidates the full subtree.'",
-          "reason": "style change"
+          "reason": "subtree"
         },
         {
           "object": "InlineTextBox 'invalidates the full subtree.'",
-          "reason": "layer"
+          "reason": "subtree"
         },
         {
           "object": "InlineTextBox 'output.'",
-          "reason": "style change"
+          "reason": "subtree"
         },
         {
           "object": "InlineTextBox 'output.'",
-          "reason": "layer"
+          "reason": "subtree"
         },
         {
           "object": "LayoutBlockFlow DIV id='container'",
-          "reason": "style change"
+          "reason": "subtree"
         },
         {
           "object": "LayoutBlockFlow DIV id='container'",
-          "reason": "layer"
+          "reason": "subtree"
         },
         {
           "object": "RootInlineBox",

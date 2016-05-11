@@ -9,17 +9,17 @@
         {
           "object": "LayoutTableCell (relative positioned) TD id='cellToScroll' class='relative'",
           "rect": [312, 112, 454, 469],
-          "reason": "full"
+          "reason": "subtree"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV class='absolute green'",
           "rect": [314, 114, 435, 450],
-          "reason": "full"
+          "reason": "subtree"
         },
         {
           "object": "LayoutBlockFlow (relative positioned) DIV class='relative red'",
           "rect": [314, 114, 435, 450],
-          "reason": "full"
+          "reason": "subtree"
         },
         {
           "object": "LayoutTableCell (relative positioned) TD id='cellToScroll' class='relative'",

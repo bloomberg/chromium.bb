@@ -1,0 +1,65 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow DIV id='child'",
+          "reason": "layer"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='target'",
+          "reason": "layer"
+        }
+      ],
+      "children": [
+        {
+          "position": [8, 8]
+        },
+        {
+          "shouldFlattenTransform": false,
+          "children": [
+            {
+              "position": [8, 8],
+              "bounds": [784, 52],
+              "drawsContent": true,
+              "paintInvalidations": [
+                {
+                  "object": "LayoutBlockFlow DIV id='child'",
+                  "rect": [1, 1, 100, 100],
+                  "reason": "layer"
+                },
+                {
+                  "object": "LayoutBlockFlow DIV id='target'",
+                  "rect": [1, 1, 50, 50],
+                  "reason": "layer"
+                }
+              ]
+            },
+            {
+              "position": [9, 9],
+              "bounds": [100, 100],
+              "drawsContent": true,
+              "paintInvalidations": [
+                {
+                  "object": "LayoutBlockFlow DIV id='child'",
+                  "rect": [0, 0, 100, 100],
+                  "reason": "style change"
+                },
+                {
+                  "object": "LayoutBlockFlow DIV id='target'",
+                  "rect": [0, 0, 50, 50],
+                  "reason": "style change"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+

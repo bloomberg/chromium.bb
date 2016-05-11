@@ -1,0 +1,33 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutSVGEllipse circle id='bounce'",
+          "rect": [102, 102, 66, 66],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGRoot svg",
+          "rect": [102, 102, 66, 66],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGEllipse circle id='bounce'",
+          "rect": [2, 2, 66, 66],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGRoot svg",
+          "rect": [2, 2, 66, 66],
+          "reason": "bounds change"
+        }
+      ]
+    }
+  ]
+}
+

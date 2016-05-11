@@ -9,7 +9,7 @@
         {
           "object": "LayoutBlockFlow INPUT",
           "rect": [5, 6, 23, 23],
-          "reason": "full"
+          "reason": "subtree"
         }
       ]
     }

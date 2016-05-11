@@ -14,22 +14,22 @@
         {
           "object": "LayoutBlockFlow (positioned) DIV class='absolute green'",
           "rect": [108, 5100, 100, 100],
-          "reason": "layer"
+          "reason": "subtree"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV class='absolute green'",
           "rect": [100, 100, 100, 100],
-          "reason": "style change"
+          "reason": "subtree"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='container' class='fixed blue'",
           "rect": [8, 5000, 100, 100],
-          "reason": "layer"
+          "reason": "subtree"
         },
         {
           "object": "LayoutBlockFlow DIV id='container' class='fixed blue'",
           "rect": [8, 8, 100, 100],
-          "reason": "style change"
+          "reason": "subtree"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV class='absolute green'",
@@ -37,7 +37,7 @@
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV class='absolute green'",
-          "reason": "layer"
+          "reason": "subtree"
         },
         {
           "object": "LayoutBlockFlow DIV id='container' class='fixed blue'",

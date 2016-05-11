@@ -23,7 +23,7 @@
             {
               "object": "LayoutBlockFlow (relative positioned) DIV id='inner'",
               "rect": [0, 0, 100, 100],
-              "reason": "layer"
+              "reason": "subtree"
             },
             {
               "object": "LayoutBlockFlow (relative positioned) DIV id='outer'",
@@ -33,7 +33,7 @@
             {
               "object": "LayoutBlockFlow (relative positioned) DIV id='outer'",
               "rect": [0, 0, 100, 100],
-              "reason": "layer"
+              "reason": "subtree"
             }
           ]
         }

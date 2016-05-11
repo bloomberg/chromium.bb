@@ -24,7 +24,7 @@
                 {
                   "object": "LayoutBlockFlow (positioned) DIV id='target'",
                   "rect": [0, 0, 200, 200],
-                  "reason": "layer"
+                  "reason": "subtree"
                 }
               ]
             }
@@ -40,7 +40,7 @@
             {
               "object": "LayoutBlockFlow (positioned) DIV id='target'",
               "rect": [0, 0, 200, 200],
-              "reason": "style change"
+              "reason": "subtree"
             }
           ]
         }

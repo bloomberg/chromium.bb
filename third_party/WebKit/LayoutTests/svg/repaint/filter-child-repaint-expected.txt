@@ -15,6 +15,10 @@
           "object": "LayoutSVGRect rect id='poke'",
           "rect": [32, 32, 64, 64],
           "reason": "style change"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "reason": "none"
         }
       ]
     }

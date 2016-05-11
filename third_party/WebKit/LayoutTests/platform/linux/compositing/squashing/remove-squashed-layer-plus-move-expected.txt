@@ -67,7 +67,7 @@
                 {
                   "object": "LayoutBlockFlow (relative positioned) DIV class='mv-tile'",
                   "rect": [0, 110, 1000, 50],
-                  "reason": "layer"
+                  "reason": "subtree"
                 },
                 {
                   "object": "LayoutBlockFlow (relative positioned) DIV class='mv-tile'",
@@ -77,7 +77,7 @@
                 {
                   "object": "LayoutBlockFlow (relative positioned) DIV class='mv-tile'",
                   "rect": [0, 55, 100, 50],
-                  "reason": "layer"
+                  "reason": "subtree"
                 },
                 {
                   "object": "LayoutBlockFlow (relative positioned) DIV class='mv-tile'",

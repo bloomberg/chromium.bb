@@ -9,17 +9,17 @@
         {
           "object": "LayoutBlockFlow DIV id='box'",
           "rect": [0, 0, 100, 220],
-          "reason": "style change"
+          "reason": "subtree"
         },
         {
           "object": "LayoutReplica (anonymous)",
           "rect": [0, 0, 100, 220],
-          "reason": "style change"
+          "reason": "subtree"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='positioned'",
           "rect": [400, 10, 50, 200],
-          "reason": "style change"
+          "reason": "subtree"
         }
       ]
     }

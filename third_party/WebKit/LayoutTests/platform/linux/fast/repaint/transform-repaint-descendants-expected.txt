@@ -9,17 +9,17 @@
         {
           "object": "LayoutBlockFlow (positioned) DIV",
           "rect": [176, 220, 394, 185],
-          "reason": "style change"
+          "reason": "subtree"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV",
           "rect": [176, 220, 388, 203],
-          "reason": "style change"
+          "reason": "subtree"
         },
         {
           "object": "LayoutBlockFlow (relative positioned) DIV id='box'",
           "rect": [76, 120, 266, 266],
-          "reason": "style change"
+          "reason": "subtree"
         }
       ]
     }

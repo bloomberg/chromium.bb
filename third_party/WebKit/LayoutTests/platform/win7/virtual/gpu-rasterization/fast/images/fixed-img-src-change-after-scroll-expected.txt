@@ -1,0 +1,23 @@
+{
+  "bounds": [785, 2016],
+  "children": [
+    {
+      "bounds": [785, 2016],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutImage (positioned) IMG id='img'",
+          "rect": [0, 1050, 100, 100],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutImage (positioned) IMG id='img'",
+          "rect": [0, 50, 100, 100],
+          "reason": "location change"
+        }
+      ]
+    }
+  ]
+}
+

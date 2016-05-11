@@ -57,7 +57,7 @@ CASE 2, The original composited layer is no longer composited, which then also r
         {
           "object": "LayoutBlockFlow (positioned) DIV id='forceComposited' class='underneath'",
           "rect": [60, 60, 100, 100],
-          "reason": "style change"
+          "reason": "subtree"
         }
       ]
     }

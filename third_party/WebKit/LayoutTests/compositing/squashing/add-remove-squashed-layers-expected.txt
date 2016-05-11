@@ -41,7 +41,7 @@ CASE 2, overlap3 gets added:
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow (positioned) DIV id='C' class='overlap3'",
-          "reason": "layer"
+          "reason": "subtree"
         }
       ],
       "children": [
@@ -137,7 +137,7 @@ CASE 4, overlap1 gets removed:
                 {
                   "object": "LayoutBlockFlow (positioned) DIV id='C' class='overlap3'",
                   "rect": [160, 160, 100, 100],
-                  "reason": "layer"
+                  "reason": "subtree"
                 },
                 {
                   "object": "LayoutBlockFlow (positioned) DIV id='A' class='overlap1'",
@@ -168,7 +168,7 @@ CASE 5, overlap2 gets added back:
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow (positioned) DIV id='B' class='overlap2'",
-          "reason": "layer"
+          "reason": "subtree"
         }
       ],
       "children": [
@@ -200,7 +200,7 @@ CASE 5, overlap2 gets added back:
                 {
                   "object": "LayoutBlockFlow (positioned) DIV id='C' class='overlap3'",
                   "rect": [0, 0, 100, 100],
-                  "reason": "layer"
+                  "reason": "subtree"
                 }
               ]
             }
@@ -221,7 +221,7 @@ CASE 6, overlap1 gets added back, and overlap3 gets removed:
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow (positioned) DIV id='A' class='overlap1'",
-          "reason": "layer"
+          "reason": "subtree"
         }
       ],
       "children": [
@@ -258,7 +258,7 @@ CASE 6, overlap1 gets added back, and overlap3 gets removed:
                 {
                   "object": "LayoutBlockFlow (positioned) DIV id='B' class='overlap2'",
                   "rect": [0, 0, 100, 100],
-                  "reason": "layer"
+                  "reason": "subtree"
                 }
               ]
             }

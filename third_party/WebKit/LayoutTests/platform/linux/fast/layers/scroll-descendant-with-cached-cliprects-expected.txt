@@ -9,42 +9,42 @@
         {
           "object": "LayoutBlockFlow (positioned) DIV id='scrollpanel'",
           "rect": [677, 252, 100, 100],
-          "reason": "style change"
+          "reason": "subtree"
         },
         {
           "object": "LayoutBlockFlow (relative positioned) DIV class='container'",
           "rect": [677, 252, 100, 100],
-          "reason": "style change"
+          "reason": "subtree"
         },
         {
           "object": "LayoutBlockFlow (relative positioned) DIV id='ul'",
           "rect": [677, 252, 100, 100],
-          "reason": "style change"
+          "reason": "subtree"
         },
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [677, 252, 100, 100],
-          "reason": "style change"
+          "reason": "subtree"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='scrollpanel'",
           "rect": [677, 52, 100, 100],
-          "reason": "style change"
+          "reason": "subtree"
         },
         {
           "object": "LayoutBlockFlow (relative positioned) DIV class='container'",
           "rect": [677, 52, 100, 100],
-          "reason": "style change"
+          "reason": "subtree"
         },
         {
           "object": "LayoutBlockFlow (relative positioned) DIV id='ul'",
           "rect": [677, 52, 100, 100],
-          "reason": "style change"
+          "reason": "subtree"
         },
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [677, 52, 100, 100],
-          "reason": "style change"
+          "reason": "subtree"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='scrollpanel'",

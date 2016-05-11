@@ -9,7 +9,7 @@
         {
           "object": "LayoutSVGInlineText #text",
           "rect": [8, 58, 400, 100],
-          "reason": "bounds change"
+          "reason": "subtree"
         },
         {
           "object": "LayoutSVGRoot svg",
@@ -19,12 +19,12 @@
         {
           "object": "LayoutSVGText text",
           "rect": [8, 58, 400, 100],
-          "reason": "style change"
+          "reason": "subtree"
         },
         {
           "object": "LayoutSVGInlineText #text",
           "rect": [8, 8, 400, 100],
-          "reason": "bounds change"
+          "reason": "subtree"
         },
         {
           "object": "LayoutSVGRoot svg",
@@ -34,7 +34,7 @@
         {
           "object": "LayoutSVGText text",
           "rect": [8, 8, 400, 100],
-          "reason": "style change"
+          "reason": "subtree"
         },
         {
           "object": "InlineTextBox 'Test'",
@@ -42,7 +42,7 @@
         },
         {
           "object": "InlineTextBox 'Test'",
-          "reason": "bounds change"
+          "reason": "subtree"
         },
         {
           "object": "RootInlineBox",

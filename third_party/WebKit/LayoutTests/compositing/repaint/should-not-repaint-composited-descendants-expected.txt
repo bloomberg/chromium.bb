@@ -21,12 +21,12 @@
             {
               "object": "LayoutBlockFlow (positioned) DIV id='composited-box'",
               "rect": [-30, -30, 50, 100],
-              "reason": "style change"
+              "reason": "subtree"
             },
             {
               "object": "LayoutBlockFlow DIV class='child'",
               "rect": [-30, -30, 50, 50],
-              "reason": "style change"
+              "reason": "subtree"
             }
           ],
           "children": [

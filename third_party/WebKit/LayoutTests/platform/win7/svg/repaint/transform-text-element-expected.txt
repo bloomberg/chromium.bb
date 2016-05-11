@@ -1,0 +1,59 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [8, 58, 400, 100],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGRoot svg",
+          "rect": [8, 58, 400, 100],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [8, 58, 400, 100],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [8, 8, 400, 100],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGRoot svg",
+          "rect": [8, 8, 400, 100],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [8, 8, 400, 100],
+          "reason": "location change"
+        },
+        {
+          "object": "InlineTextBox 'Test'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'Test'",
+          "reason": "location change"
+        },
+        {
+          "object": "RootInlineBox",
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "reason": "full"
+        }
+      ]
+    }
+  ]
+}
+

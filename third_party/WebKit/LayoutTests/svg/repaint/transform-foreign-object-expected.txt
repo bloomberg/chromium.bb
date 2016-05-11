@@ -9,12 +9,12 @@
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [108, 8, 100, 100],
-          "reason": "bounds change"
+          "reason": "subtree"
         },
         {
           "object": "LayoutSVGForeignObject foreignObject",
           "rect": [108, 8, 100, 100],
-          "reason": "style change"
+          "reason": "subtree"
         },
         {
           "object": "LayoutSVGRoot svg",
@@ -24,12 +24,12 @@
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [8, 8, 100, 100],
-          "reason": "bounds change"
+          "reason": "subtree"
         },
         {
           "object": "LayoutSVGForeignObject foreignObject",
           "rect": [8, 8, 100, 100],
-          "reason": "style change"
+          "reason": "subtree"
         },
         {
           "object": "LayoutSVGRoot svg",

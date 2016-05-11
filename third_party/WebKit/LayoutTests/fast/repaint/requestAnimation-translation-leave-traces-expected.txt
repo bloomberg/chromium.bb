@@ -12,22 +12,22 @@ Tested locations: 1200,1500
         {
           "object": "LayoutBlockFlow DIV id='box'",
           "rect": [1500, 0, 100, 100],
-          "reason": "style change"
+          "reason": "subtree"
         },
         {
           "object": "LayoutBlockFlow DIV id='box'",
           "rect": [1200, 0, 100, 100],
-          "reason": "style change"
+          "reason": "subtree"
         },
         {
           "object": "LayoutBlockFlow DIV id='box'",
           "rect": [1200, 0, 100, 100],
-          "reason": "style change"
+          "reason": "subtree"
         },
         {
           "object": "LayoutBlockFlow DIV id='box'",
           "rect": [900, 0, 100, 100],
-          "reason": "style change"
+          "reason": "subtree"
         }
       ]
     }

@@ -9,7 +9,7 @@
         {
           "object": "LayoutImage IMG id='box' class='smaller'",
           "rect": [-12, 28, 280, 280],
-          "reason": "style change"
+          "reason": "subtree"
         }
       ]
     }

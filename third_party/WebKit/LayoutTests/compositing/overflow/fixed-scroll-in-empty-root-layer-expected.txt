@@ -12,12 +12,12 @@
             {
               "object": "LayoutBlockFlow (positioned) DIV",
               "rect": [0, 250, 100, 100],
-              "reason": "full"
+              "reason": "subtree"
             },
             {
               "object": "LayoutBlockFlow (positioned) DIV",
               "rect": [0, 50, 100, 100],
-              "reason": "full"
+              "reason": "subtree"
             }
           ],
           "children": [
@@ -36,12 +36,12 @@
                 {
                   "object": "LayoutBlockFlow (positioned) DIV",
                   "rect": [0, 250, 100, 100],
-                  "reason": "full"
+                  "reason": "subtree"
                 },
                 {
                   "object": "LayoutBlockFlow (positioned) DIV",
                   "rect": [0, 50, 100, 100],
-                  "reason": "full"
+                  "reason": "subtree"
                 }
               ]
             }

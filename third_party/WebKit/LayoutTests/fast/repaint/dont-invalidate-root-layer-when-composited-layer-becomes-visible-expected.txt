@@ -8,7 +8,7 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow (positioned) DIV id='target'",
-          "reason": "layer"
+          "reason": "subtree"
         }
       ],
       "children": [

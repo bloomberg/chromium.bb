@@ -1,0 +1,43 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [108, 8, 100, 100],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGForeignObject foreignObject",
+          "rect": [108, 8, 100, 100],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGRoot svg",
+          "rect": [108, 8, 100, 100],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [8, 8, 100, 100],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGForeignObject foreignObject",
+          "rect": [8, 8, 100, 100],
+          "reason": "location change"
+        },
+        {
+          "object": "LayoutSVGRoot svg",
+          "rect": [8, 8, 100, 100],
+          "reason": "bounds change"
+        }
+      ]
+    }
+  ]
+}
+

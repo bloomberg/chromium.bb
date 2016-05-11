@@ -14,7 +14,7 @@
         {
           "object": "LayoutBlockFlow (positioned) DIV",
           "rect": [100, 70, 50, 50],
-          "reason": "layer"
+          "reason": "subtree"
         },
         {
           "object": "LayoutBlockFlow (relative positioned) DIV id='t'",

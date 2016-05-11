@@ -9,21 +9,21 @@
         {
           "object": "LayoutButton INPUT",
           "rect": [3, 4, 62, 29],
-          "reason": "full"
+          "reason": "subtree"
         },
         {
           "object": "LayoutBlockFlow (anonymous)",
           "rect": [16, 11, 36, 13],
-          "reason": "full"
+          "reason": "subtree"
         },
         {
           "object": "LayoutText #text",
           "rect": [16, 11, 36, 13],
-          "reason": "full"
+          "reason": "subtree"
         },
         {
           "object": "InlineTextBox 'Submit'",
-          "reason": "full"
+          "reason": "subtree"
         },
         {
           "object": "RootInlineBox",

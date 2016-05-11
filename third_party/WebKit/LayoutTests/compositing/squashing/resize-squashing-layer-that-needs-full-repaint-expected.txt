@@ -21,7 +21,7 @@
                 {
                   "object": "LayoutBlockFlow (positioned) DIV",
                   "rect": [55, 55, 500, 500],
-                  "reason": "layer"
+                  "reason": "subtree"
                 },
                 {
                   "object": "LayoutBlockFlow (positioned) DIV",

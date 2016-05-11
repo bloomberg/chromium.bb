@@ -9,104 +9,104 @@
         {
           "object": "LayoutBlockFlow (positioned) DIV id='box'",
           "rect": [66, 85, 168, 192],
-          "reason": "style change"
+          "reason": "subtree"
         },
         {
           "object": "LayoutInline (relative positioned) SPAN id='child'",
           "rect": [139, 359, 151, 181],
-          "reason": "style change"
+          "reason": "subtree"
         },
         {
           "object": "LayoutText #text",
           "rect": [139, 359, 151, 181],
-          "reason": "style change"
+          "reason": "subtree"
         },
         {
           "object": "LayoutInline (relative positioned) SPAN id='child'",
           "rect": [300, 300, 80, 162],
-          "reason": "style change"
+          "reason": "subtree"
         },
         {
           "object": "LayoutText #text",
           "rect": [300, 301, 80, 161],
-          "reason": "style change"
+          "reason": "subtree"
         },
         {
           "object": "LayoutText #text",
           "rect": [147, 85, 1, 1],
-          "reason": "style change"
+          "reason": "subtree"
         },
         {
           "object": "InlineFlowBox",
-          "reason": "style change"
+          "reason": "subtree"
         },
         {
           "object": "InlineFlowBox",
-          "reason": "style change"
+          "reason": "subtree"
         },
         {
           "object": "InlineFlowBox",
-          "reason": "style change"
+          "reason": "subtree"
         },
         {
           "object": "InlineFlowBox",
-          "reason": "style change"
+          "reason": "subtree"
         },
         {
           "object": "InlineFlowBox",
-          "reason": "style change"
+          "reason": "subtree"
         },
         {
           "object": "InlineFlowBox",
-          "reason": "style change"
+          "reason": "subtree"
         },
         {
           "object": "InlineFlowBox",
-          "reason": "style change"
+          "reason": "subtree"
         },
         {
           "object": "InlineFlowBox",
-          "reason": "style change"
+          "reason": "subtree"
         },
         {
           "object": "InlineFlowBox",
-          "reason": "style change"
+          "reason": "subtree"
         },
         {
           "object": "InlineTextBox 'A B C'",
-          "reason": "style change"
+          "reason": "subtree"
         },
         {
           "object": "InlineTextBox 'D E F'",
-          "reason": "style change"
+          "reason": "subtree"
         },
         {
           "object": "InlineTextBox 'G H I'",
-          "reason": "style change"
+          "reason": "subtree"
         },
         {
           "object": "InlineTextBox 'J K L'",
-          "reason": "style change"
+          "reason": "subtree"
         },
         {
           "object": "InlineTextBox 'M N O'",
-          "reason": "style change"
+          "reason": "subtree"
         },
         {
           "object": "InlineTextBox 'P Q R'",
-          "reason": "style change"
+          "reason": "subtree"
         },
         {
           "object": "InlineTextBox 'S T U'",
-          "reason": "style change"
+          "reason": "subtree"
         },
         {
           "object": "InlineTextBox 'V W X'",
-          "reason": "style change"
+          "reason": "subtree"
         },
         {
           "object": "InlineTextBox 'Y Z'",
-          "reason": "style change"
+          "reason": "subtree"
         },
         {
           "object": "RootInlineBox",

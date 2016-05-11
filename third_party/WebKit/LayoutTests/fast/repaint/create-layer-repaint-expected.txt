@@ -9,7 +9,7 @@
         {
           "object": "LayoutBlockFlow DIV id='test' class='stretchy'",
           "rect": [28, 54, 500, 50],
-          "reason": "style change"
+          "reason": "subtree"
         }
       ]
     }

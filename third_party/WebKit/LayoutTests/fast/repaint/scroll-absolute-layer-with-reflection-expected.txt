@@ -9,27 +9,27 @@
         {
           "object": "LayoutBlockFlow (positioned) DIV class='absolute red'",
           "rect": [250, 230, 100, 100],
-          "reason": "full"
+          "reason": "subtree"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='moveMe' class='absolute clipped'",
           "rect": [250, 230, 100, 100],
-          "reason": "full"
+          "reason": "subtree"
         },
         {
           "object": "LayoutBlockFlow (relative positioned) DIV class='relative reflected'",
           "rect": [250, 230, 100, 100],
-          "reason": "full"
+          "reason": "subtree"
         },
         {
           "object": "LayoutBlockFlow DIV class='green'",
           "rect": [250, 230, 100, 100],
-          "reason": "full"
+          "reason": "subtree"
         },
         {
           "object": "LayoutReplica (anonymous)",
           "rect": [250, 230, 100, 100],
-          "reason": "bounds change"
+          "reason": "subtree"
         }
       ]
     }

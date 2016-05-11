@@ -231,6 +231,54 @@ CONSOLE WARNING: SVG's SMIL animations (<animate>, <set>, etc.) are deprecated a
           "object": "LayoutSVGRect rect id='rect'",
           "rect": [0, 10, 30, 30],
           "reason": "style change"
+        },
+        {
+          "object": "LayoutSVGContainer use",
+          "reason": "none"
+        },
+        {
+          "object": "LayoutSVGContainer use",
+          "reason": "none"
+        },
+        {
+          "object": "LayoutSVGContainer use",
+          "reason": "none"
+        },
+        {
+          "object": "LayoutSVGContainer use",
+          "reason": "none"
+        },
+        {
+          "object": "LayoutSVGContainer use",
+          "reason": "none"
+        },
+        {
+          "object": "LayoutSVGContainer use",
+          "reason": "none"
+        },
+        {
+          "object": "LayoutSVGContainer use",
+          "reason": "none"
+        },
+        {
+          "object": "LayoutSVGContainer use",
+          "reason": "none"
+        },
+        {
+          "object": "LayoutSVGContainer use",
+          "reason": "none"
+        },
+        {
+          "object": "LayoutSVGContainer use",
+          "reason": "none"
+        },
+        {
+          "object": "LayoutSVGContainer use",
+          "reason": "none"
+        },
+        {
+          "object": "LayoutSVGContainer use",
+          "reason": "none"
         }
       ]
     }

@@ -14,7 +14,7 @@
         {
           "object": "LayoutBlockFlow (positioned) DIV id='absoluteDiv' class='absolute green'",
           "rect": [108, 5708, 100, 100],
-          "reason": "layer"
+          "reason": "subtree"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='absoluteDiv' class='absolute green'",

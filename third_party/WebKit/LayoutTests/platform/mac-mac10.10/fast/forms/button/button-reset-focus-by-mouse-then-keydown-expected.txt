@@ -9,21 +9,21 @@
         {
           "object": "LayoutButton BUTTON",
           "rect": [3, 4, 55, 29],
-          "reason": "full"
+          "reason": "subtree"
         },
         {
           "object": "LayoutBlockFlow (anonymous)",
           "rect": [16, 11, 29, 13],
-          "reason": "full"
+          "reason": "subtree"
         },
         {
           "object": "LayoutText #text",
           "rect": [16, 11, 29, 13],
-          "reason": "full"
+          "reason": "subtree"
         },
         {
           "object": "InlineTextBox 'Reset'",
-          "reason": "full"
+          "reason": "subtree"
         },
         {
           "object": "RootInlineBox",

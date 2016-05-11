@@ -9,12 +9,12 @@
         {
           "object": "LayoutBlockFlow DIV id='target' class='item'",
           "rect": [18, 18, 764, 20],
-          "reason": "style change"
+          "reason": "subtree"
         },
         {
           "object": "LayoutBlockFlow DIV id='target' class='item'",
           "rect": [18, 18, 764, 20],
-          "reason": "layer"
+          "reason": "subtree"
         }
       ]
     }
