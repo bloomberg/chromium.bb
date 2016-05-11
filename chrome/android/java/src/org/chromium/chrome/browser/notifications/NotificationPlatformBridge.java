@@ -22,6 +22,7 @@ import android.text.TextUtils;
 import android.text.style.StyleSpan;
 
 import org.chromium.base.CommandLine;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
@@ -91,17 +92,15 @@ public class NotificationPlatformBridge {
      *
      * @param nativeNotificationPlatformBridge Instance of the NotificationPlatformBridgeAndroid
      *        class.
-     * @param context Application context for this instance of Chrome.
      */
-    @CalledByNative private static NotificationPlatformBridge create(
-        long nativeNotificationPlatformBridge, Context context) {
+    @CalledByNative
+    private static NotificationPlatformBridge create(long nativeNotificationPlatformBridge) {
         if (sInstance != null) {
             throw new IllegalStateException(
                 "There must only be a single NotificationPlatformBridge.");
         }
 
-        sInstance = new NotificationPlatformBridge(
-            nativeNotificationPlatformBridge, context);
+        sInstance = new NotificationPlatformBridge(nativeNotificationPlatformBridge);
         return sInstance;
     }
 
@@ -129,15 +128,16 @@ public class NotificationPlatformBridge {
         sNotificationManagerOverride = notificationManager;
     }
 
-    private NotificationPlatformBridge(long nativeNotificationPlatformBridge, Context context) {
+    private NotificationPlatformBridge(long nativeNotificationPlatformBridge) {
         mNativeNotificationPlatformBridge = nativeNotificationPlatformBridge;
-        mAppContext = context.getApplicationContext();
+        mAppContext = ContextUtils.getApplicationContext();
 
         if (sNotificationManagerOverride != null) {
             mNotificationManager = sNotificationManagerOverride;
         } else {
             mNotificationManager = new NotificationManagerProxyImpl(
-                    (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE));
+                    (NotificationManager) mAppContext.getSystemService(
+                            Context.NOTIFICATION_SERVICE));
         }
 
         Resources resources = mAppContext.getResources();

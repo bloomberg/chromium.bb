@@ -7,7 +7,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/android/context_utils.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/files/file_path.h"
@@ -73,8 +72,7 @@ NotificationPlatformBridge* NotificationPlatformBridge::Create() {
 
 NotificationPlatformBridgeAndroid::NotificationPlatformBridgeAndroid() {
   java_object_.Reset(Java_NotificationPlatformBridge_create(
-      AttachCurrentThread(), reinterpret_cast<intptr_t>(this),
-      base::android::GetApplicationContext()));
+      AttachCurrentThread(), reinterpret_cast<intptr_t>(this)));
 }
 
 NotificationPlatformBridgeAndroid::~NotificationPlatformBridgeAndroid() {
