@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/lib/interface_id.h"
+#include "mojo/public/cpp/bindings/lib/serialization_context.h"
 
 namespace mojo {
 
@@ -26,6 +27,7 @@ class PipeControlMessageProxy {
  private:
   // Not owned.
   MessageReceiver* receiver_;
+  SerializationContext context_;
 
   DISALLOW_COPY_AND_ASSIGN(PipeControlMessageProxy);
 };

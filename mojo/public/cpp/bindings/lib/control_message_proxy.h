@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/callback.h"
+#include "mojo/public/cpp/bindings/lib/serialization_context.h"
 
 namespace mojo {
 
@@ -28,6 +29,7 @@ class ControlMessageProxy {
  protected:
   // Not owned.
   MessageReceiverWithResponder* receiver_;
+  SerializationContext context_;
 
   DISALLOW_COPY_AND_ASSIGN(ControlMessageProxy);
 };

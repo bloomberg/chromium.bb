@@ -59,16 +59,6 @@ class {{struct.name}} {
 {%- endfor %}
 };
 
-{# TODO(yzshen): Remove these wrappers of the Serializer interface. #}
-size_t GetSerializedSize_({{struct.name}}Ptr& input,
-                          mojo::internal::SerializationContext* context);
-void Serialize_({{struct.name}}Ptr input, mojo::internal::Buffer* buffer,
-                internal::{{struct.name}}_Data** output,
-                mojo::internal::SerializationContext* context);
-bool Deserialize_(internal::{{struct.name}}_Data* input,
-                  {{struct.name}}Ptr* output,
-                  mojo::internal::SerializationContext* context);
-
 {# TODO(yzshen): Redo the Reader interface. #}
 {# NOTE: Generated Reader instances are intentionally cheap to copy and devoid
    of heap allocations. They should stay this way. #}

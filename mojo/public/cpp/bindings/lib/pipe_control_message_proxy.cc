@@ -9,6 +9,7 @@
 
 #include "base/compiler_specific.h"
 #include "mojo/public/cpp/bindings/lib/message_builder.h"
+#include "mojo/public/cpp/bindings/lib/serialization.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/interfaces/bindings/pipe_control_messages.mojom.h"
 
@@ -17,16 +18,20 @@ namespace internal {
 namespace {
 
 void SendRunOrClosePipeMessage(MessageReceiver* receiver,
-                               pipe_control::RunOrClosePipeInputPtr input) {
+                               pipe_control::RunOrClosePipeInputPtr input,
+                               SerializationContext* context) {
   pipe_control::RunOrClosePipeMessageParamsPtr params_ptr(
       pipe_control::RunOrClosePipeMessageParams::New());
   params_ptr->input = std::move(input);
 
-  size_t size = GetSerializedSize_(params_ptr, nullptr);
+  size_t size =
+      PrepareToSerialize<pipe_control::RunOrClosePipeMessageParamsPtr>(
+          params_ptr, context);
   MessageBuilder builder(pipe_control::kRunOrClosePipeMessageId, size);
 
   pipe_control::internal::RunOrClosePipeMessageParams_Data* params = nullptr;
-  Serialize_(std::move(params_ptr), builder.buffer(), &params, nullptr);
+  Serialize<pipe_control::RunOrClosePipeMessageParamsPtr>(
+      params_ptr, builder.buffer(), &params, context);
   params->EncodePointers();
   builder.message()->set_interface_id(kInvalidInterfaceId);
   bool ok = receiver->Accept(builder.message());
@@ -49,7 +54,7 @@ void PipeControlMessageProxy::NotifyPeerEndpointClosed(InterfaceId id) {
       pipe_control::RunOrClosePipeInput::New());
   input->set_peer_associated_endpoint_closed_event(std::move(event));
 
-  SendRunOrClosePipeMessage(receiver_, std::move(input));
+  SendRunOrClosePipeMessage(receiver_, std::move(input), &context_);
 }
 
 void PipeControlMessageProxy::NotifyEndpointClosedBeforeSent(InterfaceId id) {
@@ -61,7 +66,7 @@ void PipeControlMessageProxy::NotifyEndpointClosedBeforeSent(InterfaceId id) {
       pipe_control::RunOrClosePipeInput::New());
   input->set_associated_endpoint_closed_before_sent_event(std::move(event));
 
-  SendRunOrClosePipeMessage(receiver_, std::move(input));
+  SendRunOrClosePipeMessage(receiver_, std::move(input), &context_);
 }
 
 }  // namespace internal

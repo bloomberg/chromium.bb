@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "base/macros.h"
+#include "mojo/public/cpp/bindings/lib/serialization_context.h"
 #include "mojo/public/cpp/bindings/message.h"
 
 namespace mojo {
@@ -32,6 +33,7 @@ class ControlMessageHandler : public MessageReceiverWithResponderStatus {
   bool RunOrClosePipe(Message* message);
 
   uint32_t interface_version_;
+  SerializationContext context_;
 
   DISALLOW_COPY_AND_ASSIGN(ControlMessageHandler);
 };

@@ -18,61 +18,13 @@
 #include "mojo/public/cpp/bindings/lib/native_struct_data.h"
 #include "mojo/public/cpp/bindings/lib/serialization_forward.h"
 #include "mojo/public/cpp/bindings/lib/serialization_util.h"
+#include "mojo/public/cpp/bindings/native_struct.h"
 
 namespace mojo {
 namespace internal {
 
-template <typename MaybeConstUserType,
-          bool unmapped = std::is_same<
-              NativeStructPtr,
-              typename std::remove_const<MaybeConstUserType>::type>::value>
-struct NativeStructSerializerImpl;
-
 template <typename MaybeConstUserType>
-struct NativeStructSerializerImpl<MaybeConstUserType, true> {
-  static size_t PrepareToSerialize(const NativeStructPtr& input,
-                                   SerializationContext* context) {
-    if (!input)
-      return 0;
-    return internal::PrepareToSerialize<Array<uint8_t>>(input->data, context);
-  }
-
-  static void Serialize(NativeStructPtr& input,
-                        Buffer* buffer,
-                        NativeStruct_Data** output,
-                        SerializationContext* context) {
-    if (!input) {
-      *output = nullptr;
-      return;
-    }
-
-    Array_Data<uint8_t>* data = nullptr;
-    const ArrayValidateParams params(0, false, nullptr);
-    internal::Serialize<Array<uint8_t>>(input->data, buffer, &data, &params,
-                                        context);
-    *output = reinterpret_cast<NativeStruct_Data*>(data);
-  }
-
-  static bool Deserialize(NativeStruct_Data* input,
-                          NativeStructPtr* output,
-                          SerializationContext* context) {
-    Array_Data<uint8_t>* data = reinterpret_cast<Array_Data<uint8_t>*>(input);
-
-    NativeStructPtr result(NativeStruct::New());
-    if (!internal::Deserialize<Array<uint8_t>>(data, &result->data, context)) {
-      output = nullptr;
-      return false;
-    }
-    if (!result->data)
-      *output = nullptr;
-    else
-      result.Swap(output);
-    return true;
-  }
-};
-
-template <typename MaybeConstUserType>
-struct NativeStructSerializerImpl<MaybeConstUserType, false> {
+struct NativeStructSerializerImpl {
   using UserType = typename std::remove_const<MaybeConstUserType>::type;
   using Traits = IPC::ParamTraits<UserType>;
 
@@ -143,6 +95,26 @@ struct NativeStructSerializerImpl<MaybeConstUserType, false> {
     return true;
   }
 };
+
+struct UnmappedNativeStructSerializerImpl {
+  static size_t PrepareToSerialize(const NativeStructPtr& input,
+                                   SerializationContext* context);
+  static void Serialize(const NativeStructPtr& input,
+                        Buffer* buffer,
+                        NativeStruct_Data** output,
+                        SerializationContext* context);
+  static bool Deserialize(NativeStruct_Data* input,
+                          NativeStructPtr* output,
+                          SerializationContext* context);
+};
+
+template <>
+struct NativeStructSerializerImpl<NativeStructPtr>
+    : public UnmappedNativeStructSerializerImpl {};
+
+template <>
+struct NativeStructSerializerImpl<const NativeStructPtr>
+    : public UnmappedNativeStructSerializerImpl {};
 
 template <typename MaybeConstUserType>
 struct Serializer<NativeStructPtr, MaybeConstUserType>

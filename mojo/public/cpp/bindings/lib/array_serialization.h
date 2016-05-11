@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "mojo/public/cpp/bindings/array.h"
 #include "mojo/public/cpp/bindings/lib/array_internal.h"
 #include "mojo/public/cpp/bindings/lib/serialization_forward.h"
 #include "mojo/public/cpp/bindings/lib/template_util.h"

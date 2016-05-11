@@ -63,9 +63,9 @@ class SerializationWarningTest : public testing::Test {
 
     mojo::internal::SerializationContext context;
     mojo::internal::FixedBufferForTesting buf(
-        GetSerializedSize_(obj, &context));
+        mojo::internal::PrepareToSerialize<TPtr>(obj, &context));
     typename T::Data_* data;
-    Serialize_(std::move(obj), &buf, &data, &context);
+    mojo::internal::Serialize<TPtr>(obj, &buf, &data, &context);
 
     EXPECT_EQ(expected_warning, warning_observer_.last_warning());
   }

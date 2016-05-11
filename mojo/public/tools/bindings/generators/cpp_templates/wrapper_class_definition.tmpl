@@ -28,28 +28,6 @@
 }
 {%  endif %}
 
-{%- set serializer_type = struct|unmapped_type_for_serializer %}
-
-size_t GetSerializedSize_({{struct.name}}Ptr& input,
-                          mojo::internal::SerializationContext* context) {
-
-  return mojo::internal::PrepareToSerialize<{{serializer_type}}>(
-      input, context);
-}
-
-void Serialize_({{struct.name}}Ptr input, mojo::internal::Buffer* buf,
-                internal::{{struct.name}}_Data** output,
-                mojo::internal::SerializationContext* context) {
-  mojo::internal::Serialize<{{serializer_type}}>(input, buf, output, context);
-}
-
-bool Deserialize_(internal::{{struct.name}}_Data* input,
-                  {{struct.name}}Ptr* output,
-                  mojo::internal::SerializationContext* context) {
-  return mojo::internal::Deserialize<{{serializer_type}}>(
-      input, output, context);
-}
-
 {{struct.name}}_Reader::{{struct.name}}_Reader(
     internal::{{struct.name}}_Data*  data,
     mojo::internal::SerializationContext* context)

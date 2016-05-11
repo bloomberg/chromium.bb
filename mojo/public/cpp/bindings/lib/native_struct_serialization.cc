@@ -7,23 +7,53 @@
 #include "mojo/public/cpp/bindings/lib/serialization.h"
 
 namespace mojo {
+namespace internal {
 
-size_t GetSerializedSize_(const NativeStructPtr& input,
-                          internal::SerializationContext* context) {
-  return internal::PrepareToSerialize<NativeStructPtr>(input, context);
+// static
+size_t UnmappedNativeStructSerializerImpl::PrepareToSerialize(
+    const NativeStructPtr& input,
+    SerializationContext* context) {
+  if (!input)
+    return 0;
+  return internal::PrepareToSerialize<Array<uint8_t>>(input->data, context);
 }
 
-void Serialize_(NativeStructPtr input,
-                internal::Buffer* buffer,
-                internal::NativeStruct_Data** output,
-                internal::SerializationContext* context) {
-  internal::Serialize<NativeStructPtr>(input, buffer, output, context);
+// static
+void UnmappedNativeStructSerializerImpl::Serialize(
+    const NativeStructPtr& input,
+    Buffer* buffer,
+    NativeStruct_Data** output,
+    SerializationContext* context) {
+  if (!input) {
+    *output = nullptr;
+    return;
+  }
+
+  Array_Data<uint8_t>* data = nullptr;
+  const ArrayValidateParams params(0, false, nullptr);
+  internal::Serialize<Array<uint8_t>>(input->data, buffer, &data, &params,
+                                      context);
+  *output = reinterpret_cast<NativeStruct_Data*>(data);
 }
 
-bool Deserialize_(internal::NativeStruct_Data* input,
-                  NativeStructPtr* output,
-                  internal::SerializationContext* context) {
-  return internal::Deserialize<NativeStructPtr>(input, output, context);
+// static
+bool UnmappedNativeStructSerializerImpl::Deserialize(
+    NativeStruct_Data* input,
+    NativeStructPtr* output,
+    SerializationContext* context) {
+  Array_Data<uint8_t>* data = reinterpret_cast<Array_Data<uint8_t>*>(input);
+
+  NativeStructPtr result(NativeStruct::New());
+  if (!internal::Deserialize<Array<uint8_t>>(data, &result->data, context)) {
+    output = nullptr;
+    return false;
+  }
+  if (!result->data)
+    *output = nullptr;
+  else
+    result.Swap(output);
+  return true;
 }
 
+}  // namespace internal
 }  // namespace mojo

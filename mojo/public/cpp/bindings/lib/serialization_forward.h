@@ -5,11 +5,7 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_LIB_SERIALIZATION_FORWARD_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_LIB_SERIALIZATION_FORWARD_H_
 
-#include <stddef.h>
-
 #include "mojo/public/cpp/bindings/array_traits.h"
-#include "mojo/public/cpp/bindings/lib/wtf_string_serialization.h"
-#include "mojo/public/cpp/bindings/native_struct.h"
 #include "mojo/public/cpp/bindings/string_traits.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
 
@@ -20,12 +16,6 @@
 
 namespace mojo {
 namespace internal {
-
-class Buffer;
-
-class NativeStruct_Data;
-
-struct SerializationContext;
 
 template <typename MojomType, typename MaybeConstUserType>
 struct Serializer;
@@ -59,38 +49,6 @@ bool Deserialize(DataType&& input, InputUserType* output, Args&&... args) {
 }
 
 }  // namespace internal
-
-// TODO(yzshen): The following functions eventually will become simple wrappers
-// of the Serializer interface. Remove them.
-
-// -----------------------------------------------------------------------------
-// Forward declaration for native types.
-
-size_t GetSerializedSize_(const NativeStructPtr& input,
-                          internal::SerializationContext* context);
-
-void Serialize_(NativeStructPtr input,
-                internal::Buffer* buffer,
-                internal::NativeStruct_Data** output,
-                internal::SerializationContext* context);
-
-bool Deserialize_(internal::NativeStruct_Data* input,
-                  NativeStructPtr* output,
-                  internal::SerializationContext* context);
-
-// -----------------------------------------------------------------------------
-// Forward declaration for String.
-
-size_t GetSerializedSize_(const String& input,
-                          internal::SerializationContext* context);
-void Serialize_(const String& input,
-                internal::Buffer* buffer,
-                internal::String_Data** output,
-                internal::SerializationContext* context);
-bool Deserialize_(internal::String_Data* input,
-                  String* output,
-                  internal::SerializationContext* context);
-
 }  // namespace mojo
 
 #endif  // MOJO_PUBLIC_CPP_BINDINGS_LIB_SERIALIZATION_FORWARD_H_

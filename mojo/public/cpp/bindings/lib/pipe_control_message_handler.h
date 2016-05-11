@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/lib/interface_id.h"
+#include "mojo/public/cpp/bindings/lib/serialization_context.h"
 #include "mojo/public/cpp/bindings/message.h"
 
 namespace mojo {
@@ -38,6 +39,7 @@ class PipeControlMessageHandler : public MessageReceiver {
   bool RunOrClosePipe(Message* message);
 
   PipeControlMessageHandlerDelegate* const delegate_;
+  SerializationContext context_;
 
   DISALLOW_COPY_AND_ASSIGN(PipeControlMessageHandler);
 };
