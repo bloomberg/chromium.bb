@@ -19,7 +19,6 @@
 #undef None
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/devices/x11/device_data_manager_x11.h"
@@ -85,8 +84,6 @@ class EventsXTest : public testing::Test {
     ui::TouchFactory::GetInstance()->ResetForTest();
     ResetTimestampRolloverCountersForTesting();
   }
-  void TearDown() override { ResetTimestampRolloverCountersForTesting(); }
-
  private:
   DISALLOW_COPY_AND_ASSIGN(EventsXTest);
 };
@@ -206,12 +203,11 @@ TEST_F(EventsXTest, ClickCount) {
   XEvent event;
   gfx::Point location(5, 10);
 
-  base::TimeDelta time_stamp = base::TimeTicks::Now() - base::TimeTicks() -
-                               base::TimeDelta::FromMilliseconds(10);
+  base::TimeDelta time_stamp = base::TimeDelta::FromMilliseconds(1);
   for (int i = 1; i <= 3; ++i) {
     InitButtonEvent(&event, true, location, 1, 0);
     {
-      event.xbutton.time = time_stamp.InMilliseconds() & UINT32_MAX;
+      event.xbutton.time = time_stamp.InMilliseconds();
       MouseEvent mouseev(&event);
       EXPECT_EQ(ui::ET_MOUSE_PRESSED, mouseev.type());
       EXPECT_EQ(i, mouseev.GetClickCount());
@@ -524,31 +520,13 @@ TEST_F(EventsXTest, IgnoresMotionEventForMouseWheelScroll) {
   EXPECT_EQ(ui::ET_UNKNOWN, ui::EventTypeFromNative(xev));
 }
 
-namespace {
-class MockTickClock : public base::TickClock {
- public:
-  explicit MockTickClock(uint64_t milliseconds)
-      : ticks_(base::TimeTicks::FromInternalValue(milliseconds * 1000)) {}
-  base::TimeTicks NowTicks() override { return ticks_; }
-
- private:
-  base::TimeTicks ticks_;
-};
-}  // namespace
-
 TEST_F(EventsXTest, TimestampRolloverAndAdjustWhenDecreasing) {
   XEvent event;
   InitButtonEvent(&event, true, gfx::Point(5, 10), 1, 0);
 
-  ResetTimestampRolloverCountersForTesting(
-      WrapUnique(new MockTickClock(0x100000001LL)));
-
   event.xbutton.time = 0xFFFFFFFF;
   EXPECT_EQ(base::TimeDelta::FromMilliseconds(0xFFFFFFFF).ToInternalValue(),
             ui::EventTimeFromNative(&event).ToInternalValue());
-
-  ResetTimestampRolloverCountersForTesting(
-      WrapUnique(new MockTickClock(0x100000007LL)));
 
   event.xbutton.time = 3;
   EXPECT_EQ(
@@ -560,18 +538,12 @@ TEST_F(EventsXTest, NoTimestampRolloverWhenMonotonicIncreasing) {
   XEvent event;
   InitButtonEvent(&event, true, gfx::Point(5, 10), 1, 0);
 
-  ResetTimestampRolloverCountersForTesting(WrapUnique(new MockTickClock(10)));
-
-  event.xbutton.time = 6;
-  EXPECT_EQ(base::TimeDelta::FromMilliseconds(6).ToInternalValue(),
+  event.xbutton.time = 1;
+  EXPECT_EQ(base::TimeDelta::FromMilliseconds(1).ToInternalValue(),
             ui::EventTimeFromNative(&event).ToInternalValue());
-  event.xbutton.time = 7;
-  EXPECT_EQ(base::TimeDelta::FromMilliseconds(7).ToInternalValue(),
+  event.xbutton.time = 2;
+  EXPECT_EQ(base::TimeDelta::FromMilliseconds(2).ToInternalValue(),
             ui::EventTimeFromNative(&event).ToInternalValue());
-
-  ResetTimestampRolloverCountersForTesting(
-      WrapUnique(new MockTickClock(0x100000005)));
-
   event.xbutton.time = 0xFFFFFFFF;
   EXPECT_EQ(base::TimeDelta::FromMilliseconds(0xFFFFFFFF).ToInternalValue(),
             ui::EventTimeFromNative(&event).ToInternalValue());

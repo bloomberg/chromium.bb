@@ -427,8 +427,8 @@ TEST(EventTest, KeyEventCode) {
 
 namespace {
 #if defined(USE_X11)
-void SetKeyEventTimestamp(XEvent* event, int64_t time) {
-  event->xkey.time = time & UINT32_MAX;
+void SetKeyEventTimestamp(XEvent* event, long time) {
+  event->xkey.time = time;
 }
 
 void AdvanceKeyEventTimestamp(XEvent* event) {
@@ -436,8 +436,8 @@ void AdvanceKeyEventTimestamp(XEvent* event) {
 }
 
 #elif defined(OS_WIN)
-void SetKeyEventTimestamp(MSG& msg, int64_t time) {
-  msg.time = static_cast<long>(time);
+void SetKeyEventTimestamp(MSG& msg, long time) {
+  msg.time = time;
 }
 
 void AdvanceKeyEventTimestamp(MSG& msg) {
@@ -453,7 +453,6 @@ TEST(EventTest, AutoRepeat) {
   const uint16_t kNativeCodeB =
       ui::KeycodeConverter::DomCodeToNativeKeycode(DomCode::US_B);
 #if defined(USE_X11)
-
   ScopedXI2Event native_event_a_pressed;
   native_event_a_pressed.InitKeyEvent(ET_KEY_PRESSED, VKEY_A, kNativeCodeA);
   ScopedXI2Event native_event_a_pressed_1500;
@@ -482,11 +481,8 @@ TEST(EventTest, AutoRepeat) {
   MSG native_event_a_released = { NULL, WM_KEYUP, VKEY_A, lParam_a };
   MSG native_event_b_pressed = { NULL, WM_KEYUP, VKEY_B, lParam_b };
 #endif
-  int64_t ticks_base =
-      (base::TimeTicks::Now() - base::TimeTicks()).InMilliseconds() - 5000;
-  SetKeyEventTimestamp(native_event_a_pressed, ticks_base);
-  SetKeyEventTimestamp(native_event_a_pressed_1500, ticks_base + 1500);
-  SetKeyEventTimestamp(native_event_a_pressed_3000, ticks_base + 3000);
+  SetKeyEventTimestamp(native_event_a_pressed_1500, 1500);
+  SetKeyEventTimestamp(native_event_a_pressed_3000, 3000);
 
   {
     KeyEvent key_a1(native_event_a_pressed);

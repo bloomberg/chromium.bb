@@ -13,7 +13,6 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/tick_clock.h"
@@ -27,7 +26,6 @@
 #if defined(USE_X11)
 #include <X11/Xlib.h>
 #include "ui/events/test/events_test_utils_x11.h"
-#include "ui/events/x/events_x_utils.h"
 #endif
 
 #if defined(OS_WIN)
@@ -40,41 +38,6 @@ namespace {
 
 void DummyCallback(EventType, const gfx::Vector2dF&) {
 }
-
-// A proxy for TickClock that allows passing the same underlying clock
-// to multiple consumers, each retaining a unique_ptr to their own
-// instance of TickClock proxy.
-class ClonableTickClock : public base::TickClock,
-                          public base::RefCounted<ClonableTickClock> {
- private:
-  class TickClockProxy : public base::TickClock {
-   public:
-    explicit TickClockProxy(ClonableTickClock* tick_clock)
-        : tick_clock_(tick_clock) {}
-
-   private:
-    base::TimeTicks NowTicks() override { return tick_clock_->NowTicks(); }
-
-    scoped_refptr<ClonableTickClock> tick_clock_;
-    DISALLOW_COPY_AND_ASSIGN(TickClockProxy);
-  };
-
- public:
-  explicit ClonableTickClock(std::unique_ptr<base::TickClock> tick_clock)
-      : tick_clock_(std::move(tick_clock)) {}
-
-  base::TimeTicks NowTicks() override { return tick_clock_->NowTicks(); }
-  std::unique_ptr<TickClock> Clone() {
-    return WrapUnique(new TickClockProxy(this));
-  }
-
- private:
-  friend class base::RefCounted<ClonableTickClock>;
-  ~ClonableTickClock() override = default;
-  std::unique_ptr<TickClock> tick_clock_;
-
-  DISALLOW_COPY_AND_ASSIGN(ClonableTickClock);
-};
 
 class TestTickClock : public base::TickClock {
  public:
@@ -131,7 +94,8 @@ EventGenerator::EventGenerator(gfx::NativeWindow root_window)
       flags_(0),
       grab_(false),
       async_(false),
-      targeting_application_(false) {
+      targeting_application_(false),
+      tick_clock_(new TestTickClock()) {
   Init(root_window, NULL);
 }
 
@@ -142,7 +106,8 @@ EventGenerator::EventGenerator(gfx::NativeWindow root_window,
       flags_(0),
       grab_(false),
       async_(false),
-      targeting_application_(false) {
+      targeting_application_(false),
+      tick_clock_(new TestTickClock()) {
   Init(root_window, NULL);
 }
 
@@ -152,7 +117,8 @@ EventGenerator::EventGenerator(gfx::NativeWindow root_window,
       flags_(0),
       grab_(false),
       async_(false),
-      targeting_application_(false) {
+      targeting_application_(false),
+      tick_clock_(new TestTickClock()) {
   Init(root_window, window);
 }
 
@@ -162,7 +128,8 @@ EventGenerator::EventGenerator(EventGeneratorDelegate* delegate)
       flags_(0),
       grab_(false),
       async_(false),
-      targeting_application_(false) {
+      targeting_application_(false),
+      tick_clock_(new TestTickClock()) {
   Init(NULL, NULL);
 }
 
@@ -221,8 +188,7 @@ void EventGenerator::MoveMouseToWithNative(const gfx::Point& point_in_host,
 #if defined(USE_X11)
   ui::ScopedXI2Event xevent;
   xevent.InitMotionEvent(point_in_host, point_for_native, flags_);
-  static_cast<XEvent*>(xevent)->xmotion.time =
-      Now().InMilliseconds() & UINT32_MAX;
+  static_cast<XEvent*>(xevent)->xmotion.time = Now().InMicroseconds();
   ui::MouseEvent mouseev(xevent);
 #elif defined(USE_OZONE)
   // Ozone uses the location in native event as a system location.
@@ -594,12 +560,7 @@ void EventGenerator::Dispatch(ui::Event* event) {
 }
 
 void EventGenerator::SetTickClock(std::unique_ptr<base::TickClock> tick_clock) {
-  scoped_refptr<ClonableTickClock> clonable =
-      new ClonableTickClock(std::move(tick_clock));
-#if defined(USE_X11)
-  ResetTimestampRolloverCountersForTesting(clonable->Clone());
-#endif
-  tick_clock_ = clonable->Clone();
+  tick_clock_ = std::move(tick_clock);
 }
 
 base::TimeDelta EventGenerator::Now() {
@@ -611,7 +572,6 @@ base::TimeDelta EventGenerator::Now() {
 
 void EventGenerator::Init(gfx::NativeWindow root_window,
                           gfx::NativeWindow window_context) {
-  SetTickClock(WrapUnique(new TestTickClock()));
   delegate()->SetContext(this, root_window, window_context);
   if (window_context)
     current_location_ = delegate()->CenterOfWindow(window_context);
@@ -643,7 +603,7 @@ void EventGenerator::DispatchKeyEvent(bool is_press,
   xevent.InitKeyEvent(is_press ? ui::ET_KEY_PRESSED : ui::ET_KEY_RELEASED,
                       key_code,
                       flags);
-  static_cast<XEvent*>(xevent)->xkey.time = Now().InMilliseconds() & UINT32_MAX;
+  static_cast<XEvent*>(xevent)->xkey.time = Now().InMicroseconds();
   ui::KeyEvent keyev(xevent);
 #else
   ui::EventType type = is_press ? ui::ET_KEY_PRESSED : ui::ET_KEY_RELEASED;
