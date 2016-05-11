@@ -174,10 +174,10 @@ const char* OriginTrialContext::supplementName()
 }
 
 // static
-OriginTrialContext* OriginTrialContext::from(ExecutionContext* host)
+OriginTrialContext* OriginTrialContext::from(ExecutionContext* host, CreateMode create)
 {
     OriginTrialContext* originTrials = static_cast<OriginTrialContext*>(Supplement<ExecutionContext>::from(host, supplementName()));
-    if (!originTrials) {
+    if (!originTrials && create == CreateIfNotExists) {
         originTrials = new OriginTrialContext(host);
         Supplement<ExecutionContext>::provideTo(*host, supplementName(), originTrials);
     }
@@ -209,16 +209,36 @@ void OriginTrialContext::addTokensFromHeader(ExecutionContext* host, const Strin
     std::unique_ptr<Vector<String>> tokens(parseHeaderValue(headerValue));
     if (!tokens)
         return;
-    OriginTrialContext* context = from(host);
-    for (const String& token : *tokens) {
-        context->addToken(token);
-    }
+    addTokens(host, parseHeaderValue(headerValue).get());
 }
+
+// static
+void OriginTrialContext::addTokens(ExecutionContext* host, const Vector<String>* tokens)
+{
+    if (!tokens || tokens->isEmpty())
+        return;
+    from(host)->addTokens(*tokens);
+}
+
+// static
+std::unique_ptr<Vector<String>> OriginTrialContext::getTokens(ExecutionContext* host)
+{
+    OriginTrialContext* context = from(host, DontCreateIfNotExists);
+    if (!context || context->m_tokens.isEmpty())
+        return nullptr;
+    return std::unique_ptr<Vector<String>>(new Vector<String>(context->m_tokens));
+}
+
 
 void OriginTrialContext::addToken(const String& token)
 {
     if (!token.isEmpty())
         m_tokens.append(token);
+}
+
+void OriginTrialContext::addTokens(const Vector<String>& tokens)
+{
+    m_tokens.appendVector(tokens);
 }
 
 bool OriginTrialContext::isFeatureEnabled(const String& featureName, String* errorMessage, WebTrialTokenValidator* validator)

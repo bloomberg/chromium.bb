@@ -40,6 +40,7 @@
 #include "core/inspector/ConsoleMessage.h"
 #include "core/loader/DocumentLoadTiming.h"
 #include "core/loader/DocumentLoader.h"
+#include "core/origin_trials/OriginTrialContext.h"
 #include "core/workers/InProcessWorkerBase.h"
 #include "core/workers/InProcessWorkerObjectProxy.h"
 #include "core/workers/WorkerClients.h"
@@ -106,7 +107,7 @@ void InProcessWorkerMessagingProxy::startWorkerGlobalScope(const KURL& scriptURL
     DCHECK(csp);
 
     WorkerThreadStartMode startMode = m_workerInspectorProxy->workerStartMode(document);
-    OwnPtr<WorkerThreadStartupData> startupData = WorkerThreadStartupData::create(scriptURL, userAgent, sourceCode, nullptr, startMode, csp->headers(), starterOrigin, m_workerClients.release(), document->addressSpace());
+    OwnPtr<WorkerThreadStartupData> startupData = WorkerThreadStartupData::create(scriptURL, userAgent, sourceCode, nullptr, startMode, csp->headers().get(), starterOrigin, m_workerClients.release(), document->addressSpace(), OriginTrialContext::getTokens(document).get());
     double originTime = document->loader() ? document->loader()->timing().referenceMonotonicTime() : monotonicallyIncreasingTime();
 
     m_loaderProxy = WorkerLoaderProxy::create(this);

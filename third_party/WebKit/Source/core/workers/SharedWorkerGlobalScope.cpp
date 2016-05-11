@@ -34,6 +34,7 @@
 #include "core/events/MessageEvent.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/frame/LocalDOMWindow.h"
+#include "core/origin_trials/OriginTrialContext.h"
 #include "core/workers/SharedWorkerThread.h"
 #include "core/workers/WorkerClients.h"
 #include "wtf/CurrentTime.h"
@@ -55,6 +56,7 @@ SharedWorkerGlobalScope* SharedWorkerGlobalScope::create(const String& name, Sha
     SharedWorkerGlobalScope* context = new SharedWorkerGlobalScope(name, startupData->m_scriptURL, startupData->m_userAgent, thread, startupData->m_starterOriginPrivilegeData.release(), startupData->m_workerClients.release());
     context->applyContentSecurityPolicyFromVector(*startupData->m_contentSecurityPolicyHeaders);
     context->setAddressSpace(startupData->m_addressSpace);
+    OriginTrialContext::addTokens(context, startupData->m_originTrialTokens.get());
     return context;
 }
 

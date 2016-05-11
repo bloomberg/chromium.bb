@@ -149,15 +149,17 @@ function wait_for_state(test, worker, state) {
 //   The test will succeed if the specified service worker can be successfully
 //   registered and installed.
 // - Creates a new ServiceWorker registration with a scope unique to the current
-//   document URL. Note that this doesn't allow more than one
+//   document URL and the script URL. This allows more than one
 //   service_worker_test() to be run from the same document.
 // - Waits for the new worker to begin installing.
 // - Imports tests results from tests running inside the ServiceWorker.
 function service_worker_test(url, description) {
   // If the document URL is https://example.com/document and the script URL is
   // https://example.com/script/worker.js, then the scope would be
-  // https://example.com/script/scope/document.
-  var scope = new URL('scope' + window.location.pathname,
+  // https://example.com/script/scope/document/script/worker.js.
+  var document_path = window.location.pathname;
+  var script_path = new URL(url, window.location).pathname;
+  var scope = new URL('scope' + document_path + script_path,
                       new URL(url, window.location)).toString();
   promise_test(function(test) {
       return service_worker_unregister_and_register(test, url, scope)
