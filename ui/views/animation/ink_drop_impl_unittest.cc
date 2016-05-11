@@ -6,7 +6,7 @@
 
 #include "base/macros.h"
 #include "base/test/test_simple_task_runner.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/animation/ink_drop_ripple.h"
 #include "ui/views/animation/test/ink_drop_impl_test_api.h"

@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task_runner.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "ui/ozone/platform/drm/gpu/drm_thread.h"
 #include "ui/ozone/platform/drm/gpu/proxy_helpers.h"
 #include "ui/ozone/platform/drm/host/drm_display_host_manager.h"

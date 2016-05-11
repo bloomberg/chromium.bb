@@ -14,7 +14,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/single_thread_task_runner.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/input/main_thread_scrolling_reason.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"

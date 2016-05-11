@@ -6,7 +6,7 @@
 
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "ui/ozone/common/display_snapshot_proxy.h"
 #include "ui/ozone/common/display_util.h"
 #include "ui/ozone/platform/drm/host/gpu_thread_adapter.h"

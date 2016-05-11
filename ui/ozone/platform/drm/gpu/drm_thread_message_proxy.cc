@@ -4,7 +4,7 @@
 
 #include "ui/ozone/platform/drm/gpu/drm_thread_message_proxy.h"
 
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_sender.h"
 #include "ui/ozone/common/gpu/ozone_gpu_messages.h"

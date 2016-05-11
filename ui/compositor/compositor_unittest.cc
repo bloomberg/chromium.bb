@@ -4,7 +4,7 @@
 
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "cc/output/begin_frame_args.h"
 #include "cc/test/begin_frame_args_test.h"
 #include "testing/gmock/include/gmock/gmock.h"

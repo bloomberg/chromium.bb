@@ -5,9 +5,9 @@
 #include "ui/events/platform/x11/x11_hotplug_event_handler.h"
 
 #include <stdint.h>
-#include <X11/Xatom.h>
 #include <X11/extensions/XInput.h>
 #include <X11/extensions/XInput2.h>
+#include <X11/Xatom.h>
 
 #include <algorithm>
 #include <cmath>
@@ -23,7 +23,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/sys_info.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/threading/worker_pool.h"
 #include "ui/events/devices/device_data_manager.h"
 #include "ui/events/devices/device_hotplug_event_observer.h"
