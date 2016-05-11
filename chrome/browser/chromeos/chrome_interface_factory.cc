@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/ash/app_list/app_list_presenter_service.h"
 #include "chrome/browser/ui/ash/keyboard_ui_service.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "services/shell/public/cpp/connection.h"
 
 class ChromeLaunchable : public mash::mojom::Launchable {
@@ -27,7 +28,7 @@ class ChromeLaunchable : public mash::mojom::Launchable {
                                         : profile);
   }
 
-  void CreateNewTab() { NOTIMPLEMENTED(); }
+  void CreateNewTab() { chrome::NewTab(chrome::FindLastActive()); }
 
   // mash::mojom::Launchable:
   void Launch(uint32_t what, mash::mojom::LaunchMode how) override {
