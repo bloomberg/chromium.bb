@@ -2013,6 +2013,13 @@ test("base_unittests") {
     # TODO(GYP): dep on copy_test_data_ios action.
   }
 
+  if (is_mac) {
+    libs = [
+      "CoreFoundation.framework",
+      "Foundation.framework",
+    ]
+  }
+
   if (is_linux) {
     sources -= [ "file_version_info_unittest.cc" ]
 

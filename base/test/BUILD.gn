@@ -170,6 +170,10 @@ source_set("test_support") {
     set_sources_assignment_filter(sources_assignment_filter)
   }
 
+  if (is_mac) {
+    libs = [ "AppKit.framework" ]
+  }
+
   if (is_android) {
     deps += [ ":base_unittests_jni_headers" ]
   }

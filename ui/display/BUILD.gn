@@ -108,6 +108,12 @@ component("display") {
   if (is_android && use_aura) {
     sources -= [ "android/screen_android.cc" ]
   }
+  if (is_mac) {
+    libs = [
+      "AppKit.framework",
+      "CoreGraphics.framework",
+    ]
+  }
 }
 
 if (is_chromeos) {

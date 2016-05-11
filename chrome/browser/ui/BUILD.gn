@@ -437,7 +437,10 @@ source_set("ui") {
                              "//chrome")
     }
     include_dirs = [ "$target_gen_dir" ]
-    libs += [ "Quartz.framework" ]
+    libs += [
+      "Carbon.framework",
+      "Quartz.framework",
+    ]
     configs +=
         [ "//third_party/google_toolbox_for_mac:google_toolbox_for_mac_config" ]
   } else {  # non-Mac.
