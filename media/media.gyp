@@ -58,6 +58,7 @@
       # GN version: //media:media_features
       'target_name': 'media_features',
       'includes': [ '../build/buildflag_header.gypi' ],
+      'hard_dependency': 1,
       'variables': {
         'buildflag_header_path': 'media/media_features.h',
         'buildflag_flags': [
@@ -90,6 +91,7 @@
         '../url/url.gyp:url_lib',
         'shared_memory_support',
       ],
+      'hard_dependency': 1,
       'export_dependent_settings': [
         '../third_party/libwebm/libwebm.gyp:libwebm',
         '../third_party/opus/opus.gyp:opus',
