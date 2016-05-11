@@ -82,9 +82,9 @@ void initialize(Platform* platform)
 {
     Platform::initialize(platform);
 
-    modulesInitializer().initialize();
-
     V8Initializer::initializeMainThread();
+
+    modulesInitializer().initialize();
 
     // currentThread is null if we are running on a thread without a message loop.
     if (WebThread* currentThread = platform->currentThread()) {
@@ -107,9 +107,9 @@ void shutdown()
         s_endOfTaskRunner = nullptr;
     }
 
-    V8Initializer::shutdownMainThread();
-
     modulesInitializer().shutdown();
+
+    V8Initializer::shutdownMainThread();
 
     Platform::shutdown();
 }
