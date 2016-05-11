@@ -319,6 +319,7 @@ def main():
   mac_toolchain_dir = mac_toolchain.GetToolchainDirectory()
   if mac_toolchain_dir:
     args.append('-Gmac_toolchain_dir=' + mac_toolchain_dir)
+    mac_toolchain.SetToolchainEnvironment()
 
   # TODO(crbug.com/432967) - We are eventually going to switch GYP off
   # by default for all Chromium builds, so this list of configurations
