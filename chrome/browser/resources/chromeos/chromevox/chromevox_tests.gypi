@@ -149,7 +149,7 @@
           },
           'inputs': [
             '<(gypv8sh)',
-            '<(PRODUCT_DIR)/d8<(EXECUTABLE_SUFFIX)',
+            '<(PRODUCT_DIR)/v8_shell<(EXECUTABLE_SUFFIX)',
             '<(mock_js)',
             '<(test_api_js)',
             '<(js2gtest)',
@@ -164,7 +164,7 @@
           'action': [
             'python',
             '<(gypv8sh)',
-            '<(PRODUCT_DIR)/d8<(EXECUTABLE_SUFFIX)',
+            '<(PRODUCT_DIR)/v8_shell<(EXECUTABLE_SUFFIX)',
             '--deps_js', '<(chromevox_test_deps_js_file)',
             '--external', '<(external_v8)',
             '<(mock_js)',
@@ -193,7 +193,7 @@
           },
           'inputs': [
             '<(gypv8sh)',
-            '<(PRODUCT_DIR)/d8<(EXECUTABLE_SUFFIX)',
+            '<(PRODUCT_DIR)/v8_shell<(EXECUTABLE_SUFFIX)',
             '<(mock_js)',
             '<(test_api_js)',
             '<(js2gtest)',
@@ -207,7 +207,7 @@
           'action': [
             'python',
             '<(gypv8sh)',
-            '<(PRODUCT_DIR)/d8<(EXECUTABLE_SUFFIX)',
+            '<(PRODUCT_DIR)/v8_shell<(EXECUTABLE_SUFFIX)',
             '--external', '<(external_v8)',
             '<(mock_js)',
             '<(test_api_js)',

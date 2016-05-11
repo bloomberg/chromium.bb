@@ -1544,8 +1544,8 @@
     # Turns on the i18n support in V8.
     'v8_enable_i18n_support': 1,
 
-    # Compile d8 for the host toolset.
-    'v8_toolset_for_d8': 'host',
+    # Compile the v8 shell for the host toolset.
+    'v8_toolset_for_shell': 'host',
 
     # V8 extras
     # Adding V8 extras files requires API owners review

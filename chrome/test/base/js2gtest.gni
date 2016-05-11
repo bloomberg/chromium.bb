@@ -37,10 +37,10 @@ template("js2gtest") {
 
     sources = invoker.sources
 
-    d8_path =
-        get_label_info("//v8:d8($snapshot_toolchain)", "root_out_dir") + "/d8"
+    v8_shell_path = get_label_info("//v8:v8_shell($snapshot_toolchain)",
+                                   "root_out_dir") + "/v8_shell"
     if (is_win) {
-      d8_path += ".exe"
+      v8_shell_path += ".exe"
     }
 
     input_js = [
@@ -48,7 +48,7 @@ template("js2gtest") {
       "//chrome/test/data/webui/test_api.js",
       "//chrome/test/base/js2gtest.js",
     ]
-    inputs = [ d8_path ] + input_js
+    inputs = [ v8_shell_path ] + input_js
     if (defined(invoker.deps_js)) {
       inputs += [ invoker.deps_js ]
     }
@@ -74,7 +74,7 @@ template("js2gtest") {
     }
     args += [
       # Need "./" for script to find binary (cur dir is not on path).
-      "./" + rebase_path(d8_path, root_build_dir),
+      "./" + rebase_path(v8_shell_path, root_build_dir),
     ]
     args += rebase_path(input_js, root_build_dir) + [ invoker.test_type ]
     if (v8_use_external_startup_data) {
@@ -90,7 +90,7 @@ template("js2gtest") {
     ]
 
     deps = [
-      "//v8:d8($snapshot_toolchain)",
+      "//v8:v8_shell($snapshot_toolchain)",
     ]
     if (defined(invoker.deps)) {
       deps += invoker.deps

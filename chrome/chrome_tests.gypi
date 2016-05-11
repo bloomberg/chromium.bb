@@ -2241,7 +2241,7 @@
           },
           'inputs': [
             '<(gypv8sh)',
-            '<(PRODUCT_DIR)/d8<(EXECUTABLE_SUFFIX)',
+            '<(PRODUCT_DIR)/v8_shell<(EXECUTABLE_SUFFIX)',
             '<(mock_js)',
             '<(test_api_js)',
             '<(js2gtest)',
@@ -2638,7 +2638,7 @@
           'dependencies': [
             '../components/components.gyp:copresence',
             # build time dependency.
-            '../v8/src/d8.gyp:d8#host',
+            '../v8/samples/samples.gyp:v8_shell#host',
           ],
         }],
         ['enable_app_list==1', {
@@ -2779,7 +2779,7 @@
           },
           'inputs': [
             '<(gypv8sh)',
-            '<(PRODUCT_DIR)/d8<(EXECUTABLE_SUFFIX)',
+            '<(PRODUCT_DIR)/v8_shell<(EXECUTABLE_SUFFIX)',
             '<(mock_js)',
             '<(test_api_js)',
             '<(js2gtest)',

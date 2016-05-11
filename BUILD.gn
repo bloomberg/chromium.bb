@@ -729,7 +729,7 @@ group("gn_only") {
       ]
     }
     if (is_linux && current_toolchain == host_toolchain) {
-      deps += [ "//v8:d8" ]
+      deps += [ "//v8:v8_shell" ]
     }
   }
 

@@ -30,7 +30,7 @@
 {
     'dependencies': [
       # Used by rule js2unit below.
-      '../v8/src/d8.gyp:d8#host',
+      '../v8/samples/samples.gyp:v8_shell#host',
     ],
   'rules': [
     {
@@ -65,7 +65,7 @@
       },
       'inputs': [
         '<(gypv8sh)',
-        '<(PRODUCT_DIR)/d8<(EXECUTABLE_SUFFIX)',
+        '<(PRODUCT_DIR)/v8_shell<(EXECUTABLE_SUFFIX)',
         '<(mock_js)',
         '<(test_api_js)',
         '<(js2gtest)',

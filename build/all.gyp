@@ -707,7 +707,7 @@
             }],
             ['chromeos==0', {
               'dependencies': [
-                '../v8/src/d8.gyp:d8#host',
+                '../v8/samples/samples.gyp:v8_shell#host',
                 '../third_party/pdfium/samples/samples.gyp:pdfium_test',
               ],
             }],
