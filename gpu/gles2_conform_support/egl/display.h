@@ -10,126 +10,98 @@
 #include <stdint.h>
 
 #include <memory>
+#include <vector>
 
 #include "base/macros.h"
-#include "gpu/command_buffer/client/gles2_cmd_helper.h"
-#include "gpu/command_buffer/client/gpu_control.h"
-#include "gpu/command_buffer/service/command_buffer_service.h"
-#include "gpu/command_buffer/service/command_executor.h"
-#include "gpu/command_buffer/service/gles2_cmd_decoder.h"
-#include "gpu/command_buffer/service/gpu_preferences.h"
-#include "gpu/config/gpu_driver_bug_workarounds.h"
-#include "ui/gfx/native_widget_types.h"
-#include "ui/gl/gl_context.h"
-#include "ui/gl/gl_surface.h"
-
-namespace gpu {
-class CommandBufferService;
-class GpuControl;
-class CommandExecutor;
-class TransferBuffer;
-class TransferBufferManagerInterface;
-
-namespace gles2 {
-class GLES2CmdHelper;
-class GLES2Implementation;
-}  // namespace gles2
-}  // namespace gpu
+#include "base/memory/ref_counted.h"
+#include "base/synchronization/lock.h"
 
 namespace egl {
 
 class Config;
+class Context;
 class Surface;
+class ThreadState;
 
-class Display : private gpu::GpuControl {
+class Display {
  public:
-  explicit Display(EGLNativeDisplayType display_id);
-  ~Display() override;
-
-  void SetCreateOffscreen(int width, int height) {
-    create_offscreen_ = true;
-    create_offscreen_width_ = width;
-    create_offscreen_height_ = height;
-  }
+  explicit Display();
+  ~Display();
 
   bool is_initialized() const { return is_initialized_; }
-  bool Initialize();
+
+  void ReleaseCurrentForReleaseThread(ThreadState*);
+
+  // A function for windowless GTF tests.
+  void SetNextCreateWindowSurfaceCreatesPBuffer(EGLint width, EGLint height);
+
+  EGLBoolean Initialize(ThreadState* ts, EGLint* major, EGLint* minor);
+  EGLBoolean Terminate(ThreadState* ts);
+  const char* QueryString(ThreadState* ts, EGLint name);
 
   // Config routines.
-  bool IsValidConfig(EGLConfig config);
-  bool ChooseConfigs(
-      EGLConfig* configs, EGLint config_size, EGLint* num_config);
-  bool GetConfigs(EGLConfig* configs, EGLint config_size, EGLint* num_config);
-  bool GetConfigAttrib(EGLConfig config, EGLint attribute, EGLint* value);
+  EGLBoolean GetConfigAttrib(ThreadState* ts,
+                             EGLConfig cfg,
+                             EGLint attribute,
+                             EGLint* value);
+  EGLBoolean ChooseConfig(ThreadState* ts,
+                          const EGLint* attrib_list,
+                          EGLConfig* configs,
+                          EGLint config_size,
+                          EGLint* num_config);
+  EGLBoolean GetConfigs(ThreadState*,
+                        EGLConfig*,
+                        EGLint config_size,
+                        EGLint* num_config);
 
   // Surface routines.
-  bool IsValidNativeWindow(EGLNativeWindowType win);
-  bool IsValidSurface(EGLSurface surface);
-  EGLSurface CreateWindowSurface(EGLConfig config,
+  static bool IsValidNativeWindow(EGLNativeWindowType);
+  EGLSurface CreatePbufferSurface(ThreadState*,
+                                  EGLConfig,
+                                  const EGLint* attrib_list);
+  EGLSurface CreateWindowSurface(ThreadState*,
+                                 EGLConfig,
                                  EGLNativeWindowType win,
                                  const EGLint* attrib_list);
-  void DestroySurface(EGLSurface surface);
-  void SwapBuffers(EGLSurface surface);
+  EGLBoolean DestroySurface(ThreadState*, EGLSurface);
+  EGLBoolean SwapBuffers(ThreadState*, EGLSurface);
 
   // Context routines.
-  bool IsValidContext(EGLContext ctx);
-  EGLContext CreateContext(EGLConfig config,
-                           EGLContext share_ctx,
+  EGLContext CreateContext(ThreadState*,
+                           EGLConfig,
+                           EGLSurface share_ctx,
                            const EGLint* attrib_list);
-  void DestroyContext(EGLContext ctx);
-  bool MakeCurrent(EGLSurface draw, EGLSurface read, EGLContext ctx);
+  EGLBoolean DestroyContext(ThreadState*, EGLContext);
 
-  // GpuControl implementation.
-  void SetGpuControlClient(gpu::GpuControlClient*) override;
-  gpu::Capabilities GetCapabilities() override;
-  int32_t CreateImage(ClientBuffer buffer,
-                      size_t width,
-                      size_t height,
-                      unsigned internalformat) override;
-  void DestroyImage(int32_t id) override;
-  int32_t CreateGpuMemoryBufferImage(size_t width,
-                                     size_t height,
-                                     unsigned internalformat,
-                                     unsigned usage) override;
-  void SignalQuery(uint32_t query, const base::Closure& callback) override;
-  void SetLock(base::Lock*) override;
-  void EnsureWorkVisible() override;
-  gpu::CommandBufferNamespace GetNamespaceID() const override;
-  gpu::CommandBufferId GetCommandBufferID() const override;
-  int32_t GetExtraCommandBufferData() const override;
-  uint64_t GenerateFenceSyncRelease() override;
-  bool IsFenceSyncRelease(uint64_t release) override;
-  bool IsFenceSyncFlushed(uint64_t release) override;
-  bool IsFenceSyncFlushReceived(uint64_t release) override;
-  void SignalSyncToken(const gpu::SyncToken& sync_token,
-                       const base::Closure& callback) override;
-  bool CanWaitUnverifiedSyncToken(const gpu::SyncToken* sync_token) override;
+  EGLBoolean ReleaseCurrent(ThreadState*);
+  EGLBoolean MakeCurrent(ThreadState*, EGLSurface, EGLSurface, EGLContext);
+
+  uint64_t GenerateFenceSyncRelease();
+  bool IsFenceSyncRelease(uint64_t release);
+  bool IsFenceSyncFlushed(uint64_t release);
+  bool IsFenceSyncFlushReceived(uint64_t release);
 
  private:
-  EGLNativeDisplayType display_id_;
+  void InitializeConfigsIfNeeded();
+  const Config* GetConfig(EGLConfig);
+  Surface* GetSurface(EGLSurface);
+  Context* GetContext(EGLContext);
+  EGLSurface DoCreatePbufferSurface(ThreadState* ts,
+                                    const Config* config,
+                                    EGLint width,
+                                    EGLint height);
 
-  gpu::GpuPreferences gpu_preferences_;
-  const gpu::GpuDriverBugWorkarounds gpu_driver_bug_workarounds_;
+  base::Lock lock_;
   bool is_initialized_;
-
-  bool create_offscreen_;
-  int create_offscreen_width_;
-  int create_offscreen_height_;
   uint64_t next_fence_sync_release_;
+  std::vector<scoped_refptr<Surface>> surfaces_;
+  std::vector<scoped_refptr<Context>> contexts_;
+  std::unique_ptr<Config> configs_[2];
 
-  scoped_refptr<gpu::TransferBufferManagerInterface> transfer_buffer_manager_;
-  std::unique_ptr<gpu::CommandBufferService> command_buffer_;
-  std::unique_ptr<gpu::CommandExecutor> executor_;
-  std::unique_ptr<gpu::gles2::GLES2Decoder> decoder_;
-  scoped_refptr<gfx::GLContext> gl_context_;
-  scoped_refptr<gfx::GLSurface> gl_surface_;
-  std::unique_ptr<gpu::gles2::GLES2CmdHelper> gles2_cmd_helper_;
-  std::unique_ptr<gpu::TransferBuffer> transfer_buffer_;
-
-  // TODO(alokp): Support more than one config, surface, and context.
-  std::unique_ptr<Config> config_;
-  std::unique_ptr<Surface> surface_;
-  std::unique_ptr<gpu::gles2::GLES2Implementation> context_;
+  // GTF windowless support.
+  bool next_create_window_surface_creates_pbuffer_;
+  EGLint window_surface_pbuffer_width_;
+  EGLint window_surface_pbuffer_height_;
 
   DISALLOW_COPY_AND_ASSIGN(Display);
 };

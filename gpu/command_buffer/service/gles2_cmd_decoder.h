@@ -158,6 +158,9 @@ class GPU_EXPORT GLES2Decoder : public base::SupportsWeakPtr<GLES2Decoder>,
 
   // Set the surface associated with the default FBO.
   virtual void SetSurface(const scoped_refptr<gfx::GLSurface>& surface) = 0;
+  // Releases the surface associated with the GL context.
+  // The decoder should not be used until a new surface is set.
+  virtual void ReleaseSurface() = 0;
 
   virtual void ProduceFrontBuffer(const Mailbox& mailbox) = 0;
 
