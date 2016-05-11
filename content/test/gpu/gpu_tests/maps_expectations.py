@@ -12,6 +12,10 @@ class MapsExpectations(GpuTestExpectations):
     # self.Fail('Maps.maps_001',
     #     ['mac', 'amd', ('nvidia', 0x1234)], bug=123)
 
+    # Nexus 5X
+    self.Fail('Maps.maps_002',
+              ['android', ('qualcomm', 'Adreno (TM) 418')], bug=610951)
+
     # Nexus 9
     self.Fail('Maps.maps_002',
           ['android', 'nvidia'], bug=610034)

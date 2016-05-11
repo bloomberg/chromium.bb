@@ -80,37 +80,55 @@ class WebGLConformanceExpectations(GpuTestExpectations):
 
     # Nexus 5
     self.Fail('WebglExtension.OES_texture_float_linear',
-        ['android', ('qualcomm', 'Adreno (TM) 330')])
+              ['android', ('qualcomm', 'Adreno (TM) 330')])
 
     # Nexus 5X
     self.Fail('conformance/extensions/oes-texture-float-with-image-data.html',
-        ['android', ('qualcomm', 'Adreno (TM) 418')], bug=609883)
+              ['android', ('qualcomm', 'Adreno (TM) 418')], bug=609883)
     self.Fail('conformance/extensions/oes-texture-float-with-image.html',
-        ['android', ('qualcomm', 'Adreno (TM) 418')], bug=609883)
+              ['android', ('qualcomm', 'Adreno (TM) 418')], bug=609883)
     self.Fail('conformance/extensions/oes-texture-half-float-with-canvas.html',
-        ['android', ('qualcomm', 'Adreno (TM) 418')], bug=609883)
-    self.Fail(
-        'conformance/extensions/oes-texture-half-float-with-image-data.html',
-        ['android', ('qualcomm', 'Adreno (TM) 418')], bug=609883)
+              ['android', ('qualcomm', 'Adreno (TM) 418')], bug=609883)
+    self.Fail('conformance/extensions/' +
+              'oes-texture-half-float-with-image-data.html',
+              ['android', ('qualcomm', 'Adreno (TM) 418')], bug=609883)
     self.Fail('conformance/extensions/oes-texture-half-float-with-image.html',
-        ['android', ('qualcomm', 'Adreno (TM) 418')], bug=609883)
+              ['android', ('qualcomm', 'Adreno (TM) 418')], bug=609883)
     self.Fail('conformance/extensions/oes-texture-half-float-with-video.html',
-        ['android', ('qualcomm', 'Adreno (TM) 418')], bug=609883)
+              ['android', ('qualcomm', 'Adreno (TM) 418')], bug=609883)
     self.Fail('conformance/extensions/webgl-compressed-texture-atc.html',
-        ['android', ('qualcomm', 'Adreno (TM) 418')], bug=609883)
+              ['android', ('qualcomm', 'Adreno (TM) 418')], bug=609883)
     self.Fail('conformance/glsl/bugs/sampler-struct-function-arg.html',
-        ['android', ('qualcomm', 'Adreno (TM) 418')], bug=609883)
+              ['android', ('qualcomm', 'Adreno (TM) 418')], bug=609883)
     # This test is skipped because it is crashing the GPU process.
     self.Skip('conformance/glsl/misc/shader-with-non-reserved-words.html',
-        ['android', ('qualcomm', 'Adreno (TM) 418')], bug=609883)
+              ['android', ('qualcomm', 'Adreno (TM) 418')], bug=609883)
+    self.Fail('WebglExtension.EXT_sRGB',
+              ['android', ('qualcomm', 'Adreno (TM) 418')], bug=610951)
+    self.Fail('conformance/textures/misc/' +
+              'tex-image-and-sub-image-2d-with-array-buffer-view.html',
+              ['android', ('qualcomm', 'Adreno (TM) 418')], bug=610951)
+    self.Fail('conformance/textures/canvas/*',
+              ['android', ('qualcomm', 'Adreno (TM) 418')], bug=610951)
+    self.Fail('conformance/textures/image/' +
+              'tex-2d-rgb-rgb-unsigned_short_5_6_5.html',
+              ['android', ('qualcomm', 'Adreno (TM) 418')], bug=610951)
+    self.Fail('conformance/textures/image/tex-2d-rgba-rgba-unsigned_byte.html',
+              ['android', ('qualcomm', 'Adreno (TM) 418')], bug=610951)
+    self.Fail('conformance/textures/image/' +
+              'tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html',
+              ['android', ('qualcomm', 'Adreno (TM) 418')], bug=610951)
+    self.Fail('conformance/textures/image/' +
+              'tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html',
+              ['android', ('qualcomm', 'Adreno (TM) 418')], bug=610951)
 
     # Nexus 6
     self.Fail('WebglExtension.EXT_sRGB',
-        ['android', ('qualcomm', 'Adreno (TM) 420')])
+              ['android', ('qualcomm', 'Adreno (TM) 420')])
 
     # Nexus 9
     self.Fail('WebglExtension.WEBGL_compressed_texture_atc',
-        ['android', ('nvidia', 'NVIDIA Tegra')])
+              ['android', ('nvidia', 'NVIDIA Tegra')])
 
     # ========================
     # Conformance expectations
