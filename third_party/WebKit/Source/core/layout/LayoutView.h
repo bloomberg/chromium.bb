@@ -185,6 +185,7 @@ public:
     void invalidateTreeIfNeeded(const PaintInvalidationState&) final;
 
     LayoutRect visualOverflowRect() const override;
+    LayoutRect localOverflowRectForPaintInvalidation() const override;
 
     // Invalidates paint for the entire view, including composited descendants, but not including child frames.
     // It is very likely you do not want to call this method.

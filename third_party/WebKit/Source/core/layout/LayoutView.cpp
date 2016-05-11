@@ -323,6 +323,13 @@ LayoutRect LayoutView::visualOverflowRect() const
     return LayoutRect(documentRect());
 }
 
+LayoutRect LayoutView::localOverflowRectForPaintInvalidation() const
+{
+    // TODO(wangxianzhu): This is only required without rootLayerScrolls (though it is also correct
+    // but unnecessary with rootLayerScrolls) because of the special LayoutView overflow model.
+    return visualOverflowRect();
+}
+
 void LayoutView::mapLocalToAncestor(const LayoutBoxModelObject* ancestor, TransformState& transformState, MapCoordinatesFlags mode) const
 {
     if (!ancestor && mode & UseTransforms && shouldUseTransformFromContainer(0)) {

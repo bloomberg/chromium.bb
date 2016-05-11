@@ -804,6 +804,19 @@ crbug.com/564403 http/tests/inspector/service-workers/service-worker-manager.htm
 crbug.com/306222 fast/hidpi/image-srcset-relative-svg-canvas.html [ Skip ]
 crbug.com/306222 fast/hidpi/image-srcset-relative-svg-canvas-2x.html [ Skip ]
 
+crbug.com/611046 fast/repaint/abspos-shift-image-incorrect-repaint.html [ NeedsRebaseline ]
+crbug.com/611046 fast/repaint/background-image-paint-invalidation.html [ NeedsRebaseline ]
+crbug.com/611046 fast/repaint/border-radius-repaint-2.html [ NeedsRebaseline ]
+crbug.com/611046 fast/repaint/fixed-and-absolute-position-scrolled.html [ NeedsRebaseline ]
+crbug.com/611046 fast/repaint/full-viewport-repaint-for-background-attachment-fixed.html [ NeedsRebaseline ]
+crbug.com/611046 fast/repaint/overflow-scroll-body-appear.html [ NeedsRebaseline ]
+crbug.com/611046 fast/repaint/requestAnimation-translation-leave-traces.html [ NeedsRebaseline ]
+crbug.com/611046 fast/repaint/shift-relative-positioned-container-with-image-addition.html [ NeedsRebaseline ]
+crbug.com/611046 fast/repaint/shift-relative-positioned-container-with-image-removal.html [ NeedsRebaseline ]
+crbug.com/611046 fast/repaint/table-shrink-row-repaint.html [ NeedsRebaseline ]
+crbug.com/611046 fast/repaint/window-resize-no-layout-change1.html [ NeedsRebaseline ]
+crbug.com/611046 fast/repaint/window-resize-no-layout-change2.html [ NeedsRebaseline ]
+
 crbug.com/364250 [ Debug ] virtual/threaded/animations/interpolation/transform-interpolation.html [ Pass Crash ]
 crbug.com/364250 [ Debug ] virtual/threaded/animations/interpolation/webkit-transform-interpolation.html [ Pass Crash ]
 
