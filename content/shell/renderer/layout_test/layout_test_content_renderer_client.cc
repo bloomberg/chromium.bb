@@ -110,15 +110,6 @@ void LayoutTestContentRendererClient::RenderFrameCreated(
       GetWebFrameTestProxyBase(render_frame);
   frame_proxy->set_web_frame(render_frame->GetWebFrame());
   new LayoutTestRenderFrameObserver(render_frame);
-
-  // TODO(lfg): We should fix the TestProxy to track the WebWidgets on every
-  // local root in WebFrameTestProxy instead of having only the WebWidget for
-  // the main frame in WebTestProxy.
-  test_runner::WebTestProxyBase* proxy =
-      GetWebTestProxyBase(render_frame->GetRenderView());
-  WebLocalFrame* frame = render_frame->GetWebFrame();
-  if (!frame->parent())
-    proxy->set_web_widget(frame->frameWidget());
 }
 
 void LayoutTestContentRendererClient::RenderViewCreated(
@@ -127,6 +118,10 @@ void LayoutTestContentRendererClient::RenderViewCreated(
 
   test_runner::WebTestProxyBase* proxy = GetWebTestProxyBase(render_view);
   proxy->set_web_view(render_view->GetWebView());
+  // TODO(lfg): We should fix the TestProxy to track the WebWidgets on every
+  // local root in WebFrameTestProxy instead of having only the WebWidget for
+  // the main frame in WebTestProxy.
+  proxy->set_web_widget(render_view->GetWebView()->widget());
   proxy->Reset();
   proxy->SetSendWheelGestures(UseGestureBasedWheelScrolling());
 
