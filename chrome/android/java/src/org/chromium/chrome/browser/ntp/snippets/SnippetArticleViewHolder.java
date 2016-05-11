@@ -84,9 +84,7 @@ public class SnippetArticleViewHolder extends NewTabPageViewHolder implements Vi
             }
 
             @Override
-            public void onViewDetachedFromWindow(View v) {
-                cancelImageFetch();
-            }
+            public void onViewDetachedFromWindow(View v) {}
         });
     }
 
