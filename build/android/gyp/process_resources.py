@@ -463,8 +463,6 @@ def main(args):
   # List python deps in input_strings rather than input_paths since the contents
   # of them does not change what gets written to the depsfile.
   input_strings = options.extra_res_packages + [
-    options.aapt_path,
-    options.android_sdk_jar,
     options.app_as_shared_lib,
     options.custom_package,
     options.include_all_resources,
@@ -473,7 +471,11 @@ def main(args):
     options.v14_skip,
   ]
 
-  input_paths = [ options.android_manifest ]
+  input_paths = [
+    options.aapt_path,
+    options.android_manifest,
+    options.android_sdk_jar,
+  ]
   input_paths.extend(options.dependencies_res_zips)
   input_paths.extend(p for p in options.extra_r_text_files if os.path.exists(p))
 

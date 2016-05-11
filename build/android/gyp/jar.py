@@ -76,7 +76,6 @@ def main():
 
   predicate = None
   if excluded_classes:
-    print excluded_classes
     predicate = lambda f: not build_utils.MatchesGlob(f, excluded_classes)
 
   with build_utils.TempDir() as temp_dir:
