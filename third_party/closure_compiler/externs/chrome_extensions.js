@@ -2553,7 +2553,7 @@ chrome.tabs.move = function(tabId, moveProperties, opt_callback) {};
  *   lastFocusedWindow: (boolean|undefined),
  *   status: (string|undefined),
  *   title: (string|undefined),
- *   url: (string|undefined),
+ *   url: (!Array<string>|string|undefined),
  *   windowId: (number|undefined),
  *   windowType: (string|undefined),
  *   index: (number|undefined)
