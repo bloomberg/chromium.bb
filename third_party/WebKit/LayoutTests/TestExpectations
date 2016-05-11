@@ -3,8 +3,6 @@
 # failure. Expected outputs will be adjusted for the better once Oilpan
 # has been well and truly enabled always.
 
-crbug.com/501229 fast/forms/associatedFormControls-leak-nodes.html [ Failure Pass ]
-
 crbug.com/596940 inspector-protocol/runtime/runtime-execution-contexts-events.html [ Pass Timeout ]
 crbug.com/597572 [ Debug ] http/tests/inspector/resource-tree/resource-tree-reload.html [ Pass Failure ]
 

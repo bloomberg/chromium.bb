@@ -12,20 +12,23 @@ if (!window.internals) {
     window.jsTestIsAsync = true;
     var documentsBefore;
     var documentsAfter;
+    // FIXME(keishi): Calling asyncGC twice to fix flakiness.
     asyncGC(function() {
-        documentsBefore = window.internals.numberOfLiveDocuments();
-
-        var frame = document.getElementById('frame');
-        frame.contentDocument.body.innerHTML = '<form></form>';
-        document.body.removeChild(frame);
-        frame = null;
-
         asyncGC(function() {
-            documentsAfter = window.internals.numberOfLiveDocuments();
+            documentsBefore = window.internals.numberOfLiveDocuments();
 
-            // -1 is from removing frame itself.
-            shouldBe('documentsBefore - 1', 'documentsAfter');
-            finishJSTest();
+            var frame = document.getElementById('frame');
+            frame.contentDocument.body.innerHTML = '<form></form>';
+            document.body.removeChild(frame);
+            frame = null;
+
+            asyncGC(function() {
+                documentsAfter = window.internals.numberOfLiveDocuments();
+
+                // -1 is from removing frame itself.
+                shouldBe('documentsBefore - 1', 'documentsAfter');
+                finishJSTest();
+            });
         });
     });
 }
