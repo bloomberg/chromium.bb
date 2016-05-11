@@ -1,11 +1,10 @@
+CONSOLE WARNING: 'DOMImplementation.createCSSStyleSheet()' is deprecated.
 Test that CSS rules don't lose custom properties on GC when only reachable through child rules.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS style.sheet is an instance of CSSStyleSheet
-PASS style.sheet is null
-FAIL rule.parentRule.foo should be bar. Threw exception TypeError: Cannot read property 'foo' of null
+FAIL rule.parentRule.foo should be bar (of type string). Was undefined (of type undefined).
 PASS successfullyParsed is true
 
 TEST COMPLETE

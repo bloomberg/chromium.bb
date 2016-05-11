@@ -22,7 +22,6 @@
 
 [
     DependentLifetime,
-    SetWrapperReferenceTo(CSSRule parentRule),
 ] interface CSSStyleDeclaration {
     [RaisesException=Setter] attribute DOMString cssText;
     readonly attribute unsigned long length;

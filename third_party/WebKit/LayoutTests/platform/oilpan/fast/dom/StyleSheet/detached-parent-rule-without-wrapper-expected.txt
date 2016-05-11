@@ -1,10 +1,12 @@
-CONSOLE WARNING: 'getMatchedCSSRules()' is deprecated. For more help, check https://code.google.com/p/chromium/issues/detail?id=437569#c2
 Test that CSS stylesheets lacking wrappers are pruned from detached CSSOM subtrees. This is surprising behavior, but it's a very rare situation, and the behavior actually matches what both WebKit and Gecko do for DOM nodes in detached subtrees.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS rule.parentStyleSheet is null
+PASS getMatchedCSSRules(document.getElementById("test")).length is 1
+Removing <style>...
+FAIL rule.parentRule should be null. Was [object CSSMediaRule].
+PASS getMatchedCSSRules(document.getElementById("test")) is null
 PASS successfullyParsed is true
 
 TEST COMPLETE

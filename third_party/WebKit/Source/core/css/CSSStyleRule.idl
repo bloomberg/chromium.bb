@@ -20,9 +20,7 @@
 
 // http://dev.w3.org/csswg/cssom/#the-cssstylerule-interface
 
-[
-    Custom=VisitDOMWrapper,
-] interface CSSStyleRule : CSSRule {
+interface CSSStyleRule : CSSRule {
     attribute DOMString selectorText;
     [SameObject, PutForwards=cssText] readonly attribute CSSStyleDeclaration style;
 };
