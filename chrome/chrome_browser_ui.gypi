@@ -1967,6 +1967,8 @@
       'browser/ui/webui/quota_internals/quota_internals_types.h',
       'browser/ui/webui/quota_internals/quota_internals_ui.cc',
       'browser/ui/webui/quota_internals/quota_internals_ui.h',
+      'browser/ui/webui/settings/about_handler.cc',
+      'browser/ui/webui/settings/about_handler.h',
       'browser/ui/webui/settings/appearance_handler.cc',
       'browser/ui/webui/settings/appearance_handler.h',
       'browser/ui/webui/settings/chromeos/change_picture_handler.cc',

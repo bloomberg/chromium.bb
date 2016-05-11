@@ -10,6 +10,7 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/settings/about_handler.h"
 #include "chrome/browser/ui/webui/settings/appearance_handler.h"
 #include "chrome/browser/ui/webui/settings/downloads_handler.h"
 #include "chrome/browser/ui/webui/settings/font_handler.h"
@@ -90,6 +91,7 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
     AddSettingsPageUIHandler(easy_unlock_handler);
 #endif
 
+  AddSettingsPageUIHandler(AboutHandler::Create(html_source, profile));
   AddSettingsPageUIHandler(ResetSettingsHandler::Create(html_source, profile));
 
   // Add all settings resources.
