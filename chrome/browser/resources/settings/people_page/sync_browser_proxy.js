@@ -190,7 +190,6 @@ cr.define('settings', function() {
     /** @override */
     showSetupUI: function() {
       chrome.send('SyncSetupShowSetupUI');
-      chrome.send('coreOptionsUserMetricsAction', ['Options_ShowSyncAdvanced']);
     },
 
     /** @override */

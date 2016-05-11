@@ -65,6 +65,9 @@ class PeopleHandler : public SettingsPageUIHandler,
   friend class PeopleHandlerTest;
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest,
                            DisplayConfigureWithBackendDisabledAndCancel);
+  FRIEND_TEST_ALL_PREFIXES(
+      PeopleHandlerTest,
+      DisplayConfigureWithBackendDisabledAndSyncStartupCompleted);
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, HandleSetupUIWhenSyncDisabled);
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, SelectCustomEncryption);
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, ShowSyncSetupWhenNotSignedIn);
@@ -111,11 +114,6 @@ class PeopleHandler : public SettingsPageUIHandler,
 
   // sync_driver::SyncServiceObserver implementation.
   void OnStateChanged() override;
-
-  // Shows advanced configuration dialog without going through sign in dialog.
-  // Kicks the sync backend if necessary with showing spinner dialog until it
-  // gets ready.
-  void OpenConfigureSync();
 
   // Returns a newly created dictionary with a number of properties that
   // correspond to the status of sync.
@@ -200,7 +198,8 @@ class PeopleHandler : public SettingsPageUIHandler,
   // Used to listen for pref changes to allow or disallow signin.
   PrefChangeRegistrar profile_pref_registrar_;
 
-  // Manages observer lifetime.
+  // Manages observer lifetimes.
+  ScopedObserver<SigninManagerBase, PeopleHandler> signin_observer_;
   ScopedObserver<ProfileSyncService, PeopleHandler> sync_service_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(PeopleHandler);

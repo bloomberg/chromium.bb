@@ -407,7 +407,7 @@ TEST_F(PeopleHandlerTest,
   EXPECT_CALL(*mock_pss_, IsBackendInitialized()).WillRepeatedly(Return(true));
   error_ = GoogleServiceAuthError::AuthErrorNone();
   EXPECT_CALL(*mock_pss_, GetAuthError()).WillRepeatedly(ReturnRef(error_));
-  NotifySyncListeners();
+  handler_->SyncStartupCompleted();
 
   EXPECT_EQ(2U, web_ui_.call_data().size());
 

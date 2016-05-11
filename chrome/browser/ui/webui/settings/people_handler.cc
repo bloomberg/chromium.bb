@@ -152,6 +152,7 @@ const char PeopleHandler::kPassphraseFailedPageStatus[] = "passphraseFailed";
 PeopleHandler::PeopleHandler(Profile* profile)
     : profile_(profile),
       configuring_sync_(false),
+      signin_observer_(this),
       sync_service_observer_(this) {}
 
 PeopleHandler::~PeopleHandler() {
@@ -215,6 +216,11 @@ void PeopleHandler::OnJavascriptAllowed() {
       prefs::kSigninAllowed,
       base::Bind(&PeopleHandler::UpdateSyncStatus, base::Unretained(this)));
 
+  SigninManagerBase* signin_manager(
+      SigninManagerFactory::GetInstance()->GetForProfile(profile_));
+  if (signin_manager)
+    signin_observer_.Add(signin_manager);
+
   ProfileSyncService* sync_service(
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile_));
   if (sync_service)
@@ -223,6 +229,7 @@ void PeopleHandler::OnJavascriptAllowed() {
 
 void PeopleHandler::OnJavascriptDisallowed() {
   profile_pref_registrar_.RemoveAll();
+  signin_observer_.RemoveAll();
   sync_service_observer_.RemoveAll();
 }
 
@@ -353,6 +360,8 @@ void PeopleHandler::SyncStartupCompleted() {
 
   // Stop a timer to handle timeout in waiting for checking network connection.
   backend_start_timer_.reset();
+
+  sync_startup_tracker_.reset();
 
   PushSyncPrefs();
 }
@@ -550,6 +559,8 @@ void PeopleHandler::HandleCloseTimeout(const base::ListValue* args) {
 }
 
 void PeopleHandler::HandleGetSyncStatus(const base::ListValue* args) {
+  AllowJavascript();
+
   CHECK_EQ(1U, args->GetSize());
   const base::Value* callback_id;
   CHECK(args->Get(0, &callback_id));
@@ -632,7 +643,6 @@ void PeopleHandler::OpenSyncSetup(bool creating_supervised_user) {
   // 7) User re-enables sync after disabling it via advanced settings.
 #if !defined(OS_CHROMEOS)
   SigninManagerBase* signin = SigninManagerFactory::GetForProfile(profile_);
-
   if (!signin->IsAuthenticated() ||
       SigninErrorControllerFactory::GetForProfile(profile_)->HasError()) {
     // User is not logged in (cases 1-2), or login has been specially requested
@@ -657,14 +667,6 @@ void PeopleHandler::OpenSyncSetup(bool creating_supervised_user) {
   // User is already logged in. They must have brought up the config wizard
   // via the "Advanced..." button or through One-Click signin (cases 4-6), or
   // they are re-enabling sync after having disabled it (case 7).
-  PushSyncPrefs();
-  FocusUI();
-}
-
-void PeopleHandler::OpenConfigureSync() {
-  if (!PrepareSyncSetup())
-    return;
-
   PushSyncPrefs();
   FocusUI();
 }
@@ -772,8 +774,18 @@ bool PeopleHandler::FocusExistingWizardIfPresent() {
 }
 
 void PeopleHandler::PushSyncPrefs() {
-  // Should never call this when we are not signed in.
-  DCHECK(SigninManagerFactory::GetForProfile(profile_)->IsAuthenticated());
+#if !defined(OS_CHROMEOS)
+  // Early exit if the user has not signed in yet.
+  if (!SigninManagerFactory::GetForProfile(profile_)->IsAuthenticated() ||
+      SigninErrorControllerFactory::GetForProfile(profile_)->HasError()) {
+    return;
+  }
+#endif
+
+  // Early exit if there is already a preferences push pending sync startup.
+  if (sync_startup_tracker_)
+    return;
+
   ProfileSyncService* service = GetSyncService();
   DCHECK(service);
   if (!service->IsBackendInitialized()) {
@@ -793,9 +805,6 @@ void PeopleHandler::PushSyncPrefs() {
     return;
   }
 
-  // Should only get here if user is signed in and sync is initialized, so no
-  // longer need a SyncStartupTracker.
-  sync_startup_tracker_.reset();
   configuring_sync_ = true;
   DCHECK(service->IsBackendInitialized())
       << "Cannot configure sync until the sync backend is initialized";
