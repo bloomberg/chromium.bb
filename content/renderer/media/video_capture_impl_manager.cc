@@ -108,7 +108,6 @@ void VideoCaptureImplManager::RequestRefreshFrame(
                  base::Unretained(impl)));
 }
 
-
 void VideoCaptureImplManager::GetDeviceSupportedFormats(
     media::VideoCaptureSessionId id,
     const VideoCaptureDeviceFormatsCB& callback) {

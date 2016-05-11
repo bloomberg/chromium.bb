@@ -644,7 +644,8 @@ MediaStreamVideoSource* UserMediaClientImpl::CreateVideoSource(
     const StreamDeviceInfo& device,
     const MediaStreamSource::SourceStoppedCallback& stop_callback) {
   content::MediaStreamVideoCapturerSource* ret =
-      new content::MediaStreamVideoCapturerSource(stop_callback, device);
+      new content::MediaStreamVideoCapturerSource(stop_callback, device,
+                                                  render_frame());
   return ret;
 }
 

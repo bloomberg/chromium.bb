@@ -107,6 +107,11 @@ class CONTENT_EXPORT MediaStreamDispatcherHost : public BrowserMessageFilter,
                     int page_request_id,
                     const std::string& label);
 
+  // IPC message handler: Set if the video capturing is secure.
+  void OnSetCapturingLinkSecured(int session_id,
+                                 content::MediaStreamType type,
+                                 bool is_secure);
+
   std::unique_ptr<MediaStreamUIProxy> CreateMediaStreamUIProxy();
   void HandleCheckAccessResponse(std::unique_ptr<MediaStreamUIProxy> ui_proxy,
                                  int render_frame_id,

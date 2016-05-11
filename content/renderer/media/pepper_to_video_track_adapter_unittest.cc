@@ -81,10 +81,9 @@ TEST_F(PepperToVideoTrackAdapterTest, PutFrame) {
   ASSERT_TRUE(native_track != NULL);
 
   MockMediaStreamVideoSink sink;
-  native_track->AddSink(&sink, sink.GetDeliverFrameCB());
-   scoped_refptr<PPB_ImageData_Impl> image(
-      new PPB_ImageData_Impl(instance()->pp_instance(),
-                             PPB_ImageData_Impl::ForTest()));
+  native_track->AddSink(&sink, sink.GetDeliverFrameCB(), false);
+  scoped_refptr<PPB_ImageData_Impl> image(new PPB_ImageData_Impl(
+      instance()->pp_instance(), PPB_ImageData_Impl::ForTest()));
   image->Init(PP_IMAGEDATAFORMAT_BGRA_PREMUL, 640, 360, true);
   {
     base::RunLoop run_loop;

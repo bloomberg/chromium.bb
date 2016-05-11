@@ -445,11 +445,10 @@ void PepperMediaStreamVideoTrackHost::DidConnectPendingHostToResource() {
   if (!MediaStreamVideoSink::connected_track().isNull())
     return;
   MediaStreamVideoSink::ConnectToTrack(
-      track_,
-      media::BindToCurrentLoop(
-          base::Bind(
-              &PepperMediaStreamVideoTrackHost::OnVideoFrame,
-              weak_factory_.GetWeakPtr())));
+      track_, media::BindToCurrentLoop(
+                  base::Bind(&PepperMediaStreamVideoTrackHost::OnVideoFrame,
+                             weak_factory_.GetWeakPtr())),
+      false);
 }
 
 int32_t PepperMediaStreamVideoTrackHost::OnResourceMessageReceived(

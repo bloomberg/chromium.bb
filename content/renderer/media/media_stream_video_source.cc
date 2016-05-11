@@ -317,8 +317,7 @@ MediaStreamVideoSource::MediaStreamVideoSource()
     : state_(NEW),
       track_adapter_(
           new VideoTrackAdapter(ChildProcess::current()->io_task_runner())),
-      weak_factory_(this) {
-}
+      weak_factory_(this) {}
 
 MediaStreamVideoSource::~MediaStreamVideoSource() {
   DCHECK(CalledOnValidThread());
@@ -333,6 +332,7 @@ void MediaStreamVideoSource::AddTrack(
   DCHECK(!constraints.isNull());
   DCHECK(std::find(tracks_.begin(), tracks_.end(), track) == tracks_.end());
   tracks_.push_back(track);
+  secure_tracker_.Add(track, true);
 
   track_descriptors_.push_back(
       TrackDescriptor(track, frame_callback, constraints, callback));
@@ -384,6 +384,7 @@ void MediaStreamVideoSource::RemoveTrack(MediaStreamVideoTrack* video_track) {
       std::find(tracks_.begin(), tracks_.end(), video_track);
   DCHECK(it != tracks_.end());
   tracks_.erase(it);
+  secure_tracker_.Remove(video_track);
 
   for (std::vector<TrackDescriptor>::iterator it = track_descriptors_.begin();
        it != track_descriptors_.end(); ++it) {
@@ -399,6 +400,13 @@ void MediaStreamVideoSource::RemoveTrack(MediaStreamVideoTrack* video_track) {
 
   if (tracks_.empty())
     StopSource();
+}
+
+void MediaStreamVideoSource::UpdateCapturingLinkSecure(
+    MediaStreamVideoTrack* track,
+    bool is_secure) {
+  secure_tracker_.Update(track, is_secure);
+  SetCapturingLinkSecured(secure_tracker_.is_capturing_secure());
 }
 
 base::SingleThreadTaskRunner* MediaStreamVideoSource::io_task_runner() const {

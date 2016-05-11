@@ -259,6 +259,13 @@ class CONTENT_EXPORT MediaStreamManager
   // is allowed to access |origin|.
   static bool IsOriginAllowed(int render_process_id, const url::Origin& origin);
 
+  // Set whether the capturing is secure for the capturing session with given
+  // |session_id|, |render_process_id|, and the MediaStreamType |type|.
+  void SetCapturingLinkSecured(int render_process_id,
+                               int session_id,
+                               content::MediaStreamType type,
+                               bool is_secure);
+
  private:
   // Contains all data needed to keep track of requests.
   class DeviceRequest;

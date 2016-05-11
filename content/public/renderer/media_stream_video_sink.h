@@ -41,8 +41,13 @@ class CONTENT_EXPORT MediaStreamVideoSink : public MediaStreamSink {
   // Warning: Calling DisconnectFromTrack does not immediately stop frame
   // delivery through the |callback|, since frames are being delivered on a
   // different thread.
+  //
+  // |is_sink_secure| indicates if this MediaStreamVideoSink is secure (i.e.
+  // meets output protection requirement). Generally, this should be false
+  // unless you know what you are doing.
   void ConnectToTrack(const blink::WebMediaStreamTrack& track,
-                      const VideoCaptureDeliverFrameCB& callback);
+                      const VideoCaptureDeliverFrameCB& callback,
+                      bool is_sink_secure);
   void DisconnectFromTrack();
 
   // Returns the currently-connected track, or a null instance otherwise.

@@ -1660,6 +1660,8 @@
       'browser/guest_view/web_view/chrome_web_view_permission_helper_delegate.h',
       'browser/guest_view/web_view/context_menu_content_type_web_view.cc',
       'browser/guest_view/web_view/context_menu_content_type_web_view.h',
+      'browser/media/capture_access_handler_base.cc',
+      'browser/media/capture_access_handler_base.h',
       'browser/media/cast_transport_host_filter.cc',
       'browser/media/cast_transport_host_filter.h',
       'browser/media/desktop_capture_access_handler.cc',

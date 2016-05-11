@@ -124,6 +124,8 @@ void OutputProtectionDelegate::QueryStatusComplete(
 
   content::RenderFrameHost* rfh =
       content::RenderFrameHost::FromID(render_process_id_, render_frame_id_);
+  // TODO(xjz): Investigate whether this check (and the other one above) should
+  // be removed.
   if (!rfh) {
     LOG(WARNING) << "RenderFrameHost is not alive.";
     callback.Run(false, 0, 0);
@@ -133,14 +135,11 @@ void OutputProtectionDelegate::QueryStatusComplete(
   uint32_t link_mask = response.link_mask;
   // If we successfully retrieved the device level status, check for capturers.
   if (response.success) {
-    const bool capture_detected =
-        // Check for tab capture on the current tab.
-        content::WebContents::FromRenderFrameHost(rfh)->GetCapturerCount() >
-            0 ||
-        // Check for desktop capture.
+    const bool insecure_capture_detected =
         MediaCaptureDevicesDispatcher::GetInstance()
-            ->IsDesktopCaptureInProgress();
-    if (capture_detected)
+            ->IsInsecureCapturingInProgress(render_process_id_,
+                                            render_frame_id_);
+    if (insecure_capture_detected)
       link_mask |= ui::DISPLAY_CONNECTION_TYPE_NETWORK;
   }
 

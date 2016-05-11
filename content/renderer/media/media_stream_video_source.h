@@ -17,6 +17,7 @@
 #include "content/common/media/video_capture.h"
 #include "content/public/renderer/media_stream_video_sink.h"
 #include "content/renderer/media/media_stream_source.h"
+#include "content/renderer/media/secure_display_link_tracker.h"
 #include "media/base/video_capture_types.h"
 #include "media/base/video_frame.h"
 #include "third_party/WebKit/public/platform/WebMediaConstraints.h"
@@ -81,11 +82,16 @@ class CONTENT_EXPORT MediaStreamVideoSource
                 const ConstraintsCallback& callback);
   void RemoveTrack(MediaStreamVideoTrack* track);
 
+  void UpdateCapturingLinkSecure(MediaStreamVideoTrack* track, bool is_secure);
+
   // Return true if |name| is a constraint supported by MediaStreamVideoSource.
   static bool IsConstraintSupported(const std::string& name);
 
   // Request underlying source to capture a new frame.
   virtual void RequestRefreshFrame() {}
+
+  // Notify underlying source if the capturing link is secure.
+  virtual void SetCapturingLinkSecured(bool is_secure) {}
 
   // Returns the task runner where video frames will be delivered on.
   base::SingleThreadTaskRunner* io_task_runner() const;
@@ -186,6 +192,9 @@ class CONTENT_EXPORT MediaStreamVideoSource
 
   // Tracks that currently are connected to this source.
   std::vector<MediaStreamVideoTrack*> tracks_;
+
+  // This is used for tracking if all connected video sinks are secure.
+  SecureDisplayLinkTracker<MediaStreamVideoTrack> secure_tracker_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<MediaStreamVideoSource> weak_factory_;

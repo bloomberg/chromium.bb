@@ -137,12 +137,21 @@ class MediaCaptureDevicesDispatcher : public content::MediaObserver {
                                   content::MediaRequestState state) override;
   void OnCreatingAudioStream(int render_process_id,
                              int render_frame_id) override;
+  void OnSetCapturingLinkSecured(int render_process_id,
+                                 int render_frame_id,
+                                 int page_request_id,
+                                 content::MediaStreamType stream_type,
+                                 bool is_secure) override;
 
   scoped_refptr<MediaStreamCaptureIndicator> GetMediaStreamCaptureIndicator();
 
   DesktopStreamsRegistry* GetDesktopStreamsRegistry();
 
-  bool IsDesktopCaptureInProgress();
+  // Return true if there is any ongoing insecured capturing. The capturing is
+  // deemed secure if all connected video sinks are reported secure and the
+  // extension is trusted.
+  bool IsInsecureCapturingInProgress(int render_process_id,
+                                     int render_frame_id);
 
   // Only for testing.
   void SetTestAudioCaptureDevices(const content::MediaStreamDevices& devices);
@@ -166,6 +175,11 @@ class MediaCaptureDevicesDispatcher : public content::MediaObserver {
       content::MediaRequestState state);
   void OnCreatingAudioStreamOnUIThread(int render_process_id,
                                        int render_frame_id);
+  void UpdateCapturingLinkSecured(int render_process_id,
+                                  int render_frame_id,
+                                  int page_request_id,
+                                  content::MediaStreamType stream_type,
+                                  bool is_secure);
 
   // Only for testing, a list of cached audio capture devices.
   content::MediaStreamDevices test_audio_devices_;

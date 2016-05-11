@@ -79,6 +79,7 @@ void TabCaptureAccessHandler::HandleRequest(
              ->GetMediaStreamCaptureIndicator()
              ->RegisterMediaStream(web_contents, devices);
   }
+  UpdateExtensionTrusted(request, extension);
   callback.Run(devices, devices.empty() ? content::MEDIA_DEVICE_INVALID_STATE
                                         : content::MEDIA_DEVICE_OK,
                std::move(ui));

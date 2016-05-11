@@ -34,6 +34,14 @@ class MediaObserver {
   virtual void OnCreatingAudioStream(int render_process_id,
                                      int render_frame_id) = 0;
 
+  // Called when the secure display link status of one or more consumers of this
+  // media stream has changed.
+  virtual void OnSetCapturingLinkSecured(int render_process_id,
+                                         int render_frame_id,
+                                         int page_request_id,
+                                         MediaStreamType stream_type,
+                                         bool is_secure) = 0;
+
  protected:
   virtual ~MediaObserver() {}
 };

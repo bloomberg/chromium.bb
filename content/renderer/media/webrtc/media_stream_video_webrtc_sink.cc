@@ -246,7 +246,8 @@ MediaStreamVideoWebRtcSink::MediaStreamVideoWebRtcSink(
 
   MediaStreamVideoSink::ConnectToTrack(
       track,
-      base::Bind(&WebRtcVideoSourceAdapter::OnVideoFrameOnIO, source_adapter_));
+      base::Bind(&WebRtcVideoSourceAdapter::OnVideoFrameOnIO, source_adapter_),
+      false);
 
   DVLOG(3) << "MediaStreamVideoWebRtcSink ctor() : is_screencast "
            << is_screencast;

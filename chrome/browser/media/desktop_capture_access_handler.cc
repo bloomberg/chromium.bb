@@ -39,37 +39,11 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/shell.h"
-#include "base/sha1.h"
 #endif  // defined(OS_CHROMEOS)
 
 using content::BrowserThread;
 
 namespace {
-
-bool IsExtensionWhitelistedForScreenCapture(
-    const extensions::Extension* extension) {
-  if (!extension)
-    return false;
-
-#if defined(OS_CHROMEOS)
-  std::string hash = base::SHA1HashString(extension->id());
-  std::string hex_hash = base::HexEncode(hash.c_str(), hash.length());
-
-  // crbug.com/446688
-  return hex_hash == "4F25792AF1AA7483936DE29C07806F203C7170A0" ||
-         hex_hash == "BD8781D757D830FC2E85470A1B6E8A718B7EE0D9" ||
-         hex_hash == "4AC2B6C63C6480D150DFDA13E4A5956EB1D0DDBB" ||
-         hex_hash == "81986D4F846CEDDDB962643FA501D1780DD441BB";
-#else
-  return false;
-#endif  // defined(OS_CHROMEOS)
-}
-
-bool IsBuiltInExtension(const GURL& origin) {
-  return
-      // Feedback Extension.
-      origin.spec() == "chrome-extension://gfdkimpbcpahaombhbimeihdjnejgicl/";
-}
 
 // Helper to get title of the calling application shown in the screen capture
 // notification.
@@ -240,6 +214,8 @@ void DesktopCaptureAccessHandler::ProcessScreenCaptureAccessRequest(
   std::unique_ptr<content::MediaStreamUI> ui;
 
   DCHECK_EQ(request.video_type, content::MEDIA_DESKTOP_VIDEO_CAPTURE);
+
+  UpdateExtensionTrusted(request, extension);
 
   bool loopback_audio_supported = false;
 #if defined(USE_CRAS) || defined(OS_WIN)
@@ -445,41 +421,7 @@ void DesktopCaptureAccessHandler::HandleRequest(
   ui = GetDevicesForDesktopCapture(&devices, media_id, capture_audio, true,
                                    GetApplicationTitle(web_contents, extension),
                                    base::UTF8ToUTF16(original_extension_name));
-
+  UpdateExtensionTrusted(request, extension);
   callback.Run(devices, content::MEDIA_DEVICE_OK, std::move(ui));
 }
 
-void DesktopCaptureAccessHandler::UpdateMediaRequestState(
-    int render_process_id,
-    int render_frame_id,
-    int page_request_id,
-    content::MediaStreamType stream_type,
-    content::MediaRequestState state) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  // Track desktop capture sessions.  Tracking is necessary to avoid unbalanced
-  // session counts since not all requests will reach MEDIA_REQUEST_STATE_DONE,
-  // but they will all reach MEDIA_REQUEST_STATE_CLOSING.
-  if (stream_type != content::MEDIA_DESKTOP_VIDEO_CAPTURE)
-    return;
-
-  if (state == content::MEDIA_REQUEST_STATE_DONE) {
-    DesktopCaptureSession session = {
-        render_process_id, render_frame_id, page_request_id};
-    desktop_capture_sessions_.push_back(session);
-  } else if (state == content::MEDIA_REQUEST_STATE_CLOSING) {
-    for (DesktopCaptureSessions::iterator it =
-             desktop_capture_sessions_.begin();
-         it != desktop_capture_sessions_.end(); ++it) {
-      if (it->render_process_id == render_process_id &&
-          it->render_frame_id == render_frame_id &&
-          it->page_request_id == page_request_id) {
-        desktop_capture_sessions_.erase(it);
-        break;
-      }
-    }
-  }
-}
-
-bool DesktopCaptureAccessHandler::IsCaptureInProgress() {
-  return desktop_capture_sessions_.size() > 0;
-}

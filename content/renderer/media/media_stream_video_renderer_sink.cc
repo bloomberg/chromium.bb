@@ -50,11 +50,12 @@ void MediaStreamVideoRendererSink::Start() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, STOPPED);
 
-  MediaStreamVideoSink::ConnectToTrack(video_track_,
-      media::BindToCurrentLoop(
-          base::Bind(
-              &MediaStreamVideoRendererSink::OnVideoFrame,
-              weak_factory_.GetWeakPtr())));
+  MediaStreamVideoSink::ConnectToTrack(
+      video_track_, media::BindToCurrentLoop(
+                        base::Bind(&MediaStreamVideoRendererSink::OnVideoFrame,
+                                   weak_factory_.GetWeakPtr())),
+      // Local display video rendering is considered a secure link.
+      true);
   state_ = STARTED;
 
   if (video_track_.source().getReadyState() ==

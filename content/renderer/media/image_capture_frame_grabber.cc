@@ -102,7 +102,8 @@ void ImageCaptureFrameGrabber::grabFrame(
       base::Bind(&OnVideoFrame, media::BindToCurrentLoop(base::Bind(
                                     &ImageCaptureFrameGrabber::OnSkImage,
                                     weak_factory_.GetWeakPtr(),
-                                    base::Passed(&scoped_callbacks)))));
+                                    base::Passed(&scoped_callbacks)))),
+      false);
 }
 
 void ImageCaptureFrameGrabber::OnSkImage(

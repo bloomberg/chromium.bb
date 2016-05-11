@@ -132,6 +132,8 @@ bool MediaStreamDispatcherHost::OnMessageReceived(const IPC::Message& message) {
                         OnSubscribeToDeviceChangeNotifications)
     IPC_MESSAGE_HANDLER(MediaStreamHostMsg_CancelDeviceChangeNotifications,
                         OnCancelDeviceChangeNotifications)
+    IPC_MESSAGE_HANDLER(MediaStreamHostMsg_SetCapturingLinkSecured,
+                        OnSetCapturingLinkSecured)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -298,6 +300,15 @@ void MediaStreamDispatcherHost::HandleCheckAccessResponse(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (have_access)
     Send(new MediaStreamMsg_DevicesChanged(render_frame_id));
+}
+
+void MediaStreamDispatcherHost::OnSetCapturingLinkSecured(int session_id,
+                                                          MediaStreamType type,
+                                                          bool is_secure) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  media_stream_manager_->SetCapturingLinkSecured(render_process_id_, session_id,
+                                                 type, is_secure);
 }
 
 }  // namespace content

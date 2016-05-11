@@ -152,3 +152,15 @@ IPC_MESSAGE_CONTROL2(MediaStreamHostMsg_SubscribeToDeviceChangeNotifications,
 // Cancel notifications about changes in the set of media devices.
 IPC_MESSAGE_CONTROL1(MediaStreamHostMsg_CancelDeviceChangeNotifications,
                      int /* render frame id */)
+
+// Tell the browser process if the video capture is secure (i.e., all
+// connected video sinks meet the requirement of output protection.).
+// Note: the browser process only trusts the |is_sucure| value in this IPC
+// message if it's comimg from a trusted, whitelisted extension. Extensions run
+// in separate render processes. So it shouldn't be possible, for example, for
+// a user's visit to a malicious web page to compromise a render process running
+// a trusted extension to make it report falsehood in this IPC message.
+IPC_MESSAGE_CONTROL3(MediaStreamHostMsg_SetCapturingLinkSecured,
+                     int,                      /* session_id */
+                     content::MediaStreamType, /* type */
+                     bool /* is_secure */)

@@ -338,9 +338,9 @@ class FakeMediaStreamVideoSink : public MediaStreamVideoSink {
 
   void ConnectToTrack(const blink::WebMediaStreamTrack& track) {
     MediaStreamVideoSink::ConnectToTrack(
-        track,
-        base::Bind(&FakeMediaStreamVideoSink::OnVideoFrame,
-                   base::Unretained(this)));
+        track, base::Bind(&FakeMediaStreamVideoSink::OnVideoFrame,
+                          base::Unretained(this)),
+        true);
   }
 
   void DisconnectFromTrack() {

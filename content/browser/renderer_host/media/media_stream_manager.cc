@@ -309,6 +309,17 @@ class MediaStreamManager::DeviceRequest {
     return state_[stream_type];
   }
 
+  void SetCapturingLinkSecured(bool is_secure) {
+    MediaObserver* media_observer =
+        GetContentClient()->browser()->GetMediaObserver();
+    if (!media_observer)
+      return;
+
+    media_observer->OnSetCapturingLinkSecured(target_process_id_,
+                                              target_frame_id_, page_request_id,
+                                              video_type_, is_secure);
+  }
+
   MediaStreamRequester* const requester;  // Can be NULL.
 
 
@@ -2163,6 +2174,27 @@ bool MediaStreamManager::IsOriginAllowed(int render_process_id,
   }
 
   return true;
+}
+
+void MediaStreamManager::SetCapturingLinkSecured(int render_process_id,
+                                                 int session_id,
+                                                 content::MediaStreamType type,
+                                                 bool is_secure) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  for (LabeledDeviceRequest& labeled_request : requests_) {
+    DeviceRequest* request = labeled_request.second;
+    if (request->requesting_process_id != render_process_id)
+      continue;
+
+    for (const StreamDeviceInfo& device_info : request->devices) {
+      if (device_info.session_id == session_id &&
+          device_info.device.type == type) {
+        request->SetCapturingLinkSecured(is_secure);
+        return;
+      }
+    }
+  }
 }
 
 }  // namespace content

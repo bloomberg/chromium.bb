@@ -245,15 +245,20 @@ MediaStreamVideoTrack::~MediaStreamVideoTrack() {
   DVLOG(3) << "~MediaStreamVideoTrack()";
 }
 
-void MediaStreamVideoTrack::AddSink(
-    MediaStreamVideoSink* sink, const VideoCaptureDeliverFrameCB& callback) {
+void MediaStreamVideoTrack::AddSink(MediaStreamVideoSink* sink,
+                                    const VideoCaptureDeliverFrameCB& callback,
+                                    bool is_sink_secure) {
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
   DCHECK(std::find(sinks_.begin(), sinks_.end(), sink) == sinks_.end());
   sinks_.push_back(sink);
   frame_deliverer_->AddCallback(sink, callback);
+  secure_tracker_.Add(sink, is_sink_secure);
   // Request source to deliver a frame because a new sink is added.
-  if (source_)
+  if (source_) {
     source_->RequestRefreshFrame();
+    source_->UpdateCapturingLinkSecure(this,
+                                       secure_tracker_.is_capturing_secure());
+  }
 }
 
 void MediaStreamVideoTrack::RemoveSink(MediaStreamVideoSink* sink) {
@@ -263,6 +268,10 @@ void MediaStreamVideoTrack::RemoveSink(MediaStreamVideoSink* sink) {
   DCHECK(it != sinks_.end());
   sinks_.erase(it);
   frame_deliverer_->RemoveCallback(sink);
+  secure_tracker_.Remove(sink);
+  if (source_)
+    source_->UpdateCapturingLinkSecure(this,
+                                       secure_tracker_.is_capturing_secure());
 }
 
 void MediaStreamVideoTrack::SetEnabled(bool enabled) {

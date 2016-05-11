@@ -42,9 +42,9 @@ class PpFrameReceiver : public MediaStreamVideoSink {
     if (reader) {
       MediaStreamVideoSink::ConnectToTrack(
           track_,
-          media::BindToCurrentLoop(
-              base::Bind(&PpFrameReceiver::OnVideoFrame,
-                         weak_factory_.GetWeakPtr())));
+          media::BindToCurrentLoop(base::Bind(&PpFrameReceiver::OnVideoFrame,
+                                              weak_factory_.GetWeakPtr())),
+          false);
     } else {
       MediaStreamVideoSink::DisconnectFromTrack();
       weak_factory_.InvalidateWeakPtrs();

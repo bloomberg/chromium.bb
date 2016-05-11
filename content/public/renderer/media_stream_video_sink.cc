@@ -17,13 +17,14 @@ MediaStreamVideoSink::~MediaStreamVideoSink() {
 
 void MediaStreamVideoSink::ConnectToTrack(
     const blink::WebMediaStreamTrack& track,
-    const VideoCaptureDeliverFrameCB& callback) {
+    const VideoCaptureDeliverFrameCB& callback,
+    bool is_sink_secure) {
   DCHECK(connected_track_.isNull());
   connected_track_ = track;
   MediaStreamVideoTrack* const video_track =
       MediaStreamVideoTrack::GetVideoTrack(connected_track_);
   DCHECK(video_track);
-  video_track->AddSink(this, callback);
+  video_track->AddSink(this, callback, is_sink_secure);
 }
 
 void MediaStreamVideoSink::DisconnectFromTrack() {

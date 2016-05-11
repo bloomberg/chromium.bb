@@ -632,7 +632,8 @@ VideoTrackRecorder::VideoTrackRecorder(
   // StartFrameEncode() will be called on Render IO thread.
   MediaStreamVideoSink::ConnectToTrack(
       track_,
-      base::Bind(&VideoTrackRecorder::Encoder::StartFrameEncode, encoder_));
+      base::Bind(&VideoTrackRecorder::Encoder::StartFrameEncode, encoder_),
+      false);
 }
 
 VideoTrackRecorder::~VideoTrackRecorder() {

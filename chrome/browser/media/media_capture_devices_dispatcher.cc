@@ -66,9 +66,9 @@ const content::MediaStreamDevice* FindDeviceWithId(
 }
 
 #if defined(ENABLE_EXTENSIONS)
-inline DesktopCaptureAccessHandler* ToDesktopCaptureAccessHandler(
+inline CaptureAccessHandlerBase* ToCaptureAccessHandlerBase(
     MediaAccessHandler* handler) {
-  return static_cast<DesktopCaptureAccessHandler*>(handler);
+  return static_cast<CaptureAccessHandlerBase*>(handler);
 }
 #endif
 }  // namespace
@@ -373,13 +373,19 @@ void MediaCaptureDevicesDispatcher::OnCreatingAudioStreamOnUIThread(
                     OnCreatingAudioStream(render_process_id, render_frame_id));
 }
 
-bool MediaCaptureDevicesDispatcher::IsDesktopCaptureInProgress() {
+bool MediaCaptureDevicesDispatcher::IsInsecureCapturingInProgress(
+    int render_process_id,
+    int render_frame_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 #if defined(ENABLE_EXTENSIONS)
   for (MediaAccessHandler* handler : media_access_handlers_) {
     if (handler->SupportsStreamType(content::MEDIA_DESKTOP_VIDEO_CAPTURE,
-                                    NULL)) {
-      return ToDesktopCaptureAccessHandler(handler)->IsCaptureInProgress();
+                                    nullptr) ||
+        handler->SupportsStreamType(content::MEDIA_TAB_VIDEO_CAPTURE,
+                                    nullptr)) {
+      if (ToCaptureAccessHandlerBase(handler)->IsInsecureCapturingInProgress(
+              render_process_id, render_frame_id))
+        return true;
     }
   }
 #endif
@@ -394,4 +400,44 @@ void MediaCaptureDevicesDispatcher::SetTestAudioCaptureDevices(
 void MediaCaptureDevicesDispatcher::SetTestVideoCaptureDevices(
     const MediaStreamDevices& devices) {
   test_video_devices_ = devices;
+}
+
+void MediaCaptureDevicesDispatcher::OnSetCapturingLinkSecured(
+    int render_process_id,
+    int render_frame_id,
+    int page_request_id,
+    content::MediaStreamType stream_type,
+    bool is_secure) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (stream_type != content::MEDIA_TAB_VIDEO_CAPTURE &&
+      stream_type != content::MEDIA_DESKTOP_VIDEO_CAPTURE)
+    return;
+
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&MediaCaptureDevicesDispatcher::UpdateCapturingLinkSecured,
+                 base::Unretained(this), render_process_id, render_frame_id,
+                 page_request_id, stream_type, is_secure));
+}
+
+void MediaCaptureDevicesDispatcher::UpdateCapturingLinkSecured(
+    int render_process_id,
+    int render_frame_id,
+    int page_request_id,
+    content::MediaStreamType stream_type,
+    bool is_secure) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (stream_type != content::MEDIA_TAB_VIDEO_CAPTURE &&
+      stream_type != content::MEDIA_DESKTOP_VIDEO_CAPTURE)
+    return;
+
+#if defined(ENABLE_EXTENSIONS)
+  for (MediaAccessHandler* handler : media_access_handlers_) {
+    if (handler->SupportsStreamType(stream_type, nullptr)) {
+      ToCaptureAccessHandlerBase(handler)->UpdateCapturingLinkSecured(
+          render_process_id, render_frame_id, page_request_id, is_secure);
+      break;
+    }
+  }
+#endif
 }

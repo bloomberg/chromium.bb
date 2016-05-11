@@ -15,6 +15,7 @@
 #include "content/public/renderer/media_stream_video_sink.h"
 #include "content/renderer/media/media_stream_track.h"
 #include "content/renderer/media/media_stream_video_source.h"
+#include "content/renderer/media/secure_display_link_tracker.h"
 
 namespace content {
 
@@ -72,7 +73,8 @@ class CONTENT_EXPORT MediaStreamVideoTrack : public MediaStreamTrack {
   // store the callback. This is important to ensure that we can release
   // the callback on render thread without reference to it on the IO-thread.
   void AddSink(MediaStreamVideoSink* sink,
-               const VideoCaptureDeliverFrameCB& callback);
+               const VideoCaptureDeliverFrameCB& callback,
+               bool is_sink_secure);
   void RemoveSink(MediaStreamVideoSink* sink);
 
   std::vector<MediaStreamVideoSink*> sinks_;
@@ -88,6 +90,9 @@ class CONTENT_EXPORT MediaStreamVideoTrack : public MediaStreamTrack {
   // by the blink::WebMediaStreamSource and is guaranteed to outlive the
   // track.
   MediaStreamVideoSource* source_;
+
+  // This is used for tracking if all connected video sinks are secure.
+  SecureDisplayLinkTracker<MediaStreamVideoSink> secure_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamVideoTrack);
 };

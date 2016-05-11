@@ -10,6 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "content/common/media/video_capture.h"
+#include "content/public/renderer/render_frame_observer.h"
 #include "content/renderer/media/media_stream_video_source.h"
 
 namespace media {
@@ -23,17 +24,21 @@ namespace content {
 // Render thread. Objects can be constructed either by indicating a |device| to
 // look for, or by plugging in a |source| constructed elsewhere.
 class CONTENT_EXPORT MediaStreamVideoCapturerSource
-    : public MediaStreamVideoSource {
+    : public MediaStreamVideoSource,
+      public RenderFrameObserver {
  public:
   MediaStreamVideoCapturerSource(
       const SourceStoppedCallback& stop_callback,
       std::unique_ptr<media::VideoCapturerSource> source);
   MediaStreamVideoCapturerSource(const SourceStoppedCallback& stop_callback,
-                                 const StreamDeviceInfo& device_info);
+                                 const StreamDeviceInfo& device_info,
+                                 RenderFrame* render_frame);
   ~MediaStreamVideoCapturerSource() override;
 
   // Implements MediaStreamVideoSource.
   void RequestRefreshFrame() override;
+
+  void SetCapturingLinkSecured(bool is_secure) override;
 
  private:
   friend class CanvasCaptureHandlerTest;

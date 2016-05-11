@@ -123,7 +123,7 @@ TEST_F(MediaStreamRemoteVideoSourceTest, StartTrack) {
   EXPECT_EQ(1, NumberOfSuccessConstraintsCallbacks());
 
   MockMediaStreamVideoSink sink;
-  track->AddSink(&sink, sink.GetDeliverFrameCB());
+  track->AddSink(&sink, sink.GetDeliverFrameCB(), false);
   base::RunLoop run_loop;
   base::Closure quit_closure = run_loop.QuitClosure();
   EXPECT_CALL(sink, OnVideoFrame()).WillOnce(
@@ -141,7 +141,7 @@ TEST_F(MediaStreamRemoteVideoSourceTest, RemoteTrackStop) {
   std::unique_ptr<MediaStreamVideoTrack> track(CreateTrack());
 
   MockMediaStreamVideoSink sink;
-  track->AddSink(&sink, sink.GetDeliverFrameCB());
+  track->AddSink(&sink, sink.GetDeliverFrameCB(), false);
   EXPECT_EQ(blink::WebMediaStreamSource::ReadyStateLive, sink.state());
   EXPECT_EQ(blink::WebMediaStreamSource::ReadyStateLive,
             webkit_source().getReadyState());

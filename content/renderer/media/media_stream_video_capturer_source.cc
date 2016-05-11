@@ -11,6 +11,7 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "content/common/media/media_stream_messages.h"
 #include "content/public/common/media_stream_request.h"
 #include "content/renderer/media/media_stream_constraints_util.h"
 #include "content/renderer/media/video_capture_impl_manager.h"
@@ -318,7 +319,6 @@ void LocalVideoCapturerSource::RequestRefreshFrame() {
   manager_->RequestRefreshFrame(session_id_);
 }
 
-
 void LocalVideoCapturerSource::StopCapture() {
   DVLOG(3) << __FUNCTION__;
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -393,14 +393,16 @@ void LocalVideoCapturerSource::OnDeviceSupportedFormatsEnumerated(
 MediaStreamVideoCapturerSource::MediaStreamVideoCapturerSource(
     const SourceStoppedCallback& stop_callback,
     std::unique_ptr<media::VideoCapturerSource> source)
-    : source_(std::move(source)) {
+    : RenderFrameObserver(nullptr), source_(std::move(source)) {
   SetStopCallback(stop_callback);
 }
 
 MediaStreamVideoCapturerSource::MediaStreamVideoCapturerSource(
     const SourceStoppedCallback& stop_callback,
-    const StreamDeviceInfo& device_info)
-    : source_(new LocalVideoCapturerSource(device_info)) {
+    const StreamDeviceInfo& device_info,
+    RenderFrame* render_frame)
+    : RenderFrameObserver(render_frame),
+      source_(new LocalVideoCapturerSource(device_info)) {
   SetStopCallback(stop_callback);
   SetDeviceInfo(device_info);
 }
@@ -410,6 +412,11 @@ MediaStreamVideoCapturerSource::~MediaStreamVideoCapturerSource() {
 
 void MediaStreamVideoCapturerSource::RequestRefreshFrame() {
   source_->RequestRefreshFrame();
+}
+
+void MediaStreamVideoCapturerSource::SetCapturingLinkSecured(bool is_secure) {
+  Send(new MediaStreamHostMsg_SetCapturingLinkSecured(
+      device_info().session_id, device_info().device.type, is_secure));
 }
 
 void MediaStreamVideoCapturerSource::GetCurrentSupportedFormats(

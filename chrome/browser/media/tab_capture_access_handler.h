@@ -5,12 +5,10 @@
 #ifndef CHROME_BROWSER_MEDIA_TAB_CAPTURE_ACCESS_HANDLER_H_
 #define CHROME_BROWSER_MEDIA_TAB_CAPTURE_ACCESS_HANDLER_H_
 
-#include "chrome/browser/media/media_access_handler.h"
-
-class MediaStreamCaptureIndicator;
+#include "chrome/browser/media/capture_access_handler_base.h"
 
 // MediaAccessHandler for TabCapture API.
-class TabCaptureAccessHandler : public MediaAccessHandler {
+class TabCaptureAccessHandler : public CaptureAccessHandlerBase {
  public:
   TabCaptureAccessHandler();
   ~TabCaptureAccessHandler() override;
