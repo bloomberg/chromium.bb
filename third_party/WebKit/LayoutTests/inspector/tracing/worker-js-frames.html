@@ -63,7 +63,7 @@ function test()
     function processTracingEvents()
     {
         var mainThread = { name: "Main Thread", events: InspectorTest.timelineModel()._mainThreadEvents };
-        processThread(new Set(["startSecondWorker", "worker2.onmessage"]), mainThread);
+        processThread(new Set(["worker2.onmessage"]), mainThread);
         InspectorTest.timelineModel()._virtualThreads.forEach(function(thread)
         {
             if (!thread.isWorker())

@@ -5,8 +5,6 @@
 
 crbug.com/501229 fast/forms/associatedFormControls-leak-nodes.html [ Failure Pass ]
 
-crbug.com/420008 inspector/tracing/worker-js-frames.html [ Pass Timeout Failure ]
-crbug.com/420008 virtual/threaded/inspector/tracing/worker-js-frames.html [ Pass Timeout Failure ]
 crbug.com/596940 inspector-protocol/runtime/runtime-execution-contexts-events.html [ Pass Timeout ]
 crbug.com/597572 [ Debug ] http/tests/inspector/resource-tree/resource-tree-reload.html [ Pass Failure ]
 
