@@ -84,7 +84,7 @@ bool VideoTrack::isValidKindKeyword(const String& kind)
         || (kind == emptyAtom);
 }
 
-AtomicString VideoTrack::defaultKind() const
+AtomicString VideoTrack::invalidValueDefaultKind() const
 {
     return emptyAtom;
 }

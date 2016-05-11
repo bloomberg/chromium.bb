@@ -1,0 +1,6 @@
+This is a testharness.js-based test.
+PASS TextTrack.kind, addTextTrack 
+PASS TextTrack.kind, track element 
+FAIL TextTrack.kind, \u0000 assert_equals: expected "subtitles" but got "metadata"
+Harness: the test ran to completion.
+

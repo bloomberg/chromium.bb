@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<title>Tests that the "kind" attribute is set properly and that cues are only visible when "kind" is set to "captions" or "subtitles".</title>
+<title>Tests that the "kind" attribute is set properly</title>
 <video>
     <track src="captions-webvtt/metadata.vtt" default>
 </video>
@@ -28,38 +28,34 @@ async_test(function(t) {
         assert_equals(trackElement.kind, "subtitles");
         assert_equals(video.textTracks[0].kind, "subtitles");
 
-        // Set to bogus value, should return default.
+        // Set to bogus value, should return invalid value default.
         
         // Set via DOM.
         var value = "english-metadata"
         trackElement.removeAttribute("kind");
         trackElement.kind = value;
         assert_equals(trackElement.getAttribute("kind"), value);
-        assert_equals(trackElement.kind, "subtitles");
-        assert_equals(trackElement.track.kind, "subtitles");
+        assert_equals(trackElement.kind, "metadata");
+        assert_equals(trackElement.track.kind, "metadata");
         
         // Set via attribute.
         trackElement.removeAttribute("kind");
         trackElement.setAttribute("kind", value);
-        assert_equals(trackElement.kind, "subtitles");
-        assert_equals(trackElement.track.kind, "subtitles");
         assert_equals(trackElement.getAttribute("kind"), value);
+        assert_equals(trackElement.kind, "metadata");
+        assert_equals(trackElement.track.kind, "metadata");
 
         // Set to known values.
-        setKindAndCheck("subtitles", true);
-
-        setKindAndCheck("captions", true);
-
-        setKindAndCheck("descriptions", false);
-
-        setKindAndCheck("chapters", false);
-
-        setKindAndCheck("metadata", false);
+        setKindAndCheck("subtitles");
+        setKindAndCheck("captions");
+        setKindAndCheck("descriptions");
+        setKindAndCheck("chapters");
+        setKindAndCheck("metadata");
 
         t.done();
     }
 
-    function setKindAndCheck(value, cueIsVisible) {
+    function setKindAndCheck(value) {
         // set via DOM.
         trackElement.removeAttribute("kind");
         trackElement.kind = value;
@@ -72,14 +68,6 @@ async_test(function(t) {
         assert_equals(trackElement.kind, value);
         assert_equals(trackElement.track.kind, value);
         assert_equals(trackElement.getAttribute("kind"), value);
-
-        if (cueIsVisible) {
-            assert_equals(textTrackDisplayElement(video, "display").innerText, "Lorem ipsum dolor sit amet, ");
-        } else {
-            assert_throws(null, function() {
-                textTrackDisplayElement(video, "display");
-            });
-        }
     }
 });
 </script>

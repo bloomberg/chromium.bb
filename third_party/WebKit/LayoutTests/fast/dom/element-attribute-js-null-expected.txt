@@ -290,7 +290,7 @@ TEST SUCCEEDED: The value was the string 'null'. [tested HTMLTextAreaElement.wra
 
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLTitleElement.text]
 
-TEST SUCCEEDED: The value was the string 'subtitles'. [tested HTMLTrackElement.kind]
+TEST SUCCEEDED: The value was the string 'metadata'. [tested HTMLTrackElement.kind]
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLTrackElement.label]
 TEST SUCCEEDED: The value was the string 'null' resolved as a URL. [tested HTMLTrackElement.src]
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLTrackElement.srclang]

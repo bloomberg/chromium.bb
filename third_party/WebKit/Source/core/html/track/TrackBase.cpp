@@ -70,7 +70,7 @@ void TrackBase::setKind(const AtomicString& kind)
     if (isValidKind(kind))
         m_kind = kind;
     else
-        m_kind = defaultKind();
+        m_kind = invalidValueDefaultKind();
 }
 
 } // namespace blink

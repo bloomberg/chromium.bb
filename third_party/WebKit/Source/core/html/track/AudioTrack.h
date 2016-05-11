@@ -41,7 +41,7 @@ private:
 
     // TrackBase
     bool isValidKind(const AtomicString& kind) const override { return isValidKindKeyword(kind); }
-    AtomicString defaultKind() const override;
+    AtomicString invalidValueDefaultKind() const override;
 
     bool m_enabled;
 };

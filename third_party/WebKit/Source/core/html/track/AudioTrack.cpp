@@ -82,7 +82,7 @@ bool AudioTrack::isValidKindKeyword(const String& kind)
         || (kind == emptyAtom);
 }
 
-AtomicString AudioTrack::defaultKind() const
+AtomicString AudioTrack::invalidValueDefaultKind() const
 {
     return emptyAtom;
 }

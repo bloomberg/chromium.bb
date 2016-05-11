@@ -32,7 +32,7 @@
 namespace blink {
 
 LoadableTextTrack::LoadableTextTrack(HTMLTrackElement* track)
-    : TextTrack(emptyAtom, emptyAtom, emptyAtom, emptyAtom, TrackElement)
+    : TextTrack(subtitlesKeyword(), emptyAtom, emptyAtom, emptyAtom, TrackElement)
     , m_trackElement(track)
 {
 }

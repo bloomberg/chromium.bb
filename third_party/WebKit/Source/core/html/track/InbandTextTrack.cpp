@@ -44,7 +44,7 @@ InbandTextTrack* InbandTextTrack::create(WebInbandTextTrack* webTrack)
 }
 
 InbandTextTrack::InbandTextTrack(WebInbandTextTrack* webTrack)
-    : TextTrack(emptyAtom, webTrack->label(), webTrack->language(), webTrack->id(), InBand)
+    : TextTrack(subtitlesKeyword(), webTrack->label(), webTrack->language(), webTrack->id(), InBand)
     , m_webTrack(webTrack)
 {
     m_webTrack->setClient(this);
