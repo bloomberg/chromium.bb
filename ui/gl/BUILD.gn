@@ -259,6 +259,7 @@ component("gl") {
     ]
 
     libs = [
+      "CoreFoundation.framework",
       "IOSurface.framework",
       "OpenGL.framework",
       "Quartz.framework",

@@ -123,6 +123,10 @@ component("test_runner") {
     "//url",
     "//v8",
   ]
+
+  if (is_mac) {
+    libs = [ "AppKit.framework" ]
+  }
 }
 
 # Font copies.

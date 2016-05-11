@@ -86,6 +86,13 @@ component("accessibility") {
     public_deps += [ "//third_party/iaccessible2" ]
   }
 
+  if (is_mac) {
+    libs = [
+      "AppKit.framework",
+      "Foundation.framework",
+    ]
+  }
+
   if (use_atk) {
     sources += [
       "platform/atk_util_auralinux.cc",

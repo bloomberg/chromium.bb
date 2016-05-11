@@ -8,5 +8,9 @@ if (is_mac) {
     sources = [
       "mac/include/DeckLinkAPIDispatch.cpp",
     ]
+    libs = [
+      "CoreFoundation.framework",
+      "IOKit.framework",
+    ]
   }
 }

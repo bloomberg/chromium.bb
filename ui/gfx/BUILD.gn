@@ -376,7 +376,13 @@ component("gfx") {
   }
 
   if (is_mac) {
-    libs = [ "IOSurface.framework" ]
+    libs = [
+      "AppKit.framework",
+      "CoreFoundation.framework",
+      "CoreGraphics.framework",
+      "CoreText.framework",
+      "IOSurface.framework",
+    ]
   }
 
   if (!use_aura) {

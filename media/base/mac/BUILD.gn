@@ -5,6 +5,12 @@
 assert(is_mac || is_ios)
 
 source_set("mac") {
+  # Note: This source_set is depended on only by //media. In the component
+  # build, if other component targets also depend on it, multiple copies of
+  # the ObjC classes declared in the files below will cause warnings at
+  # run-time.
+  visibility = [ "//media" ]
+
   set_sources_assignment_filter([])
   sources = [
     "coremedia_glue.h",
@@ -24,13 +30,14 @@ source_set("mac") {
     ]
     libs = [
       "AVFoundation.framework",
-
-      # Required by video_frame_mac.cc.
-      "CoreVideo.framework",
+      "CoreVideo.framework",  # Required by video_frame_mac.cc.
     ]
   }
   set_sources_assignment_filter(sources_assignment_filter)
-  configs += [ "//media:media_config" ]
+  configs += [
+    "//media:media_config",
+    "//media:media_implementation",
+  ]
 }
 
 source_set("unittests") {

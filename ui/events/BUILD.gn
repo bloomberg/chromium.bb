@@ -82,6 +82,13 @@ component("events_base") {
   if (!is_ios) {
     deps += [ "//ipc:param_traits" ]
   }
+
+  if (is_mac) {
+    libs = [
+      "AppKit.framework",
+      "Carbon.framework",
+    ]
+  }
 }
 
 component("events") {
@@ -200,6 +207,10 @@ component("events") {
       ":keyevent_jni_headers",
       ":motionevent_jni_headers",
     ]
+  }
+
+  if (is_mac) {
+    libs = [ "AppKit.framework" ]
   }
 }
 

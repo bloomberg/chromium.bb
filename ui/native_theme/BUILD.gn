@@ -54,4 +54,11 @@ component("native_theme") {
     "//ui/gfx/geometry",
     "//ui/resources",
   ]
+
+  if (is_mac) {
+    libs = [
+      "CoreGraphics.framework",
+      "AppKit.framework",
+    ]
+  }
 }

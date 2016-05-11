@@ -29,6 +29,7 @@ component("wifi") {
   if (is_mac) {
     libs = [
       "CoreWLAN.framework",
+      "Foundation.framework",
       "SystemConfiguration.framework",
     ]
   }

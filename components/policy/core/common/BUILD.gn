@@ -189,6 +189,9 @@ source_set("common") {
         "cloud/user_cloud_policy_store.h",
       ]
     }
+    if (is_mac) {
+      libs = [ "CoreFoundation.framework" ]
+    }
     if (!is_ios && !is_mac) {
       sources -= [
         "mac_util.cc",

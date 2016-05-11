@@ -140,8 +140,10 @@ component("views") {
       "//ui/events:dom_keycode_converter",
     ]
     libs = [
-      # Required by bridged_native_widget.mm.
-      "QuartzCore.framework",
+      "AppKit.framework",
+      "CoreGraphics.framework",
+      "Foundation.framework",
+      "QuartzCore.framework",  # Required by bridged_native_widget.mm.
     ]
   }
 }

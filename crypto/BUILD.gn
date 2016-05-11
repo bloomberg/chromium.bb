@@ -91,7 +91,10 @@ component("crypto") {
       "mock_apple_keychain.h",
     ]
   } else {
-    libs = [ "Security.framework" ]
+    libs = [
+      "CoreFoundation.framework",
+      "Security.framework",
+    ]
   }
 
   if (!is_mac) {

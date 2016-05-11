@@ -231,25 +231,6 @@ if (!is_android && !is_mac) {
   }
 }  # !is_android && !is_mac
 
-if (is_mac) {
-  if (is_component_build) {
-    # On Mac component builds, this target is the bundle, and the main dll is
-    # just another shared library. This speeds up incremental builds by
-    # not requiring re-doing the bundle every time main_dll changes.
-    # See https://codereview.chromium.org/11420019
-
-    # TODO(GYP) chrome_dll for Mac component build.
-    assert(false)
-  } else {
-    # On Mac non-component builds, this is a no-op forwarding target.
-    group("chrome_dll") {
-      public_deps = [
-        ":chrome_framework",
-      ]
-    }
-  }
-}
-
 if (is_win) {
   # This target is a forwarding target to compile the necessary DLLs used
   # by Chrome.
@@ -401,12 +382,6 @@ if (is_win) {
   chrome_framework_name = chrome_product_full_name + " Framework"
 
   group("chrome") {
-    deps = [
-      ":chrome_initial",
-    ]
-  }
-
-  group("chrome_initial") {
     deps = [
       ":chrome_app",
     ]
@@ -571,6 +546,13 @@ if (is_win) {
     deps = [
       "//chrome/common:version_header",
     ]
+
+    ldflags = [
+      # The helper is in Chromium.app/Contents/Versions/X/Chromium Helper.app/Conents/MacOS/
+      # so set rpath up to the base.
+      "-rpath",
+      "@loader_path/../../../../../../..",
+    ]
   }
 
   bundle_data("chrome_framework_locales") {
@@ -665,10 +647,20 @@ if (is_win) {
     ]
   }
 
-  mac_framework_bundle("chrome_framework") {
-    output_name = chrome_framework_name
-
-    configs += [ "//build/config/compiler:wexit_time_destructors" ]
+  # On Mac, speed up the component build by not re-bundling the framework
+  # every time it changes. Instead, place all the sources and their deps in
+  # a library that the bundled framework links (and re-exports). That way
+  # only the library needs to be re-linked when it changes.
+  if (is_component_build) {
+    _dll_target_type = "shared_library"
+  } else {
+    _dll_target_type = "source_set"
+  }
+  target(_dll_target_type, "chrome_dll") {
+    visibility = [
+      ":chrome_framework",
+      ":chrome_framework_shared_library",
+    ]
 
     sources = [
       "app/chrome_command_ids.h",
@@ -683,20 +675,9 @@ if (is_win) {
       "app/chrome_main_mac.mm",
     ]
 
-    info_plist_target = ":chrome_framework_plist"
-    extra_substitutions = [
-      "CHROMIUM_BUNDLE_ID=$chrome_mac_bundle_id",
-      "CHROMIUM_SHORT_NAME=$chrome_product_short_name",
-    ]
-
     deps = [
       ":browser_dependencies",
       ":child_dependencies",
-      ":chrome_framework_helpers",
-      ":chrome_framework_locales",
-      ":chrome_framework_resources",
-      "//build/config/sanitizers:deps",
-      "//chrome/app/nibs:chrome_xibs",
       "//chrome/common:features",
       "//components/crash/content/app",
       "//components/policy",
@@ -704,15 +685,14 @@ if (is_win) {
       "//third_party/cld_2",
     ]
 
+    if (is_component_build) {
+      libs = [ "Carbon.framework" ]
+    }
+
     ldflags = [
       "-Wl,-order_file",
       "-Wl," + rebase_path("app/framework.order", root_build_dir),
-      "-install_name",
-      "@executable_path/../Versions/$chrome_version_full/$chrome_framework_name.framework/$chrome_framework_name",
-      "-compatibility_version",
-      chrome_dylib_version,
-      "-current_version",
-      chrome_dylib_version,
+      "-ObjC",
     ]
 
     if (enable_plugins && enable_pdf) {
@@ -721,6 +701,46 @@ if (is_win) {
 
     if (enable_package_mash_services) {
       deps += [ "//chrome/app/mash" ]
+    }
+  }
+
+  mac_framework_bundle("chrome_framework") {
+    output_name = chrome_framework_name
+
+    configs += [ "//build/config/compiler:wexit_time_destructors" ]
+
+    info_plist_target = ":chrome_framework_plist"
+    extra_substitutions = [
+      "CHROMIUM_BUNDLE_ID=$chrome_mac_bundle_id",
+      "CHROMIUM_SHORT_NAME=$chrome_product_short_name",
+    ]
+
+    public_deps = [
+      ":chrome_dll",
+    ]
+
+    deps = [
+      ":chrome_framework_helpers",
+      ":chrome_framework_locales",
+      ":chrome_framework_resources",
+      "//build/config/sanitizers:deps",
+      "//chrome/app/nibs:chrome_xibs",
+    ]
+
+    ldflags = [
+      "-Wl,-install_name,@executable_path/../Versions/$chrome_version_full/$chrome_framework_name.framework/$chrome_framework_name",
+      "-compatibility_version",
+      chrome_dylib_version,
+      "-current_version",
+      chrome_dylib_version,
+    ]
+
+    if (is_component_build) {
+      ldflags += [
+        "-rpath",
+        "@loader_path/../../../../..",
+        "-Wl,-reexport_library,libchrome_dll.dylib",
+      ]
     }
   }
 }

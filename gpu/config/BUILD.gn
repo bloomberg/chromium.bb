@@ -96,6 +96,12 @@ source_set("config_sources") {
       ]
     }
   }
+  if (is_mac) {
+    libs = [
+      "IOKit.framework",
+      "CoreFoundation.framework",
+    ]
+  }
   if (use_libpci) {
     defines = [ "USE_LIBPCI=1" ]
     deps += [ "//build/linux/libpci" ]

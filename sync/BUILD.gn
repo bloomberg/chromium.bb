@@ -461,8 +461,8 @@ source_set("sync_core") {
 
   if (is_mac) {
     libs = [
-      # Required by get_session_name_mac.mm on Mac.
-      "SystemConfiguration.framework",
+      "CoreFoundation.framework",
+      "SystemConfiguration.framework",  # Required by get_session_name_mac.mm.
     ]
   }
 

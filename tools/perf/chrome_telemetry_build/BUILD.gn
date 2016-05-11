@@ -32,11 +32,16 @@ group("telemetry_chrome_test") {
     ]
   } else {
     data_deps = [
-      # TODO(kbr): this used to be "//chrome". Had to change this to
-      # chrome_initial temporarily to work around crbug.com/536192.
-      "//chrome:chrome_initial",
       "//third_party/catapult/telemetry:bitmaptools",
     ]
+
+    if (!is_mac) {
+      # TODO(kbr): this used to be "//chrome". Had to change this to
+      # chrome_initial temporarily to work around crbug.com/536192.
+      data_deps += [ "//chrome:chrome_initial" ]
+    } else {
+      data_deps += [ "//chrome" ]
+    }
   }
 
   data = [

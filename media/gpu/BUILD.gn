@@ -185,14 +185,10 @@ component("gpu") {
                  "vt_video_encode_accelerator_mac.h",
                ] + get_target_outputs(":libvt_generate_stubs")
     deps += [ ":libvt_generate_stubs" ]
-    lib_dirs = [ "$mac_sdk_path/usr/lib" ]
-    libs = [
-      "AVFoundation.framework",
-      "CoreMedia.framework",
-      "CoreVideo.framework",
-      "IOSurface.framework",
+    libs += [
+      "CoreFoundation.framework",
+      "Foundation.framework",
       "QuartzCore.framework",
-      "sandbox",
     ]
   }
 

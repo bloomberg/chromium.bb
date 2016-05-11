@@ -670,7 +670,10 @@ test("media_unittests") {
   }
 
   if (is_mac || is_ios) {
-    deps += [ "//media/base/mac" ]
+    libs = [
+      "AppKit.framework",
+      "Foundation.framework",
+    ]
   }
 
   #      include_dirs += [

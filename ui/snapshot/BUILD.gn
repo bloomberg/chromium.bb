@@ -59,6 +59,13 @@ component("snapshot") {
   } else {
     sources -= [ "snapshot_aura.cc" ]
   }
+
+  if (is_mac) {
+    libs = [
+      "AppKit.framework",
+      "CoreGraphics.framework",
+    ]
+  }
 }
 
 test("snapshot_unittests") {

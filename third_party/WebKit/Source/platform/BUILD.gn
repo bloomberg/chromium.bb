@@ -382,6 +382,7 @@ component("platform") {
 
     configs += [ "//third_party/WebKit/Source:mac_precompiled_headers" ]
     libs = [
+      "AppKit.framework",
       "Accelerate.framework",
       "Carbon.framework",
       "Foundation.framework",

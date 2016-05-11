@@ -264,7 +264,10 @@ source_set("remaining") {
   }
 
   if (is_mac) {
-    libs += [ "Carbon.framework" ]
+    libs += [
+      "AppKit.framework",
+      "Carbon.framework",
+    ]
   } else {  # !is_mac
     sources -= [ "editing/commands/SmartReplaceCF.cpp" ]
   }

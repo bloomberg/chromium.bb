@@ -100,6 +100,12 @@ component("printing") {
         "printing_context_mac.mm",
       ]
     }
+    libs = [
+      "AppKit.framework",
+      "ApplicationServices.framework",
+      "CoreFoundation.framework",
+      "CoreGraphics.framework",
+    ]
   }
 
   if (is_win) {

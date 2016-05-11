@@ -63,6 +63,14 @@ component("shell_dialogs") {
     include_dirs = [ "$root_gen_dir/ui" ]
     libs = [ "jnigraphics" ]
   }
+
+  if (is_mac) {
+    libs = [
+      "CoreServices.framework",
+      "Foundation.framework",
+      "AppKit.framework",
+    ]
+  }
 }
 
 test("shell_dialogs_unittests") {

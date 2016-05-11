@@ -524,9 +524,11 @@ component("base") {
 
     libs += [
       "Accelerate.framework",
+      "AppKit.framework",
       "AudioUnit.framework",
       "Carbon.framework",
       "CoreVideo.framework",
+      "Foundation.framework",
     ]
   }
 

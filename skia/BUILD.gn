@@ -498,6 +498,16 @@ component("skia") {
     configs += [ "//build/config/compiler:optimize_max" ]
   }
 
+  if (is_mac) {
+    libs = [
+      "AppKit.framework",
+      "CoreFoundation.framework",
+      "CoreGraphics.framework",
+      "CoreText.framework",
+      "Foundation.framework",
+    ]
+  }
+
   if (is_ios) {
     libs = [ "ImageIO.framework" ]
     set_sources_assignment_filter([])

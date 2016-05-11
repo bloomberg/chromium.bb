@@ -621,10 +621,7 @@ if (is_mac) {
       deps += [ ":content_shell_framework_plugins" ]
     }
 
-    ldflags = [
-      "-install_name",
-      "@executable_path/../Frameworks/$output_name.framework/$output_name",
-    ]
+    ldflags = [ "-Wl,-install_name,@executable_path/../Frameworks/$output_name.framework/$output_name" ]
 
     info_plist_target = ":content_shell_framework_plist"
   }
@@ -649,6 +646,12 @@ if (is_mac) {
     ]
     deps = [
       ":content_shell_framework+link",
+    ]
+    ldflags = [
+      # The helper is in Content Shell.app/Contents/Frameworks/Content Shell Helper.app/Contents/MacOS/
+      # so set rpath up to the base.
+      "-rpath",
+      "@loader_path/../../../../../..",
     ]
     info_plist_target = ":content_shell_helper_plist"
   }

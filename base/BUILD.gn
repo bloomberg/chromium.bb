@@ -1529,6 +1529,10 @@ component("i18n") {
 
   # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+
+  if (is_mac) {
+    libs = [ "CoreFoundation.framework" ]
+  }
 }
 
 test("base_perftests") {

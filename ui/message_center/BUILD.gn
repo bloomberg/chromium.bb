@@ -83,6 +83,13 @@ component("message_center") {
       deps += [ "//ui/aura" ]
     }
 
+    if (is_mac) {
+      libs = [
+        "AppKit.framework",
+        "Foundation.framework",
+      ]
+    }
+
     # On Mac, toolkit-views builds still use the Cocoa UI. Keep this in sync
     # with message_center_unittests below.
     if (toolkit_views && !is_mac) {

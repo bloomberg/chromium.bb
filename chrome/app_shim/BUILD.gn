@@ -44,6 +44,7 @@ mac_app_bundle("app_mode_loader") {
   ]
 
   libs = [
+    "AppKit.framework",
     "CoreFoundation.framework",
     "Foundation.framework",
   ]

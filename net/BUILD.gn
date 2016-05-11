@@ -337,6 +337,8 @@ component("net") {
 
   if (is_mac) {
     libs = [
+      "CFNetwork.framework",
+      "CoreServices.framework",
       "Foundation.framework",
       "Security.framework",
       "SystemConfiguration.framework",

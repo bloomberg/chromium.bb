@@ -132,6 +132,7 @@ component("midi") {
   if (is_mac) {
     libs += [
       "CoreAudio.framework",
+      "CoreFoundation.framework",
       "CoreMIDI.framework",
     ]
   }

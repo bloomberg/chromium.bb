@@ -374,10 +374,16 @@ source_set("browser") {
       "geolocation/empty_wifi_data_provider.h",
     ]
     deps += [
+      "//media",
       "//sandbox/mac:sandbox",
       "//third_party/mozilla",
       "//third_party/sudden_motion_sensor",
       "//ui/accelerated_widget_mac",
+    ]
+    libs += [
+      "Carbon.framework",
+      "QuartzCore.framework",
+      "IOSurface.framework",
     ]
   }
 

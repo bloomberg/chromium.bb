@@ -39,7 +39,12 @@ component("accelerated_widget_mac") {
 
   libs = [
     "AVFoundation.framework",
+    "CoreGraphics.framework",
+    "Foundation.framework",
+    "CoreFoundation.framework",
     "CoreMedia.framework",
+    "IOSurface.framework",
+    "OpenGL.framework",
     "QuartzCore.framework",
   ]
 }

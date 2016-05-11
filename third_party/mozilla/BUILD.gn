@@ -28,4 +28,10 @@ component("mozilla") {
     # Needed to link to Obj-C static libraries.
     ldflags = [ "-Wl,-ObjC" ]
   }
+
+  libs = [
+    "AppKit.framework",
+    "ApplicationServices.framework",
+    "Carbon.framework",
+  ]
 }

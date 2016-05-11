@@ -98,9 +98,11 @@ source_set("capture") {
   }
 
   if (is_mac) {
-    deps += [
-      "//media/base/mac",
-      "//third_party/decklink",
+    deps += [ "//third_party/decklink" ]
+    libs = [
+      "CoreFoundation.framework",
+      "CoreGraphics.framework",
+      "Foundation.framework",
     ]
   }
 
