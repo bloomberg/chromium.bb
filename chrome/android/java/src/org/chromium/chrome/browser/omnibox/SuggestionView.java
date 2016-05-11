@@ -61,8 +61,10 @@ class SuggestionView extends ViewGroup {
     private static final int TITLE_COLOR_STANDARD_FONT_LIGHT = 0xFFFFFFFF;
     private static final int URL_COLOR = 0xFF5595FE;
 
+    private static final int ANSWER_LINE2_VERTICAL_SPACING_DP = 3;
+    private static final int ANSWER_IMAGE_VERTICAL_SPACING_DP =
+            ANSWER_LINE2_VERTICAL_SPACING_DP + 2;
     private static final int ANSWER_IMAGE_HORIZONTAL_SPACING_DP = 4;
-    private static final int ANSWER_IMAGE_VERTICAL_SPACING_DP = 5;
     private static final float ANSWER_IMAGE_SCALING_FACTOR = 1.15f;
 
     private LocationBar mLocationBar;
@@ -726,8 +728,14 @@ class SuggestionView extends ViewGroup {
             } else {
                 // The text lines fit comfortably, so vertically center them.
                 verticalOffset = (height - line1Height - line2Height) / 2;
-                if (child == mTextLine2) verticalOffset += line1Height;
-
+                if (child == mTextLine2) {
+                    verticalOffset += line1Height;
+                    if (mSuggestion.hasAnswer()
+                            && mSuggestion.getAnswer().getSecondLine().hasImage()) {
+                        verticalOffset += ANSWER_LINE2_VERTICAL_SPACING_DP
+                                * getResources().getDisplayMetrics().density;
+                    }
+                }
                 // When one line is larger than the other, it contains extra vertical padding. This
                 // produces more apparent whitespace above or below the text lines.  Add a small
                 // offset to compensate.
