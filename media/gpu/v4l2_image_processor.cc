@@ -15,7 +15,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "media/gpu/v4l2_image_processor.h"
 
 #define IOCTL_OR_ERROR_RETURN_VALUE(type, arg, value, type_str)      \

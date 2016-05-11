@@ -18,7 +18,7 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/bitstream_buffer.h"

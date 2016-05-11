@@ -17,7 +17,7 @@
 #include "base/sync_socket.h"
 #include "base/task_runner.h"
 #include "base/test/test_timeouts.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "media/audio/audio_output_device.h"
 #include "media/audio/sample_rates.h"
 #include "testing/gmock/include/gmock/gmock.h"

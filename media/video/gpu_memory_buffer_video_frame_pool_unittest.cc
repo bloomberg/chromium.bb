@@ -7,7 +7,7 @@
 
 #include "base/bind.h"
 #include "base/test/test_simple_task_runner.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "gpu/command_buffer/client/gles2_interface_stub.h"
 #include "media/base/video_frame.h"
 #include "media/renderers/mock_gpu_video_accelerator_factories.h"

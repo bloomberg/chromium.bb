@@ -13,7 +13,7 @@
 
 #include "base/big_endian.h"
 #include "base/bind.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "media/filters/jpeg_parser.h"
 #include "media/gpu/v4l2_jpeg_decode_accelerator.h"
 #include "third_party/libyuv/include/libyuv.h"

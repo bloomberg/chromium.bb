@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "base/mac/mac_util.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "media/base/mac/coremedia_glue.h"
 #include "media/base/mac/corevideo_glue.h"
 #include "media/base/mac/video_frame_mac.h"

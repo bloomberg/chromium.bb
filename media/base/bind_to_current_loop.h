@@ -11,7 +11,7 @@
 #include "base/location.h"
 #include "base/memory/scoped_vector.h"
 #include "base/single_thread_task_runner.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 
 // This is a helper utility for base::Bind()ing callbacks to the current
 // MessageLoop. The typical use is when |a| (of class |A|) wants to hand a
