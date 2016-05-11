@@ -7,9 +7,9 @@
 
 #include <map>
 #include <memory>
+#include <vector>
 
 #include "base/macros.h"
-#include "base/scoped_observer.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/ash/launcher/app_window_launcher_controller.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -66,6 +66,8 @@ class ArcAppWindowLauncherController : public AppWindowLauncherController,
 
   AppWindow* GetAppWindowForTask(int task_id);
 
+  void CheckForAppWindowWidget(aura::Window* window);
+
   // AppWindowLauncherController:
   AppWindowLauncherItemController* ControllerForWindow(
       aura::Window* window) override;
@@ -73,9 +75,7 @@ class ArcAppWindowLauncherController : public AppWindowLauncherController,
   int active_task_id_ = -1;
   TaskIdToAppWindow task_id_to_app_window_;
   AppControllerMap app_controller_map_;
-  ScopedObserver<aura::Window, aura::WindowObserver> observed_windows_;
-  // Unowned pointer, represents host Arc window.
-  views::Widget* root_widget_ = nullptr;
+  std::vector<aura::Window*> observed_windows_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcAppWindowLauncherController);
 };

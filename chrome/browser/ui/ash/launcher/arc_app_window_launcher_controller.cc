@@ -4,6 +4,8 @@
 #include "chrome/browser/ui/ash/launcher/arc_app_window_launcher_controller.h"
 
 #include "ash/shelf/shelf_util.h"
+#include "ash/wm/common/window_state.h"
+#include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
 #include "base/bind.h"
 #include "chrome/browser/profiles/profile.h"
@@ -26,8 +28,10 @@ enum class FullScreenMode {
 
 class ArcAppWindowLauncherController::AppWindow : public ui::BaseWindow {
  public:
-  AppWindow(int task_id, ArcAppWindowLauncherController* owner)
-      : task_id_(task_id), owner_(owner) {}
+  AppWindow(int task_id,
+            std::string package_name,
+            ArcAppWindowLauncherController* owner)
+      : task_id_(task_id), package_name_(package_name), owner_(owner) {}
   ~AppWindow() {}
 
   void SetController(ArcAppWindowLauncherItemController* controller) {
@@ -44,15 +48,21 @@ class ArcAppWindowLauncherController::AppWindow : public ui::BaseWindow {
 
   int task_id() const { return task_id_; }
 
+  const std::string& package_name() const { return package_name_; }
+
   ash::ShelfID shelf_id() const { return shelf_id_; }
 
   void set_shelf_id(ash::ShelfID shelf_id) { shelf_id_ = shelf_id; }
+
+  views::Widget* widget() const { return widget_; }
+
+  void set_widget(views::Widget* widget) { widget_ = widget; }
 
   ArcAppWindowLauncherItemController* controller() { return controller_; }
 
   // ui::BaseWindow:
   bool IsActive() const override {
-    return owner_->root_widget_ && owner_->root_widget_->IsActive() &&
+    return widget_ && widget_->IsActive() &&
            owner_->active_task_id_ == task_id_;
   }
 
@@ -108,8 +118,8 @@ class ArcAppWindowLauncherController::AppWindow : public ui::BaseWindow {
     if (!app_instance)
       return;
     app_instance->SetTaskActive(task_id_);
-    if (owner_->root_widget_)
-      owner_->root_widget_->Activate();
+    if (widget_)
+      widget_->Activate();
   }
 
   void Deactivate() override { NOTREACHED(); }
@@ -152,18 +162,21 @@ class ArcAppWindowLauncherController::AppWindow : public ui::BaseWindow {
   }
 
   int task_id_;
+  std::string package_name_;
   ash::ShelfID shelf_id_ = 0;
   FullScreenMode fullscreen_mode_ = FullScreenMode::NOT_DEFINED;
   // Unowned pointers
   ArcAppWindowLauncherController* owner_;
   ArcAppWindowLauncherItemController* controller_ = nullptr;
+  // Unowned pointer, represents host Arc window.
+  views::Widget* widget_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(AppWindow);
 };
 
 ArcAppWindowLauncherController::ArcAppWindowLauncherController(
     ChromeLauncherController* owner)
-    : AppWindowLauncherController(owner), observed_windows_(this) {
+    : AppWindowLauncherController(owner) {
   aura::Env* env = aura::Env::GetInstanceDontCreate();
   if (env)
     env->AddObserver(this);
@@ -171,6 +184,8 @@ ArcAppWindowLauncherController::ArcAppWindowLauncherController(
 }
 
 ArcAppWindowLauncherController::~ArcAppWindowLauncherController() {
+  for (auto window : observed_windows_)
+    window->RemoveObserver(this);
   ArcAppListPrefs::Get(owner()->profile())->RemoveObserver(this);
   aura::Env* env = aura::Env::GetInstanceDontCreate();
   if (env)
@@ -178,43 +193,32 @@ ArcAppWindowLauncherController::~ArcAppWindowLauncherController() {
 }
 
 void ArcAppWindowLauncherController::OnWindowInitialized(aura::Window* window) {
-  DCHECK(!observed_windows_.IsObserving(window));
-
-  // Root Arc window has type WINDOW_TYPE_NORMAL.
+  // Arc windows has type WINDOW_TYPE_NORMAL.
   if (window->type() != ui::wm::WINDOW_TYPE_NORMAL)
     return;
-
-  observed_windows_.Add(window);
+  observed_windows_.push_back(window);
+  window->AddObserver(this);
+  CheckForAppWindowWidget(window);
 }
 
 void ArcAppWindowLauncherController::OnWindowPropertyChanged(
     aura::Window* window,
     const void* key,
     intptr_t old) {
-  const std::string app_id = exo::ShellSurface::GetApplicationId(window);
-  if (app_id.empty())
-    return;
-
-  int task_id = 0;
-  if (sscanf(app_id.c_str(), "org.chromium.arc.%d", &task_id) != 1 ||
-      task_id != 0)
-    return;
-
-  DCHECK(!root_widget_);
-  views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window);
-
-  DCHECK(widget);
-  root_widget_ = widget;
+  CheckForAppWindowWidget(window);
 }
 
 void ArcAppWindowLauncherController::OnWindowDestroying(aura::Window* window) {
-  DCHECK(observed_windows_.IsObserving(window));
-  observed_windows_.Remove(window);
+  auto it =
+      std::find(observed_windows_.begin(), observed_windows_.end(), window);
+  DCHECK(it != observed_windows_.end());
+  observed_windows_.erase(it);
+  window->RemoveObserver(this);
 
-  if (!root_widget_ || root_widget_->GetNativeWindow() != window)
-    return;
-
-  root_widget_ = nullptr;
+  for (auto& it : task_id_to_app_window_) {
+    if (it.second->widget() == views::Widget::GetWidgetForNativeWindow(window))
+      it.second->set_widget(nullptr);
+  }
 }
 
 ArcAppWindowLauncherController::AppWindow*
@@ -225,13 +229,49 @@ ArcAppWindowLauncherController::GetAppWindowForTask(int task_id) {
   return it->second.get();
 }
 
+void ArcAppWindowLauncherController::CheckForAppWindowWidget(
+    aura::Window* window) {
+  // exo::ShellSurface::GetApplicationId() will return the package name
+  // if available and org.chromium.arc.TASKID otherwise. org.chromium.arc.0
+  // is the default window and never used by real applications, only by
+  // system dialogs and effects.
+  const std::string app_id = exo::ShellSurface::GetApplicationId(window);
+  if (app_id.empty())
+    return;
+
+  // Check if we have any app windows with matching package names.
+  // TODO(reveman): Revisit this if we need to have different icons for
+  // different sub intents.
+  for (auto& it : task_id_to_app_window_) {
+    if (it.second->package_name() != app_id)
+      continue;
+    it.second->set_widget(views::Widget::GetWidgetForNativeWindow(window));
+  }
+
+  int task_id = -1;
+  if (sscanf(app_id.c_str(), "org.chromium.arc.%d", &task_id) != 1)
+    return;
+
+  if (!task_id) {
+    // task_id=0 is the default window. It will not contain any real
+    // apps so best if it's ignored by the shelf for purposes of darkening.
+    ash::wm::GetWindowState(window)->set_ignored_by_shelf(true);
+    return;
+  }
+
+  AppWindow* app_window = GetAppWindowForTask(task_id);
+  if (app_window)
+    app_window->set_widget(views::Widget::GetWidgetForNativeWindow(window));
+}
+
 void ArcAppWindowLauncherController::OnTaskCreated(
     int task_id,
     const std::string& package_name,
     const std::string& activity_name) {
   DCHECK(!GetAppWindowForTask(task_id));
 
-  std::unique_ptr<AppWindow> app_window(new AppWindow(task_id, this));
+  std::unique_ptr<AppWindow> app_window(
+      new AppWindow(task_id, package_name, this));
 
   const std::string app_id =
       ArcAppListPrefs::GetAppId(package_name, activity_name);
@@ -260,6 +300,9 @@ void ArcAppWindowLauncherController::OnTaskCreated(
   app_window->set_shelf_id(shelf_id);
 
   task_id_to_app_window_[task_id] = std::move(app_window);
+
+  for (auto window : observed_windows_)
+    CheckForAppWindowWidget(window);
 }
 
 void ArcAppWindowLauncherController::OnTaskDestroyed(int task_id) {
@@ -282,8 +325,6 @@ void ArcAppWindowLauncherController::OnTaskDestroyed(int task_id) {
   }
 
   task_id_to_app_window_.erase(it);
-  if (task_id_to_app_window_.empty() && root_widget_)
-    root_widget_->SetFullscreen(false);
 }
 
 void ArcAppWindowLauncherController::OnTaskSetActive(int32_t task_id) {
@@ -293,7 +334,8 @@ void ArcAppWindowLauncherController::OnTaskSetActive(int32_t task_id) {
     owner()->SetItemStatus(previous_active_app_it->second->shelf_id(),
                            ash::STATUS_RUNNING);
     previous_active_app_it->second->SetFullscreenMode(
-        root_widget_ && root_widget_->IsFullscreen()
+        previous_active_app_it->second->widget() &&
+                previous_active_app_it->second->widget()->IsFullscreen()
             ? FullScreenMode::ACTIVE
             : FullScreenMode::NON_ACTIVE);
   }
@@ -303,36 +345,43 @@ void ArcAppWindowLauncherController::OnTaskSetActive(int32_t task_id) {
   TaskIdToAppWindow::iterator new_active_app_it =
       task_id_to_app_window_.find(active_task_id_);
   if (new_active_app_it != task_id_to_app_window_.end()) {
-    // Activate root Arc widget if active task has been changed. This can be
+    // Activate Arc widget if active task has been changed. This can be
     // due creating of the new Arc app or bringing an existing app to the front.
-    if (new_active_app_it != previous_active_app_it && root_widget_)
-      root_widget_->Activate();
-
-    owner()->SetItemStatus(new_active_app_it->second->shelf_id(),
-                           root_widget_ && root_widget_->IsActive()
-                               ? ash::STATUS_ACTIVE
-                               : ash::STATUS_RUNNING);
-    if (root_widget_) {
-      root_widget_->SetFullscreen(
-          new_active_app_it->second->fullscreen_mode() ==
-          FullScreenMode::ACTIVE);
+    if (new_active_app_it != previous_active_app_it &&
+        new_active_app_it->second->widget()) {
+      new_active_app_it->second->widget()->Activate();
     }
-  } else {
-    if (root_widget_)
-      root_widget_->SetFullscreen(false);
+
+    owner()->SetItemStatus(
+        new_active_app_it->second->shelf_id(),
+        new_active_app_it->second->widget() &&
+                new_active_app_it->second->widget()->IsActive()
+            ? ash::STATUS_ACTIVE
+            : ash::STATUS_RUNNING);
+    // TODO(reveman): Figure out how to support fullscreen in interleaved
+    // window mode.
+    // if (new_active_app_it->second->widget()) {
+    //   new_active_app_it->second->widget()->SetFullscreen(
+    //       new_active_app_it->second->fullscreen_mode() ==
+    //       FullScreenMode::ACTIVE);
+    // }
   }
 }
 
 AppWindowLauncherItemController*
 ArcAppWindowLauncherController::ControllerForWindow(aura::Window* window) {
-  if (!root_widget_ || root_widget_->GetNativeWindow() != window)
-    return nullptr;
-
   AppWindow* app_window = GetAppWindowForTask(active_task_id_);
-  if (!app_window)
-    return nullptr;
+  if (app_window &&
+      app_window->widget() == views::Widget::GetWidgetForNativeWindow(window)) {
+    return app_window->controller();
+  }
 
-  return app_window->controller();
+  for (auto& it : task_id_to_app_window_) {
+    if (it.second->widget() == views::Widget::GetWidgetForNativeWindow(window))
+      return it.second->controller();
+  }
+
+  return nullptr;
 }
 
 void ArcAppWindowLauncherController::OnWindowActivated(
