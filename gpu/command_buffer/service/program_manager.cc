@@ -492,7 +492,9 @@ void Program::Update() {
   }
   for (size_t ii = 0; ii < attrib_infos_.size(); ++ii) {
     const VertexAttrib& info = attrib_infos_[ii];
-    attrib_location_to_index_map_[info.location] = ii;
+    if (info.location >= 0 && info.location <= max_location) {
+      attrib_location_to_index_map_[info.location] = ii;
+    }
   }
 
 #if !defined(NDEBUG)
