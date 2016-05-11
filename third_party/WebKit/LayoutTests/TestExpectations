@@ -10,10 +10,6 @@ crbug.com/597572 [ Debug ] http/tests/inspector/resource-tree/resource-tree-relo
 
 crbug.com/569901 crbug.com/24182 [ Debug ] jquery/manipulation.html [ Timeout Pass ]
 
-crbug.com/299010 [ Win ] fast/forms/text/text-font-height-mismatch.html [ NeedsRebaseline ]
-crbug.com/581990 [ Win ] fast/writing-mode/english-lr-text.html [ NeedsRebaseline ]
-crbug.com/574660 [ Win10 Win7 ] fast/text/emphasis-combined-text.html [ NeedsRebaseline ]
-
 # ====== Oilpan-only failures until here ======
 
 # Run these tests with under virtual/spv2 only.

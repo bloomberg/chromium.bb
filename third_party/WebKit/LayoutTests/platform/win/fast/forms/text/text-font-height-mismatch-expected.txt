@@ -13,14 +13,14 @@ layer at (0,0) size 800x142
         LayoutTextControl {INPUT} at (0,0) size 294x28 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
       LayoutBlockFlow {DIV} at (0,90) size 784x28
         LayoutTextControl {INPUT} at (0,0) size 199x28 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-layer at (9,51) size 234x27
-  LayoutBlockFlow {DIV} at (1,0.50) size 234x27
-    LayoutText {#text} at (0,0) size 74x24
-      text run at (0,0) width 74: "\x{3075} ABCgjy"
-layer at (245,51) size 234x27
-  LayoutBlockFlow {DIV} at (1,0.50) size 234x27
-    LayoutText {#text} at (0,0) size 74x24
-      text run at (0,0) width 74: "\x{3075} ABCgjy"
+layer at (9,50) size 234x28
+  LayoutBlockFlow {DIV} at (1,0) size 234x28
+    LayoutText {#text} at (0,1) size 74x24
+      text run at (0,1) width 74: "\x{3075} ABCgjy"
+layer at (245,50) size 234x28
+  LayoutBlockFlow {DIV} at (1,0) size 234x28
+    LayoutText {#text} at (0,1) size 74x24
+      text run at (0,1) width 74: "\x{3075} ABCgjy"
 layer at (9,78) size 292x28
   LayoutBlockFlow {DIV} at (1,0) size 292x28
     LayoutText {#text} at (0,0) size 81x27
