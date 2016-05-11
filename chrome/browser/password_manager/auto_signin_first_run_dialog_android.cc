@@ -14,6 +14,7 @@
 #include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
 #include "components/password_manager/core/browser/password_manager_constants.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "jni/AutoSigninFirstRunDialog_jni.h"
 #include "ui/android/window_android.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -80,11 +81,15 @@ void AutoSigninFirstRunDialogAndroid::Destroy(JNIEnv* env, jobject obj) {
 }
 
 void AutoSigninFirstRunDialogAndroid::OnOkClicked(JNIEnv* env, jobject obj) {
+  password_manager::metrics_util::LogAutoSigninPromoUserAction(
+      password_manager::metrics_util::AUTO_SIGNIN_OK_GOT_IT);
   MarkAutoSignInFirstRunExperienceShown(web_contents_);
 }
 
 void AutoSigninFirstRunDialogAndroid::OnTurnOffClicked(JNIEnv* env,
                                                        jobject obj) {
+  password_manager::metrics_util::LogAutoSigninPromoUserAction(
+      password_manager::metrics_util::AUTO_SIGNIN_TURN_OFF);
   Profile* profile =
       Profile::FromBrowserContext(web_contents_->GetBrowserContext());
   password_bubble_experiment::TurnOffAutoSignin(profile->GetPrefs());
