@@ -829,6 +829,8 @@ bool NativeWidgetMus::IsVisible() const {
 void NativeWidgetMus::Activate() {
   if (window_)
     window_->SetFocus();
+  static_cast<aura::client::ActivationClient*>(focus_client_.get())
+      ->ActivateWindow(content_);
 }
 
 void NativeWidgetMus::Deactivate() {
