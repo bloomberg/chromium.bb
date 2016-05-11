@@ -362,7 +362,6 @@ def get_decimate_filter():
         for line in lines:
             m = re.search(match, line)
             if m is not None:
-                matches = m.groupdict()
                 decimate = m.groupdict().get('filter')
                 break
     except:
@@ -983,7 +982,7 @@ def main():
         log_level = logging.INFO
     elif options.verbose >= 4:
         log_level = logging.DEBUG
-    logging.basicConfig(level=log_level)
+    logging.basicConfig(level=log_level, format="%(asctime)s.%(msecs)03d - %(message)s", datefmt="%H:%M:%S")
 
     if options.multiple:
         options.orange = True
