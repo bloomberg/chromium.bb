@@ -892,6 +892,14 @@
     'version_assembly': {
       'filepath': 'chrome/app/version_assembly',
     },
+    'video': {
+      'filepath': 'content/browser/renderer_host/media/|'\
+                  'content/renderer/media/|'\
+                  'media/capture/video/|'\
+                  'media/filters/|'\
+                  'media/gpu/|'\
+                  '.*video.*',
+    },
     'video_capture': {
       'filepath': 'chrome/browser/media/.*(capture|media|webrtc)'\
                   '|content/browser/renderer_host/media/.*(capture|media)'\
@@ -914,15 +922,6 @@
     'webrtc_browser_tests': {
       'filepath': 'chrome/browser/media/.*webrtc.*browsertest|'\
                   'content/browser/media/.*webrtc.*browsertest',
-    },
-    'webrtc_media': {
-      'filepath': 'chrome/browser/media/|'\
-                  'content/browser/renderer_host/media/|'\
-                  'content/common/gpu/media/|'\
-                  'content/renderer/media/|'\
-                  'media/base/android/|'\
-                  'media/capture/|'\
-                  'video.*_accelerat',
     },
     'website_settings': {
       'filepath': 'chrome/browser/content_settings/'\
@@ -1629,13 +1628,13 @@
                  'glider+watch@chromium.org'],
     'version_assembly': ['caitkp+watch@chromium.org',
                          'gab+watch@chromium.org'],
+    'video': ['posciak+watch@chromium.org'],
     'video_capture': ['mcasas+watch+vc@chromium.org'],
     'views': ['tfarina@chromium.org'],
     'virtual_keyboard': ['dfaden+virtualkb@google.com',
                          'groby+virtualkb@chromium.org'],
     'webrtc_browser_tests': ['phoglund+watch@chromium.org',
                              'tnakamura+watch@chromium.org'],
-    'webrtc_media': ['posciak+watch@chromium.org'],
     'website_settings': ['markusheintz@chromium.org',
                          'raymes+watch@chromium.org',
                          'msramek+watch@chromium.org'],
