@@ -3,14 +3,13 @@
 {%- set data_type = struct|get_qualified_name_for_kind(internal=True) %}
 
 // static
-bool StructTraits<{{mojom_type}}, {{mojom_type}}Ptr>::ReadFromRawData(
-    {{data_type}}* input,
-    {{mojom_type}}Ptr* output,
-    internal::SerializationContext* context) {
+bool StructTraits<{{mojom_type}}, {{mojom_type}}Ptr>::ReadFromDataView(
+    {{mojom_type}}DataView input,
+    {{mojom_type}}Ptr* output) {
   bool success = true;
-  if (input) {
+  if (!input.is_null()) {
     {{mojom_type}}Ptr result({{mojom_type}}::New());
-    {{struct_macros.deserialize(struct, "input", "result->%s", "context",
+    {{struct_macros.deserialize(struct, "input", "result->%s",
                                 "success")|indent(4)}}
     *output = std::move(result);
   } else {

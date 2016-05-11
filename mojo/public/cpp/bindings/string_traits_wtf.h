@@ -22,9 +22,7 @@ struct StringTraits<WTF::String> {
 
   static const char* GetData(const WTF::String& input, void* context);
 
-  // TODO(yzshen): Use a public type, such as mojo::String::DataView, for
-  // |input|.
-  static bool Read(internal::String_Data* input, WTF::String* output);
+  static bool Read(StringDataView input, WTF::String* output);
 };
 
 }  // namespace mojo

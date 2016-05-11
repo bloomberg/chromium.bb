@@ -135,7 +135,8 @@
 
 {#  Deserializes the specified struct.
     |struct| is the struct definition.
-    |input| is the name of the input struct instance.
+    |input| is the name of the input struct data view. It is expected to be
+    non-null.
     |output_field_pattern| should be a pattern that contains one string
     placeholder, for example, "result->%s", "p_%s". The placeholder will be
     substituted with struct field names to refer to the output fields.
@@ -146,57 +147,21 @@
       struct wrapper class.
     - method parameters/response parameters: the output is a list of
       arguments. #}
-{%- macro deserialize(struct, input, output_field_pattern, context, success) -%}
-  do {
-    // NOTE: The memory backing |{{input}}| may be smaller than
-    // |sizeof(*{{input}})| if the message comes from an older version.
-{#-   Before deserialize fields introduced at a certain version, we need to add
-      a version check, which makes sure we skip further deserialization if
-      |input| is from an earlier version. |last_checked_version| records the
-      last version that we have added such version check. #}
-{%-   set last_checked_version = 0 %}
+{%- macro deserialize(struct, input, output_field_pattern, success) -%}
+  DCHECK(!{{input}}.is_null());
+
 {%-   for pf in struct.packed.packed_fields_in_ordinal_order %}
 {%-     set output_field = output_field_pattern|format(pf.field.name) %}
 {%-     set name = pf.field.name %}
 {%-     set kind = pf.field.kind %}
-{%-     if pf.min_version > last_checked_version %}
-{%-       set last_checked_version = pf.min_version %}
-    if ({{input}}->header_.version < {{pf.min_version}})
-      break;
-{%-     endif %}
-{%-     set serializer_type = kind|unmapped_type_for_serializer %}
-{%-     if kind|is_union_kind %}
-    if (!mojo::internal::Deserialize<{{serializer_type}}>(
-            &{{input}}->{{name}}, &{{output_field}}, {{context}})) {
-      {{success}} = false;
-    }
-{%-     elif kind|is_object_kind %}
-    if (!mojo::internal::Deserialize<{{serializer_type}}>(
-            {{input}}->{{name}}.ptr, &{{output_field}}, {{context}})) {
-      {{success}} = false;
-    }
-{%-     elif kind|is_interface_kind %}
-    mojo::internal::InterfaceDataToPointer(
-        &{{input}}->{{name}}, &{{output_field}}, {{context}});
-{%-     elif kind|is_interface_request_kind %}
-    {{output_field}}.Bind(
-        ({{context}})->handles.TakeHandleAs<mojo::MessagePipeHandle>(
-            {{input}}->{{name}}));
-{%-     elif kind|is_any_handle_kind %}
-    {{output_field}} = ({{context}})->handles.TakeHandleAs<
-        typename decltype({{output_field}})::RawHandleType>(
-            {{input}}->{{name}});
-{%-   elif kind|is_associated_interface_kind %}
-    mojo::internal::AssociatedInterfaceDataToPtrInfo(&{{input}}->{{name}}, &{{output_field}}, ({{context}})->router.get());
-{%-   elif kind|is_associated_interface_request_kind %}
-    mojo::internal::AssociatedInterfaceRequestHelper::SetHandle(
-        &{{output_field}},
-        ({{context}})->router->CreateLocalEndpointHandle(mojo::internal::FetchAndReset(&{{input}}->{{name}})));
-{%-     elif kind|is_enum_kind %}
-    {{output_field}} = static_cast<{{kind|get_qualified_name_for_kind}}>({{input}}->{{name}});
+{%-     if kind|is_object_kind %}
+  if (!{{input}}.Read{{name|under_to_camel}}(&{{output_field}}))
+    {{success}} = false;
+{%-     elif kind|is_interface_kind or kind|is_any_handle_kind or
+             kind|is_associated_kind %}
+  {{output_field}} = {{input}}.Take{{name|under_to_camel}}();
 {%-     else %}
-    {{output_field}} = {{input}}->{{name}};
+  {{output_field}} = {{input}}.{{name}}();
 {%-     endif %}
 {%-   endfor %}
-  } while (false);
 {%- endmacro %}

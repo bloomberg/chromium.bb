@@ -28,9 +28,8 @@ struct StructTraits<{{mojom_type}}, {{mojom_type}}Ptr> {
 {%-   endif %}
 {%- endfor %}
 
-  static bool ReadFromRawData({{data_type}}* input,
-                              {{mojom_type}}Ptr* output,
-                              internal::SerializationContext* context);
+  static bool ReadFromDataView({{mojom_type}}DataView input,
+                               {{mojom_type}}Ptr* output);
 };
 
 namespace internal {
@@ -66,13 +65,13 @@ struct Serializer<{{mojom_type}}Ptr, MaybeConstUserType> {
   static bool Deserialize({{data_type}}* input,
                           UserType* output,
                           SerializationContext* context) {
-    return ReadCaller<Traits, HasReadFromRawDataMethod<Traits>::value>::Run(
+    return ReadCaller<Traits, HasReadFromDataViewMethod<Traits>::value>::Run(
         input, output, context);
   }
 
 
  public:
-  template <typename Traits, bool use_read_from_raw_data>
+  template <typename Traits, bool use_read_from_data_view>
   struct ReadCaller;
 
   template <typename Traits>
@@ -90,7 +89,8 @@ struct Serializer<{{mojom_type}}Ptr, MaybeConstUserType> {
     static bool Run({{data_type}}* input,
                     UserType* output,
                     SerializationContext* context) {
-      return Traits::ReadFromRawData(input, output, context);
+      {{mojom_type}}DataView data_view(input, context);
+      return Traits::ReadFromDataView(data_view, output);
     }
   };
 };

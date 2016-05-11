@@ -26,6 +26,8 @@
             'generators/cpp_templates/module.cc.tmpl',
             'generators/cpp_templates/module.h.tmpl',
             'generators/cpp_templates/module-internal.h.tmpl',
+            'generators/cpp_templates/struct_data_view_declaration.tmpl',
+            'generators/cpp_templates/struct_data_view_definition.tmpl',
             'generators/cpp_templates/struct_declaration.tmpl',
             'generators/cpp_templates/struct_definition.tmpl',
             'generators/cpp_templates/struct_macros.tmpl',

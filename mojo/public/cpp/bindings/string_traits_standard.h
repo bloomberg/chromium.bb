@@ -18,11 +18,9 @@ struct StringTraits<String> {
 
   static const char* GetData(const String& input) { return input.data(); }
 
-  // TODO(yzshen): Use a public type, such as mojo::String::DataView, for
-  // |input|.
-  static bool Read(internal::String_Data* input, String* output) {
-    if (input) {
-      String result(input->storage(), input->size());
+  static bool Read(StringDataView input, String* output) {
+    if (!input.is_null()) {
+      String result(input.storage(), input.size());
       result.Swap(output);
     } else {
       *output = nullptr;

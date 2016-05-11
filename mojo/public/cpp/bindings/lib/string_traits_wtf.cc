@@ -66,10 +66,10 @@ const char* StringTraits<WTF::String>::GetData(const WTF::String& input,
 }
 
 // static
-bool StringTraits<WTF::String>::Read(internal::String_Data* input,
+bool StringTraits<WTF::String>::Read(StringDataView input,
                                      WTF::String* output) {
-  if (input) {
-    WTF::String result = WTF::String::fromUTF8(input->storage(), input->size());
+  if (!input.is_null()) {
+    WTF::String result = WTF::String::fromUTF8(input.storage(), input.size());
     output->swap(result);
   } else if (!output->isNull()) {
     WTF::String result;

@@ -96,6 +96,24 @@ const uint32_t {{method_name}} = {{method.ordinal}};
 
 }  // namespace internal
 
+namespace {
+
+{#--- Interface parameter data view definitions #}
+{%- for interface in interfaces %}
+{%-   for method in interface.methods %}
+{%      set struct = method.param_struct %}
+{%      include "struct_data_view_declaration.tmpl" %}
+{%      include "struct_data_view_definition.tmpl" %}
+{%-     if method.response_parameters != None %}
+{%-       set struct = method.response_param_struct %}
+{%        include "struct_data_view_declaration.tmpl" %}
+{%        include "struct_data_view_definition.tmpl" %}
+{%-     endif %}
+{%-   endfor %}
+{%- endfor %}
+
+}  // namespace
+
 {#--- Struct Constants #}
 {%- for struct in structs %}
 {%-   for constant in struct.constants %}
@@ -111,6 +129,7 @@ const {{constant.kind|cpp_pod_type}} {{struct.name}}::{{constant.name}} = {{cons
 {%- for struct in structs %}
 {%-   if not struct|is_native_only_kind %}
 {%-     include "wrapper_class_definition.tmpl" %}
+{%-     include "struct_data_view_definition.tmpl" %}
 {%-   endif %}
 {%- endfor %}
 

@@ -102,10 +102,12 @@ inline void InterfaceDataToPointer(Interface_Data* input,
       input->version));
 }
 
+// TODO(yzshen): Unify StructTraits::Read*() methods and remove
+// HasReadFromDataViewMethod.
 template <typename T>
-struct HasReadFromRawDataMethod {
+struct HasReadFromDataViewMethod {
   template <typename U>
-  static char Test(decltype(U::ReadFromRawData)*);
+  static char Test(decltype(U::ReadFromDataView)*);
   template <typename U>
   static int Test(...);
   static const bool value = sizeof(Test<T>(0)) == sizeof(char);

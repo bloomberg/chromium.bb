@@ -58,7 +58,7 @@ struct Serializer<String, MaybeConstUserType> {
   static bool Deserialize(String_Data* input,
                           UserType* output,
                           SerializationContext* context) {
-    return Traits::Read(input, output);
+    return Traits::Read(StringDataView(input), output);
   }
 };
 

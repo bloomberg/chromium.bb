@@ -25,11 +25,9 @@ struct StringTraits<base::StringPiece> {
     return input.data();
   }
 
-  // TODO(yzshen): Use a public type, such as mojo::String::DataView, for
-  // |input|.
-  static bool Read(internal::String_Data* input, base::StringPiece* output) {
-    if (input)
-      output->set(input->storage(), input->size());
+  static bool Read(StringDataView input, base::StringPiece* output) {
+    if (!input.is_null())
+      output->set(input.storage(), input.size());
     else
       output->set(nullptr, 0);
     return true;

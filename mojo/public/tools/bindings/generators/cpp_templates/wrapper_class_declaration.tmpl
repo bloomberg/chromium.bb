@@ -3,6 +3,8 @@
 class {{struct.name}} {
  public:
   using Data_ = internal::{{struct.name}}_Data;
+
+  // TODO(yzshen): Remove Reader.
   using Reader = {{struct.name}}_Reader;
 
 {#--- Enums #}
@@ -62,6 +64,7 @@ class {{struct.name}} {
 {# TODO(yzshen): Redo the Reader interface. #}
 {# NOTE: Generated Reader instances are intentionally cheap to copy and devoid
    of heap allocations. They should stay this way. #}
+// TODO(yzshen): Remove this.
 class {{struct.name}}_Reader {
  public:
   {{struct.name}}_Reader(internal::{{struct.name}}_Data* data,
