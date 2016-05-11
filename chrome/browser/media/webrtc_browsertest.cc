@@ -34,6 +34,8 @@ static const char kKeygenAlgorithmEcdsa[] =
 // system.
 class WebRtcBrowserTest : public WebRtcTestBase {
  public:
+  WebRtcBrowserTest() : left_tab_(nullptr), right_tab_(nullptr) {}
+
   void SetUpInProcessBrowserTestFixture() override {
     DetectErrorsInJavaScript();  // Look for errors in our rather complex js.
   }
@@ -56,31 +58,60 @@ class WebRtcBrowserTest : public WebRtcTestBase {
       const std::string& answer_cert_keygen_alg =
           WebRtcTestBase::kUseDefaultCertKeygen) {
     if (OnWinXp()) return;
+    StartServerAndOpenTabs();
 
+    SetupPeerconnectionWithLocalStream(left_tab_, offer_cert_keygen_alg);
+    SetupPeerconnectionWithLocalStream(right_tab_, answer_cert_keygen_alg);
+
+    NegotiateCall(left_tab_, right_tab_, video_codec);
+
+    DetectVideoAndHangUp();
+  }
+
+  void RunsAudioVideoWebRTCCallInTwoTabsWithClonedCertificate(
+      const std::string& cert_keygen_alg =
+          WebRtcTestBase::kUseDefaultCertKeygen) {
+    if (OnWinXp()) return;
+    StartServerAndOpenTabs();
+
+    // Generate and clone a certificate, resulting in JavaScript variable
+    // |gCertificateClone| being set to the resulting clone.
+    DeleteDatabase(left_tab_);
+    OpenDatabase(left_tab_);
+    GenerateAndCloneCertificate(left_tab_, cert_keygen_alg);
+    CloseDatabase(left_tab_);
+    DeleteDatabase(left_tab_);
+
+    SetupPeerconnectionWithCertificateAndLocalStream(
+        left_tab_, "gCertificateClone");
+    SetupPeerconnectionWithLocalStream(right_tab_, cert_keygen_alg);
+
+    NegotiateCall(left_tab_, right_tab_, WebRtcTestBase::kUseDefaultVideoCodec);
+
+    DetectVideoAndHangUp();
+  }
+
+private:
+  void StartServerAndOpenTabs() {
     ASSERT_TRUE(embedded_test_server()->Start());
+    left_tab_ = OpenTestPageAndGetUserMediaInNewTab(kMainWebrtcTestHtmlPage);
+    right_tab_ = OpenTestPageAndGetUserMediaInNewTab(kMainWebrtcTestHtmlPage);
+  }
 
-    content::WebContents* left_tab =
-        OpenTestPageAndGetUserMediaInNewTab(kMainWebrtcTestHtmlPage);
-    content::WebContents* right_tab =
-        OpenTestPageAndGetUserMediaInNewTab(kMainWebrtcTestHtmlPage);
-
-    SetupPeerconnectionWithLocalStream(left_tab, offer_cert_keygen_alg);
-    SetupPeerconnectionWithLocalStream(right_tab, answer_cert_keygen_alg);
-
-    NegotiateCall(left_tab, right_tab, video_codec);
-
-    StartDetectingVideo(left_tab, "remote-view");
-    StartDetectingVideo(right_tab, "remote-view");
-
+  void DetectVideoAndHangUp() {
+    StartDetectingVideo(left_tab_, "remote-view");
+    StartDetectingVideo(right_tab_, "remote-view");
 #if !defined(OS_MACOSX)
     // Video is choppy on Mac OS X. http://crbug.com/443542.
-    WaitForVideoToPlay(left_tab);
-    WaitForVideoToPlay(right_tab);
+    WaitForVideoToPlay(left_tab_);
+    WaitForVideoToPlay(right_tab_);
 #endif
-
-    HangUp(left_tab);
-    HangUp(right_tab);
+    HangUp(left_tab_);
+    HangUp(right_tab_);
   }
+
+  content::WebContents* left_tab_;
+  content::WebContents* right_tab_;
 };
 
 IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest,
@@ -138,6 +169,18 @@ IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest,
   RunsAudioVideoWebRTCCallInTwoTabs(WebRtcTestBase::kUseDefaultVideoCodec,
                                     kKeygenAlgorithmEcdsa,
                                     kKeygenAlgorithmEcdsa);
+}
+
+IN_PROC_BROWSER_TEST_F(
+    WebRtcBrowserTest,
+    RunsAudioVideoWebRTCCallInTwoTabsWithClonedCertificateRsa) {
+  RunsAudioVideoWebRTCCallInTwoTabsWithClonedCertificate(kKeygenAlgorithmRsa);
+}
+
+IN_PROC_BROWSER_TEST_F(
+    WebRtcBrowserTest,
+    RunsAudioVideoWebRTCCallInTwoTabsWithClonedCertificateEcdsa) {
+  RunsAudioVideoWebRTCCallInTwoTabsWithClonedCertificate(kKeygenAlgorithmEcdsa);
 }
 
 IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest,
