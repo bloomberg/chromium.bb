@@ -8,7 +8,7 @@
 
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "blimp/client/app/user_agent.h"
 #include "blimp/client/feature/settings_feature.h"
 #include "blimp/client/feature/tab_control_feature.h"

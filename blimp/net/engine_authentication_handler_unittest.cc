@@ -7,7 +7,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/test/test_mock_time_task_runner.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "blimp/common/create_blimp_message.h"
 #include "blimp/common/proto/blimp_message.pb.h"
 #include "blimp/net/blimp_connection.h"
@@ -28,7 +28,7 @@ using testing::SaveArg;
 
 namespace blimp {
 namespace {
-static const std::string client_token = "valid token";
+const char client_token[] = "valid token";
 }  // namespace
 
 class EngineAuthenticationHandlerTest : public testing::Test {

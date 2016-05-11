@@ -13,7 +13,7 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/test/test_simple_task_runner.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "blimp/client/app/blimp_client_switches.h"
 #include "blimp/common/protocol_version.h"

@@ -4,7 +4,7 @@
 
 #include "blimp/client/feature/compositor/blimp_compositor.h"
 
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "blimp/client/feature/compositor/blimp_gpu_memory_buffer_manager.h"
 #include "blimp/client/feature/compositor/client_image_serialization_processor.h"
 #include "blimp/common/compositor/blimp_task_graph_runner.h"
