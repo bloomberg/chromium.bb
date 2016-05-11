@@ -27,6 +27,8 @@ namespace protocol {
 
 namespace {
 
+const int kIceUfragLength = 16;
+
 // Utility function to map a cricket::Candidate string type to a
 // TransportRoute::RouteType enum value.
 TransportRoute::RouteType CandidateTypeToTransportRouteType(
@@ -49,7 +51,7 @@ IceTransportChannel::IceTransportChannel(
     scoped_refptr<TransportContext> transport_context)
     : transport_context_(transport_context),
       ice_username_fragment_(
-          rtc::CreateRandomString(cricket::ICE_UFRAG_LENGTH)),
+          rtc::CreateRandomString(kIceUfragLength)),
       connect_attempts_left_(
           transport_context->network_settings().ice_reconnect_attempts),
       weak_factory_(this) {
