@@ -3086,8 +3086,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // checking whether the grandchild frame added in step 3 sees proper sandbox
 // flags and origin for its (remote) parent.  This wasn't addressed when
 // https://crbug.com/423587 was fixed.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
-                       ProxiesForNewChildFramesHaveCorrectReplicationState) {
+// TODO(alexmos): Re-enable when https://crbug.com/610893 is fixed.
+IN_PROC_BROWSER_TEST_F(
+    SitePerProcessBrowserTest,
+    DISABLED_ProxiesForNewChildFramesHaveCorrectReplicationState) {
   GURL main_url(
       embedded_test_server()->GetURL("/frame_tree/page_with_one_frame.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
