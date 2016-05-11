@@ -30,23 +30,15 @@
 #include "content/public/common/webrtc_ip_handling_policy.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/media/media_stream.h"
-#include "content/renderer/media/media_stream_audio_processor.h"
-#include "content/renderer/media/media_stream_audio_processor_options.h"
-#include "content/renderer/media/media_stream_audio_source.h"
-#include "content/renderer/media/media_stream_constraints_util.h"
 #include "content/renderer/media/media_stream_video_source.h"
 #include "content/renderer/media/media_stream_video_track.h"
 #include "content/renderer/media/peer_connection_identity_store.h"
 #include "content/renderer/media/rtc_peer_connection_handler.h"
 #include "content/renderer/media/rtc_video_decoder_factory.h"
 #include "content/renderer/media/rtc_video_encoder_factory.h"
-#include "content/renderer/media/webaudio_capturer_source.h"
-#include "content/renderer/media/webrtc/media_stream_remote_audio_track.h"
 #include "content/renderer/media/webrtc/stun_field_trial.h"
-#include "content/renderer/media/webrtc/webrtc_local_audio_track_adapter.h"
 #include "content/renderer/media/webrtc/webrtc_video_capturer_adapter.h"
 #include "content/renderer/media/webrtc_audio_device_impl.h"
-#include "content/renderer/media/webrtc_local_audio_track.h"
 #include "content/renderer/media/webrtc_logging.h"
 #include "content/renderer/media/webrtc_uma_histograms.h"
 #include "content/renderer/p2p/empty_network_manager.h"
@@ -72,7 +64,6 @@
 #include "third_party/webrtc/api/dtlsidentitystore.h"
 #include "third_party/webrtc/api/mediaconstraintsinterface.h"
 #include "third_party/webrtc/base/ssladapter.h"
-#include "third_party/webrtc/media/base/mediachannel.h"
 #include "third_party/webrtc/modules/video_coding/codecs/h264/include/h264.h"
 
 #if defined(OS_ANDROID)
@@ -128,91 +119,6 @@ PeerConnectionDependencyFactory::CreateRTCPeerConnectionHandler(
   UpdateWebRTCMethodCount(WEBKIT_RTC_PEER_CONNECTION);
 
   return new RTCPeerConnectionHandler(client, this);
-}
-
-bool PeerConnectionDependencyFactory::InitializeMediaStreamAudioSource(
-    int render_frame_id,
-    const blink::WebMediaConstraints& audio_constraints,
-    MediaStreamAudioSource* source_data) {
-  DVLOG(1) << "InitializeMediaStreamAudioSources()";
-
-  // Do additional source initialization if the audio source is a valid
-  // microphone or tab audio.
-
-  StreamDeviceInfo device_info = source_data->device_info();
-
-  cricket::AudioOptions options;
-  // Apply relevant constraints.
-  options.echo_cancellation = ConstraintToOptional(
-      audio_constraints, &blink::WebMediaTrackConstraintSet::echoCancellation);
-  options.delay_agnostic_aec = ConstraintToOptional(
-      audio_constraints,
-      &blink::WebMediaTrackConstraintSet::googDAEchoCancellation);
-  options.auto_gain_control = ConstraintToOptional(
-      audio_constraints,
-      &blink::WebMediaTrackConstraintSet::googAutoGainControl);
-  options.experimental_agc = ConstraintToOptional(
-      audio_constraints,
-      &blink::WebMediaTrackConstraintSet::googExperimentalAutoGainControl);
-  options.noise_suppression = ConstraintToOptional(
-      audio_constraints,
-      &blink::WebMediaTrackConstraintSet::googNoiseSuppression);
-  options.experimental_ns = ConstraintToOptional(
-      audio_constraints,
-      &blink::WebMediaTrackConstraintSet::googExperimentalNoiseSuppression);
-  options.highpass_filter = ConstraintToOptional(
-      audio_constraints,
-      &blink::WebMediaTrackConstraintSet::googHighpassFilter);
-  options.typing_detection = ConstraintToOptional(
-      audio_constraints,
-      &blink::WebMediaTrackConstraintSet::googTypingNoiseDetection);
-  options.stereo_swapping = ConstraintToOptional(
-      audio_constraints,
-      &blink::WebMediaTrackConstraintSet::googAudioMirroring);
-
-  MediaAudioConstraints::ApplyFixedAudioConstraints(&options);
-
-  if (device_info.device.input.effects &
-      media::AudioParameters::ECHO_CANCELLER) {
-    // TODO(hta): Figure out if we should be looking at echoCancellation.
-    // Previous code had googEchoCancellation only.
-    const blink::BooleanConstraint& echoCancellation =
-        audio_constraints.basic().googEchoCancellation;
-    if (echoCancellation.hasExact() && !echoCancellation.exact()) {
-      device_info.device.input.effects &=
-          ~media::AudioParameters::ECHO_CANCELLER;
-    }
-    options.echo_cancellation = rtc::Optional<bool>(false);
-  }
-
-  std::unique_ptr<WebRtcAudioCapturer> capturer = CreateAudioCapturer(
-      render_frame_id, device_info, audio_constraints, source_data);
-  if (!capturer.get()) {
-    const std::string log_string =
-        "PCDF::InitializeMediaStreamAudioSource: fails to create capturer";
-    WebRtcLogMessage(log_string);
-    DVLOG(1) << log_string;
-    // TODO(xians): Don't we need to check if source_observer is observing
-    // something? If not, then it looks like we have a leak here.
-    // OTOH, if it _is_ observing something, then the callback might
-    // be called multiple times which is likely also a bug.
-    return false;
-  }
-  source_data->SetAudioCapturer(std::move(capturer));
-
-  // Creates a LocalAudioSource object which holds audio options.
-  // TODO(xians): The option should apply to the track instead of the source.
-  // TODO(perkj): Move audio constraints parsing to Chrome.
-  // Currently there are a few constraints that are parsed by libjingle and
-  // the state is set to ended if parsing fails.
-  scoped_refptr<webrtc::AudioSourceInterface> rtc_source(
-      CreateLocalAudioSource(options).get());
-  if (rtc_source->state() != webrtc::MediaSourceInterface::kLive) {
-    DLOG(WARNING) << "Failed to create rtc LocalAudioSource.";
-    return false;
-  }
-  source_data->SetLocalAudioSource(rtc_source.get());
-  return true;
 }
 
 WebRtcVideoCapturerAdapter*
@@ -525,84 +431,6 @@ PeerConnectionDependencyFactory::CreateLocalAudioSource(
   return source;
 }
 
-void PeerConnectionDependencyFactory::CreateLocalAudioTrack(
-    const blink::WebMediaStreamTrack& track) {
-  blink::WebMediaStreamSource source = track.source();
-  DCHECK_EQ(source.getType(), blink::WebMediaStreamSource::TypeAudio);
-  MediaStreamAudioSource* source_data = MediaStreamAudioSource::From(source);
-
-  if (!source_data) {
-    if (source.requiresAudioConsumer()) {
-      // We're adding a WebAudio MediaStream.
-      // Create a specific capturer for each WebAudio consumer.
-      CreateWebAudioSource(&source);
-      source_data = MediaStreamAudioSource::From(source);
-      DCHECK(source_data->webaudio_capturer());
-    } else {
-      NOTREACHED() << "Local track missing MediaStreamAudioSource instance.";
-      return;
-    }
-  }
-
-  // Creates an adapter to hold all the libjingle objects.
-  scoped_refptr<WebRtcLocalAudioTrackAdapter> adapter(
-      WebRtcLocalAudioTrackAdapter::Create(track.id().utf8(),
-                                           source_data->local_audio_source()));
-  static_cast<webrtc::AudioTrackInterface*>(adapter.get())->set_enabled(
-      track.isEnabled());
-
-  // TODO(xians): Merge |source| to the capturer(). We can't do this today
-  // because only one capturer() is supported while one |source| is created
-  // for each audio track.
-  std::unique_ptr<WebRtcLocalAudioTrack> audio_track(
-      new WebRtcLocalAudioTrack(adapter.get()));
-
-  // Start the source and connect the audio data flow to the track.
-  //
-  // TODO(miu): This logic will me moved to MediaStreamAudioSource (or a
-  // subclass of it) in soon-upcoming changes.
-  audio_track->Start(base::Bind(&MediaStreamAudioSource::StopAudioDeliveryTo,
-                                source_data->GetWeakPtr(),
-                                audio_track.get()));
-  if (source_data->webaudio_capturer())
-    source_data->webaudio_capturer()->Start(audio_track.get());
-  else if (source_data->audio_capturer())
-    source_data->audio_capturer()->AddTrack(audio_track.get());
-  else
-    NOTREACHED();
-
-  // Pass the ownership of the native local audio track to the blink track.
-  blink::WebMediaStreamTrack writable_track = track;
-  writable_track.setExtraData(audio_track.release());
-}
-
-void PeerConnectionDependencyFactory::CreateRemoteAudioTrack(
-    const blink::WebMediaStreamTrack& track) {
-  blink::WebMediaStreamSource source = track.source();
-  DCHECK_EQ(source.getType(), blink::WebMediaStreamSource::TypeAudio);
-  DCHECK(source.remote());
-  DCHECK(MediaStreamAudioSource::From(source));
-
-  blink::WebMediaStreamTrack writable_track = track;
-  writable_track.setExtraData(
-      new MediaStreamRemoteAudioTrack(source, track.isEnabled()));
-}
-
-void PeerConnectionDependencyFactory::CreateWebAudioSource(
-    blink::WebMediaStreamSource* source) {
-  DVLOG(1) << "PeerConnectionDependencyFactory::CreateWebAudioSource()";
-
-  MediaStreamAudioSource* source_data = new MediaStreamAudioSource();
-  source_data->SetWebAudioCapturer(
-      base::WrapUnique(new WebAudioCapturerSource(source)));
-
-  // Create a LocalAudioSource object which holds audio options.
-  // SetLocalAudioSource() affects core audio parts in third_party/Libjingle.
-  cricket::AudioOptions options;
-  source_data->SetLocalAudioSource(CreateLocalAudioSource(options).get());
-  source->setExtraData(source_data);
-}
-
 scoped_refptr<webrtc::VideoTrackInterface>
 PeerConnectionDependencyFactory::CreateLocalVideoTrack(
     const std::string& id,
@@ -739,23 +567,6 @@ void PeerConnectionDependencyFactory::CleanupPeerConnectionFactory() {
       NOTREACHED() << "Worker thread not running.";
     }
   }
-}
-
-std::unique_ptr<WebRtcAudioCapturer>
-PeerConnectionDependencyFactory::CreateAudioCapturer(
-    int render_frame_id,
-    const StreamDeviceInfo& device_info,
-    const blink::WebMediaConstraints& constraints,
-    MediaStreamAudioSource* audio_source) {
-  // TODO(xians): Handle the cases when gUM is called without a proper render
-  // view, for example, by an extension.
-  DCHECK_GE(render_frame_id, 0);
-
-  EnsureWebRtcAudioDeviceImpl();
-  DCHECK(GetWebRtcAudioDevice());
-  return WebRtcAudioCapturer::CreateCapturer(
-      render_frame_id, device_info, constraints, GetWebRtcAudioDevice(),
-      audio_source);
 }
 
 void PeerConnectionDependencyFactory::EnsureInitialized() {

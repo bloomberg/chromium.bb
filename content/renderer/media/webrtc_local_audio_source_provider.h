@@ -34,11 +34,15 @@ class WebAudioSourceProviderClient;
 
 namespace content {
 
-// WebRtcLocalAudioSourceProvider provides a bridge between classes:
-//     WebRtcLocalAudioTrack ---> blink::WebAudioSourceProvider
+// TODO(miu): This implementation should be renamed to WebAudioMediaStreamSink,
+// as it should work as a provider for WebAudio from ANY MediaStreamAudioTrack.
+// http://crbug.com/577874
 //
-// WebRtcLocalAudioSourceProvider works as a sink to the WebRtcLocalAudioTrack
-// and store the capture data to a FIFO. When the media stream is connected to
+// WebRtcLocalAudioSourceProvider provides a bridge between classes:
+//     MediaStreamAudioTrack ---> blink::WebAudioSourceProvider
+//
+// WebRtcLocalAudioSourceProvider works as a sink to the MediaStreamAudioTrack
+// and stores the capture data to a FIFO. When the media stream is connected to
 // WebAudio MediaStreamAudioSourceNode as a source provider,
 // MediaStreamAudioSourceNode will periodically call provideInput() to get the
 // data from the FIFO.

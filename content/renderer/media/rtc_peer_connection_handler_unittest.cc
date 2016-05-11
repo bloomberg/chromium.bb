@@ -19,16 +19,18 @@
 #include "content/child/child_process.h"
 #include "content/renderer/media/media_stream.h"
 #include "content/renderer/media/media_stream_audio_source.h"
+#include "content/renderer/media/media_stream_audio_track.h"
 #include "content/renderer/media/media_stream_source.h"
 #include "content/renderer/media/media_stream_video_track.h"
+#include "content/renderer/media/mock_audio_device_factory.h"
+#include "content/renderer/media/mock_constraint_factory.h"
 #include "content/renderer/media/mock_data_channel_impl.h"
 #include "content/renderer/media/mock_media_stream_video_source.h"
 #include "content/renderer/media/mock_peer_connection_impl.h"
 #include "content/renderer/media/mock_web_rtc_peer_connection_handler_client.h"
 #include "content/renderer/media/peer_connection_tracker.h"
 #include "content/renderer/media/webrtc/mock_peer_connection_dependency_factory.h"
-#include "content/renderer/media/webrtc/webrtc_local_audio_track_adapter.h"
-#include "content/renderer/media/webrtc_local_audio_track.h"
+#include "content/renderer/media/webrtc/processed_local_audio_source.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebMediaConstraints.h"
@@ -248,12 +250,25 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
       const std::string& stream_label) {
     std::string video_track_label("video-label");
     std::string audio_track_label("audio-label");
-    blink::WebMediaStreamSource audio_source;
-    audio_source.initialize(blink::WebString::fromUTF8(audio_track_label),
-                            blink::WebMediaStreamSource::TypeAudio,
-                            blink::WebString::fromUTF8("audio_track"),
-                            false /* remote */);
-    audio_source.setExtraData(new MediaStreamAudioSource());
+    blink::WebMediaStreamSource blink_audio_source;
+    blink_audio_source.initialize(blink::WebString::fromUTF8(audio_track_label),
+                                  blink::WebMediaStreamSource::TypeAudio,
+                                  blink::WebString::fromUTF8("audio_track"),
+                                  false /* remote */);
+    ProcessedLocalAudioSource* const audio_source =
+        new ProcessedLocalAudioSource(
+            -1 /* consumer_render_frame_id is N/A for non-browser tests */,
+            StreamDeviceInfo(MEDIA_DEVICE_AUDIO_CAPTURE, "Mock device",
+                             "mock_device_id",
+                             media::AudioParameters::kAudioCDSampleRate,
+                             media::CHANNEL_LAYOUT_STEREO,
+                             media::AudioParameters::kAudioCDSampleRate / 100),
+            mock_dependency_factory_.get());
+    audio_source->SetAllowInvalidRenderFrameIdForTesting(true);
+    audio_source->SetSourceConstraints(
+        MockConstraintFactory().CreateWebMediaConstraints());
+    blink_audio_source.setExtraData(audio_source);  // Takes ownership.
+
     blink::WebMediaStreamSource video_source;
     video_source.initialize(blink::WebString::fromUTF8(video_track_label),
                             blink::WebMediaStreamSource::TypeVideo,
@@ -265,12 +280,14 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
 
     blink::WebVector<blink::WebMediaStreamTrack> audio_tracks(
         static_cast<size_t>(1));
-    audio_tracks[0].initialize(audio_source.id(), audio_source);
-    scoped_refptr<WebRtcLocalAudioTrackAdapter> adapter(
-        WebRtcLocalAudioTrackAdapter::Create(audio_track_label, nullptr));
-    std::unique_ptr<WebRtcLocalAudioTrack> native_track(
-        new WebRtcLocalAudioTrack(adapter.get()));
-    audio_tracks[0].setExtraData(native_track.release());
+    audio_tracks[0].initialize(blink_audio_source.id(), blink_audio_source);
+    EXPECT_CALL(*mock_audio_device_factory_.mock_capturer_source(),
+                Initialize(_, _, -1));
+    EXPECT_CALL(*mock_audio_device_factory_.mock_capturer_source(),
+                SetAutomaticGainControl(true));
+    EXPECT_CALL(*mock_audio_device_factory_.mock_capturer_source(), Start());
+    EXPECT_CALL(*mock_audio_device_factory_.mock_capturer_source(), Stop());
+    CHECK(audio_source->ConnectToTrack(audio_tracks[0]));
     blink::WebVector<blink::WebMediaStreamTrack> video_tracks(
         static_cast<size_t>(1));
     blink::WebMediaConstraints video_constraints;
@@ -304,12 +321,25 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
     return stream;
   }
 
+  void StopAllTracks(const blink::WebMediaStream& stream) {
+    blink::WebVector<blink::WebMediaStreamTrack> audio_tracks;
+    stream.audioTracks(audio_tracks);
+    for (const auto& track : audio_tracks)
+      MediaStreamAudioTrack::From(track)->Stop();
+
+    blink::WebVector<blink::WebMediaStreamTrack> video_tracks;
+    stream.videoTracks(video_tracks);
+    for (const auto& track : video_tracks)
+      MediaStreamVideoTrack::GetVideoTrack(track)->Stop();
+  }
+
   base::MessageLoop message_loop_;
   std::unique_ptr<ChildProcess> child_process_;
   std::unique_ptr<MockWebRTCPeerConnectionHandlerClient> mock_client_;
   std::unique_ptr<MockPeerConnectionDependencyFactory> mock_dependency_factory_;
   std::unique_ptr<NiceMock<MockPeerConnectionTracker>> mock_tracker_;
   std::unique_ptr<RTCPeerConnectionHandlerUnderTest> pc_handler_;
+  MockAudioDeviceFactory mock_audio_device_factory_;
 
   // Weak reference to the mocked native peer connection implementation.
   MockPeerConnectionImpl* mock_peer_connection_;
@@ -494,6 +524,8 @@ TEST_F(RTCPeerConnectionHandlerTest, addAndRemoveStream) {
 
   pc_handler_->removeStream(local_stream);
   EXPECT_EQ(0u, mock_peer_connection_->local_streams()->count());
+
+  StopAllTracks(local_stream);
 }
 
 TEST_F(RTCPeerConnectionHandlerTest, addStreamWithStoppedAudioAndVideoTrack) {
@@ -523,6 +555,8 @@ TEST_F(RTCPeerConnectionHandlerTest, addStreamWithStoppedAudioAndVideoTrack) {
   EXPECT_EQ(
       1u,
       mock_peer_connection_->local_streams()->at(0)->GetVideoTracks().size());
+
+  StopAllTracks(local_stream);
 }
 
 TEST_F(RTCPeerConnectionHandlerTest, GetStatsNoSelector) {
@@ -560,6 +594,8 @@ TEST_F(RTCPeerConnectionHandlerTest, GetStatsWithLocalSelector) {
   pc_handler_->getStats(request.get());
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, request->result()->report_count());
+
+  StopAllTracks(local_stream);
 }
 
 TEST_F(RTCPeerConnectionHandlerTest, GetStatsWithRemoteSelector) {
@@ -599,6 +635,8 @@ TEST_F(RTCPeerConnectionHandlerTest, GetStatsWithBadSelector) {
   pc_handler_->getStats(request.get());
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0, request->result()->report_count());
+
+  StopAllTracks(local_stream);
 }
 
 TEST_F(RTCPeerConnectionHandlerTest, OnSignalingChange) {
@@ -1025,6 +1063,8 @@ TEST_F(RTCPeerConnectionHandlerTest, CreateDtmfSender) {
   std::unique_ptr<blink::WebRTCDTMFSenderHandler> sender(
       pc_handler_->createDTMFSender(tracks[0]));
   EXPECT_TRUE(sender.get());
+
+  StopAllTracks(local_stream);
 }
 
 }  // namespace content

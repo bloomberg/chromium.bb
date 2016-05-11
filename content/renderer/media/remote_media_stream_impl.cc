@@ -18,9 +18,9 @@
 #include "content/renderer/media/media_stream.h"
 #include "content/renderer/media/media_stream_track.h"
 #include "content/renderer/media/media_stream_video_track.h"
-#include "content/renderer/media/webrtc/media_stream_remote_audio_track.h"
 #include "content/renderer/media/webrtc/media_stream_remote_video_source.h"
 #include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
+#include "content/renderer/media/webrtc/peer_connection_remote_audio_source.h"
 #include "content/renderer/media/webrtc/track_observer.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
@@ -239,11 +239,10 @@ void RemoteAudioTrackAdapter::Unregister() {
 void RemoteAudioTrackAdapter::InitializeWebkitAudioTrack() {
   InitializeWebkitTrack(blink::WebMediaStreamSource::TypeAudio);
 
-  webkit_track()->source().setExtraData(
-      new MediaStreamRemoteAudioSource(observed_track().get()));
-  webkit_track()->setExtraData(
-      new MediaStreamRemoteAudioTrack(
-          webkit_track()->source(), webkit_track()->isEnabled()));
+  MediaStreamAudioSource* const source =
+      new PeerConnectionRemoteAudioSource(observed_track().get());
+  webkit_track()->source().setExtraData(source);  // Takes ownership.
+  source->ConnectToTrack(*(webkit_track()));
 }
 
 void RemoteAudioTrackAdapter::OnChanged() {

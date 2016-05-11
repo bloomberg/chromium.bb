@@ -22,7 +22,6 @@
 #include "base/trace_event/trace_event.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
-#include "content/renderer/media/media_stream_audio_track.h"
 #include "content/renderer/media/media_stream_constraints_util.h"
 #include "content/renderer/media/media_stream_track.h"
 #include "content/renderer/media/peer_connection_tracker.h"
@@ -32,7 +31,6 @@
 #include "content/renderer/media/rtc_dtmf_sender_handler.h"
 #include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
 #include "content/renderer/media/webrtc/webrtc_media_stream_adapter.h"
-#include "content/renderer/media/webrtc_audio_capturer.h"
 #include "content/renderer/media/webrtc_audio_device_impl.h"
 #include "content/renderer/media/webrtc_uma_histograms.h"
 #include "content/renderer/render_thread_impl.h"
@@ -1485,20 +1483,25 @@ blink::WebRTCDataChannelHandler* RTCPeerConnectionHandler::createDataChannel(
 blink::WebRTCDTMFSenderHandler* RTCPeerConnectionHandler::createDTMFSender(
     const blink::WebMediaStreamTrack& track) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(!track.isNull());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::createDTMFSender");
   DVLOG(1) << "createDTMFSender.";
 
-  MediaStreamAudioTrack* native_track = MediaStreamAudioTrack::From(track);
-  if (!native_track || !native_track->is_local_track() ||
-      track.source().getType() != blink::WebMediaStreamSource::TypeAudio) {
-    DLOG(ERROR) << "The DTMF sender requires a local audio track.";
+  // Find the WebRtc track referenced by the blink track's ID.
+  webrtc::AudioTrackInterface* webrtc_track = nullptr;
+  for (const WebRtcMediaStreamAdapter* s : local_streams_) {
+    webrtc_track = s->webrtc_media_stream()->FindAudioTrack(track.id().utf8());
+    if (webrtc_track)
+      break;
+  }
+  if (!webrtc_track) {
+    DLOG(ERROR) << "Audio track with ID '" << track.id().utf8()
+                << "' has no known WebRtc sink.";
     return nullptr;
   }
 
-  scoped_refptr<webrtc::AudioTrackInterface> audio_track =
-      native_track->GetAudioAdapter();
   rtc::scoped_refptr<webrtc::DtmfSenderInterface> sender(
-      native_peer_connection_->CreateDtmfSender(audio_track.get()));
+      native_peer_connection_->CreateDtmfSender(webrtc_track));
   if (!sender) {
     DLOG(ERROR) << "Could not create native DTMF sender.";
     return nullptr;

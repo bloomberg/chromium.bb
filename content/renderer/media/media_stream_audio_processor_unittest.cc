@@ -15,6 +15,7 @@
 #include "base/path_service.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "content/common/media/media_stream_options.h"
 #include "content/public/common/media_stream_request.h"
 #include "content/renderer/media/media_stream_audio_processor.h"
 #include "content/renderer/media/media_stream_audio_processor_options.h"

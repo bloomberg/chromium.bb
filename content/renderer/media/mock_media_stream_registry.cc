@@ -11,8 +11,6 @@
 #include "content/renderer/media/media_stream_audio_source.h"
 #include "content/renderer/media/media_stream_video_track.h"
 #include "content/renderer/media/mock_media_stream_video_source.h"
-#include "content/renderer/media/webrtc/webrtc_local_audio_track_adapter.h"
-#include "content/renderer/media/webrtc_local_audio_track.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -20,7 +18,31 @@
 
 namespace content {
 
-static const char kTestStreamLabel[] = "stream_label";
+namespace {
+
+const char kTestStreamLabel[] = "stream_label";
+
+class MockCDQualityAudioSource : public MediaStreamAudioSource {
+ public:
+  MockCDQualityAudioSource() : MediaStreamAudioSource(true) {
+    MediaStreamAudioSource::SetFormat(media::AudioParameters(
+        media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
+        media::CHANNEL_LAYOUT_STEREO,
+        media::AudioParameters::kAudioCDSampleRate,
+        16,
+        media::AudioParameters::kAudioCDSampleRate / 100));
+    MediaStreamAudioSource::SetDeviceInfo(StreamDeviceInfo(
+        MEDIA_DEVICE_AUDIO_CAPTURE, "Mock audio device", "mock_audio_device_id",
+        media::AudioParameters::kAudioCDSampleRate,
+        media::CHANNEL_LAYOUT_STEREO,
+        media::AudioParameters::kAudioCDSampleRate / 100));
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockCDQualityAudioSource);
+};
+
+}  // namespace
 
 MockMediaStreamRegistry::MockMediaStreamRegistry() {}
 
@@ -55,19 +77,17 @@ void MockMediaStreamRegistry::AddVideoTrack(const std::string& track_id) {
 }
 
 void MockMediaStreamRegistry::AddAudioTrack(const std::string& track_id) {
-  blink::WebMediaStreamSource audio_source;
-  audio_source.initialize(
+  blink::WebMediaStreamSource blink_source;
+  blink_source.initialize(
       "mock audio source id", blink::WebMediaStreamSource::TypeAudio,
       "mock audio source name", false /* remote */);
-  audio_source.setExtraData(new MediaStreamAudioSource());
+  MediaStreamAudioSource* const source = new MockCDQualityAudioSource();
+  blink_source.setExtraData(source);  // Takes ownership.
+
   blink::WebMediaStreamTrack blink_track;
-  blink_track.initialize(audio_source);
-  const scoped_refptr<WebRtcLocalAudioTrackAdapter> adapter(
-      WebRtcLocalAudioTrackAdapter::Create(track_id,
-                                           nullptr /* track source */));
-  std::unique_ptr<WebRtcLocalAudioTrack> native_track(
-      new WebRtcLocalAudioTrack(adapter.get()));
-  blink_track.setExtraData(native_track.release());
+  blink_track.initialize(blink_source);
+  CHECK(source->ConnectToTrack(blink_track));
+
   test_stream_.addTrack(blink_track);
 }
 

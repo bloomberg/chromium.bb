@@ -6,16 +6,16 @@
 
 #include <stdint.h>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
-#include "base/strings/utf_string_conversions.h"
 #include "content/renderer/media/media_stream_audio_source.h"
-#include "content/renderer/media/webrtc/webrtc_local_audio_track_adapter.h"
-#include "content/renderer/media/webrtc_local_audio_track.h"
 #include "media/audio/simple_sources.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebHeap.h"
 #include "third_party/opus/src/include/opus.h"
 
@@ -209,18 +209,16 @@ class AudioTrackRecorderTest : public TestWithParam<ATRTestParams> {
   // track, which can be used to capture audio data and pass it to the producer.
   // Adapted from media::WebRTCLocalAudioSourceProviderTest.
   void PrepareBlinkTrack() {
-    scoped_refptr<WebRtcLocalAudioTrackAdapter> adapter(
-        WebRtcLocalAudioTrackAdapter::Create(std::string(), NULL));
-    std::unique_ptr<WebRtcLocalAudioTrack> native_track(
-        new WebRtcLocalAudioTrack(adapter.get()));
     blink::WebMediaStreamSource audio_source;
-    audio_source.initialize(base::UTF8ToUTF16("dummy_source_id"),
+    audio_source.initialize(blink::WebString::fromUTF8("dummy_source_id"),
                             blink::WebMediaStreamSource::TypeAudio,
-                            base::UTF8ToUTF16("dummy_source_name"),
+                            blink::WebString::fromUTF8("dummy_source_name"),
                             false /* remote */);
+    audio_source.setExtraData(new MediaStreamAudioSource(true));
     blink_track_.initialize(blink::WebString::fromUTF8("audio_track"),
                             audio_source);
-    blink_track_.setExtraData(native_track.release());
+    CHECK(MediaStreamAudioSource::From(audio_source)
+              ->ConnectToTrack(blink_track_));
   }
 
   DISALLOW_COPY_AND_ASSIGN(AudioTrackRecorderTest);

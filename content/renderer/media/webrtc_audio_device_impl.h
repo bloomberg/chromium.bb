@@ -19,11 +19,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
-#include "content/renderer/media/webrtc_audio_capturer.h"
 #include "content/renderer/media/webrtc_audio_device_not_impl.h"
 #include "ipc/ipc_platform_file.h"
-#include "media/base/audio_capturer_source.h"
-#include "media/base/audio_renderer_sink.h"
 
 // A WebRtcAudioDeviceImpl instance implements the abstract interface
 // webrtc::AudioDeviceModule which makes it possible for a user (e.g. webrtc::
@@ -182,9 +179,13 @@
 //    transferring maximum levels between the renderer and the browser.
 //
 
+namespace media {
+class AudioBus;
+}
+
 namespace content {
 
-class WebRtcAudioCapturer;
+class ProcessedLocalAudioSource;
 class WebRtcAudioRenderer;
 
 // TODO(xians): Move the following two interfaces to webrtc so that
@@ -311,8 +312,8 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl
   // Capturers must remain valid until RemoveAudioCapturer() is called.
   // TODO(xians): Remove these two methods once the ADM does not need to pass
   // hardware information up to WebRtc.
-  void AddAudioCapturer(WebRtcAudioCapturer* capturer);
-  void RemoveAudioCapturer(WebRtcAudioCapturer* capturer);
+  void AddAudioCapturer(ProcessedLocalAudioSource* capturer);
+  void RemoveAudioCapturer(ProcessedLocalAudioSource* capturer);
 
   // Gets paired device information of the capture device for the audio
   // renderer. This is used to pass on a session id, sample rate and buffer
@@ -329,7 +330,7 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl
   }
 
  private:
-  typedef std::list<WebRtcAudioCapturer*> CapturerList;
+  typedef std::list<ProcessedLocalAudioSource*> CapturerList;
   typedef std::list<WebRtcPlayoutDataSource::Sink*> PlayoutDataSinkList;
   class RenderBuffer;
 

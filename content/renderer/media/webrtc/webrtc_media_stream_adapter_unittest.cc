@@ -11,19 +11,22 @@
 #include "base/message_loop/message_loop.h"
 #include "content/child/child_process.h"
 #include "content/renderer/media/media_stream.h"
-#include "content/renderer/media/media_stream_audio_source.h"
 #include "content/renderer/media/media_stream_video_source.h"
 #include "content/renderer/media/media_stream_video_track.h"
+#include "content/renderer/media/mock_audio_device_factory.h"
+#include "content/renderer/media/mock_constraint_factory.h"
 #include "content/renderer/media/mock_media_stream_video_source.h"
 #include "content/renderer/media/webrtc/mock_peer_connection_dependency_factory.h"
-#include "content/renderer/media/webrtc/webrtc_local_audio_track_adapter.h"
-#include "content/renderer/media/webrtc_local_audio_track.h"
+#include "content/renderer/media/webrtc/processed_local_audio_source.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/web/WebHeap.h"
+
+using ::testing::_;
 
 namespace content {
 
@@ -48,15 +51,27 @@ class WebRtcMediaStreamAdapterTest : public ::testing::Test {
                               blink::WebMediaStreamSource::TypeAudio,
                               "audio",
                               false /* remote */);
-      audio_source.setExtraData(new MediaStreamAudioSource());
-
+      ProcessedLocalAudioSource* const source =
+          new ProcessedLocalAudioSource(
+              -1 /* consumer_render_frame_id is N/A for non-browser tests */,
+              StreamDeviceInfo(MEDIA_DEVICE_AUDIO_CAPTURE, "Mock audio device",
+                               "mock_audio_device_id",
+                               media::AudioParameters::kAudioCDSampleRate,
+                               media::CHANNEL_LAYOUT_STEREO,
+                               media::AudioParameters::kAudioCDSampleRate / 50),
+              dependency_factory_.get());
+      source->SetAllowInvalidRenderFrameIdForTesting(true);
+      source->SetSourceConstraints(
+          MockConstraintFactory().CreateWebMediaConstraints());
+      audio_source.setExtraData(source);  // Takes ownership.
       audio_track_vector[0].initialize(audio_source);
-      scoped_refptr<WebRtcLocalAudioTrackAdapter> adapter(
-          WebRtcLocalAudioTrackAdapter::Create(
-              audio_track_vector[0].id().utf8(), nullptr));
-      std::unique_ptr<WebRtcLocalAudioTrack> native_track(
-          new WebRtcLocalAudioTrack(adapter.get()));
-      audio_track_vector[0].setExtraData(native_track.release());
+      EXPECT_CALL(*mock_audio_device_factory_.mock_capturer_source(),
+                  Initialize(_, _, -1));
+      EXPECT_CALL(*mock_audio_device_factory_.mock_capturer_source(),
+                  SetAutomaticGainControl(true));
+      EXPECT_CALL(*mock_audio_device_factory_.mock_capturer_source(), Start());
+      EXPECT_CALL(*mock_audio_device_factory_.mock_capturer_source(), Stop());
+      CHECK(source->ConnectToTrack(audio_track_vector[0]));
     }
 
     blink::WebVector<blink::WebMediaStreamTrack> video_track_vector(
@@ -104,11 +119,12 @@ class WebRtcMediaStreamAdapterTest : public ::testing::Test {
     return adapter_->webrtc_media_stream();
   }
 
- protected:
+ private:
   base::MessageLoop message_loop_;
   std::unique_ptr<ChildProcess> child_process_;
   std::unique_ptr<MockPeerConnectionDependencyFactory> dependency_factory_;
   std::unique_ptr<WebRtcMediaStreamAdapter> adapter_;
+  MockAudioDeviceFactory mock_audio_device_factory_;
 };
 
 TEST_F(WebRtcMediaStreamAdapterTest, CreateWebRtcMediaStream) {

@@ -20,14 +20,13 @@
 #include "base/thread_task_runner_handle.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/renderer/media/media_stream.h"
-#include "content/renderer/media/media_stream_audio_source.h"
 #include "content/renderer/media/media_stream_constraints_util.h"
 #include "content/renderer/media/media_stream_dispatcher.h"
 #include "content/renderer/media/media_stream_video_capturer_source.h"
 #include "content/renderer/media/media_stream_video_track.h"
 #include "content/renderer/media/peer_connection_tracker.h"
+#include "content/renderer/media/webrtc/processed_local_audio_source.h"
 #include "content/renderer/media/webrtc/webrtc_video_capturer_adapter.h"
-#include "content/renderer/media/webrtc_audio_capturer.h"
 #include "content/renderer/media/webrtc_logging.h"
 #include "content/renderer/media/webrtc_uma_histograms.h"
 #include "content/renderer/render_thread_impl.h"
@@ -628,16 +627,26 @@ void UserMediaClientImpl::InitializeSourceObject(
                        weak_factory_.GetWeakPtr())));
   } else {
     DCHECK_EQ(blink::WebMediaStreamSource::TypeAudio, type);
-    MediaStreamAudioSource* audio_source(
-        new MediaStreamAudioSource(
-            RenderFrameObserver::routing_id(),
-            device,
-            base::Bind(&UserMediaClientImpl::OnLocalSourceStopped,
-                       weak_factory_.GetWeakPtr()),
-            dependency_factory_));
-    webkit_source->setExtraData(audio_source);
+    MediaStreamAudioSource* const audio_source =
+        CreateAudioSource(device, constraints);
+    audio_source->SetStopCallback(
+        base::Bind(&UserMediaClientImpl::OnLocalSourceStopped,
+                   weak_factory_.GetWeakPtr()));
+    webkit_source->setExtraData(audio_source);  // Takes ownership.
   }
   local_sources_.push_back(*webkit_source);
+}
+
+MediaStreamAudioSource* UserMediaClientImpl::CreateAudioSource(
+    const StreamDeviceInfo& device,
+    const blink::WebMediaConstraints& constraints) {
+  // TODO(miu): In a soon-upcoming change, I'll be providing an alternative
+  // MediaStreamAudioSource that bypasses audio processing for the non-WebRTC
+  // use cases. http://crbug.com/577881
+  ProcessedLocalAudioSource* source = new ProcessedLocalAudioSource(
+      RenderFrameObserver::routing_id(), device, dependency_factory_);
+  source->SetSourceConstraints(constraints);
+  return source;
 }
 
 MediaStreamVideoSource* UserMediaClientImpl::CreateVideoSource(
@@ -702,7 +711,7 @@ void UserMediaClientImpl::CreateAudioTracks(
                            constraints,
                            &webkit_source);
     (*webkit_tracks)[i].initialize(webkit_source);
-    request->StartAudioTrack((*webkit_tracks)[i], constraints);
+    request->StartAudioTrack((*webkit_tracks)[i]);
   }
 }
 
@@ -1083,8 +1092,7 @@ UserMediaClientImpl::UserMediaRequestInfo::~UserMediaRequestInfo() {
 }
 
 void UserMediaClientImpl::UserMediaRequestInfo::StartAudioTrack(
-    const blink::WebMediaStreamTrack& track,
-    const blink::WebMediaConstraints& constraints) {
+    const blink::WebMediaStreamTrack& track) {
   DCHECK(track.source().getType() == blink::WebMediaStreamSource::TypeAudio);
   MediaStreamAudioSource* native_source =
       MediaStreamAudioSource::From(track.source());
@@ -1092,10 +1100,10 @@ void UserMediaClientImpl::UserMediaRequestInfo::StartAudioTrack(
 
   sources_.push_back(track.source());
   sources_waiting_for_callback_.push_back(native_source);
-  native_source->AddTrack(
-      track, constraints, base::Bind(
-          &UserMediaClientImpl::UserMediaRequestInfo::OnTrackStarted,
-          AsWeakPtr()));
+  if (native_source->ConnectToTrack(track))
+    OnTrackStarted(native_source, MEDIA_DEVICE_OK, "");
+  else
+    OnTrackStarted(native_source, MEDIA_DEVICE_TRACK_START_FAILURE, "");
 }
 
 blink::WebMediaStreamTrack
