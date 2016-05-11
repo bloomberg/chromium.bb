@@ -35,6 +35,7 @@ import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.net.test.util.TestWebServer;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -366,7 +367,10 @@ public class AwTestBase
             return false;
         }
 
-        return method.isAnnotationPresent(clazz);
+        // Cast to AnnotatedElement to work around a compilation failure.
+        // Method.isAnnotationPresent() was removed in Java 8 (which is used by the Android N SDK),
+        // so compilation with Java 7 fails. See crbug.com/608792.
+        return ((AnnotatedElement) method).isAnnotationPresent(clazz);
     }
 
     /**
