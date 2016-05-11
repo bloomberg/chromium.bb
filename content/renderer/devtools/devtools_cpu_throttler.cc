@@ -4,16 +4,16 @@
 
 #include "content/renderer/devtools/devtools_cpu_throttler.h"
 
-#if defined(OS_POSIX)
-#include <signal.h>
-#define USE_SIGNALS
-#endif
-
 #include "base/atomicops.h"
 #include "base/macros.h"
 #include "base/synchronization/cancellation_flag.h"
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
+
+#if defined(OS_POSIX)
+#include <signal.h>
+#define USE_SIGNALS
+#endif
 
 using base::subtle::Atomic32;
 using base::subtle::Acquire_Load;
