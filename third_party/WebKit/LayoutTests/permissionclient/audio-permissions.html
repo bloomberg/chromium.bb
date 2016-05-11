@@ -29,12 +29,6 @@ function loaded()
     audio.src = "../media/content/silence.oga?nocache";
     document.getElementById("audio").appendChild(audio);
 
-    // Load a sound from cache.
-    var audioFromCache = document.createElement('audio');
-    audioFromCache.onloadeddata = function () { log("FAIL: audio from cache loaded"); }
-    audioFromCache.src = "../media/content/silence.oga";
-    document.getElementById("audio").appendChild(audioFromCache);
-
     // Add an iframe with a sound.
     var iframe = document.createElement('iframe');
     iframe.src = "resources/audio.html";

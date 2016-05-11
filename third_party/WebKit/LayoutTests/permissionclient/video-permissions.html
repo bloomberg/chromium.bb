@@ -29,12 +29,6 @@ function loaded()
     video.src = "../media/content/test.ogv?nocache";
     document.getElementById("video").appendChild(video);
 
-    // Load a video from cache.
-    var videoFromCache = document.createElement('video');
-    videoFromCache.onloadeddata = function () { log("FAIL: video from cache loaded"); }
-    videoFromCache.src = "../media/content/test.ogv";
-    document.getElementById("video").appendChild(videoFromCache);
-
     // Add an iframe with a video.
     var iframe = document.createElement('iframe');
     iframe.src = "resources/video.html";

@@ -1,7 +1,6 @@
 MockContentSettingsClient: allowMedia((file test):media/content/test.ogv): true
 MockContentSettingsClient: allowMedia((file test):media/content/test.ogv?nocache): false
 MockContentSettingsClient: allowMedia((file test):media/content/test.ogv): false
-MockContentSettingsClient: allowMedia((file test):media/content/test.ogv): false
  
 PASS: first video loaded
 
