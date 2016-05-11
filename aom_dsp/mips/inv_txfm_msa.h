@@ -16,7 +16,7 @@
 #include "aom_dsp/mips/txfm_macros_msa.h"
 #include "aom_dsp/txfm_common.h"
 
-#define AV1_ADST8(in0, in1, in2, in3, in4, in5, in6, in7, out0, out1, out2,  \
+#define AOM_ADST8(in0, in1, in2, in3, in4, in5, in6, in7, out0, out1, out2,  \
                   out3, out4, out5, out6, out7)                              \
   {                                                                          \
     v8i16 cnst0_m, cnst1_m, cnst2_m, cnst3_m, cnst4_m;                       \
