@@ -39,7 +39,11 @@ template("ios_info_plist") {
       "//build/config/ios/BuildInfo.plist",
       invoker.info_plist,
     ]
-    forward_variables_from(invoker, [ "executable_name" ])
+    forward_variables_from(invoker,
+                           [
+                             "executable_name",
+                             "visibility",
+                           ])
   }
 }
 
