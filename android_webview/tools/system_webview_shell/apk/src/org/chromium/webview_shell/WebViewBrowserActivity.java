@@ -175,11 +175,14 @@ public class WebViewBrowserActivity extends Activity implements PopupMenu.OnMenu
         createAndInitializeWebView();
 
         String url = getUrlFromIntent(getIntent());
-        if (url != null) {
-            setUrlBarText(url);
-            setUrlFail(false);
-            loadUrlFromUrlBar(mUrlBar);
+        if (url == null) {
+            // Make sure to load a blank page to make it immediately inspectable with
+            // chrome://inspect.
+            url = "about:blank";
         }
+        setUrlBarText(url);
+        setUrlFail(false);
+        loadUrlFromUrlBar(mUrlBar);
     }
 
     ViewGroup getContainer() {

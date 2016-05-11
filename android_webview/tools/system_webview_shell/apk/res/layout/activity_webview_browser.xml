@@ -22,6 +22,7 @@
             android:layout_weight="1.0"
             android:singleLine="true"
             android:inputType="textUri"
+            android:selectAllOnFocus="true"
             android:imeOptions="actionGo" />
         <ImageButton
             android:layout_width="wrap_content" 
