@@ -277,6 +277,60 @@ TEST_F(TemplateURLTest, SetPrepopulatedAndParse) {
   EXPECT_TRUE(valid);
 }
 
+// Test that setting the prepopulate ID from TemplateURL causes the stored
+// TemplateURLRef to handle parsing the URL parameters differently.
+TEST_F(TemplateURLTest, SetPrepopulatedAndReplace) {
+  TemplateURLData data;
+  data.SetURL("http://foo{fhqwhgads}search/?q={searchTerms}");
+  data.suggestions_url = "http://foo{fhqwhgads}suggest/?q={searchTerms}";
+  data.instant_url = "http://foo{fhqwhgads}instant/";
+  data.image_url = "http://foo{fhqwhgads}image/";
+  data.new_tab_url = "http://foo{fhqwhgads}newtab/";
+  data.contextual_search_url = "http://foo{fhqwhgads}context/";
+  data.alternate_urls.push_back(
+      "http://foo{fhqwhgads}alternate/?q={searchTerms}");
+
+  TemplateURLRef::SearchTermsArgs args(base::ASCIIToUTF16("X"));
+  const SearchTermsData& stdata = search_terms_data_;
+
+  TemplateURL url(data);
+  EXPECT_EQ("http://foo%7Bfhqwhgads%7Dsearch/?q=X",
+            url.url_ref().ReplaceSearchTerms(args, stdata));
+  EXPECT_EQ("http://foo%7Bfhqwhgads%7Dalternate/?q=X",
+            url.url_refs()[0].ReplaceSearchTerms(args, stdata));
+  EXPECT_EQ("http://foo%7Bfhqwhgads%7Dsearch/?q=X",
+            url.url_refs()[1].ReplaceSearchTerms(args, stdata));
+  EXPECT_EQ("http://foo%7Bfhqwhgads%7Dsuggest/?q=X",
+            url.suggestions_url_ref().ReplaceSearchTerms(args, stdata));
+  EXPECT_EQ("http://foo{fhqwhgads}instant/",
+            url.instant_url_ref().ReplaceSearchTerms(args, stdata));
+  EXPECT_EQ("http://foo{fhqwhgads}image/",
+            url.image_url_ref().ReplaceSearchTerms(args, stdata));
+  EXPECT_EQ("http://foo{fhqwhgads}newtab/",
+            url.new_tab_url_ref().ReplaceSearchTerms(args, stdata));
+  EXPECT_EQ("http://foo{fhqwhgads}context/",
+            url.contextual_search_url_ref().ReplaceSearchTerms(args, stdata));
+
+  data.prepopulate_id = 123;
+  TemplateURL url2(data);
+  EXPECT_EQ("http://foosearch/?q=X",
+            url2.url_ref().ReplaceSearchTerms(args, stdata));
+  EXPECT_EQ("http://fooalternate/?q=X",
+            url2.url_refs()[0].ReplaceSearchTerms(args, stdata));
+  EXPECT_EQ("http://foosearch/?q=X",
+            url2.url_refs()[1].ReplaceSearchTerms(args, stdata));
+  EXPECT_EQ("http://foosuggest/?q=X",
+            url2.suggestions_url_ref().ReplaceSearchTerms(args, stdata));
+  EXPECT_EQ("http://fooinstant/",
+            url2.instant_url_ref().ReplaceSearchTerms(args, stdata));
+  EXPECT_EQ("http://fooimage/",
+            url2.image_url_ref().ReplaceSearchTerms(args, stdata));
+  EXPECT_EQ("http://foonewtab/",
+            url2.new_tab_url_ref().ReplaceSearchTerms(args, stdata));
+  EXPECT_EQ("http://foocontext/",
+            url2.contextual_search_url_ref().ReplaceSearchTerms(args, stdata));
+}
+
 TEST_F(TemplateURLTest, InputEncodingBeforeSearchTerm) {
   TemplateURLData data;
   data.SetURL("http://foox{inputEncoding?}a{searchTerms}y{outputEncoding?}b");
