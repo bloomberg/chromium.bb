@@ -12,6 +12,9 @@
 #include "components/offline_pages/background/offliner_factory.h"
 #include "components/offline_pages/background/offliner_policy.h"
 #include "components/offline_pages/background/request_coordinator.h"
+#include "components/offline_pages/background/request_queue.h"
+#include "components/offline_pages/background/request_queue_in_memory_store.h"
+#include "components/offline_pages/background/request_queue_store.h"
 
 namespace offline_pages {
 
@@ -37,10 +40,13 @@ KeyedService* RequestCoordinatorFactory::BuildServiceInstanceFor(
   std::unique_ptr<OfflinerPolicy> policy(new OfflinerPolicy());
   std::unique_ptr<OfflinerFactory> prerendererOffliner(
       new PrerenderingOfflinerFactory(context));
+  std::unique_ptr<RequestQueueInMemoryStore> store(
+      new RequestQueueInMemoryStore());
+  std::unique_ptr<RequestQueue> queue(new RequestQueue(std::move(store)));
   // TODO(petewil) Add support for server based offliner when it is ready.
 
-  return new RequestCoordinator(std::move(policy),
-                                std::move(prerendererOffliner));
+  return new RequestCoordinator(
+      std::move(policy), std::move(prerendererOffliner), std::move(queue));
 }
 
 content::BrowserContext* RequestCoordinatorFactory::GetBrowserContextToUse(

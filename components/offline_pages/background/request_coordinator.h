@@ -9,7 +9,9 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/offline_pages/background/request_queue.h"
 #include "url/gurl.h"
 
 namespace offline_pages {
@@ -21,13 +23,16 @@ class Offliner;
 class SavePageRequest;
 
 // Coordinates queueing and processing save page later requests.
-class RequestCoordinator : public KeyedService {
+class RequestCoordinator :
+    public KeyedService,
+    public base::SupportsWeakPtr<RequestCoordinator>  {
  public:
   // Callback to report when the processing of a triggered task is complete.
   typedef base::Callback<void()> ProcessingDoneCallback;
 
   RequestCoordinator(std::unique_ptr<OfflinerPolicy> policy,
-                     std::unique_ptr<OfflinerFactory> factory);
+                     std::unique_ptr<OfflinerFactory> factory,
+                     std::unique_ptr<RequestQueue> queue);
 
   ~RequestCoordinator() override;
 
@@ -46,11 +51,18 @@ class RequestCoordinator : public KeyedService {
   // is stopped or complete.
   void StopProcessing();
 
+  // Returns the request queue used for requests.  Coordinator keeps ownership.
+  RequestQueue* GetQueue() { return queue_.get(); }
+
  private:
-  // RequestCoordinator takes over ownership of the policy
+  void AddRequestResultCallback(RequestQueue::AddRequestResult result,
+                                const SavePageRequest& request);
+  // OfflinerPolicy.  Used to store policies. Owned.
   std::unique_ptr<OfflinerPolicy> policy_;
-  // Factory is owned by the RequestCoordinator.
+  // OfflinerFactory.  Used to create offline pages. Owned.
   std::unique_ptr<OfflinerFactory> factory_;
+  // RequestQueue.  Used to store incoming requests. Owned.
+  std::unique_ptr<RequestQueue> queue_;
 
   DISALLOW_COPY_AND_ASSIGN(RequestCoordinator);
 };
