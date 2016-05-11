@@ -57,12 +57,4 @@ void NoTransportImageTransportFactory::RemoveObserver(
   observer_list_.RemoveObserver(observer);
 }
 
-#if defined(OS_MACOSX)
-bool NoTransportImageTransportFactory::
-    SurfaceShouldNotShowFramesAfterSuspendForRecycle(
-        gpu::SurfaceHandle surface_handle) const {
-  return false;
-}
-#endif
-
 }  // namespace content

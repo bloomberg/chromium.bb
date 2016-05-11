@@ -226,7 +226,7 @@ class OutputSurfaceWithoutParent : public cc::OutputSurface,
       const std::vector<ui::LatencyInfo>&,
       gfx::SwapResult,
       const gpu::GpuProcessHostedCALayerTreeParamsMac* params_mac)>
-          swap_buffers_completion_callback_;
+      swap_buffers_completion_callback_;
   std::unique_ptr<cc::OverlayCandidateValidator> overlay_candidate_validator_;
   std::unique_ptr<ExternalBeginFrameSource> begin_frame_source_;
 };

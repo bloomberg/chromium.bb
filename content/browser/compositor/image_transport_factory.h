@@ -95,10 +95,6 @@ class CONTENT_EXPORT ImageTransportFactory {
   // NSView will not flash in the new NSView.
   virtual void SetCompositorSuspendedForRecycle(ui::Compositor* compositor,
                                                 bool suspended) = 0;
-  // Used by GpuProcessHostUIShim to determine if a frame should not be
-  // displayed because it is targetted to an NSView that has been disconnected.
-  virtual bool SurfaceShouldNotShowFramesAfterSuspendForRecycle(
-      gpu::SurfaceHandle surface_handle) const = 0;
 #endif
 };
 

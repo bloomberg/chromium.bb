@@ -59,7 +59,6 @@ class GpuBrowserCompositorOutputSurface
 
 #if defined(OS_MACOSX)
   void SetSurfaceSuspendedForRecycle(bool suspended) override;
-  bool SurfaceShouldNotShowFramesAfterSuspendForRecycle() const override;
   enum ShouldShowFramesState {
     // Frames that come from the GPU process should appear on-screen.
     SHOULD_SHOW_FRAMES,

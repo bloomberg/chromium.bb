@@ -113,7 +113,8 @@ class GPU_EXPORT GpuChannelHost
       gpu::GpuStreamPriority stream_priority,
       const std::vector<int32_t>& attribs,
       const GURL& active_url,
-      gfx::GpuPreference gpu_preference);
+      gfx::GpuPreference gpu_preference,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   // Destroy a command buffer created by this channel.
   void DestroyCommandBuffer(CommandBufferProxyImpl* command_buffer);

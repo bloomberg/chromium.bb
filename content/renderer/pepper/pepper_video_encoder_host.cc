@@ -529,7 +529,7 @@ bool PepperVideoEncoderHost::EnsureGpuChannel() {
   command_buffer_ = channel->CreateCommandBuffer(
       gpu::kNullSurfaceHandle, gfx::Size(), nullptr, gpu::GPU_STREAM_DEFAULT,
       gpu::GpuStreamPriority::NORMAL, attribs, GURL::EmptyGURL(),
-      gfx::PreferIntegratedGpu);
+      gfx::PreferIntegratedGpu, base::ThreadTaskRunnerHandle::Get());
   if (!command_buffer_) {
     Close();
     return false;

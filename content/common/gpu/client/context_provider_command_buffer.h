@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
 #include "cc/output/context_provider.h"
@@ -79,6 +80,12 @@ class CONTENT_EXPORT ContextProviderCommandBuffer
   // be used on any thread while the lock returned by GetLock() is acquired.
   void SetupLock();
 
+  // Set the default task runner for command buffers to use for handling IPCs.
+  // If not specified, this will be the ThreadTaskRunner for the thread on
+  // which BindToThread is called.
+  void SetDefaultTaskRunner(
+      scoped_refptr<base::SingleThreadTaskRunner> default_task_runner);
+
  protected:
   ~ContextProviderCommandBuffer() override;
 
@@ -114,6 +121,7 @@ class CONTENT_EXPORT ContextProviderCommandBuffer
 
   scoped_refptr<SharedProviders> shared_providers_;
   scoped_refptr<gpu::GpuChannelHost> channel_;
+  scoped_refptr<base::SingleThreadTaskRunner> default_task_runner_;
 
   base::Lock context_lock_;  // Referenced by command_buffer_.
   std::unique_ptr<gpu::CommandBufferProxyImpl> command_buffer_;

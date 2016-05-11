@@ -107,9 +107,6 @@ class TestOutputSurface : public BrowserCompositorOutputSurface {
 
 #if defined(OS_MACOSX)
   void SetSurfaceSuspendedForRecycle(bool suspended) override {}
-  bool SurfaceShouldNotShowFramesAfterSuspendForRecycle() const override {
-    return false;
-  }
 #endif
 
  private:

@@ -28,7 +28,7 @@ namespace content {
 // ANativeWindow, using GpuSurfaceLookup (implemented by
 // SurfaceTextureManagerImpl).
 // On Mac, the handle just passes through the GPU process, and is sent back via
-// GpuHostMsg_AcceleratedSurfaceBuffersSwapped to reference the surface.
+// GpuCommandBufferMsg_SwapBuffersCompleted to reference the surface.
 // This class is thread safe.
 class CONTENT_EXPORT GpuSurfaceTracker : public gpu::GpuSurfaceLookup {
  public:

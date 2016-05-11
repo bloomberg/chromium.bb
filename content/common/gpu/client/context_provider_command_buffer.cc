@@ -14,6 +14,7 @@
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/strings/stringprintf.h"
+#include "base/thread_task_runner_handle.h"
 #include "cc/output/managed_memory_policy.h"
 #include "content/common/gpu/client/command_buffer_metrics.h"
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
@@ -145,9 +146,14 @@ bool ContextProviderCommandBuffer::BindToCurrentThread() {
 
     // This command buffer is a client-side proxy to the command buffer in the
     // GPU process.
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+        default_task_runner_;
+    if (!task_runner)
+      task_runner = base::ThreadTaskRunnerHandle::Get();
     command_buffer_ = channel_->CreateCommandBuffer(
         surface_handle_, gfx::Size(), shared_command_buffer, stream_id_,
-        stream_priority_, serialized_attributes, active_url_, gpu_preference_);
+        stream_priority_, serialized_attributes, active_url_, gpu_preference_,
+        std::move(task_runner));
     // The command buffer takes ownership of the |channel_|, so no need to keep
     // a reference around here.
     channel_ = nullptr;
@@ -281,6 +287,12 @@ void ContextProviderCommandBuffer::SetupLock() {
   DCHECK(bind_succeeded_);
   DCHECK(context_thread_checker_.CalledOnValidThread());
   command_buffer_->SetLock(&context_lock_);
+}
+
+void ContextProviderCommandBuffer::SetDefaultTaskRunner(
+    scoped_refptr<base::SingleThreadTaskRunner> default_task_runner) {
+  DCHECK(!bind_succeeded_);
+  default_task_runner_ = std::move(default_task_runner);
 }
 
 base::Lock* ContextProviderCommandBuffer::GetLock() {

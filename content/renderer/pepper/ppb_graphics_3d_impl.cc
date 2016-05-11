@@ -268,7 +268,7 @@ bool PPB_Graphics3D_Impl::InitRaw(PPB_Graphics3D_API* share_context,
   command_buffer_ = channel->CreateCommandBuffer(
       gpu::kNullSurfaceHandle, surface_size, share_buffer,
       gpu::GPU_STREAM_DEFAULT, gpu::GpuStreamPriority::NORMAL, attribs,
-      GURL::EmptyGURL(), gpu_preference);
+      GURL::EmptyGURL(), gpu_preference, base::ThreadTaskRunnerHandle::Get());
   if (!command_buffer_)
     return false;
 

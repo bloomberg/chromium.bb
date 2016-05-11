@@ -69,11 +69,6 @@ void SoftwareBrowserCompositorOutputSurface::OnGpuSwapBuffersCompleted(
 void SoftwareBrowserCompositorOutputSurface::SetSurfaceSuspendedForRecycle(
     bool suspended) {
 }
-
-bool SoftwareBrowserCompositorOutputSurface::
-    SurfaceShouldNotShowFramesAfterSuspendForRecycle() const {
-  return false;
-}
 #endif
 
 }  // namespace content

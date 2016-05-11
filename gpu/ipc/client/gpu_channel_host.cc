@@ -197,7 +197,8 @@ std::unique_ptr<CommandBufferProxyImpl> GpuChannelHost::CreateCommandBuffer(
     gpu::GpuStreamPriority stream_priority,
     const std::vector<int32_t>& attribs,
     const GURL& active_url,
-    gfx::GpuPreference gpu_preference) {
+    gfx::GpuPreference gpu_preference,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   DCHECK(!share_group || (stream_id == share_group->stream_id()));
   TRACE_EVENT1("gpu", "GpuChannelHost::CreateViewCommandBuffer",
                "surface_handle", surface_handle);
@@ -237,7 +238,8 @@ std::unique_ptr<CommandBufferProxyImpl> GpuChannelHost::CreateCommandBuffer(
 
   std::unique_ptr<CommandBufferProxyImpl> command_buffer =
       base::WrapUnique(new CommandBufferProxyImpl(this, route_id, stream_id));
-  AddRoute(route_id, command_buffer->AsWeakPtr());
+  AddRouteWithTaskRunner(route_id, command_buffer->AsWeakPtr(),
+                         std::move(task_runner));
   if (!command_buffer->Initialize())
     return nullptr;
 

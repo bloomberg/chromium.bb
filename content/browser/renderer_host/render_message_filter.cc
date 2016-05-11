@@ -92,7 +92,7 @@
 #endif
 
 #if defined(OS_MACOSX)
-#include "content/browser/renderer_host/render_widget_resize_helper_mac.h"
+#include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
 #endif
 
 namespace content {
@@ -108,6 +108,23 @@ const uint32_t kFilteredMessageClasses[] = {
 // object.
 base::LazyInstance<gfx::ColorProfile>::Leaky g_color_profile =
     LAZY_INSTANCE_INITIALIZER;
+#endif
+
+#if defined(OS_MACOSX)
+void ResizeHelperHandleMsgOnUIThread(int render_process_id,
+                                     const IPC::Message& message) {
+  RenderProcessHost* host = RenderProcessHost::FromID(render_process_id);
+  if (host)
+    host->OnMessageReceived(message);
+}
+
+void ResizeHelperPostMsgToUIThread(int render_process_id,
+                                   const IPC::Message& msg) {
+  ui::WindowResizeHelperMac::Get()->task_runner()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(ResizeHelperHandleMsgOnUIThread, render_process_id, msg),
+      base::TimeDelta());
+}
 #endif
 
 void DownloadUrlOnUIThread(std::unique_ptr<DownloadUrlParameters> parameters) {
@@ -181,14 +198,15 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_SaveImageFromDataURL,
                         OnSaveImageFromDataURL)
 #if defined(OS_MACOSX)
+    // On Mac, the IPCs ViewHostMsg_SwapCompositorFrame, ViewHostMsg_UpdateRect,
+    // and GpuCommandBufferMsg_SwapBuffersCompleted need to be handled in a
+    // nested message loop during resize.
     IPC_MESSAGE_HANDLER_GENERIC(
         ViewHostMsg_SwapCompositorFrame,
-        RenderWidgetResizeHelper::PostRendererProcessMsg(render_process_id_,
-                                                         message))
+        ResizeHelperPostMsgToUIThread(render_process_id_, message))
     IPC_MESSAGE_HANDLER_GENERIC(
         ViewHostMsg_UpdateRect,
-        RenderWidgetResizeHelper::PostRendererProcessMsg(render_process_id_,
-                                                         message))
+        ResizeHelperPostMsgToUIThread(render_process_id_, message))
 #endif
     // NB: The SyncAllocateSharedMemory, SyncAllocateGpuMemoryBuffer, and
     // DeletedGpuMemoryBuffer IPCs are handled here for renderer processes. For

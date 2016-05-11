@@ -72,7 +72,6 @@ class CONTENT_EXPORT BrowserCompositorOutputSurface
 
 #if defined(OS_MACOSX)
   virtual void SetSurfaceSuspendedForRecycle(bool suspended) = 0;
-  virtual bool SurfaceShouldNotShowFramesAfterSuspendForRecycle() const = 0;
 #endif
 
   cc::SyntheticBeginFrameSource* begin_frame_source() {

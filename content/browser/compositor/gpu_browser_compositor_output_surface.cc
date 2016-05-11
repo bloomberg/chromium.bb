@@ -127,7 +127,7 @@ void GpuBrowserCompositorOutputSurface::OnGpuSwapBuffersCompleted(
     gfx::SwapResult result,
     const gpu::GpuProcessHostedCALayerTreeParamsMac* params_mac) {
 #if defined(OS_MACOSX)
-  if (!SurfaceIsSuspendForRecycle()) {
+  if (should_show_frames_state_ == SHOULD_SHOW_FRAMES) {
     gfx::AcceleratedWidget native_widget =
         content::GpuSurfaceTracker::Get()->AcquireNativeWidget(
             params_mac->surface_handle);
@@ -166,11 +166,6 @@ void GpuBrowserCompositorOutputSurface::SetSurfaceSuspendedForRecycle(
           SHOULD_NOT_SHOW_FRAMES_NO_SWAP_AFTER_SUSPENDED;
     }
   }
-}
-
-bool GpuBrowserCompositorOutputSurface::
-    SurfaceShouldNotShowFramesAfterSuspendForRecycle() const {
-  return should_show_frames_state_ != SHOULD_SHOW_FRAMES;
 }
 #endif
 

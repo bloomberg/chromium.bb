@@ -165,13 +165,4 @@ OffscreenBrowserCompositorOutputSurface::CreateCompositionStartedCallback() {
   return base::Closure();
 }
 
-#if defined(OS_MACOSX)
-
-bool OffscreenBrowserCompositorOutputSurface::
-SurfaceShouldNotShowFramesAfterSuspendForRecycle() const {
-  return true;
-}
-
-#endif
-
 }  // namespace content

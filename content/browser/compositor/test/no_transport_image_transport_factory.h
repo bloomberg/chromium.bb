@@ -33,8 +33,6 @@ class NoTransportImageTransportFactory : public ImageTransportFactory {
 #if defined(OS_MACOSX)
   void SetCompositorSuspendedForRecycle(ui::Compositor* compositor,
                                         bool suspended) override {}
-  bool SurfaceShouldNotShowFramesAfterSuspendForRecycle(
-      gpu::SurfaceHandle surface_handle) const override;
 #endif
 
  private:

@@ -25,4 +25,3 @@ struct GPU_EXPORT GpuProcessHostedCALayerTreeParamsMac {
 };
 
 }  // namespace gpu
-

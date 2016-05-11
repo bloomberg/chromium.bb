@@ -76,10 +76,6 @@
 #include "ui/gfx/x/x11_switches.h"  // nogncheck
 #endif
 
-#if defined(OS_MACOSX)
-#include "content/browser/renderer_host/render_widget_resize_helper_mac.h"
-#endif
-
 #if defined(OS_MACOSX) || defined(OS_ANDROID)
 #include "content/browser/gpu/gpu_surface_tracker.h"
 #endif

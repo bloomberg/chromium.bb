@@ -76,8 +76,6 @@ class GpuProcessTransportFactory
 #if defined(OS_MACOSX)
   void SetCompositorSuspendedForRecycle(ui::Compositor* compositor,
                                         bool suspended) override;
-  bool SurfaceShouldNotShowFramesAfterSuspendForRecycle(
-      gpu::SurfaceHandle surface_handle) const override;
 #endif
 
  private:
@@ -113,15 +111,6 @@ class GpuProcessTransportFactory
 #if defined(OS_WIN)
   std::unique_ptr<OutputDeviceBacking> software_backing_;
 #endif
-
-#if defined(OS_MACOSX)
-  // The contents of this map and its methods may only be used on the compositor
-  // thread. This is used on Mac to lookup the output surface based on the
-  // surface_handle, in response to the
-  // GpuHostMsg_AcceleratedSurfaceBuffersSwapped message.
-  IDMap<BrowserCompositorOutputSurface> output_surface_map_;
-#endif
-
   base::WeakPtrFactory<GpuProcessTransportFactory> callback_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuProcessTransportFactory);

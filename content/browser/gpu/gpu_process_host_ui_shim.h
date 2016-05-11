@@ -44,9 +44,6 @@ struct VideoMemoryUsageStats;
 }
 
 namespace content {
-#if defined(OS_MACOSX)
-struct AcceleratedSurfaceBuffersSwappedParams;
-#endif
 void RouteToGpuProcessHostUIShimTask(int host_id, const IPC::Message& msg);
 
 class GpuProcessHostUIShim : public IPC::Listener,

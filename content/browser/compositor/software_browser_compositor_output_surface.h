@@ -40,7 +40,6 @@ class CONTENT_EXPORT SoftwareBrowserCompositorOutputSurface
 
 #if defined(OS_MACOSX)
   void SetSurfaceSuspendedForRecycle(bool suspended) override;
-  bool SurfaceShouldNotShowFramesAfterSuspendForRecycle() const override;
 #endif
 
   base::WeakPtrFactory<SoftwareBrowserCompositorOutputSurface> weak_factory_;

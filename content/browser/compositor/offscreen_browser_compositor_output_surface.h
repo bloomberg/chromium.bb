@@ -53,7 +53,6 @@ class OffscreenBrowserCompositorOutputSurface
       const gpu::GpuProcessHostedCALayerTreeParamsMac* params_mac) override{};
 #if defined(OS_MACOSX)
   void SetSurfaceSuspendedForRecycle(bool suspended) override {};
-  bool SurfaceShouldNotShowFramesAfterSuspendForRecycle() const override;
 #endif
 
   uint32_t fbo_;
