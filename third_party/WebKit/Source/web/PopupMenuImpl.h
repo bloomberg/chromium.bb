@@ -41,7 +41,7 @@ private:
     void show() override;
     void hide() override;
     void disconnectClient() override;
-    void updateFromElement() override;
+    void updateFromElement(UpdateReason) override;
 
     // PagePopupClient functions:
     void writeDocument(SharedBuffer*) override;

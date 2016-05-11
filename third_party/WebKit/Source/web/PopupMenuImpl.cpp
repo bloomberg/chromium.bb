@@ -468,7 +468,7 @@ void PopupMenuImpl::hide()
         m_chromeClient->closePagePopup(m_popup);
 }
 
-void PopupMenuImpl::updateFromElement()
+void PopupMenuImpl::updateFromElement(UpdateReason)
 {
     if (m_needsUpdate)
         return;

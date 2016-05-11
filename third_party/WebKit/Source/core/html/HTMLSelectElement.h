@@ -152,6 +152,7 @@ public:
     void showPopup();
     void hidePopup();
     PopupMenu* popup() const { return m_popup.get(); }
+    void didMutateSubtree();
 
     void resetTypeAheadSessionForTesting();
 
@@ -249,6 +250,9 @@ private:
     int optionCount() const override;
     String optionAtIndex(int index) const override;
 
+    void observeTreeMutation();
+    void unobserveTreeMutation();
+
     // m_listItems contains HTMLOptionElement, HTMLOptGroupElement, and
     // HTMLHRElement objects.
     mutable ListItems m_listItems;
@@ -266,6 +270,8 @@ private:
     int m_suggestedIndex;
     bool m_isAutofilledByPreview;
 
+    class PopupUpdater;
+    Member<PopupUpdater> m_popupUpdater;
     Member<PopupMenu> m_popup;
     int m_indexToSelectOnCancel;
     bool m_popupIsVisible;

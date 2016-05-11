@@ -95,10 +95,7 @@ bool ExternalPopupMenu::showInternal()
         FloatQuad quad(toLayoutBox(layoutObject)->localToAbsoluteQuad(FloatQuad(toLayoutBox(layoutObject)->borderBoundingBox())));
         IntRect rect(quad.enclosingBoundingBox());
         IntRect rectInViewport = m_localFrame->view()->soonToBeRemovedContentsToUnscaledViewport(rect);
-        // TODO(tkent): If the anchor rectangle is not visible, we should not
-        // show a popup.
         m_webExternalPopupMenu->show(rectInViewport);
-        m_shownDOMTreeVersion = m_ownerElement->document().domTreeVersion();
         return true;
     } else {
         // The client might refuse to create a popup (when there is already one pending to be shown for example).
@@ -142,17 +139,23 @@ void ExternalPopupMenu::hide()
     m_webExternalPopupMenu = 0;
 }
 
-void ExternalPopupMenu::updateFromElement()
+void ExternalPopupMenu::updateFromElement(UpdateReason reason)
 {
-    if (m_needsUpdate)
-        return;
-    // TOOD(tkent): Even if DOMTreeVersion is not changed, we should update the
-    // popup location/content in some cases.  e.g. Updating ComputedStyle of the
-    // SELECT element affects popup position and OPTION style.
-    if (m_shownDOMTreeVersion == m_ownerElement->document().domTreeVersion())
-        return;
-    m_needsUpdate = true;
-    m_ownerElement->document().postTask(BLINK_FROM_HERE, createSameThreadTask(&ExternalPopupMenu::update, this));
+    switch (reason) {
+    case BySelectionChange:
+    case ByDOMChange:
+        if (m_needsUpdate)
+            return;
+        m_needsUpdate = true;
+        m_ownerElement->document().postTask(BLINK_FROM_HERE, createSameThreadTask(&ExternalPopupMenu::update, this));
+        break;
+
+    case ByStyleChange:
+        // TOOD(tkent): We should update the popup location/content in some
+        // cases.  e.g. Updating ComputedStyle of the SELECT element affects
+        // popup position and OPTION style.
+        break;
+    }
 }
 
 void ExternalPopupMenu::update()

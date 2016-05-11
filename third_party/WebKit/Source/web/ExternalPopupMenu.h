@@ -69,7 +69,7 @@ private:
     // PopupMenu methods:
     void show() override;
     void hide() override;
-    void updateFromElement() override;
+    void updateFromElement(UpdateReason) override;
     void disconnectClient() override;
 
     // WebExternalPopupClient methods:
@@ -89,7 +89,6 @@ private:
     Timer<ExternalPopupMenu> m_dispatchEventTimer;
     // The actual implementor of the show menu.
     WebExternalPopupMenu* m_webExternalPopupMenu;
-    uint64_t m_shownDOMTreeVersion = 0;
     bool m_needsUpdate = false;
 };
 

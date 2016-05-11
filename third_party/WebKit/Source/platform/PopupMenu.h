@@ -32,7 +32,12 @@ public:
     DEFINE_INLINE_VIRTUAL_TRACE() { }
     virtual void show() = 0;
     virtual void hide() = 0;
-    virtual void updateFromElement() = 0;
+    enum UpdateReason {
+        BySelectionChange,
+        ByStyleChange,
+        ByDOMChange,
+    };
+    virtual void updateFromElement(UpdateReason) = 0;
     virtual void disconnectClient() = 0;
 };
 
