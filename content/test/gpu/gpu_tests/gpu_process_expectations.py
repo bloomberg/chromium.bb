@@ -35,7 +35,8 @@ class GpuProcessExpectations(GpuTestExpectations):
     # Nexus 9
     self.Fail('GpuProcess.no_gpu_process',
               ['android', 'nvidia'], bug=610023)
-    self.Fail('GpuProcess.skip_gpu_process',
+    # Skip this test because expecting it to fail will still run it.
+    self.Skip('GpuProcess.skip_gpu_process',
               ['android', 'nvidia'], bug=610023)
     self.Fail('GpuProcess.identify_active_gpu1',
               ['android', 'nvidia'], bug=610023)
