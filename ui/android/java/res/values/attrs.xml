@@ -7,4 +7,7 @@
         <attr name="buttonColor" format="reference|color"/>
         <attr name="buttonRaised" format="boolean"/>
     </declare-styleable>
+    <declare-styleable name="TextViewWithLeading">
+        <attr name="leading" format="reference|dimension"/>
+    </declare-styleable>
 </resources>

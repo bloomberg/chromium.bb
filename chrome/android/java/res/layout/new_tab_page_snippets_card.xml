@@ -5,13 +5,14 @@
 
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:chrome="http://schemas.android.com/apk/res-auto"
     android:id="@+id/snippets_card_view"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:padding="@dimen/snippets_padding_and_peeking_card_height"
     android:background="@color/snippets_background_color">
 
-    <TextView
+    <org.chromium.ui.widget.TextViewWithLeading
         android:id="@+id/article_headline"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -20,20 +21,22 @@
         android:maxLines="2"
         android:ellipsize="end"
         android:textSize="16sp"
-        android:textColor="@color/snippets_headline_text_color" />
+        android:textColor="@color/snippets_headline_text_color"
+        chrome:leading="24dp" />
 
-    <TextView
+    <org.chromium.ui.widget.TextViewWithLeading
         android:id="@+id/article_snippet"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
         android:layout_below="@+id/article_headline"
         android:layout_toStartOf="@+id/article_thumbnail"
-        android:maxLines="2"
         android:layout_marginTop="8dp"
+        android:maxLines="2"
         android:ellipsize="end"
         android:textSize="14sp"
-        android:textColor="@color/snippets_text_color" />
+        android:textColor="@color/snippets_text_color"
+        chrome:leading="20dp" />
 
     <TextView
         android:id="@+id/article_publisher"
