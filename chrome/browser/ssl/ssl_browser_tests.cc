@@ -39,6 +39,7 @@
 #include "chrome/browser/ssl/ssl_error_handler.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
@@ -76,6 +77,7 @@
 #include "content/public/test/download_test_observer.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_renderer_host.h"
+#include "content/public/test/test_utils.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_data_directory.h"
@@ -1842,36 +1844,50 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestRefNavigation) {
       tab, net::CERT_STATUS_DATE_INVALID, AuthState::NONE);
 }
 
-// Tests that closing a page that has a unsafe pop-up does not crash the
-// browser (bug #1966).
-// TODO(jcampan): http://crbug.com/2136 disabled because the popup is not
-//                opened as it is not initiated by a user gesture.
-IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestCloseTabWithUnsafePopup) {
+// Tests that closing a page that opened a pop-up with an interstitial does not
+// crash the browser (crbug.com/1966).
+IN_PROC_BROWSER_TEST_F(SSLUITest, TestCloseTabWithUnsafePopup) {
   ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(https_server_expired_.Start());
+
+  // Enable popups without user gesture.
+  HostContentSettingsMapFactory::GetForProfile(browser()->profile())
+      ->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_POPUPS,
+                                 CONTENT_SETTING_ALLOW);
 
   std::string replacement_path;
   GetFilePathWithHostAndPortReplacement("/ssl/page_with_unsafe_popup.html",
                                         https_server_expired_.host_port_pair(),
                                         &replacement_path);
-
+  WebContents* tab1 = browser()->tab_strip_model()->GetActiveWebContents();
+  content::WindowedNotificationObserver popup_observer(
+      chrome::NOTIFICATION_TAB_ADDED,
+      content::NotificationService::AllSources());
+  content::WindowedNotificationObserver nav_observer(
+      content::NOTIFICATION_NAV_ENTRY_COMMITTED,
+      content::NotificationService::AllSources());
+  ASSERT_EQ(1u, chrome::GetBrowserCount(browser()->profile()));
   ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL(replacement_path));
+  // Wait for popup window to appear and finish navigating.
+  popup_observer.Wait();
+  ASSERT_EQ(2u, chrome::GetBrowserCount(browser()->profile()));
 
-  WebContents* tab1 = browser()->tab_strip_model()->GetActiveWebContents();
-  // It is probably overkill to add a notification for a popup-opening, let's
-  // just poll.
-  for (int i = 0; i < 10; i++) {
-    if (IsShowingWebContentsModalDialog())
-      break;
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
-        base::TimeDelta::FromSeconds(1));
-    content::RunMessageLoop();
-  }
-  ASSERT_TRUE(IsShowingWebContentsModalDialog());
+  // Last activated browser should be the popup.
+  Browser* popup_browser = chrome::FindBrowserWithProfile(browser()->profile());
+  WebContents* popup = popup_browser->tab_strip_model()->GetActiveWebContents();
+  EXPECT_NE(popup, tab1);
+  nav_observer.Wait();
+  // Since the popup is showing an interstitial, it shouldn't have a last
+  // committed entry.
+  EXPECT_FALSE(popup->GetController().GetLastCommittedEntry());
+  ASSERT_TRUE(popup->GetController().GetVisibleEntry());
+  EXPECT_EQ(https_server_expired_.GetURL("/ssl/bad_iframe.html"),
+            popup->GetController().GetVisibleEntry()->GetURL());
+  content::WaitForInterstitialAttach(popup);
+  EXPECT_TRUE(popup->ShowingInterstitialPage());
 
-  // Let's add another tab to make sure the browser does not exit when we close
+  // Add another tab to make sure the browser does not exit when we close
   // the first tab.
   GURL url = embedded_test_server()->GetURL("/ssl/google.html");
   content::WindowedNotificationObserver observer(
