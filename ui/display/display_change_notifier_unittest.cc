@@ -2,25 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/gfx/display_change_notifier.h"
+#include "ui/display/display_change_notifier.h"
 
 #include <stdint.h>
 
 #include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/gfx/display.h"
-#include "ui/gfx/display_observer.h"
+#include "ui/display/display.h"
+#include "ui/display/display_observer.h"
 
-namespace gfx {
+namespace display {
 
 class MockDisplayObserver : public DisplayObserver {
  public:
   MockDisplayObserver()
-    : display_added_(0),
-      display_removed_(0),
-      display_changed_(0),
-      latest_metrics_change_(DisplayObserver::DISPLAY_METRIC_NONE)
-  {}
+      : display_added_(0),
+        display_removed_(0),
+        display_changed_(0),
+        latest_metrics_change_(DisplayObserver::DISPLAY_METRIC_NONE) {}
 
   ~MockDisplayObserver() override {}
 
@@ -34,21 +33,13 @@ class MockDisplayObserver : public DisplayObserver {
     latest_metrics_change_ = metrics;
   }
 
-  int display_added() const {
-    return display_added_;
-  }
+  int display_added() const { return display_added_; }
 
-  int display_removed() const {
-    return display_removed_;
-  }
+  int display_removed() const { return display_removed_; }
 
-  int display_changed() const {
-    return display_changed_;
-  }
+  int display_changed() const { return display_changed_; }
 
-  uint32_t latest_metrics_change() const {
-    return latest_metrics_change_;
-  }
+  uint32_t latest_metrics_change() const { return latest_metrics_change_; }
 
  protected:
   int display_added_;
@@ -63,13 +54,13 @@ TEST(DisplayChangeNotifierTest, AddObserver_Smoke) {
   DisplayChangeNotifier change_notifier;
   MockDisplayObserver observer;
 
-  change_notifier.NotifyDisplaysChanged(
-    std::vector<Display>(), std::vector<Display>(1, Display()));
+  change_notifier.NotifyDisplaysChanged(std::vector<Display>(),
+                                        std::vector<Display>(1, Display()));
   EXPECT_EQ(0, observer.display_added());
 
   change_notifier.AddObserver(&observer);
-  change_notifier.NotifyDisplaysChanged(
-    std::vector<Display>(), std::vector<Display>(1, Display()));
+  change_notifier.NotifyDisplaysChanged(std::vector<Display>(),
+                                        std::vector<Display>(1, Display()));
   EXPECT_EQ(1, observer.display_added());
 }
 
@@ -77,15 +68,15 @@ TEST(DisplayChangeNotifier, RemoveObserver_Smoke) {
   DisplayChangeNotifier change_notifier;
   MockDisplayObserver observer;
 
-  change_notifier.NotifyDisplaysChanged(
-    std::vector<Display>(), std::vector<Display>(1, Display()));
+  change_notifier.NotifyDisplaysChanged(std::vector<Display>(),
+                                        std::vector<Display>(1, Display()));
   EXPECT_EQ(0, observer.display_added());
 
   change_notifier.AddObserver(&observer);
   change_notifier.RemoveObserver(&observer);
 
-  change_notifier.NotifyDisplaysChanged(
-    std::vector<Display>(), std::vector<Display>(1, Display()));
+  change_notifier.NotifyDisplaysChanged(std::vector<Display>(),
+                                        std::vector<Display>(1, Display()));
   EXPECT_EQ(0, observer.display_added());
 }
 
@@ -336,8 +327,8 @@ TEST(DisplayChangeNotifierTest, NotifyDisplaysChanged_Changed_Bounds) {
     change_notifier.AddObserver(&observer);
 
     std::vector<Display> old_displays, new_displays;
-    old_displays.push_back(Display(1, Rect(0, 0, 200, 200)));
-    new_displays.push_back(Display(1, Rect(0, 0, 200, 200)));
+    old_displays.push_back(Display(1, gfx::Rect(0, 0, 200, 200)));
+    new_displays.push_back(Display(1, gfx::Rect(0, 0, 200, 200)));
 
     change_notifier.NotifyDisplaysChanged(old_displays, new_displays);
     EXPECT_EQ(0, observer.display_changed());
@@ -350,13 +341,13 @@ TEST(DisplayChangeNotifierTest, NotifyDisplaysChanged_Changed_Bounds) {
     change_notifier.AddObserver(&observer);
 
     std::vector<Display> old_displays, new_displays;
-    old_displays.push_back(Display(1, Rect(0, 0, 200, 200)));
-    new_displays.push_back(Display(1, Rect(10, 10, 300, 300)));
+    old_displays.push_back(Display(1, gfx::Rect(0, 0, 200, 200)));
+    new_displays.push_back(Display(1, gfx::Rect(10, 10, 300, 300)));
 
     change_notifier.NotifyDisplaysChanged(old_displays, new_displays);
     EXPECT_EQ(1, observer.display_changed());
     uint32_t metrics_change = DisplayObserver::DISPLAY_METRIC_BOUNDS |
-                                  DisplayObserver::DISPLAY_METRIC_WORK_AREA;
+                              DisplayObserver::DISPLAY_METRIC_WORK_AREA;
     EXPECT_EQ(metrics_change, observer.latest_metrics_change());
 
     change_notifier.RemoveObserver(&observer);
@@ -367,9 +358,9 @@ TEST(DisplayChangeNotifierTest, NotifyDisplaysChanged_Changed_Bounds) {
     change_notifier.AddObserver(&observer);
 
     std::vector<Display> old_displays, new_displays;
-    old_displays.push_back(Display(1, Rect(0, 0, 200, 200)));
-    new_displays.push_back(Display(1, Rect(0, 0, 200, 200)));
-    new_displays[0].set_bounds(Rect(10, 10, 300, 300));
+    old_displays.push_back(Display(1, gfx::Rect(0, 0, 200, 200)));
+    new_displays.push_back(Display(1, gfx::Rect(0, 0, 200, 200)));
+    new_displays[0].set_bounds(gfx::Rect(10, 10, 300, 300));
 
     change_notifier.NotifyDisplaysChanged(old_displays, new_displays);
     EXPECT_EQ(1, observer.display_changed());
@@ -404,9 +395,9 @@ TEST(DisplayChangeNotifierTest, NotifyDisplaysChanged_Changed_WorkArea) {
 
   std::vector<Display> old_displays, new_displays;
   old_displays.push_back(Display(1));
-  old_displays[0].set_work_area(Rect(0, 0, 200, 200));
+  old_displays[0].set_work_area(gfx::Rect(0, 0, 200, 200));
   new_displays.push_back(Display(1));
-  new_displays[0].set_work_area(Rect(20, 20, 300, 300));
+  new_displays[0].set_work_area(gfx::Rect(20, 20, 300, 300));
 
   change_notifier.NotifyDisplaysChanged(old_displays, new_displays);
   EXPECT_EQ(1, observer.display_changed());
@@ -447,8 +438,8 @@ TEST(DisplayChangeNotifierTest, NotifyDisplaysChanged_Changed_Multi_Displays) {
   old_displays[0].set_device_scale_factor(1.f);
   new_displays[0].set_device_scale_factor(2.f);
 
-  old_displays[1].set_bounds(Rect(0, 0, 200, 200));
-  new_displays[1].set_bounds(Rect(0, 0, 400, 400));
+  old_displays[1].set_bounds(gfx::Rect(0, 0, 200, 200));
+  new_displays[1].set_bounds(gfx::Rect(0, 0, 400, 400));
 
   old_displays[2].SetRotationAsDegree(0);
   new_displays[2].SetRotationAsDegree(90);
@@ -463,21 +454,21 @@ TEST(DisplayChangeNotifierTest, NotifyDisplaysChanged_Changed_Multi_Metrics) {
   change_notifier.AddObserver(&observer);
 
   std::vector<Display> old_displays, new_displays;
-  old_displays.push_back(Display(1, Rect(0, 0, 200, 200)));
+  old_displays.push_back(Display(1, gfx::Rect(0, 0, 200, 200)));
   old_displays[0].set_device_scale_factor(1.f);
   old_displays[0].SetRotationAsDegree(0);
 
-  new_displays.push_back(Display(1, Rect(100, 100, 200, 200)));
+  new_displays.push_back(Display(1, gfx::Rect(100, 100, 200, 200)));
   new_displays[0].set_device_scale_factor(2.f);
   new_displays[0].SetRotationAsDegree(90);
 
   change_notifier.NotifyDisplaysChanged(old_displays, new_displays);
   EXPECT_EQ(1, observer.display_changed());
   uint32_t metrics = DisplayObserver::DISPLAY_METRIC_BOUNDS |
-                         DisplayObserver::DISPLAY_METRIC_ROTATION |
-                         DisplayObserver::DISPLAY_METRIC_WORK_AREA |
-                         DisplayObserver::DISPLAY_METRIC_DEVICE_SCALE_FACTOR;
+                     DisplayObserver::DISPLAY_METRIC_ROTATION |
+                     DisplayObserver::DISPLAY_METRIC_WORK_AREA |
+                     DisplayObserver::DISPLAY_METRIC_DEVICE_SCALE_FACTOR;
   EXPECT_EQ(metrics, observer.latest_metrics_change());
 }
 
-} // namespace gfx
+}  // namespace display

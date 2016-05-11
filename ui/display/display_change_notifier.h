@@ -2,23 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_GFX_DISPLAY_CHANGE_NOTIFIER_H_
-#define UI_GFX_DISPLAY_CHANGE_NOTIFIER_H_
+#ifndef UI_DISPLAY_DISPLAY_CHANGE_NOTIFIER_H_
+#define UI_DISPLAY_DISPLAY_CHANGE_NOTIFIER_H_
 
 #include <vector>
 
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "ui/gfx/gfx_export.h"
+#include "ui/display/display_export.h"
 
 namespace gfx {
-
 class Display;
+}
+
+namespace display {
+using Display = gfx::Display;
 class DisplayObserver;
 
 // DisplayChangeNotifier is a class implementing the handling of DisplayObserver
 // notification for Screen.
-class GFX_EXPORT DisplayChangeNotifier {
+class DISPLAY_EXPORT DisplayChangeNotifier {
  public:
   DisplayChangeNotifier();
   ~DisplayChangeNotifier();
@@ -38,7 +41,6 @@ class GFX_EXPORT DisplayChangeNotifier {
   DISALLOW_COPY_AND_ASSIGN(DisplayChangeNotifier);
 };
 
-} // namespace gfx
+}  // namespace display
 
-#endif // UI_GFX_DISPLAY_CHANGE_NOTIFIER_H_
-
+#endif  // UI_DISPLAY_DISPLAY_CHANGE_NOTIFIER_H_

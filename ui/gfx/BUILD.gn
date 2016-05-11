@@ -70,10 +70,6 @@ component("gfx") {
     "color_utils.h",
     "display.cc",
     "display.h",
-    "display_change_notifier.cc",
-    "display_change_notifier.h",
-    "display_observer.cc",
-    "display_observer.h",
     "favicon_size.cc",
     "favicon_size.h",
     "font.cc",
@@ -160,12 +156,6 @@ component("gfx") {
     "scoped_ns_graphics_context_save_gstate_mac.mm",
     "scoped_ui_graphics_push_context_ios.h",
     "scoped_ui_graphics_push_context_ios.mm",
-    "screen.cc",
-    "screen.h",
-    "screen_android.cc",
-    "screen_aura.cc",
-    "screen_ios.mm",
-    "screen_mac.mm",
     "scrollbar_size.cc",
     "scrollbar_size.h",
     "selection_model.cc",
@@ -312,10 +302,7 @@ component("gfx") {
   # Android.
   if (is_android) {
     if (use_aura) {
-      sources -= [
-        "canvas_notimplemented.cc",
-        "screen_android.cc",
-      ]
+      sources -= [ "canvas_notimplemented.cc" ]
       sources += [ "font_fallback_android.cc" ]
     } else {
       sources -= [
@@ -393,7 +380,6 @@ component("gfx") {
   }
 
   if (!use_aura) {
-    sources -= [ "screen_aura.cc" ]
     if (!toolkit_views) {
       sources -= [
         "nine_image_painter.cc",
@@ -692,7 +678,6 @@ test("gfx_unittests") {
     "ios/NSString+CrStringDrawing_unittest.mm",
     "ios/uikit_util_unittest.mm",
     "platform_font_linux_unittest.cc",
-    "screen_unittest.cc",
     "test/run_all_unittests.cc",
     "text_elider_unittest.cc",
     "text_utils_unittest.cc",
@@ -719,8 +704,6 @@ test("gfx_unittests") {
       "color_analysis_unittest.cc",
       "color_profile_mac_unittest.mm",
       "color_utils_unittest.cc",
-      "display_change_notifier_unittest.cc",
-      "display_unittest.cc",
       "font_fallback_mac_unittest.cc",
       "font_list_unittest.cc",
       "geometry/box_unittest.cc",
@@ -790,17 +773,9 @@ test("gfx_unittests") {
 
   if (is_android) {
     deps += [ "//ui/android:ui_java" ]
-
-    sources -= [
-      # Do not run display_change_notifier_unittest.cc on Android because it
-      # does not compile display_observer.cc
-      "display_change_notifier_unittest.cc",
-    ]
   }
 
-  if (use_aura) {
-    sources -= [ "screen_unittest.cc" ]
-  } else if (!is_ios) {
+  if (!use_aura && !is_ios) {
     sources -= [ "nine_image_painter_unittest.cc" ]
   }
 

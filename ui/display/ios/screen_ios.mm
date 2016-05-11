@@ -2,16 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/gfx/screen.h"
+#include "ui/display/screen.h"
 
 #import <UIKit/UIKit.h>
 
 #include "base/logging.h"
-#include "ui/gfx/display.h"
+#include "ui/display/display.h"
 
+namespace display {
 namespace {
 
-class ScreenIos : public gfx::Screen {
+class ScreenIos : public Screen {
   gfx::Point GetCursorScreenPoint() override {
     NOTIMPLEMENTED();
     return gfx::Point(0, 0);
@@ -36,50 +37,48 @@ class ScreenIos : public gfx::Screen {
 #endif
   }
 
-  std::vector<gfx::Display> GetAllDisplays() const override {
+  std::vector<Display> GetAllDisplays() const override {
     NOTIMPLEMENTED();
-    return std::vector<gfx::Display>(1, GetPrimaryDisplay());
+    return std::vector<Display>(1, GetPrimaryDisplay());
   }
 
   // Returns the display nearest the specified window.
-  gfx::Display GetDisplayNearestWindow(gfx::NativeView view) const override {
+  Display GetDisplayNearestWindow(gfx::NativeView view) const override {
     NOTIMPLEMENTED();
-    return gfx::Display();
+    return Display();
   }
 
   // Returns the the display nearest the specified point.
-  gfx::Display GetDisplayNearestPoint(const gfx::Point& point) const override {
+  Display GetDisplayNearestPoint(const gfx::Point& point) const override {
     NOTIMPLEMENTED();
-    return gfx::Display();
+    return Display();
   }
 
   // Returns the display that most closely intersects the provided bounds.
-  gfx::Display GetDisplayMatching(const gfx::Rect& match_rect) const override {
+  Display GetDisplayMatching(const gfx::Rect& match_rect) const override {
     NOTIMPLEMENTED();
-    return gfx::Display();
+    return Display();
   }
 
   // Returns the primary display.
-  gfx::Display GetPrimaryDisplay() const override {
+  Display GetPrimaryDisplay() const override {
     UIScreen* mainScreen = [UIScreen mainScreen];
     CHECK(mainScreen);
-    gfx::Display display(0, gfx::Rect(mainScreen.bounds));
+    Display display(0, gfx::Rect(mainScreen.bounds));
     display.set_device_scale_factor([mainScreen scale]);
     return display;
   }
 
-  void AddObserver(gfx::DisplayObserver* observer) override {
+  void AddObserver(DisplayObserver* observer) override {
     // no display change on iOS.
   }
 
-  void RemoveObserver(gfx::DisplayObserver* observer) override {
+  void RemoveObserver(DisplayObserver* observer) override {
     // no display change on iOS.
   }
 };
 
 }  // namespace
-
-namespace gfx {
 
 Screen* CreateNativeScreen() {
   return new ScreenIos;

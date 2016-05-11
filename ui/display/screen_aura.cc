@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/gfx/screen.h"
+#include "ui/display/screen.h"
 
 #include "base/logging.h"
 
-namespace gfx {
+namespace display {
 
 Screen* CreateNativeScreen() {
   NOTREACHED() << "Implementation should be installed at higher level.";
   return NULL;
 }
 
-}  // namespace gfx
+}  // namespace display

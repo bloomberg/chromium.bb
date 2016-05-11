@@ -12,12 +12,8 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/message_center/views/popup_alignment_delegate.h"
 
-namespace gfx {
-class Screen;
-}
-
 namespace display {
-using Screen = gfx::Screen;
+class Screen;
 }
 
 namespace message_center {

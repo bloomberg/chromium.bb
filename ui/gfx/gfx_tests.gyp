@@ -20,7 +20,6 @@
         'image/image_unittest.cc',
         'ios/NSString+CrStringDrawing_unittest.mm',
         'ios/uikit_util_unittest.mm',
-        'screen_unittest.cc',
         'test/run_all_unittests.cc',
         'text_elider_unittest.cc',
         'text_utils_unittest.cc',
@@ -41,8 +40,6 @@
         'color_analysis_unittest.cc',
         'color_profile_mac_unittest.mm',
         'color_utils_unittest.cc',
-        'display_change_notifier_unittest.cc',
-        'display_unittest.cc',
         'font_fallback_mac_unittest.cc',
         'font_list_unittest.cc',
         'font_render_params_linux_unittest.cc',
@@ -122,11 +119,7 @@
             'chromeos/codec/jpeg_codec_robust_slow_unittest.cc',
           ],
         }],
-        ['use_aura==1', {
-          'sources!': [
-            'screen_unittest.cc',
-          ],
-        },{
+        ['use_aura!=1', {
           'sources!': [
             'nine_image_painter_unittest.cc',
           ],

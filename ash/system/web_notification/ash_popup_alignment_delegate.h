@@ -20,12 +20,8 @@ namespace aura {
 class Window;
 }
 
-namespace gfx {
-class Screen;
-}
-
 namespace display {
-using Screen = gfx::Screen;
+class Screen;
 }
 
 namespace ash {

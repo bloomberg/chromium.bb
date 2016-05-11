@@ -27,7 +27,7 @@ class TestScreen : public Screen {
 
   Display* display() { return &display_; }
 
-  // Screen:
+  // display::Screen:
   gfx::Point GetCursorScreenPoint() override;
   bool IsWindowUnderCursor(gfx::NativeWindow window) override;
   gfx::NativeWindow GetWindowAtScreenPoint(const gfx::Point& point) override;

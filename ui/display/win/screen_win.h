@@ -11,9 +11,9 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "ui/display/display_change_notifier.h"
 #include "ui/display/display_export.h"
 #include "ui/display/screen.h"
-#include "ui/gfx/display_change_notifier.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/win/singleton_hwnd_observer.h"
 
@@ -144,7 +144,7 @@ class DISPLAY_EXPORT ScreenWin : public display::Screen {
   ScreenWinDisplay GetScreenWinDisplay(const MONITORINFOEX& monitor_info) const;
 
   // Helper implementing the DisplayObserver handling.
-  gfx::DisplayChangeNotifier change_notifier_;
+  DisplayChangeNotifier change_notifier_;
 
   std::unique_ptr<gfx::SingletonHwndObserver> singleton_hwnd_observer_;
 

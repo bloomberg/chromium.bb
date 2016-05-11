@@ -7,13 +7,12 @@
 
 #include "ui/views/views_export.h"
 
-namespace gfx {
-class Rect;
+namespace display {
 class Screen;
 }
 
-namespace display {
-using Screen = gfx::Screen;
+namespace gfx {
+class Rect;
 }
 
 namespace views {

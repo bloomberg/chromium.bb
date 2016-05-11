@@ -2,22 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/gfx/display_change_notifier.h"
+#include "ui/display/display_change_notifier.h"
 
 #include <stdint.h>
 
-#include "ui/gfx/display.h"
-#include "ui/gfx/display_observer.h"
+#include "ui/display/display.h"
+#include "ui/display/display_observer.h"
 
-namespace gfx {
+namespace display {
 
 namespace {
 
 class DisplayComparator {
  public:
   explicit DisplayComparator(const Display& display)
-    : display_id_(display.id())
-  {}
+      : display_id_(display.id()) {}
 
   bool operator()(const Display& display) const {
     return display.id() == display_id_;
@@ -27,13 +26,11 @@ class DisplayComparator {
   int64_t display_id_;
 };
 
-} // anonymous namespace
+}  // anonymous namespace
 
-DisplayChangeNotifier::DisplayChangeNotifier() {
-}
+DisplayChangeNotifier::DisplayChangeNotifier() {}
 
-DisplayChangeNotifier::~DisplayChangeNotifier() {
-}
+DisplayChangeNotifier::~DisplayChangeNotifier() {}
 
 void DisplayChangeNotifier::AddObserver(DisplayObserver* obs) {
   observer_list_.AddObserver(obs);
@@ -58,8 +55,8 @@ void DisplayChangeNotifier::NotifyDisplaysChanged(
 
   // Display present in new_displays but not in old_displays has been added.
   // Display present in both might have been modified.
-  for (std::vector<Display>::const_iterator new_it =
-          new_displays.begin(); new_it != new_displays.end(); ++new_it) {
+  for (std::vector<Display>::const_iterator new_it = new_displays.begin();
+       new_it != new_displays.end(); ++new_it) {
     std::vector<Display>::const_iterator old_it = std::find_if(
         old_displays.begin(), old_displays.end(), DisplayComparator(*new_it));
 
@@ -84,11 +81,10 @@ void DisplayChangeNotifier::NotifyDisplaysChanged(
       metrics |= DisplayObserver::DISPLAY_METRIC_DEVICE_SCALE_FACTOR;
 
     if (metrics != DisplayObserver::DISPLAY_METRIC_NONE) {
-      FOR_EACH_OBSERVER(DisplayObserver,
-                        observer_list_,
+      FOR_EACH_OBSERVER(DisplayObserver, observer_list_,
                         OnDisplayMetricsChanged(*new_it, metrics));
     }
   }
 }
 
-} // namespace gfx
+}  // namespace display

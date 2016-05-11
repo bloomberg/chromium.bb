@@ -1054,6 +1054,7 @@
         '../ui/aura/aura.gyp:aura',
         '../ui/base/ui_base.gyp:ui_base',
         '../ui/compositor/compositor.gyp:compositor',
+        '../ui/display/display.gyp:display',
         '../ui/events/events.gyp:events',
         '../ui/gfx/gfx.gyp:gfx',
         '../ui/gfx/gfx.gyp:gfx_geometry',

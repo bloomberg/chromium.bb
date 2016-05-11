@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/gfx/screen.h"
+#include "ui/display/screen.h"
 
 #import <ApplicationServices/ApplicationServices.h>
 #import <Cocoa/Cocoa.h>
@@ -15,10 +15,11 @@
 #include "base/mac/sdk_forward_declarations.h"
 #include "base/macros.h"
 #include "base/timer/timer.h"
-#include "ui/gfx/display.h"
-#include "ui/gfx/display_change_notifier.h"
+#include "ui/display/display.h"
+#include "ui/display/display_change_notifier.h"
 #include "ui/gfx/mac/coordinate_conversion.h"
 
+namespace display {
 namespace {
 
 // The delay to handle the display configuration changes.
@@ -44,13 +45,13 @@ NSScreen* GetMatchingScreen(const gfx::Rect& match_rect) {
   return max_screen;
 }
 
-gfx::Display GetDisplayForScreen(NSScreen* screen) {
+Display GetDisplayForScreen(NSScreen* screen) {
   NSRect frame = [screen frame];
 
   CGDirectDisplayID display_id = [[[screen deviceDescription]
-    objectForKey:@"NSScreenNumber"] unsignedIntValue];
+      objectForKey:@"NSScreenNumber"] unsignedIntValue];
 
-  gfx::Display display(display_id, gfx::Rect(NSRectToCGRect(frame)));
+  Display display(display_id, gfx::Rect(NSRectToCGRect(frame)));
   NSRect visible_frame = [screen visibleFrame];
   NSScreen* primary = [[NSScreen screens] firstObject];
 
@@ -66,8 +67,8 @@ gfx::Display GetDisplayForScreen(NSScreen* screen) {
   }
   CGFloat scale = [screen backingScaleFactor];
 
-  if (gfx::Display::HasForceDeviceScaleFactor())
-    scale = gfx::Display::GetForcedDeviceScaleFactor();
+  if (Display::HasForceDeviceScaleFactor())
+    scale = Display::GetForcedDeviceScaleFactor();
 
   display.set_device_scale_factor(scale);
   // CGDisplayRotation returns a double. Display::SetRotationAsDegree will
@@ -76,7 +77,7 @@ gfx::Display GetDisplayForScreen(NSScreen* screen) {
   return display;
 }
 
-class ScreenMac : public gfx::Screen {
+class ScreenMac : public Screen {
  public:
   ScreenMac() {
     displays_ = BuildDisplaysFromQuartz();
@@ -107,11 +108,11 @@ class ScreenMac : public gfx::Screen {
 
   int GetNumDisplays() const override { return GetAllDisplays().size(); }
 
-  std::vector<gfx::Display> GetAllDisplays() const override {
+  std::vector<Display> GetAllDisplays() const override {
     return displays_;
   }
 
-  gfx::Display GetDisplayNearestWindow(gfx::NativeView view) const override {
+  Display GetDisplayNearestWindow(gfx::NativeView view) const override {
     NSWindow* window = nil;
 #if !defined(USE_AURA)
     if (view)
@@ -125,7 +126,7 @@ class ScreenMac : public gfx::Screen {
     return GetDisplayForScreen(match_screen);
   }
 
-  gfx::Display GetDisplayNearestPoint(const gfx::Point& point) const override {
+  Display GetDisplayNearestPoint(const gfx::Point& point) const override {
     NSPoint ns_point = NSPointFromCGPoint(point.ToCGPoint());
 
     NSArray* screens = [NSScreen screens];
@@ -139,25 +140,25 @@ class ScreenMac : public gfx::Screen {
   }
 
   // Returns the display that most closely intersects the provided bounds.
-  gfx::Display GetDisplayMatching(const gfx::Rect& match_rect) const override {
+  Display GetDisplayMatching(const gfx::Rect& match_rect) const override {
     NSScreen* match_screen = GetMatchingScreen(match_rect);
     return GetDisplayForScreen(match_screen);
   }
 
   // Returns the primary display.
-  gfx::Display GetPrimaryDisplay() const override {
+  Display GetPrimaryDisplay() const override {
     // Primary display is defined as the display with the menubar,
     // which is always at index 0.
     NSScreen* primary = [[NSScreen screens] firstObject];
-    gfx::Display display = GetDisplayForScreen(primary);
+    Display display = GetDisplayForScreen(primary);
     return display;
   }
 
-  void AddObserver(gfx::DisplayObserver* observer) override {
+  void AddObserver(DisplayObserver* observer) override {
     change_notifier_.AddObserver(observer);
   }
 
-  void RemoveObserver(gfx::DisplayObserver* observer) override {
+  void RemoveObserver(DisplayObserver* observer) override {
     change_notifier_.RemoveObserver(observer);
   }
 
@@ -181,21 +182,19 @@ class ScreenMac : public gfx::Screen {
 
     configure_timer_.reset(new base::OneShotTimer());
     configure_timer_->Start(
-        FROM_HERE,
-        base::TimeDelta::FromMilliseconds(kConfigureDelayMs),
-        this,
+        FROM_HERE, base::TimeDelta::FromMilliseconds(kConfigureDelayMs), this,
         &ScreenMac::ConfigureTimerFired);
   }
 
  private:
   void ConfigureTimerFired() {
-    std::vector<gfx::Display> old_displays = displays_;
+    std::vector<Display> old_displays = displays_;
     displays_ = BuildDisplaysFromQuartz();
 
     change_notifier_.NotifyDisplaysChanged(old_displays, displays_);
   }
 
-  std::vector<gfx::Display> BuildDisplaysFromQuartz() const {
+  std::vector<Display> BuildDisplaysFromQuartz() const {
     // Don't just return all online displays.  This would include displays
     // that mirror other displays, which are not desired in this list.  It's
     // tempting to use the count returned by CGGetActiveDisplayList, but active
@@ -206,10 +205,9 @@ class ScreenMac : public gfx::Screen {
     // doesn't hurt.
     CGDirectDisplayID online_displays[128];
     CGDisplayCount online_display_count = 0;
-    if (CGGetOnlineDisplayList(arraysize(online_displays),
-                              online_displays,
-                              &online_display_count) != kCGErrorSuccess) {
-      return std::vector<gfx::Display>(1, GetPrimaryDisplay());
+    if (CGGetOnlineDisplayList(arraysize(online_displays), online_displays,
+                               &online_display_count) != kCGErrorSuccess) {
+      return std::vector<Display>(1, GetPrimaryDisplay());
     }
 
     typedef std::map<int64_t, NSScreen*> ScreenIdsToScreensMap;
@@ -221,44 +219,41 @@ class ScreenMac : public gfx::Screen {
       screen_ids_to_screens[screen_id] = screen;
     }
 
-    std::vector<gfx::Display> displays;
+    std::vector<Display> displays;
     for (CGDisplayCount online_display_index = 0;
-        online_display_index < online_display_count;
-        ++online_display_index) {
+         online_display_index < online_display_count; ++online_display_index) {
       CGDirectDisplayID online_display = online_displays[online_display_index];
       if (CGDisplayMirrorsDisplay(online_display) == kCGNullDirectDisplay) {
         // If this display doesn't mirror any other, include it in the list.
         // The primary display in a mirrored set will be counted, but those that
         // mirror it will not be.
         ScreenIdsToScreensMap::iterator foundScreen =
-          screen_ids_to_screens.find(online_display);
+            screen_ids_to_screens.find(online_display);
         if (foundScreen != screen_ids_to_screens.end()) {
-            displays.push_back(GetDisplayForScreen(foundScreen->second));
+          displays.push_back(GetDisplayForScreen(foundScreen->second));
         }
       }
     }
 
     if (!displays.size())
-      return std::vector<gfx::Display>(1, GetPrimaryDisplay());
+      return std::vector<Display>(1, GetPrimaryDisplay());
 
     return displays;
   }
 
   // The displays currently attached to the device.
-  std::vector<gfx::Display> displays_;
+  std::vector<Display> displays_;
 
   // The timer to delay configuring outputs. See also the comments in
   // HandleDisplayReconfiguration().
   std::unique_ptr<base::OneShotTimer> configure_timer_;
 
-  gfx::DisplayChangeNotifier change_notifier_;
+  DisplayChangeNotifier change_notifier_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenMac);
 };
 
 }  // namespace
-
-namespace gfx {
 
 #if !defined(USE_AURA)
 Screen* CreateNativeScreen() {
@@ -266,4 +261,4 @@ Screen* CreateNativeScreen() {
 }
 #endif
 
-}
+}  // namespace display

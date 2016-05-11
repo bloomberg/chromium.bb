@@ -11,9 +11,9 @@
 
 #include "base/macros.h"
 #include "base/timer/timer.h"
+#include "ui/display/display_change_notifier.h"
 #include "ui/display/screen.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
-#include "ui/gfx/display_change_notifier.h"
 #include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/views/views_export.h"
 
@@ -95,7 +95,7 @@ class VIEWS_EXPORT DesktopScreenX11 : public display::Screen,
   // Dispatch().
   std::unique_ptr<base::OneShotTimer> configure_timer_;
 
-  gfx::DisplayChangeNotifier change_notifier_;
+  display::DisplayChangeNotifier change_notifier_;
 
   ui::X11AtomCache atom_cache_;
 

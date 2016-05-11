@@ -22,11 +22,9 @@
 #include "base/android/scoped_java_ref.h"
 #elif defined(USE_AURA)
 #if defined(OS_CHROMEOS)
-namespace gfx {
-class Screen;
-}
+
 namespace display {
-using Screen = gfx::Screen;
+class Screen;
 }
 
 namespace wm {

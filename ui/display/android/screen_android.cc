@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/gfx/screen.h"
+#include "ui/display/screen.h"
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "ui/display/display.h"
 #include "ui/gfx/android/device_display_info.h"
-#include "ui/gfx/display.h"
 #include "ui/gfx/geometry/size_conversions.h"
 
-namespace gfx {
+namespace display {
 
 class ScreenAndroid : public Screen {
  public:
@@ -28,7 +28,7 @@ class ScreenAndroid : public Screen {
     return NULL;
   }
 
-  gfx::Display GetPrimaryDisplay() const override {
+  Display GetPrimaryDisplay() const override {
     gfx::DeviceDisplayInfo device_info;
     const float device_scale_factor = device_info.GetDIPScale();
     // Note: GetPhysicalDisplayWidth/Height() does not subtract window
@@ -43,28 +43,28 @@ class ScreenAndroid : public Screen {
                       : device_info.GetDisplayHeight());
     const gfx::Rect bounds_in_dip = gfx::Rect(gfx::ScaleToCeiledSize(
         bounds_in_pixels.size(), 1.0f / device_scale_factor));
-    gfx::Display display(0, bounds_in_dip);
-    if (!gfx::Display::HasForceDeviceScaleFactor())
+    Display display(0, bounds_in_dip);
+    if (!Display::HasForceDeviceScaleFactor())
       display.set_device_scale_factor(device_scale_factor);
     display.SetRotationAsDegree(device_info.GetRotationDegrees());
     return display;
   }
 
-  gfx::Display GetDisplayNearestWindow(gfx::NativeView view) const override {
+  Display GetDisplayNearestWindow(gfx::NativeView view) const override {
     return GetPrimaryDisplay();
   }
 
-  gfx::Display GetDisplayNearestPoint(const gfx::Point& point) const override {
+  Display GetDisplayNearestPoint(const gfx::Point& point) const override {
     return GetPrimaryDisplay();
   }
 
   int GetNumDisplays() const override { return 1; }
 
-  std::vector<gfx::Display> GetAllDisplays() const override {
-    return std::vector<gfx::Display>(1, GetPrimaryDisplay());
+  std::vector<Display> GetAllDisplays() const override {
+    return std::vector<Display>(1, GetPrimaryDisplay());
   }
 
-  gfx::Display GetDisplayMatching(const gfx::Rect& match_rect) const override {
+  Display GetDisplayMatching(const gfx::Rect& match_rect) const override {
     return GetPrimaryDisplay();
   }
 
@@ -84,4 +84,4 @@ Screen* CreateNativeScreen() {
   return new ScreenAndroid;
 }
 
-}  // namespace gfx
+}  // namespace display

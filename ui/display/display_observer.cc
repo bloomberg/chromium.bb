@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/gfx/display_observer.h"
+#include "ui/display/display_observer.h"
 
-namespace gfx {
+namespace display {
 
-DisplayObserver::~DisplayObserver() {
-}
+DisplayObserver::~DisplayObserver() {}
 
-}  // namespace gfx
+}  // namespace display

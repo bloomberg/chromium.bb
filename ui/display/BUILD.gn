@@ -7,6 +7,7 @@ import("//testing/test.gni")
 
 component("display") {
   sources = [
+    "android/screen_android.cc",
     "chromeos/apply_content_protection_task.cc",
     "chromeos/apply_content_protection_task.h",
     "chromeos/configure_displays_task.cc",
@@ -33,17 +34,24 @@ component("display") {
     "chromeos/x11/native_display_event_dispatcher_x11.cc",
     "chromeos/x11/native_display_event_dispatcher_x11.h",
     "display.h",
+    "display_change_notifier.cc",
+    "display_change_notifier.h",
     "display_export.h",
     "display_finder.cc",
     "display_finder.h",
+    "display_observer.cc",
     "display_observer.h",
     "display_switches.cc",
     "display_switches.h",
+    "ios/screen_ios.mm",
+    "mac/screen_mac.mm",
     "manager/display_layout.cc",
     "manager/display_layout.h",
     "manager/display_layout_builder.cc",
     "manager/display_layout_builder.h",
+    "screen.cc",
     "screen.h",
+    "screen_aura.cc",
     "win/display_info.cc",
     "win/display_info.h",
     "win/dpi.cc",
@@ -92,6 +100,12 @@ component("display") {
       "chromeos/x11/native_display_event_dispatcher_x11.cc",
       "chromeos/x11/native_display_event_dispatcher_x11.h",
     ]
+  }
+  if (!use_aura) {
+    sources -= [ "screen_aura.cc" ]
+  }
+  if (is_android && use_aura) {
+    sources -= [ "android/screen_android.cc" ]
   }
 }
 
@@ -154,8 +168,11 @@ test("display_unittests") {
     "chromeos/update_display_configuration_task_unittest.cc",
     "chromeos/x11/display_util_x11_unittest.cc",
     "chromeos/x11/native_display_event_dispatcher_x11_unittest.cc",
+    "display_change_notifier_unittest.cc",
+    "display_unittest.cc",
     "manager/display_layout_builder_unittest.cc",
     "manager/display_layout_unittest.cc",
+    "screen_unittest.cc",
     "util/display_util_unittest.cc",
     "util/edid_parser_unittest.cc",
     "win/screen_win_unittest.cc",
@@ -176,6 +193,16 @@ test("display_unittests") {
 
   if (is_chromeos) {
     deps += [ ":test_util" ]
+  }
+
+  if (use_aura) {
+    sources -= [ "screen_unittest.cc" ]
+  }
+
+  if (is_android) {
+    # Do not run display_change_notifier_unittest.cc on Android because it
+    # does not compile display_observer.cc
+    sources -= [ "display_change_notifier_unittest.cc" ]
   }
 
   if (is_chromeos && use_ozone) {

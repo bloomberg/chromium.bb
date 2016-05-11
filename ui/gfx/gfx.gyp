@@ -130,6 +130,7 @@
         'android/gfx_jni_registrar.h',
         'android/java_bitmap.cc',
         'android/java_bitmap.h',
+        'android/screen_android.cc',
         'android/shared_device_display_info.cc',
         'android/shared_device_display_info.h',
         'android/view_configuration.cc',
@@ -181,10 +182,6 @@
         'color_utils.h',
         'display.cc',
         'display.h',
-        'display_change_notifier.cc',
-        'display_change_notifier.h',
-        'display_observer.cc',
-        'display_observer.h',
         'favicon_size.cc',
         'favicon_size.h',
         'font.cc',
@@ -289,12 +286,6 @@
         'scoped_ns_graphics_context_save_gstate_mac.mm',
         'scoped_ui_graphics_push_context_ios.h',
         'scoped_ui_graphics_push_context_ios.mm',
-        'screen.cc',
-        'screen.h',
-        'screen_android.cc',
-        'screen_aura.cc',
-        'screen_ios.mm',
-        'screen_mac.mm',
         'scrollbar_size.cc',
         'scrollbar_size.h',
         'selection_model.cc',
@@ -442,11 +433,6 @@
         ['OS=="android" and use_aura==0', {
           'sources!': [
             'path.cc',
-          ],
-        }],
-        ['OS=="android" and use_aura==1', {
-          'sources!': [
-            'screen_android.cc',
           ],
         }],
         ['OS=="android" or OS=="ios"', {
