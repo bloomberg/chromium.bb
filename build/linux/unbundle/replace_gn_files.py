@@ -17,6 +17,9 @@ import sys
 
 
 REPLACEMENTS = {
+  'flac': 'third_party/flac/BUILD.gn',
+  'harfbuzz-ng': 'third_party/harfbuzz-ng/BUILD.gn',
+  'libwebp': 'third_party/libwebp/BUILD.gn',
   'libxml': 'third_party/libxml/BUILD.gn',
   'zlib': 'third_party/zlib/BUILD.gn',
 }

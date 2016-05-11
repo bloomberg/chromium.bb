@@ -65,7 +65,11 @@ def GeneratorMain(argv):
       if options.outputs:
         yield os.path.join(target_directory, header_filename)
       if options.generate:
-        with open(os.path.join(target_directory, header_filename), 'w') as f:
+        header_path = os.path.join(target_directory, header_filename)
+        header_dir = os.path.dirname(header_path)
+        if not os.path.exists(header_dir):
+          os.makedirs(header_dir)
+        with open(header_path, 'w') as f:
           f.write(SHIM_TEMPLATE)
 
           if options.define:
