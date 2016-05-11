@@ -6,7 +6,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/test/test_simple_task_runner.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
 #include "gpu/ipc/service/gpu_channel_manager_delegate.h"
 #include "ipc/ipc_test_sink.h"
