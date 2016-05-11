@@ -4,12 +4,14 @@
 
 #include "modules/notifications/NotificationResourcesLoader.h"
 
+#include "platform/Histogram.h"
 #include "platform/weborigin/KURL.h"
 #include "public/platform/modules/notifications/WebNotificationConstants.h"
 #include "public/platform/modules/notifications/WebNotificationData.h"
 #include "public/platform/modules/notifications/WebNotificationResources.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "wtf/CurrentTime.h"
 
 namespace blink {
 
@@ -21,8 +23,13 @@ namespace {
 // TODO(mvanouwerkerk): Explore doing the scaling on a background thread.
 SkBitmap scaleDownIfNeeded(const SkBitmap& image, int maxSizePx)
 {
-    if (image.width() > maxSizePx || image.height() > maxSizePx)
-        return skia::ImageOperations::Resize(image, skia::ImageOperations::RESIZE_BEST, std::min(image.width(), maxSizePx), std::min(image.height(), maxSizePx));
+    if (image.width() > maxSizePx || image.height() > maxSizePx) {
+        DEFINE_STATIC_LOCAL(CustomCountHistogram, scaleTimeHistogram, ("Notifications.Icon.ScaleDownTime", 1, 1000 * 10 /* 10 seconds max */, 50 /* buckets */));
+        double startTime = monotonicallyIncreasingTimeMS();
+        SkBitmap scaledImage = skia::ImageOperations::Resize(image, skia::ImageOperations::RESIZE_BEST, std::min(image.width(), maxSizePx), std::min(image.height(), maxSizePx));
+        scaleTimeHistogram.count(monotonicallyIncreasingTimeMS() - startTime);
+        return scaledImage;
+    }
     return image;
 }
 

@@ -6,6 +6,7 @@
 
 #include "core/dom/ExecutionContext.h"
 #include "core/fetch/ResourceLoaderOptions.h"
+#include "platform/Histogram.h"
 #include "platform/image-decoders/ImageDecoder.h"
 #include "platform/image-decoders/ImageFrame.h"
 #include "platform/network/ResourceError.h"
@@ -14,11 +15,12 @@
 #include "platform/weborigin/KURL.h"
 #include "public/platform/WebURLRequest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "wtf/CurrentTime.h"
 
 namespace blink {
 
 NotificationImageLoader::NotificationImageLoader()
-    : m_stopped(false)
+    : m_stopped(false), m_startTime(0.0)
 {
 }
 
@@ -30,6 +32,7 @@ void NotificationImageLoader::start(ExecutionContext* executionContext, const KU
 {
     DCHECK(!m_stopped);
 
+    m_startTime = monotonicallyIncreasingTimeMS();
     m_imageCallback = std::move(imageCallback);
 
     // TODO(mvanouwerkerk): Add a timeout mechanism: crbug.com/579137.
@@ -82,7 +85,13 @@ void NotificationImageLoader::didFinishLoading(unsigned long resourceIdentifier,
     if (m_stopped)
         return;
 
+    DEFINE_STATIC_LOCAL(CustomCountHistogram, finishedTimeHistogram, ("Notifications.Icon.LoadFinishTime", 1, 1000 * 60 * 60 /* 1 hour max */, 50 /* buckets */));
+    finishedTimeHistogram.count(monotonicallyIncreasingTimeMS() - m_startTime);
+
     if (m_data) {
+        DEFINE_STATIC_LOCAL(CustomCountHistogram, fileSizeHistogram, ("Notifications.Icon.FileSize", 1, 10000000 /* ~10mb max */, 50 /* buckets */));
+        fileSizeHistogram.count(m_data->size());
+
         OwnPtr<ImageDecoder> decoder = ImageDecoder::create(*m_data.get(), ImageDecoder::AlphaPremultiplied, ImageDecoder::GammaAndColorProfileApplied);
         if (decoder) {
             decoder->setData(m_data.get(), true /* allDataReceived */);
@@ -99,6 +108,9 @@ void NotificationImageLoader::didFinishLoading(unsigned long resourceIdentifier,
 
 void NotificationImageLoader::didFail(const ResourceError& error)
 {
+    DEFINE_STATIC_LOCAL(CustomCountHistogram, failedTimeHistogram, ("Notifications.Icon.LoadFailTime", 1, 1000 * 60 * 60 /* 1 hour max */, 50 /* buckets */));
+    failedTimeHistogram.count(monotonicallyIncreasingTimeMS() - m_startTime);
+
     runCallbackWithEmptyBitmap();
 }
 

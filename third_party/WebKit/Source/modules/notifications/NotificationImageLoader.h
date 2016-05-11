@@ -53,6 +53,7 @@ private:
     void runCallbackWithEmptyBitmap();
 
     bool m_stopped;
+    double m_startTime;
     RefPtr<SharedBuffer> m_data;
     OwnPtr<ImageCallback> m_imageCallback;
     OwnPtr<ThreadableLoader> m_threadableLoader;
