@@ -167,10 +167,11 @@ NavigationRequest::NavigationRequest(
   DCHECK(!browser_initiated || (entry != nullptr && frame_entry != nullptr));
   if (browser_initiated) {
     FrameNavigationEntry* frame_entry = entry->GetFrameEntry(frame_tree_node);
-    if (frame_entry)
+    if (frame_entry) {
       source_site_instance_ = frame_entry->source_site_instance();
+      dest_site_instance_ = frame_entry->site_instance();
+    }
 
-    dest_site_instance_ = frame_entry->site_instance();
     restore_type_ = entry->restore_type();
     is_view_source_ = entry->IsViewSourceMode();
     bindings_ = entry->bindings();
