@@ -13127,6 +13127,7 @@ should be able to be added at any place in this file.
     User launches Signin activity from the promo header shown in Android Stars
     UI.
   </description>
+  <obsolete>Replaced with Signin_Signin_FromBookmarkManager.</obsolete>
 </action>
 
 <action name="Stars_SignInPromoActivity_NewAccount">
@@ -13134,6 +13135,7 @@ should be able to be added at any place in this file.
   <description>
     User attempts to create a new account on Android Stars signin activity.
   </description>
+  <obsolete>Removed from codebase.</obsolete>
 </action>
 
 <action name="Stars_SignInPromoActivity_SignedIn">
@@ -13141,6 +13143,10 @@ should be able to be added at any place in this file.
   <description>
     User confirms an account to sign in on Android Stars signin activity.
   </description>
+  <obsolete>
+    Replaced with Signin_Signin_FromBookmarkManager when followed by
+    Signin_Signin_Succeed.
+  </obsolete>
 </action>
 
 <action name="Stars_SignInPromoHeader_Dismissed">
@@ -13148,11 +13154,13 @@ should be able to be added at any place in this file.
   <description>
     User dismisses the promo header shown in Android Stars UI
   </description>
+  <obsolete>Removed from codebase.</obsolete>
 </action>
 
 <action name="Stars_SignInPromoHeader_Displayed">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of the metric.</description>
+  <obsolete>Replaced with Signin_Impression_FromBookmarkManager.</obsolete>
 </action>
 
 <action name="StartupTick" not_user_triggered="true">

@@ -68,7 +68,6 @@ class BookmarkPromoHeader implements AndroidSyncSettingsObserver,
                     .getInt(PREF_SIGNIN_PROMO_SHOW_COUNT, 0) + 1;
             ContextUtils.getAppSharedPreferences().edit()
                     .putInt(PREF_SIGNIN_PROMO_SHOW_COUNT, promoShowCount).apply();
-            RecordUserAction.record("Stars_SignInPromoHeader_Displayed");
             RecordUserAction.record("Signin_Impression_FromBookmarkManager");
         }
     }
@@ -98,7 +97,6 @@ class BookmarkPromoHeader implements AndroidSyncSettingsObserver,
         SigninAndSyncView.Listener listener = new SigninAndSyncView.Listener() {
             @Override
             public void onViewDismissed() {
-                RecordUserAction.record("Stars_SignInPromoHeader_Dismissed");
                 setSigninPromoDeclined();
                 updateShouldShow(true);
             }
