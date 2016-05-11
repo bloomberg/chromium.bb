@@ -4,10 +4,13 @@
 
 package org.chromium.net;
 
+import static android.net.ConnectivityManager.TYPE_VPN;
 import static android.net.NetworkCapabilities.NET_CAPABILITY_INTERNET;
+import static android.net.NetworkCapabilities.NET_CAPABILITY_NOT_VPN;
+import static android.net.NetworkCapabilities.TRANSPORT_VPN;
 
 import android.Manifest.permission;
-import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -27,6 +30,9 @@ import android.util.Log;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
+
+import java.io.IOException;
+import java.util.Arrays;
 
 /**
  * Used by the NetworkChangeNotifier to listens to platform changes in connectivity.
@@ -85,9 +91,16 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
          * Returns connection type and status information about |network|.
          * Only callable on Lollipop and newer releases.
          */
-        @SuppressLint("NewApi")
+        @TargetApi(Build.VERSION_CODES.LOLLIPOP)
         NetworkState getNetworkState(Network network) {
-            return getNetworkState(mConnectivityManager.getNetworkInfo(network));
+            final NetworkInfo networkInfo = mConnectivityManager.getNetworkInfo(network);
+            if (networkInfo.getType() == TYPE_VPN) {
+                // When a VPN is in place the underlying network type can be queried via
+                // getActiveNeworkInfo() thanks to
+                // https://android.googlesource.com/platform/frameworks/base/+/d6a7980d
+                return getNetworkState();
+            }
+            return getNetworkState(networkInfo);
         }
 
         /**
@@ -101,12 +114,43 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
         }
 
         /**
-         * Returns all connected networks.
+         * Returns all connected networks. This may include networks that aren't useful
+         * to Chrome (e.g. MMS, IMS, FOTA etc) or aren't accessible to Chrome (e.g. a VPN for
+         * another user); use {@link getAllNetworks} for a filtered list.
          * Only callable on Lollipop and newer releases.
          */
-        @SuppressLint("NewApi")
-        Network[] getAllNetworks() {
+        @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+        @VisibleForTesting
+        protected Network[] getAllNetworksUnfiltered() {
             return mConnectivityManager.getAllNetworks();
+        }
+
+        /**
+         * Returns {@code true} if {@code network} applies to (and hence is accessible) to the
+         * current user.
+         */
+        @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+        @VisibleForTesting
+        protected boolean vpnAccessible(Network network) {
+            // Determine if the VPN applies to the current user by seeing if a socket can be bound
+            // to the VPN.
+            try {
+                network.getSocketFactory().createSocket().close();
+            } catch (IOException e) {
+                // Failed to bind so this VPN isn't for the current user to use.
+                return false;
+            }
+            return true;
+        }
+
+        /**
+         * Return the NetworkCapabilities for {@code network}, or {@code null} if they cannot
+         * be retrieved (e.g. {@code network} has disconnected).
+         */
+        @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+        @VisibleForTesting
+        protected NetworkCapabilities getNetworkCapabilities(Network network) {
+            return mConnectivityManager.getNetworkCapabilities(network);
         }
 
         /**
@@ -114,7 +158,7 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
          * that satisfy networkRequest.
          * Only callable on Lollipop and newer releases.
          */
-        @SuppressLint("NewApi")
+        @TargetApi(Build.VERSION_CODES.LOLLIPOP)
         void registerNetworkCallback(
                 NetworkRequest networkRequest, NetworkCallback networkCallback) {
             mConnectivityManager.registerNetworkCallback(networkRequest, networkCallback);
@@ -124,7 +168,7 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
          * Unregisters networkCallback from receiving notifications.
          * Only callable on Lollipop and newer releases.
          */
-        @SuppressLint("NewApi")
+        @TargetApi(Build.VERSION_CODES.LOLLIPOP)
         void unregisterNetworkCallback(NetworkCallback networkCallback) {
             mConnectivityManager.unregisterNetworkCallback(networkCallback);
         }
@@ -134,7 +178,7 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
          * NetId.INVALID if no current default network connected.
          * Only callable on Lollipop and newer releases.
          */
-        @SuppressLint("NewApi")
+        @TargetApi(Build.VERSION_CODES.LOLLIPOP)
         int getDefaultNetId() {
             // Android Lollipop had no API to get the default network; only an
             // API to return the NetworkInfo for the default network. To
@@ -144,37 +188,29 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
             if (defaultNetworkInfo == null) {
                 return NetId.INVALID;
             }
-            final Network[] networks = getAllNetworks();
+            final Network[] networks = getAllNetworksFiltered(this, null);
             int defaultNetId = NetId.INVALID;
             for (Network network : networks) {
-                if (!hasInternetCapability(network)) {
-                    continue;
-                }
                 final NetworkInfo networkInfo = mConnectivityManager.getNetworkInfo(network);
-                if (networkInfo != null && networkInfo.getType() == defaultNetworkInfo.getType()) {
+                if (networkInfo != null
+                        && (networkInfo.getType() == defaultNetworkInfo.getType()
+                                   // getActiveNetworkInfo() will not return TYPE_VPN types due to
+                                   // https://android.googlesource.com/platform/frameworks/base/+/d6a7980d
+                                   // so networkInfo.getType() can't be matched against
+                                   // defaultNetworkInfo.getType() but networkInfo.getType() should
+                                   // be TYPE_VPN. In the case of a VPN, getAllNetworks() will have
+                                   // returned just this VPN if it applies.
+                                   || networkInfo.getType() == TYPE_VPN)) {
                     // There should not be multiple connected networks of the
                     // same type. At least as of Android Marshmallow this is
                     // not supported. If this becomes supported this assertion
-                    // may trigger. At that point we could consider using
-                    // ConnectivityManager.getDefaultNetwork() though this
-                    // may give confusing results with VPNs and is only
-                    // available with Android Marshmallow.
+                    // may trigger. At that point ConnectivityManager.getDefaultNetwork()
+                    // could be used though it's only available with Android Marshmallow.
                     assert defaultNetId == NetId.INVALID;
                     defaultNetId = networkToNetId(network);
                 }
             }
             return defaultNetId;
-        }
-
-        /**
-         * Returns true if {@code network} can provide Internet access. Can be used to
-         * ignore specialized networks (e.g. IMS, FOTA).
-         */
-        @SuppressLint("NewApi")
-        boolean hasInternetCapability(Network network) {
-            final NetworkCapabilities capabilities =
-                    mConnectivityManager.getNetworkCapabilities(network);
-            return capabilities != null && capabilities.hasCapability(NET_CAPABILITY_INTERNET);
         }
     }
 
@@ -242,10 +278,77 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
     // and go. It gets called back on a special handler thread
     // ConnectivityManager creates for making the callbacks. The callbacks in
     // turn post to the UI thread where mObserver lives.
-    @SuppressLint("NewApi")
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     private class MyNetworkCallback extends NetworkCallback {
+        // If non-null, this indicates a VPN is in place for the current user, and no other
+        // networks are accessible.
+        private Network mVpnInPlace = null;
+
+        // Initialize mVpnInPlace.
+        void initializeVpnInPlace() {
+            final Network[] networks = getAllNetworksFiltered(mConnectivityManagerDelegate, null);
+            mVpnInPlace = null;
+            // If the filtered list of networks contains just a VPN, then that VPN is in place.
+            if (networks.length == 1) {
+                final NetworkCapabilities capabilities =
+                        mConnectivityManagerDelegate.getNetworkCapabilities(networks[0]);
+                if (capabilities != null && capabilities.hasTransport(TRANSPORT_VPN)) {
+                    mVpnInPlace = networks[0];
+                }
+            }
+        }
+
+        /**
+         * Should changes to network {@code network} be ignored due to a VPN being in place
+         * and blocking direct access to {@code network}?
+         * @param network Network to possibly consider ignoring changes to.
+         */
+        private boolean ignoreNetworkDueToVpn(Network network) {
+            return mVpnInPlace != null && !mVpnInPlace.equals(network);
+        }
+
+        /**
+         * Should changes to connected network {@code network} be ignored?
+         * @param network Network to possibly consider ignoring changes to.
+         * @param capabilities {@code NetworkCapabilities} for {@code network} if known, otherwise
+         *         {@code null}.
+         * @return {@code true} when either: {@code network} is an inaccessible VPN, or has already
+         *         disconnected.
+         */
+        private boolean ignoreConnectedInaccessibleVpn(
+                Network network, NetworkCapabilities capabilities) {
+            // Fetch capabilities if not provided.
+            if (capabilities == null) {
+                capabilities = mConnectivityManagerDelegate.getNetworkCapabilities(network);
+            }
+            // Ignore inaccessible VPNs as they don't apply to Chrome.
+            return capabilities == null
+                    || capabilities.hasTransport(TRANSPORT_VPN)
+                    && !mConnectivityManagerDelegate.vpnAccessible(network);
+        }
+
+        /**
+         * Should changes to connected network {@code network} be ignored?
+         * @param network Network to possible consider ignoring changes to.
+         * @param capabilities {@code NetworkCapabilities} for {@code network} if known, otherwise
+         *         {@code null}.
+         */
+        private boolean ignoreConnectedNetwork(Network network, NetworkCapabilities capabilities) {
+            return ignoreNetworkDueToVpn(network)
+                    || ignoreConnectedInaccessibleVpn(network, capabilities);
+        }
+
         @Override
         public void onAvailable(Network network) {
+            final NetworkCapabilities capabilities =
+                    mConnectivityManagerDelegate.getNetworkCapabilities(network);
+            if (ignoreConnectedNetwork(network, capabilities)) {
+                return;
+            }
+            final boolean makeVpnDefault = capabilities.hasTransport(TRANSPORT_VPN);
+            if (makeVpnDefault) {
+                mVpnInPlace = network;
+            }
             final int netId = networkToNetId(network);
             final int connectionType =
                     getCurrentConnectionType(mConnectivityManagerDelegate.getNetworkState(network));
@@ -253,6 +356,12 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
                 @Override
                 public void run() {
                     mObserver.onNetworkConnect(netId, connectionType);
+                    if (makeVpnDefault) {
+                        // Make VPN the default network.
+                        mObserver.onConnectionTypeChanged(connectionType);
+                        // Purge all other networks as they're inaccessible to Chrome now.
+                        mObserver.updateActiveNetworkList(new int[] {netId});
+                    }
                 }
             });
         }
@@ -260,6 +369,9 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
         @Override
         public void onCapabilitiesChanged(
                 Network network, NetworkCapabilities networkCapabilities) {
+            if (ignoreConnectedNetwork(network, networkCapabilities)) {
+                return;
+            }
             // A capabilities change may indicate the ConnectionType has changed,
             // so forward the new ConnectionType along to observer.
             final int netId = networkToNetId(network);
@@ -275,6 +387,9 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
 
         @Override
         public void onLosing(Network network, int maxMsToLive) {
+            if (ignoreConnectedNetwork(network, null)) {
+                return;
+            }
             final int netId = networkToNetId(network);
             ThreadUtils.postOnUiThread(new Runnable() {
                 @Override
@@ -285,14 +400,35 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
         }
 
         @Override
-        public void onLost(Network network) {
-            final int netId = networkToNetId(network);
+        public void onLost(final Network network) {
+            if (ignoreNetworkDueToVpn(network)) {
+                return;
+            }
             ThreadUtils.postOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    mObserver.onNetworkDisconnect(netId);
+                    mObserver.onNetworkDisconnect(networkToNetId(network));
                 }
             });
+            // If the VPN is going away, inform observer that other networks that were previously
+            // hidden by ignoreNetworkDueToVpn() are now available for use, now that this user's
+            // traffic is not forced into the VPN.
+            if (mVpnInPlace != null) {
+                assert network.equals(mVpnInPlace);
+                mVpnInPlace = null;
+                for (Network newNetwork :
+                        getAllNetworksFiltered(mConnectivityManagerDelegate, network)) {
+                    onAvailable(newNetwork);
+                }
+                final int newConnectionType =
+                        getCurrentConnectionType(mConnectivityManagerDelegate.getNetworkState());
+                ThreadUtils.postOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        mObserver.onConnectionTypeChanged(newConnectionType);
+                    }
+                });
+            }
         }
     }
 
@@ -342,7 +478,7 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
     private ConnectivityManagerDelegate mConnectivityManagerDelegate;
     private WifiManagerDelegate mWifiManagerDelegate;
     // mNetworkCallback and mNetworkRequest are only non-null in Android L and above.
-    private final NetworkCallback mNetworkCallback;
+    private final MyNetworkCallback mNetworkCallback;
     private final NetworkRequest mNetworkRequest;
     private boolean mRegistered;
     private int mConnectionType;
@@ -399,7 +535,7 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
      *     for network changes (e.g. see (@link RegistrationPolicyAlwaysRegister} and
      *     {@link RegistrationPolicyApplicationStatus}).
      */
-    @SuppressLint("NewApi")
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public NetworkChangeNotifierAutoDetect(
             Observer observer, Context context, RegistrationPolicy policy) {
         // Since BroadcastReceiver is always called back on UI thread, ensure
@@ -411,8 +547,11 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
         mWifiManagerDelegate = new WifiManagerDelegate(context);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             mNetworkCallback = new MyNetworkCallback();
-            mNetworkRequest =
-                    new NetworkRequest.Builder().addCapability(NET_CAPABILITY_INTERNET).build();
+            mNetworkRequest = new NetworkRequest.Builder()
+                                      .addCapability(NET_CAPABILITY_INTERNET)
+                                      // Need to hear about VPNs too.
+                                      .removeCapability(NET_CAPABILITY_NOT_VPN)
+                                      .build();
         } else {
             mNetworkCallback = null;
             mNetworkRequest = null;
@@ -473,13 +612,14 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
         mRegistered = true;
 
         if (mNetworkCallback != null) {
+            mNetworkCallback.initializeVpnInPlace();
             mConnectivityManagerDelegate.registerNetworkCallback(mNetworkRequest, mNetworkCallback);
-            // registerNetworkCallback() will rematch our NetworkRequest
+            // registerNetworkCallback() will rematch the NetworkRequest
             // against active networks, so a cached list of active networks
             // will be repopulated immediatly after this. However we need to
             // purge any cached networks as they may have been disconnected
             // while mNetworkCallback was unregistered.
-            final Network[] networks = mConnectivityManagerDelegate.getAllNetworks();
+            final Network[] networks = getAllNetworksFiltered(mConnectivityManagerDelegate, null);
             // Convert Networks to NetIDs.
             final int[] netIds = new int[networks.length];
             for (int i = 0; i < networks.length; i++) {
@@ -506,8 +646,44 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
     }
 
     /**
+     * Returns all connected networks that are useful and accessible to Chrome.
+     * Only callable on Lollipop and newer releases.
+     * @param ignoreNetwork ignore this network as if it is not connected.
+     */
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    private static Network[] getAllNetworksFiltered(
+            ConnectivityManagerDelegate connectivityManagerDelegate, Network ignoreNetwork) {
+        Network[] networks = connectivityManagerDelegate.getAllNetworksUnfiltered();
+        // Whittle down |networks| into just the list of networks useful to us.
+        int filteredIndex = 0;
+        for (Network network : networks) {
+            if (network.equals(ignoreNetwork)) {
+                continue;
+            }
+            final NetworkCapabilities capabilities =
+                    connectivityManagerDelegate.getNetworkCapabilities(network);
+            if (capabilities == null || !capabilities.hasCapability(NET_CAPABILITY_INTERNET)) {
+                continue;
+            }
+            if (capabilities.hasTransport(TRANSPORT_VPN)) {
+                // If we can access the VPN then...
+                if (connectivityManagerDelegate.vpnAccessible(network)) {
+                    // ...we cannot access any other network, so return just the VPN.
+                    return new Network[] {network};
+                } else {
+                    // ...otherwise ignore it as we cannot use it.
+                    continue;
+                }
+            }
+            networks[filteredIndex++] = network;
+        }
+        return Arrays.copyOf(networks, filteredIndex);
+    }
+
+    /**
      * Returns an array of all of the device's currently connected
-     * networks and ConnectionTypes. Array elements are a repeated sequence of:
+     * networks and ConnectionTypes, including only those that are useful and accessible to Chrome.
+     * Array elements are a repeated sequence of:
      *   NetID of network
      *   ConnectionType of network
      * Only available on Lollipop and newer releases and when auto-detection has
@@ -517,20 +693,15 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
             return new int[0];
         }
-        final Network networks[] = mConnectivityManagerDelegate.getAllNetworks();
+        final Network networks[] = getAllNetworksFiltered(mConnectivityManagerDelegate, null);
         final int networksAndTypes[] = new int[networks.length * 2];
         int index = 0;
         for (Network network : networks) {
-            if (!mConnectivityManagerDelegate.hasInternetCapability(network)) {
-                continue;
-            }
             networksAndTypes[index++] = networkToNetId(network);
             networksAndTypes[index++] =
                     getCurrentConnectionType(mConnectivityManagerDelegate.getNetworkState(network));
         }
-        final int shortenedNetworksAndTypes[] = new int[index];
-        System.arraycopy(networksAndTypes, 0, shortenedNetworksAndTypes, 0, index);
-        return shortenedNetworksAndTypes;
+        return networksAndTypes;
     }
 
     /**
@@ -714,8 +885,9 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
     /**
      * Extracts NetID of network. Only available on Lollipop and newer releases.
      */
-    @SuppressLint("NewApi")
-    private static int networkToNetId(Network network) {
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    @VisibleForTesting
+    static int networkToNetId(Network network) {
         // NOTE(pauljensen): This depends on Android framework implementation details.
         // Fortunately this functionality is unlikely to ever change.
         // TODO(pauljensen): When we update to Android M SDK, use Network.getNetworkHandle().
