@@ -295,15 +295,26 @@ def SetProperties(device, options):
                            check_return=True)
 
   if options.remove_system_webview:
-    if device.HasRoot():
-      # This is required, e.g., to replace the system webview on a device.
-      device.adb.Remount()
-      device.RunShellCommand(['stop'], check_return=True)
-      device.RunShellCommand(['rm', '-rf'] + _SYSTEM_WEBVIEW_PATHS,
-                             check_return=True)
-      device.RunShellCommand(['start'], check_return=True)
+    if any(device.PathExists(p) for p in _SYSTEM_WEBVIEW_PATHS):
+      logging.info('System WebView exists and needs to be removed')
+      if device.HasRoot():
+        # Disabled Marshmallow's Verity security feature
+        if device.build_version_sdk >= version_codes.MARSHMALLOW:
+          device.adb.DisableVerity()
+          device.Reboot()
+          device.WaitUntilFullyBooted()
+          device.EnableRoot()
+
+        # This is required, e.g., to replace the system webview on a device.
+        device.adb.Remount()
+        device.RunShellCommand(['stop'], check_return=True)
+        device.RunShellCommand(['rm', '-rf'] + _SYSTEM_WEBVIEW_PATHS,
+                               check_return=True)
+        device.RunShellCommand(['start'], check_return=True)
+      else:
+        logging.warning('Cannot remove system webview from a non-rooted device')
     else:
-      logging.warning('Cannot remove system webview from a non-rooted device')
+      logging.info('System WebView already removed')
 
   # Some device types can momentarily disappear after setting properties.
   device.adb.WaitForDevice()
