@@ -125,17 +125,9 @@ class ImportEndedObserver : public importer::ImporterProgressObserver {
 // chrome infrastructure to be up and running before they can be attempted.
 class FirstRunDelayedTasks : public content::NotificationObserver {
  public:
-  enum Tasks {
-    NO_TASK,
-    INSTALL_EXTENSIONS
-  };
-
-  explicit FirstRunDelayedTasks(Tasks task) {
-    if (task == INSTALL_EXTENSIONS) {
-      registrar_.Add(this,
-                     extensions::NOTIFICATION_EXTENSIONS_READY_DEPRECATED,
-                     content::NotificationService::AllSources());
-    }
+  FirstRunDelayedTasks() {
+    registrar_.Add(this, extensions::NOTIFICATION_EXTENSIONS_READY_DEPRECATED,
+                   content::NotificationService::AllSources());
     registrar_.Add(this, chrome::NOTIFICATION_BROWSER_CLOSED,
                    content::NotificationService::AllSources());
   }
@@ -171,7 +163,7 @@ class FirstRunDelayedTasks : public content::NotificationObserver {
 // Installs a task to do an extensions update check once the extensions system
 // is running.
 void DoDelayedInstallExtensions() {
-  new FirstRunDelayedTasks(FirstRunDelayedTasks::INSTALL_EXTENSIONS);
+  new FirstRunDelayedTasks();
 }
 
 void DoDelayedInstallExtensionsIfNeeded(
