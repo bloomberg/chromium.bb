@@ -10,7 +10,7 @@
 #include "base/location.h"
 #include "base/metrics/histogram.h"
 #include "base/power_monitor/power_monitor.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
