@@ -43,7 +43,7 @@ void BackgroundSyncContext::Shutdown() {
 }
 
 void BackgroundSyncContext::CreateService(
-    mojo::InterfaceRequest<mojom::BackgroundSyncService> request) {
+    mojo::InterfaceRequest<blink::mojom::BackgroundSyncService> request) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   BrowserThread::PostTask(
@@ -83,7 +83,7 @@ void BackgroundSyncContext::CreateBackgroundSyncManager(
 }
 
 void BackgroundSyncContext::CreateServiceOnIOThread(
-    mojo::InterfaceRequest<mojom::BackgroundSyncService> request) {
+    mojo::InterfaceRequest<blink::mojom::BackgroundSyncService> request) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(background_sync_manager_);
   services_.insert(new BackgroundSyncServiceImpl(this, std::move(request)));

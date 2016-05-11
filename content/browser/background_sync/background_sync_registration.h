@@ -8,16 +8,14 @@
 #include <stdint.h>
 
 #include <list>
-#include <memory>
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "content/browser/background_sync/background_sync.pb.h"
 #include "content/browser/background_sync/background_sync_registration_options.h"
-#include "content/common/background_sync_service.mojom.h"
 #include "content/common/content_export.h"
-#include "mojo/public/cpp/bindings/type_converter.h"
+#include "third_party/WebKit/public/platform/modules/background_sync/background_sync.mojom.h"
 
 namespace content {
 
@@ -43,8 +41,10 @@ class CONTENT_EXPORT BackgroundSyncRegistration {
   RegistrationId id() const { return id_; }
   void set_id(RegistrationId id) { id_ = id; }
 
-  mojom::BackgroundSyncState sync_state() const { return sync_state_; }
-  void set_sync_state(mojom::BackgroundSyncState state) { sync_state_ = state; }
+  blink::mojom::BackgroundSyncState sync_state() const { return sync_state_; }
+  void set_sync_state(blink::mojom::BackgroundSyncState state) {
+    sync_state_ = state;
+  }
 
   int num_attempts() const { return num_attempts_; }
   void set_num_attempts(int num_attempts) { num_attempts_ = num_attempts; }
@@ -57,30 +57,12 @@ class CONTENT_EXPORT BackgroundSyncRegistration {
 
   BackgroundSyncRegistrationOptions options_;
   RegistrationId id_ = kInvalidRegistrationId;
-  mojom::BackgroundSyncState sync_state_ = mojom::BackgroundSyncState::PENDING;
+  blink::mojom::BackgroundSyncState sync_state_ =
+      blink::mojom::BackgroundSyncState::PENDING;
   int num_attempts_ = 0;
   base::Time delay_until_;
 };
 
 }  // namespace content
-
-namespace mojo {
-
-template <>
-struct CONTENT_EXPORT
-    TypeConverter<std::unique_ptr<content::BackgroundSyncRegistration>,
-                  content::mojom::SyncRegistrationPtr> {
-  static std::unique_ptr<content::BackgroundSyncRegistration> Convert(
-      const content::mojom::SyncRegistrationPtr& input);
-};
-
-template <>
-struct CONTENT_EXPORT TypeConverter<content::mojom::SyncRegistrationPtr,
-                                    content::BackgroundSyncRegistration> {
-  static content::mojom::SyncRegistrationPtr Convert(
-      const content::BackgroundSyncRegistration& input);
-};
-
-}  // namespace
 
 #endif  // CONTENT_BROWSER_BACKGROUND_SYNC_BACKGROUND_SYNC_REGISTRATION_H_

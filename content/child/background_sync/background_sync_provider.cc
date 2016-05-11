@@ -16,7 +16,6 @@
 #include "content/child/background_sync/background_sync_type_converters.h"
 #include "content/child/child_thread_impl.h"
 #include "content/child/service_worker/web_service_worker_registration_impl.h"
-#include "content/public/common/background_sync.mojom.h"
 #include "third_party/WebKit/public/platform/modules/background_sync/WebSyncError.h"
 #include "third_party/WebKit/public/platform/modules/background_sync/WebSyncRegistration.h"
 
@@ -35,7 +34,7 @@ int64_t GetServiceWorkerRegistrationId(
 }
 
 void ConnectToServiceOnMainThread(
-    mojo::InterfaceRequest<mojom::BackgroundSyncService> request) {
+    mojo::InterfaceRequest<blink::mojom::BackgroundSyncService> request) {
   DCHECK(ChildThreadImpl::current());
   ChildThreadImpl::current()->service_registry()->ConnectToRemoteService(
       std::move(request));
@@ -68,7 +67,7 @@ BackgroundSyncProvider::GetOrCreateThreadSpecificInstance(
   bool have_worker_id = (WorkerThread::GetCurrentId() > 0);
   if (!main_thread_task_runner->BelongsToCurrentThread() && !have_worker_id) {
     // On a worker thread, this could happen if this method is called
-    // very late (say by a garbage collected mojom::SyncRegistration).
+    // very late (say by a garbage collected blink::mojom::SyncRegistration).
     return nullptr;
   }
 
@@ -99,7 +98,7 @@ void BackgroundSyncProvider::registerBackgroundSync(
   // base::Unretained is safe here, as the mojo channel will be deleted (and
   // will wipe its callbacks) before 'this' is deleted.
   GetBackgroundSyncServicePtr()->Register(
-      mojo::ConvertTo<mojom::SyncRegistrationPtr>(*(optionsPtr.get())),
+      mojo::ConvertTo<blink::mojom::SyncRegistrationPtr>(*(optionsPtr.get())),
       service_worker_registration_id,
       base::Bind(&BackgroundSyncProvider::RegisterCallback,
                  base::Unretained(this),
@@ -131,37 +130,37 @@ void BackgroundSyncProvider::WillStopCurrentWorkerThread() {
 
 void BackgroundSyncProvider::RegisterCallback(
     std::unique_ptr<blink::WebSyncRegistrationCallbacks> callbacks,
-    mojom::BackgroundSyncError error,
-    const mojom::SyncRegistrationPtr& options) {
+    blink::mojom::BackgroundSyncError error,
+    const blink::mojom::SyncRegistrationPtr& options) {
   // TODO(iclelland): Determine the correct error message to return in each case
   std::unique_ptr<blink::WebSyncRegistration> result;
   switch (error) {
-    case mojom::BackgroundSyncError::NONE:
+    case blink::mojom::BackgroundSyncError::NONE:
       if (!options.is_null())
         result = mojo::ConvertTo<std::unique_ptr<blink::WebSyncRegistration>>(
             options);
       callbacks->onSuccess(std::move(result));
       break;
-    case mojom::BackgroundSyncError::NOT_FOUND:
+    case blink::mojom::BackgroundSyncError::NOT_FOUND:
       NOTREACHED();
       break;
-    case mojom::BackgroundSyncError::STORAGE:
+    case blink::mojom::BackgroundSyncError::STORAGE:
       callbacks->onError(
           blink::WebSyncError(blink::WebSyncError::ErrorTypeUnknown,
                               "Background Sync is disabled."));
       break;
-    case mojom::BackgroundSyncError::NOT_ALLOWED:
+    case blink::mojom::BackgroundSyncError::NOT_ALLOWED:
       callbacks->onError(
           blink::WebSyncError(blink::WebSyncError::ErrorTypeNoPermission,
                               "Attempted to register a sync event without a "
                               "window or registration tag too long."));
       break;
-    case mojom::BackgroundSyncError::PERMISSION_DENIED:
+    case blink::mojom::BackgroundSyncError::PERMISSION_DENIED:
       callbacks->onError(
           blink::WebSyncError(blink::WebSyncError::ErrorTypePermissionDenied,
                               "Permission denied."));
       break;
-    case mojom::BackgroundSyncError::NO_SERVICE_WORKER:
+    case blink::mojom::BackgroundSyncError::NO_SERVICE_WORKER:
       callbacks->onError(
           blink::WebSyncError(blink::WebSyncError::ErrorTypeUnknown,
                               "No service worker is active."));
@@ -171,11 +170,11 @@ void BackgroundSyncProvider::RegisterCallback(
 
 void BackgroundSyncProvider::GetRegistrationsCallback(
     std::unique_ptr<blink::WebSyncGetRegistrationsCallbacks> callbacks,
-    mojom::BackgroundSyncError error,
-    const mojo::Array<mojom::SyncRegistrationPtr>& registrations) {
+    blink::mojom::BackgroundSyncError error,
+    const mojo::Array<blink::mojom::SyncRegistrationPtr>& registrations) {
   // TODO(iclelland): Determine the correct error message to return in each case
   switch (error) {
-    case mojom::BackgroundSyncError::NONE: {
+    case blink::mojom::BackgroundSyncError::NONE: {
       blink::WebVector<blink::WebSyncRegistration*> results(
           registrations.size());
       for (size_t i = 0; i < registrations.size(); ++i) {
@@ -187,19 +186,19 @@ void BackgroundSyncProvider::GetRegistrationsCallback(
       callbacks->onSuccess(results);
       break;
     }
-    case mojom::BackgroundSyncError::NOT_FOUND:
-    case mojom::BackgroundSyncError::NOT_ALLOWED:
-    case mojom::BackgroundSyncError::PERMISSION_DENIED:
+    case blink::mojom::BackgroundSyncError::NOT_FOUND:
+    case blink::mojom::BackgroundSyncError::NOT_ALLOWED:
+    case blink::mojom::BackgroundSyncError::PERMISSION_DENIED:
       // These errors should never be returned from
       // BackgroundSyncManager::GetRegistrations
       NOTREACHED();
       break;
-    case mojom::BackgroundSyncError::STORAGE:
+    case blink::mojom::BackgroundSyncError::STORAGE:
       callbacks->onError(
           blink::WebSyncError(blink::WebSyncError::ErrorTypeUnknown,
                               "Background Sync is disabled."));
       break;
-    case mojom::BackgroundSyncError::NO_SERVICE_WORKER:
+    case blink::mojom::BackgroundSyncError::NO_SERVICE_WORKER:
       callbacks->onError(
           blink::WebSyncError(blink::WebSyncError::ErrorTypeUnknown,
                               "No service worker is active."));
@@ -207,10 +206,10 @@ void BackgroundSyncProvider::GetRegistrationsCallback(
   }
 }
 
-mojom::BackgroundSyncServicePtr&
+blink::mojom::BackgroundSyncServicePtr&
 BackgroundSyncProvider::GetBackgroundSyncServicePtr() {
   if (!background_sync_service_.get()) {
-    mojo::InterfaceRequest<mojom::BackgroundSyncService> request =
+    mojo::InterfaceRequest<blink::mojom::BackgroundSyncService> request =
         mojo::GetProxy(&background_sync_service_);
     main_thread_task_runner_->PostTask(
         FROM_HERE,

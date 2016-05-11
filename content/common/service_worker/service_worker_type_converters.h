@@ -6,15 +6,15 @@
 #define CONTENT_COMMON_SERVICE_WORKER_SERVICE_WORKER_TYPE_CONVERTERS_H_
 
 #include "content/common/service_worker/service_worker_status_code.h"
-#include "content/public/common/service_worker_event_status.mojom.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_event_status.mojom.h"
 
 namespace mojo {
 
 template <>
 struct CONTENT_EXPORT TypeConverter<content::ServiceWorkerStatusCode,
-                                    content::mojom::ServiceWorkerEventStatus> {
+                                    blink::mojom::ServiceWorkerEventStatus> {
   static content::ServiceWorkerStatusCode Convert(
-      content::mojom::ServiceWorkerEventStatus status);
+      blink::mojom::ServiceWorkerEventStatus status);
 };
 
 }  // namespace

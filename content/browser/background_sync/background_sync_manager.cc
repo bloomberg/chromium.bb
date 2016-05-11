@@ -26,7 +26,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/permission_manager.h"
 #include "content/public/browser/permission_type.h"
-#include "content/public/common/background_sync.mojom.h"
 
 #if defined(OS_ANDROID)
 #include "content/browser/android/background_sync_network_observer_android.h"
@@ -150,10 +149,10 @@ void OnSyncEventFinished(
     const scoped_refptr<ServiceWorkerVersion>& active_version,
     int request_id,
     const ServiceWorkerVersion::StatusCallback& callback,
-    mojom::ServiceWorkerEventStatus status) {
+    blink::mojom::ServiceWorkerEventStatus status) {
   if (!active_version->FinishRequest(
           request_id,
-          status == content::mojom::ServiceWorkerEventStatus::COMPLETED)) {
+          status == blink::mojom::ServiceWorkerEventStatus::COMPLETED)) {
     return;
   }
   callback.Run(mojo::ConvertTo<ServiceWorkerStatusCode>(status));
@@ -505,7 +504,7 @@ void BackgroundSyncManager::RegisterDidAskForPermission(
 
     if (existing_registration->IsFiring()) {
       existing_registration->set_sync_state(
-          mojom::BackgroundSyncState::REREGISTERED_WHILE_FIRING);
+          blink::mojom::BackgroundSyncState::REREGISTERED_WHILE_FIRING);
     }
 
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -738,7 +737,7 @@ void BackgroundSyncManager::GetDataFromBackend(
 void BackgroundSyncManager::DispatchSyncEvent(
     const std::string& tag,
     const scoped_refptr<ServiceWorkerVersion>& active_version,
-    mojom::BackgroundSyncEventLastChance last_chance,
+    blink::mojom::BackgroundSyncEventLastChance last_chance,
     const ServiceWorkerVersion::StatusCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(active_version);
@@ -757,9 +756,9 @@ void BackgroundSyncManager::DispatchSyncEvent(
       ServiceWorkerMetrics::EventType::SYNC, callback,
       parameters_->max_sync_event_duration,
       ServiceWorkerVersion::CONTINUE_ON_TIMEOUT);
-  base::WeakPtr<mojom::BackgroundSyncServiceClient> client =
+  base::WeakPtr<blink::mojom::BackgroundSyncServiceClient> client =
       active_version
-          ->GetMojoServiceForRequest<mojom::BackgroundSyncServiceClient>(
+          ->GetMojoServiceForRequest<blink::mojom::BackgroundSyncServiceClient>(
               request_id);
 
   client->Sync(
@@ -823,7 +822,7 @@ bool BackgroundSyncManager::IsRegistrationReadyToFire(
     const BackgroundSyncRegistration& registration) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  if (registration.sync_state() != mojom::BackgroundSyncState::PENDING)
+  if (registration.sync_state() != blink::mojom::BackgroundSyncState::PENDING)
     return false;
 
   if (clock_->Now() < registration.delay_until())
@@ -841,7 +840,8 @@ void BackgroundSyncManager::RunInBackgroundIfNecessary() {
          sw_id_and_registrations.second.registration_map) {
       const BackgroundSyncRegistration& registration =
           key_and_registration.second;
-      if (registration.sync_state() == mojom::BackgroundSyncState::PENDING) {
+      if (registration.sync_state() ==
+          blink::mojom::BackgroundSyncState::PENDING) {
         if (clock_->Now() >= registration.delay_until()) {
           soonest_wakeup_delta = base::TimeDelta();
         } else {
@@ -912,7 +912,7 @@ void BackgroundSyncManager::FireReadyEventsImpl(const base::Closure& callback) {
         // The state change is not saved to persistent storage because
         // if the sync event is killed mid-sync then it should return to
         // SYNC_STATE_PENDING.
-        registration->set_sync_state(mojom::BackgroundSyncState::FIRING);
+        registration->set_sync_state(blink::mojom::BackgroundSyncState::FIRING);
       }
     }
   }
@@ -977,10 +977,10 @@ void BackgroundSyncManager::FireReadyEventsDidFindRegistration(
 
   num_firing_registrations_ += 1;
 
-  mojom::BackgroundSyncEventLastChance last_chance =
+  blink::mojom::BackgroundSyncEventLastChance last_chance =
       registration->num_attempts() == parameters_->max_sync_attempts - 1
-          ? mojom::BackgroundSyncEventLastChance::IS_LAST_CHANCE
-          : mojom::BackgroundSyncEventLastChance::IS_NOT_LAST_CHANCE;
+          ? blink::mojom::BackgroundSyncEventLastChance::IS_LAST_CHANCE
+          : blink::mojom::BackgroundSyncEventLastChance::IS_NOT_LAST_CHANCE;
 
   HasMainFrameProviderHost(
       service_worker_registration->pattern().GetOrigin(),
@@ -1051,7 +1051,8 @@ void BackgroundSyncManager::EventCompleteImpl(
     return;
   }
 
-  DCHECK_NE(mojom::BackgroundSyncState::PENDING, registration->sync_state());
+  DCHECK_NE(blink::mojom::BackgroundSyncState::PENDING,
+            registration->sync_state());
 
   registration->set_num_attempts(registration->num_attempts() + 1);
 
@@ -1071,13 +1072,13 @@ void BackgroundSyncManager::EventCompleteImpl(
       registration->num_attempts() < parameters_->max_sync_attempts;
 
   if (registration->sync_state() ==
-      mojom::BackgroundSyncState::REREGISTERED_WHILE_FIRING) {
-    registration->set_sync_state(mojom::BackgroundSyncState::PENDING);
+      blink::mojom::BackgroundSyncState::REREGISTERED_WHILE_FIRING) {
+    registration->set_sync_state(blink::mojom::BackgroundSyncState::PENDING);
     registration->set_num_attempts(0);
     registration_completed = false;
   } else if (status_code != SERVICE_WORKER_OK &&
              can_retry) {  // Sync failed but can retry
-    registration->set_sync_state(mojom::BackgroundSyncState::PENDING);
+    registration->set_sync_state(blink::mojom::BackgroundSyncState::PENDING);
     registration->set_delay_until(clock_->Now() +
                                   parameters_->initial_retry_delay *
                                       pow(parameters_->retry_delay_factor,

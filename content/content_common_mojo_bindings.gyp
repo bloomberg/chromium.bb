@@ -12,7 +12,6 @@
         'mojom_files': [
           # NOTE: Sources duplicated in //content/common/BUILD.gn:mojo_bindings.
           'common/application_setup.mojom',
-          'common/background_sync_service.mojom',
           'common/image_downloader/image_downloader.mojom',
           'common/leveldb_wrapper.mojom',
           'common/presentation/presentation_service.mojom',
@@ -20,11 +19,6 @@
           'common/render_frame_setup.mojom',
           'common/service_worker/embedded_worker_setup.mojom',
           'common/storage_partition_service.mojom',
-
-          # NOTE: Sources duplicated in
-          # //content/public/common/BUILD.gn:mojo_bindings.
-          'public/common/background_sync.mojom',
-          'public/common/service_worker_event_status.mojom',
         ],
         'mojom_typemaps': [
           '../url/mojo/gurl.typemap',

@@ -33,12 +33,14 @@
     ],
     'variables': {
         'blink_mojo_sources': [
+            'platform/modules/background_sync/background_sync.mojom',
             'platform/modules/bluetooth/web_bluetooth.mojom',
             'platform/modules/geolocation/geolocation.mojom',
             'platform/modules/imagecapture/image_capture.mojom',
             'platform/modules/notifications/notification.mojom',
             'platform/modules/permissions/permission.mojom',
             'platform/modules/permissions/permission_status.mojom',
+            'platform/modules/serviceworker/service_worker_event_status.mojom',
             'platform/modules/vr/vr_service.mojom',
             'platform/modules/wake_lock/wake_lock_service.mojom',
         ],

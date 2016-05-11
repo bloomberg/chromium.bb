@@ -78,7 +78,7 @@ void RegistrationPendingDidGetSyncRegistration(
   for (const BackgroundSyncRegistration* registration : *registrations) {
     if (registration->options()->tag == tag) {
       callback.Run(registration->sync_state() ==
-                   mojom::BackgroundSyncState::PENDING);
+                   blink::mojom::BackgroundSyncState::PENDING);
       return;
     }
   }

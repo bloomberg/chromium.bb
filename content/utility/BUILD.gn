@@ -24,7 +24,6 @@ source_set("utility") {
     "//content:export",
     "//content/public/child:child_sources",
     "//content/public/common:common_sources",
-    "//content/public/common:mojo_bindings",
     "//courgette:courgette_lib",
     "//media/mojo/services:application_factory",
     "//mojo/common",
@@ -33,6 +32,7 @@ source_set("utility") {
     "//services/shell/public/cpp:cpp_for_chromium",
     "//services/shell/public/interfaces",
     "//third_party/WebKit/public:blink_headers",
+    "//third_party/WebKit/public:mojo_bindings",
     "//url",
   ]
 

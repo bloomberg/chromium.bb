@@ -29,10 +29,10 @@ bool BackgroundSyncRegistration::IsValid() const {
 
 bool BackgroundSyncRegistration::IsFiring() const {
   switch (sync_state_) {
-    case mojom::BackgroundSyncState::FIRING:
-    case mojom::BackgroundSyncState::REREGISTERED_WHILE_FIRING:
+    case blink::mojom::BackgroundSyncState::FIRING:
+    case blink::mojom::BackgroundSyncState::REREGISTERED_WHILE_FIRING:
       return true;
-    case mojom::BackgroundSyncState::PENDING:
+    case blink::mojom::BackgroundSyncState::PENDING:
       return false;
   }
   NOTREACHED();

@@ -10,8 +10,8 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "content/common/background_sync_service.mojom.h"
 #include "content/common/content_export.h"
+#include "third_party/WebKit/public/platform/modules/background_sync/background_sync.mojom.h"
 
 namespace content {
 
@@ -37,7 +37,7 @@ class CONTENT_EXPORT BackgroundSyncContext
   // Create a BackgroundSyncServiceImpl that is owned by this. Call on the UI
   // thread.
   void CreateService(
-      mojo::InterfaceRequest<mojom::BackgroundSyncService> request);
+      mojo::InterfaceRequest<blink::mojom::BackgroundSyncService> request);
 
   // Called by BackgroundSyncServiceImpl objects so that they can
   // be deleted. Call on the IO thread.
@@ -60,7 +60,7 @@ class CONTENT_EXPORT BackgroundSyncContext
       scoped_refptr<ServiceWorkerContextWrapper> context);
 
   void CreateServiceOnIOThread(
-      mojo::InterfaceRequest<mojom::BackgroundSyncService> request);
+      mojo::InterfaceRequest<blink::mojom::BackgroundSyncService> request);
 
   void ShutdownOnIO();
 

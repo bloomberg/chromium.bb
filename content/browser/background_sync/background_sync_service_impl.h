@@ -12,27 +12,27 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
 #include "content/browser/background_sync/background_sync_manager.h"
-#include "content/common/background_sync_service.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "third_party/WebKit/public/platform/modules/background_sync/background_sync.mojom.h"
 
 namespace content {
 
 class BackgroundSyncContext;
 
 class CONTENT_EXPORT BackgroundSyncServiceImpl
-    : public NON_EXPORTED_BASE(mojom::BackgroundSyncService) {
+    : public NON_EXPORTED_BASE(blink::mojom::BackgroundSyncService) {
  public:
   BackgroundSyncServiceImpl(
       BackgroundSyncContext* background_sync_context,
-      mojo::InterfaceRequest<mojom::BackgroundSyncService> request);
+      mojo::InterfaceRequest<blink::mojom::BackgroundSyncService> request);
 
   ~BackgroundSyncServiceImpl() override;
 
  private:
   friend class BackgroundSyncServiceImplTest;
 
-  // mojom::BackgroundSyncService methods:
-  void Register(content::mojom::SyncRegistrationPtr options,
+  // blink::mojom::BackgroundSyncService methods:
+  void Register(blink::mojom::SyncRegistrationPtr options,
                 int64_t sw_registration_id,
                 const RegisterCallback& callback) override;
   void GetRegistrations(int64_t sw_registration_id,
@@ -52,7 +52,7 @@ class CONTENT_EXPORT BackgroundSyncServiceImpl
   // background_sync_context_ owns this.
   BackgroundSyncContext* background_sync_context_;
 
-  mojo::Binding<mojom::BackgroundSyncService> binding_;
+  mojo::Binding<blink::mojom::BackgroundSyncService> binding_;
 
   base::WeakPtrFactory<BackgroundSyncServiceImpl> weak_ptr_factory_;
 

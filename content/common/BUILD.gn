@@ -221,7 +221,6 @@ mojom("mojo_bindings") {
 
   sources = [
     "application_setup.mojom",
-    "background_sync_service.mojom",
     "image_downloader/image_downloader.mojom",
     "leveldb_wrapper.mojom",
     "presentation/presentation_service.mojom",
@@ -237,7 +236,6 @@ mojom("mojo_bindings") {
   public_deps = [
     "//components/leveldb/public/interfaces",
     "//components/mus/public/interfaces",
-    "//content/public/common:mojo_bindings",
     "//services/shell/public/interfaces",
     "//skia/public/interfaces",
     "//third_party/WebKit/public:mojo_bindings",

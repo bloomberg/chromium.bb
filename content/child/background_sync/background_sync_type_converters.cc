@@ -9,7 +9,7 @@
 namespace mojo {
 
 #define COMPILE_ASSERT_MATCHING_ENUM(mojo_name, blink_name) \
-  static_assert(static_cast<int>(content::mojo_name) ==     \
+  static_assert(static_cast<int>(blink::mojo_name) ==       \
                     static_cast<int>(blink::blink_name),    \
                 "mojo and blink enums must match")
 
@@ -33,24 +33,24 @@ COMPILE_ASSERT_MATCHING_ENUM(
 // static
 blink::WebSyncRegistration::NetworkState
 TypeConverter<blink::WebSyncRegistration::NetworkState,
-              content::mojom::BackgroundSyncNetworkState>::
-    Convert(content::mojom::BackgroundSyncNetworkState input) {
+              blink::mojom::BackgroundSyncNetworkState>::
+    Convert(blink::mojom::BackgroundSyncNetworkState input) {
   return static_cast<blink::WebSyncRegistration::NetworkState>(input);
 }
 
 // static
-content::mojom::BackgroundSyncNetworkState
-TypeConverter<content::mojom::BackgroundSyncNetworkState,
+blink::mojom::BackgroundSyncNetworkState
+TypeConverter<blink::mojom::BackgroundSyncNetworkState,
               blink::WebSyncRegistration::NetworkState>::
     Convert(blink::WebSyncRegistration::NetworkState input) {
-  return static_cast<content::mojom::BackgroundSyncNetworkState>(input);
+  return static_cast<blink::mojom::BackgroundSyncNetworkState>(input);
 }
 
 // static
 std::unique_ptr<blink::WebSyncRegistration>
 TypeConverter<std::unique_ptr<blink::WebSyncRegistration>,
-              content::mojom::SyncRegistrationPtr>::
-    Convert(const content::mojom::SyncRegistrationPtr& input) {
+              blink::mojom::SyncRegistrationPtr>::
+    Convert(const blink::mojom::SyncRegistrationPtr& input) {
   std::unique_ptr<blink::WebSyncRegistration> result(
       new blink::WebSyncRegistration());
   result->id = input->id;
@@ -61,33 +61,33 @@ TypeConverter<std::unique_ptr<blink::WebSyncRegistration>,
 }
 
 // static
-content::mojom::SyncRegistrationPtr
-TypeConverter<content::mojom::SyncRegistrationPtr, blink::WebSyncRegistration>::
+blink::mojom::SyncRegistrationPtr
+TypeConverter<blink::mojom::SyncRegistrationPtr, blink::WebSyncRegistration>::
     Convert(const blink::WebSyncRegistration& input) {
-  content::mojom::SyncRegistrationPtr result(
-      content::mojom::SyncRegistration::New());
+  blink::mojom::SyncRegistrationPtr result(
+      blink::mojom::SyncRegistration::New());
   result->id = input.id;
   result->tag = input.tag.utf8();
   result->network_state =
-      ConvertTo<content::mojom::BackgroundSyncNetworkState>(input.networkState);
+      ConvertTo<blink::mojom::BackgroundSyncNetworkState>(input.networkState);
   return result;
 }
 
 // static
 blink::WebServiceWorkerContextProxy::LastChanceOption
 TypeConverter<blink::WebServiceWorkerContextProxy::LastChanceOption,
-              content::mojom::BackgroundSyncEventLastChance>::
-    Convert(content::mojom::BackgroundSyncEventLastChance input) {
+              blink::mojom::BackgroundSyncEventLastChance>::
+    Convert(blink::mojom::BackgroundSyncEventLastChance input) {
   return static_cast<blink::WebServiceWorkerContextProxy::LastChanceOption>(
       input);
 }
 
 // static
-content::mojom::BackgroundSyncEventLastChance
-TypeConverter<content::mojom::BackgroundSyncEventLastChance,
+blink::mojom::BackgroundSyncEventLastChance
+TypeConverter<blink::mojom::BackgroundSyncEventLastChance,
               blink::WebServiceWorkerContextProxy::LastChanceOption>::
     Convert(blink::WebServiceWorkerContextProxy::LastChanceOption input) {
-  return static_cast<content::mojom::BackgroundSyncEventLastChance>(input);
+  return static_cast<blink::mojom::BackgroundSyncEventLastChance>(input);
 }
 
 }  // namespace mojo

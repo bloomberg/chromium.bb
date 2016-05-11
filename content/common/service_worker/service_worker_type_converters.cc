@@ -12,14 +12,14 @@ namespace mojo {
 // static cast.
 content::ServiceWorkerStatusCode
 TypeConverter<content::ServiceWorkerStatusCode,
-              content::mojom::ServiceWorkerEventStatus>::
-    Convert(content::mojom::ServiceWorkerEventStatus status) {
+              blink::mojom::ServiceWorkerEventStatus>::
+    Convert(blink::mojom::ServiceWorkerEventStatus status) {
   content::ServiceWorkerStatusCode status_code;
-  if (status == content::mojom::ServiceWorkerEventStatus::COMPLETED) {
+  if (status == blink::mojom::ServiceWorkerEventStatus::COMPLETED) {
     status_code = content::SERVICE_WORKER_OK;
-  } else if (status == content::mojom::ServiceWorkerEventStatus::REJECTED) {
+  } else if (status == blink::mojom::ServiceWorkerEventStatus::REJECTED) {
     status_code = content::SERVICE_WORKER_ERROR_EVENT_WAITUNTIL_REJECTED;
-  } else if (status == content::mojom::ServiceWorkerEventStatus::ABORTED) {
+  } else if (status == blink::mojom::ServiceWorkerEventStatus::ABORTED) {
     status_code = content::SERVICE_WORKER_ERROR_ABORT;
   } else {
     // We received an unexpected value back. This can theoretically happen as

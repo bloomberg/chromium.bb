@@ -2,10 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module content.mojom;
+module blink.mojom;
 
-import "content/public/common/background_sync.mojom";
-import "content/public/common/service_worker_event_status.mojom";
+import "third_party/WebKit/public/platform/modules/serviceworker/service_worker_event_status.mojom";
+
+enum BackgroundSyncNetworkState {
+  ANY,
+  AVOID_CELLULAR,
+  ONLINE,
+  MAX=ONLINE
+};
+
+struct SyncRegistration {
+  int64 id = -1;
+  string tag = "";
+  BackgroundSyncNetworkState network_state = ONLINE;
+};
 
 enum BackgroundSyncError {
   NONE,
@@ -39,4 +51,3 @@ interface BackgroundSyncServiceClient {
   Sync(string tag, BackgroundSyncEventLastChance last_chance)
       => (ServiceWorkerEventStatus status);
 };
-

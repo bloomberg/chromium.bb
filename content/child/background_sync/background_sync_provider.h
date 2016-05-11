@@ -11,9 +11,9 @@
 #include <string>
 
 #include "base/macros.h"
-#include "content/common/background_sync_service.mojom.h"
 #include "content/public/child/worker_thread.h"
 #include "third_party/WebKit/public/platform/modules/background_sync/WebSyncProvider.h"
+#include "third_party/WebKit/public/platform/modules/background_sync/background_sync.mojom.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -60,17 +60,17 @@ class BackgroundSyncProvider : public blink::WebSyncProvider,
   // Callback handlers
   void RegisterCallback(
       std::unique_ptr<blink::WebSyncRegistrationCallbacks> callbacks,
-      mojom::BackgroundSyncError error,
-      const mojom::SyncRegistrationPtr& options);
+      blink::mojom::BackgroundSyncError error,
+      const blink::mojom::SyncRegistrationPtr& options);
   void GetRegistrationsCallback(
       std::unique_ptr<blink::WebSyncGetRegistrationsCallbacks> callbacks,
-      mojom::BackgroundSyncError error,
-      const mojo::Array<mojom::SyncRegistrationPtr>& registrations);
+      blink::mojom::BackgroundSyncError error,
+      const mojo::Array<blink::mojom::SyncRegistrationPtr>& registrations);
 
   // Helper method that returns an initialized BackgroundSyncServicePtr.
-  mojom::BackgroundSyncServicePtr& GetBackgroundSyncServicePtr();
+  blink::mojom::BackgroundSyncServicePtr& GetBackgroundSyncServicePtr();
 
-  mojom::BackgroundSyncServicePtr background_sync_service_;
+  blink::mojom::BackgroundSyncServicePtr background_sync_service_;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundSyncProvider);
