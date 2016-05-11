@@ -1,103 +1,94 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-item/paper-item.html">
 <link rel="import" href="chrome://md-settings/icons.html">
+<link rel="import" href="chrome://md-settings/settings_shared_css.html">
 <link rel="import" href="chrome://md-settings/site_settings/constants.html">
 <link rel="import" href="chrome://md-settings/site_settings/site_settings_behavior.html">
 <link rel="import" href="chrome://md-settings/site_settings/site_settings_prefs_browser_proxy.html">
 
 <dom-module id="settings-site-settings-page">
-  <link rel="import" type="css" href="site_settings_page.css">
   <template>
-    <div class="settings-box">
-      <div id="list" class="settings-list">
-        <paper-icon-item category$="[[ALL_SITES]]"
-            on-tap="onTapCategory">
-          <iron-icon icon="settings:list" item-icon></iron-icon>
-          <div class="flex category-header">
-            $i18n{siteSettingsCategoryAllSites}
-          </div>
-        </paper-icon-item>
-
-        <paper-icon-item category$="[[ContentSettingsTypes.COOKIES]]"
-            on-tap="onTapCategory">
-          <iron-icon icon="[[computeIconForContentCategory(
-              ContentSettingsTypes.COOKIES)]]" item-icon></iron-icon>
-          <div class="flex category-header">
-            [[computeTitleForContentCategory(ContentSettingsTypes.COOKIES)]]
-          </div>
-          <div id="cookies" class="option-value"></div>
-        </paper-icon-item>
-
-        <paper-icon-item category$="[[ContentSettingsTypes.GEOLOCATION]]"
-            on-tap="onTapCategory">
-          <iron-icon icon="[[computeIconForContentCategory(
-              ContentSettingsTypes.GEOLOCATION)]]" item-icon></iron-icon>
-          <div class="flex category-header">
-            [[computeTitleForContentCategory(ContentSettingsTypes.GEOLOCATION)]]
-          </div>
-          <div id="geolocation" class="option-value"></div>
-        </paper-icon-item>
-
-        <paper-icon-item category$="[[ContentSettingsTypes.CAMERA]]"
-            on-tap="onTapCategory">
-          <iron-icon icon="[[computeIconForContentCategory(
-              ContentSettingsTypes.CAMERA)]]" item-icon></iron-icon>
-          <div class="flex category-header">
-            [[computeTitleForContentCategory(ContentSettingsTypes.CAMERA)]]
-          </div>
-          <div id="camera" class="option-value"></div>
-        </paper-icon-item>
-
-        <paper-icon-item category$="[[ContentSettingsTypes.MIC]]"
-            on-tap="onTapCategory">
-          <iron-icon icon="[[computeIconForContentCategory(
-              ContentSettingsTypes.MIC)]]" item-icon></iron-icon>
-          <div class="flex category-header">
-            [[computeTitleForContentCategory(ContentSettingsTypes.MIC)]]
-          </div>
-          <div id="mic" class="option-value"></div>
-        </paper-icon-item>
-
-        <paper-icon-item category$="[[ContentSettingsTypes.JAVASCRIPT]]"
-            on-tap="onTapCategory">
-          <iron-icon icon="[[computeIconForContentCategory(
-              ContentSettingsTypes.JAVASCRIPT)]]" item-icon></iron-icon>
-          <div class="flex category-header">
-            [[computeTitleForContentCategory(ContentSettingsTypes.JAVASCRIPT)]]
-          </div>
-          <div id="javascript" class="option-value"></div>
-        </paper-icon-item>
-
-        <paper-icon-item category$="[[ContentSettingsTypes.POPUPS]]"
-            on-tap="onTapCategory">
-          <iron-icon icon="[[computeIconForContentCategory(
-              ContentSettingsTypes.POPUPS)]]" item-icon></iron-icon>
-          <div class="flex category-header">
-            [[computeTitleForContentCategory(ContentSettingsTypes.POPUPS)]]
-          </div>
-          <div id="popups" class="option-value"></div>
-        </paper-icon-item>
-
-        <paper-icon-item category$="[[ContentSettingsTypes.NOTIFICATIONS]]"
-            on-tap="onTapCategory">
-          <iron-icon icon="[[computeIconForContentCategory(
-              ContentSettingsTypes.NOTIFICATIONS)]]" item-icon></iron-icon>
-          <div class="flex category-header">
-            [[computeTitleForContentCategory(
-                ContentSettingsTypes.NOTIFICATIONS)]]
-          </div>
-          <div id="notifications" class="option-value"></div>
-        </paper-icon-item>
-
-        <paper-icon-item category$="[[ContentSettingsTypes.IMAGES]]"
-            on-tap="onTapCategory">
-          <iron-icon icon="[[computeIconForContentCategory(
-              ContentSettingsTypes.IMAGES)]]" item-icon></iron-icon>
-          <div class="flex category-header">
-            [[computeTitleForContentCategory(ContentSettingsTypes.IMAGES)]]
-          </div>
-          <div id="images" class="option-value"></div>
-        </paper-icon-item>
+    <style include="settings-shared">
+    </style>
+    <div class="settings-box first" category$="[[ALL_SITES]]"
+        on-tap="onTapCategory">
+      <iron-icon icon="settings:list"></iron-icon>
+      <div class="middle">$i18n{siteSettingsCategoryAllSites}</div>
+    </div>
+    <div class="settings-box two-line"
+        category$="[[ContentSettingsTypes.COOKIES]]" on-tap="onTapCategory">
+      <iron-icon icon="[[computeIconForContentCategory(
+          ContentSettingsTypes.COOKIES)]]"></iron-icon>
+      <div class="middle">
+        <div>
+          [[computeTitleForContentCategory(ContentSettingsTypes.COOKIES)]]
+        </div>
+        <div id="cookies" class="secondary"></div>
+      </div>
+    </div>
+    <div class="settings-box two-line"
+        category$="[[ContentSettingsTypes.GEOLOCATION]]" on-tap="onTapCategory">
+      <iron-icon icon="[[computeIconForContentCategory(
+          ContentSettingsTypes.GEOLOCATION)]]" item-icon=""></iron-icon>
+      <div class="middle">
+        [[computeTitleForContentCategory(ContentSettingsTypes.GEOLOCATION)]]
+        <div id="geolocation" class="secondary"></div>
+      </div>
+    </div>
+    <div class="settings-box two-line"
+        category$="[[ContentSettingsTypes.CAMERA]]" on-tap="onTapCategory">
+      <iron-icon icon="[[computeIconForContentCategory(
+          ContentSettingsTypes.CAMERA)]]" item-icon=""></iron-icon>
+      <div class="middle">
+        [[computeTitleForContentCategory(ContentSettingsTypes.CAMERA)]]
+        <div id="camera" class="secondary"></div>
+      </div>
+    </div>
+    <div class="settings-box two-line" category$="[[ContentSettingsTypes.MIC]]"
+        on-tap="onTapCategory">
+      <iron-icon icon="[[computeIconForContentCategory(
+          ContentSettingsTypes.MIC)]]" item-icon=""></iron-icon>
+      <div class="middle">
+        [[computeTitleForContentCategory(ContentSettingsTypes.MIC)]]
+        <div id="mic" class="secondary"></div>
+      </div>
+    </div>
+    <div class="settings-box two-line"
+        category$="[[ContentSettingsTypes.JAVASCRIPT]]"
+        on-tap="onTapCategory">
+      <iron-icon icon="[[computeIconForContentCategory(
+          ContentSettingsTypes.JAVASCRIPT)]]" item-icon=""></iron-icon>
+      <div class="middle">
+        [[computeTitleForContentCategory(ContentSettingsTypes.JAVASCRIPT)]]
+        <div id="javascript" class="secondary"></div>
+      </div>
+    </div>
+    <div class="settings-box two-line"
+        category$="[[ContentSettingsTypes.POPUPS]]" on-tap="onTapCategory">
+      <iron-icon icon="[[computeIconForContentCategory(
+          ContentSettingsTypes.POPUPS)]]" item-icon=""></iron-icon>
+      <div class="middle">
+        [[computeTitleForContentCategory(ContentSettingsTypes.POPUPS)]]
+        <div id="popups" class="secondary"></div>
+      </div>
+    </div>
+    <div class="settings-box two-line"
+        category$="[[ContentSettingsTypes.NOTIFICATIONS]]"
+        on-tap="onTapCategory">
+      <iron-icon icon="[[computeIconForContentCategory(
+          ContentSettingsTypes.NOTIFICATIONS)]]" item-icon=""></iron-icon>
+      <div class="middle">
+        [[computeTitleForContentCategory(ContentSettingsTypes.NOTIFICATIONS)]]
+        <div id="notifications" class="secondary"></div>
+      </div>
+    </div>
+    <div class="settings-box two-line"
+        category$="[[ContentSettingsTypes.IMAGES]]" on-tap="onTapCategory">
+      <iron-icon icon="[[computeIconForContentCategory(
+          ContentSettingsTypes.IMAGES)]]" item-icon=""></iron-icon>
+      <div class="middle">
+        [[computeTitleForContentCategory(ContentSettingsTypes.IMAGES)]]
+        <div id="images" class="secondary"></div>
       </div>
     </div>
   </template>
