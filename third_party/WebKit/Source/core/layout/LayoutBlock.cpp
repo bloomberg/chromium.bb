@@ -1947,11 +1947,6 @@ LayoutBlockFlow* LayoutBlock::nearestInnerBlockWithFirstLine()
     return nullptr;
 }
 
-LayoutObject* LayoutBlock::hoverAncestor() const
-{
-    return isAnonymousBlockContinuation() ? continuation() : LayoutBox::hoverAncestor();
-}
-
 void LayoutBlock::updateDragState(bool dragOn)
 {
     LayoutBox::updateDragState(dragOn);

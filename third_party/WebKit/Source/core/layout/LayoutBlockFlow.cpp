@@ -1970,6 +1970,11 @@ void LayoutBlockFlow::absoluteQuads(Vector<FloatQuad>& quads) const
     continuation()->absoluteQuads(quads);
 }
 
+LayoutObject* LayoutBlockFlow::hoverAncestor() const
+{
+    return isAnonymousBlockContinuation() ? continuation() : LayoutBlock::hoverAncestor();
+}
+
 RootInlineBox* LayoutBlockFlow::createAndAppendRootInlineBox()
 {
     RootInlineBox* rootBox = createRootInlineBox();

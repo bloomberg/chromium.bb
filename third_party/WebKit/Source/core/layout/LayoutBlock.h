@@ -419,7 +419,6 @@ private:
 
     void computeBlockPreferredLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const;
 
-    LayoutObject* hoverAncestor() const final;
     void updateDragState(bool dragOn) final;
     void childBecameNonInline(LayoutObject* child) final;
 
