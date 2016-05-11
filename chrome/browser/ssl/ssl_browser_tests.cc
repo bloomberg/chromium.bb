@@ -1921,23 +1921,17 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestRedirectBadToGoodHTTPS) {
   CheckAuthenticatedState(tab, AuthState::NONE);
 }
 
-// Flaky on Linux. http://crbug.com/368280.
-#if defined(OS_LINUX)
-#define MAYBE_TestRedirectGoodToBadHTTPS DISABLED_TestRedirectGoodToBadHTTPS
-#else
-#define MAYBE_TestRedirectGoodToBadHTTPS TestRedirectGoodToBadHTTPS
-#endif
-
 // Visit a page over good https that is a redirect to a page with bad https.
-IN_PROC_BROWSER_TEST_F(SSLUITest, MAYBE_TestRedirectGoodToBadHTTPS) {
+IN_PROC_BROWSER_TEST_F(SSLUITest, TestRedirectGoodToBadHTTPS) {
   ASSERT_TRUE(https_server_.Start());
   ASSERT_TRUE(https_server_expired_.Start());
 
   GURL url1 = https_server_.GetURL("/server-redirect?");
   GURL url2 = https_server_expired_.GetURL("/ssl/google.html");
-  ui_test_utils::NavigateToURL(browser(), GURL(url1.spec() + url2.spec()));
-
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+  ui_test_utils::NavigateToURL(browser(), GURL(url1.spec() + url2.spec()));
+  content::WaitForInterstitialAttach(tab);
+
   CheckAuthenticationBrokenState(
       tab, net::CERT_STATUS_DATE_INVALID, AuthState::SHOWING_INTERSTITIAL);
 
