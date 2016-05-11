@@ -7,6 +7,9 @@
 
 #include <stdint.h>
 
+#include <memory>
+
+#include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/x/events_x_export.h"
@@ -80,7 +83,8 @@ EVENTS_X_EXPORT bool GetFlingDataFromXEvent(const XEvent& xev,
                                             float* vy_ordinal,
                                             bool* is_cancel);
 
-EVENTS_X_EXPORT void ResetTimestampRolloverCountersForTesting();
+EVENTS_X_EXPORT void ResetTimestampRolloverCountersForTesting(
+    std::unique_ptr<base::TickClock> tick_clock = nullptr);
 
 }  // namespace ui
 
