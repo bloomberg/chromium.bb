@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "net/ssl/ssl_info.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_filter.h"

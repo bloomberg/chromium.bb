@@ -4,8 +4,8 @@
 
 #include "net/websockets/websocket_channel.h"
 
-#include <stddef.h>
 #include <limits.h>  // for INT_MAX
+#include <stddef.h>
 
 #include <algorithm>
 #include <deque>
@@ -22,7 +22,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "net/base/io_buffer.h"
 #include "net/http/http_request_headers.h"
