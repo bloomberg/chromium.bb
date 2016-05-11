@@ -518,6 +518,9 @@ class CONTENT_EXPORT RenderThreadImpl
 
   void ReleaseFreeMemory();
 
+  void OnSyncMemoryPressure(
+      base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
+
   // These objects live solely on the render thread.
   std::unique_ptr<AppCacheDispatcher> appcache_dispatcher_;
   std::unique_ptr<DomStorageDispatcher> dom_storage_dispatcher_;

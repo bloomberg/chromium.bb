@@ -36,6 +36,7 @@
 #include "bindings/core/v8/V8Initializer.h"
 #include "core/animation/AnimationClock.h"
 #include "core/page/Page.h"
+#include "core/workers/WorkerBackingThread.h"
 #include "gin/public/v8_platform.h"
 #include "modules/ModulesInitializer.h"
 #include "platform/LayoutTestSupport.h"
@@ -174,6 +175,13 @@ void resetPluginCache(bool reloadPages)
 void decommitFreeableMemory()
 {
     WTF::Partitions::decommitFreeableMemory();
+}
+
+void MemoryPressureNotificationToWorkerThreadIsolates(
+    v8::MemoryPressureLevel level)
+{
+    WorkerBackingThread::
+        MemoryPressureNotificationToWorkerThreadIsolates(level);
 }
 
 } // namespace blink

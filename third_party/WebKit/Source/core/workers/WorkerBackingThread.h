@@ -61,6 +61,9 @@ public:
 
     v8::Isolate* isolate() { return m_isolate; }
 
+    static void MemoryPressureNotificationToWorkerThreadIsolates(
+        v8::MemoryPressureLevel);
+
 private:
     WorkerBackingThread(const char* name, bool shouldCallGCOnShutdown);
     WorkerBackingThread(WebThread*, bool shouldCallGCOnSHutdown);

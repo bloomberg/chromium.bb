@@ -161,7 +161,6 @@
 #include "third_party/skia/include/core/SkGraphics.h"
 #include "ui/base/layout.h"
 #include "ui/base/ui_base_switches.h"
-#include "v8/include/v8.h"
 
 #if defined(OS_ANDROID)
 #include <cpu-features.h>
@@ -242,6 +241,17 @@ const size_t kImageCacheSingleAllocationByteLimit = 64 * 1024 * 1024;
 base::LazyInstance<base::ThreadLocalPointer<RenderThreadImpl> >
     lazy_tls = LAZY_INSTANCE_INITIALIZER;
 
+// v8::MemoryPressureLevel should correspond to base::MemoryPressureListener.
+static_assert(static_cast<v8::MemoryPressureLevel>(
+    base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE) ==
+        v8::MemoryPressureLevel::kNone, "none level not align");
+static_assert(static_cast<v8::MemoryPressureLevel>(
+    base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE) ==
+        v8::MemoryPressureLevel::kModerate, "moderate level not align");
+static_assert(static_cast<v8::MemoryPressureLevel>(
+    base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL) ==
+        v8::MemoryPressureLevel::kCritical, "critical level not align");
+
 class WebThreadForCompositor : public WebThreadImplForWorkerScheduler {
  public:
   explicit WebThreadForCompositor(base::Thread::Options options)
@@ -301,13 +311,6 @@ void NotifyTimezoneChangeOnThisThread() {
   if (!isolate)
     return;
   v8::Date::DateTimeConfigurationChangeNotification(isolate);
-}
-
-void LowMemoryNotificationOnThisThread() {
-  v8::Isolate* isolate = v8::Isolate::GetCurrent();
-  if (!isolate)
-    return;
-  isolate->LowMemoryNotification();
 }
 
 class RenderFrameSetupImpl : public mojom::RenderFrameSetup {
@@ -780,7 +783,9 @@ void RenderThreadImpl::Init(
 #endif
 
   memory_pressure_listener_.reset(new base::MemoryPressureListener(
-      base::Bind(&RenderThreadImpl::OnMemoryPressure, base::Unretained(this))));
+      base::Bind(&RenderThreadImpl::OnMemoryPressure, base::Unretained(this)),
+      base::Bind(&RenderThreadImpl::OnSyncMemoryPressure,
+                 base::Unretained(this))));
 
   int num_raster_threads = 0;
   std::string string_value =
@@ -1889,25 +1894,13 @@ void RenderThreadImpl::OnCreateNewSharedWorker(
 
 void RenderThreadImpl::OnMemoryPressure(
     base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level) {
+  TRACE_EVENT0("memory","RenderThreadImpl::OnMemoryPressure");
   ReleaseFreeMemory();
 
   // Do not call into blink if it is not initialized.
   if (blink_platform_impl_) {
     blink::WebMemoryPressureListener::onMemoryPressure(
         static_cast<blink::WebMemoryPressureLevel>(memory_pressure_level));
-
-    if (blink::mainThreadIsolate()) {
-      // Trigger full v8 garbage collection on memory pressure notifications.
-      // This will potentially hang the renderer for a long time, however, when
-      // we receive a memory pressure notification, we might be about to be
-      // killed. Because of the janky hang don't do this to foreground
-      // renderers.
-      if (RendererIsHidden()) {
-        blink::mainThreadIsolate()->LowMemoryNotification();
-        RenderThread::Get()->PostTaskToAllWebWorkers(
-            base::Bind(&LowMemoryNotificationOnThisThread));
-      }
-    }
 
     if (memory_pressure_level ==
         base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL) {
@@ -2074,6 +2067,26 @@ void RenderThreadImpl::PendingRenderFrameConnect::OnConnectionError() {
       RenderThreadImpl::current()->pending_render_frame_connects_.erase(
           routing_id_);
   DCHECK_EQ(1u, erased);
+}
+
+void RenderThreadImpl::OnSyncMemoryPressure(
+    base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level) {
+  if (!blink::mainThreadIsolate())
+    return;
+
+  v8::MemoryPressureLevel v8_memory_pressure_level =
+      static_cast<v8::MemoryPressureLevel>(memory_pressure_level);
+
+  // In order to reduce performance impact, translate critical level to
+  // moderate level for foregroud renderer.
+  if (!RendererIsHidden() &&
+      v8_memory_pressure_level == v8::MemoryPressureLevel::kCritical)
+    v8_memory_pressure_level = v8::MemoryPressureLevel::kModerate;
+
+  blink::mainThreadIsolate()->MemoryPressureNotification(
+      v8_memory_pressure_level);
+  blink::MemoryPressureNotificationToWorkerThreadIsolates(
+      v8_memory_pressure_level);
 }
 
 }  // namespace content

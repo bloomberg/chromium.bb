@@ -17,6 +17,34 @@
 
 namespace blink {
 
+#define DEFINE_STATIC_LOCAL_WITH_LOCK(type, name, arguments) \
+    ASSERT(isolatesMutex().locked()); \
+    static type& name = *new type arguments
+
+static Mutex& isolatesMutex()
+{
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(Mutex, mutex, new Mutex);
+    return mutex;
+}
+
+static HashSet<v8::Isolate*>& isolates()
+{
+    DEFINE_STATIC_LOCAL_WITH_LOCK(HashSet<v8::Isolate*>, isolates, ());
+    return isolates;
+}
+
+static void addWorkerIsolate(v8::Isolate* isolate)
+{
+    MutexLocker lock(isolatesMutex());
+    isolates().add(isolate);
+}
+
+static void removeWorkerIsolate(v8::Isolate* isolate)
+{
+    MutexLocker lock(isolatesMutex());
+    isolates().remove(isolate);
+}
+
 WorkerBackingThread::WorkerBackingThread(const char* name, bool shouldCallGCOnShutdown)
     : m_backingThread(WebThreadSupportingGC::create(name))
     , m_isOwningThread(true)
@@ -63,6 +91,7 @@ void WorkerBackingThread::initialize()
 {
     DCHECK(!m_isolate);
     m_isolate = V8PerIsolateData::initialize();
+    addWorkerIsolate(m_isolate);
     V8Initializer::initializeWorker(m_isolate);
     m_backingThread->initialize();
 
@@ -88,8 +117,18 @@ void WorkerBackingThread::shutdown()
     }
     m_backingThread->shutdown();
 
+    removeWorkerIsolate(m_isolate);
     V8PerIsolateData::destroy(m_isolate);
     m_isolate = nullptr;
+}
+
+// static
+void WorkerBackingThread::MemoryPressureNotificationToWorkerThreadIsolates(
+    v8::MemoryPressureLevel level)
+{
+    MutexLocker lock(isolatesMutex());
+    for (v8::Isolate* isolate : isolates())
+        isolate->MemoryPressureNotification(level);
 }
 
 } // namespace blink
