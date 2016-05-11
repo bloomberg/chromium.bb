@@ -426,7 +426,7 @@ void CrNetEnvironment::InitializeOnNetworkThread() {
   params.net_log = main_context_->net_log();
   params.enable_spdy31 = spdy_enabled();
   params.enable_http2 = spdy_enabled();
-  params.parse_alternative_services = false;
+  params.parse_alternative_services = true;
   params.enable_quic = quic_enabled();
 
   if (!params.channel_id_service) {
