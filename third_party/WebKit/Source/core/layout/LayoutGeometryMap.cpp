@@ -258,9 +258,17 @@ void LayoutGeometryMap::popMappingsToAncestor(const LayoutBoxModelObject* ancest
 {
     ASSERT(m_mapping.size());
 
+    bool mightBeSaturated = false;
     while (m_mapping.size() && m_mapping.last().m_layoutObject != ancestorLayoutObject) {
+        mightBeSaturated = mightBeSaturated || m_accumulatedOffset.width().mightBeSaturated();
+        mightBeSaturated = mightBeSaturated || m_accumulatedOffset.height().mightBeSaturated();
         stepRemoved(m_mapping.last());
         m_mapping.removeLast();
+    }
+    if (UNLIKELY(mightBeSaturated)) {
+        m_accumulatedOffset = LayoutSize();
+        for (const auto& step : m_mapping)
+            m_accumulatedOffset += step.m_offset;
     }
 }
 
