@@ -70,7 +70,6 @@ class TestingBrowserProcess : public BrowserProcess {
   ProfileManager* profile_manager() override;
   PrefService* local_state() override;
   variations::VariationsService* variations_service() override;
-  web_resource::PromoResourceService* promo_resource_service() override;
   policy::BrowserPolicyConnector* browser_policy_connector() override;
   policy::PolicyService* policy_service() override;
   IconManager* icon_manager() override;

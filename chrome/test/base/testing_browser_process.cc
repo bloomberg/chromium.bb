@@ -140,11 +140,6 @@ variations::VariationsService* TestingBrowserProcess::variations_service() {
   return nullptr;
 }
 
-web_resource::PromoResourceService*
-TestingBrowserProcess::promo_resource_service() {
-  return nullptr;
-}
-
 policy::BrowserPolicyConnector*
     TestingBrowserProcess::browser_policy_connector() {
   if (!browser_policy_connector_) {

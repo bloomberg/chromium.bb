@@ -900,8 +900,6 @@
     ],
     'web_resource_unittest_sources': [
       'web_resource/eula_accepted_notifier_unittest.cc',
-      'web_resource/promo_resource_service_mobile_ntp_unittest.cc',
-      'web_resource/promo_resource_service_unittest.cc',
       'web_resource/resource_request_allowed_notifier_unittest.cc',
     ],
     'web_restrictions_unittest_sources' : [

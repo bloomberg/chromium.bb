@@ -6,8 +6,6 @@ static_library("web_resource") {
   sources = [
     "eula_accepted_notifier.cc",
     "eula_accepted_notifier.h",
-    "notification_promo.cc",
-    "notification_promo.h",
     "promo_resource_service.cc",
     "promo_resource_service.h",
     "resource_request_allowed_notifier.cc",
@@ -16,16 +14,7 @@ static_library("web_resource") {
     "web_resource_pref_names.h",
     "web_resource_service.cc",
     "web_resource_service.h",
-    "web_resource_switches.cc",
-    "web_resource_switches.h",
   ]
-
-  if (is_android || is_ios) {
-    sources += [
-      "notification_promo_mobile_ntp.cc",
-      "notification_promo_mobile_ntp.h",
-    ]
-  }
 
   deps = [
     "//base",
@@ -54,13 +43,8 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "eula_accepted_notifier_unittest.cc",
-    "promo_resource_service_unittest.cc",
     "resource_request_allowed_notifier_unittest.cc",
   ]
-
-  if (is_android || is_ios) {
-    sources += [ "promo_resource_service_mobile_ntp_unittest.cc" ]
-  }
 
   deps = [
     ":test_support",

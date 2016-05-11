@@ -94,7 +94,6 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
   TemplateURLPrepopulateData::RegisterProfilePrefs(registry);
   translate::TranslatePrefs::RegisterProfilePrefs(registry);
   variations::VariationsService::RegisterProfilePrefs(registry);
-  web_resource::PromoResourceService::RegisterProfilePrefs(registry);
   ZeroSuggestProvider::RegisterProfilePrefs(registry);
 
   registry->RegisterBooleanPref(prefs::kDataSaverEnabled, false);
@@ -144,7 +143,10 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
 }
 
 // This method should be periodically pruned of year+ old migrations.
-void MigrateObsoleteLocalStatePrefs(PrefService* prefs) {}
+void MigrateObsoleteLocalStatePrefs(PrefService* prefs) {
+  // Added 05/2016.
+  web_resource::PromoResourceService::ClearLocalState(prefs);
+}
 
 // This method should be periodically pruned of year+ old migrations.
 void MigrateObsoleteBrowserStatePrefs(PrefService* prefs) {

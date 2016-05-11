@@ -293,9 +293,6 @@ source_set("browser") {
         rebase_path(gypi_values.chrome_browser_ssl_sources, ".", "//chrome")
     sources +=
         rebase_path(gypi_values.chrome_browser_sync_sources, ".", "//chrome")
-    sources += rebase_path(gypi_values.chrome_browser_web_resource_sources,
-                           ".",
-                           "//chrome")
     if (android_java_ui) {
       sources +=
           rebase_path(gypi_values.chrome_browser_sync_android_java_ui_sources,

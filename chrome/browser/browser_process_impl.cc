@@ -97,7 +97,6 @@
 #include "components/signin/core/common/profile_management_switches.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/update_client/update_query_params.h"
-#include "components/web_resource/promo_resource_service.h"
 #include "components/web_resource/web_resource_pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
@@ -268,11 +267,11 @@ void BrowserProcessImpl::StartTearDown() {
   tearing_down_ = true;
   DCHECK(IsShuttingDown());
   // We need to destroy the MetricsServicesManager, IntranetRedirectDetector,
-  // PromoResourceService, NetworkTimeTracker, and SafeBrowsing
-  // ClientSideDetectionService (owned by the SafeBrowsingService) before the
-  // io_thread_ gets destroyed, since their destructors can call the URLFetcher
-  // destructor, which does a PostDelayedTask operation on the IO thread. (The
-  // IO thread will handle that URLFetcher operation before going away.)
+  // NetworkTimeTracker, and SafeBrowsing ClientSideDetectionService
+  // (owned by the SafeBrowsingService) before the io_thread_ gets destroyed,
+  // since their destructors can call the URLFetcher destructor, which does a
+  // PostDelayedTask operation on the IO thread. (The IO thread will handle
+  // that URLFetcher operation before going away.)
   metrics_services_manager_.reset();
   intranet_redirect_detector_.reset();
   if (safe_browsing_service_.get())
@@ -306,10 +305,6 @@ void BrowserProcessImpl::StartTearDown() {
     UserManager::Hide();
     profile_manager_.reset();
   }
-
-  // PromoResourceService must be destroyed after the keyed services and before
-  // the IO thread.
-  promo_resource_service_.reset();
 
   child_process_watcher_.reset();
 
@@ -551,12 +546,6 @@ net::URLRequestContextGetter* BrowserProcessImpl::system_request_context() {
 variations::VariationsService* BrowserProcessImpl::variations_service() {
   DCHECK(CalledOnValidThread());
   return GetMetricsServicesManager()->GetVariationsService();
-}
-
-web_resource::PromoResourceService*
-BrowserProcessImpl::promo_resource_service() {
-  DCHECK(CalledOnValidThread());
-  return promo_resource_service_.get();
 }
 
 BrowserProcessPlatformPart* BrowserProcessImpl::platform_part() {

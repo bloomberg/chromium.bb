@@ -111,10 +111,6 @@ namespace safe_browsing {
 class ClientSideDetectionService;
 }
 
-namespace web_resource {
-class PromoResourceService;
-}
-
 // NOT THREAD SAFE, call only from the main thread.
 // These functions shouldn't return NULL unless otherwise noted.
 class BrowserProcess {
@@ -143,7 +139,6 @@ class BrowserProcess {
   virtual PrefService* local_state() = 0;
   virtual net::URLRequestContextGetter* system_request_context() = 0;
   virtual variations::VariationsService* variations_service() = 0;
-  virtual web_resource::PromoResourceService* promo_resource_service() = 0;
 
   virtual BrowserProcessPlatformPart* platform_part() = 0;
 

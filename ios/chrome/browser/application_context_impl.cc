@@ -275,12 +275,6 @@ gcm::GCMDriver* ApplicationContextImpl::GetGCMDriver() {
   return gcm_driver_.get();
 }
 
-web_resource::PromoResourceService*
-ApplicationContextImpl::GetPromoResourceService() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return nullptr;
-}
-
 component_updater::ComponentUpdateService*
 ApplicationContextImpl::GetComponentUpdateService() {
   DCHECK(thread_checker_.CalledOnValidThread());
