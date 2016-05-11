@@ -282,7 +282,13 @@ void WebMediaPlayerImpl::load(LoadType load_type,
 
 bool WebMediaPlayerImpl::supportsOverlayFullscreenVideo() {
 #if defined(OS_ANDROID)
-  return true;
+  // OverlayFullscreenVideo is only used when we're H/W decoding to an
+  // SurfaceView underlay on Android. It's possible that we haven't initialized
+  // any decoders before entering fullscreen, so we won't know whether to use
+  // OverlayFullscreenVideo. In that case we'll default to
+  // non-OverlayFullscreenVideo, which still works correctly, but has janky
+  // orientation changes.
+  return decoder_requires_restart_for_fullscreen_;
 #else
   return false;
 #endif
