@@ -39,10 +39,8 @@ class ArcAppWindowLauncherController : public AppWindowLauncherController,
   void OnWindowInitialized(aura::Window* window) override;
 
   // aura::WindowObserver:
+  void OnWindowVisibilityChanging(aura::Window* window, bool visible) override;
   void OnWindowDestroying(aura::Window* window) override;
-  void OnWindowPropertyChanged(aura::Window* window,
-                               const void* key,
-                               intptr_t old) override;
 
   // aura::client::ActivationChangeObserver:
   void OnWindowActivated(

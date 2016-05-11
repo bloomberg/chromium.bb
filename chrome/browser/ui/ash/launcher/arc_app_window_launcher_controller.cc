@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/exo/shell_surface.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/base/base_window.h"
 #include "ui/views/widget/widget.h"
@@ -198,14 +199,14 @@ void ArcAppWindowLauncherController::OnWindowInitialized(aura::Window* window) {
     return;
   observed_windows_.push_back(window);
   window->AddObserver(this);
-  CheckForAppWindowWidget(window);
 }
 
-void ArcAppWindowLauncherController::OnWindowPropertyChanged(
+void ArcAppWindowLauncherController::OnWindowVisibilityChanging(
     aura::Window* window,
-    const void* key,
-    intptr_t old) {
-  CheckForAppWindowWidget(window);
+    bool visible) {
+  // The application id property should be set at this time.
+  if (visible)
+    CheckForAppWindowWidget(window);
 }
 
 void ArcAppWindowLauncherController::OnWindowDestroying(aura::Window* window) {
@@ -239,6 +240,7 @@ void ArcAppWindowLauncherController::CheckForAppWindowWidget(
   if (app_id.empty())
     return;
 
+  bool is_app_window = false;
   // Check if we have any app windows with matching package names.
   // TODO(reveman): Revisit this if we need to have different icons for
   // different sub intents.
@@ -246,22 +248,27 @@ void ArcAppWindowLauncherController::CheckForAppWindowWidget(
     if (it.second->package_name() != app_id)
       continue;
     it.second->set_widget(views::Widget::GetWidgetForNativeWindow(window));
+    is_app_window = true;
   }
 
-  int task_id = -1;
-  if (sscanf(app_id.c_str(), "org.chromium.arc.%d", &task_id) != 1)
-    return;
+  if (!is_app_window) {
+    int task_id = -1;
+    if (sscanf(app_id.c_str(), "org.chromium.arc.%d", &task_id) != 1)
+      return;
 
-  if (!task_id) {
-    // task_id=0 is the default window. It will not contain any real
-    // apps so best if it's ignored by the shelf for purposes of darkening.
-    ash::wm::GetWindowState(window)->set_ignored_by_shelf(true);
-    return;
+    if (task_id) {
+      AppWindow* app_window = GetAppWindowForTask(task_id);
+      if (app_window)
+        app_window->set_widget(views::Widget::GetWidgetForNativeWindow(window));
+    } else {
+      // task_id=0 is the default window. It will not contain any real
+      // apps so best if it's ignored by the shelf for purposes of darkening.
+      ash::wm::GetWindowState(window)->set_ignored_by_shelf(true);
+    }
   }
 
-  AppWindow* app_window = GetAppWindowForTask(task_id);
-  if (app_window)
-    app_window->set_widget(views::Widget::GetWidgetForNativeWindow(window));
+  // Apps do their own animation and don't want any from the system.
+  window->SetProperty(aura::client::kAnimationsDisabledKey, true);
 }
 
 void ArcAppWindowLauncherController::OnTaskCreated(
