@@ -157,6 +157,7 @@ class SegmentedString;
 class SelectorQueryCache;
 class SerializedScriptValue;
 class Settings;
+class SnapCoordinator;
 class StyleEngine;
 class StyleResolver;
 class StyleSheet;
@@ -1051,6 +1052,8 @@ public:
     }
     int nodeCount() const { return m_nodeCount; }
 
+    SnapCoordinator* snapCoordinator();
+
     using WeakDocumentSet = HeapHashSet<WeakMember<Document>>;
     static WeakDocumentSet& liveDocumentSet();
 
@@ -1389,6 +1392,8 @@ private:
     int m_nodeCount;
 
     bool m_mayContainV0Shadow = false;
+
+    Member<SnapCoordinator> m_snapCoordinator;
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT Supplement<Document>;
