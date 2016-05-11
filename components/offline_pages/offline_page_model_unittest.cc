@@ -28,19 +28,9 @@
 #include "components/offline_pages/offline_page_storage_manager.h"
 #include "components/offline_pages/offline_page_test_archiver.h"
 #include "components/offline_pages/offline_page_test_store.h"
+#include "components/offline_pages/offline_page_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
-
-using SavePageResult = offline_pages::OfflinePageModel::SavePageResult;
-using DeletePageResult = offline_pages::OfflinePageModel::DeletePageResult;
-using SingleOfflinePageItemResult =
-    offline_pages::OfflinePageModel::SingleOfflinePageItemResult;
-using MultipleOfflinePageItemResult =
-    offline_pages::OfflinePageModel::MultipleOfflinePageItemResult;
-using CheckPagesExistOfflineResult =
-    offline_pages::OfflinePageModel::CheckPagesExistOfflineResult;
-using MultipleOfflineIdResult =
-    offline_pages::OfflinePageModel::MultipleOfflineIdResult;
 
 namespace offline_pages {
 
@@ -132,7 +122,7 @@ class OfflinePageModelTest
                                   OfflinePageArchiver::ArchiverResult result);
 
   void DeletePage(int64_t offline_id,
-                  const OfflinePageModel::DeletePageCallback& callback) {
+                  const DeletePageCallback& callback) {
     std::vector<int64_t> offline_ids;
     offline_ids.push_back(offline_id);
     model()->DeletePagesByOfflineId(offline_ids, callback);
@@ -235,9 +225,8 @@ void OfflinePageModelTest::SetLastPathCreatedByArchiver(
   last_archiver_path_ = file_path;
 }
 
-void OfflinePageModelTest::OnSavePageDone(
-    OfflinePageModel::SavePageResult result,
-    int64_t offline_id) {
+void OfflinePageModelTest::OnSavePageDone(SavePageResult result,
+                                          int64_t offline_id) {
   last_save_result_ = result;
   last_save_offline_id_ = offline_id;
 }

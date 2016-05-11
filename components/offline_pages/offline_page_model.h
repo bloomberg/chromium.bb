@@ -25,6 +25,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/offline_pages/offline_page_archiver.h"
 #include "components/offline_pages/offline_page_metadata_store.h"
+#include "components/offline_pages/offline_page_types.h"
 
 class GURL;
 namespace base {
@@ -65,49 +66,6 @@ class OfflinePageStorageManager;
 // * how to cancel requests and what to expect
 class OfflinePageModel : public KeyedService, public base::SupportsUserData {
  public:
-  // Result of saving a page offline.
-  // A Java counterpart will be generated for this enum.
-  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.offlinepages
-  enum class SavePageResult {
-    SUCCESS,
-    CANCELLED,
-    DEVICE_FULL,
-    CONTENT_UNAVAILABLE,
-    ARCHIVE_CREATION_FAILED,
-    STORE_FAILURE,
-    ALREADY_EXISTS,
-    // Certain pages, i.e. file URL or NTP, will not be saved because these
-    // are already locally accessible.
-    SKIPPED,
-    SECURITY_CERTIFICATE_ERROR,
-    // NOTE: always keep this entry at the end. Add new result types only
-    // immediately above this line. Make sure to update the corresponding
-    // histogram enum accordingly.
-    RESULT_COUNT,
-  };
-
-  // Result of deleting an offline page.
-  // A Java counterpart will be generated for this enum.
-  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.offlinepages
-  enum class DeletePageResult {
-    SUCCESS,
-    CANCELLED,
-    STORE_FAILURE,
-    DEVICE_FAILURE,
-    NOT_FOUND,
-    // NOTE: always keep this entry at the end. Add new result types only
-    // immediately above this line. Make sure to update the corresponding
-    // histogram enum accordingly.
-    RESULT_COUNT,
-  };
-
-  // Result of loading all pages.
-  enum class LoadResult {
-    SUCCESS,
-    CANCELLED,
-    STORE_FAILURE,
-  };
-
   // Observer of the OfflinePageModel.
   class Observer {
    public:
@@ -128,22 +86,14 @@ class OfflinePageModel : public KeyedService, public base::SupportsUserData {
     virtual ~Observer() {}
   };
 
-  typedef std::set<GURL> CheckPagesExistOfflineResult;
-  typedef std::vector<int64_t> MultipleOfflineIdResult;
-  typedef base::Optional<OfflinePageItem> SingleOfflinePageItemResult;
-  typedef std::vector<OfflinePageItem> MultipleOfflinePageItemResult;
+  using CheckPagesExistOfflineResult =
+      offline_pages::CheckPagesExistOfflineResult;
+  using MultipleOfflinePageItemResult =
+      offline_pages::MultipleOfflinePageItemResult;
 
-  typedef base::Callback<void(SavePageResult, int64_t)> SavePageCallback;
-  typedef base::Callback<void(DeletePageResult)> DeletePageCallback;
-  typedef base::Callback<void(const CheckPagesExistOfflineResult&)>
-      CheckPagesExistOfflineCallback;
-  typedef base::Callback<void(bool)> HasPagesCallback;
-  typedef base::Callback<void(const MultipleOfflineIdResult&)>
-      MultipleOfflineIdCallback;
-  typedef base::Callback<void(const SingleOfflinePageItemResult&)>
-      SingleOfflinePageItemCallback;
-  typedef base::Callback<void(const MultipleOfflinePageItemResult&)>
-      MultipleOfflinePageItemCallback;
+  //using DeletePageCallback = offline_pages::DeletePageCallback;
+  using DeletePageResult = offline_pages::DeletePageResult;
+  using SavePageResult = offline_pages::SavePageResult;
 
   // Generates a new offline id
   static int64_t GenerateOfflineId();
@@ -187,9 +137,8 @@ class OfflinePageModel : public KeyedService, public base::SupportsUserData {
   void ClearAll(const base::Closure& callback);
 
   // Deletes offline pages matching the URL predicate.
-  void DeletePagesByURLPredicate(
-      const base::Callback<bool(const GURL&)>& predicate,
-      const DeletePageCallback& callback);
+  void DeletePagesByURLPredicate(const UrlPredicate& predicate,
+                                 const DeletePageCallback& callback);
 
   // Returns true via callback if there are offline pages in the given
   // |name_space|.
@@ -366,7 +315,7 @@ class OfflinePageModel : public KeyedService, public base::SupportsUserData {
       const std::vector<int64_t>* ids_of_pages_missing_archive_file);
   void OnRemoveOfflinePagesMissingArchiveFileDone(
       const std::vector<std::pair<int64_t, ClientId>>& offline_client_id_pairs,
-      OfflinePageModel::DeletePageResult result);
+      DeletePageResult result);
 
   // Steps for clearing all.
   void OnRemoveAllFilesDoneForClearAll(const base::Closure& callback,
@@ -385,9 +334,8 @@ class OfflinePageModel : public KeyedService, public base::SupportsUserData {
 
   // Similar to DoDeletePagesByOfflineId, does actual work of deleting, and
   // requires that the model is loaded.
-  void DoDeletePagesByURLPredicate(
-      const base::Callback<bool(const GURL&)>& predicate,
-      const DeletePageCallback& callback);
+  void DoDeletePagesByURLPredicate(const UrlPredicate& predicate,
+                                   const DeletePageCallback& callback);
 
   void RunWhenLoaded(const base::Closure& job);
 

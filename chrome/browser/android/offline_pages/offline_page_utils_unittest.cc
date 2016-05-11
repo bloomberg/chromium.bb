@@ -23,7 +23,7 @@
 #include "components/offline_pages/offline_page_model.h"
 #include "components/offline_pages/offline_page_test_archiver.h"
 #include "components/offline_pages/offline_page_test_store.h"
-#include "components/offline_pages/proto/offline_pages.pb.h"
+#include "components/offline_pages/offline_page_types.h"
 #include "net/base/filename_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -54,8 +54,7 @@ class OfflinePageUtilsTest
   void RunUntilIdle();
 
   // Necessary callbacks for the offline page model.
-  void OnSavePageDone(OfflinePageModel::SavePageResult result,
-                      int64_t offlineId);
+  void OnSavePageDone(SavePageResult result, int64_t offlineId);
   void OnClearAllDone();
 
   // OfflinePageTestArchiver::Observer implementation:
@@ -118,9 +117,8 @@ void OfflinePageUtilsTest::RunUntilIdle() {
   task_runner_->RunUntilIdle();
 }
 
-void OfflinePageUtilsTest::OnSavePageDone(
-    OfflinePageModel::SavePageResult result,
-    int64_t offline_id) {
+void OfflinePageUtilsTest::OnSavePageDone(SavePageResult result,
+                                          int64_t offline_id) {
   offline_id_ = offline_id;
 }
 

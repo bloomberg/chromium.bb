@@ -25,7 +25,6 @@
 #include "url/gurl.h"
 
 using ArchiverResult = offline_pages::OfflinePageArchiver::ArchiverResult;
-using SavePageResult = offline_pages::OfflinePageModel::SavePageResult;
 
 namespace offline_pages {
 
@@ -257,7 +256,7 @@ void OfflinePageModel::ClearAll(const base::Closure& callback) {
 }
 
 void OfflinePageModel::DeletePagesByURLPredicate(
-    const base::Callback<bool(const GURL&)>& predicate,
+    const UrlPredicate& predicate,
     const DeletePageCallback& callback) {
   if (!is_loaded_) {
     delayed_tasks_.push_back(
@@ -270,7 +269,7 @@ void OfflinePageModel::DeletePagesByURLPredicate(
 }
 
 void OfflinePageModel::DoDeletePagesByURLPredicate(
-    const base::Callback<bool(const GURL&)>& predicate,
+    const UrlPredicate& predicate,
     const DeletePageCallback& callback) {
   DCHECK(is_loaded_);
 
@@ -773,7 +772,7 @@ void OfflinePageModel::OnFindPagesMissingArchiveFile(
 
 void OfflinePageModel::OnRemoveOfflinePagesMissingArchiveFileDone(
     const std::vector<std::pair<int64_t, ClientId>>& offline_client_id_pairs,
-    OfflinePageModel::DeletePageResult /* result */) {
+    DeletePageResult /* result */) {
   for (const auto& id_pair : offline_client_id_pairs) {
     FOR_EACH_OBSERVER(Observer, observers_,
                       OfflinePageDeleted(id_pair.first, id_pair.second));

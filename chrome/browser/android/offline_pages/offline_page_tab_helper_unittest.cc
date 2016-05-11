@@ -18,15 +18,12 @@
 #include "components/offline_pages/offline_page_item.h"
 #include "components/offline_pages/offline_page_model.h"
 #include "components/offline_pages/offline_page_test_archiver.h"
+#include "components/offline_pages/offline_page_types.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_change_notifier.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-using SavePageResult = offline_pages::OfflinePageModel::SavePageResult;
-using SingleOfflinePageItemResult =
-    offline_pages::OfflinePageModel::SingleOfflinePageItemResult;
 
 namespace offline_pages {
 

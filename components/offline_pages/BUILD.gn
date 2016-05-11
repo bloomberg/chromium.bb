@@ -25,6 +25,7 @@ static_library("offline_pages") {
     "offline_page_model.h",
     "offline_page_storage_manager.cc",
     "offline_page_storage_manager.h",
+    "offline_page_types.h",
     "snapshot_controller.cc",
     "snapshot_controller.h",
   ]
@@ -99,7 +100,7 @@ source_set("unit_tests") {
 if (is_android) {
   java_cpp_enum("offline_page_model_enums_java") {
     sources = [
-      "offline_page_model.h",
+      "offline_page_types.h",
     ]
   }
 }

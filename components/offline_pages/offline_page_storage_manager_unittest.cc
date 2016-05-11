@@ -12,9 +12,8 @@
 #include "components/offline_pages/client_policy_controller.h"
 #include "components/offline_pages/offline_page_item.h"
 #include "components/offline_pages/offline_page_model.h"
+#include "components/offline_pages/offline_page_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-using DeletePageResult = offline_pages::OfflinePageModel::DeletePageResult;
 
 namespace offline_pages {
 

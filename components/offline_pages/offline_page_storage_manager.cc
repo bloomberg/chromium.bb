@@ -9,10 +9,7 @@
 #include "components/offline_pages/offline_page_client_policy.h"
 #include "components/offline_pages/offline_page_item.h"
 #include "components/offline_pages/offline_page_model.h"
-
-using DeletePageResult = offline_pages::OfflinePageModel::DeletePageResult;
-using MultipleOfflinePageItemResult =
-    offline_pages::OfflinePageModel::MultipleOfflinePageItemResult;
+#include "components/offline_pages/offline_page_types.h"
 
 namespace offline_pages {
 
