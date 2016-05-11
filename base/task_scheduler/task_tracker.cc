@@ -7,9 +7,9 @@
 #include "base/callback.h"
 #include "base/debug/task_annotator.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/thread_task_runner_handle.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 
 namespace base {
