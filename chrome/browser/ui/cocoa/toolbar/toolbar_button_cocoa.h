@@ -7,11 +7,13 @@
 
 #import <Cocoa/Cocoa.h>
 
+#import "base/mac/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #import "ui/gfx/color_utils.h"
 #include "ui/gfx/vector_icons_public.h"
 
 enum class ToolbarButtonImageBackgroundStyle {
+  DEFAULT,
   HOVER,
   HOVER_THEMED,
   PRESSED,
@@ -21,6 +23,9 @@ enum class ToolbarButtonImageBackgroundStyle {
 // NSButton subclass which handles middle mouse clicking.
 @interface ToolbarButton : NSButton<ThemedWindowDrawing>  {
  @protected
+  // The toolbar button's image, as assigned by setImage:.
+  base::scoped_nsobject<NSImage> image_;
+
   // YES when middle mouse clicks should be handled.
   BOOL handleMiddleClick_;
 }

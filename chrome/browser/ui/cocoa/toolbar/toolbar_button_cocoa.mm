@@ -78,32 +78,47 @@ const NSSize kMDButtonIconSize = NSMakeSize(16, 16);
 }
 
 + (void)drawImage:(ToolbarButtonImageRep*)imageRep {
-  // Create the path used for the background fill.
-  NSBezierPath* roundedRectPath =
-      [NSBezierPath bezierPathWithRoundedRect:kMDButtonBounds
-                                      xRadius:2
-                                      yRadius:2];
+  ToolbarButtonImageBackgroundStyle displayStyle = [imageRep style];
 
-  // Determine the fill color.
-  NSColor* fillColor = nil;
-  switch (imageRep.style) {
-    case ToolbarButtonImageBackgroundStyle::HOVER:
-      fillColor = [NSColor colorWithCalibratedWhite:0 alpha:0.08];
-      break;
-    case ToolbarButtonImageBackgroundStyle::HOVER_THEMED:
-      fillColor = [NSColor colorWithCalibratedWhite:1 alpha:0.12];
-      break;
-    case ToolbarButtonImageBackgroundStyle::PRESSED:
-      fillColor = [NSColor colorWithCalibratedWhite:0 alpha:0.12];
-      break;
-    case ToolbarButtonImageBackgroundStyle::PRESSED_THEMED:
-      fillColor = [NSColor colorWithCalibratedWhite:1 alpha:0.16];
-      break;
+  // Non-default styles draw a background.
+  if (displayStyle != ToolbarButtonImageBackgroundStyle::DEFAULT) {
+    // Create the path used for the background fill.
+    const int kCornerRadius = 2;
+    NSBezierPath* roundedRectPath =
+        [NSBezierPath bezierPathWithRoundedRect:kMDButtonBounds
+                                        xRadius:kCornerRadius
+                                        yRadius:kCornerRadius];
+
+    // Determine the fill color.
+    NSColor* fillColor = nil;
+    const CGFloat kEightPercentAlpha = 0.08;
+    const CGFloat kTwelvePercentAlpha = 0.12;
+    const CGFloat kSixteenPercentAlpha = 0.16;
+    switch (displayStyle) {
+      case ToolbarButtonImageBackgroundStyle::HOVER:
+        fillColor = [NSColor colorWithCalibratedWhite:0
+                                                alpha:kEightPercentAlpha];
+        break;
+      case ToolbarButtonImageBackgroundStyle::HOVER_THEMED:
+        fillColor = [NSColor colorWithCalibratedWhite:1
+                                                alpha:kTwelvePercentAlpha];
+        break;
+      case ToolbarButtonImageBackgroundStyle::PRESSED:
+        fillColor = [NSColor colorWithCalibratedWhite:0
+                                                alpha:kTwelvePercentAlpha];
+        break;
+      case ToolbarButtonImageBackgroundStyle::PRESSED_THEMED:
+        fillColor = [NSColor colorWithCalibratedWhite:1
+                                                alpha:kSixteenPercentAlpha];
+        break;
+      case ToolbarButtonImageBackgroundStyle::DEFAULT:
+        NOTREACHED();
+    }
+
+    // Fill the path.
+    [fillColor set];
+    [roundedRectPath fill];
   }
-
-  // Fill the path.
-  [fillColor set];
-  [roundedRectPath fill];
 
   // Center the icon within the button.
   NSSize iconSize = [imageRep.icon size];
@@ -251,11 +266,27 @@ const NSSize kMDButtonIconSize = NSMakeSize(16, 16);
   return image;
 }
 
-- (void)setImage:(NSImage*)anImage {
-  [super setImage:anImage];
-  if (ui::MaterialDesignController::IsModeMaterial()) {
-    [self resetButtonStateImages];
+- (NSImage*)image {
+  if (!ui::MaterialDesignController::IsModeMaterial()) {
+    return [super image];
   }
+  // setImage: stores the image in an ivar.
+  return image_.get();
+}
+
+- (void)setImage:(NSImage*)anImage {
+  if (!ui::MaterialDesignController::IsModeMaterial()) {
+    [super setImage:anImage];
+    return;
+  }
+
+  // We want to set the default image as the image for kDefaultState. Setting it
+  // as the default image (via setImage:) can cause ghosting from the two
+  // default images being drawn over each other. However we also need to keep
+  // the default image around for resetButtonStateImages, so stick it in an
+  // ivar.
+  image_.reset([anImage retain]);
+  [self resetButtonStateImages];
 }
 
 - (void)resetButtonStateImages {
@@ -267,8 +298,15 @@ const NSSize kMDButtonIconSize = NSMakeSize(16, 16);
   gfx::VectorIconId iconId = [self vectorIconId];
   if (iconId == gfx::VectorIconId::VECTOR_ICON_NONE) {
     // If the button does not have a vector icon id (e.g. it's an extension
-    // button), use its image.
-    normalIcon = disabledIcon = [self image];
+    // button), use its image. The hover, etc. images will be created using
+    // imageForIcon:withBackgroundStyle: so do the same for the default image.
+    // If we don't do this, the icon may not appear in the same place as in the
+    // other states, causing the icon to appear to shift as you mouse over the
+    // button.
+    NSImage* defaultImage =
+        [self imageForIcon:[self image]
+              withBackgroundStyle:ToolbarButtonImageBackgroundStyle::DEFAULT];
+    normalIcon = disabledIcon = defaultImage;
   } else {
     // Compute the normal and disabled vector icon colors.
     BOOL isDarkTheme = [[self window] hasDarkTheme];
