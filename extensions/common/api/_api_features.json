@@ -214,14 +214,6 @@
         "chrome://media-router/*",
         "chrome://oobe/*"
       ]
-    },
-    // This allows GuestViews to be created on regular web pages for the Worker
-    // Thread Frame prototype: http://crbug.com/434226.
-    {
-      "internal": true,
-      "channel": "trunk",
-      "contexts": "all",
-      "matches": ["<all_urls>"]
     }
   ],
   "hid": {
