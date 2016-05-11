@@ -209,11 +209,11 @@ Revision: 5a35c20860d7e476bf6dfd85fd1ef20ef05b21a9
 Tree link: https://github.com/PolymerElements/iron-test-helpers/tree/v1.2.3
 
 Name: iron-validatable-behavior
-Version: 1.0.5
+Version: 1.1.1
 Repository: git://github.com/PolymerElements/iron-validatable-behavior.git
-Tag: v1.0.5
-Revision: c1334b835892b3d7a329a8e6b8741d4be3a8d99c
-Tree link: https://github.com/PolymerElements/iron-validatable-behavior/tree/v1.0.5
+Tag: v1.1.1
+Revision: 2ecd3f411e298733b29f1660f75cb9b03ea31d77
+Tree link: https://github.com/PolymerElements/iron-validatable-behavior/tree/v1.1.1
 
 Name: neon-animation
 Version: 1.2.2

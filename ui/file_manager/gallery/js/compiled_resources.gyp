@@ -54,6 +54,7 @@
           '../../../../third_party/polymer/v1_0/components-chromium/iron-behaviors/iron-control-state-extracted.js',
           '../../../../third_party/polymer/v1_0/components-chromium/iron-checked-element-behavior/iron-checked-element-behavior-extracted.js',
           '../../../../third_party/polymer/v1_0/components-chromium/iron-form-element-behavior/iron-form-element-behavior-extracted.js',
+          '../../../../third_party/polymer/v1_0/components-chromium/iron-meta/iron-meta-extracted.js',
           '../../../../third_party/polymer/v1_0/components-chromium/iron-range-behavior/iron-range-behavior-extracted.js',
           '../../../../third_party/polymer/v1_0/components-chromium/iron-validatable-behavior/iron-validatable-behavior-extracted.js',
           '../../../../third_party/polymer/v1_0/components-chromium/paper-behaviors/paper-inky-focus-behavior-extracted.js',
