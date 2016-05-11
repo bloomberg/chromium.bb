@@ -107,19 +107,19 @@ public class ContentSettingsResources {
                                  R.string.website_settings_fullscreen,
                                  R.string.fullscreen_permission_title, ContentSetting.ALLOW,
                                  ContentSetting.ASK, 0,
-                                 R.string.website_settings_category_ask_first_recommended));
+                                 R.string.website_settings_category_fullscreen_ask));
             localMap.put(ContentSettingsType.CONTENT_SETTINGS_TYPE_GEOLOCATION,
                     new ResourceItem(R.drawable.permission_location,
                                  R.string.website_settings_device_location,
                                  R.string.geolocation_permission_title, ContentSetting.ASK,
                                  ContentSetting.BLOCK,
-                                 R.string.website_settings_category_ask_before_accessing, 0));
+                                 R.string.website_settings_category_location_ask, 0));
             localMap.put(ContentSettingsType.CONTENT_SETTINGS_TYPE_JAVASCRIPT,
                     new ResourceItem(R.drawable.permission_javascript,
                                  R.string.javascript_permission_title,
                                  R.string.javascript_permission_title, ContentSetting.ALLOW,
                                  ContentSetting.BLOCK,
-                                 R.string.website_settings_category_allowed_recommended, 0));
+                                 R.string.website_settings_category_javascript_allowed, 0));
             localMap.put(ContentSettingsType.CONTENT_SETTINGS_TYPE_KEYGEN,
                     new ResourceItem(R.drawable.permission_keygen,
                                  R.string.keygen_permission_title,
@@ -131,12 +131,12 @@ public class ContentSettingsResources {
                     new ResourceItem(R.drawable.permission_camera,
                             R.string.website_settings_use_camera, R.string.camera_permission_title,
                             ContentSetting.ASK, ContentSetting.BLOCK,
-                            R.string.website_settings_category_ask_before_accessing, 0));
+                            R.string.website_settings_category_camera_ask, 0));
             localMap.put(
                     ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
                     new ResourceItem(R.drawable.permission_mic, R.string.website_settings_use_mic,
                             R.string.mic_permission_title, ContentSetting.ASK, ContentSetting.BLOCK,
-                            R.string.website_settings_category_ask_before_accessing, 0));
+                            R.string.website_settings_category_mic_ask, 0));
             localMap.put(ContentSettingsType.CONTENT_SETTINGS_TYPE_MIDI_SYSEX,
                     new ResourceItem(R.drawable.permission_midi, 0,
                                  R.string.midi_sysex_permission_title, null, null, 0, 0));
@@ -145,12 +145,12 @@ public class ContentSettingsResources {
                                  R.string.push_notifications_permission_title,
                                  R.string.push_notifications_permission_title, ContentSetting.ASK,
                                  ContentSetting.BLOCK,
-                                 R.string.website_settings_category_ask_before_sending, 0));
+                                 R.string.website_settings_category_notifications_ask, 0));
             localMap.put(ContentSettingsType.CONTENT_SETTINGS_TYPE_POPUPS,
                     new ResourceItem(R.drawable.permission_popups, R.string.popup_permission_title,
                                  R.string.popup_permission_title, ContentSetting.ALLOW,
                                  ContentSetting.BLOCK, 0,
-                                 R.string.website_settings_category_blocked_recommended));
+                                 R.string.website_settings_category_popups_blocked));
             localMap.put(ContentSettingsType.CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER,
                     new ResourceItem(R.drawable.permission_protected_media,
                                  org.chromium.chrome.R.string.protected_content,

@@ -562,7 +562,7 @@ Your Google account may have other forms of browsing history like searches and a
         Background sync
       </message>
       <message name="IDS_WEBSITE_SETTINGS_ADD_SITE" desc="The label for the button to add a new website to the exception list.">
-        Add site
+        Add site exception
       </message>
       <message name="IDS_WEBSITE_SETTINGS_ADD_SITE_DIALOG_TITLE" desc="The title of the dialog to add a website to a list.">
         Add site
@@ -577,10 +577,10 @@ Your Google account may have other forms of browsing history like searches and a
         Detect and playback important media for a specific site.
       </message>
       <message name="IDS_WEBSITE_SETTINGS_ADD_SITE_DESCRIPTION_JAVASCRIPT" desc="The description for the allow Javascript for website dialog.">
-        Allow JavaScript on the following site.
+        Allow JavaScript for a specific site.
       </message>
       <message name="IDS_WEBSITE_SETTINGS_ADD_SITE_DESCRIPTION_BACKGROUND_SYNC" desc="The description for the allow Background Sync for website dialog.">
-        Allow Background Sync on the following site.
+        Allow Background Sync for a specific site.
       </message>
       <message name="IDS_WEBSITE_SETTINGS_ADD_SITE_SITE_URL" desc="The label for the input field where the user can type a website URL.">
         Site URL
@@ -630,21 +630,32 @@ Your Google account may have other forms of browsing history like searches and a
       <message name="IDS_WEBSITE_SETTINGS_CATEGORY_ALLOWED_RECOMMENDED" desc="Summary text explaining that a permission is allowed, which is the recommended setting.">
         Allowed (recommended)
       </message>
-      <message name="IDS_WEBSITE_SETTINGS_CATEGORY_ASK_FIRST_RECOMMENDED" desc="Summary text explaining that the user will be asked before a site is granted a
-particular permission.">
-        Ask first (recommended)
-      </message>
-      <message name="IDS_WEBSITE_SETTINGS_CATEGORY_ASK_BEFORE_SENDING" desc="Summary text explaining that permission will be requested before sending things, e.g. notifications.">
-        Ask before sending (recommended)
-      </message>
-      <message name="IDS_WEBSITE_SETTINGS_CATEGORY_ASK_BEFORE_ACCESSING" desc="Summary text explaining that permission will be requested before accessing something, like location.">
-        Ask before accessing (recommended)
-      </message>
       <message name="IDS_WEBSITE_SETTINGS_CATEGORY_COOKIE_ALLOWED" desc="Summary text explaining that sites are allowed to use cookies and that it is the recommended setting.">
         Allow sites to save and read cookie data (recommended)
       </message>
       <message name="IDS_WEBSITE_SETTINGS_CATEGORY_AUTOPLAY_ALLOWED" desc="Summary text explaining that sites are allowed to  autoplay videos and that it is the recommended setting.">
         Allow sites to autoplay important media (recommended)
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_CATEGORY_JAVASCRIPT_ALLOWED" desc="Summary text explaining that sites are allowed to run Javascript and that it is the recommended setting.">
+        Allow sites to run JavaScript (recommended)
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_CATEGORY_POPUPS_BLOCKED" desc="Summary text explaining that sites are blocked from showing popups and that it is the recommended setting.">
+        Block sites from showing pop-ups (recommended)
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_CATEGORY_LOCATION_ASK" desc="Summary text explaining that sites need to ask for permission before knowing location and that it is the recommended setting.">
+        Ask before allowing sites to know your location (recommended)
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_CATEGORY_NOTIFICATIONS_ASK" desc="Summary text explaining that sites need to ask for permission before sending notifications and that it is the recommended setting.">
+        Ask before allowing sites to send notifications (recommended)
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_CATEGORY_FULLSCREEN_ASK" desc="Summary text explaining that sites need to ask for permission before going fullscreen and that it is the recommended setting.">
+        Ask first before allowing sites to enter fullscreen (recommended)
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_CATEGORY_CAMERA_ASK" desc="Summary text explaining that sites need to ask for permission before accessing the camera and that it is the recommended setting.">
+        Ask first before allowing sites to use your camera (recommended)
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_CATEGORY_MIC_ASK" desc="Summary text explaining that sites need to ask for permission before accessing the microphone and that it is the recommended setting.">
+        Ask first before allowing sites to use your microphone (recommended)
       </message>
       <message name="IDS_WEBSITE_SETTINGS_PERMISSIONS_ALLOW" desc="Summary text explaining that Chrome will allow a website to access some permission, e.g. JavaScript: allow.">
         Allow
