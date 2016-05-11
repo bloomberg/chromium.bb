@@ -41,6 +41,9 @@ class WebContents;
    // view as a subview instead of the normal WebContentsView render view.
    // Note: This will be false in the case of non-Flash fullscreen.
    BOOL isEmbeddingFullscreenWidget_;
+
+   // Set to true if the window is a popup.
+   BOOL isPopup_;
 }
 @property(readonly, nonatomic) content::WebContents* webContents;
 
@@ -52,7 +55,7 @@ class WebContents;
 @property(assign, nonatomic) BOOL blockFullscreenResize;
 
 // Create the contents of a tab represented by |contents|.
-- (id)initWithContents:(content::WebContents*)contents;
+- (id)initWithContents:(content::WebContents*)contents isPopup:(BOOL)popup;
 
 // Call when the container view owned by TabContentsController is about to be
 // resized and inserted into the view hierarchy, so as to not trigger
