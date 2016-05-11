@@ -220,6 +220,12 @@ class GLES2_UTILS_EXPORT GLES2Util {
   static bool IsIntegerFormat(uint32_t internal_format);
   static bool IsFloatFormat(uint32_t internal_format);
 
+  // Computes the data size for certain gl commands like glUniform.
+  static bool ComputeDataSize(uint32_t count,
+                              size_t size,
+                              unsigned int elements_per_unit,
+                              uint32_t* dst);
+
   #include "../common/gles2_cmd_utils_autogen.h"
 
  private:

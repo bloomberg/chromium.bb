@@ -7252,7 +7252,7 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
   def WriteGetDataSizeCode(self, func, f):
     """Overrriden from TypeHandler."""
     code = """  uint32_t data_size;
-  if (!ComputeDataSize(1, sizeof(%s), %d, &data_size)) {
+  if (!GLES2Util::ComputeDataSize(1, sizeof(%s), %d, &data_size)) {
     return error::kOutOfBounds;
   }
 """
@@ -7563,7 +7563,7 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "%s", "negative count");
     return error::kNoError;
   }
-  if (!ComputeDataSize(count, sizeof(%s), %d, &data_size)) {
+  if (!GLES2Util::ComputeDataSize(count, sizeof(%s), %d, &data_size)) {
     return error::kOutOfBounds;
   }
 """

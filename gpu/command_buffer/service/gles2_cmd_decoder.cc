@@ -277,22 +277,6 @@ RETURN_TYPE GetImmediateDataAs(const COMMAND_TYPE& pod,
       NULL;
 }
 
-// Computes the data size for certain gl commands like glUniform.
-bool ComputeDataSize(GLuint count,
-                     size_t size,
-                     unsigned int elements_per_unit,
-                     uint32_t* dst) {
-  uint32_t value;
-  if (!SafeMultiplyUint32(count, size, &value)) {
-    return false;
-  }
-  if (!SafeMultiplyUint32(value, elements_per_unit, &value)) {
-    return false;
-  }
-  *dst = value;
-  return true;
-}
-
 // Return true if a character belongs to the ASCII subset as defined in
 // GLSL ES 1.0 spec section 3.1.
 static bool CharacterIsValidForGLES(unsigned char c) {
@@ -15052,7 +15036,7 @@ error::Error GLES2DecoderImpl::HandleCreateAndConsumeTextureCHROMIUMImmediate(
           cmd_data);
   GLenum target = static_cast<GLenum>(c.target);
   uint32_t data_size;
-  if (!ComputeDataSize(1, sizeof(GLbyte), 64, &data_size)) {
+  if (!GLES2Util::ComputeDataSize(1, sizeof(GLbyte), 64, &data_size)) {
     return error::kOutOfBounds;
   }
   if (data_size > immediate_data_size) {
