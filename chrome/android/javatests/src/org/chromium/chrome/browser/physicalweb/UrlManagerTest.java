@@ -161,4 +161,28 @@ public class UrlManagerTest extends InstrumentationTestCase {
         notifications = mMockNotificationManagerProxy.getNotifications();
         assertEquals(0, notifications.size());
     }
+
+    @SmallTest
+    public void testUpgradeFrom1or2() {
+        String old_prefs_file = "org.chromium.chrome.browser.physicalweb.URL_CACHE";
+        String arbitrary_key = "arbitrary_key";
+        Context context = getInstrumentation().getTargetContext().getApplicationContext();
+        SharedPreferences oldPrefs =
+                context.getSharedPreferences(old_prefs_file, Context.MODE_PRIVATE);
+        oldPrefs.edit()
+                .putInt(arbitrary_key, 1)
+                .apply();
+        mSharedPreferences.edit()
+                .remove(UrlManager.getVersionKey())
+                .apply();
+        new UrlManager(context);
+        getInstrumentation().waitForIdleSync();
+
+        // Make sure the old prefs are cleared.
+        assertEquals(0, oldPrefs.getInt(arbitrary_key, 0));
+
+        // Make sure the new prefs are populated.
+        assertEquals(UrlManager.getVersion(),
+                mSharedPreferences.getInt(UrlManager.getVersionKey(), 0));
+    }
 }

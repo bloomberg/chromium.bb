@@ -300,20 +300,20 @@ class UrlManager {
     }
 
     private void initSharedPreferences() {
-        SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
-        int prefsVersion = prefs.getInt(PREFS_VERSION_KEY, 0);
-
         // Check the version.
-        if (prefsVersion != PREFS_VERSION) {
+        final SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
+        if (prefs.getInt(PREFS_VERSION_KEY, 0) != PREFS_VERSION) {
             // Stored preferences are old, upgrade to the current version.
             // TODO(cco3): This code may be deleted around m53.
-            prefs.edit().putInt(PREFS_VERSION_KEY, PREFS_VERSION);
             new AsyncTask<Void, Void, Void>() {
                 @Override
                 protected Void doInBackground(Void... params) {
-                    mContext.getSharedPreferences(DEPRECATED_PREFS_NAME, Context.MODE_PRIVATE)
-                            .edit()
+                    mContext.getSharedPreferences(
+                            DEPRECATED_PREFS_NAME, Context.MODE_PRIVATE).edit()
                             .clear()
+                            .apply();
+                    prefs.edit()
+                            .putInt(PREFS_VERSION_KEY, PREFS_VERSION)
                             .apply();
                     return null;
                 }
@@ -564,5 +564,15 @@ class UrlManager {
                 .remove(PREFS_RESOLVED_URLS_KEY)
                 .remove(PREFS_NOTIFICATION_UPDATE_TIMESTAMP)
                 .apply();
+    }
+
+    @VisibleForTesting
+    static String getVersionKey() {
+        return PREFS_VERSION_KEY;
+    }
+
+    @VisibleForTesting
+    static int getVersion() {
+        return PREFS_VERSION;
     }
 }
