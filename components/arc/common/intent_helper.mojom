@@ -6,11 +6,19 @@ module arc.mojom;
 
 import "scale_factor.mojom";
 
+// Describes the type of action to invoke.
+enum ActionType {
+  VIEW,
+  SEND,
+  SEND_MULTIPLE,
+};
+
 // Describes a package that can handle a URL.
 struct UrlHandlerInfo {
   string name;
   string package_name;
   string activity_name;  // A hint for retrieving the package's icon.
+  [MinVersion=4] ActionType action;
 };
 
 // Describes an activity.
@@ -25,6 +33,12 @@ struct ActivityIcon {
   uint32 width;  // in px
   uint32 height;  // in px
   array<uint8> icon;  // in BGRA8888 format
+};
+
+// URL associated with its mime type.
+struct UrlWithMimeType {
+  string url;
+  string mime_type;
 };
 
 // Handles intents from ARC in Chrome.
@@ -42,6 +56,11 @@ interface IntentHelperInstance {
   // most suitable activity for the URL within the package will be started.
   [MinVersion=2] HandleUrl@2(string url, string package_name);
 
+  // Handles the list of URLs by sending a specified intent to the package.
+  [MinVersion=4] HandleUrlList@5(array<UrlWithMimeType> urls,
+                                 string package_name,
+                                 ActionType action);
+
   // Establishes full-duplex communication with the host.
   Init@0(IntentHelperHost host_ptr);
 
@@ -53,6 +72,10 @@ interface IntentHelperInstance {
 
   // Requests a list of packages that can handle the URL.
   [MinVersion=2] RequestUrlHandlerList@3(string url)
+      => (array<UrlHandlerInfo> handlers);
+
+  // Requests a list of packages that can handle the list of files.
+  [MinVersion=4] RequestUrlListHandlerList@6(array<UrlWithMimeType> urls)
       => (array<UrlHandlerInfo> handlers);
 
   // Send an Android broadcast message to the Android package and class

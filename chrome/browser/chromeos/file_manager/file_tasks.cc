@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/file_task_executor.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
+#include "chrome/browser/chromeos/file_manager/arc_file_tasks.h"
 #include "chrome/browser/chromeos/file_manager/file_browser_handlers.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
 #include "chrome/browser/chromeos/file_manager/open_util.h"
@@ -138,14 +139,6 @@ bool IsFallbackFileHandler(const file_tasks::TaskDescriptor& task) {
   return false;
 }
 
-void FindArcTasks(Profile* profile,
-                  const std::vector<extensions::EntryInfo>& entries,
-                  std::unique_ptr<std::vector<FullTaskDescriptor>> result_list,
-                  const FindTasksCallback& callback) {
-  // TODO(kinaba): implement.
-  callback.Run(std::move(result_list));
-}
-
 void ExecuteByArcAfterMimeTypesCollected(
     Profile* profile,
     const TaskDescriptor& task,
@@ -153,9 +146,11 @@ void ExecuteByArcAfterMimeTypesCollected(
     const FileTaskFinishedCallback& done,
     extensions::app_file_handler_util::MimeTypeCollector* mime_collector,
     std::unique_ptr<std::vector<std::string>> mime_types) {
-  // TODO(kinaba): implement.
-  NOTIMPLEMENTED();
-  done.Run(extensions::api::file_manager_private::TASK_RESULT_FAILED);
+  if (ExecuteArcTask(profile, task, file_urls, *mime_types)) {
+    done.Run(extensions::api::file_manager_private::TASK_RESULT_MESSAGE_SENT);
+  } else {
+    done.Run(extensions::api::file_manager_private::TASK_RESULT_FAILED);
+  }
 }
 
 void PostProcessFoundTasks(

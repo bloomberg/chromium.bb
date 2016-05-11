@@ -210,6 +210,8 @@
         'browser/chromeos/feedback_util.cc',
         'browser/chromeos/feedback_util.h',
         'browser/chromeos/file_manager/app_id.h',
+        'browser/chromeos/file_manager/arc_file_tasks.cc',
+        'browser/chromeos/file_manager/arc_file_tasks.h',
         'browser/chromeos/file_manager/file_browser_handlers.cc',
         'browser/chromeos/file_manager/file_browser_handlers.h',
         'browser/chromeos/file_manager/file_tasks.cc',
