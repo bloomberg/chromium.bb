@@ -217,13 +217,12 @@ gfx::Rect HeadsUpDisplayLayerImpl::GetEnclosingRectInTargetSpace() const {
   return GetScaledEnclosingRectInTargetSpace(internal_contents_scale_);
 }
 
-void HeadsUpDisplayLayerImpl::SetHUDTypeface(
-    const skia::RefPtr<SkTypeface>& typeface) {
+void HeadsUpDisplayLayerImpl::SetHUDTypeface(sk_sp<SkTypeface> typeface) {
   if (typeface_ == typeface)
     return;
 
   DCHECK(typeface_.get() == nullptr);
-  typeface_ = typeface;
+  typeface_ = std::move(typeface);
   NoteLayerPropertyChanged();
 }
 
@@ -291,7 +290,7 @@ int HeadsUpDisplayLayerImpl::MeasureText(SkPaint* paint,
   const bool anti_alias = paint->isAntiAlias();
   paint->setAntiAlias(true);
   paint->setTextSize(size);
-  paint->setTypeface(typeface_.get());
+  paint->setTypeface(typeface_);
   SkScalar text_width = paint->measureText(text.c_str(), text.length());
 
   paint->setAntiAlias(anti_alias);
@@ -310,7 +309,7 @@ void HeadsUpDisplayLayerImpl::DrawText(SkCanvas* canvas,
 
   paint->setTextSize(size);
   paint->setTextAlign(align);
-  paint->setTypeface(typeface_.get());
+  paint->setTypeface(typeface_);
   canvas->drawText(text.c_str(), text.length(), x, y, *paint);
 
   paint->setAntiAlias(anti_alias);
@@ -685,7 +684,7 @@ void HeadsUpDisplayLayerImpl::DrawDebugRect(
 
     SkPaint label_paint = CreatePaint();
     label_paint.setTextSize(kFontHeight);
-    label_paint.setTypeface(typeface_.get());
+    label_paint.setTypeface(typeface_);
     label_paint.setColor(stroke_color);
 
     const SkScalar label_text_width =

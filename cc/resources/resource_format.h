@@ -7,7 +7,7 @@
 
 #include "base/logging.h"
 #include "cc/base/cc_export.h"
-#include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkImageInfo.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
 // TODO(prashant.n): Including third_party/khronos/GLES2/gl2.h causes

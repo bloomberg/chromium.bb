@@ -11,10 +11,10 @@
 #include "cc/output/render_surface_filters.h"
 #include "cc/proto/display_item.pb.h"
 #include "cc/proto/gfx_conversions.h"
-#include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkImageFilter.h"
 #include "third_party/skia/include/core/SkPaint.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkXfermode.h"
 #include "ui/gfx/skia_util.h"
 

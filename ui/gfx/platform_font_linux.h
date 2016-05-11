@@ -11,7 +11,6 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "build/build_config.h"
-#include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "ui/gfx/font_render_params.h"
 #include "ui/gfx/platform_font.h"
@@ -55,7 +54,7 @@ class GFX_EXPORT PlatformFontLinux : public PlatformFont {
  private:
   // Create a new instance of this object with the specified properties. Called
   // from DeriveFont.
-  PlatformFontLinux(const skia::RefPtr<SkTypeface>& typeface,
+  PlatformFontLinux(sk_sp<SkTypeface> typeface,
                     const std::string& family,
                     int size_pixels,
                     int style,
@@ -65,7 +64,7 @@ class GFX_EXPORT PlatformFontLinux : public PlatformFont {
   // Initializes this object based on the passed-in details. If |typeface| is
   // empty, a new typeface will be loaded.
   void InitFromDetails(
-      const skia::RefPtr<SkTypeface>& typeface,
+      sk_sp<SkTypeface> typeface,
       const std::string& font_family,
       int font_size_pixels,
       int style,
@@ -77,7 +76,7 @@ class GFX_EXPORT PlatformFontLinux : public PlatformFont {
   // Computes the metrics if they have not yet been computed.
   void ComputeMetricsIfNecessary();
 
-  skia::RefPtr<SkTypeface> typeface_;
+  sk_sp<SkTypeface> typeface_;
 
   // Additional information about the face.
   // Skia actually expects a family name and not a font name.

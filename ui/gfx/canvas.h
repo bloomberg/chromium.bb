@@ -13,7 +13,7 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "skia/ext/platform_canvas.h"
-#include "skia/ext/refptr.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/shadow_value.h"
@@ -89,7 +89,7 @@ class GFX_EXPORT Canvas {
   // Creates a Canvas backed by an |sk_canvas| with |image_scale_|.
   // |sk_canvas| is assumed to be already scaled based on |image_scale|
   // so no additional scaling is applied.
-  Canvas(const skia::RefPtr<SkCanvas>& sk_canvas, float image_scale);
+  Canvas(sk_sp<SkCanvas> sk_canvas, float image_scale);
 
   virtual ~Canvas();
 
@@ -449,7 +449,7 @@ class GFX_EXPORT Canvas {
   // Canvas::Scale() does not affect |image_scale_|.
   float image_scale_;
 
-  skia::RefPtr<SkCanvas> canvas_;
+  sk_sp<SkCanvas> canvas_;
 
   DISALLOW_COPY_AND_ASSIGN(Canvas);
 };

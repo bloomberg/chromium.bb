@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "skia/ext/refptr.h"
 #include "ui/compositor/compositor_export.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/rect.h"

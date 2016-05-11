@@ -20,6 +20,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "ui/gfx/break_list.h"
@@ -3085,7 +3086,7 @@ TEST_F(RenderTextTest, TextDoesntClip) {
 
   sk_sp<SkSurface> surface =
       SkSurface::MakeRasterN32Premul(kCanvasSize.width(), kCanvasSize.height());
-  Canvas canvas(skia::SharePtr(surface->getCanvas()), 1.0f);
+  Canvas canvas(sk_ref_sp(surface->getCanvas()), 1.0f);
   std::unique_ptr<RenderText> render_text(RenderText::CreateInstance());
   render_text->SetHorizontalAlignment(ALIGN_LEFT);
   render_text->SetColor(SK_ColorBLACK);
@@ -3177,7 +3178,7 @@ TEST_F(RenderTextTest, TextDoesClip) {
 
   sk_sp<SkSurface> surface =
       SkSurface::MakeRasterN32Premul(kCanvasSize.width(), kCanvasSize.height());
-  Canvas canvas(skia::SharePtr(surface->getCanvas()), 1.0f);
+  Canvas canvas(sk_ref_sp(surface->getCanvas()), 1.0f);
   std::unique_ptr<RenderText> render_text(RenderText::CreateInstance());
   render_text->SetHorizontalAlignment(ALIGN_LEFT);
   render_text->SetColor(SK_ColorBLACK);

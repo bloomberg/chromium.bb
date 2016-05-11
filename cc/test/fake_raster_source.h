@@ -7,9 +7,10 @@
 
 #include "base/memory/ref_counted.h"
 #include "cc/playback/raster_source.h"
-#include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
+
+class SkCanvas;
 
 namespace cc {
 

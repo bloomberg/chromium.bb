@@ -13,7 +13,6 @@
 
 class SkRegion;
 class SkRRect;
-class SkXferMode;
 
 namespace cc {
 

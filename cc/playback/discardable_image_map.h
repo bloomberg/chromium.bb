@@ -12,12 +12,9 @@
 #include "cc/base/rtree.h"
 #include "cc/playback/draw_image.h"
 #include "third_party/skia/include/core/SkCanvas.h"
-#include "third_party/skia/include/core/SkPicture.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
-
-class SkImage;
 
 namespace cc {
 

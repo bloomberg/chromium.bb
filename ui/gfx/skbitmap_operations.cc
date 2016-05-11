@@ -10,7 +10,6 @@
 #include <algorithm>
 
 #include "base/logging.h"
-#include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
@@ -740,9 +739,7 @@ SkBitmap SkBitmapOperations::CreateDropShadow(
     // The blur is halved to produce a shadow that correctly fits within the
     // |shadow_margin|.
     SkScalar sigma = SkDoubleToScalar(shadow.blur() / 2);
-    skia::RefPtr<SkImageFilter> filter =
-        skia::AdoptRef(SkBlurImageFilter::Create(sigma, sigma));
-    paint.setImageFilter(filter.get());
+    paint.setImageFilter(SkBlurImageFilter::Make(sigma, sigma, nullptr));
 
     canvas.saveLayer(0, &paint);
     canvas.drawBitmap(shadow_image,

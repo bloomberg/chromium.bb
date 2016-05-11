@@ -6,7 +6,6 @@
 #define CC_PROTO_IMAGE_SERIALIZATION_PROCESSOR_H_
 
 #include "third_party/skia/include/core/SkPicture.h"
-#include "third_party/skia/include/core/SkPixelSerializer.h"
 
 class SkPixelSerializer;
 

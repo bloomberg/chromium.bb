@@ -7,6 +7,7 @@
 #include "cc/playback/display_item_list.h"
 #include "cc/playback/drawing_display_item.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 #include "ui/compositor/paint_cache.h"
 #include "ui/compositor/paint_context.h"
 #include "ui/gfx/skia_util.h"
@@ -20,8 +21,8 @@ PaintRecorder::PaintRecorder(const PaintContext& context,
       // The SkCanvas reference returned by beginRecording is shared with
       // the recorder_ so no need to store a RefPtr to it on this class, we just
       // store the gfx::Canvas.
-      canvas_(skia::SharePtr(context.recorder_->beginRecording(
-                             gfx::RectToSkRect(gfx::Rect(recording_size)))),
+      canvas_(sk_ref_sp(context.recorder_->beginRecording(
+                        gfx::RectToSkRect(gfx::Rect(recording_size)))),
               context.device_scale_factor_),
       cache_(cache),
       bounds_in_layer_(context.ToLayerSpaceBounds(recording_size)) {

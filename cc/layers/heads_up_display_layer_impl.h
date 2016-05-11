@@ -17,6 +17,7 @@
 #include "cc/layers/layer_impl.h"
 #include "cc/resources/memory_history.h"
 #include "cc/resources/scoped_resource.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 
 class SkCanvas;
 class SkPaint;
@@ -52,7 +53,7 @@ class CC_EXPORT HeadsUpDisplayLayerImpl : public LayerImpl {
 
   bool IsAnimatingHUDContents() const { return fade_step_ > 0; }
 
-  void SetHUDTypeface(const skia::RefPtr<SkTypeface>& typeface);
+  void SetHUDTypeface(sk_sp<SkTypeface> typeface);
 
   // LayerImpl overrides.
   void PushPropertiesTo(LayerImpl* layer) override;
@@ -134,7 +135,7 @@ class CC_EXPORT HeadsUpDisplayLayerImpl : public LayerImpl {
   std::vector<std::unique_ptr<ScopedResource>> resources_;
   sk_sp<SkSurface> hud_surface_;
 
-  skia::RefPtr<SkTypeface> typeface_;
+  sk_sp<SkTypeface> typeface_;
 
   float internal_contents_scale_;
   gfx::Size internal_content_bounds_;

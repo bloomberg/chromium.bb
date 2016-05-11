@@ -41,7 +41,7 @@ base::LazyInstance<scoped_refptr<PlatformFontLinux>>::Leaky g_default_font =
 // Creates a SkTypeface for the passed-in Font::FontStyle and family. If a
 // fallback typeface is used instead of the requested family, |family| will be
 // updated to contain the fallback's family name.
-skia::RefPtr<SkTypeface> CreateSkTypeface(int style, std::string* family) {
+sk_sp<SkTypeface> CreateSkTypeface(int style, std::string* family) {
   DCHECK(family);
 
   int skia_style = SkTypeface::kNormal;
@@ -50,12 +50,12 @@ skia::RefPtr<SkTypeface> CreateSkTypeface(int style, std::string* family) {
   if (Font::ITALIC & style)
     skia_style |= SkTypeface::kItalic;
 
-  skia::RefPtr<SkTypeface> typeface = skia::AdoptRef(SkTypeface::CreateFromName(
+  sk_sp<SkTypeface> typeface(SkTypeface::CreateFromName(
       family->c_str(), static_cast<SkTypeface::Style>(skia_style)));
   if (!typeface) {
     // A non-scalable font such as .pcf is specified. Fall back to a default
     // scalable font.
-    typeface = skia::AdoptRef(SkTypeface::CreateFromName(
+    typeface = sk_sp<SkTypeface>(SkTypeface::CreateFromName(
         kFallbackFontFamilyName, static_cast<SkTypeface::Style>(skia_style)));
     CHECK(typeface) << "Could not find any font: " << family << ", "
                     << kFallbackFontFamilyName;
@@ -116,7 +116,7 @@ PlatformFontLinux::PlatformFontLinux(const std::string& font_name,
   query.families.push_back(font_name);
   query.pixel_size = font_size_pixels;
   query.style = Font::NORMAL;
-  InitFromDetails(skia::RefPtr<SkTypeface>(), font_name, font_size_pixels,
+  InitFromDetails(nullptr, font_name, font_size_pixels,
                   query.style, gfx::GetFontRenderParams(query, NULL));
 }
 
@@ -145,7 +145,7 @@ Font PlatformFontLinux::DeriveFont(int size_delta, int style) const {
 
   // If the style changed, we may need to load a new face.
   std::string new_family = font_family_;
-  skia::RefPtr<SkTypeface> typeface =
+  sk_sp<SkTypeface> typeface =
       (style == style_) ? typeface_ : CreateSkTypeface(style, &new_family);
 
   FontRenderParamsQuery query;
@@ -153,8 +153,8 @@ Font PlatformFontLinux::DeriveFont(int size_delta, int style) const {
   query.pixel_size = new_size;
   query.style = style;
 
-  return Font(new PlatformFontLinux(typeface, new_family, new_size, style,
-                                    gfx::GetFontRenderParams(query, NULL)));
+  return Font(new PlatformFontLinux(std::move(typeface), new_family, new_size,
+      style, gfx::GetFontRenderParams(query, NULL)));
 }
 
 int PlatformFontLinux::GetHeight() {
@@ -212,18 +212,19 @@ const FontRenderParams& PlatformFontLinux::GetFontRenderParams() {
 ////////////////////////////////////////////////////////////////////////////////
 // PlatformFontLinux, private:
 
-PlatformFontLinux::PlatformFontLinux(const skia::RefPtr<SkTypeface>& typeface,
+PlatformFontLinux::PlatformFontLinux(sk_sp<SkTypeface> typeface,
                                      const std::string& family,
                                      int size_pixels,
                                      int style,
                                      const FontRenderParams& render_params) {
-  InitFromDetails(typeface, family, size_pixels, style, render_params);
+  InitFromDetails(std::move(typeface), family, size_pixels, style,
+      render_params);
 }
 
 PlatformFontLinux::~PlatformFontLinux() {}
 
 void PlatformFontLinux::InitFromDetails(
-    const skia::RefPtr<SkTypeface>& typeface,
+    sk_sp<SkTypeface> typeface,
     const std::string& font_family,
     int font_size_pixels,
     int style,
@@ -231,7 +232,8 @@ void PlatformFontLinux::InitFromDetails(
   DCHECK_GT(font_size_pixels, 0);
 
   font_family_ = font_family;
-  typeface_ = typeface ? typeface : CreateSkTypeface(style, &font_family_);
+  typeface_ = typeface ? std::move(typeface) :
+      CreateSkTypeface(style, &font_family_);
 
   font_size_pixels_ = font_size_pixels;
   style_ = style;

@@ -18,10 +18,10 @@ scoped_refptr<HeadsUpDisplayLayer> HeadsUpDisplayLayer::Create() {
 }
 
 HeadsUpDisplayLayer::HeadsUpDisplayLayer()
-    : typeface_(skia::AdoptRef(
-          SkTypeface::CreateFromName("times new roman", SkTypeface::kNormal))) {
+    : typeface_(
+          SkTypeface::CreateFromName("times new roman", SkTypeface::kNormal)) {
   if (!typeface_) {
-    typeface_ = skia::AdoptRef(
+    typeface_ = sk_sp<SkTypeface>(
         SkTypeface::CreateFromName("monospace", SkTypeface::kBold));
   }
   DCHECK(typeface_.get());

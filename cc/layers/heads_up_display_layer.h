@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "cc/base/cc_export.h"
 #include "cc/layers/layer.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 
 namespace cc {
@@ -40,7 +41,7 @@ class CC_EXPORT HeadsUpDisplayLayer : public Layer {
  private:
   ~HeadsUpDisplayLayer() override;
 
-  skia::RefPtr<SkTypeface> typeface_;
+  sk_sp<SkTypeface> typeface_;
 
   DISALLOW_COPY_AND_ASSIGN(HeadsUpDisplayLayer);
 };

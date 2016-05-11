@@ -15,7 +15,6 @@
 #include "base/threading/thread_checker.h"
 #include "cc/output/context_provider.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
-#include "skia/ext/refptr.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace gpu {

@@ -6,7 +6,6 @@
 #define CC_PLAYBACK_IMAGE_HIJACK_CANVAS_H_
 
 #include "base/macros.h"
-#include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/utils/SkNWayCanvas.h"
 
 namespace cc {
