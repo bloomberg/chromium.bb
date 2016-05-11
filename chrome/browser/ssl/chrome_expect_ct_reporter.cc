@@ -173,5 +173,7 @@ void ChromeExpectCTReporter::OnExpectCTFailed(
     return;
   }
 
+  UMA_HISTOGRAM_BOOLEAN("SSL.ExpectCTReportSendingAttempt", true);
+
   report_sender_->Send(report_uri, serialized_report);
 }

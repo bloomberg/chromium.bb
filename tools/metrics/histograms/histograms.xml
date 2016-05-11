@@ -51812,6 +51812,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="SSL.ExpectCTReportSendingAttempt">
+  <owner>estark@chromium.org</owner>
+  <summary>
+    Sites can opt in to Expect CT, a reporting feature that sends a report
+    whenever a TLS connection does not have valid Certificate Transparency
+    information associated with it. This metric fires whenever Chrome attempts
+    to send an Expect CT report.
+  </summary>
+</histogram>
+
 <histogram name="SSL.InsecureContent" enum="InsecureContentType">
   <owner>lgarron@chromium.org</owner>
   <summary>
