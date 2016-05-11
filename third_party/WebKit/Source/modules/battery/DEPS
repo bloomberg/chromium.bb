@@ -1,7 +1,7 @@
 include_rules = [
     "+bindings",
     "+core",
-    "+device/battery/battery_monitor.mojom.h",
+    "+device/battery/battery_monitor.mojom-blink.h",
     "+heap",
     "-modules",
     "+modules/EventTargetModules.h",

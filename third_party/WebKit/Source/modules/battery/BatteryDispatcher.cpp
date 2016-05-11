@@ -29,7 +29,7 @@ void BatteryDispatcher::queryNextStatus()
         sameThreadBindForMojo(&BatteryDispatcher::onDidChange, this));
 }
 
-void BatteryDispatcher::onDidChange(device::BatteryStatusPtr batteryStatus)
+void BatteryDispatcher::onDidChange(device::blink::BatteryStatusPtr batteryStatus)
 {
     queryNextStatus();
 

@@ -6,7 +6,7 @@
 #define BatteryDispatcher_h
 
 #include "core/frame/PlatformEventDispatcher.h"
-#include "device/battery/battery_monitor.mojom.h"
+#include "device/battery/battery_monitor.mojom-blink.h"
 #include "modules/ModulesExport.h"
 #include "modules/battery/BatteryManager.h"
 #include "modules/battery/battery_status.h"
@@ -29,14 +29,14 @@ private:
     BatteryDispatcher();
 
     void queryNextStatus();
-    void onDidChange(device::BatteryStatusPtr);
+    void onDidChange(device::blink::BatteryStatusPtr);
     void updateBatteryStatus(const BatteryStatus&);
 
     // Inherited from PlatformEventDispatcher.
     void startListening() override;
     void stopListening() override;
 
-    device::BatteryMonitorPtr m_monitor;
+    device::blink::BatteryMonitorPtr m_monitor;
     BatteryStatus m_batteryStatus;
     bool m_hasLatestData;
 };
