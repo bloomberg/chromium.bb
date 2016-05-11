@@ -40,13 +40,8 @@ class CONTENT_EXPORT RenderWidgetOwnerDelegate {
   virtual bool RenderWidgetWillHandleMouseEvent(
       const blink::WebMouseEvent& event) = 0;
 
-  // Painting notifications. RenderWidgetDidCommitAndDrawCompositorFrame happens
-  // when that has completed, and subsequent rendering won't affect the painted
-  // content. DidFlushPaint happens once we've received the ACK that the screen
-  // has been updated. For a given paint operation, these overrides will always
-  // be called in the order RenderWidgetDidCommitAndDrawCompositorFrame,
-  // RenderWidgetDidFlushPaint.
-  virtual void RenderWidgetDidCommitAndDrawCompositorFrame() = 0;
+  // Painting notifications. DidFlushPaint happens once we've received the ACK
+  // that the screen has been updated.
   virtual void RenderWidgetDidFlushPaint() = 0;
 
  protected:

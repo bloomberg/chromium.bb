@@ -246,6 +246,9 @@ class CONTENT_EXPORT RenderFrameImpl
   // when a compositor frame has committed.
   void DidCommitCompositorFrame();
 
+  // Draw commands have been issued by RenderWidgetCompositor.
+  void DidCommitAndDrawCompositorFrame();
+
   // TODO(jam): this is a temporary getter until all the code is transitioned
   // to using RenderFrame instead of RenderView.
   RenderViewImpl* render_view() { return render_view_.get(); }
@@ -296,6 +299,12 @@ class CONTENT_EXPORT RenderFrameImpl
   // RendererAccessibility. It should use the RenderFrameObserver method, once
   // blink has a separate accessibility tree per frame.
   void FocusedNodeChangedForAccessibility(const blink::WebNode& node);
+
+  // Called when this frame's widget is focused.
+  void RenderWidgetSetFocus(bool enable);
+
+  // Called when the widget receives a mouse event.
+  void RenderWidgetWillHandleMouseEvent();
 
 #if defined(ENABLE_PLUGINS)
   // Get/set the plugin which will be used to handle document find requests.
@@ -644,6 +653,31 @@ class CONTENT_EXPORT RenderFrameImpl
   // process; for layout tests, this allows the test to mock out services at
   // the Mojo IPC layer.
   void MaybeEnableMojoBindings();
+
+  // Plugin-related functions --------------------------------------------------
+
+#if defined(ENABLE_PLUGINS)
+  PepperPluginInstanceImpl* focused_pepper_plugin() {
+    return focused_pepper_plugin_;
+  }
+  PepperPluginInstanceImpl* pepper_last_mouse_event_target() {
+    return pepper_last_mouse_event_target_;
+  }
+  void set_pepper_last_mouse_event_target(PepperPluginInstanceImpl* plugin) {
+    pepper_last_mouse_event_target_ = plugin;
+  }
+
+  // Indicates that the given instance has been created.
+  void PepperInstanceCreated(PepperPluginInstanceImpl* instance);
+
+  // Indicates that the given instance is being destroyed. This is called from
+  // the destructor, so it's important that the instance is not dereferenced
+  // from this call.
+  void PepperInstanceDeleted(PepperPluginInstanceImpl* instance);
+
+  // Notification that the given plugin is focused or unfocused.
+  void PepperFocusChanged(PepperPluginInstanceImpl* instance, bool focused);
+#endif  // ENABLE_PLUGINS
 
  protected:
   explicit RenderFrameImpl(const CreateParams& params);
@@ -1204,6 +1238,21 @@ class CONTENT_EXPORT RenderFrameImpl
 #endif
 
   FrameBlameContext* blame_context_;  // Not owned.
+
+  // Plugins -------------------------------------------------------------------
+#if defined(ENABLE_PLUGINS)
+  typedef std::set<PepperPluginInstanceImpl*> PepperPluginSet;
+  PepperPluginSet active_pepper_instances_;
+
+  // Whether or not the focus is on a PPAPI plugin
+  PepperPluginInstanceImpl* focused_pepper_plugin_;
+
+  // The plugin instance that received the last mouse event. It is set to NULL
+  // if the last mouse event went to elements other than Pepper plugins.
+  // |pepper_last_mouse_event_target_| is not owned by this class. We depend on
+  // the RenderFrameImpl to NULL it out when it destructs.
+  PepperPluginInstanceImpl* pepper_last_mouse_event_target_;
+#endif
 
   base::WeakPtrFactory<RenderFrameImpl> weak_factory_;
 

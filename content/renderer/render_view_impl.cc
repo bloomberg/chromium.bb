@@ -648,7 +648,6 @@ RenderViewImpl::RenderViewImpl(CompositorDependencies* compositor_deps,
 #endif
       top_controls_shrink_blink_size_(false),
       top_controls_height_(0.f),
-      has_focus_(false),
       webview_(nullptr),
       has_scrolled_focused_editable_node_into_rect_(false),
       page_zoom_level_(params.page_zoom_level),
@@ -658,10 +657,6 @@ RenderViewImpl::RenderViewImpl(CompositorDependencies* compositor_deps,
       mouse_lock_dispatcher_(NULL),
 #if defined(OS_ANDROID)
       expected_content_intent_id_(0),
-#endif
-#if defined(ENABLE_PLUGINS)
-      focused_pepper_plugin_(NULL),
-      pepper_last_mouse_event_target_(NULL),
 #endif
       enumeration_completion_id_(0),
       session_storage_namespace_id_(params.session_storage_namespace_id) {
@@ -1180,40 +1175,6 @@ blink::WebView* RenderViewImpl::webview() const {
 }
 
 #if defined(ENABLE_PLUGINS)
-void RenderViewImpl::PepperInstanceCreated(
-    PepperPluginInstanceImpl* instance) {
-  active_pepper_instances_.insert(instance);
-
-  RenderFrameImpl* const render_frame = instance->render_frame();
-  render_frame->Send(
-      new FrameHostMsg_PepperInstanceCreated(render_frame->GetRoutingID()));
-}
-
-void RenderViewImpl::PepperInstanceDeleted(
-    PepperPluginInstanceImpl* instance) {
-  active_pepper_instances_.erase(instance);
-
-  if (pepper_last_mouse_event_target_ == instance)
-    pepper_last_mouse_event_target_ = NULL;
-  if (focused_pepper_plugin_ == instance)
-    PepperFocusChanged(instance, false);
-
-  RenderFrameImpl* const render_frame = instance->render_frame();
-  if (render_frame)
-    render_frame->Send(
-        new FrameHostMsg_PepperInstanceDeleted(render_frame->GetRoutingID()));
-}
-
-void RenderViewImpl::PepperFocusChanged(PepperPluginInstanceImpl* instance,
-                                        bool focused) {
-  if (focused)
-    focused_pepper_plugin_ = instance;
-  else if (focused_pepper_plugin_ == instance)
-    focused_pepper_plugin_ = NULL;
-
-  UpdateTextInputState(ShowIme::HIDE_IME, ChangeSource::FROM_NON_IME);
-  UpdateSelectionBounds();
-}
 
 #if defined(OS_MACOSX)
 void RenderViewImpl::OnGetRenderedText() {
@@ -1280,17 +1241,6 @@ bool RenderViewImpl::RenderWidgetWillHandleMouseEvent(
       ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE;
   possible_drag_event_info_.event_location =
       gfx::Point(event.globalX, event.globalY);
-
-#if defined(ENABLE_PLUGINS)
-  // This method is called for every mouse event that the render view receives.
-  // And then the mouse event is forwarded to WebKit, which dispatches it to the
-  // event target. Potentially a Pepper plugin will receive the event.
-  // In order to tell whether a plugin gets the last mouse event and which it
-  // is, we set |pepper_last_mouse_event_target_| to NULL here. If a plugin gets
-  // the event, it will notify us via DidReceiveMouseEvent() and set itself as
-  // |pepper_last_mouse_event_target_|.
-  pepper_last_mouse_event_target_ = NULL;
-#endif
 
   // If the mouse is locked, only the current owner of the mouse lock can
   // process mouse events.
@@ -2751,19 +2701,6 @@ void RenderViewImpl::OnResize(const ResizeParams& params) {
     has_scrolled_focused_editable_node_into_rect_ = false;
 }
 
-void RenderViewImpl::RenderWidgetDidCommitAndDrawCompositorFrame() {
-#if defined(ENABLE_PLUGINS)
-  // Notify all instances that we painted.  The same caveats apply as for
-  // ViewFlushedPaint regarding instances closing themselves, so we take
-  // similar precautions.
-  PepperPluginSet plugins = active_pepper_instances_;
-  for (PepperPluginSet::iterator i = plugins.begin(); i != plugins.end(); ++i) {
-    if (active_pepper_instances_.find(*i) != active_pepper_instances_.end())
-      (*i)->ViewInitiatedPaint();
-  }
-#endif
-}
-
 void RenderViewImpl::RenderWidgetDidFlushPaint() {
   // If the RenderWidget is closing down then early-exit, otherwise we'll crash.
   // See crbug.com/112921.
@@ -2856,12 +2793,6 @@ void RenderViewImpl::OnWasHidden() {
 
   if (webview())
     webview()->setVisibilityState(visibilityState(), false);
-
-#if defined(ENABLE_PLUGINS)
-  for (PepperPluginSet::iterator i = active_pepper_instances_.begin();
-       i != active_pepper_instances_.end(); ++i)
-    (*i)->PageVisibilityChanged(false);
-#endif  // ENABLE_PLUGINS
 }
 
 void RenderViewImpl::OnWasShown(bool needs_repainting,
@@ -2875,12 +2806,6 @@ void RenderViewImpl::OnWasShown(bool needs_repainting,
 
   if (webview())
     webview()->setVisibilityState(visibilityState(), false);
-
-#if defined(ENABLE_PLUGINS)
-  for (PepperPluginSet::iterator i = active_pepper_instances_.begin();
-       i != active_pepper_instances_.end(); ++i)
-    (*i)->PageVisibilityChanged(true);
-#endif  // ENABLE_PLUGINS
 }
 
 GURL RenderViewImpl::GetURLForGraphicsContext3D() {
@@ -2899,15 +2824,8 @@ void RenderViewImpl::OnSetFocus(bool enable) {
 }
 
 void RenderViewImpl::SetFocus(bool enable) {
-  has_focus_ = enable;
   RenderWidget::OnSetFocus(enable);
 
-#if defined(ENABLE_PLUGINS)
-  // Notify all Pepper plugins.
-  for (PepperPluginSet::iterator i = active_pepper_instances_.begin();
-       i != active_pepper_instances_.end(); ++i)
-    (*i)->SetContentAreaFocus(enable);
-#endif
   // Notify all BrowserPlugins of the RenderView's focus state.
   if (BrowserPluginManager::Get())
     BrowserPluginManager::Get()->UpdateFocusState();
@@ -2920,8 +2838,9 @@ void RenderViewImpl::OnImeSetComposition(
     int selection_start,
     int selection_end) {
 #if defined(ENABLE_PLUGINS)
-  if (focused_pepper_plugin_) {
-    focused_pepper_plugin_->render_frame()->OnImeSetComposition(
+  PepperPluginInstanceImpl* focused_pepper_plugin = GetFocusedPepperPlugin();
+  if (focused_pepper_plugin) {
+    focused_pepper_plugin->render_frame()->OnImeSetComposition(
         text, underlines, selection_start, selection_end);
     return;
   }
@@ -2948,8 +2867,9 @@ void RenderViewImpl::OnImeConfirmComposition(
     const gfx::Range& replacement_range,
     bool keep_selection) {
 #if defined(ENABLE_PLUGINS)
-  if (focused_pepper_plugin_) {
-    focused_pepper_plugin_->render_frame()->OnImeConfirmComposition(
+  PepperPluginInstanceImpl* focused_pepper_plugin = GetFocusedPepperPlugin();
+  if (focused_pepper_plugin) {
+    focused_pepper_plugin->render_frame()->OnImeConfirmComposition(
         text, replacement_range, keep_selection);
     return;
   }
@@ -2985,20 +2905,22 @@ void RenderViewImpl::RenderWidgetDidSetColorProfile(
 
 ui::TextInputType RenderViewImpl::GetTextInputType() {
 #if defined(ENABLE_PLUGINS)
-  if (focused_pepper_plugin_)
-    return focused_pepper_plugin_->text_input_type();
+  PepperPluginInstanceImpl* focused_pepper_plugin = GetFocusedPepperPlugin();
+  if (focused_pepper_plugin)
+    return focused_pepper_plugin->text_input_type();
 #endif
   return RenderWidget::GetTextInputType();
 }
 
 void RenderViewImpl::GetSelectionBounds(gfx::Rect* start, gfx::Rect* end) {
 #if defined(ENABLE_PLUGINS)
-  if (focused_pepper_plugin_) {
+  PepperPluginInstanceImpl* focused_pepper_plugin = GetFocusedPepperPlugin();
+  if (focused_pepper_plugin) {
     // TODO(kinaba) http://crbug.com/101101
     // Current Pepper IME API does not handle selection bounds. So we simply
     // use the caret position as an empty range for now. It will be updated
     // after Pepper API equips features related to surrounding text retrieval.
-    blink::WebRect caret(focused_pepper_plugin_->GetCaretBounds());
+    blink::WebRect caret(focused_pepper_plugin->GetCaretBounds());
     ConvertViewportToWindowViaWidget(&caret);
     *start = caret;
     *end = caret;
@@ -3014,9 +2936,9 @@ void RenderViewImpl::GetCompositionCharacterBounds(
   bounds_in_window->clear();
 
 #if defined(ENABLE_PLUGINS)
-  if (focused_pepper_plugin_) {
+  PepperPluginInstanceImpl* focused_pepper_plugin = GetFocusedPepperPlugin();
+  if (focused_pepper_plugin)
     return;
-  }
 #endif
 
   if (!webview())
@@ -3047,17 +2969,18 @@ void RenderViewImpl::GetCompositionCharacterBounds(
 
 void RenderViewImpl::GetCompositionRange(gfx::Range* range) {
 #if defined(ENABLE_PLUGINS)
-  if (focused_pepper_plugin_) {
+  PepperPluginInstanceImpl* focused_pepper_plugin = GetFocusedPepperPlugin();
+  if (focused_pepper_plugin)
     return;
-  }
 #endif
   RenderWidget::GetCompositionRange(range);
 }
 
 bool RenderViewImpl::CanComposeInline() {
 #if defined(ENABLE_PLUGINS)
-  if (focused_pepper_plugin_)
-    return focused_pepper_plugin_->IsPluginAcceptingCompositionEvents();
+  PepperPluginInstanceImpl* focused_pepper_plugin = GetFocusedPepperPlugin();
+  if (focused_pepper_plugin)
+    return focused_pepper_plugin->IsPluginAcceptingCompositionEvents();
 #endif
   return true;
 }
@@ -3455,5 +3378,22 @@ void RenderViewImpl::UpdateWebViewWithDeviceScaleFactor() {
   webview()->settings()->setPreferCompositingToLCDTextEnabled(
       PreferCompositingToLCDText(compositor_deps_, device_scale_factor_));
 }
+
+#if defined(ENABLE_PLUGINS)
+PepperPluginInstanceImpl* RenderViewImpl::GetFocusedPepperPlugin() {
+  blink::WebFrame* frame = GetWebView()->mainFrame();
+
+  while (frame) {
+    if (frame->isWebLocalFrame()) {
+      RenderFrameImpl* render_frame = RenderFrameImpl::FromWebFrame(frame);
+      if (render_frame->focused_pepper_plugin())
+        return render_frame->focused_pepper_plugin();
+    }
+    frame = frame->traverseNext(false);
+  }
+
+  return nullptr;
+}
+#endif
 
 }  // namespace content

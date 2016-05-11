@@ -360,6 +360,9 @@ class CONTENT_EXPORT RenderWidget
   void SetDeviceColorProfileForTesting(const std::vector<char>& color_profile);
   void ResetDeviceColorProfileForTesting();
 
+  // Indicates whether this widget has focus.
+  bool has_focus() const { return has_focus_; }
+
  protected:
   // Friend RefCounted so that the dtor can be non-public. Using this class
   // without ref-counting is an error.
@@ -495,7 +498,7 @@ class CONTENT_EXPORT RenderWidget
   // the ACK that the screen has been updated. For a given paint operation,
   // these overrides will always be called in the order DidInitiatePaint,
   // DidFlushPaint.
-  virtual void DidInitiatePaint();
+  virtual void DidInitiatePaint() {}
   virtual void DidFlushPaint();
 
   virtual GURL GetURLForGraphicsContext3D();
@@ -757,6 +760,9 @@ class CONTENT_EXPORT RenderWidget
  private:
   // When emulated, this returns original device scale factor.
   float GetOriginalDeviceScaleFactor() const;
+
+  // Indicates whether this widget has focus.
+  bool has_focus_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidget);
 };

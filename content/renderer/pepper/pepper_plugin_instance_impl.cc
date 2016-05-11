@@ -536,31 +536,11 @@ PepperPluginInstanceImpl::PepperPluginInstanceImpl(
   module_->InstanceCreated(this);
 
   if (render_frame) {  // NULL in tests
-    render_frame->render_view()->PepperInstanceCreated(this);
-    // Bind a callback now so that we can inform the RenderViewImpl when we are
-    // destroyed. This works around a temporary problem stemming from work to
-    // move parts of RenderViewImpl in to RenderFrameImpl (see
-    // crbug.com/245126). If destruction happens in this order:
-    //  1) RenderFrameImpl
-    //  2) PepperPluginInstanceImpl
-    //  3) RenderViewImpl
-    // Then after 1), the PepperPluginInstanceImpl doesn't have any way to talk
-    // to the RenderViewImpl. But when the instance is destroyed, it still
-    // needs to inform the RenderViewImpl that it has gone away, otherwise
-    // between (2) and (3), the RenderViewImpl will still have the dead
-    // instance in its active set, and so might make calls on the deleted
-    // instance. See crbug.com/343576 for more information. Once the plugin
-    // calls move entirely from RenderViewImpl in to RenderFrameImpl, this
-    // can be a little bit simplified by instead making a direct call on
-    // RenderFrameImpl in the destructor (but only if render_frame_ is valid).
-    instance_deleted_callback_ =
-        base::Bind(&RenderViewImpl::PepperInstanceDeleted,
-                   render_frame->render_view()->AsWeakPtr(),
-                   base::Unretained(this));
+    render_frame->PepperInstanceCreated(this);
     view_data_.is_page_visible = !render_frame_->GetRenderWidget()->is_hidden();
 
     // Set the initial focus.
-    SetContentAreaFocus(render_frame_->render_view()->has_focus());
+    SetContentAreaFocus(render_frame_->GetRenderWidget()->has_focus());
 
     if (!module_->IsProxied()) {
       PepperBrowserConnection* browser_connection =
@@ -604,8 +584,8 @@ PepperPluginInstanceImpl::~PepperPluginInstanceImpl() {
   if (TrackedCallback::IsPending(lock_mouse_callback_))
     lock_mouse_callback_->Abort();
 
-  if (!instance_deleted_callback_.is_null())
-    instance_deleted_callback_.Run();
+  if (render_frame_)
+    render_frame_->PepperInstanceDeleted(this);
 
   if (!module_->IsProxied() && render_frame_) {
     PepperBrowserConnection* browser_connection =
@@ -1634,7 +1614,7 @@ bool PepperPluginInstanceImpl::PluginHasFocus() const {
 }
 
 void PepperPluginInstanceImpl::SendFocusChangeNotification() {
-  // Keep a reference on the stack. RenderViewImpl::PepperFocusChanged may
+  // Keep a reference on the stack. RenderFrameImpl::PepperFocusChanged may
   // remove the <embed> from the DOM, which will make the PepperWebPluginImpl
   // drop its reference, usually the last one. This is similar to possible
   // plugin behavior described at the NOTE above Delete().
@@ -1644,7 +1624,7 @@ void PepperPluginInstanceImpl::SendFocusChangeNotification() {
     return;
 
   bool has_focus = PluginHasFocus();
-  render_frame_->render_view()->PepperFocusChanged(this, has_focus);
+  render_frame_->PepperFocusChanged(this, has_focus);
 
   // instance_interface_ may have been cleared in Delete() if the
   // PepperWebPluginImpl is destroyed.

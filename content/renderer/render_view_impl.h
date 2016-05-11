@@ -123,7 +123,6 @@ class HistoryController;
 class HistoryEntry;
 class MouseLockDispatcher;
 class PageState;
-class PepperPluginInstanceImpl;
 class RenderViewImplTest;
 class RenderViewObserver;
 class RenderViewTest;
@@ -239,9 +238,6 @@ class CONTENT_EXPORT RenderViewImpl
     return page_zoom_level_;
   }
 
-  // Indicates whether this page has been focused by the browser.
-  bool has_focus() const { return has_focus_; }
-
   // Sets page-level focus in this view and notifies plugins and Blink's
   // FocusController.
   void SetFocus(bool enable);
@@ -251,26 +247,7 @@ class CONTENT_EXPORT RenderViewImpl
   // Plugin-related functions --------------------------------------------------
 
 #if defined(ENABLE_PLUGINS)
-  PepperPluginInstanceImpl* focused_pepper_plugin() {
-    return focused_pepper_plugin_;
-  }
-  PepperPluginInstanceImpl* pepper_last_mouse_event_target() {
-    return pepper_last_mouse_event_target_;
-  }
-  void set_pepper_last_mouse_event_target(PepperPluginInstanceImpl* plugin) {
-    pepper_last_mouse_event_target_ = plugin;
-  }
-
-  // Indicates that the given instance has been created.
-  void PepperInstanceCreated(PepperPluginInstanceImpl* instance);
-
-  // Indicates that the given instance is being destroyed. This is called from
-  // the destructor, so it's important that the instance is not dereferenced
-  // from this call.
-  void PepperInstanceDeleted(PepperPluginInstanceImpl* instance);
-
-  // Notification that the given plugin is focused or unfocused.
-  void PepperFocusChanged(PepperPluginInstanceImpl* instance, bool focused);
+  PepperPluginInstanceImpl* GetFocusedPepperPlugin();
 #endif  // ENABLE_PLUGINS
 
   void TransferActiveWheelFlingAnimation(
@@ -603,7 +580,6 @@ class CONTENT_EXPORT RenderViewImpl
       const blink::WebGestureEvent& event) override;
   bool RenderWidgetWillHandleMouseEvent(
       const blink::WebMouseEvent& event) override;
-  void RenderWidgetDidCommitAndDrawCompositorFrame() override;
   void RenderWidgetDidFlushPaint() override;
 
   // Old WebFrameClient implementations ----------------------------------------
@@ -897,9 +873,6 @@ class CONTENT_EXPORT RenderViewImpl
   // The height of the top controls.
   float top_controls_height_;
 
-  // Indicates whether this page has been focused/unfocused by the browser.
-  bool has_focus_;
-
   // View ----------------------------------------------------------------------
 
   blink::WebView* webview_;
@@ -954,26 +927,7 @@ class CONTENT_EXPORT RenderViewImpl
 
   // A date/time picker object for date and time related input elements.
   std::unique_ptr<RendererDateTimePicker> date_time_picker_client_;
-#endif
 
-  // Plugins -------------------------------------------------------------------
-#if defined(ENABLE_PLUGINS)
-  typedef std::set<PepperPluginInstanceImpl*> PepperPluginSet;
-  PepperPluginSet active_pepper_instances_;
-
-  // TODO(jam): these belong on RenderFrame, once the browser knows which frame
-  // is focused and sends the IPCs which use these to the correct frame. Until
-  // then, we must store these on RenderView as that's the one place that knows
-  // about all the RenderFrames for a page.
-
-  // Whether or not the focus is on a PPAPI plugin
-  PepperPluginInstanceImpl* focused_pepper_plugin_;
-
-  // The plugin instance that received the last mouse event. It is set to NULL
-  // if the last mouse event went to elements other than Pepper plugins.
-  // |pepper_last_mouse_event_target_| is not owned by this class. We depend on
-  // the RenderFrameImpl to NULL it out when it destructs.
-  PepperPluginInstanceImpl* pepper_last_mouse_event_target_;
 #endif
 
   // Misc ----------------------------------------------------------------------

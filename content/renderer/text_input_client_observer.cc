@@ -75,8 +75,8 @@ void TextInputClientObserver::OnCharacterIndexForPoint(gfx::Point point) {
 void TextInputClientObserver::OnFirstRectForCharacterRange(gfx::Range range) {
   gfx::Rect rect;
 #if defined(ENABLE_PLUGINS)
-  if (render_view_impl_->focused_pepper_plugin()) {
-    rect = render_view_impl_->focused_pepper_plugin()->GetCaretBounds();
+  if (render_view_impl_->GetFocusedPepperPlugin()) {
+    rect = render_view_impl_->GetFocusedPepperPlugin()->GetCaretBounds();
   } else
 #endif
   {

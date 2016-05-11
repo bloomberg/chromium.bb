@@ -735,7 +735,6 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   bool IsTextureInUse(const cc::TextureMailbox& mailbox) const;
 
   RenderFrameImpl* render_frame_;
-  base::Closure instance_deleted_callback_;
   scoped_refptr<PluginModule> module_;
   std::unique_ptr<ppapi::PPP_Instance_Combined> instance_interface_;
   // If this is the NaCl plugin, we create a new module when we switch to the
