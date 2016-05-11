@@ -156,7 +156,8 @@ base::TimeDelta AudioRendererImpl::CurrentMediaTime() {
   // data plus an estimate based on the last time those values were calculated.
   base::TimeDelta current_media_time = audio_clock_->front_timestamp();
   if (!last_render_time_.is_null()) {
-    current_media_time += tick_clock_->NowTicks() - last_render_time_;
+    current_media_time +=
+        (tick_clock_->NowTicks() - last_render_time_) * playback_rate_;
     if (current_media_time > audio_clock_->back_timestamp())
       current_media_time = audio_clock_->back_timestamp();
   }

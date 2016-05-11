@@ -901,9 +901,10 @@ TEST_F(AudioRendererImplTest, TimeSourceBehavior) {
   EXPECT_TRUE(is_time_moving);
 
   // Advancing once more will exceed the amount of played out frames finally.
+  const base::TimeDelta kOneSample =
+      base::TimeDelta::FromSecondsD(1.0 / kOutputSamplesPerSecond);
   base::TimeTicks current_time = tick_clock_->NowTicks();
-  tick_clock_->Advance(
-      base::TimeDelta::FromSecondsD(1.0 / kOutputSamplesPerSecond));
+  tick_clock_->Advance(kOneSample);
   EXPECT_EQ(current_time, CurrentMediaWallClockTime(&is_time_moving));
   EXPECT_TRUE(is_time_moving);
 
@@ -932,6 +933,14 @@ TEST_F(AudioRendererImplTest, TimeSourceBehavior) {
   EXPECT_EQ(current_time, CurrentMediaWallClockTime(&is_time_moving));
   EXPECT_TRUE(is_time_moving);
   EXPECT_EQ(current_time,
+            ConvertMediaTime(renderer_->CurrentMediaTime(), &is_time_moving));
+  EXPECT_TRUE(is_time_moving);
+
+  tick_clock_->Advance(kOneSample);
+  renderer_->SetPlaybackRate(2);
+  EXPECT_EQ(current_time, CurrentMediaWallClockTime(&is_time_moving));
+  EXPECT_TRUE(is_time_moving);
+  EXPECT_EQ(current_time + kOneSample * 2,
             ConvertMediaTime(renderer_->CurrentMediaTime(), &is_time_moving));
   EXPECT_TRUE(is_time_moving);
 
