@@ -2606,6 +2606,22 @@ def GetConfig():
       signer_tests=False,
   )
 
+  site_config.Add(
+      'guado_labstation-release', _release,
+      _base_configs['guado_labstation'],
+      hw_tests=[
+          config_lib.HWTestConfig(constants.HWTEST_CANARY_SUITE,
+                                  num=1, timeout=120*60, warn_only=True,
+                                  async=True, retry=False, max_retries=None,
+                                  file_bugs=False),
+      ],
+      image_test=False,
+      images=['test'],
+      signer_tests=False,
+      paygen=False,
+      vm_tests=[],
+  )
+
   _wificell_pre_cq = site_config.AddTemplate(
       'wificell-pre-cq',
       pre_cq,

@@ -9370,12 +9370,6 @@
         ],
         "vm_tests": []
     },
-    "guado_labstation-payloads": {
-        "_template": "payloads",
-        "boards": [
-            "guado_labstation"
-        ]
-    },
     "guado_labstation-pre-cq": {
         "_template": "pre-cq",
         "boards": [
@@ -9394,7 +9388,17 @@
         "active_waterfall": "chromeos",
         "boards": [
             "guado_labstation"
-        ]
+        ],
+        "hw_tests": [
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": null,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": false,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": true\n}"
+        ],
+        "image_test": false,
+        "images": [
+            "test"
+        ],
+        "paygen": false,
+        "signer_tests": false,
+        "vm_tests": []
     },
     "guado_labstation-release-afdo": {
         "_template": "release-afdo-generate",
