@@ -2721,6 +2721,8 @@
             'events/EventQueue.h',
             'events/EventSender.h',
             'events/EventTarget.cpp',
+            'events/EventUtil.h',
+            'events/EventUtil.cpp',
             'events/FocusEvent.cpp',
             'events/FocusEvent.h',
             'events/GenericEventQueue.cpp',

@@ -23,7 +23,8 @@ var rect = document.getElementById("grey").getBoundingClientRect();
 var x1 = rect.left + 5;
 var y1 = rect.top + 5;
 
-var PointerEventAttributeCount = 1321; //Comes from enum Feature in UseCounter.h
+var PointerEventAttributeCount = 1321; // Comes from enum Feature in UseCounter.h
+var PointerEventAddListenerCount = 1347; // Comes from enum Feature in UseCounter.h
 
 function init() {
   var targetDiv = document.getElementById("grey");
@@ -40,6 +41,7 @@ function runTest() {
   eventSender.mouseDown(1);
   
   shouldBe('internals.isUseCounted(document, PointerEventAttributeCount)', 'true');
+  shouldBe('internals.isUseCounted(document, PointerEventAddListenerCount)', 'true');
 }
 
 init();

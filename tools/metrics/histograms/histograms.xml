@@ -72412,6 +72412,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
       label="GeolocationInsecureOriginIframeDeprecatedNotRemoved"/>
   <int value="1345" label="ProgressElementWithNoneAppearance"/>
   <int value="1346" label="ProgressElementWithProgressBarAppearance"/>
+  <int value="1347" label="PointerEventAddListenerCount"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">

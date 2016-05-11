@@ -37,6 +37,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/editing/Editor.h"
 #include "core/events/Event.h"
+#include "core/events/EventUtil.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/UseCounter.h"
@@ -184,6 +185,11 @@ bool EventTarget::addEventListenerInternal(const AtomicString& eventType, EventL
 
 void EventTarget::addedEventListener(const AtomicString& eventType, RegisteredEventListener& registeredListener)
 {
+    if (EventUtil::isPointerEventType(eventType)) {
+        if (LocalDOMWindow* executingWindow = this->executingWindow()) {
+            UseCounter::count(executingWindow->document(), UseCounter::PointerEventAddListenerCount);
+        }
+    }
 }
 
 bool EventTarget::removeEventListener(const AtomicString& eventType, const EventListener* listener, bool useCapture)

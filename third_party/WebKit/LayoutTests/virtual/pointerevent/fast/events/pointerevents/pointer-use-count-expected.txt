@@ -8,6 +8,7 @@ grey received pointerdown
     **** read pointerID to trigger MeasureAs *****
 pointerID is 1
 PASS internals.isUseCounted(document, PointerEventAttributeCount) is true
+PASS internals.isUseCounted(document, PointerEventAddListenerCount) is true
 PASS successfullyParsed is true
 
 TEST COMPLETE

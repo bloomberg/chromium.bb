@@ -5,6 +5,7 @@
 #include "core/frame/EventHandlerRegistry.h"
 
 #include "core/events/EventListenerOptions.h"
+#include "core/events/EventUtil.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLFrameOwnerElement.h"
@@ -15,20 +16,6 @@
 namespace blink {
 
 namespace {
-
-inline bool isPointerEventType(const AtomicString& eventType)
-{
-    return eventType == EventTypeNames::gotpointercapture
-        || eventType == EventTypeNames::lostpointercapture
-        || eventType == EventTypeNames::pointercancel
-        || eventType == EventTypeNames::pointerdown
-        || eventType == EventTypeNames::pointerenter
-        || eventType == EventTypeNames::pointerleave
-        || eventType == EventTypeNames::pointermove
-        || eventType == EventTypeNames::pointerout
-        || eventType == EventTypeNames::pointerover
-        || eventType == EventTypeNames::pointerup;
-}
 
 WebEventListenerProperties webEventListenerProperties(bool hasBlocking, bool hasPassive)
 {
@@ -63,7 +50,7 @@ bool EventHandlerRegistry::eventTypeToClass(const AtomicString& eventType, const
         *result = options.passive() ? TouchEndOrCancelEventPassive : TouchEndOrCancelEventBlocking;
     } else if (eventType == EventTypeNames::touchstart || eventType == EventTypeNames::touchmove) {
         *result = options.passive() ? TouchStartOrMoveEventPassive : TouchStartOrMoveEventBlocking;
-    } else if (isPointerEventType(eventType)) {
+    } else if (EventUtil::isPointerEventType(eventType)) {
         // The EventHandlerClass is TouchStartOrMoveEventPassive since
         // the pointer events never block scrolling and the compositor
         // only needs to know about the touch listeners.
