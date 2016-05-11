@@ -1,0 +1,47 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/elements-test.js"></script>
+<script>
+
+function click()
+{
+    var target = document.getElementById("inspected");
+    var rect = target.getBoundingClientRect();
+    // Simulate the mouse click over the target to trigger an event dispatch.
+    eventSender.mouseMoveTo(rect.left + 10, rect.top + 10);
+    eventSender.mouseDown();
+    eventSender.mouseUp();
+}
+
+function test()
+{
+    InspectorTest.cpuProfilerModel.startRecording();
+    InspectorTest.cpuProfilerModel.stopRecording();
+    InspectorTest.domModel.setInspectMode(DOMAgent.InspectMode.SearchForNode, clickAtInspected);
+
+    function clickAtInspected()
+    {
+        InspectorTest.firstElementsTreeOutline().addEventListener(WebInspector.ElementsTreeOutline.Events.SelectedNodeChanged, dumpAndFinish);
+        InspectorTest.evaluateInPage("click()");
+    }
+
+    function dumpAndFinish()
+    {
+        InspectorTest.firstElementsTreeOutline().removeEventListener(WebInspector.ElementsTreeOutline.Events.SelectedNodeChanged, dumpAndFinish);
+        var selectedElement = InspectorTest.firstElementsTreeOutline().selectedTreeElement;
+        InspectorTest.addResult("Node selected: " + selectedElement.node().getAttribute("id"));
+        InspectorTest.completeTest();
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests that inspect mode works after profiling start/stop.
+</p>
+<div id="inspected" style="width:100px;height:100px;"></div>
+</body>
+</html>

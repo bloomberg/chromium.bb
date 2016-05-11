@@ -131,6 +131,7 @@ private:
     void rebuildOverlayPage();
     void invalidate();
     void scheduleUpdate();
+    void clearInternal();
 
     bool handleMousePress();
     bool handleGestureEvent(const PlatformGestureEvent&);

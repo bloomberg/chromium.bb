@@ -571,7 +571,7 @@ void InspectorOverlay::onTimer(Timer<InspectorOverlay>*)
     scheduleUpdate();
 }
 
-void InspectorOverlay::clear()
+void InspectorOverlay::clearInternal()
 {
     if (m_layoutEditor)
         m_layoutEditor.clear();
@@ -586,7 +586,11 @@ void InspectorOverlay::clear()
     m_inspectMode = InspectorDOMAgent::NotSearching;
     m_timer.stop();
     hideHighlight();
+}
 
+void InspectorOverlay::clear()
+{
+    clearInternal();
     m_debuggerAgent.clear();
     m_domAgent.clear();
     m_cssAgent.clear();
@@ -662,7 +666,7 @@ void InspectorOverlay::overlayClearSelection(bool commitChanges)
 void InspectorOverlay::suspend()
 {
     if (!m_suspendCount++)
-        clear();
+        clearInternal();
 }
 
 void InspectorOverlay::resume()
