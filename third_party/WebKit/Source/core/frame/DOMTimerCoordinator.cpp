@@ -36,8 +36,10 @@ void DOMTimerCoordinator::removeTimeoutByID(int timeoutID)
     if (timeoutID <= 0)
         return;
 
-    if (DOMTimer* removedTimer = m_timers.take(timeoutID))
+    if (DOMTimer* removedTimer = m_timers.get(timeoutID))
         removedTimer->disposeTimer();
+
+    m_timers.remove(timeoutID);
 }
 
 DEFINE_TRACE(DOMTimerCoordinator)
