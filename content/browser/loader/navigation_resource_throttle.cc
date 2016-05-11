@@ -4,6 +4,8 @@
 
 #include "content/browser/loader/navigation_resource_throttle.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/location.h"
@@ -11,8 +13,10 @@
 #include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/navigation_data.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/resource_controller.h"
+#include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/common/referrer.h"
 #include "net/url_request/redirect_info.h"
@@ -99,7 +103,8 @@ void WillProcessResponseOnUIThread(
     UIChecksPerformedCallback callback,
     int render_process_id,
     int render_frame_host_id,
-    scoped_refptr<net::HttpResponseHeaders> headers) {
+    scoped_refptr<net::HttpResponseHeaders> headers,
+    std::unique_ptr<NavigationData> navigation_data) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RenderFrameHostImpl* render_frame_host =
       RenderFrameHostImpl::FromID(render_process_id, render_frame_host_id);
@@ -115,6 +120,9 @@ void WillProcessResponseOnUIThread(
     return;
   }
 
+  if (navigation_data)
+    navigation_handle->set_navigation_data(std::move(navigation_data));
+
   navigation_handle->WillProcessResponse(
       render_frame_host, headers,
       base::Bind(&SendCheckResultToIOThread, callback));
@@ -122,8 +130,12 @@ void WillProcessResponseOnUIThread(
 
 }  // namespace
 
-NavigationResourceThrottle::NavigationResourceThrottle(net::URLRequest* request)
-    : request_(request), weak_ptr_factory_(this) {}
+NavigationResourceThrottle::NavigationResourceThrottle(
+    net::URLRequest* request,
+    ResourceDispatcherHostDelegate* resource_dispatcher_host_delegate)
+    : request_(request),
+      resource_dispatcher_host_delegate_(resource_dispatcher_host_delegate),
+      weak_ptr_factory_(this) {}
 
 NavigationResourceThrottle::~NavigationResourceThrottle() {}
 
@@ -213,6 +225,17 @@ void NavigationResourceThrottle::WillProcessResponse(bool* defer) {
         request_->response_headers()->raw_headers());
   }
 
+  std::unique_ptr<NavigationData> cloned_data;
+  if (resource_dispatcher_host_delegate_) {
+    // Ask the embedder for a NavigationData instance.
+    NavigationData* navigation_data =
+        resource_dispatcher_host_delegate_->GetNavigationData(request_);
+
+    // Clone the embedder's NavigationData before moving it to the UI thread.
+    if (navigation_data)
+      cloned_data = navigation_data->Clone();
+  }
+
   UIChecksPerformedCallback callback =
       base::Bind(&NavigationResourceThrottle::OnUIChecksPerformed,
                  weak_ptr_factory_.GetWeakPtr());
@@ -220,7 +243,8 @@ void NavigationResourceThrottle::WillProcessResponse(bool* defer) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&WillProcessResponseOnUIThread, callback, render_process_id,
-                 render_frame_id, response_headers));
+                 render_frame_id, response_headers,
+                 base::Passed(&cloned_data)));
   *defer = true;
 }
 

@@ -30,6 +30,7 @@
 #include "chrome/browser/prerender/prerender_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
+#include "chrome/browser/renderer_host/chrome_navigation_data.h"
 #include "chrome/browser/renderer_host/safe_browsing_resource_throttle.h"
 #include "chrome/browser/renderer_host/thread_hop_resource_throttle.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
@@ -42,6 +43,7 @@
 #include "chrome/common/features.h"
 #include "chrome/common/url_constants.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/policy/core/common/cloud/policy_header_io_helper.h"
@@ -49,6 +51,7 @@
 #include "components/search_engines/template_url_service.h"
 #include "components/variations/net/variations_http_headers.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/navigation_data.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/plugin_service_filter.h"
@@ -798,4 +801,23 @@ void ChromeResourceDispatcherHostDelegate::
     SetExternalProtocolHandlerDelegateForTesting(
     ExternalProtocolHandler::Delegate* delegate) {
   g_external_protocol_handler_delegate = delegate;
+}
+
+content::NavigationData*
+ChromeResourceDispatcherHostDelegate::GetNavigationData(
+    net::URLRequest* request) const {
+  ChromeNavigationData* data =
+      ChromeNavigationData::GetDataAndCreateIfNecessary(request);
+  if (!request)
+    return data;
+
+  data_reduction_proxy::DataReductionProxyData* data_reduction_proxy_data =
+      data_reduction_proxy::DataReductionProxyData::GetData(*request);
+  // DeepCopy the DataReductionProxyData from the URLRequest to prevent the
+  // URLRequest and DataReductionProxyData from both having ownership of the
+  // same object. This copy will be shortlived as it will be deep copied again
+  // when content makes a clone of NavigationData for the UI thread.
+  if (data_reduction_proxy_data)
+    data->SetDataReductionProxyData(data_reduction_proxy_data->DeepCopy());
+  return data;
 }

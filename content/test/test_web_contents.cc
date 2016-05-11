@@ -9,12 +9,14 @@
 #include "content/browser/browser_url_handler_impl.h"
 #include "content/browser/frame_host/cross_process_frame_connector.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
+#include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/frame_host/navigator.h"
 #include "content/browser/frame_host/navigator_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/common/frame_messages.h"
 #include "content/common/view_messages.h"
+#include "content/public/browser/navigation_data.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
@@ -311,6 +313,13 @@ void TestWebContents::TestDidFailLoadWithError(
   FrameHostMsg_DidFailLoadWithError msg(
       0, url, error_code, error_description, was_ignored_by_handler);
   frame_tree_.root()->current_frame_host()->OnMessageReceived(msg);
+}
+
+void TestWebContents::SetNavigationData(
+    NavigationHandle* navigation_handle,
+    std::unique_ptr<NavigationData> navigation_data) {
+  static_cast<NavigationHandleImpl*>(navigation_handle)
+      ->set_navigation_data(std::move(navigation_data));
 }
 
 void TestWebContents::CreateNewWindow(

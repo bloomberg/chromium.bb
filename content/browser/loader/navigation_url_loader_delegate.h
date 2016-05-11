@@ -17,6 +17,7 @@ struct RedirectInfo;
 
 namespace content {
 
+class NavigationData;
 class StreamHandle;
 struct ResourceResponse;
 
@@ -31,10 +32,11 @@ class CONTENT_EXPORT NavigationURLLoaderDelegate {
 
   // Called when the request receives its response. No further calls will be
   // made to the delegate. The response body is returned as a stream in
-  // |body_stream|.
+  // |body_stream|. |navigation_data| is passed to the NavigationHandle.
   virtual void OnResponseStarted(
       const scoped_refptr<ResourceResponse>& response,
-      std::unique_ptr<StreamHandle> body_stream) = 0;
+      std::unique_ptr<StreamHandle> body_stream,
+      std::unique_ptr<NavigationData> navigation_data) = 0;
 
   // Called if the request fails before receving a response. |net_error| is a
   // network error code for the failure. |has_stale_copy_in_cache| is true if

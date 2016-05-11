@@ -21,6 +21,7 @@
 #include "content/common/resource_request_body.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/navigation_data.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/stream_handle.h"
 #include "content/public/common/content_client.h"
@@ -275,7 +276,8 @@ void NavigationRequest::OnRequestRedirected(
 
 void NavigationRequest::OnResponseStarted(
     const scoped_refptr<ResourceResponse>& response,
-    std::unique_ptr<StreamHandle> body) {
+    std::unique_ptr<StreamHandle> body,
+    std::unique_ptr<NavigationData> navigation_data) {
   DCHECK(state_ == STARTED);
   state_ = RESPONSE_STARTED;
 
@@ -321,6 +323,9 @@ void NavigationRequest::OnResponseStarted(
     frame_tree_node_->ResetNavigationRequest(false);
     return;
   }
+
+  if (navigation_data)
+    navigation_handle_->set_navigation_data(std::move(navigation_data));
 
   // Store the response and the StreamHandle until checks have been processed.
   response_ = response;

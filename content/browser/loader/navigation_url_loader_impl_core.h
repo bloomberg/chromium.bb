@@ -20,6 +20,7 @@ namespace content {
 
 class FrameTreeNode;
 class NavigationResourceHandler;
+class NavigationData;
 class ResourceContext;
 class ResourceHandler;
 class ResourceRequestBody;
@@ -60,7 +61,8 @@ class NavigationURLLoaderImplCore {
 
   // Notifies |loader_| on the UI thread that the response started.
   void NotifyResponseStarted(ResourceResponse* response,
-                             std::unique_ptr<StreamHandle> body);
+                             std::unique_ptr<StreamHandle> body,
+                             std::unique_ptr<NavigationData> navigation_data);
 
   // Notifies |loader_| on the UI thread that the request failed.
   void NotifyRequestFailed(bool in_cache, int net_error);

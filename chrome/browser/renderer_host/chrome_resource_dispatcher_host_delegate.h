@@ -18,8 +18,16 @@
 class DelayedResourceQueue;
 class DownloadRequestLimiter;
 
+namespace content {
+class NavigationData;
+}
+
 namespace extensions {
 class UserScriptListener;
+}
+
+namespace net {
+class URLRequest;
 }
 
 namespace safe_browsing {
@@ -86,6 +94,8 @@ class ChromeResourceDispatcherHostDelegate
   bool ShouldEnableLoFiMode(
       const net::URLRequest& url_request,
       content::ResourceContext* resource_context) override;
+  content::NavigationData* GetNavigationData(
+      net::URLRequest* request) const override;
 
   // Called on the UI thread. Allows switching out the
   // ExternalProtocolHandler::Delegate for testing code.

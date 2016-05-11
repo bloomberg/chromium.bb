@@ -18,6 +18,7 @@ struct RedirectInfo;
 
 namespace content {
 
+class NavigationData;
 class NavigationURLLoaderDelegate;
 class StreamHandle;
 struct ResourceResponse;
@@ -45,7 +46,8 @@ class TestNavigationURLLoader
   void CallOnRequestRedirected(const net::RedirectInfo& redirect_info,
                                const scoped_refptr<ResourceResponse>& response);
   void CallOnResponseStarted(const scoped_refptr<ResourceResponse>& response,
-                             std::unique_ptr<StreamHandle> body);
+                             std::unique_ptr<StreamHandle> body,
+                             std::unique_ptr<NavigationData> navigation_data);
 
   int redirect_count() { return redirect_count_; }
 

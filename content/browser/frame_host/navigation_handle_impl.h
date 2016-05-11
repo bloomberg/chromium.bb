@@ -15,6 +15,7 @@
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/navigation_data.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "url/gurl.h"
 
@@ -111,6 +112,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
       bool new_method_is_post,
       const GURL& new_referrer_url,
       bool new_is_external_protocol) override;
+  NavigationData* GetNavigationData() override;
 
   NavigatorDelegate* GetDelegate() const;
 
@@ -211,6 +213,13 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
       bool same_page,
       RenderFrameHostImpl* render_frame_host);
 
+  // Called during commit. Takes ownership of the embedder's NavigationData
+  // instance. This NavigationData may have been cloned prior to being added
+  // here.
+  void set_navigation_data(std::unique_ptr<NavigationData> navigation_data) {
+    navigation_data_ = std::move(navigation_data);
+  }
+
  private:
   friend class NavigationHandleImplTest;
 
@@ -293,6 +302,9 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // Manages the lifetime of a pre-created ServiceWorkerProviderHost until a
   // corresponding ServiceWorkerNetworkProvider is created in the renderer.
   std::unique_ptr<ServiceWorkerNavigationHandle> service_worker_handle_;
+
+  // Embedder data tied to this navigation.
+  std::unique_ptr<NavigationData> navigation_data_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationHandleImpl);
 };

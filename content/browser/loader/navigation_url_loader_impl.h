@@ -20,6 +20,7 @@ struct RedirectInfo;
 namespace content {
 
 class NavigationURLLoaderImplCore;
+class NavigationData;
 class ServiceWorkerNavigationHandle;
 class StreamHandle;
 struct ResourceResponse;
@@ -46,7 +47,8 @@ class NavigationURLLoaderImpl : public NavigationURLLoader {
 
   // Notifies the delegate that the response has started.
   void NotifyResponseStarted(const scoped_refptr<ResourceResponse>& response,
-                             std::unique_ptr<StreamHandle> body);
+                             std::unique_ptr<StreamHandle> body,
+                             std::unique_ptr<NavigationData> navigation_data);
 
   // Notifies the delegate the request failed to return a response.
   void NotifyRequestFailed(bool in_cache, int net_error);

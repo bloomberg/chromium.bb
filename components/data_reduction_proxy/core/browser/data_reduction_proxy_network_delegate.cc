@@ -13,6 +13,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_bypass_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
 #include "components/data_reduction_proxy/core/common/lofi_decider.h"
@@ -169,9 +170,6 @@ void DataReductionProxyNetworkDelegate::OnBeforeSendProxyHeadersInternal(
     const net::ProxyInfo& proxy_info,
     net::HttpRequestHeaders* headers) {
   DCHECK(data_reduction_proxy_config_);
-
-  if (proxy_info.is_empty())
-    return;
   if (!proxy_info.proxy_server().is_valid())
     return;
   if (proxy_info.proxy_server().is_direct())
@@ -183,6 +181,13 @@ void DataReductionProxyNetworkDelegate::OnBeforeSendProxyHeadersInternal(
     return;
   }
 
+  // Retrieves DataReductionProxyData from a request, creating a new instance
+  // if needed.
+  DataReductionProxyData* data =
+      DataReductionProxyData::GetDataAndCreateIfNecessary(request);
+  if (data)
+    data->set_used_data_reduction_proxy(true);
+
   if (data_reduction_proxy_io_data_ &&
       data_reduction_proxy_io_data_->lofi_decider() && request) {
     LoFiDecider* lofi_decider = data_reduction_proxy_io_data_->lofi_decider();
@@ -193,6 +198,10 @@ void DataReductionProxyNetworkDelegate::OnBeforeSendProxyHeadersInternal(
       data_reduction_proxy_io_data_->SetLoFiModeActiveOnMainFrame(
           is_using_lofi_mode);
     }
+    // Retrieves DataReductionProxyData from a request.
+    DataReductionProxyData* data = DataReductionProxyData::GetData(*request);
+    if (data)
+      data->set_lofi_requested(is_using_lofi_mode);
   }
 
   if (data_reduction_proxy_request_options_) {

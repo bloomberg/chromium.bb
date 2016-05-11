@@ -420,7 +420,7 @@ void TestRenderFrameHost::PrepareForCommitWithServerRedirect(
   scoped_refptr<ResourceResponse> response(new ResourceResponse);
   // TODO(carlosk): ideally with PlzNavigate it should be possible someday to
   // fully commit the navigation at this call to CallOnResponseStarted.
-  url_loader->CallOnResponseStarted(response, MakeEmptyStream());
+  url_loader->CallOnResponseStarted(response, MakeEmptyStream(), nullptr);
 }
 
 int32_t TestRenderFrameHost::ComputeNextPageID() {

@@ -5,6 +5,7 @@
 #include "content/test/test_navigation_url_loader_delegate.h"
 
 #include "base/run_loop.h"
+#include "content/public/browser/navigation_data.h"
 #include "content/public/browser/stream_handle.h"
 #include "content/public/common/resource_response.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -55,7 +56,8 @@ void TestNavigationURLLoaderDelegate::OnRequestRedirected(
 
 void TestNavigationURLLoaderDelegate::OnResponseStarted(
     const scoped_refptr<ResourceResponse>& response,
-    std::unique_ptr<StreamHandle> body) {
+    std::unique_ptr<StreamHandle> body,
+    std::unique_ptr<NavigationData> navigation_data) {
   response_ = response;
   body_ = std::move(body);
   ASSERT_TRUE(response_started_);

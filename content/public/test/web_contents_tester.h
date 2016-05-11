@@ -15,6 +15,8 @@ class GURL;
 namespace content {
 
 class BrowserContext;
+class NavigationData;
+class NavigationHandle;
 class RenderFrameHost;
 class RenderViewHost;
 class WebContents;
@@ -116,6 +118,11 @@ class WebContentsTester {
                                            const GURL& url,
                                            const Referrer& referrer,
                                            ui::PageTransition transition) = 0;
+
+  // Sets NavgationData on |navigation_handle|.
+  virtual void SetNavigationData(
+      NavigationHandle* navigation_handle,
+      std::unique_ptr<NavigationData> navigation_data) = 0;
 
   // Returns headers that were passed in the previous SaveFrameWithHeaders(...)
   // call.

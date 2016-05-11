@@ -16,6 +16,7 @@
 class GURL;
 
 namespace content {
+class NavigationData;
 class NavigationThrottle;
 class RenderFrameHost;
 class WebContents;
@@ -168,6 +169,11 @@ class CONTENT_EXPORT NavigationHandle {
                                     bool new_method_is_post,
                                     const GURL& new_referrer_url,
                                     bool new_is_external_protocol) = 0;
+
+  // The NavigationData that the embedder returned from
+  // ResourceDispatcherHostDelegate::GetNavigationData during commit. This will
+  // be a clone of the NavigationData.
+  virtual NavigationData* GetNavigationData() = 0;
 };
 
 }  // namespace content

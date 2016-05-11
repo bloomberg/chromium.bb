@@ -21,6 +21,8 @@ class SiteInstanceImpl;
 
 namespace content {
 
+class NavigationData;
+class NavigationHandle;
 class RenderViewHost;
 class TestRenderViewHost;
 class WebContentsTester;
@@ -110,6 +112,10 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
                                 int error_code,
                                 const base::string16& error_description,
                                 bool was_ignored_by_handler);
+
+  void SetNavigationData(
+      NavigationHandle* navigation_handle,
+      std::unique_ptr<NavigationData> navigation_data) override;
 
  protected:
   // The deprecated WebContentsTester still needs to subclass this.

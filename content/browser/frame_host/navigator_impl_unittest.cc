@@ -19,6 +19,7 @@
 #include "content/common/frame_messages.h"
 #include "content/common/navigation_params.h"
 #include "content/common/site_isolation_policy.h"
+#include "content/public/browser/navigation_data.h"
 #include "content/public/browser/stream_handle.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
@@ -143,8 +144,8 @@ TEST_F(NavigatorTestWithBrowserSideNavigation,
 
   // Have the current RenderFrameHost commit the navigation.
   scoped_refptr<ResourceResponse> response(new ResourceResponse);
-  GetLoaderForNavigationRequest(request)
-      ->CallOnResponseStarted(response, MakeEmptyStream());
+  GetLoaderForNavigationRequest(request)->CallOnResponseStarted(
+      response, MakeEmptyStream(), nullptr);
   EXPECT_TRUE(DidRenderFrameHostRequestCommit(main_test_rfh()));
   EXPECT_TRUE(main_test_rfh()->is_loading());
   EXPECT_FALSE(node->navigation_request());
@@ -196,8 +197,8 @@ TEST_F(NavigatorTestWithBrowserSideNavigation,
 
   // Have the current RenderFrameHost commit the navigation.
   scoped_refptr<ResourceResponse> response(new ResourceResponse);
-  GetLoaderForNavigationRequest(request)
-      ->CallOnResponseStarted(response, MakeEmptyStream());
+  GetLoaderForNavigationRequest(request)->CallOnResponseStarted(
+      response, MakeEmptyStream(), nullptr);
   EXPECT_TRUE(DidRenderFrameHostRequestCommit(main_test_rfh()));
   EXPECT_TRUE(main_test_rfh()->is_loading());
   EXPECT_FALSE(node->navigation_request());
@@ -245,8 +246,8 @@ TEST_F(NavigatorTestWithBrowserSideNavigation,
 
   // Have the current RenderFrameHost commit the navigation.
   scoped_refptr<ResourceResponse> response(new ResourceResponse);
-  GetLoaderForNavigationRequest(request)
-      ->CallOnResponseStarted(response, MakeEmptyStream());
+  GetLoaderForNavigationRequest(request)->CallOnResponseStarted(
+      response, MakeEmptyStream(), nullptr);
   if (SiteIsolationPolicy::AreCrossProcessFramesPossible()) {
     EXPECT_TRUE(
         DidRenderFrameHostRequestCommit(GetSpeculativeRenderFrameHost(node)));
@@ -398,8 +399,8 @@ TEST_F(NavigatorTestWithBrowserSideNavigation, NoContent) {
   const char kNoContentHeaders[] = "HTTP/1.1 204 No Content\0\0";
   response->head.headers = new net::HttpResponseHeaders(
       std::string(kNoContentHeaders, arraysize(kNoContentHeaders)));
-  GetLoaderForNavigationRequest(main_request)->CallOnResponseStarted(
-      response, MakeEmptyStream());
+  GetLoaderForNavigationRequest(main_request)
+      ->CallOnResponseStarted(response, MakeEmptyStream(), nullptr);
 
   // There should be no pending nor speculative RenderFrameHost; the navigation
   // was aborted.
@@ -424,8 +425,8 @@ TEST_F(NavigatorTestWithBrowserSideNavigation, NoContent) {
   const char kResetContentHeaders[] = "HTTP/1.1 205 Reset Content\0\0";
   response->head.headers = new net::HttpResponseHeaders(
       std::string(kResetContentHeaders, arraysize(kResetContentHeaders)));
-  GetLoaderForNavigationRequest(main_request)->CallOnResponseStarted(
-      response, MakeEmptyStream());
+  GetLoaderForNavigationRequest(main_request)
+      ->CallOnResponseStarted(response, MakeEmptyStream(), nullptr);
 
   // There should be no pending nor speculative RenderFrameHost; the navigation
   // was aborted.
@@ -458,8 +459,8 @@ TEST_F(NavigatorTestWithBrowserSideNavigation, CrossSiteNavigation) {
   EXPECT_EQ(speculative_rfh, GetSpeculativeRenderFrameHost(node));
 
   scoped_refptr<ResourceResponse> response(new ResourceResponse);
-  GetLoaderForNavigationRequest(main_request)->CallOnResponseStarted(
-      response, MakeEmptyStream());
+  GetLoaderForNavigationRequest(main_request)
+      ->CallOnResponseStarted(response, MakeEmptyStream(), nullptr);
   EXPECT_EQ(speculative_rfh, GetSpeculativeRenderFrameHost(node));
   EXPECT_TRUE(DidRenderFrameHostRequestCommit(speculative_rfh));
   EXPECT_FALSE(DidRenderFrameHostRequestCommit(main_test_rfh()));
@@ -501,8 +502,8 @@ TEST_F(NavigatorTestWithBrowserSideNavigation, RedirectCrossSite) {
 
   // Have the RenderFrameHost commit the navigation.
   scoped_refptr<ResourceResponse> response(new ResourceResponse);
-  GetLoaderForNavigationRequest(main_request)->CallOnResponseStarted(
-      response, MakeEmptyStream());
+  GetLoaderForNavigationRequest(main_request)
+      ->CallOnResponseStarted(response, MakeEmptyStream(), nullptr);
   TestRenderFrameHost* final_speculative_rfh =
       GetSpeculativeRenderFrameHost(node);
   EXPECT_TRUE(final_speculative_rfh);
@@ -573,7 +574,7 @@ TEST_F(NavigatorTestWithBrowserSideNavigation,
   // Have the RenderFrameHost commit the navigation.
   scoped_refptr<ResourceResponse> response(new ResourceResponse);
   GetLoaderForNavigationRequest(request2)->CallOnResponseStarted(
-      response, MakeEmptyStream());
+      response, MakeEmptyStream(), nullptr);
   EXPECT_TRUE(DidRenderFrameHostRequestCommit(speculative_rfh));
   EXPECT_FALSE(DidRenderFrameHostRequestCommit(main_test_rfh()));
 
@@ -639,8 +640,8 @@ TEST_F(NavigatorTestWithBrowserSideNavigation,
 
   // Have the RenderFrameHost commit the navigation.
   scoped_refptr<ResourceResponse> response(new ResourceResponse);
-  GetLoaderForNavigationRequest(request2)
-      ->CallOnResponseStarted(response, MakeEmptyStream());
+  GetLoaderForNavigationRequest(request2)->CallOnResponseStarted(
+      response, MakeEmptyStream(), nullptr);
   if (SiteIsolationPolicy::AreCrossProcessFramesPossible()) {
     EXPECT_TRUE(
         DidRenderFrameHostRequestCommit(GetSpeculativeRenderFrameHost(node)));
@@ -700,8 +701,8 @@ TEST_F(NavigatorTestWithBrowserSideNavigation,
 
   // Have the RenderFrameHost commit the navigation.
   scoped_refptr<ResourceResponse> response(new ResourceResponse);
-  GetLoaderForNavigationRequest(request2)
-      ->CallOnResponseStarted(response, MakeEmptyStream());
+  GetLoaderForNavigationRequest(request2)->CallOnResponseStarted(
+      response, MakeEmptyStream(), nullptr);
   if (SiteIsolationPolicy::AreCrossProcessFramesPossible()) {
     EXPECT_TRUE(
         DidRenderFrameHostRequestCommit(GetSpeculativeRenderFrameHost(node)));
@@ -752,8 +753,8 @@ TEST_F(NavigatorTestWithBrowserSideNavigation,
 
   // Have the RenderFrameHost commit the navigation.
   scoped_refptr<ResourceResponse> response(new ResourceResponse);
-  GetLoaderForNavigationRequest(request2)
-      ->CallOnResponseStarted(response, MakeEmptyStream());
+  GetLoaderForNavigationRequest(request2)->CallOnResponseStarted(
+      response, MakeEmptyStream(), nullptr);
   EXPECT_TRUE(DidRenderFrameHostRequestCommit(speculative_rfh));
   EXPECT_FALSE(DidRenderFrameHostRequestCommit(main_test_rfh()));
 
@@ -809,8 +810,8 @@ TEST_F(NavigatorTestWithBrowserSideNavigation,
 
   // Have the RenderFrameHost commit the navigation.
   scoped_refptr<ResourceResponse> response(new ResourceResponse);
-  GetLoaderForNavigationRequest(request2)
-      ->CallOnResponseStarted(response, MakeEmptyStream());
+  GetLoaderForNavigationRequest(request2)->CallOnResponseStarted(
+      response, MakeEmptyStream(), nullptr);
   if (SiteIsolationPolicy::AreCrossProcessFramesPossible()) {
     EXPECT_TRUE(
         DidRenderFrameHostRequestCommit(GetSpeculativeRenderFrameHost(node)));
@@ -887,7 +888,7 @@ TEST_F(NavigatorTestWithBrowserSideNavigation,
   // OnResponseStarted.
   scoped_refptr<ResourceResponse> response(new ResourceResponse);
   GetLoaderForNavigationRequest(node->navigation_request())
-      ->CallOnResponseStarted(response, MakeEmptyStream());
+      ->CallOnResponseStarted(response, MakeEmptyStream(), nullptr);
   EXPECT_EQ(speculative_rfh, GetSpeculativeRenderFrameHost(node));
   EXPECT_TRUE(DidRenderFrameHostRequestCommit(speculative_rfh));
   EXPECT_EQ(site_instance_id, speculative_rfh->GetSiteInstance()->GetId());
@@ -948,7 +949,7 @@ TEST_F(NavigatorTestWithBrowserSideNavigation,
   // OnResponseStarted.
   scoped_refptr<ResourceResponse> response(new ResourceResponse);
   GetLoaderForNavigationRequest(main_request)
-      ->CallOnResponseStarted(response, MakeEmptyStream());
+      ->CallOnResponseStarted(response, MakeEmptyStream(), nullptr);
   speculative_rfh = GetSpeculativeRenderFrameHost(node);
   ASSERT_TRUE(speculative_rfh);
   EXPECT_TRUE(DidRenderFrameHostRequestCommit(speculative_rfh));

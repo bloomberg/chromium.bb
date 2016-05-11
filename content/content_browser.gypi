@@ -228,6 +228,7 @@
       'public/browser/navigation_entry.h',
       'public/browser/navigation_handle.cc',
       'public/browser/navigation_handle.h',
+      'public/browser/navigation_data.h',
       'public/browser/navigation_throttle.cc',
       'public/browser/navigation_throttle.h',
       'public/browser/navigation_type.h',

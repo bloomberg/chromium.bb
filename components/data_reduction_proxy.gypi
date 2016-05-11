@@ -20,6 +20,8 @@
         'data_reduction_proxy/core/browser/data_reduction_proxy_config_service_client.h',
         'data_reduction_proxy/core/browser/data_reduction_proxy_configurator.cc',
         'data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h',
+        'data_reduction_proxy/core/browser/data_reduction_proxy_data.cc',
+        'data_reduction_proxy/core/browser/data_reduction_proxy_data.h',
         'data_reduction_proxy/core/browser/data_reduction_proxy_debug_ui_service.h',
         'data_reduction_proxy/core/browser/data_reduction_proxy_delegate.cc',
         'data_reduction_proxy/core/browser/data_reduction_proxy_delegate.h',

@@ -1732,7 +1732,7 @@ ResourceDispatcherHostImpl::AddStandardHandlers(
   // PlzNavigate: the throttle is unnecessary as communication with the UI
   // thread is handled by the NavigationURLloader.
   if (!IsBrowserSideNavigationEnabled() && IsResourceTypeFrame(resource_type))
-    throttles.push_back(new NavigationResourceThrottle(request));
+    throttles.push_back(new NavigationResourceThrottle(request, delegate()));
 
   if (delegate_) {
     delegate_->RequestBeginning(request,
@@ -2329,7 +2329,7 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
   // TODO(davidben): Attach AppCacheInterceptor.
 
   std::unique_ptr<ResourceHandler> handler(
-      new NavigationResourceHandler(new_request.get(), loader));
+      new NavigationResourceHandler(new_request.get(), loader, delegate()));
 
   // TODO(davidben): Pass in the appropriate appcache_service. Also fix the
   // dependency on child_id/route_id. Those are used by the ResourceScheduler;

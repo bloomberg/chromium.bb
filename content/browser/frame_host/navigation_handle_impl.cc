@@ -269,6 +269,10 @@ NavigationHandleImpl::CallWillRedirectRequestForTesting(
   return result;
 }
 
+NavigationData* NavigationHandleImpl::GetNavigationData() {
+  return navigation_data_.get();
+}
+
 void NavigationHandleImpl::InitServiceWorkerHandle(
     ServiceWorkerContextWrapper* service_worker_context) {
   DCHECK(IsBrowserSideNavigationEnabled());

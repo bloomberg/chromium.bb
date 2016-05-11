@@ -7,6 +7,7 @@
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/page_load_metrics/observers/aborts_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/core_page_load_metrics_observer.h"
+#include "chrome/browser/page_load_metrics/observers/data_reduction_proxy_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/document_write_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/from_gws_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/google_captcha_observer.h"
@@ -32,6 +33,8 @@ void PageLoadMetricsEmbedder::RegisterObservers(
   // These classes are owned by the metrics.
   tracker->AddObserver(base::WrapUnique(new AbortsPageLoadMetricsObserver()));
   tracker->AddObserver(base::WrapUnique(new CorePageLoadMetricsObserver()));
+  tracker->AddObserver(base::WrapUnique(
+      new data_reduction_proxy::DataReductionProxyMetricsObserver()));
   tracker->AddObserver(base::WrapUnique(new FromGWSPageLoadMetricsObserver()));
   tracker->AddObserver(
       base::WrapUnique(new google_captcha_observer::GoogleCaptchaObserver()));

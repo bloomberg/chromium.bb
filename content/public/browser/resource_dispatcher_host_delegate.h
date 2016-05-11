@@ -29,6 +29,7 @@ class URLRequest;
 namespace content {
 
 class AppCacheService;
+class NavigationData;
 class ResourceContext;
 class ResourceDispatcherHostLoginDelegate;
 class ResourceThrottle;
@@ -129,6 +130,10 @@ class CONTENT_EXPORT ResourceDispatcherHostDelegate {
   // is only called for requests with an unspecified Lo-Fi value.
   virtual bool ShouldEnableLoFiMode(const net::URLRequest& url_request,
                                     content::ResourceContext* resource_context);
+
+  // Asks the embedder for NavigationData related to this request. It is only
+  // called for navigation requests.
+  virtual NavigationData* GetNavigationData(net::URLRequest* request) const;
 
  protected:
   ResourceDispatcherHostDelegate();

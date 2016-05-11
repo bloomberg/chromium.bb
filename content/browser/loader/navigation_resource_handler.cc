@@ -4,6 +4,8 @@
 
 #include "content/browser/loader/navigation_resource_handler.h"
 
+#include <memory>
+
 #include "base/logging.h"
 #include "content/browser/loader/navigation_url_loader_impl_core.h"
 #include "content/browser/loader/netlog_observer.h"
@@ -11,7 +13,9 @@
 #include "content/browser/resource_context_impl.h"
 #include "content/browser/streams/stream.h"
 #include "content/browser/streams/stream_context.h"
+#include "content/public/browser/navigation_data.h"
 #include "content/public/browser/resource_controller.h"
+#include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "content/public/browser/stream_handle.h"
 #include "content/public/common/resource_response.h"
 #include "net/base/net_errors.h"
@@ -21,9 +25,11 @@ namespace content {
 
 NavigationResourceHandler::NavigationResourceHandler(
     net::URLRequest* request,
-    NavigationURLLoaderImplCore* core)
+    NavigationURLLoaderImplCore* core,
+    ResourceDispatcherHostDelegate* resource_dispatcher_host_delegate)
     : ResourceHandler(request),
-      core_(core) {
+      core_(core),
+      resource_dispatcher_host_delegate_(resource_dispatcher_host_delegate) {
   core_->set_resource_handler(this);
   writer_.set_immediate_mode(true);
 }
@@ -92,8 +98,22 @@ bool NavigationResourceHandler::OnResponseStarted(ResourceResponse* response,
                            request()->url().GetOrigin());
 
   NetLogObserver::PopulateResponseInfo(request(), response);
-  core_->NotifyResponseStarted(response, writer_.stream()->CreateHandle());
+
+  std::unique_ptr<NavigationData> cloned_data;
+  if (resource_dispatcher_host_delegate_) {
+    // Ask the embedder for a NavigationData instance.
+    NavigationData* navigation_data =
+        resource_dispatcher_host_delegate_->GetNavigationData(request());
+
+    // Clone the embedder's NavigationData before moving it to the UI thread.
+    if (navigation_data)
+      cloned_data = navigation_data->Clone();
+  }
+
+  core_->NotifyResponseStarted(response, writer_.stream()->CreateHandle(),
+                               std::move(cloned_data));
   *defer = true;
+
   return true;
 }
 

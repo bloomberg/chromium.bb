@@ -93202,6 +93202,12 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="Clients.FromGWS2"
       label="PageLoadMetrics that are a result of a navigation from a Google
              web search"/>
+  <suffix name="Clients.DataReductionProxy"
+      label="PageLoadMetrics that are a result of a navigation through the
+             data reduction proxy."/>
+  <suffix name="Clients.DataReductionProxy.LoFiOn"
+      label="PageLoadMetrics that are a result of a navigation through the
+             data reduction proxy with LoFi requested."/>
   <suffix name="Clients.DocWrite.Evaluator"
       label="PageLoadMetrics from a page that could have been evaluated by
              the DocumentWriteEvaluator"/>

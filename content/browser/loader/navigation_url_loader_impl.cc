@@ -15,6 +15,7 @@
 #include "content/browser/service_worker/service_worker_navigation_handle.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/navigation_data.h"
 #include "content/public/browser/stream_handle.h"
 
 namespace content {
@@ -81,10 +82,12 @@ void NavigationURLLoaderImpl::NotifyRequestRedirected(
 
 void NavigationURLLoaderImpl::NotifyResponseStarted(
     const scoped_refptr<ResourceResponse>& response,
-    std::unique_ptr<StreamHandle> body) {
+    std::unique_ptr<StreamHandle> body,
+    std::unique_ptr<NavigationData> navigation_data) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  delegate_->OnResponseStarted(response, std::move(body));
+  delegate_->OnResponseStarted(response, std::move(body),
+                               std::move(navigation_data));
 }
 
 void NavigationURLLoaderImpl::NotifyRequestFailed(bool in_cache,

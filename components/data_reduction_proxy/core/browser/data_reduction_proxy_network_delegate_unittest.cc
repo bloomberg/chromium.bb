@@ -18,12 +18,14 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/mock_entropy_provider.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_test_utils.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_metrics.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
@@ -40,11 +42,13 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
 #include "net/proxy/proxy_config.h"
+#include "net/proxy/proxy_info.h"
 #include "net/proxy/proxy_server.h"
 #include "net/socket/socket_test_util.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 namespace data_reduction_proxy {
 namespace {
@@ -424,6 +428,60 @@ TEST_F(DataReductionProxyNetworkDelegateTest, LoFiTransitions) {
           fake_request.get(), data_reduction_proxy_info, &headers);
       VerifyHeaders(tests[i].is_data_reduction_proxy, true, headers);
       VerifyWasLoFiModeActiveOnMainFrame(tests[i].is_data_reduction_proxy);
+    }
+  }
+}
+
+TEST_F(DataReductionProxyNetworkDelegateTest, RequestDataConfigurations) {
+  const struct {
+    bool lofi_on;
+    bool used_data_reduction_proxy;
+  } tests[] = {
+      {
+          // Lo-Fi off.
+          false, true,
+      },
+      {
+          // Data reduction proxy not used.
+          false, false,
+      },
+      {
+          // Data reduction proxy not used, Lo-Fi should not be used.
+          true, false,
+      },
+      {
+          // Lo-Fi on.
+          true, true,
+      },
+  };
+
+  for (size_t i = 0; i < arraysize(tests); ++i) {
+    net::ProxyInfo data_reduction_proxy_info;
+    std::string data_reduction_proxy;
+    base::TrimString(params()->DefaultOrigin(), "/", &data_reduction_proxy);
+    if (tests[i].used_data_reduction_proxy)
+      data_reduction_proxy_info.UseNamedProxy(data_reduction_proxy);
+    else
+      data_reduction_proxy_info.UseNamedProxy("port.of.other.proxy");
+    {
+      // Main frame loaded. Lo-Fi should be used.
+      net::HttpRequestHeaders headers;
+
+      std::unique_ptr<net::URLRequest> fake_request(FetchURLRequest(
+          GURL("http://www.google.com/"), nullptr, std::string(), 0));
+      fake_request->SetLoadFlags(net::LOAD_MAIN_FRAME);
+      lofi_decider()->SetIsUsingLoFiMode(tests[i].lofi_on);
+      network_delegate()->NotifyBeforeSendProxyHeaders(
+          fake_request.get(), data_reduction_proxy_info, &headers);
+      DataReductionProxyData* data =
+          DataReductionProxyData::GetData(*fake_request.get());
+      if (!tests[i].used_data_reduction_proxy) {
+        EXPECT_FALSE(data);
+      } else {
+        EXPECT_TRUE(data);
+        EXPECT_TRUE(data->used_data_reduction_proxy());
+        EXPECT_EQ(tests[i].lofi_on, data->lofi_requested());
+      }
     }
   }
 }

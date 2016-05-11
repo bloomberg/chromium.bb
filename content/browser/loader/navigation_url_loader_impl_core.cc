@@ -13,6 +13,7 @@
 #include "content/browser/service_worker/service_worker_navigation_handle_core.h"
 #include "content/common/navigation_params.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/navigation_data.h"
 #include "content/public/browser/stream_handle.h"
 #include "content/public/common/resource_response.h"
 #include "net/base/net_errors.h"
@@ -94,7 +95,8 @@ void NavigationURLLoaderImplCore::NotifyRequestRedirected(
 
 void NavigationURLLoaderImplCore::NotifyResponseStarted(
     ResourceResponse* response,
-    std::unique_ptr<StreamHandle> body) {
+    std::unique_ptr<StreamHandle> body,
+    std::unique_ptr<NavigationData> navigation_data) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   TRACE_EVENT_ASYNC_END0("navigation", "Navigation redirectDelay", this);
   TRACE_EVENT_ASYNC_END2("navigation", "Navigation timeToResponseStarted", this,
@@ -112,7 +114,8 @@ void NavigationURLLoaderImplCore::NotifyResponseStarted(
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&NavigationURLLoaderImpl::NotifyResponseStarted, loader_,
-                 response->DeepCopy(), base::Passed(&body)));
+                 response->DeepCopy(), base::Passed(&body),
+                 base::Passed(&navigation_data)));
 }
 
 void NavigationURLLoaderImplCore::NotifyRequestFailed(bool in_cache,
