@@ -21,7 +21,7 @@
 #include "base/posix/eintr_wrapper.h"
 #include "base/strings/string_util.h"
 #include "base/task_runner_util.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/threading/worker_pool.h"
 #include "chromeos/dbus/pipe_reader.h"
 #include "dbus/bus.h"

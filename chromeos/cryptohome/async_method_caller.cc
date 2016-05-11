@@ -9,7 +9,7 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 

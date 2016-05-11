@@ -17,7 +17,7 @@
 #include "base/process/launch.h"
 #include "base/process/process.h"
 #include "base/single_thread_task_runner.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "third_party/cros_system_api/switches/chrome_switches.h"
 
 namespace {

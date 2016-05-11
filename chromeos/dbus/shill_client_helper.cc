@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/location.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/device_event_log/device_event_log.h"
 #include "dbus/message.h"
 #include "dbus/object_proxy.h"

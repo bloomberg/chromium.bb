@@ -23,9 +23,9 @@
 #include "base/sys_info.h"
 #include "base/task_runner.h"
 #include "base/task_runner_util.h"
-#include "base/thread_task_runner_handle.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "base/threading/thread_task_runner_handle.h"
 
 namespace chromeos {
 

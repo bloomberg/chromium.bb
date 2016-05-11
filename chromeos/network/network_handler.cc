@@ -4,7 +4,7 @@
 
 #include "chromeos/network/network_handler.h"
 
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/threading/worker_pool.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/network/auto_connect_handler.h"

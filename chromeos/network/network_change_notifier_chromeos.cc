@@ -8,7 +8,7 @@
 #include "base/location.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/network/network_change_notifier_chromeos.h"
 #include "chromeos/network/network_event_log.h"

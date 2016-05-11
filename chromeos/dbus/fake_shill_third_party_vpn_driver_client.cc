@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/dbus/shill_third_party_vpn_observer.h"
 #include "dbus/object_proxy.h"
 

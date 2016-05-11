@@ -13,8 +13,8 @@
 #include "base/process/kill.h"
 #include "base/process/process.h"
 #include "base/single_thread_task_runner.h"
-#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/process_proxy/process_proxy_registry.h"
 
 namespace chromeos {

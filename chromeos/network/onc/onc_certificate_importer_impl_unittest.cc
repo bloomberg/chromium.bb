@@ -14,7 +14,7 @@
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/test_simple_task_runner.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chromeos/network/onc/onc_test_utils.h"
 #include "components/onc/onc_constants.h"

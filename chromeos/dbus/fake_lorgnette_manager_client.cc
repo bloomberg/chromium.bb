@@ -12,7 +12,7 @@
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 
 namespace chromeos {
 

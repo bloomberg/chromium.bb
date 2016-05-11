@@ -5,7 +5,7 @@
 #include "chromeos/binder/remote_object.h"
 
 #include "base/location.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/binder/command_broker.h"
 
 namespace binder {

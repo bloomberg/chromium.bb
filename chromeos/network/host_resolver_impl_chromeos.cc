@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/sys_info.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chromeos/network/device_state.h"
 #include "chromeos/network/network_handler.h"

@@ -14,7 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chromeos/audio/audio_devices_pref_handler.h"
 #include "chromeos/audio/audio_devices_pref_handler_stub.h"

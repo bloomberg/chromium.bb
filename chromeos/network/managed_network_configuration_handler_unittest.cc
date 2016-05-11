@@ -13,7 +13,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/mock_shill_manager_client.h"

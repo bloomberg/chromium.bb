@@ -17,7 +17,7 @@
 #include "base/logging.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/onc/onc_utils.h"
