@@ -139,7 +139,7 @@ bool exhaustDictionaryIterator(DictionaryIterator& iterator, ExecutionContext* e
         }
         result.append(dictionary);
     }
-    return true;
+    return !exceptionState.hadException();
 }
 
 } // namespace

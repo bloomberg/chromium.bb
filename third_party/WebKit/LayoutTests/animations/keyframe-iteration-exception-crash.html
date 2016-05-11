@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<div id="target"></div>
+<script>
+test(() => {
+  assert_throws(null, () => {
+    target.animate({
+      [Symbol.iterator]() {
+        return { next() { throw 'error'; } };
+      }
+    });
+  });
+}, 'Do not crash when exceptions are thrown during keyframe iteration.');
+</script>
