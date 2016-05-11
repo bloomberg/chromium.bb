@@ -16,26 +16,20 @@
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {
-      'target_name': 'bluetooth_device_list_item',
-      'dependencies': [
-        '<(EXTERNS_GYP):bluetooth',
-      ],
-      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
-    },
-    {
-      'target_name': 'bluetooth_add_device_dialog',
-      'dependencies': [
-        '<(EXTERNS_GYP):bluetooth',
-      ],
-      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
-    },
-    {
-      'target_name': 'bluetooth_pair_device_dialog',
+      'target_name': 'bluetooth_device_dialog',
       'dependencies': [
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:i18n_behavior',
         '<(EXTERNS_GYP):bluetooth',
         '<(EXTERNS_GYP):bluetooth_private',
+      ],
+      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
+      'target_name': 'bluetooth_device_list_item',
+      'dependencies': [
+        '<(EXTERNS_GYP):bluetooth',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },

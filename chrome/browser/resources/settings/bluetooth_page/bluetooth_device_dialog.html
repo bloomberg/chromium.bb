@@ -1,0 +1,114 @@
+<link rel="import" href="chrome://resources/html/cr.html">
+<link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-selector/iron-selector.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-spinner/paper-spinner.html">
+<link rel="import" href="chrome://md-settings/bluetooth_page/bluetooth_device_list_item.html">
+<link rel="import" href="chrome://md-settings/bluetooth_page/bluetooth_dialog_shared_css.html">
+<link rel="import" href="chrome://md-settings/icons.html">
+<link rel="import" href="chrome://md-settings/settings_dialog.html">
+<link rel="import" href="chrome://md-settings/settings_shared_css.html">
+
+<dom-module id="bluetooth-device-dialog">
+  <template>
+    <style include="settings-shared bluetooth-dialog-shared"></style>
+    <settings-dialog id="dialog" class="layout vertical">
+      <!-- TODO(dbeam): use .title instead. -->
+      <div class="body">
+        <template is="dom-if" if="[[isDialogType_(dialogType, 'addDevice')]]">
+          <div id="dialogHeaderDiv" class="settings-box layout horizontal">
+            <span id="dialogTitle" class="flex">
+              $i18n{bluetoothAddDevicePageTitle}
+            </span>
+            <paper-icon-button icon="close" on-tap="onAddCancelTap_"
+                id="closeAdd">
+            </paper-icon-button>
+          </div>
+          <div class="settings-box flex">
+            <div id="dialogDeviceList" class="settings-box layout vertical"
+                on-device-event="onDeviceEvent_">
+              <span class="no-devices" hidden$="[[haveDevices_(deviceList)]]">
+                $i18n{bluetoothNoDevices}
+              </span>
+              <iron-selector class="flex">
+                <template is="dom-repeat" items="[[deviceList]]"
+                    filter="deviceNotPaired_" observe="paired">
+                  <bluetooth-device-list-item device="[[item]]">
+                  </bluetooth-device-list-item>
+                </template>
+              </iron-selector>
+            </div>
+          </div>
+        </template>
+        <template is="dom-if" if="[[isDialogType_(dialogType, 'pairDevice')]]">
+          <div id="dialogHeaderDiv"
+              class="settings-box layout horizontal center">
+            <span id="dialogTitle" class="flex">
+              $i18n{bluetoothPairDevicePageTitle}
+            </span>
+            <paper-icon-button icon="close" on-tap="onPairCancelTap_"
+                id="closePair">
+            </paper-icon-button>
+          </div>
+          <div id="pairing" class="settings-blox layout vertical center
+              center-justified flex">
+            <div id="dialogMessage">
+              [[getMessage_(pairingDevice, pairingEvent)]]
+            </div>
+            <div hidden$="[[!showEnterPincode_(pairingEvent)]]">
+              <paper-input id="pincode" minlength="1" maxlength="16"
+                  type="text">
+            </div>
+            <div hidden$="[[!showEnterPasskey_(pairingEvent)]]">
+              <paper-input id="passkey" minlength="6" maxlength="6" type="text">
+            </div>
+            <div id="pinDiv" class="layout horizontal center center-justified"
+                hidden="[[!showDisplayPassOrPin_(pairingEvent)]]">
+              <template is="dom-repeat" items="[[digits]]">
+                <span class$="[[getPinClass_(pairingEvent, index)]]">
+                  [[getPinDigit_(pairingEvent, index)]]
+                </span>
+              </template>
+              <span class$="[[getPinClass_(pairingEvent, -1)]]"
+                  hidden="[[showAcceptReject_(pairingEvent)]]">
+                $i18n{bluetoothEnterKey}
+              </span>
+            </div>
+          </div>
+        </template>
+      </div>
+      <div class="button-container">
+        <template is="dom-if" if="[[isDialogType_(dialogType, 'addDevice')]]">
+          <div id="scanning" class="layout horizontal center flex"
+              hidden$="[[!adapterState.discovering]]">
+            <paper-spinner active="[[adapterState.discovering]]">
+            </paper-spinner>
+            <span>$i18n{bluetoothScanning}</span>
+          </div>
+          <paper-button id="cancel" class="end-justified"
+              on-tap="onAddCancelTap_">
+            $i18n{cancel}
+          </paper-button>
+        </template>
+        <template is="dom-if" if="[[isDialogType_(dialogType, 'pairDevice')]]">
+          <paper-button hidden$="[[!showAcceptReject_(pairingEvent)]]"
+              on-tap="onAcceptTap_">$i18n{bluetoothAccept}</paper-button>
+          <paper-button hidden$="[[!showAcceptReject_(pairingEvent)]]"
+              on-tap="onRejectTap_">$i18n{bluetoothReject}</paper-button>
+          <paper-button hidden$="[[!showConnect_(pairingEvent)]]"
+              on-tap="onConnectTap_">$i18n{bluetoothConnect}</paper-button>
+          <paper-button hidden$="[[!showDismiss_(pairingDevice, pairingEvent)]]"
+              on-tap="onDismissTap_">$i18n{bluetoothDismiss}</paper-button>
+          <paper-button on-tap="onPairCancelTap_"
+              hidden$="[[showDismiss_(pairingDevice, pairingEvent)]]">
+            $i18n{cancel}
+          </paper-button>
+        </template>
+      </div>
+    </settings-dialog>
+  </template>
+  <script src="chrome://md-settings/bluetooth_page/bluetooth_device_dialog.js"></script>
+</dom-module>

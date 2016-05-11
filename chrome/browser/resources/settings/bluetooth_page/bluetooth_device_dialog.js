@@ -1,22 +1,77 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/**
- * @fileoverview
- * 'settings-bluetooth-pair-device-dialog' is the settings dialog for pairing
- * a bluetooth device.
- */
+cr.exportPath('settings');
 
 (function() {
 
 var PairingEventType = chrome.bluetoothPrivate.PairingEventType;
 
-Polymer({
-  is: 'settings-bluetooth-pair-device-dialog',
+// NOTE(dbeam): even though these behaviors are only used privately, they must
+// be globally accessible for Closure's --polymer_pass to compile happily.
 
-  behaviors: [I18nBehavior],
+/** @polymerBehavior */
+settings.BluetoothAddDeviceBehavior = {
+  properties: {
+    /**
+     * The cached bluetooth adapter state.
+     * @type {!chrome.bluetooth.AdapterState|undefined}
+     */
+    adapterState: {
+      type: Object,
+      observer: 'adapterStateChanged_',
+    },
 
+    /**
+     * The ordered list of bluetooth devices.
+     * @type {!Array<!chrome.bluetooth.Device>}
+     */
+    deviceList: {
+      type: Array,
+      value: /** @return {Array} */ function() { return []; },
+    },
+  },
+
+  /** @private */
+  adapterStateChanged_: function() {
+    if (!this.adapterState.powered)
+      this.fire('close-dialog');
+  },
+
+  /**
+   * @param {!chrome.bluetooth.Device} device
+   * @return {boolean}
+   * @private
+   */
+  deviceNotPaired_: function(device) {
+    return !device.paired;
+  },
+
+  /**
+   * @param {!Array<!chrome.bluetooth.Device>} deviceList
+   * @return {boolean} True if deviceList contains any unpaired devices.
+   * @private
+   */
+  haveDevices_: function(deviceList) {
+    return this.deviceList.findIndex(function(d) { return !d.paired; }) != -1;
+  },
+
+  /**
+   * @param {!{detail: {action: string, device: !chrome.bluetooth.Device}}} e
+   * @private
+   */
+  onDeviceEvent_: function(e) {
+    this.fire('device-event', e.detail);
+    /** @type {Event} */(e).stopPropagation();
+  },
+
+  /** @private */
+  onAddCancelTap_: function() { this.fire('close-dialog'); },
+};
+
+/** @polymerBehavior */
+settings.BluetoothPairDeviceBehavior = {
   properties: {
     /**
      * Current Pairing device.
@@ -167,7 +222,7 @@ Polymer({
   },
 
   /** @private */
-  onCancelTap_: function() {
+  onPairCancelTap_: function() {
     this.sendResponse_(chrome.bluetoothPrivate.PairingResponse.CANCEL);
     // Close the dialog immediately.
     this.fire('close-dialog', '');
@@ -264,5 +319,39 @@ Polymer({
     }
     return cssClass;
   },
+};
+
+Polymer({
+  is: 'bluetooth-device-dialog',
+
+  behaviors: [
+    I18nBehavior,
+    settings.BluetoothAddDeviceBehavior,
+    settings.BluetoothPairDeviceBehavior,
+  ],
+
+  properties: {
+    /** Which version of this dialog to show (adding or pairing). */
+    dialogType: String,
+  },
+
+  /**
+   * @param {string} currentDialogType
+   * @param {string} wantedDialogType
+   * @return {boolean}
+   * @private
+   */
+  isDialogType_: function(currentDialogType, wantedDialogType) {
+    return currentDialogType == wantedDialogType;
+  },
+
+  open: function() {
+    this.$.dialog.open();
+  },
+
+  close: function() {
+    this.$.dialog.close();
+  },
 });
+
 })();

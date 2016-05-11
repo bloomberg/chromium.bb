@@ -9,9 +9,8 @@
 <link rel="import" href="chrome://md-settings/icons.html">
 <link rel="import" href="chrome://md-settings/settings_page/settings_animated_pages.html">
 <link rel="import" href="chrome://md-settings/settings_shared_css.html">
+<link rel="import" href="bluetooth_device_dialog.html">
 <link rel="import" href="bluetooth_device_list_item.html">
-<link rel="import" href="bluetooth_add_device_dialog.html">
-<link rel="import" href="bluetooth_pair_device_dialog.html">
 
 <dom-module id="settings-bluetooth-page">
   <template>
@@ -46,7 +45,7 @@
         <div class="settings-box first">
           <div class="layout horizontal center flex">
             <iron-icon icon="settings:bluetooth"></iron-icon>
-            <span class="flex" i18n-content="bluetoothEnable"></span>
+            <span class="flex">$i18n{bluetoothEnable}</span>
             <cr-expand-button id="expandListButton"
                 hidden$="[[!bluetoothEnabled]]"
                 expanded="{{deviceListExpanded}}">
@@ -67,43 +66,31 @@
               </bluetooth-device-list-item>
             </template>
             <div class="no-devices layout horizontal center"
-                hidden$="[[haveDevices_(deviceList.splices)]]"
-                i18n-content="bluetoothNoDevices">
+                hidden$="[[haveDevices_(deviceList.splices)]]">
+              $i18n{bluetoothNoDevices}
             </div>
           </div>
           <div class="settings-box" hidden$="[[!bluetoothEnabled]]">
-            <paper-button i18n-content="bluetoothAddDevice"
-                class="primary-button" on-tap="onAddDeviceTap_">
+            <paper-button class="primary-button" on-tap="onAddDeviceTap_">
+              $i18n{bluetoothAddDevice}
             </paper-button>
           </div>
         </iron-collapse>
       </neon-animatable>
     </settings-animated-pages>
 
-    <paper-dialog modal id="deviceDialog" class="layout vertical"
+    <bluetooth-device-dialog id="deviceDialog"
+        adapter-state="[[adapterState]]"
+        device-list="[[deviceList]]"
+        dialog-type="[[dialog]]"
+        on-close-dialog="onCloseDialog_"
+        on-device-event="onDeviceEvent_"
+        on-iron-overlay-closed="onDialogClosed_"
         on-iron-overlay-opened="onDialogOpened_"
-        on-iron-overlay-closed="onDialogClosed_">
-      <template is="dom-if" if="[[dialogIsVisible_(dialog, 'addDevice')]]"
-          restamp>
-        <settings-bluetooth-add-device-dialog
-            class="layout vertical flex"
-            adapter-state="[[adapterState]]"
-            device-list="[[deviceList]]"
-            on-device-event="onDeviceEvent_"
-            on-close-dialog="onCloseDialog_">
-        </settings-bluetooth-add-device-dialog>
-      </template>
-      <template is="dom-if" if="[[dialogIsVisible_(dialog, 'pairDevice')]]"
-          restamp>
-        <settings-bluetooth-pair-device-dialog
-            class="layout vertical flex"
-            pairing-device="[[pairingDevice]]"
-            pairing-event="[[pairingEvent]]"
-            on-response="onResponse_"
-            on-close-dialog="onCloseDialog_">
-        </settings-bluetooth-pair-device-dialog>
-      </template>
-    </paper-dialog>
+        on-response="onResponse_"
+        pairing-device="[[pairingDevice]]"
+        pairing-event="[[pairingEvent]]">
+    </bluetooth-device-dialog>
 
   </template>
   <script src="bluetooth_page.js"></script>
