@@ -6,7 +6,7 @@
 #include "base/bind_helpers.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "cc/base/unique_notifier.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

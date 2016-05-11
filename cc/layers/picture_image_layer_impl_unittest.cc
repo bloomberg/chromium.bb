@@ -5,7 +5,7 @@
 #include "cc/layers/picture_image_layer_impl.h"
 
 #include "base/memory/ptr_util.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "cc/layers/append_quads_data.h"
 #include "cc/quads/draw_quad.h"
 #include "cc/test/fake_impl_task_runner_provider.h"

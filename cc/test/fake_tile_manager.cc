@@ -11,7 +11,7 @@
 #include <limits>
 
 #include "base/lazy_instance.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "cc/raster/raster_buffer.h"
 #include "cc/test/fake_tile_task_manager.h"
 

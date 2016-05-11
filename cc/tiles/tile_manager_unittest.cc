@@ -7,7 +7,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "cc/playback/raster_source.h"
 #include "cc/playback/recording_source.h"
 #include "cc/raster/raster_buffer.h"

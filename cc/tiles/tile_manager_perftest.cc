@@ -7,7 +7,7 @@
 
 #include "base/lazy_instance.h"
 #include "base/location.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "cc/debug/lap_timer.h"
 #include "cc/raster/raster_buffer.h"

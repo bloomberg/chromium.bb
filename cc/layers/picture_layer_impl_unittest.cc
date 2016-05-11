@@ -13,7 +13,7 @@
 
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "cc/base/math_util.h"
 #include "cc/layers/append_quads_data.h"
 #include "cc/layers/picture_layer.h"

@@ -6,7 +6,7 @@
 
 #include <stddef.h>
 
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "cc/debug/lap_timer.h"
 #include "cc/layers/layer_iterator.h"

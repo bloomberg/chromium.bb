@@ -7,7 +7,7 @@
 #include <stddef.h>
 
 #include "base/run_loop.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "cc/resources/resource_util.h"
 #include "cc/resources/scoped_resource.h"
 #include "cc/test/fake_output_surface.h"

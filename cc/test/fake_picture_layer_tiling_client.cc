@@ -8,7 +8,7 @@
 
 #include <limits>
 
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "cc/test/fake_raster_source.h"
 #include "cc/test/fake_tile_manager.h"
 

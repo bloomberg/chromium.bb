@@ -12,7 +12,7 @@
 
 #include "base/format_macros.h"
 #include "base/strings/stringprintf.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "cc/base/container_util.h"
 #include "cc/resources/resource_provider.h"

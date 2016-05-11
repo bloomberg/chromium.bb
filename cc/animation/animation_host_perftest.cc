@@ -4,7 +4,7 @@
 
 #include "cc/animation/animation_host.h"
 
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "cc/animation/animation_id_provider.h"
 #include "cc/animation/animation_player.h"
 #include "cc/animation/animation_timeline.h"

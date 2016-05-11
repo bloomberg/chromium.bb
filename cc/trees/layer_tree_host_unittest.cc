@@ -14,7 +14,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "cc/animation/timing_function.h"
 #include "cc/debug/frame_rate_counter.h"
 #include "cc/input/scroll_elasticity_helper.h"
