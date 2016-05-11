@@ -197,12 +197,12 @@ TEST_F('CvoxContentEditableExtractorUnitTest', 'WordWrap', function() {
 
   var extractor = new cvox.ContentEditableExtractor();
   extractor.update(textbox);
-  assertEquals('One two three', extractor.getText());
+  assertEquals('One\ntwo\nthree', extractor.getText());
   assertEquals(0, extractor.getLineStart(0));
-  assertEquals(3, extractor.getLineEnd(0));
-  assertEquals(3, extractor.getLineStart(1));
-  assertEquals(7, extractor.getLineEnd(1));
-  assertEquals(7, extractor.getLineStart(2));
+  assertEquals(4, extractor.getLineEnd(0));
+  assertEquals(4, extractor.getLineStart(1));
+  assertEquals(8, extractor.getLineEnd(1));
+  assertEquals(8, extractor.getLineStart(2));
   assertEquals(13, extractor.getLineEnd(2));
 
   // Test all possible cursor positions.

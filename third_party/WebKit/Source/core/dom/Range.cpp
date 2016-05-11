@@ -1582,16 +1582,12 @@ FloatRect Range::boundingRect() const
     getBorderAndTextQuads(quads);
 
     FloatRect result;
-    // As per section 10 in https://www.w3.org/TR/cssom-view/
-    // "Return a static DOMRect object describing the smallest rectangle that
-    // includes the first rectangle in list and all of the remaining rectangles
-    // of which the height or width is not zero."
-    for (const FloatQuad& quad : quads) {
-        if (result.isEmpty())
-            result.uniteIfNonZero(quad.boundingBox());
-        else
-            result.unite(quad.boundingBox()); // Skips empty rects.
-    }
+    for (const FloatQuad& quad : quads)
+        result.unite(quad.boundingBox()); // Skips empty rects.
+
+    // If all rects are empty, return the first rect.
+    if (result.isEmpty() && !quads.isEmpty())
+        return quads.first().boundingBox();
 
     return result;
 }
