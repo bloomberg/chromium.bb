@@ -14,6 +14,7 @@
 #include "content/child/service_worker/web_service_worker_registration_impl.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/common/push_messaging_messages.h"
+#include "content/public/common/child_process_host.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/modules/push_messaging/WebPushSubscription.h"
 #include "third_party/WebKit/public/platform/modules/push_messaging/WebPushSubscriptionOptions.h"
@@ -83,8 +84,9 @@ void PushProvider::subscribe(
   // Just treat the server key as a string of bytes and pass it to the push
   // service.
   content_options.sender_info = options.applicationServerKey.latin1();
-  thread_safe_sender_->Send(new PushMessagingHostMsg_SubscribeFromWorker(
-      request_id, service_worker_registration_id, content_options));
+  thread_safe_sender_->Send(new PushMessagingHostMsg_Subscribe(
+      ChildProcessHost::kInvalidUniqueID, request_id,
+      service_worker_registration_id, content_options));
 }
 
 void PushProvider::unsubscribe(

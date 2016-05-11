@@ -103,8 +103,8 @@ void PushMessagingDispatcher::DoSubscribe(
                                  PUSH_REGISTRATION_STATUS_NO_SENDER_ID);
     return;
   }
-  Send(new PushMessagingHostMsg_SubscribeFromDocument(
-      routing_id(), request_id, options, service_worker_registration_id));
+  Send(new PushMessagingHostMsg_Subscribe(
+      routing_id(), request_id, service_worker_registration_id, options));
 }
 
 void PushMessagingDispatcher::OnSubscribeFromDocumentSuccess(

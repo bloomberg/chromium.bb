@@ -86,13 +86,10 @@ IPC_MESSAGE_CONTROL2(PushMessagingMsg_GetPermissionStatusError,
 
 // Messages sent from the child process to the browser.
 
-IPC_MESSAGE_CONTROL4(PushMessagingHostMsg_SubscribeFromDocument,
+// |render_frame_id| should be ChildProcessHost::kInvalidUniqueID for requests
+// from a Service Worker.
+IPC_MESSAGE_CONTROL4(PushMessagingHostMsg_Subscribe,
                      int32_t /* render_frame_id */,
-                     int32_t /* request_id */,
-                     content::PushSubscriptionOptions /* options */,
-                     int64_t /* service_worker_registration_id */)
-
-IPC_MESSAGE_CONTROL3(PushMessagingHostMsg_SubscribeFromWorker,
                      int32_t /* request_id */,
                      int64_t /* service_worker_registration_id */,
                      content::PushSubscriptionOptions /* options */)
