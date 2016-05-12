@@ -40,6 +40,7 @@
             'platform/modules/notifications/notification.mojom',
             'platform/modules/permissions/permission.mojom',
             'platform/modules/permissions/permission_status.mojom',
+            'platform/modules/presentation/presentation.mojom',
             'platform/modules/serviceworker/service_worker_event_status.mojom',
             'platform/modules/vr/vr_service.mojom',
             'platform/modules/wake_lock/wake_lock_service.mojom',

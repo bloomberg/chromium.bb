@@ -16,10 +16,10 @@
 #include "base/id_map.h"
 #include "base/macros.h"
 #include "content/common/content_export.h"
-#include "content/common/presentation/presentation_service.mojom.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/WebKit/public/platform/modules/presentation/WebPresentationClient.h"
+#include "third_party/WebKit/public/platform/modules/presentation/presentation.mojom.h"
 
 namespace blink {
 class WebPresentationAvailabilityObserver;
@@ -33,19 +33,19 @@ namespace content {
 class CONTENT_EXPORT PresentationDispatcher
     : public RenderFrameObserver,
       public NON_EXPORTED_BASE(blink::WebPresentationClient),
-      public NON_EXPORTED_BASE(mojom::PresentationServiceClient) {
+      public NON_EXPORTED_BASE(blink::mojom::PresentationServiceClient) {
  public:
   explicit PresentationDispatcher(RenderFrame* render_frame);
   ~PresentationDispatcher() override;
 
  private:
   struct SendMessageRequest {
-    SendMessageRequest(mojom::PresentationSessionInfoPtr session_info,
-                       mojom::SessionMessagePtr message);
+    SendMessageRequest(blink::mojom::PresentationSessionInfoPtr session_info,
+                       blink::mojom::SessionMessagePtr message);
     ~SendMessageRequest();
 
-    mojom::PresentationSessionInfoPtr session_info;
-    mojom::SessionMessagePtr message;
+    blink::mojom::PresentationSessionInfoPtr session_info;
+    blink::mojom::SessionMessagePtr message;
   };
 
   static SendMessageRequest* CreateSendTextMessageRequest(
@@ -55,7 +55,7 @@ class CONTENT_EXPORT PresentationDispatcher
   static SendMessageRequest* CreateSendBinaryMessageRequest(
       const blink::WebString& presentationUrl,
       const blink::WebString& presentationId,
-      mojom::PresentationMessageType type,
+      blink::mojom::PresentationMessageType type,
       const uint8_t* data,
       size_t length);
 
@@ -95,26 +95,27 @@ class CONTENT_EXPORT PresentationDispatcher
       bool is_new_navigation,
       bool is_same_page_navigation) override;
 
-  // mojom::PresentationServiceClient
+  // blink::mojom::PresentationServiceClient
   void OnScreenAvailabilityNotSupported(const mojo::String& url) override;
   void OnScreenAvailabilityUpdated(const mojo::String& url,
                                    bool available) override;
   void OnConnectionStateChanged(
-      mojom::PresentationSessionInfoPtr connection,
-      mojom::PresentationConnectionState state) override;
-  void OnConnectionClosed(mojom::PresentationSessionInfoPtr connection,
-                          mojom::PresentationConnectionCloseReason reason,
-                          const mojo::String& message) override;
+      blink::mojom::PresentationSessionInfoPtr connection,
+      blink::mojom::PresentationConnectionState state) override;
+  void OnConnectionClosed(
+      blink::mojom::PresentationSessionInfoPtr connection,
+      blink::mojom::PresentationConnectionCloseReason reason,
+      const mojo::String& message) override;
   void OnSessionMessagesReceived(
-      mojom::PresentationSessionInfoPtr session_info,
-      mojo::Array<mojom::SessionMessagePtr> messages) override;
+      blink::mojom::PresentationSessionInfoPtr session_info,
+      mojo::Array<blink::mojom::SessionMessagePtr> messages) override;
   void OnDefaultSessionStarted(
-      mojom::PresentationSessionInfoPtr session_info) override;
+      blink::mojom::PresentationSessionInfoPtr session_info) override;
 
   void OnSessionCreated(
       blink::WebPresentationConnectionClientCallbacks* callback,
-      mojom::PresentationSessionInfoPtr session_info,
-      mojom::PresentationErrorPtr error);
+      blink::mojom::PresentationSessionInfoPtr session_info,
+      blink::mojom::PresentationErrorPtr error);
 
   // Call to PresentationService to send the message in |request|.
   // |session_info| and |message| of |reuqest| will be consumed.
@@ -128,8 +129,8 @@ class CONTENT_EXPORT PresentationDispatcher
 
   // Used as a weak reference. Can be null since lifetime is bound to the frame.
   blink::WebPresentationController* controller_;
-  mojom::PresentationServicePtr presentation_service_;
-  mojo::Binding<mojom::PresentationServiceClient> binding_;
+  blink::mojom::PresentationServicePtr presentation_service_;
+  mojo::Binding<blink::mojom::PresentationServiceClient> binding_;
 
   // Message requests are queued here and only one message at a time is sent
   // over mojo channel.

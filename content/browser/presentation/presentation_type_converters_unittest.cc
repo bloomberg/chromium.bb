@@ -13,8 +13,8 @@ TEST(PresentationTypeConvertersTest, PresentationSessionInfo) {
   std::string presentation_url("http://fooUrl");
   std::string presentation_id("presentationId");
   PresentationSessionInfo session(presentation_url, presentation_id);
-  mojom::PresentationSessionInfoPtr session_mojo(
-      mojom::PresentationSessionInfo::From(session));
+  blink::mojom::PresentationSessionInfoPtr session_mojo(
+      blink::mojom::PresentationSessionInfo::From(session));
   EXPECT_FALSE(session_mojo.is_null());
   EXPECT_EQ(presentation_url, session_mojo->url);
   EXPECT_EQ(presentation_id, session_mojo->id);
@@ -23,9 +23,10 @@ TEST(PresentationTypeConvertersTest, PresentationSessionInfo) {
 TEST(PresentationTypeConvertersTest, PresentationError) {
   std::string message("Error message");
   PresentationError error(PRESENTATION_ERROR_NO_AVAILABLE_SCREENS, message);
-  mojom::PresentationErrorPtr error_mojo(mojom::PresentationError::From(error));
+  blink::mojom::PresentationErrorPtr error_mojo(
+      blink::mojom::PresentationError::From(error));
   EXPECT_FALSE(error_mojo.is_null());
-  EXPECT_EQ(mojom::PresentationErrorType::NO_AVAILABLE_SCREENS,
+  EXPECT_EQ(blink::mojom::PresentationErrorType::NO_AVAILABLE_SCREENS,
             error_mojo->error_type);
   EXPECT_EQ(message, error_mojo->message);
 }

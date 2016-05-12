@@ -14,7 +14,6 @@
           'common/application_setup.mojom',
           'common/image_downloader/image_downloader.mojom',
           'common/leveldb_wrapper.mojom',
-          'common/presentation/presentation_service.mojom',
           'common/process_control.mojom',
           'common/render_frame_setup.mojom',
           'common/service_worker/embedded_worker_setup.mojom',

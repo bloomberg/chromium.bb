@@ -8,51 +8,51 @@
 
 namespace content {
 
-mojom::PresentationErrorType PresentationErrorTypeToMojo(
+blink::mojom::PresentationErrorType PresentationErrorTypeToMojo(
     content::PresentationErrorType input) {
   switch (input) {
     case content::PRESENTATION_ERROR_NO_AVAILABLE_SCREENS:
-      return mojom::PresentationErrorType::NO_AVAILABLE_SCREENS;
+      return blink::mojom::PresentationErrorType::NO_AVAILABLE_SCREENS;
     case content::PRESENTATION_ERROR_SESSION_REQUEST_CANCELLED:
-      return mojom::PresentationErrorType::SESSION_REQUEST_CANCELLED;
+      return blink::mojom::PresentationErrorType::SESSION_REQUEST_CANCELLED;
     case content::PRESENTATION_ERROR_NO_PRESENTATION_FOUND:
-      return mojom::PresentationErrorType::NO_PRESENTATION_FOUND;
+      return blink::mojom::PresentationErrorType::NO_PRESENTATION_FOUND;
     case content::PRESENTATION_ERROR_UNKNOWN:
-      return mojom::PresentationErrorType::UNKNOWN;
+      return blink::mojom::PresentationErrorType::UNKNOWN;
   }
   NOTREACHED();
-  return mojom::PresentationErrorType::UNKNOWN;
+  return blink::mojom::PresentationErrorType::UNKNOWN;
 }
 
-mojom::PresentationConnectionState PresentationConnectionStateToMojo(
+blink::mojom::PresentationConnectionState PresentationConnectionStateToMojo(
     content::PresentationConnectionState state) {
   switch (state) {
     case content::PRESENTATION_CONNECTION_STATE_CONNECTING:
-      return mojom::PresentationConnectionState::CONNECTING;
+      return blink::mojom::PresentationConnectionState::CONNECTING;
     case content::PRESENTATION_CONNECTION_STATE_CONNECTED:
-      return mojom::PresentationConnectionState::CONNECTED;
+      return blink::mojom::PresentationConnectionState::CONNECTED;
     case content::PRESENTATION_CONNECTION_STATE_CLOSED:
-      return mojom::PresentationConnectionState::CLOSED;
+      return blink::mojom::PresentationConnectionState::CLOSED;
     case content::PRESENTATION_CONNECTION_STATE_TERMINATED:
-      return mojom::PresentationConnectionState::TERMINATED;
+      return blink::mojom::PresentationConnectionState::TERMINATED;
   }
   NOTREACHED();
-  return mojom::PresentationConnectionState::TERMINATED;
+  return blink::mojom::PresentationConnectionState::TERMINATED;
 }
 
-mojom::PresentationConnectionCloseReason
+blink::mojom::PresentationConnectionCloseReason
 PresentationConnectionCloseReasonToMojo(
     content::PresentationConnectionCloseReason reason) {
   switch (reason) {
     case content::PRESENTATION_CONNECTION_CLOSE_REASON_CONNECTION_ERROR:
-      return mojom::PresentationConnectionCloseReason::CONNECTION_ERROR;
+      return blink::mojom::PresentationConnectionCloseReason::CONNECTION_ERROR;
     case content::PRESENTATION_CONNECTION_CLOSE_REASON_CLOSED:
-      return mojom::PresentationConnectionCloseReason::CLOSED;
+      return blink::mojom::PresentationConnectionCloseReason::CLOSED;
     case content::PRESENTATION_CONNECTION_CLOSE_REASON_WENT_AWAY:
-      return mojom::PresentationConnectionCloseReason::WENT_AWAY;
+      return blink::mojom::PresentationConnectionCloseReason::WENT_AWAY;
   }
   NOTREACHED();
-  return mojom::PresentationConnectionCloseReason::CONNECTION_ERROR;
+  return blink::mojom::PresentationConnectionCloseReason::CONNECTION_ERROR;
 }
 
 }  // namespace content

@@ -6,18 +6,18 @@
 #define CONTENT_BROWSER_PRESENTATION_PRESENTATION_TYPE_CONVERTERS_H_
 
 #include "content/common/content_export.h"
-#include "content/common/presentation/presentation_service.mojom.h"
 #include "content/public/browser/presentation_session.h"
+#include "third_party/WebKit/public/platform/modules/presentation/presentation.mojom.h"
 
 namespace content {
 
-CONTENT_EXPORT mojom::PresentationErrorType PresentationErrorTypeToMojo(
+CONTENT_EXPORT blink::mojom::PresentationErrorType PresentationErrorTypeToMojo(
     PresentationErrorType input);
 
-CONTENT_EXPORT mojom::PresentationConnectionState
+CONTENT_EXPORT blink::mojom::PresentationConnectionState
 PresentationConnectionStateToMojo(PresentationConnectionState state);
 
-CONTENT_EXPORT mojom::PresentationConnectionCloseReason
+CONTENT_EXPORT blink::mojom::PresentationConnectionCloseReason
 PresentationConnectionCloseReasonToMojo(
     PresentationConnectionCloseReason reason);
 }  // namespace content
@@ -25,12 +25,12 @@ PresentationConnectionCloseReasonToMojo(
 namespace mojo {
 
 template <>
-struct TypeConverter<content::mojom::PresentationSessionInfoPtr,
+struct TypeConverter<blink::mojom::PresentationSessionInfoPtr,
                      content::PresentationSessionInfo> {
-  static content::mojom::PresentationSessionInfoPtr Convert(
+  static blink::mojom::PresentationSessionInfoPtr Convert(
       const content::PresentationSessionInfo& input) {
-    content::mojom::PresentationSessionInfoPtr output(
-        content::mojom::PresentationSessionInfo::New());
+    blink::mojom::PresentationSessionInfoPtr output(
+        blink::mojom::PresentationSessionInfo::New());
     output->url = input.presentation_url;
     output->id = input.presentation_id;
     return output;
@@ -39,20 +39,20 @@ struct TypeConverter<content::mojom::PresentationSessionInfoPtr,
 
 template <>
 struct TypeConverter<content::PresentationSessionInfo,
-                     content::mojom::PresentationSessionInfoPtr> {
+                     blink::mojom::PresentationSessionInfoPtr> {
   static content::PresentationSessionInfo Convert(
-      const content::mojom::PresentationSessionInfoPtr& input) {
+      const blink::mojom::PresentationSessionInfoPtr& input) {
     return content::PresentationSessionInfo(input->url, input->id);
   }
 };
 
 template <>
-struct TypeConverter<content::mojom::PresentationErrorPtr,
+struct TypeConverter<blink::mojom::PresentationErrorPtr,
                      content::PresentationError> {
-  static content::mojom::PresentationErrorPtr Convert(
+  static blink::mojom::PresentationErrorPtr Convert(
       const content::PresentationError& input) {
-    content::mojom::PresentationErrorPtr output(
-        content::mojom::PresentationError::New());
+    blink::mojom::PresentationErrorPtr output(
+        blink::mojom::PresentationError::New());
     output->error_type = PresentationErrorTypeToMojo(input.error_type);
     output->message = input.message;
     return output;

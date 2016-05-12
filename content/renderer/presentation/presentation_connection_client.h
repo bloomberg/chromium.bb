@@ -7,8 +7,8 @@
 
 #include "base/compiler_specific.h"
 #include "content/common/content_export.h"
-#include "content/common/presentation/presentation_service.mojom.h"
 #include "third_party/WebKit/public/platform/modules/presentation/WebPresentationConnectionClient.h"
+#include "third_party/WebKit/public/platform/modules/presentation/presentation.mojom.h"
 
 namespace content {
 
@@ -18,7 +18,7 @@ class CONTENT_EXPORT PresentationConnectionClient
     : public NON_EXPORTED_BASE(blink::WebPresentationConnectionClient) {
  public:
   explicit PresentationConnectionClient(
-      mojom::PresentationSessionInfoPtr session_info);
+      blink::mojom::PresentationSessionInfoPtr session_info);
   explicit PresentationConnectionClient(const mojo::String& url,
                                      const mojo::String& id);
   ~PresentationConnectionClient() override;
