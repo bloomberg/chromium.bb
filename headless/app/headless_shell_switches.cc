@@ -20,5 +20,9 @@ const char kProxyServer[] = "proxy-server";
 // so exposing it too widely can be a security risk.
 const char kRemoteDebuggingAddress[] = "remote-debugging-address";
 
+// Runs a read-eval-print loop that allows the user to evaluate Javascript
+// expressions.
+const char kRepl[] = "repl";
+
 }  // namespace switches
 }  // namespace headless

@@ -10,6 +10,7 @@ namespace switches {
 extern const char kDumpDom[];
 extern const char kProxyServer[];
 extern const char kRemoteDebuggingAddress[];
+extern const char kRepl[];
 }  // namespace switches
 }  // namespace headless
 

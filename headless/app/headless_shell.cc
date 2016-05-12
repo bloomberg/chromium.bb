@@ -8,6 +8,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/json/json_writer.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/numerics/safe_conversions.h"
@@ -128,6 +129,12 @@ class HeadlessShell : public HeadlessWebContents::Observer, page::Observer {
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
             headless::switches::kDumpDom)) {
       FetchDom();
+    } else if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+                   headless::switches::kRepl)) {
+      std::cout
+          << "Type a Javascript expression to evaluate or \"quit\" to exit."
+          << std::endl;
+      InputExpression();
     } else {
       Shutdown();
     }
@@ -149,6 +156,29 @@ class HeadlessShell : public HeadlessWebContents::Observer, page::Observer {
       }
     }
     Shutdown();
+  }
+
+  void InputExpression() {
+    // Note that a real system should read user input asynchronously, because
+    // otherwise all other browser activity is suspended (e.g., page loading).
+    std::string expression;
+    std::cout << ">>> ";
+    std::getline(std::cin, expression);
+    if (std::cin.bad() || std::cin.eof() || expression == "quit") {
+      Shutdown();
+      return;
+    }
+    devtools_client_->GetRuntime()->Evaluate(
+        expression,
+        base::Bind(&HeadlessShell::OnExpressionResult, base::Unretained(this)));
+  }
+
+  void OnExpressionResult(std::unique_ptr<runtime::EvaluateResult> result) {
+    std::unique_ptr<base::Value> value = result->Serialize();
+    std::string result_json;
+    base::JSONWriter::Write(*value, &result_json);
+    std::cout << result_json << std::endl;
+    InputExpression();
   }
 
   bool RemoteDebuggingEnabled() const {
