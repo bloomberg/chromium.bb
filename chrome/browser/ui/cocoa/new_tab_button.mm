@@ -18,13 +18,19 @@
 
 namespace {
 
-enum class RenderingOption {
-  NORMAL,
-  OVERLAY_LIGHTEN,
-  OVERLAY_LIGHTEN_INCOGNITO,
-  OVERLAY_DARKEN,
-  INLAY_LIGHTEN,
+enum class OverlayOption {
+  NONE,
+  LIGHTEN,
+  DARKEN,
 };
+
+  const NSSize newTabButtonImageSize = { 34, 18 };
+
+const CGFloat k7PercentAlpha = 0.07;
+const CGFloat k8PercentAlpha = 0.08;
+const CGFloat k10PercentAlpha = 0.1;
+const CGFloat k20PercentAlpha = 0.2;
+const CGFloat k25PercentAlpha = 0.25;
 
 NSImage* GetMaskImageFromCell(NewTabButtonCell* aCell) {
   if (!ui::MaterialDesignController::IsModeMaterial()) {
@@ -133,7 +139,7 @@ CGFloat LineWidthFromContext(CGContextRef context) {
 @property (assign, nonatomic) NSView* destView;
 @property (copy, nonatomic) NSColor* fillColor;
 @property (assign, nonatomic) NSPoint patternPhasePosition;
-@property (assign, nonatomic) RenderingOption renderingOption;
+@property (assign, nonatomic) OverlayOption overlayOption;
 @end
 
 @implementation NewTabButtonCustomImageRep
@@ -141,7 +147,7 @@ CGFloat LineWidthFromContext(CGContextRef context) {
 @synthesize destView = destView_;
 @synthesize fillColor = fillColor_;
 @synthesize patternPhasePosition = patternPhasePosition_;
-@synthesize renderingOption = renderingOption_;
+@synthesize overlayOption = overlayOption_;
 
 - (void)dealloc {
   [fillColor_ release];
@@ -171,6 +177,24 @@ CGFloat LineWidthFromContext(CGContextRef context) {
 
 @end
 
+@interface NewTabButton()
+
+// Returns a new tab button image appropriate for the specified button state
+// (e.g. hover) and theme. In Material Design, the theme color affects the
+// button color.
+- (NSImage*)imageForState:(image_button_cell::ButtonState)state
+                    theme:(const ui::ThemeProvider*)theme;
+
+// Returns a new tab button image bezier path with the specified line width.
++ (NSBezierPath*)newTabButtonBezierPathWithLineWidth:(CGFloat)lineWidth;
+
+// NSCustomImageRep custom drawing method that renders the new tab button image.
++ (void)drawNewTabButtonImage:(NewTabButtonCustomImageRep*)imageRep;
+
+// Returns a new tab button image filled with |fillColor|.
+- (NSImage*)imageWithFillColor:(NSColor*)fillColor;
+
+@end
 
 @implementation NewTabButton
 
@@ -304,29 +328,23 @@ CGFloat LineWidthFromContext(CGContextRef context) {
 - (NSImage*)imageForState:(image_button_cell::ButtonState)state
                     theme:(const ui::ThemeProvider*)theme {
   NSColor* fillColor = nil;
-  RenderingOption renderingOption = RenderingOption::NORMAL;
+  OverlayOption overlayOption = OverlayOption::NONE;
 
   switch (state) {
     case image_button_cell::kDefaultState:
+      // In the normal state, the NTP button looks like a background tab.
       fillColor = theme->GetNSImageColorNamed(IDR_THEME_TAB_BACKGROUND);
       break;
 
     case image_button_cell::kHoverState:
       fillColor = theme->GetNSImageColorNamed(IDR_THEME_TAB_BACKGROUND);
-      // When a custom theme highlight the entire area, otherwise only
-      // highlight the interior and not the border.
-      if (theme->HasCustomImage(IDR_THEME_TAB_BACKGROUND)) {
-        renderingOption = RenderingOption::OVERLAY_LIGHTEN;
-      } else if (theme->InIncognitoMode()) {
-        renderingOption = RenderingOption::OVERLAY_LIGHTEN_INCOGNITO;
-      } else {
-        renderingOption = RenderingOption::INLAY_LIGHTEN;
-      }
+      overlayOption = OverlayOption::LIGHTEN;
 
       break;
 
     case image_button_cell::kPressedState:
       fillColor = theme->GetNSImageColorNamed(IDR_THEME_TAB_BACKGROUND);
+      overlayOption = OverlayOption::DARKEN;
       break;
 
     case image_button_cell::kDefaultStateBackground:
@@ -350,64 +368,67 @@ CGFloat LineWidthFromContext(CGContextRef context) {
   [imageRep setPatternPhasePosition:
       [[self window]
           themeImagePositionForAlignment:THEME_IMAGE_ALIGN_WITH_TAB_STRIP]];
-  [imageRep setRenderingOption:renderingOption];
+  [imageRep setOverlayOption:overlayOption];
 
   NSImage* newTabButtonImage =
-      [[[NSImage alloc] initWithSize:NSMakeSize(34, 17)] autorelease];
+      [[[NSImage alloc] initWithSize:newTabButtonImageSize] autorelease];
   [newTabButtonImage setCacheMode:NSImageCacheAlways];
   [newTabButtonImage addRepresentation:imageRep];
 
   return newTabButtonImage;
 }
 
-+ (NSBezierPath*)newTabButtonBezierPathWithInset:(int)inset
-                                       lineWidth:(CGFloat)lineWidth {
++ (NSBezierPath*)newTabButtonBezierPathWithLineWidth:(CGFloat)lineWidth {
   NSBezierPath* bezierPath = [NSBezierPath bezierPath];
 
-  // Bottom edge.
-  [bezierPath moveToPoint:NSMakePoint(19 - inset, 1.2825 + inset)];
-  [bezierPath lineToPoint:NSMakePoint(10.45 + inset, 1.2825 + inset)];
+  // This data comes straight from the SVG.
+  [bezierPath moveToPoint:NSMakePoint(15.2762236,30)];
 
-  // Lower-left corner.
-  [bezierPath curveToPoint:NSMakePoint(6.08 + inset, 2.85 + inset)
-             controlPoint1:NSMakePoint(10.1664 + inset, 1.3965 + inset)
-             controlPoint2:NSMakePoint(7.89222 + inset, 0.787708 + inset)];
+  [bezierPath curveToPoint:NSMakePoint(11.0354216,27.1770115)
+             controlPoint1:NSMakePoint(13.3667706,30)
+             controlPoint2:NSMakePoint(11.7297681,28.8344828)];
 
-  // Left side.
-  [bezierPath lineToPoint:NSMakePoint(0.7125 + inset, 14.25 - inset)];
+  [bezierPath curveToPoint:NSMakePoint(7.28528951e-08,2.01431416)
+             controlPoint1:NSMakePoint(11.0354216,27.1770115)
+             controlPoint2:NSMakePoint(0.000412425082,3.87955717)];
 
-  // Upper-left corner.
-  const float topEdgeY = 16.2688;
-  [bezierPath curveToPoint:NSMakePoint(1.71 + inset, topEdgeY - inset)
-             controlPoint1:NSMakePoint(0.246496 + inset, 15.2613 - inset)
-             controlPoint2:NSMakePoint(0.916972 + inset, 16.3489 - inset)];
+  [bezierPath curveToPoint:NSMakePoint(1.70510791,0)
+             controlPoint1:NSMakePoint(-0.000270516213,0.790325707)
+             controlPoint2:NSMakePoint(0.753255356,0)];
 
-  // Top edge.
-  [bezierPath lineToPoint:NSMakePoint(23.275 - inset, topEdgeY - inset)];
+  [bezierPath lineToPoint:NSMakePoint(48.7033642,0)];
 
-  // Upper right corner.
-  [bezierPath curveToPoint:NSMakePoint(27.645 - inset, 14.7012 - inset)
-             controlPoint1:NSMakePoint(26.4376 - inset, 16.3305 - inset)
-             controlPoint2:NSMakePoint(26.9257 - inset, 15.8059 - inset)];
+  [bezierPath curveToPoint:NSMakePoint(52.9464653,2.82643678)
+             controlPoint1:NSMakePoint(50.6151163,0)
+             controlPoint2:NSMakePoint(52.2521188,1.16666667)];
 
-  // Right side.
-  [bezierPath lineToPoint:NSMakePoint(32.9543 - inset, 3.62561 + inset)];
+  [bezierPath curveToPoint:NSMakePoint(64.0268555,27.5961914)
+             controlPoint1:NSMakePoint(52.9464653,2.82643678)
+             controlPoint2:NSMakePoint(64.0268555,27.4111339)];
 
-  // Lower right corner.
-  [bezierPath curveToPoint:NSMakePoint(32.015 - inset, 1.2825 + inset)
-             controlPoint1:NSMakePoint(34.069 - inset, 1.45303 + inset)
-             controlPoint2:NSMakePoint(31.0348 - inset, 1.31455 + inset)];
+  [bezierPath curveToPoint:NSMakePoint(62.2756294,30)
+             controlPoint1:NSMakePoint(64.0268555,28.5502144)
+             controlPoint2:NSMakePoint(63.227482,29.9977011)];
 
   [bezierPath closePath];
 
-  // On non-Retina machines, adjust the path so that the top line rests along
-  // a pixel line (to get a crisp line on the display).
-  if (lineWidth == 1) {
-    NSAffineTransform* translateTransform = [NSAffineTransform transform];
-    [translateTransform translateXBy:0
-                                 yBy:0.5 - (topEdgeY - trunc(topEdgeY))];
-    [bezierPath transformUsingAffineTransform:translateTransform];
-  }
+  // The SVG path is flipped for some reason, so flip it back.
+  const CGFloat kSVGHeight = 32;
+  NSAffineTransformStruct flipStruct = { 1, 0, 0, -1, 0, kSVGHeight };
+  NSAffineTransform* flipTransform = [NSAffineTransform transform];
+  [flipTransform setTransformStruct:flipStruct];
+  [bezierPath transformUsingAffineTransform:flipTransform];
+
+  // The SVG data is for the 2x version so scale it down.
+  NSAffineTransform* scaleTransform = [NSAffineTransform transform];
+  const CGFloat k50PercentScale = 0.5;
+  [scaleTransform scaleBy:k50PercentScale];
+  [bezierPath transformUsingAffineTransform:scaleTransform];
+
+  // Adjust by half the line width to get crisp lines.
+  NSAffineTransform* transform = [NSAffineTransform transform];
+  [transform translateXBy:lineWidth / 2 yBy:lineWidth / 2];
+  [bezierPath transformUsingAffineTransform:transform];
 
   [bezierPath setLineWidth:lineWidth];
 
@@ -422,8 +443,8 @@ CGFloat LineWidthFromContext(CGContextRef context) {
   CGContextRef context = static_cast<CGContextRef>(
       [[NSGraphicsContext currentContext] graphicsPort]);
   CGFloat lineWidth = LineWidthFromContext(context);
-  NSBezierPath* bezierPath = [self newTabButtonBezierPathWithInset:0
-                                                         lineWidth:lineWidth];
+  NSBezierPath* bezierPath =
+      [self newTabButtonBezierPathWithLineWidth:lineWidth];
 
   if ([imageRep fillColor]) {
     [[imageRep fillColor] set];
@@ -431,79 +452,86 @@ CGFloat LineWidthFromContext(CGContextRef context) {
   }
 
   static NSColor* strokeColor =
-      [[NSColor colorWithCalibratedWhite:0 alpha:0.4] retain];
+      [[NSColor colorWithCalibratedWhite:0 alpha:k25PercentAlpha] retain];
   [strokeColor set];
   [bezierPath stroke];
 
   // Bottom edge.
-  bezierPath = [NSBezierPath bezierPath];
-  [bezierPath moveToPoint:NSMakePoint(31, 1.2825)];
-  [bezierPath lineToPoint:NSMakePoint(9, 1.2825)];
+  const CGFloat kBottomEdgeX = 9;
+  const CGFloat kBottomEdgeY = 1.2825;
+  const CGFloat kBottomEdgeWidth = 22;
+  NSPoint bottomEdgeStart = NSMakePoint(kBottomEdgeX, kBottomEdgeY);
+  NSPoint bottomEdgeEnd = NSMakePoint(kBottomEdgeX + kBottomEdgeWidth,
+                                      kBottomEdgeY);
+  NSBezierPath* bottomEdgePath = [NSBezierPath bezierPath];
+  [bottomEdgePath moveToPoint:bottomEdgeStart];
+  [bottomEdgePath lineToPoint:bottomEdgeEnd];
   static NSColor* bottomEdgeColor =
-      [[NSColor colorWithCalibratedWhite:0.25 alpha:0.3] retain];
+      [[NSColor colorWithCalibratedWhite:0 alpha:k7PercentAlpha] retain];
   [bottomEdgeColor set];
-  [bezierPath setLineWidth:lineWidth];
-  [bezierPath setLineCapStyle:NSRoundLineCapStyle];
-  [bezierPath stroke];
+  [bottomEdgePath setLineWidth:lineWidth];
+  [bottomEdgePath setLineCapStyle:NSRoundLineCapStyle];
+  [bottomEdgePath stroke];
 
-  // Shadow beneath the bottom edge.
-  NSAffineTransform* translateTransform = [NSAffineTransform transform];
-  [translateTransform translateXBy:0 yBy:-lineWidth];
-  [bezierPath transformUsingAffineTransform:translateTransform];
-  static NSColor* shadowColor =
-      [[NSColor colorWithCalibratedWhite:0.5 alpha:0.3] retain];
-  [shadowColor set];
-  [bezierPath stroke];
+  CGPoint shadowStart = NSZeroPoint;
+  CGPoint shadowEnd = NSZeroPoint;
+  NSColor* overlayColor = nil;
+  const CGFloat kBottomShadowX = 8;
+  const CGFloat kBottomShadowY = kBottomEdgeY - lineWidth;
+  const CGFloat kTopShadowX = 1;
+  const CGFloat kTopShadowY = kBottomShadowY + 15;
+  const CGFloat kShadowWidth = 24;
+  static NSColor* lightOverlayColor =
+      [[NSColor colorWithCalibratedWhite:1 alpha:k20PercentAlpha] retain];
+  static NSColor* darkOverlayColor =
+      [[NSColor colorWithCalibratedWhite:0 alpha:k8PercentAlpha] retain];
 
-  static NSColor* lightColor =
-      [[NSColor colorWithCalibratedWhite:1 alpha:0.35] retain];
-  static NSColor* lightIncognitoColor =
-      [[NSColor colorWithCalibratedWhite:1 alpha:0.15] retain];
-  static NSColor* darkColor =
-      [[NSColor colorWithCalibratedWhite:0 alpha:0.08] retain];
-
-  CGFloat inset = -1;
-  switch ([imageRep renderingOption]) {
-    case RenderingOption::OVERLAY_LIGHTEN:
-      [lightColor set];
-      inset = 0;
+  switch ([imageRep overlayOption]) {
+    case OverlayOption::LIGHTEN:
+      overlayColor = lightOverlayColor;
       break;
 
-    case RenderingOption::OVERLAY_LIGHTEN_INCOGNITO:
-      [lightIncognitoColor set];
-      inset = 0;
+    case OverlayOption::DARKEN:
+      overlayColor = darkOverlayColor;
+      shadowStart = NSMakePoint(kTopShadowX, kTopShadowY);
+      shadowEnd = NSMakePoint(kTopShadowX + kShadowWidth, kTopShadowY);
       break;
 
-    case RenderingOption::OVERLAY_DARKEN:
-      [darkColor set];
-      NSRectFillUsingOperation(NSMakeRect(0, 0, 34, 17), NSCompositeSourceAtop);
-      break;
-
-    case RenderingOption::INLAY_LIGHTEN:
-      [lightColor set];
-      inset = 1;
-      break;
-
-    case RenderingOption::NORMAL:
+    case OverlayOption::NONE:
+      shadowStart = NSMakePoint(kBottomShadowX, kBottomShadowY);
+      shadowEnd = NSMakePoint(kBottomShadowX + kShadowWidth, kBottomShadowY);
       break;
   }
-  if (inset != -1) {
-    bezierPath = [self newTabButtonBezierPathWithInset:inset
-                                             lineWidth:lineWidth];
-    [bezierPath fill];
+
+  // Shadow beneath the bottom or top edge.
+  if (!NSEqualPoints(shadowStart, NSZeroPoint)) {
+    NSBezierPath* shadowPath = [NSBezierPath bezierPath];
+    [shadowPath moveToPoint:shadowStart];
+    [shadowPath lineToPoint:shadowEnd];
+    [shadowPath setLineWidth:lineWidth];
+    [shadowPath setLineCapStyle:NSRoundLineCapStyle];
+    static NSColor* shadowColor =
+      [[NSColor colorWithCalibratedWhite:0 alpha:k10PercentAlpha] retain];
+    [shadowColor set];
+    [shadowPath stroke];
+  }
+
+  if (overlayColor) {
+    [overlayColor set];
+    [[self newTabButtonBezierPathWithLineWidth:lineWidth] fill];
   }
 }
 
 - (NSImage*)imageWithFillColor:(NSColor*)fillColor {
   NSImage* image =
-      [[[NSImage alloc] initWithSize:NSMakeSize(34, 17)] autorelease];
+      [[[NSImage alloc] initWithSize:newTabButtonImageSize] autorelease];
 
   [image lockFocus];
   [fillColor set];
   CGContextRef context = static_cast<CGContextRef>(
       [[NSGraphicsContext currentContext] graphicsPort]);
   CGFloat lineWidth = LineWidthFromContext(context);
-  [[NewTabButton newTabButtonBezierPathWithInset:0 lineWidth:lineWidth] fill];
+  [[NewTabButton newTabButtonBezierPathWithLineWidth:lineWidth] fill];
   [image unlockFocus];
   return image;
 }
