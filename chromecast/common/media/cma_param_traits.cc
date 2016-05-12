@@ -17,10 +17,12 @@
 #include "ui/gfx/ipc/gfx_param_traits.h"
 #include "ui/gfx/ipc/skia/gfx_skia_param_traits.h"
 
-// Note(gunsch): these are currently defined in content/, but not declared in
-// content/public/. These headers need to be forward-declared for chromecast/,
-// but without new implementations linked in.
-// The correct long-term fix is to use Mojo instead of the content/ IPCs.
+// Note(slan): These are defined in the following headers:
+//   media/gpu/ipc/common/media_param_traits_macros.h
+//   content/common/media/audio_messages.h
+// but including these headers is not correct, so forward declare them here.
+// Their existing implementations in content/ and media/ should be linked in.
+// This hack will not be necessary with Mojo.
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(media::ChannelLayout,
                               media::ChannelLayout::CHANNEL_LAYOUT_NONE,
                               media::ChannelLayout::CHANNEL_LAYOUT_MAX)

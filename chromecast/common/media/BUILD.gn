@@ -55,6 +55,7 @@ if (enable_cma) {
       "//content/public/common",
       "//media",
       "//media:shared_memory_support",
+      "//media/gpu/ipc/common",
       "//ui/gfx/ipc",
       "//ui/gfx/ipc/skia",
     ]
