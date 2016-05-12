@@ -51,7 +51,7 @@ class PlatformScreen;
 class WindowServer;
 }
 
-class MandolineUIServicesApp
+class MusApp
     : public shell::ShellClient,
       public ws::WindowServerDelegate,
       public shell::InterfaceFactory<mojom::DisplayManager>,
@@ -62,8 +62,8 @@ class MandolineUIServicesApp
       public shell::InterfaceFactory<mojom::WindowServerTest>,
       public shell::InterfaceFactory<mojom::Gpu> {
  public:
-  MandolineUIServicesApp();
-  ~MandolineUIServicesApp() override;
+  MusApp();
+  ~MusApp() override;
 
  private:
   // Holds InterfaceRequests received before the first WindowTreeHost Display
@@ -145,9 +145,9 @@ class MandolineUIServicesApp
 
   std::unique_ptr<ws::PlatformScreen> platform_screen_;
 
-  base::WeakPtrFactory<MandolineUIServicesApp> weak_ptr_factory_;
+  base::WeakPtrFactory<MusApp> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(MandolineUIServicesApp);
+  DISALLOW_COPY_AND_ASSIGN(MusApp);
 };
 
 }  // namespace mus

@@ -91,7 +91,7 @@ class DefaultShellClient : public shell::ShellClient,
     if (name == "mojo:mash_session")
       return base::WrapUnique(new mash::session::Session);
     if (name == "mojo:mus")
-      return base::WrapUnique(new mus::MandolineUIServicesApp);
+      return base::WrapUnique(new mus::MusApp);
     if (name == "mojo:quick_launch")
       return base::WrapUnique(new mash::quick_launch::QuickLaunchApplication);
     if (name == "mojo:task_viewer")

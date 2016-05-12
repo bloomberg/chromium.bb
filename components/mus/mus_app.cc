@@ -63,21 +63,21 @@ const char kResourceFile200[] = "mus_app_resources_200.pak";
 }  // namespace
 
 // TODO(sky): this is a pretty typical pattern, make it easier to do.
-struct MandolineUIServicesApp::PendingRequest {
+struct MusApp::PendingRequest {
   shell::Connection* connection;
   std::unique_ptr<mojo::InterfaceRequest<mojom::WindowTreeFactory>> wtf_request;
 };
 
-struct MandolineUIServicesApp::UserState {
+struct MusApp::UserState {
   std::unique_ptr<ws::WindowTreeHostFactory> window_tree_host_factory;
 };
 
-MandolineUIServicesApp::MandolineUIServicesApp()
+MusApp::MusApp()
     : test_config_(false),
       platform_screen_(ws::PlatformScreen::Create()),
       weak_ptr_factory_(this) {}
 
-MandolineUIServicesApp::~MandolineUIServicesApp() {
+MusApp::~MusApp() {
   // Destroy |window_server_| first, since it depends on |event_source_|.
   // WindowServer (or more correctly its Displays) may have state that needs to
   // be destroyed before GpuState as well.
@@ -87,7 +87,7 @@ MandolineUIServicesApp::~MandolineUIServicesApp() {
     platform_display_init_params_.gpu_state->StopThreads();
 }
 
-void MandolineUIServicesApp::InitializeResources(shell::Connector* connector) {
+void MusApp::InitializeResources(shell::Connector* connector) {
   if (ui::ResourceBundle::HasSharedInstance())
     return;
 
@@ -114,8 +114,7 @@ void MandolineUIServicesApp::InitializeResources(shell::Connector* connector) {
                          ui::SCALE_FACTOR_200P);
 }
 
-MandolineUIServicesApp::UserState* MandolineUIServicesApp::GetUserState(
-    shell::Connection* connection) {
+MusApp::UserState* MusApp::GetUserState(shell::Connection* connection) {
   const ws::UserId& user_id = connection->GetRemoteIdentity().user_id();
   auto it = user_id_to_user_state_.find(user_id);
   if (it != user_id_to_user_state_.end())
@@ -124,20 +123,20 @@ MandolineUIServicesApp::UserState* MandolineUIServicesApp::GetUserState(
   return user_id_to_user_state_[user_id].get();
 }
 
-void MandolineUIServicesApp::AddUserIfNecessary(shell::Connection* connection) {
+void MusApp::AddUserIfNecessary(shell::Connection* connection) {
   window_server_->user_id_tracker()->AddUserId(
       connection->GetRemoteIdentity().user_id());
 }
 
-void MandolineUIServicesApp::Initialize(shell::Connector* connector,
-                                        const shell::Identity& identity,
-                                        uint32_t id) {
+void MusApp::Initialize(shell::Connector* connector,
+                        const shell::Identity& identity,
+                        uint32_t id) {
   platform_display_init_params_.connector = connector;
   platform_display_init_params_.surfaces_state = new SurfacesState;
 
   base::PlatformThread::SetName("mus");
   tracing_.Initialize(connector, identity.name());
-  TRACE_EVENT0("mus", "MandolineUIServicesApp::Initialize started");
+  TRACE_EVENT0("mus", "MusApp::Initialize started");
 
   test_config_ =
       base::CommandLine::ForCurrentProcess()->HasSwitch(kUseTestConfig);
@@ -184,7 +183,7 @@ void MandolineUIServicesApp::Initialize(shell::Connector* connector,
       new ws::WindowServer(this, platform_display_init_params_.surfaces_state));
 }
 
-bool MandolineUIServicesApp::AcceptConnection(Connection* connection) {
+bool MusApp::AcceptConnection(Connection* connection) {
   connection->AddInterface<Gpu>(this);
   connection->AddInterface<mojom::DisplayManager>(this);
   connection->AddInterface<mojom::UserAccessManager>(this);
@@ -196,53 +195,51 @@ bool MandolineUIServicesApp::AcceptConnection(Connection* connection) {
   return true;
 }
 
-void MandolineUIServicesApp::OnFirstDisplayReady() {
+void MusApp::OnFirstDisplayReady() {
   PendingRequests requests;
   requests.swap(pending_requests_);
   for (auto& request : requests)
     Create(request->connection, std::move(*request->wtf_request));
 }
 
-void MandolineUIServicesApp::OnNoMoreDisplays() {
+void MusApp::OnNoMoreDisplays() {
   // We may get here from the destructor, in which case there is no messageloop.
   if (base::MessageLoop::current())
     base::MessageLoop::current()->QuitWhenIdle();
 }
 
-bool MandolineUIServicesApp::IsTestConfig() const {
+bool MusApp::IsTestConfig() const {
   return test_config_;
 }
 
-void MandolineUIServicesApp::CreateDefaultDisplays() {
+void MusApp::CreateDefaultDisplays() {
   // An asynchronous callback will create the Displays once the physical
   // displays are ready.
-  platform_screen_->ConfigurePhysicalDisplay(
-      base::Bind(&MandolineUIServicesApp::OnCreatedPhysicalDisplay,
-                 weak_ptr_factory_.GetWeakPtr()));
+  platform_screen_->ConfigurePhysicalDisplay(base::Bind(
+      &MusApp::OnCreatedPhysicalDisplay, weak_ptr_factory_.GetWeakPtr()));
 }
 
-void MandolineUIServicesApp::Create(shell::Connection* connection,
-                                    mojom::DisplayManagerRequest request) {
+void MusApp::Create(shell::Connection* connection,
+                    mojom::DisplayManagerRequest request) {
   window_server_->display_manager()
       ->GetUserDisplayManager(connection->GetRemoteIdentity().user_id())
       ->AddDisplayManagerBinding(std::move(request));
 }
 
-void MandolineUIServicesApp::Create(shell::Connection* connection,
-                                    mojom::UserAccessManagerRequest request) {
+void MusApp::Create(shell::Connection* connection,
+                    mojom::UserAccessManagerRequest request) {
   window_server_->user_id_tracker()->Bind(std::move(request));
 }
 
-void MandolineUIServicesApp::Create(
-    shell::Connection* connection,
-    mojom::WindowManagerFactoryServiceRequest request) {
+void MusApp::Create(shell::Connection* connection,
+                    mojom::WindowManagerFactoryServiceRequest request) {
   AddUserIfNecessary(connection);
   window_server_->window_manager_factory_registry()->Register(
       connection->GetRemoteIdentity().user_id(), std::move(request));
 }
 
-void MandolineUIServicesApp::Create(Connection* connection,
-                                    mojom::WindowTreeFactoryRequest request) {
+void MusApp::Create(Connection* connection,
+                    mojom::WindowTreeFactoryRequest request) {
   AddUserIfNecessary(connection);
   if (!window_server_->display_manager()->has_displays()) {
     std::unique_ptr<PendingRequest> pending_request(new PendingRequest);
@@ -259,9 +256,8 @@ void MandolineUIServicesApp::Create(Connection* connection,
       connection->GetRemoteIdentity().name(), std::move(request));
 }
 
-void MandolineUIServicesApp::Create(
-    Connection* connection,
-    mojom::WindowTreeHostFactoryRequest request) {
+void MusApp::Create(Connection* connection,
+                    mojom::WindowTreeHostFactoryRequest request) {
   UserState* user_state = GetUserState(connection);
   if (!user_state->window_tree_host_factory) {
     user_state->window_tree_host_factory.reset(new ws::WindowTreeHostFactory(
@@ -271,21 +267,19 @@ void MandolineUIServicesApp::Create(
   user_state->window_tree_host_factory->AddBinding(std::move(request));
 }
 
-void MandolineUIServicesApp::Create(Connection* connection,
-                                    mojom::WindowServerTestRequest request) {
+void MusApp::Create(Connection* connection,
+                    mojom::WindowServerTestRequest request) {
   if (!test_config_)
     return;
   new ws::WindowServerTestImpl(window_server_.get(), std::move(request));
 }
 
-void MandolineUIServicesApp::Create(shell::Connection* connection,
-                                    mojom::GpuRequest request) {
+void MusApp::Create(shell::Connection* connection, mojom::GpuRequest request) {
   DCHECK(platform_display_init_params_.gpu_state);
   new GpuImpl(std::move(request), platform_display_init_params_.gpu_state);
 }
 
-void MandolineUIServicesApp::OnCreatedPhysicalDisplay(int64_t id,
-                                                      const gfx::Rect& bounds) {
+void MusApp::OnCreatedPhysicalDisplay(int64_t id, const gfx::Rect& bounds) {
   platform_display_init_params_.display_bounds = bounds;
   platform_display_init_params_.display_id = id;
 

@@ -7,7 +7,7 @@
 #include "services/shell/public/cpp/application_runner.h"
 
 MojoResult MojoMain(MojoHandle shell_handle) {
-  shell::ApplicationRunner runner(new mus::MandolineUIServicesApp);
+  shell::ApplicationRunner runner(new mus::MusApp);
   runner.set_message_loop_type(base::MessageLoop::TYPE_UI);
   return runner.Run(shell_handle);
 }
