@@ -12,6 +12,8 @@ import android.test.suitebuilder.annotation.SmallTest;
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.test.util.browser.notifications.MockNotificationManagerProxy;
 import org.chromium.chrome.test.util.browser.notifications.MockNotificationManagerProxy.NotificationEntry;
+import org.chromium.content.browser.test.util.Criteria;
+import org.chromium.content.browser.test.util.CriteriaHelper;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -226,23 +228,28 @@ public class UrlManagerTest extends InstrumentationTestCase {
     }
 
     @SmallTest
-    public void testUpgradeFrom1or2() {
-        String old_prefs_file = "org.chromium.chrome.browser.physicalweb.URL_CACHE";
-        String arbitrary_key = "arbitrary_key";
+    public void testUpgradeFrom1or2() throws Exception {
+        String oldPrefsFile = "org.chromium.chrome.browser.physicalweb.URL_CACHE";
+        final String arbitraryKey = "arbitrary_key";
         Context context = getInstrumentation().getTargetContext().getApplicationContext();
-        SharedPreferences oldPrefs =
-                context.getSharedPreferences(old_prefs_file, Context.MODE_PRIVATE);
+        final SharedPreferences oldPrefs =
+                context.getSharedPreferences(oldPrefsFile, Context.MODE_PRIVATE);
         oldPrefs.edit()
-                .putInt(arbitrary_key, 1)
+                .putInt(arbitraryKey, 1)
                 .apply();
         mSharedPreferences.edit()
                 .remove(UrlManager.getVersionKey())
                 .apply();
         new UrlManager(context);
-        getInstrumentation().waitForIdleSync();
 
         // Make sure the old prefs are cleared.
-        assertEquals(0, oldPrefs.getInt(arbitrary_key, 0));
+        CriteriaHelper.pollInstrumentationThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return mSharedPreferences.contains(UrlManager.getVersionKey())
+                        && !oldPrefs.contains(arbitraryKey);
+            }
+        }, 5000, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
 
         // Make sure the new prefs are populated.
         assertEquals(UrlManager.getVersion(),
