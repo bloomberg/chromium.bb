@@ -642,6 +642,8 @@
           'task_scheduler/scheduler_lock.h',
           'task_scheduler/scheduler_lock_impl.cc',
           'task_scheduler/scheduler_lock_impl.h',
+          'task_scheduler/scheduler_service_thread.cc',
+          'task_scheduler/scheduler_service_thread.h',
           'task_scheduler/scheduler_thread_pool.h',
           'task_scheduler/scheduler_thread_pool_impl.cc',
           'task_scheduler/scheduler_thread_pool_impl.h',

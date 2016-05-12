@@ -14,7 +14,6 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/task_runner.h"
 #include "base/task_scheduler/delayed_task_manager.h"
-#include "base/task_scheduler/scheduler_thread_pool_impl.h"
 #include "base/task_scheduler/sequence.h"
 #include "base/task_scheduler/task_scheduler.h"
 #include "base/task_scheduler/task_tracker.h"
@@ -22,6 +21,9 @@
 
 namespace base {
 namespace internal {
+
+class SchedulerServiceThread;
+class SchedulerThreadPoolImpl;
 
 // Default TaskScheduler implementation. This class is thread-safe.
 class BASE_EXPORT TaskSchedulerImpl : public TaskScheduler {
@@ -60,6 +62,10 @@ class BASE_EXPORT TaskSchedulerImpl : public TaskScheduler {
   // worker thread pops a Task from it.
   void ReEnqueueSequenceCallback(scoped_refptr<Sequence> sequence);
 
+  // Callback invoked when the delayed run time is changed from the
+  // DelayedTaskManager.
+  void OnDelayedRunTimeUpdated();
+
   TaskTracker task_tracker_;
   DelayedTaskManager delayed_task_manager_;
 
@@ -74,6 +80,8 @@ class BASE_EXPORT TaskSchedulerImpl : public TaskScheduler {
 
   // Thread pool for USER_VISIBLE and USER_BLOCKING Tasks with file I/O.
   std::unique_ptr<SchedulerThreadPoolImpl> normal_file_io_thread_pool_;
+
+  std::unique_ptr<SchedulerServiceThread> service_thread_;
 
 #if DCHECK_IS_ON()
   // Signaled once JoinForTesting() has returned.

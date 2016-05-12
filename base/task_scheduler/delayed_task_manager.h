@@ -50,7 +50,6 @@ class BASE_EXPORT DelayedTaskManager {
                       SchedulerThreadPool* thread_pool);
 
   // Posts delayed tasks that are ripe for execution.
-  // TODO(robliao): Call this from a service thread.
   void PostReadyTasks();
 
   // Returns the next time at which a delayed task will become ripe for

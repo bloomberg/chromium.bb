@@ -202,6 +202,7 @@ class SchedulerThreadPoolImpl::SchedulerWorkerThreadDelegateImpl
   scoped_refptr<Sequence> GetWork(
       SchedulerWorkerThread* worker_thread) override;
   void ReEnqueueSequence(scoped_refptr<Sequence> sequence) override;
+  TimeDelta GetSleepTimeout() override;
 
  private:
   SchedulerThreadPoolImpl* outer_;
@@ -477,6 +478,11 @@ void SchedulerThreadPoolImpl::SchedulerWorkerThreadDelegateImpl::
     // |sequence| must be enqueued.
     re_enqueue_sequence_callback_.Run(std::move(sequence));
   }
+}
+
+TimeDelta SchedulerThreadPoolImpl::SchedulerWorkerThreadDelegateImpl::
+    GetSleepTimeout() {
+  return TimeDelta::Max();
 }
 
 SchedulerThreadPoolImpl::SchedulerThreadPoolImpl(

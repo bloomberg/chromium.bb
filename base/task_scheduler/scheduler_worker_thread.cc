@@ -69,7 +69,14 @@ void SchedulerWorkerThread::ThreadMain() {
     scoped_refptr<Sequence> sequence = delegate_->GetWork(this);
 
     if (!sequence) {
-      wake_up_event_.Wait();
+      TimeDelta sleep_time = delegate_->GetSleepTimeout();
+      if (sleep_time.is_max()) {
+        // Calling TimedWait with TimeDelta::Max is not recommended per
+        // http://crbug.com/465948.
+        wake_up_event_.Wait();
+      } else {
+        wake_up_event_.TimedWait(sleep_time);
+      }
       continue;
     }
 

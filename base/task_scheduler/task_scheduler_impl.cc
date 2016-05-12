@@ -9,6 +9,8 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/memory/ptr_util.h"
+#include "base/task_scheduler/scheduler_service_thread.h"
+#include "base/task_scheduler/scheduler_thread_pool_impl.h"
 #include "base/task_scheduler/sequence_sort_key.h"
 #include "base/task_scheduler/task.h"
 #include "base/time/time.h"
@@ -59,15 +61,15 @@ void TaskSchedulerImpl::JoinForTesting() {
   background_file_io_thread_pool_->JoinForTesting();
   normal_thread_pool_->JoinForTesting();
   normal_file_io_thread_pool_->JoinForTesting();
+  service_thread_->JoinForTesting();
 #if DCHECK_IS_ON()
   join_for_testing_returned_.Signal();
 #endif
 }
 
 TaskSchedulerImpl::TaskSchedulerImpl()
-    // TODO(robliao): Wake up the service thread instead of calling DoNothing()
-    // when the delayed run time changes.
-    : delayed_task_manager_(Bind(&DoNothing))
+    : delayed_task_manager_(Bind(&TaskSchedulerImpl::OnDelayedRunTimeUpdated,
+                                 Unretained(this)))
 #if DCHECK_IS_ON()
           ,
       join_for_testing_returned_(true, false)
@@ -111,6 +113,10 @@ void TaskSchedulerImpl::Initialize() {
       IORestriction::ALLOWED, re_enqueue_sequence_callback, &task_tracker_,
       &delayed_task_manager_);
   CHECK(normal_file_io_thread_pool_);
+
+  service_thread_ = SchedulerServiceThread::Create(&task_tracker_,
+                                                   &delayed_task_manager_);
+  CHECK(service_thread_);
 }
 
 SchedulerThreadPool* TaskSchedulerImpl::GetThreadPoolForTraits(
@@ -140,6 +146,10 @@ void TaskSchedulerImpl::ReEnqueueSequenceCallback(
 
   GetThreadPoolForTraits(traits)->ReEnqueueSequence(std::move(sequence),
                                                     sort_key);
+}
+
+void TaskSchedulerImpl::OnDelayedRunTimeUpdated() {
+  service_thread_->WakeUp();
 }
 
 }  // namespace internal

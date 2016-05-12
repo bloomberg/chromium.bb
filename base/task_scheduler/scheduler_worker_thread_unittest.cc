@@ -18,6 +18,7 @@
 #include "base/task_scheduler/sequence.h"
 #include "base/task_scheduler/task.h"
 #include "base/task_scheduler/task_tracker.h"
+#include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -163,6 +164,10 @@ class TaskSchedulerWorkerThreadTest : public testing::TestWithParam<size_t> {
       outer_->re_enqueued_sequences_.push_back(std::move(sequence));
       EXPECT_LE(outer_->re_enqueued_sequences_.size(),
                 outer_->created_sequences_.size());
+    }
+
+    TimeDelta GetSleepTimeout() override {
+      return TimeDelta::Max();
     }
 
    private:
