@@ -61,6 +61,7 @@
         'video_encoder.cc',
         'video_frame.cc',
         'view.cc',
+        'vpn_provider.cc',
         'websocket.cc',
 
         # ppapi/cpp/dev
@@ -145,6 +146,7 @@
         'video_encoder.h',
         'video_frame.h',
         'view.h',
+        'vpn_provider.h',
         'websocket.h',
       ],
       'DEST': 'include/ppapi/cpp',

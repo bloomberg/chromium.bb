@@ -49,6 +49,7 @@
 #include "ppapi/c/ppb_var_dictionary.h"
 #include "ppapi/c/ppb_video_decoder.h"
 #include "ppapi/c/ppb_video_encoder.h"
+#include "ppapi/c/ppb_vpn_provider.h"
 #include "ppapi/c/ppb_websocket.h"
 #include "ppapi/c/ppp_messaging.h"
 #include "ppapi/c/private/ppb_camera_device_private.h"
@@ -150,6 +151,7 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VideoDecoder_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VideoDecoder_1_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VideoEncoder_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VideoEncoder_0_2;
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VpnProvider_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_WebSocket_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_Messaging_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_AudioInput_Dev_0_3;
@@ -2510,6 +2512,35 @@ static void Pnacl_M44_PPB_VideoEncoder_Close(PP_Resource video_encoder) {
 /* Not generating wrapper methods for PPB_View_1_1 */
 
 /* Not generating wrapper methods for PPB_View_1_2 */
+
+/* Begin wrapper methods for PPB_VpnProvider_0_1 */
+
+static PP_Resource Pnacl_M52_PPB_VpnProvider_Create(PP_Instance instance) {
+  const struct PPB_VpnProvider_0_1 *iface = Pnacl_WrapperInfo_PPB_VpnProvider_0_1.real_iface;
+  return iface->Create(instance);
+}
+
+static PP_Bool Pnacl_M52_PPB_VpnProvider_IsVpnProvider(PP_Resource resource) {
+  const struct PPB_VpnProvider_0_1 *iface = Pnacl_WrapperInfo_PPB_VpnProvider_0_1.real_iface;
+  return iface->IsVpnProvider(resource);
+}
+
+static int32_t Pnacl_M52_PPB_VpnProvider_Bind(PP_Resource vpn_provider, struct PP_Var* configuration_id, struct PP_Var* configuration_name, struct PP_CompletionCallback* callback) {
+  const struct PPB_VpnProvider_0_1 *iface = Pnacl_WrapperInfo_PPB_VpnProvider_0_1.real_iface;
+  return iface->Bind(vpn_provider, *configuration_id, *configuration_name, *callback);
+}
+
+static int32_t Pnacl_M52_PPB_VpnProvider_SendPacket(PP_Resource vpn_provider, struct PP_Var* packet, struct PP_CompletionCallback* callback) {
+  const struct PPB_VpnProvider_0_1 *iface = Pnacl_WrapperInfo_PPB_VpnProvider_0_1.real_iface;
+  return iface->SendPacket(vpn_provider, *packet, *callback);
+}
+
+static int32_t Pnacl_M52_PPB_VpnProvider_ReceivePacket(PP_Resource vpn_provider, struct PP_Var* packet, struct PP_CompletionCallback* callback) {
+  const struct PPB_VpnProvider_0_1 *iface = Pnacl_WrapperInfo_PPB_VpnProvider_0_1.real_iface;
+  return iface->ReceivePacket(vpn_provider, packet, *callback);
+}
+
+/* End wrapper methods for PPB_VpnProvider_0_1 */
 
 /* Begin wrapper methods for PPB_WebSocket_1_0 */
 
@@ -5298,6 +5329,14 @@ static const struct PPB_VideoEncoder_0_2 Pnacl_Wrappers_PPB_VideoEncoder_0_2 = {
 
 /* Not generating wrapper interface for PPB_View_1_2 */
 
+static const struct PPB_VpnProvider_0_1 Pnacl_Wrappers_PPB_VpnProvider_0_1 = {
+    .Create = (PP_Resource (*)(PP_Instance instance))&Pnacl_M52_PPB_VpnProvider_Create,
+    .IsVpnProvider = (PP_Bool (*)(PP_Resource resource))&Pnacl_M52_PPB_VpnProvider_IsVpnProvider,
+    .Bind = (int32_t (*)(PP_Resource vpn_provider, struct PP_Var configuration_id, struct PP_Var configuration_name, struct PP_CompletionCallback callback))&Pnacl_M52_PPB_VpnProvider_Bind,
+    .SendPacket = (int32_t (*)(PP_Resource vpn_provider, struct PP_Var packet, struct PP_CompletionCallback callback))&Pnacl_M52_PPB_VpnProvider_SendPacket,
+    .ReceivePacket = (int32_t (*)(PP_Resource vpn_provider, struct PP_Var* packet, struct PP_CompletionCallback callback))&Pnacl_M52_PPB_VpnProvider_ReceivePacket
+};
+
 static const struct PPB_WebSocket_1_0 Pnacl_Wrappers_PPB_WebSocket_1_0 = {
     .Create = (PP_Resource (*)(PP_Instance instance))&Pnacl_M18_PPB_WebSocket_Create,
     .IsWebSocket = (PP_Bool (*)(PP_Resource resource))&Pnacl_M18_PPB_WebSocket_IsWebSocket,
@@ -6253,6 +6292,12 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VideoEncoder_0_2 = {
   .real_iface = NULL
 };
 
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VpnProvider_0_1 = {
+  .iface_macro = PPB_VPNPROVIDER_INTERFACE_0_1,
+  .wrapped_iface = (const void *) &Pnacl_Wrappers_PPB_VpnProvider_0_1,
+  .real_iface = NULL
+};
+
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_WebSocket_1_0 = {
   .iface_macro = PPB_WEBSOCKET_INTERFACE_1_0,
   .wrapped_iface = (const void *) &Pnacl_Wrappers_PPB_WebSocket_1_0,
@@ -6641,6 +6686,7 @@ static struct __PnaclWrapperInfo *s_ppb_wrappers[] = {
   &Pnacl_WrapperInfo_PPB_VideoDecoder_1_1,
   &Pnacl_WrapperInfo_PPB_VideoEncoder_0_1,
   &Pnacl_WrapperInfo_PPB_VideoEncoder_0_2,
+  &Pnacl_WrapperInfo_PPB_VpnProvider_0_1,
   &Pnacl_WrapperInfo_PPB_WebSocket_1_0,
   &Pnacl_WrapperInfo_PPB_AudioInput_Dev_0_3,
   &Pnacl_WrapperInfo_PPB_AudioInput_Dev_0_4,

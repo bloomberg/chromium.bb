@@ -348,6 +348,10 @@ PP_Resource ResourceCreationImpl::CreateVideoSource(PP_Instance instance) {
   return 0;  // Not supported in-process.
 }
 
+PP_Resource ResourceCreationImpl::CreateVpnProvider(PP_Instance instance) {
+  return 0;  // Not supported in-process.
+}
+
 PP_Resource ResourceCreationImpl::CreateWheelInputEvent(
     PP_Instance instance,
     PP_TimeTicks time_stamp,

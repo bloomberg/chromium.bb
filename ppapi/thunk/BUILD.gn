@@ -138,6 +138,8 @@ source_set("thunk") {
     "ppb_view_api.h",
     "ppb_view_dev_thunk.cc",
     "ppb_view_thunk.cc",
+    "ppb_vpn_provider_api.h",
+    "ppb_vpn_provider_thunk.cc",
     "ppb_websocket_api.h",
     "ppb_websocket_thunk.cc",
     "ppb_x509_certificate_private_api.h",

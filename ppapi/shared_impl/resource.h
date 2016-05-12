@@ -89,6 +89,7 @@
   F(PPB_VideoLayer_API)                 \
   F(PPB_VideoSource_Private_API)        \
   F(PPB_View_API)                       \
+  F(PPB_VpnProvider_API)                \
   F(PPB_WebSocket_API)                  \
   F(PPB_Widget_API)                     \
   F(PPB_X509Certificate_Private_API)

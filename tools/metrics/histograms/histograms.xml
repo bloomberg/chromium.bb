@@ -81811,6 +81811,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1978180250" label="PPB_Flash_Clipboard;5.1"/>
   <int value="1980463089" label="PPB_View;1.1"/>
   <int value="1981643755" label="PPB_FileMapping;0.1"/>
+  <int value="1990584694" label="PPB_VpnProvider;0.1"/>
   <int value="1994108724" label="PPB_Flash_File_FileRef;2"/>
   <int value="1997668256" label="PPB_GLESChromiumTextureMapping(Dev);0.1"/>
   <int value="1998274350" label="PPB_Font(Dev);0.6"/>

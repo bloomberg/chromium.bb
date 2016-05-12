@@ -86,6 +86,7 @@
 #include "ppapi/c/ppb_var_array_buffer.h"
 #include "ppapi/c/ppb_var_dictionary.h"
 #include "ppapi/c/ppb_video_frame.h"
+#include "ppapi/c/ppb_vpn_provider.h"
 #include "ppapi/c/ppb_websocket.h"
 #include "ppapi/c/ppp.h"
 #include "ppapi/c/ppp_graphics_3d.h"

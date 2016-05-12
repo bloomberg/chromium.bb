@@ -409,6 +409,10 @@ PP_Resource ResourceCreationProxy::CreateVideoSource(
   return (new VideoSourceResource(GetConnection(), instance))->GetReference();
 }
 
+PP_Resource ResourceCreationProxy::CreateVpnProvider(PP_Instance instance) {
+  return 0;
+}
+
 PP_Resource ResourceCreationProxy::CreateWebSocket(PP_Instance instance) {
   return (new WebSocketResource(GetConnection(), instance))->GetReference();
 }

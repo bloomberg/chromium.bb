@@ -76,6 +76,7 @@
 #include "ppapi/cpp/var_array_buffer.h"
 #include "ppapi/cpp/var_dictionary.h"
 #include "ppapi/cpp/video_frame.h"
+#include "ppapi/cpp/vpn_provider.h"
 #include "ppapi/cpp/websocket.h"
 #include "ppapi/utility/completion_callback_factory.h"
 #include "ppapi/utility/completion_callback_factory_thread_traits.h"

@@ -68,6 +68,7 @@
       'c/ppb_video_encoder.h',
       'c/ppb_video_frame.h',
       'c/ppb_view.h',
+      'c/ppb_ppb_vpn_provider.h',
       'c/ppb_websocket.h',
       'c/ppp.h',
       'c/ppp_graphics_3d.h',
@@ -246,6 +247,8 @@
       'cpp/video_frame.h',
       'cpp/view.cc',
       'cpp/view.h',
+      'cpp/vpn_provider.h',
+      'cpp/vpn_provider.cc',
       'cpp/websocket.cc',
       'cpp/websocket.h',
 

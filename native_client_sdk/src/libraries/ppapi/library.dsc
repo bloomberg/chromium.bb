@@ -65,6 +65,7 @@
         'ppb_video_encoder.h',
         'ppb_video_frame.h',
         'ppb_view.h',
+        'ppb_vpn_provider.h',
         'ppb_websocket.h',
         'pp_codecs.h',
         'pp_completion_callback.h',

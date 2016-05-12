@@ -69,6 +69,7 @@
 #include "ppapi/c/ppb_video_encoder.h"
 #include "ppapi/c/ppb_video_frame.h"
 #include "ppapi/c/ppb_view.h"
+#include "ppapi/c/ppb_vpn_provider.h"
 #include "ppapi/c/ppb_websocket.h"
 #include "ppapi/c/private/ppb_camera_capabilities_private.h"
 #include "ppapi/c/private/ppb_camera_device_private.h"

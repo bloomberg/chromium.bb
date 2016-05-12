@@ -179,6 +179,7 @@ class ResourceCreationAPI {
   virtual PP_Resource CreateVideoDestination(PP_Instance instance) = 0;
   virtual PP_Resource CreateVideoEncoder(PP_Instance instance) = 0;
   virtual PP_Resource CreateVideoSource(PP_Instance instance) = 0;
+  virtual PP_Resource CreateVpnProvider(PP_Instance instance) = 0;
   virtual PP_Resource CreateWebSocket(PP_Instance instance) = 0;
   virtual PP_Resource CreateX509CertificatePrivate(PP_Instance instance) = 0;
 #if !defined(OS_NACL)
