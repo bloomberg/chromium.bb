@@ -51,9 +51,6 @@ class WebRtcDisableEncryptionFlagBrowserTest : public WebRtcTestBase {
 // Makes a call and checks that there's encryption or not in the SDP offer.
 IN_PROC_BROWSER_TEST_F(WebRtcDisableEncryptionFlagBrowserTest,
                        VerifyEncryption) {
-  if (!OnWinXp())
-    return;  // Flaky timeout on a webrtc Win XP bot. http://crbug.com/368163.
-
   ASSERT_TRUE(embedded_test_server()->Start());
 
   content::WebContents* left_tab =

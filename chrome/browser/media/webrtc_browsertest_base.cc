@@ -450,14 +450,6 @@ bool WebRtcTestBase::HasWebcamAvailableOnSystem(
   return result == "has-video-input-device";
 }
 
-bool WebRtcTestBase::OnWinXp() const {
-#if defined(OS_WIN)
-  return base::win::GetVersion() <= base::win::VERSION_XP;
-#else
-  return false;
-#endif
-}
-
 bool WebRtcTestBase::OnWin8() const {
 #if defined(OS_WIN)
   return base::win::GetVersion() > base::win::VERSION_WIN7;

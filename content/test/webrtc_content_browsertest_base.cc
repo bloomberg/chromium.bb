@@ -20,10 +20,6 @@
 #include "chromeos/audio/cras_audio_handler.h"
 #endif
 
-#if defined(OS_WIN)
-#include "base/win/windows_version.h"
-#endif
-
 namespace content {
 
 void WebRtcContentBrowserTest::SetUpCommandLine(
@@ -114,14 +110,6 @@ std::string WebRtcContentBrowserTest::GenerateGetUserMediaCall(
       max_height,
       min_frame_rate,
       max_frame_rate);
-}
-
-bool WebRtcContentBrowserTest::OnWinXp() const {
-#if defined(OS_WIN)
-  return base::win::GetVersion() <= base::win::VERSION_XP;
-#else
-  return false;
-#endif
 }
 
 }  // namespace content

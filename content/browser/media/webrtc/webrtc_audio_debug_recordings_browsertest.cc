@@ -202,13 +202,8 @@ IN_PROC_BROWSER_TEST_F(WebRtcAudioDebugRecordingsBrowserTest,
 
 // Timing out on ARM linux bot: http://crbug.com/238490
 // Renderer crashes under Android ASAN: https://crbug.com/408496.
-// Flaky on XP and Mac: http://crbug.com/425034.
 IN_PROC_BROWSER_TEST_F(WebRtcAudioDebugRecordingsBrowserTest,
                        DISABLED_TwoCallsWithAudioDebugRecordings) {
-  if (OnWinXp()) {
-    LOG(INFO) << "Disabled on Win XP: skipping test...";
-    return;
-  }
   if (!media::AudioManager::Get()->HasAudioOutputDevices()) {
     LOG(INFO) << "Missing output devices: skipping test...";
     return;

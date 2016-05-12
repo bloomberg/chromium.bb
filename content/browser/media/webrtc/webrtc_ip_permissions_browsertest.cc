@@ -69,9 +69,6 @@ class MAYBE_WebRtcBrowserIPPermissionGrantedTest
 // device permission is granted, we should have loopback candidates.
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserIPPermissionGrantedTest,
                        GatherLocalCandidates) {
-  // Disable this test on XP, crbug.com/542416.
-  if (OnWinXp())
-    return;
   MakeTypicalCall("callWithDevicePermissionGranted();", kPeerConnectionHtml);
 }
 
@@ -94,9 +91,6 @@ class MAYBE_WebRtcBrowserIPPermissionDeniedTest
 // gathered even if the policy is "default".
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserIPPermissionDeniedTest,
                        GatherLocalCandidates) {
-  // Disable this test on XP, crbug.com/542416.
-  if (OnWinXp())
-    return;
   MakeTypicalCall("callAndExpectNonLoopbackCandidates();", kPeerConnectionHtml);
 }
 
@@ -120,9 +114,6 @@ class MAYBE_WebRtcBrowserIPPolicyPublicAndPrivateInterfacesTest
 IN_PROC_BROWSER_TEST_F(
     MAYBE_WebRtcBrowserIPPolicyPublicAndPrivateInterfacesTest,
     GatherLocalCandidates) {
-  // Disable this test on XP, crbug.com/542416.
-  if (OnWinXp())
-    return;
   MakeTypicalCall("callAndExpectNonLoopbackCandidates();", kPeerConnectionHtml);
 }
 
@@ -146,9 +137,6 @@ class MAYBE_WebRtcBrowserIPPolicyPublicInterfaceOnlyTest
 
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserIPPolicyPublicInterfaceOnlyTest,
                        GatherLocalCandidates) {
-  // Disable this test on XP, crbug.com/542416.
-  if (OnWinXp())
-    return;
   MakeTypicalCall("callWithNoCandidateExpected();", kPeerConnectionHtml);
 }
 
@@ -171,9 +159,6 @@ class MAYBE_WebRtcBrowserIPPolicyDisableUdpTest
 
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserIPPolicyDisableUdpTest,
                        GatherLocalCandidates) {
-  // Disable this test on XP, crbug.com/542416.
-  if (OnWinXp())
-    return;
   MakeTypicalCall("callWithNoCandidateExpected();", kPeerConnectionHtml);
 }
 

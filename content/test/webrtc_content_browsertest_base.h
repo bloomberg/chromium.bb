@@ -42,8 +42,6 @@ class WebRtcContentBrowserTest: public ContentBrowserTest {
                                        int max_height,
                                        int min_frame_rate,
                                        int max_frame_rate) const;
-
-  bool OnWinXp() const;
 };
 
 }  // namespace content

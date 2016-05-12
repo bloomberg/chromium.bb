@@ -57,7 +57,6 @@ class WebRtcBrowserTest : public WebRtcTestBase {
           WebRtcTestBase::kUseDefaultCertKeygen,
       const std::string& answer_cert_keygen_alg =
           WebRtcTestBase::kUseDefaultCertKeygen) {
-    if (OnWinXp()) return;
     StartServerAndOpenTabs();
 
     SetupPeerconnectionWithLocalStream(left_tab_, offer_cert_keygen_alg);
@@ -71,7 +70,6 @@ class WebRtcBrowserTest : public WebRtcTestBase {
   void RunsAudioVideoWebRTCCallInTwoTabsWithClonedCertificate(
       const std::string& cert_keygen_alg =
           WebRtcTestBase::kUseDefaultCertKeygen) {
-    if (OnWinXp()) return;
     StartServerAndOpenTabs();
 
     // Generate and clone a certificate, resulting in JavaScript variable
@@ -143,8 +141,6 @@ IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest,
 IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest, TestWebAudioMediaStream) {
   // This tests against crash regressions for the WebAudio-MediaStream
   // integration.
-  if (OnWinXp()) return;
-
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url(embedded_test_server()->GetURL("/webrtc/webaudio_crash.html"));
   ui_test_utils::NavigateToURL(browser(), url);

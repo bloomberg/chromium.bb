@@ -156,9 +156,6 @@ class WebRtcTestBase : public InProcessBrowserTest {
   // Methods to check what devices we have on the system.
   bool HasWebcamAvailableOnSystem(content::WebContents* tab_contents) const;
 
-  // Returns true if we're on WinXP, that lovely operating system of bliss.
-  bool OnWinXp() const;
-
   // Returns true if we're on win 8.
   bool OnWin8() const;
 
