@@ -240,6 +240,8 @@ gfx::Image GetTabAlertIndicatorAffordanceImage(TabAlertState alert_state,
       return GetTabAlertIndicatorImage(TabAlertState::AUDIO_MUTING,
                                        button_color);
     case TabAlertState::AUDIO_MUTING:
+      return GetTabAlertIndicatorImage(TabAlertState::AUDIO_PLAYING,
+                                       button_color);
     case TabAlertState::NONE:
     case TabAlertState::MEDIA_RECORDING:
     case TabAlertState::TAB_CAPTURING:

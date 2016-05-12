@@ -42,6 +42,10 @@ class AnimationDelegate;
   std::unique_ptr<gfx::Animation> fadeAnimation_;
   TabAlertState showingAlertState_;
 
+  // Set to YES while the button is in the temporary dormant period after mute
+  // has been toggled.
+  BOOL isDormant_;
+
   // Target and action invoked whenever a fade-in/out animation completes.  This
   // is used by TabController to layout the TabView after an indicator has
   // completely faded out.

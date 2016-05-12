@@ -60,6 +60,7 @@ class FadeAnimationDelegate : public gfx::AnimationDelegate {
   if ((self = [super initWithFrame:NSZeroRect])) {
     alertState_ = TabAlertState::NONE;
     showingAlertState_ = TabAlertState::NONE;
+    isDormant_ = NO;
     [self setEnabled:NO];
     [super setTarget:self];
     [super setAction:@selector(handleClick:)];
@@ -79,7 +80,9 @@ class FadeAnimationDelegate : public gfx::AnimationDelegate {
     NSImage* tabIndicatorImage =
         chrome::GetTabAlertIndicatorImage(aState, iconColor).ToNSImage();
     [self setImage:tabIndicatorImage];
-    affordanceImage_.reset([tabIndicatorImage retain]);
+    affordanceImage_.reset(
+        [chrome::GetTabAlertIndicatorAffordanceImage(aState, iconColor)
+               .ToNSImage() retain]);
   }
 }
 
@@ -119,11 +122,6 @@ class FadeAnimationDelegate : public gfx::AnimationDelegate {
 
   [self updateEnabledForMuteToggle];
 
-  // An indicator state change should be made visible immediately, instead of
-  // the user being surprised when their mouse leaves the button.
-  if ([self hoverState] == kHoverStateMouseOver)
-    [self setHoverState:kHoverStateNone];
-
   [self setNeedsDisplay:YES];
 }
 
@@ -148,7 +146,8 @@ class FadeAnimationDelegate : public gfx::AnimationDelegate {
 - (void)mouseDown:(NSEvent*)theEvent {
   // Do not handle this left-button mouse event if any modifier keys are being
   // held down.  Instead, the Tab should react (e.g., selection or drag start).
-  if ([theEvent modifierFlags] & NSDeviceIndependentModifierFlagsMask) {
+  if ([theEvent modifierFlags] & NSDeviceIndependentModifierFlagsMask ||
+      isDormant_) {
     [self setHoverState:kHoverStateNone];  // Turn off hover.
     [[self nextResponder] mouseDown:theEvent];
     return;
@@ -163,6 +162,11 @@ class FadeAnimationDelegate : public gfx::AnimationDelegate {
     return;
   }
   [super mouseEntered:theEvent];
+}
+
+- (void)mouseExited:(NSEvent*)theEvent {
+  [self exitDormantPeriod];
+  [super mouseExited:theEvent];
 }
 
 - (void)mouseMoved:(NSEvent*)theEvent {
@@ -181,7 +185,8 @@ class FadeAnimationDelegate : public gfx::AnimationDelegate {
 }
 
 - (void)drawRect:(NSRect)dirtyRect {
-  NSImage* image = ([self hoverState] == kHoverStateNone || ![self isEnabled]) ?
+  NSImage* const image = ([self hoverState] == kHoverStateNone ||
+                          ![self isEnabled] || isDormant_) ?
       [self image] : affordanceImage_.get();
   if (!image)
     return;
@@ -191,10 +196,14 @@ class FadeAnimationDelegate : public gfx::AnimationDelegate {
   destRect.origin.y =
       floor((NSHeight(destRect) / 2) - (NSHeight(imageRect) / 2));
   destRect.size = imageRect.size;
-  double opaqueness =
-      fadeAnimation_ ? fadeAnimation_->GetCurrentValue() : 1.0;
-  if (alertState_ == TabAlertState::NONE)
-    opaqueness = 1.0 - opaqueness;  // Fading out, not in.
+  double opaqueness = 1.0;
+  if (fadeAnimation_) {
+    opaqueness = fadeAnimation_->GetCurrentValue();
+    if (alertState_ == TabAlertState::NONE)
+      opaqueness = 1.0 - opaqueness;  // Fading out, not in.
+  } else if (isDormant_) {
+    opaqueness = 0.5;
+  }
   [image drawInRect:destRect
            fromRect:imageRect
           operation:NSCompositeSourceOver
@@ -205,26 +214,35 @@ class FadeAnimationDelegate : public gfx::AnimationDelegate {
 
 // When disabled, the superview should receive all mouse events.
 - (NSView*)hitTest:(NSPoint)aPoint {
-  if ([self isEnabled] && ![self isHidden])
+  if ([self isEnabled] && !isDormant_ && ![self isHidden])
     return [super hitTest:aPoint];
   else
     return nil;
 }
 
 - (void)handleClick:(id)sender {
-  using base::UserMetricsAction;
+  [self enterDormantPeriod];
 
-  if (alertState_ == TabAlertState::AUDIO_PLAYING)
+  // Call |-transitionToAlertState| to change the image, providing the user with
+  // instant feedback.  In the very unlikely event that the mute toggle fails,
+  // |-transitionToAlertState| will be called again, via another code path, to
+  // set the image to be consistent with the final outcome.
+  using base::UserMetricsAction;
+  if (alertState_ == TabAlertState::AUDIO_PLAYING) {
     content::RecordAction(UserMetricsAction("AlertIndicatorButton_Mute"));
-  else if (alertState_ == TabAlertState::AUDIO_MUTING)
+    [self transitionToAlertState:TabAlertState::AUDIO_MUTING];
+  } else {
+    DCHECK(alertState_ == TabAlertState::AUDIO_MUTING);
     content::RecordAction(UserMetricsAction("AlertIndicatorButton_Unmute"));
-  else
-    NOTREACHED();
+    [self transitionToAlertState:TabAlertState::AUDIO_PLAYING];
+  }
 
   [clickTarget_ performSelector:clickAction_ withObject:self];
 }
 
 - (void)updateEnabledForMuteToggle {
+  const BOOL wasEnabled = [self isEnabled];
+
   BOOL enable = chrome::AreExperimentalMuteControlsEnabled() &&
       (alertState_ == TabAlertState::AUDIO_PLAYING ||
        alertState_ == TabAlertState::AUDIO_MUTING);
@@ -239,7 +257,39 @@ class FadeAnimationDelegate : public gfx::AnimationDelegate {
     enable = ([tabView widthOfLargestSelectableRegion] >= requiredWidth);
   }
 
+  if (enable == wasEnabled)
+    return;
+
   [self setEnabled:enable];
+
+  // If the button has become enabled, check whether the mouse is currently
+  // hovering.  If it is, enter a dormant period where extra user clicks are
+  // prevented from having an effect (i.e., before the user has realized the
+  // button has become enabled underneath their cursor).
+  if (!wasEnabled && [self hoverState] == kHoverStateMouseOver)
+    [self enterDormantPeriod];
+  else if (![self isEnabled])
+    [self exitDormantPeriod];
+}
+
+// Enters a temporary "dormant period" where this button will not trigger on
+// clicks.  The user is provided a visual affordance during this period.  Sets a
+// timer to call |-exitDormantPeriod|.
+- (void)enterDormantPeriod {
+  isDormant_ = YES;
+  [self performSelector:@selector(exitDormantPeriod)
+             withObject:nil
+             afterDelay:[NSEvent doubleClickInterval]];
+  [self setNeedsDisplay:YES];
+}
+
+// Leaves the "dormant period," allowing clicks to once again trigger an enabled
+// button.
+- (void)exitDormantPeriod {
+  if (!isDormant_)
+    return;
+  isDormant_ = NO;
+  [self setNeedsDisplay:YES];
 }
 
 // ThemedWindowDrawing protocol support.

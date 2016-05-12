@@ -14,6 +14,10 @@
 
 class Tab;
 
+namespace base {
+class OneShotTimer;
+}
+
 namespace gfx {
 class Animation;
 class AnimationDelegate;
@@ -61,6 +65,7 @@ class AlertIndicatorButton : public views::ImageButton,
   bool OnMousePressed(const ui::MouseEvent& event) override;
   bool OnMouseDragged(const ui::MouseEvent& event) override;
   void OnMouseEntered(const ui::MouseEvent& event) override;
+  void OnMouseExited(const ui::MouseEvent& event) override;
   void OnMouseMoved(const ui::MouseEvent& event) override;
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   void OnPaint(gfx::Canvas* canvas) override;
@@ -75,6 +80,9 @@ class AlertIndicatorButton : public views::ImageButton,
   // views::CustomButton:
   bool IsTriggerableEvent(const ui::Event& event) override;
 
+  // views::ImageButton:
+  gfx::ImageSkia GetImageToPaint() override;
+
  private:
   friend class AlertIndicatorButtonTest;
   class FadeAnimationDelegate;
@@ -86,6 +94,17 @@ class AlertIndicatorButton : public views::ImageButton,
   // parent tab's button color.  Should be called when either of these changes.
   void ResetImages(TabAlertState state);
 
+  // Enters a temporary "dormant period" where this AlertIndicatorButton will
+  // not trigger on clicks.  The user is provided a visual affordance during
+  // this period.  Sets a timer to call ExitDormantPeriod().
+  void EnterDormantPeriod();
+
+  // Leaves the "dormant period," allowing clicks to once again trigger an
+  // enabled AlertIndicatorButton.
+  void ExitDormantPeriod();
+
+  bool is_dormant() const { return !!wake_up_timer_; }
+
   Tab* const parent_tab_;
 
   TabAlertState alert_state_;
@@ -95,6 +114,9 @@ class AlertIndicatorButton : public views::ImageButton,
   std::unique_ptr<gfx::AnimationDelegate> fade_animation_delegate_;
   std::unique_ptr<gfx::Animation> fade_animation_;
   TabAlertState showing_alert_state_;
+
+  // Created on-demand, this fires to exit the "dormant period."
+  std::unique_ptr<base::OneShotTimer> wake_up_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(AlertIndicatorButton);
 };

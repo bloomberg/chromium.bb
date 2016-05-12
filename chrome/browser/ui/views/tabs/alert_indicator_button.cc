@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/tabs/alert_indicator_button.h"
 
 #include "base/macros.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_renderer_data.h"
@@ -12,6 +13,7 @@
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
+#include "ui/views/metrics.h"
 
 using base::UserMetricsAction;
 
@@ -54,6 +56,7 @@ class AlertIndicatorButton::FadeAnimationDelegate
 
   void AnimationEnded(const gfx::Animation* animation) override {
     button_->showing_alert_state_ = button_->alert_state_;
+    button_->SchedulePaint();
     button_->parent_tab_->AlertStateChanged();
   }
 
@@ -63,13 +66,17 @@ class AlertIndicatorButton::FadeAnimationDelegate
 };
 
 AlertIndicatorButton::AlertIndicatorButton(Tab* parent_tab)
-    : views::ImageButton(NULL),
+    : views::ImageButton(nullptr),
       parent_tab_(parent_tab),
       alert_state_(TabAlertState::NONE),
       showing_alert_state_(TabAlertState::NONE) {
   DCHECK(parent_tab_);
   SetEventTargeter(
       std::unique_ptr<views::ViewTargeter>(new views::ViewTargeter(this)));
+
+  // Disable animations of hover state change, to be consistent with the
+  // behavior of the tab close button.
+  set_animate_on_state_change(false);
 }
 
 AlertIndicatorButton::~AlertIndicatorButton() {}
@@ -110,19 +117,11 @@ void AlertIndicatorButton::TransitionToAlertState(TabAlertState next_state) {
     parent_tab_->AlertStateChanged();
 
   UpdateEnabledForMuteToggle();
-
-  // An indicator state change should be made visible immediately, instead of
-  // the user being surprised when their mouse leaves the button.
-  if (state() == views::CustomButton::STATE_HOVERED) {
-    SetState(enabled() ? views::CustomButton::STATE_NORMAL
-                       : views::CustomButton::STATE_DISABLED);
-  }
-
-  // Note: The calls to SetImage(), SetEnabled(), and SetState() above will call
-  // SchedulePaint() if necessary.
 }
 
 void AlertIndicatorButton::UpdateEnabledForMuteToggle() {
+  const bool was_enabled = enabled();
+
   bool enable = chrome::AreExperimentalMuteControlsEnabled() &&
                 (alert_state_ == TabAlertState::AUDIO_PLAYING ||
                  alert_state_ == TabAlertState::AUDIO_MUTING);
@@ -137,7 +136,19 @@ void AlertIndicatorButton::UpdateEnabledForMuteToggle() {
     enable = (GetTab()->GetWidthOfLargestSelectableRegion() >= required_width);
   }
 
+  if (enable == was_enabled)
+    return;
+
   SetEnabled(enable);
+
+  // If the button has become enabled, check whether the mouse is currently
+  // hovering.  If it is, enter a dormant period where extra user clicks are
+  // prevented from having an effect (i.e., before the user has realized the
+  // button has become enabled underneath their cursor).
+  if (!was_enabled && state() == views::CustomButton::STATE_HOVERED)
+    EnterDormantPeriod();
+  else if (!enabled())
+    ExitDormantPeriod();
 }
 
 void AlertIndicatorButton::OnParentTabButtonColorChanged() {
@@ -152,7 +163,7 @@ const char* AlertIndicatorButton::GetClassName() const {
 
 views::View* AlertIndicatorButton::GetTooltipHandlerForPoint(
     const gfx::Point& point) {
-  return NULL;  // Tab (the parent View) provides the tooltip.
+  return nullptr;  // Tab (the parent View) provides the tooltip.
 }
 
 bool AlertIndicatorButton::OnMousePressed(const ui::MouseEvent& event) {
@@ -186,6 +197,11 @@ void AlertIndicatorButton::OnMouseEntered(const ui::MouseEvent& event) {
   ImageButton::OnMouseEntered(event);
 }
 
+void AlertIndicatorButton::OnMouseExited(const ui::MouseEvent& event) {
+  ExitDormantPeriod();
+  ImageButton::OnMouseExited(event);
+}
+
 void AlertIndicatorButton::OnMouseMoved(const ui::MouseEvent& event) {
   // If any modifier keys are being held down, turn off hover.
   if (state() != views::CustomButton::STATE_DISABLED &&
@@ -201,10 +217,14 @@ void AlertIndicatorButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {
 }
 
 void AlertIndicatorButton::OnPaint(gfx::Canvas* canvas) {
-  double opaqueness =
-      fade_animation_ ? fade_animation_->GetCurrentValue() : 1.0;
-  if (alert_state_ == TabAlertState::NONE)
-    opaqueness = 1.0 - opaqueness;  // Fading out, not in.
+  double opaqueness = 1.0;
+  if (fade_animation_) {
+    opaqueness = fade_animation_->GetCurrentValue();
+    if (alert_state_ == TabAlertState::NONE)
+      opaqueness = 1.0 - opaqueness;  // Fading out, not in.
+  } else if (is_dormant()) {
+    opaqueness = 0.5;
+  }
   if (opaqueness < 1.0)
     canvas->SaveLayerAlpha(opaqueness * SK_AlphaOPAQUE);
   ImageButton::OnPaint(canvas);
@@ -221,17 +241,28 @@ bool AlertIndicatorButton::DoesIntersectRect(const views::View* target,
 }
 
 void AlertIndicatorButton::NotifyClick(const ui::Event& event) {
-  if (alert_state_ == TabAlertState::AUDIO_PLAYING)
+  EnterDormantPeriod();
+
+  // Call TransitionToAlertState() to change the image, providing the user with
+  // instant feedback.  In the very unlikely event that the mute toggle fails,
+  // TransitionToAlertState() will be called again, via another code path, to
+  // set the image to be consistent with the final outcome.
+  if (alert_state_ == TabAlertState::AUDIO_PLAYING) {
     content::RecordAction(UserMetricsAction("AlertIndicatorButton_Mute"));
-  else if (alert_state_ == TabAlertState::AUDIO_MUTING)
+    TransitionToAlertState(TabAlertState::AUDIO_MUTING);
+  } else {
+    DCHECK(alert_state_ == TabAlertState::AUDIO_MUTING);
     content::RecordAction(UserMetricsAction("AlertIndicatorButton_Unmute"));
-  else
-    NOTREACHED();
+    TransitionToAlertState(TabAlertState::AUDIO_PLAYING);
+  }
 
   GetTab()->controller()->ToggleTabAudioMute(GetTab());
 }
 
 bool AlertIndicatorButton::IsTriggerableEvent(const ui::Event& event) {
+  if (is_dormant())
+    return false;
+
   // For mouse events, only trigger on the left mouse button and when no
   // modifier keys are being held down.
   if (event.IsMouseEvent() &&
@@ -251,6 +282,12 @@ bool AlertIndicatorButton::IsTriggerableEvent(const ui::Event& event) {
   return views::ImageButton::IsTriggerableEvent(event);
 }
 
+gfx::ImageSkia AlertIndicatorButton::GetImageToPaint() {
+  if (is_dormant())
+    return views::ImageButton::images_[views::CustomButton::STATE_NORMAL];
+  return views::ImageButton::GetImageToPaint();
+}
+
 Tab* AlertIndicatorButton::GetTab() const {
   DCHECK_EQ(static_cast<views::View*>(parent_tab_), parent());
   return parent_tab_;
@@ -266,4 +303,21 @@ void AlertIndicatorButton::ResetImages(TabAlertState state) {
       chrome::GetTabAlertIndicatorAffordanceImage(state, color).AsImageSkia();
   SetImage(views::CustomButton::STATE_HOVERED, &affordance_image);
   SetImage(views::CustomButton::STATE_PRESSED, &affordance_image);
+}
+
+void AlertIndicatorButton::EnterDormantPeriod() {
+  wake_up_timer_.reset(new base::OneShotTimer());
+  wake_up_timer_->Start(
+      FROM_HERE,
+      base::TimeDelta::FromMilliseconds(views::GetDoubleClickInterval()),
+      this,
+      &AlertIndicatorButton::ExitDormantPeriod);
+  SchedulePaint();
+}
+
+void AlertIndicatorButton::ExitDormantPeriod() {
+  const bool needs_repaint = is_dormant();
+  wake_up_timer_.reset();
+  if (needs_repaint)
+    SchedulePaint();
 }
