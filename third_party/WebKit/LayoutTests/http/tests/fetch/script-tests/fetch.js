@@ -58,30 +58,33 @@ promise_test(function(t) {
         function() {});
   }, 'fetch invalid data: URL');
 
-// Tests for blob: scheme.
-promise_test(function(t) {
-    var url = URL.createObjectURL(new Blob(['fox'], {type: 'text/fox'}));
-    return fetch(url)
-      .then(function(response) {
-          assert_equals(response.status, 200);
-          assert_equals(response.statusText, 'OK');
-          assert_equals(response.headers.get('Content-Type'), 'text/fox');
-          assert_equals(response.headers.get('Content-Length'), '3');
-          assert_equals(size(response.headers), 2);
-          return response.text();
-        })
-      .then(function(text) {
-          assert_equals(text, 'fox');
-        });
-  }, 'fetch blob: URL');
+// Only [Exposed=(Window,DedicatedWorker,SharedWorker)].
+if ('createObjectURL' in URL) {
+  // Tests for blob: scheme.
+  promise_test(function(t) {
+      var url = URL.createObjectURL(new Blob(['fox'], {type: 'text/fox'}));
+      return fetch(url)
+        .then(function(response) {
+            assert_equals(response.status, 200);
+            assert_equals(response.statusText, 'OK');
+            assert_equals(response.headers.get('Content-Type'), 'text/fox');
+            assert_equals(response.headers.get('Content-Length'), '3');
+            assert_equals(size(response.headers), 2);
+            return response.text();
+          })
+        .then(function(text) {
+            assert_equals(text, 'fox');
+          });
+    }, 'fetch blob: URL');
 
-promise_test(function(t) {
-    var url = URL.createObjectURL(new Blob(['fox'], {type: 'text/fox'}));
-    return fetch(url + 'invalid')
-      .then(
-        t.unreached_func('fetching non-existent blob: URL must fail'),
-        function() {});
-  }, 'fetch non-existent blob: URL');
+  promise_test(function(t) {
+      var url = URL.createObjectURL(new Blob(['fox'], {type: 'text/fox'}));
+      return fetch(url + 'invalid')
+        .then(
+          t.unreached_func('fetching non-existent blob: URL must fail'),
+          function() {});
+    }, 'fetch non-existent blob: URL');
+}
 
 // https://fetch.spec.whatwg.org/#concept-basic-fetch
 // The last statement:

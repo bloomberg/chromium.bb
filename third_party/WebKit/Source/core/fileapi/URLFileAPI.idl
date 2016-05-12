@@ -4,8 +4,8 @@
 
 // https://w3c.github.io/FileAPI/#creating-revoking
 partial interface URL {
-    [CallWith=ExecutionContext, RaisesException] static DOMString createObjectURL(Blob blob);
-    // TODO(jsbell): Implement createFor()
+    [Exposed=(Window,DedicatedWorker,SharedWorker), CallWith=ExecutionContext, RaisesException] static DOMString createObjectURL(Blob blob);
+    // TODO(jsbell): Implement createFor(). https://crbug.com/608460
     //static DOMString createFor(Blob blob);
-    [CallWith=ExecutionContext] static void revokeObjectURL(DOMString url);
+    [Exposed=(Window,DedicatedWorker,SharedWorker), CallWith=ExecutionContext] static void revokeObjectURL(DOMString url);
 };

@@ -552,8 +552,6 @@ interface TextEncoder
     method constructor
     method encode
 interface URL
-    static method createObjectURL
-    static method revokeObjectURL
     getter hash
     getter host
     getter hostname

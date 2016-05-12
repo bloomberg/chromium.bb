@@ -31,8 +31,6 @@
 #include "modules/mediasource/URLMediaSource.h"
 
 #include "core/dom/DOMURL.h"
-#include "core/frame/Deprecation.h"
-#include "core/frame/UseCounter.h"
 #include "modules/mediasource/MediaSource.h"
 
 namespace blink {
@@ -42,12 +40,8 @@ String URLMediaSource::createObjectURL(ExecutionContext* executionContext, Media
     // Since WebWorkers cannot obtain MediaSource objects, we should be on the main thread.
     ASSERT(isMainThread());
 
-    if (executionContext && executionContext->isServiceWorkerGlobalScope())
-        Deprecation::countDeprecation(executionContext, UseCounter::URLMethodCreateObjectURLServiceWorker);
-
     if (!executionContext)
         return String();
-
     return DOMURL::createPublicURL(executionContext, source);
 }
 

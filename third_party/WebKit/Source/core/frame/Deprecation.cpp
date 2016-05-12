@@ -385,12 +385,6 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature)
     case UseCounter::During_Microtask_SyncXHR:
         return willBeRemoved("Invoking 'send()' on a sync XHR during microtask execution", 53, "5647113010544640");
 
-    case UseCounter::URLMethodCreateObjectURLServiceWorker:
-        return willBeRemoved("The 'URL.createObjectURL' method in Service Workers", 52, "5685092332601344");
-
-    case UseCounter::URLMethodRevokeObjectURLServiceWorker:
-        return willBeRemoved("The 'URL.revokeObjectURL' method in Service Workers", 52, "5685092332601344");
-
     case UseCounter::MediaStreamOnEnded:
         return replacedWillBeRemoved("The MediaStream 'ended' event", "the MediaStream 'inactive' event", 53, "5730404371791872");
 
