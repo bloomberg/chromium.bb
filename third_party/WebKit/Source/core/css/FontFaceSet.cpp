@@ -486,11 +486,6 @@ void FontFaceSet::FontLoadHistogram::record()
     }
 }
 
-static const char* supplementName()
-{
-    return "FontFaceSet";
-}
-
 FontFaceSet* FontFaceSet::from(Document& document)
 {
     FontFaceSet* fonts = static_cast<FontFaceSet*>(Supplement<Document>::from(document, supplementName()));

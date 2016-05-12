@@ -105,6 +105,7 @@ function test()
 
 var objectsToTest = [
     [ "document.implementation", "allow custom" ], // DOMImplementation
+    [ "document.fonts", "allow custom" ], // FontFaceSet
     [ "document", "allow custom" ],
     [ "document.body", "allow custom" ],
     [ "document.body.attributes", "allow custom" ], // NamedNodeMap
@@ -133,7 +134,7 @@ var objectsToTest = [
     [ "document.getElementsByTagName('map')[0].areas", "allow custom" ],
 
     [ "document.body.style", "allow custom" ],
-    [ "document.styleSheets", "allow custom" ],
+    [ "document.styleSheets", "allow custom" ], // StyleSheetList
     [ "document.styleSheets[0]", "allow custom" ],
     [ "document.styleSheets[0].cssRules", "allow custom"],
     [ "document.styleSheets[0].cssRules[0]", "allow custom" ],

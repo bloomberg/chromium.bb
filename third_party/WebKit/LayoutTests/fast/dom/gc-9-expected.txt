@@ -6,6 +6,7 @@ Because neither WinIE nor FF has reasonable or predictable behavior in this scen
 
 DOM OBJECTS BEFORE GARBAGE COLLECTION:
 PASS: document.implementation.myCustomProperty should be 1 and is.
+PASS: document.fonts.myCustomProperty should be 1 and is.
 PASS: document.myCustomProperty should be 1 and is.
 PASS: document.body.myCustomProperty should be 1 and is.
 PASS: document.body.attributes.myCustomProperty should be 1 and is.
@@ -41,6 +42,7 @@ PASS: document.createNSResolver(document).myCustomProperty should be undefined a
 PASS: document.createExpression('/', document.createNSResolver(document)).myCustomProperty should be undefined and is.
 DOM OBJECTS AFTER GARBAGE COLLECTION:
 PASS: document.implementation.myCustomProperty should be 1 and is.
+PASS: document.fonts.myCustomProperty should be 1 and is.
 PASS: document.myCustomProperty should be 1 and is.
 PASS: document.body.myCustomProperty should be 1 and is.
 PASS: document.body.attributes.myCustomProperty should be 1 and is.

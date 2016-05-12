@@ -51,6 +51,7 @@
 #include "core/css/CSSFontSelector.h"
 #include "core/css/CSSStyleDeclaration.h"
 #include "core/css/CSSStyleSheet.h"
+#include "core/css/FontFaceSet.h"
 #include "core/css/MediaQueryMatcher.h"
 #include "core/css/StylePropertySet.h"
 #include "core/css/StyleSheetContents.h"
@@ -5989,6 +5990,11 @@ DEFINE_TRACE(Document)
 DEFINE_TRACE_WRAPPERS(Document)
 {
     visitor->traceWrappers(m_importsController);
+    visitor->traceWrappers(m_implementation);
+    visitor->traceWrappers(m_styleSheetList);
+    visitor->traceWrappers(
+        Supplementable<Document>::m_supplements.get(
+            FontFaceSet::supplementName()));
     ContainerNode::traceWrappers(visitor);
 }
 

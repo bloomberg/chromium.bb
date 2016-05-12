@@ -97,6 +97,11 @@ public:
     static FontFaceSet* from(Document&);
     static void didLayout(Document&);
 
+    static const char* supplementName()
+    {
+        return "FontFaceSet";
+    }
+
     void addFontFacesToFontFaceCache(FontFaceCache*, CSSFontSelector*);
 
     DECLARE_VIRTUAL_TRACE();
