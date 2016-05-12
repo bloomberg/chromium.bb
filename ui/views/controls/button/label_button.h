@@ -112,6 +112,10 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
   ImageView* image() const { return image_; }
   Label* label() const { return label_; }
 
+  bool explicitly_set_normal_color() const {
+    return explicitly_set_colors_[STATE_NORMAL];
+  }
+
   // Returns the available area for the label and image. Subclasses can change
   // these bounds if they need room to do manual painting.
   virtual gfx::Rect GetChildAreaBounds();

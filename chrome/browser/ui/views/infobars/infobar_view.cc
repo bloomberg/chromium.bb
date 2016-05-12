@@ -172,8 +172,8 @@ views::MdTextButton* InfoBarView::CreateMdTextButton(
   DCHECK(ui::MaterialDesignController::IsModeMaterial());
   views::MdTextButton* button =
       views::MdTextButton::CreateMdButton(listener, text);
-  button->SetTextColor(views::Button::STATE_NORMAL, GetInfobarTextColor());
-  button->SetTextColor(views::Button::STATE_HOVERED, GetInfobarTextColor());
+  // TODO(estade): can we just remove this?
+  button->SetEnabledTextColors(GetInfobarTextColor());
   return button;
 }
 

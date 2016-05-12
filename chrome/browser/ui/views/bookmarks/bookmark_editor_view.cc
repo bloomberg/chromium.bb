@@ -27,7 +27,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/event.h"
 #include "ui/views/background.h"
-#include "ui/views/controls/button/label_button.h"
+#include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -331,9 +331,9 @@ void BookmarkEditorView::Init() {
     tree_view_->SetRootShown(false);
     tree_view_->set_context_menu_controller(this);
 
-    new_folder_button_.reset(new views::LabelButton(this,
+    new_folder_button_.reset(views::MdTextButton::CreateSecondaryUiButton(
+        this,
         l10n_util::GetStringUTF16(IDS_BOOKMARK_EDITOR_NEW_FOLDER_BUTTON)));
-    new_folder_button_->SetStyle(views::Button::STYLE_BUTTON);
     new_folder_button_->set_owned_by_client();
     new_folder_button_->SetEnabled(false);
   }

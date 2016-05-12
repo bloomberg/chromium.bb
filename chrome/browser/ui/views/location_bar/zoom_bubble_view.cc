@@ -26,7 +26,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/views/controls/button/image_button.h"
-#include "ui/views/controls/button/label_button.h"
+#include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/separator.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
@@ -190,10 +190,9 @@ void ZoomBubbleView::Init() {
   grid_layout->StartRow(0, 1);
 
   // Add "Reset to Default" button.
-  views::LabelButton* set_default_button = new views::LabelButton(
-      this, l10n_util::GetStringUTF16(IDS_ZOOM_SET_DEFAULT));
-  set_default_button->SetStyle(views::Button::STYLE_BUTTON);
-  grid_layout->AddView(set_default_button);
+  grid_layout->AddView(
+      views::MdTextButton::CreateSecondaryUiButton(
+          this, l10n_util::GetStringUTF16(IDS_ZOOM_SET_DEFAULT)));
 
   StartTimerIfNecessary();
 }

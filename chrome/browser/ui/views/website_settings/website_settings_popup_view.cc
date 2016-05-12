@@ -51,7 +51,7 @@
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/button/image_button.h"
-#include "ui/views/controls/button/label_button.h"
+#include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
@@ -299,12 +299,14 @@ void PopupHeaderView::SetSecuritySummary(
 }
 
 void PopupHeaderView::AddResetDecisionsButton() {
-  views::LabelButton* reset_decisions_button = new views::LabelButton(
-      button_listener_,
-      l10n_util::GetStringUTF16(
-          IDS_PAGEINFO_RESET_INVALID_CERTIFICATE_DECISIONS_BUTTON));
+  // TODO(estade): this looks pretty crazy as an MD button because the button
+  // text is very long. See crbug.com/512442
+  views::LabelButton* reset_decisions_button =
+      views::MdTextButton::CreateSecondaryUiButton(
+          button_listener_,
+          l10n_util::GetStringUTF16(
+              IDS_PAGEINFO_RESET_INVALID_CERTIFICATE_DECISIONS_BUTTON));
   reset_decisions_button->set_id(BUTTON_RESET_CERTIFICATE_DECISIONS);
-  reset_decisions_button->SetStyle(views::Button::STYLE_BUTTON);
 
   reset_decisions_button_container_->AddChildView(reset_decisions_button);
 

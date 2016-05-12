@@ -19,7 +19,7 @@
 #include "ui/views/border.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/button/image_button.h"
-#include "ui/views/controls/button/label_button.h"
+#include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/scroll_view.h"
@@ -252,8 +252,8 @@ views::View* MediaGalleriesDialogViews::CreateExtraView() {
   DCHECK(!auxiliary_button_);
   base::string16 button_label = controller_->GetAuxiliaryButtonText();
   if (!button_label.empty()) {
-    auxiliary_button_ = new views::LabelButton(this, button_label);
-    auxiliary_button_->SetStyle(views::Button::STYLE_BUTTON);
+    auxiliary_button_ =
+        views::MdTextButton::CreateSecondaryUiButton(this, button_label);
   }
   return auxiliary_button_;
 }

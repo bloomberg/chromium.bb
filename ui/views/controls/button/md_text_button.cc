@@ -113,7 +113,11 @@ void MdTextButton::UpdateColorsFromNativeTheme() {
   ui::NativeTheme::ColorId fg_color_id = ui::NativeTheme::kColorId_NumColors;
   switch (cta_) {
     case NO_CALL_TO_ACTION:
-      fg_color_id = ui::NativeTheme::kColorId_ButtonEnabledColor;
+      // When there's no call to action, respect a color override if one has
+      // been set. For other call to action states, don't let individual buttons
+      // specify a color.
+      if (!explicitly_set_normal_color())
+        fg_color_id = ui::NativeTheme::kColorId_ButtonEnabledColor;
       break;
     case WEAK_CALL_TO_ACTION:
       fg_color_id = ui::NativeTheme::kColorId_CallToActionColor;
@@ -123,7 +127,8 @@ void MdTextButton::UpdateColorsFromNativeTheme() {
       break;
   }
   ui::NativeTheme* theme = GetNativeTheme();
-  SetEnabledTextColors(theme->GetSystemColor(fg_color_id));
+  if (fg_color_id != ui::NativeTheme::kColorId_NumColors)
+    SetEnabledTextColors(theme->GetSystemColor(fg_color_id));
 
   set_background(
       cta_ == STRONG_CALL_TO_ACTION

@@ -24,7 +24,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/table_model.h"
 #include "ui/base/models/table_model_observer.h"
-#include "ui/views/controls/button/label_button.h"
+#include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/table/table_view.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
@@ -251,11 +251,9 @@ views::View* CertificateSelector::GetInitiallyFocusedView() {
 
 views::View* CertificateSelector::CreateExtraView() {
   DCHECK(!view_cert_button_);
-  std::unique_ptr<views::LabelButton> button(new views::LabelButton(
-      this, l10n_util::GetStringUTF16(IDS_PAGEINFO_CERT_INFO_BUTTON)));
-  button->SetStyle(views::Button::STYLE_BUTTON);
-  view_cert_button_ = button.get();
-  return button.release();
+  view_cert_button_ = views::MdTextButton::CreateSecondaryUiButton(
+      this, l10n_util::GetStringUTF16(IDS_PAGEINFO_CERT_INFO_BUTTON));
+  return view_cert_button_;
 }
 
 ui::ModalType CertificateSelector::GetModalType() const {

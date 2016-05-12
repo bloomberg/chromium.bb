@@ -46,6 +46,7 @@
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/clip_recorder.h"
 #include "ui/gfx/canvas.h"
@@ -64,6 +65,7 @@
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/label_button_border.h"
+#include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
@@ -1246,11 +1248,12 @@ views::View* ProfileChooserView::CreateTutorialView(
                     views::kButtonHEdgeMarginNew);
 
   // Adds title and close button if needed.
+  const SkColor kTitleAndButtonTextColor = SK_ColorWHITE;
   views::Label* title_label = new views::Label(title_text);
   title_label->SetMultiLine(true);
   title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   title_label->SetAutoColorReadabilityEnabled(false);
-  title_label->SetEnabledColor(SK_ColorWHITE);
+  title_label->SetEnabledColor(kTitleAndButtonTextColor);
   title_label->SetFontList(ui::ResourceBundle::GetSharedInstance().GetFontList(
       ui::ResourceBundle::MediumFont));
 
@@ -1285,9 +1288,11 @@ views::View* ProfileChooserView::CreateTutorialView(
   // Adds links and buttons.
   bool has_button = !button_text.empty();
   if (has_button) {
-    *button = new views::LabelButton(this, button_text);
-    (*button)->SetHorizontalAlignment(gfx::ALIGN_CENTER);
-    (*button)->SetStyle(views::Button::STYLE_BUTTON);
+    *button = views::MdTextButton::CreateSecondaryUiButton(this, button_text);
+    if (ui::MaterialDesignController::IsSecondaryUiMaterial())
+      (*button)->SetEnabledTextColors(kTitleAndButtonTextColor);
+    else
+      (*button)->SetHorizontalAlignment(gfx::ALIGN_CENTER);
   }
 
   bool has_link = !link_text.empty();
@@ -1295,7 +1300,7 @@ views::View* ProfileChooserView::CreateTutorialView(
     *link = CreateLink(link_text, this);
     (*link)->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     (*link)->SetAutoColorReadabilityEnabled(false);
-    (*link)->SetEnabledColor(SK_ColorWHITE);
+    (*link)->SetEnabledColor(kTitleAndButtonTextColor);
   }
 
   if (stack_button) {

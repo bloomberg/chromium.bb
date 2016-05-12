@@ -63,7 +63,6 @@
 #include "ui/views/animation/ink_drop_hover.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
-#include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/mouse_constants.h"
@@ -950,14 +949,12 @@ void DownloadItemViewMd::ShowWarningDialog() {
   if (mode_ == DANGEROUS_MODE) {
     save_button_ = views::MdTextButton::CreateMdButton(
         this, model_.GetWarningConfirmButtonText());
-    save_button_->SetStyle(views::Button::STYLE_BUTTON);
     AddChildView(save_button_);
   }
   int discard_button_message =
       model_.IsMalicious() ? IDS_DISMISS_DOWNLOAD : IDS_DISCARD_DOWNLOAD;
   discard_button_ = views::MdTextButton::CreateMdButton(
       this, l10n_util::GetStringUTF16(discard_button_message));
-  discard_button_->SetStyle(views::Button::STYLE_BUTTON);
   AddChildView(discard_button_);
 
   base::string16 dangerous_label =
