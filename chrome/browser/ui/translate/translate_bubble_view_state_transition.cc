@@ -7,6 +7,12 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 
+namespace translate {
+
+const char kTranslateBubbleUIEvent[] = "Translate.BubbleUiEvent";
+
+}  // namespace translate
+
 TranslateBubbleViewStateTransition::TranslateBubbleViewStateTransition(
     TranslateBubbleModel::ViewState view_state)
     : view_state_(view_state), view_state_before_advanced_view_(view_state) {
@@ -20,14 +26,14 @@ void TranslateBubbleViewStateTransition::SetViewState(
   if (view_state != TranslateBubbleModel::VIEW_STATE_ADVANCED)
     view_state_before_advanced_view_ = view_state;
   else
-    UMA_HISTOGRAM_ENUMERATION("Translate.BubbleUiEvent",
+    UMA_HISTOGRAM_ENUMERATION(translate::kTranslateBubbleUIEvent,
                               translate::SET_STATE_OPTIONS,
                               translate::TRANSLATE_BUBBLE_UI_EVENT_MAX);
 }
 
 void TranslateBubbleViewStateTransition::GoBackFromAdvanced() {
   DCHECK(view_state_ == TranslateBubbleModel::VIEW_STATE_ADVANCED);
-  UMA_HISTOGRAM_ENUMERATION("Translate.BubbleUiEvent",
+  UMA_HISTOGRAM_ENUMERATION(translate::kTranslateBubbleUIEvent,
                             translate::LEAVE_STATE_OPTIONS,
                             translate::TRANSLATE_BUBBLE_UI_EVENT_MAX);
   SetViewState(view_state_before_advanced_view_);

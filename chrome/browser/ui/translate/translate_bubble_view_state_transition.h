@@ -62,8 +62,16 @@ enum TranslateBubbleUiEvent {
   // The user changed the "Target language".
   TARGET_LANGUAGE_MENU_CLICKED,
 
+  // The user activated the translate page action icon.
+  PAGE_ACTION_ICON_ACTIVATED,
+
+  // The user deactivated the translate page action icon.
+  PAGE_ACTION_ICON_DEACTIVATED,
+
   TRANSLATE_BUBBLE_UI_EVENT_MAX
 };
+
+extern const char kTranslateBubbleUIEvent[];
 
 }  // namespace translate
 

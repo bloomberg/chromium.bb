@@ -4,9 +4,11 @@
 
 #include "chrome/browser/ui/views/translate/translate_icon_view.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/translate/translate_bubble_view_state_transition.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/translate/translate_bubble_view.h"
 #include "chrome/grit/generated_resources.h"
@@ -25,6 +27,14 @@ TranslateIconView::~TranslateIconView() {}
 
 void TranslateIconView::OnExecuting(
     BubbleIconView::ExecuteSource execute_source) {}
+
+void TranslateIconView::OnPressed(bool activated) {
+  UMA_HISTOGRAM_ENUMERATION(
+      translate::kTranslateBubbleUIEvent,
+      (activated ? translate::PAGE_ACTION_ICON_ACTIVATED
+                 : translate::PAGE_ACTION_ICON_DEACTIVATED),
+      translate::TRANSLATE_BUBBLE_UI_EVENT_MAX);
+}
 
 views::BubbleDialogDelegateView* TranslateIconView::GetBubble() const {
   return TranslateBubbleView::GetCurrentBubble();

@@ -51,8 +51,6 @@
 
 namespace {
 
-const char kTranslateBubbleUIEvent[] = "Translate.BubbleUiEvent";
-
 views::LabelButton* CreateBlueButton(views::ButtonListener* listener,
                                      const base::string16& label,
                                      int id) {
@@ -934,6 +932,6 @@ void TranslateBubbleView::UpdateAdvancedView() {
 
 void TranslateBubbleView::ReportUiAction(
     translate::TranslateBubbleUiEvent action) {
-  UMA_HISTOGRAM_ENUMERATION(kTranslateBubbleUIEvent, action,
+  UMA_HISTOGRAM_ENUMERATION(translate::kTranslateBubbleUIEvent, action,
                             translate::TRANSLATE_BUBBLE_UI_EVENT_MAX);
 }

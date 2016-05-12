@@ -54,10 +54,13 @@ class BubbleIconView : public views::InkDropHostView,
   // Invoked prior to executing the command.
   virtual void OnExecuting(ExecuteSource execute_source) = 0;
 
+  // Invoked after the icon is pressed.
+  virtual void OnPressed(bool activated) {}
+
   // views::View:
   void GetAccessibleState(ui::AXViewState* state) override;
-  bool GetTooltipText(const gfx::Point& p, base::string16* tooltip) const
-      override;
+  bool GetTooltipText(const gfx::Point& p,
+                      base::string16* tooltip) const override;
   gfx::Size GetPreferredSize() const override;
   void Layout() override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
@@ -77,8 +80,7 @@ class BubbleIconView : public views::InkDropHostView,
 
   // views::WidgetObserver:
   void OnWidgetDestroying(views::Widget* widget) override;
-  void OnWidgetVisibilityChanged(views::Widget* widget,
-                                 bool visible) override;
+  void OnWidgetVisibilityChanged(views::Widget* widget, bool visible) override;
 
  protected:
   // Calls OnExecuting and runs |command_id_| with a valid |command_updater_|.

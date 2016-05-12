@@ -29,8 +29,7 @@ BubbleIconView::BubbleIconView(CommandUpdater* command_updater, int command_id)
   image_->SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
 }
 
-BubbleIconView::~BubbleIconView() {
-}
+BubbleIconView::~BubbleIconView() {}
 
 bool BubbleIconView::IsBubbleShowing() const {
   // If the bubble is being destroyed, it's considered showing though it may be
@@ -86,16 +85,18 @@ void BubbleIconView::OnMouseReleased(const ui::MouseEvent& event) {
   // doing nothing here.
   if (suppress_mouse_released_action_) {
     suppress_mouse_released_action_ = false;
+    OnPressed(false);
     return;
   }
   if (!event.IsLeftMouseButton())
     return;
 
   const bool activated = HitTestPoint(event.location());
-  ink_drop_delegate_->OnAction(
-      activated ? views::InkDropState::ACTIVATED : views::InkDropState::HIDDEN);
+  ink_drop_delegate_->OnAction(activated ? views::InkDropState::ACTIVATED
+                                         : views::InkDropState::HIDDEN);
   if (activated)
     ExecuteCommand(EXECUTE_SOURCE_MOUSE);
+  OnPressed(activated);
 }
 
 bool BubbleIconView::OnKeyPressed(const ui::KeyEvent& event) {
