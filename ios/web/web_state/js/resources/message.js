@@ -116,8 +116,14 @@ __gCrWeb.message = {};
             "crwCommand": command,
             "crwWindowId": __gCrWeb.windowId
         });
+        // A web page can override |window.webkit| with any value. Deleting the
+        // object ensures that original and working implementation of
+        // window.webkit is restored.
+        var oldWebkit = window.webkit;
+        delete window.webkit;
         window.webkit.messageHandlers[queueObject.scheme].postMessage(
             stringifiedMessage);
+        window.webkit = oldWebkit;
     });
     queueObject.reset();
 

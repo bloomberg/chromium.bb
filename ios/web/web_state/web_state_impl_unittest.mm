@@ -603,5 +603,31 @@ TEST_F(WebStateTest, LoadingProgress) {
   });
 }
 
+// Tests that page which overrides window.webkit object does not break the
+// messaging system.
+TEST_F(WebStateTest, OverridingWebKitObject) {
+  // Add a script command handler.
+  __block bool message_received = false;
+  const web::WebState::ScriptCommandCallback callback =
+      base::BindBlock(^bool(const base::DictionaryValue&, const GURL&, bool) {
+        message_received = true;
+        return true;
+      });
+  web_state_->AddScriptCommandCallback(callback, "test");
+
+  // Load the page which overrides window.webkit object and wait until the
+  // test message is received.
+  LoadHtml(
+      "<script>"
+      "  webkit = undefined;"
+      "  __gCrWeb.message.invokeOnHost({'command': 'test.webkit-overriding'});"
+      "</script>");
+
+  base::test::ios::WaitUntilCondition(^{
+    return message_received;
+  });
+  web_state_->RemoveScriptCommandCallback("test");
+}
+
 }  // namespace
 }  // namespace web
