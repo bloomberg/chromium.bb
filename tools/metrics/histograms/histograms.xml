@@ -8836,6 +8836,104 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="DNS.HostCache.Erase" enum="DNS.HostCache.EraseReason">
+  <owner>juliatuttle@chromium.org</owner>
+  <summary>The reason for erasing a DNS entry from the host cache.</summary>
+</histogram>
+
+<histogram name="DNS.HostCache.EraseStale.ExpiredBy" units="ms">
+  <owner>juliatuttle@chromium.org</owner>
+  <summary>
+    When erasing a stale (expired or old-network) DNS entry from the host cache,
+    how long past the expiration time it is.
+  </summary>
+</histogram>
+
+<histogram name="DNS.HostCache.EraseStale.NetworkChanges" units="changes">
+  <owner>juliatuttle@chromium.org</owner>
+  <summary>
+    When erasing a stale (expired or old-network) DNS entry from the host cache
+    how many network changes happened between setting and erasing it.
+  </summary>
+</histogram>
+
+<histogram name="DNS.HostCache.EraseStale.StaleHits" units="hits">
+  <owner>juliatuttle@chromium.org</owner>
+  <summary>
+    When erasing a stale (expired or old-network) DNS entry from the host cache
+    how many hits it received while stale.
+  </summary>
+</histogram>
+
+<histogram name="DNS.HostCache.EraseValid.ValidFor" units="ms">
+  <owner>juliatuttle@chromium.org</owner>
+  <summary>
+    When erasing a valid DNS entry from the host cache, for how much longer it
+    would have remained valid.
+  </summary>
+</histogram>
+
+<histogram name="DNS.HostCache.Lookup" enum="DNS.HostCache.LookupOutcome">
+  <owner>juliatuttle@chromium.org</owner>
+  <summary>The outcome of looking up a DNS entry in the host cache.</summary>
+</histogram>
+
+<histogram name="DNS.HostCache.LookupStale.ExpiredBy" units="ms">
+  <owner>juliatuttle@chromium.org</owner>
+  <summary>
+    When looking up a stale DNS entry in the host cache, how long past the
+    expiration time it is.
+  </summary>
+</histogram>
+
+<histogram name="DNS.HostCache.LookupStale.NetworkChanges" units="changes">
+  <owner>juliatuttle@chromium.org</owner>
+  <summary>
+    When looking up a stale DNS entry in the host cache, how many network
+    changes happened between setting it and looking it up.
+  </summary>
+</histogram>
+
+<histogram name="DNS.HostCache.Set" enum="DNS.HostCache.SetOutcome">
+  <owner>juliatuttle@chromium.org</owner>
+  <summary>The outcome of setting a DNS entry in the host cache.</summary>
+</histogram>
+
+<histogram name="DNS.HostCache.UpdateStale.AddressListDelta"
+    enum="DNS.AddressListDeltaType">
+  <owner>juliatuttle@chromium.org</owner>
+  <summary>
+    When updating a stale (expired or old-network) DNS entry in the host cache,
+    and both results are successful, how the address list differs between the
+    old and new entries.
+  </summary>
+</histogram>
+
+<histogram name="DNS.HostCache.UpdateStale.ExpiredBy" units="ms">
+  <owner>juliatuttle@chromium.org</owner>
+  <summary>
+    When updating a stale (expired or old-network) DNS entry in the host cache,
+    how long past the expiration time the old entry was.
+  </summary>
+</histogram>
+
+<histogram name="DNS.HostCache.UpdateStale.NetworkChanges" units="changes">
+  <owner>juliatuttle@chromium.org</owner>
+  <summary>
+    When updating a stale (expired or old-nework) DNS entry in the host cache,
+    how many network changes happened between setting the old entry and setting
+    the new entry.
+  </summary>
+</histogram>
+
+<histogram name="DNS.HostCache.UpdateStale.StaleHits" units="hits">
+  <owner>juliatuttle@chromium.org</owner>
+  <summary>
+    The number of hits received to an updated stale DNS entry in the host cache
+    while it was stale.
+  </summary>
+</histogram>
+
 <histogram name="DNS.IndependentFailedNavigation" units="ms">
   <owner>juliatuttle@chromium.org</owner>
   <summary>
@@ -66899,6 +66997,32 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="2132270559" label="libsvn_tsvn32.dll"/>
 </enum>
 
+<enum name="DNS.AddressListDeltaType" type="int">
+  <int value="0" label="Same addresses in the same order"/>
+  <int value="1" label="Same addresses in a different order"/>
+  <int value="2" label="Some but not all addresses in common"/>
+  <int value="3" label="No addresses in common"/>
+</enum>
+
+<enum name="DNS.HostCache.EraseReason" type="int">
+  <int value="0" label="Entry evicted"/>
+  <int value="1" label="Cache cleared"/>
+  <int value="2" label="Cache destroyed"/>
+</enum>
+
+<enum name="DNS.HostCache.LookupOutcome" type="int">
+  <int value="0" label="Miss (absent)"/>
+  <int value="1" label="Miss (stale when not requested)"/>
+  <int value="2" label="Hit (valid)"/>
+  <int value="3" label="Hit (stale when requested)"/>
+</enum>
+
+<enum name="DNS.HostCache.SetOutcome" type="int">
+  <int value="0" label="Inserted new entry"/>
+  <int value="1" label="Updated valid entry"/>
+  <int value="2" label="Updated stale entry"/>
+</enum>
+
 <enum name="DNSEmptyAddressListAndNoError" type="int">
   <int value="0" label="Error reported or Address List is not empty"/>
   <int value="1" label="Success reported but Address List is empty"/>
@@ -90586,6 +90710,15 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="Platform.DiskUsage.GCache_Avg"/>
   <affected-histogram name="Platform.DiskUsage.GCache_Max"/>
   <affected-histogram name="Platform.DiskUsage.LeastUsedAccountDays"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="DNS.HostCache.UpdateStale.AddressListDeltaType">
+  <suffix name="Identical" label="Same addresses, in the same order."/>
+  <suffix name="Reordered" label="Same addresses, in a different order."/>
+  <suffix name="Overlap" label="Some same addreses, some different."/>
+  <suffix name="Disjoint" label="All different addresses."/>
+  <affected-histogram name="DNS.HostCache.UpdateStale.ExpiredBy"/>
+  <affected-histogram name="DNS.HostCache.UpdateStale.NetworkChanges"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="DnsImpact2">

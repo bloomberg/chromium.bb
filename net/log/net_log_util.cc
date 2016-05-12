@@ -381,10 +381,9 @@ NET_EXPORT std::unique_ptr<base::DictionaryValue> GetNetInfo(
 
       base::ListValue* entry_list = new base::ListValue();
 
-      HostCache::EntryMap::Iterator it(cache->entries());
-      for (; it.HasNext(); it.Advance()) {
-        const HostCache::Key& key = it.key();
-        const HostCache::Entry& entry = it.value();
+      for (const auto& pair : cache->entries()) {
+        const HostCache::Key& key = pair.first;
+        const HostCache::Entry& entry = pair.second;
 
         base::DictionaryValue* entry_dict = new base::DictionaryValue();
 
@@ -392,16 +391,16 @@ NET_EXPORT std::unique_ptr<base::DictionaryValue> GetNetInfo(
         entry_dict->SetInteger("address_family",
                                static_cast<int>(key.address_family));
         entry_dict->SetString("expiration",
-                              NetLog::TickCountToString(it.expiration()));
+                              NetLog::TickCountToString(entry.expires()));
 
-        if (entry.error != OK) {
-          entry_dict->SetInteger("error", entry.error);
+        if (entry.error() != OK) {
+          entry_dict->SetInteger("error", entry.error());
         } else {
+          const AddressList& addresses = entry.addresses();
           // Append all of the resolved addresses.
           base::ListValue* address_list = new base::ListValue();
-          for (size_t i = 0; i < entry.addrlist.size(); ++i) {
-            address_list->AppendString(entry.addrlist[i].ToStringWithoutPort());
-          }
+          for (size_t i = 0; i < addresses.size(); ++i)
+            address_list->AppendString(addresses[i].ToStringWithoutPort());
           entry_dict->Set("addresses", address_list);
         }
 

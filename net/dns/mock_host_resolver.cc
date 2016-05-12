@@ -175,9 +175,9 @@ int MockHostResolverBase::ResolveFromIPLiteralOrCache(const RequestInfo& info,
                        info.host_resolver_flags());
     const HostCache::Entry* entry = cache_->Lookup(key, base::TimeTicks::Now());
     if (entry) {
-      rv = entry->error;
+      rv = entry->error();
       if (rv == OK)
-        *addresses = AddressList::CopyWithPort(entry->addrlist, info.port());
+        *addresses = AddressList::CopyWithPort(entry->addresses(), info.port());
     }
   }
   return rv;
