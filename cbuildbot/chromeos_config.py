@@ -1060,6 +1060,7 @@ def GetConfig():
       manifest_version=True,
       chrome_rev=constants.CHROME_REV_LATEST,
       chrome_sdk=True,
+      unittests=False,
       description='Preflight Chromium Uprev & Build (public)',
       vm_tests=[config_lib.VMTestConfig(constants.SMOKE_SUITE_TEST_TYPE),
                 config_lib.VMTestConfig(constants.SIMPLE_AU_TEST_TYPE)],

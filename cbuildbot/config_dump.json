@@ -328,6 +328,7 @@
             "manifest_version": true,
             "overlays": "both",
             "prebuilts": "private",
+            "unittests": false,
             "uprev": false,
             "useflags": [
                 "chrome_internal"
@@ -382,6 +383,7 @@
             "important": true,
             "manifest_version": true,
             "overlays": "public",
+            "unittests": false,
             "uprev": false,
             "vm_tests": [
                 "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}",
