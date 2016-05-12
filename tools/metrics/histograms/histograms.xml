@@ -49799,6 +49799,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Signin.AndroidSigninPromoAction"
     enum="AndroidSigninPromoAction">
+  <obsolete>
+    Removed this histogram since we have had newly designed histograms
+    Signin.SigninStartedAccessPoint, Signin.SigninCompletedAccessPoint, and
+    Signin.SigninReason.
+  </obsolete>
   <owner>guohui@chromium.org</owner>
   <summary>Track how a user interfacts with the android signin promo.</summary>
 </histogram>

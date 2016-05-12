@@ -46,7 +46,7 @@ import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.datareduction.DataReductionPromoScreen;
-import org.chromium.chrome.browser.signin.SigninPromoScreen;
+import org.chromium.chrome.browser.signin.SigninPromoUtil;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabUma.TabCreationState;
@@ -266,7 +266,7 @@ public class DocumentActivity extends ChromeActivity {
             if (preferenceManager.getPromosSkippedOnFirstStart()) {
                 // Data reduction promo should be temporarily suppressed if the sign in promo is
                 // shown to avoid nagging users too much.
-                if (!SigninPromoScreen.launchSigninPromoIfNeeded(this)) {
+                if (!SigninPromoUtil.launchSigninPromoIfNeeded(this)) {
                     DataReductionPromoScreen.launchDataReductionPromo(this);
                 }
             } else {

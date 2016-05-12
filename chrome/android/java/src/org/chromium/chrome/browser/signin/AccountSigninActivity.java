@@ -39,7 +39,7 @@ public class AccountSigninActivity extends AppCompatActivity
     private ProfileDataCache mProfileDataCache;
 
     @IntDef({SigninAccessPoint.SETTINGS, SigninAccessPoint.BOOKMARK_MANAGER,
-        SigninAccessPoint.RECENT_TABS})
+            SigninAccessPoint.RECENT_TABS, SigninAccessPoint.SIGNIN_PROMO})
     @Retention(RetentionPolicy.SOURCE)
     public @interface AccessPoint {}
     @AccessPoint private int mAccessPoint;
@@ -76,6 +76,7 @@ public class AccountSigninActivity extends AppCompatActivity
         assert mAccessPoint == SigninAccessPoint.BOOKMARK_MANAGER
                 || mAccessPoint == SigninAccessPoint.RECENT_TABS
                 || mAccessPoint == SigninAccessPoint.SETTINGS
+                || mAccessPoint == SigninAccessPoint.SIGNIN_PROMO
                 : "invalid access point: " + mAccessPoint;
 
         mView = (AccountSigninView) LayoutInflater.from(this).inflate(
@@ -160,6 +161,9 @@ public class AccountSigninActivity extends AppCompatActivity
                 break;
             case SigninAccessPoint.SETTINGS:
                 RecordUserAction.record("Signin_Signin_FromSettings");
+                break;
+            case SigninAccessPoint.SIGNIN_PROMO:
+                RecordUserAction.record("Signin_Signin_FromSigninPromo");
                 break;
             default:
                 assert false : "Invalid access point.";

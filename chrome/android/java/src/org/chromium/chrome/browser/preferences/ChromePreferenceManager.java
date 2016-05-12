@@ -11,7 +11,6 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.crash.MinidumpUploadService.ProcessType;
-import org.chromium.chrome.browser.signin.SigninPromoUma;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 
 import java.util.Locale;
@@ -242,8 +241,6 @@ public class ChromePreferenceManager {
     public void setShowSigninPromo(boolean shouldShow) {
         SharedPreferences.Editor sharedPreferencesEditor = mSharedPreferences.edit();
         sharedPreferencesEditor.putBoolean(SHOW_SIGNIN_PROMO, shouldShow).apply();
-
-        if (shouldShow) SigninPromoUma.recordAction(SigninPromoUma.SIGNIN_PROMO_ENABLED);
     }
 
     /**
