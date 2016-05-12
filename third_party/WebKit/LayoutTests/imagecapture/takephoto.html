@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../resources/mojo-helpers.js"></script>
+<script src="resources/mock-imagecapture.js"></script>
+<body>
+<canvas id='canvas' width=10 height=10/>
+</body>
+<script>
+
+// This test verifies that ImageCapture can takePhoto()s, with a mock Mojo
+// interface implementation.
+
+async_test(function(t) {
+  var canvas = document.getElementById('canvas');
+  var context = canvas.getContext("2d");
+  context.fillStyle = "red";
+  context.fillRect(0, 0, 10, 10);
+  var stream = canvas.captureStream();
+
+  mockImageCaptureReady
+    .then((mock) => {
+      var capturer = new ImageCapture(stream.getVideoTracks()[0]);
+
+      capturer.takePhoto()
+        .then(blob => {
+            assert_true(blob.size > 0);
+            t.done();
+        })
+        .catch(error => {
+            assert_unreached("Error during takePhoto(): " + error);
+        });
+    })
+    .catch(error => {
+      assert_unreached("Error creating MockImageCapture: " + error);
+    });
+}, 'exercises the ImageCapture API takePhoto()');
+
+</script>
