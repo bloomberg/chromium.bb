@@ -53,11 +53,6 @@ component("prefs") {
   deps = [
     "//base",
   ]
-
-  if (!is_debug) {
-    configs -= [ "//build/config/compiler:default_optimization" ]
-    configs += [ "//build/config/compiler:optimize_max" ]
-  }
 }
 
 source_set("test_support") {
