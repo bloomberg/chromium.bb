@@ -31,7 +31,7 @@
 #ifndef ElementAnimation_h
 #define ElementAnimation_h
 
-#include "bindings/core/v8/UnionTypesCore.h"
+#include "bindings/core/v8/EffectModelOrDictionarySequenceOrDictionary.h"
 #include "core/animation/AnimationTimeline.h"
 #include "core/animation/EffectInput.h"
 #include "core/animation/ElementAnimations.h"

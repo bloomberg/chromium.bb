@@ -4,7 +4,7 @@
 
 #include "modules/offscreencanvas2d/OffscreenCanvasRenderingContext2D.h"
 
-#include "bindings/modules/v8/UnionTypesModules.h"
+#include "bindings/modules/v8/OffscreenCanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContext.h"
 #include "core/frame/ImageBitmap.h"
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/StaticBitmapImage.h"

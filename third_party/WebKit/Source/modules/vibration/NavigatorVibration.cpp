@@ -19,7 +19,7 @@
 
 #include "modules/vibration/NavigatorVibration.h"
 
-#include "bindings/modules/v8/UnionTypesModules.h"
+#include "bindings/modules/v8/UnsignedLongOrUnsignedLongSequence.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Navigator.h"
 #include "core/frame/UseCounter.h"

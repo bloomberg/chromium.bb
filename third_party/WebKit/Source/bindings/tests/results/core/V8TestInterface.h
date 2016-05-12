@@ -8,6 +8,7 @@
 #define V8TestInterface_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "bindings/core/v8/StringOrDouble.h"
 #include "bindings/core/v8/ToV8.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8DOMWrapper.h"

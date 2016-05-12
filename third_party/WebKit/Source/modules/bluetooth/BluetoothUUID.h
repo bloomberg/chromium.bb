@@ -6,7 +6,7 @@
 #define BluetoothUUID_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
-#include "bindings/modules/v8/UnionTypesModules.h"
+#include "bindings/modules/v8/StringOrUnsignedLong.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {

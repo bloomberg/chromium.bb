@@ -6,7 +6,7 @@
 #define BluetoothRemoteGATTServer_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
-#include "bindings/modules/v8/UnionTypesModules.h"
+#include "bindings/modules/v8/StringOrUnsignedLong.h"
 #include "modules/bluetooth/BluetoothDevice.h"
 #include "platform/heap/Heap.h"
 #include "wtf/OwnPtr.h"

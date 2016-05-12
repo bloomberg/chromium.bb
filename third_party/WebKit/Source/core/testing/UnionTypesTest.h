@@ -5,7 +5,11 @@
 #ifndef UnionTypesTest_h
 #define UnionTypesTest_h
 
-#include "bindings/core/v8/UnionTypesCore.h"
+#include "bindings/core/v8/DoubleOrInternalEnum.h"
+#include "bindings/core/v8/DoubleOrString.h"
+#include "bindings/core/v8/DoubleOrStringOrStringArray.h"
+#include "bindings/core/v8/DoubleOrStringOrStringSequence.h"
+#include "bindings/core/v8/NodeListOrElement.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {

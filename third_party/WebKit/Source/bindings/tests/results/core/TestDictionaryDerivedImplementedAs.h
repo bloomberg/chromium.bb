@@ -8,7 +8,7 @@
 #define TestDictionaryDerivedImplementedAs_h
 
 #include "bindings/core/v8/Nullable.h"
-#include "bindings/core/v8/UnionTypesCore.h"
+#include "bindings/core/v8/StringOrDouble.h"
 #include "bindings/tests/idls/core/TestDictionary.h"
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"

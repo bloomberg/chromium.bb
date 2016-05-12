@@ -2,8 +2,13 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import v8_types
 import v8_utilities
 
+
+UNION_CPP_INCLUDES = frozenset([
+    'bindings/core/v8/ToV8.h',
+])
 
 UNION_H_INCLUDES = frozenset([
     'bindings/core/v8/Dictionary.h',
@@ -28,37 +33,12 @@ header_forward_decls = set()
 header_includes = set()
 
 
-def union_context(union_types, interfaces_info):
+def container_context(union_type, interfaces_info):
     cpp_includes.clear()
     header_forward_decls.clear()
     header_includes.clear()
+    cpp_includes.update(UNION_CPP_INCLUDES)
     header_includes.update(UNION_H_INCLUDES)
-
-    # For container classes we strip nullable wrappers. For example,
-    # both (A or B)? and (A? or B) will become AOrB. This should be OK
-    # because container classes can handle null and it seems that
-    # distinguishing (A or B)? and (A? or B) doesn't make sense.
-    container_cpp_types = set()
-    union_types_for_containers = set()
-    for union_type in union_types:
-        cpp_type = union_type.cpp_type
-        if cpp_type not in container_cpp_types:
-            union_types_for_containers.add(union_type)
-            container_cpp_types.add(cpp_type)
-
-    union_types_for_containers = sorted(union_types_for_containers,
-                                        key=lambda union_type: union_type.cpp_type)
-
-    return {
-        'containers': [container_context(union_type, interfaces_info)
-                       for union_type in union_types_for_containers],
-        'cpp_includes': sorted(cpp_includes - UNION_CPP_INCLUDES_BLACKLIST),
-        'header_forward_decls': sorted(header_forward_decls),
-        'header_includes': sorted(header_includes),
-    }
-
-
-def container_context(union_type, interfaces_info):
     members = []
 
     # These variables refer to member contexts if the given union type has
@@ -114,13 +94,17 @@ def container_context(union_type, interfaces_info):
     if dictionary_type and nullable_members == 1:
         raise Exception('%s has a dictionary and a nullable member' % union_type.name)
 
+    cpp_class = union_type.cpp_type
     return {
         'array_buffer_type': array_buffer_type,
         'array_buffer_view_type': array_buffer_view_type,
         'array_or_sequence_type': array_or_sequence_type,
         'boolean_type': boolean_type,
-        'cpp_class': union_type.cpp_type,
+        'cpp_class': cpp_class,
+        'cpp_includes': sorted(cpp_includes - UNION_CPP_INCLUDES_BLACKLIST),
         'dictionary_type': dictionary_type,
+        'header_includes': sorted(header_includes),
+        'header_forward_decls': sorted(header_forward_decls),
         'includes_nullable_type': union_type.includes_nullable_type,
         'interface_types': interface_types,
         'members': members,
@@ -128,6 +112,7 @@ def container_context(union_type, interfaces_info):
         'object_type': object_type,
         'string_type': string_type,
         'type_string': str(union_type),
+        'v8_class': v8_types.v8_type(cpp_class),
     }
 
 
@@ -135,15 +120,7 @@ def _update_includes_and_forward_decls(member, interface_info):
     if interface_info:
         cpp_includes.update(interface_info.get(
             'dependencies_include_paths', []))
-        # TODO(bashi): Workaround for http://crbug.com/524424
-        # Avoid using forward declaration for IDL dictionaries so that they
-        # aren't imcomplete types in UnionTypes.h. This enables an IDL
-        # dictionary to have a union type which has an IDL dictionary. e.g.
-        #   dictionary DictA { (boolean or DictB) member; }
-        # Note that this doesn't cover all cases. We still can't use an IDL
-        # dictionary in a union type when the dictionary contains a union type.
-        # e.g.
-        #   void foo((DOMString or DictA) arg);  // won't compile
+        # We need complete types for IDL dictionaries in union containers.
         if member.is_dictionary:
             header_includes.update(member.includes_for_type())
         else:

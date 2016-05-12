@@ -7,7 +7,6 @@
 
 #include "bindings/core/v8/Maplike.h"
 #include "bindings/core/v8/ScriptWrappable.h"
-#include "bindings/core/v8/UnionTypesCore.h"
 #include "core/dom/DOMArrayPiece.h"
 #include "platform/heap/Heap.h"
 
