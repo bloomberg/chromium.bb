@@ -44,10 +44,16 @@ GLFence* GLFence::Create() {
       << "Trying to create fence with no context";
 
   std::unique_ptr<GLFence> fence;
-  // Prefer ARB_sync which supports server-side wait.
-  if (g_driver_gl.ext.b_GL_ARB_sync ||
-      GetGLVersionInfo()->is_es3 ||
-      GetGLImplementation() == kGLImplementationDesktopGLCoreProfile) {
+#if !defined(OS_MACOSX)
+  if (g_driver_egl.ext.b_EGL_KHR_fence_sync &&
+      g_driver_egl.ext.b_EGL_KHR_wait_sync) {
+    // Prefer GLFenceEGL which doesn't require GL context switching.
+    fence.reset(new GLFenceEGL);
+  } else
+#endif
+      if (g_driver_gl.ext.b_GL_ARB_sync || GetGLVersionInfo()->is_es3 ||
+          GetGLImplementation() == kGLImplementationDesktopGLCoreProfile) {
+    // Prefer ARB_sync which supports server-side wait.
     fence.reset(new GLFenceARB);
 #if defined(OS_MACOSX)
   } else if (g_driver_gl.ext.b_GL_APPLE_fence) {
