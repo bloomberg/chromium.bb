@@ -20,19 +20,17 @@ namespace content {
 
 GpuSurfacelessBrowserCompositorOutputSurface::
     GpuSurfacelessBrowserCompositorOutputSurface(
-        const scoped_refptr<ContextProviderCommandBuffer>& context,
-        const scoped_refptr<ContextProviderCommandBuffer>& worker_context,
+        scoped_refptr<ContextProviderCommandBuffer> context,
         gpu::SurfaceHandle surface_handle,
-        const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager,
+        scoped_refptr<ui::CompositorVSyncManager> vsync_manager,
         base::SingleThreadTaskRunner* task_runner,
         std::unique_ptr<display_compositor::CompositorOverlayCandidateValidator>
             overlay_candidate_validator,
         unsigned int target,
         unsigned int internalformat,
         gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager)
-    : GpuBrowserCompositorOutputSurface(context,
-                                        worker_context,
-                                        vsync_manager,
+    : GpuBrowserCompositorOutputSurface(std::move(context),
+                                        std::move(vsync_manager),
                                         task_runner,
                                         std::move(overlay_candidate_validator)),
       internalformat_(internalformat),

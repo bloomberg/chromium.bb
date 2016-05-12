@@ -26,15 +26,13 @@
 namespace content {
 
 GpuBrowserCompositorOutputSurface::GpuBrowserCompositorOutputSurface(
-    const scoped_refptr<ContextProviderCommandBuffer>& context,
-    const scoped_refptr<ContextProviderCommandBuffer>& worker_context,
-    const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager,
+    scoped_refptr<ContextProviderCommandBuffer> context,
+    scoped_refptr<ui::CompositorVSyncManager> vsync_manager,
     base::SingleThreadTaskRunner* task_runner,
     std::unique_ptr<display_compositor::CompositorOverlayCandidateValidator>
         overlay_candidate_validator)
-    : BrowserCompositorOutputSurface(context,
-                                     worker_context,
-                                     vsync_manager,
+    : BrowserCompositorOutputSurface(std::move(context),
+                                     std::move(vsync_manager),
                                      task_runner,
                                      std::move(overlay_candidate_validator)),
 #if defined(OS_MACOSX)

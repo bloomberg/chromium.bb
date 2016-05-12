@@ -19,14 +19,13 @@
 namespace content {
 
 BrowserCompositorOutputSurface::BrowserCompositorOutputSurface(
-    const scoped_refptr<cc::ContextProvider>& context_provider,
-    const scoped_refptr<cc::ContextProvider>& worker_context_provider,
-    const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager,
+    scoped_refptr<cc::ContextProvider> context_provider,
+    scoped_refptr<ui::CompositorVSyncManager> vsync_manager,
     base::SingleThreadTaskRunner* task_runner,
     std::unique_ptr<display_compositor::CompositorOverlayCandidateValidator>
         overlay_candidate_validator)
-    : OutputSurface(context_provider, worker_context_provider),
-      vsync_manager_(vsync_manager),
+    : OutputSurface(std::move(context_provider)),
+      vsync_manager_(std::move(vsync_manager)),
       synthetic_begin_frame_source_(new cc::SyntheticBeginFrameSource(
           task_runner,
           cc::BeginFrameArgs::DefaultInterval())),

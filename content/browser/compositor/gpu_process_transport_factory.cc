@@ -446,8 +446,8 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
       const auto& capabilities = context_provider->ContextCapabilities();
       if (data->surface_handle == gpu::kNullSurfaceHandle) {
         surface = base::WrapUnique(new OffscreenBrowserCompositorOutputSurface(
-            context_provider, shared_worker_context_provider_,
-            compositor->vsync_manager(), compositor->task_runner().get(),
+            context_provider, compositor->vsync_manager(),
+            compositor->task_runner().get(),
             std::unique_ptr<
                 display_compositor::CompositorOverlayCandidateValidator>()));
       } else if (capabilities.surfaceless) {
@@ -459,9 +459,8 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
 #endif
         surface =
             base::WrapUnique(new GpuSurfacelessBrowserCompositorOutputSurface(
-                context_provider, shared_worker_context_provider_,
-                data->surface_handle, compositor->vsync_manager(),
-                compositor->task_runner().get(),
+                context_provider, data->surface_handle,
+                compositor->vsync_manager(), compositor->task_runner().get(),
                 CreateOverlayCandidateValidator(compositor->widget()), target,
                 format, BrowserGpuMemoryBufferManager::current()));
       } else {
@@ -472,9 +471,8 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
         validator = CreateOverlayCandidateValidator(compositor->widget());
 #endif
         surface = base::WrapUnique(new GpuBrowserCompositorOutputSurface(
-            context_provider, shared_worker_context_provider_,
-            compositor->vsync_manager(), compositor->task_runner().get(),
-            std::move(validator)));
+            context_provider, compositor->vsync_manager(),
+            compositor->task_runner().get(), std::move(validator)));
       }
     }
   }

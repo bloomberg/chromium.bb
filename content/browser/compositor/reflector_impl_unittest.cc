@@ -72,13 +72,11 @@ CreateTestValidatorOzone() {
 
 class TestOutputSurface : public BrowserCompositorOutputSurface {
  public:
-  TestOutputSurface(
-      const scoped_refptr<cc::ContextProvider>& context_provider,
-      const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager,
-      base::SingleThreadTaskRunner* task_runner)
-      : BrowserCompositorOutputSurface(context_provider,
-                                       nullptr,
-                                       vsync_manager,
+  TestOutputSurface(scoped_refptr<cc::ContextProvider> context_provider,
+                    scoped_refptr<ui::CompositorVSyncManager> vsync_manager,
+                    base::SingleThreadTaskRunner* task_runner)
+      : BrowserCompositorOutputSurface(std::move(context_provider),
+                                       std::move(vsync_manager),
                                        task_runner,
                                        CreateTestValidatorOzone()) {
     surface_size_ = gfx::Size(256, 256);
@@ -132,11 +130,9 @@ class ReflectorImplTest : public testing::Test {
     compositor_.reset(
         new ui::Compositor(context_factory, compositor_task_runner_.get()));
     compositor_->SetAcceleratedWidget(gfx::kNullAcceleratedWidget);
-    context_provider_ =
-        cc::TestContextProvider::Create(cc::TestWebGraphicsContext3D::Create());
-    output_surface_ = std::unique_ptr<TestOutputSurface>(
-        new TestOutputSurface(context_provider_, compositor_->vsync_manager(),
-                              compositor_task_runner_.get()));
+    output_surface_ = std::unique_ptr<TestOutputSurface>(new TestOutputSurface(
+        cc::TestContextProvider::Create(cc::TestWebGraphicsContext3D::Create()),
+        compositor_->vsync_manager(), compositor_task_runner_.get()));
     CHECK(output_surface_->BindToClient(&output_surface_client_));
 
     root_layer_.reset(new ui::Layer(ui::LAYER_SOLID_COLOR));
@@ -170,7 +166,6 @@ class ReflectorImplTest : public testing::Test {
 
  protected:
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
-  scoped_refptr<cc::ContextProvider> context_provider_;
   cc::FakeOutputSurfaceClient output_surface_client_;
   std::unique_ptr<base::MessageLoop> message_loop_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
