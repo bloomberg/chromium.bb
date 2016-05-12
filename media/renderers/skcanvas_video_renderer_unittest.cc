@@ -531,10 +531,10 @@ TEST_F(SkCanvasVideoRendererTest, ContextLost) {
   TestGLES2Interface gles2;
   Context3D context_3d(&gles2, gr_context.get());
   gfx::Size size(kWidth, kHeight);
-  gpu::MailboxHolder mailbox(gpu::Mailbox::Generate(), gpu::SyncToken(),
-                             GL_TEXTURE_RECTANGLE_ARB);
-  auto video_frame = VideoFrame::WrapNativeTexture(
-      PIXEL_FORMAT_UYVY, mailbox, base::Bind(MailboxHoldersReleased), size,
+  gpu::MailboxHolder holders[VideoFrame::kMaxPlanes] = {gpu::MailboxHolder(
+      gpu::Mailbox::Generate(), gpu::SyncToken(), GL_TEXTURE_RECTANGLE_ARB)};
+  auto video_frame = VideoFrame::WrapNativeTextures(
+      PIXEL_FORMAT_UYVY, holders, base::Bind(MailboxHoldersReleased), size,
       gfx::Rect(size), size, kNoTimestamp());
 
   renderer_.Paint(video_frame, &canvas, kNaturalRect, 0xFF,

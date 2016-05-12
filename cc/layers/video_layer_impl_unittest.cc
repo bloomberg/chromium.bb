@@ -336,14 +336,16 @@ TEST(VideoLayerImplTest, NativeYUVFrameGeneratesYUVQuad) {
   LayerTestCommon::LayerImplTest impl;
   DebugSetImplThreadAndMainThreadBlocked(impl.task_runner_provider());
 
-  gpu::MailboxHolder mailbox_holder;
-  mailbox_holder.mailbox.name[0] = 1;
+  gpu::MailboxHolder mailbox_holders[media::VideoFrame::kMaxPlanes];
+  mailbox_holders[0].mailbox.name[0] = 1;
+  mailbox_holders[1].mailbox.name[0] = 1;
+  mailbox_holders[2].mailbox.name[0] = 1;
 
   scoped_refptr<media::VideoFrame> video_frame =
-      media::VideoFrame::WrapYUV420NativeTextures(
-          mailbox_holder, mailbox_holder, mailbox_holder,
-          base::Bind(EmptyCallback), gfx::Size(10, 10), gfx::Rect(10, 10),
-          gfx::Size(10, 10), base::TimeDelta());
+      media::VideoFrame::WrapNativeTextures(
+          media::PIXEL_FORMAT_I420, mailbox_holders, base::Bind(EmptyCallback),
+          gfx::Size(10, 10), gfx::Rect(10, 10), gfx::Size(10, 10),
+          base::TimeDelta());
   ASSERT_TRUE(video_frame);
   video_frame->metadata()->SetBoolean(media::VideoFrameMetadata::ALLOW_OVERLAY,
                                       true);

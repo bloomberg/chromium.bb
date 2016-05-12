@@ -144,10 +144,11 @@ scoped_refptr<VideoFrame> MakeTextFrameForCast(
   gl->GenUnverifiedSyncTokenCHROMIUM(fence_sync,
                                      texture_mailbox_sync_token.GetData());
 
-  return VideoFrame::WrapNativeTexture(
-      media::PIXEL_FORMAT_ARGB,
+  gpu::MailboxHolder holders[media::VideoFrame::kMaxPlanes] = {
       gpu::MailboxHolder(texture_mailbox, texture_mailbox_sync_token,
-                         texture_target),
+                         texture_target)};
+  return VideoFrame::WrapNativeTextures(
+      media::PIXEL_FORMAT_ARGB, holders,
       media::BindToCurrentLoop(base::Bind(&OnReleaseTexture, context_3d_cb,
                                           remote_playback_texture_id)),
       canvas_size /* coded_size */, gfx::Rect(canvas_size) /* visible_rect */,

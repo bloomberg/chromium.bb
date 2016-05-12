@@ -562,9 +562,14 @@ void GpuVideoDecoder::PictureReady(const media::Picture& picture) {
         IsOpaque(config_.format()) ? PIXEL_FORMAT_XRGB : PIXEL_FORMAT_ARGB;
   }
 
-  scoped_refptr<VideoFrame> frame(VideoFrame::WrapNativeTexture(
-      pixel_format, gpu::MailboxHolder(pb.texture_mailbox(0), gpu::SyncToken(),
-                                       decoder_texture_target_),
+  gpu::MailboxHolder mailbox_holders[VideoFrame::kMaxPlanes];
+  for (size_t i = 0; i < pb.texture_ids().size(); ++i) {
+    mailbox_holders[i] = gpu::MailboxHolder(
+        pb.texture_mailbox(i), gpu::SyncToken(), decoder_texture_target_);
+  }
+
+  scoped_refptr<VideoFrame> frame(VideoFrame::WrapNativeTextures(
+      pixel_format, mailbox_holders,
       base::Bind(&ReleaseMailboxTrampoline, factories_->GetTaskRunner(),
                  base::Bind(&GpuVideoDecoder::ReleaseMailbox,
                             weak_factory_.GetWeakPtr(), factories_,

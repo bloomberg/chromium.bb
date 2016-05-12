@@ -1244,10 +1244,11 @@ void WebMediaPlayerAndroid::ReallocateVideoFrame() {
       gl->VerifySyncTokensCHROMIUM(sync_tokens, arraysize(sync_tokens));
     }
 
-    scoped_refptr<VideoFrame> new_frame = VideoFrame::WrapNativeTexture(
-        media::PIXEL_FORMAT_ARGB,
+    gpu::MailboxHolder holders[media::VideoFrame::kMaxPlanes] = {
         gpu::MailboxHolder(texture_mailbox_, texture_mailbox_sync_token,
-                           texture_target),
+                           texture_target)};
+    scoped_refptr<VideoFrame> new_frame = VideoFrame::WrapNativeTextures(
+        media::PIXEL_FORMAT_ARGB, holders,
         media::BindToCurrentLoop(base::Bind(
             &OnReleaseTexture, stream_texture_factory_, texture_id_ref)),
         natural_size_, gfx::Rect(natural_size_), natural_size_,

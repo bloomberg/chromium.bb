@@ -590,37 +590,19 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::
   for (size_t i = 0; i < num_planes; i += planes_per_copy)
     mailbox_holders[i].sync_token = sync_token;
 
-  scoped_refptr<VideoFrame> frame;
 
   auto release_mailbox_callback = BindToCurrentLoop(
       base::Bind(&PoolImpl::MailboxHoldersReleased, this, frame_resources));
 
   // Create the VideoFrame backed by native textures.
   gfx::Size visible_size = video_frame->visible_rect().size();
-  switch (output_format_) {
-    case PIXEL_FORMAT_I420:
-      frame = VideoFrame::WrapYUV420NativeTextures(
-          mailbox_holders[VideoFrame::kYPlane],
-          mailbox_holders[VideoFrame::kUPlane],
-          mailbox_holders[VideoFrame::kVPlane], release_mailbox_callback,
-          coded_size, gfx::Rect(visible_size), video_frame->natural_size(),
-          video_frame->timestamp());
-      if (frame &&
-          video_frame->metadata()->IsTrue(VideoFrameMetadata::ALLOW_OVERLAY))
-        frame->metadata()->SetBoolean(VideoFrameMetadata::ALLOW_OVERLAY, true);
-      break;
-    case PIXEL_FORMAT_NV12:
-    case PIXEL_FORMAT_UYVY:
-      frame = VideoFrame::WrapNativeTexture(
-          output_format_, mailbox_holders[VideoFrame::kYPlane],
-          release_mailbox_callback, coded_size, gfx::Rect(visible_size),
-          video_frame->natural_size(), video_frame->timestamp());
-      if (frame)
-        frame->metadata()->SetBoolean(VideoFrameMetadata::ALLOW_OVERLAY, true);
-      break;
-    default:
-      NOTREACHED();
-  }
+  scoped_refptr<VideoFrame> frame = VideoFrame::WrapNativeTextures(
+      output_format_, mailbox_holders, release_mailbox_callback, coded_size,
+      gfx::Rect(visible_size), video_frame->natural_size(),
+      video_frame->timestamp());
+  if (frame &&
+      video_frame->metadata()->IsTrue(VideoFrameMetadata::ALLOW_OVERLAY))
+    frame->metadata()->SetBoolean(VideoFrameMetadata::ALLOW_OVERLAY, true);
 
   if (!frame) {
     release_mailbox_callback.Run(gpu::SyncToken());

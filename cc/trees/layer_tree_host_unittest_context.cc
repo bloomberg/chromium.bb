@@ -1004,15 +1004,15 @@ class LayerTreeHostContextTestDontUseLostResources
     color_video_frame_ = VideoFrame::CreateColorFrame(
         gfx::Size(4, 4), 0x80, 0x80, 0x80, base::TimeDelta());
     ASSERT_TRUE(color_video_frame_);
-    hw_video_frame_ = VideoFrame::WrapNativeTexture(
-        media::PIXEL_FORMAT_ARGB,
-        gpu::MailboxHolder(mailbox, sync_token, GL_TEXTURE_2D),
+    gpu::MailboxHolder holders[media::VideoFrame::kMaxPlanes] = {
+        gpu::MailboxHolder(mailbox, sync_token, GL_TEXTURE_2D)};
+    hw_video_frame_ = VideoFrame::WrapNativeTextures(
+        media::PIXEL_FORMAT_ARGB, holders,
         media::VideoFrame::ReleaseMailboxCB(), gfx::Size(4, 4),
         gfx::Rect(0, 0, 4, 4), gfx::Size(4, 4), base::TimeDelta());
     ASSERT_TRUE(hw_video_frame_);
-    scaled_hw_video_frame_ = VideoFrame::WrapNativeTexture(
-        media::PIXEL_FORMAT_ARGB,
-        gpu::MailboxHolder(mailbox, sync_token, GL_TEXTURE_2D),
+    scaled_hw_video_frame_ = VideoFrame::WrapNativeTextures(
+        media::PIXEL_FORMAT_ARGB, holders,
         media::VideoFrame::ReleaseMailboxCB(), gfx::Size(4, 4),
         gfx::Rect(0, 0, 3, 2), gfx::Size(4, 4), base::TimeDelta());
     ASSERT_TRUE(scaled_hw_video_frame_);

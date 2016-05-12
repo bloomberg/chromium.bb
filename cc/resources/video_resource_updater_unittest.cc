@@ -186,15 +186,16 @@ class VideoResourceUpdaterTest : public testing::Test {
     const gpu::SyncToken sync_token(
         gpu::CommandBufferNamespace::GPU_IO, 0,
         gpu::CommandBufferId::FromUnsafeValue(0x123), 7);
+    gpu::MailboxHolder mailbox_holders[media::VideoFrame::kMaxPlanes] = {
+        gpu::MailboxHolder(mailbox, sync_token, target)};
     scoped_refptr<media::VideoFrame> video_frame =
-        media::VideoFrame::WrapNativeTexture(
-            media::PIXEL_FORMAT_ARGB,
-            gpu::MailboxHolder(mailbox, sync_token, target),
-            base::Bind(&ReleaseMailboxCB),
-            size,                // coded_size
-            gfx::Rect(size),     // visible_rect
-            size,                // natural_size
-            base::TimeDelta());  // timestamp
+        media::VideoFrame::WrapNativeTextures(media::PIXEL_FORMAT_ARGB,
+                                              mailbox_holders,
+                                              base::Bind(&ReleaseMailboxCB),
+                                              size,             // coded_size
+                                              gfx::Rect(size),  // visible_rect
+                                              size,             // natural_size
+                                              base::TimeDelta());  // timestamp
     EXPECT_TRUE(video_frame);
     return video_frame;
   }
@@ -216,28 +217,25 @@ class VideoResourceUpdaterTest : public testing::Test {
     const int kDimension = 10;
     gfx::Size size(kDimension, kDimension);
 
-    const int kPlanesNum = 3;
-    gpu::Mailbox mailbox[kPlanesNum];
-    for (int i = 0; i < kPlanesNum; ++i) {
-      mailbox[i].name[0] = 50 + 1;
-    }
     const gpu::SyncToken sync_token(
         gpu::CommandBufferNamespace::GPU_IO, 0,
         gpu::CommandBufferId::FromUnsafeValue(0x123), 7);
     const unsigned target = GL_TEXTURE_RECTANGLE_ARB;
+    const int kPlanesNum = 3;
+    gpu::MailboxHolder mailbox_holders[media::VideoFrame::kMaxPlanes];
+    for (int i = 0; i < kPlanesNum; ++i) {
+      gpu::Mailbox mailbox;
+      mailbox.name[0] = 50 + 1;
+      mailbox_holders[i] = gpu::MailboxHolder(mailbox, sync_token, target);
+    }
     scoped_refptr<media::VideoFrame> video_frame =
-        media::VideoFrame::WrapYUV420NativeTextures(
-            gpu::MailboxHolder(mailbox[media::VideoFrame::kYPlane], sync_token,
-                               target),
-            gpu::MailboxHolder(mailbox[media::VideoFrame::kUPlane], sync_token,
-                               target),
-            gpu::MailboxHolder(mailbox[media::VideoFrame::kVPlane], sync_token,
-                               target),
-            base::Bind(&ReleaseMailboxCB),
-            size,                // coded_size
-            gfx::Rect(size),     // visible_rect
-            size,                // natural_size
-            base::TimeDelta());  // timestamp
+        media::VideoFrame::WrapNativeTextures(media::PIXEL_FORMAT_I420,
+                                              mailbox_holders,
+                                              base::Bind(&ReleaseMailboxCB),
+                                              size,             // coded_size
+                                              gfx::Rect(size),  // visible_rect
+                                              size,             // natural_size
+                                              base::TimeDelta());  // timestamp
     EXPECT_TRUE(video_frame);
     return video_frame;
   }

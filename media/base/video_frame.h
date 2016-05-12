@@ -124,26 +124,12 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
       const gfx::Size& natural_size,
       base::TimeDelta timestamp);
 
-  // Wraps a native texture of the given parameters with a VideoFrame.
-  // The backing of the VideoFrame is held in the mailbox held by
-  // |mailbox_holder|, and |mailbox_holder_release_cb| will be called with
-  // a sync token as the argument when the VideoFrame is to be destroyed.
-  static scoped_refptr<VideoFrame> WrapNativeTexture(
-      VideoPixelFormat format,
-      const gpu::MailboxHolder& mailbox_holder,
-      const ReleaseMailboxCB& mailbox_holder_release_cb,
-      const gfx::Size& coded_size,
-      const gfx::Rect& visible_rect,
-      const gfx::Size& natural_size,
-      base::TimeDelta timestamp);
-
-  // Wraps a set of native textures representing YUV data with a VideoFrame.
+  // Wraps a set of native textures with a VideoFrame.
   // |mailbox_holders_release_cb| will be called with a sync token as the
   // argument when the VideoFrame is to be destroyed.
-  static scoped_refptr<VideoFrame> WrapYUV420NativeTextures(
-      const gpu::MailboxHolder& y_mailbox_holder,
-      const gpu::MailboxHolder& u_mailbox_holder,
-      const gpu::MailboxHolder& v_mailbox_holder,
+  static scoped_refptr<VideoFrame> WrapNativeTextures(
+      VideoPixelFormat format,
+      const gpu::MailboxHolder (&mailbox_holder)[kMaxPlanes],
       const ReleaseMailboxCB& mailbox_holders_release_cb,
       const gfx::Size& coded_size,
       const gfx::Rect& visible_rect,

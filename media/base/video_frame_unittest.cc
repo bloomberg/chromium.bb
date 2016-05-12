@@ -294,9 +294,10 @@ TEST(VideoFrame, TextureNoLongerNeededCallbackIsCalled) {
                                    gpu::CommandBufferId::FromUnsafeValue(1), 1);
 
   {
-    scoped_refptr<VideoFrame> frame = VideoFrame::WrapNativeTexture(
-        PIXEL_FORMAT_ARGB,
-        gpu::MailboxHolder(gpu::Mailbox::Generate(), gpu::SyncToken(), 5),
+    gpu::MailboxHolder holders[media::VideoFrame::kMaxPlanes] = {
+        gpu::MailboxHolder(gpu::Mailbox::Generate(), gpu::SyncToken(), 5)};
+    scoped_refptr<VideoFrame> frame = VideoFrame::WrapNativeTextures(
+        PIXEL_FORMAT_ARGB, holders,
         base::Bind(&TextureCallback, &called_sync_token),
         gfx::Size(10, 10),   // coded_size
         gfx::Rect(10, 10),   // visible_rect
@@ -352,10 +353,13 @@ TEST(VideoFrame,
 
   gpu::SyncToken called_sync_token;
   {
-    scoped_refptr<VideoFrame> frame = VideoFrame::WrapYUV420NativeTextures(
+    gpu::MailboxHolder holders[media::VideoFrame::kMaxPlanes] = {
         gpu::MailboxHolder(mailbox[VideoFrame::kYPlane], sync_token, target),
         gpu::MailboxHolder(mailbox[VideoFrame::kUPlane], sync_token, target),
         gpu::MailboxHolder(mailbox[VideoFrame::kVPlane], sync_token, target),
+    };
+    scoped_refptr<VideoFrame> frame = VideoFrame::WrapNativeTextures(
+        PIXEL_FORMAT_I420, holders,
         base::Bind(&TextureCallback, &called_sync_token),
         gfx::Size(10, 10),   // coded_size
         gfx::Rect(10, 10),   // visible_rect

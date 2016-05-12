@@ -63,10 +63,11 @@ scoped_refptr<::media::VideoFrame> HoleFrameFactory::CreateHoleFrame(
   }
 
   LOG(INFO) << "Create hole frame " << size.width() << "x" << size.height();
+  gpu::MailboxHolder holders[::media::VideoFrame::kMaxPlanes] = {
+      gpu::MailboxHolder(mailbox_, sync_token_, GL_TEXTURE_2D)};
   scoped_refptr<::media::VideoFrame> frame =
-      ::media::VideoFrame::WrapNativeTexture(
-          ::media::PIXEL_FORMAT_XRGB,
-          gpu::MailboxHolder(mailbox_, sync_token_, GL_TEXTURE_2D),
+      ::media::VideoFrame::WrapNativeTextures(
+          ::media::PIXEL_FORMAT_XRGB, holders,
           ::media::VideoFrame::ReleaseMailboxCB(),
           size,                // coded_size
           gfx::Rect(size),     // visible rect

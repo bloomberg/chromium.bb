@@ -432,13 +432,16 @@ scoped_refptr<media::VideoFrame> RTCVideoDecoder::CreateVideoFrame(
   // This prevents the compositor from messing with it, since the underlying
   // platform can handle the former format natively. Make sure the
   // correct format is used and everyone down the line understands it.
-  scoped_refptr<media::VideoFrame> frame = media::VideoFrame::WrapNativeTexture(
-      pixel_format, gpu::MailboxHolder(pb.texture_mailbox(0), gpu::SyncToken(),
-                                       decoder_texture_target_),
-      media::BindToCurrentLoop(base::Bind(
-          &RTCVideoDecoder::ReleaseMailbox, weak_factory_.GetWeakPtr(),
-          factories_, picture.picture_buffer_id(), pb.texture_ids()[0])),
-      pb.size(), visible_rect, visible_rect.size(), timestamp_ms);
+  gpu::MailboxHolder holders[media::VideoFrame::kMaxPlanes] = {
+      gpu::MailboxHolder(pb.texture_mailbox(0), gpu::SyncToken(),
+                         decoder_texture_target_)};
+  scoped_refptr<media::VideoFrame> frame =
+      media::VideoFrame::WrapNativeTextures(
+          pixel_format, holders,
+          media::BindToCurrentLoop(base::Bind(
+              &RTCVideoDecoder::ReleaseMailbox, weak_factory_.GetWeakPtr(),
+              factories_, picture.picture_buffer_id(), pb.texture_ids()[0])),
+          pb.size(), visible_rect, visible_rect.size(), timestamp_ms);
   if (frame && picture.allow_overlay()) {
     frame->metadata()->SetBoolean(media::VideoFrameMetadata::ALLOW_OVERLAY,
                                   true);
