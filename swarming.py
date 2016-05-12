@@ -121,9 +121,9 @@ def isolated_handle_options(options, args):
         options.isolated)
 
   inputs_ref = FilesRef(
-    isolated=options.isolated,
-    isolatedserver=options.isolate_server,
-    namespace=options.namespace)
+      isolated=options.isolated,
+      isolatedserver=options.isolate_server,
+      namespace=options.namespace)
   return isolated_cmd_args, inputs_ref
 
 
@@ -930,14 +930,15 @@ def process_trigger_options(parser, options, args):
     except ValueError as e:
       parser.error(str(e))
 
-  # If inputs_ref is used, command is actually extra_args. Otherwise it's an
-  # actual command to run.
+  # If inputs_ref.isolated is used, command is actually extra_args.
+  # Otherwise it's an actual command to run.
+  isolated_input = inputs_ref and inputs_ref.isolated
   properties = TaskProperties(
-      command=None if inputs_ref else command,
+      command=None if isolated_input else command,
       dimensions=options.dimensions,
       env=options.env,
       execution_timeout_secs=options.hard_timeout,
-      extra_args=command if inputs_ref else None,
+      extra_args=command if isolated_input else None,
       grace_period_secs=30,
       idempotent=options.idempotent,
       inputs_ref=inputs_ref,
@@ -1378,7 +1379,7 @@ def CMDreproduce(parser, args):
       else:
         env[key] = i['value'].encode('utf-8')
 
-  if properties.get('inputs_ref'):
+  if (properties.get('inputs_ref') or {}).get('isolated'):
     # Create the tree.
     with isolateserver.get_storage(
           properties['inputs_ref']['isolatedserver'],
