@@ -46,7 +46,9 @@ shared_library("clearkeycdm") {
     deps += [ "//third_party/ffmpeg" ]
   }
 
-  # TODO(GYP) on Mac: 'DYLIB_INSTALL_NAME_BASE': '@loader_path',
+  if (is_mac) {
+    ldflags = [ "-Wl,-install_name,@loader_path/libclearkeycdm.dylib" ]
+  }
 }
 
 process_version("clearkeycdmadapter_resources") {
