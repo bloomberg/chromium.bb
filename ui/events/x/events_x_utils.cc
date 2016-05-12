@@ -13,6 +13,7 @@
 #include <X11/Xutil.h>
 #include <cmath>
 
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
@@ -305,22 +306,49 @@ bool GetGestureTimes(const XEvent& xev, double* start_time, double* end_time) {
   return true;
 }
 
-int64_t g_last_seen_timestamp_ms_ = 0;
+int64_t g_last_seen_timestamp_ms = 0;
 // accumulated rollover time.
-int64_t g_rollover_ms_ = 0;
+int64_t g_rollover_ms = 0;
+base::LazyInstance<std::unique_ptr<base::TickClock>>::Leaky g_tick_clock =
+    LAZY_INSTANCE_INITIALIZER;
 
-// Takes a 32-bit timestamp in milliseconds (e.g., an Xlib Time) and returns
-// a time delta that is immune to timer rollover. This function is not thread
-// safe as we do not use a lock.
-base::TimeDelta TimeDeltaFromXEventTime(uint32_t timestamp) {
-  int64_t timestamp_64 = static_cast<int64_t>(timestamp);
+// Takes Xlib Time and returns a time delta that is immune to timer rollover.
+// This function is not thread safe as we do not use a lock.
+base::TimeDelta TimeDeltaFromXEventTime(Time timestamp) {
+  int64_t timestamp64 = timestamp;
+
+  if (!timestamp)
+    return base::TimeDelta();
+
+  // If this is the first event that we get, assume the time stamp roll-over
+  // might have happened before the process was started.
   // Register a rollover if the distance between last timestamp and current one
   // is larger than half the width. This avoids false rollovers even in a case
   // where X server delivers reasonably close events out-of-order.
-  if (g_last_seen_timestamp_ms_ - timestamp_64 > (UINT32_MAX >> 1))
-    g_rollover_ms_ += static_cast<int64_t>(UINT32_MAX) + 1;  // ~49.7 days.
-  g_last_seen_timestamp_ms_ = timestamp_64;
-  return base::TimeDelta::FromMilliseconds(g_rollover_ms_ + timestamp_64);
+  bool had_recent_rollover =
+      !g_last_seen_timestamp_ms ||
+      g_last_seen_timestamp_ms - timestamp64 > (UINT32_MAX >> 1);
+
+  g_last_seen_timestamp_ms = timestamp64;
+  if (!had_recent_rollover)
+    return base::TimeDelta::FromMilliseconds(g_rollover_ms + timestamp);
+
+  DCHECK(timestamp64 <= UINT32_MAX)
+      << "X11 Time does not roll over 32 bit, the below logic is likely wrong";
+
+  base::TimeTicks now_ticks = g_tick_clock.Get() != nullptr
+                                  ? g_tick_clock.Get()->NowTicks()
+                                  : base::TimeTicks::Now();
+  int64_t now_ms = (now_ticks - base::TimeTicks()).InMilliseconds();
+
+  g_rollover_ms = now_ms & ~static_cast<int64_t>(UINT32_MAX);
+  uint32_t delta = static_cast<uint32_t>(now_ms - timestamp);
+  // If using a mock clock, all bets are off -- in some tests, actual X11 events
+  // come through with real timestamps.
+  DCHECK(delta < 60 * 1000 || g_tick_clock.Get() != nullptr)
+      << "Unexpected X11 event time, now: " << now_ticks
+      << " event at: " << timestamp;
+  return base::TimeDelta::FromMilliseconds(now_ms - delta);
 }
 
 }  // namespace
@@ -781,9 +809,11 @@ bool GetFlingDataFromXEvent(const XEvent& xev,
   return true;
 }
 
-void ResetTimestampRolloverCountersForTesting() {
-  g_last_seen_timestamp_ms_ = 0;
-  g_rollover_ms_ = 0;
+void ResetTimestampRolloverCountersForTesting(
+    std::unique_ptr<base::TickClock> tick_clock) {
+  g_last_seen_timestamp_ms = 0;
+  g_rollover_ms = 0;
+  g_tick_clock.Get() = std::move(tick_clock);
 }
 
 }  // namespace ui

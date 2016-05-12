@@ -359,13 +359,18 @@
             'keycodes/events_keycodes.gyp:keycodes_x11',
           ],
         }],
+        ['use_x11==1 or ozone_platform_ozonex==1', {
+          'dependencies': [
+            'x/events_x.gyp:events_x',
+          ],
+        }],
         ['use_x11==1 or use_ozone==1', {
           'sources' : [
               'test/device_data_manager_test_api_impl.cc',
             ],
           'dependencies': [
             'devices/events_devices.gyp:events_devices',
-            ],
+          ],
         }, { # else use_x11=1 or use_ozone=1
           'sources' : [
               'test/device_data_manager_test_api_stub.cc',
