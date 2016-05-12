@@ -1646,6 +1646,8 @@
       'browser/accessibility/animation_policy_prefs.h',
       'browser/autocomplete/keyword_extensions_delegate_impl.cc',
       'browser/autocomplete/keyword_extensions_delegate_impl.h',
+      'browser/browsing_data/hosted_apps_counter.cc',
+      'browser/browsing_data/hosted_apps_counter.h',
       'browser/content_settings/content_settings_internal_extension_provider.cc',
       'browser/content_settings/content_settings_internal_extension_provider.h',
       'browser/drive/drive_notification_manager_factory.cc',

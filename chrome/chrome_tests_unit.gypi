@@ -404,6 +404,7 @@
       'browser/apps/app_shim/extension_app_shim_handler_mac_unittest.cc',
       'browser/apps/drive/drive_app_mapping_unittest.cc',
       'browser/autocomplete/keyword_extensions_delegate_impl_unittest.cc',
+      'browser/browsing_data/hosted_apps_counter_unittest.cc',
       'browser/extensions/active_tab_unittest.cc',
       'browser/extensions/activity_log/activity_database_unittest.cc',
       'browser/extensions/activity_log/activity_log_enabled_unittest.cc',
