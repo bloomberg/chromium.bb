@@ -2,13 +2,9 @@ dvadym@chromium.org
 engedy@chromium.org
 gcasto@chromium.org
 isherman@chromium.org
+melandory@chromium.org
 mkwst@chromium.org
 vabr@chromium.org
 vasilii@chromium.org
 
-per-file account_chooser_dialog_android.*=melandory@chromium.org
-
-per-file credential_android.*=melandory@chromium.org
-
-per-file generated_password_saved_infobar_delegate_android.*=melandory@chromium.org
 per-file generated_password_saved_infobar_delegate_android.*=rouslan@chromium.org
