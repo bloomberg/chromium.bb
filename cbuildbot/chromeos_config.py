@@ -199,10 +199,13 @@ class HWTestList(object):
                         retry=False, max_retries=None, minimum_duts=4)
     # Allows kwargs overrides to default_dict for pfq.
     default_dict.update(kwargs)
-    return [config_lib.HWTestConfig(constants.HWTEST_COMMIT_SUITE,
-                                    num=8, pool=constants.HWTEST_MACH_POOL,
-                                    **default_dict),
-            config_lib.HWTestConfig(constants.HWTEST_ARC_COMMIT_SUITE,
+
+    # TODO(crbug.com/610807): Disable the HWTests for now, since we are having
+    # issues getting them to run and complete in time.
+    # return [config_lib.HWTestConfig(constants.HWTEST_COMMIT_SUITE,
+    #                                num=8, pool=constants.HWTEST_MACH_POOL,
+    #                                **default_dict),
+    return [config_lib.HWTestConfig(constants.HWTEST_ARC_COMMIT_SUITE,
                                     num=4, pool=constants.HWTEST_PALADIN_POOL,
                                     **default_dict)]
 
