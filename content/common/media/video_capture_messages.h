@@ -21,7 +21,6 @@ IPC_ENUM_TRAITS_MAX_VALUE(media::ResolutionChangePolicy,
                           media::RESOLUTION_POLICY_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(media::VideoFrame::StorageType,
                           media::VideoFrame::STORAGE_LAST)
-IPC_ENUM_TRAITS_MAX_VALUE(media::VideoPixelStorage, media::PIXEL_STORAGE_MAX)
 IPC_ENUM_TRAITS_MAX_VALUE(media::PowerLineFrequency,
                           media::PowerLineFrequency::FREQUENCY_MAX)
 

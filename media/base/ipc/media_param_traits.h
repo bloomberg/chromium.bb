@@ -1,13 +1,13 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_MEDIA_MEDIA_PARAM_TRAITS_H_
-#define CONTENT_COMMON_MEDIA_MEDIA_PARAM_TRAITS_H_
+#ifndef MEDIA_BASE_IPC_COMMON_MEDIA_PARAM_TRAITS_H_
+#define MEDIA_BASE_IPC_COMMON_MEDIA_PARAM_TRAITS_H_
 
-#include "content/common/content_export.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_param_traits.h"
+#include "media/base/ipc/media_param_traits_macros.h"
 
 namespace media {
 class AudioParameters;
@@ -17,7 +17,7 @@ struct VideoCaptureFormat;
 namespace IPC {
 
 template <>
-struct CONTENT_EXPORT ParamTraits<media::AudioParameters> {
+struct ParamTraits<media::AudioParameters> {
   typedef media::AudioParameters param_type;
   static void GetSize(base::PickleSizer* s, const param_type& p);
   static void Write(base::Pickle* m, const param_type& p);
@@ -28,7 +28,7 @@ struct CONTENT_EXPORT ParamTraits<media::AudioParameters> {
 };
 
 template <>
-struct CONTENT_EXPORT ParamTraits<media::VideoCaptureFormat> {
+struct ParamTraits<media::VideoCaptureFormat> {
   typedef media::VideoCaptureFormat param_type;
   static void GetSize(base::PickleSizer* s, const param_type& p);
   static void Write(base::Pickle* m, const param_type& p);
@@ -38,6 +38,6 @@ struct CONTENT_EXPORT ParamTraits<media::VideoCaptureFormat> {
   static void Log(const param_type& p, std::string* l);
 };
 
-} // namespace IPC
+}  // namespace IPC
 
-#endif  // CONTENT_COMMON_MEDIA_MEDIA_PARAM_TRAITS_H_
+#endif  // MEDIA_BASE_IPC_COMMON_MEDIA_PARAM_TRAITS_H_

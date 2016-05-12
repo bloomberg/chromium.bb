@@ -12,11 +12,10 @@
 #include "base/memory/shared_memory.h"
 #include "base/sync_socket.h"
 #include "content/common/content_export.h"
-#include "content/common/media/media_param_traits.h"
 #include "ipc/ipc_message_macros.h"
 #include "media/audio/audio_input_ipc.h"
 #include "media/audio/audio_output_ipc.h"
-#include "media/base/audio_parameters.h"
+#include "media/base/ipc/media_param_traits.h"
 #include "media/gpu/ipc/common/media_param_traits.h"
 #include "url/origin.h"
 
@@ -32,11 +31,6 @@ IPC_ENUM_TRAITS_MAX_VALUE(media::AudioOutputIPCDelegateState,
 
 IPC_ENUM_TRAITS_MAX_VALUE(media::OutputDeviceStatus,
                           media::OUTPUT_DEVICE_STATUS_LAST)
-
-IPC_ENUM_TRAITS_MAX_VALUE(media::AudioParameters::Format,
-                          media::AudioParameters::AUDIO_FORMAT_LAST)
-
-IPC_ENUM_TRAITS_MAX_VALUE(media::ChannelLayout, media::CHANNEL_LAYOUT_MAX)
 
 IPC_STRUCT_BEGIN(AudioInputHostMsg_CreateStream_Config)
   IPC_STRUCT_MEMBER(media::AudioParameters, params)

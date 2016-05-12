@@ -1,16 +1,16 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/media/media_param_traits.h"
+#include "media/base/ipc/media_param_traits.h"
 
 #include "base/strings/stringprintf.h"
-#include "content/common/media/audio_messages.h"
-#include "content/common/media/video_capture_messages.h"
 #include "ipc/ipc_message_utils.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/audio_point.h"
 #include "media/base/limits.h"
+#include "media/base/video_capture_types.h"
+#include "ui/gfx/ipc/geometry/gfx_param_traits.h"
 #include "ui/gfx/ipc/gfx_param_traits.h"
 #include "ui/gfx/ipc/skia/gfx_skia_param_traits.h"
 
@@ -110,4 +110,32 @@ void ParamTraits<VideoCaptureFormat>::Log(const VideoCaptureFormat& p,
                                media::VideoCaptureFormat::ToString(p).c_str()));
 }
 
+}  // namespace IPC
+
+// Generate param traits size methods.
+#include "ipc/param_traits_size_macros.h"
+namespace IPC {
+#undef MEDIA_BASE_IPC_COMMON_MEDIA_PARAM_TRAITS_MACROS_H_
+#include "media/base/ipc/media_param_traits_macros.h"
+}
+
+// Generate param traits write methods.
+#include "ipc/param_traits_write_macros.h"
+namespace IPC {
+#undef MEDIA_BASE_IPC_COMMON_MEDIA_PARAM_TRAITS_MACROS_H_
+#include "media/base/ipc/media_param_traits_macros.h"
+}  // namespace IPC
+
+// Generate param traits read methods.
+#include "ipc/param_traits_read_macros.h"
+namespace IPC {
+#undef MEDIA_BASE_IPC_COMMON_MEDIA_PARAM_TRAITS_MACROS_H_
+#include "media/base/ipc/media_param_traits_macros.h"
+}  // namespace IPC
+
+// Generate param traits log methods.
+#include "ipc/param_traits_log_macros.h"
+namespace IPC {
+#undef MEDIA_BASE_IPC_COMMON_MEDIA_PARAM_TRAITS_MACROS_H_
+#include "media/base/ipc/media_param_traits_macros.h"
 }  // namespace IPC

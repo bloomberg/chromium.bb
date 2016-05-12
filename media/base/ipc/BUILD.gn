@@ -2,14 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("common") {
+source_set("ipc") {
   sources = [
-    "create_video_encoder_params.cc",
-    "create_video_encoder_params.h",
-    "media_message_generator.cc",
-    "media_message_generator.h",
-    "media_messages.cc",
-    "media_messages.h",
     "media_param_traits.cc",
     "media_param_traits.h",
     "media_param_traits_macros.h",
@@ -17,12 +11,8 @@ source_set("common") {
 
   deps = [
     "//base",
-    "//gpu/ipc/common",
     "//ipc",
     "//media",
-    "//media/base/ipc",
-    "//ui/gfx:memory_buffer",
-    "//ui/gfx/geometry",
     "//ui/gfx/ipc",
     "//ui/gfx/ipc/geometry",
   ]
