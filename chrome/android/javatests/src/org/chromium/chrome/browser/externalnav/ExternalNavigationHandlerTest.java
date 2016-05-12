@@ -838,6 +838,10 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
         }
 
         @Override
+        public void maybeSetWindowId(Intent intent) {
+        }
+
+        @Override
         public boolean isChromeAppInForeground() {
             return mIsChromeAppInForeground;
         }

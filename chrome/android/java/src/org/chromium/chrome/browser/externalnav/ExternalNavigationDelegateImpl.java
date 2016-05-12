@@ -31,6 +31,7 @@ import org.chromium.base.PathUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeTabbedActivity2;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler.OverrideUrlLoadingResult;
@@ -443,6 +444,13 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     public boolean isChromeAppInForeground() {
         return ApplicationStatus.getStateForApplication()
                 == ApplicationState.HAS_RUNNING_ACTIVITIES;
+    }
+
+    @Override
+    public void maybeSetWindowId(Intent intent) {
+        Context context = getAvailableContext();
+        if (!(context instanceof ChromeTabbedActivity2)) return;
+        intent.putExtra(IntentHandler.EXTRA_WINDOW_ID, 2);
     }
 
     @Override

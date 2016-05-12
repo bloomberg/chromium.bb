@@ -90,6 +90,9 @@ interface ExternalNavigationDelegate {
      */
     OverrideUrlLoadingResult clobberCurrentTab(String url, String referrerUrl, Tab tab);
 
+    /** Adds a window id to the intent, if necessary. */
+    void maybeSetWindowId(Intent intent);
+
     /**
      * Determine if the Chrome app is in the foreground.
      */

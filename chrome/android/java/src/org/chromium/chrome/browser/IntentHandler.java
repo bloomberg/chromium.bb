@@ -127,6 +127,11 @@ public class IntentHandler {
     private static final String EXTRA_TIMESTAMP_MS = "org.chromium.chrome.browser.timestamp";
 
     /**
+     * For multi-window, passes the id of the window.
+     */
+    public static final String EXTRA_WINDOW_ID = "org.chromium.chrome.browser.window_id";
+
+    /**
      * Fake ComponentName used in constructing TRUSTED_APPLICATION_CODE_EXTRA.
      */
     private static ComponentName sFakeComponentName = null;
