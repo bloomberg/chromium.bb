@@ -788,16 +788,12 @@ void SpellChecker::respondToChangedSelection(const VisibleSelection& oldSelectio
             newAdjacentWords = VisibleSelection(startOfWord(newStart, LeftWordIfOnBoundary), endOfWord(newStart, RightWordIfOnBoundary));
         }
 
-        // Don't check spelling and grammar if the change of selection is triggered by spelling correction itself.
-        bool shouldCheckSpellingAndGrammar = !(options & FrameSelection::SpellCorrectionTriggered);
-
         // When typing we check spelling elsewhere, so don't redo it here.
         // If this is a change in selection resulting from a delete operation,
         // oldSelection may no longer be in the document.
         // FIXME(http://crbug.com/382809): if oldSelection is on a textarea
         // element, we cause synchronous layout.
-        if (shouldCheckSpellingAndGrammar
-            && closeTyping
+        if (closeTyping
             && !isSelectionInTextField(oldSelection)
             && (isSelectionInTextArea(oldSelection) || oldSelection.isContentEditable())
             && oldSelection.start().inShadowIncludingDocument()) {

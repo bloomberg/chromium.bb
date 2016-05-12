@@ -81,11 +81,10 @@ public:
         // 1 << 0 is reserved for EUserTriggered
         CloseTyping = 1 << 1,
         ClearTypingStyle = 1 << 2,
-        SpellCorrectionTriggered = 1 << 3,
-        DoNotSetFocus = 1 << 4,
-        DoNotUpdateAppearance = 1 << 5,
-        DoNotClearStrategy = 1 << 6,
-        DoNotAdjustInFlatTree = 1 << 7,
+        DoNotSetFocus = 1 << 3,
+        DoNotUpdateAppearance = 1 << 4,
+        DoNotClearStrategy = 1 << 5,
+        DoNotAdjustInFlatTree = 1 << 6,
     };
     typedef unsigned SetSelectionOptions; // Union of values in SetSelectionOption and EUserTriggered
     static inline EUserTriggered selectionOptionsToUserTriggered(SetSelectionOptions options)
