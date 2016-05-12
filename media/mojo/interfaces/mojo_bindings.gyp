@@ -18,7 +18,7 @@
       'dependencies': [
         'platform_verification_mojo_bindings',
         '../../../mojo/mojo_public.gyp:mojo_cpp_bindings',
-        '../../../services/shell/shell.gyp:shell_public',
+        '../../../services/shell/shell_public.gyp:shell_public',
       ],
       'sources': [
         '<(SHARED_INTERMEDIATE_DIR)/media/mojo/interfaces/platform_verification.mojom.cc',
@@ -42,7 +42,7 @@
       'dependencies': [
         'provision_fetcher_mojo_bindings',
         '../../../mojo/mojo_public.gyp:mojo_cpp_bindings',
-        '../../../services/shell/shell.gyp:shell_public',
+        '../../../services/shell/shell_public.gyp:shell_public',
       ],
     },
   ],

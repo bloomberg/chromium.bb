@@ -3385,7 +3385,7 @@
             '../mojo/mojo_public.gyp:mojo_js_bindings',
             '../net/net.gyp:net_extras',
             '../net/net.gyp:net_with_v8',
-            '../services/shell/shell.gyp:shell_public',
+            '../services/shell/shell_public.gyp:shell_public',
             '../storage/storage_browser.gyp:storage',
             '../storage/storage_common.gyp:storage_common',
             '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',

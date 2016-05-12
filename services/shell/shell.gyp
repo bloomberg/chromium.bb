@@ -5,72 +5,6 @@
 {
   'targets': [
   {
-    'target_name': 'shell_interfaces',
-    'type': 'none',
-    'variables': {
-      'mojom_files': [
-        '../catalog/public/interfaces/catalog.mojom',
-        'public/interfaces/capabilities.mojom',
-        'public/interfaces/connector.mojom',
-        'public/interfaces/interface_provider.mojom',
-        'public/interfaces/shell.mojom',
-        'public/interfaces/shell_client.mojom',
-        'public/interfaces/shell_client_factory.mojom',
-        'public/interfaces/shell_resolver.mojom',
-      ],
-      'mojom_typemaps': [
-        '<(DEPTH)/mojo/common/common_custom_types.typemap',
-      ],
-    },
-    'includes': [ '../../mojo/mojom_bindings_generator_explicit.gypi' ],
-    'dependencies': [
-      '<(DEPTH)/mojo/mojo_base.gyp:mojo_common_custom_types_mojom',
-    ],
-    'export_dependent_settings': [
-      '<(DEPTH)/mojo/mojo_base.gyp:mojo_common_custom_types_mojom',
-    ],
-  },
-  {
-    # GN version: //services/shell/public/cpp
-    'target_name': 'shell_public',
-    'type': 'static_library',
-    'sources': [
-      'public/cpp/application_runner.h',
-      'public/cpp/capabilities.h',
-      'public/cpp/connect.h',
-      'public/cpp/connection.h',
-      'public/cpp/connector.h',
-      'public/cpp/identity.h',
-      'public/cpp/initialize_base_and_icu.cc',
-      'public/cpp/initialize_base_and_icu.h',
-      'public/cpp/interface_binder.h',
-      'public/cpp/interface_factory.h',
-      'public/cpp/interface_factory_impl.h',
-      'public/cpp/interface_registry.h',
-      'public/cpp/lib/application_runner.cc',
-      'public/cpp/lib/capabilities.cc',
-      'public/cpp/lib/connection_impl.cc',
-      'public/cpp/lib/connection_impl.h',
-      'public/cpp/lib/connector_impl.cc',
-      'public/cpp/lib/connector_impl.h',
-      'public/cpp/lib/identity.cc',
-      'public/cpp/lib/interface_factory_binder.h',
-      'public/cpp/lib/interface_registry.cc',
-      'public/cpp/lib/names.cc',
-      'public/cpp/lib/shell_client.cc',
-      'public/cpp/lib/shell_connection.cc',
-      'public/cpp/lib/shell_connection_ref.cc',
-      'public/cpp/names.h',
-      'public/cpp/shell_client.h',
-      'public/cpp/shell_connection.h',
-      'public/cpp/shell_connection_ref.h',
-    ],
-    'dependencies': [
-      'shell_interfaces',
-      '<(DEPTH)/base/base.gyp:base_i18n',
-      '<(DEPTH)/mojo/mojo_public.gyp:mojo_cpp_bindings',
-    ],
-  }, {
     'target_name': 'shell_lib',
     'type': 'static_library',
     'sources': [
@@ -99,16 +33,16 @@
       'switches.cc',
     ],
     'dependencies': [
-      'shell_public',
       '<(DEPTH)/base/base.gyp:base',
       '<(DEPTH)/base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
       '<(DEPTH)/components/filesystem/filesystem.gyp:filesystem_bindings',
       '<(DEPTH)/components/filesystem/filesystem.gyp:filesystem_lib',
       '<(DEPTH)/mojo/mojo_base.gyp:mojo_common_lib',
+      'shell_public.gyp:shell_public',
     ],
     'export_dependent_settings': [
-      'shell_public',
       '<(DEPTH)/components/filesystem/filesystem.gyp:filesystem_bindings',
+      'shell_public.gyp:shell_public',
     ],
     'variables': {
       'mojom_typemaps': [
@@ -123,13 +57,13 @@
     ],
     'dependencies': [
       'shell_lib',
-      'shell_public',
       'shell_test_public',
       '<(DEPTH)/base/base.gyp:base',
       '<(DEPTH)/mojo/mojo_base.gyp:mojo_common_lib',
       '<(DEPTH)/mojo/mojo_edk.gyp:mojo_run_all_unittests',
       '<(DEPTH)/mojo/mojo_public.gyp:mojo_cpp_bindings',
       '<(DEPTH)/testing/gtest.gyp:gtest',
+      'shell_public.gyp:shell_public',
     ]
   }, {
     'target_name': 'shell_test_public',
@@ -161,14 +95,14 @@
       '..',
     ],
     'dependencies': [
-      'shell_public',
       '<(DEPTH)/base/base.gyp:base',
       '<(DEPTH)/mojo/mojo_edk.gyp:mojo_system_impl',
       '<(DEPTH)/mojo/mojo_public.gyp:mojo_cpp_bindings',
       '<(DEPTH)/mojo/mojo_public.gyp:mojo_cpp_system',
+      'shell_public.gyp:shell_public',
     ],
     'export_dependent_settings': [
-      'shell_public',
+      'shell_public.gyp:shell_public',
     ],
   }, {
     'target_name': 'shell_runner_host_lib',
@@ -191,16 +125,16 @@
     ],
     'dependencies': [
       'shell_lib',
-      'shell_public',
       'shell_runner_common_lib',
       '<(DEPTH)/base/base.gyp:base',
       '<(DEPTH)/base/base.gyp:base_i18n',
       '<(DEPTH)/base/base.gyp:base_static',
       '<(DEPTH)/mojo/mojo_edk.gyp:mojo_system_impl',
       '<(DEPTH)/mojo/mojo_platform_handle.gyp:platform_handle',
+      'shell_public.gyp:shell_public',
     ],
     'export_dependent_settings': [
-      'shell_public',
+      'shell_public.gyp:shell_public',
     ],
     'conditions': [
       ['OS=="linux"', {
@@ -240,10 +174,10 @@
     'target_name': 'shell_client_lib_unittests',
     'type': 'executable',
     'dependencies': [
-      'shell_public',
       '<(DEPTH)/base/base.gyp:base',
       '<(DEPTH)/mojo/mojo_edk.gyp:mojo_run_all_unittests',
       '<(DEPTH)/testing/gtest.gyp:gtest',
+      'shell_public.gyp:shell_public',
     ],
     'sources': [
       'public/cpp/tests/interface_registry_unittest.cc',

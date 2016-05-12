@@ -30,7 +30,7 @@
         '../mojo/mojo_edk.gyp:mojo_js_lib',
         '../mojo/mojo_edk.gyp:mojo_system_impl',
         '../mojo/mojo_public.gyp:mojo_cpp_bindings',
-        '../services/shell/shell.gyp:shell_public',
+        '../services/shell/shell_public.gyp:shell_public',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
         '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',

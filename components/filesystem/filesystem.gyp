@@ -36,7 +36,7 @@
         '../../mojo/mojo_edk.gyp:mojo_system_impl',
         '../../mojo/mojo_public.gyp:mojo_cpp_bindings',
         '../../mojo/mojo_platform_handle.gyp:platform_handle',
-        '../../services/shell/shell.gyp:shell_public',
+        '../../services/shell/shell_public.gyp:shell_public',
         '../../url/url.gyp:url_lib',
       ],
       'export_dependent_settings': [

@@ -31,7 +31,7 @@
         'leveldb_public_lib',
         '../../components/filesystem/filesystem.gyp:filesystem_lib',
         '../../mojo/mojo_public.gyp:mojo_cpp_bindings',
-        '../../services/shell/shell.gyp:shell_public',
+        '../../services/shell/shell_public.gyp:shell_public',
         '../../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
       ]
     },
@@ -49,7 +49,7 @@
         'leveldb_bindings_mojom',
         '../../mojo/mojo_edk.gyp:mojo_system_impl',
         '../../mojo/mojo_public.gyp:mojo_cpp_bindings',
-        '../../services/shell/shell.gyp:shell_public',
+        '../../services/shell/shell_public.gyp:shell_public',
         '../../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
       ]
     },

@@ -27,7 +27,7 @@
       'dependencies': [
         '../components/leveldb/leveldb.gyp:leveldb_bindings_mojom',
         '../mojo/mojo_public.gyp:mojo_cpp_bindings',
-        '../services/shell/shell.gyp:shell_public',
+        '../services/shell/shell_public.gyp:shell_public',
         '../skia/skia.gyp:skia_mojo',
         '../third_party/WebKit/public/blink.gyp:mojo_bindings',
         '../ui/mojo/geometry/mojo_bindings.gyp:mojo_geometry_bindings',

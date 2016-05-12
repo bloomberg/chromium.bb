@@ -28,7 +28,7 @@
     '../mojo/mojo_base.gyp:mojo_url_type_converters',
     '../mojo/mojo_edk.gyp:mojo_js_lib',
     '../net/net.gyp:net',
-    '../services/shell/shell.gyp:shell_public',
+    '../services/shell/shell_public.gyp:shell_public',
     '../skia/skia.gyp:skia',
     '../skia/skia.gyp:skia_mojo',
     '../storage/storage_common.gyp:storage_common',

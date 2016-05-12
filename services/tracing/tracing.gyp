@@ -28,7 +28,7 @@
       'dependencies': [
         'tracing_public',
         '../../mojo/mojo_edk.gyp:mojo_system_impl',
-        '../shell/shell.gyp:shell_public',
+        '../shell/shell_public.gyp:shell_public',
       ],
       'sources': [
         'trace_data_sink.cc',
@@ -46,7 +46,7 @@
       'dependencies': [
         'tracing_interfaces',
         '../../mojo/mojo_edk.gyp:mojo_system_impl',
-        '../shell/shell.gyp:shell_public',
+        '../shell/shell_public.gyp:shell_public',
       ],
       'sources': [
         'public/cpp/switches.cc',

@@ -8,8 +8,8 @@
     '../courgette/courgette.gyp:courgette_lib',
     '../mojo/mojo_base.gyp:mojo_common_lib',
     '../mojo/mojo_public.gyp:mojo_cpp_bindings',
-    '../services/shell/shell.gyp:shell_public',
     '../services/shell/shell.gyp:shell_lib',
+    '../services/shell/shell_public.gyp:shell_public',
     '../url/url.gyp:url_lib',
   ],
   'variables': {

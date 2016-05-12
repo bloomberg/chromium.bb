@@ -26,8 +26,8 @@
     '../mojo/mojo_edk.gyp:mojo_system_impl',
     '../mojo/mojo_public.gyp:mojo_cpp_bindings',
     '../net/net.gyp:net',
-    '../services/shell/shell.gyp:shell_public',
     '../services/shell/shell.gyp:shell_runner_common_lib',
+    '../services/shell/shell_public.gyp:shell_public',
     '../skia/skia.gyp:skia',
     '../storage/storage_common.gyp:storage_common',
     '../third_party/WebKit/public/blink.gyp:blink',
@@ -81,7 +81,7 @@
   'export_dependent_settings': [
     '../base/base.gyp:base',
     '../mojo/mojo_public.gyp:mojo_cpp_bindings',
-    '../services/shell/shell.gyp:shell_public',
+    '../services/shell/shell_public.gyp:shell_public',
     # The public content API headers directly include Blink API headers, so we
     # have to export the blink header settings so that relative paths in these
     # headers resolve correctly.
