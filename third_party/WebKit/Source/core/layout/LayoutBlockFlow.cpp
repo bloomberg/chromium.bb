@@ -2548,6 +2548,49 @@ void LayoutBlockFlow::reparentPrecedingFloatingOrOutOfFlowSiblings()
     }
 }
 
+void LayoutBlockFlow::makeChildrenInlineIfPossible()
+{
+    // Collapsing away anonymous wrappers isn't relevant for the children of anonymous blocks, unless they are ruby bases.
+    if (isAnonymousBlock() && !isRubyBase())
+        return;
+
+    Vector<LayoutBlock*, 3> blocksToRemove;
+    for (LayoutObject* child = firstChild(); child; child = child->nextSibling()) {
+        if (child->isFloating())
+            continue;
+        if (child->isOutOfFlowPositioned())
+            continue;
+
+        // There are still block children in the container, so any anonymous wrappers are still needed.
+        if (!child->isAnonymousBlock())
+            return;
+        // If one of the children is being destroyed then it is unsafe to clean up anonymous wrappers as the
+        // entire branch may be being destroyed.
+        if (toLayoutBlock(child)->beingDestroyed())
+            return;
+        // We can't remove anonymous wrappers if they contain continuations as this means there are block children present.
+        if (toLayoutBlock(child)->continuation())
+            return;
+        // We are only interested in removing anonymous wrappers if there are inline siblings underneath them.
+        if (!child->childrenInline())
+            return;
+        // Ruby elements use anonymous wrappers for ruby runs and ruby bases by design, so we don't remove them.
+        if (child->isRubyRun() || child->isRubyBase())
+            return;
+
+        blocksToRemove.append(toLayoutBlock(child));
+    }
+
+    // If we make an object's children inline we are going to frustrate any future attempts to remove
+    // floats from its children's float-lists before the next layout happens so clear down all the floatlists
+    // now - they will be rebuilt at layout.
+    removeFloatingObjectsFromDescendants();
+
+    for (size_t i = 0; i < blocksToRemove.size(); i++)
+        collapseAnonymousBlockChild(this, blocksToRemove[i]);
+    setChildrenInline(true);
+}
+
 void LayoutBlockFlow::invalidatePaintForOverhangingFloats(bool paintAllDescendants)
 {
     // Invalidate paint of any overhanging floats (if we know we're the one to paint them).

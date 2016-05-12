@@ -416,6 +416,8 @@ private:
     void reparentSubsequentFloatingOrOutOfFlowSiblings();
     void reparentPrecedingFloatingOrOutOfFlowSiblings();
 
+    void makeChildrenInlineIfPossible();
+
     void updateLogicalWidthForAlignment(const ETextAlign&, const RootInlineBox*, BidiRun* trailingSpaceRun, LayoutUnit& logicalLeft, LayoutUnit& totalLogicalWidth, LayoutUnit& availableLogicalWidth, unsigned expansionOpportunityCount);
     void checkForPaginationLogicalHeightChange(LayoutUnit& pageLogicalHeight, bool& pageLogicalHeightChanged, bool& hasSpecifiedPageLogicalHeight);
 

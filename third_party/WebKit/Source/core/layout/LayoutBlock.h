@@ -389,8 +389,6 @@ private:
 
     virtual void removeLeftoverAnonymousBlock(LayoutBlock* child);
 
-    void makeChildrenInlineIfPossible();
-
     void dirtyLinesFromChangedChild(LayoutObject* child) final { m_lineBoxes.dirtyLinesFromChangedChild(LineLayoutItem(this), LineLayoutItem(child)); }
 
     TrackedLayoutBoxListHashSet* positionedObjectsInternal() const;
