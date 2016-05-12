@@ -114,33 +114,6 @@ class WebGLVertexArrayObjectBase;
 class WebGLRenderingContextLostCallback;
 class WebGLRenderingContextErrorMessageCallback;
 
-// ScopedDrawingBufferBinder is used for ReadPixels/CopyTexImage2D/CopySubImage2D to read from
-// a multisampled DrawingBuffer. In this situation, we need to blit to a single sampled buffer
-// for reading, during which the bindings could be changed and need to be recovered.
-class ScopedDrawingBufferBinder {
-    STACK_ALLOCATED();
-public:
-    ScopedDrawingBufferBinder(DrawingBuffer* drawingBuffer, WebGLFramebuffer* framebufferBinding)
-        : m_drawingBuffer(drawingBuffer)
-        , m_readFramebufferBinding(framebufferBinding)
-    {
-        // Commit DrawingBuffer if needed (e.g., for multisampling)
-        if (!m_readFramebufferBinding && m_drawingBuffer)
-            m_drawingBuffer->commit();
-    }
-
-    ~ScopedDrawingBufferBinder()
-    {
-        // Restore DrawingBuffer if needed
-        if (!m_readFramebufferBinding && m_drawingBuffer)
-            m_drawingBuffer->restoreFramebufferBindings();
-    }
-
-private:
-    DrawingBuffer* m_drawingBuffer;
-    Member<WebGLFramebuffer> m_readFramebufferBinding;
-};
-
 // This class uses the color mask to prevent drawing to the alpha channel, if
 // the DrawingBuffer requires RGB emulation.
 class ScopedRGBEmulationColorMask {
