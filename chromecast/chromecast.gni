@@ -12,14 +12,16 @@ declare_args() {
   # Set it to "public" for a Chromium build.
   chromecast_branding = "public"
 
-  # Use Playready CDMs.
-  use_playready = false
-
   # The incremental build number. The Cast automated builders will set this
   # value to indicate the buildset. Note: The default value should be greater
   # than any value the builder may assign to prevent attempted automatic updates
   # when the default value is used.
   cast_build_incremental = "999999"
+}
+
+declare_args() {
+  # Use Playready CDMs for internal non-desktop builds.
+  use_playready = !is_cast_desktop_build && chromecast_branding != "public"
 }
 
 # This is the release version, which takes the form <major>.<minor>. Internal
