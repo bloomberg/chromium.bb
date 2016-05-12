@@ -74,6 +74,7 @@ class HttpAuthPreferences;
 class HttpServerProperties;
 class HttpTransactionFactory;
 class HttpUserAgentSettings;
+class LoggingNetworkChangeObserver;
 class NetworkDelegate;
 class NetworkQualityEstimator;
 class ProxyConfigService;
@@ -503,8 +504,7 @@ class IOThread : public content::BrowserThreadDelegate {
   NetworkSessionConfigurator network_session_configurator_;
 
   // Observer that logs network changes to the ChromeNetLog.
-  class LoggingNetworkChangeObserver;
-  std::unique_ptr<LoggingNetworkChangeObserver> network_change_observer_;
+  std::unique_ptr<net::LoggingNetworkChangeObserver> network_change_observer_;
 
   BooleanPrefMember system_enable_referrers_;
 

@@ -486,6 +486,8 @@
       'base/load_flags_list.h',
       'base/load_states.h',
       'base/load_states_list.h',
+      'base/logging_network_change_observer.cc',
+      'base/logging_network_change_observer.h',
       'base/mime_extension_chromeos.cc',
       'base/mime_extension_chromeos.h',
       'base/mime_sniffer.cc',
