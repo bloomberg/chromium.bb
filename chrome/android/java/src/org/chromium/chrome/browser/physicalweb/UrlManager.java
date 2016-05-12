@@ -36,10 +36,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.PriorityQueue;
 import java.util.Set;
 
 /**
@@ -65,15 +67,26 @@ class UrlManager {
     private static final String PREFS_NOTIFICATION_UPDATE_TIMESTAMP =
             "physicalweb_notification_update_timestamp";
     private static final int PREFS_VERSION = 3;
-    private static final long STALE_NOTIFICATION_TIMEOUT_MILLIS = 30 * 60 * 1000;
+    private static final long STALE_NOTIFICATION_TIMEOUT_MILLIS = 30 * 60 * 1000;  // 30 Minutes
+    private static final long MAX_CACHE_TIME = 24 * 60 * 60 * 1000;  // 1 Day
+    private static final int MAX_CACHE_SIZE = 100;
     private static UrlManager sInstance = null;
     private final Context mContext;
     private final ObserverList<Listener> mObservers;
     private final Set<String> mNearbyUrls;
     private final Set<String> mResolvedUrls;
     private final Map<String, UrlInfo> mUrlInfoMap;
+    private final PriorityQueue<String> mUrlsSortedByTimestamp;
     private NotificationManagerProxy mNotificationManager;
     private PwsClient mPwsClient;
+
+    private final Comparator<String> mScanTimestampComparator = new Comparator<String>() {
+        public int compare(String url1, String url2) {
+            UrlInfo urlInfo1 = mUrlInfoMap.get(url1);
+            UrlInfo urlInfo2 = mUrlInfoMap.get(url2);
+            return Long.compare(urlInfo1.getScanTimestamp(), urlInfo2.getScanTimestamp());
+        }
+    };
 
     /**
      * Interface for observers that should be notified when the nearby URL list changes.
@@ -100,6 +113,7 @@ class UrlManager {
         mNearbyUrls = new HashSet<>();
         mResolvedUrls = new HashSet<>();
         mUrlInfoMap = new HashMap<>();
+        mUrlsSortedByTimestamp = new PriorityQueue<String>(1, mScanTimestampComparator);
         initSharedPreferences();
     }
 
@@ -159,7 +173,10 @@ class UrlManager {
 
         mNearbyUrls.add(urlInfo.getUrl());
         putCachedNearbyUrls();
+        mUrlsSortedByTimestamp.remove(urlInfo.getUrl());
         mUrlInfoMap.put(urlInfo.getUrl(), urlInfo);
+        mUrlsSortedByTimestamp.add(urlInfo.getUrl());
+        garbageCollect();
         putCachedUrlInfoMap();
 
         if (!isOnboarding) {
@@ -329,10 +346,12 @@ class UrlManager {
                 JSONObject jsonObject = new JSONObject(serializedUrl);
                 UrlInfo urlInfo = UrlInfo.jsonDeserialize(jsonObject);
                 mUrlInfoMap.put(urlInfo.getUrl(), urlInfo);
+                mUrlsSortedByTimestamp.add(urlInfo.getUrl());
             } catch (JSONException e) {
                 Log.e(TAG, "Could not deserialize UrlInfo", e);
             }
         }
+        garbageCollect();
     }
 
     private void setUrlInfoCollectionInSharedPreferences(
@@ -545,6 +564,23 @@ class UrlManager {
         }
     }
 
+    private void garbageCollect() {
+        for (String url = mUrlsSortedByTimestamp.peek(); url != null;
+                url = mUrlsSortedByTimestamp.peek()) {
+            UrlInfo urlInfo = mUrlInfoMap.get(url);
+            if ((System.currentTimeMillis() - urlInfo.getScanTimestamp() <= MAX_CACHE_TIME
+                    && mUrlsSortedByTimestamp.size() <= MAX_CACHE_SIZE)
+                    || mNearbyUrls.contains(url)) {
+                break;
+            }
+            // The min value cannot have changed at this point, so it's OK to just remove via
+            // poll().
+            mUrlsSortedByTimestamp.poll();
+            mUrlInfoMap.remove(url);
+            mResolvedUrls.remove(url);
+        }
+    }
+
     @VisibleForTesting
     void overridePwsClientForTesting(PwsClient pwsClient) {
         mPwsClient = pwsClient;
@@ -574,5 +610,18 @@ class UrlManager {
     @VisibleForTesting
     static int getVersion() {
         return PREFS_VERSION;
+    }
+
+    @VisibleForTesting
+    boolean containsInAnyCache(String url) {
+        return mNearbyUrls.contains(url)
+                || mResolvedUrls.contains(url)
+                || mUrlInfoMap.containsKey(url)
+                || mUrlsSortedByTimestamp.contains(url);
+    }
+
+    @VisibleForTesting
+    int getMaxCacheSize() {
+        return MAX_CACHE_SIZE;
     }
 }

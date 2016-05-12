@@ -21,17 +21,20 @@ import java.util.List;
  * Tests for the UrlManager class.
  */
 public class UrlManagerTest extends InstrumentationTestCase {
-    static final String URL1 = "https://example.com/";
-    static final String TITLE1 = "Example";
-    static final String DESC1 = "Example Website";
-    static final String PREF_PHYSICAL_WEB = "physical_web";
-    static final int PHYSICAL_WEB_OFF = 0;
-    static final int PHYSICAL_WEB_ON = 1;
-    static final int PHYSICAL_WEB_ONBOARDING = 2;
-    UrlManager mUrlManager = null;
-    MockPwsClient mMockPwsClient = null;
-    MockNotificationManagerProxy mMockNotificationManagerProxy = null;
-    SharedPreferences mSharedPreferences = null;
+    private static final String URL1 = "https://example.com/";
+    private static final String TITLE1 = "Example";
+    private static final String DESC1 = "Example Website";
+    private static final String URL2 = "https://google.com/";
+    private static final String TITLE2 = "Google";
+    private static final String DESC2 = "Search the Web";
+    private static final String PREF_PHYSICAL_WEB = "physical_web";
+    private static final int PHYSICAL_WEB_OFF = 0;
+    private static final int PHYSICAL_WEB_ON = 1;
+    private static final int PHYSICAL_WEB_ONBOARDING = 2;
+    private UrlManager mUrlManager = null;
+    private MockPwsClient mMockPwsClient = null;
+    private MockNotificationManagerProxy mMockNotificationManagerProxy = null;
+    private SharedPreferences mSharedPreferences = null;
 
     @Override
     protected void setUp() throws Exception {
@@ -114,6 +117,66 @@ public class UrlManagerTest extends InstrumentationTestCase {
         // Make sure that a notification was shown.
         List<NotificationEntry> notifications = mMockNotificationManagerProxy.getNotifications();
         assertEquals(1, notifications.size());
+    }
+
+    @SmallTest
+    public void testAddUrlGarbageCollectsForSize() throws Exception {
+        // Add and remove 101 URLs, making sure one is clearly slightly older than the others.
+        mMockPwsClient.addPwsResults(new ArrayList<PwsResult>());
+        UrlInfo urlInfo = new UrlInfo(URL1, -1.0, System.currentTimeMillis() - 1);
+        mUrlManager.addUrl(urlInfo);
+        mUrlManager.removeUrl(urlInfo);
+        for (int i = 1; i <= mUrlManager.getMaxCacheSize(); i++) {
+            mMockPwsClient.addPwsResults(new ArrayList<PwsResult>());
+            urlInfo = new UrlInfo(URL1 + i, -1.0, System.currentTimeMillis());
+            mUrlManager.addUrl(urlInfo);
+            mUrlManager.removeUrl(urlInfo);
+        }
+
+        // Make our cache is missing the first URL and contains the others.
+        assertFalse(mUrlManager.containsInAnyCache(URL1));
+        assertTrue(mUrlManager.containsInAnyCache(URL1 + 1));
+        assertTrue(mUrlManager.containsInAnyCache(URL1 + mUrlManager.getMaxCacheSize()));
+    }
+
+    @SmallTest
+    public void testAddUrlGarbageCollectsForAge() throws Exception {
+        // Add a URL with a phony timestamp.
+        mMockPwsClient.addPwsResults(new ArrayList<PwsResult>());
+        mMockPwsClient.addPwsResults(new ArrayList<PwsResult>());
+        UrlInfo urlInfo1 = new UrlInfo(URL1, -1.0, 0);
+        mUrlManager.addUrl(urlInfo1);
+        mUrlManager.removeUrl(urlInfo1);
+
+        // Make sure the URL is still in the cache.
+        assertTrue(mUrlManager.containsInAnyCache(URL1));
+
+        // Trigger garbage collection and make sure we no longer have the old URL in the cache.
+        mUrlManager.addUrl(new UrlInfo(URL2, -1.0, System.currentTimeMillis()));
+        assertFalse(mUrlManager.containsInAnyCache(URL1));
+    }
+
+    @SmallTest
+    public void testAddTwiceWorks() throws Exception {
+        // Add and remove an old URL twice and add new URL twice before removing.
+        // This should cover several issues involved with updating the cache queue.
+        mMockPwsClient.addPwsResults(new ArrayList<PwsResult>());
+        mMockPwsClient.addPwsResults(new ArrayList<PwsResult>());
+        mMockPwsClient.addPwsResults(new ArrayList<PwsResult>());
+        mMockPwsClient.addPwsResults(new ArrayList<PwsResult>());
+        UrlInfo urlInfo1 = new UrlInfo(URL1, -1.0, 0);
+        UrlInfo urlInfo2 = new UrlInfo(URL2, -1.0, System.currentTimeMillis());
+        mUrlManager.addUrl(urlInfo1);
+        mUrlManager.removeUrl(urlInfo1);
+        mUrlManager.addUrl(urlInfo1);
+        mUrlManager.removeUrl(urlInfo1);
+        mUrlManager.addUrl(urlInfo2);
+        mUrlManager.addUrl(urlInfo2);
+        mUrlManager.removeUrl(urlInfo2);
+
+        // Make sure only URL2 is still in the cache.
+        assertFalse(mUrlManager.containsInAnyCache(URL1));
+        assertTrue(mUrlManager.containsInAnyCache(URL2));
     }
 
     @SmallTest
