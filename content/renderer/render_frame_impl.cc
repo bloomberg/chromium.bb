@@ -4537,7 +4537,7 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(
     if (render_view_->webview()->mainFrame()->isWebLocalFrame() &&
         render_view_->webview()->mainFrame()->document().isPluginDocument()) {
       // Reset the zoom levels for plugins.
-      render_view_->webview()->setZoomLevel(0);
+      render_view_->SetZoomLevel(0);
     } else {
       // If the zoom level is not found, then do nothing. In-page navigation
       // relies on not changing the zoom level in this case.
@@ -4620,7 +4620,7 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(
     params.history_list_was_cleared = false;
     params.report_type = FrameMsg_UILoadMetricsReportType::NO_REPORT;
     // Subframes should match the zoom level of the main frame.
-    render_view_->webview()->setZoomLevel(render_view_->page_zoom_level());
+    render_view_->SetZoomLevel(render_view_->page_zoom_level());
   }
 
   // This message needs to be sent before any of allowScripts(),
