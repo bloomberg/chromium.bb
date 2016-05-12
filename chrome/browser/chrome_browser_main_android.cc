@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chrome_browser_main_android.h"
 
-#include "base/android/build_info.h"
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
@@ -72,9 +71,7 @@ int ChromeBrowserMainPartsAndroid::PreCreateThreads() {
     crash_dump_manager_.reset(new breakpad::CrashDumpManager(crash_dump_dir));
   }
 
-  bool has_language_splits =
-      base::android::BuildInfo::GetInstance()->has_language_apk_splits();
-  ui::SetLocalePaksStoredInApk(has_language_splits);
+  ui::SetLocalePaksStoredInApk(false);
 
   return ChromeBrowserMainParts::PreCreateThreads();
 }

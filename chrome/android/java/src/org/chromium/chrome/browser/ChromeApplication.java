@@ -23,7 +23,6 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ApplicationStatus.ApplicationStateListener;
-import org.chromium.base.BuildInfo;
 import org.chromium.base.CommandLine;
 import org.chromium.base.CommandLineInitUtil;
 import org.chromium.base.ContextUtils;
@@ -423,9 +422,7 @@ public class ChromeApplication extends ContentApplication {
         // The ResourceExtractor is only needed by the browser process, but this will have no
         // impact on the renderer process construction.
         ResourceBundle.initializeLocalePaks(this, R.array.locale_paks);
-        if (!BuildInfo.hasLanguageApkSplits(this)) {
-            ResourceExtractor.setResourcesToExtract(ResourceBundle.getActiveLocaleResources());
-        }
+        ResourceExtractor.setResourcesToExtract(ResourceBundle.getActiveLocaleResources());
     }
 
     /**

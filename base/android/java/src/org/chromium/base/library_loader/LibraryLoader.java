@@ -4,18 +4,13 @@
 
 package org.chromium.base.library_loader;
 
-import android.annotation.TargetApi;
 import android.content.Context;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageInfo;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.SystemClock;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
-import org.chromium.base.PackageUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
@@ -273,7 +268,7 @@ public class LibraryLoader {
                         String libFilePath = System.mapLibraryName(library);
                         if (Linker.isInZipFile()) {
                             // Load directly from the APK.
-                            zipFilePath = getLibraryApkPath(context);
+                            zipFilePath = context.getApplicationInfo().sourceDir;
                             Log.i(TAG, "Loading " + library + " from within " + zipFilePath);
                         } else {
                             // The library is in its own file.
@@ -322,25 +317,6 @@ public class LibraryLoader {
     private static boolean isAbiSplit(String splitName) {
         // The split name for the ABI split is manually set in the build rules.
         return splitName.startsWith("abi_");
-    }
-
-    // Returns the path to the .apk that holds the native libraries.
-    // This is either the main .apk, or the abi split apk.
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    private static String getLibraryApkPath(Context context) {
-        ApplicationInfo appInfo = context.getApplicationInfo();
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-            return appInfo.sourceDir;
-        }
-        PackageInfo packageInfo = PackageUtils.getOwnPackageInfo(context);
-        if (packageInfo.splitNames != null) {
-            for (int i = 0; i < packageInfo.splitNames.length; ++i) {
-                if (isAbiSplit(packageInfo.splitNames[i])) {
-                    return appInfo.splitSourceDirs[i];
-                }
-            }
-        }
-        return appInfo.sourceDir;
     }
 
     // The WebView requires the Command Line to be switched over before
