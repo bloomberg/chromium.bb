@@ -71,7 +71,7 @@
     <paper-menu name="root-menu">
       <paper-submenu data-page="basic" id="basicPage" opened="{{basicOpened_}}">
         <div class="menu-trigger" data-section="" on-tap="openPage_">
-          <span i18n-content="basicPageTitle"></span>
+          <span>$i18n{basicPageTitle}</span>
           <iron-icon icon="[[arrowState_(basicOpened_)]]"></iron-icon>
         </div>
         <paper-menu attr-for-selected="data-section" class="menu-content"
@@ -79,98 +79,97 @@
 <if expr="chromeos">
           <div data-section="internet" on-tap="openPage_">
             <iron-icon icon="settings:network-wifi"></iron-icon>
-            <span i18n-content="internetPageTitle"></span>
+            $i18n{internetPageTitle}
           </div>
 </if>
           <div data-section="people" on-tap="openPage_">
             <iron-icon icon="settings:people"></iron-icon>
-            <span i18n-content="peoplePageTitle"></span>
+            $i18n{peoplePageTitle}
           </div>
           <div data-section="appearance" on-tap="openPage_">
             <iron-icon icon="settings:palette"></iron-icon>
-            <span i18n-content="appearancePageTitle"></span>
+            $i18n{appearancePageTitle}
           </div>
 <if expr="chromeos">
           <div data-section="device" on-tap="openPage_">
             <iron-icon icon="settings:laptop-chromebook"></iron-icon>
-            <span i18n-content="devicePageTitle"></span>
+            $i18n{devicePageTitle}
           </div>
 </if>
           <div data-section="search" on-tap="openPage_">
             <iron-icon icon="cr:search"></iron-icon>
-            <span i18n-content="searchPageTitle"></span>
+            $i18n{searchPageTitle}
           </div>
 <if expr="not chromeos">
           <div data-section="defaultBrowser" on-tap="openPage_">
             <iron-icon icon="settings:web"></iron-icon>
-            <span i18n-content="defaultBrowser"></span>
+            $i18n{defaultBrowser}
           </div>
 </if>
           <div data-section="onStartup" on-tap="openPage_">
             <iron-icon icon="settings:power-settings-new"></iron-icon>
-            <span i18n-content="onStartup"></span>
+            $i18n{onStartup}
           </div>
         </paper-menu>
       </paper-submenu>
       <paper-submenu id="advancedPage" data-page="advanced"
           opened="{{advancedOpened_}}">
         <div class="menu-trigger" data-section="" on-tap="openPage_">
-          <span i18n-content="advancedPageTitle"></span>
-          <iron-icon icon="[[arrowState_(advancedOpened_)]]">
-          </iron-icon>
+          <span>$i18n{advancedPageTitle}</span>
+          <iron-icon icon="[[arrowState_(advancedOpened_)]]"></iron-icon>
         </div>
         <paper-menu attr-for-selected="data-section" class="menu-content"
             data-page="advanced" id="advancedMenu">
 <if expr="chromeos">
           <div data-section="dateTime" on-tap="openPage_">
             <iron-icon icon="settings:access-time"></iron-icon>
-            <span i18n-content="dateTimePageTitle"></span>
+            $i18n{dateTimePageTitle}
           </div>
 </if>
           <div data-section="privacy" on-tap="openPage_">
             <iron-icon icon="settings:security"></iron-icon>
-            <span i18n-content="privacyPageTitle"></span>
+            $i18n{privacyPageTitle}
           </div>
 <if expr="chromeos">
           <div data-section="bluetooth" on-tap="openPage_">
             <iron-icon icon="settings:bluetooth"></iron-icon>
-            <span i18n-content="bluetoothPageTitle"></span>
+            $i18n{bluetoothPageTitle}
           </div>
 </if>
           <div data-section="passwordsAndForms" on-tap="openPage_">
             <iron-icon icon="settings:assignment"></iron-icon>
-            <span i18n-content="passwordsAndAutofillPageTitle"></span>
+            $i18n{passwordsAndAutofillPageTitle}
           </div>
           <div data-section="languages" on-tap="openPage_">
             <iron-icon icon="settings:language"></iron-icon>
-            <span i18n-content="languagesPageTitle"></span>
+            $i18n{languagesPageTitle}
           </div>
           <div data-section="downloads" on-tap="openPage_">
             <iron-icon icon="settings:file-download">
             </iron-icon>
-            <span i18n-content="downloadsPageTitle"></span>
+            $i18n{downloadsPageTitle}
           </div>
           <div data-section="a11y" on-tap="openPage_">
             <iron-icon icon="settings:accessibility">
             </iron-icon>
-            <span i18n-content="a11yPageTitle"></span>
+            $i18n{a11yPageTitle}
           </div>
 <if expr="not chromeos">
           <div data-section="system" on-tap="openPage_">
             <iron-icon icon="settings:build"></iron-icon>
-            <span i18n-content="systemPageTitle"></span>
+            $i18n{systemPageTitle}
           </div>
 </if>
           <div data-section="reset" on-tap="openPage_">
             <iron-icon icon="settings:restore"></iron-icon>
-            <span i18n-content="resetPageTitle"></span>
+            $i18n{resetPageTitle}
           </div>
         </paper-menu>
       </paper-submenu>
       <div class="separator"></div>
       <paper-submenu data-page="about">
         <div class="menu-trigger" on-tap="openPage_" data-section="">
-          <span i18n-content="aboutPageTitle"></span>
+          $i18n{aboutPageTitle}
         </div>
       </paper-submenu>
     </paper-menu>
