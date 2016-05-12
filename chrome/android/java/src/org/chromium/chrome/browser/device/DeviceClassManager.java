@@ -19,8 +19,6 @@ import org.chromium.ui.base.DeviceFormFactor;
  * devices.
  */
 public class DeviceClassManager {
-    private static final int DISABLE_AUTO_HIDING_TOOLBAR_THRESHOLD = 800;
-
     private static DeviceClassManager sInstance;
 
     // Set of features that can be enabled/disabled
@@ -34,7 +32,6 @@ public class DeviceClassManager {
     private boolean mDisableDomainReliability;
 
     private final boolean mEnableFullscreen;
-    private Boolean mDisableAutoHidingToolbar;
 
     private static DeviceClassManager getInstance() {
         if (sInstance == null) {
@@ -153,20 +150,5 @@ public class DeviceClassManager {
                 && manager.isTouchExplorationEnabled();
         TraceEvent.end("DeviceClassManager::isAccessibilityModeEnabled");
         return enabled;
-    }
-
-    /**
-     * @param context A {@link Context} instance.
-     * @return Whether auto-hiding the toolbar is disabled.
-     */
-    public static boolean isAutoHidingToolbarDisabled(Context context) {
-        if (getInstance().mDisableAutoHidingToolbar == null) {
-            getInstance().mDisableAutoHidingToolbar = false;
-            int smallestScreenDp = context.getResources().getConfiguration().smallestScreenWidthDp;
-            if (smallestScreenDp >= DISABLE_AUTO_HIDING_TOOLBAR_THRESHOLD) {
-                getInstance().mDisableAutoHidingToolbar = true;
-            }
-        }
-        return getInstance().mDisableAutoHidingToolbar;
     }
 }

@@ -50,8 +50,6 @@ public class TopControlsVisibilityDelegate {
         enableHidingTopControls &= !webContents.isShowingInterstitialPage();
         enableHidingTopControls &= (mTab.getFullscreenManager() != null);
         enableHidingTopControls &= DeviceClassManager.enableFullscreen();
-        enableHidingTopControls &= !DeviceClassManager.isAutoHidingToolbarDisabled(
-                mTab.getApplicationContext());
         enableHidingTopControls &= !mTab.isFullscreenWaitingForLoad();
 
         return enableHidingTopControls;
