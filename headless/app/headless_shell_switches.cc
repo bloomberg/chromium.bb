@@ -7,6 +7,9 @@
 namespace headless {
 namespace switches {
 
+// Instructs headless_shell to print document.body.innerHTML to stdout.
+const char kDumpDom[] = "dump-dom";
+
 // Uses a specified proxy server, overrides system settings. This switch only
 // affects HTTP and HTTPS requests.
 const char kProxyServer[] = "proxy-server";

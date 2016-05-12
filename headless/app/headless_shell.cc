@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <iostream>
 #include <memory>
 
 #include "base/bind.h"
@@ -37,7 +38,9 @@ const char kDevToolsHttpServerAddress[] = "127.0.0.1";
 class HeadlessShell : public HeadlessWebContents::Observer, page::Observer {
  public:
   HeadlessShell()
-      : browser_(nullptr), devtools_client_(HeadlessDevToolsClient::Create()) {}
+      : browser_(nullptr),
+        devtools_client_(HeadlessDevToolsClient::Create()),
+        processed_page_ready_(false) {}
   ~HeadlessShell() override {}
 
   void OnStart(HeadlessBrowser* browser) {
@@ -47,13 +50,13 @@ class HeadlessShell : public HeadlessWebContents::Observer, page::Observer {
         base::CommandLine::ForCurrentProcess()->GetArgs();
 
     const char kDefaultUrl[] = "about:blank";
-    GURL url;
     if (args.empty() || args[0].empty()) {
-      url = GURL(kDefaultUrl);
+      url_ = GURL(kDefaultUrl);
     } else {
-      url = GURL(args[0]);
+      url_ = GURL(args[0]);
     }
-    web_contents_ = browser->CreateWebContents(url, gfx::Size(800, 600));
+
+    web_contents_ = browser->CreateWebContents(url_, gfx::Size(800, 600));
     if (!web_contents_) {
       LOG(ERROR) << "Navigation failed";
       browser_->Shutdown();
@@ -83,21 +86,68 @@ class HeadlessShell : public HeadlessWebContents::Observer, page::Observer {
     devtools_client_->GetPage()->Enable();
     // Check if the document had already finished loading by the time we
     // attached.
-    devtools_client_->GetRuntime()->Evaluate(
-        "document.readyState",
-        base::Bind(&HeadlessShell::OnReadyState, base::Unretained(this)));
+    PollReadyState();
     // TODO(skyostil): Implement more features to demonstrate the devtools API.
   }
 
+  void PollReadyState() {
+    // We need to check the current location in addition to the ready state to
+    // be sure the expected page is ready.
+    devtools_client_->GetRuntime()->Evaluate(
+        "document.readyState + ' ' + document.location.href",
+        base::Bind(&HeadlessShell::OnReadyState, base::Unretained(this)));
+  }
+
   void OnReadyState(std::unique_ptr<runtime::EvaluateResult> result) {
-    std::string ready_state;
-    if (result->GetResult()->GetValue()->GetAsString(&ready_state) &&
-        ready_state == "complete")
-      Shutdown();
+    std::string ready_state_and_url;
+    if (result->GetResult()->GetValue()->GetAsString(&ready_state_and_url)) {
+      std::stringstream stream(ready_state_and_url);
+      std::string ready_state;
+      std::string url;
+      stream >> ready_state;
+      stream >> url;
+
+      if (ready_state == "complete" &&
+          (url_.spec() == url || url != "about:blank")) {
+        OnPageReady();
+        return;
+      }
+    }
   }
 
   // page::Observer implementation:
   void OnLoadEventFired(const page::LoadEventFiredParams& params) override {
+    OnPageReady();
+  }
+
+  void OnPageReady() {
+    if (processed_page_ready_)
+      return;
+    processed_page_ready_ = true;
+
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            headless::switches::kDumpDom)) {
+      FetchDom();
+    } else {
+      Shutdown();
+    }
+  }
+
+  void FetchDom() {
+    devtools_client_->GetRuntime()->Evaluate(
+        "document.body.innerHTML",
+        base::Bind(&HeadlessShell::OnDomFetched, base::Unretained(this)));
+  }
+
+  void OnDomFetched(std::unique_ptr<runtime::EvaluateResult> result) {
+    if (result->GetWasThrown()) {
+      LOG(ERROR) << "Failed to evaluate document.body.innerHTML";
+    } else {
+      std::string dom;
+      if (result->GetResult()->GetValue()->GetAsString(&dom)) {
+        std::cout << dom << std::endl;
+      }
+    }
     Shutdown();
   }
 
@@ -108,9 +158,11 @@ class HeadlessShell : public HeadlessWebContents::Observer, page::Observer {
   }
 
  private:
+  GURL url_;
   HeadlessBrowser* browser_;  // Not owned.
   std::unique_ptr<HeadlessDevToolsClient> devtools_client_;
   HeadlessWebContents* web_contents_;
+  bool processed_page_ready_;
 
   DISALLOW_COPY_AND_ASSIGN(HeadlessShell);
 };
