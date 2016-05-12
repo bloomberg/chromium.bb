@@ -91,8 +91,10 @@ void ServiceRegistryImpl::GetInterface(
     const mojo::String& name,
     mojo::ScopedMessagePipeHandle client_handle) {
   auto it = service_factories_.find(name);
-  if (it == service_factories_.end())
+  if (it == service_factories_.end()) {
+    DLOG(ERROR) << name << " not found";
     return;
+  }
 
   // It's possible and effectively unavoidable that under certain conditions
   // an invalid handle may be received. Don't invoke the factory in that case.
