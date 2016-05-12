@@ -4,9 +4,12 @@
 
 #include <stddef.h>
 
+#include <unordered_set>
+
 #include "base/format_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
@@ -383,4 +386,53 @@ TEST_F(ProfileAttributesStorageTest, AccessFromElsewhere) {
   profile_info_cache()->SetNameOfProfileAtIndex(
       index, base::ASCIIToUTF16("OtherNewName"));
   EXPECT_EQ(base::ASCIIToUTF16("OtherNewName"), first_entry->GetName());
+}
+
+TEST_F(ProfileAttributesStorageTest, ChooseAvatarIconIndexForNewProfile) {
+  size_t total_icon_count = profiles::GetDefaultAvatarIconCount();
+#if defined(OS_CHROMEOS) || defined(OS_ANDROID)
+  size_t generic_icon_count = profiles::GetGenericAvatarIconCount();
+  ASSERT_LE(generic_icon_count, total_icon_count);
+#endif
+
+  // Run ChooseAvatarIconIndexForNewProfile |num_iterations| times before using
+  // the final |icon_index| to add a profile. Multiple checks are needed because
+  // ChooseAvatarIconIndexForNewProfile is non-deterministic.
+  const int num_iterations = 10;
+  std::unordered_set<int> used_icon_indices;
+
+  for (size_t i = 0; i < total_icon_count; ++i) {
+    EXPECT_EQ(i, storage()->GetNumberOfProfiles());
+
+    size_t icon_index = 0;
+    for (int iter = 0; iter < num_iterations; ++iter) {
+      icon_index = storage()->ChooseAvatarIconIndexForNewProfile();
+      // Icon must not be used.
+      ASSERT_EQ(0u, used_icon_indices.count(icon_index));
+      ASSERT_GT(total_icon_count, icon_index);
+
+#if defined(OS_CHROMEOS) || defined(OS_ANDROID)
+      if (i < total_icon_count - generic_icon_count)
+        ASSERT_LE(generic_icon_count, icon_index);
+      else
+        ASSERT_GT(generic_icon_count, icon_index);
+#endif
+    }
+
+    used_icon_indices.insert(icon_index);
+
+    storage()->AddProfile(
+        GetProfilePath(base::StringPrintf("testing_profile_path%" PRIuS, i)),
+                       base::string16(),
+                       std::string(),
+                       base::string16(),
+                       icon_index,
+                       std::string());
+  }
+
+  for (int iter = 0; iter < num_iterations; ++iter) {
+    // All icons are used up, expect any valid icon.
+    ASSERT_GT(total_icon_count,
+              storage()->ChooseAvatarIconIndexForNewProfile());
+  }
 }

@@ -554,6 +554,83 @@ TEST_F(ProfileInfoCacheTest, AddStubProfile) {
     ASSERT_FALSE(names[i].empty());
 }
 
+TEST_F(ProfileInfoCacheTest, EntriesInAttributesStorage) {
+  EXPECT_EQ(0u, GetCache()->GetNumberOfProfiles());
+
+  // Add some profiles with and without a '.' in their paths.
+  const struct {
+    const char* profile_path;
+    const char* profile_name;
+  } kTestCases[] = {
+    { "path.test0", "name_0" },
+    { "path_test1", "name_1" },
+    { "path.test2", "name_2" },
+    { "path_test3", "name_3" },
+  };
+
+  // Profiles are added and removed using all combinations of the old and the
+  // new interfaces. The content of |profile_attributes_entries_| in
+  // ProfileAttributesStorage is checked after each insert and delete operation.
+
+  // Add profiles.
+  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
+    base::FilePath profile_path = GetProfilePath(kTestCases[i].profile_path);
+    base::string16 profile_name = ASCIIToUTF16(kTestCases[i].profile_name);
+
+    ASSERT_EQ(0u, GetCache()->profile_attributes_entries_.count(
+                      profile_path.value()));
+
+    // Use ProfileInfoCache in profiles 0 and 2, and ProfileAttributesStorage in
+    // profiles 1 and 3.
+    if (i | 1u) {
+      GetCache()->AddProfileToCache(profile_path, profile_name, std::string(),
+                                    base::string16(), i, "");
+    } else {
+      GetCache()->AddProfile(profile_path, profile_name, std::string(),
+                             base::string16(), i, "");
+    }
+
+    ASSERT_EQ(i + 1, GetCache()->GetNumberOfProfiles());
+    ASSERT_EQ(i + 1, GetCache()->profile_attributes_entries_.size());
+
+    ASSERT_EQ(1u, GetCache()->profile_attributes_entries_.count(
+                      profile_path.value()));
+    // TODO(anthonyvd) : check that the entry in |profile_attributes_entries_|
+    // is null before GetProfileAttributesWithPath is run. Currently this is
+    // impossible to check because GetProfileAttributesWithPath is called during
+    // profile creation.
+
+    ProfileAttributesEntry* entry = nullptr;
+    GetCache()->GetProfileAttributesWithPath(profile_path, &entry);
+    EXPECT_EQ(
+        entry,
+        GetCache()->profile_attributes_entries_[profile_path.value()].get());
+  }
+
+  // Remove profiles.
+  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
+    base::FilePath profile_path = GetProfilePath(kTestCases[i].profile_path);
+    ASSERT_EQ(1u, GetCache()->profile_attributes_entries_.count(
+                      profile_path.value()));
+
+    // Use ProfileInfoCache in profiles 0 and 1, and ProfileAttributesStorage in
+    // profiles 2 and 3.
+    if (i | 2u)
+      GetCache()->DeleteProfileFromCache(profile_path);
+    else
+      GetCache()->RemoveProfile(profile_path);
+
+    ASSERT_EQ(0u, GetCache()->profile_attributes_entries_.count(
+                      profile_path.value()));
+
+    ProfileAttributesEntry* entry = nullptr;
+    EXPECT_FALSE(GetCache()->GetProfileAttributesWithPath(profile_path,
+                                                          &entry));
+    ASSERT_EQ(0u, GetCache()->profile_attributes_entries_.count(
+                      profile_path.value()));
+  }
+}
+
 // High res avatar downloading is only supported on desktop.
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 TEST_F(ProfileInfoCacheTest, DownloadHighResAvatarTest) {

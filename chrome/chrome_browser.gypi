@@ -2502,6 +2502,7 @@
       'browser/profiles/profile.h',
       'browser/profiles/profile_attributes_entry.cc',
       'browser/profiles/profile_attributes_entry.h',
+      'browser/profiles/profile_attributes_storage.cc',
       'browser/profiles/profile_attributes_storage.h',
       'browser/profiles/profile_avatar_downloader.cc',
       'browser/profiles/profile_avatar_downloader.h',

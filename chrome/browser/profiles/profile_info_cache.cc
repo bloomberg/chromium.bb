@@ -11,15 +11,11 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/i18n/case_conversion.h"
-#include "base/i18n/string_compare.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/profiler/scoped_tracker.h"
-#include "base/rand_util.h"
 #include "base/stl_util.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -33,7 +29,6 @@
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "content/public/browser/browser_thread.h"
-#include "third_party/icu/source/i18n/unicode/coll.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
@@ -71,29 +66,6 @@ const char kStatsBrowsingHistoryKey[] = "stats_browsing_history";
 const char kStatsPasswordsKey[] = "stats_passwords";
 const char kStatsBookmarksKey[] = "stats_bookmarks";
 const char kStatsSettingsKey[] = "stats_settings";
-
-// First eight are generic icons, which use IDS_NUMBERED_PROFILE_NAME.
-const int kDefaultNames[] = {
-  IDS_DEFAULT_AVATAR_NAME_8,
-  IDS_DEFAULT_AVATAR_NAME_9,
-  IDS_DEFAULT_AVATAR_NAME_10,
-  IDS_DEFAULT_AVATAR_NAME_11,
-  IDS_DEFAULT_AVATAR_NAME_12,
-  IDS_DEFAULT_AVATAR_NAME_13,
-  IDS_DEFAULT_AVATAR_NAME_14,
-  IDS_DEFAULT_AVATAR_NAME_15,
-  IDS_DEFAULT_AVATAR_NAME_16,
-  IDS_DEFAULT_AVATAR_NAME_17,
-  IDS_DEFAULT_AVATAR_NAME_18,
-  IDS_DEFAULT_AVATAR_NAME_19,
-  IDS_DEFAULT_AVATAR_NAME_20,
-  IDS_DEFAULT_AVATAR_NAME_21,
-  IDS_DEFAULT_AVATAR_NAME_22,
-  IDS_DEFAULT_AVATAR_NAME_23,
-  IDS_DEFAULT_AVATAR_NAME_24,
-  IDS_DEFAULT_AVATAR_NAME_25,
-  IDS_DEFAULT_AVATAR_NAME_26
-};
 
 typedef std::vector<unsigned char> ImageData;
 
@@ -160,38 +132,11 @@ void DeleteBitmap(const base::FilePath& image_path) {
   base::DeleteFile(image_path, false);
 }
 
-// Compares two ProfileAttributesEntry using locale-sensitive comparison of
-// their names. For ties, the profile path is compared next.
-class ProfileAttributesSortComparator {
- public:
-  explicit ProfileAttributesSortComparator(icu::Collator* collator);
-  bool operator()(const ProfileAttributesEntry* const a,
-                  const ProfileAttributesEntry* const b) const;
- private:
-  icu::Collator* collator_;
-};
-
-ProfileAttributesSortComparator::ProfileAttributesSortComparator(
-    icu::Collator* collator) : collator_(collator) {}
-
-bool ProfileAttributesSortComparator::operator()(
-    const ProfileAttributesEntry* const a,
-    const ProfileAttributesEntry* const b) const {
-  UCollationResult result = base::i18n::CompareString16WithCollator(
-      *collator_, a->GetName(), b->GetName());
-  if (result != UCOL_EQUAL)
-    return result == UCOL_LESS;
-
-  // If the names are the same, then compare the paths, which must be unique.
-  return a->GetPath().value() < b->GetPath().value();
-}
-
 }  // namespace
 
 ProfileInfoCache::ProfileInfoCache(PrefService* prefs,
                                    const base::FilePath& user_data_dir)
-    : prefs_(prefs),
-      user_data_dir_(user_data_dir),
+    : ProfileAttributesStorage(prefs, user_data_dir),
       disable_avatar_download_for_testing_(false) {
   // Populate the cache
   DictionaryPrefUpdate update(prefs_, prefs::kProfileInfoCache);
@@ -203,6 +148,8 @@ ProfileInfoCache::ProfileInfoCache(PrefService* prefs,
     base::string16 name;
     info->GetString(kNameKey, &name);
     sorted_keys_.insert(FindPositionForProfile(it.key(), name), it.key());
+    profile_attributes_entries_[user_data_dir_.AppendASCII(it.key()).value()] =
+        std::unique_ptr<ProfileAttributesEntry>(nullptr);
 
     bool using_default_name;
     if (!info->GetBoolean(kIsUsingDefaultNameKey, &using_default_name)) {
@@ -256,6 +203,8 @@ void ProfileInfoCache::AddProfileToCache(
   cache->SetWithoutPathExpansion(key, info.release());
 
   sorted_keys_.insert(FindPositionForProfile(key, name), key);
+  profile_attributes_entries_[user_data_dir_.AppendASCII(key).value()] =
+      std::unique_ptr<ProfileAttributesEntry>();
 
   if (!disable_avatar_download_for_testing_)
     DownloadHighResAvatarIfNeeded(icon_index, profile_path);
@@ -913,78 +862,6 @@ void ProfileInfoCache::SetProfileIsAuthErrorAtIndex(size_t index, bool value) {
   SetInfoForProfileAtIndex(index, info.release());
 }
 
-bool ProfileInfoCache::IsDefaultProfileName(const base::string16& name) const {
-  // Check if it's a "First user" old-style name.
-  if (name == l10n_util::GetStringUTF16(IDS_DEFAULT_PROFILE_NAME) ||
-      name == l10n_util::GetStringUTF16(IDS_LEGACY_DEFAULT_PROFILE_NAME))
-    return true;
-
-  // Check if it's one of the old-style profile names.
-  for (size_t i = 0; i < arraysize(kDefaultNames); ++i) {
-    if (name == l10n_util::GetStringUTF16(kDefaultNames[i]))
-      return true;
-  }
-
-  // Check whether it's one of the "Person %d" style names.
-  std::string default_name_format = l10n_util::GetStringFUTF8(
-      IDS_NEW_NUMBERED_PROFILE_NAME, base::ASCIIToUTF16("%d"));
-
-  int generic_profile_number;  // Unused. Just a placeholder for sscanf.
-  int assignments = sscanf(base::UTF16ToUTF8(name).c_str(),
-                           default_name_format.c_str(),
-                           &generic_profile_number);
-  // Unless it matched the format, this is a custom name.
-  return assignments == 1;
-}
-
-base::string16 ProfileInfoCache::ChooseNameForNewProfile(
-    size_t icon_index) const {
-  base::string16 name;
-  for (int name_index = 1; ; ++name_index) {
-#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
-    name = l10n_util::GetStringFUTF16Int(IDS_NEW_NUMBERED_PROFILE_NAME,
-                                         name_index);
-#else
-   if (icon_index < profiles::GetGenericAvatarIconCount()) {
-      name = l10n_util::GetStringFUTF16Int(IDS_NUMBERED_PROFILE_NAME,
-                                           name_index);
-    } else {
-      name = l10n_util::GetStringUTF16(
-          kDefaultNames[icon_index - profiles::GetGenericAvatarIconCount()]);
-      if (name_index > 1)
-        name.append(base::UTF8ToUTF16(base::IntToString(name_index)));
-    }
-#endif
-
-    // Loop through previously named profiles to ensure we're not duplicating.
-    bool name_found = false;
-    for (size_t i = 0; i < GetNumberOfProfiles(); ++i) {
-      if (GetNameOfProfileAtIndex(i) == name) {
-        name_found = true;
-        break;
-      }
-    }
-    if (!name_found)
-      return name;
-  }
-}
-
-size_t ProfileInfoCache::ChooseAvatarIconIndexForNewProfile() const {
-  size_t icon_index = 0;
-  // Try to find a unique, non-generic icon.
-  if (ChooseAvatarIconIndexForNewProfile(false, true, &icon_index))
-    return icon_index;
-  // Try to find any unique icon.
-  if (ChooseAvatarIconIndexForNewProfile(true, true, &icon_index))
-    return icon_index;
-  // Settle for any random icon, even if it's not unique.
-  if (ChooseAvatarIconIndexForNewProfile(true, false, &icon_index))
-    return icon_index;
-
-  NOTREACHED();
-  return 0;
-}
-
 void ProfileInfoCache::SetStatsBrowsingHistoryOfProfileAtIndex(size_t index,
                                                                int value) {
   std::unique_ptr<base::DictionaryValue> info(
@@ -1128,38 +1005,6 @@ std::vector<std::string>::iterator ProfileInfoCache::FindPositionForProfile(
     }
   }
   return sorted_keys_.end();
-}
-
-bool ProfileInfoCache::IconIndexIsUnique(size_t icon_index) const {
-  for (size_t i = 0; i < GetNumberOfProfiles(); ++i) {
-    if (GetAvatarIconIndexOfProfileAtIndex(i) == icon_index)
-      return false;
-  }
-  return true;
-}
-
-bool ProfileInfoCache::ChooseAvatarIconIndexForNewProfile(
-    bool allow_generic_icon,
-    bool must_be_unique,
-    size_t* out_icon_index) const {
-#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
-  // Always allow the generic icon when displaying the new avatar menu.
-  allow_generic_icon = true;
-#endif
-  size_t start = allow_generic_icon ? 0 : profiles::GetGenericAvatarIconCount();
-  size_t end = profiles::GetDefaultAvatarIconCount();
-  size_t count = end - start;
-
-  int rand = base::RandInt(0, count);
-  for (size_t i = 0; i < count; ++i) {
-    size_t icon_index = start + (rand + i) %  count;
-    if (!must_be_unique || IconIndexIsUnique(icon_index)) {
-      *out_icon_index = icon_index;
-      return true;
-    }
-  }
-
-  return false;
 }
 
 void ProfileInfoCache::UpdateSortForProfileIndex(size_t index) {
@@ -1382,31 +1227,13 @@ ProfileInfoCache::GetAllProfilesAttributes() {
   return ret;
 }
 
-std::vector<ProfileAttributesEntry*>
-ProfileInfoCache::GetAllProfilesAttributesSortedByName() {
-  UErrorCode error_code = U_ZERO_ERROR;
-  // Use the default collator. The default locale should have been properly
-  // set by the time this constructor is called.
-  std::unique_ptr<icu::Collator> collator(
-      icu::Collator::createInstance(error_code));
-  DCHECK(U_SUCCESS(error_code));
-
-  std::vector<ProfileAttributesEntry*> ret = GetAllProfilesAttributes();
-  std::sort(ret.begin(), ret.end(),
-      ProfileAttributesSortComparator(collator.get()));
-  return ret;
-}
-
 bool ProfileInfoCache::GetProfileAttributesWithPath(
     const base::FilePath& path, ProfileAttributesEntry** entry) {
-  if (GetNumberOfProfiles() == 0)
+  const auto entry_iter = profile_attributes_entries_.find(path.value());
+  if (entry_iter == profile_attributes_entries_.end())
     return false;
 
-  if (GetIndexOfProfileWithPath(path) == std::string::npos)
-    return false;
-
-  std::unique_ptr<ProfileAttributesEntry>& current_entry =
-      profile_attributes_entries_[path.value()];
+  std::unique_ptr<ProfileAttributesEntry>& current_entry = entry_iter->second;
   if (!current_entry) {
     // The profile info is in the cache but its entry isn't created yet, insert
     // it in the map.

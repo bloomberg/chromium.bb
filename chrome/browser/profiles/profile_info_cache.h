@@ -146,17 +146,6 @@ class ProfileInfoCache : public ProfileInfoInterface,
   void SetProfileIsUsingDefaultAvatarAtIndex(size_t index, bool value);
   void SetProfileIsAuthErrorAtIndex(size_t index, bool value);
 
-  // Determines whether |name| is one of the default assigned names.
-  bool IsDefaultProfileName(const base::string16& name) const override;
-
-  // Returns unique name that can be assigned to a newly created profile.
-  base::string16 ChooseNameForNewProfile(size_t icon_index) const override;
-
-  // Returns an avatar icon index that can be assigned to a newly created
-  // profile. Note that the icon may not be unique since there are a limited
-  // set of default icons.
-  size_t ChooseAvatarIconIndexForNewProfile() const override;
-
   // Statistics
   void SetStatsBrowsingHistoryOfProfileAtIndex(size_t index, int value);
   void SetStatsPasswordsOfProfileAtIndex(size_t index, int value);
@@ -200,11 +189,8 @@ class ProfileInfoCache : public ProfileInfoInterface,
   // Returns a vector containing one attributes entry per known profile. They
   // are not sorted in any particular order.
   std::vector<ProfileAttributesEntry*> GetAllProfilesAttributes() override;
-  std::vector<ProfileAttributesEntry*> GetAllProfilesAttributesSortedByName()
-      override;
-  bool GetProfileAttributesWithPath(
-      const base::FilePath& path,
-      ProfileAttributesEntry** entry) override;
+  bool GetProfileAttributesWithPath(const base::FilePath& path,
+                                    ProfileAttributesEntry** entry) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ProfileInfoCacheTest, DownloadHighResAvatarTest);
@@ -218,15 +204,6 @@ class ProfileInfoCache : public ProfileInfoInterface,
   std::vector<std::string>::iterator FindPositionForProfile(
       const std::string& search_key,
       const base::string16& search_name);
-
-  // Returns true if the given icon index is not in use by another profie.
-  bool IconIndexIsUnique(size_t icon_index) const;
-
-  // Tries to find an icon index that satisfies all the given conditions.
-  // Returns true if an icon was found, false otherwise.
-  bool ChooseAvatarIconIndexForNewProfile(bool allow_generic_icon,
-                                          bool must_be_unique,
-                                          size_t* out_icon_index) const;
 
   // Updates the position of the profile at the given index so that the list
   // of profiles is still sorted.
@@ -263,12 +240,7 @@ class ProfileInfoCache : public ProfileInfoInterface,
   // used by the profiles.
   void MigrateLegacyProfileNamesAndDownloadAvatars();
 
-  PrefService* prefs_;
   std::vector<std::string> sorted_keys_;
-  std::unordered_map<base::FilePath::StringType,
-                     std::unique_ptr<ProfileAttributesEntry>>
-      profile_attributes_entries_;
-  base::FilePath user_data_dir_;
 
   mutable base::ObserverList<ProfileInfoCacheObserver> observer_list_;
 

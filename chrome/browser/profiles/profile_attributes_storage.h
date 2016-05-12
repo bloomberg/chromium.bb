@@ -7,24 +7,29 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
+#include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
+#include "base/files/file_path.h"
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
+#include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_info_cache_observer.h"
 
-namespace base {
-class FilePath;
-}  // namespace base
+class PrefService;
 class ProfileAttributesEntry;
 
 class ProfileAttributesStorage {
  public:
   using Observer = ProfileInfoCacheObserver;
 
-  ProfileAttributesStorage() {}
-  ~ProfileAttributesStorage() {}
+  ProfileAttributesStorage(PrefService* prefs,
+                           const base::FilePath& user_data_dir);
+  virtual ~ProfileAttributesStorage();
 
   // If the |supervised_user_id| is non-empty, the profile will be marked to be
   // omitted from the avatar-menu list on desktop versions. This is used while a
@@ -44,8 +49,7 @@ class ProfileAttributesStorage {
   // Returns a vector containing one attributes entry per known profile. They
   // are not sorted in any particular order.
   virtual std::vector<ProfileAttributesEntry*> GetAllProfilesAttributes() = 0;
-  virtual std::vector<ProfileAttributesEntry*>
-      GetAllProfilesAttributesSortedByName() = 0;
+  std::vector<ProfileAttributesEntry*> GetAllProfilesAttributesSortedByName();
 
   // Populates |entry| with the data for the profile at |path| and returns true
   // if the operation is successful and |entry| can be used. Returns false
@@ -59,18 +63,27 @@ class ProfileAttributesStorage {
   virtual size_t GetNumberOfProfiles() const = 0;
 
   // Returns a unique name that can be assigned to a newly created profile.
-  virtual base::string16 ChooseNameForNewProfile(size_t icon_index) const = 0;
+  base::string16 ChooseNameForNewProfile(size_t icon_index) const;
 
   // Determines whether |name| is one of the default assigned names.
-  virtual bool IsDefaultProfileName(const base::string16& name) const = 0;
+  bool IsDefaultProfileName(const base::string16& name) const;
 
   // Returns an avatar icon index that can be assigned to a newly created
   // profile. Note that the icon may not be unique since there are a limited
   // set of default icons.
-  virtual size_t ChooseAvatarIconIndexForNewProfile() const = 0;
+  size_t ChooseAvatarIconIndexForNewProfile() const;
 
   virtual void AddObserver(ProfileAttributesStorage::Observer* observer) = 0;
   virtual void RemoveObserver(ProfileAttributesStorage::Observer* observer) = 0;
+
+ protected:
+  FRIEND_TEST_ALL_PREFIXES(ProfileInfoCacheTest, EntriesInAttributesStorage);
+
+  PrefService* prefs_;
+  base::FilePath user_data_dir_;
+  mutable std::unordered_map<base::FilePath::StringType,
+                             std::unique_ptr<ProfileAttributesEntry>>
+      profile_attributes_entries_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ProfileAttributesStorage);
