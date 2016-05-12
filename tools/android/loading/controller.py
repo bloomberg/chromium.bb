@@ -54,9 +54,12 @@ class ChromeControllerMetadataGatherer(object):
     if self._chromium_commit is None:
       def _GitCommand(subcmd):
         return subprocess.check_output(['git', '-C', _SRC_DIR] + subcmd).strip()
-      self._chromium_commit = _GitCommand(['merge-base', 'master', 'HEAD'])
-      if self._chromium_commit != _GitCommand(['rev-parse', 'HEAD']):
-        self._chromium_commit = 'unknown'
+      try:
+        self._chromium_commit = _GitCommand(['merge-base', 'master', 'HEAD'])
+        if self._chromium_commit != _GitCommand(['rev-parse', 'HEAD']):
+          self._chromium_commit = 'unknown'
+      except subprocess.CalledProcessError:
+        self._chromium_commit = 'git_error'
     return {
       'chromium_commit': self._chromium_commit,
       'date': datetime.datetime.utcnow().isoformat(),
