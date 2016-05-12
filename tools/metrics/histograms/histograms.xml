@@ -552,6 +552,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Android.TabNavigationInterceptResult"
+    enum="NavigationInterceptResult">
+  <owner>mariakhomenko@chromium.org</owner>
+  <summary>
+    The distribution of results when running ExternalNavigationHandler, this
+    shows how often we send intents to be handled by other applications.
+  </summary>
+</histogram>
+
 <histogram name="AndroidTabCloseUndo.Toast"
     enum="AndroidTabCloseUndoToastEvent">
   <owner>dtrainor@chromium.org</owner>
@@ -79371,6 +79380,13 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="0" label="None">Did not scroll</int>
   <int value="1" label="Forward">Scrolled forward</int>
   <int value="2" label="Back">Scrolled back</int>
+</enum>
+
+<enum name="NavigationInterceptResult" type="int">
+  <int value="0" label="Created external intent"/>
+  <int value="1" label="Created external intent with tab clobbering"/>
+  <int value="2" label="Created async dialog for confirming external intent"/>
+  <int value="3" label="Navigation not intercepted"/>
 </enum>
 
 <enum name="NavigationScheme" type="int">

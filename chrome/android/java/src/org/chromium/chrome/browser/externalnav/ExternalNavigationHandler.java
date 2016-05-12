@@ -49,6 +49,7 @@ public class ExternalNavigationHandler {
 
     /**
      * Result types for checking if we should override URL loading.
+     * NOTE: this enum is used in UMA, do not reorder values. Changes should be append only.
      */
     public enum OverrideUrlLoadingResult {
         /* We should override the URL loading and launch an intent. */
