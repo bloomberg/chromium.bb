@@ -15,7 +15,8 @@ iframe {
   <body style='height:500px; width: 500px; padding: 0; margin: 0;'>
     <script>
       var testEventList = ['pointerup', 'pointerdown', 'pointermove',
-                           'touchstart', 'touchmove', 'touchend'];
+                           'touchstart', 'touchmove', 'touchend',
+                           'mouseup', 'mousedown', 'mousemove'];
       testEventList.forEach(function(eventName) {
         document.documentElement.addEventListener(eventName, function(event) {
           top.document.events.push(event);
@@ -42,6 +43,14 @@ function testScenario(scrollX, scrollY, zoomFactor) {
   document.getElementById('target').contentWindow.scrollTo(scrollX, scrollY);
   window.internals.setZoomFactor(zoomFactor);
 
+  debug(' *** Mouse events inside iframe ***');
+  // mouse events inside iframe
+  eventSender.mouseMoveTo(200, 200);
+  eventSender.mouseDown(0);
+  eventSender.mouseUp(0);
+  dumpEvents();
+
+  debug(' *** Touch events inside iframe ***');
   // touch events inside iframe
   eventSender.addTouchPoint(200, 200)
   eventSender.touchStart();
@@ -54,7 +63,7 @@ function testScenario(scrollX, scrollY, zoomFactor) {
   debug('');
 }
 
-function runTests(scrollX, scrollY) {
+function runTests() {
   testScenario(25, 100, 1);
   testScenario(40, 140, 1);
   testScenario(40, 140, 2);
@@ -74,6 +83,11 @@ function dumpEvents()
       debug(event.type + " is recieved:");
       attributes.forEach(function(att) {
         debug(att + " = " + event.changedTouches[0][att]);
+      });
+    } else {
+      debug(event.type + " is recieved:");
+      attributes.forEach(function(att) {
+        debug(att + " = " + event[att]);
       });
     }
   });

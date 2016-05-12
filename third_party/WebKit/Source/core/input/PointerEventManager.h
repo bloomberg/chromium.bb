@@ -31,7 +31,6 @@ public:
         Node*, const AtomicString& type,
         int clickCount, const PlatformMouseEvent&,
         Node* relatedTarget,
-        AbstractView*,
         Node* lastNodeUnderMouse);
 
     WebInputEventResult handleTouchEvents(
@@ -52,7 +51,7 @@ public:
         Node* exitedNode,
         Node* enteredNode,
         const PlatformMouseEvent&,
-        AbstractView*, bool isFrameBoundaryTransition);
+        bool isFrameBoundaryTransition);
 
     // Resets the internal state of this object.
     void clear();

@@ -32,7 +32,7 @@ public:
     PointerEvent* create(
         const AtomicString& mouseEventName, const PlatformMouseEvent&,
         EventTarget* relatedTarget,
-        AbstractView*);
+        LocalDOMWindow*);
 
     PointerEvent* create(const AtomicString& type,
         const PlatformTouchPoint&, PlatformEvent::Modifiers,

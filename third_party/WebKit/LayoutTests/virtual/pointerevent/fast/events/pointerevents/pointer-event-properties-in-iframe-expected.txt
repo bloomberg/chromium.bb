@@ -8,6 +8,26 @@ PASS successfullyParsed is true
 
 TEST COMPLETE
 ===== scrollX=25, scrollY=100, zoomFactor=1
+ *** Mouse events inside iframe ***
+pointermove of mouse is recieved:
+clientX = 150
+clientY = 100
+mousemove is recieved:
+clientX = 150
+clientY = 100
+pointerdown of mouse is recieved:
+clientX = 150
+clientY = 100
+mousedown is recieved:
+clientX = 150
+clientY = 100
+pointerup of mouse is recieved:
+clientX = 150
+clientY = 100
+mouseup is recieved:
+clientX = 150
+clientY = 100
+ *** Touch events inside iframe ***
 pointerdown of touch is recieved:
 clientX = 150
 clientY = 100
@@ -28,6 +48,26 @@ clientX = 150
 clientY = 100
 
 ===== scrollX=40, scrollY=140, zoomFactor=1
+ *** Mouse events inside iframe ***
+pointermove of mouse is recieved:
+clientX = 150
+clientY = 100
+mousemove is recieved:
+clientX = 150
+clientY = 100
+pointerdown of mouse is recieved:
+clientX = 150
+clientY = 100
+mousedown is recieved:
+clientX = 150
+clientY = 100
+pointerup of mouse is recieved:
+clientX = 150
+clientY = 100
+mouseup is recieved:
+clientX = 150
+clientY = 100
+ *** Touch events inside iframe ***
 pointerdown of touch is recieved:
 clientX = 150
 clientY = 100
@@ -48,6 +88,26 @@ clientX = 150
 clientY = 100
 
 ===== scrollX=40, scrollY=140, zoomFactor=2
+ *** Mouse events inside iframe ***
+pointermove of mouse is recieved:
+clientX = 50
+clientY = 0
+mousemove is recieved:
+clientX = 50
+clientY = 0
+pointerdown of mouse is recieved:
+clientX = 50
+clientY = 0
+mousedown is recieved:
+clientX = 50
+clientY = 0
+pointerup of mouse is recieved:
+clientX = 50
+clientY = 0
+mouseup is recieved:
+clientX = 50
+clientY = 0
+ *** Touch events inside iframe ***
 pointerdown of touch is recieved:
 clientX = 50
 clientY = 0

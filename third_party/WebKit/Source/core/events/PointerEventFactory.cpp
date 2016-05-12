@@ -4,6 +4,7 @@
 
 #include "core/events/PointerEventFactory.h"
 
+#include "core/frame/FrameView.h"
 #include "platform/geometry/FloatSize.h"
 
 namespace blink {
@@ -89,7 +90,7 @@ void PointerEventFactory::setBubblesAndCancelable(PointerEventInit& pointerEvent
 PointerEvent* PointerEventFactory::create(
     const AtomicString& mouseEventName, const PlatformMouseEvent& mouseEvent,
     EventTarget* relatedTarget,
-    AbstractView* view)
+    LocalDOMWindow* view)
 {
     AtomicString pointerEventName = pointerEventNameForMouseEventName(mouseEventName);
     unsigned buttons = MouseEvent::platformModifiersToButtons(mouseEvent.getModifiers());
@@ -100,8 +101,20 @@ PointerEvent* PointerEventFactory::create(
 
     pointerEventInit.setScreenX(mouseEvent.globalPosition().x());
     pointerEventInit.setScreenY(mouseEvent.globalPosition().y());
-    pointerEventInit.setClientX(mouseEvent.position().x());
-    pointerEventInit.setClientY(mouseEvent.position().y());
+
+    IntPoint locationInFrameZoomed;
+    if (view && view->frame() && view->frame()->view()) {
+        LocalFrame* frame = view->frame();
+        FrameView* frameView = frame->view();
+        IntPoint locationInContents = frameView->rootFrameToContents(mouseEvent.position());
+        locationInFrameZoomed = frameView->contentsToFrame(locationInContents);
+        float scaleFactor = 1 / frame->pageZoomFactor();
+        locationInFrameZoomed.scale(scaleFactor, scaleFactor);
+    }
+
+    // Set up initial values for coordinates.
+    pointerEventInit.setClientX(locationInFrameZoomed.x());
+    pointerEventInit.setClientY(locationInFrameZoomed.y());
 
     if (pointerEventName == EventTypeNames::pointerdown
         || pointerEventName == EventTypeNames::pointerup) {

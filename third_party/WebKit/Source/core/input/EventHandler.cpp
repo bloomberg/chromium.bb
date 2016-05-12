@@ -1724,7 +1724,7 @@ void EventHandler::updateMouseEventTargetNodeAndSendEvents(Node* targetNode,
     Node* lastNodeUnderMouse = updateMouseEventTargetNode(targetNode, mouseEvent);
     m_pointerEventManager.sendMouseAndPossiblyPointerNodeTransitionEvents(
         lastNodeUnderMouse, m_nodeUnderMouse, mouseEvent,
-        m_frame->document()->domWindow(), isFrameBoundaryTransition);
+        isFrameBoundaryTransition);
 }
 
 WebInputEventResult EventHandler::dispatchMouseEvent(const AtomicString& eventType, Node* targetNode, int clickCount, const PlatformMouseEvent& mouseEvent)
@@ -1774,7 +1774,7 @@ WebInputEventResult EventHandler::updatePointerTargetAndDispatchEvents(const Ato
 
     return m_pointerEventManager.sendMousePointerEvent(
         m_nodeUnderMouse, mouseEventType, clickCount, mouseEvent, nullptr,
-        m_frame->document()->domWindow(), lastNodeUnderMouse);
+        lastNodeUnderMouse);
 }
 
 WebInputEventResult EventHandler::handleMouseFocus(const MouseEventWithHitTestResults& targetedEvent, InputDeviceCapabilities* sourceCapabilities)

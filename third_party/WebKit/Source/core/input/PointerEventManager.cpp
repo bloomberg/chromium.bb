@@ -169,13 +169,12 @@ void PointerEventManager::sendMouseAndPossiblyPointerNodeTransitionEvents(
     Node* exitedNode,
     Node* enteredNode,
     const PlatformMouseEvent& mouseEvent,
-    AbstractView* view,
     bool isFrameBoundaryTransition)
 {
     // Pointer event type does not matter as it will be overridden in the sendNodeTransitionEvents
     PointerEvent* pointerEvent =
         m_pointerEventFactory.create(EventTypeNames::mouseout, mouseEvent,
-        nullptr, view);
+        nullptr, m_frame->document()->domWindow());
 
     // TODO(crbug/545647): This state should reset with pointercancel too.
     // This function also gets called for compat mouse events of touch at this
@@ -476,12 +475,11 @@ WebInputEventResult PointerEventManager::sendMousePointerEvent(
     Node* target, const AtomicString& mouseEventType,
     int clickCount, const PlatformMouseEvent& mouseEvent,
     Node* relatedTarget,
-    AbstractView* view,
     Node* lastNodeUnderMouse)
 {
     PointerEvent* pointerEvent =
         m_pointerEventFactory.create(mouseEventType, mouseEvent,
-        relatedTarget, view);
+        relatedTarget, m_frame->document()->domWindow());
 
     // This is for when the mouse is released outside of the page.
     if (pointerEvent->type() == EventTypeNames::pointermove
