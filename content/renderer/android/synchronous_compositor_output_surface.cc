@@ -13,13 +13,16 @@
 #include "cc/output/software_output_device.h"
 #include "content/common/android/sync_compositor_messages.h"
 #include "content/renderer/android/synchronous_compositor_external_begin_frame_source.h"
+#include "content/renderer/android/synchronous_compositor_filter.h"
 #include "content/renderer/android/synchronous_compositor_registry.h"
 #include "content/renderer/gpu/frame_swap_message_queue.h"
+#include "content/renderer/render_thread_impl.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/gpu_memory_allocation.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
+#include "ipc/ipc_sender.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/skia_util.h"
@@ -78,6 +81,7 @@ SynchronousCompositorOutputSurface::SynchronousCompositorOutputSurface(
       routing_id_(routing_id),
       output_surface_id_(output_surface_id),
       registry_(registry),
+      sender_(RenderThreadImpl::current()->sync_compositor_message_filter()),
       registered_(false),
       sync_client_(nullptr),
       current_sw_canvas_(nullptr),
@@ -86,8 +90,9 @@ SynchronousCompositorOutputSurface::SynchronousCompositorOutputSurface(
       frame_swap_message_queue_(frame_swap_message_queue),
       fallback_tick_pending_(false),
       fallback_tick_running_(false) {
-  thread_checker_.DetachFromThread();
   DCHECK(registry_);
+  DCHECK(sender_);
+  thread_checker_.DetachFromThread();
   capabilities_.adjust_deadline_for_parent = false;
   capabilities_.delegated_rendering = true;
   memory_policy_.priority_cutoff_when_visible =
@@ -106,6 +111,7 @@ bool SynchronousCompositorOutputSurface::OnMessageReceived(
     const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(SynchronousCompositorOutputSurface, message)
+    IPC_MESSAGE_HANDLER(SyncCompositorMsg_SetMemoryPolicy, SetMemoryPolicy)
     IPC_MESSAGE_HANDLER(SyncCompositorMsg_ReclaimResources, OnReclaimResources)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -121,6 +127,7 @@ bool SynchronousCompositorOutputSurface::BindToClient(
   client_->SetMemoryPolicy(memory_policy_);
   registry_->RegisterOutputSurface(routing_id_, this);
   registered_ = true;
+  Send(new SyncCompositorHostMsg_OutputSurfaceCreated(routing_id_));
   return true;
 }
 
@@ -281,6 +288,11 @@ void SynchronousCompositorOutputSurface::GetMessagesToDeliver(
   std::unique_ptr<FrameSwapMessageQueue::SendMessageScope> send_message_scope =
       frame_swap_message_queue_->AcquireSendMessageScope();
   frame_swap_message_queue_->DrainMessages(messages);
+}
+
+bool SynchronousCompositorOutputSurface::Send(IPC::Message* message) {
+  DCHECK(CalledOnValidThread());
+  return sender_->Send(message);
 }
 
 bool SynchronousCompositorOutputSurface::CalledOnValidThread() const {

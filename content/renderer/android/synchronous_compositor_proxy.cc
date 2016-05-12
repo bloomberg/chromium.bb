@@ -40,7 +40,6 @@ SynchronousCompositorProxy::SynchronousCompositorProxy(
       inside_receive_(false),
       hardware_draw_reply_(nullptr),
       software_draw_reply_(nullptr),
-      bytes_limit_(0u),
       version_(0u),
       page_scale_factor_(0.f),
       min_page_scale_factor_(0.f),
@@ -75,7 +74,6 @@ void SynchronousCompositorProxy::SetOutputSurface(
     output_surface_->SetTreeActivationCallback(
         base::Bind(&SynchronousCompositorProxy::DidActivatePendingTree,
                    base::Unretained(this)));
-    output_surface_->SetMemoryPolicy(bytes_limit_);
   }
 }
 
@@ -411,11 +409,6 @@ void SynchronousCompositorProxy::DidOverscroll(
 
 void SynchronousCompositorProxy::ProcessCommonParams(
     const SyncCompositorCommonBrowserParams& common_params) {
-  if (bytes_limit_ != common_params.bytes_limit) {
-    bytes_limit_ = common_params.bytes_limit;
-    if (output_surface_)
-      output_surface_->SetMemoryPolicy(bytes_limit_);
-  }
   if (common_params.update_root_scroll_offset &&
       total_scroll_offset_ != common_params.root_scroll_offset) {
     total_scroll_offset_ = common_params.root_scroll_offset;

@@ -137,7 +137,6 @@ class SynchronousCompositorProxy
   IPC::Message* software_draw_reply_;
 
   // From browser.
-  size_t bytes_limit_;
   std::unique_ptr<SharedMemoryWithSize> software_draw_shm_;
 
   // To browser.

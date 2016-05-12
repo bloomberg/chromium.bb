@@ -96,6 +96,8 @@ SynchronousCompositorHost::~SynchronousCompositorHost() {
 bool SynchronousCompositorHost::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(SynchronousCompositorHost, message)
+    IPC_MESSAGE_HANDLER(SyncCompositorHostMsg_OutputSurfaceCreated,
+                        OutputSurfaceCreated)
     IPC_MESSAGE_HANDLER(SyncCompositorHostMsg_UpdateState, ProcessCommonParams)
     IPC_MESSAGE_HANDLER(SyncCompositorHostMsg_OverScroll, OnOverScroll)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -316,8 +318,11 @@ void SynchronousCompositorHost::ReturnResources(
 void SynchronousCompositorHost::SetMemoryPolicy(size_t bytes_limit) {
   if (bytes_limit_ == bytes_limit)
     return;
-  bytes_limit_ = bytes_limit;
-  SendAsyncCompositorStateIfNeeded();
+
+  if (sender_->Send(
+          new SyncCompositorMsg_SetMemoryPolicy(routing_id_, bytes_limit))) {
+    bytes_limit_ = bytes_limit;
+  }
 }
 
 void SynchronousCompositorHost::DidChangeRootLayerScrollOffset(
@@ -419,6 +424,13 @@ void SynchronousCompositorHost::BeginFrame(const cc::BeginFrameArgs& args) {
   ProcessCommonParams(common_renderer_params);
 }
 
+void SynchronousCompositorHost::OutputSurfaceCreated() {
+  // New output surface is not aware of state from Browser side. So need to
+  // re-send all browser side state here.
+  sender_->Send(
+      new SyncCompositorMsg_SetMemoryPolicy(routing_id_, bytes_limit_));
+}
+
 void SynchronousCompositorHost::OnOverScroll(
     const SyncCompositorCommonRendererParams& params,
     const DidOverscrollParams& over_scroll_params) {
@@ -429,7 +441,6 @@ void SynchronousCompositorHost::OnOverScroll(
 void SynchronousCompositorHost::PopulateCommonParams(
     SyncCompositorCommonBrowserParams* params) {
   DCHECK(params);
-  params->bytes_limit = bytes_limit_;
   if (root_scroll_offset_updated_by_browser_) {
     params->root_scroll_offset = root_scroll_offset_;
     params->update_root_scroll_offset = root_scroll_offset_updated_by_browser_;

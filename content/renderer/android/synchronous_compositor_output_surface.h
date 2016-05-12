@@ -29,6 +29,7 @@ class CompositorFrameMetadata;
 
 namespace IPC {
 class Message;
+class Sender;
 }
 
 namespace content {
@@ -87,7 +88,6 @@ class SynchronousCompositorOutputSurface
                     const gfx::Rect& viewport_rect_for_tile_priority,
                     const gfx::Transform& transform_for_tile_priority);
   void DemandDrawSw(SkCanvas* canvas);
-  void SetMemoryPolicy(size_t bytes_limit);
   void SetTreeActivationCallback(const base::Closure& callback);
   void GetMessagesToDeliver(
       std::vector<std::unique_ptr<IPC::Message>>* messages);
@@ -100,18 +100,21 @@ class SynchronousCompositorOutputSurface
                        const gfx::Rect& viewport,
                        const gfx::Rect& clip,
                        bool hardware_draw);
+  bool Send(IPC::Message* message);
   bool CalledOnValidThread() const;
 
   void CancelFallbackTick();
   void FallbackTickFired();
 
   // IPC handlers.
+  void SetMemoryPolicy(size_t bytes_limit);
   void OnReclaimResources(uint32_t output_surface_id,
                           const cc::CompositorFrameAck& ack);
 
   const int routing_id_;
   const uint32_t output_surface_id_;
-  SynchronousCompositorRegistry* const registry_;  // unowned
+  SynchronousCompositorRegistry* const registry_;  // Not owned.
+  IPC::Sender* const sender_;  // Not owned.
   bool registered_;
 
   // Not owned.

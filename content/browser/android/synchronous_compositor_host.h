@@ -87,6 +87,7 @@ class SynchronousCompositorHost : public SynchronousCompositor {
   void ProcessCommonParams(const SyncCompositorCommonRendererParams& params);
   void UpdateNeedsBeginFrames();
   void UpdateFrameMetaData(const cc::CompositorFrameMetadata& frame_metadata);
+  void OutputSurfaceCreated();
   void OnOverScroll(const SyncCompositorCommonRendererParams& params,
                     const DidOverscrollParams& over_scroll_params);
   void SendAsyncCompositorStateIfNeeded();

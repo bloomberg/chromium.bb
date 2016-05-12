@@ -26,7 +26,6 @@ struct SyncCompositorCommonBrowserParams {
   SyncCompositorCommonBrowserParams();
   ~SyncCompositorCommonBrowserParams();
 
-  uint32_t bytes_limit;
   gfx::ScrollOffset root_scroll_offset;
   bool update_root_scroll_offset;
   bool begin_frame_source_paused;
@@ -95,7 +94,6 @@ struct SyncCompositorCommonRendererParams {
 #define IPC_MESSAGE_START SyncCompositorMsgStart
 
 IPC_STRUCT_TRAITS_BEGIN(content::SyncCompositorCommonBrowserParams)
-  IPC_STRUCT_TRAITS_MEMBER(bytes_limit)
   IPC_STRUCT_TRAITS_MEMBER(root_scroll_offset)
   IPC_STRUCT_TRAITS_MEMBER(update_root_scroll_offset)
   IPC_STRUCT_TRAITS_MEMBER(begin_frame_source_paused)
@@ -185,12 +183,17 @@ IPC_SYNC_MESSAGE_ROUTED3_1(SyncCompositorMsg_ZoomBy,
                            gfx::Point /* anchor */,
                            content::SyncCompositorCommonRendererParams)
 
+IPC_MESSAGE_ROUTED1(SyncCompositorMsg_SetMemoryPolicy,
+                    uint32_t /* bytes_limit */);
+
 IPC_MESSAGE_ROUTED2(SyncCompositorMsg_ReclaimResources,
                     uint32_t /* output_surface_id */,
                     cc::CompositorFrameAck);
 
 // -----------------------------------------------------------------------------
 // Messages sent from the renderer to the browser.
+
+IPC_MESSAGE_ROUTED0(SyncCompositorHostMsg_OutputSurfaceCreated);
 
 IPC_MESSAGE_ROUTED1(SyncCompositorHostMsg_UpdateState,
                     content::SyncCompositorCommonRendererParams)
