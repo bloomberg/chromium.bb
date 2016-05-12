@@ -12,14 +12,11 @@
 namespace blink {
 
 SimDisplayItemList::SimDisplayItemList()
-    : m_containsText(false)
 {
 }
 
 void SimDisplayItemList::appendDrawingItem(const WebRect&, sk_sp<const SkPicture> picture)
 {
-    m_containsText |= picture->hasText();
-
     SkIRect bounds = picture->cullRect().roundOut();
     SimCanvas canvas(bounds.width(), bounds.height());
     picture->playback(&canvas);

@@ -19,11 +19,9 @@ public:
 
     int drawCount() const { return m_commands.size(); }
 
-    bool containsText() const { return m_containsText; }
     bool contains(SimCanvas::CommandType, const String& colorString = String()) const;
 
 private:
-    bool m_containsText;
     Vector<SimCanvas::Command> m_commands;
 };
 
