@@ -397,9 +397,9 @@ layer at (0,0) size 785x644 backgroundClip at (0,0) size 785x600 clip at (0,0) s
             text run at (0,65) width 56: "QRSTUVW"
             text run at (0,78) width 22: "XYZ"
             text run at (21,78) width 5: " "
-            text run at (0,91) width 60: "abcdefghijk"
-            text run at (0,104) width 59: "lmnopqrstu"
-            text run at (0,117) width 6: "v"
+            text run at (0,91) width 54: "abcdefghij"
+            text run at (0,104) width 58: "klmnopqrst"
+            text run at (0,117) width 13: "uv"
     layer at (226,285) size 66x66 clip at (227,286) size 49x49 scrollHeight 147
       LayoutTextControl {TEXTAREA} at (1,57) size 66x66 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
         LayoutBlockFlow {DIV} at (3,3) size 45x143
@@ -476,10 +476,10 @@ layer at (0,0) size 785x644 backgroundClip at (0,0) size 785x600 clip at (0,0) s
             text run at (0,104) width 42: "abcdefg"
             text run at (0,117) width 43: "hijklmno"
             text run at (0,130) width 40: "pqrstuv"
-    layer at (554,319) size 39x32 clip at (555,320) size 22x30 scrollHeight 381
+    layer at (554,319) size 39x32 clip at (555,320) size 22x30 scrollHeight 394
       LayoutTextControl {TEXTAREA} at (1,15) size 39x32 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
-        LayoutBlockFlow {DIV} at (3,3) size 18x377
-          LayoutText {#text} at (0,0) size 18x377
+        LayoutBlockFlow {DIV} at (3,3) size 18x390
+          LayoutText {#text} at (0,0) size 18x390
             text run at (0,0) width 17: "Lor"
             text run at (0,13) width 16: "em"
             text run at (15,13) width 3: " "
@@ -499,19 +499,20 @@ layer at (0,0) size 785x644 backgroundClip at (0,0) size 785x600 clip at (0,0) s
             text run at (0,182) width 15: "PQ"
             text run at (0,195) width 14: "RS"
             text run at (0,208) width 15: "TU"
-            text run at (0,221) width 18: "VW"
-            text run at (0,234) width 15: "XY"
-            text run at (0,247) width 8: "Z"
-            text run at (7,247) width 4: " "
-            text run at (0,260) width 13: "ab"
-            text run at (0,273) width 13: "cd"
-            text run at (0,286) width 17: "efg"
-            text run at (0,299) width 18: "hijk"
-            text run at (0,312) width 12: "lm"
-            text run at (0,325) width 13: "no"
-            text run at (0,338) width 17: "pqr"
-            text run at (0,351) width 16: "stu"
-            text run at (0,364) width 6: "v"
+            text run at (0,221) width 7: "V"
+            text run at (0,234) width 11: "W"
+            text run at (0,247) width 15: "XY"
+            text run at (0,260) width 8: "Z"
+            text run at (7,260) width 4: " "
+            text run at (0,273) width 13: "ab"
+            text run at (0,286) width 13: "cd"
+            text run at (0,299) width 17: "efg"
+            text run at (0,312) width 18: "hijk"
+            text run at (0,325) width 12: "lm"
+            text run at (0,338) width 13: "no"
+            text run at (0,351) width 17: "pqr"
+            text run at (0,364) width 16: "stu"
+            text run at (0,377) width 6: "v"
     layer at (636,306) size 141x45 clip at (637,307) size 124x43 scrollHeight 69
       LayoutTextControl {TEXTAREA} at (1,15) size 141x45 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
         LayoutBlockFlow {DIV} at (3,3) size 120x65
@@ -539,10 +540,10 @@ layer at (0,0) size 785x644 backgroundClip at (0,0) size 785x600 clip at (0,0) s
             text run at (0,78) width 38: "QRSTU"
             text run at (0,91) width 41: "VWXYZ"
             text run at (40,91) width 2: " "
-            text run at (0,104) width 42: "abcdefg"
-            text run at (0,117) width 37: "hijklmn"
-            text run at (0,130) width 40: "opqrstu"
-            text run at (0,143) width 6: "v"
+            text run at (0,104) width 36: "abcdef"
+            text run at (0,117) width 37: "ghijklm"
+            text run at (0,130) width 40: "nopqrst"
+            text run at (0,143) width 13: "uv"
     layer at (83,370) size 141x97 clip at (84,371) size 139x95
       LayoutTextControl {TEXTAREA} at (1,15) size 141x97 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
         LayoutBlockFlow {DIV} at (3,3) size 135x52
@@ -948,11 +949,11 @@ layer at (0,644) size 785x620 backgroundClip at (0,0) size 785x600 clip at (0,0)
             text run at (26,26) width 4: " "
             text run at (0,39) width 37: "ABCDE"
             text run at (0,52) width 39: "FGHIJK"
-            text run at (0,65) width 39: "LMNOP"
-            text run at (0,78) width 38: "QRSTU"
-            text run at (0,91) width 33: "VWXY"
-            text run at (0,104) width 8: "Z"
-            text run at (7,104) width 4: " "
+            text run at (0,65) width 33: "LMNO"
+            text run at (0,78) width 37: "PQRST"
+            text run at (0,91) width 34: "UVWX"
+            text run at (0,104) width 15: "YZ"
+            text run at (14,104) width 4: " "
             text run at (0,117) width 36: "abcdef"
             text run at (0,130) width 37: "ghijklm"
             text run at (0,143) width 36: "nopqrs"
@@ -1029,25 +1030,26 @@ layer at (0,644) size 785x620 backgroundClip at (0,0) size 785x600 clip at (0,0)
             text run at (0,845) width 4: "t"
             text run at (0,858) width 7: "u"
             text run at (0,871) width 6: "v"
-    layer at (308,193) size 60x28 clip at (309,194) size 43x26 scrollHeight 143
+    layer at (308,193) size 60x28 clip at (309,194) size 43x26 scrollHeight 156
       LayoutTextControl {TEXTAREA} at (1,43) size 60x28 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
-        LayoutBlockFlow {DIV} at (1,1) size 43x143
-          LayoutText {#text} at (0,0) size 43x143
+        LayoutBlockFlow {DIV} at (1,1) size 43x156
+          LayoutText {#text} at (0,0) size 43x156
             text run at (0,0) width 33: "Lorem"
             text run at (32,0) width 4: " "
             text run at (0,13) width 32: "ipsum"
             text run at (31,13) width 7: "  "
             text run at (0,26) width 27: "dolor"
             text run at (26,26) width 4: " "
-            text run at (0,39) width 43: "ABCDEF"
-            text run at (0,52) width 39: "GHIJKL"
-            text run at (0,65) width 42: "MNOPQ"
-            text run at (0,78) width 37: "RSTUV"
-            text run at (0,91) width 33: "WXYZ"
-            text run at (32,91) width 4: " "
+            text run at (0,39) width 37: "ABCDE"
+            text run at (0,52) width 39: "FGHIJK"
+            text run at (0,65) width 39: "LMNOP"
+            text run at (0,78) width 38: "QRSTU"
+            text run at (0,91) width 41: "VWXYZ"
+            text run at (40,91) width 3: " "
             text run at (0,104) width 42: "abcdefg"
-            text run at (0,117) width 43: "hijklmno"
-            text run at (0,130) width 40: "pqrstuv"
+            text run at (0,117) width 37: "hijklmn"
+            text run at (0,130) width 40: "opqrstu"
+            text run at (0,143) width 6: "v"
     layer at (390,161) size 141x60 clip at (391,162) size 139x58
       LayoutTextControl {TEXTAREA} at (1,29) size 141x60 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
         LayoutBlockFlow {DIV} at (3,3) size 135x52
@@ -1070,11 +1072,11 @@ layer at (0,644) size 785x620 backgroundClip at (0,0) size 785x600 clip at (0,0)
             text run at (26,26) width 4: " "
             text run at (0,39) width 37: "ABCDE"
             text run at (0,52) width 39: "FGHIJK"
-            text run at (0,65) width 39: "LMNOP"
-            text run at (0,78) width 38: "QRSTU"
-            text run at (0,91) width 33: "VWXY"
-            text run at (0,104) width 8: "Z"
-            text run at (7,104) width 4: " "
+            text run at (0,65) width 33: "LMNO"
+            text run at (0,78) width 37: "PQRST"
+            text run at (0,91) width 34: "UVWX"
+            text run at (0,104) width 15: "YZ"
+            text run at (14,104) width 4: " "
             text run at (0,117) width 36: "abcdef"
             text run at (0,130) width 37: "ghijklm"
             text run at (0,143) width 36: "nopqrs"
@@ -1103,7 +1105,7 @@ layer at (0,644) size 785x620 backgroundClip at (0,0) size 785x600 clip at (0,0)
     layer at (144,279) size 60x60 clip at (145,280) size 58x58 scrollHeight 134
       LayoutTextControl {TEXTAREA} at (1,57) size 60x60 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
         LayoutBlockFlow {DIV} at (3,3) size 54x130
-          LayoutText {#text} at (0,0) size 54x130
+          LayoutText {#text} at (0,0) size 53x130
             text run at (0,0) width 33: "Lorem"
             text run at (32,0) width 4: " "
             text run at (0,13) width 32: "ipsum"
@@ -1115,9 +1117,9 @@ layer at (0,644) size 785x620 backgroundClip at (0,0) size 785x600 clip at (0,0)
             text run at (0,65) width 53: "OPQRSTU"
             text run at (0,78) width 41: "VWXYZ"
             text run at (40,78) width 4: " "
-            text run at (0,91) width 54: "abcdefghij"
-            text run at (0,104) width 54: "klmnopqrs"
-            text run at (0,117) width 17: "tuv"
+            text run at (0,91) width 52: "abcdefghi"
+            text run at (0,104) width 51: "jklmnopqr"
+            text run at (0,117) width 23: "stuv"
     layer at (226,279) size 60x60 clip at (227,280) size 43x43 scrollHeight 173
       LayoutTextControl {TEXTAREA} at (1,57) size 60x60 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
         LayoutBlockFlow {DIV} at (3,3) size 39x169
@@ -1130,11 +1132,11 @@ layer at (0,644) size 785x620 backgroundClip at (0,0) size 785x600 clip at (0,0)
             text run at (26,26) width 4: " "
             text run at (0,39) width 37: "ABCDE"
             text run at (0,52) width 39: "FGHIJK"
-            text run at (0,65) width 39: "LMNOP"
-            text run at (0,78) width 38: "QRSTU"
-            text run at (0,91) width 33: "VWXY"
-            text run at (0,104) width 8: "Z"
-            text run at (7,104) width 4: " "
+            text run at (0,65) width 33: "LMNO"
+            text run at (0,78) width 37: "PQRST"
+            text run at (0,91) width 34: "UVWX"
+            text run at (0,104) width 15: "YZ"
+            text run at (14,104) width 4: " "
             text run at (0,117) width 36: "abcdef"
             text run at (0,130) width 37: "ghijklm"
             text run at (0,143) width 36: "nopqrs"
@@ -1151,11 +1153,11 @@ layer at (0,644) size 785x620 backgroundClip at (0,0) size 785x600 clip at (0,0)
             text run at (26,26) width 4: " "
             text run at (0,39) width 37: "ABCDE"
             text run at (0,52) width 39: "FGHIJK"
-            text run at (0,65) width 39: "LMNOP"
-            text run at (0,78) width 38: "QRSTU"
-            text run at (0,91) width 33: "VWXY"
-            text run at (0,104) width 8: "Z"
-            text run at (7,104) width 4: " "
+            text run at (0,65) width 33: "LMNO"
+            text run at (0,78) width 37: "PQRST"
+            text run at (0,91) width 34: "UVWX"
+            text run at (0,104) width 15: "YZ"
+            text run at (14,104) width 4: " "
             text run at (0,117) width 36: "abcdef"
             text run at (0,130) width 37: "ghijklm"
             text run at (0,143) width 36: "nopqrs"
@@ -1172,11 +1174,11 @@ layer at (0,644) size 785x620 backgroundClip at (0,0) size 785x600 clip at (0,0)
             text run at (26,26) width 4: " "
             text run at (0,39) width 37: "ABCDE"
             text run at (0,52) width 39: "FGHIJK"
-            text run at (0,65) width 39: "LMNOP"
-            text run at (0,78) width 38: "QRSTU"
-            text run at (0,91) width 33: "VWXY"
-            text run at (0,104) width 8: "Z"
-            text run at (7,104) width 4: " "
+            text run at (0,65) width 33: "LMNO"
+            text run at (0,78) width 37: "PQRST"
+            text run at (0,91) width 34: "UVWX"
+            text run at (0,104) width 15: "YZ"
+            text run at (14,104) width 4: " "
             text run at (0,117) width 36: "abcdef"
             text run at (0,130) width 37: "ghijklm"
             text run at (0,143) width 36: "nopqrs"
@@ -1193,19 +1195,19 @@ layer at (0,644) size 785x620 backgroundClip at (0,0) size 785x600 clip at (0,0)
             text run at (26,26) width 4: " "
             text run at (0,39) width 37: "ABCDE"
             text run at (0,52) width 39: "FGHIJK"
-            text run at (0,65) width 39: "LMNOP"
-            text run at (0,78) width 38: "QRSTU"
-            text run at (0,91) width 33: "VWXY"
-            text run at (0,104) width 8: "Z"
-            text run at (7,104) width 4: " "
+            text run at (0,65) width 33: "LMNO"
+            text run at (0,78) width 37: "PQRST"
+            text run at (0,91) width 34: "UVWX"
+            text run at (0,104) width 15: "YZ"
+            text run at (14,104) width 4: " "
             text run at (0,117) width 36: "abcdef"
             text run at (0,130) width 37: "ghijklm"
             text run at (0,143) width 36: "nopqrs"
             text run at (0,156) width 17: "tuv"
-    layer at (554,307) size 39x32 clip at (555,308) size 22x30 scrollHeight 381
+    layer at (554,307) size 39x32 clip at (555,308) size 22x30 scrollHeight 394
       LayoutTextControl {TEXTAREA} at (1,15) size 39x32 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
-        LayoutBlockFlow {DIV} at (3,3) size 18x377
-          LayoutText {#text} at (0,0) size 18x377
+        LayoutBlockFlow {DIV} at (3,3) size 18x390
+          LayoutText {#text} at (0,0) size 18x390
             text run at (0,0) width 17: "Lor"
             text run at (0,13) width 16: "em"
             text run at (15,13) width 3: " "
@@ -1225,19 +1227,20 @@ layer at (0,644) size 785x620 backgroundClip at (0,0) size 785x600 clip at (0,0)
             text run at (0,182) width 15: "PQ"
             text run at (0,195) width 14: "RS"
             text run at (0,208) width 15: "TU"
-            text run at (0,221) width 18: "VW"
-            text run at (0,234) width 15: "XY"
-            text run at (0,247) width 8: "Z"
-            text run at (7,247) width 4: " "
-            text run at (0,260) width 13: "ab"
-            text run at (0,273) width 13: "cd"
-            text run at (0,286) width 17: "efg"
-            text run at (0,299) width 18: "hijk"
-            text run at (0,312) width 12: "lm"
-            text run at (0,325) width 13: "no"
-            text run at (0,338) width 17: "pqr"
-            text run at (0,351) width 16: "stu"
-            text run at (0,364) width 6: "v"
+            text run at (0,221) width 7: "V"
+            text run at (0,234) width 11: "W"
+            text run at (0,247) width 15: "XY"
+            text run at (0,260) width 8: "Z"
+            text run at (7,260) width 4: " "
+            text run at (0,273) width 13: "ab"
+            text run at (0,286) width 13: "cd"
+            text run at (0,299) width 17: "efg"
+            text run at (0,312) width 18: "hijk"
+            text run at (0,325) width 12: "lm"
+            text run at (0,338) width 13: "no"
+            text run at (0,351) width 17: "pqr"
+            text run at (0,364) width 16: "stu"
+            text run at (0,377) width 6: "v"
     layer at (636,294) size 141x45 clip at (637,295) size 124x43 scrollHeight 69
       LayoutTextControl {TEXTAREA} at (1,15) size 141x45 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
         LayoutBlockFlow {DIV} at (3,3) size 120x65
@@ -1265,10 +1268,10 @@ layer at (0,644) size 785x620 backgroundClip at (0,0) size 785x600 clip at (0,0)
             text run at (0,78) width 38: "QRSTU"
             text run at (0,91) width 41: "VWXYZ"
             text run at (40,91) width 2: " "
-            text run at (0,104) width 42: "abcdefg"
-            text run at (0,117) width 37: "hijklmn"
-            text run at (0,130) width 40: "opqrstu"
-            text run at (0,143) width 6: "v"
+            text run at (0,104) width 36: "abcdef"
+            text run at (0,117) width 37: "ghijklm"
+            text run at (0,130) width 40: "nopqrst"
+            text run at (0,143) width 13: "uv"
     layer at (83,355) size 141x97 clip at (84,356) size 139x95
       LayoutTextControl {TEXTAREA} at (1,15) size 141x97 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
         LayoutBlockFlow {DIV} at (3,3) size 135x52
