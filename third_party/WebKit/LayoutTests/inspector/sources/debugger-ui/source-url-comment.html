@@ -15,7 +15,7 @@ function doEval()
 
 function doEvalWithNonRelativeURL()
 {
-    eval("function relativeURLScript() {}\n//# sourceURL=/js/nonRelativeURL.js");
+    eval("function relativeURLScript() {}\n//# sourceURL=js/nonRelativeURL.js");
 }
 
 function doDynamicScript()
@@ -158,7 +158,7 @@ function test()
 
         function testNonRelativeURL(next)
         {
-            InspectorTest.showScriptSource("/js/nonRelativeURL.js", didShowScriptSource);
+            InspectorTest.showScriptSource("js/nonRelativeURL.js", didShowScriptSource);
             InspectorTest.evaluateInPage("setTimeout(doEvalWithNonRelativeURL, 0)");
 
             function didShowScriptSource(sourceFrame)
