@@ -43,6 +43,8 @@ static amdgpu_device_handle device_handle;
 static uint32_t major_version;
 static uint32_t minor_version;
 static uint32_t family_id;
+static uint32_t chip_rev;
+static uint32_t chip_id;
 
 static amdgpu_context_handle context_handle;
 static amdgpu_bo_handle ib_handle;
@@ -78,6 +80,9 @@ int suite_cs_tests_init(void)
 		return CUE_SINIT_FAILED;
 
 	family_id = device_handle->info.family_id;
+	/* VI asic POLARIS10/11 have specific external_rev_id */
+	chip_rev = device_handle->info.chip_rev;
+	chip_id = device_handle->info.chip_external_rev;
 
 	r = amdgpu_cs_ctx_create(device_handle, &context_handle);
 	if (r)
@@ -200,8 +205,17 @@ static void amdgpu_cs_uvd_create(void)
 	CU_ASSERT_EQUAL(r, 0);
 
 	memcpy(msg, uvd_create_msg, sizeof(uvd_create_msg));
-	if (family_id >= AMDGPU_FAMILY_VI)
+	if (family_id >= AMDGPU_FAMILY_VI) {
 		((uint8_t*)msg)[0x10] = 7;
+		/* chip polaris 10/11 */
+		if (chip_id == chip_rev+0x50 || chip_id == chip_rev+0x5A) {
+			/* dpb size */
+			((uint8_t*)msg)[0x28] = 0x00;
+			((uint8_t*)msg)[0x29] = 0x94;
+			((uint8_t*)msg)[0x2A] = 0x6B;
+			((uint8_t*)msg)[0x2B] = 0x00;
+		}
+	}
 
 	r = amdgpu_bo_cpu_unmap(buf_handle);
 	CU_ASSERT_EQUAL(r, 0);
@@ -230,8 +244,8 @@ static void amdgpu_cs_uvd_create(void)
 
 static void amdgpu_cs_uvd_decode(void)
 {
-	const unsigned dpb_size = 15923584, dt_size = 737280;
-	uint64_t msg_addr, fb_addr, bs_addr, dpb_addr, dt_addr, it_addr;
+	const unsigned dpb_size = 15923584, ctx_size = 5287680, dt_size = 737280;
+	uint64_t msg_addr, fb_addr, bs_addr, dpb_addr, ctx_addr, dt_addr, it_addr;
 	struct amdgpu_bo_alloc_request req = {0};
 	amdgpu_bo_handle buf_handle;
 	amdgpu_va_handle va_handle;
@@ -269,8 +283,21 @@ static void amdgpu_cs_uvd_decode(void)
 	memcpy(ptr, uvd_decode_msg, sizeof(uvd_create_msg));
 	if (family_id >= AMDGPU_FAMILY_VI) {
 		ptr[0x10] = 7;
-		ptr[0x98] = 0xb0;
-		ptr[0x99] = 0x1;
+		ptr[0x98] = 0x00;
+		ptr[0x99] = 0x02;
+		/* chip polaris10/11 */
+		if (chip_id == chip_rev+0x50 || chip_id == chip_rev+0x5A) {
+			/*dpb size */
+			ptr[0x24] = 0x00;
+			ptr[0x25] = 0x94;
+			ptr[0x26] = 0x6B;
+			ptr[0x27] = 0x00;
+			/*ctx size */
+			ptr[0x2C] = 0x00;
+			ptr[0x2D] = 0xAF;
+			ptr[0x2E] = 0x50;
+			ptr[0x2F] = 0x00;
+		}
 	}
 
 	ptr += 4*1024;
@@ -301,6 +328,12 @@ static void amdgpu_cs_uvd_decode(void)
 	} else
 		bs_addr = fb_addr + 4*1024;
 	dpb_addr = ALIGN(bs_addr + sizeof(uvd_bitstream), 4*1024);
+
+	if ((family_id >= AMDGPU_FAMILY_VI) &&
+		(chip_id == chip_rev+0x50 || chip_id == chip_rev+0x5A)) {
+		ctx_addr = ALIGN(dpb_addr + 0x006B9400, 4*1024);
+	}
+
 	dt_addr = ALIGN(dpb_addr + dpb_size, 4*1024);
 
 	i = 0;
@@ -309,8 +342,11 @@ static void amdgpu_cs_uvd_decode(void)
 	uvd_cmd(dt_addr, 0x2, &i);
 	uvd_cmd(fb_addr, 0x3, &i);
 	uvd_cmd(bs_addr, 0x100, &i);
-	if (family_id >= AMDGPU_FAMILY_VI)
+	if (family_id >= AMDGPU_FAMILY_VI) {
 		uvd_cmd(it_addr, 0x204, &i);
+		if (chip_id == chip_rev+0x50 || chip_id == chip_rev+0x5A)
+			uvd_cmd(ctx_addr, 0x206, &i);
+}
 	ib_cpu[i++] = 0x3BC6;
 	ib_cpu[i++] = 0x1;
 	for (; i % 16; ++i)
