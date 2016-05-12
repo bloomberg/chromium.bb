@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/trace_event/trace_log.h"
 #include "content/common/content_export.h"
@@ -21,7 +20,7 @@ class V8SamplingThread;
 // The class monitors enablement of V8 CPU profiler and
 // spawns a sampling thread when needed.
 class CONTENT_EXPORT V8SamplingProfiler final
-    : public base::trace_event::TraceLog::EnabledStateObserver {
+    : public base::trace_event::TraceLog::AsyncEnabledStateObserver {
  public:
   explicit V8SamplingProfiler(bool underTest = false);
   ~V8SamplingProfiler() override;
@@ -40,7 +39,7 @@ class CONTENT_EXPORT V8SamplingProfiler final
   std::unique_ptr<base::WaitableEvent> waitable_event_for_testing_;
   std::unique_ptr<V8SamplingThread> sampling_thread_;
   std::unique_ptr<Sampler> render_thread_sampler_;
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  base::WeakPtrFactory<V8SamplingProfiler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(V8SamplingProfiler);
 };

@@ -13,7 +13,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/cancellation_flag.h"
 #include "base/threading/platform_thread.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "build/build_config.h"
@@ -580,18 +579,19 @@ void V8SamplingThread::Stop() {
 V8SamplingProfiler::V8SamplingProfiler(bool underTest)
     : sampling_thread_(nullptr),
       render_thread_sampler_(Sampler::CreateForCurrentThread()),
-      task_runner_(base::ThreadTaskRunnerHandle::Get()) {
+      weak_factory_(this) {
   DCHECK(underTest || RenderThreadImpl::current());
   // Force the "v8.cpu_profile*" categories to show up in the trace viewer.
   TraceLog::GetCategoryGroupEnabled(
       TRACE_DISABLED_BY_DEFAULT("v8.cpu_profile"));
   TraceLog::GetCategoryGroupEnabled(
       TRACE_DISABLED_BY_DEFAULT("v8.cpu_profile.hires"));
-  TraceLog::GetInstance()->AddEnabledStateObserver(this);
+  TraceLog::GetInstance()->AddAsyncEnabledStateObserver(
+      weak_factory_.GetWeakPtr());
 }
 
 V8SamplingProfiler::~V8SamplingProfiler() {
-  TraceLog::GetInstance()->RemoveEnabledStateObserver(this);
+  TraceLog::GetInstance()->RemoveAsyncEnabledStateObserver(this);
   DCHECK(!sampling_thread_.get());
 }
 
@@ -624,15 +624,11 @@ void V8SamplingProfiler::OnTraceLogEnabled() {
   if (record_mode == base::trace_event::TraceRecordMode::RECORD_CONTINUOUSLY)
     return;
 
-  task_runner_->PostTask(FROM_HERE,
-                         base::Bind(&V8SamplingProfiler::StartSamplingThread,
-                                    base::Unretained(this)));
+  StartSamplingThread();
 }
 
 void V8SamplingProfiler::OnTraceLogDisabled() {
-  task_runner_->PostTask(FROM_HERE,
-                         base::Bind(&V8SamplingProfiler::StopSamplingThread,
-                                    base::Unretained(this)));
+  StopSamplingThread();
 }
 
 void V8SamplingProfiler::EnableSamplingEventForTesting(int code_added_events,
