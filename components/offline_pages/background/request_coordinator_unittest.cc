@@ -15,6 +15,7 @@
 #include "components/offline_pages/background/request_queue.h"
 #include "components/offline_pages/background/request_queue_in_memory_store.h"
 #include "components/offline_pages/background/save_page_request.h"
+#include "components/offline_pages/background/scheduler.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace offline_pages {
@@ -24,6 +25,28 @@ namespace {
 const GURL kUrl("http://universe.com/everything");
 const ClientId kClientId("bookmark", "42");
 }  // namespace
+
+class SchedulerStub : public Scheduler {
+ public:
+  SchedulerStub() : schedule_called_(false), unschedule_called_(false) {}
+
+  void Schedule(const TriggerCondition& trigger_condition) override {
+    schedule_called_ = true;
+  }
+
+  // Unschedules the currently scheduled task, if any.
+  void Unschedule() override {
+    unschedule_called_ = true;
+  }
+
+  bool schedule_called() const { return schedule_called_; }
+
+  bool unschedule_called() const { return unschedule_called_; }
+
+ private:
+  bool schedule_called_;
+  bool unschedule_called_;
+};
 
 class RequestCoordinatorTest
     : public testing::Test {
@@ -35,7 +58,7 @@ class RequestCoordinatorTest
 
   void PumpLoop();
 
-  RequestCoordinator* getCoordinator() {
+  RequestCoordinator* coordinator() {
     return coordinator_.get();
   }
 
@@ -76,10 +99,11 @@ void RequestCoordinatorTest::SetUp() {
   std::unique_ptr<RequestQueueInMemoryStore>
       store(new RequestQueueInMemoryStore());
   std::unique_ptr<RequestQueue> queue(new RequestQueue(std::move(store)));
+  std::unique_ptr<Scheduler> scheduler_stub(new SchedulerStub());
   coordinator_.reset(new RequestCoordinator(
-      std::move(policy), std::move(factory), std::move(queue)));
+      std::move(policy), std::move(factory), std::move(queue),
+      std::move(scheduler_stub)));
 }
-
 
 void RequestCoordinatorTest::PumpLoop() {
   task_runner_->RunUntilIdle();
@@ -97,14 +121,14 @@ TEST_F(RequestCoordinatorTest, StartProcessingWithNoRequests) {
       base::Bind(
           &RequestCoordinatorTest::EmptyCallbackFunction,
           base::Unretained(this));
-  EXPECT_FALSE(getCoordinator()->StartProcessing(callback));
+  EXPECT_FALSE(coordinator()->StartProcessing(callback));
 }
 
 TEST_F(RequestCoordinatorTest, SavePageLater) {
-  EXPECT_TRUE(getCoordinator()->SavePageLater(kUrl, kClientId));
+  EXPECT_TRUE(coordinator()->SavePageLater(kUrl, kClientId));
 
   // Expect that a request got placed on the queue.
-  getCoordinator()->GetQueue()->GetRequests(
+  coordinator()->GetQueue()->GetRequests(
       base::Bind(&RequestCoordinatorTest::GetRequestsDone,
                  base::Unretained(this)));
 
@@ -116,7 +140,10 @@ TEST_F(RequestCoordinatorTest, SavePageLater) {
   EXPECT_EQ(kUrl, last_requests()[0].url());
   EXPECT_EQ(kClientId, last_requests()[0].client_id());
 
-  // TODO(petewil): Expect that the scheduler got notified.
+  // Expect that the scheduler got notified.
+  SchedulerStub* scheduler_stub = reinterpret_cast<SchedulerStub*>(
+      coordinator()->GetSchedulerForTesting());
+  EXPECT_TRUE(scheduler_stub->schedule_called());
 }
 
 }  // namespace offline_pages

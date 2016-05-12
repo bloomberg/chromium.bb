@@ -18,7 +18,7 @@ namespace android {
 
 // Bridge between C++ and Java for implementing background scheduler
 // on Android.
-class BackgroundSchedulerBridge : Scheduler {
+class BackgroundSchedulerBridge : public Scheduler {
  public:
   BackgroundSchedulerBridge();
   ~BackgroundSchedulerBridge() override;

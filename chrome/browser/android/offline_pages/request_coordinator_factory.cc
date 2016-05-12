@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/memory/singleton.h"
+#include "chrome/browser/android/offline_pages/background_scheduler_bridge.h"
 #include "chrome/browser/android/offline_pages/prerendering_offliner_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/offline_pages/background/offliner_factory.h"
@@ -15,6 +16,7 @@
 #include "components/offline_pages/background/request_queue.h"
 #include "components/offline_pages/background/request_queue_in_memory_store.h"
 #include "components/offline_pages/background/request_queue_store.h"
+#include "components/offline_pages/background/scheduler.h"
 
 namespace offline_pages {
 
@@ -38,15 +40,21 @@ RequestCoordinator* RequestCoordinatorFactory::GetForBrowserContext(
 KeyedService* RequestCoordinatorFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   std::unique_ptr<OfflinerPolicy> policy(new OfflinerPolicy());
-  std::unique_ptr<OfflinerFactory> prerendererOffliner(
+  std::unique_ptr<OfflinerFactory> prerenderer_offliner(
       new PrerenderingOfflinerFactory(context));
   std::unique_ptr<RequestQueueInMemoryStore> store(
       new RequestQueueInMemoryStore());
   std::unique_ptr<RequestQueue> queue(new RequestQueue(std::move(store)));
   // TODO(petewil) Add support for server based offliner when it is ready.
 
-  return new RequestCoordinator(
-      std::move(policy), std::move(prerendererOffliner), std::move(queue));
+  std::unique_ptr<Scheduler>
+      scheduler(new android::BackgroundSchedulerBridge());
+  // TODO(petewil) Add support for server based offliner when it is ready.
+
+  return new RequestCoordinator(std::move(policy),
+                                std::move(prerenderer_offliner),
+                                std::move(queue),
+                                std::move(scheduler));
 }
 
 content::BrowserContext* RequestCoordinatorFactory::GetBrowserContextToUse(

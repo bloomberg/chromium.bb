@@ -21,6 +21,7 @@ class OfflinerPolicy;
 class OfflinerFactory;
 class Offliner;
 class SavePageRequest;
+class Scheduler;
 
 // Coordinates queueing and processing save page later requests.
 class RequestCoordinator :
@@ -32,7 +33,8 @@ class RequestCoordinator :
 
   RequestCoordinator(std::unique_ptr<OfflinerPolicy> policy,
                      std::unique_ptr<OfflinerFactory> factory,
-                     std::unique_ptr<RequestQueue> queue);
+                     std::unique_ptr<RequestQueue> queue,
+                     std::unique_ptr<Scheduler> scheduler);
 
   ~RequestCoordinator() override;
 
@@ -54,6 +56,8 @@ class RequestCoordinator :
   // Returns the request queue used for requests.  Coordinator keeps ownership.
   RequestQueue* GetQueue() { return queue_.get(); }
 
+  Scheduler* GetSchedulerForTesting() { return scheduler_.get(); }
+
  private:
   void AddRequestResultCallback(RequestQueue::AddRequestResult result,
                                 const SavePageRequest& request);
@@ -63,6 +67,8 @@ class RequestCoordinator :
   std::unique_ptr<OfflinerFactory> factory_;
   // RequestQueue.  Used to store incoming requests. Owned.
   std::unique_ptr<RequestQueue> queue_;
+  // Scheduler. Used to request a callback when network is available.  Owned.
+  std::unique_ptr<Scheduler> scheduler_;
 
   DISALLOW_COPY_AND_ASSIGN(RequestCoordinator);
 };

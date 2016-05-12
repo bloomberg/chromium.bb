@@ -10,18 +10,19 @@
 #include "components/offline_pages/background/offliner_factory.h"
 #include "components/offline_pages/background/offliner_policy.h"
 #include "components/offline_pages/background/save_page_request.h"
+#include "components/offline_pages/background/scheduler.h"
 #include "components/offline_pages/offline_page_item.h"
 
 namespace offline_pages {
 
-RequestCoordinator::RequestCoordinator(std::unique_ptr<OfflinerPolicy> policy,
-                                       std::unique_ptr<OfflinerFactory> factory,
-                                       std::unique_ptr<RequestQueue> queue) {
-  // Do setup as needed.
-  // TODO(petewil): Assert policy not null.
-  policy_ = std::move(policy);
-  factory_ = std::move(factory);
-  queue_ = std::move(queue);
+RequestCoordinator::RequestCoordinator(
+    std::unique_ptr<OfflinerPolicy> policy,
+    std::unique_ptr<OfflinerFactory> factory,
+    std::unique_ptr<RequestQueue> queue,
+    std::unique_ptr<Scheduler> scheduler)
+    :   policy_(std::move(policy)), factory_(std::move(factory)),
+        queue_(std::move(queue)), scheduler_(std::move(scheduler)) {
+  DCHECK(policy_ != nullptr);
 }
 
 RequestCoordinator::~RequestCoordinator() {}
@@ -53,7 +54,9 @@ void RequestCoordinator::AddRequestResultCallback(
   DVLOG(2) << __FUNCTION__;
 
   // Inform the scheduler that we have an outstanding task.
-  // TODO(petewil): implement.
+  // TODO(petewil): Define proper TriggerConditions and set them.
+  Scheduler::TriggerCondition conditions;
+  scheduler_->Schedule(conditions);
 }
 
 bool RequestCoordinator::StartProcessing(
