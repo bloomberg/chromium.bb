@@ -39,6 +39,8 @@
         'battor_finder.h',
         'battor_sample_converter.cc',
         'battor_sample_converter.h',
+        'serial_utils.cc',
+        'serial_utils.h',
       ],
       'dependencies': [
         '../../base/base.gyp:base',
@@ -65,6 +67,7 @@
         'battor_connection_impl_unittest.cc',
         'battor_protocol_types_unittest.cc',
         'battor_sample_converter_unittest.cc',
+        'serial_utils_unittest.cc',        
       ],
     },
   ],

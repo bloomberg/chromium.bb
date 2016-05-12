@@ -8,28 +8,13 @@
 #include <string>
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "tools/battor_agent/serial_utils.h"
 
 using namespace testing;
 
 namespace battor {
 
 namespace {
-
-// Prints the character array as hex to a comma-separated list.
-std::string CharArrayToFormattedString(const unsigned char* arr,
-                                       size_t length) {
-  std::string s;
-
-  char num_buff[6];
-  for (size_t i = 0; i < length; ++i) {
-    // We use sprintf because stringstream's hex support wants to print our
-    // characters as signed.
-    sprintf(num_buff, "0x%02hhx,", arr[i]);
-    s += num_buff;
-  }
-
-  return s;
-}
 
 const BattOrEEPROM kUnserializedEEPROM{
     {0, 0, 0, 1}, 2,  "serialno", 3,  4,  5,  6,  7,  8,  9,  10, 11,
@@ -55,12 +40,12 @@ TEST(BattOrProtocolTypeTest, EEPROMSerializesCorrectly) {
   // the EEPROM will change in the future and we'll need to update the
   // serialized version when it does, it makes sense to print the bytes as a
   // string that can just be copied and pasted into kSerializedEEPROM.
-  const unsigned char* eeprom_bytes =
-      reinterpret_cast<const unsigned char*>(&kUnserializedEEPROM);
+  const char* eeprom_bytes =
+      reinterpret_cast<const char*>(&kUnserializedEEPROM);
 
-  ASSERT_EQ(
-      CharArrayToFormattedString(kSerializedEEPROM, sizeof(kSerializedEEPROM)),
-      CharArrayToFormattedString(eeprom_bytes, sizeof(kUnserializedEEPROM)));
+  ASSERT_EQ(CharArrayToString(reinterpret_cast<const char*>(kSerializedEEPROM),
+                              sizeof(kSerializedEEPROM)),
+            CharArrayToString(eeprom_bytes, sizeof(kUnserializedEEPROM)));
 }
 
 }  // namespace battor

@@ -34,6 +34,8 @@ source_set("battor_agent_lib") {
     "battor_finder.h",
     "battor_sample_converter.cc",
     "battor_sample_converter.h",
+    "serial_utils.cc",
+    "serial_utils.h",
   ]
   deps = [
     "//base",
@@ -48,6 +50,7 @@ test("battor_agent_unittests") {
     "battor_connection_impl_unittest.cc",
     "battor_protocol_types_unittest.cc",
     "battor_sample_converter_unittest.cc",
+    "serial_utils_unittest.cc",
   ]
   deps = [
     ":battor_agent_lib",
