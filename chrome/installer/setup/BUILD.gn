@@ -26,6 +26,7 @@ if (is_win) {
       ":setup_exe_version",
       "//build/config/sanitizers:deps",
       "//build/win:default_exe_manifest",
+      "//chrome/install_static:install_static_util",
       "//components/crash/content/app:app",
     ]
   }
@@ -94,6 +95,7 @@ if (is_win) {
       "//base",
       "//base:i18n",
       "//base/test:test_support",
+      "//chrome/install_static:install_static_util",
       "//chrome/installer/mini_installer:unit_tests",
       "//testing/gmock",
       "//testing/gtest",

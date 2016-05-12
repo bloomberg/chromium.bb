@@ -17,6 +17,7 @@
           'type': 'loadable_module',
           'dependencies': [
             'gcapi_lib',
+            '../chrome/chrome.gyp:install_static_util',
             '../chrome/common_constants.gyp:version_header',
           ],
           'include_dirs': [
@@ -97,6 +98,7 @@
             'installer_util',
             '../base/base.gyp:base',
             '../base/base.gyp:test_support_base',
+            '../chrome/chrome.gyp:install_static_util',
             '../components/components.gyp:variations',
             '../testing/gtest.gyp:gtest',
           ],
@@ -126,6 +128,7 @@
             '../base/base.gyp:base_i18n',
             '../base/base.gyp:test_support_base',
             '../chrome/chrome.gyp:chrome_version_resources',
+            '../chrome/chrome.gyp:install_static_util',
             '../components/components.gyp:variations',
             '../content/content.gyp:content_common',
             '../testing/gmock.gyp:gmock',
@@ -295,6 +298,7 @@
           'type': 'executable',
           'dependencies': [
             'setup_lib',
+            '../chrome/chrome.gyp:install_static_util',
             '../chrome/common_constants.gyp:common_constants',
             '../chrome/common_constants.gyp:version_header',
             '../chrome_elf/chrome_elf.gyp:chrome_elf_constants',
@@ -379,6 +383,7 @@
             'setup_lib',
             '../base/base.gyp:base_i18n',
             '../base/base.gyp:test_support_base',
+            '../chrome/chrome.gyp:install_static_util',
             '../testing/gmock.gyp:gmock',
             '../testing/gtest.gyp:gtest',
           ],

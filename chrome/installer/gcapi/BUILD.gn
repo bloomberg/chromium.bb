@@ -21,6 +21,7 @@ shared_library("gcapi") {
     ":gcapi_dll_version",
     ":lib",
     "//base",
+    "//chrome/install_static:install_static_util",
   ]
 }
 
@@ -72,6 +73,7 @@ test("gcapi_test") {
   deps = [
     ":lib",
     "//base/test:test_support",
+    "//chrome/install_static:install_static_util",
     "//chrome/installer/util:with_no_strings",
     "//components/variations",
     "//testing/gtest",

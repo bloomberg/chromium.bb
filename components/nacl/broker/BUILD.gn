@@ -151,6 +151,7 @@ if (current_cpu == "x86") {
 
     deps = [
       "//chrome/common:constants",
+      "//chrome/install_static:install_static_util",
       "//chrome/installer/util:with_no_strings",
       "//components/browser_watcher:browser_watcher_client",
       "//components/flags_ui:switches",

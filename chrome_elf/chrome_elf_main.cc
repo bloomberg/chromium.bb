@@ -17,7 +17,7 @@ void SignalChromeElf() {
 
 BOOL APIENTRY DllMain(HMODULE module, DWORD reason, LPVOID reserved) {
   if (reason == DLL_PROCESS_ATTACH) {
-    InitializeProcessType();
+    install_static::InitializeProcessType();
     InitializeCrashReporting();
 
     __try {

@@ -22,6 +22,7 @@
 #include "base/win/windows_version.h"
 #include "chrome/common/chrome_icon_resources_win.h"
 #include "chrome/common/chrome_paths_internal.h"
+#include "chrome/install_static/install_util.h"
 #include "chrome/installer/util/app_registration_data.h"
 #include "chrome/installer/util/channel_info.h"
 #include "chrome/installer/util/google_update_constants.h"
@@ -249,8 +250,9 @@ base::string16 GoogleChromeDistribution::GetDistributionData(HKEY root_key) {
   result.append(ap_value);
 
   // Crash client id.
-  base::FilePath crash_dir;
-  if (chrome::GetDefaultCrashDumpLocation(&crash_dir)) {
+  base::string16 crash_dump_location;
+  if (install_static::GetDefaultCrashDumpLocation(&crash_dump_location)) {
+    base::FilePath crash_dir = base::FilePath(crash_dump_location);
     crashpad::UUID client_id;
     std::unique_ptr<crashpad::CrashReportDatabase> database(
         crashpad::CrashReportDatabase::InitializeWithoutCreating(crash_dir));

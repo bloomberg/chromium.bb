@@ -397,6 +397,7 @@
             'chrome_watcher_client',
             'file_pre_reader',
             'installer_util',
+            'install_static_util',
             'metrics_constants_util_win',
             '../base/base.gyp:base',
             '../breakpad/breakpad.gyp:breakpad_handler',
@@ -526,6 +527,7 @@
               ],
               'dependencies': [
                 'chrome_version_resources',
+                'install_static_util_nacl_win64',
                 'installer_util_nacl_win64',
                 '../base/base.gyp:base_i18n_nacl_win64',
                 '../base/base.gyp:base_win64',

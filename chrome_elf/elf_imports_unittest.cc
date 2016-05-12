@@ -88,7 +88,11 @@ TEST_F(ELFImportsTest, ChromeElfSanityCheck) {
 #if defined(ADDRESS_SANITIZER) && defined(COMPONENT_BUILD)
     "clang_rt.asan_dynamic-i386.dll",
 #endif
-    "ADVAPI32.dll"
+    "ADVAPI32.dll",
+    // On 64 bit the Version API's like VerQueryValue come from VERSION.dll.
+    // It depends on kernel32, advapi32 and api-ms-win-crt*.dll. This should
+    // be ok.
+    "VERSION.dll",
   };
 
   // Make sure all of ELF's imports are in the valid imports list.
