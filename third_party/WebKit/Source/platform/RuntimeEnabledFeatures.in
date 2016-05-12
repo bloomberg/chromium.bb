@@ -51,6 +51,7 @@ CSSFontDisplay status=experimental
 CSSFontSizeAdjust status=experimental
 CSSGridLayout status=experimental
 CSSHyphens status=test
+CSSInBodyDoesNotBlockPaint status=experimental
 CSSIndependentTransformProperties status=experimental
 CSSMaskSourceType status=experimental
 CSSOMSmoothScroll status=experimental

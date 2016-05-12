@@ -373,8 +373,8 @@ public:
 
     bool sawElementsInKnownNamespaces() const { return m_sawElementsInKnownNamespaces; }
 
-    bool isRenderingReady() const { return haveImportsLoaded() && haveStylesheetsLoaded(); }
-    bool isScriptExecutionReady() const { return isRenderingReady(); }
+    bool isRenderingReady() const { return haveImportsLoaded() && haveRenderBlockingStylesheetsLoaded(); }
+    bool isScriptExecutionReady() const { return haveImportsLoaded() && haveStylesheetsLoaded(); }
 
     // This is a DOM function.
     StyleSheetList& styleSheets();
@@ -1156,6 +1156,7 @@ private:
     void clearFocusedElementTimerFired(Timer<Document>*);
 
     bool haveStylesheetsLoaded() const;
+    bool haveRenderBlockingStylesheetsLoaded() const;
     void styleResolverMayHaveChanged();
 
     void setHoverNode(Node*);

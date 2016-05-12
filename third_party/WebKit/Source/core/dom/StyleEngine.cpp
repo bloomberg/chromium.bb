@@ -131,18 +131,27 @@ void StyleEngine::injectAuthorSheet(StyleSheetContents* authorSheet)
     resolverChanged(AnalyzedStyleUpdate);
 }
 
-void StyleEngine::addPendingSheet()
+void StyleEngine::addPendingSheet(StyleEngineContext &context)
 {
     m_pendingStylesheets++;
+
+    context.addingPendingSheet(document());
+    if (context.addedPendingSheetBeforeBody())
+        m_pendingRenderBlockingStylesheets++;
 }
 
 // This method is called whenever a top-level stylesheet has finished loading.
-void StyleEngine::removePendingSheet(Node* styleSheetCandidateNode)
+void StyleEngine::removePendingSheet(Node* styleSheetCandidateNode, const StyleEngineContext &context)
 {
     DCHECK(styleSheetCandidateNode);
     TreeScope* treeScope = isStyleElement(*styleSheetCandidateNode) ? &styleSheetCandidateNode->treeScope() : m_document.get();
     if (styleSheetCandidateNode->inShadowIncludingDocument())
         markTreeScopeDirty(*treeScope);
+
+    if (context.addedPendingSheetBeforeBody()) {
+        DCHECK_GT(m_pendingRenderBlockingStylesheets, 0);
+        m_pendingRenderBlockingStylesheets--;
+    }
 
     // Make sure we knew this sheet was pending, and that our count isn't out of sync.
     DCHECK_GT(m_pendingStylesheets, 0);
@@ -493,11 +502,11 @@ void StyleEngine::markDocumentDirty()
         document().importsController()->master()->styleEngine().markDocumentDirty();
 }
 
-CSSStyleSheet* StyleEngine::createSheet(Element* e, const String& text, TextPosition startPosition)
+CSSStyleSheet* StyleEngine::createSheet(Element* e, const String& text, TextPosition startPosition, StyleEngineContext &context)
 {
     CSSStyleSheet* styleSheet = nullptr;
 
-    e->document().styleEngine().addPendingSheet();
+    e->document().styleEngine().addPendingSheet(context);
 
     AtomicString textContent(text);
 

@@ -36,6 +36,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/DocumentOrderedList.h"
 #include "core/dom/DocumentStyleSheetCollection.h"
+#include "core/dom/StyleEngineContext.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Allocator.h"
 #include "wtf/ListHashSet.h"
@@ -98,11 +99,13 @@ public:
     void setSelectedStylesheetSetName(const String&);
     void setHttpDefaultStyle(const String&);
 
-    void addPendingSheet();
-    void removePendingSheet(Node* styleSheetCandidateNode);
+    void addPendingSheet(StyleEngineContext&);
+    void removePendingSheet(Node* styleSheetCandidateNode, const StyleEngineContext&);
 
     bool hasPendingSheets() const { return m_pendingStylesheets > 0; }
+    bool hasPendingRenderBlockingSheets() const { return m_pendingRenderBlockingStylesheets > 0; }
     bool haveStylesheetsLoaded() const { return !hasPendingSheets() || m_ignorePendingStylesheets; }
+    bool haveRenderBlockingStylesheetsLoaded() const { return !hasPendingRenderBlockingSheets() || m_ignorePendingStylesheets; }
     bool ignoringPendingStylesheets() const { return m_ignorePendingStylesheets; }
 
     unsigned maxDirectAdjacentSelectors() const { return m_maxDirectAdjacentSelectors; }
@@ -152,7 +155,7 @@ public:
     bool shouldClearResolver() const;
     void resolverChanged(StyleResolverUpdateMode);
 
-    CSSStyleSheet* createSheet(Element*, const String& text, TextPosition startPosition);
+    CSSStyleSheet* createSheet(Element*, const String& text, TextPosition startPosition, StyleEngineContext&);
     void removeSheet(StyleSheetContents*);
 
     void collectScopedStyleFeaturesTo(RuleFeatureSet&) const;
@@ -223,6 +226,7 @@ private:
     // We use this count of pending sheets to detect when we can begin attaching
     // elements and when it is safe to execute scripts.
     int m_pendingStylesheets = 0;
+    int m_pendingRenderBlockingStylesheets = 0;
 
     HeapVector<Member<CSSStyleSheet>> m_injectedAuthorStyleSheets;
 

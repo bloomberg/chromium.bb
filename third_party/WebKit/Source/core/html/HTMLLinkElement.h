@@ -28,6 +28,7 @@
 #include "core/css/CSSStyleSheet.h"
 #include "core/dom/DOMTokenList.h"
 #include "core/dom/IconURL.h"
+#include "core/dom/StyleEngineContext.h"
 #include "core/fetch/ResourceOwner.h"
 #include "core/fetch/StyleSheetResource.h"
 #include "core/fetch/StyleSheetResourceClient.h"
@@ -121,6 +122,7 @@ private:
     Member<CSSStyleSheet> m_sheet;
     DisabledState m_disabledState;
     PendingSheetType m_pendingSheetType;
+    StyleEngineContext m_styleEngineContext;
     bool m_loading;
     bool m_firedLoad;
     bool m_loadedSheet;

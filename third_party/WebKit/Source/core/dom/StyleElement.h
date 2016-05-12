@@ -22,6 +22,7 @@
 #define StyleElement_h
 
 #include "core/css/CSSStyleSheet.h"
+#include "core/dom/StyleEngineContext.h"
 #include "wtf/text/TextPosition.h"
 
 namespace blink {
@@ -69,6 +70,7 @@ private:
     bool m_loading : 1;
     bool m_registeredAsCandidate : 1;
     TextPosition m_startPosition;
+    StyleEngineContext m_styleEngineContext;
 };
 
 } // namespace blink

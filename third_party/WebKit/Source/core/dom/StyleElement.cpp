@@ -146,7 +146,7 @@ void StyleElement::clearSheet(Element* ownerElement)
     DCHECK(m_sheet);
 
     if (ownerElement && m_sheet->isLoading())
-        ownerElement->document().styleEngine().removePendingSheet(ownerElement);
+        ownerElement->document().styleEngine().removePendingSheet(ownerElement, m_styleEngineContext);
 
     m_sheet.release()->clearOwnerNode();
 }
@@ -191,7 +191,7 @@ StyleElement::ProcessingResult StyleElement::createSheet(Element* e, const Strin
         if (screenEval.eval(mediaQueries) || printEval.eval(mediaQueries)) {
             m_loading = true;
             TextPosition startPosition = m_startPosition == TextPosition::belowRangePosition() ? TextPosition::minimumPosition() : m_startPosition;
-            newSheet = document.styleEngine().createSheet(e, text, startPosition);
+            newSheet = document.styleEngine().createSheet(e, text, startPosition, m_styleEngineContext);
             newSheet->setMediaQueries(mediaQueries);
             m_loading = false;
         }
@@ -219,13 +219,13 @@ bool StyleElement::sheetLoaded(Document& document)
     if (isLoading())
         return false;
 
-    document.styleEngine().removePendingSheet(m_sheet->ownerNode());
+    document.styleEngine().removePendingSheet(m_sheet->ownerNode(), m_styleEngineContext);
     return true;
 }
 
 void StyleElement::startLoadingDynamicSheet(Document& document)
 {
-    document.styleEngine().addPendingSheet();
+    document.styleEngine().addPendingSheet(m_styleEngineContext);
 }
 
 DEFINE_TRACE(StyleElement)

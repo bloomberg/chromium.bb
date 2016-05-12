@@ -166,7 +166,7 @@ void ProcessingInstruction::process(const String& href, const String& charset)
     if (resource) {
         m_loading = true;
         if (!m_isXSL)
-            document().styleEngine().addPendingSheet();
+            document().styleEngine().addPendingSheet(m_styleEngineContext);
         setResource(resource);
     }
 }
@@ -184,7 +184,7 @@ bool ProcessingInstruction::sheetLoaded()
 {
     if (!isLoading()) {
         if (!DocumentXSLT::sheetLoaded(document(), this))
-            document().styleEngine().removePendingSheet(this);
+            document().styleEngine().removePendingSheet(this, m_styleEngineContext);
         return true;
     }
     return false;
@@ -288,7 +288,7 @@ void ProcessingInstruction::clearSheet()
 {
     DCHECK(m_sheet);
     if (m_sheet->isLoading())
-        document().styleEngine().removePendingSheet(this);
+        document().styleEngine().removePendingSheet(this, m_styleEngineContext);
     m_sheet.release()->clearOwnerNode();
 }
 

@@ -3071,7 +3071,7 @@ void Document::didLoadAllScriptBlockingResources()
 
 void Document::executeScriptsWaitingForResources()
 {
-    if (!isRenderingReady())
+    if (!isScriptExecutionReady())
         return;
     if (ScriptableDocumentParser* parser = scriptableDocumentParser())
         parser->executeScriptsWaitingForResources();
@@ -5674,6 +5674,13 @@ void Document::updateHoverActiveState(const HitTestRequest& request, Element* in
 
 bool Document::haveStylesheetsLoaded() const
 {
+    return m_styleEngine->haveStylesheetsLoaded();
+}
+
+bool Document::haveRenderBlockingStylesheetsLoaded() const
+{
+    if (RuntimeEnabledFeatures::cssInBodyDoesNotBlockPaintEnabled())
+        return m_styleEngine->haveRenderBlockingStylesheetsLoaded();
     return m_styleEngine->haveStylesheetsLoaded();
 }
 

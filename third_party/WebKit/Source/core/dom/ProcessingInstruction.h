@@ -23,6 +23,7 @@
 #define ProcessingInstruction_h
 
 #include "core/dom/CharacterData.h"
+#include "core/dom/StyleEngineContext.h"
 #include "core/fetch/ResourceOwner.h"
 #include "core/fetch/StyleSheetResource.h"
 #include "core/fetch/StyleSheetResourceClient.h"
@@ -94,6 +95,7 @@ private:
     String m_title;
     String m_media;
     Member<StyleSheet> m_sheet;
+    StyleEngineContext m_styleEngineContext;
     bool m_loading;
     bool m_alternate;
     bool m_isCSS;

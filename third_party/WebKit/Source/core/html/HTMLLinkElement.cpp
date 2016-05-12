@@ -622,7 +622,7 @@ void LinkStyle::addPendingSheet(PendingSheetType type)
 
     if (m_pendingSheetType == NonBlocking)
         return;
-    m_owner->document().styleEngine().addPendingSheet();
+    m_owner->document().styleEngine().addPendingSheet(m_styleEngineContext);
 }
 
 void LinkStyle::removePendingSheet()
@@ -638,7 +638,7 @@ void LinkStyle::removePendingSheet()
         return;
     }
 
-    m_owner->document().styleEngine().removePendingSheet(m_owner);
+    m_owner->document().styleEngine().removePendingSheet(m_owner, m_styleEngineContext);
 }
 
 void LinkStyle::setDisabledState(bool disabled)
