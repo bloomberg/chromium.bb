@@ -416,22 +416,10 @@ void LayoutBlock::addChild(LayoutObject* newChild, LayoutObject* beforeChild)
         return;
     }
 
-    bool madeBoxesNonInline = false;
+    // Only LayoutBlockFlow should have inline children, and then we shouldn't be here.
+    ASSERT(!childrenInline());
 
-    // A block has to either have all of its children inline, or all of its children as blocks.
-    // So, if our children are currently inline and a block child has to be inserted, we move all our
-    // inline children into anonymous block boxes.
-    if (childrenInline() && !newChild->isInline() && !newChild->isFloatingOrOutOfFlowPositioned()) {
-        // This is a block with inline content. Wrap the inline content in anonymous blocks.
-        makeChildrenNonInline(beforeChild);
-        madeBoxesNonInline = true;
-
-        if (beforeChild && beforeChild->parent() != this) {
-            beforeChild = beforeChild->parent();
-            ASSERT(beforeChild->isAnonymousBlock());
-            ASSERT(beforeChild->parent() == this);
-        }
-    } else if (!childrenInline() && (newChild->isFloatingOrOutOfFlowPositioned() || newChild->isInline())) {
+    if (newChild->isInline() || newChild->isFloatingOrOutOfFlowPositioned()) {
         // If we're inserting an inline child but all of our children are blocks, then we have to make sure
         // it is put into an anomyous block box. We try to use an existing anonymous box if possible, otherwise
         // a new one is created and inserted into our list of children in the appropriate position.
@@ -446,19 +434,12 @@ void LayoutBlock::addChild(LayoutObject* newChild, LayoutObject* beforeChild)
             // No suitable existing anonymous box - create a new one.
             LayoutBlock* newBox = createAnonymousBlock();
             LayoutBox::addChild(newBox, beforeChild);
-            // Reparent adjacent floating or out-of-flow siblings to the new box.
-            newBox->reparentPrecedingFloatingOrOutOfFlowSiblings();
             newBox->addChild(newChild);
-            newBox->reparentSubsequentFloatingOrOutOfFlowSiblings();
             return;
         }
     }
 
     LayoutBox::addChild(newChild, beforeChild);
-
-    if (madeBoxesNonInline && parent() && isAnonymousBlock() && parent()->isLayoutBlock())
-        toLayoutBlock(parent())->removeLeftoverAnonymousBlock(this);
-    // this object may be dead here
 }
 
 static void getInlineRun(LayoutObject* start, LayoutObject* boundary,

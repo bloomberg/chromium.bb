@@ -2296,7 +2296,64 @@ void LayoutBlockFlow::addChild(LayoutObject* newChild, LayoutObject* beforeChild
         flowThread->addChild(newChild, beforeChild);
         return;
     }
-    LayoutBlock::addChild(newChild, beforeChild);
+
+    if (beforeChild && beforeChild->parent() != this) {
+        addChildBeforeDescendant(newChild, beforeChild);
+        return;
+    }
+
+    bool madeBoxesNonInline = false;
+
+    // A block has to either have all of its children inline, or all of its children as blocks.
+    // So, if our children are currently inline and a block child has to be inserted, we move all our
+    // inline children into anonymous block boxes.
+    bool childIsBlockLevel = !newChild->isInline() && !newChild->isFloatingOrOutOfFlowPositioned();
+    if (childrenInline()) {
+        if (childIsBlockLevel) {
+            // Wrap the inline content in anonymous blocks, to allow for the new block child to be
+            // inserted.
+            makeChildrenNonInline(beforeChild);
+            madeBoxesNonInline = true;
+
+            if (beforeChild && beforeChild->parent() != this) {
+                beforeChild = beforeChild->parent();
+                ASSERT(beforeChild->isAnonymousBlock());
+                ASSERT(beforeChild->parent() == this);
+            }
+        }
+    } else if (!childIsBlockLevel) {
+        // This block has block children. We may want to put the new child into an anomyous
+        // block. Floats and out-of-flow children may live among either block or inline children,
+        // so for such children, only put them inside an anonymous block if one already exists. If
+        // the child is inline, on the other hand, we *have to* put it inside an anonymous block,
+        // so create a new one if there is none for us there already.
+        LayoutObject* afterChild = beforeChild ? beforeChild->previousSibling() : lastChild();
+
+        if (afterChild && afterChild->isAnonymousBlock()) {
+            afterChild->addChild(newChild);
+            return;
+        }
+
+        if (newChild->isInline()) {
+            // No suitable existing anonymous box - create a new one.
+            LayoutBlockFlow* newBlock = toLayoutBlockFlow(createAnonymousBlock());
+            LayoutBox::addChild(newBlock, beforeChild);
+            // Reparent adjacent floating or out-of-flow siblings to the new box.
+            newBlock->reparentPrecedingFloatingOrOutOfFlowSiblings();
+            newBlock->addChild(newChild);
+            newBlock->reparentSubsequentFloatingOrOutOfFlowSiblings();
+            return;
+        }
+    }
+
+    // Skip the LayoutBlock override, since that one deals with anonymous child insertion in a way
+    // that isn't sufficient for us, and can only cause trouble at this point.
+    LayoutBox::addChild(newChild, beforeChild);
+
+    if (madeBoxesNonInline && parent() && isAnonymousBlock() && parent()->isLayoutBlock()) {
+        toLayoutBlock(parent())->removeLeftoverAnonymousBlock(this);
+        // |this| may be dead now.
+    }
 }
 
 void LayoutBlockFlow::removeChild(LayoutObject* oldChild)
