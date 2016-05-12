@@ -57,10 +57,12 @@ class ToughWebglCasesPageSet(story.StorySet):
       'http://www.khronos.org/registry/webgl/sdk/demos/webkit/Earth.html',
       # pylint: disable=line-too-long
       'http://www.khronos.org/registry/webgl/sdk/demos/webkit/ManyPlanetsDeep.html',
-      'http://webglsamples.googlecode.com/hg/aquarium/aquarium.html',
-      'http://webglsamples.googlecode.com/hg/blob/blob.html',
+      'http://webglsamples.org/aquarium/aquarium.html',
+      'http://webglsamples.org/blob/blob.html',
       # pylint: disable=line-too-long
-      'http://webglsamples.googlecode.com/hg/dynamic-cubemap/dynamic-cubemap.html'
+      'http://webglsamples.org/dynamic-cubemap/dynamic-cubemap.html',
+      # pylint: disable=line-too-long
+      'http://kenrussell.github.io/webgl-animometer/Animometer/tests/3d/webgl.html',
     ]
     for url in urls_list:
       self.AddStory(ToughWebglCasesPage(url, self))
