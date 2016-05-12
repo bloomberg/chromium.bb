@@ -77094,6 +77094,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-1137442543" label="enable-slimming-paint"/>
   <int value="-1136627751" label="ignore-autocomplete-off-autofill"/>
   <int value="-1136509631" label="ssl-interstitial-v1"/>
+  <int value="-1127996427" label="enable-files-details-panel"/>
   <int value="-1125133283" label="disable-threaded-scrolling"/>
   <int value="-1107762575" label="enable-data-reduction-proxy-config-client"/>
   <int value="-1102212525" label="enable-tcp-fastopen"/>

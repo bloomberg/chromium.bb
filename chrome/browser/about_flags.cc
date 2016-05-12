@@ -1843,6 +1843,11 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_ENABLE_NATIVE_CUPS_NAME,
      IDS_FLAGS_ENABLE_NATIVE_CUPS_DESCRIPTION, kOsCrOS,
      SINGLE_VALUE_TYPE(switches::kEnableNativeCups)},
+    {"enable-files-details-panel",
+      IDS_FLAGS_ENABLE_FILES_DETAILS_PANEL_NAME,
+      IDS_FLAGS_ENABLE_FILES_DETAILS_PANEL_DESCRIPTION,
+      kOsCrOS,
+      SINGLE_VALUE_TYPE(chromeos::switches::kEnableFilesDetailsPanel)},
 #endif // defined(OS_CHROMEOS)
 #if !defined(OS_ANDROID) && !defined(OS_IOS) && defined(GOOGLE_CHROME_BUILD)
     {"enable-google-branded-context-menu",
