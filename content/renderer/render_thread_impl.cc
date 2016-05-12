@@ -1433,7 +1433,9 @@ media::GpuVideoAcceleratorFactories* RenderThreadImpl::GetGpuFactories() {
       !cmd_line->HasSwitch(switches::kDisableAcceleratedVideoDecode);
   const bool enable_gpu_memory_buffer_video_frames =
 #if defined(OS_MACOSX) || defined(OS_LINUX)
-      !cmd_line->HasSwitch(switches::kDisableGpuMemoryBufferVideoFrames);
+      !cmd_line->HasSwitch(switches::kDisableGpuMemoryBufferVideoFrames) &&
+      !cmd_line->HasSwitch(switches::kDisableGpuCompositing) &&
+      !gpu_channel_host->gpu_info().software_rendering;
 #else
       cmd_line->HasSwitch(switches::kEnableGpuMemoryBufferVideoFrames);
 #endif
