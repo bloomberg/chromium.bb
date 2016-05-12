@@ -71,7 +71,9 @@ std::string GetPluginInstancePosterAttribute(
 }  // namespace
 
 PowerSaverInfo::PowerSaverInfo()
-    : power_saver_enabled(false), blocked_for_background_tab(false) {}
+    : is_eligible(false),
+      power_saver_enabled(false),
+      blocked_for_background_tab(false) {}
 
 PowerSaverInfo::PowerSaverInfo(const PowerSaverInfo& other) = default;
 
@@ -88,13 +90,12 @@ PowerSaverInfo PowerSaverInfo::Get(content::RenderFrame* render_frame,
   // It is also enabled for the Power Saver test plugin for browser tests.
   bool is_flash =
       plugin_info.name == base::ASCIIToUTF16(content::kFlashPluginName);
-  bool can_throttle_plugin_type =
-      is_flash || override_for_testing == "ignore-list";
 
   PowerSaverInfo info;
-  info.power_saver_enabled =
-      override_for_testing == "always" ||
-      (power_saver_setting_on && can_throttle_plugin_type);
+  info.is_eligible = power_saver_setting_on &&
+                     (is_flash || override_for_testing == "ignore-list");
+  info.power_saver_enabled = override_for_testing == "always" ||
+                             (power_saver_setting_on && info.is_eligible);
 
   if (info.power_saver_enabled) {
     // Even if we disable PPS in the next block because content is same-origin,

@@ -5,12 +5,15 @@
 #ifndef COMPONENTS_PLUGINS_RENDERER_LOADABLE_PLUGIN_PLACEHOLDER_H_
 #define COMPONENTS_PLUGINS_RENDERER_LOADABLE_PLUGIN_PLACEHOLDER_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 #include "components/plugins/renderer/plugin_placeholder.h"
 #include "content/public/common/webplugininfo.h"
 #include "content/public/renderer/plugin_instance_throttler.h"
+#include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
 
 namespace plugins {
@@ -18,6 +21,8 @@ namespace plugins {
 // (blocked or disabled).
 class LoadablePluginPlaceholder : public PluginPlaceholderBase {
  public:
+  void set_delayed(bool delayed) { is_delayed_placeholder_ = delayed; }
+
   void set_blocked_for_background_tab(bool blocked_for_background_tab) {
     is_blocked_for_background_tab_ = blocked_for_background_tab;
   }
@@ -47,6 +52,8 @@ class LoadablePluginPlaceholder : public PluginPlaceholderBase {
                             const std::string& html_data);
 
   ~LoadablePluginPlaceholder() override;
+
+  void SetDelegate(std::unique_ptr<Delegate> delegate);
 
   void MarkPluginEssential(
       content::PluginInstanceThrottler::PowerSaverUnthrottleMethod method);
@@ -92,9 +99,18 @@ class LoadablePluginPlaceholder : public PluginPlaceholderBase {
   // Plugin creation is embedder-specific.
   virtual blink::WebPlugin* CreatePlugin() = 0;
 
+  // Handling of delayed behavior is embedder-specific.
+  virtual void OnLoadedRectUpdate(
+      const gfx::Rect& unobscured_rect,
+      content::RenderFrame::PeripheralContentStatus status) = 0;
+
   content::WebPluginInfo plugin_info_;
 
   base::string16 message_;
+
+  // True if this is a "delayed" placeholder - one that will make a decision
+  // on placeholder vs. plugin behavior once initial size has been determined.
+  bool is_delayed_placeholder_;
 
   // True if the plugin load was deferred due to page being a background tab.
   // Plugin may be automatically loaded when the page is foregrounded.
@@ -123,6 +139,8 @@ class LoadablePluginPlaceholder : public PluginPlaceholderBase {
 
   // True if the power saver heuristic has already been run on this content.
   bool heuristic_run_before_;
+
+  std::unique_ptr<Delegate> delegate_;
 
   base::WeakPtrFactory<LoadablePluginPlaceholder> weak_factory_;
 

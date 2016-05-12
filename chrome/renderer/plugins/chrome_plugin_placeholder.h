@@ -23,6 +23,9 @@ class ChromePluginPlaceholder final
  public:
   static gin::WrapperInfo kWrapperInfo;
 
+  // Check if Chrome participates in small content experiment.
+  static bool IsSmallContentFilterEnabled();
+
   static ChromePluginPlaceholder* CreateBlockedPlugin(
       content::RenderFrame* render_frame,
       blink::WebLocalFrame* frame,
@@ -32,6 +35,16 @@ class ChromePluginPlaceholder final
       const base::string16& name,
       int resource_id,
       const base::string16& message,
+      const PowerSaverInfo& power_saver_info);
+
+  // Create a plugin placeholder that delays until sizing is known.
+  static ChromePluginPlaceholder* CreateDelayedPlugin(
+      content::RenderFrame* render_frame,
+      blink::WebLocalFrame* frame,
+      const blink::WebPluginParams& params,
+      const content::WebPluginInfo& info,
+      const std::string& identifier,
+      const base::string16& name,
       const PowerSaverInfo& power_saver_info);
 
   // Creates a new WebViewPlugin with a MissingPlugin as a delegate.
@@ -54,8 +67,11 @@ class ChromePluginPlaceholder final
                           const base::string16& title);
   ~ChromePluginPlaceholder() override;
 
-  // content::LoadablePluginPlaceholder method
+  // content::LoadablePluginPlaceholder overrides.
   blink::WebPlugin* CreatePlugin() override;
+  void OnLoadedRectUpdate(
+      const gfx::Rect& unobscured_rect,
+      content::RenderFrame::PeripheralContentStatus status) override;
 
   // gin::Wrappable (via PluginPlaceholder) method
   gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
@@ -102,6 +118,8 @@ class ChromePluginPlaceholder final
   bool has_host_;
   int context_menu_request_id_;  // Nonzero when request pending.
   base::string16 plugin_name_;
+
+  bool ignore_updates_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromePluginPlaceholder);
 };

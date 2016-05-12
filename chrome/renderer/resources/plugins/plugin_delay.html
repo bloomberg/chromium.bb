@@ -1,0 +1,21 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, user-scalable=no">
+<script>
+  window.onload = function() {
+    if (plugin.didFinishLoading)
+      plugin.didFinishLoading();
+      if (plugin.didFinishIconRepositionForTesting) {
+      // Defer until reflow complete.
+      window.setTimeout(function() {
+        plugin.didFinishIconRepositionForTesting();
+      });
+    }};
+</script>
+<body>
+  <div></div>
+</body>
+</html>
+
