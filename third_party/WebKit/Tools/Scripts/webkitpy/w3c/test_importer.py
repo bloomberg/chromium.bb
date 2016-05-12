@@ -70,13 +70,10 @@
        accordingly.
 """
 
-# FIXME: Change this file to use the Host abstractions rather that os, sys, shutils, etc.
-
 import logging
 import mimetypes
 import optparse
 import os
-import shutil
 import sys
 
 from webkitpy.common.host import Host
@@ -95,21 +92,22 @@ _log = logging.getLogger(__name__)
 
 def main(_argv, _stdout, _stderr):
     options, args = parse_args()
-    dir_to_import = os.path.normpath(os.path.abspath(args[0]))
+    host = Host()
+    dir_to_import = host.filesystem.normpath(os.path.abspath(args[0]))
     if len(args) == 1:
         top_of_repo = dir_to_import
     else:
-        top_of_repo = os.path.normpath(os.path.abspath(args[1]))
+        top_of_repo = host.filesystem.normpath(os.path.abspath(args[1]))
 
-    if not os.path.exists(dir_to_import):
+    if not host.filesystem.exists(dir_to_import):
         sys.exit('Directory %s not found!' % dir_to_import)
-    if not os.path.exists(top_of_repo):
+    if not host.filesystem.exists(top_of_repo):
         sys.exit('Repository directory %s not found!' % top_of_repo)
     if top_of_repo not in dir_to_import:
         sys.exit('Repository directory %s must be a parent of %s' % (top_of_repo, dir_to_import))
 
     configure_logging()
-    test_importer = TestImporter(Host(), dir_to_import, top_of_repo, options)
+    test_importer = TestImporter(host, dir_to_import, top_of_repo, options)
     test_importer.do_import()
 
 
@@ -146,6 +144,9 @@ def parse_args():
     if len(args) > 2:
         parser.error('Incorrect number of arguments')
     elif len(args) == 0:
+        # If no top-of-repo path was given, then assume that the user means to
+        # use the current working directory as the top-of-repo path.
+        # TODO(qyearsley): Remove this behavior, since it's a little confusing.
         args = (os.getcwd(),)
     return options, args
 
@@ -185,10 +186,9 @@ class TestImporter(object):
             self.changeset = CHANGESET_NOT_AVAILABLE
 
     def find_importable_tests(self, directory):
-        # FIXME: use filesystem
         paths_to_skip = self.find_paths_to_skip()
 
-        for root, dirs, files in os.walk(directory):
+        for root, dirs, files in self.filesystem.walk(directory):
             cur_dir = root.replace(self.dir_above_repo + '/', '') + '/'
             _log.info('  scanning ' + cur_dir + '...')
             total_tests = 0
@@ -238,14 +238,14 @@ class TestImporter(object):
                 if filename.startswith('.') or filename.endswith('.pl'):
                     continue  # For some reason the w3c repo contains random perl scripts we don't care about.
 
-                fullpath = os.path.join(root, filename)
+                fullpath = self.filesystem.join(root, filename)
 
                 mimetype = mimetypes.guess_type(fullpath)
                 if not 'html' in str(mimetype[0]) and not 'application/xhtml+xml' in str(mimetype[0]) and not 'application/xml' in str(mimetype[0]):
                     copy_list.append({'src': fullpath, 'dest': filename})
                     continue
 
-                if os.path.basename(root) in DIRS_TO_INCLUDE:
+                if self.filesystem.basename(root) in DIRS_TO_INCLUDE:
                     copy_list.append({'src': fullpath, 'dest': filename})
                     continue
 
@@ -257,18 +257,18 @@ class TestImporter(object):
                 if 'reference' in test_info.keys():
                     reftests += 1
                     total_tests += 1
-                    test_basename = os.path.basename(test_info['test'])
+                    test_basename = self.filesystem.basename(test_info['test'])
 
                     # Add the ref file, following WebKit style.
                     # FIXME: Ideally we'd support reading the metadata
                     # directly rather than relying  on a naming convention.
                     # Using a naming convention creates duplicate copies of the
                     # reference files.
-                    ref_file = os.path.splitext(test_basename)[0] + '-expected'
+                    ref_file = self.filesystem.splitext(test_basename)[0] + '-expected'
                     # Make sure to use the extension from the *reference*, not
                     # from the test, because at least flexbox tests use XHTML
                     # references but HTML tests.
-                    ref_file += os.path.splitext(test_info['reference'])[1]
+                    ref_file += self.filesystem.path.splitext(test_info['reference'])[1]
 
                     copy_list.append({'src': test_info['reference'], 'dest': ref_file,
                                       'reference_support_info': test_info['reference_support_info']})
@@ -323,39 +323,39 @@ class TestImporter(object):
 
             orig_path = dir_to_copy['dirname']
 
-            subpath = os.path.relpath(orig_path, self.top_of_repo)
-            new_path = os.path.join(self.destination_directory, subpath)
+            subpath = self.filesystem.relpath(orig_path, self.top_of_repo)
+            new_path = self.filesystem.join(self.destination_directory, subpath)
 
-            if not(os.path.exists(new_path)):
-                os.makedirs(new_path)
+            if not self.filesystem.exists(new_path):
+                self.filesystem.maybe_make_directory(new_path)
 
             copied_files = []
 
             for file_to_copy in dir_to_copy['copy_list']:
                 # FIXME: Split this block into a separate function.
-                orig_filepath = os.path.normpath(file_to_copy['src'])
+                orig_filepath = self.filesystem.normpath(file_to_copy['src'])
 
-                if os.path.isdir(orig_filepath):
+                if self.filesystem.isdir(orig_filepath):
                     # FIXME: Figure out what is triggering this and what to do about it.
                     _log.error('%s refers to a directory' % orig_filepath)
                     continue
 
-                if not(os.path.exists(orig_filepath)):
+                if not self.filesystem.exists(orig_filepath):
                     _log.warning('%s not found. Possible error in the test.', orig_filepath)
                     continue
 
-                new_filepath = os.path.join(new_path, file_to_copy['dest'])
+                new_filepath = self.filesystem.join(new_path, file_to_copy['dest'])
                 if 'reference_support_info' in file_to_copy.keys() and file_to_copy['reference_support_info'] != {}:
                     reference_support_info = file_to_copy['reference_support_info']
                 else:
                     reference_support_info = None
 
-                if not(os.path.exists(os.path.dirname(new_filepath))):
+                if not self.filesystem.exists(self.filesystem.dirname(new_filepath)):
                     if not self.import_in_place and not self.options.dry_run:
-                        os.makedirs(os.path.dirname(new_filepath))
+                        self.filesystem.maybe_make_directory(self.filesystem.dirname(new_filepath))
 
-                relpath = os.path.relpath(new_filepath, self.layout_tests_dir)
-                if not self.options.overwrite and os.path.exists(new_filepath):
+                relpath = self.filesystem.relpath(new_filepath, self.layout_tests_dir)
+                if not self.options.overwrite and self.filesystem.exists(new_filepath):
                     _log.info('  skipping %s' % relpath)
                 else:
                     # FIXME: Maybe doing a file diff is in order here for existing files?
@@ -372,7 +372,7 @@ class TestImporter(object):
 
                     if not converted_file:
                         if not self.import_in_place and not self.options.dry_run:
-                            shutil.copyfile(orig_filepath, new_filepath)  # The file was unmodified.
+                            self.filesystem.copyfile(orig_filepath, new_filepath)  # The file was unmodified.
                     else:
                         for prefixed_property in converted_file[0]:
                             total_prefixed_properties.setdefault(prefixed_property, 0)
@@ -385,7 +385,7 @@ class TestImporter(object):
                             outfile.close()
                 else:
                     if not self.import_in_place and not self.options.dry_run:
-                        shutil.copyfile(orig_filepath, new_filepath)
+                        self.filesystem.copyfile(orig_filepath, new_filepath)
 
                 copied_files.append(new_filepath.replace(self._webkit_root, ''))
 
@@ -408,9 +408,9 @@ class TestImporter(object):
 
         new_subpath = self.dir_to_import[len(self.top_of_repo):]
 
-        destination_directory = os.path.join(self.destination_directory, new_subpath)
+        destination_directory = self.filesystem.join(self.destination_directory, new_subpath)
 
-        if not os.path.exists(destination_directory):
-            os.makedirs(destination_directory)
+        if not self.filesystem.exists(destination_directory):
+            self.filesystem.maybe_make_directory(destination_directory)
 
         _log.info('Tests will be imported into: %s', destination_directory)
