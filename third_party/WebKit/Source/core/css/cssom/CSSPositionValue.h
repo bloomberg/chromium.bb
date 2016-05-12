@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PositionValue_h
-#define PositionValue_h
+#ifndef CSSPositionValue_h
+#define CSSPositionValue_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
@@ -13,13 +13,13 @@ namespace blink {
 
 class LengthValue;
 
-class CORE_EXPORT PositionValue final : public StyleValue {
-    WTF_MAKE_NONCOPYABLE(PositionValue);
+class CORE_EXPORT CSSPositionValue final : public StyleValue {
+    WTF_MAKE_NONCOPYABLE(CSSPositionValue);
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PositionValue* create(const LengthValue* x, const LengthValue* y)
+    static CSSPositionValue* create(const LengthValue* x, const LengthValue* y)
     {
-        return new PositionValue(x, y);
+        return new CSSPositionValue(x, y);
     }
 
     // Bindings require a non const return value.
@@ -38,7 +38,7 @@ public:
     }
 
 protected:
-    PositionValue(const LengthValue* x, const LengthValue* y)
+    CSSPositionValue(const LengthValue* x, const LengthValue* y)
         : m_x(x)
         , m_y(y)
     {

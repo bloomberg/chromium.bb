@@ -435,6 +435,11 @@ interface CSSPageRule : CSSRule
     getter style
     method constructor
     setter selectorText
+interface CSSPositionValue : StyleValue
+    attribute @@toStringTag
+    getter x
+    getter y
+    method constructor
 interface CSSRule
     attribute @@toStringTag
     attribute CHARSET_RULE
@@ -4284,11 +4289,6 @@ interface PluginArray
 interface PopStateEvent : Event
     attribute @@toStringTag
     getter state
-    method constructor
-interface PositionValue : StyleValue
-    attribute @@toStringTag
-    getter x
-    getter y
     method constructor
 interface Presentation
     attribute @@toStringTag
