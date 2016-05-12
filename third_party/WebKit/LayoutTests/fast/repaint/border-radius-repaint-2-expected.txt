@@ -8,6 +8,11 @@
       "backgroundColor": "#3F3F3F",
       "paintInvalidations": [
         {
+          "object": "LayoutView #document",
+          "rect": [0, 600, 874, 180],
+          "reason": "incremental"
+        },
+        {
           "object": "LayoutBlockFlow DIV",
           "rect": [8, 8, 866, 764],
           "reason": "border box change"

@@ -8,7 +8,7 @@
       "paintInvalidations": [
         {
           "object": "LayoutView #document",
-          "rect": [0, 0, 800, 600],
+          "rect": [0, 0, 2008, 2092],
           "reason": "style change"
         },
         {
