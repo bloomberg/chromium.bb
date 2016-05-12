@@ -110,7 +110,9 @@ AccountChooserDialogAndroid::AccountChooserDialogAndroid(
     ScopedVector<autofill::PasswordForm> federated_credentials,
     const GURL& origin,
     const ManagePasswordsState::CredentialsCallback& callback)
-    : web_contents_(web_contents), origin_(origin) {
+    : content::WebContentsObserver(web_contents),
+      web_contents_(web_contents),
+      origin_(origin) {
   passwords_data_.set_client(
       ChromePasswordManagerClient::FromWebContents(web_contents_));
   passwords_data_.OnRequestCredentials(
@@ -144,7 +146,7 @@ void AccountChooserDialogAndroid::ShowDialog() {
       password_manager::CredentialType::CREDENTIAL_TYPE_FEDERATED,
       local_credentials_forms().size());
   base::android::ScopedJavaGlobalRef<jobject> java_dialog_global;
-  java_dialog_global.Reset(Java_AccountChooserDialog_createAccountChooser(
+  dialog_jobject_.Reset(Java_AccountChooserDialog_createAndShowAccountChooser(
       env, native_window->GetJavaObject().obj(),
       reinterpret_cast<intptr_t>(this), java_credentials_array.obj(),
       base::android::ConvertUTF16ToJavaString(env, title).obj(),
@@ -152,13 +154,11 @@ void AccountChooserDialogAndroid::ShowDialog() {
       base::android::ConvertUTF8ToJavaString(
           env, password_manager::GetShownOrigin(origin_))
           .obj()));
-  base::android::ScopedJavaLocalRef<jobject> java_dialog(java_dialog_global);
   net::URLRequestContextGetter* request_context =
       Profile::FromBrowserContext(web_contents_->GetBrowserContext())
           ->GetRequestContext();
-  FetchAvatars(java_dialog_global, local_credentials_forms(), 0,
-               request_context);
-  FetchAvatars(java_dialog_global, federated_credentials_forms(),
+  FetchAvatars(dialog_jobject_, local_credentials_forms(), 0, request_context);
+  FetchAvatars(dialog_jobject_, federated_credentials_forms(),
                local_credentials_forms().size(), request_context);
 }
 
@@ -180,7 +180,7 @@ void AccountChooserDialogAndroid::Destroy(JNIEnv* env,
 void AccountChooserDialogAndroid::CancelDialog(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
-  ChooseCredential(-1, password_manager::CredentialType::CREDENTIAL_TYPE_EMPTY);
+  OnDialogCancel();
 }
 
 void AccountChooserDialogAndroid::OnLinkClicked(
@@ -190,6 +190,23 @@ void AccountChooserDialogAndroid::OnLinkClicked(
       GURL(password_manager::kPasswordManagerHelpCenterSmartLock),
       content::Referrer(), NEW_FOREGROUND_TAB, ui::PAGE_TRANSITION_LINK,
       false /* is_renderer_initiated */));
+}
+
+void AccountChooserDialogAndroid::WebContentsDestroyed() {
+  JNIEnv* env = AttachCurrentThread();
+  Java_AccountChooserDialog_dismissDialog(env, dialog_jobject_.obj());
+}
+
+void AccountChooserDialogAndroid::WasHidden() {
+  // TODO(https://crbug.com/610700): once bug is fixed, this code should be
+  // gone.
+  OnDialogCancel();
+  JNIEnv* env = AttachCurrentThread();
+  Java_AccountChooserDialog_dismissDialog(env, dialog_jobject_.obj());
+}
+
+void AccountChooserDialogAndroid::OnDialogCancel() {
+  ChooseCredential(-1, password_manager::CredentialType::CREDENTIAL_TYPE_EMPTY);
 }
 
 const std::vector<const autofill::PasswordForm*>&

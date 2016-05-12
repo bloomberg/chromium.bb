@@ -5,12 +5,9 @@
 package org.chromium.chrome.browser.password_manager;
 
 import android.app.Activity;
-import android.app.Dialog;
-import android.app.DialogFragment;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Bitmap;
-import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.text.SpannableString;
 import android.text.Spanned;
@@ -36,7 +33,7 @@ import org.chromium.ui.base.WindowAndroid;
  *  haven't chosen anything.
  */
 public class AccountChooserDialog
-        extends DialogFragment implements DialogInterface.OnClickListener {
+        implements DialogInterface.OnClickListener, DialogInterface.OnDismissListener {
     private final Context mContext;
     private final Credential[] mCredentials;
 
@@ -49,6 +46,7 @@ public class AccountChooserDialog
     private final String mOrigin;
     private ArrayAdapter<Credential> mAdapter;
     private boolean mIsDestroyed;
+    private boolean mWasDismissedByNative;
 
     /**
      * Holds the reference to the credentials which were chosen by the user.
@@ -78,7 +76,7 @@ public class AccountChooserDialog
      *  @param origin Address of the web page, where dialog was triggered.
      */
     @CalledByNative
-    private static AccountChooserDialog createAccountChooser(WindowAndroid windowAndroid,
+    private static AccountChooserDialog createAndShowAccountChooser(WindowAndroid windowAndroid,
             long nativeAccountChooserDialog, Credential[] credentials, String title,
             int titleLinkStart, int titleLinkEnd, String origin) {
         Activity activity = windowAndroid.getActivity().get();
@@ -86,7 +84,7 @@ public class AccountChooserDialog
         AccountChooserDialog chooser =
                 new AccountChooserDialog(activity, nativeAccountChooserDialog, credentials, title,
                         titleLinkStart, titleLinkEnd, origin);
-        chooser.show(activity.getFragmentManager(), null);
+        chooser.show();
         return chooser;
     }
 
@@ -136,8 +134,7 @@ public class AccountChooserDialog
         };
     }
 
-    @Override
-    public Dialog onCreateDialog(Bundle savedInstanceState) {
+    private void show() {
         View titleView =
                 LayoutInflater.from(mContext).inflate(R.layout.account_chooser_dialog_title, null);
         TextView origin = (TextView) titleView.findViewById(R.id.origin);
@@ -168,29 +165,8 @@ public class AccountChooserDialog
                             }
                         });
         mDialog = builder.create();
-        return mDialog;
-    }
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (savedInstanceState != null) dismiss();
-    }
-
-    @Override
-    public void onClick(DialogInterface dialog, int whichButton) {}
-
-    @Override
-    public void onDismiss(DialogInterface dialog) {
-        super.onDismiss(dialog);
-        if (mCredential != null) {
-            nativeOnCredentialClicked(
-                    mNativeAccountChooserDialog, mCredential.getIndex(), mCredential.getType());
-        } else {
-            nativeCancelDialog(mNativeAccountChooserDialog);
-        }
-        destroy();
-        mDialog = null;
+        mDialog.setOnDismissListener(this);
+        mDialog.show();
     }
 
     @CalledByNative
@@ -216,6 +192,30 @@ public class AccountChooserDialog
         mIsDestroyed = true;
         nativeDestroy(mNativeAccountChooserDialog);
         mNativeAccountChooserDialog = 0;
+        mDialog = null;
+    }
+
+    @CalledByNative
+    private void dismissDialog() {
+        assert !mWasDismissedByNative;
+        mWasDismissedByNative = true;
+        mDialog.dismiss();
+    }
+
+    @Override
+    public void onClick(DialogInterface dialog, int whichButton) {}
+
+    @Override
+    public void onDismiss(DialogInterface dialog) {
+        if (!mWasDismissedByNative) {
+            if (mCredential != null) {
+                nativeOnCredentialClicked(
+                        mNativeAccountChooserDialog, mCredential.getIndex(), mCredential.getType());
+            } else {
+                nativeCancelDialog(mNativeAccountChooserDialog);
+            }
+        }
+        destroy();
     }
 
     private native void nativeOnCredentialClicked(

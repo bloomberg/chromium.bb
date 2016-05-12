@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "chrome/browser/ui/passwords/manage_passwords_state.h"
+#include "content/public/browser/web_contents_observer.h"
 
 namespace content {
 class WebContents;
@@ -24,7 +25,7 @@ struct CredentialInfo;
 
 // Native counterpart for the android dialog which allows users to select
 // credentials which will be passed to the web site in order to log in the user.
-class AccountChooserDialogAndroid {
+class AccountChooserDialogAndroid : public content::WebContentsObserver {
  public:
   AccountChooserDialogAndroid(
       content::WebContents* web_contents,
@@ -33,7 +34,7 @@ class AccountChooserDialogAndroid {
       const GURL& origin,
       const ManagePasswordsState::CredentialsCallback& callback);
 
-  ~AccountChooserDialogAndroid();
+  ~AccountChooserDialogAndroid() override;
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
 
   void ShowDialog();
@@ -52,7 +53,13 @@ class AccountChooserDialogAndroid {
   void OnLinkClicked(JNIEnv* env,
                      const base::android::JavaParamRef<jobject>& obj);
 
+  // content::WebContentsObserver overrides:
+  void WebContentsDestroyed() override;
+  void WasHidden() override;
+
  private:
+  void OnDialogCancel();
+
   const std::vector<const autofill::PasswordForm*>& local_credentials_forms()
       const;
 
@@ -64,6 +71,7 @@ class AccountChooserDialogAndroid {
   content::WebContents* web_contents_;
   ManagePasswordsState passwords_data_;
   GURL origin_;
+  base::android::ScopedJavaGlobalRef<jobject> dialog_jobject_;
 
   DISALLOW_COPY_AND_ASSIGN(AccountChooserDialogAndroid);
 };
