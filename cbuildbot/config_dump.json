@@ -11177,11 +11177,11 @@
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "overlays": "both",
+        "run_gce_tests": true,
         "sync_chrome": false,
         "useflags": [
             "chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "lakitu_next-release": {
         "_template": "release",

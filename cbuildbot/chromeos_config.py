@@ -1996,6 +1996,11 @@ def GetConfig():
       _base_configs['lakitu'],
       lakitu_test_customizations,
   )
+  site_config.Add(
+      'lakitu_next-pre-cq', pre_cq,
+      _base_configs['lakitu_next'],
+      lakitu_test_customizations,
+  )
 
   _CreateConfigsForBoards(no_vmtest_pre_cq, _all_boards, 'no-vmtest-pre-cq')
   _CreateConfigsForBoards(
