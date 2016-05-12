@@ -1894,7 +1894,7 @@ TaskQueueManagerTestWithTracing::CreateTraceAnalyzer() {
 TEST_F(TaskQueueManagerTestWithTracing, BlameContextAttribution) {
   using trace_analyzer::Query;
 
-  Initialize(1u);
+  InitializeWithRealMessageLoop(1u);
   TaskQueue* queue = runners_[0].get();
 
   StartTracing();
@@ -1904,7 +1904,7 @@ TEST_F(TaskQueueManagerTestWithTracing, BlameContextAttribution) {
     blame_context.Initialize();
     queue->SetBlameContext(&blame_context);
     queue->PostTask(FROM_HERE, base::Bind(&NopTask));
-    test_task_runner_->RunUntilIdle();
+    message_loop_->RunUntilIdle();
   }
   StopTracing();
   std::unique_ptr<trace_analyzer::TraceAnalyzer> analyzer =
