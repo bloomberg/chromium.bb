@@ -1,0 +1,4 @@
+Verifies that editable source map is created in case of race between iNotify and BrowserSync.
+
+SourceMap is editable: true
+
