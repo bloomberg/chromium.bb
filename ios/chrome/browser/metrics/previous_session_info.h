@@ -7,6 +7,11 @@
 
 #import <Foundation/Foundation.h>
 
+namespace previous_session_info_constants {
+// Key in the UserDefaults for a boolean value keeping track of memory warnings.
+extern NSString* const kDidSeeMemoryWarningShortlyBeforeTerminating;
+}  // namespace previous_session_info_constants
+
 // PreviousSessionInfo has two jobs:
 // - Holding information about the last session, persisted across restart.
 //   These informations are accessible via the properties on the shared

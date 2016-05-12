@@ -13,7 +13,8 @@ namespace {
 
 // Key in the UserDefaults for a boolean value keeping track of memory warnings.
 NSString* const kDidSeeMemoryWarningShortlyBeforeTerminating =
-    @"DidSeeMemoryWarning";
+    previous_session_info_constants::
+        kDidSeeMemoryWarningShortlyBeforeTerminating;
 
 // Key in the NSUserDefaults for a string value that stores the version of the
 // last session.
