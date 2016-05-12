@@ -14,8 +14,9 @@
 (
   set -e
 
-  dom_distiller_js_path=third_party/dom_distiller_js
+  dom_distiller_js_path=$(dirname "${BASH_SOURCE[0]}")
   readme_chromium=$dom_distiller_js_path/README.chromium
+  [ ! -f $readme_chromium ] && echo "$readme_chromium is not found" && exit 1
   tmpdir=/tmp/domdistiller-$$
   changes=$tmpdir/domdistiller.changes
   bugs=$tmpdir/domdistiller.bugs
