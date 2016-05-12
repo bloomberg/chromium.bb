@@ -6900,6 +6900,7 @@
         ],
         "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
+        "important": true,
         "vm_tests": []
     },
     "elm-cheets-release-afdo": {
@@ -7070,6 +7071,7 @@
         ],
         "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
+        "important": true,
         "vm_tests": []
     },
     "elm-release-afdo": {
@@ -14174,6 +14176,7 @@
         ],
         "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
+        "important": true,
         "vm_tests": []
     },
     "oak-cheets-release-afdo": {
@@ -14343,6 +14346,7 @@
         "boards": [
             "oak"
         ],
+        "important": true,
         "vm_tests": []
     },
     "oak-release-afdo": {

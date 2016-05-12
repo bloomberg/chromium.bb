@@ -659,11 +659,6 @@ _waterfall_config_map = {
         # gru
         'gru-release',
         'kevin-release',
-        # oak
-        'oak-release',
-        'elm-release',
-        'oak-cheets-release',
-        'elm-cheets-release',
         # reef
         'reef-release',
         'amenia-release',
@@ -2971,7 +2966,6 @@ def GetConfig():
           'oak-cheets',
           'elm-cheets',
       ),
-      important=False,
   )
 
   # glados-based boards
