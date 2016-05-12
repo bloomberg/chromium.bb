@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.payments;
 
+import android.content.DialogInterface;
 import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.chrome.R;
@@ -58,9 +59,22 @@ public class PaymentRequestNoShippingTest extends PaymentRequestTestBase {
     public void testPayAndCancelDialog() throws InterruptedException, ExecutionException,
             TimeoutException {
         triggerUIAndWait(mReadyToPay);
-        clickAndWait(R.id.button_primary, mReadyToUnmask);
-        cancelCardUnmaskDialogAndWait(mReadyToUnmask.getTarget(), mResultReady);
+        clickAndWait(R.id.button_primary, mReadyForUnmaskInput);
+        clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_NEGATIVE,
+                mReadyForUnmaskInput.getTarget(), mResultReady);
         clickAndWait(R.id.ok_button, mDismissed);
         expectResultContains(new String[] {"Request cancelled"});
+    }
+
+    @MediumTest
+    public void testPay() throws InterruptedException, ExecutionException, TimeoutException {
+        triggerUIAndWait(mReadyToPay);
+        clickAndWait(R.id.button_primary, mReadyForUnmaskInput);
+        typeInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123",
+                mReadyForUnmaskInput.getTarget(), mReadyToUnmask);
+        clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE,
+                mReadyToUnmask.getTarget(), mDismissed);
+        expectResultContains(new String[] {"Jon Doe", "4111111111111111", "12", "2050", "visa",
+                "123"});
     }
 }

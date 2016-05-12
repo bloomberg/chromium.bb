@@ -110,9 +110,14 @@ public class CardUnmaskPrompt
      */
     public interface CardUnmaskObserverForTest {
         /**
-         * Called when clicks on the prompt are possible.
+         * Called when typing the CVC input is possible.
          */
-        void onCardUnmaskReadyForInput(CardUnmaskPrompt prompt);
+        void onCardUnmaskPromptReadyForInput(CardUnmaskPrompt prompt);
+
+        /**
+         * Called when clicking "Verify" or "Continue" (the positive button) is possible.
+         */
+        void onCardUnmaskPromptReadyToUnmask(CardUnmaskPrompt prompt);
     }
 
     public static CardUnmaskPrompt create(Context context, CardUnmaskPromptDelegate delegate,
@@ -277,7 +282,11 @@ public class CardUnmaskPrompt
     }
 
     private void validate() {
-        mDialog.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(areInputsValid());
+        Button positiveButton = mDialog.getButton(AlertDialog.BUTTON_POSITIVE);
+        positiveButton.setEnabled(areInputsValid());
+        if (positiveButton.isEnabled() && mObserverForTest != null) {
+            mObserverForTest.onCardUnmaskPromptReadyToUnmask(this);
+        }
     }
 
     @Override
@@ -371,7 +380,7 @@ public class CardUnmaskPrompt
         imm.showSoftInput(view, InputMethodManager.SHOW_IMPLICIT);
         view.sendAccessibilityEvent(AccessibilityEvent.TYPE_VIEW_FOCUSED);
         if (mObserverForTest != null) {
-            mObserverForTest.onCardUnmaskReadyForInput(CardUnmaskPrompt.this);
+            mObserverForTest.onCardUnmaskPromptReadyForInput(this);
         }
     }
 

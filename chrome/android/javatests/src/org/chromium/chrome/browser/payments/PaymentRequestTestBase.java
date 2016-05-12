@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.payments;
 
-import android.content.DialogInterface;
+import android.widget.EditText;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
@@ -37,6 +37,7 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeA
     protected final PaymentsCallbackHelper<PaymentRequestUI> mReadyToPay;
     protected final PaymentsCallbackHelper<PaymentRequestUI> mReadyToClose;
     protected final PaymentsCallbackHelper<PaymentRequestUI> mResultReady;
+    protected final PaymentsCallbackHelper<CardUnmaskPrompt> mReadyForUnmaskInput;
     protected final PaymentsCallbackHelper<CardUnmaskPrompt> mReadyToUnmask;
     protected final CallbackHelper mDismissed;
     private final AtomicReference<ContentViewCore> mViewCoreRef;
@@ -50,6 +51,7 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeA
         mReadyToPay = new PaymentsCallbackHelper<>();
         mReadyToClose = new PaymentsCallbackHelper<>();
         mResultReady = new PaymentsCallbackHelper<>();
+        mReadyForUnmaskInput = new PaymentsCallbackHelper<>();
         mReadyToUnmask = new PaymentsCallbackHelper<>();
         mDismissed = new CallbackHelper();
         mViewCoreRef = new AtomicReference<>();
@@ -97,13 +99,27 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeA
         helper.waitForCallback(callCount);
     }
 
-    protected void cancelCardUnmaskDialogAndWait(final CardUnmaskPrompt prompt,
-            CallbackHelper helper) throws InterruptedException, TimeoutException {
+    protected void typeInCardUnmaskDialogAndWait(final int resourceId, final String input,
+            final CardUnmaskPrompt prompt, CallbackHelper helper) throws InterruptedException,
+            TimeoutException {
         int callCount = helper.getCallCount();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                prompt.getDialogForTest().getButton(DialogInterface.BUTTON_NEGATIVE).performClick();
+                ((EditText) prompt.getDialogForTest().findViewById(resourceId)).setText(input);
+            }
+        });
+        helper.waitForCallback(callCount);
+    }
+
+    protected void clickCardUnmaskButtonAndWait(final int dialogButtonId,
+            final CardUnmaskPrompt prompt, CallbackHelper helper) throws InterruptedException,
+            TimeoutException {
+        int callCount = helper.getCallCount();
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                prompt.getDialogForTest().getButton(dialogButtonId).performClick();
             }
         });
         helper.waitForCallback(callCount);
@@ -170,7 +186,13 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeA
     }
 
     @Override
-    public void onCardUnmaskReadyForInput(CardUnmaskPrompt prompt) {
+    public void onCardUnmaskPromptReadyForInput(CardUnmaskPrompt prompt) {
+        ThreadUtils.assertOnUiThread();
+        mReadyForUnmaskInput.notifyCalled(prompt);
+    }
+
+    @Override
+    public void onCardUnmaskPromptReadyToUnmask(CardUnmaskPrompt prompt) {
         ThreadUtils.assertOnUiThread();
         mReadyToUnmask.notifyCalled(prompt);
     }
