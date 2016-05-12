@@ -31,11 +31,6 @@ class OfflinePageUtils {
       content::BrowserContext* browser_context,
       const GURL& offline_url);
 
-  // Gets a bookmark ID related to the |offline_url|.
-  static int64_t GetBookmarkIdForOfflineURL(
-      content::BrowserContext* browser_context,
-      const GURL& offline_url);
-
   // Checks whether |offline_url| points to an offline page.
   static bool IsOfflinePage(content::BrowserContext* browser_context,
                             const GURL& offline_url);

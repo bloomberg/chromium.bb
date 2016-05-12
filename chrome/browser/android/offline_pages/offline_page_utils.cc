@@ -94,26 +94,6 @@ GURL OfflinePageUtils::GetOnlineURLForOfflineURL(
 }
 
 // static
-int64_t OfflinePageUtils::GetBookmarkIdForOfflineURL(
-    content::BrowserContext* browser_context,
-    const GURL& offline_url) {
-  const OfflinePageItem* offline_page =
-      GetOfflinePageForOfflineURL(browser_context, offline_url);
-  if (!offline_page)
-    return -1;
-
-  if (offline_page->client_id.name_space != offline_pages::kBookmarkNamespace) {
-    return -1;
-  }
-
-  int64_t result;
-  if (base::StringToInt64(offline_page->client_id.id, &result)) {
-    return result;
-  }
-  return -1;
-}
-
-// static
 bool OfflinePageUtils::IsOfflinePage(content::BrowserContext* browser_context,
                                      const GURL& offline_url) {
   return GetOfflinePageForOfflineURL(browser_context, offline_url) != nullptr;

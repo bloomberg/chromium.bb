@@ -37,8 +37,6 @@ const GURL kTestPage3Url("http://test.org/page3");
 const int64_t kTestFileSize = 876543LL;
 const char* kTestPage1ClientId = "1234";
 const char* kTestPage2ClientId = "5678";
-const int64_t kTestPage1BookmarkId = 1234;
-const int64_t kTestPage2BookmarkId = 5678;
 
 }  // namespace
 
@@ -205,15 +203,6 @@ TEST_F(OfflinePageUtilsTest, GetOnlineURLForOfflineURL) {
                                profile(), offline_url_page_2()));
   EXPECT_EQ(GURL::EmptyGURL(), OfflinePageUtils::GetOnlineURLForOfflineURL(
                                    profile(), offline_url_missing()));
-}
-
-TEST_F(OfflinePageUtilsTest, GetBookmarkIdForOfflineURL) {
-  EXPECT_EQ(kTestPage1BookmarkId, OfflinePageUtils::GetBookmarkIdForOfflineURL(
-                                      profile(), offline_url_page_1()));
-  EXPECT_EQ(kTestPage2BookmarkId, OfflinePageUtils::GetBookmarkIdForOfflineURL(
-                                      profile(), offline_url_page_2()));
-  EXPECT_EQ(-1, OfflinePageUtils::GetBookmarkIdForOfflineURL(
-                    profile(), offline_url_missing()));
 }
 
 TEST_F(OfflinePageUtilsTest, IsOfflinePage) {
