@@ -185,8 +185,7 @@ public class ToolbarProgressBar extends ClipDrawableProgressBar {
             animationParams.topMargin = mMarginTop;
 
             mAnimatingView = new ToolbarProgressBarAnimatingView(getContext(), animationParams);
-            mAnimatingView.setColor(
-                    ColorUtils.getColorWithOverlay(getForegroundColor(), Color.WHITE, 0.4f));
+            setForegroundColor(getForegroundColor());
             UiUtils.insertAfter(mControlContainer, mAnimatingView, this);
         } else if (TextUtils.equals(animation, "fast-start")) {
             mAnimationLogic = new ProgressAnimationFastStart();
@@ -334,35 +333,28 @@ public class ToolbarProgressBar extends ClipDrawableProgressBar {
      * @param color The Android color the toolbar is using.
      */
     public void setThemeColor(int color, boolean isIncognito) {
-        int animationColor;
-        int foregroundColor;
-
         if (!ColorUtils.shoudUseLightForegroundOnBackground(color) && !isIncognito) {
             // Light theme.
-            foregroundColor = ColorUtils.getColorWithOverlay(Color.BLACK, color,
-                    THEMED_FOREGROUND_BLACK_FRACTION);
-            animationColor = ColorUtils.getColorWithOverlay(Color.WHITE, foregroundColor,
-                    ANIMATION_WHITE_FRACTION);
+            setForegroundColor(ColorUtils.getColorWithOverlay(Color.BLACK, color,
+                    THEMED_FOREGROUND_BLACK_FRACTION));
         } else {
             // Dark theme.
-            foregroundColor = Color.WHITE;
-            animationColor = ColorUtils.getColorWithOverlay(Color.WHITE, color,
-                    ANIMATION_WHITE_FRACTION);
+            setForegroundColor(Color.WHITE);
+            if (mAnimatingView != null) {
+                mAnimatingView.setColor(ColorUtils.getColorWithOverlay(color, Color.WHITE,
+                        ANIMATION_WHITE_FRACTION));
+            }
         }
 
-        setForegroundColor(foregroundColor);
-        setBackgroundColor(
-                ColorUtils.getColorWithOverlay(Color.WHITE, color,
-                        THEMED_BACKGROUND_WHITE_FRACTION));
-
-        if (mAnimatingView != null) mAnimatingView.setColor(animationColor);
+        setBackgroundColor(ColorUtils.getColorWithOverlay(Color.WHITE, color,
+                THEMED_BACKGROUND_WHITE_FRACTION));
     }
 
     @Override
     public void setForegroundColor(int color) {
         super.setForegroundColor(color);
         if (mAnimatingView != null) {
-            mAnimatingView.setColor(ColorUtils.getColorWithOverlay(color, Color.WHITE,
+            mAnimatingView.setColor(ColorUtils.getColorWithOverlay(Color.WHITE, color,
                     ANIMATION_WHITE_FRACTION));
         }
     }
