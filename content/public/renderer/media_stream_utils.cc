@@ -11,11 +11,10 @@
 #include "base/guid.h"
 #include "base/rand_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "content/renderer/media/media_stream_audio_source.h"
+#include "content/renderer/media/external_media_stream_audio_source.h"
 #include "content/renderer/media/media_stream_video_capturer_source.h"
 #include "content/renderer/media/media_stream_video_source.h"
 #include "content/renderer/media/media_stream_video_track.h"
-#include "content/renderer/render_thread_impl.h"
 #include "media/base/audio_capturer_source.h"
 #include "media/base/video_capturer_source.h"
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
@@ -83,32 +82,17 @@ bool AddAudioTrackToMediaStream(
   web_media_stream_source.initialize(track_id,
                                      blink::WebMediaStreamSource::TypeAudio,
                                      track_id, is_remote);
-
-  MediaStreamAudioSource* media_stream_source(new MediaStreamAudioSource(
-      -1, StreamDeviceInfo(), MediaStreamSource::SourceStoppedCallback(),
-      RenderThreadImpl::current()->GetPeerConnectionDependencyFactory()));
-
-  blink::WebMediaConstraints constraints;
-  constraints.initialize();
-  {
-    // TODO(miu): In an upcoming change, a source purposed for passing audio
-    // directly (i.e., without modification) will replace this "hacky" use of
-    // WebRtcAudioCapturer.  http://crbug.com/577881
-    std::unique_ptr<WebRtcAudioCapturer> capturer(
-        WebRtcAudioCapturer::CreateCapturer(-1, StreamDeviceInfo(), constraints,
-                                            nullptr, media_stream_source));
-    capturer->SetCapturerSource(std::move(audio_source), params);
-    media_stream_source->SetAudioCapturer(std::move(capturer));
-  }
-  web_media_stream_source.setExtraData(
-      media_stream_source);  // Takes ownership.
+  MediaStreamAudioSource* const media_stream_source =
+      new ExternalMediaStreamAudioSource(std::move(audio_source), sample_rate,
+                                         channel_layout, frames_per_buffer,
+                                         is_remote);
+  // Takes ownership of |media_stream_source|.
+  web_media_stream_source.setExtraData(media_stream_source);
 
   blink::WebMediaStreamTrack web_media_stream_track;
   web_media_stream_track.initialize(web_media_stream_source);
-  RenderThreadImpl::current()
-      ->GetPeerConnectionDependencyFactory()
-      ->CreateLocalAudioTrack(web_media_stream_track);
-
+  if (!media_stream_source->ConnectToTrack(web_media_stream_track))
+    return false;
   web_media_stream->addTrack(web_media_stream_track);
   return true;
 }

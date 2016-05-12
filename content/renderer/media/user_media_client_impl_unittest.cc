@@ -62,6 +62,7 @@ class UserMediaClientImplUnderTest : public UserMediaClientImpl {
         result_(NUM_MEDIA_REQUEST_RESULTS),
         result_name_(""),
         factory_(dependency_factory),
+        create_source_that_fails_(false),
         video_source_(NULL) {}
 
   void RequestUserMedia(const blink::WebUserMediaRequest& user_media_request) {
@@ -126,6 +127,32 @@ class UserMediaClientImplUnderTest : public UserMediaClientImpl {
     last_sources_ = sources;
   }
 
+  void SetCreateSourceThatFails(bool should_fail) {
+    create_source_that_fails_ = should_fail;
+  }
+
+  MediaStreamAudioSource* CreateAudioSource(
+      const StreamDeviceInfo& device,
+      const blink::WebMediaConstraints& constraints) override {
+    MediaStreamAudioSource* source;
+    if (create_source_that_fails_) {
+      class FailedAtLifeAudioSource : public MediaStreamAudioSource {
+       public:
+        FailedAtLifeAudioSource() : MediaStreamAudioSource(true) {}
+        ~FailedAtLifeAudioSource() override {}
+       protected:
+        bool EnsureSourceIsStarted() override {
+          return false;
+        }
+      };
+      source = new FailedAtLifeAudioSource();
+    } else {
+      source = new MediaStreamAudioSource(true);
+    }
+    source->SetDeviceInfo(device);
+    return source;
+  }
+
   MediaStreamVideoSource* CreateVideoSource(
       const StreamDeviceInfo& device,
       const MediaStreamSource::SourceStoppedCallback& stop_callback) override {
@@ -179,6 +206,7 @@ class UserMediaClientImplUnderTest : public UserMediaClientImpl {
   blink::WebVector<blink::WebMediaDeviceInfo> last_devices_;
   blink::WebVector<blink::WebSourceInfo> last_sources_;
   PeerConnectionDependencyFactory* factory_;
+  bool create_source_that_fails_;
   MockMediaStreamVideoCapturerSource* video_source_;
 };
 
@@ -268,11 +296,6 @@ class UserMediaClientImplTest : public ::testing::Test {
         used_media_impl_->last_created_video_source();
     if (video_source->SourceHasAttemptedToStart())
       video_source->FailToStartMockedSource();
-    blink::WebHeap::collectGarbageForTesting();
-  }
-
-  void FailToCreateNextAudioCapturer() {
-    dependency_factory_->FailToCreateNextAudioCapturer();
     blink::WebHeap::collectGarbageForTesting();
   }
 
@@ -452,7 +475,7 @@ TEST_F(UserMediaClientImplTest, MediaVideoSourceFailToStart) {
 
 // This test what happens if an audio source fail to initialize.
 TEST_F(UserMediaClientImplTest, MediaAudioSourceFailToInitialize) {
-  FailToCreateNextAudioCapturer();
+  used_media_impl_->SetCreateSourceThatFails(true);
   used_media_impl_->RequestUserMedia();
   FakeMediaStreamDispatcherRequestUserMediaComplete();
   StartMockedVideoSource();

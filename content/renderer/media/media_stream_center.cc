@@ -19,7 +19,7 @@
 #include "content/renderer/media/media_stream_source.h"
 #include "content/renderer/media/media_stream_video_source.h"
 #include "content/renderer/media/media_stream_video_track.h"
-#include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
+#include "content/renderer/media/webaudio_media_stream_source.h"
 #include "content/renderer/media/webrtc_local_audio_source_provider.h"
 #include "third_party/WebKit/public/platform/WebMediaConstraints.h"
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
@@ -39,16 +39,28 @@ namespace content {
 namespace {
 
 void CreateNativeAudioMediaStreamTrack(
-    const blink::WebMediaStreamTrack& track,
-    PeerConnectionDependencyFactory* factory) {
-  DCHECK(!MediaStreamAudioTrack::From(track));
+    const blink::WebMediaStreamTrack& track) {
   blink::WebMediaStreamSource source = track.source();
-  DCHECK_EQ(source.getType(), blink::WebMediaStreamSource::TypeAudio);
-  if (source.remote()) {
-    factory->CreateRemoteAudioTrack(track);
-  } else {
-    factory->CreateLocalAudioTrack(track);
+  MediaStreamAudioSource* media_stream_source =
+      MediaStreamAudioSource::From(source);
+
+  // At this point, a MediaStreamAudioSource instance must exist. The one
+  // exception is when a WebAudio destination node is acting as a source of
+  // audio.
+  //
+  // TODO(miu): This needs to be moved to an appropriate location. A WebAudio
+  // source should have been created before this method was called so that this
+  // special case code isn't needed here.
+  if (!media_stream_source && source.requiresAudioConsumer()) {
+    DVLOG(1) << "Creating WebAudio media stream source.";
+    media_stream_source = new WebAudioMediaStreamSource(&source);
+    source.setExtraData(media_stream_source);  // Takes ownership.
   }
+
+  if (media_stream_source)
+    media_stream_source->ConnectToTrack(track);
+  else
+    LOG(DFATAL) << "WebMediaStreamSource missing its MediaStreamAudioSource.";
 }
 
 void CreateNativeVideoMediaStreamTrack(
@@ -74,33 +86,28 @@ void CreateNativeVideoMediaStreamTrack(
                                 track.isEnabled()));
 }
 
-void CreateNativeMediaStreamTrack(const blink::WebMediaStreamTrack& track,
-                                  PeerConnectionDependencyFactory* factory) {
-  DCHECK(!track.isNull() && !track.getExtraData());
-  DCHECK(!track.source().isNull());
-
-  switch (track.source().getType()) {
-    case blink::WebMediaStreamSource::TypeAudio:
-      CreateNativeAudioMediaStreamTrack(track, factory);
-      break;
-    case blink::WebMediaStreamSource::TypeVideo:
-      CreateNativeVideoMediaStreamTrack(track);
-      break;
-  }
-}
-
 }  // namespace
 
-MediaStreamCenter::MediaStreamCenter(blink::WebMediaStreamCenterClient* client,
-                                     PeerConnectionDependencyFactory* factory)
-    : rtc_factory_(factory) {}
+MediaStreamCenter::MediaStreamCenter(
+    blink::WebMediaStreamCenterClient* client,
+    PeerConnectionDependencyFactory* factory) {}
 
 MediaStreamCenter::~MediaStreamCenter() {}
 
 void MediaStreamCenter::didCreateMediaStreamTrack(
     const blink::WebMediaStreamTrack& track) {
   DVLOG(1) << "MediaStreamCenter::didCreateMediaStreamTrack";
-  CreateNativeMediaStreamTrack(track, rtc_factory_);
+  DCHECK(!track.isNull() && !track.getExtraData());
+  DCHECK(!track.source().isNull());
+
+  switch (track.source().getType()) {
+    case blink::WebMediaStreamSource::TypeAudio:
+      CreateNativeAudioMediaStreamTrack(track);
+      break;
+    case blink::WebMediaStreamSource::TypeVideo:
+      CreateNativeVideoMediaStreamTrack(track);
+      break;
+  }
 }
 
 void MediaStreamCenter::didEnableMediaStreamTrack(
@@ -142,7 +149,8 @@ MediaStreamCenter::createWebAudioSourceFromMediaStreamTrack(
   DCHECK_EQ(source.getType(), blink::WebMediaStreamSource::TypeAudio);
 
   // TODO(tommi): Rename WebRtcLocalAudioSourceProvider to
-  // WebRtcAudioSourceProvider since it's not specific to local.
+  // WebAudioMediaStreamSink since it's not specific to any particular source.
+  // http://crbug.com/577874
   return new WebRtcLocalAudioSourceProvider(track);
 }
 

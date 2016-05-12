@@ -9,11 +9,7 @@
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/renderer/media/mock_peer_connection_impl.h"
-#include "content/renderer/media/webaudio_capturer_source.h"
-#include "content/renderer/media/webrtc/webrtc_local_audio_track_adapter.h"
 #include "content/renderer/media/webrtc/webrtc_video_capturer_adapter.h"
-#include "content/renderer/media/webrtc_audio_capturer.h"
-#include "content/renderer/media/webrtc_local_audio_track.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 #include "third_party/webrtc/api/mediastreaminterface.h"
 #include "third_party/webrtc/base/scoped_ref_ptr.h"
@@ -380,7 +376,9 @@ class MockIceCandidate : public IceCandidateInterface {
 
 MockPeerConnectionDependencyFactory::MockPeerConnectionDependencyFactory()
     : PeerConnectionDependencyFactory(NULL),
-      fail_to_create_next_audio_capturer_(false) {
+      signaling_thread_("MockPCFactory WebRtc Signaling Thread") {
+  EnsureWebRtcAudioDeviceImpl();
+  CHECK(signaling_thread_.Start());
 }
 
 MockPeerConnectionDependencyFactory::~MockPeerConnectionDependencyFactory() {}
@@ -415,9 +413,6 @@ MockPeerConnectionDependencyFactory::CreateVideoSource(
   NOTIMPLEMENTED();
   return nullptr;
 }
-
-void MockPeerConnectionDependencyFactory::CreateWebAudioSource(
-    blink::WebMediaStreamSource* source) {}
 
 scoped_refptr<webrtc::MediaStreamInterface>
 MockPeerConnectionDependencyFactory::CreateLocalMediaStream(
@@ -458,19 +453,9 @@ MockPeerConnectionDependencyFactory::CreateIceCandidate(
   return new MockIceCandidate(sdp_mid, sdp_mline_index, sdp);
 }
 
-std::unique_ptr<WebRtcAudioCapturer>
-MockPeerConnectionDependencyFactory::CreateAudioCapturer(
-    int render_frame_id,
-    const StreamDeviceInfo& device_info,
-    const blink::WebMediaConstraints& constraints,
-    MediaStreamAudioSource* audio_source) {
-  if (fail_to_create_next_audio_capturer_) {
-    fail_to_create_next_audio_capturer_ = false;
-    return NULL;
-  }
-  DCHECK(audio_source);
-  return WebRtcAudioCapturer::CreateCapturer(-1, device_info, constraints, NULL,
-                                             audio_source);
+scoped_refptr<base::SingleThreadTaskRunner>
+MockPeerConnectionDependencyFactory::GetWebRtcSignalingThread() const {
+  return signaling_thread_.task_runner();
 }
 
 }  // namespace content

@@ -31,6 +31,7 @@
 
 namespace content {
 class PeerConnectionDependencyFactory;
+class MediaStreamAudioSource;
 class MediaStreamDispatcher;
 class MediaStreamVideoSource;
 class VideoCapturerDelegate;
@@ -119,8 +120,12 @@ class CONTENT_EXPORT UserMediaClientImpl
   virtual void EnumerateSourcesSucceded(
       blink::WebMediaStreamTrackSourcesRequest* request,
       blink::WebVector<blink::WebSourceInfo>& sources);
-  // Creates a MediaStreamVideoSource object.
-  // This is virtual for test purposes.
+
+  // Creates a MediaStreamAudioSource/MediaStreamVideoSource objects.
+  // These are virtual for test purposes.
+  virtual MediaStreamAudioSource* CreateAudioSource(
+      const StreamDeviceInfo& device,
+      const blink::WebMediaConstraints& constraints);
   virtual MediaStreamVideoSource* CreateVideoSource(
       const StreamDeviceInfo& device,
       const MediaStreamSource::SourceStoppedCallback& stop_callback);
@@ -147,8 +152,7 @@ class CONTENT_EXPORT UserMediaClientImpl
     blink::WebMediaStream web_stream;
     blink::WebUserMediaRequest request;
 
-    void StartAudioTrack(const blink::WebMediaStreamTrack& track,
-                         const blink::WebMediaConstraints& constraints);
+    void StartAudioTrack(const blink::WebMediaStreamTrack& track);
 
     blink::WebMediaStreamTrack CreateAndStartVideoTrack(
         const blink::WebMediaStreamSource& source,

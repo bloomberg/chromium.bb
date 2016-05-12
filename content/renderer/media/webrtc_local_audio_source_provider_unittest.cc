@@ -5,9 +5,8 @@
 #include <stddef.h>
 
 #include "base/logging.h"
-#include "content/renderer/media/webrtc/webrtc_local_audio_track_adapter.h"
+#include "content/renderer/media/media_stream_audio_track.h"
 #include "content/renderer/media/webrtc_local_audio_source_provider.h"
-#include "content/renderer/media/webrtc_local_audio_track.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_parameters.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -27,10 +26,6 @@ class WebRtcLocalAudioSourceProviderTest : public testing::Test {
         media::CHANNEL_LAYOUT_STEREO, 44100, 16,
         WebRtcLocalAudioSourceProvider::kWebAudioRenderBufferSize);
     sink_bus_ = media::AudioBus::Create(sink_params_);
-    scoped_refptr<WebRtcLocalAudioTrackAdapter> adapter(
-        WebRtcLocalAudioTrackAdapter::Create(std::string(), NULL));
-    std::unique_ptr<WebRtcLocalAudioTrack> native_track(
-        new WebRtcLocalAudioTrack(adapter.get()));
     blink::WebMediaStreamSource audio_source;
     audio_source.initialize(blink::WebString::fromUTF8("dummy_source_id"),
                             blink::WebMediaStreamSource::TypeAudio,
@@ -38,7 +33,7 @@ class WebRtcLocalAudioSourceProviderTest : public testing::Test {
                             false /* remote */);
     blink_track_.initialize(blink::WebString::fromUTF8("audio_track"),
                             audio_source);
-    blink_track_.setExtraData(native_track.release());
+    blink_track_.setExtraData(new MediaStreamAudioTrack(true));
     source_provider_.reset(new WebRtcLocalAudioSourceProvider(blink_track_));
     source_provider_->SetSinkParamsForTesting(sink_params_);
     source_provider_->OnSetFormat(source_params_);
@@ -58,6 +53,10 @@ class WebRtcLocalAudioSourceProviderTest : public testing::Test {
 };
 
 TEST_F(WebRtcLocalAudioSourceProviderTest, VerifyDataFlow) {
+  // TODO(miu): This test should be re-worked so that the audio data and format
+  // is feed into a MediaStreamAudioSource and, through the
+  // MediaStreamAudioTrack, ultimately delivered to the |source_provider_|.
+
   // Point the WebVector into memory owned by |sink_bus_|.
   blink::WebVector<float*> audio_data(
       static_cast<size_t>(sink_bus_->channels()));
@@ -119,17 +118,13 @@ TEST_F(WebRtcLocalAudioSourceProviderTest,
   source_provider_.reset();
 
   // Stop the audio track.
-  WebRtcLocalAudioTrack* native_track = static_cast<WebRtcLocalAudioTrack*>(
-      MediaStreamTrack::GetTrack(blink_track_));
-  native_track->Stop();
+  MediaStreamAudioTrack::From(blink_track_)->Stop();
 }
 
 TEST_F(WebRtcLocalAudioSourceProviderTest,
        StopTrackBeforeDeletingSourceProvider) {
   // Stop the audio track.
-  WebRtcLocalAudioTrack* native_track = static_cast<WebRtcLocalAudioTrack*>(
-      MediaStreamTrack::GetTrack(blink_track_));
-  native_track->Stop();
+  MediaStreamAudioTrack::From(blink_track_)->Stop();
 
   // Delete the source provider.
   source_provider_.reset();

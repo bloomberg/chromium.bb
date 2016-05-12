@@ -14,11 +14,13 @@
 #include "content/public/renderer/media_stream_audio_renderer.h"
 #include "content/renderer/media/audio_device_factory.h"
 #include "content/renderer/media/webrtc_audio_device_impl.h"
+#include "media/base/audio_capturer_source.h"
 #include "media/base/mock_audio_renderer_sink.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
+#include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebHeap.h"
 #include "third_party/webrtc/api/mediastreaminterface.h"
 
@@ -64,7 +66,8 @@ class WebRtcAudioRendererTest : public testing::Test,
       : message_loop_(new base::MessageLoopForIO),
         source_(new MockAudioRendererSource()) {
     blink::WebVector<blink::WebMediaStreamTrack> dummy_tracks;
-    stream_.initialize("new stream", dummy_tracks, dummy_tracks);
+    stream_.initialize(blink::WebString::fromUTF8("new stream"), dummy_tracks,
+                       dummy_tracks);
   }
 
   void SetupRenderer(const std::string& device_id) {
