@@ -239,7 +239,7 @@ void InputMethodController::cancelCompositionIfSelectionIsInvalid()
     frame().chromeClient().didCancelCompositionOnSelectionChange();
 }
 
-void InputMethodController::setComposition(const String& text, const Vector<CompositionUnderline>& underlines, unsigned selectionStart, unsigned selectionEnd)
+void InputMethodController::setComposition(const String& text, const Vector<CompositionUnderline>& underlines, int selectionStart, int selectionEnd)
 {
     Editor::RevealSelectionScope revealSelectionScope(&editor());
 
@@ -332,9 +332,30 @@ void InputMethodController::setComposition(const String& text, const Vector<Comp
     if (baseNode->layoutObject())
         baseNode->layoutObject()->setShouldDoFullPaintInvalidation();
 
-    unsigned start = std::min(baseOffset + selectionStart, extentOffset);
-    unsigned end = std::min(std::max(start, baseOffset + selectionEnd), extentOffset);
-    Range* selectedRange = Range::create(baseNode->document(), baseNode, start, baseNode, end);
+    // In case of exceeding the left boundary.
+    int selectionOffsetsStart = static_cast<int>(getSelectionOffsets().start());
+    int start = std::max(selectionOffsetsStart + selectionStart, 0);
+    int end = std::max(selectionOffsetsStart + selectionEnd, start);
+
+    Element* rootEditableElement = frame().selection().rootEditableElement();
+    if (!rootEditableElement)
+        return;
+
+    // In case of exceeding the right boundary.
+    // If both |value1| and |value2| exceed right boundary,
+    // PlainTextRange(value1, value2)::createRange() will return a default
+    // value, which is [0,0]. In order to get the correct Position in that case,
+    // we should make sure |value1| is within range at least.
+    const EphemeralRange& startRange = PlainTextRange(0, start).createRange(*rootEditableElement);
+    const EphemeralRange& endRange = PlainTextRange(0, end).createRange(*rootEditableElement);
+
+    // TODO(yabinh): There should be a better way to create |startPosition| and
+    // |endPosition|. But for now, since we can't get |anchorNode| and |offset|,
+    // we can't create the 2 Position objects directly. So we use
+    // PlainTextRange::createRange as a workaround.
+    const Position& startPosition = startRange.endPosition();
+    const Position& endPosition = endRange.endPosition();
+    Range* selectedRange = Range::create(rootEditableElement->document(), startPosition, endPosition);
     frame().selection().setSelectedRange(selectedRange, TextAffinity::Downstream, SelectionDirectionalMode::NonDirectional, NotUserTriggered);
 
     if (underlines.isEmpty()) {

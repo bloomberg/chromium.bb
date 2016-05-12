@@ -21,6 +21,7 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.FlakyTest;
 import org.chromium.content.browser.ContentViewCore;
@@ -136,6 +137,55 @@ public class ImeTest extends ContentShellTestBase {
         waitAndVerifyUpdateSelection(2, 2, 2, -1, -1);
         deleteSurroundingText(0, 0);
         assertTextsAroundCursor("he", "", "llo");
+    }
+
+    // When newCursorPosition != 1, setComposingText doesn't work for ReplicaInputConnection
+    // because there is a bug in BaseInputConnection.
+    @CommandLineFlags.Add("enable-features=ImeThread")
+    @SmallTest
+    @Feature({"TextInput", "Main"})
+    public void testSetComposingTextForDifferentnewCursorPositions() throws Throwable {
+        // Cursor is on the right of composing text when newCursorPosition > 0.
+        setComposingText("ab", 1);
+        waitAndVerifyUpdateSelection(0, 2, 2, 0, 2);
+
+        finishComposingText();
+        waitAndVerifyUpdateSelection(1, 2, 2, -1, -1);
+
+        // Cursor exceeds the left boundary.
+        setComposingText("cdef", -100);
+        waitAndVerifyUpdateSelection(2, 0, 0, 2, 6);
+
+        // Cursor is on the left boundary.
+        setComposingText("cd", -2);
+        waitAndVerifyUpdateSelection(3, 0, 0, 2, 4);
+
+        // Cursor is between the left boundary and the composing text.
+        setComposingText("cd", -1);
+        waitAndVerifyUpdateSelection(4, 1, 1, 2, 4);
+
+        // Cursor is on the left of composing text.
+        setComposingText("cd", 0);
+        waitAndVerifyUpdateSelection(5, 2, 2, 2, 4);
+
+        finishComposingText();
+        waitAndVerifyUpdateSelection(6, 2, 2, -1, -1);
+
+        // Cursor is on the right of composing text.
+        setComposingText("ef", 1);
+        waitAndVerifyUpdateSelection(7, 4, 4, 2, 4);
+
+        // Cursor is between the composing text and the right boundary.
+        setComposingText("ef", 2);
+        waitAndVerifyUpdateSelection(8, 5, 5, 2, 4);
+
+        // Cursor is on the right boundary.
+        setComposingText("ef", 3);
+        waitAndVerifyUpdateSelection(9, 6, 6, 2, 4);
+
+        // Cursor exceeds the right boundary.
+        setComposingText("efgh", 100);
+        waitAndVerifyUpdateSelection(10, 8, 8, 2, 6);
     }
 
     @SmallTest
