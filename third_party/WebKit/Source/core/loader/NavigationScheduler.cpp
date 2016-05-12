@@ -264,8 +264,6 @@ NavigationScheduler::NavigationScheduler(LocalFrame* frame)
 
 NavigationScheduler::~NavigationScheduler()
 {
-    // TODO(alexclarke): Can remove this if oilpan is on since any pending task should
-    // keep the NavigationScheduler alive.
     if (m_navigateTaskFactory->isPending())
         Platform::current()->currentThread()->scheduler()->removePendingNavigation(m_frameType);
 }
