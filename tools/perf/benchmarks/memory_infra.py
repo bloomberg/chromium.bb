@@ -158,6 +158,10 @@ class MemoryLongRunningIdleGmail(_MemoryV8Benchmark):
   def Name(cls):
     return 'memory.long_running_idle_gmail_tbmv2'
 
+  @classmethod
+  def ShouldDisable(cls, possible_browser):
+    return cls.IsSvelte(possible_browser)  # http://crbug.com/611167
+
 
 class MemoryLongRunningIdleGmailBackground(_MemoryV8Benchmark):
   """Use (recorded) real world web sites and measure memory consumption
