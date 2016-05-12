@@ -176,11 +176,9 @@ abstract class OverlayPanelBase {
      * Handles when the Panel's container view size changes.
      * @param width The new width of the Panel's container view.
      * @param height The new height of the Panel's container view.
-     * @param hasChangedPanelLayout Whether the Panel's layout has changed
-     *                              between full and narrow-width.
+     * @param previousWidth The previous width of the Panel's container view.
      */
-    protected abstract void handleSizeChanged(float width, float height,
-                                              boolean hasChangedPanelLayout);
+    protected abstract void handleSizeChanged(float width, float height, float previousWidth);
 
     // ============================================================================================
     // Layout Integration
@@ -212,10 +210,7 @@ abstract class OverlayPanelBase {
         mMaximumWidth = calculateOverlayPanelWidth();
         mMaximumHeight = getPanelHeightFromState(PanelState.MAXIMIZED);
 
-        boolean wasFullWidthSizePanel = doesMatchFullWidthCriteria(previousLayoutWidth);
-        boolean hasChangedPanelLayout = isFullWidthSizePanel() != wasFullWidthSizePanel;
-
-        handleSizeChanged(width, height, hasChangedPanelLayout);
+        handleSizeChanged(width, height, previousLayoutWidth);
     }
 
     /**
@@ -229,7 +224,7 @@ abstract class OverlayPanelBase {
      * @param containerWidth The width of the panel's container.
      * @return Whether the given width matches the criteria required for a full width Panel.
      */
-    private boolean doesMatchFullWidthCriteria(float containerWidth) {
+    protected boolean doesMatchFullWidthCriteria(float containerWidth) {
         if (mOverrideIsFullWidthSizePanelForTesting) {
             return mIsFullWidthSizePanelForTesting;
         }

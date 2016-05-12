@@ -141,17 +141,29 @@ public abstract class OverlayPanelAnimation extends OverlayPanelBase
     }
 
     @Override
-    protected void handleSizeChanged(float width, float height, boolean hasChangedPanelLayout) {
+    protected void handleSizeChanged(float width, float height, float previousWidth) {
         if (!isShowing()) return;
 
-        // TODO(pedrosimonetti): Cannot preserve panel when its layout changes (crbug.com/568351)
-        // (full vs narrow-width) due to an activity size change. The panel provides
+        boolean wasFullWidthSizePanel = doesMatchFullWidthCriteria(previousWidth);
+        boolean isPanelResizeSupported = isFullWidthSizePanel() && wasFullWidthSizePanel;
+
+        // TODO(pedrosimonetti): See crbug.com/568351.
+        // We can't keep the panel opened after a viewport size change when the panel's
+        // ContentView needs to be resized to a non-default size. The panel provides
         // different desired MeasureSpecs when full-width vs narrow-width
         // (See {@link OverlayPanel#createNewOverlayPanelContentInternal()}).
         // When the activity is resized, ContentViewClient asks for the MeasureSpecs
         // before the panel is notified of the size change, resulting in the panel's
         // ContentView being laid out incorrectly.
-        if (hasChangedPanelLayout) {
+        if (isPanelResizeSupported) {
+            if (mAnimatingState != PanelState.UNDEFINED) {
+                // If the size changes when an animation is happening, then we need to restart the
+                // animation, because the size of the Panel might have changed as well.
+                animatePanelToState(mAnimatingState, mAnimatingStateReason);
+            } else {
+                updatePanelForSizeChange();
+            }
+        } else {
             // TODO(pedrosimonetti): Find solution that does not require async handling.
             // NOTE(pedrosimonetti): Should close the Panel asynchronously because
             // we might be in the middle of laying out the CompositorViewHolder
@@ -165,14 +177,6 @@ public abstract class OverlayPanelAnimation extends OverlayPanelBase
                     closePanel(StateChangeReason.UNKNOWN, false);
                 }
             });
-        } else {
-            if (mAnimatingState != PanelState.UNDEFINED) {
-                // If the size changes when an animation is happening, then we need to restart the
-                // animation, because the size of the Panel might have changed as well.
-                animatePanelToState(mAnimatingState, mAnimatingStateReason);
-            } else {
-                updatePanelForSizeChange();
-            }
         }
     }
 
