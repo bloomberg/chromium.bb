@@ -49,6 +49,7 @@ executable("flatc") {
   deps = [
     ":compiler_files",
     ":flatbuffers",
+    "//build/config/sanitizers:deps",
   ]
 }
 

@@ -287,3 +287,15 @@ fuzzer_test("convert_woff2ttf_fuzzer") {
   seed_corpus = "//testing/libfuzzer/fuzzers/woff2_corpus"
   libfuzzer_options = [ "max_len=803500" ]
 }
+
+fuzzer_test("flatbuffers_verifier_fuzzer") {
+  sources = [
+    "flatbuffers_verifier_fuzzer.cc",
+  ]
+  deps = [
+    "//third_party/flatbuffers",
+    "//third_party/flatbuffers:flatbuffers_samplebuffer",
+  ]
+  libfuzzer_options = [ "max_len=1024" ]
+  seed_corpus = "//testing/libfuzzer/fuzzers/flatbuffers_corpus"
+}
