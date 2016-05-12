@@ -13,6 +13,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -142,6 +143,7 @@ int LayoutTestBrowserMain(
   }
 
   exit_code = RunTests(main_runner);
+  base::RunLoop().RunUntilIdle();
 
 #if !defined(OS_ANDROID)
   main_runner->Shutdown();
