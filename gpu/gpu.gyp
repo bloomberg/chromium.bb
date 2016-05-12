@@ -214,6 +214,7 @@
         'command_buffer/service/framebuffer_manager_unittest.cc',
         'command_buffer/service/gl_context_mock.cc',
         'command_buffer/service/gl_context_mock.h',
+        'command_buffer/service/gl_context_virtual_unittest.cc',
         'command_buffer/service/gl_surface_mock.cc',
         'command_buffer/service/gl_surface_mock.h',
         'command_buffer/service/gles2_cmd_decoder_unittest.cc',

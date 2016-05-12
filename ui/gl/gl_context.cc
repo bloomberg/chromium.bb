@@ -220,7 +220,10 @@ scoped_refptr<gfx::GPUTimingClient> GLContextReal::CreateGPUTimingClient() {
   return gpu_timing_->CreateGPUTimingClient();
 }
 
-GLContextReal::~GLContextReal() {}
+GLContextReal::~GLContextReal() {
+  if (GetRealCurrent() == this)
+    current_real_context_.Pointer()->Set(nullptr);
+}
 
 void GLContextReal::SetCurrent(GLSurface* surface) {
   GLContext::SetCurrent(surface);

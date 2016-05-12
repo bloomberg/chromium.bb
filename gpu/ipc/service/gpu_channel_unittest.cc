@@ -13,6 +13,7 @@
 #include "ipc/ipc_test_sink.h"
 #include "ui/gl/gl_context_stub_with_extensions.h"
 #include "ui/gl/gl_mock.h"
+#include "ui/gl/gl_surface_stub.h"
 #include "ui/gl/test/gl_surface_test_support.h"
 
 namespace gpu {
@@ -385,6 +386,8 @@ TEST_F(GpuChannelTest, CreateFailsIfSharedContextIsLost) {
   // GLContext. Use a GLContextStub which does nothing but call through to our
   // |gl_interface| above.
   scoped_refptr<gfx::GLContextStub> context(new gfx::GLContextStub);
+  scoped_refptr<gfx::GLSurfaceStub> surface(new gfx::GLSurfaceStub);
+  context->MakeCurrent(surface.get());
   gfx::GLSurfaceTestSupport::InitializeDynamicMockBindings(context.get());
 
   base::TestMessageLoop message_loop;
@@ -477,6 +480,9 @@ TEST_F(GpuChannelTest, CreateFailsIfSharedContextIsLost) {
   // Destroy the command buffer we initialized before destoying GL.
   HandleMessage(channel,
                 new GpuChannelMsg_DestroyCommandBuffer(kSharedRouteId));
+
+  context = nullptr;
+  surface = nullptr;
   gfx::MockGLInterface::SetGLInterface(nullptr);
   gfx::ClearGLBindings();
 }

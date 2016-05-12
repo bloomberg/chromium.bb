@@ -15,6 +15,8 @@
 
 namespace gfx {
 class GLContextStubWithExtensions;
+class GLSurface;
+class GLSurfaceStub;
 }
 
 namespace gpu {
@@ -31,6 +33,7 @@ class GpuServiceTest : public testing::Test {
   void SetUp() override;
   void TearDown() override;
   gfx::GLContext* GetGLContext();
+  gfx::GLSurface* GetGLSurface();
 
   std::unique_ptr<::testing::StrictMock<::gfx::MockGLInterface>> gl_;
 
@@ -38,6 +41,7 @@ class GpuServiceTest : public testing::Test {
   bool ran_setup_;
   bool ran_teardown_;
   scoped_refptr<gfx::GLContextStubWithExtensions> context_;
+  scoped_refptr<gfx::GLSurfaceStub> surface_;
   base::MessageLoop message_loop_;
 };
 

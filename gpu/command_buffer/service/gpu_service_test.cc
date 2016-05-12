@@ -9,6 +9,7 @@
 #include "ui/gl/gl_context_stub_with_extensions.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_mock.h"
+#include "ui/gl/gl_surface_stub.h"
 #include "ui/gl/test/gl_surface_test_support.h"
 
 namespace gpu {
@@ -33,6 +34,8 @@ void GpuServiceTest::SetUpWithGLVersion(const char* gl_version,
   context_ = new gfx::GLContextStubWithExtensions;
   context_->AddExtensionsString(gl_extensions);
   context_->SetGLVersionString(gl_version);
+  surface_ = new gfx::GLSurfaceStub;
+  context_->MakeCurrent(surface_.get());
   gfx::GLSurfaceTestSupport::InitializeDynamicMockBindings(context_.get());
   ran_setup_ = true;
 }
@@ -43,6 +46,8 @@ void GpuServiceTest::SetUp() {
 
 void GpuServiceTest::TearDown() {
   DCHECK(ran_setup_);
+  context_ = nullptr;
+  surface_ = nullptr;
   ::gfx::MockGLInterface::SetGLInterface(NULL);
   gl_.reset();
   gfx::ClearGLBindings();
@@ -54,5 +59,10 @@ void GpuServiceTest::TearDown() {
 gfx::GLContext* GpuServiceTest::GetGLContext() {
   return context_.get();
 }
+
+gfx::GLSurface* GpuServiceTest::GetGLSurface() {
+  return surface_.get();
+}
+
 }  // namespace gles2
 }  // namespace gpu

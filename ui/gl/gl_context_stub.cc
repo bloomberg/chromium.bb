@@ -26,7 +26,7 @@ void GLContextStub::ReleaseCurrent(GLSurface* surface) {
 }
 
 bool GLContextStub::IsCurrent(GLSurface* surface) {
-  return true;
+  return GetRealCurrent() == this;
 }
 
 void* GLContextStub::GetHandle() {
