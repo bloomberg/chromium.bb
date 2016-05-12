@@ -1009,7 +1009,7 @@ if (!is_ios && !is_android) {
   }
 }
 
-if (is_linux) {
+if (is_linux || is_mac) {
   executable("cachetool") {
     testonly = true
     sources = [
@@ -1036,7 +1036,9 @@ if (is_linux) {
       "//url",
     ]
   }
+}
 
+if (is_linux) {
   static_library("epoll_server") {
     sources = [
       "tools/epoll_server/epoll_server.cc",

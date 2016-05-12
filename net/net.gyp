@@ -1686,7 +1686,7 @@
         },
       ],
     }],
-    ['OS == "linux"', {
+    ['OS == "linux" or OS == "mac"', {
       'targets': [
         {
           'target_name': 'cachetool',
