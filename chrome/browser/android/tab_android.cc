@@ -761,10 +761,11 @@ jlong TabAndroid::GetBookmarkId(JNIEnv* env,
       web_contents()->GetURL());
   Profile* profile = GetProfile();
 
-  // If the url points to an offline page, it already has a bookmark ID that it
-  // is related to.
-  int64_t candidate_bookmark_id =
-      offline_pages::OfflinePageUtils::GetBookmarkIdForOfflineURL(profile, url);
+  // If the url points to an offline page, then we need to get its original URL.
+  if (offline_pages::OfflinePageUtils::IsOfflinePage(profile, url)) {
+    url = offline_pages::OfflinePageUtils::GetOnlineURLForOfflineURL(profile,
+                                                                     url);
+  }
 
   // Get all the nodes for |url| and sort them by date added.
   std::vector<const bookmarks::BookmarkNode*> nodes;
@@ -772,13 +773,6 @@ jlong TabAndroid::GetBookmarkId(JNIEnv* env,
       ManagedBookmarkServiceFactory::GetForProfile(profile);
   bookmarks::BookmarkModel* model =
       BookmarkModelFactory::GetForProfile(profile);
-
-  // If we have a candidate bookmark ID from the offline page model and that ID
-  // matches an existing bookmark, return it.
-  if (candidate_bookmark_id != -1 &&
-      bookmarks::GetBookmarkNodeByID(model, candidate_bookmark_id) != nullptr) {
-    return candidate_bookmark_id;
-  }
 
   model->GetNodesByURL(url, &nodes);
   std::sort(nodes.begin(), nodes.end(), &bookmarks::MoreRecentlyAdded);
