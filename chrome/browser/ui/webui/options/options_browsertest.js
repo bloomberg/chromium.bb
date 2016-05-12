@@ -103,6 +103,18 @@ OptionsWebUITest.prototype = {
     this.accessibilityAuditConfig.ignoreSelectors(
         'linkWithUnclearPurpose',
         linkWithUnclearPurposeSelectors);
+
+    // Causes testDefaultZoomFactor to flake. See http://crbug.com/611233.
+    var requiredOwnedAriaRoleMissingSelectors = [
+      '#default-search-engine-list',
+      '#other-search-engine-list',
+    ];
+
+    // Enable when failure is resolved.
+    // AX_ARIA_08: http://crbug.com/606657
+    this.accessibilityAuditConfig.ignoreSelectors(
+        'requiredOwnedAriaRoleMissing',
+        requiredOwnedAriaRoleMissingSelectors);
   },
 };
 
