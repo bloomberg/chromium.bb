@@ -11,13 +11,20 @@
 #include "grit/theme_resources.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/color_utils.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/vector_icons_public.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/views/widget/widget.h"
 
 OpenPDFInReaderView::OpenPDFInReaderView() : bubble_(NULL), model_(NULL) {
   SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
-  SetImage(ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-      IDR_OMNIBOX_PDF_ICON));
+  if (!ui::MaterialDesignController::IsModeMaterial()) {
+    SetImage(ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+        IDR_OMNIBOX_PDF_ICON));
+  }
   SetTooltipText(l10n_util::GetStringUTF16(IDS_PDF_BUBBLE_OPEN_IN_READER_LINK));
 }
 
@@ -76,6 +83,16 @@ bool OpenPDFInReaderView::OnKeyPressed(const ui::KeyEvent& event) {
 
   ShowBubble();
   return true;
+}
+
+void OpenPDFInReaderView::OnNativeThemeChanged(
+    const ui::NativeTheme* native_theme) {
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    SetImage(gfx::CreateVectorIcon(
+        gfx::VectorIconId::PDF,
+        color_utils::DeriveDefaultIconColor(native_theme->GetSystemColor(
+            ui::NativeTheme::kColorId_TextfieldDefaultColor))));
+  }
 }
 
 void OpenPDFInReaderView::OnWidgetDestroying(views::Widget* widget) {

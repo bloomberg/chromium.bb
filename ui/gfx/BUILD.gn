@@ -499,6 +499,8 @@ action("aggregate_vector_icons") {
     "vector_icons/overflow_chevron.1x.icon",
     "vector_icons/overflow_chevron.icon",
     "vector_icons/paintbrush.icon",
+    "vector_icons/pdf.1x.icon",
+    "vector_icons/pdf.icon",
     "vector_icons/photo_camera.icon",
     "vector_icons/protocol_handler.icon",
     "vector_icons/remove_box.icon",
