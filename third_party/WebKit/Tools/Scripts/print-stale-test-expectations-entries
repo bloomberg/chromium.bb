@@ -38,63 +38,56 @@ import sys
 import time
 import urllib2
 
+from webkitpy.common.host import Host
 from webkitpy.common.system.filesystem import FileSystem
 from webkitpy.common.webkit_finder import WebKitFinder
+from webkitpy.layout_tests.models.test_expectations import TestExpectationParser
 
 google_code_url = 'https://www.googleapis.com/projecthosting/v2/projects/chromium/issues/%s?key=AIzaSyDgCqT1Dt5AZWLHo4QJjyMHaCjhnFacGF0'
 crbug_prefix = 'crbug.com/'
 
 class StaleTestPrinter(object):
     def __init__(self, options):
-        self._days = options.days
+        self.days = options.days
+        self.create_csv = options.create_csv
 
-    def is_stale(self, bug_number):
+    def is_stale(self, bug_link):
+        bug_number = bug_link.strip(crbug_prefix)
         url = google_code_url % bug_number
         response = urllib2.urlopen(url)
         parsed = json.loads(response.read())
         last_updated = parsed['updated']
         parsed_time = datetime.datetime.strptime(last_updated.split(".")[0]+"UTC", "%Y-%m-%dT%H:%M:%S%Z")
         time_delta = datetime.datetime.now() - parsed_time
-        return time_delta.days > 90
+        return time_delta.days > self.days
 
     def print_stale_tests(self):
-        finder = WebKitFinder(FileSystem())
-        path_to_expectations = finder.path_from_webkit_base('LayoutTests', 'TestExpectations')
-        expectations = open(path_to_expectations)
-
-        for line in expectations:
-            comment_index = line.find("#")
-            if comment_index == -1:
-                comment_index = len(line)
-
-            remaining_string = re.sub(r"\s+", " ", line[:comment_index].strip())
-            if len(remaining_string) == 0:
-                continue
-
-            is_bug_stale = True
-            parts = line.split(' ')
-            for part in parts:
-                if part.startswith(crbug_prefix):
-                    bug_number = part.split('/')[1]
-                    try:
-                        if not self.is_stale(bug_number):
-                            is_bug_stale = False
-                            break;
-                    except urllib2.HTTPError as error:
-                        if error.code == 404:
-                            print '%s%s does not exist.' % (crbug_prefix, bug_number)
-                        elif error.code == 403:
-                            print '%s%s is not accessible. Not able to tell if it\'s stale.' % (crbug_prefix, bug_number)
-                            is_bug_stale = False
-                        else:
-                            raise error
-
-            if is_bug_stale:
-                print line.strip()
+        host = Host()
+        port = host.port_factory.get()
+        exps = port.expectations_dict()
+        csv_contents = ''
+        parser = TestExpectationParser(port, all_tests=(), is_lint_mode=False)
+        for line in parser.parse(*exps.items()[0]):
+            bugs, name = line.bugs, line.name
+            try:
+                if bugs and all(self.is_stale(bug) for bug in bugs):
+                    print line.original_string.strip()
+                    csv_contents += "%s, %s\n" % (bugs[0], name)
+            except urllib2.HTTPError as error:
+                if error.code == 404:
+                    print 'Does not exist.'
+                elif error.code == 403:
+                    print 'Is not accessible. Not able to tell if it\'s stale.'
+                    is_bug_stale = False
+                else:
+                    print error
+        if self.create_csv:
+            host.filesystem.write_text_file(self.create_csv, csv_contents)
 
 def main(argv):
     option_parser = optparse.OptionParser()
     option_parser.add_option('--days', type='int', default=90, help='Number of days to consider a bug stale.'),
+    option_parser.add_option('--create-csv', type='string', default=0, help='Generate a CSV of the stale entries as well. Followed by the filename.'),
     options, args = option_parser.parse_args(argv)
 
     printer = StaleTestPrinter(options)
