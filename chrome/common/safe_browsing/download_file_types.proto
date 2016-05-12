@@ -13,9 +13,19 @@ package safe_browsing;
 
 // Next id: 5
 message DownloadFileType {
-  optional string extension = 1;  // required
+  optional string extension = 1;  // required, except in default_file_type.
   optional int64 uma_value = 2;  // required
-  optional bool is_archive = 3;
+  optional bool is_archive = 3 [default = false];
+
+  // TODO(nparker): Add a field describing what Chrome-internal unpacker
+  // should be used to scan this file type (DMG or zip are currently supported)
+
+  enum PingSetting {
+    SAMPLED_PING = 0;
+    NO_PING = 1;
+    FULL_PING = 2;
+  }
+  optional PingSetting ping_setting = 4;  // required
 
   enum DangerLevel {
     NOT_DANGEROUS = 0;
@@ -24,11 +34,12 @@ message DownloadFileType {
   }
 
   enum AutoOpenHint {
+    DISALLOW_AUTO_OPEN = 0;
     ALLOW_AUTO_OPEN = 1;
-    DISALLOW_AUTO_OPEN = 2;
   }
 
   enum PlatformType {
+    PLATFORM_ANY = 0;
     PLATFORM_ANDROID = 1;
     PLATFORM_CHROME_OS = 2;
     PLATFORM_LINUX = 3;
@@ -36,28 +47,20 @@ message DownloadFileType {
     PLATFORM_WINDOWS = 5;
   }
 
-  enum PingSetting {
-    SAMPLED_PING = 0;
-    NO_PING = 1;
-    FULL_PING = 2;
-  }
-
-  // TODO(nparker): Add a field describing what Chrome-internal unpacker
-  // should be used to scan this file type (DMG or zip are currently supported)
-
-  // Next id: 5
+  // Next id: 4
   message PlatformSettings {
-    optional PlatformType platform = 1;
+    optional PlatformType platform = 1 [default = PLATFORM_ANY];
     optional DangerLevel danger_level = 2;  // required
     optional AutoOpenHint auto_open_hint = 3;  // required
-    optional PingSetting ping_setting = 4;  // required
   };
 
-  repeated PlatformSettings platform_settings = 4; // required >= 1
+  // Protos parsed by Chrome should have exactly one entry here.
+  repeated PlatformSettings platform_settings = 5;
 };
 
 // Next id: 5
 message DownloadFileTypeConfig {
+  // All required
   optional uint32 version_id = 1;
   optional float sampled_ping_probability = 2;
   repeated DownloadFileType file_types = 3;

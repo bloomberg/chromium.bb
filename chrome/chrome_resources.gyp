@@ -314,6 +314,22 @@
             'script_file':'browser/resources/safe_browsing/gen_file_type_proto.py',
             'asciipb_file' : 'browser/resources/safe_browsing/download_file_types.asciipb',
             'output_file' : '<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/safe_browsing/download_file_types.pb',
+            'conditions': [
+              ['OS=="android"', {
+                'platform': 'android'
+              }, 'chromeos==1', {
+                'platform': 'chromeos'
+              }, 'OS=="linux"', {
+                'platform': 'linux'
+              }, 'OS=="mac"', {
+                'platform': 'mac'
+              }, 'OS=="win"', {
+                'platform': 'win'
+              }, {
+                # This will cause the script to fail
+                'platform': 'unknown_target_arch'
+              }],
+            ],
           },
           'inputs': [
             '<(script_file)',
@@ -328,6 +344,7 @@
             '-w',
             '-i', '<(asciipb_file)',
             '-o', '<(output_file)',
+            '-t', '<(platform)',
             '-p', '<(PRODUCT_DIR)/pyproto',
             '-p', '<(PRODUCT_DIR)/pyproto/chrome/common/safe_browsing',
           ],

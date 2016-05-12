@@ -67348,6 +67348,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="259" label="sparseimage"/>
   <int value="260" label="toast"/>
   <int value="261" label="udif"/>
+  <int value="262" label="run"/>
+  <int value="263" label="ad"/>
 </enum>
 
 <enum name="DownloadItem.DangerType" type="int">
@@ -84165,6 +84167,7 @@ To add a new entry, add it with any value and run test to compute valid value.
 </enum>
 
 <enum name="SBClientDownloadExtensions" type="int">
+  <int value="-1" label="File extension not categorized"/>
   <int value="0" label="EXE"/>
   <int value="1" label="MSI"/>
   <int value="2" label="CAB"/>
@@ -84232,7 +84235,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="64" label="CPIO"/>
   <int value="65" label="CMD"/>
   <int value="66" label="APP"/>
-  <int value="67" label="OSX"/>
+  <int value="67" label="OSX -- Not supported"/>
   <int value="68" label="SWF"/>
   <int value="69" label="SPL"/>
   <int value="70" label="APPLICATION"/>
@@ -84326,11 +84329,11 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="158" label="ACTION"/>
   <int value="159" label="BIN"/>
   <int value="160" label="INX"/>
-  <int value="161" label="IPA"/>
+  <int value="161" label="IPA -- Not supported"/>
   <int value="162" label="ISU"/>
   <int value="163" label="JOB"/>
   <int value="164" label="OUT"/>
-  <int value="165" label="PAD"/>
+  <int value="165" label="PAD -- Not supported"/>
   <int value="166" label="PAF"/>
   <int value="167" label="RGS"/>
   <int value="168" label="U3P"/>
@@ -84426,6 +84429,8 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="258" label="NDIF"/>
   <int value="259" label="UDIF"/>
   <int value="260" label="TOAST"/>
+  <int value="261" label="RUN"/>
+  <int value="262" label="AD"/>
 </enum>
 
 <enum name="SBClientDownloadIsSignedBinary" type="int">

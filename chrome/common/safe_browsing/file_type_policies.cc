@@ -16,11 +16,11 @@ namespace safe_browsing {
 FileTypePolicies::FileTypePolicies() {
   // Setup a file-type policy to use if the ResourceBundle is unreadable.
   // This should normally never be used.
-  last_resort_default_.set_uma_value(99999);  // TODO: Add this to xml.
+  last_resort_default_.set_uma_value(-1l);
+  last_resort_default_.set_ping_setting(DownloadFileType::NO_PING);
   auto settings = last_resort_default_.add_platform_settings();
   settings->set_danger_level(DownloadFileType::ALLOW_ON_USER_GESTURE);
   settings->set_auto_open_hint(DownloadFileType::DISALLOW_AUTO_OPEN);
-  settings->set_ping_setting(DownloadFileType::NO_PING);
 }
 
 FileTypePolicies::~FileTypePolicies() {}

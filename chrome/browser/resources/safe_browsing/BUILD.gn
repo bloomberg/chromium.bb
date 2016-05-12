@@ -14,6 +14,23 @@ action("make_file_types_protobuf") {
   python_path_root = "$root_build_dir/pyproto"
   python_path_safe_browsing = "$python_path_root/chrome/common/safe_browsing"
 
+  # Pick an architecture to generate for. These string match those
+  # in the python script.
+  if (is_android) {
+    target_arch = "android"
+  } else if (is_chromeos) {
+    target_arch = "chromeos"
+  } else if (is_win) {
+    target_arch = "win"
+  } else if (is_mac) {
+    target_arch = "mac"
+  } else if (is_linux) {
+    target_arch = "linux"
+  } else {
+    # This will cause the script to fail.
+    target_arch = "unknown_target_arch"
+  }
+
   inputs = [
     script,
     input_filename,
@@ -31,6 +48,8 @@ action("make_file_types_protobuf") {
 
   args = [
     "-w",
+    "-t",
+    target_arch,
     "-i",
     rebase_path(input_filename, root_build_dir),
     "-o",

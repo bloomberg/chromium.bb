@@ -282,9 +282,14 @@ enum SBClientDownloadExtensions {
   EXTENSION_NDIF,
   EXTENSION_UDIF,
   EXTENSION_TOAST,
+
   // New values go above this one.
   EXTENSION_MAX
 };
+
+static_assert(EXTENSION_TOAST + 1 == EXTENSION_MAX,
+              "You must add new types to download_file_types.asciipb as "
+              "well.");
 
 struct SafeBrowsingFiletype {
   const base::FilePath::CharType* const extension;
