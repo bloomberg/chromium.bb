@@ -67,6 +67,10 @@ const char kAlsaCheckCloseTimeout[] = "alsa-check-close-timeout";
 // Optional flag to set a fixed sample rate for the alsa device.
 const char kAlsaFixedOutputSampleRate[] = "alsa-fixed-output-sample-rate";
 
+// KB of memory to treat as unavailable to cast_shell when computing memory
+// pressure level.
+const char kMemPressureSystemReservedKb[] = "mem-pressure-system-reserved-kb";
+
 }  // namespace switches
 
 namespace chromecast {

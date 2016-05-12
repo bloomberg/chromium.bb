@@ -46,6 +46,9 @@ extern const char kAlsaOutputAvailMin[];
 extern const char kAlsaCheckCloseTimeout[];
 extern const char kAlsaFixedOutputSampleRate[];
 
+// Memory pressure switches
+extern const char kMemPressureSystemReservedKb[];
+
 }  // namespace switches
 
 namespace chromecast {

@@ -28,6 +28,7 @@ class CastMemoryPressureMonitor : public base::MemoryPressureMonitor {
   void UpdateMemoryPressureLevel(MemoryPressureLevel new_level);
 
   MemoryPressureLevel current_level_;
+  const int system_reserved_kb_;
   base::WeakPtrFactory<CastMemoryPressureMonitor> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CastMemoryPressureMonitor);
