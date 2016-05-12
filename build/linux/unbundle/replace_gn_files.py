@@ -17,10 +17,15 @@ import sys
 
 
 REPLACEMENTS = {
+  'ffmpeg': 'third_party/ffmpeg/BUILD.gn',
   'flac': 'third_party/flac/BUILD.gn',
   'harfbuzz-ng': 'third_party/harfbuzz-ng/BUILD.gn',
+  'libevent': 'base/third_party/libevent/BUILD.gn',
   'libwebp': 'third_party/libwebp/BUILD.gn',
   'libxml': 'third_party/libxml/BUILD.gn',
+  'libxslt': 'third_party/libxslt/BUILD.gn',
+  'snappy': 'third_party/snappy/BUILD.gn',
+  'yasm': 'third_party/yasm/yasm_assemble.gni',
   'zlib': 'third_party/zlib/BUILD.gn',
 }
 
