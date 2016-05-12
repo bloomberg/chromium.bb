@@ -14,6 +14,10 @@
 #include "base/memory/weak_ptr.h"
 #include "components/offline_pages/offline_page_types.h"
 
+namespace base {
+class Clock;
+}
+
 namespace offline_pages {
 
 class ClientPolicyController;
@@ -56,6 +60,9 @@ class OfflinePageStorageManager {
   // pages (if clearing condition wasn't satisfied).
   void ClearPagesIfNeeded(const ClearPageCallback& callback);
 
+  // Sets the clock for testing.
+  void SetClockForTesting(std::unique_ptr<base::Clock> clock);
+
  private:
   // Selects and removes pages that need to be expired. Triggered as a callback
   // to |GetAllPages|.
@@ -74,8 +81,8 @@ class OfflinePageStorageManager {
   // Determine if manager should clear pages.
   bool ShouldClearPages();
 
-  // Return true if |page| is expired.
-  bool IsPageExpired(const OfflinePageItem& page);
+  // Return true if |page| is expired comparing to |now|.
+  bool ShouldBeExpired(const base::Time& now, const OfflinePageItem& page);
 
   // Not owned.
   Client* client_;
@@ -84,6 +91,9 @@ class OfflinePageStorageManager {
   ClientPolicyController* policy_controller_;
 
   bool in_progress_;
+
+  // Clock for getting time.
+  std::unique_ptr<base::Clock> clock_;
 
   base::WeakPtrFactory<OfflinePageStorageManager> weak_ptr_factory_;
 
