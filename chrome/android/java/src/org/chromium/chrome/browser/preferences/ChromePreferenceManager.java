@@ -46,6 +46,7 @@ public class ChromePreferenceManager {
     private static final String ENABLE_CUSTOM_TABS = "enable_custom_tabs";
     private static final String HERB_FLAVOR_KEY = "herb_flavor";
     private static final String APP_LINK_KEY = "applink.app_link_enabled";
+    private static final String CHROME_DEFAULT_BROWSER = "applink.chrome_default_browser";
 
     private static final String SUCCESS_UPLOAD_SUFFIX = "_crash_success_upload";
     private static final String FAILURE_UPLOAD_SUFFIX = "_crash_failure_upload";
@@ -349,6 +350,16 @@ public class ChromePreferenceManager {
     public void setCachedAppLinkEnabled(boolean isEnabled) {
         SharedPreferences.Editor ed = mSharedPreferences.edit();
         ed.putBoolean(APP_LINK_KEY, isEnabled);
+        ed.apply();
+    }
+
+    public boolean getCachedChromeDefaultBrowser() {
+        return mSharedPreferences.getBoolean(CHROME_DEFAULT_BROWSER, false);
+    }
+
+    public void setCachedChromeDefaultBrowser(boolean isDefault) {
+        SharedPreferences.Editor ed = mSharedPreferences.edit();
+        ed.putBoolean(CHROME_DEFAULT_BROWSER, isDefault);
         ed.apply();
     }
 

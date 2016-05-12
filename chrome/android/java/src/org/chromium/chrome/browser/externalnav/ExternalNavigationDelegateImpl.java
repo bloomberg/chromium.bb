@@ -30,9 +30,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.PathUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.AppLinkHandler;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler.OverrideUrlLoadingResult;
@@ -472,12 +470,5 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
         if (context instanceof ChromeActivity) {
             ((ChromeActivity) context).getTabModelSelector().closeTab(tab);
         }
-    }
-
-    @Override
-    public boolean maybeDelegateToAppLink(Intent intent) {
-        return AppLinkHandler.getInstance((ChromeApplication)
-                ApplicationStatus.getLastTrackedFocusedActivity().getApplication()).handleIntent(
-                        getAvailableContext(), intent, false);
     }
 }

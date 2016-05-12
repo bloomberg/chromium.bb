@@ -26,7 +26,16 @@ public class AppLinkHandler {
     public void cacheAppLinkEnabled(Context context) {
     }
 
-    /** Handle intent. */
+    /** Handle incoming intent. */
+    public boolean handleIncomingIntent(Context context, Intent intent, boolean isCustomTabs) {
+        return false;
+    }
+
+    /**
+     * Handle intent.
+     * TODO(mariakhomenko): remove
+     */
+    @Deprecated
     public boolean handleIntent(Context context, Intent intent, boolean isCustomTabsIntent) {
         return false;
     }

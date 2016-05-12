@@ -335,10 +335,6 @@ public class ExternalNavigationHandler {
             IntentHandler.setPendingReferrer(intent, params.getReferrerUrl());
         }
 
-        if (!params.isIncognito() && mDelegate.maybeDelegateToAppLink(intent)) {
-            return OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT;
-        }
-
         // Make sure webkit can handle it internally before checking for specialized
         // handlers. If webkit can't handle it internally, we need to call
         // startActivityIfNeeded or startActivity.

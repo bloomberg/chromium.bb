@@ -108,10 +108,10 @@ extern const char kDnsPrefetchDisable[];
 extern const char kDumpBrowserHistograms[];
 extern const char kEasyUnlockAppPath[];
 extern const char kEnableAddToShelf[];
+extern const char kEnableAllBookmarksView[];
 #if defined(OS_ANDROID)
 extern const char kEnableAppLink[];
 #endif
-extern const char kEnableAllBookmarksView[];
 extern const char kEnableAppsFileAssociations[];
 extern const char kEnableAudioDebugRecordingsFromExtension[];
 extern const char kEnableBenchmarking[];

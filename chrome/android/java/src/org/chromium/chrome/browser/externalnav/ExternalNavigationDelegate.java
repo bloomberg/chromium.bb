@@ -104,9 +104,4 @@ interface ExternalNavigationDelegate {
      * @return Default SMS application's package name. Null if there isn't any.
      */
     String getDefaultSmsPackageName();
-
-    /**
-     * @return Whether an app was launched to handle the URL.
-     */
-    boolean maybeDelegateToAppLink(Intent intent);
 }

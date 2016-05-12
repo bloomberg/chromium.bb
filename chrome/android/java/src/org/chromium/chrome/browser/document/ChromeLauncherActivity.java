@@ -212,7 +212,7 @@ public class ChromeLauncherActivity extends Activity
             return;
         }
 
-        if (AppLinkHandler.getInstance((ChromeApplication) getApplication()).handleIntent(
+        if (AppLinkHandler.getInstance((ChromeApplication) getApplication()).handleIncomingIntent(
                 this, intent, mIsCustomTabIntent)) {
             finish();
             return;

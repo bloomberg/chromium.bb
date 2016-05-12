@@ -12,6 +12,7 @@ import android.app.assist.AssistContent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.ResolveInfo;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -733,6 +734,28 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         if (MultiWindowUtils.getInstance().isInMultiWindowMode(this)) {
             onDeferredStartupForMultiWindowMode();
         }
+
+        cacheIsChromeDefaultBrowser();
+    }
+
+    /**
+     * Caches whether Chrome is set as a default browser on the device.
+     */
+    private void cacheIsChromeDefaultBrowser() {
+        // Retrieve whether Chrome is default in background to avoid strict mode checks.
+        new AsyncTask<Void, Void, Void>() {
+            @Override
+            protected Void doInBackground(Void... params) {
+                Intent intent = new Intent(Intent.ACTION_VIEW,
+                        Uri.parse("http://www.madeupdomainforcheck123.com/"));
+                ResolveInfo info = getPackageManager().resolveActivity(intent, 0);
+                boolean isDefault = info != null && info.match != 0 && getPackageName().equals(
+                        info.activityInfo.packageName);
+                ChromePreferenceManager.getInstance(ChromeActivity.this)
+                        .setCachedChromeDefaultBrowser(isDefault);
+                return null;
+            }
+        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     /**
