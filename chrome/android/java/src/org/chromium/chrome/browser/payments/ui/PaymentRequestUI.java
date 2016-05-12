@@ -182,7 +182,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
     private SectionInformation mShippingAddressSectionInformation;
     private SectionInformation mShippingOptionsSectionInformation;
 
-    private AnimatorSet mCurrentAnimator;
+    private Animator mCurrentAnimator;
     private int mAnimatorTranslation;
     private boolean mIsInitialLayoutComplete;
 
@@ -275,6 +275,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         }
         mPaymentContainerLayout.addView(mPaymentMethodSection, new LinearLayout.LayoutParams(
                 LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+        mBottomSheetContainer.addOnLayoutChangeListener(new FadeInAnimator());
         mBottomSheetContainer.addOnLayoutChangeListener(new PeekingAnimator());
 
         // Enabled in updatePayButtonEnabled() when the user has selected all payment options.
@@ -327,7 +328,15 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
 
                 updatePaymentMethodSection(result.getPaymentMethods());
                 updatePayButtonEnabled();
-                notifyReadyForInput();
+
+                // Hide the loading indicators and show the real sections.
+                mPaymentContainer.setVisibility(View.VISIBLE);
+                mButtonBar.setVisibility(View.VISIBLE);
+                mBottomSheetContainer.removeView(
+                        mBottomSheetContainer.findViewById(R.id.waiting_progress));
+                mBottomSheetContainer.removeView(
+                        mBottomSheetContainer.findViewById(R.id.waiting_message));
+                mBottomSheetContainer.addOnLayoutChangeListener(new SheetEnlargingAnimator());
             }
         });
     }
@@ -527,7 +536,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         if (!mIsShowingEditDialog) {
             // Container now takes the full height of the screen, animating towards it.
             mBottomSheetContainer.getLayoutParams().height = LayoutParams.MATCH_PARENT;
-            mBottomSheetContainer.addOnLayoutChangeListener(new FullSheetAnimator());
+            mBottomSheetContainer.addOnLayoutChangeListener(new SheetEnlargingAnimator());
 
             // Swap out Views that combine multiple fields with individual fields.
             if (mRequestShipping && mShippingSummarySection.getParent() != null) {
@@ -627,7 +636,28 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         if (!mIsClientClosing) mClient.onDismiss();
     }
 
-    /** Animates the initial UI coming in from below and darkening everything else on screen. */
+    /**
+     * Animates the whole dialog fading in and darkening everything else on screen.
+     * This particular animation is not tracked because it is not meant to be cancelable.
+     */
+    private class FadeInAnimator
+            extends AnimatorListenerAdapter implements OnLayoutChangeListener {
+        @Override
+        public void onLayoutChange(View v, int left, int top, int right, int bottom,
+                int oldLeft, int oldTop, int oldRight, int oldBottom) {
+            mBottomSheetContainer.removeOnLayoutChangeListener(this);
+
+            Animator alphaAnimator = ObjectAnimator.ofFloat(mFullContainer, View.ALPHA, 0f, 1f);
+            alphaAnimator.setDuration(DIALOG_ENTER_ANIMATION_MS);
+            alphaAnimator.setInterpolator(new LinearOutSlowInInterpolator());
+            alphaAnimator.start();
+        }
+    }
+
+    /**
+     * Animates the bottom sheet UI translating upwards from the bottom of the screen.
+     * Can be canceled when a {@link SheetEnlargingAnimator} starts and expands the dialog.
+     */
     private class PeekingAnimator
             extends AnimatorListenerAdapter implements OnLayoutChangeListener {
         @Override
@@ -635,75 +665,48 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
                 int oldLeft, int oldTop, int oldRight, int oldBottom) {
             mBottomSheetContainer.removeOnLayoutChangeListener(this);
 
-            mCurrentAnimator = new AnimatorSet();
+            mCurrentAnimator = ObjectAnimator.ofFloat(
+                    mBottomSheetContainer, View.TRANSLATION_Y, mAnimatorTranslation, 0);
             mCurrentAnimator.setDuration(DIALOG_ENTER_ANIMATION_MS);
             mCurrentAnimator.setInterpolator(new LinearOutSlowInInterpolator());
-            mCurrentAnimator.playTogether(
-                    ObjectAnimator.ofFloat(mScrim, View.ALPHA, 0f, 1f),
-                    ObjectAnimator.ofFloat(mBottomSheetContainer, View.ALPHA, 0f, 1f),
-                    ObjectAnimator.ofFloat(
-                            mBottomSheetContainer, View.TRANSLATION_Y, mAnimatorTranslation, 0));
-            mCurrentAnimator.addListener(this);
             mCurrentAnimator.start();
-        }
-
-        @Override
-        public void onAnimationEnd(Animator animation) {
-            mCurrentAnimator = null;
-            mIsInitialLayoutComplete = true;
-            notifyReadyToClose();
-            notifyReadyForInput();
-            notifyReadyToPay();
         }
     }
 
-    /** Animates the initial UI expanding to the full dialog. */
-    private class FullSheetAnimator implements OnLayoutChangeListener {
-        private final int mOriginalPaymentContainerTop;
-        private final int mOriginalPaymentContainerBottom;
-        private final int mOriginalPaymentContainerHeight;
-
+    /** Animates the bottom sheet expanding to a larger sheet. */
+    private class SheetEnlargingAnimator implements OnLayoutChangeListener {
         private int mContainerHeightDifference;
-        private int mPaymentHeightDifference;
-
-        private FullSheetAnimator() {
-            mOriginalPaymentContainerTop = mPaymentContainer.getTop();
-            mOriginalPaymentContainerBottom = mPaymentContainer.getBottom();
-            mOriginalPaymentContainerHeight = mPaymentContainer.getMeasuredHeight();
-        }
 
         /**
          * Updates the animation.
          *
-         * + The dialog container initially starts off translated downward, gradually decreasing the
-         *   translation until it is in the right place on screen.
-         *
-         * + The buttons are laid out so that they look like they're constantly at the bottom of
-         *   the screen, when in reality they start off way above where they're supposed to be in
-         *   the dialog and translate downward towards their final spot.
-         *
-         * + The payment sections expand to their full height by animating where its top and bottom
-         *   are.  This allows the shadows to appear and disappear correctly.
-         *
          * @param progress How far along the animation is.  In the range [0,1], with 1 being done.
          */
         private void update(float progress) {
+            // The dialog container initially starts off translated downward, gradually decreasing
+            // the translation until it is in the right place on screen.
             float containerTranslation = mContainerHeightDifference * progress;
             mBottomSheetContainer.setTranslationY(containerTranslation);
+
+            // The button bar is translated along the dialog so that is looks like it stays in place
+            // at the bottom while the entire bottom sheet is translating upwards.
             mButtonBar.setTranslationY(-containerTranslation);
 
-            int paymentAddition = (int) (mPaymentHeightDifference * (1.0 - progress));
-            mPaymentContainer.setTop(mOriginalPaymentContainerTop);
-            mPaymentContainer.setBottom(mOriginalPaymentContainerBottom + paymentAddition);
+            // The payment container is sandwiched between the header and the button bar.  Expansion
+            // animates by changing where its "bottom" is, letting its shadows appear and disappear.
+            int paymentContainerBottom = Math.min(
+                    mPaymentContainer.getTop() + mPaymentContainer.getMeasuredHeight(),
+                    mButtonBar.getTop());
+            mPaymentContainer.setBottom(paymentContainerBottom);
         }
 
         @Override
         public void onLayoutChange(View v, int left, int top, int right, int bottom,
                 int oldLeft, int oldTop, int oldRight, int oldBottom) {
+            if (mCurrentAnimator != null) mCurrentAnimator.cancel();
+
             mBottomSheetContainer.removeOnLayoutChangeListener(this);
             mContainerHeightDifference = (bottom - top) - (oldBottom - oldTop);
-            mPaymentHeightDifference =
-                    mPaymentContainer.getMeasuredHeight() - mOriginalPaymentContainerHeight;
 
             ValueAnimator containerAnimator = ValueAnimator.ofFloat(1f, 0f);
             containerAnimator.addUpdateListener(new AnimatorUpdateListener() {
@@ -714,14 +717,20 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
                 }
             });
 
-            mCurrentAnimator = new AnimatorSet();
+            mCurrentAnimator = containerAnimator;
             mCurrentAnimator.setDuration(DIALOG_ENTER_ANIMATION_MS);
             mCurrentAnimator.setInterpolator(new LinearOutSlowInInterpolator());
-            mCurrentAnimator.playTogether(containerAnimator);
             mCurrentAnimator.addListener(new AnimatorListenerAdapter() {
                 @Override
                 public void onAnimationEnd(Animator animation) {
+                    // Reset the layout so that everything is in the expected place.
+                    mBottomSheetContainer.setTranslationY(0);
+                    mButtonBar.setTranslationY(0);
+                    mBottomSheetContainer.requestLayout();
+
+                    // Indicate that the dialog is ready to use.
                     mCurrentAnimator = null;
+                    mIsInitialLayoutComplete = true;
                     notifyReadyToClose();
                     notifyReadyForInput();
                     notifyReadyToPay();
@@ -744,14 +753,16 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
                     mBottomSheetContainer, View.TRANSLATION_Y, 0f, mAnimatorTranslation);
             Animator scrimFader = ObjectAnimator.ofFloat(mScrim, View.ALPHA, mScrim.getAlpha(), 0f);
 
-            mCurrentAnimator = new AnimatorSet();
-            mCurrentAnimator.setDuration(DIALOG_EXIT_ANIMATION_MS);
-            mCurrentAnimator.setInterpolator(new FastOutLinearInInterpolator());
+            AnimatorSet current = new AnimatorSet();
+            current.setDuration(DIALOG_EXIT_ANIMATION_MS);
+            current.setInterpolator(new FastOutLinearInInterpolator());
             if (mIsDialogClosing) {
-                mCurrentAnimator.playTogether(sheetFader, sheetTranslator, scrimFader);
+                current.playTogether(sheetFader, sheetTranslator, scrimFader);
             } else {
-                mCurrentAnimator.playTogether(sheetFader, sheetTranslator);
+                current.playTogether(sheetFader, sheetTranslator);
             }
+
+            mCurrentAnimator = current;
             mCurrentAnimator.addListener(this);
             mCurrentAnimator.start();
         }

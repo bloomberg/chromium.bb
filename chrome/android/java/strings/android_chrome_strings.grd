@@ -2387,6 +2387,9 @@ You can control the Physical Web in Chrome Settings.
       <message name="IDS_PAYMENTS_PAY_BUTTON" desc="The label for the button that finishes the payment process.">
         Pay
       </message>
+      <message name="IDS_PAYMENTS_LOADING_MESSAGE" desc="The text that informs the user that payment information is being loaded up.">
+        Loading
+      </message>
       <message name="IDS_PAYMENTS_PROCESSING_MESSAGE" desc="The text that informs the user that the payment is being verified and charged.">
         Processing
       </message>
