@@ -15,6 +15,7 @@ class ShellContentUtilityClient : public ContentUtilityClient {
 
   // ContentUtilityClient:
   void RegisterMojoApplications(StaticMojoApplicationMap* apps) override;
+  void RegisterMojoServices(ServiceRegistry* registry) override;
 };
 
 }  // namespace content
