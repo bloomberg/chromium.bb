@@ -33,6 +33,9 @@
   font-size: 123.1%;
   font-weight: 500;
   justify-content: center;
+  /* To avoid overlapping with the header, we need this min-height
+   * until bug 596743 is fixed. */
+  min-height: min-content;
 }
 
 #no-downloads .illustration {
