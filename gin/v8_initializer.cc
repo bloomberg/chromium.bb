@@ -442,6 +442,11 @@ void V8Initializer::Initialize(IsolateHolder::ScriptMode mode,
     v8::V8::SetFlagsFromString(flag.c_str(), static_cast<int>(flag.size()));
   }
 
+  if (base::FeatureList::IsEnabled(features::kV8IgnitionLazy)) {
+    std::string flag("--no-ignition-eager");
+    v8::V8::SetFlagsFromString(flag.c_str(), static_cast<int>(flag.size()));
+  }
+
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
   v8::StartupData natives;
   natives.data = reinterpret_cast<const char*>(g_mapped_natives->data());

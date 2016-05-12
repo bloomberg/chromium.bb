@@ -11,4 +11,9 @@ const base::Feature kV8Ignition {
   "V8Ignition", base::FEATURE_DISABLED_BY_DEFAULT
 };
 
+// Enables or disables lazy compilation for the V8 Ignition interpreter.
+const base::Feature kV8IgnitionLazy {
+  "V8IgnitionLazy", base::FEATURE_DISABLED_BY_DEFAULT
+};
+
 }  // namespace features
