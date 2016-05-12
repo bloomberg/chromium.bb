@@ -4,7 +4,9 @@
 
 import("//testing/test.gni")
 
-test("engine_browsertests") {
+source_set("engine_browsertests") {
+  testonly = true
+
   sources = [
     "browser_tests/blimp_browser_test.cc",
     "browser_tests/blimp_browser_test.h",
@@ -35,6 +37,7 @@ test("engine_browsertests") {
   ]
 
   data = [
-    "data/test_client_token",
+    "data/",
+    "$root_out_dir/blimp_engine.pak",
   ]
 }

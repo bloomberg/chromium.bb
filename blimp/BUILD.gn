@@ -50,7 +50,7 @@ group("blimp_tests") {
   }
 
   if (is_linux) {
-    deps += [ "//blimp/test:engine_browsertests" ]
+    deps += [ ":blimp_browsertests" ]
   }
 }
 
@@ -65,5 +65,13 @@ test("blimp_unittests") {
 
   if (is_linux) {
     deps += [ "//blimp/engine:unit_tests" ]
+  }
+}
+
+if (is_linux) {
+  test("blimp_browsertests") {
+    deps = [
+      "//blimp/test:engine_browsertests",
+    ]
   }
 }

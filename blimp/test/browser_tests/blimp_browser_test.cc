@@ -11,6 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/path_service.h"
 #include "base/run_loop.h"
 #include "blimp/client/app/blimp_client_switches.h"
 #include "blimp/client/session/assignment_source.h"
@@ -26,7 +27,7 @@
 
 namespace blimp {
 namespace {
-const char kTestDataFilePath[] = "blimp/engine/test/data";
+const char kTestDataFilePath[] = "blimp/test/data";
 const char kClientTokenFilePath[] = "blimp/test/data/test_client_token";
 }  // namespace
 
@@ -84,8 +85,11 @@ void BlimpBrowserTest::SetUpCommandLine(base::CommandLine* command_line) {
 
   // Use dynamically allocated port for browser test.
   command_line->AppendSwitchASCII(blimp::engine::kEnginePort, "0");
-  command_line->AppendSwitchASCII(blimp::engine::kClientTokenPath,
-                                  kClientTokenFilePath);
+  base::FilePath src_root;
+  PathService::Get(base::DIR_SOURCE_ROOT, &src_root);
+  command_line->AppendSwitchASCII(
+      blimp::engine::kClientTokenPath,
+      src_root.Append(kClientTokenFilePath).value());
 }
 
 void BlimpBrowserTest::RunTestOnMainThreadLoop() {
