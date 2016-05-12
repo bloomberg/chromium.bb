@@ -318,9 +318,6 @@ void LayoutBlock::styleDidChange(StyleDifference diff, const ComputedStyle* oldS
 {
     LayoutBox::styleDidChange(diff, oldStyle);
 
-    if (isFloatingOrOutOfFlowPositioned() && oldStyle && !oldStyle->isFloating() && !oldStyle->hasOutOfFlowPosition() && parent() && parent()->isLayoutBlockFlow())
-        toLayoutBlockFlow(parent())->childBecameFloatingOrOutOfFlow(this);
-
     const ComputedStyle& newStyle = styleRef();
 
     if (oldStyle && parent()) {

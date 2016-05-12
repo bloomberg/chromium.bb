@@ -241,6 +241,9 @@ void LayoutBox::styleDidChange(StyleDifference diff, const ComputedStyle* oldSty
 
     LayoutBoxModelObject::styleDidChange(diff, oldStyle);
 
+    if (isFloatingOrOutOfFlowPositioned() && oldStyle && !oldStyle->isFloating() && !oldStyle->hasOutOfFlowPosition() && parent() && parent()->isLayoutBlockFlow())
+        toLayoutBlockFlow(parent())->childBecameFloatingOrOutOfFlow(this);
+
     const ComputedStyle& newStyle = styleRef();
     if (needsLayout() && oldStyle)
         removeFromPercentHeightContainer();
