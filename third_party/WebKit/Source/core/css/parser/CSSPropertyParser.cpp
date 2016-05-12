@@ -3150,6 +3150,8 @@ static CSSValue* consumeGridLine(CSSParserTokenRange& range)
         }
     }
 
+    if (spanValue && !numericValue && !gridLineName)
+        return nullptr; // "span" keyword alone is invalid.
     if (spanValue && numericValue && numericValue->getIntValue() < 0)
         return nullptr; // Negative numbers are not allowed for span.
     if (numericValue && numericValue->getIntValue() == 0)
