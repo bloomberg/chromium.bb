@@ -118,11 +118,13 @@ bool HTMLElement::ieForbidsInsertHTML() const
         || hasTagName(imageTag)
         || hasTagName(imgTag)
         || hasTagName(inputTag)
+        || hasTagName(keygenTag)
         || hasTagName(linkTag)
         || (RuntimeEnabledFeatures::contextMenuEnabled() && hasTagName(menuitemTag))
         || hasTagName(metaTag)
         || hasTagName(paramTag)
         || hasTagName(sourceTag)
+        || hasTagName(trackTag)
         || hasTagName(wbrTag))
         return true;
     return false;
