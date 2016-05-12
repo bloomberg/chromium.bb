@@ -58414,6 +58414,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Variations.StringsOverridden" units="strings">
+  <owner>asvitkine@chromium.org</owner>
+  <summary>
+    Records the number of UI strings overriden for each study that overrides
+    strings. Recorded at start up when each study is evaluated.
+  </summary>
+</histogram>
+
 <histogram name="Variations.TimeSinceLastFetchAttempt" units="minutes">
   <owner>asvitkine@chromium.org</owner>
   <summary>

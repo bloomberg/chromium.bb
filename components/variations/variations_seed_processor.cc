@@ -12,6 +12,7 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/metrics/field_trial.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/variations/processed_study.h"
 #include "components/variations/study_filtering.h"
@@ -75,6 +76,8 @@ void RegisterVariationIds(const Study_Experiment& experiment,
 void ApplyUIStringOverrides(
     const Study_Experiment& experiment,
     const VariationsSeedProcessor::UIStringOverrideCallback& callback) {
+  UMA_HISTOGRAM_COUNTS_100("Variations.StringsOverridden",
+                           experiment.override_ui_string_size());
   for (int i = 0; i < experiment.override_ui_string_size(); ++i) {
     const Study_Experiment_OverrideUIString& override =
         experiment.override_ui_string(i);
