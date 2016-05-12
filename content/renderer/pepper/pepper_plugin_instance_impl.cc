@@ -1285,8 +1285,9 @@ void PepperPluginInstanceImpl::ViewChanged(
   view_data_.css_scale *= viewport_to_dip_scale_;
   view_data_.device_scale /= viewport_to_dip_scale_;
 
-  gfx::Size scroll_offset =
-      container_->document().frame()->scrollOffset();
+  gfx::Size scroll_offset = gfx::ScaleToRoundedSize(
+      container_->document().frame()->scrollOffset(), viewport_to_dip_scale_);
+
   view_data_.scroll_offset = PP_MakePoint(scroll_offset.width(),
                                           scroll_offset.height());
 
