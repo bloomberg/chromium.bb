@@ -269,11 +269,19 @@ void PowerPolicyController::PowerManagerRestarted() {
   SendCurrentPolicy();
 }
 
+void PowerPolicyController::NotifyChromeIsExiting() {
+  if (chrome_is_exiting_)
+    return;
+  chrome_is_exiting_ = true;
+  SendCurrentPolicy();
+}
+
 PowerPolicyController::PowerPolicyController(PowerManagerClient* client)
     : client_(client),
       prefs_were_set_(false),
       honor_screen_wake_locks_(true),
-      next_wake_lock_id_(1) {
+      next_wake_lock_id_(1),
+      chrome_is_exiting_(false) {
   DCHECK(client_);
   client_->AddObserver(this);
 }
@@ -357,6 +365,21 @@ void PowerPolicyController::SendCurrentPolicy() {
       policy.set_battery_idle_action(
           power_manager::PowerManagementPolicy_Action_DO_NOTHING);
     }
+  }
+
+  // To avoid a race in the case where the user asks Chrome to sign out
+  // and then immediately closes the lid, override the lid-closed action
+  // so the system will stay awake while Chrome is exiting. When Chrome
+  // restarts to display the login screen, it will send an updated
+  // policy that powerd can act on.
+  if (chrome_is_exiting_ &&
+      (!policy.has_lid_closed_action() ||
+       policy.lid_closed_action() ==
+           power_manager::PowerManagementPolicy_Action_SUSPEND ||
+       policy.lid_closed_action() ==
+           power_manager::PowerManagementPolicy_Action_SHUT_DOWN)) {
+    policy.set_lid_closed_action(
+        power_manager::PowerManagementPolicy_Action_DO_NOTHING);
   }
 
   if (!causes.empty())

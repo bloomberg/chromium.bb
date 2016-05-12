@@ -107,6 +107,11 @@ class CHROMEOS_EXPORT PowerPolicyController
   // and sends an updated policy.
   void RemoveWakeLock(int id);
 
+  // Adjusts policy while Chrome is exiting. The lid-closed action
+  // is overridden to ensure that the system doesn't suspend or shut
+  // down.
+  void NotifyChromeIsExiting();
+
   // PowerManagerClient::Observer implementation:
   void PowerManagerRestarted() override;
 
@@ -164,6 +169,9 @@ class CHROMEOS_EXPORT PowerPolicyController
 
   // Next ID to be used by an Add*WakeLock() request.
   int next_wake_lock_id_;
+
+  // True if Chrome is in the process of exiting.
+  bool chrome_is_exiting_;
 
   DISALLOW_COPY_AND_ASSIGN(PowerPolicyController);
 };
