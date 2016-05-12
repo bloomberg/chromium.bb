@@ -51,6 +51,7 @@ CC_EXPORT extern const char kUIEnableLayerLists[];
 
 // Unit test related.
 CC_EXPORT extern const char kCCLayerTreeTestNoTimeout[];
+CC_EXPORT extern const char kCCLayerTreeTestLongTimeout[];
 CC_EXPORT extern const char kCCRebaselinePixeltests[];
 
 }  // namespace switches

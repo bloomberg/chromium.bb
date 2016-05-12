@@ -322,7 +322,9 @@ class ChromeTests:
     return self.SimpleTest("chrome", "cast_unittests")
 
   def TestCC(self):
-    return self.SimpleTest("cc", "cc_unittests")
+    return self.SimpleTest("cc", "cc_unittests",
+                           cmd_args=[
+                               "--cc-layer-tree-test-long-timeout"])
 
   def TestChromeApp(self):
     return self.SimpleTest("chrome_app", "chrome_app_unittests")

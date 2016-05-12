@@ -92,6 +92,9 @@ const char kUIEnableLayerLists[] = "ui-enable-layer-lists";
 // Prevents the layer tree unit tests from timing out.
 const char kCCLayerTreeTestNoTimeout[] = "cc-layer-tree-test-no-timeout";
 
+// Increases timeout for memory checkers.
+const char kCCLayerTreeTestLongTimeout[] = "cc-layer-tree-test-long-timeout";
+
 // Makes pixel tests write their output instead of read it.
 const char kCCRebaselinePixeltests[] = "cc-rebaseline-pixeltests";
 

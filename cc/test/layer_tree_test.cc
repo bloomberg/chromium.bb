@@ -516,6 +516,8 @@ LayerTreeTest::LayerTreeTest()
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (!command_line->HasSwitch(switches::kCCLayerTreeTestNoTimeout))
     timeout_seconds_ = 5;
+  if (command_line->HasSwitch(switches::kCCLayerTreeTestLongTimeout))
+    timeout_seconds_ = 5 * 60;
 }
 
 LayerTreeTest::~LayerTreeTest() {}
