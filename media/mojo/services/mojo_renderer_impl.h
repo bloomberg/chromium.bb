@@ -39,12 +39,8 @@ class MojoRendererImpl : public Renderer, public interfaces::RendererClient {
 
   // Renderer implementation.
   void Initialize(DemuxerStreamProvider* demuxer_stream_provider,
-                  const PipelineStatusCB& init_cb,
-                  const StatisticsCB& statistics_cb,
-                  const BufferingStateCB& buffering_state_cb,
-                  const base::Closure& ended_cb,
-                  const PipelineStatusCB& error_cb,
-                  const base::Closure& waiting_for_decryption_key_cb) override;
+                  media::RendererClient* client,
+                  const PipelineStatusCB& init_cb) override;
   void SetCdm(CdmContext* cdm_context,
               const CdmAttachedCB& cdm_attached_cb) override;
   void Flush(const base::Closure& flush_cb) override;
@@ -77,6 +73,9 @@ class MojoRendererImpl : public Renderer, public interfaces::RendererClient {
   // lifetime of |this|.
   DemuxerStreamProvider* demuxer_stream_provider_;
 
+  // Client of |this| renderer passed in Initialize.
+  media::RendererClient* client_;
+
   // This class is constructed on one thread and used exclusively on another
   // thread. This member is used to safely pass the RendererPtr from one thread
   // to another. It is set in the constructor and is consumed in Initialize().
@@ -91,9 +90,6 @@ class MojoRendererImpl : public Renderer, public interfaces::RendererClient {
   // Callbacks passed to Initialize() that we forward messages from
   // |remote_renderer_| through.
   PipelineStatusCB init_cb_;
-  base::Closure ended_cb_;
-  PipelineStatusCB error_cb_;
-  BufferingStateCB buffering_state_cb_;
 
   // Lock used to serialize access for |time_|.
   mutable base::Lock lock_;

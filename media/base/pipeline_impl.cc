@@ -357,6 +357,48 @@ void PipelineImpl::OnError(PipelineStatus error) {
       base::Bind(&PipelineImpl::ErrorChangedTask, weak_this_, error));
 }
 
+void PipelineImpl::OnEnded() {
+  DCHECK(media_task_runner_->BelongsToCurrentThread());
+  media_log_->AddEvent(media_log_->CreateEvent(MediaLogEvent::ENDED));
+
+  if (state_ != kPlaying)
+    return;
+
+  DCHECK(!renderer_ended_);
+  renderer_ended_ = true;
+
+  RunEndedCallbackIfNeeded();
+}
+
+void PipelineImpl::OnStatisticsUpdate(const PipelineStatistics& stats) {
+  DCHECK(media_task_runner_->BelongsToCurrentThread());
+
+  base::AutoLock auto_lock(lock_);
+  statistics_.audio_bytes_decoded += stats.audio_bytes_decoded;
+  statistics_.video_bytes_decoded += stats.video_bytes_decoded;
+  statistics_.video_frames_decoded += stats.video_frames_decoded;
+  statistics_.video_frames_dropped += stats.video_frames_dropped;
+  statistics_.audio_memory_usage += stats.audio_memory_usage;
+  statistics_.video_memory_usage += stats.video_memory_usage;
+}
+
+void PipelineImpl::OnBufferingStateChange(BufferingState state) {
+  DVLOG(1) << __FUNCTION__ << "(" << state << ") ";
+  DCHECK(media_task_runner_->BelongsToCurrentThread());
+
+  main_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&Pipeline::Client::OnBufferingStateChange,
+                            weak_client_, state));
+}
+
+void PipelineImpl::OnWaitingForDecryptionKey() {
+  DCHECK(media_task_runner_->BelongsToCurrentThread());
+
+  main_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&Pipeline::Client::OnWaitingForDecryptionKey, weak_client_));
+}
+
 void PipelineImpl::SetDuration(TimeDelta duration) {
   // TODO(alokp): Add thread DCHECK after ensuring that all Demuxer
   // implementations call DemuxerHost on the media thread.
@@ -535,25 +577,6 @@ void PipelineImpl::OnBufferedTimeRangesChanged(
   base::AutoLock auto_lock(lock_);
   buffered_time_ranges_ = ranges;
   did_loading_progress_ = true;
-}
-
-// Called from any thread.
-void PipelineImpl::OnUpdateStatistics(const PipelineStatistics& stats_delta) {
-  base::AutoLock auto_lock(lock_);
-  statistics_.audio_bytes_decoded += stats_delta.audio_bytes_decoded;
-  statistics_.video_bytes_decoded += stats_delta.video_bytes_decoded;
-  statistics_.video_frames_decoded += stats_delta.video_frames_decoded;
-  statistics_.video_frames_dropped += stats_delta.video_frames_dropped;
-  statistics_.audio_memory_usage += stats_delta.audio_memory_usage;
-  statistics_.video_memory_usage += stats_delta.video_memory_usage;
-}
-
-void PipelineImpl::OnWaitingForDecryptionKey() {
-  DCHECK(media_task_runner_->BelongsToCurrentThread());
-
-  main_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&Pipeline::Client::OnWaitingForDecryptionKey, weak_client_));
 }
 
 void PipelineImpl::StartTask() {
@@ -808,19 +831,6 @@ void PipelineImpl::OnCdmAttached(const CdmAttachedCB& cdm_attached_cb,
   cdm_attached_cb.Run(success);
 }
 
-void PipelineImpl::OnRendererEnded() {
-  DCHECK(media_task_runner_->BelongsToCurrentThread());
-  media_log_->AddEvent(media_log_->CreateEvent(MediaLogEvent::ENDED));
-
-  if (state_ != kPlaying)
-    return;
-
-  DCHECK(!renderer_ended_);
-  renderer_ended_ = true;
-
-  RunEndedCallbackIfNeeded();
-}
-
 void PipelineImpl::OnTextRendererEnded() {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
   media_log_->AddEvent(media_log_->CreateEvent(MediaLogEvent::TEXT_ENDED));
@@ -907,13 +917,7 @@ void PipelineImpl::InitializeRenderer(const PipelineStatusCB& done_cb) {
   if (cdm_context_)
     renderer_->SetCdm(cdm_context_, base::Bind(&IgnoreCdmAttached));
 
-  renderer_->Initialize(
-      demuxer_, done_cb,
-      base::Bind(&PipelineImpl::OnUpdateStatistics, weak_this_),
-      base::Bind(&PipelineImpl::BufferingStateChanged, weak_this_),
-      base::Bind(&PipelineImpl::OnRendererEnded, weak_this_),
-      base::Bind(&PipelineImpl::OnError, weak_this_),
-      base::Bind(&PipelineImpl::OnWaitingForDecryptionKey, weak_this_));
+  renderer_->Initialize(demuxer_, this, done_cb);
 }
 
 void PipelineImpl::ReportMetadata() {
@@ -934,15 +938,6 @@ void PipelineImpl::ReportMetadata() {
   main_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&Pipeline::Client::OnMetadata, weak_client_, metadata));
-}
-
-void PipelineImpl::BufferingStateChanged(BufferingState new_buffering_state) {
-  DVLOG(1) << __FUNCTION__ << "(" << new_buffering_state << ") ";
-  DCHECK(media_task_runner_->BelongsToCurrentThread());
-
-  main_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&Pipeline::Client::OnBufferingStateChange,
-                            weak_client_, new_buffering_state));
 }
 
 }  // namespace media

@@ -19,6 +19,7 @@
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/demuxer_stream_provider.h"
 #include "media/base/media_switches.h"
+#include "media/base/renderer_client.h"
 #include "media/base/time_source.h"
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_renderer.h"
@@ -28,6 +29,30 @@ namespace media {
 
 // See |video_underflow_threshold_|.
 static const int kDefaultVideoUnderflowThresholdMs = 3000;
+
+class RendererImpl::RendererClientInternal : public RendererClient {
+ public:
+  RendererClientInternal(DemuxerStream::Type type, RendererImpl* renderer)
+      : type_(type), renderer_(renderer) {
+    DCHECK((type_ == DemuxerStream::AUDIO) || (type_ == DemuxerStream::VIDEO));
+  }
+
+  void OnError(PipelineStatus error) override { renderer_->OnError(error); }
+  void OnEnded() override { renderer_->OnRendererEnded(type_); }
+  void OnStatisticsUpdate(const PipelineStatistics& stats) override {
+    renderer_->OnStatisticsUpdate(stats);
+  }
+  void OnBufferingStateChange(BufferingState state) override {
+    renderer_->OnBufferingStateChange(type_, state);
+  }
+  void OnWaitingForDecryptionKey() override {
+    renderer_->OnWaitingForDecryptionKey();
+  }
+
+ private:
+  DemuxerStream::Type type_;
+  RendererImpl* renderer_;
+};
 
 RendererImpl::RendererImpl(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
@@ -81,32 +106,20 @@ RendererImpl::~RendererImpl() {
   }
 }
 
-void RendererImpl::Initialize(
-    DemuxerStreamProvider* demuxer_stream_provider,
-    const PipelineStatusCB& init_cb,
-    const StatisticsCB& statistics_cb,
-    const BufferingStateCB& buffering_state_cb,
-    const base::Closure& ended_cb,
-    const PipelineStatusCB& error_cb,
-    const base::Closure& waiting_for_decryption_key_cb) {
+void RendererImpl::Initialize(DemuxerStreamProvider* demuxer_stream_provider,
+                              RendererClient* client,
+                              const PipelineStatusCB& init_cb) {
   DVLOG(1) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, STATE_UNINITIALIZED);
   DCHECK(!init_cb.is_null());
-  DCHECK(!statistics_cb.is_null());
-  DCHECK(!buffering_state_cb.is_null());
-  DCHECK(!ended_cb.is_null());
-  DCHECK(!error_cb.is_null());
+  DCHECK(client);
   DCHECK(demuxer_stream_provider->GetStream(DemuxerStream::AUDIO) ||
          demuxer_stream_provider->GetStream(DemuxerStream::VIDEO));
 
+  client_ = client;
   demuxer_stream_provider_ = demuxer_stream_provider;
-  statistics_cb_ = statistics_cb;
-  buffering_state_cb_ = buffering_state_cb;
-  ended_cb_ = ended_cb;
-  error_cb_ = error_cb;
   init_cb_ = init_cb;
-  waiting_for_decryption_key_cb_ = waiting_for_decryption_key_cb;
 
   if (HasEncryptedStream() && !cdm_context_) {
     state_ = STATE_INIT_PENDING_CDM;
@@ -305,16 +318,13 @@ void RendererImpl::InitializeAudioRenderer() {
     return;
   }
 
+  audio_renderer_client_.reset(
+      new RendererClientInternal(DemuxerStream::AUDIO, this));
   // Note: After the initialization of a renderer, error events from it may
   // happen at any time and all future calls must guard against STATE_ERROR.
   audio_renderer_->Initialize(
-      demuxer_stream_provider_->GetStream(DemuxerStream::AUDIO), done_cb,
-      cdm_context_, base::Bind(&RendererImpl::OnUpdateStatistics, weak_this_),
-      base::Bind(&RendererImpl::OnBufferingStateChanged, weak_this_,
-                 &audio_buffering_state_),
-      base::Bind(&RendererImpl::OnAudioRendererEnded, weak_this_),
-      base::Bind(&RendererImpl::OnError, weak_this_),
-      waiting_for_decryption_key_cb_);
+      demuxer_stream_provider_->GetStream(DemuxerStream::AUDIO), cdm_context_,
+      audio_renderer_client_.get(), done_cb);
 }
 
 void RendererImpl::OnAudioRendererInitializeDone(PipelineStatus status) {
@@ -353,15 +363,13 @@ void RendererImpl::InitializeVideoRenderer() {
     return;
   }
 
+  video_renderer_client_.reset(
+      new RendererClientInternal(DemuxerStream::VIDEO, this));
   video_renderer_->Initialize(
-      demuxer_stream_provider_->GetStream(DemuxerStream::VIDEO), done_cb,
-      cdm_context_, base::Bind(&RendererImpl::OnUpdateStatistics, weak_this_),
-      base::Bind(&RendererImpl::OnBufferingStateChanged, weak_this_,
-                 &video_buffering_state_),
-      base::Bind(&RendererImpl::OnVideoRendererEnded, weak_this_),
-      base::Bind(&RendererImpl::OnError, weak_this_),
+      demuxer_stream_provider_->GetStream(DemuxerStream::VIDEO), cdm_context_,
+      video_renderer_client_.get(),
       base::Bind(&RendererImpl::GetWallClockTimes, base::Unretained(this)),
-      waiting_for_decryption_key_cb_);
+      done_cb);
 }
 
 void RendererImpl::OnVideoRendererInitializeDone(PipelineStatus status) {
@@ -467,16 +475,21 @@ void RendererImpl::OnVideoRendererFlushDone() {
   base::ResetAndReturn(&flush_cb_).Run();
 }
 
-void RendererImpl::OnUpdateStatistics(const PipelineStatistics& stats) {
+void RendererImpl::OnStatisticsUpdate(const PipelineStatistics& stats) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  statistics_cb_.Run(stats);
+  client_->OnStatisticsUpdate(stats);
 }
 
-void RendererImpl::OnBufferingStateChanged(BufferingState* buffering_state,
-                                           BufferingState new_buffering_state) {
-  const bool is_audio = buffering_state == &audio_buffering_state_;
+void RendererImpl::OnBufferingStateChange(DemuxerStream::Type type,
+                                          BufferingState new_buffering_state) {
+  DCHECK((type == DemuxerStream::AUDIO) || (type == DemuxerStream::VIDEO));
+  BufferingState* buffering_state = type == DemuxerStream::AUDIO
+                                        ? &audio_buffering_state_
+                                        : &video_buffering_state_;
+
   DVLOG(1) << __FUNCTION__ << "(" << *buffering_state << ", "
-           << new_buffering_state << ") " << (is_audio ? "audio" : "video");
+           << new_buffering_state << ") "
+           << (type == DemuxerStream::AUDIO ? "audio" : "video");
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   bool was_waiting_for_enough_data = WaitingForEnoughData();
@@ -484,14 +497,15 @@ void RendererImpl::OnBufferingStateChanged(BufferingState* buffering_state,
   // When audio is present and has enough data, defer video underflow callbacks
   // for some time to avoid unnecessary glitches in audio; see
   // http://crbug.com/144683#c53.
-  if (audio_renderer_ && !is_audio && state_ == STATE_PLAYING) {
+  if (audio_renderer_ && type == DemuxerStream::VIDEO &&
+      state_ == STATE_PLAYING) {
     if (video_buffering_state_ == BUFFERING_HAVE_ENOUGH &&
         audio_buffering_state_ == BUFFERING_HAVE_ENOUGH &&
         new_buffering_state == BUFFERING_HAVE_NOTHING &&
         deferred_underflow_cb_.IsCancelled()) {
-      deferred_underflow_cb_.Reset(base::Bind(
-          &RendererImpl::OnBufferingStateChanged, weak_factory_.GetWeakPtr(),
-          buffering_state, new_buffering_state));
+      deferred_underflow_cb_.Reset(
+          base::Bind(&RendererImpl::OnBufferingStateChange,
+                     weak_factory_.GetWeakPtr(), type, new_buffering_state));
       task_runner_->PostDelayedTask(FROM_HERE,
                                     deferred_underflow_cb_.callback(),
                                     video_underflow_threshold_);
@@ -499,7 +513,8 @@ void RendererImpl::OnBufferingStateChanged(BufferingState* buffering_state,
     }
 
     deferred_underflow_cb_.Cancel();
-  } else if (!deferred_underflow_cb_.IsCancelled() && is_audio &&
+  } else if (!deferred_underflow_cb_.IsCancelled() &&
+             type == DemuxerStream::AUDIO &&
              new_buffering_state == BUFFERING_HAVE_NOTHING) {
     // If audio underflows while we have a deferred video underflow in progress
     // we want to mark video as underflowed immediately and cancel the deferral.
@@ -528,7 +543,7 @@ void RendererImpl::OnBufferingStateChanged(BufferingState* buffering_state,
   // Renderer prerolled.
   if (was_waiting_for_enough_data && !WaitingForEnoughData()) {
     StartPlayback();
-    buffering_state_cb_.Run(BUFFERING_HAVE_ENOUGH);
+    client_->OnBufferingStateChange(BUFFERING_HAVE_ENOUGH);
     return;
   }
 }
@@ -588,28 +603,21 @@ void RendererImpl::StartPlayback() {
     video_renderer_->OnTimeStateChanged(true);
 }
 
-void RendererImpl::OnAudioRendererEnded() {
+void RendererImpl::OnRendererEnded(DemuxerStream::Type type) {
   DVLOG(1) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK((type == DemuxerStream::AUDIO) || (type == DemuxerStream::VIDEO));
 
   if (state_ != STATE_PLAYING)
     return;
 
-  DCHECK(!audio_ended_);
-  audio_ended_ = true;
-
-  RunEndedCallbackIfNeeded();
-}
-
-void RendererImpl::OnVideoRendererEnded() {
-  DVLOG(1) << __FUNCTION__;
-  DCHECK(task_runner_->BelongsToCurrentThread());
-
-  if (state_ != STATE_PLAYING)
-    return;
-
-  DCHECK(!video_ended_);
-  video_ended_ = true;
+  if (type == DemuxerStream::AUDIO) {
+    DCHECK(!audio_ended_);
+    audio_ended_ = true;
+  } else {
+    DCHECK(!video_ended_);
+    video_ended_ = true;
+  }
 
   RunEndedCallbackIfNeeded();
 }
@@ -637,7 +645,7 @@ void RendererImpl::RunEndedCallbackIfNeeded() {
   if (time_ticking_)
     PausePlayback();
 
-  ended_cb_.Run();
+  client_->OnEnded();
 }
 
 void RendererImpl::OnError(PipelineStatus error) {
@@ -660,10 +668,15 @@ void RendererImpl::OnError(PipelineStatus error) {
   }
 
   // After OnError() returns, the pipeline may destroy |this|.
-  base::ResetAndReturn(&error_cb_).Run(error);
+  client_->OnError(error);
 
   if (!flush_cb_.is_null())
     base::ResetAndReturn(&flush_cb_).Run();
+}
+
+void RendererImpl::OnWaitingForDecryptionKey() {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  client_->OnWaitingForDecryptionKey();
 }
 
 }  // namespace media

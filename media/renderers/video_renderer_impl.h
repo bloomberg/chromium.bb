@@ -64,14 +64,10 @@ class MEDIA_EXPORT VideoRendererImpl
 
   // VideoRenderer implementation.
   void Initialize(DemuxerStream* stream,
-                  const PipelineStatusCB& init_cb,
                   CdmContext* cdm_context,
-                  const StatisticsCB& statistics_cb,
-                  const BufferingStateCB& buffering_state_cb,
-                  const base::Closure& ended_cb,
-                  const PipelineStatusCB& error_cb,
+                  RendererClient* client,
                   const TimeSource::WallClockTimeCB& wall_clock_time_cb,
-                  const base::Closure& waiting_for_decryption_key_cb) override;
+                  const PipelineStatusCB& init_cb) override;
   void Flush(const base::Closure& callback) override;
   void StartPlayingFrom(base::TimeDelta timestamp) override;
   void OnTimeStateChanged(bool time_progressing) override;
@@ -92,6 +88,13 @@ class MEDIA_EXPORT VideoRendererImpl
  private:
   // Callback for |video_frame_stream_| initialization.
   void OnVideoFrameStreamInitialized(bool success);
+
+  // Functions to notify certain events to the RendererClient.
+  void OnPlaybackError(PipelineStatus error);
+  void OnPlaybackEnded();
+  void OnStatisticsUpdate(const PipelineStatistics& stats);
+  void OnBufferingStateChange(BufferingState state);
+  void OnWaitingForDecryptionKey();
 
   // Callback for |video_frame_stream_| to deliver decoded video frames and
   // report video decoding status. If a frame is available the planes will be
@@ -187,6 +190,8 @@ class MEDIA_EXPORT VideoRendererImpl
   // Used for accessing data members.
   base::Lock lock_;
 
+  RendererClient* client_;
+
   // Provides video frames to VideoRendererImpl.
   std::unique_ptr<VideoFrameStream> video_frame_stream_;
 
@@ -244,14 +249,8 @@ class MEDIA_EXPORT VideoRendererImpl
   BufferingState buffering_state_;
 
   // Playback operation callbacks.
-  base::Closure flush_cb_;
-
-  // Event callbacks.
   PipelineStatusCB init_cb_;
-  StatisticsCB statistics_cb_;
-  BufferingStateCB buffering_state_cb_;
-  base::Closure ended_cb_;
-  PipelineStatusCB error_cb_;
+  base::Closure flush_cb_;
   TimeSource::WallClockTimeCB wall_clock_time_cb_;
 
   base::TimeDelta start_timestamp_;

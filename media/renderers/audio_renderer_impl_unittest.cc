@@ -65,7 +65,7 @@ ACTION_P(EnterPendingDecoderInitStateAction, test) {
   test->EnterPendingDecoderInitState(arg2);
 }
 
-class AudioRendererImplTest : public ::testing::Test {
+class AudioRendererImplTest : public ::testing::Test, public RendererClient {
  public:
   // Give the decoder some non-garbage media properties.
   AudioRendererImplTest()
@@ -116,26 +116,21 @@ class AudioRendererImplTest : public ::testing::Test {
         .WillOnce(DoAll(SaveArg<3>(&output_cb_), RunCallback<2>(false)));
   }
 
-  void OnStatistics(const PipelineStatistics& stats) {
+  // RendererClient implementation.
+  MOCK_METHOD1(OnError, void(PipelineStatus));
+  void OnEnded() override {
+    CHECK(!ended_);
+    ended_ = true;
+  }
+  void OnStatisticsUpdate(const PipelineStatistics& stats) override {
     last_statistics_.audio_memory_usage += stats.audio_memory_usage;
   }
-
   MOCK_METHOD1(OnBufferingStateChange, void(BufferingState));
-  MOCK_METHOD1(OnError, void(PipelineStatus));
   MOCK_METHOD0(OnWaitingForDecryptionKey, void(void));
 
   void InitializeRenderer(const PipelineStatusCB& pipeline_status_cb) {
     EXPECT_CALL(*this, OnWaitingForDecryptionKey()).Times(0);
-    renderer_->Initialize(
-        &demuxer_stream_, pipeline_status_cb, nullptr,
-        base::Bind(&AudioRendererImplTest::OnStatistics,
-                   base::Unretained(this)),
-        base::Bind(&AudioRendererImplTest::OnBufferingStateChange,
-                   base::Unretained(this)),
-        base::Bind(&AudioRendererImplTest::OnEnded, base::Unretained(this)),
-        base::Bind(&AudioRendererImplTest::OnError, base::Unretained(this)),
-        base::Bind(&AudioRendererImplTest::OnWaitingForDecryptionKey,
-                   base::Unretained(this)));
+    renderer_->Initialize(&demuxer_stream_, nullptr, this, pipeline_status_cb);
   }
 
   void Initialize() {
@@ -412,11 +407,6 @@ class AudioRendererImplTest : public ::testing::Test {
       base::ResetAndReturn(&reset_cb_).Run();
 
     base::RunLoop().RunUntilIdle();
-  }
-
-  void OnEnded() {
-    CHECK(!ended_);
-    ended_ = true;
   }
 
   MockDemuxerStream demuxer_stream_;

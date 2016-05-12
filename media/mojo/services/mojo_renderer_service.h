@@ -15,6 +15,7 @@
 #include "base/timer/timer.h"
 #include "media/base/buffering_state.h"
 #include "media/base/pipeline_status.h"
+#include "media/base/renderer_client.h"
 #include "media/mojo/interfaces/renderer.mojom.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
@@ -27,7 +28,7 @@ class Renderer;
 
 // An interfaces::Renderer implementation that use a media::Renderer to render
 // media streams.
-class MojoRendererService : interfaces::Renderer {
+class MojoRendererService : public interfaces::Renderer, public RendererClient {
  public:
   // |mojo_cdm_service_context| can be used to find the CDM to support
   // encrypted media. If null, encrypted media is not supported.
@@ -57,6 +58,13 @@ class MojoRendererService : interfaces::Renderer {
     STATE_ERROR
   };
 
+  // RendererClient implementation.
+  void OnError(PipelineStatus status) final;
+  void OnEnded() final;
+  void OnStatisticsUpdate(const PipelineStatistics& stats) final;
+  void OnBufferingStateChange(BufferingState state) final;
+  void OnWaitingForDecryptionKey() final;
+
   // Called when the DemuxerStreamProviderShim is ready to go (has a config,
   // pipe handle, etc) and can be handed off to a renderer for use.
   void OnStreamReady(const mojo::Callback<void(bool)>& callback);
@@ -65,25 +73,12 @@ class MojoRendererService : interfaces::Renderer {
   void OnRendererInitializeDone(const mojo::Callback<void(bool)>& callback,
                                 PipelineStatus status);
 
-  // Callback executed by filters to update statistics.
-  void OnUpdateStatistics(const PipelineStatistics& stats);
-
   // Periodically polls the media time from the renderer and notifies the client
   // if the media time has changed since the last update.  If |force| is true,
   // the client is notified even if the time is unchanged.
   void UpdateMediaTime(bool force);
   void CancelPeriodicMediaTimeUpdates();
   void SchedulePeriodicMediaTimeUpdates();
-
-  // Callback executed by audio renderer when buffering state changes.
-  // TODO(tim): Need old and new.
-  void OnBufferingStateChanged(BufferingState new_buffering_state);
-
-  // Callback executed when a renderer has ended.
-  void OnRendererEnded();
-
-  // Callback executed when a runtime error happens.
-  void OnError(PipelineStatus error);
 
   // Callback executed once Flush() completes.
   void OnFlushCompleted(const mojo::Closure& callback);

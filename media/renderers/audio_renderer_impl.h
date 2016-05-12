@@ -80,13 +80,9 @@ class MEDIA_EXPORT AudioRendererImpl
 
   // AudioRenderer implementation.
   void Initialize(DemuxerStream* stream,
-                  const PipelineStatusCB& init_cb,
                   CdmContext* cdm_context,
-                  const StatisticsCB& statistics_cb,
-                  const BufferingStateCB& buffering_state_cb,
-                  const base::Closure& ended_cb,
-                  const PipelineStatusCB& error_cb,
-                  const base::Closure& waiting_for_decryption_key_cb) override;
+                  RendererClient* client,
+                  const PipelineStatusCB& init_cb) override;
   TimeSource* GetTimeSource() override;
   void Flush(const base::Closure& callback) override;
   void StartPlaying() override;
@@ -176,6 +172,13 @@ class MEDIA_EXPORT AudioRendererImpl
   // by the value of |success|).
   void OnAudioBufferStreamInitialized(bool succes);
 
+  // Callback functions to be called on |client_|.
+  void OnPlaybackError(PipelineStatus error);
+  void OnPlaybackEnded();
+  void OnStatisticsUpdate(const PipelineStatistics& stats);
+  void OnBufferingStateChange(BufferingState state);
+  void OnWaitingForDecryptionKey();
+
   // Used to initiate the flush operation once all pending reads have
   // completed.
   void DoFlush_Locked();
@@ -215,12 +218,10 @@ class MEDIA_EXPORT AudioRendererImpl
   // Cached copy of hardware params from |hardware_config_|.
   AudioParameters audio_parameters_;
 
-  // Callbacks provided during Initialize().
+  RendererClient* client_;
+
+  // Callback provided during Initialize().
   PipelineStatusCB init_cb_;
-  BufferingStateCB buffering_state_cb_;
-  base::Closure ended_cb_;
-  PipelineStatusCB error_cb_;
-  StatisticsCB statistics_cb_;
 
   // Callback provided to Flush().
   base::Closure flush_cb_;

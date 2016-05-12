@@ -11,6 +11,7 @@
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "media/base/demuxer_stream_provider.h"
+#include "media/base/renderer_client.h"
 #include "media/mojo/services/mojo_demuxer_stream_impl.h"
 
 namespace media {
@@ -29,16 +30,10 @@ MojoRendererImpl::~MojoRendererImpl() {
   DCHECK(task_runner_->BelongsToCurrentThread());
 }
 
-// TODO(xhwang): Support |waiting_for_decryption_key_cb| and |statictics_cb|.
-// See http://crbug.com/585287
 void MojoRendererImpl::Initialize(
     DemuxerStreamProvider* demuxer_stream_provider,
-    const PipelineStatusCB& init_cb,
-    const StatisticsCB& /* statistics_cb */,
-    const BufferingStateCB& buffering_state_cb,
-    const base::Closure& ended_cb,
-    const PipelineStatusCB& error_cb,
-    const base::Closure& /* waiting_for_decryption_key_cb */) {
+    media::RendererClient* client,
+    const PipelineStatusCB& init_cb) {
   DVLOG(1) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(demuxer_stream_provider);
@@ -61,10 +56,8 @@ void MojoRendererImpl::Initialize(
       base::Bind(&MojoRendererImpl::OnConnectionError, base::Unretained(this)));
 
   demuxer_stream_provider_ = demuxer_stream_provider;
+  client_ = client;
   init_cb_ = init_cb;
-  buffering_state_cb_ = buffering_state_cb;
-  ended_cb_ = ended_cb;
-  error_cb_ = error_cb;
 
   // Create audio and video interfaces::DemuxerStream and bind its lifetime to
   // the pipe.
@@ -167,13 +160,13 @@ void MojoRendererImpl::OnBufferingStateChange(
     interfaces::BufferingState state) {
   DVLOG(2) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
-  buffering_state_cb_.Run(static_cast<media::BufferingState>(state));
+  client_->OnBufferingStateChange(static_cast<media::BufferingState>(state));
 }
 
 void MojoRendererImpl::OnEnded() {
   DVLOG(1) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
-  ended_cb_.Run();
+  client_->OnEnded();
 }
 
 void MojoRendererImpl::OnError() {
@@ -183,7 +176,7 @@ void MojoRendererImpl::OnError() {
 
   // TODO(tim): Should we plumb error code from remote renderer?
   // http://crbug.com/410451.
-  error_cb_.Run(PIPELINE_ERROR_DECODE);
+  client_->OnError(PIPELINE_ERROR_DECODE);
 }
 
 void MojoRendererImpl::OnConnectionError() {
@@ -195,7 +188,7 @@ void MojoRendererImpl::OnConnectionError() {
     return;
   }
 
-  error_cb_.Run(PIPELINE_ERROR_DECODE);
+  client_->OnError(PIPELINE_ERROR_DECODE);
 }
 
 void MojoRendererImpl::OnInitialized(bool success) {

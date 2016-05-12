@@ -26,6 +26,7 @@
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/demuxer_stream_provider.h"
 #include "media/base/pipeline_status.h"
+#include "media/base/renderer_client.h"
 #include "media/base/time_delta_interpolator.h"
 #include "media/base/video_renderer_sink.h"
 #include "media/renderers/gpu_video_accelerator_factories.h"
@@ -86,21 +87,12 @@ CmaRenderer::~CmaRenderer() {
 
 void CmaRenderer::Initialize(
     ::media::DemuxerStreamProvider* demuxer_stream_provider,
-    const ::media::PipelineStatusCB& init_cb,
-    const ::media::StatisticsCB& statistics_cb,
-    const ::media::BufferingStateCB& buffering_state_cb,
-    const base::Closure& ended_cb,
-    const ::media::PipelineStatusCB& error_cb,
-    const base::Closure& waiting_for_decryption_key_cb) {
+    ::media::RendererClient* client,
+    const ::media::PipelineStatusCB& init_cb) {
   CMALOG(kLogControl) << __FUNCTION__;
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_EQ(state_, kUninitialized) << state_;
   DCHECK(!init_cb.is_null());
-  DCHECK(!statistics_cb.is_null());
-  DCHECK(!ended_cb.is_null());
-  DCHECK(!error_cb.is_null());
-  DCHECK(!buffering_state_cb.is_null());
-  DCHECK(!waiting_for_decryption_key_cb.is_null());
   DCHECK(demuxer_stream_provider->GetStream(::media::DemuxerStream::AUDIO) ||
          demuxer_stream_provider->GetStream(::media::DemuxerStream::VIDEO));
 
@@ -110,14 +102,11 @@ void CmaRenderer::Initialize(
   BeginStateTransition();
 
   demuxer_stream_provider_ = demuxer_stream_provider;
-  statistics_cb_ = statistics_cb;
-  buffering_state_cb_ = buffering_state_cb;
-  ended_cb_ = ended_cb;
-  error_cb_ = error_cb;
-  waiting_for_decryption_key_cb_ = waiting_for_decryption_key_cb;
+  client_ = client;
 
   MediaPipelineClient media_pipeline_client;
-  media_pipeline_client.error_cb = ::media::BindToCurrentLoop(error_cb_);
+  media_pipeline_client.error_cb =
+      ::media::BindToCurrentLoop(base::Bind(&CmaRenderer::OnError, weak_this_));
   media_pipeline_client.buffering_state_cb = ::media::BindToCurrentLoop(
       base::Bind(&CmaRenderer::OnBufferingNotification, weak_this_));
   media_pipeline_client.time_update_cb = ::media::BindToCurrentLoop(
@@ -161,7 +150,7 @@ void CmaRenderer::StartPlayingFrom(base::TimeDelta time) {
   BeginStateTransition();
 
   if (state_ == kError) {
-    error_cb_.Run(::media::PIPELINE_ERROR_ABORT);
+    client_->OnError(::media::PIPELINE_ERROR_ABORT);
     CompleteStateTransition(kError);
     return;
   }
@@ -372,7 +361,7 @@ void CmaRenderer::OnVideoPipelineInitializeDone(
 }
 
 void CmaRenderer::OnWaitForKey(bool is_audio) {
-  waiting_for_decryption_key_cb_.Run();
+  client_->OnWaitingForDecryptionKey();
 }
 
 void CmaRenderer::OnEosReached(bool is_audio) {
@@ -395,13 +384,13 @@ void CmaRenderer::OnEosReached(bool is_audio) {
   CMALOG(kLogControl) << __FUNCTION__ << " audio_finished=" << audio_finished
                       << " video_finished=" << video_finished;
   if (audio_finished && video_finished)
-    ended_cb_.Run();
+    client_->OnEnded();
 }
 
 void CmaRenderer::OnStatisticsUpdated(
     const ::media::PipelineStatistics& stats) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  statistics_cb_.Run(stats);
+  client_->OnStatisticsUpdate(stats);
 }
 
 void CmaRenderer::OnNaturalSizeChanged(const gfx::Size& size) {
@@ -433,7 +422,8 @@ void CmaRenderer::OnBufferingNotification(
     ::media::BufferingState buffering_state) {
   CMALOG(kLogControl) << __FUNCTION__ << ": state=" << state_
                       << ", buffering=" << buffering_state;
-  buffering_state_cb_.Run(buffering_state);
+  DCHECK(thread_checker_.CalledOnValidThread());
+  client_->OnBufferingStateChange(buffering_state);
 }
 
 void CmaRenderer::OnFlushDone() {
@@ -463,7 +453,7 @@ void CmaRenderer::OnError(::media::PipelineStatus error) {
       base::ResetAndReturn(&init_cb_).Run(error);
       return;
     }
-    error_cb_.Run(error);
+    client_->OnError(error);
   }
 
   // After OnError() returns, the pipeline may destroy |this|.

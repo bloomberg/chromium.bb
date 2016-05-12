@@ -21,6 +21,7 @@
 #include "media/base/pipeline.h"
 #include "media/base/pipeline_status.h"
 #include "media/base/ranges.h"
+#include "media/base/renderer_client.h"
 #include "media/base/serial_runner.h"
 #include "media/base/text_track.h"
 
@@ -74,7 +75,9 @@ class TextRenderer;
 // TODO(sandersd): It should be possible to pass through Suspended when going
 // from InitDemuxer to InitRenderer, thereby eliminating the Resuming state.
 // Some annoying differences between the two paths need to be removed first.
-class MEDIA_EXPORT PipelineImpl : public Pipeline, public DemuxerHost {
+class MEDIA_EXPORT PipelineImpl : public Pipeline,
+                                  public DemuxerHost,
+                                  public RendererClient {
  public:
   // Constructs a media pipeline that will execute media tasks on
   // |media_task_runner|.
@@ -147,15 +150,12 @@ class MEDIA_EXPORT PipelineImpl : public Pipeline, public DemuxerHost {
                      const TextTrackConfig& config) override;
   void RemoveTextStream(DemuxerStream* text_stream) override;
 
-  // Callback executed when a rendering error happened, initiating the teardown
-  // sequence.
-  void OnError(PipelineStatus error);
-
-  // Callback executed by filters to update statistics.
-  void OnUpdateStatistics(const PipelineStatistics& stats_delta);
-
-  // Callback executed by renderer when waiting for decryption key.
-  void OnWaitingForDecryptionKey();
+  // RendererClient implementation.
+  void OnError(PipelineStatus error) override;
+  void OnEnded() override;
+  void OnStatisticsUpdate(const PipelineStatistics& stats) override;
+  void OnBufferingStateChange(BufferingState state) override;
+  void OnWaitingForDecryptionKey() override;
 
   // The following "task" methods correspond to the public methods, but these
   // methods are run as the result of posting a task to the Pipeline's
@@ -196,8 +196,7 @@ class MEDIA_EXPORT PipelineImpl : public Pipeline, public DemuxerHost {
                      CdmContext* cdm_context,
                      bool success);
 
-  // Callbacks executed when a renderer has ended.
-  void OnRendererEnded();
+  // Callbacks executed when text renderer has ended.
   void OnTextRendererEnded();
   void RunEndedCallbackIfNeeded();
 
@@ -229,8 +228,6 @@ class MEDIA_EXPORT PipelineImpl : public Pipeline, public DemuxerHost {
   void DoStop();
 
   void ReportMetadata();
-
-  void BufferingStateChanged(BufferingState new_buffering_state);
 
   // Task runner of the thread on which this class is constructed.
   // Also used to post notifications on Pipeline::Client object.

@@ -16,6 +16,7 @@ namespace media {
 
 class CdmContext;
 class DemuxerStream;
+class RendererClient;
 class TimeSource;
 
 class MEDIA_EXPORT AudioRenderer {
@@ -26,32 +27,15 @@ class MEDIA_EXPORT AudioRenderer {
   virtual ~AudioRenderer();
 
   // Initialize an AudioRenderer with |stream|, executing |init_cb| upon
-  // completion. If initialization fails, only |init_cb| (not |error_cb|) will
-  // be called.
+  // completion. If initialization fails, only |init_cb|
+  // (not RendererClient::OnError) will be called.
   //
   // |cdm_context| can be used to handle encrypted streams. May be null if the
   // stream is not encrypted.
-  //
-  // |statistics_cb| is executed periodically with audio rendering stats.
-  //
-  // |buffering_state_cb| is executed when audio rendering has either run out of
-  // data or has enough data to continue playback.
-  //
-  // |ended_cb| is executed when audio rendering has reached the end of stream.
-  //
-  // |error_cb| is executed if an error was encountered after initialization.
-  //
-  // |waiting_for_decryption_key_cb| is called whenever the key needed to
-  // decrypt the stream is not available.
-  virtual void Initialize(
-      DemuxerStream* stream,
-      const PipelineStatusCB& init_cb,
-      CdmContext* cdm_context,
-      const StatisticsCB& statistics_cb,
-      const BufferingStateCB& buffering_state_cb,
-      const base::Closure& ended_cb,
-      const PipelineStatusCB& error_cb,
-      const base::Closure& waiting_for_decryption_key_cb) = 0;
+  virtual void Initialize(DemuxerStream* stream,
+                          CdmContext* cdm_context,
+                          RendererClient* client,
+                          const PipelineStatusCB& init_cb) = 0;
 
   // Returns the TimeSource associated with audio rendering.
   virtual TimeSource* GetTimeSource() = 0;

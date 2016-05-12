@@ -102,6 +102,10 @@ MockAudioDecoder::MockAudioDecoder() {}
 
 MockAudioDecoder::~MockAudioDecoder() {}
 
+MockRendererClient::MockRendererClient() {}
+
+MockRendererClient::~MockRendererClient() {}
+
 MockVideoRenderer::MockVideoRenderer() {}
 
 MockVideoRenderer::~MockVideoRenderer() {}

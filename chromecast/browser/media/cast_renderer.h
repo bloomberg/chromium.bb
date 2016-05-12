@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/weak_ptr.h"
 #include "chromecast/browser/media/media_pipeline_backend_factory.h"
 #include "media/base/renderer.h"
 
@@ -28,12 +29,8 @@ class CastRenderer : public ::media::Renderer {
 
   // ::media::Renderer implementation.
   void Initialize(::media::DemuxerStreamProvider* demuxer_stream_provider,
-                  const ::media::PipelineStatusCB& init_cb,
-                  const ::media::StatisticsCB& statistics_cb,
-                  const ::media::BufferingStateCB& buffering_state_cb,
-                  const base::Closure& ended_cb,
-                  const ::media::PipelineStatusCB& error_cb,
-                  const base::Closure& waiting_for_decryption_key_cb) final;
+                  ::media::RendererClient* client,
+                  const ::media::PipelineStatusCB& init_cb) final;
   void SetCdm(::media::CdmContext* cdm_context,
               const ::media::CdmAttachedCB& cdm_attached_cb) final;
   void Flush(const base::Closure& flush_cb) final;
@@ -46,15 +43,21 @@ class CastRenderer : public ::media::Renderer {
 
  private:
   enum Stream { STREAM_AUDIO, STREAM_VIDEO };
-  void OnEos(Stream stream);
+  void OnError(::media::PipelineStatus status);
+  void OnEnded(Stream stream);
+  void OnStatisticsUpdate(const ::media::PipelineStatistics& stats);
+  void OnBufferingStateChange(::media::BufferingState state);
+  void OnWaitingForDecryptionKey();
 
   const CreateMediaPipelineBackendCB create_backend_cb_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  ::media::RendererClient* client_;
   scoped_refptr<BalancedMediaTaskRunnerFactory> media_task_runner_factory_;
   std::unique_ptr<TaskRunnerImpl> backend_task_runner_;
   std::unique_ptr<MediaPipelineImpl> pipeline_;
   bool eos_[2];
-  base::Closure ended_cb_;
+  base::WeakPtrFactory<CastRenderer> weak_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(CastRenderer);
 };
 

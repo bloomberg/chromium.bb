@@ -20,6 +20,7 @@
 #include "media/base/media_log.h"
 #include "media/base/media_switches.h"
 #include "media/base/pipeline_status.h"
+#include "media/base/renderer_client.h"
 #include "media/base/video_frame.h"
 #include "media/renderers/gpu_video_accelerator_factories.h"
 #include "media/video/gpu_memory_buffer_video_frame_pool.h"
@@ -37,6 +38,7 @@ VideoRendererImpl::VideoRendererImpl(
     : task_runner_(media_task_runner),
       sink_(sink),
       sink_started_(false),
+      client_(nullptr),
       video_frame_stream_(new VideoFrameStream(media_task_runner,
                                                std::move(decoders),
                                                media_log)),
@@ -95,7 +97,9 @@ void VideoRendererImpl::Flush(const base::Closure& callback) {
   // stream and needs to drain it before flushing it.
   if (buffering_state_ != BUFFERING_HAVE_NOTHING) {
     buffering_state_ = BUFFERING_HAVE_NOTHING;
-    buffering_state_cb_.Run(BUFFERING_HAVE_NOTHING);
+    task_runner_->PostTask(
+        FROM_HERE, base::Bind(&VideoRendererImpl::OnBufferingStateChange,
+                              weak_factory_.GetWeakPtr(), buffering_state_));
   }
   received_end_of_stream_ = false;
   rendered_end_of_stream_ = false;
@@ -122,22 +126,15 @@ void VideoRendererImpl::StartPlayingFrom(base::TimeDelta timestamp) {
 
 void VideoRendererImpl::Initialize(
     DemuxerStream* stream,
-    const PipelineStatusCB& init_cb,
     CdmContext* cdm_context,
-    const StatisticsCB& statistics_cb,
-    const BufferingStateCB& buffering_state_cb,
-    const base::Closure& ended_cb,
-    const PipelineStatusCB& error_cb,
+    RendererClient* client,
     const TimeSource::WallClockTimeCB& wall_clock_time_cb,
-    const base::Closure& waiting_for_decryption_key_cb) {
+    const PipelineStatusCB& init_cb) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   base::AutoLock auto_lock(lock_);
   DCHECK(stream);
   DCHECK_EQ(stream->type(), DemuxerStream::VIDEO);
   DCHECK(!init_cb.is_null());
-  DCHECK(!statistics_cb.is_null());
-  DCHECK(!buffering_state_cb.is_null());
-  DCHECK(!ended_cb.is_null());
   DCHECK(!wall_clock_time_cb.is_null());
   DCHECK_EQ(kUninitialized, state_);
   DCHECK(!render_first_frame_and_stop_);
@@ -154,21 +151,17 @@ void VideoRendererImpl::Initialize(
   // failed.
   init_cb_ = BindToCurrentLoop(init_cb);
 
-  // Always post |buffering_state_cb_| because it may otherwise invoke reentrant
-  // calls to OnTimeStateChanged() under lock, which can deadlock the compositor
-  // and media threads.
-  buffering_state_cb_ = BindToCurrentLoop(buffering_state_cb);
-
-  statistics_cb_ = statistics_cb;
-  ended_cb_ = ended_cb;
-  error_cb_ = error_cb;
+  client_ = client;
   wall_clock_time_cb_ = wall_clock_time_cb;
   state_ = kInitializing;
 
   video_frame_stream_->Initialize(
       stream, base::Bind(&VideoRendererImpl::OnVideoFrameStreamInitialized,
                          weak_factory_.GetWeakPtr()),
-      cdm_context, statistics_cb, waiting_for_decryption_key_cb);
+      cdm_context, base::Bind(&VideoRendererImpl::OnStatisticsUpdate,
+                              weak_factory_.GetWeakPtr()),
+      base::Bind(&VideoRendererImpl::OnWaitingForDecryptionKey,
+                 weak_factory_.GetWeakPtr()));
 }
 
 scoped_refptr<VideoFrame> VideoRendererImpl::Render(
@@ -276,6 +269,31 @@ void VideoRendererImpl::OnVideoFrameStreamInitialized(bool success) {
   base::ResetAndReturn(&init_cb_).Run(PIPELINE_OK);
 }
 
+void VideoRendererImpl::OnPlaybackError(PipelineStatus error) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  client_->OnError(error);
+}
+
+void VideoRendererImpl::OnPlaybackEnded() {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  client_->OnEnded();
+}
+
+void VideoRendererImpl::OnStatisticsUpdate(const PipelineStatistics& stats) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  client_->OnStatisticsUpdate(stats);
+}
+
+void VideoRendererImpl::OnBufferingStateChange(BufferingState state) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  client_->OnBufferingStateChange(state);
+}
+
+void VideoRendererImpl::OnWaitingForDecryptionKey() {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  client_->OnWaitingForDecryptionKey();
+}
+
 void VideoRendererImpl::SetTickClockForTesting(
     std::unique_ptr<base::TickClock> tick_clock) {
   tick_clock_.swap(tick_clock);
@@ -356,8 +374,10 @@ void VideoRendererImpl::FrameReady(uint32_t sequence_token,
 
     if (status == VideoFrameStream::DECODE_ERROR) {
       DCHECK(!frame);
-      PipelineStatus error = PIPELINE_ERROR_DECODE;
-      task_runner_->PostTask(FROM_HERE, base::Bind(error_cb_, error));
+      task_runner_->PostTask(
+          FROM_HERE,
+          base::Bind(&VideoRendererImpl::OnPlaybackError,
+                     weak_factory_.GetWeakPtr(), PIPELINE_ERROR_DECODE));
       return;
     }
 
@@ -451,7 +471,9 @@ void VideoRendererImpl::TransitionToHaveEnough_Locked() {
   lock_.AssertAcquired();
 
   buffering_state_ = BUFFERING_HAVE_ENOUGH;
-  buffering_state_cb_.Run(BUFFERING_HAVE_ENOUGH);
+  task_runner_->PostTask(
+      FROM_HERE, base::Bind(&VideoRendererImpl::OnBufferingStateChange,
+                            weak_factory_.GetWeakPtr(), buffering_state_));
 }
 
 void VideoRendererImpl::TransitionToHaveNothing() {
@@ -462,7 +484,9 @@ void VideoRendererImpl::TransitionToHaveNothing() {
     return;
 
   buffering_state_ = BUFFERING_HAVE_NOTHING;
-  buffering_state_cb_.Run(BUFFERING_HAVE_NOTHING);
+  task_runner_->PostTask(
+      FROM_HERE, base::Bind(&VideoRendererImpl::OnBufferingStateChange,
+                            weak_factory_.GetWeakPtr(), buffering_state_));
 }
 
 void VideoRendererImpl::AddReadyFrame_Locked(
@@ -539,7 +563,9 @@ void VideoRendererImpl::UpdateStats_Locked() {
     const size_t memory_usage = algorithm_->GetMemoryUsage();
     statistics.video_memory_usage = memory_usage - last_video_memory_usage_;
 
-    task_runner_->PostTask(FROM_HERE, base::Bind(statistics_cb_, statistics));
+    task_runner_->PostTask(FROM_HERE,
+                           base::Bind(&VideoRendererImpl::OnStatisticsUpdate,
+                                      weak_factory_.GetWeakPtr(), statistics));
     frames_decoded_ = 0;
     frames_dropped_ = 0;
     last_video_memory_usage_ = memory_usage;
@@ -604,7 +630,9 @@ void VideoRendererImpl::MaybeFireEndedCallback_Locked(bool time_progressing) {
       (algorithm_->frames_queued() == 1u &&
        algorithm_->average_frame_duration().is_zero())) {
     rendered_end_of_stream_ = true;
-    task_runner_->PostTask(FROM_HERE, ended_cb_);
+    task_runner_->PostTask(FROM_HERE,
+                           base::Bind(&VideoRendererImpl::OnPlaybackEnded,
+                                      weak_factory_.GetWeakPtr()));
   }
 }
 
