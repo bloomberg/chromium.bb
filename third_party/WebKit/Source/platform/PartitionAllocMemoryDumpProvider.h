@@ -5,10 +5,9 @@
 #ifndef PartitionAllocMemoryDumpProvider_h
 #define PartitionAllocMemoryDumpProvider_h
 
+#include "base/trace_event/memory_dump_provider.h"
 #include "public/platform/WebCommon.h"
-#include "public/platform/WebMemoryDumpProvider.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/OwnPtr.h"
 #include "wtf/ThreadingPrimitives.h"
 
 namespace base {
@@ -21,7 +20,7 @@ class AllocationRegister;
 
 namespace blink {
 
-class BLINK_PLATFORM_EXPORT PartitionAllocMemoryDumpProvider final : public WebMemoryDumpProvider {
+class BLINK_PLATFORM_EXPORT PartitionAllocMemoryDumpProvider final : public base::trace_event::MemoryDumpProvider {
     // TODO(tasak): PartitionAllocMemoryDumpProvider should be
     // USING_FAST_MALLOC. c.f. crbug.com/584196
     WTF_MAKE_NONCOPYABLE(PartitionAllocMemoryDumpProvider);
@@ -29,10 +28,9 @@ public:
     static PartitionAllocMemoryDumpProvider* instance();
     ~PartitionAllocMemoryDumpProvider() override;
 
-    // WebMemoryDumpProvider implementation.
-    bool onMemoryDump(WebMemoryDumpLevelOfDetail, WebProcessMemoryDump*) override;
-    bool supportsHeapProfiling() override { return true; }
-    void onHeapProfilingEnabled(bool) override;
+    // MemoryDumpProvider implementation.
+    bool OnMemoryDump(const base::trace_event::MemoryDumpArgs&, base::trace_event::ProcessMemoryDump*) override;
+    void OnHeapProfilingEnabled(bool) override;
 
     // These methods are called only from PartitionAllocHooks' callbacks.
     void insert(void*, size_t, const char*);
@@ -42,7 +40,7 @@ private:
     PartitionAllocMemoryDumpProvider();
 
     Mutex m_allocationRegisterMutex;
-    OwnPtr<base::trace_event::AllocationRegister> m_allocationRegister;
+    std::unique_ptr<base::trace_event::AllocationRegister> m_allocationRegister;
     bool m_isHeapProfilingEnabled;
 };
 

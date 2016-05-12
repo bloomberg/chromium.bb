@@ -99,7 +99,7 @@ void Platform::initialize(Platform* platform)
     if (s_platform->m_mainThread) {
         ASSERT(!s_gcTaskRunner);
         s_gcTaskRunner = new GCTaskRunner(s_platform->m_mainThread);
-        s_platform->registerMemoryDumpProvider(PartitionAllocMemoryDumpProvider::instance(), "PartitionAlloc");
+        base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(PartitionAllocMemoryDumpProvider::instance(), "PartitionAlloc", base::ThreadTaskRunnerHandle::Get());
         s_platform->registerMemoryDumpProvider(FontCacheMemoryDumpProvider::instance(), "FontCaches");
     }
 
@@ -113,7 +113,7 @@ void Platform::shutdown()
 
     if (s_platform->m_mainThread) {
         s_platform->unregisterMemoryDumpProvider(FontCacheMemoryDumpProvider::instance());
-        s_platform->unregisterMemoryDumpProvider(PartitionAllocMemoryDumpProvider::instance());
+        base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(PartitionAllocMemoryDumpProvider::instance());
         ASSERT(s_gcTaskRunner);
         delete s_gcTaskRunner;
         s_gcTaskRunner = nullptr;
