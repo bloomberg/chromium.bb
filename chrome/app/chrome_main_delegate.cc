@@ -232,8 +232,8 @@ static void AdjustLinuxOOMScore(const std::string& process_type) {
   const int kPluginScore = kMiscScore - kScoreBump;
   int score = -1;
 
-  DCHECK(kMiscScore > 0);
-  DCHECK(kPluginScore > 0);
+  DCHECK_GT(kMiscScore, 0);
+  DCHECK_GT(kPluginScore, 0);
 
   if (process_type == switches::kPpapiPluginProcess) {
     score = kPluginScore;
@@ -331,7 +331,7 @@ void SIGTERMProfilingShutdown(int signal) {
   struct sigaction sigact;
   memset(&sigact, 0, sizeof(sigact));
   sigact.sa_handler = SIG_DFL;
-  CHECK(sigaction(SIGTERM, &sigact, NULL) == 0);
+  CHECK_EQ(sigaction(SIGTERM, &sigact, NULL), 0);
   raise(signal);
 }
 
@@ -340,7 +340,7 @@ void SetUpProfilingShutdownHandler() {
   sigact.sa_handler = SIGTERMProfilingShutdown;
   sigact.sa_flags = SA_RESETHAND;
   sigemptyset(&sigact.sa_mask);
-  CHECK(sigaction(SIGTERM, &sigact, NULL) == 0);
+  CHECK_EQ(sigaction(SIGTERM, &sigact, NULL), 0);
 }
 #endif  // !defined(OS_MACOSX) && !defined(OS_ANDROID)
 
