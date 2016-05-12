@@ -1060,6 +1060,7 @@
       'browser/chromeos/policy/affiliated_invalidation_service_provider_impl_unittest.cc',
       'browser/chromeos/policy/android_management_client_unittest.cc',
       'browser/chromeos/policy/auto_enrollment_client_unittest.cc',
+      'browser/chromeos/policy/bluetooth_policy_handler_unittest.cc',
       'browser/chromeos/policy/cloud_external_data_manager_base_unittest.cc',
       'browser/chromeos/policy/cloud_external_data_policy_observer_unittest.cc',
       'browser/chromeos/policy/cloud_external_data_store_unittest.cc',
