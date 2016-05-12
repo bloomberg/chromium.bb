@@ -9,7 +9,7 @@
 
 #include "base/message_loop/message_pump_mac.h"
 #include "base/posix/eintr_wrapper.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/utility/image_writer/error_messages.h"
 #include "chrome/utility/image_writer/image_writer.h"
 
