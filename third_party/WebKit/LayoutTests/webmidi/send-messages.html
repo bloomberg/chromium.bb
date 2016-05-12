@@ -100,6 +100,7 @@ PermissionsHelper.setPermission('midi-sysex', 'granted').then(function() {
     finishJSTest();
 }).catch(function () {
     testFailed("requestMIDIAccess() return an error.");
+    finishJSTest();
 });
 
 </script>

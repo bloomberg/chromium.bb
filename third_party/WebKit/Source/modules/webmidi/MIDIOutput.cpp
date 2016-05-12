@@ -147,11 +147,15 @@ private:
         DCHECK(!isSysex());
         DCHECK(!isReservedStatusByte());
         DCHECK(!isRealTimeMessage());
+        DCHECK(!isEndOfSysex());
         static const int channelMessageLength[7] = { 3, 3, 3, 3, 2, 2, 3 }; // for 0x8*, 0x9*, ..., 0xe*
         static const int systemMessageLength[7] = { 2, 3, 2, 0, 0, 1, 0 }; // for 0xf1, 0xf2, ..., 0xf7
         size_t length = isSystemMessage() ? systemMessageLength[m_data[m_offset] - 0xf1] : channelMessageLength[(m_data[m_offset] >> 4) - 8];
-        size_t count = 1;
-        for (m_offset++; !isEndOfData(); m_offset++) {
+        m_offset++;
+        DCHECK_GT(length, 0UL);
+        if (length == 1)
+            return true;
+        for (size_t count = 1; !isEndOfData(); m_offset++) {
             if (isReservedStatusByte())
                 return false;
             if (isRealTimeMessage())
