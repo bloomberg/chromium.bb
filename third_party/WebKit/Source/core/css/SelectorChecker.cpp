@@ -405,9 +405,8 @@ SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingC
         }
 
     case CSSSelector::SubSelector:
-        ASSERT_NOT_REACHED();
+        break;
     }
-
     ASSERT_NOT_REACHED();
     return SelectorFailsCompletely;
 }
@@ -503,11 +502,9 @@ static bool attributeValueMatches(const Attribute& attributeItem, CSSSelector::M
             return false;
         return true;
     default:
-        break;
+        ASSERT_NOT_REACHED();
+        return false;
     }
-
-    ASSERT_NOT_REACHED();
-    return true;
 }
 
 static bool anyAttributeMatches(Element& element, CSSSelector::MatchType match, const CSSSelector& selector)
@@ -590,15 +587,10 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, MatchResu
     case CSSSelector::PseudoElement:
         return checkPseudoElement(context, result);
 
-    case CSSSelector::PagePseudoClass:
-        // FIXME: what?
-        return true;
-    case CSSSelector::Unknown:
-        // FIXME: what?
-        return true;
+    default:
+        ASSERT_NOT_REACHED();
+        return false;
     }
-    ASSERT_NOT_REACHED();
-    return true;
 }
 
 bool SelectorChecker::checkPseudoNot(const SelectorCheckingContext& context, MatchResult& result) const
