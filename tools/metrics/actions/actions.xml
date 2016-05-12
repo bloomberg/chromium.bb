@@ -9425,6 +9425,7 @@ should be able to be added at any place in this file.
     Recorded when &quot;Remove&quot; button is clicked in offline section of
     &quot;Edit bookmark&quot; page.
   </description>
+  <obsolete>Offline pages were pulled out of bookmarks UI.</obsolete>
 </action>
 
 <action name="OfflinePages.Edit.RemoveButtonNotClicked">
@@ -9433,6 +9434,7 @@ should be able to be added at any place in this file.
     Recorded when the user navigates away without clicking &quot;Remove&quot;
     button in offline section of &quot;Edit bookmark&quot; page.
   </description>
+  <obsolete>Offline pages were pulled out of bookmarks UI.</obsolete>
 </action>
 
 <action name="OfflinePages.Edit.SaveButtonClicked">
@@ -9441,6 +9443,7 @@ should be able to be added at any place in this file.
     Recorded when &quot;Save&quot; button is clicked in offline section of
     &quot;Edit bookmark&quot; page.
   </description>
+  <obsolete>Offline pages were pulled out of bookmarks UI.</obsolete>
 </action>
 
 <action name="OfflinePages.Edit.SaveButtonNotClicked">
@@ -9449,6 +9452,7 @@ should be able to be added at any place in this file.
     Recorded when the user navigates away without clicking &quot;Save&quot;
     button in offline section of &quot;Edit bookmark&quot; page.
   </description>
+  <obsolete>Offline pages were pulled out of bookmarks UI.</obsolete>
 </action>
 
 <action name="OfflinePages.Edit.VisitButtonClicked">
@@ -9457,6 +9461,7 @@ should be able to be added at any place in this file.
     Recorded when &quot;Visit&quot; button is clicked in offline section of
     &quot;Edit bookmark&quot; page.
   </description>
+  <obsolete>Offline pages were pulled out of bookmarks UI.</obsolete>
 </action>
 
 <action name="OfflinePages.Edit.VisitButtonNotClicked">
@@ -9465,6 +9470,7 @@ should be able to be added at any place in this file.
     Recorded when the user navigates away without clicking &quot;Visit&quot;
     button in offline section of &quot;Edit bookmark&quot; page.
   </description>
+  <obsolete>Offline pages were pulled out of bookmarks UI.</obsolete>
 </action>
 
 <action name="OfflinePages.FreeUpSpaceDialogButtonClicked">
@@ -9473,6 +9479,7 @@ should be able to be added at any place in this file.
     Recorded when &quot;Delete&quot; button is clicked in the Free Up Space
     dialog.
   </description>
+  <obsolete>Offline pages were pulled out of bookmarks UI.</obsolete>
 </action>
 
 <action name="OfflinePages.FreeUpSpaceDialogButtonNotClicked">
@@ -9481,6 +9488,7 @@ should be able to be added at any place in this file.
     Recorded when the user leaves the Free Up Space dialog without clicking
     &quot;Delete&quot; button.
   </description>
+  <obsolete>Offline pages were pulled out of bookmarks UI.</obsolete>
 </action>
 
 <action name="OfflinePages.FreeUpSpaceHeaderClicked">
@@ -9489,6 +9497,7 @@ should be able to be added at any place in this file.
     Recorded when &quot;Free Up Space&quot; button is clicked in the storage
     space promotion section of &quot;Saved Offline&quot; page.
   </description>
+  <obsolete>Offline pages were pulled out of bookmarks UI.</obsolete>
 </action>
 
 <action name="OfflinePages.FreeUpSpaceHeaderNotClicked">
@@ -9498,6 +9507,7 @@ should be able to be added at any place in this file.
     Space&quot; button is clicked in the storage space promotion section of
     &quot;Saved Offline&quot; page.
   </description>
+  <obsolete>Offline pages were pulled out of bookmarks UI.</obsolete>
 </action>
 
 <action name="OfflinePages.ReloadButtonClicked">
@@ -9522,6 +9532,7 @@ should be able to be added at any place in this file.
     Recorded when &quot;Save&quot; button is clicked in the snackbar that is
     shown when bookmarked page without saved copy is opened.
   </description>
+  <obsolete>Offline pages were pulled out of bookmarks UI.</obsolete>
 </action>
 
 <action name="OfflinePages.SaveButtonNotClicked">
@@ -9530,6 +9541,7 @@ should be able to be added at any place in this file.
     Recorded when &quot;Save&quot; button is not clicked in the snackbar that is
     shown when bookmarked page without saved copy is opened.
   </description>
+  <obsolete>Offline pages were pulled out of bookmarks UI.</obsolete>
 </action>
 
 <action name="OfflinePages.SaveStatusSnackbar.FreeUpSpaceButtonClicked">
@@ -9539,6 +9551,7 @@ should be able to be added at any place in this file.
     snackbar that is shown when the page is/is not saved and storage is almost
     full.
   </description>
+  <obsolete>Offline pages were pulled out of bookmarks UI.</obsolete>
 </action>
 
 <action name="OfflinePages.SaveStatusSnackbar.FreeUpSpaceButtonNotClicked">
@@ -9548,6 +9561,7 @@ should be able to be added at any place in this file.
     Space&quot; button is clicked in the storage space promotion section of
     &quot;Saved Offline&quot; page.
   </description>
+  <obsolete>Offline pages were pulled out of bookmarks UI.</obsolete>
 </action>
 
 <action name="OfflinePages.ViewingOffline.EditButtonClicked">
@@ -9556,6 +9570,7 @@ should be able to be added at any place in this file.
     Recorded when a user clicks on the &quot;Edit&quot; button on a snackbar
     that shown when viewing offline page with no network.
   </description>
+  <obsolete>Offline pages were pulled out of bookmarks UI.</obsolete>
 </action>
 
 <action name="OfflinePages.ViewingOffline.EditButtonNotClicked">
@@ -9564,6 +9579,7 @@ should be able to be added at any place in this file.
     Recorded when a snackbar shown when viewing an offline page with no network
     is dismissed without &quot;Edit&quot; button being clicked.
   </description>
+  <obsolete>Offline pages were pulled out of bookmarks UI.</obsolete>
 </action>
 
 <action name="Omnibox.ServerSuggestDelete.Failure">
