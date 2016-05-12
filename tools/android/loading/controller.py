@@ -15,6 +15,7 @@ import datetime
 import errno
 import logging
 import os
+import platform
 import shutil
 import socket
 import subprocess
@@ -40,6 +41,27 @@ from devil.android.sdk import intent
 sys.path.append(
     os.path.join(_CATAPULT_DIR, 'telemetry', 'third_party', 'websocket-client'))
 import websocket
+
+
+class ChromeControllerMetadataGatherer(object):
+  """Gather metadata for the ChromeControllerBase."""
+
+  def __init__(self):
+    self._chromium_commit = None
+
+  def GetMetadata(self):
+    """Gets metadata to update in the ChromeControllerBase"""
+    if self._chromium_commit is None:
+      def _GitCommand(subcmd):
+        return subprocess.check_output(['git', '-C', _SRC_DIR] + subcmd).strip()
+      self._chromium_commit = _GitCommand(['merge-base', 'master', 'HEAD'])
+      if self._chromium_commit != _GitCommand(['rev-parse', 'HEAD']):
+        self._chromium_commit = 'unknown'
+    return {
+      'chromium_commit': self._chromium_commit,
+      'date': datetime.datetime.utcnow().isoformat(),
+      'seconds_since_epoch': time.time()
+    }
 
 
 class ChromeControllerInternalError(Exception):
@@ -92,6 +114,7 @@ class ChromeControllerBase(object):
 
   Defines common operations but should not be created directly.
   """
+  METADATA_GATHERER = ChromeControllerMetadataGatherer()
   DEVTOOLS_CONNECTION_ATTEMPTS = 10
   DEVTOOLS_CONNECTION_ATTEMPT_INTERVAL_SECONDS = 1
 
@@ -240,8 +263,7 @@ class ChromeControllerBase(object):
     else:
       self._metadata['network_emulation'] = \
           {k: 'disabled' for k in ['name', 'download', 'upload', 'latency']}
-    self._metadata.update(date=datetime.datetime.utcnow().isoformat(),
-                          seconds_since_epoch=time.time())
+    self._metadata.update(self.METADATA_GATHERER.GetMetadata())
     logging.info('Devtools connection success')
 
   def _GetChromeArguments(self):
@@ -268,6 +290,10 @@ class RemoteChromeController(ChromeControllerBase):
     super(RemoteChromeController, self).__init__()
     self._device = device
     self._device.EnableRoot()
+    self._metadata['platform'] = {
+        'os': 'A-' + device.build_id,
+        'product_model': device.product_model
+    }
 
   def GetDevice(self):
     """Overridden android device."""
@@ -363,6 +389,10 @@ class LocalChromeController(ChromeControllerBase):
     if self._using_temp_profile_dir:
       self._profile_dir = tempfile.mkdtemp(suffix='.profile')
     self._headless = False
+    self._metadata['platform'] = {
+        'os': platform.system()[0] + '-' + platform.release(),
+        'product_model': 'unknown'
+    }
 
   def __del__(self):
     if self._using_temp_profile_dir:

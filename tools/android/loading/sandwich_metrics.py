@@ -35,6 +35,8 @@ import tracing
 CSV_FIELD_NAMES = [
     'repeat_id',
     'url',
+    'chromium_commit',
+    'platform',
     'subresource_discoverer',
     'subresource_count',
     # The amount of subresources detected at SetupBenchmark step.
@@ -290,7 +292,12 @@ def _ExtractMetricsFromRunDirectory(benchmark_setup, run_directory_path):
   trace_path = os.path.join(run_directory_path, 'trace.json')
   logging.info('processing trace \'%s\'' % trace_path)
   loading_trace = loading_trace_module.LoadingTrace.FromJsonFile(trace_path)
-  run_metrics = {'url': loading_trace.url}
+  run_metrics = {
+      'url': loading_trace.url,
+      'chromium_commit': loading_trace.metadata['chromium_commit'],
+      'platform': (loading_trace.metadata['platform']['os'] + '-' +
+          loading_trace.metadata['platform']['product_model'])
+  }
   run_metrics.update(_ExtractDefaultMetrics(loading_trace))
   run_metrics.update(_ExtractMemoryMetrics(loading_trace))
   run_metrics.update(
