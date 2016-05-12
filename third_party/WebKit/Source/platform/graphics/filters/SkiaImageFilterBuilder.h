@@ -31,6 +31,7 @@
 #include "third_party/skia/include/core/SkRefCnt.h"
 
 class SkImageFilter;
+class SkPicture;
 
 namespace blink {
 
@@ -49,6 +50,8 @@ PLATFORM_EXPORT sk_sp<SkImageFilter> buildTransform(const AffineTransform&, sk_s
 
 PLATFORM_EXPORT sk_sp<SkImageFilter> transformColorSpace(
     sk_sp<SkImageFilter> input, ColorSpace srcColorSpace, ColorSpace dstColorSpace);
+
+PLATFORM_EXPORT void buildSourceGraphic(FilterEffect*, sk_sp<SkPicture>);
 
 PLATFORM_EXPORT sk_sp<SkImageFilter> buildBoxReflectFilter(const BoxReflection&, sk_sp<SkImageFilter> input);
 

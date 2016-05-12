@@ -109,8 +109,6 @@ void FilterEffect::addAbsolutePaintRect(const FloatRect& paintRect)
     if (m_absolutePaintRect.contains(intPaintRect))
         return;
     intPaintRect.unite(m_absolutePaintRect);
-    // Make sure we are not holding on to a smaller rendering.
-    clearResult();
     m_absolutePaintRect = intPaintRect;
 }
 

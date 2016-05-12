@@ -44,6 +44,26 @@
 namespace blink {
 namespace SkiaImageFilterBuilder {
 
+namespace {
+
+void populateSourceGraphicImageFilters(FilterEffect* sourceGraphic, sk_sp<SkImageFilter> input, ColorSpace inputColorSpace)
+{
+    // Prepopulate SourceGraphic with two image filters: one with a null image
+    // filter, and the other with a colorspace conversion filter.
+    // We don't know what color space the interior nodes will request, so we
+    // have to initialize SourceGraphic with both options.
+    // Since we know SourceGraphic is always PM-valid, we also use these for
+    // the PM-validated options.
+    sk_sp<SkImageFilter> deviceFilter = transformColorSpace(input, inputColorSpace, ColorSpaceDeviceRGB);
+    sk_sp<SkImageFilter> linearFilter = transformColorSpace(input, inputColorSpace, ColorSpaceLinearRGB);
+    sourceGraphic->setImageFilter(ColorSpaceDeviceRGB, false, deviceFilter);
+    sourceGraphic->setImageFilter(ColorSpaceLinearRGB, false, linearFilter);
+    sourceGraphic->setImageFilter(ColorSpaceDeviceRGB, true, deviceFilter);
+    sourceGraphic->setImageFilter(ColorSpaceLinearRGB, true, linearFilter);
+}
+
+} // namespace
+
 sk_sp<SkImageFilter> build(FilterEffect* effect, ColorSpace colorSpace, bool destinationRequiresValidPreMultipliedPixels)
 {
     if (!effect)
@@ -72,6 +92,14 @@ sk_sp<SkImageFilter> transformColorSpace(sk_sp<SkImageFilter> input, ColorSpace 
     return SkColorFilterImageFilter::Make(std::move(colorFilter), std::move(input));
 }
 
+void buildSourceGraphic(FilterEffect* sourceGraphic, sk_sp<SkPicture> picture)
+{
+    ASSERT(picture);
+    SkRect cullRect = picture->cullRect();
+    sk_sp<SkImageFilter> filter = SkPictureImageFilter::Make(std::move(picture), cullRect);
+    populateSourceGraphicImageFilters(sourceGraphic, std::move(filter), sourceGraphic->operatingColorSpace());
+}
+
 void buildFilterOperations(const FilterOperations& operations, CompositorFilterOperations* filters)
 {
     ColorSpace currentColorSpace = ColorSpaceDeviceRGB;
@@ -82,21 +110,9 @@ void buildFilterOperations(const FilterOperations& operations, CompositorFilterO
         case FilterOperation::REFERENCE: {
             Filter* referenceFilter = toReferenceFilterOperation(op).getFilter();
             if (referenceFilter && referenceFilter->lastEffect()) {
-                FilterEffect* filterEffect = referenceFilter->lastEffect();
-                // Prepopulate SourceGraphic with two image filters: one with a null image
-                // filter, and the other with a colorspace conversion filter.
-                // We don't know what color space the interior nodes will request, so we have to
-                // initialize SourceGraphic with both options.
-                // Since we know SourceGraphic is always PM-valid, we also use
-                // these for the PM-validated options.
-                sk_sp<SkImageFilter> deviceFilter = transformColorSpace(nullptr, currentColorSpace, ColorSpaceDeviceRGB);
-                sk_sp<SkImageFilter> linearFilter = transformColorSpace(nullptr, currentColorSpace, ColorSpaceLinearRGB);
-                FilterEffect* sourceGraphic = referenceFilter->getSourceGraphic();
-                sourceGraphic->setImageFilter(ColorSpaceDeviceRGB, false, deviceFilter);
-                sourceGraphic->setImageFilter(ColorSpaceLinearRGB, false, linearFilter);
-                sourceGraphic->setImageFilter(ColorSpaceDeviceRGB, true, deviceFilter);
-                sourceGraphic->setImageFilter(ColorSpaceLinearRGB, true, linearFilter);
+                populateSourceGraphicImageFilters(referenceFilter->getSourceGraphic(), nullptr, currentColorSpace);
 
+                FilterEffect* filterEffect = referenceFilter->lastEffect();
                 currentColorSpace = filterEffect->operatingColorSpace();
                 filterEffect->determineFilterPrimitiveSubregion(MapRectForward);
                 filters->appendReferenceFilter(SkiaImageFilterBuilder::build(filterEffect, currentColorSpace));
