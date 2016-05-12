@@ -288,7 +288,11 @@ class Path(object):
 
   def ShouldProcess(self, gyp_defines, staging_flags):
     """Tests whether this artifact should be copied."""
-    if self.cond:
+    if self.cond and isinstance(self.cond, list):
+      for c in self.cond:
+        if not c(gyp_defines, staging_flags):
+          return False
+    elif self.cond:
       return self.cond(gyp_defines, staging_flags)
     return True
 
@@ -296,9 +300,11 @@ class Path(object):
 _DISABLE_NACL = 'disable_nacl'
 
 _CHROME_INTERNAL_FLAG = 'chrome_internal'
+_GN_FLAG = 'gn'
 _HIGHDPI_FLAG = 'highdpi'
 STAGING_FLAGS = (
     _CHROME_INTERNAL_FLAG,
+    _GN_FLAG,
     _HIGHDPI_FLAG,
 )
 
@@ -354,7 +360,12 @@ _COPY_PATHS_CHROME = (
     Path('keyboard_resources.pak'),
     Path('lib/*.so',
          exe=True,
-         cond=C.GypSet('component', value='shared_library')),
+         cond=[C.StagingFlagNotSet('gn'),
+               C.GypSet('component', value='shared_library')]),
+    Path('*.so',
+         exe=True,
+         cond=[C.StagingFlagSet('gn'),
+               C.GypSet('component', value='shared_library')]),
     # Set as optional for backwards compatibility.
     Path('libexif.so', exe=True, optional=True),
     # Widevine binaries are already pre-stripped.  In addition, they don't
