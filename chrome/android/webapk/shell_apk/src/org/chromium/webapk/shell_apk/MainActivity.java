@@ -54,6 +54,13 @@ public class MainActivity extends Activity {
                     packageName, PackageManager.GET_META_DATA);
             Bundle bundle = appInfo.metaData;
             url = bundle.getString(META_DATA_HOST_URL);
+
+            String overrideUrl = getIntent().getDataString();
+            // TODO(pkotwicz): Use same logic as {@code IntentHandler#shouldIgnoreIntent()}
+            if (overrideUrl != null && overrideUrl.startsWith("https:")) {
+                url = overrideUrl;
+            }
+
             scope = bundle.getString(META_DATA_SCOPE);
             webappId = WebApkConstants.WEBAPK_ID_PREFIX + packageName;
             mac = bundle.getString(META_DATA_MAC);

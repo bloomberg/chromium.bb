@@ -19,7 +19,10 @@ declare_args() {
   webapk_mac = "template"
 
   # The scope of the urls that the WebAPK can navigate to.
-  webapk_scope = "https://www.template.com"
+  webapk_scope_url = "https://www.template.com"
+
+  # Host part of |webapk_scope|.
+  webapk_scope_url_host = "www.template.com"
 }
 
 shell_apk_manifest_package =
@@ -36,7 +39,8 @@ jinja_template("shell_apk_manifest") {
     "host_url=$webapk_start_url",
     "runtime_host=$webapk_runtime_host",
     "mac=$webapk_mac",
-    "scope=$webapk_scope",
+    "scope_url=$webapk_scope_url",
+    "scope_url_host=$webapk_scope_url_host",
   ]
 }
 
