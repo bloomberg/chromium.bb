@@ -149,7 +149,8 @@ crbug.com/594309 [ Linux ] imported/csswg-test/vendor-imports/mozilla/mozilla-ce
 crbug.com/594309 [ Linux ] imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/variables/variable-declaration-16.html [ Leak ]
 crbug.com/594309 [ Linux ] imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/variables/variable-declaration-17.html [ Leak ]
 crbug.com/594309 [ Linux ] imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/variables/variable-declaration-18.html [ Leak ]
-
+crbug.com/594309 [ Linux ] imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/variables/variable-external-font-face-01.html [ Pass Leak ]
+crbug.com/594309 [ Linux ] imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/variables/variable-font-face-02.html [ Pass Leak ]
 
 # -----------------------------------------------------------------
 # Leaks in ScriptedIdleTaskController
