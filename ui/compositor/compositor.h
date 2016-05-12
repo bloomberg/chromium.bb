@@ -44,6 +44,7 @@ class LayerTreeHost;
 class RendererSettings;
 class SharedBitmapManager;
 class SurfaceIdAllocator;
+class SurfaceManager;
 class TaskGraphRunner;
 }
 
@@ -115,6 +116,9 @@ class COMPOSITOR_EXPORT ContextFactory {
   // Creates a Surface ID allocator with a new namespace.
   virtual std::unique_ptr<cc::SurfaceIdAllocator>
   CreateSurfaceIdAllocator() = 0;
+
+  // Gets the surface manager.
+  virtual cc::SurfaceManager* GetSurfaceManager() = 0;
 
   // Resize the display corresponding to this compositor to a particular size.
   virtual void ResizeDisplay(ui::Compositor* compositor,

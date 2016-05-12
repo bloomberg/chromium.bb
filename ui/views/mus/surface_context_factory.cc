@@ -93,6 +93,11 @@ SurfaceContextFactory::CreateSurfaceIdAllocator() {
       new cc::SurfaceIdAllocator(next_surface_id_namespace_++));
 }
 
+cc::SurfaceManager* SurfaceContextFactory::GetSurfaceManager() {
+  // NOTIMPLEMENTED();
+  return nullptr;
+}
+
 void SurfaceContextFactory::ResizeDisplay(ui::Compositor* compositor,
                                           const gfx::Size& size) {
   // NOTIMPLEMENTED();
