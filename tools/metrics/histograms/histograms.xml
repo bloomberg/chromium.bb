@@ -43562,20 +43562,20 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="RenderViewContextMenu.OpenLinkAsUserShown" units="profiles">
-  <owner>jochen@chromium.org</owner>
-  <summary>
-    Count of the profiles shown for the &quot;Open Link as User&quot; context
-    menu. Logged when the context menu is created.
-  </summary>
-</histogram>
-
-<histogram name="RenderViewContextMenu.OpenLinkAsUserShownProfilesState"
+<histogram name="RenderViewContextMenu.OpenLinkAsUserProfilesState"
     enum="OpenLinkAsUserProfilesState">
   <owner>jochen@chromium.org</owner>
   <summary>
     Whether or not other profiles are active when the &quot;Open Link as
     User&quot; context menu is shown. Logged when the context menu is created.
+  </summary>
+</histogram>
+
+<histogram name="RenderViewContextMenu.OpenLinkAsUserShown" units="profiles">
+  <owner>jochen@chromium.org</owner>
+  <summary>
+    Count of the profiles shown for the &quot;Open Link as User&quot; context
+    menu. Logged when the context menu is created.
   </summary>
 </histogram>
 
