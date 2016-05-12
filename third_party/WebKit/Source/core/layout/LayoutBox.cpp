@@ -1707,6 +1707,8 @@ LayoutUnit LayoutBox::containingBlockLogicalWidthForContent() const
         return overrideContainingBlockContentLogicalWidth();
 
     LayoutBlock* cb = containingBlock();
+    if (isOutOfFlowPositioned())
+        return cb->clientLogicalWidth();
     return cb->availableLogicalWidth();
 }
 
