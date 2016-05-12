@@ -39,6 +39,8 @@
         'metrics/drive_metrics_provider_linux.cc',
         'metrics/drive_metrics_provider_mac.mm',
         'metrics/drive_metrics_provider_win.cc',
+        'metrics/enabled_state_provider.cc',
+        'metrics/enabled_state_provider.h',
         'metrics/file_metrics_provider.cc',
         'metrics/file_metrics_provider.h',
         'metrics/histogram_encoder.cc',
@@ -195,6 +197,8 @@
         'component_metrics_proto',
       ],
       'sources': [
+        'metrics/test_enabled_state_provider.cc',
+        'metrics/test_enabled_state_provider.h',
         'metrics/test_metrics_provider.cc',
         'metrics/test_metrics_provider.h',
         'metrics/test_metrics_service_client.cc',

@@ -20,6 +20,7 @@
 #include "components/metrics/metrics_log.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_state_manager.h"
+#include "components/metrics/test_enabled_state_provider.h"
 #include "components/metrics/test_metrics_provider.h"
 #include "components/metrics/test_metrics_service_client.h"
 #include "components/prefs/testing_pref_service.h"
@@ -72,15 +73,13 @@ class TestMetricsLog : public MetricsLog {
 
 class MetricsServiceTest : public testing::Test {
  public:
-  MetricsServiceTest() : is_metrics_reporting_enabled_(false) {
+  MetricsServiceTest()
+      : enabled_state_provider_(new TestEnabledStateProvider(false, false)) {
     base::SetRecordActionTaskRunner(message_loop.task_runner());
     MetricsService::RegisterPrefs(testing_local_state_.registry());
     metrics_state_manager_ = MetricsStateManager::Create(
-        GetLocalState(),
-        base::Bind(&MetricsServiceTest::is_metrics_reporting_enabled,
-                   base::Unretained(this)),
-        base::Bind(&StoreNoClientInfoBackup),
-        base::Bind(&ReturnNoBackup));
+        GetLocalState(), enabled_state_provider_.get(),
+        base::Bind(&StoreNoClientInfoBackup), base::Bind(&ReturnNoBackup));
   }
 
   ~MetricsServiceTest() override {
@@ -96,7 +95,8 @@ class MetricsServiceTest : public testing::Test {
 
   // Sets metrics reporting as enabled for testing.
   void EnableMetricsReporting() {
-    is_metrics_reporting_enabled_ = true;
+    enabled_state_provider_->set_consent(true);
+    enabled_state_provider_->set_enabled(true);
   }
 
   // Waits until base::TimeTicks::Now() no longer equals |value|. This should
@@ -152,11 +152,7 @@ class MetricsServiceTest : public testing::Test {
   }
 
  private:
-  bool is_metrics_reporting_enabled() const {
-    return is_metrics_reporting_enabled_;
-  }
-
-  bool is_metrics_reporting_enabled_;
+  std::unique_ptr<TestEnabledStateProvider> enabled_state_provider_;
   TestingPrefServiceSimple testing_local_state_;
   std::unique_ptr<MetricsStateManager> metrics_state_manager_;
   base::MessageLoop message_loop;

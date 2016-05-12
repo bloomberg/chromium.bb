@@ -13,6 +13,7 @@
 #include "components/metrics/metrics_service.h"
 #include "components/metrics/metrics_state_manager.h"
 #include "components/metrics/proto/system_profile.pb.h"
+#include "components/metrics/test_enabled_state_provider.h"
 #include "components/prefs/testing_pref_service.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
@@ -20,10 +21,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
-
-bool IsMetricsReportingEnabled() {
-  return true;
-}
 
 void StoreNoClientInfoBackup(const metrics::ClientInfo& /* client_info */) {
 }
@@ -108,10 +105,11 @@ TEST(ExtensionsMetricsProvider, HashExtension) {
 TEST(ExtensionsMetricsProvider, SystemProtoEncoding) {
   metrics::SystemProfileProto system_profile;
   TestingPrefServiceSimple local_state;
+  metrics::TestEnabledStateProvider enabled_state_provider(true, true);
   metrics::MetricsService::RegisterPrefs(local_state.registry());
   std::unique_ptr<metrics::MetricsStateManager> metrics_state_manager(
       metrics::MetricsStateManager::Create(
-          &local_state, base::Bind(&IsMetricsReportingEnabled),
+          &local_state, &enabled_state_provider,
           base::Bind(&StoreNoClientInfoBackup), base::Bind(&ReturnNoBackup)));
   TestExtensionsMetricsProvider extension_metrics(metrics_state_manager.get());
   extension_metrics.ProvideSystemProfileMetrics(&system_profile);

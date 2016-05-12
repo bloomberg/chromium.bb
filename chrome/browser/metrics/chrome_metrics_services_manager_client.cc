@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/browser_otr_state.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/installer/util/google_update_settings.h"
+#include "components/metrics/enabled_state_provider.h"
 #include "components/metrics/metrics_state_manager.h"
 #include "components/prefs/pref_service.h"
 #include "components/rappor/rappor_service.h"
@@ -33,9 +34,23 @@ void PostStoreMetricsClientInfo(const metrics::ClientInfo& client_info) {
 
 }  // namespace
 
+class ChromeMetricsServicesManagerClient::ChromeEnabledStateProvider
+    : public metrics::EnabledStateProvider {
+ public:
+  ChromeEnabledStateProvider() {}
+  ~ChromeEnabledStateProvider() override {}
+
+  bool IsConsentGiven() override {
+    return ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled();
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(ChromeEnabledStateProvider);
+};
+
 ChromeMetricsServicesManagerClient::ChromeMetricsServicesManagerClient(
     PrefService* local_state)
-    : local_state_(local_state) {
+    : enabled_state_provider_(new ChromeEnabledStateProvider()),
+      local_state_(local_state) {
   DCHECK(local_state);
 
   SetupMetricsStateForChromeOS();
@@ -91,7 +106,7 @@ bool ChromeMetricsServicesManagerClient::IsSafeBrowsingEnabled(
 }
 
 bool ChromeMetricsServicesManagerClient::IsMetricsReportingEnabled() {
-  return ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled();
+  return enabled_state_provider_->IsReportingEnabled();
 }
 
 bool ChromeMetricsServicesManagerClient::OnlyDoMetricsRecording() {
@@ -105,9 +120,7 @@ ChromeMetricsServicesManagerClient::GetMetricsStateManager() {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!metrics_state_manager_) {
     metrics_state_manager_ = metrics::MetricsStateManager::Create(
-        local_state_,
-        base::Bind(
-            &ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled),
+        local_state_, enabled_state_provider_.get(),
         base::Bind(&PostStoreMetricsClientInfo),
         base::Bind(&GoogleUpdateSettings::LoadMetricsClientInfo));
   }

@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "components/metrics/enabled_state_provider.h"
 #include "components/metrics/metrics_service_client.h"
 
 class PrefService;
@@ -32,7 +33,8 @@ namespace engine {
 // tailored for the Blimp engine to support the upload of metrics information
 // from the engine.
 // Metrics are always turned on.
-class BlimpMetricsServiceClient : public metrics::MetricsServiceClient {
+class BlimpMetricsServiceClient : public metrics::MetricsServiceClient,
+                                  public metrics::EnabledStateProvider {
  public:
   // PrefService ownership is retained by the caller.
   // The request_context_getter is a system request context.
@@ -61,6 +63,11 @@ class BlimpMetricsServiceClient : public metrics::MetricsServiceClient {
   base::TimeDelta GetStandardUploadInterval() override;
   metrics::MetricsServiceClient::EnableMetricsDefault GetDefaultOptIn()
       override;
+
+  // metrics::EnabledStateProvider implementation.
+  // Returns if consent is given for the MetricsService to record metrics
+  // information for the client. Always true.
+  bool IsConsentGiven() override;
 
  private:
   // Used by NetMetricsLogUploader to create log-upload requests.

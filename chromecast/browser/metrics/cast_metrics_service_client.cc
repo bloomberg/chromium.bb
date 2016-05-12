@@ -22,6 +22,7 @@
 #include "chromecast/browser/metrics/cast_stability_metrics_provider.h"
 #include "chromecast/public/cast_sys_info.h"
 #include "components/metrics/client_info.h"
+#include "components/metrics/enabled_state_provider.h"
 #include "components/metrics/gpu/gpu_metrics_provider.h"
 #include "components/metrics/metrics_provider.h"
 #include "components/metrics/metrics_service.h"
@@ -260,6 +261,10 @@ base::TimeDelta CastMetricsServiceClient::GetStandardUploadInterval() {
   return base::TimeDelta::FromMinutes(kStandardUploadIntervalMinutes);
 }
 
+bool CastMetricsServiceClient::IsConsentGiven() {
+  return pref_service_->GetBoolean(prefs::kOptInStats);
+}
+
 void CastMetricsServiceClient::EnableMetricsService(bool enabled) {
   if (!task_runner_->BelongsToCurrentThread()) {
     task_runner_->PostTask(
@@ -326,9 +331,7 @@ void CastMetricsServiceClient::Initialize(CastService* cast_service) {
   cast_service_ = cast_service;
 
   metrics_state_manager_ = ::metrics::MetricsStateManager::Create(
-      pref_service_,
-      base::Bind(&CastMetricsServiceClient::IsReportingEnabled,
-                 base::Unretained(this)),
+      pref_service_, this,
       base::Bind(&CastMetricsServiceClient::StoreClientInfo,
                  base::Unretained(this)),
       base::Bind(&CastMetricsServiceClient::LoadClientInfo,
@@ -408,10 +411,6 @@ void CastMetricsServiceClient::Finalize() {
   platform_metrics_ = nullptr;
 #endif  // defined(OS_LINUX)
   metrics_service_->Stop();
-}
-
-bool CastMetricsServiceClient::IsReportingEnabled() {
-  return pref_service_->GetBoolean(prefs::kOptInStats);
 }
 
 }  // namespace metrics

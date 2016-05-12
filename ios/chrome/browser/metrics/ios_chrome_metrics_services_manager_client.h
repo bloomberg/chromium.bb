@@ -14,6 +14,7 @@
 class PrefService;
 
 namespace metrics {
+class EnabledStateProvider;
 class MetricsStateManager;
 }
 
@@ -26,6 +27,11 @@ class IOSChromeMetricsServicesManagerClient
   ~IOSChromeMetricsServicesManagerClient() override;
 
  private:
+  // This is defined as a member class to get access to
+  // IOSChromeMetricsServiceAccessor through
+  // IOSChromeMetricsServicesManagerClient's friendship.
+  class IOSChromeEnabledStateProvider;
+
   // metrics_services_manager::MetricsServicesManagerClient:
   std::unique_ptr<rappor::RapporService> CreateRapporService() override;
   std::unique_ptr<variations::VariationsService> CreateVariationsService()
@@ -43,6 +49,10 @@ class IOSChromeMetricsServicesManagerClient
 
   // MetricsStateManager which is passed as a parameter to service constructors.
   std::unique_ptr<metrics::MetricsStateManager> metrics_state_manager_;
+
+  // EnabledStateProvider to communicate if the client has consented to metrics
+  // reporting, and if it's enabled.
+  std::unique_ptr<metrics::EnabledStateProvider> enabled_state_provider_;
 
   // Ensures that all functions are called from the same thread.
   base::ThreadChecker thread_checker_;

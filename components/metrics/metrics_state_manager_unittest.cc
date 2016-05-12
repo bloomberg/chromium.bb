@@ -17,6 +17,7 @@
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_service.h"
 #include "components/metrics/metrics_switches.h"
+#include "components/metrics/test_enabled_state_provider.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/variations/caching_permuted_entropy_provider.h"
 #include "components/variations/pref_names.h"
@@ -26,15 +27,14 @@ namespace metrics {
 
 class MetricsStateManagerTest : public testing::Test {
  public:
-  MetricsStateManagerTest() : is_metrics_reporting_enabled_(false) {
+  MetricsStateManagerTest()
+      : enabled_state_provider_(new TestEnabledStateProvider(false, false)) {
     MetricsService::RegisterPrefs(prefs_.registry());
   }
 
   std::unique_ptr<MetricsStateManager> CreateStateManager() {
     return MetricsStateManager::Create(
-        &prefs_,
-        base::Bind(&MetricsStateManagerTest::is_metrics_reporting_enabled,
-                   base::Unretained(this)),
+        &prefs_, enabled_state_provider_.get(),
         base::Bind(&MetricsStateManagerTest::MockStoreClientInfoBackup,
                    base::Unretained(this)),
         base::Bind(&MetricsStateManagerTest::LoadFakeClientInfoBackup,
@@ -43,7 +43,8 @@ class MetricsStateManagerTest : public testing::Test {
 
   // Sets metrics reporting as enabled for testing.
   void EnableMetricsReporting() {
-    is_metrics_reporting_enabled_ = true;
+    enabled_state_provider_->set_consent(true);
+    enabled_state_provider_->set_enabled(true);
   }
 
  protected:
@@ -58,10 +59,6 @@ class MetricsStateManagerTest : public testing::Test {
   std::unique_ptr<ClientInfo> fake_client_info_backup_;
 
  private:
-  bool is_metrics_reporting_enabled() const {
-    return is_metrics_reporting_enabled_;
-  }
-
   // Stores the |client_info| in |stored_client_info_backup_| for verification
   // by the tests later.
   void MockStoreClientInfoBackup(const ClientInfo& client_info) {
@@ -93,7 +90,7 @@ class MetricsStateManagerTest : public testing::Test {
     return backup_copy;
   }
 
-  bool is_metrics_reporting_enabled_;
+  std::unique_ptr<TestEnabledStateProvider> enabled_state_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(MetricsStateManagerTest);
 };

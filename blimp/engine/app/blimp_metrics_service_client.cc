@@ -31,13 +31,6 @@ namespace {
 // metrics service.
 const int kStandardUploadIntervalMinutes = 30;
 
-// Returns if the MetricsService should be recording metrics information for
-// the client. Always true.
-// This callback is required by MetricsStateManager::Create.
-bool IsReportingEnabled() {
-  return true;
-}
-
 // Store/LoadClientInfo allows Windows Chrome to back up ClientInfo.
 // Both are no-ops for Blimp.
 // These callbacks are required by MetricsStateManager::Create.
@@ -55,8 +48,8 @@ BlimpMetricsServiceClient::BlimpMetricsServiceClient(
   request_context_getter_ = request_context_getter;
 
   metrics_state_manager_ = metrics::MetricsStateManager::Create(
-      pref_service, base::Bind(&IsReportingEnabled),
-      base::Bind(&StoreClientInfo), base::Bind(&LoadClientInfo));
+      pref_service, this, base::Bind(&StoreClientInfo),
+      base::Bind(&LoadClientInfo));
 
   // Metrics state manager created while other class instances exist.
   // Sign of multiple initializations.
@@ -161,6 +154,10 @@ base::TimeDelta BlimpMetricsServiceClient::GetStandardUploadInterval() {
 metrics::MetricsServiceClient::EnableMetricsDefault
 BlimpMetricsServiceClient::GetDefaultOptIn() {
   return OPT_IN;
+}
+
+bool BlimpMetricsServiceClient::IsConsentGiven() {
+  return true;
 }
 
 }  // namespace engine

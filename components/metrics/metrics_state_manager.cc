@@ -16,6 +16,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/metrics/cloned_install_detector.h"
+#include "components/metrics/enabled_state_provider.h"
 #include "components/metrics/machine_id_provider.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_switches.h"
@@ -49,17 +50,17 @@ bool MetricsStateManager::instance_exists_ = false;
 
 MetricsStateManager::MetricsStateManager(
     PrefService* local_state,
-    const base::Callback<bool(void)>& is_reporting_enabled_callback,
+    EnabledStateProvider* enabled_state_provider,
     const StoreClientInfoCallback& store_client_info,
     const LoadClientInfoCallback& retrieve_client_info)
     : local_state_(local_state),
-      is_reporting_enabled_callback_(is_reporting_enabled_callback),
+      enabled_state_provider_(enabled_state_provider),
       store_client_info_(store_client_info),
       load_client_info_(retrieve_client_info),
       low_entropy_source_(kLowEntropySourceNotSet),
       entropy_source_returned_(ENTROPY_SOURCE_NONE) {
   ResetMetricsIDsIfNecessary();
-  if (IsMetricsReportingEnabled())
+  if (enabled_state_provider_->IsConsentGiven())
     ForceClientIdCreation();
 
   DCHECK(!instance_exists_);
@@ -72,7 +73,7 @@ MetricsStateManager::~MetricsStateManager() {
 }
 
 bool MetricsStateManager::IsMetricsReportingEnabled() {
-  return is_reporting_enabled_callback_.Run();
+  return enabled_state_provider_->IsReportingEnabled();
 }
 
 void MetricsStateManager::ForceClientIdCreation() {
@@ -158,7 +159,7 @@ MetricsStateManager::CreateEntropyProvider() {
   const int low_entropy_source_value = GetLowEntropySource();
   UMA_HISTOGRAM_SPARSE_SLOWLY("UMA.LowEntropySourceValue",
                               low_entropy_source_value);
-  if (IsMetricsReportingEnabled()) {
+  if (enabled_state_provider_->IsConsentGiven()) {
     UpdateEntropySourceReturnedValue(ENTROPY_SOURCE_HIGH);
     const std::string high_entropy_source =
         client_id_ + base::IntToString(low_entropy_source_value);
@@ -181,14 +182,13 @@ MetricsStateManager::CreateEntropyProvider() {
 // static
 std::unique_ptr<MetricsStateManager> MetricsStateManager::Create(
     PrefService* local_state,
-    const base::Callback<bool(void)>& is_reporting_enabled_callback,
+    EnabledStateProvider* enabled_state_provider,
     const StoreClientInfoCallback& store_client_info,
     const LoadClientInfoCallback& retrieve_client_info) {
   std::unique_ptr<MetricsStateManager> result;
   // Note: |instance_exists_| is updated in the constructor and destructor.
   if (!instance_exists_) {
-    result.reset(new MetricsStateManager(local_state,
-                                         is_reporting_enabled_callback,
+    result.reset(new MetricsStateManager(local_state, enabled_state_provider,
                                          store_client_info,
                                          retrieve_client_info));
   }

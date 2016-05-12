@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
+#include "components/metrics/enabled_state_provider.h"
 #include "components/metrics/metrics_service_client.h"
 
 class PrefRegistrySimple;
@@ -41,7 +42,8 @@ namespace metrics {
 
 class ExternalMetrics;
 
-class CastMetricsServiceClient : public ::metrics::MetricsServiceClient {
+class CastMetricsServiceClient : public ::metrics::MetricsServiceClient,
+                                 public ::metrics::EnabledStateProvider {
  public:
   ~CastMetricsServiceClient() override;
 
@@ -64,7 +66,7 @@ class CastMetricsServiceClient : public ::metrics::MetricsServiceClient {
   void Initialize(CastService* cast_service);
   void Finalize();
 
-  // metrics::MetricsServiceClient implementation:
+  // ::metrics::MetricsServiceClient:
   ::metrics::MetricsService* GetMetricsService() override;
   void SetMetricsClientId(const std::string& client_id) override;
   void OnRecordingDisabled() override;
@@ -82,6 +84,9 @@ class CastMetricsServiceClient : public ::metrics::MetricsServiceClient {
       const base::Callback<void(int)>& on_upload_complete) override;
   base::TimeDelta GetStandardUploadInterval() override;
 
+  // ::metrics::EnabledStateProvider:
+  bool IsConsentGiven() override;
+
   // Starts/stops the metrics service.
   void EnableMetricsService(bool enabled);
 
@@ -91,9 +96,6 @@ class CastMetricsServiceClient : public ::metrics::MetricsServiceClient {
   CastMetricsServiceClient(base::TaskRunner* io_task_runner,
                            PrefService* pref_service,
                            net::URLRequestContextGetter* request_context);
-
-  // Returns whether or not metrics reporting is enabled.
-  bool IsReportingEnabled();
 
   std::unique_ptr<::metrics::ClientInfo> LoadClientInfo();
   void StoreClientInfo(const ::metrics::ClientInfo& client_info);
@@ -112,6 +114,7 @@ class CastMetricsServiceClient : public ::metrics::MetricsServiceClient {
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   std::unique_ptr<::metrics::MetricsStateManager> metrics_state_manager_;
   std::unique_ptr<::metrics::MetricsService> metrics_service_;
+  std::unique_ptr<::metrics::EnabledStateProvider> enabled_state_provider_;
   net::URLRequestContextGetter* const request_context_;
 
   DISALLOW_COPY_AND_ASSIGN(CastMetricsServiceClient);

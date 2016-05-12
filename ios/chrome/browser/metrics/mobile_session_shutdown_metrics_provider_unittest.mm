@@ -14,18 +14,11 @@
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_service.h"
 #include "components/metrics/metrics_state_manager.h"
+#include "components/metrics/test_enabled_state_provider.h"
 #include "components/metrics/test_metrics_service_client.h"
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest-param-test.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-namespace {
-
-bool IsMetricsReportingEnabled() {
-  return false;
-}
-
-}  // namespace
 
 // An MobileSessionShutdownMetricsProvider that returns fake values for the last
 // session environment query methods.
@@ -154,7 +147,7 @@ TEST_P(MobileSessionShutdownMetricsProviderTest, ProvideStabilityMetrics) {
   local_state_.SetBoolean(metrics::prefs::kStabilityExitedCleanly,
                           was_last_shutdown_clean);
   metrics_state_ = metrics::MetricsStateManager::Create(
-      &local_state_, base::Bind(&IsMetricsReportingEnabled),
+      &local_state_, new metrics::TestEnabledStateProvider(false, false),
       metrics::MetricsStateManager::StoreClientInfoCallback(),
       metrics::MetricsStateManager::LoadClientInfoCallback());
   metrics_service_.reset(new metrics::MetricsService(

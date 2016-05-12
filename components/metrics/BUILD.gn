@@ -29,6 +29,8 @@ source_set("metrics") {
     "drive_metrics_provider_linux.cc",
     "drive_metrics_provider_mac.mm",
     "drive_metrics_provider_win.cc",
+    "enabled_state_provider.cc",
+    "enabled_state_provider.h",
     "file_metrics_provider.cc",
     "file_metrics_provider.h",
     "histogram_encoder.cc",
@@ -261,6 +263,8 @@ if (!is_ios) {
 source_set("test_support") {
   testonly = true
   sources = [
+    "test_enabled_state_provider.cc",
+    "test_enabled_state_provider.h",
     "test_metrics_provider.cc",
     "test_metrics_provider.h",
     "test_metrics_service_client.cc",

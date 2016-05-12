@@ -20,6 +20,7 @@ class PrefRegistrySimple;
 namespace metrics {
 
 class ClonedInstallDetector;
+class EnabledStateProvider;
 
 // Responsible for managing MetricsService state prefs, specifically the UMA
 // client id and low entropy source. Code outside the metrics directory should
@@ -38,7 +39,9 @@ class MetricsStateManager {
 
   virtual ~MetricsStateManager();
 
-  // Returns true if the user opted in to sending metric reports.
+  // Returns true if the user has consented to sending metric reports, and there
+  // is no other reason to disable reporting. One such reason is client
+  // sampling, and this client isn't in the sample.
   bool IsMetricsReportingEnabled();
 
   // Returns the client ID for this client, or the empty string if the user is
@@ -69,7 +72,7 @@ class MetricsStateManager {
   // of the class exists at a time. Returns NULL if an instance exists already.
   static std::unique_ptr<MetricsStateManager> Create(
       PrefService* local_state,
-      const base::Callback<bool(void)>& is_reporting_enabled_callback,
+      EnabledStateProvider* enabled_state_provider,
       const StoreClientInfoCallback& store_client_info,
       const LoadClientInfoCallback& load_client_info);
 
@@ -94,17 +97,16 @@ class MetricsStateManager {
     ENTROPY_SOURCE_ENUM_SIZE,
   };
 
-  // Creates the MetricsStateManager with the given |local_state|. Calls
-  // |is_reporting_enabled_callback| to query whether metrics reporting is
-  // enabled. Clients should instead use Create(), which enforces that a single
-  // instance of this class be alive at any given time.
+  // Creates the MetricsStateManager with the given |local_state|. Uses
+  // |enabled_state_provider| to query whether there is consent for metrics
+  // reporting, and if it is enabled. Clients should instead use Create(), which
+  // enforces that a single instance of this class be alive at any given time.
   // |store_client_info| should back up client info to persistent storage such
   // that it is later retrievable by |load_client_info|.
-  MetricsStateManager(
-      PrefService* local_state,
-      const base::Callback<bool(void)>& is_reporting_enabled_callback,
-      const StoreClientInfoCallback& store_client_info,
-      const LoadClientInfoCallback& load_client_info);
+  MetricsStateManager(PrefService* local_state,
+                      EnabledStateProvider* enabled_state_provider,
+                      const StoreClientInfoCallback& store_client_info,
+                      const LoadClientInfoCallback& load_client_info);
 
   // Backs up the current client info via |store_client_info_|.
   void BackUpCurrentClientInfo();
@@ -144,9 +146,9 @@ class MetricsStateManager {
   // Weak pointer to the local state prefs store.
   PrefService* const local_state_;
 
-  // A callback run by this MetricsStateManager to know whether reporting is
-  // enabled.
-  const base::Callback<bool(void)> is_reporting_enabled_callback_;
+  // Weak pointer to an enabled state provider. Used to know whether the user
+  // has consented to reporting, and if reporting should be done.
+  EnabledStateProvider* enabled_state_provider_;
 
   // A callback run during client id creation so this MetricsStateManager can
   // store a backup of the newly generated ID.
