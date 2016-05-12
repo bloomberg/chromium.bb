@@ -574,6 +574,36 @@ TEST_F(RootWindowControllerTest, MultipleDisplaysGetWindowForFullscreenMode) {
   EXPECT_EQ(NULL, controllers[1]->GetWindowForFullscreenMode());
 }
 
+// Test that GetRootWindowController() works with multiple displays and
+// child widgets.
+TEST_F(RootWindowControllerTest, GetRootWindowController) {
+  if (!SupportsMultipleDisplays())
+    return;
+  UpdateDisplay("600x600,600x600");
+  Shell::RootWindowControllerList controllers =
+      Shell::GetInstance()->GetAllRootWindowControllers();
+  ASSERT_EQ(2u, controllers.size());
+
+  // Test null.
+  EXPECT_FALSE(GetRootWindowController(nullptr));
+
+  // Test a widget on the first display.
+  Widget* w1 = CreateTestWidget(gfx::Rect(0, 0, 100, 100));
+  EXPECT_EQ(controllers[0],
+            GetRootWindowController(w1->GetNativeWindow()->GetRootWindow()));
+
+  // Test a child widget.
+  Widget* w2 = Widget::CreateWindowWithParentAndBounds(
+      nullptr, w1->GetNativeWindow(), gfx::Rect(0, 0, 100, 100));
+  EXPECT_EQ(controllers[0],
+            GetRootWindowController(w2->GetNativeWindow()->GetRootWindow()));
+
+  // Test a widget on the second display.
+  Widget* w3 = CreateTestWidget(gfx::Rect(600, 0, 100, 100));
+  EXPECT_EQ(controllers[1],
+            GetRootWindowController(w3->GetNativeWindow()->GetRootWindow()));
+}
+
 // Test that user session window can't be focused if user session blocked by
 // some overlapping UI.
 TEST_F(RootWindowControllerTest, FocusBlockedWindow) {

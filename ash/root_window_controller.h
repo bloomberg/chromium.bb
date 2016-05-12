@@ -306,8 +306,9 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   DISALLOW_COPY_AND_ASSIGN(RootWindowController);
 };
 
-
-// Gets the RootWindowController for |root_window|.
+// On classic ash, returns the RootWindowController for the given |root_window|.
+// On mus ash, returns the RootWindowController for the primary display.
+// See RootWindowController class comment above.
 ASH_EXPORT RootWindowController* GetRootWindowController(
     const aura::Window* root_window);
 
