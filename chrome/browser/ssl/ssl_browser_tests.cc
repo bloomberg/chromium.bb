@@ -388,12 +388,6 @@ class SSLUITest
     ssl_interstitial->CommandReceived(command);
   }
 
-  bool IsShowingWebContentsModalDialog() const {
-    return WebContentsModalDialogManager::FromWebContents(
-        browser()->tab_strip_model()->GetActiveWebContents())->
-            IsDialogActive();
-  }
-
   static void GetFilePathWithHostAndPortReplacement(
       const std::string& original_file_path,
       const net::HostPortPair& host_port_pair,
@@ -1548,48 +1542,75 @@ IN_PROC_BROWSER_TEST_F(SSLUITest,
       AuthState::RAN_INSECURE_CONTENT);
 }
 
-// Visits a page with unsafe content and make sure that:
-// - frames content is replaced with warning
-// - images and scripts are filtered out entirely
+// Visits an SSL page twice, once with subresources served over good SSL and
+// once over bad SSL.
+// - For the good SSL case, the iframe and images should be properly displayed.
+// - For the bad SSL case, the iframe contents shouldn't be displayed and images
+//   and scripts should be filtered out entirely.
 IN_PROC_BROWSER_TEST_F(SSLUITest, TestUnsafeContents) {
   ASSERT_TRUE(https_server_.Start());
   ASSERT_TRUE(https_server_expired_.Start());
-
-  std::string replacement_path;
-  GetFilePathWithHostAndPortReplacement("/ssl/page_with_unsafe_contents.html",
-                                        https_server_expired_.host_port_pair(),
-                                        &replacement_path);
-  ui_test_utils::NavigateToURL(browser(),
-                               https_server_.GetURL(replacement_path));
-
-  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
-  // When the bad content is filtered, the state is expected to be
-  // authenticated.
-  CheckAuthenticatedState(tab, AuthState::NONE);
-
-  // Because of cross-frame scripting restrictions, we cannot access the iframe
-  // content.  So to know if the frame was loaded, we just check if a popup was
-  // opened (the iframe content opens one).
-  // Note: because of bug 1115868, no web contents modal dialog is opened right
-  //       now.  Once the bug is fixed, this will do the real check.
-  EXPECT_FALSE(IsShowingWebContentsModalDialog());
-
-  int img_width;
-  EXPECT_TRUE(content::ExecuteScriptAndExtractInt(
-      tab,
-      "window.domAutomationController.send(ImageWidth());",
-      &img_width));
-  // In order to check that the image was not loaded, we check its width.
-  // The actual image (Google logo) is 114 pixels wide, we assume the broken
-  // image is less than 100.
-  EXPECT_LT(img_width, 100);
-
-  bool js_result = false;
-  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
-      tab,
-      "window.domAutomationController.send(IsFooSet());",
-      &js_result));
-  EXPECT_FALSE(js_result);
+  // Enable popups without user gesture.
+  HostContentSettingsMapFactory::GetForProfile(browser()->profile())
+      ->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_POPUPS,
+                                 CONTENT_SETTING_ALLOW);
+  {
+    // First visit the page with its iframe and subresources served over good
+    // SSL. This is a sanity check to make sure these resources aren't already
+    // broken in the good case.
+    std::string replacement_path;
+    GetFilePathWithHostAndPortReplacement("/ssl/page_with_unsafe_contents.html",
+                                          https_server_.host_port_pair(),
+                                          &replacement_path);
+    ui_test_utils::BrowserAddedObserver popup_observer;
+    ui_test_utils::NavigateToURL(browser(),
+                                 https_server_.GetURL(replacement_path));
+    WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+    // The state is expected to be authenticated.
+    CheckAuthenticatedState(tab, AuthState::NONE);
+    // The iframe should be able to open a popup.
+    popup_observer.WaitForSingleNewBrowser();
+    EXPECT_EQ(2u, chrome::GetBrowserCount(browser()->profile()));
+    // In order to check that the image was loaded, check its width.
+    // The actual image (Google logo) is 276 pixels wide.
+    int img_width = 0;
+    EXPECT_TRUE(content::ExecuteScriptAndExtractInt(
+        tab, "window.domAutomationController.send(ImageWidth());", &img_width));
+    EXPECT_EQ(img_width, 276);
+    // Check that variable |foo| is set.
+    bool js_result = false;
+    EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+        tab, "window.domAutomationController.send(IsFooSet());", &js_result));
+    EXPECT_TRUE(js_result);
+  }
+  {
+    // Now visit the page with its iframe and subresources served over bad
+    // SSL. Iframes, images, and scripts should all be blocked.
+    std::string replacement_path;
+    GetFilePathWithHostAndPortReplacement(
+        "/ssl/page_with_unsafe_contents.html",
+        https_server_expired_.host_port_pair(), &replacement_path);
+    ui_test_utils::NavigateToURL(browser(),
+                                 https_server_.GetURL(replacement_path));
+    WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+    // When the bad content is filtered, the state is expected to be
+    // authenticated.
+    CheckAuthenticatedState(tab, AuthState::NONE);
+    // The iframe attempts to open a popup window, but it shouldn't be able to.
+    // Previous popup is still open.
+    EXPECT_EQ(2u, chrome::GetBrowserCount(browser()->profile()));
+    // Assume the broken image width is less than 100.
+    int img_width = 0;
+    EXPECT_TRUE(content::ExecuteScriptAndExtractInt(
+        tab, "window.domAutomationController.send(ImageWidth());", &img_width));
+    EXPECT_GT(img_width, 0);
+    EXPECT_LT(img_width, 100);
+    // Check that variable |foo| is not set.
+    bool js_result = false;
+    EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+        tab, "window.domAutomationController.send(IsFooSet());", &js_result));
+    EXPECT_FALSE(js_result);
+  }
 }
 
 // Visits a page with insecure content loaded by JS (after the initial page
