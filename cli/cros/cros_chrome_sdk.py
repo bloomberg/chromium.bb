@@ -752,6 +752,15 @@ class ChromeSDKCommand(command.CliCommand):
     env['builddir_name'] = out_dir
     env['GYP_GENERATOR_FLAGS'] = 'output_dir=%s' % out_dir
     env['GYP_CROSSCOMPILE'] = '1'
+
+    # deploy_chrome relies on the 'gn' USE flag to locate .so (and potentially
+    # other) files. Set this by default if GYP_CHROMIUM_NO_ACTION=1.
+    # TODO(stevenjb): Maybe figure out a better way to set this by default.
+    if os.environ.get('GYP_CHROMIUM_NO_ACTION', '') == '1':
+      env['USE'] = 'gn'
+      logging.notice(
+          'GYP_CHROMIUM_NO_ACTION=1, setting USE="gn" for deploy_chrome.')
+
     return env
 
   @staticmethod
