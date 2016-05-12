@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.IBinder;
 
+import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.content.browser.DownloadInfo;
 
@@ -26,6 +27,7 @@ import javax.annotation.Nullable;
  * to the latter to issue calls to show and update notifications.
  */
 public class SystemDownloadNotifier implements DownloadNotifier {
+    private static final String TAG = "DownloadNotifier";
     private static final int DOWNLOAD_NOTIFICATION_TYPE_PROGRESS = 0;
     private static final int DOWNLOAD_NOTIFICATION_TYPE_SUCCESS = 1;
     private static final int DOWNLOAD_NOTIFICATION_TYPE_FAILURE = 2;
@@ -73,6 +75,12 @@ public class SystemDownloadNotifier implements DownloadNotifier {
         @Override
         public void onServiceConnected(ComponentName className, IBinder service) {
             synchronized (mLock) {
+                if (!(service instanceof DownloadNotificationService.LocalBinder)) {
+                    Log.w(TAG, "Not from DownloadNotificationService, do not connect."
+                            + " Component name: " + className);
+                    assert false;
+                    return;
+                }
                 mBoundService = ((DownloadNotificationService.LocalBinder) service).getService();
                 // updateDownloadNotification() may leave some outstanding notifications
                 // before the service is connected, handle them now.
