@@ -313,9 +313,6 @@
       <structure name="IDR_SETTINGS_CONTROLS_RADIO_GROUP_JS"
                  file="controls/settings_radio_group.js"
                  type="chrome_html" />
-      <structure name="IDR_SETTINGS_CONTROLS_RADIO_GROUP_CSS"
-                 file="controls/settings_radio_group.css"
-                 type="chrome_html" />
       <if expr="not chromeos">
         <structure name="IDR_SETTINGS_DEFAULT_BROWSER_PAGE_CSS"
                    file="default_browser_page/default_browser_page.css"

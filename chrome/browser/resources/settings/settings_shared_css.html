@@ -105,11 +105,26 @@
         };
       }
 
+      paper-checkbox {
+        --paper-checkbox-checked-color: var(--google-blue-500);
+        --paper-checkbox-label-spacing: var(--checkbox-spacing);
+        --paper-checkbox-size: var(--checkbox-size);
+        --paper-checkbox-unchecked-color: var(--paper-grey-600);
+        -webkit-margin-start: var(--checkbox-margin-start);
+      }
+
       paper-radio-button {
+        @apply(--layout-center);
         --paper-radio-button-checked-color: var(--google-blue-500);
         --paper-radio-button-label-spacing: 18px;
         --paper-radio-button-unchecked-color: var(--paper-grey-600);
         -webkit-margin-start: 2px;
+        display: flex;
+        min-height: 40px;
+      }
+
+      paper-radio-group {
+        width: 100%;
       }
 
       .text-elide {
