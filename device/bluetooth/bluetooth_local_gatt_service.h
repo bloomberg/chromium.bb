@@ -124,6 +124,20 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothLocalGattService
         int offset,
         const base::Closure& callback,
         const ErrorCallback& error_callback) = 0;
+
+    // Called when a remote device requests notifications to start for
+    // |characteristic|. This is only called if the characteristic has
+    // specified the notify or indicate property.
+    virtual void OnNotificationsStart(
+        const BluetoothLocalGattService* service,
+        const BluetoothLocalGattCharacteristic* characteristic) = 0;
+
+    // Called when a remote device requests notifications to stop for
+    // |characteristic|. This is only called if the characteristic has
+    // specified the notify or indicate property.
+    virtual void OnNotificationsStop(
+        const BluetoothLocalGattService* service,
+        const BluetoothLocalGattCharacteristic* characteristic) = 0;
   };
 
   // Creates a local GATT service to be used with |adapter| (which will own

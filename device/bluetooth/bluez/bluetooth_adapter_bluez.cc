@@ -27,6 +27,7 @@
 #include "device/bluetooth/bluez/bluetooth_audio_sink_bluez.h"
 #include "device/bluetooth/bluez/bluetooth_device_bluez.h"
 #include "device/bluetooth/bluez/bluetooth_gatt_service_bluez.h"
+#include "device/bluetooth/bluez/bluetooth_local_gatt_characteristic_bluez.h"
 #include "device/bluetooth/bluez/bluetooth_local_gatt_service_bluez.h"
 #include "device/bluetooth/bluez/bluetooth_pairing_bluez.h"
 #include "device/bluetooth/bluez/bluetooth_socket_bluez.h"
@@ -1140,7 +1141,17 @@ bool BluetoothAdapterBlueZ::IsGattServiceRegistered(
   return registered_gatt_services_.count(service->object_path()) != 0;
 }
 
-// Returns the object path of the adapter.
+bool BluetoothAdapterBlueZ::SendValueChanged(
+    BluetoothLocalGattCharacteristicBlueZ* characteristic,
+    const std::vector<uint8_t>& value) {
+  if (registered_gatt_services_.count(
+          characteristic->GetService()->object_path()) == 0)
+    return false;
+  gatt_application_provider_->SendValueChanged(characteristic->object_path(),
+                                               value);
+  return true;
+}
+
 dbus::ObjectPath BluetoothAdapterBlueZ::GetApplicationObjectPath() const {
   return dbus::ObjectPath(object_path_.value() + kGattApplicationObjectPath);
 }

@@ -45,6 +45,7 @@ namespace bluez {
 class BluetoothBlueZTest;
 class BluetoothAdapterProfileBlueZ;
 class BluetoothDeviceBlueZ;
+class BluetoothLocalGattCharacteristicBlueZ;
 class BluetoothLocalGattServiceBlueZ;
 class BluetoothGattApplicationServiceProvider;
 class BluetoothPairingBlueZ;
@@ -177,6 +178,12 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ
 
   // Returns if a given service is currently registered.
   bool IsGattServiceRegistered(BluetoothLocalGattServiceBlueZ* service);
+
+  // Send a notification for this characteristic that its value has been
+  // updated. If the service that owns that characteristic is not registered,
+  // this method will return false.
+  bool SendValueChanged(BluetoothLocalGattCharacteristicBlueZ* characteristic,
+                        const std::vector<uint8_t>& value);
 
   // Returns the object path of the adapter.
   dbus::ObjectPath GetApplicationObjectPath() const;

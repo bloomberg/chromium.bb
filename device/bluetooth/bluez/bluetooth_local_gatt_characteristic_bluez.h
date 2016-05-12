@@ -5,12 +5,13 @@
 #ifndef DEVICE_BLUETOOTH_BLUEZ_BLUETOOTH_LOCAL_GATT_CHARACTERISTIC_BLUEZ_H_
 #define DEVICE_BLUETOOTH_BLUEZ_BLUETOOTH_LOCAL_GATT_CHARACTERISTIC_BLUEZ_H_
 
+#include <cstdint>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "device/bluetooth/bluetooth_gatt_characteristic.h"
 #include "device/bluetooth/bluetooth_local_gatt_characteristic.h"
-#include "device/bluetooth/bluetooth_local_gatt_service.h"
 #include "device/bluetooth/bluetooth_uuid.h"
 #include "device/bluetooth/bluez/bluetooth_gatt_characteristic_bluez.h"
 #include "device/bluetooth/bluez/bluetooth_local_gatt_descriptor_bluez.h"
@@ -32,10 +33,14 @@ class BluetoothLocalGattCharacteristicBlueZ
       BluetoothLocalGattServiceBlueZ* service);
   ~BluetoothLocalGattCharacteristicBlueZ() override;
 
-  // device::BluetoothLocalGattCharacteristic overrides.
+  // device::BluetoothGattCharacteristic overrides:
   device::BluetoothUUID GetUUID() const override;
   Properties GetProperties() const override;
   Permissions GetPermissions() const override;
+
+  // device::BluetoothLocalGattCharacteristic overrides:
+  NotificationStatus NotifyValueChanged(const std::vector<uint8_t>& new_value,
+                                        bool indicate) override;
 
   BluetoothLocalGattServiceBlueZ* GetService();
 

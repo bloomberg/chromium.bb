@@ -68,6 +68,20 @@ BluetoothDevice* BluetoothTestBase::SimulateLowEnergyDevice(
   return nullptr;
 }
 
+bool BluetoothTestBase::SimulateLocalGattCharacteristicNotificationsRequest(
+    BluetoothLocalGattService* service,
+    BluetoothLocalGattCharacteristic* characteristic,
+    bool start) {
+  NOTIMPLEMENTED();
+  return false;
+}
+
+std::vector<uint8_t> BluetoothTestBase::LastNotifactionValueForCharacteristic(
+    BluetoothLocalGattCharacteristic* characteristic) {
+  NOTIMPLEMENTED();
+  return std::vector<uint8_t>();
+}
+
 std::vector<BluetoothLocalGattService*>
 BluetoothTestBase::RegisteredGattServices() {
   NOTIMPLEMENTED();

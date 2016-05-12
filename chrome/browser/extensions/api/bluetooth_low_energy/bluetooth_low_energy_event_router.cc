@@ -1206,6 +1206,14 @@ void BluetoothLowEnergyEventRouter::OnDescriptorWriteRequest(
                                                 descriptor->GetIdentifier()));
 }
 
+void BluetoothLowEnergyEventRouter::OnNotificationsStart(
+    const device::BluetoothLocalGattService* service,
+    const device::BluetoothLocalGattCharacteristic* characteristic) {}
+
+void BluetoothLowEnergyEventRouter::OnNotificationsStop(
+    const device::BluetoothLocalGattService* service,
+    const device::BluetoothLocalGattCharacteristic* characteristic) {}
+
 void BluetoothLowEnergyEventRouter::OnExtensionUnloaded(
     content::BrowserContext* browser_context,
     const extensions::Extension* extension,

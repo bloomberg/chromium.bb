@@ -16,6 +16,9 @@ TestBluetoothLocalGattServiceDelegate::TestBluetoothLocalGattServiceDelegate()
       expected_characteristic_(nullptr),
       expected_descriptor_(nullptr) {}
 
+TestBluetoothLocalGattServiceDelegate::
+    ~TestBluetoothLocalGattServiceDelegate() {}
+
 void TestBluetoothLocalGattServiceDelegate::OnCharacteristicReadRequest(
     const BluetoothLocalGattService* service,
     const BluetoothLocalGattCharacteristic* characteristic,
@@ -78,6 +81,33 @@ void TestBluetoothLocalGattServiceDelegate::OnDescriptorWriteRequest(
   }
   last_written_value_ = BluetoothGattServerTest::GetInteger(value);
   callback.Run();
+}
+
+void TestBluetoothLocalGattServiceDelegate::OnNotificationsStart(
+    const BluetoothLocalGattService* service,
+    const BluetoothLocalGattCharacteristic* characteristic) {
+  EXPECT_EQ(expected_service_, service);
+  EXPECT_EQ(expected_characteristic_, characteristic);
+  notifications_started_for_characteristic_[characteristic->GetIdentifier()] =
+      true;
+}
+
+void TestBluetoothLocalGattServiceDelegate::OnNotificationsStop(
+    const BluetoothLocalGattService* service,
+    const BluetoothLocalGattCharacteristic* characteristic) {
+  EXPECT_EQ(expected_service_, service);
+  EXPECT_EQ(expected_characteristic_, characteristic);
+  notifications_started_for_characteristic_[characteristic->GetIdentifier()] =
+      false;
+}
+
+bool TestBluetoothLocalGattServiceDelegate::NotificationStatusForCharacteristic(
+    BluetoothLocalGattCharacteristic* characteristic) {
+  auto found = notifications_started_for_characteristic_.find(
+      characteristic->GetIdentifier());
+  if (found == notifications_started_for_characteristic_.end())
+    return false;
+  return found->second;
 }
 
 }  // namespace device

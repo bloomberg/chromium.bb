@@ -323,14 +323,12 @@ class BluetoothLowEnergyEventRouter
       int offset,
       const base::Closure& callback,
       const Delegate::ErrorCallback& error_callback) override;
-
   void OnDescriptorReadRequest(
       const device::BluetoothLocalGattService* service,
       const device::BluetoothLocalGattDescriptor* descriptor,
       int offset,
       const Delegate::ValueCallback& value_callback,
       const Delegate::ErrorCallback& error_callback) override;
-
   void OnDescriptorWriteRequest(
       const device::BluetoothLocalGattService* service,
       const device::BluetoothLocalGattDescriptor* descriptor,
@@ -338,6 +336,12 @@ class BluetoothLowEnergyEventRouter
       int offset,
       const base::Closure& callback,
       const Delegate::ErrorCallback& error_callback) override;
+  void OnNotificationsStart(
+      const device::BluetoothLocalGattService* service,
+      const device::BluetoothLocalGattCharacteristic* characteristic) override;
+  void OnNotificationsStop(
+      const device::BluetoothLocalGattService* service,
+      const device::BluetoothLocalGattCharacteristic* characteristic) override;
 
   // extensions::ExtensionRegistryObserver overrides:
   void OnExtensionUnloaded(

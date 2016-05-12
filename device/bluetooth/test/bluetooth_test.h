@@ -254,6 +254,19 @@ class BluetoothTestBase : public testing::Test {
       const base::Closure& success_callback,
       const base::Closure& error_callback) {}
 
+  // Simulates starting or stopping a notification session for a locally
+  // hosted GATT characteristic by a remote device. Returns false if we were
+  // not able to start or stop notifications.
+  virtual bool SimulateLocalGattCharacteristicNotificationsRequest(
+      BluetoothLocalGattService* service,
+      BluetoothLocalGattCharacteristic* characteristic,
+      bool start);
+
+  // Returns the value for the last notification that was sent on this
+  // characteristic.
+  virtual std::vector<uint8_t> LastNotifactionValueForCharacteristic(
+      BluetoothLocalGattCharacteristic* characteristic);
+
   // Remembers |descriptor|'s platform specific object to be used in a
   // subsequent call to methods such as SimulateGattDescriptorRead that
   // accept a nullptr value to select this remembered descriptor. This

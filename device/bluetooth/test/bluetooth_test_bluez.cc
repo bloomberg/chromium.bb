@@ -239,6 +239,47 @@ void BluetoothTestBlueZ::SimulateLocalGattDescriptorValueWriteRequest(
   run_loop.Run();
 }
 
+bool BluetoothTestBlueZ::SimulateLocalGattCharacteristicNotificationsRequest(
+    BluetoothLocalGattService* service,
+    BluetoothLocalGattCharacteristic* characteristic,
+    bool start) {
+  bluez::BluetoothLocalGattCharacteristicBlueZ* characteristic_bluez =
+      static_cast<bluez::BluetoothLocalGattCharacteristicBlueZ*>(
+          characteristic);
+  bluez::FakeBluetoothGattManagerClient* fake_bluetooth_gatt_manager_client =
+      static_cast<bluez::FakeBluetoothGattManagerClient*>(
+          bluez::BluezDBusManager::Get()->GetBluetoothGattManagerClient());
+  bluez::FakeBluetoothGattCharacteristicServiceProvider*
+      characteristic_provider =
+          fake_bluetooth_gatt_manager_client->GetCharacteristicServiceProvider(
+              characteristic_bluez->object_path());
+
+  bluez::BluetoothLocalGattServiceBlueZ* service_bluez =
+      static_cast<bluez::BluetoothLocalGattServiceBlueZ*>(service);
+  static_cast<TestBluetoothLocalGattServiceDelegate*>(
+      service_bluez->GetDelegate())
+      ->set_expected_characteristic(characteristic);
+
+  return characteristic_provider->NotificationsChange(start);
+}
+
+std::vector<uint8_t> BluetoothTestBlueZ::LastNotifactionValueForCharacteristic(
+    BluetoothLocalGattCharacteristic* characteristic) {
+  bluez::BluetoothLocalGattCharacteristicBlueZ* characteristic_bluez =
+      static_cast<bluez::BluetoothLocalGattCharacteristicBlueZ*>(
+          characteristic);
+  bluez::FakeBluetoothGattManagerClient* fake_bluetooth_gatt_manager_client =
+      static_cast<bluez::FakeBluetoothGattManagerClient*>(
+          bluez::BluezDBusManager::Get()->GetBluetoothGattManagerClient());
+  bluez::FakeBluetoothGattCharacteristicServiceProvider*
+      characteristic_provider =
+          fake_bluetooth_gatt_manager_client->GetCharacteristicServiceProvider(
+              characteristic_bluez->object_path());
+
+  return characteristic_provider ? characteristic_provider->sent_value()
+                                 : std::vector<uint8_t>();
+}
+
 std::vector<BluetoothLocalGattService*>
 BluetoothTestBlueZ::RegisteredGattServices() {
   std::vector<BluetoothLocalGattService*> services;

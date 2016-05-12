@@ -8,6 +8,10 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "dbus/object_path.h"
+#include "device/bluetooth/bluetooth_gatt_characteristic.h"
+#include "device/bluetooth/bluez/bluetooth_adapter_bluez.h"
+#include "device/bluetooth/bluez/bluetooth_gatt_service_bluez.h"
 #include "device/bluetooth/bluez/bluetooth_local_gatt_service_bluez.h"
 
 namespace device {
@@ -65,6 +69,20 @@ device::BluetoothGattCharacteristic::Permissions
 BluetoothLocalGattCharacteristicBlueZ::GetPermissions() const {
   NOTIMPLEMENTED();
   return Permissions();
+}
+
+device::BluetoothLocalGattCharacteristic::NotificationStatus
+BluetoothLocalGattCharacteristicBlueZ::NotifyValueChanged(
+    const std::vector<uint8_t>& new_value,
+    bool indicate) {
+  if (indicate && !(properties_ & PROPERTY_INDICATE))
+    return INDICATE_PROPERTY_NOT_SET;
+  if (!indicate && !(properties_ & PROPERTY_NOTIFY))
+    return NOTIFY_PROPERTY_NOT_SET;
+  DCHECK(service_);
+  return service_->GetAdapter()->SendValueChanged(this, new_value)
+             ? NOTIFICATION_SUCCESS
+             : SERVICE_NOT_REGISTERED;
 }
 
 BluetoothLocalGattServiceBlueZ*

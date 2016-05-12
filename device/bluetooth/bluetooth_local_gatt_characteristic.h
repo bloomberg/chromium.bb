@@ -29,6 +29,13 @@ namespace device {
 class DEVICE_BLUETOOTH_EXPORT BluetoothLocalGattCharacteristic
     : public virtual BluetoothGattCharacteristic {
  public:
+  enum NotificationStatus {
+    NOTIFICATION_SUCCESS = 0,
+    NOTIFY_PROPERTY_NOT_SET,
+    INDICATE_PROPERTY_NOT_SET,
+    SERVICE_NOT_REGISTERED,
+  };
+
   // Constructs a BluetoothLocalGattCharacteristic associated with a local GATT
   // service when the adapter is in the peripheral role.
   //
@@ -47,6 +54,15 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothLocalGattCharacteristic
       Properties properties,
       Permissions permissions,
       BluetoothLocalGattService* service);
+
+  // Notify that the remote central that the value of this characteristic has
+  // been changed and the new value is |new_value|. |indicate| should be set to
+  // true if we want to use an indication instead of a notification. An
+  // indication waits for a response from the remote, making it more reliable
+  // but notifications may be faster.
+  virtual NotificationStatus NotifyValueChanged(
+      const std::vector<uint8_t>& new_value,
+      bool indicate) = 0;
 
  protected:
   BluetoothLocalGattCharacteristic();

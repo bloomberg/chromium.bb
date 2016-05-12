@@ -20,7 +20,9 @@ class TestBluetoothLocalGattServiceDelegate
     : public BluetoothLocalGattService::Delegate {
  public:
   TestBluetoothLocalGattServiceDelegate();
+  virtual ~TestBluetoothLocalGattServiceDelegate();
 
+  // BluetoothLocalGattService::Delegate overrides:
   void OnCharacteristicReadRequest(
       const BluetoothLocalGattService* service,
       const BluetoothLocalGattCharacteristic* characteristic,
@@ -46,6 +48,15 @@ class TestBluetoothLocalGattServiceDelegate
                                 int offset,
                                 const base::Closure& callback,
                                 const ErrorCallback& error_callback) override;
+  void OnNotificationsStart(
+      const BluetoothLocalGattService* service,
+      const BluetoothLocalGattCharacteristic* characteristic) override;
+  void OnNotificationsStop(
+      const BluetoothLocalGattService* service,
+      const BluetoothLocalGattCharacteristic* characteristic) override;
+
+  bool NotificationStatusForCharacteristic(
+      BluetoothLocalGattCharacteristic* characteristic);
 
   void set_expected_service(BluetoothLocalGattService* service) {
     expected_service_ = service;
@@ -68,6 +79,8 @@ class TestBluetoothLocalGattServiceDelegate
   BluetoothLocalGattService* expected_service_;
   BluetoothLocalGattCharacteristic* expected_characteristic_;
   BluetoothLocalGattDescriptor* expected_descriptor_;
+
+  std::map<std::string, bool> notifications_started_for_characteristic_;
 
   DISALLOW_COPY_AND_ASSIGN(TestBluetoothLocalGattServiceDelegate);
 };
