@@ -11,6 +11,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/android/offline_pages/offline_page_mhtml_archiver.h"
@@ -91,10 +92,10 @@ void RecentTabHelper::StartSnapshot() {
     return;
 
   GURL url = web_contents()->GetLastCommittedURL();
-  if (!page_model_->CanSavePage(url)) {
-    // TODO(dimich): Add UMA. Bug 608112.
+  bool can_save = page_model_->CanSavePage(url);
+  UMA_HISTOGRAM_BOOLEAN("OfflinePages.CanSaveRecentPage", can_save);
+  if (!can_save)
     return;
-  }
 
   snapshot_url_ = url;
 
@@ -180,7 +181,6 @@ void RecentTabHelper::ContinueSnapshotAfterPurge(
 
 void RecentTabHelper::SavePageCallback(OfflinePageModel::SavePageResult result,
                                        int64_t offline_id) {
-  // TODO(dimich): add UMA, including result. Bug 608112.
   ReportSnapshotCompleted();
 }
 

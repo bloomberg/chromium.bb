@@ -34154,6 +34154,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="OfflinePages.CanSaveRecentPage" enum="Boolean">
+  <owner>bburns@chromium.org</owner>
+  <summary>
+    Can a recent page be saved or not? Logged for all attempts to save
+  </summary>
+</histogram>
+
 <histogram name="OfflinePages.ClearAllStatus" enum="OfflinePagesClearAllStatus">
   <obsolete>
     Deprecated 3/2016, and replaced by OfflinePages.ClearAllStatus2.
