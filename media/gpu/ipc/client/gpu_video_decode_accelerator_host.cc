@@ -99,13 +99,6 @@ bool GpuVideoDecodeAcceleratorHost::Initialize(const Config& config,
   return true;
 }
 
-void GpuVideoDecodeAcceleratorHost::SetCdm(int cdm_id) {
-  DCHECK(CalledOnValidThread());
-  if (!channel_)
-    return;
-  Send(new AcceleratedVideoDecoderMsg_SetCdm(decoder_route_id_, cdm_id));
-}
-
 void GpuVideoDecodeAcceleratorHost::Decode(
     const BitstreamBuffer& bitstream_buffer) {
   DCHECK(CalledOnValidThread());

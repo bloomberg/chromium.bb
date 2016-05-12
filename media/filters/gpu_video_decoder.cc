@@ -263,7 +263,10 @@ void GpuVideoDecoder::CompleteInitialization(int cdm_id, int surface_id) {
   DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent();
   DCHECK(!init_cb_.is_null());
 
-  VideoDecodeAccelerator::Config vda_config(config_);
+  VideoDecodeAccelerator::Config vda_config;
+  vda_config.profile = config_.profile();
+  vda_config.cdm_id = cdm_id;
+  vda_config.is_encrypted = config_.is_encrypted();
   vda_config.surface_id = surface_id;
   vda_config.is_deferred_initialization_allowed = true;
   vda_config.initial_expected_coded_size = config_.coded_size();
@@ -273,25 +276,15 @@ void GpuVideoDecoder::CompleteInitialization(int cdm_id, int surface_id) {
     return;
   }
 
-  // The VDA is now initialized, but if the stream is encrypted we need to
-  // attach the CDM before completing GVD's initialization.
-  if (config_.is_encrypted()) {
-    // TODO(watk,timav): Pass this in the VDA::Config.
-    vda_->SetCdm(cdm_id);
-    DCHECK(supports_deferred_initialization_);
-  }
-
-  // We enable deferred initialization in the config, so if the VDA supports it,
-  // then it will be in use.  Otherwise, initialization is already complete.
-  if (!supports_deferred_initialization_) {
+  // If deferred initialization is not supported, initialization is complete.
+  // Otherwise, a call to NotifyInitializationComplete will follow with the
+  // result of deferred initialization.
+  if (!supports_deferred_initialization_)
     base::ResetAndReturn(&init_cb_).Run(true);
-  }
-
-  // A call to NotifyInitializationComplete will follow with the status.
 }
 
 void GpuVideoDecoder::NotifyInitializationComplete(bool success) {
-  DVLOG_IF(2, !success) << __FUNCTION__ << ": CDM not attached.";
+  DVLOG_IF(1, !success) << __FUNCTION__ << " Deferred initialization failed.";
   DCHECK(!init_cb_.is_null());
 
   base::ResetAndReturn(&init_cb_).Run(success);

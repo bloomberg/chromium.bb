@@ -123,7 +123,6 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
 
   // media::VideoDecodeAccelerator implementation:
   bool Initialize(const Config& config, Client* client) override;
-  void SetCdm(int cdm_id) override;
   void Decode(const media::BitstreamBuffer& bitstream_buffer) override;
   void AssignPictureBuffers(
       const std::vector<media::PictureBuffer>& buffers) override;
@@ -259,12 +258,15 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
   // |bitstream_buffer| of id as -1 indicates a flush command.
   void DecodeBuffer(const media::BitstreamBuffer& bitstream_buffer);
 
-  // This callback is called after CDM obtained a MediaCrypto object.
+  // Called during Initialize() for encrypted streams to set up the CDM.
+  void InitializeCdm(int cdm_id);
+
+  // Called after the CDM obtains a MediaCrypto object.
   void OnMediaCryptoReady(
       media::MediaDrmBridgeCdmContext::JavaObjectPtr media_crypto,
       bool needs_protected_surface);
 
-  // This callback is called when a new key is added to CDM.
+  // Called when a new key is added to the CDM.
   void OnKeyAdded();
 
   // Notifies the client of the result of deferred initialization.
@@ -385,8 +387,6 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
   // Type of a drain request. We need to distinguish between DRAIN_FOR_FLUSH
   // and other types, see IsDrainingForResetOrDestroy().
   DrainType drain_type_;
-
-  // CDM related stuff.
 
   // Holds a ref-count to the CDM to avoid using the CDM after it's destroyed.
   scoped_refptr<media::MediaKeys> cdm_for_reference_holding_only_;

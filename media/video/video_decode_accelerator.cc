@@ -12,11 +12,6 @@ namespace media {
 VideoDecodeAccelerator::Config::Config(VideoCodecProfile video_codec_profile)
     : profile(video_codec_profile) {}
 
-VideoDecodeAccelerator::Config::Config(
-    const VideoDecoderConfig& video_decoder_config)
-    : profile(video_decoder_config.profile()),
-      is_encrypted(video_decoder_config.is_encrypted()) {}
-
 std::string VideoDecodeAccelerator::Config::AsHumanReadableString() const {
   std::ostringstream s;
   s << "profile: " << GetProfileName(profile) << " encrypted? "
@@ -30,10 +25,6 @@ void VideoDecodeAccelerator::Client::NotifyInitializationComplete(
 }
 
 VideoDecodeAccelerator::~VideoDecodeAccelerator() {}
-
-void VideoDecodeAccelerator::SetCdm(int cdm_id) {
-  NOTREACHED() << "By default CDM is not supported.";
-}
 
 bool VideoDecodeAccelerator::TryToSetupDecodeOnSeparateThread(
     const base::WeakPtr<Client>& decode_client,

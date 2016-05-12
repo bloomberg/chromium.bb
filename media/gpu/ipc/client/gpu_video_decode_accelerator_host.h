@@ -40,7 +40,6 @@ class GpuVideoDecodeAcceleratorHost
 
   // VideoDecodeAccelerator implementation.
   bool Initialize(const Config& config, Client* client) override;
-  void SetCdm(int cdm_id) override;
   void Decode(const BitstreamBuffer& bitstream_buffer) override;
   void AssignPictureBuffers(const std::vector<PictureBuffer>& buffers) override;
   void ReusePictureBuffer(int32_t picture_buffer_id) override;

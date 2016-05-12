@@ -196,7 +196,6 @@ bool GpuVideoDecodeAccelerator::OnMessageReceived(const IPC::Message& msg) {
 
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(GpuVideoDecodeAccelerator, msg)
-    IPC_MESSAGE_HANDLER(AcceleratedVideoDecoderMsg_SetCdm, OnSetCdm)
     IPC_MESSAGE_HANDLER(AcceleratedVideoDecoderMsg_Decode, OnDecode)
     IPC_MESSAGE_HANDLER(AcceleratedVideoDecoderMsg_AssignPictureBuffers,
                         OnAssignPictureBuffers)
@@ -373,11 +372,6 @@ bool GpuVideoDecodeAccelerator::Initialize(
   }
 
   return true;
-}
-
-void GpuVideoDecodeAccelerator::OnSetCdm(int cdm_id) {
-  DCHECK(video_decode_accelerator_);
-  video_decode_accelerator_->SetCdm(cdm_id);
 }
 
 // Runs on IO thread if VDA::TryToSetupDecodeOnSeparateThread() succeeded,
