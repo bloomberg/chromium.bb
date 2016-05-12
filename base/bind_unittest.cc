@@ -763,15 +763,10 @@ TEST_F(BindTest, ConstRef) {
 }
 
 TEST_F(BindTest, ScopedRefptr) {
-  // BUG: The scoped_refptr should cause the only AddRef()/Release() pair. But
-  // due to a bug in base::Bind(), there's an extra call when invoking the
-  // callback.
-  // https://code.google.com/p/chromium/issues/detail?id=251937
-  EXPECT_CALL(has_ref_, AddRef()).Times(2);
-  EXPECT_CALL(has_ref_, Release()).Times(2);
+  EXPECT_CALL(has_ref_, AddRef()).Times(1);
+  EXPECT_CALL(has_ref_, Release()).Times(1);
 
-  const scoped_refptr<StrictMock<HasRef> > refptr(&has_ref_);
-
+  const scoped_refptr<HasRef> refptr(&has_ref_);
   Callback<int()> scoped_refptr_const_ref_cb =
       Bind(&FunctionWithScopedRefptrFirstParam, base::ConstRef(refptr), 1);
   EXPECT_EQ(1, scoped_refptr_const_ref_cb.Run());
