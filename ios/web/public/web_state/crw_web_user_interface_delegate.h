@@ -70,16 +70,6 @@ class GURL;
 // Cancels any outstanding dialogs requested by the methods above.
 - (void)cancelDialogsForWebController:(CRWWebController*)webController;
 
-// Displays a context menu for DOM element. |point| and |view| represent the
-// location and UIView where the context menu was triggered by a user gesture.
-// |menuInfo| keys are defined in crw_context_menu_provider.h.
-// TODO(eugenebut): create DOMElement class (tag + attributes) and pass
-// it and referrer as separate arguments instead of |menuInfo|.
-- (void)webController:(CRWWebController*)webController
-       runContextMenu:(NSDictionary*)menuInfo
-              atPoint:(CGPoint)point
-               inView:(UIView*)view;
-
 @end
 
 #endif  // IOS_WEB_PUBLIC_WEB_STATE_CRW_WEB_USER_INTERFACE_DELEGATE_H_

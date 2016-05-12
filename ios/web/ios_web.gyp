@@ -225,8 +225,6 @@
         'web_state/js/page_script_util.mm',
         'web_state/page_viewport_state.h',
         'web_state/page_viewport_state.mm',
-        'web_state/ui/crw_context_menu_provider.h',
-        'web_state/ui/crw_context_menu_provider.mm',
         'web_state/ui/crw_generic_content_view.mm',
         'web_state/ui/crw_swipe_recognizer_provider.h',
         'web_state/ui/crw_touch_tracking_recognizer.h',

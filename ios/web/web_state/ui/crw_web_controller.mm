@@ -86,7 +86,6 @@
 #import "ios/web/web_state/js/crw_js_post_request_loader.h"
 #import "ios/web/web_state/js/crw_js_window_id_manager.h"
 #import "ios/web/web_state/page_viewport_state.h"
-#import "ios/web/web_state/ui/crw_context_menu_provider.h"
 #import "ios/web/web_state/ui/crw_swipe_recognizer_provider.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
 #import "ios/web/web_state/ui/crw_web_controller_container_view.h"
@@ -730,8 +729,8 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
              completionHandler:
                  (void (^)(std::unique_ptr<base::DictionaryValue>))handler;
 // Extracts context menu information from the given DOM element.
-// result keys are defined in crw_context_menu_provider.h.
-- (NSDictionary*)contextMenuInfoForElement:(base::DictionaryValue*)element;
+- (web::ContextMenuParams)contextMenuParamsForElement:
+    (base::DictionaryValue*)element;
 // Sets the value of |_DOMElementForLastTouch|.
 - (void)setDOMElementForLastTouch:
     (std::unique_ptr<base::DictionaryValue>)element;
@@ -1327,39 +1326,14 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   if (!_DOMElementForLastTouch || _DOMElementForLastTouch->empty())
     return;
 
-  NSDictionary* info =
-      [self contextMenuInfoForElement:_DOMElementForLastTouch.get()];
-  CGPoint point = [gestureRecognizer locationInView:_webView];
-
-  SEL runMenuSelector = @selector(webController:runContextMenu:atPoint:inView:);
-  if ([self.UIDelegate respondsToSelector:runMenuSelector]) {
+  web::ContextMenuParams params =
+      [self contextMenuParamsForElement:_DOMElementForLastTouch.get()];
+  params.view.reset([_webView retain]);
+  params.location = [gestureRecognizer locationInView:_webView];
+  if (self.webStateImpl->HandleContextMenu(params)) {
     // Cancelling all touches has the intended side effect of suppressing the
     // system's context menu.
     [self cancelAllTouches];
-    [self.UIDelegate webController:self
-                    runContextMenu:info
-                           atPoint:point
-                            inView:_webView];
-  } else {
-    web::ContextMenuParams params;
-    params.menu_title.reset([info[web::kContextTitle] copy]);
-    NSString* linkUrl = info[web::kContextLinkURLString];
-    if (linkUrl) {
-      params.link_url = GURL(base::SysNSStringToUTF8(linkUrl));
-    }
-    NSString* srcURL = info[web::kContextImageURLString];
-    if (srcURL) {
-      params.src_url = GURL(base::SysNSStringToUTF8(srcURL));
-    }
-    params.referrer_policy = static_cast<web::ReferrerPolicy>(
-        [info[web::kContextLinkReferrerPolicy] intValue]);
-    params.view.reset([_webView retain]);
-    params.location = point;
-    if (self.webStateImpl->HandleContextMenu(params)) {
-      // Cancelling all touches has the intended side effect of suppressing the
-      // system's context menu.
-      [self cancelAllTouches];
-    }
   }
 }
 
@@ -4235,40 +4209,38 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   }];
 }
 
-- (NSDictionary*)contextMenuInfoForElement:(base::DictionaryValue*)element {
-  DCHECK(element);
-  NSMutableDictionary* mutableInfo = [NSMutableDictionary dictionary];
+- (web::ContextMenuParams)contextMenuParamsForElement:
+    (base::DictionaryValue*)element {
+  web::ContextMenuParams params;
   NSString* title = nil;
   std::string href;
   if (element->GetString("href", &href)) {
-    mutableInfo[web::kContextLinkURLString] = base::SysUTF8ToNSString(href);
-    GURL linkURL(href);
-    if (linkURL.SchemeIs(url::kJavaScriptScheme)) {
+    params.link_url = GURL(href);
+    if (params.link_url.SchemeIs(url::kJavaScriptScheme)) {
       title = @"JavaScript";
     } else {
-      DCHECK(web::GetWebClient());
-      base::string16 urlText = url_formatter::FormatUrl(GURL(href));
+      base::string16 urlText = url_formatter::FormatUrl(params.link_url);
       title = base::SysUTF16ToNSString(urlText);
     }
   }
   std::string src;
   if (element->GetString("src", &src)) {
-    mutableInfo[web::kContextImageURLString] = base::SysUTF8ToNSString(src);
+    params.src_url = GURL(src);
     if (!title)
       title = base::SysUTF8ToNSString(src);
-    if ([title hasPrefix:@"data:"])
-      title = @"";
+    if ([title hasPrefix:base::SysUTF8ToNSString(url::kDataScheme)])
+      title = nil;
   }
   std::string titleAttribute;
   if (element->GetString("title", &titleAttribute))
     title = base::SysUTF8ToNSString(titleAttribute);
+  if (title) {
+    params.menu_title.reset([title copy]);
+  }
   std::string referrerPolicy;
-  element->GetString("referrerPolicy", &referrerPolicy);
-  mutableInfo[web::kContextLinkReferrerPolicy] =
-      @(web::ReferrerPolicyFromString(referrerPolicy));
-  if (title)
-    mutableInfo[web::kContextTitle] = title;
-  return [[mutableInfo copy] autorelease];
+  if (element->GetString("referrerPolicy", &referrerPolicy))
+    params.referrer_policy = web::ReferrerPolicyFromString(referrerPolicy);
+  return params;
 }
 
 #pragma mark -
