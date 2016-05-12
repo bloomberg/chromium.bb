@@ -343,8 +343,6 @@ component("gpu") {
       "/DELAYLOAD:mf.dll",
       "/DELAYLOAD:mfplat.dll",
     ]
-
-    # TODO(GYP): extract_xinput action.
   }
 
   if (use_x11) {
@@ -352,9 +350,12 @@ component("gpu") {
   }
 }
 
-if (is_android || is_chromeos) {
-  # TODO(GYP): Port Windows logic.
+if (is_win || is_android || is_chromeos) {
   test("video_decode_accelerator_unittest") {
+    sources = [
+      "video_accelerator_unittest_helpers.h",
+    ]
+
     deps = [
       ":gpu",
       "//base",
@@ -368,24 +369,14 @@ if (is_android || is_chromeos) {
       "//ui/gl",
       "//ui/gl:test_support",
     ]
+
     configs += [ "//third_party/khronos:khronos_headers" ]
     if (is_chromeos && target_cpu != "arm") {
       configs += [ "//third_party/libva:libva_config" ]
     }
-    sources = [
-      "video_accelerator_unittest_helpers.h",
-    ]
-    if (is_android) {
-      sources += [ "android_video_decode_accelerator_unittest.cc" ]
-    } else {
-      sources += [
-        "rendering_helper.cc",
-        "rendering_helper.h",
-        "video_decode_accelerator_unittest.cc",
-      ]
-    }
 
     if (is_android) {
+      sources += [ "android_video_decode_accelerator_unittest.cc" ]
       deps += [
         "//gpu:test_support",
         "//media/base/android",
@@ -395,7 +386,23 @@ if (is_android || is_chromeos) {
         "//testing/gmock",
         "//ui/android:ui_java",
       ]
+    } else {
+      sources += [
+        "rendering_helper.cc",
+        "rendering_helper.h",
+        "video_decode_accelerator_unittest.cc",
+      ]
     }
+
+    if (is_win) {
+      # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+      configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+      deps += [
+        "//third_party/angle:libEGL",
+        "//third_party/angle:libGLESv2",
+      ]
+    }
+
     if (is_chromeos && use_ozone) {
       deps += [
         "//ui/display",  # Used by rendering_helper.cc

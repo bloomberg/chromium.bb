@@ -24,11 +24,10 @@ group("remoting_all") {
   testonly = true
 
   deps = [
-    #"//remoting:remoting_browser_test_resources",
     "//remoting:remoting_unittests",
     "//remoting/test:chromoting_test_driver",
-
-    #"//remoting:remoting_webapp_unittests",
+    "//remoting/webapp:browser_test_resources",
+    "//remoting/webapp:unit_tests",
   ]
 
   # TODO(GYP): add is_mac

@@ -251,14 +251,6 @@ test("extensions_browsertests") {
     "//third_party/mesa:osmesa",
   ]
 
-  if (is_win) {
-    if (target_cpu == "x86") {
-      data_deps += [
-        # "$root_out_dir/wow_helper.exe"  # TODO(GYP)
-      ]
-    }
-  }
-
   if (is_mac) {
     deps += [ "shell:app_shell" ]  # Needed for App Shell.app's Helper.
   }

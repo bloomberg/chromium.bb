@@ -9,13 +9,10 @@ group("sandbox") {
       "//sandbox/win:sandbox",
     ]
   } else if (is_mac) {
-    # TODO(GYP): Make sandbox compile w/ 10.6 SDK.
-    if (false) {
-      public_deps = [
-        "//sandbox/mac:sandbox",
-        "//sandbox/mac:seatbelt",
-      ]
-    }
+    public_deps = [
+      "//sandbox/mac:sandbox",
+      "//sandbox/mac:seatbelt",
+    ]
   } else if (is_linux || is_android) {
     public_deps = [
       "//sandbox/linux:sandbox",

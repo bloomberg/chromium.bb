@@ -132,11 +132,12 @@ if (!(is_chromeos && !use_ozone)) {
     }
 
     if (is_mac) {
-      # TODO(GYP) bug 546894: Fix GN and toolchains to handle spaces here.
-      #output_name = "App Shell"
+      output_name = "App Shell"
+
       # TODO(GYP): Mac bundling. See also content_shell which this is basically
       # a copy-paste of.
       deps += [ ":app_shell_framework" ]
+
       # TODO(GYP): Mac app_shell_helper stuff.
     }
   }
@@ -190,15 +191,11 @@ test("app_shell_unittests") {
     sources += chromeos_sources
   }
 
-  # TODO(GYP): Enable this when //components/nacl GN is done.
-  if (false) {
-    if (use_nacl) {
-      nacl_sources =
-          rebase_path(app_shell_gypi_values.app_shell_unittests_sources_nacl,
-                      ".",
-                      "//extensions/shell")
-      sources += nacl_sources
-    }
+  if (enable_nacl) {
+    sources +=
+        rebase_path(app_shell_gypi_values.app_shell_unittests_sources_nacl,
+                    ".",
+                    "//extensions/shell")
   }
 }
 
