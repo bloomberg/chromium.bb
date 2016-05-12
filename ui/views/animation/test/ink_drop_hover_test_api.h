@@ -41,7 +41,7 @@ class InkDropHoverTestApi
   InkDropHover* ink_drop_hover() const { return ink_drop_hover_; }
 
  private:
-  // The InkDropedAnimation to provide internal access to.
+  // The InkDropHover to provide internal access to.
   InkDropHover* ink_drop_hover_;
 
   DISALLOW_COPY_AND_ASSIGN(InkDropHoverTestApi);

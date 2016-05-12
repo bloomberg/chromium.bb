@@ -28,7 +28,7 @@ class InkDropImplTestApi
     : public ui::test::MultiLayerAnimatorTestController,
       public ui::test::MultiLayerAnimatorTestControllerDelegate {
  public:
-  explicit InkDropImplTestApi(InkDropImpl* ink_drop_controller_);
+  explicit InkDropImplTestApi(InkDropImpl* ink_drop);
   ~InkDropImplTestApi() override;
 
   // Wrappers to InkDropImpl internals:

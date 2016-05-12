@@ -20,9 +20,9 @@ namespace views {
 class InkDropRipple;
 class InkDropHover;
 
-// Used by the InkDropAnimationController to add and remove the ink drop layers
-// from a host's layer tree. Typically the ink drop layer is added to a View's
-// layer but it can also be added to a View's ancestor layer.
+// Used by the InkDrop to add and remove the ink drop layers from a host's layer
+// tree. Typically the ink drop layer is added to a View's layer but it can also
+// be added to a View's ancestor layer.
 //
 // Note: Some Views do not own a Layer, but you can use
 // View::SetLayer(new ui::Layer(ui::LAYER_NOT_DRAWN)) to force the View to have

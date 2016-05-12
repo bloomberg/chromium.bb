@@ -68,7 +68,7 @@ InkDropFactoryTest::InkDropFactoryTest() : ink_drop_(nullptr) {
       break;
     case ui::MaterialDesignController::MATERIAL_NORMAL:
     case ui::MaterialDesignController::MATERIAL_HYBRID:
-      // The Timer's used by the InkDropAnimationControllerImpl class require a
+      // The Timer's used by the InkDropImpl class require a
       // base::ThreadTaskRunnerHandle instance.
       scoped_refptr<base::TestMockTimeTaskRunner> task_runner(
           new base::TestMockTimeTaskRunner);
