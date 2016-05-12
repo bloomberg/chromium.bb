@@ -487,14 +487,11 @@ class TestPrerenderContents : public PrerenderContents {
     if (skip_final_checks_)
       return;
 
-    if (expected_final_status_ == FINAL_STATUS_MAX) {
-      EXPECT_EQ(MATCH_COMPLETE_REPLACEMENT, match_complete_status());
-    } else {
-      EXPECT_EQ(expected_final_status_, final_status()) <<
-          " when testing URL " << prerender_url().path() <<
-          " (Expected: " << NameFromFinalStatus(expected_final_status_) <<
-          ", Actual: " << NameFromFinalStatus(final_status()) << ")";
-    }
+    EXPECT_EQ(expected_final_status_, final_status())
+        << " when testing URL " << prerender_url().path()
+        << " (Expected: " << NameFromFinalStatus(expected_final_status_)
+        << ", Actual: " << NameFromFinalStatus(final_status()) << ")";
+
     // Prerendering RenderViewHosts should be hidden before the first
     // navigation, so this should be happen for every PrerenderContents for
     // which a RenderViewHost is created, regardless of whether or not it's

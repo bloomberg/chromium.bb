@@ -40697,7 +40697,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Prerender.FinalStatusMatchComplete"
     enum="PrerenderFinalStatus">
-  <owner>pasko@chromium.org</owner>
+  <obsolete>
+    deprecated 2016-05-12
+  </obsolete>
   <summary>
     Final status for prerender pages - either success, or why it was canceled.
     This is for the MatchComplete set of pages (including some pages that were

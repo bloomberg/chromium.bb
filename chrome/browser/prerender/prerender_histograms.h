@@ -80,9 +80,7 @@ class PrerenderHistograms {
                                           base::TimeDelta time) const;
 
   // Record a final status of a prerendered page in a histogram.
-  void RecordFinalStatus(Origin origin,
-                         PrerenderContents::MatchCompleteStatus mc_status,
-                         FinalStatus final_status) const;
+  void RecordFinalStatus(Origin origin, FinalStatus final_status) const;
 
   // To be called when a new prerender is added.
   void RecordPrerender(Origin origin, const GURL& url);

@@ -205,7 +205,6 @@ PrerenderContents::PrerenderContents(
       has_stopped_loading_(false),
       has_finished_loading_(false),
       final_status_(FINAL_STATUS_MAX),
-      match_complete_status_(MATCH_COMPLETE_DEFAULT),
       prerendering_has_been_cancelled_(false),
       child_id_(-1),
       route_id_(-1),
@@ -347,8 +346,7 @@ PrerenderContents::~PrerenderContents() {
       prerendering_has_been_cancelled() || final_status() == FINAL_STATUS_USED);
   DCHECK_NE(ORIGIN_MAX, origin());
 
-  prerender_manager_->RecordFinalStatusWithMatchCompleteStatus(
-      origin(), match_complete_status(), final_status());
+  prerender_manager_->RecordFinalStatus(origin(), final_status());
 
   bool used = final_status() == FINAL_STATUS_USED ||
               final_status() == FINAL_STATUS_WOULD_HAVE_BEEN_USED;
@@ -462,12 +460,10 @@ bool PrerenderContents::OnMessageReceived(const IPC::Message& message) {
 
 bool PrerenderContents::CheckURL(const GURL& url) {
   if (!url.SchemeIsHTTPOrHTTPS()) {
-    DCHECK_NE(MATCH_COMPLETE_REPLACEMENT_PENDING, match_complete_status_);
     Destroy(FINAL_STATUS_UNSUPPORTED_SCHEME);
     return false;
   }
-  if (match_complete_status_ != MATCH_COMPLETE_REPLACEMENT_PENDING &&
-      prerender_manager_->HasRecentlyBeenNavigatedTo(origin(), url)) {
+  if (prerender_manager_->HasRecentlyBeenNavigatedTo(origin(), url)) {
     Destroy(FINAL_STATUS_RECENTLY_VISITED);
     return false;
   }

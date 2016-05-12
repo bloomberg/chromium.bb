@@ -91,31 +91,6 @@ class PrerenderContents : public content::NotificationObserver,
     virtual ~Observer() = 0;
   };
 
-  // Indicates how this PrerenderContents relates to MatchComplete. This is to
-  // figure out which histograms to use to record the FinalStatus, Match (record
-  // all prerenders and control group prerenders) or MatchComplete (record
-  // running prerenders only in the way they would have been recorded in the
-  // control group).
-  // TODO(pasko): Remove the dead code associated with non-default
-  // MatchCompleteStatus.
-  enum MatchCompleteStatus {
-    // A regular prerender which will be recorded both in Match and
-    // MatchComplete.
-    MATCH_COMPLETE_DEFAULT,
-    // A prerender that used to be a regular prerender, but has since been
-    // replaced by a MatchComplete dummy. Therefore, we will record this only
-    // for Match, but not for MatchComplete.
-    MATCH_COMPLETE_REPLACED,
-    // A prerender that is a MatchComplete dummy replacing a regular prerender.
-    // In the control group, our prerender never would have been canceled, so
-    // we record in MatchComplete but not Match.
-    MATCH_COMPLETE_REPLACEMENT,
-    // A prerender that is a MatchComplete dummy, early in the process of being
-    // created. This prerender should not fail. Record for MatchComplete, but
-    // not Match.
-    MATCH_COMPLETE_REPLACEMENT_PENDING,
-  };
-
   ~PrerenderContents() override;
 
   // All observers of a PrerenderContents are removed after the OnPrerenderStop
@@ -123,11 +98,6 @@ class PrerenderContents : public content::NotificationObserver,
   // use case.
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
-
-  // For MatchComplete correctness, create a dummy replacement prerender
-  // contents to stand in for this prerender contents that (which we are about
-  // to destroy).
-  PrerenderContents* CreateMatchCompleteReplacement();
 
   bool Init();
 
@@ -163,12 +133,6 @@ class PrerenderContents : public content::NotificationObserver,
   bool has_stopped_loading() const { return has_stopped_loading_; }
   bool has_finished_loading() const { return has_finished_loading_; }
   bool prerendering_has_started() const { return prerendering_has_started_; }
-  MatchCompleteStatus match_complete_status() const {
-    return match_complete_status_;
-  }
-  void set_match_complete_status(MatchCompleteStatus status) {
-    match_complete_status_ = status;
-  }
 
   // Sets the parameter to the value of the associated RenderViewHost's child id
   // and returns a boolean indicating the validity of that id.
@@ -361,11 +325,6 @@ class PrerenderContents : public content::NotificationObserver,
   bool has_finished_loading_;
 
   FinalStatus final_status_;
-
-  // The MatchComplete status of the prerender, indicating how it relates
-  // to being a MatchComplete dummy (see definition of MatchCompleteStatus
-  // above).
-  MatchCompleteStatus match_complete_status_;
 
   // Tracks whether or not prerendering has been cancelled by calling Destroy.
   // Used solely to prevent double deletion.

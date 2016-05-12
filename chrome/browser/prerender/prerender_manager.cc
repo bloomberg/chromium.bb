@@ -412,16 +412,18 @@ WebContents* PrerenderManager::SwapInternal(
   // Don't use prerendered pages if debugger is attached to the tab.
   // See http://crbug.com/98541
   if (content::DevToolsAgentHost::IsDebuggerAttached(web_contents)) {
-    DestroyAndMarkMatchCompleteAsUsed(prerender_data->contents(),
-                                      FINAL_STATUS_DEVTOOLS_ATTACHED);
+    histograms_->RecordFinalStatus(prerender_data->contents()->origin(),
+                                   FINAL_STATUS_DEVTOOLS_ATTACHED);
+    prerender_data->contents()->Destroy(FINAL_STATUS_DEVTOOLS_ATTACHED);
     return NULL;
   }
 
   // If the prerendered page is in the middle of a cross-site navigation,
   // don't swap it in because there isn't a good way to merge histories.
   if (prerender_data->contents()->IsCrossSiteNavigationPending()) {
-    DestroyAndMarkMatchCompleteAsUsed(
-        prerender_data->contents(),
+    histograms_->RecordFinalStatus(prerender_data->contents()->origin(),
+                                   FINAL_STATUS_CROSS_SITE_NAVIGATION_PENDING);
+    prerender_data->contents()->Destroy(
         FINAL_STATUS_CROSS_SITE_NAVIGATION_PENDING);
     return NULL;
   }
@@ -782,11 +784,9 @@ void PrerenderManager::ClearData(int clear_flags) {
     prerender_history_->Clear();
 }
 
-void PrerenderManager::RecordFinalStatusWithMatchCompleteStatus(
-    Origin origin,
-    PrerenderContents::MatchCompleteStatus mc_status,
-    FinalStatus final_status) const {
-  histograms_->RecordFinalStatus(origin, mc_status, final_status);
+void PrerenderManager::RecordFinalStatus(Origin origin,
+                                         FinalStatus final_status) const {
+  histograms_->RecordFinalStatus(origin, final_status);
 }
 
 void PrerenderManager::RecordNavigation(const GURL& url) {
@@ -1193,23 +1193,11 @@ void PrerenderManager::DestroyAllContents(FinalStatus final_status) {
   to_delete_prerenders_.clear();
 }
 
-void PrerenderManager::DestroyAndMarkMatchCompleteAsUsed(
-    PrerenderContents* prerender_contents,
-    FinalStatus final_status) {
-  prerender_contents->set_match_complete_status(
-      PrerenderContents::MATCH_COMPLETE_REPLACED);
-  histograms_->RecordFinalStatus(prerender_contents->origin(),
-                                 PrerenderContents::MATCH_COMPLETE_REPLACEMENT,
-                                 FINAL_STATUS_WOULD_HAVE_BEEN_USED);
-  prerender_contents->Destroy(final_status);
-}
-
 void PrerenderManager::RecordFinalStatusWithoutCreatingPrerenderContents(
     const GURL& url, Origin origin, FinalStatus final_status) const {
   PrerenderHistory::Entry entry(url, final_status, origin, base::Time::Now());
   prerender_history_->AddEntry(entry);
-  RecordFinalStatusWithMatchCompleteStatus(
-      origin, PrerenderContents::MATCH_COMPLETE_DEFAULT, final_status);
+  histograms_->RecordFinalStatus(origin, final_status);
 }
 
 void PrerenderManager::Observe(int type,

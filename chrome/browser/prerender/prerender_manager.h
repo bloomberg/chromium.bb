@@ -273,12 +273,7 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   void ClearData(int clear_flags);
 
   // Record a final status of a prerendered page in a histogram.
-  // This variation allows specifying whether prerendering had been started
-  // (necessary to flag MatchComplete dummies).
-  void RecordFinalStatusWithMatchCompleteStatus(
-      Origin origin,
-      PrerenderContents::MatchCompleteStatus mc_status,
-      FinalStatus final_status) const;
+  void RecordFinalStatus(Origin origin, FinalStatus final_status) const;
 
   // content::NotificationObserver
   void Observe(int type,
@@ -499,16 +494,8 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // Used both on destruction, and when clearing the browsing history.
   void DestroyAllContents(FinalStatus final_status);
 
-  // Helper function to destroy a PrerenderContents with the specified
-  // final_status, while at the same time recording that for the MatchComplete
-  // case, that this prerender would have been used.
-  void DestroyAndMarkMatchCompleteAsUsed(PrerenderContents* prerender_contents,
-                                         FinalStatus final_status);
-
   // Records the final status a prerender in the case that a PrerenderContents
   // was never created, and also adds a PrerenderHistory entry.
-  // This is a helper function which will ultimately call
-  // RecordFinalStatusWthMatchCompleteStatus, using MATCH_COMPLETE_DEFAULT.
   void RecordFinalStatusWithoutCreatingPrerenderContents(
       const GURL& url, Origin origin, FinalStatus final_status) const;
 
