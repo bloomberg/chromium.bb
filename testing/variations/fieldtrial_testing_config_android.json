@@ -456,6 +456,11 @@
             }
         }
     ],
+    "UsePredictorDNSQueue": [
+        {
+            "group_name": "Disabled"
+        }
+    ],
     "V8CacheStrategiesForCacheStorage": [
         {
             "group_name": "none"

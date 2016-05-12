@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/containers/mru_cache.h"
+#include "base/feature_list.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -55,6 +56,11 @@ using base::TimeDelta;
 using content::BrowserThread;
 
 namespace chrome_browser_net {
+
+namespace {
+const base::Feature kUsePredictorDNSQueue{"UsePredictorDNSQueue",
+                                          base::FEATURE_ENABLED_BY_DEFAULT};
+}
 
 // static
 const int Predictor::kPredictorReferrerVersion = 2;
@@ -426,7 +432,8 @@ void Predictor::DiscardAllResults() {
       assignees[url] = *info;
     }
   }
-  DCHECK_LE(assignees.size(), max_concurrent_dns_lookups_);
+  DCHECK(!base::FeatureList::IsEnabled(kUsePredictorDNSQueue) ||
+         assignees.size() <= max_concurrent_dns_lookups_);
   results_.clear();
   // Put back in the names being worked on.
   for (Results::iterator it = assignees.begin(); assignees.end() != it; ++it) {
@@ -1086,6 +1093,7 @@ UrlInfo* Predictor::AppendToResolutionQueue(
 
 bool Predictor::CongestionControlPerformed(UrlInfo* info) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(base::FeatureList::IsEnabled(kUsePredictorDNSQueue));
   // Note: queue_duration is ONLY valid after we go to assigned state.
   if (info->queue_duration() < max_dns_queue_delay_)
     return false;
@@ -1105,14 +1113,18 @@ bool Predictor::CongestionControlPerformed(UrlInfo* info) {
 void Predictor::StartSomeQueuedResolutions() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
+  // If the queue is disabled, just make LookupRequests for all entries.
+  bool enable_queue = base::FeatureList::IsEnabled(kUsePredictorDNSQueue);
   while (!work_queue_.IsEmpty() &&
-         pending_lookups_.size() < max_concurrent_dns_lookups_) {
+         (!enable_queue ||
+          pending_lookups_.size() < max_concurrent_dns_lookups_)) {
     const GURL url(work_queue_.Pop());
     UrlInfo* info = &results_[url];
     DCHECK(info->HasUrl(url));
     info->SetAssignedState();
 
-    if (CongestionControlPerformed(info)) {
+    // Only perform congestion control if the queue is enabled.
+    if (enable_queue && CongestionControlPerformed(info)) {
       DCHECK(work_queue_.IsEmpty());
       return;
     }
