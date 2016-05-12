@@ -490,7 +490,7 @@ TEST_F(SdchFilterTest, BasicDictionary) {
   EXPECT_EQ(output, expanded_);
 
   // Decode with really small buffers (size 1) to check for edge effects.
-  filter.reset(Filter::Factory(filter_types, *filter_context()));
+  filter = Filter::Factory(filter_types, *filter_context());
 
   feed_block_size = 1;
   output_block_size = 1;
@@ -748,7 +748,7 @@ TEST_F(SdchFilterTest, DictionaryPathValidation) {
 
   // Test decode the path data, arriving from a invalid path.
   SetupFilterContextWithGURL(GURL(url_string));
-  filter.reset(Filter::Factory(filter_types, *filter_context()));
+  filter = Filter::Factory(filter_types, *filter_context());
 
   feed_block_size = 100;
   output_block_size = 100;
@@ -800,7 +800,7 @@ TEST_F(SdchFilterTest, DictionaryPortValidation) {
 
   // Test decode the port data, arriving from a valid (default) port.
   SetupFilterContextWithGURL(GURL(url_string));  // Default port.
-  filter.reset(Filter::Factory(filter_types, *filter_context()));
+  filter = Filter::Factory(filter_types, *filter_context());
 
   feed_block_size = 100;
   output_block_size = 100;
@@ -811,7 +811,7 @@ TEST_F(SdchFilterTest, DictionaryPortValidation) {
 
   // Test decode the port data, arriving from a invalid port.
   SetupFilterContextWithGURL(GURL(url_string + ":" + port + "1"));
-  filter.reset(Filter::Factory(filter_types, *filter_context()));
+  filter = Filter::Factory(filter_types, *filter_context());
 
   feed_block_size = 100;
   output_block_size = 100;
@@ -882,8 +882,10 @@ static std::string gzip_compress(const std::string &input) {
 
 class SdchFilterChainingTest {
  public:
-  static Filter* Factory(const std::vector<Filter::FilterType>& types,
-                           const FilterContext& context, int size) {
+  static std::unique_ptr<Filter> Factory(
+      const std::vector<Filter::FilterType>& types,
+      const FilterContext& context,
+      int size) {
     return Filter::FactoryForTests(types, context, size);
   }
 };
@@ -946,9 +948,8 @@ TEST_F(SdchFilterTest, FilterChaining) {
   // two filters more than once (that is why we multiply by 2).
   CHECK_LT(kMidSizedInputBufferSize * 2, sdch_compressed.size());
   filter_context()->SetURL(url);
-  filter.reset(
-      SdchFilterChainingTest::Factory(filter_types, *filter_context(),
-                                      kMidSizedInputBufferSize));
+  filter = SdchFilterChainingTest::Factory(filter_types, *filter_context(),
+                                           kMidSizedInputBufferSize);
   EXPECT_EQ(static_cast<int>(kMidSizedInputBufferSize),
             filter->stream_buffer_size());
 
@@ -960,8 +961,8 @@ TEST_F(SdchFilterTest, FilterChaining) {
   EXPECT_EQ(output, expanded_);
 
   // Next try with a tiny input and output buffer to cover edge effects.
-  filter.reset(SdchFilterChainingTest::Factory(filter_types, *filter_context(),
-                                               kLargeInputBufferSize));
+  filter = SdchFilterChainingTest::Factory(filter_types, *filter_context(),
+                                           kLargeInputBufferSize);
   EXPECT_EQ(static_cast<int>(kLargeInputBufferSize),
             filter->stream_buffer_size());
 
@@ -1019,7 +1020,7 @@ TEST_F(SdchFilterTest, DefaultGzipIfSdch) {
   EXPECT_EQ(output, expanded_);
 
   // Next try with a tiny buffer to cover edge effects.
-  filter.reset(Filter::Factory(filter_types, *filter_context()));
+  filter = Filter::Factory(filter_types, *filter_context());
 
   feed_block_size = 1;
   output_block_size = 1;
@@ -1077,7 +1078,7 @@ TEST_F(SdchFilterTest, AcceptGzipSdchIfGzip) {
   EXPECT_EQ(output, expanded_);
 
   // Next try with a tiny buffer to cover edge effects.
-  filter.reset(Filter::Factory(filter_types, *filter_context()));
+  filter = Filter::Factory(filter_types, *filter_context());
 
   feed_block_size = 1;
   output_block_size = 1;
@@ -1132,7 +1133,7 @@ TEST_F(SdchFilterTest, DefaultSdchGzipIfEmpty) {
   EXPECT_EQ(output, expanded_);
 
   // Next try with a tiny buffer to cover edge effects.
-  filter.reset(Filter::Factory(filter_types, *filter_context()));
+  filter = Filter::Factory(filter_types, *filter_context());
 
   feed_block_size = 1;
   output_block_size = 1;
@@ -1193,7 +1194,7 @@ TEST_F(SdchFilterTest, AcceptGzipGzipSdchIfGzip) {
   EXPECT_EQ(output, expanded_);
 
   // Next try with a tiny buffer to cover edge effects.
-  filter.reset(Filter::Factory(filter_types, *filter_context()));
+  filter = Filter::Factory(filter_types, *filter_context());
 
   feed_block_size = 1;
   output_block_size = 1;

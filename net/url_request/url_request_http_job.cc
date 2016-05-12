@@ -1225,10 +1225,10 @@ void URLRequestHttpJob::PopulateNetErrorDetails(
   return transaction_->PopulateNetErrorDetails(details);
 }
 
-Filter* URLRequestHttpJob::SetupFilter() const {
+std::unique_ptr<Filter> URLRequestHttpJob::SetupFilter() const {
   DCHECK(transaction_.get());
   if (!response_info_)
-    return NULL;
+    return nullptr;
 
   std::vector<Filter::FilterType> encoding_types;
   std::string encoding_type;

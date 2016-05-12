@@ -118,7 +118,7 @@ class BrotliUnitTest : public PlatformTest {
   void InitFilter() {
     std::vector<Filter::FilterType> filter_types;
     filter_types.push_back(Filter::FILTER_TYPE_BROTLI);
-    filter_.reset(Filter::Factory(filter_types, filter_context_));
+    filter_ = Filter::Factory(filter_types, filter_context_);
     ASSERT_TRUE(filter_.get());
     ASSERT_LE(kDefaultBufferSize, filter_->stream_buffer_size());
   }
@@ -126,8 +126,8 @@ class BrotliUnitTest : public PlatformTest {
   void InitFilterWithBufferSize(int buffer_size) {
     std::vector<Filter::FilterType> filter_types;
     filter_types.push_back(Filter::FILTER_TYPE_BROTLI);
-    filter_.reset(
-        Filter::FactoryForTests(filter_types, filter_context_, buffer_size));
+    filter_ =
+        Filter::FactoryForTests(filter_types, filter_context_, buffer_size);
     ASSERT_TRUE(filter_.get());
   }
 

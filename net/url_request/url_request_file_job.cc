@@ -145,11 +145,11 @@ bool URLRequestFileJob::IsRedirectResponse(GURL* location,
 #endif
 }
 
-Filter* URLRequestFileJob::SetupFilter() const {
+std::unique_ptr<Filter> URLRequestFileJob::SetupFilter() const {
   // Bug 9936 - .svgz files needs to be decompressed.
   return base::LowerCaseEqualsASCII(file_path_.Extension(), ".svgz")
              ? Filter::GZipFactory()
-             : NULL;
+             : nullptr;
 }
 
 bool URLRequestFileJob::GetMimeType(std::string* mime_type) const {
