@@ -493,6 +493,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // DelegatedFrameHostClient implementation.
   ui::Layer* DelegatedFrameHostGetLayer() const override;
   bool DelegatedFrameHostIsVisible() const override;
+  SkColor DelegatedFrameHostGetGutterColor(SkColor color) const override;
   gfx::Size DelegatedFrameHostDesiredSizeInDIP() const override;
   bool DelegatedFrameCanCreateResizeLock() const override;
   std::unique_ptr<ResizeLock> DelegatedFrameHostCreateResizeLock(

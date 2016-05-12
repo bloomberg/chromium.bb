@@ -58,6 +58,10 @@ class CONTENT_EXPORT DelegatedFrameHostClient {
  public:
   virtual ui::Layer* DelegatedFrameHostGetLayer() const = 0;
   virtual bool DelegatedFrameHostIsVisible() const = 0;
+
+  // Returns the color that the resize gutters should be drawn with. Takes the
+  // suggested color from the current page background.
+  virtual SkColor DelegatedFrameHostGetGutterColor(SkColor color) const = 0;
   virtual gfx::Size DelegatedFrameHostDesiredSizeInDIP() const = 0;
 
   virtual bool DelegatedFrameCanCreateResizeLock() const = 0;
@@ -206,6 +210,8 @@ class CONTENT_EXPORT DelegatedFrameHost
 
   // Checks if the resize lock can be released because we received an new frame.
   void CheckResizeLock();
+
+  SkColor GetGutterColor() const;
 
   // Update the layers for the resize gutters to the right and bottom of the
   // surface layer.

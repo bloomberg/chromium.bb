@@ -255,16 +255,24 @@ void DelegatedFrameHost::WasResized() {
   UpdateGutters();
 }
 
+SkColor DelegatedFrameHost::GetGutterColor() const {
+  // In fullscreen mode resizing is uncommon, so it makes more sense to
+  // make the initial switch to fullscreen mode look better by using black as
+  // the gutter color.
+  return client_->DelegatedFrameHostGetGutterColor(background_color_);
+}
+
 void DelegatedFrameHost::UpdateGutters() {
   if (surface_id_.is_null()) {
     right_gutter_.reset();
     bottom_gutter_.reset();
     return;
   }
+
   if (current_frame_size_in_dip_.width() <
       client_->DelegatedFrameHostDesiredSizeInDIP().width()) {
     right_gutter_.reset(new ui::Layer(ui::LAYER_SOLID_COLOR));
-    right_gutter_->SetColor(background_color_);
+    right_gutter_->SetColor(GetGutterColor());
     int width = client_->DelegatedFrameHostDesiredSizeInDIP().width() -
                 current_frame_size_in_dip_.width();
     // The right gutter also includes the bottom-right corner, if necessary.
@@ -280,7 +288,7 @@ void DelegatedFrameHost::UpdateGutters() {
   if (current_frame_size_in_dip_.height() <
       client_->DelegatedFrameHostDesiredSizeInDIP().height()) {
     bottom_gutter_.reset(new ui::Layer(ui::LAYER_SOLID_COLOR));
-    bottom_gutter_->SetColor(background_color_);
+    bottom_gutter_->SetColor(GetGutterColor());
     int width = current_frame_size_in_dip_.width();
     int height = client_->DelegatedFrameHostDesiredSizeInDIP().height() -
                  current_frame_size_in_dip_.height();

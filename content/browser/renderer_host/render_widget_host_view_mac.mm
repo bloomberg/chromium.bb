@@ -414,6 +414,19 @@ bool RenderWidgetHostViewMac::DelegatedFrameHostIsVisible() const {
   return !render_widget_host_->is_hidden();
 }
 
+SkColor RenderWidgetHostViewMac::DelegatedFrameHostGetGutterColor(
+    SkColor color) const {
+  // When making an element on the page fullscreen the element's background
+  // may not match the page's, so use black as the gutter color to avoid
+  // flashes of brighter colors during the transition.
+  if (render_widget_host_->delegate() &&
+      render_widget_host_->delegate()->IsFullscreenForCurrentTab(
+          render_widget_host_)) {
+    return SK_ColorBLACK;
+  }
+  return color;
+}
+
 gfx::Size RenderWidgetHostViewMac::DelegatedFrameHostDesiredSizeInDIP() const {
   return GetViewBounds().size();
 }

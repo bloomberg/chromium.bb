@@ -154,10 +154,11 @@ class TestOverscrollDelegate : public OverscrollControllerDelegate {
 
 class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
  public:
-  MockRenderWidgetHostDelegate() : rwh_(nullptr) {}
+  MockRenderWidgetHostDelegate() : rwh_(nullptr), is_fullscreen_(false) {}
   ~MockRenderWidgetHostDelegate() override {}
   const NativeWebKeyboardEvent* last_event() const { return last_event_.get(); }
   void set_widget_host(RenderWidgetHostImpl* rwh) { rwh_ = rwh; }
+  void set_is_fullscreen(bool is_fullscreen) { is_fullscreen_ = is_fullscreen; }
 
  protected:
   // RenderWidgetHostDelegate:
@@ -174,10 +175,15 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
     if (rwh_)
       rwh_->SendScreenRects();
   }
+  bool IsFullscreenForCurrentTab(
+      RenderWidgetHostImpl* render_widget_host) const override {
+    return is_fullscreen_;
+  }
 
  private:
   std::unique_ptr<NativeWebKeyboardEvent> last_event_;
   RenderWidgetHostImpl* rwh_;
+  bool is_fullscreen_;
 
   DISALLOW_COPY_AND_ASSIGN(MockRenderWidgetHostDelegate);
 };
@@ -1721,11 +1727,15 @@ TEST_F(RenderWidgetHostViewAuraTest, DelegatedFrameGutter) {
   EXPECT_EQ(gfx::Rect(0, 45, 40, 55), parent_layer->children()[1]->bounds());
   EXPECT_EQ(SK_ColorRED, parent_layer->children()[1]->background_color());
 
+  delegates_.back()->set_is_fullscreen(true);
   view_->SetSize(medium_size);
 
   // Right gutter is unnecessary.
   ASSERT_EQ(1u, parent_layer->children().size());
   EXPECT_EQ(gfx::Rect(0, 45, 40, 50), parent_layer->children()[0]->bounds());
+
+  // RWH is fullscreen, so gutters should be black.
+  EXPECT_EQ(SK_ColorBLACK, parent_layer->children()[0]->background_color());
 
   frame = MakeDelegatedFrame(1.f, medium_size, gfx::Rect(medium_size));
   view_->OnSwapCompositorFrame(0, std::move(frame));
