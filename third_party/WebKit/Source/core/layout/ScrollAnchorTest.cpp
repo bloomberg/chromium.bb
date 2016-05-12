@@ -263,6 +263,68 @@ TEST_F(ScrollAnchorTest, ExcludeAbsolutePosition)
     EXPECT_EQ(absPos->layoutObject(), scrollAnchor(scroller).anchorObject());
 }
 
+// Test that we descend into zero-height containers that have overflowing content.
+TEST_F(ScrollAnchorTest, DescendsIntoContainerWithOverflow)
+{
+    setBodyInnerHTML(
+        "<style>"
+        "    body { height: 1000; }"
+        "    #outer { width: 300px; }"
+        "    #zeroheight { height: 0px; }"
+        "    #changer { height: 100px; background-color: red; }"
+        "    #bottom { margin-top: 600px; }"
+        "</style>"
+        "<div id='outer'>"
+        "    <div id='zeroheight'>"
+        "      <div id='changer'></div>"
+        "      <div id='bottom'>bottom</div>"
+        "    </div>"
+        "</div>");
+
+    ScrollableArea* viewport = layoutViewport();
+
+    scrollLayoutViewport(DoubleSize(0, 200));
+    setHeight(document().getElementById("changer"), 200);
+
+    EXPECT_EQ(300, viewport->scrollPosition().y());
+    EXPECT_EQ(document().getElementById("bottom")->layoutObject(),
+        scrollAnchor(viewport).anchorObject());
+}
+
+// Test that we descend into zero-height containers that have floating content.
+TEST_F(ScrollAnchorTest, DescendsIntoContainerWithFloat)
+{
+    setBodyInnerHTML(
+        "<style>"
+        "    body { height: 1000; }"
+        "    #outer { width: 300px; }"
+        "    #outer:after { content: ' '; clear:both; display: table; }"
+        "    #float {"
+        "         float: left; background-color: #ccc;"
+        "         height: 500px; width: 100%;"
+        "    }"
+        "    #inner { height: 21px; background-color:#7f0; }"
+        "</style>"
+        "<div id='outer'>"
+        "    <div id='zeroheight'>"
+        "      <div id='float'>"
+        "         <div id='inner'></div>"
+        "      </div>"
+        "    </div>"
+        "</div>");
+
+    EXPECT_EQ(0, toLayoutBox(document().getElementById("zeroheight")->layoutObject())->size().height());
+
+    ScrollableArea* viewport = layoutViewport();
+
+    scrollLayoutViewport(DoubleSize(0, 200));
+    setHeight(document().getElementById("float"), 600);
+
+    EXPECT_EQ(200, viewport->scrollPosition().y());
+    EXPECT_EQ(document().getElementById("float")->layoutObject(),
+        scrollAnchor(viewport).anchorObject());
+}
+
 class ScrollAnchorCornerTest : public ScrollAnchorTest {
 protected:
     void checkCorner(const AtomicString& id, Corner corner, DoublePoint startPos, DoubleSize expectedAdjustment)
