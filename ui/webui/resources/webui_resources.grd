@@ -19,7 +19,6 @@ without changes to the corresponding grd file. -->
       <!-- Roboto Font. Roboto-Regular and Roboto-Light is already available on
            Android, and Roboto-Medium is not used on Android. -->
       <if expr="not android">
-        <include name="IDR_WEBUI_ROBOTO_ROBOTO_LIGHT_WOFF2" file="roboto/roboto-light.woff2" type="BINDATA" />
         <include name="IDR_WEBUI_ROBOTO_ROBOTO_REGULAR_WOFF2" file="roboto/roboto-regular.woff2" type="BINDATA" />
         <include name="IDR_WEBUI_ROBOTO_ROBOTO_MEDIUM_WOFF2" file="roboto/roboto-medium.woff2" type="BINDATA" />
       </if>
