@@ -72,6 +72,7 @@ public:
     ALWAYS_INLINE ~PassRefPtr() { derefIfNotNull(m_ptr); }
 
     template <typename U> PassRefPtr(const RefPtr<U>&, EnsurePtrConvertibleArgDecl(U, T));
+    template <typename U> PassRefPtr(RefPtr<U>&&, EnsurePtrConvertibleArgDecl(U, T));
 
     T* get() const { return m_ptr; }
 
@@ -108,6 +109,12 @@ template <typename U> inline PassRefPtr<T>::PassRefPtr(const RefPtr<U>& o, Ensur
 {
     T* ptr = m_ptr;
     refIfNotNull(ptr);
+}
+
+template <typename T>
+template <typename U> inline PassRefPtr<T>::PassRefPtr(RefPtr<U>&& o, EnsurePtrConvertibleArgDefn(U, T))
+    : m_ptr(o.release().leakRef())
+{
 }
 
 template <typename T> inline T* PassRefPtr<T>::leakRef() const
