@@ -673,7 +673,6 @@
           'third_party/nspr/prtime.h',
           'third_party/superfasthash/superfasthash.c',
           'third_party/xdg_mime/xdgmime.h',
-          'thread_task_runner_handle.h',
           'threading/non_thread_safe.h',
           'threading/non_thread_safe_impl.cc',
           'threading/non_thread_safe_impl.h',
