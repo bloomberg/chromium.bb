@@ -8,7 +8,7 @@ self.onmessage = function(e) {
     var ctx = aCanvas.getContext('2d');
    
     ctx.drawImage(e.data, 0, 0);
-    ctx.drawImage(e.data, 30, 30);
+    ctx.drawImage(e.data, 30, 30, 30, 30);
     // stretch the image
     ctx.drawImage(e.data, 8, 8, 15, 15, 60, 60, 60, 60);
     // reduce the image

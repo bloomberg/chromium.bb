@@ -4048,6 +4048,7 @@ interface OffscreenCanvasRenderingContext2D
     method createLinearGradient
     method createPattern
     method createRadialGradient
+    method drawImage
     method ellipse
     method fill
     method fillRect

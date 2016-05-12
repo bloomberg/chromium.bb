@@ -31,10 +31,9 @@
     void stroke(Path2D path);
 
     // drawing images
-    // TODO(crbug.com/563856): Expose these API to Window with more layout tests
-    [CallWith=ExecutionContext, Exposed=Worker, RaisesException] void drawImage(CanvasImageSource image, unrestricted double x, unrestricted double y);
-    [CallWith=ExecutionContext, Exposed=Worker, RaisesException] void drawImage(CanvasImageSource image, unrestricted double x, unrestricted double y, unrestricted double width, unrestricted double height);
-    [CallWith=ExecutionContext, Exposed=Worker, RaisesException] void drawImage(CanvasImageSource image, unrestricted double sx, unrestricted double sy, unrestricted double sw, unrestricted double sh, unrestricted double dx, unrestricted double dy, unrestricted double dw, unrestricted double dh);
+    [CallWith=ExecutionContext, RaisesException] void drawImage(CanvasImageSource image, unrestricted double x, unrestricted double y);
+    [CallWith=ExecutionContext, RaisesException] void drawImage(CanvasImageSource image, unrestricted double x, unrestricted double y, unrestricted double width, unrestricted double height);
+    [CallWith=ExecutionContext, RaisesException] void drawImage(CanvasImageSource image, unrestricted double sx, unrestricted double sy, unrestricted double sw, unrestricted double sh, unrestricted double dx, unrestricted double dy, unrestricted double dw, unrestricted double dh);
 
     // Line caps/joins
     attribute unrestricted double lineWidth; // (default 1)
