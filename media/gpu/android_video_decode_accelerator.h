@@ -23,6 +23,7 @@
 #include "media/base/android/sdk_media_codec_bridge.h"
 #include "media/base/media_keys.h"
 #include "media/gpu/avda_state_provider.h"
+#include "media/gpu/avda_surface_tracker.h"
 #include "media/gpu/gpu_video_decode_accelerator_helpers.h"
 #include "media/gpu/media_gpu_export.h"
 #include "media/video/video_decode_accelerator.h"
@@ -163,6 +164,9 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
     WAITING_FOR_CODEC,
     // Set when we have a codec, but it doesn't yet have a key.
     WAITING_FOR_KEY,
+    // The output surface was destroyed. We must not configure a new MediaCodec
+    // with the destroyed surface.
+    SURFACE_DESTROYED,
   };
 
   enum DrainType {
@@ -320,6 +324,11 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
   // can be a null callback.
   void ResetCodecState(const base::Closure& done_cb);
 
+  // Registered to be called when surfaces are being destroyed. If |surface_id|
+  // is our surface, we should release the MediaCodec before returning from
+  // this.
+  void OnDestroyingSurface(int surface_id);
+
   // Return true if and only if we should use deferred rendering.
   static bool UseDeferredRenderingStrategy(
       const gpu::GpuPreferences& gpu_preferences);
@@ -415,6 +424,10 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
   // True if and only if VDA initialization is deferred, and we have not yet
   // called NotifyInitializationComplete.
   bool deferred_initialization_pending_;
+
+  int surface_id_;
+
+  OnDestroyingSurfaceCallback on_destroying_surface_cb_;
 
   // WeakPtrFactory for posting tasks back to |this|.
   base::WeakPtrFactory<AndroidVideoDecodeAccelerator> weak_this_factory_;

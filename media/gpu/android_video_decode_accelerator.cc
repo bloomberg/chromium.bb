@@ -318,6 +318,7 @@ AndroidVideoDecodeAccelerator::AndroidVideoDecodeAccelerator(
       error_sequence_token_(0),
       defer_errors_(false),
       deferred_initialization_pending_(false),
+      surface_id_(media::VideoDecodeAccelerator::Config::kNoSurfaceID),
       weak_this_factory_(this) {}
 
 AndroidVideoDecodeAccelerator::~AndroidVideoDecodeAccelerator() {
@@ -413,12 +414,19 @@ bool AndroidVideoDecodeAccelerator::Initialize(const Config& config,
     return false;
   }
 
-  codec_config_->surface_ = strategy_->Initialize(config.surface_id);
+  surface_id_ = config.surface_id;
+  codec_config_->surface_ = strategy_->Initialize(surface_id_);
   if (codec_config_->surface_.IsEmpty()) {
     LOG(ERROR) << "Failed to initialize the backing strategy. The returned "
                   "Java surface is empty.";
     return false;
   }
+
+  on_destroying_surface_cb_ =
+      base::Bind(&AndroidVideoDecodeAccelerator::OnDestroyingSurface,
+                 weak_this_factory_.GetWeakPtr());
+  AVDASurfaceTracker::GetInstance()->RegisterOnDestroyingSurfaceCallback(
+      on_destroying_surface_cb_);
 
   // TODO(watk,liberato): move this into the strategy.
   scoped_refptr<gfx::SurfaceTexture> surface_texture =
@@ -454,8 +462,10 @@ bool AndroidVideoDecodeAccelerator::Initialize(const Config& config,
 void AndroidVideoDecodeAccelerator::DoIOTask(bool start_timer) {
   DCHECK(thread_checker_.CalledOnValidThread());
   TRACE_EVENT0("media", "AVDA::DoIOTask");
-  if (state_ == ERROR || state_ == WAITING_FOR_CODEC)
+  if (state_ == ERROR || state_ == WAITING_FOR_CODEC ||
+      state_ == SURFACE_DESTROYED) {
     return;
+  }
 
   strategy_->MaybeRenderEarly();
   bool did_work = false, did_input = false, did_output = false;
@@ -895,7 +905,10 @@ void AndroidVideoDecodeAccelerator::Flush() {
   DVLOG(1) << __FUNCTION__;
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  StartCodecDrain(DRAIN_FOR_FLUSH);
+  if (state_ == SURFACE_DESTROYED)
+    NotifyFlushDone();
+  else
+    StartCodecDrain(DRAIN_FOR_FLUSH);
 }
 
 void AndroidVideoDecodeAccelerator::ConfigureMediaCodecAsynchronously() {
@@ -961,22 +974,28 @@ AndroidVideoDecodeAccelerator::ConfigureMediaCodecOnAnyThread(
 void AndroidVideoDecodeAccelerator::OnCodecConfigured(
     std::unique_ptr<media::VideoCodecBridge> media_codec) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK_EQ(state_, WAITING_FOR_CODEC);
-
-  media_codec_ = std::move(media_codec);
+  DCHECK(state_ == WAITING_FOR_CODEC || state_ == SURFACE_DESTROYED);
 
   // Record one instance of the codec being initialized.
   RecordFormatChangedMetric(FormatChangedValue::CodecInitialized);
 
-  strategy_->CodecChanged(media_codec_.get());
-
   // If we are supposed to notify that initialization is complete, then do so
   // now.  Otherwise, this is a reconfiguration.
   if (deferred_initialization_pending_) {
-    NotifyInitializationComplete(!!media_codec_);
+    // Losing the output surface is not considered an error state, so notify
+    // success. The client will destroy this soon.
+    NotifyInitializationComplete(state_ == SURFACE_DESTROYED ? true
+                                                             : !!media_codec);
     deferred_initialization_pending_ = false;
   }
 
+  // If |state_| changed to SURFACE_DESTROYED while we were configuring a codec,
+  // then the codec is already invalid so we return early and drop it.
+  if (state_ == SURFACE_DESTROYED)
+    return;
+
+  media_codec_ = std::move(media_codec);
+  strategy_->CodecChanged(media_codec_.get());
   if (!media_codec_) {
     POST_ERROR(PLATFORM_FAILURE, "Failed to create MediaCodec.");
     return;
@@ -1052,7 +1071,8 @@ void AndroidVideoDecodeAccelerator::ResetCodecState(
 
   // If there is already a reset in flight, then that counts.  This can really
   // only happen if somebody calls Reset.
-  if (state_ == WAITING_FOR_CODEC) {
+  // If the surface is destroyed there's nothing to do.
+  if (state_ == WAITING_FOR_CODEC || state_ == SURFACE_DESTROYED) {
     if (!done_cb.is_null())
       done_cb.Run();
     return;
@@ -1179,6 +1199,11 @@ void AndroidVideoDecodeAccelerator::ActualDestroy() {
   DVLOG(1) << __FUNCTION__;
   DCHECK(thread_checker_.CalledOnValidThread());
 
+  if (!on_destroying_surface_cb_.is_null()) {
+    AVDASurfaceTracker::GetInstance()->UnregisterOnDestroyingSurfaceCallback(
+        on_destroying_surface_cb_);
+  }
+
   // Note that async codec construction might still be in progress.  In that
   // case, the codec will be deleted when it completes once we invalidate all
   // our weak refs.
@@ -1230,6 +1255,28 @@ gpu::gles2::TextureRef* AndroidVideoDecodeAccelerator::GetTextureForPicture(
                     nullptr);
 
   return texture_ref;
+}
+
+void AndroidVideoDecodeAccelerator::OnDestroyingSurface(int surface_id) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  TRACE_EVENT0("media", "AVDA::OnDestroyingSurface");
+  DVLOG(1) << __FUNCTION__ << " surface_id: " << surface_id;
+
+  if (surface_id != surface_id_)
+    return;
+
+  // If we're currently asynchronously configuring a codec, it will be destroyed
+  // when configuration completes and it notices that |state_| has changed to
+  // SURFACE_DESTROYED.
+  state_ = SURFACE_DESTROYED;
+  if (media_codec_) {
+    media_codec_.reset();
+    strategy_->CodecChanged(media_codec_.get());
+  }
+  // If we're draining, signal completion now because the drain can no longer
+  // proceed.
+  if (drain_type_ != DRAIN_TYPE_NONE)
+    OnDrainCompleted();
 }
 
 void AndroidVideoDecodeAccelerator::OnFrameAvailable() {
@@ -1395,7 +1442,12 @@ AndroidVideoDecodeAccelerator::GetCapabilities(
   Capabilities capabilities;
   SupportedProfiles& profiles = capabilities.supported_profiles;
 
-  if (media::MediaCodecUtil::IsVp8DecoderAvailable()) {
+  // Only support VP8 on Android versions where we don't have to synchronously
+  // tear down the MediaCodec on surface destruction because VP8 requires
+  // us to completely drain the decoder before releasing it, which is difficult
+  // and time consuming to do while the surface is being destroyed.
+  if (base::android::BuildInfo::GetInstance()->sdk_int() >= 18 &&
+      media::MediaCodecUtil::IsVp8DecoderAvailable()) {
     SupportedProfile profile;
     profile.profile = media::VP8PROFILE_ANY;
     profile.min_resolution.SetSize(0, 0);
