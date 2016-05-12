@@ -385,23 +385,23 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleInputEvent(
 }
 
 void InputHandlerProxy::RecordMainThreadScrollingReasons(
-    WebInputEvent::Type type,
+    blink::WebGestureDevice device,
     uint32_t reasons) {
   static const char* kGestureHistogramName =
       "Renderer4.MainThreadGestureScrollReason";
   static const char* kWheelHistogramName =
       "Renderer4.MainThreadWheelScrollReason";
 
-  DCHECK(type == WebInputEvent::GestureScrollBegin ||
-         type == WebInputEvent::MouseWheel);
+  DCHECK(device == blink::WebGestureDeviceTouchpad ||
+         device == blink::WebGestureDeviceTouchscreen);
 
-  if (type != WebInputEvent::GestureScrollBegin &&
-      type != WebInputEvent::MouseWheel) {
+  if (device != blink::WebGestureDeviceTouchpad &&
+      device != blink::WebGestureDeviceTouchscreen) {
     return;
   }
 
   if (reasons == cc::MainThreadScrollingReason::kNotScrollingOnMain) {
-    if (type == WebInputEvent::GestureScrollBegin) {
+    if (device == blink::WebGestureDeviceTouchscreen) {
       UMA_HISTOGRAM_ENUMERATION(
           kGestureHistogramName,
           cc::MainThreadScrollingReason::kNotScrollingOnMain,
@@ -419,7 +419,7 @@ void InputHandlerProxy::RecordMainThreadScrollingReasons(
        ++i) {
     unsigned val = 1 << i;
     if (reasons & val) {
-      if (type == WebInputEvent::GestureScrollBegin) {
+      if (device == blink::WebGestureDeviceTouchscreen) {
         UMA_HISTOGRAM_ENUMERATION(
             kGestureHistogramName, i + 1,
             cc::MainThreadScrollingReason::kMainThreadScrollingReasonCount);
@@ -488,7 +488,8 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::ScrollByMouseWheel(
     // thread, so punt it to the main thread. http://crbug.com/236639
     result = DID_NOT_HANDLE;
     RecordMainThreadScrollingReasons(
-        wheel_event.type, cc::MainThreadScrollingReason::kPageBasedScrolling);
+        blink::WebGestureDeviceTouchpad,
+        cc::MainThreadScrollingReason::kPageBasedScrolling);
 
   } else if (!wheel_event.canScroll) {
     // Wheel events with |canScroll| == false will not trigger scrolling,
@@ -500,7 +501,8 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::ScrollByMouseWheel(
                                        scroll_delta);
 
     RecordMainThreadScrollingReasons(
-        wheel_event.type, scroll_status.main_thread_scrolling_reasons);
+        blink::WebGestureDeviceTouchpad,
+        scroll_status.main_thread_scrolling_reasons);
 
     switch (scroll_status.thread) {
       case cc::InputHandler::SCROLL_ON_IMPL_THREAD:
@@ -523,7 +525,8 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::ScrollByMouseWheel(
         &scroll_state_begin, cc::InputHandler::WHEEL);
 
     RecordMainThreadScrollingReasons(
-        wheel_event.type, scroll_status.main_thread_scrolling_reasons);
+        blink::WebGestureDeviceTouchpad,
+        scroll_status.main_thread_scrolling_reasons);
 
     switch (scroll_status.thread) {
       case cc::InputHandler::SCROLL_ON_IMPL_THREAD: {
@@ -613,7 +616,7 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureScrollBegin(
                             scroll_status.thread,
                             cc::InputHandler::LAST_SCROLL_STATUS + 1);
 
-  RecordMainThreadScrollingReasons(gesture_event.type,
+  RecordMainThreadScrollingReasons(gesture_event.sourceDevice,
                                    scroll_status.main_thread_scrolling_reasons);
 
   InputHandlerProxy::EventDisposition result = DID_NOT_HANDLE;

@@ -93,7 +93,7 @@ class InputHandlerProxy
   }
 
  protected:
-  void RecordMainThreadScrollingReasons(blink::WebInputEvent::Type type,
+  void RecordMainThreadScrollingReasons(blink::WebGestureDevice device,
                                         uint32_t reasons);
 
  private:

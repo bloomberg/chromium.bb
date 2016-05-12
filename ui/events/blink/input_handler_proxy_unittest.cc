@@ -266,9 +266,9 @@ class TestInputHandlerProxy : public InputHandlerProxy {
   TestInputHandlerProxy(cc::InputHandler* input_handler,
                         InputHandlerProxyClient* client)
       : InputHandlerProxy(input_handler, client) {}
-  void RecordMainThreadScrollingReasonsForTest(blink::WebInputEvent::Type type,
+  void RecordMainThreadScrollingReasonsForTest(blink::WebGestureDevice device,
                                                uint32_t reasons) {
-    RecordMainThreadScrollingReasons(type, reasons);
+    RecordMainThreadScrollingReasons(device, reasons);
   }
 };
 
@@ -2847,7 +2847,7 @@ TEST(SynchronousInputHandlerProxyTest, SetOffset) {
 
 TEST_P(InputHandlerProxyTest, MainThreadScrollingMouseWheelHistograms) {
   input_handler_->RecordMainThreadScrollingReasonsForTest(
-      WebInputEvent::MouseWheel,
+      blink::WebGestureDeviceTouchpad,
       cc::MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects |
           cc::MainThreadScrollingReason::kThreadedScrollingDisabled |
           cc::MainThreadScrollingReason::kPageOverlay |
