@@ -174,10 +174,15 @@ std::unique_ptr<device::BluetoothAdvertisement::ServiceData> CreateServiceData(
 bool HasProperty(
     const std::vector<apibtle::CharacteristicProperty>& api_properties,
     apibtle::CharacteristicProperty property) {
-  if (find(api_properties.begin(), api_properties.end(), property) !=
-      api_properties.end())
-    return true;
-  return false;
+  return find(api_properties.begin(), api_properties.end(), property) !=
+         api_properties.end();
+}
+
+bool HasPermission(
+    const std::vector<apibtle::DescriptorPermission>& api_permissions,
+    apibtle::DescriptorPermission permission) {
+  return find(api_permissions.begin(), api_permissions.end(), permission) !=
+         api_permissions.end();
 }
 
 device::BluetoothGattCharacteristic::Properties GetBluetoothProperties(
@@ -189,41 +194,124 @@ device::BluetoothGattCharacteristic::Properties GetBluetoothProperties(
       apibtle::CHARACTERISTIC_PROPERTY_LAST == 14,
       "Update required if the number of characteristic properties changes.");
 
-  if (HasProperty(api_properties, apibtle::CHARACTERISTIC_PROPERTY_BROADCAST))
+  if (HasProperty(api_properties, apibtle::CHARACTERISTIC_PROPERTY_BROADCAST)) {
     properties |= device::BluetoothGattCharacteristic::PROPERTY_BROADCAST;
+  }
 
-  if (HasProperty(api_properties, apibtle::CHARACTERISTIC_PROPERTY_READ))
+  if (HasProperty(api_properties, apibtle::CHARACTERISTIC_PROPERTY_READ)) {
     properties |= device::BluetoothGattCharacteristic::PROPERTY_READ;
+  }
+
   if (HasProperty(api_properties,
-                  apibtle::CHARACTERISTIC_PROPERTY_WRITEWITHOUTRESPONSE))
+                  apibtle::CHARACTERISTIC_PROPERTY_WRITEWITHOUTRESPONSE)) {
     properties |=
         device::BluetoothGattCharacteristic::PROPERTY_WRITE_WITHOUT_RESPONSE;
-  if (HasProperty(api_properties, apibtle::CHARACTERISTIC_PROPERTY_WRITE))
+  }
+
+  if (HasProperty(api_properties, apibtle::CHARACTERISTIC_PROPERTY_WRITE)) {
     properties |= device::BluetoothGattCharacteristic::PROPERTY_WRITE;
+  }
 
-  if (HasProperty(api_properties, apibtle::CHARACTERISTIC_PROPERTY_NOTIFY))
+  if (HasProperty(api_properties, apibtle::CHARACTERISTIC_PROPERTY_NOTIFY)) {
     properties |= device::BluetoothGattCharacteristic::PROPERTY_NOTIFY;
+  }
 
-  if (HasProperty(api_properties, apibtle::CHARACTERISTIC_PROPERTY_INDICATE))
+  if (HasProperty(api_properties, apibtle::CHARACTERISTIC_PROPERTY_INDICATE)) {
     properties |= device::BluetoothGattCharacteristic::PROPERTY_INDICATE;
+  }
 
   if (HasProperty(api_properties,
-                  apibtle::CHARACTERISTIC_PROPERTY_AUTHENTICATEDSIGNEDWRITES))
+                  apibtle::CHARACTERISTIC_PROPERTY_AUTHENTICATEDSIGNEDWRITES)) {
     properties |= device::BluetoothGattCharacteristic::
         PROPERTY_AUTHENTICATED_SIGNED_WRITES;
+  }
+
   if (HasProperty(api_properties,
-                  apibtle::CHARACTERISTIC_PROPERTY_EXTENDEDPROPERTIES))
+                  apibtle::CHARACTERISTIC_PROPERTY_EXTENDEDPROPERTIES)) {
     properties |=
         device::BluetoothGattCharacteristic::PROPERTY_EXTENDED_PROPERTIES;
+  }
+
   if (HasProperty(api_properties,
-                  apibtle::CHARACTERISTIC_PROPERTY_RELIABLEWRITE))
+                  apibtle::CHARACTERISTIC_PROPERTY_RELIABLEWRITE)) {
     properties |= device::BluetoothGattCharacteristic::PROPERTY_RELIABLE_WRITE;
+  }
+
   if (HasProperty(api_properties,
-                  apibtle::CHARACTERISTIC_PROPERTY_WRITABLEAUXILIARIES))
+                  apibtle::CHARACTERISTIC_PROPERTY_WRITABLEAUXILIARIES)) {
     properties |=
         device::BluetoothGattCharacteristic::PROPERTY_WRITABLE_AUXILIARIES;
+  }
+
+  if (HasProperty(api_properties,
+                  apibtle::CHARACTERISTIC_PROPERTY_ENCRYPTREAD)) {
+    properties |= device::BluetoothGattCharacteristic::PROPERTY_READ_ENCRYPTED;
+  }
+
+  if (HasProperty(api_properties,
+                  apibtle::CHARACTERISTIC_PROPERTY_ENCRYPTWRITE)) {
+    properties |= device::BluetoothGattCharacteristic::PROPERTY_WRITE_ENCRYPTED;
+  }
+
+  if (HasProperty(api_properties,
+                  apibtle::CHARACTERISTIC_PROPERTY_ENCRYPTAUTHENTICATEDREAD)) {
+    properties |= device::BluetoothGattCharacteristic::
+        PROPERTY_READ_ENCRYPTED_AUTHENTICATED;
+  }
+
+  if (HasProperty(api_properties,
+                  apibtle::CHARACTERISTIC_PROPERTY_ENCRYPTAUTHENTICATEDWRITE)) {
+    properties |= device::BluetoothGattCharacteristic::
+        PROPERTY_WRITE_ENCRYPTED_AUTHENTICATED;
+  }
 
   return properties;
+}
+
+device::BluetoothGattCharacteristic::Permissions GetBluetoothPermissions(
+    const std::vector<apibtle::DescriptorPermission>& api_permissions) {
+  device::BluetoothGattCharacteristic::Permissions permissions =
+      device::BluetoothGattCharacteristic::PERMISSION_NONE;
+
+  static_assert(
+      apibtle::DESCRIPTOR_PERMISSION_LAST == 6,
+      "Update required if the number of descriptor permissions changes.");
+
+  if (HasPermission(api_permissions, apibtle::DESCRIPTOR_PERMISSION_READ)) {
+    permissions |= device::BluetoothGattCharacteristic::PERMISSION_READ;
+  }
+
+  if (HasPermission(api_permissions, apibtle::DESCRIPTOR_PERMISSION_WRITE)) {
+    permissions |= device::BluetoothGattCharacteristic::PERMISSION_WRITE;
+  }
+
+  if (HasPermission(api_permissions,
+                    apibtle::DESCRIPTOR_PERMISSION_ENCRYPTEDREAD)) {
+    permissions |=
+        device::BluetoothGattCharacteristic::PERMISSION_READ_ENCRYPTED;
+  }
+
+  if (HasPermission(api_permissions,
+                    apibtle::DESCRIPTOR_PERMISSION_ENCRYPTEDWRITE)) {
+    permissions |=
+        device::BluetoothGattCharacteristic::PERMISSION_WRITE_ENCRYPTED;
+  }
+
+  if (HasPermission(
+          api_permissions,
+          apibtle::DESCRIPTOR_PERMISSION_ENCRYPTEDAUTHENTICATEDREAD)) {
+    permissions |= device::BluetoothGattCharacteristic::
+        PERMISSION_READ_ENCRYPTED_AUTHENTICATED;
+  }
+
+  if (HasPermission(
+          api_permissions,
+          apibtle::DESCRIPTOR_PERMISSION_ENCRYPTEDAUTHENTICATEDWRITE)) {
+    permissions |= device::BluetoothGattCharacteristic::
+        PERMISSION_WRITE_ENCRYPTED_AUTHENTICATED;
+  }
+
+  return permissions;
 }
 
 }  // namespace
@@ -1264,7 +1352,8 @@ void BluetoothLowEnergyCreateDescriptorFunction::DoWork() {
   base::WeakPtr<device::BluetoothLocalGattDescriptor> descriptor =
       device::BluetoothLocalGattDescriptor::Create(
           device::BluetoothUUID(params_->descriptor.uuid),
-          device::BluetoothGattCharacteristic::Permissions(), characteristic);
+          GetBluetoothPermissions(params_->descriptor.permissions),
+          characteristic);
 
   Respond(ArgumentList(
       apibtle::CreateDescriptor::Results::Create(descriptor->GetIdentifier())));
@@ -1329,7 +1418,15 @@ void BluetoothLowEnergyNotifyCharacteristicValueChangedFunction::DoWork() {
 template class BLEPeripheralExtensionFunction<apibtle::RemoveService::Params>;
 
 void BluetoothLowEnergyRemoveServiceFunction::DoWork() {
-  Respond(Error(kErrorPermissionDenied));
+  device::BluetoothLocalGattService* service =
+      event_router_->adapter()->GetGattService(params_->service_id);
+  if (!service) {
+    Respond(Error(kErrorInvalidServiceId));
+    return;
+  }
+  event_router_->RemoveServiceFromApp(extension_id(), service->GetIdentifier());
+  service->Delete();
+  Respond(NoArguments());
 }
 
 // sendRequestResponse:

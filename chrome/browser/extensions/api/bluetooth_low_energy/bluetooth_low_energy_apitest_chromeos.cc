@@ -17,7 +17,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace {
-const std::string kTestingAppId = "pjdjhejcdkeebjehnokfbfnjmgmgdjlc";
+const char kTestingAppId[] = "pjdjhejcdkeebjehnokfbfnjmgmgdjlc";
 }  // namespace
 
 namespace extensions {
@@ -141,6 +141,13 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTestChromeOs, UnregisterService) {
   ASSERT_TRUE(
       RunPlatformAppTest("api_test/bluetooth_low_energy/"
                          "unregister_service"))
+      << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTestChromeOs, RemoveService) {
+  ASSERT_TRUE(
+      RunPlatformAppTest("api_test/bluetooth_low_energy/"
+                         "remove_service"))
       << message_;
 }
 

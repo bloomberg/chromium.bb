@@ -361,6 +361,10 @@ class BluetoothLowEnergyEventRouter
   void AddServiceToApp(const std::string& app_id,
                        const std::string& service_id);
 
+  // Removes a mapping for a service_id to the id of the app that owns it.
+  void RemoveServiceFromApp(const std::string& app_id,
+                            const std::string& service_id);
+
   // Register a local GATT service.
   void RegisterGattService(const Extension* extension,
                            const std::string& service_id,

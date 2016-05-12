@@ -1273,6 +1273,26 @@ void BluetoothLowEnergyEventRouter::AddServiceToApp(
   }
 }
 
+void BluetoothLowEnergyEventRouter::RemoveServiceFromApp(
+    const std::string& app_id,
+    const std::string& service_id) {
+  const auto& services = app_id_to_service_ids_.find(app_id);
+  if (services == app_id_to_service_ids_.end()) {
+    LOG(WARNING) << "No service mapping exists for app: " << app_id;
+    return;
+  }
+
+  const auto& service =
+      find(services->second.begin(), services->second.end(), service_id);
+  if (service == services->second.end()) {
+    LOG(WARNING) << "Service:" << service_id
+                 << " doesn't exist in app: " << app_id;
+    return;
+  }
+
+  services->second.erase(service);
+}
+
 void BluetoothLowEnergyEventRouter::RegisterGattService(
     const Extension* extension,
     const std::string& service_id,
