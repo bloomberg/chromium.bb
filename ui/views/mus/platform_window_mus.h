@@ -66,19 +66,12 @@ class VIEWS_MUS_EXPORT PlatformWindowMus
  private:
   friend class PlatformWindowMusTest;
 
-  void SetShowState(mus::mojom::ShowState show_state);
-
   // mus::WindowObserver:
   void OnWindowDestroyed(mus::Window* window) override;
   void OnWindowFocusChanged(mus::Window* gained_focus,
                             mus::Window* lost_focus) override;
   void OnWindowPredefinedCursorChanged(mus::Window* window,
                                        mus::mojom::Cursor cursor) override;
-  void OnWindowSharedPropertyChanged(
-      mus::Window* window,
-      const std::string& name,
-      const std::vector<uint8_t>* old_data,
-      const std::vector<uint8_t>* new_data) override;
   void OnRequestClose(mus::Window* window) override;
 
   // mus::InputEventHandler:
@@ -90,7 +83,6 @@ class VIEWS_MUS_EXPORT PlatformWindowMus
 
   ui::PlatformWindowDelegate* delegate_;
   mus::Window* mus_window_;
-  mus::mojom::ShowState show_state_;
   mus::mojom::Cursor last_cursor_;
 
   // True if OnWindowDestroyed() has been received.

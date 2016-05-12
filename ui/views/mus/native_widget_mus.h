@@ -208,6 +208,8 @@ class VIEWS_MUS_EXPORT NativeWidgetMus : public internal::NativeWidgetPrivate,
  private:
   class MusWindowObserver;
 
+  void SetShowState(mus::mojom::ShowState show_state);
+
   void OnMusWindowVisibilityChanging(mus::Window* window);
   void OnMusWindowVisibilityChanged(mus::Window* window);
 
@@ -216,7 +218,7 @@ class VIEWS_MUS_EXPORT NativeWidgetMus : public internal::NativeWidgetPrivate,
   internal::NativeWidgetDelegate* native_widget_delegate_;
 
   const mus::mojom::SurfaceType surface_type_;
-  ui::PlatformWindowState show_state_before_fullscreen_;
+  mus::mojom::ShowState show_state_before_fullscreen_;
 
   // See class documentation for Widget in widget.h for a note about ownership.
   Widget::InitParams::Ownership ownership_;

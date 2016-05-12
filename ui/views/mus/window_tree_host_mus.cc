@@ -20,8 +20,7 @@ namespace views {
 WindowTreeHostMus::WindowTreeHostMus(shell::Connector* connector,
                                      NativeWidgetMus* native_widget,
                                      mus::Window* window)
-    : native_widget_(native_widget),
-      show_state_(ui::PLATFORM_WINDOW_STATE_UNKNOWN) {
+    : native_widget_(native_widget) {
   SetPlatformWindow(
       base::WrapUnique(new PlatformWindowMus(this, connector, window)));
   // The location of events is already transformed, and there is no way to
@@ -57,10 +56,6 @@ void WindowTreeHostMus::DispatchEvent(ui::Event* event) {
 void WindowTreeHostMus::OnClosed() {
   if (native_widget_)
     native_widget_->OnPlatformWindowClosed();
-}
-
-void WindowTreeHostMus::OnWindowStateChanged(ui::PlatformWindowState state) {
-  show_state_ = state;
 }
 
 void WindowTreeHostMus::OnActivationChanged(bool active) {

@@ -68,7 +68,6 @@ PlatformWindowMus::PlatformWindowMus(ui::PlatformWindowDelegate* delegate,
                                      mus::Window* mus_window)
     : delegate_(delegate),
       mus_window_(mus_window),
-      show_state_(mus::mojom::ShowState::DEFAULT),
       last_cursor_(mus::mojom::Cursor::CURSOR_NULL),
       mus_window_destroyed_(false) {
   DCHECK(delegate_);
@@ -146,17 +145,11 @@ void PlatformWindowMus::ToggleFullscreen() {
   NOTIMPLEMENTED();
 }
 
-void PlatformWindowMus::Maximize() {
-  SetShowState(mus::mojom::ShowState::MAXIMIZED);
-}
+void PlatformWindowMus::Maximize() {}
 
-void PlatformWindowMus::Minimize() {
-  SetShowState(mus::mojom::ShowState::MINIMIZED);
-}
+void PlatformWindowMus::Minimize() {}
 
-void PlatformWindowMus::Restore() {
-  SetShowState(mus::mojom::ShowState::NORMAL);
-}
+void PlatformWindowMus::Restore() {}
 
 void PlatformWindowMus::SetCursor(ui::PlatformCursor cursor) {
   NOTIMPLEMENTED();
@@ -172,12 +165,6 @@ void PlatformWindowMus::ConfineCursorToBounds(const gfx::Rect& bounds) {
 
 ui::PlatformImeController* PlatformWindowMus::GetPlatformImeController() {
   return nullptr;
-}
-
-void PlatformWindowMus::SetShowState(mus::mojom::ShowState show_state) {
-  mus_window_->SetSharedProperty<int32_t>(
-      mus::mojom::WindowManager::kShowState_Property,
-      static_cast<int32_t>(show_state));
 }
 
 void PlatformWindowMus::OnWindowDestroyed(mus::Window* window) {
@@ -207,41 +194,6 @@ void PlatformWindowMus::OnWindowPredefinedCursorChanged(
     mus::mojom::Cursor cursor) {
   DCHECK_EQ(window, mus_window_);
   last_cursor_ = cursor;
-}
-
-void PlatformWindowMus::OnWindowSharedPropertyChanged(
-    mus::Window* window,
-    const std::string& name,
-    const std::vector<uint8_t>* old_data,
-    const std::vector<uint8_t>* new_data) {
-  if (name != mus::mojom::WindowManager::kShowState_Property)
-    return;
-  mus::mojom::ShowState show_state =
-      static_cast<mus::mojom::ShowState>(window->GetSharedProperty<int32_t>(
-          mus::mojom::WindowManager::kShowState_Property));
-  if (show_state == show_state_)
-    return;
-  show_state_ = show_state;
-  ui::PlatformWindowState state = ui::PLATFORM_WINDOW_STATE_UNKNOWN;
-  switch (show_state_) {
-    case mus::mojom::ShowState::MINIMIZED:
-      state = ui::PLATFORM_WINDOW_STATE_MINIMIZED;
-      break;
-    case mus::mojom::ShowState::MAXIMIZED:
-      state = ui::PLATFORM_WINDOW_STATE_MAXIMIZED;
-      break;
-    case mus::mojom::ShowState::DEFAULT:
-    case mus::mojom::ShowState::INACTIVE:
-    case mus::mojom::ShowState::NORMAL:
-    case mus::mojom::ShowState::DOCKED:
-      // TODO(sky): support docked.
-      state = ui::PLATFORM_WINDOW_STATE_NORMAL;
-      break;
-    case mus::mojom::ShowState::FULLSCREEN:
-      state = ui::PLATFORM_WINDOW_STATE_FULLSCREEN;
-      break;
-  }
-  delegate_->OnWindowStateChanged(state);
 }
 
 void PlatformWindowMus::OnRequestClose(mus::Window* window) {
