@@ -39,6 +39,12 @@ struct Params;
 namespace UnregisterService {
 struct Params;
 }
+namespace NotifyCharacteristicValueChanged {
+struct Params;
+}
+namespace RemoveService {
+struct Params;
+}
 namespace SendRequestResponse {
 struct Params;
 }
@@ -512,6 +518,22 @@ class BluetoothLowEnergyCreateCharacteristicFunction
   void DoWork() override;
 };
 
+class BluetoothLowEnergyNotifyCharacteristicValueChangedFunction
+    : public BLEPeripheralExtensionFunction<
+          extensions::api::bluetooth_low_energy::
+              NotifyCharacteristicValueChanged::Params> {
+ public:
+  DECLARE_EXTENSION_FUNCTION(
+      "bluetoothLowEnergy.notifyCharacteristicValueChanged",
+      BLUETOOTHLOWENERGY_NOTIFYCHARACTERISTICVALUECHANGED);
+
+ protected:
+  ~BluetoothLowEnergyNotifyCharacteristicValueChangedFunction() override {}
+
+  // BluetoothLowEnergyPeripheralExtensionFunction override.
+  void DoWork() override;
+};
+
 class BluetoothLowEnergyCreateDescriptorFunction
     : public BLEPeripheralExtensionFunction<
           extensions::api::bluetooth_low_energy::CreateDescriptor::Params> {
@@ -562,6 +584,20 @@ class BluetoothLowEnergyUnregisterServiceFunction
   // BluetoothLowEnergyEventRouter::RegisterService.
   void SuccessCallback();
   void ErrorCallback(BluetoothLowEnergyEventRouter::Status status);
+};
+
+class BluetoothLowEnergyRemoveServiceFunction
+    : public BLEPeripheralExtensionFunction<
+          extensions::api::bluetooth_low_energy::RemoveService::Params> {
+ public:
+  DECLARE_EXTENSION_FUNCTION("bluetoothLowEnergy.removeService",
+                             BLUETOOTHLOWENERGY_REMOVESERVICE);
+
+ protected:
+  ~BluetoothLowEnergyRemoveServiceFunction() override {}
+
+  // BluetoothLowEnergyPeripheralExtensionFunction override.
+  void DoWork() override;
 };
 
 class BluetoothLowEnergySendRequestResponseFunction

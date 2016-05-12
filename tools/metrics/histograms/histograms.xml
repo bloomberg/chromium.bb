@@ -70612,6 +70612,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1125" label="BLUETOOTHLOWENERGY_REGISTERSERVICE"/>
   <int value="1126" label="BLUETOOTHLOWENERGY_UNREGISTERSERVICE"/>
   <int value="1127" label="BLUETOOTHLOWENERGY_SENDREQUESTRESPONSE"/>
+  <int value="1128"
+      label="BLUETOOTHLOWENERGY_NOTIFYCHARACTERISTICVALUECHANGED"/>
+  <int value="1129" label="BLUETOOTHLOWENERGY_REMOVESERVICE"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

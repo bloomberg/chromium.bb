@@ -8,10 +8,23 @@
 // Generic Attribute Profile (GATT)</a>.
 namespace bluetoothLowEnergy {
   // Values representing the possible properties of a characteristic.
-  enum CharacteristicProperty {broadcast, read, writeWithoutResponse, write,
-                               notify, indicate, authenticatedSignedWrites,
-                               extendedProperties, reliableWrite,
-                               writableAuxiliaries};
+  // Characteristic permissions are inferred from these properties.
+  // Please see the Bluetooth 4.x spec to see the meaning of each individual
+  // property.
+  enum CharacteristicProperty {
+      broadcast, read, writeWithoutResponse, write, notify, indicate,
+      authenticatedSignedWrites, extendedProperties, reliableWrite,
+      writableAuxiliaries, encryptRead, encryptWrite, encryptAuthenticatedRead,
+      encryptAuthenticatedWrite
+  };
+
+  // Values representing possible permissions for a descriptor.
+  // Please see the Bluetooth 4.x spec to see the meaning of each individual
+  // permission.
+  enum DescriptorPermission {
+      read, write, encryptedRead, encryptedWrite, encryptedAuthenticatedRead,
+      encryptedAuthenticatedWrite
+  };
 
   // Type of advertisement. If 'broadcast' is chosen, the sent advertisement
   // type will be ADV_NONCONN_IND and the device will broadcast with a random
@@ -19,16 +32,6 @@ namespace bluetoothLowEnergy {
   // ADV_IND or ADV_SCAN_IND and the device will broadcast with real Bluetooth
   // Adapter's MAC Address.
   enum AdvertisementType {broadcast, peripheral};
-
-  // Result of a register or unregister service call.
-  enum ServiceResult {
-    // The service operation was successful.
-    success,
-    // The service that is being registered is already regsitered.
-    alreadyRegistered,
-    // The service that is being unregistered is not regsitered.
-    notRegistered
-  };
 
   // Represents a bluetooth central device that is connected to the local GATT
   // server.
@@ -99,6 +102,9 @@ namespace bluetoothLowEnergy {
 
     // The GATT characteristic this descriptor belongs to.
     Characteristic? characteristic;
+
+    // The permissions of this descriptor.
+    DescriptorPermission[] permissions;
 
     // Returns the identifier assigned to this descriptor. Use the instance ID
     // to distinguish between descriptors from a peripheral with the same UUID
@@ -187,6 +193,14 @@ namespace bluetoothLowEnergy {
     ArrayBuffer? value;
   };
 
+  // Represents a notification to be sent to a remote device.
+  dictionary Notification {
+    // New value of the characteristic.
+    ArrayBuffer value;
+    // Optional flag for sending an indication instead of a notification.
+    boolean? shouldIndicate;
+  };
+
   callback CharacteristicCallback = void(Characteristic result);
   callback CreateCharacteristicCallback = void(DOMString characteristicId);
   callback CharacteristicsCallback = void(Characteristic[] result);
@@ -197,7 +211,6 @@ namespace bluetoothLowEnergy {
   callback ServiceCallback = void(Service result);
   callback CreateServiceCallback = void(DOMString serviceId);
   callback ServicesCallback = void(Service[] result);
-  callback ServiceResultCallback = void(ServiceResult result);
   callback RegisterAdvertisementCallback = void (long advertisementId);
 
   // These functions all report failures via chrome.runtime.lastError.
@@ -356,6 +369,22 @@ namespace bluetoothLowEnergy {
         DOMString characteristicId,
         optional ResultCallback callback);
 
+    // Notify a remote device of a new value for a characteristic. If the
+    // shouldIndicate flag in the notification object is true, an indication
+    // will be sent instead of a notification. Note, the characteristic needs
+    // to correctly set the 'notify' or 'indicate' property during creation for
+    // this call to succeed.
+    // This function is only available if the app has both the
+    // bluetooth:low_energy and the bluetooth:peripheral permissions set to
+    // true. The peripheral permission may not be available to all apps.
+    // |characteristicId|: The characteristic to send the notication for.
+    // |notifcation|: The notification to send.
+    // |callback|: Callback called once the notification or indication has
+    // been sent successfully.
+    static void notifyCharacteristicValueChanged(DOMString characteristicId,
+                                                 Notification notification,
+                                                 ResultCallback callback);
+
     // Retrieve the value of a specified characteristic descriptor from a remote
     // peripheral.
     // |descriptorId|: The instance ID of the GATT characteristic descriptor
@@ -385,7 +414,7 @@ namespace bluetoothLowEnergy {
     // |serviceId|: Unique ID of a created service.
     // |callback|: Callback with the result of the register operation.
     static void registerService(
-        DOMString serviceId, ServiceResultCallback callback);
+        DOMString serviceId, ResultCallback callback);
 
     // Unregister the given service with the local GATT server. If the service
     // ID is invalid, the lastError will be set.
@@ -395,7 +424,17 @@ namespace bluetoothLowEnergy {
     // |serviceId|: Unique ID of a current registered service.
     // |callback|: Callback with the result of the register operation.
     static void unregisterService(
-        DOMString serviceId, ServiceResultCallback callback);
+        DOMString serviceId, ResultCallback callback);
+
+    // Remove the specified service, unregistering it if it was registered.
+    // If the service ID is invalid, the lastError will be set.
+    // This function is only available if the app has both the
+    // bluetooth:low_energy and the bluetooth:peripheral permissions set to
+    // true. The peripheral permission may not be available to all apps.
+    // |serviceId|: Unique ID of a current registered service.
+    // |callback|: Callback called once the service is removed.
+    static void removeService(
+        DOMString serviceId, optional ResultCallback callback);
 
     // Create an advertisement and register it for advertising. To call this
     // function, the app must have the bluetooth:low_energy and

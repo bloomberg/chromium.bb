@@ -186,7 +186,7 @@ device::BluetoothGattCharacteristic::Properties GetBluetoothProperties(
       device::BluetoothGattCharacteristic::PROPERTY_NONE;
 
   static_assert(
-      apibtle::CHARACTERISTIC_PROPERTY_LAST == 10,
+      apibtle::CHARACTERISTIC_PROPERTY_LAST == 14,
       "Update required if the number of characteristic properties changes.");
 
   if (HasProperty(api_properties, apibtle::CHARACTERISTIC_PROPERTY_BROADCAST))
@@ -1284,8 +1284,7 @@ void BluetoothLowEnergyRegisterServiceFunction::DoWork() {
 }
 
 void BluetoothLowEnergyRegisterServiceFunction::SuccessCallback() {
-  Respond(ArgumentList(apibtle::RegisterService::Results::Create(
-      apibtle::SERVICE_RESULT_SUCCESS)));
+  Respond(NoArguments());
 }
 
 void BluetoothLowEnergyRegisterServiceFunction::ErrorCallback(
@@ -1308,13 +1307,29 @@ void BluetoothLowEnergyUnregisterServiceFunction::DoWork() {
 }
 
 void BluetoothLowEnergyUnregisterServiceFunction::SuccessCallback() {
-  Respond(ArgumentList(apibtle::UnregisterService::Results::Create(
-      apibtle::SERVICE_RESULT_SUCCESS)));
+  Respond(NoArguments());
 }
 
 void BluetoothLowEnergyUnregisterServiceFunction::ErrorCallback(
     BluetoothLowEnergyEventRouter::Status status) {
   Respond(Error(StatusToString(status)));
+}
+
+// notifyCharacteristicValueChanged:
+
+template class BLEPeripheralExtensionFunction<
+    apibtle::NotifyCharacteristicValueChanged::Params>;
+
+void BluetoothLowEnergyNotifyCharacteristicValueChangedFunction::DoWork() {
+  Respond(Error(kErrorPermissionDenied));
+}
+
+// removeService:
+
+template class BLEPeripheralExtensionFunction<apibtle::RemoveService::Params>;
+
+void BluetoothLowEnergyRemoveServiceFunction::DoWork() {
+  Respond(Error(kErrorPermissionDenied));
 }
 
 // sendRequestResponse:

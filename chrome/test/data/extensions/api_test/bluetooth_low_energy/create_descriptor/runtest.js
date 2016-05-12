@@ -24,13 +24,14 @@ chrome.bluetoothLowEnergy.createService(service, function(serviceId) {
     return;
 
   var characteristic = { uuid: '00001234-0000-1000-8000-00805f9b34fa',
-    properties: ['read']};
+    properties: ['read'] };
   chrome.bluetoothLowEnergy.createCharacteristic(characteristic, serviceId,
       function(characteristicId) {
     if (failOnError(characteristicId))
       return;
 
-    var descriptor = { uuid: '00001234-0000-1000-8000-00805f9b34fc' };
+    var descriptor = { uuid: '00001234-0000-1000-8000-00805f9b34fc',
+      permissions: ['read'] };
     // Invalid characteristic ID.
     chrome.bluetoothLowEnergy.createDescriptor(descriptor,
         'invalidCharacteristicId', function(descriptorId) {
