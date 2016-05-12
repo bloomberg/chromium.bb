@@ -130,14 +130,6 @@ void ExtensionInstalledBubbleView::UpdateAnchorView() {
       DCHECK(!container->animating());
 
       reference_view = container->GetViewForId(controller_->extension()->id());
-      // If the view is not visible then it is in the chevron, so point the
-      // install bubble to the chevron instead. If this is an incognito window,
-      // both could be invisible.
-      if (!reference_view || !reference_view->visible()) {
-        reference_view = container->chevron();
-        if (!reference_view || !reference_view->visible())
-          reference_view = nullptr;  // fall back to app menu below.
-      }
       break;
     }
     case ExtensionInstalledBubble::ANCHOR_PAGE_ACTION: {
@@ -161,7 +153,7 @@ void ExtensionInstalledBubbleView::UpdateAnchorView() {
   }
 
   // Default case.
-  if (!reference_view)
+  if (!reference_view || !reference_view->visible())
     reference_view = browser_view->GetToolbarView()->app_menu_button();
   SetAnchorView(reference_view);
 }

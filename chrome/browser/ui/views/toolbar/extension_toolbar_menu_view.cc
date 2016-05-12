@@ -39,7 +39,6 @@ ExtensionToolbarMenuView::ExtensionToolbarMenuView(
       BrowserView::GetBrowserViewForBrowser(browser_)
           ->toolbar()->browser_actions();
   container_ = new BrowserActionsContainer(browser_, main);
-  container_->Init();
   SetContents(container_);
 
   // Listen for the drop to finish so we can close the app menu, if necessary.

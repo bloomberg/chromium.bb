@@ -139,11 +139,6 @@ void ImeWarningBubbleView::InitAnchorView() {
   if (anchor_to_browser_action_) {
     // Anchors the bubble to the browser action of the extension.
     reference_view = container_->GetViewForId(extension_->id());
-    // If the view is not visible then it is in the chevron, so point the IME
-    // warning bubble to the chevron instead. If this is an incognito window,
-    // both could be invisible.
-    if (!reference_view || !reference_view->visible())
-      reference_view = container_->chevron();
   }
   if (!reference_view || !reference_view->visible()) {
     // Anchors the bubble to the app menu.

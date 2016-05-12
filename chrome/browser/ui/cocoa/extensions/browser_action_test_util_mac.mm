@@ -121,14 +121,6 @@ int BrowserActionTestUtil::VisibleBrowserActions() {
   return [GetController(browser_, test_helper_.get()) visibleButtonCount];
 }
 
-bool BrowserActionTestUtil::IsChevronShowing() {
-  BrowserActionsController* controller =
-      GetController(browser_, test_helper_.get());
-  // The magic "18" comes from kChevronWidth in browser_actions_controller.mm.
-  return ![controller chevronIsHidden] &&
-         NSWidth([[controller containerView] animationEndFrame]) >= 18;
-}
-
 void BrowserActionTestUtil::InspectPopup(int index) {
   NOTREACHED();
 }

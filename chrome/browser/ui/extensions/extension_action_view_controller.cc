@@ -49,7 +49,6 @@ ExtensionActionViewController::ExtensionActionViewController(
       view_delegate_(nullptr),
       platform_delegate_(ExtensionActionPlatformDelegate::Create(this)),
       icon_factory_(browser->profile(), extension, extension_action, this),
-      icon_observer_(nullptr),
       extension_registry_(
           extensions::ExtensionRegistry::Get(browser_->profile())),
       popup_host_observer_(this),
@@ -243,8 +242,6 @@ void ExtensionActionViewController::OnIconUpdated() {
   // be ready.
   if (view_delegate_)
     view_delegate_->UpdateState();
-  if (icon_observer_)
-    icon_observer_->OnIconUpdated();
 }
 
 void ExtensionActionViewController::OnExtensionHostDestroyed(

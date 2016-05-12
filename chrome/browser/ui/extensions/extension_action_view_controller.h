@@ -86,10 +86,6 @@ class ExtensionActionViewController
   ToolbarActionViewDelegate* view_delegate() { return view_delegate_; }
   bool is_showing_popup() const { return popup_host_ != nullptr; }
 
-  void set_icon_observer(ExtensionActionIconFactory::Observer* icon_observer) {
-    icon_observer_ = icon_observer;
-  }
-
   std::unique_ptr<IconWithBadgeImageSource> GetIconImageSourceForTesting(
       content::WebContents* web_contents,
       const gfx::Size& size);
@@ -184,10 +180,6 @@ class ExtensionActionViewController
   // returned by the factory will be transparent), so we have to observe it for
   // updates to the icon.
   ExtensionActionIconFactory icon_factory_;
-
-  // An additional observer that we need to notify when the icon of the button
-  // has been updated.
-  ExtensionActionIconFactory::Observer* icon_observer_;
 
   // The associated ExtensionRegistry; cached for quick checking.
   extensions::ExtensionRegistry* extension_registry_;

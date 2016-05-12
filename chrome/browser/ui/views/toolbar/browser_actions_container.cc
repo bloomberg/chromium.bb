@@ -34,7 +34,6 @@
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/nine_image_painter_factory.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/base/theme_provider.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/resources/grit/ui_resources.h"
@@ -44,13 +43,6 @@
 #include "ui/views/widget/widget.h"
 
 namespace {
-
-// Horizontal spacing before the chevron (if visible).
-// TODO(tdanderson): In material design, the chevron should have the same size
-//                   and vertical spacing as the other action buttons.
-int GetChevronSpacing() {
-  return GetLayoutConstant(TOOLBAR_STANDARD_SPACING) - 2;
-}
 
 // Returns the ToolbarView for the given |browser|.
 ToolbarView* GetToolbarView(Browser* browser) {
@@ -91,8 +83,6 @@ BrowserActionsContainer::BrowserActionsContainer(
       browser_(browser),
       main_container_(main_container),
       resize_area_(NULL),
-      chevron_(NULL),
-      suppress_chevron_(false),
       added_to_view_(false),
       resize_starting_width_(-1),
       resize_amount_(0),
@@ -100,28 +90,17 @@ BrowserActionsContainer::BrowserActionsContainer(
       active_bubble_(nullptr) {
   set_id(VIEW_ID_BROWSER_ACTION_TOOLBAR);
 
-  bool overflow_experiment =
-      extensions::FeatureSwitch::extension_action_redesign()->IsEnabled();
-  DCHECK(!in_overflow_mode() || overflow_experiment);
-
-  if (!in_overflow_mode()) {
+  if (!ShownInsideMenu()) {
     resize_animation_.reset(new gfx::SlideAnimation(this));
     resize_area_ = new views::ResizeArea(this);
     AddChildView(resize_area_);
 
-    // 'Main' mode doesn't need a chevron overflow when overflow is shown inside
-    // the Chrome menu.
-    if (!overflow_experiment) {
-      // Since the ChevronMenuButton holds a raw pointer to us, we need to
-      // ensure it doesn't outlive us.  Having it owned by the view hierarchy as
-      // a child will suffice.
-      chevron_ = new ChevronMenuButton(this);
-      chevron_->EnableCanvasFlippingForRTLUI(true);
-      chevron_->SetAccessibleName(
-          l10n_util::GetStringUTF16(IDS_ACCNAME_EXTENSIONS_CHEVRON));
-      chevron_->SetVisible(false);
-      AddChildView(chevron_);
-    }
+    const int kInfoImages[] = IMAGE_GRID(IDR_TOOLBAR_ACTION_HIGHLIGHT);
+    info_highlight_painter_.reset(
+        views::Painter::CreateImageGridPainter(kInfoImages));
+    const int kWarningImages[] = IMAGE_GRID(IDR_DEVELOPER_MODE_HIGHLIGHT);
+    warning_highlight_painter_.reset(
+        views::Painter::CreateImageGridPainter(kWarningImages));
   }
 }
 
@@ -135,10 +114,6 @@ BrowserActionsContainer::~BrowserActionsContainer() {
   toolbar_actions_bar_->DeleteActions();
   // All views should be removed as part of ToolbarActionsBar::DeleteActions().
   DCHECK(toolbar_action_views_.empty());
-}
-
-void BrowserActionsContainer::Init() {
-  LoadImages();
 }
 
 std::string BrowserActionsContainer::GetIdAt(size_t index) const {
@@ -175,7 +150,7 @@ size_t BrowserActionsContainer::VisibleBrowserActionsAfterAnimation() const {
 }
 
 bool BrowserActionsContainer::ShownInsideMenu() const {
-  return in_overflow_mode();
+  return main_container_ != nullptr;
 }
 
 void BrowserActionsContainer::OnToolbarActionViewDragDone() {
@@ -183,19 +158,13 @@ void BrowserActionsContainer::OnToolbarActionViewDragDone() {
 }
 
 views::MenuButton* BrowserActionsContainer::GetOverflowReferenceView() {
-  // With traditional overflow, the reference is the chevron. With the redesign,
-  // we use the app menu instead.
-  return chevron_ ? static_cast<views::MenuButton*>(chevron_)
-                  : static_cast<views::MenuButton*>(
-                        GetToolbarView(browser_)->app_menu_button());
+  return static_cast<views::MenuButton*>(
+      GetToolbarView(browser_)->app_menu_button());
 }
 
 void BrowserActionsContainer::AddViewForAction(
    ToolbarActionViewController* view_controller,
    size_t index) {
-  if (chevron_)
-    chevron_->CloseMenu();
-
   ToolbarActionView* view = new ToolbarActionView(view_controller, this);
   toolbar_action_views_.insert(toolbar_action_views_.begin() + index, view);
   AddChildViewAt(view, index);
@@ -203,9 +172,6 @@ void BrowserActionsContainer::AddViewForAction(
 
 void BrowserActionsContainer::RemoveViewForAction(
     ToolbarActionViewController* action) {
-  if (chevron_)
-    chevron_->CloseMenu();
-
   for (ToolbarActionViews::iterator iter = toolbar_action_views_.begin();
        iter != toolbar_action_views_.end(); ++iter) {
     if ((*iter)->view_controller() == action) {
@@ -253,12 +219,11 @@ void BrowserActionsContainer::Redraw(bool order_changed) {
   Layout();
 }
 
-void BrowserActionsContainer::ResizeAndAnimate(
-    gfx::Tween::Type tween_type,
-    int target_width,
-    bool suppress_chevron) {
+void BrowserActionsContainer::ResizeAndAnimate(gfx::Tween::Type tween_type,
+                                               int target_width,
+                                               bool /*suppress_chevron*/) {
   if (resize_animation_ && !toolbar_actions_bar_->suppress_animation()) {
-    if (!in_overflow_mode()) {
+    if (!ShownInsideMenu()) {
       // Make sure we don't try to animate to wider than the allowed width.
       int max_width = GetToolbarView(browser_)->GetMaxBrowserActionsWidth();
       if (target_width > max_width)
@@ -268,7 +233,6 @@ void BrowserActionsContainer::ResizeAndAnimate(
     // because that could end up calling AnimationEnded which clears the value.
     resize_animation_->Reset();
     resize_starting_width_ = width();
-    suppress_chevron_ = suppress_chevron;
     resize_animation_->SetTweenType(tween_type);
     animation_target_size_ = target_width;
     resize_animation_->Show();
@@ -278,10 +242,7 @@ void BrowserActionsContainer::ResizeAndAnimate(
   }
 }
 
-void BrowserActionsContainer::SetChevronVisibility(bool visible) {
-  if (chevron_)
-    chevron_->SetVisible(visible);
-}
+void BrowserActionsContainer::SetChevronVisibility(bool visible) {}
 
 int BrowserActionsContainer::GetWidth(GetWidthTime get_width_time) const {
   return get_width_time == GET_WIDTH_AFTER_ANIMATION &&
@@ -300,8 +261,7 @@ void BrowserActionsContainer::StopAnimating() {
 }
 
 int BrowserActionsContainer::GetChevronWidth() const {
-  return chevron_ ?
-      chevron_->GetPreferredSize().width() + GetChevronSpacing() : 0;
+  return 0;
 }
 
 void BrowserActionsContainer::ShowToolbarActionBubble(
@@ -356,7 +316,7 @@ int BrowserActionsContainer::GetWidthForMaxWidth(int max_width) const {
 }
 
 gfx::Size BrowserActionsContainer::GetPreferredSize() const {
-  if (in_overflow_mode())
+  if (ShownInsideMenu())
     return toolbar_actions_bar_->GetPreferredSize();
 
   // If there are no actions to show, then don't show the container at all.
@@ -376,7 +336,7 @@ gfx::Size BrowserActionsContainer::GetPreferredSize() const {
 }
 
 int BrowserActionsContainer::GetHeightForWidth(int width) const {
-  if (in_overflow_mode())
+  if (ShownInsideMenu())
     toolbar_actions_bar_->SetOverflowRowWidth(width);
   return GetPreferredSize().height();
 }
@@ -403,20 +363,6 @@ void BrowserActionsContainer::Layout() {
   // (exclusive).
   size_t start_index = toolbar_actions_bar_->GetStartIndexInBounds();
   size_t end_index = toolbar_actions_bar_->GetEndIndexInBounds();
-
-  // If the icons don't all fit, show the chevron (unless suppressed).
-  if (chevron_ && !suppress_chevron_ && toolbar_actions_bar_->NeedsOverflow()) {
-    chevron_->SetVisible(true);
-    gfx::Size chevron_size(chevron_->GetPreferredSize());
-    chevron_->SetBounds(
-        width() - GetLayoutConstant(TOOLBAR_STANDARD_SPACING) -
-            chevron_size.width(),
-        0,
-        chevron_size.width(),
-        chevron_size.height());
-  } else if (chevron_) {
-    chevron_->SetVisible(false);
-  }
 
   // Now draw the icons for the actions in the available space. Once all the
   // variables are in place, the layout works equally well for the main and
@@ -468,7 +414,7 @@ int BrowserActionsContainer::OnDragUpdated(
 
     // Sanity check - we should never be on a different row in the main
     // container.
-    DCHECK(in_overflow_mode() || row_index == 0);
+    DCHECK(ShownInsideMenu() || row_index == 0);
 
     // Next, we determine which icon to place the indicator in front of. We want
     // to place the indicator in front of icon n when the cursor is between the
@@ -498,7 +444,7 @@ int BrowserActionsContainer::OnDragUpdated(
     // We need to figure out how many icons are visible on the relevant row.
     // In the main container, this will just be the visible actions.
     int visible_icons_on_row = VisibleBrowserActionsAfterAnimation();
-    if (in_overflow_mode()) {
+    if (ShownInsideMenu()) {
       int icons_per_row = platform_settings().icons_per_overflow_menu_row;
       // If this is the final row of the overflow, then this is the remainder of
       // visible icons. Otherwise, it's a full row (kIconsPerRow).
@@ -543,7 +489,7 @@ int BrowserActionsContainer::OnPerformDrop(
   size_t i = drop_position_->row *
       platform_settings().icons_per_overflow_menu_row +
       drop_position_->icon_in_row;
-  if (in_overflow_mode())
+  if (ShownInsideMenu())
     i += main_container_->VisibleBrowserActionsAfterAnimation();
   // |i| now points to the item to the right of the drop indicator*, which is
   // correct when dragging an icon to the left. When dragging to the right,
@@ -555,7 +501,7 @@ int BrowserActionsContainer::OnPerformDrop(
 
   ToolbarActionsBar::DragType drag_type = ToolbarActionsBar::DRAG_TO_SAME;
   if (!toolbar_action_views_[data.index()]->visible())
-    drag_type = in_overflow_mode() ? ToolbarActionsBar::DRAG_TO_OVERFLOW :
+    drag_type = ShownInsideMenu() ? ToolbarActionsBar::DRAG_TO_OVERFLOW :
         ToolbarActionsBar::DRAG_TO_MAIN;
 
   toolbar_actions_bar_->OnDragDrop(data.index(), i, drag_type);
@@ -652,7 +598,6 @@ void BrowserActionsContainer::AnimationEnded(const gfx::Animation* animation) {
   animation_target_size_ = 0;
   resize_amount_ = 0;
   resize_starting_width_ = -1;
-  suppress_chevron_ = false;
   parent()->Layout();
 
   toolbar_actions_bar_->OnAnimationEnded();
@@ -666,7 +611,7 @@ void BrowserActionsContainer::OnPaint(gfx::Canvas* canvas) {
   // If the views haven't been initialized yet, wait for the next call to
   // paint (one will be triggered by entering highlight mode).
   if (toolbar_actions_bar_->is_highlighting() &&
-      !toolbar_action_views_.empty() && !in_overflow_mode()) {
+      !toolbar_action_views_.empty() && !ShownInsideMenu()) {
     ToolbarActionsModel::HighlightType highlight_type =
         toolbar_actions_bar_->highlight_type();
     views::Painter* painter =
@@ -710,10 +655,6 @@ void BrowserActionsContainer::OnPaint(gfx::Canvas* canvas) {
   }
 }
 
-void BrowserActionsContainer::OnThemeChanged() {
-  LoadImages();
-}
-
 void BrowserActionsContainer::ViewHierarchyChanged(
     const ViewHierarchyChangedDetails& details) {
   if (!toolbar_actions_bar_->enabled())
@@ -728,24 +669,6 @@ void BrowserActionsContainer::ViewHierarchyChanged(
 
     added_to_view_ = true;
   }
-}
-
-void BrowserActionsContainer::LoadImages() {
-  if (in_overflow_mode())
-    return;  // Overflow mode has neither a chevron nor highlighting.
-
-  const ui::ThemeProvider* tp = GetThemeProvider();
-  if (tp && chevron_) {
-    chevron_->SetImage(views::Button::STATE_NORMAL,
-                       *tp->GetImageSkiaNamed(IDR_BROWSER_ACTIONS_OVERFLOW));
-  }
-
-  const int kInfoImages[] = IMAGE_GRID(IDR_TOOLBAR_ACTION_HIGHLIGHT);
-  info_highlight_painter_.reset(
-      views::Painter::CreateImageGridPainter(kInfoImages));
-  const int kWarningImages[] = IMAGE_GRID(IDR_DEVELOPER_MODE_HIGHLIGHT);
-  warning_highlight_painter_.reset(
-      views::Painter::CreateImageGridPainter(kWarningImages));
 }
 
 void BrowserActionsContainer::ClearActiveBubble(views::Widget* widget) {

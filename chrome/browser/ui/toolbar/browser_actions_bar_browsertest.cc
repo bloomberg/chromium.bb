@@ -209,7 +209,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, Visibility) {
   EXPECT_EQ(extension_b()->id(), browser_actions_bar()->GetExtensionId(0));
 
   // Enable A again. A should get its spot in the same location and the bar
-  // should not grow (chevron is showing). For details: http://crbug.com/35349.
+  // should not grow. For details: http://crbug.com/35349.
   // State becomes: A, [B, C].
   EnableExtension(extension_a()->id());
   EXPECT_EQ(3, browser_actions_bar()->NumberOfBrowserActions());
@@ -257,35 +257,37 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, Visibility) {
   EXPECT_EQ(extension_a()->id(), browser_actions_bar()->GetExtensionId(0));
 
   // Shrink the browser actions bar to zero visible icons.
-  // No icons should be visible, but we *should* show the chevron and have a
+  // No icons should be visible, but we *should* overflow and have a
   // non-empty size.
   toolbar_model()->SetVisibleIconCount(0);
   EXPECT_EQ(0, browser_actions_bar()->VisibleBrowserActions());
-  EXPECT_TRUE(browser_actions_bar()->IsChevronShowing());
+  ToolbarActionsBar* toolbar_actions_bar =
+      browser_actions_bar()->GetToolbarActionsBar();
+  EXPECT_TRUE(toolbar_actions_bar->NeedsOverflow());
 
-  // Reset visibility count to 2. State should be A, B, [C], and the chevron
-  // should be visible.
+  // Reset visibility count to 2. State should be A, B, [C], and we should
+  // overflow.
   toolbar_model()->SetVisibleIconCount(2);
   EXPECT_EQ(2, browser_actions_bar()->VisibleBrowserActions());
   EXPECT_EQ(extension_a()->id(), browser_actions_bar()->GetExtensionId(0));
   EXPECT_EQ(extension_b()->id(), browser_actions_bar()->GetExtensionId(1));
-  EXPECT_TRUE(browser_actions_bar()->IsChevronShowing());
+  EXPECT_TRUE(toolbar_actions_bar->NeedsOverflow());
 
-  // Disable C (the overflowed extension). State should now be A, B, and the
-  // chevron should be hidden.
+  // Disable C (the overflowed extension). State should now be A, B, and we
+  // should not overflow.
   DisableExtension(extension_c()->id());
   EXPECT_EQ(2, browser_actions_bar()->VisibleBrowserActions());
   EXPECT_EQ(extension_a()->id(), browser_actions_bar()->GetExtensionId(0));
   EXPECT_EQ(extension_b()->id(), browser_actions_bar()->GetExtensionId(1));
-  EXPECT_FALSE(browser_actions_bar()->IsChevronShowing());
+  EXPECT_FALSE(toolbar_actions_bar->NeedsOverflow());
 
-  // Re-enable C. We should still only have 2 visible icons, and the chevron
-  // should be visible.
+  // Re-enable C. We should still only have 2 visible icons, still with
+  // overflow.
   EnableExtension(extension_c()->id());
   EXPECT_EQ(2, browser_actions_bar()->VisibleBrowserActions());
   EXPECT_EQ(extension_a()->id(), browser_actions_bar()->GetExtensionId(0));
   EXPECT_EQ(extension_b()->id(), browser_actions_bar()->GetExtensionId(1));
-  EXPECT_TRUE(browser_actions_bar()->IsChevronShowing());
+  EXPECT_TRUE(toolbar_actions_bar->NeedsOverflow());
 }
 
 // Test that, with the toolbar action redesign, actions that want to run have

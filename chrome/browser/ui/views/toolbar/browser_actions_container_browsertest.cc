@@ -119,8 +119,6 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, DragBrowserActions) {
   // Shrink the size of the container so we have an overflow menu.
   toolbar_model()->SetVisibleIconCount(2u);
   EXPECT_EQ(2u, container->VisibleBrowserActions());
-  ASSERT_TRUE(container->chevron());
-  EXPECT_TRUE(container->chevron()->visible());
 
   // Simulate a drag and drop from the overflow menu.
   ui::OSExchangeData drop_data3;
@@ -143,13 +141,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, DragBrowserActions) {
   EXPECT_EQ(extension_c()->id(), browser_actions_bar()->GetExtensionId(1));
   EXPECT_EQ(extension_b()->id(), browser_actions_bar()->GetExtensionId(2));
   EXPECT_EQ(3u, container->VisibleBrowserActions());
-  EXPECT_FALSE(container->chevron()->visible());
   EXPECT_TRUE(toolbar_model()->all_icons_visible());
-
-  // TODO(devlin): Ideally, we'd also have tests for dragging from the legacy
-  // overflow menu (i.e., chevron) to the main bar, but this requires either
-  // having a fairly complicated interactive UI test or finding a good way to
-  // mock up the BrowserActionOverflowMenuController.
 }
 
 // Test that changes performed in one container affect containers in other
@@ -194,8 +186,6 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, MultipleWindows) {
 
   // Semi-random placement for a regression test for crbug.com/539744.
   first->Layout();
-  EXPECT_FALSE(first->chevron_for_testing()->visible());
-
   first->OnPerformDrop(target_event);
 
   // The new order, B A C, should be reflected in *both* containers, even
@@ -212,8 +202,6 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, MultipleWindows) {
   // The first and second container should each have resized.
   EXPECT_EQ(2u, first->VisibleBrowserActions());
   EXPECT_EQ(2u, second->VisibleBrowserActions());
-  EXPECT_TRUE(first->chevron_for_testing()->visible());
-  EXPECT_TRUE(second->chevron_for_testing()->visible());
 }
 
 // Test that the BrowserActionsContainer responds correctly when the underlying

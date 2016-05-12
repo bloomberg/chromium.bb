@@ -266,8 +266,6 @@ void ToolbarView::Init() {
                          base::Bind(&ToolbarView::OnShowHomeButtonChanged,
                                     base::Unretained(this)));
 
-  browser_actions_->Init();
-
   // Accessibility specific tooltip text.
   if (content::BrowserAccessibilityState::GetInstance()->
           IsAccessibleBrowser()) {

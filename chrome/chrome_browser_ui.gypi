@@ -2446,8 +2446,6 @@
       'browser/ui/views/toolbar/back_button.h',
       'browser/ui/views/toolbar/browser_actions_container.cc',
       'browser/ui/views/toolbar/browser_actions_container.h',
-      'browser/ui/views/toolbar/chevron_menu_button.cc',
-      'browser/ui/views/toolbar/chevron_menu_button.h',
       'browser/ui/views/toolbar/extension_toolbar_menu_view.cc',
       'browser/ui/views/toolbar/extension_toolbar_menu_view.h',
       'browser/ui/views/toolbar/home_button.cc',

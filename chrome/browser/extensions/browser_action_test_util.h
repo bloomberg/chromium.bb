@@ -49,11 +49,6 @@ class BrowserActionTestUtil {
   // Returns the number of browser action currently visible.
   int VisibleBrowserActions();
 
-  // Returns true if the overflow chevron is completely shown in the browser
-  // actions container (i.e., is visible and is within the bounds of the
-  // container).
-  bool IsChevronShowing();
-
   // Inspects the extension popup for the action at the given index.
   void InspectPopup(int index);
 

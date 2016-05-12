@@ -1168,7 +1168,6 @@ SkBitmap Gtk2UI::GenerateGtkThemeBitmap(int id) const {
     // ResourceBundle. (i.e. in a light on dark theme, the dropdown arrow will
     // be dark on dark)
     case IDR_MENU_DROPARROW:
-    case IDR_BROWSER_ACTIONS_OVERFLOW:
       return GenerateTintedIcon(id, button_tint_);
   }
 
