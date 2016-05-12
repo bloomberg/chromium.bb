@@ -43,7 +43,7 @@ class DepsChecker(DepsBuilder):
                being_tested=False,
                ignore_temp_rules=False,
                skip_tests=False,
-               resolve_dotdot=False):
+               resolve_dotdot=True):
     """Creates a new DepsChecker.
 
     Args:
@@ -179,8 +179,8 @@ def main():
       '', '--json',
       help='Path to JSON output file')
   option_parser.add_option(
-      '', '--resolve-dotdot',
-      action='store_true', dest='resolve_dotdot', default=False,
+      '', '--no-resolve-dotdot',
+      action='store_false', dest='resolve_dotdot', default=True,
       help='resolve leading ../ in include directive paths relative '
            'to the file perfoming the inclusion.')
 
