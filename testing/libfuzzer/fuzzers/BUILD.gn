@@ -26,6 +26,7 @@ fuzzer_test("brotli_fuzzer") {
   deps = [
     "//third_party/brotli:brotli",
   ]
+  libfuzzer_options = [ "max_len=1280" ]
 }
 
 fuzzer_test("courgette_fuzzer") {
