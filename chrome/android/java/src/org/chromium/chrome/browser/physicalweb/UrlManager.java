@@ -338,6 +338,7 @@ class UrlManager {
             return;
         }
 
+        // Read the cache.
         mNearbyUrls.addAll(prefs.getStringSet(PREFS_NEARBY_URLS_KEY, new HashSet<String>()));
         mResolvedUrls.addAll(
                 prefs.getStringSet(PREFS_RESOLVED_URLS_KEY, new HashSet<String>()));

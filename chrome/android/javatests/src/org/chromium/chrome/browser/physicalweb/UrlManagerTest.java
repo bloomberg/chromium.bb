@@ -20,7 +20,7 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Tests for the UrlManager class.
+ * Tests for {@link UrlManager}.
  */
 public class UrlManagerTest extends InstrumentationTestCase {
     private static final String URL1 = "https://example.com/";
@@ -52,6 +52,18 @@ public class UrlManagerTest extends InstrumentationTestCase {
         mUrlManager.overrideNotificationManagerForTesting(mMockNotificationManagerProxy);
     }
 
+    private void addPwsResult1() {
+        ArrayList<PwsResult> results = new ArrayList<>();
+        results.add(new PwsResult(URL1, URL1, null, TITLE1, DESC1));
+        mMockPwsClient.addPwsResults(results);
+    }
+
+    private void addPwsResult2() {
+        ArrayList<PwsResult> results = new ArrayList<>();
+        results.add(new PwsResult(URL2, URL2, null, TITLE2, DESC2));
+        mMockPwsClient.addPwsResults(results);
+    }
+
     private void setOnboarding() {
         mSharedPreferences.edit().putInt(PREF_PHYSICAL_WEB, PHYSICAL_WEB_ONBOARDING).apply();
     }
@@ -59,9 +71,7 @@ public class UrlManagerTest extends InstrumentationTestCase {
     @SmallTest
     public void testAddUrlWhileOnboardingMakesNotification() throws Exception {
         setOnboarding();
-        ArrayList<PwsResult> results = new ArrayList<>();
-        results.add(new PwsResult(URL1, URL1, null, TITLE1, DESC1));
-        mMockPwsClient.addPwsResults(results);
+        addPwsResult1();
         mUrlManager.addUrl(URL1);
         getInstrumentation().waitForIdleSync();
 
@@ -102,9 +112,7 @@ public class UrlManagerTest extends InstrumentationTestCase {
 
     @SmallTest
     public void testAddUrlWithResolutionMakesNotification() throws Exception {
-        ArrayList<PwsResult> results = new ArrayList<>();
-        results.add(new PwsResult(URL1, URL1, null, TITLE1, DESC1));
-        mMockPwsClient.addPwsResults(results);
+        addPwsResult1();
         mUrlManager.addUrl(URL1);
         getInstrumentation().waitForIdleSync();
 
@@ -183,9 +191,7 @@ public class UrlManagerTest extends InstrumentationTestCase {
 
     @SmallTest
     public void testRemoveOnlyUrlClearsNotification() throws Exception {
-        ArrayList<PwsResult> results = new ArrayList<>();
-        results.add(new PwsResult(URL1, URL1, null, TITLE1, DESC1));
-        mMockPwsClient.addPwsResults(results);
+        addPwsResult1();
         mUrlManager.addUrl(URL1);
         getInstrumentation().waitForIdleSync();
 
@@ -206,9 +212,7 @@ public class UrlManagerTest extends InstrumentationTestCase {
 
     @SmallTest
     public void testClearUrlsClearsNotification() throws Exception {
-        ArrayList<PwsResult> results = new ArrayList<>();
-        results.add(new PwsResult(URL1, URL1, null, TITLE1, DESC1));
-        mMockPwsClient.addPwsResults(results);
+        addPwsResult1();
         mUrlManager.addUrl(URL1);
         getInstrumentation().waitForIdleSync();
 
@@ -225,6 +229,21 @@ public class UrlManagerTest extends InstrumentationTestCase {
         // Make sure no notification is shown.
         notifications = mMockNotificationManagerProxy.getNotifications();
         assertEquals(0, notifications.size());
+    }
+
+    @SmallTest
+    public void testSerializationWorks() throws Exception {
+        addPwsResult1();
+        addPwsResult2();
+        mUrlManager.addUrl(new UrlInfo(URL1, 99.5, 42));
+        mUrlManager.addUrl(new UrlInfo(URL2, 100.5, 43));
+        getInstrumentation().waitForIdleSync();
+
+        // Make sure all URLs are restored.
+        Context context = getInstrumentation().getTargetContext().getApplicationContext();
+        UrlManager urlManager = new UrlManager(context);
+        List<UrlInfo> urlInfos = urlManager.getUrls();
+        assertEquals(2, urlInfos.size());
     }
 
     @SmallTest

@@ -79,8 +79,8 @@ class UrlInfo implements Comparable<UrlInfo> {
     public static UrlInfo jsonDeserialize(JSONObject jsonObject) throws JSONException {
         return new UrlInfo(
                 jsonObject.getString(URL_KEY),
-                jsonObject.getDouble(SCAN_TIMESTAMP_KEY),
-                jsonObject.getLong(DISTANCE_KEY));
+                jsonObject.getDouble(DISTANCE_KEY),
+                jsonObject.getLong(SCAN_TIMESTAMP_KEY));
     }
 
     /**
@@ -143,6 +143,6 @@ class UrlInfo implements Comparable<UrlInfo> {
      */
     @Override
     public String toString() {
-        return String.format(Locale.getDefault(), "%s %f", mUrl, mDistance);
+        return String.format(Locale.getDefault(), "%s %f %d", mUrl, mDistance, mScanTimestamp);
     }
 }
