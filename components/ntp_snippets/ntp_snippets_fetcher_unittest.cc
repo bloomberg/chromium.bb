@@ -251,24 +251,31 @@ TEST_F(NTPSnippetsFetcherTest, ShouldReportEmptyHostsError) {
 
 TEST_F(NTPSnippetsFetcherTest, ShouldRestrictToHosts) {
   net::TestURLFetcherFactory test_url_fetcher_factory;
-  snippets_fetcher().FetchSnippetsFromHosts(test_hosts(), test_lang(),
-                                            /*count=*/17);
+  snippets_fetcher().FetchSnippetsFromHosts(
+      {"www.somehost1.com", "www.somehost2.com"}, test_lang(), /*count=*/17);
   net::TestURLFetcher* fetcher = test_url_fetcher_factory.GetFetcherByID(0);
   ASSERT_THAT(fetcher, NotNull());
   std::unique_ptr<base::Value> value =
       base::JSONReader::Read(fetcher->upload_data());
-  ASSERT_TRUE(value);
-  const base::DictionaryValue* dict;
+  ASSERT_TRUE(value) << " failed to parse JSON: "
+                     << PrintToString(fetcher->upload_data());
+  const base::DictionaryValue* dict = nullptr;
   ASSERT_TRUE(value->GetAsDictionary(&dict));
-  const base::DictionaryValue* local_scoring_params;
+  const base::DictionaryValue* local_scoring_params = nullptr;
   ASSERT_TRUE(dict->GetDictionary("advanced_options.local_scoring_params",
                                   &local_scoring_params));
-  const base::DictionaryValue* content_selectors;
-  ASSERT_TRUE(local_scoring_params->GetDictionary("content_selectors",
-                                                  &content_selectors));
+  const base::ListValue* content_selectors = nullptr;
+  ASSERT_TRUE(
+      local_scoring_params->GetList("content_selectors", &content_selectors));
+  ASSERT_THAT(content_selectors->GetSize(), Eq(static_cast<size_t>(2)));
+  const base::DictionaryValue* content_selector = nullptr;
+  ASSERT_TRUE(content_selectors->GetDictionary(0, &content_selector));
   std::string content_selector_value;
-  EXPECT_TRUE(content_selectors->GetString("value", &content_selector_value));
-  EXPECT_THAT(content_selector_value, Eq("www.somehost.com"));
+  EXPECT_TRUE(content_selector->GetString("value", &content_selector_value));
+  EXPECT_THAT(content_selector_value, Eq("www.somehost1.com"));
+  ASSERT_TRUE(content_selectors->GetDictionary(1, &content_selector));
+  EXPECT_TRUE(content_selector->GetString("value", &content_selector_value));
+  EXPECT_THAT(content_selector_value, Eq("www.somehost2.com"));
 }
 
 TEST_F(NTPSnippetsFetcherTest, ShouldReportUrlStatusError) {

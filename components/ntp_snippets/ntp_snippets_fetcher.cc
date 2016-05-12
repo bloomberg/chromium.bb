@@ -66,19 +66,21 @@ const char kRequestParameterFormat[] =
     "        \"only_return_personalized_results\": false"
     "%s"  // If authenticated - user segment (lang code) will be inserted here.
     "      },"
-    "      \"content_restricts\": {"
-    "        \"type\": \"METADATA\","
-    "        \"value\": \"TITLE\""
-    "      },"
-    "      \"content_restricts\": {"
-    "        \"type\": \"METADATA\","
-    "        \"value\": \"SNIPPET\""
-    "      },"
-    "      \"content_restricts\": {"
-    "        \"type\": \"METADATA\","
-    "        \"value\": \"THUMBNAIL\""
-    "      }"
-    "%s"  // If host restricted - host restrictions will be inserted here.
+    "      \"content_restricts\": ["
+    "        {"
+    "          \"type\": \"METADATA\","
+    "          \"value\": \"TITLE\""
+    "        },"
+    "        {"
+    "          \"type\": \"METADATA\","
+    "          \"value\": \"SNIPPET\""
+    "        },"
+    "        {"
+    "          \"type\": \"METADATA\","
+    "          \"value\": \"THUMBNAIL\""
+    "        }"
+    "      ],"
+    "      \"content_selectors\": [%s]"
     "    },"
     "    \"global_scoring_params\": {"
     "      \"num_to_return\": %i,"
@@ -90,7 +92,7 @@ const char kRequestParameterFormat[] =
 const char kGaiaIdFormat[] = "  \"obfuscated_gaia_id\": \"%s\",";
 const char kUserSegmentFormat[] = "        ,\"user_segment\": \"%s\"";
 const char kHostRestrictFormat[] =
-    "      ,\"content_selectors\": {"
+    "      {"
     "        \"type\": \"HOST_RESTRICT\","
     "        \"value\": \"%s\""
     "      }";
@@ -229,8 +231,11 @@ void NTPSnippetsFetcher::FetchSnippetsImpl(const GURL& url,
 std::string NTPSnippetsFetcher::GetHostRestricts() const {
   std::string host_restricts;
   if (UseHostRestriction()) {
-    for (const std::string& host : hosts_)
+    for (const std::string& host : hosts_) {
+      if (!host_restricts.empty())
+        host_restricts.push_back(',');
       host_restricts += base::StringPrintf(kHostRestrictFormat, host.c_str());
+    }
   }
   return host_restricts;
 }
