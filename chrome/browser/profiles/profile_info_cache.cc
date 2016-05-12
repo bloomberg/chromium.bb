@@ -226,11 +226,6 @@ ProfileInfoCache::ProfileInfoCache(PrefService* prefs,
 }
 
 ProfileInfoCache::~ProfileInfoCache() {
-  STLDeleteContainerPairSecondPointers(
-      cached_avatar_images_.begin(), cached_avatar_images_.end());
-  STLDeleteContainerPairSecondPointers(
-      avatar_images_downloads_in_progress_.begin(),
-      avatar_images_downloads_in_progress_.end());
 }
 
 void ProfileInfoCache::AddProfileToCache(
@@ -296,7 +291,7 @@ void ProfileInfoCache::DeleteProfileFromCache(
   std::string key = CacheKeyFromProfilePath(profile_path);
   cache->Remove(key, NULL);
   sorted_keys_.erase(std::find(sorted_keys_.begin(), sorted_keys_.end(), key));
-  profile_attributes_entries_.erase(profile_path);
+  profile_attributes_entries_.erase(profile_path.value());
 
   FOR_EACH_OBSERVER(ProfileInfoCacheObserver,
                     observer_list_,
@@ -796,12 +791,7 @@ void ProfileInfoCache::SetGAIAPictureOfProfileAtIndex(size_t index,
   std::string key = CacheKeyFromProfilePath(path);
 
   // Delete the old bitmap from cache.
-  std::map<std::string, gfx::Image*>::iterator it =
-      cached_avatar_images_.find(key);
-  if (it != cached_avatar_images_.end()) {
-    delete it->second;
-    cached_avatar_images_.erase(it);
-  }
+  cached_avatar_images_.erase(key);
 
   std::string old_file_name;
   GetInfoForProfileAtIndex(index)->GetString(
@@ -1071,7 +1061,7 @@ void ProfileInfoCache::SaveAvatarImageAtPath(
     const gfx::Image* image,
     const std::string& key,
     const base::FilePath& image_path) {
-  cached_avatar_images_[key] = new gfx::Image(*image);
+  cached_avatar_images_[key].reset(new gfx::Image(*image));
 
   std::unique_ptr<ImageData> data(new ImageData);
   scoped_refptr<base::RefCountedMemory> png_data = image->As1xPNGBytes();
@@ -1084,7 +1074,7 @@ void ProfileInfoCache::SaveAvatarImageAtPath(
     // We mustn't delete the avatar downloader right here, since we're being
     // called by it.
     BrowserThread::DeleteSoon(BrowserThread::UI, FROM_HERE,
-                              downloader_iter->second);
+                              downloader_iter->second.release());
     avatar_images_downloads_in_progress_.erase(downloader_iter);
   }
 
@@ -1228,21 +1218,23 @@ void ProfileInfoCache::DownloadHighResAvatar(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "461175 ProfileInfoCache::DownloadHighResAvatar::MakeDownloader"));
   // Start the download for this file. The cache takes ownership of the
-  // |avatar_downloader|, which will be deleted when the download completes, or
+  // avatar downloader, which will be deleted when the download completes, or
   // if that never happens, when the ProfileInfoCache is destroyed.
-  ProfileAvatarDownloader* avatar_downloader = new ProfileAvatarDownloader(
-      icon_index,
-      base::Bind(&ProfileInfoCache::SaveAvatarImageAtPath,
-                 base::Unretained(this),
-                 profile_path));
-  avatar_images_downloads_in_progress_[file_name] = avatar_downloader;
+  std::unique_ptr<ProfileAvatarDownloader>& current_downloader =
+      avatar_images_downloads_in_progress_[file_name];
+  current_downloader.reset(
+      new ProfileAvatarDownloader(
+          icon_index,
+          base::Bind(&ProfileInfoCache::SaveAvatarImageAtPath,
+                     base::Unretained(this),
+                     profile_path)));
 
   // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/461175
   // is fixed.
   tracked_objects::ScopedTracker tracking_profile3(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "461175 ProfileInfoCache::DownloadHighResAvatar::StartDownload"));
-  avatar_downloader->Start();
+  current_downloader->Start();
 }
 
 const gfx::Image* ProfileInfoCache::LoadAvatarPictureFromPath(
@@ -1253,7 +1245,7 @@ const gfx::Image* ProfileInfoCache::LoadAvatarPictureFromPath(
   if (cached_avatar_images_.count(key)) {
     if (cached_avatar_images_[key]->IsEmpty())
       return NULL;
-    return cached_avatar_images_[key];
+    return cached_avatar_images_[key].get();
   }
 
   // Don't download the image if downloading is disabled for tests.
@@ -1285,7 +1277,6 @@ void ProfileInfoCache::OnAvatarPictureLoaded(const base::FilePath& profile_path,
           "461175 ProfileInfoCache::OnAvatarPictureLoaded::Start"));
 
   cached_avatar_images_loading_[key] = false;
-  delete cached_avatar_images_[key];
 
   if (*image) {
     // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/461175
@@ -1293,7 +1284,7 @@ void ProfileInfoCache::OnAvatarPictureLoaded(const base::FilePath& profile_path,
     tracked_objects::ScopedTracker tracking_profile2(
         FROM_HERE_WITH_EXPLICIT_FUNCTION(
             "461175 ProfileInfoCache::OnAvatarPictureLoaded::SetImage"));
-    cached_avatar_images_[key] = *image;
+    cached_avatar_images_[key].reset(*image);
   } else {
     // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/461175
     // is fixed.
@@ -1301,7 +1292,7 @@ void ProfileInfoCache::OnAvatarPictureLoaded(const base::FilePath& profile_path,
         FROM_HERE_WITH_EXPLICIT_FUNCTION(
             "461175 ProfileInfoCache::OnAvatarPictureLoaded::MakeEmptyImage"));
     // Place an empty image in the cache to avoid reloading it again.
-    cached_avatar_images_[key] = new gfx::Image();
+    cached_avatar_images_[key].reset(new gfx::Image());
   }
   // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/461175
   // is fixed.
@@ -1414,16 +1405,15 @@ bool ProfileInfoCache::GetProfileAttributesWithPath(
   if (GetIndexOfProfileWithPath(path) == std::string::npos)
     return false;
 
-  if (profile_attributes_entries_.find(path) ==
-      profile_attributes_entries_.end()) {
+  std::unique_ptr<ProfileAttributesEntry>& current_entry =
+      profile_attributes_entries_[path.value()];
+  if (!current_entry) {
     // The profile info is in the cache but its entry isn't created yet, insert
     // it in the map.
-    std::unique_ptr<ProfileAttributesEntry> new_entry(
-        new ProfileAttributesEntry());
-    profile_attributes_entries_.add(path, std::move(new_entry));
-    profile_attributes_entries_.get(path)->Initialize(this, path);
+    current_entry.reset(new ProfileAttributesEntry());
+    current_entry->Initialize(this, path);
   }
 
-  *entry = profile_attributes_entries_.get(path);
+  *entry = current_entry.get();
   return true;
 }

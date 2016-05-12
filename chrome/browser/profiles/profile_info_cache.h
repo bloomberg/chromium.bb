@@ -7,12 +7,11 @@
 
 #include <stddef.h>
 
-#include <map>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -266,8 +265,8 @@ class ProfileInfoCache : public ProfileInfoInterface,
 
   PrefService* prefs_;
   std::vector<std::string> sorted_keys_;
-  base::ScopedPtrHashMap<base::FilePath,
-                         std::unique_ptr<ProfileAttributesEntry>>
+  std::unordered_map<base::FilePath::StringType,
+                     std::unique_ptr<ProfileAttributesEntry>>
       profile_attributes_entries_;
   base::FilePath user_data_dir_;
 
@@ -275,17 +274,18 @@ class ProfileInfoCache : public ProfileInfoInterface,
 
   // A cache of gaia/high res avatar profile pictures. This cache is updated
   // lazily so it needs to be mutable.
-  mutable std::map<std::string, gfx::Image*> cached_avatar_images_;
+  mutable std::unordered_map<std::string, std::unique_ptr<gfx::Image>>
+      cached_avatar_images_;
   // Marks a profile picture as loading from disk. This prevents a picture from
   // loading multiple times.
-  mutable std::map<std::string, bool> cached_avatar_images_loading_;
+  mutable std::unordered_map<std::string, bool> cached_avatar_images_loading_;
 
-  // Map of profile pictures currently being downloaded from the remote
+  // Hash table of profile pictures currently being downloaded from the remote
   // location and the ProfileAvatarDownloader instances downloading them.
   // This prevents a picture from being downloaded multiple times. The
   // ProfileAvatarDownloader instances are deleted when the download completes
   // or when the ProfileInfoCache is destroyed.
-  std::map<std::string, ProfileAvatarDownloader*>
+  std::unordered_map<std::string, std::unique_ptr<ProfileAvatarDownloader>>
       avatar_images_downloads_in_progress_;
 
   // Determines of the ProfileAvatarDownloader should be created and executed

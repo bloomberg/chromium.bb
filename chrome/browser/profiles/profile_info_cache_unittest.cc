@@ -608,7 +608,7 @@ TEST_F(ProfileInfoCacheTest, DownloadHighResAvatarTest) {
   // The file should have been cached and saved.
   EXPECT_EQ(1U, profile_info_cache.cached_avatar_images_.size());
   EXPECT_TRUE(profile_info_cache.GetHighResAvatarOfProfileAtIndex(0));
-  EXPECT_EQ(profile_info_cache.cached_avatar_images_[file_name],
+  EXPECT_EQ(profile_info_cache.cached_avatar_images_[file_name].get(),
       profile_info_cache.GetHighResAvatarOfProfileAtIndex(0));
 
   // Make sure everything has completed, and the file has been written to disk.
