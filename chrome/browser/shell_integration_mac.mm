@@ -53,7 +53,7 @@ bool IsIdentifierDefaultProtocolClient(NSString* identifier,
 // applies only for the current user. Returns false if this cannot be done, or
 // if the operation fails.
 bool SetAsDefaultBrowser() {
-  if (CanSetAsDefaultBrowser())
+  if (!CanSetAsDefaultBrowser())
     return false;
 
   // We really do want the outer bundle here, not the main bundle since setting
