@@ -130,7 +130,8 @@ public class NewTabPage
 
     private boolean mIsLoaded;
 
-    // Whether the NTP has loaded once and is in the foreground.
+    // Whether the NTP is in the foreground (might be loaded or not).
+    // TODO(mastiz): Replace with tab.isHidden() since they should be equivalent.
     private boolean mIsVisible;
 
     // Whether destroy() has been called.
@@ -531,12 +532,10 @@ public class NewTabPage
             RecordHistogram.recordTimesHistogram(
                     "Tab.NewTabOnload", loadTimeMs, TimeUnit.MILLISECONDS);
             mIsLoaded = true;
-            // TODO(mastiz): revisit the logic for mIsLoaded and mIsVisible, since setting
-            // mIsVisible to true seems wrong here.
-            mIsVisible = true;
             StartupMetrics.getInstance().recordOpenedNTP();
             NewTabPageUma.recordNTPImpression(NewTabPageUma.NTP_IMPRESSION_REGULAR);
-            recordNTPShown();
+            // If not visible when loading completes, wait until onShown is received.
+            if (mIsVisible) recordNTPShown();
 
             int tileTypes[] = new int[items.length];
             for (int i = 0; i < items.length; i++) {
@@ -611,7 +610,7 @@ public class NewTabPage
 
             @Override
             public void onHidden(Tab tab) {
-                recordNTPInteractionTime();
+                if (mIsLoaded) recordNTPInteractionTime();
                 mIsVisible = false;
             }
         };
@@ -779,7 +778,7 @@ public class NewTabPage
     public void destroy() {
         assert !mIsDestroyed;
         assert getView().getParent() == null : "Destroy called before removed from window";
-        if (mIsVisible) recordNTPInteractionTime();
+        if (mIsLoaded && mIsVisible) recordNTPInteractionTime();
 
         if (mFaviconHelper != null) {
             mFaviconHelper.destroy();
