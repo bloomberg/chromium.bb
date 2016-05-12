@@ -225,10 +225,10 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   void MoveCursorToInternal(const gfx::Point& root_location,
                             const gfx::Point& host_location);
 
-  // We don't use a scoped_ptr for |window_| since we need this ptr to be valid
-  // during its deletion. (Window's dtor notifies observers that may attempt to
-  // reach back up to access this object which will be valid until the end of
-  // the dtor).
+  // We don't use a std::unique_ptr for |window_| since we need this ptr to be
+  // valid during its deletion. (Window's dtor notifies observers that may
+  // attempt to reach back up to access this object which will be valid until
+  // the end of the dtor).
   Window* window_;  // Owning.
 
   base::ObserverList<WindowTreeHostObserver> observers_;
