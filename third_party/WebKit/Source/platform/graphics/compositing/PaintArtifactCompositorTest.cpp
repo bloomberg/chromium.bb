@@ -5,7 +5,7 @@
 #include "platform/graphics/compositing/PaintArtifactCompositor.h"
 
 #include "base/test/test_simple_task_runner.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "cc/layers/layer.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/trees/layer_tree_host.h"

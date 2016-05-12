@@ -4,7 +4,7 @@
 
 #include "platform/testing/WebLayerTreeViewImplForTesting.h"
 
-#include "base/thread_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "cc/animation/animation_host.h"
 #include "cc/animation/animation_timeline.h"
 #include "cc/blink/web_layer_impl.h"
