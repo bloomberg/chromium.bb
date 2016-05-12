@@ -71,6 +71,7 @@ public class ToolbarProgressBar extends ClipDrawableProgressBar {
     private boolean mAnimationInitialized;
     private int mMarginTop;
     private ViewGroup mControlContainer;
+    private int mProgressStartCount;
 
     private ToolbarProgressBarAnimatingView mAnimatingView;
 
@@ -201,6 +202,7 @@ public class ToolbarProgressBar extends ClipDrawableProgressBar {
      */
     public void start() {
         mIsStarted = true;
+        mProgressStartCount++;
 
         if (mAnimatingView != null) {
             removeCallbacks(mStartIndeterminate);
@@ -263,6 +265,22 @@ public class ToolbarProgressBar extends ClipDrawableProgressBar {
     @VisibleForTesting
     public void setHidingDelay(long hidngDelayMs) {
         mHidingDelayMs = hidngDelayMs;
+    }
+
+    /**
+     * @return The number of times the progress bar has been triggered.
+     */
+    @VisibleForTesting
+    public int getStartCountForTesting() {
+        return mProgressStartCount;
+    }
+
+    /**
+     * Reset the number of times the progress bar has been triggered.
+     */
+    @VisibleForTesting
+    public void resetStartCountForTesting() {
+        mProgressStartCount = 0;
     }
 
     private void animateAlphaTo(float targetAlpha) {
