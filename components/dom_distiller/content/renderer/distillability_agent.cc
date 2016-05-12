@@ -29,6 +29,15 @@ const char* const kBlacklist[] = {
   "www.reddit.com"
 };
 
+enum RejectionBuckets {
+  NOT_ARTICLE = 0,
+  MOBILE_FRIENDLY,
+  BLACKLISTED,
+  TOO_SHORT,
+  NOT_REJECTED,
+  REJECTION_BUCKET_BOUNDARY
+};
+
 // Returns whether it is necessary to send updates back to the browser.
 // The number of updates can be from 0 to 2. See the tests in
 // "distillable_page_utils_browsertest.cc".
@@ -96,6 +105,22 @@ bool IsDistillablePageAdaboost(WebDocument& doc,
   } else {
     UMA_HISTOGRAM_ENUMERATION("DomDistiller.PageDistillableAfterParsing",
         bucket, 4);
+    if (!distillable) {
+      UMA_HISTOGRAM_ENUMERATION("DomDistiller.DistillabilityRejection",
+          NOT_ARTICLE, REJECTION_BUCKET_BOUNDARY);
+    } else if (features.isMobileFriendly) {
+      UMA_HISTOGRAM_ENUMERATION("DomDistiller.DistillabilityRejection",
+          MOBILE_FRIENDLY, REJECTION_BUCKET_BOUNDARY);
+    } else if (blacklisted) {
+      UMA_HISTOGRAM_ENUMERATION("DomDistiller.DistillabilityRejection",
+          BLACKLISTED, REJECTION_BUCKET_BOUNDARY);
+    } else if (!long_article) {
+      UMA_HISTOGRAM_ENUMERATION("DomDistiller.DistillabilityRejection",
+          TOO_SHORT, REJECTION_BUCKET_BOUNDARY);
+    } else {
+      UMA_HISTOGRAM_ENUMERATION("DomDistiller.DistillabilityRejection",
+          NOT_REJECTED, REJECTION_BUCKET_BOUNDARY);
+    }
   }
 
   if (blacklisted) {

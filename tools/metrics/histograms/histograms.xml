@@ -9628,6 +9628,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="DomDistiller.DistillabilityRejection" enum="DistillRejection">
+  <owner>wychen@chromium.org</owner>
+  <summary>
+    The reason to reject distillability at PageDistillableAfterParsing time.
+  </summary>
+</histogram>
+
 <histogram name="DomDistiller.DistillationQuality" enum="BooleanSuccess">
   <owner>nyquist@chromium.org</owner>
   <summary>
@@ -66832,6 +66839,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1" label="Mobile-friendly, not distillable"/>
   <int value="2" label="Non-mobile-friendly, distillable"/>
   <int value="3" label="Mobile-friendly, distillable"/>
+</enum>
+
+<enum name="DistillRejection" type="int">
+  <int value="0" label="Not an article"/>
+  <int value="1" label="Mobile-friendly"/>
+  <int value="2" label="Domain is blacklisted"/>
+  <int value="3" label="Predicted to be short"/>
+  <int value="4" label="Not rejected"/>
 </enum>
 
 <enum name="DllHash" type="int">
