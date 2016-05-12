@@ -24,11 +24,14 @@
 #include "base/i18n/number_formatting.h"
 #include "base/i18n/rtl.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/display/screen.h"
 #include "ui/message_center/message_center_style.h"
 #include "ui/message_center/message_center_tray_delegate.h"
@@ -118,9 +121,17 @@ class WebNotificationButton : public views::CustomButton {
         is_bubble_visible_(false),
         unread_count_(0) {
     SetLayoutManager(new views::FillLayout);
-    unread_label_ = new views::Label();
-    SetupLabelForTray(unread_label_);
-    AddChildView(unread_label_);
+
+    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    no_unread_icon_.SetImage(
+        rb.GetImageNamed(IDR_ASH_SHELF_NOTIFICATION_TRAY_BELL).ToImageSkia());
+    no_unread_icon_.SetImageSize(gfx::Size(18, 18));
+    no_unread_icon_.set_owned_by_client();
+
+    unread_label_.set_owned_by_client();
+    SetupLabelForTray(&unread_label_);
+
+    AddChildView(&unread_label_);
   }
 
   void SetBubbleVisible(bool visible) {
@@ -135,11 +146,6 @@ class WebNotificationButton : public views::CustomButton {
     // base::FormatNumber doesn't convert to arabic numeric characters.
     // TODO(mukai): use ICU to support conversion for such locales.
     unread_count_ = unread_count;
-    // TODO(mukai): move NINE_PLUS message to ui_strings, it doesn't need to be
-    // in ash_strings.
-    unread_label_->SetText((unread_count > 9) ?
-        l10n_util::GetStringUTF16(IDS_ASH_NOTIFICATION_UNREAD_COUNT_NINE_PLUS) :
-        base::FormatNumber(unread_count));
     UpdateIconVisibility();
   }
 
@@ -155,16 +161,35 @@ class WebNotificationButton : public views::CustomButton {
 
  private:
   void UpdateIconVisibility() {
-    unread_label_->SetEnabledColor((unread_count_ > 0)
-                                       ? kWebNotificationColorWithUnread
-                                       : kWebNotificationColorNoUnread);
+    if (unread_count_ == 0) {
+      if (!Contains(&no_unread_icon_)) {
+        RemoveAllChildViews(false /* delete_children */);
+        AddChildView(&no_unread_icon_);
+      }
+    } else {
+      if (!Contains(&unread_label_)) {
+        RemoveAllChildViews(false /* delete_children */);
+        AddChildView(&unread_label_);
+      }
+
+      // TODO(mukai): move NINE_PLUS message to ui_strings, it doesn't need to
+      // be in ash_strings.
+      unread_label_.SetText(
+          (unread_count_ > 9) ? l10n_util::GetStringUTF16(
+                                    IDS_ASH_NOTIFICATION_UNREAD_COUNT_NINE_PLUS)
+                              : base::FormatNumber(unread_count_));
+      unread_label_.SetEnabledColor((unread_count_ > 0)
+                                        ? kWebNotificationColorWithUnread
+                                        : kWebNotificationColorNoUnread);
+    }
     SchedulePaint();
   }
 
   bool is_bubble_visible_;
   int unread_count_;
 
-  views::Label* unread_label_;
+  views::ImageView no_unread_icon_;
+  views::Label unread_label_;
 
   DISALLOW_COPY_AND_ASSIGN(WebNotificationButton);
 };
