@@ -170,6 +170,9 @@ message CastLogsProto {
       REBOOT_TYPE_FDR = 8;
     }
     optional RebootType last_reboot_type = 1;
+
+    // System version which the cast_shell is running.
+    optional fixed64 system_build_number = 2;
   }
   optional CastDeviceMutableInfo cast_device_mutable_info = 5;
 
