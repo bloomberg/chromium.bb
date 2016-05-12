@@ -21,6 +21,7 @@
         'ca_renderer_layer_tree.mm',
         'display_link_mac.cc',
         'display_link_mac.h',
+        'fullscreen_low_power_coordinator.h',
         'gl_renderer_layer_tree.h',
         'gl_renderer_layer_tree.mm',
         'io_surface_context.h',

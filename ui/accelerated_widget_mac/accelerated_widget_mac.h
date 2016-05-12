@@ -31,6 +31,7 @@ class SoftwareFrameData;
 namespace ui {
 
 class AcceleratedWidgetMac;
+class FullscreenLowPowerCoordinator;
 
 // A class through which an AcceleratedWidget may be bound to draw the contents
 // of an NSView. An AcceleratedWidget may be bound to multiple different views
@@ -58,6 +59,12 @@ class ACCELERATED_WIDGET_MAC_EXPORT AcceleratedWidgetMac {
 
   void SetNSView(AcceleratedWidgetMacNSView* view);
   void ResetNSView();
+
+  // Fullscreen low power mode interface.
+  void SetFullscreenLowPowerCoordinator(
+      FullscreenLowPowerCoordinator* coordinator);
+  void ResetFullscreenLowPowerCoordinator();
+  CALayer* GetFullscreenLowPowerLayer() const;
 
   // Return true if the last frame swapped has a size in DIP of |dip_size|.
   bool HasFrameOfSize(const gfx::Size& dip_size) const;
@@ -98,6 +105,10 @@ class ACCELERATED_WIDGET_MAC_EXPORT AcceleratedWidgetMac {
 
   // A phony NSView handle used to identify this.
   gfx::AcceleratedWidget native_widget_;
+
+  // The fullscreen low power coordinator. Weak, reset by
+  // SetFullscreenLowPowerCoordinator when it is destroyed.
+  FullscreenLowPowerCoordinator* fslp_coordinator_ = nullptr;
 
   // A flipped layer, which acts as the parent of the compositing and software
   // layers. This layer is flipped so that the we don't need to recompute the

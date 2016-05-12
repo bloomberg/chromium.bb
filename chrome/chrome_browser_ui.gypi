@@ -1011,6 +1011,8 @@
       'browser/ui/cocoa/framed_browser_window.mm',
       'browser/ui/cocoa/full_size_content_window.h',
       'browser/ui/cocoa/full_size_content_window.mm',
+      'browser/ui/cocoa/fullscreen_low_power_coordinator.h',
+      'browser/ui/cocoa/fullscreen_low_power_coordinator.mm',
       'browser/ui/cocoa/fullscreen_window.h',
       'browser/ui/cocoa/fullscreen_window.mm',
       'browser/ui/cocoa/global_error_bubble_controller.h',
@@ -3088,6 +3090,7 @@
             '../third_party/google_toolbox_for_mac/google_toolbox_for_mac.gyp:google_toolbox_for_mac',
             '../third_party/molokocacao/molokocacao.gyp:molokocacao',
             '../third_party/mozilla/mozilla.gyp:mozilla',
+            '../ui/accelerated_widget_mac/accelerated_widget_mac.gyp:accelerated_widget_mac',
           ],
           'conditions': [
             ['mac_views_browser==1', {

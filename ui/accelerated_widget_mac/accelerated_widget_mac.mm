@@ -13,6 +13,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/trace_event/trace_event.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "ui/accelerated_widget_mac/fullscreen_low_power_coordinator.h"
 #include "ui/base/cocoa/animation_utils.h"
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/gl/scoped_cgl.h"
@@ -77,6 +78,7 @@ void AcceleratedWidgetMac::SetNSView(AcceleratedWidgetMacNSView* view) {
   // Disable the fade-in animation as the view is added.
   ScopedCAActionDisabler disabler;
 
+  DCHECK(!fslp_coordinator_);
   DCHECK(view && !view_);
   view_ = view;
 
@@ -90,6 +92,11 @@ void AcceleratedWidgetMac::ResetNSView() {
   if (!view_)
     return;
 
+  if (fslp_coordinator_) {
+    fslp_coordinator_->WillLoseAcceleratedWidget();
+    DCHECK(!fslp_coordinator_);
+  }
+
   // Disable the fade-out animation as the view is removed.
   ScopedCAActionDisabler disabler;
 
@@ -99,6 +106,22 @@ void AcceleratedWidgetMac::ResetNSView() {
 
   last_swap_size_dip_ = gfx::Size();
   view_ = NULL;
+}
+
+void AcceleratedWidgetMac::SetFullscreenLowPowerCoordinator(
+    FullscreenLowPowerCoordinator* coordinator) {
+  DCHECK(coordinator);
+  DCHECK(!fslp_coordinator_);
+  fslp_coordinator_ = coordinator;
+}
+
+void AcceleratedWidgetMac::ResetFullscreenLowPowerCoordinator() {
+  DCHECK(fslp_coordinator_);
+  fslp_coordinator_ = nullptr;
+}
+
+CALayer* AcceleratedWidgetMac::GetFullscreenLowPowerLayer() const {
+  return fullscreen_low_power_layer_;
 }
 
 bool AcceleratedWidgetMac::HasFrameOfSize(
@@ -173,9 +196,18 @@ void AcceleratedWidgetMac::GotCAContextFrame(
   if ([fullscreen_low_power_layer_ contextId] !=
         fullscreen_low_power_ca_context_id) {
     TRACE_EVENT0("ui", "Creating a new CALayerHost");
+    if (fslp_coordinator_) {
+      fslp_coordinator_->WillLoseAcceleratedWidget();
+      DCHECK(!fslp_coordinator_);
+    }
     fullscreen_low_power_layer_.reset([[CALayerHost alloc] init]);
     [fullscreen_low_power_layer_
         setContextId:fullscreen_low_power_ca_context_id];
+  }
+
+  if (fslp_coordinator_) {
+    fslp_coordinator_->SetLowPowerLayerValid(
+        fullscreen_low_power_ca_context_valid);
   }
 
   // If this replacing a same-type layer, remove it now that the new layer is

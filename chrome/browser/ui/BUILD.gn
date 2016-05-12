@@ -416,6 +416,7 @@ source_set("ui") {
       "//third_party/google_toolbox_for_mac",
       "//third_party/molokocacao",
       "//third_party/mozilla",
+      "//ui/accelerated_widget_mac:accelerated_widget_mac",
     ]
     if (mac_views_browser) {
       sources += rebase_path(
