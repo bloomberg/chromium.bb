@@ -221,7 +221,7 @@ bool VideoMediaCodecDecoder::OnOutputFormatChanged() {
   return true;
 }
 
-void VideoMediaCodecDecoder::Render(int buffer_index,
+bool VideoMediaCodecDecoder::Render(int buffer_index,
                                     size_t offset,
                                     size_t size,
                                     RenderMode render_mode,
@@ -253,13 +253,13 @@ void VideoMediaCodecDecoder::Render(int buffer_index,
   switch (render_mode) {
     case kRenderSkip:
       ReleaseOutputBuffer(buffer_index, pts, false, false, eos_encountered);
-      return;
+      return true;
     case kRenderAfterPreroll:
       // We get here in the preroll phase. Render now as explained above.
       // |start_pts_| is not set yet, thus we cannot calculate |time_to_render|.
       ReleaseOutputBuffer(buffer_index, pts, (size > 0), update_time,
                           eos_encountered);
-      return;
+      return true;
     case kRenderNow:
       break;
   }
@@ -290,7 +290,7 @@ void VideoMediaCodecDecoder::Render(int buffer_index,
     // Render late frames immediately.
     ReleaseOutputBuffer(buffer_index, pts, render, update_time,
                         eos_encountered);
-    return;
+    return true;
   }
 
   delayed_buffers_.insert(buffer_index);
@@ -300,6 +300,8 @@ void VideoMediaCodecDecoder::Render(int buffer_index,
                             base::Unretained(this), buffer_index, pts, render,
                             update_time, eos_encountered),
       time_to_render);
+
+  return true;
 }
 
 int VideoMediaCodecDecoder::NumDelayedRenderTasks() const {

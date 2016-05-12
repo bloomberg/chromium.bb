@@ -487,12 +487,11 @@ void MediaDecoderJob::DecodeInternal(
 
   if (time_to_render > base::TimeDelta()) {
     decoder_task_runner_->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&MediaDecoderJob::ReleaseOutputBuffer,
-                   base::Unretained(this), buffer_index, offset, size,
-                   render_output,
-                   false,  // this is not a late frame
-                   presentation_timestamp, base::Bind(callback, status)),
+        FROM_HERE, base::Bind(&MediaDecoderJob::ReleaseOutputBuffer,
+                              base::Unretained(this), buffer_index, offset,
+                              size, render_output,
+                              false,  // this is not a late frame
+                              presentation_timestamp, status, callback),
         time_to_render);
     return;
   }
@@ -511,12 +510,9 @@ void MediaDecoderJob::DecodeInternal(
     presentation_timestamp = kNoTimestamp();
   }
 
-  ReleaseOutputCompletionCallback completion_callback = base::Bind(
-      callback, status);
-
   const bool is_late_frame = (time_to_render < base::TimeDelta());
   ReleaseOutputBuffer(buffer_index, offset, size, render_output, is_late_frame,
-                      presentation_timestamp, completion_callback);
+                      presentation_timestamp, status, callback);
 }
 
 void MediaDecoderJob::OnDecodeCompleted(

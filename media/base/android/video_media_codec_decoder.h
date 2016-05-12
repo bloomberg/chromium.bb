@@ -68,7 +68,7 @@ class VideoMediaCodecDecoder : public MediaCodecDecoder {
   void AssociateCurrentTimeWithPTS(base::TimeDelta pts) override;
   void DissociatePTSFromTime() override;
   bool OnOutputFormatChanged() override;
-  void Render(int buffer_index,
+  bool Render(int buffer_index,
               size_t offset,
               size_t size,
               RenderMode render_mode,

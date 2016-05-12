@@ -52,7 +52,7 @@ class AudioMediaCodecDecoder : public MediaCodecDecoder {
   bool IsCodecReconfigureNeeded(const DemuxerConfigs& next) const override;
   ConfigStatus ConfigureInternal(jobject media_crypto) override;
   bool OnOutputFormatChanged() override;
-  void Render(int buffer_index,
+  bool Render(int buffer_index,
               size_t offset,
               size_t size,
               RenderMode render_mode,

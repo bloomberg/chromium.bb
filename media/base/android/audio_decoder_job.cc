@@ -102,49 +102,56 @@ void AudioDecoderJob::ReleaseOutputBuffer(
     bool render_output,
     bool /* is_late_frame */,
     base::TimeDelta current_presentation_timestamp,
-    const ReleaseOutputCompletionCallback& callback) {
+    MediaCodecStatus status,
+    const DecoderCallback& callback) {
   render_output = render_output && (size != 0u);
   bool is_audio_underrun = false;
+
+  // Ignore input value.
+  current_presentation_timestamp = kNoTimestamp();
+
   if (render_output) {
-    bool postpone = false;
     int64_t head_position;
-    MediaCodecStatus status =
+    MediaCodecStatus play_status =
         (static_cast<AudioCodecBridge*>(media_codec_bridge_.get()))
-            ->PlayOutputBuffer(output_buffer_index, size, offset, postpone,
+            ->PlayOutputBuffer(output_buffer_index, size, offset, false,
                                &head_position);
-    // TODO(timav,watk): This CHECK maintains the behavior of this call before
-    // we started catching CodecException and returning it as MEDIA_CODEC_ERROR.
-    // It needs to be handled some other way. http://crbug.com/585978
-    CHECK_EQ(status, MEDIA_CODEC_OK);
+    if (play_status == MEDIA_CODEC_OK) {
+      base::TimeTicks current_time = base::TimeTicks::Now();
 
-    base::TimeTicks current_time = base::TimeTicks::Now();
+      size_t bytes_per_frame =
+          kBytesPerAudioOutputSample * output_num_channels_;
+      size_t new_frames_count = size / bytes_per_frame;
+      frame_count_ += new_frames_count;
+      audio_timestamp_helper_->AddFrames(new_frames_count);
+      int64_t frames_to_play = frame_count_ - head_position;
+      DCHECK_GE(frames_to_play, 0);
 
-    size_t bytes_per_frame = kBytesPerAudioOutputSample * output_num_channels_;
-    size_t new_frames_count = size / bytes_per_frame;
-    frame_count_ += new_frames_count;
-    audio_timestamp_helper_->AddFrames(new_frames_count);
-    int64_t frames_to_play = frame_count_ - head_position;
-    DCHECK_GE(frames_to_play, 0);
+      const base::TimeDelta last_buffered =
+          audio_timestamp_helper_->GetTimestamp();
 
-    const base::TimeDelta last_buffered =
-        audio_timestamp_helper_->GetTimestamp();
+      current_presentation_timestamp =
+          last_buffered -
+          audio_timestamp_helper_->GetFrameDuration(frames_to_play);
 
-    current_presentation_timestamp =
-        last_buffered -
-        audio_timestamp_helper_->GetFrameDuration(frames_to_play);
+      // Potential audio underrun is considered a late frame for UMA.
+      is_audio_underrun = !next_frame_time_limit_.is_null() &&
+                          next_frame_time_limit_ < current_time;
 
-    // Potential audio underrun is considered a late frame for UMA.
-    is_audio_underrun = !next_frame_time_limit_.is_null() &&
-                        next_frame_time_limit_ < current_time;
+      next_frame_time_limit_ =
+          current_time + (last_buffered - current_presentation_timestamp);
+    } else {
+      DLOG(ERROR) << __FUNCTION__ << ": PlayOutputBuffer failed for index:"
+                  << output_buffer_index;
 
-    next_frame_time_limit_ =
-        current_time + (last_buffered - current_presentation_timestamp);
-  } else {
-    current_presentation_timestamp = kNoTimestamp();
+      // Override output status.
+      status = MEDIA_CODEC_ERROR;
+    }
   }
+
   media_codec_bridge_->ReleaseOutputBuffer(output_buffer_index, false);
 
-  callback.Run(is_audio_underrun, current_presentation_timestamp,
+  callback.Run(status, is_audio_underrun, current_presentation_timestamp,
                audio_timestamp_helper_->GetTimestamp());
 }
 
@@ -218,7 +225,7 @@ bool AudioDecoderJob::OnOutputFormatChanged() {
   status = media_codec_bridge_->GetOutputChannelCount(&output_num_channels_);
 
   if (status == MEDIA_CODEC_OK && old_num_channels != output_num_channels_) {
-    DCHECK_GT(output_sampling_rate_, 0);
+    DCHECK_GT(output_num_channels_, 0);
     DVLOG(2) << __FUNCTION__ << ": new channel count " << output_num_channels_;
     needs_recreate_audio_track = true;
   }

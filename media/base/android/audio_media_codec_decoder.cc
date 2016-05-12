@@ -195,7 +195,7 @@ bool AudioMediaCodecDecoder::OnOutputFormatChanged() {
   status = media_codec_bridge_->GetOutputChannelCount(&output_num_channels_);
 
   if (status == MEDIA_CODEC_OK && old_num_channels != output_num_channels_) {
-    DCHECK_GT(output_sampling_rate_, 0);
+    DCHECK_GT(output_num_channels_, 0);
     DVLOG(2) << __FUNCTION__ << ": new channel count " << output_num_channels_;
     needs_recreate_audio_track = true;
   }
@@ -210,7 +210,7 @@ bool AudioMediaCodecDecoder::OnOutputFormatChanged() {
   return true;
 }
 
-void AudioMediaCodecDecoder::Render(int buffer_index,
+bool AudioMediaCodecDecoder::Render(int buffer_index,
                                     size_t offset,
                                     size_t size,
                                     RenderMode render_mode,
@@ -234,10 +234,13 @@ void AudioMediaCodecDecoder::Render(int buffer_index,
     int64_t head_position;
     MediaCodecStatus status = audio_codec->PlayOutputBuffer(
         buffer_index, size, offset, postpone, &head_position);
-    // TODO(timav,watk): This CHECK maintains the behavior of this call before
-    // we started catching CodecException and returning it as MEDIA_CODEC_ERROR.
-    // It needs to be handled some other way. http://crbug.com/585978
-    CHECK_EQ(status, MEDIA_CODEC_OK);
+
+    if (status != MEDIA_CODEC_OK) {
+      DLOG(ERROR) << class_name() << "::" << __FUNCTION__ << " pts:" << pts
+                  << " PlayOutputBuffer failed for index:" << buffer_index;
+      media_codec_bridge_->ReleaseOutputBuffer(buffer_index, false);
+      return false;
+    }
 
     base::TimeTicks current_time = base::TimeTicks::Now();
 
@@ -297,6 +300,8 @@ void AudioMediaCodecDecoder::Render(int buffer_index,
   media_codec_bridge_->ReleaseOutputBuffer(buffer_index, false);
 
   CheckLastFrame(eos_encountered, false);  // no delayed tasks
+
+  return true;
 }
 
 void AudioMediaCodecDecoder::SetVolumeInternal() {

@@ -83,9 +83,10 @@ void VideoDecoderJob::ReleaseOutputBuffer(
     bool render_output,
     bool is_late_frame,
     base::TimeDelta current_presentation_timestamp,
-    const ReleaseOutputCompletionCallback& callback) {
+    MediaCodecStatus status,
+    const DecoderCallback& callback) {
   media_codec_bridge_->ReleaseOutputBuffer(output_buffer_index, render_output);
-  callback.Run(is_late_frame, current_presentation_timestamp,
+  callback.Run(status, is_late_frame, current_presentation_timestamp,
                current_presentation_timestamp);
 }
 

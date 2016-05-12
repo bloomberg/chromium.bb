@@ -40,14 +40,14 @@ class VideoDecoderJob : public MediaDecoderJob {
 
  private:
   // MediaDecoderJob implementation.
-  void ReleaseOutputBuffer(
-      int output_buffer_index,
-      size_t offset,
-      size_t size,
-      bool render_output,
-      bool is_late_frame,
-      base::TimeDelta current_presentation_timestamp,
-      const ReleaseOutputCompletionCallback& callback) override;
+  void ReleaseOutputBuffer(int output_buffer_index,
+                           size_t offset,
+                           size_t size,
+                           bool render_output,
+                           bool is_late_frame,
+                           base::TimeDelta current_presentation_timestamp,
+                           MediaCodecStatus status,
+                           const DecoderCallback& callback) override;
   bool ComputeTimeToRender() const override;
   bool IsCodecReconfigureNeeded(const DemuxerConfigs& configs) const override;
   bool AreDemuxerConfigsChanged(const DemuxerConfigs& configs) const override;

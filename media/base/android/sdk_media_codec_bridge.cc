@@ -579,8 +579,11 @@ MediaCodecStatus AudioCodecBridge::PlayOutputBuffer(int index,
   size_t capacity = 0;
   MediaCodecStatus status =
       GetOutputBufferAddress(index, offset, &buffer, &capacity);
-  if (status == MEDIA_CODEC_ERROR)
+  if (status != MEDIA_CODEC_OK) {
+    DLOG(ERROR) << __FUNCTION__
+                << ": GetOutputBufferAddress() failed for index:" << index;
     return status;
+  }
 
   numBytes = std::min(base::checked_cast<int>(capacity), numBytes);
   CHECK_GE(numBytes, 0);
