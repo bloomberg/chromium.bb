@@ -18,7 +18,8 @@
         </settings-advanced-page>
       </template>
       <template is="dom-if" if="[[showAboutPage_]]">
-        <settings-about-page></settings-about-page>
+        <settings-about-page current-route="{{currentRoute}}">
+        </settings-about-page>
       </template>
     </div>
   </template>

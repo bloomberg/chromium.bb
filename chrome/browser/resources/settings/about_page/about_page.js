@@ -8,4 +8,37 @@
  */
 Polymer({
   is: 'settings-about-page',
+
+  behaviors: [RoutableBehavior],
+
+  properties: {
+    /**
+     * The current active route.
+     */
+    currentRoute: {
+      type: Object,
+      notify: true,
+    },
+  },
+
+  /**
+   * @type {string} Selector to get the sections.
+   * TODO(michaelpg): replace duplicate docs with @override once b/24294625
+   * is fixed.
+   */
+  sectionSelector: 'settings-section',
+
+   /** @override */
+  attached: function() {
+    this.scroller = this.parentElement;
+  },
+
+<if expr="chromeos">
+  /** @private */
+  onDetailedBuildInfoTap_: function() {
+    var animatedPages = /** @type {!SettingsAnimatedPagesElement} */ (
+        this.$.pages);
+    animatedPages.setSubpageChain(['detailed-build-info']);
+  },
+</if>
 });

@@ -30,7 +30,8 @@
                  flattenhtml="true" />
       <structure name="IDR_SETTINGS_ABOUT_PAGE_JS"
                  file="about_page/about_page.js"
-                 type="chrome_html" />
+                 type="chrome_html"
+                 flattenhtml="true" />
       <structure name="IDR_SETTINGS_ABOUT_PAGE_HTML"
                  file="about_page/about_page.html"
                  type="chrome_html"

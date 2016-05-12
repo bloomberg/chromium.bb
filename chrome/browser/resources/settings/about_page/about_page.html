@@ -1,12 +1,19 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://md-settings/settings_page/main_page_behavior.html">
+<link rel="import" href="chrome://md-settings/settings_page/settings_animated_pages.html">
 <link rel="import" href="chrome://md-settings/settings_page/settings_section.html">
 <link rel="import" href="chrome://md-settings/settings_shared_css.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+
+<if expr="chromeos">
+<link rel="import" href="chrome://md-settings/settings_page/settings_subpage.html">
+</if>
 
 <dom-module id="settings-about-page">
   <link rel="import" type="css" href="chrome://md-settings/settings_page.css">
   <template>
-    <style include="settings-shared">
+    <style include="settings-shared main-page-styles">
       span {
         font-size: 20px;
         margin-top: auto;
@@ -18,36 +25,51 @@
       }
     </style>
     <settings-section page-title="$i18n{aboutPageTitle}"
-        current-route="[[currentRoute]]">
-      <div class="settings-box">
-        <img id="product-logo"
-            srcset="chrome://theme/current-channel-logo@1x 1x,
-                    chrome://theme/current-channel-logo@2x 2x" alt="">
-        <span>$i18n{aboutProductTitle}</span>
-      </div>
-      <div class="settings-box two-line">
-        <!-- TODO(dpapad): Implement this. -->
-        <div class="start">
-          <div>Your device is up to date</div>
-          <div class="secondary">Version Foo.bar.baz</div>
-        </div>
-        <paper-button class="secondary-action">Check for update</paper-button>
-      </div>
-      <div class="settings-box two-line">
-        <!-- TODO(dpapad): Implement this. -->
-        <div class="start">
-          <div>Get help with Chrome</div>
-          <div class="secondary">Open the Help Center</div>
-        </div>
-      </div>
-      <div class="settings-box">
-        <!-- TODO(dpapad): Implement this. -->
-        Report an issue
-      </div>
-      <div class="settings-box">
-        <!-- TODO(dpapad): Implement this. -->
-        Other info here
-      </div>
+        current-route="[[currentRoute]]" section="about">
+      <settings-animated-pages id="pages" current-route="{{currentRoute}}"
+          section="about">
+        <neon-animatable id="main">
+          <div class="settings-box">
+            <img id="product-logo"
+                srcset="chrome://theme/current-channel-logo@1x 1x,
+                        chrome://theme/current-channel-logo@2x 2x" alt="">
+            <span>$i18n{aboutProductTitle}</span>
+          </div>
+          <div class="settings-box two-line">
+            <!-- TODO(dpapad): Implement this. -->
+            <div class="start">
+              <div>Your device is up to date</div>
+              <div class="secondary">Version Foo.bar.baz</div>
+            </div>
+            <paper-button class="secondary-action">Check for update</paper-button>
+          </div>
+          <div class="settings-box two-line">
+            <!-- TODO(dpapad): Implement this. -->
+            <div class="start">
+              <div>Get help with Chrome</div>
+              <div class="secondary">Open the Help Center</div>
+            </div>
+          </div>
+          <div class="settings-box">
+            <!-- TODO(dpapad): Implement this. -->
+            Report an issue
+          </div>
+<if expr="chromeos">
+          <div class="settings-box" on-tap="onDetailedBuildInfoTap_">
+            <!-- TODO(dpapad): Localize string. -->
+            Detailed build info
+          </div>
+</if>
+        </neon-animatable>
+<if expr="chromeos">
+        <template is="dom-if" name="detailed-build-info">
+          <settings-subpage page-title="Detailed build information">
+            <!-- TODO(dpapad): Implement this. -->
+            <div>Detailed build info goes here</div>
+          </settings-subpage>
+        </template>
+</if>
+      </settings-animated-pages>
     </settings-section>
   </template>
   <script src="about_page.js"></script>

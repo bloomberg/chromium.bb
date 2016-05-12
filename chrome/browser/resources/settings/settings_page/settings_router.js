@@ -101,6 +101,14 @@ Polymer({
       section: '',
       subpage: [],
     },
+<if expr="chromeos">
+    {
+      url: '/help/details',
+      page: 'about',
+      section: 'about',
+      subpage: ['detailed-build-info'],
+    },
+</if>
     {
       url: '/advanced',
       page: 'advanced',
