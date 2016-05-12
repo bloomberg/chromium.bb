@@ -157,7 +157,6 @@ public:
     virtual void deleteLineBoxTree();
 
     void addChild(LayoutObject* newChild, LayoutObject* beforeChild = nullptr) override;
-    void removeChild(LayoutObject*) override;
 
     virtual void layoutBlock(bool relayoutChildren);
 

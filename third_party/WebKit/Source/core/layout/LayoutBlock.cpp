@@ -625,39 +625,6 @@ void LayoutBlock::collapseAnonymousBlockChild(LayoutBlock* parent, LayoutBlock* 
     child->destroy();
 }
 
-void LayoutBlock::removeChild(LayoutObject* oldChild)
-{
-    // No need to waste time in merging or removing empty anonymous blocks.
-    // We can just bail out if our document is getting destroyed.
-    if (documentBeingDestroyed()) {
-        LayoutBox::removeChild(oldChild);
-        return;
-    }
-
-    // If this child is a block, and if our previous and next siblings are
-    // both anonymous blocks with inline content, then we can go ahead and
-    // fold the inline content back together.
-    LayoutObject* prev = oldChild->previousSibling();
-    LayoutObject* next = oldChild->nextSibling();
-    bool mergedAnonymousBlocks = false;
-    if (prev && next && !oldChild->isInline() && !oldChild->virtualContinuation() && prev->isLayoutBlockFlow() && next->isLayoutBlockFlow()) {
-        if (toLayoutBlockFlow(prev)->mergeSiblingContiguousAnonymousBlock(toLayoutBlockFlow(next))) {
-            mergedAnonymousBlocks = true;
-            next = nullptr;
-        }
-    }
-
-    LayoutBox::removeChild(oldChild);
-
-    LayoutObject* child = prev ? prev : next;
-    if (mergedAnonymousBlocks && child && !child->previousSibling() && !child->nextSibling()) {
-        // The removal has knocked us down to containing only a single anonymous
-        // box.  We can go ahead and pull the content right back up into our
-        // box.
-        collapseAnonymousBlockChild(this, toLayoutBlock(child));
-    }
-}
-
 void LayoutBlock::startDelayUpdateScrollInfo()
 {
     if (gDelayUpdateScrollInfo == 0) {
