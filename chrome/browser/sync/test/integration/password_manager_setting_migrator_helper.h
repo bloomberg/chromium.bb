@@ -12,8 +12,10 @@ class Profile;
 
 namespace password_manager_setting_migrater_helper {
 
-// Enables the password manager setting migration field trial.
-void SetupFieldTrial();
+// Ensures that the password manager setting migration field trial experiment is
+// enabled. Returns false if it already was enabled, and true if it got enabled
+// during this call.
+bool EnsureFieldTrialSetup();
 
 // Triggers Initalization of the PasswordManagerSettingMigrator service.
 // The service registers observes which are required in order to perform

@@ -234,6 +234,11 @@
             "group_name": "SmartLockBrandingSavePromptOnly"
         }
     ],
+    "PasswordManagerSettingsMigration": [
+        {
+            "group_name": "Enable"
+        }
+    ],
     "PhysicalWeb": [
         {
             "enable_features": [

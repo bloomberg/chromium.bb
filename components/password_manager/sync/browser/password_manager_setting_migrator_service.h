@@ -89,6 +89,11 @@ class PasswordManagerSettingMigratorService
 
   void InitializeMigration(sync_driver::SyncService* sync_service);
 
+  // Only use for testing.
+  static void set_force_disabled_for_testing(bool force_disabled) {
+    force_disabled_for_testing_ = force_disabled;
+  }
+
  private:
   // Initializes the observers: preferences observers and sync status observers.
   void InitObservers();
@@ -145,6 +150,11 @@ class PasswordManagerSettingMigratorService
   sync_driver::SyncService* sync_service_;
 
   PrefChangeRegistrar pref_change_registrar_;
+
+  // If true, the service will refuse to initialize despite Field Trial
+  // settings.
+  // Default value is false. Only use for testing.
+  static bool force_disabled_for_testing_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordManagerSettingMigratorService);
 };

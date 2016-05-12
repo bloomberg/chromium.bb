@@ -632,6 +632,10 @@ IN_PROC_BROWSER_TEST_P(PolicyPrefIndicatorTest, CheckPolicyIndicators) {
                  pref_mappings.begin();
              pref_mapping != pref_mappings.end();
              ++pref_mapping) {
+          PrefService* prefs =
+              (*pref_mapping)->is_local_state() ? local_state : user_prefs;
+          if (prefs->FindPreference((*pref_mapping)->pref()))
+            prefs->ClearPref((*pref_mapping)->pref());
           if (!(*pref_mapping)->indicator_test_cases().empty()) {
             has_pref_indicator_tests = true;
             break;

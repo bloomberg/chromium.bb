@@ -212,6 +212,11 @@
             "group_name": "Disabled"
         }
     ],
+    "PasswordManagerSettingsMigration": [
+        {
+            "group_name": "Enable"
+        }
+    ],
     "PreRead": [
         {
             "group_name": "NoPrefetchArgument2",

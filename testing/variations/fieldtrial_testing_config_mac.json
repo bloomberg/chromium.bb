@@ -164,6 +164,11 @@
             "group_name": "SmartLockBrandingSavePromptOnly"
         }
     ],
+    "PasswordManagerSettingsMigration": [
+        {
+            "group_name": "Enable"
+        }
+    ],
     "QUIC": [
         {
             "group_name": "Enabled"

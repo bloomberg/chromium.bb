@@ -48,9 +48,10 @@ class TwoClientsPasswordManagerSettingMigratorServiceSyncTest
   }
 
   void EnsureMigrationStartsForClient(int index) {
-    password_manager_setting_migrater_helper::SetupFieldTrial();
-    password_manager_setting_migrater_helper::InitializePreferencesMigration(
-        GetProfile(index));
+    if (password_manager_setting_migrater_helper::EnsureFieldTrialSetup()) {
+      password_manager_setting_migrater_helper::InitializePreferencesMigration(
+          GetProfile(index));
+    }
   }
 
   void ExpectValueOnBothClientsForBothPreference(bool value) {

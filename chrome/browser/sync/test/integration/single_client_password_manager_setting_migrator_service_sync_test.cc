@@ -12,6 +12,7 @@
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/common/pref_names.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
+#include "components/password_manager/sync/browser/password_manager_setting_migrator_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/syncable_prefs/pref_service_syncable.h"
 #include "components/syncable_prefs/pref_service_syncable_observer.h"
@@ -61,7 +62,10 @@ class SingleClientPasswordManagerSettingMigratorServiceSyncTest
     : public SyncTest {
  public:
   SingleClientPasswordManagerSettingMigratorServiceSyncTest()
-      : SyncTest(SINGLE_CLIENT) {}
+      : SyncTest(SINGLE_CLIENT) {
+    password_manager::PasswordManagerSettingMigratorService::
+        set_force_disabled_for_testing(true);
+  }
 
   ~SingleClientPasswordManagerSettingMigratorServiceSyncTest() override {}
 
@@ -92,7 +96,9 @@ class SingleClientPasswordManagerSettingMigratorServiceSyncTest
     syncer::ModelTypeSet types = syncer::UserSelectableTypes();
     types.Remove(syncer::PREFERENCES);
     ASSERT_TRUE(GetClient(0)->SetupSync(types));
-    password_manager_setting_migrater_helper::SetupFieldTrial();
+    password_manager::PasswordManagerSettingMigratorService::
+        set_force_disabled_for_testing(false);
+    password_manager_setting_migrater_helper::EnsureFieldTrialSetup();
     password_manager_setting_migrater_helper::InitializePreferencesMigration(
         GetProfile(0));
     // Now enable prefs, the completion of which will trigger the migration
