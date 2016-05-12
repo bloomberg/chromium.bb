@@ -504,6 +504,7 @@ EffectNodeData::EffectNodeData()
       is_currently_animating_opacity(false),
       effect_changed(false),
       num_copy_requests_in_subtree(0),
+      has_unclipped_descendants(false),
       transform_id(0),
       clip_id(0),
       target_id(0) {}

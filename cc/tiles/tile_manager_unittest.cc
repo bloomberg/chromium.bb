@@ -46,6 +46,7 @@ class LowResTilingsSettings : public LayerTreeSettings {
  public:
   LowResTilingsSettings() {
     create_low_res_tiling = true;
+    verify_clip_tree_calculations = true;
   }
 };
 
@@ -1202,6 +1203,7 @@ TEST_F(TileManagerTilePriorityQueueTest,
 
   client.SetTileSize(gfx::Size(30, 30));
   LayerTreeSettings settings;
+  settings.verify_clip_tree_calculations = true;
 
   std::unique_ptr<PictureLayerTilingSet> tiling_set =
       PictureLayerTilingSet::Create(
@@ -1312,6 +1314,7 @@ TEST_F(TileManagerTilePriorityQueueTest,
 
   client.SetTileSize(gfx::Size(30, 30));
   LayerTreeSettings settings;
+  settings.verify_clip_tree_calculations = true;
 
   std::unique_ptr<PictureLayerTilingSet> tiling_set =
       PictureLayerTilingSet::Create(
@@ -1584,6 +1587,8 @@ class TileManagerTest : public testing::Test {
  public:
   void SetUp() override {
     LayerTreeSettings settings;
+    settings.verify_clip_tree_calculations = true;
+
     CustomizeSettings(&settings);
     output_surface_ = GetOutputSurface();
     task_graph_runner_ = GetTaskGraphRunner();

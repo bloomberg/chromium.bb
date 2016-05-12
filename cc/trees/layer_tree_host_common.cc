@@ -82,6 +82,7 @@ LayerTreeHostCommon::CalcDrawPropsImplInputs::CalcDrawPropsImplInputs(
     bool layers_always_allowed_lcd_text,
     bool can_render_to_separate_surface,
     bool can_adjust_raster_scales,
+    bool verify_clip_tree_calculations,
     LayerImplList* render_surface_layer_list,
     PropertyTrees* property_trees)
     : root_layer(root_layer),
@@ -100,6 +101,7 @@ LayerTreeHostCommon::CalcDrawPropsImplInputs::CalcDrawPropsImplInputs(
       layers_always_allowed_lcd_text(layers_always_allowed_lcd_text),
       can_render_to_separate_surface(can_render_to_separate_surface),
       can_adjust_raster_scales(can_adjust_raster_scales),
+      verify_clip_tree_calculations(verify_clip_tree_calculations),
       render_surface_layer_list(render_surface_layer_list),
       property_trees(property_trees) {}
 
@@ -123,6 +125,7 @@ LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting::
                               false,
                               true,
                               false,
+                              true,
                               render_surface_layer_list,
                               GetPropertyTrees(root_layer)) {
   DCHECK(root_layer);
@@ -606,6 +609,10 @@ void CalculateDrawPropertiesInternal(
       inputs->root_layer->layer_tree_impl(), inputs->property_trees,
       inputs->render_surface_layer_list, inputs->can_render_to_separate_surface,
       inputs->max_texture_size);
+
+  if (inputs->verify_clip_tree_calculations)
+    draw_property_utils::VerifyClipTreeCalculations(visible_layer_list,
+                                                    inputs->property_trees);
 
   if (should_measure_property_tree_performance) {
     TRACE_EVENT_END0(TRACE_DISABLED_BY_DEFAULT("cc.debug.cdp-perf"),

@@ -441,6 +441,7 @@ class LayerImplScrollTest : public testing::Test {
 
   LayerTreeSettings settings() {
     LayerTreeSettings settings;
+    settings.verify_clip_tree_calculations = true;
     return settings;
   }
 

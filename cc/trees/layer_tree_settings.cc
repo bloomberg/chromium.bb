@@ -98,6 +98,7 @@ LayerTreeSettings::LayerTreeSettings()
       ignore_root_layer_flings(false),
       scheduled_raster_task_limit(32),
       use_occlusion_for_tile_prioritization(false),
+      verify_clip_tree_calculations(false),
       image_decode_tasks_enabled(false),
       wait_for_beginframe_interval(true),
       abort_commit_before_output_surface_creation(true),
@@ -166,6 +167,7 @@ bool LayerTreeSettings::operator==(const LayerTreeSettings& other) const {
          scheduled_raster_task_limit == other.scheduled_raster_task_limit &&
          use_occlusion_for_tile_prioritization ==
              other.use_occlusion_for_tile_prioritization &&
+         verify_clip_tree_calculations == other.verify_clip_tree_calculations &&
          image_decode_tasks_enabled == other.image_decode_tasks_enabled &&
          wait_for_beginframe_interval == other.wait_for_beginframe_interval &&
          use_mouse_wheel_gestures == other.use_mouse_wheel_gestures &&

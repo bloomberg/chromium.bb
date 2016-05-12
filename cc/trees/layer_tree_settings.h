@@ -86,6 +86,7 @@ class CC_EXPORT LayerTreeSettings {
   bool ignore_root_layer_flings;
   size_t scheduled_raster_task_limit;
   bool use_occlusion_for_tile_prioritization;
+  bool verify_clip_tree_calculations;
   bool image_decode_tasks_enabled;
   bool wait_for_beginframe_interval;
   bool abort_commit_before_output_surface_creation;

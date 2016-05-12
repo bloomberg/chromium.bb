@@ -21,6 +21,7 @@
 #include "cc/test/fake_picture_layer_impl.h"
 #include "cc/test/fake_proxy.h"
 #include "cc/test/fake_recording_source.h"
+#include "cc/test/layer_tree_settings_for_testing.h"
 #include "cc/test/skia_common.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_task_graph_runner.h"
@@ -327,7 +328,7 @@ TEST(PictureLayerTest, ClearVisibleRectWhenNoTiling) {
 
   TestSharedBitmapManager shared_bitmap_manager;
   std::unique_ptr<OutputSurface> output_surface(FakeOutputSurface::Create3d());
-  LayerTreeSettings layer_tree_settings = LayerTreeSettings();
+  LayerTreeSettings layer_tree_settings = LayerTreeSettingsForTesting();
   layer_tree_settings.image_decode_tasks_enabled = true;
   FakeLayerTreeHostImpl host_impl(layer_tree_settings,
                                   &impl_task_runner_provider,
@@ -417,6 +418,7 @@ TEST(PictureLayerTest, NonMonotonicSourceFrameNumber) {
   LayerTreeSettings settings;
   settings.single_thread_proxy_scheduler = false;
   settings.use_zero_copy = true;
+  settings.verify_clip_tree_calculations = true;
 
   FakeLayerTreeHostClient host_client1(FakeLayerTreeHostClient::DIRECT_3D);
   FakeLayerTreeHostClient host_client2(FakeLayerTreeHostClient::DIRECT_3D);

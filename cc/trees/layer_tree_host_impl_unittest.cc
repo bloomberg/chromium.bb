@@ -111,6 +111,7 @@ class LayerTreeHostImplTest : public testing::Test,
     settings.minimum_occlusion_tracking_size = gfx::Size();
     settings.renderer_settings.texture_id_allocation_chunk_size = 1;
     settings.gpu_rasterization_enabled = true;
+    settings.verify_clip_tree_calculations = true;
     return settings;
   }
 

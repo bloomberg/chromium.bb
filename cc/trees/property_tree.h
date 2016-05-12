@@ -291,6 +291,7 @@ struct CC_EXPORT EffectNodeData {
   // rect.
   bool effect_changed;
   int num_copy_requests_in_subtree;
+  bool has_unclipped_descendants;
   int transform_id;
   int clip_id;
   // Effect node id of which this effect contributes to.

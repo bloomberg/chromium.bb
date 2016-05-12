@@ -83,6 +83,7 @@ class PictureLayerImplTestSettings : public GpuRasterizationEnabledSettings {
  public:
   PictureLayerImplTestSettings() {
     layer_transforms_should_scale_layer_contents = true;
+    verify_clip_tree_calculations = true;
   }
 };
 

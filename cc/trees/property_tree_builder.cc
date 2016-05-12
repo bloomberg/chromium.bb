@@ -26,6 +26,7 @@ namespace {
 
 static const int kInvalidPropertyTreeNodeId = -1;
 static const int kRootPropertyTreeNodeId = 0;
+static const int kViewportClipTreeNodeId = 1;
 
 template <typename LayerType>
 struct DataForRecursion {
@@ -848,6 +849,8 @@ bool AddEffectNodeIfNeeded(
       // transform id.
       node.data.transform_id =
           data_from_ancestor.transform_tree->next_available_id();
+      node.data.has_unclipped_descendants =
+          (NumUnclippedDescendants(layer) != 0);
     }
     node.data.clip_id = data_from_ancestor.clip_tree_parent;
   } else {
@@ -856,7 +859,7 @@ bool AddEffectNodeIfNeeded(
     // factor) and clip node created from root layer (include viewports) applies
     // to root render surface's content, but not root render surface itself.
     node.data.transform_id = kRootPropertyTreeNodeId;
-    node.data.clip_id = kRootPropertyTreeNodeId;
+    node.data.clip_id = kViewportClipTreeNodeId;
   }
   data_for_children->effect_tree_parent =
       data_for_children->effect_tree->Insert(node, parent_id);

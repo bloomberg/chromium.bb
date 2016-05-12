@@ -98,6 +98,9 @@ bool CC_EXPORT LayerNeedsUpdate(LayerImpl* layer,
                                 bool layer_is_drawn,
                                 const TransformTree& tree);
 
+void CC_EXPORT VerifyClipTreeCalculations(const LayerImplList& layer_list,
+                                          PropertyTrees* property_trees);
+
 gfx::Transform CC_EXPORT DrawTransform(const LayerImpl* layer,
                                        const TransformTree& tree);
 

@@ -120,6 +120,7 @@ class CalcDrawPropsTest : public LayerTreeHostCommonPerfTest {
         host_impl->settings().layers_always_allowed_lcd_text,
         can_render_to_separate_surface,
         host_impl->settings().layer_transforms_should_scale_layer_contents,
+        false,  // do not verify_clip_tree_calculation for perf tests
         &update_list, active_tree->property_trees());
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
   }
