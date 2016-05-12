@@ -12,6 +12,7 @@
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "wtf/CurrentTime.h"
+#include "wtf/Threading.h"
 
 namespace blink {
 
@@ -24,7 +25,7 @@ namespace {
 SkBitmap scaleDownIfNeeded(const SkBitmap& image, int maxSizePx)
 {
     if (image.width() > maxSizePx || image.height() > maxSizePx) {
-        DEFINE_STATIC_LOCAL(CustomCountHistogram, scaleTimeHistogram, ("Notifications.Icon.ScaleDownTime", 1, 1000 * 10 /* 10 seconds max */, 50 /* buckets */));
+        DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, scaleTimeHistogram, new CustomCountHistogram("Notifications.Icon.ScaleDownTime", 1, 1000 * 10 /* 10 seconds max */, 50 /* buckets */));
         double startTime = monotonicallyIncreasingTimeMS();
         SkBitmap scaledImage = skia::ImageOperations::Resize(image, skia::ImageOperations::RESIZE_BEST, std::min(image.width(), maxSizePx), std::min(image.height(), maxSizePx));
         scaleTimeHistogram.count(monotonicallyIncreasingTimeMS() - startTime);

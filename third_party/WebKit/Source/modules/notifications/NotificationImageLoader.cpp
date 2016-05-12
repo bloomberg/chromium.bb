@@ -16,6 +16,7 @@
 #include "public/platform/WebURLRequest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "wtf/CurrentTime.h"
+#include "wtf/Threading.h"
 
 namespace blink {
 
@@ -85,11 +86,11 @@ void NotificationImageLoader::didFinishLoading(unsigned long resourceIdentifier,
     if (m_stopped)
         return;
 
-    DEFINE_STATIC_LOCAL(CustomCountHistogram, finishedTimeHistogram, ("Notifications.Icon.LoadFinishTime", 1, 1000 * 60 * 60 /* 1 hour max */, 50 /* buckets */));
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, finishedTimeHistogram, new CustomCountHistogram("Notifications.Icon.LoadFinishTime", 1, 1000 * 60 * 60 /* 1 hour max */, 50 /* buckets */));
     finishedTimeHistogram.count(monotonicallyIncreasingTimeMS() - m_startTime);
 
     if (m_data) {
-        DEFINE_STATIC_LOCAL(CustomCountHistogram, fileSizeHistogram, ("Notifications.Icon.FileSize", 1, 10000000 /* ~10mb max */, 50 /* buckets */));
+        DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, fileSizeHistogram, new CustomCountHistogram("Notifications.Icon.FileSize", 1, 10000000 /* ~10mb max */, 50 /* buckets */));
         fileSizeHistogram.count(m_data->size());
 
         OwnPtr<ImageDecoder> decoder = ImageDecoder::create(*m_data.get(), ImageDecoder::AlphaPremultiplied, ImageDecoder::GammaAndColorProfileApplied);
@@ -108,7 +109,7 @@ void NotificationImageLoader::didFinishLoading(unsigned long resourceIdentifier,
 
 void NotificationImageLoader::didFail(const ResourceError& error)
 {
-    DEFINE_STATIC_LOCAL(CustomCountHistogram, failedTimeHistogram, ("Notifications.Icon.LoadFailTime", 1, 1000 * 60 * 60 /* 1 hour max */, 50 /* buckets */));
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, failedTimeHistogram, new CustomCountHistogram("Notifications.Icon.LoadFailTime", 1, 1000 * 60 * 60 /* 1 hour max */, 50 /* buckets */));
     failedTimeHistogram.count(monotonicallyIncreasingTimeMS() - m_startTime);
 
     runCallbackWithEmptyBitmap();
