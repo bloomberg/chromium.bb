@@ -97,8 +97,6 @@ void FillEntryPropertiesValueForDrive(const drive::ResourceEntry& entry_proto,
   if (!entry_proto.resource_id().empty()) {
     DriveApiUrlGenerator url_generator(
         (GURL(google_apis::DriveApiUrlGenerator::kBaseUrlForProduction)),
-        (GURL(
-            google_apis::DriveApiUrlGenerator::kBaseDownloadUrlForProduction)),
         (GURL(google_apis::DriveApiUrlGenerator::
                   kBaseThumbnailUrlForProduction)));
     properties->thumbnail_url.reset(new std::string(
@@ -1105,7 +1103,6 @@ void FileManagerPrivateInternalGetDownloadUrlFunction::OnGetResourceEntry(
 
   DriveApiUrlGenerator url_generator(
       (GURL(google_apis::DriveApiUrlGenerator::kBaseUrlForProduction)),
-      (GURL(google_apis::DriveApiUrlGenerator::kBaseDownloadUrlForProduction)),
       (GURL(
           google_apis::DriveApiUrlGenerator::kBaseThumbnailUrlForProduction)));
   download_url_ = url_generator.GenerateDownloadFileUrl(entry->resource_id());
@@ -1138,7 +1135,7 @@ void FileManagerPrivateInternalGetDownloadUrlFunction::OnTokenFetched(
   }
 
   const std::string url =
-      download_url_.Resolve("?access_token=" + access_token).spec();
+      download_url_.Resolve("?alt=media&access_token=" + access_token).spec();
   SetResult(new base::StringValue(url));
 
   SendResponse(true);

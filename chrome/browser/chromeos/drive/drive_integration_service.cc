@@ -238,7 +238,6 @@ DriveIntegrationService::DriveIntegrationService(
         oauth_service, g_browser_process->system_request_context(),
         blocking_task_runner_.get(),
         GURL(google_apis::DriveApiUrlGenerator::kBaseUrlForProduction),
-        GURL(google_apis::DriveApiUrlGenerator::kBaseDownloadUrlForProduction),
         GURL(google_apis::DriveApiUrlGenerator::kBaseThumbnailUrlForProduction),
         GetDriveUserAgent()));
   }

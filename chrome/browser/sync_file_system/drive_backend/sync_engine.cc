@@ -75,7 +75,6 @@ SyncEngine::DriveServiceFactory::CreateDriveService(
       drive::DriveServiceInterface>(new drive::DriveAPIService(
       oauth2_token_service, url_request_context_getter, blocking_task_runner,
       GURL(google_apis::DriveApiUrlGenerator::kBaseUrlForProduction),
-      GURL(google_apis::DriveApiUrlGenerator::kBaseDownloadUrlForProduction),
       GURL(google_apis::DriveApiUrlGenerator::kBaseThumbnailUrlForProduction),
       std::string() /* custom_user_agent */));
 }

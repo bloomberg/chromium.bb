@@ -53,7 +53,8 @@ const char kTestPermissionResponse[] =
 
 const char kTestUploadExistingFilePath[] = "/upload/existingfile/path";
 const char kTestUploadNewFilePath[] = "/upload/newfile/path";
-const char kTestDownloadPathPrefix[] = "/host/";
+const char kTestDownloadPathPrefix[] = "/drive/v2/files/";
+const char kTestDownloadFileQuery[] = "alt=media";
 
 // Used as a GetContentCallback.
 void AppendContent(std::string* out,
@@ -167,7 +168,7 @@ class DriveApiRequestsTest : public testing::Test {
 
     GURL test_base_url = test_util::GetBaseUrlForTesting(test_server_.port());
     url_generator_.reset(
-        new DriveApiUrlGenerator(test_base_url, test_base_url, test_base_url));
+        new DriveApiUrlGenerator(test_base_url, test_base_url));
 
     // Reset the server's expected behavior just in case.
     ResetExpectedResponse();
@@ -442,9 +443,9 @@ class DriveApiRequestsTest : public testing::Test {
 
     const GURL absolute_url = test_server_.GetURL(request.relative_url);
     std::string id;
-    if (!test_util::RemovePrefix(absolute_url.path(),
-                                 kTestDownloadPathPrefix,
-                                 &id)) {
+    if (!test_util::RemovePrefix(
+          absolute_url.path(), kTestDownloadPathPrefix, &id) ||
+        absolute_url.query() != kTestDownloadFileQuery) {
       return std::unique_ptr<net::test_server::HttpResponse>();
     }
 
@@ -1877,7 +1878,8 @@ TEST_F(DriveApiRequestsTest, DownloadFileRequest) {
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
   EXPECT_EQ(net::test_server::METHOD_GET, http_request_.method);
-  EXPECT_EQ(kTestDownloadPathPrefix + kTestId, http_request_.relative_url);
+  EXPECT_EQ(kTestDownloadPathPrefix + kTestId + "?" + kTestDownloadFileQuery,
+            http_request_.relative_url);
   EXPECT_EQ(kDownloadedFilePath, temp_file);
 
   const std::string expected_contents = kTestId + kTestId + kTestId;
@@ -1912,7 +1914,8 @@ TEST_F(DriveApiRequestsTest, DownloadFileRequest_GetContentCallback) {
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
   EXPECT_EQ(net::test_server::METHOD_GET, http_request_.method);
-  EXPECT_EQ(kTestDownloadPathPrefix + kTestId, http_request_.relative_url);
+  EXPECT_EQ(kTestDownloadPathPrefix + kTestId + "?" + kTestDownloadFileQuery,
+            http_request_.relative_url);
   EXPECT_EQ(kDownloadedFilePath, temp_file);
 
   const std::string expected_contents = kTestId + kTestId + kTestId;

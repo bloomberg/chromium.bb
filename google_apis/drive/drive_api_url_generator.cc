@@ -31,7 +31,7 @@ const char kDriveV2UploadNewFileUrl[] = "upload/drive/v2/files";
 const char kDriveV2UploadExistingFileUrlPrefix[] = "upload/drive/v2/files/";
 const char kDriveV2BatchUploadUrl[] = "upload/drive";
 const char kDriveV2PermissionsUrlFormat[] = "drive/v2/files/%s/permissions";
-const char kDriveV2DownloadUrlFormat[] = "host/%s";
+const char kDriveV2DownloadUrlFormat[] = "drive/v2/files/%s?alt=media";
 const char kDriveV2ThumbnailUrlFormat[] = "d/%s=w%d-h%d";
 const char kDriveV2ThumbnailUrlWithCropFormat[] = "d/%s=w%d-h%d-c";
 
@@ -54,10 +54,8 @@ GURL AddMultipartUploadParam(const GURL& url) {
 }  // namespace
 
 DriveApiUrlGenerator::DriveApiUrlGenerator(const GURL& base_url,
-                                           const GURL& base_download_url,
                                            const GURL& base_thumbnail_url)
     : base_url_(base_url),
-      base_download_url_(base_download_url),
       base_thumbnail_url_(base_thumbnail_url) {
   // Do nothing.
 }
@@ -68,13 +66,6 @@ DriveApiUrlGenerator::~DriveApiUrlGenerator() {
 
 const char DriveApiUrlGenerator::kBaseUrlForProduction[] =
     "https://www.googleapis.com";
-
-const char DriveApiUrlGenerator::kBaseDownloadUrlForProduction[] =
-#if defined(GOOGLE_CHROME_BUILD) || defined(USE_OFFICIAL_GOOGLE_API_KEYS)
-    "https://www.googledrive.com/p/";
-#else
-    "https://www.googledrive.com";
-#endif
 
 const char DriveApiUrlGenerator::kBaseThumbnailUrlForProduction[] =
     "https://lh3.googleusercontent.com";
@@ -289,7 +280,7 @@ GURL DriveApiUrlGenerator::GetMultipartUploadExistingFileUrl(
 
 GURL DriveApiUrlGenerator::GenerateDownloadFileUrl(
     const std::string& resource_id) const {
-  return base_download_url_.Resolve(base::StringPrintf(
+  return base_url_.Resolve(base::StringPrintf(
       kDriveV2DownloadUrlFormat, net::EscapePath(resource_id).c_str()));
 }
 

@@ -21,15 +21,11 @@ class DriveApiUrlGenerator {
   // |base_url| is the path to the target drive api server.
   // Note that this is an injecting point for a testing server.
   DriveApiUrlGenerator(const GURL& base_url,
-                       const GURL& base_download_url,
                        const GURL& base_thumbnail_url);
   ~DriveApiUrlGenerator();
 
   // The base URL for communicating with the production drive api server.
   static const char kBaseUrlForProduction[];
-
-  // The base URL for the file download server for production.
-  static const char kBaseDownloadUrlForProduction[];
 
   // The base URL for the thumbnail download server for production.
   static const char kBaseThumbnailUrlForProduction[];

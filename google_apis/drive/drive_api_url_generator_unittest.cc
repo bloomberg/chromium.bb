@@ -18,7 +18,6 @@ namespace {
 // The URLs used for production may be different for Chromium OS and Chrome
 // OS, so use testing base urls.
 const char kBaseUrlForTesting[] = "https://www.example.com";
-const char kBaseDownloadUrlForTesting[] = "https://download.example.com/p/";
 const char kBaseThumbnailUrlForTesting[] = "https://thumbnail.example.com";
 }  // namespace
 
@@ -26,7 +25,6 @@ class DriveApiUrlGeneratorTest : public testing::Test {
  public:
   DriveApiUrlGeneratorTest()
       : url_generator_(GURL(kBaseUrlForTesting),
-                       GURL(kBaseDownloadUrlForTesting),
                        GURL(kBaseThumbnailUrlForTesting)) {}
 
  protected:
@@ -362,10 +360,12 @@ TEST_F(DriveApiUrlGeneratorTest, GetMultipartUploadExistingFileUrl) {
 }
 
 TEST_F(DriveApiUrlGeneratorTest, GenerateDownloadFileUrl) {
-  EXPECT_EQ("https://download.example.com/p/host/resourceId",
-            url_generator_.GenerateDownloadFileUrl("resourceId").spec());
-  EXPECT_EQ("https://download.example.com/p/host/file%3AresourceId",
-            url_generator_.GenerateDownloadFileUrl("file:resourceId").spec());
+  EXPECT_EQ(
+      "https://www.example.com/drive/v2/files/resourceId?alt=media",
+      url_generator_.GenerateDownloadFileUrl("resourceId").spec());
+  EXPECT_EQ(
+      "https://www.example.com/drive/v2/files/file%3AresourceId?alt=media",
+      url_generator_.GenerateDownloadFileUrl("file:resourceId").spec());
 }
 
 TEST_F(DriveApiUrlGeneratorTest, GeneratePermissionsInsertUrl) {

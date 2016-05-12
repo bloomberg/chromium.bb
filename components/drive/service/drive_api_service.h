@@ -94,8 +94,6 @@ class DriveAPIService : public DriveServiceInterface,
   // |url_request_context_getter| is used to initialize URLFetcher.
   // |blocking_task_runner| is used to run blocking tasks (like parsing JSON).
   // |base_url| is used to generate URLs for communication with the drive API.
-  // |base_download_url| is used to generate URLs for downloading file from the
-  // drive API.
   // |base_thumbnail_url| is used to generate URLs for downloading thumbnail
   // from image server.
   // |custom_user_agent| will be used for the User-Agent header in HTTP
@@ -105,7 +103,6 @@ class DriveAPIService : public DriveServiceInterface,
       net::URLRequestContextGetter* url_request_context_getter,
       base::SequencedTaskRunner* blocking_task_runner,
       const GURL& base_url,
-      const GURL& base_download_url,
       const GURL& base_thumbnail_url,
       const std::string& custom_user_agent);
   ~DriveAPIService() override;
