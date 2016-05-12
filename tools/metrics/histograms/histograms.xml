@@ -19244,6 +19244,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Layout.ScrollAnchor.TimeToFindAnchor" units="microseconds">
+  <owner>ymalik@chromium.org</owner>
+  <summary>The time it took to find a suitable anchor element.</summary>
+</histogram>
+
 <histogram name="LevelDB.Open" enum="LevelDBStatus">
   <owner>cmumford@chromium.org</owner>
   <summary>The result of an open attempt of a leveldb.</summary>

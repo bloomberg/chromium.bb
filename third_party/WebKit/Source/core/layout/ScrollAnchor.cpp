@@ -134,6 +134,9 @@ ScrollAnchor::ExamineResult ScrollAnchor::examine(const LayoutObject* candidate)
 
 void ScrollAnchor::findAnchor()
 {
+    TRACE_EVENT0("blink", "ScrollAnchor::findAnchor");
+    SCOPED_BLINK_UMA_HISTOGRAM_TIMER("Layout.ScrollAnchor.TimeToFindAnchor");
+
     LayoutObject* stayWithin = scrollerLayoutBox(m_scroller);
     LayoutObject* candidate = stayWithin->nextInPreOrder(stayWithin);
     while (candidate) {
