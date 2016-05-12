@@ -207,8 +207,7 @@ void LocationBarViewMac::UpdateSaveCreditCardIcon() {
   bool enabled = controller && controller->IsIconVisible();
   command_updater()->UpdateCommandEnabled(IDC_SAVE_CREDIT_CARD_FOR_PAGE,
                                           enabled);
-  bool in_dark_mode = [[field_ window] inIncognitoModeWithSystemTheme];
-  save_credit_card_decoration_->SetIcon(in_dark_mode);
+  save_credit_card_decoration_->SetIcon(IsLocationBarDark());
   save_credit_card_decoration_->SetVisible(enabled);
   OnDecorationsChanged();
 }
@@ -344,15 +343,13 @@ void LocationBarViewMac::SetStarred(bool starred) {
   if (star_decoration_->starred() == starred)
     return;
 
-  star_decoration_->SetStarred(starred,
-      [[field_ window] inIncognitoModeWithSystemTheme]);
+  star_decoration_->SetStarred(starred, IsLocationBarDark());
   UpdateBookmarkStarVisibility();
   OnDecorationsChanged();
 }
 
 void LocationBarViewMac::SetTranslateIconLit(bool on) {
-  bool in_dark_mode = [[field_ window] inIncognitoModeWithSystemTheme];
-  translate_decoration_->SetLit(on, in_dark_mode);
+  translate_decoration_->SetLit(on, IsLocationBarDark());
   OnDecorationsChanged();
 }
 
@@ -563,7 +560,7 @@ void LocationBarViewMac::UpdateWithoutTabRestore() {
 }
 
 void LocationBarViewMac::UpdateLocationIcon() {
-  bool in_dark_mode = [[field_ window] inIncognitoModeWithSystemTheme];
+  bool in_dark_mode = IsLocationBarDark();
 
   SkColor vector_icon_color = gfx::kPlaceholderColor;
   gfx::VectorIconId vector_icon_id = gfx::VectorIconId::VECTOR_ICON_NONE;
@@ -603,8 +600,8 @@ void LocationBarViewMac::UpdateColorsToMatchTheme() {
   // Make sure we're displaying the correct star color for Incognito mode. If
   // the window is in Incognito mode, switching between a theme and no theme
   // can move the window in and out of dark mode.
-  bool in_dark_mode = [[field_ window] inIncognitoModeWithSystemTheme];
-  star_decoration_->SetStarred(star_decoration_->starred(), in_dark_mode);
+  star_decoration_->SetStarred(star_decoration_->starred(),
+                               IsLocationBarDark());
 
   // Update the appearance of the text in the Omnibox.
   omnibox_view_->Update();
@@ -654,6 +651,10 @@ WebContents* LocationBarViewMac::GetWebContents() {
 bool LocationBarViewMac::ShouldShowEVBubble() const {
   return (GetToolbarModel()->GetSecurityLevel(false) ==
           security_state::SecurityStateModel::EV_SECURE);
+}
+
+bool LocationBarViewMac::IsLocationBarDark() const {
+  return [[field_ window] inIncognitoModeWithSystemTheme];
 }
 
 NSImage* LocationBarViewMac::GetKeywordImage(const base::string16& keyword) {
@@ -795,9 +796,8 @@ void LocationBarViewMac::UpdateTranslateDecoration() {
   bool enabled = language_state.translate_enabled();
   command_updater()->UpdateCommandEnabled(IDC_TRANSLATE_PAGE, enabled);
   translate_decoration_->SetVisible(enabled);
-  bool in_dark_mode = [[field_ window] inIncognitoModeWithSystemTheme];
   translate_decoration_->SetLit(language_state.IsPageTranslated(),
-                                in_dark_mode);
+                                IsLocationBarDark());
 }
 
 bool LocationBarViewMac::UpdateZoomDecoration(bool default_zoom_changed) {
@@ -805,11 +805,9 @@ bool LocationBarViewMac::UpdateZoomDecoration(bool default_zoom_changed) {
   if (!web_contents)
     return false;
 
-  bool in_dark_mode = [[field_ window] inIncognitoModeWithSystemTheme];
   return zoom_decoration_->UpdateIfNecessary(
       ui_zoom::ZoomController::FromWebContents(web_contents),
-      default_zoom_changed,
-      in_dark_mode);
+      default_zoom_changed, IsLocationBarDark());
 }
 
 void LocationBarViewMac::OnDefaultZoomLevelChanged() {

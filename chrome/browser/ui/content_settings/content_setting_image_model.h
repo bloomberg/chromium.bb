@@ -53,8 +53,9 @@ class ContentSettingImageModel {
   bool is_visible() const { return is_visible_; }
 
 #if defined(OS_MACOSX)
-  const gfx::Image& raster_icon() const { return raster_icon_; }
-  int raster_icon_id() const { return raster_icon_id_; }
+  // Calls UpdateFromWebContents() and returns true if the icon has changed.
+  bool UpdateFromWebContentsAndCheckIfIconChanged(
+      content::WebContents* web_contents);
 #endif
 
   gfx::Image GetIcon(SkColor nearby_text_color) const;

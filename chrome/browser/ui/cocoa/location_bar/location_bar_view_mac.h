@@ -189,6 +189,9 @@ class LocationBarViewMac : public LocationBar,
 
   AutocompleteTextField* GetAutocompleteTextField() { return field_; }
 
+  // Returns true if the location bar is dark.
+  bool IsLocationBarDark() const;
+
   ManagePasswordsDecoration* manage_passwords_decoration() {
     return manage_passwords_decoration_.get();
   }

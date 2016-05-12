@@ -28,11 +28,7 @@ using content::WebContents;
 namespace {
 
 bool UseVectorGraphics() {
-#if defined(OS_MACOSX)
-  return false;
-#else
   return ui::MaterialDesignController::IsModeMaterial();
-#endif
 }
 
 }  // namespace
@@ -525,11 +521,14 @@ void ContentSettingMIDISysExImageModel::UpdateFromWebContents(
 // Base class ------------------------------------------------------------------
 
 gfx::Image ContentSettingImageModel::GetIcon(SkColor nearby_text_color) const {
+  SkColor icon_color = nearby_text_color;
+#if !defined(OS_MACOSX)
+  icon_color = color_utils::DeriveDefaultIconColor(nearby_text_color);
+#endif
+
   return UseVectorGraphics()
              ? gfx::Image(gfx::CreateVectorIconWithBadge(
-                   vector_icon_id_, 16,
-                   color_utils::DeriveDefaultIconColor(nearby_text_color),
-                   vector_icon_badge_id_))
+                   vector_icon_id_, 16, icon_color, vector_icon_badge_id_))
              : raster_icon_;
 }
 
@@ -577,3 +576,20 @@ void ContentSettingImageModel::SetIconByResourceId(int id) {
   raster_icon_ =
       ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(id);
 }
+
+#if defined(OS_MACOSX)
+bool ContentSettingImageModel::UpdateFromWebContentsAndCheckIfIconChanged(
+    content::WebContents* web_contents) {
+  if (UseVectorGraphics()) {
+    gfx::VectorIconId old_vector_icon = vector_icon_id_;
+    gfx::VectorIconId old_badge_icon = vector_icon_badge_id_;
+    UpdateFromWebContents(web_contents);
+    return old_vector_icon != vector_icon_id_ &&
+           old_badge_icon != vector_icon_badge_id_;
+  } else {
+    int old_icon = raster_icon_id_;
+    UpdateFromWebContents(web_contents);
+    return old_icon != raster_icon_id_;
+  }
+}
+#endif

@@ -62,6 +62,10 @@ const CGFloat kTextMarginPadding = 4;
 const CGFloat kIconMarginPadding = 2;
 const CGFloat kBorderPadding = 3;
 
+// Color of the vector graphic icons. Used when the location is not dark.
+// SkColorSetARGB(0xCC, 0xFF, 0xFF 0xFF);
+const SkColor kVectorIconColor = 0xCCFFFFFF;
+
 // Different states in which the animation can be. In |kOpening|, the text
 // is getting larger. In |kOpen|, the text should be displayed at full size.
 // In |kClosing|, the text is again getting smaller. The durations in which
@@ -182,14 +186,16 @@ ContentSettingDecoration::~ContentSettingDecoration() {
 bool ContentSettingDecoration::UpdateFromWebContents(
     WebContents* web_contents) {
   bool was_visible = IsVisible();
-  int old_icon = content_setting_image_model_->raster_icon_id();
-  content_setting_image_model_->UpdateFromWebContents(web_contents);
+  bool did_icon_change =
+      content_setting_image_model_->UpdateFromWebContentsAndCheckIfIconChanged(
+          web_contents);
   SetVisible(content_setting_image_model_->is_visible());
-  bool decoration_changed =
-      was_visible != IsVisible() ||
-      old_icon != content_setting_image_model_->raster_icon_id();
+  bool decoration_changed = was_visible != IsVisible() || did_icon_change;
   if (IsVisible()) {
-    SetImage(content_setting_image_model_->raster_icon().ToNSImage());
+    SkColor icon_color =
+        owner_->IsLocationBarDark() ? kVectorIconColor : gfx::kChromeIconGrey;
+    SetImage(content_setting_image_model_->GetIcon(icon_color).ToNSImage());
+
     SetToolTip(
         base::SysUTF16ToNSString(content_setting_image_model_->get_tooltip()));
 
