@@ -516,11 +516,10 @@ class EventSenderBindings : public gin::Wrappable<EventSenderBindings> {
                          gin::Arguments* args);
   bool IsFlinging() const;
   void GestureScrollFirstPoint(int x, int y);
-  void TouchStart();
-  void TouchMove();
-  void TouchMoveCausingScrollIfUncanceled();
-  void TouchCancel();
-  void TouchEnd();
+  void TouchStart(gin::Arguments* args);
+  void TouchMove(gin::Arguments* args);
+  void TouchCancel(gin::Arguments* args);
+  void TouchEnd(gin::Arguments* args);
   void NotifyStartOfTouchScroll();
   void LeapForward(int milliseconds);
   double LastEventTimestamp();
@@ -817,24 +816,24 @@ void EventSenderBindings::GestureScrollFirstPoint(int x, int y) {
     sender_->GestureScrollFirstPoint(x, y);
 }
 
-void EventSenderBindings::TouchStart() {
+void EventSenderBindings::TouchStart(gin::Arguments* args) {
   if (sender_)
-    sender_->TouchStart();
+    sender_->TouchStart(args);
 }
 
-void EventSenderBindings::TouchMove() {
+void EventSenderBindings::TouchMove(gin::Arguments* args) {
   if (sender_)
-    sender_->TouchMove();
+    sender_->TouchMove(args);
 }
 
-void EventSenderBindings::TouchCancel() {
+void EventSenderBindings::TouchCancel(gin::Arguments* args) {
   if (sender_)
-    sender_->TouchCancel();
+    sender_->TouchCancel(args);
 }
 
-void EventSenderBindings::TouchEnd() {
+void EventSenderBindings::TouchEnd(gin::Arguments* args) {
   if (sender_)
-    sender_->TouchEnd();
+    sender_->TouchEnd(args);
 }
 
 void EventSenderBindings::NotifyStartOfTouchScroll() {
@@ -1882,20 +1881,38 @@ void EventSender::GestureScrollFirstPoint(int x, int y) {
   current_gesture_location_ = WebPoint(x, y);
 }
 
-void EventSender::TouchStart() {
-  SendCurrentTouchEvent(WebInputEvent::TouchStart, false);
+bool EventSender::GetMovedBeyondSlopRegionArg(gin::Arguments* args) {
+  std::string arg;
+  if (args->PeekNext().IsEmpty())
+    return false;
+
+  if(args->PeekNext()->IsString() && args->GetNext(&arg)) {
+    if (arg == "movedBeyondSlopRegion")
+      return true;
+  }
+
+  args->ThrowError();
+  return false;
 }
 
-void EventSender::TouchMove() {
-  SendCurrentTouchEvent(WebInputEvent::TouchMove, false);
+void EventSender::TouchStart(gin::Arguments* args) {
+  SendCurrentTouchEvent(WebInputEvent::TouchStart,
+                        GetMovedBeyondSlopRegionArg(args));
 }
 
-void EventSender::TouchCancel() {
-  SendCurrentTouchEvent(WebInputEvent::TouchCancel, false);
+void EventSender::TouchMove(gin::Arguments* args) {
+  SendCurrentTouchEvent(WebInputEvent::TouchMove,
+                        GetMovedBeyondSlopRegionArg(args));
 }
 
-void EventSender::TouchEnd() {
-  SendCurrentTouchEvent(WebInputEvent::TouchEnd, false);
+void EventSender::TouchCancel(gin::Arguments* args) {
+  SendCurrentTouchEvent(WebInputEvent::TouchCancel,
+                        GetMovedBeyondSlopRegionArg(args));
+}
+
+void EventSender::TouchEnd(gin::Arguments* args) {
+  SendCurrentTouchEvent(WebInputEvent::TouchEnd,
+                        GetMovedBeyondSlopRegionArg(args));
 }
 
 void EventSender::NotifyStartOfTouchScroll() {

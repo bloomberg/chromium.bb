@@ -467,21 +467,35 @@ WebInputEventResult TouchEventManager::handleTouchEvent(
 
     // Whether a touch should be considered a "user gesture" or not is a tricky question.
     // https://docs.google.com/document/d/1oF1T3O7_E4t1PYHV6gyCwHxOi3ystm0eSL5xZu7nvOg/edit#
-    // TODO(rbyers): Disable user gesture in some cases but retain logging for now (crbug.com/582140).
-    OwnPtr<UserGestureIndicator> gestureIndicator;
-    if (event.touchPoints().size() == 1
+
+    // The touchend corresponding to a tap is always a user gesture.
+    bool isTap = event.touchPoints().size() == 1
         && event.touchPoints()[0].state() == PlatformTouchPoint::TouchReleased
-        && !event.causesScrollingIfUncanceled()) {
-        // This is a touchend corresponding to a tap, definitely a user gesture.  So don't supply
-        // a UserGestureUtilizedCallback.
-        gestureIndicator = adoptPtr(new UserGestureIndicator(DefinitelyProcessingUserGesture));
-    } else {
-        // This is some other touch event that perhaps shouldn't be considered a user gesture.  So
-        // use a UserGestureUtilizedCallback to get metrics / deprecation warnings.
+        && !event.causesScrollingIfUncanceled();
+
+    // For now, disallow dragging as a user gesture when the events are being sent to a
+    // cross-origin iframe (crbug.com/582140).
+    bool isSameOrigin = false;
+    if (m_touchSequenceDocument && m_touchSequenceDocument->frame()) {
+        SecurityOrigin* securityOrigin = m_touchSequenceDocument->frame()->securityContext()->getSecurityOrigin();
+        Frame* top = m_frame->tree().top();
+        if (top && securityOrigin->canAccess(top->securityContext()->getSecurityOrigin()))
+            isSameOrigin = true;
+    }
+
+    OwnPtr<UserGestureIndicator> gestureIndicator;
+    if (isTap || isSameOrigin) {
+        UserGestureUtilizedCallback* callback = 0;
+        if (!isTap) {
+            // This is some other touch event that we currently consider a user gesture.  So
+            // use a UserGestureUtilizedCallback to get metrics.
+            callback = &m_touchSequenceDocument->frame()->eventHandler();
+        }
+
         if (m_touchSequenceUserGestureToken)
-            gestureIndicator = adoptPtr(new UserGestureIndicator(m_touchSequenceUserGestureToken.release(), &m_touchSequenceDocument->frame()->eventHandler()));
+            gestureIndicator = adoptPtr(new UserGestureIndicator(m_touchSequenceUserGestureToken.release(), callback));
         else
-            gestureIndicator = adoptPtr(new UserGestureIndicator(DefinitelyProcessingUserGesture, &m_touchSequenceDocument->frame()->eventHandler()));
+            gestureIndicator = adoptPtr(new UserGestureIndicator(DefinitelyProcessingUserGesture, callback));
         m_touchSequenceUserGestureToken = UserGestureIndicator::currentToken();
     }
 

@@ -1,0 +1,77 @@
+<script src="../../../resources/js-test.js"></script>
+<div id="target">Target</div>
+<div id="description">Test user gesture behavior during touch events.</div>
+<div id="console"></div>
+
+<script>
+
+var openedPopup = undefined;
+function handler(e) {
+    if (openedPopup !== undefined)
+        testFailed("Handler invoked multiple times");
+
+    var w = window.open("about:blank", "_blank");
+    if (w) {
+        w.close();
+        openedPopup = true;
+    } else {
+        openedPopup = false;
+    }
+}
+
+var target = document.getElementById('target');
+
+function testPopupOnEventDuring(eventType, expectPopup, operation) {
+    openedPopup = undefined;
+    target.addEventListener(eventType, handler);
+
+    operation();
+
+    if (openedPopup===undefined)
+        testFailed(eventType + ' handler was not invoked');
+    else if (expectPopup)
+        shouldBeTrue("openedPopup");
+    else
+        shouldBeFalse("openedPopup");
+
+    target.removeEventListener(eventType, handler);
+}
+
+if (window.testRunner) {
+    testRunner.setCloseRemainingWindowsWhenComplete(true);
+    testRunner.setCanOpenWindows();
+    testRunner.setPopupBlockingEnabled(true);
+}
+
+
+var rect = target.getBoundingClientRect();
+var targetX = rect.left + rect.width / 2;
+var targetY = rect.top + rect.height / 2;
+
+debug('touchstart should be a user gesture');
+eventSender.addTouchPoint(targetX, targetY);
+testPopupOnEventDuring('touchstart', true, function() { eventSender.touchStart(); });
+
+debug('touchend for the same gesture should not get a new gesture');
+eventSender.releaseTouchPoint(0);
+testPopupOnEventDuring('touchend', false, function() { eventSender.touchStart(); });
+
+debug('touchmove should be a user gesture');
+eventSender.addTouchPoint(targetX, targetY);
+eventSender.touchStart();
+eventSender.updateTouchPoint(0, targetX + 1, targetY);
+testPopupOnEventDuring('touchmove', true, function() { eventSender.touchMove("movedBeyondSlopRegion"); });
+
+debug('second touchmove for the same gesture should not get a new gesture');
+eventSender.updateTouchPoint(0, targetX + 2, targetY);
+testPopupOnEventDuring('touchmove', false, function() { eventSender.touchMove("movedBeyondSlopRegion"); });
+eventSender.releaseTouchPoint(0);
+eventSender.touchEnd();
+
+debug('touchend should be a user gesture');
+eventSender.addTouchPoint(targetX, targetY);
+eventSender.touchStart();
+eventSender.releaseTouchPoint(0);
+testPopupOnEventDuring('touchend', true, function() { eventSender.touchEnd(); });
+
+</script>

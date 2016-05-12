@@ -1,0 +1,16 @@
+Target
+Test user gesture behavior during touch events.
+touchstart should be a user gesture
+PASS openedPopup is true
+touchend for the same gesture should not get a new gesture
+PASS openedPopup is false
+touchmove should be a user gesture
+PASS openedPopup is true
+second touchmove for the same gesture should not get a new gesture
+PASS openedPopup is false
+touchend should be a user gesture
+PASS openedPopup is true
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

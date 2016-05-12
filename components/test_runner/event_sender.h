@@ -134,10 +134,11 @@ class EventSender {
   bool IsFlinging() const;
   void GestureScrollFirstPoint(int x, int y);
 
-  void TouchStart();
-  void TouchMove();
-  void TouchCancel();
-  void TouchEnd();
+  bool GetMovedBeyondSlopRegionArg(gin::Arguments* args);
+  void TouchStart(gin::Arguments* args);
+  void TouchMove(gin::Arguments* args);
+  void TouchCancel(gin::Arguments* args);
+  void TouchEnd(gin::Arguments* args);
   void NotifyStartOfTouchScroll();
 
   void LeapForward(int milliseconds);

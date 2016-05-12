@@ -1098,7 +1098,6 @@ public:
         InvalidSandboxDirectiveInMetaCSP = 1282,
         InvalidFrameAncestorsDirectiveInMetaCSP = 1283,
         TouchDragUserGestureUsed = 1284,
-        TouchDragUserGestureUsedCrossOrigin = 1285,
         DocumentCreateEventForeignFetchEvent = 1286,
         SVGCalcModeDiscrete = 1287,
         SVGCalcModeLinear = 1288,

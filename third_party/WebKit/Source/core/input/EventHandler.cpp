@@ -3644,10 +3644,9 @@ WebInputEventResult EventHandler::handleTouchEvent(const PlatformTouchEvent& eve
 
 void EventHandler::userGestureUtilized()
 {
-    // This is invoked for UserGestureIndicators created in handleTouchEvent which perhaps represent
-    // touch actions which shouldn't be considered a user-gesture.
+    // This is invoked for UserGestureIndicators created in TouchEventManger::handleTouchEvent which perhaps
+    // represent touch actions which shouldn't be considered a user-gesture.
     UseCounter::count(m_frame, UseCounter::TouchDragUserGestureUsed);
-    Deprecation::countDeprecationCrossOriginIframe(m_frame, UseCounter::TouchDragUserGestureUsedCrossOrigin);
 }
 
 void EventHandler::setLastKnownMousePosition(const PlatformMouseEvent& event)

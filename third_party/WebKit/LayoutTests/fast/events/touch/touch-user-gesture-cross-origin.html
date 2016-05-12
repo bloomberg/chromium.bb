@@ -1,0 +1,22 @@
+<style>
+    /* iframe will pass its client co-ordinates to eventSender */
+    html, body {
+        margin: 0;
+    }
+    iframe {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 1000px;
+    }
+</style>
+<iframe src="resources/touch-user-gesture-frame.html"></iframe>
+
+<script>
+// Ensure the iframe is considered cross-origin
+testRunner.setAllowFileAccessFromFileURLs(false);
+testRunner.setAllowUniversalAccessFromFileURLs(false);
+testRunner.dumpChildFramesAsText();
+testRunner.waitUntilDone();
+</script>
