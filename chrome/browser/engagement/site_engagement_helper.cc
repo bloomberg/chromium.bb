@@ -12,7 +12,7 @@
 #include "chrome/browser/engagement/site_engagement_service_factory.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/profiles/profile.h"
-#include "content/public/browser/navigation_details.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 
 namespace {
@@ -156,8 +156,7 @@ void SiteEngagementHelper::MediaTracker::WasHidden() {
 }
 
 SiteEngagementHelper::~SiteEngagementHelper() {
-  content::WebContents* contents = web_contents();
-  if (contents) {
+  if (web_contents()) {
     input_tracker_.Stop();
     media_tracker_.Stop();
   }
@@ -198,25 +197,23 @@ void SiteEngagementHelper::RecordMediaPlaying(bool is_hidden) {
   }
 }
 
-void SiteEngagementHelper::DidNavigateMainFrame(
-    const content::LoadCommittedDetails& details,
-    const content::FrameNavigateParams& params) {
-  // Ignore in-page navigations. However, do not stop input or media detection.
-  if (details.is_in_page)
-    return;
-
+void SiteEngagementHelper::DidFinishNavigation(
+    content::NavigationHandle* handle) {
   input_tracker_.Stop();
   media_tracker_.Stop();
-  record_engagement_ = params.url.SchemeIsHTTPOrHTTPS();
 
-  // Ignore all schemes except HTTP and HTTPS.
-  if (!record_engagement_)
+  // Ignore all schemes except HTTP and HTTPS, as well as uncommitted, non
+  // main-frame, same page, or error page navigations.
+  record_engagement_ = handle->GetURL().SchemeIsHTTPOrHTTPS();
+  if (!handle->HasCommitted() || !handle->IsInMainFrame() ||
+      handle->IsSamePage() || handle->IsErrorPage() || !record_engagement_) {
     return;
+  }
 
   // Ignore prerender loads. This means that prerenders will not receive
   // navigation engagement. The implications are as follows:
   //
-  // - Instant search prerenders from the omnibox trigger DidNavigateMainFrame
+  // - Instant search prerenders from the omnibox trigger DidFinishNavigation
   //   twice: once for the prerender, and again when the page swaps in. The
   //   second trigger has transition GENERATED and receives navigation
   //   engagement.
@@ -235,14 +232,15 @@ void SiteEngagementHelper::DidNavigateMainFrame(
       SiteEngagementServiceFactory::GetForProfile(profile);
 
   if (service)
-    service->HandleNavigation(params.url, params.transition);
+    service->HandleNavigation(handle->GetURL(), handle->GetPageTransition());
 
   input_tracker_.Start(
       base::TimeDelta::FromSeconds(g_seconds_delay_after_navigation));
 }
 
 void SiteEngagementHelper::WasShown() {
-  // Ensure that the input callbacks are registered when we come into view.
+  // Ensure that the input callbacks are registered when we come into view. This
+  // occurs when switching tabs, or when prerendered pages are swapped in.
   if (record_engagement_) {
     input_tracker_.Start(
         base::TimeDelta::FromSeconds(g_seconds_delay_after_show));

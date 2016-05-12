@@ -12,6 +12,7 @@
 #include "content/public/browser/web_contents_user_data.h"
 
 namespace content {
+class NavigationHandle;
 class WebContents;
 }
 
@@ -153,9 +154,7 @@ class SiteEngagementHelper
   void RecordMediaPlaying(bool is_hidden);
 
   // content::WebContentsObserver overrides.
-  void DidNavigateMainFrame(
-      const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params) override;
+  void DidFinishNavigation(content::NavigationHandle* handle) override;
   void WasShown() override;
   void WasHidden() override;
 
