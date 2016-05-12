@@ -123,7 +123,12 @@ source_set("audio") {
     "virtual_audio_output_stream.cc",
     "virtual_audio_output_stream.h",
   ]
-  deps = []
+  deps = [
+    "//base",
+    "//media:shared_memory_support",
+    "//media/base",
+    "//url",
+  ]
   libs = []
   configs += [
     ":platform_config",
@@ -281,7 +286,10 @@ source_set("test_support") {
   ]
   configs += [ ":platform_config" ]
   deps = [
+    "//base",
+    "//media",
     "//testing/gmock",
+    "//testing/gtest",
   ]
   configs += [ "//media:media_config" ]
 }
@@ -304,6 +312,9 @@ source_set("unittests") {
   ]
   deps = [
     ":test_support",
+    "//base",
+    "//base/test:test_support",
+    "//media",
     "//media/base:test_support",
     "//testing/gmock",
     "//testing/gtest",
