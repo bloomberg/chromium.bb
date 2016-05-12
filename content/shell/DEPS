@@ -27,22 +27,10 @@ include_rules = [
   "+components/devtools_discovery",
   "+components/devtools_http_handler",
   "+components/url_formatter",
-
-  # For enabling media related features.
-  "+media/base/media_switches.h",
-
-  # For media::RemoveProprietaryMediaTypesAndCodecsForTests.
-  "+media/base/mime_util.h",
-
-  # For enabling mojo media services.
-  "+media/mojo/services",
 ]
 
 specific_include_rules = {
   "shell_views\.cc": [
     "+ui/wm/test"
-  ],
-  "content_browser_tests_android\.cc": [
-    "+media/base"
   ],
 }

@@ -14,7 +14,6 @@ include_rules = [
   "+device/vibration",
   "+gin",
   "+jingle/glue",
-  "+media",  # For audio input/output and audio/video decoding.
   "+mojo",
   "+services",
   "-storage/browser",

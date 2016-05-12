@@ -1,6 +1,4 @@
 include_rules = [
-  "+media/audio",
-  "+media/base",
   "-storage/browser",
 
   # No inclusion of WebKit from the browser, other than strictly enum/POD,

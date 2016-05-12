@@ -3,5 +3,4 @@ include_rules = [
   "+components/web_cache/renderer",
   "+components/plugins/renderer",
   "+components/test_runner",
-  "+media",
 ]

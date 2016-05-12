@@ -15,8 +15,6 @@ specific_include_rules = {
     # Testing utilities can access anything in content/
     "+content",
     "+gin/v8_initializer.h",
-    "+media/base",
-    "+media/capture/video/android/capture_jni_registrar.h",
     "+third_party/iaccessible2",
     "+ui/base/resource/resource_bundle.h",
   ],

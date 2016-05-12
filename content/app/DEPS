@@ -9,7 +9,4 @@ include_rules = [
   "+gin/public/isolate_holder.h",
   "+gin/public/snapshot_fd_data.h",
   "+gin/v8_initializer.h",
-  "+media/base",  # For initializing media library.
-  "+media/capture/video/android/capture_jni_registrar.h",
-  "+media/midi/midi_jni_registrar.h",
 ]

@@ -16,14 +16,6 @@ include_rules = [
   "+device/battery",  # For battery status service.
   "+device/vibration",  # For Vibration API
   "+gin/v8_initializer.h",
-  "+media/media_features.h",
-  "+media/audio",  # For audio input for speech input feature.
-  "+media/capture",  # For Video Device monitoring in Mac.
-  "+media/base",  # For Android JNI registration.
-  "+media/capture",  # For Device Monitoring
-  "+media/filters",  # For reporting GPU decoding UMA.
-  "+media/midi",  # For Web MIDI API
-  "+media/mojo",  # For mojo media services.
   "+mojo",
   "+services",
   "+sql",
