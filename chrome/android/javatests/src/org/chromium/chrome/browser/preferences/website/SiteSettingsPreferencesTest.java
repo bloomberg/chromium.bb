@@ -131,6 +131,15 @@ public class SiteSettingsPreferencesTest extends ChromeActivityTestCaseBase<Chro
         assertTrue(getInfoBars().isEmpty());
     }
 
+    private Preferences startSiteSettingsMenu(String category) {
+        Bundle fragmentArgs = new Bundle();
+        fragmentArgs.putString(SingleCategoryPreferences.EXTRA_CATEGORY, category);
+        Intent intent = PreferencesLauncher.createIntentForSettingsPage(
+                getInstrumentation().getTargetContext(), SiteSettingsPreferences.class.getName());
+        intent.putExtra(Preferences.EXTRA_SHOW_FRAGMENT_ARGUMENTS, fragmentArgs);
+        return (Preferences) getInstrumentation().startActivitySync(intent);
+    }
+
     private Preferences startSiteSettingsCategory(String category) {
         Bundle fragmentArgs = new Bundle();
         fragmentArgs.putString(SingleCategoryPreferences.EXTRA_CATEGORY, category);
@@ -452,6 +461,49 @@ public class SiteSettingsPreferencesTest extends ChromeActivityTestCaseBase<Chro
                 Website site = new Website(WebsiteAddress.create(origin));
                 site.setKeygenInfo(new KeygenInfo(origin, origin, false));
                 assertEquals(site.getKeygenPermission(), ContentSetting.ALLOW);
+            }
+        });
+    }
+
+    /**
+     * Test that showing the Site Settings menu doesn't crash (crbug.com/610576).
+     * @throws Exception
+     */
+    @SmallTest
+    @Feature({"Preferences"})
+    public void testSiteSettingsMenu() throws Exception {
+        final Preferences preferenceActivity = startSiteSettingsMenu("");
+        preferenceActivity.finish();
+    }
+
+    /**
+     * Test the Media Menu.
+     * @throws Exception
+     */
+    @SmallTest
+    @Feature({"Preferences"})
+    public void testMediaMenu() throws Exception {
+        final Preferences preferenceActivity =
+                startSiteSettingsMenu(SiteSettingsPreferences.MEDIA_KEY);
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                SiteSettingsPreferences siteSettings = (SiteSettingsPreferences)
+                        preferenceActivity.getFragmentForTest();
+
+                SiteSettingsPreference allSites  = (SiteSettingsPreference)
+                        siteSettings.findPreference(SiteSettingsPreferences.ALL_SITES_KEY);
+                assertEquals(null, allSites);
+
+                SiteSettingsPreference autoplay  = (SiteSettingsPreference)
+                        siteSettings.findPreference(SiteSettingsPreferences.AUTOPLAY_KEY);
+                assertFalse(autoplay == null);
+
+                SiteSettingsPreference protectedContent = (SiteSettingsPreference)
+                        siteSettings.findPreference(SiteSettingsPreferences.PROTECTED_CONTENT_KEY);
+                assertFalse(protectedContent == null);
+
+                preferenceActivity.finish();
             }
         });
     }

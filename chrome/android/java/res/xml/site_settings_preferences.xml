@@ -62,6 +62,12 @@
         android:key="language"
         android:title="@string/language"
         android:icon="@drawable/settings_language" />
+    <!-- Media -->
+    <org.chromium.chrome.browser.preferences.website.SiteSettingsPreference
+        android:fragment="org.chromium.chrome.browser.preferences.website.SiteSettingsPreferences"
+        android:key="media"
+        android:title="@string/media_permission_title"
+        android:icon="@drawable/settings_media" />
     <!-- Storage -->
     <!-- TODO(finnur): Move this over to the new Usage screen, once it exists. -->
     <org.chromium.chrome.browser.preferences.website.SiteSettingsPreference
