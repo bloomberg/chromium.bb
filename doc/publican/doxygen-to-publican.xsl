@@ -101,7 +101,7 @@
 
 <!-- methods -->
 <xsl:template match="memberdef" >
-  <xsl:if test="@kind = 'function' and @static = 'no' or
+  <xsl:if test="@kind = 'function' and @static = 'no' and @prot = 'public' or
                 @kind !='function' and normalize-space(briefdescription) != ''">
     <varlistentry id="{$which}-{@id}">
         <term>

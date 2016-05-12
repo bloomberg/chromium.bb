@@ -1470,6 +1470,8 @@ wl_display_add_shm_format(struct wl_display *display, uint32_t format)
  *
  * \sa wl_display_add_shm_format()
  *
+ * \private
+ *
  * \memberof wl_display
  */
 struct wl_array *
