@@ -296,6 +296,9 @@
     ],
     "UsePredictorDNSQueue": [
         {
+            "disable_features": [
+                "UsePredictorDNSQueue"
+            ],
             "group_name": "Disabled"
         }
     ],
