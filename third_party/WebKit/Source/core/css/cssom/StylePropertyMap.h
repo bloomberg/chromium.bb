@@ -7,8 +7,7 @@
 
 #include "bindings/core/v8/Iterable.h"
 #include "bindings/core/v8/ScriptWrappable.h"
-#include "bindings/core/v8/StyleValueOrStyleValueSequence.h"
-#include "bindings/core/v8/StyleValueOrStyleValueSequenceOrString.h"
+#include "bindings/core/v8/UnionTypesCore.h"
 #include "core/CSSPropertyNames.h"
 #include "core/CoreExport.h"
 #include "core/css/cssom/StyleValue.h"

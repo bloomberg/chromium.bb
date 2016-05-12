@@ -21,8 +21,8 @@
       'methods.cpp',
       'partial_interface.cpp',
       'partial_interface.h',
-      'union_container.cpp',
-      'union_container.h',
+      'union.cpp',
+      'union.h',
     ],
   },
 }

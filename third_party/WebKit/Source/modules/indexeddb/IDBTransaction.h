@@ -29,7 +29,6 @@
 #include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "core/dom/ActiveDOMObject.h"
-#include "core/dom/DOMStringList.h"
 #include "core/events/EventListener.h"
 #include "modules/EventModules.h"
 #include "modules/EventTargetModules.h"

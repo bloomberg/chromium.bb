@@ -266,11 +266,9 @@ class InterfaceInfoCollector(object):
             partial_include_paths = []
             if this_include_path:
                 partial_include_paths.append(this_include_path)
-            for union_type in this_union_types:
-                if union_type.is_nullable:
-                    union_type = union_type.inner_type
+            if this_union_types:
                 partial_include_paths.append(
-                    'bindings/%s/v8/%s.h' % (component, union_type.name))
+                    'bindings/%s/v8/UnionTypes%s.h' % (component, component.capitalize()))
             self.add_paths_to_partials_dict(definition.name, full_path, partial_include_paths)
             # Collects C++ header paths which should be included from generated
             # .cpp files.  The resulting structure is as follows.
@@ -297,7 +295,7 @@ class InterfaceInfoCollector(object):
         interface_info.update({
             'extended_attributes': extended_attributes,
             'full_path': full_path,
-            'union_types': this_union_types,
+            'has_union_types': bool(this_union_types),
             'implemented_as': implemented_as,
             'implemented_by_interfaces': left_interfaces,
             'implements_interfaces': right_interfaces,

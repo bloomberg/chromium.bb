@@ -30,7 +30,7 @@
 #ifndef ServiceWorkerGlobalScope_h
 #define ServiceWorkerGlobalScope_h
 
-#include "bindings/modules/v8/RequestOrUSVString.h"
+#include "bindings/modules/v8/UnionTypesModules.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"

@@ -4,6 +4,7 @@
 
 #include "modules/push_messaging/PushManager.h"
 
+#include "bindings/modules/v8/UnionTypesModules.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "modules/push_messaging/PushSubscriptionOptions.h"
 #include "public/platform/WebString.h"

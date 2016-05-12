@@ -88,7 +88,7 @@ class ComponentInfoProvider(object):
         return set()
 
     @property
-    def include_path_for_union_types(self, name):
+    def include_path_for_union_types(self):
         return None
 
 
@@ -118,8 +118,9 @@ class ComponentInfoProviderCore(ComponentInfoProvider):
     def union_types(self):
         return self._component_info['union_types']
 
-    def include_path_for_union_types(self, name):
-        return 'bindings/core/v8/%s.h' % name
+    @property
+    def include_path_for_union_types(self):
+        return 'bindings/core/v8/UnionTypesCore.h'
 
     @property
     def specifier_for_export(self):
@@ -164,12 +165,9 @@ class ComponentInfoProviderModules(ComponentInfoProvider):
         # generating multiple container generation.
         return self._component_info_modules['union_types'] - self._component_info_core['union_types']
 
-    def include_path_for_union_types(self, name):
-        core_union_type_names = [union_type.name for union_type
-                                 in self._component_info_core['union_types']]
-        if name in core_union_type_names:
-            return 'bindings/core/v8/%s.h' % name
-        return 'bindings/modules/v8/%s.h' % name
+    @property
+    def include_path_for_union_types(self):
+        return 'bindings/modules/v8/UnionTypesModules.h'
 
     @property
     def specifier_for_export(self):

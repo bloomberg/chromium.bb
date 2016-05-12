@@ -4,6 +4,7 @@
 
 #include "modules/serviceworkers/InstallEvent.h"
 
+#include "bindings/modules/v8/UnionTypesModules.h"
 #include "core/dom/ExceptionCode.h"
 #include "modules/serviceworkers/ServiceWorkerGlobalScopeClient.h"
 #include "public/platform/WebSecurityOrigin.h"

@@ -4,8 +4,7 @@
 
 #include "modules/webgl/WebGL2RenderingContext.h"
 
-#include "bindings/modules/v8/CanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContextOrImageBitmapRenderingContext.h"
-#include "bindings/modules/v8/OffscreenCanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContext.h"
+#include "bindings/modules/v8/UnionTypesModules.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/loader/FrameLoader.h"

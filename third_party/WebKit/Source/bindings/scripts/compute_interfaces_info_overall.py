@@ -287,11 +287,9 @@ def compute_interfaces_info_overall(info_individuals):
             else:
                 dependencies_other_component_include_paths.append(include_path)
 
-        for union_type in interface_info.get('union_types', []):
-            if union_type.is_nullable:
-                union_type = union_type.inner_type
+        if interface_info['has_union_types']:
             dependencies_include_paths.append(
-                'bindings/%s/v8/%s.h' % (component, union_type.name))
+                'bindings/%s/v8/UnionTypes%s.h' % (component, component.capitalize()))
 
         interface_info.update({
             'dependencies_full_paths': dependencies_full_paths,
@@ -305,7 +303,7 @@ def compute_interfaces_info_overall(info_individuals):
     # Clean up temporary private information
     for interface_info in interfaces_info.itervalues():
         del interface_info['extended_attributes']
-        del interface_info['union_types']
+        del interface_info['has_union_types']
         del interface_info['is_legacy_treat_as_partial_interface']
 
     # Compute global_type_info to interfaces_info so that idl_compiler does

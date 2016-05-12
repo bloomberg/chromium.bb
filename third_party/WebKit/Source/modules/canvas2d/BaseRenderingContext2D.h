@@ -5,9 +5,8 @@
 #ifndef BaseRenderingContext2D_h
 #define BaseRenderingContext2D_h
 
-#include "bindings/modules/v8/HTMLImageElementOrHTMLVideoElementOrHTMLCanvasElementOrImageBitmap.h"
-#include "bindings/modules/v8/StringOrCanvasGradientOrCanvasPattern.h"
-#include "core/html/ImageData.h"
+#include "bindings/core/v8/UnionTypesCore.h"
+#include "bindings/modules/v8/UnionTypesModules.h"
 #include "modules/ModulesExport.h"
 #include "modules/canvas2d/CanvasGradient.h"
 #include "modules/canvas2d/CanvasPathMethods.h"
