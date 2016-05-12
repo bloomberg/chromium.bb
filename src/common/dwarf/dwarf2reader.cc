@@ -639,7 +639,7 @@ void CompilationUnit::ProcessSplitDwarf() {
     }
   }
   bool found_in_dwp = false;
-  if (dwp_reader_ != NULL) {
+  if (dwp_reader_) {
     // If we have a .dwp file, read the debug sections for the requested CU.
     SectionMap sections;
     dwp_reader_->ReadDebugSectionsForCU(dwo_id_, &sections);

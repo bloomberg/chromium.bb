@@ -1,0 +1,3 @@
+This directory contains the elf headers from
+https://sourceware.org/git/?p=glibc.git;a=tree;f=elf;h=cd330f6bfe90a397cd6151629ee4c34e3bbaf769;hb=refs/heads/master
+that are required to get ELF working in dump_syms on Mac OS X.
