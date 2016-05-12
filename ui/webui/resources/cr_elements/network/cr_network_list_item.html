@@ -6,8 +6,82 @@
 <link rel="import" href="chrome://resources/cr_elements/network/cr_onc_types.html">
 
 <dom-module id="cr-network-list-item">
-  <link rel="import" type="css" href="cr_network_list_item.css">
   <template>
+    <style>
+      :host {
+        display: inline-block;
+      }
+
+      span {
+        cursor: pointer;
+      }
+
+      #divOuter {
+        border-style: none;
+        display: flex;
+        flex-direction: row;
+        margin: 0;
+        padding: 4px;
+      }
+
+      #divOuter[is-list-item]:hover {
+        background-color: lightgrey;
+      }
+
+      #divIcon {
+        display: flex;
+        flex: 0 0 auto;
+        flex-direction: column;
+        justify-content: center;
+      }
+
+      #icon {
+        height: 32px;
+        width: 32px;
+      }
+
+      #divDetail {
+        display: flex;
+        flex: 1 0 auto;
+        flex-direction: row;
+      }
+
+      #divText {
+        display: flex;
+        flex: 1 0 auto;
+        flex-direction: column;
+        justify-content: center;
+      }
+
+      #networkName {
+        -webkit-margin-start: 8px;
+        font-size: 16px;
+      }
+
+      #networkStateText {
+        -webkit-margin-start: 8px;
+        color: grey;
+        font-size: 14px;
+      }
+
+      .buttons {
+        align-items: center;
+        display: flex;
+        flex-direction: row;
+      }
+
+      .buttons paper-icon-button {
+        text-align: center;
+      }
+
+      .known paper-icon-button {
+        width: 60px;
+      }
+
+      .connected {
+        font-weight: bold;
+      }
+    </style>
     <div id="divOuter" is-list-item$="[[isListItem_(listItemType)]]">
       <div id="divIcon">
         <cr-network-icon id="icon" is-list-item="[[isListItem_(listItemType)]]"

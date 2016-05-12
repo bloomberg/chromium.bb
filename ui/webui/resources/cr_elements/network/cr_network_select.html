@@ -6,8 +6,12 @@
 <link rel="import" href="chrome://resources/cr_elements/network/cr_onc_types.html">
 
 <dom-module id="cr-network-select">
-  <link rel="import" type="css" href="cr_network_select.css">
   <template>
+    <style>
+      :host {
+        display: inline-block;
+      }
+    </style>
     <div class="layout vertical">
       <div class="layout horizontal center">
         <cr-network-list-item class="flex" hidden$="[[!showActive]]"

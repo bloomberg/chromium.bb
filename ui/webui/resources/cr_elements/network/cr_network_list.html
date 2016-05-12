@@ -5,8 +5,23 @@
 <link rel="import" href="chrome://resources/cr_elements/network/cr_onc_types.html">
 
 <dom-module id="cr-network-list">
-  <link rel="import" type="css" href="cr_network_list.css">
   <template>
+    <style>
+      #container {
+        max-height: 1000px;
+        min-height: 50px;
+        overflow-y: auto;
+      }
+
+      /* Note: the 'flex' attribute on core-list doesn't work as expected. */
+      #networkList {
+        flex: 1;
+      }
+
+      cr-network-list-item:not(:last-of-type) {
+        border-bottom: 1px solid lightgrey;
+      }
+    </style>
     <iron-collapse opened="{{opened}}">
       <div id="container" class="layout vertical flex">
         <template is="dom-repeat" items="[[networks]]">
