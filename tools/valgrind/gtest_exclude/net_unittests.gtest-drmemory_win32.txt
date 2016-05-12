@@ -37,3 +37,6 @@ ProxyResolverV8TracingWrapperTest.*
 
 # https://crbug.com/604611
 BidirectionalStreamTest.*
+
+# https://crbug.com/611533
+*HttpStreamFactoryBidirectionalQuicTest.RequestBidirectionalStreamImplQuicAlternative*
