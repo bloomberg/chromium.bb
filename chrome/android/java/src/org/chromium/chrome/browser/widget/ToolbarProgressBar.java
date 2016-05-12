@@ -96,7 +96,7 @@ public class ToolbarProgressBar extends ClipDrawableProgressBar {
                 // Cap progress bar animation frame time so that it doesn't jump too much even when
                 // the animation is janky.
                 float progress = mAnimationLogic.updateProgress(mTargetProgress,
-                        Math.max(deltaTimeMs, PROGRESS_FRAME_TIME_CAP_MS) * 0.001f, getWidth());
+                        Math.min(deltaTimeMs, PROGRESS_FRAME_TIME_CAP_MS) * 0.001f, getWidth());
                 ToolbarProgressBar.super.setProgress(progress);
 
                 if (mAnimatingView != null) {

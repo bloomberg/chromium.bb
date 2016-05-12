@@ -61,6 +61,12 @@ public class ToolbarProgressBarAnimatingView extends ImageView {
     private float mLastAnimatedFraction;
 
     /**
+     * If the animation is currently running. This is needed because Animator.isStarted() is not
+     * reliable on JellyBean.
+     */
+    private boolean mIsAnimationRunning;
+
+    /**
      * An animation update listener that moves an ImageView across the progress bar.
      */
     private class ProgressBarUpdateListener implements AnimatorUpdateListener {
@@ -77,7 +83,6 @@ public class ToolbarProgressBarAnimatingView extends ImageView {
      */
     public ToolbarProgressBarAnimatingView(Context context, LayoutParams layoutParams) {
         super(context);
-
         setLayoutParams(layoutParams);
         mIsRtl = LocalizationUtils.isLayoutRtl();
 
@@ -117,7 +122,8 @@ public class ToolbarProgressBarAnimatingView extends ImageView {
      */
     public void startAnimation() {
         mIsCanceled = false;
-        if (!mAnimatorSet.isStarted()) {
+        if (!mIsAnimationRunning) {
+            mIsAnimationRunning = true;
             // Set the initial start delay to 0ms so it starts immediately.
             mAnimatorSet.setStartDelay(0);
 
@@ -180,7 +186,7 @@ public class ToolbarProgressBarAnimatingView extends ImageView {
      */
     public void cancelAnimation() {
         mIsCanceled = true;
-        mAnimatorSet.cancel();
+        mIsAnimationRunning = false;
         // Reset position and alpha.
         setScaleX(0.0f);
         setTranslationX(0.0f);
