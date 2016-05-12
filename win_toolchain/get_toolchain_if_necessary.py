@@ -72,11 +72,19 @@ def GetFileList(root):
   assert not os.path.isabs(root)
   assert os.path.normpath(root) == root
   file_list = []
+  # Ignore WER ReportQueue entries that vctip/cl leave in the bin dir if/when
+  # they crash. Also ignores the content of the win_sdk/debuggers/x(86|64)/sym/
+  # directories as this is just the temporarily location that Windbg might use
+  # to store the symbol files.
+  ignored_directories = ['wer\\reportqueue',
+                         'win_sdk\\debuggers\\x86\\sym\\',
+                         'win_sdk\\debuggers\\x64\\sym\\']
   for base, _, files in os.walk(root):
-    paths = [os.path.join(base, f) for f in files]
-    # Ignore WER ReportQueue entries that vctip/cl leave in the bin dir if/when
-    # they crash.
-    file_list.extend(x.lower() for x in paths if 'WER\\ReportQueue' not in x)
+    paths = [os.path.join(base, f).lower() for f in files]
+    for p in paths:
+      if any(ignored_dir in p for ignored_dir in ignored_directories):
+        continue
+      file_list.append(p)
   return sorted(file_list, key=lambda s: s.replace('/', '\\'))
 
 
@@ -119,6 +127,25 @@ def CalculateHash(root, expected_hash):
           disk != vc_dir and os.path.getmtime(disk) != cached[1]):
         matches = False
         break
+  elif os.path.exists(timestamps_file):
+    # Print some information about the extra/missing files. Don't do this if we
+    # don't have a timestamp file, as all the files will be considered as
+    # missing.
+    timestamps_data_files = []
+    for f in timestamps_data['files']:
+      timestamps_data_files.append(f[0])
+    missing_files = [f for f in timestamps_data_files if f not in file_list]
+    if len(missing_files):
+      print ('Some files are missing from the %s version of the toolchain:' %
+             expected_hash)
+      for f in missing_files:
+        print '\t%s' % f
+    extra_files = [f for f in file_list if f not in timestamps_data_files]
+    if len(extra_files):
+      print ('There\'s some extra files in the %s version of the toolchain:' %
+             expected_hash)
+      for f in extra_files:
+        print '\t%s' % f
   if matches:
     return timestamps_data['sha1']
 
@@ -137,14 +164,22 @@ def CalculateHash(root, expected_hash):
   return digest.hexdigest()
 
 
-def CalculateToolchainHashes(root):
+def CalculateToolchainHashes(root, remove_corrupt_toolchains):
   """Calculate the hash of the different toolchains installed in the |root|
   directory."""
   hashes = []
   dir_list = [
       d for d in os.listdir(root) if os.path.isdir(os.path.join(root, d))]
   for d in dir_list:
-    hashes.append(CalculateHash(root, d))
+    toolchain_hash = CalculateHash(root, d)
+    if toolchain_hash != d:
+      print ('The hash of a version of the toolchain has an unexpected value ('
+             '%s instead of %s)%s.' % (toolchain_hash, d,
+             ', removing it' if remove_corrupt_toolchains else ''))
+      if remove_corrupt_toolchains:
+        RemoveToolchain(root, d, True)
+    else:
+      hashes.append(toolchain_hash)
   return hashes
 
 
@@ -425,7 +460,7 @@ def main():
   # Typically this script is only run when the .sha1 one file is updated, but
   # directly calling "gclient runhooks" will also run it, so we cache
   # based on timestamps to make that case fast.
-  current_hashes = CalculateToolchainHashes(target_dir)
+  current_hashes = CalculateToolchainHashes(target_dir, True)
   if desired_hash not in current_hashes:
     should_use_gs = False
     if (HaveSrcInternalAccess() or
@@ -479,7 +514,7 @@ def main():
     json.dump(data, f)
 
   if got_new_toolchain:
-    current_hashes = CalculateToolchainHashes(target_dir)
+    current_hashes = CalculateToolchainHashes(target_dir, False)
     if desired_hash not in current_hashes:
       print >> sys.stderr, (
           'Got wrong hash after pulling a new toolchain. '
