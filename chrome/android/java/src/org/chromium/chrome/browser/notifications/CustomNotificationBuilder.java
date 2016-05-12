@@ -12,6 +12,8 @@ import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
+import android.os.StrictMode;
+import android.os.SystemClock;
 import android.text.format.DateFormat;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
@@ -20,10 +22,12 @@ import android.widget.RemoteViews;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.ui.base.LocalizationUtils;
 
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Builds a notification using the given inputs. Uses RemoteViews to provide a custom layout.
@@ -97,9 +101,22 @@ public class CustomNotificationBuilder extends NotificationBuilderBase {
         bigView.setInt(R.id.body, "setMaxLines", calculateMaxBodyLines(fontScale));
         int scaledPadding =
                 calculateScaledPadding(fontScale, mContext.getResources().getDisplayMetrics());
-        String time = DateFormat.getTimeFormat(mContext).format(new Date());
+        String formattedTime = "";
+
+        // Temporarily allowing disk access. TODO: Fix. See http://crbug.com/577185
+        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
+        StrictMode.allowThreadDiskWrites();
+        try {
+            long time = SystemClock.elapsedRealtime();
+            formattedTime = DateFormat.getTimeFormat(mContext).format(new Date());
+            RecordHistogram.recordTimesHistogram("Android.StrictMode.NotificationUIBuildTime",
+                    SystemClock.elapsedRealtime() - time, TimeUnit.MILLISECONDS);
+        } finally {
+            StrictMode.setThreadPolicy(oldPolicy);
+        }
+
         for (RemoteViews view : new RemoteViews[] {compactView, bigView}) {
-            view.setTextViewText(R.id.time, time);
+            view.setTextViewText(R.id.time, formattedTime);
             view.setTextViewText(R.id.title, mTitle);
             view.setTextViewText(R.id.body, mBody);
             view.setTextViewText(R.id.origin, mOrigin);

@@ -13,7 +13,6 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Build;
-import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.util.DisplayMetrics;
 import android.view.View;
@@ -24,6 +23,7 @@ import android.widget.TextView;
 
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
+import org.chromium.content.browser.test.NativeLibraryTestBase;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -33,7 +33,14 @@ import java.util.Arrays;
  */
 @SuppressLint("NewApi") // For the |extras| property of Notification.
 @SuppressWarnings("deprecation") // For the |icon| and |largeIcon| properties of Notification.
-public class CustomNotificationBuilderTest extends InstrumentationTestCase {
+public class CustomNotificationBuilderTest extends NativeLibraryTestBase {
+
+    @Override
+    public void setUp() throws Exception {
+        super.setUp();
+        loadNativeLibraryNoBrowserProcess();
+    }
+
     @SmallTest
     @Feature({"Browser", "Notifications"})
     public void testSetAll() {

@@ -14,8 +14,6 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.StrictMode;
-import android.os.SystemClock;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
@@ -42,7 +40,6 @@ import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Nullable;
 
@@ -528,17 +525,7 @@ public class NotificationPlatformBridge {
         }
 
         String platformTag = makePlatformTag(persistentNotificationId, origin, tag);
-        // Temporarily allowing disk access. TODO: Fix. See http://crbug.com/577185
-        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
-        StrictMode.allowThreadDiskWrites();
-        try {
-            long time = SystemClock.elapsedRealtime();
-            mNotificationManager.notify(platformTag, PLATFORM_ID, notificationBuilder.build());
-            RecordHistogram.recordTimesHistogram("Android.StrictMode.NotificationUIBuildTime",
-                    SystemClock.elapsedRealtime() - time, TimeUnit.MILLISECONDS);
-        } finally {
-            StrictMode.setThreadPolicy(oldPolicy);
-        }
+        mNotificationManager.notify(platformTag, PLATFORM_ID, notificationBuilder.build());
     }
 
     private NotificationBuilderBase createNotificationBuilder() {
