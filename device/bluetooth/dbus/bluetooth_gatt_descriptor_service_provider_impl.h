@@ -26,6 +26,7 @@ namespace bluez {
 class DEVICE_BLUETOOTH_EXPORT BluetoothGattDescriptorServiceProviderImpl
     : public BluetoothGattDescriptorServiceProvider {
  public:
+  // Use nullptr for |bus| to create for testing.
   BluetoothGattDescriptorServiceProviderImpl(
       dbus::Bus* bus,
       const dbus::ObjectPath& object_path,

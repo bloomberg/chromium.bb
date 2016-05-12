@@ -27,6 +27,7 @@ class BluetoothGattCharacteristicDelegateWrapper
       BluetoothLocalGattServiceBlueZ* service,
       BluetoothLocalGattCharacteristicBlueZ* characteristic);
 
+  // BluetoothGattAttributeValueDelegate overrides:
   void GetValue(
       const device::BluetoothLocalGattService::Delegate::ValueCallback&
           callback,
@@ -37,6 +38,8 @@ class BluetoothGattCharacteristicDelegateWrapper
       const base::Closure& callback,
       const device::BluetoothLocalGattService::Delegate::ErrorCallback&
           error_callback) override;
+  void StartNotifications() override;
+  void StopNotifications() override;
 
  private:
   BluetoothLocalGattServiceBlueZ* service_;

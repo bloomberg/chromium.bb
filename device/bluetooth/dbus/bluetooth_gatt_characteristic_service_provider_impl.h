@@ -27,6 +27,7 @@ namespace bluez {
 class DEVICE_BLUETOOTH_EXPORT BluetoothGattCharacteristicServiceProviderImpl
     : public BluetoothGattCharacteristicServiceProvider {
  public:
+  // Use nullptr for |bus| to create for testing.
   BluetoothGattCharacteristicServiceProviderImpl(
       dbus::Bus* bus,
       const dbus::ObjectPath& object_path,
@@ -67,6 +68,16 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattCharacteristicServiceProviderImpl
   // Called by BlueZ when a remote central is requesting to write the value of
   // this characteristic.
   void WriteValue(dbus::MethodCall* method_call,
+                  dbus::ExportedObject::ResponseSender response_sender);
+
+  // Called by BlueZ when a remote central is requesting to start a
+  // notification session for this characteristic.
+  void StartNotify(dbus::MethodCall* method_call,
+                   dbus::ExportedObject::ResponseSender response_sender);
+
+  // Called by BlueZ when a remote central is requesting to stop any existing
+  // notification session for this characteristic.
+  void StopNotify(dbus::MethodCall* method_call,
                   dbus::ExportedObject::ResponseSender response_sender);
 
   // Called by dbus:: when a method is exported.

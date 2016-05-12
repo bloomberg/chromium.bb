@@ -31,4 +31,8 @@ void BluetoothGattCharacteristicDelegateWrapper::SetValue(
       service_, characteristic_, value, 0, callback, error_callback);
 }
 
+void BluetoothGattCharacteristicDelegateWrapper::StartNotifications() {}
+
+void BluetoothGattCharacteristicDelegateWrapper::StopNotifications() {}
+
 }  // namespace bluez

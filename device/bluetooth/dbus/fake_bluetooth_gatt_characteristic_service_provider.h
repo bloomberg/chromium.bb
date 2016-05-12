@@ -50,9 +50,13 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothGattCharacteristicServiceProvider
       const device::BluetoothLocalGattService::Delegate::ErrorCallback&
           error_callback);
 
+  // Method to simulate starting and stopping notifications.
+  bool NotificationsChange(bool start);
+
   const dbus::ObjectPath& object_path() const override;
   const std::string& uuid() const { return uuid_; }
   const dbus::ObjectPath& service_path() const { return service_path_; }
+  const std::vector<uint8_t>& sent_value() const { return sent_value_; }
 
  private:
   // D-Bus object path of the fake GATT characteristic.
@@ -66,6 +70,9 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothGattCharacteristicServiceProvider
 
   // Object path of the service that this characteristic belongs to.
   const dbus::ObjectPath service_path_;
+
+  // Value that was sent to the fake remote device.
+  std::vector<uint8_t> sent_value_;
 
   // The delegate that method calls are passed on to.
   std::unique_ptr<BluetoothGattAttributeValueDelegate> delegate_;

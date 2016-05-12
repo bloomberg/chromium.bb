@@ -22,7 +22,8 @@ BluetoothGattApplicationServiceProviderImpl::
       weak_ptr_factory_(this) {
   VLOG(1) << "Creating Bluetooth GATT application: " << object_path_.value();
   DCHECK(object_path_.IsValid());
-  DCHECK(bus_);
+  if (!bus_)
+    return;
 
   exported_object_ = bus_->GetExportedObject(object_path_);
 
@@ -35,9 +36,7 @@ BluetoothGattApplicationServiceProviderImpl::
       base::Bind(&BluetoothGattApplicationServiceProviderImpl::OnExported,
                  weak_ptr_factory_.GetWeakPtr()));
 
-  BluetoothGattApplicationServiceProvider::CreateAttributeServiceProviders(
-      bus, services, &service_providers_, &characteristic_providers_,
-      &descriptor_providers_);
+  CreateAttributeServiceProviders(bus, services);
 }
 
 BluetoothGattApplicationServiceProviderImpl::
@@ -45,16 +44,6 @@ BluetoothGattApplicationServiceProviderImpl::
   VLOG(1) << "Cleaning up Bluetooth GATT service: " << object_path_.value();
   if (bus_)
     bus_->UnregisterExportedObject(object_path_);
-}
-
-BluetoothGattApplicationServiceProviderImpl::
-    BluetoothGattApplicationServiceProviderImpl(
-        const dbus::ObjectPath& object_path)
-    : origin_thread_id_(base::PlatformThread::CurrentId()),
-      bus_(nullptr),
-      object_path_(object_path),
-      weak_ptr_factory_(this) {
-  VLOG(1) << "Creating Fake Bluetooth GATT application service provider.";
 }
 
 bool BluetoothGattApplicationServiceProviderImpl::OnOriginThread() {

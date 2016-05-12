@@ -40,9 +40,6 @@ BluetoothGattCharacteristicServiceProviderImpl::
       weak_ptr_factory_(this) {
   VLOG(1) << "Created Bluetooth GATT characteristic: " << object_path.value()
           << " UUID: " << uuid;
-
-  // If we have a null bus, this means that this is being initialized for a
-  // test, hence we shouldn't do any other setup.
   if (!bus_)
     return;
 
@@ -90,6 +87,20 @@ BluetoothGattCharacteristicServiceProviderImpl::
                  weak_ptr_factory_.GetWeakPtr()),
       base::Bind(&BluetoothGattCharacteristicServiceProviderImpl::OnExported,
                  weak_ptr_factory_.GetWeakPtr()));
+  exported_object_->ExportMethod(
+      bluetooth_gatt_characteristic::kBluetoothGattCharacteristicInterface,
+      bluetooth_gatt_characteristic::kStartNotify,
+      base::Bind(&BluetoothGattCharacteristicServiceProviderImpl::StartNotify,
+                 weak_ptr_factory_.GetWeakPtr()),
+      base::Bind(&BluetoothGattCharacteristicServiceProviderImpl::OnExported,
+                 weak_ptr_factory_.GetWeakPtr()));
+  exported_object_->ExportMethod(
+      bluetooth_gatt_characteristic::kBluetoothGattCharacteristicInterface,
+      bluetooth_gatt_characteristic::kStopNotify,
+      base::Bind(&BluetoothGattCharacteristicServiceProviderImpl::StopNotify,
+                 weak_ptr_factory_.GetWeakPtr()),
+      base::Bind(&BluetoothGattCharacteristicServiceProviderImpl::OnExported,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 BluetoothGattCharacteristicServiceProviderImpl::
@@ -102,6 +113,10 @@ BluetoothGattCharacteristicServiceProviderImpl::
 
 void BluetoothGattCharacteristicServiceProviderImpl::SendValueChanged(
     const std::vector<uint8_t>& value) {
+  // Running a test, don't actually try to write to use DBus.
+  if (!bus_)
+    return;
+
   VLOG(2) << "Emitting a PropertiesChanged signal for characteristic value.";
   dbus::Signal signal(dbus::kDBusPropertiesInterface,
                       dbus::kDBusPropertiesChangedSignal);
@@ -357,6 +372,27 @@ void BluetoothGattCharacteristicServiceProviderImpl::WriteValue(
                  weak_ptr_factory_.GetWeakPtr(), method_call, response_sender),
       base::Bind(&BluetoothGattCharacteristicServiceProviderImpl::OnFailure,
                  weak_ptr_factory_.GetWeakPtr(), method_call, response_sender));
+}
+
+void BluetoothGattCharacteristicServiceProviderImpl::StartNotify(
+    dbus::MethodCall* method_call,
+    dbus::ExportedObject::ResponseSender response_sender) {
+  VLOG(3) << "BluetoothGattCharacteristicServiceProvider::StartNotify: "
+          << object_path_.value();
+  DCHECK(OnOriginThread());
+  DCHECK(delegate_);
+  delegate_->StartNotifications();
+}
+
+void BluetoothGattCharacteristicServiceProviderImpl::StopNotify(
+    dbus::MethodCall* method_call,
+    dbus::ExportedObject::ResponseSender response_sender) {
+  VLOG(3) << "BluetoothGattCharacteristicServiceProvider::StopNotify: "
+          << object_path_.value();
+  DCHECK(OnOriginThread());
+
+  DCHECK(delegate_);
+  delegate_->StopNotifications();
 }
 
 void BluetoothGattCharacteristicServiceProviderImpl::OnExported(

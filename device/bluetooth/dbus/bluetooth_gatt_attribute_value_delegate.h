@@ -44,6 +44,16 @@ class BluetoothGattAttributeValueDelegate {
       const base::Closure& callback,
       const device::BluetoothLocalGattService::Delegate::ErrorCallback&
           error_callback) = 0;
+
+  // This method will be called, when a remote device requests to start sending
+  // notifications for this characteristic. This will never be called for
+  // descriptors.
+  virtual void StartNotifications() = 0;
+
+  // This method will be called, when a remote device requests to stop sending
+  // notifications for this characteristic. This will never be called for
+  // descriptors.
+  virtual void StopNotifications() = 0;
 };
 
 }  // namespace bluez

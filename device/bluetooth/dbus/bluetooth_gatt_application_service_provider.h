@@ -30,16 +30,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattApplicationServiceProvider {
 
   // Creates individual service providers for all the attributes managed by the
   // object manager interface implemented by this application service provider.
-  static void CreateAttributeServiceProviders(
+  void CreateAttributeServiceProviders(
       dbus::Bus* bus,
       const std::map<dbus::ObjectPath, BluetoothLocalGattServiceBlueZ*>&
-          services,
-      std::vector<std::unique_ptr<BluetoothGattServiceServiceProvider>>*
-          service_providers,
-      std::vector<std::unique_ptr<BluetoothGattCharacteristicServiceProvider>>*
-          characteristic_providers,
-      std::vector<std::unique_ptr<BluetoothGattDescriptorServiceProvider>>*
-          descriptor_providers);
+          services);
 
   // Creates the instance where |bus| is the D-Bus bus connection to export the
   // object onto, |object_path| is the object path that it should have, |uuid|
@@ -53,8 +47,22 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattApplicationServiceProvider {
       const std::map<dbus::ObjectPath, BluetoothLocalGattServiceBlueZ*>&
           services);
 
+  void SendValueChanged(const dbus::ObjectPath& characteristic_path,
+                        const std::vector<uint8_t>& value);
+
  protected:
   BluetoothGattApplicationServiceProvider();
+
+  // List of GATT Service service providers managed by this object manager.
+  std::vector<std::unique_ptr<BluetoothGattServiceServiceProvider>>
+      service_providers_;
+  // List of GATT Characteristic service providers managed by this object
+  // manager.
+  std::vector<std::unique_ptr<BluetoothGattCharacteristicServiceProvider>>
+      characteristic_providers_;
+  // List of GATT Descriptor service providers managed by this object manager.
+  std::vector<std::unique_ptr<BluetoothGattDescriptorServiceProvider>>
+      descriptor_providers_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BluetoothGattApplicationServiceProvider);

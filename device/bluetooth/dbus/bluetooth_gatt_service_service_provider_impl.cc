@@ -34,9 +34,6 @@ BluetoothGattServiceServiceProviderImpl::
       weak_ptr_factory_(this) {
   VLOG(1) << "Creating Bluetooth GATT service: " << object_path_.value()
           << " UUID: " << uuid;
-
-  // If we have a null bus, this means that this is being initialized for a
-  // test, hence we shouldn't do any other setup.
   if (!bus_)
     return;
 

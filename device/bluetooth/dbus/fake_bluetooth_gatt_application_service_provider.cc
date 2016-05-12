@@ -26,8 +26,7 @@ FakeBluetoothGattApplicationServiceProvider::
   fake_bluetooth_gatt_manager_client->RegisterApplicationServiceProvider(this);
 
   BluetoothGattApplicationServiceProvider::CreateAttributeServiceProviders(
-      nullptr, services, &service_providers_, &characteristic_providers_,
-      &descriptor_providers_);
+      nullptr, services);
 }
 
 FakeBluetoothGattApplicationServiceProvider::

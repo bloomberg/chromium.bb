@@ -41,17 +41,6 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothGattApplicationServiceProvider
   // D-Bus object path of the fake GATT service.
   dbus::ObjectPath object_path_;
 
-  // List of GATT Service service providers managed by this object manager.
-  std::vector<std::unique_ptr<BluetoothGattServiceServiceProvider>>
-      service_providers_;
-  // List of GATT Characteristic service providers managed by this object
-  // manager.
-  std::vector<std::unique_ptr<BluetoothGattCharacteristicServiceProvider>>
-      characteristic_providers_;
-  // List of GATT Descriptor service providers managed by this object manager.
-  std::vector<std::unique_ptr<BluetoothGattDescriptorServiceProvider>>
-      descriptor_providers_;
-
   DISALLOW_COPY_AND_ASSIGN(FakeBluetoothGattApplicationServiceProvider);
 };
 

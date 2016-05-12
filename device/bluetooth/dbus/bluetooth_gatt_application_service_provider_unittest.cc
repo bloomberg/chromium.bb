@@ -288,7 +288,6 @@ void ResponseSenderCallback(const std::string& expected_message,
 class BluetoothGattApplicationServiceProviderTest : public testing::Test {
  public:
   std::string CreateFakeService(
-      dbus::Bus* bus,
       BluetoothGattApplicationServiceProviderImpl* app_provider,
       const std::string& service_path) {
     const std::string& full_service_path =
@@ -301,7 +300,6 @@ class BluetoothGattApplicationServiceProviderTest : public testing::Test {
   }
 
   std::string CreateFakeCharacteristic(
-      dbus::Bus* bus,
       BluetoothGattApplicationServiceProviderImpl* app_provider,
       const std::string& characteristic_path,
       const std::string& service_path) {
@@ -317,7 +315,6 @@ class BluetoothGattApplicationServiceProviderTest : public testing::Test {
   }
 
   void CreateFakeDescriptor(
-      dbus::Bus* bus,
       BluetoothGattApplicationServiceProviderImpl* app_provider,
       const std::string& descriptor_path,
       const std::string& characteristic_path) {
@@ -331,42 +328,56 @@ class BluetoothGattApplicationServiceProviderTest : public testing::Test {
   }
 
   void CreateFakeAttributes(
-      dbus::Bus* bus,
       BluetoothGattApplicationServiceProviderImpl* app_provider) {
     const std::string& kServicePath1 =
-        CreateFakeService(bus, app_provider, "service0");
+        CreateFakeService(app_provider, "service0");
     const std::string& kServicePath2 =
-        CreateFakeService(bus, app_provider, "service1");
+        CreateFakeService(app_provider, "service1");
 
     const std::string& kCharacteristicPath1 = CreateFakeCharacteristic(
-        bus, app_provider, "characteristic0", kServicePath1);
+        app_provider, "characteristic0", kServicePath1);
     const std::string& kCharacteristicPath2 = CreateFakeCharacteristic(
-        bus, app_provider, "characteristic1", kServicePath1);
+        app_provider, "characteristic1", kServicePath1);
     const std::string& kCharacteristicPath3 = CreateFakeCharacteristic(
-        bus, app_provider, "characteristic0", kServicePath2);
+        app_provider, "characteristic0", kServicePath2);
 
-    CreateFakeDescriptor(bus, app_provider, "descriptor0",
-                         kCharacteristicPath1);
-    CreateFakeDescriptor(bus, app_provider, "descriptor1",
-                         kCharacteristicPath2);
-    CreateFakeDescriptor(bus, app_provider, "descriptor2",
-                         kCharacteristicPath3);
-    CreateFakeDescriptor(bus, app_provider, "descriptor3",
-                         kCharacteristicPath1);
+    CreateFakeDescriptor(app_provider, "descriptor0", kCharacteristicPath1);
+    CreateFakeDescriptor(app_provider, "descriptor1", kCharacteristicPath2);
+    CreateFakeDescriptor(app_provider, "descriptor2", kCharacteristicPath3);
+    CreateFakeDescriptor(app_provider, "descriptor3", kCharacteristicPath1);
   }
 };
 
 TEST_F(BluetoothGattApplicationServiceProviderTest, GetManagedObjects) {
   std::unique_ptr<BluetoothGattApplicationServiceProviderImpl> app_provider =
       base::WrapUnique(new BluetoothGattApplicationServiceProviderImpl(
-          dbus::ObjectPath(kAppObjectPath)));
-  CreateFakeAttributes(nullptr, app_provider.get());
+          nullptr, dbus::ObjectPath(kAppObjectPath),
+          std::map<dbus::ObjectPath, BluetoothLocalGattServiceBlueZ*>()));
+  CreateFakeAttributes(app_provider.get());
 
   dbus::MethodCall method_call("com.example.Interface", "SomeMethod");
   // Not setting the serial causes a crash.
   method_call.SetSerial(123);
   app_provider->GetManagedObjects(
       &method_call, base::Bind(&ResponseSenderCallback, kExpectedMessage));
+}
+
+TEST_F(BluetoothGattApplicationServiceProviderTest, SendValueChanged) {
+  std::unique_ptr<BluetoothGattApplicationServiceProviderImpl> app_provider =
+      base::WrapUnique(new BluetoothGattApplicationServiceProviderImpl(
+          nullptr, dbus::ObjectPath(kAppObjectPath),
+          std::map<dbus::ObjectPath, BluetoothLocalGattServiceBlueZ*>()));
+  const std::string& kServicePath =
+      CreateFakeService(app_provider.get(), "service0");
+  const std::string& kCharacteristicPath = CreateFakeCharacteristic(
+      app_provider.get(), "characteristic0", kServicePath);
+
+  std::vector<uint8_t> kNewValue = {0x13, 0x37, 0xba, 0xad, 0xf0};
+  app_provider->SendValueChanged(dbus::ObjectPath(kCharacteristicPath),
+                                 kNewValue);
+  // TODO(rkc): Write a test implementation of dbus::Bus and
+  // dbus::ExportedObject so we can capture the actual signal that is sent and
+  // verify its contents.
 }
 
 }  // namespace bluez

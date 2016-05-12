@@ -102,24 +102,18 @@ BluetoothGattApplicationServiceProvider::
 BluetoothGattApplicationServiceProvider::
     ~BluetoothGattApplicationServiceProvider() {}
 
-// static
 void BluetoothGattApplicationServiceProvider::CreateAttributeServiceProviders(
     dbus::Bus* bus,
-    const std::map<dbus::ObjectPath, BluetoothLocalGattServiceBlueZ*>& services,
-    std::vector<std::unique_ptr<BluetoothGattServiceServiceProvider>>*
-        service_providers,
-    std::vector<std::unique_ptr<BluetoothGattCharacteristicServiceProvider>>*
-        characteristic_providers,
-    std::vector<std::unique_ptr<BluetoothGattDescriptorServiceProvider>>*
-        descriptor_providers) {
+    const std::map<dbus::ObjectPath, BluetoothLocalGattServiceBlueZ*>&
+        services) {
   for (const auto& service : services) {
-    service_providers->push_back(
+    service_providers_.push_back(
         base::WrapUnique(BluetoothGattServiceServiceProvider::Create(
             bus, service.second->object_path(),
             service.second->GetUUID().value(), service.second->IsPrimary(),
             std::vector<dbus::ObjectPath>())));
     for (const auto& characteristic : service.second->GetCharacteristics()) {
-      characteristic_providers->push_back(
+      characteristic_providers_.push_back(
           base::WrapUnique(BluetoothGattCharacteristicServiceProvider::Create(
               bus, characteristic.second->object_path(),
               base::WrapUnique(new BluetoothGattCharacteristicDelegateWrapper(
@@ -128,7 +122,7 @@ void BluetoothGattApplicationServiceProvider::CreateAttributeServiceProviders(
               FlagsFromProperties(characteristic.second->GetProperties()),
               service.second->object_path())));
       for (const auto& descriptor : characteristic.second->GetDescriptors()) {
-        descriptor_providers->push_back(
+        descriptor_providers_.push_back(
             base::WrapUnique(BluetoothGattDescriptorServiceProvider::Create(
                 bus, descriptor->object_path(),
                 base::WrapUnique(new BluetoothGattDescriptorDelegateWrapper(
@@ -139,6 +133,21 @@ void BluetoothGattApplicationServiceProvider::CreateAttributeServiceProviders(
       }
     }
   }
+}
+
+void BluetoothGattApplicationServiceProvider::SendValueChanged(
+    const dbus::ObjectPath& characteristic_path,
+    const std::vector<uint8_t>& value) {
+  auto characteristic = std::find_if(
+      characteristic_providers_.begin(), characteristic_providers_.end(),
+      [&](const std::unique_ptr<BluetoothGattCharacteristicServiceProvider>&
+              p) { return p->object_path() == characteristic_path; });
+  if (characteristic == characteristic_providers_.end()) {
+    LOG(ERROR) << "Couldn't find characteristic provider for: "
+               << characteristic_path.value();
+    return;
+  }
+  characteristic->get()->SendValueChanged(value);
 }
 
 // static

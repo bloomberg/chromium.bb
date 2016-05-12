@@ -41,9 +41,6 @@ BluetoothGattDescriptorServiceProviderImpl::
       weak_ptr_factory_(this) {
   VLOG(1) << "Created Bluetooth GATT characteristic descriptor: "
           << object_path.value() << " UUID: " << uuid;
-
-  // If we have a null bus, this means that this is being initialized for a
-  // test, hence we shouldn't do any other setup.
   if (!bus_)
     return;
 

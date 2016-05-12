@@ -54,6 +54,16 @@ bool CanRead(const std::vector<std::string>& flags) {
   return false;
 }
 
+bool CanNotify(const std::vector<std::string>& flags) {
+  if (find(flags.begin(), flags.end(),
+           bluetooth_gatt_characteristic::kFlagNotify) != flags.end())
+    return true;
+  if (find(flags.begin(), flags.end(),
+           bluetooth_gatt_characteristic::kFlagIndicate) != flags.end())
+    return true;
+  return false;
+}
+
 }  // namespace
 
 FakeBluetoothGattCharacteristicServiceProvider::
@@ -99,6 +109,7 @@ void FakeBluetoothGattCharacteristicServiceProvider::SendValueChanged(
     const std::vector<uint8_t>& value) {
   VLOG(1) << "Sent characteristic value changed: " << object_path_.value()
           << " UUID: " << uuid_;
+  sent_value_ = value;
 }
 
 void FakeBluetoothGattCharacteristicServiceProvider::GetValue(
@@ -154,6 +165,31 @@ void FakeBluetoothGattCharacteristicServiceProvider::SetValue(
   // Pass on to the delegate.
   DCHECK(delegate_);
   delegate_->SetValue(value, callback, error_callback);
+}
+
+bool FakeBluetoothGattCharacteristicServiceProvider::NotificationsChange(
+    bool start) {
+  VLOG(1) << "GATT characteristic value notification request: "
+          << object_path_.value() << " UUID: " << uuid_ << " start=" << start;
+  // Check if this characteristic is registered.
+  FakeBluetoothGattManagerClient* fake_bluetooth_gatt_manager_client =
+      static_cast<FakeBluetoothGattManagerClient*>(
+          bluez::BluezDBusManager::Get()->GetBluetoothGattManagerClient());
+  if (!fake_bluetooth_gatt_manager_client->IsServiceRegistered(service_path_)) {
+    VLOG(1) << "GATT characteristic not registered.";
+    return false;
+  }
+
+  if (!CanNotify(flags_)) {
+    VLOG(1) << "GATT characteristic not notifiable.";
+    return false;
+  }
+
+  // Pass on to the delegate.
+  DCHECK(delegate_);
+  start ? delegate_->StartNotifications() : delegate_->StopNotifications();
+
+  return true;
 }
 
 const dbus::ObjectPath&

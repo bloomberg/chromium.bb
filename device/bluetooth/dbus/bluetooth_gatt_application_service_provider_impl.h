@@ -33,16 +33,13 @@ class BluetoothLocalGattServiceBlueZ;
 class DEVICE_BLUETOOTH_EXPORT BluetoothGattApplicationServiceProviderImpl
     : public BluetoothGattApplicationServiceProvider {
  public:
+  // Use nullptr for |bus| to create for testing.
   BluetoothGattApplicationServiceProviderImpl(
       dbus::Bus* bus,
       const dbus::ObjectPath& object_path,
       const std::map<dbus::ObjectPath, BluetoothLocalGattServiceBlueZ*>&
           services);
   ~BluetoothGattApplicationServiceProviderImpl() override;
-
-  // For testing.
-  BluetoothGattApplicationServiceProviderImpl(
-      const dbus::ObjectPath& object_path);
 
  private:
   friend class BluetoothGattApplicationServiceProviderTest;
@@ -83,17 +80,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattApplicationServiceProviderImpl
 
   // Origin thread (i.e. the UI thread in production).
   base::PlatformThreadId origin_thread_id_;
-
-  // List of GATT Service service providers managed by this object manager.
-  std::vector<std::unique_ptr<BluetoothGattServiceServiceProvider>>
-      service_providers_;
-  // List of GATT Characteristic service providers managed by this object
-  // manager.
-  std::vector<std::unique_ptr<BluetoothGattCharacteristicServiceProvider>>
-      characteristic_providers_;
-  // List of GATT Descriptor service providers managed by this object manager.
-  std::vector<std::unique_ptr<BluetoothGattDescriptorServiceProvider>>
-      descriptor_providers_;
 
   // D-Bus bus object is exported on, not owned by this object and must
   // outlive it.
