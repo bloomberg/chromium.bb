@@ -158,6 +158,8 @@ public:
 
     void moveAllChildrenIncludingFloatsTo(LayoutBlock* toBlock, bool fullRemoveInsert);
 
+    void childBecameFloatingOrOutOfFlow(LayoutBox* child);
+
     bool generatesLineBoxesForInlineChild(LayoutObject*);
 
     LayoutUnit logicalTopForFloat(const FloatingObject& floatingObject) const { return isHorizontalWritingMode() ? floatingObject.y() : floatingObject.x(); }

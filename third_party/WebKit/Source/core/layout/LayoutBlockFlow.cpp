@@ -2384,7 +2384,27 @@ void LayoutBlockFlow::moveAllChildrenIncludingFloatsTo(LayoutBlock* toBlock, boo
             toBlockFlow->m_floatingObjects->add(floatingObject.unsafeClone());
         }
     }
+}
 
+void LayoutBlockFlow::childBecameFloatingOrOutOfFlow(LayoutBox* child)
+{
+    makeChildrenInlineIfPossible();
+
+    // Reparent the child to an adjacent anonymous block if one is available.
+    LayoutObject* prev = child->previousSibling();
+    if (prev && prev->isAnonymousBlock() && prev->isLayoutBlockFlow()) {
+        LayoutBlockFlow* newContainer = toLayoutBlockFlow(prev);
+        moveChildTo(newContainer, child, nullptr, false);
+        // The anonymous block we've moved to may now be adjacent to former siblings of ours
+        // that it can contain also.
+        newContainer->reparentSubsequentFloatingOrOutOfFlowSiblings();
+        return;
+    }
+    LayoutObject* next = child->nextSibling();
+    if (next && next->isAnonymousBlock() && next->isLayoutBlockFlow()) {
+        LayoutBlockFlow* newContainer = toLayoutBlockFlow(next);
+        moveChildTo(newContainer, child, newContainer->firstChild(), false);
+    }
 }
 
 void LayoutBlockFlow::invalidatePaintForOverhangingFloats(bool paintAllDescendants)

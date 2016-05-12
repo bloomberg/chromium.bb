@@ -318,18 +318,8 @@ void LayoutBlock::styleDidChange(StyleDifference diff, const ComputedStyle* oldS
 {
     LayoutBox::styleDidChange(diff, oldStyle);
 
-    if (isFloatingOrOutOfFlowPositioned() && oldStyle && !oldStyle->isFloating() && !oldStyle->hasOutOfFlowPosition() && parent() && parent()->isLayoutBlockFlow()) {
-        toLayoutBlock(parent())->makeChildrenInlineIfPossible();
-        // Reparent to an adjacent anonymous block if one is available.
-        if (previousSibling() && previousSibling()->isAnonymousBlock()) {
-            LayoutBlock* newParent = toLayoutBlock(previousSibling());
-            toLayoutBlock(parent())->moveChildTo(newParent, this, nullptr, false);
-            // The anonymous block we've moved to may now be adjacent to former siblings of ours that it can contain also.
-            newParent->reparentSubsequentFloatingOrOutOfFlowSiblings();
-        } else if (nextSibling() && nextSibling()->isAnonymousBlock()) {
-            toLayoutBlock(parent())->moveChildTo(toLayoutBlock(nextSibling()), this, nextSibling()->slowFirstChild(), false);
-        }
-    }
+    if (isFloatingOrOutOfFlowPositioned() && oldStyle && !oldStyle->isFloating() && !oldStyle->hasOutOfFlowPosition() && parent() && parent()->isLayoutBlockFlow())
+        toLayoutBlockFlow(parent())->childBecameFloatingOrOutOfFlow(this);
 
     const ComputedStyle& newStyle = styleRef();
 
