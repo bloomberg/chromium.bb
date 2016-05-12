@@ -1068,10 +1068,11 @@ def _CheckAddedDepsHaveTargetApprovals(input_api, output_api):
     output = output_api.PresubmitNotifyResult
 
   owners_db = input_api.owners_db
-  owner_email, reviewers = input_api.canned_checks._RietveldOwnerAndReviewers(
-      input_api,
-      owners_db.email_regexp,
-      approval_needed=input_api.is_committing)
+  owner_email, reviewers = (
+      input_api.canned_checks.GetCodereviewOwnerAndReviewers(
+        input_api,
+        owners_db.email_regexp,
+        approval_needed=input_api.is_committing))
 
   owner_email = owner_email or input_api.change.author_email
 
