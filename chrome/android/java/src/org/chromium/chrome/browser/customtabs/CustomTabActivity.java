@@ -331,11 +331,15 @@ public class CustomTabActivity extends ChromeActivity {
                         pendingIntent);
             }
         };
-        String url = getUrlToLoad();
-        DataUseTabUIManager.onCustomTabInitialNavigation(
-                mMainTab, connection.getClientPackageNameForSession(mSession), url);
         recordClientPackageName();
         connection.showSignInToastIfNecessary(mSession, getIntent());
+        String url = getUrlToLoad();
+        String packageName = connection.getClientPackageNameForSession(mSession);
+        if (TextUtils.isEmpty(packageName)) {
+            packageName = connection.extractCreatorPackage(getIntent());
+        }
+        DataUseTabUIManager.onCustomTabInitialNavigation(mMainTab, packageName, url);
+
         if (mHasCreatedTabEarly) {
             if (!mMainTab.isLoading()) postDeferredStartupIfNeeded();
         } else {
