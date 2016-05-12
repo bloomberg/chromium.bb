@@ -2486,6 +2486,68 @@ void LayoutBlockFlow::childBecameFloatingOrOutOfFlow(LayoutBox* child)
     }
 }
 
+static bool isMergeableAnonymousBlock(const LayoutBlockFlow* block)
+{
+    return block->isAnonymousBlock() && !block->continuation() && !block->beingDestroyed() && !block->isRubyRun() && !block->isRubyBase();
+}
+
+bool LayoutBlockFlow::mergeSiblingContiguousAnonymousBlock(LayoutBlockFlow* siblingThatMayBeDeleted)
+{
+    // Note: |this| and |siblingThatMayBeDeleted| may not be adjacent siblings at this point. There
+    // may be an object between them which is about to be removed.
+
+    if (!isMergeableAnonymousBlock(this) || !isMergeableAnonymousBlock(siblingThatMayBeDeleted))
+        return false;
+
+    setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(LayoutInvalidationReason::AnonymousBlockChange);
+
+    // If the inlineness of children of the two block don't match, we'd need special code here
+    // (but there should be no need for it).
+    ASSERT(siblingThatMayBeDeleted->childrenInline() == childrenInline());
+    // Take all the children out of the |next| block and put them in
+    // the |prev| block.
+    siblingThatMayBeDeleted->moveAllChildrenIncludingFloatsTo(this, siblingThatMayBeDeleted->hasLayer() || hasLayer());
+    // Delete the now-empty block's lines and nuke it.
+    siblingThatMayBeDeleted->deleteLineBoxTree();
+    siblingThatMayBeDeleted->destroy();
+    return true;
+}
+
+void LayoutBlockFlow::reparentSubsequentFloatingOrOutOfFlowSiblings()
+{
+    if (!parent() || !parent()->isLayoutBlockFlow())
+        return;
+    if (beingDestroyed() || documentBeingDestroyed())
+        return;
+    LayoutBlockFlow* parentBlockFlow = toLayoutBlockFlow(parent());
+    LayoutObject* child = nextSibling();
+    while (child && child->isFloatingOrOutOfFlowPositioned()) {
+        LayoutObject* sibling = child->nextSibling();
+        parentBlockFlow->moveChildTo(this, child, nullptr, false);
+        child = sibling;
+    }
+
+    if (LayoutObject* next = nextSibling()) {
+        if (next->isLayoutBlockFlow())
+            mergeSiblingContiguousAnonymousBlock(toLayoutBlockFlow(next));
+    }
+}
+
+void LayoutBlockFlow::reparentPrecedingFloatingOrOutOfFlowSiblings()
+{
+    if (!parent() || !parent()->isLayoutBlockFlow())
+        return;
+    if (beingDestroyed() || documentBeingDestroyed())
+        return;
+    LayoutBlockFlow* parentBlockFlow = toLayoutBlockFlow(parent());
+    LayoutObject* child = previousSibling();
+    while (child && child->isFloatingOrOutOfFlowPositioned()) {
+        LayoutObject* sibling = child->previousSibling();
+        parentBlockFlow->moveChildTo(this, child, firstChild(), false);
+        child = sibling;
+    }
+}
+
 void LayoutBlockFlow::invalidatePaintForOverhangingFloats(bool paintAllDescendants)
 {
     // Invalidate paint of any overhanging floats (if we know we're the one to paint them).

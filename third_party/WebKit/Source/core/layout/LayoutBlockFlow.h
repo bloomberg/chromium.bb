@@ -406,6 +406,16 @@ private:
     LayoutMultiColumnFlowThread* createMultiColumnFlowThread(FlowThreadType);
     void createOrDestroyMultiColumnFlowThreadIfNeeded(const ComputedStyle* oldStyle);
 
+    // Merge children of |siblingThatMayBeDeleted| into this object if possible, and delete
+    // |siblingThatMayBeDeleted|. Returns true if we were able to merge. In that case,
+    // |siblingThatMayBeDeleted| will be dead. We'll only be able to merge if both blocks are
+    // anonymous.
+    bool mergeSiblingContiguousAnonymousBlock(LayoutBlockFlow* siblingThatMayBeDeleted);
+
+    // Reparent subsequent or preceding adjacent floating or out-of-flow siblings into this object.
+    void reparentSubsequentFloatingOrOutOfFlowSiblings();
+    void reparentPrecedingFloatingOrOutOfFlowSiblings();
+
     void updateLogicalWidthForAlignment(const ETextAlign&, const RootInlineBox*, BidiRun* trailingSpaceRun, LayoutUnit& logicalLeft, LayoutUnit& totalLogicalWidth, LayoutUnit& availableLogicalWidth, unsigned expansionOpportunityCount);
     void checkForPaginationLogicalHeightChange(LayoutUnit& pageLogicalHeight, bool& pageLogicalHeightChanged, bool& hasSpecifiedPageLogicalHeight);
 
