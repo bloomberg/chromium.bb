@@ -170,7 +170,8 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestHistograms) {
 TEST_F(RenderWidgetHostLatencyTrackerTest,
        LatencyTerminatedOnAckIfRenderingNotScheduled) {
   {
-    auto scroll = SyntheticWebGestureEventBuilder::BuildScrollBegin(5.f, -5.f);
+    auto scroll = SyntheticWebGestureEventBuilder::BuildScrollBegin(
+        5.f, -5.f, blink::WebGestureDeviceTouchscreen);
     ui::LatencyInfo scroll_latency;
     AddFakeComponents(*tracker(), &scroll_latency);
     // Don't include the rendering schedule component, since we're testing the
@@ -313,7 +314,8 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, InputCoordinatesPopulated) {
 }
 
 TEST_F(RenderWidgetHostLatencyTrackerTest, ScrollLatency) {
-  auto scroll_begin = SyntheticWebGestureEventBuilder::BuildScrollBegin(5, -5);
+  auto scroll_begin = SyntheticWebGestureEventBuilder::BuildScrollBegin(
+      5, -5, blink::WebGestureDeviceTouchscreen);
   ui::LatencyInfo scroll_latency;
   scroll_latency.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, 0,
                                   0);

@@ -118,9 +118,10 @@ WebGestureEvent SyntheticWebGestureEventBuilder::Build(
 
 WebGestureEvent SyntheticWebGestureEventBuilder::BuildScrollBegin(
     float dx_hint,
-    float dy_hint) {
-  WebGestureEvent result = Build(WebInputEvent::GestureScrollBegin,
-                                 blink::WebGestureDeviceTouchscreen);
+    float dy_hint,
+    blink::WebGestureDevice source_device) {
+  WebGestureEvent result =
+      Build(WebInputEvent::GestureScrollBegin, source_device);
   result.data.scrollBegin.deltaXHint = dx_hint;
   result.data.scrollBegin.deltaYHint = dy_hint;
   return result;

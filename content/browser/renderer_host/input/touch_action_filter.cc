@@ -36,6 +36,9 @@ TouchActionFilter::TouchActionFilter() :
 }
 
 bool TouchActionFilter::FilterGestureEvent(WebGestureEvent* gesture_event) {
+  if (gesture_event->sourceDevice != blink::WebGestureDeviceTouchscreen)
+    return false;
+
   // Filter for allowable touch actions first (eg. before the TouchEventQueue
   // can decide to send a touch cancel event).
   switch (gesture_event->type) {
@@ -61,8 +64,6 @@ bool TouchActionFilter::FilterGestureEvent(WebGestureEvent* gesture_event) {
       break;
 
     case WebInputEvent::GestureFlingStart:
-      if (gesture_event->sourceDevice != blink::WebGestureDeviceTouchscreen)
-        break;
       // Touchscreen flings should always have non-zero velocity.
       DCHECK(gesture_event->data.flingStart.velocityX ||
              gesture_event->data.flingStart.velocityY);

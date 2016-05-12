@@ -2213,8 +2213,8 @@ TEST_F(InputRouterImplScaleGestureEventTest, GestureScrollUpdate) {
 }
 
 TEST_F(InputRouterImplScaleGestureEventTest, GestureScrollBegin) {
-  SimulateGestureEvent(
-      SyntheticWebGestureEventBuilder::BuildScrollBegin(10.f, 20.f));
+  SimulateGestureEvent(SyntheticWebGestureEventBuilder::BuildScrollBegin(
+      10.f, 20.f, blink::WebGestureDeviceTouchscreen));
   const WebGestureEvent* sent_event = GetSentWebInputEvent<WebGestureEvent>();
   EXPECT_EQ(20.f, sent_event->data.scrollBegin.deltaXHint);
   EXPECT_EQ(40.f, sent_event->data.scrollBegin.deltaYHint);
