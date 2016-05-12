@@ -557,10 +557,8 @@
     },
 
     'chromium.webrtc.fyi': {
-      'Android Builder (dbg)':
-        'android_blink_logging_gyp_debug_static_bot',
-      'Android Builder ARM64 (dbg)':
-        'android_blink_logging_gyp_debug_static_bot_arm64',
+      'Android Builder (dbg)': 'android_gn_debug_static_bot',
+      'Android Builder ARM64 (dbg)': 'android_gn_debug_static_bot_arm64',
       'Android GN (dbg)': 'android_gn_debug_bot',
       'Android GN': 'android_gn_release_bot',
       'Android Tests (dbg) (K Nexus5)': 'none',
@@ -625,7 +623,7 @@
 
     'tryserver.blink': {
       # Most tryservers should have '_trybot' in their config names, but
-      # 'release_trybot' includes 'dcheck_always_on', and the blink 
+      # 'release_trybot' includes 'dcheck_always_on', and the blink
       # release trybots must *not* enable dchecks, because that could
       # cause them to produce different baselines than the release
       # waterfall bots, and run-webkit-tests can't handle that (by design).
@@ -880,14 +878,6 @@
   'configs': {
     'android_asan_gn_clang_shared_debug_minimal_symbols': [
       'android', 'asan', 'gn', 'clang', 'shared', 'debug', 'minimal_symbols',
-    ],
-
-    'android_blink_logging_gyp_debug_static_bot': [
-      'android', 'blink_logging', 'gyp', 'debug_static_bot',
-    ],
-
-    'android_blink_logging_gyp_debug_static_bot_arm64': [
-      'android', 'blink_logging', 'gyp', 'debug_static_bot', 'arm64',
     ],
 
     'android_cast_gn_debug_static_bot': [
@@ -1214,7 +1204,7 @@
     ],
 
     'gyp_asan_fuzzer_v8_heap_chrome_with_codecs_release_static_x86': [
-      'gyp', 'asan', 'fuzzer', 'v8_heap', 'chrome_with_codecs', 
+      'gyp', 'asan', 'fuzzer', 'v8_heap', 'chrome_with_codecs',
       'release', 'static', 'x86',
     ],
 
@@ -1235,7 +1225,7 @@
     ],
 
     'gyp_asan_lsan_edge_fuzzer_v8_heap_chromeos_codecs_release_bot': [
-      'gyp', 'asan', 'lsan', 'edge', 'v8_heap', 'chromeos_codecs', 
+      'gyp', 'asan', 'lsan', 'edge', 'v8_heap', 'chromeos_codecs',
       'release_bot',
     ],
 
