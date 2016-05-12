@@ -31,8 +31,8 @@ namespace {
 constexpr CGFloat kCredentialHeight =
     kAvatarImageSize + 2 * kVerticalAvatarMargin;
 
-// Maximum number of accounts displayed before vertical scrolling appears.
-constexpr size_t kMaxAccounts = 3;
+// Maximum height of the credential list. The unit is one row height.
+constexpr CGFloat kMaxHeightAccounts = 3.5;
 
 }  // namespace
 
@@ -104,12 +104,14 @@ constexpr size_t kMaxAccounts = 3;
 
   NSSize buttonsSize = NSMakeSize(
       kDesiredBubbleWidth,
-      std::min([credentialButtons_ count], kMaxAccounts) * kCredentialHeight);
+      std::min<CGFloat>([credentialButtons_ count], kMaxHeightAccounts) *
+          kCredentialHeight);
   base::scoped_nsobject<NSScrollView> scrollView = [[NSScrollView alloc]
       initWithFrame:NSMakeRect(0, 0, buttonsSize.width, buttonsSize.height)];
-  [scrollView setHasVerticalScroller:[credentialButtons_ count] > kMaxAccounts
-                                         ? YES
-                                         : NO];
+  [scrollView
+      setHasVerticalScroller:[credentialButtons_ count] > kMaxHeightAccounts
+                                 ? YES
+                                 : NO];
   [scrollView setBorderType:NSNoBorder];
   CGFloat buttonWidth = [scrollView contentSize].width;
   CGFloat curY = 0;
