@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/cssom/KeywordValue.h"
+#include "core/css/cssom/CSSKeywordValue.h"
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/css/CSSCustomIdentValue.h"
@@ -11,28 +11,28 @@
 
 namespace blink {
 
-KeywordValue* KeywordValue::create(const String& keyword, ExceptionState& exceptionState)
+CSSKeywordValue* CSSKeywordValue::create(const String& keyword, ExceptionState& exceptionState)
 {
     if (keyword.isEmpty()) {
-        exceptionState.throwTypeError("KeywordValue does not support empty strings");
+        exceptionState.throwTypeError("CSSKeywordValue does not support empty strings");
         return nullptr;
     }
-    return new KeywordValue(keyword);
+    return new CSSKeywordValue(keyword);
 }
 
-const String& KeywordValue::keywordValue() const
+const String& CSSKeywordValue::keywordValue() const
 {
     return m_keywordValue;
 }
 
-CSSValueID KeywordValue::keywordValueID() const
+CSSValueID CSSKeywordValue::keywordValueID() const
 {
     CSSParserString cssKeywordString;
     cssKeywordString.init(m_keywordValue);
     return cssValueKeywordID(cssKeywordString);
 }
 
-CSSValue* KeywordValue::toCSSValue() const
+CSSValue* CSSKeywordValue::toCSSValue() const
 {
     CSSValueID keywordID = keywordValueID();
     if (keywordID == CSSValueID::CSSValueInvalid) {

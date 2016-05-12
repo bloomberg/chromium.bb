@@ -4,7 +4,7 @@
 
 #include "core/css/cssom/CSSOMKeywords.h"
 
-#include "core/css/cssom/KeywordValue.h"
+#include "core/css/cssom/CSSKeywordValue.h"
 #include "wtf/HashMap.h"
 
 namespace blink {
@@ -37,7 +37,7 @@ KeywordTable& keywordTable()
 
 } // namespace
 
-bool CSSOMKeywords::validKeywordForProperty(CSSPropertyID id, const KeywordValue& keyword)
+bool CSSOMKeywords::validKeywordForProperty(CSSPropertyID id, const CSSKeywordValue& keyword)
 {
     CSSValueID valueID = keyword.keywordValueID();
     if (valueID == CSSValueInvalid) {

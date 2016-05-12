@@ -416,6 +416,10 @@ interface CSSKeyframesRule : CSSRule
     method deleteRule
     method findRule
     setter name
+interface CSSKeywordValue : StyleValue
+    attribute @@toStringTag
+    getter keywordValue
+    method constructor
 interface CSSMediaRule : CSSGroupingRule
     attribute @@toStringTag
     getter media
@@ -3434,10 +3438,6 @@ interface KeyboardEvent : UIEvent
     method initKeyboardEvent
 interface KeyframeEffect : AnimationEffectReadOnly
     attribute @@toStringTag
-    method constructor
-interface KeywordValue : StyleValue
-    attribute @@toStringTag
-    getter keywordValue
     method constructor
 interface LengthValue : StyleValue
     static method from
