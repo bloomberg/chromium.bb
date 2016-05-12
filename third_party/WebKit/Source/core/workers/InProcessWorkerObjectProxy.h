@@ -59,7 +59,7 @@ public:
     ~InProcessWorkerObjectProxy() override { }
 
     void postMessageToWorkerObject(PassRefPtr<SerializedScriptValue>, PassOwnPtr<MessagePortChannelArray>);
-    void postTaskToMainExecutionContext(PassOwnPtr<ExecutionContextTask>);
+    void postTaskToMainExecutionContext(std::unique_ptr<ExecutionContextTask>);
     void confirmMessageFromWorkerObject(bool hasPendingActivity);
     void reportPendingActivity(bool hasPendingActivity);
 

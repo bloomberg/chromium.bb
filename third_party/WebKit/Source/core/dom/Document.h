@@ -830,8 +830,8 @@ public:
     void parseDNSPrefetchControlHeader(const String&);
 
     // FIXME(crbug.com/305497): This should be removed once LocalDOMWindow is an ExecutionContext.
-    void postTask(const WebTraceLocation&, PassOwnPtr<ExecutionContextTask>) override; // Executes the task on context's thread asynchronously.
-    void postInspectorTask(const WebTraceLocation&, PassOwnPtr<ExecutionContextTask>);
+    void postTask(const WebTraceLocation&, std::unique_ptr<ExecutionContextTask>) override; // Executes the task on context's thread asynchronously.
+    void postInspectorTask(const WebTraceLocation&, std::unique_ptr<ExecutionContextTask>);
 
     void tasksWereSuspended() final;
     void tasksWereResumed() final;

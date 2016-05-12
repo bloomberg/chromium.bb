@@ -45,6 +45,7 @@
 #include "public/platform/WebSecurityOrigin.h"
 #include "public/platform/WebTraceLocation.h"
 #include "wtf/Assertions.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/StdLibExtras.h"
 
 namespace blink {
@@ -167,9 +168,9 @@ unsigned long long DatabaseTracker::getMaxSizeForDatabase(const Database* databa
 
 class DatabaseTracker::CloseOneDatabaseImmediatelyTask final : public ExecutionContextTask {
 public:
-    static PassOwnPtr<CloseOneDatabaseImmediatelyTask> create(const String& originString, const String& name, Database* database)
+    static std::unique_ptr<CloseOneDatabaseImmediatelyTask> create(const String& originString, const String& name, Database* database)
     {
-        return adoptPtr(new CloseOneDatabaseImmediatelyTask(originString, name, database));
+        return wrapUnique(new CloseOneDatabaseImmediatelyTask(originString, name, database));
     }
 
     void performTask(ExecutionContext*) override
@@ -210,7 +211,7 @@ void DatabaseTracker::closeDatabasesImmediately(SecurityOrigin* origin, const St
         (*it)->getDatabaseContext()->getExecutionContext()->postTask(BLINK_FROM_HERE, CloseOneDatabaseImmediatelyTask::create(originString, name, *it));
 }
 
-void DatabaseTracker::forEachOpenDatabaseInPage(Page* page, PassOwnPtr<DatabaseCallback> callback)
+void DatabaseTracker::forEachOpenDatabaseInPage(Page* page, std::unique_ptr<DatabaseCallback> callback)
 {
     MutexLocker openDatabaseMapLock(m_openDatabaseMapGuard);
     if (!m_openDatabaseMap)

@@ -35,7 +35,7 @@ SkBitmap scaleDownIfNeeded(const SkBitmap& image, int maxSizePx)
 
 } // namespace
 
-NotificationResourcesLoader::NotificationResourcesLoader(PassOwnPtr<CompletionCallback> completionCallback)
+NotificationResourcesLoader::NotificationResourcesLoader(std::unique_ptr<CompletionCallback> completionCallback)
     : m_started(false), m_completionCallback(std::move(completionCallback)), m_pendingRequestCount(0)
 {
     ThreadState::current()->registerPreFinalizer(this);
@@ -82,7 +82,7 @@ DEFINE_TRACE(NotificationResourcesLoader)
     visitor->trace(m_imageLoaders);
 }
 
-void NotificationResourcesLoader::loadImage(ExecutionContext* executionContext, const KURL& url, PassOwnPtr<NotificationImageLoader::ImageCallback> imageCallback)
+void NotificationResourcesLoader::loadImage(ExecutionContext* executionContext, const KURL& url, std::unique_ptr<NotificationImageLoader::ImageCallback> imageCallback)
 {
     if (url.isNull() || url.isEmpty() || !url.isValid()) {
         didFinishRequest();

@@ -31,15 +31,16 @@
 #include "platform/v8_inspector/public/ConsoleTypes.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 
 class AddConsoleMessageTask : public ExecutionContextTask {
 public:
-    static PassOwnPtr<AddConsoleMessageTask> create(MessageSource source, MessageLevel level, const String& message)
+    static std::unique_ptr<AddConsoleMessageTask> create(MessageSource source, MessageLevel level, const String& message)
     {
-        return adoptPtr(new AddConsoleMessageTask(source, level, message));
+        return wrapUnique(new AddConsoleMessageTask(source, level, message));
     }
     virtual void performTask(ExecutionContext*);
 private:

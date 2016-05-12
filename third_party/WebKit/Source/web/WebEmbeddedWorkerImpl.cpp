@@ -250,12 +250,12 @@ void WebEmbeddedWorkerImpl::postMessageToPageInspector(const String& message)
     m_workerInspectorProxy->dispatchMessageFromWorker(message);
 }
 
-void WebEmbeddedWorkerImpl::postTaskToLoader(PassOwnPtr<ExecutionContextTask> task)
+void WebEmbeddedWorkerImpl::postTaskToLoader(std::unique_ptr<ExecutionContextTask> task)
 {
     m_mainFrame->frame()->document()->postTask(BLINK_FROM_HERE, std::move(task));
 }
 
-bool WebEmbeddedWorkerImpl::postTaskToWorkerGlobalScope(PassOwnPtr<ExecutionContextTask> task)
+bool WebEmbeddedWorkerImpl::postTaskToWorkerGlobalScope(std::unique_ptr<ExecutionContextTask> task)
 {
     if (m_askedToTerminate || !m_workerThread)
         return false;

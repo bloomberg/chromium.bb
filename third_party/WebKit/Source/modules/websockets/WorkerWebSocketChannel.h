@@ -144,7 +144,7 @@ public:
 
     private:
         // Returns false if shutdown event is received before method completion.
-        bool waitForMethodCompletion(PassOwnPtr<ExecutionContextTask>);
+        bool waitForMethodCompletion(std::unique_ptr<ExecutionContextTask>);
 
         Member<WebSocketChannelClient> m_client;
         Member<WorkerGlobalScope> m_workerGlobalScope;

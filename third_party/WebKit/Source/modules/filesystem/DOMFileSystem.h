@@ -41,6 +41,7 @@
 #include "modules/filesystem/EntriesCallback.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebTraceLocation.h"
+#include "wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -177,7 +178,7 @@ void DOMFileSystem::scheduleCallback(ExecutionContext* executionContext, CB* cal
 {
     ASSERT(executionContext->isContextThread());
     if (callback)
-        executionContext->postTask(BLINK_FROM_HERE, adoptPtr(new DispatchCallbackPtrArgTask<CB, CBArg>(callback, arg)));
+        executionContext->postTask(BLINK_FROM_HERE, wrapUnique(new DispatchCallbackPtrArgTask<CB, CBArg>(callback, arg)));
 }
 
 template <typename CB, typename CBArg>
@@ -185,7 +186,7 @@ void DOMFileSystem::scheduleCallback(ExecutionContext* executionContext, CB* cal
 {
     ASSERT(executionContext->isContextThread());
     if (callback)
-        executionContext->postTask(BLINK_FROM_HERE, adoptPtr(new DispatchCallbackNonPtrArgTask<CB, PersistentHeapVector<CBArg>>(callback, arg)));
+        executionContext->postTask(BLINK_FROM_HERE, wrapUnique(new DispatchCallbackNonPtrArgTask<CB, PersistentHeapVector<CBArg>>(callback, arg)));
 }
 
 template <typename CB, typename CBArg>
@@ -193,7 +194,7 @@ void DOMFileSystem::scheduleCallback(ExecutionContext* executionContext, CB* cal
 {
     ASSERT(executionContext->isContextThread());
     if (callback)
-        executionContext->postTask(BLINK_FROM_HERE, adoptPtr(new DispatchCallbackNonPtrArgTask<CB, CBArg>(callback, arg)));
+        executionContext->postTask(BLINK_FROM_HERE, wrapUnique(new DispatchCallbackNonPtrArgTask<CB, CBArg>(callback, arg)));
 }
 
 template <typename CB, typename CBArg>
@@ -201,7 +202,7 @@ void DOMFileSystem::scheduleCallback(ExecutionContext* executionContext, CB* cal
 {
     ASSERT(executionContext->isContextThread());
     if (callback)
-        executionContext->postTask(BLINK_FROM_HERE, adoptPtr(new DispatchCallbackNonPtrArgTask<CB, Persistent<CBArg>>(callback, arg)));
+        executionContext->postTask(BLINK_FROM_HERE, wrapUnique(new DispatchCallbackNonPtrArgTask<CB, Persistent<CBArg>>(callback, arg)));
 }
 
 template <typename CB>
@@ -209,7 +210,7 @@ void DOMFileSystem::scheduleCallback(ExecutionContext* executionContext, CB* cal
 {
     ASSERT(executionContext->isContextThread());
     if (callback)
-        executionContext->postTask(BLINK_FROM_HERE, adoptPtr(new DispatchCallbackNoArgTask<CB>(callback)));
+        executionContext->postTask(BLINK_FROM_HERE, wrapUnique(new DispatchCallbackNoArgTask<CB>(callback)));
 }
 
 } // namespace blink

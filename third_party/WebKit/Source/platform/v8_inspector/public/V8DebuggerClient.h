@@ -45,7 +45,7 @@ public:
     virtual v8::MaybeLocal<v8::Value> memoryInfo(v8::Isolate*, v8::Local<v8::Context>, v8::Local<v8::Object> creationContext) = 0;
 
     using TimerCallback = Function<void()>;
-    virtual int startRepeatingTimer(double, PassOwnPtr<TimerCallback>) = 0;
+    virtual int startRepeatingTimer(double, std::unique_ptr<TimerCallback>) = 0;
     virtual void cancelTimer(int) = 0;
 };
 

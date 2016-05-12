@@ -94,8 +94,8 @@ private:
     // WorkerLoaderProxyProvider
     // These methods are called on different threads to schedule loading
     // requests and to send callbacks back to WorkerGlobalScope.
-    void postTaskToLoader(PassOwnPtr<ExecutionContextTask>) override;
-    bool postTaskToWorkerGlobalScope(PassOwnPtr<ExecutionContextTask>) override;
+    void postTaskToLoader(std::unique_ptr<ExecutionContextTask>) override;
+    bool postTaskToWorkerGlobalScope(std::unique_ptr<ExecutionContextTask>) override;
 
     // Returns true if this is called on the parent context thread.
     bool isParentContextThread() const;
@@ -116,7 +116,7 @@ private:
     bool m_askedToTerminate;
 
     // Tasks are queued here until there's a thread object created.
-    Vector<OwnPtr<ExecutionContextTask>> m_queuedEarlyTasks;
+    Vector<std::unique_ptr<ExecutionContextTask>> m_queuedEarlyTasks;
 
     Persistent<WorkerInspectorProxy> m_workerInspectorProxy;
 

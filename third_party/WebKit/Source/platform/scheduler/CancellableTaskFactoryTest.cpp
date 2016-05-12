@@ -13,7 +13,7 @@ namespace {
 
 class TestCancellableTaskFactory final : public CancellableTaskFactory {
 public:
-    explicit TestCancellableTaskFactory(PassOwnPtr<SameThreadClosure> closure)
+    explicit TestCancellableTaskFactory(std::unique_ptr<SameThreadClosure> closure)
         : CancellableTaskFactory(std::move(closure))
     {
     }

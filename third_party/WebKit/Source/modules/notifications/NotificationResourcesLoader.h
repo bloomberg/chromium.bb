@@ -34,7 +34,7 @@ public:
     // the same function to handle the callbacks.
     using CompletionCallback = Function<void(NotificationResourcesLoader*)>;
 
-    explicit NotificationResourcesLoader(PassOwnPtr<CompletionCallback>);
+    explicit NotificationResourcesLoader(std::unique_ptr<CompletionCallback>);
     ~NotificationResourcesLoader();
 
     // Starts fetching the resources specified in the given WebNotificationData.
@@ -55,7 +55,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    void loadImage(ExecutionContext*, const KURL&, PassOwnPtr<NotificationImageLoader::ImageCallback>);
+    void loadImage(ExecutionContext*, const KURL&, std::unique_ptr<NotificationImageLoader::ImageCallback>);
     void didLoadIcon(const SkBitmap& image);
     void didLoadBadge(const SkBitmap& image);
     void didLoadActionIcon(size_t actionIndex, const SkBitmap& image);
@@ -65,7 +65,7 @@ private:
     void didFinishRequest();
 
     bool m_started;
-    OwnPtr<CompletionCallback> m_completionCallback;
+    std::unique_ptr<CompletionCallback> m_completionCallback;
     int m_pendingRequestCount;
     HeapVector<Member<NotificationImageLoader>> m_imageLoaders;
     SkBitmap m_icon;

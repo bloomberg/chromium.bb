@@ -280,12 +280,12 @@ WorkerThreadableLoader::MainThreadAsyncBridge::~MainThreadAsyncBridge()
 {
 }
 
-void WorkerThreadableLoader::MainThreadAsyncBridge::forwardTaskToWorker(PassOwnPtr<ExecutionContextTask> task)
+void WorkerThreadableLoader::MainThreadAsyncBridge::forwardTaskToWorker(std::unique_ptr<ExecutionContextTask> task)
 {
     loaderProxy()->postTaskToWorkerGlobalScope(std::move(task));
 }
 
-void WorkerThreadableLoader::MainThreadAsyncBridge::forwardTaskToWorkerOnLoaderDone(PassOwnPtr<ExecutionContextTask> task)
+void WorkerThreadableLoader::MainThreadAsyncBridge::forwardTaskToWorkerOnLoaderDone(std::unique_ptr<ExecutionContextTask> task)
 {
     loaderProxy()->postTaskToWorkerGlobalScope(std::move(task));
 }
@@ -327,7 +327,7 @@ void WorkerThreadableLoader::MainThreadSyncBridge::start(const ResourceRequest& 
     // The following code must be run only after |m_loaderDoneEvent| is
     // signalled.
 
-    Vector<OwnPtr<ExecutionContextTask>> tasks;
+    Vector<std::unique_ptr<ExecutionContextTask>> tasks;
     {
         MutexLocker lock(m_lock);
         ASSERT(m_done);
@@ -345,7 +345,7 @@ WorkerThreadableLoader::MainThreadSyncBridge::~MainThreadSyncBridge()
     ASSERT(isMainThread());
 }
 
-void WorkerThreadableLoader::MainThreadSyncBridge::forwardTaskToWorker(PassOwnPtr<ExecutionContextTask> task)
+void WorkerThreadableLoader::MainThreadSyncBridge::forwardTaskToWorker(std::unique_ptr<ExecutionContextTask> task)
 {
     ASSERT(isMainThread());
 
@@ -355,7 +355,7 @@ void WorkerThreadableLoader::MainThreadSyncBridge::forwardTaskToWorker(PassOwnPt
     m_clientTasks.append(std::move(task));
 }
 
-void WorkerThreadableLoader::MainThreadSyncBridge::forwardTaskToWorkerOnLoaderDone(PassOwnPtr<ExecutionContextTask> task)
+void WorkerThreadableLoader::MainThreadSyncBridge::forwardTaskToWorkerOnLoaderDone(std::unique_ptr<ExecutionContextTask> task)
 {
     ASSERT(isMainThread());
 

@@ -49,7 +49,7 @@ class SameThreadTask : public WebTaskRunner::Task {
     USING_FAST_MALLOC(SameThreadTask);
     WTF_MAKE_NONCOPYABLE(SameThreadTask);
 public:
-    explicit SameThreadTask(PassOwnPtr<SameThreadClosure> closure)
+    explicit SameThreadTask(std::unique_ptr<SameThreadClosure> closure)
         : m_closure(std::move(closure))
     {
     }
@@ -60,14 +60,14 @@ public:
     }
 
 private:
-    OwnPtr<SameThreadClosure> m_closure;
+    std::unique_ptr<SameThreadClosure> m_closure;
 };
 
 class CrossThreadTask : public WebTaskRunner::Task {
     USING_FAST_MALLOC(CrossThreadTask);
     WTF_MAKE_NONCOPYABLE(CrossThreadTask);
 public:
-    explicit CrossThreadTask(PassOwnPtr<CrossThreadClosure> closure)
+    explicit CrossThreadTask(std::unique_ptr<CrossThreadClosure> closure)
         : m_closure(std::move(closure))
     {
     }
@@ -78,7 +78,7 @@ public:
     }
 
 private:
-    OwnPtr<CrossThreadClosure> m_closure;
+    std::unique_ptr<CrossThreadClosure> m_closure;
 };
 
 } // namespace blink

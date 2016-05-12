@@ -229,7 +229,7 @@ void DataConsumerHandleTestUtil::ReplayingHandle::add(const Command& command)
     m_context->add(command);
 }
 
-DataConsumerHandleTestUtil::HandleReader::HandleReader(PassOwnPtr<WebDataConsumerHandle> handle, PassOwnPtr<OnFinishedReading> onFinishedReading)
+DataConsumerHandleTestUtil::HandleReader::HandleReader(PassOwnPtr<WebDataConsumerHandle> handle, std::unique_ptr<OnFinishedReading> onFinishedReading)
     : m_reader(handle->obtainReader(this))
     , m_onFinishedReading(std::move(onFinishedReading))
 {
@@ -257,10 +257,11 @@ void DataConsumerHandleTestUtil::HandleReader::didGetReadable()
 void DataConsumerHandleTestUtil::HandleReader::runOnFinishedReading(PassOwnPtr<HandleReadResult> result)
 {
     ASSERT(m_onFinishedReading);
-    (*m_onFinishedReading.release())(std::move(result));
+    std::unique_ptr<OnFinishedReading> onFinishedReading(std::move(m_onFinishedReading));
+    (*onFinishedReading)(std::move(result));
 }
 
-DataConsumerHandleTestUtil::HandleTwoPhaseReader::HandleTwoPhaseReader(PassOwnPtr<WebDataConsumerHandle> handle, PassOwnPtr<OnFinishedReading> onFinishedReading)
+DataConsumerHandleTestUtil::HandleTwoPhaseReader::HandleTwoPhaseReader(PassOwnPtr<WebDataConsumerHandle> handle, std::unique_ptr<OnFinishedReading> onFinishedReading)
     : m_reader(handle->obtainReader(this))
     , m_onFinishedReading(std::move(onFinishedReading))
 {
@@ -291,7 +292,8 @@ void DataConsumerHandleTestUtil::HandleTwoPhaseReader::didGetReadable()
 void DataConsumerHandleTestUtil::HandleTwoPhaseReader::runOnFinishedReading(PassOwnPtr<HandleReadResult> result)
 {
     ASSERT(m_onFinishedReading);
-    (*m_onFinishedReading.release())(std::move(result));
+    std::unique_ptr<OnFinishedReading> onFinishedReading(std::move(m_onFinishedReading));
+    (*onFinishedReading)(std::move(result));
 }
 
 } // namespace blink

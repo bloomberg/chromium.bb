@@ -93,7 +93,7 @@ namespace blink {
 // [1] createCrossThreadTask() for non-member functions (with ExecutionContext* argument).
 // (P = <P1, ..., Pn>, MP = <MP1, ..., MPn, ExecutionContext*>)
 template<typename... P, typename... MP,
-    typename RETTYPE = PassOwnPtr<ExecutionContextTask>, size_t PS = sizeof...(P), size_t MPS = sizeof...(MP)>
+    typename RETTYPE = std::unique_ptr<ExecutionContextTask>, size_t PS = sizeof...(P), size_t MPS = sizeof...(MP)>
 typename std::enable_if<PS + 1 == MPS, RETTYPE>::type createCrossThreadTask(void (*function)(MP...), P&&... parameters)
 {
     return internal::CallClosureWithExecutionContextTask<WTF::CrossThreadAffinity>::create(threadSafeBind<ExecutionContext*>(function, std::forward<P>(parameters)...));
@@ -102,7 +102,7 @@ typename std::enable_if<PS + 1 == MPS, RETTYPE>::type createCrossThreadTask(void
 // [2] createCrossThreadTask() for member functions of class C (with ExecutionContext* argument) + raw pointer (C*).
 // (P = <P1, ..., Pn>, MP = <MP1, ..., MPn, ExecutionContext*>)
 template<typename C, typename... P, typename... MP,
-    typename RETTYPE = PassOwnPtr<ExecutionContextTask>, size_t PS = sizeof...(P), size_t MPS = sizeof...(MP)>
+    typename RETTYPE = std::unique_ptr<ExecutionContextTask>, size_t PS = sizeof...(P), size_t MPS = sizeof...(MP)>
 typename std::enable_if<PS + 1 == MPS, RETTYPE>::type createCrossThreadTask(void (C::*function)(MP...), C* p, P&&... parameters)
 {
     return internal::CallClosureWithExecutionContextTask<WTF::CrossThreadAffinity>::create(threadSafeBind<ExecutionContext*>(function, AllowCrossThreadAccess(p), std::forward<P>(parameters)...));
@@ -111,7 +111,7 @@ typename std::enable_if<PS + 1 == MPS, RETTYPE>::type createCrossThreadTask(void
 // [3] createCrossThreadTask() for non-member functions
 // (P = <P1, ..., Pn>, MP = <MP1, ..., MPn>)
 template<typename... P, typename... MP,
-    typename RETTYPE = PassOwnPtr<ExecutionContextTask>, size_t PS = sizeof...(P), size_t MPS = sizeof...(MP)>
+    typename RETTYPE = std::unique_ptr<ExecutionContextTask>, size_t PS = sizeof...(P), size_t MPS = sizeof...(MP)>
 typename std::enable_if<PS == MPS, RETTYPE>::type createCrossThreadTask(void (*function)(MP...), P&&... parameters)
 {
     return internal::CallClosureTask<WTF::CrossThreadAffinity>::create(threadSafeBind(function, std::forward<P>(parameters)...));
@@ -121,14 +121,14 @@ typename std::enable_if<PS == MPS, RETTYPE>::type createCrossThreadTask(void (*f
 // [5] createCrossThreadTask() for member functions of class C + weak pointer (const WeakPtr<C>&)
 // (P = <P1, ..., Pn>, MP = <MP1, ..., MPn>)
 template<typename C, typename... P, typename... MP,
-    typename RETTYPE = PassOwnPtr<ExecutionContextTask>, size_t PS = sizeof...(P), size_t MPS = sizeof...(MP)>
+    typename RETTYPE = std::unique_ptr<ExecutionContextTask>, size_t PS = sizeof...(P), size_t MPS = sizeof...(MP)>
 typename std::enable_if<PS == MPS, RETTYPE>::type createCrossThreadTask(void (C::*function)(MP...), C* p, P&&... parameters)
 {
     return internal::CallClosureTask<WTF::CrossThreadAffinity>::create(threadSafeBind(function, AllowCrossThreadAccess(p), std::forward<P>(parameters)...));
 }
 
 template<typename C, typename... P, typename... MP,
-    typename RETTYPE = PassOwnPtr<ExecutionContextTask>, size_t PS = sizeof...(P), size_t MPS = sizeof...(MP)>
+    typename RETTYPE = std::unique_ptr<ExecutionContextTask>, size_t PS = sizeof...(P), size_t MPS = sizeof...(MP)>
 typename std::enable_if<PS == MPS, RETTYPE>::type createCrossThreadTask(void (C::*function)(MP...), const WeakPtr<C>& p, P&&... parameters)
 {
     return internal::CallClosureTask<WTF::CrossThreadAffinity>::create(threadSafeBind(function, AllowCrossThreadAccess(p), std::forward<P>(parameters)...));
@@ -137,7 +137,7 @@ typename std::enable_if<PS == MPS, RETTYPE>::type createCrossThreadTask(void (C:
 // [6] createCrossThreadTask() for member functions + pointers to class C other than C* or const WeakPtr<C>&
 // (P = <P0, P1, ..., Pn>, MP = <MP1, ..., MPn>)
 template<typename C, typename P0, typename... P, typename... MP,
-    typename RETTYPE = PassOwnPtr<ExecutionContextTask>, size_t PS = sizeof...(P), size_t MPS = sizeof...(MP)>
+    typename RETTYPE = std::unique_ptr<ExecutionContextTask>, size_t PS = sizeof...(P), size_t MPS = sizeof...(MP)>
 typename std::enable_if<PS == MPS && !WTF::IsSubclassOfTemplate<typename std::decay<P0>::type, WeakPtr>::value && !std::is_pointer<typename std::decay<P0>::type>::value, RETTYPE>::type
 createCrossThreadTask(void (C::*function)(MP...), P0&& parameter0, P&&... parameters)
 {

@@ -457,7 +457,7 @@ void Bridge::disconnect()
 
 // Caller of this function should hold a reference to the bridge, because this function may call WebSocket::didClose() in the end,
 // which causes the bridge to get disconnected from the WebSocket and deleted if there is no other reference.
-bool Bridge::waitForMethodCompletion(PassOwnPtr<ExecutionContextTask> task)
+bool Bridge::waitForMethodCompletion(std::unique_ptr<ExecutionContextTask> task)
 {
     ASSERT(m_workerGlobalScope);
     ASSERT(m_syncHelper);

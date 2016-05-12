@@ -44,7 +44,7 @@ public:
     void consoleTime(const String16& title) override;
     void consoleTimeEnd(const String16& title) override;
     void consoleTimeStamp(const String16& title) override;
-    int startRepeatingTimer(double, PassOwnPtr<V8DebuggerClient::TimerCallback>) override;
+    int startRepeatingTimer(double, std::unique_ptr<V8DebuggerClient::TimerCallback>) override;
     void cancelTimer(int) override;
 
     V8Debugger* debugger() const { return m_debugger.get(); }
@@ -56,7 +56,7 @@ protected:
     v8::Isolate* m_isolate;
     OwnPtr<V8Debugger> m_debugger;
     HashMap<int, OwnPtr<Timer<ThreadDebugger>>> m_timers;
-    HashMap<Timer<ThreadDebugger>*, OwnPtr<V8DebuggerClient::TimerCallback>> m_timerCallbacks;
+    HashMap<Timer<ThreadDebugger>*, std::unique_ptr<V8DebuggerClient::TimerCallback>> m_timerCallbacks;
     int m_lastTimerId;
     OwnPtr<UserGestureIndicator> m_userGestureIndicator;
 };

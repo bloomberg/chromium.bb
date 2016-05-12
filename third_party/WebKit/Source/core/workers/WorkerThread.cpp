@@ -102,7 +102,7 @@ unsigned WorkerThread::workerThreadCount()
     return workerThreads().size();
 }
 
-void WorkerThread::performTask(PassOwnPtr<ExecutionContextTask> task, bool isInstrumented)
+void WorkerThread::performTask(std::unique_ptr<ExecutionContextTask> task, bool isInstrumented)
 {
     DCHECK(isCurrentThread());
     WorkerGlobalScope* globalScope = workerGlobalScope();
@@ -117,7 +117,7 @@ void WorkerThread::performTask(PassOwnPtr<ExecutionContextTask> task, bool isIns
     task->performTask(globalScope);
 }
 
-PassOwnPtr<CrossThreadClosure> WorkerThread::createWorkerThreadTask(PassOwnPtr<ExecutionContextTask> task, bool isInstrumented)
+std::unique_ptr<CrossThreadClosure> WorkerThread::createWorkerThreadTask(std::unique_ptr<ExecutionContextTask> task, bool isInstrumented)
 {
     if (isInstrumented)
         isInstrumented = !task->taskNameForInstrumentation().isEmpty();
@@ -386,7 +386,7 @@ bool WorkerThread::isCurrentThread()
     return m_started && workerBackingThread().backingThread().isCurrentThread();
 }
 
-void WorkerThread::postTask(const WebTraceLocation& location, PassOwnPtr<ExecutionContextTask> task)
+void WorkerThread::postTask(const WebTraceLocation& location, std::unique_ptr<ExecutionContextTask> task)
 {
     workerBackingThread().backingThread().postTask(location, createWorkerThreadTask(std::move(task), true));
 }
@@ -394,12 +394,12 @@ void WorkerThread::postTask(const WebTraceLocation& location, PassOwnPtr<Executi
 void WorkerThread::runDebuggerTaskDontWait()
 {
     DCHECK(isCurrentThread());
-    OwnPtr<CrossThreadClosure> task = m_inspectorTaskRunner->takeNextTask(InspectorTaskRunner::DontWaitForTask);
+    std::unique_ptr<CrossThreadClosure> task = m_inspectorTaskRunner->takeNextTask(InspectorTaskRunner::DontWaitForTask);
     if (task)
         (*task)();
 }
 
-void WorkerThread::appendDebuggerTask(PassOwnPtr<CrossThreadClosure> task)
+void WorkerThread::appendDebuggerTask(std::unique_ptr<CrossThreadClosure> task)
 {
     {
         MutexLocker lock(m_threadStateMutex);
@@ -415,7 +415,7 @@ void WorkerThread::appendDebuggerTask(PassOwnPtr<CrossThreadClosure> task)
     workerBackingThread().backingThread().postTask(BLINK_FROM_HERE, threadSafeBind(&WorkerThread::runDebuggerTaskDontWait, AllowCrossThreadAccess(this)));
 }
 
-void WorkerThread::runDebuggerTask(PassOwnPtr<CrossThreadClosure> task)
+void WorkerThread::runDebuggerTask(std::unique_ptr<CrossThreadClosure> task)
 {
     DCHECK(isCurrentThread());
     InspectorTaskRunner::IgnoreInterruptsScope scope(m_inspectorTaskRunner.get());
@@ -440,7 +440,7 @@ void WorkerThread::startRunningDebuggerTasksOnPause()
 {
     m_pausedInDebugger = true;
     ThreadDebugger::idleStarted(isolate());
-    OwnPtr<CrossThreadClosure> task;
+    std::unique_ptr<CrossThreadClosure> task;
     do {
         {
             SafePointScope safePointScope(BlinkGC::HeapPointersOnStack);

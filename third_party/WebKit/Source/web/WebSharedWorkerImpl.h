@@ -131,8 +131,8 @@ private:
     void postMessageToPageInspectorOnMainThread(const String& message);
 
     // WorkerLoaderProxyProvider
-    void postTaskToLoader(PassOwnPtr<ExecutionContextTask>);
-    bool postTaskToWorkerGlobalScope(PassOwnPtr<ExecutionContextTask>);
+    void postTaskToLoader(std::unique_ptr<ExecutionContextTask>) override;
+    bool postTaskToWorkerGlobalScope(std::unique_ptr<ExecutionContextTask>) override;
 
     // 'shadow page' - created to proxy loading requests from the worker.
     Persistent<ExecutionContext> m_loadingDocument;

@@ -40,6 +40,7 @@
 #include "platform/Logging.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/WebTraceLocation.h"
+#include "wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -76,9 +77,9 @@ DatabaseManager::~DatabaseManager()
 
 class DatabaseCreationCallbackTask final : public ExecutionContextTask {
 public:
-    static PassOwnPtr<DatabaseCreationCallbackTask> create(Database* database, DatabaseCallback* creationCallback)
+    static std::unique_ptr<DatabaseCreationCallbackTask> create(Database* database, DatabaseCallback* creationCallback)
     {
-        return adoptPtr(new DatabaseCreationCallbackTask(database, creationCallback));
+        return wrapUnique(new DatabaseCreationCallbackTask(database, creationCallback));
     }
 
     void performTask(ExecutionContext*) override

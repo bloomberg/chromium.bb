@@ -59,12 +59,12 @@ public:
     // Helpers for posting bound functions as tasks.
 
     // For cross-thread posting. Can be called from any thread.
-    void postTask(const WebTraceLocation&, PassOwnPtr<CrossThreadClosure>);
-    void postDelayedTask(const WebTraceLocation&, PassOwnPtr<CrossThreadClosure>, long long delayMs);
+    void postTask(const WebTraceLocation&, std::unique_ptr<CrossThreadClosure>);
+    void postDelayedTask(const WebTraceLocation&, std::unique_ptr<CrossThreadClosure>, long long delayMs);
 
     // For same-thread posting. Must be called from the associated WebThread.
-    void postTask(const WebTraceLocation&, PassOwnPtr<SameThreadClosure>);
-    void postDelayedTask(const WebTraceLocation&, PassOwnPtr<SameThreadClosure>, long long delayMs);
+    void postTask(const WebTraceLocation&, std::unique_ptr<SameThreadClosure>);
+    void postDelayedTask(const WebTraceLocation&, std::unique_ptr<SameThreadClosure>, long long delayMs);
 
     PassOwnPtr<WebTaskRunner> adoptClone()
     {

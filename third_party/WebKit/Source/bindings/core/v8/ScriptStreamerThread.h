@@ -27,7 +27,7 @@ public:
     static void shutdown();
     static ScriptStreamerThread* shared();
 
-    void postTask(PassOwnPtr<CrossThreadClosure>);
+    void postTask(std::unique_ptr<CrossThreadClosure>);
 
     bool isRunningTask() const
     {

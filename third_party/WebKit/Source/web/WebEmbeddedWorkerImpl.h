@@ -89,8 +89,8 @@ private:
     void startWorkerThread();
 
     // WorkerLoaderProxyProvider
-    void postTaskToLoader(PassOwnPtr<ExecutionContextTask>) override;
-    bool postTaskToWorkerGlobalScope(PassOwnPtr<ExecutionContextTask>) override;
+    void postTaskToLoader(std::unique_ptr<ExecutionContextTask>) override;
+    bool postTaskToWorkerGlobalScope(std::unique_ptr<ExecutionContextTask>) override;
 
     WebEmbeddedWorkerStartData m_workerStartData;
 

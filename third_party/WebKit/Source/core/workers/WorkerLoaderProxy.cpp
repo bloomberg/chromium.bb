@@ -25,7 +25,7 @@ void WorkerLoaderProxy::detachProvider(WorkerLoaderProxyProvider* proxyProvider)
     m_loaderProxyProvider = nullptr;
 }
 
-void WorkerLoaderProxy::postTaskToLoader(PassOwnPtr<ExecutionContextTask> task)
+void WorkerLoaderProxy::postTaskToLoader(std::unique_ptr<ExecutionContextTask> task)
 {
     MutexLocker locker(m_lock);
     if (!m_loaderProxyProvider)
@@ -34,7 +34,7 @@ void WorkerLoaderProxy::postTaskToLoader(PassOwnPtr<ExecutionContextTask> task)
     m_loaderProxyProvider->postTaskToLoader(std::move(task));
 }
 
-bool WorkerLoaderProxy::postTaskToWorkerGlobalScope(PassOwnPtr<ExecutionContextTask> task)
+bool WorkerLoaderProxy::postTaskToWorkerGlobalScope(std::unique_ptr<ExecutionContextTask> task)
 {
     MutexLocker locker(m_lock);
     if (!m_loaderProxyProvider)

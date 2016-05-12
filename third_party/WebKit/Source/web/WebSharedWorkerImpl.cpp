@@ -262,12 +262,12 @@ void WebSharedWorkerImpl::workerThreadTerminatedOnMainThread()
 
 // WorkerLoaderProxyProvider -----------------------------------------------------------
 
-void WebSharedWorkerImpl::postTaskToLoader(PassOwnPtr<ExecutionContextTask> task)
+void WebSharedWorkerImpl::postTaskToLoader(std::unique_ptr<ExecutionContextTask> task)
 {
     m_mainFrame->frame()->document()->postTask(BLINK_FROM_HERE, std::move(task));
 }
 
-bool WebSharedWorkerImpl::postTaskToWorkerGlobalScope(PassOwnPtr<ExecutionContextTask> task)
+bool WebSharedWorkerImpl::postTaskToWorkerGlobalScope(std::unique_ptr<ExecutionContextTask> task)
 {
     m_workerThread->postTask(BLINK_FROM_HERE, std::move(task));
     return true;

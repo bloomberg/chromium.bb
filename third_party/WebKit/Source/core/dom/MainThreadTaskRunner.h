@@ -32,8 +32,6 @@
 #include "platform/heap/Handle.h"
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
 
 namespace blink {
@@ -50,9 +48,9 @@ public:
 
     DECLARE_TRACE();
 
-    void postTask(const WebTraceLocation&, PassOwnPtr<ExecutionContextTask>); // Executes the task on context's thread asynchronously.
-    void postInspectorTask(const WebTraceLocation&, PassOwnPtr<ExecutionContextTask>);
-    void perform(PassOwnPtr<ExecutionContextTask>, bool);
+    void postTask(const WebTraceLocation&, std::unique_ptr<ExecutionContextTask>); // Executes the task on context's thread asynchronously.
+    void postInspectorTask(const WebTraceLocation&, std::unique_ptr<ExecutionContextTask>);
+    void perform(std::unique_ptr<ExecutionContextTask>, bool);
 
     void suspend();
     void resume();
@@ -62,11 +60,11 @@ private:
 
     void pendingTasksTimerFired(Timer<MainThreadTaskRunner>*);
 
-    void postTaskInternal(const WebTraceLocation&, PassOwnPtr<ExecutionContextTask>, bool isInspectorTask);
+    void postTaskInternal(const WebTraceLocation&, std::unique_ptr<ExecutionContextTask>, bool isInspectorTask);
 
     Member<ExecutionContext> m_context;
     Timer<MainThreadTaskRunner> m_pendingTasksTimer;
-    Vector<OwnPtr<ExecutionContextTask>> m_pendingTasks;
+    Vector<std::unique_ptr<ExecutionContextTask>> m_pendingTasks;
     bool m_suspended;
 };
 

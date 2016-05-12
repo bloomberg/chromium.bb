@@ -266,14 +266,14 @@ typedef Function<v8::MaybeLocal<v8::Script>(v8::Isolate*, v8::Local<v8::String>,
 // This version isn't quite as smart as the real WTF::bind, though, so you
 // sometimes may still have to call the original.
 template<typename... A>
-PassOwnPtr<CompileFn> bind(const A&... args)
+std::unique_ptr<CompileFn> bind(const A&... args)
 {
     return WTF::bind<v8::Isolate*, v8::Local<v8::String>, v8::ScriptOrigin>(args...);
 }
 
 // Select a compile function from any of the above, mainly depending on
 // cacheOptions.
-PassOwnPtr<CompileFn> selectCompileFunction(V8CacheOptions cacheOptions, CachedMetadataHandler* cacheHandler, v8::Local<v8::String> code, V8CompileHistogram::Cacheability cacheabilityIfNoHandler)
+std::unique_ptr<CompileFn> selectCompileFunction(V8CacheOptions cacheOptions, CachedMetadataHandler* cacheHandler, v8::Local<v8::String> code, V8CompileHistogram::Cacheability cacheabilityIfNoHandler)
 {
     static const int minimalCodeLength = 1024;
     static const int hotHours = 72;
@@ -328,7 +328,7 @@ PassOwnPtr<CompileFn> selectCompileFunction(V8CacheOptions cacheOptions, CachedM
 }
 
 // Select a compile function for a streaming compile.
-PassOwnPtr<CompileFn> selectCompileFunction(V8CacheOptions cacheOptions, ScriptResource* resource, ScriptStreamer* streamer)
+std::unique_ptr<CompileFn> selectCompileFunction(V8CacheOptions cacheOptions, ScriptResource* resource, ScriptStreamer* streamer)
 {
     // We don't stream scripts which don't have a Resource.
     ASSERT(resource);
@@ -382,7 +382,7 @@ v8::MaybeLocal<v8::Script> V8ScriptRunner::compileScript(v8::Local<v8::String> c
     if (!cacheHandler && (scriptStartPosition.m_line.zeroBasedInt() == 0) && (scriptStartPosition.m_column.zeroBasedInt() == 0))
         cacheabilityIfNoHandler = V8CompileHistogram::Cacheability::InlineScript;
 
-    OwnPtr<CompileFn> compileFn = streamer
+    std::unique_ptr<CompileFn> compileFn = streamer
         ? selectCompileFunction(cacheOptions, resource, streamer)
         : selectCompileFunction(cacheOptions, cacheHandler, code, cacheabilityIfNoHandler);
 

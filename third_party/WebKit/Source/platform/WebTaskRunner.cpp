@@ -8,22 +8,22 @@
 
 namespace blink {
 
-void WebTaskRunner::postTask(const WebTraceLocation& location, PassOwnPtr<CrossThreadClosure> task)
+void WebTaskRunner::postTask(const WebTraceLocation& location, std::unique_ptr<CrossThreadClosure> task)
 {
     postTask(location, new CrossThreadTask(std::move(task)));
 }
 
-void WebTaskRunner::postDelayedTask(const WebTraceLocation& location, PassOwnPtr<CrossThreadClosure> task, long long delayMs)
+void WebTaskRunner::postDelayedTask(const WebTraceLocation& location, std::unique_ptr<CrossThreadClosure> task, long long delayMs)
 {
     postDelayedTask(location, new CrossThreadTask(std::move(task)), delayMs);
 }
 
-void WebTaskRunner::postTask(const WebTraceLocation& location, PassOwnPtr<SameThreadClosure> task)
+void WebTaskRunner::postTask(const WebTraceLocation& location, std::unique_ptr<SameThreadClosure> task)
 {
     postTask(location, new SameThreadTask(std::move(task)));
 }
 
-void WebTaskRunner::postDelayedTask(const WebTraceLocation& location, PassOwnPtr <SameThreadClosure> task, long long delayMs)
+void WebTaskRunner::postDelayedTask(const WebTraceLocation& location, std::unique_ptr<SameThreadClosure> task, long long delayMs)
 {
     postDelayedTask(location, new SameThreadTask(std::move(task)), delayMs);
 }

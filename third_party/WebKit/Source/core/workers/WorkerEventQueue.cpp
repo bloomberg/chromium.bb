@@ -30,6 +30,7 @@
 #include "core/dom/ExecutionContextTask.h"
 #include "core/events/Event.h"
 #include "core/inspector/InspectorInstrumentation.h"
+#include "wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -58,9 +59,9 @@ DEFINE_TRACE(WorkerEventQueue)
 
 class WorkerEventQueue::EventDispatcherTask : public ExecutionContextTask {
 public:
-    static PassOwnPtr<EventDispatcherTask> create(Event* event, WorkerEventQueue* eventQueue)
+    static std::unique_ptr<EventDispatcherTask> create(Event* event, WorkerEventQueue* eventQueue)
     {
-        return adoptPtr(new EventDispatcherTask(event, eventQueue));
+        return wrapUnique(new EventDispatcherTask(event, eventQueue));
     }
 
     ~EventDispatcherTask() override
@@ -114,9 +115,9 @@ bool WorkerEventQueue::enqueueEvent(Event* event)
     if (m_isClosed)
         return false;
     InspectorInstrumentation::asyncTaskScheduled(event->target()->getExecutionContext(), event->type(), event);
-    OwnPtr<EventDispatcherTask> task = EventDispatcherTask::create(event, this);
+    std::unique_ptr<EventDispatcherTask> task = EventDispatcherTask::create(event, this);
     m_eventTaskMap.add(event, task.get());
-    m_executionContext->postTask(BLINK_FROM_HERE, task.release());
+    m_executionContext->postTask(BLINK_FROM_HERE, std::move(task));
     return true;
 }
 

@@ -87,7 +87,7 @@ HTMLParserThread* HTMLParserThread::shared()
     return s_sharedThread;
 }
 
-void HTMLParserThread::postTask(PassOwnPtr<CrossThreadClosure> closure)
+void HTMLParserThread::postTask(std::unique_ptr<CrossThreadClosure> closure)
 {
     ASSERT(isMainThread());
     if (!m_thread) {

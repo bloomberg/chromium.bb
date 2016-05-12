@@ -61,11 +61,11 @@ public:
     virtual ~WorkerLoaderProxyProvider() { }
 
     // Posts a task to the thread which runs the loading code (normally, the main thread).
-    virtual void postTaskToLoader(PassOwnPtr<ExecutionContextTask>) = 0;
+    virtual void postTaskToLoader(std::unique_ptr<ExecutionContextTask>) = 0;
 
     // Posts callbacks from loading code to the WorkerGlobalScope.
     // Returns true if the task was posted successfully.
-    virtual bool postTaskToWorkerGlobalScope(PassOwnPtr<ExecutionContextTask>) = 0;
+    virtual bool postTaskToWorkerGlobalScope(std::unique_ptr<ExecutionContextTask>) = 0;
 };
 
 class CORE_EXPORT WorkerLoaderProxy : public ThreadSafeRefCounted<WorkerLoaderProxy>, public WorkerLoaderProxyProvider {
@@ -77,8 +77,8 @@ public:
 
     ~WorkerLoaderProxy() override;
 
-    void postTaskToLoader(PassOwnPtr<ExecutionContextTask>) override;
-    bool postTaskToWorkerGlobalScope(PassOwnPtr<ExecutionContextTask>) override;
+    void postTaskToLoader(std::unique_ptr<ExecutionContextTask>) override;
+    bool postTaskToWorkerGlobalScope(std::unique_ptr<ExecutionContextTask>) override;
 
     // Notification from the provider that it can no longer be
     // accessed. An implementation of WorkerLoaderProxyProvider is

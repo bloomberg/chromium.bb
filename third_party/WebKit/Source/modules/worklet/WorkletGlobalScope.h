@@ -50,7 +50,7 @@ public:
     using SecurityContext::contentSecurityPolicy;
 
     DOMTimerCoordinator* timers() final { ASSERT_NOT_REACHED(); return nullptr; } // WorkletGlobalScopes don't have timers.
-    void postTask(const WebTraceLocation&, PassOwnPtr<ExecutionContextTask>) override
+    void postTask(const WebTraceLocation&, std::unique_ptr<ExecutionContextTask>) override
     {
         // TODO(ikilpatrick): implement.
         ASSERT_NOT_REACHED();

@@ -51,7 +51,7 @@ DEFINE_TRACE(MainThreadTaskRunner)
     visitor->trace(m_context);
 }
 
-void MainThreadTaskRunner::postTaskInternal(const WebTraceLocation& location, PassOwnPtr<ExecutionContextTask> task, bool isInspectorTask)
+void MainThreadTaskRunner::postTaskInternal(const WebTraceLocation& location, std::unique_ptr<ExecutionContextTask> task, bool isInspectorTask)
 {
     Platform::current()->mainThread()->getWebTaskRunner()->postTask(location, threadSafeBind(
         &MainThreadTaskRunner::perform,
@@ -60,19 +60,19 @@ void MainThreadTaskRunner::postTaskInternal(const WebTraceLocation& location, Pa
         isInspectorTask));
 }
 
-void MainThreadTaskRunner::postTask(const WebTraceLocation& location, PassOwnPtr<ExecutionContextTask> task)
+void MainThreadTaskRunner::postTask(const WebTraceLocation& location, std::unique_ptr<ExecutionContextTask> task)
 {
     if (!task->taskNameForInstrumentation().isEmpty())
         InspectorInstrumentation::asyncTaskScheduled(m_context, task->taskNameForInstrumentation(), task.get());
     postTaskInternal(location, std::move(task), false);
 }
 
-void MainThreadTaskRunner::postInspectorTask(const WebTraceLocation& location, PassOwnPtr<ExecutionContextTask> task)
+void MainThreadTaskRunner::postInspectorTask(const WebTraceLocation& location, std::unique_ptr<ExecutionContextTask> task)
 {
     postTaskInternal(location, std::move(task), true);
 }
 
-void MainThreadTaskRunner::perform(PassOwnPtr<ExecutionContextTask> task, bool isInspectorTask)
+void MainThreadTaskRunner::perform(std::unique_ptr<ExecutionContextTask> task, bool isInspectorTask)
 {
     if (!isInspectorTask && (m_context->tasksNeedSuspension() || !m_pendingTasks.isEmpty())) {
         m_pendingTasks.append(std::move(task));
@@ -102,7 +102,7 @@ void MainThreadTaskRunner::resume()
 void MainThreadTaskRunner::pendingTasksTimerFired(Timer<MainThreadTaskRunner>*)
 {
     while (!m_pendingTasks.isEmpty()) {
-        OwnPtr<ExecutionContextTask> task = m_pendingTasks[0].release();
+        std::unique_ptr<ExecutionContextTask> task = std::move(m_pendingTasks[0]);
         m_pendingTasks.remove(0);
         const bool instrumenting = !task->taskNameForInstrumentation().isEmpty();
         InspectorInstrumentation::AsyncTask asyncTask(m_context, task.get(), instrumenting);

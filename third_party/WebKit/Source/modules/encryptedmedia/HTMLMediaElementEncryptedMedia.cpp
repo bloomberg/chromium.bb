@@ -59,7 +59,7 @@ typedef Function<void(ExceptionCode, const String&)> FailureCallback;
 // Calls |success| if result is resolved, |failure| is result is rejected.
 class SetContentDecryptionModuleResult final : public ContentDecryptionModuleResult {
 public:
-    SetContentDecryptionModuleResult(PassOwnPtr<SuccessCallback> success, PassOwnPtr<FailureCallback> failure)
+    SetContentDecryptionModuleResult(std::unique_ptr<SuccessCallback> success, std::unique_ptr<FailureCallback> failure)
         : m_successCallback(std::move(success))
         , m_failureCallback(std::move(failure))
     {
@@ -97,8 +97,8 @@ public:
     }
 
 private:
-    OwnPtr<SuccessCallback> m_successCallback;
-    OwnPtr<FailureCallback> m_failureCallback;
+    std::unique_ptr<SuccessCallback> m_successCallback;
+    std::unique_ptr<FailureCallback> m_failureCallback;
 };
 
 ScriptPromise SetMediaKeysHandler::create(ScriptState* scriptState, HTMLMediaElement& element, MediaKeys* mediaKeys)
@@ -166,9 +166,9 @@ void SetMediaKeysHandler::clearExistingMediaKeys()
             //       attribute to decrypt media data and remove the association
             //       with the media element.
             // (All 3 steps handled as needed in Chromium.)
-            OwnPtr<SuccessCallback> successCallback = bind(&SetMediaKeysHandler::setNewMediaKeys, this);
-            OwnPtr<FailureCallback> failureCallback = bind<ExceptionCode, const String&>(&SetMediaKeysHandler::clearFailed, this);
-            ContentDecryptionModuleResult* result = new SetContentDecryptionModuleResult(successCallback.release(), failureCallback.release());
+            std::unique_ptr<SuccessCallback> successCallback = bind(&SetMediaKeysHandler::setNewMediaKeys, this);
+            std::unique_ptr<FailureCallback> failureCallback = bind<ExceptionCode, const String&>(&SetMediaKeysHandler::clearFailed, this);
+            ContentDecryptionModuleResult* result = new SetContentDecryptionModuleResult(std::move(successCallback), std::move(failureCallback));
             mediaPlayer->setContentDecryptionModule(nullptr, result->result());
 
             // Don't do anything more until |result| is resolved (or rejected).
@@ -194,9 +194,9 @@ void SetMediaKeysHandler::setNewMediaKeys()
         //       algorithm on the media element.
         //       (Handled in Chromium).
         if (m_element->webMediaPlayer()) {
-            OwnPtr<SuccessCallback> successCallback = bind(&SetMediaKeysHandler::finish, this);
-            OwnPtr<FailureCallback> failureCallback = bind<ExceptionCode, const String&>(&SetMediaKeysHandler::setFailed, this);
-            ContentDecryptionModuleResult* result = new SetContentDecryptionModuleResult(successCallback.release(), failureCallback.release());
+            std::unique_ptr<SuccessCallback> successCallback = bind(&SetMediaKeysHandler::finish, this);
+            std::unique_ptr<FailureCallback> failureCallback = bind<ExceptionCode, const String&>(&SetMediaKeysHandler::setFailed, this);
+            ContentDecryptionModuleResult* result = new SetContentDecryptionModuleResult(std::move(successCallback), std::move(failureCallback));
             m_element->webMediaPlayer()->setContentDecryptionModule(m_newMediaKeys->contentDecryptionModule(), result->result());
 
             // Don't do anything more until |result| is resolved (or rejected).

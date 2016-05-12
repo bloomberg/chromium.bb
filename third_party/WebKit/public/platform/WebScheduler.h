@@ -98,9 +98,9 @@ public:
     // Helpers for posting bound functions as tasks.
     typedef Function<void(double deadlineSeconds)> IdleTask;
 
-    void postIdleTask(const WebTraceLocation&, PassOwnPtr<IdleTask>);
-    void postNonNestableIdleTask(const WebTraceLocation&, PassOwnPtr<IdleTask>);
-    void postIdleTaskAfterWakeup(const WebTraceLocation&, PassOwnPtr<IdleTask>);
+    void postIdleTask(const WebTraceLocation&, std::unique_ptr<IdleTask>);
+    void postNonNestableIdleTask(const WebTraceLocation&, std::unique_ptr<IdleTask>);
+    void postIdleTaskAfterWakeup(const WebTraceLocation&, std::unique_ptr<IdleTask>);
 #endif
 };
 

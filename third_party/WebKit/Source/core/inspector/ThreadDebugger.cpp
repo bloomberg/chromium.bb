@@ -156,7 +156,7 @@ void ThreadDebugger::consoleTimeStamp(const String16& title)
     TRACE_EVENT_INSTANT1("devtools.timeline", "TimeStamp", TRACE_EVENT_SCOPE_THREAD, "data", InspectorTimeStampEvent::data(currentExecutionContext(isolate), title));
 }
 
-int ThreadDebugger::startRepeatingTimer(double interval, PassOwnPtr<V8DebuggerClient::TimerCallback> callback)
+int ThreadDebugger::startRepeatingTimer(double interval, std::unique_ptr<V8DebuggerClient::TimerCallback> callback)
 {
     int id = ++m_lastTimerId;
     OwnPtr<Timer<ThreadDebugger>> timer = adoptPtr(new Timer<ThreadDebugger>(this, &ThreadDebugger::onTimer));

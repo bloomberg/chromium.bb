@@ -68,7 +68,7 @@ public:
     void closeDatabasesImmediately(SecurityOrigin*, const String& name);
 
     using DatabaseCallback = Function<void(Database*)>;
-    void forEachOpenDatabaseInPage(Page*, PassOwnPtr<DatabaseCallback>);
+    void forEachOpenDatabaseInPage(Page*, std::unique_ptr<DatabaseCallback>);
 
     void prepareToOpenDatabase(Database*);
     void failedToOpenDatabase(Database*);

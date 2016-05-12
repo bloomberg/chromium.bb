@@ -133,16 +133,16 @@ void InProcessWorkerMessagingProxy::postMessageToWorkerGlobalScope(PassRefPtr<Se
     if (m_askedToTerminate)
         return;
 
-    OwnPtr<ExecutionContextTask> task = createCrossThreadTask(&processMessageOnWorkerGlobalScope, message, passed(std::move(channels)), AllowCrossThreadAccess(&workerObjectProxy()));
+    std::unique_ptr<ExecutionContextTask> task = createCrossThreadTask(&processMessageOnWorkerGlobalScope, message, passed(std::move(channels)), AllowCrossThreadAccess(&workerObjectProxy()));
     if (m_workerThread) {
         ++m_unconfirmedMessageCount;
-        m_workerThread->postTask(BLINK_FROM_HERE, task.release());
+        m_workerThread->postTask(BLINK_FROM_HERE, std::move(task));
     } else {
-        m_queuedEarlyTasks.append(task.release());
+        m_queuedEarlyTasks.append(std::move(task));
     }
 }
 
-bool InProcessWorkerMessagingProxy::postTaskToWorkerGlobalScope(PassOwnPtr<ExecutionContextTask> task)
+bool InProcessWorkerMessagingProxy::postTaskToWorkerGlobalScope(std::unique_ptr<ExecutionContextTask> task)
 {
     if (m_askedToTerminate)
         return false;
@@ -152,7 +152,7 @@ bool InProcessWorkerMessagingProxy::postTaskToWorkerGlobalScope(PassOwnPtr<Execu
     return true;
 }
 
-void InProcessWorkerMessagingProxy::postTaskToLoader(PassOwnPtr<ExecutionContextTask> task)
+void InProcessWorkerMessagingProxy::postTaskToLoader(std::unique_ptr<ExecutionContextTask> task)
 {
     DCHECK(getExecutionContext()->isDocument());
     getExecutionContext()->postTask(BLINK_FROM_HERE, std::move(task));
@@ -204,7 +204,7 @@ void InProcessWorkerMessagingProxy::workerThreadCreated()
     m_workerThreadHadPendingActivity = true;
 
     for (auto& earlyTasks : m_queuedEarlyTasks)
-        m_workerThread->postTask(BLINK_FROM_HERE, earlyTasks.release());
+        m_workerThread->postTask(BLINK_FROM_HERE, std::move(earlyTasks));
     m_queuedEarlyTasks.clear();
 }
 

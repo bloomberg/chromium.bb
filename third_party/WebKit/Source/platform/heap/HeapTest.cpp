@@ -4991,16 +4991,16 @@ TEST(HeapTest, RegressNullIsStrongified)
 
 TEST(HeapTest, Bind)
 {
-    OwnPtr<SameThreadClosure> closure = bind(static_cast<void (Bar::*)(Visitor*)>(&Bar::trace), Bar::create(), static_cast<Visitor*>(0));
+    std::unique_ptr<SameThreadClosure> closure = bind(static_cast<void (Bar::*)(Visitor*)>(&Bar::trace), Bar::create(), static_cast<Visitor*>(0));
     // OffHeapInt* should not make Persistent.
-    OwnPtr<SameThreadClosure> closure2 = bind(&OffHeapInt::voidFunction, OffHeapInt::create(1));
+    std::unique_ptr<SameThreadClosure> closure2 = bind(&OffHeapInt::voidFunction, OffHeapInt::create(1));
     preciselyCollectGarbage();
     // The closure should have a persistent handle to the Bar.
     EXPECT_EQ(1u, Bar::s_live);
 
     UseMixin::s_traceCount = 0;
     Mixin* mixin = UseMixin::create();
-    OwnPtr<SameThreadClosure> mixinClosure = bind(static_cast<void (Mixin::*)(Visitor*)>(&Mixin::trace), mixin, static_cast<Visitor*>(0));
+    std::unique_ptr<SameThreadClosure> mixinClosure = bind(static_cast<void (Mixin::*)(Visitor*)>(&Mixin::trace), mixin, static_cast<Visitor*>(0));
     preciselyCollectGarbage();
     // The closure should have a persistent handle to the mixin.
     EXPECT_EQ(1, UseMixin::s_traceCount);

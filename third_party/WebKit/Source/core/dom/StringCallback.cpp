@@ -33,6 +33,7 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/ExecutionContextTask.h"
 #include "public/platform/WebTraceLocation.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -41,9 +42,9 @@ namespace {
 
 class DispatchCallbackTask final : public ExecutionContextTask {
 public:
-    static PassOwnPtr<DispatchCallbackTask> create(StringCallback* callback, const String& data, const String& taskName)
+    static std::unique_ptr<DispatchCallbackTask> create(StringCallback* callback, const String& data, const String& taskName)
     {
-        return adoptPtr(new DispatchCallbackTask(callback, data, taskName));
+        return wrapUnique(new DispatchCallbackTask(callback, data, taskName));
     }
 
     void performTask(ExecutionContext*) override

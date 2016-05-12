@@ -166,7 +166,7 @@ private:
     typedef Function<bool()> BoolFunction;
     class EventWrapper : public GarbageCollectedFinalized<EventWrapper> {
     public:
-        EventWrapper(Event*, PassOwnPtr<BoolFunction>);
+        EventWrapper(Event*, std::unique_ptr<BoolFunction>);
         // Returns true if |m_setupFunction| returns true or it is null.
         // |m_event| will only be fired if setup() returns true;
         bool setup();
@@ -176,14 +176,14 @@ private:
         Member<Event> m_event;
 
     private:
-        OwnPtr<BoolFunction> m_setupFunction;
+        std::unique_ptr<BoolFunction> m_setupFunction;
     };
 
     RTCPeerConnection(ExecutionContext*, RTCConfiguration*, WebMediaConstraints, ExceptionState&);
     void dispose();
 
     void scheduleDispatchEvent(Event*);
-    void scheduleDispatchEvent(Event*, PassOwnPtr<BoolFunction>);
+    void scheduleDispatchEvent(Event*, std::unique_ptr<BoolFunction>);
     void dispatchScheduledEvent();
     bool hasLocalStreamWithTrackId(const String& trackId);
 

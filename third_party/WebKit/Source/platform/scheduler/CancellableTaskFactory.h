@@ -62,7 +62,7 @@ public:
 protected:
     // Only intended used by unit tests wanting to stack allocate and/or pass in a closure value.
     // Please use the create() factory method elsewhere.
-    explicit CancellableTaskFactory(PassOwnPtr<SameThreadClosure> closure)
+    explicit CancellableTaskFactory(std::unique_ptr<SameThreadClosure> closure)
         : m_closure(std::move(closure))
         , m_weakPtrFactory(this)
     {
@@ -85,7 +85,7 @@ private:
         WeakPtr<CancellableTaskFactory> m_weakPtr;
     };
 
-    OwnPtr<SameThreadClosure> m_closure;
+    std::unique_ptr<SameThreadClosure> m_closure;
     WeakPtrFactory<CancellableTaskFactory> m_weakPtrFactory;
 };
 

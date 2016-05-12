@@ -26,10 +26,10 @@ public:
     ~InspectorTaskRunner();
 
     using Task = WTF::CrossThreadClosure;
-    void appendTask(PassOwnPtr<Task>);
+    void appendTask(std::unique_ptr<Task>);
 
     enum WaitMode { WaitForTask, DontWaitForTask };
-    PassOwnPtr<Task> takeNextTask(WaitMode);
+    std::unique_ptr<Task> takeNextTask(WaitMode);
 
     void interruptAndRunAllTasksDontWait(v8::Isolate*);
     void runAllTasksDontWait();
@@ -53,7 +53,7 @@ private:
     bool m_ignoreInterrupts;
     Mutex m_mutex;
     ThreadCondition m_condition;
-    Deque<OwnPtr<Task>> m_queue;
+    Deque<std::unique_ptr<Task>> m_queue;
     bool m_killed;
 };
 

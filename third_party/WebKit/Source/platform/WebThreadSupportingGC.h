@@ -33,22 +33,22 @@ public:
     static PassOwnPtr<WebThreadSupportingGC> createForThread(WebThread*, bool perThreadHeapEnabled = false);
     ~WebThreadSupportingGC();
 
-    void postTask(const WebTraceLocation& location, PassOwnPtr<SameThreadClosure> task)
+    void postTask(const WebTraceLocation& location, std::unique_ptr<SameThreadClosure> task)
     {
         m_thread->getWebTaskRunner()->postTask(location, std::move(task));
     }
 
-    void postDelayedTask(const WebTraceLocation& location, PassOwnPtr<SameThreadClosure> task, long long delayMs)
+    void postDelayedTask(const WebTraceLocation& location, std::unique_ptr<SameThreadClosure> task, long long delayMs)
     {
         m_thread->getWebTaskRunner()->postDelayedTask(location, std::move(task), delayMs);
     }
 
-    void postTask(const WebTraceLocation& location, PassOwnPtr<CrossThreadClosure> task)
+    void postTask(const WebTraceLocation& location, std::unique_ptr<CrossThreadClosure> task)
     {
         m_thread->getWebTaskRunner()->postTask(location, std::move(task));
     }
 
-    void postDelayedTask(const WebTraceLocation& location, PassOwnPtr<CrossThreadClosure> task, long long delayMs)
+    void postDelayedTask(const WebTraceLocation& location, std::unique_ptr<CrossThreadClosure> task, long long delayMs)
     {
         m_thread->getWebTaskRunner()->postDelayedTask(location, std::move(task), delayMs);
     }

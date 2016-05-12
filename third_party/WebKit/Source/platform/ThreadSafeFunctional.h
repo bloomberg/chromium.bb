@@ -28,7 +28,7 @@ namespace blink {
 //     bind(func1, 42, str.isolatedCopy());
 
 template<typename... FreeVariableTypes, typename FunctionType, typename... Ps>
-PassOwnPtr<Function<typename WTF::FunctionWrapper<FunctionType>::ResultType(FreeVariableTypes...), WTF::CrossThreadAffinity>> threadSafeBind(
+std::unique_ptr<Function<typename WTF::FunctionWrapper<FunctionType>::ResultType(FreeVariableTypes...), WTF::CrossThreadAffinity>> threadSafeBind(
     FunctionType function,
     Ps&&... parameters)
 {

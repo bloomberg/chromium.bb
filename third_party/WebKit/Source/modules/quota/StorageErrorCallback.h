@@ -49,7 +49,7 @@ public:
     DEFINE_INLINE_VIRTUAL_TRACE() { }
     virtual void handleEvent(DOMError*) = 0;
 
-    MODULES_EXPORT static PassOwnPtr<ExecutionContextTask> createSameThreadTask(StorageErrorCallback*, ExceptionCode);
+    MODULES_EXPORT static std::unique_ptr<ExecutionContextTask> createSameThreadTask(StorageErrorCallback*, ExceptionCode);
 
 private:
     static void run(StorageErrorCallback*, ExceptionCode);

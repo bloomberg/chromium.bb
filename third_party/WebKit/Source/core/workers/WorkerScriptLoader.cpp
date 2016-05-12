@@ -84,7 +84,7 @@ void WorkerScriptLoader::loadSynchronously(ExecutionContext& executionContext, c
     WorkerThreadableLoader::loadResourceSynchronously(toWorkerGlobalScope(executionContext), request, *this, options, resourceLoaderOptions);
 }
 
-void WorkerScriptLoader::loadAsynchronously(ExecutionContext& executionContext, const KURL& url, CrossOriginRequestPolicy crossOriginRequestPolicy, WebAddressSpace creationAddressSpace, PassOwnPtr<SameThreadClosure> responseCallback, PassOwnPtr<SameThreadClosure> finishedCallback)
+void WorkerScriptLoader::loadAsynchronously(ExecutionContext& executionContext, const KURL& url, CrossOriginRequestPolicy crossOriginRequestPolicy, WebAddressSpace creationAddressSpace, std::unique_ptr<SameThreadClosure> responseCallback, std::unique_ptr<SameThreadClosure> finishedCallback)
 {
     DCHECK(responseCallback || finishedCallback);
     m_responseCallback = std::move(responseCallback);
@@ -225,7 +225,7 @@ void WorkerScriptLoader::notifyFinished()
     if (!m_finishedCallback)
         return;
 
-    OwnPtr<SameThreadClosure> callback = m_finishedCallback.release();
+    std::unique_ptr<SameThreadClosure> callback = std::move(m_finishedCallback);
     (*callback)();
 }
 

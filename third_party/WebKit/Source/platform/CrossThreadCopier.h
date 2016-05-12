@@ -158,6 +158,16 @@ struct CrossThreadCopier<PassOwnPtr<T>> {
 };
 
 template <typename T>
+struct CrossThreadCopier<std::unique_ptr<T>> {
+    STATIC_ONLY(CrossThreadCopier);
+    using Type = std::unique_ptr<T>;
+    static std::unique_ptr<T> copy(std::unique_ptr<T> pointer)
+    {
+        return pointer; // This is in fact a move.
+    }
+};
+
+template <typename T>
 struct CrossThreadCopier<WTF::PassedWrapper<T>> {
     STATIC_ONLY(CrossThreadCopier);
     using Type = WTF::PassedWrapper<typename CrossThreadCopier<T>::Type>;

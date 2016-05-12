@@ -41,12 +41,12 @@ public:
     {
     }
 
-    explicit WebFunction(PassOwnPtr<WTFFunction> c)
+    explicit WebFunction(std::unique_ptr<WTFFunction> c)
     {
         // Make the base::Callback own the WTF::Function, allowing it to call the
         // WTF::Function more than once but destroy it when the base::Callback is
         // destroyed.
-        m_callback = base::Bind(&RunWTFFunction<R, Args...>, base::Owned(c.leakPtr()));
+        m_callback = base::Bind(&RunWTFFunction<R, Args...>, base::Owned(c.release()));
     }
 #endif
 

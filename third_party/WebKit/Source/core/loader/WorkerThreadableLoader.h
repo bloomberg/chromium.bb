@@ -137,8 +137,8 @@ private:
         // The following methods are overridden by the subclasses to implement
         // code to forward did.* method invocations to the worker context's
         // thread which is specialized for sync and async case respectively.
-        virtual void forwardTaskToWorker(PassOwnPtr<ExecutionContextTask>) = 0;
-        virtual void forwardTaskToWorkerOnLoaderDone(PassOwnPtr<ExecutionContextTask>) = 0;
+        virtual void forwardTaskToWorker(std::unique_ptr<ExecutionContextTask>) = 0;
+        virtual void forwardTaskToWorkerOnLoaderDone(std::unique_ptr<ExecutionContextTask>) = 0;
 
         // All executed on the main thread.
         void mainThreadCreateLoader(ThreadableLoaderOptions, ResourceLoaderOptions, ExecutionContext*);
@@ -169,8 +169,8 @@ private:
     private:
         ~MainThreadAsyncBridge() override;
 
-        void forwardTaskToWorker(PassOwnPtr<ExecutionContextTask>) override;
-        void forwardTaskToWorkerOnLoaderDone(PassOwnPtr<ExecutionContextTask>) override;
+        void forwardTaskToWorker(std::unique_ptr<ExecutionContextTask>) override;
+        void forwardTaskToWorkerOnLoaderDone(std::unique_ptr<ExecutionContextTask>) override;
     };
 
     class MainThreadSyncBridge final : public MainThreadBridgeBase {
@@ -181,15 +181,15 @@ private:
     private:
         ~MainThreadSyncBridge() override;
 
-        void forwardTaskToWorker(PassOwnPtr<ExecutionContextTask>) override;
-        void forwardTaskToWorkerOnLoaderDone(PassOwnPtr<ExecutionContextTask>) override;
+        void forwardTaskToWorker(std::unique_ptr<ExecutionContextTask>) override;
+        void forwardTaskToWorkerOnLoaderDone(std::unique_ptr<ExecutionContextTask>) override;
 
         bool m_done;
         OwnPtr<WaitableEvent> m_loaderDoneEvent;
         // Thread-safety: |m_clientTasks| can be written (i.e. Closures are added)
         // on the main thread only before |m_loaderDoneEvent| is signaled and can be read
         // on the worker context thread only after |m_loaderDoneEvent| is signaled.
-        Vector<OwnPtr<ExecutionContextTask>> m_clientTasks;
+        Vector<std::unique_ptr<ExecutionContextTask>> m_clientTasks;
         Mutex m_lock;
     };
 

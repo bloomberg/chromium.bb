@@ -50,6 +50,7 @@
 #include "platform/weborigin/SecurityPolicy.h"
 #include "public/platform/WebCachePolicy.h"
 #include "public/platform/WebURLRequest.h"
+#include "wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -81,9 +82,9 @@ static ImageLoader::BypassMainWorldBehavior shouldBypassMainWorldCSP(ImageLoader
 
 class ImageLoader::Task : public WebTaskRunner::Task {
 public:
-    static PassOwnPtr<Task> create(ImageLoader* loader, UpdateFromElementBehavior updateBehavior, ReferrerPolicy referrerPolicy)
+    static std::unique_ptr<Task> create(ImageLoader* loader, UpdateFromElementBehavior updateBehavior, ReferrerPolicy referrerPolicy)
     {
-        return adoptPtr(new Task(loader, updateBehavior, referrerPolicy));
+        return wrapUnique(new Task(loader, updateBehavior, referrerPolicy));
     }
 
     Task(ImageLoader* loader, UpdateFromElementBehavior updateBehavior, ReferrerPolicy referrerPolicy)
@@ -247,9 +248,9 @@ inline void ImageLoader::clearFailedLoadURL()
 
 inline void ImageLoader::enqueueImageLoadingMicroTask(UpdateFromElementBehavior updateBehavior, ReferrerPolicy referrerPolicy)
 {
-    OwnPtr<Task> task = Task::create(this, updateBehavior, referrerPolicy);
+    std::unique_ptr<Task> task = Task::create(this, updateBehavior, referrerPolicy);
     m_pendingTask = task->createWeakPtr();
-    Microtask::enqueueMicrotask(task.release());
+    Microtask::enqueueMicrotask(std::move(task));
     m_loadDelayCounter = IncrementLoadEventDelayCount::create(m_element->document());
 }
 

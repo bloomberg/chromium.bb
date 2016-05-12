@@ -59,7 +59,7 @@ public:
     ~MainThreadDebugger() override;
 
     static MainThreadDebugger* instance();
-    static void interruptMainThreadAndRun(PassOwnPtr<InspectorTaskRunner::Task>);
+    static void interruptMainThreadAndRun(std::unique_ptr<InspectorTaskRunner::Task>);
 
     InspectorTaskRunner* taskRunner() const { return m_taskRunner.get(); }
     bool isWorker() override { return false; }

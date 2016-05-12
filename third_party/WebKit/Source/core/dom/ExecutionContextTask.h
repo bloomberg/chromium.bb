@@ -31,7 +31,7 @@
 #include "wtf/Allocator.h"
 #include "wtf/Functional.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/PassOwnPtr.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -53,12 +53,12 @@ namespace internal {
 template<typename T, WTF::FunctionThreadAffinity threadAffinity>
 class CallClosureTaskBase : public ExecutionContextTask {
 protected:
-    explicit CallClosureTaskBase(PassOwnPtr<Function<T, threadAffinity>> closure)
+    explicit CallClosureTaskBase(std::unique_ptr<Function<T, threadAffinity>> closure)
         : m_closure(std::move(closure))
     {
     }
 
-    OwnPtr<Function<T, threadAffinity>> m_closure;
+    std::unique_ptr<Function<T, threadAffinity>> m_closure;
 };
 
 template<WTF::FunctionThreadAffinity threadAffinity>
@@ -67,9 +67,9 @@ public:
     // Do not use |create| other than in createCrossThreadTask and
     // createSameThreadTask.
     // See http://crbug.com/390851
-    static PassOwnPtr<CallClosureTask<threadAffinity>> create(PassOwnPtr<Function<void(), threadAffinity>> closure)
+    static std::unique_ptr<CallClosureTask<threadAffinity>> create(std::unique_ptr<Function<void(), threadAffinity>> closure)
     {
-        return adoptPtr(new CallClosureTask<threadAffinity>(std::move(closure)));
+        return wrapUnique(new CallClosureTask<threadAffinity>(std::move(closure)));
     }
 
     void performTask(ExecutionContext*) override
@@ -78,7 +78,7 @@ public:
     }
 
 private:
-    explicit CallClosureTask(PassOwnPtr<Function<void(), threadAffinity>> closure)
+    explicit CallClosureTask(std::unique_ptr<Function<void(), threadAffinity>> closure)
         : CallClosureTaskBase<void(), threadAffinity>(std::move(closure))
     {
     }
@@ -90,9 +90,9 @@ public:
     // Do not use |create| other than in createCrossThreadTask and
     // createSameThreadTask.
     // See http://crbug.com/390851
-    static PassOwnPtr<CallClosureWithExecutionContextTask> create(PassOwnPtr<Function<void(ExecutionContext*), threadAffinity>> closure)
+    static std::unique_ptr<CallClosureWithExecutionContextTask> create(std::unique_ptr<Function<void(ExecutionContext*), threadAffinity>> closure)
     {
-        return adoptPtr(new CallClosureWithExecutionContextTask(std::move(closure)));
+        return wrapUnique(new CallClosureWithExecutionContextTask(std::move(closure)));
     }
 
     void performTask(ExecutionContext* context) override
@@ -101,7 +101,7 @@ public:
     }
 
 private:
-    explicit CallClosureWithExecutionContextTask(PassOwnPtr<Function<void(ExecutionContext*), threadAffinity>> closure)
+    explicit CallClosureWithExecutionContextTask(std::unique_ptr<Function<void(ExecutionContext*), threadAffinity>> closure)
         : CallClosureTaskBase<void(ExecutionContext*), threadAffinity>(std::move(closure))
     {
     }
@@ -115,7 +115,7 @@ private:
 // about thread safety when posting the task.
 // When posting tasks across threads, use |createCrossThreadTask|.
 template<typename FunctionType, typename... P>
-PassOwnPtr<ExecutionContextTask> createSameThreadTask(
+std::unique_ptr<ExecutionContextTask> createSameThreadTask(
     FunctionType function, P&&... parameters)
 {
     return internal::CallClosureTask<WTF::SameThreadAffinity>::create(bind(function, std::forward<P>(parameters)...));

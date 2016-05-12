@@ -119,7 +119,7 @@ WebFileSystem* LocalFileSystem::fileSystem() const
     return Platform::current()->fileSystem();
 }
 
-void LocalFileSystem::requestFileSystemAccessInternal(ExecutionContext* context, PassOwnPtr<SameThreadClosure> allowed, PassOwnPtr<SameThreadClosure> denied)
+void LocalFileSystem::requestFileSystemAccessInternal(ExecutionContext* context, std::unique_ptr<SameThreadClosure> allowed, std::unique_ptr<SameThreadClosure> denied)
 {
     if (!client()) {
         (*denied)();

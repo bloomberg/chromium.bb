@@ -359,7 +359,7 @@ RTCOfferOptionsPlatform* parseOfferOptions(const Dictionary& options)
 
 RTCPeerConnection::EventWrapper::EventWrapper(
     Event* event,
-    PassOwnPtr<BoolFunction> function)
+    std::unique_ptr<BoolFunction> function)
     : m_event(event)
     , m_setupFunction(std::move(function))
 {
@@ -1184,7 +1184,7 @@ void RTCPeerConnection::scheduleDispatchEvent(Event* event)
 }
 
 void RTCPeerConnection::scheduleDispatchEvent(Event* event,
-    PassOwnPtr<BoolFunction> setupFunction)
+    std::unique_ptr<BoolFunction> setupFunction)
 {
     m_scheduledEvents.append(new EventWrapper(event, std::move(setupFunction)));
 

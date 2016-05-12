@@ -31,6 +31,7 @@
 #include "wtf/Assertions.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/RefPtr.h"
 #include "wtf/ThreadSafeRefCounted.h"
 #include "wtf/WeakPtr.h"
@@ -315,18 +316,18 @@ private:
 };
 
 template <FunctionThreadAffinity threadAffinity, typename... UnboundParameters, typename FunctionType, typename... BoundParameters>
-PassOwnPtr<Function<typename FunctionWrapper<FunctionType>::ResultType(UnboundParameters...), threadAffinity>> bindInternal(FunctionType function, BoundParameters&&... boundParameters)
+std::unique_ptr<Function<typename FunctionWrapper<FunctionType>::ResultType(UnboundParameters...), threadAffinity>> bindInternal(FunctionType function, BoundParameters&&... boundParameters)
 {
     // Bound parameters' types are wrapped with std::tuple so we can pass two template parameter packs (bound
     // parameters and unbound) to PartBoundFunctionImpl. Note that a tuple of this type isn't actually created;
     // std::tuple<> is just for carrying the bound parameters' types. Any other class template taking a type parameter
     // pack can be used instead of std::tuple. std::tuple is used just because it's most convenient for this purpose.
     using BoundFunctionType = PartBoundFunctionImpl<threadAffinity, std::tuple<BoundParameters&&...>, FunctionWrapper<FunctionType>, UnboundParameters...>;
-    return adoptPtr(new BoundFunctionType(FunctionWrapper<FunctionType>(function), std::forward<BoundParameters>(boundParameters)...));
+    return wrapUnique(new BoundFunctionType(FunctionWrapper<FunctionType>(function), std::forward<BoundParameters>(boundParameters)...));
 }
 
 template <typename... UnboundParameters, typename FunctionType, typename... BoundParameters>
-PassOwnPtr<Function<typename FunctionWrapper<FunctionType>::ResultType(UnboundParameters...), SameThreadAffinity>> bind(FunctionType function, BoundParameters&&... boundParameters)
+std::unique_ptr<Function<typename FunctionWrapper<FunctionType>::ResultType(UnboundParameters...), SameThreadAffinity>> bind(FunctionType function, BoundParameters&&... boundParameters)
 {
     return bindInternal<SameThreadAffinity, UnboundParameters...>(function, std::forward<BoundParameters>(boundParameters)...);
 }

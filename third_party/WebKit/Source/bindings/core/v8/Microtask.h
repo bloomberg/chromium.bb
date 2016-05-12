@@ -67,8 +67,8 @@ public:
     // TODO(jochen): Make all microtasks pass in the ScriptState they want to be
     // executed in. Until then, all microtasks have to keep track of their
     // ScriptState themselves.
-    static void enqueueMicrotask(PassOwnPtr<WebTaskRunner::Task>);
-    static void enqueueMicrotask(PassOwnPtr<SameThreadClosure>);
+    static void enqueueMicrotask(std::unique_ptr<WebTaskRunner::Task>);
+    static void enqueueMicrotask(std::unique_ptr<SameThreadClosure>);
 };
 
 } // namespace blink

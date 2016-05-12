@@ -32,12 +32,12 @@
 
 namespace blink {
 
-PassOwnPtr<ContentSettingCallbacks> ContentSettingCallbacks::create(PassOwnPtr<SameThreadClosure> allowed, PassOwnPtr<SameThreadClosure> denied)
+PassOwnPtr<ContentSettingCallbacks> ContentSettingCallbacks::create(std::unique_ptr<SameThreadClosure> allowed, std::unique_ptr<SameThreadClosure> denied)
 {
     return adoptPtr(new ContentSettingCallbacks(std::move(allowed), std::move(denied)));
 }
 
-ContentSettingCallbacks::ContentSettingCallbacks(PassOwnPtr<SameThreadClosure> allowed, PassOwnPtr<SameThreadClosure> denied)
+ContentSettingCallbacks::ContentSettingCallbacks(std::unique_ptr<SameThreadClosure> allowed, std::unique_ptr<SameThreadClosure> denied)
     : m_allowed(std::move(allowed))
     , m_denied(std::move(denied))
 {

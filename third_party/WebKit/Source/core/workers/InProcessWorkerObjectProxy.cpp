@@ -51,7 +51,7 @@ void InProcessWorkerObjectProxy::postMessageToWorkerObject(PassRefPtr<Serialized
     getExecutionContext()->postTask(BLINK_FROM_HERE, createCrossThreadTask(&InProcessWorkerMessagingProxy::postMessageToWorkerObject, m_messagingProxy, message, passed(std::move(channels))));
 }
 
-void InProcessWorkerObjectProxy::postTaskToMainExecutionContext(PassOwnPtr<ExecutionContextTask> task)
+void InProcessWorkerObjectProxy::postTaskToMainExecutionContext(std::unique_ptr<ExecutionContextTask> task)
 {
     getExecutionContext()->postTask(BLINK_FROM_HERE, std::move(task));
 }

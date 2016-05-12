@@ -127,7 +127,7 @@ MainThreadDebugger* MainThreadDebugger::instance()
     return static_cast<MainThreadDebugger*>(data->threadDebugger());
 }
 
-void MainThreadDebugger::interruptMainThreadAndRun(PassOwnPtr<InspectorTaskRunner::Task> task)
+void MainThreadDebugger::interruptMainThreadAndRun(std::unique_ptr<InspectorTaskRunner::Task> task)
 {
     MutexLocker locker(creationMutex());
     if (s_instance) {

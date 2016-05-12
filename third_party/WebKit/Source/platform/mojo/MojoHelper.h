@@ -40,6 +40,12 @@ base::Callback<R(Args...)> createBaseCallback(PassOwnPtr<Function<R(Args...)>> f
     return base::Bind(&internal::CallWTFFunction<R, Args...>, base::Owned(functor.leakPtr()));
 }
 
+template <typename R, typename... Args>
+base::Callback<R(Args...)> createBaseCallback(std::unique_ptr<Function<R(Args...)>> functor)
+{
+    return base::Bind(&internal::CallWTFFunction<R, Args...>, base::Owned(functor.release()));
+}
+
 } // namespace blink
 
 namespace mojo {

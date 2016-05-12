@@ -29,14 +29,14 @@ InspectorTaskRunner::~InspectorTaskRunner()
 {
 }
 
-void InspectorTaskRunner::appendTask(PassOwnPtr<Task> task)
+void InspectorTaskRunner::appendTask(std::unique_ptr<Task> task)
 {
     MutexLocker lock(m_mutex);
     m_queue.append(std::move(task));
     m_condition.signal();
 }
 
-PassOwnPtr<InspectorTaskRunner::Task> InspectorTaskRunner::takeNextTask(InspectorTaskRunner::WaitMode waitMode)
+std::unique_ptr<InspectorTaskRunner::Task> InspectorTaskRunner::takeNextTask(InspectorTaskRunner::WaitMode waitMode)
 {
     MutexLocker lock(m_mutex);
     bool timedOut = false;
@@ -51,7 +51,7 @@ PassOwnPtr<InspectorTaskRunner::Task> InspectorTaskRunner::takeNextTask(Inspecto
         return nullptr;
 
     ASSERT_WITH_SECURITY_IMPLICATION(!m_queue.isEmpty());
-    return m_queue.takeFirst().release();
+    return m_queue.takeFirst();
 }
 
 void InspectorTaskRunner::kill()
@@ -69,7 +69,7 @@ void InspectorTaskRunner::interruptAndRunAllTasksDontWait(v8::Isolate* isolate)
 void InspectorTaskRunner::runAllTasksDontWait()
 {
     while (true) {
-        OwnPtr<Task> task = takeNextTask(DontWaitForTask);
+        std::unique_ptr<Task> task = takeNextTask(DontWaitForTask);
         if (!task)
             return;
         (*task)();

@@ -295,14 +295,14 @@ private:
     }
 
     // WorkerLoaderProxyProvider methods.
-    void postTaskToLoader(PassOwnPtr<ExecutionContextTask> task) override
+    void postTaskToLoader(std::unique_ptr<ExecutionContextTask> task) override
     {
         ASSERT(m_workerThread);
         ASSERT(m_workerThread->isCurrentThread());
         document().postTask(BLINK_FROM_HERE, std::move(task));
     }
 
-    bool postTaskToWorkerGlobalScope(PassOwnPtr<ExecutionContextTask> task) override
+    bool postTaskToWorkerGlobalScope(std::unique_ptr<ExecutionContextTask> task) override
     {
         ASSERT(m_workerThread);
         m_workerThread->postTask(BLINK_FROM_HERE, std::move(task));

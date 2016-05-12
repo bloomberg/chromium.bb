@@ -28,7 +28,7 @@ NotificationImageLoader::~NotificationImageLoader()
 {
 }
 
-void NotificationImageLoader::start(ExecutionContext* executionContext, const KURL& url, PassOwnPtr<ImageCallback> imageCallback)
+void NotificationImageLoader::start(ExecutionContext* executionContext, const KURL& url, std::unique_ptr<ImageCallback> imageCallback)
 {
     DCHECK(!m_stopped);
 

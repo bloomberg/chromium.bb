@@ -230,6 +230,7 @@
 #include "wtf/DateMath.h"
 #include "wtf/Functional.h"
 #include "wtf/HashFunctions.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/TemporaryChange.h"
 #include "wtf/text/StringBuffer.h"
@@ -372,9 +373,9 @@ Document::WeakDocumentSet& Document::liveDocumentSet()
 // This class doesn't work with non-Document ExecutionContext.
 class AutofocusTask final : public ExecutionContextTask {
 public:
-    static PassOwnPtr<AutofocusTask> create()
+    static std::unique_ptr<AutofocusTask> create()
     {
-        return adoptPtr(new AutofocusTask());
+        return wrapUnique(new AutofocusTask());
     }
     ~AutofocusTask() override { }
 
@@ -5219,12 +5220,12 @@ void Document::addConsoleMessage(ConsoleMessage* consoleMessage)
 }
 
 // FIXME(crbug.com/305497): This should be removed after ExecutionContext-LocalDOMWindow migration.
-void Document::postTask(const WebTraceLocation& location, PassOwnPtr<ExecutionContextTask> task)
+void Document::postTask(const WebTraceLocation& location, std::unique_ptr<ExecutionContextTask> task)
 {
     m_taskRunner->postTask(location, std::move(task));
 }
 
-void Document::postInspectorTask(const WebTraceLocation& location, PassOwnPtr<ExecutionContextTask> task)
+void Document::postInspectorTask(const WebTraceLocation& location, std::unique_ptr<ExecutionContextTask> task)
 {
     m_taskRunner->postInspectorTask(location, std::move(task));
 }
