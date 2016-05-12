@@ -76,3 +76,5 @@ SitePerProcessBrowserTest.RFPHDestruction
 # https://crbug.com/608117
 WebRtcDataChannelTest.DataChannelGC
 
+# https://crbug.com/611557
+FindRequestManagerTest.RapidFire
