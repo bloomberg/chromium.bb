@@ -712,8 +712,10 @@ void CronetURLRequestContextAdapter::StartNetLogToFileOnNetworkThread(
     return;
   base::FilePath file_path(file_name);
   base::ScopedFILE file(base::OpenFile(file_path, "w"));
-  if (!file)
+  if (!file) {
+    LOG(ERROR) << "Failed to open NetLog file for writing.";
     return;
+  }
 
   write_to_file_observer_.reset(new net::WriteToFileNetLogObserver());
   if (log_all) {
