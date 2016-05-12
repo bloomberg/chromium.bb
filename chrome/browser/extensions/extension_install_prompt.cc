@@ -101,7 +101,7 @@ static const int kAcceptButtonIds[ExtensionInstallPrompt::NUM_PROMPT_TYPES] = {
     IDS_EXTENSION_PROMPT_LAUNCH_BUTTON,
     0,  // Remote installs use different strings for extensions/apps.
     0,  // Repairs use different strings for extensions/apps.
-    0,  // Delegated installs use different strings for extensions/apps/themes.
+    IDS_EXTENSION_PROMPT_INSTALL_BUTTON,
     IDS_EXTENSION_PROMPT_INSTALL_BUTTON,
 };
 static const int kAbortButtonIds[ExtensionInstallPrompt::NUM_PROMPT_TYPES] = {
@@ -326,8 +326,7 @@ int ExtensionInstallPrompt::Prompt::GetDialogButtons() const {
 base::string16 ExtensionInstallPrompt::Prompt::GetAcceptButtonLabel() const {
   int id = kAcceptButtonIds[type_];
 
-  if (type_ == INSTALL_PROMPT || type_ == INLINE_INSTALL_PROMPT ||
-      type_ == DELEGATED_PERMISSIONS_PROMPT) {
+  if (type_ == INSTALL_PROMPT || type_ == INLINE_INSTALL_PROMPT) {
     if (extension_->is_app())
       id = IDS_EXTENSION_INSTALL_PROMPT_ACCEPT_BUTTON_APP;
     else if (extension_->is_theme())
