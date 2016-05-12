@@ -1939,10 +1939,11 @@ void Document::layoutUpdated()
             m_documentTiming.markFirstLayout();
     }
 
-    if (isInMainFrame() && frameHost()) {
-        DCHECK(frameHost()->rootScroller());
+    // TODO(bokan): Not sure how rootScroller can be null here if we're in the
+    // main frame. In any case, I'm moving rootScroller to be owned by Document
+    // soon so this will go away: https://codereview.chromium.org/1970763002/
+    if (isInMainFrame() && frameHost() && frameHost()->rootScroller())
         frameHost()->rootScroller()->didUpdateTopDocumentLayout();
-    }
 }
 
 void Document::setNeedsFocusedElementCheck()
