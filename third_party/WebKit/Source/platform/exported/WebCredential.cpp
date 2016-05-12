@@ -14,11 +14,11 @@ namespace blink {
 std::unique_ptr<WebCredential> WebCredential::create(PlatformCredential* credential)
 {
     if (credential->isPassword()) {
-        return WTF::wrapUnique(new WebPasswordCredential(credential));
+        return wrapUnique(new WebPasswordCredential(credential));
     }
 
     if (credential->isFederated()) {
-        return WTF::wrapUnique(new WebFederatedCredential(credential));
+        return wrapUnique(new WebFederatedCredential(credential));
     }
 
     ASSERT_NOT_REACHED();
