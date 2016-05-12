@@ -158,6 +158,13 @@ public class ToolbarProgressBar extends ClipDrawableProgressBar {
         if (mAnimatingView != null) mAnimatingView.setAlpha(alpha);
     }
 
+    @Override
+    public void onSizeChanged(int width, int height, int oldWidth, int oldHeight) {
+        super.onSizeChanged(width, height, oldWidth, oldHeight);
+        // If the size changed, the animation width needs to be manually updated.
+        if (mAnimatingView != null) mAnimatingView.update(width * getProgress());
+    }
+
     /**
      * Initializes animation based on command line configuration. This must be called when native
      * library is ready.
