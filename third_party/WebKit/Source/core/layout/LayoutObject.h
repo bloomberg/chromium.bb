@@ -780,13 +780,14 @@ public:
     virtual LayoutMultiColumnSpannerPlaceholder* spannerPlaceholder() const { return nullptr; }
     bool isColumnSpanAll() const { return style()->getColumnSpan() == ColumnSpanAll && spannerPlaceholder(); }
 
-    // We include isLayoutButton in this check because buttons are implemented
-    // using flex box but should still support first-line|first-letter.
+    // We include isLayoutButton() in this check, because buttons are
+    // implemented using flex box but should still support things like
+    // first-line, first-letter and text-overflow.
     // The flex box and grid specs require that flex box and grid do not
     // support first-line|first-letter, though.
     // TODO(cbiesinger): Remove when buttons are implemented with align-items instead
     // of flex box. crbug.com/226252.
-    bool canHaveFirstLineOrFirstLetterStyle() const { return isLayoutBlockFlow() || isLayoutButton(); }
+    bool behavesLikeBlockContainer() const { return isLayoutBlockFlow() || isLayoutButton(); }
 
     bool hasFilterOrReflection() const;
 

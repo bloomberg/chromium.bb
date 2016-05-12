@@ -1801,7 +1801,7 @@ const LayoutBlock* LayoutBlock::enclosingFirstLineStyleBlock() const
         LayoutObject* parentBlock = firstLineBlock->parent();
         if (firstLineBlock->isAtomicInlineLevel() || firstLineBlock->isFloatingOrOutOfFlowPositioned()
             || !parentBlock
-            || !parentBlock->canHaveFirstLineOrFirstLetterStyle())
+            || !parentBlock->behavesLikeBlockContainer())
             break;
         ASSERT_WITH_SECURITY_IMPLICATION(parentBlock->isLayoutBlock());
         if (toLayoutBlock(parentBlock)->firstChild() != firstLineBlock)

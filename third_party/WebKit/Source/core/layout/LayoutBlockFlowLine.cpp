@@ -1537,6 +1537,18 @@ static bool isInlineWithOutlineAndContinuation(const LayoutObject& o)
     return o.isLayoutInline() && o.styleRef().hasOutline() && !o.isElementContinuation() && toLayoutInline(o).continuation();
 }
 
+static inline bool shouldTruncateOverflowingText(const LayoutBlockFlow* block)
+{
+    const LayoutObject* objectToCheck = block;
+    if (block->isAnonymousBlock()) {
+        const LayoutObject* parent = block->parent();
+        if (!parent || !parent->behavesLikeBlockContainer())
+            return false;
+        objectToCheck = parent;
+    }
+    return objectToCheck->hasOverflowClip() && objectToCheck->style()->getTextOverflow();
+}
+
 void LayoutBlockFlow::layoutInlineChildren(bool relayoutChildren, LayoutUnit& paintInvalidationLogicalTop, LayoutUnit& paintInvalidationLogicalBottom, LayoutUnit afterEdge)
 {
     // Figure out if we should clear out our line boxes.
@@ -1551,17 +1563,12 @@ void LayoutBlockFlow::layoutInlineChildren(bool relayoutChildren, LayoutUnit& pa
         lineBoxes()->deleteLineBoxes();
     }
 
-    // Text truncation kicks in in two cases:
-    //     1) If your overflow isn't visible and your text-overflow-mode isn't clip.
-    //     2) If you're an anonymous block with a block parent that satisfies #1 that was created
-    //        to accommodate a block that has inline and block children. This excludes parents where
-    //        canCollapseAnonymousBlockChild is false, notably flex items and grid items.
+    // Text truncation kicks in if overflow isn't visible and text-overflow isn't 'clip'. If this is
+    // an anonymous block, we have to examine the parent.
     // FIXME: CSS3 says that descendants that are clipped must also know how to truncate.  This is insanely
     // difficult to figure out in general (especially in the middle of doing layout), so we only handle the
-    // simple case of an anonymous block truncating when it's parent is clipped.
-    bool hasTextOverflow = (style()->getTextOverflow() && hasOverflowClip())
-        || (isAnonymousBlock() && parent() && parent()->isLayoutBlock() && toLayoutBlock(parent())->canCollapseAnonymousBlockChild()
-            && parent()->style()->getTextOverflow() && parent()->hasOverflowClip());
+    // simple case of an anonymous block truncating when its parent is clipped.
+    bool hasTextOverflow = shouldTruncateOverflowingText(this);
 
     // Walk all the lines and delete our ellipsis line boxes if they exist.
     if (hasTextOverflow)

@@ -1873,7 +1873,7 @@ void LayoutObject::firstLineStyleDidChange(const ComputedStyle& oldStyle, const 
         // We need to invalidate all inline boxes in the first line, because they need to be
         // repainted with the new style, e.g. background, font style, etc.
         LayoutBlockFlow* firstLineContainer = nullptr;
-        if (canHaveFirstLineOrFirstLetterStyle()) {
+        if (behavesLikeBlockContainer()) {
             // This object is a LayoutBlock having PseudoIdFirstLine pseudo style changed.
             firstLineContainer = toLayoutBlock(this)->nearestInnerBlockWithFirstLine();
         } else if (isLayoutInline()) {
@@ -3010,7 +3010,7 @@ static PassRefPtr<ComputedStyle> firstLineStyleForCachedUncachedType(StyleCacheS
     if (layoutObject->isBeforeOrAfterContent())
         layoutObjectForFirstLineStyle = layoutObject->parent();
 
-    if (layoutObjectForFirstLineStyle->canHaveFirstLineOrFirstLetterStyle()) {
+    if (layoutObjectForFirstLineStyle->behavesLikeBlockContainer()) {
         if (const LayoutBlock* firstLineBlock = toLayoutBlock(layoutObjectForFirstLineStyle)->enclosingFirstLineStyleBlock()) {
             if (type == Cached)
                 return firstLineBlock->getCachedPseudoStyle(PseudoIdFirstLine, style);
