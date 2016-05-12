@@ -52,7 +52,7 @@ public class AutofillTestHelper {
         }).intValue();
     }
 
-    String setProfile(final AutofillProfile profile) throws InterruptedException,
+    public String setProfile(final AutofillProfile profile) throws InterruptedException,
             ExecutionException {
         String guid = ThreadUtils.runOnUiThreadBlocking(new Callable<String>() {
             @Override
