@@ -24,7 +24,7 @@ cr.define('settings_reset_page', function() {
       'onHideResetProfileDialog',
       'onHideResetProfileBanner',
       'onShowResetProfileDialog',
-      'getReportedSettings',
+      'showReportedSettings',
       'onPowerwashDialogShow',
       'requestFactoryResetRestart',
     ]);
@@ -55,9 +55,8 @@ cr.define('settings_reset_page', function() {
     },
 
     /** @override */
-    getReportedSettings: function() {
-      this.methodCalled('getReportedSettings');
-      return Promise.resolve([]);
+    showReportedSettings: function() {
+      this.methodCalled('showReportedSettings');
     },
 
     /** @override */
@@ -196,7 +195,7 @@ cr.define('settings_reset_page', function() {
         assertTrue(!!showReportedSettingsLink);
         MockInteractions.tap(showReportedSettingsLink);
 
-        return browserProxy.whenCalled('getReportedSettings').then(function() {
+        return browserProxy.whenCalled('showReportedSettings').then(function() {
           MockInteractions.tap(dialog.$.reset);
           return browserProxy.whenCalled('performResetProfileSettings');
         });

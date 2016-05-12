@@ -50,15 +50,6 @@ Polymer({
    * @private
    */
   onShowReportedSettingsTap_: function() {
-    this.browserProxy_.getReportedSettings().then(function(settings) {
-      var output = settings.map(function(entry) {
-        return entry.key + ': ' + entry.value.replace(/\n/g, ', ');
-      });
-      var win = window.open('about:blank');
-      var div = win.document.createElement('div');
-      div.textContent = output.join('\n');
-      div.style.whiteSpace = 'pre';
-      win.document.body.appendChild(div);
-    });
+    this.browserProxy_.showReportedSettings();
   },
 });

@@ -30,11 +30,10 @@ cr.define('settings', function() {
     onShowResetProfileDialog: function() {},
 
     /**
-     * Gets the current settings (about to be reset) reported to Google for
-     * analysis.
-     * @return {!Promise<!Array<{key:string, value:string}>}
+     * Shows the settings that are about to be reset and which will be reported
+     * to Google for analysis, in a new tab.
      */
-    getReportedSettings: function() {},
+    showReportedSettings: function() {},
 
 <if expr="chromeos">
     /**
@@ -78,8 +77,17 @@ cr.define('settings', function() {
     },
 
     /** @override */
-    getReportedSettings: function() {
-      return cr.sendWithPromise('getReportedSettings');
+    showReportedSettings: function() {
+      cr.sendWithPromise('getReportedSettings').then(function(settings) {
+        var output = settings.map(function(entry) {
+          return entry.key + ': ' + entry.value.replace(/\n/g, ', ');
+        });
+        var win = window.open('about:blank');
+        var div = win.document.createElement('div');
+        div.textContent = output.join('\n');
+        div.style.whiteSpace = 'pre';
+        win.document.body.appendChild(div);
+      });
     },
 
 <if expr="chromeos">
