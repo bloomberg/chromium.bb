@@ -389,7 +389,7 @@ void CommandBufferDriver::ScheduleDelayedWork(base::TimeDelta delay) {
     return;
   }
 
-  const base::TimeTicks current_time = base::TimeTicks();
+  const base::TimeTicks current_time = base::TimeTicks::Now();
   // |process_delayed_work_time_| is set if processing of delayed work is
   // already scheduled. Just update the time if already scheduled.
   if (!process_delayed_work_time_.is_null()) {
