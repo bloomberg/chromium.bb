@@ -1,0 +1,8 @@
+include_rules = [
+  "+content/public",
+  "+content/shell",
+  "+net/base",
+  "+sandbox",
+  "+services/shell",
+  "+ui"
+]

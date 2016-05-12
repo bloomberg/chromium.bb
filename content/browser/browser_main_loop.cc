@@ -1207,6 +1207,9 @@ int BrowserMainLoop::BrowserThreadsStarted() {
       MojoShellConnectionImpl::Create();
       MojoShellConnectionImpl::Get()->BindToRequestFromCommandLine();
     }
+  }
+  mojo_shell_context_.reset(new MojoShellContext);
+  if (IsRunningInMojoShell()) {
 #if defined(MOJO_SHELL_CLIENT) && defined(USE_AURA)
     MojoShellConnection* mojo_shell_connection = MojoShellConnection::Get();
     if (mojo_shell_connection) {
@@ -1220,7 +1223,6 @@ int BrowserMainLoop::BrowserThreadsStarted() {
 #endif
   }
 
-  mojo_shell_context_.reset(new MojoShellContext);
 #if defined(OS_MACOSX)
   mojo::edk::SetMachPortProvider(MachBroker::GetInstance());
 #endif  // defined(OS_MACOSX)

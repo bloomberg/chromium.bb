@@ -271,6 +271,7 @@ MojoShellContext::MojoShellContext() {
         shell_->InitInstanceForEmbedder(kBrowserMojoApplicationName),
         false /* is_external */);
   }
+  GetContentClient()->browser()->AddMojoShellConnectionListeners();
 
   std::unique_ptr<BrowserShellConnection> browser_shell_connection(
       new BrowserShellConnection);

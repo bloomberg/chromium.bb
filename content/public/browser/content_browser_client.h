@@ -635,6 +635,9 @@ class CONTENT_EXPORT ContentBrowserClient {
       BrowserContext* browser_context,
       const GURL& url);
 
+  // Allows the embedder to register MojoShellConnection::Listeners.
+  virtual void AddMojoShellConnectionListeners() {}
+
   // Allows to register browser Mojo services exposed through the
   // RenderProcessHost.
   virtual void RegisterRenderProcessMojoServices(ServiceRegistry* registry) {}

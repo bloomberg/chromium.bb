@@ -445,6 +445,10 @@
     "type": "raw",
     "args": [],
   },
+  "navigation_unittests": {
+    "label": "//services/navigation:navigation_unittests",
+    "type": "windowed_test_launcher",
+  },
   "net_unittests": {
     "label": "//net:net_unittests",
     "type": "console_test_launcher",

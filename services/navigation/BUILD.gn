@@ -1,0 +1,96 @@
+# Copyright 2016 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//mojo/public/mojo_application.gni")
+import("//mojo/public/mojo_application_manifest.gni")
+import("//testing/test.gni")
+
+group("all") {
+  testonly = true
+  data_deps = [
+    ":navigation",
+    ":navigation_unittests",
+  ]
+}
+
+executable("navigation") {
+  testonly = true
+  sources = [
+    "main.cc",
+  ]
+
+  deps = [
+    "//base",
+    "//build/win:default_exe_manifest",
+    "//content",
+    "//content/public/app:both",
+    "//mojo/public/cpp/bindings",
+    "//services/navigation/content_client",
+    "//services/shell/runner:init",
+    "//services/shell/runner/common",
+  ]
+
+  data_deps = [
+    ":manifest",
+    "//mash/wm",
+  ]
+
+  if (is_win) {
+    configs -= [ "//build/config/win:console" ]
+    configs += [ "//build/config/win:windowed" ]
+    deps += [ "//sandbox" ]
+  }
+}
+
+static_library("lib") {
+  sources = [
+    "navigation.cc",
+    "navigation.h",
+    "view_impl.cc",
+    "view_impl.h",
+  ]
+
+  deps = [
+    "//base",
+    "//services/navigation/public/interfaces",
+    "//services/shell/public/cpp",
+    "//skia",
+  ]
+}
+
+test("navigation_unittests") {
+  sources = [
+    "navigation_unittest.cc",
+  ]
+
+  deps = [
+    "//base",
+    "//base/test:test_support",
+    "//services/navigation/public/interfaces",
+    "//services/shell/public/cpp",
+    "//services/shell/public/cpp:shell_test_support",
+    "//services/shell/public/cpp/test:run_all_shelltests",
+    "//testing/gtest",
+  ]
+
+  data_deps = [
+    ":navigation",
+    ":unittest_manifest",
+
+    # TODO(beng): this is a layering violation, provide a test wm.
+    "//mash/wm",
+  ]
+}
+
+mojo_application_manifest("manifest") {
+  type = "exe"
+  application_name = "navigation"
+  source = "manifest.json"
+}
+
+mojo_application_manifest("unittest_manifest") {
+  type = "exe"
+  application_name = "navigation_unittests"
+  source = "unittest_manifest.json"
+}

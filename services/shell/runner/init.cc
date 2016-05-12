@@ -50,6 +50,15 @@ void WaitForDebuggerIfNecessary() {
                 .BaseName()
                 .RemoveExtension()
                 .MaybeAsASCII();
+    } else {
+      base::FilePath exe_path =
+          command_line->GetProgram().BaseName().RemoveExtension();
+      for (const auto& app_name : apps_to_debug) {
+        if (base::FilePath().AppendASCII(app_name) == exe_path) {
+          app = app_name;
+          break;
+        }
+      }
     }
     if (apps_to_debug.empty() || ContainsValue(apps_to_debug, app)) {
 #if defined(OS_WIN)
