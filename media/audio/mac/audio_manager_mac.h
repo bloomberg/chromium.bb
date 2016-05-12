@@ -10,6 +10,7 @@
 #include <stddef.h>
 
 #include <list>
+#include <map>
 #include <memory>
 #include <string>
 
@@ -60,6 +61,13 @@ class MEDIA_EXPORT AudioManagerMac : public AudioManagerBase {
   // Used to track destruction of input and output streams.
   void ReleaseOutputStream(AudioOutputStream* stream) override;
   void ReleaseInputStream(AudioInputStream* stream) override;
+
+  // Called by AUHALStream::Close() before releasing the stream.
+  // This method is a special contract between the real stream and the audio
+  // manager and it ensures that we only try to increase the IO buffer size
+  // for real streams and not for fake or mocked streams.
+  void ReleaseOutputStreamUsingRealDevice(AudioOutputStream* stream,
+                                          AudioDeviceID device_id);
 
   static bool GetDeviceChannels(AudioDeviceID device,
                                 AudioObjectPropertyScope scope,
@@ -127,6 +135,24 @@ class MEDIA_EXPORT AudioManagerMac : public AudioManagerBase {
   // sample rate has changed, otherwise does nothing.
   void HandleDeviceChanges();
 
+  // Returns true if any active input stream is using the specified |device_id|.
+  bool AudioDeviceIsUsedForInput(AudioDeviceID device_id);
+
+  // This method is called when an output stream has been released and it takes
+  // the given |device_id| and scans all active output streams that are
+  // using this id. The goal is to find a new (larger) I/O buffer size which
+  // can be applied to all active output streams since doing so will save
+  // system resources.
+  // Note that, it is only called if no input stream is also using the device.
+  // Example: two active output streams where #1 wants 1024 as buffer size but
+  // is using 256 since stream #2 wants it. Now, if stream #2 is closed down,
+  // the native I/O buffer size will be increased to 1024 instead of 256.
+  // Returns true if it was possible to increase the I/O buffer size and
+  // false otherwise.
+  // TODO(henrika): possibly extend the scheme to also take input streams into
+  // account.
+  bool IncreaseIOBufferSizeIfPossible(AudioDeviceID device_id);
+
   std::unique_ptr<AudioDeviceListenerMac> output_device_listener_;
 
   // Track the output sample-rate and the default output device
@@ -148,6 +174,10 @@ class MEDIA_EXPORT AudioManagerMac : public AudioManagerBase {
   std::list<AudioInputStream*> basic_input_streams_;
   std::list<AUAudioInputStream*> low_latency_input_streams_;
   std::list<AUHALStream*> output_streams_;
+
+  // Maps device IDs and their corresponding actual (I/O) buffer sizes for
+  // all output streams using the specific device.
+  std::map<AudioDeviceID, size_t> output_io_buffer_size_map_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioManagerMac);
 };
