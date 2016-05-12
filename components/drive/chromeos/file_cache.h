@@ -53,6 +53,9 @@ class FreeDiskSpaceGetterInterface {
 // GetCacheFilePath() for example), should be run with |blocking_task_runner|.
 class FileCache {
  public:
+  // The file extended attribute assigned to Drive cache directory.
+  static const char kGCacheFilesAttribute[];
+
   // Enum defining type of file operation e.g. copy or move, etc.
   enum FileOperationType {
     FILE_OPERATION_MOVE = 0,
@@ -158,14 +161,6 @@ class FileCache {
       const ResourceMetadataStorage::RecoveredCacheInfoMap&
           recovered_cache_info);
 
-  // Migrates cache files from |from| directory to |to_files| directory with
-  // creating links in |to_links| directory if necessary. Returns true for
-  // success.
-  static bool MigrateCacheFiles(const base::FilePath& from,
-                                const base::FilePath& to_files,
-                                const base::FilePath& to_links,
-                                ResourceMetadataStorage* metadata_storage);
-
  private:
   friend class FileCacheTest;
 
@@ -190,6 +185,12 @@ class FileCache {
   // Renames cache files from old "prefix:id.md5" format to the new format.
   // TODO(hashimoto): Remove this method at some point.
   bool RenameCacheFilesToNewFormat();
+
+  // Adds appropriate file attributes to the Drive cache directory and files in
+  // it for crbug.com/533750. Returns true on success.
+  // This also resolves inconsistency between cache files and metadata which can
+  // be produced when cryptohome removed cache files or on abrupt shutdown.
+  bool FixMetadataAndFileAttributes();
 
   // This method must be called after writing to a cache file.
   // Used to implement OpenForWrite().
