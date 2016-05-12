@@ -59,9 +59,10 @@
       'target_name': 'flatbuffers_samplebuffer',
       'type': 'static_library',
       'sources': [
+        # Disabled as workaround for crbug.com/611351.
+        # 'src/tests/include_test1.fbs',
+        # 'src/tests/include_test2.fbs',
         'src/tests/monster_test.fbs',
-        'src/tests/include_test1.fbs',
-        'src/tests/include_test2.fbs',
         'src/tests/namespace_test/namespace_test1.fbs',
         'src/tests/namespace_test/namespace_test2.fbs',
       ],
