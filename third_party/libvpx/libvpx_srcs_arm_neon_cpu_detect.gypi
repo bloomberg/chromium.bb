@@ -300,6 +300,7 @@
     '<(libvpx_source)/vpx/vpx_frame_buffer.h',
     '<(libvpx_source)/vpx/vpx_image.h',
     '<(libvpx_source)/vpx/vpx_integer.h',
+    '<(libvpx_source)/vpx_dsp/add_noise.c',
     '<(libvpx_source)/vpx_dsp/arm/bilinear_filter_media.asm',
     '<(libvpx_source)/vpx_dsp/arm/sad_media.asm',
     '<(libvpx_source)/vpx_dsp/arm/subpel_variance_media.c',

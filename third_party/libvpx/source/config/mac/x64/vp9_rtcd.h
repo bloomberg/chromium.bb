@@ -99,10 +99,6 @@ void vp9_mbpost_proc_down_c(uint8_t *dst, int pitch, int rows, int cols, int fli
 void vp9_mbpost_proc_down_xmm(uint8_t *dst, int pitch, int rows, int cols, int flimit);
 #define vp9_mbpost_proc_down vp9_mbpost_proc_down_xmm
 
-void vp9_plane_add_noise_c(uint8_t *Start, char *noise, char blackclamp[16], char whiteclamp[16], char bothclamp[16], unsigned int Width, unsigned int Height, int Pitch);
-void vp9_plane_add_noise_wmt(uint8_t *Start, char *noise, char blackclamp[16], char whiteclamp[16], char bothclamp[16], unsigned int Width, unsigned int Height, int Pitch);
-#define vp9_plane_add_noise vp9_plane_add_noise_wmt
-
 void vp9_post_proc_down_and_across_c(const uint8_t *src_ptr, uint8_t *dst_ptr, int src_pixels_per_line, int dst_pixels_per_line, int rows, int cols, int flimit);
 void vp9_post_proc_down_and_across_xmm(const uint8_t *src_ptr, uint8_t *dst_ptr, int src_pixels_per_line, int dst_pixels_per_line, int rows, int cols, int flimit);
 #define vp9_post_proc_down_and_across vp9_post_proc_down_and_across_xmm
