@@ -383,17 +383,17 @@ TEST_F(MediaRouterMojoImplTest, OffTheRecordRoutesTerminatedOnProfileShutdown) {
 
 TEST_F(MediaRouterMojoImplTest, JoinRoute) {
   MediaSource media_source(kSource);
-
   MediaRoute expected_route(kRouteId, media_source, kSinkId, "", false, "",
                             false);
 
   interfaces::MediaRoutePtr route = CreateMojoRoute();
   // Make sure the MR has received an update with the route, so it knows there
-  // is a local route to join.
+  // is a route to join.
   mojo::Array<interfaces::MediaRoutePtr> mojo_routes(1);
   mojo_routes[0] = route->Clone();
   router()->OnRoutesUpdated(std::move(mojo_routes), mojo::String(),
                             mojo::Array<mojo::String>());
+  EXPECT_TRUE(router()->HasJoinableRoute());
 
   // Use a lambda function as an invocation target here to work around
   // a limitation with GMock::Invoke that prevents it from using move-only types
@@ -442,11 +442,12 @@ TEST_F(MediaRouterMojoImplTest, JoinRouteNotFoundFails) {
 
 TEST_F(MediaRouterMojoImplTest, JoinRouteTimedOutFails) {
   // Make sure the MR has received an update with the route, so it knows there
-  // is a local route to join.
+  // is a route to join.
   mojo::Array<interfaces::MediaRoutePtr> mojo_routes(1);
   mojo_routes[0] = CreateMojoRoute();
   router()->OnRoutesUpdated(std::move(mojo_routes), mojo::String(),
                             mojo::Array<mojo::String>());
+  EXPECT_TRUE(router()->HasJoinableRoute());
 
   EXPECT_CALL(
       mock_media_route_provider_,
@@ -479,11 +480,12 @@ TEST_F(MediaRouterMojoImplTest, JoinRouteOffTheRecordMismatchFails) {
   interfaces::MediaRoutePtr route = CreateMojoRoute();
 
   // Make sure the MR has received an update with the route, so it knows there
-  // is a local route to join.
+  // is a route to join.
   mojo::Array<interfaces::MediaRoutePtr> mojo_routes(1);
   mojo_routes[0] = route->Clone();
   router()->OnRoutesUpdated(std::move(mojo_routes), mojo::String(),
                             mojo::Array<mojo::String>());
+  EXPECT_TRUE(router()->HasJoinableRoute());
 
   // Use a lambda function as an invocation target here to work around
   // a limitation with GMock::Invoke that prevents it from using move-only types

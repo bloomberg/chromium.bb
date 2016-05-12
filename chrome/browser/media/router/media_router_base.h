@@ -52,8 +52,9 @@ class MediaRouterBase : public MediaRouter {
       content::PresentationConnectionCloseReason reason,
       const std::string& message);
 
-  // Returns true when there is at least one MediaRoute with is_local = true.
-  bool HasLocalRoute() const;
+  // Returns true when there is at least one MediaRoute that can be returned by
+  // JoinRoute().
+  bool HasJoinableRoute() const;
 
   using PresentationConnectionStateChangedCallbacks = base::CallbackList<void(
       const content::PresentationConnectionStateChangeInfo&)>;

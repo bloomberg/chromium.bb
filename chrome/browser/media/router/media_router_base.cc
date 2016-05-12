@@ -19,7 +19,7 @@ class MediaRouterBase::InternalMediaRoutesObserver
     : public MediaRoutesObserver {
  public:
   explicit InternalMediaRoutesObserver(MediaRouter* router)
-      : MediaRoutesObserver(router), has_local_route(false) {}
+      : MediaRoutesObserver(router), has_route(false) {}
   ~InternalMediaRoutesObserver() override {}
 
   // MediaRoutesObserver
@@ -27,15 +27,16 @@ class MediaRouterBase::InternalMediaRoutesObserver
       const std::vector<MediaRoute>& routes,
       const std::vector<MediaRoute::Id>& joinable_route_ids) override {
     off_the_record_route_ids.clear();
-    has_local_route = false;
+    // TODO(crbug.com/611486): Have the MRPM pass a list of joinable route ids
+    // via |joinable_route_ids|, and check here if it is non-empty.
+    has_route = !routes.empty();
     for (const auto& route : routes) {
-      has_local_route |= route.is_local();
       if (route.off_the_record())
         off_the_record_route_ids.push_back(route.media_route_id());
     }
   }
 
-  bool has_local_route;
+  bool has_route;
   std::vector<MediaRoute::Id> off_the_record_route_ids;
 
  private:
@@ -103,8 +104,8 @@ void MediaRouterBase::NotifyPresentationConnectionClose(
   callbacks->Notify(info);
 }
 
-bool MediaRouterBase::HasLocalRoute() const {
-  return internal_routes_observer_->has_local_route;
+bool MediaRouterBase::HasJoinableRoute() const {
+  return internal_routes_observer_->has_route;
 }
 
 void MediaRouterBase::Initialize() {

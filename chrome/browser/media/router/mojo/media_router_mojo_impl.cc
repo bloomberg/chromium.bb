@@ -345,8 +345,8 @@ void MediaRouterMojoImpl::JoinRoute(
     DVLOG_WITH_INSTANCE(1) << "Invalid origin: " << origin;
     error_result = RouteRequestResult::FromError(
         "Invalid origin", RouteRequestResult::INVALID_ORIGIN);
-  } else if (!HasLocalRoute()) {
-    DVLOG_WITH_INSTANCE(1) << "No local routes";
+  } else if (!HasJoinableRoute()) {
+    DVLOG_WITH_INSTANCE(1) << "No joinable routes";
     error_result = RouteRequestResult::FromError(
         "Route not found", RouteRequestResult::ROUTE_NOT_FOUND);
   }
