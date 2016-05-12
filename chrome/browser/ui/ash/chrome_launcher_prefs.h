@@ -63,8 +63,8 @@ void SetShelfAlignmentPref(PrefService* prefs,
 
 // Get the list of pinned apps from preferences.
 std::vector<std::string> GetPinnedAppsFromPrefs(
-    PrefService* prefs,
-    LauncherControllerHelper* helper);
+    const PrefService* prefs,
+    const LauncherControllerHelper* helper);
 
 }  // namespace ash
 

@@ -137,6 +137,8 @@ class ArcAppListPrefs : public KeyedService,
   bool HasObserver(Observer* observer);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(ChromeLauncherControllerTest, ArcAppPinPolicy);
+
   // See the Create methods.
   ArcAppListPrefs(const base::FilePath& base_path, PrefService* prefs);
 

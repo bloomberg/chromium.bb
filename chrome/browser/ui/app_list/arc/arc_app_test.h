@@ -23,6 +23,8 @@ namespace content {
 class BrowserContext;
 }
 
+class ArcAppListPrefs;
+
 // Helper class to initialize arc bridge to work with arc apps in unit tests.
 class ArcAppTest {
  public:
@@ -42,9 +44,13 @@ class ArcAppTest {
 
   arc::FakeAppInstance* app_instance() { return app_instance_.get(); }
 
+  ArcAppListPrefs* arc_app_list_prefs() { return arc_app_list_pref_; }
+
  private:
   // Unowned pointer.
   content::BrowserContext* browser_context_ = nullptr;
+
+  ArcAppListPrefs* arc_app_list_pref_ = nullptr;
 
   std::unique_ptr<arc::FakeArcBridgeService> bridge_service_;
   std::unique_ptr<arc::FakeAppInstance> app_instance_;

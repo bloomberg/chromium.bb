@@ -465,13 +465,31 @@ AppListControllerDelegate::Pinnable ChromeLauncherController::GetPinnable(
       profile_->GetPrefs()->GetList(prefs::kPolicyPinnedLauncherApps);
   if (!pref)
     return AppListControllerDelegate::PIN_EDITABLE;
+
+  // Pinned ARC apps policy defines the package name of the apps, that must
+  // be pinned. All the launch activities of any package in policy are pinned.
+  // In turn the input parameter to this function is app_id, which
+  // is 32 chars hash. In case of ARC app this is a hash of
+  // (package name + activity). This means that we must identify the package
+  // from the hash, and check if this package is pinned by policy.
+  const ArcAppListPrefs* const arc_prefs = ArcAppListPrefs::Get(profile());
+  std::string arc_app_packege_name;
+  if (arc_prefs) {
+    std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
+        arc_prefs->GetApp(app_id);
+    if (app_info)
+      arc_app_packege_name = app_info->package_name;
+  }
+
   for (size_t index = 0; index < pref->GetSize(); ++index) {
     const base::DictionaryValue* app = nullptr;
-    std::string the_app_id;
+    std::string app_id_or_package;
     if (pref->GetDictionary(index, &app) &&
-        app->GetString(ash::kPinnedAppsPrefAppIDPath, &the_app_id) &&
-        app_id == the_app_id)
+        app->GetString(ash::kPinnedAppsPrefAppIDPath, &app_id_or_package) &&
+        (app_id == app_id_or_package ||
+         arc_app_packege_name == app_id_or_package)) {
       return AppListControllerDelegate::PIN_FIXED;
+    }
   }
   return AppListControllerDelegate::PIN_EDITABLE;
 }

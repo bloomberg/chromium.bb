@@ -36,6 +36,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/lifetime/scoped_keep_alive.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
 #include "chrome/browser/ui/apps/chrome_app_delegate.h"
 #include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
@@ -202,7 +203,7 @@ class TestLauncherControllerHelper : public LauncherControllerHelper {
         std::string();
   }
 
-  bool IsValidIDForCurrentUser(const std::string& id) override {
+  bool IsValidIDForCurrentUser(const std::string& id) const override {
     for (TabToStringMap::const_iterator i = tab_id_map_.begin();
          i != tab_id_map_.end(); ++i) {
       if (i->second == id)
@@ -214,6 +215,8 @@ class TestLauncherControllerHelper : public LauncherControllerHelper {
   void SetCurrentUser(Profile* profile) override {
     // We can ignore this for now.
   }
+
+  ArcAppListPrefs* GetArcAppListPrefs() const override { return nullptr; }
 
  private:
   typedef std::map<content::WebContents*, std::string> TabToStringMap;
@@ -2914,4 +2917,34 @@ TEST_F(ChromeLauncherControllerTest, MultipleAppIconLoaders) {
   EXPECT_EQ(1, app_icon_loader1->clear_count());
   EXPECT_EQ(1, app_icon_loader2->fetch_count());
   EXPECT_EQ(1, app_icon_loader2->clear_count());
+}
+
+TEST_F(ChromeLauncherControllerTest, ArcAppPinPolicy) {
+  InitLauncherControllerWithBrowser();
+
+  arc::mojom::AppInfo appinfo;
+  appinfo.name = "Some App";
+  appinfo.activity = "SomeActivity";
+  appinfo.package_name = "com.example.app";
+
+  ArcAppListPrefs* const prefs = arc_test_.arc_app_list_prefs();
+  ASSERT_TRUE(prefs);
+
+  // Adding app to the prefs, and check that the app is accessible by id.
+  prefs->AddApp(appinfo);
+  const std::string app_id =
+      ArcAppListPrefs::GetAppId(appinfo.package_name, appinfo.activity);
+  EXPECT_TRUE(prefs->GetApp(app_id));
+
+  // Set policy, that makes pins ARC app. Unlike native extension, for ARC app
+  // package_name (not hash) specified as id. In this test we check that
+  // by hash we can determine that appropriate package was set by policy.
+  base::ListValue policy_value;
+  InsertPrefValue(&policy_value, 0, appinfo.package_name);
+  profile()->GetTestingPrefService()->SetManagedPref(
+      prefs::kPolicyPinnedLauncherApps, policy_value.DeepCopy());
+
+  EXPECT_TRUE(launcher_controller_->IsAppPinned(app_id));
+  EXPECT_EQ(AppListControllerDelegate::PIN_FIXED,
+            launcher_controller_->GetPinnable(app_id));
 }

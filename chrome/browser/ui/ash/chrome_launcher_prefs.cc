@@ -12,6 +12,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/ash/launcher/launcher_controller_helper.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
@@ -168,6 +169,25 @@ const char* AutoHideBehaviorToPref(ShelfAutoHideBehavior behavior) {
   return nullptr;
 }
 
+bool IsAppIdArcPackage(const std::string& app_id) {
+  return app_id.find('.') != app_id.npos;
+}
+
+std::vector<std::string> GetActivitiesForPackage(
+    const std::string& package,
+    const std::vector<std::string>& all_arc_app_ids,
+    const ArcAppListPrefs& app_list_pref) {
+  std::vector<std::string> activities;
+  for (const std::string& app_id : all_arc_app_ids) {
+    const std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
+        app_list_pref.GetApp(app_id);
+    if (app_info->package_name == package) {
+      activities.push_back(app_info->activity);
+    }
+  }
+  return activities;
+}
+
 }  // namespace
 
 const char kPinnedAppsPrefAppIDPath[] = "id";
@@ -271,8 +291,8 @@ void SetShelfAlignmentPref(PrefService* prefs,
 }
 
 std::vector<std::string> GetPinnedAppsFromPrefs(
-    PrefService* prefs,
-    LauncherControllerHelper* helper) {
+    const PrefService* prefs,
+    const LauncherControllerHelper* helper) {
   // Adding the app list item to the list of items requires that the ID is not
   // a valid and known ID for the extension system. The ID was constructed that
   // way - but just to make sure...
@@ -294,14 +314,36 @@ std::vector<std::string> GetPinnedAppsFromPrefs(
       (pinned->Find(*chrome_app.get()) != pinned->end() ||
        (policy && policy->Find(*chrome_app.get()) != policy->end()));
 
+  // Obtain here all ids of ARC apps because it takes linear time, and getting
+  // them in the loop bellow would lead to quadratic complexity.
+  const ArcAppListPrefs* const arc_app_list_pref = helper->GetArcAppListPrefs();
+  const std::vector<std::string> all_arc_app_ids(
+      arc_app_list_pref ? arc_app_list_pref->GetAppIds()
+                        : std::vector<std::string>());
+
   std::string app_id;
   for (size_t i = 0; policy && (i < policy->GetSize()); ++i) {
     const base::DictionaryValue* dictionary = nullptr;
     if (policy->GetDictionary(i, &dictionary) &&
         dictionary->GetString(kPinnedAppsPrefAppIDPath, &app_id) &&
-        helper->IsValidIDForCurrentUser(app_id) &&
         std::find(apps.begin(), apps.end(), app_id) == apps.end()) {
-      apps.push_back(app_id);
+      if (IsAppIdArcPackage(app_id)) {
+        if (!arc_app_list_pref)
+          continue;
+
+        // We are dealing with package name, not with 32 characters ID.
+        const std::string& arc_package = app_id;
+        const std::vector<std::string> activities = GetActivitiesForPackage(
+            arc_package, all_arc_app_ids, *arc_app_list_pref);
+        for (const auto& activity : activities) {
+          const std::string arc_app_id =
+              ArcAppListPrefs::GetAppId(arc_package, activity);
+          if (helper->IsValidIDForCurrentUser(arc_app_id))
+            apps.push_back(arc_app_id);
+        }
+      } else if (helper->IsValidIDForCurrentUser(app_id)) {
+        apps.push_back(app_id);
+      }
     }
   }
 

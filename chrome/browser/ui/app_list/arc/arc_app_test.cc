@@ -39,8 +39,8 @@ void ArcAppTest::SetUp(content::BrowserContext* browser_context) {
   fake_apps_[0].sticky = true;
 
   bridge_service_.reset(new arc::FakeArcBridgeService());
-  app_instance_.reset(
-      new arc::FakeAppInstance(ArcAppListPrefs::Get(browser_context_)));
+  arc_app_list_pref_ = ArcAppListPrefs::Get(browser_context_);
+  app_instance_.reset(new arc::FakeAppInstance(arc_app_list_pref_));
   arc::mojom::AppInstancePtr instance;
   app_instance_->Bind(mojo::GetProxy(&instance));
   bridge_service_->OnAppInstanceReady(std::move(instance));

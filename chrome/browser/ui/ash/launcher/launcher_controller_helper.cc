@@ -143,8 +143,9 @@ std::string LauncherControllerHelper::GetAppID(content::WebContents* tab) {
   return extension ? extension->id() : std::string();
 }
 
-bool LauncherControllerHelper::IsValidIDForCurrentUser(const std::string& id) {
-  if (ArcAppListPrefs::Get(profile_)->IsRegistered(id))
+bool LauncherControllerHelper::IsValidIDForCurrentUser(
+    const std::string& id) const {
+  if (GetArcAppListPrefs()->IsRegistered(id))
     return true;
   return GetExtensionByID(profile_, id) != nullptr;
 }
@@ -156,7 +157,7 @@ void LauncherControllerHelper::SetCurrentUser(Profile* profile) {
 void LauncherControllerHelper::LaunchApp(const std::string& app_id,
                                          ash::LaunchSource source,
                                          int event_flags) {
-  if (ArcAppListPrefs::Get(profile_)->IsRegistered(app_id)) {
+  if (GetArcAppListPrefs()->IsRegistered(app_id)) {
     arc::LaunchApp(profile_, app_id);
     return;
   }
@@ -192,6 +193,10 @@ void LauncherControllerHelper::LaunchApp(const std::string& app_id,
   }
 
   OpenApplication(params);
+}
+
+ArcAppListPrefs* LauncherControllerHelper::GetArcAppListPrefs() const {
+  return ArcAppListPrefs::Get(profile_);
 }
 
 void LauncherControllerHelper::ExtensionEnableFlowFinished() {
