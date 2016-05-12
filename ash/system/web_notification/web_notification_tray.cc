@@ -155,9 +155,9 @@ class WebNotificationButton : public views::CustomButton {
 
  private:
   void UpdateIconVisibility() {
-    unread_label_->SetEnabledColor(
-        (!is_bubble_visible_ && unread_count_ > 0) ?
-        kWebNotificationColorWithUnread : kWebNotificationColorNoUnread);
+    unread_label_->SetEnabledColor((unread_count_ > 0)
+                                       ? kWebNotificationColorWithUnread
+                                       : kWebNotificationColorNoUnread);
     SchedulePaint();
   }
 
@@ -454,7 +454,7 @@ void WebNotificationTray::UpdateTrayContent() {
 
   SetVisible((status_area_widget()->login_status() != user::LOGGED_IN_NONE) &&
              (status_area_widget()->login_status() != user::LOGGED_IN_LOCKED) &&
-             !userAddingRunning && (message_center->NotificationCount() > 0));
+             !userAddingRunning);
   Layout();
   SchedulePaint();
 }
