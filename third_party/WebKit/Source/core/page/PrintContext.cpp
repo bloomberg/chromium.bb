@@ -190,14 +190,15 @@ int PrintContext::pageNumberForElement(Element* element, const FloatSize& pageSi
 {
     element->document().updateLayout();
 
-    LayoutBoxModelObject* box = enclosingBoxModelObject(element->layoutObject());
-    if (!box)
-        return -1;
-
     LocalFrame* frame = element->document().frame();
     FloatRect pageRect(FloatPoint(0, 0), pageSizeInPixels);
     PrintContext printContext(frame);
     printContext.begin(pageRect.width(), pageRect.height());
+
+    LayoutBoxModelObject* box = enclosingBoxModelObject(element->layoutObject());
+    if (!box)
+        return -1;
+
     FloatSize scaledPageSize = pageSizeInPixels;
     scaledPageSize.scale(frame->view()->contentsSize().width() / pageRect.width());
     printContext.computePageRectsWithPageSize(scaledPageSize);
