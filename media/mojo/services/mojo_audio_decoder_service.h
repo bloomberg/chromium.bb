@@ -60,6 +60,7 @@ class MojoAudioDecoderService : public interfaces::AudioDecoder {
   void OnAudioBufferReady(const scoped_refptr<AudioBuffer>& audio_buffer);
 
   // A helper method to read and deserialize DecoderBuffer from data pipe.
+  // Returns empty scoped_refptr in case of an error.
   scoped_refptr<DecoderBuffer> ReadDecoderBuffer(
       interfaces::DecoderBufferPtr buffer);
 
