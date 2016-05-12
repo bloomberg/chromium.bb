@@ -379,8 +379,6 @@ wl_map_for_each(struct wl_map *map, wl_iterator_func_t func, void *data)
 	for_each_helper(&map->server_entries, func, data);
 }
 
-/** \endcond */
-
 static void
 wl_log_stderr_handler(const char *fmt, va_list arg)
 {
@@ -410,3 +408,5 @@ wl_abort(const char *fmt, ...)
 
 	abort();
 }
+
+/** \endcond */
