@@ -36,7 +36,7 @@ Polymer({
           this._animations.push(animation);
           effects.push(effect);
         } else {
-          Polymer.Base._warn(this.is + ':', config.animation, 'not found!');
+          console.warn(this.is + ':', config.animation, 'not found!');
           abortedConfigure = true;
           break;
         }

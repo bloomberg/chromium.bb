@@ -337,6 +337,7 @@
    */
   function keyboardEventFor(type, keyCode, modifiers, key) {
     var event = new CustomEvent(type, {
+      detail: 0,
       bubbles: true,
       cancelable: true
     });

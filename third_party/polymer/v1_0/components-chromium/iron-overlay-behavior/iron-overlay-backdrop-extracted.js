@@ -1,4 +1,5 @@
 (function() {
+'use strict';
 
   Polymer({
 
@@ -10,75 +11,98 @@
        * Returns true if the backdrop is opened.
        */
       opened: {
-        readOnly: true,
         reflectToAttribute: true,
         type: Boolean,
-        value: false
-      },
-
-      _manager: {
-        type: Object,
-        value: Polymer.IronOverlayManager
+        value: false,
+        observer: '_openedChanged'
       }
 
     },
 
     listeners: {
-      'transitionend' : '_onTransitionend'
+      'transitionend': '_onTransitionend'
+    },
+
+    created: function() {
+      // Used to cancel previous requestAnimationFrame calls when opened changes.
+      this.__openedRaf = null;
+    },
+
+    attached: function() {
+      this.opened && this._openedChanged(this.opened);
     },
 
     /**
-     * Appends the backdrop to document body and sets its `z-index` to be below the latest overlay.
+     * Appends the backdrop to document body if needed.
      */
     prepare: function() {
-      if (!this.parentNode) {
+      if (this.opened && !this.parentNode) {
         Polymer.dom(document.body).appendChild(this);
       }
     },
 
     /**
-     * Shows the backdrop if needed.
+     * Shows the backdrop.
      */
     open: function() {
-      // only need to make the backdrop visible if this is called by the first overlay with a backdrop
-      if (this._manager.getBackdrops().length < 2) {
-        this._setOpened(true);
-      }
+      this.opened = true;
     },
 
     /**
-     * Hides the backdrop if needed.
+     * Hides the backdrop.
      */
     close: function() {
-      // close only if no element with backdrop is left
-      if (this._manager.getBackdrops().length === 0) {
-        // Read style before setting opened.
-        var cs = getComputedStyle(this);
-        var noAnimation = (cs.transitionDuration === '0s' || cs.opacity == 0);
-        this._setOpened(false);
-        // In case of no animations, complete
-        if (noAnimation) {
-          this.complete();
-        }
-      }
+      this.opened = false;
     },
 
     /**
      * Removes the backdrop from document body if needed.
      */
     complete: function() {
-      // only remove the backdrop if there are no more overlays with backdrops
-      if (this._manager.getBackdrops().length === 0 && this.parentNode) {
+      if (!this.opened && this.parentNode === document.body) {
         Polymer.dom(this.parentNode).removeChild(this);
       }
     },
 
-    _onTransitionend: function (event) {
+    _onTransitionend: function(event) {
       if (event && event.target === this) {
         this.complete();
       }
-    }
+    },
 
+    /**
+     * @param {boolean} opened
+     * @private
+     */
+    _openedChanged: function(opened) {
+      if (opened) {
+        // Auto-attach.
+        this.prepare();
+      } else {
+        // Animation might be disabled via the mixin or opacity custom property.
+        // If it is disabled in other ways, it's up to the user to call complete.
+        var cs = window.getComputedStyle(this);
+        if (cs.transitionDuration === '0s' || cs.opacity == 0) {
+          this.complete();
+        }
+      }
+
+      if (!this.isAttached) {
+        return;
+      }
+
+      // Always cancel previous requestAnimationFrame.
+      if (this.__openedRaf) {
+        window.cancelAnimationFrame(this.__openedRaf);
+        this.__openedRaf = null;
+      }
+      // Force relayout to ensure proper transitions.
+      this.scrollTop = this.scrollTop;
+      this.__openedRaf = window.requestAnimationFrame(function() {
+        this.__openedRaf = null;
+        this.toggleClass('opened', this.opened);
+      }.bind(this));
+    }
   });
 
 })();

@@ -30,7 +30,7 @@
               });
             }
           } else {
-            Polymer.Base._warn(this.is + ':', config.name, 'not found!');
+            console.warn(this.is + ':', config.name, 'not found!');
           }
         }
       }
@@ -57,27 +57,30 @@
       if (!allConfigs) {
         return;
       }
-      var allAnimations = this._configureAnimationEffects(allConfigs);
-      var allEffects = allAnimations.map(function(animation) {
-        return animation.effect;
-      });
+      try {
+        var allAnimations = this._configureAnimationEffects(allConfigs);
+        var allEffects = allAnimations.map(function(animation) {
+          return animation.effect;
+        });
 
-      if (allEffects.length > 0) {
-        this._player = this._runAnimationEffects(allEffects);
-        this._player.onfinish = function() {
-          this._completeAnimations(allAnimations);
+        if (allEffects.length > 0) {
+          this._player = this._runAnimationEffects(allEffects);
+          this._player.onfinish = function() {
+            this._completeAnimations(allAnimations);
 
-          if (this._player) {
-            this._player.cancel();
-            this._player = null;
-          }
+            if (this._player) {
+              this._player.cancel();
+              this._player = null;
+            }
 
-          this.fire('neon-animation-finish', cookie, {bubbles: false});
-        }.bind(this);
-
-      } else {
-        this.fire('neon-animation-finish', cookie, {bubbles: false});
+            this.fire('neon-animation-finish', cookie, {bubbles: false});
+          }.bind(this);
+          return;
+        }
+      } catch (e) {
+        console.warn('Couldnt play', '(', type, allConfigs, ').', e);
       }
+      this.fire('neon-animation-finish', cookie, {bubbles: false});
     },
 
     /**

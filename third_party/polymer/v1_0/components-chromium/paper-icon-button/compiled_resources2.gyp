@@ -13,5 +13,12 @@
       ],
       'includes': ['../../../../closure_compiler/compile_js2.gypi'],
     },
+    {
+      'target_name': 'paper-icon-button-light-extracted',
+      'dependencies': [
+        '../paper-behaviors/compiled_resources2.gyp:paper-ripple-behavior-extracted',
+      ],
+      'includes': ['../../../../closure_compiler/compile_js2.gypi'],
+    },
   ],
 }

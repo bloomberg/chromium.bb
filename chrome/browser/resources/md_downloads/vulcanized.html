@@ -1937,7 +1937,6 @@ paper-button {
 <dom-module id="iron-overlay-backdrop" assetpath="chrome://resources/polymer/v1_0/iron-overlay-behavior/">
 
   <style>
-
     :host {
       position: fixed;
       top: 0;
@@ -1948,17 +1947,14 @@ paper-button {
       opacity: 0;
       transition: opacity 0.2s;
       pointer-events: none;
-
       @apply(--iron-overlay-backdrop);
     }
 
-    :host([opened]) {
+    :host(.opened) {
       opacity: var(--iron-overlay-backdrop-opacity, 0.6);
       pointer-events: auto;
-
       @apply(--iron-overlay-backdrop-opened);
     }
-
   </style>
 
   <template>

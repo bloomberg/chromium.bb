@@ -7,9 +7,6 @@
   'targets': [
     {
       'target_name': 'neon-animatable-behavior-extracted',
-      'dependencies': [
-        'animations/compiled_resources2.gyp:opaque-animation-extracted',
-      ],
       'includes': ['../../../../closure_compiler/compile_js2.gypi'],
     },
     {

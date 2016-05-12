@@ -8,11 +8,11 @@ Polymer({
 
     configure: function(config) {
       var node = config.node;
-      node.style.opacity = '0';
       this._effect = new KeyframeEffect(node, [
         {'opacity': '1'},
         {'opacity': '1'}
       ], this.timingFromConfig(config));
+      node.style.opacity = '0';
       return this._effect;
     },
 

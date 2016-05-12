@@ -22,12 +22,12 @@
       var fromPage = config.fromPage;
       var toPage = config.toPage;
       if (!fromPage || !toPage) {
-        Polymer.Base._warn(this.is + ':', !fromPage ? 'fromPage' : 'toPage', 'is undefined!');
+        console.warn(this.is + ':', !fromPage ? 'fromPage' : 'toPage', 'is undefined!');
         return null;
       };
 
       if (!fromPage.sharedElements || !toPage.sharedElements) {
-        Polymer.Base._warn(this.is + ':', 'sharedElements are undefined for', !fromPage.sharedElements ? fromPage : toPage);
+        console.warn(this.is + ':', 'sharedElements are undefined for', !fromPage.sharedElements ? fromPage : toPage);
         return null;
       };
 
@@ -35,7 +35,7 @@
       var to = toPage.sharedElements[config.id];
 
       if (!from || !to) {
-        Polymer.Base._warn(this.is + ':', 'sharedElement with id', config.id, 'not found in', !from ? fromPage : toPage);
+        console.warn(this.is + ':', 'sharedElement with id', config.id, 'not found in', !from ? fromPage : toPage);
         return null;
       }
 

@@ -20,14 +20,14 @@ Polymer({
       var deltaWidth = fromRect.width / toRect.width;
       var deltaHeight = fromRect.height / toRect.height;
 
-      this.setPrefixedProperty(shared.to, 'transformOrigin', '0 0');
-      shared.to.style.zIndex = 10000;
-      shared.from.style.visibility = 'hidden';
-
       this._effect = new KeyframeEffect(shared.to, [
         {'transform': 'translate(' + deltaLeft + 'px,' + deltaTop + 'px) scale(' + deltaWidth + ',' + deltaHeight + ')'},
         {'transform': 'none'}
       ], this.timingFromConfig(config));
+
+      this.setPrefixedProperty(shared.to, 'transformOrigin', '0 0');
+      shared.to.style.zIndex = 10000;
+      shared.from.style.visibility = 'hidden';
 
       return this._effect;
     },

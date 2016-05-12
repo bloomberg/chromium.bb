@@ -41,6 +41,11 @@ Radio-button-groups can be made optional, and allow zero buttons to be selected:
 See <a href="paper-radio-button">paper-radio-button</a> for more
 information about `paper-radio-button`.
 
+
+Custom property | Description | Default
+----------------|-------------|----------
+`--paper-radio-group-item-padding` | The padding of the item | `12px`
+
 @group Paper Elements
 @element paper-radio-group
 @hero hero.svg
@@ -55,7 +60,7 @@ information about `paper-radio-button`.
       }
 
       :host ::content > * {
-        padding: 12px;
+        padding: var(--paper-radio-group-item-padding, 12px);
       }
     </style>
 

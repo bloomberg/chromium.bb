@@ -9,10 +9,6 @@ Polymer({
     configure: function(config) {
       var node = config.node;
 
-      if (config.transformOrigin) {
-        this.setPrefixedProperty(node, 'transformOrigin', config.transformOrigin);
-      }
-
       var scaleProperty = 'scale(0)';
       if (config.axis === 'x') {
         scaleProperty = 'scale(0, 1)';
@@ -24,6 +20,10 @@ Polymer({
         {'transform': scaleProperty},
         {'transform': 'scale(1, 1)'}
       ], this.timingFromConfig(config));
+
+      if (config.transformOrigin) {
+        this.setPrefixedProperty(node, 'transformOrigin', config.transformOrigin);
+      }
 
       return this._effect;
     }

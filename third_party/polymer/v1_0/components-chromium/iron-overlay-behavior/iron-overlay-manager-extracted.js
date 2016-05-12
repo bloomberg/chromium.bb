@@ -209,7 +209,13 @@
      * Updates the backdrop z-index.
      */
     trackBackdrop: function() {
-      this.backdropElement.style.zIndex = this.backdropZ();
+      var overlay = this._overlayWithBackdrop();
+      // Avoid creating the backdrop if there is no overlay with backdrop.
+      if (!overlay && !this._backdropElement) {
+        return;
+      }
+      this.backdropElement.style.zIndex = this._getZ(overlay) - 1;
+      this.backdropElement.opened = !!overlay;
     },
 
     /**
@@ -324,6 +330,12 @@
       var overlay = /** @type {?} */ (this.currentOverlay());
       // Check if clicked outside of top overlay.
       if (overlay && this._overlayInPath(Polymer.dom(event).path) !== overlay) {
+        if (overlay.withBackdrop) {
+          // There's no need to stop the propagation as the backdrop element
+          // already got this mousedown/touchstart event. Calling preventDefault
+          // on this event ensures that click/tap won't be triggered at all.
+          event.preventDefault();
+        }
         overlay._onCaptureClick(event);
       }
     },

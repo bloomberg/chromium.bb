@@ -36,21 +36,10 @@
 
     _entryAnimationChanged: function() {
       this.animationConfig = this.animationConfig || {};
-      if (this.entryAnimation !== 'fade-in-animation') {
-        // insert polyfill hack
-        this.animationConfig['entry'] = [{
-          name: 'opaque-animation',
-          node: this
-        }, {
-          name: this.entryAnimation,
-          node: this
-        }];
-      } else {
-        this.animationConfig['entry'] = [{
-          name: this.entryAnimation,
-          node: this
-        }];
-      }
+      this.animationConfig['entry'] = [{
+        name: this.entryAnimation,
+        node: this
+      }];
     },
 
     _exitAnimationChanged: function() {

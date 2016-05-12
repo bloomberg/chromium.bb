@@ -7,7 +7,6 @@ The complete set of contributors may be found at http://polymer.github.io/CONTRI
 Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 --><html><head><link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="iron-overlay-manager.html">
 
 <!--
 `iron-overlay-backdrop` is a backdrop used by `Polymer.IronOverlayBehavior`. It should be a
@@ -28,7 +27,6 @@ Custom property | Description | Default
 </head><body><dom-module id="iron-overlay-backdrop">
 
   <style>
-
     :host {
       position: fixed;
       top: 0;
@@ -39,17 +37,14 @@ Custom property | Description | Default
       opacity: 0;
       transition: opacity 0.2s;
       pointer-events: none;
-
       @apply(--iron-overlay-backdrop);
     }
 
-    :host([opened]) {
+    :host(.opened) {
       opacity: var(--iron-overlay-backdrop-opacity, 0.6);
       pointer-events: auto;
-
       @apply(--iron-overlay-backdrop-opened);
     }
-
   </style>
 
   <template>
