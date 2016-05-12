@@ -5,6 +5,7 @@
 import("//build/config/chrome_build.gni")
 import("//build/config/chromecast_build.gni")
 import("//build/config/sanitizers/sanitizers.gni")
+import("//build/toolchain/toolchain.gni")
 
 # Contains the dependencies needed for sanitizers to link into executables and
 # shared_libraries. Unconditionally depend upon this target as it is empty if
@@ -41,6 +42,22 @@ group("deps_no_options") {
     if (use_custom_libcxx) {
       deps += [ "//buildtools/third_party/libc++:libcxx_proxy" ]
     }
+    if (is_mac) {
+      data_deps = [
+        ":copy_asan_runtime",
+      ]
+    }
+  }
+}
+
+if (is_mac) {
+  copy("copy_asan_runtime") {
+    sources = [
+      "//third_party/llvm-build/Release+Asserts/lib/clang/$clang_version/lib/darwin/libclang_rt.asan_osx_dynamic.dylib",
+    ]
+    outputs = [
+      "$root_out_dir/{{source_file_part}}",
+    ]
   }
 }
 
