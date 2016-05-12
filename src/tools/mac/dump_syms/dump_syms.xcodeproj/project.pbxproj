@@ -1238,7 +1238,7 @@
 				HEADER_SEARCH_PATHS = (
 					../../..,
 					../../../common/mac/include/,
-					../../../third_party/glibc/elf/,
+					../../../third_party/musl/include/,
 				);
 			};
 			name = Debug;
@@ -1250,7 +1250,7 @@
 				HEADER_SEARCH_PATHS = (
 					../../..,
 					../../../common/mac/include/,
-					../../../third_party/glibc/elf/,
+					../../../third_party/musl/include/,
 				);
 			};
 			name = Release;

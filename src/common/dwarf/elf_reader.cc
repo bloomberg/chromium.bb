@@ -52,6 +52,19 @@
 #define EM_AARCH64      183             /* ARM AARCH64 */
 #endif
 
+// Map Linux macros to their Apple equivalents.
+#if __APPLE__
+#ifndef __LITTLE_ENDIAN
+#define __LITTLE_ENDIAN __ORDER_LITTLE_ENDIAN__
+#endif  // __LITTLE_ENDIAN
+#ifndef __BIG_ENDIAN
+#define __BIG_ENDIAN __ORDER_BIG_ENDIAN__
+#endif  // __BIG_ENDIAN
+#ifndef __BYTE_ORDER
+#define __BYTE_ORDER __BYTE_ORDER__
+#endif  // __BYTE_ORDER
+#endif  // __APPLE__
+
 // TODO(dthomson): Can be removed once all Java code is using the Google3
 // launcher. We need to avoid processing PLT functions as it causes memory
 // fragmentation in malloc, which is fixed in tcmalloc - and if the Google3
