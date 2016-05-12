@@ -23,6 +23,12 @@
 #include "third_party/webrtc/base/refcount.h"
 #include "third_party/webrtc/video_frame.h"
 
+#if defined(OS_WIN)
+#include "base/command_line.h"
+#include "base/win/windows_version.h"
+#include "content/public/common/content_switches.h"
+#endif  // defined(OS_WIN)
+
 namespace content {
 
 const int32_t RTCVideoDecoder::ID_LAST = 0x3FFFFFFF;
@@ -89,6 +95,16 @@ std::unique_ptr<RTCVideoDecoder> RTCVideoDecoder::Create(
     webrtc::VideoCodecType type,
     media::GpuVideoAcceleratorFactories* factories) {
   std::unique_ptr<RTCVideoDecoder> decoder;
+// See https://bugs.chromium.org/p/webrtc/issues/detail?id=5717.
+#if defined(OS_WIN)
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableWin7WebRtcHWH264Decoding) &&
+      type == webrtc::kVideoCodecH264 &&
+      base::win::GetVersion() == base::win::VERSION_WIN7) {
+    DLOG(ERROR) << "H264 HW decoding on Win7 is not supported.";
+    return decoder;
+  }
+#endif  // defined(OS_WIN)
   // Convert WebRTC codec type to media codec profile.
   media::VideoCodecProfile profile;
   switch (type) {

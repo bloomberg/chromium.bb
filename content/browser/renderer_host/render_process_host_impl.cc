@@ -1510,6 +1510,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
 #endif
 #if defined(OS_WIN)
     switches::kDisableWin32kRendererLockDown,
+    switches::kEnableWin7WebRtcHWH264Decoding,
     switches::kTrySupportedChannelLayouts,
     switches::kTraceExportEventsToETW,
 #endif

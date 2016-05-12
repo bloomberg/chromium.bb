@@ -17,6 +17,11 @@
 #include "media/video/mock_video_decode_accelerator.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_WIN)
+#include "base/command_line.h"
+#include "content/public/common/content_switches.h"
+#endif  // defined(OS_WIN)
+
 using ::testing::_;
 using ::testing::Invoke;
 using ::testing::Return;
@@ -74,6 +79,11 @@ class RTCVideoDecoderTest
         .Times(1)
         .WillRepeatedly(Return(true));
     EXPECT_CALL(*mock_vda_, Destroy()).Times(1);
+
+#if defined(OS_WIN)
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kEnableWin7WebRtcHWH264Decoding);
+#endif  // defined(OS_WIN)
   }
 
   void TearDown() override {

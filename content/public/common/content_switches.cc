@@ -1020,6 +1020,10 @@ const char kEnableWin32kLockDownMimeTypes[] =
 // Enables experimental hardware acceleration for VP8/VP9 video decoding.
 const char kEnableAcceleratedVpxDecode[] = "enable-accelerated-vpx-decode";
 
+// Enables H264 HW decode acceleration for WebRtc on Win 7.
+const char kEnableWin7WebRtcHWH264Decoding[] =
+    "enable-win7-webrtc-hw-h264-decoding";
+
 // DirectWrite FontCache is shared by browser to renderers using shared memory.
 // This switch allows us to pass the shared memory handle to the renderer.
 const char kFontCacheSharedHandle[] = "font-cache-shared-handle";
