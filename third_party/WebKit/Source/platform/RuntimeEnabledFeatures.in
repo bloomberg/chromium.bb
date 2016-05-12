@@ -152,7 +152,7 @@ PassiveEventListeners status=stable
 PassPaintVisualRectToCompositor
 PathOpsSVGClipping status=stable
 PaymentRequest status=experimental
-PerformanceObserver status=experimental
+PerformanceObserver status=stable
 Permissions status=stable
 PermissionsRequestRevoke status=experimental
 PointerEvent

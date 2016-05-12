@@ -432,6 +432,11 @@ interface NotificationEvent : ExtendableEvent
     getter action
     getter notification
     method constructor
+interface PerformanceObserverEntryList
+    method constructor
+    method getEntries
+    method getEntriesByName
+    method getEntriesByType
 interface PermissionStatus : EventTarget
     getter onchange
     getter state

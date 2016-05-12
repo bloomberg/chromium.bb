@@ -446,6 +446,12 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     setter onclose
 [Worker]     setter onerror
 [Worker]     setter onshow
+[Worker] interface PerformanceObserverEntryList
+[Worker]     attribute @@toStringTag
+[Worker]     method constructor
+[Worker]     method getEntries
+[Worker]     method getEntriesByName
+[Worker]     method getEntriesByType
 [Worker] interface PermissionStatus : EventTarget
 [Worker]     attribute @@toStringTag
 [Worker]     getter onchange

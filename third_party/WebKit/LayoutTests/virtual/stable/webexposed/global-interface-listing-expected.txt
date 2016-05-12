@@ -3585,6 +3585,17 @@ interface PerformanceNavigation
     getter redirectCount
     getter type
     method constructor
+interface PerformanceObserver
+    attribute @@toStringTag
+    method constructor
+    method disconnect
+    method observe
+interface PerformanceObserverEntryList
+    attribute @@toStringTag
+    method constructor
+    method getEntries
+    method getEntriesByName
+    method getEntriesByType
 interface PerformanceResourceTiming : PerformanceEntry
     attribute @@toStringTag
     getter connectEnd
