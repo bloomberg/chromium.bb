@@ -55,6 +55,8 @@ public:
 
     DECLARE_TRACE();
 
+    DECLARE_VIRTUAL_TRACE_WRAPPERS();
+
 private:
     TextTrackCueList();
     size_t findInsertionIndex(const TextTrackCue*) const;

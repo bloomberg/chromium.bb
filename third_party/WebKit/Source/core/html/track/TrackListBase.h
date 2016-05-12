@@ -100,6 +100,13 @@ public:
         EventTargetWithInlineData::trace(visitor);
     }
 
+    DECLARE_VIRTUAL_TRACE_WRAPPERS()
+    {
+        for (auto track : m_tracks) {
+            visitor->traceWrappers(track);
+        }
+    }
+
 private:
     void scheduleTrackEvent(const AtomicString& eventName, T* track)
     {

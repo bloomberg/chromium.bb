@@ -26,7 +26,11 @@
             findMediaElement();
             video.src = findMediaFile('video', '../content/test');
 
+            video.textTracks.custom = "trackList";
+            testExpected("video.textTracks.hasOwnProperty('custom')", true);
+
             consoleWrite("** Add a text track to the video element **");
+
             track = video.addTextTrack("captions", "regular captions track", "en");
             track.custom = "track";
             testExpected("track.hasOwnProperty('custom')", true);
@@ -37,6 +41,7 @@
                 c.custom = "cue";
                 c.addEventListener("enter", checkNativeProperty);
                 track.addCue(c);
+                c = null;
             }
             for (var i = 0; i < 10; i++) {
                 cue = track.cues[i];
@@ -46,7 +51,11 @@
             consoleWrite("");
             consoleWrite("** Trigger a garbage collection.  **");
             track = null;
+            cue = null;
             gc();
+
+            testExpected("video.textTracks.hasOwnProperty('custom')", true);
+
             track = video.textTracks[0];
             testExpected("track.hasOwnProperty('custom')", true);
 

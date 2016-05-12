@@ -1,5 +1,6 @@
 Tests that added cue object wrappers live across garbage collections.
 
+EXPECTED (video.textTracks.hasOwnProperty('custom') == 'true') OK
 ** Add a text track to the video element **
 EXPECTED (track.hasOwnProperty('custom') == 'true') OK
 ** Add cues with own native property to the track with enter event listener. **
@@ -15,6 +16,7 @@ EXPECTED (cue.hasOwnProperty('custom') == 'true') OK
 EXPECTED (cue.hasOwnProperty('custom') == 'true') OK
 
 ** Trigger a garbage collection. **
+EXPECTED (video.textTracks.hasOwnProperty('custom') == 'true') OK
 EXPECTED (track.hasOwnProperty('custom') == 'true') OK
 
 ** Play the video and test cue wrappers. **

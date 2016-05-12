@@ -83,6 +83,9 @@ public:
     static bool isMediaStreamURL(const String& url);
 
     DECLARE_VIRTUAL_TRACE();
+
+    DECLARE_VIRTUAL_TRACE_WRAPPERS();
+
     void clearWeakMembers(Visitor*);
     WebMediaPlayer* webMediaPlayer() const
     {

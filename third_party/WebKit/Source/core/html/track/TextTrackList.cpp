@@ -320,3 +320,13 @@ DEFINE_TRACE(TextTrackList)
     visitor->trace(m_inbandTracks);
     EventTargetWithInlineData::trace(visitor);
 }
+
+DEFINE_TRACE_WRAPPERS(TextTrackList)
+{
+    for (auto track : m_addTrackTracks)
+        visitor->traceWrappers(track);
+    for (auto track : m_elementTracks)
+        visitor->traceWrappers(track);
+    for (auto track : m_inbandTracks)
+        visitor->traceWrappers(track);
+}

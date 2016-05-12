@@ -149,4 +149,10 @@ DEFINE_TRACE(TextTrackCueList)
     visitor->trace(m_list);
 }
 
+DEFINE_TRACE_WRAPPERS(TextTrackCueList)
+{
+    for (auto cue : m_list) {
+        visitor->traceWrappers(cue);
+    }
+}
 } // namespace blink
