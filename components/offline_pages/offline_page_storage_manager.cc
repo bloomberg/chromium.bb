@@ -8,27 +8,27 @@
 #include "components/offline_pages/client_policy_controller.h"
 #include "components/offline_pages/offline_page_client_policy.h"
 #include "components/offline_pages/offline_page_item.h"
-#include "components/offline_pages/offline_page_model.h"
 #include "components/offline_pages/offline_page_types.h"
 
 namespace offline_pages {
 
-OfflinePageStorageManager::OfflinePageStorageManager(OfflinePageModel* model)
-    : model_(model),
-      policy_controller_(model->GetPolicyController()),
+OfflinePageStorageManager::OfflinePageStorageManager(
+    Client* client,
+    ClientPolicyController* policy_controller)
+    : client_(client),
+      policy_controller_(policy_controller),
       in_progress_(false),
       weak_ptr_factory_(this) {}
 
-OfflinePageStorageManager::~OfflinePageStorageManager() {
-}
+OfflinePageStorageManager::~OfflinePageStorageManager() {}
 
 void OfflinePageStorageManager::ClearPagesIfNeeded(
     const ClearPageCallback& callback) {
   if (!ShouldClearPages())
     return;
   in_progress_ = true;
-  model_->GetAllPages(base::Bind(&OfflinePageStorageManager::ClearExpiredPages,
-                                 weak_ptr_factory_.GetWeakPtr(), callback));
+  client_->GetAllPages(base::Bind(&OfflinePageStorageManager::ClearExpiredPages,
+                                  weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
 void OfflinePageStorageManager::ClearExpiredPages(
@@ -37,7 +37,7 @@ void OfflinePageStorageManager::ClearExpiredPages(
   DCHECK(in_progress_);
   std::vector<int64_t> offline_ids;
   GetExpiredPageIds(pages, offline_ids);
-  model_->DeletePagesByOfflineId(
+  client_->DeletePagesByOfflineId(
       offline_ids,
       base::Bind(&OfflinePageStorageManager::OnExpiredPagesDeleted,
                  weak_ptr_factory_.GetWeakPtr(), callback, offline_ids.size()));
@@ -61,7 +61,7 @@ void OfflinePageStorageManager::OnExpiredPagesDeleted(
 }
 
 bool OfflinePageStorageManager::ShouldClearPages() {
-  return !in_progress_ && model_->is_loaded();
+  return !in_progress_;
 }
 
 bool OfflinePageStorageManager::IsPageExpired(const OfflinePageItem& page) {

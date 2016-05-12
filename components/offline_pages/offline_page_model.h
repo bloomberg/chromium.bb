@@ -25,6 +25,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/offline_pages/offline_page_archiver.h"
 #include "components/offline_pages/offline_page_metadata_store.h"
+#include "components/offline_pages/offline_page_storage_manager.h"
 #include "components/offline_pages/offline_page_types.h"
 
 class GURL;
@@ -64,7 +65,9 @@ class OfflinePageStorageManager;
 //
 // TODO(fgorski): Things to describe:
 // * how to cancel requests and what to expect
-class OfflinePageModel : public KeyedService, public base::SupportsUserData {
+class OfflinePageModel : public KeyedService,
+                         public base::SupportsUserData,
+                         public OfflinePageStorageManager::Client {
  public:
   // Observer of the OfflinePageModel.
   class Observer {
@@ -129,9 +132,8 @@ class OfflinePageModel : public KeyedService, public base::SupportsUserData {
                              const DeletePageCallback& callback);
 
   // Deletes offline pages related to the passed |offline_ids|.
-  // Making virtual for test purposes.
-  virtual void DeletePagesByOfflineId(const std::vector<int64_t>& offline_ids,
-                                      const DeletePageCallback& callback);
+  void DeletePagesByOfflineId(const std::vector<int64_t>& offline_ids,
+                              const DeletePageCallback& callback) override;
 
   // Wipes out all the data by deleting all saved files and clearing the store.
   void ClearAll(const base::Closure& callback);
@@ -151,8 +153,7 @@ class OfflinePageModel : public KeyedService, public base::SupportsUserData {
                               const CheckPagesExistOfflineCallback& callback);
 
   // Gets all available offline pages.
-  // Making virtual for test purposes.
-  virtual void GetAllPages(const MultipleOfflinePageItemCallback& callback);
+  void GetAllPages(const MultipleOfflinePageItemCallback& callback) override;
 
   // Gets all offline ids where the offline page has the matching client id.
   void GetOfflineIdsForClientId(const ClientId& client_id,
@@ -223,16 +224,14 @@ class OfflinePageModel : public KeyedService, public base::SupportsUserData {
                                bool reporting_after_delete);
 
   // Returns the policy controller.
-  // Making virtual for test purposes.
-  virtual ClientPolicyController* GetPolicyController();
+  ClientPolicyController* GetPolicyController();
 
   // Methods for testing only:
   OfflinePageMetadataStore* GetStoreForTesting();
 
   OfflinePageStorageManager* GetStorageManager();
 
-  // Making virtual for test purposes.
-  virtual bool is_loaded() const;
+  bool is_loaded() const;
 
  protected:
   // Adding a protected constructor for testing-only purposes in

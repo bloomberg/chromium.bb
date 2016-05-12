@@ -11,7 +11,7 @@
 #include "base/time/time.h"
 #include "components/offline_pages/client_policy_controller.h"
 #include "components/offline_pages/offline_page_item.h"
-#include "components/offline_pages/offline_page_model.h"
+#include "components/offline_pages/offline_page_storage_manager.h"
 #include "components/offline_pages/offline_page_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -29,9 +29,9 @@ const int64_t kOfflineId = 1234LL;
 const int64_t kOfflineId2 = 2345LL;
 }  // namespace
 
-class OfflinePageTestModel : public OfflinePageModel {
+class StorageManagerTestClient : public OfflinePageStorageManager::Client {
  public:
-  OfflinePageTestModel() : policy_controller_(new ClientPolicyController()) {
+  StorageManagerTestClient() {
     // Manually adding pages for the fake model.
     // Only the first page is expired.
     pages_.clear();
@@ -52,12 +52,6 @@ class OfflinePageTestModel : public OfflinePageModel {
                               const DeletePageCallback& callback) override {
     callback.Run(DeletePageResult::SUCCESS);
   }
-
-  ClientPolicyController* GetPolicyController() override {
-    return policy_controller_.get();
-  }
-
-  bool is_loaded() const override { return true; }
 
  private:
   std::vector<OfflinePageItem> pages_;
@@ -82,7 +76,7 @@ class OfflinePageStorageManagerTest : public testing::Test {
 
  private:
   std::unique_ptr<OfflinePageStorageManager> manager_;
-  std::unique_ptr<OfflinePageModel> model_;
+  std::unique_ptr<OfflinePageStorageManager::Client> client_;
 
   int last_cleared_page_count_;
   DeletePageResult last_delete_page_result_;
@@ -93,13 +87,14 @@ OfflinePageStorageManagerTest::OfflinePageStorageManagerTest()
       last_delete_page_result_(DeletePageResult::SUCCESS) {}
 
 void OfflinePageStorageManagerTest::SetUp() {
-  model_.reset(new OfflinePageTestModel());
-  manager_.reset(new OfflinePageStorageManager(model_.get()));
+  client_.reset(new StorageManagerTestClient());
+  manager_.reset(new OfflinePageStorageManager(client_.get(),
+                                               new ClientPolicyController()));
 }
 
 void OfflinePageStorageManagerTest::TearDown() {
   manager_.reset();
-  model_.reset();
+  client_.reset();
 }
 
 void OfflinePageStorageManagerTest::OnPagesCleared(int pages_cleared_count,

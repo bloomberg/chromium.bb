@@ -12,16 +12,11 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "components/offline_pages/offline_page_model.h"
+#include "components/offline_pages/offline_page_types.h"
 
 namespace offline_pages {
 
-// TODO(romax): Keep this as a default value until I find a way to get
-// storage size in C++. (20MB)
-static const int64_t kDefaultStorageSize = 20 * (1 << 20);
-
 class ClientPolicyController;
-struct OfflinePageItem;
 
 // This class is used for storage management of offline pages. It provides
 // a ClearPagesIfNeeded method which is used to clear expired offline pages
@@ -33,13 +28,27 @@ struct OfflinePageItem;
 // And this manager would use OfflinePageModel to get/remove pages.
 class OfflinePageStorageManager {
  public:
+  // This interface should have no knowledge of offline page model.
+  // This interface should be implemented by clients managed by storage manager.
+  class Client {
+   public:
+    // Asks the client to get all offline pages and invoke |callback|.
+    virtual void GetAllPages(
+        const MultipleOfflinePageItemCallback& callback) = 0;
+
+    // Asks the client to delete pages based on |offline_ids| and invoke
+    // |callback|.
+    virtual void DeletePagesByOfflineId(const std::vector<int64_t>& offline_ids,
+                                        const DeletePageCallback& callback) = 0;
+  };
+
   // Callback used when calling ClearPagesIfNeeded.
   // int: the number of deleted pages.
   // DeletePageResult: result of deleting pages.
-  typedef base::Callback<void(int, OfflinePageModel::DeletePageResult)>
-      ClearPageCallback;
+  typedef base::Callback<void(int, DeletePageResult)> ClearPageCallback;
 
-  explicit OfflinePageStorageManager(OfflinePageModel* model);
+  explicit OfflinePageStorageManager(Client* client,
+                                     ClientPolicyController* policy_controller);
 
   ~OfflinePageStorageManager();
 
@@ -50,19 +59,17 @@ class OfflinePageStorageManager {
  private:
   // Selects and removes pages that need to be expired. Triggered as a callback
   // to |GetAllPages|.
-  void ClearExpiredPages(
-      const ClearPageCallback& callback,
-      const OfflinePageModel::MultipleOfflinePageItemResult& pages);
+  void ClearExpiredPages(const ClearPageCallback& callback,
+                         const MultipleOfflinePageItemResult& pages);
 
   // Gets offline IDs of all expired pages and return in |offline_ids|.
-  void GetExpiredPageIds(
-      const OfflinePageModel::MultipleOfflinePageItemResult& pages,
-      std::vector<int64_t>& offline_ids);
+  void GetExpiredPageIds(const MultipleOfflinePageItemResult& pages,
+                         std::vector<int64_t>& offline_ids);
 
   // Callback when expired pages has been deleted.
   void OnExpiredPagesDeleted(const ClearPageCallback& callback,
                              int pages_to_clear,
-                             OfflinePageModel::DeletePageResult result);
+                             DeletePageResult result);
 
   // Determine if manager should clear pages.
   bool ShouldClearPages();
@@ -71,7 +78,7 @@ class OfflinePageStorageManager {
   bool IsPageExpired(const OfflinePageItem& page);
 
   // Not owned.
-  OfflinePageModel* model_;
+  Client* client_;
 
   // Not owned.
   ClientPolicyController* policy_controller_;

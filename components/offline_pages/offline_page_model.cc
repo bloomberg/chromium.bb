@@ -124,7 +124,6 @@ OfflinePageModel::OfflinePageModel(
       is_loaded_(false),
       task_runner_(task_runner),
       policy_controller_(new ClientPolicyController()),
-      storage_manager_(new OfflinePageStorageManager(this)),
       weak_ptr_factory_(this) {
   task_runner_->PostTaskAndReply(
       FROM_HERE, base::Bind(EnsureArchivesDirCreated, archives_dir_),
@@ -636,6 +635,10 @@ void OfflinePageModel::OnLoadDone(
 
   UMA_HISTOGRAM_TIMES("OfflinePages.Model.ConstructionToLoadedEventTime",
                       base::TimeTicks::Now() - start_time);
+
+  // Create Storage Manager.
+  storage_manager_.reset(
+      new OfflinePageStorageManager(this, GetPolicyController()));
 
   // Run all the delayed tasks.
   for (const auto& delayed_task : delayed_tasks_)
