@@ -523,7 +523,9 @@ LayoutUnit LayoutFlexibleBox::computeMainAxisExtentForChild(const LayoutBox& chi
         // We don't have to check for "auto" here - computeContentLogicalHeight will just return -1 for that case anyway.
         // It's safe to access scrollbarLogicalHeight here because computeNextFlexLine will have already
         // forced layout on the child.
-        return child.computeContentLogicalHeight(sizeType, size, child.contentLogicalHeight()) + child.scrollbarLogicalHeight();
+        // We previously layed out the child if necessary (see computeNextFlexLine and the call to childHasIntrinsicMainAxisSize)
+        // so we can be sure that the two height calls here will return up-to-date data.
+        return child.computeContentLogicalHeight(sizeType, size, child.intrinsicContentLogicalHeight()) + child.scrollbarLogicalHeight();
     }
     // computeLogicalWidth always re-computes the intrinsic widths. However, when our logical width is auto,
     // we can just use our cached value. So let's do that here. (Compare code in LayoutBlock::computePreferredLogicalWidths)
@@ -1233,7 +1235,7 @@ bool LayoutFlexibleBox::computeNextFlexLine(OrderedFlexItemList& orderedChildren
             continue;
         }
 
-        // If this condition is true, then computeMainAxisExtentForChild will call child.contentLogicalHeight()
+        // If this condition is true, then computeMainAxisExtentForChild will call child.intrinsicContentLogicalHeight()
         // and child.scrollbarLogicalHeight(), so if the child has intrinsic min/max/preferred size,
         // run layout on it now to make sure its logical height and scroll bars are up-to-date.
         if (childHasIntrinsicMainAxisSize(*child) && child->needsLayout()) {
