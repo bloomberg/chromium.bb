@@ -26,10 +26,10 @@
 
 namespace {
 
-// Maximum number of accounts displayed before vertical scrolling appears.
-const size_t kMaxAccounts = 3;
+// Maximum height of the credential list. The unit is one row's height.
+constexpr double kMaxHeightAccounts = 3.5;
 
-const int kVerticalAvatarMargin = 8;
+constexpr int kVerticalAvatarMargin = 8;
 
 // An identifier for views::ColumnSet.
 enum ColumnSetType {
@@ -88,7 +88,7 @@ views::ScrollView* CreateCredentialsView(
     list_view->AddChildView(credential_view);
   }
   views::ScrollView* scroll_view = new views::ScrollView;
-  scroll_view->ClipHeightTo(0, kMaxAccounts * item_height);
+  scroll_view->ClipHeightTo(0, kMaxHeightAccounts * item_height);
   scroll_view->SetContents(list_view);
   return scroll_view;
 }
