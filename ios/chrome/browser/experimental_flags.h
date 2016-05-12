@@ -34,6 +34,9 @@ bool IsTabSwitcherEnabled();
 // Whether the reading list is enabled.
 bool IsReadingListEnabled();
 
+// Whether the All Bookmarks view is visible in bookmarks.
+bool IsAllBookmarksEnabled();
+
 }  // namespace experimental_flags
 
 #endif  // IOS_CHROME_BROWSER_EXPERIMENTAL_FLAGS_H_

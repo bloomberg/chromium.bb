@@ -12,6 +12,9 @@ namespace switches {
 // all work out.
 // -----------------------------------------------------------------------------
 
+// Disables all bookmarks view in bookmark manager.
+const char kDisableAllBookmarksView[] = "disable-all-bookmarks-view";
+
 // Disables Contextual Search.
 const char kDisableContextualSearch[] = "disable-contextual-search";
 
@@ -48,6 +51,9 @@ const char kDisableTabEviction[] = "disable-tab-eviction";
 
 // Disables the tab switcher.
 const char kDisableTabSwitcher[] = "disable-tab-switcher";
+
+// Enables all bookmarks view in bookmark manager.
+const char kEnableAllBookmarksView[] = "enable-all-bookmarks-view";
 
 // Enables Contextual Search.
 const char kEnableContextualSearch[] = "enable-contextual-search";
