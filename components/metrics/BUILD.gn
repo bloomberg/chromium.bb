@@ -365,7 +365,6 @@ source_set("unit_tests") {
   if (metrics_use_blimp) {
     defines = [
       "OVERRIDE_OS_NAME_TO_BLIMP",
-      "ENABLE_REPORTING_BLIMP",
     ]
   }
 }

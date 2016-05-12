@@ -794,14 +794,8 @@ void BrowserProcessImpl::RegisterPrefs(PrefRegistrySimple* registry) {
                                std::string());
 #endif  // defined(OS_CHROMEOS)
 
-#if defined(ENABLE_REPORTING_BLIMP)
-  // Enables reporting for the (headless) blimp engine. Defined in
-  // components/metrics/BUILD.gn
-  registry->RegisterBooleanPref(metrics::prefs::kMetricsReportingEnabled, true);
-#else
   registry->RegisterBooleanPref(metrics::prefs::kMetricsReportingEnabled,
                                 GoogleUpdateSettings::GetCollectStatsConsent());
-#endif // defined(ENABLE_REPORTING_HEADLESS)
 
 #if BUILDFLAG(ANDROID_JAVA_UI)
   registry->RegisterBooleanPref(
