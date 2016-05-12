@@ -711,6 +711,9 @@ test("media_perftests") {
   if (media_use_ffmpeg) {
     deps += [ "//third_party/ffmpeg" ]  # Direct dependency required to inherit config.
   }
+
+  # This target should not require the Chrome executable to run.
+  assert_no_deps = [ "//chrome" ]
 }
 
 # For running the subset of media_unittests that might require audio hardware

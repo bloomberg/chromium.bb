@@ -651,7 +651,6 @@ if (!is_android) {
     deps = [
       ":test_support",
       "//base",
-      "//chrome",
       "//components/invalidation/impl",
       "//components/invalidation/impl:test_support",
       "//content/test:browsertest_base",
@@ -1549,6 +1548,9 @@ if (!is_android) {
     if (toolkit_views) {
       deps += [ "//ui/views" ]
     }
+
+    # This target should not require the Chrome executable to run.
+    assert_no_deps = [ "//chrome" ]
   }
 
   # Executable to measure time to load libraries.
@@ -1570,6 +1572,9 @@ if (!is_android) {
         "//third_party/widevine/cdm:widevinecdmadapter",
       ]
     }
+
+    # This target should not require the Chrome executable to run.
+    assert_no_deps = [ "//chrome" ]
   }
 }
 
@@ -2309,6 +2314,9 @@ if (is_win || (is_linux && !is_chromeos)) {
     if (!is_mac) {
       sources -= [ "perf/mach_ports_performancetest.cc" ]
     }
+
+    # This target should not require the Chrome executable to run.
+    assert_no_deps = [ "//chrome" ]
   }
 }
 
