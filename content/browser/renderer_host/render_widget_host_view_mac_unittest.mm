@@ -33,6 +33,7 @@
 #include "testing/gtest_mac.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #import "third_party/ocmock/ocmock_extensions.h"
+#include "ui/events/latency_info.h"
 #include "ui/events/test/cocoa_test_event_utils.h"
 #import "ui/gfx/test/ui_cocoa_test_helper.h"
 
@@ -158,10 +159,21 @@ class MockRenderWidgetHostImpl : public RenderWidgetHostImpl {
                            int32_t routing_id)
       : RenderWidgetHostImpl(delegate, process, routing_id, false) {
     set_renderer_initialized(true);
+    lastWheelEventLatencyInfo = ui::LatencyInfo();
+  }
+
+  // Extracts |latency_info| and stores it in |lastWheelEventLatencyInfo|.
+  void ForwardWheelEventWithLatencyInfo (
+        const blink::WebMouseWheelEvent& wheel_event,
+        const ui::LatencyInfo& ui_latency) override {
+    RenderWidgetHostImpl::ForwardWheelEventWithLatencyInfo (
+        wheel_event, ui_latency);
+    lastWheelEventLatencyInfo = ui::LatencyInfo(ui_latency);
   }
 
   MOCK_METHOD0(Focus, void());
   MOCK_METHOD0(Blur, void());
+  ui::LatencyInfo lastWheelEventLatencyInfo;
 };
 
 // Generates the |length| of composition rectangle vector and save them to
@@ -841,6 +853,44 @@ TEST_F(RenderWidgetHostViewMacTest, BlurAndFocusOnSetActive) {
 
   // Clean up.
   rwh->ShutdownAndDestroyWidget(true);
+}
+
+TEST_F(RenderWidgetHostViewMacTest, LastWheelEventLatencyInfoExists) {
+  // Initialize the view associated with a MockRenderWidgetHostImpl, rather than
+  // the MockRenderProcessHost that is set up by the test harness which mocks
+  // out |OnMessageReceived()|.
+  TestBrowserContext browser_context;
+  MockRenderProcessHost* process_host =
+      new MockRenderProcessHost(&browser_context);
+  process_host->Init();
+  MockRenderWidgetHostDelegate delegate;
+  int32_t routing_id = process_host->GetNextRoutingID();
+  MockRenderWidgetHostImpl* host =
+      new MockRenderWidgetHostImpl(&delegate, process_host, routing_id);
+  RenderWidgetHostViewMac* view = new RenderWidgetHostViewMac(host, false);
+  process_host->sink().ClearMessages();
+
+  // Send an initial wheel event for scrolling by 3 lines.
+  // Verifies that ui::INPUT_EVENT_LATENCY_UI_COMPONENT is added
+  // properly in scrollWheel function.
+  NSEvent* wheelEvent1 = MockScrollWheelEventWithPhase(@selector(phaseBegan),3);
+  [view->cocoa_view() scrollWheel:wheelEvent1];
+  ui::LatencyInfo::LatencyComponent ui_component1;
+  ASSERT_TRUE(host->lastWheelEventLatencyInfo.FindLatency(
+      ui::INPUT_EVENT_LATENCY_UI_COMPONENT, 0, &ui_component1) );
+
+  // Send a wheel event with phaseEnded.
+  // Verifies that ui::INPUT_EVENT_LATENCY_UI_COMPONENT is added
+  // properly in shortCircuitScrollWheelEvent function which is called
+  // in scrollWheel.
+  NSEvent* wheelEvent2 = MockScrollWheelEventWithPhase(@selector(phaseEnded),0);
+  [view->cocoa_view() scrollWheel:wheelEvent2];
+  ui::LatencyInfo::LatencyComponent ui_component2;
+  ASSERT_TRUE(host->lastWheelEventLatencyInfo.FindLatency(
+      ui::INPUT_EVENT_LATENCY_UI_COMPONENT, 0, &ui_component2) );
+
+  // Clean up.
+  host->ShutdownAndDestroyWidget(true);
 }
 
 TEST_F(RenderWidgetHostViewMacTest, ScrollWheelEndEventDelivery) {

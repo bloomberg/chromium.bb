@@ -301,9 +301,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   void ForwardMouseEventWithLatencyInfo(
       const blink::WebMouseEvent& mouse_event,
       const ui::LatencyInfo& ui_latency);
-  void ForwardWheelEventWithLatencyInfo(
+  virtual void ForwardWheelEventWithLatencyInfo(
       const blink::WebMouseWheelEvent& wheel_event,
-      const ui::LatencyInfo& ui_latency);
+      const ui::LatencyInfo& ui_latency); // Virtual for testing.
 
   // Enables/disables touch emulation using mouse event. See TouchEmulator.
   void SetTouchEventEmulationEnabled(

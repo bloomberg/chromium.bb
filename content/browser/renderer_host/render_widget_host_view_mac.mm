@@ -1641,7 +1641,9 @@ void RenderWidgetHostViewMac::ProcessMouseEvent(
 }
 void RenderWidgetHostViewMac::ProcessMouseWheelEvent(
     const blink::WebMouseWheelEvent& event) {
-  render_widget_host_->ForwardWheelEvent(event);
+  ui::LatencyInfo latency_info;
+  latency_info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_UI_COMPONENT, 0, 0);
+  render_widget_host_->ForwardWheelEventWithLatencyInfo(event, latency_info);
 }
 
 void RenderWidgetHostViewMac::ProcessTouchEvent(
@@ -2363,7 +2365,10 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
     WebMouseWheelEvent webEvent = WebMouseWheelEventBuilder::Build(
         event, self, canRubberbandLeft, canRubberbandRight);
     webEvent.railsMode = mouseWheelFilter_.UpdateRailsMode(webEvent);
-    renderWidgetHostView_->render_widget_host_->ForwardWheelEvent(webEvent);
+    ui::LatencyInfo latency_info;
+    latency_info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_UI_COMPONENT, 0, 0);
+    renderWidgetHostView_->render_widget_host_->
+        ForwardWheelEventWithLatencyInfo(webEvent, latency_info);
   }
 
   if (endWheelMonitor_) {
