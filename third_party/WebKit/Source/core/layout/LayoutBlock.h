@@ -146,6 +146,12 @@ protected:
     RootInlineBox* firstRootBox() const { return static_cast<RootInlineBox*>(firstLineBox()); }
     RootInlineBox* lastRootBox() const { return static_cast<RootInlineBox*>(lastLineBox()); }
 
+    // Insert a child correctly into the tree when |beforeDescendant| isn't a direct child of
+    // |this|. This happens e.g. when there's an anonymous block child of |this| and
+    // |beforeDescendant| has been reparented into that one. Such things are invisible to the DOM,
+    // and addChild() is typically called with the DOM tree (and not the layout tree) in mind.
+    void addChildBeforeDescendant(LayoutObject* newChild, LayoutObject* beforeDescendant);
+
 public:
     // FIXME-BLOCKFLOW: Remove virtualizaion when all callers have moved to LayoutBlockFlow
     virtual void deleteLineBoxTree();

@@ -657,9 +657,9 @@ TEST_F(MultiColumnTreeModifyingTest, InsertSubtreeWithSpannerBeforeContentAndRem
 
 TEST_F(MultiColumnTreeModifyingTest, InsertSubtreeWithSpannerInsideContentAndRemove)
 {
-    setMulticolHTML("<div id='block'>text<div class='s'></div>text</div><div id='mc'><div>outside<div id='insertBefore'>outside</div></div></div>");
+    setMulticolHTML("<div id='block'>text<div class='s'></div>text</div><div id='mc'><div id='newParent'>outside<div id='insertBefore'>outside</div></div></div>");
     EXPECT_EQ(columnSetSignature("mc"), "c");
-    reparentLayoutObject("mc", "block", "insertBefore");
+    reparentLayoutObject("newParent", "block", "insertBefore");
     EXPECT_EQ(columnSetSignature("mc"), "csc");
     destroyLayoutObject("block");
     EXPECT_EQ(columnSetSignature("mc"), "c");

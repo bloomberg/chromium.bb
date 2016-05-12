@@ -364,47 +364,56 @@ bool LayoutBlock::allowsOverflowClip() const
     return node() != document().viewportDefiningElement();
 }
 
+void LayoutBlock::addChildBeforeDescendant(LayoutObject* newChild, LayoutObject* beforeDescendant)
+{
+    ASSERT(beforeDescendant->parent() != this);
+    LayoutObject* beforeDescendantContainer = beforeDescendant->parent();
+    while (beforeDescendantContainer->parent() != this)
+        beforeDescendantContainer = beforeDescendantContainer->parent();
+    ASSERT(beforeDescendantContainer);
+
+    // We really can't go on if what we have found isn't anonymous. We're not supposed to use some
+    // random non-anonymous object and put the child there. That's a recipe for security issues.
+    RELEASE_ASSERT(beforeDescendantContainer->isAnonymous());
+
+    // If the requested insertion point is not one of our children, then this is because
+    // there is an anonymous container within this object that contains the beforeDescendant.
+    if (beforeDescendantContainer->isAnonymousBlock()
+        // Full screen layoutObjects and full screen placeholders act as anonymous blocks, not tables:
+        || beforeDescendantContainer->isLayoutFullScreen()
+        || beforeDescendantContainer->isLayoutFullScreenPlaceholder()) {
+        // Insert the child into the anonymous block box instead of here.
+        if (newChild->isInline() || newChild->isFloatingOrOutOfFlowPositioned() || beforeDescendant->parent()->slowFirstChild() != beforeDescendant)
+            beforeDescendant->parent()->addChild(newChild, beforeDescendant);
+        else
+            addChild(newChild, beforeDescendant->parent());
+        return;
+    }
+
+    ASSERT(beforeDescendantContainer->isTable());
+    if (newChild->isTablePart()) {
+        // Insert into the anonymous table.
+        beforeDescendantContainer->addChild(newChild, beforeDescendant);
+        return;
+    }
+
+    LayoutObject* beforeChild = splitAnonymousBoxesAroundChild(beforeDescendant);
+
+    ASSERT(beforeChild->parent() == this);
+    if (beforeChild->parent() != this) {
+        // We should never reach here. If we do, we need to use the
+        // safe fallback to use the topmost beforeChild container.
+        beforeChild = beforeDescendantContainer;
+    }
+
+    addChild(newChild, beforeChild);
+}
+
 void LayoutBlock::addChild(LayoutObject* newChild, LayoutObject* beforeChild)
 {
     if (beforeChild && beforeChild->parent() != this) {
-        LayoutObject* beforeChildContainer = beforeChild->parent();
-        while (beforeChildContainer->parent() != this)
-            beforeChildContainer = beforeChildContainer->parent();
-        ASSERT(beforeChildContainer);
-
-        if (beforeChildContainer->isAnonymous()) {
-            // If the requested beforeChild is not one of our children, then this is because
-            // there is an anonymous container within this object that contains the beforeChild.
-            LayoutObject* beforeChildAnonymousContainer = beforeChildContainer;
-            if (beforeChildAnonymousContainer->isAnonymousBlock()
-                // Full screen layoutObjects and full screen placeholders act as anonymous blocks, not tables:
-                || beforeChildAnonymousContainer->isLayoutFullScreen()
-                || beforeChildAnonymousContainer->isLayoutFullScreenPlaceholder()
-                ) {
-                // Insert the child into the anonymous block box instead of here.
-                if (newChild->isInline() || newChild->isFloatingOrOutOfFlowPositioned() || beforeChild->parent()->slowFirstChild() != beforeChild)
-                    beforeChild->parent()->addChild(newChild, beforeChild);
-                else
-                    addChild(newChild, beforeChild->parent());
-                return;
-            }
-
-            ASSERT(beforeChildAnonymousContainer->isTable());
-            if (newChild->isTablePart()) {
-                // Insert into the anonymous table.
-                beforeChildAnonymousContainer->addChild(newChild, beforeChild);
-                return;
-            }
-
-            beforeChild = splitAnonymousBoxesAroundChild(beforeChild);
-
-            ASSERT(beforeChild->parent() == this);
-            if (beforeChild->parent() != this) {
-                // We should never reach here. If we do, we need to use the
-                // safe fallback to use the topmost beforeChild container.
-                beforeChild = beforeChildContainer;
-            }
-        }
+        addChildBeforeDescendant(newChild, beforeChild);
+        return;
     }
 
     bool madeBoxesNonInline = false;
