@@ -220,37 +220,46 @@ void MessagePumpForUI::InitMessageWnd() {
 void MessagePumpForUI::WaitForWork() {
   // Wait until a message is available, up to the time needed by the timer
   // manager to fire the next set of timers.
-  int delay = GetCurrentDelay();
-  if (delay < 0)  // Negative value means no timers waiting.
-    delay = INFINITE;
+  int delay;
+  DWORD wait_flags = MWMO_INPUTAVAILABLE;
 
-  DWORD result;
-  result = MsgWaitForMultipleObjectsEx(0, NULL, delay, QS_ALLINPUT,
-                                       MWMO_INPUTAVAILABLE);
+  while ((delay = GetCurrentDelay()) != 0) {
+    if (delay < 0)  // Negative value means no timers waiting.
+      delay = INFINITE;
 
-  if (WAIT_OBJECT_0 == result) {
-    // A WM_* message is available.
-    // If a parent child relationship exists between windows across threads
-    // then their thread inputs are implicitly attached.
-    // This causes the MsgWaitForMultipleObjectsEx API to return indicating
-    // that messages are ready for processing (Specifically, mouse messages
-    // intended for the child window may appear if the child window has
-    // capture).
-    // The subsequent PeekMessages call may fail to return any messages thus
-    // causing us to enter a tight loop at times.
-    // The WaitMessage call below is a workaround to give the child window
-    // some time to process its input messages.
-    MSG msg = {0};
-    bool has_pending_sent_message =
-        (HIWORD(GetQueueStatus(QS_SENDMESSAGE)) & QS_SENDMESSAGE) != 0;
-    if (!has_pending_sent_message &&
-        !PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)) {
-      WaitMessage();
+    DWORD result =
+        MsgWaitForMultipleObjectsEx(0, NULL, delay, QS_ALLINPUT, wait_flags);
+
+    if (WAIT_OBJECT_0 == result) {
+      // A WM_* message is available.
+      // If a parent child relationship exists between windows across threads
+      // then their thread inputs are implicitly attached.
+      // This causes the MsgWaitForMultipleObjectsEx API to return indicating
+      // that messages are ready for processing (Specifically, mouse messages
+      // intended for the child window may appear if the child window has
+      // capture).
+      // The subsequent PeekMessages call may fail to return any messages thus
+      // causing us to enter a tight loop at times.
+      // The code below is a workaround to give the child window
+      // some time to process its input messages by looping back to
+      // MsgWaitForMultipleObjectsEx above when there are no messages for the
+      // current thread.
+      MSG msg = {0};
+      bool has_pending_sent_message =
+          (HIWORD(GetQueueStatus(QS_SENDMESSAGE)) & QS_SENDMESSAGE) != 0;
+      if (has_pending_sent_message ||
+          PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)) {
+        return;
+      }
+
+      // We know there are no more messages for this thread because PeekMessage
+      // has returned false. Reset |wait_flags| so that we wait for a *new*
+      // message.
+      wait_flags = 0;
     }
-    return;
-  }
 
-  DCHECK_NE(WAIT_FAILED, result) << GetLastError();
+    DCHECK_NE(WAIT_FAILED, result) << GetLastError();
+  }
 }
 
 void MessagePumpForUI::HandleWorkMessage() {
