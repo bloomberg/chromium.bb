@@ -112,6 +112,7 @@ MostVisitedSitesBridge::MostVisitedSitesBridge(Profile* profile)
                     TemplateURLServiceFactory::GetForProfile(profile),
                     g_browser_process->variations_service(),
                     profile->GetRequestContext(),
+                    ChromePopularSites::GetDirectory(),
                     TopSitesFactory::GetForProfile(profile),
                     SuggestionsServiceFactory::GetForProfile(profile),
                     profile->IsChild(),

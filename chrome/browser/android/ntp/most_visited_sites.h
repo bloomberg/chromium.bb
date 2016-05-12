@@ -94,6 +94,7 @@ class MostVisitedSites : public history::TopSitesObserver,
                    const TemplateURLService* template_url_service,
                    variations::VariationsService* variations_service,
                    net::URLRequestContextGetter* download_context,
+                   const base::FilePath& popular_sites_directory,
                    scoped_refptr<history::TopSites> top_sites,
                    suggestions::SuggestionsService* suggestions,
                    bool is_child_profile,
@@ -228,6 +229,7 @@ class MostVisitedSites : public history::TopSitesObserver,
   const TemplateURLService* template_url_service_;
   variations::VariationsService* variations_service_;
   net::URLRequestContextGetter* download_context_;
+  base::FilePath popular_sites_directory_;
   scoped_refptr<history::TopSites> top_sites_;
   suggestions::SuggestionsService* suggestions_service_;
 

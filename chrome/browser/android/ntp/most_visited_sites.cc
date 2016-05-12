@@ -176,18 +176,27 @@ MostVisitedSites::MostVisitedSites(
     const TemplateURLService* template_url_service,
     variations::VariationsService* variations_service,
     net::URLRequestContextGetter* download_context,
+    const base::FilePath& popular_sites_directory,
     scoped_refptr<history::TopSites> top_sites,
     SuggestionsService* suggestions,
     bool is_child_profile,
     Profile* profile)
-    : profile_(profile), prefs_(prefs),
+    : profile_(profile),
+      prefs_(prefs),
       template_url_service_(template_url_service),
       variations_service_(variations_service),
-      download_context_(download_context), top_sites_(top_sites),
-      suggestions_service_(suggestions), is_child_profile_(is_child_profile),
-      observer_(nullptr), num_sites_(0), received_most_visited_sites_(false),
-      received_popular_sites_(false), recorded_uma_(false),
-      scoped_observer_(this), mv_source_(SUGGESTIONS_SERVICE),
+      download_context_(download_context),
+      popular_sites_directory_(popular_sites_directory),
+      top_sites_(top_sites),
+      suggestions_service_(suggestions),
+      is_child_profile_(is_child_profile),
+      observer_(nullptr),
+      num_sites_(0),
+      received_most_visited_sites_(false),
+      received_popular_sites_(false),
+      recorded_uma_(false),
+      scoped_observer_(this),
+      mv_source_(SUGGESTIONS_SERVICE),
       weak_ptr_factory_(this) {
   SupervisedUserService* supervised_user_service =
       SupervisedUserServiceFactory::GetForProfile(profile_);
@@ -209,13 +218,9 @@ void MostVisitedSites::SetMostVisitedURLsObserver(
   if (ShouldShowPopularSites() &&
       NeedPopularSites(prefs_, num_sites_)) {
     popular_sites_.reset(new PopularSites(
-        prefs_,
-        template_url_service_,
-        variations_service_,
-        download_context_,
-        GetPopularSitesCountry(),
-        GetPopularSitesVersion(),
-        false,
+        prefs_, template_url_service_, variations_service_, download_context_,
+        popular_sites_directory_, GetPopularSitesCountry(),
+        GetPopularSitesVersion(), false,
         base::Bind(&MostVisitedSites::OnPopularSitesAvailable,
                    base::Unretained(this))));
   } else {

@@ -14,7 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
-#include "chrome/browser/net/file_downloader.h"
+#include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
 
 namespace net {
@@ -32,10 +32,19 @@ class VariationsService;
 class PrefService;
 class TemplateURLService;
 
+// TODO(sfiera): move to chrome_popular_sites.h
+class ChromePopularSites {
+ public:
+  static base::FilePath GetDirectory();
+
+ private:
+  DISALLOW_IMPLICIT_CONSTRUCTORS(ChromePopularSites);
+};
+
 // Downloads and provides a list of suggested popular sites, for display on
 // the NTP when there are not enough personalized suggestions. Caches the
 // downloaded file on disk to avoid re-downloading on every startup.
-class PopularSites {
+class PopularSites : public net::URLFetcherDelegate {
  public:
   struct Site {
     Site(const base::string16& title,
@@ -55,14 +64,20 @@ class PopularSites {
 
   using FinishedCallback = base::Callback<void(bool /* success */)>;
 
+  // Must only be instantiated on the UI thread. When the suggestions have been
+  // fetched (from cache or URL) and parsed, invokes |callback|, also on the UI
+  // thread.
+  //
   // Set |force_download| to enforce re-downloading the suggestions file, even
   // if it already exists on disk.
+  //
   // TODO(treib): PopularSites should query the variation params itself instead
   // of having them passed in.
   PopularSites(PrefService* prefs,
                const TemplateURLService* template_url_service,
                variations::VariationsService* variations_service,
                net::URLRequestContextGetter* download_context,
+               const base::FilePath& directory,
                const std::string& variation_param_country,
                const std::string& variation_param_version,
                bool force_download,
@@ -73,10 +88,11 @@ class PopularSites {
   PopularSites(PrefService* prefs,
                const TemplateURLService* template_url_service,
                net::URLRequestContextGetter* download_context,
+               const base::FilePath& directory,
                const GURL& url,
                const FinishedCallback& callback);
 
-  ~PopularSites();
+  ~PopularSites() override;
 
   const std::vector<Site>& sites() const { return sites_; }
 
@@ -94,6 +110,7 @@ class PopularSites {
   PopularSites(PrefService* prefs,
                const TemplateURLService* template_url_service,
                net::URLRequestContextGetter* download_context,
+               const base::FilePath& directory,
                const std::string& country,
                const std::string& version,
                const GURL& override_url,
@@ -102,21 +119,27 @@ class PopularSites {
 
   GURL GetPopularSitesURL() const;
 
-  // Fetch the popular sites at the given URL. |force_download| should be true
-  // if any previously downloaded site list should be overwritten.
-  void FetchPopularSites(const GURL& url,
-                         bool force_download,
-                         bool is_fallback);
+  void OnReadFileDone(const GURL& url,
+                      std::unique_ptr<std::string> data,
+                      bool success);
 
-  // If the download was not successful and it was not a fallback, attempt to
-  // download the fallback suggestions.
-  void OnDownloadDone(bool is_fallback, FileDownloader::Result result);
+  // Fetch the popular sites at the given URL, overwriting any file that already
+  // exists.
+  void FetchPopularSites(const GURL& url);
 
-  void ParseSiteList(const base::FilePath& path);
+  // net::URLFetcherDelegate implementation.
+  void OnURLFetchComplete(const net::URLFetcher* source) override;
+
+  void OnJsonSanitized(const std::string& valid_minified_json);
+  void OnJsonSanitizationFailed(const std::string& error_message);
+  void OnFileWriteDone(const std::string& json, bool success);
+  void ParseSiteList(const std::string& json);
   void OnJsonParsed(std::unique_ptr<std::vector<Site>> sites);
+  void OnDownloadFailed();
 
   FinishedCallback callback_;
-  std::unique_ptr<FileDownloader> downloader_;
+  std::unique_ptr<net::URLFetcher> fetcher_;
+  bool is_fallback_;
   std::vector<Site> sites_;
   std::string pending_country_;
   std::string pending_version_;
@@ -126,6 +149,8 @@ class PopularSites {
   PrefService* prefs_;
   const TemplateURLService* template_url_service_;
   net::URLRequestContextGetter* download_context_;
+
+  scoped_refptr<base::TaskRunner> runner_;
 
   base::WeakPtrFactory<PopularSites> weak_ptr_factory_;
 

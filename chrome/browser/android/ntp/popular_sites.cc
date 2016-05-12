@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/files/important_file_writer.h"
 #include "base/json/json_reader.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
@@ -23,13 +24,17 @@
 #include "components/ntp_tiles/switches.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
+#include "components/safe_json/json_sanitizer.h"
 #include "components/search_engines/search_engine_type.h"
 #include "components/search_engines/template_url_prepopulate_data.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/variations/service/variations_service.h"
 #include "content/public/browser/browser_thread.h"
+#include "net/base/load_flags.h"
+#include "net/http/http_status_code.h"
 
 using content::BrowserThread;
+using net::URLFetcher;
 using variations::VariationsService;
 
 namespace {
@@ -123,20 +128,8 @@ std::string GetVersionToUse(const PrefService* prefs,
   return version;
 }
 
-base::FilePath GetPopularSitesPath() {
-  base::FilePath dir;
-  PathService::Get(chrome::DIR_USER_DATA, &dir);
-  return dir.AppendASCII(kPopularSitesLocalFilename);
-}
-
-std::unique_ptr<std::vector<PopularSites::Site>> ReadAndParseJsonFile(
-    const base::FilePath& path) {
-  std::string json;
-  if (!base::ReadFileToString(path, &json)) {
-    DLOG(WARNING) << "Failed reading file";
-    return nullptr;
-  }
-
+std::unique_ptr<std::vector<PopularSites::Site>> ParseJson(
+    const std::string& json) {
   std::unique_ptr<base::Value> value =
       base::JSONReader::Read(json, base::JSON_ALLOW_TRAILING_COMMAS);
   base::ListValue* list;
@@ -172,6 +165,12 @@ std::unique_ptr<std::vector<PopularSites::Site>> ReadAndParseJsonFile(
 
 }  // namespace
 
+base::FilePath ChromePopularSites::GetDirectory() {
+  base::FilePath dir;
+  PathService::Get(chrome::DIR_USER_DATA, &dir);
+  return dir;  // empty if PathService::Get() failed.
+}
+
 PopularSites::Site::Site(const base::string16& title,
                          const GURL& url,
                          const GURL& favicon_url,
@@ -191,6 +190,7 @@ PopularSites::PopularSites(PrefService* prefs,
                            const TemplateURLService* template_url_service,
                            VariationsService* variations_service,
                            net::URLRequestContextGetter* download_context,
+                           const base::FilePath& directory,
                            const std::string& variation_param_country,
                            const std::string& variation_param_version,
                            bool force_download,
@@ -198,6 +198,7 @@ PopularSites::PopularSites(PrefService* prefs,
     : PopularSites(prefs,
                    template_url_service,
                    download_context,
+                   directory,
                    GetCountryToUse(prefs,
                                    template_url_service,
                                    variations_service,
@@ -210,11 +211,13 @@ PopularSites::PopularSites(PrefService* prefs,
 PopularSites::PopularSites(PrefService* prefs,
                            const TemplateURLService* template_url_service,
                            net::URLRequestContextGetter* download_context,
+                           const base::FilePath& directory,
                            const GURL& url,
                            const FinishedCallback& callback)
     : PopularSites(prefs,
                    template_url_service,
                    download_context,
+                   directory,
                    std::string(),
                    std::string(),
                    url,
@@ -247,19 +250,27 @@ void PopularSites::RegisterProfilePrefs(
 PopularSites::PopularSites(PrefService* prefs,
                            const TemplateURLService* template_url_service,
                            net::URLRequestContextGetter* download_context,
+                           const base::FilePath& directory,
                            const std::string& country,
                            const std::string& version,
                            const GURL& override_url,
                            bool force_download,
                            const FinishedCallback& callback)
     : callback_(callback),
+      is_fallback_(false),
       pending_country_(country),
       pending_version_(version),
-      local_path_(GetPopularSitesPath()),
+      local_path_(directory.empty()
+                      ? base::FilePath()
+                      : directory.AppendASCII(kPopularSitesLocalFilename)),
       prefs_(prefs),
       template_url_service_(template_url_service),
       download_context_(download_context),
+      runner_(
+          BrowserThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(
+              base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN)),
       weak_ptr_factory_(this) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   const base::Time last_download_time = base::Time::FromInternalValue(
       prefs_->GetInt64(kPopularSitesLastDownloadPref));
   const base::TimeDelta time_since_last_download =
@@ -270,14 +281,31 @@ PopularSites::PopularSites(PrefService* prefs,
   const bool country_changed = GetCountry() != pending_country_;
   const bool version_changed = GetVersion() != pending_version_;
 
-  const bool should_redownload_if_exists =
-      force_download || download_time_is_future ||
-      (time_since_last_download > redownload_interval) || country_changed ||
-      version_changed;
+  const GURL url =
+      override_url.is_valid() ? override_url : GetPopularSitesURL();
 
-  FetchPopularSites(
-      override_url.is_valid() ? override_url : GetPopularSitesURL(),
-      should_redownload_if_exists, false /* is_fallback */);
+  // No valid path to save to. Immediately post failure.
+  if (local_path_.empty()) {
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            base::Bind(callback_, false));
+    return;
+  }
+
+  // Download forced, or we need to download a new file.
+  if (force_download || download_time_is_future ||
+      (time_since_last_download > redownload_interval) || country_changed ||
+      version_changed) {
+    FetchPopularSites(url);
+    return;
+  }
+
+  std::unique_ptr<std::string> file_data(new std::string);
+  std::string* file_data_ptr = file_data.get();
+  base::PostTaskAndReplyWithResult(
+      runner_.get(), FROM_HERE,
+      base::Bind(&base::ReadFileToString, local_path_, file_data_ptr),
+      base::Bind(&PopularSites::OnReadFileDone, weak_ptr_factory_.GetWeakPtr(),
+                 url, base::Passed(std::move(file_data))));
 }
 
 GURL PopularSites::GetPopularSitesURL() const {
@@ -286,53 +314,76 @@ GURL PopularSites::GetPopularSitesURL() const {
                                  pending_version_.c_str()));
 }
 
-void PopularSites::FetchPopularSites(const GURL& url,
-                                     bool force_download,
-                                     bool is_fallback) {
-  downloader_.reset(new FileDownloader(
-      url, local_path_, force_download, download_context_,
-      base::Bind(&PopularSites::OnDownloadDone, base::Unretained(this),
-                 is_fallback)));
-}
-
-void PopularSites::OnDownloadDone(bool is_fallback,
-                                  FileDownloader::Result result) {
-  downloader_.reset();
-  switch (result) {
-    case FileDownloader::DOWNLOADED:
-      prefs_->SetInt64(kPopularSitesLastDownloadPref,
-                      base::Time::Now().ToInternalValue());
-      prefs_->SetString(kPopularSitesCountryPref, pending_country_);
-      prefs_->SetString(kPopularSitesVersionPref, pending_version_);
-      ParseSiteList(local_path_);
-      break;
-    case FileDownloader::EXISTS:
-      ParseSiteList(local_path_);
-      break;
-    case FileDownloader::FAILED:
-      if (!is_fallback) {
-        DLOG(WARNING) << "Download country site list failed";
-        pending_country_ = kPopularSitesDefaultCountryCode;
-        pending_version_ = kPopularSitesDefaultVersion;
-        // It is fine to force the download as Fallback is only triggered after
-        // a failed download.
-        FetchPopularSites(GetPopularSitesURL(), true /* force_download */,
-                          true /* is_fallback */);
-      } else {
-        DLOG(WARNING) << "Download fallback site list failed";
-        callback_.Run(false);
-      }
-      break;
+void PopularSites::OnReadFileDone(const GURL& url,
+                                  std::unique_ptr<std::string> data,
+                                  bool success) {
+  if (success) {
+    ParseSiteList(*data);
+  } else {
+    // File didn't exist, or couldn't be read for some other reason.
+    FetchPopularSites(url);
   }
 }
 
-void PopularSites::ParseSiteList(const base::FilePath& path) {
+void PopularSites::FetchPopularSites(const GURL& url) {
+  fetcher_ = URLFetcher::Create(url, URLFetcher::GET, this);
+  fetcher_->SetRequestContext(download_context_);
+  fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
+                         net::LOAD_DO_NOT_SAVE_COOKIES);
+  fetcher_->SetAutomaticallyRetryOnNetworkChanges(1);
+  fetcher_->Start();
+}
+
+void PopularSites::OnURLFetchComplete(const net::URLFetcher* source) {
+  DCHECK_EQ(fetcher_.get(), source);
+  std::unique_ptr<net::URLFetcher> free_fetcher = std::move(fetcher_);
+
+  std::string sketchy_json;
+  if (!(source->GetStatus().is_success() &&
+        source->GetResponseCode() == net::HTTP_OK &&
+        source->GetResponseAsString(&sketchy_json))) {
+    OnDownloadFailed();
+    return;
+  }
+
+  safe_json::JsonSanitizer::Sanitize(
+      sketchy_json, base::Bind(&PopularSites::OnJsonSanitized,
+                               weak_ptr_factory_.GetWeakPtr()),
+      base::Bind(&PopularSites::OnJsonSanitizationFailed,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+void PopularSites::OnJsonSanitized(const std::string& valid_minified_json) {
   base::PostTaskAndReplyWithResult(
-      BrowserThread::GetBlockingPool()
-          ->GetTaskRunnerWithShutdownBehavior(
-              base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN)
-          .get(),
-      FROM_HERE, base::Bind(&ReadAndParseJsonFile, path),
+      runner_.get(), FROM_HERE,
+      base::Bind(&base::ImportantFileWriter::WriteFileAtomically, local_path_,
+                 valid_minified_json),
+      base::Bind(&PopularSites::OnFileWriteDone, weak_ptr_factory_.GetWeakPtr(),
+                 valid_minified_json));
+}
+
+void PopularSites::OnJsonSanitizationFailed(const std::string& error_message) {
+  DLOG(WARNING) << "JSON sanitization failed: " << error_message;
+  OnDownloadFailed();
+}
+
+void PopularSites::OnFileWriteDone(const std::string& json, bool success) {
+  if (success) {
+    prefs_->SetInt64(kPopularSitesLastDownloadPref,
+                     base::Time::Now().ToInternalValue());
+    prefs_->SetString(kPopularSitesCountryPref, pending_country_);
+    prefs_->SetString(kPopularSitesVersionPref, pending_version_);
+    ParseSiteList(json);
+  } else {
+    DLOG(WARNING) << "Could not write file to "
+                  << local_path_.LossyDisplayName();
+    OnDownloadFailed();
+  }
+}
+
+void PopularSites::ParseSiteList(const std::string& json) {
+  base::PostTaskAndReplyWithResult(
+      runner_.get(), FROM_HERE, base::Bind(&ParseJson, json),
       base::Bind(&PopularSites::OnJsonParsed, weak_ptr_factory_.GetWeakPtr()));
 }
 
@@ -342,4 +393,17 @@ void PopularSites::OnJsonParsed(std::unique_ptr<std::vector<Site>> sites) {
   else
     sites_.clear();
   callback_.Run(!!sites);
+}
+
+void PopularSites::OnDownloadFailed() {
+  if (!is_fallback_) {
+    DLOG(WARNING) << "Download country site list failed";
+    is_fallback_ = true;
+    pending_country_ = kPopularSitesDefaultCountryCode;
+    pending_version_ = kPopularSitesDefaultVersion;
+    FetchPopularSites(GetPopularSitesURL());
+  } else {
+    DLOG(WARNING) << "Download fallback site list failed";
+    callback_.Run(false);
+  }
 }
