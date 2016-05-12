@@ -241,17 +241,19 @@ config("compiler") {
   # Non-Mac Posix compiler flags setup.
   # -----------------------------------
   if (is_posix && !(is_mac || is_ios)) {
-    if (enable_profiling && !is_debug) {
-      cflags += [
-        "-fno-omit-frame-pointer",
-        "-g",
-      ]
+    if (enable_profiling) {
+      # Explicitly ask for frame pointers. Otherwise they are omitted when
+      # any optimization level is used (and Android debug builds use -Os).
+      cflags += [ "-fno-omit-frame-pointer" ]
+      if (!is_debug) {
+        cflags += [ "-g" ]
 
-      if (enable_full_stack_frames_for_profiling) {
-        cflags += [
-          "-fno-inline",
-          "-fno-optimize-sibling-calls",
-        ]
+        if (enable_full_stack_frames_for_profiling) {
+          cflags += [
+            "-fno-inline",
+            "-fno-optimize-sibling-calls",
+          ]
+        }
       }
     }
 
@@ -1209,7 +1211,7 @@ if (is_win) {
     # We don't omit frame pointers on arm64 since they are required
     # to correctly unwind stackframes which contain system library
     # function frames (crbug.com/391706).
-    if (!using_sanitizer && target_cpu != "arm64") {
+    if (!using_sanitizer && !enable_profiling && target_cpu != "arm64") {
       common_optimize_on_cflags += [ "-fomit-frame-pointer" ]
     }
 
@@ -1299,7 +1301,7 @@ config("no_optimize") {
     # We don't omit frame pointers on arm64 since they are required
     # to correctly unwind stackframes which contain system library
     # function frames (crbug.com/391706).
-    if (!using_sanitizer && target_cpu != "arm64") {
+    if (!using_sanitizer && !enable_profiling && target_cpu != "arm64") {
       cflags += [ "-fomit-frame-pointer" ]
     }
 
