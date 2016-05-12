@@ -239,7 +239,7 @@ void DomDistillerViewerSource::StartDataRequest(
           distiller_ui_handle_.get()));
 
   // Tell the renderer that this is currently a distilled page.
-  DistillerPageNotifierServicePtr page_notifier_service;
+  mojom::DistillerPageNotifierServicePtr page_notifier_service;
   render_frame_host->GetServiceRegistry()->ConnectToRemoteService(
       mojo::GetProxy(&page_notifier_service));
   DCHECK(page_notifier_service);

@@ -8,35 +8,35 @@
 
 namespace leveldb {
 
-DatabaseError LeveldbStatusToError(const leveldb::Status& s) {
+mojom::DatabaseError LeveldbStatusToError(const leveldb::Status& s) {
   if (s.ok())
-    return DatabaseError::OK;
+    return mojom::DatabaseError::OK;
   if (s.IsNotFound())
-    return DatabaseError::NOT_FOUND;
+    return mojom::DatabaseError::NOT_FOUND;
   if (s.IsCorruption())
-    return DatabaseError::CORRUPTION;
+    return mojom::DatabaseError::CORRUPTION;
   if (s.IsNotSupportedError())
-    return DatabaseError::NOT_SUPPORTED;
+    return mojom::DatabaseError::NOT_SUPPORTED;
   if (s.IsIOError())
-    return DatabaseError::IO_ERROR;
-  return DatabaseError::INVALID_ARGUMENT;
+    return mojom::DatabaseError::IO_ERROR;
+  return mojom::DatabaseError::INVALID_ARGUMENT;
 }
 
-leveldb::Status DatabaseErrorToStatus(DatabaseError e,
+leveldb::Status DatabaseErrorToStatus(mojom::DatabaseError e,
                                       const Slice& msg,
                                       const Slice& msg2) {
   switch (e) {
-    case DatabaseError::OK:
+    case mojom::DatabaseError::OK:
       return leveldb::Status::OK();
-    case DatabaseError::NOT_FOUND:
+    case mojom::DatabaseError::NOT_FOUND:
       return leveldb::Status::NotFound(msg, msg2);
-    case DatabaseError::CORRUPTION:
+    case mojom::DatabaseError::CORRUPTION:
       return leveldb::Status::Corruption(msg, msg2);
-    case DatabaseError::NOT_SUPPORTED:
+    case mojom::DatabaseError::NOT_SUPPORTED:
       return leveldb::Status::NotSupported(msg, msg2);
-    case DatabaseError::INVALID_ARGUMENT:
+    case mojom::DatabaseError::INVALID_ARGUMENT:
       return leveldb::Status::InvalidArgument(msg, msg2);
-    case DatabaseError::IO_ERROR:
+    case mojom::DatabaseError::IO_ERROR:
       return leveldb::Status::IOError(msg, msg2);
   }
 

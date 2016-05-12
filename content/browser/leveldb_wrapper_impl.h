@@ -19,7 +19,8 @@
 
 namespace content {
 
-// This is a wrapper around a leveldb::LevelDBDatabase. Multiple interface
+// This is a wrapper around a leveldb::mojom::LevelDBDatabase. Multiple
+// interface
 // pointers can be bound to the same object. The wrapper adds a couple of
 // features not found directly in leveldb.
 // 1) Adds the given prefix, if any, to all keys. This allows the sharing of one
@@ -32,7 +33,7 @@ class LevelDBWrapperImpl : public mojom::LevelDBWrapper {
  public:
   // |no_bindings_callback| will be called when this object has no more
   // bindings.
-  LevelDBWrapperImpl(leveldb::LevelDBDatabase* database,
+  LevelDBWrapperImpl(leveldb::mojom::LevelDBDatabase* database,
                      const std::string& prefix,
                      size_t max_size,
                      base::TimeDelta default_commit_delay,
@@ -101,19 +102,19 @@ class LevelDBWrapperImpl : public mojom::LevelDBWrapper {
 
   void OnConnectionError();
   void LoadMap(const base::Closure& completion_callback);
-  void OnLoadComplete(leveldb::DatabaseError status,
-                      mojo::Array<leveldb::KeyValuePtr> data);
+  void OnLoadComplete(leveldb::mojom::DatabaseError status,
+                      mojo::Array<leveldb::mojom::KeyValuePtr> data);
   void CreateCommitBatchIfNeeded();
   void StartCommitTimer();
   base::TimeDelta ComputeCommitDelay() const;
   void CommitChanges();
-  void OnCommitComplete(leveldb::DatabaseError error);
+  void OnCommitComplete(leveldb::mojom::DatabaseError error);
 
   std::string prefix_;
   mojo::BindingSet<mojom::LevelDBWrapper> bindings_;
   mojo::InterfacePtrSet<mojom::LevelDBObserver> observers_;
   base::Closure no_bindings_callback_;
-  leveldb::LevelDBDatabase* database_;
+  leveldb::mojom::LevelDBDatabase* database_;
   std::unique_ptr<ValueMap> map_;
   std::vector<base::Closure> on_load_complete_tasks_;
   size_t bytes_used_;

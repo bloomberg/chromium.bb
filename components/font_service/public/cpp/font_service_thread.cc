@@ -19,7 +19,7 @@ namespace {
 const char kFontThreadName[] = "Font_Proxy_Thread";
 }  // namespace
 
-FontServiceThread::FontServiceThread(FontServicePtr font_service)
+FontServiceThread::FontServiceThread(mojom::FontServicePtr font_service)
     : base::Thread(kFontThreadName),
       font_service_info_(font_service.PassInterface()),
       weak_factory_(this) {
@@ -95,10 +95,10 @@ void FontServiceThread::MatchFamilyNameImpl(
     return;
   }
 
-  TypefaceStylePtr style(TypefaceStyle::New());
+  mojom::TypefaceStylePtr style(mojom::TypefaceStyle::New());
   style->weight = requested_style.weight();
   style->width = requested_style.width();
-  style->slant = static_cast<TypefaceSlant>(requested_style.slant());
+  style->slant = static_cast<mojom::TypefaceSlant>(requested_style.slant());
 
   pending_waitable_events_.insert(done_event);
   font_service_->MatchFamilyName(
@@ -114,9 +114,9 @@ void FontServiceThread::OnMatchFamilyNameComplete(
     SkFontConfigInterface::FontIdentity* out_font_identity,
     SkString* out_family_name,
     SkFontStyle* out_style,
-    FontIdentityPtr font_identity,
+    mojom::FontIdentityPtr font_identity,
     mojo::String family_name,
-    TypefaceStylePtr style) {
+    mojom::TypefaceStylePtr style) {
   DCHECK_EQ(GetThreadId(), base::PlatformThread::CurrentId());
   pending_waitable_events_.erase(done_event);
 

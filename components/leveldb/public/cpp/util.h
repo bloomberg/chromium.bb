@@ -12,13 +12,13 @@ namespace leveldb {
 class Slice;
 class Status;
 
-// Builds a mojo DatabaseError from a leveldb::Status object.
-DatabaseError LeveldbStatusToError(const leveldb::Status& s);
+// Builds a mojo mojom::DatabaseError from a leveldb::Status object.
+mojom::DatabaseError LeveldbStatusToError(const leveldb::Status& s);
 
 // Creates a leveldb Status object form a database error and two optional
 // messages. A mojoification of the various static leveldb::Status
 // constructors.
-leveldb::Status DatabaseErrorToStatus(DatabaseError e,
+leveldb::Status DatabaseErrorToStatus(mojom::DatabaseError e,
                                       const Slice& msg,
                                       const Slice& msg2);
 

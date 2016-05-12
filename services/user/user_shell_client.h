@@ -23,7 +23,7 @@ std::unique_ptr<shell::ShellClient> CreateUserShellClient(
 class UserShellClient
     : public shell::ShellClient,
       public shell::InterfaceFactory<mojom::UserService>,
-      public shell::InterfaceFactory<leveldb::LevelDBService> {
+      public shell::InterfaceFactory<leveldb::mojom::LevelDBService> {
  public:
   UserShellClient(
       scoped_refptr<base::SingleThreadTaskRunner> user_service_runner,
@@ -43,10 +43,10 @@ class UserShellClient
 
   // |InterfaceFactory<LevelDBService>| implementation:
   void Create(shell::Connection* connection,
-              leveldb::LevelDBServiceRequest request) override;
+              leveldb::mojom::LevelDBServiceRequest request) override;
 
   void OnLevelDBServiceRequest(shell::Connection* connection,
-                               leveldb::LevelDBServiceRequest request);
+                               leveldb::mojom::LevelDBServiceRequest request);
   void OnLevelDBServiceError();
 
   scoped_refptr<base::SingleThreadTaskRunner> user_service_runner_;

@@ -53,24 +53,21 @@ void DistillerNativeJavaScript::AddJavaScriptObjectToFrame(
   // wrapper function for binding. Note that calling distiller_js_service.get()
   // does not transfer ownership of the interface.
   BindFunctionToObject(
-      distiller_obj,
-      "sendFeedback",
+      distiller_obj, "sendFeedback",
       base::Bind(
-          &DistillerJavaScriptService::HandleDistillerFeedbackCall,
+          &mojom::DistillerJavaScriptService::HandleDistillerFeedbackCall,
           base::Unretained(distiller_js_service_.get())));
 
   BindFunctionToObject(
-      distiller_obj,
-      "closePanel",
+      distiller_obj, "closePanel",
       base::Bind(
-          &DistillerJavaScriptService::HandleDistillerClosePanelCall,
+          &mojom::DistillerJavaScriptService::HandleDistillerClosePanelCall,
           base::Unretained(distiller_js_service_.get())));
 
   BindFunctionToObject(
-      distiller_obj,
-      "openSettings",
+      distiller_obj, "openSettings",
       base::Bind(
-          &DistillerJavaScriptService::HandleDistillerOpenSettingsCall,
+          &mojom::DistillerJavaScriptService::HandleDistillerOpenSettingsCall,
           base::Unretained(distiller_js_service_.get())));
 }
 

@@ -180,7 +180,7 @@ void ContextualSearchManager::EnableContextualSearchJsApiForOverlay(
           ->GetRenderViewHost()
           ->GetMainFrame();
   DCHECK(render_frame_host);
-  contextual_search::OverlayPageNotifierServicePtr page_notifier_service;
+  contextual_search::mojom::OverlayPageNotifierServicePtr page_notifier_service;
   render_frame_host->GetServiceRegistry()->ConnectToRemoteService(
       mojo::GetProxy(&page_notifier_service));
   DCHECK(page_notifier_service);

@@ -13,15 +13,16 @@
 namespace dom_distiller {
 
 // This is the receiving end of "distiller" JavaScript object calls.
-class DistillerJavaScriptServiceImpl : public DistillerJavaScriptService {
+class DistillerJavaScriptServiceImpl
+    : public mojom::DistillerJavaScriptService {
  public:
   DistillerJavaScriptServiceImpl(
       content::RenderFrameHost* render_frame_host,
       DistillerUIHandle* distiller_ui_handle,
-      mojo::InterfaceRequest<DistillerJavaScriptService> request);
+      mojo::InterfaceRequest<mojom::DistillerJavaScriptService> request);
   ~DistillerJavaScriptServiceImpl() override;
 
-  // Mojo DistillerJavaScriptService implementation.
+  // Mojo mojom::DistillerJavaScriptService implementation.
 
   // Echo implementation, this call does not actually return as it would be
   // blocking.
@@ -37,7 +38,7 @@ class DistillerJavaScriptServiceImpl : public DistillerJavaScriptService {
   void HandleDistillerOpenSettingsCall() override;
 
  private:
-  mojo::StrongBinding<DistillerJavaScriptService> binding_;
+  mojo::StrongBinding<mojom::DistillerJavaScriptService> binding_;
   content::RenderFrameHost* render_frame_host_;
   DistillerUIHandle* distiller_ui_handle_;
 };
@@ -46,7 +47,7 @@ class DistillerJavaScriptServiceImpl : public DistillerJavaScriptService {
 void CreateDistillerJavaScriptService(
     content::RenderFrameHost* render_frame_host,
     DistillerUIHandle* distiller_ui_handle,
-    mojo::InterfaceRequest<DistillerJavaScriptService> request);
+    mojo::InterfaceRequest<mojom::DistillerJavaScriptService> request);
 
 }  // namespace dom_distiller
 

@@ -8,11 +8,12 @@
 
 namespace leveldb {
 
-RemoteIterator::RemoteIterator(LevelDBDatabase* database, uint64_t iterator_id)
+RemoteIterator::RemoteIterator(mojom::LevelDBDatabase* database,
+                               uint64_t iterator_id)
     : database_(database),
       iterator_id_(iterator_id),
       valid_(false),
-      status_(DatabaseError::OK) {}
+      status_(mojom::DatabaseError::OK) {}
 
 RemoteIterator::~RemoteIterator() {
   database_->ReleaseIterator(iterator_id_);

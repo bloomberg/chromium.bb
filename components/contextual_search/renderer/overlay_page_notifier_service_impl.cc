@@ -12,7 +12,7 @@ namespace contextual_search {
 
 OverlayPageNotifierServiceImpl::OverlayPageNotifierServiceImpl(
     OverlayJsRenderFrameObserver* observer,
-    mojo::InterfaceRequest<OverlayPageNotifierService> request)
+    mojo::InterfaceRequest<mojom::OverlayPageNotifierService> request)
     : binding_(this, std::move(request)), overlay_js_observer_(observer) {}
 
 OverlayPageNotifierServiceImpl::~OverlayPageNotifierServiceImpl() {}

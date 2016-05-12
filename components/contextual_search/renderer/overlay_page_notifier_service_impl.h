@@ -14,23 +14,25 @@ namespace contextual_search {
 
 class OverlayJsRenderFrameObserver;
 
-// OverlayPageNotifierService is responsible for listening to the browser for
+// mojom::OverlayPageNotifierService is responsible for listening to the browser
+// for
 // messages about whether a page is presented in an overlay panel.
 // No message is received if the page is not presented in an overlay panel.
 // This service should be removed from the registry once the page is done
 // loading.
-class OverlayPageNotifierServiceImpl : public OverlayPageNotifierService {
+class OverlayPageNotifierServiceImpl
+    : public mojom::OverlayPageNotifierService {
  public:
   explicit OverlayPageNotifierServiceImpl(
       OverlayJsRenderFrameObserver* observer,
-      mojo::InterfaceRequest<OverlayPageNotifierService> request);
+      mojo::InterfaceRequest<mojom::OverlayPageNotifierService> request);
   ~OverlayPageNotifierServiceImpl() override;
 
   // Implementation of mojo interface OverlayPageNotifierService.
   void NotifyIsContextualSearchOverlay() override;
 
  private:
-  mojo::StrongBinding<OverlayPageNotifierService> binding_;
+  mojo::StrongBinding<mojom::OverlayPageNotifierService> binding_;
   OverlayJsRenderFrameObserver* overlay_js_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(OverlayPageNotifierServiceImpl);

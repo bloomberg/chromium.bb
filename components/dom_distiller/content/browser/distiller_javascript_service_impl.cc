@@ -16,7 +16,7 @@ namespace dom_distiller {
 DistillerJavaScriptServiceImpl::DistillerJavaScriptServiceImpl(
     content::RenderFrameHost* render_frame_host,
     DistillerUIHandle* distiller_ui_handle,
-    mojo::InterfaceRequest<DistillerJavaScriptService> request)
+    mojo::InterfaceRequest<mojom::DistillerJavaScriptService> request)
     : binding_(this, std::move(request)),
       render_frame_host_(render_frame_host),
       distiller_ui_handle_(distiller_ui_handle) {}
@@ -65,7 +65,7 @@ void DistillerJavaScriptServiceImpl::HandleDistillerOpenSettingsCall() {
 void CreateDistillerJavaScriptService(
     content::RenderFrameHost* render_frame_host,
     DistillerUIHandle* distiller_ui_handle,
-    mojo::InterfaceRequest<DistillerJavaScriptService> request) {
+    mojo::InterfaceRequest<mojom::DistillerJavaScriptService> request) {
   // This is strongly bound and owned by the pipe.
   new DistillerJavaScriptServiceImpl(render_frame_host, distiller_ui_handle,
                                      std::move(request));

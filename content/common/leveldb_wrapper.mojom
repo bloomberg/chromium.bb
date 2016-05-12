@@ -47,5 +47,5 @@ interface LevelDBWrapper {
   // Only used with small databases. Returns all key/value pairs.
   [Sync]
   GetAll(string source)
-    => (leveldb.DatabaseError status, array<KeyValue> data);
+    => (leveldb.mojom.DatabaseError status, array<KeyValue> data);
 };

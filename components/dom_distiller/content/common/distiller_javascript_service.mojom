@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module dom_distiller;
+module dom_distiller.mojom;
 
 // This service is implemented by the browser process and is used by the
 // renderer when a distiller JavaScript function is called.

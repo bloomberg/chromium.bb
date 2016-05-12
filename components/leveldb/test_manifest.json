@@ -5,7 +5,7 @@
   "capabilities": {
     "required": {
       "mojo:filesystem": { "interfaces": [ "filesystem::mojom::FileSystem" ] },
-      "mojo:leveldb": { "interfaces":  [ "leveldb::LevelDBService" ] }
+      "mojo:leveldb": { "interfaces":  [ "leveldb::mojom::LevelDBService" ] }
     }
   }
 }

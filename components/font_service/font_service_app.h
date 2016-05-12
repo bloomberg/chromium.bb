@@ -19,8 +19,8 @@
 namespace font_service {
 
 class FontServiceApp : public shell::ShellClient,
-                       public shell::InterfaceFactory<FontService>,
-                       public FontService {
+                       public shell::InterfaceFactory<mojom::FontService>,
+                       public mojom::FontService {
  public:
   FontServiceApp();
   ~FontServiceApp() override;
@@ -32,20 +32,20 @@ class FontServiceApp : public shell::ShellClient,
                   uint32_t id) override;
   bool AcceptConnection(shell::Connection* connection) override;
 
-  // shell::InterfaceFactory<FontService>:
+  // shell::InterfaceFactory<mojom::FontService>:
   void Create(shell::Connection* connection,
-              mojo::InterfaceRequest<FontService> request) override;
+              mojo::InterfaceRequest<mojom::FontService> request) override;
 
   // FontService:
   void MatchFamilyName(const mojo::String& family_name,
-                       TypefaceStylePtr requested_style,
+                       mojom::TypefaceStylePtr requested_style,
                        const MatchFamilyNameCallback& callback) override;
   void OpenStream(uint32_t id_number,
                   const OpenStreamCallback& callback) override;
 
   int FindOrAddPath(const SkString& path);
 
-  mojo::BindingSet<FontService> bindings_;
+  mojo::BindingSet<mojom::FontService> bindings_;
 
   mojo::TracingImpl tracing_;
 

@@ -17,10 +17,10 @@ namespace dom_distiller {
 
 // Implementation of the Mojo DistillabilityService. This is called by the
 // renderer to notify the browser that a page is distillable.
-class DistillabilityServiceImpl : public DistillabilityService {
+class DistillabilityServiceImpl : public mojom::DistillabilityService {
  public:
   DistillabilityServiceImpl(
-      mojo::InterfaceRequest<DistillabilityService> request,
+      mojo::InterfaceRequest<mojom::DistillabilityService> request,
       base::WeakPtr<DistillabilityDriver> distillability_driver)
       : binding_(this, std::move(request)),
         distillability_driver_(distillability_driver) {}
@@ -33,7 +33,7 @@ class DistillabilityServiceImpl : public DistillabilityService {
   }
 
  private:
-  mojo::StrongBinding<DistillabilityService> binding_;
+  mojo::StrongBinding<mojom::DistillabilityService> binding_;
   base::WeakPtr<DistillabilityDriver> distillability_driver_;
 };
 
@@ -49,7 +49,7 @@ DistillabilityDriver::~DistillabilityDriver() {
 }
 
 void DistillabilityDriver::CreateDistillabilityService(
-    mojo::InterfaceRequest<DistillabilityService> request) {
+    mojo::InterfaceRequest<mojom::DistillabilityService> request) {
   new DistillabilityServiceImpl(std::move(request), weak_factory_.GetWeakPtr());
 }
 

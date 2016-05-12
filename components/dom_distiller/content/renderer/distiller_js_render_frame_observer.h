@@ -40,7 +40,7 @@ class DistillerJsRenderFrameObserver : public content::RenderFrameObserver {
 
  private:
   void CreateDistillerPageNotifierService(
-      mojo::InterfaceRequest<DistillerPageNotifierService> request);
+      mojo::InterfaceRequest<mojom::DistillerPageNotifierService> request);
 
   // The isolated world that the distiller object should be written to.
   int distiller_isolated_world_id_;
@@ -48,7 +48,7 @@ class DistillerJsRenderFrameObserver : public content::RenderFrameObserver {
   // Track if the current page is distilled. This is needed for testing.
   bool is_distiller_page_;
 
-  //mojo::StrongBinding<DistillerPageNotifierService> binding_;
+  // mojo::StrongBinding<mojom::DistillerPageNotifierService> binding_;
 
   // Handle to "distiller" JavaScript object functionality.
   std::unique_ptr<DistillerNativeJavaScript> native_javascript_handle_;

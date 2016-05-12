@@ -17,9 +17,9 @@ namespace leveldb {
 class MojoEnv;
 
 // The backing to a database object that we pass to our called.
-class LevelDBDatabaseImpl : public LevelDBDatabase {
+class LevelDBDatabaseImpl : public mojom::LevelDBDatabase {
  public:
-  LevelDBDatabaseImpl(leveldb::LevelDBDatabaseRequest request,
+  LevelDBDatabaseImpl(leveldb::mojom::LevelDBDatabaseRequest request,
                       std::unique_ptr<leveldb::Env> environment,
                       std::unique_ptr<leveldb::DB> db);
   ~LevelDBDatabaseImpl() override;
@@ -32,7 +32,7 @@ class LevelDBDatabaseImpl : public LevelDBDatabase {
               const DeleteCallback& callback) override;
   void DeletePrefixed(mojo::Array<uint8_t> key_prefix,
                       const DeletePrefixedCallback& callback) override;
-  void Write(mojo::Array<BatchedOperationPtr> operations,
+  void Write(mojo::Array<mojom::BatchedOperationPtr> operations,
              const WriteCallback& callback) override;
   void Get(mojo::Array<uint8_t> key, const GetCallback& callback) override;
   void GetPrefixed(mojo::Array<uint8_t> key_prefix,
@@ -69,7 +69,7 @@ class LevelDBDatabaseImpl : public LevelDBDatabase {
   leveldb::Status DeletePrefixedHelper(const leveldb::Slice& key_prefix,
                                        leveldb::WriteBatch* batch);
 
-  mojo::StrongBinding<LevelDBDatabase> binding_;
+  mojo::StrongBinding<mojom::LevelDBDatabase> binding_;
   std::unique_ptr<leveldb::Env> environment_;
   std::unique_ptr<leveldb::DB> db_;
 

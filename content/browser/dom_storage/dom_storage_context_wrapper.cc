@@ -109,7 +109,7 @@ class DOMStorageContextWrapper::MojoState {
 
   // Part of our asynchronous directory opening called from OpenLocalStorage().
   void OnDirectoryOpened(filesystem::mojom::FileError err);
-  void OnDatabaseOpened(leveldb::DatabaseError status);
+  void OnDatabaseOpened(leveldb::mojom::DatabaseError status);
 
   // The (possibly delayed) implementation of OpenLocalStorage(). Can be called
   // directly from that function, or through |on_database_open_callbacks_|.
@@ -134,8 +134,8 @@ class DOMStorageContextWrapper::MojoState {
   user_service::mojom::UserServicePtr user_service_;
   filesystem::mojom::DirectoryPtr directory_;
 
-  leveldb::LevelDBServicePtr leveldb_service_;
-  leveldb::LevelDBDatabasePtr database_;
+  leveldb::mojom::LevelDBServicePtr leveldb_service_;
+  leveldb::mojom::LevelDBDatabasePtr database_;
 
   std::vector<base::Closure> on_database_opened_callbacks_;
 
@@ -194,7 +194,7 @@ void DOMStorageContextWrapper::MojoState::OnDirectoryOpened(
   if (err != filesystem::mojom::FileError::OK) {
     // We failed to open the directory; continue with startup so that we create
     // the |level_db_wrappers_|.
-    OnDatabaseOpened(leveldb::DatabaseError::IO_ERROR);
+    OnDatabaseOpened(leveldb::mojom::DatabaseError::IO_ERROR);
     return;
   }
 
@@ -208,8 +208,8 @@ void DOMStorageContextWrapper::MojoState::OnDirectoryOpened(
 }
 
 void DOMStorageContextWrapper::MojoState::OnDatabaseOpened(
-    leveldb::DatabaseError status) {
-  if (status != leveldb::DatabaseError::OK) {
+    leveldb::mojom::DatabaseError status) {
+  if (status != leveldb::mojom::DatabaseError::OK) {
     // If we failed to open the database, reset the service object so we pass
     // null pointers to our wrappers.
     database_.reset();

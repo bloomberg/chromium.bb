@@ -14,22 +14,24 @@ namespace dom_distiller {
 
 class DistillerJsRenderFrameObserver;
 
-// DistillerPageNotifierService is responsible for listening to the browser for
+// mojom::DistillerPageNotifierService is responsible for listening to the
+// browser for
 // messages about if a page is a distiller page. No message is received if the
 // page is not a distiller page. This service should be removed from the
 // registry once the page is done loading.
-class DistillerPageNotifierServiceImpl : public DistillerPageNotifierService {
+class DistillerPageNotifierServiceImpl
+    : public mojom::DistillerPageNotifierService {
  public:
   explicit DistillerPageNotifierServiceImpl(
       DistillerJsRenderFrameObserver* observer,
-      mojo::InterfaceRequest<DistillerPageNotifierService> request);
+      mojo::InterfaceRequest<mojom::DistillerPageNotifierService> request);
   ~DistillerPageNotifierServiceImpl() override;
 
   // Implementation of mojo interface DistillerPageNotifierService.
   void NotifyIsDistillerPage() override;
 
  private:
-  mojo::StrongBinding<DistillerPageNotifierService> binding_;
+  mojo::StrongBinding<mojom::DistillerPageNotifierService> binding_;
   DistillerJsRenderFrameObserver* distiller_js_observer_;
 };
 

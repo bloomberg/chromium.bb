@@ -33,7 +33,7 @@ class MappedFontFile;
 class FontServiceThread : public base::Thread,
                           public base::RefCountedThreadSafe<FontServiceThread> {
  public:
-  explicit FontServiceThread(FontServicePtr font_service);
+  explicit FontServiceThread(mojom::FontServicePtr font_service);
 
   // These methods are proxies which run on your thread, post a blocking task
   // to the FontServiceThread, and wait on an event signaled from the callback.
@@ -70,9 +70,9 @@ class FontServiceThread : public base::Thread,
       SkFontConfigInterface::FontIdentity* out_font_identity,
       SkString* out_family_name,
       SkFontStyle* out_style,
-      FontIdentityPtr font_identity,
+      mojom::FontIdentityPtr font_identity,
       mojo::String family_name,
-      TypefaceStylePtr style);
+      mojom::TypefaceStylePtr style);
 
   // Implementation of OpenStream; same threading restrictions as MatchFamily.
   void OpenStreamImpl(base::WaitableEvent* done_event,
@@ -92,11 +92,11 @@ class FontServiceThread : public base::Thread,
 
   // This member is used to safely pass data from one thread to another. It is
   // set in the constructor and is consumed in Init().
-  mojo::InterfacePtrInfo<FontService> font_service_info_;
+  mojo::InterfacePtrInfo<mojom::FontService> font_service_info_;
 
   // This member is set in Init(). It takes |font_service_info_|, which is
   // non-thread bound, and binds it to the newly created thread.
-  mojo::InterfacePtr<FontService> font_service_;
+  mojo::InterfacePtr<mojom::FontService> font_service_;
 
   // All WaitableEvents supplied to OpenStreamImpl() are added here while
   // waiting on the response from the |font_service_| (FontService::OpenStream()

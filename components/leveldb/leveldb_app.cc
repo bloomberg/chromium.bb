@@ -21,12 +21,12 @@ void LevelDBApp::Initialize(shell::Connector* connector,
 }
 
 bool LevelDBApp::AcceptConnection(shell::Connection* connection) {
-  connection->AddInterface<LevelDBService>(this);
+  connection->AddInterface<mojom::LevelDBService>(this);
   return true;
 }
 
 void LevelDBApp::Create(shell::Connection* connection,
-                        leveldb::LevelDBServiceRequest request) {
+                        leveldb::mojom::LevelDBServiceRequest request) {
   if (!service_)
     service_.reset(
         new LevelDBServiceImpl(base::MessageLoop::current()->task_runner()));

@@ -12,7 +12,7 @@ namespace contextual_search {
 
 ContextualSearchJsApiServiceImpl::ContextualSearchJsApiServiceImpl(
     ContextualSearchJsApiHandler* contextual_search_js_api_handler,
-    mojo::InterfaceRequest<ContextualSearchJsApiService> request)
+    mojo::InterfaceRequest<mojom::ContextualSearchJsApiService> request)
     : binding_(this, std::move(request)),
       contextual_search_js_api_handler_(contextual_search_js_api_handler) {}
 
@@ -27,7 +27,7 @@ void ContextualSearchJsApiServiceImpl::HandleSetCaption(
 // static
 void CreateContextualSearchJsApiService(
     ContextualSearchJsApiHandler* contextual_search_js_api_handler,
-    mojo::InterfaceRequest<ContextualSearchJsApiService> request) {
+    mojo::InterfaceRequest<mojom::ContextualSearchJsApiService> request) {
   // This is strongly bound and owned by the pipe.
   new ContextualSearchJsApiServiceImpl(contextual_search_js_api_handler,
                                        std::move(request));

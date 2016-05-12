@@ -263,7 +263,7 @@ void LocalStorageCachedArea::EnsureLoaded() {
   base::TimeTicks before = base::TimeTicks::Now();
   ignore_all_mutations_ = true;
   get_all_request_id_ = base::Uint64ToString(base::RandUint64());
-  leveldb::DatabaseError status = leveldb::DatabaseError::OK;
+  leveldb::mojom::DatabaseError status = leveldb::mojom::DatabaseError::OK;
   mojo::Array<content::mojom::KeyValuePtr> data;
   leveldb_->GetAll(get_all_request_id_, &status, &data);
 

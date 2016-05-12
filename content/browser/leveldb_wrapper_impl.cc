@@ -45,7 +45,7 @@ size_t LevelDBWrapperImpl::CommitBatch::GetDataSize() const {
 }
 
 LevelDBWrapperImpl::LevelDBWrapperImpl(
-    leveldb::LevelDBDatabase* database,
+    leveldb::mojom::LevelDBDatabase* database,
     const std::string& prefix,
     size_t max_size,
     base::TimeDelta default_commit_delay,
@@ -229,7 +229,7 @@ void LevelDBWrapperImpl::GetAll(const mojo::String& source,
     kv->value = it.second.Clone();
     all.push_back(std::move(kv));
   }
-  callback.Run(leveldb::DatabaseError::OK, std::move(all));
+  callback.Run(leveldb::mojom::DatabaseError::OK, std::move(all));
   observers_.ForAllPtrs(
       [source](mojom::LevelDBObserver* observer) {
         observer->GetAllComplete(source);
@@ -255,8 +255,8 @@ void LevelDBWrapperImpl::LoadMap(const base::Closure& completion_callback) {
 }
 
 void LevelDBWrapperImpl::OnLoadComplete(
-    leveldb::DatabaseError status,
-    mojo::Array<leveldb::KeyValuePtr> data) {
+    leveldb::mojom::DatabaseError status,
+    mojo::Array<leveldb::mojom::KeyValuePtr> data) {
   DCHECK(!map_);
   map_.reset(new ValueMap);
   for (auto& it : data)
@@ -265,7 +265,7 @@ void LevelDBWrapperImpl::OnLoadComplete(
   // We proceed without using a backing store, nothing will be persisted but the
   // class is functional for the lifetime of the object.
   // TODO(michaeln): Uma here or in the DB file?
-  if (status != leveldb::DatabaseError::OK)
+  if (status != leveldb::mojom::DatabaseError::OK)
     database_ = nullptr;
 
   std::vector<base::Closure> tasks;
@@ -323,20 +323,22 @@ void LevelDBWrapperImpl::CommitChanges() {
   data_rate_limiter_.add_samples(commit_batch_->GetDataSize());
 
   // Commit all our changes in a single batch.
-  mojo::Array<leveldb::BatchedOperationPtr> operations;
+  mojo::Array<leveldb::mojom::BatchedOperationPtr> operations;
   if (commit_batch_->clear_all_first) {
-    leveldb::BatchedOperationPtr item = leveldb::BatchedOperation::New();
-    item->type = leveldb::BatchOperationType::DELETE_PREFIXED_KEY;
+    leveldb::mojom::BatchedOperationPtr item =
+        leveldb::mojom::BatchedOperation::New();
+    item->type = leveldb::mojom::BatchOperationType::DELETE_PREFIXED_KEY;
     item->key = mojo::Array<uint8_t>::From(std::string(prefix_));
     operations.push_back(std::move(item));
   }
   for (auto& it : commit_batch_->changed_values) {
-    leveldb::BatchedOperationPtr item = leveldb::BatchedOperation::New();
+    leveldb::mojom::BatchedOperationPtr item =
+        leveldb::mojom::BatchedOperation::New();
     item->key = it.first.Clone();
     if (item->value.is_null()) {
-      item->type = leveldb::BatchOperationType::DELETE_KEY;
+      item->type = leveldb::mojom::BatchOperationType::DELETE_KEY;
     } else {
-      item->type = leveldb::BatchOperationType::PUT_KEY;
+      item->type = leveldb::mojom::BatchOperationType::PUT_KEY;
       item->value = std::move(it.second);
     }
     operations.push_back(std::move(item));
@@ -352,7 +354,7 @@ void LevelDBWrapperImpl::CommitChanges() {
                               weak_ptr_factory_.GetWeakPtr()));
 }
 
-void LevelDBWrapperImpl::OnCommitComplete(leveldb::DatabaseError error) {
+void LevelDBWrapperImpl::OnCommitComplete(leveldb::mojom::DatabaseError error) {
   // TODO(michaeln): What if it fails, uma here or in the DB class?
   --commit_batches_in_flight_;
   StartCommitTimer();

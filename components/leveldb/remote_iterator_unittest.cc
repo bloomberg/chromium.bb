@@ -28,21 +28,21 @@ class RemoteIteratorTest : public shell::test::ShellTest {
     ShellTest::SetUp();
     connector()->ConnectToInterface("mojo:leveldb", &leveldb_);
 
-    DatabaseError error;
+    mojom::DatabaseError error;
     leveldb()->OpenInMemory(GetProxy(&database_), Capture(&error));
     ASSERT_TRUE(leveldb().WaitForIncomingResponse());
-    EXPECT_EQ(DatabaseError::OK, error);
+    EXPECT_EQ(mojom::DatabaseError::OK, error);
 
     std::map<std::string, std::string> data{
         {"a", "first"}, {"b:suffix", "second"}, {"c", "third"}};
 
     for (auto p : data) {
       // Write a key to the database.
-      error = DatabaseError::INVALID_ARGUMENT;
+      error = mojom::DatabaseError::INVALID_ARGUMENT;
       database_->Put(mojo::Array<uint8_t>::From(p.first),
                      mojo::Array<uint8_t>::From(p.second), Capture(&error));
       ASSERT_TRUE(database_.WaitForIncomingResponse());
-      EXPECT_EQ(DatabaseError::OK, error);
+      EXPECT_EQ(mojom::DatabaseError::OK, error);
     }
   }
 
@@ -51,12 +51,12 @@ class RemoteIteratorTest : public shell::test::ShellTest {
     ShellTest::TearDown();
   }
 
-  LevelDBServicePtr& leveldb() { return leveldb_; }
-  LevelDBDatabasePtr& database() { return database_; }
+  mojom::LevelDBServicePtr& leveldb() { return leveldb_; }
+  mojom::LevelDBDatabasePtr& database() { return database_; }
 
  private:
-  LevelDBServicePtr leveldb_;
-  LevelDBDatabasePtr database_;
+  mojom::LevelDBServicePtr leveldb_;
+  mojom::LevelDBDatabasePtr database_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoteIteratorTest);
 };

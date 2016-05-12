@@ -34,7 +34,7 @@ void OverlayJsRenderFrameObserver::RegisterMojoService() {
 }
 
 void OverlayJsRenderFrameObserver::CreateOverlayPageNotifierService(
-    mojo::InterfaceRequest<OverlayPageNotifierService> request) {
+    mojo::InterfaceRequest<mojom::OverlayPageNotifierService> request) {
   // This is strongly bound to and owned by the pipe.
   new OverlayPageNotifierServiceImpl(this, std::move(request));
 }
@@ -55,7 +55,7 @@ void OverlayJsRenderFrameObserver::DidFinishLoad() {
   // from the registry.
   render_frame()
       ->GetServiceRegistry()
-      ->RemoveService<OverlayPageNotifierService>();
+      ->RemoveService<mojom::OverlayPageNotifierService>();
 }
 
 }  // namespace contextual_search

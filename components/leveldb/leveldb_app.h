@@ -16,7 +16,7 @@
 namespace leveldb {
 
 class LevelDBApp : public shell::ShellClient,
-                   public shell::InterfaceFactory<LevelDBService> {
+                   public shell::InterfaceFactory<mojom::LevelDBService> {
  public:
   LevelDBApp();
   ~LevelDBApp() override;
@@ -28,13 +28,13 @@ class LevelDBApp : public shell::ShellClient,
                   uint32_t id) override;
   bool AcceptConnection(shell::Connection* connection) override;
 
-  // |InterfaceFactory<LevelDBService>| implementation:
+  // |InterfaceFactory<mojom::LevelDBService>| implementation:
   void Create(shell::Connection* connection,
-              leveldb::LevelDBServiceRequest request) override;
+              leveldb::mojom::LevelDBServiceRequest request) override;
 
   mojo::TracingImpl tracing_;
-  std::unique_ptr<LevelDBService> service_;
-  mojo::BindingSet<LevelDBService> bindings_;
+  std::unique_ptr<mojom::LevelDBService> service_;
+  mojo::BindingSet<mojom::LevelDBService> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(LevelDBApp);
 };

@@ -31,10 +31,11 @@ void DistillerJsRenderFrameObserver::DidStartProvisionalLoad() {
 
 void DistillerJsRenderFrameObserver::DidFinishLoad() {
   // If no message about the distilled page was received at this point, there
-  // will not be one; remove the DistillerPageNotifierService from the registry.
+  // will not be one; remove the mojom::DistillerPageNotifierService from the
+  // registry.
   render_frame()
       ->GetServiceRegistry()
-      ->RemoveService<DistillerPageNotifierService>();
+      ->RemoveService<mojom::DistillerPageNotifierService>();
 }
 
 void DistillerJsRenderFrameObserver::DidCreateScriptContext(
@@ -57,7 +58,7 @@ void DistillerJsRenderFrameObserver::RegisterMojoService() {
 }
 
 void DistillerJsRenderFrameObserver::CreateDistillerPageNotifierService(
-    mojo::InterfaceRequest<DistillerPageNotifierService> request) {
+    mojo::InterfaceRequest<mojom::DistillerPageNotifierService> request) {
   // This is strongly bound to and owned by the pipe.
   new DistillerPageNotifierServiceImpl(this, std::move(request));
 }

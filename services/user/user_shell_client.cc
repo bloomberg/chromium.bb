@@ -54,7 +54,7 @@ class UserShellClient::LevelDBServiceObjects
 
   // Called on the |leveldb_service_runner_|.
   void OnLevelDBServiceRequest(shell::Connection* connection,
-                               leveldb::LevelDBServiceRequest request) {
+                               leveldb::mojom::LevelDBServiceRequest request) {
     if (!leveldb_service_)
       leveldb_service_.reset(new leveldb::LevelDBServiceImpl(task_runner_));
     leveldb_bindings_.AddBinding(leveldb_service_.get(), std::move(request));
@@ -64,8 +64,8 @@ class UserShellClient::LevelDBServiceObjects
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   // Variables that are only accessible on the |leveldb_service_runner_| thread.
-  std::unique_ptr<leveldb::LevelDBService> leveldb_service_;
-  mojo::BindingSet<leveldb::LevelDBService> leveldb_bindings_;
+  std::unique_ptr<leveldb::mojom::LevelDBService> leveldb_service_;
+  mojo::BindingSet<leveldb::mojom::LevelDBService> leveldb_bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(LevelDBServiceObjects);
 };
@@ -99,7 +99,7 @@ void UserShellClient::Initialize(shell::Connector* connector,
 }
 
 bool UserShellClient::AcceptConnection(shell::Connection* connection) {
-  connection->AddInterface<leveldb::LevelDBService>(this);
+  connection->AddInterface<leveldb::mojom::LevelDBService>(this);
   connection->AddInterface<mojom::UserService>(this);
   return true;
 }
@@ -114,7 +114,7 @@ void UserShellClient::Create(shell::Connection* connection,
 }
 
 void UserShellClient::Create(shell::Connection* connection,
-                             leveldb::LevelDBServiceRequest request) {
+                             leveldb::mojom::LevelDBServiceRequest request) {
   leveldb_service_runner_->PostTask(
       FROM_HERE,
       base::Bind(

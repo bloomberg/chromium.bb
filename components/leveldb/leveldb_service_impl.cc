@@ -27,17 +27,17 @@ LevelDBServiceImpl::~LevelDBServiceImpl() {}
 
 void LevelDBServiceImpl::Open(filesystem::mojom::DirectoryPtr directory,
                               const mojo::String& dbname,
-                              leveldb::LevelDBDatabaseRequest database,
+                              leveldb::mojom::LevelDBDatabaseRequest database,
                               const OpenCallback& callback) {
-  OpenWithOptions(leveldb::OpenOptions::New(), std::move(directory), dbname,
-                  std::move(database), callback);
+  OpenWithOptions(leveldb::mojom::OpenOptions::New(), std::move(directory),
+                  dbname, std::move(database), callback);
 }
 
 void LevelDBServiceImpl::OpenWithOptions(
-    leveldb::OpenOptionsPtr open_options,
+    leveldb::mojom::OpenOptionsPtr open_options,
     filesystem::mojom::DirectoryPtr directory,
     const mojo::String& dbname,
-    leveldb::LevelDBDatabaseRequest database,
+    leveldb::mojom::LevelDBDatabaseRequest database,
     const OpenCallback& callback) {
   leveldb::Options options;
   options.create_if_missing = open_options->create_if_missing;
@@ -67,8 +67,9 @@ void LevelDBServiceImpl::OpenWithOptions(
   callback.Run(LeveldbStatusToError(s));
 }
 
-void LevelDBServiceImpl::OpenInMemory(leveldb::LevelDBDatabaseRequest database,
-                                      const OpenCallback& callback) {
+void LevelDBServiceImpl::OpenInMemory(
+    leveldb::mojom::LevelDBDatabaseRequest database,
+    const OpenCallback& callback) {
   leveldb::Options options;
   options.create_if_missing = true;
   options.max_open_files = 0;  // Use minimum.

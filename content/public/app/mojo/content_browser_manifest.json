@@ -15,7 +15,7 @@
       },
       "mojo:user": {
         "interfaces": [
-          "leveldb::LevelDBService",
+          "leveldb::mojom::LevelDBService",
           "user_service::UserService"
          ]
       }

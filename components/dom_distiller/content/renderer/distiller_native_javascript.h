@@ -38,7 +38,7 @@ class DistillerNativeJavaScript {
   std::string DistillerEcho(const std::string& message);
 
   content::RenderFrame* render_frame_;
-  DistillerJavaScriptServicePtr distiller_js_service_;
+  mojom::DistillerJavaScriptServicePtr distiller_js_service_;
 };
 
 // static

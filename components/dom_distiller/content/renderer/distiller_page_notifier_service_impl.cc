@@ -13,7 +13,7 @@ namespace dom_distiller {
 
 DistillerPageNotifierServiceImpl::DistillerPageNotifierServiceImpl(
     DistillerJsRenderFrameObserver* observer,
-    mojo::InterfaceRequest<DistillerPageNotifierService> request)
+    mojo::InterfaceRequest<mojom::DistillerPageNotifierService> request)
     : binding_(this, std::move(request)), distiller_js_observer_(observer) {}
 
 void DistillerPageNotifierServiceImpl::NotifyIsDistillerPage() {
