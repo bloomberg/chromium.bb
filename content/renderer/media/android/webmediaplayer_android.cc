@@ -1293,7 +1293,7 @@ bool WebMediaPlayerAndroid::UpdateCurrentFrame(base::TimeTicks deadline_min,
 
 bool WebMediaPlayerAndroid::HasCurrentFrame() {
   base::AutoLock auto_lock(current_frame_lock_);
-  return current_frame_;
+  return static_cast<bool>(current_frame_);
 }
 
 scoped_refptr<media::VideoFrame> WebMediaPlayerAndroid::GetCurrentFrame() {

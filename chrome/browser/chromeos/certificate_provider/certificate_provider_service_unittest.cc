@@ -52,8 +52,7 @@ certificate_provider::CertificateInfo CreateCertInfo(
   certificate_provider::CertificateInfo cert_info;
   cert_info.certificate =
       net::ImportCertFromFile(net::GetTestCertsDirectory(), cert_filename);
-  EXPECT_NE(nullptr, cert_info.certificate) << "Could not load "
-                                            << cert_filename;
+  EXPECT_TRUE(cert_info.certificate) << "Could not load " << cert_filename;
   cert_info.type = net::SSLPrivateKey::Type::RSA;
   cert_info.supported_hashes.push_back(net::SSLPrivateKey::Hash::SHA256);
   cert_info.max_signature_length_in_bytes = 123;

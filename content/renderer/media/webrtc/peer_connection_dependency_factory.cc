@@ -116,7 +116,7 @@ PeerConnectionDependencyFactory::PeerConnectionDependencyFactory(
 
 PeerConnectionDependencyFactory::~PeerConnectionDependencyFactory() {
   DVLOG(1) << "~PeerConnectionDependencyFactory()";
-  DCHECK(pc_factory_ == NULL);
+  DCHECK(!pc_factory_);
 }
 
 blink::WebRTCPeerConnectionHandler*

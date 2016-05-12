@@ -105,7 +105,7 @@ bool VideoFrameCompositor::UpdateCurrentFrame(base::TimeTicks deadline_min,
 
 bool VideoFrameCompositor::HasCurrentFrame() {
   DCHECK(compositor_task_runner_->BelongsToCurrentThread());
-  return current_frame_;
+  return static_cast<bool>(current_frame_);
 }
 
 void VideoFrameCompositor::Start(RenderCallback* callback) {

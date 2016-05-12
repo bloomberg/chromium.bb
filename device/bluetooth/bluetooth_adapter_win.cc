@@ -358,7 +358,7 @@ void BluetoothAdapterWin::InitForTest(
     scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
     scoped_refptr<base::SequencedTaskRunner> bluetooth_task_runner) {
   ui_task_runner_ = ui_task_runner;
-  if (ui_task_runner_ == nullptr)
+  if (!ui_task_runner_)
     ui_task_runner_ = base::ThreadTaskRunnerHandle::Get();
   task_manager_ =
       new BluetoothTaskManagerWin(ui_task_runner_);

@@ -200,7 +200,7 @@ CancelCallback DriveUploader::UploadNewFile(
 }
 
 void DriveUploader::StartBatchProcessing() {
-  DCHECK(current_batch_request_ == nullptr);
+  DCHECK(!current_batch_request_);
   current_batch_request_ =
       new RefCountedBatchRequest(drive_service_->StartBatchRequest());
 }

@@ -276,7 +276,7 @@ bool SharedBufferDispatcher::BeginTransit() {
   base::AutoLock lock(lock_);
   if (in_transit_)
     return false;
-  in_transit_ = shared_buffer_ != nullptr;
+  in_transit_ = static_cast<bool>(shared_buffer_);
   return in_transit_;
 }
 

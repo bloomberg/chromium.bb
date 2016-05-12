@@ -25,7 +25,7 @@ void FakeVideoFrameProvider::SetVideoFrameProviderClient(Client* client) {
 }
 
 bool FakeVideoFrameProvider::HasCurrentFrame() {
-  return frame_;
+  return static_cast<bool>(frame_);
 }
 
 scoped_refptr<media::VideoFrame> FakeVideoFrameProvider::GetCurrentFrame() {

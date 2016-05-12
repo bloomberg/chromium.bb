@@ -36,7 +36,7 @@ class InMemoryBlobCacheTest : public testing::Test {
 
 TEST_F(InMemoryBlobCacheTest, SimplePutContainsAndGetOperations) {
   EXPECT_FALSE(cache_.Contains(kFoo));
-  EXPECT_EQ(nullptr, cache_.Get(kFoo));
+  EXPECT_FALSE(cache_.Get(kFoo));
 
   BlobDataPtr blob_data = CreateBlobDataPtr(kDeadbeef);
   cache_.Put(kFoo, blob_data);

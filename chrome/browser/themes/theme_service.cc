@@ -568,7 +568,8 @@ void ThemeService::LoadThemePrefs() {
                            ? chrome::kThemePackMaterialDesignFilename
                            : chrome::kThemePackFilename);
     SwapThemeSupplier(BrowserThemePack::BuildFromDataPack(path, current_id));
-    loaded_pack = theme_supplier_ != nullptr;
+    if (theme_supplier_)
+      loaded_pack = true;
   }
 
   if (loaded_pack) {

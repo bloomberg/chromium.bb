@@ -40,7 +40,7 @@ void ChildMemoryDumpManagerDelegateImpl::SetChildTraceMessageFilter(
   const auto& task_runner = ctmf ? (ctmf->ipc_task_runner()) : nullptr;
   // Check that we are either registering the CTMF or tearing it down, but not
   // replacing a valid instance with another one (should never happen).
-  DCHECK(ctmf_ == nullptr || (ctmf == nullptr && ctmf_task_runner_ != nullptr));
+  DCHECK(!ctmf_ || (!ctmf && ctmf_task_runner_));
   ctmf_ = ctmf;
 
   {

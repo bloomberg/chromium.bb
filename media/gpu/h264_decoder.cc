@@ -1141,7 +1141,7 @@ bool H264Decoder::ProcessSPS(int sps_id, bool* need_new_buffers) {
 
 bool H264Decoder::FinishPrevFrameIfPresent() {
   // If we already have a frame waiting to be decoded, decode it and finish.
-  if (curr_pic_ != NULL) {
+  if (curr_pic_) {
     if (!DecodePicture())
       return false;
 

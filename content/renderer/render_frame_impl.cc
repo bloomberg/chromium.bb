@@ -4410,10 +4410,10 @@ bool RenderFrameImpl::IsHidden() {
 }
 
 bool RenderFrameImpl::IsLocalRoot() const {
-  bool is_local_root = render_widget_ != nullptr;
+  bool is_local_root = static_cast<bool>(render_widget_);
   DCHECK_EQ(is_local_root,
             !(frame_->parent() && frame_->parent()->isWebLocalFrame()));
-  return render_widget_ != nullptr;
+  return is_local_root;
 }
 
 // Tell the embedding application that the URL of the active page has changed.

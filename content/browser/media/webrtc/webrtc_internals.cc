@@ -278,7 +278,7 @@ void WebRTCInternals::EnableAudioDebugRecordings(
   EnableAudioDebugRecordingsOnAllRenderProcessHosts();
 #else
   selecting_event_log_ = false;
-  DCHECK(select_file_dialog_ == nullptr);
+  DCHECK(!select_file_dialog_);
   select_file_dialog_ = ui::SelectFileDialog::Create(this, NULL);
   select_file_dialog_->SelectFile(
       ui::SelectFileDialog::SELECT_SAVEAS_FILE,
@@ -330,7 +330,7 @@ void WebRTCInternals::SetEventLogRecordings(
     EnableEventLogRecordingsOnAllRenderProcessHosts();
 #else
     DCHECK(web_contents);
-    DCHECK(select_file_dialog_ == nullptr);
+    DCHECK(!select_file_dialog_);
     selecting_event_log_ = true;
     select_file_dialog_ = ui::SelectFileDialog::Create(this, nullptr);
     select_file_dialog_->SelectFile(

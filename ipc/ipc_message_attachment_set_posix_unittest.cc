@@ -154,7 +154,7 @@ TEST(MessageAttachmentSet, WalkWrongOrder) {
       set->AddAttachment(new internal::PlatformFileAttachment(kFDBase + 2)));
 
   ASSERT_EQ(set->GetNonBrokerableAttachmentAt(0)->TakePlatformFile(), kFDBase);
-  ASSERT_EQ(set->GetNonBrokerableAttachmentAt(2), nullptr);
+  ASSERT_FALSE(set->GetNonBrokerableAttachmentAt(2));
 
   set->CommitAllDescriptors();
 }

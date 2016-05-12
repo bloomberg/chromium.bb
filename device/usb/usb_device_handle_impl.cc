@@ -862,7 +862,7 @@ void UsbDeviceHandleImpl::ClaimInterfaceComplete(
         interface_claimer;
     RefreshEndpointMap();
   }
-  callback.Run(interface_claimer);
+  callback.Run(static_cast<bool>(interface_claimer));
 }
 
 void UsbDeviceHandleImpl::SetInterfaceAlternateSettingOnBlockingThread(

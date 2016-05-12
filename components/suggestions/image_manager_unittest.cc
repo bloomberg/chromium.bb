@@ -204,7 +204,7 @@ TEST_F(ImageManagerTest, GetImageForURLNetworkCacheHit) {
   // Expect something in the cache.
   auto encoded_image =
       image_manager_->GetEncodedImageFromCache(GURL(kTestUrl1));
-  EXPECT_NE(nullptr, encoded_image);
+  EXPECT_TRUE(encoded_image);
 
   base::RunLoop run_loop;
   image_manager_->GetImageForURL(GURL(kTestUrl1),

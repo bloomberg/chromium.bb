@@ -1009,8 +1009,7 @@ void QuicCryptoServerConfig::EvaluateClientHello(
   HandshakeFailureReason source_address_token_error = MAX_FAILURE_REASON;
   StringPiece srct;
   if (client_hello.GetStringPiece(kSourceAddressTokenTag, &srct)) {
-    Config& config =
-        requested_config != nullptr ? *requested_config : *primary_config;
+    Config& config = requested_config ? *requested_config : *primary_config;
     source_address_token_error =
         ParseSourceAddressToken(config, srct, &info->source_address_tokens);
 

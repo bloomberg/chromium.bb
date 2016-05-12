@@ -374,7 +374,7 @@ void PasswordManagerHandler::ImportPasswordResultConsumer::ConsumePassword(
     }
   }
   UMA_HISTOGRAM_BOOLEAN("PasswordManager.StorePasswordImportedFromCSVResult",
-                        store);
+                        static_cast<bool>(store));
 }
 
 void PasswordManagerHandler::HandlePasswordExport(const base::ListValue* args) {

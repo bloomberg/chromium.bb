@@ -200,7 +200,7 @@ class BluetoothAdvertisementBlueZTest : public testing::Test {
 TEST_F(BluetoothAdvertisementBlueZTest, RegisterSucceeded) {
   scoped_refptr<BluetoothAdvertisement> advertisement = CreateAdvertisement();
   ExpectSuccess();
-  EXPECT_NE(nullptr, advertisement);
+  EXPECT_TRUE(advertisement);
 
   UnregisterAdvertisement(advertisement);
   ExpectSuccess();
@@ -209,18 +209,18 @@ TEST_F(BluetoothAdvertisementBlueZTest, RegisterSucceeded) {
 TEST_F(BluetoothAdvertisementBlueZTest, DoubleRegisterFailed) {
   scoped_refptr<BluetoothAdvertisement> advertisement = CreateAdvertisement();
   ExpectSuccess();
-  EXPECT_NE(nullptr, advertisement);
+  EXPECT_TRUE(advertisement);
 
   // Creating a second advertisement should give us an error.
   scoped_refptr<BluetoothAdvertisement> advertisement2 = CreateAdvertisement();
   ExpectError(BluetoothAdvertisement::ERROR_ADVERTISEMENT_ALREADY_EXISTS);
-  EXPECT_EQ(nullptr, advertisement2);
+  EXPECT_FALSE(advertisement2);
 }
 
 TEST_F(BluetoothAdvertisementBlueZTest, DoubleUnregisterFailed) {
   scoped_refptr<BluetoothAdvertisement> advertisement = CreateAdvertisement();
   ExpectSuccess();
-  EXPECT_NE(nullptr, advertisement);
+  EXPECT_TRUE(advertisement);
 
   UnregisterAdvertisement(advertisement);
   ExpectSuccess();
@@ -234,7 +234,7 @@ TEST_F(BluetoothAdvertisementBlueZTest, DoubleUnregisterFailed) {
 TEST_F(BluetoothAdvertisementBlueZTest, UnregisterAfterReleasedFailed) {
   scoped_refptr<BluetoothAdvertisement> advertisement = CreateAdvertisement();
   ExpectSuccess();
-  EXPECT_NE(nullptr, advertisement);
+  EXPECT_TRUE(advertisement);
 
   observer_.reset(new TestAdvertisementObserver(advertisement));
   TriggerReleased(advertisement);

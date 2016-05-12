@@ -724,7 +724,7 @@ void ChildThreadImpl::EnsureConnected() {
 }
 
 bool ChildThreadImpl::IsInBrowserProcess() const {
-  return browser_process_io_runner_;
+  return static_cast<bool>(browser_process_io_runner_);
 }
 
 }  // namespace content

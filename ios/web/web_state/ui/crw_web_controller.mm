@@ -5093,7 +5093,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     scoped_refptr<net::X509Certificate> cert =
         web::CreateCertFromChain([_webView certificateChain]);
     UMA_HISTOGRAM_BOOLEAN("WebController.WKWebViewHasCertForSecureConnection",
-                          cert);
+                          static_cast<bool>(cert));
   }
 }
 

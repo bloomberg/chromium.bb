@@ -131,31 +131,31 @@ class LayerTreeHostSerializationTest : public testing::Test {
       }
       EXPECT_TRUE(found_hud_layer_type);
     } else {
-      EXPECT_EQ(nullptr, layer_tree_host_dst_->hud_layer_);
+      EXPECT_FALSE(layer_tree_host_dst_->hud_layer_);
     }
     if (layer_tree_host_src_->overscroll_elasticity_layer_) {
       EXPECT_EQ(layer_tree_host_src_->overscroll_elasticity_layer_->id(),
                 layer_tree_host_dst_->overscroll_elasticity_layer_->id());
     } else {
-      EXPECT_EQ(nullptr, layer_tree_host_dst_->overscroll_elasticity_layer_);
+      EXPECT_FALSE(layer_tree_host_dst_->overscroll_elasticity_layer_);
     }
     if (layer_tree_host_src_->page_scale_layer_) {
       EXPECT_EQ(layer_tree_host_src_->page_scale_layer_->id(),
                 layer_tree_host_dst_->page_scale_layer_->id());
     } else {
-      EXPECT_EQ(nullptr, layer_tree_host_dst_->page_scale_layer_);
+      EXPECT_FALSE(layer_tree_host_dst_->page_scale_layer_);
     }
     if (layer_tree_host_src_->inner_viewport_scroll_layer_) {
       EXPECT_EQ(layer_tree_host_src_->inner_viewport_scroll_layer_->id(),
                 layer_tree_host_dst_->inner_viewport_scroll_layer_->id());
     } else {
-      EXPECT_EQ(nullptr, layer_tree_host_dst_->inner_viewport_scroll_layer_);
+      EXPECT_FALSE(layer_tree_host_dst_->inner_viewport_scroll_layer_);
     }
     if (layer_tree_host_src_->outer_viewport_scroll_layer_) {
       EXPECT_EQ(layer_tree_host_src_->outer_viewport_scroll_layer_->id(),
                 layer_tree_host_dst_->outer_viewport_scroll_layer_->id());
     } else {
-      EXPECT_EQ(nullptr, layer_tree_host_dst_->outer_viewport_scroll_layer_);
+      EXPECT_FALSE(layer_tree_host_dst_->outer_viewport_scroll_layer_);
     }
     EXPECT_EQ(layer_tree_host_src_->selection_,
               layer_tree_host_dst_->selection_);

@@ -348,7 +348,7 @@ CompositorImpl::SharedVulkanContextProviderAndroid() {
           switches::kEnableVulkan)) {
     scoped_refptr<cc::VulkanInProcessContextProvider>* context_provider =
         g_shared_vulkan_context_provider_android_.Pointer();
-    if (*context_provider == NULL)
+    if (!*context_provider)
       *context_provider = cc::VulkanInProcessContextProvider::Create();
     return *context_provider;
   }

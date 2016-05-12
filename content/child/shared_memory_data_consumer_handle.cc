@@ -163,7 +163,7 @@ class SharedMemoryDataConsumerHandle::Context final
   }
   bool is_handle_locked() const {
     lock_.AssertAcquired();
-    return notification_task_runner_;
+    return static_cast<bool>(notification_task_runner_);
   }
   bool IsReaderBoundToCurrentThread() const {
     lock_.AssertAcquired();

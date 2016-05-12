@@ -25,7 +25,7 @@ class GLImageOzoneNativePixmapTestDelegate {
         surface_factory->CreateNativePixmap(gfx::kNullAcceleratedWidget, size,
                                             gfx::BufferFormat::RGBA_8888,
                                             gfx::BufferUsage::SCANOUT);
-    EXPECT_TRUE(pixmap != nullptr);
+    EXPECT_TRUE(pixmap);
     scoped_refptr<gfx::GLImageOzoneNativePixmap> image(
         new gfx::GLImageOzoneNativePixmap(size, GL_RGBA));
     EXPECT_TRUE(image->Initialize(pixmap.get(), pixmap->GetBufferFormat()));

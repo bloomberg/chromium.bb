@@ -197,7 +197,7 @@ void DrmCursor::MoveCursor(const gfx::Vector2dF& delta) {
 
 bool DrmCursor::IsCursorVisible() {
   base::AutoLock lock(lock_);
-  return bitmap_;
+  return static_cast<bool>(bitmap_);
 }
 
 gfx::PointF DrmCursor::GetLocation() {

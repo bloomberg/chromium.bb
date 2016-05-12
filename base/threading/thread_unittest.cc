@@ -291,7 +291,7 @@ TEST_F(ThreadTest, CleanUp) {
 
 TEST_F(ThreadTest, ThreadNotStarted) {
   Thread a("Inert");
-  EXPECT_EQ(nullptr, a.task_runner());
+  EXPECT_FALSE(a.task_runner());
 }
 
 TEST_F(ThreadTest, MultipleWaitUntilThreadStarted) {

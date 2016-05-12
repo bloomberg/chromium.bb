@@ -236,7 +236,7 @@ TEST_F(WaitSetDispatcherTest, HandleWithoutRemoving) {
     context = 0;
     EXPECT_EQ(MOJO_RESULT_SHOULD_WAIT,
               GetOneReadyDispatcher(wait_set, &woken_dispatcher, &context));
-    EXPECT_EQ(nullptr, woken_dispatcher);
+    EXPECT_FALSE(woken_dispatcher);
     EXPECT_EQ(0u, context);
     EXPECT_EQ(MOJO_RESULT_DEADLINE_EXCEEDED, w.Wait(0, nullptr));
   }

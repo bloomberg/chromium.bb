@@ -286,7 +286,7 @@ void GpuProcessTransportFactory::CreateOutputSurface(
       compositor->widget());
 #endif
 
-  const bool use_vulkan = SharedVulkanContextProvider();
+  const bool use_vulkan = static_cast<bool>(SharedVulkanContextProvider());
 
   const bool create_gpu_output_surface =
       ShouldCreateGpuOutputSurface(compositor.get());

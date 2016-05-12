@@ -706,7 +706,7 @@ void CacheStorage::CreateCacheDidCreateCache(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   UMA_HISTOGRAM_BOOLEAN("ServiceWorkerCache.CreateCacheStorageResult",
-                        cache != nullptr);
+                        static_cast<bool>(cache));
 
   if (!cache.get()) {
     callback.Run(scoped_refptr<CacheStorageCache>(),

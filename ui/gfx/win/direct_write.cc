@@ -54,7 +54,7 @@ void MaybeInitializeDirectWrite() {
   base::win::ScopedComPtr<IDWriteFactory> factory;
   CreateDWriteFactory(factory.Receive());
 
-  if (factory == nullptr)
+  if (!factory)
     return;
 
   // The skia call to create a new DirectWrite font manager instance can fail

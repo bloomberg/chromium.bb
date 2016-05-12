@@ -858,7 +858,7 @@ const GLuint GLES2ImplementationTest::kVertexArraysStartId;
 #endif
 
 TEST_F(GLES2ImplementationTest, Basic) {
-  EXPECT_TRUE(gl_->share_group() != NULL);
+  EXPECT_TRUE(gl_->share_group());
 }
 
 TEST_F(GLES2ImplementationTest, GetBucketContents) {
