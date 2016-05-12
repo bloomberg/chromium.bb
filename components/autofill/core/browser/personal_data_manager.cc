@@ -902,8 +902,6 @@ std::string PersonalDataManager::MergeProfile(
       // the profile will have a very slightly newer time reflecting what's
       // actually stored in the database.
       existing_profile->set_modification_date(base::Time::Now());
-
-      existing_profile->RecordAndLogUse();
     }
     merged_profiles->push_back(*existing_profile);
   }

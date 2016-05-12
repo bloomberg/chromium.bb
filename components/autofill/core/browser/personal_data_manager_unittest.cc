@@ -4157,13 +4157,14 @@ TEST_F(PersonalDataManagerTest, SaveImportedProfile) {
         EXPECT_EQ(base::UTF8ToUTF16(changed_field.field_value),
                   saved_profiles.front()->GetRawInfo(changed_field.field_type));
       }
-      // Verify that the merged profile's modification and use dates were
-      // updated.
+      // Verify that the merged profile's use count, use date and modification
+      // date were updated.
+      EXPECT_EQ(2U, saved_profiles.front()->use_count());
+      EXPECT_GT(base::TimeDelta::FromMilliseconds(500),
+                base::Time::Now() - saved_profiles.front()->use_date());
       EXPECT_GT(
           base::TimeDelta::FromMilliseconds(500),
           base::Time::Now() - saved_profiles.front()->modification_date());
-      EXPECT_GT(base::TimeDelta::FromMilliseconds(500),
-                base::Time::Now() - saved_profiles.front()->use_date());
     }
 
     // Erase the profiles for the next test.
@@ -4206,6 +4207,48 @@ TEST_F(PersonalDataManagerTest, MergeProfile_Frecency) {
 
   // The new profile should be merged into the "fox" profile.
   EXPECT_EQ(profile2.guid(), guid);
+}
+
+// Tests that MergeProfile produces a merged profile with the expected usage
+// statistics.
+TEST_F(PersonalDataManagerTest, MergeProfile_UsageStats) {
+  // Create an initial profile with a use count of 10, an old use date and an
+  // old modification date of 4 days ago.
+  AutofillProfile profile(base::GenerateGUID(), "https://www.example.com");
+  test::SetProfileInfo(&profile, "Homer", "Jay", "Simpson",
+                       "homer.simpson@abc.com", "SNP", "742 Evergreen Terrace",
+                       "", "Springfield", "IL", "91601", "US", "12345678910");
+  profile.set_use_count(4U);
+  profile.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(4));
+  profile.set_modification_date(base::Time::Now() -
+                                base::TimeDelta::FromDays(4));
+
+  // Create the |existing_profiles| vector.
+  std::vector<AutofillProfile*> existing_profiles;
+  existing_profiles.push_back(&profile);
+
+  // Create a new imported profile that will get merged with the existing one.
+  AutofillProfile imported_profile(base::GenerateGUID(),
+                                   "https://www.example.com");
+  test::SetProfileInfo(&imported_profile, "Homer", "Jay", "Simpson",
+                       "homer.simpson@abc.com", "", "742 Evergreen Terrace", "",
+                       "Springfield", "IL", "91601", "US", "12345678910");
+
+  // Merge the imported profile into the existing profiles.
+  std::vector<AutofillProfile> profiles;
+  std::string guid = personal_data_->MergeProfile(
+      imported_profile, existing_profiles, "US-EN", &profiles);
+
+  // The new profile should be merged into the existing profile.
+  EXPECT_EQ(profile.guid(), guid);
+  // The use count should have been incremented by one.
+  EXPECT_EQ(5U, profile.use_count());
+  // The use date and modification dates should have been set to less than 500
+  // milliseconds ago.
+  EXPECT_GT(base::TimeDelta::FromMilliseconds(500),
+            base::Time::Now() - profile.use_date());
+  EXPECT_GT(base::TimeDelta::FromMilliseconds(500),
+            base::Time::Now() - profile.modification_date());
 }
 
 }  // namespace autofill
