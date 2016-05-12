@@ -13,9 +13,12 @@
     <settings-dialog id="dialog">
       <div class="title">$i18n{powerwashDialogTitle}</div>
       <div class="body">
-        $i18n{powerwashDialogExplanation}&nbsp;
-        <a href="$i18nRaw{powerwashLearnMoreUrl}"
-            target="_blank">$i18n{learnMore}</a>
+        <span>
+          $i18n{powerwashDialogExplanation}
+          <a href="$i18nRaw{powerwashLearnMoreUrl}" target="_blank">
+            $i18n{learnMore}
+          </a>
+        </span>
       </div>
       <div class="button-container">
         <paper-button class="cancel-button" on-tap="onCancelTap_"
