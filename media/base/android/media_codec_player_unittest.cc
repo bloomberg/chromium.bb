@@ -1229,7 +1229,8 @@ TEST_F(MediaCodecPlayerTest, DISABLED_AudioSeekWhilePlaying) {
       &MockMediaPlayerManager::IsSeekCompleted, base::Unretained(&manager_))));
 }
 
-TEST_F(MediaCodecPlayerTest, VideoReplaceSurface) {
+// Disabled per http://crbug.com/611489.
+TEST_F(MediaCodecPlayerTest, DISABLED_VideoReplaceSurface) {
   SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
 
   base::TimeDelta duration = base::TimeDelta::FromMilliseconds(1000);
@@ -1466,7 +1467,8 @@ TEST_F(MediaCodecPlayerTest, DISABLED_VideoReleaseWhileWaitingForSeek) {
       &MockMediaPlayerManager::IsSeekCompleted, base::Unretained(&manager_))));
 }
 
-TEST_F(MediaCodecPlayerTest, VideoPrerollAfterSeek) {
+// Disabled per http://crbug.com/611489.
+TEST_F(MediaCodecPlayerTest, DISABLED_VideoPrerollAfterSeek) {
   SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
 
   // A simple test for preroll for video stream only. After the seek is done

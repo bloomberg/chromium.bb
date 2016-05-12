@@ -588,7 +588,8 @@ TEST_F(MediaCodecDecoderTest, VideoPlayTillCompletion) {
   EXPECT_EQ(data_factory_->last_pts(), pts_stat_.max());
 }
 
-TEST_F(MediaCodecDecoderTest, VideoStopAndResume) {
+// Disabled per http://crbug.com/611489.
+TEST_F(MediaCodecDecoderTest, DISABLED_VideoStopAndResume) {
   SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
 
   CreateVideoDecoder();
@@ -705,7 +706,8 @@ TEST_F(MediaCodecDecoderTest, DISABLED_AudioStarvationAndStop) {
   EXPECT_FALSE(decoder_->IsCompleted());
 }
 
-TEST_F(MediaCodecDecoderTest, VideoFirstUnitIsReconfig) {
+// Disabled per http://crbug.com/611489.
+TEST_F(MediaCodecDecoderTest, DISABLED_VideoFirstUnitIsReconfig) {
   SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
 
   // Test that the kConfigChanged unit that comes before the first data unit
