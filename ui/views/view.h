@@ -1194,7 +1194,9 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // NativeTheme ---------------------------------------------------------------
 
-  // Invoked when the NativeTheme associated with this View changes.
+  // Invoked when the NativeTheme associated with this View changes, including
+  // when one first becomes available (after the view is added to a widget
+  // hierarchy).
   virtual void OnNativeThemeChanged(const ui::NativeTheme* theme) {}
 
   // Debugging -----------------------------------------------------------------
