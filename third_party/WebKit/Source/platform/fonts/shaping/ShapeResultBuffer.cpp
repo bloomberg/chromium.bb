@@ -379,7 +379,7 @@ Vector<CharacterRange> ShapeResultBuffer::individualCharacterRanges(
     return ranges;
 }
 
-int ShapeResultBuffer::offsetForPosition(const TextRun& run, float targetX) const
+int ShapeResultBuffer::offsetForPosition(const TextRun& run, float targetX, bool includePartialGlyphs) const
 {
     unsigned totalOffset;
     if (run.rtl()) {
@@ -390,7 +390,7 @@ int ShapeResultBuffer::offsetForPosition(const TextRun& run, float targetX) cons
                 continue;
             totalOffset -= wordResult->numCharacters();
             if (targetX >= 0 && targetX <= wordResult->width()) {
-                int offsetForWord = wordResult->offsetForPosition(targetX);
+                int offsetForWord = wordResult->offsetForPosition(targetX, includePartialGlyphs);
                 return totalOffset + offsetForWord;
             }
             targetX -= wordResult->width();
@@ -400,7 +400,7 @@ int ShapeResultBuffer::offsetForPosition(const TextRun& run, float targetX) cons
         for (const auto& wordResult : m_results) {
             if (!wordResult)
                 continue;
-            int offsetForWord = wordResult->offsetForPosition(targetX);
+            int offsetForWord = wordResult->offsetForPosition(targetX, includePartialGlyphs);
             ASSERT(offsetForWord >= 0);
             totalOffset += offsetForWord;
             if (targetX >= 0 && targetX <= wordResult->width())

@@ -71,7 +71,7 @@ public:
     // For memory reporting.
     size_t byteSize() const;
 
-    int offsetForPosition(float targetX) const;
+    int offsetForPosition(float targetX, bool includePartialGlyphs) const;
 
     PassRefPtr<ShapeResult> applySpacingToCopy(ShapeResultSpacing&,
         const TextRun&) const;

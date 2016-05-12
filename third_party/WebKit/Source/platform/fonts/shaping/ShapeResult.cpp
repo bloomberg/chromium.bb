@@ -89,34 +89,35 @@ float ShapeResult::RunInfo::xPositionForOffset(unsigned offset, AdjustMidCluster
     return position;
 }
 
-int ShapeResult::RunInfo::characterIndexForXPosition(float targetX) const
+int ShapeResult::RunInfo::characterIndexForXPosition(float targetX, bool includePartialGlyphs) const
 {
-    ASSERT(targetX <= m_width);
+    DCHECK(targetX >= 0 && targetX <= m_width);
     const unsigned numGlyphs = m_glyphData.size();
     float currentX = 0;
-    float currentAdvance = m_glyphData[0].advance;
+    float currentAdvance = 0;
     unsigned glyphIndex = 0;
+    unsigned prevCharacterIndex = m_numCharacters; // used only when rtl()
 
-    // Sum up advances that belong to the first character.
-    while (glyphIndex < numGlyphs - 1 && m_glyphData[glyphIndex].characterIndex == m_glyphData[glyphIndex + 1].characterIndex)
-        currentAdvance += m_glyphData[++glyphIndex].advance;
-    currentAdvance = currentAdvance / 2.0;
-    if (targetX <= currentAdvance)
-        return rtl() ? m_numCharacters : 0;
-
-    currentX = currentAdvance;
-    ++glyphIndex;
     while (glyphIndex < numGlyphs) {
-        unsigned prevCharacterIndex = m_glyphData[glyphIndex - 1].characterIndex;
         float prevAdvance = currentAdvance;
+        unsigned currentCharacterIndex = m_glyphData[glyphIndex].characterIndex;
         currentAdvance = m_glyphData[glyphIndex].advance;
-        while (glyphIndex < numGlyphs - 1 && m_glyphData[glyphIndex].characterIndex == m_glyphData[glyphIndex + 1].characterIndex)
+        while (glyphIndex < numGlyphs - 1 && currentCharacterIndex == m_glyphData[glyphIndex + 1].characterIndex)
             currentAdvance += m_glyphData[++glyphIndex].advance;
-        currentAdvance = currentAdvance / 2.0;
-        float nextX = currentX + prevAdvance + currentAdvance;
+        float nextX;
+        if (includePartialGlyphs) {
+            // For hit testing, find the closest caret point by incuding
+            // end-half of the previous character and start-half of the current
+            // character.
+            currentAdvance = currentAdvance / 2.0;
+            nextX = currentX + prevAdvance + currentAdvance;
+        } else {
+            nextX = currentX + currentAdvance;
+        }
         if (currentX <= targetX && targetX <= nextX)
-            return rtl() ? prevCharacterIndex : m_glyphData[glyphIndex].characterIndex;
+            return includePartialGlyphs && rtl() ? prevCharacterIndex : currentCharacterIndex;
         currentX = nextX;
+        prevCharacterIndex = currentCharacterIndex;
         ++glyphIndex;
     }
 
@@ -169,7 +170,7 @@ size_t ShapeResult::byteSize() const
     return selfByteSize;
 }
 
-int ShapeResult::offsetForPosition(float targetX) const
+int ShapeResult::offsetForPosition(float targetX, bool includePartialGlyphs) const
 {
     int charactersSoFar = 0;
     float currentX = 0;
@@ -184,7 +185,7 @@ int ShapeResult::offsetForPosition(float targetX) const
             float offsetForRun = targetX - currentX;
             if (offsetForRun >= 0 && offsetForRun <= m_runs[i]->m_width) {
                 // The x value in question is within this script run.
-                const unsigned index = m_runs[i]->characterIndexForXPosition(offsetForRun);
+                const unsigned index = m_runs[i]->characterIndexForXPosition(offsetForRun, includePartialGlyphs);
                 return charactersSoFar + index;
             }
             currentX = nextX;
@@ -196,7 +197,7 @@ int ShapeResult::offsetForPosition(float targetX) const
             float nextX = currentX + m_runs[i]->m_width;
             float offsetForRun = targetX - currentX;
             if (offsetForRun >= 0 && offsetForRun <= m_runs[i]->m_width) {
-                const unsigned index = m_runs[i]->characterIndexForXPosition(offsetForRun);
+                const unsigned index = m_runs[i]->characterIndexForXPosition(offsetForRun, includePartialGlyphs);
                 return charactersSoFar + index;
             }
             charactersSoFar += m_runs[i]->m_numCharacters;

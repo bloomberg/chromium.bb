@@ -742,7 +742,7 @@ int Font::offsetForPositionForComplexText(const TextRun& run, float xFloat,
     bool includePartialGlyphs) const
 {
     CachingWordShaper shaper(m_fontFallbackList->shapeCache(m_fontDescription));
-    return shaper.offsetForPosition(this, run, xFloat);
+    return shaper.offsetForPosition(this, run, xFloat, includePartialGlyphs);
 }
 
 // Return the rectangle for selecting the given range of code-points in the TextRun.

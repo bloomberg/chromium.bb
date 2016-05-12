@@ -34,7 +34,7 @@ public:
     float fillGlyphBuffer(GlyphBuffer*, const TextRun&, unsigned from, unsigned to) const;
     float fillGlyphBufferForTextEmphasis(GlyphBuffer*, const TextRun&,
         const GlyphData* emphasisData, unsigned from, unsigned to) const;
-    int offsetForPosition(const TextRun&, float targetX) const;
+    int offsetForPosition(const TextRun&, float targetX, bool includePartialGlyphs) const;
     CharacterRange getCharacterRange(TextDirection, float totalWidth,
         unsigned from, unsigned to) const;
     Vector<CharacterRange> individualCharacterRanges(TextDirection,

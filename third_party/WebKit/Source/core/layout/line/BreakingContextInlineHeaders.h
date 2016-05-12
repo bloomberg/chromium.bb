@@ -604,34 +604,21 @@ ALWAYS_INLINE bool BreakingContext::rewindToMidWordBreak(LineLayoutText text,
 
     // TODO(kojii): should be replaced with safe-to-break when hb is ready.
     float x = m_width.availableWidth() + LayoutUnit::epsilon() - m_width.currentWidth();
+    if (run.rtl())
+        x = wordMeasurement.width - x;
     len = font.offsetForPosition(run, x, false);
     if (!len && !m_width.currentWidth())
         return rewindToFirstMidWordBreak(text, style, font, breakAll, wordMeasurement);
-
-    FloatRect rect = font.selectionRectForText(run, FloatPoint(), 0, 0, len);
-    // HarfBuzzShaper ignores includePartialGlyphs=false, so we need to find the
-    // real width that fits. Usually a few loops at maximum.
-    if (len && !m_width.fitsOnLine(rect.width())) {
-        for (; ; ) {
-            --len;
-            if (!len) {
-                rect.setWidth(0);
-                break;
-            }
-            rect = font.selectionRectForText(run, FloatPoint(), 0, 0, len);
-            if (m_width.fitsOnLine(rect.width()))
-                break;
-        }
-    }
 
     int end = start + len;
     if (breakAll) {
         end = lastBreakablePositionForBreakAll(text, style, start, end);
         if (!end)
             return false;
-        rect = font.selectionRectForText(run, FloatPoint(), 0, 0, end - start);
+        len = end - start;
     }
-
+    FloatRect rect = font.selectionRectForText(run, FloatPoint(), 0, 0, len);
+    DCHECK(m_width.fitsOnLine(rect.width() - 1)); // avoid failure when rect is rounded up.
     return rewindToMidWordBreak(wordMeasurement, end, rect.width());
 }
 

@@ -52,7 +52,7 @@ public:
     float width(const Font*, const TextRun&,
         HashSet<const SimpleFontData*>* fallbackFonts,
         FloatRect* glyphBounds);
-    int offsetForPosition(const Font*, const TextRun&, float targetX);
+    int offsetForPosition(const Font*, const TextRun&, float targetX, bool includePartialGlyphs);
     float fillGlyphBuffer(const Font*, const TextRun&,
         HashSet<const SimpleFontData*>*, GlyphBuffer*,
         unsigned from, unsigned to);

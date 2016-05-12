@@ -78,12 +78,12 @@ static inline float shapeResultsForRun(ShapeCache* shapeCache, const Font* font,
     return totalWidth;
 }
 
-int CachingWordShaper::offsetForPosition(const Font* font, const TextRun& run, float targetX)
+int CachingWordShaper::offsetForPosition(const Font* font, const TextRun& run, float targetX, bool includePartialGlyphs)
 {
     ShapeResultBuffer buffer;
     shapeResultsForRun(m_shapeCache, font, run, nullptr, &buffer);
 
-    return buffer.offsetForPosition(run, targetX);
+    return buffer.offsetForPosition(run, targetX, includePartialGlyphs);
 }
 
 float CachingWordShaper::fillGlyphBuffer(const Font* font, const TextRun& run,
