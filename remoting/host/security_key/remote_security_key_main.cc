@@ -63,7 +63,7 @@ int StartRemoteSecurityKey() {
 int RemoteSecurityKeyMain(int argc, char** argv) {
   // This object instance is required by Chrome classes (such as MessageLoop).
   base::AtExitManager exit_manager;
-  base::MessageLoopForUI message_loop;
+  base::MessageLoopForIO message_loop;
 
   base::CommandLine::Init(argc, argv);
   remoting::InitHostLogging();
