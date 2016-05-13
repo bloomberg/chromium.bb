@@ -16,6 +16,11 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.CheckPatternIsValid(pattern)
     GpuTestExpectations.Fail(self, pattern, condition, bug)
 
+  def Flaky(self, pattern, condition=None, bug=None, max_num_retries=2):
+    self.CheckPatternIsValid(pattern)
+    GpuTestExpectations.Flaky(self, pattern, condition, bug=bug,
+        max_num_retries=max_num_retries)
+
   def Skip(self, pattern, condition=None, bug=None):
     self.CheckPatternIsValid(pattern)
     GpuTestExpectations.Skip(self, pattern, condition, bug)

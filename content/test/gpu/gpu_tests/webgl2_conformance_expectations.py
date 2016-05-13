@@ -318,9 +318,11 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win'], bug=606021)
 
     # Win / Release.
-    self.Flaky('deqp/functional/gles3/texturefiltering/cube_combinations_01',
+    self.Flaky(
+        'deqp/functional/gles3/texturefiltering/cube_combinations_01.html',
         ['win', 'release'], bug=607393)
-    self.Flaky('deqp/functional/gles3/texturefiltering/cube_combinations_05',
+    self.Flaky(
+        'deqp/functional/gles3/texturefiltering/cube_combinations_05.html',
         ['win', 'release'], bug=607393)
 
     # Win / AMD
