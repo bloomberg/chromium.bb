@@ -1209,9 +1209,8 @@ public class NewTabPageView extends FrameLayout
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        // Set the parent scroll view port height in the layout.
         if (mNewTabPageLayout != null) {
-            mNewTabPageLayout.setParentScrollViewportHeight(MeasureSpec.getSize(heightMeasureSpec));
+            mNewTabPageLayout.setParentViewportHeight(MeasureSpec.getSize(heightMeasureSpec));
         }
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
     }
