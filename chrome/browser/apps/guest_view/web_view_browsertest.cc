@@ -1975,7 +1975,8 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, ScreenCoordinates) {
 }
 
 #if defined(OS_CHROMEOS)
-IN_PROC_BROWSER_TEST_P(WebViewTest, ChromeVoxInjection) {
+// Flaky, see http://crbug.com/611736.
+IN_PROC_BROWSER_TEST_P(WebViewTest, DISABLED_ChromeVoxInjection) {
   EXPECT_FALSE(
       chromeos::AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
 
