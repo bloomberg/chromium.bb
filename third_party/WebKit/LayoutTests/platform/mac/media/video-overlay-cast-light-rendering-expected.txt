@@ -17,22 +17,22 @@ layer at (8,342) size 320x262 backgroundClip at (0,0) size 785x600 clip at (0,0)
   LayoutVideo {VIDEO} at (0,0) size 320x261.81
 layer at (8,50) size 352x288
   LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 352x288
-    LayoutBlockFlow {DIV} at (0,253) size 352x35
-layer at (8,50) size 352x253
-  LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 352x253
-layer at (26,63) size 30x30
-  LayoutButton (positioned) {INPUT} at (17.59,12.64) size 30x30
+    LayoutBlockFlow {DIV} at (0,256) size 352x32
+layer at (8,50) size 352x246
+  LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 352x246
+layer at (16,58) size 32x32
+  LayoutButton (positioned) {INPUT} at (8,8) size 32x32
 layer at (8,342) size 320x262 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
   LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 320x261.81
-    LayoutBlockFlow {DIV} at (0,226.81) size 320x35
-layer at (8,342) size 320x227
-  LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 320x226.81
-layer at (24,353) size 30x30
-  LayoutButton (positioned) {INPUT} at (16,11.33) size 30x30
+    LayoutBlockFlow {DIV} at (0,229.81) size 320x32
+layer at (8,342) size 320x220
+  LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 320x219.81
+layer at (16,350) size 32x32
+  LayoutButton (positioned) {INPUT} at (8,8) size 32x32
 layer at (8,608) size 320x262 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
   LayoutVideo (positioned) {VIDEO} at (8,608) size 320x261.81
 layer at (8,608) size 320x262 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
   LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 320x261.81
-    LayoutBlockFlow {DIV} at (0,226.81) size 320x35
-layer at (8,608) size 320x227 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
-  LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 320x226.81
+    LayoutBlockFlow {DIV} at (0,229.81) size 320x32
+layer at (8,608) size 320x220 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
+  LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 320x219.81

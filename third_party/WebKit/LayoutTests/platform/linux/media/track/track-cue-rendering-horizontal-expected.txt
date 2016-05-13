@@ -58,6 +58,6 @@ layer at (8,210) size 320x15 scrollHeight 17
         text run at (19,0) width 282: "Cue 6: should be on top of bottom positioned cue 5."
 layer at (8,8) size 320x240
   LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 320x240
-    LayoutBlockFlow {DIV} at (0,205) size 320x35
-layer at (8,8) size 320x205
-  LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 320x205
+    LayoutBlockFlow {DIV} at (0,208) size 320x32
+layer at (8,8) size 320x198
+  LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 320x198

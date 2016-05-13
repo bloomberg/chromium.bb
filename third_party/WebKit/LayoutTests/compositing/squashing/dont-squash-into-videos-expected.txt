@@ -17,7 +17,7 @@
               "drawsContent": true
             },
             {
-              "bounds": [100, 65]
+              "bounds": [100, 58]
             }
           ]
         },

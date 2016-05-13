@@ -1,0 +1,33 @@
+layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 850
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 785x850 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
+  LayoutBlockFlow {HTML} at (0,0) size 785x850
+    LayoutBlockFlow {BODY} at (8,8) size 769x834
+      LayoutBlockFlow {P} at (0,0) size 769x20
+        LayoutText {#text} at (0,0) size 268x19
+          text run at (0,0) width 268: "150% zoom, with width and height attributes"
+      LayoutBlockFlow (anonymous) at (0,36) size 769x373
+        LayoutText {#text} at (0,353) size 4x19
+          text run at (0,353) width 4: " "
+        LayoutBR {BR} at (492,368) size 0x0
+      LayoutBlockFlow {P} at (0,425) size 769x20
+        LayoutText {#text} at (0,0) size 287x19
+          text run at (0,0) width 287: "150% zoom, without width and height attributes"
+      LayoutBlockFlow (anonymous) at (0,461) size 769x373
+        LayoutText {#text} at (0,353) size 4x19
+          text run at (0,353) width 4: " "
+        LayoutBR {BR} at (492,368) size 0x0
+layer at (12,44) size 488x368
+  LayoutVideo {VIDEO} at (4,0) size 488x368 [border: (4px solid #FF0000)]
+layer at (12,469) size 488x368 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
+  LayoutVideo {VIDEO} at (4,0) size 488x368 [border: (4px solid #FF0000)]
+layer at (16,48) size 480x360
+  LayoutFlexibleBox (relative positioned) {DIV} at (4,4) size 480x360
+    LayoutBlockFlow {DIV} at (0,307.50) size 480x52.50
+layer at (16,48) size 480x308
+  LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 480x307.50
+layer at (16,473) size 480x360 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
+  LayoutFlexibleBox (relative positioned) {DIV} at (4,4) size 480x360
+    LayoutBlockFlow {DIV} at (0,307.50) size 480x52.50
+layer at (16,473) size 480x308 backgroundClip at (16,473) size 480x127 clip at (16,473) size 480x127
+  LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 480x307.50

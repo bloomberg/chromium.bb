@@ -22,6 +22,6 @@ layer at (51,51) size 100x100
   LayoutBlockFlow (relative positioned) {DIV} at (0,0) size 100x100 [bgcolor=#008000]
 layer at (0,0) size 100x100
   LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 100x100
-    LayoutBlockFlow {DIV} at (0,65) size 100x35
-layer at (0,0) size 100x65
-  LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 100x65
+    LayoutBlockFlow {DIV} at (0,68) size 100x32
+layer at (0,0) size 100x58
+  LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 100x58

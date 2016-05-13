@@ -20,53 +20,53 @@
             },
             {
               "position": [8, 8],
-              "bounds": [320, 235],
+              "bounds": [320, 240],
               "drawsContent": true,
               "paintInvalidations": [
                 {
+                  "object": "LayoutSlider INPUT",
+                  "rect": [108, 223, 70, 2],
+                  "reason": "full"
+                },
+                {
                   "object": "LayoutFlexibleBox DIV",
-                  "rect": [53, 216, 92, 8],
+                  "rect": [108, 223, 69, 2],
                   "reason": "forced by layout"
                 },
                 {
-                  "object": "LayoutSlider INPUT",
-                  "rect": [53, 216, 92, 8],
-                  "reason": "full"
-                },
-                {
-                  "object": "LayoutButton INPUT",
-                  "rect": [194, 205, 36, 30],
+                  "object": "LayoutBlockFlow DIV id='thumb'",
+                  "rect": [90, 208, 37, 32],
                   "reason": "full"
                 },
                 {
                   "object": "LayoutBlockFlow DIV id='thumb'",
-                  "rect": [118, 208, 33, 24],
-                  "reason": "full"
-                },
-                {
-                  "object": "LayoutBlockFlow DIV id='thumb'",
-                  "rect": [47, 208, 32, 24],
-                  "reason": "full"
-                },
-                {
-                  "object": "LayoutSlider INPUT",
-                  "rect": [235, 216, 32, 8],
+                  "rect": [159, 208, 36, 32],
                   "reason": "full"
                 },
                 {
                   "object": "LayoutButton INPUT",
-                  "rect": [14, 205, 30, 30],
+                  "rect": [195, 208, 32, 32],
                   "reason": "full"
                 },
                 {
-                  "object": "LayoutText #text",
-                  "rect": [159, 212, 28, 15],
+                  "object": "LayoutButton INPUT",
+                  "rect": [0, 208, 32, 32],
+                  "reason": "full"
+                },
+                {
+                  "object": "LayoutSlider INPUT",
+                  "rect": [245, 223, 25, 2],
                   "reason": "full"
                 },
                 {
                   "object": "LayoutBlockFlow (anonymous)",
-                  "rect": [159, 205, 27, 22],
+                  "rect": [32, 208, 24, 23],
                   "reason": "invalidate paint rectangle"
+                },
+                {
+                  "object": "LayoutText #text",
+                  "rect": [32, 217, 24, 14],
+                  "reason": "full"
                 },
                 {
                   "object": "InlineTextBox ''",

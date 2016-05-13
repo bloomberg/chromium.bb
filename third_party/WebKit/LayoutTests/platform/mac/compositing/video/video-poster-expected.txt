@@ -50,7 +50,7 @@ Case: Displaying movie
             },
             {
               "position": [8, 8],
-              "bounds": [352, 253],
+              "bounds": [352, 246],
               "drawsContent": true
             }
           ]

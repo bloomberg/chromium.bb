@@ -1,0 +1,38 @@
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutText {#text} at (0,0) size 504x17
+        text run at (0,0) width 504: "This tests that toggling the display property won't make the controls disappear."
+      LayoutBR {BR} at (503,14) size 1x0
+      LayoutText {#text} at (0,0) size 0x0
+layer at (8,26) size 320x240
+  LayoutVideo {VIDEO} at (0,18) size 320x240
+layer at (8,26) size 320x240
+  LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 320x240
+    LayoutBlockFlow {DIV} at (0,208) size 320x32
+layer at (8,26) size 320x198
+  LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 320x198
+layer at (8,234) size 320x32 scrollHeight 40
+  LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 320x32 [bgcolor=#FAFAFA]
+    LayoutButton {INPUT} at (0,0) size 32x32
+    LayoutFlexibleBox {DIV} at (32,0) size 17.73x32 [color=#5A5A5A]
+      LayoutBlockFlow (anonymous) at (0,0) size 17.73x32
+        LayoutText {#text} at (0,9) size 18x14
+          text run at (0,9) width 18: "0:00"
+    LayoutFlexibleBox {DIV} at (49.73,0) size 28.27x32 [color=#5A5A5A]
+      LayoutBlockFlow (anonymous) at (4,0) size 24.27x32
+        LayoutText {#text} at (0,9) size 25x14
+          text run at (0,9) width 25: "/ 0:06"
+    LayoutSlider {INPUT} at (96,15) size 81x2
+      LayoutFlexibleBox {DIV} at (0,0) size 81x2
+        LayoutBlockFlow {DIV} at (-18,-23) size 117x48
+          LayoutBlockFlow {DIV} at (0,0) size 36x48
+    LayoutButton {INPUT} at (195,0) size 32x32
+    LayoutSlider {INPUT} at (245,15) size 25x2
+      LayoutFlexibleBox {DIV} at (0,0) size 25x2
+        LayoutBlockFlow {DIV} at (-18,-23) size 61x48
+          LayoutBlockFlow {DIV} at (25,0) size 36x48
+layer at (296,234) size 32x32
+  LayoutButton {INPUT} at (288,0) size 32x32

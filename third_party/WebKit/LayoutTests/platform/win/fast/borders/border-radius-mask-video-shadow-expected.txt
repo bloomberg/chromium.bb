@@ -25,6 +25,6 @@ layer at (18,139) size 500x225
   LayoutVideo {VIDEO} at (10,10) size 500x225 [bgcolor=#808080]
 layer at (18,139) size 500x225
   LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 500x225
-    LayoutBlockFlow {DIV} at (0,190) size 500x35
-layer at (18,139) size 500x190
-  LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 500x190
+    LayoutBlockFlow {DIV} at (0,193) size 500x32
+layer at (18,139) size 500x183
+  LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 500x183

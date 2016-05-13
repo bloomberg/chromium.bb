@@ -15,8 +15,8 @@ layer at (18,269) size 302x152 clip at (19,270) size 285x150 scrollY 100.00 scro
     LayoutBlockFlow {DIV} at (1,1) size 285x500
 layer at (19,53) size 300x200
   LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 300x200
-    LayoutBlockFlow {DIV} at (0,165) size 300x35
-layer at (19,53) size 300x165
-  LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 300x165
+    LayoutBlockFlow {DIV} at (0,168) size 300x32
+layer at (19,53) size 300x158
+  LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 300x158
 layer at (19,170) size 100x100 backgroundClip at (19,270) size 285x150 clip at (19,270) size 285x150
   LayoutBlockFlow {DIV} at (0,0) size 100x100 [bgcolor=#FF0000]

@@ -20,32 +20,32 @@
             },
             {
               "position": [8, 8],
-              "bounds": [700, 520],
+              "bounds": [700, 525],
               "drawsContent": true,
               "paintInvalidations": [
                 {
                   "object": "LayoutFlexibleBox DIV",
-                  "rect": [576, 501, 70, 8],
+                  "rect": [580, 508, 70, 2],
                   "reason": "forced by layout"
                 },
                 {
                   "object": "LayoutSlider INPUT",
-                  "rect": [576, 501, 70, 8],
+                  "rect": [580, 508, 70, 2],
+                  "reason": "full"
+                },
+                {
+                  "object": "LayoutBlockFlow DIV id='thumb'",
+                  "rect": [632, 493, 36, 32],
+                  "reason": "full"
+                },
+                {
+                  "object": "LayoutBlockFlow DIV id='thumb'",
+                  "rect": [562, 493, 36, 32],
                   "reason": "full"
                 },
                 {
                   "object": "LayoutButton INPUT",
-                  "rect": [535, 490, 35, 30],
-                  "reason": "full"
-                },
-                {
-                  "object": "LayoutBlockFlow DIV id='thumb'",
-                  "rect": [628, 493, 24, 24],
-                  "reason": "full"
-                },
-                {
-                  "object": "LayoutBlockFlow DIV id='thumb'",
-                  "rect": [570, 493, 24, 24],
+                  "rect": [530, 493, 32, 32],
                   "reason": "full"
                 }
               ]

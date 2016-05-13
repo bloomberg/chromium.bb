@@ -23,6 +23,6 @@ layer at (18,266) size 302x152 clip at (19,267) size 285x150 scrollY 24.00 scrol
         text run at (0,101) width 64: "here."
 layer at (19,51) size 300x200
   LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 300x200
-    LayoutBlockFlow {DIV} at (0,165) size 300x35
-layer at (19,51) size 300x165
-  LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 300x165
+    LayoutBlockFlow {DIV} at (0,168) size 300x32
+layer at (19,51) size 300x158
+  LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 300x158

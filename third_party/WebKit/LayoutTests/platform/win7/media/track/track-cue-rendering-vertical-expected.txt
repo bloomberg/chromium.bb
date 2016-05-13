@@ -58,6 +58,6 @@ layer at (290,8) size 18x240
         text run at (1,64) width 111: "Cue 6: \x{79C1}\x{306F}\x{7ACB}\x{6D3E}\x{306A}\x{4EBA}"
 layer at (8,8) size 320x240
   LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 320x240
-    LayoutBlockFlow {DIV} at (0,205) size 320x35
-layer at (8,8) size 320x205
-  LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 320x205
+    LayoutBlockFlow {DIV} at (0,208) size 320x32
+layer at (8,8) size 320x198
+  LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 320x198

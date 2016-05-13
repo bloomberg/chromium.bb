@@ -35,6 +35,6 @@ layer at (8,546) size 556x406 backgroundClip at (0,0) size 785x600 clip at (0,0)
   LayoutEmbeddedObject {EMBED} at (0,538) size 556x406 [bgcolor=#00FF00] [border: (3px solid #000000)]
 layer at (8,392) size 300x150
   LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 300x150
-    LayoutBlockFlow {DIV} at (0,115) size 300x35
-layer at (8,392) size 300x115
-  LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 300x115
+    LayoutBlockFlow {DIV} at (0,118) size 300x32
+layer at (8,392) size 300x108
+  LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 300x108

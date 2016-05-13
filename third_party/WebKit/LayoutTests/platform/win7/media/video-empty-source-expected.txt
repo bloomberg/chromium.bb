@@ -1,0 +1,28 @@
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {P} at (0,0) size 784x18
+        LayoutText {#text} at (0,0) size 437x17
+          text run at (0,0) width 437: "Slider drawing with no source. The controls should render correctly."
+      LayoutBlockFlow (anonymous) at (0,34) size 784x152
+        LayoutText {#text} at (0,0) size 0x0
+layer at (8,42) size 302x152
+  LayoutVideo {VIDEO} at (0,0) size 302x152 [border: (1px solid #000000)]
+layer at (9,43) size 300x150
+  LayoutFlexibleBox (relative positioned) {DIV} at (1,1) size 300x150
+    LayoutBlockFlow {DIV} at (0,118) size 300x32
+layer at (9,43) size 300x108
+  LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 300x108
+layer at (9,161) size 300x32 scrollHeight 40
+  LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 300x32 [bgcolor=#FAFAFA]
+    LayoutButton {INPUT} at (0,0) size 32x32
+    LayoutFlexibleBox {DIV} at (32,0) size 17.73x32 [color=#5A5A5A]
+      LayoutBlockFlow (anonymous) at (0,0) size 17.73x32
+        LayoutText {#text} at (0,9) size 18x14
+          text run at (0,9) width 18: "0:00"
+    LayoutSlider {INPUT} at (67.73,15) size 214.27x2
+      LayoutFlexibleBox {DIV} at (0,0) size 214.27x2
+        LayoutBlockFlow {DIV} at (-18,-23) size 250.27x48
+          LayoutBlockFlow {DIV} at (0,0) size 36x48
