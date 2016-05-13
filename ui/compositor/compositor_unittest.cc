@@ -94,7 +94,14 @@ TEST_F(CompositorTest, ReleaseWidgetWithOutputSurfaceNeverCreated) {
   compositor()->SetVisible(true);
 }
 
-TEST_F(CompositorTest, CreateAndReleaseOutputSurface) {
+#if defined(OS_WIN)
+// TODO(crbug.com/608436): Flaky on windows trybots
+#define MAYBE_CreateAndReleaseOutputSurface \
+  DISABLED_CreateAndReleaseOutputSurface
+#else
+#define MAYBE_CreateAndReleaseOutputSurface CreateAndReleaseOutputSurface
+#endif
+TEST_F(CompositorTest, MAYBE_CreateAndReleaseOutputSurface) {
   std::unique_ptr<Layer> root_layer(new Layer(ui::LAYER_SOLID_COLOR));
   root_layer->SetBounds(gfx::Rect(10, 10));
   compositor()->SetRootLayer(root_layer.get());
