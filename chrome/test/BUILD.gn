@@ -2070,6 +2070,12 @@ test("unit_tests") {
     # other things like the ui and startup tests. *shrug*
     ldflags = [ "-Wl,-ObjC" ]
   }
+  if (is_android) {
+    sources += rebase_path(
+            chrome_tests_unit_gypi_values.chrome_unit_tests_android_sources,
+            ".",
+            "//chrome")
+  }
   if (!is_mac && !is_ios) {
     deps += [
       "//chrome:packed_extra_resources",
