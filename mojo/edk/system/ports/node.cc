@@ -293,51 +293,22 @@ int Node::GetMessageIf(const PortRef& port_ref,
   return OK;
 }
 
-int Node::SendMessage(const PortRef& port_ref, ScopedMessage* message) {
-  ScopedMessage& m = *message;
-  for (size_t i = 0; i < m->num_ports(); ++i) {
-    if (m->ports()[i] == port_ref.name())
-      return ERROR_PORT_CANNOT_SEND_SELF;
-  }
-
-  Port* port = port_ref.port();
-  NodeName peer_node_name;
-  {
-    // We must acquire |ports_lock_| before grabbing any port locks, because
-    // WillSendMessage_Locked may need to lock multiple ports out of order.
-    base::AutoLock ports_lock(ports_lock_);
-    base::AutoLock lock(port->lock);
-
-    if (port->state != Port::kReceiving)
-      return ERROR_PORT_STATE_UNEXPECTED;
-
-    if (port->peer_closed)
-      return ERROR_PORT_PEER_CLOSED;
-
-    int rv = WillSendMessage_Locked(port, port_ref.name(), m.get());
-    if (rv != OK)
-      return rv;
-
-    // Beyond this point there's no sense in returning anything but OK. Even if
-    // message forwarding or acceptance fails, there's nothing the embedder can
-    // do to recover. Assume that failure beyond this point must be treated as a
-    // transport failure.
-
-    peer_node_name = port->peer_node_name;
-  }
-
-  if (peer_node_name != name_) {
-    delegate_->ForwardMessage(peer_node_name, std::move(m));
-    return OK;
-  }
-
-  int rv = AcceptMessage(std::move(m));
+int Node::SendMessage(const PortRef& port_ref, ScopedMessage message) {
+  int rv = SendMessageInternal(port_ref, &message);
   if (rv != OK) {
-    // See comment above for why we don't return an error in this case.
-    DVLOG(2) << "AcceptMessage failed: " << rv;
-  }
+    // If send failed, close all carried ports. Note that we're careful not to
+    // close the sending port itself if it happened to be one of the encoded
+    // ports (an invalid but possible condition.)
+    for (size_t i = 0; i < message->num_ports(); ++i) {
+      if (message->ports()[i] == port_ref.name())
+        continue;
 
-  return OK;
+      PortRef port;
+      if (GetPort(message->ports()[i], &port) == OK)
+        ClosePort(port);
+    }
+  }
+  return rv;
 }
 
 int Node::AcceptMessage(ScopedMessage message) {
@@ -873,6 +844,53 @@ scoped_refptr<Port> Node::GetPort_Locked(const PortName& port_name) {
     return nullptr;
 
   return iter->second;
+}
+
+int Node::SendMessageInternal(const PortRef& port_ref, ScopedMessage* message) {
+  ScopedMessage& m = *message;
+  for (size_t i = 0; i < m->num_ports(); ++i) {
+    if (m->ports()[i] == port_ref.name())
+      return ERROR_PORT_CANNOT_SEND_SELF;
+  }
+
+  Port* port = port_ref.port();
+  NodeName peer_node_name;
+  {
+    // We must acquire |ports_lock_| before grabbing any port locks, because
+    // WillSendMessage_Locked may need to lock multiple ports out of order.
+    base::AutoLock ports_lock(ports_lock_);
+    base::AutoLock lock(port->lock);
+
+    if (port->state != Port::kReceiving)
+      return ERROR_PORT_STATE_UNEXPECTED;
+
+    if (port->peer_closed)
+      return ERROR_PORT_PEER_CLOSED;
+
+    int rv = WillSendMessage_Locked(port, port_ref.name(), m.get());
+    if (rv != OK)
+      return rv;
+
+    // Beyond this point there's no sense in returning anything but OK. Even if
+    // message forwarding or acceptance fails, there's nothing the embedder can
+    // do to recover. Assume that failure beyond this point must be treated as a
+    // transport failure.
+
+    peer_node_name = port->peer_node_name;
+  }
+
+  if (peer_node_name != name_) {
+    delegate_->ForwardMessage(peer_node_name, std::move(m));
+    return OK;
+  }
+
+  int rv = AcceptMessage(std::move(m));
+  if (rv != OK) {
+    // See comment above for why we don't return an error in this case.
+    DVLOG(2) << "AcceptMessage failed: " << rv;
+  }
+
+  return OK;
 }
 
 int Node::MergePorts_Locked(const PortRef& port0_ref,

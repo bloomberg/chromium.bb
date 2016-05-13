@@ -138,8 +138,7 @@ MojoResult MessagePipeDispatcher::WriteMessage(
     return MOJO_RESULT_INVALID_ARGUMENT;
 
   size_t num_bytes = message->num_bytes();
-  std::unique_ptr<PortsMessage> msg = message->TakePortsMessage();
-  int rv = node_controller_->SendMessage(port_, &msg);
+  int rv = node_controller_->SendMessage(port_, message->TakePortsMessage());
 
   DVLOG(1) << "Sent message on pipe " << pipe_id_ << " endpoint " << endpoint_
            << " [port=" << port_.name() << "; rv=" << rv

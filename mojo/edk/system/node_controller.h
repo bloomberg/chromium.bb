@@ -88,10 +88,9 @@ class NodeController : public ports::NodeDelegate,
   // it ensures the port's observer has also been removed.
   void ClosePort(const ports::PortRef& port);
 
-  // Sends a message on a port to its peer. If message send fails, |message|
-  // is left intact. Otherwise ownership is transferred and it's reset.
+  // Sends a message on a port to its peer.
   int SendMessage(const ports::PortRef& port_ref,
-                  std::unique_ptr<PortsMessage>* message);
+                  std::unique_ptr<PortsMessage> message);
 
   // Reserves a local port |port| associated with |token|. A peer holding a copy
   // of |token| can merge one of its own ports into this one.

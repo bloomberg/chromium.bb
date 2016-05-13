@@ -173,13 +173,9 @@ void NodeController::ClosePort(const ports::PortRef& port) {
 }
 
 int NodeController::SendMessage(const ports::PortRef& port,
-                                std::unique_ptr<PortsMessage>* message) {
-  ports::ScopedMessage ports_message(message->release());
-  int rv = node_->SendMessage(port, &ports_message);
-  if (rv != ports::OK) {
-    DCHECK(ports_message);
-    message->reset(static_cast<PortsMessage*>(ports_message.release()));
-  }
+                                std::unique_ptr<PortsMessage> message) {
+  ports::ScopedMessage ports_message(message.release());
+  int rv = node_->SendMessage(port, std::move(ports_message));
 
   AcceptIncomingMessages();
   return rv;
