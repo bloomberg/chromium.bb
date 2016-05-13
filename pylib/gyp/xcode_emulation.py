@@ -848,7 +848,8 @@ class XcodeSettings(object):
     ldflags.append('-arch ' + archs[0])
 
     # Xcode adds the product directory by default.
-    ldflags.append('-L' + product_dir)
+    # Rewrite -L. to -L./ to work around http://www.openradar.me/25313838
+    ldflags.append('-L' + (product_dir if product_dir != '.' else './'))
 
     install_name = self.GetInstallName()
     if install_name and self.spec['type'] != 'loadable_module':
