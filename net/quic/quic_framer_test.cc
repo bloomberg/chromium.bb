@@ -4061,11 +4061,75 @@ TEST_P(QuicFramerTest, PathCloseFrame) {
   }
 }
 
-TEST_P(QuicFramerTest, PublicResetPacket) {
+TEST_P(QuicFramerTest, PublicResetPacketV33) {
   // clang-format off
   unsigned char packet[] = {
     // public flags (public reset, 8 byte connection_id)
     0x0A,
+    // connection_id
+    0x10, 0x32, 0x54, 0x76,
+    0x98, 0xBA, 0xDC, 0xFE,
+    // message tag (kPRST)
+    'P', 'R', 'S', 'T',
+    // num_entries (2) + padding
+    0x02, 0x00, 0x00, 0x00,
+    // tag kRNON
+    'R', 'N', 'O', 'N',
+    // end offset 8
+    0x08, 0x00, 0x00, 0x00,
+    // tag kRSEQ
+    'R', 'S', 'E', 'Q',
+    // end offset 16
+    0x10, 0x00, 0x00, 0x00,
+    // nonce proof
+    0x89, 0x67, 0x45, 0x23,
+    0x01, 0xEF, 0xCD, 0xAB,
+    // rejected packet number
+    0xBC, 0x9A, 0x78, 0x56,
+    0x34, 0x12, 0x00, 0x00,
+  };
+  // clang-format on
+
+  QuicEncryptedPacket encrypted(AsChars(packet), arraysize(packet), false);
+  EXPECT_TRUE(framer_.ProcessPacket(encrypted));
+  ASSERT_EQ(QUIC_NO_ERROR, framer_.error());
+  ASSERT_TRUE(visitor_.public_reset_packet_.get());
+  EXPECT_EQ(kConnectionId,
+            visitor_.public_reset_packet_->public_header.connection_id);
+  EXPECT_TRUE(visitor_.public_reset_packet_->public_header.reset_flag);
+  EXPECT_FALSE(visitor_.public_reset_packet_->public_header.version_flag);
+  EXPECT_EQ(kNonceProof, visitor_.public_reset_packet_->nonce_proof);
+  EXPECT_EQ(0u, visitor_.public_reset_packet_->rejected_packet_number);
+  EXPECT_EQ(ADDRESS_FAMILY_UNSPECIFIED,
+            visitor_.public_reset_packet_->client_address.GetFamily());
+
+  // Now test framing boundaries.
+  for (size_t i = 0; i < arraysize(packet); ++i) {
+    string expected_error;
+    DVLOG(1) << "iteration: " << i;
+    if (i < kConnectionIdOffset) {
+      expected_error = "Unable to read public flags.";
+      CheckProcessingFails(packet, i, expected_error,
+                           QUIC_INVALID_PACKET_HEADER);
+    } else if (i < kPublicResetPacketMessageTagOffset) {
+      expected_error = "Unable to read ConnectionId.";
+      CheckProcessingFails(packet, i, expected_error,
+                           QUIC_INVALID_PACKET_HEADER);
+    } else {
+      expected_error = "Unable to read reset message.";
+      CheckProcessingFails(packet, i, expected_error,
+                           QUIC_INVALID_PUBLIC_RST_PACKET);
+    }
+  }
+}
+
+TEST_P(QuicFramerTest, PublicResetPacket) {
+  QuicFramerPeer::SetPerspective(&framer_, Perspective::IS_CLIENT);
+
+  // clang-format off
+  unsigned char packet[] = {
+    // public flags (public reset, 8 byte connection_id)
+    0x0E,
     // connection_id
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,

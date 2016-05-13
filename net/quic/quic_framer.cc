@@ -916,12 +916,14 @@ bool QuicFramer::ProcessPublicHeader(QuicDataReader* reader,
   }
 
   // A nonce should only be present in packets from the server to the client,
+  // which are neither version negotiation nor public reset packets
   // and only for versions after QUIC_VERSION_32. Earlier versions will
   // set this bit when indicating an 8-byte connection ID, which should
   // not be interpreted as indicating a nonce is present.
   if (quic_version_ > QUIC_VERSION_32 &&
       public_flags & PACKET_PUBLIC_FLAGS_NONCE &&
       !(public_flags & PACKET_PUBLIC_FLAGS_VERSION) &&
+      !(public_flags & PACKET_PUBLIC_FLAGS_RST) &&
       // The nonce flag from a client is ignored and is assumed to be an older
       // client indicating an eight-byte connection ID.
       perspective_ == Perspective::IS_CLIENT) {
