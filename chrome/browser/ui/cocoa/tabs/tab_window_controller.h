@@ -53,7 +53,8 @@
 @property(readonly, nonatomic) NSView* chromeContentView;
 
 // This is the designated initializer for this class.
-- (id)initTabWindowControllerWithTabStrip:(BOOL)hasTabStrip;
+- (id)initTabWindowControllerWithTabStrip:(BOOL)hasTabStrip
+                                 titleBar:(BOOL)hasTitleBar;
 
 // Used during tab dragging to turn on/off the overlay window when a tab
 // is torn off. If -deferPerformClose (below) is used, -removeOverlay will

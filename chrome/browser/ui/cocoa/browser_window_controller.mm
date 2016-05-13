@@ -232,7 +232,9 @@ void SetUpBrowserWindowCommandHandler(NSWindow* window) {
 // Private(TestingAPI) init routine with testing options.
 - (id)initWithBrowser:(Browser*)browser takeOwnership:(BOOL)ownIt {
   bool hasTabStrip = browser->SupportsWindowFeature(Browser::FEATURE_TABSTRIP);
-  if ((self = [super initTabWindowControllerWithTabStrip:hasTabStrip])) {
+  bool hasTitleBar = browser->SupportsWindowFeature(Browser::FEATURE_TITLEBAR);
+  if ((self = [super initTabWindowControllerWithTabStrip:hasTabStrip
+                                                titleBar:hasTitleBar])) {
     DCHECK(browser);
     initializing_ = YES;
     browser_.reset(browser);

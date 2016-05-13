@@ -24,7 +24,8 @@
 // subview of the root view. It cannot be a subview of the contentView, as that
 // would cause it to become layer backed, which would cause it to draw on top
 // of non-layer backed content like the window controls.
-- (void)insertTabStripBackgroundViewIntoWindow:(NSWindow*)window;
+- (void)insertTabStripBackgroundViewIntoWindow:(NSWindow*)window
+                                      titleBar:(BOOL)hasTitleBar;
 @end
 
 @interface TabWindowOverlayWindow : NSWindow
@@ -48,7 +49,8 @@
 
 @implementation TabWindowController
 
-- (id)initTabWindowControllerWithTabStrip:(BOOL)hasTabStrip {
+- (id)initTabWindowControllerWithTabStrip:(BOOL)hasTabStrip
+                                 titleBar:(BOOL)hasTitleBar {
   const CGFloat kDefaultWidth = 750;
   const CGFloat kDefaultHeight = 600;
 
@@ -88,7 +90,7 @@
                                  kBrowserFrameViewPaintHeight)]);
     [tabStripBackgroundView_
         setAutoresizingMask:NSViewWidthSizable | NSViewMinYMargin];
-    [self insertTabStripBackgroundViewIntoWindow:window];
+    [self insertTabStripBackgroundViewIntoWindow:window titleBar:hasTitleBar];
 
     tabStripView_.reset([[TabStripView alloc]
         initWithFrame:NSMakeRect(
@@ -335,7 +337,8 @@
   closeDeferred_ = YES;
 }
 
-- (void)insertTabStripBackgroundViewIntoWindow:(NSWindow*)window {
+- (void)insertTabStripBackgroundViewIntoWindow:(NSWindow*)window
+                                      titleBar:(BOOL)hasTitleBar {
   DCHECK(tabStripBackgroundView_);
   NSView* rootView = [[window contentView] superview];
 
@@ -349,6 +352,12 @@
               relativeTo:nil];
     return;
   }
+
+  [window setTitlebarAppearsTransparent:YES];
+
+  // If the window has a normal titlebar, then do not add NSVisualEffectView.
+  if (hasTitleBar)
+    return;
 
   base::scoped_nsobject<NSVisualEffectView> visualEffectView(
       [[nsVisualEffectViewClass alloc]
@@ -371,8 +380,6 @@
   [visualEffectView setMaterial:NSVisualEffectMaterialLight];
   [visualEffectView setBlendingMode:NSVisualEffectBlendingModeBehindWindow];
   [visualEffectView setState:NSVisualEffectStateFollowsWindowActiveState];
-
-  [window setTitlebarAppearsTransparent:YES];
 
   [rootView addSubview:visualEffectView
             positioned:NSWindowBelow
