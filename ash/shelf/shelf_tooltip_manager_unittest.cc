@@ -185,6 +185,7 @@ TEST_F(ShelfTooltipManagerTest, HideForExternalEvents) {
   generator.set_current_location(gfx::Point());
   generator.PressTouch();
   EXPECT_EQ(TooltipIsVisible(), !closes);
+  generator.ReleaseTouch();
 
   // Should hide for touch events on the tooltip.
   ShowImmediately();
@@ -192,6 +193,7 @@ TEST_F(ShelfTooltipManagerTest, HideForExternalEvents) {
   generator.set_current_location(GetTooltipWindow()->bounds().CenterPoint());
   generator.PressTouch();
   EXPECT_EQ(TooltipIsVisible(), !closes);
+  generator.ReleaseTouch();
 
   // Should hide for gestures outside the shelf.
   ShowImmediately();

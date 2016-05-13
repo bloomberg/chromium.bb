@@ -43,6 +43,7 @@ class EVENTS_EXPORT GestureProviderAura : public GestureProviderClient {
   void OnTouchEventAck(uint32_t unique_event_id, bool event_consumed);
   const MotionEventAura& pointer_state() { return pointer_state_; }
   ScopedVector<GestureEvent>* GetAndResetPendingGestures();
+  void OnTouchEnter(int pointer_id, float x, float y);
 
   // GestureProviderClient implementation
   void OnGestureEvent(const GestureEventData& gesture) override;

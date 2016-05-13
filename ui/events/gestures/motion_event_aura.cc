@@ -64,23 +64,12 @@ bool MotionEventAura::OnTouch(const TouchEvent& touch) {
   bool pointer_id_is_active = index != -1;
 
   if (touch.type() == ET_TOUCH_PRESSED && pointer_id_is_active) {
-    // TODO(tdresser): This should return false (or NOTREACHED()), and
-    // ignore the touch; however, there is at least one case where we
-    // need to allow a touch press from a currently used touch id. See
-    // crbug.com/446852 for details.
-
-    // Cancel the existing touch, before handling the touch press.
-    TouchEvent cancel(ET_TOUCH_CANCELLED, gfx::Point(), touch.touch_id(),
-                      touch.time_stamp());
-    cancel.set_location_f(touch.location_f());
-    cancel.set_root_location_f(touch.location_f());
-    OnTouch(cancel);
-    CleanupRemovedTouchPoints(cancel);
-    DCHECK_EQ(-1, FindPointerIndexOfId(touch.touch_id()));
+    // TODO(tdresser): This should be NOTREACHED() - crbug.com/610423.
+    return false;
   } else if (touch.type() != ET_TOUCH_PRESSED && !pointer_id_is_active) {
-    // We could have an active touch stream transfered to us, resulting in touch
-    // move or touch up events without associated touch down events. Ignore
-    // them.
+    // When a window begins capturing touch events, we could have an active
+    // touch stream transfered to us, resulting in touch move or touch up events
+    // without associated touch down events. Ignore them.
     return false;
   }
 

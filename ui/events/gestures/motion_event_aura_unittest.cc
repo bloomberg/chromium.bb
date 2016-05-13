@@ -431,6 +431,7 @@ TEST(MotionEventAuraTest, ToolType) {
   ASSERT_EQ(1U, event.GetPointerCount());
   EXPECT_EQ(MotionEvent::TOOL_TYPE_FINGER, event.GetToolType(0));
 
+  touch_event = TouchWithType(ET_TOUCH_RELEASED, 7);
   PointerDetails pointer_details(EventPointerType::POINTER_TYPE_PEN, 5.0f, 5.0f,
                                  1.0f, 0.0f, 0.0f);
   touch_event.set_pointer_details(pointer_details);
@@ -453,8 +454,7 @@ TEST(MotionEventAuraTest, Flags) {
   EXPECT_EQ(EF_CONTROL_DOWN | EF_CAPS_LOCK_ON, event.GetFlags());
 }
 
-// Once crbug.com/446852 is fixed, we should ignore redundant presses.
-TEST(MotionEventAuraTest, DoesntIgnoreRedundantPresses) {
+TEST(MotionEventAuraTest, IgnoresRedundantPresses) {
   const int id = 7;
   const int position_1 = 10;
   const int position_2 = 23;
@@ -465,10 +465,10 @@ TEST(MotionEventAuraTest, DoesntIgnoreRedundantPresses) {
   EXPECT_TRUE(event.OnTouch(press1));
   TouchEvent press2 = TouchWithPosition(ET_TOUCH_PRESSED, id, position_2,
                                         position_2, position_2, position_2);
-  EXPECT_TRUE(event.OnTouch(press2));
+  EXPECT_FALSE(event.OnTouch(press2));
 
   EXPECT_EQ(1U, event.GetPointerCount());
-  EXPECT_FLOAT_EQ(position_2, event.GetX(0));
+  EXPECT_FLOAT_EQ(position_1, event.GetX(0));
 }
 
 TEST(MotionEventAuraTest, IgnoresEventsWithoutPress) {
@@ -481,7 +481,7 @@ TEST(MotionEventAuraTest, IgnoresStationaryMoves) {
   int id = 7;
   MotionEventAura event;
   EXPECT_TRUE(event.OnTouch(TouchWithType(ET_TOUCH_PRESSED, id)));
-  TouchEvent move0 = TouchWithPosition(ET_TOUCH_PRESSED, id, 10, 20, 10, 20);
+  TouchEvent move0 = TouchWithPosition(ET_TOUCH_MOVED, id, 10, 20, 10, 20);
   EXPECT_TRUE(event.OnTouch(move0));
 
   TouchEvent move1 = TouchWithPosition(ET_TOUCH_MOVED, id, 11, 21, 11, 21);

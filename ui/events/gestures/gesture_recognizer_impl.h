@@ -38,13 +38,20 @@ class EVENTS_EXPORT GestureRecognizerImpl : public GestureRecognizer,
 
   std::vector<GestureEventHelper*>& helpers() { return helpers_; }
 
+  // Returns a list of events of type |type|, one for each pointer down on
+  // |consumer|. Event locations are pulled from the active pointers.
+  std::vector<std::unique_ptr<TouchEvent>> GetEventPerPointForConsumer(
+      GestureConsumer* consumer,
+      EventType type);
+
   // Overridden from GestureRecognizer
   GestureConsumer* GetTouchLockedTarget(const TouchEvent& event) override;
   GestureConsumer* GetTargetForLocation(const gfx::PointF& location,
                                         int source_device_id) override;
   void CancelActiveTouchesExcept(GestureConsumer* not_cancelled) override;
   void TransferEventsTo(GestureConsumer* current_consumer,
-                        GestureConsumer* new_consumer) override;
+                        GestureConsumer* new_consumer,
+                        ShouldCancelTouches should_cancel_touches) override;
   bool GetLastTouchPointForTarget(GestureConsumer* consumer,
                                   gfx::PointF* point) override;
   bool CancelActiveTouches(GestureConsumer* consumer) override;

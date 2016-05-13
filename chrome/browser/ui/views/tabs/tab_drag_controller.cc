@@ -580,7 +580,8 @@ TabDragController::DragBrowserToNewTabStrip(
   // Only Aura windows are gesture consumers.
   ui::GestureRecognizer::Get()->TransferEventsTo(
       GetAttachedBrowserWidget()->GetNativeView(),
-      target_tabstrip->GetWidget()->GetNativeView());
+      target_tabstrip->GetWidget()->GetNativeView(),
+      ui::GestureRecognizer::ShouldCancelTouches::DontCancel);
 #endif
 
   if (is_dragging_window_) {
@@ -1035,7 +1036,8 @@ void TabDragController::DetachIntoNewBrowserAndRunMoveLoop(
   gfx::NativeView attached_native_view =
       attached_tabstrip_->GetWidget()->GetNativeView();
   ui::GestureRecognizer::Get()->TransferEventsTo(
-      attached_native_view, dragged_widget->GetNativeView());
+      attached_native_view, dragged_widget->GetNativeView(),
+      ui::GestureRecognizer::ShouldCancelTouches::DontCancel);
 #endif
 
   Detach(can_release_capture_ ? RELEASE_CAPTURE : DONT_RELEASE_CAPTURE);

@@ -50,17 +50,6 @@ bool RemoveConsumerFromMap(GestureConsumer* consumer,
   return consumer_removed;
 }
 
-void TransferTouchIdToConsumerMap(
-    GestureConsumer* old_consumer,
-    GestureConsumer* new_consumer,
-    GestureRecognizerImpl::TouchIdToConsumerMap* map) {
-  for (GestureRecognizerImpl::TouchIdToConsumerMap::iterator i = map->begin();
-       i != map->end(); ++i) {
-    if (i->second == old_consumer)
-      i->second = new_consumer;
-  }
-}
-
 GestureProviderAura* CreateGestureProvider(GestureConsumer* consumer,
                                            GestureProviderAuraClient* client) {
   return new GestureProviderAura(consumer, client);
@@ -129,16 +118,62 @@ void GestureRecognizerImpl::CancelActiveTouchesExcept(
   }
 }
 
-void GestureRecognizerImpl::TransferEventsTo(GestureConsumer* current_consumer,
-                                             GestureConsumer* new_consumer) {
+void GestureRecognizerImpl::TransferEventsTo(
+    GestureConsumer* current_consumer,
+    GestureConsumer* new_consumer,
+    ShouldCancelTouches should_cancel_touches) {
+  // This method transfers the gesture stream from |current_consumer| to
+  // |new_consumer|. If |should_cancel_touches| is Cancel, it ensures that both
+  // consumers retain a touch event stream which is reasonably valid. In order
+  // to do this we
+  // - record what pointers are currently down on |current_consumer|
+  // - cancel touches on consumers other than |current_consumer|
+  // - move the gesture provider from |current_consumer| to |new_consumer|
+  // - if |should_cancel_touches|
+  //     - synchronize the state of the new gesture provider associated with
+  //       current_consumer with with the touch state of the consumer itself via
+  //       OnTouchEnter.
+  //     - synthesize touch cancels on |current_consumer|.
+  // - retarget the pointers that were previously targeted to
+  //   |current_consumer| to |new_consumer|.
+  // NOTE: This currently doesn't synthesize touch press events on
+  // |new_consumer|, so the event stream it sees is still invalid.
   DCHECK(current_consumer);
   DCHECK(new_consumer);
+  GestureEventHelper* helper = FindDispatchHelperForConsumer(current_consumer);
+
+  std::vector<int> touchids_targeted_at_current;
+
+  for (const auto& touch_id_target: touch_id_target_) {
+    if (touch_id_target.second == current_consumer)
+      touchids_targeted_at_current.push_back(touch_id_target.first);
+  }
 
   CancelActiveTouchesExcept(current_consumer);
 
-  TransferTouchIdToConsumerMap(current_consumer, new_consumer,
-                               &touch_id_target_);
+  std::vector<std::unique_ptr<TouchEvent>> cancelling_touches =
+      GetEventPerPointForConsumer(current_consumer, ET_TOUCH_CANCELLED);
+
   TransferConsumer(current_consumer, new_consumer, &consumer_gesture_provider_);
+
+  // We're now in a situation where current_consumer has no gesture recognizer,
+  // but has some pointers down which need cancelling. In order to ensure that
+  // the GR sees a valid event stream, inform it of these pointers via
+  // OnTouchEnter, and then synthesize a touch cancel per pointer.
+  if (should_cancel_touches ==
+          GestureRecognizer::ShouldCancelTouches::Cancel &&
+      helper) {
+    GestureProviderAura* gesture_provider =
+        GetGestureProviderForConsumer(current_consumer);
+
+    for (std::unique_ptr<TouchEvent>& event : cancelling_touches) {
+      gesture_provider->OnTouchEnter(event->touch_id(), event->x(), event->y());
+      helper->DispatchSyntheticTouchEvent(event.get());
+    }
+  }
+
+  for (int touch_id : touchids_targeted_at_current)
+    touch_id_target_[touch_id] = new_consumer;
 }
 
 bool GestureRecognizerImpl::GetLastTouchPointForTarget(
@@ -154,31 +189,40 @@ bool GestureRecognizerImpl::GetLastTouchPointForTarget(
     return true;
 }
 
-bool GestureRecognizerImpl::CancelActiveTouches(GestureConsumer* consumer) {
-  bool cancelled_touch = false;
+std::vector<std::unique_ptr<TouchEvent>>
+GestureRecognizerImpl::GetEventPerPointForConsumer(GestureConsumer* consumer,
+                                                   EventType type) {
+  std::vector<std::unique_ptr<TouchEvent>> cancelling_touches;
   if (consumer_gesture_provider_.count(consumer) == 0)
-    return false;
+    return cancelling_touches;
   const MotionEventAura& pointer_state =
       consumer_gesture_provider_[consumer]->pointer_state();
   if (pointer_state.GetPointerCount() == 0)
-    return false;
-  // pointer_state is modified every time after DispatchCancelTouchEvent.
-  std::unique_ptr<MotionEvent> pointer_state_clone = pointer_state.Clone();
-  for (size_t i = 0; i < pointer_state_clone->GetPointerCount(); ++i) {
-    TouchEvent touch_event(ui::ET_TOUCH_CANCELLED, gfx::Point(),
-                           ui::EF_IS_SYNTHESIZED,
-                           pointer_state_clone->GetPointerId(i),
-                           ui::EventTimeForNow(), 0.0f, 0.0f, 0.0f, 0.0f);
-    gfx::PointF point(pointer_state_clone->GetX(i),
-                      pointer_state_clone->GetY(i));
-    touch_event.set_location_f(point);
-    touch_event.set_root_location_f(point);
-    GestureEventHelper* helper = FindDispatchHelperForConsumer(consumer);
-    if (helper)
-      helper->DispatchCancelTouchEvent(consumer, &touch_event);
-    cancelled_touch = true;
+    return cancelling_touches;
+  for (size_t i = 0; i < pointer_state.GetPointerCount(); ++i) {
+    std::unique_ptr<TouchEvent> touch_event(new TouchEvent(
+        type, gfx::Point(), EF_IS_SYNTHESIZED, pointer_state.GetPointerId(i),
+        EventTimeForNow(), 0.0f, 0.0f, 0.0f, 0.0f));
+    gfx::PointF point(pointer_state.GetX(i), pointer_state.GetY(i));
+    touch_event->set_location_f(point);
+    touch_event->set_root_location_f(point);
+    cancelling_touches.push_back(std::move(touch_event));
   }
-  return cancelled_touch;
+  return cancelling_touches;
+}
+
+bool GestureRecognizerImpl::CancelActiveTouches(GestureConsumer* consumer) {
+  GestureEventHelper* helper =
+      FindDispatchHelperForConsumer(consumer);
+
+  if (!helper)
+    return false;
+
+  std::vector<std::unique_ptr<TouchEvent>> cancelling_touches =
+      GetEventPerPointForConsumer(consumer, ET_TOUCH_CANCELLED);
+  for (const std::unique_ptr<TouchEvent>& cancelling_touch : cancelling_touches)
+    helper->DispatchSyntheticTouchEvent(cancelling_touch.get());
+  return cancelling_touches.size() > 0U;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

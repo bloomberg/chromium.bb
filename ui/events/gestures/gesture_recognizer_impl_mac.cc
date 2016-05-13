@@ -41,7 +41,8 @@ class GestureRecognizerImplMac : public GestureRecognizer {
   }
   void CancelActiveTouchesExcept(GestureConsumer* not_cancelled) override {}
   void TransferEventsTo(GestureConsumer* current_consumer,
-                        GestureConsumer* new_consumer) override {}
+                        GestureConsumer* new_consumer,
+                        ShouldCancelTouches should_cancel_touches) override {}
   bool GetLastTouchPointForTarget(GestureConsumer* consumer,
                                   gfx::PointF* point) override {
     return false;

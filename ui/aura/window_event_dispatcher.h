@@ -197,8 +197,7 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
   bool CanDispatchToConsumer(ui::GestureConsumer* consumer) override;
   void DispatchGestureEvent(ui::GestureConsumer* raw_input_consumer,
                             ui::GestureEvent* event) override;
-  void DispatchCancelTouchEvent(ui::GestureConsumer* raw_input_consumer,
-                                ui::TouchEvent* event) override;
+  void DispatchSyntheticTouchEvent(ui::TouchEvent* event) override;
 
   // Overridden from WindowObserver:
   void OnWindowDestroying(Window* window) override;

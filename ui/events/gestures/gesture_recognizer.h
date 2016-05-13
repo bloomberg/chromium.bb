@@ -62,13 +62,15 @@ class EVENTS_EXPORT GestureRecognizer {
   // |not_cancelled| == nullptr, cancels all touches.
   virtual void CancelActiveTouchesExcept(GestureConsumer* not_cancelled) = 0;
 
-  // Makes |new_consumer| the target for events previously targeting
-  // |current_consumer|. Touches targeting all other targets are
-  // canceled. The caller is responsible for updating the state of the
-  // consumers to be aware of this transfer of control (there are no
-  // ENTERED/EXITED events).
+  enum class ShouldCancelTouches { Cancel, DontCancel };
+
+  // Transfer the gesture stream from the drag source (current_consumer) to the
+  // consumer used for dragging (new_consumer). If |should_cancel_touches| is
+  // Cancel, dispatches cancel events to |current_consumer| to ensure that its
+  // touch stream remains valid.
   virtual void TransferEventsTo(GestureConsumer* current_consumer,
-                                GestureConsumer* new_consumer) = 0;
+                                GestureConsumer* new_consumer,
+                                ShouldCancelTouches should_cancel_touches) = 0;
 
   // If a gesture is underway for |consumer| |point| is set to the last touch
   // point and true is returned. If no touch events have been processed for
