@@ -566,6 +566,8 @@ public:
 
     DECLARE_VIRTUAL_TRACE();
 
+    DECLARE_VIRTUAL_TRACE_WRAPPERS();
+
     SpellcheckAttributeState spellcheckAttributeState() const;
 
     NodeIntersectionObserverData* intersectionObserverData() const;

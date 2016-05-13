@@ -140,6 +140,8 @@ public:
 
     DECLARE_TRACE_AFTER_DISPATCH();
 
+    DECLARE_TRACE_WRAPPERS_AFTER_DISPATCH();
+
 private:
     CompositorProxiedPropertySet& ensureCompositorProxiedPropertySet();
     void clearCompositorProxiedPropertySet() { m_proxiedProperties = nullptr; }

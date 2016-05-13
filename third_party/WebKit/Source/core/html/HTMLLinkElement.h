@@ -186,6 +186,8 @@ public:
 
     DECLARE_VIRTUAL_TRACE();
 
+    DECLARE_VIRTUAL_TRACE_WRAPPERS();
+
 private:
     HTMLLinkElement(Document&, bool createdByParser);
 

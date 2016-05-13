@@ -2357,6 +2357,8 @@ DEFINE_TRACE_WRAPPERS(Node)
     visitor->traceWrappers(parentOrShadowHostOrTemplateHostNode());
     visitor->traceWrappers(m_previous);
     visitor->traceWrappers(m_next);
+    if (hasRareData())
+        visitor->traceWrappers(rareData());
     EventTarget::traceWrappers(visitor);
 }
 

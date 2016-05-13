@@ -103,6 +103,9 @@ public:
     DECLARE_TRACE_AFTER_DISPATCH();
     void finalizeGarbageCollectedObject();
 
+    DECLARE_TRACE_WRAPPERS();
+    DECLARE_TRACE_WRAPPERS_AFTER_DISPATCH();
+
 protected:
     explicit NodeRareData(LayoutObject* layoutObject)
         : NodeRareDataBase(layoutObject)

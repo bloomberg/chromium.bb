@@ -468,6 +468,12 @@ DEFINE_TRACE(HTMLLinkElement)
     DOMTokenListObserver::trace(visitor);
 }
 
+DEFINE_TRACE_WRAPPERS(HTMLLinkElement)
+{
+    visitor->traceWrappers(m_relList);
+    HTMLElement::traceWrappers(visitor);
+}
+
 LinkStyle* LinkStyle::create(HTMLLinkElement* owner)
 {
     return new LinkStyle(owner);

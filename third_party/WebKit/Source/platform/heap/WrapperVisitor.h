@@ -10,16 +10,18 @@
 
 namespace blink {
 
-class ScriptWrappable;
 template<typename T> class TraceTrait;
 template<typename T> class Member;
 class ScriptWrappable;
 
 // TODO(hlopko): Find a way to remove special-casing using templates
-#define WRAPPER_VISITOR_SPECIAL_CLASSES(V)                          \
-    V(HTMLImportsController)                                        \
+#define WRAPPER_VISITOR_SPECIAL_CLASSES(V)                           \
+    V(HTMLImportsController)                                         \
+    V(NodeRareData);                                                 \
+    V(NodeListsNodeData);                                            \
+    V(ElementRareData);                                              \
 
-#define FORWARD_DECLARE_SPECIAL_CLASSES(className)                  \
+#define FORWARD_DECLARE_SPECIAL_CLASSES(className)                   \
     class className;
 
 WRAPPER_VISITOR_SPECIAL_CLASSES(FORWARD_DECLARE_SPECIAL_CLASSES);
@@ -36,7 +38,7 @@ WRAPPER_VISITOR_SPECIAL_CLASSES(FORWARD_DECLARE_SPECIAL_CLASSES);
  *         DECLARE_TRACE_WRAPPERS();
  *     }
  */
-#define DECLARE_TRACE_WRAPPERS()                                    \
+#define DECLARE_TRACE_WRAPPERS()                                     \
     void traceWrappers(const WrapperVisitor* visitor) const
 
 /**
@@ -44,7 +46,7 @@ WRAPPER_VISITOR_SPECIAL_CLASSES(FORWARD_DECLARE_SPECIAL_CLASSES);
  * used to override the method in the subclasses, and can be used by
  * non-ScriptWrappable classes which expect to be inherited.
  */
-#define DECLARE_VIRTUAL_TRACE_WRAPPERS()                            \
+#define DECLARE_VIRTUAL_TRACE_WRAPPERS()                             \
     virtual DECLARE_TRACE_WRAPPERS()
 
 /**
@@ -58,8 +60,15 @@ WRAPPER_VISITOR_SPECIAL_CLASSES(FORWARD_DECLARE_SPECIAL_CLASSES);
  *         visitor->traceWrappers(m_mutationObserverData);
  *     }
  */
-#define DEFINE_TRACE_WRAPPERS(T)                                   \
+#define DEFINE_TRACE_WRAPPERS(T)                                     \
     void T::traceWrappers(const WrapperVisitor* visitor) const
+
+#define DECLARE_TRACE_WRAPPERS_AFTER_DISPATCH()                      \
+    void traceWrappersAfterDispatch(const WrapperVisitor*) const
+
+#define DEFINE_TRACE_WRAPPERS_AFTER_DISPATCH(T)                      \
+    void T::traceWrappersAfterDispatch(const WrapperVisitor* visitor) const
+
 
 // ###########################################################################
 // TODO(hlopko): Get rid of virtual calls using CRTP
@@ -90,7 +99,7 @@ public:
     }
 
     virtual void dispatchTraceWrappers(const ScriptWrappable*) const = 0;
-#define DECLARE_DISPATCH_TRACE_WRAPPERS(className)                 \
+#define DECLARE_DISPATCH_TRACE_WRAPPERS(className)                   \
     virtual void dispatchTraceWrappers(const className*) const = 0;
 
     WRAPPER_VISITOR_SPECIAL_CLASSES(DECLARE_DISPATCH_TRACE_WRAPPERS);

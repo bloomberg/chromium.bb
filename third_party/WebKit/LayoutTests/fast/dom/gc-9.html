@@ -114,7 +114,15 @@ var objectsToTest = [
     [ "document.getElementsByTagName('canvas')[0].getContext('2d').createLinearGradient(0, 0, 0, 0)" ], // CanvasGradient
     [ "document.getElementsByTagName('canvas')[0].getContext('2d').createPattern(document.getElementsByTagName('canvas')[0], 'no-repeat')" ], // CanvasPattern
     [ "document.getElementsByTagName('select')[0].options", "allow custom" ],
-    [ "document.body.childNodes", "allow custom" ],
+    [ "document.body.childNodes", "allow custom" ], // NodeList
+    [ "document.body.dataset", "allow custom" ], // DatasetDOMStringMap (DOMStringMap)
+
+    [ "document.body.classList", "allow custom" ], // ClassList (DOMTokenList)
+    [ "document.getElementsByTagName('link')[0].relList", "allow custom" ], // ClassList (DOMTokenList)
+    [ "document.getElementsByTagName('link')[0].sizes", "allow custom" ], // ClassList (DOMTokenList)
+    [ "document.getElementsByTagName('output')[0].htmlFor", "allow custom" ], // ClassList (DOMTokenList)
+    [ "document.getElementsByTagName('output')[0].labels", "allow custom" ], // NodeList
+    [ "document.getElementsByTagName('iframe')[0].sandbox", "allow custom" ], // ClassList (DOMTokenList)
 
     [ "document.all", "allow custom" ],
     [ "document.images", "allow custom" ],
@@ -197,6 +205,9 @@ function testPropertiesAgain()
     <form></form>
     <table><tbody><tr></tr></tbody></table>
     <map></map>
+    <link></link>
+    <output></output>
+    <iframe></iframe>
 </div>
 
 </body>

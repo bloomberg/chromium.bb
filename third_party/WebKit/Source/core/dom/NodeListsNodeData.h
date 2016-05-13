@@ -156,6 +156,8 @@ public:
 
     DECLARE_TRACE();
 
+    DECLARE_TRACE_WRAPPERS();
+
 private:
     NodeListsNodeData()
         : m_childNodeList(nullptr)

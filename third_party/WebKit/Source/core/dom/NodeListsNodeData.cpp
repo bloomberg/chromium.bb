@@ -51,4 +51,9 @@ DEFINE_TRACE(NodeListsNodeData)
     visitor->trace(m_tagCollectionCacheNS);
 }
 
+DEFINE_TRACE_WRAPPERS(NodeListsNodeData)
+{
+    visitor->traceWrappers(m_childNodeList);
+}
+
 } // namespace blink

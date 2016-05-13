@@ -8,6 +8,9 @@
 #include "bindings/core/v8/DOMWrapperWorld.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/WrapperTypeInfo.h"
+#include "core/dom/ElementRareData.h"
+#include "core/dom/NodeListsNodeData.h"
+#include "core/dom/NodeRareData.h"
 #include "core/html/imports/HTMLImportsController.h"
 #include "platform/heap/HeapPage.h"
 

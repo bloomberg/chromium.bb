@@ -3705,4 +3705,12 @@ DEFINE_TRACE(Element)
     ContainerNode::trace(visitor);
 }
 
+DEFINE_TRACE_WRAPPERS(Element)
+{
+    if (hasRareData()) {
+        visitor->traceWrappers(elementRareData());
+    }
+    ContainerNode::traceWrappers(visitor);
+}
+
 } // namespace blink
