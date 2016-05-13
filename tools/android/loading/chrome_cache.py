@@ -121,7 +121,7 @@ def PushBrowserCache(device, local_cache_path):
 
   # Clear previous cache.
   _AdbShell(device.adb, ['rm', '-rf', remote_cache_directory])
-  _AdbShell(device.adb, ['mkdir', remote_cache_directory])
+  _AdbShell(device.adb, ['mkdir', '-p', remote_cache_directory])
 
   # Push cache content.
   device.adb.Push(local_cache_path, remote_cache_directory)

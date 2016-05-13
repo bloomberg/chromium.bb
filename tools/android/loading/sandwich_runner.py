@@ -224,6 +224,7 @@ class SandwichRunner(object):
       trace.ToJsonFile(trace_path)
 
   def _RunUrl(self, url, run_id):
+    self._chrome_ctl.ResetBrowserState()
     clear_cache = False
     if self.cache_operation == 'clear':
       clear_cache = True

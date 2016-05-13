@@ -199,6 +199,10 @@ class ChromeControllerBase(object):
     assert network_name in emulation.NETWORK_CONDITIONS or network_name is None
     self._network_name = network_name
 
+  def ResetBrowserState(self):
+    """Resets the chrome's browser state."""
+    raise NotImplementedError
+
   def PushBrowserCache(self, cache_path):
     """Pushes the HTTP chrome cache to the profile directory.
 
@@ -287,8 +291,10 @@ class RemoteChromeController(ChromeControllerBase):
   def __init__(self, device):
     """Initialize the controller.
 
+    Caution: The browser state might need to be manually reseted.
+
     Args:
-      device: an andriod device.
+      device: an android device.
     """
     assert device is not None, 'Should you be using LocalController instead?'
     super(RemoteChromeController, self).__init__()
@@ -312,9 +318,6 @@ class RemoteChromeController(ChromeControllerBase):
     package_info = OPTIONS.ChromePackage()
     command_line_path = '/data/local/chrome-command-line'
     self._device.ForceStop(package_info.package)
-    if OPTIONS.clear_device_data:
-      logging.info('Clear Chrome data')
-      self._device.adb.Shell('pm clear ' + package_info.package)
     chrome_args = self._GetChromeArguments()
     logging.info('Launching %s with flags: %s' % (package_info.package,
         subprocess.list2cmdline(chrome_args)))
@@ -355,13 +358,24 @@ class RemoteChromeController(ChromeControllerBase):
       finally:
         self._device.ForceStop(package_info.package)
 
+  def ResetBrowserState(self):
+    """Override for chrome state reseting."""
+    logging.info('Reset chrome\'s profile')
+    package_info = OPTIONS.ChromePackage()
+    # We assume all the browser is in the Default user profile directory.
+    cmd = ['rm', '-rf', '/data/data/{}/app_chrome/Default'.format(
+               package_info.package)]
+    self._device.adb.Shell(subprocess.list2cmdline(cmd))
+
   def PushBrowserCache(self, cache_path):
     """Override for chrome cache pushing."""
+    logging.info('Push cache from %s' % cache_path)
     chrome_cache.PushBrowserCache(self._device, cache_path)
 
   def PullBrowserCache(self):
     """Override for chrome cache pulling."""
     assert self._slow_death, 'Must do SetSlowDeath() before opening chrome.'
+    logging.info('Pull cache from device')
     return chrome_cache.PullBrowserCache(self._device)
 
   @contextlib.contextmanager
@@ -385,6 +399,10 @@ class LocalChromeController(ChromeControllerBase):
   """Controller for a local (desktop) chrome instance."""
 
   def __init__(self):
+    """Initialize the controller.
+
+    Caution: The browser state might need to be manually reseted.
+    """
     super(LocalChromeController, self).__init__()
     if OPTIONS.no_sandbox:
       self.AddChromeArgument('--no-sandbox')
@@ -485,6 +503,18 @@ class LocalChromeController(ChromeControllerBase):
       if self._headless:
         xvfb_process.kill()
 
+  def ResetBrowserState(self):
+    """Override for chrome state reseting."""
+    assert os.path.isdir(self._profile_dir)
+    logging.info('Reset chrome\'s profile')
+    # Don't do a rmtree(self._profile_dir) because it might be a temp directory.
+    for filename in os.listdir(self._profile_dir):
+      path = os.path.join(self._profile_dir, filename)
+      if os.path.isdir(path):
+        shutil.rmtree(path)
+      else:
+        os.remove(path)
+
   def PushBrowserCache(self, cache_path):
     """Override for chrome cache pushing."""
     self._EnsureProfileDirectory()
@@ -524,7 +554,6 @@ class LocalChromeController(ChromeControllerBase):
       # Launch chrome so that it populates the profile directory.
       with self.Open():
         pass
-      print os.listdir(self._profile_dir + '/Default')
     assert os.path.isdir(self._profile_dir)
     assert os.path.isdir(os.path.dirname(self._GetCacheDirectoryPath()))
 

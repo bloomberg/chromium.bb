@@ -37,7 +37,6 @@ EOF
  for ((run=0;run<$repeat_count;++run)); do
    echo '****'  $run
    tools/android/loading/analyze.py log_requests \
-      --clear_device_data \
       --devtools_port 9222 \
       --url $site \
       --output $outdir/${output_subdir}/${run}

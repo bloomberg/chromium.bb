@@ -18,9 +18,7 @@ class Options(object):
   be available as instance attributes (eg, OPTIONS.clear_cache).
   """
   # Tuples of (argument name, default value, help string).
-  _ARGS = [ ('clear_device_data', False,
-             'Clear Chrome data from device before loading'),
-            ('chrome_package_name', 'chrome',
+  _ARGS = [ ('chrome_package_name', 'chrome',
              'build/android/pylib/constants package description'),
             ('devtools_hostname', 'localhost',
              'hostname for devtools websocket connection'),
