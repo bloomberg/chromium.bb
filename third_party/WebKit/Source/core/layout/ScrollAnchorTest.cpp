@@ -60,6 +60,33 @@ protected:
     }
 };
 
+// TODO(ymalik): Currently, this should be the first test in the file to avoid
+// failure when running with other tests. Dig into this more and fix.
+TEST_F(ScrollAnchorTest, UMAMetricUpdated)
+{
+    HistogramTester histogramTester;
+    setBodyInnerHTML(
+        "<style> body { height: 1000px } div { height: 100px } </style>"
+        "<div id='block1'>abc</div>"
+        "<div id='block2'>def</div>");
+
+    ScrollableArea* viewport = layoutViewport();
+
+    // Scroll position not adjusted, metric not updated.
+    scrollLayoutViewport(DoubleSize(0, 150));
+    histogramTester.expectTotalCount(
+        "Layout.ScrollAnchor.AdjustedScrollOffset", 0);
+
+    // Height changed, verify metric updated once.
+    setHeight(document().getElementById("block1"), 200);
+    histogramTester.expectUniqueSample(
+        "Layout.ScrollAnchor.AdjustedScrollOffset", 1, 1);
+
+    EXPECT_EQ(250, viewport->scrollPosition().y());
+    EXPECT_EQ(document().getElementById("block2")->layoutObject(),
+        scrollAnchor(viewport).anchorObject());
+}
+
 TEST_F(ScrollAnchorTest, Basic)
 {
     setBodyInnerHTML(
@@ -99,31 +126,6 @@ TEST_F(ScrollAnchorTest, FractionalOffsetsAreRoundedBeforeComparing)
     update();
 
     EXPECT_EQ(101, viewport->scrollPosition().y());
-}
-
-TEST_F(ScrollAnchorTest, UMAMetricUpdated)
-{
-    HistogramTester histogramTester;
-    setBodyInnerHTML(
-        "<style> body { height: 1000px } div { height: 100px } </style>"
-        "<div id='block1'>abc</div>"
-        "<div id='block2'>def</div>");
-
-    ScrollableArea* viewport = layoutViewport();
-
-    // Scroll position not adjusted, metric not updated.
-    scrollLayoutViewport(DoubleSize(0, 150));
-    histogramTester.expectTotalCount(
-        "Layout.ScrollAnchor.AdjustedScrollOffset", 0);
-
-    // Height changed, verify metric updated once.
-    setHeight(document().getElementById("block1"), 200);
-    histogramTester.expectUniqueSample(
-        "Layout.ScrollAnchor.AdjustedScrollOffset", 1, 1);
-
-    EXPECT_EQ(250, viewport->scrollPosition().y());
-    EXPECT_EQ(document().getElementById("block2")->layoutObject(),
-        scrollAnchor(viewport).anchorObject());
 }
 
 TEST_F(ScrollAnchorTest, AnchorWithLayerInScrollingDiv)
