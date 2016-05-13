@@ -1065,6 +1065,18 @@ private:
     CrossThreadWeakPersistent<T> m_value;
 };
 
+template <typename T>
+Persistent<T> wrapPersistent(T* value)
+{
+    return Persistent<T>(value);
+}
+
+template <typename T>
+CrossThreadPersistent<T> wrapCrossThreadPersistent(T* value)
+{
+    return CrossThreadPersistent<T>(value);
+}
+
 // LEAK_SANITIZER_DISABLED_SCOPE: all allocations made in the current scope
 // will be exempted from LSan consideration.
 //
