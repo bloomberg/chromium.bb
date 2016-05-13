@@ -11,6 +11,7 @@
 #include <sstream>
 
 #include "base/logging.h"
+#include "base/rand_util.h"
 #include "mojo/edk/system/ports/node.h"
 #include "mojo/edk/system/ports/node_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -73,12 +74,12 @@ struct Task {
   Task(NodeName node_name, ScopedMessage message)
       : node_name(node_name),
         message(std::move(message)),
-        priority(rand()) {
+        priority(base::RandUint64()) {
   }
 
   NodeName node_name;
   ScopedMessage message;
-  int32_t priority;
+  uint64_t priority;
 };
 
 struct TaskComparator {
@@ -1303,7 +1304,6 @@ TEST_F(PortsTest, MergePortsWithMovedPeers) {
   EXPECT_TRUE(node0.CanShutdownCleanly(false));
   EXPECT_TRUE(node1.CanShutdownCleanly(false));
 }
-
 
 TEST_F(PortsTest, MergePortsFailsGracefully) {
   // This tests that the system remains in a well-defined state if something

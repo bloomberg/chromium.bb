@@ -27,19 +27,6 @@
       ],
     },
     {
-      # GN version: //mojo/edk/system/ports:mojo_system_ports_unittests
-      'target_name': 'mojo_system_ports_unittests',
-      'type': 'executable',
-      'dependencies': [
-        '../testing/gtest.gyp:gtest',
-        '../testing/gtest.gyp:gtest_main',
-        'mojo_edk.gyp:mojo_system_impl',
-      ],
-      'sources': [
-        'edk/system/ports/ports_unittest.cc',
-      ],
-    },
-    {
       # GN version: //mojo/edk/test:mojo_public_bindings_unittests
       'target_name': 'mojo_public_bindings_unittests',
       'type': 'executable',
@@ -200,6 +187,7 @@
         'mojo_edk.gyp:mojo_common_test_support',
         'mojo_edk.gyp:mojo_run_all_unittests',
         'mojo_edk.gyp:mojo_system_impl',
+        'mojo_edk.gyp:mojo_system_ports',
       ],
       'sources': [
         'edk/embedder/embedder_unittest.cc',
@@ -213,6 +201,7 @@
         'edk/system/multiprocess_message_pipe_unittest.cc',
         'edk/system/options_validation_unittest.cc',
         'edk/system/platform_handle_dispatcher_unittest.cc',
+        'edk/system/ports/ports_unittest.cc',
         'edk/system/shared_buffer_dispatcher_unittest.cc',
         'edk/system/shared_buffer_unittest.cc',
         'edk/system/test_utils.cc',

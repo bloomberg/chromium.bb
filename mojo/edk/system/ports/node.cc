@@ -582,6 +582,17 @@ int Node::OnObserveProxy(const PortName& port_name,
   scoped_refptr<Port> port = GetPort(port_name);
   if (!port) {
     DVLOG(1) << "ObserveProxy: " << port_name << "@" << name_ << " not found";
+
+    if (port_name != event.proxy_port_name &&
+        port_name != event.proxy_to_port_name) {
+      // The receiving port may have been removed while this message was in
+      // transit.  In this case, we restart the ObserveProxy circulation from
+      // the referenced proxy port to avoid leaking the proxy.
+      delegate_->ForwardMessage(
+          event.proxy_node_name,
+          NewInternalMessage(
+              event.proxy_port_name, EventType::kObserveProxy, event));
+    }
     return OK;
   }
 
@@ -763,8 +774,6 @@ int Node::OnObserveClosure(const PortName& port_name,
 int Node::OnMergePort(const PortName& port_name,
                       const MergePortEventData& event) {
   scoped_refptr<Port> port = GetPort(port_name);
-  if (!port)
-    return ERROR_PORT_UNKNOWN;
 
   DVLOG(1) << "MergePort at " << port_name << "@" << name_ << " (state="
            << port->state << ") merging with proxy " << event.new_port_name
@@ -782,7 +791,7 @@ int Node::OnMergePort(const PortName& port_name,
   int rv = AcceptPort(event.new_port_name, event.new_port_descriptor);
   if (rv != OK) {
     close_target_port = true;
-  } else {
+  } else if (port) {
     // BeginProxying_Locked may call MaybeRemoveProxy_Locked, which in turn
     // needs to hold |ports_lock_|. We also acquire multiple port locks within.
     base::AutoLock ports_lock(ports_lock_);
@@ -807,6 +816,8 @@ int Node::OnMergePort(const PortName& port_name,
       close_new_port = true;
       close_target_port = true;
     }
+  } else {
+    close_new_port = true;
   }
 
   if (close_target_port) {
@@ -893,7 +904,6 @@ int Node::MergePorts_Locked(const PortRef& port0_ref,
 
     std::swap(port0->peer_node_name, port1->peer_node_name);
     std::swap(port0->peer_port_name, port1->peer_port_name);
-    std::swap(port0->peer_closed, port1->peer_closed);
 
     port0->state = Port::kBuffering;
     if (port0->peer_closed)
@@ -935,7 +945,6 @@ int Node::MergePorts_Locked(const PortRef& port0_ref,
     // state by undoing the peer swap.
     std::swap(port0->peer_node_name, port1->peer_node_name);
     std::swap(port0->peer_port_name, port1->peer_port_name);
-    std::swap(port0->peer_closed, port1->peer_closed);
     port0->remove_proxy_on_last_message = false;
     port1->remove_proxy_on_last_message = false;
     port0->state = Port::kReceiving;
