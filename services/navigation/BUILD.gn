@@ -77,9 +77,7 @@ test("navigation_unittests") {
   data_deps = [
     ":navigation",
     ":unittest_manifest",
-
-    # TODO(beng): this is a layering violation, provide a test wm.
-    "//mash/wm",
+    "//components/mus/test_wm",
   ]
 }
 

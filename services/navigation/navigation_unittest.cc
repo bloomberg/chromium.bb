@@ -10,7 +10,6 @@
 #include "services/shell/public/cpp/shell_client.h"
 #include "services/shell/public/cpp/shell_test.h"
 
-
 namespace navigation {
 
 class NavigationTest : public shell::test::ShellTest,
@@ -24,7 +23,7 @@ class NavigationTest : public shell::test::ShellTest,
  protected:
    void SetUp() override {
      shell::test::ShellTest::SetUp();
-     window_manager_connection_ = connector()->Connect("mojo:desktop_wm");
+     window_manager_connection_ = connector()->Connect("mojo:test_wm");
    }
 
   mojom::ViewClientPtr GetViewClient() {
