@@ -418,6 +418,7 @@
       'fonts/FontFeatureSettings.h',
       'fonts/FontPlatformData.cpp',
       'fonts/FontPlatformData.h',
+      'fonts/FontVariantNumeric.h',
       'fonts/GenericFontFamilySettings.cpp',
       'fonts/GenericFontFamilySettings.h',
       'fonts/GlyphBuffer.h',

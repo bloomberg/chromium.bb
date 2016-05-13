@@ -27,6 +27,7 @@
 #include "core/CoreExport.h"
 #include "core/css/FontSize.h"
 #include "platform/fonts/FontDescription.h"
+#include "platform/fonts/FontVariantNumeric.h"
 #include "platform/heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 
@@ -64,6 +65,7 @@ public:
     void setStyle(FontStyle);
     void setVariantCaps(FontDescription::FontVariantCaps);
     void setVariantLigatures(const FontDescription::VariantLigatures&);
+    void setVariantNumeric(const FontVariantNumeric&);
     void setTextRendering(TextRenderingMode);
     void setKerning(FontDescription::Kerning);
     void setFontSmoothing(FontSmoothingMode);
@@ -83,6 +85,7 @@ public:
     static TextRenderingMode initialTextRendering() { return AutoTextRendering; }
     static FontDescription::FontVariantCaps initialVariantCaps() { return FontDescription::CapsNormal; }
     static FontDescription::VariantLigatures initialVariantLigatures() { return FontDescription::VariantLigatures(); }
+    static FontVariantNumeric initialVariantNumeric() { return FontVariantNumeric(); };
     static const AtomicString& initialLocale() { return nullAtom; }
     static FontStyle initialStyle() { return FontStyleNormal; }
     static FontDescription::Kerning initialKerning() { return FontDescription::AutoKerning; }
@@ -117,6 +120,7 @@ private:
         SizeAdjust,
         VariantCaps,
         VariantLigatures,
+        VariantNumeric,
         TextRendering,
         Kerning,
         FontSmoothing,

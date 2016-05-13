@@ -545,6 +545,97 @@ static CSSPrimitiveValue* consumeFontVariantCaps(CSSParserTokenRange& range)
         CSSValueUnicase, CSSValueTitlingCaps>(range);
 }
 
+class FontVariantNumericParser {
+    STACK_ALLOCATED();
+
+public:
+    FontVariantNumericParser()
+        : m_sawNumericFigureValue(false)
+        , m_sawNumericSpacingValue(false)
+        , m_sawNumericFractionValue(false)
+        , m_sawOrdinalValue(false)
+        , m_sawSlashedZeroValue(false)
+        , m_result(CSSValueList::createSpaceSeparated())
+    {
+    }
+
+    enum class ParseResult {
+        ConsumedValue,
+        DisallowedValue,
+        UnknownValue
+    };
+
+    ParseResult consumeNumeric(CSSParserTokenRange& range)
+    {
+        CSSValueID valueID = range.peek().id();
+        switch (valueID) {
+        case CSSValueLiningNums:
+        case CSSValueOldstyleNums:
+            if (m_sawNumericFigureValue)
+                return ParseResult::DisallowedValue;
+            m_sawNumericFigureValue = true;
+            break;
+        case CSSValueProportionalNums:
+        case CSSValueTabularNums:
+            if (m_sawNumericSpacingValue)
+                return ParseResult::DisallowedValue;
+            m_sawNumericSpacingValue = true;
+            break;
+        case CSSValueDiagonalFractions:
+        case CSSValueStackedFractions:
+            if (m_sawNumericFractionValue)
+                return ParseResult::DisallowedValue;
+            m_sawNumericFractionValue = true;
+            break;
+        case CSSValueOrdinal:
+            if (m_sawOrdinalValue)
+                return ParseResult::DisallowedValue;
+            m_sawOrdinalValue = true;
+            break;
+        case CSSValueSlashedZero:
+            if (m_sawSlashedZeroValue)
+                return ParseResult::DisallowedValue;
+            m_sawSlashedZeroValue = true;
+            break;
+        default:
+            return ParseResult::UnknownValue;
+        }
+        m_result->append(consumeIdent(range));
+        return ParseResult::ConsumedValue;
+    }
+
+    CSSValue* finalizeValue()
+    {
+        if (!m_result->length())
+            return cssValuePool().createIdentifierValue(CSSValueNormal);
+        return m_result.release();
+    }
+
+
+private:
+    bool m_sawNumericFigureValue;
+    bool m_sawNumericSpacingValue;
+    bool m_sawNumericFractionValue;
+    bool m_sawOrdinalValue;
+    bool m_sawSlashedZeroValue;
+    Member<CSSValueList> m_result;
+};
+
+static CSSValue* consumeFontVariantNumeric(CSSParserTokenRange& range)
+{
+    if (range.peek().id() == CSSValueNormal)
+        return consumeIdent(range);
+
+    FontVariantNumericParser numericParser;
+    do {
+        if (numericParser.consumeNumeric(range) !=
+            FontVariantNumericParser::ParseResult::ConsumedValue)
+            return nullptr;
+    } while (!range.atEnd());
+
+    return numericParser.finalizeValue();
+}
+
 static CSSPrimitiveValue* consumeFontVariantCSS21(CSSParserTokenRange& range)
 {
     return consumeIdent<CSSValueNormal, CSSValueSmallCaps>(range);
@@ -3478,6 +3569,8 @@ CSSValue* CSSPropertyParser::parseSingleValue(CSSPropertyID unresolvedProperty, 
         return consumeFontVariantCaps(m_range);
     case CSSPropertyFontVariantLigatures:
         return consumeFontVariantLigatures(m_range);
+    case CSSPropertyFontVariantNumeric:
+        return consumeFontVariantNumeric(m_range);
     case CSSPropertyFontFeatureSettings:
         return consumeFontFeatureSettings(m_range);
     case CSSPropertyFontFamily:
@@ -3987,6 +4080,7 @@ bool CSSPropertyParser::consumeSystemFont(bool important)
     addProperty(CSSPropertyFontStretch, CSSPropertyFont, cssValuePool().createIdentifierValue(CSSValueNormal), important);
     addProperty(CSSPropertyFontVariantCaps, CSSPropertyFont, cssValuePool().createIdentifierValue(CSSValueNormal), important);
     addProperty(CSSPropertyFontVariantLigatures, CSSPropertyFont, cssValuePool().createIdentifierValue(CSSValueNormal), important);
+    addProperty(CSSPropertyFontVariantNumeric, CSSPropertyFont, cssValuePool().createIdentifierValue(CSSValueNormal), important);
     addProperty(CSSPropertyLineHeight, CSSPropertyFont, cssValuePool().createIdentifierValue(CSSValueNormal), important);
     return true;
 }
@@ -4035,6 +4129,7 @@ bool CSSPropertyParser::consumeFont(bool important)
     addProperty(CSSPropertyFontStyle, CSSPropertyFont, fontStyle ? fontStyle : cssValuePool().createIdentifierValue(CSSValueNormal), important);
     addProperty(CSSPropertyFontVariantCaps, CSSPropertyFont, fontVariantCaps ? fontVariantCaps : cssValuePool().createIdentifierValue(CSSValueNormal), important);
     addProperty(CSSPropertyFontVariantLigatures, CSSPropertyFont, cssValuePool().createIdentifierValue(CSSValueNormal), important);
+    addProperty(CSSPropertyFontVariantNumeric, CSSPropertyFont, cssValuePool().createIdentifierValue(CSSValueNormal), important);
 
     addProperty(CSSPropertyFontWeight, CSSPropertyFont, fontWeight ? fontWeight : cssValuePool().createIdentifierValue(CSSValueNormal), important);
     addProperty(CSSPropertyFontStretch, CSSPropertyFont, fontStretch ? fontStretch : cssValuePool().createIdentifierValue(CSSValueNormal), important);
@@ -4078,11 +4173,16 @@ bool CSSPropertyParser::consumeFontVariantShorthand(bool important)
 
     CSSPrimitiveValue* capsValue = nullptr;
     FontVariantLigaturesParser ligaturesParser;
+    FontVariantNumericParser numericParser;
     do {
-        FontVariantLigaturesParser::ParseResult parseResult = ligaturesParser.consumeLigature(m_range);
-        if (parseResult == FontVariantLigaturesParser::ParseResult::ConsumedValue)
+        FontVariantLigaturesParser::ParseResult ligaturesParseResult = ligaturesParser.consumeLigature(m_range);
+        FontVariantNumericParser::ParseResult numericParseResult = numericParser.consumeNumeric(m_range);
+        if (ligaturesParseResult == FontVariantLigaturesParser::ParseResult::ConsumedValue
+            || numericParseResult == FontVariantNumericParser::ParseResult::ConsumedValue)
             continue;
-        if (parseResult == FontVariantLigaturesParser::ParseResult::DisallowedValue)
+
+        if (ligaturesParseResult == FontVariantLigaturesParser::ParseResult::DisallowedValue
+            || numericParseResult == FontVariantNumericParser::ParseResult::DisallowedValue)
             return false;
 
         CSSValueID id = m_range.peek().id();
@@ -4104,6 +4204,7 @@ bool CSSPropertyParser::consumeFontVariantShorthand(bool important)
     } while (!m_range.atEnd());
 
     addProperty(CSSPropertyFontVariantLigatures, CSSPropertyFontVariant, ligaturesParser.finalizeValue(), important);
+    addProperty(CSSPropertyFontVariantNumeric, CSSPropertyFontVariant, numericParser.finalizeValue(), important);
     addProperty(CSSPropertyFontVariantCaps, CSSPropertyFontVariant, capsValue ? capsValue : cssValuePool().createIdentifierValue(CSSValueNormal), important);
     return true;
 }

@@ -70,6 +70,17 @@ all-petite-caps
 unicase
 titling-caps
 
+// font-variant-numeric
+// normal
+lining-nums
+oldstyle-nums
+proportional-nums
+tabular-nums
+diagonal-fractions
+stacked-fractions
+ordinal
+slashed-zero
+
 //
 // font-weigth
 //

@@ -57,6 +57,32 @@ var gPropertyData = [
   { prop: "font-variant-ligatures", value: "no-contextual contextual", features: {"liga": 1, "clig": 1, "dlig": 0, "hlig": 0}, invalid: true },
   { prop: "font-variant-ligatures", value: "no-discretionary-ligatures discretionary-ligatures", features: {"liga": 1, "clig": 1, "dlig": 0}, invalid: true },
   { prop: "font-variant-ligatures", value: "common-ligatures no-discretionary-ligatures no-common-ligatures", features: {"liga": 1, "clig": 1, "dlig": 0}, invalid: true },
+
+  // font-variant-numeric
+  // valid values
+  { prop: "font-variant-numeric", value: "normal", features: {"lnum": 0, "tnum": 0, "pnum": 0, "onum": 0} },
+  { prop: "font-variant-numeric", value: "lining-nums", features: {"lnum": 1, "onum": 0, "pnum": 0} },
+  { prop: "font-variant-numeric", value: "oldstyle-nums", features: {"lnum": 0, "onum": 1, "pnum": 0} },
+  { prop: "font-variant-numeric", value: "proportional-nums", features: {"lnum": 0, "onum": 0, "pnum": 1, "tnum": 0} },
+  { prop: "font-variant-numeric", value: "proportional-nums oldstyle-nums", features: {"lnum": 0, "onum": 1, "pnum": 1, "tnum": 0} },
+  { prop: "font-variant-numeric", value: "tabular-nums", features: {"tnum": 1, "onum": 0, "pnum": 0} },
+  { prop: "font-variant-numeric", value: "diagonal-fractions", features: {"frac": 1, "afrc": 0, "pnum": 0} },
+  { prop: "font-variant-numeric", value: "stacked-fractions", features: {"frac": 0, "afrc": 1, "pnum": 0} },
+  { prop: "font-variant-numeric", value: "slashed-zero", features: {"zero": 1, "pnum": 0} },
+  { prop: "font-variant-numeric", value: "ordinal", features: {"ordn": 1, "pnum": 0} },
+  { prop: "font-variant-numeric", value: "lining-nums diagonal-fractions", features: {"frac": 1, "afrc": 0, "lnum": 1} },
+  { prop: "font-variant-numeric", value: "tabular-nums stacked-fractions", features: {"frac": 0, "afrc": 1, "tnum": 1} },
+  { prop: "font-variant-numeric", value: "tabular-nums slashed-zero stacked-fractions", features: {"frac": 0, "afrc": 1, "tnum": 1, "zero": 1} },
+  { prop: "font-variant-numeric", value: "proportional-nums slashed-zero diagonal-fractions oldstyle-nums ordinal", features: {"frac": 1, "afrc": 0, "tnum": 0, "pnum": 1, "onum": 1, "ordn": 1, "zero": 1} },
+
+  // invalid values
+  { prop: "font-variant-numeric", value: "lining-nums normal", features: {"lnum": 0, "onum": 0}, invalid: true },
+  { prop: "font-variant-numeric", value: "lining-nums oldstyle-nums", features: {"lnum": 0, "onum": 0}, invalid: true },
+  { prop: "font-variant-numeric", value: "lining-nums normal slashed-zero ordinal", features: {"lnum": 0, "onum": 0, "zero": 0}, invalid: true },
+  { prop: "font-variant-numeric", value: "proportional-nums tabular-nums", features: {"pnum": 0, "tnum": 0}, invalid: true },
+  { prop: "font-variant-numeric", value: "diagonal-fractions stacked-fractions", features: {"frac": 0, "afrc": 0}, invalid: true },
+  { prop: "font-variant-numeric", value: "slashed-zero diagonal-fractions slashed-zero", features: {"frac": 0, "afrc": 0, "zero": 0}, invalid: true },
+  { prop: "font-variant-numeric", value: "lining-nums slashed-zero diagonal-fractions oldstyle-nums", features: {"frac": 0, "afrc": 0, "zero": 0, "onum": 0}, invalid: true },
 ];
 
 // note: the code below requires an array "gFeatures" from :

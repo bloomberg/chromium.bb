@@ -115,6 +115,14 @@ static void fontVariantCapsValue(FontBuilder& b) { b.setVariantCaps(FontDescript
 static void fontVariantLigaturesBase(FontDescription& d) { d.setVariantLigatures(FontDescription::VariantLigatures(FontDescription::EnabledLigaturesState)); }
 static void fontVariantLigaturesValue(FontBuilder& b) { b.setVariantLigatures(FontDescription::VariantLigatures(FontDescription::DisabledLigaturesState)); }
 
+static void fontVariantNumericBase(FontDescription& d) { d.setVariantNumeric(FontVariantNumeric()); }
+static void fontVariantNumericValue(FontBuilder& b)
+{
+    FontVariantNumeric variantNumeric;
+    variantNumeric.setNumericFraction(FontVariantNumeric::StackedFractions);
+    b.setVariantNumeric(variantNumeric);
+}
+
 static void fontTextRenderingBase(FontDescription& d) { d.setTextRendering(GeometricPrecision); }
 static void fontTextRenderingValue(FontBuilder& b) { b.setTextRendering(OptimizeLegibility); }
 
@@ -153,6 +161,7 @@ INSTANTIATE_TEST_CASE_P(AllFields, FontBuilderAdditiveTest,
     FunctionPair(fontStyleBase, fontStyleValue),
     FunctionPair(fontVariantCapsBase, fontVariantCapsValue),
     FunctionPair(fontVariantLigaturesBase, fontVariantLigaturesValue),
+    FunctionPair(fontVariantNumericBase, fontVariantNumericValue),
     FunctionPair(fontTextRenderingBase, fontTextRenderingValue),
     FunctionPair(fontKerningBase, fontKerningValue),
     FunctionPair(fontFontSmoothingBase, fontFontSmoothingValue),

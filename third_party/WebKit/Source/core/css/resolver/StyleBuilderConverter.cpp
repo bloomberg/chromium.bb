@@ -338,6 +338,48 @@ FontDescription::VariantLigatures StyleBuilderConverter::convertFontVariantLigat
     return FontDescription::VariantLigatures();
 }
 
+FontVariantNumeric StyleBuilderConverter::convertFontVariantNumeric(StyleResolverState&, const CSSValue& value)
+{
+    if (value.isPrimitiveValue()) {
+        ASSERT(toCSSPrimitiveValue(value).getValueID() == CSSValueNormal);
+        return FontVariantNumeric();
+    }
+
+    FontVariantNumeric variantNumeric;
+    for (const CSSValue* feature : toCSSValueList(value)) {
+        switch (toCSSPrimitiveValue(feature)->getValueID()) {
+        case CSSValueLiningNums:
+            variantNumeric.setNumericFigure(FontVariantNumeric::LiningNums);
+            break;
+        case CSSValueOldstyleNums:
+            variantNumeric.setNumericFigure(FontVariantNumeric::OldstyleNums);
+            break;
+        case CSSValueProportionalNums:
+            variantNumeric.setNumericSpacing(FontVariantNumeric::ProportionalNums);
+            break;
+        case CSSValueTabularNums:
+            variantNumeric.setNumericSpacing(FontVariantNumeric::TabularNums);
+            break;
+        case CSSValueDiagonalFractions:
+            variantNumeric.setNumericFraction(FontVariantNumeric::DiagonalFractions);
+            break;
+        case CSSValueStackedFractions:
+            variantNumeric.setNumericFraction(FontVariantNumeric::StackedFractions);
+            break;
+        case CSSValueOrdinal:
+            variantNumeric.setOrdinal(FontVariantNumeric::OrdinalOn);
+            break;
+        case CSSValueSlashedZero:
+            variantNumeric.setSlashedZero(FontVariantNumeric::SlashedZeroOn);
+            break;
+        default:
+            ASSERT_NOT_REACHED();
+            break;
+        }
+    }
+    return variantNumeric;
+}
+
 StyleSelfAlignmentData StyleBuilderConverter::convertSelfOrDefaultAlignmentData(StyleResolverState&, const CSSValue& value)
 {
     StyleSelfAlignmentData alignmentData = ComputedStyle::initialSelfAlignment();

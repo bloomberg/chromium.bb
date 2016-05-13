@@ -562,6 +562,8 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
     case CSSPropertyApplyAtRule: return 532;
     case CSSPropertyFontVariantCaps: return 533;
     case CSSPropertyHyphens: return 534;
+    case CSSPropertyFontVariantNumeric: return 535;
+
 
     // 1. Add new features above this line (don't change the assigned numbers of the existing
     // items).
@@ -578,7 +580,8 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
     return 0;
 }
 
-static int maximumCSSSampleId() { return 534; }
+
+static int maximumCSSSampleId() { return 535; }
 
 static EnumerationHistogram& featureObserverHistogram()
 {

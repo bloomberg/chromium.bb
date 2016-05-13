@@ -162,6 +162,7 @@ font-style: normal
 font-variant: normal
 font-variant-caps: normal
 font-variant-ligatures: normal
+font-variant-numeric: normal
 font-weight: normal
 grid-auto-columns: auto
 grid-auto-flow: row

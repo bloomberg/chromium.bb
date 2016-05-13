@@ -33,6 +33,7 @@
 #include "platform/fonts/FontOrientation.h"
 #include "platform/fonts/FontSmoothingMode.h"
 #include "platform/fonts/FontTraits.h"
+#include "platform/fonts/FontVariantNumeric.h"
 #include "platform/fonts/FontWidthVariant.h"
 #include "platform/fonts/TextRenderingMode.h"
 #include "platform/fonts/TypesettingFeatures.h"
@@ -47,6 +48,9 @@
 namespace blink {
 
 const float FontSizeAdjustNone = -1;
+typedef struct {
+    uint32_t parts[2];
+} FieldsAsUnsignedType;
 
 class PLATFORM_EXPORT FontDescription {
     USING_FAST_MALLOC(FontDescription);
@@ -68,8 +72,8 @@ public:
         , m_letterSpacing(0)
         , m_wordSpacing(0)
     {
-        m_fieldsAsUnsigned[0] = 0;
-        m_fieldsAsUnsigned[1] = 0;
+        m_fieldsAsUnsigned.parts[0] = 0;
+        m_fieldsAsUnsigned.parts[1] = 0;
         m_fields.m_orientation = static_cast<unsigned>(FontOrientation::Horizontal);
         m_fields.m_widthVariant = RegularWidth;
         m_fields.m_style = FontStyleNormal;
@@ -91,6 +95,7 @@ public:
         m_fields.m_syntheticItalic = false;
         m_fields.m_subpixelTextPosition = s_useSubpixelTextPositioning;
         m_fields.m_typesettingFeatures = s_defaultTypesettingFeatures;
+        m_fields.m_variantNumeric = FontVariantNumeric().m_fieldsAsUnsigned;
     }
 
     bool operator==(const FontDescription&) const;
@@ -165,6 +170,7 @@ public:
     }
     Kerning getKerning() const { return static_cast<Kerning>(m_fields.m_kerning); }
     VariantLigatures getVariantLigatures() const;
+    FontVariantNumeric variantNumeric() const  { return FontVariantNumeric::initializeFromUnsigned(m_fields.m_variantNumeric); };
     LigaturesState commonLigaturesState() const { return static_cast<LigaturesState>(m_fields.m_commonLigaturesState); }
     LigaturesState discretionaryLigaturesState() const { return static_cast<LigaturesState>(m_fields.m_discretionaryLigaturesState); }
     LigaturesState historicalLigaturesState() const { return static_cast<LigaturesState>(m_fields.m_historicalLigaturesState); }
@@ -200,6 +206,7 @@ public:
     void setStyle(FontStyle i) { m_fields.m_style = i; }
     void setVariantCaps(FontVariantCaps);
     void setVariantLigatures(const VariantLigatures&);
+    void setVariantNumeric(const FontVariantNumeric&);
     void setIsAbsoluteSize(bool s) { m_fields.m_isAbsoluteSize = s; }
     void setWeight(FontWeight w) { m_fields.m_weight = w; }
     void setStretch(FontStretch s) { m_fields.m_stretch = s; }
@@ -231,8 +238,10 @@ public:
     static TypesettingFeatures defaultTypesettingFeatures();
 
     unsigned styleHashWithoutFamilyList() const;
-    unsigned bitmapFields() const { return m_fieldsAsUnsigned[0]; }
-    unsigned auxiliaryBitmapFields() const { return m_fieldsAsUnsigned[1]; }
+    // TODO(drott): We should not expose internal structure here, but rather introduce
+    // a hash function here.
+    unsigned bitmapFields() const { return m_fieldsAsUnsigned.parts[0]; }
+    unsigned auxiliaryBitmapFields() const { return m_fieldsAsUnsigned.parts[1]; }
 
     SkFontStyle skiaFontStyle() const;
 
@@ -290,10 +299,14 @@ private:
         unsigned m_syntheticItalic : 1;
         unsigned m_subpixelTextPosition : 1;
         unsigned m_typesettingFeatures : 3;
+        unsigned m_variantNumeric : 8;
     };
+
+    static_assert(sizeof(BitFields) == sizeof(FieldsAsUnsignedType),
+        "Mapped bitfield datatypes must have identical size.");
     union {
         BitFields m_fields;
-        uint32_t m_fieldsAsUnsigned[2];
+        FieldsAsUnsignedType m_fieldsAsUnsigned;
     };
 
     static TypesettingFeatures s_defaultTypesettingFeatures;
@@ -311,8 +324,8 @@ inline bool FontDescription::operator==(const FontDescription& other) const
         && m_sizeAdjust == other.m_sizeAdjust
         && m_letterSpacing == other.m_letterSpacing
         && m_wordSpacing == other.m_wordSpacing
-        && m_fieldsAsUnsigned[0] == other.m_fieldsAsUnsigned[0]
-        && m_fieldsAsUnsigned[1] == other.m_fieldsAsUnsigned[1]
+        && m_fieldsAsUnsigned.parts[0] == other.m_fieldsAsUnsigned.parts[0]
+        && m_fieldsAsUnsigned.parts[1] == other.m_fieldsAsUnsigned.parts[1]
         && (m_featureSettings == other.m_featureSettings || (m_featureSettings && other.m_featureSettings && *m_featureSettings == *other.m_featureSettings));
 }
 

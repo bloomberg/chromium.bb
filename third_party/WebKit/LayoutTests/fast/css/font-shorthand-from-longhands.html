@@ -81,6 +81,15 @@ style.fontVariantLigatures = "normal";
 shouldBe("style.font", "'italic small-caps bold ultra-expanded 20px/40px sans-serif'");
 shouldBe("computedStyle.font", "'italic small-caps bold ultra-expanded 20px / 40px sans-serif'");
 
+style.fontVariantNumeric = "lining-nums";
+// Shorthand cannot be built because of non-normal numeric value.
+shouldBe("style.font", "''");
+shouldBe("computedStyle.font", "''");
+// Reset for next test.
+style.fontVariantNumeric = "normal";
+shouldBe("style.font", "'italic small-caps bold ultra-expanded 20px/40px sans-serif'");
+shouldBe("computedStyle.font", "'italic small-caps bold ultra-expanded 20px / 40px sans-serif'");
+
 style.font = "";
 shouldBe("style.font", "''");
 shouldBe("computedStyle.font", "'normal normal normal normal 16px / normal foobar'");

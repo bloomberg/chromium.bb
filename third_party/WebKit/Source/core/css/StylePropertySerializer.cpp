@@ -545,6 +545,7 @@ void StylePropertySerializer::appendFontLonghandValueIfNotNormal(CSSPropertyID p
     case CSSPropertyFontStretch:
     case CSSPropertyFontVariantCaps:
     case CSSPropertyFontVariantLigatures:
+    case CSSPropertyFontVariantNumeric:
     case CSSPropertyFontWeight:
         prefix = ' ';
         break;
@@ -582,21 +583,28 @@ String StylePropertySerializer::fontValue() const
     int fontFamilyPropertyIndex = m_propertySet.findPropertyIndex(CSSPropertyFontFamily);
     int fontVariantCapsPropertyIndex = m_propertySet.findPropertyIndex(CSSPropertyFontVariantCaps);
     int fontVariantLigaturesPropertyIndex = m_propertySet.findPropertyIndex(CSSPropertyFontVariantLigatures);
+    int fontVariantNumericPropertyIndex = m_propertySet.findPropertyIndex(CSSPropertyFontVariantNumeric);
     DCHECK_NE(fontSizePropertyIndex, -1);
     DCHECK_NE(fontFamilyPropertyIndex, -1);
     DCHECK_NE(fontVariantCapsPropertyIndex, -1);
     DCHECK_NE(fontVariantLigaturesPropertyIndex, -1);
+    DCHECK_NE(fontVariantNumericPropertyIndex, -1);
 
     PropertyValueForSerializer fontSizeProperty = m_propertySet.propertyAt(fontSizePropertyIndex);
     PropertyValueForSerializer fontFamilyProperty = m_propertySet.propertyAt(fontFamilyPropertyIndex);
     PropertyValueForSerializer fontVariantCapsProperty = m_propertySet.propertyAt(fontVariantCapsPropertyIndex);
     PropertyValueForSerializer fontVariantLigaturesProperty = m_propertySet.propertyAt(fontVariantLigaturesPropertyIndex);
+    PropertyValueForSerializer fontVariantNumericProperty = m_propertySet.propertyAt(fontVariantNumericPropertyIndex);
 
     // Check that non-initial font-variant subproperties are not conflicting with this serialization.
     const CSSValue* ligaturesValue = fontVariantLigaturesProperty.value();
+    const CSSValue* numericValue = fontVariantNumericProperty.value();
     if ((ligaturesValue->isPrimitiveValue()
         && toCSSPrimitiveValue(ligaturesValue)->getValueID() != CSSValueNormal)
-        || ligaturesValue->isValueList())
+        || ligaturesValue->isValueList()
+        || (numericValue->isPrimitiveValue()
+        && toCSSPrimitiveValue(numericValue)->getValueID() != CSSValueNormal)
+        || numericValue->isValueList())
         return emptyString();
 
     String commonValue = fontSizeProperty.value()->cssText();
@@ -640,6 +648,7 @@ String StylePropertySerializer::fontVariantValue() const
     String dummyCommonValue;
     appendFontLonghandValueIfNotNormal(CSSPropertyFontVariantLigatures, result, dummyCommonValue);
     appendFontLonghandValueIfNotNormal(CSSPropertyFontVariantCaps, result, dummyCommonValue);
+    appendFontLonghandValueIfNotNormal(CSSPropertyFontVariantNumeric, result, dummyCommonValue);
 
     if (result.isEmpty()) {
         return "normal";

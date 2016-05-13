@@ -678,6 +678,28 @@ static CSSValue* valueForFontVariantLigatures(const ComputedStyle& style)
     return valueList;
 }
 
+static CSSValue* valueForFontVariantNumeric(const ComputedStyle& style)
+{
+    FontVariantNumeric variantNumeric = style.getFontDescription().variantNumeric();
+    if (variantNumeric.isAllNormal())
+        return cssValuePool().createIdentifierValue(CSSValueNormal);
+
+    CSSValueList* valueList = CSSValueList::createSpaceSeparated();
+    if (variantNumeric.numericFigureValue() != FontVariantNumeric::NormalFigure)
+        valueList->append(cssValuePool().createIdentifierValue(variantNumeric.numericFigureValue() == FontVariantNumeric::LiningNums ? CSSValueLiningNums : CSSValueOldstyleNums));
+    if (variantNumeric.numericSpacingValue() != FontVariantNumeric::NormalSpacing)
+        valueList->append(cssValuePool().createIdentifierValue(variantNumeric.numericSpacingValue() == FontVariantNumeric::ProportionalNums ? CSSValueProportionalNums : CSSValueTabularNums));
+    if (variantNumeric.numericFractionValue() != FontVariantNumeric::NormalFraction)
+        valueList->append(cssValuePool().createIdentifierValue(variantNumeric.numericFractionValue() == FontVariantNumeric::DiagonalFractions ? CSSValueDiagonalFractions : CSSValueStackedFractions));
+    if (variantNumeric.ordinalValue() == FontVariantNumeric::OrdinalOn)
+        valueList->append(cssValuePool().createIdentifierValue(CSSValueOrdinal));
+    if (variantNumeric.slashedZeroValue() == FontVariantNumeric::SlashedZeroOn)
+        valueList->append(cssValuePool().createIdentifierValue(CSSValueSlashedZero));
+
+    return valueList;
+}
+
+
 static CSSValue* specifiedValueForGridTrackBreadth(const GridLength& trackBreadth, const ComputedStyle& style)
 {
     if (!trackBreadth.isLength())
@@ -1502,7 +1524,9 @@ CSSValue* ComputedStyleCSSValueMapping::valueForFont(const ComputedStyle& style)
 
     // Check that non-initial font-variant subproperties are not conflicting with this serialization.
     CSSValue* ligaturesValue = valueForFontVariantLigatures(style);
-    if (!ligaturesValue->equals(*cssValuePool().createIdentifierValue(CSSValueNormal)))
+    CSSValue* numericValue = valueForFontVariantNumeric(style);
+    if (!ligaturesValue->equals(*cssValuePool().createIdentifierValue(CSSValueNormal))
+        || !numericValue->equals(*cssValuePool().createIdentifierValue(CSSValueNormal)))
         return nullptr;
 
     CSSPrimitiveValue* capsValue = valueForFontVariantCaps(style);
@@ -2325,6 +2349,8 @@ CSSValue* ComputedStyleCSSValueMapping::get(CSSPropertyID propertyID, const Comp
         return valueForFontVariantLigatures(style);
     case CSSPropertyFontVariantCaps:
         return valueForFontVariantCaps(style);
+    case CSSPropertyFontVariantNumeric:
+        return valueForFontVariantNumeric(style);
     case CSSPropertyZIndex:
         if (style.hasAutoZIndex())
             return cssValuePool().createIdentifierValue(CSSValueAuto);

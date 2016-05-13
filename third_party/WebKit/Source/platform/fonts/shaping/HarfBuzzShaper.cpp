@@ -205,6 +205,38 @@ void HarfBuzzShaper::setFontFeatures()
         break;
     }
 
+    // font-variant-numeric:
+    static hb_feature_t lnum = createFeature('l', 'n', 'u', 'm', 1);
+    if (description.variantNumeric().numericFigureValue() == FontVariantNumeric::LiningNums)
+        m_features.append(lnum);
+
+    static hb_feature_t onum = createFeature('o', 'n', 'u', 'm', 1);
+    if (description.variantNumeric().numericFigureValue() == FontVariantNumeric::OldstyleNums)
+        m_features.append(onum);
+
+    static hb_feature_t pnum = createFeature('p', 'n', 'u', 'm', 1);
+    if (description.variantNumeric().numericSpacingValue() == FontVariantNumeric::ProportionalNums)
+        m_features.append(pnum);
+    static hb_feature_t tnum = createFeature('t', 'n', 'u', 'm', 1);
+    if (description.variantNumeric().numericSpacingValue() == FontVariantNumeric::TabularNums)
+        m_features.append(tnum);
+
+    static hb_feature_t afrc = createFeature('a', 'f', 'r', 'c', 1);
+    if (description.variantNumeric().numericFractionValue() == FontVariantNumeric::StackedFractions)
+        m_features.append(afrc);
+    static hb_feature_t frac = createFeature('f', 'r', 'a', 'c', 1);
+    if (description.variantNumeric().numericFractionValue() == FontVariantNumeric::DiagonalFractions)
+        m_features.append(frac);
+
+    static hb_feature_t ordn = createFeature('o', 'r', 'd', 'n', 1);
+    if (description.variantNumeric().ordinalValue() == FontVariantNumeric::OrdinalOn)
+        m_features.append(ordn);
+
+    static hb_feature_t zero = createFeature('z', 'e', 'r', 'o', 1);
+    if (description.variantNumeric().slashedZeroValue() == FontVariantNumeric::SlashedZeroOn)
+        m_features.append(zero);
+
+
     FontFeatureSettings* settings = description.featureSettings();
     if (!settings)
         return;

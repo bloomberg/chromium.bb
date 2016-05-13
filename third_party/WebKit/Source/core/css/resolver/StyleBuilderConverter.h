@@ -68,6 +68,7 @@ public:
     static FontWeight convertFontWeight(StyleResolverState&, const CSSValue&);
     static FontDescription::FontVariantCaps convertFontVariantCaps(StyleResolverState&, const CSSValue&);
     static FontDescription::VariantLigatures convertFontVariantLigatures(StyleResolverState&, const CSSValue&);
+    static FontVariantNumeric convertFontVariantNumeric(StyleResolverState&, const CSSValue&);
     static StyleSelfAlignmentData convertSelfOrDefaultAlignmentData(StyleResolverState&, const CSSValue&);
     static StyleContentAlignmentData convertContentAlignmentData(StyleResolverState&, const CSSValue&);
     static GridAutoFlow convertGridAutoFlow(StyleResolverState&, const CSSValue&);

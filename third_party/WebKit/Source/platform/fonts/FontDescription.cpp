@@ -42,7 +42,7 @@ struct SameSizeAsFontDescription {
     RefPtr<FontFeatureSettings> m_featureSettings;
     AtomicString locale;
     float sizes[6];
-    uint32_t bitfields[2];
+    FieldsAsUnsignedType bitfields;
 };
 
 static_assert(sizeof(FontDescription) == sizeof(SameSizeAsFontDescription), "FontDescription should stay small");
@@ -157,6 +157,13 @@ void FontDescription::setVariantLigatures(const VariantLigatures& ligatures)
     m_fields.m_discretionaryLigaturesState = ligatures.discretionary;
     m_fields.m_historicalLigaturesState = ligatures.historical;
     m_fields.m_contextualLigaturesState = ligatures.contextual;
+
+    updateTypesettingFeatures();
+}
+
+void FontDescription::setVariantNumeric(const FontVariantNumeric& variantNumeric)
+{
+    m_fields.m_variantNumeric = variantNumeric.m_fieldsAsUnsigned;
 
     updateTypesettingFeatures();
 }
@@ -281,8 +288,8 @@ unsigned FontDescription::styleHashWithoutFamilyList() const
     addFloatToHash(hash, m_sizeAdjust);
     addFloatToHash(hash, m_letterSpacing);
     addFloatToHash(hash, m_wordSpacing);
-    addToHash(hash, m_fieldsAsUnsigned[0]);
-    addToHash(hash, m_fieldsAsUnsigned[1]);
+    addToHash(hash, m_fieldsAsUnsigned.parts[0]);
+    addToHash(hash, m_fieldsAsUnsigned.parts[1]);
 
     return hash;
 }

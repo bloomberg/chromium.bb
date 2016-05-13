@@ -169,6 +169,13 @@ void FontBuilder::setVariantLigatures(const FontDescription::VariantLigatures& l
     m_fontDescription.setVariantLigatures(ligatures);
 }
 
+void FontBuilder::setVariantNumeric(const FontVariantNumeric& variantNumeric)
+{
+    set(PropertySetFlag::VariantNumeric);
+
+    m_fontDescription.setVariantNumeric(variantNumeric);
+}
+
 void FontBuilder::setTextRendering(TextRenderingMode textRenderingMode)
 {
     set(PropertySetFlag::TextRendering);
@@ -371,6 +378,8 @@ void FontBuilder::createFont(FontSelector* fontSelector, ComputedStyle& style)
         description.setVariantCaps(m_fontDescription.variantCaps());
     if (isSet(PropertySetFlag::VariantLigatures))
         description.setVariantLigatures(m_fontDescription.getVariantLigatures());
+    if (isSet(PropertySetFlag::VariantNumeric))
+        description.setVariantNumeric(m_fontDescription.variantNumeric());
     if (isSet(PropertySetFlag::TextRendering))
         description.setTextRendering(m_fontDescription.textRendering());
     if (isSet(PropertySetFlag::Kerning))
