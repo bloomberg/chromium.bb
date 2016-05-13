@@ -173,7 +173,7 @@ public:
     virtual void cancelIdleCallback(int id) = 0;
 
     // Custom elements
-    virtual CustomElementsRegistry* customElements() const = 0;
+    virtual CustomElementsRegistry* customElements(ScriptState*) const = 0;
 
     void captureEvents() { }
     void releaseEvents() { }

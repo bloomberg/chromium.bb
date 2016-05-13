@@ -29,6 +29,7 @@ class ScriptWrappable;
     V(customElementNamespaceURI) \
     V(customElementTagName) \
     V(customElementType) \
+    V(customElementsRegistryMap) \
     V(callback) \
     V(condition) \
     V(data) \

@@ -31,10 +31,14 @@
 #include "core/dom/custom/V0CustomElementRegistry.h"
 
 #include "bindings/core/v8/V0CustomElementConstructorBuilder.h"
+#include "bindings/core/v8/V8Binding.h"
 #include "core/HTMLNames.h"
 #include "core/SVGNames.h"
+#include "core/dom/Document.h"
+#include "core/dom/custom/CustomElementsRegistry.h"
 #include "core/dom/custom/V0CustomElementException.h"
 #include "core/dom/custom/V0CustomElementRegistrationContext.h"
+#include "core/frame/LocalDOMWindow.h"
 
 namespace blink {
 
@@ -52,7 +56,7 @@ V0CustomElementDefinition* V0CustomElementRegistry::registerElement(Document* do
         return 0;
     }
 
-    if (m_registeredTypeNames.contains(type)) {
+    if (m_registeredTypeNames.contains(type) || v1NameIsDefined(type)) {
         V0CustomElementException::throwException(V0CustomElementException::TypeAlreadyRegistered, type, exceptionState);
         return 0;
     }
@@ -96,9 +100,26 @@ V0CustomElementDefinition* V0CustomElementRegistry::find(const V0CustomElementDe
     return m_definitions.get(descriptor);
 }
 
+bool V0CustomElementRegistry::nameIsDefined(const AtomicString& name) const
+{
+    return m_registeredTypeNames.contains(name);
+}
+
+void V0CustomElementRegistry::setV1(const CustomElementsRegistry* v1)
+{
+    DCHECK(!m_v1.get());
+    m_v1 = v1;
+}
+
+bool V0CustomElementRegistry::v1NameIsDefined(const AtomicString& name) const
+{
+    return m_v1.get() && m_v1->nameIsDefined(name);
+}
+
 DEFINE_TRACE(V0CustomElementRegistry)
 {
     visitor->trace(m_definitions);
+    visitor->trace(m_v1);
 }
 
 } // namespace blink

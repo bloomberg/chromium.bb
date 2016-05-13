@@ -2630,6 +2630,8 @@
             'dom/XMLDocument.h',
             'dom/custom/CustomElement.cpp',
             'dom/custom/CustomElement.h',
+            'dom/custom/CustomElementDefinition.cpp',
+            'dom/custom/CustomElementDefinition.h',
             'dom/custom/CustomElementsRegistry.cpp',
             'dom/custom/CustomElementsRegistry.h',
             'dom/custom/V0CustomElement.cpp',

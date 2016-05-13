@@ -1322,10 +1322,12 @@ void LocalDOMWindow::cancelIdleCallback(int id)
         document->cancelIdleCallback(id);
 }
 
-CustomElementsRegistry* LocalDOMWindow::customElements() const
+CustomElementsRegistry* LocalDOMWindow::customElements(ScriptState* scriptState) const
 {
+    if (!scriptState->world().isMainWorld())
+        return nullptr;
     if (!m_customElements)
-        m_customElements = CustomElementsRegistry::create();
+        m_customElements = CustomElementsRegistry::create(scriptState, document()->registrationContext());
     return m_customElements.get();
 }
 

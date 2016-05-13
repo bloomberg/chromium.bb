@@ -153,6 +153,16 @@ void V0CustomElementRegistrationContext::setTypeExtension(Element* element, cons
     context->didGiveTypeExtension(element, element->document().convertLocalName(type));
 }
 
+bool V0CustomElementRegistrationContext::nameIsDefined(const AtomicString& name) const
+{
+    return m_registry.nameIsDefined(name);
+}
+
+void V0CustomElementRegistrationContext::setV1(const CustomElementsRegistry* v1)
+{
+    m_registry.setV1(v1);
+}
+
 DEFINE_TRACE(V0CustomElementRegistrationContext)
 {
     visitor->trace(m_candidates);

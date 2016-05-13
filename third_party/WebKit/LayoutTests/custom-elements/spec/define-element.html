@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<title>Custom Elements: defineElement</title>
+<link rel="help" href="https://html.spec.whatwg.org/multipage/scripting.html#customelementsregistry">
+<meta name="author" title="Dominic Cooney" href="mailto:dominicc@chromium.org">
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharness-helpers.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="resources/custom-elements-helpers.js"></script>
+<body>
+<script>
+// TODO(dominicc): Merge these tests with
+// https://github.com/w3c/web-platform-tests/pull/2940
+
+'use strict';
+
+test_with_window((w) => {
+  assert_throws(TypeError.prototype, () => {
+    w.customElements.define('a-a', 42);
+  }, 'defining a non-constructor should throw a TypeError');
+}, 'A "constructor" that is not a constructor');
+
+test_with_window((w) => {
+  // https://html.spec.whatwg.org/multipage/scripting.html#valid-custom-element-name
+  let invalid_names = [
+    'annotation-xml',
+    'color-profile',
+    'font-face',
+    'font-face-src',
+    'font-face-uri',
+    'font-face-format',
+    'font-face-name',
+    'missing-glyph',
+    'div', 'p',
+    'nothtmlbutnohyphen',
+    '-not-initial-a-z', '0not-initial-a-z', 'Not-initial-a-z',
+    'intermediate-UPPERCASE-letters',
+    'bad-\u00b6', 'bad-\u00b8', 'bad-\u00bf', 'bad-\u00d7', 'bad-\u00f7',
+    'bad-\u037e', 'bad-\u037e', 'bad-\u2000', 'bad-\u200e', 'bad-\u203e',
+    'bad-\u2041', 'bad-\u206f', 'bad-\u2190', 'bad-\u2bff', 'bad-\u2ff0',
+    'bad-\u3000', 'bad-\ud800', 'bad-\uf8ff', 'bad-\ufdd0', 'bad-\ufdef',
+    'bad-\ufffe', 'bad-\uffff', 'bad-' + String.fromCodePoint(0xf0000)
+  ];
+  class X extends w.HTMLElement {}
+  invalid_names.forEach((name) => {
+    assert_throws('SYNTAX_ERR', () => {
+      w.customElements.define(name, X);
+    }, `defining an element named "${name}" should throw a SyntaxError`);
+  });
+}, 'Invalid names');
+
+test_with_window((w) => {
+  class X extends w.HTMLElement {}
+  class Y extends w.HTMLElement {}
+  w.customElements.define('a-a', X);
+  assert_throws('NotSupportedError', () => {
+    w.customElements.define('a-a', Y);
+  }, 'defining an element with a name that is already defined should throw ' +
+     'a NotSupportedError');
+}, 'Duplicate name');
+
+test_with_window((w) => {
+  class X extends w.HTMLElement {}
+  w.customElements.define('a-a', X);
+  assert_throws('NotSupportedError', () => {
+    w.customElements.define('a-b', X);
+  }, 'defining an element with a constructor that is already in the ' +
+     'registry should throw a NotSupportedError');
+}, 'Reused constructor');
+
+test_with_window((w) => {
+  function F() {}
+  F.prototype = 42;
+  assert_throws(TypeError.prototype, () => {
+    w.customElements.define('a-a', F);
+  }, 'defining an element with a constructor with a prototype that is not an ' +
+     'object should throw a TypeError');
+}, 'Retrieved prototype is a non-object');
+
+test_with_window((w) => {
+  assert_throws(TypeError.prototype, () => {
+    let not_a_constructor = new Object();
+    let invalid_name = 'annotation-xml';
+    // TODO(dominicc): When V8 supports IsConstructor, replace this with a
+    // function.
+    w.customElements.define(invalid_name, not_a_constructor);
+  }, 'Defining an element with an invalid name and invalid constructor ' +
+     'should throw a TypeError for the constructor and not a SyntaxError');
+
+  class C extends w.HTMLElement {}
+  w.customElements.define('a-a', C);
+  assert_throws('SYNTAX_ERR', () => {
+    let invalid_name = 'annotation-xml';
+    let reused_constructor = C;
+    w.customElements.define(invalid_name, reused_constructor);
+  }, 'Defining an element with an invalid name and a reused constructor ' +
+     'should throw a SyntaxError for the name and not a NotSupportedError');
+}, 'Order of checks');
+</script>

@@ -327,7 +327,7 @@ void RemoteDOMWindow::cancelIdleCallback(int id)
     ASSERT_NOT_REACHED();
 }
 
-CustomElementsRegistry* RemoteDOMWindow::customElements() const
+CustomElementsRegistry* RemoteDOMWindow::customElements(ScriptState*) const
 {
     ASSERT_NOT_REACHED();
     return nullptr;

@@ -40,6 +40,8 @@
 
 namespace blink {
 
+class CustomElementsRegistry;
+
 class V0CustomElementRegistrationContext final : public GarbageCollectedFinalized<V0CustomElementRegistrationContext> {
 public:
     static V0CustomElementRegistrationContext* create()
@@ -58,6 +60,9 @@ public:
     static void setTypeExtension(Element*, const AtomicString& type);
 
     void resolve(Element*, const V0CustomElementDescriptor&);
+
+    bool nameIsDefined(const AtomicString& name) const;
+    void setV1(const CustomElementsRegistry*);
 
     DECLARE_TRACE();
 
@@ -79,4 +84,3 @@ private:
 } // namespace blink
 
 #endif // V0CustomElementRegistrationContext_h
-

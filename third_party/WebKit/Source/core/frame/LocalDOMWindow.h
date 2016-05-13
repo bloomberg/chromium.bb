@@ -145,7 +145,7 @@ public:
     void cancelAnimationFrame(int id) override;
     int requestIdleCallback(IdleRequestCallback*, const IdleRequestOptions&) override;
     void cancelIdleCallback(int id) override;
-    CustomElementsRegistry* customElements() const override;
+    CustomElementsRegistry* customElements(ScriptState*) const override;
     void schedulePostMessage(MessageEvent*, SecurityOrigin* target, PassRefPtr<ScriptCallStack>);
 
     void registerProperty(DOMWindowProperty*);
