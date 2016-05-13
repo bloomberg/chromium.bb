@@ -3,10 +3,6 @@
     {
       "name": "testPageScroll",
       "_bug_id": "crbug.com/534643"
-    },
-    {
-      "name": "testRequestImageRef",
-      "_bug_id": "crbug.com/563691"
     }
   ]
 }
