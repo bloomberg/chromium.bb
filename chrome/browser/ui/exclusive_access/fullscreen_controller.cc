@@ -477,41 +477,10 @@ void FullscreenController::ExitFullscreenModeInternal() {
 }
 
 ContentSetting FullscreenController::GetFullscreenSetting() const {
-  DCHECK(exclusive_access_tab());
-
-  // If simplified UI is enabled, never ask the user, just auto-allow.
-  // TODO(mgiuca): Should we allow the user to block use of fullscreen?
-  // http://crbug.com/515747.
-  if (ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled())
-    return CONTENT_SETTING_ALLOW;
-
-  GURL url = GetRequestingOrigin();
-
-  // Always ask on file:// URLs, since we can't meaningfully make the
-  // decision stick for a particular origin.
-  // TODO(estark): Revisit this when crbug.com/455882 is fixed.
-  if (url.SchemeIsFile())
-    return CONTENT_SETTING_ASK;
-
-  if (IsPrivilegedFullscreenForTab())
-    return CONTENT_SETTING_ALLOW;
-
-  // If the permission was granted to the website with no embedder, it should
-  // always be allowed, even if embedded.
-  if (HostContentSettingsMapFactory::GetForProfile(
-        exclusive_access_manager()->context()->GetProfile())
-            ->GetContentSetting(url, url, CONTENT_SETTINGS_TYPE_FULLSCREEN,
-                                std::string()) == CONTENT_SETTING_ALLOW) {
-    return CONTENT_SETTING_ALLOW;
-  }
-
-  // See the comment above the call to |SetContentSettingDefaultScope()| for how
-  // the requesting and embedding origins interact with each other wrt
-  // permissions.
-  return HostContentSettingsMapFactory::GetForProfile(
-      exclusive_access_manager()->context()->GetProfile())
-          ->GetContentSetting(url, GetEmbeddingOrigin(),
-                              CONTENT_SETTINGS_TYPE_FULLSCREEN, std::string());
+  // The new policy is to always allow (even if the flag is disabled).
+  // TODO(mgiuca): Remove this function and clean up callers
+  // (https://crbug.com/610900).
+  return CONTENT_SETTING_ALLOW;
 }
 
 bool FullscreenController::IsPrivilegedFullscreenForTab() const {

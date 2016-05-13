@@ -119,15 +119,14 @@ ContentSettingsType kPermissionType[] = {
 // Determines whether to show permission |type| in the Website Settings UI. Only
 // applies to permissions listed in |kPermissionType|.
 bool ShouldShowPermission(ContentSettingsType type) {
-  // TODO(mgiuca): When simplified-fullscreen-ui is enabled on all platforms,
-  // remove these from kPermissionType, rather than having this check
+  // TODO(mgiuca): When simplified-fullscreen-ui is enabled permanently on
+  // Android, remove these from kPermissionType, rather than having this check
   // (http://crbug.com/577396).
 #if !defined(OS_ANDROID)
-  // Fullscreen and mouselock settings are not shown in simplified fullscreen
-  // mode (always allow).
+  // Fullscreen and mouselock settings are no longer shown (always allow).
   if (type == CONTENT_SETTINGS_TYPE_FULLSCREEN ||
       type == CONTENT_SETTINGS_TYPE_MOUSELOCK) {
-    return !ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled();
+    return false;
   }
 #endif
 

@@ -103,9 +103,6 @@ class ParamaterizedFullscreenControllerInteractiveTest
     }
   }
 
-  // Whether the test should be prompting the user (i.e. non-simplified UI).
-  bool ShouldPrompt() { return GetParam() == PROMPTING; }
-
  private:
   DISALLOW_COPY_AND_ASSIGN(ParamaterizedFullscreenControllerInteractiveTest);
 };
@@ -728,13 +725,6 @@ IN_PROC_BROWSER_TEST_P(ParamaterizedFullscreenControllerInteractiveTest,
       chrome::NOTIFICATION_MOUSE_LOCK_CHANGED,
       content::NotificationService::AllSources()));
   ASSERT_TRUE(IsFullscreenBubbleDisplayed());
-  if (ShouldPrompt()) {
-    ASSERT_TRUE(IsMouseLockPermissionRequested());
-    ASSERT_FALSE(IsMouseLocked());
-
-    // Accept mouse lock.
-    AcceptCurrentFullscreenOrMouseLockRequest();
-  }
   ASSERT_TRUE(IsMouseLocked());
   ASSERT_TRUE(IsFullscreenBubbleDisplayed());
 

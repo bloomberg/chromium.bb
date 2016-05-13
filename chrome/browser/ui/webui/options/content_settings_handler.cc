@@ -756,14 +756,15 @@ void ContentSettingsHandler::InitializePage() {
   UpdateAllChooserExceptionsViewsFromModel();
   UpdateProtectedContentExceptionsButton();
 
-  // In simplified fullscreen mode, fullscreen and mouselock settings are
-  // ignored. Still, always show these settings (to give users the ability to
-  // view and delete exceptions), but hide the global settings.
-  bool hide_settings =
-      ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled();
+  // Fullscreen and mouselock settings are ignored, but still stored. Always
+  // show the per-site settings (to give users the ability to view and delete
+  // exceptions), but hide the global settings.
+  // TODO(mgiuca): Remove this function and the global setting UI
+  // (https://crbug.com/610900). Then, delete all the per-site data and remove
+  // this content setting entirely (https://crbug.com/591896).
   web_ui()->CallJavascriptFunction("ContentSettings.setExclusiveAccessVisible",
-                                   base::FundamentalValue(hide_settings),
-                                   base::FundamentalValue(!hide_settings));
+                                   base::FundamentalValue(true),
+                                   base::FundamentalValue(false));
 }
 
 void ContentSettingsHandler::OnContentSettingChanged(
