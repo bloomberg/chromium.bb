@@ -4,7 +4,7 @@
 
 import os
 
-from cloud.common.clovis_task import ClovisTask
+from common.clovis_task import ClovisTask
 from failure_database import FailureDatabase
 from trace_task_handler import TraceTaskHandler
 

@@ -7,7 +7,7 @@ import os
 import re
 import sys
 
-from cloud.common.clovis_task import ClovisTask
+from common.clovis_task import ClovisTask
 import controller
 from failure_database import FailureDatabase
 import loading_trace

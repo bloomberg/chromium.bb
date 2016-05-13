@@ -14,11 +14,15 @@ from oauth2client.client import GoogleCredentials
 # NOTE: The parent directory needs to be first in sys.path to avoid conflicts
 # with catapult modules that have colliding names, as catapult inserts itself
 # into the path as the second element. This is an ugly and fragile hack.
-sys.path.insert(0,
-    os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir,
-                 os.pardir))
-from cloud.common.clovis_task import ClovisTask
-from cloud.common.google_instance_helper import GoogleInstanceHelper
+_CLOUD_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                          os.pardir)
+sys.path.insert(0, os.path.join(_CLOUD_DIR, os.pardir))
+# Add _CLOUD_DIR to the path to access common code through the same path as the
+# frontend.
+sys.path.append(_CLOUD_DIR)
+
+from common.clovis_task import ClovisTask
+from common.google_instance_helper import GoogleInstanceHelper
 from clovis_task_handler import ClovisTaskHandler
 from failure_database import FailureDatabase
 from google_storage_accessor import GoogleStorageAccessor

@@ -7,6 +7,8 @@ import time
 
 from googleapiclient import (discovery, errors)
 
+import common.google_error_helper as google_error_helper
+
 
 class GoogleInstanceHelper(object):
   """Helper class for the Google Compute API, allowing to manage groups of
@@ -32,8 +34,8 @@ class GoogleInstanceHelper(object):
       self._logger.info('Compute API response:\n' + str(response))
       return (True, response)
     except errors.HttpError as err:
-      error_content = self._GetErrorContent(err)
-      error_reason = self._GetErrorReason(error_content)
+      error_content = google_error_helper.GetErrorContent(err)
+      error_reason = google_error_helper.GetErrorReason(error_content)
       if error_reason == 'resourceNotReady' and retry_count > 0:
         # Retry after a delay
         delay_seconds = 1
@@ -55,26 +57,6 @@ class GoogleInstanceHelper(object):
   def _GetInstanceGroupName(self, tag):
     """Returns the name of the instance group associated with tag."""
     return 'group-' + tag
-
-  def _GetErrorContent(self, error):
-    """Returns the contents of an error returned by the Compute API as a
-    dictionary or None.
-    """
-    if not error.resp.get('content-type', '').startswith('application/json'):
-      return None
-    return json.loads(error.content)
-
-  def _GetErrorReason(self, error_content):
-    """Returns the error reason as a string."""
-    if not error_content:
-      return None
-    if (not error_content.get('error') or
-        not error_content['error'].get('errors')):
-      return None
-    error_list = error_content['error']['errors']
-    if not error_list:
-      return None
-    return error_list[0].get('reason')
 
   def CreateTemplate(self, tag, bucket):
     """Creates an instance template for instances identified by tag and using
@@ -128,7 +110,8 @@ class GoogleInstanceHelper(object):
     (success, result) = self._ExecuteApiRequest(request)
     if success:
       return True
-    if self._GetErrorReason(result) == 'notFound':
+    if google_error_helper.GetErrorReason(result) == \
+        google_error_helper.REASON_NOT_FOUND:
       # The template does not exist, nothing to do.
       self._logger.warning('Template not found: ' + template_name)
       return True
@@ -176,7 +159,8 @@ class GoogleInstanceHelper(object):
     (success, result) = self._ExecuteApiRequest(request)
     if success:
       return True
-    if self._GetErrorReason(result) == 'notFound':
+    if google_error_helper.GetErrorReason(result) == \
+        google_error_helper.REASON_NOT_FOUND:
       # The group does not exist, nothing to do.
       self._logger.warning('Instance group not found: ' + group_name)
       return True
