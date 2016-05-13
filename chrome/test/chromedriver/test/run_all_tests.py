@@ -197,9 +197,9 @@ def main():
       versions['50'] = '4acbec91b57f31a501264906aded632cc64c9300'
       versions['49'] = '7acdedefe3ddcb27b3fc826027f519bdb5d04d7e'
     else:
-      versions['51'] = '369932'
+      versions['51'] = '386266'
       versions['50'] = '378110'
-      versions['49'] = '386266'
+      versions['49'] = '369932'
     code = 0
     for version, revision in versions.iteritems():
       if options.chrome_version and version != options.chrome_version:
