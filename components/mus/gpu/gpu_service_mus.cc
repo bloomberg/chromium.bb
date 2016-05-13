@@ -12,6 +12,39 @@ GpuServiceMus::GpuServiceMus() {}
 
 GpuServiceMus::~GpuServiceMus() {}
 
+void GpuServiceMus::EstablishGpuChannel(
+    bool prempts,
+    bool allow_view_command_buffers,
+    bool allow_real_time_streams,
+    const mojom::GpuService::EstablishGpuChannelCallback& callback) {
+  NOTIMPLEMENTED();
+}
+
+void GpuServiceMus::CreateGpuMemoryBuffer(
+    mojom::GpuMemoryBufferIdPtr id,
+    mojo::SizePtr size,
+    mojom::BufferFormat format,
+    mojom::BufferUsage usage,
+    uint64_t surface_id,
+    const mojom::GpuService::CreateGpuMemoryBufferCallback& callback) {
+  NOTIMPLEMENTED();
+}
+
+void GpuServiceMus::CreateGpuMemoryBufferFromHandle(
+    mojom::GpuMemoryBufferHandlePtr buffer_handle,
+    mojom::GpuMemoryBufferIdPtr id,
+    mojo::SizePtr size,
+    mojom::BufferFormat format,
+    const mojom::GpuService::CreateGpuMemoryBufferFromHandleCallback&
+        callback) {
+  NOTIMPLEMENTED();
+}
+
+void GpuServiceMus::DestroyGpuMemoryBuffer(mojom::GpuMemoryBufferIdPtr id,
+                                           const gpu::SyncToken& sync_token) {
+  NOTIMPLEMENTED();
+}
+
 void GpuServiceMus::DidCreateOffscreenContext(const GURL& active_url) {
   NOTIMPLEMENTED();
 }

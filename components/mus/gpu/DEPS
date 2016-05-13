@@ -3,3 +3,9 @@ include_rules = [
   "+gpu/ipc/service",
   "+mojo/platform_handle",
 ]
+
+specific_include_rules = {
+  "run_all_shelltests\.cc": [
+    "+mojo/edk/embedder/embedder.h",
+  ],
+}
