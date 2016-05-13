@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 
 // On Mac, some infobars are still used that have been migrated to a bubble UI

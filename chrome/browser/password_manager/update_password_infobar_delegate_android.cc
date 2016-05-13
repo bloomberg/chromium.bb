@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/password_manager/update_password_infobar_delegate.h"
+#include "chrome/browser/password_manager/update_password_infobar_delegate_android.h"
 
 #include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"

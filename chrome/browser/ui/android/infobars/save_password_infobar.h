@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_ANDROID_INFOBARS_SAVE_PASSWORD_INFOBAR_H_
 
 #include "base/macros.h"
-#include "chrome/browser/password_manager/save_password_infobar_delegate.h"
+#include "chrome/browser/password_manager/save_password_infobar_delegate_android.h"
 #include "chrome/browser/ui/android/infobars/confirm_infobar.h"
 
 // The Android infobar that offers the user the ability to save a password

@@ -9,7 +9,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
-#include "chrome/browser/password_manager/update_password_infobar_delegate.h"
+#include "chrome/browser/password_manager/update_password_infobar_delegate_android.h"
 #include "components/password_manager/core/common/credential_manager_types.h"
 #include "jni/UpdatePasswordInfoBar_jni.h"
 

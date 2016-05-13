@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PASSWORD_MANAGER_SAVE_PASSWORD_INFOBAR_DELEGATE_H_
-#define CHROME_BROWSER_PASSWORD_MANAGER_SAVE_PASSWORD_INFOBAR_DELEGATE_H_
+#ifndef CHROME_BROWSER_PASSWORD_MANAGER_SAVE_PASSWORD_INFOBAR_DELEGATE_ANDROID_H_
+#define CHROME_BROWSER_PASSWORD_MANAGER_SAVE_PASSWORD_INFOBAR_DELEGATE_ANDROID_H_
 
 #include <memory>
 
 #include "base/macros.h"
 #include "base/timer/elapsed_timer.h"
-#include "chrome/browser/password_manager/password_manager_infobar_delegate.h"
+#include "chrome/browser/password_manager/password_manager_infobar_delegate_android.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/password_manager/core/browser/password_form_manager.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
@@ -85,4 +85,4 @@ class SavePasswordInfoBarDelegate : public PasswordManagerInfoBarDelegate {
 std::unique_ptr<infobars::InfoBar> CreateSavePasswordInfoBar(
     std::unique_ptr<SavePasswordInfoBarDelegate> delegate);
 
-#endif  // CHROME_BROWSER_PASSWORD_MANAGER_SAVE_PASSWORD_INFOBAR_DELEGATE_H_
+#endif  // CHROME_BROWSER_PASSWORD_MANAGER_SAVE_PASSWORD_INFOBAR_DELEGATE_ANDROID_H_
