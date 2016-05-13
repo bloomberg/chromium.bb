@@ -47,19 +47,38 @@ FAKE_FILES = {
 
 class TestImporterTest(unittest.TestCase):
 
+    @staticmethod
+    def options(**kwargs):
+        """Returns a set of option values for TestImporter."""
+        options = {
+            "overwrite": False,
+            "destination": "w3c",
+            "ignore_expectations": False,
+        }
+        options.update(kwargs)
+        return optparse.Values(options)
+
     def test_import_dir_with_no_tests(self):
         host = MockHost()
         host.executive = MockExecutive2(exception=ScriptError(
             "abort: no repository found in '/Volumes/Source/src/wk/Tools/Scripts/webkitpy/w3c'"))
         host.filesystem = MockFileSystem(files=FAKE_FILES)
 
-        importer = TestImporter(host, FAKE_SOURCE_DIR, FAKE_REPO_DIR, optparse.Values(
-            {"overwrite": False, 'destination': 'w3c', 'ignore_expectations': False}))
+        importer = TestImporter(host, FAKE_SOURCE_DIR, FAKE_REPO_DIR, self.options())
+
         oc = OutputCapture()
         oc.capture_output()
         try:
             importer.do_import()
         finally:
             oc.restore_output()
+
+    def test_path_too_long_true(self):
+        importer = TestImporter(MockHost(), FAKE_SOURCE_DIR, FAKE_REPO_DIR, self.options())
+        self.assertTrue(importer.path_too_long(FAKE_REPO_DIR + '/' + ('x' * 150) + '.html'))
+
+    def test_path_too_long_false(self):
+        importer = TestImporter(MockHost(), FAKE_SOURCE_DIR, FAKE_REPO_DIR, self.options())
+        self.assertFalse(importer.path_too_long(FAKE_REPO_DIR + '/x.html'))
 
     # FIXME: Needs more tests.

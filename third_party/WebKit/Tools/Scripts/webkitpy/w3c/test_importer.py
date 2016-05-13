@@ -82,6 +82,12 @@ from webkitpy.w3c.test_parser import TestParser
 from webkitpy.w3c.test_converter import convert_for_webkit
 
 
+# Maximum length of import path starting from top of source repository.
+# This limit is here because the Windows builders cannot create paths that are
+# longer than the Windows max path length (260). See http://crbug.com/609871.
+MAX_PATH_LENGTH = 125
+
+
 _log = logging.getLogger(__name__)
 
 
@@ -329,6 +335,11 @@ class TestImporter(object):
                     _log.warning('%s not found. Possible error in the test.', orig_filepath)
                     continue
 
+                if self.path_too_long(orig_filepath):
+                    _log.warning('%s skipped (longer than %d chars), to avoid hitting Windows max path length on builders (http://crbug.com/609871).',
+                                 orig_filepath, MAX_PATH_LENGTH)
+                    continue
+
                 new_filepath = self.filesystem.join(new_path, file_to_copy['dest'])
                 if 'reference_support_info' in file_to_copy.keys() and file_to_copy['reference_support_info'] != {}:
                     reference_support_info = file_to_copy['reference_support_info']
@@ -387,6 +398,15 @@ class TestImporter(object):
             _log.info('Properties needing prefixes (by count):')
             for prefixed_property in sorted(total_prefixed_properties, key=lambda p: total_prefixed_properties[p]):
                 _log.info('  %s: %s', prefixed_property, total_prefixed_properties[prefixed_property])
+
+    def path_too_long(self, source_path):
+        """Checks whether a source path is too long to import.
+
+        Args:
+          Absolute path of file to be imported.
+        """
+        path_from_repo_base = os.path.relpath(source_path, self.top_of_repo)
+        return len(path_from_repo_base) > MAX_PATH_LENGTH
 
     def setup_destination_directory(self):
         """ Creates a destination directory that mirrors that of the source directory """
