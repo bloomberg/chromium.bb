@@ -7,6 +7,7 @@
 import atexit
 import httplib
 import os
+import platform
 import signal
 import stat
 import subprocess
@@ -37,6 +38,10 @@ def IsLinux():
 
 def IsMac():
   return sys.platform.startswith('darwin')
+
+
+def Is64Bit():
+  return platform.architecture()[0] == '64bit'
 
 
 def GetAbsolutePathOfUserPath(user_path):

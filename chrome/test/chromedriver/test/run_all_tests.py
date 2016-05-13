@@ -164,7 +164,7 @@ def main():
 
   chromedriver = os.path.join(build_dir, server_name)
   platform_name = util.GetPlatformName()
-  if util.IsLinux() and platform.architecture()[0] == '64bit':
+  if util.IsLinux() and util.Is64Bit():
     platform_name += '64'
   ref_chromedriver = os.path.join(
       chrome_paths.GetSrc(),
@@ -188,23 +188,27 @@ def main():
       code = code or code1 or code2
     return code
   else:
-    latest_snapshot_revision = archive.GetLatestSnapshotVersion()
-    versions = [
-        ['HEAD', latest_snapshot_revision],
-        ['51', archive.CHROME_51_REVISION],
-        ['50', archive.CHROME_50_REVISION],
-        ['49', archive.CHROME_49_REVISION],
-    ]
+    versions = {'HEAD': archive.GetLatestRevision()}
+    if util.IsLinux() and not util.Is64Bit():
+      # Linux32 builds need to be special-cased, because 1) they are keyed by
+      # git hash rather than commit position, and 2) come from a different
+      # download site (so we can't just convert the commit position to a hash).
+      versions['51'] = '5a161bb6fe3d6bfbe2dafc0a7dd5831478f34277'
+      versions['50'] = '4acbec91b57f31a501264906aded632cc64c9300'
+      versions['49'] = '7acdedefe3ddcb27b3fc826027f519bdb5d04d7e'
+    else:
+      versions['51'] = '369932'
+      versions['50'] = '378110'
+      versions['49'] = '386266'
     code = 0
-    for version in versions:
-      if options.chrome_version and version[0] != options.chrome_version:
+    for version, revision in versions.iteritems():
+      if options.chrome_version and version != options.chrome_version:
         continue
-      download_site = archive.Site.CHROMIUM_SNAPSHOT
-      version_name = version[0]
+      download_site = archive.GetDownloadSite()
+      version_name = version
       if version_name == 'HEAD':
-        version_name = version[1]
-        download_site = archive.GetSnapshotDownloadSite()
-      temp_dir, chrome_path = DownloadChrome(version_name, version[1],
+        version_name = revision
+      temp_dir, chrome_path = DownloadChrome(version_name, revision,
                                              download_site)
       if not chrome_path:
         code = 1
