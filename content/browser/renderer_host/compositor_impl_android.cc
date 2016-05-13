@@ -235,11 +235,13 @@ class OutputSurfaceWithoutParent : public cc::OutputSurface,
 class VulkanOutputSurface : public cc::OutputSurface {
  public:
   VulkanOutputSurface(
-      scoped_refptr<cc::VulkanContextProvider> vulkan_context_provider)
+      scoped_refptr<cc::VulkanContextProvider> vulkan_context_provider,
+      std::unique_ptr<ExternalBeginFrameSource> begin_frame_source)
       : OutputSurface(nullptr,
                       nullptr,
                       std::move(vulkan_context_provider),
-                      nullptr) {}
+                      nullptr),
+        begin_frame_source_(std::move(begin_frame_source)) {}
 
   ~VulkanOutputSurface() override { Destroy(); }
 
@@ -253,6 +255,13 @@ class VulkanOutputSurface : public cc::OutputSurface {
     }
     surface_ = std::move(surface);
 
+    return true;
+  }
+
+  bool BindToClient(cc::OutputSurfaceClient* client) override {
+    if (!OutputSurface::BindToClient(client))
+      return false;
+    client->SetBeginFrameSource(begin_frame_source_.get());
     return true;
   }
 
@@ -277,6 +286,7 @@ class VulkanOutputSurface : public cc::OutputSurface {
 
  private:
   std::unique_ptr<gpu::VulkanSurface> surface_;
+  std::unique_ptr<ExternalBeginFrameSource> begin_frame_source_;
 
   DISALLOW_COPY_AND_ASSIGN(VulkanOutputSurface);
 };
@@ -592,8 +602,9 @@ void CompositorImpl::CreateOutputSurface() {
 #if defined(ENABLE_VULKAN)
   std::unique_ptr<VulkanOutputSurface> vulkan_surface;
   if (vulkan_context_provider) {
-    vulkan_surface.reset(
-        new VulkanOutputSurface(std::move(vulkan_context_provider)));
+    vulkan_surface.reset(new VulkanOutputSurface(
+        std::move(vulkan_context_provider),
+        base::WrapUnique(new ExternalBeginFrameSource(this))));
     if (!vulkan_surface->Initialize(window_)) {
       vulkan_surface->Destroy();
       vulkan_surface.reset();
