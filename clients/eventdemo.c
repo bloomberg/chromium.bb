@@ -206,7 +206,7 @@ key_handler(struct window *window, struct input *input, uint32_t time,
 	if (!log_key)
 		return;
 
-	printf("key key: %d, unicode: %d, state: %s, modifiers: 0x%x\n",
+	printf("key key: %u, unicode: %u, state: %s, modifiers: 0x%x\n",
 	       key, unicode,
 	       (state == WL_KEYBOARD_KEY_STATE_PRESSED) ? "pressed" :
 							  "released",
@@ -235,7 +235,7 @@ button_handler(struct widget *widget, struct input *input, uint32_t time,
 	e->print_pointer_frame = true;
 
 	input_get_position(input, &x, &y);
-	printf("button time: %d, button: %d, state: %s, x: %d, y: %d\n",
+	printf("button time: %u, button: %u, state: %s, x: %d, y: %d\n",
 	       time, button,
 	       (state == WL_POINTER_BUTTON_STATE_PRESSED) ? "pressed" :
 							    "released",
@@ -262,7 +262,7 @@ axis_handler(struct widget *widget, struct input *input, uint32_t time,
 
 	e->print_pointer_frame = true;
 
-	printf("axis time: %d, axis: %s, value: %f\n",
+	printf("axis time: %u, axis: %s, value: %f\n",
 	       time,
 	       axis == WL_POINTER_AXIS_VERTICAL_SCROLL ? "vertical" :
 							 "horizontal",
@@ -322,7 +322,7 @@ axis_stop_handler(struct widget *widget, struct input *input,
 		return;
 
 	e->print_pointer_frame = true;
-	printf("axis stop time: %d, axis: %s\n",
+	printf("axis stop time: %u, axis: %s\n",
 	       time,
 	       axis == WL_POINTER_AXIS_VERTICAL_SCROLL ? "vertical" :
 							 "horizontal");
@@ -338,7 +338,7 @@ axis_discrete_handler(struct widget *widget, struct input *input,
 		return;
 
 	e->print_pointer_frame = true;
-	printf("axis discrete axis: %d value: %d\n", axis, discrete);
+	printf("axis discrete axis: %u value: %d\n", axis, discrete);
 }
 
 /**
@@ -361,7 +361,7 @@ motion_handler(struct widget *widget, struct input *input, uint32_t time,
 	struct eventdemo *e = data;
 
 	if (log_motion) {
-		printf("motion time: %d, x: %f, y: %f\n", time, x, y);
+		printf("motion time: %u, x: %f, y: %f\n", time, x, y);
 		e->print_pointer_frame = true;
 	}
 
