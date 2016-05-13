@@ -39,6 +39,8 @@ public:
 
     DECLARE_VIRTUAL_TRACE();
 
+    DECLARE_VIRTUAL_TRACE_WRAPPERS();
+
 protected:
     WebGL2RenderingContext(HTMLCanvasElement* passedCanvas, PassOwnPtr<WebGraphicsContext3DProvider>, const WebGLContextAttributes& requestedAttributes);
 

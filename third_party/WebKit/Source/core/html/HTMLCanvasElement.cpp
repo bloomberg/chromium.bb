@@ -844,6 +844,12 @@ DEFINE_TRACE(HTMLCanvasElement)
     HTMLElement::trace(visitor);
 }
 
+DEFINE_TRACE_WRAPPERS(HTMLCanvasElement)
+{
+    visitor->traceWrappers(m_context);
+    HTMLElement::traceWrappers(visitor);
+}
+
 void HTMLCanvasElement::updateExternallyAllocatedMemory() const
 {
     int bufferCount = 0;

@@ -182,6 +182,8 @@ public:
 
     DECLARE_VIRTUAL_TRACE();
 
+    DECLARE_VIRTUAL_TRACE_WRAPPERS();
+
     void createImageBufferUsingSurfaceForTesting(PassOwnPtr<ImageBufferSurface>);
 
     static void registerRenderingContextFactory(PassOwnPtr<CanvasRenderingContextFactory>);
