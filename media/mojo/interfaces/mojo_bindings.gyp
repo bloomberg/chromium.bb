@@ -5,6 +5,31 @@
   'targets': [
     {
       # GN version: //media/mojo/interfaces
+      'target_name': 'audio_output_mojom',
+      'type': 'none',
+      'variables': {
+        'mojom_files': [
+          'audio_output.mojom',
+          'audio_parameters.mojom',
+        ],
+      },
+      'dependencies': [
+       '../../../mojo/mojo_public.gyp:mojo_cpp_bindings',
+      ],
+      'includes': [ '../../../mojo/mojom_bindings_generator_explicit.gypi' ],
+      'mojom_typemaps': [
+          'audio_parameters.typemap',
+      ],
+    },
+    {
+      'target_name': 'audio_output_mojom_bindings',
+      'type': 'static_library',
+      'dependencies': [
+        'audio_output_mojom',
+      ],
+    },
+    {
+      # GN version: //media/mojo/interfaces
       'target_name': 'platform_verification_mojo_bindings',
       'type': 'none',
       'sources': [
