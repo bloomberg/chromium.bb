@@ -130,6 +130,16 @@ bool ResourceMultiBufferDataProvider::Available() const {
   return false;
 }
 
+int64_t ResourceMultiBufferDataProvider::AvailableBytes() const {
+  int64_t bytes = 0;
+  for (const auto i : fifo_) {
+    if (i->end_of_stream())
+      break;
+    bytes += i->data_size();
+  }
+  return bytes;
+}
+
 scoped_refptr<DataBuffer> ResourceMultiBufferDataProvider::Read() {
   DCHECK(Available());
   scoped_refptr<DataBuffer> ret = fifo_.front();
@@ -353,8 +363,7 @@ void ResourceMultiBufferDataProvider::didReceiveData(WebURLLoader* loader,
     data_length -= to_append;
   }
 
-  if (Available())
-    url_data_->multibuffer()->OnDataProviderEvent(this);
+  url_data_->multibuffer()->OnDataProviderEvent(this);
 
   // Beware, this object might be deleted here.
 }

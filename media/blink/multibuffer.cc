@@ -389,9 +389,13 @@ void MultiBuffer::OnDataProviderEvent(DataProvider* provider_tmp) {
     present_.SetInterval(start_pos, pos, 1);
     Interval<BlockId> expanded_range = present_.find(start_pos).interval();
     NotifyAvailableRange(expanded_range, expanded_range);
-
     lru_->IncrementDataSize(blocks_added);
     Prune(blocks_added * kMaxFreesPerAdd + 1);
+  } else {
+    // Make sure to give progress reports even when there
+    // aren't any new blocks yet.
+    NotifyAvailableRange(Interval<BlockId>(start_pos, start_pos + 1),
+                         Interval<BlockId>(start_pos, start_pos));
   }
 
   // Check that it's still there before we try to delete it.
@@ -516,6 +520,13 @@ void MultiBuffer::IncrementMaxSize(int32_t size) {
   lru_->IncrementMaxSize(size);
   DCHECK_GE(max_size_, 0);
   // Pruning only happens when blocks are added.
+}
+
+int64_t MultiBuffer::UncommittedBytesAt(const MultiBuffer::BlockId& block) {
+  auto i = writer_index_.find(block);
+  if (writer_index_.end() == i)
+    return 0;
+  return i->second->AvailableBytes();
 }
 
 }  // namespace media

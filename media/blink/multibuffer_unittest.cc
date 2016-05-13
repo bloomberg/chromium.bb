@@ -65,6 +65,7 @@ class FakeMultiBufferDataProvider : public MultiBuffer::DataProvider {
   MultiBufferBlockId Tell() const override { return pos_; }
 
   bool Available() const override { return !fifo_.empty(); }
+  int64_t AvailableBytes() const override { return 0; }
 
   scoped_refptr<DataBuffer> Read() override {
     DCHECK(Available());

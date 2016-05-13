@@ -180,13 +180,14 @@ void MultiBufferReader::NotifyAvailableRange(
     // there are no callbacks from us after we've been destroyed.
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
-        base::Bind(&MultiBufferReader::Call, weak_factory_.GetWeakPtr(),
-                   base::Bind(progress_callback_,
-                              static_cast<int64_t>(range.begin)
-                                  << multibuffer_->block_size_shift(),
-                              static_cast<int64_t>(range.end)
-                                  << multibuffer_->block_size_shift())));
-    // We may be destroyed, do not touch |this|.
+        base::Bind(
+            &MultiBufferReader::Call, weak_factory_.GetWeakPtr(),
+            base::Bind(progress_callback_,
+                       static_cast<int64_t>(range.begin)
+                           << multibuffer_->block_size_shift(),
+                       (static_cast<int64_t>(range.end)
+                        << multibuffer_->block_size_shift()) +
+                           multibuffer_->UncommittedBytesAt(range.end))));
   }
 }
 

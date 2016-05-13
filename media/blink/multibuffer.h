@@ -114,6 +114,11 @@ class MEDIA_BLINK_EXPORT MultiBuffer {
     // availble to read.
     virtual bool Available() const = 0;
 
+    // Returns how many bytes are available, note that Available() may still
+    // return false even if AvailableBytes() returns a value greater than
+    // zero if less than a full block is available.
+    virtual int64_t AvailableBytes() const = 0;
+
     // Returns the next block. Only valid if Available()
     // returns true. Last block might be of a smaller size
     // and after the last block we will get an end-of-stream
@@ -248,6 +253,11 @@ class MEDIA_BLINK_EXPORT MultiBuffer {
 
   // Increment max cache size by |size| (counted in blocks).
   void IncrementMaxSize(int32_t size);
+
+  // Returns how many bytes have been received by the data providers at position
+  // |block|, which have not yet been submitted to the multibuffer cache.
+  // The returned number should be less than the size of one block.
+  int64_t UncommittedBytesAt(const BlockId& block);
 
   // Caller takes ownership of 'provider', cache will
   // not call it anymore.

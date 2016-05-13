@@ -973,8 +973,10 @@ TEST_F(MultibufferDataSourceTest, Http_Read) {
 
   ReadAt(kDataSize, kDataSize);
   EXPECT_CALL(*this, ReadCallback(kDataSize));
-  EXPECT_CALL(host_, AddBufferedByteRange(0, kDataSize * 2));
+  EXPECT_CALL(host_,
+              AddBufferedByteRange(kDataSize, kDataSize + kDataSize / 2));
   ReceiveData(kDataSize / 2);
+  EXPECT_CALL(host_, AddBufferedByteRange(0, kDataSize * 2));
   ReceiveData(kDataSize / 2);
 
   EXPECT_TRUE(data_source_->downloading());
@@ -989,8 +991,10 @@ TEST_F(MultibufferDataSourceTest, Http_ShareData) {
 
   ReadAt(kDataSize, kDataSize);
   EXPECT_CALL(*this, ReadCallback(kDataSize));
-  EXPECT_CALL(host_, AddBufferedByteRange(0, kDataSize * 2));
+  EXPECT_CALL(host_,
+              AddBufferedByteRange(kDataSize, kDataSize + kDataSize / 2));
   ReceiveData(kDataSize / 2);
+  EXPECT_CALL(host_, AddBufferedByteRange(0, kDataSize * 2));
   ReceiveData(kDataSize / 2);
 
   EXPECT_TRUE(data_source_->downloading());
@@ -1313,6 +1317,7 @@ TEST_F(MultibufferDataSourceTest, SeekPastEOF) {
   EXPECT_CALL(*this, ReadCallback(kDataSize));
   ReadAt(0);
 
+  EXPECT_CALL(host_, AddBufferedByteRange(kDataSize, kDataSize + 1));
   ReceiveData(1);
   EXPECT_CALL(host_, AddBufferedByteRange(0, kDataSize * 3));
   FinishLoading();

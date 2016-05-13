@@ -40,6 +40,7 @@ class MEDIA_BLINK_EXPORT ResourceMultiBufferDataProvider
   // MultiBuffer::DataProvider implementation
   MultiBufferBlockId Tell() const override;
   bool Available() const override;
+  int64_t AvailableBytes() const override;
   scoped_refptr<DataBuffer> Read() override;
   void SetDeferred(bool defer) override;
 
