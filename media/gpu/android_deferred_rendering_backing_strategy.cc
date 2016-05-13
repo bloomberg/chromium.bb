@@ -53,7 +53,16 @@ gfx::ScopedJavaSurface AndroidDeferredRenderingBackingStrategy::Initialize(
     surface = gpu::GpuSurfaceLookup::GetInstance()->AcquireJavaSurface(
         surface_view_id);
   } else {
-    if (DoesSurfaceTextureDetachWork()) {
+    bool using_virtualized_context = false;
+    if (gfx::GLContext* context = gfx::GLContext::GetCurrent()) {
+      if (gfx::GLShareGroup* share_group = context->share_group())
+        using_virtualized_context = !!share_group->GetSharedContext();
+    }
+
+    // If we're using a virtualized context, then detaching the surface texture
+    // won't buy us much, since there's no real context switch anyway.  Since
+    // detaching is a little flaky, we skip it if possible.
+    if (!using_virtualized_context && DoesSurfaceTextureDetachWork()) {
       // Create a detached SurfaceTexture. Detaching it will silently fail to
       // delete texture 0.
       surface_texture_ = gfx::SurfaceTexture::Create(0);

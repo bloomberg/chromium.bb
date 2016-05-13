@@ -260,6 +260,8 @@ void AVDACodecImage::AttachSurfaceTextureToContext() {
 std::unique_ptr<ui::ScopedMakeCurrent> AVDACodecImage::MakeCurrentIfNeeded() {
   DCHECK(shared_state_->context());
   std::unique_ptr<ui::ScopedMakeCurrent> scoped_make_current;
+  // Remember: virtual contexts return true if and only if their shared context
+  // is current, regardless of which virtual context it is.
   if (!shared_state_->context()->IsCurrent(NULL)) {
     scoped_make_current.reset(new ui::ScopedMakeCurrent(
         shared_state_->context(), shared_state_->surface()));
