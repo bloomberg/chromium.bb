@@ -10,7 +10,9 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.widget.LinearLayout;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 
 /**
  * Layout for the new tab page. This positions the page elements in the correct vertical positions.
@@ -77,6 +79,7 @@ public class NewTabPageLayout extends LinearLayout {
         mSearchProviderLogoView = (LogoView) findViewById(R.id.search_provider_logo);
         mSearchBoxView = findViewById(R.id.search_box);
         mMostVisitedLayout = (MostVisitedLayout) findViewById(R.id.most_visited_layout);
+        setSearchBoxStyle();
     }
 
     /**
@@ -163,6 +166,22 @@ public class NewTabPageLayout extends LinearLayout {
         }
         top += ((MarginLayoutParams) mMostVisitedLayout.getLayoutParams()).topMargin;
         return top;
+    }
+
+    /**
+     * Set the search box style. Modify the search box to enable material when snippets or
+     * material design is enabled.
+     */
+    private void setSearchBoxStyle() {
+        if ((ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_SNIPPETS)
+                    || ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_MATERIAL_DESIGN))
+                && ApiCompatibilityUtils.isElevationSupported()) {
+            // Replace drawable with one that does not contain a border.
+            mSearchBoxView.setBackgroundResource(R.drawable.bg_ntp_search_box_material);
+            // Add an elevation to the search box.
+            mSearchBoxView.setElevation(
+                    getResources().getDimensionPixelSize(R.dimen.toolbar_elevation));
+        }
     }
 
     /**
