@@ -311,6 +311,8 @@ if (is_mac) {
     sources = [
       "cocoa/bridged_native_widget_interactive_uitest.mm",
       "run_all_unittests.cc",
+      "run_all_unittests.h",
+      "run_all_unittests_main.cc",
       "widget/native_widget_mac_interactive_uitest.mm",
     ]
     deps = [

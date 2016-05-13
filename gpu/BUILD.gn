@@ -219,6 +219,8 @@ test("gl_tests") {
   if (is_android) {
     libs += [ "android" ]
     deps += [ "//ui/android:ui_java" ]
+  } else if (is_mac) {
+    libs += [ "IOSurface.framework" ]
   }
 }
 

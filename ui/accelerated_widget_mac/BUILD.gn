@@ -67,5 +67,8 @@ test("accelerated_widget_mac_unittests") {
     "//ui/gfx:test_support",
     "//ui/gl:test_support",
   ]
-  libs = [ "QuartzCore.framework" ]
+  libs = [
+    "AVFoundation.framework",
+    "QuartzCore.framework",
+  ]
 }

@@ -359,6 +359,7 @@ test("gl_unittests") {
 
   if (is_mac) {
     sources += [ "gl_image_io_surface_unittest.cc" ]
+    libs = [ "IOSurface.framework" ]
   }
 
   include_dirs = [ "//third_party/khronos" ]

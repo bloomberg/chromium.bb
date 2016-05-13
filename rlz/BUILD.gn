@@ -68,6 +68,13 @@ source_set("rlz_lib") {
     "//url",
   ]
 
+  if (is_mac) {
+    libs = [
+      "Foundation.framework",
+      "IOKit.framework",
+    ]
+  }
+
   if (is_ios) {
     # These _mac files are also used on iOS.
     set_sources_assignment_filter([])
