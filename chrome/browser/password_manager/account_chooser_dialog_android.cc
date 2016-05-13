@@ -227,7 +227,6 @@ void AccountChooserDialogAndroid::ChooseCredential(
     passwords_data_.ChooseCredential(nullptr);
     return;
   }
-  DCHECK_EQ(CredentialType::CREDENTIAL_TYPE_PASSWORD, type);
   const auto& credentials_forms =
       (type == CredentialType::CREDENTIAL_TYPE_PASSWORD)
           ? local_credentials_forms()
