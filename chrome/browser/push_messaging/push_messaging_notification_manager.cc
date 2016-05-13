@@ -52,6 +52,9 @@ using content::ServiceWorkerContext;
 using content::WebContents;
 
 namespace {
+// Currently this just costs 1.0, but we may expand the cost to
+// include things like whether wifi is available in the mobile case.
+const double kBackgroundProcessingCost = 1.0;
 
 void RecordUserVisibleStatus(content::PushUserVisibleStatus status) {
   UMA_HISTOGRAM_ENUMERATION("PushMessaging.UserVisibleStatus", status,
@@ -186,20 +189,29 @@ void PushMessagingNotificationManager::DidGetNotificationsFromDatabase(
     }
   }
 
-  // Don't track push messages that didn't show a notification but were exempt
-  // from needing to do so.
-  if (notification_shown || notification_needed) {
+  if (notification_needed && !notification_shown) {
+    // Only track budget for messages that needed to show a notification but
+    // did not.
     BackgroundBudgetService* service =
         BackgroundBudgetServiceFactory::GetForProfile(profile_);
-    std::string notification_history = service->GetBudget(origin);
-    DidGetBudget(origin, service_worker_registration_id, notification_shown,
-                 notification_needed, message_handled_closure,
-                 notification_history);
-  } else {
+    double budget = service->GetBudget(origin);
+    DidGetBudget(origin, service_worker_registration_id,
+                 message_handled_closure, budget);
+    return;
+  }
+
+  if (notification_needed && notification_shown) {
+    RecordUserVisibleStatus(
+        content::PUSH_USER_VISIBLE_STATUS_REQUIRED_AND_SHOWN);
+  } else if (!notification_needed && !notification_shown) {
     RecordUserVisibleStatus(
         content::PUSH_USER_VISIBLE_STATUS_NOT_REQUIRED_AND_NOT_SHOWN);
-    message_handled_closure.Run();
+  } else {
+    RecordUserVisibleStatus(
+        content::PUSH_USER_VISIBLE_STATUS_NOT_REQUIRED_BUT_SHOWN);
   }
+
+  message_handled_closure.Run();
 }
 
 bool PushMessagingNotificationManager::IsTabVisible(
@@ -238,46 +250,24 @@ bool PushMessagingNotificationManager::IsTabVisible(
 void PushMessagingNotificationManager::DidGetBudget(
     const GURL& origin,
     int64_t service_worker_registration_id,
-    bool notification_shown,
-    bool notification_needed,
     const base::Closure& message_handled_closure,
-    const std::string& data) {
+    const double budget) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  // We remember whether the last (up to) 10 pushes showed notifications.
-  const size_t MISSED_NOTIFICATIONS_LENGTH = 10;
-  // data is a string like "0001000", where '0' means shown, and '1' means
-  // needed but not shown. We manipulate it in bitset form.
-  std::bitset<MISSED_NOTIFICATIONS_LENGTH> missed_notifications(data);
+  // If the service needed to show a notification but did not, update the
+  // budget.
+  if (budget >= kBackgroundProcessingCost) {
+    // Update the stored budget.
+    BackgroundBudgetService* service =
+        BackgroundBudgetServiceFactory::GetForProfile(profile_);
+    service->StoreBudget(origin, budget - kBackgroundProcessingCost);
 
-  DCHECK(notification_shown || notification_needed);  // Caller must ensure this
-  bool needed_but_not_shown = notification_needed && !notification_shown;
-
-  // New entries go at the end, and old ones are shifted off the beginning once
-  // the history length is exceeded.
-  missed_notifications <<= 1;
-  missed_notifications[0] = needed_but_not_shown;
-  std::string updated_data(missed_notifications.
-      to_string<char, std::string::traits_type, std::string::allocator_type>());
-  BackgroundBudgetService* service =
-      BackgroundBudgetServiceFactory::GetForProfile(profile_);
-  service->StoreBudget(origin, updated_data);
-
-  if (notification_shown) {
-    RecordUserVisibleStatus(
-        notification_needed
-            ? content::PUSH_USER_VISIBLE_STATUS_REQUIRED_AND_SHOWN
-            : content::PUSH_USER_VISIBLE_STATUS_NOT_REQUIRED_BUT_SHOWN);
-    message_handled_closure.Run();
-    return;
-  }
-  DCHECK(needed_but_not_shown);
-  if (missed_notifications.count() <= 1) {  // Apply grace.
     RecordUserVisibleStatus(
         content::PUSH_USER_VISIBLE_STATUS_REQUIRED_BUT_NOT_SHOWN_USED_GRACE);
     message_handled_closure.Run();
     return;
   }
+
   RecordUserVisibleStatus(
       content::PUSH_USER_VISIBLE_STATUS_REQUIRED_BUT_NOT_SHOWN_GRACE_EXCEEDED);
   rappor::SampleDomainAndRegistryFromGURL(

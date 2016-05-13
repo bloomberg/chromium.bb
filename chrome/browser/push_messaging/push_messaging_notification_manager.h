@@ -75,10 +75,8 @@ class PushMessagingNotificationManager {
 
   void DidGetBudget(const GURL& origin,
                     int64_t service_worker_registration_id,
-                    bool notification_shown,
-                    bool notification_needed,
                     const base::Closure& message_handled_closure,
-                    const std::string& data);
+                    const double budget);
 
   static void DidWriteNotificationDataIOProxy(
       const base::WeakPtr<PushMessagingNotificationManager>& ui_weak_ptr,

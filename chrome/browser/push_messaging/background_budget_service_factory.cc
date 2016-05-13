@@ -4,6 +4,8 @@
 
 #include "chrome/browser/push_messaging/background_budget_service_factory.h"
 
+#include "base/memory/ptr_util.h"
+#include "base/time/default_clock.h"
 #include "chrome/browser/engagement/site_engagement_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/push_messaging/background_budget_service.h"
