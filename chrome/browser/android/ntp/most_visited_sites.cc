@@ -16,9 +16,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "chrome/browser/supervised_user/supervised_user_service.h"
-#include "chrome/browser/supervised_user/supervised_user_service_factory.h"
-#include "chrome/browser/supervised_user/supervised_user_url_filter.h"
 #include "components/history/core/browser/top_sites.h"
 #include "components/ntp_tiles/pref_names.h"
 #include "components/ntp_tiles/switches.h"
@@ -179,17 +176,15 @@ MostVisitedSites::MostVisitedSites(
     const base::FilePath& popular_sites_directory,
     scoped_refptr<history::TopSites> top_sites,
     SuggestionsService* suggestions,
-    bool is_child_profile,
-    Profile* profile)
-    : profile_(profile),
-      prefs_(prefs),
+    MostVisitedSitesSupervisor* supervisor)
+    : prefs_(prefs),
       template_url_service_(template_url_service),
       variations_service_(variations_service),
       download_context_(download_context),
       popular_sites_directory_(popular_sites_directory),
       top_sites_(top_sites),
       suggestions_service_(suggestions),
-      is_child_profile_(is_child_profile),
+      supervisor_(supervisor),
       observer_(nullptr),
       num_sites_(0),
       received_most_visited_sites_(false),
@@ -198,15 +193,11 @@ MostVisitedSites::MostVisitedSites(
       scoped_observer_(this),
       mv_source_(SUGGESTIONS_SERVICE),
       weak_ptr_factory_(this) {
-  SupervisedUserService* supervised_user_service =
-      SupervisedUserServiceFactory::GetForProfile(profile_);
-  supervised_user_service->AddObserver(this);
+  supervisor_->SetObserver(this);
 }
 
 MostVisitedSites::~MostVisitedSites() {
-  SupervisedUserService* supervised_user_service =
-      SupervisedUserServiceFactory::GetForProfile(profile_);
-  supervised_user_service->RemoveObserver(this);
+  supervisor_->SetObserver(nullptr);
 }
 
 void MostVisitedSites::SetMostVisitedURLsObserver(
@@ -356,7 +347,7 @@ void MostVisitedSites::RecordOpenedMostVisitedItem(int index, int tile_type) {
   LogHistogramEvent(histogram, tile_type, NUM_TILE_TYPES);
 }
 
-void MostVisitedSites::OnURLFilterChanged() {
+void MostVisitedSites::OnBlockedSitesChanged() {
   BuildCurrentSuggestions();
 }
 
@@ -385,22 +376,15 @@ void MostVisitedSites::InitiateTopSitesQuery() {
 }
 
 base::FilePath MostVisitedSites::GetWhitelistLargeIconPath(const GURL& url) {
-  SupervisedUserService* supervised_user_service =
-      SupervisedUserServiceFactory::GetForProfile(profile_);
-
-  for (const auto& whitelist : supervised_user_service->whitelists()) {
-    if (AreURLsEquivalent(whitelist->entry_point(), url))
-      return whitelist->large_icon_path();
+  for (const auto& whitelist : supervisor_->whitelists()) {
+    if (AreURLsEquivalent(whitelist.entry_point, url))
+      return whitelist.large_icon_path;
   }
   return base::FilePath();
 }
 
 void MostVisitedSites::OnMostVisitedURLsAvailable(
     const history::MostVisitedURLList& visited_list) {
-  SupervisedUserURLFilter* url_filter =
-      SupervisedUserServiceFactory::GetForProfile(profile_)
-          ->GetURLFilterForUIThread();
-
   MostVisitedSites::SuggestionsPtrVector suggestions;
   size_t num_tiles =
       std::min(visited_list.size(), static_cast<size_t>(num_sites_));
@@ -410,10 +394,8 @@ void MostVisitedSites::OnMostVisitedURLsAvailable(
       num_tiles = i;
       break;  // This is the signal that there are no more real visited sites.
     }
-    if (url_filter->GetFilteringBehaviorForURL(visited.url) ==
-        SupervisedUserURLFilter::FilteringBehavior::BLOCK) {
+    if (supervisor_->IsBlocked(visited.url))
       continue;
-    }
 
     std::unique_ptr<Suggestion> suggestion(new Suggestion());
     suggestion->title = visited.title;
@@ -441,16 +423,11 @@ void MostVisitedSites::OnSuggestionsProfileAvailable(
   if (num_sites_ < num_tiles)
     num_tiles = num_sites_;
 
-  SupervisedUserURLFilter* url_filter =
-      SupervisedUserServiceFactory::GetForProfile(profile_)
-          ->GetURLFilterForUIThread();
   MostVisitedSites::SuggestionsPtrVector suggestions;
   for (int i = 0; i < num_tiles; ++i) {
     const ChromeSuggestion& suggestion = suggestions_profile.suggestions(i);
-    if (url_filter->GetFilteringBehaviorForURL(GURL(suggestion.url())) ==
-        SupervisedUserURLFilter::FilteringBehavior::BLOCK) {
+    if (supervisor_->IsBlocked(GURL(suggestion.url())))
       continue;
-    }
 
     std::unique_ptr<Suggestion> generated_suggestion(new Suggestion());
     generated_suggestion->title = base::UTF8ToUTF16(suggestion.title());
@@ -479,36 +456,29 @@ MostVisitedSites::CreateWhitelistEntryPointSuggestions(
   size_t num_whitelist_suggestions = num_sites_ - num_personal_suggestions;
   MostVisitedSites::SuggestionsPtrVector whitelist_suggestions;
 
-  SupervisedUserService* supervised_user_service =
-      SupervisedUserServiceFactory::GetForProfile(profile_);
-  SupervisedUserURLFilter* url_filter =
-      supervised_user_service->GetURLFilterForUIThread();
-
   std::set<std::string> personal_hosts;
   for (const auto& suggestion : personal_suggestions)
     personal_hosts.insert(suggestion->url.host());
 
-  for (const auto& whitelist : supervised_user_service->whitelists()) {
+  for (const auto& whitelist : supervisor_->whitelists()) {
     // Skip blacklisted sites.
-    if (top_sites_ && top_sites_->IsBlacklisted(whitelist->entry_point()))
+    if (top_sites_ && top_sites_->IsBlacklisted(whitelist.entry_point))
       continue;
 
     // Skip suggestions already present.
-    if (personal_hosts.find(whitelist->entry_point().host()) !=
+    if (personal_hosts.find(whitelist.entry_point.host()) !=
         personal_hosts.end())
       continue;
 
     // Skip whitelist entry points that are manually blocked.
-    if (url_filter->GetFilteringBehaviorForURL(whitelist->entry_point()) ==
-        SupervisedUserURLFilter::FilteringBehavior::BLOCK) {
+    if (supervisor_->IsBlocked(whitelist.entry_point))
       continue;
-    }
 
     std::unique_ptr<Suggestion> suggestion(new Suggestion());
-    suggestion->title = whitelist->title();
-    suggestion->url = whitelist->entry_point();
+    suggestion->title = whitelist.title;
+    suggestion->url = whitelist.entry_point;
     suggestion->source = WHITELIST;
-    suggestion->whitelist_icon_path = whitelist->large_icon_path();
+    suggestion->whitelist_icon_path = whitelist.large_icon_path;
 
     whitelist_suggestions.push_back(std::move(suggestion));
     if (whitelist_suggestions.size() >= num_whitelist_suggestions)
@@ -523,7 +493,7 @@ MostVisitedSites::CreatePopularSitesSuggestions(
     const MostVisitedSites::SuggestionsPtrVector& personal_suggestions,
     const MostVisitedSites::SuggestionsPtrVector& whitelist_suggestions) {
   // For child accounts popular sites suggestions will not be added.
-  if (is_child_profile_)
+  if (supervisor_->IsChildProfile())
     return MostVisitedSites::SuggestionsPtrVector();
 
   size_t num_suggestions =

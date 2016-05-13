@@ -19,6 +19,9 @@
 #include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/search/suggestions/suggestions_service_factory.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/supervised_user/supervised_user_service.h"
+#include "chrome/browser/supervised_user/supervised_user_service_factory.h"
+#include "chrome/browser/supervised_user/supervised_user_url_filter.h"
 #include "chrome/browser/thumbnails/thumbnail_list_source.h"
 #include "components/history/core/browser/top_sites.h"
 #include "content/public/browser/url_data_source.h"
@@ -49,10 +52,59 @@ void CallJavaWithBitmap(
 
 }  // namespace
 
-class MostVisitedSitesBridge::Observer
-    : public MostVisitedSites::Observer {
+MostVisitedSitesBridge::SupervisorBridge::SupervisorBridge(Profile* profile)
+    : profile_(profile),
+      supervisor_observer_(nullptr),
+      register_observer_(this) {
+  register_observer_.Add(SupervisedUserServiceFactory::GetForProfile(profile_));
+}
+
+MostVisitedSitesBridge::SupervisorBridge::~SupervisorBridge() {}
+
+void MostVisitedSitesBridge::SupervisorBridge::SetObserver(
+    Observer* new_observer) {
+  if (new_observer)
+    DCHECK(!supervisor_observer_);
+  else
+    DCHECK(supervisor_observer_);
+
+  supervisor_observer_ = new_observer;
+}
+
+bool MostVisitedSitesBridge::SupervisorBridge::IsBlocked(const GURL& url) {
+  SupervisedUserService* supervised_user_service =
+      SupervisedUserServiceFactory::GetForProfile(profile_);
+  auto url_filter = supervised_user_service->GetURLFilterForUIThread();
+  return url_filter->GetFilteringBehaviorForURL(url) ==
+         SupervisedUserURLFilter::FilteringBehavior::BLOCK;
+}
+
+std::vector<MostVisitedSitesSupervisor::Whitelist>
+MostVisitedSitesBridge::SupervisorBridge::whitelists() {
+  std::vector<MostVisitedSitesSupervisor::Whitelist> results;
+  SupervisedUserService* supervised_user_service =
+      SupervisedUserServiceFactory::GetForProfile(profile_);
+  for (const auto& whitelist : supervised_user_service->whitelists()) {
+    results.emplace_back(Whitelist{
+        whitelist->title(), whitelist->entry_point(),
+        whitelist->large_icon_path(),
+    });
+  }
+  return results;
+}
+
+bool MostVisitedSitesBridge::SupervisorBridge::IsChildProfile() {
+  return profile_->IsChild();
+}
+
+void MostVisitedSitesBridge::SupervisorBridge::OnURLFilterChanged() {
+  if (supervisor_observer_)
+    supervisor_observer_->OnBlockedSitesChanged();
+}
+
+class MostVisitedSitesBridge::JavaObserver : public MostVisitedSites::Observer {
  public:
-  Observer(JNIEnv* env, const JavaParamRef<jobject>& obj);
+  JavaObserver(JNIEnv* env, const JavaParamRef<jobject>& obj);
 
   void OnMostVisitedURLsAvailable(
       const MostVisitedSites::SuggestionsVector& suggestions) override;
@@ -63,14 +115,15 @@ class MostVisitedSitesBridge::Observer
  private:
   ScopedJavaGlobalRef<jobject> observer_;
 
-  DISALLOW_COPY_AND_ASSIGN(Observer);
+  DISALLOW_COPY_AND_ASSIGN(JavaObserver);
 };
 
-MostVisitedSitesBridge::Observer::Observer(
-    JNIEnv* env, const JavaParamRef<jobject>& obj)
+MostVisitedSitesBridge::JavaObserver::JavaObserver(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj)
     : observer_(env, obj) {}
 
-void MostVisitedSitesBridge::Observer::OnMostVisitedURLsAvailable(
+void MostVisitedSitesBridge::JavaObserver::OnMostVisitedURLsAvailable(
     const MostVisitedSites::SuggestionsVector& suggestions) {
   JNIEnv* env = AttachCurrentThread();
   std::vector<base::string16> titles;
@@ -90,7 +143,7 @@ void MostVisitedSitesBridge::Observer::OnMostVisitedURLsAvailable(
       ToJavaArrayOfStrings(env, whitelist_icon_paths).obj());
 }
 
-void MostVisitedSitesBridge::Observer::OnPopularURLsAvailable(
+void MostVisitedSitesBridge::JavaObserver::OnPopularURLsAvailable(
     const MostVisitedSites::PopularSitesVector& sites) {
   JNIEnv* env = AttachCurrentThread();
   std::vector<std::string> urls;
@@ -108,15 +161,15 @@ void MostVisitedSitesBridge::Observer::OnPopularURLsAvailable(
 }
 
 MostVisitedSitesBridge::MostVisitedSitesBridge(Profile* profile)
-    : most_visited_(profile->GetPrefs(),
+    : supervisor_(profile),
+      most_visited_(profile->GetPrefs(),
                     TemplateURLServiceFactory::GetForProfile(profile),
                     g_browser_process->variations_service(),
                     profile->GetRequestContext(),
                     ChromePopularSites::GetDirectory(),
                     TopSitesFactory::GetForProfile(profile),
                     SuggestionsServiceFactory::GetForProfile(profile),
-                    profile->IsChild(),
-                    profile) {
+                    &supervisor_) {
   // Register the thumbnails debugging page.
   // TODO(sfiera): find thumbnails a home. They don't belong here.
   content::URLDataSource::Add(profile, new ThumbnailListSource(profile));
@@ -134,8 +187,8 @@ void MostVisitedSitesBridge::SetMostVisitedURLsObserver(
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jobject>& j_observer,
     jint num_sites) {
-  observer_.reset(new Observer(env, j_observer));
-  most_visited_.SetMostVisitedURLsObserver(observer_.get(), num_sites);
+  java_observer_.reset(new JavaObserver(env, j_observer));
+  most_visited_.SetMostVisitedURLsObserver(java_observer_.get(), num_sites);
 }
 
 void MostVisitedSitesBridge::GetURLThumbnail(

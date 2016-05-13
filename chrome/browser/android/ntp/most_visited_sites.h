@@ -17,8 +17,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/android/ntp/popular_sites.h"
-#include "chrome/browser/supervised_user/supervised_user_service.h"
-#include "chrome/browser/supervised_user/supervised_user_service_observer.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/history/core/browser/top_sites_observer.h"
 #include "components/suggestions/proto/suggestions.pb.h"
@@ -41,6 +39,42 @@ namespace variations {
 class VariationsService;
 }
 
+// Shim interface for SupervisedUserService.
+class MostVisitedSitesSupervisor {
+ public:
+  struct Whitelist {
+    base::string16 title;
+    GURL entry_point;
+    base::FilePath large_icon_path;
+  };
+
+  class Observer {
+   public:
+    virtual void OnBlockedSitesChanged() = 0;
+
+   protected:
+    ~Observer() {}
+  };
+
+  // Pass non-null to set observer, or null to remove observer.
+  // If setting observer, there must not yet be an observer set.
+  // If removing observer, there must already be one to remove.
+  // Does not take ownership. Observer must outlive this object.
+  virtual void SetObserver(Observer* new_observer) = 0;
+
+  // If true, |url| should not be shown on the NTP.
+  virtual bool IsBlocked(const GURL& url) = 0;
+
+  // Explicit suggestions for sites to show on NTP.
+  virtual std::vector<Whitelist> whitelists() = 0;
+
+  // If true, be conservative about suggesting sites from outside sources.
+  virtual bool IsChildProfile() = 0;
+
+ protected:
+  virtual ~MostVisitedSitesSupervisor() {}
+};
+
 // Tracks the list of most visited sites and their thumbnails.
 //
 // Do not use, except from MostVisitedSitesBridge. The interface is in flux
@@ -49,7 +83,7 @@ class VariationsService;
 //
 // TODO(sfiera): finalize interface.
 class MostVisitedSites : public history::TopSitesObserver,
-                         public SupervisedUserServiceObserver {
+                         public MostVisitedSitesSupervisor::Observer {
  public:
   struct Suggestion;
   using SuggestionsVector = std::vector<Suggestion>;
@@ -97,8 +131,7 @@ class MostVisitedSites : public history::TopSitesObserver,
                    const base::FilePath& popular_sites_directory,
                    scoped_refptr<history::TopSites> top_sites,
                    suggestions::SuggestionsService* suggestions,
-                   bool is_child_profile,
-                   Profile* profile);
+                   MostVisitedSitesSupervisor* supervisor);
 
   ~MostVisitedSites() override;
 
@@ -113,8 +146,8 @@ class MostVisitedSites : public history::TopSitesObserver,
   void RecordTileTypeMetrics(const std::vector<int>& tile_types);
   void RecordOpenedMostVisitedItem(int index, int tile_type);
 
-  // SupervisedUserServiceObserver implementation.
-  void OnURLFilterChanged() override;
+  // MostVisitedSitesSupervisor::Observer implementation.
+  void OnBlockedSitesChanged() override;
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
@@ -222,9 +255,6 @@ class MostVisitedSites : public history::TopSitesObserver,
   void TopSitesChanged(history::TopSites* top_sites,
                        ChangeReason change_reason) override;
 
-  // The profile whose most visited sites will be queried.
-  Profile* profile_;
-
   PrefService* prefs_;
   const TemplateURLService* template_url_service_;
   variations::VariationsService* variations_service_;
@@ -232,13 +262,7 @@ class MostVisitedSites : public history::TopSitesObserver,
   base::FilePath popular_sites_directory_;
   scoped_refptr<history::TopSites> top_sites_;
   suggestions::SuggestionsService* suggestions_service_;
-
-  // Children will not be shown popular sites as suggestions.
-  // TODO(sfiera): enable/disable suggestions if the profile is marked or
-  // unmarked as a child profile during the lifetime of the object. For now, it
-  // doesn't matter, because a MostVisitedSites is instantiated for each NTP,
-  // but a longer-lived object would need to update.
-  bool is_child_profile_;
+  MostVisitedSitesSupervisor* supervisor_;
 
   Observer* observer_;
 

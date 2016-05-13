@@ -15,6 +15,8 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
 #include "chrome/browser/android/ntp/most_visited_sites.h"
+#include "chrome/browser/supervised_user/supervised_user_service.h"
+#include "chrome/browser/supervised_user/supervised_user_service_observer.h"
 
 class Profile;
 
@@ -57,8 +59,30 @@ class MostVisitedSitesBridge {
  private:
   ~MostVisitedSitesBridge();
 
-  class Observer;
-  std::unique_ptr<Observer> observer_;
+  class JavaObserver;
+  std::unique_ptr<JavaObserver> java_observer_;
+
+  class SupervisorBridge : public MostVisitedSitesSupervisor,
+                           public SupervisedUserServiceObserver {
+   public:
+    explicit SupervisorBridge(Profile* profile);
+    ~SupervisorBridge() override;
+
+    void SetObserver(Observer* observer) override;
+    bool IsBlocked(const GURL& url) override;
+    std::vector<MostVisitedSitesSupervisor::Whitelist> whitelists() override;
+    bool IsChildProfile() override;
+
+    // SupervisedUserServiceObserver implementation.
+    void OnURLFilterChanged() override;
+
+   private:
+    Profile* const profile_;
+    Observer* supervisor_observer_;
+    ScopedObserver<SupervisedUserService, SupervisedUserServiceObserver>
+        register_observer_;
+  };
+  SupervisorBridge supervisor_;
 
   MostVisitedSites most_visited_;
 
