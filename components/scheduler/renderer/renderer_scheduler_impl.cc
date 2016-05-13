@@ -1263,6 +1263,11 @@ void RendererSchedulerImpl::BroadcastConsoleWarning(
 void RendererSchedulerImpl::OnTriedToExecuteBlockedTask(
     const TaskQueue& queue,
     const base::PendingTask& task) {
+  if (!MainThreadOnly().expensive_task_blocking_allowed ||
+      MainThreadOnly().timer_queue_suspend_count ||
+      MainThreadOnly().timer_queue_suspended_when_backgrounded) {
+    return;
+  }
   if (!MainThreadOnly().have_reported_blocking_intervention_in_current_policy) {
     MainThreadOnly().have_reported_blocking_intervention_in_current_policy =
         true;
