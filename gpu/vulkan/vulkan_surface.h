@@ -21,11 +21,11 @@ class VULKAN_EXPORT VulkanSurface {
  public:
   // Minimum bit depth of surface.
   enum Format {
-    FORMAT_BGRA8888,
-    FORMAT_RGB565,
+    FORMAT_RGBA_32,
+    FORMAT_RGB_16,
 
     NUM_SURFACE_FORMATS,
-    DEFAULT_SURFACE_FORMAT = FORMAT_BGRA8888
+    DEFAULT_SURFACE_FORMAT = FORMAT_RGBA_32
   };
 
   virtual ~VulkanSurface() = 0;
