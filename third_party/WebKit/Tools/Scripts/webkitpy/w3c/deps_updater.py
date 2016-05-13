@@ -18,7 +18,7 @@ class DepsUpdater(object):
         self.fs = host.filesystem
         self.finder = WebKitFinder(self.fs)
         self.verbose = False
-        self.allow_local_blink_commits = False
+        self.allow_local_commits = False
         self.keep_w3c_repos_around = False
 
     def main(self, argv=None):
@@ -28,8 +28,8 @@ class DepsUpdater(object):
         if not self.checkout_is_okay():
             return 1
 
-        self.print_('## noting the current Blink commitish')
-        blink_commitish = self.run(['git', 'show-ref', 'HEAD'])[1].split()[0]
+        self.print_('## noting the current Chromium commitish')
+        chromium_commitish = self.run(['git', 'show-ref', 'HEAD'])[1].split()[0]
 
         if self.target == 'wpt':
             import_commitish = self.update('web-platform-tests',
@@ -47,7 +47,7 @@ class DepsUpdater(object):
         else:
             raise AssertionError("Unsupported target %s" % self.target)
 
-        self.commit_changes_if_needed(blink_commitish, import_commitish)
+        self.commit_changes_if_needed(chromium_commitish, import_commitish)
 
         return 0
 
@@ -56,27 +56,27 @@ class DepsUpdater(object):
         parser.description = __doc__
         parser.add_argument('-v', '--verbose', action='store_true',
                             help='log what we are doing')
-        parser.add_argument('--allow-local-blink-commits', action='store_true',
-                            help='allow script to run even if we have local blink commits')
+        parser.add_argument('--allow-local-commits', action='store_true',
+                            help='allow script to run even if we have local commits')
         parser.add_argument('--keep-w3c-repos-around', action='store_true',
                             help='leave the w3c repos around that were imported previously.')
         parser.add_argument('target', choices=['css', 'wpt'],
                             help='Target repository.  "css" for csswg-test, "wpt" for web-platform-tests.')
 
         args = parser.parse_args(argv)
-        self.allow_local_blink_commits = args.allow_local_blink_commits
+        self.allow_local_commits = args.allow_local_commits
         self.keep_w3c_repos_around = args.keep_w3c_repos_around
         self.verbose = args.verbose
         self.target = args.target
 
     def checkout_is_okay(self):
         if self.run(['git', 'diff', '--quiet', 'HEAD'], exit_on_failure=False)[0]:
-            self.print_('## blink checkout is dirty, aborting')
+            self.print_('## checkout is dirty, aborting')
             return False
 
-        local_blink_commits = self.run(['git', 'log', '--oneline', 'origin/master..HEAD'])[1]
-        if local_blink_commits and not self.allow_local_blink_commits:
-            self.print_('## blink checkout has local commits, aborting')
+        local_commits = self.run(['git', 'log', '--oneline', 'origin/master..HEAD'])[1]
+        if local_commits and not self.allow_local_commits:
+            self.print_('## checkout has local commits, aborting')
             return False
 
         if self.fs.exists(self.path_from_webkit_base('web-platform-tests')):
@@ -132,13 +132,13 @@ class DepsUpdater(object):
 
         return '%s@%s' % (repo, master_commitish)
 
-    def commit_changes_if_needed(self, blink_commitish, import_commitish):
+    def commit_changes_if_needed(self, chromium_commitish, import_commitish):
         if self.run(['git', 'diff', '--quiet', 'HEAD'], exit_on_failure=False)[0]:
             self.print_('## commiting changes')
             commit_msg = ('Import %s\n'
                           '\n'
-                          'Using update-w3c-deps in Blink %s.\n'
-                          % (import_commitish, blink_commitish))
+                          'Using update-w3c-deps in Chromium %s.\n'
+                          % (import_commitish, chromium_commitish))
             path_to_commit_msg = self.path_from_webkit_base('commit_msg')
             if self.verbose:
                 self.print_('cat > %s <<EOF' % path_to_commit_msg)
