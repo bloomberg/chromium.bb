@@ -57,6 +57,7 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_context_storage.h"
 #include "net/url_request/url_request_job_factory_impl.h"
+#include "url/url_features.h"
 #include "url/url_util.h"
 
 namespace {
@@ -148,7 +149,9 @@ void CrNetEnvironment::Initialize() {
   if (!g_at_exit_)
     g_at_exit_ = new base::AtExitManager;
 
+#if !BUILDFLAG(USE_PLATFORM_ICU_ALTERNATIVES)
   CHECK(base::i18n::InitializeICU());
+#endif
   url::Initialize();
   base::CommandLine::Init(0, nullptr);
 
@@ -457,9 +460,11 @@ void CrNetEnvironment::InitializeOnNetworkThread() {
       new net::URLRequestJobFactoryImpl;
   job_factory->SetProtocolHandler(
       "data", base::WrapUnique(new net::DataProtocolHandler));
+#if !defined(DISABLE_FILE_SUPPORT)
   job_factory->SetProtocolHandler(
       "file", base::WrapUnique(
                   new net::FileProtocolHandler(file_thread_->task_runner())));
+#endif   // !defined(DISABLE_FILE_SUPPORT)
   main_context_->set_job_factory(job_factory);
 
   main_context_->set_net_log(net_log_.get());

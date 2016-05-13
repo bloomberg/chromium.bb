@@ -22,6 +22,7 @@
 #include "net/http/http_version.h"
 #include "net/url_request/url_request.h"
 #include "url/gurl.h"
+#include "url/url_features.h"
 
 namespace {
 
@@ -111,6 +112,10 @@ NSURLResponse* GetNSURLResponseForRequest(URLRequest* request) {
         NSString* v = base::SysUTF8ToNSString(value);
         if (!v) {
           DLOG(ERROR) << "Header \"" << name << "\" is not in UTF8: " << value;
+#if BUILDFLAG(USE_PLATFORM_ICU_ALTERNATIVES)
+          DCHECK(FALSE) << "ICU support is required, but not included.";
+          continue;
+#else
           // Infer the encoding, or skip the header if it's not possible.
           std::string encoding;
           if (!base::DetectEncoding(value, &encoding))
@@ -120,6 +125,7 @@ NSURLResponse* GetNSURLResponseForRequest(URLRequest* request) {
             continue;
           v = base::SysUTF8ToNSString(value_utf8);
           DCHECK(v);
+#endif  // !BUILDFLAG(USE_PLATFORM_ICU_ALTERNATIVES)
         }
 
         // Duplicate keys are appended using a comma separator (RFC 2616).
