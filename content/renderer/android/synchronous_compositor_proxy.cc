@@ -174,6 +174,7 @@ void SynchronousCompositorProxy::OnMessageReceived(
                                     DemandDrawSw)
     IPC_MESSAGE_HANDLER(SyncCompositorMsg_UpdateState, ProcessCommonParams)
     IPC_MESSAGE_HANDLER(SyncCompositorMsg_ZoomBy, SynchronouslyZoomBy)
+    IPC_MESSAGE_HANDLER(SyncCompositorMsg_SetScroll, SetScroll)
   IPC_END_MESSAGE_MAP()
 }
 
@@ -399,6 +400,14 @@ void SynchronousCompositorProxy::SynchronouslyZoomBy(
   PopulateCommonParams(common_renderer_params);
 }
 
+void SynchronousCompositorProxy::SetScroll(
+    const gfx::ScrollOffset& new_total_scroll_offset) {
+  if (total_scroll_offset_ == new_total_scroll_offset)
+    return;
+  total_scroll_offset_ = new_total_scroll_offset;
+  input_handler_proxy_->SynchronouslySetRootScrollOffset(total_scroll_offset_);
+}
+
 void SynchronousCompositorProxy::DidOverscroll(
     const DidOverscrollParams& did_overscroll_params) {
   SyncCompositorCommonRendererParams params;
@@ -409,12 +418,6 @@ void SynchronousCompositorProxy::DidOverscroll(
 
 void SynchronousCompositorProxy::ProcessCommonParams(
     const SyncCompositorCommonBrowserParams& common_params) {
-  if (common_params.update_root_scroll_offset &&
-      total_scroll_offset_ != common_params.root_scroll_offset) {
-    total_scroll_offset_ = common_params.root_scroll_offset;
-    input_handler_proxy_->SynchronouslySetRootScrollOffset(
-        total_scroll_offset_);
-  }
   begin_frame_source_->SetBeginFrameSourcePaused(
       common_params.begin_frame_source_paused);
 }

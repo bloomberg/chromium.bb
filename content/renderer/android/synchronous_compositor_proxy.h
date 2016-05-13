@@ -111,6 +111,7 @@ class SynchronousCompositorProxy
       float zoom_delta,
       const gfx::Point& anchor,
       SyncCompositorCommonRendererParams* common_renderer_params);
+  void SetScroll(const gfx::ScrollOffset& total_scroll_offset);
 
   void SwapBuffersHw(uint32_t output_surface_id, cc::CompositorFrame* frame);
   void SendDemandDrawHwReply(cc::CompositorFrame* frame,

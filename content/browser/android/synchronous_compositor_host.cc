@@ -77,7 +77,6 @@ SynchronousCompositorHost::SynchronousCompositorHost(
       use_in_process_zero_copy_software_draw_(use_in_proc_software_draw),
       is_active_(false),
       bytes_limit_(0u),
-      root_scroll_offset_updated_by_browser_(false),
       renderer_param_version_(0u),
       need_animate_scroll_(false),
       need_invalidate_count_(0u),
@@ -329,9 +328,9 @@ void SynchronousCompositorHost::DidChangeRootLayerScrollOffset(
     const gfx::ScrollOffset& root_offset) {
   if (root_scroll_offset_ == root_offset)
     return;
-  root_scroll_offset_updated_by_browser_ = true;
   root_scroll_offset_ = root_offset;
-  SendAsyncCompositorStateIfNeeded();
+  sender_->Send(
+      new SyncCompositorMsg_SetScroll(routing_id_, root_scroll_offset_));
 }
 
 void SynchronousCompositorHost::SendAsyncCompositorStateIfNeeded() {
@@ -441,11 +440,6 @@ void SynchronousCompositorHost::OnOverScroll(
 void SynchronousCompositorHost::PopulateCommonParams(
     SyncCompositorCommonBrowserParams* params) {
   DCHECK(params);
-  if (root_scroll_offset_updated_by_browser_) {
-    params->root_scroll_offset = root_scroll_offset_;
-    params->update_root_scroll_offset = root_scroll_offset_updated_by_browser_;
-    root_scroll_offset_updated_by_browser_ = false;
-  }
   params->begin_frame_source_paused = !is_active_;
 
   weak_ptr_factory_.InvalidateWeakPtrs();

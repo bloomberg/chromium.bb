@@ -7,8 +7,7 @@
 namespace content {
 
 SyncCompositorCommonBrowserParams::SyncCompositorCommonBrowserParams()
-    : update_root_scroll_offset(false),
-      begin_frame_source_paused(false) {}
+    : begin_frame_source_paused(false) {}
 
 SyncCompositorCommonBrowserParams::~SyncCompositorCommonBrowserParams() {}
 

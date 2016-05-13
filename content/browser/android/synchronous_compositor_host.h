@@ -110,7 +110,6 @@ class SynchronousCompositorHost : public SynchronousCompositor {
 
   // Updated by both renderer and browser.
   gfx::ScrollOffset root_scroll_offset_;
-  bool root_scroll_offset_updated_by_browser_;
 
   // From renderer.
   uint32_t renderer_param_version_;
