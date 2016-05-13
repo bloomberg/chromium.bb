@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "chromecast/base/metrics/cast_metrics_helper.h"
 #include "chromecast/media/cdm/browser_cdm_cast.h"
 #include "chromecast/media/cma/base/buffering_defs.h"
 #include "chromecast/media/cma/base/cma_logging.h"
@@ -76,6 +77,12 @@ VideoPipelineImpl::~VideoPipelineImpl() {
 void VideoPipelineImpl::OnVideoResolutionChanged(const Size& size) {
   if (state() != kPlaying)
     return;
+
+  metrics::CastMetricsHelper* metrics_helper =
+      metrics::CastMetricsHelper::GetInstance();
+  int encoded_video_resolution = (size.width << 16) | size.height;
+  metrics_helper->RecordApplicationEventWithValue(
+      "Cast.Platform.VideoResolution", encoded_video_resolution);
 
   if (!natural_size_changed_cb_.is_null()) {
     natural_size_changed_cb_.Run(gfx::Size(size.width, size.height));
