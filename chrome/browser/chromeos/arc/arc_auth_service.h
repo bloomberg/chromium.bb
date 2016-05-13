@@ -5,23 +5,27 @@
 #ifndef CHROME_BROWSER_CHROMEOS_ARC_ARC_AUTH_SERVICE_H_
 #define CHROME_BROWSER_CHROMEOS_ARC_ARC_AUTH_SERVICE_H_
 
+#include <memory>
 #include <ostream>
+#include <string>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "chrome/browser/chromeos/policy/android_management_client.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service.h"
 #include "components/arc/common/auth.mojom.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/syncable_prefs/pref_service_syncable_observer.h"
 #include "components/syncable_prefs/synced_pref_observer.h"
-#include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/ubertoken_fetcher.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 class ArcAppLauncher;
 class GaiaAuthFetcher;
 class Profile;
+class ProfileOAuth2TokenService;
 
 namespace content {
 class StoragePartition;
@@ -74,6 +78,9 @@ class ArcAuthService : public ArcService,
 
     // Called to notify that OptIn UI needs to show specific page.
     virtual void OnOptInUIShowPage(UIPage page, const base::string16& status) {}
+
+    // Called to notify that ARC bridge is shut down.
+    virtual void OnShutdownBridge() {}
   };
 
   explicit ArcAuthService(ArcBridgeService* bridge_service);
@@ -88,6 +95,8 @@ class ArcAuthService : public ArcService,
 
   // Checks if OptIn verification was disabled by switch in command line.
   static bool IsOptInVerificationDisabled();
+
+  static void EnableCheckAndroidManagementForTesting();
 
   void OnPrimaryUserProfilePrepared(Profile* profile);
   void Shutdown();
@@ -160,6 +169,11 @@ class ArcAuthService : public ArcService,
   void OnOptInPreferenceChanged();
   void StartUI();
   void OnPrepareContextFailed();
+  void StartAndroidManagementClient();
+  void CheckAndroidManagement();
+  void OnAndroidManagementChecked(
+      policy::AndroidManagementClient::Result result);
+  void StartArcIfSignedIn();
 
   // Unowned pointer. Keeps current profile.
   Profile* profile_ = nullptr;
@@ -182,6 +196,12 @@ class ArcAuthService : public ArcService,
   bool context_prepared_ = false;
   UIPage ui_page_ = UIPage::NO_PAGE;
   base::string16 ui_page_status_;
+
+  ProfileOAuth2TokenService* token_service_;
+  std::string account_id_;
+  std::unique_ptr<policy::AndroidManagementClient> android_management_client_;
+
+  base::WeakPtrFactory<ArcAuthService> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcAuthService);
 };

@@ -6586,6 +6586,9 @@ All users must sign out to continue.
   <message name="IDS_ARC_SERVER_COMMUNICATION_ERROR" desc="Android sign-in error because of server communication error">
     Server communication error
   </message>
+  <message name="IDS_ARC_ANDROID_MANAGEMENT_REQUIRED_ERROR" desc="Error message shown when Android management is required for an unmanaged Chrome OS user.">
+    Your organization has not enabled Android Apps for your account. Contact your administrator for more information.
+  </message>
   <message name="IDS_FLAGS_ENABLE_IME_MENU_NAME" desc="Name of the about: flag for enabling opt-in IME menu.">
     Enable opt-in IME menu
     </message>
