@@ -1,3 +1,4 @@
+<link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
@@ -113,7 +114,7 @@
 
       <div id="overlay-wrapper" hidden$="[[!itemsSelected_]]">
         <div id="overlay-buttons">
-          <paper-icon-button icon="clear" id="cancel-icon-button"
+          <paper-icon-button icon="cr:clear" id="cancel-icon-button"
               on-tap="onClearSelectionTap_"></paper-icon-button>
           <div id="number-selected">[[numberOfItemsSelected_(count)]]</div>
           <paper-button id="cancel-button" on-tap="onClearSelectionTap_">

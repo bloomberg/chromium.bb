@@ -51,7 +51,7 @@ Polymer({
   toggleTabCard: function() {
     this.$.collapse.toggle();
     this.$['dropdown-indicator'].icon =
-        this.$.collapse.opened ? 'expand-less' : 'expand-more';
+        this.$.collapse.opened ? 'cr:expand-less' : 'cr:expand-more';
   },
 
   /**
