@@ -389,7 +389,15 @@ IN_PROC_BROWSER_TEST_F(TopDocumentIsolationTest,
       DepictFrameTree(root()));
 }
 
-IN_PROC_BROWSER_TEST_F(TopDocumentIsolationTest, FramesForSitesInHistory) {
+// Flaky on Mac. See https://crbug.com/611344.
+#if defined(OS_MACOSX)
+#define MAYBE_FramesForSitesInHistory DISABLED_FramesForSitesInHistory
+#else
+#define MAYBE_FramesForSitesInHistory FramesForSitesInHistory
+#endif
+
+IN_PROC_BROWSER_TEST_F(TopDocumentIsolationTest,
+                       MAYBE_FramesForSitesInHistory) {
   if (content::AreAllSitesIsolatedForTesting())
     return;  // Top Document Isolation is disabled in this mode.
 
