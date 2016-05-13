@@ -494,16 +494,6 @@ class CC_EXPORT LayerImpl {
 
   bool scrolls_drawn_descendant() { return scrolls_drawn_descendant_; }
 
-  void set_layer_or_descendant_has_touch_handler(
-      bool layer_or_descendant_has_touch_handler) {
-    layer_or_descendant_has_touch_handler_ =
-        layer_or_descendant_has_touch_handler;
-  }
-
-  bool layer_or_descendant_has_touch_handler() {
-    return layer_or_descendant_has_touch_handler_;
-  }
-
   int num_copy_requests_in_target_subtree();
 
   void UpdatePropertyTreeForScrollingAndAnimationIfNeeded();
@@ -658,8 +648,6 @@ class CC_EXPORT LayerImpl {
   std::unique_ptr<RenderSurfaceImpl> render_surface_;
 
   bool scrolls_drawn_descendant_;
-  // If true, the layer or one of its descendants has a touch handler.
-  bool layer_or_descendant_has_touch_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerImpl);
 };

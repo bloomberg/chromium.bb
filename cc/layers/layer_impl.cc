@@ -82,8 +82,7 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl, int id)
       element_id_(0),
       mutable_properties_(MutableProperty::kNone),
       debug_info_(nullptr),
-      scrolls_drawn_descendant_(false),
-      layer_or_descendant_has_touch_handler_(false) {
+      scrolls_drawn_descendant_(false) {
   DCHECK_GT(layer_id_, 0);
 
   DCHECK(layer_tree_impl_);

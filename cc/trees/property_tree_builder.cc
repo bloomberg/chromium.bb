@@ -83,21 +83,13 @@ static LayerPositionConstraint PositionConstraint(LayerImpl* layer) {
 
 struct PreCalculateMetaInformationRecursiveData {
   size_t num_unclipped_descendants;
-  int num_layer_or_descendants_with_copy_request;
-  int num_layer_or_descendants_with_touch_handler;
   int num_descendants_that_draw_content;
 
   PreCalculateMetaInformationRecursiveData()
       : num_unclipped_descendants(0),
-        num_layer_or_descendants_with_copy_request(0),
-        num_layer_or_descendants_with_touch_handler(0),
         num_descendants_that_draw_content(0) {}
 
   void Merge(const PreCalculateMetaInformationRecursiveData& data) {
-    num_layer_or_descendants_with_copy_request +=
-        data.num_layer_or_descendants_with_copy_request;
-    num_layer_or_descendants_with_touch_handler +=
-        data.num_layer_or_descendants_with_touch_handler;
     num_unclipped_descendants += data.num_unclipped_descendants;
     num_descendants_that_draw_content += data.num_descendants_that_draw_content;
   }
@@ -138,12 +130,6 @@ static void PreCalculateMetaInformationInternal(
     recursive_data->num_unclipped_descendants -= num_clip_children;
   }
 
-  if (layer->HasCopyRequest())
-    recursive_data->num_layer_or_descendants_with_copy_request++;
-
-  if (!layer->touch_event_handler_region().IsEmpty())
-    recursive_data->num_layer_or_descendants_with_touch_handler++;
-
   layer->set_num_unclipped_descendants(
       recursive_data->num_unclipped_descendants);
 
@@ -171,16 +157,8 @@ static void PreCalculateMetaInformationInternalForTesting(
     recursive_data->num_unclipped_descendants -= num_clip_children;
   }
 
-  if (layer->HasCopyRequest())
-    recursive_data->num_layer_or_descendants_with_copy_request++;
-
-  if (!layer->touch_event_handler_region().IsEmpty())
-    recursive_data->num_layer_or_descendants_with_touch_handler++;
-
   layer->test_properties()->num_unclipped_descendants =
       recursive_data->num_unclipped_descendants;
-  layer->set_layer_or_descendant_has_touch_handler(
-      (recursive_data->num_layer_or_descendants_with_touch_handler != 0));
   // TODO(enne): this should be synced from the main thread, so is only
   // for tests constructing layers on the compositor thread.
   layer->test_properties()->num_descendants_that_draw_content =

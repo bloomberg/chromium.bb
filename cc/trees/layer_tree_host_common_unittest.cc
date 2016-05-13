@@ -9079,30 +9079,6 @@ TEST_F(LayerTreeHostCommonTest, LayerTreeRebuildTest) {
   EXPECT_GT(root->num_copy_requests_in_target_subtree(), 0);
 }
 
-TEST_F(LayerTreeHostCommonTest, InputHandlersRecursiveUpdateTest) {
-  // Ensure that the treewalk in LayertreeHostCommon::
-  // PreCalculateMetaInformation updates input handlers correctly.
-  LayerImpl* root = root_layer();
-  LayerImpl* child = AddChild<LayerImpl>(root);
-
-  gfx::Transform identity;
-
-  SetLayerPropertiesForTesting(root, identity, gfx::Point3F(), gfx::PointF(),
-                               gfx::Size(100, 100), true, false, true);
-  SetLayerPropertiesForTesting(child, identity, gfx::Point3F(), gfx::PointF(),
-                               gfx::Size(100, 100), true, false, false);
-
-  EXPECT_EQ(root->layer_or_descendant_has_touch_handler(), false);
-
-  child->SetTouchEventHandlerRegion(gfx::Rect(0, 0, 100, 100));
-  ExecuteCalculateDrawProperties(root);
-  EXPECT_EQ(root->layer_or_descendant_has_touch_handler(), true);
-
-  child->SetTouchEventHandlerRegion(gfx::Rect());
-  ExecuteCalculateDrawProperties(root);
-  EXPECT_EQ(root->layer_or_descendant_has_touch_handler(), false);
-}
-
 TEST_F(LayerTreeHostCommonTest, ResetPropertyTreeIndices) {
   gfx::Transform identity;
   gfx::Transform translate_z;
