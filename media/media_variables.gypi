@@ -6,12 +6,6 @@
 {
   'variables': {
     'conditions': [
-      ['OS == "android" or OS == "ios"', {
-        # Android and iOS don't use libwebm by default.
-        'media_use_libwebm%': 0,
-      }, {
-        'media_use_libwebm%': 1,
-      }],
       ['OS == "ios"', {
         # iOS doesn't use FFmpeg or libvpx by default.
         'media_use_ffmpeg%': 0,
