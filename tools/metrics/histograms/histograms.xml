@@ -57810,6 +57810,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="V8.Execute" units="ms">
+  <owner>jochen@chromium.org</owner>
+  <owner>rmcilroy@chromium.org</owner>
+  <summary>
+    Time spent in JavaScript Execution, including runtime calls, callbacks, and
+    lazy compilation.
+  </summary>
+</histogram>
+
 <histogram name="V8.GCCompactor" units="ms">
   <owner>jochen@chromium.org</owner>
   <owner>hpayer@chromium.org</owner>
