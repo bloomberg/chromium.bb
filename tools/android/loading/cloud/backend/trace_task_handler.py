@@ -30,22 +30,30 @@ class TraceTaskHandler(object):
     self._logger = logger
     self._google_storage_accessor = google_storage_accessor
     self._base_path = base_path
+    self._is_initialized = False
+    self._trace_database = None
     if instance_name:
       trace_database_filename = 'trace_database_%s.json' % instance_name
     else:
       trace_database_filename = 'trace_database.json'
     self._trace_database_path = os.path.join(base_path, trace_database_filename)
 
+    # Initialize the global options that will be used during trace generation.
+    options.OPTIONS.ParseArgs(['--local_build_dir', binaries_path])
+
+  def _Initialize(self):
+    """Initializes the trace task handler. Can be called multiple times."""
+    if self._is_initialized:
+      return
+    self._is_initialized = True
+
     # Recover any existing traces in case the worker died.
     self._DownloadTraceDatabase()
     if self._trace_database.ToJsonDict():
-      # Script is restarting after a crash, or there are already files from a
-      # previous run in the directory.
+      # There are already files from a previous run in the directory, likely
+      # because the script is restarting after a crash.
       self._failure_database.AddFailure(FailureDatabase.DIRTY_STATE_ERROR,
                                         'trace_database')
-
-    # Initialize the global options that will be used during trace generation.
-    options.OPTIONS.ParseArgs(['--local_build_dir', binaries_path])
 
   def _DownloadTraceDatabase(self):
     """Downloads the trace database from CloudStorage."""
@@ -58,6 +66,7 @@ class TraceTaskHandler(object):
   def _UploadTraceDatabase(self):
     """Uploads the trace database to CloudStorage."""
     self._logger.info('Uploading trace database')
+    assert self._is_initialized
     self._google_storage_accessor.UploadString(
         self._trace_database.ToJsonString(),
         self._trace_database_path)
@@ -137,6 +146,7 @@ class TraceTaskHandler(object):
                              the log (with a .log extension added) are uploaded.
       trace_metadata (dict): Metadata associated with the trace generation.
     """
+    assert self._is_initialized
     if trace_metadata['succeeded']:
       traces_dir = os.path.join(self._base_path, 'traces')
       remote_trace_location = os.path.join(traces_dir, remote_filename)
@@ -173,6 +183,8 @@ class TraceTaskHandler(object):
       self._failure_database.AddFailure(FailureDatabase.CRITICAL_ERROR,
                                         'trace_task_handler_run')
       return
+
+    self._Initialize()
 
     # Extract the task parameters.
     params = clovis_task.ActionParams()
