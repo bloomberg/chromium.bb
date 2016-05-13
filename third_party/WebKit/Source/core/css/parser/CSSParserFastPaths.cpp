@@ -387,7 +387,7 @@ static bool fastParseColorInternal(RGBA32& rgb, const CharacterType* characters,
     if (length >= 4 && characters[0] == '#')
         return Color::parseHexColor(characters + 1, length - 1, rgb);
 
-    if (quirksMode && length >= 3) {
+    if (quirksMode && (length == 3 || length == 6)) {
         if (Color::parseHexColor(characters, length, rgb))
             return true;
     }

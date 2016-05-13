@@ -43,12 +43,25 @@
 #t33 { background-color: 1e+1 }
 #t34 { background-color: 1e-1 }
 #t35 { background-color: 2222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222f }
+
+#t36 { border-color: 1010 }
+#t37 { border-color: 00101010 }
+#t38 { border-color: ff10 }
+#t39 { border-color: ff101010 }
 </style>
+<div></div>
 <script>
+function testElementWithColorStyle(colorString) {
+    var element = document.querySelector('div');
+    element.style.color = null; /* Reset any existing color style first. */
+    element.style.color = colorString;
+    return element;
+}
+
 var sheet = document.styleSheets[0];
 
 test(function(){ assert_true(!!sheet); }, "StyleSheet present");
-test(function(){ assert_equals(sheet.cssRules.length, 35); }, "All rules parsed");
+test(function(){ assert_equals(sheet.cssRules.length, 39); }, "All rules parsed");
 
 test(function(){
     assert_equals(sheet.cssRules[0].style.color, "rgb(0, 128, 0)");
@@ -190,4 +203,39 @@ test(function(){
     assert_equals(sheet.cssRules[34].style.backgroundColor, "");
 }, "No hashless color quirk for background-color property with invalid hashless value");
 
+test(function(){
+    assert_equals(sheet.cssRules[35].style.borderColor, "rgb(0, 16, 16)");
+}, "4 digits: 1010 is a valid <quirky-color>");
+
+test(function(){
+    assert_equals(sheet.cssRules[36].style.borderColor, "rgb(16, 16, 16)");
+}, "8 digits: 00101010 is a valid <quirky-color>");
+
+test(function(){
+    assert_equals(sheet.cssRules[37].style.borderColor, "");
+}, "No hashless color quirk for border-color property with 4 digit hex value");
+
+test(function(){
+    assert_equals(sheet.cssRules[38].style.borderColor, "");
+}, "No hashless color quirk for border-color property with 8 digit hex value");
+
+test(function(){
+    var element = testElementWithColorStyle("f0f");
+    assert_equals(element.style.color, "rgb(255, 0, 255)");
+}, "3 digit hex: f0f should be accepted in quirks-mode");
+
+test(function(){
+    var element = testElementWithColorStyle("ff00ff");
+    assert_equals(element.style.color, "rgb(255, 0, 255)");
+}, "6 digit hex: ff00ff should be accepted in quirks-mode");
+
+test(function(){
+    var element = testElementWithColorStyle("F0F0");
+    assert_equals(element.style.color, "");
+}, "4 digit hex: F0F0 must be ignored in quirks-mode");
+
+test(function(){
+    var element = testElementWithColorStyle("FF00FF00");
+    assert_equals(element.style.color, "");
+}, "8 digit hex: FF00FF00 must be ignored in quirks-mode");
 </script>

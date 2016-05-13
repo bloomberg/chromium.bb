@@ -416,6 +416,9 @@ static bool parseHexColor(CSSParserTokenRange& range, RGBA32& result, bool accep
             while (color.length() < 6)
                 color = "0" + color;
         } else if (token.type() == IdentToken) { // e.g. FF0000
+            unsigned length = token.value().length();
+            if (length != 3 && length != 6)
+                return false;
             color = token.value();
         }
     }

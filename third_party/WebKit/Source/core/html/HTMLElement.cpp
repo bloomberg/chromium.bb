@@ -927,12 +927,20 @@ void HTMLElement::addHTMLColorToStyle(MutableStylePropertySet* style, CSSPropert
     if (equalIgnoringCase(colorString, "transparent"))
         return;
 
-    // If the string is a named CSS color or a 3/6-digit hex color, use that.
-    Color parsedColor;
-    if (!parsedColor.setFromString(colorString))
-        parsedColor.setRGB(parseColorStringWithCrazyLegacyRules(colorString));
+    Color color;
 
-    style->setProperty(propertyID, cssValuePool().createColorValue(parsedColor.rgb()));
+    // If the string is a 3/6-digit hex color or a named CSS color, use that. Apply legacy rules otherwise. Note color.setFromString()
+    // accepts 4/8-digit hex color, so restrict its use with length checks here to support legacy HTML attributes.
+
+    bool success = false;
+    if ((colorString.length() == 4 || colorString.length() == 7) && colorString[0] == '#')
+        success = color.setFromString(colorString);
+    if (!success)
+        success = color.setNamedColor(colorString);
+    if (!success)
+        color.setRGB(parseColorStringWithCrazyLegacyRules(colorString));
+
+    style->setProperty(propertyID, cssValuePool().createColorValue(color.rgb()));
 }
 
 bool HTMLElement::isInteractiveContent() const
