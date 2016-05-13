@@ -16,6 +16,12 @@ namespace test {
 // HtmlResponseProvider will use the |responses| map to resolve URLs.
 void SetUpSimpleHttpServer(const std::map<GURL, std::string>& responses);
 
+// Sets up a web::test::HttpServer with a FileBasedResponseProvider. The
+// server will try to resolve URLs as file paths relative to the application
+// bundle path. web::test::MakeUrl should be used to rewrite URLs before doing
+// a request.
+void SetUpFileBasedHttpServer();
+
 }  // namespace test
 }  // namespace web
 

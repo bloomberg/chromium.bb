@@ -12,6 +12,7 @@
 #import "ios/web/public/test/http_server.h"
 #include "ios/web/public/test/http_server_util.h"
 #include "ios/web/public/test/navigation_test_util.h"
+#import "ios/web/public/test/web_view_interaction_test_util.h"
 #include "ios/web/shell/test/app/web_shell_test_util.h"
 #import "ios/web/shell/test/earl_grey/shell_matchers.h"
 
@@ -46,6 +47,27 @@
   [super tearDown];
   web::test::HttpServer& server = web::test::HttpServer::GetSharedInstance();
   server.RemoveAllResponseProviders();
+}
+
+// Tests clicking a link to about:blank.
+- (void)testNavigationLinkToAboutBlank {
+  const GURL URL = web::test::HttpServer::MakeUrl(
+      "http://ios/web/shell/test/http_server_files/basic_navigation_test.html");
+  NSString* URLSpec = base::SysUTF8ToNSString(URL.spec());
+  web::test::SetUpFileBasedHttpServer();
+  web::WebState* webState = web::web_shell_test_util::GetCurrentWebState();
+
+  // TODO(crbug.com/611515): Create web shell utility that only requires URL,
+  // and gets the web state and passes it in to the web view utility.
+  web::navigation_test_util::LoadUrl(webState, URL);
+  [[EarlGrey selectElementWithMatcher:web::addressFieldText(URLSpec)]
+      assertWithMatcher:grey_notNil()];
+
+  web::test::TapWebViewElementWithId(webState,
+                                     "basic-link-navigation-to-about-blank");
+
+  [[EarlGrey selectElementWithMatcher:web::addressFieldText(@"about:blank")]
+      assertWithMatcher:grey_notNil()];
 }
 
 // Tests the back and forward button after entering two URLs.

@@ -14,6 +14,9 @@ extern const NSTimeInterval kSpinDelaySeconds;
 
 // Constant for timeout in seconds while waiting for UI element.
 extern const NSTimeInterval kWaitForUIElementTimeout;
+
+// Constant for timeout in seconds while waiting for JavaScript completion.
+extern const NSTimeInterval kWaitForJSCompletionTimeout;
 }
 
 #endif  // IOS_TESTING_EARL_GREY_WAIT_UTIL_H_

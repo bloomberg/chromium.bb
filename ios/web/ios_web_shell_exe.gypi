@@ -60,5 +60,4 @@
       'shell/toolbar_forward@2x.png',
     ],
   },
-
 }

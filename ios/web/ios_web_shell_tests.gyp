@@ -62,6 +62,22 @@
       'sources': [
         'shell/test/web_shell_navigation_egtest.mm',
       ],
+      'actions': [{
+        'action_name': 'copy_test_data',
+        'variables': {
+        'test_data_files': [
+          '../../ios/web/shell/test/http_server_files',
+        ],
+        # Files are copied to .app/<test_data_prefix>/<test_data_files>.
+        # Since the test_data_files are two levels up, the test_data_prefix
+        # needs to be two levels deep so the files end up in the .app bundle
+        # and not in some parent directory. In other words, this will resolve
+        # to: .app/ios/web/../../ios/web/shell/test/http_server_files.
+        'test_data_prefix': 'ios/web',
+        },
+        'includes': [ '../../build/copy_test_data_ios.gypi' ],
+      }],
+
       'postbuilds': [
         {
           'postbuild_name': 'Copy OCHamcrest to TEST_HOST',
@@ -97,6 +113,8 @@
       'sources': [
         'public/test/earl_grey/web_view_matchers.h',
         'public/test/earl_grey/web_view_matchers.mm',
+        'public/test/web_view_interaction_test_util.h',
+        'public/test/web_view_interaction_test_util.mm',
         'shell/test/app/web_shell_test_util.h',
         'shell/test/app/web_shell_test_util.mm',
         'shell/test/earl_grey/shell_matchers.h',
