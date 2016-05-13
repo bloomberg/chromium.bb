@@ -28,6 +28,10 @@ if (target_cpu == "arm" || current_cpu == "arm") {
 
     # Whether to enable optional NEON code paths.
     arm_optionally_use_neon = false
+
+    # Thumb is a reduced instruction set available on some ARM processors that
+    # has increased code density.
+    arm_use_thumb = true
   }
 
   assert(arm_float_abi == "" || arm_float_abi == "hard" ||
@@ -42,9 +46,6 @@ if (target_cpu == "arm" || current_cpu == "arm") {
       arm_float_abi = "softfp"
     }
     arm_fpu = "vfp"
-
-    # Thumb is a reduced instruction set available on some ARM processors that
-    # has increased code density.
     arm_use_thumb = false
   } else if (arm_version == 7) {
     arm_arch = "armv7-a"
@@ -59,8 +60,6 @@ if (target_cpu == "arm" || current_cpu == "arm") {
         arm_float_abi = "hard"
       }
     }
-
-    arm_use_thumb = true
 
     if (arm_use_neon) {
       arm_fpu = "neon"
@@ -80,8 +79,6 @@ if (target_cpu == "arm" || current_cpu == "arm") {
         arm_float_abi = "hard"
       }
     }
-
-    arm_use_thumb = true
 
     if (arm_use_neon) {
       arm_fpu = "neon"
