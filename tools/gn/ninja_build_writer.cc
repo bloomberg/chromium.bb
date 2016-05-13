@@ -167,14 +167,26 @@ bool NinjaBuildWriter::RunAndWriteFile(
   if (!gen.Run(err))
     return false;
 
+  // Unconditionally write the build.ninja. Ninja's build-out-of-date checking
+  // will re-run GN when any build input is newer than build.ninja, so any time
+  // the build is updated, build.ninja's timestamp needs to updated also, even
+  // if the contents haven't been changed.
   base::FilePath ninja_file_name(build_settings->GetFullPath(
       SourceFile(build_settings->build_dir().value() + "build.ninja")));
+  base::CreateDirectory(ninja_file_name.DirName());
+  std::string ninja_contents = file.str();
+  if (base::WriteFile(ninja_file_name, ninja_contents.data(),
+                      static_cast<int>(ninja_contents.size())) !=
+      static_cast<int>(ninja_contents.size()))
+    return false;
+
+  // Dep file listing build dependencies.
   base::FilePath dep_file_name(build_settings->GetFullPath(
       SourceFile(build_settings->build_dir().value() + "build.ninja.d")));
-  base::CreateDirectory(ninja_file_name.DirName());
-
-  if (!WriteFileIfChanged(ninja_file_name, file.str(), err) ||
-      !WriteFileIfChanged(dep_file_name, depfile.str(), err))
+  std::string dep_contents = depfile.str();
+  if (base::WriteFile(dep_file_name, dep_contents.data(),
+                      static_cast<int>(dep_contents.size())) !=
+      static_cast<int>(dep_contents.size()))
     return false;
 
   return true;
