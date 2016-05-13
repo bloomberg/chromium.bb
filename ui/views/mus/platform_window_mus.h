@@ -35,7 +35,6 @@ namespace views {
 // into views::NativeWidgetMus. See crbug.com/609555 for details.
 class VIEWS_MUS_EXPORT PlatformWindowMus
     : public NON_EXPORTED_BASE(ui::PlatformWindow),
-      public mus::WindowObserver,
       public NON_EXPORTED_BASE(mus::InputEventHandler) {
  public:
   PlatformWindowMus(ui::PlatformWindowDelegate* delegate,
@@ -63,12 +62,6 @@ class VIEWS_MUS_EXPORT PlatformWindowMus
 
  private:
   friend class PlatformWindowMusTest;
-
-  // mus::WindowObserver:
-  void OnWindowDestroyed(mus::Window* window) override;
-  void OnWindowFocusChanged(mus::Window* gained_focus,
-                            mus::Window* lost_focus) override;
-  void OnRequestClose(mus::Window* window) override;
 
   // mus::InputEventHandler:
   void OnWindowInputEvent(

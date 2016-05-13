@@ -362,6 +362,20 @@ class NativeWidgetMus::MusWindowObserver : public mus::WindowObserver {
     }
     platform_window_delegate()->OnWindowStateChanged(state);
   }
+  void OnWindowDestroyed(mus::Window* window) override {
+    DCHECK_EQ(mus_window(), window);
+    platform_window_delegate()->OnClosed();
+  }
+  void OnWindowFocusChanged(mus::Window* gained_focus,
+                            mus::Window* lost_focus) override {
+    if (gained_focus == mus_window())
+      platform_window_delegate()->OnActivationChanged(true);
+    else if (lost_focus == mus_window())
+      platform_window_delegate()->OnActivationChanged(false);
+  }
+  void OnRequestClose(mus::Window* window) override {
+    platform_window_delegate()->OnCloseRequest();
+  }
 
  private:
   mus::Window* mus_window() { return native_widget_mus_->window(); }

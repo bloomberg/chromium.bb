@@ -71,7 +71,6 @@ PlatformWindowMus::PlatformWindowMus(ui::PlatformWindowDelegate* delegate,
       mus_window_destroyed_(false) {
   DCHECK(delegate_);
   DCHECK(mus_window_);
-  mus_window_->AddObserver(this);
   mus_window_->set_input_event_handler(this);
 
   // We need accelerated widget numbers to be different for each
@@ -97,10 +96,7 @@ PlatformWindowMus::PlatformWindowMus(ui::PlatformWindowDelegate* delegate,
 PlatformWindowMus::~PlatformWindowMus() {
   if (!mus_window_)
     return;
-  mus_window_->RemoveObserver(this);
   mus_window_->set_input_event_handler(nullptr);
-  if (!mus_window_destroyed_)
-    mus_window_->Destroy();
 }
 
 void PlatformWindowMus::Show() {}
@@ -153,32 +149,6 @@ void PlatformWindowMus::ConfineCursorToBounds(const gfx::Rect& bounds) {
 
 ui::PlatformImeController* PlatformWindowMus::GetPlatformImeController() {
   return nullptr;
-}
-
-void PlatformWindowMus::OnWindowDestroyed(mus::Window* window) {
-  DCHECK_EQ(mus_window_, window);
-  mus_window_destroyed_ = true;
-#ifndef NDEBUG
-  weak_factory_.reset(new base::WeakPtrFactory<PlatformWindowMus>(this));
-  base::WeakPtr<PlatformWindowMus> weak_ptr = weak_factory_->GetWeakPtr();
-#endif
-  delegate_->OnClosed();
-  // |this| has been destroyed at this point.
-#ifndef NDEBUG
-  DCHECK(!weak_ptr);
-#endif
-}
-
-void PlatformWindowMus::OnWindowFocusChanged(mus::Window* gained_focus,
-                                             mus::Window* lost_focus) {
-  if (gained_focus == mus_window_)
-    delegate_->OnActivationChanged(true);
-  else if (lost_focus == mus_window_)
-    delegate_->OnActivationChanged(false);
-}
-
-void PlatformWindowMus::OnRequestClose(mus::Window* window) {
-  delegate_->OnCloseRequest();
 }
 
 void PlatformWindowMus::OnWindowInputEvent(
