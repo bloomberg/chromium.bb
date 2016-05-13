@@ -22,7 +22,12 @@ ActiveScriptWrappable::ActiveScriptWrappable(ScriptWrappable* self)
 void ActiveScriptWrappable::traceActiveScriptWrappables(v8::Isolate* isolate, ScriptWrappableVisitor* visitor)
 {
     V8PerIsolateData* isolateData = V8PerIsolateData::from(isolate);
-    for (auto activeWrappable : isolateData->activeScriptWrappables()) {
+    auto activeScriptWrappables = isolateData->activeScriptWrappables();
+    if (!activeScriptWrappables) {
+        return;
+    }
+
+    for (auto activeWrappable : *activeScriptWrappables) {
         if (!activeWrappable->hasPendingActivity())
             continue;
 

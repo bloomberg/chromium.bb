@@ -142,7 +142,7 @@ public:
 
     using ActiveScriptWrappableSet = HeapHashSet<WeakMember<ActiveScriptWrappable>>;
     void addActiveScriptWrappable(ActiveScriptWrappable*);
-    const ActiveScriptWrappableSet& activeScriptWrappables() const { return *m_activeScriptWrappables; }
+    const ActiveScriptWrappableSet* activeScriptWrappables() const { return m_activeScriptWrappables.get(); }
 
 private:
     V8PerIsolateData();
