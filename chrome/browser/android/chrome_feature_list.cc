@@ -46,7 +46,7 @@ const base::Feature kImportantSitesInCBD{"ImportantSitesInCBD",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kMediaStyleNotification {
-  "MediaStyleNotification", base::FEATURE_DISABLED_BY_DEFAULT
+  "MediaStyleNotification", base::FEATURE_ENABLED_BY_DEFAULT
 };
 
 const base::Feature kNTPMaterialDesign{"NTPMaterialDesign",
