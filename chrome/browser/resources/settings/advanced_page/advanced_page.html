@@ -28,7 +28,7 @@
     <style include="main-page-styles"></style>
 <if expr="chromeos">
     <template is="dom-if" if="[[showPage(pageVisibility.dateTime)]]" restamp>
-      <settings-section page-title="[[i18n('dateTimePageTitle')]]"
+      <settings-section page-title="$i18n{dateTimePageTitle}"
           current-route="[[currentRoute]]" section="dateTime">
         <settings-date-time-page prefs="{{prefs}}">
         </settings-date-time-page>
@@ -36,7 +36,7 @@
     </template>
 </if>
     <template is="dom-if" if="[[showPage(pageVisibility.privacy)]]" restamp>
-      <settings-section page-title="[[i18n('privacyPageTitle')]]"
+      <settings-section page-title="$i18n{privacyPageTitle}"
           current-route="[[currentRoute]]" section="privacy">
         <settings-privacy-page prefs="{{prefs}}"
           current-route="{{currentRoute}}">
@@ -45,7 +45,7 @@
     </template>
 <if expr="chromeos">
     <template is="dom-if" if="[[showPage(pageVisibility.bluetooth)]]" restamp>
-      <settings-section page-title="[[i18n('bluetoothPageTitle')]]"
+      <settings-section page-title="$i18n{bluetoothPageTitle}"
           current-route="[[currentRoute]]" section="bluetooth">
         <settings-bluetooth-page current-route="{{currentRoute}}">
         </settings-bluetooth-page>
@@ -55,7 +55,7 @@
     <template is="dom-if" if="[[showPage(pageVisibility.passwordsAndForms)]]"
         restamp>
       <settings-section
-          page-title="[[i18n('passwordsAndAutofillPageTitle')]]"
+          page-title="$i18n{passwordsAndAutofillPageTitle}"
           current-route="[[currentRoute]]" section="passwordsAndForms">
         <settings-passwords-and-forms-page prefs="{{prefs}}"
             current-route="{{currentRoute}}">
@@ -63,7 +63,7 @@
       </settings-section>
     </template>
     <template is="dom-if" if="[[showPage(pageVisibility.languages)]]" restamp>
-      <settings-section page-title="[[i18n('languagesPageTitle')]]"
+      <settings-section page-title="$i18n{languagesPageTitle}"
           current-route="[[currentRoute]]" section="languages">
         <settings-languages-page prefs="{{prefs}}"
             current-route="{{currentRoute}}">
@@ -71,7 +71,7 @@
       </settings-section>
     </template>
     <template is="dom-if" if="[[showPage(pageVisibility.downloads)]]" restamp>
-      <settings-section page-title="[[i18n('downloadsPageTitle')]]"
+      <settings-section page-title="$i18n{downloadsPageTitle}"
           current-route="[[currentRoute]]" section="downloads">
         <settings-downloads-page prefs="{{prefs}}">
         </settings-downloads-page>
@@ -81,21 +81,21 @@
     <!-- TODO(dschuyler): Add Google Cloud Print section here. -->
 
     <template is="dom-if" if="[[showPage(pageVisibility.a11y)]]" restamp>
-      <settings-section page-title="[[i18n('a11yPageTitle')]]"
+      <settings-section page-title="$i18n{a11yPageTitle}"
           current-route="[[currentRoute]]" section="a11y">
         <settings-a11y-page prefs="{{prefs}}"></settings-a11y-page>
       </settings-section>
     </template>
 <if expr="not chromeos">
     <template is="dom-if" if="[[showPage(pageVisibility.system)]]" restamp>
-      <settings-section page-title="[[i18n('systemPageTitle')]]"
+      <settings-section page-title="$i18n{systemPageTitle}"
           current-route="[[currentRoute]]" section="system">
         <settings-system-page prefs="{{prefs}}"></settings-system-page>
       </settings-section>
     </template>
 </if>
     <template is="dom-if" if="[[showPage(pageVisibility.reset)]]" restamp>
-      <settings-section page-title="[[i18n('resetPageTitle')]]"
+      <settings-section page-title="$i18n{resetPageTitle}"
           current-route="[[currentRoute]]" section="reset">
         <settings-reset-page></settings-reset-page>
       </settings-section>

@@ -7,12 +7,11 @@
   <template>
     <style include="settings-shared"></style>
     <div class="settings-box first block">
-      <div i18n-content="timeZone"></div>
+      <div>$i18n{timeZone}</div>
       <settings-checkbox pref="{{prefs.settings.clock.use_24hour_clock}}"
-          i18n-values="label:use24HourClock">
+          label="$i18n{use24HourClock}">
       </settings-checkbox>
-      <div id="setAutomatically" i18n-content="dateTimeSetAutomatically">
-      </div>
+      <div id="setAutomatically">$i18n{dateTimeSetAutomatically}</div>
     </div>
   </template>
   <script src="date_time_page.js"></script>

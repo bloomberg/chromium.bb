@@ -21,15 +21,16 @@
     </style>
     <div class="settings-box block first">
 <if expr="not is_macosx">
-      <settings-checkbox i18n-values="label:backgroundAppsLabel"
+      <settings-checkbox label="$i18n{backgroundAppsLabel}"
           pref="{{prefs.background_mode.enabled}}">
       </settings-checkbox>
 </if>
       <div id="hardware-acceleration">
-        <settings-checkbox i18n-values="label:hardwareAccelerationLabel"
+        <settings-checkbox label="$i18n{hardwareAccelerationLabel}"
             pref="{{prefs.hardware_acceleration_mode.enabled}}">
         </settings-checkbox>
-        <template is="dom-if" if="[[shouldShowRestart_(prefs.hardware_acceleration_mode.enabled.value)]]">
+        <template is="dom-if" if="[[shouldShowRestart_(
+            prefs.hardware_acceleration_mode.enabled.value)]]">
           <paper-button on-tap="onRestartTap_">$i18n{restart}</paper-button>
         </template>
       </div>

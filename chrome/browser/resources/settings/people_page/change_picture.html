@@ -43,7 +43,7 @@
         </iron-selector>
         <template is="dom-if" if="[[isAuthorCreditShown_(selectedItem_)]]">
           <div id="authorCredit">
-            [[i18n('authorCredit')]]
+            $i18n{authorCredit}
             [[getAuthorName_(selectedItem_, defaultImages_)]]
             <a href="[[getAuthorWebsite_(selectedItem_, defaultImages_)]]"
                 target="_blank">

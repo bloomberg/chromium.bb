@@ -109,7 +109,7 @@
       </neon-animatable>
 <if expr="use_nss_certs">
       <template is="dom-if" name="manage-certificates">
-        <settings-subpage page-title="[[i18n('manageCertificates')]]">
+        <settings-subpage page-title="$i18n{manageCertificates}">
           <settings-certificate-manager-page>
           </settings-certificate-manager-page>
         </settings-subpage>
@@ -117,7 +117,7 @@
 </if>
       <template is="dom-if" name="site-settings">
         <settings-subpage id="site-settings"
-            page-title="[[i18n('siteSettings')]]">
+            page-title="$i18n{siteSettings}">
           <settings-site-settings-page current-route="{{currentRoute}}"
               category-selected="{{categorySelected}}">
           </settings-site-settings-page>
@@ -125,7 +125,7 @@
       </template>
 
       <template is="dom-if" name="all-sites">
-        <settings-subpage page-title="[[i18n('siteSettingsCategoryAllSites')]]">
+        <settings-subpage page-title="$i18n{siteSettingsCategoryAllSites}">
           <all-sites
               selected-site="{{selectedSite}}"
               current-route="{{currentRoute}}">
@@ -133,7 +133,7 @@
         </settings-subpage>
       </template>
       <template is="dom-if" name="site-settings-category-camera">
-        <settings-subpage page-title="[[i18n('siteSettingsCategoryCamera')]]">
+        <settings-subpage page-title="$i18n{siteSettingsCategoryCamera}">
           <site-settings-category
               selected-site="{{selectedSite}}"
               current-route="{{currentRoute}}"
@@ -142,7 +142,7 @@
         </settings-subpage>
       </template>
       <template is="dom-if" name="site-settings-category-cookies">
-        <settings-subpage page-title="[[i18n('siteSettingsCategoryCookies')]]">
+        <settings-subpage page-title="$i18n{siteSettingsCategoryCookies}">
           <site-settings-category
               selected-site="{{selectedSite}}"
               current-route="{{currentRoute}}"
@@ -152,7 +152,7 @@
       </template>
       <template is="dom-if" name="site-settings-category-fullscreen">
         <settings-subpage
-            page-title="[[i18n('siteSettingsCategoryFullscreen')]]">
+            page-title="$i18n{siteSettingsCategoryFullscreen}">
           <site-settings-category
               selected-site="{{selectedSite}}"
               current-route="{{currentRoute}}"
@@ -161,7 +161,7 @@
         </settings-subpage>
       </template>
       <template is="dom-if" name="site-settings-category-images">
-        <settings-subpage page-title="[[i18n('siteSettingsCategoryImages')]]">
+        <settings-subpage page-title="$i18n{siteSettingsCategoryImages}">
           <site-settings-category
               selected-site="{{selectedSite}}"
               current-route="{{currentRoute}}"
@@ -170,7 +170,7 @@
         </settings-subpage>
       </template>
       <template is="dom-if" name="site-settings-category-location">
-        <settings-subpage page-title="[[i18n('siteSettingsCategoryLocation')]]">
+        <settings-subpage page-title="$i18n{siteSettingsCategoryLocation}">
           <site-settings-category
               selected-site="{{selectedSite}}"
               current-route="{{currentRoute}}"
@@ -180,7 +180,7 @@
       </template>
       <template is="dom-if" name="site-settings-category-javascript">
         <settings-subpage
-            page-title="[[i18n('siteSettingsCategoryJavascript')]]">
+            page-title="$i18n{siteSettingsCategoryJavascript}">
           <site-settings-category
               selected-site="{{selectedSite}}"
               current-route="{{currentRoute}}"
@@ -190,7 +190,7 @@
       </template>
       <template is="dom-if" name="site-settings-category-microphone">
         <settings-subpage
-            page-title="[[i18n('siteSettingsCategoryMicrophone')]]">
+            page-title="$i18n{siteSettingsCategoryMicrophone}">
           <site-settings-category
               selected-site="{{selectedSite}}"
               current-route="{{currentRoute}}"
@@ -200,7 +200,7 @@
       </template>
       <template is="dom-if" name="site-settings-category-notifications">
         <settings-subpage
-            page-title="[[i18n('siteSettingsCategoryNotifications')]]">
+            page-title="$i18n{siteSettingsCategoryNotifications}">
           <site-settings-category
               selected-site="{{selectedSite}}"
               current-route="{{currentRoute}}"
@@ -209,7 +209,7 @@
         </settings-subpage>
       </template>
       <template is="dom-if" name="site-settings-category-popups">
-        <settings-subpage page-title="[[i18n('siteSettingsCategoryPopups')]]">
+        <settings-subpage page-title="$i18n{siteSettingsCategoryPopups}">
           <site-settings-category
               selected-site="{{selectedSite}}"
               current-route="{{currentRoute}}"
@@ -220,7 +220,7 @@
 
       <template is="dom-if" name="site-details">
         <settings-subpage
-            page-title="[[i18n('siteSettingsSiteDetailsPageTitle')]]">
+            page-title="$i18n{siteSettingsSiteDetailsPageTitle}">
           <site-details site="[[selectedSite]]"></site-details>
         </settings-subpage>
       </template>
