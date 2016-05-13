@@ -163,6 +163,7 @@ class Request(object):
                          Worker.
     timing: (Timing) Request timing, extended with loading_finished.
     status: (int) Response status code.
+    status_text: (str) Response status text received in the status line.
     encoded_data_length: (int) Total encoded data length.
     data_chunks: (list) [(offset, encoded_data_length), ...] List of data
                  chunks received, with their offset in ms relative to
@@ -200,6 +201,7 @@ class Request(object):
     self.from_service_worker = False
     self.timing = None
     self.status = None
+    self.status_text = None
     self.encoded_data_length = 0
     self.data_chunks = []
     self.failed = False
@@ -345,6 +347,17 @@ class Request(object):
     """
     # All fields in timing are millis relative to request_time.
     return self.timing.LargestOffset()
+
+  def GetRawResponseHeaders(self):
+    """Gets the request's raw response headers compatible with
+    net::HttpResponseHeaders's constructor.
+    """
+    assert not self.IsDataRequest()
+    headers = '{} {} {}\x00'.format(
+        self.protocol.upper(), self.status, self.status_text)
+    for key in sorted(self.response_headers.keys()):
+      headers += '{}: {}\x00'.format(key, self.response_headers[key])
+    return headers
 
   def __eq__(self, o):
     return self.__dict__ == o.__dict__
@@ -668,7 +681,8 @@ class RequestTrack(devtools_monitor.Track):
                           (('headers', 'response_headers'),
                            ('encodedDataLength', 'encoded_data_length'),
                            ('fromDiskCache', 'from_disk_cache'),
-                           ('protocol', 'protocol'), ('status', 'status')))
+                           ('protocol', 'protocol'), ('status', 'status'),
+                           ('statusText', 'status_text')))
     r.timing = Timing.FromDevToolsDict(redirect_response['timing'])
 
     redirect_index = self._redirects_count_by_id[request_id]
@@ -712,7 +726,7 @@ class RequestTrack(devtools_monitor.Track):
         response, r, (('status', 'status'), ('mimeType', 'mime_type'),
                       ('fromDiskCache', 'from_disk_cache'),
                       ('fromServiceWorker', 'from_service_worker'),
-                      ('protocol', 'protocol'),
+                      ('protocol', 'protocol'), ('statusText', 'status_text'),
                       # Actual request headers are not known before reaching the
                       # network stack.
                       ('requestHeaders', 'request_headers'),

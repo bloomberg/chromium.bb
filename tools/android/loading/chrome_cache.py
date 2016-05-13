@@ -29,7 +29,7 @@ OPTIONS = options.OPTIONS
 
 
 # Cache back-end types supported by cachetool.
-BACKEND_TYPES = ['simple']
+BACKEND_TYPES = {'simple', 'blockfile'}
 
 # Regex used to parse HTTP headers line by line.
 HEADER_PARSING_REGEX = re.compile(r'^(?P<header>\S+):(?P<value>.*)$')
@@ -251,6 +251,11 @@ class CacheBackend(object):
     # Make sure cache_directory_path is a valid cache.
     self._CachetoolCmd('validate')
 
+  def GetSize(self):
+    """Gets total size of cache entries in bytes."""
+    size = self._CachetoolCmd('get_size')
+    return int(size.strip())
+
   def ListKeys(self):
     """Lists cache's keys.
 
@@ -272,7 +277,16 @@ class CacheBackend(object):
     Returns:
       String holding stream binary content.
     """
-    return self._CachetoolCmd('get_stream', key, str(index))
+    return self._CachetoolCmd('get_stream', [key, str(index)])
+
+  def DeleteStreamForKey(self, key, index):
+    """Delete a key's stream.
+
+    Args:
+      key: The key to access the stream.
+      index: The stream index
+    """
+    self._CachetoolCmd('delete_stream', [key, str(index)])
 
   def DeleteKey(self, key):
     """Deletes a key from the cache.
@@ -280,14 +294,15 @@ class CacheBackend(object):
     Args:
       key: The key delete.
     """
-    self._CachetoolCmd('delete_key', key)
+    self._CachetoolCmd('delete_key', [key])
 
-  def _CachetoolCmd(self, operation, *args):
+  def _CachetoolCmd(self, operation, args=None, stdin=''):
     """Runs the cache editor tool and return the stdout.
 
     Args:
       operation: Cachetool operation.
-      *args: Additional operation argument to append to the command line.
+      args: Additional operation argument to append to the command line.
+      stdin: String to pipe to the Cachetool's stdin.
 
     Returns:
       Cachetool's stdout string.
@@ -297,11 +312,21 @@ class CacheBackend(object):
         self._cache_directory_path,
         self._cache_backend_type,
         operation]
-    editor_tool_cmd.extend(args)
-    process = subprocess.Popen(editor_tool_cmd, stdout=subprocess.PIPE)
-    stdout_data, _ = process.communicate()
+    editor_tool_cmd.extend(args or [])
+    process = subprocess.Popen(
+        editor_tool_cmd, stdout=subprocess.PIPE, stdin=subprocess.PIPE)
+    stdout_data, _ = process.communicate(input=stdin)
     assert process.returncode == 0
     return stdout_data
+
+  def UpdateRawResponseHeaders(self, key, raw_headers):
+    """Updates a key's raw response headers.
+
+    Args:
+      key: The key to modify.
+      raw_headers: Raw response headers to set.
+    """
+    self._CachetoolCmd('update_raw_headers', [key], stdin=raw_headers)
 
   def GetDecodedContentForKey(self, key):
     """Gets a key's decoded content.

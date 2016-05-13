@@ -74,6 +74,15 @@ class RequestTestCase(unittest.TestCase):
     r.response_headers = {'foo': 'Bar', 'Baz': 'Foo'}
     self.assertEquals('Bar', r.GetHTTPResponseHeader('Foo'))
 
+  def testGetRawResponseHeaders(self):
+    r = Request()
+    r.protocol = 'http/1.1'
+    r.status = 200
+    r.status_text = 'Hello world'
+    r.response_headers = {'Foo': 'Bar', 'Baz': 'Foo'}
+    self.assertEquals('HTTP/1.1 200 Hello world\x00Baz: Foo\x00Foo: Bar\x00',
+                      r.GetRawResponseHeaders())
+
 
 class CachingPolicyTestCase(unittest.TestCase):
   _REQUEST = {

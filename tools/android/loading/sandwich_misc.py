@@ -101,6 +101,63 @@ def _FilterOutDataAndIncompleteRequests(requests):
     yield request
 
 
+def PatchCacheArchive(cache_archive_path, loading_trace_path,
+                      cache_archive_dest_path):
+  """Patch the cache archive.
+
+  Note: This method update the raw response headers of cache entries' to store
+    the ones such as Set-Cookie that were pruned by the
+    net::HttpCacheTransaction, and remove the stream index 2 holding resource's
+    compile meta data.
+
+  Args:
+    cache_archive_path: Input archive's path to patch.
+    loading_trace_path: Path of the loading trace that have recorded the cache
+        archive <cache_archive_path>.
+    cache_archive_dest_path: Archive destination's path.
+  """
+  trace = LoadingTrace.FromJsonFile(loading_trace_path)
+  with common_util.TemporaryDirectory(prefix='sandwich_tmp') as tmp_path:
+    cache_path = os.path.join(tmp_path, 'cache')
+    chrome_cache.UnzipDirectoryContent(cache_archive_path, cache_path)
+    cache_backend = chrome_cache.CacheBackend(cache_path, 'simple')
+    cache_entries = set(cache_backend.ListKeys())
+    logging.info('Original cache size: %d bytes' % cache_backend.GetSize())
+    for request in _FilterOutDataAndIncompleteRequests(
+        trace.request_track.GetEvents()):
+      # On requests having an upload data stream such as POST requests,
+      # net::HttpCache::GenerateCacheKey() prefixes the cache entry's key with
+      # the upload data stream's session unique identifier.
+      #
+      # It is fine to not patch these requests since when reopening Chrome,
+      # there is no way the entry can be reused since the upload data stream's
+      # identifier will be different.
+      #
+      # The fact that these entries are kept in the cache after closing Chrome
+      # properly by closing the Chrome tab as the ChromeControler.SetSlowDeath()
+      # do is a known Chrome bug (crbug.com/610725).
+      #
+      # TODO(gabadie): Add support in ValidateCacheArchiveContent() and in
+      #   VerifyBenchmarkOutputDirectory() for POST requests to be known as
+      #   impossible to use from cache.
+      if request.url not in cache_entries:
+        if request.method != 'POST':
+          raise RuntimeError('Unexpected method that is not found in cache.'
+                             ''.format(request.method))
+        continue
+      # Chrome prunes Set-Cookie from response headers before storing them in
+      # disk cache. Also, it adds implicit "Vary: cookie" header to all redirect
+      # response headers. Sandwich manages the cache, but between recording the
+      # cache and benchmarking the cookie jar is invalidated. This leads to
+      # invalidation of all cacheable redirects.
+      raw_headers = request.GetRawResponseHeaders()
+      cache_backend.UpdateRawResponseHeaders(request.url, raw_headers)
+      # NoState-Prefetch would only fetch the resources, but not parse them.
+      cache_backend.DeleteStreamForKey(request.url, 2)
+    chrome_cache.ZipDirectoryContent(cache_path, cache_archive_dest_path)
+    logging.info('Patched cache size: %d bytes' % cache_backend.GetSize())
+
+
 def ExtractDiscoverableUrls(loading_trace_path, subresource_discoverer):
   """Extracts discoverable resource urls from a loading trace according to a
   sub-resource discoverer.
@@ -161,12 +218,15 @@ def _PrintUrlSetComparison(ref_url_set, url_set, url_set_name):
   if ref_url_set == url_set:
     logging.info('  %d %s are matching.' % (len(ref_url_set), url_set_name))
     return
-  logging.error('  %s are not matching.' % url_set_name)
-  logging.error('    List of missing resources:')
-  for url in ref_url_set.difference(url_set):
+  missing_urls = ref_url_set.difference(url_set)
+  unexpected_urls = url_set.difference(ref_url_set)
+  logging.error('  %s are not matching (expected %d, had %d)' % \
+      (url_set_name, len(ref_url_set), len(url_set)))
+  logging.error('    List of %d missing resources:' % len(missing_urls))
+  for url in sorted(missing_urls):
     logging.error('-     ' + url)
-  logging.error('    List of unexpected resources:')
-  for url in url_set.difference(ref_url_set):
+  logging.error('    List of %d unexpected resources:' % len(unexpected_urls))
+  for url in sorted(unexpected_urls):
     logging.error('+     ' + url)
 
 

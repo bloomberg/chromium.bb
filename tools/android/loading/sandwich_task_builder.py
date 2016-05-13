@@ -96,10 +96,11 @@ class SandwichTaskBuilder(task_manager.Builder):
     subresources (urls-resources.json).
 
     Here is the full dependency tree for the returned task:
-    common/cache-ref-validation.log
-      depends on: common/cache-ref.zip
-        depends on: common/webpages-patched.wpr
-          depends on: common/webpages.wpr
+    common/patched-cache-validation.log
+      depends on: common/patched-cache.zip
+        depends on: common/original-cache.zip
+          depends on: common/webpages-patched.wpr
+            depends on: common/webpages.wpr
       depends on: common/urls-resources.json
         depends on: common/urls-resources-run/
           depends on: common/webpages.wpr
@@ -113,14 +114,21 @@ class SandwichTaskBuilder(task_manager.Builder):
       shutil.copyfile(self._original_wpr_task.path, BuildPatchedWpr.path)
       sandwich_misc.PatchWpr(BuildPatchedWpr.path)
 
-    @self.RegisterTask('common/cache-ref.zip', [BuildPatchedWpr])
-    def BuildReferenceCache():
+    @self.RegisterTask('common/original-cache.zip', [BuildPatchedWpr])
+    def BuildOriginalCache():
       runner = self._CreateSandwichRunner()
       runner.wpr_archive_path = BuildPatchedWpr.path
-      runner.cache_archive_path = BuildReferenceCache.path
+      runner.cache_archive_path = BuildOriginalCache.path
       runner.cache_operation = 'save'
-      runner.trace_output_directory = BuildReferenceCache.path[:-4] + '-run'
+      runner.trace_output_directory = BuildOriginalCache.run_path
       runner.Run()
+    BuildOriginalCache.run_path = BuildOriginalCache.path[:-4] + '-run'
+
+    @self.RegisterTask('common/patched-cache.zip', [BuildOriginalCache])
+    def BuildPatchedCache():
+      sandwich_misc.PatchCacheArchive(BuildOriginalCache.path,
+          os.path.join(BuildOriginalCache.run_path, '0', 'trace.json'),
+          BuildPatchedCache.path)
 
     @self.RegisterTask('common/subresources-for-urls-run/',
                        dependencies=[self._original_wpr_task])
@@ -138,23 +146,23 @@ class SandwichTaskBuilder(task_manager.Builder):
       with open(ListUrlsResources.path, 'w') as output:
         json.dump(json_content, output)
 
-    @self.RegisterTask('common/cache-ref-validation.log',
-                       [BuildReferenceCache, ListUrlsResources])
-    def ValidateReferenceCache():
+    @self.RegisterTask('common/patched-cache-validation.log',
+                       [BuildPatchedCache, ListUrlsResources])
+    def ValidatePatchedCache():
       json_content = json.load(open(ListUrlsResources.path))
       ref_urls = set()
       for urls in json_content.values():
         ref_urls.update(set(urls))
       sandwich_misc.ValidateCacheArchiveContent(
-          ref_urls, BuildReferenceCache.path)
+          ref_urls, BuildPatchedCache.path)
 
     self._patched_wpr_task = BuildPatchedWpr
-    self._reference_cache_task = BuildReferenceCache
+    self._reference_cache_task = BuildPatchedCache
     self._subresources_for_urls_run_task = UrlsResourcesRun
     self._subresources_for_urls_task = ListUrlsResources
 
-    self._default_final_tasks.append(ValidateReferenceCache)
-    return ValidateReferenceCache
+    self._default_final_tasks.append(ValidatePatchedCache)
+    return ValidatePatchedCache
 
   def PopulateLoadBenchmark(self, subresource_discoverer,
                             transformer_list_name, transformer_list):
