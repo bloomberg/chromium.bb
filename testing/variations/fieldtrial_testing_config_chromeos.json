@@ -271,6 +271,14 @@
             "group_name": "Enabled"
         }
     ],
+    "WebRTC-EnableWebRtcEcdsa": [
+        {
+            "enable_features": [
+                "WebRTC-EnableWebRtcEcdsa"
+            ],
+            "group_name": "Enabled"
+        }
+    ],
     "WebRTC-H264WithOpenH264FFmpeg": [
         {
             "enable_features": [

@@ -493,6 +493,14 @@
             "group_name": "Enabled"
         }
     ],
+    "WebRTC-EnableWebRtcEcdsa": [
+        {
+            "enable_features": [
+                "WebRTC-EnableWebRtcEcdsa"
+            ],
+            "group_name": "Enabled"
+        }
+    ],
     "WebRTC-LocalIPPermissionCheck": [
         {
             "group_name": "Enabled"
