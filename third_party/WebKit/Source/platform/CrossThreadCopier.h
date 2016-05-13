@@ -71,18 +71,18 @@ struct CrossThreadCopierPassThrough {
     }
 };
 
-template <typename T, bool isArithmeticOrEnum, bool isThreadSafeRefCounted, bool isGarbageCollected>
+template <typename T, bool isArithmeticOrEnum, bool isThreadSafeRefCounted>
 struct CrossThreadCopierBase;
 
 // Arithmetic values (integers or floats) and enums can be safely copied.
-template <typename T, bool isThreadSafeRefCounted, bool isGarbageCollected>
-struct CrossThreadCopierBase<T, true, isThreadSafeRefCounted, isGarbageCollected> : public CrossThreadCopierPassThrough<T> {
+template <typename T, bool isThreadSafeRefCounted>
+struct CrossThreadCopierBase<T, true, isThreadSafeRefCounted> : public CrossThreadCopierPassThrough<T> {
     STATIC_ONLY(CrossThreadCopierBase);
 };
 
 // Custom copy method for ThreadSafeRefCounted.
-template <typename T, bool isGarbageCollected>
-struct CrossThreadCopierBase<T, false, true, isGarbageCollected> {
+template <typename T>
+struct CrossThreadCopierBase<T, false, true> {
     STATIC_ONLY(CrossThreadCopierBase);
     typedef typename WTF::RemoveTemplate<T, RefPtr>::Type TypeWithoutRefPtr;
     typedef typename WTF::RemoveTemplate<TypeWithoutRefPtr, PassRefPtr>::Type TypeWithoutPassRefPtr;
@@ -101,18 +101,6 @@ struct CrossThreadCopierBase<T, false, true, isGarbageCollected> {
     }
 };
 
-// A pointer to GarbageCollected.
-template <typename T>
-struct CrossThreadCopierBase<T, false, false, true> {
-    STATIC_ONLY(CrossThreadCopierBase);
-    typedef typename std::remove_pointer<T>::type TypeWithoutPointer;
-    typedef TypeWithoutPointer* Type;
-    static Type copy(const T& ptr)
-    {
-        return ptr;
-    }
-};
-
 template <typename T>
 struct CrossThreadCopier : public CrossThreadCopierBase<
     T,
@@ -122,8 +110,7 @@ struct CrossThreadCopier : public CrossThreadCopierBase<
     || WTF::IsSubclassOfTemplate<typename WTF::RemoveTemplate<T, PassRefPtr>::Type, ThreadSafeRefCounted>::value
     || std::is_base_of<SkRefCnt, typename WTF::RemoveTemplate<T, RefPtr>::Type>::value
     || std::is_base_of<SkRefCnt, typename std::remove_pointer<T>::type>::value
-    || std::is_base_of<SkRefCnt, typename WTF::RemoveTemplate<T, PassRefPtr>::Type>::value,
-    WTF::IsSubclassOfTemplate<typename std::remove_pointer<T>::type, GarbageCollected>::value> {
+    || std::is_base_of<SkRefCnt, typename WTF::RemoveTemplate<T, PassRefPtr>::Type>::value> {
     STATIC_ONLY(CrossThreadCopier);
 };
 
@@ -165,6 +152,11 @@ struct CrossThreadCopier<std::unique_ptr<T>> {
     {
         return pointer; // This is in fact a move.
     }
+};
+
+template<typename T>
+struct CrossThreadCopier<CrossThreadPersistent<T>> : public CrossThreadCopierPassThrough<CrossThreadPersistent<T>> {
+    STATIC_ONLY(CrossThreadCopier);
 };
 
 template <typename T>

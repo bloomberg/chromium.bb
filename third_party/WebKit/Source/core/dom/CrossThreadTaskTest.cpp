@@ -43,24 +43,24 @@ protected:
 
 TEST_F(CrossThreadTaskTest, CreateForGarbageCollectedMethod)
 {
-    std::unique_ptr<ExecutionContextTask> task1 = createCrossThreadTask(&GCObject::run, new GCObject, new GCObject);
-    std::unique_ptr<ExecutionContextTask> task2 = createCrossThreadTask(&GCObject::run, new GCObject, new GCObject);
+    std::unique_ptr<ExecutionContextTask> task1 = createCrossThreadTask(&GCObject::run, wrapCrossThreadPersistent(new GCObject), wrapCrossThreadPersistent(new GCObject));
+    std::unique_ptr<ExecutionContextTask> task2 = createCrossThreadTask(&GCObject::run, wrapCrossThreadPersistent(new GCObject), wrapCrossThreadPersistent(new GCObject));
     ThreadHeap::collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithSweep, BlinkGC::ForcedGC);
     EXPECT_EQ(4, GCObject::s_counter);
 }
 
 TEST_F(CrossThreadTaskTest, CreateForFunctionWithGarbageCollected)
 {
-    std::unique_ptr<ExecutionContextTask> task1 = createCrossThreadTask(&functionWithGarbageCollected, new GCObject);
-    std::unique_ptr<ExecutionContextTask> task2 = createCrossThreadTask(&functionWithGarbageCollected, new GCObject);
+    std::unique_ptr<ExecutionContextTask> task1 = createCrossThreadTask(&functionWithGarbageCollected, wrapCrossThreadPersistent(new GCObject));
+    std::unique_ptr<ExecutionContextTask> task2 = createCrossThreadTask(&functionWithGarbageCollected, wrapCrossThreadPersistent(new GCObject));
     ThreadHeap::collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithSweep, BlinkGC::ForcedGC);
     EXPECT_EQ(2, GCObject::s_counter);
 }
 
 TEST_F(CrossThreadTaskTest, CreateForFunctionWithExecutionContext)
 {
-    std::unique_ptr<ExecutionContextTask> task1 = createCrossThreadTask(&functionWithExecutionContext, new GCObject);
-    std::unique_ptr<ExecutionContextTask> task2 = createCrossThreadTask(&functionWithExecutionContext, new GCObject);
+    std::unique_ptr<ExecutionContextTask> task1 = createCrossThreadTask(&functionWithExecutionContext, wrapCrossThreadPersistent(new GCObject));
+    std::unique_ptr<ExecutionContextTask> task2 = createCrossThreadTask(&functionWithExecutionContext, wrapCrossThreadPersistent(new GCObject));
     ThreadHeap::collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithSweep, BlinkGC::ForcedGC);
     EXPECT_EQ(2, GCObject::s_counter);
 }
