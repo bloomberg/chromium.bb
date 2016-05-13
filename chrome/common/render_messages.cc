@@ -8,6 +8,12 @@
 
 namespace IPC {
 
+void ParamTraits<ContentSettingsPattern>::GetSize(
+    base::PickleSizer* s,
+    const ContentSettingsPattern& pattern) {
+  ContentSettingsPatternSerializer::GetSize(pattern, s);
+}
+
 void ParamTraits<ContentSettingsPattern>::Write(
     base::Pickle* m,
     const ContentSettingsPattern& pattern) {

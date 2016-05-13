@@ -79,6 +79,11 @@ void WriteVectorWithoutCopy(base::Pickle* m, const std::vector<T>& p) {
 // PP_Bool ---------------------------------------------------------------------
 
 // static
+void ParamTraits<PP_Bool>::GetSize(base::PickleSizer* s, const param_type& p) {
+  GetParamSize(s, PP_ToBool(p));
+}
+
+// static
 void ParamTraits<PP_Bool>::Write(base::Pickle* m, const param_type& p) {
   WriteParam(m, PP_ToBool(p));
 }
@@ -151,6 +156,13 @@ void ParamTraits<PP_KeyInformation>::Log(const param_type& p, std::string* l) {
 // PP_NetAddress_Private -------------------------------------------------------
 
 // static
+void ParamTraits<PP_NetAddress_Private>::GetSize(base::PickleSizer* s,
+                                                 const param_type& p) {
+  GetParamSize(s, p.size);
+  s->AddBytes(static_cast<int>(p.size));
+}
+
+// static
 void ParamTraits<PP_NetAddress_Private>::Write(base::Pickle* m,
                                                const param_type& p) {
   WriteParam(m, p.size);
@@ -184,6 +196,13 @@ void ParamTraits<PP_NetAddress_Private>::Log(const param_type& p,
 }
 
 // HostResource ----------------------------------------------------------------
+
+// static
+void ParamTraits<ppapi::HostResource>::GetSize(base::PickleSizer* s,
+                                               const param_type& p) {
+  GetParamSize(s, p.instance());
+  GetParamSize(s, p.host_resource());
+}
 
 // static
 void ParamTraits<ppapi::HostResource>::Write(base::Pickle* m,
@@ -253,6 +272,13 @@ void ParamTraits< std::vector<ppapi::proxy::SerializedVar> >::Log(
 
 // ppapi::PpapiPermissions -----------------------------------------------------
 
+// static
+void ParamTraits<ppapi::PpapiPermissions>::GetSize(base::PickleSizer* s,
+                                                   const param_type& p) {
+  GetParamSize(s, p.GetBits());
+}
+
+// static
 void ParamTraits<ppapi::PpapiPermissions>::Write(base::Pickle* m,
                                                  const param_type& p) {
   WriteParam(m, p.GetBits());
@@ -673,6 +699,13 @@ void ParamTraits<ppapi::SocketOptionData>::Log(const param_type& p,
 }
 
 // ppapi::CompositorLayerData --------------------------------------------------
+
+// static
+void ParamTraits<ppapi::CompositorLayerData::Transform>::GetSize(
+    base::PickleSizer* s, const param_type& p) {
+  for (size_t i = 0; i < arraysize(p.matrix); i++)
+    GetParamSize(s, p.matrix[i]);
+}
 
 // static
 void ParamTraits<ppapi::CompositorLayerData::Transform>::Write(

@@ -12,6 +12,20 @@
 
 namespace IPC {
 
+void ParamTraits<media::BitstreamBuffer>::GetSize(base::PickleSizer* s,
+                                                  const param_type& p) {
+  GetParamSize(s, p.id());
+  GetParamSize(s, static_cast<uint64_t>(p.size()));
+  GetParamSize(s, static_cast<uint64_t>(p.offset()));
+  GetParamSize(s, p.presentation_timestamp());
+  GetParamSize(s, p.key_id());
+  if (!p.key_id().empty()) {
+    GetParamSize(s, p.iv());
+    GetParamSize(s, p.subsamples());
+  }
+  GetParamSize(s, p.handle());
+}
+
 void ParamTraits<media::BitstreamBuffer>::Write(base::Pickle* m,
                                                 const param_type& p) {
   WriteParam(m, p.id());

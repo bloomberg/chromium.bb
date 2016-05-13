@@ -68,6 +68,9 @@ class ManifestPermission {
   bool Equal(const ManifestPermission* rhs) const;
 
   // IPC functions
+  // Gets the size of the data to be written.
+  void GetSize(base::PickleSizer* s) const;
+
   // Writes this into the given IPC message |m|.
   void Write(base::Pickle* m) const;
 

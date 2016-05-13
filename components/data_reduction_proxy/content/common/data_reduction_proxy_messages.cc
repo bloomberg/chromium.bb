@@ -14,6 +14,12 @@
 #include "ipc/struct_destructor_macros.h"
 #include "components/data_reduction_proxy/content/common/data_reduction_proxy_messages.h"
 
+// Generate param traits size methods.
+#include "ipc/param_traits_size_macros.h"
+namespace IPC {
+#include "components/data_reduction_proxy/content/common/data_reduction_proxy_messages.h"
+}  // namespace IPC
+
 // Generate param traits write methods.
 #include "ipc/param_traits_write_macros.h"
 namespace IPC {

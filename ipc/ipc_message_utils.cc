@@ -996,6 +996,14 @@ void ParamTraits<base::TimeTicks>::Log(const param_type& p, std::string* l) {
   ParamTraits<int64_t>::Log(p.ToInternalValue(), l);
 }
 
+void ParamTraits<IPC::ChannelHandle>::GetSize(base::PickleSizer* sizer,
+                                              const param_type& p) {
+  GetParamSize(sizer, p.name);
+#if defined(OS_POSIX)
+  GetParamSize(sizer, p.socket);
+#endif
+}
+
 void ParamTraits<IPC::ChannelHandle>::Write(base::Pickle* m,
                                             const param_type& p) {
 #if defined(OS_WIN)

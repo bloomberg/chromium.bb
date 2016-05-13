@@ -992,6 +992,7 @@ struct ParamTraits<std::unique_ptr<P>> {
 template<>
 struct IPC_EXPORT ParamTraits<IPC::ChannelHandle> {
   typedef ChannelHandle param_type;
+  static void GetSize(base::PickleSizer* sizer, const param_type& p);
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,

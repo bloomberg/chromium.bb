@@ -20,6 +20,12 @@ template <class Element>
 struct ParamTraits<google::protobuf::RepeatedPtrField<Element>> {
   typedef google::protobuf::RepeatedPtrField<Element> param_type;
 
+  static void GetSize(base::PickleSizer* s, const param_type& p) {
+    GetParamSize(s, p.size());
+    for (const auto& element : p)
+      GetParamSize(s, element);
+  }
+
   static void Write(base::Pickle* m, const param_type& p) {
     WriteParam(m, p.size());
     for (const auto& element : p)

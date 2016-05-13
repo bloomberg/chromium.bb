@@ -13,6 +13,13 @@
 namespace IPC {
 
 // static
+void ParamTraits<webrtc::DesktopVector>::GetSize(base::PickleSizer* s,
+                                                 const param_type& p) {
+  GetParamSize(s, p.x());
+  GetParamSize(s, p.y());
+}
+
+// static
 void ParamTraits<webrtc::DesktopVector>::Write(base::Pickle* m,
                                                const webrtc::DesktopVector& p) {
   m->WriteInt(p.x());
@@ -38,6 +45,13 @@ void ParamTraits<webrtc::DesktopVector>::Log(const webrtc::DesktopVector& p,
 }
 
 // static
+void ParamTraits<webrtc::DesktopSize>::GetSize(base::PickleSizer* s,
+                                               const param_type& p) {
+  GetParamSize(s, p.width());
+  GetParamSize(s, p.height());
+}
+
+// static
 void ParamTraits<webrtc::DesktopSize>::Write(base::Pickle* m,
                                              const webrtc::DesktopSize& p) {
   m->WriteInt(p.width());
@@ -60,6 +74,15 @@ void ParamTraits<webrtc::DesktopSize>::Log(const webrtc::DesktopSize& p,
                                            std::string* l) {
   l->append(base::StringPrintf("webrtc::DesktopSize(%d, %d)",
                                p.width(), p.height()));
+}
+
+// static
+void ParamTraits<webrtc::DesktopRect>::GetSize(base::PickleSizer* s,
+                                               const param_type& p) {
+  GetParamSize(s, p.left());
+  GetParamSize(s, p.top());
+  GetParamSize(s, p.right());
+  GetParamSize(s, p.bottom());
 }
 
 // static
@@ -190,6 +213,12 @@ void ParamTraits<remoting::ScreenResolution>::Log(
 }
 
 // static
+void ParamTraits<net::IPAddress>::GetSize(base::PickleSizer* s,
+                                          const param_type& p) {
+  GetParamSize(s, p.bytes());
+}
+
+// static
 void ParamTraits<net::IPAddress>::Write(base::Pickle* m, const param_type& p) {
   WriteParam(m, p.bytes());
 }
@@ -213,6 +242,13 @@ bool ParamTraits<net::IPAddress>::Read(const base::Pickle* m,
 // static
 void ParamTraits<net::IPAddress>::Log(const param_type& p, std::string* l) {
   l->append("IPAddress:" + (p.empty() ? "(empty)" : p.ToString()));
+}
+
+// static
+void ParamTraits<net::IPEndPoint>::GetSize(base::PickleSizer* s,
+                                           const param_type& p) {
+  GetParamSize(s, p.address());
+  GetParamSize(s, p.port());
 }
 
 // static

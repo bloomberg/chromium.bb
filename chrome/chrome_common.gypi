@@ -229,6 +229,7 @@
       'common/safe_browsing/protobuf_message_log_macros.h',
       'common/safe_browsing/protobuf_message_param_traits.h',
       'common/safe_browsing/protobuf_message_read_macros.h',
+      'common/safe_browsing/protobuf_message_size_macros.h',
       'common/safe_browsing/protobuf_message_write_macros.h',
       'common/safe_browsing/zip_analyzer.cc',
       'common/safe_browsing/zip_analyzer.h',

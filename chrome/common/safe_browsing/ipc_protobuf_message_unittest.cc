@@ -9,6 +9,11 @@
 #define IPC_MESSAGE_IMPL
 #include "chrome/common/safe_browsing/ipc_protobuf_message_test_messages.h"
 
+// Generate ipc protobuf traits size methods.
+#include "chrome/common/safe_browsing/protobuf_message_size_macros.h"
+namespace IPC {
+#include "chrome/common/safe_browsing/ipc_protobuf_message_test_messages.h"
+}  // namespace IPC
 // Generate ipc protobuf traits write methods.
 #include "chrome/common/safe_browsing/protobuf_message_write_macros.h"
 namespace IPC {

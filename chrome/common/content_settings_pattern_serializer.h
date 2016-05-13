@@ -10,12 +10,17 @@
 namespace base {
 class Pickle;
 class PickleIterator;
+class PickleSizer;
 }
 
 class ContentSettingsPattern;
 
 class ContentSettingsPatternSerializer {
  public:
+  // Gets the serialized pattern's size.
+  static void GetSize(const ContentSettingsPattern& pattern,
+                      base::PickleSizer* s);
+
   // Serializes the pattern to an IPC message.
   static void WriteToMessage(const ContentSettingsPattern& pattern,
                              base::Pickle* m);
