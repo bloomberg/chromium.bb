@@ -48,7 +48,7 @@ public class InterestsPage implements NativePage {
      */
     public InterestsPage(final Context context, Tab tab, Profile profile) {
         mTitle = context.getResources().getString(R.string.ntp_interests);
-        mBackgroundColor = NtpColorUtils.getBackgroundColorResource(context.getResources());
+        mBackgroundColor = NtpColorUtils.getBackgroundColorResource(context.getResources(), false);
         mThemeColor = ApiCompatibilityUtils.getColor(
                 context.getResources(), R.color.default_primary_color);
         mPageView = (InterestsView) View.inflate(context, R.layout.interests_page, null);

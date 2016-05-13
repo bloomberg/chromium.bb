@@ -52,7 +52,7 @@ public class NewTabPageToolbar extends LinearLayout {
                 R.string.accessibility_ntp_toolbar_btn_bookmarks));
         mInterestsButton =  initButton(R.id.interests_button, R.drawable.btn_star_filled);
 
-        setBackgroundColor(NtpColorUtils.getBackgroundColorResource(getResources()));
+        setBackgroundColor(NtpColorUtils.getToolbarBackgroundColorResource(getResources()));
     }
 
     private ViewGroup initButton(int buttonId, int drawableId) {

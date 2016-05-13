@@ -18,10 +18,24 @@ public class NtpColorUtils {
 
     private NtpColorUtils() {}
 
-    public static int getBackgroundColorResource(Resources res) {
-        return (ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_SNIPPETS)
-                       || ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_MATERIAL_DESIGN))
+    public static int getBackgroundColorResource(Resources res, boolean isIncognito) {
+        if (isIncognito) {
+            return ApiCompatibilityUtils.getColor(res, R.color.ntp_bg_incognito);
+        }
+
+        return shouldUseMaterialColors()
                 ? ApiCompatibilityUtils.getColor(res, R.color.ntp_material_design_bg)
                 : ApiCompatibilityUtils.getColor(res, R.color.ntp_bg);
+    }
+
+    public static int getToolbarBackgroundColorResource(Resources res) {
+        return shouldUseMaterialColors()
+                ? ApiCompatibilityUtils.getColor(res, R.color.ntp_material_design_bg)
+                : ApiCompatibilityUtils.getColor(res, R.color.ntp_bg);
+    }
+
+    private static boolean shouldUseMaterialColors() {
+        return ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_SNIPPETS)
+                || ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_MATERIAL_DESIGN);
     }
 }

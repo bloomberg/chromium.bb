@@ -192,7 +192,7 @@ public class AccountSigninView extends FrameLayout implements ProfileDownloader.
      * This is currently used in the Recent Tabs Promo and the bookmarks page.
      */
     public void configureForRecentTabsOrBookmarksPage() {
-        setBackgroundColor(NtpColorUtils.getBackgroundColorResource(getResources()));
+        setBackgroundColor(NtpColorUtils.getBackgroundColorResource(getResources(), false));
         mCancelButtonTextId = R.string.cancel;
         setUpCancelButton();
     }

@@ -300,6 +300,8 @@ public class NewTabPageView extends FrameLayout
         } else {
             stub.setLayoutResource(R.layout.new_tab_page_scroll_view);
             mScrollView = (NewTabPageScrollView) stub.inflate();
+            mScrollView.setBackgroundColor(
+                    NtpColorUtils.getBackgroundColorResource(getResources(), false));
             mScrollView.enableBottomShadow(SHADOW_COLOR);
             mNewTabPageLayout = (NewTabPageLayout) findViewById(R.id.ntp_content);
         }
