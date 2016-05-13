@@ -40,7 +40,7 @@ const CGFloat kVerticalImagePadding = 3.0;
 const CGFloat kMaterialVerticalImagePadding = 5.0;
 
 const CGFloat kTextStartOffset = 28.0;
-const CGFloat kMaterialTextStartOffset = 25.0;
+const CGFloat kMaterialTextStartOffset = 26.0;
 
 // Rounding radius of selection and hover background on popup items.
 const CGFloat kCellRoundingRadius = 2.0;
