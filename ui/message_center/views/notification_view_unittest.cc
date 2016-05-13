@@ -228,8 +228,8 @@ void NotificationViewTest::SetUp() {
   notification_->set_image(CreateTestImage(320, 240));
 
   // Then create a new NotificationView with that single notification.
-  notification_view_.reset(
-      NotificationView::Create(this, *notification_, true));
+  notification_view_.reset(static_cast<NotificationView*>(
+      NotificationView::Create(this, *notification_, true)));
   notification_view_->set_owned_by_client();
 
   views::Widget::InitParams init_params(

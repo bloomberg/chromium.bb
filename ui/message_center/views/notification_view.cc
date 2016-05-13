@@ -150,9 +150,9 @@ namespace message_center {
 // NotificationView ////////////////////////////////////////////////////////////
 
 // static
-NotificationView* NotificationView::Create(MessageCenterController* controller,
-                                           const Notification& notification,
-                                           bool top_level) {
+MessageView* NotificationView::Create(MessageCenterController* controller,
+                                      const Notification& notification,
+                                      bool top_level) {
   switch (notification.type()) {
     case NOTIFICATION_TYPE_BASE_FORMAT:
     case NOTIFICATION_TYPE_IMAGE:
@@ -249,12 +249,11 @@ void NotificationView::SetAccessibleName(const Notification& notification) {
 
 NotificationView::NotificationView(MessageCenterController* controller,
                                    const Notification& notification)
-    : MessageView(this,
+    : MessageView(controller,
                   notification.id(),
                   notification.notifier_id(),
                   notification.small_image().AsImageSkia(),
                   notification.display_source()),
-      controller_(controller),
       clickable_(notification.clickable()),
       top_view_(NULL),
       title_view_(NULL),
@@ -403,7 +402,7 @@ void NotificationView::ScrollRectToVisible(const gfx::Rect& rect) {
 }
 
 gfx::NativeCursor NotificationView::GetCursor(const ui::MouseEvent& event) {
-  if (!clickable_ || !controller_->HasClickedListener(notification_id()))
+  if (!clickable_ || !controller()->HasClickedListener(notification_id()))
     return views::View::GetCursor(event);
 
   return views::GetNativeHandCursor();
@@ -427,35 +426,26 @@ void NotificationView::ButtonPressed(views::Button* sender,
   std::string id(notification_id());
 
   if (sender == settings_button_view_) {
-    controller_->ClickOnSettingsButton(id);
+    controller()->ClickOnSettingsButton(id);
     return;
   }
 
   // See if the button pressed was an action button.
   for (size_t i = 0; i < action_buttons_.size(); ++i) {
     if (sender == action_buttons_[i]) {
-      controller_->ClickOnNotificationButton(id, i);
+      controller()->ClickOnNotificationButton(id, i);
       return;
     }
   }
 
   if (close_button_ && sender == close_button_.get()) {
-    controller_->RemoveNotification(notification_id(), true);  // By user.
+    controller()->RemoveNotification(notification_id(), true);  // By user.
   }
 
   // Let the superclass handle everything else.
   // Warning: This may cause the NotificationView itself to be deleted,
   // so don't do anything afterwards.
   MessageView::ButtonPressed(sender, event);
-}
-
-void NotificationView::ClickOnNotification(const std::string& notification_id) {
-  controller_->ClickOnNotification(notification_id);
-}
-
-void NotificationView::RemoveNotification(const std::string& notification_id,
-                                          bool by_user) {
-  controller_->RemoveNotification(notification_id, by_user);
 }
 
 void NotificationView::CreateOrUpdateTitleView(

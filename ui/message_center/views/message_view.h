@@ -32,14 +32,7 @@ class ScrollView;
 
 namespace message_center {
 
-// Interface that MessageView uses to report clicks and other user actions.
-// Provided by creator of MessageView.
-class MessageViewController {
- public:
-  virtual void ClickOnNotification(const std::string& notification_id) = 0;
-  virtual void RemoveNotification(const std::string& notification_id,
-                                  bool by_user) = 0;
-};
+class MessageCenterController;
 
 // Individual notifications constants.
 const int kPaddingBetweenItems = 10;
@@ -52,7 +45,7 @@ const int kWebNotificationIconSize = 40;
 class MESSAGE_CENTER_EXPORT MessageView : public views::SlideOutView,
                                           public views::ButtonListener {
  public:
-  MessageView(MessageViewController* controller,
+  MessageView(MessageCenterController* controller,
               const std::string& notification_id,
               const NotifierId& notifier_id,
               const gfx::ImageSkia& small_image,
@@ -97,15 +90,20 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::SlideOutView,
   NotifierId notifier_id() { return notifier_id_; }
   const base::string16& display_source() const { return display_source_; }
 
+  void set_controller(MessageCenterController* controller) {
+    controller_ = controller;
+  }
+
  protected:
   // Overridden from views::SlideOutView:
   void OnSlideOut() override;
 
   views::ImageView* small_image() { return small_image_view_.get(); }
   views::ScrollView* scroller() { return scroller_; }
+  MessageCenterController* controller() { return controller_; }
 
  private:
-  MessageViewController* controller_;
+  MessageCenterController* controller_;  // Weak, lives longer then views.
   std::string notification_id_;
   NotifierId notifier_id_;
   views::View* background_view_;  // Owned by views hierarchy.

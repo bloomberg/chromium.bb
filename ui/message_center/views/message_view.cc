@@ -13,6 +13,7 @@
 #include "ui/gfx/shadow_value.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_style.h"
+#include "ui/message_center/views/message_center_controller.h"
 #include "ui/message_center/views/padded_button.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/strings/grit/ui_strings.h"
@@ -33,7 +34,7 @@ const int kShadowBlur = 4;
 
 namespace message_center {
 
-MessageView::MessageView(MessageViewController* controller,
+MessageView::MessageView(MessageCenterController* controller,
                          const std::string& notification_id,
                          const NotifierId& notifier_id,
                          const gfx::ImageSkia& small_image,

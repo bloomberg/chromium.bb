@@ -425,7 +425,7 @@ void MessageCenterView::OnNotificationRemoved(const std::string& id,
   NotificationViewsMap::iterator view_iter = notification_views_.find(id);
   if (view_iter == notification_views_.end())
     return;
-  NotificationView* view = view_iter->second;
+  MessageView* view = view_iter->second;
   int index = message_list_view_->GetIndexOf(view);
   DCHECK_LE(0, index);
   if (by_user) {
@@ -467,7 +467,7 @@ void MessageCenterView::OnNotificationUpdated(const std::string& id) {
   bool set = false;
   if (message_list_view_->IsMouseHovered()) {
     for (const auto& hover_id_view : notification_views_) {
-      NotificationView* hover_view = hover_id_view.second;
+      MessageView* hover_view = hover_id_view.second;
       if (hover_view->IsMouseHovered()) {
         message_list_view_->SetRepositionTarget(hover_view->bounds());
         set = true;
@@ -479,7 +479,7 @@ void MessageCenterView::OnNotificationUpdated(const std::string& id) {
     message_list_view_->ResetRepositionSession();
 
   // TODO(dimich): add MessageCenter::GetVisibleNotificationById(id)
-  NotificationView* view = view_iter->second;
+  MessageView* view = view_iter->second;
   const NotificationList::Notifications& notifications =
       message_center_->GetVisibleNotifications();
   for (NotificationList::Notifications::const_iterator iter =
@@ -568,7 +568,7 @@ void MessageCenterView::AnimationCanceled(const gfx::Animation* animation) {
 
 void MessageCenterView::AddNotificationAt(const Notification& notification,
                                           int index) {
-  NotificationView* view =
+  MessageView* view =
       NotificationView::Create(this, notification, false);  // Not top-level.
   view->set_context_menu_controller(context_menu_controller_.get());
   notification_views_[notification.id()] = view;

@@ -102,9 +102,9 @@ class MESSAGE_CENTER_EXPORT MessageCenterView : public views::View,
   MessageCenter* message_center_;  // Weak reference.
   MessageCenterTray* tray_;  // Weak reference.
 
-  // Map notification_id->NotificationView*. It contains all NotificationViews
-  // currently displayed in MessageCenter.
-  typedef std::map<std::string, NotificationView*> NotificationViewsMap;
+  // Map notification_id->MessageView*. It contains all MessageViews currently
+  // displayed in MessageCenter.
+  typedef std::map<std::string, MessageView*> NotificationViewsMap;
   NotificationViewsMap notification_views_;  // Weak.
 
   // Child views.

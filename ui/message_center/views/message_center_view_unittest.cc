@@ -126,7 +126,7 @@ class MessageCenterViewTest : public views::ViewsTestBase,
   MessageCenterView* GetMessageCenterView();
   MessageListView* GetMessageListView();
   FakeMessageCenterImpl* GetMessageCenter() const;
-  NotificationView* GetNotificationView(const std::string& id);
+  MessageView* GetNotificationView(const std::string& id);
   views::BoundsAnimator* GetAnimator();
   int GetNotificationCount();
   int GetCallCount(CallType type);
@@ -228,8 +228,7 @@ FakeMessageCenterImpl* MessageCenterViewTest::GetMessageCenter() const {
   return message_center_.get();
 }
 
-NotificationView* MessageCenterViewTest::GetNotificationView(
-    const std::string& id) {
+MessageView* MessageCenterViewTest::GetNotificationView(const std::string& id) {
   return message_center_view_->notification_views_[id];
 }
 

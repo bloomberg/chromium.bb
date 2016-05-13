@@ -156,7 +156,7 @@ void MessagePopupCollection::UpdateWidgets() {
     if (FindToast((*iter)->id()))
       continue;
 
-    NotificationView* view;
+    MessageView* view;
     // Create top-level notification.
 #if defined(OS_CHROMEOS)
     if ((*iter)->pinned()) {

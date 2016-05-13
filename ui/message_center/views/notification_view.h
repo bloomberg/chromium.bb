@@ -23,7 +23,6 @@ namespace message_center {
 
 class BoundedLabel;
 class MessageCenter;
-class MessageCenterController;
 class NotificationButton;
 class NotificationProgressBarBase;
 class NotificationView;
@@ -36,8 +35,7 @@ class ProportionalImageView;
 // method below.
 class MESSAGE_CENTER_EXPORT NotificationView
     : public MessageView,
-      public views::ViewTargeterDelegate,
-      public MessageViewController {
+      public views::ViewTargeterDelegate {
  public:
   // Creates appropriate MessageViews for notifications. Those currently are
   // always NotificationView instances but in the future
@@ -46,9 +44,9 @@ class MESSAGE_CENTER_EXPORT NotificationView
   // outside the browser window. No custom shadows are created for top level
   // notifications on Linux with Aura.
   // |controller| may be NULL, but has to be set before the view is shown.
-  static NotificationView* Create(MessageCenterController* controller,
-                                  const Notification& notification,
-                                  bool top_level);
+  static MessageView* Create(MessageCenterController* controller,
+                             const Notification& notification,
+                             bool top_level);
   ~NotificationView() override;
 
   // Overridden from views::View:
@@ -65,15 +63,6 @@ class MESSAGE_CENTER_EXPORT NotificationView
   bool IsCloseButtonFocused() override;
   void RequestFocusOnCloseButton() override;
   bool IsPinned() override;
-
-  // Overridden from MessageViewController:
-  void ClickOnNotification(const std::string& notification_id) override;
-  void RemoveNotification(const std::string& notification_id,
-                          bool by_user) override;
-
-  void set_controller(MessageCenterController* controller) {
-    controller_ = controller;
-  }
 
  protected:
   NotificationView(MessageCenterController* controller,
@@ -118,8 +107,6 @@ class MESSAGE_CENTER_EXPORT NotificationView
   // given the space available in the ContextMessage section of the
   // notification.
   base::string16 FormatContextMessage(const Notification& notification) const;
-
-  MessageCenterController* controller_;  // Weak, lives longer then views.
 
   // Describes whether the view should display a hand pointer or not.
   bool clickable_;
