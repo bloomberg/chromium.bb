@@ -44,3 +44,8 @@
     (literal "/usr/lib/libCoreStorage.dylib")
     (literal "/usr/lib/libsasl2.2.dylib")
     (literal "/usr/lib/libutil.dylib")))
+
+; https://crbug.com/605840
+; file-read-metadata /System/Library/LinguisticData/en/US/hyphenation.dat
+; for CFStringIsHyphenationAvailableForLocale and CFStringGetHyphenationLocationBeforeIndex
+(allow file-read* (subpath "/System/Library/LinguisticData"))
