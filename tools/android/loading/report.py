@@ -8,6 +8,7 @@ When executed as a script, takes a trace filename and print the report.
 """
 
 import loading_trace
+from network_activity_lens import NetworkActivityLens
 from user_satisfied_lens import (
     FirstTextPaintLens, FirstContentfulPaintLens, FirstSignificantPaintLens)
 
@@ -33,6 +34,18 @@ class LoadingReport(object):
     self._max_msec = max(
         r.end_msec or -1 for r in self.trace.request_track.GetEvents())
 
+    network_lens = NetworkActivityLens(self.trace)
+    if network_lens.total_download_bytes > 0:
+      self._contentful_byte_frac = network_lens.DownloadedBytesAt(
+          self._contentful_paint_msec -
+          self._base_msec) / float(network_lens.total_download_bytes)
+      self._significant_byte_frac = network_lens.DownloadedBytesAt(
+          self._significant_paint_msec -
+          self._base_msec) / float(network_lens.total_download_bytes)
+    else:
+      self._contentful_byte_frac = float('Nan')
+      self._significant_byte_frac = float('Nan')
+
   def GenerateReport(self):
     """Returns a report as a dict."""
     return {
@@ -40,7 +53,9 @@ class LoadingReport(object):
         'first_text_ms': self._text_msec - self._base_msec,
         'contentful_paint_ms': self._contentful_paint_msec - self._base_msec,
         'significant_paint_ms': self._significant_paint_msec - self._base_msec,
-        'plt_ms': self._max_msec - self._base_msec}
+        'plt_ms': self._max_msec - self._base_msec,
+        'contentful_byte_frac': self._contentful_byte_frac,
+        'significant_byte_frac': self._significant_byte_frac,}
 
   @classmethod
   def FromTraceFilename(cls, filename):

@@ -46,7 +46,7 @@ class UserSatisfiedLensTestCase(unittest.TestCase):
   def testFirstContentfulPaintLens(self):
     MAINFRAME = 1
     SUBFRAME = 2
-    trace_creator = TraceCreator()
+    trace_creator = test_utils.TraceCreator()
     requests = [trace_creator.RequestAt(1), trace_creator.RequestAt(10),
                 trace_creator.RequestAt(20)]
     loading_trace = trace_creator.CreateTrace(
@@ -71,7 +71,7 @@ class UserSatisfiedLensTestCase(unittest.TestCase):
 
   def testCantGetNoSatisfaction(self):
     MAINFRAME = 1
-    trace_creator = TraceCreator()
+    trace_creator = test_utils.TraceCreator()
     requests = [trace_creator.RequestAt(1), trace_creator.RequestAt(10),
                 trace_creator.RequestAt(20)]
     loading_trace = trace_creator.CreateTrace(
@@ -88,7 +88,7 @@ class UserSatisfiedLensTestCase(unittest.TestCase):
   def testFirstTextPaintLens(self):
     MAINFRAME = 1
     SUBFRAME = 2
-    trace_creator = TraceCreator()
+    trace_creator = test_utils.TraceCreator()
     requests = [trace_creator.RequestAt(1), trace_creator.RequestAt(10),
                 trace_creator.RequestAt(20)]
     loading_trace = trace_creator.CreateTrace(
@@ -115,7 +115,7 @@ class UserSatisfiedLensTestCase(unittest.TestCase):
 
   def testFirstSignificantPaintLens(self):
     MAINFRAME = 1
-    trace_creator = TraceCreator()
+    trace_creator = test_utils.TraceCreator()
     requests = [trace_creator.RequestAt(1), trace_creator.RequestAt(10),
                 trace_creator.RequestAt(15), trace_creator.RequestAt(20)]
     loading_trace = trace_creator.CreateTrace(
@@ -154,7 +154,7 @@ class UserSatisfiedLensTestCase(unittest.TestCase):
   def testRequestFingerprintLens(self):
     MAINFRAME = 1
     SUBFRAME = 2
-    trace_creator = TraceCreator()
+    trace_creator = test_utils.TraceCreator()
     requests = [trace_creator.RequestAt(1), trace_creator.RequestAt(10),
                 trace_creator.RequestAt(20)]
     loading_trace = trace_creator.CreateTrace(

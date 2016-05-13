@@ -225,3 +225,27 @@ class MockUserSatisfiedLens(user_satisfied_lens._FirstEventLens):
   def _CalculateTimes(self, _):
     self._satisfied_msec = float('inf')
     self._event_msec = float('inf')
+
+
+class TraceCreator(object):
+  def __init__(self):
+    self._request_index = 1
+
+  def RequestAt(self, timestamp_msec, duration=1):
+    timestamp_sec = float(timestamp_msec) / 1000
+    rq = request_track.Request.FromJsonDict({
+        'url': 'http://bla-%s-.com' % timestamp_msec,
+        'request_id': '0.%s' % self._request_index,
+        'frame_id': '123.%s' % timestamp_msec,
+        'initiator': {'type': 'other'},
+        'timestamp': timestamp_sec,
+        'timing': {'request_time': timestamp_sec,
+                   'loading_finished': duration}
+        })
+    self._request_index += 1
+    return rq
+
+  def CreateTrace(self, requests, events, main_frame_id):
+    trace = LoadingTraceFromEvents(requests, trace_events=events)
+    trace.tracing_track.SetMainFrameID(main_frame_id)
+    return trace

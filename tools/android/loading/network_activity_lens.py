@@ -36,6 +36,7 @@ class NetworkActivityLens(object):
     self._downloaded_bytes_timeline = []
     self._upload_rate_timeline = []
     self._download_rate_timeline = []
+    self._total_downloaded_bytes = 0
     requests = trace.request_track.GetEvents()
     self._network_events = list(itertools.chain.from_iterable(
         NetworkEvent.EventsFromRequest(request) for request in requests))
@@ -57,6 +58,36 @@ class NetworkActivityLens(object):
   @property
   def download_rate_timeline(self):
     return (self._start_end_times, self._download_rate_timeline)
+
+  @property
+  def total_download_bytes(self):
+    return self._total_downloaded_bytes
+
+  def DownloadedBytesAt(self, time_msec):
+    """Return the the downloaded bytes at a given timestamp.
+
+    Args:
+      time_msec: a timestamp, in the same scale as the timelines.
+
+    Returns:
+      The total bytes downloaded up until the time period ending at time_msec.
+    """
+    # We just do a linear cumulative sum. Currently this is only called a couple
+    # of times, so making an indexed cumulative sum does not seem to be worth
+    # the bother.
+    total_bytes = 0
+    previous_msec = self.downloaded_bytes_timeline[0][0]
+    for msec, nbytes in zip(*self.downloaded_bytes_timeline):
+      if msec < time_msec:
+        total_bytes += nbytes
+        previous_msec = msec
+      else:
+        if time_msec > previous_msec:
+          fraction_of_chunk = ((time_msec - previous_msec)
+                               / (msec - previous_msec))
+          total_bytes += float(nbytes) * fraction_of_chunk
+        break
+    return total_bytes
 
   def _IndexEvents(self):
     start_end_times_set = set()
@@ -87,6 +118,7 @@ class NetworkActivityLens(object):
       downloaded_bytes = sum(
           e.DownloadedBytes() for e in self._active_events_list[index]
           if timestamp == e.end_msec)
+      self._total_downloaded_bytes += downloaded_bytes
       self._uploaded_bytes_timeline.append(uploaded_bytes)
       self._downloaded_bytes_timeline.append(downloaded_bytes)
       self._upload_rate_timeline.append(upload_rate)

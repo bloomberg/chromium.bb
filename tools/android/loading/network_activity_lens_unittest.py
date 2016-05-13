@@ -67,6 +67,7 @@ class NetworkActivityLensTestCase(unittest.TestCase):
     download_rate = lens.download_rate_timeline
     self.assertEquals(4 / 10e-3, download_rate[1][5])
     self.assertEquals(0, download_rate[1][6])
+    self.assertAlmostEquals(4, lens.total_download_bytes)
 
   def testLongRequest(self):
     timing_dict = {
@@ -101,6 +102,32 @@ class NetworkActivityLensTestCase(unittest.TestCase):
         self.assertAlmostEqual(1000 / 990e-3, download_rate[index])
         self.assertEquals(0, downloaded_bytes[index])
     self.assertEquals(1000, downloaded_bytes[-1])
+
+  def testDownloadedBytesAt(self):
+    timing_dict = {
+        'requestTime': 1.2,
+        'dnsStart': 20, 'dnsEnd': 30,
+        'connectStart': 50, 'connectEnd': 60,
+        'sendStart': 70, 'sendEnd': 80,
+        'receiveHeadersEnd': 90,
+        'loadingFinished': 100}
+    request = test_utils.MakeRequestWithTiming(1, 2, timing_dict)
+    lens = self._NetworkActivityLens([request])
+    # See testTransferredBytes for key events times. We test around events at
+    # the start, middle and end of the data transfer as well as for the
+    # interpolation.
+    self.assertEquals(0, lens.DownloadedBytesAt(1219))
+    self.assertEquals(0, lens.DownloadedBytesAt(1220))
+    self.assertEquals(0, lens.DownloadedBytesAt(1225))
+    self.assertEquals(0, lens.DownloadedBytesAt(1280))
+    self.assertEquals(1.6, lens.DownloadedBytesAt(1281))
+    self.assertEquals(8, lens.DownloadedBytesAt(1285))
+    self.assertEquals(14.4, lens.DownloadedBytesAt(1289))
+    self.assertEquals(16, lens.DownloadedBytesAt(1290))
+    self.assertEquals(16, lens.DownloadedBytesAt(1291))
+    self.assertEquals(16, lens.DownloadedBytesAt(1295))
+    self.assertEquals(16, lens.DownloadedBytesAt(1300))
+    self.assertEquals(16, lens.DownloadedBytesAt(1400))
 
   def _NetworkActivityLens(self, requests):
     trace = test_utils.LoadingTraceFromEvents(requests)

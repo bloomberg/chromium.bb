@@ -20,11 +20,15 @@ class LoadingReportTestCase(unittest.TestCase):
 
   @classmethod
   def _MakeTrace(cls):
-    trace_creator = user_satisfied_lens_unittest.TraceCreator()
+    trace_creator = test_utils.TraceCreator()
     requests = [trace_creator.RequestAt(cls._FIRST_REQUEST_TIME),
                 trace_creator.RequestAt(
                     cls._FIRST_REQUEST_TIME + cls._REQUEST_OFFSET,
                     cls._DURATION)]
+    requests[0].timing.receive_headers_end = 0
+    requests[1].timing.receive_headers_end = 0
+    requests[0].encoded_data_length = 128
+    requests[1].encoded_data_length = 1024
     trace = trace_creator.CreateTrace(
         requests,
         [{'ts': cls._CONTENTFUL_PAINT * cls.MILLI_TO_MICRO, 'ph': 'I',
@@ -57,6 +61,8 @@ class LoadingReportTestCase(unittest.TestCase):
                      loading_report['contentful_paint_ms'])
     self.assertEqual(self._REQUEST_OFFSET + self._DURATION,
                      loading_report['plt_ms'])
+    self.assertAlmostEqual(0.3, loading_report['contentful_byte_frac'])
+    self.assertAlmostEqual(0.14, loading_report['significant_byte_frac'], 2)
 
 
 if __name__ == '__main__':

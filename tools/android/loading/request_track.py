@@ -51,6 +51,9 @@ class Timing(object):
     return all(getattr(self, attr) == getattr(o, attr)
                for attr in self.__slots__)
 
+  def __str__(self):
+    return str(self.ToJsonDict())
+
   def LargestOffset(self):
     """Returns the largest offset in the available timings."""
     return max(0, max(
@@ -60,6 +63,7 @@ class Timing(object):
   def ToJsonDict(self):
     return {attr: getattr(self, attr)
             for attr in self.__slots__ if getattr(self, attr) != -1}
+
   @classmethod
   def FromJsonDict(cls, json_dict):
     return cls(**json_dict)
