@@ -35,6 +35,22 @@ class FilePath;
 
 // A base class that defines APIs to perform/rollback an action or a
 // sequence of actions during install/update/uninstall.
+//
+// Subclasses must implement DoImpl() and RollbackImpl().
+//
+// Do() calls DoImpl(). When the "best-effort" flag is true, it always returns
+// true. Otherwise, it returns the value returned by DoImpl(). Implementations
+// of DoImpl() may use the "best-effort" flag as an indication that they should
+// do as much work as possible (i.e., shouldn't abort as soon as one of the
+// actions they have to perform fails). By default, the "best-effort" flag is
+// false.
+//
+// Rollback() calls RollbackImpl() when the "rollback enabled" flag is true.
+// Otherwise, it's a no-op. Implementations of DoImpl() may read the "rollback
+// enabled" flag to determine whether they should save state to support
+// rollback. By default, the "rollback enabled" flag is true.
+//
+// The "best-effort" and "rollback enabled" must be set before Do() is invoked.
 class WorkItem {
  public:
   // A callback that returns the desired value based on the |existing_value|.
@@ -119,12 +135,10 @@ class WorkItem {
       const std::wstring& value_name);
 
   // Create a DeleteTreeWorkItem that recursively deletes a file system
-  // hierarchy at the given root path. A key file can be optionally specified
-  // by key_path.
+  // hierarchy at the given root path.
   static DeleteTreeWorkItem* CreateDeleteTreeWorkItem(
       const base::FilePath& root_path,
-      const base::FilePath& temp_path,
-      const std::vector<base::FilePath>& key_paths);
+      const base::FilePath& temp_path);
 
   // Create a MoveTreeWorkItem that recursively moves a file system hierarchy
   // from source path to destination path.
@@ -184,38 +198,24 @@ class WorkItem {
   // a list of WorkItems.
   static WorkItemList* CreateWorkItemList();
 
-  // Create an empty WorkItemList that cannot be rolled back.
-  // Such a work item list executes all items on a best effort basis and does
-  // not abort execution if an item in the list fails.
-  static WorkItemList* CreateNoRollbackWorkItemList();
-
   // Create a conditional work item list that will execute only if
   // condition->ShouldRun() returns true. The WorkItemList instance
   // assumes ownership of condition.
   static WorkItemList* CreateConditionalWorkItemList(Condition* condition);
 
-  // Perform the actions of WorkItem. Returns true if success, returns false
-  // otherwise.
-  // If the WorkItem is transactional, then Do() is done as a transaction.
-  // If it returns false, there will be no change on the system.
-  virtual bool Do() = 0;
+  // Perform the actions of WorkItem. Returns true if success or if
+  // best_effort(). Can only be called once per instance.
+  bool Do();
 
-  // Rollback any actions previously carried out by this WorkItem. If the
-  // WorkItem is transactional, then the previous actions can be fully
-  // rolled back. If the WorkItem is non-transactional, the rollback is a
-  // best effort.
-  virtual void Rollback() = 0;
+  // Rollback any actions previously carried out by this WorkItem if
+  // rollback_enabled(). Can only be called once per instance, after Do() has
+  // returned.
+  void Rollback();
 
-  // If called with true, this WorkItem may return true from its Do() method
-  // even on failure and Rollback will have no effect.
-  void set_ignore_failure(bool ignore_failure) {
-    ignore_failure_ = ignore_failure;
-  }
-
-  // Returns true if this WorkItem should ignore failures.
-  bool ignore_failure() const {
-    return ignore_failure_;
-  }
+  void set_best_effort(bool best_effort);
+  bool best_effort() const { return best_effort_; }
+  void set_rollback_enabled(bool rollback_enabled);
+  bool rollback_enabled() const { return rollback_enabled_; }
 
   // Sets an optional log message that a work item may use to print additional
   // instance-specific information.
@@ -227,13 +227,30 @@ class WorkItem {
   const std::string& log_message() const { return log_message_; }
 
  protected:
+  enum State {
+    BEFORE_DO,
+    AFTER_DO,
+    AFTER_ROLLBACK,
+  };
+
   WorkItem();
 
-  // Specifies whether this work item my fail to complete and yet still
-  // return true from Do().
-  bool ignore_failure_;
+  State state() const { return state_; }
 
   std::string log_message_;
+
+ private:
+  // Called by Do(). Performs the actions of the Workitem.
+  virtual bool DoImpl() = 0;
+
+  // Called by Rollback() if rollback_enabled() is true. Rollbacks the actions
+  // performed by DoImpl(). Implementations must support invocation of this even
+  // when DoImpl() returned false.
+  virtual void RollbackImpl() = 0;
+
+  State state_ = BEFORE_DO;
+  bool best_effort_ = false;
+  bool rollback_enabled_ = true;
 };
 
 #endif  // CHROME_INSTALLER_UTIL_WORK_ITEM_H_

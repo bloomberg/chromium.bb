@@ -28,7 +28,7 @@ CopyTreeWorkItem::CopyTreeWorkItem(const base::FilePath& source_path,
       copied_to_alternate_path_(false) {
 }
 
-bool CopyTreeWorkItem::Do() {
+bool CopyTreeWorkItem::DoImpl() {
   if (!base::PathExists(source_path_)) {
     LOG(ERROR) << source_path_.value() << " does not exist";
     return false;
@@ -103,7 +103,7 @@ bool CopyTreeWorkItem::Do() {
   return true;
 }
 
-void CopyTreeWorkItem::Rollback() {
+void CopyTreeWorkItem::RollbackImpl() {
   // Normally the delete operations below should not fail unless some
   // programs like anti-virus are inspecting the files we just copied.
   // If this does happen sometimes, we may consider using Move instead of

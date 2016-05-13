@@ -72,9 +72,9 @@ class InstallUtil {
   // This function checks if the current OS is supported for Chromium.
   static bool IsOSSupported();
 
-  // Adds work items to |install_list|, which should be a
-  // NoRollbackWorkItemList, to set installer error information in the registry
-  // for consumption by Google Update.  |state_key| must be the full path to an
+  // Adds work items to |install_list| to set installer error information in the
+  // registry for consumption by Google Update. |install_list| must be best-
+  // effort with rollback disabled. |state_key| must be the full path to an
   // app's ClientState key.  See InstallerState::WriteInstallerResult for more
   // details.
   static void AddInstallerResultItems(bool system_install,

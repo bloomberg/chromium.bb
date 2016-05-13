@@ -18,10 +18,6 @@ class DeleteRegValueWorkItem : public WorkItem {
  public:
   ~DeleteRegValueWorkItem() override;
 
-  bool Do() override;
-
-  void Rollback() override;
-
  private:
   friend class WorkItem;
 
@@ -42,6 +38,10 @@ class DeleteRegValueWorkItem : public WorkItem {
                          const std::wstring& key_path,
                          REGSAM wow64_acccess,
                          const std::wstring& value_name);
+
+  // WorkItem:
+  bool DoImpl() override;
+  void RollbackImpl() override;
 
   // Root key of the target key under which the value is set. The root key can
   // only be one of the predefined keys on Windows.

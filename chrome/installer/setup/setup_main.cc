@@ -430,10 +430,8 @@ installer::InstallStatus RenameChromeExecutables(
                                             google_update::kRegRenameCmdField);
   }
   // old_chrome.exe is still in use in most cases, so ignore failures here.
-  // Make sure this is the last item in the list because it cannot be rolled
-  // back.
-  install_list->AddDeleteTreeWorkItem(chrome_old_exe, temp_path.path())->
-      set_ignore_failure(true);
+  install_list->AddDeleteTreeWorkItem(chrome_old_exe, temp_path.path())
+      ->set_best_effort(true);
 
   installer::InstallStatus ret = installer::RENAME_SUCCESSFUL;
   if (!install_list->Do()) {

@@ -138,8 +138,10 @@ void ProcessGoogleUpdateItems(const InstallationState& original_state,
 
   // Apply the new channel value to all other products and to the multi package.
   if (modified) {
-    std::unique_ptr<WorkItemList> update_list(
-        WorkItem::CreateNoRollbackWorkItemList());
+    std::unique_ptr<WorkItemList> update_list(WorkItem::CreateWorkItemList());
+    update_list->set_log_message("Channel Value Update");
+    update_list->set_best_effort(true);
+    update_list->set_rollback_enabled(false);
     std::vector<BrowserDistribution::Type> dist_types;
     for (size_t i = 0; i < BrowserDistribution::NUM_TYPES; ++i) {
       BrowserDistribution::Type other_dist_type =
@@ -150,16 +152,18 @@ void ProcessGoogleUpdateItems(const InstallationState& original_state,
     AddChannelValueUpdateWorkItems(original_state, installer_state,
                                    channel_info, dist_types,
                                    update_list.get());
-    bool success = update_list->Do();
-    LOG_IF(ERROR, !success) << "Failed updating channel values.";
+    update_list->Do();
   }
 }
 
 // Processes uninstall WorkItems from install_worker in no-rollback-list.
 void ProcessChromeWorkItems(const InstallerState& installer_state,
                             const Product& product) {
-  std::unique_ptr<WorkItemList> work_item_list(
-      WorkItem::CreateNoRollbackWorkItemList());
+  std::unique_ptr<WorkItemList> work_item_list(WorkItem::CreateWorkItemList());
+  work_item_list->set_log_message(
+      "Cleanup OS upgrade command and deprecated per-user registrations");
+  work_item_list->set_best_effort(true);
+  work_item_list->set_rollback_enabled(false);
   AddOsUpgradeWorkItems(installer_state, base::FilePath(), Version(), product,
                         work_item_list.get());
   // Perform a best-effort cleanup of per-user keys. On system-level installs
@@ -168,13 +172,14 @@ void ProcessChromeWorkItems(const InstallerState& installer_state,
   // for all users solely for this cleanup).
   AddCleanupDeprecatedPerUserRegistrationsWorkItems(product,
                                                     work_item_list.get());
-  if (!work_item_list->Do())
-    LOG(ERROR) << "Failed to process Chrome WorkItems.";
+  work_item_list->Do();
 }
 
 void ProcessIELowRightsPolicyWorkItems(const InstallerState& installer_state) {
-  std::unique_ptr<WorkItemList> work_items(
-      WorkItem::CreateNoRollbackWorkItemList());
+  std::unique_ptr<WorkItemList> work_items(WorkItem::CreateWorkItemList());
+  work_items->set_log_message("Delete old IE low rights policy");
+  work_items->set_best_effort(true);
+  work_items->set_rollback_enabled(false);
   AddDeleteOldIELowRightsPolicyWorkItems(installer_state, work_items.get());
   work_items->Do();
   RefreshElevationPolicy();

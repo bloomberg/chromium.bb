@@ -23,16 +23,16 @@ class DeleteRegKeyWorkItem : public WorkItem {
  public:
   ~DeleteRegKeyWorkItem() override;
 
-  bool Do() override;
-
-  void Rollback() override;
-
  private:
   friend class WorkItem;
 
   DeleteRegKeyWorkItem(HKEY predefined_root,
                        const std::wstring& path,
                        REGSAM wow64_access);
+
+  // WorkItem:
+  bool DoImpl() override;
+  void RollbackImpl() override;
 
   // Root key from which we delete the key. The root key can only be
   // one of the predefined keys on Windows.
@@ -46,6 +46,9 @@ class DeleteRegKeyWorkItem : public WorkItem {
 
   // Backup of the deleted key.
   RegistryKeyBackup backup_;
+
+  // True if |backup_| has been initialized.
+  bool backup_initialized_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(DeleteRegKeyWorkItem);
 };

@@ -24,16 +24,12 @@ class FilePath;
 // provides functionalities to carry out or roll back the sequence of actions
 // defined by the list of WorkItems it contains.
 // The WorkItems are executed in the same order as they are added to the list.
+// The "best-effort" flag of the WorkItemList is propagated to the WorkItems
+// when it's true. Likewise, the "rollback enabled" flag of the WorkItemList is
+// propagated to the WorkItems when it's false.
 class WorkItemList : public WorkItem {
  public:
   ~WorkItemList() override;
-
-  // Execute the WorkItems in the same order as they are added to the list.
-  // It aborts as soon as one WorkItem fails.
-  bool Do() override;
-
-  // Rollback the WorkItems in the reverse order as they are executed.
-  void Rollback() override;
 
   // Add a WorkItem to the list.
   // A WorkItem can only be added to the list before the list's DO() is called.
@@ -76,15 +72,8 @@ class WorkItemList : public WorkItem {
                                               REGSAM wow64_access,
                                               const std::wstring& value_name);
 
-  // Add a DeleteTreeWorkItem that recursively deletes a file system
-  // hierarchy at the given root path. A key file can be optionally specified
-  // by key_path.
-  virtual WorkItem* AddDeleteTreeWorkItem(
-      const base::FilePath& root_path,
-      const base::FilePath& temp_path,
-      const std::vector<base::FilePath>& key_paths);
-
-  // Same as above but without support for key files.
+  // Add a DeleteTreeWorkItem that recursively deletes a file system hierarchy
+  // at the given root path.
   virtual WorkItem* AddDeleteTreeWorkItem(const base::FilePath& root_path,
                                           const base::FilePath& temp_path);
 
@@ -144,18 +133,16 @@ class WorkItemList : public WorkItem {
   typedef std::list<WorkItem*> WorkItems;
   typedef WorkItems::iterator WorkItemIterator;
 
-  enum ListStatus {
-    // List has not been executed. Ok to add new WorkItem.
-    ADD_ITEM,
-    // List has been executed. Can not add new WorkItem.
-    LIST_EXECUTED,
-    // List has been executed and rolled back. No further action is acceptable.
-    LIST_ROLLED_BACK
-  };
-
   WorkItemList();
 
-  ListStatus status_;
+  // WorkItem:
+
+  // Execute the WorkItems in the same order as they are added to the list. It
+  // aborts as soon as one WorkItem fails, unless the best-effort flag is true.
+  bool DoImpl() override;
+
+  // Rollback the WorkItems in the reverse order as they are executed.
+  void RollbackImpl() override;
 
   // The list of WorkItems, in the order of them being added.
   WorkItems list_;
@@ -163,23 +150,6 @@ class WorkItemList : public WorkItem {
   // The list of executed WorkItems, in the reverse order of them being
   // executed.
   WorkItems executed_list_;
-};
-
-// A specialization of WorkItemList that executes items in the list on a
-// best-effort basis.  Failure of individual items to execute does not prevent
-// subsequent items from being executed.
-// Also, as the class name suggests, Rollback is not possible.
-class NoRollbackWorkItemList : public WorkItemList {
- public:
-  ~NoRollbackWorkItemList() override;
-
-  // Execute the WorkItems in the same order as they are added to the list.
-  // If a WorkItem fails, the function will return failure but all other
-  // WorkItems will still be executed.
-  bool Do() override;
-
-  // No-op.
-  void Rollback() override;
 };
 
 #endif  // CHROME_INSTALLER_UTIL_WORK_ITEM_LIST_H_

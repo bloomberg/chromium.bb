@@ -129,23 +129,17 @@ SetRegValueWorkItem::SetRegValueWorkItem(
   // Nothing to do, |get_value_callback| will fill |value_| later.
 }
 
-bool SetRegValueWorkItem::Do() {
-  LONG result = ERROR_SUCCESS;
-  base::win::RegKey key;
-  if (status_ != SET_VALUE) {
-    // we already did something.
-    VLOG(1) << "multiple calls to Do()";
-    result = ERROR_CANTWRITE;
-    return ignore_failure_;
-  }
+bool SetRegValueWorkItem::DoImpl() {
+  DCHECK_EQ(SET_VALUE, status_);
 
   status_ = VALUE_UNCHANGED;
-  result = key.Open(predefined_root_,
-                    key_path_.c_str(),
-                    KEY_READ | KEY_SET_VALUE | wow64_access_);
+
+  base::win::RegKey key;
+  LONG result = key.Open(predefined_root_, key_path_.c_str(),
+                         KEY_READ | KEY_SET_VALUE | wow64_access_);
   if (result != ERROR_SUCCESS) {
     VLOG(1) << "can not open " << key_path_ << " error: " << result;
-    return ignore_failure_;
+    return false;
   }
 
   DWORD type = 0;
@@ -191,19 +185,16 @@ bool SetRegValueWorkItem::Do() {
                           static_cast<DWORD>(value_.size()), type_);
   if (result != ERROR_SUCCESS) {
     VLOG(1) << "Failed to write value " << key_path_ << " error: " << result;
-    return ignore_failure_;
+    return false;
   }
 
   status_ = previous_type_ ? VALUE_OVERWRITTEN : NEW_VALUE_CREATED;
   return true;
 }
 
-void SetRegValueWorkItem::Rollback() {
-  if (ignore_failure_)
-    return;
-
-  if (status_ == SET_VALUE || status_ == VALUE_ROLL_BACK)
-    return;
+void SetRegValueWorkItem::RollbackImpl() {
+  DCHECK_NE(SET_VALUE, status_);
+  DCHECK_NE(VALUE_ROLL_BACK, status_);
 
   if (status_ == VALUE_UNCHANGED) {
     status_ = VALUE_ROLL_BACK;

@@ -15,8 +15,8 @@ class MockWorkItem : public WorkItem {
   MockWorkItem();
   ~MockWorkItem();
 
-  MOCK_METHOD0(Do, bool());
-  MOCK_METHOD0(Rollback, void());
+  MOCK_METHOD0(DoImpl, bool());
+  MOCK_METHOD0(RollbackImpl, void());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockWorkItem);
