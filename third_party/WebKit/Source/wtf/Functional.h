@@ -60,12 +60,12 @@ namespace WTF {
 //     1) Pass by rvalue reference.
 //
 //            void yourFunction(Argument&& argument) { ... }
-//            OwnPtr<Function<void(Argument&&)>> functor = bind<Argument&&>(yourFunction);
+//            std::unique_ptr<Function<void(Argument&&)>> functor = bind<Argument&&>(yourFunction);
 //
 //     2) Pass by value.
 //
 //            void yourFunction(Argument argument) { ... }
-//            OwnPtr<Function<void(Argument)>> functor = bind<Argument>(yourFunction);
+//            std::unique_ptr<Function<void(Argument)>> functor = bind<Argument>(yourFunction);
 //
 // Note that with the latter there will be *two* move constructions happening, because there needs to be at least one
 // intermediary function call taking an argument of type "Argument" (i.e. passed by value). The former case does not
@@ -84,7 +84,7 @@ namespace WTF {
 //     }
 //
 //     ...
-//     OwnPtr<Function<void()>> functor = bind(yourFunction, passed(Argument()));
+//     std::unique_ptr<Function<void()>> functor = bind(yourFunction, passed(Argument()));
 //     ...
 //     (*functor)();
 //
@@ -161,6 +161,12 @@ public:
 
     template <typename... IncomingParameters>
     R operator()(const PassOwnPtr<C>& c, IncomingParameters&&... parameters)
+    {
+        return (c.get()->*m_function)(std::forward<IncomingParameters>(parameters)...);
+    }
+
+    template <typename... IncomingParameters>
+    R operator()(const std::unique_ptr<C>& c, IncomingParameters&&... parameters)
     {
         return (c.get()->*m_function)(std::forward<IncomingParameters>(parameters)...);
     }

@@ -294,6 +294,18 @@ TEST(FunctionalTest, MemberFunctionPartBind)
     EXPECT_EQ(25, (*objectBoundFunction2)(15));
 }
 
+TEST(FunctionalTest, MemberFunctionBindByUniquePtr)
+{
+    std::unique_ptr<Function<int()>> function1 = WTF::bind(&A::f, wrapUnique(new A(10)));
+    EXPECT_EQ(10, (*function1)());
+}
+
+TEST(FunctionalTest, MemberFunctionBindByPassedUniquePtr)
+{
+    std::unique_ptr<Function<int()>> function1 = WTF::bind(&A::f, passed(wrapUnique(new A(10))));
+    EXPECT_EQ(10, (*function1)());
+}
+
 class Number : public RefCounted<Number> {
 public:
     static PassRefPtr<Number> create(int value)
