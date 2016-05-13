@@ -296,6 +296,14 @@ AboutHandler* AboutHandler::Create(content::WebUIDataSource* html_source,
   base::Time build_time = base::SysInfo::GetLsbReleaseTime();
   base::string16 build_date = base::TimeFormatFriendlyDate(build_time);
   html_source->AddString("aboutBuildDate", build_date);
+
+  base::CommandLine::StringType command_line =
+      base::CommandLine::ForCurrentProcess()->GetCommandLineString();
+  html_source->AddString("aboutCommandLine", command_line);
+
+  html_source->AddString("aboutUserAgent", GetUserAgent());
+  html_source->AddString("aboutJsEngineVersion", v8::V8::GetVersion());
+  html_source->AddString("aboutBlinkVersion", content::GetWebKitVersion());
 #endif
 
   return new AboutHandler();

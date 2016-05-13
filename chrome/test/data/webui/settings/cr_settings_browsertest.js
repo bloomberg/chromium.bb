@@ -67,6 +67,30 @@ TEST_F('CrSettingsBrowserTest', 'MAYBE_CrSettingsTest', function() {
   mocha.run();
 });
 
+/**
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+ */
+function CrSettingsAboutPageTest() {}
+
+CrSettingsAboutPageTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://md-settings/about_page/about_page.html',
+
+  /** @override */
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    'test_browser_proxy.js',
+    'about_page_tests.js',
+  ]),
+};
+
+TEST_F('CrSettingsAboutPageTest', 'AboutPage', function() {
+  settings_about_page.registerTests();
+  mocha.run();
+});
+
 GEN('#if defined(OS_CHROMEOS)');
 /**
  * Test fixture for

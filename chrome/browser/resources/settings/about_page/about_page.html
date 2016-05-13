@@ -7,6 +7,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 
 <if expr="chromeos">
+<link rel="import" href="chrome://md-settings/about_page/detailed_build_info.html">
 <link rel="import" href="chrome://md-settings/settings_page/settings_subpage.html">
 </if>
 
@@ -64,8 +65,7 @@
 <if expr="chromeos">
         <template is="dom-if" name="detailed-build-info">
           <settings-subpage page-title="Detailed build information">
-            <!-- TODO(dpapad): Implement this. -->
-            <div>Detailed build info goes here</div>
+            <settings-detailed-build-info></settings-detailed-build-info>
           </settings-subpage>
         </template>
 </if>

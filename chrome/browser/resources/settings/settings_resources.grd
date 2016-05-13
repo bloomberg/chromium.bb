@@ -37,6 +37,14 @@
                  type="chrome_html"
                  flattenhtml="true"
                  allowexternalscript="true" />
+      <if expr="chromeos">
+        <structure name="IDR_SETTINGS_DETAILED_BUILD_INFO_JS"
+                   file="about_page/detailed_build_info.js"
+                   type="chrome_html" />
+        <structure name="IDR_SETTINGS_DETAILED_BUILD_INFO_HTML"
+                   file="about_page/detailed_build_info.html"
+                   type="chrome_html" />
+      </if>
       <structure name="IDR_SETTINGS_ADD_SITE_DIALOG_HTML"
                  file="site_settings/add_site_dialog.html"
                  type="chrome_html" />

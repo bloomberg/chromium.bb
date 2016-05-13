@@ -133,6 +133,14 @@ void AddAboutStrings(content::WebUIDataSource* html_source) {
 #else
       {"aboutProductTitle", IDS_PRODUCT_NAME},
 #endif
+
+#if defined(OS_CHROMEOS)
+      {"aboutChannelStable", IDS_SETTINGS_ABOUT_PAGE_CURRENT_CHANNEL_STABLE},
+      {"aboutChannelBeta", IDS_SETTINGS_ABOUT_PAGE_CURRENT_CHANNEL_BETA},
+      {"aboutChannelDev", IDS_SETTINGS_ABOUT_PAGE_CURRENT_CHANNEL_DEV},
+      {"aboutCurrentlyOnChannel", IDS_SETTINGS_ABOUT_PAGE_CURRENT_CHANNEL},
+#endif
+
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));

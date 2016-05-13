@@ -24,19 +24,19 @@ var RegulatoryInfo;
  * }}
  */
 var VersionInfo;
+
+/**
+ * Enumeration of all possible browser channels.
+ * @enum {string}
+ */
+var BrowserChannel = {
+  BETA: 'beta-channel',
+  DEV: 'dev-channel',
+  STABLE: 'stable-channel',
+};
 </if>
 
 cr.define('settings', function() {
-  /**
-   * Enumeration of all possible browser channels.
-   * @enum {string}
-   */
-  var BrowserChannel = {
-    BETA: 'beta-channel',
-    DEV: 'dev-channel',
-    STABLE: 'stable-channel',
-  };
-
   /** @interface */
   function AboutPageBrowserProxy() {}
 
@@ -74,10 +74,10 @@ cr.define('settings', function() {
      */
     setChannel: function(channel, isPowerwashAllowed) {},
 
-    /** @return {!Promise<string>} */
+    /** @return {!Promise<!BrowserChannel>} */
     getCurrentChannel: function() {},
 
-    /** @return {!Promise<string>} */
+    /** @return {!Promise<!BrowserChannel>} */
     getTargetChannel: function() {},
 
     /** @return {!Promise<!VersionInfo>} */
