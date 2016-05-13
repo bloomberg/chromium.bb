@@ -53,15 +53,21 @@ int GetSanitizedArg(const std::string& switch_name) {
   return int_value;
 }
 
-// Checks whether the device is yet to be set up by the first user in its
-// lifetime. After first setup, the activation date gets stored in the R/W VPD,
-// the absence of this key signals the device is factory-fresh. The requirement
-// for the machine serial number to be present as well is a sanity-check to
-// ensure that the VPD has actually been read successfully.
-bool IsFirstDeviceSetup() {
-  std::string activate_date;
+// Determine whether the auto-enrollment check can be skipped. This is true when
+// kCheckEnrollmentKey VPD entry doesn't indicate the device as being enrolled
+// in the past. For backward compatibility with devices upgrading from an older
+// version of Chrome OS, the kActivateDateKey VPD entry should be missing too.
+// The requirement for the machine serial number to be present as well is a
+// sanity-check to ensure that the VPD has actually been read successfully.
+bool CanSkipFRE() {
+  std::string check_enrollment_value;
+  bool is_enrolled =
+      system::StatisticsProvider::GetInstance()->GetMachineStatistic(
+          system::kCheckEnrollmentKey, &check_enrollment_value) &&
+      check_enrollment_value == "1";
   return !system::StatisticsProvider::GetInstance()->HasMachineStatistic(
              system::kActivateDateKey) &&
+         !is_enrolled &&
          !policy::DeviceCloudPolicyManagerChromeOS::GetMachineID().empty();
 }
 
@@ -130,10 +136,9 @@ void AutoEnrollmentController::Start() {
     return;
   }
 
-  // Skip if this is the first boot ever, and thus re-enrollment checks are
-  // pointless. This also enables factories to start full guest sessions for
-  // testing, see http://crbug.com/397354 for more context.
-  if (IsFirstDeviceSetup()) {
+  // This enables factories to start full guest sessions for testing, see
+  // http://crbug.com/397354 for more context.
+  if (CanSkipFRE()) {
     LOG(WARNING) << "Auto-enrollment disabled: " << "first setup.";
     UpdateState(policy::AUTO_ENROLLMENT_STATE_NO_ENROLLMENT);
     return;

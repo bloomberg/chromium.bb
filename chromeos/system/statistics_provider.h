@@ -20,6 +20,9 @@ namespace system {
 // Activation date key.
 CHROMEOS_EXPORT extern const char kActivateDateKey[];
 
+// The key that will be present in VPD if the device ever was enrolled.
+CHROMEOS_EXPORT extern const char kCheckEnrollmentKey[];
+
 // Customization ID key.
 CHROMEOS_EXPORT extern const char kCustomizationIdKey[];
 
