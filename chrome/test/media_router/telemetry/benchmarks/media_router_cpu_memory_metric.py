@@ -56,9 +56,10 @@ class MediaRouterCPUMemoryMetric(Metric):
             avg_result))
 
     # Calculate MR extension wakeup time
-    wakeup_percentage = round(
-        (len(perf_results['cpu']['mr_extension']) * 100 /
-         len(perf_results['cpu']['browser'])), 2)
-    results.AddValue(scalar.ScalarValue(
-            results.current_page, 'mr_extension_wakeup_percentage',
-            '%', wakeup_percentage))
+    if 'mr_extension' in perf_results['cpu']:
+      wakeup_percentage = round(
+          (len(perf_results['cpu']['mr_extension']) * 100 /
+           len(perf_results['cpu']['browser'])), 2)
+      results.AddValue(scalar.ScalarValue(
+              results.current_page, 'mr_extension_wakeup_percentage',
+              '%', wakeup_percentage))

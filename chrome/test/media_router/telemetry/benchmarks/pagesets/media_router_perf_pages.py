@@ -185,3 +185,12 @@ class MediaRouterCPUMemoryPageSet(story.StorySet):
     self.AddStory(CastIdlePage(self))
     self.AddStory(CastFlingingPage(self))
     self.AddStory(CastMirroringPage(self))
+
+
+class CPUMemoryPageSet(story.StorySet):
+  """Pageset to get baseline CPU and memory usage."""
+
+  def __init__(self):
+    super(CPUMemoryPageSet, self).__init__(
+        cloud_storage_bucket=story.PARTNER_BUCKET)
+    self.AddStory(CastIdlePage(self))

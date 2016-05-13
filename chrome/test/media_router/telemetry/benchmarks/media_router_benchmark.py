@@ -39,6 +39,7 @@ class _BaseCastBenchmark(perf_benchmark.PerfBenchmark):
 
 
 class TraceEventCastBenckmark(_BaseCastBenchmark):
+  """Benchmark for dialog latency from trace event."""
 
   def CreateTimelineBasedMeasurementOptions(self):
     media_router_category = 'media_router'
@@ -61,6 +62,7 @@ class TraceEventCastBenckmark(_BaseCastBenchmark):
 
 
 class HistogramCastBenckmark(_BaseCastBenchmark):
+  """Benchmark for dialog latency from histograms."""
 
   def CreatePageTest(self, options):
     return media_router_measurements.MediaRouterDialogTest()
@@ -76,6 +78,8 @@ class HistogramCastBenckmark(_BaseCastBenchmark):
 
 
 class CPUMemoryCastBenckmark(_BaseCastBenchmark):
+  """Benchmark for CPU and memory usage with Media Router."""
+
   options = {'page_repeat': 1}
 
   page_set = media_router_perf_pages.MediaRouterCPUMemoryPageSet
@@ -86,3 +90,31 @@ class CPUMemoryCastBenckmark(_BaseCastBenchmark):
   @classmethod
   def Name(cls):
     return 'media_router.cpu_memory'
+
+
+class CPUMemoryBenckmark(perf_benchmark.PerfBenchmark):
+  """Benchmark for CPU and memory usage without Media Router."""
+
+  options = {'page_repeat': 1}
+
+  page_set = media_router_perf_pages.CPUMemoryPageSet
+
+  def SetExtraBrowserOptions(self, options):
+    options.clear_sytem_cache_for_browser_and_profile_on_start = True
+    # This flag is required to enable the communication between the page and
+    # the test extension.
+    options.disable_background_networking = False
+    options.AppendExtraBrowserArgs([
+        '--load-extension=' +
+             os.path.join(path_util.GetChromiumSrcDir(), 'out',
+             'Release', 'media_router', 'test_extension'),
+        '--media-router=0',
+        '--enable-stats-collection-bindings'
+    ])
+
+  def CreatePageTest(self, options):
+    return media_router_measurements.MediaRouterCPUMemoryTest()
+
+  @classmethod
+  def Name(cls):
+    return 'media_router.cpu_memory.no_media_router'
