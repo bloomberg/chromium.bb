@@ -627,6 +627,11 @@ void WebSettingsImpl::setStrictlyBlockBlockableMixedContent(bool enabled)
     m_settings->setStrictlyBlockBlockableMixedContent(enabled);
 }
 
+void WebSettingsImpl::setPassiveEventListenerDefault(PassiveEventListenerDefault defaultValue)
+{
+    m_settings->setPassiveListenerDefault(static_cast<PassiveListenerDefault>(defaultValue));
+}
+
 void WebSettingsImpl::setPasswordEchoEnabled(bool flag)
 {
     m_settings->setPasswordEchoEnabled(flag);

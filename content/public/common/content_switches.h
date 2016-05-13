@@ -195,6 +195,7 @@ CONTENT_EXPORT extern const char kDisableAppContainer[];
 CONTENT_EXPORT extern const char kNumRasterThreads[];
 CONTENT_EXPORT extern const char kOverridePluginPowerSaverForTesting[];
 CONTENT_EXPORT extern const char kOverscrollHistoryNavigation[];
+CONTENT_EXPORT extern const char kPassiveListenersDefault[];
 CONTENT_EXPORT extern const char kPpapiBrokerProcess[];
 CONTENT_EXPORT extern const char kPpapiFlashArgs[];
 CONTENT_EXPORT extern const char kPpapiInProcess[];

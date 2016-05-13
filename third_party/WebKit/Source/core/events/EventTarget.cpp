@@ -54,21 +54,14 @@ using namespace WTF;
 namespace blink {
 namespace {
 
-void setDefaultEventListenerOptionsLegacy(EventListenerOptions& options, bool useCapture)
+Settings* windowSettings(LocalDOMWindow* executingWindow)
 {
-    options.setCapture(useCapture);
-}
-
-void setDefaultAddEventListenerOptionsLegacy(AddEventListenerOptions& options, bool useCapture)
-{
-    setDefaultEventListenerOptionsLegacy(options, useCapture);
-    options.setPassive(false);
-}
-
-void setDefaultAddEventListenerOptions(AddEventListenerOptions& options)
-{
-    if (!options.hasPassive())
-        options.setPassive(false);
+    if (executingWindow) {
+        if (LocalFrame* frame = executingWindow->frame()) {
+            return frame->settings();
+        }
+    }
+    return nullptr;
 }
 
 double blockedEventsWarningThreshold(const ExecutionContext* context, const Event* event)
@@ -189,10 +182,44 @@ inline LocalDOMWindow* EventTarget::executingWindow()
     return nullptr;
 }
 
+void EventTarget::setDefaultAddEventListenerOptions(AddEventListenerOptions& options)
+{
+    if (Settings* settings = windowSettings(executingWindow())) {
+        switch (settings->passiveListenerDefault()) {
+        case PassiveListenerDefault::False:
+            if (!options.hasPassive())
+                options.setPassive(false);
+            break;
+        case PassiveListenerDefault::True:
+            if (!options.hasPassive())
+                options.setPassive(true);
+            break;
+        case PassiveListenerDefault::ForceAllTrue:
+            options.setPassive(true);
+            break;
+        case PassiveListenerDefault::DocumentTrue:
+            if (!options.hasPassive()) {
+                if (Node* node = toNode()) {
+                    if (node->isDocumentNode() || node->document().documentElement() == node || node->document().body() == node) {
+                        options.setPassive(true);
+                    }
+                } else if (toLocalDOMWindow()) {
+                    options.setPassive(true);
+                }
+            }
+            break;
+        }
+    } else {
+        if (!options.hasPassive())
+            options.setPassive(false);
+    }
+}
+
 bool EventTarget::addEventListener(const AtomicString& eventType, EventListener* listener, bool useCapture)
 {
     AddEventListenerOptions options;
-    setDefaultAddEventListenerOptionsLegacy(options, useCapture);
+    options.setCapture(useCapture);
+    setDefaultAddEventListenerOptions(options);
     return addEventListenerInternal(eventType, listener, options);
 }
 
@@ -245,7 +272,7 @@ void EventTarget::addedEventListener(const AtomicString& eventType, RegisteredEv
 bool EventTarget::removeEventListener(const AtomicString& eventType, const EventListener* listener, bool useCapture)
 {
     EventListenerOptions options;
-    setDefaultEventListenerOptionsLegacy(options, useCapture);
+    options.setCapture(useCapture);
     return removeEventListenerInternal(eventType, listener, options);
 }
 

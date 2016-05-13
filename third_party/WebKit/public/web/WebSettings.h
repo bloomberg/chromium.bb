@@ -95,6 +95,15 @@ public:
         Subtitles
     };
 
+    // Defines the default for 'passive' field used in the AddEventListenerOptions interface
+    // when javascript calls addEventListener.
+    enum class PassiveEventListenerDefault {
+        False, // Default of false.
+        True, // Default of true.
+        DocumentTrue, // Default of true for document level elements, false otherwise.
+        ForceAllTrue // Force all values to be true even when specified.
+    };
+
     // Sets value of a setting by its string identifier from Settings.in and
     // string representation of value. An enum's string representation is the
     // string representation of the integer value of the enum.
@@ -184,6 +193,7 @@ public:
     virtual void setMinimumLogicalFontSize(int) = 0;
     virtual void setMockScrollbarsEnabled(bool) = 0;
     virtual void setOfflineWebApplicationCacheEnabled(bool) = 0;
+    virtual void setPassiveEventListenerDefault(PassiveEventListenerDefault) = 0;
     virtual void setPasswordEchoDurationInSeconds(double) = 0;
     virtual void setPasswordEchoEnabled(bool) = 0;
     virtual void setPerTilePaintingEnabled(bool) = 0;

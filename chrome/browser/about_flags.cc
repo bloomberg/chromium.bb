@@ -185,6 +185,16 @@ const FeatureEntry::Choice kNaClDebugMaskChoices[] = {
 };
 #endif
 
+const FeatureEntry::Choice kPassiveListenersChoices[] = {
+    {IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", ""},
+    {IDS_FLAGS_PASSIVE_EVENT_LISTENER_DOCUMENT_TRUE,
+     switches::kPassiveListenersDefault, "documentonlytrue"},
+    {IDS_FLAGS_PASSIVE_EVENT_LISTENER_TRUE, switches::kPassiveListenersDefault,
+     "true"},
+    {IDS_FLAGS_PASSIVE_EVENT_LISTENER_FORCE_ALL_TRUE,
+     switches::kPassiveListenersDefault, "forcealltrue"},
+};
+
 const FeatureEntry::Choice kMarkNonSecureAsChoices[] = {
     {IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", ""},
     {IDS_MARK_NON_SECURE_AS_NEUTRAL, security_state::switches::kMarkNonSecureAs,
@@ -1866,6 +1876,11 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_EXPERIMENTAL_POINTER_EVENT_NAME,
      IDS_FLAGS_EXPERIMENTAL_POINTER_EVENT_DESCRIPTION, kOsAll,
      FEATURE_VALUE_TYPE(features::kPointerEvents)},
+    {"passive-listener-default",  // FLAGS:RECORD_UMA
+     IDS_FLAGS_PASSIVE_EVENT_LISTENER_DEFAULT_NAME,
+     IDS_FLAGS_PASSIVE_EVENT_LISTENER_DEFAULT_DESCRIPTION, kOsAll,
+     MULTI_VALUE_TYPE(kPassiveListenersChoices)},
+
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in
     // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.

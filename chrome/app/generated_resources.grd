@@ -5628,6 +5628,21 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_GESTURE_REQUIREMENT_FOR_MEDIA_PLAYBACK_DESCRIPTION" desc="Description for the flag for gesture requiment for media playback">
         User gesture requirement for playing media elements. Disabling this will allow autoplay to work.
       </message>
+      <message name="IDS_FLAGS_PASSIVE_EVENT_LISTENER_DOCUMENT_TRUE" desc="Choice for passive listeners to default to true on document level nodes.">
+        Document Level True (when unspecified)
+      </message>
+      <message name="IDS_FLAGS_PASSIVE_EVENT_LISTENER_TRUE" desc="Choice for passive listeners to default to true on all nodes not explicitly set.">
+        True (when unspecified)
+      </message>
+      <message name="IDS_FLAGS_PASSIVE_EVENT_LISTENER_FORCE_ALL_TRUE" desc="Choice for passive listeners to default to true on all nodes.">
+        Force All True
+      </message>
+     <message name="IDS_FLAGS_PASSIVE_EVENT_LISTENER_DEFAULT_NAME" desc="Name for the flag to adjust the default behaviour for passive event listeners.">
+        Passive Event Listener Override
+      </message>
+      <message name="IDS_FLAGS_PASSIVE_EVENT_LISTENER_DEFAULT_DESCRIPTION" desc="Description for the flag to adjust default behaviour for passive event listeners.">
+        Forces touchstart, touchmove, mousewheel and wheel event listeners (which haven't requested otherwise) to be treated as passive. This will break touch/wheel behavior on some websites but is useful for demonstrating the potential performance benefits of adopting passive event listeners.
+      </message>
       <if expr="is_android">
           <message name="IDS_FLAGS_MEDIA_STYLE_NOTIFICATION_NAME" desc="Title for the flag for using Android MediaStyle notification">
               Android MediaStyle notification

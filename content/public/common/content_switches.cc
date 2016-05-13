@@ -675,6 +675,13 @@ const char kOverridePluginPowerSaverForTesting[] =
 const char kOverscrollHistoryNavigation[] =
     "overscroll-history-navigation";
 
+// Override the default value for the 'passive' field in javascript
+// addEventListener calls. Values are defined as:
+//  'documentonlytrue' to set the default be true only for document level nodes.
+//  'true' to set the default to be true on all nodes (when not specified).
+//  'forcealltrue' to force the value on all nodes.
+const char kPassiveListenersDefault[] = "passive-listeners-default";
+
 // Argument to the process type that indicates a PPAPI broker process type.
 const char kPpapiBrokerProcess[]            = "ppapi-broker";
 

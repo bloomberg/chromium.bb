@@ -535,6 +535,11 @@ STATIC_ASSERT_ENUM(WebSettings::EditingBehaviorWin, EditingWindowsBehavior);
 STATIC_ASSERT_ENUM(WebSettings::EditingBehaviorUnix, EditingUnixBehavior);
 STATIC_ASSERT_ENUM(WebSettings::EditingBehaviorAndroid, EditingAndroidBehavior);
 
+STATIC_ASSERT_ENUM(WebSettings::PassiveEventListenerDefault::False, PassiveListenerDefault::False);
+STATIC_ASSERT_ENUM(WebSettings::PassiveEventListenerDefault::True, PassiveListenerDefault::True);
+STATIC_ASSERT_ENUM(WebSettings::PassiveEventListenerDefault::DocumentTrue, PassiveListenerDefault::DocumentTrue);
+STATIC_ASSERT_ENUM(WebSettings::PassiveEventListenerDefault::ForceAllTrue, PassiveListenerDefault::ForceAllTrue);
+
 STATIC_ASSERT_ENUM(WebIDBDatabaseExceptionUnknownError, UnknownError);
 STATIC_ASSERT_ENUM(WebIDBDatabaseExceptionConstraintError, ConstraintError);
 STATIC_ASSERT_ENUM(WebIDBDatabaseExceptionDataError, DataError);

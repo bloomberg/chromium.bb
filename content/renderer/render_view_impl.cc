@@ -723,6 +723,20 @@ void RenderViewImpl::Initialize(const ViewMsg_New_Params& params,
     selection_strategy = WebSettings::SelectionStrategyType::Direction;
   webview()->settings()->setSelectionStrategy(selection_strategy);
 
+  std::string passiveListenersDefault =
+      command_line.GetSwitchValueASCII(switches::kPassiveListenersDefault);
+  if (!passiveListenersDefault.empty()) {
+    WebSettings::PassiveEventListenerDefault passiveDefault =
+        WebSettings::PassiveEventListenerDefault::False;
+    if (passiveListenersDefault == "documentonlytrue")
+      passiveDefault = WebSettings::PassiveEventListenerDefault::DocumentTrue;
+    else if (passiveListenersDefault == "true")
+      passiveDefault = WebSettings::PassiveEventListenerDefault::True;
+    else if (passiveListenersDefault == "forcealltrue")
+      passiveDefault = WebSettings::PassiveEventListenerDefault::ForceAllTrue;
+    webview()->settings()->setPassiveEventListenerDefault(passiveDefault);
+  }
+
   ApplyBlinkSettings(command_line, webview()->settings());
 
   if (params.main_frame_routing_id != MSG_ROUTING_NONE) {
