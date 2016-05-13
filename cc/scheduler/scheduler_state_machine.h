@@ -282,9 +282,6 @@ class CC_EXPORT SchedulerStateMachine {
   // TODO(sunnyps): Rename this to ShouldAbortCurrentFrame or similar.
   bool PendingActivationsShouldBeForced() const;
 
-  // TODO(brianderson): Remove this once NPAPI support is removed.
-  bool SendingBeginMainFrameMightCauseDeadlock() const;
-
   bool ShouldBeginOutputSurfaceCreation() const;
   bool ShouldDraw() const;
   bool ShouldActivatePendingTree() const;
