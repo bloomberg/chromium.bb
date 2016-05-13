@@ -216,9 +216,22 @@ public:
 
     int f() { return m_i; }
     int addF(int j) { return m_i + j; }
+    virtual int overridden() { return 42; }
 
 private:
     int m_i;
+};
+
+class B : public A {
+public:
+    explicit B(int i)
+        : A(i)
+    {
+    }
+
+    int f() { return A::f() + 1; }
+    int addF(int j) { return A::addF(j) + 1; }
+    int overridden() override { return 43; }
 };
 
 TEST(FunctionalTest, MemberFunctionBind)
@@ -229,6 +242,42 @@ TEST(FunctionalTest, MemberFunctionBind)
 
     std::unique_ptr<Function<int()>> function2 = bind(&A::addF, &a, 15);
     EXPECT_EQ(25, (*function2)());
+
+    std::unique_ptr<Function<int()>> function3 = bind(&A::overridden, &a);
+    EXPECT_EQ(42, (*function3)());
+}
+
+TEST(FunctionalTest, MemberFunctionBindWithSubclassPointer)
+{
+    B b(10);
+    std::unique_ptr<Function<int()>> function1 = bind(&A::f, &b);
+    EXPECT_EQ(10, (*function1)());
+
+    std::unique_ptr<Function<int()>> function2 = bind(&A::addF, &b, 15);
+    EXPECT_EQ(25, (*function2)());
+
+    std::unique_ptr<Function<int()>> function3 = bind(&A::overridden, &b);
+    EXPECT_EQ(43, (*function3)());
+
+    std::unique_ptr<Function<int()>> function4 = bind(&B::f, &b);
+    EXPECT_EQ(11, (*function4)());
+
+    std::unique_ptr<Function<int()>> function5 = bind(&B::addF, &b, 15);
+    EXPECT_EQ(26, (*function5)());
+
+}
+
+TEST(FunctionalTest, MemberFunctionBindWithSubclassPointerWithCast)
+{
+    B b(10);
+    std::unique_ptr<Function<int()>> function1 = bind(&A::f, static_cast<A*>(&b));
+    EXPECT_EQ(10, (*function1)());
+
+    std::unique_ptr<Function<int()>> function2 = bind(&A::addF, static_cast<A*>(&b), 15);
+    EXPECT_EQ(25, (*function2)());
+
+    std::unique_ptr<Function<int()>> function3 = bind(&A::overridden, static_cast<A*>(&b));
+    EXPECT_EQ(43, (*function3)());
 }
 
 TEST(FunctionalTest, MemberFunctionPartBind)
