@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/cssom/RotationTransformComponent.h"
+#include "core/css/cssom/CSSRotation.h"
 
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSValuePool.h"
 
 namespace blink {
 
-CSSFunctionValue* RotationTransformComponent::toCSSValue() const
+CSSFunctionValue* CSSRotation::toCSSValue() const
 {
     CSSFunctionValue* result = CSSFunctionValue::create(m_is2D ? CSSValueRotate : CSSValueRotate3d);
     if (!m_is2D) {

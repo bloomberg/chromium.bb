@@ -2,26 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef RotationTransformComponent_h
-#define RotationTransformComponent_h
+#ifndef CSSRotation_h
+#define CSSRotation_h
 
 #include "core/css/cssom/MatrixTransformComponent.h"
 #include "core/css/cssom/TransformComponent.h"
 
 namespace blink {
 
-class CORE_EXPORT RotationTransformComponent final : public TransformComponent {
-    WTF_MAKE_NONCOPYABLE(RotationTransformComponent);
+class CORE_EXPORT CSSRotation final : public TransformComponent {
+    WTF_MAKE_NONCOPYABLE(CSSRotation);
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RotationTransformComponent* create(double angle)
+    static CSSRotation* create(double angle)
     {
-        return new RotationTransformComponent(angle);
+        return new CSSRotation(angle);
     }
 
-    static RotationTransformComponent* create(double angle, double x, double y, double z)
+    static CSSRotation* create(double angle, double x, double y, double z)
     {
-        return new RotationTransformComponent(angle, x, y, z);
+        return new CSSRotation(angle, x, y, z);
     }
 
     double angle() const { return m_angle; }
@@ -40,7 +40,7 @@ public:
     CSSFunctionValue* toCSSValue() const override;
 
 private:
-    RotationTransformComponent(double angle)
+    CSSRotation(double angle)
         : m_angle(angle)
         , m_x(0)
         , m_y(0)
@@ -48,7 +48,7 @@ private:
         , m_is2D(true)
     { }
 
-    RotationTransformComponent(double angle, double x, double y, double z)
+    CSSRotation(double angle, double x, double y, double z)
         : m_angle(angle)
         , m_x(x)
         , m_y(y)
