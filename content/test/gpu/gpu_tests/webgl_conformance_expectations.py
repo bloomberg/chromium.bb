@@ -126,6 +126,40 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance/textures/image/' +
               'tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html',
               ['android', ('qualcomm', 'Adreno (TM) 418')], bug=610951)
+    self.Fail('conformance/textures/image_data/' +
+              'tex-2d-rgb-rgb-unsigned_byte.html',
+              ['android', ('qualcomm', 'Adreno (TM) 418')], bug=610951)
+    self.Fail('conformance/textures/image_data/' +
+              'tex-2d-rgb-rgb-unsigned_short_5_6_5.html',
+              ['android', ('qualcomm', 'Adreno (TM) 418')], bug=610951)
+    self.Fail('conformance/textures/image_data/' +
+              'tex-2d-rgba-rgba-unsigned_byte.html',
+              ['android', ('qualcomm', 'Adreno (TM) 418')], bug=610951)
+    self.Fail('conformance/textures/image_data/' +
+              'tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html',
+              ['android', ('qualcomm', 'Adreno (TM) 418')], bug=610951)
+    self.Fail('conformance/textures/image_data/' +
+              'tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html',
+              ['android', ('qualcomm', 'Adreno (TM) 418')], bug=610951)
+    self.Fail('conformance/textures/svg_image/' +
+              'tex-2d-rgb-rgb-unsigned_byte.html',
+              ['android', ('qualcomm', 'Adreno (TM) 418')], bug=610951)
+    self.Fail('conformance/textures/svg_image/' +
+              'tex-2d-rgb-rgb-unsigned_short_5_6_5.html',
+              ['android', ('qualcomm', 'Adreno (TM) 418')], bug=610951)
+    self.Fail('conformance/textures/svg_image/' +
+              'tex-2d-rgba-rgba-unsigned_byte.html',
+              ['android', ('qualcomm', 'Adreno (TM) 418')], bug=610951)
+    self.Fail('conformance/textures/svg_image/' +
+              'tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html',
+              ['android', ('qualcomm', 'Adreno (TM) 418')], bug=610951)
+    self.Fail('conformance/textures/svg_image/' +
+              'tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html',
+              ['android', ('qualcomm', 'Adreno (TM) 418')], bug=610951)
+    self.Fail('conformance/textures/video/' +
+              'tex-2d-rgb-rgb-unsigned_byte.html',
+              ['android', 'android-content-shell',
+               ('qualcomm', 'Adreno (TM) 418')], bug=610951)
 
     # Nexus 6
     self.Fail('WebglExtension.EXT_sRGB',
