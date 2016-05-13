@@ -268,7 +268,8 @@ void V8DebuggerImpl::setPauseOnExceptionsState(PauseOnExceptionsState pauseOnExc
 
 void V8DebuggerImpl::setPauseOnNextStatement(bool pause)
 {
-    ASSERT(!m_runningNestedMessageLoop);
+    if (m_runningNestedMessageLoop)
+        return;
     if (pause)
         v8::Debug::DebugBreak(m_isolate);
     else
