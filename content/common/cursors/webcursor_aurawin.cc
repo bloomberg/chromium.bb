@@ -37,6 +37,7 @@ ui::PlatformCursor WebCursor::GetPlatformCursor() {
 
 void WebCursor::InitPlatformData() {
   custom_cursor_ = NULL;
+  device_scale_factor_ = 1.f;
 }
 
 bool WebCursor::SerializePlatformData(base::Pickle* pickle) const {
@@ -59,6 +60,7 @@ void WebCursor::CleanupPlatformData() {
 }
 
 void WebCursor::CopyPlatformData(const WebCursor& other) {
+  device_scale_factor_ = other.device_scale_factor_;
 }
 
 }  // namespace content

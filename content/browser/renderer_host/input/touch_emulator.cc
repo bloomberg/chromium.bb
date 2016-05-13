@@ -126,9 +126,6 @@ gfx::SizeF TouchEmulator::InitCursorFromResource(
   cursor_info.custom_image = cursor_image.AsBitmap();
   cursor_info.hotspot =
       gfx::Point(cursor_image.Width() / 2, cursor_image.Height() / 2);
-#if defined(OS_WIN)
-  cursor_info.external_handle = 0;
-#endif
 
   cursor->InitFromCursorInfo(cursor_info);
   return gfx::ScaleSize(gfx::SizeF(cursor_image.Size()), 1.f / scale);

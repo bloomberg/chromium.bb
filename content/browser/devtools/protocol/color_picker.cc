@@ -253,9 +253,6 @@ void ColorPicker::UpdateCursor() {
   cursor_info.hotspot =
       gfx::Point(kHotspotOffset * device_scale_factor,
                  kHotspotOffset * device_scale_factor);
-#if defined(OS_WIN)
-  cursor_info.external_handle = 0;
-#endif
 
   cursor.InitFromCursorInfo(cursor_info);
   DCHECK(host_);

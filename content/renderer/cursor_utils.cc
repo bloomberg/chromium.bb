@@ -21,9 +21,6 @@ bool GetWebCursorInfo(const WebCursor& cursor,
   web_cursor_info->hotSpot = cursor_info.hotspot;
   web_cursor_info->customImage = cursor_info.custom_image;
   web_cursor_info->imageScaleFactor = cursor_info.image_scale_factor;
-#if defined(OS_WIN)
-  web_cursor_info->externalHandle = cursor_info.external_handle;
-#endif
   return true;
 }
 
@@ -34,9 +31,6 @@ void InitializeCursorFromWebCursorInfo(WebCursor* cursor,
   cursor_info.image_scale_factor = web_cursor_info.imageScaleFactor;
   cursor_info.hotspot = web_cursor_info.hotSpot;
   cursor_info.custom_image = web_cursor_info.customImage.getSkBitmap();
-#if defined(OS_WIN)
-  cursor_info.external_handle = web_cursor_info.externalHandle;
-#endif
   cursor->InitFromCursorInfo(cursor_info);
 }
 

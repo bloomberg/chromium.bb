@@ -305,16 +305,29 @@ TEST(WebCursorTest, UnscaledImageCopy) {
   EXPECT_EQ(0, hotspot.x());
   EXPECT_EQ(1, hotspot.y());
 }
+
+TEST(WebCursorTest, CopyDeviceScaleFactor) {
+  WebCursor cursor1;
+  EXPECT_EQ(1.f, cursor1.GetCursorScaleFactor());
+
+  display::Display display;
+  display.set_device_scale_factor(19.333f);
+  cursor1.SetDisplayInfo(display);
+  WebCursor cursor2 = cursor1;
+  EXPECT_EQ(19.333f, cursor2.GetCursorScaleFactor());
+}
 #endif
 
 #if defined(OS_WIN)
-void ScaleCursor(float scaleFactor, int hotspotX, int hotspotY) {
+namespace {
+
+void ScaleCursor(float scale_factor, int hotspot_x, int hotspot_y) {
   display::Display display;
-  display.set_device_scale_factor(scaleFactor);
+  display.set_device_scale_factor(scale_factor);
 
   WebCursor::CursorInfo info;
   info.type = WebCursorInfo::TypeCustom;
-  info.hotspot = gfx::Point(hotspotX, hotspotY);
+  info.hotspot = gfx::Point(hotspot_x, hotspot_y);
 
   info.custom_image = SkBitmap();
   info.custom_image.allocN32Pixels(10, 10);
@@ -324,16 +337,18 @@ void ScaleCursor(float scaleFactor, int hotspotX, int hotspotY) {
   cursor.SetDisplayInfo(display);
   cursor.InitFromCursorInfo(info);
 
-  HCURSOR windowsCursorHandle = cursor.GetPlatformCursor();
-  EXPECT_NE(nullptr, windowsCursorHandle);
-  ICONINFO windowsIconInfo;
-  EXPECT_TRUE(GetIconInfo(windowsCursorHandle, &windowsIconInfo));
-  EXPECT_FALSE(windowsIconInfo.fIcon);
-  EXPECT_EQ(static_cast<DWORD>(scaleFactor * hotspotX),
-            windowsIconInfo.xHotspot);
-  EXPECT_EQ(static_cast<DWORD>(scaleFactor * hotspotY),
-            windowsIconInfo.yHotspot);
+  HCURSOR windows_cursor_handle = cursor.GetPlatformCursor();
+  EXPECT_NE(nullptr, windows_cursor_handle);
+  ICONINFO windows_icon_info;
+  EXPECT_TRUE(GetIconInfo(windows_cursor_handle, &windows_icon_info));
+  EXPECT_FALSE(windows_icon_info.fIcon);
+  EXPECT_EQ(static_cast<DWORD>(scale_factor * hotspot_x),
+            windows_icon_info.xHotspot);
+  EXPECT_EQ(static_cast<DWORD>(scale_factor * hotspot_y),
+            windows_icon_info.yHotspot);
 }
+
+}  // namespace
 
 TEST(WebCursorTest, WindowsCursorScaledAtHiDpi) {
   ScaleCursor(2.0f, 4, 6);
