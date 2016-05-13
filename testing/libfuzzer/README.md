@@ -15,6 +15,7 @@ engineers to uncover potential security & stability problems earlier.
 
 *** note
 **Requirements:** libFuzzer in Chrome is supported with GN on Linux only. 
+**Check [Reference] for experimental platform availability.
 ***
 
 ## Integration Status

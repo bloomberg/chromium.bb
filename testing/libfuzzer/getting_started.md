@@ -129,10 +129,10 @@ UBSAN_OPTIONS=symbolize=1:halt_on_error=1:print_stacktrace=1 ./fuzzer <corpus_di
 
 
 [Address Sanitizer]: http://clang.llvm.org/docs/AddressSanitizer.html
+[Memory Sanitizer]: http://clang.llvm.org/docs/MemorySanitizer.html
+[Undefined Behavior Sanitizer]: http://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html
 [ClusterFuzz status]: clusterfuzz.md#Status-Links
 [crbug/598448]: https://bugs.chromium.org/p/chromium/issues/detail?id=598448
 [Efficient Fuzzer Guide]: efficient_fuzzer.md
 [Maximum Testcase Length]: efficient_fuzzer.md#Maximum-Testcase-Length
-[Memory Sanitizer]: http://clang.llvm.org/docs/MemorySanitizer.html
-[Undefined Behavior Sanitizer]: http://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html
 [url_parse_fuzzer.cc]: https://code.google.com/p/chromium/codesearch#chromium/src/testing/libfuzzer/fuzzers/url_parse_fuzzer.cc
