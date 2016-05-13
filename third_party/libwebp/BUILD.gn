@@ -195,7 +195,7 @@ if (use_dsp_neon) {
       # behavior similar to *.c.neon in an Android.mk
       configs -= [ "//build/config/compiler:compiler_arm_fpu" ]
       cflags = [ "-mfpu=neon" ]
-    } else if (current_cpu == "arm64") {
+    } else if (current_cpu == "arm64" && !is_clang) {
       # avoid an ICE with gcc-4.9: b/15574841
       cflags = [ "-frename-registers" ]
     }

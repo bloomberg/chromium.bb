@@ -62,7 +62,7 @@ config("compiler") {
     } else if (current_cpu == "arm64") {
       # Place holder for arm64 support, not tested.
       # TODO: Enable clang support for Android Arm64. http://crbug.com/539781
-      abi_target = "aarch64-linux-androideabi"
+      abi_target = "aarch64-linux-android"
     } else if (current_cpu == "x64") {
       # Place holder for x64 support, not tested.
       # TODO: Enable clang support for Android x64. http://crbug.com/539781

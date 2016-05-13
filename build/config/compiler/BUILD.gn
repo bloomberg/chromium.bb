@@ -9,7 +9,7 @@ import("//build/config/nacl/config.gni")
 import("//build/toolchain/cc_wrapper.gni")
 import("//build/toolchain/toolchain.gni")
 
-if (current_cpu == "arm") {
+if (current_cpu == "arm" || current_cpu == "arm64") {
   import("//build/config/arm.gni")
 }
 if (current_cpu == "mipsel" || current_cpu == "mips64el") {
@@ -731,6 +731,9 @@ config("clang_stackrealign") {
 config("compiler_arm_fpu") {
   if (current_cpu == "arm" && !is_ios && !is_nacl) {
     cflags = [ "-mfpu=$arm_fpu" ]
+    asmflags = cflags
+  } else if (current_cpu == "arm64" && !is_ios && !is_nacl) {
+    cflags = [ "-mcpu=$arm_fpu" ]
     asmflags = cflags
   }
 }

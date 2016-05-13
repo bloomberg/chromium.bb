@@ -131,7 +131,7 @@ private:
     {
         int result;
 #if CPU(ARM64)
-        asm volatile("mrs %[result], FPCR" : [result] "=r" (result));
+        asm volatile("mrs %x[result], FPCR" : [result] "=r" (result));
 #else
         asm volatile("vmrs %[result], FPSCR" : [result] "=r" (result));
 #endif
@@ -141,7 +141,7 @@ private:
     inline void setStatusWord(int a)
     {
 #if CPU(ARM64)
-        asm volatile("msr FPCR, %[src]" : : [src] "r" (a));
+        asm volatile("msr FPCR, %x[src]" : : [src] "r" (a));
 #else
         asm volatile("vmsr FPSCR, %[src]" : : [src] "r" (a));
 #endif
