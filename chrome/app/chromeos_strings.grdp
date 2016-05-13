@@ -1665,7 +1665,7 @@ Press any key to continue exploring.
     Sign-in failed because your account details could not be retrieved. Please contact your administrator or try again.
   </message>
   <message name="IDS_LOGIN_FATAL_ERROR_NO_PASSWORD" desc="Message to show when the authentication could not be completed because the user's password could not be retrieved.">
-    Sing-in failed. Please contact your administrator or try again.
+    Sign-in failed. Please contact your administrator or try again.
   </message>
   <message name="IDS_LOGIN_FATAL_ERROR_PASSWORD_VERIFICATION" desc="Message to show when the authentication could not be completed because two attempts to verify the user's password failed.">
     Sign-in failed because your password could not be verified. Please contact your administrator or try again.
