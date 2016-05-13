@@ -15,7 +15,7 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "content/browser/fileapi/chrome_blob_storage_context.h"
+#include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/common/clipboard_messages.h"
 #include "content/public/browser/blob_handle.h"
 #include "content/public/browser/browser_context.h"

@@ -20,7 +20,7 @@
 #include "base/run_loop.h"
 #include "base/task_runner.h"
 #include "base/time/time.h"
-#include "content/browser/fileapi/chrome_blob_storage_context.h"
+#include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/public/browser/blob_handle.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"

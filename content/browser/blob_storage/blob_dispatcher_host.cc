@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "content/browser/bad_message.h"
-#include "content/browser/fileapi/chrome_blob_storage_context.h"
+#include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/common/fileapi/webblob_messages.h"
 #include "ipc/ipc_platform_file.h"
 #include "storage/browser/blob/blob_storage_context.h"

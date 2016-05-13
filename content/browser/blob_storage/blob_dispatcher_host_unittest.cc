@@ -11,7 +11,7 @@
 #include "base/memory/shared_memory.h"
 #include "base/run_loop.h"
 #include "base/tuple.h"
-#include "content/browser/fileapi/chrome_blob_storage_context.h"
+#include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/common/fileapi/webblob_messages.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/test_browser_context.h"

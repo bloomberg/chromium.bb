@@ -17,7 +17,7 @@
 #include "base/run_loop.h"
 #include "base/time/time.h"
 #include "content/browser/blob_storage/blob_dispatcher_host.h"
-#include "content/browser/fileapi/chrome_blob_storage_context.h"
+#include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/public/test/test_browser_context.h"
 #include "net/base/io_buffer.h"
 #include "net/base/test_completion_callback.h"

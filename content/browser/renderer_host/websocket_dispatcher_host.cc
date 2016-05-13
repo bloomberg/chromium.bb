@@ -15,8 +15,8 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
+#include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/child_process_security_policy_impl.h"
-#include "content/browser/fileapi/chrome_blob_storage_context.h"
 #include "content/browser/renderer_host/websocket_host.h"
 #include "content/common/websocket_messages.h"
 

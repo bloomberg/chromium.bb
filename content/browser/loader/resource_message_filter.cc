@@ -5,7 +5,7 @@
 #include "content/browser/loader/resource_message_filter.h"
 
 #include "content/browser/appcache/chrome_appcache_service.h"
-#include "content/browser/fileapi/chrome_blob_storage_context.h"
+#include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/host_zoom_level_context.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"

@@ -18,7 +18,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_split.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "content/browser/fileapi/chrome_blob_storage_context.h"
+#include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/fileapi/mock_url_request_delegate.h"
 #include "content/browser/quota/mock_quota_manager_proxy.h"
 #include "content/common/cache_storage/cache_storage_types.h"

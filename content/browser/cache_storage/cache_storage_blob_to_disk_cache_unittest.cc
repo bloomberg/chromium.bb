@@ -13,7 +13,7 @@
 #include "base/run_loop.h"
 #include "base/test/null_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "content/browser/fileapi/chrome_blob_storage_context.h"
+#include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
