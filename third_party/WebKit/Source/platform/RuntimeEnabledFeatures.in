@@ -73,8 +73,8 @@ DeviceOrientationAbsolute status=stable
 DisableBlockingMethodsDuringMicrotasks status=test
 DisplayList2dCanvas status=stable
 DocumentWriteEvaluator
-DurableStorage status=experimental
 DOMConvenienceAPI status=experimental
+DurableStorage status=experimental, origin_trial_feature_name=DurableStorage
 ForceDisplayList2dCanvas
 // See crbug.com/585250.
 ForceDisable2dCanvasCopyOnWrite
