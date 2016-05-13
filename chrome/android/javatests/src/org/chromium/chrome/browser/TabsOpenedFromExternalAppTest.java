@@ -20,6 +20,7 @@ import junit.framework.Assert;
 import org.chromium.base.BaseSwitches;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.FlakyTest;
 import org.chromium.chrome.R;
@@ -253,8 +254,9 @@ public class TabsOpenedFromExternalAppTest extends ChromeTabbedActivityTestBase 
      * Tests that URLs opened from the same external app don't create new tabs.
      * @throws InterruptedException
      */
-    @LargeTest
-    @Feature({"Navigation"})
+    // @LargeTest
+    // @Feature({"Navigation"})
+    @DisabledTest
     public void testNoNewTabForSameApp() throws InterruptedException {
         startMainActivityFromLauncher();
 
@@ -349,8 +351,9 @@ public class TabsOpenedFromExternalAppTest extends ChromeTabbedActivityTestBase 
      * the intent do create new tabs.
      * @throws InterruptedException
      */
-    @LargeTest
-    @Feature({"Navigation"})
+    // @LargeTest
+    // @Feature({"Navigation"})
+    @DisabledTest
     public void testNewTabWithNewTabExtra() throws InterruptedException {
         startMainActivityFromLauncher();
 
