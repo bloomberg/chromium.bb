@@ -145,6 +145,7 @@ source_set("struct_traits") {
 source_set("wtf_support") {
   sources = [
     "array_traits_wtf.h",
+    "array_traits_wtf_vector.h",
     "lib/string_traits_wtf.cc",
     "lib/wtf_serialization.h",
     "string_traits_wtf.h",

@@ -64,7 +64,7 @@ WTFArray<WTF::String> ConstructStringArray() {
 
 }  // namespace
 
-TEST_F(WTFTypesTest, WTFToWTFSerialization_StringArray) {
+TEST_F(WTFTypesTest, Serialization_WTFArrayToWTFArray) {
   WTFArray<WTF::String> strs = ConstructStringArray();
   WTFArray<WTF::String> cloned_strs = strs.Clone();
 
@@ -85,7 +85,28 @@ TEST_F(WTFTypesTest, WTFToWTFSerialization_StringArray) {
   EXPECT_TRUE(strs.Equals(strs2));
 }
 
-TEST_F(WTFTypesTest, WTFToMojoSerialization_StringArray) {
+TEST_F(WTFTypesTest, Serialization_WTFVectorToWTFVector) {
+  WTF::Vector<WTF::String> strs = ConstructStringArray().PassStorage();
+  WTF::Vector<WTF::String> cloned_strs = strs;
+
+  mojo::internal::SerializationContext context;
+  size_t size = mojo::internal::PrepareToSerialize<Array<mojo::String>>(
+      cloned_strs, &context);
+
+  mojo::internal::FixedBufferForTesting buf(size);
+  mojo::internal::Array_Data<mojo::internal::String_Data*>* data;
+  mojo::internal::ArrayValidateParams validate_params(
+      0, true, new mojo::internal::ArrayValidateParams(0, false, nullptr));
+  mojo::internal::Serialize<Array<mojo::String>>(cloned_strs, &buf, &data,
+                                                 &validate_params, &context);
+
+  WTF::Vector<WTF::String> strs2;
+  mojo::internal::Deserialize<Array<mojo::String>>(data, &strs2, nullptr);
+
+  EXPECT_EQ(strs, strs2);
+}
+
+TEST_F(WTFTypesTest, Serialization_WTFArrayToMojoArray) {
   WTFArray<WTF::String> strs = ConstructStringArray();
 
   mojo::internal::SerializationContext context;

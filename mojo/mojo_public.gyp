@@ -239,6 +239,7 @@
       ],
       'sources': [
         'public/cpp/bindings/array_traits_wtf.h',
+        'public/cpp/bindings/array_traits_wtf_vector.h',
         'public/cpp/bindings/lib/string_traits_wtf.cc',
         'public/cpp/bindings/lib/wtf_serialization.h',
         'public/cpp/bindings/string_traits_wtf.h',
