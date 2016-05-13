@@ -153,47 +153,32 @@ class UrlManager {
     @VisibleForTesting
     public void addUrl(UrlInfo urlInfo) {
         Log.d(TAG, "URL found: %s", urlInfo);
-        boolean isOnboarding = PhysicalWeb.isOnboarding(mContext);
-
-        // A URL is displayable if it is both nearby and resolved through our resolution service.
-        // When new displayable URLs are found we tell our observers. In onboarding mode we do not
-        // use our resolution service so the displayable list should always be empty. However, we
-        // still want to track the nearby URL count so we can show an opt-in notification.
-        // In normal operation, both the notification and observers are updated for changes to the
-        // displayable list.
-
-        int displayableUrlsBefore;
-        int notificationUrlsBefore;
-        if (isOnboarding) {
-            displayableUrlsBefore = 0;
-            notificationUrlsBefore = mNearbyUrls.size();
-        } else {
-            displayableUrlsBefore = notificationUrlsBefore = getUrls().size();
-        }
-
-        mNearbyUrls.add(urlInfo.getUrl());
-        putCachedNearbyUrls();
         mUrlsSortedByTimestamp.remove(urlInfo.getUrl());
         mUrlInfoMap.put(urlInfo.getUrl(), urlInfo);
         mUrlsSortedByTimestamp.add(urlInfo.getUrl());
         garbageCollect();
         putCachedUrlInfoMap();
 
-        if (!isOnboarding) {
+        recordUpdate();
+        if (mNearbyUrls.contains(urlInfo.getUrl())) {
+            return;
+        }
+        mNearbyUrls.add(urlInfo.getUrl());
+        putCachedNearbyUrls();
+
+        boolean isOnboarding = PhysicalWeb.isOnboarding(mContext);
+        if (!isOnboarding && !mResolvedUrls.contains(urlInfo.getUrl())) {
+            // We need to resolve the URL.
             resolveUrl(urlInfo);
+            return;
         }
+        notifyNewDisplayableUrl(urlInfo);
 
-        int displayableUrlsAfter;
-        int notificationUrlsAfter;
-        if (isOnboarding) {
-            displayableUrlsAfter = 0;
-            notificationUrlsAfter = mNearbyUrls.size();
-        } else {
-            displayableUrlsAfter = notificationUrlsAfter = getUrls().size();
+        // Only trigger the notification if we did not previously have a displayable URL
+        // (i.e., we have exactly 1 displayble URL).
+        if (getUrls(isOnboarding).size() == 1) {
+            showNotification();
         }
-
-        updateNotification(notificationUrlsBefore == 0, notificationUrlsAfter == 0);
-        notifyDisplayableUrlsChanged(displayableUrlsBefore, displayableUrlsAfter, urlInfo);
     }
 
     /**
@@ -213,12 +198,14 @@ class UrlManager {
     @VisibleForTesting
     public void removeUrl(UrlInfo urlInfo) {
         Log.d(TAG, "URL lost: %s", urlInfo);
-        boolean isOnboarding = PhysicalWeb.isOnboarding(mContext);
+        recordUpdate();
         mNearbyUrls.remove(urlInfo.getUrl());
         putCachedNearbyUrls();
 
-        int notificationUrlsAfter = isOnboarding ? mNearbyUrls.size() : getUrls().size();
-        updateNotification(false, notificationUrlsAfter == 0);
+        // If there are no URLs nearby to display, clear the notification.
+        if (getUrls(PhysicalWeb.isOnboarding(mContext)).isEmpty()) {
+            clearNotification();
+        }
     }
 
     /**
@@ -235,6 +222,7 @@ class UrlManager {
      * @return A set of nearby and resolved URLs, sorted by distance.
      */
     // TODO(conleyo) We will need to provide sorted URLs after distance is in place.
+    @VisibleForTesting
     public List<UrlInfo> getUrls() {
         return getUrls(false);
     }
@@ -245,6 +233,7 @@ class UrlManager {
      * resolved URL list is empty.
      * @return A set of nearby URLs.
      */
+    @VisibleForTesting
     public List<UrlInfo> getUrls(boolean allowUnresolved) {
         Set<String> intersection = new HashSet<>(mNearbyUrls);
         intersection.retainAll(mResolvedUrls);
@@ -287,6 +276,7 @@ class UrlManager {
      */
     public void clearNotification() {
         mNotificationManager.cancel(NotificationConstants.NOTIFICATION_ID_PHYSICAL_WEB);
+        cancelClearNotificationAlarm();
     }
 
     private List<UrlInfo> getUrlInfoList(Set<String> urls) {
@@ -297,23 +287,36 @@ class UrlManager {
         return result;
     }
 
-    private void addResolvedUrl(UrlInfo url) {
-        Log.d(TAG, "PWS resolved: %s", url);
-        int displayableUrlsBefore = getUrls().size();
+    private void addResolvedUrl(UrlInfo urlInfo) {
+        Log.d(TAG, "PWS resolved: %s", urlInfo.getUrl());
+        if (mResolvedUrls.contains(urlInfo.getUrl())) {
+            return;
+        }
 
-        mResolvedUrls.add(url.getUrl());
+        mResolvedUrls.add(urlInfo.getUrl());
         putCachedResolvedUrls();
 
-        int displayableUrlsAfter = getUrls().size();
-        updateNotification(displayableUrlsBefore == 0, displayableUrlsAfter == 0);
-        notifyDisplayableUrlsChanged(displayableUrlsBefore, displayableUrlsAfter, url);
+        if (!mNearbyUrls.contains(urlInfo.getUrl())) {
+            return;
+        }
+        notifyNewDisplayableUrl(urlInfo);
+
+        // Only trigger the notification if we did not previously have a displayable URL
+        // (i.e., we have exactly 1 displayble URL).
+        if (getUrls(PhysicalWeb.isOnboarding(mContext)).size() == 1) {
+            showNotification();
+        }
     }
 
     private void removeResolvedUrl(UrlInfo url) {
         Log.d(TAG, "PWS unresolved: %s", url);
         mResolvedUrls.remove(url.getUrl());
         putCachedResolvedUrls();
-        updateNotification(false, getUrls().isEmpty());
+
+        // If there are no URLs nearby to display, clear the notification.
+        if (getUrls(PhysicalWeb.isOnboarding(mContext)).isEmpty()) {
+            clearNotification();
+        }
     }
 
     private void initSharedPreferences() {
@@ -437,7 +440,7 @@ class UrlManager {
         return SystemClock.elapsedRealtime() - timestamp;
     }
 
-    private void updateNotification(boolean isUrlListEmptyBefore, boolean isUrlListEmptyAfter) {
+    private void recordUpdate() {
         // Record a timestamp.
         // This is useful for tracking whether a notification is pressed soon after an update or
         // much later.
@@ -445,13 +448,9 @@ class UrlManager {
         SharedPreferences.Editor editor = prefs.edit();
         editor.putLong(PREFS_NOTIFICATION_UPDATE_TIMESTAMP, SystemClock.elapsedRealtime());
         editor.apply();
+    }
 
-        if (isUrlListEmptyAfter) {
-            clearNotification();
-            cancelClearNotificationAlarm();
-            return;
-        }
-
+    private void showNotification() {
         // We should only show notifications if there's no other notification-based client.
         if (PhysicalWebEnvironment
                 .getInstance((ChromeApplication) mContext.getApplicationContext())
@@ -459,15 +458,6 @@ class UrlManager {
             return;
         }
 
-        // We only call showNotification if the list was empty before because we need to be able to
-        // count the number of times we show the OptIn notification.
-        if (isUrlListEmptyBefore) {
-            showNotification();
-        }
-        scheduleClearNotificationAlarm();
-    }
-
-    private void showNotification() {
         if (PhysicalWeb.isOnboarding(mContext)) {
             if (PhysicalWeb.getOptInNotifyCount(mContext) < PhysicalWeb.OPTIN_NOTIFY_MAX_TRIES) {
                 // high priority notification
@@ -553,15 +543,12 @@ class UrlManager {
         alarmManager.cancel(pendingIntent);
     }
 
-    private void notifyDisplayableUrlsChanged(int displayCountBefore, int displayCountAfter,
-            UrlInfo url) {
-        if (displayCountAfter > displayCountBefore) {
-            Collection<UrlInfo> urls = new ArrayList<>();
-            urls.add(url);
-            Collection<UrlInfo> wrappedUrls = Collections.unmodifiableCollection(urls);
-            for (Listener observer : mObservers) {
-                observer.onDisplayableUrlsAdded(wrappedUrls);
-            }
+    private void notifyNewDisplayableUrl(UrlInfo urlInfo) {
+        Collection<UrlInfo> urlInfos = new ArrayList<>();
+        urlInfos.add(urlInfo);
+        Collection<UrlInfo> wrappedUrlInfos = Collections.unmodifiableCollection(urlInfos);
+        for (Listener observer : mObservers) {
+            observer.onDisplayableUrlsAdded(wrappedUrlInfos);
         }
     }
 

@@ -130,6 +130,22 @@ public class UrlManagerTest extends InstrumentationTestCase {
     }
 
     @SmallTest
+    public void testAddTwoUrlsMakesOneNotification() throws Exception {
+        addPwsResult1();
+        addPwsResult2();
+
+        // Adding one URL should fire a notification.
+        mUrlManager.addUrl(URL1);
+        getInstrumentation().waitForIdleSync();
+        assertEquals(1, mMockNotificationManagerProxy.getNotifications().size());
+
+        // Adding a second should not.
+        mMockNotificationManagerProxy.cancelAll();
+        mUrlManager.addUrl(URL2);
+        assertEquals(0, mMockNotificationManagerProxy.getNotifications().size());
+    }
+
+    @SmallTest
     public void testAddUrlGarbageCollectsForSize() throws Exception {
         // Add and remove 101 URLs, making sure one is clearly slightly older than the others.
         mMockPwsClient.addPwsResults(new ArrayList<PwsResult>());
@@ -155,19 +171,19 @@ public class UrlManagerTest extends InstrumentationTestCase {
         mMockPwsClient.addPwsResults(new ArrayList<PwsResult>());
         mMockPwsClient.addPwsResults(new ArrayList<PwsResult>());
         UrlInfo urlInfo1 = new UrlInfo(URL1, -1.0, 0);
+        UrlInfo urlInfo2 = new UrlInfo(URL2, -1.0, System.currentTimeMillis());
         mUrlManager.addUrl(urlInfo1);
         mUrlManager.removeUrl(urlInfo1);
+        mUrlManager.addUrl(urlInfo2);
+        mUrlManager.removeUrl(urlInfo2);
 
-        // Make sure the URL is still in the cache.
-        assertTrue(mUrlManager.containsInAnyCache(URL1));
-
-        // Trigger garbage collection and make sure we no longer have the old URL in the cache.
-        mUrlManager.addUrl(new UrlInfo(URL2, -1.0, System.currentTimeMillis()));
+        // Make sure only URL2 is still in the cache.
         assertFalse(mUrlManager.containsInAnyCache(URL1));
+        assertTrue(mUrlManager.containsInAnyCache(URL2));
     }
 
     @SmallTest
-    public void testAddTwiceWorks() throws Exception {
+    public void testAddUrlTwiceWorks() throws Exception {
         // Add and remove an old URL twice and add new URL twice before removing.
         // This should cover several issues involved with updating the cache queue.
         mMockPwsClient.addPwsResults(new ArrayList<PwsResult>());
