@@ -46,6 +46,9 @@ interface IntentHelperHost {
   // Called when icons associated with the package are no longer up to date.
   [MinVersion=3] OnIconInvalidated@1(string package_name);
 
+  // Opens the downloads directory in the Chrome OS file manager.
+  [MinVersion=5] OnOpenDownloads@2();
+
   // Opens the url with Chrome for Chrome OS.
   OnOpenUrl@0(string url);
 };
