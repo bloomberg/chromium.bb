@@ -4,7 +4,7 @@
 
 #include "core/fetch/FetchUtils.h"
 
-#include "core/inspector/InspectorInstrumentation.h"
+#include "platform/HTTPNames.h"
 #include "platform/network/HTTPHeaderMap.h"
 #include "platform/network/HTTPParsers.h"
 #include "wtf/HashSet.h"
@@ -99,7 +99,7 @@ bool FetchUtils::isSimpleHeader(const AtomicString& name, const AtomicString& va
     if (equalIgnoringCase(name, "accept")
         || equalIgnoringCase(name, "accept-language")
         || equalIgnoringCase(name, "content-language")
-        || equalIgnoringCase(name, InspectorInstrumentation::kInspectorEmulateNetworkConditionsClientId)
+        || equalIgnoringCase(name, HTTPNames::X_DevTools_Emulate_Network_Conditions_Client_Id)
         || equalIgnoringCase(name, "save-data"))
         return true;
 

@@ -30,6 +30,7 @@
 #include "core/fetch/ResourceClientOrObserverWalker.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/fetch/ResourceLoader.h"
+#include "platform/HTTPNames.h"
 
 namespace blink {
 
@@ -212,6 +213,7 @@ static bool shouldIgnoreHeaderForCacheReuse(AtomicString headerName)
         m_headers.add("Purpose");
         m_headers.add("Referer");
         m_headers.add("User-Agent");
+        m_headers.add(HTTPNames::X_DevTools_Emulate_Network_Conditions_Client_Id);
     }
     return m_headers.contains(headerName);
 }

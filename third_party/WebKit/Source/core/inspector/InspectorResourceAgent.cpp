@@ -537,7 +537,7 @@ void InspectorResourceAgent::willSendRequest(LocalFrame* frame, unsigned long id
     willSendRequestInternal(frame, identifier, loader, request, redirectResponse, initiatorInfo);
 
     if (!m_hostId.isEmpty())
-        request.addHTTPHeaderField(InspectorInstrumentation::kInspectorEmulateNetworkConditionsClientId, AtomicString(m_hostId));
+        request.addHTTPHeaderField(HTTPNames::X_DevTools_Emulate_Network_Conditions_Client_Id, AtomicString(m_hostId));
 }
 
 void InspectorResourceAgent::markResourceAsCached(unsigned long identifier)

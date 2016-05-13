@@ -163,9 +163,6 @@ JavaScriptDialog::~JavaScriptDialog()
 
 int FrontendCounter::s_frontendCounter = 0;
 
-// Keep in sync with kDevToolsRequestInitiator defined in devtools_network_controller.cc
-const char kInspectorEmulateNetworkConditionsClientId[] = "X-DevTools-Emulate-Network-Conditions-Client-Id";
-
 bool isDebuggerPaused(LocalFrame*)
 {
     return MainThreadDebugger::instance()->debugger()->isPaused();

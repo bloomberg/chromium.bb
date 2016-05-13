@@ -291,4 +291,12 @@ TEST(RawResourceTest, RemoveClientDuringCallback)
     EXPECT_FALSE(raw->hasClientsOrObservers());
 }
 
+TEST(RawResourceTest, CanReuseDevToolsEmulateNetworkConditionsClientIdHeader)
+{
+    ResourceRequest request("data:text/html,");
+    request.setHTTPHeaderField(HTTPNames::X_DevTools_Emulate_Network_Conditions_Client_Id, "Foo");
+    Resource* raw = RawResource::create(request, Resource::Raw);
+    EXPECT_TRUE(raw->canReuse(ResourceRequest("data:text/html,")));
+}
+
 } // namespace blink

@@ -104,8 +104,6 @@ inline bool hasFrontends() { return acquireLoad(&FrontendCounter::s_frontendCoun
 CORE_EXPORT void registerInstrumentingAgents(InstrumentingAgents*);
 CORE_EXPORT void unregisterInstrumentingAgents(InstrumentingAgents*);
 
-CORE_EXPORT extern const char kInspectorEmulateNetworkConditionsClientId[];
-
 // Called from generated instrumentation code.
 CORE_EXPORT InstrumentingAgents* instrumentingAgentsFor(WorkerGlobalScope*);
 CORE_EXPORT InstrumentingAgents* instrumentingAgentsForNonDocumentContext(ExecutionContext*);
