@@ -2,8 +2,8 @@
   <template>
     <style>
       :root {
-        --main-text-color: var(--paper-grey-800);
         --page-width: 624px;
+        --primary-text-color: var(--paper-grey-800);
         --title-icon-color: var(--paper-grey-500);
       }
 
@@ -53,6 +53,12 @@
 
       paper-button.action + paper-button.action {
         -webkit-margin-start: 8px;
+      }
+
+      paper-listbox {
+        --paper-listbox: {
+          padding: 0;
+        };
       }
     </style>
   </template>

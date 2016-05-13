@@ -20,7 +20,7 @@
   <template>
     <style include="shared-styles">
       .container {
-        color: var(--main-text-color);
+        color: var(--primary-text-color);
         width: var(--page-width);
       }
 
@@ -59,7 +59,6 @@
       #nameInput,
       paper-dropdown-menu {
         --paper-input-container-input: {
-          color: inherit;
           font-size: inherit;
         };
       }
@@ -94,7 +93,6 @@
       paper-checkbox {
         --paper-checkbox-label-spacing: 16px;
         --paper-checkbox-size: 20px;
-        --primary-text-color: var(--main-text-color);
         margin-top: 24px;
       }
 
@@ -109,13 +107,6 @@
       #supervised-user-container paper-dropdown-menu {
         margin-top: 4px;
         width: 200px;
-      }
-
-      #supervised-user-container paper-listbox {
-        --paper-listbox: {
-          color: inherit;
-          padding: 0;
-        };
       }
 
       #supervised-user-container paper-listbox paper-item {
