@@ -25,15 +25,22 @@ struct StructTraits<url::mojom::Origin, url::Origin> {
   static bool unique(const url::Origin& r) {
     return r.unique();
   }
-  static bool Read(url::mojom::Origin::Reader r, url::Origin* out) {
-    *out = r.unique() ? url::Origin()
-                      : url::Origin::UnsafelyCreateOriginWithoutNormalization(
-                            r.scheme(), r.host(), r.port());
+  static bool Read(url::mojom::OriginDataView data, url::Origin* out) {
+    if (data.unique()) {
+      *out = url::Origin();
+    } else {
+      base::StringPiece scheme, host;
+      if (!data.ReadScheme(&scheme) || !data.ReadHost(&host))
+        return false;
+
+      *out = url::Origin::UnsafelyCreateOriginWithoutNormalization(scheme, host,
+                                                                   data.port());
+    }
 
     // If a unique origin was created, but the unique flag wasn't set, then
     // the values provided to 'UnsafelyCreateOriginWithoutNormalization' were
     // invalid.
-    if (!r.unique() && out->unique())
+    if (!data.unique() && out->unique())
       return false;
 
     return true;

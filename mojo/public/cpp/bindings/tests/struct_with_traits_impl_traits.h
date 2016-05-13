@@ -12,17 +12,14 @@
 #include "base/strings/string_piece.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
 #include "mojo/public/cpp/bindings/tests/struct_with_traits_impl.h"
+#include "mojo/public/interfaces/bindings/tests/struct_with_traits.mojom.h"
 
 namespace mojo {
-namespace test {
-class StructWithTraits;
-class StructWithTraits_Reader;
-}
 
 template <>
 struct StructTraits<test::StructWithTraits, test::StructWithTraitsImpl> {
   // Deserialization to test::StructTraitsImpl.
-  static bool Read(test::StructWithTraits_Reader r,
+  static bool Read(test::StructWithTraitsDataView data,
                    test::StructWithTraitsImpl* out);
 
   // Fields in test::StructWithTraits.

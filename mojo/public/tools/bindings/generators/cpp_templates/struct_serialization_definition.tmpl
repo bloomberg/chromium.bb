@@ -1,19 +1,14 @@
 {%- import "struct_macros.tmpl" as struct_macros %}
 {%- set mojom_type = struct|get_qualified_name_for_kind %}
-{%- set data_type = struct|get_qualified_name_for_kind(internal=True) %}
 
 // static
-bool StructTraits<{{mojom_type}}, {{mojom_type}}Ptr>::ReadFromDataView(
+bool StructTraits<{{mojom_type}}, {{mojom_type}}Ptr>::Read(
     {{mojom_type}}DataView input,
     {{mojom_type}}Ptr* output) {
   bool success = true;
-  if (!input.is_null()) {
-    {{mojom_type}}Ptr result({{mojom_type}}::New());
-    {{struct_macros.deserialize(struct, "input", "result->%s",
-                                "success")|indent(4)}}
-    *output = std::move(result);
-  } else {
-    output->reset();
-  }
+  {{mojom_type}}Ptr result({{mojom_type}}::New());
+  {{struct_macros.deserialize(struct, "input", "result->%s",
+                              "success")|indent(4)}}
+  *output = std::move(result);
   return success;
 }

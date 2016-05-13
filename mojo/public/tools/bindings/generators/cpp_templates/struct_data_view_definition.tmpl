@@ -1,7 +1,9 @@
 {{struct.name}}DataView::{{struct.name}}DataView(
     internal::{{struct.name}}_Data*  data,
     mojo::internal::SerializationContext* context)
-    : data_(data), context_(context) {}
+    : data_(data), context_(context) {
+  DCHECK(data_);
+}
 
 {%- for pf in struct.packed.packed_fields_in_ordinal_order %}
 {%-   set kind = pf.field.kind -%}
@@ -11,7 +13,6 @@
 {%-   elif kind|is_map_kind %}
 bool {{struct.name}}DataView::Read{{name|under_to_camel}}(
     {{kind|cpp_wrapper_type}}* value) {
-  DCHECK(!is_null());
 {%-     if pf.min_version != 0 %}
     auto pointer = data_->header_.version >= {{pf.min_version}}
                    ? data_->{{name}}.ptr : nullptr;
@@ -25,7 +26,6 @@ bool {{struct.name}}DataView::Read{{name|under_to_camel}}(
 {%-   elif kind|is_union_kind %}
 bool {{struct.name}}DataView::Read{{name|under_to_camel}}(
     {{kind|cpp_wrapper_type}}* value) {
-  DCHECK(!is_null());
 {%-     if pf.min_version != 0 %}
     auto pointer = data_->header_.version >= {{pf.min_version}}
                    ? &data_->{{name}} : nullptr;
@@ -38,8 +38,6 @@ bool {{struct.name}}DataView::Read{{name|under_to_camel}}(
 
 {%-   elif kind|is_interface_kind %}
 {{kind|cpp_wrapper_type}} {{struct.name}}DataView::Take{{name|under_to_camel}}() {
-  DCHECK(!is_null());
-
   {{kind|cpp_wrapper_type}} result;
 {%-     if pf.min_version != 0 %}
   if (data_->header_.version < {{pf.min_version}})
@@ -51,8 +49,6 @@ bool {{struct.name}}DataView::Read{{name|under_to_camel}}(
 
 {%-   elif kind|is_interface_request_kind %}
 {{kind|cpp_wrapper_type}} {{struct.name}}DataView::Take{{name|under_to_camel}}() {
-  DCHECK(!is_null());
-
   {{kind|cpp_wrapper_type}} result;
 {%-     if pf.min_version != 0 %}
   if (data_->header_.version < {{pf.min_version}})
@@ -65,8 +61,6 @@ bool {{struct.name}}DataView::Read{{name|under_to_camel}}(
 
 {%-   elif kind|is_any_handle_kind %}
 {{kind|cpp_wrapper_type}} {{struct.name}}DataView::Take{{name|under_to_camel}}() {
-  DCHECK(!is_null());
-
 {%-     if pf.min_version != 0 %}
   if (data_->header_.version < {{pf.min_version}})
     return {{kind|cpp_wrapper_type}}();
@@ -78,8 +72,6 @@ bool {{struct.name}}DataView::Read{{name|under_to_camel}}(
 
 {%-   elif kind|is_associated_interface_kind %}
 {{kind|cpp_wrapper_type}} {{struct.name}}DataView::Take{{name|under_to_camel}}() {
-  DCHECK(!is_null());
-
   {{kind|cpp_wrapper_type}} result;
 {%-     if pf.min_version != 0 %}
   if (data_->header_.version < {{pf.min_version}})
@@ -92,8 +84,6 @@ bool {{struct.name}}DataView::Read{{name|under_to_camel}}(
 
 {%-   elif kind|is_associated_interface_request_kind %}
 {{kind|cpp_wrapper_type}} {{struct.name}}DataView::Take{{name|under_to_camel}}() {
-  DCHECK(!is_null());
-
   {{kind|cpp_wrapper_type}} result;
 {%-     if pf.min_version != 0 %}
   if (data_->header_.version < {{pf.min_version}})
@@ -108,7 +98,6 @@ bool {{struct.name}}DataView::Read{{name|under_to_camel}}(
 
 {%-   else %}
 {{kind|cpp_wrapper_type}} {{struct.name}}DataView::{{name}}() const {
-  DCHECK(!is_null());
 {%-     if pf.min_version != 0 %}
   if (data_->header_.version < {{pf.min_version}})
     return {{kind|cpp_wrapper_type}}{};

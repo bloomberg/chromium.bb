@@ -102,20 +102,6 @@ inline void InterfaceDataToPointer(Interface_Data* input,
       input->version));
 }
 
-// TODO(yzshen): Unify StructTraits::Read*() methods and remove
-// HasReadFromDataViewMethod.
-template <typename T>
-struct HasReadFromDataViewMethod {
-  template <typename U>
-  static char Test(decltype(U::ReadFromDataView)*);
-  template <typename U>
-  static int Test(...);
-  static const bool value = sizeof(Test<T>(0)) == sizeof(char);
-
- private:
-  EnsureTypeIsComplete<T> check_t_;
-};
-
 template <typename T>
 struct HasIsNullMethod {
   template <typename U>
@@ -141,6 +127,37 @@ template <
     typename UserType,
     typename std::enable_if<!HasIsNullMethod<Traits>::value>::type* = nullptr>
 bool CallIsNullIfExists(const UserType& input) {
+  return false;
+}
+template <typename T>
+struct HasSetToNullMethod {
+  template <typename U>
+  static char Test(decltype(U::SetToNull)*);
+  template <typename U>
+  static int Test(...);
+  static const bool value = sizeof(Test<T>(0)) == sizeof(char);
+
+ private:
+  EnsureTypeIsComplete<T> check_t_;
+};
+
+template <
+    typename Traits,
+    typename UserType,
+    typename std::enable_if<HasSetToNullMethod<Traits>::value>::type* = nullptr>
+bool CallSetToNullIfExists(UserType* output) {
+  Traits::SetToNull(output);
+  return true;
+}
+
+template <typename Traits,
+          typename UserType,
+          typename std::enable_if<!HasSetToNullMethod<Traits>::value>::type* =
+              nullptr>
+bool CallSetToNullIfExists(UserType* output) {
+  LOG(ERROR) << "A null value is received. But the Struct/Array/StringTraits "
+             << "class doesn't define a SetToNull() function and therefore is "
+             << "unable to deserialize the value.";
   return false;
 }
 

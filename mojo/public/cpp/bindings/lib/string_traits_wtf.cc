@@ -43,6 +43,15 @@ UTF8AdaptorInfo* ToAdaptor(const WTF::String& input, void* context) {
 }  // namespace
 
 // static
+void StringTraits<WTF::String>::SetToNull(WTF::String* output) {
+  if (output->isNull())
+    return;
+
+  WTF::String result;
+  output->swap(result);
+}
+
+// static
 void* StringTraits<WTF::String>::SetUpContext(const WTF::String& input) {
   return new UTF8AdaptorInfo(input);
 }
@@ -68,13 +77,8 @@ const char* StringTraits<WTF::String>::GetData(const WTF::String& input,
 // static
 bool StringTraits<WTF::String>::Read(StringDataView input,
                                      WTF::String* output) {
-  if (!input.is_null()) {
-    WTF::String result = WTF::String::fromUTF8(input.storage(), input.size());
-    output->swap(result);
-  } else if (!output->isNull()) {
-    WTF::String result;
-    output->swap(result);
-  }
+  WTF::String result = WTF::String::fromUTF8(input.storage(), input.size());
+  output->swap(result);
   return true;
 }
 

@@ -23,16 +23,18 @@ struct StructTraits<url::mojom::Url, GURL> {
     return base::StringPiece(r.possibly_invalid_spec().c_str(),
                              r.possibly_invalid_spec().length());
   }
-  static bool Read(url::mojom::Url::Reader r, GURL* out) {
-    if (r.url().length() > url::kMaxURLChars) {
-      *out = GURL();
+  static bool Read(url::mojom::UrlDataView data, GURL* out) {
+    base::StringPiece url_string;
+    if (!data.ReadUrl(&url_string))
       return false;
-    }
-    *out = GURL(r.url());
-    if (!r.url().empty() && !out->is_valid()) {
-      *out = GURL();
+
+    if (url_string.length() > url::kMaxURLChars)
       return false;
-    }
+
+    *out = GURL(url_string);
+    if (!url_string.empty() && !out->is_valid())
+      return false;
+
     return true;
   }
 };

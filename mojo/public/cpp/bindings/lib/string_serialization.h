@@ -58,6 +58,8 @@ struct Serializer<String, MaybeConstUserType> {
   static bool Deserialize(String_Data* input,
                           UserType* output,
                           SerializationContext* context) {
+    if (!input)
+      return CallSetToNullIfExists<Traits>(output);
     return Traits::Read(StringDataView(input), output);
   }
 };

@@ -15,6 +15,7 @@ struct ArrayTraits<WTFArray<U>> {
   using Element = U;
 
   static bool IsNull(const WTFArray<U>& input) { return input.is_null(); }
+  static void SetToNull(WTFArray<U>* output) { *output = nullptr; }
 
   static size_t GetSize(const WTFArray<U>& input) { return input.size(); }
 
@@ -29,8 +30,6 @@ struct ArrayTraits<WTFArray<U>> {
   }
 
   static void Resize(WTFArray<U>& input, size_t size) { input.resize(size); }
-
-  static void SetToNull(WTFArray<U>& input) { input = nullptr; }
 };
 
 }  // namespace mojo

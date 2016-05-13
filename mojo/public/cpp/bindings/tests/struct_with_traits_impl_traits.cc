@@ -3,19 +3,21 @@
 // found in the LICENSE file.
 
 #include "mojo/public/cpp/bindings/tests/struct_with_traits_impl_traits.h"
-#include "mojo/public/interfaces/bindings/tests/struct_with_traits.mojom.h"
 
 namespace mojo {
 
 // static
 bool StructTraits<test::StructWithTraits, test::StructWithTraitsImpl>::Read(
-    test::StructWithTraits_Reader r,
+    test::StructWithTraitsDataView data,
     test::StructWithTraitsImpl* out) {
-  out->set_bool(r.f_bool());
-  out->set_uint32(r.f_uint32());
-  out->set_uint64(r.f_uint64());
-  out->set_string(r.f_string().as_string());
-  return r.f_string() == r.f_string2();
+  out->set_bool(data.f_bool());
+  out->set_uint32(data.f_uint32());
+  out->set_uint64(data.f_uint64());
+  base::StringPiece f_string, f_string2;
+  if (!data.ReadFString(&f_string) || !data.ReadFString2(&f_string2))
+    return false;
+  out->set_string(f_string.as_string());
+  return f_string == f_string2;
 }
 
 }  // namespace mojo

@@ -5,6 +5,7 @@
 template <>
 struct StructTraits<{{mojom_type}}, {{mojom_type}}Ptr> {
   static bool IsNull(const {{mojom_type}}Ptr& input) { return !input; }
+  static void SetToNull({{mojom_type}}Ptr* output) { output->reset(); }
 
 {%- for field in struct.fields %}
 {%-   set return_ref = field.kind|is_object_kind or
@@ -28,8 +29,7 @@ struct StructTraits<{{mojom_type}}, {{mojom_type}}Ptr> {
 {%-   endif %}
 {%- endfor %}
 
-  static bool ReadFromDataView({{mojom_type}}DataView input,
-                               {{mojom_type}}Ptr* output);
+  static bool Read({{mojom_type}}DataView input, {{mojom_type}}Ptr* output);
 };
 
 namespace internal {
@@ -65,34 +65,12 @@ struct Serializer<{{mojom_type}}Ptr, MaybeConstUserType> {
   static bool Deserialize({{data_type}}* input,
                           UserType* output,
                           SerializationContext* context) {
-    return ReadCaller<Traits, HasReadFromDataViewMethod<Traits>::value>::Run(
-        input, output, context);
+    if (!input)
+      return CallSetToNullIfExists<Traits>(output);
+
+    {{mojom_type}}DataView data_view(input, context);
+    return Traits::Read(data_view, output);
   }
-
-
- public:
-  template <typename Traits, bool use_read_from_data_view>
-  struct ReadCaller;
-
-  template <typename Traits>
-  struct ReadCaller<Traits, false> {
-    static bool Run({{data_type}}* input,
-                    UserType* output,
-                    SerializationContext* context) {
-      {{mojom_type}}_Reader reader(input, context);
-      return Traits::Read(reader, output);
-    }
-  };
-
-  template <typename Traits>
-  struct ReadCaller<Traits, true> {
-    static bool Run({{data_type}}* input,
-                    UserType* output,
-                    SerializationContext* context) {
-      {{mojom_type}}DataView data_view(input, context);
-      return Traits::ReadFromDataView(data_view, output);
-    }
-  };
 };
 
 }  // namespace internal

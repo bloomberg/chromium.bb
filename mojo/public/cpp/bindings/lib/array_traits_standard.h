@@ -15,6 +15,7 @@ struct ArrayTraits<Array<T>> {
   using Element = T;
 
   static bool IsNull(const Array<T>& input) { return input.is_null(); }
+  static void SetToNull(Array<T>* output) { *output = nullptr; }
 
   static size_t GetSize(const Array<T>& input) { return input.size(); }
 
@@ -32,8 +33,6 @@ struct ArrayTraits<Array<T>> {
   }
 
   static void Resize(Array<T>& input, size_t size) { input.resize(size); }
-
-  static void SetToNull(Array<T>& input) { input = nullptr; }
 };
 
 }  // namespace mojo

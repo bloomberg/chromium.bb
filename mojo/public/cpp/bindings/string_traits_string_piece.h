@@ -12,12 +12,19 @@ namespace mojo {
 
 template <>
 struct StringTraits<base::StringPiece> {
-  // No IsNull() function, which means that base::StringPiece is always
-  // considered as non-null mojom string. We could have let StringPiece
-  // containing a null data pointer map to null mojom string, but
-  // StringPiece::empty() returns true in this case. It seems confusing to mix
-  // the concept of empty and null strings, especially because they mean
-  // different things in mojom.
+  static bool IsNull(const base::StringPiece& input) {
+    // base::StringPiece is always converted to non-null mojom string. We could
+    // have let StringPiece containing a null data pointer map to null mojom
+    // string, but StringPiece::empty() returns true in this case. It seems
+    // confusing to mix the concept of empty and null strings, especially
+    // because they mean different things in mojom.
+    return false;
+  }
+
+  static void SetToNull(base::StringPiece* output) {
+    // Convert null to an "empty" base::StringPiece.
+    output->set(nullptr, 0);
+  }
 
   static size_t GetSize(const base::StringPiece& input) { return input.size(); }
 
@@ -26,10 +33,7 @@ struct StringTraits<base::StringPiece> {
   }
 
   static bool Read(StringDataView input, base::StringPiece* output) {
-    if (!input.is_null())
-      output->set(input.storage(), input.size());
-    else
-      output->set(nullptr, 0);
+    output->set(input.storage(), input.size());
     return true;
   }
 };

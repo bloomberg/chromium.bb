@@ -390,10 +390,9 @@ struct Serializer<Array<Element>, MaybeConstUserType> {
   static bool Deserialize(Data* input,
                           UserType* output,
                           SerializationContext* context) {
-    if (input)
-      return Impl::DeserializeElements(input, output, context);
-    Traits::SetToNull(*output);
-    return true;
+    if (!input)
+      return CallSetToNullIfExists<Traits>(output);
+    return Impl::DeserializeElements(input, output, context);
   }
 };
 

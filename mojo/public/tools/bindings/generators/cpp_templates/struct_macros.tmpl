@@ -148,8 +148,6 @@
     - method parameters/response parameters: the output is a list of
       arguments. #}
 {%- macro deserialize(struct, input, output_field_pattern, success) -%}
-  DCHECK(!{{input}}.is_null());
-
 {%-   for pf in struct.packed.packed_fields_in_ordinal_order %}
 {%-     set output_field = output_field_pattern|format(pf.field.name) %}
 {%-     set name = pf.field.name %}

@@ -18,7 +18,7 @@ struct StructTraits<test::blink::TypemappedRect, test::RectBlink> {
   static int width(const test::RectBlink& r) { return r.width(); }
   static int height(const test::RectBlink& r) { return r.height(); }
 
-  static bool Read(test::blink::TypemappedRect::Reader r,
+  static bool Read(test::blink::TypemappedRectDataView r,
                    test::RectBlink* out) {
     if (r.x() < 0 || r.y() < 0 || r.width() < 0 || r.height() < 0) {
       return false;

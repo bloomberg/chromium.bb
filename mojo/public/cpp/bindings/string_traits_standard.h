@@ -13,18 +13,15 @@ namespace mojo {
 template <>
 struct StringTraits<String> {
   static bool IsNull(const String& input) { return input.is_null(); }
+  static void SetToNull(String* output) { *output = nullptr; }
 
   static size_t GetSize(const String& input) { return input.size(); }
 
   static const char* GetData(const String& input) { return input.data(); }
 
   static bool Read(StringDataView input, String* output) {
-    if (!input.is_null()) {
-      String result(input.storage(), input.size());
-      result.Swap(output);
-    } else {
-      *output = nullptr;
-    }
+    String result(input.storage(), input.size());
+    result.Swap(output);
     return true;
   }
 };

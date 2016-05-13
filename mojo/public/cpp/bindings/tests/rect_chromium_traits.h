@@ -18,7 +18,7 @@ struct StructTraits<test::TypemappedRect, test::RectChromium> {
   static int width(const test::RectChromium& r) { return r.width(); }
   static int height(const test::RectChromium& r) { return r.height(); }
 
-  static bool Read(test::TypemappedRect::Reader r, test::RectChromium* out) {
+  static bool Read(test::TypemappedRectDataView r, test::RectChromium* out) {
     if (r.width() < 0 || r.height() < 0)
       return false;
     out->set_x(r.x());

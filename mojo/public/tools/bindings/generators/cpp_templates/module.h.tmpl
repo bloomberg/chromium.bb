@@ -125,7 +125,6 @@ using {{struct.name}} = mojo::NativeStruct;
 using {{struct.name}}Ptr = mojo::NativeStructPtr;
 {%-   else %}
 class {{struct.name}};
-class {{struct.name}}_Reader;
 class {{struct.name}}DataView;
 {%-     if struct|should_inline %}
 using {{struct.name}}Ptr = mojo::InlinedStructPtr<{{struct.name}}>;
