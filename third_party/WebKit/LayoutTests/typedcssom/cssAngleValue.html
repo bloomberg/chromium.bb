@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<script src='../resources/testharness.js'></script>
+<script src='../resources/testharnessreport.js'></script>
+
+<script>
+
+EPSILON = 0.000001;
+
+test(function() {
+  assert_throws(new TypeError(), function() { new CSSAngleValue(100, null); });
+  assert_throws(new TypeError(), function() { new CSSAngleValue(100, ''); });
+  assert_throws(new TypeError(), function() { new CSSAngleValue(100, 'px'); });
+  assert_throws(new TypeError(), function() { new CSSAngleValue(100, 'bananas'); });
+}, 'Invalid unit name throws an exception')
+
+test(function() {
+  var angleValue = new CSSAngleValue(100.1, 'deg');
+
+  assert_equals(angleValue.degrees, 100.1);
+  assert_approx_equals(angleValue.radians, 1.747075, EPSILON);
+  assert_approx_equals(angleValue.gradians, 111.222222, EPSILON);
+  assert_approx_equals(angleValue.turns, 0.278056, EPSILON);
+}, 'Test degree conversions');
+
+test(function() {
+  var angleValue = new CSSAngleValue(100, 'rad');
+
+  assert_equals(angleValue.radians, 100);
+  assert_approx_equals(angleValue.degrees, 5729.577951, EPSILON);
+  assert_approx_equals(angleValue.gradians, 6366.197724, EPSILON);
+  assert_approx_equals(angleValue.turns, 15.915494, EPSILON);
+}, 'Test radian conversions');
+
+test(function() {
+  var angleValue = new CSSAngleValue(100, 'grad');
+
+  assert_equals(angleValue.gradians, 100);
+  assert_equals(angleValue.degrees, 90);
+  assert_approx_equals(angleValue.radians, 1.570796, EPSILON);
+  assert_equals(angleValue.turns, 0.25);
+}, 'Test gradian conversions');
+
+test(function() {
+  var angleValue = new CSSAngleValue(100, 'turn');
+
+  assert_equals(angleValue.turns, 100);
+  assert_equals(angleValue.degrees, 36000);
+  assert_approx_equals(angleValue.radians, 628.31853, EPSILON);
+  assert_equals(angleValue.gradians, 40000);
+}, 'Test turn conversions');
+
+test(function() {
+  assert_equals((new CSSAngleValue(100, 'deg')).cssString, '100deg');
+  assert_equals((new CSSAngleValue(200, 'rad')).cssString, '200rad');
+  assert_equals((new CSSAngleValue(300, 'grad')).cssString, '300grad');
+  assert_equals((new CSSAngleValue(400, 'turn')).cssString, '400turn');
+}, 'Test cssString');
+
+</script>

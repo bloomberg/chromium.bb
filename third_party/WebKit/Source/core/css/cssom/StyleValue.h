@@ -21,7 +21,13 @@ class CORE_EXPORT StyleValue : public GarbageCollectedFinalized<StyleValue>, pub
     DEFINE_WRAPPERTYPEINFO();
 public:
     enum StyleValueType {
-        KeywordType, SimpleLengthType, CalcLengthType, NumberType, TransformValueType, PositionType
+        AngleType,
+        CalcLengthType,
+        KeywordType,
+        NumberType,
+        PositionType,
+        SimpleLengthType,
+        TransformValueType,
     };
 
     virtual ~StyleValue() { }

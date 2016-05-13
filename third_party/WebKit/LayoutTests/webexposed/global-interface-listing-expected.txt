@@ -385,6 +385,13 @@ interface CSS
     static method supports
     attribute @@toStringTag
     method constructor
+interface CSSAngleValue : StyleValue
+    attribute @@toStringTag
+    getter degrees
+    getter gradians
+    getter radians
+    getter turns
+    method constructor
 interface CSSFontFaceRule : CSSRule
     attribute @@toStringTag
     getter style

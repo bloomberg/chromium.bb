@@ -162,13 +162,14 @@ public:
 
     static UnitType fromName(const String& unit);
 
-    bool isAngle() const
+    static bool isAngle(UnitType unit)
     {
-        return type() == UnitType::Degrees
-            || type() == UnitType::Radians
-            || type() == UnitType::Gradians
-            || type() == UnitType::Turns;
+        return unit == UnitType::Degrees
+            || unit == UnitType::Radians
+            || unit == UnitType::Gradians
+            || unit == UnitType::Turns;
     }
+    bool isAngle() const { return isAngle(type()); }
     bool isFontRelativeLength() const
     {
         return type() == UnitType::QuirkyEms
