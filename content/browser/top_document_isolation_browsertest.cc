@@ -278,8 +278,8 @@ IN_PROC_BROWSER_TEST_F(TopDocumentIsolationTest,
       DepictFrameTree(root()));
 }
 
-// Flaky on Mac. See http://crbug.com/611300.
-#if defined(OS_MACOSX)
+// Flaky on Mac and Windows. See http://crbug.com/611300.
+#if defined(OS_MACOSX) || defined(OS_WIN)
 #define MAYBE_NavigateToSubframeSiteWithPopup2 \
     DISABLED_NavigateToSubframeSiteWithPopup2
 #else
