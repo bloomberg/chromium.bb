@@ -46,6 +46,9 @@ source_set("pipeline_integration_tests") {
       "//media:test_support",
       "//media/audio:test_support",
       "//media/base:test_support",
+      "//media/mojo/interfaces",
+      "//media/mojo/services:proxy",
+      "//services/shell/public/cpp:shell_test_support",
       "//testing/gtest",
       "//url",
 
