@@ -183,11 +183,7 @@ public class ContextualSearchPanel extends OverlayPanel {
 
     @Override
     public void setPanelState(PanelState toState, StateChangeReason reason) {
-        // Store the previous state of the panel for when super changes it. 'super' should be the
-        // first thing with significant logic that runs in this method which is why
-        // onPanelStateChanged is not called here.
         PanelState fromState = getPanelState();
-        super.setPanelState(toState, reason);
 
         mPanelMetrics.onPanelStateChanged(fromState, toState, reason);
 
@@ -211,6 +207,8 @@ public class ContextualSearchPanel extends OverlayPanel {
             // the promo should disappear.
             getPeekPromoControl().hide();
         }
+
+        super.setPanelState(toState, reason);
     }
 
     @Override
