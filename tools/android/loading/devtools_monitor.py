@@ -33,6 +33,9 @@ class DevToolsConnectionException(Exception):
     super(DevToolsConnectionException, self).__init__(message)
     logging.warning("DevToolsConnectionException: " + message)
 
+class DevToolsConnectionTargetCrashed(DevToolsConnectionException):
+  pass
+
 
 # Taken from telemetry.internal.backends.chrome_inspector.tracing_backend.
 # TODO(mattcary): combine this with the above and export?
@@ -111,6 +114,7 @@ class DevToolsConnection(object):
     self._target_descriptor = None
 
     self._Connect()
+    self.RegisterListener('Inspector.targetCrashed', self)
 
   def RegisterListener(self, name, listener):
     """Registers a listener for an event.
@@ -296,6 +300,11 @@ class DevToolsConnection(object):
         break
     if not self._please_stop:
       logging.warning('%s stopped on a timeout.' % kind)
+
+  def Handle(self, method, event):
+    del event # unused
+    if method == 'Inspector.targetCrashed':
+      raise DevToolsConnectionTargetCrashed('Renderer crashed.')
 
   def _TearDownMonitoring(self):
     if self.TRACING_DOMAIN in self._domains_to_enable:

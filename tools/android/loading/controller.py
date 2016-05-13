@@ -78,7 +78,8 @@ class ChromeControllerError(Exception):
     Some of these errors might be known intermittent errors that can usually be
     retried by the caller after re-doing any specific setup again.
   """
-  _INTERMITTENT_WHITE_LIST = {websocket.WebSocketTimeoutException}
+  _INTERMITTENT_WHITE_LIST = {websocket.WebSocketTimeoutException,
+                              devtools_monitor.DevToolsConnectionTargetCrashed}
 
   def __init__(self, log):
     """Constructor
