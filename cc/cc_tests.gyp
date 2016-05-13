@@ -305,6 +305,8 @@
       'test/test_image_factory.h',
       'test/test_in_process_context_provider.cc',
       'test/test_in_process_context_provider.h',
+      'test/test_layer_tree_host_base.cc',
+      'test/test_layer_tree_host_base.h',
       'test/test_occlusion_tracker.h',
       'test/test_shared_bitmap_manager.cc',
       'test/test_shared_bitmap_manager.h',
