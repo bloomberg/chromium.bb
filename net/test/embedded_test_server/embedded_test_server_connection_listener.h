@@ -18,7 +18,7 @@ class EmbeddedTestServerConnectionListener {
   virtual void AcceptedSocket(const StreamSocket& socket) = 0;
 
   // Notified when a socket was read from by the EmbeddedTestServer.
-  virtual void ReadFromSocket(const StreamSocket& socket) = 0;
+  virtual void ReadFromSocket(const StreamSocket& socket, int rv) = 0;
 
  protected:
   EmbeddedTestServerConnectionListener() {}

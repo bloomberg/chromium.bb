@@ -241,7 +241,7 @@ void Predictor::AnticipateOmniboxUrl(const GURL& url, bool preconnectable) {
   UrlInfo::ResolutionMotivation motivation(UrlInfo::OMNIBOX_MOTIVATED);
   base::TimeTicks now = base::TimeTicks::Now();
 
-  if (preconnect_enabled_) {
+  if (PreconnectEnabled()) {
     if (preconnectable && !is_new_host_request) {
       ++consecutive_omnibox_preconnect_count_;
       // The omnibox suggests a search URL (for which we can preconnect) after
@@ -305,8 +305,8 @@ void Predictor::PreconnectUrlAndSubresources(const GURL& url,
     const GURL& first_party_for_cookies) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
          BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (!predictor_enabled_ || !preconnect_enabled_ ||
-      !url.is_valid() || !url.has_host())
+  if (!predictor_enabled_ || !PreconnectEnabled() || !url.is_valid() ||
+      !url.has_host())
     return;
   if (!CanPreresolveAndPreconnect())
     return;
@@ -472,6 +472,8 @@ void Predictor::LearnFromNavigation(const GURL& referring_url,
   DCHECK_EQ(target_url, Predictor::CanonicalizeUrl(target_url));
   DCHECK_NE(target_url, GURL::EmptyGURL());
 
+  if (observer_)
+    observer_->OnLearnFromNavigation(referring_url, target_url);
   referrers_[referring_url].SuggestHost(target_url);
   // Possibly do some referrer trimming.
   TrimReferrers();
@@ -978,7 +980,7 @@ void Predictor::PrepareFrameSubresources(const GURL& original_url,
     // size of the list with all the "Leaf" nodes in the tree (nodes that don't
     // load any subresources).  If we learn about this resource, we will instead
     // provide a more carefully estimated preconnection count.
-    if (preconnect_enabled_) {
+    if (PreconnectEnabled()) {
       PreconnectUrlOnIOThread(url, first_party_for_cookies,
                               UrlInfo::SELF_REFERAL_MOTIVATED,
                               kAllowCredentialsOnPreconnectByDefault, 2);
@@ -998,7 +1000,7 @@ void Predictor::PrepareFrameSubresources(const GURL& original_url,
                                 static_cast<int>(connection_expectation * 100),
                                 10, 5000, 50);
     future_url->second.ReferrerWasObserved();
-    if (preconnect_enabled_ &&
+    if (PreconnectEnabled() &&
         connection_expectation > kPreconnectWorthyExpectedValue) {
       evalution = PRECONNECTION;
       future_url->second.IncrementPreconnectionCount();
@@ -1215,6 +1217,16 @@ GURL Predictor::GetHSTSRedirectOnIOThread(const GURL& url) {
 // ---------------------- End IO methods. -------------------------------------
 
 //-----------------------------------------------------------------------------
+
+bool Predictor::PreconnectEnabled() const {
+  base::AutoLock lock(preconnect_enabled_lock_);
+  return preconnect_enabled_;
+}
+
+void Predictor::SetPreconnectEnabledForTest(bool preconnect_enabled) {
+  base::AutoLock lock(preconnect_enabled_lock_);
+  preconnect_enabled_ = preconnect_enabled;
+}
 
 Predictor::HostNameQueue::HostNameQueue() {
 }

@@ -315,6 +315,18 @@ void EmbeddedTestServer::DoAcceptLoop() {
   }
 }
 
+bool EmbeddedTestServer::FlushAllSocketsAndConnectionsOnUIThread() {
+  return PostTaskToIOThreadAndWait(
+      base::Bind(&EmbeddedTestServer::FlushAllSocketsAndConnections,
+                 base::Unretained(this)));
+}
+
+void EmbeddedTestServer::FlushAllSocketsAndConnections() {
+  STLDeleteContainerPairSecondPointers(connections_.begin(),
+                                       connections_.end());
+  connections_.clear();
+}
+
 void EmbeddedTestServer::OnAcceptCompleted(int rv) {
   DCHECK_NE(ERR_IO_PENDING, rv);
   HandleAcceptResult(std::move(accepted_socket_));
@@ -376,7 +388,7 @@ void EmbeddedTestServer::OnReadCompleted(HttpConnection* connection, int rv) {
 bool EmbeddedTestServer::HandleReadResult(HttpConnection* connection, int rv) {
   DCHECK(io_thread_->task_runner()->BelongsToCurrentThread());
   if (connection_listener_)
-    connection_listener_->ReadFromSocket(*connection->socket_);
+    connection_listener_->ReadFromSocket(*connection->socket_, rv);
   if (rv <= 0) {
     DidClose(connection);
     return false;

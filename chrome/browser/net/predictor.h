@@ -38,6 +38,7 @@
 #include "chrome/browser/net/url_info.h"
 #include "components/network_hints/common/network_hints_common.h"
 #include "net/base/host_port_pair.h"
+#include "url/gurl.h"
 
 class IOThread;
 class PrefService;
@@ -75,7 +76,9 @@ class PredictorObserver {
   virtual void OnPreconnectUrl(const GURL& original_url,
                                const GURL& first_party_for_cookies,
                                UrlInfo::ResolutionMotivation motivation,
-                               int count) = 0;
+                               int count) {}
+  virtual void OnLearnFromNavigation(const GURL& referring_url,
+                                     const GURL& target_url) {}
 };
 
 // Predictor is constructed during Profile construction (on the UI thread),
@@ -299,14 +302,19 @@ class Predictor {
     return profile_io_data_;
   }
 
-  bool preconnect_enabled() const {
-    return preconnect_enabled_;
-  }
-
   bool predictor_enabled() const {
     return predictor_enabled_;
   }
 
+  bool PreconnectEnabled() const;
+
+  // Used only for testing. Overrides command line flag to disable preconnect,
+  // which is added in the browser test fixture.
+  void SetPreconnectEnabledForTest(bool preconnect_enabled);
+
+  net::URLRequestContextGetter* url_request_context_getter_for_test() {
+    return url_request_context_getter_.get();
+  }
 
  private:
   FRIEND_TEST_ALL_PREFIXES(PredictorTest, BenefitLookupTest);
@@ -562,9 +570,10 @@ class Predictor {
   net::ProxyService* proxy_service_;
 
   // Are we currently using preconnection, rather than just DNS resolution, for
-  // subresources and omni-box search URLs.
-  // This is false if and only if disabled by a command line switch.
-  const bool preconnect_enabled_;
+  // subresources and omni-box search URLs. This is false if and only if
+  // disabled by a command line switch. Protected by |preconnect_enabled_lock_|,
+  // which is used by tests to bypass the command line flags.
+  bool preconnect_enabled_;
 
   // Most recent suggestion from Omnibox provided via AnticipateOmniboxUrl().
   std::string last_omnibox_host_;
@@ -596,6 +605,9 @@ class Predictor {
   PredictorObserver* observer_;
 
   std::unique_ptr<base::WeakPtrFactory<Predictor>> weak_factory_;
+
+  // Protects |preconnect_enabled_|.
+  mutable base::Lock preconnect_enabled_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(Predictor);
 };

@@ -211,6 +211,9 @@ class EmbeddedTestServer {
   // tried after all other user-specified handlers have been tried.
   void RegisterDefaultHandler(const HandleRequestCallback& callback);
 
+  bool FlushAllSocketsAndConnectionsOnUIThread();
+  void FlushAllSocketsAndConnections();
+
  private:
   // Shuts down the server.
   void ShutdownOnIOThread();

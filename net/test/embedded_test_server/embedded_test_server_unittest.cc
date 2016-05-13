@@ -83,7 +83,7 @@ class TestConnectionListener
 
   // Get called from the EmbeddedTestServer thread to be notified that
   // a connection was read from.
-  void ReadFromSocket(const net::StreamSocket& connection) override {
+  void ReadFromSocket(const net::StreamSocket& connection, int rv) override {
     base::AutoLock lock(lock_);
     did_read_from_socket_ = true;
   }
