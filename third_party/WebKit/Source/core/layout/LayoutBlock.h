@@ -428,8 +428,6 @@ private:
     void removeFromGlobalMaps();
     bool widthAvailableToChildrenHasChanged();
 
-public:
-    static void collapseAnonymousBlockChild(LayoutBlock* parent, LayoutBlock* child);
 protected:
     bool isPageLogicalHeightKnown(LayoutUnit logicalOffset) const { return pageLogicalHeightForOffset(logicalOffset); }
 
@@ -456,8 +454,6 @@ protected:
     PositionWithAffinity positionForPointIfOutsideAtomicInlineLevel(const LayoutPoint&);
 
     virtual bool updateLogicalWidthAndColumnWidth();
-
-    virtual bool canCollapseAnonymousBlockChild() const { return true; }
 
     LayoutObjectChildList m_children;
     LineBoxList m_lineBoxes; // All of the root line boxes created for this block flow.  For example, <div>Hello<br>world.</div> will have two total lines for the <div>.

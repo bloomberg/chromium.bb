@@ -44,7 +44,6 @@ public:
 
     bool isDeprecatedFlexibleBox() const override { return true; }
     bool isStretchingChildren() const { return m_stretchingChildren; }
-    bool canCollapseAnonymousBlockChild() const override { return false; }
 
     void placeChild(LayoutBox* child, const LayoutPoint& location);
 

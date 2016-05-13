@@ -490,29 +490,6 @@ void LayoutBlock::removeLeftoverAnonymousBlock(LayoutBlock* child)
     child->destroy();
 }
 
-void LayoutBlock::collapseAnonymousBlockChild(LayoutBlock* parent, LayoutBlock* child)
-{
-    if (!parent->canCollapseAnonymousBlockChild())
-        return;
-    // It's possible that this block's destruction may have been triggered by the
-    // child's removal. Just bail if the anonymous child block is already being
-    // destroyed. See crbug.com/282088
-    if (child->beingDestroyed())
-        return;
-    if (child->continuation())
-        return;
-    // Ruby elements use anonymous wrappers for ruby runs and ruby bases by design, so we don't remove them.
-    if (child->isRubyRun() || child->isRubyBase())
-        return;
-    parent->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(LayoutInvalidationReason::ChildAnonymousBlockChanged);
-
-    child->moveAllChildrenTo(parent, child->nextSibling(), child->hasLayer());
-    parent->setChildrenInline(child->childrenInline());
-
-    parent->children()->removeChildNode(parent, child, child->hasLayer());
-    child->destroy();
-}
-
 void LayoutBlock::startDelayUpdateScrollInfo()
 {
     if (gDelayUpdateScrollInfo == 0) {

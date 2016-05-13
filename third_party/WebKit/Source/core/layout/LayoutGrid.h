@@ -56,8 +56,6 @@ public:
 
     void layoutBlock(bool relayoutChildren) override;
 
-    bool canCollapseAnonymousBlockChild() const override { return false; }
-
     void dirtyGrid();
 
     const Vector<LayoutUnit>& columnPositions() const

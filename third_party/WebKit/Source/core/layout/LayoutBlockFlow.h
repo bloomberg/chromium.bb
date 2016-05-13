@@ -159,6 +159,7 @@ public:
     void moveAllChildrenIncludingFloatsTo(LayoutBlock* toBlock, bool fullRemoveInsert);
 
     void childBecameFloatingOrOutOfFlow(LayoutBox* child);
+    void collapseAnonymousBlockChild(LayoutBlockFlow* child);
 
     bool generatesLineBoxesForInlineChild(LayoutObject*);
 

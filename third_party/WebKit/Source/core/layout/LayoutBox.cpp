@@ -4567,15 +4567,13 @@ static void markBoxForRelayoutAfterSplit(LayoutBox* box)
     box->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(LayoutInvalidationReason::AnonymousBlockChange);
 }
 
-static void collapseLoneAnonymousBlockChild(LayoutObject* child)
+static void collapseLoneAnonymousBlockChild(LayoutBox* parent, LayoutObject* child)
 {
-    ASSERT(child);
-    if (!child->isAnonymousBlock())
+    if (!child->isAnonymousBlock() || !child->isLayoutBlockFlow())
         return;
-    LayoutObject* parent = child->parent();
-    if (!parent->isLayoutBlock())
+    if (!parent->isLayoutBlockFlow())
         return;
-    LayoutBlock::collapseAnonymousBlockChild(toLayoutBlock(parent), toLayoutBlock(child));
+    toLayoutBlockFlow(parent)->collapseAnonymousBlockChild(toLayoutBlockFlow(child));
 }
 
 LayoutObject* LayoutBox::splitAnonymousBoxesAroundChild(LayoutObject* beforeChild)
@@ -4601,11 +4599,11 @@ LayoutObject* LayoutBox::splitAnonymousBoxesAroundChild(LayoutObject* beforeChil
             LayoutObject* child = postBox->slowFirstChild();
             ASSERT(child);
             if (child && !child->nextSibling())
-                collapseLoneAnonymousBlockChild(child);
+                collapseLoneAnonymousBlockChild(postBox, child);
             child = boxToSplit->slowFirstChild();
             ASSERT(child);
             if (child && !child->nextSibling())
-                collapseLoneAnonymousBlockChild(child);
+                collapseLoneAnonymousBlockChild(boxToSplit, child);
 
             markBoxForRelayoutAfterSplit(boxToSplit);
             markBoxForRelayoutAfterSplit(postBox);

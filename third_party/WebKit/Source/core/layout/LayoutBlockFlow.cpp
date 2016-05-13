@@ -2385,7 +2385,7 @@ void LayoutBlockFlow::removeChild(LayoutObject* oldChild)
         // The removal has knocked us down to containing only a single anonymous
         // box.  We can go ahead and pull the content right back up into our
         // box.
-        collapseAnonymousBlockChild(this, toLayoutBlock(child));
+        collapseAnonymousBlockChild(toLayoutBlockFlow(child));
     }
 
     if (!firstChild()) {
@@ -2486,6 +2486,27 @@ void LayoutBlockFlow::childBecameFloatingOrOutOfFlow(LayoutBox* child)
     }
 }
 
+void LayoutBlockFlow::collapseAnonymousBlockChild(LayoutBlockFlow* child)
+{
+    // It's possible that this block's destruction may have been triggered by the
+    // child's removal. Just bail if the anonymous child block is already being
+    // destroyed. See crbug.com/282088
+    if (child->beingDestroyed())
+        return;
+    if (child->continuation())
+        return;
+    // Ruby elements use anonymous wrappers for ruby runs and ruby bases by design, so we don't remove them.
+    if (child->isRubyRun() || child->isRubyBase())
+        return;
+    setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(LayoutInvalidationReason::ChildAnonymousBlockChanged);
+
+    child->moveAllChildrenTo(this, child->nextSibling(), child->hasLayer());
+    setChildrenInline(child->childrenInline());
+
+    children()->removeChildNode(this, child, child->hasLayer());
+    child->destroy();
+}
+
 static bool isMergeableAnonymousBlock(const LayoutBlockFlow* block)
 {
     return block->isAnonymousBlock() && !block->continuation() && !block->beingDestroyed() && !block->isRubyRun() && !block->isRubyBase();
@@ -2554,7 +2575,7 @@ void LayoutBlockFlow::makeChildrenInlineIfPossible()
     if (isAnonymousBlock() && !isRubyBase())
         return;
 
-    Vector<LayoutBlock*, 3> blocksToRemove;
+    Vector<LayoutBlockFlow*, 3> blocksToRemove;
     for (LayoutObject* child = firstChild(); child; child = child->nextSibling()) {
         if (child->isFloating())
             continue;
@@ -2562,7 +2583,7 @@ void LayoutBlockFlow::makeChildrenInlineIfPossible()
             continue;
 
         // There are still block children in the container, so any anonymous wrappers are still needed.
-        if (!child->isAnonymousBlock())
+        if (!child->isAnonymousBlock() || !child->isLayoutBlockFlow())
             return;
         // If one of the children is being destroyed then it is unsafe to clean up anonymous wrappers as the
         // entire branch may be being destroyed.
@@ -2578,7 +2599,7 @@ void LayoutBlockFlow::makeChildrenInlineIfPossible()
         if (child->isRubyRun() || child->isRubyBase())
             return;
 
-        blocksToRemove.append(toLayoutBlock(child));
+        blocksToRemove.append(toLayoutBlockFlow(child));
     }
 
     // If we make an object's children inline we are going to frustrate any future attempts to remove
@@ -2587,7 +2608,7 @@ void LayoutBlockFlow::makeChildrenInlineIfPossible()
     removeFloatingObjectsFromDescendants();
 
     for (size_t i = 0; i < blocksToRemove.size(); i++)
-        collapseAnonymousBlockChild(this, blocksToRemove[i]);
+        collapseAnonymousBlockChild(blocksToRemove[i]);
     setChildrenInline(true);
 }
 

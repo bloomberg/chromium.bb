@@ -38,7 +38,6 @@ public:
     bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectLayoutButton || LayoutFlexibleBox::isOfType(type); }
 
     bool canBeSelectionLeaf() const override { return node() && node()->hasEditableStyle(); }
-    bool canCollapseAnonymousBlockChild() const override { return true; }
 
     void addChild(LayoutObject* newChild, LayoutObject *beforeChild = nullptr) override;
     void removeChild(LayoutObject*) override;

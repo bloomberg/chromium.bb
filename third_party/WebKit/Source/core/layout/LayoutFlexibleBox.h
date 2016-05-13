@@ -47,7 +47,6 @@ public:
     const char* name() const override { return "LayoutFlexibleBox"; }
 
     bool isFlexibleBox() const final { return true; }
-    bool canCollapseAnonymousBlockChild() const override { return false; }
     void layoutBlock(bool relayoutChildren) final;
 
     int baselinePosition(FontBaseline, bool firstLine, LineDirectionMode, LinePositionMode = PositionOnContainingLine) const override;
