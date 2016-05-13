@@ -26,19 +26,14 @@
 namespace {
 
 // Check for feature enabling the use of persistent histogram storage and
-// create an appropriate allocator for such if so.
+// enable the global allocator if so.
 void InstantiatePersistentHistograms() {
   if (base::FeatureList::IsEnabled(base::kPersistentHistogramsFeature)) {
-    const char kAllocatorName[] = "BrowserMetrics";
-    // Create persistent/shared memory and allow histograms to be stored in it.
-    // Memory that is not actualy used won't be physically mapped by the system.
-    // BrowserMetrics usage peaked around 95% of 2MiB as of 2016-02-20.
-    base::GlobalHistogramAllocator::CreateWithLocalMemory(
-        3 << 20,     // 3 MiB
-        0x935DDD43,  // SHA1(BrowserMetrics)
-        kAllocatorName);
-    base::GlobalHistogramAllocator::Get()->CreateTrackingHistograms(
-        kAllocatorName);
+    base::GlobalHistogramAllocator::Enable();
+    base::GlobalHistogramAllocator* allocator =
+        base::GlobalHistogramAllocator::Get();
+    DCHECK(allocator);  // Should have been created during startup.
+    allocator->CreateTrackingHistograms(allocator->Name());
   }
 }
 

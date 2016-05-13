@@ -52,6 +52,19 @@ class FileMetricsProvider : public metrics::MetricsProvider {
     //FILE_HISTOGRAMS_ACTIVE,
   };
 
+  enum FileAssociation {
+    // Associates the metrics in the file with the current run of the browser.
+    // The reporting will take place as part of the normal logging of
+    // histograms.
+    ASSOCIATE_CURRENT_RUN,
+
+    // Associates the metrics in the file with the previous run of the browesr.
+    // The reporting will take place as part of the "stability" histograms.
+    // This is important when metrics are dumped as part of a crash of the
+    // previous run. This can only be used with FILE_HISTOGRAMS_ATOMIC.
+    ASSOCIATE_PREVIOUS_RUN,
+  };
+
   FileMetricsProvider(const scoped_refptr<base::TaskRunner>& task_runner,
                       PrefService* local_state);
   ~FileMetricsProvider() override;
@@ -63,6 +76,7 @@ class FileMetricsProvider : public metrics::MetricsProvider {
   // if no persistence is required.
   void RegisterFile(const base::FilePath& path,
                     FileType type,
+                    FileAssociation file_association,
                     const base::StringPiece prefs_key);
 
   // Registers all necessary preferences for maintaining persistent state
@@ -74,6 +88,7 @@ class FileMetricsProvider : public metrics::MetricsProvider {
  private:
   friend class FileMetricsProviderTest;
   FRIEND_TEST_ALL_PREFIXES(FileMetricsProviderTest, AccessMetrics);
+  FRIEND_TEST_ALL_PREFIXES(FileMetricsProviderTest, AccessInitialMetrics);
 
   // The different results that can occur accessing a file.
   enum AccessResult {
@@ -131,7 +146,10 @@ class FileMetricsProvider : public metrics::MetricsProvider {
 
   // metrics::MetricsDataProvider:
   void OnDidCreateMetricsLog() override;
+  bool HasInitialStabilityMetrics() override;
   void RecordHistogramSnapshots(
+      base::HistogramSnapshotManager* snapshot_manager) override;
+  void RecordInitialHistogramSnapshots(
       base::HistogramSnapshotManager* snapshot_manager) override;
 
   // A task-runner capable of performing I/O.
@@ -142,6 +160,11 @@ class FileMetricsProvider : public metrics::MetricsProvider {
 
   // A list of files that have data to be read and reported.
   FileInfoList files_to_read_;
+
+  // A list of files for a previous run. These are held separately because
+  // they are not subject to the periodic background checking that handles
+  // metrics for the current run.
+  FileInfoList files_for_previous_run_;
 
   // The preferences-service used to store persistent state about files.
   PrefService* pref_service_;

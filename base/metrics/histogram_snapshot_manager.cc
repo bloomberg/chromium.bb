@@ -31,11 +31,12 @@ void HistogramSnapshotManager::StartDeltas() {
 
   DCHECK(owned_histograms_.empty());
 
-#ifdef DEBUG
-    CHECK(!iter->second.histogram);
-    CHECK(!iter->second.accumulated_samples);
-    CHECK(!(iter->second.inconsistencies &
-            HistogramBase::NEW_INCONSISTENCY_FOUND));
+#if DCHECK_IS_ON()
+  for (const auto& hash_and_info : known_histograms_) {
+    DCHECK(!hash_and_info.second.histogram);
+    DCHECK(!hash_and_info.second.accumulated_samples);
+    DCHECK(!(hash_and_info.second.inconsistencies &
+             HistogramBase::NEW_INCONSISTENCY_FOUND));
   }
 #endif
 }
@@ -57,6 +58,12 @@ void HistogramSnapshotManager::PrepareAbsolute(const HistogramBase* histogram) {
 void HistogramSnapshotManager::PrepareAbsoluteTakingOwnership(
     std::unique_ptr<const HistogramBase> histogram) {
   PrepareSamples(histogram.get(), histogram->SnapshotSamples());
+  owned_histograms_.push_back(std::move(histogram));
+}
+
+void HistogramSnapshotManager::PrepareFinalDeltaTakingOwnership(
+    std::unique_ptr<const HistogramBase> histogram) {
+  PrepareSamples(histogram.get(), histogram->SnapshotFinalDelta());
   owned_histograms_.push_back(std::move(histogram));
 }
 

@@ -12,7 +12,9 @@
 #include "base/metrics/histogram_snapshot_manager.h"
 #include "base/metrics/persistent_histogram_allocator.h"
 #include "base/metrics/persistent_memory_allocator.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/metrics/statistics_recorder.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/metrics/metrics_pref_names.h"
@@ -86,6 +88,32 @@ class FileMetricsProviderTest : public testing::Test {
     task_runner_->RunUntilIdle();
   }
 
+  void CreateMetricsFileWithHistograms(int histogram_count) {
+    // Get this first so it isn't created inside the persistent allocator.
+    base::GlobalHistogramAllocator::GetCreateHistogramResultHistogram();
+
+    base::GlobalHistogramAllocator::CreateWithLocalMemory(
+        64 << 10, 0, kMetricsName);
+
+    // Create both sparse and normal histograms in the allocator.
+    base::SparseHistogram::FactoryGet("h0", 0)->Add(0);
+    for (int i = 1; i < histogram_count; ++i) {
+      base::Histogram::FactoryGet(base::StringPrintf("h%d", i), 1, 100, 10, 0)
+          ->Add(i);
+    }
+
+    std::unique_ptr<base::PersistentHistogramAllocator> histogram_allocator =
+        base::GlobalHistogramAllocator::ReleaseForTesting();
+    base::PersistentMemoryAllocator* allocator =
+        histogram_allocator->memory_allocator();
+    base::File writer(metrics_file(),
+                      base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
+    ASSERT_TRUE(writer.IsValid());
+    ASSERT_EQ(static_cast<int>(allocator->used()),
+              writer.Write(0, (const char*)allocator->data(),
+                           allocator->used()));
+  }
+
  private:
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle thread_task_runner_handle_;
@@ -97,40 +125,17 @@ class FileMetricsProviderTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(FileMetricsProviderTest);
 };
 
-
 TEST_F(FileMetricsProviderTest, AccessMetrics) {
   ASSERT_FALSE(PathExists(metrics_file()));
-
-  {
-    // Get this first so it isn't created inside the persistent allocator.
-    base::GlobalHistogramAllocator::GetCreateHistogramResultHistogram();
-
-    base::GlobalHistogramAllocator::CreateWithLocalMemory(
-        64 << 10, 0, kMetricsName);
-    base::HistogramBase* foo =
-        base::Histogram::FactoryGet("foo", 1, 100, 10, 0);
-    base::HistogramBase* bar =
-        base::Histogram::FactoryGet("bar", 1, 100, 10, 0);
-    foo->Add(42);
-    bar->Add(84);
-
-    std::unique_ptr<base::PersistentHistogramAllocator> histogram_allocator =
-        base::GlobalHistogramAllocator::ReleaseForTesting();
-    base::PersistentMemoryAllocator* allocator =
-        histogram_allocator->memory_allocator();
-    base::File writer(metrics_file(),
-                      base::File::FLAG_CREATE | base::File::FLAG_WRITE);
-    ASSERT_TRUE(writer.IsValid());
-    ASSERT_EQ(static_cast<int>(allocator->used()),
-              writer.Write(0, (const char*)allocator->data(),
-                           allocator->used()));
-  }
+  CreateMetricsFileWithHistograms(2);
 
   // Register the file and allow the "checker" task to run.
   ASSERT_TRUE(PathExists(metrics_file()));
-  provider()->RegisterFile(metrics_file(),
-                           FileMetricsProvider::FILE_HISTOGRAMS_ATOMIC,
-                           kMetricsName);
+  provider()->RegisterFile(
+      metrics_file(),
+      FileMetricsProvider::FILE_HISTOGRAMS_ATOMIC,
+      FileMetricsProvider::ASSOCIATE_CURRENT_RUN,
+      kMetricsName);
 
   // Record embedded snapshots via snapshot-manager.
   provider()->OnDidCreateMetricsLog();
@@ -186,6 +191,52 @@ TEST_F(FileMetricsProviderTest, AccessMetrics) {
     provider()->RecordHistogramSnapshots(&snapshot_manager);
     snapshot_manager.FinishDeltas();
     EXPECT_EQ(2U, flattener.GetRecordedDeltaHistogramNames().size());
+  }
+}
+
+TEST_F(FileMetricsProviderTest, AccessInitialMetrics) {
+  ASSERT_FALSE(PathExists(metrics_file()));
+  CreateMetricsFileWithHistograms(2);
+
+  // Register the file and allow the "checker" task to run.
+  ASSERT_TRUE(PathExists(metrics_file()));
+  provider()->RegisterFile(
+      metrics_file(),
+      FileMetricsProvider::FILE_HISTOGRAMS_ATOMIC,
+      FileMetricsProvider::ASSOCIATE_PREVIOUS_RUN,
+      kMetricsName);
+
+  // Record embedded snapshots via snapshot-manager.
+  provider()->HasInitialStabilityMetrics();
+  {
+    HistogramFlattenerDeltaRecorder flattener;
+    base::HistogramSnapshotManager snapshot_manager(&flattener);
+    snapshot_manager.StartDeltas();
+    provider()->RecordInitialHistogramSnapshots(&snapshot_manager);
+    snapshot_manager.FinishDeltas();
+    EXPECT_EQ(2U, flattener.GetRecordedDeltaHistogramNames().size());
+  }
+
+  // Second full run on the same file should produce nothing.
+  provider()->OnDidCreateMetricsLog();
+  RunTasks();
+  {
+    HistogramFlattenerDeltaRecorder flattener;
+    base::HistogramSnapshotManager snapshot_manager(&flattener);
+    snapshot_manager.StartDeltas();
+    provider()->RecordInitialHistogramSnapshots(&snapshot_manager);
+    snapshot_manager.FinishDeltas();
+    EXPECT_EQ(0U, flattener.GetRecordedDeltaHistogramNames().size());
+  }
+
+  // A run for normal histograms should produce nothing.
+  {
+    HistogramFlattenerDeltaRecorder flattener;
+    base::HistogramSnapshotManager snapshot_manager(&flattener);
+    snapshot_manager.StartDeltas();
+    provider()->RecordHistogramSnapshots(&snapshot_manager);
+    snapshot_manager.FinishDeltas();
+    EXPECT_EQ(0U, flattener.GetRecordedDeltaHistogramNames().size());
   }
 }
 

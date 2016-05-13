@@ -56572,6 +56572,69 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="UMA.FileMetricsProvider.InitialAccessResult"
+    enum="FileMetricsProviderAccessResult">
+  <owner>asvitkine@chromium.org</owner>
+  <owner>bcwhite@chromium.org</owner>
+  <summary>
+    Records attempts to access a file for the purpose of extracting initial
+    stability metrics.
+  </summary>
+</histogram>
+
+<histogram name="UMA.FileMetricsProvider.InitialCheckTime.File" units="ms">
+  <owner>asvitkine@chromium.org</owner>
+  <owner>bcwhite@chromium.org</owner>
+  <summary>
+    Records how much wall time was spent checking and mapping an initial metrics
+    file on disk.
+  </summary>
+</histogram>
+
+<histogram name="UMA.FileMetricsProvider.InitialCheckTime.Total" units="ms">
+  <owner>asvitkine@chromium.org</owner>
+  <owner>bcwhite@chromium.org</owner>
+  <summary>
+    Records how much wall time was spent checking and mapping initial metrics
+    from all files on disk.
+  </summary>
+</histogram>
+
+<histogram name="UMA.FileMetricsProvider.InitialSnapshotTime.File" units="ms">
+  <owner>asvitkine@chromium.org</owner>
+  <owner>bcwhite@chromium.org</owner>
+  <summary>
+    Records how much wall time was spent collecting initial stability metrics
+    from a file on disk.
+  </summary>
+</histogram>
+
+<histogram name="UMA.FileMetricsProvider.InitialSnapshotTime.Total" units="ms">
+  <owner>asvitkine@chromium.org</owner>
+  <owner>bcwhite@chromium.org</owner>
+  <summary>
+    Records how much wall time was spent collecting initial stability metrics
+    from all files on disk.
+  </summary>
+</histogram>
+
+<histogram name="UMA.FileMetricsProvider.SnapshotTime.File" units="ms">
+  <owner>asvitkine@chromium.org</owner>
+  <owner>bcwhite@chromium.org</owner>
+  <summary>
+    Records how much wall time was spent collecting metrics from a file on disk.
+  </summary>
+</histogram>
+
+<histogram name="UMA.FileMetricsProvider.SnapshotTime.Total" units="ms">
+  <owner>asvitkine@chromium.org</owner>
+  <owner>bcwhite@chromium.org</owner>
+  <summary>
+    Records how much wall time was spent collecting metrics from all files on
+    disk.
+  </summary>
+</histogram>
+
 <histogram name="UMA.GeneratedLowEntropySource" enum="Boolean">
   <obsolete>
     Deprecated as of August 2015. No longer tracked.

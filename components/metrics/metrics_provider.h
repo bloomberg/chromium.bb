@@ -70,11 +70,18 @@ class MetricsProvider {
   virtual void ProvideGeneralMetrics(
       ChromeUserMetricsExtension* uma_proto);
 
-  // Called during collection to explicitly load histogram snapshots using a
-  // snapshot manager. PrepareDeltas() will have already been called and
-  // FinishDeltas() will be called later; calls to only PrepareDelta(), not
-  // PrepareDeltas (plural), should be made.
+  // Called during regular collection to explicitly load histogram snapshots
+  // using a snapshot manager. PrepareDeltas() will have already been called
+  // and FinishDeltas() will be called later; calls to only PrepareDelta(),
+  // not PrepareDeltas (plural), should be made.
   virtual void RecordHistogramSnapshots(
+      base::HistogramSnapshotManager* snapshot_manager);
+
+  // Called during collection of initial metrics to explicitly load histogram
+  // snapshots using a snapshot manager. PrepareDeltas() will have already
+  // been called and FinishDeltas() will be called later; calls to only
+  // PrepareDelta(), not PrepareDeltas (plural), should be made.
+  virtual void RecordInitialHistogramSnapshots(
       base::HistogramSnapshotManager* snapshot_manager);
 
  private:

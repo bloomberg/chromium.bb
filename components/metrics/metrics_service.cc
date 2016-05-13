@@ -1143,11 +1143,9 @@ void MetricsService::RecordCurrentHistograms() {
   histogram_snapshot_manager_.StartDeltas();
   // "true" to the begin() call indicates that StatisticsRecorder should include
   // histograms held in persistent storage.
-  auto end = base::StatisticsRecorder::end();
-  for (auto it = base::StatisticsRecorder::begin(true); it != end; ++it) {
-    if ((*it)->flags() & base::Histogram::kUmaTargetedHistogramFlag)
-      histogram_snapshot_manager_.PrepareDelta(*it);
-  }
+  histogram_snapshot_manager_.PrepareDeltasWithoutStartFinish(
+      base::StatisticsRecorder::begin(true), base::StatisticsRecorder::end(),
+      base::Histogram::kNoFlags, base::Histogram::kUmaTargetedHistogramFlag);
   for (MetricsProvider* provider : metrics_providers_)
     provider->RecordHistogramSnapshots(&histogram_snapshot_manager_);
   histogram_snapshot_manager_.FinishDeltas();
@@ -1155,11 +1153,15 @@ void MetricsService::RecordCurrentHistograms() {
 
 void MetricsService::RecordCurrentStabilityHistograms() {
   DCHECK(log_manager_.current_log());
+  histogram_snapshot_manager_.StartDeltas();
   // "true" indicates that StatisticsRecorder should include histograms in
   // persistent storage.
-  histogram_snapshot_manager_.PrepareDeltas(
+  histogram_snapshot_manager_.PrepareDeltasWithoutStartFinish(
       base::StatisticsRecorder::begin(true), base::StatisticsRecorder::end(),
       base::Histogram::kNoFlags, base::Histogram::kUmaStabilityHistogramFlag);
+  for (MetricsProvider* provider : metrics_providers_)
+    provider->RecordInitialHistogramSnapshots(&histogram_snapshot_manager_);
+  histogram_snapshot_manager_.FinishDeltas();
 }
 
 void MetricsService::LogCleanShutdown() {

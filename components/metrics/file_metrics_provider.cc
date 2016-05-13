@@ -69,6 +69,7 @@ FileMetricsProvider::~FileMetricsProvider() {}
 
 void FileMetricsProvider::RegisterFile(const base::FilePath& path,
                                        FileType type,
+                                       FileAssociation file_association,
                                        const base::StringPiece prefs_key) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -84,7 +85,15 @@ void FileMetricsProvider::RegisterFile(const base::FilePath& path,
                                 file->prefs_key));
   }
 
-  files_to_check_.push_back(std::move(file));
+  switch (file_association) {
+    case ASSOCIATE_CURRENT_RUN:
+      files_to_check_.push_back(std::move(file));
+      break;
+    case ASSOCIATE_PREVIOUS_RUN:
+      DCHECK_EQ(FILE_HISTOGRAMS_ATOMIC, file->type);
+      files_for_previous_run_.push_back(std::move(file));
+      break;
+  }
 }
 
 // static
@@ -187,7 +196,7 @@ void FileMetricsProvider::RecordHistogramSnapshotsFromFile(
     if (!histogram)
       break;
     if (file->type == FILE_HISTOGRAMS_ATOMIC)
-      snapshot_manager->PrepareAbsoluteTakingOwnership(std::move(histogram));
+      snapshot_manager->PrepareFinalDeltaTakingOwnership(std::move(histogram));
     else
       snapshot_manager->PrepareDeltaTakingOwnership(std::move(histogram));
     ++histogram_count;
@@ -268,16 +277,72 @@ void FileMetricsProvider::OnDidCreateMetricsLog() {
   // check is run off of the worker-pool so as to not cause delays on the
   // main UI thread (which is currently where metric collection is done).
   ScheduleFilesCheck();
+
+  // Clear any data for initial metrics since they're always reported
+  // before the first call to this method. It couldn't be released after
+  // being reported in RecordInitialHistogramSnapshots because the data
+  // will continue to be used by the caller after that method returns. Once
+  // here, though, all actions to be done on the data have been completed.
+#if DCHECK_IS_ON()
+  for (const std::unique_ptr<FileInfo>& file : files_for_previous_run_)
+    DCHECK(file->read_complete);
+#endif
+  files_for_previous_run_.clear();
+}
+
+bool FileMetricsProvider::HasInitialStabilityMetrics() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  // Measure the total time spent checking all files as well as the time
+  // per individual file. This method is called during startup and thus blocks
+  // the initial showing of the browser window so it's important to know the
+  // total delay.
+  SCOPED_UMA_HISTOGRAM_TIMER("UMA.FileMetricsProvider.InitialCheckTime.Total");
+
+  // Check all files for previous run to see if they need to be read.
+  for (auto iter = files_for_previous_run_.begin();
+       iter != files_for_previous_run_.end();) {
+    SCOPED_UMA_HISTOGRAM_TIMER("UMA.FileMetricsProvider.InitialCheckTime.File");
+
+    auto temp = iter++;
+    FileInfo* file = temp->get();
+
+    // This would normally be done on a background I/O thread but there
+    // hasn't been a chance to run any at the time this method is called.
+    // Do the check in-line.
+    AccessResult result = CheckAndMapNewMetrics(file);
+    UMA_HISTOGRAM_ENUMERATION("UMA.FileMetricsProvider.InitialAccessResult",
+                              result, ACCESS_RESULT_MAX);
+
+    // If it couldn't be accessed, remove it from the list. There is only ever
+    // one chance to record it so no point keeping it around for later. Also
+    // mark it as having been read since uploading it with a future browser
+    // run would associate it with the previous run which would no longer be
+    // the run from which it came.
+    if (result != ACCESS_RESULT_SUCCESS) {
+      RecordFileAsSeen(file);
+      files_for_previous_run_.erase(temp);
+    }
+  }
+
+  return !files_for_previous_run_.empty();
 }
 
 void FileMetricsProvider::RecordHistogramSnapshots(
     base::HistogramSnapshotManager* snapshot_manager) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
+  // Measure the total time spent processing all files as well as the time
+  // per individual file. This method is called on the UI thread so it's
+  // important to know how much total "jank" may be introduced.
+  SCOPED_UMA_HISTOGRAM_TIMER("UMA.FileMetricsProvider.SnapshotTime.Total");
+
   for (std::unique_ptr<FileInfo>& file : files_to_read_) {
     // Skip this file if the data has already been read.
     if (file->read_complete)
       continue;
+
+    SCOPED_UMA_HISTOGRAM_TIMER("UMA.FileMetricsProvider.SnapshotTime.File");
 
     // If the file is mapped or loaded then it needs to have an allocator
     // attached to it in order to read histograms out of it.
@@ -291,6 +356,35 @@ void FileMetricsProvider::RecordHistogramSnapshots(
     // catches the case where creating an allocator from the file has failed.
     if (!file->allocator)
       continue;
+
+    // Dump all histograms contained within the file to the snapshot-manager.
+    RecordHistogramSnapshotsFromFile(snapshot_manager, file.get());
+
+    // Update the last-seen time so it isn't read again unless it changes.
+    RecordFileAsSeen(file.get());
+  }
+}
+
+void FileMetricsProvider::RecordInitialHistogramSnapshots(
+    base::HistogramSnapshotManager* snapshot_manager) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  // Measure the total time spent processing all files as well as the time
+  // per individual file. This method is called during startup and thus blocks
+  // the initial showing of the browser window so it's important to know the
+  // total delay.
+  SCOPED_UMA_HISTOGRAM_TIMER(
+      "UMA.FileMetricsProvider.InitialTotalSnapshotTime");
+
+  for (const std::unique_ptr<FileInfo>& file : files_for_previous_run_) {
+    SCOPED_UMA_HISTOGRAM_TIMER(
+        "UMA.FileMetricsProvider.InitialFileSnapshotTime");
+
+    // The file needs to have an allocator attached to it in order to read
+    // histograms out of it.
+    DCHECK(file->mapped || !file->data.empty());
+    CreateAllocatorForFile(file.get());
+    DCHECK(file->allocator);
 
     // Dump all histograms contained within the file to the snapshot-manager.
     RecordHistogramSnapshotsFromFile(snapshot_manager, file.get());

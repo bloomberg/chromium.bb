@@ -51,4 +51,8 @@ void MetricsProvider::RecordHistogramSnapshots(
     base::HistogramSnapshotManager* snapshot_manager) {
 }
 
+void MetricsProvider::RecordInitialHistogramSnapshots(
+    base::HistogramSnapshotManager* snapshot_manager) {
+}
+
 }  // namespace metrics

@@ -12,9 +12,11 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/persistent_histogram_allocator.h"
 #include "base/path_service.h"
 #include "base/rand_util.h"
 #include "base/strings/string16.h"
@@ -23,6 +25,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/google/google_brand.h"
+#include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/metrics/chrome_stability_metrics_provider.h"
 #include "chrome/browser/metrics/metrics_reporting_state.h"
 #include "chrome/browser/metrics/subprocess_metrics_provider.h"
@@ -42,6 +45,7 @@
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_service.h"
 #include "components/metrics/metrics_service_client.h"
+#include "components/metrics/metrics_state_manager.h"
 #include "components/metrics/net/net_metrics_log_uploader.h"
 #include "components/metrics/net/network_metrics_provider.h"
 #include "components/metrics/net/version_utils.h"
@@ -108,6 +112,8 @@ const int kStandardUploadIntervalCellularSeconds = 15 * 60;  // Fifteen minutes.
 const int kStandardUploadIntervalSeconds = 30 * 60;  // Thirty minutes.
 #endif
 
+const char kBrowserMetricsFileName[] = "SavedMetrics";
+
 // Returns true if current connection type is cellular and user is assigned to
 // experimental group for enabled cellular uploads.
 bool IsCellularLogicEnabled() {
@@ -138,30 +144,84 @@ bool ShouldClearSavedMetrics() {
 }
 
 void RegisterInstallerFileMetricsPreferences(PrefRegistrySimple* registry) {
+  base::GlobalHistogramAllocator* allocator =
+      base::GlobalHistogramAllocator::GetEvenIfDisabled();
+  if (allocator)
+    metrics::FileMetricsProvider::RegisterPrefs(registry, allocator->Name());
+
 #if defined(OS_WIN)
   metrics::FileMetricsProvider::RegisterPrefs(
       registry, installer::kSetupHistogramAllocatorName);
 #endif
 }
 
-void RegisterInstallerFileMetricsProvider(
-    metrics::MetricsService* metrics_service) {
+// A wrapper around base::DeleteFile that has no return value and thus can be
+// used as a callback.
+void LocalDeleteFile(const base::FilePath& path) {
+  base::DeleteFile(path, /*recursive=*/false);
+}
+
+std::unique_ptr<metrics::FileMetricsProvider>
+CreateInstallerFileMetricsProvider(bool metrics_reporting_enabled) {
+  // Fetch a worker-pool for performing I/O tasks that are not allowed on
+  // the main UI thread.
+  scoped_refptr<base::TaskRunner> task_runner =
+      content::BrowserThread::GetBlockingPool()
+          ->GetTaskRunnerWithShutdownBehavior(
+              base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
+
+  // Create an object to monitor files of metrics and include them in reports.
+  std::unique_ptr<metrics::FileMetricsProvider> file_metrics_provider(
+      new metrics::FileMetricsProvider(task_runner,
+                                       g_browser_process->local_state()));
+
+  // Build the pathname for browser's persistent metrics file. Set it as the
+  // destination for the GlobalHistogramAllocator during process exit and add
+  // it to the file-metrics-provider so one written from a previous run will
+  // be loaded.
+  // TODO(bcwhite): Actually create those files.
+  base::FilePath metrics_file;
+  if (base::PathService::Get(chrome::DIR_USER_DATA, &metrics_file)) {
+    metrics_file =
+        metrics_file.AppendASCII(kBrowserMetricsFileName)
+            .AddExtension(base::PersistentMemoryAllocator::kFileExtension);
+    if (metrics_reporting_enabled) {
+      // Metrics get persisted to disk when the process exits. Store the path
+      // to that file in the global allocator for use at exit time and tell
+      // the FileMetricsProvider about that file so it can read one created
+      // by the previous run.
+      base::GlobalHistogramAllocator* allocator =
+          base::GlobalHistogramAllocator::GetEvenIfDisabled();
+      if (allocator) {
+        const char* allocator_name = allocator->Name();
+        allocator->SetPersistentLocation(metrics_file);
+        file_metrics_provider->RegisterFile(
+            metrics_file,
+            metrics::FileMetricsProvider::FILE_HISTOGRAMS_ATOMIC,
+            metrics::FileMetricsProvider::ASSOCIATE_PREVIOUS_RUN,
+            allocator_name);
+      }
+    } else {
+      // When metrics reporting is not enabled, any existing file should be
+      // deleted in order to preserve user privacy.
+      task_runner->PostTask(FROM_HERE,
+                            base::Bind(&LocalDeleteFile, metrics_file));
+    }
+  }
+
 #if defined(OS_WIN)
-  std::unique_ptr<metrics::FileMetricsProvider> file_metrics(
-      new metrics::FileMetricsProvider(
-          content::BrowserThread::GetBlockingPool()
-              ->GetTaskRunnerWithShutdownBehavior(
-                  base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN),
-          g_browser_process->local_state()));
+  // Read metrics file from setup.exe.
   base::FilePath program_dir;
   base::PathService::Get(base::DIR_EXE, &program_dir);
-  file_metrics->RegisterFile(
+  file_metrics_provider->RegisterFile(
       program_dir.AppendASCII(installer::kSetupHistogramAllocatorName)
-          .AddExtension(L".pma"),
+          .AddExtension(FILE_PATH_LITERAL(".pma")),
       metrics::FileMetricsProvider::FILE_HISTOGRAMS_ATOMIC,
+      metrics::FileMetricsProvider::ASSOCIATE_CURRENT_RUN,
       installer::kSetupHistogramAllocatorName);
-  metrics_service->RegisterMetricsProvider(std::move(file_metrics));
 #endif
+
+  return file_metrics_provider;
 }
 
 }  // namespace
@@ -394,7 +454,9 @@ void ChromeMetricsServiceClient::Initialize() {
       std::unique_ptr<metrics::MetricsProvider>(
           new metrics::ScreenInfoMetricsProvider));
 
-  RegisterInstallerFileMetricsProvider(metrics_service_.get());
+  metrics_service_->RegisterMetricsProvider(
+      CreateInstallerFileMetricsProvider(
+          metrics_state_manager_->IsMetricsReportingEnabled()));
 
   drive_metrics_provider_ = new metrics::DriveMetricsProvider(
       content::BrowserThread::GetMessageLoopProxyForThread(

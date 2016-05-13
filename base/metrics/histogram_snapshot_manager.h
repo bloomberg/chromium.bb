@@ -40,18 +40,28 @@ class BASE_EXPORT HistogramSnapshotManager {
   // |Histogram::kNoFlags|. Though any "forward" iterator will work, the
   // histograms over which it iterates *must* remain valid until this method
   // returns; the iterator cannot deallocate histograms once it iterates past
-  // them.
+  // them and FinishDeltas() has been called after.  StartDeltas() must be
+  // called before.
+  template <class ForwardHistogramIterator>
+  void PrepareDeltasWithoutStartFinish(ForwardHistogramIterator begin,
+                                       ForwardHistogramIterator end,
+                                       HistogramBase::Flags flags_to_set,
+                                       HistogramBase::Flags required_flags) {
+    for (ForwardHistogramIterator it = begin; it != end; ++it) {
+      (*it)->SetFlags(flags_to_set);
+      if (((*it)->flags() & required_flags) == required_flags)
+        PrepareDelta(*it);
+    }
+  }
+
+  // As above but also calls StartDeltas() and FinishDeltas().
   template <class ForwardHistogramIterator>
   void PrepareDeltas(ForwardHistogramIterator begin,
                      ForwardHistogramIterator end,
                      HistogramBase::Flags flags_to_set,
                      HistogramBase::Flags required_flags) {
     StartDeltas();
-    for (ForwardHistogramIterator it = begin; it != end; ++it) {
-      (*it)->SetFlags(flags_to_set);
-      if (((*it)->flags() & required_flags) == required_flags)
-        PrepareDelta(*it);
-    }
+    PrepareDeltasWithoutStartFinish(begin, end, flags_to_set, required_flags);
     FinishDeltas();
   }
 
@@ -62,6 +72,9 @@ class BASE_EXPORT HistogramSnapshotManager {
   // until FinishDeltas() completes. PrepareAbsolute() works the same
   // but assumes there were no previous logged values and no future deltas
   // will be created (and thus can work on read-only histograms).
+  // PrepareFinalDelta() works like PrepareDelta() except that it does
+  // not update the previous logged values and can thus be used with
+  // read-only files.
   // Use Prepare*TakingOwnership() if it is desireable to have this class
   // automatically delete the histogram once it is "finished".
   void StartDeltas();
@@ -69,6 +82,8 @@ class BASE_EXPORT HistogramSnapshotManager {
   void PrepareDeltaTakingOwnership(std::unique_ptr<HistogramBase> histogram);
   void PrepareAbsolute(const HistogramBase* histogram);
   void PrepareAbsoluteTakingOwnership(
+      std::unique_ptr<const HistogramBase> histogram);
+  void PrepareFinalDeltaTakingOwnership(
       std::unique_ptr<const HistogramBase> histogram);
   void FinishDeltas();
 
