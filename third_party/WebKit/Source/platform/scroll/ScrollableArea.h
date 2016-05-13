@@ -270,6 +270,10 @@ public:
     // Does nothing if overlay scrollbars are enabled.
     IntSize excludeScrollbars(const IntSize&) const;
 
+    // Returns 0 if overlay scrollbars are enabled.
+    int verticalScrollbarWidth() const;
+    int horizontalScrollbarHeight() const;
+
     // Returns the widget associated with this ScrollableArea.
     virtual Widget* getWidget() { return nullptr; }
 

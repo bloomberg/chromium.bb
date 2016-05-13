@@ -546,20 +546,14 @@ DoubleRect ScrollableArea::visibleContentRectDouble(IncludeScrollbarsInRect scro
 
 IntRect ScrollableArea::visibleContentRect(IncludeScrollbarsInRect scrollbarInclusion) const
 {
-    int verticalScrollbarWidth = 0;
-    int horizontalScrollbarHeight = 0;
+    int scrollbarWidth = scrollbarInclusion == IncludeScrollbars ? verticalScrollbarWidth() : 0;
+    int scrollbarHeight = scrollbarInclusion == IncludeScrollbars ? horizontalScrollbarHeight() : 0;
 
-    if (scrollbarInclusion == IncludeScrollbars) {
-        if (Scrollbar* verticalBar = verticalScrollbar())
-            verticalScrollbarWidth = !verticalBar->isOverlayScrollbar() ? verticalBar->width() : 0;
-        if (Scrollbar* horizontalBar = horizontalScrollbar())
-            horizontalScrollbarHeight = !horizontalBar->isOverlayScrollbar() ? horizontalBar->height() : 0;
-    }
-
-    return IntRect(scrollPosition().x(),
-                   scrollPosition().y(),
-                   std::max(0, visibleWidth() + verticalScrollbarWidth),
-                   std::max(0, visibleHeight() + horizontalScrollbarHeight));
+    return IntRect(
+        scrollPosition().x(),
+        scrollPosition().y(),
+        std::max(0, visibleWidth() + scrollbarWidth),
+        std::max(0, visibleHeight() + scrollbarHeight));
 }
 
 IntPoint ScrollableArea::clampScrollPosition(const IntPoint& scrollPosition) const
@@ -597,18 +591,24 @@ float ScrollableArea::pixelStep(ScrollbarOrientation) const
     return 1;
 }
 
+int ScrollableArea::verticalScrollbarWidth() const
+{
+    if (Scrollbar* verticalBar = verticalScrollbar())
+        return !verticalBar->isOverlayScrollbar() ? verticalBar->width() : 0;
+    return 0;
+}
+
+int ScrollableArea::horizontalScrollbarHeight() const
+{
+    if (Scrollbar* horizontalBar = horizontalScrollbar())
+        return !horizontalBar->isOverlayScrollbar() ? horizontalBar->height() : 0;
+    return 0;
+}
+
 IntSize ScrollableArea::excludeScrollbars(const IntSize& size) const
 {
-    int verticalScrollbarWidth = 0;
-    int horizontalScrollbarHeight = 0;
-
-    if (Scrollbar* verticalBar = verticalScrollbar())
-        verticalScrollbarWidth = !verticalBar->isOverlayScrollbar() ? verticalBar->width() : 0;
-    if (Scrollbar* horizontalBar = horizontalScrollbar())
-        horizontalScrollbarHeight = !horizontalBar->isOverlayScrollbar() ? horizontalBar->height() : 0;
-
-    return IntSize(std::max(0, size.width() - verticalScrollbarWidth),
-        std::max(0, size.height() - horizontalScrollbarHeight));
+    return IntSize(std::max(0, size.width() - verticalScrollbarWidth()),
+        std::max(0, size.height() - horizontalScrollbarHeight()));
 }
 
 DEFINE_TRACE(ScrollableArea)
