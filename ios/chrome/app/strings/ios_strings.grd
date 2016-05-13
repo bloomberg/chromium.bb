@@ -178,7 +178,9 @@ all other OS specific variables will be false.
       <message name="IDS_IOS_FLAGS_CONTEXTUAL_SEARCH_DESCRIPTION" desc="Description for the flag to enable Contextual Search.">
         Whether or not Contextual Search is enabled.
       </message>
-
+      <message name="IDS_IOS_SAVE_IMAGE_RESTRICTED_PRIVACY_ALERT_MESSAGE" desc="Message to inform user that Save Image failed due to insufficient privilege in Privacy Settings and that the user cannot grant such privilege. This message is displayed as the message body in an alert box with a single OK button. [Length: 120em]">
+        A device policy blocked access to your photos
+      </message>
       <!-- iOS Net-Export strings -->
       <message name="IDS_IOS_NET_EXPORT_NO_EMAIL_ACCOUNTS_ALERT_MESSAGE" desc="The message of the alert informing a user with no email accounts that he or she needs to configure an email account to send net-export data. [Length: 70em]">
         To send net-export data, please configure your email account in the Settings app.
