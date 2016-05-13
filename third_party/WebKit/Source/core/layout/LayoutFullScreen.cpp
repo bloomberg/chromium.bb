@@ -54,7 +54,7 @@ private:
 
 void LayoutFullScreenPlaceholder::willBeDestroyed()
 {
-    m_owner->setPlaceholder(nullptr);
+    m_owner->resetPlaceholder();
     LayoutBlockFlow::willBeDestroyed();
 }
 
@@ -179,11 +179,6 @@ void LayoutFullScreen::unwrapLayoutObject()
         placeholder()->remove();
     remove();
     destroy();
-}
-
-void LayoutFullScreen::setPlaceholder(LayoutBlock* placeholder)
-{
-    m_placeholder = placeholder;
 }
 
 void LayoutFullScreen::createPlaceholder(PassRefPtr<ComputedStyle> style, const LayoutRect& frameRect)

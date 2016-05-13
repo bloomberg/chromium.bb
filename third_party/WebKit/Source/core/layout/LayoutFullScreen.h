@@ -31,6 +31,8 @@
 
 namespace blink {
 
+class LayoutBlockFlow;
+
 class CORE_EXPORT LayoutFullScreen final : public LayoutFlexibleBox {
 public:
     static LayoutFullScreen* createAnonymous(Document*);
@@ -38,8 +40,8 @@ public:
     bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectLayoutFullScreen || LayoutFlexibleBox::isOfType(type); }
     const char* name() const override { return "LayoutFullScreen"; }
 
-    void setPlaceholder(LayoutBlock*);
-    LayoutBlock* placeholder() { return m_placeholder; }
+    void resetPlaceholder() { m_placeholder = nullptr; }
+    LayoutBlockFlow* placeholder() { return m_placeholder; }
     void createPlaceholder(PassRefPtr<ComputedStyle>, const LayoutRect& frameRect);
 
 
@@ -56,7 +58,7 @@ private:
     void willBeDestroyed() override;
 
 protected:
-    LayoutBlock* m_placeholder;
+    LayoutBlockFlow* m_placeholder;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutFullScreen, isLayoutFullScreen());

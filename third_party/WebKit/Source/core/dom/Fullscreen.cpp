@@ -42,6 +42,7 @@
 #include "core/html/HTMLMediaElement.h"
 #include "core/input/EventHandler.h"
 #include "core/inspector/ConsoleMessage.h"
+#include "core/layout/LayoutBlockFlow.h"
 #include "core/layout/LayoutFullScreen.h"
 #include "core/layout/api/LayoutFullScreenItem.h"
 #include "core/page/ChromeClient.h"
@@ -498,7 +499,7 @@ void Fullscreen::setFullScreenLayoutObject(LayoutFullScreen* layoutObject)
     if (layoutObject && m_savedPlaceholderComputedStyle) {
         layoutObject->createPlaceholder(m_savedPlaceholderComputedStyle.release(), m_savedPlaceholderFrameRect);
     } else if (layoutObject && m_fullScreenLayoutObject && m_fullScreenLayoutObject->placeholder()) {
-        LayoutBlock* placeholder = m_fullScreenLayoutObject->placeholder();
+        LayoutBlockFlow* placeholder = m_fullScreenLayoutObject->placeholder();
         layoutObject->createPlaceholder(ComputedStyle::clone(placeholder->styleRef()), placeholder->frameRect());
     }
 
