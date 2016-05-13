@@ -31,6 +31,7 @@ class TraceCreator(object):
     loading_trace = test_utils.LoadingTraceFromEvents(
         requests, trace_events=events)
     loading_trace.tracing_track.SetMainFrameID(main_frame_id)
+    loading_trace.url = 'http://www.dummy.com'
     return loading_trace
 
 

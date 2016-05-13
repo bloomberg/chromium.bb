@@ -36,6 +36,7 @@ class LoadingReport(object):
   def GenerateReport(self):
     """Returns a report as a dict."""
     return {
+        'url': self.trace.url,
         'first_text_ms': self._text_msec - self._base_msec,
         'contentful_paint_ms': self._contentful_paint_msec - self._base_msec,
         'significant_paint_ms': self._significant_paint_msec - self._base_msec,

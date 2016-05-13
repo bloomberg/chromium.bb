@@ -48,6 +48,7 @@ class LoadingReportTestCase(unittest.TestCase):
   def testGenerateReport(self):
     trace = self._MakeTrace()
     loading_report = report.LoadingReport(trace).GenerateReport()
+    self.assertEqual(trace.url, loading_report['url'])
     self.assertEqual(self._TEXT_PAINT - self._FIRST_REQUEST_TIME,
                      loading_report['first_text_ms'])
     self.assertEqual(self._SIGNIFICANT_PAINT - self._FIRST_REQUEST_TIME,
