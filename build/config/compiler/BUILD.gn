@@ -350,7 +350,13 @@ config("compiler") {
 
   if (is_posix && (use_gold || (use_lld && !is_nacl)) && !using_sanitizer &&
       !(is_android && use_order_profiling)) {
-    ldflags += [ "-Wl,--icf=all" ]
+    # TODO(crbug.com/576197) - gcc on x86 platforms + gold + icf=all
+    # doesn't currently work. Once it does, use icf=all everywhere.
+    if (is_clang || (target_cpu != "x86" && target_cpu != "x64")) {
+      ldflags += [ "-Wl,--icf=all" ]
+    } else {
+      ldflags += [ "-Wl,--icf=safe" ]
+    }
   }
 
   if (linux_use_bundled_binutils) {
