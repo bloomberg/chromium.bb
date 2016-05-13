@@ -3900,6 +3900,8 @@
               'DelayLoadDLLs': [
                 # Used by browser/net/net_error_diagnostics_dialog_win.h
                 'ndfapi.dll',
+                # Used by browser/private_working_set_snapshot.h
+                'pdh.dll',
               ],
               'AdditionalDependencies': [
                 'cryptui.lib',
@@ -3915,6 +3917,7 @@
               'VCLinkerTool': {
                 'DelayLoadDLLs': [
                   'ndfapi.dll',
+                  'pdh.dll',  # The task manager is rarely used.
                 ],
                 'AdditionalDependencies': [
                   'cryptui.lib',

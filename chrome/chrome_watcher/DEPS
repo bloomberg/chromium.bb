@@ -3,6 +3,8 @@ include_rules = [
   "+chrome/installer/util",
   "+components/browser_watcher",
   "+components/crash",
+  "+components/memory_pressure",
   "+syzygy/kasko/api",
+  "+testing/gtest",
   "+third_party/kasko",
 ]

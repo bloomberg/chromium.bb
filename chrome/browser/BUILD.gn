@@ -48,9 +48,12 @@ if (is_win) {
       "dwmapi.lib",
       "netapi32.lib",
       "ndfapi.lib",  # Used by browser/net/net_error_diagnostics_dialog_win.h
-      "pdh.lib",
+      "pdh.lib",  # Used by browser/private_working_set_snapshot.h
     ]
-    ldflags = [ "/DELAYLOAD:ndfapi.dll" ]
+    ldflags = [
+      "/DELAYLOAD:ndfapi.dll",
+      "/DELAYLOAD:pdh.dll",  # The task manager is rarely used.
+    ]
   }
 }
 

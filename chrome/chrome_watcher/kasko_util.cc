@@ -28,10 +28,16 @@
 #include "base/win/win_util.h"
 
 #include "chrome/chrome_watcher/chrome_watcher_main_api.h"
+#include "chrome/chrome_watcher/system_load_estimator.h"
 #include "components/crash/content/app/crashpad.h"
+#include "components/memory_pressure/direct_memory_pressure_calculator_win.h"
+#include "components/memory_pressure/memory_pressure_calculator.h"
 #include "syzygy/kasko/api/reporter.h"
 
 namespace {
+
+using MemoryPressureLevel =
+    memory_pressure::MemoryPressureCalculator::MemoryPressureLevel;
 
 // Labels a crash report to the server as a hang report.
 const wchar_t kHangReportCrashKey[] = L"hang-report";
@@ -227,6 +233,41 @@ void AddProcessExeNameToCrashKeys(
   }
 }
 
+void AddSystemLoadInformation(std::vector<kasko::api::CrashKey>* crash_keys) {
+  DCHECK(crash_keys);
+
+  // Add memory pressure level.
+  memory_pressure::DirectMemoryPressureCalculator memory_calculator;
+  const wchar_t* memory_pressure_level = L"";
+  switch (memory_calculator.CalculateCurrentPressureLevel()) {
+    case MemoryPressureLevel::MEMORY_PRESSURE_LEVEL_NONE:
+      memory_pressure_level = L"none-or-unknown";
+      break;
+    case MemoryPressureLevel::MEMORY_PRESSURE_LEVEL_MODERATE:
+      memory_pressure_level = L"moderate";
+      break;
+    case MemoryPressureLevel::MEMORY_PRESSURE_LEVEL_CRITICAL:
+      memory_pressure_level = L"critical";
+      break;
+  }
+  AddCrashKey(L"memory-pressure", memory_pressure_level, crash_keys);
+
+  // Add measures of cpu and disk load.
+  chrome_watcher::SystemLoadEstimator::Estimate load_estimate = {};
+  if (!chrome_watcher::SystemLoadEstimator::Measure(&load_estimate))
+    return;
+
+  AddCrashKey(L"cpu-load-percent",
+              base::IntToString16(load_estimate.cpu_load_pct).c_str(),
+              crash_keys);
+  AddCrashKey(L"disk-idle-percent",
+              base::IntToString16(load_estimate.disk_idle_pct).c_str(),
+              crash_keys);
+  AddCrashKey(L"disk-avg-queue-len",
+              base::IntToString16(load_estimate.avg_disk_queue_len).c_str(),
+              crash_keys);
+}
+
 }  // namespace
 
 bool InitializeKaskoReporter(const base::string16& endpoint,
@@ -269,6 +310,12 @@ void DumpHungProcess(DWORD main_thread_id, const base::string16& channel,
 
   // Label the report as a hang report.
   AddCrashKey(kHangReportCrashKey, hang_type, &annotations);
+
+  // Note: system load is measured as early as possible, as it is potentially
+  // more volatile than wait chain information.
+  // TODO(manzagop): consider continuous load observation, instead of punctual
+  // observation, which may fail to observe load.
+  AddSystemLoadInformation(&annotations);
 
   // Use the Wait Chain Traversal API to determine the hung thread. Defaults to
   // UI thread on error. The wait chain may point to a different thread in a

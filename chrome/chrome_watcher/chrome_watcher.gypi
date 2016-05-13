@@ -18,15 +18,57 @@
           'sources': [
             'kasko_util.cc',
             'kasko_util.h',
+            'system_load_estimator.cc',
+            'system_load_estimator.h',
           ],
           'dependencies': [
             'chrome_watcher_client',
             '../base/base.gyp:base',
             '../third_party/kasko/kasko.gyp:kasko',
-            '../components/components.gyp:crash_component'
+            '../components/components.gyp:crash_component',
+            '../components/components.gyp:memory_pressure'
           ],
           'export_dependent_settings': [
             '../third_party/kasko/kasko.gyp:kasko',
+          ],
+          'msvs_settings': {
+            'VCLinkerTool': {
+              'DelayLoadDLLs': [
+                'pdh.dll',  # Used by system_load_estimator.h on report capture.
+              ],
+              'AdditionalDependencies': [
+                'pdh.lib',
+              ],
+            },
+          },
+          'all_dependent_settings': {
+            'msvs_settings': {
+              'VCLinkerTool': {
+                'DelayLoadDLLs': [
+                  # Used by system_load_estimator.h on report capture.
+                  'pdh.dll',
+                ],
+                'AdditionalDependencies': [
+                  'pdh.lib',
+                ],
+              },
+            },
+          },
+        },
+
+        {
+          # GN version: //chrome/chrome_watcher:system_load_estimator_unittests
+          'target_name': 'system_load_estimator_unittests',
+          'type': '<(gtest_target_type)',
+          'sources': [
+            'system_load_estimator_unittest.cc',
+          ],
+          'dependencies': [
+            'kasko_util',
+            '../base/base.gyp:base',
+            '../base/base.gyp:run_all_unittests',
+            '../base/base.gyp:test_support_base',
+            '../testing/gtest.gyp:gtest',
           ],
         },
       ],
