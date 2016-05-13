@@ -1,0 +1,11 @@
+Tests Geolocation when the geolocation service connection fails.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS error.code is error.POSITION_UNAVAILABLE
+PASS error.message is "Failed to start Geolocation service"
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

@@ -156,7 +156,6 @@
 #include "modules/app_banner/AppBannerController.h"
 #include "modules/audio_output_devices/AudioOutputDeviceClient.h"
 #include "modules/bluetooth/BluetoothSupplement.h"
-#include "modules/geolocation/GeolocationController.h"
 #include "modules/installedapp/InstalledAppController.h"
 #include "modules/notifications/NotificationPermissionClient.h"
 #include "modules/permissions/PermissionController.h"
@@ -220,7 +219,6 @@
 #include "web/AudioOutputDeviceClientImpl.h"
 #include "web/CompositionUnderlineVectorBuilder.h"
 #include "web/FindInPageCoordinates.h"
-#include "web/GeolocationClientProxy.h"
 #include "web/IndexedDBClientImpl.h"
 #include "web/LocalFileSystemClient.h"
 #include "web/MIDIClientProxy.h"
@@ -1420,7 +1418,6 @@ WebLocalFrameImpl::WebLocalFrameImpl(WebTreeScopeType scope, WebFrameClient* cli
     , m_contentSettingsClient(0)
     , m_inputEventsScaleFactorForEmulation(1)
     , m_userMediaClientImpl(this)
-    , m_geolocationClientProxy(GeolocationClientProxy::create(client ? client->geolocationClient() : 0))
     , m_webDevToolsFrontend(0)
     , m_selfKeepAlive(this)
 {
@@ -1446,7 +1443,6 @@ DEFINE_TRACE(WebLocalFrameImpl)
     visitor->trace(m_devToolsAgent);
     visitor->trace(m_textFinder);
     visitor->trace(m_printContext);
-    visitor->trace(m_geolocationClientProxy);
     visitor->trace(m_contextMenuNode);
     visitor->template registerWeakMembers<WebFrame, &WebFrame::clearWeakFrames>(this);
     WebFrame::traceFrames(visitor, this);
@@ -1466,8 +1462,6 @@ void WebLocalFrameImpl::setCoreFrame(LocalFrame* frame)
 
     provideNotificationPermissionClientTo(*m_frame, NotificationPermissionClientImpl::create());
     provideUserMediaTo(*m_frame, &m_userMediaClientImpl);
-    provideGeolocationTo(*m_frame, m_geolocationClientProxy.get());
-    m_geolocationClientProxy->setController(GeolocationController::from(m_frame.get()));
     provideMIDITo(*m_frame, MIDIClientProxy::create(m_client ? m_client->webMIDIClient() : nullptr));
     provideIndexedDBClientTo(*m_frame, IndexedDBClientImpl::create());
     provideLocalFileSystemTo(*m_frame, LocalFileSystemClient::create());

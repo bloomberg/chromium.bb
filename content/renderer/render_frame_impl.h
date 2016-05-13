@@ -79,7 +79,6 @@ class SyncMessage;
 }
 
 namespace blink {
-class WebGeolocationClient;
 class WebMouseEvent;
 class WebContentDecryptionModule;
 class WebPresentationClient;
@@ -125,7 +124,6 @@ class CompositorDependencies;
 class DevToolsAgent;
 class DocumentState;
 class ExternalPopupMenu;
-class GeolocationDispatcher;
 class ManifestManager;
 class MediaInterfaceProvider;
 class MediaStreamDispatcher;
@@ -581,7 +579,6 @@ class CONTENT_EXPORT RenderFrameImpl
                            unsigned long long requested_size,
                            blink::WebStorageQuotaCallbacks callbacks) override;
   void willOpenWebSocket(blink::WebSocketHandle* handle) override;
-  blink::WebGeolocationClient* geolocationClient() override;
   blink::WebPushClient* pushClient() override;
   blink::WebPresentationClient* presentationClient() override;
   void willStartUsingPeerConnectionHandler(
@@ -1176,9 +1173,6 @@ class CONTENT_EXPORT RenderFrameImpl
   // The devtools agent for this frame; only created for main frame and
   // local roots.
   DevToolsAgent* devtools_agent_;
-
-  // The geolocation dispatcher attached to this frame, lazily initialized.
-  GeolocationDispatcher* geolocation_dispatcher_;
 
   // The push messaging dispatcher attached to this frame, lazily initialized.
   PushMessagingDispatcher* push_messaging_dispatcher_;

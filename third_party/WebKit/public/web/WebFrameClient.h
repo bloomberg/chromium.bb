@@ -77,7 +77,6 @@ class WebEncryptedMediaClient;
 class WebExternalPopupMenu;
 class WebExternalPopupMenuClient;
 class WebFormElement;
-class WebGeolocationClient;
 class WebInstalledAppClient;
 class WebMediaPlayer;
 class WebMediaPlayerClient;
@@ -564,12 +563,6 @@ public:
 
     // A WebSocket object is going to open a new WebSocket connection.
     virtual void willOpenWebSocket(WebSocketHandle*) { }
-
-    // Geolocation ---------------------------------------------------------
-
-    // Access the embedder API for (client-based) geolocation client .
-    virtual WebGeolocationClient* geolocationClient() { return 0; }
-
 
     // MediaStream -----------------------------------------------------
 

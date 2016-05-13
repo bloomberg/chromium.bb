@@ -1140,7 +1140,6 @@
       'geofencing/WorkerNavigatorGeofencing.h',
       'geolocation/Coordinates.cpp',
       'geolocation/Geolocation.cpp',
-      'geolocation/GeolocationController.cpp',
       'geolocation/GeoNotifier.cpp',
       'geolocation/GeoNotifier.h',
       'geolocation/GeolocationWatchers.cpp',
@@ -1939,7 +1938,6 @@
     # 'partial interface' or target (right side of) 'implements'
     'modules_testing_dependency_idl_files' : [
       'accessibility/testing/InternalsAccessibility.idl',
-      'geolocation/testing/InternalsGeolocation.idl',
       'mediastream/testing/InternalsRTCCertificate.idl',
       'navigatorcontentutils/testing/InternalsNavigatorContentUtils.idl',
       'serviceworkers/testing/InternalsServiceWorker.idl',
@@ -1950,10 +1948,6 @@
     'modules_testing_files': [
       'accessibility/testing/InternalsAccessibility.cpp',
       'accessibility/testing/InternalsAccessibility.h',
-      'geolocation/testing/GeolocationClientMock.cpp',
-      'geolocation/testing/GeolocationClientMock.h',
-      'geolocation/testing/InternalsGeolocation.cpp',
-      'geolocation/testing/InternalsGeolocation.h',
       'mediastream/testing/InternalsRTCCertificate.cpp',
       'mediastream/testing/InternalsRTCCertificate.h',
       'navigatorcontentutils/testing/InternalsNavigatorContentUtils.cpp',

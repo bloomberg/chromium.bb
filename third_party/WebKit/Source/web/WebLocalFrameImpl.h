@@ -49,7 +49,6 @@
 namespace blink {
 
 class ChromePrintContext;
-class GeolocationClientProxy;
 class IntSize;
 class KURL;
 class Range;
@@ -381,8 +380,6 @@ private:
     float m_inputEventsScaleFactorForEmulation;
 
     UserMediaClientImpl m_userMediaClientImpl;
-
-    Member<GeolocationClientProxy> m_geolocationClientProxy;
 
     WebDevToolsFrontendImpl* m_webDevToolsFrontend;
 

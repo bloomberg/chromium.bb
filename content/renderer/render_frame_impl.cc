@@ -90,7 +90,6 @@
 #include "content/renderer/dom_automation_controller.h"
 #include "content/renderer/effective_connection_type_helper.h"
 #include "content/renderer/external_popup_menu.h"
-#include "content/renderer/geolocation_dispatcher.h"
 #include "content/renderer/gpu/gpu_benchmarking_extension.h"
 #include "content/renderer/history_controller.h"
 #include "content/renderer/history_serialization.h"
@@ -1031,7 +1030,6 @@ RenderFrameImpl::RenderFrameImpl(const CreateParams& params)
       contains_media_player_(false),
 #endif
       devtools_agent_(nullptr),
-      geolocation_dispatcher_(NULL),
       push_messaging_dispatcher_(NULL),
       presentation_dispatcher_(NULL),
       blink_service_registry_(service_registry_.GetWeakPtr()),
@@ -4109,12 +4107,6 @@ void RenderFrameImpl::requestStorageQuota(
 void RenderFrameImpl::willOpenWebSocket(blink::WebSocketHandle* handle) {
   WebSocketBridge* impl = static_cast<WebSocketBridge*>(handle);
   impl->set_render_frame_id(routing_id_);
-}
-
-blink::WebGeolocationClient* RenderFrameImpl::geolocationClient() {
-  if (!geolocation_dispatcher_)
-    geolocation_dispatcher_ = new GeolocationDispatcher(this);
-  return geolocation_dispatcher_;
 }
 
 blink::WebPresentationClient* RenderFrameImpl::presentationClient() {

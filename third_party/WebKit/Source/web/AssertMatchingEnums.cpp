@@ -53,8 +53,6 @@
 #include "core/page/PageVisibilityState.h"
 #include "core/style/ComputedStyleConstants.h"
 #include "modules/accessibility/AXObject.h"
-#include "modules/geolocation/GeolocationError.h"
-#include "modules/geolocation/GeolocationPosition.h"
 #include "modules/indexeddb/IDBKey.h"
 #include "modules/indexeddb/IDBKeyPath.h"
 #include "modules/indexeddb/IDBMetadata.h"
@@ -113,8 +111,6 @@
 #include "public/web/WebContentSecurityPolicy.h"
 #include "public/web/WebFrameClient.h"
 #include "public/web/WebFrameLoadType.h"
-#include "public/web/WebGeolocationError.h"
-#include "public/web/WebGeolocationPosition.h"
 #include "public/web/WebHistoryCommitType.h"
 #include "public/web/WebHistoryItem.h"
 #include "public/web/WebIconURL.h"
@@ -580,9 +576,6 @@ STATIC_ASSERT_ENUM(WebFileErrorInvalidModification, FileError::INVALID_MODIFICAT
 STATIC_ASSERT_ENUM(WebFileErrorQuotaExceeded, FileError::QUOTA_EXCEEDED_ERR);
 STATIC_ASSERT_ENUM(WebFileErrorTypeMismatch, FileError::TYPE_MISMATCH_ERR);
 STATIC_ASSERT_ENUM(WebFileErrorPathExists, FileError::PATH_EXISTS_ERR);
-
-STATIC_ASSERT_ENUM(WebGeolocationError::ErrorPermissionDenied, GeolocationError::PermissionDenied);
-STATIC_ASSERT_ENUM(WebGeolocationError::ErrorPositionUnavailable, GeolocationError::PositionUnavailable);
 
 STATIC_ASSERT_ENUM(WebTextCheckingTypeSpelling, TextCheckingTypeSpelling);
 STATIC_ASSERT_ENUM(WebTextCheckingTypeGrammar, TextCheckingTypeGrammar);
