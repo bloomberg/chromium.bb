@@ -29,30 +29,41 @@ using base::Time;
 
 namespace {
 
-class DiskCachePerfTest : public DiskCacheTestWithCache {
- protected:
-  void CacheBackendPerformance();
-};
-
 struct TestEntry {
   std::string key;
   int data_len;
 };
-typedef std::vector<TestEntry> TestEntries;
 
-const int kMaxSize = 16 * 1024 - 1;
+class DiskCachePerfTest : public DiskCacheTestWithCache {
+ protected:
+  enum class WhatToRead {
+    HEADERS_ONLY,
+    HEADERS_AND_BODY,
+  };
+
+  // Helper methods for constructing tests.
+  bool TimeWrite();
+  bool TimeRead(WhatToRead what_to_read, const char* timer_message);
+  void ResetAndEvictSystemDiskCache();
+
+  // Complete perf tests.
+  void CacheBackendPerformance();
+
+  const int kNumEntries = 1000;
+  const int kHeadersSize = 200;
+  const int kBodySize = 16 * 1024 - 1;
+
+  std::vector<TestEntry> entries_;
+};
 
 // Creates num_entries on the cache, and writes 200 bytes of metadata and up
-// to kMaxSize of data to each entry.
-bool TimeWrite(int num_entries,
-               disk_cache::Backend* cache,
-               TestEntries* entries) {
-  const int kSize1 = 200;
-  scoped_refptr<net::IOBuffer> buffer1(new net::IOBuffer(kSize1));
-  scoped_refptr<net::IOBuffer> buffer2(new net::IOBuffer(kMaxSize));
+// to kBodySize of data to each entry.
+bool DiskCachePerfTest::TimeWrite() {
+  scoped_refptr<net::IOBuffer> buffer1(new net::IOBuffer(kHeadersSize));
+  scoped_refptr<net::IOBuffer> buffer2(new net::IOBuffer(kBodySize));
 
-  CacheTestFillBuffer(buffer1->data(), kSize1, false);
-  CacheTestFillBuffer(buffer2->data(), kMaxSize, false);
+  CacheTestFillBuffer(buffer1->data(), kHeadersSize, false);
+  CacheTestFillBuffer(buffer2->data(), kBodySize, false);
 
   int expected = 0;
 
@@ -61,23 +72,23 @@ bool TimeWrite(int num_entries,
 
   base::PerfTimeLogger timer("Write disk cache entries");
 
-  for (int i = 0; i < num_entries; i++) {
+  for (int i = 0; i < kNumEntries; i++) {
     TestEntry entry;
     entry.key = GenerateKey(true);
-    entry.data_len = rand() % kMaxSize;
-    entries->push_back(entry);
+    entry.data_len = rand() % kBodySize;
+    entries_.push_back(entry);
 
     disk_cache::Entry* cache_entry;
     net::TestCompletionCallback cb;
-    int rv = cache->CreateEntry(entry.key, &cache_entry, cb.callback());
+    int rv = cache_->CreateEntry(entry.key, &cache_entry, cb.callback());
     if (net::OK != cb.GetResult(rv))
       break;
     int ret = cache_entry->WriteData(
-        0, 0, buffer1.get(), kSize1,
+        0, 0, buffer1.get(), kHeadersSize,
         base::Bind(&CallbackTest::Run, base::Unretained(&callback)), false);
     if (net::ERR_IO_PENDING == ret)
       expected++;
-    else if (kSize1 != ret)
+    else if (kHeadersSize != ret)
       break;
 
     ret = cache_entry->WriteData(
@@ -93,51 +104,49 @@ bool TimeWrite(int num_entries,
   helper.WaitUntilCacheIoFinished(expected);
   timer.Done();
 
-  return (expected == helper.callbacks_called());
+  return expected == helper.callbacks_called();
 }
 
 // Reads the data and metadata from each entry listed on |entries|.
-bool TimeRead(int num_entries,
-              disk_cache::Backend* cache,
-              const TestEntries& entries,
-              bool cold) {
-  const int kSize1 = 200;
-  scoped_refptr<net::IOBuffer> buffer1(new net::IOBuffer(kSize1));
-  scoped_refptr<net::IOBuffer> buffer2(new net::IOBuffer(kMaxSize));
+bool DiskCachePerfTest::TimeRead(WhatToRead what_to_read,
+                                 const char* timer_message) {
+  scoped_refptr<net::IOBuffer> buffer1(new net::IOBuffer(kHeadersSize));
+  scoped_refptr<net::IOBuffer> buffer2(new net::IOBuffer(kBodySize));
 
-  CacheTestFillBuffer(buffer1->data(), kSize1, false);
-  CacheTestFillBuffer(buffer2->data(), kMaxSize, false);
+  CacheTestFillBuffer(buffer1->data(), kHeadersSize, false);
+  CacheTestFillBuffer(buffer2->data(), kBodySize, false);
 
   int expected = 0;
 
   MessageLoopHelper helper;
   CallbackTest callback(&helper, true);
 
-  const char* message = cold ? "Read disk cache entries (cold)"
-                             : "Read disk cache entries (warm)";
-  base::PerfTimeLogger timer(message);
+  base::PerfTimeLogger timer(timer_message);
 
-  for (int i = 0; i < num_entries; i++) {
+  for (int i = 0; i < kNumEntries; i++) {
     disk_cache::Entry* cache_entry;
     net::TestCompletionCallback cb;
-    int rv = cache->OpenEntry(entries[i].key, &cache_entry, cb.callback());
+    int rv = cache_->OpenEntry(entries_[i].key, &cache_entry, cb.callback());
     if (net::OK != cb.GetResult(rv))
       break;
     int ret = cache_entry->ReadData(
-        0, 0, buffer1.get(), kSize1,
+        0, 0, buffer1.get(), kHeadersSize,
         base::Bind(&CallbackTest::Run, base::Unretained(&callback)));
     if (net::ERR_IO_PENDING == ret)
       expected++;
-    else if (kSize1 != ret)
+    else if (kHeadersSize != ret)
       break;
 
-    ret = cache_entry->ReadData(
-        1, 0, buffer2.get(), entries[i].data_len,
-        base::Bind(&CallbackTest::Run, base::Unretained(&callback)));
-    if (net::ERR_IO_PENDING == ret)
-      expected++;
-    else if (entries[i].data_len != ret)
-      break;
+    if (what_to_read == WhatToRead::HEADERS_AND_BODY) {
+      ret = cache_entry->ReadData(
+          1, 0, buffer2.get(), entries_[i].data_len,
+          base::Bind(&CallbackTest::Run, base::Unretained(&callback)));
+      if (net::ERR_IO_PENDING == ret)
+        expected++;
+      else if (entries_[i].data_len != ret)
+        break;
+    }
+
     cache_entry->Close();
   }
 
@@ -145,11 +154,6 @@ bool TimeRead(int num_entries,
   timer.Done();
 
   return (expected == helper.callbacks_called());
-}
-
-int BlockSize() {
-  // We can use form 1 to 4 blocks.
-  return (rand() & 0x3) + 1;
 }
 
 TEST_F(DiskCachePerfTest, BlockfileHashes) {
@@ -164,21 +168,7 @@ TEST_F(DiskCachePerfTest, BlockfileHashes) {
   timer.Done();
 }
 
-void DiskCachePerfTest::CacheBackendPerformance() {
-  base::Thread cache_thread("CacheThread");
-  ASSERT_TRUE(cache_thread.StartWithOptions(
-      base::Thread::Options(base::MessageLoop::TYPE_IO, 0)));
-
-  int seed = static_cast<int>(Time::Now().ToInternalValue());
-  srand(seed);
-
-  InitCache();
-
-  TestEntries entries;
-  int num_entries = 1000;
-
-  EXPECT_TRUE(TimeWrite(num_entries, cache_.get(), &entries));
-
+void DiskCachePerfTest::ResetAndEvictSystemDiskCache() {
   base::MessageLoop::current()->RunUntilIdle();
   cache_.reset();
 
@@ -199,9 +189,24 @@ void DiskCachePerfTest::CacheBackendPerformance() {
 
   DisableFirstCleanup();
   InitCache();
+}
 
-  EXPECT_TRUE(TimeRead(num_entries, cache_.get(), entries, true));
-  EXPECT_TRUE(TimeRead(num_entries, cache_.get(), entries, false));
+void DiskCachePerfTest::CacheBackendPerformance() {
+  InitCache();
+  EXPECT_TRUE(TimeWrite());
+
+  ResetAndEvictSystemDiskCache();
+  EXPECT_TRUE(TimeRead(WhatToRead::HEADERS_ONLY,
+                       "Read disk cache headers only (cold)"));
+  EXPECT_TRUE(TimeRead(WhatToRead::HEADERS_ONLY,
+                       "Read disk cache headers only (warm)"));
+  base::MessageLoop::current()->RunUntilIdle();
+
+  ResetAndEvictSystemDiskCache();
+  EXPECT_TRUE(
+      TimeRead(WhatToRead::HEADERS_AND_BODY, "Read disk cache entries (cold)"));
+  EXPECT_TRUE(
+      TimeRead(WhatToRead::HEADERS_AND_BODY, "Read disk cache entries (warm)"));
   base::MessageLoop::current()->RunUntilIdle();
 }
 
@@ -212,6 +217,11 @@ TEST_F(DiskCachePerfTest, CacheBackendPerformance) {
 TEST_F(DiskCachePerfTest, SimpleCacheBackendPerformance) {
   SetSimpleCacheMode();
   CacheBackendPerformance();
+}
+
+int BlockSize() {
+  // We can use form 1 to 4 blocks.
+  return (rand() & 0x3) + 1;
 }
 
 // Creating and deleting "entries" on a block-file is something quite frequent
@@ -228,13 +238,13 @@ TEST_F(DiskCachePerfTest, BlockFilesPerformance) {
   int seed = static_cast<int>(Time::Now().ToInternalValue());
   srand(seed);
 
-  const int kNumEntries = 60000;
-  disk_cache::Addr* address = new disk_cache::Addr[kNumEntries];
+  const int kNumBlocks = 60000;
+  disk_cache::Addr address[kNumBlocks];
 
   base::PerfTimeLogger timer1("Fill three block-files");
 
   // Fill up the 32-byte block file (use three files).
-  for (int i = 0; i < kNumEntries; i++) {
+  for (int i = 0; i < kNumBlocks; i++) {
     EXPECT_TRUE(
         files.CreateBlock(disk_cache::RANKINGS, BlockSize(), &address[i]));
   }
@@ -243,8 +253,8 @@ TEST_F(DiskCachePerfTest, BlockFilesPerformance) {
   base::PerfTimeLogger timer2("Create and delete blocks");
 
   for (int i = 0; i < 200000; i++) {
-    int entry = rand() * (kNumEntries / RAND_MAX + 1);
-    if (entry >= kNumEntries)
+    int entry = rand() * (kNumBlocks / RAND_MAX + 1);
+    if (entry >= kNumBlocks)
       entry = 0;
 
     files.DeleteBlock(address[entry], false);
@@ -254,7 +264,6 @@ TEST_F(DiskCachePerfTest, BlockFilesPerformance) {
 
   timer2.Done();
   base::MessageLoop::current()->RunUntilIdle();
-  delete[] address;
 }
 
 }  // namespace
