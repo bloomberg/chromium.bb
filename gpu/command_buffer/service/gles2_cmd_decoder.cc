@@ -995,27 +995,29 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   void DoCompressedCopyTextureCHROMIUM(GLuint source_id, GLuint dest_id);
 
   // Helper for DoTexStorage2DEXT and DoTexStorage3D.
-  void TexStorageImpl(
-    GLenum target, GLint levels, GLenum internal_format,
-    GLsizei width, GLsizei height, GLsizei depth,
-    ContextState::Dimension dimension, const char* function_name);
+  void TexStorageImpl(GLenum target,
+                      GLsizei levels,
+                      GLenum internal_format,
+                      GLsizei width,
+                      GLsizei height,
+                      GLsizei depth,
+                      ContextState::Dimension dimension,
+                      const char* function_name);
 
   // Wrapper for TexStorage2DEXT.
-  void DoTexStorage2DEXT(
-      GLenum target,
-      GLint levels,
-      GLenum internal_format,
-      GLsizei width,
-      GLsizei height);
+  void DoTexStorage2DEXT(GLenum target,
+                         GLsizei levels,
+                         GLenum internal_format,
+                         GLsizei width,
+                         GLsizei height);
 
   // Wrapper for TexStorage3D.
-  void DoTexStorage3D(
-      GLenum target,
-      GLint levels,
-      GLenum internal_format,
-      GLsizei width,
-      GLsizei height,
-      GLsizei depth);
+  void DoTexStorage3D(GLenum target,
+                      GLsizei levels,
+                      GLenum internal_format,
+                      GLsizei width,
+                      GLsizei height,
+                      GLsizei depth);
 
   void DoProduceTextureCHROMIUM(GLenum target, const GLbyte* key);
   void DoProduceTextureDirectCHROMIUM(GLuint texture, GLenum target,
@@ -5387,11 +5389,6 @@ void GLES2DecoderImpl::InvalidateFramebufferImpl(
         return;
       }
     }
-  }
-
-  if (width < 0 || height < 0) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, function_name, "negative size");
-    return;
   }
 
   // If the default framebuffer is bound but we are still rendering to an
@@ -11739,11 +11736,6 @@ void GLES2DecoderImpl::DoCompressedTexSubImage3D(
         "glCompressedTexSubImage3D", "dimensions out of range");
     return;
   }
-  if (image_size < 0) {
-    LOCAL_SET_GL_ERROR(
-        GL_INVALID_VALUE, "glCompressedTexSubImage3D", "imageSize < 0");
-    return;
-  }
   TextureRef* texture_ref = texture_manager()->GetTextureInfoForTarget(
       &state_, target);
   if (!texture_ref) {
@@ -14752,12 +14744,16 @@ void GLES2DecoderImpl::DoCompressedCopyTextureCHROMIUM(GLuint source_id,
       false, false);
 }
 
-void GLES2DecoderImpl::TexStorageImpl(
-    GLenum target, GLint levels, GLenum internal_format,
-    GLsizei width, GLsizei height, GLsizei depth,
-    ContextState::Dimension dimension, const char* function_name) {
-  if (levels <= 0) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, function_name, "levels <= 0");
+void GLES2DecoderImpl::TexStorageImpl(GLenum target,
+                                      GLsizei levels,
+                                      GLenum internal_format,
+                                      GLsizei width,
+                                      GLsizei height,
+                                      GLsizei depth,
+                                      ContextState::Dimension dimension,
+                                      const char* function_name) {
+  if (levels == 0) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, function_name, "levels == 0");
     return;
   }
   bool is_compressed_format = IsCompressedTextureFormat(internal_format);
@@ -14878,25 +14874,23 @@ void GLES2DecoderImpl::TexStorageImpl(
   }
 }
 
-void GLES2DecoderImpl::DoTexStorage2DEXT(
-    GLenum target,
-    GLint levels,
-    GLenum internal_format,
-    GLsizei width,
-    GLsizei height) {
+void GLES2DecoderImpl::DoTexStorage2DEXT(GLenum target,
+                                         GLsizei levels,
+                                         GLenum internal_format,
+                                         GLsizei width,
+                                         GLsizei height) {
   TRACE_EVENT2("gpu", "GLES2DecoderImpl::DoTexStorage2D",
       "width", width, "height", height);
   TexStorageImpl(target, levels, internal_format, width, height, 1,
                  ContextState::k2D, "glTexStorage2D");
 }
 
-void GLES2DecoderImpl::DoTexStorage3D(
-    GLenum target,
-    GLint levels,
-    GLenum internal_format,
-    GLsizei width,
-    GLsizei height,
-    GLsizei depth) {
+void GLES2DecoderImpl::DoTexStorage3D(GLenum target,
+                                      GLsizei levels,
+                                      GLenum internal_format,
+                                      GLsizei width,
+                                      GLsizei height,
+                                      GLsizei depth) {
   TRACE_EVENT2("gpu", "GLES2DecoderImpl::DoTexStorage3D",
       "widthXheight", width * height, "depth", depth);
   TexStorageImpl(target, levels, internal_format, width, height, depth,
