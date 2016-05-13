@@ -12,6 +12,7 @@
             'license.py',
             'name_utilities.py',
             'template_expander.py',
+            'trie_builder.py',
             'templates/macros.tmpl',
         ],
         'css_properties_files': [
@@ -46,6 +47,10 @@
             '<@(make_qualified_names_files)',
             'make_element_type_helpers.py',
             'templates/ElementTypeHelpers.h.tmpl',
+        ],
+        'make_trie_helpers_files': [
+            '<@(scripts_for_in_files)',
+            'trie_builder.py', 
         ],
         'conditions': [
             ['OS=="win"', {

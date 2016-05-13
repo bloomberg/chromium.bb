@@ -732,7 +732,7 @@
         {
           'action_name': 'HTMLElementLookupTrie',
           'inputs': [
-            '<@(scripts_for_in_files)',
+            '<@(make_trie_helpers_files)',
             '../build/scripts/make_element_lookup_trie.py',
             '../build/scripts/templates/ElementLookupTrie.cpp.tmpl',
             '../build/scripts/templates/ElementLookupTrie.h.tmpl',

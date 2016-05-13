@@ -56,6 +56,9 @@ make_element_type_helpers_files =
       "$_scripts_dir/templates/ElementTypeHelpers.h.tmpl",
     ]
 
+make_trie_helpers_files =
+    scripts_for_in_files + [ "$_scripts_dir/trie_builder.py" ]
+
 # The executables are relative to the build directory. Don't rebase it because
 # on Posix we want to run the system one on the path.
 if (host_os == "win") {
