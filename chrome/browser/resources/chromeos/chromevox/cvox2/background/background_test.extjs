@@ -652,3 +652,27 @@ TEST_F('BackgroundTest', 'DISABLED_ForwardNavigationThroughIframes', function() 
     });
   });
 });
+
+TEST_F('BackgroundTest', 'SelectOptionSelected', function() {
+  var mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(function() {/*!
+    <select>
+      <option>apple
+      <option>banana
+      <option>grapefruit
+    </select>
+  */}, function(root) {
+    var select = root.find({role: 'popUpButton'});
+    var clickSelect = select.doDefault.bind(select);
+    var lastOption = select.lastChild.lastChild;
+    var selectLastOption = lastOption.doDefault.bind(lastOption);
+
+    mockFeedback.call(clickSelect)
+        .expectSpeech('apple')
+        .expectSpeech('Button')
+        .call(selectLastOption)
+        .expectNextSpeechUtteranceIsNot('apple')
+        .expectSpeech('grapefruit')
+        .replay();
+  });
+});

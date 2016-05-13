@@ -50,7 +50,7 @@ DesktopAutomationHandler = function(node) {
   this.addListener_(e.hover, this.onEventWithFlushedOutput);
   this.addListener_(e.loadComplete, this.onLoadComplete);
   this.addListener_(e.menuEnd, this.onMenuEnd);
-  this.addListener_(e.menuListItemSelected, this.onEventDefault);
+  this.addListener_(e.menuListItemSelected, this.onEventIfSelected);
   this.addListener_(e.menuStart, this.onMenuStart);
   this.addListener_(e.scrollPositionChanged, this.onScrollPositionChanged);
   this.addListener_(e.selection, this.onEventWithFlushedOutput);
@@ -140,6 +140,14 @@ DesktopAutomationHandler.prototype = {
     if (AutomationUtil.isDescendantOf(
         global.backgroundObj.currentRange.start.node, evt.target) ||
             evt.target.state.focused)
+      this.onEventDefault(evt);
+  },
+
+  /**
+   * @param {!AutomationEvent} evt
+   */
+  onEventIfSelected: function(evt) {
+    if (evt.target.state.selected)
       this.onEventDefault(evt);
   },
 
