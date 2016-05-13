@@ -31,6 +31,7 @@ import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import org.chromium.base.Callback;
@@ -50,7 +51,7 @@ import java.util.List;
  * The PaymentRequest UI.
  */
 public class PaymentRequestUI implements DialogInterface.OnDismissListener, View.OnClickListener,
-        PaymentRequestSection.PaymentsSectionListener {
+        PaymentRequestSection.PaymentsSectionDelegate {
     /**
      * The interface to be implemented by the consumer of the PaymentRequest UI.
      */
@@ -159,7 +160,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
     private final PaymentResultUI mResultUI;
 
     private final View mScrim;
-    private final View mPaymentContainer;
+    private final ScrollView mPaymentContainer;
     private final ViewGroup mPaymentContainerLayout;
     private final DualControlLayout mButtonBar;
     private final Button mEditButton;
@@ -182,7 +183,8 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
     private SectionInformation mShippingAddressSectionInformation;
     private SectionInformation mShippingOptionsSectionInformation;
 
-    private Animator mCurrentAnimator;
+    private Animator mSheetAnimator;
+    private Animator mSectionAnimator;
     private int mAnimatorTranslation;
     private boolean mIsInitialLayoutComplete;
 
@@ -223,7 +225,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         mBottomSheetContainer = (ViewGroup) mFullContainer.findViewById(R.id.dialogContainer);
         mResultUI = new PaymentResultUI(mContext, title, origin);
 
-        mPaymentContainer = mBottomSheetContainer.findViewById(R.id.paymentContainer);
+        mPaymentContainer = (ScrollView) mBottomSheetContainer.findViewById(R.id.paymentContainer);
         ((TextView) mBottomSheetContainer.findViewById(R.id.pageTitle)).setText(title);
         ((TextView) mBottomSheetContainer.findViewById(R.id.hostname)).setText(origin);
 
@@ -336,7 +338,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
                         mBottomSheetContainer.findViewById(R.id.waiting_progress));
                 mBottomSheetContainer.removeView(
                         mBottomSheetContainer.findViewById(R.id.waiting_message));
-                mBottomSheetContainer.addOnLayoutChangeListener(new SheetEnlargingAnimator());
+                mBottomSheetContainer.addOnLayoutChangeListener(new SheetEnlargingAnimator(false));
             }
         });
     }
@@ -524,11 +526,12 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
 
     /** @return Whether or not the dialog can be closed via the X close button. */
     private boolean isAcceptingCloseButton() {
-        return mCurrentAnimator == null && mIsInitialLayoutComplete;
+        return mSheetAnimator == null && mSectionAnimator == null && mIsInitialLayoutComplete;
     }
 
     /** @return Whether or not the dialog is accepting user input. */
-    private boolean isAcceptingUserInput() {
+    @Override
+    public boolean isAcceptingUserInput() {
         return isAcceptingCloseButton() && mPaymentMethodSectionInformation != null;
     }
 
@@ -536,7 +539,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         if (!mIsShowingEditDialog) {
             // Container now takes the full height of the screen, animating towards it.
             mBottomSheetContainer.getLayoutParams().height = LayoutParams.MATCH_PARENT;
-            mBottomSheetContainer.addOnLayoutChangeListener(new SheetEnlargingAnimator());
+            mBottomSheetContainer.addOnLayoutChangeListener(new SheetEnlargingAnimator(true));
 
             // Swap out Views that combine multiple fields with individual fields.
             if (mRequestShipping && mShippingSummarySection.getParent() != null) {
@@ -570,20 +573,6 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
             mIsShowingEditDialog = true;
         }
 
-        // Update the display status of each expandable section.
-        mOrderSummarySection.setDisplayMode(section == mOrderSummarySection
-                ? PaymentRequestSection.DISPLAY_MODE_FOCUSED
-                : PaymentRequestSection.DISPLAY_MODE_EXPANDABLE);
-        mShippingAddressSection.setDisplayMode(section == mShippingAddressSection
-                ? PaymentRequestSection.DISPLAY_MODE_FOCUSED
-                : PaymentRequestSection.DISPLAY_MODE_EXPANDABLE);
-        mShippingOptionSection.setDisplayMode(section == mShippingOptionSection
-                ? PaymentRequestSection.DISPLAY_MODE_FOCUSED
-                : PaymentRequestSection.DISPLAY_MODE_EXPANDABLE);
-        mPaymentMethodSection.setDisplayMode(section == mPaymentMethodSection
-                ? PaymentRequestSection.DISPLAY_MODE_FOCUSED
-                : PaymentRequestSection.DISPLAY_MODE_EXPANDABLE);
-
         // Update the section contents when they're selected.
         mSelectedSection = section;
         assert mSelectedSection != mShippingSummarySection;
@@ -592,6 +581,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
                 @Override
                 public void onResult(List<LineItem> result) {
                     updateOrderSummarySection(result);
+                    updateSectionVisibility();
                 }
             });
         } else if (mSelectedSection == mShippingAddressSection) {
@@ -599,6 +589,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
                 @Override
                 public void onResult(SectionInformation result) {
                     updateShippingAddressSection(result);
+                    updateSectionVisibility();
                 }
             });
         } else if (mSelectedSection == mShippingOptionSection) {
@@ -606,6 +597,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
                 @Override
                 public void onResult(SectionInformation result) {
                     updateShippingOptionsSection(result);
+                    updateSectionVisibility();
                 }
             });
         } else if (mSelectedSection == mPaymentMethodSection) {
@@ -613,9 +605,29 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
                 @Override
                 public void onResult(SectionInformation result) {
                     updatePaymentMethodSection(result);
+                    updateSectionVisibility();
                 }
             });
+        } else {
+            updateSectionVisibility();
         }
+    }
+
+    /** Update the display status of each expandable section. */
+    private void updateSectionVisibility() {
+        mPaymentContainerLayout.addOnLayoutChangeListener(new PaymentsSectionAnimator());
+        mOrderSummarySection.setDisplayMode(mSelectedSection == mOrderSummarySection
+                ? PaymentRequestSection.DISPLAY_MODE_FOCUSED
+                : PaymentRequestSection.DISPLAY_MODE_EXPANDABLE);
+        mShippingAddressSection.setDisplayMode(mSelectedSection == mShippingAddressSection
+                ? PaymentRequestSection.DISPLAY_MODE_FOCUSED
+                : PaymentRequestSection.DISPLAY_MODE_EXPANDABLE);
+        mShippingOptionSection.setDisplayMode(mSelectedSection == mShippingOptionSection
+                ? PaymentRequestSection.DISPLAY_MODE_FOCUSED
+                : PaymentRequestSection.DISPLAY_MODE_EXPANDABLE);
+        mPaymentMethodSection.setDisplayMode(mSelectedSection == mPaymentMethodSection
+                ? PaymentRequestSection.DISPLAY_MODE_FOCUSED
+                : PaymentRequestSection.DISPLAY_MODE_EXPANDABLE);
     }
 
     /**
@@ -658,24 +670,29 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
      * Animates the bottom sheet UI translating upwards from the bottom of the screen.
      * Can be canceled when a {@link SheetEnlargingAnimator} starts and expands the dialog.
      */
-    private class PeekingAnimator
-            extends AnimatorListenerAdapter implements OnLayoutChangeListener {
+    private class PeekingAnimator implements OnLayoutChangeListener {
         @Override
         public void onLayoutChange(View v, int left, int top, int right, int bottom,
                 int oldLeft, int oldTop, int oldRight, int oldBottom) {
             mBottomSheetContainer.removeOnLayoutChangeListener(this);
 
-            mCurrentAnimator = ObjectAnimator.ofFloat(
+            mSheetAnimator = ObjectAnimator.ofFloat(
                     mBottomSheetContainer, View.TRANSLATION_Y, mAnimatorTranslation, 0);
-            mCurrentAnimator.setDuration(DIALOG_ENTER_ANIMATION_MS);
-            mCurrentAnimator.setInterpolator(new LinearOutSlowInInterpolator());
-            mCurrentAnimator.start();
+            mSheetAnimator.setDuration(DIALOG_ENTER_ANIMATION_MS);
+            mSheetAnimator.setInterpolator(new LinearOutSlowInInterpolator());
+            mSheetAnimator.start();
         }
     }
 
     /** Animates the bottom sheet expanding to a larger sheet. */
-    private class SheetEnlargingAnimator implements OnLayoutChangeListener {
+    private class SheetEnlargingAnimator
+            extends AnimatorListenerAdapter implements OnLayoutChangeListener {
+        private final boolean mIsButtonBarLockedInPlace;
         private int mContainerHeightDifference;
+
+        public SheetEnlargingAnimator(boolean isButtonBarLockedInPlace) {
+            mIsButtonBarLockedInPlace = isButtonBarLockedInPlace;
+        }
 
         /**
          * Updates the animation.
@@ -688,22 +705,25 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
             float containerTranslation = mContainerHeightDifference * progress;
             mBottomSheetContainer.setTranslationY(containerTranslation);
 
-            // The button bar is translated along the dialog so that is looks like it stays in place
-            // at the bottom while the entire bottom sheet is translating upwards.
-            mButtonBar.setTranslationY(-containerTranslation);
+            if (mIsButtonBarLockedInPlace) {
+                // The button bar is translated along the dialog so that is looks like it stays in
+                // place at the bottom while the entire bottom sheet is translating upwards.
+                mButtonBar.setTranslationY(-containerTranslation);
 
-            // The payment container is sandwiched between the header and the button bar.  Expansion
-            // animates by changing where its "bottom" is, letting its shadows appear and disappear.
-            int paymentContainerBottom = Math.min(
-                    mPaymentContainer.getTop() + mPaymentContainer.getMeasuredHeight(),
-                    mButtonBar.getTop());
-            mPaymentContainer.setBottom(paymentContainerBottom);
+                // The payment container is sandwiched between the header and the button bar.
+                // Expansion animates by changing where its "bottom" is, letting its shadows appear
+                // and disappear as it changes size.
+                int paymentContainerBottom = Math.min(
+                        mPaymentContainer.getTop() + mPaymentContainer.getMeasuredHeight(),
+                        mButtonBar.getTop());
+                mPaymentContainer.setBottom(paymentContainerBottom);
+            }
         }
 
         @Override
         public void onLayoutChange(View v, int left, int top, int right, int bottom,
                 int oldLeft, int oldTop, int oldRight, int oldBottom) {
-            if (mCurrentAnimator != null) mCurrentAnimator.cancel();
+            if (mSheetAnimator != null) mSheetAnimator.cancel();
 
             mBottomSheetContainer.removeOnLayoutChangeListener(this);
             mContainerHeightDifference = (bottom - top) - (oldBottom - oldTop);
@@ -717,26 +737,164 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
                 }
             });
 
-            mCurrentAnimator = containerAnimator;
-            mCurrentAnimator.setDuration(DIALOG_ENTER_ANIMATION_MS);
-            mCurrentAnimator.setInterpolator(new LinearOutSlowInInterpolator());
-            mCurrentAnimator.addListener(new AnimatorListenerAdapter() {
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    // Reset the layout so that everything is in the expected place.
-                    mBottomSheetContainer.setTranslationY(0);
-                    mButtonBar.setTranslationY(0);
-                    mBottomSheetContainer.requestLayout();
+            mSheetAnimator = containerAnimator;
+            mSheetAnimator.setDuration(DIALOG_ENTER_ANIMATION_MS);
+            mSheetAnimator.setInterpolator(new LinearOutSlowInInterpolator());
+            mSheetAnimator.addListener(this);
+            mSheetAnimator.start();
+        }
 
-                    // Indicate that the dialog is ready to use.
-                    mCurrentAnimator = null;
-                    mIsInitialLayoutComplete = true;
-                    notifyReadyToClose();
-                    notifyReadyForInput();
-                    notifyReadyToPay();
+        @Override
+        public void onAnimationEnd(Animator animation) {
+            // Reset the layout so that everything is in the expected place.
+            mBottomSheetContainer.setTranslationY(0);
+            mButtonBar.setTranslationY(0);
+            mBottomSheetContainer.requestLayout();
+
+            // Indicate that the dialog is ready to use.
+            mSheetAnimator = null;
+            mIsInitialLayoutComplete = true;
+            notifyReadyToClose();
+            notifyReadyForInput();
+            notifyReadyToPay();
+        }
+    }
+
+    /** Animates sections expanding and collapsing as the user selects them. */
+    private class PaymentsSectionAnimator
+            extends AnimatorListenerAdapter implements OnLayoutChangeListener {
+        private final ArrayList<Integer> mOriginalTops = new ArrayList<Integer>();
+
+        public PaymentsSectionAnimator() {
+            calculateTops(mOriginalTops, mPaymentContainerLayout);
+        }
+
+        @Override
+        public void onLayoutChange(View v, int left, int top, int right, int bottom,
+                int oldLeft, int oldTop, int oldRight, int oldBottom) {
+            mPaymentContainerLayout.removeOnLayoutChangeListener(this);
+
+            boolean isAnotherAnimationRunning = mSectionAnimator != null;
+            boolean didNumberOfChildrenChange =
+                    mOriginalTops.size() != (mPaymentContainerLayout.getChildCount() + 1);
+            if (isAnotherAnimationRunning || didNumberOfChildrenChange) {
+                makeSelectedSectionVisible();
+                return;
+            }
+
+            // Don't animate if children are already all in the correct places.
+            ArrayList<Integer> finalHeights = new ArrayList<Integer>();
+            calculateTops(finalHeights, mPaymentContainerLayout);
+
+            boolean isAnimationNecessary = false;
+            for (int i = 0; i < finalHeights.size() && !isAnimationNecessary; i++) {
+                isAnimationNecessary |= finalHeights.get(i).compareTo(mOriginalTops.get(i)) != 0;
+            }
+            if (!isAnimationNecessary) {
+                makeSelectedSectionVisible();
+                return;
+            }
+
+            // Animate each section moving and changing size to match their final locations.
+            ArrayList<Animator> animators = new ArrayList<Animator>();
+            for (int i = 0; i < mPaymentContainerLayout.getChildCount(); i++) {
+                if (mOriginalTops.get(i).compareTo(finalHeights.get(i)) == 0
+                        && mOriginalTops.get(i + 1).compareTo(finalHeights.get(i + 1)) == 0) {
+                    continue;
+                }
+
+                final View section = mPaymentContainerLayout.getChildAt(i);
+                final int translationDifference = mOriginalTops.get(i) - finalHeights.get(i);
+                final int oldHeight = mOriginalTops.get(i + 1) - mOriginalTops.get(i);
+                final int newHeight = finalHeights.get(i + 1) - finalHeights.get(i);
+
+                ValueAnimator sectionAnimator = ValueAnimator.ofFloat(0f, 1f);
+                sectionAnimator.addUpdateListener(new AnimatorUpdateListener() {
+                    @Override
+                    public void onAnimationUpdate(ValueAnimator animation) {
+                        float progress = (Float) animation.getAnimatedValue();
+                        section.setTranslationY((1f - progress) * translationDifference);
+
+                        if (oldHeight != newHeight) {
+                            float animatedHeight =
+                                    oldHeight * (1f - progress) + newHeight * progress;
+                            section.setBottom(section.getTop() + (int) animatedHeight);
+                        }
+                    }
+                });
+                sectionAnimator.addListener(new AnimatorListenerAdapter() {
+                    @Override
+                    public void onAnimationEnd(Animator animator) {
+                        section.setTranslationY(0);
+                    }
+                });
+                animators.add(sectionAnimator);
+            }
+
+            // Animate the height of the container itself changing.
+            int oldContainerHeight = mOriginalTops.get(mOriginalTops.size() - 1);
+            int newContainerHeight = finalHeights.get(finalHeights.size() - 1);
+            ValueAnimator layoutAnimator =
+                    ValueAnimator.ofInt(oldContainerHeight, newContainerHeight);
+            layoutAnimator.addUpdateListener(new AnimatorUpdateListener() {
+                @Override
+                public void onAnimationUpdate(ValueAnimator animation) {
+                    mPaymentContainerLayout.setBottom(((Integer) animation.getAnimatedValue()));
+                    makeSelectedSectionVisible();
                 }
             });
-            mCurrentAnimator.start();
+            animators.add(layoutAnimator);
+
+            // Set up and kick off the animation.
+            AnimatorSet animator = new AnimatorSet();
+            animator.setDuration(DIALOG_ENTER_ANIMATION_MS);
+            animator.setInterpolator(new LinearOutSlowInInterpolator());
+            animator.playTogether(animators);
+
+            mSectionAnimator = animator;
+            mSectionAnimator.addListener(this);
+            mSectionAnimator.start();
+        }
+
+        @Override
+        public void onAnimationEnd(Animator animator) {
+            mSectionAnimator = null;
+            notifyReadyToClose();
+            notifyReadyForInput();
+            notifyReadyToPay();
+        }
+
+        /** Scroll the layout so that the selected section is on screen. */
+        private void makeSelectedSectionVisible() {
+            if (mSelectedSection != null) {
+                mPaymentContainer.requestChildFocus(mPaymentContainerLayout, mSelectedSection);
+            }
+
+            // Using ScrollView#requestChildFocus fails to account for the LinearLayout inside of it
+            // dynamically changing height.
+            int viewportHeight = mPaymentContainer.getBottom() - mPaymentContainer.getTop();
+            int scrollMax = Math.max(
+                    0, mPaymentContainerLayout.getMeasuredHeight() - viewportHeight);
+            if (mPaymentContainer.getScrollY() > scrollMax) mPaymentContainer.setScrollY(scrollMax);
+        }
+
+        /**
+         * Calculates where the top of each child view should be.
+         *
+         * @param tops   Y-coordinates of the tops of each child view.  The last value represents
+         *               the total height of the layout and points at the bottom of the last child.
+         * @param layout Layout with all the children.
+         */
+        private void calculateTops(ArrayList<Integer> tops, ViewGroup layout) {
+            tops.clear();
+
+            int runningTotal = 0;
+            for (int i = 0; i < layout.getChildCount(); i++) {
+                tops.add(runningTotal);
+                runningTotal += layout.getChildAt(i).getMeasuredHeight();
+            }
+
+            tops.add(runningTotal);
         }
     }
 
@@ -762,14 +920,14 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
                 current.playTogether(sheetFader, sheetTranslator);
             }
 
-            mCurrentAnimator = current;
-            mCurrentAnimator.addListener(this);
-            mCurrentAnimator.start();
+            mSheetAnimator = current;
+            mSheetAnimator.addListener(this);
+            mSheetAnimator.start();
         }
 
         @Override
         public void onAnimationEnd(Animator animation) {
-            mCurrentAnimator = null;
+            mSheetAnimator = null;
             mFullContainer.removeView(mBottomSheetContainer);
             if (mIsDialogClosing && mDialog.isShowing()) mDialog.dismiss();
         }

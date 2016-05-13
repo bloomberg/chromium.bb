@@ -62,8 +62,8 @@ import javax.annotation.Nullable;
 public abstract class PaymentRequestSection extends LinearLayout {
     public static final String TAG = "PaymentRequestUI";
 
-    /** Listens for clicks on the widgets. */
-    public static interface PaymentsSectionListener extends View.OnClickListener {
+    /** Handles clicking on the widgets. */
+    public static interface PaymentsSectionDelegate extends View.OnClickListener {
         /**
          * Called when the user selects a radio button option from an {@link OptionSection}.
          *
@@ -71,6 +71,9 @@ public abstract class PaymentRequestSection extends LinearLayout {
          * @param option  {@link PaymentOption} that was selected.
          */
         void onPaymentOptionChanged(OptionSection section, PaymentOption option);
+
+        /** Checks whether or not the user should be allowed to click on controls. */
+        boolean isAcceptingUserInput();
     }
 
     /** Normal mode: White background, displays the item assuming the user accepts it as is. */
@@ -82,7 +85,7 @@ public abstract class PaymentRequestSection extends LinearLayout {
     /** Focused mode: Gray background, more padding, no edit chevron. */
     static final int DISPLAY_MODE_FOCUSED = 2;
 
-    protected final PaymentsSectionListener mListener;
+    protected final PaymentsSectionDelegate mDelegate;
     protected final int mLargeSpacing;
 
     private final int mVerticalSpacing;
@@ -105,13 +108,13 @@ public abstract class PaymentRequestSection extends LinearLayout {
      *
      * @param context     Context to pull resources from.
      * @param sectionName Title of the section to display.
-     * @param listener    Listener to alert when something changes in the dialog.
+     * @param delegate    Delegate to alert when something changes in the dialog.
      */
     private PaymentRequestSection(
-            Context context, String sectionName, PaymentsSectionListener listener) {
+            Context context, String sectionName, PaymentsSectionDelegate delegate) {
         super(context);
-        mListener = listener;
-        setOnClickListener(listener);
+        mDelegate = delegate;
+        setOnClickListener(delegate);
         setOrientation(HORIZONTAL);
         setGravity(Gravity.CENTER_VERTICAL);
 
@@ -336,8 +339,8 @@ public abstract class PaymentRequestSection extends LinearLayout {
         private TextView mExtraTextView;
 
         public ExtraTextSection(
-                Context context, String sectionName, PaymentsSectionListener listener) {
-            super(context, sectionName, listener);
+                Context context, String sectionName, PaymentsSectionDelegate delegate) {
+            super(context, sectionName, delegate);
             setExtraText(null);
         }
 
@@ -385,8 +388,8 @@ public abstract class PaymentRequestSection extends LinearLayout {
         private GridLayout mBreakdownLayout;
 
         public LineItemBreakdownSection(
-                Context context, String sectionName, PaymentsSectionListener listener) {
-            super(context, sectionName, listener);
+                Context context, String sectionName, PaymentsSectionDelegate delegate) {
+            super(context, sectionName, delegate);
         }
 
         @Override
@@ -540,18 +543,18 @@ public abstract class PaymentRequestSection extends LinearLayout {
                 int resourceId = item.getDrawableIconId();
                 if (resourceId != 0) createAndAddLogoView(this, resourceId, mLargeSpacing, 0);
 
-                // Clicking on either the radio button or the row itself should toggle its option.
-                mRadioButton.setOnClickListener(OptionSection.this);
+                // Making the radio button unclickable makes clicks fall through to the row.
+                mRadioButton.setClickable(false);
                 setOnClickListener(OptionSection.this);
             }
 
-            /** Sets the selected state of this item, alerting the listener if selected. */
+            /** Sets the selected state of this item, alerting the delegate if selected. */
             public void setChecked(boolean isChecked) {
                 mRadioButton.setChecked(isChecked);
 
                 if (isChecked) {
                     updateSelectedItem(mOption);
-                    mListener.onPaymentOptionChanged(OptionSection.this, mOption);
+                    mDelegate.onPaymentOptionChanged(OptionSection.this, mOption);
                 }
             }
         }
@@ -571,11 +574,11 @@ public abstract class PaymentRequestSection extends LinearLayout {
          * @param context     Context to pull resources from.
          * @param sectionName Title of the section to display.
          * @param emptyLabel  An optional string to display when no item is selected.
-         * @param listener    Listener to alert when something changes in the dialog.
+         * @param delegate    Delegate to alert when something changes in the dialog.
          */
         public OptionSection(Context context, String sectionName, @Nullable CharSequence emptyLabel,
-                PaymentsSectionListener listener) {
-            super(context, sectionName, listener);
+                PaymentsSectionDelegate delegate) {
+            super(context, sectionName, delegate);
             mVerticalMargin = context.getResources().getDimensionPixelSize(
                     R.dimen.payments_section_small_spacing);
             mEmptyLabel = emptyLabel;
@@ -584,6 +587,8 @@ public abstract class PaymentRequestSection extends LinearLayout {
 
         @Override
         public void onClick(View v) {
+            if (!mDelegate.isAcceptingUserInput()) return;
+
             for (int i = 0; i < mOptionLayout.getChildCount(); i++) {
                 OptionRow row = (OptionRow) mOptionLayout.getChildAt(i);
                 row.setChecked(v == row || v == row.mRadioButton);
