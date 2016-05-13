@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_USB_USB_CHOOSER_BUBBLE_CONTROLLER_H_
 
 #include <utility>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"

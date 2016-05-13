@@ -7,6 +7,10 @@
 
 #include <stddef.h>
 
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "base/macros.h"
 #include "chrome/browser/ui/website_settings/chooser_bubble_controller.h"
 #include "components/bubble/bubble_reference.h"

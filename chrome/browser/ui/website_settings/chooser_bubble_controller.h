@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_UI_WEBSITE_SETTINGS_CHOOSER_BUBBLE_CONTROLLER_H_
 #define CHROME_BROWSER_UI_WEBSITE_SETTINGS_CHOOSER_BUBBLE_CONTROLLER_H_
 
-#include <vector>
-
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "components/bubble/bubble_delegate.h"
