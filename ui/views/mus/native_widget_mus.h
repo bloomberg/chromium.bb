@@ -32,6 +32,9 @@ class Window;
 namespace mus {
 class Window;
 class WindowTreeConnection;
+namespace mojom {
+enum class Cursor;
+}
 }
 
 namespace shell {
@@ -208,12 +211,14 @@ class VIEWS_MUS_EXPORT NativeWidgetMus : public internal::NativeWidgetPrivate,
  private:
   class MusWindowObserver;
 
+  void set_last_cursor(mus::mojom::Cursor cursor) { last_cursor_ = cursor; }
   void SetShowState(mus::mojom::ShowState show_state);
 
   void OnMusWindowVisibilityChanging(mus::Window* window);
   void OnMusWindowVisibilityChanged(mus::Window* window);
 
   mus::Window* window_;
+  mus::mojom::Cursor last_cursor_;
 
   internal::NativeWidgetDelegate* native_widget_delegate_;
 

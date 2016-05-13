@@ -68,7 +68,6 @@ PlatformWindowMus::PlatformWindowMus(ui::PlatformWindowDelegate* delegate,
                                      mus::Window* mus_window)
     : delegate_(delegate),
       mus_window_(mus_window),
-      last_cursor_(mus::mojom::Cursor::CURSOR_NULL),
       mus_window_destroyed_(false) {
   DCHECK(delegate_);
   DCHECK(mus_window_);
@@ -102,17 +101,6 @@ PlatformWindowMus::~PlatformWindowMus() {
   mus_window_->set_input_event_handler(nullptr);
   if (!mus_window_destroyed_)
     mus_window_->Destroy();
-}
-
-void PlatformWindowMus::SetCursorById(mus::mojom::Cursor cursor) {
-  if (last_cursor_ != cursor) {
-    // The ui::PlatformWindow interface uses ui::PlatformCursor at this level,
-    // instead of ui::Cursor. All of the cursor abstractions in ui right now are
-    // sort of leaky; despite being nominally cross platform, they all drop down
-    // to platform types almost immediately, which makes them unusable as
-    // transport types.
-    mus_window_->SetPredefinedCursor(cursor);
-  }
 }
 
 void PlatformWindowMus::Show() {}
@@ -187,13 +175,6 @@ void PlatformWindowMus::OnWindowFocusChanged(mus::Window* gained_focus,
     delegate_->OnActivationChanged(true);
   else if (lost_focus == mus_window_)
     delegate_->OnActivationChanged(false);
-}
-
-void PlatformWindowMus::OnWindowPredefinedCursorChanged(
-    mus::Window* window,
-    mus::mojom::Cursor cursor) {
-  DCHECK_EQ(window, mus_window_);
-  last_cursor_ = cursor;
 }
 
 void PlatformWindowMus::OnRequestClose(mus::Window* window) {

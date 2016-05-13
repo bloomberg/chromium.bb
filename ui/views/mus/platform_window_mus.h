@@ -43,8 +43,6 @@ class VIEWS_MUS_EXPORT PlatformWindowMus
                     mus::Window* mus_window);
   ~PlatformWindowMus() override;
 
-  void SetCursorById(mus::mojom::Cursor cursor);
-
   // ui::PlatformWindow:
   void Show() override;
   void Hide() override;
@@ -70,8 +68,6 @@ class VIEWS_MUS_EXPORT PlatformWindowMus
   void OnWindowDestroyed(mus::Window* window) override;
   void OnWindowFocusChanged(mus::Window* gained_focus,
                             mus::Window* lost_focus) override;
-  void OnWindowPredefinedCursorChanged(mus::Window* window,
-                                       mus::mojom::Cursor cursor) override;
   void OnRequestClose(mus::Window* window) override;
 
   // mus::InputEventHandler:
@@ -83,7 +79,6 @@ class VIEWS_MUS_EXPORT PlatformWindowMus
 
   ui::PlatformWindowDelegate* delegate_;
   mus::Window* mus_window_;
-  mus::mojom::Cursor last_cursor_;
 
   // True if OnWindowDestroyed() has been received.
   bool mus_window_destroyed_;

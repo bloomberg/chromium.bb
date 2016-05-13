@@ -323,6 +323,11 @@ class NativeWidgetMus::MusWindowObserver : public mus::WindowObserver {
                              const gfx::Rect& new_bounds) override {
     platform_window_delegate()->OnBoundsChanged(new_bounds);
   }
+  void OnWindowPredefinedCursorChanged(mus::Window* window,
+                                       mus::mojom::Cursor cursor) override {
+    DCHECK_EQ(window, mus_window());
+    native_widget_mus_->set_last_cursor(cursor);
+  }
   void OnWindowSharedPropertyChanged(
       mus::Window* window,
       const std::string& name,
@@ -381,6 +386,7 @@ NativeWidgetMus::NativeWidgetMus(internal::NativeWidgetDelegate* delegate,
                                  mus::Window* window,
                                  mus::mojom::SurfaceType surface_type)
     : window_(window),
+      last_cursor_(mus::mojom::Cursor::CURSOR_NULL),
       native_widget_delegate_(delegate),
       surface_type_(surface_type),
       show_state_before_fullscreen_(mus::mojom::ShowState::DEFAULT),
@@ -973,16 +979,18 @@ void NativeWidgetMus::SchedulePaintInRect(const gfx::Rect& rect) {
 }
 
 void NativeWidgetMus::SetCursor(gfx::NativeCursor cursor) {
-  if (!window_tree_host_)
+  if (!window_)
     return;
+
   // TODO(erg): In aura, our incoming cursor is really two
   // parts. cursor.native_type() is an integer for standard cursors and is all
   // we support right now. If native_type() == kCursorCustom, than we should
   // also send an image, but as the cursor code is currently written, the image
   // is in a platform native format that's already uploaded to the window
   // server.
-  window_tree_host_->platform_window()->SetCursorById(
-      mus::mojom::Cursor(cursor.native_type()));
+  mus::mojom::Cursor new_cursor = mus::mojom::Cursor(cursor.native_type());
+  if (last_cursor_ != new_cursor)
+    window_->SetPredefinedCursor(new_cursor);
 }
 
 bool NativeWidgetMus::IsMouseEventsEnabled() const {
