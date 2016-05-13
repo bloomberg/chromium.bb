@@ -66,14 +66,10 @@ void SynchronousCompositorProxy::SetOutputSurface(
   DCHECK_NE(output_surface_, output_surface);
   if (output_surface_) {
     output_surface_->SetSyncClient(nullptr);
-    output_surface_->SetTreeActivationCallback(base::Closure());
   }
   output_surface_ = output_surface;
   if (output_surface_) {
     output_surface_->SetSyncClient(this);
-    output_surface_->SetTreeActivationCallback(
-        base::Bind(&SynchronousCompositorProxy::DidActivatePendingTree,
-                   base::Unretained(this)));
   }
 }
 
@@ -122,16 +118,6 @@ void SynchronousCompositorProxy::Invalidate() {
 void SynchronousCompositorProxy::DidActivatePendingTree() {
   ++did_activate_pending_tree_count_;
   SendAsyncRendererStateIfNeeded();
-  DeliverMessages();
-}
-
-void SynchronousCompositorProxy::DeliverMessages() {
-  DCHECK(output_surface_);
-  std::vector<std::unique_ptr<IPC::Message>> messages;
-  output_surface_->GetMessagesToDeliver(&messages);
-  for (auto& msg : messages) {
-    Send(msg.release());
-  }
 }
 
 void SynchronousCompositorProxy::SendAsyncRendererStateIfNeeded() {
@@ -235,8 +221,6 @@ void SynchronousCompositorProxy::DemandDrawHw(
     cc::CompositorFrame empty_frame;
     SendDemandDrawHwReply(&empty_frame, 0u, reply_message);
     inside_receive_ = false;
-  } else {
-    DeliverMessages();
   }
 }
 
@@ -321,8 +305,6 @@ void SynchronousCompositorProxy::DemandDrawSw(
     cc::CompositorFrame empty_frame;
     SendDemandDrawSwReply(false, &empty_frame, reply_message);
     inside_receive_ = false;
-  } else {
-    DeliverMessages();
   }
 }
 

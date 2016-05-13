@@ -8,7 +8,6 @@
 #include <stddef.h>
 
 #include <memory>
-#include <vector>
 
 #include "base/callback.h"
 #include "base/cancelable_callback.h"
@@ -40,6 +39,7 @@ class WebGraphicsContext3DCommandBufferImpl;
 
 class SynchronousCompositorOutputSurfaceClient {
  public:
+  virtual void DidActivatePendingTree() = 0;
   virtual void Invalidate() = 0;
   virtual void SwapBuffers(uint32_t output_surface_id,
                            cc::CompositorFrame* frame) = 0;
@@ -88,9 +88,6 @@ class SynchronousCompositorOutputSurface
                     const gfx::Rect& viewport_rect_for_tile_priority,
                     const gfx::Transform& transform_for_tile_priority);
   void DemandDrawSw(SkCanvas* canvas);
-  void SetTreeActivationCallback(const base::Closure& callback);
-  void GetMessagesToDeliver(
-      std::vector<std::unique_ptr<IPC::Message>>* messages);
 
  private:
   class SoftwareDevice;
@@ -101,6 +98,8 @@ class SynchronousCompositorOutputSurface
                        const gfx::Rect& clip,
                        bool hardware_draw);
   bool Send(IPC::Message* message);
+  void DidActivatePendingTree();
+  void DeliverMessages();
   bool CalledOnValidThread() const;
 
   void CancelFallbackTick();

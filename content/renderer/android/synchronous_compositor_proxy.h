@@ -67,6 +67,7 @@ class SynchronousCompositorProxy
   void OnNeedsBeginFramesChange(bool needs_begin_frames) override;
 
   // SynchronousCompositorOutputSurfaceClient overrides.
+  void DidActivatePendingTree() override;
   void Invalidate() override;
   void SwapBuffers(uint32_t output_surface_id,
                    cc::CompositorFrame* frame) override;
@@ -122,8 +123,6 @@ class SynchronousCompositorProxy
   void SendDemandDrawSwReply(bool success,
                              cc::CompositorFrame* frame,
                              IPC::Message* reply_message);
-  void DidActivatePendingTree();
-  void DeliverMessages();
   void SendAsyncRendererStateIfNeeded();
 
   const int routing_id_;

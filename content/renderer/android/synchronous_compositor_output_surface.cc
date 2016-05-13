@@ -4,6 +4,8 @@
 
 #include "content/renderer/android/synchronous_compositor_output_surface.h"
 
+#include <vector>
+
 #include "base/auto_reset.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -125,6 +127,9 @@ bool SynchronousCompositorOutputSurface::BindToClient(
     return false;
 
   client_->SetMemoryPolicy(memory_policy_);
+  client_->SetTreeActivationCallback(
+      base::Bind(&SynchronousCompositorOutputSurface::DidActivatePendingTree,
+                 base::Unretained(this)));
   registry_->RegisterOutputSurface(routing_id_, this);
   registered_ = true;
   Send(new SyncCompositorHostMsg_OutputSurfaceCreated(routing_id_));
@@ -136,6 +141,7 @@ void SynchronousCompositorOutputSurface::DetachFromClient() {
   if (registered_) {
     registry_->UnregisterOutputSurface(routing_id_, this);
   }
+  client_->SetTreeActivationCallback(base::Closure());
   cc::OutputSurface::DetachFromClient();
   CancelFallbackTick();
 }
@@ -150,8 +156,10 @@ void SynchronousCompositorOutputSurface::SwapBuffers(
     cc::CompositorFrame* frame) {
   DCHECK(CalledOnValidThread());
   DCHECK(sync_client_);
-  if (!fallback_tick_running_)
+  if (!fallback_tick_running_) {
     sync_client_->SwapBuffers(output_surface_id_, frame);
+    DeliverMessages();
+  }
   client_->DidSwapBuffers();
   did_swap_ = true;
 }
@@ -276,18 +284,21 @@ void SynchronousCompositorOutputSurface::SetMemoryPolicy(size_t bytes_limit) {
   }
 }
 
-void SynchronousCompositorOutputSurface::SetTreeActivationCallback(
-    const base::Closure& callback) {
-  DCHECK(client_);
-  client_->SetTreeActivationCallback(callback);
+void SynchronousCompositorOutputSurface::DidActivatePendingTree() {
+  DCHECK(CalledOnValidThread());
+  if (sync_client_)
+    sync_client_->DidActivatePendingTree();
+  DeliverMessages();
 }
 
-void SynchronousCompositorOutputSurface::GetMessagesToDeliver(
-    std::vector<std::unique_ptr<IPC::Message>>* messages) {
-  DCHECK(CalledOnValidThread());
+void SynchronousCompositorOutputSurface::DeliverMessages() {
+  std::vector<std::unique_ptr<IPC::Message>> messages;
   std::unique_ptr<FrameSwapMessageQueue::SendMessageScope> send_message_scope =
       frame_swap_message_queue_->AcquireSendMessageScope();
-  frame_swap_message_queue_->DrainMessages(messages);
+  frame_swap_message_queue_->DrainMessages(&messages);
+  for (auto& msg : messages) {
+    Send(msg.release());
+  }
 }
 
 bool SynchronousCompositorOutputSurface::Send(IPC::Message* message) {
