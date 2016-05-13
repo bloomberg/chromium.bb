@@ -7,6 +7,8 @@
 #include <stddef.h>
 
 #include "base/logging.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -14,6 +16,7 @@
 #include "net/base/escape.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 #include "url/url_constants.h"
 
 #if !defined(OS_ANDROID)
@@ -108,18 +111,17 @@ void SplitHost(const GURL& url,
 }
 #endif  // !defined(OS_ANDROID)
 
-bool ShouldShowScheme(const GURL& url,
+bool ShouldShowScheme(base::StringPiece scheme,
                       const url_formatter::SchemeDisplay scheme_display) {
   switch (scheme_display) {
     case url_formatter::SchemeDisplay::SHOW:
       return true;
 
     case url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS:
-      return !url.SchemeIs(url::kHttpsScheme) &&
-             !url.SchemeIs(url::kHttpScheme);
+      return scheme != url::kHttpsScheme && scheme != url::kHttpScheme;
 
     case url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC:
-      return !url.SchemeIsCryptographic();
+      return scheme != url::kHttpsScheme && scheme != url::kWssScheme;
   }
 
   return true;
@@ -355,19 +357,45 @@ base::string16 FormatUrlForSecurityDisplay(const GURL& url,
   }
 
   const GURL origin = url.GetOrigin();
-  const std::string& scheme = origin.scheme();
-  const std::string& host = origin.host();
+  base::StringPiece scheme = origin.scheme_piece();
+  base::StringPiece host = origin.host_piece();
 
   base::string16 result;
-  if (ShouldShowScheme(url, scheme_display))
+  if (ShouldShowScheme(scheme, scheme_display))
     result = base::UTF8ToUTF16(scheme) + scheme_separator;
   result += base::UTF8ToUTF16(host);
 
   const int port = origin.IntPort();
   const int default_port = url::DefaultPortForScheme(
-      scheme.c_str(), static_cast<int>(scheme.length()));
+      scheme.data(), static_cast<int>(scheme.length()));
   if (port != url::PORT_UNSPECIFIED && port != default_port)
-    result += colon + base::UTF8ToUTF16(origin.port());
+    result += colon + base::UTF8ToUTF16(origin.port_piece());
+
+  return result;
+}
+
+base::string16 FormatOriginForSecurityDisplay(
+    const url::Origin& origin,
+    const SchemeDisplay scheme_display) {
+  base::StringPiece scheme = origin.scheme();
+  base::StringPiece host = origin.host();
+  if (scheme.empty() && host.empty())
+    return base::string16();
+
+  const base::string16 colon(base::ASCIIToUTF16(":"));
+  const base::string16 scheme_separator(
+      base::ASCIIToUTF16(url::kStandardSchemeSeparator));
+
+  base::string16 result;
+  if (ShouldShowScheme(scheme, scheme_display))
+    result = base::UTF8ToUTF16(scheme) + scheme_separator;
+  result += base::UTF8ToUTF16(host);
+
+  int port = static_cast<int>(origin.port());
+  const int default_port = url::DefaultPortForScheme(
+      scheme.data(), static_cast<int>(scheme.length()));
+  if (port != 0 && port != default_port)
+    result += colon + base::UintToString16(origin.port());
 
   return result;
 }
