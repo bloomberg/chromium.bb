@@ -514,6 +514,7 @@
             'layout/api/LayoutProgressItem.h',
             'layout/api/LayoutSliderItem.h',
             'layout/api/LayoutTextControlItem.h',
+            'layout/api/LayoutTextFragmentItem.h',
             'layout/api/LayoutTextItem.h',
             'layout/api/LayoutViewItem.h',
             'layout/api/LineLayoutAPIShim.h',

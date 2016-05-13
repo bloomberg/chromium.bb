@@ -40,6 +40,16 @@ public:
         toText()->setText(text, force);
     }
 
+    bool isTextFragment() const
+    {
+        return toText()->isTextFragment();
+    }
+
+    void dirtyLineBoxes()
+    {
+        toText()->dirtyLineBoxes();
+    }
+
 private:
     LayoutText* toText() { return toLayoutText(layoutObject()); }
     const LayoutText* toText() const { return toLayoutText(layoutObject()); }

@@ -5,6 +5,7 @@
 #ifndef LayoutItem_h
 #define LayoutItem_h
 
+#include "core/inspector/InspectorTraceEvents.h"
 #include "core/layout/LayoutObject.h"
 
 #include "wtf/Allocator.h"
@@ -182,6 +183,11 @@ public:
     FloatPoint absoluteToLocal(const FloatPoint& point, MapCoordinatesFlags mode = 0) const
     {
         return m_layoutObject->absoluteToLocal(point, mode);
+    }
+
+    void setNeedsLayoutAndPrefWidthsRecalc(LayoutInvalidationReasonForTracing reason)
+    {
+        m_layoutObject->setNeedsLayoutAndPrefWidthsRecalc(reason);
     }
 
 protected:
