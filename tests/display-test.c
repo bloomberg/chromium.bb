@@ -211,8 +211,6 @@ find_client_info(struct display *d, struct wl_client *client)
 {
 	struct client_info *ci;
 
-	/* find the right client_info struct and save the
-	 * resource as its data, so that we can use it later */
 	wl_list_for_each(ci, &d->clients, link) {
 		if (ci->wl_client == client)
 			return ci;
@@ -235,6 +233,8 @@ bind_seat(struct wl_client *client, void *data,
 	res = wl_resource_create(client, &wl_seat_interface, vers, id);
 	assert(res);
 
+	/* save the resource as client's info data,
+	 * so that we can use it later */
 	ci->data = res;
 }
 
