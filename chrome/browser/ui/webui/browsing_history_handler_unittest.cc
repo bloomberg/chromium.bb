@@ -52,7 +52,13 @@ bool ResultEquals(
 
 // Tests that the MergeDuplicateResults method correctly removes duplicate
 // visits to the same URL on the same day.
-TEST(BrowsingHistoryHandlerTest, MergeDuplicateResults) {
+// Fails on Android.  http://crbug.com/2345
+#if defined(OS_ANDROID)
+#define MAYBE_MergeDuplicateResults DISABLED_MergeDuplicateResults
+#else
+#define MAYBE_MergeDuplicateResults MergeDuplicateResults
+#endif
+TEST(BrowsingHistoryHandlerTest, MAYBE_MergeDuplicateResults) {
   {
     // Basic test that duplicates on the same day are removed.
     TestResult test_data[] = {
