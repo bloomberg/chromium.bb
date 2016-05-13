@@ -253,7 +253,7 @@ class TestImporter(object):
                     # Make sure to use the extension from the *reference*, not
                     # from the test, because at least flexbox tests use XHTML
                     # references but HTML tests.
-                    ref_file += self.filesystem.path.splitext(test_info['reference'])[1]
+                    ref_file += self.filesystem.splitext(test_info['reference'])[1]
 
                     copy_list.append({'src': test_info['reference'], 'dest': ref_file,
                                       'reference_support_info': test_info['reference_support_info']})
