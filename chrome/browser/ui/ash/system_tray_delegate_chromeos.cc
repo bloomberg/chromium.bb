@@ -20,7 +20,7 @@
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
-#include "ash/system/bluetooth/bluetooth_observer.h"
+#include "ash/system/chromeos/bluetooth/bluetooth_observer.h"
 #include "ash/system/chromeos/power/power_status.h"
 #include "ash/system/chromeos/session/logout_button_observer.h"
 #include "ash/system/chromeos/shutdown_policy_observer.h"

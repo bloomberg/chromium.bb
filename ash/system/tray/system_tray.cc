@@ -11,7 +11,6 @@
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/system/audio/tray_audio.h"
-#include "ash/system/bluetooth/tray_bluetooth.h"
 #include "ash/system/cast/tray_cast.h"
 #include "ash/system/date/tray_date.h"
 #include "ash/system/status_area_widget.h"
@@ -45,6 +44,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/system/chromeos/audio/tray_audio_chromeos.h"
+#include "ash/system/chromeos/bluetooth/tray_bluetooth.h"
 #include "ash/system/chromeos/brightness/tray_brightness.h"
 #include "ash/system/chromeos/enterprise/tray_enterprise.h"
 #include "ash/system/chromeos/network/tray_network.h"
@@ -210,11 +210,6 @@ void SystemTray::CreateItems(SystemTrayDelegate* delegate) {
   AddTrayItem(tray_accessibility_);
   if (media::CoreAudioUtil::IsSupported())
     AddTrayItem(new TrayAudioWin(this));
-  AddTrayItem(new TrayUpdate(this));
-  AddTrayItem(tray_date_);
-#elif defined(OS_LINUX)
-  AddTrayItem(tray_accessibility_);
-  AddTrayItem(new TrayBluetooth(this));
   AddTrayItem(new TrayUpdate(this));
   AddTrayItem(tray_date_);
 #endif

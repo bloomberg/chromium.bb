@@ -12,7 +12,6 @@
 
 #include "ash/ash_export.h"
 #include "ash/system/audio/audio_observer.h"
-#include "ash/system/bluetooth/bluetooth_observer.h"
 #include "ash/system/chromeos/tray_tracing.h"
 #include "ash/system/date/clock_observer.h"
 #include "ash/system/ime/ime_observer.h"
@@ -24,6 +23,7 @@
 #include "base/observer_list.h"
 
 #if defined(OS_CHROMEOS)
+#include "ash/system/chromeos/bluetooth/bluetooth_observer.h"
 #include "ash/system/chromeos/enterprise/enterprise_domain_observer.h"
 #include "ash/system/chromeos/network/network_observer.h"
 #include "ash/system/chromeos/network/network_portal_detector_observer.h"
@@ -56,9 +56,6 @@ class ASH_EXPORT SystemTrayNotifier {
   void AddAudioObserver(AudioObserver* observer);
   void RemoveAudioObserver(AudioObserver* observer);
 
-  void AddBluetoothObserver(BluetoothObserver* observer);
-  void RemoveBluetoothObserver(BluetoothObserver* observer);
-
   void AddClockObserver(ClockObserver* observer);
   void RemoveClockObserver(ClockObserver* observer);
 
@@ -78,6 +75,9 @@ class ASH_EXPORT SystemTrayNotifier {
   void RemoveUserObserver(UserObserver* observer);
 
 #if defined(OS_CHROMEOS)
+  void AddBluetoothObserver(BluetoothObserver* observer);
+  void RemoveBluetoothObserver(BluetoothObserver* observer);
+
   void AddLogoutButtonObserver(LogoutButtonObserver* observer);
   void RemoveLogoutButtonObserver(LogoutButtonObserver* observer);
 
@@ -119,8 +119,6 @@ class ASH_EXPORT SystemTrayNotifier {
   void NotifyAudioActiveOutputNodeChanged();
   void NotifyAudioActiveInputNodeChanged();
   void NotifyTracingModeChanged(bool value);
-  void NotifyRefreshBluetooth();
-  void NotifyBluetoothDiscoveringChanged();
   void NotifyRefreshClock();
   void NotifyDateFormatChanged();
   void NotifySystemClockTimeUpdated();
@@ -135,6 +133,8 @@ class ASH_EXPORT SystemTrayNotifier {
   void NotifyUserUpdate();
   void NotifyUserAddedToSession();
 #if defined(OS_CHROMEOS)
+  void NotifyRefreshBluetooth();
+  void NotifyBluetoothDiscoveringChanged();
   void NotifyShowLoginButtonChanged(bool show_login_button);
   void NotifyLogoutDialogDurationChanged(base::TimeDelta duration);
   void NotifySessionStartTimeChanged();
@@ -156,7 +156,6 @@ class ASH_EXPORT SystemTrayNotifier {
  private:
   base::ObserverList<AccessibilityObserver> accessibility_observers_;
   base::ObserverList<AudioObserver> audio_observers_;
-  base::ObserverList<BluetoothObserver> bluetooth_observers_;
   base::ObserverList<ClockObserver> clock_observers_;
   base::ObserverList<IMEObserver> ime_observers_;
   base::ObserverList<LocaleObserver> locale_observers_;
@@ -164,6 +163,7 @@ class ASH_EXPORT SystemTrayNotifier {
   base::ObserverList<UpdateObserver> update_observers_;
   base::ObserverList<UserObserver> user_observers_;
 #if defined(OS_CHROMEOS)
+  base::ObserverList<BluetoothObserver> bluetooth_observers_;
   base::ObserverList<LogoutButtonObserver> logout_button_observers_;
   base::ObserverList<SessionLengthLimitObserver>
       session_length_limit_observers_;

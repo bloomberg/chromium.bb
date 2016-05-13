@@ -30,14 +30,6 @@ void SystemTrayNotifier::RemoveAudioObserver(AudioObserver* observer) {
   audio_observers_.RemoveObserver(observer);
 }
 
-void SystemTrayNotifier::AddBluetoothObserver(BluetoothObserver* observer) {
-  bluetooth_observers_.AddObserver(observer);
-}
-
-void SystemTrayNotifier::RemoveBluetoothObserver(BluetoothObserver* observer) {
-  bluetooth_observers_.RemoveObserver(observer);
-}
-
 void SystemTrayNotifier::AddClockObserver(ClockObserver* observer) {
   clock_observers_.AddObserver(observer);
 }
@@ -87,6 +79,14 @@ void SystemTrayNotifier::RemoveUserObserver(UserObserver* observer) {
 }
 
 #if defined(OS_CHROMEOS)
+
+void SystemTrayNotifier::AddBluetoothObserver(BluetoothObserver* observer) {
+  bluetooth_observers_.AddObserver(observer);
+}
+
+void SystemTrayNotifier::RemoveBluetoothObserver(BluetoothObserver* observer) {
+  bluetooth_observers_.RemoveObserver(observer);
+}
 
 void SystemTrayNotifier::AddLogoutButtonObserver(
     LogoutButtonObserver* observer) {
@@ -235,18 +235,6 @@ void SystemTrayNotifier::NotifyTracingModeChanged(bool value) {
       OnTracingModeChanged(value));
 }
 
-void SystemTrayNotifier::NotifyRefreshBluetooth() {
-  FOR_EACH_OBSERVER(BluetoothObserver,
-                    bluetooth_observers_,
-                    OnBluetoothRefresh());
-}
-
-void SystemTrayNotifier::NotifyBluetoothDiscoveringChanged() {
-  FOR_EACH_OBSERVER(BluetoothObserver,
-                    bluetooth_observers_,
-                    OnBluetoothDiscoveringChanged());
-}
-
 void SystemTrayNotifier::NotifyRefreshClock() {
   FOR_EACH_OBSERVER(ClockObserver, clock_observers_, Refresh());
 }
@@ -310,6 +298,16 @@ void SystemTrayNotifier::NotifyUserAddedToSession() {
 }
 
 #if defined(OS_CHROMEOS)
+
+void SystemTrayNotifier::NotifyRefreshBluetooth() {
+  FOR_EACH_OBSERVER(BluetoothObserver, bluetooth_observers_,
+                    OnBluetoothRefresh());
+}
+
+void SystemTrayNotifier::NotifyBluetoothDiscoveringChanged() {
+  FOR_EACH_OBSERVER(BluetoothObserver, bluetooth_observers_,
+                    OnBluetoothDiscoveringChanged());
+}
 
 void SystemTrayNotifier::NotifyShowLoginButtonChanged(bool show_login_button) {
   FOR_EACH_OBSERVER(LogoutButtonObserver,
