@@ -12,7 +12,7 @@
 
 #if defined(OS_POSIX)
 #include <signal.h>
-#define USE_SIGNALS
+#define USE_SIGNALS 1
 #endif
 
 using base::subtle::Atomic32;
@@ -37,6 +37,7 @@ class CPUThrottlingThread final : public base::PlatformThread::Delegate {
 
   static void SuspendThread(base::PlatformThreadHandle thread_handle);
   static void ResumeThread(base::PlatformThreadHandle thread_handle);
+  static void Sleep(base::TimeDelta duration);
 
 #ifdef USE_SIGNALS
   void InstallSignalHandler();
@@ -122,27 +123,44 @@ void CPUThrottlingThread::HandleSignal(int signal) {
 // static
 void CPUThrottlingThread::SuspendThread(
     base::PlatformThreadHandle thread_handle) {
-#ifdef USE_SIGNALS
+#if defined(USE_SIGNALS)
   Release_Store(&suspended_, 1);
   pthread_kill(thread_handle.platform_handle(), SIGUSR2);
+#elif defined(OS_WIN)
+  ::SuspendThread(thread_handle.platform_handle());
 #endif
 }
 
 // static
 void CPUThrottlingThread::ResumeThread(
     base::PlatformThreadHandle thread_handle) {
-#ifdef USE_SIGNALS
+#if defined(USE_SIGNALS)
   Release_Store(&suspended_, 0);
+#elif defined(OS_WIN)
+  ::ResumeThread(thread_handle.platform_handle());
 #endif
 }
 
 void CPUThrottlingThread::Start() {
 #ifdef USE_SIGNALS
   InstallSignalHandler();
+#elif !defined(OS_WIN)
+  LOG(ERROR) << "CPU throttling is not supported."
 #endif
   if (!base::PlatformThread::Create(0, this, &throttling_thread_handle_)) {
     LOG(ERROR) << "Failed to create throttling thread.";
   }
+}
+
+void CPUThrottlingThread::Sleep(base::TimeDelta duration) {
+#if defined(OS_WIN)
+  // We cannot rely on ::Sleep function as it's precision is not enough for
+  // the purpose. Could be up to 16ms jitter.
+  base::TimeTicks wakeup_time = base::TimeTicks::Now() + duration;
+  while (base::TimeTicks::Now() < wakeup_time) {}
+#else
+  base::PlatformThread::Sleep(duration);
+#endif
 }
 
 void CPUThrottlingThread::Stop() {
@@ -160,9 +178,9 @@ void CPUThrottlingThread::Throttle() {
       base::TimeDelta::FromMicroseconds(static_cast<int>(quant_time_us / rate));
   base::TimeDelta sleep_duration =
       base::TimeDelta::FromMicroseconds(quant_time_us) - run_duration;
-  base::PlatformThread::Sleep(run_duration);
+  Sleep(run_duration);
   SuspendThread(throttled_thread_handle_);
-  base::PlatformThread::Sleep(sleep_duration);
+  Sleep(sleep_duration);
   ResumeThread(throttled_thread_handle_);
 }
 
