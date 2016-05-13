@@ -258,8 +258,8 @@ private:
 
     template <typename Strategy>
     VisiblePositionTemplate<Strategy> originalBase() const;
-    void setOriginalBase(const VisiblePosition&);
-    void setOriginalBase(const VisiblePositionInFlatTree&);
+    void setOriginalBase(const VisiblePosition& newBase) { m_originalBase = newBase; }
+    void setOriginalBase(const VisiblePositionInFlatTree& newBase) { m_originalBaseInFlatTree = newBase; }
 
     template <typename Strategy>
     void setNonDirectionalSelectionIfNeededAlgorithm(const VisibleSelectionTemplate<Strategy>&, TextGranularity, EndPointsAdjustmentMode);
