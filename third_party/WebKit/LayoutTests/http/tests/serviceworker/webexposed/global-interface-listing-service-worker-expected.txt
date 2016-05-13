@@ -507,6 +507,7 @@ interface OffscreenCanvasRenderingContext2D
     method clearRect
     method closePath
     method constructor
+    method createImageData
     method createLinearGradient
     method createPattern
     method createRadialGradient
@@ -514,9 +515,11 @@ interface OffscreenCanvasRenderingContext2D
     method ellipse
     method fill
     method fillRect
+    method getImageData
     method getLineDash
     method lineTo
     method moveTo
+    method putImageData
     method quadraticCurveTo
     method rect
     method resetTransform

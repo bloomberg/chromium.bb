@@ -516,6 +516,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method clearRect
 [Worker]     method closePath
 [Worker]     method constructor
+[Worker]     method createImageData
 [Worker]     method createLinearGradient
 [Worker]     method createPattern
 [Worker]     method createRadialGradient
@@ -523,9 +524,11 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method ellipse
 [Worker]     method fill
 [Worker]     method fillRect
+[Worker]     method getImageData
 [Worker]     method getLineDash
 [Worker]     method lineTo
 [Worker]     method moveTo
+[Worker]     method putImageData
 [Worker]     method quadraticCurveTo
 [Worker]     method rect
 [Worker]     method resetTransform
