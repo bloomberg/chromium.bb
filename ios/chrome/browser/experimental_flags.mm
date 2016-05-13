@@ -110,10 +110,13 @@ bool IsAllBookmarksEnabled() {
     return false;
   }
 
-  // Check if the finch experiment is turned on. Flag is off by default.
+  // Check if the finch experiment exists.
   std::string group_name =
       base::FieldTrialList::FindFullName("RemoveAllBookmarks");
 
+  if (group_name.empty()) {
+    return true;  // If no finch experiment, keep all bookmarks enabled.
+  }
   return base::StartsWith(group_name, "Enabled",
                           base::CompareCase::INSENSITIVE_ASCII);
 }
