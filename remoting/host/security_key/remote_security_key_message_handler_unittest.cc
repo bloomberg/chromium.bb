@@ -126,7 +126,8 @@ TEST_F(RemoteSecurityKeyMessageHandlerTest,
 
   ASSERT_EQ(RemoteSecurityKeyMessageType::CONNECT_RESPONSE,
             writer_weak_ptr_->last_message_type());
-  ASSERT_EQ("1", writer_weak_ptr_->last_message_payload());
+  ASSERT_EQ(std::string(1, kConnectResponseActiveSession),
+            writer_weak_ptr_->last_message_payload());
 }
 
 TEST_F(RemoteSecurityKeyMessageHandlerTest,
@@ -172,7 +173,8 @@ TEST_F(RemoteSecurityKeyMessageHandlerTest,
 
   ASSERT_EQ(RemoteSecurityKeyMessageType::CONNECT_RESPONSE,
             writer_weak_ptr_->last_message_type());
-  ASSERT_EQ("0", writer_weak_ptr_->last_message_payload());
+  ASSERT_EQ(std::string(1, kConnectResponseNoSession),
+            writer_weak_ptr_->last_message_payload());
 }
 
 TEST_F(RemoteSecurityKeyMessageHandlerTest,

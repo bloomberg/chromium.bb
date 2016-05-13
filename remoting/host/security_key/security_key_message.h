@@ -97,6 +97,9 @@ enum class RemoteSecurityKeyMessageType : uint8_t {
   UNKNOWN_ERROR = 255,
 };
 
+const uint8_t kConnectResponseNoSession = 0;
+const uint8_t kConnectResponseActiveSession = 1;
+
 class SecurityKeyMessage final {
  public:
   // The number of bytes used to represent the header.

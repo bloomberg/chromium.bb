@@ -87,7 +87,8 @@ void RemoteSecurityKeyMessageHandler::HandleIpcConnectionChange(
     bool connection_established) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (connection_established) {
-    SendMessageWithPayload(RemoteSecurityKeyMessageType::CONNECT_RESPONSE, "1");
+    SendMessageWithPayload(RemoteSecurityKeyMessageType::CONNECT_RESPONSE,
+                           std::string(1, kConnectResponseActiveSession));
   } else {
     SendMessageWithPayload(
         RemoteSecurityKeyMessageType::CONNECT_ERROR,
@@ -130,7 +131,8 @@ void RemoteSecurityKeyMessageHandler::HandleConnectRequest(
         base::Bind(&RemoteSecurityKeyMessageHandler::HandleIpcConnectionChange,
                    base::Unretained(this), false));
   } else {
-    SendMessageWithPayload(RemoteSecurityKeyMessageType::CONNECT_RESPONSE, "0");
+    SendMessageWithPayload(RemoteSecurityKeyMessageType::CONNECT_RESPONSE,
+                           std::string(1, kConnectResponseNoSession));
   }
 }
 

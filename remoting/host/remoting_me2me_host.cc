@@ -820,7 +820,10 @@ void HostProcess::StartOnUiThread() {
     remoting::GnubbyAuthHandler::SetGnubbySocketName(gnubby_socket_name);
     gnubby_extension_supported_ = true;
   }
-#endif  // defined(OS_LINUX)
+#elif defined(OS_WIN)
+  // TODO(joedow): Remove the conditional once this is supported on OSX.
+  gnubby_extension_supported_ = true;
+#endif  // defined(OS_WIN)
 
   // Create a desktop environment factory appropriate to the build type &
   // platform.
