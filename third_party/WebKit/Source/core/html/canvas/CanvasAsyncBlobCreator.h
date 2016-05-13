@@ -20,8 +20,14 @@ class JPEGImageEncoderState;
 class CORE_EXPORT CanvasAsyncBlobCreator : public GarbageCollectedFinalized<CanvasAsyncBlobCreator> {
 public:
     static CanvasAsyncBlobCreator* create(DOMUint8ClampedArray* unpremultipliedRGBAImageData, const String& mimeType, const IntSize&, BlobCallback*);
-    void scheduleAsyncBlobCreation(bool canUseIdlePeriodScheduling, double quality = 0.0);
+    void scheduleAsyncBlobCreation(bool canUseIdlePeriodScheduling, const double& quality = 0.0);
     virtual ~CanvasAsyncBlobCreator();
+    enum MimeType {
+        MimeTypePng,
+        MimeTypeJpeg,
+        MimeTypeWebp,
+        NumberOfMimeTypeSupported
+    };
     enum IdleTaskStatus {
         IdleTaskNotStarted,
         IdleTaskStarted,
@@ -40,16 +46,19 @@ public:
     }
 
 protected:
-    CanvasAsyncBlobCreator(DOMUint8ClampedArray* data, const String& mimeType, const IntSize&, BlobCallback*);
+    CanvasAsyncBlobCreator(DOMUint8ClampedArray* data, MimeType, const IntSize&, BlobCallback*);
     // Methods are virtual for unit testing
     virtual void scheduleInitiatePngEncoding();
+    virtual void scheduleInitiateJpegEncoding(const double&);
     virtual void idleEncodeRowsPng(double deadlineSeconds);
+    virtual void idleEncodeRowsJpeg(double deadlineSeconds);
     virtual void postDelayedTaskToMainThread(const WebTraceLocation&, SameThreadTask*, double delayMs);
     virtual void signalAlternativeCodePathFinishedForTesting() { }
     virtual void createBlobAndInvokeCallback();
     virtual void createNullAndInvokeCallback();
 
     void initiatePngEncoding(double deadlineSeconds);
+    void initiateJpegEncoding(const double& quality, double deadlineSeconds);
     IdleTaskStatus m_idleTaskStatus;
 
 private:
@@ -63,16 +72,19 @@ private:
 
     const IntSize m_size;
     size_t m_pixelRowStride;
-    const String m_mimeType;
+    const MimeType m_mimeType;
     CrossThreadPersistent<BlobCallback> m_callback;
 
-    void scheduleIdleEncodeRowsPng();
-
+    // PNG
     bool initializePngStruct();
     void encodeRowsPngOnMainThread(); // Similar to idleEncodeRowsPng without deadline
-    void encodeImageOnEncoderThread(double quality);
 
-    void initiateJpegEncoding(const double& quality);
+    // JPEG
+    bool initializeJpegStruct(double quality);
+    void encodeRowsJpegOnMainThread(); // Similar to idleEncodeRowsJpeg without deadline
+
+    // WEBP
+    void encodeImageOnEncoderThread(double quality);
 
     void idleTaskStartTimeoutEvent(double quality);
     void idleTaskCompleteTimeoutEvent();

@@ -33,6 +33,7 @@
 #include "SkColorPriv.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/ImageBuffer.h"
+#include "wtf/CurrentTime.h"
 
 extern "C" {
 #include <setjmp.h>
@@ -126,6 +127,13 @@ static void disableSubsamplingForHighQuality(jpeg_compress_struct* cinfo, int qu
     }
 }
 
+#define SET_JUMP_BUFFER(jpeg_compress_struct_ptr, what_to_return) \
+    jmp_buf jumpBuffer;                                           \
+    jpeg_compress_struct_ptr->client_data = &jumpBuffer;          \
+    if (setjmp(jumpBuffer)) {                                     \
+        return what_to_return;                                    \
+    }
+
 PassOwnPtr<JPEGImageEncoderState> JPEGImageEncoderState::create(const IntSize& imageSize, const double& quality, Vector<unsigned char>* output)
 {
     if (imageSize.width() <= 0 || imageSize.height() <= 0)
@@ -138,12 +146,7 @@ PassOwnPtr<JPEGImageEncoderState> JPEGImageEncoderState::create(const IntSize& i
     cinfo->err = jpeg_std_error(error);
     error->error_exit = handleError;
 
-    jmp_buf jumpBuffer;
-    cinfo->client_data = &jumpBuffer;
-
-    if (setjmp(jumpBuffer)) {
-        return nullptr;
-    }
+    SET_JUMP_BUFFER(cinfo, nullptr);
 
     JPEGOutputBuffer* destination = encoderState->outputBuffer();
     destination->output = output;
@@ -177,22 +180,42 @@ int JPEGImageEncoder::computeCompressionQuality(const double& quality)
     return compressionQuality;
 }
 
-bool JPEGImageEncoder::encodeWithPreInitializedState(PassOwnPtr<JPEGImageEncoderState> encoderState, const unsigned char* inputPixels)
+int JPEGImageEncoder::progressiveEncodeRowsJpegHelper(JPEGImageEncoderState* encoderState, unsigned char* data, int currentRowsCompleted, const double SlackBeforeDeadline, double deadlineSeconds)
+{
+    JPEGImageEncoderStateImpl* encoderStateImpl = static_cast<JPEGImageEncoderStateImpl*>(encoderState);
+    Vector<JSAMPLE> row(encoderStateImpl->cinfo()->image_width * encoderStateImpl->cinfo()->input_components);
+    SET_JUMP_BUFFER(encoderStateImpl->cinfo(), ProgressiveEncodeFailed);
+
+    const size_t pixelRowStride = encoderStateImpl->cinfo()->image_width * 4;
+    unsigned char* pixels = data + pixelRowStride * currentRowsCompleted;
+
+    while (encoderStateImpl->cinfo()->next_scanline < encoderStateImpl->cinfo()->image_height) {
+        JSAMPLE* rowData = row.data();
+        RGBAtoRGB(pixels, encoderStateImpl->cinfo()->image_width, rowData);
+        jpeg_write_scanlines(encoderStateImpl->cinfo(), &rowData, 1);
+        pixels += pixelRowStride;
+        currentRowsCompleted++;
+
+        if (deadlineSeconds - SlackBeforeDeadline - monotonicallyIncreasingTime() <= 0) {
+            return currentRowsCompleted;
+        }
+    }
+
+    jpeg_finish_compress(encoderStateImpl->cinfo());
+    return currentRowsCompleted;
+}
+
+bool JPEGImageEncoder::encodeWithPreInitializedState(PassOwnPtr<JPEGImageEncoderState> encoderState, const unsigned char* inputPixels, int numRowsCompleted)
 {
     JPEGImageEncoderStateImpl* encoderStateImpl = static_cast<JPEGImageEncoderStateImpl*>(encoderState.get());
 
     Vector<JSAMPLE> row;
     row.resize(encoderStateImpl->cinfo()->image_width * encoderStateImpl->cinfo()->input_components);
 
-    jmp_buf jumpBuffer;
-    encoderStateImpl->cinfo()->client_data = &jumpBuffer;
+    SET_JUMP_BUFFER(encoderStateImpl->cinfo(), false);
 
-    if (setjmp(jumpBuffer)) {
-        return false;
-    }
-
-    unsigned char* pixels = const_cast<unsigned char*>(inputPixels);
     const size_t pixelRowStride = encoderStateImpl->cinfo()->image_width * 4;
+    unsigned char* pixels = const_cast<unsigned char*>(inputPixels) + pixelRowStride * numRowsCompleted;
     while (encoderStateImpl->cinfo()->next_scanline < encoderStateImpl->cinfo()->image_height) {
         JSAMPLE* rowData = row.data();
         RGBAtoRGB(pixels, encoderStateImpl->cinfo()->image_width, rowData);

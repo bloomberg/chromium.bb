@@ -18,8 +18,8 @@ typedef CanvasAsyncBlobCreator::IdleTaskStatus IdleTaskStatus;
 
 class MockCanvasAsyncBlobCreator : public CanvasAsyncBlobCreator {
 public:
-    MockCanvasAsyncBlobCreator(DOMUint8ClampedArray* data, const IntSize& size)
-        : CanvasAsyncBlobCreator(data, "image/png", size, nullptr)
+    MockCanvasAsyncBlobCreator(DOMUint8ClampedArray* data, const IntSize& size, MimeType mimeType)
+        : CanvasAsyncBlobCreator(data, mimeType, size, nullptr)
     {
     }
 
@@ -49,11 +49,13 @@ void MockCanvasAsyncBlobCreator::postDelayedTaskToMainThread(const WebTraceLocat
 }
 
 //==============================================================================
+//=================================PNG==========================================
+//==============================================================================
 
-class MockCanvasAsyncBlobCreatorWithoutStart : public MockCanvasAsyncBlobCreator {
+class MockCanvasAsyncBlobCreatorWithoutStartPng : public MockCanvasAsyncBlobCreator {
 public:
-    MockCanvasAsyncBlobCreatorWithoutStart(DOMUint8ClampedArray* data, const IntSize& size)
-        : MockCanvasAsyncBlobCreator(data, size)
+    MockCanvasAsyncBlobCreatorWithoutStartPng(DOMUint8ClampedArray* data, const IntSize& size)
+        : MockCanvasAsyncBlobCreator(data, size, MimeTypePng)
     {
     }
 
@@ -66,10 +68,10 @@ protected:
 
 //==============================================================================
 
-class MockCanvasAsyncBlobCreatorWithoutComplete : public MockCanvasAsyncBlobCreator {
+class MockCanvasAsyncBlobCreatorWithoutCompletePng : public MockCanvasAsyncBlobCreator {
 public:
-    MockCanvasAsyncBlobCreatorWithoutComplete(DOMUint8ClampedArray* data, const IntSize& size)
-        : MockCanvasAsyncBlobCreator(data, size)
+    MockCanvasAsyncBlobCreatorWithoutCompletePng(DOMUint8ClampedArray* data, const IntSize& size)
+        : MockCanvasAsyncBlobCreator(data, size, MimeTypePng)
     {
     }
 
@@ -77,7 +79,7 @@ protected:
     void scheduleInitiatePngEncoding() override
     {
         Platform::current()->mainThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE,
-        bind(&MockCanvasAsyncBlobCreatorWithoutComplete::initiatePngEncoding, this, std::numeric_limits<double>::max()));
+        bind(&MockCanvasAsyncBlobCreatorWithoutCompletePng::initiatePngEncoding, this, std::numeric_limits<double>::max()));
     }
 
     void idleEncodeRowsPng(double deadlineSeconds) override
@@ -87,12 +89,58 @@ protected:
 };
 
 //==============================================================================
+//=================================JPEG=========================================
+//==============================================================================
+
+class MockCanvasAsyncBlobCreatorWithoutStartJpeg : public MockCanvasAsyncBlobCreator {
+public:
+    MockCanvasAsyncBlobCreatorWithoutStartJpeg(DOMUint8ClampedArray* data, const IntSize& size)
+        : MockCanvasAsyncBlobCreator(data, size, MimeTypeJpeg)
+    {
+    }
+
+protected:
+    void scheduleInitiateJpegEncoding(const double&) override
+    {
+        // Deliberately make scheduleInitiateJpegEncoding do nothing so that idle task never starts
+    }
+};
+
+//==============================================================================
+
+class MockCanvasAsyncBlobCreatorWithoutCompleteJpeg : public MockCanvasAsyncBlobCreator {
+public:
+    MockCanvasAsyncBlobCreatorWithoutCompleteJpeg(DOMUint8ClampedArray* data, const IntSize& size)
+        : MockCanvasAsyncBlobCreator(data, size, MimeTypeJpeg)
+    {
+    }
+
+protected:
+    void scheduleInitiateJpegEncoding(const double& quality) override
+    {
+        Platform::current()->mainThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE,
+        bind(&MockCanvasAsyncBlobCreatorWithoutCompleteJpeg::initiateJpegEncoding, this, quality, std::numeric_limits<double>::max()));
+    }
+
+    void idleEncodeRowsJpeg(double deadlineSeconds) override
+    {
+        // Deliberately make idleEncodeRowsJpeg do nothing so that idle task never completes
+    }
+};
+
+//==============================================================================
 
 class CanvasAsyncBlobCreatorTest : public ::testing::Test {
 public:
-    void prepareMockCanvasAsyncBlobCreatorWithoutStart();
-    void prepareMockCanvasAsyncBlobCreatorWithoutComplete();
-    void prepareMockCanvasAsyncBlobCreatorFail();
+    // Png unit tests
+    void prepareMockCanvasAsyncBlobCreatorWithoutStartPng();
+    void prepareMockCanvasAsyncBlobCreatorWithoutCompletePng();
+    void prepareMockCanvasAsyncBlobCreatorFailPng();
+
+    // Jpeg unit tests
+    void prepareMockCanvasAsyncBlobCreatorWithoutStartJpeg();
+    void prepareMockCanvasAsyncBlobCreatorWithoutCompleteJpeg();
+    void prepareMockCanvasAsyncBlobCreatorFailJpeg();
 
 protected:
     CanvasAsyncBlobCreatorTest();
@@ -107,30 +155,56 @@ CanvasAsyncBlobCreatorTest::CanvasAsyncBlobCreatorTest()
 {
 }
 
-void CanvasAsyncBlobCreatorTest::prepareMockCanvasAsyncBlobCreatorWithoutStart()
+void CanvasAsyncBlobCreatorTest::prepareMockCanvasAsyncBlobCreatorWithoutStartPng()
 {
     IntSize testSize(20, 20);
     ImageData* imageData = ImageData::create(testSize);
 
-    m_asyncBlobCreator = new MockCanvasAsyncBlobCreatorWithoutStart(imageData->data(), testSize);
+    m_asyncBlobCreator = new MockCanvasAsyncBlobCreatorWithoutStartPng(imageData->data(), testSize);
 }
 
-void CanvasAsyncBlobCreatorTest::prepareMockCanvasAsyncBlobCreatorWithoutComplete()
+void CanvasAsyncBlobCreatorTest::prepareMockCanvasAsyncBlobCreatorWithoutCompletePng()
 {
     IntSize testSize(20, 20);
     ImageData* imageData = ImageData::create(testSize);
 
-    m_asyncBlobCreator = new MockCanvasAsyncBlobCreatorWithoutComplete(imageData->data(), testSize);
+    m_asyncBlobCreator = new MockCanvasAsyncBlobCreatorWithoutCompletePng(imageData->data(), testSize);
 }
 
-void CanvasAsyncBlobCreatorTest::prepareMockCanvasAsyncBlobCreatorFail()
+void CanvasAsyncBlobCreatorTest::prepareMockCanvasAsyncBlobCreatorFailPng()
 {
     IntSize testSize(0, 0);
     ImageData* imageData = ImageData::create(testSize);
 
-    // We reuse the class MockCanvasAsyncBlobCreatorWithoutComplete because this
+    // We reuse the class MockCanvasAsyncBlobCreatorWithoutCompletePng because this
     // test case is expected to fail at initialization step before completion.
-    m_asyncBlobCreator = new MockCanvasAsyncBlobCreatorWithoutComplete(imageData->data(), testSize);
+    m_asyncBlobCreator = new MockCanvasAsyncBlobCreatorWithoutCompletePng(imageData->data(), testSize);
+}
+
+void CanvasAsyncBlobCreatorTest::prepareMockCanvasAsyncBlobCreatorWithoutStartJpeg()
+{
+    IntSize testSize(20, 20);
+    ImageData* imageData = ImageData::create(testSize);
+
+    m_asyncBlobCreator = new MockCanvasAsyncBlobCreatorWithoutStartJpeg(imageData->data(), testSize);
+}
+
+void CanvasAsyncBlobCreatorTest::prepareMockCanvasAsyncBlobCreatorWithoutCompleteJpeg()
+{
+    IntSize testSize(20, 20);
+    ImageData* imageData = ImageData::create(testSize);
+
+    m_asyncBlobCreator = new MockCanvasAsyncBlobCreatorWithoutCompleteJpeg(imageData->data(), testSize);
+}
+
+void CanvasAsyncBlobCreatorTest::prepareMockCanvasAsyncBlobCreatorFailJpeg()
+{
+    IntSize testSize(0, 0);
+    ImageData* imageData = ImageData::create(testSize);
+
+    // We reuse the class MockCanvasAsyncBlobCreatorWithoutCompleteJpeg because this
+    // test case is expected to fail at initialization step before completion.
+    m_asyncBlobCreator = new MockCanvasAsyncBlobCreatorWithoutCompleteJpeg(imageData->data(), testSize);
 }
 
 void CanvasAsyncBlobCreatorTest::TearDown()
@@ -140,13 +214,13 @@ void CanvasAsyncBlobCreatorTest::TearDown()
 
 //==============================================================================
 
-TEST_F(CanvasAsyncBlobCreatorTest, IdleTaskNotStartedWhenStartTimeoutEventHappens)
+TEST_F(CanvasAsyncBlobCreatorTest, PngIdleTaskNotStartedWhenStartTimeoutEventHappens)
 {
     // This test mocks the scenario when idle task is not started when the
     // StartTimeoutEvent is inspecting the idle task status.
     // The whole image encoding process (including initialization)  will then
     // become carried out in the alternative code path instead.
-    this->prepareMockCanvasAsyncBlobCreatorWithoutStart();
+    this->prepareMockCanvasAsyncBlobCreatorWithoutStartPng();
     EXPECT_CALL(*(asyncBlobCreator()), signalTaskSwitchInStartTimeoutEventForTesting());
 
     this->asyncBlobCreator()->scheduleAsyncBlobCreation(true);
@@ -156,13 +230,13 @@ TEST_F(CanvasAsyncBlobCreatorTest, IdleTaskNotStartedWhenStartTimeoutEventHappen
     EXPECT_EQ(IdleTaskStatus::IdleTaskSwitchedToMainThreadTask, this->asyncBlobCreator()->idleTaskStatus());
 }
 
-TEST_F(CanvasAsyncBlobCreatorTest, IdleTaskNotCompletedWhenCompleteTimeoutEventHappens)
+TEST_F(CanvasAsyncBlobCreatorTest, PngIdleTaskNotCompletedWhenCompleteTimeoutEventHappens)
 {
     // This test mocks the scenario when idle task is not completed when the
     // CompleteTimeoutEvent is inspecting the idle task status.
     // The remaining image encoding process (excluding initialization)  will
     // then become carried out in the alternative code path instead.
-    this->prepareMockCanvasAsyncBlobCreatorWithoutComplete();
+    this->prepareMockCanvasAsyncBlobCreatorWithoutCompletePng();
     EXPECT_CALL(*(asyncBlobCreator()), signalTaskSwitchInCompleteTimeoutEventForTesting());
 
     this->asyncBlobCreator()->scheduleAsyncBlobCreation(true);
@@ -172,14 +246,50 @@ TEST_F(CanvasAsyncBlobCreatorTest, IdleTaskNotCompletedWhenCompleteTimeoutEventH
     EXPECT_EQ(IdleTaskStatus::IdleTaskSwitchedToMainThreadTask, this->asyncBlobCreator()->idleTaskStatus());
 }
 
-TEST_F(CanvasAsyncBlobCreatorTest, IdleTaskFailedWhenStartTimeoutEventHappens)
+TEST_F(CanvasAsyncBlobCreatorTest, PngIdleTaskFailedWhenStartTimeoutEventHappens)
 {
     // This test mocks the scenario when idle task is not failed during when
     // either the StartTimeoutEvent or the CompleteTimeoutEvent is inspecting
     // the idle task status.
-    this->prepareMockCanvasAsyncBlobCreatorFail();
+    this->prepareMockCanvasAsyncBlobCreatorFailPng();
 
     this->asyncBlobCreator()->scheduleAsyncBlobCreation(true);
+    testing::enterRunLoop();
+
+    EXPECT_EQ(IdleTaskStatus::IdleTaskFailed, this->asyncBlobCreator()->idleTaskStatus());
+}
+
+// The below 3 unit tests have exactly same workflow as the above 3 unit tests
+// except that they are encoding on JPEG image formats instead of PNG.
+TEST_F(CanvasAsyncBlobCreatorTest, JpegIdleTaskNotStartedWhenStartTimeoutEventHappens)
+{
+    this->prepareMockCanvasAsyncBlobCreatorWithoutStartJpeg();
+    EXPECT_CALL(*(asyncBlobCreator()), signalTaskSwitchInStartTimeoutEventForTesting());
+
+    this->asyncBlobCreator()->scheduleAsyncBlobCreation(true, 1.0);
+    testing::enterRunLoop();
+
+    ::testing::Mock::VerifyAndClearExpectations(asyncBlobCreator());
+    EXPECT_EQ(IdleTaskStatus::IdleTaskSwitchedToMainThreadTask, this->asyncBlobCreator()->idleTaskStatus());
+}
+
+TEST_F(CanvasAsyncBlobCreatorTest, JpegIdleTaskNotCompletedWhenCompleteTimeoutEventHappens)
+{
+    this->prepareMockCanvasAsyncBlobCreatorWithoutCompleteJpeg();
+    EXPECT_CALL(*(asyncBlobCreator()), signalTaskSwitchInCompleteTimeoutEventForTesting());
+
+    this->asyncBlobCreator()->scheduleAsyncBlobCreation(true, 1.0);
+    testing::enterRunLoop();
+
+    ::testing::Mock::VerifyAndClearExpectations(asyncBlobCreator());
+    EXPECT_EQ(IdleTaskStatus::IdleTaskSwitchedToMainThreadTask, this->asyncBlobCreator()->idleTaskStatus());
+}
+
+TEST_F(CanvasAsyncBlobCreatorTest, JpegIdleTaskFailedWhenStartTimeoutEventHappens)
+{
+    this->prepareMockCanvasAsyncBlobCreatorFailJpeg();
+
+    this->asyncBlobCreator()->scheduleAsyncBlobCreation(true, 1.0);
     testing::enterRunLoop();
 
     EXPECT_EQ(IdleTaskStatus::IdleTaskFailed, this->asyncBlobCreator()->idleTaskStatus());

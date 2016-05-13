@@ -52,6 +52,10 @@ public:
 class PLATFORM_EXPORT JPEGImageEncoder {
     STATIC_ONLY(JPEGImageEncoder);
 public:
+    enum {
+        ProgressiveEncodeFailed = -1
+    };
+
     // Encode the image data with a compression quality in [0-100].
     // Warning: Calling this method off the main thread may result in data race
     // problems; instead, call JPEGImageEncoderState::create on main thread
@@ -59,7 +63,8 @@ public:
     // be safer.
     static bool encode(const ImageDataBuffer&, const double& quality, Vector<unsigned char>*);
 
-    static bool encodeWithPreInitializedState(PassOwnPtr<JPEGImageEncoderState>, const unsigned char*);
+    static bool encodeWithPreInitializedState(PassOwnPtr<JPEGImageEncoderState>, const unsigned char*, int numRowsCompleted = 0);
+    static int progressiveEncodeRowsJpegHelper(JPEGImageEncoderState*, unsigned char*, int, const double, double);
     static int computeCompressionQuality(const double& quality);
 
 private:
