@@ -12,8 +12,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
-#include "chrome/browser/ui/views/app_list/app_list_dialog_container.h"
+#include "chrome/browser/ui/views/apps/app_info_dialog/app_info_dialog_container.h"
 #include "chrome/browser/ui/views/apps/app_info_dialog/app_info_footer_panel.h"
 #include "chrome/browser/ui/views/apps/app_info_dialog/app_info_header_panel.h"
 #include "chrome/browser/ui/views/apps/app_info_dialog/app_info_permissions_panel.h"
@@ -24,8 +23,6 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
-#include "ui/app_list/app_list_constants.h"
-#include "ui/app_list/app_list_switches.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/border.h"
@@ -36,6 +33,10 @@
 #include "ui/views/window/dialog_delegate.h"
 
 namespace {
+
+// The color of the separator used inside the dialog - should match the app
+// list's app_list::kDialogSeparatorColor
+const SkColor kDialogSeparatorColor = SkColorSetRGB(0xD1, 0xD1, 0xD1);
 
 #if defined(OS_MACOSX)
 bool IsAppInfoDialogMacEnabled() {
@@ -64,6 +65,7 @@ gfx::Size GetAppInfoNativeDialogSize() {
   return gfx::Size(380, 490);
 }
 
+#if defined(ENABLE_APP_LIST)
 void ShowAppInfoInAppList(gfx::NativeWindow parent,
                           const gfx::Rect& app_list_bounds,
                           Profile* profile,
@@ -84,6 +86,7 @@ void ShowAppInfoInAppList(gfx::NativeWindow parent,
   dialog_widget->SetBounds(app_list_bounds);
   dialog_widget->Show();
 }
+#endif
 
 void ShowAppInfoInNativeDialog(content::WebContents* web_contents,
                                const gfx::Size& size,
@@ -128,11 +131,11 @@ AppInfoDialog::AppInfoDialog(gfx::NativeWindow parent_window,
   const int kHorizontalSeparatorHeight = 1;
   dialog_header_ = new AppInfoHeaderPanel(profile, app);
   dialog_header_->SetBorder(views::Border::CreateSolidSidedBorder(
-      0, 0, kHorizontalSeparatorHeight, 0, app_list::kDialogSeparatorColor));
+      0, 0, kHorizontalSeparatorHeight, 0, kDialogSeparatorColor));
 
   dialog_footer_ = new AppInfoFooterPanel(parent_window, profile, app);
   dialog_footer_->SetBorder(views::Border::CreateSolidSidedBorder(
-      kHorizontalSeparatorHeight, 0, 0, 0, app_list::kDialogSeparatorColor));
+      kHorizontalSeparatorHeight, 0, 0, 0, kDialogSeparatorColor));
   if (!dialog_footer_->has_children()) {
     // If there are no controls in the footer, don't add it to the dialog.
     delete dialog_footer_;

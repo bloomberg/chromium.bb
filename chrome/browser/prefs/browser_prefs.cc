@@ -105,7 +105,6 @@
 
 #if defined(ENABLE_EXTENSIONS)
 #include "chrome/browser/accessibility/animation_policy_prefs.h"
-#include "chrome/browser/apps/drive/drive_app_mapping.h"
 #include "chrome/browser/apps/shortcut_manager.h"
 #include "chrome/browser/extensions/activity_log/activity_log.h"
 #include "chrome/browser/extensions/api/commands/command_service.h"
@@ -224,6 +223,10 @@
 
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 #include "chrome/browser/ui/startup/default_browser_prompt.h"
+#endif
+
+#if defined(ENABLE_APP_LIST)
+#include "chrome/browser/apps/drive/drive_app_mapping.h"
 #endif
 
 namespace {
@@ -504,7 +507,9 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   AppShortcutManager::RegisterProfilePrefs(registry);
   DeviceIDFetcher::RegisterProfilePrefs(registry);
   DevToolsWindow::RegisterProfilePrefs(registry);
+#if defined(ENABLE_APP_LIST)
   DriveAppMapping::RegisterProfilePrefs(registry);
+#endif
   extensions::CommandService::RegisterProfilePrefs(registry);
   extensions::ExtensionSettingsHandler::RegisterProfilePrefs(registry);
   extensions::TabsCaptureVisibleTabFunction::RegisterProfilePrefs(registry);

@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/views/apps/app_info_dialog/app_info_footer_panel.h"
 
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/grit/generated_resources.h"
@@ -59,6 +58,7 @@ void AppInfoFooterPanel::CreateButtons() {
     create_shortcuts_button_->SetStyle(views::Button::STYLE_BUTTON);
   }
 
+#if defined(USE_ASH)
   if (CanSetPinnedToShelf()) {
     pin_to_shelf_button_ = new views::LabelButton(
         this, l10n_util::GetStringUTF16(IDS_APP_LIST_CONTEXT_MENU_PIN));
@@ -67,6 +67,7 @@ void AppInfoFooterPanel::CreateButtons() {
         this, l10n_util::GetStringUTF16(IDS_APP_LIST_CONTEXT_MENU_UNPIN));
     unpin_from_shelf_button_->SetStyle(views::Button::STYLE_BUTTON);
   }
+#endif
 
   if (CanUninstallApp()) {
     remove_button_ = new views::LabelButton(
@@ -111,10 +112,12 @@ void AppInfoFooterPanel::ButtonPressed(views::Button* sender,
                                        const ui::Event& event) {
   if (sender == create_shortcuts_button_) {
     CreateShortcuts();
+#if defined(USE_ASH)
   } else if (sender == pin_to_shelf_button_) {
     SetPinnedToShelf(true);
   } else if (sender == unpin_from_shelf_button_) {
     SetPinnedToShelf(false);
+#endif
   } else if (sender == remove_button_) {
     UninstallApp();
   } else {
@@ -151,8 +154,8 @@ bool AppInfoFooterPanel::CanCreateShortcuts() const {
 #endif  // USE_ASH
 }
 
-void AppInfoFooterPanel::SetPinnedToShelf(bool value) {
 #if defined(USE_ASH)
+void AppInfoFooterPanel::SetPinnedToShelf(bool value) {
   DCHECK(CanSetPinnedToShelf());
   ash::ShelfDelegate* shelf_delegate =
       ash::Shell::GetInstance()->GetShelfDelegate();
@@ -164,13 +167,9 @@ void AppInfoFooterPanel::SetPinnedToShelf(bool value) {
 
   UpdatePinButtons(true);
   Layout();
-#else
-  NOTREACHED();
-#endif
 }
 
 bool AppInfoFooterPanel::CanSetPinnedToShelf() const {
-#if defined(USE_ASH)
   // Non-Ash platforms don't have a shelf.
   if (!ash::Shell::HasInstance())
     return false;
@@ -180,10 +179,8 @@ bool AppInfoFooterPanel::CanSetPinnedToShelf() const {
          (!ChromeLauncherController::instance() ||
           ChromeLauncherController::instance()->GetPinnable(app_->id()) ==
               AppListControllerDelegate::PIN_EDITABLE);
-#else
-  return false;
-#endif
 }
+#endif  // USE_ASH
 
 void AppInfoFooterPanel::UninstallApp() {
   DCHECK(CanUninstallApp());

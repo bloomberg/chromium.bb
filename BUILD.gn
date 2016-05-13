@@ -190,7 +190,6 @@ group("both_gn_and_gyp") {
       "//tools/gn:gn_unittests",
       "//tools/perf/clear_system_cache",
       "//ui/accessibility:accessibility_unittests",
-      "//ui/app_list:app_list_unittests",
     ]
   }
 
@@ -268,11 +267,22 @@ group("both_gn_and_gyp") {
     deps += [ "//ui/views:views_unittests" ]
   }
 
+  if (enable_app_list) {
+    deps += [ "//ui/app_list:app_list_unittests" ]
+  }
+
+  if (enable_app_list && use_aura) {
+    deps += [
+      # TODO(tapted): Move this into enable_app_list when enable_app_list is not
+      # true on Mac.
+      "//ui/app_list/presenter:app_list_presenter_unittests",
+    ]
+  }
+
   if (use_aura) {
     deps += [
       "//ash:ash_shell_with_content",
       "//ash:ash_unittests",
-      "//ui/app_list/presenter:app_list_presenter_unittests",
       "//ui/aura:aura_unittests",
       "//ui/aura:demo",
       "//ui/wm:wm_unittests",
@@ -543,7 +553,7 @@ group("both_gn_and_gyp") {
       }
     }
 
-    if (toolkit_views) {
+    if (enable_app_list) {
       deps += [ "//ui/app_list:app_list_demo" ]
     }
 

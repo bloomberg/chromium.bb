@@ -66,10 +66,12 @@ class AppInfoFooterPanel
   void CreateShortcuts();
   bool CanCreateShortcuts() const;
 
+#if defined(USE_ASH)
   // Pins and unpins the app from the shelf. Must only be called if
   // CanSetPinnedToShelf() returns true.
   void SetPinnedToShelf(bool value);
   bool CanSetPinnedToShelf() const;
+#endif
 
   // Uninstall the app. Must only be called if CanUninstallApp() returns true.
   void UninstallApp();

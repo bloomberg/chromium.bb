@@ -2,14 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/app_list/app_list_dialog_container.h"
+#include "chrome/browser/ui/views/apps/app_info_dialog/app_info_dialog_container.h"
 
 #include <utility>
 
 #include "base/macros.h"
 #include "build/build_config.h"
-#include "third_party/skia/include/core/SkPaint.h"
-#include "ui/app_list/app_list_constants.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_types.h"
@@ -18,7 +16,6 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/resources/grit/ui_resources.h"
-#include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/bubble/bubble_frame_view.h"
@@ -29,6 +26,12 @@
 #include "ui/views/window/dialog_delegate.h"
 #include "ui/views/window/native_frame_view.h"
 #include "ui/views/window/non_client_view.h"
+
+#if defined(ENABLE_APP_LIST)
+#include "third_party/skia/include/core/SkPaint.h"
+#include "ui/app_list/app_list_constants.h"
+#include "ui/views/background.h"
+#endif
 
 namespace {
 
@@ -41,6 +44,7 @@ const views::BubbleBorder::Shadow kShadowType =
     views::BubbleBorder::SMALL_SHADOW;
 #endif
 
+#if defined(ENABLE_APP_LIST)
 // The background for App List dialogs, which appears as a rounded rectangle
 // with the same border radius and color as the app list contents.
 class AppListOverlayBackground : public views::Background {
@@ -58,13 +62,14 @@ class AppListOverlayBackground : public views::Background {
     SkPaint paint;
     paint.setStyle(SkPaint::kFill_Style);
     paint.setColor(app_list::kContentsBackgroundColor);
-    canvas->DrawRoundRect(
-        view->GetContentsBounds(), kAppListOverlayBorderRadius, paint);
+    canvas->DrawRoundRect(view->GetContentsBounds(),
+                          kAppListOverlayBorderRadius, paint);
   }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AppListOverlayBackground);
 };
+#endif  // ENABLE_APP_LIST
 
 // Base container for modal dialogs. Encases a content view in a modal dialog
 // with an accelerator to close on escape.
@@ -72,8 +77,7 @@ class BaseDialogContainer : public views::DialogDelegateView {
  public:
   BaseDialogContainer(views::View* dialog_body,
                       const base::Closure& close_callback)
-      : dialog_body_(dialog_body),
-        close_callback_(close_callback) {
+      : dialog_body_(dialog_body), close_callback_(close_callback) {
     AddChildView(dialog_body_);
     // Since we are using a ClientView instead of a DialogClientView, we need to
     // manually bind the escape key to close the dialog.
@@ -118,6 +122,8 @@ class BaseDialogContainer : public views::DialogDelegateView {
 
   DISALLOW_COPY_AND_ASSIGN(BaseDialogContainer);
 };
+
+#if defined(ENABLE_APP_LIST)
 
 // The contents view for an App List Dialog, which covers the entire app list
 // and adds a close button.
@@ -167,6 +173,8 @@ class AppListDialogContainer : public BaseDialogContainer,
   DISALLOW_COPY_AND_ASSIGN(AppListDialogContainer);
 };
 
+#endif  // ENABLE_APP_LIST
+
 // A BubbleFrameView that allows its client view to extend all the way to the
 // top of the dialog, overlapping the BubbleFrameView's close button. This
 // allows dialog content to appear closer to the top, in place of a title.
@@ -206,8 +214,7 @@ class NativeDialogContainer : public BaseDialogContainer {
   NativeDialogContainer(views::View* dialog_body,
                         const gfx::Size& size,
                         const base::Closure& close_callback)
-      : BaseDialogContainer(dialog_body, close_callback),
-        size_(size) {
+      : BaseDialogContainer(dialog_body, close_callback), size_(size) {
     SetLayoutManager(new views::FillLayout());
   }
   ~NativeDialogContainer() override {}
@@ -234,11 +241,13 @@ class NativeDialogContainer : public BaseDialogContainer {
 
 }  // namespace
 
+#if defined(ENABLE_APP_LIST)
 views::DialogDelegateView* CreateAppListContainerForView(
     views::View* view,
     const base::Closure& close_callback) {
   return new AppListDialogContainer(view, close_callback);
 }
+#endif  // ENABLE_APP_LIST
 
 views::DialogDelegateView* CreateDialogContainerForView(
     views::View* view,

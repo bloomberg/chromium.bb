@@ -50,7 +50,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -108,6 +107,10 @@
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service_factory.h"
 #include "chrome/browser/printing/print_dialog_cloud.h"
+#endif
+
+#if defined(ENABLE_APP_LIST)
+#include "chrome/browser/ui/app_list/app_list_service.h"
 #endif
 
 using content::BrowserThread;
@@ -872,10 +875,12 @@ base::FilePath GetStartupProfilePath(const base::FilePath& user_data_dir,
         command_line.GetSwitchValuePath(switches::kProfileDirectory));
   }
 
+#if defined(ENABLE_APP_LIST)
   // If we are showing the app list then chrome isn't shown so load the app
   // list's profile rather than chrome's.
   if (command_line.HasSwitch(switches::kShowAppList))
     return AppListService::Get()->GetProfilePath(user_data_dir);
+#endif
 
   return g_browser_process->profile_manager()->GetLastUsedProfileDir(
       user_data_dir);

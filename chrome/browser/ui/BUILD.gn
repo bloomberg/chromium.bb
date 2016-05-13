@@ -465,7 +465,6 @@ source_set("ui") {
       "//third_party/iaccessible2",
       "//third_party/isimpledom",
       "//third_party/wtl",
-      "//ui/app_list",
       "//ui/base/ime",
       "//ui/events:dom_keycode_converter",
     ]
@@ -476,6 +475,9 @@ source_set("ui") {
         "webui/help/version_updater_basic.cc",
         "webui/help/version_updater_basic.h",
       ]
+    }
+    if (enable_app_list) {
+      deps += [ "//ui/app_list" ]
     }
   } else {  # 'OS!="win"
     if (toolkit_views) {
@@ -528,6 +530,12 @@ source_set("ui") {
       sources += rebase_path(gypi_values.chrome_browser_ui_chromeos_arc_sources,
                              ".",
                              "//chrome")
+    }
+    if (is_desktop_linux) {
+      sources +=
+          rebase_path(gypi_values.chrome_browser_ui_app_list_linux_sources,
+                      ".",
+                      "//chrome")
     }
     if (!is_mac && !use_ash) {
       sources +=

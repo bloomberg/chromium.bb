@@ -666,12 +666,8 @@
       'browser/ui/views/select_file_dialog_extension_browsertest.cc',
     ],
     # Cross-platform (except Mac/Cocoa) views browser tests. Excluded on Mac
-    # unless building with mac_views_browser=1. Assumes app list is enabled (as
-    # for chrome_browser_ui_views_non_mac_sources).
+    # unless building with mac_views_browser=1.
     'chrome_browser_tests_views_non_mac_sources': [
-      # This assumes the AppListService is views-based.
-      'browser/ui/app_list/app_list_service_views_browsertest.cc',
-
       # TODO(tapted): Move these to chrome_browser_tests_views_sources when the
       # the corresponding files are moved in chrome_browser_ui.gypi (i.e. out of
       # chrome_browser_ui_views_non_mac_sources). http://crbug.com/404979.
@@ -922,6 +918,7 @@
       'browser/apps/drive/drive_app_provider_browsertest.cc',
       'browser/ui/app_list/app_list_controller_browsertest.cc',
       'browser/ui/app_list/app_list_service_impl_browsertest.cc',
+      'browser/ui/app_list/app_list_service_views_browsertest.cc',
       'browser/ui/app_list/search/webstore/webstore_provider_browsertest.cc',
       'browser/ui/app_list/speech_recognizer_browsertest.cc',
     ],
@@ -2653,6 +2650,15 @@
         }],
         ['enable_app_list==1', {
           'sources': [ '<@(chrome_browser_tests_app_list_sources)' ],
+          'conditions': [
+            ['OS=="mac"', {
+              'sources!': [
+                # This assumes the AppList is views-based, but Mac only links
+                # browser parts for the Cocoa implementation.
+                'browser/ui/app_list/app_list_service_views_browsertest.cc',
+              ],
+            }],
+          ],
         }, {
           'sources!': [ 'browser/ui/webui/app_list/start_page_browsertest.js' ],
         }],
@@ -2889,7 +2895,6 @@
         '../sync/sync.gyp:sync',
         '../sync/sync.gyp:test_support_sync_fake_server',
         '../sync/sync.gyp:test_support_sync_testserver',
-        '../ui/app_list/app_list.gyp:app_list_test_support',
       ],
       'include_dirs': [
         '..',
@@ -2929,7 +2934,11 @@
             # 'browser/sync/test/integration/wifi_credentials_helper_chromeos.h',
           ],
         }],
-        ['enable_app_list==0', {
+        ['enable_app_list==1', {
+          'dependencies' : [
+            '../ui/app_list/app_list.gyp:app_list_test_support',
+          ],
+        }, {
           # Note: this list is duplicated in the GN build.
           'sources!': [
             'browser/sync/test/integration/sync_app_list_helper.cc',

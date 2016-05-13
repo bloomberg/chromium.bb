@@ -54,7 +54,6 @@
       'inline_install_private.idl',
       'instance_id.json',
       'language_settings_private.idl',
-      'launcher_page.idl',
       'manifest_types.json',
       'media_galleries.idl',
       'metrics_private.json',
@@ -142,7 +141,11 @@
       'cast_streaming_session.idl',
       'cast_streaming_udp_transport.idl',
     ],
-    
+    'app_list_schema_files': [
+      # TODO(tapted): Move this into chromeos_schema_files.
+      'launcher_page.idl',
+    ],
+
     'task_manager_dependent_schema_files': [
       'processes.idl',
     ],
@@ -198,6 +201,11 @@
       ['enable_webrtc==1', {
         'schema_files': [
           '<@(webrtc_schema_files)',
+        ],
+      }],
+      ['enable_app_list==1', {
+        'schema_files': [
+          '<@(app_list_schema_files)',
         ],
       }],
     ],

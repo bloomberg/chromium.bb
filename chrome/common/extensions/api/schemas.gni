@@ -28,6 +28,9 @@ if (enable_service_discovery) {
 if (enable_webrtc) {
   sources += gypi_values.webrtc_schema_files
 }
+if (enable_app_list) {
+  sources += gypi_values.app_list_schema_files
+}
 
 uncompiled_sources = gypi_values.main_non_compiled_schema_files
 

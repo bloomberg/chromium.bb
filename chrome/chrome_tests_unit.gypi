@@ -400,7 +400,6 @@
       '../components/drive/service/fake_drive_service_unittest.cc',
       'browser/apps/app_shim/app_shim_host_mac_unittest.cc',
       'browser/apps/app_shim/extension_app_shim_handler_mac_unittest.cc',
-      'browser/apps/drive/drive_app_mapping_unittest.cc',
       'browser/autocomplete/keyword_extensions_delegate_impl_unittest.cc',
       'browser/browsing_data/hosted_apps_counter_unittest.cc',
       'browser/extensions/active_tab_unittest.cc',
@@ -1339,15 +1338,12 @@
     ],
     # Views unit_tests for everywhere but ChromeOS.
     'chrome_unit_tests_views_non_chromeos_sources': [
-      'browser/ui/views/app_list/linux/app_list_linux_unittest.cc',
       'browser/ui/views/frame/opaque_browser_frame_view_layout_unittest.cc',
       'browser/ui/views/sync/one_click_signin_dialog_view_unittest.cc',
     ],
-    # Cross-platform (except Mac) views unit tests. Assumes app list is enabled.
+    # Cross-platform (except Mac) views unit tests.
     'chrome_unit_tests_views_non_mac_sources': [
       'browser/ui/views/accelerator_table_unittest.cc',
-      # Views implies app list is enabled (only disabled on mobile).
-      'browser/ui/views/app_list/win/app_list_win_unittest.cc',
       'browser/ui/views/apps/shaped_app_window_targeter_unittest.cc',
       'browser/ui/views/bookmarks/bookmark_bar_view_unittest.cc',
       'browser/ui/views/bookmarks/bookmark_bubble_view_unittest.cc',
@@ -1604,6 +1600,7 @@
       'browser/upgrade_detector_impl_unittest.cc',
     ],
     'chrome_unit_tests_app_list_sources': [
+      'browser/apps/drive/drive_app_mapping_unittest.cc',
       'browser/ui/app_list/app_context_menu_unittest.cc',
       'browser/ui/app_list/app_list_positioner_unittest.cc',
       'browser/ui/app_list/app_list_service_mac_unittest.mm',
@@ -1623,6 +1620,8 @@
       'browser/ui/app_list/test/fake_profile_store.cc',
       'browser/ui/app_list/test/fake_profile_store.h',
       'browser/ui/app_list/test/fast_show_pickler_unittest.cc',
+      'browser/ui/views/app_list/linux/app_list_linux_unittest.cc',
+      'browser/ui/views/app_list/win/app_list_win_unittest.cc',
     ],
     # ChromeOS only sources of app_list.
     'chrome_unit_tests_app_list_chromeos_sources': [
@@ -2735,12 +2734,8 @@
               'dependencies': [
                 '../components/components.gyp:arc_test_support',
               ],
-            }],
-            ['OS=="mac"', {
               'sources!': [
-                # This assumes the AppList is views-based, but Mac only links
-                # browser parts for the Cocoa implementation.
-                'browser/ui/app_list/app_list_shower_views_unittest.cc',
+                'browser/ui/views/app_list/linux/app_list_linux_unittest.cc',
               ],
             }],
           ],

@@ -1341,10 +1341,6 @@
       'browser/ui/input_method/input_method_engine.h',
       'browser/ui/input_method/input_method_engine_base.cc',
       'browser/ui/input_method/input_method_engine_base.h',
-      'browser/ui/views/app_list/linux/app_list_linux.cc',
-      'browser/ui/views/app_list/linux/app_list_linux.h',
-      'browser/ui/views/app_list/linux/app_list_service_linux.cc',
-      'browser/ui/views/app_list/linux/app_list_service_linux.h',
       'browser/ui/views/apps/chrome_app_window_client_views_linux.cc',
       'browser/ui/views/first_run_dialog.cc',
       'browser/ui/views/first_run_dialog.h',
@@ -2049,6 +2045,8 @@
       'browser/ui/autofill/save_card_bubble_controller_impl.h',
       'browser/ui/autofill/save_card_bubble_view.h',
       'browser/ui/browser_dialogs_mac.cc',
+      'browser/ui/views/apps/app_info_dialog/app_info_dialog_container.cc',
+      'browser/ui/views/apps/app_info_dialog/app_info_dialog_container.h',
       'browser/ui/views/apps/app_info_dialog/app_info_dialog_views.cc',
       'browser/ui/views/apps/app_info_dialog/app_info_dialog_views.h',
       'browser/ui/views/apps/app_info_dialog/app_info_footer_panel.cc',
@@ -2131,7 +2129,7 @@
       'browser/ui/views/sync/one_click_signin_dialog_view.cc',
       'browser/ui/views/sync/one_click_signin_dialog_view.h',
     ],
-    # Cross-platform (except Mac) views sources. We assume app list is enabled.
+    # Cross-platform (except Mac) views sources.
     'chrome_browser_ui_views_non_mac_sources': [
       'browser/ui/views/accelerator_utils_aura.cc',
       'browser/ui/views/accessibility/invert_bubble_view.cc',
@@ -2546,9 +2544,6 @@
 
     ### Feature-based sources ###
     # Variables should generally be alphabetical within this section.
-
-    # Note that we assume app list is enabled on all views builds, so the
-    # views-specific app list files are in the views section.
     'chrome_browser_ui_app_list_sources': [
       'browser/ui/app_list/app_context_menu.cc',
       'browser/ui/app_list/app_context_menu.h',
@@ -2651,8 +2646,6 @@
       'browser/ui/app_list/start_page_service.h',
       'browser/ui/app_list/start_page_service_factory.cc',
       'browser/ui/app_list/start_page_service_factory.h',
-      'browser/ui/views/app_list/app_list_dialog_container.cc',
-      'browser/ui/views/app_list/app_list_dialog_container.h',
       'browser/ui/views/app_list/win/activation_tracker_win.cc',
       'browser/ui/views/app_list/win/activation_tracker_win.h',
       'browser/ui/views/app_list/win/app_list_controller_delegate_win.cc',
@@ -2665,6 +2658,12 @@
       'browser/ui/webui/app_list/start_page_handler.h',
       'browser/ui/webui/app_list/start_page_ui.cc',
       'browser/ui/webui/app_list/start_page_ui.h',
+    ],
+    'chrome_browser_ui_app_list_linux_sources': [
+      'browser/ui/views/app_list/linux/app_list_linux.cc',
+      'browser/ui/views/app_list/linux/app_list_linux.h',
+      'browser/ui/views/app_list/linux/app_list_service_linux.cc',
+      'browser/ui/views/app_list/linux/app_list_service_linux.h',
     ],
     'chrome_browser_ui_app_list_views_sources': [
       'browser/ui/app_list/app_list_controller_delegate_views.cc',
@@ -3148,7 +3147,6 @@
             '../google_update/google_update.gyp:google_update',
             '../third_party/iaccessible2/iaccessible2.gyp:iaccessible2',
             '../third_party/isimpledom/isimpledom.gyp:isimpledom',
-            '../ui/app_list/app_list.gyp:app_list',
             '../ui/base/ime/ui_base_ime.gyp:ui_base_ime',
             '../ui/events/events.gyp:dom_keycode_converter',
             '../ui/views/controls/webview/webview.gyp:webview',
@@ -3174,6 +3172,11 @@
               'sources': [
                 'browser/ui/webui/help/version_updater_basic.cc',
                 'browser/ui/webui/help/version_updater_basic.h',
+              ],
+            }],
+            ['enable_app_list==1', {
+              'dependencies!': [
+                '../ui/app_list/app_list.gyp:app_list',
               ],
             }],
           ],
@@ -3237,6 +3240,11 @@
             '../ui/app_list/app_list.gyp:app_list',
           ],
           'conditions': [
+            ['desktop_linux==1', {
+              'sources': [
+                '<@(chrome_browser_ui_app_list_linux_sources)',
+              ],
+            }],
             ['OS!="mac"', {
               'sources': [
                 '<@(chrome_browser_ui_app_list_views_sources)',

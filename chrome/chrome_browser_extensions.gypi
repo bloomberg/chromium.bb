@@ -355,8 +355,6 @@
       'browser/extensions/api/language_settings_private/language_settings_private_delegate.h',
       'browser/extensions/api/language_settings_private/language_settings_private_delegate_factory.cc',
       'browser/extensions/api/language_settings_private/language_settings_private_delegate_factory.h',
-      'browser/extensions/api/launcher_page/launcher_page_api.cc',
-      'browser/extensions/api/launcher_page/launcher_page_api.h',
       'browser/extensions/api/management/chrome_management_api_delegate.cc',
       'browser/extensions/api/management/chrome_management_api_delegate.h',
       'browser/extensions/api/media_galleries/media_galleries_api.cc',
@@ -908,6 +906,8 @@
       'browser/apps/drive/drive_app_uninstall_sync_service.h',
       'browser/apps/drive/drive_service_bridge.cc',
       'browser/apps/drive/drive_service_bridge.h',
+      'browser/extensions/api/launcher_page/launcher_page_api.cc',
+      'browser/extensions/api/launcher_page/launcher_page_api.h',
     ],
     'chrome_browser_extensions_networking_private_sources_winmac': [
       'browser/extensions/api/networking_private/crypto_verify_impl.cc',

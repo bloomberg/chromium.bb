@@ -383,7 +383,6 @@
             '../sandbox/sandbox.gyp:sbox_integration_tests',
             '../sandbox/sandbox.gyp:sbox_unittests',
             '../sandbox/sandbox.gyp:sbox_validation_tests',
-            '../ui/app_list/app_list.gyp:app_list_unittests',
           ],
           'conditions': [
             # remoting_host_installation uses lots of non-trivial GYP that tend
@@ -443,7 +442,6 @@
         }],
         ['OS=="mac"', {
           'dependencies': [
-            '../ui/app_list/app_list.gyp:app_list_unittests',
             '../ui/message_center/message_center.gyp:*',
           ],
         }],
@@ -462,11 +460,19 @@
             '../printing/printing.gyp:printing_unittests',
           ],
         }],
+        ['enable_app_list==1', {
+          'dependencies': [
+            '../ui/app_list/app_list.gyp:app_list_unittests',
+          ],
+        }],
+        ['enable_app_list==1 and use_aura==1', {
+          'dependencies': [
+            '../ui/app_list/presenter/app_list_presenter.gyp:app_list_presenter_unittests',
+          ],
+        }],
         ['use_aura==1', {
           'dependencies': [
             '../ash/ash.gyp:ash_unittests',
-            '../ui/app_list/app_list.gyp:app_list_unittests',
-            '../ui/app_list/presenter/app_list_presenter.gyp:app_list_presenter_unittests',
             '../ui/aura/aura.gyp:aura_unittests',
             '../ui/compositor/compositor.gyp:compositor_unittests',
           ],
@@ -1121,7 +1127,6 @@
             '../third_party/WebKit/Source/platform/blink_platform_tests.gyp:blink_heap_unittests',
             '../third_party/WebKit/Source/platform/blink_platform_tests.gyp:blink_platform_unittests',
             '../ui/accessibility/accessibility.gyp:accessibility_unittests',
-            '../ui/app_list/app_list.gyp:app_list_unittests',
             '../ui/aura/aura.gyp:aura_unittests',
             '../ui/compositor/compositor.gyp:compositor_unittests',
             '../ui/display/display.gyp:display_unittests',
@@ -1232,7 +1237,6 @@
             '../ppapi/ppapi_internal.gyp:ppapi_unittests',
             '../remoting/remoting.gyp:remoting_unittests',
             '../skia/skia_tests.gyp:skia_unittests',
-            '../ui/app_list/app_list.gyp:*',
             '../ui/aura/aura.gyp:*',
             '../ui/aura_extra/aura_extra.gyp:*',
             '../ui/base/ui_base_tests.gyp:ui_base_unittests',
@@ -1267,6 +1271,11 @@
               'dependencies': [
                 '../ui/ozone/ozone.gyp:*',
                 '../ui/ozone/demo/ozone_demos.gyp:*',
+              ],
+            }],
+            ['enable_app_list==1', {
+              'dependencies': [
+                '../ui/app_list/app_list.gyp:*',
               ],
             }],
             ['chromecast==0', {

@@ -156,8 +156,12 @@
         }],
         ['toolkit_views==1', {
           'dependencies': [
-            '../ui/app_list/app_list.gyp:app_list_demo',
             '../ui/views/views.gyp:views_unittests',
+          ],
+        }],
+        ['enable_app_list==1', {
+          'dependencies': [
+            '../ui/app_list/app_list.gyp:app_list_demo',
           ],
         }],
         ['use_ash==1', {
@@ -360,8 +364,12 @@
             '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation_unittests',
             '../third_party/libphonenumber/libphonenumber.gyp:libphonenumber_unittests',
             '../tools/imagediff/image_diff.gyp:image_diff',
-            '../ui/app_list/app_list.gyp:app_list_unittests',
             '../ui/compositor/compositor.gyp:compositor_unittests',
+          ],
+        }],
+        ['enable_app_list==1', {
+          'dependencies': [
+            '../ui/app_list/app_list.gyp:app_list_unittests',
           ],
         }],
         ['OS!="android" and chromecast==0', {
@@ -602,7 +610,6 @@
             '../tools/battor_agent/battor_agent.gyp:battor_agent_unittests_run',
             '../tools/gn/gn.gyp:gn_unittests_run',
             '../ui/accessibility/accessibility.gyp:accessibility_unittests_run',
-            '../ui/app_list/app_list.gyp:app_list_unittests_run',
             '../ui/compositor/compositor.gyp:compositor_unittests_run',
             '../ui/display/display.gyp:display_unittests_run',
             '../ui/events/events_unittests.gyp:events_unittests_run',
@@ -653,9 +660,18 @@
                 '../ash/ash.gyp:ash_unittests_run',
               ],
             }],
-            ['use_aura==1', {
+            ['enable_app_list==1', {
+              'dependencies': [
+                '../ui/app_list/app_list.gyp:app_list_unittests_run',
+              ],
+            }],
+            ['enable_app_list==1 and use_aura==1', {
               'dependencies': [
                 '../ui/app_list/presenter/app_list_presenter.gyp:app_list_presenter_unittests_run',
+              ],
+            }],
+            ['use_aura==1', {
+              'dependencies': [
                 '../ui/aura/aura.gyp:aura_unittests_run',
                 '../ui/wm/wm.gyp:wm_unittests_run',
               ],

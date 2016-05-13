@@ -25,7 +25,7 @@ class Size;
 
 // Used for UMA to track where the App Info dialog is launched from.
 enum AppInfoLaunchSource {
-  FROM_APP_LIST,         // Launched from the app list context menu.
+  FROM_APP_LIST,         // Launched from the app list context menu (ChromeOS).
   FROM_EXTENSIONS_PAGE,  // Launched from the chrome://extensions page.
   FROM_APPS_PAGE,        // Launched from chrome://apps context menu.
   NUM_LAUNCH_SOURCES,
@@ -38,6 +38,7 @@ bool CanShowAppInfoDialog();
 // Returns the size of the native window container for the app info dialog.
 gfx::Size GetAppInfoNativeDialogSize();
 
+#if defined(ENABLE_APP_LIST)
 // Shows the chrome app information as a frameless window for the given |app|
 // and |profile| at the given |app_list_bounds|. Appears 'inside' the app list.
 void ShowAppInfoInAppList(gfx::NativeWindow parent,
@@ -45,6 +46,7 @@ void ShowAppInfoInAppList(gfx::NativeWindow parent,
                           Profile* profile,
                           const extensions::Extension* app,
                           const base::Closure& close_callback);
+#endif
 
 // Shows the chrome app information in a native dialog box of the given |size|.
 void ShowAppInfoInNativeDialog(content::WebContents* web_contents,

@@ -259,7 +259,7 @@
           }],
 
           # Enable App Launcher everywhere but mobile.
-          ['OS!="ios" and OS!="android"', {
+          ['OS!="ios" and OS!="android" and chromecast==0', {
             'enable_app_list%': 1,
           }, {
             'enable_app_list%': 0,
