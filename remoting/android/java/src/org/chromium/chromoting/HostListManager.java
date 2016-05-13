@@ -273,8 +273,10 @@ public class HostListManager {
 
             // Listen for the server to respond.
             int status = link.getResponseCode();
+            // TODO(yuweih): Turn this switch statement into range testing. e.g. 200-299 = OK.
             switch (status) {
                 case HttpURLConnection.HTTP_OK:  // 200
+                case HttpURLConnection.HTTP_NO_CONTENT:  // 204
                     break;
                 case HttpURLConnection.HTTP_UNAUTHORIZED:  // 401
                     error = Error.AUTH_FAILED;

@@ -72,9 +72,6 @@ public class Chromoting extends AppCompatActivity implements ConnectionListener,
     /** User's account name (email). */
     private String mAccount;
 
-    /** Account auth token. */
-    private String mToken;
-
     /** Helper for fetching the host list. */
     private HostListManager mHostListManager;
 
@@ -102,19 +99,11 @@ public class Chromoting extends AppCompatActivity implements ConnectionListener,
      */
     private SessionAuthenticator mAuthenticator;
 
-    /**
-     * This is set when receiving an authentication error from the HostListManager. If that occurs,
-     * this flag is set and a fresh authentication token is fetched from the AccountsService, and
-     * used to request the host list a second time.
-     */
-    boolean mTriedNewAuthToken;
+    private OAuthTokenConsumer mHostConnectingConsumer;
 
-    /**
-     * Flag to track whether a call to AccountManager.getAuthToken() is currently pending.
-     * This avoids infinitely-nested calls in case onStart() gets triggered a second time
-     * while a token is being fetched.
-     */
-    private boolean mWaitingForAuthToken = false;
+    private OAuthTokenConsumer mHostListRetrievingConsumer;
+
+    private OAuthTokenConsumer mHostDeletingConsumer;
 
     private DrawerLayout mDrawerLayout;
 
@@ -191,7 +180,6 @@ public class Chromoting extends AppCompatActivity implements ConnectionListener,
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        mTriedNewAuthToken = false;
         mHostListManager = new HostListManager();
 
         // Get ahold of our view widgets.
@@ -280,6 +268,10 @@ public class Chromoting extends AppCompatActivity implements ConnectionListener,
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT));
         navigationDrawer.addView(switcherView, 0);
+
+        mHostConnectingConsumer = new OAuthTokenConsumer(this, TOKEN_SCOPE);
+        mHostListRetrievingConsumer = new OAuthTokenConsumer(this, TOKEN_SCOPE);
+        mHostDeletingConsumer = new OAuthTokenConsumer(this, TOKEN_SCOPE);
     }
 
     @Override
@@ -371,10 +363,9 @@ public class Chromoting extends AppCompatActivity implements ConnectionListener,
             if (resultCode == RESULT_OK) {
                 // User gave OAuth permission to this app (or recovered from any OAuth failure),
                 // so retry fetching the token.
-                requestAuthToken(false);
+                refreshHostList();
             } else {
                 // User denied permission or cancelled the dialog, so cancel the request.
-                mWaitingForAuthToken = false;
                 updateHostListView();
             }
         }
@@ -452,7 +443,7 @@ public class Chromoting extends AppCompatActivity implements ConnectionListener,
         }
     }
 
-    private void connectToHost(HostInfo host) {
+    private void connectToHost(final HostInfo host) {
         if (mClient != null) {
             mClient.destroy();
         }
@@ -474,52 +465,62 @@ public class Chromoting extends AppCompatActivity implements ConnectionListener,
                     }
                 });
 
-        SessionConnector connector = new SessionConnector(mClient, this, this, mHostListManager);
+        final SessionConnector connector =
+                new SessionConnector(mClient, this, this, mHostListManager);
         mAuthenticator = new SessionAuthenticator(this, mClient, host);
-        connector.connectToHost(mAccount, mToken, host, mAuthenticator,
-                getPreferences(MODE_PRIVATE).getString(PREFERENCE_EXPERIMENTAL_FLAGS, ""));
+        mHostConnectingConsumer.consume(mAccount, new OAuthTokenFetcher.Callback() {
+            @Override
+            public void onTokenFetched(String token) {
+                connector.connectToHost(mAccount, token, host, mAuthenticator,
+                        getPreferences(MODE_PRIVATE).getString(PREFERENCE_EXPERIMENTAL_FLAGS, ""));
+            }
+
+            @Override
+            public void onError(OAuthTokenFetcher.Error error) {
+                showAuthErrorMessage(error);
+            }
+        });
+    }
+
+    private void showAuthErrorMessage(OAuthTokenFetcher.Error error) {
+        String explanation = getString(error == OAuthTokenFetcher.Error.NETWORK
+                ? R.string.error_network_error : R.string.error_unexpected);
+        Toast.makeText(Chromoting.this, explanation, Toast.LENGTH_LONG).show();
     }
 
     private void refreshHostList() {
-        if (mWaitingForAuthToken) {
-            return;
-        }
-
-        mTriedNewAuthToken = false;
         showHostListLoadingIndicator();
 
         // The refresh button simply makes use of the currently-chosen account.
-        requestAuthToken(false);
+        mHostListRetrievingConsumer.consume(mAccount, new OAuthTokenFetcher.Callback() {
+            @Override
+            public void onTokenFetched(String token) {
+                mHostListManager.retrieveHostList(token, Chromoting.this);
+            }
+
+            @Override
+            public void onError(OAuthTokenFetcher.Error error) {
+                showAuthErrorMessage(error);
+                updateHostListView();
+            }
+        });
     }
 
-    private void requestAuthToken(boolean expireCurrentToken) {
-        mWaitingForAuthToken = true;
+    private void deleteHost(final String hostId) {
+        showHostListLoadingIndicator();
 
-        OAuthTokenFetcher fetcher = new OAuthTokenFetcher(this, mAccount, TOKEN_SCOPE,
-                new OAuthTokenFetcher.Callback() {
-                    @Override
-                    public void onTokenFetched(String token) {
-                        mWaitingForAuthToken = false;
-                        mToken = token;
-                        mHostListManager.retrieveHostList(mToken, Chromoting.this);
-                    }
+        mHostDeletingConsumer.consume(mAccount, new OAuthTokenFetcher.Callback() {
+            @Override
+            public void onTokenFetched(String token) {
+                mHostListManager.deleteHost(token, hostId, Chromoting.this);
+            }
 
-                    @Override
-                    public void onError(OAuthTokenFetcher.Error error) {
-                        mWaitingForAuthToken = false;
-                        updateHostListView();
-                        String explanation = getString(error == OAuthTokenFetcher.Error.NETWORK
-                                ? R.string.error_network_error : R.string.error_unexpected);
-                        Toast.makeText(Chromoting.this, explanation, Toast.LENGTH_LONG).show();
-                    }
-                });
-
-        if (expireCurrentToken) {
-            fetcher.clearAndFetch(mToken);
-            mToken = null;
-        } else {
-            fetcher.fetch();
-        }
+            @Override
+            public void onError(OAuthTokenFetcher.Error error) {
+                showAuthErrorMessage(error);
+                updateHostListView();
+            }
+        });
     }
 
     @Override
@@ -558,7 +559,9 @@ public class Chromoting extends AppCompatActivity implements ConnectionListener,
 
     @Override
     public void onHostDeleted() {
-        // Not implemented Yet.
+        // Refresh the host list. there is no need to refetch the auth token again.
+        // onHostListReceived is in charge to hide the progress indicator.
+        mHostListManager.retrieveHostList(mHostDeletingConsumer.getLatestToken(), this);
     }
 
     @Override
@@ -586,22 +589,10 @@ public class Chromoting extends AppCompatActivity implements ConnectionListener,
             return;
         }
 
-        // This is the AUTH_FAILED case.
-
-        if (!mTriedNewAuthToken) {
-            // This was our first connection attempt.
-            mTriedNewAuthToken = true;
-            requestAuthToken(true);
-
-            // We're not in an error state *yet*.
-            return;
-        } else {
-            // Authentication truly failed.
-            Log.e(TAG, "Fresh auth token was rejected.");
-            explanation = getString(R.string.error_authentication_failed);
-            Toast.makeText(this, explanation, Toast.LENGTH_LONG).show();
-            updateHostListView();
-        }
+        Log.e(TAG, "Fresh auth token was rejected.");
+        explanation = getString(R.string.error_authentication_failed);
+        Toast.makeText(this, explanation, Toast.LENGTH_LONG).show();
+        updateHostListView();
     }
 
     /**

@@ -29,6 +29,7 @@ template("remoting_android_client_java_tmpl") {
       "HostListAdapter.java",
       "HostListManager.java",
       "InputStrategyInterface.java",
+      "OAuthTokenConsumer.java",
       "RenderData.java",
       "SessionAuthenticator.java",
       "SessionConnector.java",
