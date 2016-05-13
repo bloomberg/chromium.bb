@@ -6,6 +6,8 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/files/file_enumerator.h"
+#include "base/files/file_path.h"
 #include "base/hash.h"
 #include "base/strings/string_util.h"
 #include "base/test/perf_time_logger.h"
@@ -27,6 +29,11 @@ using base::Time;
 
 namespace {
 
+class DiskCachePerfTest : public DiskCacheTest {
+ protected:
+  void CacheBackendPerformance(net::BackendType backend_type);
+};
+
 struct TestEntry {
   std::string key;
   int data_len;
@@ -37,8 +44,9 @@ const int kMaxSize = 16 * 1024 - 1;
 
 // Creates num_entries on the cache, and writes 200 bytes of metadata and up
 // to kMaxSize of data to each entry.
-bool TimeWrite(int num_entries, disk_cache::Backend* cache,
-              TestEntries* entries) {
+bool TimeWrite(int num_entries,
+               disk_cache::Backend* cache,
+               TestEntries* entries) {
   const int kSize1 = 200;
   scoped_refptr<net::IOBuffer> buffer1(new net::IOBuffer(kSize1));
   scoped_refptr<net::IOBuffer> buffer2(new net::IOBuffer(kMaxSize));
@@ -89,8 +97,10 @@ bool TimeWrite(int num_entries, disk_cache::Backend* cache,
 }
 
 // Reads the data and metadata from each entry listed on |entries|.
-bool TimeRead(int num_entries, disk_cache::Backend* cache,
-             const TestEntries& entries, bool cold) {
+bool TimeRead(int num_entries,
+              disk_cache::Backend* cache,
+              const TestEntries& entries,
+              bool cold) {
   const int kSize1 = 200;
   scoped_refptr<net::IOBuffer> buffer1(new net::IOBuffer(kSize1));
   scoped_refptr<net::IOBuffer> buffer2(new net::IOBuffer(kMaxSize));
@@ -103,8 +113,8 @@ bool TimeRead(int num_entries, disk_cache::Backend* cache,
   MessageLoopHelper helper;
   CallbackTest callback(&helper, true);
 
-  const char* message = cold ? "Read disk cache entries (cold)" :
-                        "Read disk cache entries (warm)";
+  const char* message = cold ? "Read disk cache entries (cold)"
+                             : "Read disk cache entries (warm)";
   base::PerfTimeLogger timer(message);
 
   for (int i = 0; i < num_entries; i++) {
@@ -142,9 +152,7 @@ int BlockSize() {
   return (rand() & 0x3) + 1;
 }
 
-}  // namespace
-
-TEST_F(DiskCacheTest, Hash) {
+TEST_F(DiskCachePerfTest, BlockfileHashes) {
   int seed = static_cast<int>(Time::Now().ToInternalValue());
   srand(seed);
 
@@ -156,23 +164,17 @@ TEST_F(DiskCacheTest, Hash) {
   timer.Done();
 }
 
-TEST_F(DiskCacheTest, CacheBackendPerformance) {
+void DiskCachePerfTest::CacheBackendPerformance(net::BackendType backend_type) {
   base::Thread cache_thread("CacheThread");
   ASSERT_TRUE(cache_thread.StartWithOptions(
-                  base::Thread::Options(base::MessageLoop::TYPE_IO, 0)));
+      base::Thread::Options(base::MessageLoop::TYPE_IO, 0)));
 
   ASSERT_TRUE(CleanupCacheDir());
   net::TestCompletionCallback cb;
   std::unique_ptr<disk_cache::Backend> cache;
-  int rv = disk_cache::CreateCacheBackend(net::DISK_CACHE,
-                                          net::CACHE_BACKEND_BLOCKFILE,
-                                          cache_path_,
-                                          0,
-                                          false,
-                                          cache_thread.task_runner(),
-                                          NULL,
-                                          &cache,
-                                          cb.callback());
+  int rv = disk_cache::CreateCacheBackend(
+      net::DISK_CACHE, backend_type, cache_path_, 0, false,
+      cache_thread.task_runner(), NULL, &cache, cb.callback());
 
   ASSERT_EQ(net::OK, cb.GetResult(rv));
 
@@ -187,26 +189,24 @@ TEST_F(DiskCacheTest, CacheBackendPerformance) {
   base::MessageLoop::current()->RunUntilIdle();
   cache.reset();
 
-  ASSERT_TRUE(base::EvictFileFromSystemCache(
-              cache_path_.AppendASCII("index")));
-  ASSERT_TRUE(base::EvictFileFromSystemCache(
-              cache_path_.AppendASCII("data_0")));
-  ASSERT_TRUE(base::EvictFileFromSystemCache(
-              cache_path_.AppendASCII("data_1")));
-  ASSERT_TRUE(base::EvictFileFromSystemCache(
-              cache_path_.AppendASCII("data_2")));
-  ASSERT_TRUE(base::EvictFileFromSystemCache(
-              cache_path_.AppendASCII("data_3")));
+  // Flush all files in the cache out of system memory.
+  const base::FilePath::StringType file_pattern = FILE_PATH_LITERAL("*");
+  base::FileEnumerator enumerator(cache_path_, true /* recursive */,
+                                  base::FileEnumerator::FILES, file_pattern);
+  for (base::FilePath file_path = enumerator.Next(); !file_path.empty();
+       file_path = enumerator.Next()) {
+    ASSERT_TRUE(base::EvictFileFromSystemCache(file_path));
+  }
+  // And, cache directories.
+  if (backend_type == net::CACHE_BACKEND_SIMPLE) {
+    ASSERT_TRUE(
+        base::EvictFileFromSystemCache(cache_path_.AppendASCII("index-dir")));
+  }
+  ASSERT_TRUE(base::EvictFileFromSystemCache(cache_path_));
 
-  rv = disk_cache::CreateCacheBackend(net::DISK_CACHE,
-                                      net::CACHE_BACKEND_BLOCKFILE,
-                                      cache_path_,
-                                      0,
-                                      false,
-                                      cache_thread.task_runner(),
-                                      NULL,
-                                      &cache,
-                                      cb.callback());
+  rv = disk_cache::CreateCacheBackend(
+      net::DISK_CACHE, backend_type, cache_path_, 0, false,
+      cache_thread.task_runner(), NULL, &cache, cb.callback());
   ASSERT_EQ(net::OK, cb.GetResult(rv));
 
   EXPECT_TRUE(TimeRead(num_entries, cache.get(), entries, true));
@@ -216,12 +216,20 @@ TEST_F(DiskCacheTest, CacheBackendPerformance) {
   base::MessageLoop::current()->RunUntilIdle();
 }
 
+TEST_F(DiskCachePerfTest, CacheBackendPerformance) {
+  CacheBackendPerformance(net::CACHE_BACKEND_BLOCKFILE);
+}
+
+TEST_F(DiskCachePerfTest, SimpleCacheBackendPerformance) {
+  CacheBackendPerformance(net::CACHE_BACKEND_SIMPLE);
+}
+
 // Creating and deleting "entries" on a block-file is something quite frequent
 // (after all, almost everything is stored on block files). The operation is
 // almost free when the file is empty, but can be expensive if the file gets
 // fragmented, or if we have multiple files. This test measures that scenario,
 // by using multiple, highly fragmented files.
-TEST_F(DiskCacheTest, BlockFilesPerformance) {
+TEST_F(DiskCachePerfTest, BlockFilesPerformance) {
   ASSERT_TRUE(CleanupCacheDir());
 
   disk_cache::BlockFiles files(cache_path_);
@@ -237,8 +245,8 @@ TEST_F(DiskCacheTest, BlockFilesPerformance) {
 
   // Fill up the 32-byte block file (use three files).
   for (int i = 0; i < kNumEntries; i++) {
-    EXPECT_TRUE(files.CreateBlock(disk_cache::RANKINGS, BlockSize(),
-                                  &address[i]));
+    EXPECT_TRUE(
+        files.CreateBlock(disk_cache::RANKINGS, BlockSize(), &address[i]));
   }
 
   timer1.Done();
@@ -250,11 +258,13 @@ TEST_F(DiskCacheTest, BlockFilesPerformance) {
       entry = 0;
 
     files.DeleteBlock(address[entry], false);
-    EXPECT_TRUE(files.CreateBlock(disk_cache::RANKINGS, BlockSize(),
-                                  &address[entry]));
+    EXPECT_TRUE(
+        files.CreateBlock(disk_cache::RANKINGS, BlockSize(), &address[entry]));
   }
 
   timer2.Done();
   base::MessageLoop::current()->RunUntilIdle();
   delete[] address;
 }
+
+}  // namespace
