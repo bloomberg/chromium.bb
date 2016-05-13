@@ -10,6 +10,7 @@
 #include <map>
 #include <memory>
 #include <queue>
+#include <set>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -135,15 +136,6 @@ class Display : public PlatformDisplayDelegate,
   void OnWillDestroyTree(WindowTree* tree);
 
   void UpdateNativeCursor(int32_t cursor_id);
-
-  // Called when a client updates a cursor. This will update the cursor on the
-  // native display if the cursor is currently under |window|.
-  void OnCursorUpdated(ServerWindow* window);
-
-  // Called when the window tree when stacking and bounds of a window
-  // change. This may update the cursor if the ServerWindow under the last
-  // known pointer location changed.
-  void MaybeChangeCursorOnWindowTreeChange();
 
   // mojom::WindowTreeHost:
   void SetSize(mojo::SizePtr size) override;

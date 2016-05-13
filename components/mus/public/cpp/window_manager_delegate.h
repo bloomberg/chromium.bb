@@ -9,9 +9,11 @@
 
 #include <map>
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "components/mus/public/interfaces/cursor.mojom.h"
 #include "components/mus/public/interfaces/event_matcher.mojom.h"
 #include "components/mus/public/interfaces/input_events.mojom.h"
 #include "components/mus/public/interfaces/window_manager_constants.mojom.h"
@@ -36,6 +38,8 @@ class WindowManagerClient {
  public:
   virtual void SetFrameDecorationValues(
       mojom::FrameDecorationValuesPtr values) = 0;
+  virtual void SetNonClientCursor(Window* window,
+                                  mojom::Cursor non_client_cursor) = 0;
 
   virtual void AddAccelerator(uint32_t id,
                               mojom::EventMatcherPtr event_matcher,

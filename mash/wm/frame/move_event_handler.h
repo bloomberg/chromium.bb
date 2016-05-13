@@ -17,6 +17,7 @@ class Window;
 
 namespace mus {
 class Window;
+class WindowManagerClient;
 }
 
 namespace ui {
@@ -31,7 +32,9 @@ class MoveLoop;
 // EventHandler attached to the root. Starts a MoveLoop as necessary.
 class MoveEventHandler : public ui::EventHandler, public aura::WindowObserver {
  public:
-  MoveEventHandler(mus::Window* mus_window, aura::Window* aura_window);
+  MoveEventHandler(mus::Window* mus_window,
+                   mus::WindowManagerClient* window_manager_client,
+                   aura::Window* aura_window);
   ~MoveEventHandler() override;
 
  private:
@@ -50,6 +53,7 @@ class MoveEventHandler : public ui::EventHandler, public aura::WindowObserver {
   void OnWindowDestroying(aura::Window* window) override;
 
   mus::Window* mus_window_;
+  mus::WindowManagerClient* window_manager_client_;
   aura::Window* aura_window_;
   aura::Window* root_window_;
   std::unique_ptr<MoveLoop> move_loop_;

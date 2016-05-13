@@ -4,6 +4,7 @@
 
 module mus.mojom;
 
+import "components/mus/public/interfaces/cursor.mojom";
 import "components/mus/public/interfaces/event_matcher.mojom";
 import "components/mus/public/interfaces/input_events.mojom";
 import "components/mus/public/interfaces/window_manager_constants.mojom";
@@ -97,6 +98,9 @@ interface WindowManagerClient {
   // Sets the frame decoration constants of the display the window manager is
   // associated with.
   WmSetFrameDecorationValues(FrameDecorationValues values);
+
+  // Sets the cursor that the non-client areas of the window should use.
+  WmSetNonClientCursor(uint32 window_id, Cursor cursor_id);
 
   // Response from WmCreateTopLevelWindow() informing the client of the id for
   // the new window.

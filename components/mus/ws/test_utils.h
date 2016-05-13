@@ -33,7 +33,8 @@ namespace test {
 
 class WindowManagerFactoryRegistryTestApi {
  public:
-  WindowManagerFactoryRegistryTestApi(WindowManagerFactoryRegistry* registry);
+  explicit WindowManagerFactoryRegistryTestApi(
+      WindowManagerFactoryRegistry* registry);
   ~WindowManagerFactoryRegistryTestApi();
 
   void AddService(const UserId& user_id, mojom::WindowManagerFactory* factory);
@@ -67,7 +68,7 @@ class UserDisplayManagerTestApi {
 
 class WindowTreeTestApi {
  public:
-  WindowTreeTestApi(WindowTree* tree);
+  explicit WindowTreeTestApi(WindowTree* tree);
   ~WindowTreeTestApi();
 
   void set_user_id(const UserId& user_id) { tree_->user_id_ = user_id; }
@@ -465,6 +466,21 @@ class WindowEventTargetingHelper {
   base::MessageLoop message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowEventTargetingHelper);
+};
+
+// -----------------------------------------------------------------------------
+
+class TestWindowManagerFactory : public mojom::WindowManagerFactory {
+ public:
+  TestWindowManagerFactory();
+  ~TestWindowManagerFactory() override;
+
+  // mojom::WindowManagerFactory:
+  void CreateWindowManager(mus::mojom::DisplayPtr display,
+                           mus::mojom::WindowTreeClientRequest client) override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestWindowManagerFactory);
 };
 
 // -----------------------------------------------------------------------------

@@ -35,20 +35,6 @@ namespace ws {
 namespace test {
 namespace {
 
-class TestWindowManagerFactory : public mojom::WindowManagerFactory {
- public:
-  TestWindowManagerFactory() {}
-  ~TestWindowManagerFactory() override {}
-
-  // mojom::WindowManagerFactory:
-  void CreateWindowManager(
-      mus::mojom::DisplayPtr display,
-      mus::mojom::WindowTreeClientRequest client) override {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestWindowManagerFactory);
-};
-
 class TestDisplayManagerObserver : public mojom::DisplayManagerObserver {
  public:
   TestDisplayManagerObserver() {}
@@ -129,6 +115,7 @@ class UserDisplayManagerTest : public testing::Test {
   base::MessageLoop message_loop_;
   TestWindowManagerFactory test_window_manager_factory_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(UserDisplayManagerTest);
 };
 

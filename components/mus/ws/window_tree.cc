@@ -1421,6 +1421,16 @@ void WindowTree::WmSetFrameDecorationValues(
     wm_state->SetFrameDecorationValues(std::move(values));
 }
 
+void WindowTree::WmSetNonClientCursor(uint32_t window_id,
+                                      mojom::Cursor cursor_id) {
+  WindowManagerState* wm_state = GetWindowManagerStateForWindowManager();
+  if (wm_state) {
+    ServerWindow* window = GetWindowByClientId(ClientWindowId(window_id));
+    if (window)
+      window->SetNonClientCursor(cursor_id);
+  }
+}
+
 void WindowTree::OnWmCreatedTopLevelWindow(uint32_t change_id,
                                            Id transport_window_id) {
   if (GetDisplayForWindowManager()) {

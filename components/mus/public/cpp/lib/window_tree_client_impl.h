@@ -9,6 +9,8 @@
 
 #include <map>
 #include <set>
+#include <string>
+#include <vector>
 
 #include "base/atomicops.h"
 #include "base/macros.h"
@@ -253,6 +255,8 @@ class WindowTreeClientImpl : public WindowTreeConnection,
   // Overriden from WindowManagerClient:
   void SetFrameDecorationValues(
       mojom::FrameDecorationValuesPtr values) override;
+  void SetNonClientCursor(Window* window,
+                          mus::mojom::Cursor cursor_id) override;
   void AddAccelerator(uint32_t id,
                       mojom::EventMatcherPtr event_matcher,
                       const base::Callback<void(bool)>& callback) override;

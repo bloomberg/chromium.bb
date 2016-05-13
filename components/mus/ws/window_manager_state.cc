@@ -4,6 +4,8 @@
 
 #include "components/mus/ws/window_manager_state.h"
 
+#include <queue>
+
 #include "base/memory/weak_ptr.h"
 #include "components/mus/common/event_matcher_util.h"
 #include "components/mus/ws/accelerator.h"
@@ -294,8 +296,10 @@ void WindowManagerState::DispatchInputEventToWindowImpl(
 
   if (event.IsMousePointerEvent()) {
     DCHECK(event_dispatcher_.mouse_cursor_source_window());
-    display_->UpdateNativeCursor(
-        event_dispatcher_.mouse_cursor_source_window()->cursor());
+
+    int32_t cursor_id = 0;
+    if (event_dispatcher_.GetCurrentMouseCursor(&cursor_id))
+      display_->UpdateNativeCursor(cursor_id);
   }
 
   // If the event is in the non-client area the event goes to the owner of

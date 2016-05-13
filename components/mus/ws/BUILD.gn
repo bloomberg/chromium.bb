@@ -178,6 +178,7 @@ group("tests") {
 
 test("mus_ws_unittests") {
   sources = [
+    "cursor_unittest.cc",
     "display_unittest.cc",
     "event_dispatcher_unittest.cc",
     "event_matcher_unittest.cc",

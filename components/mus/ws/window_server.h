@@ -9,6 +9,7 @@
 
 #include <map>
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/macros.h"
@@ -230,8 +231,15 @@ class WindowServer : public ServerWindowDelegate,
   // Balances a call to PrepareForOperation().
   void FinishOperation();
 
-  // Run in response to events which may cause us to change the native cursor.
-  void MaybeUpdateNativeCursor(ServerWindow* window);
+  // Updates the native cursor by figuring out what window is under the mouse
+  // cursor. This is run in response to events that change the bounds or window
+  // hierarchy.
+  void UpdateNativeCursorFromMouseLocation(ServerWindow* window);
+
+  // Updates the native cursor if the cursor is currently inside |window|. This
+  // is run in response to events that change the mouse cursor properties of
+  // |window|.
+  void UpdateNativeCursorIfOver(ServerWindow* window);
 
   // Overridden from ServerWindowDelegate:
   mus::SurfacesState* GetSurfacesState() override;
@@ -272,6 +280,8 @@ class WindowServer : public ServerWindowDelegate,
       const std::vector<uint8_t>* new_data) override;
   void OnWindowPredefinedCursorChanged(ServerWindow* window,
                                        int32_t cursor_id) override;
+  void OnWindowNonClientCursorChanged(ServerWindow* window,
+                                      int32_t cursor_id) override;
   void OnWindowTextInputStateChanged(ServerWindow* window,
                                      const ui::TextInputState& state) override;
   void OnTransientWindowAdded(ServerWindow* window,

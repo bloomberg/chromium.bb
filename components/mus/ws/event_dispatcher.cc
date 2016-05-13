@@ -4,6 +4,8 @@
 
 #include "components/mus/ws/event_dispatcher.h"
 
+#include <algorithm>
+
 #include "base/time/time.h"
 #include "cc/surfaces/surface_hittest.h"
 #include "components/mus/surfaces/surfaces_state.h"
@@ -72,7 +74,8 @@ EventDispatcher::EventDispatcher(EventDispatcherDelegate* delegate)
       capture_window_in_nonclient_area_(false),
       modal_window_controller_(this),
       mouse_button_down_(false),
-      mouse_cursor_source_window_(nullptr) {}
+      mouse_cursor_source_window_(nullptr),
+      mouse_cursor_in_non_client_area_(false) {}
 
 EventDispatcher::~EventDispatcher() {
   if (capture_window_) {
@@ -107,6 +110,16 @@ void EventDispatcher::SetMousePointerScreenLocation(
   // shouldn't cause problems because we already read the cursor before we
   // process any events in views during window construction.
   delegate_->OnMouseCursorLocationChanged(screen_location);
+}
+
+bool EventDispatcher::GetCurrentMouseCursor(int32_t* cursor_out) {
+  if (!mouse_cursor_source_window_)
+    return false;
+
+  *cursor_out = mouse_cursor_in_non_client_area_
+                    ? mouse_cursor_source_window_->non_client_cursor()
+                    : mouse_cursor_source_window_->cursor();
+  return true;
 }
 
 bool EventDispatcher::SetCaptureWindow(ServerWindow* window,
@@ -192,11 +205,30 @@ void EventDispatcher::ReleaseCaptureBlockedByAnyModalWindow() {
     SetCaptureWindow(nullptr, false);
 }
 
+void EventDispatcher::UpdateNonClientAreaForCurrentWindow() {
+  if (mouse_cursor_source_window_) {
+    gfx::Point location = mouse_pointer_last_location_;
+    ServerWindow* target =
+        FindDeepestVisibleWindowForEvents(root_, surface_id_, &location);
+    if (target == mouse_cursor_source_window_) {
+      mouse_cursor_in_non_client_area_ =
+          mouse_cursor_source_window_
+              ? IsLocationInNonclientArea(mouse_cursor_source_window_, location)
+              : false;
+    }
+  }
+}
+
 void EventDispatcher::UpdateCursorProviderByLastKnownLocation() {
   if (!mouse_button_down_) {
     gfx::Point location = mouse_pointer_last_location_;
     mouse_cursor_source_window_ =
         FindDeepestVisibleWindowForEvents(root_, surface_id_, &location);
+
+    mouse_cursor_in_non_client_area_ =
+        mouse_cursor_source_window_
+            ? IsLocationInNonclientArea(mouse_cursor_source_window_, location)
+            : false;
   }
 }
 
@@ -412,6 +444,9 @@ void EventDispatcher::DispatchToPointerTarget(const PointerTarget& target,
     delegate_->OnEventTargetNotFound(event);
     return;
   }
+
+  if (target.is_mouse_event)
+    mouse_cursor_in_non_client_area_ = target.in_nonclient_area;
 
   gfx::Point location(event.location());
   gfx::Transform transform(GetTransformToWindow(surface_id_, target.window));

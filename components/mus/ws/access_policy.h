@@ -57,8 +57,8 @@ class AccessPolicy {
   virtual bool CanSetCapture(const ServerWindow* window) const = 0;
   virtual bool CanSetFocus(const ServerWindow* window) const = 0;
   virtual bool CanSetClientArea(const ServerWindow* window) const = 0;
-  // Used for all cursor properties; which cursor should be displayed,
-  // visibility, locking, etc.
+  // Used for all client controllable cursor properties; which cursor should be
+  // displayed, visibility, locking, etc.
   virtual bool CanSetCursorProperties(const ServerWindow* window) const = 0;
 
   // Returns whether the connection should notify on a hierarchy change.

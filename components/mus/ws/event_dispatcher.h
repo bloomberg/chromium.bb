@@ -9,6 +9,7 @@
 
 #include <map>
 #include <memory>
+#include <utility>
 
 #include "base/macros.h"
 #include "cc/surfaces/surface_id.h"
@@ -53,6 +54,10 @@ class EventDispatcher : public ServerWindowObserver {
     return mouse_pointer_last_location_;
   }
 
+  // If we still have the window of the last mouse move, returns true and sets
+  // the current cursor to use to |cursor_out|.
+  bool GetCurrentMouseCursor(int32_t* cursor_out);
+
   // |capture_window_| will receive all input. See window_tree.mojom for
   // details.
   ServerWindow* capture_window() { return capture_window_; }
@@ -79,6 +84,11 @@ class EventDispatcher : public ServerWindowObserver {
   ServerWindow* mouse_cursor_source_window() const {
     return mouse_cursor_source_window_;
   }
+
+  // If the mouse cursor is still over |mouse_cursor_source_window_|, updates
+  // whether we are in the non-client area. Used when
+  // |mouse_cursor_source_window_| has changed its properties.
+  void UpdateNonClientAreaForCurrentWindow();
 
   // Possibly updates the cursor. If we aren't in an implicit capture, we take
   // the last known location of the mouse pointer, and look for the
@@ -191,6 +201,7 @@ class EventDispatcher : public ServerWindowObserver {
 
   bool mouse_button_down_;
   ServerWindow* mouse_cursor_source_window_;
+  bool mouse_cursor_in_non_client_area_;
 
   // The on screen location of the mouse pointer. This can be outside the
   // bounds of |mouse_cursor_source_window_|, which can capture the cursor.

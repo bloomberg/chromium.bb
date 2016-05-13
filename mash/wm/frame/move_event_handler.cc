@@ -5,6 +5,7 @@
 #include "mash/wm/frame/move_event_handler.h"
 
 #include "components/mus/public/cpp/window.h"
+#include "components/mus/public/cpp/window_manager_delegate.h"
 #include "components/mus/public/interfaces/cursor.mojom.h"
 #include "mash/wm/frame/move_loop.h"
 #include "mojo/converters/input_events/input_events_type_converters.h"
@@ -42,9 +43,13 @@ mus::mojom::Cursor CursorForWindowComponent(int window_component) {
 
 }  // namespace
 
-MoveEventHandler::MoveEventHandler(mus::Window* mus_window,
-                                   aura::Window* aura_window)
-    : mus_window_(mus_window), aura_window_(aura_window),
+MoveEventHandler::MoveEventHandler(
+    mus::Window* mus_window,
+    mus::WindowManagerClient* window_manager_client,
+    aura::Window* aura_window)
+    : mus_window_(mus_window),
+      window_manager_client_(window_manager_client),
+      aura_window_(aura_window),
       root_window_(aura_window->GetRootWindow()) {
   root_window_->AddObserver(this);
   root_window_->AddPreTargetHandler(this);
@@ -83,7 +88,8 @@ void MoveEventHandler::ProcessLocatedEvent(ui::LocatedEvent* event) {
     }
   } else if (pointer_event->type() == ui::ET_POINTER_MOVED) {
     const int ht_location = GetNonClientComponentForEvent(pointer_event.get());
-    mus_window_->SetPredefinedCursor(CursorForWindowComponent(ht_location));
+    window_manager_client_->SetNonClientCursor(
+        mus_window_, CursorForWindowComponent(ht_location));
   }
   if (had_move_loop || move_loop_)
     event->SetHandled();

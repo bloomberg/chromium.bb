@@ -7,6 +7,8 @@
 #include <stdint.h>
 
 #include <memory>
+#include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "components/mus/public/cpp/property_type_converters.h"
@@ -93,11 +95,13 @@ class WmNativeWidgetMus : public views::NativeWidgetMus {
  public:
   WmNativeWidgetMus(views::internal::NativeWidgetDelegate* delegate,
                     shell::Connector* connector,
-                    mus::Window* window)
+                    mus::Window* window,
+                    mus::WindowManagerClient* window_manager_client)
       : NativeWidgetMus(delegate,
                         connector,
                         window,
-                        mus::mojom::SurfaceType::UNDERLAY) {}
+                        mus::mojom::SurfaceType::UNDERLAY),
+        window_manager_client_(window_manager_client) {}
   ~WmNativeWidgetMus() override {
   }
 
@@ -107,7 +111,8 @@ class WmNativeWidgetMus : public views::NativeWidgetMus {
         static_cast<views::internal::NativeWidgetPrivate*>(this)->GetWidget();
     NonClientFrameViewMash* frame_view =
         new NonClientFrameViewMash(widget, window());
-    move_event_handler_.reset(new MoveEventHandler(window(), GetNativeView()));
+    move_event_handler_.reset(new MoveEventHandler(
+        window(), window_manager_client_, GetNativeView()));
     return frame_view;
   }
   void InitNativeWidget(const views::Widget::InitParams& params) override {
@@ -147,6 +152,8 @@ class WmNativeWidgetMus : public views::NativeWidgetMus {
   std::unique_ptr<Shadow> shadow_;
 
   std::unique_ptr<MoveEventHandler> move_event_handler_;
+
+  mus::WindowManagerClient* window_manager_client_;
 
   DISALLOW_COPY_AND_ASSIGN(WmNativeWidgetMus);
 };
@@ -210,7 +217,8 @@ NonClientFrameController::NonClientFrameController(
   // We initiate focus at the mus level, not at the views level.
   params.activatable = views::Widget::InitParams::ACTIVATABLE_NO;
   params.delegate = this;
-  params.native_widget = new WmNativeWidgetMus(widget_, connector, window);
+  params.native_widget =
+      new WmNativeWidgetMus(widget_, connector, window, window_manager_client);
   widget_->Init(params);
   widget_->ShowInactive();
 

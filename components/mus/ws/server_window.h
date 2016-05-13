@@ -7,6 +7,8 @@
 
 #include <stdint.h>
 
+#include <map>
+#include <string>
 #include <vector>
 
 #include "base/logging.h"
@@ -81,6 +83,9 @@ class ServerWindow {
                      const std::vector<gfx::Rect>& additional_client_areas);
 
   int32_t cursor() const { return static_cast<int32_t>(cursor_id_); }
+  int32_t non_client_cursor() const {
+    return static_cast<int32_t>(non_client_cursor_id_);
+  }
 
   const ServerWindow* parent() const { return parent_; }
   ServerWindow* parent() { return parent_; }
@@ -124,6 +129,7 @@ class ServerWindow {
   void SetOpacity(float value);
 
   void SetPredefinedCursor(mus::mojom::Cursor cursor_id);
+  void SetNonClientCursor(mus::mojom::Cursor cursor_id);
 
   const gfx::Transform& transform() const { return transform_; }
   void SetTransform(const gfx::Transform& transform);
@@ -210,6 +216,7 @@ class ServerWindow {
   std::vector<gfx::Rect> additional_client_areas_;
   std::unique_ptr<ServerWindowSurfaceManager> surface_manager_;
   mojom::Cursor cursor_id_;
+  mojom::Cursor non_client_cursor_id_;
   float opacity_;
   bool can_focus_;
   gfx::Transform transform_;

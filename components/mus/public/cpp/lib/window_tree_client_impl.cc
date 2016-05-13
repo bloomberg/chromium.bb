@@ -5,7 +5,10 @@
 #include "components/mus/public/cpp/lib/window_tree_client_impl.h"
 
 #include <stddef.h>
+
+#include <string>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
@@ -795,7 +798,8 @@ void SetViewportMetricsOnDecendants(Window* root,
   for (size_t i = 0; i < children.size(); ++i)
     SetViewportMetricsOnDecendants(children[i], old_metrics, new_metrics);
 }
-}
+
+}  // namespace
 
 void WindowTreeClientImpl::OnWindowViewportMetricsChanged(
     mojo::Array<uint32_t> window_ids,
@@ -1061,6 +1065,12 @@ void WindowTreeClientImpl::SetFrameDecorationValues(
     mojom::FrameDecorationValuesPtr values) {
   window_manager_internal_client_->WmSetFrameDecorationValues(
       std::move(values));
+}
+
+void WindowTreeClientImpl::SetNonClientCursor(Window* window,
+                                              mus::mojom::Cursor cursor_id) {
+  window_manager_internal_client_->WmSetNonClientCursor(server_id(window),
+                                                        cursor_id);
 }
 
 void WindowTreeClientImpl::AddAccelerator(

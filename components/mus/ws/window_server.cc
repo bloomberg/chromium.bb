@@ -4,6 +4,9 @@
 
 #include "components/mus/ws/window_server.h"
 
+#include <set>
+#include <string>
+
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
@@ -404,11 +407,6 @@ void WindowServer::ProcessWillChangeWindowPredefinedCursor(ServerWindow* window,
     pair.second->ProcessCursorChanged(window, cursor_id,
                                       IsOperationSource(pair.first));
   }
-
-  // Pass the cursor change to the native window.
-  Display* display = display_manager_->GetDisplayContaining(window);
-  if (display)
-    display->OnCursorUpdated(window);
 }
 
 void WindowServer::SendToEventObservers(const ui::Event& event,
@@ -466,11 +464,29 @@ void WindowServer::FinishOperation() {
   current_operation_ = nullptr;
 }
 
-void WindowServer::MaybeUpdateNativeCursor(ServerWindow* window) {
-  // This can be null in unit tests.
-  Display* display = display_manager_->GetDisplayContaining(window);
-  if (display)
-    display->MaybeChangeCursorOnWindowTreeChange();
+void WindowServer::UpdateNativeCursorFromMouseLocation(ServerWindow* window) {
+  WindowManagerAndDisplay wm_and_display =
+      display_manager_->GetWindowManagerAndDisplay(window);
+  WindowManagerState* wms = wm_and_display.window_manager_state;
+  if (wms && wm_and_display.display) {
+    wms->event_dispatcher()->UpdateCursorProviderByLastKnownLocation();
+    int32_t cursor_id = 0;
+    if (wms->event_dispatcher()->GetCurrentMouseCursor(&cursor_id))
+      wm_and_display.display->UpdateNativeCursor(cursor_id);
+  }
+}
+
+void WindowServer::UpdateNativeCursorIfOver(ServerWindow* window) {
+  WindowManagerAndDisplay wm_and_display =
+      display_manager_->GetWindowManagerAndDisplay(window);
+  WindowManagerState* wms = wm_and_display.window_manager_state;
+  if (wms && wm_and_display.display &&
+      window == wms->event_dispatcher()->mouse_cursor_source_window()) {
+    wms->event_dispatcher()->UpdateNonClientAreaForCurrentWindow();
+    int32_t cursor_id = 0;
+    if (wms->event_dispatcher()->GetCurrentMouseCursor(&cursor_id))
+      wm_and_display.display->UpdateNativeCursor(cursor_id);
+  }
 }
 
 mus::SurfacesState* WindowServer::GetSurfacesState() {
@@ -555,7 +571,7 @@ void WindowServer::OnWindowHierarchyChanged(ServerWindow* window,
   if (new_parent)
     SchedulePaint(new_parent, gfx::Rect(new_parent->bounds().size()));
 
-  MaybeUpdateNativeCursor(window);
+  UpdateNativeCursorFromMouseLocation(window);
 }
 
 void WindowServer::OnWindowBoundsChanged(ServerWindow* window,
@@ -571,7 +587,7 @@ void WindowServer::OnWindowBoundsChanged(ServerWindow* window,
   SchedulePaint(window->parent(), old_bounds);
   SchedulePaint(window->parent(), new_bounds);
 
-  MaybeUpdateNativeCursor(window);
+  UpdateNativeCursorFromMouseLocation(window);
 }
 
 void WindowServer::OnWindowClientAreaChanged(
@@ -583,6 +599,8 @@ void WindowServer::OnWindowClientAreaChanged(
 
   ProcessClientAreaChanged(window, new_client_area,
                            new_additional_client_areas);
+
+  UpdateNativeCursorIfOver(window);
 }
 
 void WindowServer::OnWindowReordered(ServerWindow* window,
@@ -591,7 +609,7 @@ void WindowServer::OnWindowReordered(ServerWindow* window,
   ProcessWindowReorder(window, relative, direction);
   if (!in_destructor_)
     SchedulePaint(window, gfx::Rect(window->bounds().size()));
-  MaybeUpdateNativeCursor(window);
+  UpdateNativeCursorFromMouseLocation(window);
 }
 
 void WindowServer::OnWillChangeWindowVisibility(ServerWindow* window) {
@@ -639,6 +657,16 @@ void WindowServer::OnWindowPredefinedCursorChanged(ServerWindow* window,
     return;
 
   ProcessWillChangeWindowPredefinedCursor(window, cursor_id);
+
+  UpdateNativeCursorIfOver(window);
+}
+
+void WindowServer::OnWindowNonClientCursorChanged(ServerWindow* window,
+                                                  int32_t cursor_id) {
+  if (in_destructor_)
+    return;
+
+  UpdateNativeCursorIfOver(window);
 }
 
 void WindowServer::OnWindowSharedPropertyChanged(

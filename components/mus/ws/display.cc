@@ -4,6 +4,9 @@
 
 #include "components/mus/ws/display.h"
 
+#include <set>
+#include <vector>
+
 #include "base/debug/debugger.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/mus/common/types.h"
@@ -217,23 +220,6 @@ void Display::UpdateNativeCursor(int32_t cursor_id) {
     platform_display_->SetCursorById(cursor_id);
     last_cursor_ = cursor_id;
   }
-}
-
-void Display::OnCursorUpdated(ServerWindow* window) {
-  WindowManagerState* wms = GetActiveWindowManagerState();
-  if (wms && window == wms->event_dispatcher()->mouse_cursor_source_window())
-    UpdateNativeCursor(window->cursor());
-}
-
-void Display::MaybeChangeCursorOnWindowTreeChange() {
-  WindowManagerState* wms = GetActiveWindowManagerState();
-  if (!wms)
-    return;
-  wms->event_dispatcher()->UpdateCursorProviderByLastKnownLocation();
-  ServerWindow* cursor_source_window =
-      wms->event_dispatcher()->mouse_cursor_source_window();
-  if (cursor_source_window)
-    UpdateNativeCursor(cursor_source_window->cursor());
 }
 
 void Display::SetSize(mojo::SizePtr size) {

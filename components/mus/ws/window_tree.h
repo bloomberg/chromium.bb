@@ -404,6 +404,8 @@ class WindowTree : public mojom::WindowTree,
   void WmRequestClose(Id transport_window_id) override;
   void WmSetFrameDecorationValues(
       mojom::FrameDecorationValuesPtr values) override;
+  void WmSetNonClientCursor(uint32_t window_id,
+                            mojom::Cursor cursor_id) override;
   void OnWmCreatedTopLevelWindow(uint32_t change_id,
                                  Id transport_window_id) override;
 

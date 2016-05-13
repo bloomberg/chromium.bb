@@ -445,6 +445,16 @@ void WindowEventTargetingHelper::SetTaskRunner(
 
 // ----------------------------------------------------------------------------
 
+TestWindowManagerFactory::TestWindowManagerFactory() {}
+
+TestWindowManagerFactory::~TestWindowManagerFactory() {}
+
+void TestWindowManagerFactory::CreateWindowManager(
+    mus::mojom::DisplayPtr display,
+    mus::mojom::WindowTreeClientRequest client) {}
+
+// ----------------------------------------------------------------------------
+
 ServerWindow* FirstRoot(WindowTree* tree) {
   return tree->roots().size() == 1u
              ? tree->GetWindow((*tree->roots().begin())->id())

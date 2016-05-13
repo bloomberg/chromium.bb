@@ -33,6 +33,7 @@ ServerWindow::ServerWindow(ServerWindowDelegate* delegate,
       is_modal_(false),
       visible_(false),
       cursor_id_(mojom::Cursor::CURSOR_NULL),
+      non_client_cursor_id_(mojom::Cursor::CURSOR_NULL),
       opacity_(1),
       can_focus_(true),
       properties_(properties),
@@ -289,6 +290,15 @@ void ServerWindow::SetPredefinedCursor(mus::mojom::Cursor value) {
   FOR_EACH_OBSERVER(
       ServerWindowObserver, observers_,
       OnWindowPredefinedCursorChanged(this, static_cast<int32_t>(value)));
+}
+
+void ServerWindow::SetNonClientCursor(mus::mojom::Cursor value) {
+  if (value == non_client_cursor_id_)
+    return;
+  non_client_cursor_id_ = value;
+  FOR_EACH_OBSERVER(
+      ServerWindowObserver, observers_,
+      OnWindowNonClientCursorChanged(this, static_cast<int32_t>(value)));
 }
 
 void ServerWindow::SetTransform(const gfx::Transform& transform) {
