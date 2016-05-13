@@ -48,7 +48,8 @@ AudioOutputController::AudioOutputController(
 }
 
 AudioOutputController::~AudioOutputController() {
-  DCHECK_EQ(kClosed, state_);
+  CHECK_EQ(kClosed, state_);
+  CHECK_EQ(nullptr, stream_);
 }
 
 // static

@@ -217,7 +217,7 @@ AudioRendererHost::AudioRendererHost(
 
 AudioRendererHost::~AudioRendererHost() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(audio_entries_.empty());
+  CHECK(audio_entries_.empty());
 
   // If we had any streams, report UMA stats for the maximum number of
   // simultaneous streams for this render process and for the whole browser

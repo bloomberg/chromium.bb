@@ -32,9 +32,14 @@ AudioOutputDispatcherImpl::AudioOutputDispatcherImpl(
       audio_stream_id_(0) {}
 
 AudioOutputDispatcherImpl::~AudioOutputDispatcherImpl() {
-  DCHECK_EQ(idle_proxies_, 0u);
-  DCHECK(proxy_to_physical_map_.empty());
-  DCHECK(idle_streams_.empty());
+  // There must be no idle proxy streams.
+  CHECK_EQ(idle_proxies_, 0u);
+
+  // There must be no active proxy streams.
+  CHECK(proxy_to_physical_map_.empty());
+
+  // All idle physical streams must have been closed during shutdown.
+  CHECK(idle_streams_.empty());
 }
 
 bool AudioOutputDispatcherImpl::OpenStream() {
@@ -127,6 +132,12 @@ void AudioOutputDispatcherImpl::Shutdown() {
   // No AudioOutputProxy objects should hold a reference to us when we get
   // to this stage.
   DCHECK(HasOneRef()) << "Only the AudioManager should hold a reference";
+
+  LOG_IF(WARNING, idle_proxies_ > 0u) << "Idle proxy streams during shutdown: "
+                                      << idle_proxies_;
+  LOG_IF(WARNING, !proxy_to_physical_map_.empty())
+      << "Active proxy streams during shutdown: "
+      << proxy_to_physical_map_.size();
 }
 
 bool AudioOutputDispatcherImpl::HasOutputProxies() const {
