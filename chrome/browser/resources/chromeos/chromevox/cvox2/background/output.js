@@ -418,7 +418,7 @@ Output.RULES = {
     },
     div: {
       enter: '$nameFromNode',
-      speak: '$name $description'
+      speak: '$name $description $descendants'
     },
     grid: {
       enter: '$nameFromNode $role $description'

@@ -110,7 +110,9 @@ TEST_F('LiveRegionsTest', 'LiveRegionChangeAtomic', function() {
     function(rootNode) {
       var go = rootNode.find({ role: RoleType.button });
       mockFeedback.call(go.doDefault.bind(go))
-          .expectQueuedSpeech('Alpha  Bravo  Charlie ')
+          .expectQueuedSpeech('Alpha')
+          .expectQueuedSpeech('Bravo')
+          .expectQueuedSpeech('Charlie');
       mockFeedback.replay();
     });
 });

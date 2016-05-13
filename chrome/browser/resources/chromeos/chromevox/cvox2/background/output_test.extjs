@@ -621,3 +621,15 @@ TEST_F('OutputE2ETest', 'JoinDescendants', function() {
                    , joined.speechOutputForTest.string_);
   });
 });
+
+TEST_F('OutputE2ETest', 'ComplexDiv', function() {
+  this.runWithLoadedTree(function() {/*!
+      <div><button>ok</button></div>
+    */},
+    function(root) {
+      var div = root.find({role: 'div'});
+      var o = new Output().withSpeech(cursors.Range.fromNode(div));
+      assertEquals('|ok||Button'
+                   , o.speechOutputForTest.string_);
+  });
+});
