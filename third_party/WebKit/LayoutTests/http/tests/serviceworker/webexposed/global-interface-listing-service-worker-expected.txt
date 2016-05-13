@@ -29,13 +29,6 @@ interface CanvasGradient
     method constructor
 interface CanvasPattern
     method constructor
-interface CircularGeofencingRegion : GeofencingRegion
-    attribute MAX_RADIUS
-    attribute MIN_RADIUS
-    getter latitude
-    getter longitude
-    getter radius
-    method constructor
 interface Client
     getter frameType
     getter id
@@ -273,10 +266,6 @@ interface FormData
     method keys
     method set
     method values
-interface GeofencingEvent : Event
-    getter id
-    getter region
-    method constructor
 interface Headers
     method append
     method constructor
@@ -643,7 +632,6 @@ interface Response
 interface ServiceWorkerGlobalScope : WorkerGlobalScope
     method constructor
 interface ServiceWorkerRegistration : EventTarget
-    getter geofencing
     getter onupdatefound
     getter pushManager
     getter scope
@@ -1238,7 +1226,6 @@ interface WorkerNavigator
     getter appName
     getter appVersion
     getter connection
-    getter geofencing
     getter hardwareConcurrency
     getter onLine
     getter permissions
@@ -1359,8 +1346,6 @@ global object
     getter onactivate
     getter onfetch
     getter onforeignfetch
-    getter ongeofenceenter
-    getter ongeofenceleave
     getter oninstall
     getter onmessage
     getter onnotificationclick
@@ -1375,8 +1360,6 @@ global object
     setter onactivate
     setter onfetch
     setter onforeignfetch
-    setter ongeofenceenter
-    setter ongeofenceleave
     setter oninstall
     setter onmessage
     setter onnotificationclick

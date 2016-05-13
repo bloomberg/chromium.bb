@@ -78,7 +78,6 @@ class WebFallbackThemeEngine;
 class WebFileSystem;
 class WebFileUtilities;
 class WebFlingAnimator;
-class WebGeofencingProvider;
 class WebGestureCurve;
 class WebGraphicsContext3DProvider;
 class WebIDBFactory;
@@ -607,11 +606,6 @@ public:
     // Web Notifications --------------------------------------------------
 
     virtual WebNotificationManager* notificationManager() { return nullptr; }
-
-
-    // Geofencing ---------------------------------------------------------
-
-    virtual WebGeofencingProvider* geofencingProvider() { return nullptr; }
 
 
     // Push API------------------------------------------------------------

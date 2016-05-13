@@ -63,7 +63,6 @@ class CONTENT_EXPORT  StoragePartitionImpl
   IndexedDBContextImpl* GetIndexedDBContext() override;
   CacheStorageContextImpl* GetCacheStorageContext() override;
   ServiceWorkerContextWrapper* GetServiceWorkerContext() override;
-  GeofencingManager* GetGeofencingManager() override;
   HostZoomMap* GetHostZoomMap() override;
   HostZoomLevelContext* GetHostZoomLevelContext() override;
   ZoomLevelDelegate* GetZoomLevelDelegate() override;
@@ -172,7 +171,6 @@ class CONTENT_EXPORT  StoragePartitionImpl
       ServiceWorkerContextWrapper* service_worker_context,
       WebRTCIdentityStore* webrtc_identity_store,
       storage::SpecialStoragePolicy* special_storage_policy,
-      GeofencingManager* geofencing_manager,
       HostZoomLevelContext* host_zoom_level_context,
       PlatformNotificationContextImpl* platform_notification_context,
       BackgroundSyncContext* background_sync_context);
@@ -218,7 +216,6 @@ class CONTENT_EXPORT  StoragePartitionImpl
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
   scoped_refptr<WebRTCIdentityStore> webrtc_identity_store_;
   scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy_;
-  scoped_refptr<GeofencingManager> geofencing_manager_;
   scoped_refptr<HostZoomLevelContext> host_zoom_level_context_;
   scoped_refptr<PlatformNotificationContextImpl> platform_notification_context_;
   scoped_refptr<BackgroundSyncContext> background_sync_context_;

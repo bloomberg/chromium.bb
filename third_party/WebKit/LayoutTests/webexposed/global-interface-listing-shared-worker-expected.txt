@@ -41,14 +41,6 @@ Starting worker: resources/global-interface-listing.js
 [Worker] interface CanvasPattern
 [Worker]     attribute @@toStringTag
 [Worker]     method constructor
-[Worker] interface CircularGeofencingRegion : GeofencingRegion
-[Worker]     attribute @@toStringTag
-[Worker]     attribute MAX_RADIUS
-[Worker]     attribute MIN_RADIUS
-[Worker]     getter latitude
-[Worker]     getter longitude
-[Worker]     getter radius
-[Worker]     method constructor
 [Worker] interface CloseEvent : Event
 [Worker]     attribute @@toStringTag
 [Worker]     getter code
@@ -645,7 +637,6 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method text
 [Worker] interface ServiceWorkerRegistration : EventTarget
 [Worker]     attribute @@toStringTag
-[Worker]     getter geofencing
 [Worker]     getter onupdatefound
 [Worker]     getter pushManager
 [Worker]     getter scope
@@ -1245,7 +1236,6 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     getter appName
 [Worker]     getter appVersion
 [Worker]     getter connection
-[Worker]     getter geofencing
 [Worker]     getter hardwareConcurrency
 [Worker]     getter onLine
 [Worker]     getter permissions

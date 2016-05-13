@@ -31,7 +31,6 @@
 #ifndef WebServiceWorkerContextProxy_h
 #define WebServiceWorkerContextProxy_h
 
-#include "public/platform/WebGeofencingEventType.h"
 #include "public/platform/WebMessagePortChannel.h"
 #include "public/platform/modules/serviceworker/WebServiceWorker.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerRegistration.h"
@@ -42,7 +41,6 @@ namespace blink {
 
 class WebServiceWorkerRequest;
 class WebString;
-struct WebCircularGeofencingRegion;
 struct WebNotificationData;
 struct WebServiceWorkerClientInfo;
 
@@ -60,7 +58,6 @@ public:
     virtual void dispatchInstallEvent(int eventID) = 0;
     virtual void dispatchFetchEvent(int eventID, const WebServiceWorkerRequest& webRequest) = 0;
     virtual void dispatchForeignFetchEvent(int eventID, const WebServiceWorkerRequest& webRequest) = 0;
-    virtual void dispatchGeofencingEvent(int eventID, WebGeofencingEventType, const WebString& regionID, const WebCircularGeofencingRegion&) = 0;
     virtual void dispatchNotificationClickEvent(int eventID, int64_t notificationID, const WebNotificationData&, int actionIndex) = 0;
     virtual void dispatchNotificationCloseEvent(int eventID, int64_t notificationID, const WebNotificationData&) = 0;
     virtual void dispatchPushEvent(int eventID, const WebString& data) = 0;

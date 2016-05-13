@@ -475,19 +475,6 @@ void BlinkTestRunner::SendBluetoothManualChooserEvent(
                                                             argument));
 }
 
-void BlinkTestRunner::SetGeofencingMockProvider(bool service_available) {
-  content::SetGeofencingMockProvider(service_available);
-}
-
-void BlinkTestRunner::ClearGeofencingMockProvider() {
-  content::ClearGeofencingMockProvider();
-}
-
-void BlinkTestRunner::SetGeofencingMockPosition(double latitude,
-                                                double longitude) {
-  content::SetGeofencingMockPosition(latitude, longitude);
-}
-
 void BlinkTestRunner::SetFocus(blink::WebView* web_view, bool focus) {
   RenderView* render_view = RenderView::FromWebView(web_view);
   if (render_view)  // Check whether |web_view| has been already closed.

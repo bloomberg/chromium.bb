@@ -119,7 +119,6 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void AddWebPageOverlay();
   void CapturePixelsAsyncThen(v8::Local<v8::Function> callback);
   void ClearAllDatabases();
-  void ClearGeofencingMockProvider();
   void ClearPrinting();
   void CloseWebInspector();
   void CopyImageAtAndCapturePixelsAsyncThen(int x,
@@ -212,8 +211,6 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void SetDatabaseQuota(int quota);
   void SetDomainRelaxationForbiddenForURLScheme(bool forbidden,
                                                 const std::string& scheme);
-  void SetGeofencingMockPosition(double latitude, double longitude);
-  void SetGeofencingMockProvider(bool service_available);
   void SetImagesAllowed(bool allowed);
   void SetInterceptPostMessage(bool value);
   void SetIsolatedWorldContentSecurityPolicy(int world_id,
@@ -355,8 +352,6 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
                  &TestRunnerBindings::CapturePixelsAsyncThen)
       .SetMethod("clearAllDatabases", &TestRunnerBindings::ClearAllDatabases)
       .SetMethod("clearBackForwardList", &TestRunnerBindings::NotImplemented)
-      .SetMethod("clearGeofencingMockProvider",
-                 &TestRunnerBindings::ClearGeofencingMockProvider)
       .SetMethod("clearPrinting", &TestRunnerBindings::ClearPrinting)
       .SetMethod("closeWebInspector", &TestRunnerBindings::CloseWebInspector)
       .SetMethod("copyImageAtAndCapturePixelsAsyncThen",
@@ -522,10 +517,6 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
       .SetMethod("setDatabaseQuota", &TestRunnerBindings::SetDatabaseQuota)
       .SetMethod("setDomainRelaxationForbiddenForURLScheme",
                  &TestRunnerBindings::SetDomainRelaxationForbiddenForURLScheme)
-      .SetMethod("setGeofencingMockPosition",
-                 &TestRunnerBindings::SetGeofencingMockPosition)
-      .SetMethod("setGeofencingMockProvider",
-                 &TestRunnerBindings::SetGeofencingMockProvider)
       .SetMethod("setIconDatabaseEnabled", &TestRunnerBindings::NotImplemented)
       .SetMethod("setImagesAllowed", &TestRunnerBindings::SetImagesAllowed)
       .SetMethod("setIsolatedWorldContentSecurityPolicy",
@@ -1427,22 +1418,6 @@ void TestRunnerBindings::SetViewSourceForFrame(const std::string& name,
     view_runner_->SetViewSourceForFrame(name, enabled);
 }
 
-void TestRunnerBindings::SetGeofencingMockProvider(bool service_available) {
-  if (runner_)
-    runner_->SetGeofencingMockProvider(service_available);
-}
-
-void TestRunnerBindings::ClearGeofencingMockProvider() {
-  if (runner_)
-    runner_->ClearGeofencingMockProvider();
-}
-
-void TestRunnerBindings::SetGeofencingMockPosition(double latitude,
-                                                   double longitude) {
-  if (runner_)
-    runner_->SetGeofencingMockPosition(latitude, longitude);
-}
-
 void TestRunnerBindings::SetPermission(const std::string& name,
                                        const std::string& value,
                                        const std::string& origin,
@@ -1639,7 +1614,6 @@ void TestRunner::Reset() {
     delegate_->DisableAutoResizeMode(WebSize());
     delegate_->DeleteAllCookies();
     delegate_->SetBluetoothManualChooser(false);
-    delegate_->ClearGeofencingMockProvider();
     delegate_->ResetPermissions();
     ResetDeviceLight();
   }
@@ -2660,18 +2634,6 @@ void TestRunner::SetFocus(blink::WebView* web_view, bool focus) {
 
 std::string TestRunner::PathToLocalResource(const std::string& path) {
   return delegate_->PathToLocalResource(path);
-}
-
-void TestRunner::SetGeofencingMockProvider(bool service_available) {
-  delegate_->SetGeofencingMockProvider(service_available);
-}
-
-void TestRunner::ClearGeofencingMockProvider() {
-  delegate_->ClearGeofencingMockProvider();
-}
-
-void TestRunner::SetGeofencingMockPosition(double latitude, double longitude) {
-  delegate_->SetGeofencingMockPosition(latitude, longitude);
 }
 
 void TestRunner::SetPermission(const std::string& name,

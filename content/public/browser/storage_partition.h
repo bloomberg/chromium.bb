@@ -44,7 +44,6 @@ class AppCacheService;
 class BrowserContext;
 class CacheStorageContext;
 class DOMStorageContext;
-class GeofencingManager;
 class HostZoomLevelContext;
 class HostZoomMap;
 class IndexedDBContext;
@@ -71,7 +70,6 @@ class CONTENT_EXPORT StoragePartition {
   virtual IndexedDBContext* GetIndexedDBContext() = 0;
   virtual ServiceWorkerContext* GetServiceWorkerContext() = 0;
   virtual CacheStorageContext* GetCacheStorageContext() = 0;
-  virtual GeofencingManager* GetGeofencingManager() = 0;
   virtual HostZoomMap* GetHostZoomMap() = 0;
   virtual HostZoomLevelContext* GetHostZoomLevelContext() = 0;
   virtual ZoomLevelDelegate* GetZoomLevelDelegate() = 0;

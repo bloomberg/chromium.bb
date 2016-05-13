@@ -84,7 +84,7 @@ class ServiceWorkerMetrics {
     SYNC = 3,
     NOTIFICATION_CLICK = 4,
     PUSH = 5,
-    GEOFENCING = 6,
+    // GEOFENCING = 6,  // Obsolete
     // SERVICE_PORT_CONNECT = 7,  // Obsolete
     MESSAGE = 8,
     NOTIFICATION_CLOSE = 9,

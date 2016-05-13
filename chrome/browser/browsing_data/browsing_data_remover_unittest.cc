@@ -215,9 +215,6 @@ class TestStoragePartition : public StoragePartition {
   content::CacheStorageContext* GetCacheStorageContext() override {
     return nullptr;
   }
-  content::GeofencingManager* GetGeofencingManager() override {
-    return nullptr;
-  }
   content::PlatformNotificationContext* GetPlatformNotificationContext()
       override {
     return nullptr;

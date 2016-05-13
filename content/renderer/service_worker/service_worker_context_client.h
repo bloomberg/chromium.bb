@@ -22,7 +22,6 @@
 #include "content/common/service_worker/service_worker_types.h"
 #include "ipc/ipc_listener.h"
 #include "services/shell/public/interfaces/interface_provider.mojom.h"
-#include "third_party/WebKit/public/platform/WebGeofencingEventType.h"
 #include "third_party/WebKit/public/platform/WebMessagePortChannel.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerError.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_event_status.mojom.h"
@@ -38,7 +37,6 @@ class TaskRunner;
 }
 
 namespace blink {
-struct WebCircularGeofencingRegion;
 class WebDataSource;
 struct WebServiceWorkerClientQueryOptions;
 class WebServiceWorkerContextProxy;
@@ -209,10 +207,6 @@ class ServiceWorkerContextClient
       int request_id,
       int64_t persistent_notification_id,
       const PlatformNotificationData& notification_data);
-  void OnGeofencingEvent(int request_id,
-                         blink::WebGeofencingEventType event_type,
-                         const std::string& region_id,
-                         const blink::WebCircularGeofencingRegion& region);
 
   void OnDidGetClient(int request_id, const ServiceWorkerClientInfo& client);
   void OnDidGetClients(

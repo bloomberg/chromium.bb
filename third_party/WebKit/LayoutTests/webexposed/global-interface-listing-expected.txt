@@ -696,14 +696,6 @@ interface CharacterData : Node
     method replaceWith
     method substringData
     setter data
-interface CircularGeofencingRegion : GeofencingRegion
-    attribute @@toStringTag
-    attribute MAX_RADIUS
-    attribute MIN_RADIUS
-    getter latitude
-    getter longitude
-    getter radius
-    method constructor
 interface ClientRect
     attribute @@toStringTag
     getter bottom
@@ -5737,7 +5729,6 @@ interface ServiceWorkerMessageEvent : Event
     method constructor
 interface ServiceWorkerRegistration : EventTarget
     attribute @@toStringTag
-    getter geofencing
     getter onupdatefound
     getter pushManager
     getter scope

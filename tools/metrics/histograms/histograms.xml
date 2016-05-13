@@ -85122,7 +85122,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="3" label="SYNC"/>
   <int value="4" label="NOTIFICATION_CLICK"/>
   <int value="5" label="PUSH"/>
-  <int value="6" label="GEOFENCING"/>
+  <int value="6" label="GEOFENCING (unused)"/>
   <int value="7" label="SERVICE_PORT_CONNECT (unused)"/>
   <int value="8" label="MESSAGE"/>
   <int value="9" label="NOTIFICATION_CLOSE"/>
@@ -94774,7 +94774,11 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="SYNC" label="SYNC"/>
   <suffix name="NOTIFICATION_CLICK" label="NOTIFICATION_CLICK"/>
   <suffix name="PUSH" label="PUSH"/>
-  <suffix name="GEOFENCING" label="GEOFENCING"/>
+  <suffix name="GEOFENCING" label="GEOFENCING">
+    <obsolete>
+      Deprecated as of 5/2016 because geofencing got removed.
+    </obsolete>
+  </suffix>
   <suffix name="MESSAGE" label="MESSAGE"/>
   <suffix name="NOTIFICATION_CLOSE" label="NOTIFICATION_CLOSE"/>
   <suffix name="FETCH_MAIN_FRAME" label="FETCH_MAIN_FRAME"/>

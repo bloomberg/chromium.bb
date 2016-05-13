@@ -17,8 +17,6 @@
 #include "content/public/common/push_event_payload.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_param_traits.h"
-#include "third_party/WebKit/public/platform/WebCircularGeofencingRegion.h"
-#include "third_party/WebKit/public/platform/WebGeofencingEventType.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerError.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerEventResult.h"
 #include "url/gurl.h"
@@ -144,9 +142,6 @@ IPC_STRUCT_BEGIN(ServiceWorkerMsg_MessageToDocument_Params)
   IPC_STRUCT_MEMBER(std::vector<int>, new_routing_ids)
 IPC_STRUCT_END()
 
-IPC_ENUM_TRAITS_MAX_VALUE(blink::WebGeofencingEventType,
-                          blink::WebGeofencingEventTypeLast)
-
 IPC_STRUCT_TRAITS_BEGIN(content::PushEventPayload)
   IPC_STRUCT_TRAITS_MEMBER(data)
   IPC_STRUCT_TRAITS_MEMBER(is_null)
@@ -266,9 +261,6 @@ IPC_MESSAGE_ROUTED2(ServiceWorkerHostMsg_NotificationCloseEventFinished,
                     int /* request_id */,
                     blink::WebServiceWorkerEventResult)
 IPC_MESSAGE_ROUTED2(ServiceWorkerHostMsg_PushEventFinished,
-                    int /* request_id */,
-                    blink::WebServiceWorkerEventResult)
-IPC_MESSAGE_ROUTED2(ServiceWorkerHostMsg_GeofencingEventFinished,
                     int /* request_id */,
                     blink::WebServiceWorkerEventResult)
 
@@ -486,11 +478,6 @@ IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_NotificationCloseEvent,
 IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_PushEvent,
                      int /* request_id */,
                      content::PushEventPayload /* data */)
-IPC_MESSAGE_CONTROL4(ServiceWorkerMsg_GeofencingEvent,
-                     int /* request_id */,
-                     blink::WebGeofencingEventType /* event_type */,
-                     std::string /* region_id */,
-                     blink::WebCircularGeofencingRegion /* region */)
 
 IPC_MESSAGE_CONTROL1(ServiceWorkerMsg_DidSkipWaiting,
                      int /* request_id */)

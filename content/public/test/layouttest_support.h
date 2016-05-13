@@ -120,17 +120,6 @@ void SetDeviceColorProfile(RenderView* render_view, const std::string& name);
 void SetBluetoothAdapter(int render_process_id,
                          scoped_refptr<device::BluetoothAdapter> adapter);
 
-// Enables mock geofencing service while running a layout test.
-// |service_available| indicates if the mock service should mock geofencing
-// being available or not.
-void SetGeofencingMockProvider(bool service_available);
-
-// Disables mock geofencing service while running a layout test.
-void ClearGeofencingMockProvider();
-
-// Set the mock geofencing position while running a layout test.
-void SetGeofencingMockPosition(double latitude, double longitude);
-
 // Enables or disables synchronous resize mode. When enabled, all window-sizing
 // machinery is short-circuited inside the renderer. This mode is necessary for
 // some tests that were written before browsers had multi-process architecture

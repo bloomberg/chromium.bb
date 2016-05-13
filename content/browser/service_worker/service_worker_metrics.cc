@@ -92,8 +92,6 @@ const char* ServiceWorkerMetrics::EventTypeToString(EventType event_type) {
       return "Notification Close";
     case EventType::PUSH:
       return "Push";
-    case EventType::GEOFENCING:
-      return "Geofencing";
     case EventType::MESSAGE:
       return "Message";
     case EventType::FETCH_MAIN_FRAME:
@@ -221,11 +219,6 @@ void ServiceWorkerMetrics::RecordStartWorkerStatus(
     case EventType::PUSH:
       UMA_HISTOGRAM_ENUMERATION(
           "ServiceWorker.StartWorker.StatusByPurpose_PUSH", status,
-          SERVICE_WORKER_ERROR_MAX_VALUE);
-      break;
-    case EventType::GEOFENCING:
-      UMA_HISTOGRAM_ENUMERATION(
-          "ServiceWorker.StartWorker.StatusByPurpose_GEOFENCING", status,
           SERVICE_WORKER_ERROR_MAX_VALUE);
       break;
     case EventType::MESSAGE:
@@ -405,10 +398,6 @@ void ServiceWorkerMetrics::RecordEventDuration(EventType event,
     case EventType::MESSAGE:
       UMA_HISTOGRAM_MEDIUM_TIMES("ServiceWorker.ExtendableMessageEvent.Time",
                                  time);
-      break;
-
-    // For now event duration for these events is not recorded.
-    case EventType::GEOFENCING:
       break;
 
     case EventType::UNKNOWN:

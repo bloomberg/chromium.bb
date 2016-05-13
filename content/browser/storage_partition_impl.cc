@@ -16,7 +16,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/fileapi/browser_file_system_helper.h"
-#include "content/browser/geofencing/geofencing_manager.h"
 #include "content/browser/gpu/shader_disk_cache.h"
 #include "content/browser/host_zoom_map_impl.h"
 #include "content/browser/notifications/platform_notification_context_impl.h"
@@ -369,7 +368,6 @@ StoragePartitionImpl::StoragePartitionImpl(
     ServiceWorkerContextWrapper* service_worker_context,
     WebRTCIdentityStore* webrtc_identity_store,
     storage::SpecialStoragePolicy* special_storage_policy,
-    GeofencingManager* geofencing_manager,
     HostZoomLevelContext* host_zoom_level_context,
     PlatformNotificationContextImpl* platform_notification_context,
     BackgroundSyncContext* background_sync_context)
@@ -384,7 +382,6 @@ StoragePartitionImpl::StoragePartitionImpl(
       service_worker_context_(service_worker_context),
       webrtc_identity_store_(webrtc_identity_store),
       special_storage_policy_(special_storage_policy),
-      geofencing_manager_(geofencing_manager),
       host_zoom_level_context_(host_zoom_level_context),
       platform_notification_context_(platform_notification_context),
       background_sync_context_(background_sync_context),
@@ -414,9 +411,6 @@ StoragePartitionImpl::~StoragePartitionImpl() {
 
   if (GetCacheStorageContext())
     GetCacheStorageContext()->Shutdown();
-
-  if (GetGeofencingManager())
-    GetGeofencingManager()->Shutdown();
 
   if (GetPlatformNotificationContext())
     GetPlatformNotificationContext()->Shutdown();
@@ -505,10 +499,6 @@ StoragePartitionImpl* StoragePartitionImpl::Create(
   scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy(
       context->GetSpecialStoragePolicy());
 
-  scoped_refptr<GeofencingManager> geofencing_manager =
-      new GeofencingManager(service_worker_context);
-  geofencing_manager->Init();
-
   scoped_refptr<HostZoomLevelContext> host_zoom_level_context(
       new HostZoomLevelContext(
           context->CreateZoomLevelDelegate(partition_path)));
@@ -528,8 +518,8 @@ StoragePartitionImpl* StoragePartitionImpl::Create(
       dom_storage_context.get(), indexed_db_context.get(),
       cache_storage_context.get(), service_worker_context.get(),
       webrtc_identity_store.get(), special_storage_policy.get(),
-      geofencing_manager.get(), host_zoom_level_context.get(),
-      platform_notification_context.get(), background_sync_context.get());
+      host_zoom_level_context.get(), platform_notification_context.get(),
+      background_sync_context.get());
 
   service_worker_context->set_storage_partition(storage_partition);
 
@@ -579,10 +569,6 @@ CacheStorageContextImpl* StoragePartitionImpl::GetCacheStorageContext() {
 
 ServiceWorkerContextWrapper* StoragePartitionImpl::GetServiceWorkerContext() {
   return service_worker_context_.get();
-}
-
-GeofencingManager* StoragePartitionImpl::GetGeofencingManager() {
-  return geofencing_manager_.get();
 }
 
 HostZoomMap* StoragePartitionImpl::GetHostZoomMap() {

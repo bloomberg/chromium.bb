@@ -272,8 +272,7 @@ PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "F
 FAIL Should throw NOT_SUPPORTED_ERR for non-legacy event interface "GamepadEvent" assert_throws: function "function () {
         var evt = document.createEvent(even..." did not throw
 PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "GamepadEvents" 
-FAIL Should throw NOT_SUPPORTED_ERR for non-legacy event interface "GeofencingEvent" assert_throws: function "function () {
-        var evt = document.createEvent(even..." did not throw
+PASS Should throw NOT_SUPPORTED_ERR for non-legacy event interface "GeofencingEvent" 
 PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "GeofencingEvents" 
 FAIL Should throw NOT_SUPPORTED_ERR for non-legacy event interface "InstallEvent" assert_throws: function "function () {
         var evt = document.createEvent(even..." did not throw

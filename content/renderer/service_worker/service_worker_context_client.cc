@@ -28,7 +28,6 @@
 #include "content/child/thread_safe_sender.h"
 #include "content/child/webmessageportchannel_impl.h"
 #include "content/common/devtools_messages.h"
-#include "content/common/geofencing_messages.h"
 #include "content/common/message_port_messages.h"
 #include "content/common/mojo/service_registry_impl.h"
 #include "content/common/service_worker/embedded_worker_messages.h"
@@ -252,7 +251,6 @@ void ServiceWorkerContextClient::OnMessageReceived(
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_NotificationCloseEvent,
                         OnNotificationCloseEvent)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_PushEvent, OnPushEvent)
-    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_GeofencingEvent, OnGeofencingEvent)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_DidGetClient, OnDidGetClient)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_DidGetClients, OnDidGetClients)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_OpenWindowResponse,
@@ -821,19 +819,6 @@ void ServiceWorkerContextClient::OnPushEvent(int request_id,
   if (!payload.is_null)
     data.assign(blink::WebString::fromUTF8(payload.data));
   proxy_->dispatchPushEvent(request_id, data);
-}
-
-void ServiceWorkerContextClient::OnGeofencingEvent(
-    int request_id,
-    blink::WebGeofencingEventType event_type,
-    const std::string& region_id,
-    const blink::WebCircularGeofencingRegion& region) {
-  TRACE_EVENT0("ServiceWorker",
-               "ServiceWorkerContextClient::OnGeofencingEvent");
-  proxy_->dispatchGeofencingEvent(
-      request_id, event_type, blink::WebString::fromUTF8(region_id), region);
-  Send(new ServiceWorkerHostMsg_GeofencingEventFinished(
-      GetRoutingID(), request_id, blink::WebServiceWorkerEventResultCompleted));
 }
 
 void ServiceWorkerContextClient::OnDidGetClient(

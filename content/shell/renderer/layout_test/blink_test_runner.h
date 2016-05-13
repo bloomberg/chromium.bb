@@ -112,9 +112,6 @@ class BlinkTestRunner : public RenderViewObserver,
       override;
   void SendBluetoothManualChooserEvent(const std::string& event,
                                        const std::string& argument) override;
-  void SetGeofencingMockProvider(bool service_available) override;
-  void ClearGeofencingMockProvider() override;
-  void SetGeofencingMockPosition(double latitude, double longitude) override;
   void SetFocus(blink::WebView* web_view, bool focus) override;
   void SetAcceptAllCookies(bool accept) override;
   std::string PathToLocalResource(const std::string& resource) override;

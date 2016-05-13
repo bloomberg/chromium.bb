@@ -40,7 +40,6 @@
 #include "content/child/child_shared_bitmap_manager.h"
 #include "content/child/fileapi/file_system_dispatcher.h"
 #include "content/child/fileapi/webfilesystem_impl.h"
-#include "content/child/geofencing/geofencing_message_filter.h"
 #include "content/child/memory/child_memory_message_filter.h"
 #include "content/child/mojo/mojo_application.h"
 #include "content/child/notifications/notification_dispatcher.h"
@@ -428,8 +427,6 @@ void ChildThreadImpl::Init(const Options& options) {
       new QuotaMessageFilter(thread_safe_sender_.get());
   quota_dispatcher_.reset(new QuotaDispatcher(thread_safe_sender_.get(),
                                               quota_message_filter_.get()));
-  geofencing_message_filter_ =
-      new GeofencingMessageFilter(thread_safe_sender_.get());
   notification_dispatcher_ =
       new NotificationDispatcher(thread_safe_sender_.get());
   push_dispatcher_ = new PushDispatcher(thread_safe_sender_.get());
@@ -440,7 +437,6 @@ void ChildThreadImpl::Init(const Options& options) {
   channel_->AddFilter(notification_dispatcher_->GetFilter());
   channel_->AddFilter(push_dispatcher_->GetFilter());
   channel_->AddFilter(service_worker_message_filter_->GetFilter());
-  channel_->AddFilter(geofencing_message_filter_->GetFilter());
 
   if (!IsInBrowserProcess()) {
     // In single process mode, browser-side tracing and memory will cover the

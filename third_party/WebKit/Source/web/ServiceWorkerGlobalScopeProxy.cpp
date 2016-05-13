@@ -40,8 +40,6 @@
 #include "core/workers/WorkerThread.h"
 #include "modules/background_sync/SyncEvent.h"
 #include "modules/fetch/Headers.h"
-#include "modules/geofencing/CircularGeofencingRegion.h"
-#include "modules/geofencing/GeofencingEvent.h"
 #include "modules/notifications/Notification.h"
 #include "modules/notifications/NotificationEvent.h"
 #include "modules/notifications/NotificationEventInit.h"
@@ -158,12 +156,6 @@ void ServiceWorkerGlobalScopeProxy::dispatchForeignFetchEvent(int eventID, const
     ForeignFetchEvent* fetchEvent = ForeignFetchEvent::create(EventTypeNames::foreignfetch, eventInit, observer);
     DispatchEventResult dispatchResult = workerGlobalScope()->dispatchEvent(fetchEvent);
     observer->didDispatchEvent(dispatchResult);
-}
-
-void ServiceWorkerGlobalScopeProxy::dispatchGeofencingEvent(int eventID, WebGeofencingEventType eventType, const WebString& regionID, const WebCircularGeofencingRegion& region)
-{
-    const AtomicString& type = eventType == WebGeofencingEventTypeEnter ? EventTypeNames::geofenceenter : EventTypeNames::geofenceleave;
-    workerGlobalScope()->dispatchEvent(GeofencingEvent::create(type, regionID, CircularGeofencingRegion::create(regionID, region)));
 }
 
 void ServiceWorkerGlobalScopeProxy::dispatchInstallEvent(int eventID)

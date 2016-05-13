@@ -1012,7 +1012,6 @@ public:
         DocumentCreateEventMediaEncryptedEvent = 1197,
         DocumentCreateEventMediaKeyMessageEvent = 1198,
         DocumentCreateEventGamepadEvent = 1199,
-        DocumentCreateEventGeofencingEvent = 1200,
         DocumentCreateEventIDBVersionChangeEvent = 1201,
         DocumentCreateEventBlobEvent = 1202,
         DocumentCreateEventMediaStreamEvent = 1203,

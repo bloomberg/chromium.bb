@@ -484,17 +484,6 @@ class TestRunner : public WebTestRunner {
   // Converts a URL starting with file:///tmp/ to the local mapping.
   std::string PathToLocalResource(const std::string& path);
 
-  // Enables mock geofencing service while running a layout test.
-  // |service_available| indicates if the mock service should mock geofencing
-  // being available or not.
-  void SetGeofencingMockProvider(bool service_available);
-
-  // Disables mock geofencing service while running a layout test.
-  void ClearGeofencingMockProvider();
-
-  // Set the mock geofencing position while running a layout test.
-  void SetGeofencingMockPosition(double latitude, double longitude);
-
   // Sets the permission's |name| to |value| for a given {origin, embedder}
   // tuple.
   void SetPermission(const std::string& name,

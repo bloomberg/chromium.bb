@@ -50,7 +50,6 @@ class PushDispatcher;
 class ThreadSafeSender;
 class TraceLogObserverAdapter;
 class WebCryptoImpl;
-class WebGeofencingProviderImpl;
 
 class CONTENT_EXPORT BlinkPlatformImpl
     : NON_EXPORTED_BASE(public blink::Platform) {
@@ -124,7 +123,6 @@ class CONTENT_EXPORT BlinkPlatformImpl
   void didStartWorkerThread() override;
   void willStopWorkerThread() override;
   blink::WebCrypto* crypto() override;
-  blink::WebGeofencingProvider* geofencingProvider() override;
   blink::WebNotificationManager* notificationManager() override;
   blink::WebPushProvider* pushProvider() override;
   blink::WebPermissionClient* permissionClient() override;
@@ -152,7 +150,6 @@ class CONTENT_EXPORT BlinkPlatformImpl
   WebFallbackThemeEngineImpl fallback_theme_engine_;
   base::ThreadLocalStorage::Slot current_thread_slot_;
   webcrypto::WebCryptoImpl web_crypto_;
-  std::unique_ptr<WebGeofencingProviderImpl> geofencing_provider_;
   base::ScopedPtrHashMap<blink::Platform::TraceLogEnabledStateObserver*,
                          std::unique_ptr<TraceLogObserverAdapter>>
       trace_log_observers_;

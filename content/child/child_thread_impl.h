@@ -286,8 +286,6 @@ class CONTENT_EXPORT ChildThreadImpl
 
   std::unique_ptr<base::PowerMonitor> power_monitor_;
 
-  scoped_refptr<ChildMessageFilter> geofencing_message_filter_;
-
   scoped_refptr<base::SequencedTaskRunner> browser_process_io_runner_;
 
   base::WeakPtrFactory<ChildThreadImpl> channel_connected_factory_;

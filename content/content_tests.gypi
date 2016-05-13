@@ -472,8 +472,6 @@
       'browser/gamepad/gamepad_service_unittest.cc',
       'browser/gamepad/gamepad_test_helpers.cc',
       'browser/gamepad/gamepad_test_helpers.h',
-      'browser/geofencing/geofencing_manager_unittest.cc',
-      'browser/geofencing/geofencing_service_unittest.cc',
       'browser/geolocation/geolocation_provider_impl_unittest.cc',
       'browser/geolocation/location_arbitrator_impl_unittest.cc',
       'browser/geolocation/network_location_provider_unittest.cc',

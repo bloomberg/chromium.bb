@@ -103,7 +103,6 @@ enum IPCMessageStart {
   PDFMsgStart,
   ManifestManagerMsgStart,
   ExtensionUtilityMsgStart,
-  GeofencingMsgStart,
   LayoutTestMsgStart,
   NetworkHintsMsgStart,
   BluetoothMsgStart,

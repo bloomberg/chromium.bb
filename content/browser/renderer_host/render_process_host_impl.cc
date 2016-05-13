@@ -67,7 +67,6 @@
 #include "content/browser/dom_storage/dom_storage_message_filter.h"
 #include "content/browser/fileapi/fileapi_message_filter.h"
 #include "content/browser/frame_host/render_frame_message_filter.h"
-#include "content/browser/geofencing/geofencing_dispatcher_host.h"
 #include "content/browser/gpu/browser_gpu_memory_buffer_manager.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
@@ -1006,8 +1005,6 @@ void RenderProcessHostImpl::CreateMessageFilters() {
 #if defined(OS_ANDROID)
   AddFilter(new ScreenOrientationMessageFilterAndroid());
 #endif
-  AddFilter(new GeofencingDispatcherHost(
-      storage_partition_impl_->GetGeofencingManager()));
 
   bool enable_web_bluetooth =
       browser_command_line.HasSwitch(switches::kEnableWebBluetooth);
