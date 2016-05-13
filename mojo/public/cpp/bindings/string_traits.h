@@ -10,7 +10,7 @@
 
 namespace mojo {
 
-// Access to a string inside a mojo message.
+// Access to the contents of a serialized string.
 class StringDataView {
  public:
   explicit StringDataView(internal::String_Data* data) : data_(data) {
@@ -25,12 +25,43 @@ class StringDataView {
   internal::String_Data* data_;
 };
 
-// This must be specialized for any UserType to be serialized/deserialized as
+// This must be specialized for any type |T| to be serialized/deserialized as
 // a mojom string.
 //
-// TODO(yzshen): This is work in progress. Add better documentation once the
-// interface becomes more stable.
-template <typename UserType>
+// Imagine you want to specialize it for CustomString, usually you need to
+// implement:
+//
+//   template <T>
+//   struct StringTraits<CustomString> {
+//     // These two methods are optional. Please see comments in struct_traits.h
+//     static bool IsNull(const CustomString& input);
+//     static void SetToNull(CustomString* output);
+//
+//     static size_t GetSize(const CustomString& input);
+//     static const char* GetData(const CustomString& input);
+//
+//     static bool Read(StringDataView input, CustomString* output);
+//   };
+//
+// In some cases, you may need to do conversion before you can return the size
+// and data as 8-bit characters for serialization. (For example, CustomString is
+// UTF-16 string). In that case, you can add two optional methods:
+//
+//   static void* SetUpContext(const CustomString& input);
+//   static void TearDownContext(const CustomString& input, void* context);
+//
+// And then you append a second parameter, void* context, to GetSize() and
+// GetData():
+//
+//   static size_t GetSize(const CustomString& input, void* context);
+//   static const char* GetData(const CustomString& input, void* context);
+//
+// If a CustomString instance is not null, the serialization code will call
+// SetUpContext() at the beginning, and pass the resulting context pointer to
+// GetSize()/GetData(). After serialization is done, it calls TearDownContext()
+// so that you can do any necessary cleanup.
+//
+template <typename T>
 struct StringTraits;
 
 }  // namespace mojo

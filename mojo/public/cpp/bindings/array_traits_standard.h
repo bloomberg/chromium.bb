@@ -27,8 +27,8 @@ struct ArrayTraits<Array<T>> {
     return input[index];
   }
 
-  static typename Array<T>::ConstRefType& GetAt(const Array<T>& input,
-                                                size_t index) {
+  static typename Array<T>::ConstRefType GetAt(const Array<T>& input,
+                                               size_t index) {
     return input[index];
   }
 

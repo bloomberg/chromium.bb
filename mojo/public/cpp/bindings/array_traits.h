@@ -7,12 +7,33 @@
 
 namespace mojo {
 
-// This must be specialized for any UserType to be serialized/deserialized as
+// This must be specialized for any type |T| to be serialized/deserialized as
 // a mojom array.
 //
-// TODO(yzshen): This is work in progress. Add better documentation once the
-// interface becomes more stable.
-template <typename UserType>
+// Usually you would like to do a partial specialization for an array/vector
+// template. Imagine you want to specialize it for CustomArray<>, you need to
+// implement:
+//
+//   template <typename T>
+//   struct ArrayTraits<CustomArray<T>> {
+//     using Element = T;
+//
+//     // These two methods are optional. Please see comments in struct_traits.h
+//     static bool IsNull(const CustomArray<T>& input);
+//     static void SetToNull(CustomArray<T>* output);
+//
+//     static size_t GetSize(const CustomArray<T>& input);
+//
+//     static T* GetData(CustomArray<T>& input);
+//     static const T* GetData(const CustomArray<T>& input);
+//
+//     static T& GetAt(CustomArray<T>& input, size_t index);
+//     static const T& GetAt(const CustomArray<T>& input, size_t index);
+//
+//     static void Resize(CustomArray<T>& input, size_t size);
+//   };
+//
+template <typename T>
 struct ArrayTraits;
 
 }  // namespace mojo

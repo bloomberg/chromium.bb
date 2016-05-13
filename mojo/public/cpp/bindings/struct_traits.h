@@ -10,22 +10,97 @@ namespace mojo {
 // This must be specialized for any type |T| to be serialized/deserialized as
 // a mojom struct of type |MojomType|.
 //
-// Each specialization must implement a few things:
-//
+// Each specialization needs to implement a few things:
 //   1. Static getters for each field in the Mojom type. These should be
 //      of the form:
 //
-//        static <return type> <field name>(const T&)
+//        static <return type> <field name>(const T& input);
 //
 //      and should return a serializable form of the named field as extracted
-//      from the referenced |T| instance.
+//      from |input|.
 //
-//   2. A static Read method to initialize a new |T| from a MojomType::Reader:
+//      Serializable form of a field:
+//        Value or reference of the same type used in |MojomType|, or the
+//        following alternatives:
+//        - string:
+//          Value or reference of any type that has a StringTraits defined.
+//          Supported by default: base::StringPiece, std::string.
 //
-//        static bool Read(MojomType::Reader r, T* out);
+//        - array:
+//          Value or reference of any type that has an ArrayTraits defined.
+//          Supported by default: std::vector, WTF::Vector (in blink).
 //
-//      The generated MojomType::Reader type provides a convenient, inexpensive
-//      view of a serialized struct's field data.
+//        - struct:
+//          Value or reference of any type that has a StructTraits defined.
+//
+//   2. A static Read() method to set the contents of a |T| instance from a
+//      |MojomType|DataView (e.g., if |MojomType| is test::Example, the data
+//      view will be test::ExampleDataView).
+//
+//        static bool Read(|MojomType|DataView data, T* output);
+//
+//      The generated |MojomType|DataView type provides a convenient,
+//      inexpensive view of a serialized struct's field data.
+//
+//      Returning false indicates invalid incoming data and causes the message
+//      pipe receiving it to be disconnected. Therefore, you can do custom
+//      validation for |T| in this method.
+//
+//   3. [Optional] A static IsNull() method indicating whether a given |T|
+//      instance is null:
+//
+//        static bool IsNull(const T& input);
+//
+//      If this method returns true, it is guaranteed that none of the getters
+//      (described in section 1) will be called for the same |input|. So you
+//      don't have to check whether |input| is null in those getters.
+//
+//      If it is not defined, |T| instances are always considered non-null.
+//
+//      [Optional] A static SetToNull() method to set the contents of a given
+//      |T| instance to null.
+//
+//        static void SetToNull(T* output);
+//
+//      When a null serialized struct is received, the deserialization code
+//      calls this method instead of Read().
+//
+//      NOTE: It is to set |*output|'s contents to a null state, not to set the
+//      |output| pointer itself to null. "Null state" means whatever state you
+//      think it makes sense to map a null serialized struct to.
+//
+//      If it is not defined, null is not allowed to be converted to |T|. In
+//      that case, an incoming null value is considered invalid and causes the
+//      message pipe to be disconnected.
+//
+// EXAMPLE:
+//
+// Mojom definition:
+//   struct Bar {};
+//   struct Foo {
+//     int32 f_integer;
+//     string f_string;
+//     array<string> f_string_array;
+//     Bar f_bar;
+//   };
+//
+// StructTraits for Foo:
+//   template <>
+//   struct StructTraits<Foo, CustomFoo> {
+//     // Optional methods dealing with null:
+//     static bool IsNull(const CustomFoo& input);
+//     static void SetToNull(CustomFoo* output);
+//
+//     // Field getters:
+//     static int32_t f_integer(const CustomFoo& input);
+//     static const std::string& f_string(const CustomFoo& input);
+//     static const std::vector<std::string>& f_string_array(
+//         const CustomFoo& input);
+//     // Assuming there is a StructTraits<Bar, CustomBar> defined.
+//     static const CustomBar& f_bar(const CustomFoo& input);
+//
+//     static bool Read(FooDataView data, CustomFoo* output);
+//   };
 //
 template <typename MojomType, typename T>
 struct StructTraits;
