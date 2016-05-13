@@ -48,6 +48,11 @@
 #t37 { border-color: 00101010 }
 #t38 { border-color: ff10 }
 #t39 { border-color: ff101010 }
+#t40 { background-color: 0.000ff }
+#t41 { background-color: -0001ff }
+#t42 { background-color: -0.000ff }
+#t43 { background-color: -1.1 }
+#t44 { background-color: -1 }
 </style>
 <div></div>
 <script>
@@ -61,7 +66,7 @@ function testElementWithColorStyle(colorString) {
 var sheet = document.styleSheets[0];
 
 test(function(){ assert_true(!!sheet); }, "StyleSheet present");
-test(function(){ assert_equals(sheet.cssRules.length, 39); }, "All rules parsed");
+test(function(){ assert_equals(sheet.cssRules.length, 44); }, "All rules parsed");
 
 test(function(){
     assert_equals(sheet.cssRules[0].style.color, "rgb(0, 128, 0)");
@@ -238,4 +243,25 @@ test(function(){
     var element = testElementWithColorStyle("FF00FF00");
     assert_equals(element.style.color, "");
 }, "8 digit hex: FF00FF00 must be ignored in quirks-mode");
+
+test(function(){
+    assert_equals(sheet.cssRules[39].style.backgroundColor, "");
+}, "No hashless color quirk for background-color property with invalid hashless value");
+
+test(function(){
+    assert_equals(sheet.cssRules[40].style.backgroundColor, "");
+}, "No hashless color quirk for background-color property with invalid hashless value");
+
+test(function(){
+    assert_equals(sheet.cssRules[41].style.backgroundColor, "");
+}, "No hashless color quirk for background-color property with invalid hashless value");
+
+test(function(){
+    assert_equals(sheet.cssRules[42].style.backgroundColor, "");
+}, "No hashless color quirk for background-color property with invalid hashless value");
+
+test(function(){
+    assert_equals(sheet.cssRules[43].style.backgroundColor, "");
+}, "No hashless color quirk for background-color property with invalid hashless value");
+
 </script>

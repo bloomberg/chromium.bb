@@ -405,14 +405,14 @@ static bool parseHexColor(CSSParserTokenRange& range, RGBA32& result, bool accep
     const CSSParserToken& token = range.peek();
     String color;
     if (acceptQuirkyColors) {
-        if (token.type() == NumberToken && token.numericValueType() == IntegerValueType
-            && token.numericValue() >= 0. && token.numericValue() < 1000000.) { // e.g. 112233
-            color = String::format("%06d", static_cast<int>(token.numericValue()));
-        } else if (token.type() == DimensionToken) { // e.g. 0001FF
-            // TODO(timloh): This should check the numericValueType flag
-            color = String::number(static_cast<int>(token.numericValue())) + String(token.value());
-            if (color.length() > 6)
+        if (token.type() == NumberToken || token.type() == DimensionToken) {
+            if (token.numericValueType() != IntegerValueType
+                || token.numericValue() < 0. || token.numericValue() >= 1000000.)
                 return false;
+            if (token.type() == NumberToken) // e.g. 112233
+                color = String::format("%d", static_cast<int>(token.numericValue()));
+            else // e.g. 0001FF
+                color = String::number(static_cast<int>(token.numericValue())) + String(token.value());
             while (color.length() < 6)
                 color = "0" + color;
         } else if (token.type() == IdentToken) { // e.g. FF0000
