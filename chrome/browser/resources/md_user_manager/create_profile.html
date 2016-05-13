@@ -58,6 +58,8 @@
 
       #nameInput,
       paper-dropdown-menu {
+        --paper-input-container-color: var(--primary-text-color);
+        --paper-input-container-focus-color: var(--google-blue-500);
         --paper-input-container-input: {
           font-size: inherit;
         };
@@ -91,13 +93,15 @@
       }
 
       paper-checkbox {
+        --paper-checkbox-checked-color: var(--google-blue-500);
         --paper-checkbox-label-spacing: 16px;
-        --paper-checkbox-size: 20px;
+        --paper-checkbox-size: 16px;
+        --paper-checkbox-unchecked-color: var(--paper-grey-600);
         margin-top: 24px;
       }
 
       #supervised-user-container {
-        -webkit-padding-start: 36px;
+        -webkit-padding-start: 32px;
       }
 
       #supervised-user-container #learn-more {
