@@ -1,0 +1,55 @@
+{
+    "description": "Describes the Web Page Replay archives for a story set. Don't edit by hand! Use record_wpr for updating.", 
+    "archives": {
+        "memory_system_health_desktop_004.wpr": [
+            "load:tools:drive", 
+            "load:tools:docs", 
+            "load:tools:gmail", 
+            "load:tools:maps", 
+            "load:tools:stackoverflow", 
+            "load:tools:dropbox", 
+            "load:tools:weather"
+        ], 
+        "memory_system_health_desktop_002.wpr": [
+            "load:news:engadget", 
+            "load:news:cnn", 
+            "load:news:reddit", 
+            "load:news:qq", 
+            "load:news:bbc", 
+            "load:news:wikipedia"
+        ], 
+        "memory_system_health_desktop_005.wpr": [
+            "load:games:spychase", 
+            "load:games:alphabetty", 
+            "load:games:bubbles", 
+            "load:games:miniclip", 
+            "load:games:lazors"
+        ], 
+        "memory_system_health_desktop_000.wpr": [
+            "load:search:amazon", 
+            "load:search:flipkart", 
+            "load:search:ebay", 
+            "load:search:google", 
+            "load:search:yandex", 
+            "load:search:taobao", 
+            "load:search:yahoo", 
+            "load:search:baidu"
+        ], 
+        "memory_system_health_desktop_003.wpr": [
+            "load:media:soundcloud", 
+            "load:media:dailymotion", 
+            "load:media:9gag", 
+            "load:media:flickr", 
+            "load:media:google_images", 
+            "load:media:youtube"
+        ], 
+        "memory_system_health_desktop_001.wpr": [
+            "load:social:facebook", 
+            "load:social:instagram", 
+            "load:social:twitter", 
+            "load:social:pinterest", 
+            "load:social:vk", 
+            "load:social:tumblr"
+        ]
+    }
+}

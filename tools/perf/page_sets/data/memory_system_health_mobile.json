@@ -1,0 +1,52 @@
+{
+    "description": "Describes the Web Page Replay archives for a story set. Don't edit by hand! Use record_wpr for updating.", 
+    "archives": {
+        "memory_system_health_mobile_005.wpr": [
+            "load:games:lazors", 
+            "load:games:bubbles", 
+            "load:games:spychase"
+        ], 
+        "memory_system_health_mobile_004.wpr": [
+            "load:tools:gmail", 
+            "load:tools:maps", 
+            "load:tools:stackoverflow", 
+            "load:tools:dropbox", 
+            "load:tools:weather", 
+            "load:tools:drive", 
+            "load:tools:docs"
+        ], 
+        "memory_system_health_mobile_001.wpr": [
+            "load:social:facebook", 
+            "load:social:tumblr", 
+            "load:social:twitter", 
+            "load:social:pinterest", 
+            "load:social:instagram"
+        ], 
+        "memory_system_health_mobile_003.wpr": [
+            "load:media:9gag", 
+            "load:media:google_images", 
+            "load:media:soundcloud", 
+            "load:media:youtube", 
+            "load:media:dailymotion", 
+            "load:media:flickr"
+        ], 
+        "memory_system_health_mobile_000.wpr": [
+            "load:search:amazon", 
+            "load:search:baidu", 
+            "load:search:yandex", 
+            "load:search:google", 
+            "load:search:taobao", 
+            "load:search:ebay", 
+            "load:search:yahoo"
+        ], 
+        "memory_system_health_mobile_002.wpr": [
+            "load:news:cnn", 
+            "load:news:reddit", 
+            "load:news:sohu", 
+            "load:news:qq", 
+            "load:news:bbc", 
+            "load:news:wikipedia", 
+            "load:news:engadget"
+        ]
+    }
+}
