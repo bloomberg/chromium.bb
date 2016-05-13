@@ -325,7 +325,7 @@ void ProfileImpl::RegisterProfilePrefs(
   registry->RegisterBooleanPref(prefs::kAllowDeletingBrowserHistory, true);
   registry->RegisterBooleanPref(prefs::kForceGoogleSafeSearch, false);
   registry->RegisterBooleanPref(prefs::kForceYouTubeSafetyMode, false);
-  registry->RegisterBooleanPref(prefs::kRecordHistory, false);
+  registry->RegisterBooleanPref(prefs::kForceSessionSync, false);
   registry->RegisterIntegerPref(
       prefs::kProfileAvatarIndex,
       -1,

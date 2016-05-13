@@ -50,9 +50,6 @@ SupervisedUserSettingsPrefMappingEntry kSupervisedUserSettingsPrefMapping[] = {
     supervised_users::kForceSafeSearch, prefs::kForceYouTubeSafetyMode,
   },
   {
-    supervised_users::kRecordHistory, prefs::kRecordHistory,
-  },
-  {
     supervised_users::kSafeSitesEnabled, prefs::kSupervisedUserSafeSites,
   },
   {
@@ -116,15 +113,11 @@ void SupervisedUserPrefStore::OnNewSettingsAvailable(
   prefs_.reset(new PrefValueMap);
   if (settings) {
     // Set hardcoded prefs and defaults.
-    prefs_->SetBoolean(prefs::kAllowDeletingBrowserHistory, false);
     prefs_->SetInteger(prefs::kDefaultSupervisedUserFilteringBehavior,
                        SupervisedUserURLFilter::ALLOW);
     prefs_->SetBoolean(prefs::kForceGoogleSafeSearch, true);
     prefs_->SetBoolean(prefs::kForceYouTubeSafetyMode, true);
     prefs_->SetBoolean(prefs::kHideWebStoreIcon, true);
-    prefs_->SetInteger(prefs::kIncognitoModeAvailability,
-                       IncognitoModePrefs::DISABLED);
-    prefs_->SetBoolean(prefs::kRecordHistory, true);
     prefs_->SetBoolean(prefs::kSigninAllowed, false);
 
     // Copy supervised user settings to prefs.
@@ -135,14 +128,19 @@ void SupervisedUserPrefStore::OnNewSettingsAvailable(
     }
 
     // Manually set preferences that aren't direct copies of the settings value.
-    bool record_history;
-    if (settings->GetBoolean(supervised_users::kRecordHistory,
-                             &record_history)) {
-      prefs_->SetBoolean(prefs::kAllowDeletingBrowserHistory, !record_history);
-      prefs_->SetInteger(prefs::kIncognitoModeAvailability,
-                         record_history ? IncognitoModePrefs::DISABLED
-                                        : IncognitoModePrefs::ENABLED);
-    }
+
+    bool record_history = true;
+    settings->GetBoolean(supervised_users::kRecordHistory, &record_history);
+    prefs_->SetBoolean(prefs::kAllowDeletingBrowserHistory, !record_history);
+    prefs_->SetInteger(prefs::kIncognitoModeAvailability,
+                       record_history ? IncognitoModePrefs::DISABLED
+                                      : IncognitoModePrefs::ENABLED);
+
+    bool record_history_includes_session_sync = true;
+    settings->GetBoolean(supervised_users::kRecordHistoryIncludesSessionSync,
+                         &record_history_includes_session_sync);
+    prefs_->SetBoolean(prefs::kForceSessionSync,
+                       record_history && record_history_includes_session_sync);
 
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kEnableSupervisedUserManagedBookmarksFolder)) {

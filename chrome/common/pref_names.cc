@@ -911,9 +911,9 @@ const char kForceGoogleSafeSearch[] = "settings.force_google_safesearch";
 // Boolean controlling whether Safety Mode is mandatory on YouTube.
 const char kForceYouTubeSafetyMode[] = "settings.force_youtube_safety_mode";
 
-// Boolean controlling whether History is recorded and synced for
-// supervised users.
-const char kRecordHistory[] = "settings.history_recorded";
+// Boolean controlling whether history is recorded via Session Sync
+// (for supervised users).
+const char kForceSessionSync[] = "settings.history_recorded";
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 // Linux specific preference on whether we should match the system theme.

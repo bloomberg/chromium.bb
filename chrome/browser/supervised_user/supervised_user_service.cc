@@ -195,8 +195,8 @@ void SupervisedUserService::Init() {
       base::Bind(&SupervisedUserService::OnSupervisedUserIdChanged,
           base::Unretained(this)));
   pref_change_registrar_.Add(
-      prefs::kRecordHistory,
-      base::Bind(&SupervisedUserService::OnHistoryRecordingStateChanged,
+      prefs::kForceSessionSync,
+      base::Bind(&SupervisedUserService::OnForceSessionSyncChanged,
                  base::Unretained(this)));
 
   ProfileSyncService* sync_service =
@@ -406,6 +406,10 @@ void SupervisedUserService::AddPermissionRequestCreator(
 void SupervisedUserService::SetSafeSearchURLReporter(
     std::unique_ptr<SafeSearchURLReporter> reporter) {
   url_reporter_ = std::move(reporter);
+}
+
+bool SupervisedUserService::IncludesSyncSessionsType() const {
+  return includes_sync_sessions_type_;
 }
 
 SupervisedUserService::URLFilterContext::URLFilterContext()
@@ -924,16 +928,11 @@ std::string SupervisedUserService::GetSupervisedUserName() const {
 #endif
 }
 
-void SupervisedUserService::OnHistoryRecordingStateChanged() {
-  bool record_history =
-      profile_->GetPrefs()->GetBoolean(prefs::kRecordHistory);
-  includes_sync_sessions_type_ = record_history;
+void SupervisedUserService::OnForceSessionSyncChanged() {
+  includes_sync_sessions_type_ =
+      profile_->GetPrefs()->GetBoolean(prefs::kForceSessionSync);
   ProfileSyncServiceFactory::GetForProfile(profile_)
       ->ReconfigureDatatypeManager();
-}
-
-bool SupervisedUserService::IncludesSyncSessionsType() const {
-  return includes_sync_sessions_type_;
 }
 
 void SupervisedUserService::Shutdown() {

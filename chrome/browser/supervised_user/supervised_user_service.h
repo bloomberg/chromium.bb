@@ -188,6 +188,10 @@ class SupervisedUserService : public KeyedService,
   void SetSafeSearchURLReporter(
       std::unique_ptr<SafeSearchURLReporter> reporter);
 
+  // Returns true if the syncer::SESSIONS type should be included in Sync.
+  // Public for testing.
+  bool IncludesSyncSessionsType() const;
+
   // ProfileKeyedService override:
   void Shutdown() override;
 
@@ -210,10 +214,6 @@ class SupervisedUserService : public KeyedService,
   friend class SupervisedUserServiceFactory;
   FRIEND_TEST_ALL_PREFIXES(SingleClientSupervisedUserSettingsSyncTest, Sanity);
   FRIEND_TEST_ALL_PREFIXES(SupervisedUserServiceTest, ClearOmitOnRegistration);
-  FRIEND_TEST_ALL_PREFIXES(SupervisedUserServiceTest,
-                           ChangesIncludedSessionOnChangedSettings);
-  FRIEND_TEST_ALL_PREFIXES(SupervisedUserServiceTest,
-                           ChangesSyncSessionStateOnChangedSettings);
   FRIEND_TEST_ALL_PREFIXES(SupervisedUserServiceExtensionTest,
                            ExtensionManagementPolicyProvider);
 
@@ -358,10 +358,7 @@ class SupervisedUserService : public KeyedService,
   // Subscribes to the SupervisedUserPrefStore, refreshes
   // |includes_sync_sessions_type_| and triggers reconfiguring the
   // ProfileSyncService.
-  void OnHistoryRecordingStateChanged();
-
-  // Returns true if the syncer::SESSIONS type should be included in Sync.
-  bool IncludesSyncSessionsType() const;
+  void OnForceSessionSyncChanged();
 
   // The option a custodian sets to either record or prevent recording the
   // supervised user's history. Set by |FetchNewSessionSyncState()| and

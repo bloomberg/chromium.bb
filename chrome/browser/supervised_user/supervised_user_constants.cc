@@ -14,6 +14,8 @@ const char kContentPackManualBehaviorURLs[] = "ContentPackManualBehaviorURLs";
 const char kForceSafeSearch[] = "ForceSafeSearch";
 const char kGeolocationDisabled[] = "GeolocationDisabled";
 const char kRecordHistory[] = "RecordHistory";
+const char kRecordHistoryIncludesSessionSync[] =
+    "RecordHistoryIncludesSessionSync";
 const char kSafeSitesEnabled[] = "SafeSites";
 const char kSigninAllowed[] = "SigninAllowed";
 const char kUserName[] = "UserName";

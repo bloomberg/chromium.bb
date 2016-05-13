@@ -207,7 +207,7 @@ class SupervisedUserServiceTest : public ::testing::Test {
 TEST_F(SupervisedUserServiceTest, ChangesIncludedSessionOnChangedSettings) {
   supervised_user_service_->Init();
   EXPECT_TRUE(supervised_user_service_->IncludesSyncSessionsType());
-  profile_->GetPrefs()->SetBoolean(prefs::kRecordHistory, false);
+  profile_->GetPrefs()->SetBoolean(prefs::kForceSessionSync, false);
   EXPECT_FALSE(supervised_user_service_->IncludesSyncSessionsType());
 }
 

@@ -147,6 +147,10 @@ bool ChildAccountService::SetActive(bool active) {
     SupervisedUserSettingsService* settings_service =
         SupervisedUserSettingsServiceFactory::GetForProfile(profile_);
 
+    settings_service->SetLocalSetting(
+        supervised_users::kRecordHistoryIncludesSessionSync,
+        base::WrapUnique(new base::FundamentalValue(false)));
+
     // In contrast to legacy SUs, child account SUs must sign in.
     settings_service->SetLocalSetting(
         supervised_users::kSigninAllowed,
@@ -157,6 +161,7 @@ bool ChildAccountService::SetActive(bool active) {
     settings_service->SetLocalSetting(
         supervised_users::kForceSafeSearch,
         base::WrapUnique(new base::FundamentalValue(false)));
+
 #if !defined(OS_CHROMEOS)
     // This is also used by user policies (UserPolicySigninService), but since
     // child accounts can not also be Dasher accounts, there shouldn't be any

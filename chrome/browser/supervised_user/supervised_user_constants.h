@@ -16,6 +16,7 @@ extern const char kContentPackManualBehaviorURLs[];
 extern const char kForceSafeSearch[];
 extern const char kGeolocationDisabled[];
 extern const char kRecordHistory[];
+extern const char kRecordHistoryIncludesSessionSync[];
 extern const char kSafeSitesEnabled[];
 extern const char kSigninAllowed[];
 extern const char kUserName[];
