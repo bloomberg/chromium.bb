@@ -990,7 +990,8 @@ class MetaBuildWrapper(object):
     if android and test_type != "script":
       cmdline = [
           self.PathJoin('bin', 'run_%s' % target_name),
-          '--logcat-output-dir', '${ISOLATED_OUTDIR}/logcats'
+          '--logcat-output-dir', '${ISOLATED_OUTDIR}/logcats',
+          '-v',
       ]
     elif use_x11 and test_type == 'windowed_test_launcher':
       extra_files = [
