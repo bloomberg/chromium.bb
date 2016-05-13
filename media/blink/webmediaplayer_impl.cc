@@ -175,6 +175,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       should_notify_time_changed_(false),
       fullscreen_(false),
       decoder_requires_restart_for_fullscreen_(false),
+      supports_overlay_fullscreen_video_(false),
       client_(client),
       encrypted_client_(encrypted_client),
       delegate_(delegate),
@@ -288,7 +289,16 @@ bool WebMediaPlayerImpl::supportsOverlayFullscreenVideo() {
   // OverlayFullscreenVideo. In that case we'll default to
   // non-OverlayFullscreenVideo, which still works correctly, but has janky
   // orientation changes.
-  return decoder_requires_restart_for_fullscreen_;
+
+  // We return a consistent value while in fullscreen to avoid us getting into a
+  // state where some of the OverlayFullscreenVideo adjustments are applied and
+  // some aren't.
+  // TODO(watk): Implement dynamic OverlayFullscreenVideo switching in blink.
+  if (!fullscreen_) {
+    supports_overlay_fullscreen_video_ =
+        decoder_requires_restart_for_fullscreen_;
+  }
+  return supports_overlay_fullscreen_video_;
 #else
   return false;
 #endif
