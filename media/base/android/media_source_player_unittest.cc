@@ -890,7 +890,8 @@ TEST_F(MediaSourcePlayerTest, StartAudioDecoderWithInvalidConfig) {
 }
 
 TEST_F(MediaSourcePlayerTest, StartVideoCodecWithValidSurface) {
-  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+  // crbug.com/604602 and crbug.com/597836
+  SKIP_TEST_IF_VP8_DECODER_IS_NOT_SUPPORTED();
 
   // Test video codec will not be created until data is received.
   StartVideoDecoderJob();
@@ -942,7 +943,8 @@ TEST_F(MediaSourcePlayerTest, ReadFromDemuxerAfterSeek) {
 }
 
 TEST_F(MediaSourcePlayerTest, SetSurfaceWhileSeeking) {
-  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+  // crbug.com/604602 and crbug.com/597836
+  SKIP_TEST_IF_VP8_DECODER_IS_NOT_SUPPORTED();
 
   // Test SetVideoSurface() will not cause an extra seek while the player is
   // waiting for demuxer to indicate seek is done.
@@ -973,7 +975,8 @@ TEST_F(MediaSourcePlayerTest, SetSurfaceWhileSeeking) {
 }
 
 TEST_F(MediaSourcePlayerTest, ChangeMultipleSurfaceWhileDecoding) {
-  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+  // crbug.com/604602 and crbug.com/597836
+  SKIP_TEST_IF_VP8_DECODER_IS_NOT_SUPPORTED();
 
   // Test MediaSourcePlayer can switch multiple surfaces during decoding.
   CreateNextTextureAndSetVideoSurface();
@@ -1014,7 +1017,8 @@ TEST_F(MediaSourcePlayerTest, ChangeMultipleSurfaceWhileDecoding) {
 }
 
 TEST_F(MediaSourcePlayerTest, SetEmptySurfaceAndStarveWhileDecoding) {
-  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+  // crbug.com/604602 and crbug.com/597836
+  SKIP_TEST_IF_VP8_DECODER_IS_NOT_SUPPORTED();
 
   // Test player pauses if an empty surface is passed.
   CreateNextTextureAndSetVideoSurface();
@@ -1049,7 +1053,8 @@ TEST_F(MediaSourcePlayerTest, SetEmptySurfaceAndStarveWhileDecoding) {
 }
 
 TEST_F(MediaSourcePlayerTest, ReleaseVideoDecoderResourcesWhileDecoding) {
-  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+  // crbug.com/604602 and crbug.com/597836
+  SKIP_TEST_IF_VP8_DECODER_IS_NOT_SUPPORTED();
 
   // Test that if video decoder is released while decoding, the resources will
   // not be immediately released.
@@ -1099,7 +1104,8 @@ TEST_F(MediaSourcePlayerTest, AudioOnlyStartAfterSeekFinish) {
 }
 
 TEST_F(MediaSourcePlayerTest, VideoOnlyStartAfterSeekFinish) {
-  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+  // crbug.com/604602 and crbug.com/597836
+  SKIP_TEST_IF_VP8_DECODER_IS_NOT_SUPPORTED();
 
   // Test video decoder job will not start until pending seek event is handled.
   CreateNextTextureAndSetVideoSurface();
@@ -1161,7 +1167,8 @@ TEST_F(MediaSourcePlayerTest, StartImmediatelyAfterPause) {
 }
 
 TEST_F(MediaSourcePlayerTest, DecoderJobsCannotStartWithoutAudio) {
-  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+  // crbug.com/604602 and crbug.com/597836
+  SKIP_TEST_IF_VP8_DECODER_IS_NOT_SUPPORTED();
 
   // Test that when Start() is called, video decoder job will wait for audio
   // decoder job before start decoding the data.
@@ -1214,7 +1221,8 @@ TEST_F(MediaSourcePlayerTest, StartTimeTicksResetAfterDecoderUnderruns) {
 }
 
 TEST_F(MediaSourcePlayerTest, V_SecondAccessUnitIsEOSAndResumePlayAfterSeek) {
-  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+  // crbug.com/604602 and crbug.com/597836
+  SKIP_TEST_IF_VP8_DECODER_IS_NOT_SUPPORTED();
 
   // Test MediaSourcePlayer can replay video after input EOS is reached.
   CreateNextTextureAndSetVideoSurface();
@@ -1241,7 +1249,8 @@ TEST_F(MediaSourcePlayerTest, A_FirstAccessUnitIsEOSAndResumePlayAfterSeek) {
 }
 
 TEST_F(MediaSourcePlayerTest, V_FirstAccessUnitAfterSeekIsEOS) {
-  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+  // crbug.com/604602 and crbug.com/597836
+  SKIP_TEST_IF_VP8_DECODER_IS_NOT_SUPPORTED();
 
   // Test decode of video EOS buffer, just after seeking, without any prior
   // decode (other than the simulated |kAborted| resulting from the seek
@@ -1264,7 +1273,8 @@ TEST_F(MediaSourcePlayerTest, A_FirstAccessUnitAfterSeekIsEOS) {
 }
 
 TEST_F(MediaSourcePlayerTest, AV_PlaybackCompletionAcrossConfigChange) {
-  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+  // crbug.com/604602 and crbug.com/597836
+  SKIP_TEST_IF_VP8_DECODER_IS_NOT_SUPPORTED();
 
   // Test that if one stream (audio) has completed decode of EOS and the other
   // stream (video) processes config change, that subsequent video EOS completes
@@ -1289,7 +1299,8 @@ TEST_F(MediaSourcePlayerTest, AV_PlaybackCompletionAcrossConfigChange) {
 }
 
 TEST_F(MediaSourcePlayerTest, VA_PlaybackCompletionAcrossConfigChange) {
-  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+  // crbug.com/604602 and crbug.com/597836
+  SKIP_TEST_IF_VP8_DECODER_IS_NOT_SUPPORTED();
 
   // Test that if one stream (video) has completed decode of EOS and the other
   // stream (audio) processes config change, that subsequent audio EOS completes
@@ -1314,7 +1325,8 @@ TEST_F(MediaSourcePlayerTest, VA_PlaybackCompletionAcrossConfigChange) {
 }
 
 TEST_F(MediaSourcePlayerTest, AV_NoPrefetchForFinishedVideoOnAudioStarvation) {
-  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+  // crbug.com/604602 and crbug.com/597836
+  SKIP_TEST_IF_VP8_DECODER_IS_NOT_SUPPORTED();
 
   // Test that if one stream (video) has completed decode of EOS, prefetch
   // resulting from player starvation occurs only for the other stream (audio),
@@ -1351,7 +1363,8 @@ TEST_F(MediaSourcePlayerTest, AV_NoPrefetchForFinishedVideoOnAudioStarvation) {
 }
 
 TEST_F(MediaSourcePlayerTest, V_StarvationDuringEOSDecode) {
-  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+  // crbug.com/604602 and crbug.com/597836
+  SKIP_TEST_IF_VP8_DECODER_IS_NOT_SUPPORTED();
 
   // Test that video-only playback completes without further data requested when
   // starvation occurs during EOS decode.
@@ -1384,7 +1397,8 @@ TEST_F(MediaSourcePlayerTest, A_StarvationDuringEOSDecode) {
 }
 
 TEST_F(MediaSourcePlayerTest, AV_SeekDuringEOSDecodePreventsCompletion) {
-  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+  // crbug.com/604602 and crbug.com/597836
+  SKIP_TEST_IF_VP8_DECODER_IS_NOT_SUPPORTED();
 
   // Test that seek supercedes audio+video playback completion on simultaneous
   // audio and video EOS decode, if SeekTo() occurs during these EOS decodes.
@@ -1392,7 +1406,8 @@ TEST_F(MediaSourcePlayerTest, AV_SeekDuringEOSDecodePreventsCompletion) {
 }
 
 TEST_F(MediaSourcePlayerTest, AV_SeekDuringAudioEOSDecodePreventsCompletion) {
-  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+  // crbug.com/604602 and crbug.com/597836
+  SKIP_TEST_IF_VP8_DECODER_IS_NOT_SUPPORTED();
 
   // Test that seek supercedes audio+video playback completion on simultaneous
   // audio EOS and video non-EOS decode, if SeekTo() occurs during these
@@ -1401,7 +1416,8 @@ TEST_F(MediaSourcePlayerTest, AV_SeekDuringAudioEOSDecodePreventsCompletion) {
 }
 
 TEST_F(MediaSourcePlayerTest, AV_SeekDuringVideoEOSDecodePreventsCompletion) {
-  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+  // crbug.com/604602 and crbug.com/597836
+  SKIP_TEST_IF_VP8_DECODER_IS_NOT_SUPPORTED();
 
   // Test that seek supercedes audio+video playback completion on simultaneous
   // audio non-EOS and video EOS decode, if SeekTo() occurs during these
@@ -1410,7 +1426,8 @@ TEST_F(MediaSourcePlayerTest, AV_SeekDuringVideoEOSDecodePreventsCompletion) {
 }
 
 TEST_F(MediaSourcePlayerTest, V_SeekDuringEOSDecodePreventsCompletion) {
-  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+  // crbug.com/604602 and crbug.com/597836
+  SKIP_TEST_IF_VP8_DECODER_IS_NOT_SUPPORTED();
 
   // Test that seek supercedes video-only playback completion on EOS decode, if
   // SeekTo() occurs during EOS decode.
@@ -1465,7 +1482,8 @@ TEST_F(MediaSourcePlayerTest, DemuxerDataArrivesAfterRelease) {
 }
 
 TEST_F(MediaSourcePlayerTest, BrowserSeek_RegularSeekPendsBrowserSeekDone) {
-  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+  // crbug.com/604602 and crbug.com/597836
+  SKIP_TEST_IF_VP8_DECODER_IS_NOT_SUPPORTED();
 
   // Test that a browser seek, once started, delays a newly arrived regular
   // SeekTo() request's demuxer seek until the browser seek is done.
@@ -1495,7 +1513,8 @@ TEST_F(MediaSourcePlayerTest, BrowserSeek_RegularSeekPendsBrowserSeekDone) {
 }
 
 TEST_F(MediaSourcePlayerTest, BrowserSeek_InitialReleaseAndStart) {
-  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+  // crbug.com/604602 and crbug.com/597836
+  SKIP_TEST_IF_VP8_DECODER_IS_NOT_SUPPORTED();
 
   // Test that no browser seek is requested if player Release() + Start() occurs
   // prior to receiving any data.
@@ -1520,7 +1539,8 @@ TEST_F(MediaSourcePlayerTest, BrowserSeek_InitialReleaseAndStart) {
 }
 
 TEST_F(MediaSourcePlayerTest, BrowserSeek_MidStreamReleaseAndStart) {
-  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+  // crbug.com/604602 and crbug.com/597836
+  SKIP_TEST_IF_VP8_DECODER_IS_NOT_SUPPORTED();
 
   // Test that one browser seek is requested if player Release() + Start(), with
   // video data received between Release() and Start().
@@ -1533,7 +1553,8 @@ TEST_F(MediaSourcePlayerTest, BrowserSeek_MidStreamReleaseAndStart) {
 }
 
 TEST_F(MediaSourcePlayerTest, NoBrowserSeekWithKeyFrameInCache) {
-  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+  // crbug.com/604602 and crbug.com/597836
+  SKIP_TEST_IF_VP8_DECODER_IS_NOT_SUPPORTED();
 
   // Test that browser seek is not needed if a key frame is found in data
   // cache.
@@ -1573,7 +1594,8 @@ TEST_F(MediaSourcePlayerTest, PrerollAudioAfterSeek) {
 }
 
 TEST_F(MediaSourcePlayerTest, PrerollVideoAfterSeek) {
-  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+  // crbug.com/604602 and crbug.com/597836
+  SKIP_TEST_IF_VP8_DECODER_IS_NOT_SUPPORTED();
 
   // Test decoder job will preroll the media to the seek position.
   CreateNextTextureAndSetVideoSurface();
@@ -1717,7 +1739,8 @@ TEST_F(MediaSourcePlayerTest, PrerollContinuesAfterUnchangedConfigs) {
 }
 
 TEST_F(MediaSourcePlayerTest, AudioPrerollFinishesBeforeVideo) {
-  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+  // crbug.com/604602 and crbug.com/597836
+  SKIP_TEST_IF_VP8_DECODER_IS_NOT_SUPPORTED();
 
   // Test that after audio finishes prerolling, it will wait for video to finish
   // prerolling before advancing together.
@@ -1769,7 +1792,8 @@ TEST_F(MediaSourcePlayerTest, AudioPrerollFinishesBeforeVideo) {
 }
 
 TEST_F(MediaSourcePlayerTest, SimultaneousAudioVideoConfigChange) {
-  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+  // crbug.com/604602 and crbug.com/597836
+  SKIP_TEST_IF_VP8_DECODER_IS_NOT_SUPPORTED();
 
   // Test that the player allows simultaneous audio and video config change,
   // such as might occur during OnPrefetchDone() if next access unit for both
@@ -1810,7 +1834,8 @@ TEST_F(MediaSourcePlayerTest, SimultaneousAudioVideoConfigChange) {
 
 TEST_F(MediaSourcePlayerTest,
        SimultaneousAudioVideoConfigChangeWithAdaptivePlayback) {
-  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+  // crbug.com/604602 and crbug.com/597836
+  SKIP_TEST_IF_VP8_DECODER_IS_NOT_SUPPORTED();
 
   // Test that the player allows simultaneous audio and video config change with
   // adaptive video playback enabled.
@@ -1894,7 +1919,8 @@ TEST_F(MediaSourcePlayerTest, DemuxerConfigRequestedIfInUnit1AfterPrefetch) {
 }
 
 TEST_F(MediaSourcePlayerTest, BrowserSeek_PrerollAfterBrowserSeek) {
-  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+  // crbug.com/604602 and crbug.com/597836
+  SKIP_TEST_IF_VP8_DECODER_IS_NOT_SUPPORTED();
 
   // Test decoder job will preroll the media to the actual seek position
   // resulting from a browser seek.
@@ -1914,7 +1940,8 @@ TEST_F(MediaSourcePlayerTest, BrowserSeek_PrerollAfterBrowserSeek) {
 }
 
 TEST_F(MediaSourcePlayerTest, VideoDemuxerConfigChange) {
-  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+  // crbug.com/604602 and crbug.com/597836
+  SKIP_TEST_IF_VP8_DECODER_IS_NOT_SUPPORTED();
 
   // Test that video config change notification results in creating a new
   // video codec without any browser seek.
@@ -1929,7 +1956,8 @@ TEST_F(MediaSourcePlayerTest, VideoDemuxerConfigChange) {
 }
 
 TEST_F(MediaSourcePlayerTest, VideoDemuxerConfigChangeWithAdaptivePlayback) {
-  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+  // crbug.com/604602 and crbug.com/597836
+  SKIP_TEST_IF_VP8_DECODER_IS_NOT_SUPPORTED();
 
   // Test that if codec supports adaptive playback, no new codec should be
   // created beyond the one used to decode the prefetch media data prior to
@@ -1982,7 +2010,8 @@ TEST_F(MediaSourcePlayerTest, DecoderDrainInterruptedByRelease) {
 }
 
 TEST_F(MediaSourcePlayerTest, DecoderDrainInterruptedBySurfaceChange) {
-  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+  // crbug.com/604602 and crbug.com/597836
+  SKIP_TEST_IF_VP8_DECODER_IS_NOT_SUPPORTED();
 
   // Test if a video decoder is being drained while surface changes, draining
   // is canceled.
@@ -2004,7 +2033,8 @@ TEST_F(MediaSourcePlayerTest, DecoderDrainInterruptedBySurfaceChange) {
 
 TEST_F(MediaSourcePlayerTest,
        BrowserSeek_DecoderStarvationWhilePendingSurfaceChange) {
-  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+  // crbug.com/604602 and crbug.com/597836
+  SKIP_TEST_IF_VP8_DECODER_IS_NOT_SUPPORTED();
 
   // Test video decoder starvation while handling a pending surface change
   // should not cause any crashes.
@@ -2213,7 +2243,8 @@ TEST_F(MediaSourcePlayerTest, ConfigChangedThenReleaseThenStart) {
 }
 
 TEST_F(MediaSourcePlayerTest, BrowserSeek_ThenReleaseThenDemuxerSeekDone) {
-  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+  // crbug.com/604602 and crbug.com/597836
+  SKIP_TEST_IF_VP8_DECODER_IS_NOT_SUPPORTED();
 
   // Test that Release() after a browser seek's DemuxerSeek IPC request has been
   // sent behaves similar to a regular seek: if OnDemuxerSeekDone() occurs
@@ -2241,7 +2272,8 @@ TEST_F(MediaSourcePlayerTest, BrowserSeek_ThenReleaseThenDemuxerSeekDone) {
 }
 
 TEST_F(MediaSourcePlayerTest, BrowserSeek_ThenReleaseThenStart) {
-  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+  // crbug.com/604602 and crbug.com/597836
+  SKIP_TEST_IF_VP8_DECODER_IS_NOT_SUPPORTED();
 
   // Test that Release() after a browser seek's DemuxerSeek IPC request has been
   // sent behaves similar to a regular seek: if OnDemuxerSeekDone() does not
@@ -2327,7 +2359,8 @@ TEST_F(MediaSourcePlayerTest, CurrentTimeKeepsIncreasingAfterConfigChange) {
 }
 
 TEST_F(MediaSourcePlayerTest, VideoMetadataChangeAfterConfigChange) {
-  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+  // crbug.com/604602 and crbug.com/597836
+  SKIP_TEST_IF_VP8_DECODER_IS_NOT_SUPPORTED();
 
   // Test that after a config change, metadata change will be happen
   // after decoder is drained.

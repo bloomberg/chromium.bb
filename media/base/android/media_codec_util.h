@@ -27,6 +27,15 @@ namespace media {
     }                                                             \
   } while (0)
 
+// Helper macro to skip the test if VP8 decoding isn't supported.
+#define SKIP_TEST_IF_VP8_DECODER_IS_NOT_SUPPORTED()               \
+  do {                                                            \
+    if (!MediaCodecUtil::IsVp8DecoderAvailable()) {               \
+      VLOG(0) << "Could not run test - not supported on device."; \
+      return;                                                     \
+    }                                                             \
+  } while (0)
+
 // Codec direction. Keep this in sync with MediaCodecUtil.java.
 enum MediaCodecDirection {
   MEDIA_CODEC_DECODER,
