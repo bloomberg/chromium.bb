@@ -175,7 +175,7 @@ void WindowManager::OnAccelerator(uint32_t id, const ui::Event& event) {
 }
 
 void WindowManager::ScreenlockStateChanged(bool locked) {
-  // Hide USER_PRIVATE windows when the screen is locked.
+  // Hide USER_PRIVATE_CONTAINER windows when the screen is locked.
   mus::Window* window = root_controller_->GetWindowForContainer(
       mash::wm::mojom::Container::USER_PRIVATE);
   window->SetVisible(!locked);

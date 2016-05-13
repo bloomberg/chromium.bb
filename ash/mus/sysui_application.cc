@@ -65,7 +65,7 @@ mash::wm::mojom::Container GetContainerId(
   if (id == kShellWindowId_DesktopBackgroundContainer)
     return mash::wm::mojom::Container::USER_BACKGROUND;
   if (id == kShellWindowId_ShelfContainer)
-    return mash::wm::mojom::Container::USER_SHELF;
+    return mash::wm::mojom::Container::USER_PRIVATE_SHELF;
   if (id == kShellWindowId_StatusContainer)
     return mash::wm::mojom::Container::STATUS;
 
@@ -76,7 +76,7 @@ mash::wm::mojom::Container GetContainerId(
     case views::Widget::InitParams::Type::TYPE_MENU:
       return mash::wm::mojom::Container::MENUS;
     case views::Widget::InitParams::Type::TYPE_TOOLTIP:
-      return mash::wm::mojom::Container::TOOLTIPS;
+      return mash::wm::mojom::Container::DRAG_AND_TOOLTIPS;
     default:
       return mash::wm::mojom::Container::COUNT;
   }

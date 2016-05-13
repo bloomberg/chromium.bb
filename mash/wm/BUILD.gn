@@ -24,6 +24,8 @@ source_set("lib") {
     "bridge/wm_root_window_controller_mus.h",
     "bridge/wm_window_mus.cc",
     "bridge/wm_window_mus.h",
+    "container_ids.cc",
+    "container_ids.h",
     "disconnected_app_handler.cc",
     "disconnected_app_handler.h",
     "fill_layout.cc",

@@ -98,7 +98,7 @@ class RootWindowController : public mus::WindowObserver,
 
   std::unique_ptr<WindowManager> window_manager_;
 
-  std::map<mus::Window*, std::unique_ptr<LayoutManager>> layout_manager_;
+  std::map<mus::Window*, std::unique_ptr<LayoutManager>> layout_managers_;
 
   std::unique_ptr<ShadowController> shadow_controller_;
 

@@ -74,7 +74,7 @@ mojom::Container GetRequestedContainer(const mus::Window* window) {
     return static_cast<mojom::Container>(
         window->GetSharedProperty<int32_t>(mojom::kWindowContainer_Property));
   }
-  return mojom::Container::USER_WINDOWS;
+  return mojom::Container::USER_PRIVATE_WINDOWS;
 }
 
 int32_t GetResizeBehavior(const mus::Window* window) {

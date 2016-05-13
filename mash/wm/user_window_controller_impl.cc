@@ -129,7 +129,7 @@ mus::Window* UserWindowControllerImpl::GetUserWindowById(uint32_t id) {
 
 mus::Window* UserWindowControllerImpl::GetUserWindowContainer() const {
   return root_controller_->GetWindowForContainer(
-      mojom::Container::USER_WINDOWS);
+      mojom::Container::USER_PRIVATE_WINDOWS);
 }
 
 void UserWindowControllerImpl::OnTreeChanging(const TreeChangeParams& params) {
