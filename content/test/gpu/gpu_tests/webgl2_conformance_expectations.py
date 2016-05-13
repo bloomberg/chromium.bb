@@ -75,6 +75,46 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Flaky('conformance2/query/occlusion-query.html', bug=603168)
     self.Fail('conformance2/vertex_arrays/vertex-array-object.html', bug=483282)
 
+    # All platforms when running ANGLE
+    self.Skip('conformance2/textures/misc/copy-texture-image.html',
+        ['d3d9', 'd3d11', 'opengl'], bug=577144) # crash on debug
+    self.Fail('conformance2/textures/misc/tex-unpack-params.html',
+        ['d3d9', 'd3d11', 'opengl'], bug=483282)
+
+    # Avoid a conflict with a Mac expectation by setting
+    self.Fail('conformance2/textures/misc/tex-input-validation.html',
+        ['d3d9', 'd3d11', 'opengl'], bug=483282)
+
+    # Failing because the tests are using invalid combinations of source and
+    # destination formats, see https://github.com/KhronosGroup/WebGL/issues/1628
+    self.Fail('conformance2/textures/webgl_canvas/' +
+        'tex-2d-r8-red-unsigned_byte.html',
+        ['d3d9', 'd3d11', 'opengl'], bug=483282)
+    self.Fail('conformance2/textures/webgl_canvas/' +
+        'tex-2d-rg8-rg-unsigned_byte.html',
+        ['d3d9', 'd3d11', 'opengl'], bug=483282)
+    self.Fail('conformance2/textures/webgl_canvas/' +
+        'tex-2d-rgb8-rgb-unsigned_byte.html',
+        ['d3d9', 'd3d11', 'opengl'], bug=483282)
+    self.Fail('conformance2/textures/webgl_canvas/' +
+        'tex-2d-rgb565-rgb-unsigned_byte.html',
+        ['d3d9', 'd3d11', 'opengl'], bug=483282)
+    self.Fail('conformance2/textures/webgl_canvas/' +
+        'tex-2d-rgb565-rgb-unsigned_short_5_6_5.html',
+        ['d3d9', 'd3d11', 'opengl'], bug=483282)
+    self.Fail('conformance2/textures/webgl_canvas/' +
+        'tex-2d-rgb5_a1-rgba-unsigned_byte.html',
+        ['d3d9', 'd3d11', 'opengl'], bug=483282)
+    self.Fail('conformance2/textures/webgl_canvas/' +
+        'tex-2d-rgb5_a1-rgba-unsigned_short_5_5_5_1.html',
+        ['d3d9', 'd3d11', 'opengl'], bug=483282)
+    self.Fail('conformance2/textures/webgl_canvas/' +
+        'tex-2d-rgba4-rgba-unsigned_byte.html',
+        ['d3d9', 'd3d11', 'opengl'], bug=483282)
+    self.Fail('conformance2/textures/webgl_canvas/' +
+        'tex-2d-rgba4-rgba-unsigned_short_4_4_4_4.html',
+        ['d3d9', 'd3d11', 'opengl'], bug=483282)
+
     # Windows only.
 
     self.Fail('deqp/functional/gles3/negativefragmentapi.html',
@@ -109,38 +149,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/textures/canvas/' +
         'tex-2d-rgba4-rgba-unsigned_short_4_4_4_4.html',
         ['win'], bug=483282)
-    self.Fail('conformance2/textures/misc/tex-unpack-params.html',
-        ['win'], bug=483282)
-
-    # Failing because ANGLE using a different interpretation of the spec for
-    # CopyTexImage2D so that for example a copy from RGBA8 to R8 fails.
-    self.Fail('conformance2/textures/webgl_canvas/' +
-        'tex-2d-r8-red-unsigned_byte.html',
-        ['win'], bug=483282)
-    self.Fail('conformance2/textures/webgl_canvas/' +
-        'tex-2d-rg8-rg-unsigned_byte.html',
-        ['win'], bug=483282)
-    self.Fail('conformance2/textures/webgl_canvas/' +
-        'tex-2d-rgb8-rgb-unsigned_byte.html',
-        ['win'], bug=483282)
-    self.Fail('conformance2/textures/webgl_canvas/' +
-        'tex-2d-rgb565-rgb-unsigned_byte.html',
-        ['win'], bug=483282)
-    self.Fail('conformance2/textures/webgl_canvas/' +
-        'tex-2d-rgb565-rgb-unsigned_short_5_6_5.html',
-        ['win'], bug=483282)
-    self.Fail('conformance2/textures/webgl_canvas/' +
-        'tex-2d-rgb5_a1-rgba-unsigned_byte.html',
-        ['win'], bug=483282)
-    self.Fail('conformance2/textures/webgl_canvas/' +
-        'tex-2d-rgb5_a1-rgba-unsigned_short_5_5_5_1.html',
-        ['win'], bug=483282)
-    self.Fail('conformance2/textures/webgl_canvas/' +
-        'tex-2d-rgba4-rgba-unsigned_byte.html',
-        ['win'], bug=483282)
-    self.Fail('conformance2/textures/webgl_canvas/' +
-        'tex-2d-rgba4-rgba-unsigned_short_4_4_4_4.html',
-        ['win'], bug=483282)
 
     self.Flaky('deqp/functional/gles3/buffercopy.html', ['win'], bug=587601)
 
@@ -148,8 +156,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/glsl3/array-in-complex-expression.html',
         ['win'], bug=483282)
     self.Skip('conformance2/reading/read-pixels-pack-parameters.html',
-        ['win'], bug=483282)
-    self.Fail('conformance2/textures/misc/tex-input-validation.html',
         ['win'], bug=483282)
     self.Skip('conformance2/textures/misc/tex-mipmap-levels.html',
         ['win'], bug=483282)
@@ -159,8 +165,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win'], bug=1198) # angle bug ID
     self.Skip('conformance2/reading/read-pixels-into-pixel-pack-buffer.html',
         ['win'], bug=1266) # angle bug ID
-    self.Skip('conformance2/textures/misc/copy-texture-image.html',
-        ['win'], bug=577144) # crash on debug
     self.Fail('conformance2/state/gl-object-get-calls.html',
         ['win'], bug=483282)
 
@@ -376,7 +380,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/rendering/draw-buffers.html',
         ['mac', ('nvidia', 0xfe9)], bug=483282)
     self.Fail('conformance2/textures/misc/tex-input-validation.html',
-        ['mac', ('nvidia', 0xfe9)], bug=483282)
+        ['mac', ('nvidia', 0xfe9), 'no_angle'], bug=483282)
     self.Fail('conformance2/textures/misc/tex-mipmap-levels.html',
         ['mac', ('nvidia', 0xfe9)], bug=483282)
     self.Fail('deqp/functional/gles3/shaderstruct.html',
@@ -392,7 +396,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
     # Mac Intel
     self.Fail('conformance2/textures/misc/tex-unpack-params.html',
-        ['mac', 'intel'], bug=483282)
+        ['mac', 'intel', 'no_angle'], bug=483282)
     self.Fail('deqp/functional/gles3/texturefiltering/2d_combinations_01.html',
         ['mac', 'intel'], bug=606074)
     self.Fail('deqp/functional/gles3/texturefiltering/' +
@@ -414,13 +418,15 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux'], bug=483282)
     self.Fail('conformance2/rendering/draw-buffers.html',
         ['linux'], bug=483282)
-    # We want to mark this Flaky for all of Linux however we currently skip
-    # all the tests on Intel. Tag this with AMD and Nvidia to avoid an
-    # expectation conflict that would make this test run on Intel.
     # Flaky because the virtual gl contexts implementation calls glUseProgram
     # while a transform feedback is active.
     self.Flaky('deqp/functional/gles3/negativeshaderapi.html',
-        ['linux', 'amd', 'nvidia'], bug=483282)
+        ['linux'], bug=483282)
+
+    self.Skip('deqp/data/gles3/shaders/qualification_order.html',
+        ['linux', 'amd', 'intel'], bug=483282)
+    self.Fail('deqp/functional/gles3/clipping.html',
+        ['linux', 'amd', 'intel'], bug=483282)
 
     # Linux NVIDIA only.
     self.Fail('conformance2/glsl3/array-complex-indexing.html',
@@ -434,13 +440,30 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/vertexarrays.html',
         ['linux', 'nvidia', 'debug'], bug=483282)
 
+    # Linux NVIDIA with ANGLE only
+    self.Fail('deqp/functional/gles3/buffercopy.html',
+        ['linux', 'nvidia', 'opengl'], bug=483282)
+    self.Fail('conformance2/buffers/bound-buffer-size-change-test.html',
+        ['linux', 'nvidia', 'opengl'], bug=483282)
+    self.Fail('conformance2/reading/read-pixels-pack-parameters.html',
+        ['linux', 'nvidia', 'opengl'], bug=483282)
+
+    # Linux Intel with ANGLE only
+    self.Fail('deqp/functional/gles3/texturefiltering/cube_sizes_00.html',
+        ['linux', 'intel', 'opengl'], bug=606021)
+    self.Fail('deqp/functional/gles3/pixelbufferobject.html',
+        ['linux', 'intel', 'opengl'], bug=483282)
+
+    # The Mesa Intel driver has a scoping bug, see
+    # https://bugs.freedesktop.org/show_bug.cgi?id=95184
+    self.Fail('deqp/data/gles3/shaders/scoping.html',
+        ['linux', 'intel'], bug=610800)
+
     # Linux AMD only.
     # It looks like AMD shader compiler rejects many valid ES3 semantics.
     self.Fail('deqp/data/gles3/shaders/conversions.html',
         ['linux', 'amd'], bug=483282)
     self.Skip('deqp/data/gles3/shaders/arrays.html',
-        ['linux', 'amd'], bug=483282)
-    self.Skip('deqp/data/gles3/shaders/qualification_order.html',
         ['linux', 'amd'], bug=483282)
     self.Fail('deqp/functional/gles3/internalformatquery.html',
         ['linux', 'amd'], bug=483282)
@@ -449,8 +472,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/vertexarrays.html',
         ['linux', 'amd'], bug=483282)
     self.Fail('deqp/functional/gles3/buffercopy.html',
-        ['linux', 'amd'], bug=483282)
-    self.Fail('deqp/functional/gles3/clipping.html',
         ['linux', 'amd'], bug=483282)
     self.Fail('deqp/functional/gles3/samplerobject.html',
         ['linux', 'amd'], bug=483282)

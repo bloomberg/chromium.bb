@@ -4,7 +4,7 @@
 
 from gpu_tests import test_expectations
 
-ANGLE_CONDITIONS = ['d3d9', 'd3d11', 'opengl']
+ANGLE_CONDITIONS = ['d3d9', 'd3d11', 'opengl', 'no_angle']
 
 GPU_CONDITIONS = ['amd', 'arm', 'broadcom', 'hisilicon', 'intel', 'imagination',
                   'nvidia', 'qualcomm', 'vivante']
@@ -28,7 +28,9 @@ class GpuExpectation(test_expectations.Expectation):
       qualcomm, vivante
 
     ANGLE renderer:
-      d3d9, d3d11, opengl
+      d3d9, d3d11, opengl, no_angle
+      no_angle can be used to avoid conflicts between expectations for
+      ANGLE and expectations not for ANGLE
 
     Specific GPUs can be listed as a tuple with vendor name and device ID.
     Examples: ('nvidia', 0x1234), ('arm', 'Mali-T604')
@@ -128,4 +130,4 @@ class GpuTestExpectations(test_expectations.TestExpectations):
           return 'd3d9'
         elif 'OpenGL' in gl_renderer:
           return 'opengl'
-    return ''
+    return 'no_angle'
