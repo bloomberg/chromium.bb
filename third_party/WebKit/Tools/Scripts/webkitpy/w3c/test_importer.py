@@ -62,12 +62,10 @@
 
      - Also upon completion, if we are not importing the files in place, each
        directory where files are imported will have a w3c-import.log file written with
-       a timestamp, the W3C Mercurial changeset if available, the list of CSS
-       properties used that require prefixes, the list of imported files, and
-       guidance for future test modification and maintenance. On subsequent
-       imports, this file is read to determine if files have been
-       removed in the newer changesets.  The script removes these files
-       accordingly.
+       a timestamp, the list of CSS properties used that require prefixes, the list
+       of imported files, and guidance for future test modification and maintenance.
+       On subsequent imports, this file is read to determine if files have been
+       removed in the newer changesets. The script removes these files accordingly.
 """
 
 import logging
@@ -82,9 +80,6 @@ from webkitpy.common.system.executive import ScriptError
 from webkitpy.layout_tests.models.test_expectations import TestExpectationParser
 from webkitpy.w3c.test_parser import TestParser
 from webkitpy.w3c.test_converter import convert_for_webkit
-
-
-CHANGESET_NOT_AVAILABLE = 'Not Available'
 
 
 _log = logging.getLogger(__name__)
@@ -168,22 +163,12 @@ class TestImporter(object):
         self.import_in_place = (self.dir_to_import == self.destination_directory)
         self.dir_above_repo = self.filesystem.dirname(self.top_of_repo)
 
-        self.changeset = CHANGESET_NOT_AVAILABLE
-
         self.import_list = []
 
     def do_import(self):
         _log.info("Importing %s into %s", self.dir_to_import, self.destination_directory)
         self.find_importable_tests(self.dir_to_import)
-        self.load_changeset()
         self.import_tests()
-
-    def load_changeset(self):
-        """Returns the current changeset from mercurial or "Not Available"."""
-        try:
-            self.changeset = self.host.executive.run_command(['hg', 'tip']).split('changeset:')[1]
-        except (OSError, ScriptError):
-            self.changeset = CHANGESET_NOT_AVAILABLE
 
     def find_importable_tests(self, directory):
         paths_to_skip = self.find_paths_to_skip()
@@ -197,7 +182,7 @@ class TestImporter(object):
 
             # Files in 'tools' are not for browser testing (e.g., a script for generating test files).
             # http://testthewebforward.org/docs/test-format-guidelines.html#tools
-            DIRS_TO_SKIP = ('.git', '.hg', 'test-plan', 'tools')
+            DIRS_TO_SKIP = ('.git', 'test-plan', 'tools')
 
             # Need to copy all files in 'support', including HTML without meta data.
             # http://testthewebforward.org/docs/test-format-guidelines.html#support-files

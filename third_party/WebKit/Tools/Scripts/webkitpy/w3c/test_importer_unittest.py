@@ -47,25 +47,10 @@ FAKE_FILES = {
 
 class TestImporterTest(unittest.TestCase):
 
-    def test_import_dir_with_no_tests_and_no_hg(self):
-        host = MockHost()
-        host.executive = MockExecutive2(exception=OSError())
-        host.filesystem = MockFileSystem(files=FAKE_FILES)
-
-        importer = TestImporter(host, FAKE_SOURCE_DIR, FAKE_REPO_DIR, optparse.Values(
-            {"overwrite": False, 'destination': 'w3c', 'ignore_expectations': False}))
-
-        oc = OutputCapture()
-        oc.capture_output()
-        try:
-            importer.do_import()
-        finally:
-            oc.restore_output()
-
     def test_import_dir_with_no_tests(self):
         host = MockHost()
         host.executive = MockExecutive2(exception=ScriptError(
-            "abort: no repository found in '/Volumes/Source/src/wk/Tools/Scripts/webkitpy/w3c' (.hg not found)!"))
+            "abort: no repository found in '/Volumes/Source/src/wk/Tools/Scripts/webkitpy/w3c'"))
         host.filesystem = MockFileSystem(files=FAKE_FILES)
 
         importer = TestImporter(host, FAKE_SOURCE_DIR, FAKE_REPO_DIR, optparse.Values(
