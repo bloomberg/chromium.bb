@@ -42,12 +42,15 @@ VideoCaptureDeviceAndroid::VideoCaptureDeviceAndroid(const Name& device_name)
 VideoCaptureDeviceAndroid::~VideoCaptureDeviceAndroid() {
   StopAndDeAllocate();
   // If there are still |photo_callbacks_|, resolve them with empty datas.
-  std::for_each(photo_callbacks_.begin(), photo_callbacks_.end(),
-                [](const std::unique_ptr<TakePhotoCallback>& callback) {
-                  std::unique_ptr<std::vector<uint8_t>> empty_data(
-                      new std::vector<uint8_t>());
-                  callback->Run("", std::move(empty_data));
-                });
+  {
+    base::AutoLock lock(photo_callbacks_lock_);
+    std::for_each(photo_callbacks_.begin(), photo_callbacks_.end(),
+                  [](const std::unique_ptr<TakePhotoCallback>& callback) {
+                    std::unique_ptr<std::vector<uint8_t>> empty_data(
+                        new std::vector<uint8_t>());
+                    callback->Run("", std::move(empty_data));
+                  });
+  }
 }
 
 bool VideoCaptureDeviceAndroid::Init() {
@@ -157,7 +160,10 @@ bool VideoCaptureDeviceAndroid::TakePhoto(const TakePhotoCallback& callback) {
   if (!Java_VideoCapture_takePhoto(env, j_capture_.obj(), callback_id))
     return false;
 
-  photo_callbacks_.push_back(std::move(cb));
+  {
+    base::AutoLock lock(photo_callbacks_lock_);
+    photo_callbacks_.push_back(std::move(cb));
+  }
   return true;
 }
 
@@ -212,6 +218,8 @@ void VideoCaptureDeviceAndroid::OnPhotoTaken(
     jlong callback_id,
     const base::android::JavaParamRef<jbyteArray>& data) {
   DCHECK(callback_id);
+
+  base::AutoLock lock(photo_callbacks_lock_);
 
   TakePhotoCallback* const cb =
       reinterpret_cast<TakePhotoCallback*>(callback_id);

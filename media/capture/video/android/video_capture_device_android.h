@@ -97,6 +97,7 @@ class MEDIA_EXPORT VideoCaptureDeviceAndroid : public VideoCaptureDevice {
   std::unique_ptr<VideoCaptureDevice::Client> client_;
 
   // List of |photo_callbacks_| in flight, being served in Java side.
+  base::Lock photo_callbacks_lock_;
   std::list<std::unique_ptr<TakePhotoCallback>> photo_callbacks_;
 
   Name device_name_;
