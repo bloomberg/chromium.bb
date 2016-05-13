@@ -217,7 +217,7 @@ void InProcessWorkerMessagingProxy::workerObjectDestroyed()
     // cleared before this method gets called.
     DCHECK(!m_workerObject);
 
-    getExecutionContext()->postTask(BLINK_FROM_HERE, createCrossThreadTask(&InProcessWorkerMessagingProxy::workerObjectDestroyedInternal, this));
+    getExecutionContext()->postTask(BLINK_FROM_HERE, createCrossThreadTask(&InProcessWorkerMessagingProxy::workerObjectDestroyedInternal, AllowCrossThreadAccess(this)));
 }
 
 void InProcessWorkerMessagingProxy::workerObjectDestroyedInternal()

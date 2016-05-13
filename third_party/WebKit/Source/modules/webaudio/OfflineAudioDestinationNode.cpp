@@ -217,7 +217,7 @@ void OfflineAudioDestinationHandler::finishOfflineRendering()
     // The actual rendering has been completed. Notify the context.
     if (context()->getExecutionContext()) {
         context()->getExecutionContext()->postTask(BLINK_FROM_HERE,
-            createCrossThreadTask(&OfflineAudioDestinationHandler::notifyComplete, this));
+            createCrossThreadTask(&OfflineAudioDestinationHandler::notifyComplete, AllowCrossThreadAccess(this)));
     }
 }
 

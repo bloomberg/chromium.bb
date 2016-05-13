@@ -135,7 +135,7 @@ void NetworkStateNotifier::setWebConnectionImpl(WebConnectionType type, double m
 
     for (const auto& entry : m_observers) {
         ExecutionContext* context = entry.key;
-        context->postTask(BLINK_FROM_HERE, createCrossThreadTask(&NetworkStateNotifier::notifyObserversOfConnectionChangeOnContext, this, type, maxBandwidthMbps));
+        context->postTask(BLINK_FROM_HERE, createCrossThreadTask(&NetworkStateNotifier::notifyObserversOfConnectionChangeOnContext, AllowCrossThreadAccess(this), type, maxBandwidthMbps));
     }
 }
 

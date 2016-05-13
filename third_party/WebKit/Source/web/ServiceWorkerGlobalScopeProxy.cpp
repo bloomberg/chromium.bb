@@ -229,7 +229,7 @@ void ServiceWorkerGlobalScopeProxy::reportConsoleMessage(ConsoleMessage* console
 void ServiceWorkerGlobalScopeProxy::postMessageToPageInspector(const String& message)
 {
     DCHECK(m_embeddedWorker);
-    document().postInspectorTask(BLINK_FROM_HERE, createCrossThreadTask(&WebEmbeddedWorkerImpl::postMessageToPageInspector, m_embeddedWorker, message));
+    document().postInspectorTask(BLINK_FROM_HERE, createCrossThreadTask(&WebEmbeddedWorkerImpl::postMessageToPageInspector, AllowCrossThreadAccess(m_embeddedWorker), message));
 }
 
 void ServiceWorkerGlobalScopeProxy::didEvaluateWorkerScript(bool success)
@@ -253,7 +253,7 @@ void ServiceWorkerGlobalScopeProxy::workerGlobalScopeStarted(WorkerGlobalScope* 
 void ServiceWorkerGlobalScopeProxy::workerGlobalScopeClosed()
 {
     DCHECK(m_embeddedWorker);
-    document().postTask(BLINK_FROM_HERE, createCrossThreadTask(&WebEmbeddedWorkerImpl::terminateWorkerContext, m_embeddedWorker));
+    document().postTask(BLINK_FROM_HERE, createCrossThreadTask(&WebEmbeddedWorkerImpl::terminateWorkerContext, AllowCrossThreadAccess(m_embeddedWorker)));
 }
 
 void ServiceWorkerGlobalScopeProxy::willDestroyWorkerGlobalScope()

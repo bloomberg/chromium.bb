@@ -384,7 +384,7 @@ Bridge::~Bridge()
 
 void Bridge::initialize(const String& sourceURL, unsigned lineNumber)
 {
-    if (!waitForMethodCompletion(createCrossThreadTask(&Peer::initialize, m_peer.get(), sourceURL, lineNumber))) {
+    if (!waitForMethodCompletion(createCrossThreadTask(&Peer::initialize, AllowCrossThreadAccess(m_peer.get()), sourceURL, lineNumber))) {
         // The worker thread has been signalled to shutdown before method completion.
         disconnect();
     }
@@ -395,7 +395,7 @@ bool Bridge::connect(const KURL& url, const String& protocol)
     if (!m_peer)
         return false;
 
-    if (!waitForMethodCompletion(createCrossThreadTask(&Peer::connect, m_peer.get(), url, protocol)))
+    if (!waitForMethodCompletion(createCrossThreadTask(&Peer::connect, AllowCrossThreadAccess(m_peer.get()), url, protocol)))
         return false;
 
     return m_syncHelper->connectRequestResult();
@@ -408,7 +408,7 @@ void Bridge::send(const CString& message)
     if (message.length())
         memcpy(data->data(), static_cast<const char*>(message.data()), message.length());
 
-    m_loaderProxy->postTaskToLoader(createCrossThreadTask(&Peer::sendTextAsCharVector, m_peer.get(), passed(data.release())));
+    m_loaderProxy->postTaskToLoader(createCrossThreadTask(&Peer::sendTextAsCharVector, AllowCrossThreadAccess(m_peer.get()), passed(data.release())));
 }
 
 void Bridge::send(const DOMArrayBuffer& binaryData, unsigned byteOffset, unsigned byteLength)
@@ -419,25 +419,25 @@ void Bridge::send(const DOMArrayBuffer& binaryData, unsigned byteOffset, unsigne
     if (binaryData.byteLength())
         memcpy(data->data(), static_cast<const char*>(binaryData.data()) + byteOffset, byteLength);
 
-    m_loaderProxy->postTaskToLoader(createCrossThreadTask(&Peer::sendBinaryAsCharVector, m_peer.get(), passed(data.release())));
+    m_loaderProxy->postTaskToLoader(createCrossThreadTask(&Peer::sendBinaryAsCharVector, AllowCrossThreadAccess(m_peer.get()), passed(data.release())));
 }
 
 void Bridge::send(PassRefPtr<BlobDataHandle> data)
 {
     ASSERT(m_peer);
-    m_loaderProxy->postTaskToLoader(createCrossThreadTask(&Peer::sendBlob, m_peer.get(), data));
+    m_loaderProxy->postTaskToLoader(createCrossThreadTask(&Peer::sendBlob, AllowCrossThreadAccess(m_peer.get()), data));
 }
 
 void Bridge::close(int code, const String& reason)
 {
     ASSERT(m_peer);
-    m_loaderProxy->postTaskToLoader(createCrossThreadTask(&Peer::close, m_peer.get(), code, reason));
+    m_loaderProxy->postTaskToLoader(createCrossThreadTask(&Peer::close, AllowCrossThreadAccess(m_peer.get()), code, reason));
 }
 
 void Bridge::fail(const String& reason, MessageLevel level, const String& sourceURL, unsigned lineNumber)
 {
     ASSERT(m_peer);
-    m_loaderProxy->postTaskToLoader(createCrossThreadTask(&Peer::fail, m_peer.get(), reason, level, sourceURL, lineNumber));
+    m_loaderProxy->postTaskToLoader(createCrossThreadTask(&Peer::fail, AllowCrossThreadAccess(m_peer.get()), reason, level, sourceURL, lineNumber));
 }
 
 void Bridge::disconnect()
@@ -445,7 +445,7 @@ void Bridge::disconnect()
     if (!m_peer)
         return;
 
-    waitForMethodCompletion(createCrossThreadTask(&Peer::disconnect, m_peer.get()));
+    waitForMethodCompletion(createCrossThreadTask(&Peer::disconnect, AllowCrossThreadAccess(m_peer.get())));
     // Here |m_peer| is detached from the main thread and we can delete it.
 
     m_client = nullptr;

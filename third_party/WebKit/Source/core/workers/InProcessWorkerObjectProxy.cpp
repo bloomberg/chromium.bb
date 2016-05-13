@@ -48,7 +48,7 @@ PassOwnPtr<InProcessWorkerObjectProxy> InProcessWorkerObjectProxy::create(InProc
 
 void InProcessWorkerObjectProxy::postMessageToWorkerObject(PassRefPtr<SerializedScriptValue> message, PassOwnPtr<MessagePortChannelArray> channels)
 {
-    getExecutionContext()->postTask(BLINK_FROM_HERE, createCrossThreadTask(&InProcessWorkerMessagingProxy::postMessageToWorkerObject, m_messagingProxy, message, passed(std::move(channels))));
+    getExecutionContext()->postTask(BLINK_FROM_HERE, createCrossThreadTask(&InProcessWorkerMessagingProxy::postMessageToWorkerObject, AllowCrossThreadAccess(m_messagingProxy), message, passed(std::move(channels))));
 }
 
 void InProcessWorkerObjectProxy::postTaskToMainExecutionContext(std::unique_ptr<ExecutionContextTask> task)
@@ -58,47 +58,47 @@ void InProcessWorkerObjectProxy::postTaskToMainExecutionContext(std::unique_ptr<
 
 void InProcessWorkerObjectProxy::confirmMessageFromWorkerObject(bool hasPendingActivity)
 {
-    getExecutionContext()->postTask(BLINK_FROM_HERE, createCrossThreadTask(&InProcessWorkerMessagingProxy::confirmMessageFromWorkerObject, m_messagingProxy, hasPendingActivity));
+    getExecutionContext()->postTask(BLINK_FROM_HERE, createCrossThreadTask(&InProcessWorkerMessagingProxy::confirmMessageFromWorkerObject, AllowCrossThreadAccess(m_messagingProxy), hasPendingActivity));
 }
 
 void InProcessWorkerObjectProxy::reportPendingActivity(bool hasPendingActivity)
 {
-    getExecutionContext()->postTask(BLINK_FROM_HERE, createCrossThreadTask(&InProcessWorkerMessagingProxy::reportPendingActivity, m_messagingProxy, hasPendingActivity));
+    getExecutionContext()->postTask(BLINK_FROM_HERE, createCrossThreadTask(&InProcessWorkerMessagingProxy::reportPendingActivity, AllowCrossThreadAccess(m_messagingProxy), hasPendingActivity));
 }
 
 void InProcessWorkerObjectProxy::reportException(const String& errorMessage, int lineNumber, int columnNumber, const String& sourceURL, int exceptionId)
 {
-    getExecutionContext()->postTask(BLINK_FROM_HERE, createCrossThreadTask(&InProcessWorkerMessagingProxy::reportException, m_messagingProxy, errorMessage, lineNumber, columnNumber, sourceURL, exceptionId));
+    getExecutionContext()->postTask(BLINK_FROM_HERE, createCrossThreadTask(&InProcessWorkerMessagingProxy::reportException, AllowCrossThreadAccess(m_messagingProxy), errorMessage, lineNumber, columnNumber, sourceURL, exceptionId));
 }
 
 void InProcessWorkerObjectProxy::reportConsoleMessage(ConsoleMessage* consoleMessage)
 {
-    getExecutionContext()->postTask(BLINK_FROM_HERE, createCrossThreadTask(&InProcessWorkerMessagingProxy::reportConsoleMessage, m_messagingProxy, consoleMessage->source(), consoleMessage->level(), consoleMessage->message(), consoleMessage->lineNumber(), consoleMessage->url()));
+    getExecutionContext()->postTask(BLINK_FROM_HERE, createCrossThreadTask(&InProcessWorkerMessagingProxy::reportConsoleMessage, AllowCrossThreadAccess(m_messagingProxy), consoleMessage->source(), consoleMessage->level(), consoleMessage->message(), consoleMessage->lineNumber(), consoleMessage->url()));
 }
 
 void InProcessWorkerObjectProxy::postMessageToPageInspector(const String& message)
 {
     ExecutionContext* context = getExecutionContext();
     if (context->isDocument())
-        toDocument(context)->postInspectorTask(BLINK_FROM_HERE, createCrossThreadTask(&InProcessWorkerMessagingProxy::postMessageToPageInspector, m_messagingProxy, message));
+        toDocument(context)->postInspectorTask(BLINK_FROM_HERE, createCrossThreadTask(&InProcessWorkerMessagingProxy::postMessageToPageInspector, AllowCrossThreadAccess(m_messagingProxy), message));
 }
 
 void InProcessWorkerObjectProxy::postWorkerConsoleAgentEnabled()
 {
     ExecutionContext* context = getExecutionContext();
     if (context->isDocument())
-        toDocument(context)->postInspectorTask(BLINK_FROM_HERE, createCrossThreadTask(&InProcessWorkerMessagingProxy::postWorkerConsoleAgentEnabled, m_messagingProxy));
+        toDocument(context)->postInspectorTask(BLINK_FROM_HERE, createCrossThreadTask(&InProcessWorkerMessagingProxy::postWorkerConsoleAgentEnabled, AllowCrossThreadAccess(m_messagingProxy)));
 }
 
 void InProcessWorkerObjectProxy::workerGlobalScopeClosed()
 {
-    getExecutionContext()->postTask(BLINK_FROM_HERE, createCrossThreadTask(&InProcessWorkerMessagingProxy::terminateWorkerGlobalScope, m_messagingProxy));
+    getExecutionContext()->postTask(BLINK_FROM_HERE, createCrossThreadTask(&InProcessWorkerMessagingProxy::terminateWorkerGlobalScope, AllowCrossThreadAccess(m_messagingProxy)));
 }
 
 void InProcessWorkerObjectProxy::workerThreadTerminated()
 {
     // This will terminate the MessagingProxy.
-    getExecutionContext()->postTask(BLINK_FROM_HERE, createCrossThreadTask(&InProcessWorkerMessagingProxy::workerThreadTerminated, m_messagingProxy));
+    getExecutionContext()->postTask(BLINK_FROM_HERE, createCrossThreadTask(&InProcessWorkerMessagingProxy::workerThreadTerminated, AllowCrossThreadAccess(m_messagingProxy)));
 }
 
 InProcessWorkerObjectProxy::InProcessWorkerObjectProxy(InProcessWorkerMessagingProxy* messagingProxy)
