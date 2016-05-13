@@ -519,9 +519,39 @@ InjectedScript.prototype = {
             return;
         }
 
+        /**
+         * @param {number} length
+         */
+        function* arrayIndexNames(length)
+        {
+            for (var i = 0; i < length; ++i)
+                yield "" + i;
+        }
+
+        var skipGetOwnPropertyNames;
+        try {
+            skipGetOwnPropertyNames = InjectedScriptHost.isTypedArray(object) && object.length > 500000;
+        } catch (e) {
+        }
+
         for (var o = object; this._isDefined(o); o = InjectedScriptHost.prototype(o)) {
-            for (var property of process(o, InjectedScriptHost.ownPropertyNames(o)))
-                yield property;
+            if (InjectedScriptHost.subtype(o) === "proxy")
+                continue;
+            if (skipGetOwnPropertyNames && o === object) {
+                // Avoid OOM crashes from getting all own property names of a large TypedArray.
+                for (var descriptor of process(o, arrayIndexNames(o.length)))
+                    yield descriptor;
+            } else {
+                // First call Object.keys() to enforce ordering of the property descriptors.
+                for (var descriptor of process(o, Object.keys(/** @type {!Object} */ (o))))
+                    yield descriptor;
+                for (var descriptor of process(o, Object.getOwnPropertyNames(/** @type {!Object} */ (o))))
+                    yield descriptor;
+            }
+            if (Object.getOwnPropertySymbols) {
+                for (var descriptor of process(o, Object.getOwnPropertySymbols(/** @type {!Object} */ (o))))
+                    yield descriptor;
+            }
             if (ownProperties) {
                 var proto = InjectedScriptHost.prototype(o);
                 if (proto && !accessorPropertiesOnly)

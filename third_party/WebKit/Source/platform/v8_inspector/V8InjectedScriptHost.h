@@ -25,6 +25,7 @@ public:
 private:
     static void internalConstructorNameCallback(const v8::FunctionCallbackInfo<v8::Value>&);
     static void formatAccessorsAsProperties(const v8::FunctionCallbackInfo<v8::Value>&);
+    static void isTypedArrayCallback(const v8::FunctionCallbackInfo<v8::Value>&);
     static void subtypeCallback(const v8::FunctionCallbackInfo<v8::Value>&);
     static void generatorObjectDetailsCallback(const v8::FunctionCallbackInfo<v8::Value>&);
     static void collectionEntriesCallback(const v8::FunctionCallbackInfo<v8::Value>&);
@@ -35,7 +36,6 @@ private:
     static void setFunctionVariableValueCallback(const v8::FunctionCallbackInfo<v8::Value>&);
     static void bindCallback(const v8::FunctionCallbackInfo<v8::Value>&);
     static void proxyTargetValueCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-    static void ownPropertyNamesCallback(const v8::FunctionCallbackInfo<v8::Value>&);
     static void prototypeCallback(const v8::FunctionCallbackInfo<v8::Value>&);
 };
 
