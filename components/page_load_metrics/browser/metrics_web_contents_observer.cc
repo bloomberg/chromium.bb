@@ -203,6 +203,36 @@ void LogAbortChainSameURLHistogram(int aborted_chain_size_same_url) {
   }
 }
 
+void DispatchObserverTimingCallbacks(PageLoadMetricsObserver* observer,
+                                     const PageLoadTiming& last_timing,
+                                     const PageLoadTiming& new_timing,
+                                     const PageLoadExtraInfo& extra_info) {
+  observer->OnTimingUpdate(new_timing, extra_info);
+  if (!new_timing.dom_content_loaded_event_start.is_zero() &&
+      last_timing.dom_content_loaded_event_start.is_zero())
+    observer->OnDomContentLoadedEventStart(new_timing, extra_info);
+  if (!new_timing.load_event_start.is_zero() &&
+      last_timing.load_event_start.is_zero())
+    observer->OnLoadEventStart(new_timing, extra_info);
+  if (!new_timing.first_layout.is_zero() && last_timing.first_layout.is_zero())
+    observer->OnFirstLayout(new_timing, extra_info);
+  if (!new_timing.first_paint.is_zero() && last_timing.first_paint.is_zero())
+    observer->OnFirstPaint(new_timing, extra_info);
+  if (!new_timing.first_text_paint.is_zero() &&
+      last_timing.first_text_paint.is_zero())
+    observer->OnFirstTextPaint(new_timing, extra_info);
+  if (!new_timing.first_image_paint.is_zero() &&
+      last_timing.first_image_paint.is_zero())
+    observer->OnFirstImagePaint(new_timing, extra_info);
+  if (!new_timing.first_contentful_paint.is_zero() &&
+      last_timing.first_contentful_paint.is_zero())
+    observer->OnFirstContentfulPaint(new_timing, extra_info);
+  if (!new_timing.parse_start.is_zero() && last_timing.parse_start.is_zero())
+    observer->OnParseStart(new_timing, extra_info);
+  if (!new_timing.parse_stop.is_zero() && last_timing.parse_stop.is_zero())
+    observer->OnParseStop(new_timing, extra_info);
+}
+
 }  // namespace
 
 PageLoadTracker::PageLoadTracker(
@@ -350,11 +380,19 @@ bool PageLoadTracker::UpdateTiming(const PageLoadTiming& new_timing,
       metadata_.behavior_flags;
   if (IsValidPageLoadTiming(new_timing) && valid_timing_descendent &&
       valid_behavior_descendent) {
+    // There are some subtle ordering constraints here. GetPageLoadMetricsInfo()
+    // must be called before DispatchObserverTimingCallbacks, but its
+    // implementation depends on the state of metadata_, so we need to update
+    // metadata_ before calling GetPageLoadMetricsInfo. Thus, we make a copy of
+    // timing here, update timing_ and metadata_, and then proceed to dispatch
+    // the observer timing callbacks.
+    const PageLoadTiming last_timing = timing_;
     timing_ = new_timing;
     metadata_ = new_metadata;
     const PageLoadExtraInfo info = GetPageLoadMetricsInfo();
     for (const auto& observer : observers_) {
-      observer->OnTimingUpdate(timing_, info);
+      DispatchObserverTimingCallbacks(observer.get(), last_timing, new_timing,
+                                      info);
     }
     return true;
   }

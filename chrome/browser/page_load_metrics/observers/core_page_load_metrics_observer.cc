@@ -132,17 +132,13 @@ CorePageLoadMetricsObserver::CorePageLoadMetricsObserver() {}
 
 CorePageLoadMetricsObserver::~CorePageLoadMetricsObserver() {}
 
-void CorePageLoadMetricsObserver::OnTimingUpdate(
+void CorePageLoadMetricsObserver::OnFirstContentfulPaint(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
-  if (!logged_first_contentful_paint_from_timing_update_ &&
-      !timing.first_contentful_paint.is_zero()) {
-    if (WasStartedInForegroundEventInForeground(timing.first_contentful_paint,
-                                                info)) {
-      PAGE_LOAD_HISTOGRAM(internal::kHistogramFirstContentfulPaintImmediate,
-                          timing.first_contentful_paint);
-    }
-    logged_first_contentful_paint_from_timing_update_ = true;
+  if (WasStartedInForegroundEventInForeground(timing.first_contentful_paint,
+                                              info)) {
+    PAGE_LOAD_HISTOGRAM(internal::kHistogramFirstContentfulPaintImmediate,
+                        timing.first_contentful_paint);
   }
 }
 

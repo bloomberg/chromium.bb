@@ -142,6 +142,28 @@ class PageLoadMetricsObserver {
   // After this call, the object will be deleted.
   virtual void OnComplete(const PageLoadTiming& timing,
                           const PageLoadExtraInfo& extra_info) {}
+
+  // The following methods are invoked at most once, when the timing for the
+  // associated event first becomes available.
+  virtual void OnDomContentLoadedEventStart(
+      const PageLoadTiming& timing,
+      const PageLoadExtraInfo& extra_info) {}
+  virtual void OnLoadEventStart(const PageLoadTiming& timing,
+                                const PageLoadExtraInfo& extra_info) {}
+  virtual void OnFirstLayout(const PageLoadTiming& timing,
+                             const PageLoadExtraInfo& extra_info) {}
+  virtual void OnFirstPaint(const PageLoadTiming& timing,
+                            const PageLoadExtraInfo& extra_info) {}
+  virtual void OnFirstTextPaint(const PageLoadTiming& timing,
+                                const PageLoadExtraInfo& extra_info) {}
+  virtual void OnFirstImagePaint(const PageLoadTiming& timing,
+                                 const PageLoadExtraInfo& extra_info) {}
+  virtual void OnFirstContentfulPaint(const PageLoadTiming& timing,
+                                      const PageLoadExtraInfo& extra_info) {}
+  virtual void OnParseStart(const PageLoadTiming& timing,
+                            const PageLoadExtraInfo& extra_info) {}
+  virtual void OnParseStop(const PageLoadTiming& timing,
+                           const PageLoadExtraInfo& extra_info) {}
 };
 
 }  // namespace page_load_metrics
