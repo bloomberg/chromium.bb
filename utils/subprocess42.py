@@ -165,10 +165,18 @@ else:
       # pylint: disable=E1101
       fcntl.fcntl(conn, fcntl.F_SETFL, flags | os.O_NONBLOCK)
     try:
-      data = conn.read(maxsize)
+      try:
+        data = conn.read(maxsize)
+      except IOError as e:
+        # On posix, this means the read would block.
+        if e.errno == errno.EAGAIN:
+          return conns.index(conn), None, False
+        raise e
+
       if not data:
         # On posix, this means the channel closed.
         return conns.index(conn), None, True
+
       return conns.index(conn), data, False
     finally:
       if not conn.closed:
@@ -470,7 +478,7 @@ class Popen(subprocess.Popen):
             timeout -= (time.time() - start)
           continue
 
-      if self.universal_newlines:
+      if self.universal_newlines and data:
         data = self._translate_newlines(data)
       return names[index], data
 
