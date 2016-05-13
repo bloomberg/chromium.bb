@@ -74,8 +74,8 @@ public:
     }
     DECLARE_TRACE();
     void dispose();
+    Resource* resource();
 
-    Member<Resource> m_resource;
     bool m_inLiveDecodedResourcesList;
     unsigned m_accessCount;
     double m_lastDecodedAccessTime; // Used as a thrash guard
@@ -87,16 +87,18 @@ public:
 
 private:
     explicit MemoryCacheEntry(Resource* resource)
-        : m_resource(resource)
-        , m_inLiveDecodedResourcesList(false)
+        : m_inLiveDecodedResourcesList(false)
         , m_accessCount(0)
         , m_lastDecodedAccessTime(0.0)
         , m_previousInLiveResourcesList(nullptr)
         , m_nextInLiveResourcesList(nullptr)
         , m_previousInAllResourcesList(nullptr)
         , m_nextInAllResourcesList(nullptr)
+        , m_resource(resource)
     {
     }
+
+    Member<Resource> m_resource;
 };
 
 WILL_NOT_BE_EAGERLY_TRACED_CLASS(MemoryCacheEntry);
