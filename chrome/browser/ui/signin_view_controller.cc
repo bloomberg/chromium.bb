@@ -42,6 +42,11 @@ void SigninViewController::CloseModalSignin() {
   DCHECK(!signin_view_controller_delegate_);
 }
 
+void SigninViewController::SetModalSigninHeight(int height) {
+  if (signin_view_controller_delegate_)
+    signin_view_controller_delegate_->ResizeNativeView(height);
+}
+
 void SigninViewController::ResetModalSigninDelegate() {
   signin_view_controller_delegate_ = nullptr;
 }

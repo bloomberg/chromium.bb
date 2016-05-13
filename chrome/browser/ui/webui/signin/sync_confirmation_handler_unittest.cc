@@ -23,6 +23,7 @@
 #include "components/signin/core/browser/account_fetcher_service.h"
 #include "components/signin/core/browser/fake_account_fetcher_service.h"
 #include "components/signin/core/browser/fake_signin_manager.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_web_ui.h"
 
 const int kExpectedProfileImageSize = 128;
@@ -46,7 +47,8 @@ class TestingSyncConfirmationHandler : public SyncConfirmationHandler {
 
 class SyncConfirmationHandlerTest : public BrowserWithTestWindowTest {
  public:
-  SyncConfirmationHandlerTest() : web_ui_(new content::TestWebUI) {}
+  SyncConfirmationHandlerTest() : did_user_explicitly_interact(false),
+                                  web_ui_(new content::TestWebUI) {}
   void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
     chrome::NewTab(browser());
@@ -79,6 +81,12 @@ class SyncConfirmationHandlerTest : public BrowserWithTestWindowTest {
     sync_confirmation_ui_.reset();
     web_ui_.reset();
     BrowserWithTestWindowTest::TearDown();
+
+    if (did_user_explicitly_interact) {
+      EXPECT_EQ(0, user_action_tester()->GetActionCount("Signin_Abort_Signin"));
+    } else {
+      EXPECT_EQ(1, user_action_tester()->GetActionCount("Signin_Abort_Signin"));
+    }
   }
 
   TestingSyncConfirmationHandler* handler() {
@@ -121,6 +129,9 @@ class SyncConfirmationHandlerTest : public BrowserWithTestWindowTest {
     return builder.Build().release();
   }
 
+protected:
+ bool did_user_explicitly_interact;
+
 private:
  std::unique_ptr<content::TestWebUI> web_ui_;
  std::unique_ptr<SyncConfirmationUI> sync_confirmation_ui_;
@@ -129,7 +140,6 @@ private:
 };
 
 TEST_F(SyncConfirmationHandlerTest, TestSetImageIfPrimaryAccountReady) {
-  browser()->ShowModalSyncConfirmationWindow();
   account_fetcher_service()->FakeUserInfoFetchSuccess(
       "gaia",
       "foo@example.com",
@@ -166,12 +176,9 @@ TEST_F(SyncConfirmationHandlerTest, TestSetImageIfPrimaryAccountReady) {
                                                      kExpectedProfileImageSize,
                                                      &picture_url_with_size));
   EXPECT_EQ(picture_url_with_size.spec(), passed_picture_url);
-  handler()->HandleUndo(nullptr);
 }
 
 TEST_F(SyncConfirmationHandlerTest, TestSetImageIfPrimaryAccountReadyLater) {
-  browser()->ShowModalSyncConfirmationWindow();
-
   base::ListValue args;
   args.Set(0, new base::FundamentalValue(kDefaultDialogHeight));
   handler()->HandleInitializedWithSize(&args);
@@ -210,7 +217,6 @@ TEST_F(SyncConfirmationHandlerTest, TestSetImageIfPrimaryAccountReadyLater) {
                                                      kExpectedProfileImageSize,
                                                      &picture_url_with_size));
   EXPECT_EQ(picture_url_with_size.spec(), passed_picture_url);
-  handler()->HandleUndo(nullptr);
 }
 
 TEST_F(SyncConfirmationHandlerTest, TestHandleUndo) {
@@ -218,6 +224,7 @@ TEST_F(SyncConfirmationHandlerTest, TestHandleUndo) {
   EXPECT_TRUE(sync()->IsFirstSetupInProgress());
 
   handler()->HandleUndo(nullptr);
+  did_user_explicitly_interact = true;
 
   EXPECT_FALSE(sync()->IsFirstSetupInProgress());
   EXPECT_FALSE(sync()->IsFirstSetupComplete());
@@ -235,6 +242,7 @@ TEST_F(SyncConfirmationHandlerTest, TestHandleConfirm) {
   EXPECT_TRUE(sync()->IsFirstSetupInProgress());
 
   handler()->HandleConfirm(nullptr);
+  did_user_explicitly_interact = true;
 
   EXPECT_FALSE(sync()->IsFirstSetupInProgress());
   EXPECT_TRUE(sync()->IsFirstSetupComplete());

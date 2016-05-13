@@ -39,6 +39,9 @@ class SigninViewController {
   // SigninViewController, if one exists. Does nothing otherwise.
   void CloseModalSignin();
 
+  // Sets the height of the modal signin dialog.
+  void SetModalSigninHeight(int height);
+
   // Notifies this object that it's |signin_view_controller_delegate_|
   // member has become invalid.
   void ResetModalSigninDelegate();

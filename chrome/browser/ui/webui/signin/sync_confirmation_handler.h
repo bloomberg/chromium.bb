@@ -64,6 +64,9 @@ class SyncConfirmationHandler : public content::WebUIMessageHandler,
       LoginUIService::SyncConfirmationUIClosedResult result);
 
  private:
+  // Records whether the user clicked on Undo, Ok, or Settings.
+  bool did_user_explicitly_interact;
+
   DISALLOW_COPY_AND_ASSIGN(SyncConfirmationHandler);
 };
 

@@ -22,11 +22,19 @@
 
 const int kProfileImageSize = 128;
 
-SyncConfirmationHandler::SyncConfirmationHandler() {}
+SyncConfirmationHandler::SyncConfirmationHandler()
+    : did_user_explicitly_interact(false) {}
 
 SyncConfirmationHandler::~SyncConfirmationHandler() {
   Profile* profile = Profile::FromWebUI(web_ui());
   AccountTrackerServiceFactory::GetForProfile(profile)->RemoveObserver(this);
+
+  // Abort signin and prevent sync from starting if none of the actions on the
+  // sync confirmation dialog are taken by the user.
+  if (!did_user_explicitly_interact) {
+    HandleUndo(nullptr);
+    content::RecordAction(base::UserMetricsAction("Signin_Abort_Signin"));
+  }
 }
 
 void SyncConfirmationHandler::RegisterMessages() {
@@ -44,14 +52,17 @@ void SyncConfirmationHandler::RegisterMessages() {
 }
 
 void SyncConfirmationHandler::HandleConfirm(const base::ListValue* args) {
+  did_user_explicitly_interact = true;
   CloseModalSigninWindow(LoginUIService::SYNC_WITH_DEFAULT_SETTINGS);
 }
 
 void SyncConfirmationHandler::HandleGoToSettings(const base::ListValue* args) {
+  did_user_explicitly_interact = true;
   CloseModalSigninWindow(LoginUIService::CONFIGURE_SYNC_FIRST);
 }
 
 void SyncConfirmationHandler::HandleUndo(const base::ListValue* args) {
+  did_user_explicitly_interact = true;
   content::RecordAction(base::UserMetricsAction("Signin_Undo_Signin"));
   Browser* browser = GetDesktopBrowser();
   LoginUIServiceFactory::GetForProfile(browser->profile())->
@@ -119,7 +130,7 @@ void SyncConfirmationHandler::HandleInitializedWithSize(
   bool success = args->GetDouble(0, &height);
   DCHECK(success);
 
-  browser->signin_view_controller()->delegate()->ResizeNativeView(
+  browser->signin_view_controller()->SetModalSigninHeight(
       static_cast<int>(height));
 
   // After the dialog is shown, some platforms might have an element focused.
