@@ -544,7 +544,7 @@ int main(int argc, char* argv[]) {
 
   const mkvparser::Cluster* cluster = parser_segment->GetFirst();
 
-  while ((cluster != NULL) && !cluster->EOS()) {
+  while (cluster != NULL && !cluster->EOS()) {
     const mkvparser::BlockEntry* block_entry;
 
     long status = cluster->GetFirst(block_entry);
@@ -554,7 +554,7 @@ int main(int argc, char* argv[]) {
       return EXIT_FAILURE;
     }
 
-    while ((block_entry != NULL) && !block_entry->EOS()) {
+    while (block_entry != NULL && !block_entry->EOS()) {
       const mkvparser::Block* const block = block_entry->GetBlock();
       const long long trackNum = block->GetTrackNumber();
       const mkvparser::Track* const parser_track =

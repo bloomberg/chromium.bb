@@ -327,7 +327,7 @@ int main(int argc, char* argv[]) {
 
   const mkvparser::Cluster* pCluster = pSegment->GetFirst();
 
-  while ((pCluster != NULL) && !pCluster->EOS()) {
+  while (pCluster != NULL && !pCluster->EOS()) {
     const long long timeCode = pCluster->GetTimeCode();
     printf("\t\tCluster Time Code\t: %lld\n", timeCode);
 
@@ -345,7 +345,7 @@ int main(int argc, char* argv[]) {
       return EXIT_FAILURE;
     }
 
-    while ((pBlockEntry != NULL) && !pBlockEntry->EOS()) {
+    while (pBlockEntry != NULL && !pBlockEntry->EOS()) {
       const mkvparser::Block* const pBlock = pBlockEntry->GetBlock();
       const long long trackNum = pBlock->GetTrackNumber();
       const unsigned long tn = static_cast<unsigned long>(trackNum);
