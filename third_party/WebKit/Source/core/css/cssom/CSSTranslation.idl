@@ -5,10 +5,9 @@
 [
     Constructor(LengthValue x, LengthValue y),
     Constructor(LengthValue x, LengthValue y, LengthValue z),
-    ImplementedAs=TranslationTransformComponent,
     RaisesException=Constructor,
     RuntimeEnabled=CSSTypedOM
-] interface Translation : TransformComponent {
+] interface CSSTranslation : TransformComponent {
     readonly attribute LengthValue x;
     readonly attribute LengthValue y;
     readonly attribute LengthValue z;

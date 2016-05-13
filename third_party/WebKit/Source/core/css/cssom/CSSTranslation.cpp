@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/cssom/TranslationTransformComponent.h"
+#include "core/css/cssom/CSSTranslation.h"
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/css/CSSPrimitiveValue.h"
@@ -10,16 +10,16 @@
 
 namespace blink {
 
-TranslationTransformComponent* TranslationTransformComponent::create(LengthValue* x, LengthValue* y, LengthValue* z, ExceptionState& exceptionState)
+CSSTranslation* CSSTranslation::create(LengthValue* x, LengthValue* y, LengthValue* z, ExceptionState& exceptionState)
 {
     if (z->containsPercent()) {
-        exceptionState.throwTypeError("TranslationTransformComponent does not support z LengthValue with percent units");
+        exceptionState.throwTypeError("CSSTranslation does not support z LengthValue with percent units");
         return nullptr;
     }
-    return new TranslationTransformComponent(x, y, z);
+    return new CSSTranslation(x, y, z);
 }
 
-CSSFunctionValue* TranslationTransformComponent::toCSSValue() const
+CSSFunctionValue* CSSTranslation::toCSSValue() const
 {
     CSSFunctionValue* result = CSSFunctionValue::create(is2D() ? CSSValueTranslate : CSSValueTranslate3d);
     result->append(m_x->toCSSValue());

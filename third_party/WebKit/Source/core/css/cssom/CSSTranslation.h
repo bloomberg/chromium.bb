@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef TranslationTransformComponent_h
-#define TranslationTransformComponent_h
+#ifndef CSSTranslation_h
+#define CSSTranslation_h
 
 #include "core/css/cssom/LengthValue.h"
 #include "core/css/cssom/TransformComponent.h"
@@ -12,15 +12,15 @@ namespace blink {
 
 class ExceptionState;
 
-class CORE_EXPORT TranslationTransformComponent final : public TransformComponent {
-    WTF_MAKE_NONCOPYABLE(TranslationTransformComponent);
+class CORE_EXPORT CSSTranslation final : public TransformComponent {
+    WTF_MAKE_NONCOPYABLE(CSSTranslation);
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static TranslationTransformComponent* create(LengthValue* x, LengthValue* y, ExceptionState&)
+    static CSSTranslation* create(LengthValue* x, LengthValue* y, ExceptionState&)
     {
-        return new TranslationTransformComponent(x, y, nullptr);
+        return new CSSTranslation(x, y, nullptr);
     }
-    static TranslationTransformComponent* create(LengthValue* x, LengthValue* y, LengthValue* z, ExceptionState&);
+    static CSSTranslation* create(LengthValue* x, LengthValue* y, LengthValue* z, ExceptionState&);
 
     LengthValue* x() const { return m_x; }
     LengthValue* y() const { return m_y; }
@@ -28,7 +28,7 @@ public:
 
     TransformComponentType type() const override { return is2D() ? TranslationType : Translation3DType; }
 
-    // TODO: Implement asMatrix for TranslationTransformComponent.
+    // TODO: Implement asMatrix for CSSTranslation.
     MatrixTransformComponent* asMatrix() const override { return nullptr; }
 
     CSSFunctionValue* toCSSValue() const override;
@@ -42,7 +42,7 @@ public:
     }
 
 private:
-    TranslationTransformComponent(LengthValue* x, LengthValue* y, LengthValue* z)
+    CSSTranslation(LengthValue* x, LengthValue* y, LengthValue* z)
         : TransformComponent()
         , m_x(x)
         , m_y(y)

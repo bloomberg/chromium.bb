@@ -14,40 +14,40 @@ var simplePercent = new SimpleLength(10, "percent");
 var calcPercent = new CalcLength({px: 1, percent: 2.2});
 
 var values = [
-  // 2D Translation Transform Components
-  {input: new Translation(simpleLength, simpleLength),
+  // 2D CSSTranslation Transform Components
+  {input: new CSSTranslation(simpleLength, simpleLength),
     x: simpleLength, y: simpleLength, is2DComponent: true},
-  {input: new Translation(decimalLength, negativeLength),
+  {input: new CSSTranslation(decimalLength, negativeLength),
     x: decimalLength, y: negativeLength, is2DComponent: true},
-  {input: new Translation(negativeLength, calcLengthPx),
+  {input: new CSSTranslation(negativeLength, calcLengthPx),
     x: negativeLength, y: calcLengthPx, is2DComponent: true},
-  {input: new Translation(calcLengthPx, negativeLength),
+  {input: new CSSTranslation(calcLengthPx, negativeLength),
     x: calcLengthPx, y: negativeLength, is2DComponent: true},
-  {input: new Translation(calcLengthPx, calcLength),
+  {input: new CSSTranslation(calcLengthPx, calcLength),
     x: calcLengthPx, y: calcLength, is2DComponent: true},
-  {input: new Translation(simplePercent, simpleLength),
+  {input: new CSSTranslation(simplePercent, simpleLength),
     x: simplePercent, y: simpleLength, is2DComponent: true},
-  {input: new Translation(calcLengthPx, simplePercent),
+  {input: new CSSTranslation(calcLengthPx, simplePercent),
     x: calcLengthPx, y: simplePercent, is2DComponent: true},
-  {input: new Translation(calcPercent, calcLength),
+  {input: new CSSTranslation(calcPercent, calcLength),
     x: calcPercent, y: calcLength, is2DComponent: true},
-  {input: new Translation(simplePercent, calcPercent),
+  {input: new CSSTranslation(simplePercent, calcPercent),
     x: simplePercent, y: calcPercent, is2DComponent: true},
 
-  // 3D Translation Transform Components
-  {input: new Translation(simpleLength, simpleLength, simpleLength),
+  // 3D CSSTranslation Transform Components
+  {input: new CSSTranslation(simpleLength, simpleLength, simpleLength),
     x: simpleLength, y: simpleLength, z: simpleLength, is2DComponent: false},
-  {input: new Translation(simpleLength, decimalLength, negativeLength),
+  {input: new CSSTranslation(simpleLength, decimalLength, negativeLength),
     x: simpleLength, y: decimalLength, z: negativeLength, is2DComponent: false},
-  {input: new Translation(simpleLength, simpleLength, calcLengthPx),
+  {input: new CSSTranslation(simpleLength, simpleLength, calcLengthPx),
     x: simpleLength, y: simpleLength, z: calcLengthPx, is2DComponent: false},
-  {input: new Translation(calcLengthPx, calcLength, calcLength),
+  {input: new CSSTranslation(calcLengthPx, calcLength, calcLength),
     x: calcLengthPx, y: calcLength, z: calcLength, is2DComponent: false},
-  {input: new Translation(simplePercent, decimalLength, simpleLength),
+  {input: new CSSTranslation(simplePercent, decimalLength, simpleLength),
     x: simplePercent, y: decimalLength, z: simpleLength, is2DComponent: false},
-  {input: new Translation(simpleLength, calcPercent, decimalLength),
+  {input: new CSSTranslation(simpleLength, calcPercent, decimalLength),
     x: simpleLength, y: calcPercent, z: decimalLength, is2DComponent: false},
-  {input: new Translation(calcPercent, simplePercent, calcLength),
+  {input: new CSSTranslation(calcPercent, simplePercent, calcLength),
     x: calcPercent, y: simplePercent, z: calcLength, is2DComponent: false}
 ];
 
@@ -69,29 +69,29 @@ test(function() {
     else
       assert_equals(values[i].input.z, values[i].z);
   }
-}, "Test that the (x, y, z) values for Translation are correct.");
+}, "Test that the (x, y, z) values for CSSTranslation are correct.");
 
 test(function() {
   for (var i = 0; i < values.length; ++i) {
     assert_equals(values[i].input.is2DComponent(), values[i].is2DComponent);
   }
-}, "Test that the is2DComponent values for Translation is correct.");
+}, "Test that the is2DComponent values for CSSTranslation is correct.");
 
 test(function() {
   for (var i = 0; i < values.length; ++i) {
     assert_equals(values[i].input.cssString, expectedCssString(values[i]));
   }
-}, "Test that cssString values for Translation is correct.");
+}, "Test that cssString values for CSSTranslation is correct.");
 
 test(function() {
-  assert_throws(null, function() { new Translation(simpleLength, simpleLength, simplePercent); });
-  assert_throws(null, function() { new Translation(simpleLength, simpleLength, calcPercent); });
-  assert_throws(null, function() { new Translation(simplePercent, simplePercent, simplePercent); });
-}, "Test that Translation constructor throws when z component contains percent.");
+  assert_throws(null, function() { new CSSTranslation(simpleLength, simpleLength, simplePercent); });
+  assert_throws(null, function() { new CSSTranslation(simpleLength, simpleLength, calcPercent); });
+  assert_throws(null, function() { new CSSTranslation(simplePercent, simplePercent, simplePercent); });
+}, "Test that CSSTranslation constructor throws when z component contains percent.");
 
 test(function() {
-  assert_throws(null, function() { new Translation(); });
-  assert_throws(null, function() { new Translation(simpleLength); });
-}, "Test that invalid number of arguments for Translation throws an exception.");
+  assert_throws(null, function() { new CSSTranslation(); });
+  assert_throws(null, function() { new CSSTranslation(simpleLength); });
+}, "Test that invalid number of arguments for CSSTranslation throws an exception.");
 
 </script>

@@ -520,6 +520,12 @@ interface CSSSupportsRule : CSSRule
     method constructor
     method deleteRule
     method insertRule
+interface CSSTranslation : TransformComponent
+    attribute @@toStringTag
+    getter x
+    getter y
+    getter z
+    method constructor
 interface CSSViewportRule : CSSRule
     attribute @@toStringTag
     getter style
@@ -6105,12 +6111,6 @@ interface TransitionEvent : Event
     getter elapsedTime
     getter propertyName
     getter pseudoElement
-    method constructor
-interface Translation : TransformComponent
-    attribute @@toStringTag
-    getter x
-    getter y
-    getter z
     method constructor
 interface TreeWalker
     attribute @@toStringTag
