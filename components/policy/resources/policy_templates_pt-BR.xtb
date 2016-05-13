@@ -702,7 +702,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 
           Esta política só entrará em vigor se você tiver selecionado as configurações de proxy manuais em "Escolha como especificar as configurações do servidor proxy".
 
-          Deixe esta política sem definição, caso você tenha selecionado qualquer outro modo de definição de políticas de proxy.
+          Deixe esta política sem definição caso você tenha selecionado qualquer outro modo de definição de políticas de proxy.
 
           Para ver exemplos mais detalhados, visite:
           <ph name="PROXY_HELP_URL" />.</translation>
@@ -1806,7 +1806,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 
           Esta política só entrará em vigor se você tiver selecionado as configurações manuais de proxy em "Escolha como especificar as configurações do servidor proxy".
 
-          Deixe esta política sem definição, caso você tenha selecionado qualquer outro modo de definição de políticas proxy.
+          Deixe esta política sem definição caso você tenha selecionado qualquer outro modo de definição de políticas proxy.
 
           Para ver mais opções e exemplos detalhados, visite:
           <ph name="PROXY_HELP_URL" />.</translation>
@@ -1844,7 +1844,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 
           Esta política só entrará em vigor se você tiver selecionado as configurações manuais de proxy em "Escolha como especificar as configurações do servidor proxy".
 
-          Deixe esta política sem definição, caso você tenha selecionado qualquer outro modo de definição de políticas proxy
+          Deixe esta política sem definição caso você tenha selecionado qualquer outro modo de definição de políticas proxy
 
           Para ver exemplos detalhados, visite:
           <ph name="PROXY_HELP_URL" />.</translation>
