@@ -53,21 +53,62 @@ template("nacl_test_data") {
   } else {
     nmf_cpu = current_cpu
   }
-  if (is_nacl_glibc) {
-    suffix = "glibc_${nmf_cpu}"
-  } else {
-    suffix = "newlib_${nmf_cpu}"
-  }
-  suffixed_output_name = "${output_name}_${suffix}"
+
   if (current_cpu == "pnacl") {
     if (defined(invoker.pretranslate_pexe)) {
       pretranslate_pexe = invoker.pretranslate_pexe
     } else {
       pretranslate_pexe = is_nacl_nonsfi
     }
-    if (pretranslate_pexe) {
-      pexe_translate_target_name = target_name + "_translate_pexe"
+  } else {
+    pretranslate_pexe = false
+  }
+
+  # Note this can't test "is_win" because it's evaluated in the NaCl
+  # toolchain context where is_win==false because current_os=="nacl".
+  # It tests target_cpu rather than current_cpu because it's also
+  # needed in the current_cpu=="pnacl" && pretranslate_pexe case.
+  if (target_os == "win" && target_cpu == "x86" && !is_nacl_nonsfi &&
+      (current_cpu == "x86" || pretranslate_pexe)) {
+    # x86 Windows builds of Chrome run on both x86 Windows and x64
+    # Windows.  On x64 Windows, only x64 NaCl is supported, so those
+    # tests are needed too.
+    extra_tc_cpu = "x64"
+    if (current_cpu == "x86") {
+      extra_nmf_cpu = "x86_64"
     }
+  }
+
+  if (is_nacl_glibc) {
+    suffix = "glibc_${nmf_cpu}"
+    if (defined(extra_nmf_cpu)) {
+      extra_suffix = "glibc_${extra_nmf_cpu}"
+      glibc_tc = "//build/toolchain/nacl:glibc"
+      assert(current_toolchain == "${glibc_tc}_${current_cpu}")
+      extra_toolchain = "${glibc_tc}_${extra_tc_cpu}"
+    }
+  } else {
+    suffix = "newlib_${nmf_cpu}"
+    if (defined(extra_nmf_cpu)) {
+      extra_suffix = "newlib_${extra_nmf_cpu}"
+      newlib_tc = "//build/toolchain/nacl:clang_newlib"
+      assert(current_toolchain == "${newlib_tc}_${current_cpu}")
+      extra_toolchain = "${newlib_tc}_${extra_tc_cpu}"
+    }
+  }
+  suffixed_output_name = "${output_name}_${suffix}"
+  if (defined(extra_nmf_cpu)) {
+    extra_suffixed_output_name = "${output_name}_${extra_suffix}"
+  }
+  if (pretranslate_pexe) {
+    pexe_translate_target_name = target_name + "_translate_pexe_"
+    if (defined(extra_tc_cpu)) {
+      # There will be an extra pretranslation done below for the
+      # extra CPU (i.e. for x64 on x86 Windows).
+      extra_pexe_translate_target_name =
+          pexe_translate_target_name + extra_tc_cpu
+    }
+    pexe_translate_target_name += target_cpu
   }
   if (defined(invoker.generate_nmf)) {
     generate_nmf = invoker.generate_nmf
@@ -136,80 +177,96 @@ template("nacl_test_data") {
   }
 
   if (current_cpu == "pnacl" && pretranslate_pexe) {
-    action(pexe_translate_target_name) {
-      visibility = [ ":$nexe_copy_target_name" ]
+    # This is a template so it can be invoked twice in the
+    # defined(extra_tc_cpu) case below.
+    template("nacl_test_data_pretranslate_pexe") {
+      action(target_name) {
+        translate_cpu = invoker.translate_cpu
 
-      # We specify the toolchain explicitly because in the Non-SFI case, we
-      # still want to use the pexe built using the newlib_pnacl toolchain.
-      tests = ":ppapi_nacl_tests_nexe(//build/toolchain/nacl:newlib_pnacl)"
+        visibility = [ ":$nexe_copy_target_name" ]
 
-      pexe = get_label_info(tests, "root_out_dir") +
-             "/${suffixed_output_name}.pexe"
-      if (target_cpu == "x86" ||
-          (is_nacl_nonsfi && (target_cpu == "x86" || target_cpu == "x64"))) {
-        nmf_cpu = "x32"
-      } else {
-        nmf_cpu = target_cpu
-      }
-      if (is_nacl_nonsfi) {
-        suffix = "pnacl_newlib_${nmf_cpu}_nonsfi"
-      } else {
-        suffix = "pnacl_newlib_${nmf_cpu}"
-      }
-      nexe = "${root_out_dir}/${output_name}_${suffix}.nexe"
+        # We specify the toolchain explicitly because in the Non-SFI case, we
+        # still want to use the pexe built using the newlib_pnacl toolchain.
+        tests = ":ppapi_nacl_tests_nexe(//build/toolchain/nacl:newlib_pnacl)"
 
-      script = "${nacl_toolchain_bindir}/pydir/loader.py"
-      sources = [
-        pexe,
-      ]
-      outputs = [
-        nexe,
-      ]
-
-      if (is_nacl_nonsfi) {
-        if (target_cpu == "x86" || target_cpu == "x64") {
-          arch = "x86-32-nonsfi"
-        } else if (target_cpu == "arm") {
-          arch = "arm-nonsfi"
+        pexe = get_label_info(tests, "root_out_dir") +
+               "/${suffixed_output_name}.pexe"
+        if (translate_cpu == "x86" ||
+            (is_nacl_nonsfi &&
+             (translate_cpu == "x86" || translate_cpu == "x64"))) {
+          nmf_cpu = "x32"
+        } else {
+          nmf_cpu = translate_cpu
         }
-      } else {
-        # TODO(phosek): remove the following once change 1360243003 is rolled
-        # into Chrome and use $target_cpu directly.
-        if (target_cpu == "x86") {
-          arch = "i686"
-        } else if (target_cpu == "x64") {
-          arch = "x86-64"
-        } else if (target_cpu == "arm") {
-          arch = "armv7"
+        if (is_nacl_nonsfi) {
+          suffix = "pnacl_newlib_${nmf_cpu}_nonsfi"
+        } else {
+          suffix = "pnacl_newlib_${nmf_cpu}"
         }
-      }
+        nexe = "${root_out_dir}/${output_name}_${suffix}.nexe"
 
-      # The pre-translated object file has to be linked with an IRT shim to
-      # get a runnable nexe. This is handled by pnacl-translate, which passes
-      # -l:libpnacl_irt_shim.a to native linker, and we need to ensure the
-      # linker can find the correct library.
-      if (is_nacl_nonsfi) {
-        pnacl_irt_shim = "//ppapi/native_client/src/untrusted/pnacl_irt_shim:aot(//build/toolchain/nacl:newlib_pnacl_nonsfi)"
-      } else {
-        pnacl_irt_shim = "//ppapi/native_client/src/untrusted/pnacl_irt_shim:aot(//build/toolchain/nacl:clang_newlib_${target_cpu})"
-      }
+        script = "${nacl_toolchain_bindir}/pydir/loader.py"
+        sources = [
+          pexe,
+        ]
+        outputs = [
+          nexe,
+        ]
 
-      args = [
-        "pnacl-translate",
-        rebase_path(pexe, root_build_dir),
-        "-o",
-        rebase_path(nexe, root_build_dir),
-        "-arch",
-        arch,
-        "-Wl,-L" +
-            rebase_path(get_label_info(pnacl_irt_shim, "target_out_dir")),
-      ]
-      deps = [
-        ":$nexe_target_name(//build/toolchain/nacl:newlib_pnacl)",
-      ]
-      data_deps = [
-        pnacl_irt_shim,
-      ]
+        if (is_nacl_nonsfi) {
+          if (translate_cpu == "x86" || translate_cpu == "x64") {
+            arch = "x86-32-nonsfi"
+          } else if (translate_cpu == "arm") {
+            arch = "arm-nonsfi"
+          }
+        } else {
+          # TODO(phosek): remove the following once change 1360243003 is rolled
+          # into Chrome and use translate_cpu directly.
+          if (translate_cpu == "x86") {
+            arch = "i686"
+          } else if (translate_cpu == "x64") {
+            arch = "x86-64"
+          } else if (translate_cpu == "arm") {
+            arch = "armv7"
+          }
+        }
+
+        # The pre-translated object file has to be linked with an IRT shim to
+        # get a runnable nexe. This is handled by pnacl-translate, which passes
+        # -l:libpnacl_irt_shim.a to native linker, and we need to ensure the
+        # linker can find the correct library.
+        if (is_nacl_nonsfi) {
+          pnacl_irt_shim = "//ppapi/native_client/src/untrusted/pnacl_irt_shim:aot(//build/toolchain/nacl:newlib_pnacl_nonsfi)"
+        } else {
+          pnacl_irt_shim = "//ppapi/native_client/src/untrusted/pnacl_irt_shim:aot(//build/toolchain/nacl:clang_newlib_${translate_cpu})"
+        }
+
+        args = [
+          "pnacl-translate",
+          rebase_path(pexe, root_build_dir),
+          "-o",
+          rebase_path(nexe, root_build_dir),
+          "-arch",
+          arch,
+          "-Wl,-L" +
+              rebase_path(get_label_info(pnacl_irt_shim, "target_out_dir")),
+        ]
+        deps = [
+          ":$nexe_target_name(//build/toolchain/nacl:newlib_pnacl)",
+        ]
+        data_deps = [
+          pnacl_irt_shim,
+        ]
+      }
+    }
+
+    nacl_test_data_pretranslate_pexe(pexe_translate_target_name) {
+      translate_cpu = target_cpu
+    }
+    if (defined(extra_tc_cpu)) {
+      nacl_test_data_pretranslate_pexe(extra_pexe_translate_target_name) {
+        translate_cpu = extra_tc_cpu
+      }
     }
   }
 
@@ -221,6 +278,9 @@ template("nacl_test_data") {
     if (current_cpu == "pnacl") {
       if (pretranslate_pexe) {
         sources = get_target_outputs(":${pexe_translate_target_name}")
+        if (defined(extra_tc_cpu)) {
+          sources += get_target_outputs(":${extra_pexe_translate_target_name}")
+        }
       } else if (defined(invoker.nonstable_pexe) && invoker.nonstable_pexe) {
         sources = [
           "${root_out_dir}/exe.unstripped/${suffixed_output_name}.pexe",
@@ -234,6 +294,13 @@ template("nacl_test_data") {
       sources = [
         "${root_out_dir}/${suffixed_output_name}.nexe",
       ]
+      if (defined(extra_nmf_cpu)) {
+        extra_root_out_dir =
+            get_label_info(":${nexe_target_name}(${extra_toolchain})",
+                           "root_out_dir")
+        sources +=
+            [ "${extra_root_out_dir}/${extra_suffixed_output_name}.nexe" ]
+      }
     }
     outputs = [
       "${target_dir}/{{source_file_part}}",
@@ -242,10 +309,16 @@ template("nacl_test_data") {
       deps = [
         ":$pexe_translate_target_name",
       ]
+      if (defined(extra_tc_cpu)) {
+        deps += [ ":$extra_pexe_translate_target_name" ]
+      }
     } else {
       deps = [
         ":$nexe_target_name",
       ]
+      if (defined(extra_nmf_cpu)) {
+        deps += [ ":${nexe_target_name}(${extra_toolchain})" ]
+      }
     }
   }
 
