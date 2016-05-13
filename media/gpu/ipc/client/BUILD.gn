@@ -22,6 +22,7 @@ source_set("client") {
     "//media",
     "//media:media_features",
     "//media/gpu",
+    "//media/gpu/ipc/common",
     "//ui/gfx:memory_buffer",
     "//ui/gfx/geometry",
     "//ui/gfx/ipc",
