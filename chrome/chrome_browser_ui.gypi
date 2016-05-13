@@ -2470,6 +2470,8 @@
       'browser/ui/views/update_recommended_message_box.h',
       'browser/ui/views/validation_message_bubble_view.cc',
       'browser/ui/views/validation_message_bubble_view.h',
+      'browser/ui/views/native_web_contents_modal_dialog_manager_views.cc',
+      'browser/ui/views/native_web_contents_modal_dialog_manager_views.h',
       'browser/ui/views/web_contents_modal_dialog_manager_views.cc',
       'browser/ui/views/website_settings/chooser_bubble_ui_view.cc',
       'browser/ui/views/website_settings/chooser_bubble_ui_view.h',
