@@ -72,7 +72,7 @@ template("yasm_assemble") {
 
     # Output file.
     outputs = [
-      "$target_out_dir/{{source_name_part}}.o",
+      "$target_out_dir/$source_set_name/{{source_name_part}}.o",
     ]
     args += [
       "-o",
