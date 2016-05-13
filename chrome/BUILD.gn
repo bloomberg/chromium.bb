@@ -637,6 +637,24 @@ if (is_win) {
     }
   }
 
+  if (enable_nacl) {
+    bundle_data("chrome_framework_plugins") {
+      sources = []
+      outputs = [
+        "{{bundle_root_dir}}/Internet Plug-Ins/{{source_file_part}}",
+      ]
+      public_deps = []
+
+      if (enable_nacl) {
+        sources += [ "$root_out_dir/nacl_irt_x86_64.nexe" ]
+        public_deps += [ "//ppapi/native_client:irt" ]
+      }
+    }
+  } else {
+    group("chrome_framework_plugins") {
+    }
+  }
+
   tweak_info_plist("chrome_framework_plist") {
     info_plist = "app/framework-Info.plist"
     args = [
@@ -726,6 +744,7 @@ if (is_win) {
     deps = [
       ":chrome_framework_helpers",
       ":chrome_framework_locales",
+      ":chrome_framework_plugins",
       ":chrome_framework_resources",
       "//build/config/sanitizers:deps",
       "//chrome/app/nibs:chrome_xibs",

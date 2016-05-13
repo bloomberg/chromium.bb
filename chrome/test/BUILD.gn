@@ -713,6 +713,7 @@ if (!is_android) {
         # TODO(rouslan): This test depends on hunspell and we cannot run it
         # on Mac, which does not use hunspell by default.
         "../browser/ui/webui/options/language_options_dictionary_download_browsertest.js",
+        "../browser/ui/webui/options/multilanguage_options_webui_browsertest.js",
       ]
     }
     if (!enable_app_list) {
@@ -888,7 +889,6 @@ if (!is_android) {
       "$root_out_dir/chrome_material_100_percent.pak",
       "$root_out_dir/chrome_200_percent.pak",
       "$root_out_dir/chrome_material_200_percent.pak",
-      "$root_out_dir/locales/",
       "$root_out_dir/remoting/unittests/",
       "$root_out_dir/resources/extension/",
       "$root_out_dir/test_case.html",
@@ -982,6 +982,7 @@ if (!is_android) {
     ]
 
     if (!is_mac) {
+      data += [ "$root_out_dir/locales/" ]
       data_deps += [ "//chrome:packed_extra_resources" ]
     }
 
@@ -1240,6 +1241,19 @@ if (!is_android) {
         # message loops. See 306348
         "../renderer/safe_browsing/phishing_classifier_browsertest.cc",
         "../renderer/safe_browsing/phishing_classifier_delegate_browsertest.cc",
+      ]
+
+      data_deps += [
+        "//chrome",
+        "//chrome:chrome_framework",
+      ]
+
+      # TODO(rsesek): Remove once https://crbug.com/611414 is fixed.
+      data += [
+        "$root_out_dir/Chromium.app/",
+        "$root_out_dir/Chromium Framework.framework/",
+        "$root_out_dir/power_saver_test_plugin.plugin/",
+        "$root_out_dir/ppapi_tests.plugin/",
       ]
 
       # The browser window can be views or Cocoa on Mac. Test accordingly.
