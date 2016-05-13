@@ -1,6 +1,6 @@
 <?php
-    header("Link: <http://127.0.0.1:8000/resources/square.png?large>;rel=preload;as=image;media='(min-width: 300px)'", false);
-    header("Link: <http://127.0.0.1:8000/resources/square.png?small>;rel=preload;as=image;media='(max-width: 299px)'", false);
+    header("Link: <http://127.0.0.1:8000/resources/square.png?large>;rel=preload;as=image;media=\"(min-width: 300px)\"", false);
+    header("Link: <http://127.0.0.1:8000/resources/square.png?small>;rel=preload;as=image;media=\"(max-width: 299px)\"", false);
 ?>
 <!DOCTYPE html>
 <meta name="viewport" content="width=160">

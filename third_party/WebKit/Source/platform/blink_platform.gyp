@@ -141,6 +141,7 @@
       'platform_generated.gyp:make_platform_generated',
       '<(DEPTH)/base/base.gyp:base',
       '<(DEPTH)/cc/cc.gyp:cc',
+      '<(DEPTH)/components/link_header_util/link_header_util.gyp:link_header_util',
       '<(DEPTH)/gpu/gpu.gyp:gles2_c_lib',
       '<(DEPTH)/gpu/gpu.gyp:gles2_implementation',
       '<(DEPTH)/mojo/mojo_edk.gyp:mojo_system_impl',

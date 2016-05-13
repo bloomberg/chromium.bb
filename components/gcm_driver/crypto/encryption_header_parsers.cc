@@ -75,7 +75,8 @@ bool ParseEncryptionHeaderValuesImpl(std::string::const_iterator input_begin,
                                      EncryptionHeaderValues* values) {
   net::HttpUtil::NameValuePairsIterator name_value_pairs(
       input_begin, input_end, ';',
-      net::HttpUtil::NameValuePairsIterator::VALUES_NOT_OPTIONAL);
+      net::HttpUtil::NameValuePairsIterator::Values::REQUIRED,
+      net::HttpUtil::NameValuePairsIterator::Quotes::NOT_STRICT);
 
   while (name_value_pairs.GetNext()) {
     const base::StringPiece name(name_value_pairs.name_begin(),
@@ -123,7 +124,8 @@ bool ParseCryptoKeyHeaderValuesImpl(std::string::const_iterator input_begin,
                                     CryptoKeyHeaderValues* values) {
   net::HttpUtil::NameValuePairsIterator name_value_pairs(
       input_begin, input_end, ';',
-      net::HttpUtil::NameValuePairsIterator::VALUES_NOT_OPTIONAL);
+      net::HttpUtil::NameValuePairsIterator::Values::REQUIRED,
+      net::HttpUtil::NameValuePairsIterator::Quotes::NOT_STRICT);
 
   while (name_value_pairs.GetNext()) {
     const base::StringPiece name(name_value_pairs.name_begin(),

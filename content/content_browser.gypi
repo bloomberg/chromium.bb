@@ -9,6 +9,7 @@
     '../cc/cc.gyp:cc_surfaces',
     '../components/components.gyp:display_compositor',
     '../components/leveldb/leveldb.gyp:leveldb_lib',
+    '../components/link_header_util/link_header_util.gyp:link_header_util',
     '../components/mime_util/mime_util.gyp:mime_util',
     '../components/scheduler/scheduler.gyp:scheduler_common',
     '../components/url_formatter/url_formatter.gyp:url_formatter',

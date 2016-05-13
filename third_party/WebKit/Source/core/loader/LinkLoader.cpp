@@ -45,12 +45,12 @@
 #include "core/html/parser/HTMLPreloadScanner.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/loader/DocumentLoader.h"
-#include "core/loader/LinkHeader.h"
 #include "core/loader/NetworkHintsInterface.h"
 #include "core/loader/PrerenderHandle.h"
 #include "platform/MIMETypeRegistry.h"
 #include "platform/Prerender.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "platform/network/LinkHeader.h"
 #include "platform/network/NetworkHints.h"
 #include "public/platform/WebPrerender.h"
 
@@ -318,13 +318,13 @@ void LinkLoader::loadLinksFromHeader(const String& headerValue, const KURL& base
                 dnsPrefetchIfNeeded(relAttribute, url, *document, networkHintsInterface, LinkCalledFromHeader);
 
             if (RuntimeEnabledFeatures::linkPreconnectEnabled())
-                preconnectIfNeeded(relAttribute, url, *document, header.crossOrigin(), networkHintsInterface, LinkCalledFromHeader);
+                preconnectIfNeeded(relAttribute, url, *document, crossOriginAttributeValue(header.crossOrigin()), networkHintsInterface, LinkCalledFromHeader);
         }
         if (canLoadResources != DoNotLoadResources) {
             bool errorOccurred = false;
             if (RuntimeEnabledFeatures::linkPreloadEnabled()) {
                 ViewportDescription* viewportDescription = (viewportDescriptionWrapper && viewportDescriptionWrapper->set) ? &(viewportDescriptionWrapper->description) : nullptr;
-                preloadIfNeeded(relAttribute, url, *document, header.as(), header.mimeType(), header.media(), header.crossOrigin(), LinkCalledFromHeader, errorOccurred, viewportDescription);
+                preloadIfNeeded(relAttribute, url, *document, header.as(), header.mimeType(), header.media(), crossOriginAttributeValue(header.crossOrigin()), LinkCalledFromHeader, errorOccurred, viewportDescription);
             }
         }
         // TODO(yoav): Add more supported headers as needed.

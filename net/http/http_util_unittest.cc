@@ -247,6 +247,57 @@ TEST(HttpUtilTest, Unquote) {
   // Allow single quotes to act as quote marks.
   // Not part of RFC 2616.
   EXPECT_STREQ("x\"", HttpUtil::Unquote("'x\"'").c_str());
+
+  // Allow quotes in the middle of the input.
+  EXPECT_STREQ("foo\"bar", HttpUtil::Unquote("\"foo\"bar\"").c_str());
+
+  // Allow the final quote to be escaped.
+  EXPECT_STREQ("foo", HttpUtil::Unquote("\"foo\\\"").c_str());
+}
+
+TEST(HttpUtilTest, StrictUnquote) {
+  std::string out;
+
+  // Replace <backslash> " with ".
+  EXPECT_TRUE(HttpUtil::StrictUnquote("\"xyz\\\"abc\"", &out));
+  EXPECT_STREQ("xyz\"abc", out.c_str());
+
+  // Replace <backslash> <backslash> with <backslash>.
+  EXPECT_TRUE(HttpUtil::StrictUnquote("\"xyz\\\\abc\"", &out));
+  EXPECT_STREQ("xyz\\abc", out.c_str());
+  EXPECT_TRUE(HttpUtil::StrictUnquote("\"xyz\\\\\\\\\\\\abc\"", &out));
+  EXPECT_STREQ("xyz\\\\\\abc", out.c_str());
+
+  // Replace <backslash> X with X.
+  EXPECT_TRUE(HttpUtil::StrictUnquote("\"xyz\\Xabc\"", &out));
+  EXPECT_STREQ("xyzXabc", out.c_str());
+
+  // Empty quoted string.
+  EXPECT_TRUE(HttpUtil::StrictUnquote("\"\"", &out));
+  EXPECT_STREQ("", out.c_str());
+
+  // Return false on unquoted inputs.
+  EXPECT_FALSE(HttpUtil::StrictUnquote("X", &out));
+  EXPECT_FALSE(HttpUtil::StrictUnquote("", &out));
+
+  // Return false on mismatched quotes.
+  EXPECT_FALSE(HttpUtil::StrictUnquote("\"", &out));
+  EXPECT_FALSE(HttpUtil::StrictUnquote("\"xyz", &out));
+  EXPECT_FALSE(HttpUtil::StrictUnquote("\"abc'", &out));
+
+  // Return false on escaped terminal quote.
+  EXPECT_FALSE(HttpUtil::StrictUnquote("\"abc\\\"", &out));
+  EXPECT_FALSE(HttpUtil::StrictUnquote("\"\\\"", &out));
+
+  // Allow escaped backslash before terminal quote.
+  EXPECT_TRUE(HttpUtil::StrictUnquote("\"\\\\\"", &out));
+  EXPECT_STREQ("\\", out.c_str());
+
+  // Don't allow single quotes to act as quote marks.
+  EXPECT_FALSE(HttpUtil::StrictUnquote("'x\"'", &out));
+  EXPECT_TRUE(HttpUtil::StrictUnquote("\"x'\"", &out));
+  EXPECT_STREQ("x'", out.c_str());
+  EXPECT_FALSE(HttpUtil::StrictUnquote("''", &out));
 }
 
 TEST(HttpUtilTest, Quote) {
@@ -1102,7 +1153,8 @@ TEST(HttpUtilTest, NameValuePairsIteratorOptionalValues) {
 
   HttpUtil::NameValuePairsIterator values_required_parser(
       data.begin(), data.end(), ';',
-      HttpUtil::NameValuePairsIterator::VALUES_NOT_OPTIONAL);
+      HttpUtil::NameValuePairsIterator::Values::REQUIRED,
+      HttpUtil::NameValuePairsIterator::Quotes::NOT_STRICT);
   EXPECT_TRUE(values_required_parser.valid());
   ASSERT_NO_FATAL_FAILURE(CheckNextNameValuePair(&values_required_parser, true,
                                                  true, "alpha", "1"));
@@ -1111,7 +1163,8 @@ TEST(HttpUtilTest, NameValuePairsIteratorOptionalValues) {
 
   HttpUtil::NameValuePairsIterator parser(
       data.begin(), data.end(), ';',
-      HttpUtil::NameValuePairsIterator::VALUES_OPTIONAL);
+      HttpUtil::NameValuePairsIterator::Values::NOT_REQUIRED,
+      HttpUtil::NameValuePairsIterator::Quotes::NOT_STRICT);
   EXPECT_TRUE(parser.valid());
 
   ASSERT_NO_FATAL_FAILURE(
@@ -1175,6 +1228,64 @@ TEST(HttpUtilTest, NameValuePairsIteratorMissingEndQuote) {
       CheckNextNameValuePair(&parser, true, true, "name", "value"));
   ASSERT_NO_FATAL_FAILURE(CheckNextNameValuePair(
       &parser, false, true, std::string(), std::string()));
+}
+
+TEST(HttpUtilTest, NameValuePairsIteratorStrictQuotesEscapedEndQuote) {
+  std::string data = "foo=bar; name=\"value\\\"";
+  HttpUtil::NameValuePairsIterator parser(
+      data.begin(), data.end(), ';',
+      HttpUtil::NameValuePairsIterator::Values::REQUIRED,
+      HttpUtil::NameValuePairsIterator::Quotes::STRICT_QUOTES);
+  EXPECT_TRUE(parser.valid());
+
+  ASSERT_NO_FATAL_FAILURE(
+      CheckNextNameValuePair(&parser, true, true, "foo", "bar"));
+  ASSERT_NO_FATAL_FAILURE(CheckNextNameValuePair(&parser, false, false,
+                                                 std::string(), std::string()));
+}
+
+TEST(HttpUtilTest, NameValuePairsIteratorStrictQuotesQuoteInValue) {
+  std::string data = "foo=\"bar\"; name=\"va\"lue\"";
+  HttpUtil::NameValuePairsIterator parser(
+      data.begin(), data.end(), ';',
+      HttpUtil::NameValuePairsIterator::Values::REQUIRED,
+      HttpUtil::NameValuePairsIterator::Quotes::STRICT_QUOTES);
+  EXPECT_TRUE(parser.valid());
+
+  ASSERT_NO_FATAL_FAILURE(
+      CheckNextNameValuePair(&parser, true, true, "foo", "bar"));
+  ASSERT_NO_FATAL_FAILURE(CheckNextNameValuePair(&parser, false, false,
+                                                 std::string(), std::string()));
+}
+
+TEST(HttpUtilTest, NameValuePairsIteratorStrictQuotesMissingEndQuote) {
+  std::string data = "foo=\"bar\"; name=\"value";
+  HttpUtil::NameValuePairsIterator parser(
+      data.begin(), data.end(), ';',
+      HttpUtil::NameValuePairsIterator::Values::REQUIRED,
+      HttpUtil::NameValuePairsIterator::Quotes::STRICT_QUOTES);
+  EXPECT_TRUE(parser.valid());
+
+  ASSERT_NO_FATAL_FAILURE(
+      CheckNextNameValuePair(&parser, true, true, "foo", "bar"));
+  ASSERT_NO_FATAL_FAILURE(CheckNextNameValuePair(&parser, false, false,
+                                                 std::string(), std::string()));
+}
+
+TEST(HttpUtilTest, NameValuePairsIteratorStrictQuotesSingleQuotes) {
+  std::string data = "foo=\"bar\"; name='value; ok=it'";
+  HttpUtil::NameValuePairsIterator parser(
+      data.begin(), data.end(), ';',
+      HttpUtil::NameValuePairsIterator::Values::REQUIRED,
+      HttpUtil::NameValuePairsIterator::Quotes::STRICT_QUOTES);
+  EXPECT_TRUE(parser.valid());
+
+  ASSERT_NO_FATAL_FAILURE(
+      CheckNextNameValuePair(&parser, true, true, "foo", "bar"));
+  ASSERT_NO_FATAL_FAILURE(
+      CheckNextNameValuePair(&parser, true, true, "name", "'value"));
+  ASSERT_NO_FATAL_FAILURE(
+      CheckNextNameValuePair(&parser, true, true, "ok", "it'"));
 }
 
 TEST(HttpUtilTest, IsValidHeaderValueRFC7230) {

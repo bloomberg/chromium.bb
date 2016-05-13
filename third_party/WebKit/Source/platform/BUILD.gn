@@ -357,6 +357,7 @@ component("platform") {
   ]
   deps = [
     ":blink_common",
+    "//components/link_header_util:link_header_util",
     "//mojo/public/c/system:for_component",
     "//mojo/public/cpp/bindings:callback",
     "//mojo/public/cpp/bindings:wtf_support",

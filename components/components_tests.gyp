@@ -344,6 +344,9 @@
     'leveldb_proto_unittest_sources': [
       'leveldb_proto/proto_database_impl_unittest.cc',
     ],
+    'link_header_util_unittest_sources': [
+      'link_header_util/link_header_util_unittest.cc',
+    ],
     'login_unittest_sources': [
       'login/screens/screen_context_unittest.cc',
     ],
@@ -997,6 +1000,7 @@
         '<@(keyed_service_unittest_sources)',
         '<@(language_usage_metrics_unittest_sources)',
         '<@(leveldb_proto_unittest_sources)',
+        '<@(link_header_util_unittest_sources)',
         '<@(login_unittest_sources)',
         '<@(memory_pressure_unittest_sources)',
         '<@(metrics_unittest_sources)',
@@ -1183,6 +1187,7 @@
         'components_resources.gyp:components_resources',
         'components_strings.gyp:components_strings',
         'components_tests_pak',
+        'link_header_util/link_header_util.gyp:link_header_util',
         'mime_util/mime_util.gyp:mime_util',
         'prefs/prefs.gyp:prefs',
         'prefs/prefs.gyp:prefs_test_support',

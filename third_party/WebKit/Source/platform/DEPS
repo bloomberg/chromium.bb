@@ -10,6 +10,7 @@ include_rules = [
     "+base/metrics/histogram_base.h",
     "+base/metrics/histogram_samples.h",
     "+base/metrics/sparse_histogram.h",
+    "+base/strings/string_util.h",
     "+base/strings/stringprintf.h",
     "+base/synchronization/waitable_event.h",
     "+base/sys_info.h",

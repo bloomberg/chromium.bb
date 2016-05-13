@@ -128,7 +128,8 @@ bool ParseHPKPHeaderImpl(const std::string& value,
 
   HttpUtil::NameValuePairsIterator name_value_pairs(
       value.begin(), value.end(), ';',
-      HttpUtil::NameValuePairsIterator::VALUES_OPTIONAL);
+      HttpUtil::NameValuePairsIterator::Values::NOT_REQUIRED,
+      HttpUtil::NameValuePairsIterator::Quotes::NOT_STRICT);
 
   while (name_value_pairs.GetNext()) {
     if (base::LowerCaseEqualsASCII(

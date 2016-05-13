@@ -5,8 +5,7 @@
 #ifndef LinkHeader_h
 #define LinkHeader_h
 
-#include "core/CoreExport.h"
-#include "core/html/CrossOriginAttribute.h"
+#include "platform/PlatformExport.h"
 #include "wtf/Allocator.h"
 #include "wtf/text/WTFString.h"
 
@@ -15,15 +14,12 @@ namespace blink {
 class LinkHeader {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
-    template <typename CharType>
-    LinkHeader(CharType*& position, CharType* end);
-
     const String& url() const { return m_url; }
     const String& rel() const { return m_rel; }
     const String& as() const { return m_as; }
     const String& mimeType() const { return m_mimeType; }
     const String& media() const { return m_media; }
-    CrossOriginAttributeValue crossOrigin() const { return m_crossOrigin; }
+    const String& crossOrigin() const { return m_crossOrigin; }
     bool valid() const { return m_isValid; }
 
     enum LinkParameterName {
@@ -41,19 +37,24 @@ public:
     };
 
 private:
-    void setValue(LinkParameterName, String value);
+    friend class LinkHeaderSet;
+
+    template <typename Iterator>
+    LinkHeader(Iterator begin, Iterator end);
+    void setValue(LinkParameterName, const String& value);
 
     String m_url;
     String m_rel;
     String m_as;
     String m_mimeType;
     String m_media;
-    CrossOriginAttributeValue m_crossOrigin;
+    String m_crossOrigin;
     bool m_isValid;
 };
 
-class CORE_EXPORT LinkHeaderSet {
+class PLATFORM_EXPORT LinkHeaderSet {
     STACK_ALLOCATED();
+
 public:
     LinkHeaderSet(const String& header);
 
@@ -63,9 +64,6 @@ public:
     size_t size() { return m_headerSet.size(); }
 
 private:
-    template <typename CharType>
-    void init(CharType* headerValue, unsigned len);
-
     Vector<LinkHeader> m_headerSet;
 };
 
