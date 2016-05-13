@@ -144,6 +144,13 @@ void FontDescription::setTraits(FontTraits traits)
     setStretch(traits.stretch());
 }
 
+void FontDescription::setVariantCaps(FontVariantCaps variantCaps)
+{
+    m_fields.m_variantCaps = variantCaps;
+
+    updateTypesettingFeatures();
+}
+
 void FontDescription::setVariantLigatures(const VariantLigatures& ligatures)
 {
     m_fields.m_commonLigaturesState = ligatures.common;
@@ -220,10 +227,10 @@ void FontDescription::updateTypesettingFeatures()
     if (m_letterSpacing == 0) {
         switch (commonLigaturesState()) {
         case FontDescription::DisabledLigaturesState:
-            m_fields.m_typesettingFeatures &= ~Ligatures;
+            m_fields.m_typesettingFeatures &= ~blink::Ligatures;
             break;
         case FontDescription::EnabledLigaturesState:
-            m_fields.m_typesettingFeatures |= Ligatures;
+            m_fields.m_typesettingFeatures |= blink::Ligatures;
             break;
         case FontDescription::NormalLigaturesState:
             break;
@@ -235,6 +242,9 @@ void FontDescription::updateTypesettingFeatures()
             m_fields.m_typesettingFeatures |= blink::Ligatures;
         }
     }
+
+    if (variantCaps() != CapsNormal)
+        m_fields.m_typesettingFeatures |= blink::Caps;
 }
 
 static inline void addToHash(unsigned& hash, unsigned key)

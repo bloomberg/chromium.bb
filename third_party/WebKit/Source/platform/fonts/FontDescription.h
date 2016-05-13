@@ -198,7 +198,7 @@ public:
     void setAdjustedSize(float s) { m_adjustedSize = clampTo<float>(s); }
     void setSizeAdjust(float aspect) { m_sizeAdjust = clampTo<float>(aspect); }
     void setStyle(FontStyle i) { m_fields.m_style = i; }
-    void setVariantCaps(FontVariantCaps variantCaps) { m_fields.m_variantCaps = variantCaps; }
+    void setVariantCaps(FontVariantCaps);
     void setVariantLigatures(const VariantLigatures&);
     void setIsAbsoluteSize(bool s) { m_fields.m_isAbsoluteSize = s; }
     void setWeight(FontWeight w) { m_fields.m_weight = w; }
@@ -289,7 +289,7 @@ private:
         unsigned m_syntheticBold : 1;
         unsigned m_syntheticItalic : 1;
         unsigned m_subpixelTextPosition : 1;
-        unsigned m_typesettingFeatures : 2; // TypesettingFeatures
+        unsigned m_typesettingFeatures : 3;
     };
     union {
         BitFields m_fields;

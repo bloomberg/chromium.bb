@@ -31,6 +31,7 @@ namespace blink {
 enum TypesettingFeature {
     Kerning = 1 << 0,
     Ligatures = 1 << 1,
+    Caps = 1 << 2
 };
 
 typedef unsigned TypesettingFeatures;
