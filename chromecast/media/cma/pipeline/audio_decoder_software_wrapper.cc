@@ -59,7 +59,7 @@ bool AudioDecoderSoftwareWrapper::SetConfig(const AudioConfig& config) {
     return true;
   }
 
-  if (config.is_encrypted() || !CreateSoftwareDecoder(config))
+  if (!CreateSoftwareDecoder(config))
     return false;
 
   output_config_.codec = media::kCodecPCM;

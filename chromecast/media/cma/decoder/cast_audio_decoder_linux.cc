@@ -69,6 +69,12 @@ class CastAudioDecoderImpl : public CastAudioDecoder {
     DCHECK(!initialized_);
     DCHECK_LE(config_.channel_number, kMaxChannelInput);
     config_ = config;
+
+    // Media pipeline should already decrypt the stream with the selected key
+    // system. If media pipeline fails to decrypt the stream for some reason,
+    // the decoder will report kDecodeError when decoding.
+    config_.encryption_scheme = Unencrypted();
+
     if (config_.channel_number == 1) {
       // If the input is mono, create a ChannelMixer to convert mono to stereo.
       // TODO(kmackay) Support other channel format conversions?
@@ -102,7 +108,11 @@ class CastAudioDecoderImpl : public CastAudioDecoder {
               const DecodeCallback& decode_callback) override {
     DCHECK(!decode_callback.is_null());
     DCHECK(task_runner_->BelongsToCurrentThread());
-    if (!initialized_ || decode_pending_) {
+
+    if (data->decrypt_context() != nullptr) {
+      LOG(ERROR) << "Audio decoder doesn't support encrypted stream";
+      decode_callback.Run(kDecodeError, data);
+    } else if (!initialized_ || decode_pending_) {
       decode_queue_.push(std::make_pair(data, decode_callback));
     } else {
       DecodeNow(data, decode_callback);
