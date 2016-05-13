@@ -4,7 +4,10 @@
   "display_name": "Chrome",
   "capabilities": {
     "required": {
-      "*": { "classes": [ "app" ] }
+      "*": { "classes": [ "app" ] },
+      "mojo:ash_sysui": {
+        "interfaces": [ "mash::shelf::mojom::ShelfController" ]
+      }
     },
     "provided": {
       "mash:launchable": [ "mash::mojom::Launchable" ],
