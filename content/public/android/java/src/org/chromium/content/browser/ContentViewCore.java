@@ -54,6 +54,7 @@ import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.content.R;
 import org.chromium.content.browser.ScreenOrientationListener.ScreenOrientationObserver;
 import org.chromium.content.browser.accessibility.BrowserAccessibilityManager;
@@ -2012,9 +2013,17 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
                 /** Google search doesn't support requests slightly larger than this. */
                 private static final int MAX_SEARCH_QUERY_LENGTH = 1000;
 
+                // All WebContents actions record a user action internally.
                 @Override
                 public void selectAll() {
                     mWebContents.selectAll();
+                    // Even though the above statement logged a SelectAll user action, we want to
+                    // track whether the focus was in an editable field, so log that too.
+                    if (isFocusedNodeEditable()) {
+                        RecordUserAction.record("MobileActionMode.SelectAllWasEditable");
+                    } else {
+                        RecordUserAction.record("MobileActionMode.SelectAllWasNonEditable");
+                    }
                 }
 
                 @Override
@@ -2034,6 +2043,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
 
                 @Override
                 public void share() {
+                    RecordUserAction.record("MobileActionMode.Share");
                     final String query = sanitizeQuery(getSelectedText(), MAX_SHARE_QUERY_LENGTH);
                     if (TextUtils.isEmpty(query)) return;
 
@@ -2052,6 +2062,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
 
                 @Override
                 public void processText(Intent intent) {
+                    RecordUserAction.record("MobileActionMode.ProcessTextIntent");
                     assert Build.VERSION.SDK_INT >= Build.VERSION_CODES.M;
 
                     final String query = sanitizeQuery(getSelectedText(), MAX_SEARCH_QUERY_LENGTH);
@@ -2079,6 +2090,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
 
                 @Override
                 public void search() {
+                    RecordUserAction.record("MobileActionMode.WebSearch");
                     final String query = sanitizeQuery(getSelectedText(), MAX_SEARCH_QUERY_LENGTH);
                     if (TextUtils.isEmpty(query)) return;
 

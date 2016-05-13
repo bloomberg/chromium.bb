@@ -7,6 +7,7 @@
 #include "base/auto_reset.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics.h"
 
 namespace ui {
 namespace {
@@ -384,6 +385,9 @@ void TouchSelectionController::OnDragBegin(
   if (anchor_drag_to_selection_start_)
     std::swap(base, extent);
 
+  // If this is the first drag, log an action to allow user action sequencing.
+  if (!selection_handle_dragged_)
+    base::RecordAction(base::UserMetricsAction("SelectionChanged"));
   selection_handle_dragged_ = true;
 
   // When moving the handle we want to move only the extent point. Before doing

@@ -14,6 +14,7 @@ import org.chromium.base.ObserverList;
 import org.chromium.base.SysUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayContentDelegate;
@@ -50,6 +51,7 @@ import org.chromium.ui.base.WindowAndroid;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.regex.Pattern;
 
 import javax.annotation.Nullable;
 
@@ -77,6 +79,8 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
 
     // We blacklist this URL because malformed URLs may bring up this page.
     private static final String BLACKLISTED_URL = "about:blank";
+
+    private static final Pattern CONTAINS_WHITESPACE_PATTERN = Pattern.compile("\\s");
 
     private final ObserverList<ContextualSearchObserver> mObservers =
             new ObserverList<ContextualSearchObserver>();
@@ -424,6 +428,18 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
             mDidStartLoadingResolvedSearchRequest = false;
             mSearchPanel.setSearchTerm(mSelectionController.getSelectedText());
             if (shouldPrefetch) loadSearchUrl();
+
+            // Record metrics for manual refinement of the search term from long-press.
+            // TODO(donnd): remove this section once metrics have been analyzed.
+            if (mSelectionController.getSelectionType() == SelectionType.LONG_PRESS
+                    && mSearchPanel.isPeeking()) {
+                boolean isSingleWord =
+                        !CONTAINS_WHITESPACE_PATTERN
+                                 .matcher(mSelectionController.getSelectedText().trim())
+                                 .find();
+                RecordUserAction.record(isSingleWord ? "ContextualSearch.ManualRefineSingleWord"
+                                                     : "ContextualSearch.ManualRefineMultiWord");
+            }
         }
 
         if (!didRequestSurroundings) {

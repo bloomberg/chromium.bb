@@ -2597,6 +2597,22 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="ContextualSearch.ManualRefineMultiWord">
+  <owner>donnd@chromium.org</owner>
+  <description>
+    Contextual Search updated the search in the Bar in response to manual
+    refinement of the selection into multiple words.
+  </description>
+</action>
+
+<action name="ContextualSearch.ManualRefineSingleWord">
+  <owner>donnd@chromium.org</owner>
+  <description>
+    Contextual Search updated the search in the Bar in response to manual
+    refinement of the selection into a single word.
+  </description>
+</action>
+
 <action name="CookieBlockingDisabledPerDefault">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
@@ -8276,8 +8292,45 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="MobileActionBarShown">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>donnd@chromium.org</owner>
+  <description>
+    The Action Bar was shown in response to the user selecting text.
+  </description>
+</action>
+
+<action name="MobileActionMode.ProcessTextIntent">
+  <owner>donnd@chromium.org</owner>
+  <description>
+    User chose to process text using one of the assist actions available in the
+    mobile action bar.  These actions trigger an intent to interacte with
+    another activity, e.g. Translate.
+  </description>
+</action>
+
+<action name="MobileActionMode.SelectAllWasEditable">
+  <owner>donnd@chromium.org</owner>
+  <description>
+    The just-recorded SelectAll action was done in an editable field.
+  </description>
+</action>
+
+<action name="MobileActionMode.SelectAllWasNonEditable">
+  <owner>donnd@chromium.org</owner>
+  <description>
+    The just-recorded SelectAll action was done in a non-editable field.
+  </description>
+</action>
+
+<action name="MobileActionMode.Share">
+  <owner>donnd@chromium.org</owner>
+  <description>
+    The user pressed the Share button in the mobile Action Bar.
+  </description>
+</action>
+
+<action name="MobileActionMode.WebSearch">
+  <owner>donnd@chromium.org</owner>
+  <description>User pressed 'Web Search' in the mobile action bar.</description>
 </action>
 
 <action name="MobileAddBookmarkViaIntent">
@@ -12547,6 +12600,15 @@ should be able to be added at any place in this file.
 <action name="SelectTab7">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+</action>
+
+<action name="SelectionChanged">
+  <owner>donnd@chromium.org</owner>
+  <description>
+    The user changed the selection by manipulating the selection handles. Only
+    one action of this kind is emmitted when the selection handles are
+    repeatedly moved.
+  </description>
 </action>
 
 <action name="ServiceWorker.ControlledPageLoad" not_user_triggered="true">
