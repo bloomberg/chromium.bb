@@ -1236,12 +1236,16 @@ if (!is_android) {
         # This test depends on GetCommandLineForRelaunch, which is not
         # available on Mac.
         "../browser/printing/cloud_print/test/cloud_print_policy_browsertest.cc",
-
-        # single-process mode hangs on Mac sometimes because of multiple UI
-        # message loops. See 306348
-        "../renderer/safe_browsing/phishing_classifier_browsertest.cc",
-        "../renderer/safe_browsing/phishing_classifier_delegate_browsertest.cc",
       ]
+
+      if (safe_browsing_mode == 1) {
+        sources -= [
+          # single-process mode hangs on Mac sometimes because of multiple UI
+          # message loops. See 306348
+          "../renderer/safe_browsing/phishing_classifier_browsertest.cc",
+          "../renderer/safe_browsing/phishing_classifier_delegate_browsertest.cc",
+        ]
+      }
 
       data_deps += [
         "//chrome",
@@ -1367,7 +1371,7 @@ if (!is_android) {
     } else {
       sources -= [ "../browser/extensions/api/braille_display_private/braille_display_private_apitest.cc" ]
     }
-    if (is_chrome_branded) {
+    if (is_chrome_branded && safe_browsing_mode == 1 && !is_mac) {
       sources -= [
         # These tests depend on single process mode, which is disabled in
         # official builds.
