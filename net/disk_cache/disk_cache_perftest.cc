@@ -29,9 +29,9 @@ using base::Time;
 
 namespace {
 
-class DiskCachePerfTest : public DiskCacheTest {
+class DiskCachePerfTest : public DiskCacheTestWithCache {
  protected:
-  void CacheBackendPerformance(net::BackendType backend_type);
+  void CacheBackendPerformance();
 };
 
 struct TestEntry {
@@ -164,30 +164,23 @@ TEST_F(DiskCachePerfTest, BlockfileHashes) {
   timer.Done();
 }
 
-void DiskCachePerfTest::CacheBackendPerformance(net::BackendType backend_type) {
+void DiskCachePerfTest::CacheBackendPerformance() {
   base::Thread cache_thread("CacheThread");
   ASSERT_TRUE(cache_thread.StartWithOptions(
       base::Thread::Options(base::MessageLoop::TYPE_IO, 0)));
 
-  ASSERT_TRUE(CleanupCacheDir());
-  net::TestCompletionCallback cb;
-  std::unique_ptr<disk_cache::Backend> cache;
-  int rv = disk_cache::CreateCacheBackend(
-      net::DISK_CACHE, backend_type, cache_path_, 0, false,
-      cache_thread.task_runner(), NULL, &cache, cb.callback());
-
-  ASSERT_EQ(net::OK, cb.GetResult(rv));
-
   int seed = static_cast<int>(Time::Now().ToInternalValue());
   srand(seed);
+
+  InitCache();
 
   TestEntries entries;
   int num_entries = 1000;
 
-  EXPECT_TRUE(TimeWrite(num_entries, cache.get(), &entries));
+  EXPECT_TRUE(TimeWrite(num_entries, cache_.get(), &entries));
 
   base::MessageLoop::current()->RunUntilIdle();
-  cache.reset();
+  cache_.reset();
 
   // Flush all files in the cache out of system memory.
   const base::FilePath::StringType file_pattern = FILE_PATH_LITERAL("*");
@@ -198,30 +191,27 @@ void DiskCachePerfTest::CacheBackendPerformance(net::BackendType backend_type) {
     ASSERT_TRUE(base::EvictFileFromSystemCache(file_path));
   }
   // And, cache directories.
-  if (backend_type == net::CACHE_BACKEND_SIMPLE) {
+  if (simple_cache_mode_) {
     ASSERT_TRUE(
         base::EvictFileFromSystemCache(cache_path_.AppendASCII("index-dir")));
   }
   ASSERT_TRUE(base::EvictFileFromSystemCache(cache_path_));
 
-  rv = disk_cache::CreateCacheBackend(
-      net::DISK_CACHE, backend_type, cache_path_, 0, false,
-      cache_thread.task_runner(), NULL, &cache, cb.callback());
-  ASSERT_EQ(net::OK, cb.GetResult(rv));
+  DisableFirstCleanup();
+  InitCache();
 
-  EXPECT_TRUE(TimeRead(num_entries, cache.get(), entries, true));
-
-  EXPECT_TRUE(TimeRead(num_entries, cache.get(), entries, false));
-
+  EXPECT_TRUE(TimeRead(num_entries, cache_.get(), entries, true));
+  EXPECT_TRUE(TimeRead(num_entries, cache_.get(), entries, false));
   base::MessageLoop::current()->RunUntilIdle();
 }
 
 TEST_F(DiskCachePerfTest, CacheBackendPerformance) {
-  CacheBackendPerformance(net::CACHE_BACKEND_BLOCKFILE);
+  CacheBackendPerformance();
 }
 
 TEST_F(DiskCachePerfTest, SimpleCacheBackendPerformance) {
-  CacheBackendPerformance(net::CACHE_BACKEND_SIMPLE);
+  SetSimpleCacheMode();
+  CacheBackendPerformance();
 }
 
 // Creating and deleting "entries" on a block-file is something quite frequent
