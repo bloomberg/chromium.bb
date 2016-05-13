@@ -556,11 +556,20 @@
       'WebKit Win7': 'none',
     },
 
+    'chromium.webrtc': {
+      'Linux Builder': 'gn_release_bot_chrome_with_codecs',
+      'Linux Tester': 'none',
+      'Mac Builder': 'chrome_with_codecs_blink_logging_gyp_release_trybot',
+      'Mac Tester': 'none',
+      'Win Builder': 'chrome_with_codecs_blink_logging_gyp_release_trybot_x86',
+      'Win10 Tester': 'none',
+      'Win7 Tester': 'none',
+      'Win8 Tester': 'none',
+    },
+
     'chromium.webrtc.fyi': {
       'Android Builder (dbg)': 'android_gn_debug_static_bot',
       'Android Builder ARM64 (dbg)': 'android_gn_debug_static_bot_arm64',
-      'Android GN (dbg)': 'android_gn_debug_bot',
-      'Android GN': 'android_gn_release_bot',
       'Android Tests (dbg) (K Nexus5)': 'none',
       'Android Tests (dbg) (L Nexus5)': 'none',
       'Android Tests (dbg) (L Nexus6)': 'none',
