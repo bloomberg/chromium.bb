@@ -6,8 +6,6 @@ import("//build/config/nacl/config.gni")
 import("//testing/test.gni")
 import("//tools/ipc_fuzzer/ipc_fuzzer.gni")
 
-assert(!is_ios)
-
 component("ipc") {
   sources = [
     "attachment_broker.cc",
@@ -121,7 +119,7 @@ component("ipc") {
     ]
   }
 
-  if (is_win || is_ios || is_nacl_nonsfi) {
+  if (is_win || is_nacl_nonsfi) {
     sources -= [ "unix_domain_socket_util.cc" ]
   }
 
