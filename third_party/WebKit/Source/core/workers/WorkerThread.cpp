@@ -73,7 +73,7 @@ public:
                 scriptController->getRejectedPromises()->processQueue();
             if (globalScope->isClosing()) {
                 m_workerThread->workerReportingProxy().workerGlobalScopeClosed();
-                m_workerThread->shutdown();
+                m_workerThread->terminateFromWorkerThread();
             }
         }
     }
@@ -293,6 +293,26 @@ void WorkerThread::terminateAndWait()
     m_terminationEvent->wait();
 }
 
+void WorkerThread::terminateAndWaitForAllWorkers()
+{
+    DCHECK(isMainThread());
+
+    // Keep this lock to prevent WorkerThread instances from being destroyed.
+    MutexLocker lock(threadSetMutex());
+    HashSet<WorkerThread*> threads = workerThreads();
+    for (WorkerThread* thread : threads)
+        thread->terminateInternal();
+
+    for (WorkerThread* thread : threads)
+        thread->m_terminationEvent->wait();
+}
+
+void WorkerThread::terminateFromWorkerThread()
+{
+    DCHECK(isCurrentThread());
+    shutdown();
+}
+
 WorkerGlobalScope* WorkerThread::workerGlobalScope()
 {
     DCHECK(isCurrentThread());
@@ -365,20 +385,6 @@ void WorkerThread::terminateInternal()
 v8::Isolate* WorkerThread::isolate()
 {
     return workerBackingThread().isolate();
-}
-
-void WorkerThread::terminateAndWaitForAllWorkers()
-{
-    DCHECK(isMainThread());
-
-    // Keep this lock to prevent WorkerThread instances from being destroyed.
-    MutexLocker lock(threadSetMutex());
-    HashSet<WorkerThread*> threads = workerThreads();
-    for (WorkerThread* thread : threads)
-        thread->terminateInternal();
-
-    for (WorkerThread* thread : threads)
-        thread->m_terminationEvent->wait();
 }
 
 bool WorkerThread::isCurrentThread()

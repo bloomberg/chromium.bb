@@ -63,6 +63,15 @@ public:
     void start(PassOwnPtr<WorkerThreadStartupData>);
     void terminate();
 
+    // Called in shutdown sequence on the main thread. Internally calls
+    // terminate() (or terminateInternal) and wait (by *blocking* the calling
+    // thread) until the worker(s) is/are shut down.
+    void terminateAndWait();
+    static void terminateAndWaitForAllWorkers();
+
+    // Called on the worker thread for WorkerGlobleScope::close().
+    void terminateFromWorkerThread();
+
     virtual WorkerBackingThread& workerBackingThread() = 0;
     virtual bool shouldAttachThreadDebugger() const { return true; }
     v8::Isolate* isolate();
@@ -71,12 +80,6 @@ public:
     // (This is signaled on the main thread, so it's assumed to be waited on
     // the worker context thread)
     WaitableEvent* shutdownEvent() { return m_shutdownEvent.get(); }
-
-    // Called in shutdown sequence on the main thread. Internally calls
-    // terminate() (or terminateInternal) and wait (by *blocking* the calling
-    // thread) until the worker(s) is/are shut down.
-    void terminateAndWait();
-    static void terminateAndWaitForAllWorkers();
 
     bool isCurrentThread();
     WorkerLoaderProxy* workerLoaderProxy() const
@@ -119,8 +122,6 @@ protected:
     virtual void postInitialize() { }
 
 private:
-    friend class WorkerMicrotaskRunner;
-
     std::unique_ptr<CrossThreadClosure> createWorkerThreadTask(std::unique_ptr<ExecutionContextTask>, bool isInstrumented);
 
     // Called on the main thread.
