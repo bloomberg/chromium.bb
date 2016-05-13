@@ -19,6 +19,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_split.h"
+#include "base/threading/thread_checker.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/policy_export.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -155,6 +156,10 @@ class POLICY_EXPORT DeviceManagementService : public net::URLFetcherDelegate {
   // Gets the URL that the DMServer requests are sent to.
   std::string GetServerUrl();
 
+  // Sets the retry delay to a shorter time to prevent browser tests from
+  // timing out.
+  static void SetRetryDelayForTesting(long retryDelayMs);
+
  private:
   typedef std::map<const net::URLFetcher*,
                    DeviceManagementRequestJobImpl*> JobFetcherMap;
@@ -193,7 +198,12 @@ class POLICY_EXPORT DeviceManagementService : public net::URLFetcherDelegate {
   // If it is not initialized, incoming requests are queued.
   bool initialized_;
 
-  // Used to create tasks to run |Initialize| delayed on the UI thread.
+  // TaskRunner used to schedule retry attempts.
+  const scoped_refptr<base::SequencedTaskRunner> task_runner_;
+
+  base::ThreadChecker thread_checker_;
+
+  // Used to create tasks which run delayed on the UI thread.
   base::WeakPtrFactory<DeviceManagementService> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceManagementService);

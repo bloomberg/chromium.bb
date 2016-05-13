@@ -11,6 +11,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
 #include "chromeos/dbus/session_manager_client.h"
+#include "components/policy/core/common/cloud/device_management_service.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/test/test_utils.h"
@@ -71,6 +72,9 @@ class UserAffiliationBrowserTest
     affiliation_test_helper::SetUserAffiliationIDs(
         &user_policy, fake_session_manager_client, kAffiliatedUser,
         user_affiliation_ids);
+
+    // Set retry delay to prevent timeouts.
+    policy::DeviceManagementService::SetRetryDelayForTesting(0);
   }
 
  private:
