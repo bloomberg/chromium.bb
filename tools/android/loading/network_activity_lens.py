@@ -237,6 +237,4 @@ class NetworkEvent(object):
     """Returns the download rate of this event in Bytes / s."""
     downloaded_bytes = self.DownloadedBytes()
     value = 1000 * downloaded_bytes / float(self.end_msec - self.start_msec)
-    if value > 1e6:
-      print self._kind, downloaded_bytes, self.end_msec - self.start_msec
     return value
