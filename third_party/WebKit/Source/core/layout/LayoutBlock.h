@@ -385,8 +385,6 @@ private:
 
     bool isLayoutBlock() const final { return true; }
 
-    void makeChildrenNonInline(LayoutObject* insertionPoint = nullptr);
-
     virtual void removeLeftoverAnonymousBlock(LayoutBlock* child);
 
     void dirtyLinesFromChangedChild(LayoutObject* child) final { m_lineBoxes.dirtyLinesFromChangedChild(LineLayoutItem(this), LineLayoutItem(child)); }
@@ -407,8 +405,6 @@ private:
     bool isPointInOverflowControl(HitTestResult&, const LayoutPoint& locationInContainer, const LayoutPoint& accumulatedOffset) const;
 
     void computeBlockPreferredLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const;
-
-    void childBecameNonInline(LayoutObject* child) final;
 
     bool isSelectionRoot() const;
 
@@ -469,10 +465,6 @@ protected:
 
     unsigned m_hasPositionedObjects : 1;
     unsigned m_hasPercentHeightDescendants : 1;
-
-    // LayoutRubyBase objects need to be able to split and merge, moving their children around
-    // (calling moveChildTo, moveAllChildrenTo, and makeChildrenNonInline).
-    friend class LayoutRubyBase;
 
     // FIXME: This is temporary as we move code that accesses block flow
     // member variables out of LayoutBlock and into LayoutBlockFlow.

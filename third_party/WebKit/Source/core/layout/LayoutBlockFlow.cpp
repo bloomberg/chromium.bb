@@ -2612,6 +2612,97 @@ void LayoutBlockFlow::makeChildrenInlineIfPossible()
     setChildrenInline(true);
 }
 
+static void getInlineRun(LayoutObject* start, LayoutObject* boundary,
+    LayoutObject*& inlineRunStart,
+    LayoutObject*& inlineRunEnd)
+{
+    // Beginning at |start| we find the largest contiguous run of inlines that
+    // we can.  We denote the run with start and end points, |inlineRunStart|
+    // and |inlineRunEnd|.  Note that these two values may be the same if
+    // we encounter only one inline.
+    //
+    // We skip any non-inlines we encounter as long as we haven't found any
+    // inlines yet.
+    //
+    // |boundary| indicates a non-inclusive boundary point.  Regardless of whether |boundary|
+    // is inline or not, we will not include it in a run with inlines before it.  It's as though we encountered
+    // a non-inline.
+
+    // Start by skipping as many non-inlines as we can.
+    LayoutObject * curr = start;
+    bool sawInline;
+    do {
+        while (curr && !(curr->isInline() || curr->isFloatingOrOutOfFlowPositioned()))
+            curr = curr->nextSibling();
+
+        inlineRunStart = inlineRunEnd = curr;
+
+        if (!curr)
+            return; // No more inline children to be found.
+
+        sawInline = curr->isInline();
+
+        curr = curr->nextSibling();
+        while (curr && (curr->isInline() || curr->isFloatingOrOutOfFlowPositioned()) && (curr != boundary)) {
+            inlineRunEnd = curr;
+            if (curr->isInline())
+                sawInline = true;
+            curr = curr->nextSibling();
+        }
+    } while (!sawInline);
+}
+
+void LayoutBlockFlow::makeChildrenNonInline(LayoutObject *insertionPoint)
+{
+    // makeChildrenNonInline takes a block whose children are *all* inline and it
+    // makes sure that inline children are coalesced under anonymous
+    // blocks.  If |insertionPoint| is defined, then it represents the insertion point for
+    // the new block child that is causing us to have to wrap all the inlines.  This
+    // means that we cannot coalesce inlines before |insertionPoint| with inlines following
+    // |insertionPoint|, because the new child is going to be inserted in between the inlines,
+    // splitting them.
+    ASSERT(!isInline() || isAtomicInlineLevel());
+    ASSERT(!insertionPoint || insertionPoint->parent() == this);
+
+    setChildrenInline(false);
+
+    LayoutObject* child = firstChild();
+    if (!child)
+        return;
+
+    deleteLineBoxTree();
+
+    while (child) {
+        LayoutObject* inlineRunStart;
+        LayoutObject* inlineRunEnd;
+        getInlineRun(child, insertionPoint, inlineRunStart, inlineRunEnd);
+
+        if (!inlineRunStart)
+            break;
+
+        child = inlineRunEnd->nextSibling();
+
+        LayoutBlock* block = createAnonymousBlock();
+        children()->insertChildNode(this, block, inlineRunStart);
+        moveChildrenTo(block, inlineRunStart, child);
+    }
+
+#if ENABLE(ASSERT)
+    for (LayoutObject *c = firstChild(); c; c = c->nextSibling())
+        ASSERT(!c->isInline());
+#endif
+
+    setShouldDoFullPaintInvalidation();
+}
+
+void LayoutBlockFlow::childBecameNonInline(LayoutObject*)
+{
+    makeChildrenNonInline();
+    if (isAnonymousBlock() && parent() && parent()->isLayoutBlock())
+        toLayoutBlock(parent())->removeLeftoverAnonymousBlock(this);
+    // |this| may be dead here
+}
+
 void LayoutBlockFlow::invalidatePaintForOverhangingFloats(bool paintAllDescendants)
 {
     // Invalidate paint of any overhanging floats (if we know we're the one to paint them).

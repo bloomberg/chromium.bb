@@ -419,6 +419,9 @@ private:
 
     void makeChildrenInlineIfPossible();
 
+    void makeChildrenNonInline(LayoutObject* insertionPoint = nullptr);
+    void childBecameNonInline(LayoutObject* child) final;
+
     void updateLogicalWidthForAlignment(const ETextAlign&, const RootInlineBox*, BidiRun* trailingSpaceRun, LayoutUnit& logicalLeft, LayoutUnit& totalLogicalWidth, LayoutUnit& availableLogicalWidth, unsigned expansionOpportunityCount);
     void checkForPaginationLogicalHeightChange(LayoutUnit& pageLogicalHeight, bool& pageLogicalHeightChanged, bool& hasSpecifiedPageLogicalHeight);
 
@@ -613,6 +616,11 @@ protected:
 
     friend class MarginInfo;
     friend class LineWidth; // needs to know FloatingObject
+
+    // LayoutRubyBase objects need to be able to split and merge, moving their children around
+    // (calling makeChildrenNonInline).
+    // TODO(mstensho): Try to get rid of this friendship.
+    friend class LayoutRubyBase;
 
 // FIXME-BLOCKFLOW: These methods have implementations in
 // LayoutBlockFlowLine. They should be moved to the proper header once the
