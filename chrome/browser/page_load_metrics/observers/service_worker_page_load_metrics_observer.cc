@@ -14,6 +14,13 @@ const char kHistogramServiceWorkerFirstContentfulPaint[] =
 const char kBackgroundHistogramServiceWorkerFirstContentfulPaint[] =
     "PageLoad.Clients.ServiceWorker.Timing2.NavigationToFirstContentfulPaint."
     "Background";
+const char kHistogramServiceWorkerParseStartToFirstContentfulPaint[] =
+    "PageLoad.Clients.ServiceWorker.Timing2.ParseStartToFirstContentfulPaint";
+const char kHistogramServiceWorkerDomContentLoaded[] =
+    "PageLoad.Clients.ServiceWorker.Timing2."
+    "NavigationToDOMContentLoadedEventFired";
+const char kHistogramServiceWorkerLoad[] =
+    "PageLoad.Clients.ServiceWorker.Timing2.NavigationToLoadEventFired";
 
 }  // namespace internal
 
@@ -22,8 +29,6 @@ ServiceWorkerPageLoadMetricsObserver::ServiceWorkerPageLoadMetricsObserver() {}
 void ServiceWorkerPageLoadMetricsObserver::OnComplete(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
-  if (timing.first_contentful_paint.is_zero())
-    return;
   if (info.metadata.behavior_flags &
       blink::WebLoadingBehaviorFlag::
           WebLoadingBehaviorServiceWorkerControlled) {
@@ -40,10 +45,23 @@ void ServiceWorkerPageLoadMetricsObserver::LogServiceWorkerHistograms(
     if (foreground_paint) {
       PAGE_LOAD_HISTOGRAM(internal::kHistogramServiceWorkerFirstContentfulPaint,
                           timing.first_contentful_paint);
+      PAGE_LOAD_HISTOGRAM(
+          internal::kHistogramServiceWorkerParseStartToFirstContentfulPaint,
+          timing.first_contentful_paint - timing.parse_start);
     } else {
       PAGE_LOAD_HISTOGRAM(
           internal::kBackgroundHistogramServiceWorkerFirstContentfulPaint,
           timing.first_contentful_paint);
     }
+  }
+
+  if (WasStartedInForegroundEventInForeground(
+          timing.dom_content_loaded_event_start, info)) {
+    PAGE_LOAD_HISTOGRAM(internal::kHistogramServiceWorkerDomContentLoaded,
+                        timing.dom_content_loaded_event_start);
+  }
+  if (WasStartedInForegroundEventInForeground(timing.load_event_start, info)) {
+    PAGE_LOAD_HISTOGRAM(internal::kHistogramServiceWorkerLoad,
+                        timing.load_event_start);
   }
 }
