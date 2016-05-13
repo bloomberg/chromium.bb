@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <string>
+#include <vector>
 
 #include "base/strings/string_piece.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
@@ -17,13 +18,23 @@
 namespace mojo {
 
 template <>
+struct StructTraits<test::NestedStructWithTraits,
+                    test::NestedStructWithTraitsImpl> {
+  static bool Read(test::NestedStructWithTraitsDataView data,
+                   test::NestedStructWithTraitsImpl* output);
+  static int32_t value(const test::NestedStructWithTraitsImpl& input) {
+    return input.value;
+  }
+};
+
+template <>
 struct StructTraits<test::StructWithTraits, test::StructWithTraitsImpl> {
   // Deserialization to test::StructTraitsImpl.
   static bool Read(test::StructWithTraitsDataView data,
                    test::StructWithTraitsImpl* out);
 
   // Fields in test::StructWithTraits.
-  // See src/mojo/public/interfaces/bindings/tests/test_native_types.mojom.
+  // See src/mojo/public/interfaces/bindings/tests/struct_with_traits.mojom.
   static bool f_bool(const test::StructWithTraitsImpl& value) {
     return value.get_bool();
   }
@@ -37,11 +48,26 @@ struct StructTraits<test::StructWithTraits, test::StructWithTraitsImpl> {
   }
 
   static base::StringPiece f_string(const test::StructWithTraitsImpl& value) {
+    return value.get_string_as_string_piece();
+  }
+
+  static const std::string& f_string2(const test::StructWithTraitsImpl& value) {
     return value.get_string();
   }
 
-  static base::StringPiece f_string2(const test::StructWithTraitsImpl& value) {
-    return value.get_string();
+  static const std::vector<std::string>& f_string_array(
+      const test::StructWithTraitsImpl& value) {
+    return value.get_string_array();
+  }
+
+  static const test::NestedStructWithTraitsImpl& f_struct(
+      const test::StructWithTraitsImpl& value) {
+    return value.get_struct();
+  }
+
+  static const std::vector<test::NestedStructWithTraitsImpl>& f_struct_array(
+      const test::StructWithTraitsImpl& value) {
+    return value.get_struct_array();
   }
 };
 

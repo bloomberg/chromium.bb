@@ -214,6 +214,11 @@ TEST_F(StructTraitsTest, FieldTypes) {
   input.set_uint32(7);
   input.set_uint64(42);
   input.set_string("hello world!");
+  input.get_mutable_string_array().assign({"hello", "world!"});
+  input.get_mutable_struct().value = 42;
+  input.get_mutable_struct_array().resize(2);
+  input.get_mutable_struct_array()[0].value = 1;
+  input.get_mutable_struct_array()[1].value = 2;
 
   base::RunLoop loop;
   TraitsTestServicePtr proxy = GetTraitsTestProxy();
@@ -224,6 +229,9 @@ TEST_F(StructTraitsTest, FieldTypes) {
         EXPECT_EQ(input.get_uint32(), passed.get_uint32());
         EXPECT_EQ(input.get_uint64(), passed.get_uint64());
         EXPECT_EQ(input.get_string(), passed.get_string());
+        EXPECT_EQ(input.get_string_array(), passed.get_string_array());
+        EXPECT_EQ(input.get_struct(), passed.get_struct());
+        EXPECT_EQ(input.get_struct_array(), passed.get_struct_array());
         loop.Quit();
       });
   loop.Run();

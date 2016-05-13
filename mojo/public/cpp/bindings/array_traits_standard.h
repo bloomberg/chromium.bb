@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_PUBLIC_CPP_BINDINGS_LIB_ARRAY_TRAITS_STANDARD_H_
-#define MOJO_PUBLIC_CPP_BINDINGS_LIB_ARRAY_TRAITS_STANDARD_H_
+#ifndef MOJO_PUBLIC_CPP_BINDINGS_ARRAY_TRAITS_STANDARD_H_
+#define MOJO_PUBLIC_CPP_BINDINGS_ARRAY_TRAITS_STANDARD_H_
 
 #include "mojo/public/cpp/bindings/array.h"
 #include "mojo/public/cpp/bindings/array_traits.h"
@@ -37,4 +37,4 @@ struct ArrayTraits<Array<T>> {
 
 }  // namespace mojo
 
-#endif  // MOJO_PUBLIC_CPP_BINDINGS_LIB_ARRAY_TRAITS_STANDARD_H_
+#endif  // MOJO_PUBLIC_CPP_BINDINGS_ARRAY_TRAITS_STANDARD_H_

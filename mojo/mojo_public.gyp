@@ -120,6 +120,8 @@
       'sources': [
         'public/cpp/bindings/array.h',
         'public/cpp/bindings/array_traits.h',
+        'public/cpp/bindings/array_traits_standard.h',
+        'public/cpp/bindings/array_traits_stl.h',
         'public/cpp/bindings/associated_binding.h',
         'public/cpp/bindings/associated_group.h',
         'public/cpp/bindings/associated_interface_ptr.h',
@@ -134,7 +136,6 @@
         'public/cpp/bindings/lib/array_internal.cc',
         'public/cpp/bindings/lib/array_internal.h',
         'public/cpp/bindings/lib/array_serialization.h',
-        'public/cpp/bindings/lib/array_traits_standard.h',
         'public/cpp/bindings/lib/associated_group.cc',
         'public/cpp/bindings/lib/associated_interface_ptr_state.h',
         'public/cpp/bindings/lib/binding_state.h',
@@ -215,6 +216,7 @@
         'public/cpp/bindings/string.h',
         'public/cpp/bindings/string_traits.h',
         'public/cpp/bindings/string_traits_standard.h',
+        'public/cpp/bindings/string_traits_stl.h',
         'public/cpp/bindings/string_traits_string_piece.h',
         'public/cpp/bindings/struct_ptr.h',
         'public/cpp/bindings/strong_binding.h',
@@ -236,7 +238,7 @@
         '..'
       ],
       'sources': [
-        'public/cpp/bindings/lib/array_traits_wtf.h',
+        'public/cpp/bindings/array_traits_wtf.h',
         'public/cpp/bindings/lib/string_traits_wtf.cc',
         'public/cpp/bindings/lib/wtf_serialization.h',
         'public/cpp/bindings/string_traits_wtf.h',

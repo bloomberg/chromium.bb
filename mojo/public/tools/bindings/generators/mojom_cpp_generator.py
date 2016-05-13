@@ -177,11 +177,7 @@ def GetCppPodType(kind):
 
 def GetCppArrayArgWrapperType(kind):
   if IsTypemappedKind(kind):
-    if mojom.IsStructKind(kind) and kind.native_only:
-      return GetNativeTypeName(kind)
-    else:
-      raise Exception(
-          "Cannot serialize containers of non-native typemapped structs yet!")
+    return GetNativeTypeName(kind)
   if mojom.IsEnumKind(kind):
     return GetNameForKind(kind)
   if mojom.IsStructKind(kind) or mojom.IsUnionKind(kind):

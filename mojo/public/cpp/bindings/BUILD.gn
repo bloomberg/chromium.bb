@@ -6,6 +6,8 @@ source_set("bindings") {
   sources = [
     "array.h",
     "array_traits.h",
+    "array_traits_standard.h",
+    "array_traits_stl.h",
     "associated_binding.h",
     "associated_group.h",
     "associated_interface_ptr.h",
@@ -20,7 +22,6 @@ source_set("bindings") {
     "lib/array_internal.cc",
     "lib/array_internal.h",
     "lib/array_serialization.h",
-    "lib/array_traits_standard.h",
     "lib/associated_group.cc",
     "lib/associated_interface_ptr_state.h",
     "lib/binding_state.h",
@@ -99,6 +100,7 @@ source_set("bindings") {
     "string.h",
     "string_traits.h",
     "string_traits_standard.h",
+    "string_traits_stl.h",
     "string_traits_string_piece.h",
     "strong_binding.h",
     "struct_ptr.h",
@@ -142,7 +144,7 @@ source_set("struct_traits") {
 
 source_set("wtf_support") {
   sources = [
-    "lib/array_traits_wtf.h",
+    "array_traits_wtf.h",
     "lib/string_traits_wtf.cc",
     "lib/wtf_serialization.h",
     "string_traits_wtf.h",
