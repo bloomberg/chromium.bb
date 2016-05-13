@@ -59,23 +59,6 @@ class FakeUrlRequestFactory : public UrlRequestFactory {
   std::map<std::string, UrlRequest::Result> results_;
 };
 
-bool operator==(const cricket::ProtocolAddress& a,
-                const cricket::ProtocolAddress& b) {
-  return a.address == b.address && a.proto == b.proto && a.secure == b.secure;
-}
-bool operator==(const cricket::RelayServerConfig& a,
-                const cricket::RelayServerConfig& b) {
-  if (a.ports.size() != b.ports.size())
-    return false;
-  for (size_t i = 0; i < a.ports.size(); ++i) {
-    if (!(a.ports[i] == b.ports[i]))
-      return false;
-  }
-  return a.type == b.type &&
-         a.credentials.username == b.credentials.username &&
-         a.credentials.password == b.credentials.password;
-}
-
 }  // namespace
 
 static const char kTestUrl[] = "http://host/ice_config";
