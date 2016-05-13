@@ -4,7 +4,7 @@
 
 import unittest
 
-from loading_trace_database import LoadingTraceDatabase
+from cloud.common.loading_trace_database import LoadingTraceDatabase
 
 
 class LoadingTraceDatabaseUnittest(unittest.TestCase):

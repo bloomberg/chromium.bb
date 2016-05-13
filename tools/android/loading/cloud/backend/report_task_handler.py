@@ -7,10 +7,10 @@ import uuid
 
 from googleapiclient import errors
 
+from common.loading_trace_database import LoadingTraceDatabase
 import common.google_error_helper as google_error_helper
 from failure_database import FailureDatabase
 from loading_trace import LoadingTrace
-from loading_trace_database import LoadingTraceDatabase
 from report import LoadingReport
 
 

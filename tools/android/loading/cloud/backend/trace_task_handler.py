@@ -8,10 +8,10 @@ import re
 import sys
 
 from common.clovis_task import ClovisTask
+from common.loading_trace_database import LoadingTraceDatabase
 import controller
 from failure_database import FailureDatabase
 import loading_trace
-from loading_trace_database import LoadingTraceDatabase
 import options
 
 
