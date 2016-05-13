@@ -15,6 +15,23 @@ import sys
 _EXCLUDED_PATHS = ()
 
 
+def _CheckForNonBlinkVariantMojomIncludes(input_api, output_api):
+    pattern = input_api.re.compile(r'#include\s+.+\.mojom(.*)\.h[>"]')
+    errors = []
+    for f in input_api.AffectedFiles():
+        for line_num, line in f.ChangedContents():
+            m = pattern.match(line)
+            if m and m.group(1) != '-blink':
+                errors.append('    %s:%d %s' % (
+                    f.LocalPath(), line_num, line))
+
+    results = []
+    if errors:
+        results.append(output_api.PresubmitError(
+            'Files that include non-Blink variant mojoms found:', errors))
+    return results
+
+
 def _CheckForVersionControlConflictsInFile(input_api, f):
     pattern = input_api.re.compile('^(?:<<<<<<<|>>>>>>>) |^=======$')
     errors = []
@@ -76,6 +93,7 @@ def _CommonChecks(input_api, output_api):
     results.extend(input_api.canned_checks.PanProjectChecks(
         input_api, output_api, excluded_paths=_EXCLUDED_PATHS,
         maxlen=800, license_header=license_header))
+    results.extend(_CheckForNonBlinkVariantMojomIncludes(input_api, output_api))
     results.extend(_CheckForVersionControlConflicts(input_api, output_api))
     results.extend(_CheckPatchFiles(input_api, output_api))
     results.extend(_CheckTestExpectations(input_api, output_api))
