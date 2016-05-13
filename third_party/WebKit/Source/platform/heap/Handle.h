@@ -240,13 +240,14 @@ private:
 
     void uninitialize()
     {
-        if (!m_persistentNode)
-            return;
-
         if (crossThreadnessConfiguration == CrossThreadPersistentConfiguration) {
-            ProcessHeap::crossThreadPersistentRegion().freePersistentNode(m_persistentNode);
+            if (acquireLoad(reinterpret_cast<void* volatile*>(&m_persistentNode)))
+                ProcessHeap::crossThreadPersistentRegion().freePersistentNode(m_persistentNode);
             return;
         }
+
+        if (!m_persistentNode)
+            return;
         ThreadState* state = ThreadStateFor<ThreadingTrait<T>::Affinity>::state();
         ASSERT(state->checkThread());
         // Persistent handle must be created and destructed in the same thread.

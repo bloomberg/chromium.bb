@@ -177,7 +177,8 @@ public:
     void allocatePersistentNode(PersistentNode*& persistentNode, void* self, TraceCallback trace)
     {
         MutexLocker lock(m_mutex);
-        persistentNode = m_persistentRegion->allocatePersistentNode(self, trace);
+        PersistentNode* node = m_persistentRegion->allocatePersistentNode(self, trace);
+        releaseStore(reinterpret_cast<void* volatile*>(&persistentNode), node);
     }
 
     void freePersistentNode(PersistentNode*& persistentNode)
@@ -193,7 +194,7 @@ public:
         if (!persistentNode)
             return;
         m_persistentRegion->freePersistentNode(persistentNode);
-        persistentNode = nullptr;
+        releaseStore(reinterpret_cast<void* volatile*>(&persistentNode), nullptr);
     }
 
     void tracePersistentNodes(Visitor* visitor)
