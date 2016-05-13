@@ -5,6 +5,7 @@
 #ifndef TOOLS_BATTOR_AGENT_BATTOR_CONNECTION_IMPL_H_
 #define TOOLS_BATTOR_AGENT_BATTOR_CONNECTION_IMPL_H_
 
+#include <fstream>
 #include <vector>
 
 #include "base/callback_forward.h"
@@ -75,6 +76,9 @@ class BattOrConnectionImpl
   // Internal callback for when bytes are sent.
   void OnBytesSent(int bytes_sent, device::serial::SendError error);
 
+  // Appends |str| to the serial log file if it exists.
+  void LogSerial(const std::string& str);
+
   // The path of the BattOr.
   std::string path_;
 
@@ -92,6 +96,8 @@ class BattOrConnectionImpl
   // Threads needed for serial communication.
   scoped_refptr<base::SingleThreadTaskRunner> file_thread_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> ui_thread_task_runner_;
+
+  std::fstream serial_log_;
 
   DISALLOW_COPY_AND_ASSIGN(BattOrConnectionImpl);
 };
