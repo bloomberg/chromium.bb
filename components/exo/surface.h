@@ -122,6 +122,9 @@ class Surface : public aura::Window,
   // Returns the current input region of surface in the form of a hit-test mask.
   void GetHitTestMask(gfx::Path* mask) const;
 
+  // Returns the bounds of the surface area that is not know to be transparent.
+  gfx::Rect GetNonTransparentBounds() const;
+
   // Set the surface delegate.
   void SetSurfaceDelegate(SurfaceDelegate* delegate);
 
@@ -210,6 +213,9 @@ class Surface : public aura::Window,
 
   // The alpha state to take effect when Commit() is called.
   float pending_alpha_;
+
+  // The active alpha state.
+  float alpha_;
 
   // The buffer that is currently set as content of surface.
   base::WeakPtr<Buffer> current_buffer_;

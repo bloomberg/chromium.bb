@@ -138,6 +138,7 @@ Surface::Surface()
       pending_only_visible_on_secure_output_(false),
       pending_blend_mode_(SkXfermode::kSrcOver_Mode),
       pending_alpha_(1.0f),
+      alpha_(0.0f),
       input_region_(SkIRect::MakeLargest()),
       needs_commit_surface_hierarchy_(false),
       update_contents_after_successful_compositing_(false),
@@ -382,6 +383,7 @@ void Surface::CommitSurfaceHierarchy() {
       // to produce a texture mailbox for the currently attached buffer.
       layer()->SetShowSolidColorContent();
       layer()->SetColor(SK_ColorBLACK);
+      alpha_ = 1.0f;
     }
 
     // Schedule redraw of the damage region.
@@ -405,8 +407,10 @@ void Surface::CommitSurfaceHierarchy() {
       pending_blend_mode_ == SkXfermode::kSrc_Mode ||
       pending_opaque_region_.contains(
           gfx::RectToSkIRect(gfx::Rect(layer()->size()))));
-  if (layer()->has_external_content())
+  if (layer()->has_external_content()) {
     layer()->SetTextureAlpha(pending_alpha_);
+    alpha_ = pending_alpha_;
+  }
 
   // Synchronize window hierarchy. This will position and update the stacking
   // order of all sub-surfaces after committing all pending state of sub-surface
@@ -464,6 +468,22 @@ bool Surface::HasHitTestMask() const {
 
 void Surface::GetHitTestMask(gfx::Path* mask) const {
   input_region_.getBoundaryPath(mask);
+}
+
+gfx::Rect Surface::GetNonTransparentBounds() const {
+  gfx::Rect non_transparent_bounds;
+  if (alpha_)
+    non_transparent_bounds = gfx::Rect(layer()->size());
+
+  for (auto& sub_surface_entry : pending_sub_surfaces_) {
+    Surface* sub_surface = sub_surface_entry.first;
+    if (!sub_surface->has_contents())
+      continue;
+    non_transparent_bounds.Union(sub_surface->GetNonTransparentBounds() +
+                                 sub_surface->bounds().OffsetFromOrigin());
+  }
+
+  return non_transparent_bounds;
 }
 
 void Surface::SetSurfaceDelegate(SurfaceDelegate* delegate) {

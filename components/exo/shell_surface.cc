@@ -917,11 +917,11 @@ void ShellSurface::UpdateWidgetBounds() {
 void ShellSurface::UpdateTransparentInsets() {
   DCHECK(widget_);
 
-  gfx::Rect hit_test_bounds =
-      surface_->GetHitTestBounds() + GetSurfaceOrigin().OffsetFromOrigin();
+  gfx::Rect non_transparent_bounds = surface_->GetNonTransparentBounds() +
+                                     GetSurfaceOrigin().OffsetFromOrigin();
   gfx::Size window_size = widget_->GetNativeWindow()->bounds().size();
   gfx::Insets transparent_insets =
-      gfx::Rect(window_size).InsetsFrom(hit_test_bounds);
+      gfx::Rect(window_size).InsetsFrom(non_transparent_bounds);
   ash::wm::WindowState* window_state =
       ash::wm::GetWindowState(widget_->GetNativeWindow());
   if (window_state->transparent_insets() != transparent_insets) {
