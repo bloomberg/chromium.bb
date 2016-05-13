@@ -12,7 +12,11 @@ function onSecondIframeLoaded() {
 }
 
 var iframe = document.createElement('iframe');
-iframe.src = 'resources/callback-to-deleted-context-inner1.html';
-document.body.appendChild(iframe);
+geolocationServiceMock.then(mock => {
+    mock.setGeolocationPermission(true);
+    mock.setGeolocationPosition(51.478, -0.166, 100);
+    iframe.src = 'resources/callback-to-deleted-context-inner1.html';
+    document.body.appendChild(iframe);
+});
 
 window.jsTestIsAsync = true;

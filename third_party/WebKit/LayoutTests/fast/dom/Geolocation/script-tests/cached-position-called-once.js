@@ -1,14 +1,12 @@
 description('Tests that when a cached position is available the callback for getCurrentPosition is called only once. This is a regression test for http://crbug.com/311876 .');
 
-if (!window.testRunner || !window.internals)
-    debug('This test can not run without testRunner or internals');
-
-internals.setGeolocationClientMock(document);
-internals.setGeolocationPosition(document, 31.478, -0.166, 100);
-internals.setGeolocationPermission(document, true);
+if (!window.testRunner || !window.mojo)
+    debug('This test can not run without testRunner or mojo');
 
 // Only one success callback should be reported per call to getCurrentPosition.
 var reportCount = 0;
+var isSuccess;
+
 function reportCallback(success, id) {
     isSuccess = success;
     shouldBeTrue('isSuccess');
@@ -34,11 +32,22 @@ function getPosition(milliseconds) {
     setTimeout(fn, milliseconds);
 }
 
-// The test terminates at the 3rd reported callback. If the bug still exists
-// this happens after the 2nd call to getCurrentPosition, one of them is a
-// repeat of the first.
-getPosition(0);
-getPosition(100);
-getPosition(200);
+geolocationServiceMock.then(mock => {
+    mock.setGeolocationPosition(31.478, -0.166, 100);
+    mock.setGeolocationPermission(true);
+
+    // Make a geolocation request to populate the cached value so requests with a
+    // timeout of 0 can succeed.
+    navigator.geolocation.getCurrentPosition(function(position) {
+        // The test terminates at the 3rd reported callback. If the bug still exists
+        // this happens after the 2nd call to getCurrentPosition, one of them is a
+        // repeat of the first.
+        getPosition(0);
+        getPosition(100);
+        getPosition(200);
+    }, function(error) {
+        testFailed('Error callback invoked unexpectedly');
+    });
+});
 
 window.jsTestIsAsync = true;

@@ -2,8 +2,8 @@ description("Tests the assertion that the GeolocationClient should not be updati
             "when the GeolocationController is destroyed.<br>" +
             "See https://bugs.webkit.org/show_bug.cgi?id=52216");
 
-if (!window.testRunner || !window.internals)
-    debug('This test can not run without testRunner or internals');
+if (!window.testRunner || !window.mojo)
+    debug('This test can not run without testRunner or mojo');
 
 testRunner.waitUntilDone();
 testRunner.setCanOpenWindows();

@@ -2,18 +2,19 @@ description("Tests Geolocation error callback using the mock service.");
 
 var mockMessage = "debug";
 
-if (!window.testRunner || !window.internals)
-    debug('This test can not run without testRunner or internals');
-
-internals.setGeolocationClientMock(document);
-internals.setGeolocationPermission(document, true);
-internals.setGeolocationPositionUnavailableError(document, mockMessage);
+if (!window.testRunner || !window.mojo)
+    debug('This test can not run without testRunner or mojo');
 
 var error;
-navigator.geolocation.getCurrentPosition(function(p) {
+
+geolocationServiceMock.then(mock => {
+  mock.setGeolocationPermission(true);
+  mock.setGeolocationPositionUnavailableError(mockMessage);
+
+  navigator.geolocation.getCurrentPosition(function(p) {
     testFailed('Success callback invoked unexpectedly');
     finishJSTest();
-}, function(e) {
+  }, function(e) {
     error = e;
     shouldBe('error.code', 'error.POSITION_UNAVAILABLE');
     shouldBe('error.message', 'mockMessage');
@@ -22,6 +23,7 @@ navigator.geolocation.getCurrentPosition(function(p) {
     shouldBe('error.POSITION_UNAVAILABLE', '2');
     shouldBe('error.TIMEOUT', '3');
     finishJSTest();
+  });
 });
 
 window.jsTestIsAsync = true;

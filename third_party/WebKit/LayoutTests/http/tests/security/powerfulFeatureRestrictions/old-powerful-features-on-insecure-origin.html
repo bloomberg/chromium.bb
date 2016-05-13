@@ -16,16 +16,6 @@ if (window.location.origin != get_host_info().UNAUTHENTICATED_ORIGIN) {
     if (!window.internals)
         assert_unreached('window.internals is required for this test');
 
-    var mockLatitude = 51.478;
-    var mockLongitude = -0.166;
-    var mockAccuracy = 100.0;
-
-    internals.setGeolocationClientMock(document);
-    internals.setGeolocationPermission(document, true);
-    internals.setGeolocationPosition(document,
-                                     mockLatitude,
-                                     mockLongitude,
-                                     mockAccuracy);
 
     // Tests for APIs that are deprecated, but still allowed, on
     // insecure origins

@@ -2,29 +2,38 @@
 <html>
 <head>
 <script src="../../../resources/js-test.js"></script>
+<script src="../../../resources/mojo-helpers.js"></script>
+<script src="resources/geolocation-mock.js"></script>
 </head>
 <body>
 <script>
 
 description("Tests that navigator.geolocation.watchPosition returns unique results within its script execution context.");
 
-if (!window.testRunner || !window.internals)
-    debug('This test can not run without testRunner or internals');
+if (!window.testRunner || !window.mojo)
+    debug('This test can not run without testRunner or mojo');
 
-internals.setGeolocationClientMock(document);
-internals.setGeolocationPosition(document, 51.478, -0.166, 100.0);
+var watchID1;
+var watchID2;
+var watchID3;
 
-var watchID1 = navigator.geolocation.watchPosition(function() { });
-var watchID2 = navigator.geolocation.watchPosition(function() { });
-var watchID3 = navigator.geolocation.watchPosition(function() { });
+geolocationServiceMock.then(mock => {
+    mock.setGeolocationPosition(51.478, -0.166, 100.0);
 
-shouldBeTrue("watchID1 > 0");
-shouldBeTrue("watchID2 > 0");
-shouldBeTrue("watchID3 > 0");
-shouldBeTrue("watchID1 !== watchID2");
-shouldBeTrue("watchID1 !== watchID3");
-shouldBeTrue("watchID2 !== watchID3");
+    watchID1 = navigator.geolocation.watchPosition(function() { });
+    watchID2 = navigator.geolocation.watchPosition(function() { });
+    watchID3 = navigator.geolocation.watchPosition(function() { });
 
+    shouldBeTrue("watchID1 > 0");
+    shouldBeTrue("watchID2 > 0");
+    shouldBeTrue("watchID3 > 0");
+    shouldBeTrue("watchID1 !== watchID2");
+    shouldBeTrue("watchID1 !== watchID3");
+    shouldBeTrue("watchID2 !== watchID3");
+    finishJSTest();
+});
+
+window.jsTestIsAsync = true;
 </script>
 </body>
 </html>

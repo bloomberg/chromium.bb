@@ -1,18 +1,23 @@
 description("Tests that when a request is made on a Geolocation object after its frame has been disconnected, no callbacks are made and no crash occurs.");
 
-if (!window.testRunner || !window.internals)
-    debug('This test can not run without testRunner or internals');
+if (!window.testRunner || !window.mojo)
+    debug('This test can not run without testRunner or mojo');
 
-internals.setGeolocationClientMock(document);
-internals.setGeolocationPermission(document, true);
-internals.setGeolocationPosition(document, 51.478, -0.166, 100);
+var iframe = document.createElement('iframe');
+
+geolocationServiceMock.then(mock => {
+    mock.setGeolocationPermission(true);
+    mock.setGeolocationPosition(51.478, -0.166, 100);
+
+    iframe.src = 'resources/disconnected-frame-already-inner1.html';
+    document.body.appendChild(iframe);
+});
 
 function onFirstIframeLoaded() {
     iframeGeolocation = iframe.contentWindow.navigator.geolocation;
     iframe.src = 'resources/disconnected-frame-already-inner2.html';
 }
 
-var error;
 function onSecondIframeLoaded() {
     iframeGeolocation.getCurrentPosition(function () {
         testFailed('Success callback invoked unexpectedly');
@@ -28,9 +33,5 @@ function finishTest() {
     debug('Method called on Geolocation object with disconnected Frame.');
     finishJSTest();
 }
-
-var iframe = document.createElement('iframe');
-iframe.src = 'resources/disconnected-frame-already-inner1.html';
-document.body.appendChild(iframe);
 
 window.jsTestIsAsync = true;

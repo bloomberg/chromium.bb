@@ -9,27 +9,28 @@ shouldBeTrue('now != 0');
 var t = null;
 var then = null;
 
-if (!window.testRunner || !window.internals)
-    debug('This test can not run without testRunner or internals');
+if (!window.testRunner || !window.mojo)
+    debug('This test can not run without testRunner or mojo');
 
-internals.setGeolocationClientMock(document);
-internals.setGeolocationPermission(document, true);
-internals.setGeolocationPosition(document, mockLatitude, mockLongitude, mockAccuracy);
+geolocationServiceMock.then(mock => {
+    mock.setGeolocationPermission(true);
+    mock.setGeolocationPosition(mockLatitude, mockLongitude, mockAccuracy);
 
-function checkPosition(p) {
-    t = p.timestamp;
-    var d = new Date();
-    then = d.getTime();
-    shouldBeTrue('t != 0');
-    shouldBeTrue('then != 0');
-    shouldBeTrue('now - 1 <= t'); // Avoid rounding errors
-    if (now - 1 > t) {
-        debug("  now - 1 = " + (now-1));
-        debug("  t = " + t);
+    function checkPosition(p) {
+        t = p.timestamp;
+        var d = new Date();
+        then = d.getTime();
+        shouldBeTrue('t != 0');
+        shouldBeTrue('then != 0');
+        shouldBeTrue('now - 1 <= t'); // Avoid rounding errors
+        if (now - 1 > t) {
+            debug("  now - 1 = " + (now-1));
+            debug("  t = " + t);
+        }
+        shouldBeTrue('t <= then + 1'); // Avoid rounding errors
+        finishJSTest();
     }
-    shouldBeTrue('t <= then + 1'); // Avoid rounding errors
-    finishJSTest();
-}
 
-navigator.geolocation.getCurrentPosition(checkPosition);
+    navigator.geolocation.getCurrentPosition(checkPosition);
+});
 window.jsTestIsAsync = true;

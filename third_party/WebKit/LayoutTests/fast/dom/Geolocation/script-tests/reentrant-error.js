@@ -2,46 +2,48 @@ description("Tests that reentrant calls to Geolocation methods from the error ca
 
 var mockMessage = 'test';
 
-if (!window.testRunner || !window.internals)
-    debug('This test can not run without testRunner or internals');
-
-internals.setGeolocationClientMock(document);
-internals.setGeolocationPermission(document, true);
-internals.setGeolocationPositionUnavailableError(document, mockMessage);
+if (!window.testRunner || !window.mojo)
+    debug('This test can not run without testRunner or mojo');
 
 var error;
-var errorCallbackInvoked = false;
-navigator.geolocation.getCurrentPosition(function(p) {
-    testFailed('Success callback invoked unexpectedly');
-    finishJSTest();
-}, function(e) {
-    if (errorCallbackInvoked) {
-        testFailed('Error callback invoked unexpectedly');
-        finishJSTest();
-    }
-    errorCallbackInvoked = true;
 
-    error = e;
-    shouldBe('error.code', 'error.POSITION_UNAVAILABLE');
-    shouldBe('error.message', 'mockMessage');
-    debug('');
-    continueTest();
-});
+geolocationServiceMock.then(mock => {
+    mock.setGeolocationPermission(true);
+    mock.setGeolocationPositionUnavailableError(mockMessage);
 
-function continueTest() {
-    mockMessage += ' repeat';
-
-    internals.setGeolocationPositionUnavailableError(document, mockMessage);
-
+    var errorCallbackInvoked = false;
     navigator.geolocation.getCurrentPosition(function(p) {
         testFailed('Success callback invoked unexpectedly');
         finishJSTest();
     }, function(e) {
+        if (errorCallbackInvoked) {
+            testFailed('Error callback invoked unexpectedly');
+            finishJSTest();
+        }
+        errorCallbackInvoked = true;
+
         error = e;
         shouldBe('error.code', 'error.POSITION_UNAVAILABLE');
         shouldBe('error.message', 'mockMessage');
-        finishJSTest();
+        debug('');
+        continueTest();
     });
-}
+
+    function continueTest() {
+        mockMessage += ' repeat';
+
+        mock.setGeolocationPositionUnavailableError(mockMessage);
+
+        navigator.geolocation.getCurrentPosition(function(p) {
+            testFailed('Success callback invoked unexpectedly');
+            finishJSTest();
+        }, function(e) {
+            error = e;
+            shouldBe('error.code', 'error.POSITION_UNAVAILABLE');
+            shouldBe('error.message', 'mockMessage');
+            finishJSTest();
+        });
+    }
+});
 
 window.jsTestIsAsync = true;

@@ -76,7 +76,7 @@ class ApacheHTTP(server_base.ServerBase):
             '-f', '%s' % self._port_obj.path_to_apache_config_file(),
             '-C', 'ServerRoot "%s"' % server_root,
             '-C', 'DocumentRoot "%s"' % document_root,
-            '-c', 'Alias /js-test-resources "%s"' % js_test_resources_dir,
+            '-c', 'AliasMatch /(.*/)?js-test-resources/(.+) "%s/$1resources/$2"' % test_dir,
             '-c', 'AliasMatch ^/resources/testharness([r.].*) "%s/testharness$1"' % imported_resources_dir,
             '-c', 'Alias /w3c/resources/WebIDLParser.js "%s/webidl2/lib/webidl2.js"' % imported_resources_dir,
             '-c', 'Alias /w3c/resources "%s"' % imported_resources_dir,

@@ -72,6 +72,7 @@ bool GeolocationDispatcher::lastPosition(WebGeolocationPosition&) {
 // conversion is necessary.
 void GeolocationDispatcher::requestPermission(
     const WebGeolocationPermissionRequest& permissionRequest) {
+  num_pending_permission_requests_++;
   if (!permission_service_.get()) {
     render_frame()->GetServiceRegistry()->ConnectToRemoteService(
         mojo::GetProxy(&permission_service_));
@@ -90,6 +91,8 @@ void GeolocationDispatcher::cancelPermissionRequest(
     const blink::WebGeolocationPermissionRequest& permissionRequest) {
   int permission_request_id;
   pending_permissions_->remove(permissionRequest, permission_request_id);
+  if (--num_pending_permission_requests_ == 0)
+    permission_service_.reset();
 }
 
 // Permission for using geolocation has been set.
@@ -99,6 +102,9 @@ void GeolocationDispatcher::OnPermissionSet(
   WebGeolocationPermissionRequest permissionRequest;
   if (!pending_permissions_->remove(permission_request_id, permissionRequest))
     return;
+
+  if (--num_pending_permission_requests_ == 0)
+    permission_service_.reset();
 
   permissionRequest.setIsAllowed(status ==
                                  blink::mojom::PermissionStatus::GRANTED);

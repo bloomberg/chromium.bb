@@ -2,6 +2,8 @@
 <html>
 <head>
 <script src="../../../resources/js-test.js"></script>
+<script src="../../../resources/mojo-helpers.js"></script>
+<script src="resources/geolocation-mock.js"></script>
 </head>
 <body>
 <script>
@@ -11,23 +13,23 @@ var mockLatitude = 51.478;
 var mockLongitude = -0.166;
 var mockAccuracy = 100;
 
-if (!window.testRunner || !window.internals)
-    debug('This test can not run without testRunner or internals');
+if (!window.testRunner || !window.mojo)
+    debug('This test can not run without testRunner or mojo');
 
-internals.setGeolocationPermission(document, true);
-internals.setGeolocationPosition(document,
-                                 mockLatitude,
-                                 mockLongitude,
-                                 mockAccuracy);
+geolocationServiceMock.then(mock => {
+    mock.setGeolocationPermission(true);
+    mock.setGeolocationPosition(mockLatitude,
+                                mockLongitude,
+                                mockAccuracy);
 
-var watchId = navigator.geolocation.watchPosition(function() {
-    navigator.geolocation.clearWatch(watchId);
-    finishJSTest();
-}, function(e) {
-    navigator.geolocation.clearWatch(watchId);
-    finishJSTest();
+    var watchId = navigator.geolocation.watchPosition(function() {
+        navigator.geolocation.clearWatch(watchId);
+        finishJSTest();
+    }, function(e) {
+        navigator.geolocation.clearWatch(watchId);
+        finishJSTest();
+    });
 });
-
 
 window.jsTestIsAsync = true;
 </script>

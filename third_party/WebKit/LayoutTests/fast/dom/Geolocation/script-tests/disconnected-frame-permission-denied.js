@@ -1,16 +1,11 @@
 description("Tests that when a request is made on a Geolocation object, permission is denied and its Frame is disconnected before a callback is made, no callbacks are made.");
 
-if (!window.testRunner || !window.internals)
-    debug('This test can not run without testRunner or internals');
-
-internals.setGeolocationClientMock(document);
-
-// Prime the Geolocation instance by denying permission. This makes sure that we execute the
-// same code path for both preemptive and non-preemptive permissions policies.
-internals.setGeolocationPermission(document, false);
-internals.setGeolocationPosition(document, 51.478, -0.166, 100);
+if (!window.testRunner || !window.mojo)
+    debug('This test can not run without testRunner or mojo');
 
 var error;
+var iframe = document.createElement('iframe');
+
 function onIframeLoaded() {
     iframeGeolocation = iframe.contentWindow.navigator.geolocation;
     iframeGeolocation.getCurrentPosition(function() {
@@ -40,8 +35,15 @@ function onIframeUnloaded() {
     }, 100);
 }
 
-var iframe = document.createElement('iframe');
-iframe.src = 'resources/disconnected-frame-inner.html';
-document.body.appendChild(iframe);
+
+geolocationServiceMock.then(mock => {
+    // Prime the Geolocation instance by denying permission. This makes sure that we execute the
+    // same code path for both preemptive and non-preemptive permissions policies.
+    mock.setGeolocationPermission(false);
+    mock.setGeolocationPosition(51.478, -0.166, 100);
+
+    iframe.src = 'resources/disconnected-frame-inner.html';
+    document.body.appendChild(iframe);
+});
 
 window.jsTestIsAsync = true;

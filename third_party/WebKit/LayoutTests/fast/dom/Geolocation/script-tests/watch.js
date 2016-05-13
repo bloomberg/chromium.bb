@@ -24,42 +24,43 @@ function checkError(e) {
     debug('');
 }
 
-if (!window.testRunner || !window.internals)
-    debug('This test can not run without testRunner or internals');
+if (!window.testRunner || !window.mojo)
+    debug('This test can not run without testRunner or mojo');
 
-internals.setGeolocationClientMock(document);
-internals.setGeolocationPermission(document, true);
-internals.setGeolocationPosition(document, mockLatitude, mockLongitude, mockAccuracy);
+geolocationServiceMock.then(mock => {
+    mock.setGeolocationPermission(true);
+    mock.setGeolocationPosition(mockLatitude, mockLongitude, mockAccuracy);
 
-var state = 0;
-navigator.geolocation.watchPosition(function(p) {
-    switch (state++) {
-        case 0:
-            checkPosition(p);
-            internals.setGeolocationPosition(document, ++mockLatitude, ++mockLongitude, ++mockAccuracy);
-            break;
-        case 1:
-            checkPosition(p);
-            internals.setGeolocationPositionUnavailableError(document, mockMessage);
-            break;
-        case 3:
-            checkPosition(p);
-            finishJSTest();
-            break;
-        default:
-            testFailed('Success callback invoked unexpectedly');
-            finishJSTest();
-    }
-}, function(e) {
-    switch (state++) {
-        case 2:
-            checkError(e);
-            internals.setGeolocationPosition(document, ++mockLatitude, ++mockLongitude, ++mockAccuracy);
-            break;
-        default:
-            testFailed('Error callback invoked unexpectedly');
-            finishJSTest();
-    }
+    var state = 0;
+    navigator.geolocation.watchPosition(function(p) {
+        switch (state++) {
+            case 0:
+                checkPosition(p);
+                mock.setGeolocationPosition(++mockLatitude, ++mockLongitude, ++mockAccuracy);
+                break;
+            case 1:
+                checkPosition(p);
+                mock.setGeolocationPositionUnavailableError(mockMessage);
+                break;
+            case 3:
+                checkPosition(p);
+                finishJSTest();
+                break;
+            default:
+                testFailed('Success callback invoked unexpectedly');
+                finishJSTest();
+        }
+    }, function(e) {
+        switch (state++) {
+            case 2:
+                checkError(e);
+                mock.setGeolocationPosition(++mockLatitude, ++mockLongitude, ++mockAccuracy);
+                break;
+            default:
+                testFailed('Error callback invoked unexpectedly');
+                finishJSTest();
+        }
+    });
 });
 
 window.jsTestIsAsync = true;

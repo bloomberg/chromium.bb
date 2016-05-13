@@ -54,6 +54,7 @@ class GeolocationDispatcher
 
   std::unique_ptr<blink::WebGeolocationController> controller_;
 
+  size_t num_pending_permission_requests_ = 0;
   std::unique_ptr<blink::WebGeolocationPermissionRequestManager>
       pending_permissions_;
   blink::mojom::GeolocationServicePtr geolocation_service_;
