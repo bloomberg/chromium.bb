@@ -48,6 +48,7 @@
 <translation id="1557201757634521564">شناسایی خودکار کدبندی</translation>
 <translation id="1620510694547887537">دوربین</translation>
 <translation id="1623104350909869708">جلوگیری از ایجاد پنجره‌های اضافی توسط این صفحه</translation>
+<translation id="1639239467298939599">بارگیری</translation>
 <translation id="1641113438599504367">مرور ایمن</translation>
 <translation id="164269334534774161">شما در حال تماشای کپی آفلاین این صفحه از <ph name="CREATION_TIME" /> هستید</translation>
 <translation id="1643702317193804718">درحال ترجمه صفحه به <ph name="SOURCE_LANGUAGE" />…</translation>
@@ -73,7 +74,6 @@
 <translation id="1943432128510653496">ذخیره گذرواژه‌ها</translation>
 <translation id="1944384637046898011">‏رمزگذاری همه با گذرواژه Google از تاریخ <ph name="TIME" /></translation>
 <translation id="1946005195648379376">‏نحوه استفاده Google از سابقه مرورتان را برای شخصی‌سازی جستجو و سایر سرویس‌های Google کنترل کنید.</translation>
-<translation id="1959930595721737608">اجرای جاوا اسکریپت را در سایت‌های زیر مجاز می‌کند.</translation>
 <translation id="1966710179511230534">لطفاً جزئیات ورود به سیستم را به‌روز کنید.</translation>
 <translation id="1974060860693918893">پیشرفته</translation>
 <translation id="1984321224716884559">‏نشانک‌های Chrome پیشرفته</translation>
@@ -99,11 +99,9 @@
 <translation id="2268044343513325586">فیلتر</translation>
 <translation id="2315043854645842844">انتخاب گواهی سمت کلاینت توسط سیستم‌عامل پشتیبانی نمی‌شود.</translation>
 <translation id="2321958826496381788">لغزنده را بکشید تا زمانی که بتوانید این متن را به راحتی بخوانید. بعد از دو ضربه متوالی روی یک پاراگراف، اندازه نوشتار حداقل باید به این بزرگی باشد.</translation>
-<translation id="2329597144923131178">برای دریافت نشانک‌ها، سابقه، گذرواژه‌ها و سایر تنظیماتتان در همه دستگاه‌ها، وارد سیستم شوید.</translation>
 <translation id="2343328333327081434">در حال نصب…</translation>
 <translation id="2351097562818989364">تنظیمات ترجمه شما بازنشانی شده است.</translation>
 <translation id="2359808026110333948">ادامه</translation>
-<translation id="2381756643783702095">قبل از ارسال سؤال شود (توصیه می‌شود)</translation>
 <translation id="2385560268894525395">هفته گذشته</translation>
 <translation id="2387895666653383613">اندازه قلم نوشتار</translation>
 <translation id="238909021488141516">هنگام بارگیری محتوا خطایی روی داد.</translation>
@@ -185,6 +183,7 @@
 <translation id="3387650086002190359">به‌دلیل خطاهای سیستم فایل، بارگیری <ph name="FILE_NAME" /> انجام نشد.</translation>
 <translation id="3414952576877147120">اندازه:</translation>
 <translation id="3435896845095436175">فعال کردن</translation>
+<translation id="3452612588551937789">‏برای دسترسی به نشانک‌ها، گذرواژه‌ها، سابقه و تنظیمات دیگر در همه دستگاه‌هایتان، به سیستم حساب Google خود وارد شوید.</translation>
 <translation id="3485544713029068372">‏Smart Lock برای گذرواژه‌ها</translation>
 <translation id="3492207499832628349">برگه ناشناس جدید</translation>
 <translation id="3518985090088779359">پذیرش و ادامه</translation>
@@ -234,6 +233,7 @@
 <translation id="4259722352634471385">پیمایش مسدود است: <ph name="URL" /></translation>
 <translation id="4269820728363426813">کپی آدرس پیوند</translation>
 <translation id="4271185234001491831"><ph name="LANGUAGE" /> هرگز ترجمه نشود</translation>
+<translation id="4275663329226226506">رسانه</translation>
 <translation id="4278390842282768270">مجاز است</translation>
 <translation id="4297410240212242334">جدا کردن برگه‌ها و برنامه‌ها</translation>
 <translation id="4307992518367153382">موارد اصلی</translation>
@@ -336,7 +336,6 @@
 <translation id="5596627076506792578">گزینه‌های بیشتر</translation>
 <translation id="5626134646977739690">نام:</translation>
 <translation id="5626370437647899551">‏افزودن یک حساب Google</translation>
-<translation id="563535393368633106">قبل از دسترسی سؤال شود (توصیه می‌شود)</translation>
 <translation id="5646376287012673985">مکان</translation>
 <translation id="5659593005791499971">ایمیل</translation>
 <translation id="5668404140385795438">لغو درخواست وب‌سایت برای جلوگیری از بزرگ‌نمایی</translation>
@@ -418,7 +417,6 @@
 <translation id="6656545060687952787">‏Chrome برای جستجوی دستگاه‌ها باید به مکان دسترسی داشته باشد. <ph name="BEGIN_LINK" />به‌روزرسانی مجوزها<ph name="END_LINK" /></translation>
 <translation id="666268767214822976">از یک سرویس پیش‌بینی استفاده می‌شود تا هم‌زمان با تایپ کردن شما در نوار آدرس، عبارت‌های جستجوی مرتبط و وب‌سایت‌های محبوب نشان داده شوند</translation>
 <translation id="666981079809192359">‏اخطار حریم خصوصی Chrome</translation>
-<translation id="6683720003467092441">همگام‌سازی پس‌زمینه را در سایت‌های زیر مجاز می‌کند.</translation>
 <translation id="6698801883190606802">مدیریت داده‌های همگام‌سازی شده</translation>
 <translation id="6710213216561001401">قبلی</translation>
 <translation id="6738867403308150051">در حال بارگیری…</translation>
@@ -550,7 +548,6 @@
 <translation id="8374821112118309944">‏باید TalkBack را به نسخه جدیدتری به‌روزرسانی کنید.</translation>
 <translation id="8396312449826231789">فقط سایت‌های تأیید شده</translation>
 <translation id="8413126021676339697">نمایش کل سابقه</translation>
-<translation id="8413385045638830869">ابتدا سؤال شود (توصیه می‌شود)</translation>
 <translation id="8428213095426709021">تنظیمات</translation>
 <translation id="8433057134996913067">با این کار از سیستم بیشتر وب‌سایت‌ها خارج می‌شوید.</translation>
 <translation id="8481940801237642152">اتصال شما به این سایت خصوصی است، اما ممکن است شخصی در شبکه بتواند ظاهر این صفحه را تغییر دهد.</translation>

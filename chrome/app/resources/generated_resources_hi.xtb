@@ -343,7 +343,6 @@
 <translation id="1482124012545051544"><ph name="FILE_COUNT" /> नई फ़ोटो का बैक अप लेने के लिए तैयार है</translation>
 <translation id="148466539719134488">स्विस</translation>
 <translation id="1485015260175968628">यह अब निम्न कर सकता है:</translation>
-<translation id="1485146213770915382">खोज शब्द प्रविष्ट करने के URL में <ph name="SEARCH_TERMS_LITERAL" /> सम्मिलित करें. </translation>
 <translation id="1486096554574027028">पासवर्ड खोजें</translation>
 <translation id="1493263392339817010">फ़ॉन्ट कस्टमाइज़ करें...</translation>
 <translation id="1493492096534259649">वर्तनी जांच के लिए इस भाषा का उपयोग नहीं किया जा सकता है</translation>
@@ -802,7 +801,6 @@
 <translation id="2176045495080708525">निम्‍न एक्‍सटेंशन अब इंस्‍टॉल हो गए हैं:</translation>
 <translation id="2177950615300672361">गुप्त टैब: <ph name="TAB_NAME" /></translation>
 <translation id="2178614541317717477">CA समझौता</translation>
-<translation id="2179052183774520942">खोज इंजन जोड़ें</translation>
 <translation id="218492098606937156">स्पर्श इवेंट सक्षम करें</translation>
 <translation id="2187895286714876935">सर्वर प्रमाणपत्र आयात त्रुटि</translation>
 <translation id="2190069059097339078">वाई-फ़ाई प्रमाणिकता प्राप्‍तकर्ता</translation>
@@ -968,7 +966,6 @@
 <translation id="2392369802118427583">सक्रिय करें</translation>
 <translation id="2394296868155622118">बिलिंग विवरण प्रबंधित करें...</translation>
 <translation id="2394566832561516196">अगली बार फिर से लोड करने पर सेटिंग साफ़ हो जाएंगी.</translation>
-<translation id="2396635603035772766">पासवर्ड सहेजने के लिए प्रयोगात्मक बबल-आधारित UI सक्षम करें; जिससे मौजूदा सूचनाबार बदल जाता है.</translation>
 <translation id="2399147786307302860">उन्‍नत समन्‍वयन सेटिंग...</translation>
 <translation id="2401053206567162910">यह ऐप्स  वर्तमान में इस डिवाइस पर समर्थित नहीं है लेकिन यह जल्दी ही काम करने लगे इसके लिए Chrome gnome इसके लिए कठोर मेहनत कर रहे हैं.</translation>
 <translation id="2403091441537561402">गेटवे:</translation>
@@ -985,7 +982,6 @@
 <translation id="2431394478374894294">वर्चुअल कीबोर्ड पर ध्‍वनि इनपुट सक्षम करता है.</translation>
 <translation id="2433452467737464329">पृष्ठ को स्वतः रीफ्रेश करने के लिए URL में क्वेरी परम जोड़ें: chrome://network/?refresh=&lt;sec&gt;</translation>
 <translation id="2433507940547922241">प्रकटन</translation>
-<translation id="2433728760128592593">विधियों के बीच स्‍विच करने के लिए Alt+Shift दबाएं.</translation>
 <translation id="2435248616906486374">नेटवर्क डिस्‍कनेक्‍ट है</translation>
 <translation id="2436186046335138073"><ph name="HANDLER_HOSTNAME" /> को सभी <ph name="PROTOCOL" /> लिंक खोलने दें?</translation>
 <translation id="2436707352762155834">न्यूनतम</translation>
@@ -2002,7 +1998,6 @@
 <translation id="3764800135428056022">आपके वेब पासवर्ड सहेजना ऑफ़र करें.</translation>
 <translation id="3764986667044728669">नामांकन करने में असमर्थ</translation>
 <translation id="3768037234834996183">आपकी प्राथमिकताएं समन्‍वयित की जा रही हैं...</translation>
-<translation id="3770072361759252365">सक्षम होने पर, एक H.264 सॉफ़्टवेयर वीडियो एन्कोडर/डीकोडर युग्म को शामिल किया जाता है. (यदि हार्डवेयर डीकोडर भी उपलब्ध हो तो इस डीकोडर के बजाय उसका उपयोग किया जा सकता है).</translation>
 <translation id="3771294271822695279">वीडियो फ़ाइलें</translation>
 <translation id="3774278775728862009">थाई इनपुट पद्धति (TIS-820.2538 कीबोर्ड)</translation>
 <translation id="3775432569830822555">SSL सर्वर प्रमाणपत्र</translation>
@@ -2272,7 +2267,6 @@
 <translation id="418179967336296930">रूसी फ़ोनेटिक (YaZHert) कीबोर्ड</translation>
 <translation id="4181841719683918333">भाषाएं</translation>
 <translation id="4187248015940562149">वेब ब्लूटूथ को सक्षम करता है जो वेबसाइट को आपके आस-पास के ब्लूटूथ डिवाइस से कनेक्ट करने और उन्हें नियंत्रित करने दे सकता है.</translation>
-<translation id="4188026131102273494">कीवर्ड:</translation>
 <translation id="4189406272289638749">कोई एक्सटेंशन, &lt;b&gt;<ph name="EXTENSION_NAME" />&lt;/b&gt;, इस सेटिंग को नियंत्रित कर रहा है.</translation>
 <translation id="4193154014135846272">Google दस्‍तावेज़</translation>
 <translation id="4193182321948161343">मटीरियल डिज़ाइन उपयोगकर्ता प्रबंधक को सक्षम करें</translation>
@@ -2574,7 +2568,6 @@
 <translation id="4685045708662437080">इससे Google को आपकी आवाज़ को पहचानने और वाक् तथा ऑडियो पहचान को बेहतर बनाने में सहायता मिलती है जिससे आपको कम परेशानी और अधिक तेज़ी के साथ परिणाम दिए जा सकें. <ph name="BEGIN_LINK" />और जानें<ph name="END_LINK" /></translation>
 <translation id="4690246192099372265">स्वीडिश</translation>
 <translation id="4690462567478992370">अमान्य प्रमाणपत्र का उपयोग करना बंद करें</translation>
-<translation id="4691088804026137116">कुछ भी समन्वयित न करें</translation>
 <translation id="469230890969474295">OEM फ़ोल्डर</translation>
 <translation id="4692342183939154835">WebRTC हार्डवेयर वीडियो एन्कोडिंग</translation>
 <translation id="4692623383562244444">खोज इंजन</translation>
@@ -3239,7 +3232,6 @@
 <translation id="5627086634964711283">इससे यह भी नियंत्रित होता है कि जब आप होम बटन क्लिक करते हैं तब कौन सा पृष्‍ठ दिखाया जाए.</translation>
 <translation id="5627259319513858869">ऐसी प्रयोगात्मक कैनवास सुविधाओं का उपयोग करना सक्षम करता है जो अभी भी विकास के चरण में हैं.</translation>
 <translation id="5627618611556177958">WebUSB</translation>
-<translation id="5630163645818715367">ब्राउज़र के प्रमुख chrome में मटीरियल डिज़ाइन</translation>
 <translation id="5636996382092289526"><ph name="NETWORK_ID" /> का उपयोग करने के लिए आपको सबसे पहले <ph name="LINK_START" />नेटवर्क के साइन-इन पृष्ठ पर जाना<ph name="LINK_END" /> होगा, जो कुछ ही सेकंड में स्वचालित रूप से खुल जाएगा. यदि ऐसा नहीं होता, तो नेटवर्क का उपयोग नहीं किया जा सकेगा.</translation>
 <translation id="5637357908912398026">पासवर्ड को बलपूर्वक सहेजना</translation>
 <translation id="5637380810526272785">इनपुट पद्धति</translation>
@@ -3931,7 +3923,6 @@
 <translation id="6708242697268981054">मूल:</translation>
 <translation id="6709357832553498500"><ph name="EXTENSIONNAME" /> के उपयोग से कनेक्‍ट करें</translation>
 <translation id="6710213216561001401">पिछला</translation>
-<translation id="6713912347540154876">पासवर्ड बबल UI सहेजें</translation>
 <translation id="6718273304615422081">ज़िप किया जा रहा है...</translation>
 <translation id="671928215901716392">लॉक स्‍क्रीन</translation>
 <translation id="6721972322305477112">&amp;फ़ाइल</translation>
@@ -4290,7 +4281,6 @@
 <translation id="7255220508626648026">कास्ट कर रहा है: <ph name="ROUTETITLE" /></translation>
 <translation id="7255935316994522020">लागू करें</translation>
 <translation id="7256710573727326513">टैब में खोलें</translation>
-<translation id="7257173066616499747">वाई-फ़ाई नेटवर्क</translation>
 <translation id="7257666756905341374">प्रतिलिपि बनाया और चिपकाया जाने वाला डेटा पढ़ें</translation>
 <translation id="7260504762447901703">एक्सेस निरस्त करें</translation>
 <translation id="7262004276116528033">यह प्रवेश सेवा <ph name="SAML_DOMAIN" /> द्वारा होस्‍ट की गई है</translation>
@@ -4718,6 +4708,7 @@
 <translation id="7896906914454843592">यूएस विस्‍तारित कीबोर्ड</translation>
 <translation id="7897900149154324287">भविष्य में, अपने निकाले जाने योग्य डिवाइस को अनप्लग करने से पहले उसे फ़ाइलें ऐप्स से निकालना सुनिश्चित करें, अन्यथा, आपका डेटा खो सकता है.</translation>
 <translation id="7898627924844766532">टूलबार में रखें</translation>
+<translation id="7898725031477653577">हमेशा अनुवाद करें</translation>
 <translation id="7899177175067029110">आपका फ़ोन नहीं मिल पा रहा है. सुनिश्‍चित करें कि <ph name="DEVICE_TYPE" /> इंटरनेट से कनेक्‍ट है. &lt;a&gt;और जानें&lt;/a&gt;</translation>
 <translation id="7900476766547206086">प्रवेश किए हुए उपयोगकर्ताओं के लिए पासवर्ड की आवश्यकता है, क्योंकि एक या अधिक उपयोगकर्ताओं ने सेटिंग चालू की हुई हैं.</translation>
 <translation id="7903128267494448252">इस व्यक्ति को हटाएं</translation>
@@ -5289,7 +5280,6 @@
 <translation id="871476437400413057">Google द्वारा सहेजे गए पासवर्ड</translation>
 <translation id="8714838604780058252">पृष्‍ठभूमि ग्राफ़िक</translation>
 <translation id="8722421161699219904">यूएस अंतर्राष्‍ट्रीय कीबोर्ड</translation>
-<translation id="872451400847464257">खोज इंजन संपादित करें</translation>
 <translation id="8724859055372736596">खोजकर्ता में &amp;दिखाएं</translation>
 <translation id="8725066075913043281">पुन: प्रयास करें</translation>
 <translation id="8725178340343806893">पसंदीदा/बुकमार्क बार</translation>
@@ -5547,7 +5537,7 @@
 <translation id="910077499156148110">किसी साइट के लिए एक अपवाद जोड़ें</translation>
 <translation id="9100825730060086615">कीबोर्ड प्रकार</translation>
 <translation id="9101691533782776290">ऐप्स लॉन्च करें</translation>
-<translation id="9101960725093302061">यह सेट करने के लिए कि <ph name="NEW_PROFILE_NAME" /> कौन सी वेबसाइटें देख सकता है, तो आप <ph name="BEGIN_LINK" /><ph name="DISPLAY_LINK" /><ph name="END_LINK" /> पर जाकर प्रतिबंध और सेटिंग कॉन्फ़िगर कर सकते हैं. यदि आप डिफ़ॉल्ट सेटिंग में बदलाव नहीं करते, तो <ph name="NEW_PROFILE_NAME" /> वेब पर सब कुछ ब्राउज़ कर सकता है.</translation>
+<translation id="9101960725093302061">यह सेट करने के लिए कि <ph name="NEW_PROFILE_NAME" /> कौन सी वेबसाइटें देख सकता है, आप <ph name="BEGIN_LINK" /><ph name="DISPLAY_LINK" /><ph name="END_LINK" /> पर जाकर प्रतिबंध और सेटिंग कॉन्फ़िगर कर सकते हैं. यदि आप डिफ़ॉल्ट सेटिंग में बदलाव नहीं करते, तो <ph name="NEW_PROFILE_NAME" /> वेब पर सब कुछ ब्राउज़ कर सकता है.</translation>
 <translation id="9103001804464916031">{NUM_DOWNLOAD,plural, =1{डाउनलोड चल रहा है}one{डाउनलोड चल रहे हैं}other{डाउनलोड चल रहे हैं}}</translation>
 <translation id="9105212490906037469">F2</translation>
 <translation id="9106577689055281370">बैटरी <ph name="HOUR" />:<ph name="MINUTE" /> शेष</translation>

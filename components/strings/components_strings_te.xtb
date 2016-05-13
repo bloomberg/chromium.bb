@@ -347,7 +347,7 @@
 <translation id="450710068430902550">నిర్వాహకుడితో భాగస్వామ్యం</translation>
 <translation id="4522570452068850558">వివరాలు</translation>
 <translation id="4535734014498033861">ప్రాక్సీ సర్వర్  కనెక్షన్ విఫలమైంది.</translation>
-<translation id="4553532082208702698">మీ <ph name="CREDIT_CARD" /> కార్డ్ వెనుక భాగంలో ఉండే 4 అంకెల CVCని నమోదు చేయండి</translation>
+<translation id="4553532082208702698">మీ <ph name="CREDIT_CARD" /> కార్డ్ ముందువైపు ఉండే 4 అంకెల CVCని నమోదు చేయండి</translation>
 <translation id="4558551763791394412">మీ పొడిగింపులను నిలిపివేయడం ప్రయత్నించండి.</translation>
 <translation id="4587425331216688090">Chrome నుండి చిరునామాను తీసివేయాలా?</translation>
 <translation id="4592951414987517459"><ph name="DOMAIN" />కి గల మీ కనెక్షన్ ఆధునిక సైఫర్ సూట్ ఉపయోగించి గుప్తీకరించబడింది.</translation>
@@ -440,7 +440,7 @@
 <translation id="5650551054760837876">శోధన ఫలితాలు ఏవీ దొరకలేదు.</translation>
 <translation id="5663999524854166235">ధృవీకరణ కోసం మీ కార్డ్ వెనుకవైపు ఉన్న 3 అంకెల CVCని నమోదు చేయండి</translation>
 <translation id="5677928146339483299">బ్లాక్ చెయ్యబడింది</translation>
-<translation id="5696590819423335174">మీ <ph name="CREDIT_CARD" /> కార్డ్ గడువు ముగింపు తేదీని మరియు వెనుక భాగంలో ఉండే 4 అంకెల CVCని నమోదు చేయండి</translation>
+<translation id="5696590819423335174">మీ <ph name="CREDIT_CARD" /> కార్డ్ గడువు ముగింపు తేదీని మరియు ముందువైపు ఉండే 4 అంకెల CVCని నమోదు చేయండి</translation>
 <translation id="5699278517904102888">ధృవీకరణ కోసం మీ <ph name="CREDIT_CARD" /> వెనుక భాగంలో ఉండే 3 అంకెల CVCని నమోదు చేయండి</translation>
 <translation id="5710435578057952990">ఈ వెబ్‍‌సైట్ యొక్క గుర్తింపు నిర్థారించబడలేదు.</translation>
 <translation id="5720705177508910913">ప్రస్తుత వినియోగదారు</translation>
@@ -657,6 +657,7 @@
 <translation id="8225771182978767009">ఈ కంప్యూటర్‌ను సెటప్ చేసిన వ్యక్తి ఈ సైట్‌ను బ్లాక్ చేయడానికి ఎంచుకున్నారు.</translation>
 <translation id="8241707690549784388">మీరు వెతికే పేజీ మీరు ఎంటర్ చేసిన సమాచారాన్ని ఉపయోగించుకుంది. ఆ పేజీకి తిరిగి వెళ్ళడం ద్వారా మీరు చేసిన ఏ చర్య అయినా పునరావృతం చెయ్యవలసి వస్తుంది. మీరు కొనసాగాలనుకుంటున్నారా?</translation>
 <translation id="8249320324621329438">చివరగా పొందబడినవి:</translation>
+<translation id="8261506727792406068">తొలగించు</translation>
 <translation id="8266098793847448402"><ph name="BEGIN_BOLD" />ప్రారంభం<ph name="END_BOLD" />
       క్లిక్ చేసి,
       <ph name="BEGIN_BOLD" />అమలు<ph name="END_BOLD" />

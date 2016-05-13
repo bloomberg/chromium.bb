@@ -48,6 +48,7 @@
 <translation id="1557201757634521564">זיהוי אוטומטי של קידוד</translation>
 <translation id="1620510694547887537">מצלמה</translation>
 <translation id="1623104350909869708">מנע מהדף זה ליצור תיבות דו-שיח נוספות</translation>
+<translation id="1639239467298939599">טוען</translation>
 <translation id="1641113438599504367">גלישה בטוחה</translation>
 <translation id="164269334534774161">אתה מציג עותק לא מקוון של הדף הזה מ-<ph name="CREATION_TIME" /></translation>
 <translation id="1643702317193804718">מתרגם את הדף ל<ph name="SOURCE_LANGUAGE" />...</translation>
@@ -73,7 +74,6 @@
 <translation id="1943432128510653496">שמור סיסמאות</translation>
 <translation id="1944384637046898011">‏הצפן הכל באמצעות סיסמת Google החל מ-<ph name="TIME" /></translation>
 <translation id="1946005195648379376">‏קבע כיצד Google משתמשת בהיסטוריית הגלישה שלך כדי להתאים אישית את החיפוש ושירותים אחרים של Google.</translation>
-<translation id="1959930595721737608">‏התר JavaScript באתר הבא.</translation>
 <translation id="1966710179511230534">עדכן את פרטי הכניסה שלך.</translation>
 <translation id="1974060860693918893">מתקדם</translation>
 <translation id="1984321224716884559">‏סימניות של Chrome בגירסת הפיתוח</translation>
@@ -99,11 +99,9 @@
 <translation id="2268044343513325586">צמצם</translation>
 <translation id="2315043854645842844">מערכת ההפעלה אינה תומכת בבחירת אישור בצד הלקוח.</translation>
 <translation id="2321958826496381788">גרור את המחוון עד שתוכל לקרוא את הקטע הזה בצורה נוחה. לאחר שתקיש פעמיים על פיסקה, הטקסט אמור להיות מוצג בגודל הזה לפחות.</translation>
-<translation id="2329597144923131178">היכנס כדי לקבל גישה אל הסימניות, ההיסטוריה, הסיסמאות והגדרות נוספות בכל המכשירים שברשותך.</translation>
 <translation id="2343328333327081434">מתקין...</translation>
 <translation id="2351097562818989364">הגדרות התרגום שלך אופסו.</translation>
 <translation id="2359808026110333948">המשך</translation>
-<translation id="2381756643783702095">שאל לפני שליחה (מומלץ)</translation>
 <translation id="2385560268894525395">מהשבוע האחרון</translation>
 <translation id="2387895666653383613">שינוי גודל טקסט</translation>
 <translation id="238909021488141516">אירעה שגיאה בזמן הורדת התוכן.</translation>
@@ -185,6 +183,7 @@
 <translation id="3387650086002190359">הורדת <ph name="FILE_NAME" /> נכשלה עקב שגיאות במערכת הקבצים.</translation>
 <translation id="3414952576877147120">גודל:</translation>
 <translation id="3435896845095436175">הפעל</translation>
+<translation id="3452612588551937789">‏היכנס באמצעות חשבון Google כדי לקבל גישה אל הסימניות, הסיסמאות, ההיסטוריה והגדרות נוספות בכל המכשירים שלך.</translation>
 <translation id="3485544713029068372">‏Smart Lock לסיסמאות</translation>
 <translation id="3492207499832628349">כרטיסייה חדשה לגלישה בסתר</translation>
 <translation id="3518985090088779359">קבל והמשך</translation>
@@ -234,6 +233,7 @@
 <translation id="4259722352634471385">הניווט חסום: <ph name="URL" /></translation>
 <translation id="4269820728363426813">העתק כתובת של קישור</translation>
 <translation id="4271185234001491831">אל תתרגם <ph name="LANGUAGE" /> אף פעם</translation>
+<translation id="4275663329226226506">מדיה</translation>
 <translation id="4278390842282768270">מותר</translation>
 <translation id="4297410240212242334">הפרדה בין כרטיסיות ואפליקציות</translation>
 <translation id="4307992518367153382">היסודות</translation>
@@ -336,7 +336,6 @@
 <translation id="5596627076506792578">אפשרויות נוספות</translation>
 <translation id="5626134646977739690">שם:</translation>
 <translation id="5626370437647899551">‏הוסף חשבון Google</translation>
-<translation id="563535393368633106">שאל לפני גישה (מומלץ)</translation>
 <translation id="5646376287012673985">מיקום</translation>
 <translation id="5659593005791499971">אימייל</translation>
 <translation id="5668404140385795438">עקוף בקשה של אתר שנועדה למנוע שינוי של מרחק התצוגה</translation>
@@ -419,7 +418,6 @@
 <translation id="6656545060687952787">‏כדי לבצע סריקה לאיתור מכשירים ב-Chrome, יש צורך בגישה לנתוני מיקום. <ph name="BEGIN_LINK" />עדכן הרשאות<ph name="END_LINK" /></translation>
 <translation id="666268767214822976">השתמש בשירות חיזוי כדי להציג שאילתות קשורות ואתרים פופולריים תוך כדי ההקלדה בסרגל הכתובות</translation>
 <translation id="666981079809192359">‏הודעת הפרטיות של Chrome</translation>
-<translation id="6683720003467092441">התר סינכרון ברקע באתר הבא.</translation>
 <translation id="6698801883190606802">נהל נתונים מסונכרנים</translation>
 <translation id="6710213216561001401">הקודם</translation>
 <translation id="6738867403308150051">מוריד...</translation>
@@ -526,7 +524,7 @@
 <translation id="8007176423574883786">כבוי בשביל המכשיר הזה</translation>
 <translation id="8026334261755873520">נקה נתוני גלישה</translation>
 <translation id="8035133914807600019">תיקייה חדשה…</translation>
-<translation id="8063895661287329888">הוספת הכרטיסייה נכשלה.</translation>
+<translation id="8063895661287329888">הוספת הסימנייה נכשלה.</translation>
 <translation id="8068648041423924542">אין אפשרות לבחור אישור.</translation>
 <translation id="8069239273282989646">לאחר דחיסה</translation>
 <translation id="8073388330009372546">פתח את התמונה בכרטיסייה חדשה</translation>
@@ -551,7 +549,6 @@
 <translation id="8374821112118309944">‏עליך לעדכן את TalkBack לגרסה חדשה יותר.</translation>
 <translation id="8396312449826231789">רק אתרים שאושרו</translation>
 <translation id="8413126021676339697">הצג את ההיסטוריה המלאה</translation>
-<translation id="8413385045638830869">שאל תחילה (מומלץ)</translation>
 <translation id="8428213095426709021">הגדרות</translation>
 <translation id="8433057134996913067">פעולה זו תוציא אותך מהחשבון ברוב האתרים.</translation>
 <translation id="8481940801237642152">החיבור שלך לאתר הזה הוא פרטי, אך ייתכן שמישהו ברשת יכול לשנות את המראה של הדף.</translation>

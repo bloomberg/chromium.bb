@@ -48,6 +48,7 @@ Fiziksel Web'i kullanabilmeniz için Bluetooth ve Konum özelliklerinin açık o
 <translation id="1557201757634521564">Kodlamayı otomatik olarak algıla</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1623104350909869708">Bu sayfanın daha fazla iletişim kutusu oluşturmasını önle</translation>
+<translation id="1639239467298939599">Yükleniyor</translation>
 <translation id="1641113438599504367">Güvenli Tarama</translation>
 <translation id="164269334534774161">Bu sayfanın <ph name="CREATION_TIME" /> tarihinde oluşturulan bir çevrimdışı kopyasını görüntülüyorsunuz</translation>
 <translation id="1643702317193804718">Sayfa <ph name="SOURCE_LANGUAGE" /> diline çevriliyor…</translation>
@@ -73,7 +74,6 @@ Fiziksel Web'i kullanabilmeniz için Bluetooth ve Konum özelliklerinin açık o
 <translation id="1943432128510653496">Şifreleri kaydetme</translation>
 <translation id="1944384637046898011"><ph name="TIME" /> itibariyle tüm Google şifrelerini şifrele</translation>
 <translation id="1946005195648379376">Google'ın, Arama ve diğer Google hizmetlerini kişiselleştirmek için tarama geçmişinizi nasıl kullanacağını kontrol edin.</translation>
-<translation id="1959930595721737608">Aşağıdaki sitede JavaScript'e izin verin.</translation>
 <translation id="1966710179511230534">Lütfen oturum açma ayrıntılarınızı güncelleyin.</translation>
 <translation id="1974060860693918893">Gelişmiş</translation>
 <translation id="1984321224716884559">Chrome Dev yer işaretleri</translation>
@@ -99,11 +99,9 @@ Fiziksel Web'i kullanabilmeniz için Bluetooth ve Konum özelliklerinin açık o
 <translation id="2268044343513325586">Hassaslaştır</translation>
 <translation id="2315043854645842844">İstemci tarafı sertifika seçimi, işletim sistemi tarafından desteklenmiyor.</translation>
 <translation id="2321958826496381788">Bu yazıyı rahatça okuyana kadar kaydırma çubuğunu sürükleyin. Bir paragrafa iki kez hafifçe dokunduğunuzda metin en az bunun kadar büyük görünmelidir.</translation>
-<translation id="2329597144923131178">Yer işaretlerinize, geçmişinize ve diğer ayarlarınıza tüm cihazlarınızdan erişmek için oturum açın.</translation>
 <translation id="2343328333327081434">Yükleniyor…</translation>
 <translation id="2351097562818989364">Çeviri ayarlarınız sıfırlandı.</translation>
 <translation id="2359808026110333948">Devam Et</translation>
-<translation id="2381756643783702095">Göndermeden önce sor (önerilir)</translation>
 <translation id="2385560268894525395">geçen hafta</translation>
 <translation id="2387895666653383613">Metin ölçekleme</translation>
 <translation id="238909021488141516">İçerik indirilirken bir hata oluştu.</translation>
@@ -185,6 +183,7 @@ Yönetilen bir hesapla oturum açıyor ve hesabın yöneticisine Chrome profilin
 <translation id="3387650086002190359">Dosya sistemi hataları nedeniyle <ph name="FILE_NAME" /> dosyası indirilemedi.</translation>
 <translation id="3414952576877147120">Boyut:</translation>
 <translation id="3435896845095436175">Etkinleştir</translation>
+<translation id="3452612588551937789">Yer işaretleri, geçmiş, şifreler ve diğer ayarlarınıza tüm cihazlarınızdan erişmek için Google Hesabınızla oturum açın.</translation>
 <translation id="3485544713029068372">Şifreler için Smart Lock</translation>
 <translation id="3492207499832628349">Yeni gizli sekme</translation>
 <translation id="3518985090088779359">Kabul et ve devam et</translation>
@@ -234,6 +233,7 @@ Arama teriminizi düzeltmek için uzun basarak terimi seçin. Aramanızı ayrın
 <translation id="4259722352634471385">Gezinme engellendi: <ph name="URL" /></translation>
 <translation id="4269820728363426813">Bağlantı adresini kopyala</translation>
 <translation id="4271185234001491831"><ph name="LANGUAGE" /> dilini asla çevirme</translation>
+<translation id="4275663329226226506">Medya</translation>
 <translation id="4278390842282768270">İzin verildi</translation>
 <translation id="4297410240212242334">Sekmeleri ve uygulamaları ayır</translation>
 <translation id="4307992518367153382">Temel Bilgiler</translation>
@@ -336,7 +336,6 @@ Arama teriminizi düzeltmek için uzun basarak terimi seçin. Aramanızı ayrın
 <translation id="5596627076506792578">Diğer seçenekler</translation>
 <translation id="5626134646977739690">Adı:</translation>
 <translation id="5626370437647899551">Google Hesabı ekle</translation>
-<translation id="563535393368633106">Erişmeden önce sor (önerilir)</translation>
 <translation id="5646376287012673985">Konum</translation>
 <translation id="5659593005791499971">E-posta</translation>
 <translation id="5668404140385795438">Web sitesinin yakınlaştırmayı önleme isteğini geçersiz kıl</translation>
@@ -419,7 +418,6 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="6656545060687952787">Chrome'un cihazları taraması için konuma erişmesi gerekiyor. <ph name="BEGIN_LINK" />İzinleri güncelleyin<ph name="END_LINK" /></translation>
 <translation id="666268767214822976">Adres çubuğuna yazarken ilgili sorguları ve popüler siteleri göstermek için bir tahmin hizmeti kullan</translation>
 <translation id="666981079809192359">Chrome Gizlilik Uyarısı</translation>
-<translation id="6683720003467092441">Aşağıdaki sitede Arka Plan Senkronizasyonu'na izin verin.</translation>
 <translation id="6698801883190606802">Senkronize edilen verileri yönetme</translation>
 <translation id="6710213216561001401">Önceki</translation>
 <translation id="6738867403308150051">İndiriliyor…</translation>
@@ -551,7 +549,6 @@ Diğer Google hizmetlerinden yapılan aramalar ve etkinlikler gibi Google hesab�
 <translation id="8374821112118309944">TalkBack'i daha yeni bir sürüme güncellemeniz gerekiyor.</translation>
 <translation id="8396312449826231789">Sadece onaylı siteler</translation>
 <translation id="8413126021676339697">Tüm geçmişi göster</translation>
-<translation id="8413385045638830869">Önce sor (önerilir)</translation>
 <translation id="8428213095426709021">Ayarlar</translation>
 <translation id="8433057134996913067">Bu işlem, çoğu web sitesinden çıkış yapmanıza neden olacak.</translation>
 <translation id="8481940801237642152">Bu siteye bağlantınız gizli bir bağlantı, ancak ağ üzerindeki biri sayfanın görünümünü değiştirebilir.</translation>

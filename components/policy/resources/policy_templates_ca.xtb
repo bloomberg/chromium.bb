@@ -1329,7 +1329,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
       Aquesta política afecta tots els tipus de mitjans d'emmagatzematge. Per exemple: unitats flaix USB, discos durs externs, SD i altres targetes de memòria, emmagatzematge òptic, etc. Aquesta política no afecta l''emmagatzematge intern, o sigui que podreu continuar accedint als fitxers desats a la carpeta Baixades. Aquesta política tampoc no afecta Google Drive.
 
       Si desactiveu o no configureu aquest paràmetre, els usuaris podran utilitzar tots els tipus d'emmagatzematge extern compatibles al seu dispositiu.</translation>
-<translation id="6076099373507468537">Defineix la llista de dispositius USB que està permès separar del programa de control de kernel per tal d'utilitzar-los mitjançant l'API de chrome.usb directament dins d'una aplicació web. Les entrades són parells de l'identificador del producte i de l'identificador del proveïdor dels USB, que permeten identificar un maquinari concret.
+<translation id="6076099373507468537">Defineix la llista de dispositius USB que està permès separar del controlador de kernel per tal d'utilitzar-los mitjançant l'API de chrome.usb directament dins d'una aplicació web. Les entrades són parells formats per l'identificador del producte i l'identificador del proveïdor dels USB, que permeten identificar un maquinari concret.
 
       Si aquesta política no està configurada, la llista de dispositius USB que es poden separar està buida.</translation>
 <translation id="6095999036251797924">Especifica la quantitat de temps que ha de passar sense cap interacció de l'usuari abans que la pantalla no es bloquegi quan s'utilitza amb connexió a la corrent CA o amb una bateria.
@@ -1873,7 +1873,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 
           Deixeu-la sense establir si heu seleccionat qualsevol altra manera d'establir les polítiques del servidor intermediari.
 
-          Per obtenir exemples detallats, aneu a:
+          Per veure exemples detallats, aneu a:
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="793134539373873765">Permet especificar si s'utilitzarà la tecnologia d'igual a igual (P2P) per a les càrregues útils d'actualització del sistema operatiu. Si el valor s'estableix com a True, els dispositius compartiran i provaran de consumir les càrregues útils d'actualització a la xarxa LAN, amb la qual cosa és possible que es redueixi l'ús i la congestió de l'amplada de banda d'Internet. Si la càrrega útil d'actualització no està disponible a la xarxa LAN, el dispositiu farà les baixades des d'un servidor d'actualitzacions. Si el valor s'estableix com a False o si no es configura, no es farà servir P2P.</translation>
 <translation id="7933141401888114454">Activa la creació d'usuaris supervisats.</translation>

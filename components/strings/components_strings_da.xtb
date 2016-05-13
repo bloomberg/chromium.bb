@@ -312,7 +312,7 @@
 <translation id="4103249731201008433">Enhedens serienummer er ugyldigt</translation>
 <translation id="4103763322291513355">Gå til &lt;strong&gt;chrome://policy&lt;/strong&gt; for at se listen over sortlistede webadresser og andre politikker, din systemadministrator har igangsat.</translation>
 <translation id="4117700440116928470">Politikkens omfang understøttes ikke.</translation>
-<translation id="4130226655945681476">Kontrollere netværkskabler, modem og routeren</translation>
+<translation id="4130226655945681476">Kontrollerer netværkskabler, modem og routeren</translation>
 <translation id="4147376274874979956">Der kunne ikke opnås adgang til filen.</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">Skal Chromium gemme dette kort?</translation>
@@ -659,6 +659,7 @@ Psst! Prøv at bruge Inkognitotilstand <ph name="SHORTCUT_KEY" /> næste gang.</
 <translation id="8225771182978767009">Den person, der har konfigureret denne computer, har valgt at blokere dette website.</translation>
 <translation id="8241707690549784388">Siden, du søger, benyttede oplysninger, du har indtastet. Vender du tilbage til denne side kan det betyde, at enhver handling, du har foretaget, skal gentages. Vil du fortsætte?</translation>
 <translation id="8249320324621329438">Sidste hentet:</translation>
+<translation id="8261506727792406068">Slet</translation>
 <translation id="8266098793847448402">Klik på
       <ph name="BEGIN_BOLD" />Start<ph name="END_BOLD" />,
       klik på

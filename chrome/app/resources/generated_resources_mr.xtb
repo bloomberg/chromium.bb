@@ -343,7 +343,6 @@
 <translation id="1482124012545051544">नवीन <ph name="FILE_COUNT" /> फोटोंचा बॅकअप घेण्यासाठी सज्ज आहे</translation>
 <translation id="148466539719134488">स्विस</translation>
 <translation id="1485015260175968628">ते आता करू शकते:</translation>
-<translation id="1485146213770915382">जेथे शोध संज्ञा दिसली पाहिजे तेथे URL मध्ये <ph name="SEARCH_TERMS_LITERAL" /> घाला.</translation>
 <translation id="1486096554574027028">संकेतशब्द शोधा</translation>
 <translation id="1493263392339817010">फॉन्ट सानुकूलित करा...</translation>
 <translation id="1493492096534259649">ही भाषा शब्दलेखन तपासण्यासाठी वापरली जाऊ शकत नाही</translation>
@@ -801,7 +800,6 @@
 <translation id="2176045495080708525">खालील विस्तार आता स्‍थापित करण्‍यात आले:</translation>
 <translation id="2177950615300672361">गुप्त टॅब: <ph name="TAB_NAME" /></translation>
 <translation id="2178614541317717477">CA तडजोड</translation>
-<translation id="2179052183774520942">शोध इंजिन जोडा</translation>
 <translation id="218492098606937156">टच इव्हेंट सक्षम करा</translation>
 <translation id="2187895286714876935">सर्व्हर प्रमाणपत्र आयात त्रुटी</translation>
 <translation id="2190069059097339078">WiFi क्रेडेन्शियल मिळविणारा</translation>
@@ -967,7 +965,6 @@
 <translation id="2392369802118427583">सक्रिय करा</translation>
 <translation id="2394296868155622118">बिलिंग तपशील व्यवस्थापित करा...</translation>
 <translation id="2394566832561516196">पुढील रीलोडच्या वेळी सेटिंग्ज साफ केली जातील.</translation>
-<translation id="2396635603035772766">संकेतशब्द जतन करण्यासाठी प्रायोगिक बबल-आधारित UI सक्षम करा; अस्तित्वातील इंफोबर पुनर्स्थित करते.</translation>
 <translation id="2399147786307302860">प्रगत समक्रमण सेटिंग्ज...</translation>
 <translation id="2401053206567162910">हा अ‍ॅप सध्या या डिव्हाइसवर समर्थित नाही परंतु कार्य करण्यास Chrome gnomes ते लवकर कार्य करण्यासाठी कठीण आहेत.</translation>
 <translation id="2403091441537561402">गेटवे:</translation>
@@ -984,7 +981,6 @@
 <translation id="2431394478374894294">व्हर्च्युअल कीबोर्डवर व्हॉइस इनपुट सक्षम करते.</translation>
 <translation id="2433452467737464329">पृष्ठ स्वयं-रीफ्रेश करण्यासाठी URL मध्ये क्वेरी परम जोडा: chrome://network/?refresh=&lt;sec&gt;</translation>
 <translation id="2433507940547922241">स्वरूप</translation>
-<translation id="2433728760128592593">इनपुट पद्धतींदरम्यान स्विच करण्यासाठी Alt+Shift दाबा.</translation>
 <translation id="2435248616906486374">नेटवर्क डिस्कनेक्ट झाले</translation>
 <translation id="2436186046335138073"><ph name="HANDLER_HOSTNAME" /> ला सर्व <ph name="PROTOCOL" /> दुवे उघडण्याची अनुमती द्यायची?</translation>
 <translation id="2436707352762155834">किमान</translation>
@@ -1997,7 +1993,6 @@
 <translation id="3764800135428056022">आपले वेब संकेतशब्द जतन करण्यासाठी ऑफर.</translation>
 <translation id="3764986667044728669">नोंदणी करण्यात अक्षम</translation>
 <translation id="3768037234834996183">आपली प्राधान्ये संकालित करत आहे...</translation>
-<translation id="3770072361759252365">सक्षम केले असताना, H.264 सॉफ्टवेअर व्हिडिओ एन्कोडर/डीकोडरची जोडी समाविष्ट केली जाते. (हार्डवेअर डीकोडर देखील उपलब्ध असल्यास या डीकोडर ऐवजी ते वापरले जाऊ शकते).</translation>
 <translation id="3771294271822695279">व्हिडिओ फायली</translation>
 <translation id="3774278775728862009">थाई इनपुट पद्धत (TIS-820.2538 कीबोर्ड)</translation>
 <translation id="3775432569830822555">SSL सर्व्हर प्रमाणप‍त्र</translation>
@@ -2267,7 +2262,6 @@
 <translation id="418179967336296930">रशियन ध्वन्यात्मक (YaZHert) कीबोर्ड</translation>
 <translation id="4181841719683918333">भाषा</translation>
 <translation id="4187248015940562149">वेब Bluetooth सक्षम करते जे वेबसाइटना यास कनेक्ट करण्याची आणि आपल्या आसपासच्या Bluetooth डिव्हाइसेसना नियंत्रित करण्याची अनुमती देऊ शकते.</translation>
-<translation id="4188026131102273494">कीवर्ड:</translation>
 <translation id="4189406272289638749">&lt;b&gt;<ph name="EXTENSION_NAME" />&lt;/b&gt; विस्तार, हे सेटिंग नियंत्रित करत आहे.</translation>
 <translation id="4193154014135846272">Google दस्तऐवज</translation>
 <translation id="4193182321948161343">वस्तू डिझाइन वापरकर्ता व्यवस्थापक सक्षम करा</translation>
@@ -2569,7 +2563,6 @@
 <translation id="4685045708662437080">आपल्‍याला अधिक जलद आणि थोड्‍या त्रासात परिणाम देण्‍यासाठी हे Google ला आपला व्‍हॉइस ओळखण्‍यात आणि उच्चार आणि ऑडिओ ओळख सुधारित करण्‍यात मदत करते. <ph name="BEGIN_LINK" />अधिक जाणून घ्‍या<ph name="END_LINK" /></translation>
 <translation id="4690246192099372265">स्वीडिश</translation>
 <translation id="4690462567478992370">अवैध प्रमाणपत्र वापरणे थांबवा</translation>
-<translation id="4691088804026137116">काहीही संकालित करू नका</translation>
 <translation id="469230890969474295">OEM फोल्डर</translation>
 <translation id="4692342183939154835">WebRTC हार्डवेअर व्हिडिओ संकेतनात लिहीणे</translation>
 <translation id="4692623383562244444">शोध इंजिने</translation>
@@ -3234,7 +3227,6 @@
 <translation id="5627086634964711283">आपण होम बटण क्लिक करता तेव्हा कोणते पृष्ठ दर्शविले जाते हे देखील हे नियंत्रित करते.</translation>
 <translation id="5627259319513858869">अद्याप सुधारणेत असणार्‍या प्रायोगिक कॅन्व्हास वैशिष्ट्यांचा वापर सक्षम करते.</translation>
 <translation id="5627618611556177958">WebUSB</translation>
-<translation id="5630163645818715367">ब्राउझझरच्या शीर्ष chrome मधील वस्तू डिझाइन</translation>
 <translation id="5636996382092289526"><ph name="NETWORK_ID" /> वापरण्यासाठी आपल्याला प्रथम <ph name="LINK_START" />नेटवर्कच्या साइन-इन पृष्‍ठावर भेट देणे<ph name="LINK_END" /> आवश्यक आहे, जे काही सेकंदांमध्ये स्वयंचलितपणे उघडेल. तसे न झाल्यास, नेटवर्क वापरणे शक्य नाही.</translation>
 <translation id="5637357908912398026">संकेतशब्द सक्तीने जतन-करणे</translation>
 <translation id="5637380810526272785">इनपुट पद्धत</translation>
@@ -3925,7 +3917,6 @@
 <translation id="6708242697268981054">मूळ:</translation>
 <translation id="6709357832553498500"><ph name="EXTENSIONNAME" /> वापरून कनेक्ट करा</translation>
 <translation id="6710213216561001401">मागील</translation>
-<translation id="6713912347540154876">संकेतशब्द फुगा UI जतन करा</translation>
 <translation id="6718273304615422081">झिप करत आहे...</translation>
 <translation id="671928215901716392">लॉक स्क्रीन</translation>
 <translation id="6721972322305477112">&amp;फाइल</translation>
@@ -4281,7 +4272,6 @@
 <translation id="7255220508626648026">कास्ट करीत आहे: <ph name="ROUTETITLE" /></translation>
 <translation id="7255935316994522020">लागू करा</translation>
 <translation id="7256710573727326513">टॅबमध्ये उघडा</translation>
-<translation id="7257173066616499747">Wi-Fi नेटवर्क</translation>
 <translation id="7257666756905341374">आपण कॉपी आणि पेस्ट करता तो डेटा वाचा</translation>
 <translation id="7260504762447901703">प्रवेश रद्द करा</translation>
 <translation id="7262004276116528033">ही साइन-इन सेवा <ph name="SAML_DOMAIN" /> द्वारे होस्ट केली जाते</translation>
@@ -4708,6 +4698,7 @@
 <translation id="7896906914454843592">यूएस विस्तृत कीबोर्ड</translation>
 <translation id="7897900149154324287">भविष्यात, आपण फायली अॅप मधील आपला काढण्यायोग्य डिव्हाइस अनप्लग करण्यापूर्वी तो निष्कासित करण्याचे सुनिश्चित करा. अन्यथा, आपण डेटा गमावू शकता.</translation>
 <translation id="7898627924844766532">टूलबारमध्ये ठेवा</translation>
+<translation id="7898725031477653577">नेहमी भाषांतर करा</translation>
 <translation id="7899177175067029110">आपला फोन शोधू शकत नाही. आपले <ph name="DEVICE_TYPE" /> इंटरनेटशी कनेक्ट केले असल्याचे सुनिश्चित करा. &lt;a&gt;अधिक जाणून घ्या&lt;/a&gt;</translation>
 <translation id="7900476766547206086">एक किंवा अधिक वापरकर्त्यांनी ही सेटिंग चालू केल्यामुळे, साइन इन केलेल्या वापरकर्त्यांसाठी संकेतशब्द आवश्यक आहेत.</translation>
 <translation id="7903128267494448252">या व्यक्तीस हटवा</translation>
@@ -5279,7 +5270,6 @@
 <translation id="871476437400413057">Google ने जतन केलेले संकेतशब्द</translation>
 <translation id="8714838604780058252">पार्श्वभूमी ग्राफिक्स</translation>
 <translation id="8722421161699219904">यूएस आंतरराष्ट्रीय कीबोर्ड</translation>
-<translation id="872451400847464257">शोध इंजिन संपादित करा</translation>
 <translation id="8724859055372736596">फोल्डरमध्ये &amp;दर्शवा</translation>
 <translation id="8725066075913043281">पुन्हा प्रयत्न करा</translation>
 <translation id="8725178340343806893">मनपसंत/बुकमार्क</translation>

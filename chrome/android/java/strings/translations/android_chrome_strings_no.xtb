@@ -48,6 +48,7 @@ Du må ha slått på Bluetooth og Posisjon for å bruke det fysiske nettet.</tra
 <translation id="1557201757634521564">Gjenkjenn omgjøring til kode automatisk</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1623104350909869708">Hindre denne siden i å opprette flere dialogruter</translation>
+<translation id="1639239467298939599">Laster inn</translation>
 <translation id="1641113438599504367">Sikker surfing</translation>
 <translation id="164269334534774161">Du ser en lokal kopi av denne siden fra <ph name="CREATION_TIME" /></translation>
 <translation id="1643702317193804718">Oversetter siden til <ph name="SOURCE_LANGUAGE" /> …</translation>
@@ -68,11 +69,11 @@ Du må ha slått på Bluetooth og Posisjon for å bruke det fysiske nettet.</tra
 <translation id="1842969606798536927">Betal</translation>
 <translation id="1853692000353488670">Ny inkognitofane</translation>
 <translation id="189172778771606813">Lukk uttrekksmenyen</translation>
+<translation id="1924956916668006832">Velg leveringsadresse</translation>
 <translation id="194341124344773587">Slå på tillatelsen for Chrome i <ph name="BEGIN_LINK" />Android-innstillingene<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Lagring av passord</translation>
 <translation id="1944384637046898011">Kryptér alt med Google-passord fra og med <ph name="TIME" /></translation>
 <translation id="1946005195648379376">Kontrollér hvordan Google bruker nettlesingsloggen din for å gi Søk og andre Google-tjenester et personlig preg.</translation>
-<translation id="1959930595721737608">Tillat JavaScript på følgende nettsted.</translation>
 <translation id="1966710179511230534">Oppdater påloggingsinformasjonen din.</translation>
 <translation id="1974060860693918893">Avansert</translation>
 <translation id="1984321224716884559">Bokmerker fra Chrome Dev</translation>
@@ -98,11 +99,9 @@ Du må ha slått på Bluetooth og Posisjon for å bruke det fysiske nettet.</tra
 <translation id="2268044343513325586">Finstem</translation>
 <translation id="2315043854645842844">Operativsystemet har ikke støtte for sertifikatvalg på klientsiden.</translation>
 <translation id="2321958826496381788">Dra glidebryteren til du kan lese dette uten problemer. Når du har dobbelttrykket på et avsnitt, bør teksten være minst like stor som dette.</translation>
-<translation id="2329597144923131178">Logg på for å få bokmerkene, loggen, passordene og de andre innstillingene dine på alle enhetene du bruker.</translation>
 <translation id="2343328333327081434">Installerer …</translation>
 <translation id="2351097562818989364">Oversettelsesinnstillingene dine er tilbakestilt.</translation>
 <translation id="2359808026110333948">Fortsett</translation>
-<translation id="2381756643783702095">Spør før noe sendes (anbefales).</translation>
 <translation id="2385560268894525395">den siste uken</translation>
 <translation id="2387895666653383613">Tekstskalering</translation>
 <translation id="238909021488141516">Det oppsto en feil under nedlastingen av innholdet.</translation>
@@ -134,6 +133,7 @@ Du må ha slått på Bluetooth og Posisjon for å bruke det fysiske nettet.</tra
 <translation id="2762000892062317888">akkurat nå</translation>
 <translation id="2770465223704140727">Fjern fra listen</translation>
 <translation id="278029852808208386">Ingen Bluetooth-enheter ble funnet. <ph name="BEGIN_LINK" />Søk igjen<ph name="END_LINK" />.</translation>
+<translation id="2781389167600714117">Velg frakt</translation>
 <translation id="2811892995384186721">Ser du ikke enheten din? <ph name="BEGIN_LINK" />Få hjelp<ph name="END_LINK" /></translation>
 <translation id="2836148919159985482">Trykk på tilbakeknappen for å avslutte fullskjerm.</translation>
 <translation id="2842985007712546952">Overordnet mappe</translation>
@@ -183,6 +183,7 @@ Du logger på med en administrert konto, og gir administratoren kontroll over Ch
 <translation id="3387650086002190359">Nedlastingen av <ph name="FILE_NAME" /> ble avbrutt på grunn av filsystemfeil.</translation>
 <translation id="3414952576877147120">Størrelse:</translation>
 <translation id="3435896845095436175">Slå på</translation>
+<translation id="3452612588551937789">Logg på med Google-kontoen din for å få bokmerkene, passordene, loggoppføringene og de andre innstillingene dine på alle enhetene du bruker.</translation>
 <translation id="3485544713029068372">Smart Lock for passord</translation>
 <translation id="3492207499832628349">Ny inkognitofane</translation>
 <translation id="3518985090088779359">Godta og fortsett</translation>
@@ -225,12 +226,14 @@ Hvis du vil endre søkeordet, kan du trykke på det og holde for å merke det. H
 <translation id="4170011742729630528">Tjenesten er ikke tilgjengelig. Prøv på nytt senere.</translation>
 <translation id="4195643157523330669">Åpne i ny fane</translation>
 <translation id="423410644998903704">Chrome må ha tilgang til tillatelsene for å kunne dele dem med dette nettstedet.</translation>
+<translation id="4242533952199664413">Åpne innstillingene</translation>
 <translation id="424864128008805179">Vil du logge av Chrome?</translation>
 <translation id="4254813446494774748">Språket siden skal oversettes til:</translation>
 <translation id="4256782883801055595">Lisenser for åpen kildekode</translation>
 <translation id="4259722352634471385">Nettadressen er blokkert: <ph name="URL" /></translation>
 <translation id="4269820728363426813">Kopiér linkadressen</translation>
 <translation id="4271185234001491831">Oversett aldri <ph name="LANGUAGE" /></translation>
+<translation id="4275663329226226506">Medier</translation>
 <translation id="4278390842282768270">Tillatt</translation>
 <translation id="4297410240212242334">Skill faner og apper</translation>
 <translation id="4307992518367153382">Generelt</translation>
@@ -333,7 +336,6 @@ Hvis du vil endre søkeordet, kan du trykke på det og holde for å merke det. H
 <translation id="5596627076506792578">Flere alternativer</translation>
 <translation id="5626134646977739690">Navn:</translation>
 <translation id="5626370437647899551">Legg til en Google-konto</translation>
-<translation id="563535393368633106">Spør før noe brukes (anbefales).</translation>
 <translation id="5646376287012673985">Posisjon</translation>
 <translation id="5659593005791499971">E-post</translation>
 <translation id="5668404140385795438">Overstyr nettstedets forespørsel om å forhindre zooming</translation>
@@ -416,7 +418,6 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="6656545060687952787">Chrome trenger posisjonstilgang for å søke etter enheter. <ph name="BEGIN_LINK" />Oppdater tillatelsene<ph name="END_LINK" /></translation>
 <translation id="666268767214822976">Bruk en forslagstjeneste for å vise relaterte søkeord og populære nettsteder mens du skriver i adressefeltet</translation>
 <translation id="666981079809192359">Merknad om personvern for Chrome</translation>
-<translation id="6683720003467092441">Tillat bakgrunnssynkronisering på følgende nettsted.</translation>
 <translation id="6698801883190606802">Administrer synkroniserte data</translation>
 <translation id="6710213216561001401">Forrige</translation>
 <translation id="6738867403308150051">Laster ned …</translation>
@@ -523,6 +524,7 @@ Det kan hende Google-kontoen din har andre typer nettlesingslogger, for eksempel
 <translation id="8007176423574883786">Slått av for denne enheten</translation>
 <translation id="8026334261755873520">Slett nettleserdata</translation>
 <translation id="8035133914807600019">Ny mappe</translation>
+<translation id="8063895661287329888">Kunne ikke legge til bokmerket.</translation>
 <translation id="8068648041423924542">Kan ikke velge sertifikat.</translation>
 <translation id="8069239273282989646">Etter komprimering</translation>
 <translation id="8073388330009372546">Åpne bildet i en ny fane</translation>
@@ -547,7 +549,6 @@ Det kan hende Google-kontoen din har andre typer nettlesingslogger, for eksempel
 <translation id="8374821112118309944">Du må oppdatere til en nyere versjon av Talkback.</translation>
 <translation id="8396312449826231789">Bare godkjente nettsteder</translation>
 <translation id="8413126021676339697">Vis fullstendig logg</translation>
-<translation id="8413385045638830869">Spør først (anbefales)</translation>
 <translation id="8428213095426709021">Innstillinger</translation>
 <translation id="8433057134996913067">Dette logger deg av de fleste nettsteder.</translation>
 <translation id="8481940801237642152">Tilkoblingen til dette området er privat, men det kan hende at noen på nettverket kan endre utseendet på siden.</translation>

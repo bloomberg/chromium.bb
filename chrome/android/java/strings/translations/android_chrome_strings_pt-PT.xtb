@@ -48,6 +48,7 @@ Tem de ter a Localização e o Bluetooth ativados para poder utilizar a Web fís
 <translation id="1557201757634521564">Deteção automática de codificação</translation>
 <translation id="1620510694547887537">Câmara</translation>
 <translation id="1623104350909869708">Evitar que esta página crie caixas de diálogo adicionais</translation>
+<translation id="1639239467298939599">A carregar</translation>
 <translation id="1641113438599504367">Navegação segura</translation>
 <translation id="164269334534774161">Está a visualizar uma cópia offline desta página de <ph name="CREATION_TIME" /></translation>
 <translation id="1643702317193804718">A traduzir a página para <ph name="SOURCE_LANGUAGE" />…</translation>
@@ -73,7 +74,6 @@ Tem de ter a Localização e o Bluetooth ativados para poder utilizar a Web fís
 <translation id="1943432128510653496">Guardar palavras-passe</translation>
 <translation id="1944384637046898011">Encriptar tudo com uma palavra-passe do Google a partir de <ph name="TIME" /></translation>
 <translation id="1946005195648379376">Controle a forma como a Google utiliza o seu histórico de navegação para personalizar a Pesquisa Google e outros serviços Google.</translation>
-<translation id="1959930595721737608">Permitir JavaScript no seguinte site.</translation>
 <translation id="1966710179511230534">Atualize os detalhes de início de sessão.</translation>
 <translation id="1974060860693918893">Avançadas</translation>
 <translation id="1984321224716884559">Marcadores do Chrome Dev</translation>
@@ -99,11 +99,9 @@ Tem de ter a Localização e o Bluetooth ativados para poder utilizar a Web fís
 <translation id="2268044343513325586">Refinar</translation>
 <translation id="2315043854645842844">O sistema operativo não suporta a seleção do certificado do lado do cliente.</translation>
 <translation id="2321958826496381788">Arraste o controlo de deslize até conseguir ler confortavelmente. O texto deve ter, pelo menos, este tamanho depois de tocar duas vezes num parágrafo.</translation>
-<translation id="2329597144923131178">Inicie sessão para aceder aos marcadores, ao histórico, às palavras-passe e a outras definições em todos os dispositivos.</translation>
 <translation id="2343328333327081434">A instalar...</translation>
 <translation id="2351097562818989364">As definições de tradução foram repostas.</translation>
 <translation id="2359808026110333948">Continuar</translation>
-<translation id="2381756643783702095">Perguntar antes de enviar (recomendado)</translation>
 <translation id="2385560268894525395">da semana passada</translation>
 <translation id="2387895666653383613">Escala do texto</translation>
 <translation id="238909021488141516">Ocorreu um erro ao transferir o conteúdo.</translation>
@@ -185,6 +183,7 @@ Está a iniciar sessão com uma conta gerida e a atribuir ao respetivo administr
 <translation id="3387650086002190359">A transferência de <ph name="FILE_NAME" /> falhou devido a erros do sistema de ficheiros.</translation>
 <translation id="3414952576877147120">Tamanho:</translation>
 <translation id="3435896845095436175">Ativar</translation>
+<translation id="3452612588551937789">Inicie sessão com a sua Conta Google para aceder aos marcadores, ao histórico, às palavras-passe e a outras definições em todos os dispositivos.</translation>
 <translation id="3485544713029068372">Smart Lock para palavras-passe</translation>
 <translation id="3492207499832628349">Novo sep. navegação anónima</translation>
 <translation id="3518985090088779359">Aceitar e continuar</translation>
@@ -234,6 +233,7 @@ Para ajustar o termo de pesquisa, prima continuamente para selecionar. Para refi
 <translation id="4259722352634471385">A navegação está bloqueada: <ph name="URL" /></translation>
 <translation id="4269820728363426813">Copiar endereço do link</translation>
 <translation id="4271185234001491831">Nunca traduzir de <ph name="LANGUAGE" /></translation>
+<translation id="4275663329226226506">Multimédia</translation>
 <translation id="4278390842282768270">Permitidos:</translation>
 <translation id="4297410240212242334">Separar separadores e aplicações</translation>
 <translation id="4307992518367153382">Noções básicas</translation>
@@ -336,7 +336,6 @@ Para ajustar o termo de pesquisa, prima continuamente para selecionar. Para refi
 <translation id="5596627076506792578">Mais opções</translation>
 <translation id="5626134646977739690">Nome:</translation>
 <translation id="5626370437647899551">Adicionar uma Conta Google</translation>
-<translation id="563535393368633106">Perguntar antes de aceder (recomendado)</translation>
 <translation id="5646376287012673985">Localização</translation>
 <translation id="5659593005791499971">Email</translation>
 <translation id="5668404140385795438">Substituir pedido de um Website para evitar aumentar o zoom</translation>
@@ -419,7 +418,6 @@ Por exemplo, alguns Websites podem responder a este pedido ao mostrar-lhe anúnc
 <translation id="6656545060687952787">O Chrome necessita de acesso à localização para procurar dispositivos. <ph name="BEGIN_LINK" />Atualizar autorizações<ph name="END_LINK" /></translation>
 <translation id="666268767214822976">Utilizar um serviço de previsão para mostrar consultas relacionadas e Websites populares à medida que escreve na barra de endereço</translation>
 <translation id="666981079809192359">Aviso de privacidade do Chrome</translation>
-<translation id="6683720003467092441">Permitir Sincronização em segundo plano no seguinte site.</translation>
 <translation id="6698801883190606802">Gerir dados sincronizados</translation>
 <translation id="6710213216561001401">Anterior</translation>
 <translation id="6738867403308150051">A transferir...</translation>
@@ -551,7 +549,6 @@ A sua Conta Google pode ter outras formas do histórico de navegação, como pes
 <translation id="8374821112118309944">Tem de atualizar o TalkBack para uma versão mais recente.</translation>
 <translation id="8396312449826231789">Apenas sites aprovados</translation>
 <translation id="8413126021676339697">Mostrar histórico completo</translation>
-<translation id="8413385045638830869">Perguntar primeiro (recomendado)</translation>
 <translation id="8428213095426709021">Definições</translation>
 <translation id="8433057134996913067">Esta opção termina a sessão na maioria dos Websites.</translation>
 <translation id="8481940801237642152">A sua ligação a este site é privada, mas alguém na rede pode estar a tentar alterar o aspeto da página.</translation>

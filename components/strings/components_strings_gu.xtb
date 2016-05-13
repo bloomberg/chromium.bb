@@ -18,7 +18,7 @@
 <translation id="1103523840287552314"><ph name="LANGUAGE" /> નો હંમેશાં અનુવાદ કરો</translation>
 <translation id="1107591249535594099">જો ચેક કરેલું હોય, તો ઝડપથી ફોર્મ ભરવા માટે Chrome આ ઉપકરણ પર તમારા કાર્ડની એક કૉપિ સંગ્રહશે.</translation>
 <translation id="1113869188872983271">&amp;પુનઃક્રમાંકિત કરવું પૂર્વવત્ કરો</translation>
-<translation id="112840717907525620">નીતિ કેશ ઑકે</translation>
+<translation id="112840717907525620">નીતિ કેશ ઓકે</translation>
 <translation id="113188000913989374"><ph name="SITE" /> આ કહે છે:</translation>
 <translation id="1132774398110320017">Chrome સ્વતઃભરણ સેટિંગ્સ...</translation>
 <translation id="113770840981343808">ચકાસણી માટે તમારા કાર્ડની આગળની બાજુ પરથી 4-અંકનો CVC દાખલ કરો</translation>
@@ -658,6 +658,7 @@
 <translation id="8225771182978767009">આ કમ્પ્યુટરને સેટ કરનાર વ્યક્તિએ આ સાઇટને અવરોધિત કરવાનું પસંદ કર્યું છે.</translation>
 <translation id="8241707690549784388">તમારા દ્વારા દાખલ કરાયેલી વપરાયેલી માહિતી માટે આ પાનું તમે જોઈ રહ્યા છો. તે પૃષ્ઠ પર પાછા જવાથી એવી કોઈપણ ક્રિયા ફરીથી થઈ શકે છે જે તમે પહેલા કરી હતી. શું તમે ચાલુ રાખવા માંગો છો?</translation>
 <translation id="8249320324621329438">છેલ્લું આનયન:</translation>
+<translation id="8261506727792406068">કાઢી નાખો</translation>
 <translation id="8266098793847448402"><ph name="BEGIN_BOLD" />Start<ph name="END_BOLD" /> 
       ક્લિક કરો,
       <ph name="BEGIN_BOLD" />Run<ph name="END_BOLD" /> 

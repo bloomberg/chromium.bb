@@ -199,7 +199,7 @@
 <translation id="2969319727213777354">Untuk membuat sambungan aman, jam perlu disetel dengan benar. Itu karena sertifikat yang digunakan situs web untuk mengidentifikasi situs web tersebut hanya valid untuk jangka waktu tertentu. Karena jam perangkat tidak benar, Google Chrome tidak dapat memverifikasi sertifikat ini.</translation>
 <translation id="2972581237482394796">&amp;Ulang</translation>
 <translation id="2985306909656435243">Jika diaktifkan, Chromium akan menyimpan salinan kartu Anda di perangkat ini untuk pengisian formulir yang lebih cepat.</translation>
-<translation id="2989984781570875765">Masukkan tanggal masa berlaku habis dan 3 digit CVC yang ada di bagian belakang <ph name="CREDIT_CARD" /></translation>
+<translation id="2989984781570875765">Masukkan tanggal masa berlaku dan 3 digit CVC yang ada di bagian belakang <ph name="CREDIT_CARD" /></translation>
 <translation id="2991174974383378012">Berbagi dengan Situs Web</translation>
 <translation id="3005723025932146533">Tampilkan salinan yang disimpan</translation>
 <translation id="3010559122411665027">Entri daftar "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
@@ -353,7 +353,7 @@
 <translation id="4592951414987517459">Sambungan Anda ke <ph name="DOMAIN" /> dienkripsi menggunakan cipher suite modern.</translation>
 <translation id="4594403342090139922">&amp;Urungkan Penghapusan</translation>
 <translation id="4668929960204016307">,</translation>
-<translation id="4670097147947922288">Anda melihat laman ekstensi.</translation>
+<translation id="4670097147947922288">Anda sedang melihat laman ekstensi.</translation>
 <translation id="467662567472608290">Server ini tidak dapat membuktikan bahwa ini adalah <ph name="DOMAIN" />; sertifikat keamanannya berisi kesalahan. Hal ini dapat disebabkan oleh kesalahan konfigurasi atau penyerang memotong sambungan Anda.</translation>
 <translation id="4683417246209150705">Masukkan 3 digit CVC yang ada di bagian belakang <ph name="CREDIT_CARD" /></translation>
 <translation id="4697214168136963651"><ph name="URL" /> dicekal</translation>
@@ -440,7 +440,7 @@
 <translation id="5650551054760837876">Tak ada hasil penelusuran yang ditemukan.</translation>
 <translation id="5663999524854166235">Masukkan 3 digit CVC dari bagian belakang kartu untuk verifikasi</translation>
 <translation id="5677928146339483299">Dicekal</translation>
-<translation id="5696590819423335174">Masukkan tanggal masa berlaku habis dan 4 digit CVC yang ada di bagian depan <ph name="CREDIT_CARD" /></translation>
+<translation id="5696590819423335174">Masukkan tanggal masa berlaku dan 4 digit CVC yang ada di bagian depan <ph name="CREDIT_CARD" /></translation>
 <translation id="5699278517904102888">Masukkan 3 digit CVC yang ada di bagian belakang <ph name="CREDIT_CARD" /> untuk verifikasi</translation>
 <translation id="5710435578057952990">Identitas situs Web ini belum diverifikasi.</translation>
 <translation id="5720705177508910913">Pengguna saat ini</translation>
@@ -659,6 +659,7 @@ Ssst! <ph name="SHORTCUT_KEY" /> mode penyamaran mungkin berguna suatu saat nant
 <translation id="8225771182978767009">Orang yang menyiapkan komputer ini telah memilih untuk memblokir situs ini.</translation>
 <translation id="8241707690549784388">Laman yang dicari menggunakan informasi yang Anda masukkan. Kembali ke laman tersebut dapat menyebabkan pengulangan tindakan apa pun yang Anda lakukan. Apakah Anda ingin melanjutkan?</translation>
 <translation id="8249320324621329438">Terakhir diambil:</translation>
+<translation id="8261506727792406068">Hapus</translation>
 <translation id="8266098793847448402">Klik
       <ph name="BEGIN_BOLD" />Start<ph name="END_BOLD" />,
       klik

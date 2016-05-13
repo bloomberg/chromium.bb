@@ -343,7 +343,6 @@ Gå til din e-mail på <ph name="ACCOUNT_EMAIL" /> for at få yderligere vejledn
 <translation id="1482124012545051544">Klar til at sikkerhedskopiere <ph name="FILE_COUNT" /> nye billeder</translation>
 <translation id="148466539719134488">Schweizisk</translation>
 <translation id="1485015260175968628">Nu kan den:</translation>
-<translation id="1485146213770915382">Indsæt <ph name="SEARCH_TERMS_LITERAL" /> i webadressen, der hvor søgetermer skal stå.</translation>
 <translation id="1486096554574027028">Søg i adgangskoder</translation>
 <translation id="1493263392339817010">Tilpas skriftstørrelser...</translation>
 <translation id="1493492096534259649">Dette sprog kan ikke bruges til stavekontrol</translation>
@@ -799,7 +798,6 @@ Gå til din e-mail på <ph name="ACCOUNT_EMAIL" /> for at få yderligere vejledn
 <translation id="2176045495080708525">Disse udvidelser er nu installeret:</translation>
 <translation id="2177950615300672361">Inkognitofane: <ph name="TAB_NAME" /></translation>
 <translation id="2178614541317717477">Sammensat nøglecenter</translation>
-<translation id="2179052183774520942">Tilføj søgemaskine</translation>
 <translation id="218492098606937156">Aktivér berøringshændelser</translation>
 <translation id="2187895286714876935">Fejl ved import af servercertifikat</translation>
 <translation id="2190069059097339078">Hentning af Wi-Fi-loginoplysninger</translation>
@@ -965,7 +963,6 @@ Når du har oprettet en ny administreret bruger, kan du til enhver tid administr
 <translation id="2392369802118427583">Aktiver</translation>
 <translation id="2394296868155622118">Administrer faktureringsoplysninger...</translation>
 <translation id="2394566832561516196">Indstillingerne nulstilles ved næste genindlæsning.</translation>
-<translation id="2396635603035772766">Aktivér eksperimentel grænseflade med boble til lagring af adgangskoder. Den erstatter den eksisterende infolinje.</translation>
 <translation id="2399147786307302860">Avancerede indstillinger for synkronisering...</translation>
 <translation id="2401053206567162910">Denne app understøttes ikke på denne enhed på nuværende tidspunkt, men Chrome-nisserne arbejder hårdt på snart at få den til at fungere.</translation>
 <translation id="2403091441537561402">Gateway:</translation>
@@ -982,7 +979,6 @@ Når du har oprettet en ny administreret bruger, kan du til enhver tid administr
 <translation id="2431394478374894294">Aktiverer taleinput på det virtuelle tastatur.</translation>
 <translation id="2433452467737464329">Tilføj et forespørgselsparameter i webadressen for at opdatere siden automatisk: chrome://network/?refresh=&lt;sec&gt;</translation>
 <translation id="2433507940547922241">Udseende</translation>
-<translation id="2433728760128592593">Tryk på Alt+Shift for at skifte mellem indtastningsmetoderne.</translation>
 <translation id="2435248616906486374">Forbindelsen til netværket blev afbrudt</translation>
 <translation id="2436186046335138073">Vil du tillade, at <ph name="HANDLER_HOSTNAME" /> åbner alle <ph name="PROTOCOL" />-links?</translation>
 <translation id="2436707352762155834">Minimum</translation>
@@ -2002,7 +1998,6 @@ Fra <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3764800135428056022">Tilbyd at gemme dine adgangskoder på nettet.</translation>
 <translation id="3764986667044728669">Tilmelding mislykkedes</translation>
 <translation id="3768037234834996183">Synkroniserer dine præferencer...</translation>
-<translation id="3770072361759252365">Når den er aktiveret, medtages et videokoder/-videoafkoderpar til H.264-software (hvis en hardwareafkoder også er tilgængelig, bruges den muligvis i stedet for denne afkoder).</translation>
 <translation id="3771294271822695279">Videofiler</translation>
 <translation id="3774278775728862009">Thai indtastningsmetode (TIS-820.2538-tastatur)</translation>
 <translation id="3775432569830822555">SSL-servercertifikat</translation>
@@ -2272,7 +2267,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="418179967336296930">Russisk fonetisk (YaZHert) tastatur</translation>
 <translation id="4181841719683918333">Sprog</translation>
 <translation id="4187248015940562149">Aktiverer Web-Bluetooth, der kan give websites tilladelse til at oprette forbindelse til og styre Bluetooth-enheder i nærheden af dig.</translation>
-<translation id="4188026131102273494">Søgeord:</translation>
 <translation id="4189406272289638749">Udvidelsen &lt;b&gt;<ph name="EXTENSION_NAME" />&lt;/b&gt; styrer denne indstilling.</translation>
 <translation id="4193154014135846272">Google-dokument</translation>
 <translation id="4193182321948161343">Aktivér Brugeradministration af Material Design</translation>
@@ -2573,7 +2567,6 @@ Tryk på en vilkårlig tast for at fortsætte udforskningen.</translation>
 <translation id="4685045708662437080">Dette hjælper Google med at genkende din stemme og forbedre tale- og lydgenkendelse for at give dig hurtigere resultater og med færre problemer. <ph name="BEGIN_LINK" />Få flere oplysninger<ph name="END_LINK" /></translation>
 <translation id="4690246192099372265">Svensk</translation>
 <translation id="4690462567478992370">Stop med at bruge et ugyldigt certifikat</translation>
-<translation id="4691088804026137116">Synkroniser ingenting</translation>
 <translation id="469230890969474295">OEM-mappe</translation>
 <translation id="4692342183939154835">Hardwarevideokodning i WebRTC</translation>
 <translation id="4692623383562244444">Søgemaskiner</translation>
@@ -3237,7 +3230,6 @@ Tryk på en vilkårlig tast for at fortsætte udforskningen.</translation>
 <translation id="5627086634964711283">Den styrer også, hvilken side der vises, når du klikker på knappen Startside.</translation>
 <translation id="5627259319513858869">Muliggør brugen af eksperimentelle kanvasfunktioner, som stadig er under udvikling.</translation>
 <translation id="5627618611556177958">WebUSB</translation>
-<translation id="5630163645818715367">Material design øverst i browserens chrome</translation>
 <translation id="5636996382092289526">Hvis du vil bruge <ph name="NETWORK_ID" />, skal du først <ph name="LINK_START" />gå til netværkets loginside<ph name="LINK_END" />, som åbner automatisk om et par sekunder. Hvis ikke, kan netværket ikke bruges.</translation>
 <translation id="5637357908912398026">Tving til at gemme adgangskoder</translation>
 <translation id="5637380810526272785">Indtastningsmetode</translation>
@@ -3928,7 +3920,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6708242697268981054">Oprindelse:</translation>
 <translation id="6709357832553498500">Opret forbindelse ved hjælp af <ph name="EXTENSIONNAME" /></translation>
 <translation id="6710213216561001401">Forrige</translation>
-<translation id="6713912347540154876">Boblegrænseflade for Gem adgangskode</translation>
 <translation id="6718273304615422081">Komprimerer...</translation>
 <translation id="671928215901716392">Lås skærmen</translation>
 <translation id="6721972322305477112">&amp;Fil</translation>
@@ -4284,7 +4275,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7255220508626648026">Caster: <ph name="ROUTETITLE" /></translation>
 <translation id="7255935316994522020">Anvend</translation>
 <translation id="7256710573727326513">Åbn på en fane</translation>
-<translation id="7257173066616499747">Wi-Fi-netværk</translation>
 <translation id="7257666756905341374">Læs de data, du kopierer og indsætter</translation>
 <translation id="7260504762447901703">Tilbagekald adgangstilladelsen</translation>
 <translation id="7262004276116528033">Denne logintjeneste hostes af <ph name="SAML_DOMAIN" />.</translation>
@@ -4712,6 +4702,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7896906914454843592">Udvidet amerikansk tastatur</translation>
 <translation id="7897900149154324287">For fremtiden skal du sørge for at skubbe din flytbare enhed ud i appen Filer, før du kobler den fra. Hvis ikke du gør dette, kan du risikere at miste data.</translation>
 <translation id="7898627924844766532">Behold på værktøjslinjen</translation>
+<translation id="7898725031477653577">Oversæt altid</translation>
 <translation id="7899177175067029110">Din telefon kan ikke findes. Sørg for, at din <ph name="DEVICE_TYPE" /> har forbindelse til internettet. &lt;a&gt;Få flere oplysninger&lt;/a&gt;</translation>
 <translation id="7900476766547206086">Adgangskoder er påkrævede for brugere, der logger ind, da én eller flere brugere har denne indstilling slået til.</translation>
 <translation id="7903128267494448252">Slet denne person</translation>
@@ -5284,7 +5275,6 @@ Beregner resterende tid</translation>
 <translation id="871476437400413057">Gemte adgangskoder på Google</translation>
 <translation id="8714838604780058252">Baggrundsgrafik</translation>
 <translation id="8722421161699219904">Internationalt amerikansk tastatur</translation>
-<translation id="872451400847464257">Rediger søgemaskine</translation>
 <translation id="8724859055372736596">&amp;Vis i mappe</translation>
 <translation id="8725066075913043281">Forsøg igen</translation>
 <translation id="8725178340343806893">Foretrukne/Bogmærker</translation>

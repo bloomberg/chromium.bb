@@ -516,9 +516,9 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
 
           Si eliges usar la configuración del proxy del sistema o detectar de forma automática el servidor proxy, se ignoran todas las otras opciones.
 
-           Si eliges la configuración manual del proxy, puedes especificar más opciones en los campos "Dirección o URL del servidor proxy" y "Lista separada por comas de las reglas de omisión del proxy". Las apps de ARC solo podrán usar el servidor proxy HTTP con la prioridad más alta.
+           Si eliges la configuración manual del proxy, puedes especificar más opciones en los campos "Dirección o URL del servidor proxy", "URL a un archivo proxy .pac" y "Lista separada por comas de las reglas de omisión del proxy". Las apps de ARC solo podrán usar el servidor proxy HTTP con la prioridad más alta.
 
-          Para conocer ejemplos detallados, visita:
+          Para obtener ejemplos detallados, visita:
           <ph name="PROXY_HELP_URL" />.
 
           Si habilitas esta configuración, <ph name="PRODUCT_NAME" /> ignora todas las opciones relacionadas con el proxy que se especificaron en la línea de comandos.
@@ -636,7 +636,7 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
 
       Si eliges detectar de forma automática el servidor proxy, se ignoran todas las otras opciones.
 
-      Para conocer ejemplos detallados, visita:
+      Para obtener ejemplos detallados, visita:
       <ph name="PROXY_HELP_URL" />.
 
       Si habilitas esta configuración, <ph name="PRODUCT_NAME" /> y las apps de ARC ignoran todas las opciones relacionadas con el proxy que se especificaron en la línea de comandos.
@@ -710,7 +710,7 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
 
           No establezcas esta política si seleccionaste otro modo para configurar políticas de proxy.
 
-          Para conocer ejemplos detallados, visita:
+          Para obtener ejemplos detallados, visita:
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="3478024346823118645">Eliminar los datos del usuario al salir</translation>
 <translation id="348495353354674884">Habilitar el teclado virtual</translation>
@@ -1316,7 +1316,7 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
       Esta política afecta a todos los tipos de medios de almacenamiento, por ejemplo, memorias USB, discos rígidos externos, tarjetas de memoria SD y de otros tipos, almacenamiento óptico, etc. El almacenamiento interno no se ve afectado, por lo que aún se puede acceder a los archivos guardados en la carpeta de Descargas. Esta política tampoco afecta a Google Drive.
 
       Si esta opción se inhabilita o no se configura, los usuarios podrán utilizar todos los tipos admitidos de almacenamiento externo en su dispositivo.</translation>
-<translation id="6076099373507468537">Define la lista de dispositivos USB que tienen autorización para separarse del controlador en modo kernel para usarse a través de la API chrome.usb directamente en la aplicación web. Las entradas son pares formados por el identificador del producto y del proveedor USB que permiten determinar un hardware específico.
+<translation id="6076099373507468537">Define la lista de dispositivos USB que tienen autorización para separarse del controlador en modo kernel para usarse a través de la API chrome.usb directamente en la aplicación web. Las entradas son pares formados por el identificador del producto y del proveedor USB que permiten reconocer un hardware específico.
 
       Si esta política no se configura, la lista de dispositivos USB que se pueden separar está vacía.</translation>
 <translation id="6095999036251797924">Especifica el tiempo que debe transcurrir sin que el usuario realice una acción antes de que la pantalla se bloquee cuando se utiliza CA o batería.
@@ -1814,7 +1814,7 @@ desactivarlo).</translation>
 
           No establezcas esta política si seleccionaste otro modo para configurar políticas de proxy.
 
-          Para conocer ejemplos detallados, visita:
+          Para obtener ejemplos detallados, visita:
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7788511847830146438">Por perfil</translation>
 <translation id="7796141075993499320">Te permite configurar una lista de patrones de URL que especifican los sitios que están autorizados a ejecutar complementos. Si esta política no se configura, se usará el valor global predeterminado para todos los sitios ya sea de la política "DefaultPluginsSetting", si está configurada, o de otro tipo de configuración personal del usuario.</translation>
@@ -1852,7 +1852,7 @@ desactivarlo).</translation>
 
           No establezcas esta política si seleccionaste otro modo para configurar políticas de proxy.
 
-          Para conocer ejemplos detallados, visita:
+          Para obtener ejemplos detallados, visita:
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="793134539373873765">Especifica si se debe utilizar la conexión P2P para cargas de actualizaciones del sistema operativo. Si esta política se establece en True, los dispositivos compartirán e intentarán consumir cargas de actualizaciones en la red LAN, y reducirán de forma potencial la congestión y el uso del ancho de banda de Internet. Si la carga de actualizaciones no está disponible en la red LAN, el dispositivo deberá realizar la descarga desde un servidor de actualizaciones. Si se establece en False o no se configura, no se utilizará la conexión P2P.</translation>
 <translation id="7933141401888114454">Habilita la creación de usuarios supervisados.</translation>
@@ -2197,9 +2197,9 @@ desactivarlo).</translation>
 
           Si eliges el modo de proxy de servidor fijo, puedes especificar más opciones en los campos "Dirección o URL del servidor proxy" y "Lista separada por comas de las reglas de omisión del proxy". Las apps de ARC solo podrán usar el servidor proxy HTTP con la prioridad más alta.
 
-          Si eliges usar una secuencia de comandos para el proxy con formato .pac, debes especificar la URL de la secuencia de comandos en el campo "URL para el archivo .pac de proxy".
+          Si eliges usar una secuencia de comandos para el proxy con formato .pac, debes especificar la URL de la secuencia de comandos en el campo "URL a un archivo proxy .pac".
 
-          Para conocer ejemplos detallados, visita:
+          Para obtener ejemplos detallados, visita:
           <ph name="PROXY_HELP_URL" />.
 
           Si habilitas esta configuración, <ph name="PRODUCT_NAME" /> y las apps de ARC ignoran todas las opciones relacionadas con el proxy que se especificaron en la línea de comandos.

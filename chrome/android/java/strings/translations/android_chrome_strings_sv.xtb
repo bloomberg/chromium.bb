@@ -48,6 +48,7 @@ Bluetooth och Plats måste vara aktiverade om du vill använda Physical Web-tjä
 <translation id="1557201757634521564">Identifiera teckenkodning automatiskt</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1623104350909869708">Hindra sidan från att skapa fler dialogrutor</translation>
+<translation id="1639239467298939599">Läser in</translation>
 <translation id="1641113438599504367">Säker webbsökning</translation>
 <translation id="164269334534774161">Det som visas är en offlinekopia av den här sidan från <ph name="CREATION_TIME" /></translation>
 <translation id="1643702317193804718">Översätter sidan till <ph name="SOURCE_LANGUAGE" /> …</translation>
@@ -73,7 +74,6 @@ Bluetooth och Plats måste vara aktiverade om du vill använda Physical Web-tjä
 <translation id="1943432128510653496">Spara lösenord</translation>
 <translation id="1944384637046898011">Kryptera alla med Google-lösenordet från <ph name="TIME" /></translation>
 <translation id="1946005195648379376">Styr hur Google anpassar Sök och andra Google-tjänster utifrån webbhistoriken.</translation>
-<translation id="1959930595721737608">Tillåt JavaScript på följande webbplats.</translation>
 <translation id="1966710179511230534">Uppdatera dina inloggningsuppgifter.</translation>
 <translation id="1974060860693918893">Avancerat</translation>
 <translation id="1984321224716884559">Bokmärken i Chrome Dev</translation>
@@ -99,11 +99,9 @@ Bluetooth och Plats måste vara aktiverade om du vill använda Physical Web-tjä
 <translation id="2268044343513325586">Finjustera</translation>
 <translation id="2315043854645842844">Val av certifikat på klienten stöds inte av operativsystemet.</translation>
 <translation id="2321958826496381788">Flytta reglaget tills du kan läsa texten ordentligt. Texten bör bli åtminstone så här stor när du trycker två gånger på ett stycke.</translation>
-<translation id="2329597144923131178">Logga in så blir bokmärken, historik, lösenord med mera tillgängligt på alla dina enheter.</translation>
 <translation id="2343328333327081434">Installerar …</translation>
 <translation id="2351097562818989364">Översättningsinställningarna har återställts.</translation>
 <translation id="2359808026110333948">Fortsätt</translation>
-<translation id="2381756643783702095">Fråga innan något skickas (rekommenderas)</translation>
 <translation id="2385560268894525395">den senaste veckan</translation>
 <translation id="2387895666653383613">Textskalning</translation>
 <translation id="238909021488141516">Ett fel uppstod när innehållet skulle laddas ned.</translation>
@@ -185,6 +183,7 @@ Du loggar in med ett hanterat konto, vilket innebär att administratören kontro
 <translation id="3387650086002190359">Det gick inte att ladda ned <ph name="FILE_NAME" /> på grund av filsystemfel.</translation>
 <translation id="3414952576877147120">Storlek:</translation>
 <translation id="3435896845095436175">Aktivera</translation>
+<translation id="3452612588551937789">Logga in med ditt Google-konto så att du kan använda bokmärken, lösenord, historik med mera på alla dina enheter.</translation>
 <translation id="3485544713029068372">Smart Lock för lösenord</translation>
 <translation id="3492207499832628349">Ny inkognitoflik</translation>
 <translation id="3518985090088779359">Godkänn och fortsätt</translation>
@@ -234,6 +233,7 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="4259722352634471385">Webbadressen har blockerats: <ph name="URL" /></translation>
 <translation id="4269820728363426813">Kopiera länkadress</translation>
 <translation id="4271185234001491831">Översätt aldrig från <ph name="LANGUAGE" /></translation>
+<translation id="4275663329226226506">Media</translation>
 <translation id="4278390842282768270">Tillåtet</translation>
 <translation id="4297410240212242334">Separera flikar och appar</translation>
 <translation id="4307992518367153382">Grunderna</translation>
@@ -336,7 +336,6 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="5596627076506792578">Fler alternativ</translation>
 <translation id="5626134646977739690">Namn:</translation>
 <translation id="5626370437647899551">Lägg till ett Google-konto</translation>
-<translation id="563535393368633106">Fråga innan informationen används (rekommenderas)</translation>
 <translation id="5646376287012673985">Plats</translation>
 <translation id="5659593005791499971">E-post</translation>
 <translation id="5668404140385795438">Åsidosätt en webbplats begäran att hindra inzoomning</translation>
@@ -419,7 +418,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="6656545060687952787">Chrome behöver platsåtkomst för att söka efter enheter. <ph name="BEGIN_LINK" />Uppdatera behörigheter<ph name="END_LINK" /></translation>
 <translation id="666268767214822976">Använd en tjänst som ger förslag på relaterade sökfrågor och populära webbplatser när du skriver i adressfältet</translation>
 <translation id="666981079809192359">Chromes sekretessmeddelande</translation>
-<translation id="6683720003467092441">Tillåt bakgrundssynkronisering på följande webbplats.</translation>
 <translation id="6698801883190606802">Hantera synkroniserad data</translation>
 <translation id="6710213216561001401">Föregående</translation>
 <translation id="6738867403308150051">Laddar ned …</translation>
@@ -551,7 +549,6 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="8374821112118309944">Du måste uppdatera till en senare version av TalkBack.</translation>
 <translation id="8396312449826231789">Endast godkända webbplatser</translation>
 <translation id="8413126021676339697">Visa fullständig historik</translation>
-<translation id="8413385045638830869">Fråga först (rekommenderas)</translation>
 <translation id="8428213095426709021">Inställningar</translation>
 <translation id="8433057134996913067">Alternativet innebär att du loggas ut från de flesta webbplatser.</translation>
 <translation id="8481940801237642152">Din anslutning till webbplatsen är privat, men någon i nätverket kanske kan ändra utseendet på sidan.</translation>

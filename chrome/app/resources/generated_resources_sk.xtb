@@ -343,7 +343,6 @@
 <translation id="1482124012545051544">Zálohovanie nových fotiek (počet: <ph name="FILE_COUNT" />) je pripravené</translation>
 <translation id="148466539719134488">Švajčiarska klávesnica</translation>
 <translation id="1485015260175968628">Teraz môže:</translation>
-<translation id="1485146213770915382">Vložiť <ph name="SEARCH_TERMS_LITERAL" /> do webovej adresy, kde by sa mali zobraziť hľadané slová.</translation>
 <translation id="1486096554574027028">Vyhľadávanie hesiel</translation>
 <translation id="1493263392339817010">Prispôsobiť písma...</translation>
 <translation id="1493492096534259649">Tento jazyk nie je možné použiť na kontrolu pravopisu</translation>
@@ -804,7 +803,6 @@ Do úplného nabitia zostáva: <ph name="HOUR" />:<ph name="MINUTE" /></translat
 <translation id="2176045495080708525">Práve sa inštalujú tieto rozšírenia:</translation>
 <translation id="2177950615300672361">Karta inkognito: <ph name="TAB_NAME" /></translation>
 <translation id="2178614541317717477">Ohrozenie zabezpečenia CA</translation>
-<translation id="2179052183774520942">Pridať vyhľadávací mechanizmus</translation>
 <translation id="218492098606937156">Povoliť udalosti dotyku</translation>
 <translation id="2187895286714876935">Chyba importovania certifikátu servera</translation>
 <translation id="2190069059097339078">WiFi Credentials Getter</translation>
@@ -970,7 +968,6 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translation>
 <translation id="2392369802118427583">Aktivovať</translation>
 <translation id="2394296868155622118">Spravovať fakturačné údaje...</translation>
 <translation id="2394566832561516196">Pri ďalšom opätovnom načítaní budú nastavenia vymazané.</translation>
-<translation id="2396635603035772766">Povolí experimentálne bublinové používateľské rozhranie na ukladanie hesiel, ktoré nahradí existujúci informačný panel.</translation>
 <translation id="2399147786307302860">Rozšírené nastavenia synchronizácie...</translation>
 <translation id="2401053206567162910">Táto aplikácia nie je v súčasnosti na tomto zariadení podporovaná, ale škriatkovia prehliadača Chrome usilovne pracujú na tom, aby čoskoro fungovala.</translation>
 <translation id="2403091441537561402">Brána:</translation>
@@ -987,7 +984,6 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translation>
 <translation id="2431394478374894294">Aktivuje hlasový vstup na virtuálnej klávesnici.</translation>
 <translation id="2433452467737464329">Pridajte parameter dopytu do webovej adresy na automatické obnovenie stránky: chrome://network/?refresh=&lt;sec&gt;</translation>
 <translation id="2433507940547922241">Vzhľad</translation>
-<translation id="2433728760128592593">Stlačením klávesov Alt+Shift môžete prepínať medzi metódami vstupu.</translation>
 <translation id="2435248616906486374">Sieť je odpojená</translation>
 <translation id="2436186046335138073">Chcete povoliť obslužnému programu <ph name="HANDLER_HOSTNAME" /> otvárať všetky odkazy protokolu <ph name="PROTOCOL" />?</translation>
 <translation id="2436707352762155834">Minimálne</translation>
@@ -2003,7 +1999,6 @@ z domény <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3764800135428056022">Ponúkať uloženie hesiel webových stránok.</translation>
 <translation id="3764986667044728669">Registrácia zlyhala</translation>
 <translation id="3768037234834996183">Synchronizujú sa predvoľby...</translation>
-<translation id="3770072361759252365">Keď je táto možnosť povolená, bude zahrnutá aj dvojica softvérový kódovač/dekodér videí H.264 (ak je k dispozícii aj hardvérový dekodér, môžete ho použiť namiesto tohto dekodéra).</translation>
 <translation id="3771294271822695279">Súbory videa</translation>
 <translation id="3774278775728862009">Thajská metóda vstupu (klávesnica TIS-820.2538)</translation>
 <translation id="3775432569830822555">Certifikát servera SSL</translation>
@@ -2274,7 +2269,6 @@ Všetci používatelia sa musia odhlásiť a až potom môžu pokračovať.</tra
 <translation id="418179967336296930">Ruská fonetická (YaZHert) klávesnica</translation>
 <translation id="4181841719683918333">Jazyky</translation>
 <translation id="4187248015940562149">Aktivuje funkciu Web Bluetooth zahrnujúcu možnosť povoľovať webové stránky, ku ktorým je možné pripojiť sa, a ovládať zariadenia Bluetooth vo vašom okolí.</translation>
-<translation id="4188026131102273494">Kľúčové slovo:</translation>
 <translation id="4189406272289638749">Toto nastavenie spravuje rozšírenie &lt;b&gt;<ph name="EXTENSION_NAME" />&lt;/b&gt;.</translation>
 <translation id="4193154014135846272">Dokument Google</translation>
 <translation id="4193182321948161343">Povoliť správcu používateľov so vzhľadom Material Design</translation>
@@ -2575,7 +2569,6 @@ Ak chcete pokračovať v práci, stlačte ľubovoľný kláves.</translation>
 <translation id="4685045708662437080">Táto funkcia pomôže službe Google rozpoznať váš hlas a zlepšiť rozpoznávanie hlasu a zvuku, aby vám mohla zobrazovať výsledky rýchlejšie a s menším počtom problémov. <ph name="BEGIN_LINK" />Ďalšie informácie<ph name="END_LINK" /></translation>
 <translation id="4690246192099372265">Švédčina</translation>
 <translation id="4690462567478992370">Nepoužívať neplatné certifikáty</translation>
-<translation id="4691088804026137116">Nesynchronizovať nič</translation>
 <translation id="469230890969474295">Priečinok OEM</translation>
 <translation id="4692342183939154835">Hardvérové kódovanie videa WebRTC</translation>
 <translation id="4692623383562244444">Vyhľadávače</translation>
@@ -3240,7 +3233,6 @@ Ak chcete pokračovať v práci, stlačte ľubovoľný kláves.</translation>
 <translation id="5627086634964711283">Tiež určuje, ktorá stránka sa zobrazí po kliknutí na tlačidlo Domovská stránka.</translation>
 <translation id="5627259319513858869">Povolí použitie experimentálnych funkcií plátna, ktoré sú ešte vo vývoji.</translation>
 <translation id="5627618611556177958">WebUSB</translation>
-<translation id="5630163645818715367">Vzhľad Material Design v hornom paneli chrome prehliadača</translation>
 <translation id="5636996382092289526">Pred použitím siete <ph name="NETWORK_ID" /> bude možno potrebné najprv <ph name="LINK_START" />prejsť na prihlasovaciu stránku siete<ph name="LINK_END" />, ktorá sa otvorí automaticky v priebehu niekoľkých sekúnd. Ak k tomu nedôjde, daná sieť sa nedá použiť.</translation>
 <translation id="5637357908912398026">Vynútené ukladanie hesiel</translation>
 <translation id="5637380810526272785">Metóda vstupu</translation>
@@ -3932,7 +3924,6 @@ Niektoré funkcie nemusia byť k dispozícii.  Skontrolujte, či profil existuje
 <translation id="6708242697268981054">Pôvod:</translation>
 <translation id="6709357832553498500">Pripojiť sa pomocou rozšírenia <ph name="EXTENSIONNAME" /></translation>
 <translation id="6710213216561001401">Dozadu</translation>
-<translation id="6713912347540154876">Bublinové používateľské rozhranie ukladania hesiel</translation>
 <translation id="6718273304615422081">Prebieha komprimovanie...</translation>
 <translation id="671928215901716392">Uzamknúť obrazovku</translation>
 <translation id="6721972322305477112">&amp;Súbor</translation>
@@ -4290,7 +4281,6 @@ Niektoré funkcie nemusia byť k dispozícii.  Skontrolujte, či profil existuje
 <translation id="7255220508626648026">Prebieha prenášanie: <ph name="ROUTETITLE" /></translation>
 <translation id="7255935316994522020">Použiť</translation>
 <translation id="7256710573727326513">Otvoriť na karte</translation>
-<translation id="7257173066616499747">Siete Wi-Fi</translation>
 <translation id="7257666756905341374">Čítať údaje, ktoré kopírujete a prilepujete</translation>
 <translation id="7260504762447901703">Odvolať prístup</translation>
 <translation id="7262004276116528033">Túto prihlasovaciu službu hostí doména <ph name="SAML_DOMAIN" /></translation>
@@ -4718,6 +4708,7 @@ Niektoré funkcie nemusia byť k dispozícii.  Skontrolujte, či profil existuje
 <translation id="7896906914454843592">Americká klávesnica s rozšíreným rozložením klávesov</translation>
 <translation id="7897900149154324287">V budúcnosti nezabudnite v aplikácii Súbory vysunúť odnímateľné zariadenie skôr, ako ho odpojíte. Inak by ste mohli prísť o údaje.</translation>
 <translation id="7898627924844766532">Ponechať na paneli s nástrojmi</translation>
+<translation id="7898725031477653577">Vždy preložiť</translation>
 <translation id="7899177175067029110">Váš telefón sa nedá nájsť. Uistite sa, že vaše zariadenie <ph name="DEVICE_TYPE" /> je pripojené k internetu. &lt;a&gt;Ďalšie informácie&lt;/a&gt;</translation>
 <translation id="7900476766547206086">Pre prihlásených používateľov sa vyžaduje heslo, pretože jeden alebo viacero používateľov zaplo toto nastavenie.</translation>
 <translation id="7903128267494448252">Odstrániť túto osobu</translation>
@@ -5290,7 +5281,6 @@ Prebieha výpočet času do úplného nabitia</translation>
 <translation id="871476437400413057">uloženým heslám Google</translation>
 <translation id="8714838604780058252">Grafika na pozadí</translation>
 <translation id="8722421161699219904">Americká klávesnica s medzinárodným rozložením klávesov</translation>
-<translation id="872451400847464257">Upraviť vyhľadávací mechanizmus</translation>
 <translation id="8724859055372736596">&amp;Zobraziť v priečinku</translation>
 <translation id="8725066075913043281">Skúsiť znova</translation>
 <translation id="8725178340343806893">Obľúbené položky/záložky</translation>

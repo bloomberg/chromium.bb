@@ -344,7 +344,6 @@ Pakitingnan ang iyong email sa <ph name="ACCOUNT_EMAIL" /> upang makakuha ng iba
 <translation id="1482124012545051544">Handa nang mag-back up ng <ph name="FILE_COUNT" /> (na) bagong larawan</translation>
 <translation id="148466539719134488">Swiss</translation>
 <translation id="1485015260175968628">Maaari na itong:</translation>
-<translation id="1485146213770915382">Ipasok <ph name="SEARCH_TERMS_LITERAL" /> sa URL kung saan ang mga tuntunin sa paghahanap ay dapat lumitaw.</translation>
 <translation id="1486096554574027028">Maghanap ng mga password</translation>
 <translation id="1493263392339817010">I-customize ang mga font...</translation>
 <translation id="1493492096534259649">Hindi magagamit ang wikang ito para sa spell checking</translation>
@@ -805,7 +804,6 @@ Pakitingnan ang iyong email sa <ph name="ACCOUNT_EMAIL" /> upang makakuha ng iba
 <translation id="2176045495080708525">Naka-install na ngayon ang sumusunod na mga extension:</translation>
 <translation id="2177950615300672361">Tab na Incognito: <ph name="TAB_NAME" /></translation>
 <translation id="2178614541317717477">CA Compromise</translation>
-<translation id="2179052183774520942">Idagdag ang Search Engine</translation>
 <translation id="218492098606937156">Pinapagana ang mga touch event</translation>
 <translation id="2187895286714876935">Error sa Pag-import ng Certificate ng Server</translation>
 <translation id="2190069059097339078">Pangkuha ng mga Kredensyal ng WiFi</translation>
@@ -971,7 +969,6 @@ Pagkatapos mong gumawa ng bagong pinangangasiwaang user, maaari mong pamahalaan 
 <translation id="2392369802118427583">I-activate</translation>
 <translation id="2394296868155622118">Pamahalaan ang mga detalye ng pagsingil...</translation>
 <translation id="2394566832561516196">Maki-clear ang mga setting sa susunod na pag-reload.</translation>
-<translation id="2396635603035772766">I-enable ang pang-eksperimentong bubble-based na UI para sa pag-save ng mga password; na pinapalitan ang umiiral nang infobar.</translation>
 <translation id="2399147786307302860">Advanced na mga setting ng pag-sync...</translation>
 <translation id="2401053206567162910">Kasalukuyang hindi sinusuportahan ang app na ito sa device na ito ngunit nagsusumikap nang mabuti ang mga gnome ng Chrome upang mapagana ito sa lalong madaling panahon.</translation>
 <translation id="2403091441537561402">Gateway:</translation>
@@ -988,7 +985,6 @@ Pagkatapos mong gumawa ng bagong pinangangasiwaang user, maaari mong pamahalaan 
 <translation id="2431394478374894294">Ine-enable ang input na boses sa virtual na keyboard.</translation>
 <translation id="2433452467737464329">Magdagdag ng query param sa URL upang i-auto-refresh ang pahina: chrome://network/?refresh=&lt;sec&gt;</translation>
 <translation id="2433507940547922241">Hitsura</translation>
-<translation id="2433728760128592593">Pindutin ang Alt+Shift upang magpalipat-lipat sa mga pamamaraan ng pag-input.</translation>
 <translation id="2435248616906486374">Nadiskonekta ang network</translation>
 <translation id="2436186046335138073">Papayagan ang <ph name="HANDLER_HOSTNAME" /> na buksan ang lahat ng link ng <ph name="PROTOCOL" />?</translation>
 <translation id="2436707352762155834">Minimum</translation>
@@ -2006,7 +2002,6 @@ Mula Sa <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3764800135428056022">Mag-alok na i-save ang iyong mga password sa web.</translation>
 <translation id="3764986667044728669">Hindi ma-enroll</translation>
 <translation id="3768037234834996183">Nagsi-sync ng iyong mga kagustuhan...</translation>
-<translation id="3770072361759252365">Kapag na-enable, magsasama ng isang pares ng H.264 software video encoder/decoder. (Kung mayroon ding isang hardware decoder, maaari ito ang gamitin sa halip na ang decode na ito).</translation>
 <translation id="3771294271822695279">Mga Video File</translation>
 <translation id="3774278775728862009">Paraan ng pag-input na Thai (TIS-820.2538 na keyboard)</translation>
 <translation id="3775432569830822555">SSL Server Certificate</translation>
@@ -2277,7 +2272,6 @@ Dapat mag-sign out ang lahat ng user upang magpatuloy.</translation>
 <translation id="418179967336296930">Russian Phonetic (YaZHert) keyboard</translation>
 <translation id="4181841719683918333">Mga Wika</translation>
 <translation id="4187248015940562149">Ine-enable ang Web Bluetooth na maaaring magbigay-daan sa mga website na kumonekta sa at kontrolin ang mga Bluetooth device na nasa paligid mo.</translation>
-<translation id="4188026131102273494">Keyword:</translation>
 <translation id="4189406272289638749">Kinokontrol ng isang extension na &lt;b&gt;<ph name="EXTENSION_NAME" />&lt;/b&gt; ang setting na ito.</translation>
 <translation id="4193154014135846272">Dokumento ng Google</translation>
 <translation id="4193182321948161343">I-enable ang User Manager ng Material Design</translation>
@@ -2579,7 +2573,6 @@ Pumindot ng anumang key upang magpatuloy sa pagtuklas.</translation>
 <translation id="4685045708662437080">Nakakatulong ito sa Google na makilala ang iyong boses at mapahusay ang pagkilala ng pananalita at audio upang mabigyan ka ng mga resulta nang mas mabilis at mas kaunti ang abala. <ph name="BEGIN_LINK" />Matuto nang higit pa<ph name="END_LINK" /></translation>
 <translation id="4690246192099372265">Swedish</translation>
 <translation id="4690462567478992370">Ihinto ang paggamit ng di-wastong certificate</translation>
-<translation id="4691088804026137116">Huwag mag-sync</translation>
 <translation id="469230890969474295">Folder ng OEM</translation>
 <translation id="4692342183939154835">Pag-encode ng video ng WebRTC hardware</translation>
 <translation id="4692623383562244444">Mga search engine</translation>
@@ -3244,7 +3237,6 @@ Pumindot ng anumang key upang magpatuloy sa pagtuklas.</translation>
 <translation id="5627086634964711283">Kinokontrol din nito kung anong pahina ang ipinapakita kapag na-click mo ang button ng Home.</translation>
 <translation id="5627259319513858869">Nagbibigay-daan sa paggamit ng mga pang-eksperimentong tampok ng canvas na binubuo pa.</translation>
 <translation id="5627618611556177958">WebUSB</translation>
-<translation id="5630163645818715367">Material design sa chrome sa itaas ng browser</translation>
 <translation id="5636996382092289526">Upang gamitin ang <ph name="NETWORK_ID" />, maaaring kailangan mo munang <ph name="LINK_START" />bisitahin ang pahina sa pag-sign in ng network<ph name="LINK_END" />, na awtomatikong bubukas sa loob ng ilang segundo. Kung hindi ito mangyayari, hindi magagamit ang network.</translation>
 <translation id="5637357908912398026">Puwersahang pagse-save ng mga password</translation>
 <translation id="5637380810526272785">Input Method</translation>
@@ -3936,7 +3928,6 @@ Maaaring hindi available ang ilang tampok.  Mangyaring suriin na umiiral ang pro
 <translation id="6708242697268981054">Pinanggalingan:</translation>
 <translation id="6709357832553498500">Kumonekta sa pamamagitan ng <ph name="EXTENSIONNAME" /></translation>
 <translation id="6710213216561001401">Nakaraan</translation>
-<translation id="6713912347540154876">Bubble UI para sa Pagse-save ng Password</translation>
 <translation id="6718273304615422081">Nagzi-zip...</translation>
 <translation id="671928215901716392">I-lock ang screen</translation>
 <translation id="6721972322305477112">&amp;File</translation>
@@ -4296,7 +4287,6 @@ Maaaring hindi available ang ilang tampok.  Mangyaring suriin na umiiral ang pro
 <translation id="7255220508626648026">Nagka-cast: <ph name="ROUTETITLE" /></translation>
 <translation id="7255935316994522020">Ilapat</translation>
 <translation id="7256710573727326513">Buksan sa isang tab</translation>
-<translation id="7257173066616499747">Mga Wi-Fi network</translation>
 <translation id="7257666756905341374">Basahin ang data na iyong kinokopya at pine-paste</translation>
 <translation id="7260504762447901703">Bawiin ang access</translation>
 <translation id="7262004276116528033">Hino-host ng <ph name="SAML_DOMAIN" /> ang serbisyo sa pag-sign in</translation>
@@ -4724,6 +4714,7 @@ Maaaring hindi available ang ilang tampok.  Mangyaring suriin na umiiral ang pro
 <translation id="7896906914454843592">US Extended keyboard</translation>
 <translation id="7897900149154324287">Sa hinaharap, tiyaking i-eject ang iyong naaalis na device sa Files app bago ito i-unplug. Kung hindi, maaari kang mawalan ng data.</translation>
 <translation id="7898627924844766532">Panatilihin sa toolbar</translation>
+<translation id="7898725031477653577">Palaging i-translate</translation>
 <translation id="7899177175067029110">Hindi mahanap ang iyong telepono. Tiyaking nakakonekta sa Internet ang iyong <ph name="DEVICE_TYPE" />. &lt;a&gt;Matuto nang higit pa&lt;/a&gt;</translation>
 <translation id="7900476766547206086">Kinakailangan ang mga password para sa mga naka-sign in na user, kapag naka-on ang setting na ito sa isa o higit pang mga user.</translation>
 <translation id="7903128267494448252">I-delete ang taong ito</translation>
@@ -5299,7 +5290,6 @@ Kinakalkula ang oras hanggang sa mapuno</translation>
 <translation id="871476437400413057">Mga password na naka-save sa Google</translation>
 <translation id="8714838604780058252">Graphics sa background</translation>
 <translation id="8722421161699219904">US International keyboard</translation>
-<translation id="872451400847464257">I-edit ang Search Engine</translation>
 <translation id="8724859055372736596">&amp;Ipakita sa Folder</translation>
 <translation id="8725066075913043281">Muling subukan</translation>
 <translation id="8725178340343806893">Mga Paborito/Bookmark</translation>

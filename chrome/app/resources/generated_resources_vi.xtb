@@ -344,7 +344,6 @@ Vui lòng kiểm tra email của bạn tại <ph name="ACCOUNT_EMAIL" /> để �
 <translation id="1482124012545051544">Sẵn sàng sao lưu <ph name="FILE_COUNT" /> ảnh mới</translation>
 <translation id="148466539719134488">Tiếng Thụy Sĩ</translation>
 <translation id="1485015260175968628">Tiện ích/ứng dụng giờ đây có thể:</translation>
-<translation id="1485146213770915382">Chèn <ph name="SEARCH_TERMS_LITERAL" /> vào URL, vị trí mà thuật ngữ tìm kiếm xuất hiện.</translation>
 <translation id="1486096554574027028">Tìm kiếm mật khẩu</translation>
 <translation id="1493263392339817010">Tùy chỉnh phông chữ...</translation>
 <translation id="1493492096534259649">Không thể sử dụng ngôn ngữ này để kiểm tra chính tả</translation>
@@ -804,7 +803,6 @@ Vui lòng kiểm tra email của bạn tại <ph name="ACCOUNT_EMAIL" /> để �
 <translation id="2176045495080708525">Các tiện ích sau hiện đã được cài đặt:</translation>
 <translation id="2177950615300672361">Tab ẩn danh: <ph name="TAB_NAME" /></translation>
 <translation id="2178614541317717477">Lộ CA</translation>
-<translation id="2179052183774520942">Thêm Công cụ Tìm kiếm</translation>
 <translation id="218492098606937156">Bật sự kiện chạm</translation>
 <translation id="2187895286714876935">Lỗi nhập chứng chỉ máy chủ</translation>
 <translation id="2190069059097339078">Trình nhận thông tin đăng nhập WiFi</translation>
@@ -970,7 +968,6 @@ Sau khi tạo người dùng được giám sát mới, bạn có thể quản l
 <translation id="2392369802118427583">Kích hoạt</translation>
 <translation id="2394296868155622118">Quản lý chi tiết thanh toán...</translation>
 <translation id="2394566832561516196">Cài đặt sẽ được xóa trong lần tải lại tiếp theo.</translation>
-<translation id="2396635603035772766">Bật giao diện người dùng dựa trên bong bóng thử nghiệm để lưu mật khẩu; thay thế thanh thông tin hiện tại.</translation>
 <translation id="2399147786307302860">Cài đặt đồng bộ hóa nâng cao...</translation>
 <translation id="2401053206567162910">Ứng dụng hiện không được hỗ trợ trên thiết bị này, nhưng các kỹ sư Chrome đang làm việc tích cực để ứng dụng này sớm hoạt động.</translation>
 <translation id="2403091441537561402">Cổng vào:</translation>
@@ -987,7 +984,6 @@ Sau khi tạo người dùng được giám sát mới, bạn có thể quản l
 <translation id="2431394478374894294">Bật tính năng nhập bằng giọng nói trên bàn phím ảo.</translation>
 <translation id="2433452467737464329">Thêm một tham số truy vấn trong URL để tự động làm mới trang: chrome://network/?refresh=&lt;sec&gt;</translation>
 <translation id="2433507940547922241">Hình thức</translation>
-<translation id="2433728760128592593">Nhấn Alt+Shift để chuyển đổi giữa các phương thức nhập.</translation>
 <translation id="2435248616906486374">Mạng đã bị ngắt kết nối</translation>
 <translation id="2436186046335138073">Cho phép <ph name="HANDLER_HOSTNAME" /> mở tất cả liên kết <ph name="PROTOCOL" />?</translation>
 <translation id="2436707352762155834">Tối thiểu</translation>
@@ -2004,7 +2000,6 @@ Từ <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3764800135428056022">Đề xuất lưu mật khẩu web của bạn.</translation>
 <translation id="3764986667044728669">Không thể đăng ký</translation>
 <translation id="3768037234834996183">Đang đồng bộ hóa tùy chọn của bạn...</translation>
-<translation id="3770072361759252365">Sau khi bạn bật, ghép nối bộ mã hóa/bộ giải mã video của phần mềm H.264 sẽ được bao gồm. (Nếu bộ giải mã phần cứng cũng có sẵn thì nó có thể được sử dụng thay cho bộ giải mã này).</translation>
 <translation id="3771294271822695279">Tệp video</translation>
 <translation id="3774278775728862009">Phương pháp nhập tiếng Thái (bàn phím TIS-820.2538)</translation>
 <translation id="3775432569830822555">Chứng chỉ Máy chủ SSL</translation>
@@ -2275,7 +2270,6 @@ Tất cả người dùng phải đăng xuất để tiếp tục.</translation>
 <translation id="418179967336296930">Bàn phím ngữ âm tiếng Nga (YaZHert)</translation>
 <translation id="4181841719683918333">Ngôn ngữ</translation>
 <translation id="4187248015940562149">Bật Bluetooth cho web có thể cho phép trang web kết nối và kiểm soát thiết bị Bluetooth xung quanh bạn.</translation>
-<translation id="4188026131102273494">Từ khóa:</translation>
 <translation id="4189406272289638749">Tiện ích, &lt;b&gt;<ph name="EXTENSION_NAME" />&lt;/b&gt;, đang kiểm soát cài đặt này.</translation>
 <translation id="4193154014135846272">Tài liệu Google</translation>
 <translation id="4193182321948161343">Bật trình quản lý người dùng thiết kế Material Design</translation>
@@ -2577,7 +2571,6 @@ Nhấn phím bất kỳ để tiếp tục khám phá.</translation>
 <translation id="4685045708662437080">Điều này giúp Google nhận dạng giọng nói của bạn và cải thiện nhận dạng bằng giọng nói và âm thanh để cung cấp cho bạn kết quả nhanh hơn và ít phức tạp hơn. <ph name="BEGIN_LINK" />Tìm hiểu thêm<ph name="END_LINK" /></translation>
 <translation id="4690246192099372265">Tiếng Thuỵ Điển</translation>
 <translation id="4690462567478992370">Dừng sử dụng chứng chỉ không hợp lệ</translation>
-<translation id="4691088804026137116">Không đồng bộ hóa</translation>
 <translation id="469230890969474295">Thư mục OEM</translation>
 <translation id="4692342183939154835">Mã hóa video phần cứng WebRTC</translation>
 <translation id="4692623383562244444">Công cụ tìm kiếm</translation>
@@ -3242,7 +3235,6 @@ Nhấn phím bất kỳ để tiếp tục khám phá.</translation>
 <translation id="5627086634964711283">Tiện ích cũng điều khiển trang nào sẽ hiển thị khi bạn nhấp vào nút Trang chủ.</translation>
 <translation id="5627259319513858869">Cho phép sử dụng tính năng canvas thử nghiệm vẫn đang được phát triển.</translation>
 <translation id="5627618611556177958">WebUSB</translation>
-<translation id="5630163645818715367">Thiết kế material design trong chrome hàng đầu của trình duyệt</translation>
 <translation id="5636996382092289526">Để sử dụng <ph name="NETWORK_ID" />, trước hết bạn cần <ph name="LINK_START" />truy cập vào trang đăng nhập của mạng<ph name="LINK_END" />. Trang này thường tự động mở sau vài giây. Nếu trang này không mở thì không thể sử dụng mạng này.</translation>
 <translation id="5637357908912398026">Buộc lưu mật khẩu</translation>
 <translation id="5637380810526272785">Phương pháp Nhập</translation>
@@ -3934,7 +3926,6 @@ Một số tính năng có thể không có sẵn. Hãy kiểm tra xem hồ sơ 
 <translation id="6708242697268981054">Bản gốc:</translation>
 <translation id="6709357832553498500">Kết nối bằng <ph name="EXTENSIONNAME" /></translation>
 <translation id="6710213216561001401">Trước đó</translation>
-<translation id="6713912347540154876">Giao diện người dùng bong bóng lưu mật khẩu</translation>
 <translation id="6718273304615422081">Đang nén...</translation>
 <translation id="671928215901716392">Khóa màn hình</translation>
 <translation id="6721972322305477112">&amp;Tệp</translation>
@@ -4292,7 +4283,6 @@ Một số tính năng có thể không có sẵn. Hãy kiểm tra xem hồ sơ 
 <translation id="7255220508626648026">Đang truyền: <ph name="ROUTETITLE" /></translation>
 <translation id="7255935316994522020">Áp dụng</translation>
 <translation id="7256710573727326513">Mở trong một tab</translation>
-<translation id="7257173066616499747">Mạng Wi-Fi</translation>
 <translation id="7257666756905341374">Đọc dữ liệu bạn sao chép và dán</translation>
 <translation id="7260504762447901703">Thu hồi quyền truy cập</translation>
 <translation id="7262004276116528033">Dịch vụ đăng nhập này do <ph name="SAML_DOMAIN" /> lưu trữ</translation>
@@ -4720,6 +4710,7 @@ Một số tính năng có thể không có sẵn. Hãy kiểm tra xem hồ sơ 
 <translation id="7896906914454843592">Bàn phím Hoa Kỳ mở rộng</translation>
 <translation id="7897900149154324287">Trong tương lai, đảm bảo rằng bạn đã ngắt kết nối thiết bị di động của mình trong ứng dụng Tệp trước khi tháo thiết bị. Nếu không, bạn có thể mất dữ liệu.</translation>
 <translation id="7898627924844766532">Giữ trong thanh công cụ</translation>
+<translation id="7898725031477653577">Luôn dịch</translation>
 <translation id="7899177175067029110">Không thể tìm thấy điện thoại của bạn. Đảm bảo rằng <ph name="DEVICE_TYPE" /> của bạn được kết nối với Internet. &lt;a&gt;Tìm hiểu thêm&lt;/a&gt;</translation>
 <translation id="7900476766547206086">Cần có mật khẩu cho người dùng đã đăng nhập vì một hoặc nhiều người dùng đã bật cài đặt này.</translation>
 <translation id="7903128267494448252">Xóa người này</translation>
@@ -5291,7 +5282,6 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="871476437400413057">Các mật khẩu đã lưu trên Google</translation>
 <translation id="8714838604780058252">Đồ họa nền</translation>
 <translation id="8722421161699219904">Bàn phím quốc tế Hoa Kỳ</translation>
-<translation id="872451400847464257">Chỉnh sửa Công cụ Tìm kiếm</translation>
 <translation id="8724859055372736596">&amp;Hiển thị trong Thư mục</translation>
 <translation id="8725066075913043281">Thử lại</translation>
 <translation id="8725178340343806893">Mục ưa thích/Dấu trang</translation>

@@ -48,6 +48,7 @@
 <translation id="1557201757634521564">Автоматично откриване на кодирането</translation>
 <translation id="1620510694547887537">Камера</translation>
 <translation id="1623104350909869708">Да не се създават допълнителни диалогови прозорци от тази страница</translation>
+<translation id="1639239467298939599">Зарежда се</translation>
 <translation id="1641113438599504367">Безопасно сърфиране</translation>
 <translation id="164269334534774161">Преглеждате офлайн копие на тази страница, създадено на <ph name="CREATION_TIME" /></translation>
 <translation id="1643702317193804718">Страницата се превежда на <ph name="SOURCE_LANGUAGE" />…</translation>
@@ -73,7 +74,6 @@
 <translation id="1943432128510653496">Запазени пароли</translation>
 <translation id="1944384637046898011">Шифроване на всичко с паролата за Google от <ph name="TIME" /></translation>
 <translation id="1946005195648379376">Контролирайте начина, по който използваме историята ви на сърфиране, за да персонализираме търсенето и други услуги на Google.</translation>
-<translation id="1959930595721737608">Разрешаване на JavaScript за следващия сайт.</translation>
 <translation id="1966710179511230534">Моля, актуализирайте данните си за вход.</translation>
 <translation id="1974060860693918893">Разширени</translation>
 <translation id="1984321224716884559">Отметки от Chrome Dev</translation>
@@ -99,11 +99,9 @@
 <translation id="2268044343513325586">Прецизиране</translation>
 <translation id="2315043854645842844">Избраният сертификат от страната на клиента не се поддържа от операционната система.</translation>
 <translation id="2321958826496381788">Преместете плъзгача, докато можете да четете удобно това. Текстът трябва да изглежда поне толкова голям след двукратно докосване на абзац.</translation>
-<translation id="2329597144923131178">Влезте в профила си и получете своите отметки, история, пароли и др. настройки на всички у-ва.</translation>
 <translation id="2343328333327081434">Инсталира се…</translation>
 <translation id="2351097562818989364">Настройките ви за превод са нулирани.</translation>
 <translation id="2359808026110333948">Напред</translation>
-<translation id="2381756643783702095">Извеждане на запитване преди изпращане (препоръчително)</translation>
 <translation id="2385560268894525395">последната седмица</translation>
 <translation id="2387895666653383613">Мащабиране на текста</translation>
 <translation id="238909021488141516">При изтеглянето на съдържанието възникна грешка.</translation>
@@ -185,6 +183,7 @@
 <translation id="3387650086002190359">Изтеглянето на „<ph name="FILE_NAME" />“ не бе успешно поради грешки във файловата система.</translation>
 <translation id="3414952576877147120">Размер:</translation>
 <translation id="3435896845095436175">Активиране</translation>
+<translation id="3452612588551937789">Влезте с профила си в Google, за да получите своите отметки, история, пароли и други настройки на всичките си устройства.</translation>
 <translation id="3485544713029068372">Smart Lock за пароли</translation>
 <translation id="3492207499832628349">Нов раздел „инкогнито“</translation>
 <translation id="3518985090088779359">Приемам! Напред</translation>
@@ -234,6 +233,7 @@
 <translation id="4259722352634471385">Навигирането е блокирано: <ph name="URL" /></translation>
 <translation id="4269820728363426813">Копиране на адреса на връзката</translation>
 <translation id="4271185234001491831">Никога да не се превежда от <ph name="LANGUAGE" /></translation>
+<translation id="4275663329226226506">Медия</translation>
 <translation id="4278390842282768270">Разрешено</translation>
 <translation id="4297410240212242334">Разделяне на приложенията и разделите</translation>
 <translation id="4307992518367153382">Основни положения</translation>
@@ -336,7 +336,6 @@
 <translation id="5596627076506792578">Още опции</translation>
 <translation id="5626134646977739690">Име:</translation>
 <translation id="5626370437647899551">Добавяне на профил в Google</translation>
-<translation id="563535393368633106">Извеждане на запитване преди осъществяване на достъп (препоръчително)</translation>
 <translation id="5646376287012673985">Местоположение</translation>
 <translation id="5659593005791499971">Имейл</translation>
 <translation id="5668404140385795438">Отмяна на искането на уебсайта да не се допуска увеличаване на мащаба</translation>
@@ -419,7 +418,6 @@
 <translation id="6656545060687952787">Chrome се нуждае от достъп до местоположението, за да сканира за устройства. <ph name="BEGIN_LINK" />Актуализиране на разрешенията<ph name="END_LINK" /></translation>
 <translation id="666268767214822976">Използване на услуга за предвиждания за показване на сродни заявки и популярни уебсайтове, докато пишете в адресната лента</translation>
 <translation id="666981079809192359">Съобщение за поверителност на Chrome</translation>
-<translation id="6683720003467092441">Разрешаване на синхронизирането на заден план за следващия сайт.</translation>
 <translation id="6698801883190606802">Управление на синхронизираните данни</translation>
 <translation id="6710213216561001401">Предишна</translation>
 <translation id="6738867403308150051">Изтегля се…</translation>
@@ -551,7 +549,6 @@
 <translation id="8374821112118309944">Трябва да актуализирате TalkBack до по-нова версия.</translation>
 <translation id="8396312449826231789">Само одобрени сайтове</translation>
 <translation id="8413126021676339697">Показване на пълната история</translation>
-<translation id="8413385045638830869">Първо ще се извежда запитване (препоръчително)</translation>
 <translation id="8428213095426709021">Настройки</translation>
 <translation id="8433057134996913067">Ще излезете от повечето уебсайтове.</translation>
 <translation id="8481940801237642152">Връзката ви с този сайт е частна, но някой в мрежата може да промени облика на страницата.</translation>

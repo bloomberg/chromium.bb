@@ -48,6 +48,7 @@
 <translation id="1557201757634521564">エンコードを自動検出する</translation>
 <translation id="1620510694547887537">カメラ</translation>
 <translation id="1623104350909869708">このページで追加のダイアログが作成されないようにする</translation>
+<translation id="1639239467298939599">読み込み中</translation>
 <translation id="1641113438599504367">セーフ ブラウジング</translation>
 <translation id="164269334534774161">このページの <ph name="CREATION_TIME" /> のオフライン コピーを表示しています</translation>
 <translation id="1643702317193804718">ページを<ph name="SOURCE_LANGUAGE" />に翻訳しています...</translation>
@@ -73,7 +74,6 @@
 <translation id="1943432128510653496">パスワードを保存する</translation>
 <translation id="1944384637046898011"><ph name="TIME" />時点の Google パスワードですべてのデータを暗号化する</translation>
 <translation id="1946005195648379376">Google が閲覧履歴をどのような方法で使用し、検索やその他の Google サービスをカスタマイズするかを設定します。</translation>
-<translation id="1959930595721737608">次のサイトで JavaScript を許可します。</translation>
 <translation id="1966710179511230534">ログイン情報を更新してください。</translation>
 <translation id="1974060860693918893">詳細設定</translation>
 <translation id="1984321224716884559">Chrome Dev のブックマーク</translation>
@@ -99,11 +99,9 @@
 <translation id="2268044343513325586">絞り込み</translation>
 <translation id="2315043854645842844">オペレーティング システムでサポートされていないため、クライアント側で証明書を選択することはできません。</translation>
 <translation id="2321958826496381788">読みやすくなるまでスライダをドラッグしてください。段落をダブルタップするとテキストがこれより大きくなります。</translation>
-<translation id="2329597144923131178">ログインすると、お使いのどのデバイスでも同じブックマーク、履歴、パスワード、その他の設定を利用できるようになります。</translation>
 <translation id="2343328333327081434">インストール中...</translation>
 <translation id="2351097562818989364">翻訳設定をリセットしました。</translation>
 <translation id="2359808026110333948">続行</translation>
-<translation id="2381756643783702095">送信する前に確認する（推奨）</translation>
 <translation id="2385560268894525395">過去 1 週間</translation>
 <translation id="2387895666653383613">テキストの拡大と縮小</translation>
 <translation id="238909021488141516">コンテンツのダウンロード中にエラーが発生しました。</translation>
@@ -185,6 +183,7 @@
 <translation id="3387650086002190359">ファイル システムでエラーが発生したため、<ph name="FILE_NAME" /> をダウンロードできませんでした。</translation>
 <translation id="3414952576877147120">サイズ:</translation>
 <translation id="3435896845095436175">有効にする</translation>
+<translation id="3452612588551937789">Google アカウントでログインすると、どの端末からでも同じブックマーク、履歴、パスワードなどの設定を利用できるようになります。</translation>
 <translation id="3485544713029068372">Smart Lock for Passwords</translation>
 <translation id="3492207499832628349">新しいシークレット タブ</translation>
 <translation id="3518985090088779359">同意して続行</translation>
@@ -234,6 +233,7 @@
 <translation id="4259722352634471385"><ph name="URL" /> へのアクセスがブロックされました</translation>
 <translation id="4269820728363426813">リンクアドレスをコピー</translation>
 <translation id="4271185234001491831"><ph name="LANGUAGE" />を翻訳しない</translation>
+<translation id="4275663329226226506">メディア</translation>
 <translation id="4278390842282768270">許可</translation>
 <translation id="4297410240212242334">タブとアプリの分離</translation>
 <translation id="4307992518367153382">基本設定</translation>
@@ -336,7 +336,6 @@
 <translation id="5596627076506792578">その他のオプション</translation>
 <translation id="5626134646977739690">名前:</translation>
 <translation id="5626370437647899551">Googleアカウントの追加</translation>
-<translation id="563535393368633106">アクセスする前に確認する（推奨）</translation>
 <translation id="5646376287012673985">現在地</translation>
 <translation id="5659593005791499971">メール</translation>
 <translation id="5668404140385795438">ウェブサイトのズーム防止リクエストを上書きする</translation>
@@ -419,7 +418,6 @@
 <translation id="6656545060687952787">デバイスをスキャンするには、Chrome で位置情報にアクセスする必要があります。<ph name="BEGIN_LINK" />権限を更新<ph name="END_LINK" /></translation>
 <translation id="666268767214822976">予測サービスを使用し、アドレスバーへの入力時に関連性の高い検索キーワードや人気のウェブサイトを表示します</translation>
 <translation id="666981079809192359">Chrome のプライバシーに関するお知らせ</translation>
-<translation id="6683720003467092441">次のサイトでバックグラウンド同期を許可します。</translation>
 <translation id="6698801883190606802">同期データを管理</translation>
 <translation id="6710213216561001401">前へ</translation>
 <translation id="6738867403308150051">ダウンロードしています…</translation>
@@ -551,7 +549,6 @@
 <translation id="8374821112118309944">TalkBack を最新版に更新する必要があります。</translation>
 <translation id="8396312449826231789">承認済みのサイトのみ</translation>
 <translation id="8413126021676339697">全履歴を表示</translation>
-<translation id="8413385045638830869">最初に確認する（推奨）</translation>
 <translation id="8428213095426709021">設定</translation>
 <translation id="8433057134996913067">ほとんどのウェブサイトからログアウトします。</translation>
 <translation id="8481940801237642152">このサイトへの接続はプライベート接続です。ただし、ネットワーク上のユーザーがこのページのデザインを変更できる可能性はあります。</translation>

@@ -2449,7 +2449,7 @@ Jei pasirinksite niekada nenaudoti tarpinio serverio ir visada prisijungti tiesi
 
           Jei pasirinksite naudoti .pac tarpinio serverio scenarijų, turėsite nurodyti scenarijaus URL skiltyje „Tarpinio serverio .pac failo URL“.
 
-          Jei reikia išsamių pavyzdžių,l apsilankykite adresu
+          Jei reikia išsamių pavyzdžių, apsilankykite adresu
           <ph name="PROXY_HELP_URL" />.
 
           Jei įgalinsite šį nustatymą, „<ph name="PRODUCT_NAME" />“ ir ARC programos nepaisys visų su tarpiniu serveriu susijusių parinkčių, nurodytų komandos eilutėje.

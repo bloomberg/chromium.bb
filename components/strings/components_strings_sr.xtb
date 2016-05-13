@@ -655,6 +655,7 @@
 <translation id="8225771182978767009">Особа која је подесила овај рачунар је одлучила да блокира овај сајт.</translation>
 <translation id="8241707690549784388">Страница коју тражите користила је информације које сте унели. Повратак на ту страницу може да проузрокује потребну понављања радњи које сте извршили. Желите ли да наставите?</translation>
 <translation id="8249320324621329438">Последње учитано:</translation>
+<translation id="8261506727792406068">Избриши</translation>
 <translation id="8266098793847448402">Кликните на <ph name="BEGIN_BOLD" />Start<ph name="END_BOLD" /> (Старт), па на <ph name="BEGIN_BOLD" />Run<ph name="END_BOLD" /> (Покрени), откуцајте <ph name="BEGIN_BOLD" />%windir%\network diagnostic\xpnetdiag.exe<ph name="END_BOLD" />, а затим кликните на <ph name="BEGIN_BOLD" />OK<ph name="END_BOLD" /> (Потврди).</translation>
 <translation id="8279107132611114222">Захтев за приступ овом сајту послат је кориснику <ph name="NAME" />.</translation>
 <translation id="8289355894181816810">Контактирајте администратора мреже ако нисте сигурни шта то значи.</translation>

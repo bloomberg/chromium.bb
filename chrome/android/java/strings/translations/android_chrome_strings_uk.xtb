@@ -48,6 +48,7 @@
 <translation id="1557201757634521564">Автоматично визначати кодування</translation>
 <translation id="1620510694547887537">Камера</translation>
 <translation id="1623104350909869708">Заборонити цій сторінці створювати додаткові діалогові вікна</translation>
+<translation id="1639239467298939599">Завантаження</translation>
 <translation id="1641113438599504367">Безпечний перегляд</translation>
 <translation id="164269334534774161">Ви переглядаєте офлайн-копію цієї сторінки, створену <ph name="CREATION_TIME" /></translation>
 <translation id="1643702317193804718">Сторінка перекладається такою мовою: <ph name="SOURCE_LANGUAGE" />…</translation>
@@ -73,7 +74,6 @@
 <translation id="1943432128510653496">Зберігання паролів</translation>
 <translation id="1944384637046898011">Зашифрувати всі дані за допомогою пароля Google із <ph name="TIME" />.</translation>
 <translation id="1946005195648379376">Укажіть, як Google має використовувати вашу історію веб-перегляду, щоб персоналізувати Пошук та інші служби Google.</translation>
-<translation id="1959930595721737608">Дозволити JavaScript на цьому сайті.</translation>
 <translation id="1966710179511230534">Оновіть свої дані для входу.</translation>
 <translation id="1974060860693918893">Розширені</translation>
 <translation id="1984321224716884559">Закладки з Chrome для розробників</translation>
@@ -99,11 +99,9 @@
 <translation id="2268044343513325586">Уточнити</translation>
 <translation id="2315043854645842844">Операційна система не підтримує сертифікат, вибраний на стороні клієнта.</translation>
 <translation id="2321958826496381788">Перетягуйте повзунок, доки розмір тексту не стане зручним для читання. Якщо двічі торкнутись абзацу, розмір тексту має стати принаймні таким, як цей.</translation>
-<translation id="2329597144923131178">Увійдіть, щоб мати доступ до закладок, історії, паролів та інших налаштувань на всіх своїх пристроях.</translation>
 <translation id="2343328333327081434">Встановлення…</translation>
 <translation id="2351097562818989364">Налаштування перекладу скинуто.</translation>
 <translation id="2359808026110333948">Продовжити</translation>
-<translation id="2381756643783702095">Запитувати, перш ніж надсилати (рекомендується)</translation>
 <translation id="2385560268894525395">останній тиждень</translation>
 <translation id="2387895666653383613">Масштаб тексту</translation>
 <translation id="238909021488141516">Сталася помилка під час завантаження вмісту.</translation>
@@ -185,6 +183,7 @@
 <translation id="3387650086002190359">Файл <ph name="FILE_NAME" /> не завантажено через помилки файлової системи.</translation>
 <translation id="3414952576877147120">Розмір:</translation>
 <translation id="3435896845095436175">Увімкнути</translation>
+<translation id="3452612588551937789">Увійдіть в обліковий запис Google, щоб мати доступ до закладок, паролів, історії й інших налаштувань на всіх своїх пристроях.</translation>
 <translation id="3485544713029068372">Smart Lock для паролів</translation>
 <translation id="3492207499832628349">Нова анонімна вкладка</translation>
 <translation id="3518985090088779359">Прийняти та продовж.</translation>
@@ -234,6 +233,7 @@
 <translation id="4259722352634471385">Веб-сторінку <ph name="URL" /> заблоковано</translation>
 <translation id="4269820728363426813">Копіювати адресу посилання</translation>
 <translation id="4271185234001491831">Ніколи не перекладати з такої мови: <ph name="LANGUAGE" /></translation>
+<translation id="4275663329226226506">Медіа-дані</translation>
 <translation id="4278390842282768270">Дозволено</translation>
 <translation id="4297410240212242334">Розділити вкладки та додатки</translation>
 <translation id="4307992518367153382">Основи</translation>
@@ -336,7 +336,6 @@
 <translation id="5596627076506792578">Інші опції</translation>
 <translation id="5626134646977739690">Ім'я:</translation>
 <translation id="5626370437647899551">Додати обліковий запис Google</translation>
-<translation id="563535393368633106">Запитувати дозволу, перш ніж надавати доступ (рекомендується)</translation>
 <translation id="5646376287012673985">Місцезнаходження</translation>
 <translation id="5659593005791499971">Електронна пошта</translation>
 <translation id="5668404140385795438">Відхиляти запит веб-сайту, щоб забороняти масштабування</translation>
@@ -419,7 +418,6 @@
 <translation id="6656545060687952787">Щоб знаходити пристрої, Chrome потрібний доступ до геоданих. <ph name="BEGIN_LINK" />Оновлити дозволи<ph name="END_LINK" /></translation>
 <translation id="666268767214822976">Показувати підказки зі схожими запитами та популярними веб-сайтами під час введення запиту в адресному рядку</translation>
 <translation id="666981079809192359">Примітка про конфіденційність Chrome</translation>
-<translation id="6683720003467092441">Дозволити фонову синхронізацію на цьому сайті.</translation>
 <translation id="6698801883190606802">Керування синхронізованими даними</translation>
 <translation id="6710213216561001401">Попереднє</translation>
 <translation id="6738867403308150051">Завантаження…</translation>
@@ -551,7 +549,6 @@
 <translation id="8374821112118309944">Потрібно оновити додаток TalkBack до новішої версії.</translation>
 <translation id="8396312449826231789">Лише схвалені сайти</translation>
 <translation id="8413126021676339697">Показати повну історію</translation>
-<translation id="8413385045638830869">Спершу запитувати (рекомендується)</translation>
 <translation id="8428213095426709021">Налаштування</translation>
 <translation id="8433057134996913067">Ви вийдете з облікового запису на більшості веб-сайтів.</translation>
 <translation id="8481940801237642152">Ваше з’єднання з сайтом приватне, але хтось у мережі може змінювати вигляд сторінки.</translation>

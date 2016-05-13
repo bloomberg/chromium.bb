@@ -48,6 +48,7 @@
 <translation id="1557201757634521564">الاكتشاف التلقائي للتشفير</translation>
 <translation id="1620510694547887537">الكاميرا</translation>
 <translation id="1623104350909869708">منع هذه الصفحة من إنشاء مربعات حوار إضافية.</translation>
+<translation id="1639239467298939599">جارٍ التحميل.</translation>
 <translation id="1641113438599504367">التصفح الآمن</translation>
 <translation id="164269334534774161">أنت تعرض نسخة بلا اتصال لهذه الصفحة من <ph name="CREATION_TIME" /></translation>
 <translation id="1643702317193804718">جارٍ ترجمة الصفحة إلى <ph name="SOURCE_LANGUAGE" />...</translation>
@@ -73,7 +74,6 @@
 <translation id="1943432128510653496">حفظ كلمات المرور</translation>
 <translation id="1944384637046898011">‏ترميز الكل باستخدام كلمة مرور Google بدءًا من <ph name="TIME" /></translation>
 <translation id="1946005195648379376">‏يمكنك التحكم في الطريقة التي تتبعها Google عند استخدام سجل التصفح لتخصيص البحث وخدمات Google الأخرى.</translation>
-<translation id="1959930595721737608">السماح بتشغيل جافا سكريبت في الموقع التالي.</translation>
 <translation id="1966710179511230534">الرجاء تحديث تفاصيل تسجيل الدخول.</translation>
 <translation id="1974060860693918893">إعدادات متقدمة</translation>
 <translation id="1984321224716884559">‏الإشارات المرجعية لإصدار مطوّري البرامج من Chrome</translation>
@@ -99,11 +99,9 @@
 <translation id="2268044343513325586">تحسين</translation>
 <translation id="2315043854645842844">لا يدعم نظام التشغيل تحديد الشهادة من جانب العميل.</translation>
 <translation id="2321958826496381788">يمكنك سحب شريط التمرير حتى تتمكن من قراءة هذا النص بسهولة. يجب أن يظهر النص بهذا الحجم على الأقل بعد النقر مرتين على إحدى الفقرات.</translation>
-<translation id="2329597144923131178">سجّل الدخول للحصول على الإشارات المرجعية، والسجل، وكلمات المرور، والإعدادات الأخرى على كل أجهزتك.</translation>
 <translation id="2343328333327081434">جارٍ التثبيت...</translation>
 <translation id="2351097562818989364">تم إعادة ضبط إعداداتك للترجمة.</translation>
 <translation id="2359808026110333948">المتابعة</translation>
-<translation id="2381756643783702095">اسأل قبل الإرسال (موصى به)</translation>
 <translation id="2385560268894525395">الأسبوع الماضي</translation>
 <translation id="2387895666653383613">تغيير حجم النص</translation>
 <translation id="238909021488141516">حدث خطأ أثناء تنزيل المحتوى.</translation>
@@ -183,6 +181,7 @@
 <translation id="3387650086002190359">أخفق تنزيل الملف <ph name="FILE_NAME" /> بسبب أخطاء في نظام الملف.</translation>
 <translation id="3414952576877147120">الحجم:</translation>
 <translation id="3435896845095436175">تمكين الإضافات</translation>
+<translation id="3452612588551937789">‏سجّل الدخول إلى حسابك في Google للحصول على الإشارات المرجعية، والسجل، وكلمات المرور، والإعدادات الأخرى على جميع أجهزتك.</translation>
 <translation id="3485544713029068372">‏Smart Lock لكلمات المرور</translation>
 <translation id="3492207499832628349">تابة جديدة للتصفح المتخفي</translation>
 <translation id="3518985090088779359">القبول والمتابعة</translation>
@@ -232,6 +231,7 @@
 <translation id="4259722352634471385">التنقل محظور: <ph name="URL" /></translation>
 <translation id="4269820728363426813">نسخ عنوان الرابط</translation>
 <translation id="4271185234001491831">عدم الترجمة مطلقًا من اللغة <ph name="LANGUAGE" /></translation>
+<translation id="4275663329226226506">الوسائط</translation>
 <translation id="4278390842282768270">مسموح بها</translation>
 <translation id="4297410240212242334">فصل علامات التبويب والتطبيقات</translation>
 <translation id="4307992518367153382">أساسيّات</translation>
@@ -335,7 +335,6 @@
 <translation id="5596627076506792578">خيارات إضافية</translation>
 <translation id="5626134646977739690">الاسم:</translation>
 <translation id="5626370437647899551">‏إضافة حساب Google</translation>
-<translation id="563535393368633106">اسأل قبل الدخول (موصى به)</translation>
 <translation id="5646376287012673985">الموقع</translation>
 <translation id="5659593005791499971">البريد الإلكتروني</translation>
 <translation id="5668404140385795438">تجاوز طلب موقع الويب لمنع التكبير</translation>
@@ -418,7 +417,6 @@
 <translation id="6656545060687952787">‏يحتاج Chrome للوصول إلى المواقع للبحث عن الأجهزة. <ph name="BEGIN_LINK" />تحديث الأذونات<ph name="END_LINK" />.</translation>
 <translation id="666268767214822976">يمكنك استخدام خدمة التوقعات لعرض طلبات البحث ذات الصلة ومواقع الويب الشائعة أثناء الكتابة في شريط العناوين</translation>
 <translation id="666981079809192359">‏إشعار خصوصية Chrome</translation>
-<translation id="6683720003467092441">السماح بتشغيل "مزامنة الخلفية" في الموقع التالي.</translation>
 <translation id="6698801883190606802">إدارة البيانات المتزامنة</translation>
 <translation id="6710213216561001401">السابق</translation>
 <translation id="6738867403308150051">جارٍ التنزيل…</translation>
@@ -550,7 +548,6 @@
 <translation id="8374821112118309944">‏يلزمك تحديث TalkBack إلى إصدار جديد.</translation>
 <translation id="8396312449826231789">المواقع المعتمدة فقط</translation>
 <translation id="8413126021676339697">عرض السجل بكامله</translation>
-<translation id="8413385045638830869">السؤال أولاً (موصى به)</translation>
 <translation id="8428213095426709021">إعدادات</translation>
 <translation id="8433057134996913067">سيؤدي هذا إلى خروجك من معظم مواقع الويب.</translation>
 <translation id="8481940801237642152">إن اتصالك بهذا الموقع له خصوصية، لكن قد يتمكن أحد الأشخاص على هذه الشبكة من تغيير مظهر الصفحة.</translation>

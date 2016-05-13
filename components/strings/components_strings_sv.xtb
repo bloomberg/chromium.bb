@@ -440,7 +440,7 @@
 <translation id="5650551054760837876">Inga sökresultat hittades.</translation>
 <translation id="5663999524854166235">Verifiera genom att ange den tresiffriga CVC-koden som står på kortets baksida</translation>
 <translation id="5677928146339483299">Blockerad</translation>
-<translation id="5696590819423335174">Ange utgångsdatum och den fyrsiffriga CVC-koden på framsida av <ph name="CREDIT_CARD" /></translation>
+<translation id="5696590819423335174">Ange utgångsdatum och den fyrsiffriga CVC-koden på framsidan av <ph name="CREDIT_CARD" /></translation>
 <translation id="5699278517904102888">Verifiera genom att ange den tresiffriga CVC-koden som står på baksidan av <ph name="CREDIT_CARD" /></translation>
 <translation id="5710435578057952990">Webbplatsens identitet har inte verifierats.</translation>
 <translation id="5720705177508910913">Aktuell användare</translation>
@@ -659,6 +659,7 @@ Psst! Nästa gång kanske inkognitoläget <ph name="SHORTCUT_KEY" /> kan vara n�
 <translation id="8225771182978767009">Personen som konfigurerade datorn har valt att blockera den här webbplatsen.</translation>
 <translation id="8241707690549784388">Önskad sida använder information som du har angett. Om du återgår till sidan kan eventuella åtgärder på sidan upprepas. Vill du fortsätta?</translation>
 <translation id="8249320324621329438">Senast hämtad:</translation>
+<translation id="8261506727792406068">Radera</translation>
 <translation id="8266098793847448402">Klicka på
       <ph name="BEGIN_BOLD" />Start<ph name="END_BOLD" />,
       klicka på

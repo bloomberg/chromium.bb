@@ -343,7 +343,6 @@
 <translation id="1482124012545051544"><ph name="FILE_COUNT" /> નવા ફોટાનો બેકઅપ લેવા માટે તૈયાર</translation>
 <translation id="148466539719134488">સ્વીસ</translation>
 <translation id="1485015260175968628">તે હવે આ કરી શકે છે:</translation>
-<translation id="1485146213770915382">શોધ શબ્દો જ્યાં દેખાવા જોઈએ ત્યાં URLમાં <ph name="SEARCH_TERMS_LITERAL" /> શામેલ કરો.</translation>
 <translation id="1486096554574027028">પાસવર્ડ્સ શોધો</translation>
 <translation id="1493263392339817010">ફોન્ટ્સ કસ્ટમાઇઝ કરો ...</translation>
 <translation id="1493492096534259649">આ ભાષાનો ઉપયોગ જોડણી પરીક્ષણ માટે કરી શકાતો નથી</translation>
@@ -799,7 +798,6 @@
 <translation id="2176045495080708525">નીચેના એક્સ્ટેંશન્સ હવે ઇન્સ્ટોલ થઈ ગયા છે:</translation>
 <translation id="2177950615300672361">છુપો ટેબ: <ph name="TAB_NAME" /></translation>
 <translation id="2178614541317717477">CA સમાધાન</translation>
-<translation id="2179052183774520942">શોધ એંજીન ઉમેરો</translation>
 <translation id="218492098606937156">ટચ ઇવેન્ટ્સ સક્ષમ કરો</translation>
 <translation id="2187895286714876935">સર્વર પ્રમાણપત્ર આયાત કરવામાં ભૂલ</translation>
 <translation id="2190069059097339078">WiFi ઓળખપત્રો બનાવનાર</translation>
@@ -965,7 +963,6 @@
 <translation id="2392369802118427583">સક્રિય કરો</translation>
 <translation id="2394296868155622118">બિલિંગ વિગતોનું સંચાલન કરો...</translation>
 <translation id="2394566832561516196">પછી ફરી લોડ થવા પર સેટિંગ્સ સાફ થઈ જશે.</translation>
-<translation id="2396635603035772766">પાસવર્ડ્સ સાચવવા માટે પ્રાયોગિક બબલ-આધારિત UI સક્ષમ કરો; અસ્તિત્વમાંના માહિતી બારને બદલે છે.</translation>
 <translation id="2399147786307302860">વિગતવાર સમન્વયન સેટિંગ્સ...</translation>
 <translation id="2401053206567162910">આ એપ્લિકેશન હાલમાં આ ઉપકરણ પર સમર્થિત નથી પરંતુ Chrome gnomes તેને જલ્દી કામ કરતું બનાવવા માટે સખત કાર્ય કરે છે.</translation>
 <translation id="2403091441537561402">ગેટવે:</translation>
@@ -982,7 +979,6 @@
 <translation id="2431394478374894294">વર્ચ્યુઅલ કીબોર્ડ પર વૉઇસ ઇનપુટ સક્ષમ કરે છે.</translation>
 <translation id="2433452467737464329">પૃષ્ઠને સ્વતઃ તાજું કરવા માટે URL માં ક્વેરી પરમ ઉમેરો: chrome://network/?refresh=&lt;sec&gt;</translation>
 <translation id="2433507940547922241">દેખાવ</translation>
-<translation id="2433728760128592593">ઇનપુટ પદ્ધતિઓ વચ્ચે સ્વિચ કરવા માટે alt+shift ને દબાવો.</translation>
 <translation id="2435248616906486374">નેટવર્ક ડિસ્કનેક્ટ થયું</translation>
 <translation id="2436186046335138073"><ph name="HANDLER_HOSTNAME" /> ને બધી <ph name="PROTOCOL" /> લિંક્સ ખોલવાની મંજૂરી આપીએ?</translation>
 <translation id="2436707352762155834">ન્યૂનતમ</translation>
@@ -1999,7 +1995,6 @@
 <translation id="3764800135428056022">તમારા વેબ પાસવર્ડ્સને સાચવવાની ઓફર કરો.</translation>
 <translation id="3764986667044728669">નોંધણી કરવામાં અસમર્થ</translation>
 <translation id="3768037234834996183">તમારી પસંદગીઓને સમન્વયિત કરી રહ્યું છે...</translation>
-<translation id="3770072361759252365">જ્યારે સક્ષમ હોય, ત્યારે H.264 સોફ્ટવેર વિડિઓ એન્કોડર/ડિકોડરની જોડીનો સમાવેશ થાય છે. (જો હાર્ડવેર ડિકોડર પણ ઉપલબ્ધ હોય, તો આ ડિકોડરને બદલે તેનો ઉપયોગ કરવામાં આવી શકે છે).</translation>
 <translation id="3771294271822695279">વિડિઓ ફાઇલો</translation>
 <translation id="3774278775728862009">થાઈ ઇનપુટ મેથડ (TIS-820.2538 કીબોર્ડ) </translation>
 <translation id="3775432569830822555">SSL સર્વર પ્રમાણપત્ર</translation>
@@ -2270,7 +2265,6 @@
 <translation id="418179967336296930">રશિયન ધ્વન્યાત્મક (YaZHert) કીબોર્ડ</translation>
 <translation id="4181841719683918333">ભાષાઓ</translation>
 <translation id="4187248015940562149">વેબ Bluetooth ને સક્ષમ કરે છે જે વેબસાઇટ્સને તમારી આસપાસના Bluetooth ઉપકરણો સાથે કનેક્ટ થવાની અને તેઓને નિયંત્રિત કરવાની મંજૂરી આપી શકે છે.</translation>
-<translation id="4188026131102273494">કીવર્ડ:</translation>
 <translation id="4189406272289638749">એક એક્સ્ટેન્શન, &lt;b&gt;<ph name="EXTENSION_NAME" />&lt;/b&gt; આ સેટિંગનું નિયંત્રણ કરે છે.</translation>
 <translation id="4193154014135846272">Google દસ્તાવેજ</translation>
 <translation id="4193182321948161343">સામગ્રી ડિઝાઇન વપરાશકર્તા સંચાલકને સક્ષમ કરો</translation>
@@ -2571,7 +2565,6 @@
 <translation id="4685045708662437080">આ Google ને તમારો અવાજ ઓળખવામાં તથા તમને ઝડપી અને ઓછી અડચણો સાથે પરિણામો આપવા માટે વાણી અને ઑડિઓ ઓળખાણને બહેતર બનાવવામાં સહાય કરે છે. <ph name="BEGIN_LINK" />વધુ જાણો<ph name="END_LINK" /></translation>
 <translation id="4690246192099372265">સ્વીડિશ</translation>
 <translation id="4690462567478992370">અમાન્ય પ્રમાણપત્રનો ઉપયોગ કરવાનું બંધ કરો</translation>
-<translation id="4691088804026137116">કંઈ પણ સમન્વયિત ન કરો</translation>
 <translation id="469230890969474295">OEM ફોલ્ડર</translation>
 <translation id="4692342183939154835">WebRTC હાર્ડવેર વિડિઓ એન્કોડિંગ</translation>
 <translation id="4692623383562244444">શોધ એંજીન્સ</translation>
@@ -2967,7 +2960,7 @@
 <translation id="5271247532544265821">સરળીકૃત/પરંપરાગત ચાઇનીઝ મોડને ટૉગલ કરો</translation>
 <translation id="5271549068863921519">પાસવર્ડ સાચવો</translation>
 <translation id="5273628206174272911">આડા ઑવરસ્ક્રોલના જવાબમાં પ્રાયોગિક ઇતિહાસ નેવિગેશન.</translation>
-<translation id="5275194674756975076">ઑકે, તાજું કરો</translation>
+<translation id="5275194674756975076">ઓકે, તાજું કરો</translation>
 <translation id="5275795814002959418">આ સાઇટ પરથી <ph name="COUNT" /></translation>
 <translation id="5275973617553375938">Google ડ્રાઇવમાંથી પુનર્પ્રાપ્ત ફાઇલો</translation>
 <translation id="527605719918376753">ટૅબ મ્યૂટ કરો</translation>
@@ -3235,7 +3228,6 @@
 <translation id="5627086634964711283">જ્યારે તમે હોમ બટન ક્લિક કરો ત્યારે કયું પૃષ્ઠ બતાવવામાં આવે તે તેનું પણ નિયંત્રણ કરે છે.</translation>
 <translation id="5627259319513858869">પ્રાયોગિક કેનવાસ સુવિધાઓનો ઉપયોગ સક્ષમ કરે છે કે જેમાં હજી વિકાસકાર્ય ચાલુ છે.</translation>
 <translation id="5627618611556177958">WebUSB</translation>
-<translation id="5630163645818715367">બ્રાઉઝરના ટોચનાં Chrome માં સામગ્રી ડિઝાઇન</translation>
 <translation id="5636996382092289526"><ph name="NETWORK_ID" /> નો ઉપયોગ કરવા માટે તમારે પહેલા <ph name="LINK_START" />નેટવર્કના સાઇન-ઇન પૃષ્ઠની મુલાકાત લેવી<ph name="LINK_END" /> જરૂરી છે, જે થોડીવારમાં આપમેળે ખુલશે. જો આવું ન થાય, તો નેટવર્કનો ઉપયોગ કરી શકાતો નથી.</translation>
 <translation id="5637357908912398026">પાસવર્ડ્સની દબાણપૂર્વક-સાચવણી</translation>
 <translation id="5637380810526272785">ઇનપુટ પદ્ધતિ</translation>
@@ -3926,7 +3918,6 @@
 <translation id="6708242697268981054">મૂળ:</translation>
 <translation id="6709357832553498500"><ph name="EXTENSIONNAME" /> નો ઉપયોગ કરીને કનેક્ટ કરો</translation>
 <translation id="6710213216561001401">પહેલાનું</translation>
-<translation id="6713912347540154876">પાસવર્ડ સાચવો બબલ UI</translation>
 <translation id="6718273304615422081">ઝિપ કરી રહ્યાં છે...</translation>
 <translation id="671928215901716392">સ્ક્રીન લૉક કરો</translation>
 <translation id="6721972322305477112">&amp;File</translation>
@@ -4283,7 +4274,6 @@
 <translation id="7255220508626648026">કાસ્ટ કરી રહ્યાં છે: <ph name="ROUTETITLE" /></translation>
 <translation id="7255935316994522020">લાગુ કરો</translation>
 <translation id="7256710573727326513">એક ટેબમાં ખોલો</translation>
-<translation id="7257173066616499747">Wi-Fi નેટવર્ક્સ</translation>
 <translation id="7257666756905341374">તમે કૉપિ અને પેસ્ટ કરો એ ડેટાને વાંચો</translation>
 <translation id="7260504762447901703">ઍક્સેસ રદબાતલ કરો</translation>
 <translation id="7262004276116528033">આ સાઇન-ઇન સેવા <ph name="SAML_DOMAIN" /> દ્વારા હોસ્ટ થયેલી છે.</translation>
@@ -4711,6 +4701,7 @@
 <translation id="7896906914454843592">યુએસ વિસ્તૃત કીબોર્ડ</translation>
 <translation id="7897900149154324287">ભવિષ્યમાં, તમારા કાઢવાયોગ્ય ઉપકરણને અનપ્લગ કરતાં પહેલાં ફાઇલ્સ એપ્લિકેશનમાં તેને બહાર કાઢવાનું યાદ રાખો. અન્યથા, તમે ડેટા ગુમાવી શકો છો.</translation>
 <translation id="7898627924844766532">ટુલબારમાં રાખો</translation>
+<translation id="7898725031477653577">હંમેશાં અનુવાદ કરો</translation>
 <translation id="7899177175067029110">તમારો ફોન શોધી શકાતો નથી. ખાતરી કરો કે તમારું <ph name="DEVICE_TYPE" /> ઇન્ટરનેટથી કનેક્ટ કરેલું છે. &lt;a&gt;વધુ જાણો&lt;/a&gt;</translation>
 <translation id="7900476766547206086">સાઇન-ઇન કરેલ વપરાશકર્તાઓ માટે પાસવર્ડ્સ આવશ્યક છે, કેમકે એક અથવા વધુ વપરાશકર્તાઓએ આ સેટિંગ ચાલુ કરી છે.</translation>
 <translation id="7903128267494448252">આ વ્યક્તિને કાઢી નાખો</translation>
@@ -4881,7 +4872,7 @@
 <translation id="8141520032636997963">Adobe Reader માં ખોલો</translation>
 <translation id="8141725884565838206">તમારા પાસવર્ડ્સનું સંચાલન કરો</translation>
 <translation id="8142699993796781067">ખાનગી નેટવર્ક</translation>
-<translation id="8142732521333266922">ઑકે, દરેક વસ્તુ સમન્વયિત કરો</translation>
+<translation id="8142732521333266922">ઓકે, દરેક વસ્તુ સમન્વયિત કરો</translation>
 <translation id="8144022414479088182">શું તમે ખરેખર મીટિંગ માટેનાં Chromebox ઉપકરણ તરીકે આ ઉપકરણને સેટ કરવા માગો છો?</translation>
 <translation id="8144909191982723922"><ph name="USER_EMAIL_ADDRESS" /> તરીકે સાઇન ઇન થયાં. <ph name="BEGIN_LINK" />Chrome ડેશબોર્ડ<ph name="END_LINK" /> પર તમારા સમન્વયિત ડેટા અને ઉપકરણોનું સંચાલન કરો.</translation>
 <translation id="8145409227593688472">વુબી ઇનપુટ પદ્ધતિ</translation>
@@ -5280,7 +5271,6 @@
 <translation id="871476437400413057">Google સાચવેલ પાસવર્ડ્સ</translation>
 <translation id="8714838604780058252">પૃષ્ઠભૂમિ ગ્રાફિક્સ</translation>
 <translation id="8722421161699219904">યુએસ આંતરરાષ્ટ્રીય કીબોર્ડ</translation>
-<translation id="872451400847464257">શોધ એન્જિન સંપાદિત કરો</translation>
 <translation id="8724859055372736596">ફોલ્ડરમાં બતાવો</translation>
 <translation id="8725066075913043281">ફરી પ્રયાસ કરો</translation>
 <translation id="8725178340343806893">પસંદગીઓ/બુકમાર્ક્સ</translation>
@@ -5487,7 +5477,7 @@
 <translation id="9022026332614591902">પૉપ-અપ્સ અવરોધિત (<ph name="POP_UP_COUNT" />)</translation>
 <translation id="9024127637873500333">નવા ટૅબમાં &amp;ખોલો</translation>
 <translation id="9024331582947483881">પૂર્ણ સ્ક્રીન</translation>
-<translation id="9025098623496448965">ઑકે, મને પાછા સાઇન-ઇન સ્ક્રીન પર લઈ જાઓ</translation>
+<translation id="9025098623496448965">ઓકે, મને પાછા સાઇન-ઇન સ્ક્રીન પર લઈ જાઓ</translation>
 <translation id="902638246363752736">કીબોર્ડ સેટિંગ્સ</translation>
 <translation id="9026731007018893674">ડાઉનલોડ કરો</translation>
 <translation id="9027146684281895941">આ વ્યક્તિ તમારા Google એકાઉન્ટથી મુલાકાત લે છે તે વેબસાઇટ્સ જોવા અને નિયંત્રિત કરવા માટે તેનું નિરીક્ષણ કરો.</translation>

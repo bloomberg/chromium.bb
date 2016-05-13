@@ -311,7 +311,7 @@
 <translation id="4103249731201008433">डिव्हाइस सिरीयल क्रमांक अवैध आहे</translation>
 <translation id="4103763322291513355">आपल्या सिस्टीम प्रशासकाद्वारे प्रवर्तित काळ्यासूचीतील URLs आणि अन्य धोरणांची सूची पाहण्यासाठी &lt;strong&gt;chrome://policy&lt;/strong&gt; ला भेट द्या.</translation>
 <translation id="4117700440116928470">धोरण कक्षा समर्थित नाही.</translation>
-<translation id="4130226655945681476">नेटवर्क केबल, मोडेम आणि राऊटर तपासत आहे</translation>
+<translation id="4130226655945681476">नेटवर्क केबल, मोडेम आणि राउटर तपासत आहे</translation>
 <translation id="4147376274874979956">फाइलमध्ये प्रवेश करण्‍यास अक्षम.</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">Chromium ने हे कार्ड जतन करावे असे आपण इच्छिता?</translation>
@@ -659,6 +659,7 @@
 <translation id="8225771182978767009">ज्या व्यक्तीने हा संगणक सेट केला त्या व्यक्तीने ही साइट अवरोधित करण्याचे निवडले आहे.</translation>
 <translation id="8241707690549784388">आपण जे पृष्ठ शोधत आहत ते आपण प्रविष्ट केलेली माहिती वापरत आहे. त्या पृष्ठाकडे परत गेल्यास कदाचित आपण केलेल्या कोणत्याही क्रियेची पुनरावृत्ती होईल. आपण सुरू ठेवू इच्छिता?</translation>
 <translation id="8249320324621329438">अंतिम प्राप्त केलेले:</translation>
+<translation id="8261506727792406068">हटवा</translation>
 <translation id="8266098793847448402"><ph name="BEGIN_BOLD" />प्रारंभ करा<ph name="END_BOLD" /> क्लिक करा,
       <ph name="BEGIN_BOLD" />चालवा<ph name="END_BOLD" /> क्लिक करा,
             <ph name="BEGIN_BOLD" />%windir%\network diagnostic\xpnetdiag.exe<ph name="END_BOLD" /> टाइप करा

@@ -48,6 +48,7 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
 <translation id="1557201757634521564">Auto-detect encoding</translation>
 <translation id="1620510694547887537">Camera</translation>
 <translation id="1623104350909869708">Prevent this page from creating additional dialogues</translation>
+<translation id="1639239467298939599">Loading</translation>
 <translation id="1641113438599504367">Safe Browsing</translation>
 <translation id="164269334534774161">You are viewing an offline copy of this page from <ph name="CREATION_TIME" /></translation>
 <translation id="1643702317193804718">Translating page to <ph name="SOURCE_LANGUAGE" />…</translation>
@@ -73,7 +74,6 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
 <translation id="1943432128510653496">Save passwords</translation>
 <translation id="1944384637046898011">Encrypt all with Google password as of <ph name="TIME" /></translation>
 <translation id="1946005195648379376">Control how Google uses your browsing history to personalise Search and other Google services.</translation>
-<translation id="1959930595721737608">Allow JavaScript on the following site.</translation>
 <translation id="1966710179511230534">Please update your sign-in details.</translation>
 <translation id="1974060860693918893">Advanced</translation>
 <translation id="1984321224716884559">Chrome Dev bookmarks</translation>
@@ -99,11 +99,9 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
 <translation id="2268044343513325586">Refine</translation>
 <translation id="2315043854645842844">Client side certificate selection is not supported by the operating system.</translation>
 <translation id="2321958826496381788">Drag the slider until you can read this comfortably. Text should look at least this big after double-tapping on a paragraph.</translation>
-<translation id="2329597144923131178">Sign in to get your bookmarks, history, passwords and other settings on all your devices</translation>
 <translation id="2343328333327081434">Installing…</translation>
 <translation id="2351097562818989364">Your translate settings have been reset.</translation>
 <translation id="2359808026110333948">Continue</translation>
-<translation id="2381756643783702095">Ask before sending (recommended)</translation>
 <translation id="2385560268894525395">past week</translation>
 <translation id="2387895666653383613">Text scaling</translation>
 <translation id="238909021488141516">An error occurred while downloading the content.</translation>
@@ -185,6 +183,7 @@ You are signing in with a managed account and giving its administrator control o
 <translation id="3387650086002190359"><ph name="FILE_NAME" /> download failed due to file system errors.</translation>
 <translation id="3414952576877147120">Size:</translation>
 <translation id="3435896845095436175">Enable</translation>
+<translation id="3452612588551937789">Sign in with your Google Account to get your bookmarks, history, passwords and other settings on all your devices.</translation>
 <translation id="3485544713029068372">Smart Lock for Passwords</translation>
 <translation id="3492207499832628349">New incognito tab</translation>
 <translation id="3518985090088779359">Accept &amp; continue</translation>
@@ -234,6 +233,7 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="4259722352634471385">Navigation is blocked: <ph name="URL" /></translation>
 <translation id="4269820728363426813">Copy link address</translation>
 <translation id="4271185234001491831">Never translate <ph name="LANGUAGE" /></translation>
+<translation id="4275663329226226506">Media</translation>
 <translation id="4278390842282768270">Allowed</translation>
 <translation id="4297410240212242334">Separate tabs and apps</translation>
 <translation id="4307992518367153382">Basics</translation>
@@ -336,7 +336,6 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="5596627076506792578">More options</translation>
 <translation id="5626134646977739690">Name:</translation>
 <translation id="5626370437647899551">Add a Google Account</translation>
-<translation id="563535393368633106">Ask before accessing (recommended)</translation>
 <translation id="5646376287012673985">Location</translation>
 <translation id="5659593005791499971">Email</translation>
 <translation id="5668404140385795438">Override a website’s request to prevent zooming in</translation>
@@ -419,7 +418,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6656545060687952787">Chrome needs location access to scan for devices. <ph name="BEGIN_LINK" />Update permissions<ph name="END_LINK" /></translation>
 <translation id="666268767214822976">Use a prediction service to show related queries and popular websites as you type in the address bar</translation>
 <translation id="666981079809192359">Chrome Privacy Notice</translation>
-<translation id="6683720003467092441">Allow Background Sync on the following site.</translation>
 <translation id="6698801883190606802">Manage synced data</translation>
 <translation id="6710213216561001401">Previous</translation>
 <translation id="6738867403308150051">Downloading…</translation>
@@ -551,7 +549,6 @@ Your Google account may have other forms of browsing history like searches and a
 <translation id="8374821112118309944">You need to update TalkBack to a newer version.</translation>
 <translation id="8396312449826231789">Only approved sites</translation>
 <translation id="8413126021676339697">Show full history</translation>
-<translation id="8413385045638830869">Ask first (recommended)</translation>
 <translation id="8428213095426709021">Settings</translation>
 <translation id="8433057134996913067">This will sign you out of most websites.</translation>
 <translation id="8481940801237642152">Your connection to this site is private, but someone on the network might be able to change the look of the page.</translation>

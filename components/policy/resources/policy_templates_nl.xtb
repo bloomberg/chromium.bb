@@ -2016,7 +2016,7 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 
           Dit beleid wordt alleen van kracht als je handmatige proxyinstellingen hebt geselecteerd bij 'Kies hoe je proxyserverinstellingen wilt opgeven'.
 
-          Stel dit beleid niet in als een je andere modus hebt geselecteerd voor het instellen van je proxybeleid.
+          Stel dit beleid niet in als je een andere modus hebt geselecteerd voor het instellen van je proxybeleid.
 
           Ga voor gedetailleerde voorbeelden naar:
           <ph name="PROXY_HELP_URL" /></translation>

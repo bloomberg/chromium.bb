@@ -343,7 +343,6 @@ Täpsemad juhised leiate konto <ph name="ACCOUNT_EMAIL" /> e-postist.</translati
 <translation id="1482124012545051544"><ph name="FILE_COUNT" /> uue foto varundamiseks valmis</translation>
 <translation id="148466539719134488">Šveitsi</translation>
 <translation id="1485015260175968628">See võib nüüd:</translation>
-<translation id="1485146213770915382">Sisestage URLi sisse otsingusõnade ilmumise kohta <ph name="SEARCH_TERMS_LITERAL" />.</translation>
 <translation id="1486096554574027028">Otsi paroole</translation>
 <translation id="1493263392339817010">Kohanda fonte ...</translation>
 <translation id="1493492096534259649">Selle keele õigekirja ei saa kontrollida</translation>
@@ -803,7 +802,6 @@ Täpsemad juhised leiate konto <ph name="ACCOUNT_EMAIL" /> e-postist.</translati
 <translation id="2176045495080708525">Järgmised laiendused on nüüd installitud:</translation>
 <translation id="2177950615300672361">Inkognito vaheleht: <ph name="TAB_NAME" /></translation>
 <translation id="2178614541317717477">CA turvarike</translation>
-<translation id="2179052183774520942">Lisa otsingumootor</translation>
 <translation id="218492098606937156">Luba puutesündmused</translation>
 <translation id="2187895286714876935">Serveri sertifikaadi impordi viga</translation>
 <translation id="2190069059097339078">WiFi mandaadi hankija</translation>
@@ -969,7 +967,6 @@ Kui olete loonud uue jälgitava kasutaja, saate tema seadeid mis tahes ajal ja s
 <translation id="2392369802118427583">Aktiveeri</translation>
 <translation id="2394296868155622118">Halda arvelduse üksikasju ...</translation>
 <translation id="2394566832561516196">Seaded kustutatakse järgmise uuesti laadimise ajal.</translation>
-<translation id="2396635603035772766">Lubatakse katseline mullipõhine kasutajaliides paroolide salvestamiseks; asendab olemasoleva teaberiba.</translation>
 <translation id="2399147786307302860">Täpsemad sünkroonimisseaded ...</translation>
 <translation id="2401053206567162910">Seda rakendust praegu selles seadmes ei toetata, aga Chrome'i gnoomid töötavad selle nimel, et see peagi toimima hakkaks.</translation>
 <translation id="2403091441537561402">Lüüs:</translation>
@@ -986,7 +983,6 @@ Kui olete loonud uue jälgitava kasutaja, saate tema seadeid mis tahes ajal ja s
 <translation id="2431394478374894294">Lubab virtuaalse klaviatuuri häälsisendi.</translation>
 <translation id="2433452467737464329">Lisage URL-ile päringu parameetrid, et lehte automaatselt värskendada: chrome://network/?refresh=&lt;sec&gt;</translation>
 <translation id="2433507940547922241">Välimus</translation>
-<translation id="2433728760128592593">Sisestusmeetodite vahel vahetamiseks vajutage klahvikombinatsiooni Alt + Tõstuklahv.</translation>
 <translation id="2435248616906486374">Võrguühendus puudub</translation>
 <translation id="2436186046335138073">Kas lubada kasutajal <ph name="HANDLER_HOSTNAME" /> avada kõik protokolli <ph name="PROTOCOL" /> lingid?</translation>
 <translation id="2436707352762155834">Miinimum</translation>
@@ -2003,7 +1999,6 @@ Asukohast <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3764800135428056022">Paku veebiparoolide salvestamist.</translation>
 <translation id="3764986667044728669">Ei saa registreerida</translation>
 <translation id="3768037234834996183">Eelistuste sünkroonimine ...</translation>
-<translation id="3770072361759252365">Kui see on lubatud, lisatakse H.264 tarkvara videokooder/-dekooder. (Kui saadaval on ka riistvara dekooder, võidakse seda kasutada selle dekoodri asemel).</translation>
 <translation id="3771294271822695279">Videofailid</translation>
 <translation id="3774278775728862009">Tai sisestusviis (TIS-820.2538 klaviatuur)</translation>
 <translation id="3775432569830822555">SSL-serveri sertifikaat</translation>
@@ -2274,7 +2269,6 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="418179967336296930">Vene foneetiline (YaZHert) klaviatuur</translation>
 <translation id="4181841719683918333">Keeled</translation>
 <translation id="4187248015940562149">Lubatakse funktsioon Web Bluetooth, mis võib veebisaitidel lubada ühenduse loomise teie läheduses olevate Bluetoothi seadmetega ja neid juhtida.</translation>
-<translation id="4188026131102273494">Märksõna:</translation>
 <translation id="4189406272289638749">Laiendus &lt;b&gt;<ph name="EXTENSION_NAME" />&lt;/b&gt; juhib seda seadet.</translation>
 <translation id="4193154014135846272">Google'i dokument</translation>
 <translation id="4193182321948161343">Materiaalse disaini kasutajahalduri lubamine</translation>
@@ -2575,7 +2569,6 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="4685045708662437080">See aitab Google'il teie häält ära tunda ja parandab kõne ning heli tuvastamist, tänu millele saate tulemusi kiiremalt ja mugavamalt. <ph name="BEGIN_LINK" />Lisateave<ph name="END_LINK" /></translation>
 <translation id="4690246192099372265">rootsi keel</translation>
 <translation id="4690462567478992370">Lõpeta kehtetu sertifikaadi kasutamine</translation>
-<translation id="4691088804026137116">Ära sünkrooni midagi</translation>
 <translation id="469230890969474295">OEM-i kaust</translation>
 <translation id="4692342183939154835">WebRTC riistvarapõhine video kodeerimine</translation>
 <translation id="4692623383562244444">Otsingumootorid</translation>
@@ -3240,7 +3233,6 @@ Uurimise jätkamiseks vajutage mis tahes klahvi.</translation>
 <translation id="5627086634964711283">Lisaks juhib see seda, mis lehte kuvatakse avalehe nupul klõpsamisel.</translation>
 <translation id="5627259319513858869">Lubab kasutada alles arendusjärgus olevaid eksperimentaalseid lõuendifunktsioone.</translation>
 <translation id="5627618611556177958">WebUSB</translation>
-<translation id="5630163645818715367">Materiaalne disain brauseri ülemises Chrome'i osas</translation>
 <translation id="5636996382092289526">Võimalik, et võrgu <ph name="NETWORK_ID" /> kasutamiseks tuleb teil esmalt <ph name="LINK_START" />külastada võrgu sisselogimislehte<ph name="LINK_END" />, mis avaneb mõne sekundi pärast automaatselt. Kui see ei avane, ei saa võrku kasutada.</translation>
 <translation id="5637357908912398026">Paroolide sundsalvestamine</translation>
 <translation id="5637380810526272785">Sisestusmeetod</translation>
@@ -3932,7 +3924,6 @@ Mõned funktsioonid ei pruugi olla saadaval. Veenduge, et profiil on olemas ning
 <translation id="6708242697268981054">Päritolu:</translation>
 <translation id="6709357832553498500">Ühenda, kasutades laiendust <ph name="EXTENSIONNAME" /></translation>
 <translation id="6710213216561001401">Eelmine</translation>
-<translation id="6713912347540154876">Parooli mulli kasutajaliidese salvestamine</translation>
 <translation id="6718273304615422081">Pakkimine ...</translation>
 <translation id="671928215901716392">Lukusta ekraan</translation>
 <translation id="6721972322305477112">&amp;Fail</translation>
@@ -4290,7 +4281,6 @@ Mõned funktsioonid ei pruugi olla saadaval. Veenduge, et profiil on olemas ning
 <translation id="7255220508626648026">Ülekandmine: <ph name="ROUTETITLE" /></translation>
 <translation id="7255935316994522020">Rakenda</translation>
 <translation id="7256710573727326513">Ava vahekaardil</translation>
-<translation id="7257173066616499747">WiFi-võrgud</translation>
 <translation id="7257666756905341374">Kopeeritud ja kleebitud andmete lugemine</translation>
 <translation id="7260504762447901703">Juurdepääsu tühistamine</translation>
 <translation id="7262004276116528033">Sisselogimisteenust hostib <ph name="SAML_DOMAIN" /></translation>
@@ -4718,6 +4708,7 @@ Mõned funktsioonid ei pruugi olla saadaval. Veenduge, et profiil on olemas ning
 <translation id="7896906914454843592">USA laiendatud klaviatuur</translation>
 <translation id="7897900149154324287">Edaspidi eraldage eemaldatav seade kõigepealt rakenduses Failid ja alles seejärel eemaldage seade ise. Muidu võivad andmed kaduma minna.</translation>
 <translation id="7898627924844766532">Tööriistaribale jätmine</translation>
+<translation id="7898725031477653577">Tõlgi alati</translation>
 <translation id="7899177175067029110">Teie telefoni ei õnnestu leida. Veenduge, et seade <ph name="DEVICE_TYPE" /> oleks Internetiga ühendatud. &lt;a&gt;Lisateave&lt;/a&gt;</translation>
 <translation id="7900476766547206086">Sisselogitud kasutajate jaoks on paroolid kohustuslikud, kuna vähemalt üks kasutaja on seade sisse lülitanud.</translation>
 <translation id="7903128267494448252">Kustuta see isik</translation>
@@ -5290,7 +5281,6 @@ Täislaadimiseks kuluva aja arvutamine</translation>
 <translation id="871476437400413057">Google'i salvestatud paroolid</translation>
 <translation id="8714838604780058252">Taustagraafika</translation>
 <translation id="8722421161699219904">USA rahvusvaheline klaviatuur</translation>
-<translation id="872451400847464257">Muuda otsingumootorit</translation>
 <translation id="8724859055372736596">&amp;Kuva kaustas</translation>
 <translation id="8725066075913043281">Proovi uuesti</translation>
 <translation id="8725178340343806893">Lemmikud/järjehoidjad</translation>

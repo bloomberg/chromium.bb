@@ -355,7 +355,7 @@
 <translation id="4592951414987517459">החיבור שלך אל <ph name="DOMAIN" /> מוצפן באמצעות חבילת צופן מתקדמת.</translation>
 <translation id="4594403342090139922">&amp;ביטול מחיקה</translation>
 <translation id="4668929960204016307">,</translation>
-<translation id="4670097147947922288">אתה צופה בדף תוספים.</translation>
+<translation id="4670097147947922288">אתה צופה בדף של תוסף.</translation>
 <translation id="467662567472608290">השרת הזה לא הצליח להוכיח שהוא <ph name="DOMAIN" />; אישור האבטחה שלו מכיל שגיאות. ייתכן שהסיבה לכך היא הגדרה שגויה או תוקף המיירט את החיבור שלך.</translation>
 <translation id="4683417246209150705">‏הזן את ה-CVC בן שלוש הספרות המופיע בגב ה-<ph name="CREDIT_CARD" /></translation>
 <translation id="4697214168136963651"><ph name="URL" /> היתה חסומה</translation>
@@ -666,6 +666,7 @@ Del</translation>
 <translation id="8225771182978767009">האדם שהגדיר את המחשב הזה בחר לחסום את האתר הזה.</translation>
 <translation id="8241707690549784388">הדף שאתה מחפש השתמש במידע שהזנת. החזרה לדף זה עלולה לגרום לכפילות בפעולות שביצעת. האם ברצונך להמשיך?</translation>
 <translation id="8249320324621329438">אוחזר לאחרונה:</translation>
+<translation id="8261506727792406068">מחק</translation>
 <translation id="8266098793847448402">‏לחץ על
           <ph name="BEGIN_BOLD" />התחל<ph name="END_BOLD" />,
           לחץ על

@@ -344,7 +344,6 @@ Please check your email at <ph name="ACCOUNT_EMAIL" /> for further instructions.
 <translation id="1482124012545051544">Ready to backup <ph name="FILE_COUNT" /> new photos</translation>
 <translation id="148466539719134488">Swiss</translation>
 <translation id="1485015260175968628">It can now:</translation>
-<translation id="1485146213770915382">Insert <ph name="SEARCH_TERMS_LITERAL" /> in the URL where the search terms should appear.</translation>
 <translation id="1486096554574027028">Search passwords</translation>
 <translation id="1493263392339817010">Customise fonts...</translation>
 <translation id="1493492096534259649">This language cannot be used for spell checking</translation>
@@ -804,7 +803,6 @@ Please check your email at <ph name="ACCOUNT_EMAIL" /> for further instructions.
 <translation id="2176045495080708525">The following extensions are now installed:</translation>
 <translation id="2177950615300672361">Incognito Tab: <ph name="TAB_NAME" /></translation>
 <translation id="2178614541317717477">CA Compromise</translation>
-<translation id="2179052183774520942">Add Search Engine</translation>
 <translation id="218492098606937156">Enable touch events</translation>
 <translation id="2187895286714876935">Server Certificate Import Error</translation>
 <translation id="2190069059097339078">Wi-Fi Credentials Getter</translation>
@@ -970,7 +968,6 @@ After you create a new supervised user, you can manage their settings at any tim
 <translation id="2392369802118427583">Activate</translation>
 <translation id="2394296868155622118">Manage billing details...</translation>
 <translation id="2394566832561516196">Settings will be cleared on next reload.</translation>
-<translation id="2396635603035772766">Enable experimental bubble-based UI for saving passwords; replaces the existing infobar.</translation>
 <translation id="2399147786307302860">Advanced sync settings...</translation>
 <translation id="2401053206567162910">This app is not currently supported on this device but the Chrome gnomes are hard at work to make it work soon.</translation>
 <translation id="2403091441537561402">Gateway:</translation>
@@ -987,7 +984,6 @@ After you create a new supervised user, you can manage their settings at any tim
 <translation id="2431394478374894294">Enables voice input on virtual keyboard.</translation>
 <translation id="2433452467737464329">Add a query param in URL to auto-refresh the page: chrome://network/?refresh=&lt;sec&gt;</translation>
 <translation id="2433507940547922241">Appearance</translation>
-<translation id="2433728760128592593">Press Alt+Shift to switch between input methods.</translation>
 <translation id="2435248616906486374">Network disconnected</translation>
 <translation id="2436186046335138073">Allow <ph name="HANDLER_HOSTNAME" /> to open all <ph name="PROTOCOL" /> links?</translation>
 <translation id="2436707352762155834">Minimum</translation>
@@ -2003,7 +1999,6 @@ From <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3764800135428056022">Offer to save your web passwords.</translation>
 <translation id="3764986667044728669">Unable to enroll</translation>
 <translation id="3768037234834996183">Syncing your preferences...</translation>
-<translation id="3770072361759252365">When enabled, an H.264 software video encoder/decoder pair is included. (If a hardware decoder is also available it may be used instead of this decoder).</translation>
 <translation id="3771294271822695279">Video Files</translation>
 <translation id="3774278775728862009">Thai input method (TIS-820.2538 keyboard)</translation>
 <translation id="3775432569830822555">SSL Server Certificate</translation>
@@ -2274,7 +2269,6 @@ All users must sign out to continue.</translation>
 <translation id="418179967336296930">Russian Phonetic (YaZHert) keyboard</translation>
 <translation id="4181841719683918333">Languages</translation>
 <translation id="4187248015940562149">Enables Web Bluetooth which could allow websites to connect to and control Bluetooth devices around you.</translation>
-<translation id="4188026131102273494">Keyword:</translation>
 <translation id="4189406272289638749">An extension, &lt;b&gt;<ph name="EXTENSION_NAME" />&lt;/b&gt;, is controlling this setting.</translation>
 <translation id="4193154014135846272">Google document</translation>
 <translation id="4193182321948161343">Enable Material Design User Manager</translation>
@@ -2576,7 +2570,6 @@ Press any key to continue exploring.</translation>
 <translation id="4685045708662437080">This helps Google recognise your voice and improve speech and audio recognition in order to give you results faster and with fewer hassles. <ph name="BEGIN_LINK" />Learn more<ph name="END_LINK" /></translation>
 <translation id="4690246192099372265">Swedish</translation>
 <translation id="4690462567478992370">Stop using an invalid certificate</translation>
-<translation id="4691088804026137116">Sync nothing</translation>
 <translation id="469230890969474295">OEM Folder</translation>
 <translation id="4692342183939154835">WebRTC hardware video encoding</translation>
 <translation id="4692623383562244444">Search engines</translation>
@@ -3241,7 +3234,6 @@ Press any key to continue exploring.</translation>
 <translation id="5627086634964711283">It also controls what page is shown when you click the Home button.</translation>
 <translation id="5627259319513858869">Enables the use of experimental canvas features which are still in development.</translation>
 <translation id="5627618611556177958">WebUSB</translation>
-<translation id="5630163645818715367">Material design in the browser's top Chrome</translation>
 <translation id="5636996382092289526">To use <ph name="NETWORK_ID" /> you may first need to <ph name="LINK_START" />visit the network's sign-in page<ph name="LINK_END" />, which will open automatically in a few seconds. If it doesn't happen, the network can't be used.</translation>
 <translation id="5637357908912398026">Force-saving of passwords</translation>
 <translation id="5637380810526272785">Input Method</translation>
@@ -3933,7 +3925,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
 <translation id="6708242697268981054">Origin:</translation>
 <translation id="6709357832553498500">Connect using <ph name="EXTENSIONNAME" /></translation>
 <translation id="6710213216561001401">Previous</translation>
-<translation id="6713912347540154876">Save Password Bubble UI</translation>
 <translation id="6718273304615422081">Zipping...</translation>
 <translation id="671928215901716392">Lock screen</translation>
 <translation id="6721972322305477112">&amp;File</translation>
@@ -4292,7 +4283,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
 <translation id="7255220508626648026">Casting: <ph name="ROUTETITLE" /></translation>
 <translation id="7255935316994522020">Apply</translation>
 <translation id="7256710573727326513">Open in a tab</translation>
-<translation id="7257173066616499747">Wi-Fi networks</translation>
 <translation id="7257666756905341374">Read data that you copy and paste</translation>
 <translation id="7260504762447901703">Revoke access</translation>
 <translation id="7262004276116528033">This sign-in service is hosted by <ph name="SAML_DOMAIN" /></translation>
@@ -4720,6 +4710,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
 <translation id="7896906914454843592">US Extended keyboard</translation>
 <translation id="7897900149154324287">In the future, make sure that you eject your removable device in the Files app before unplugging it. Otherwise, you might lose data.</translation>
 <translation id="7898627924844766532">Keep in toolbar</translation>
+<translation id="7898725031477653577">Always translate</translation>
 <translation id="7899177175067029110">Can’t find your phone. Make sure that your <ph name="DEVICE_TYPE" /> is connected to the Internet. &lt;a&gt;Learn more&lt;/a&gt;</translation>
 <translation id="7900476766547206086">Passwords are required for signed-in users, as one or more users has this setting turned on.</translation>
 <translation id="7903128267494448252">Delete this person</translation>
@@ -5293,7 +5284,6 @@ Calculating time until full</translation>
 <translation id="871476437400413057">Google saved passwords</translation>
 <translation id="8714838604780058252">Background graphics</translation>
 <translation id="8722421161699219904">US International keyboard</translation>
-<translation id="872451400847464257">Edit Search Engine</translation>
 <translation id="8724859055372736596">&amp;Show in Folder</translation>
 <translation id="8725066075913043281">Try again</translation>
 <translation id="8725178340343806893">Favourites/bookmarks</translation>

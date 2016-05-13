@@ -543,6 +543,22 @@
           Hvert element på denne listen er et samsvarsmønster som ligner på en utvidelse (se https://developer.chrome.com/extensions/match_patterns). Brukerne kan enkelt installere elementer fra alle nettadresser som samsvarer med et element på denne listen. Både plasseringen til *.crx-filen og siden der nedlastingen starter fra (dvs. referenten), må tillates av disse mønstrene.
 
           ExtensionInstallBlacklist har forrang over denne regelen. Det betyr at en utvidelse på svartelisten ikke blir installert, selv om det skjer fra et nettsted som er på denne listen.</translation>
+<translation id="2813740161943223811">Denne regelen er avviklet. Bruk ProxyMode i stedet.
+
+          Lar deg spesifisere hvilken proxy-tjener som brukes av <ph name="PRODUCT_NAME" />, og hindrer brukerne i å endre innstillingene for proxy-tjenere. ARC-apper kan også bruke denne proxy-tjeneren.
+
+          Hvis du velger at det aldri skal brukes proxy-tjenere og alltid kobles til direkte, ignoreres alle andre alternativer.
+
+          Hvis du velger at systeminnstillingene for proxy-tjenere skal brukes, eller at proxy-tjenere skal oppdages automatisk, ignoreres alle andre alternativer.
+
+          Hvis du velger manuelle innstillinger for proxy-tjenere, kan du spesifisere flere alternativer i «Adresse eller nettadresse for proxy-tjener», «Nettadresse til en .pac-fil for proxy-tjener» og «Kommadelt liste over regler for å omgå proxy-tjener». ARC-apper kan bare bruke den HTTP-proxy-tjeneren som har høyest prioritet.
+
+          Du finner detaljerte eksempler her:
+          <ph name="PROXY_HELP_URL" />.
+
+          Hvis du slår på denne innstillingen, ignorerer <ph name="PRODUCT_NAME" /> alle proxy-tjenerrelaterte alternativer som spesifiseres fra kommandolinjen.
+
+          Hvis du ikke spesifiserer denne regelen, kan brukerne velge egne innstillinger for proxy-tjenere.</translation>
 <translation id="2824715612115726353">Aktiver inkognitomodus</translation>
 <translation id="2844404652289407061">Gjør «Trykk for å søke» tilgjengelig i innholdsvisningen i <ph name="PRODUCT_NAME" />.
 
@@ -654,6 +670,18 @@
           </translation>
 <translation id="3205825995289802549">Maksimer det første nettleservinduet ved den første kjøringen</translation>
 <translation id="3206731874112238027">Slå av forhåndsvisning av utskrifter (avviklet)</translation>
+<translation id="3208854390109736596">Lar deg spesifisere hvilken proxy-tjener som brukes av <ph name="PRODUCT_NAME" />, og hindrer brukerne i å endre innstillingene for proxy-tjenere. ARC-apper kan også bruke denne proxy-tjeneren.
+
+      Hvis du velger at det aldri skal brukes proxy-tjenere og alltid kobles til direkte, ignoreres alle andre alternativer.
+
+      Hvis du velger at proxy-tjenere skal oppdages automatisk, ignoreres alle andre alternativer.
+
+      Du finner detaljerte eksempler her:
+      <ph name="PROXY_HELP_URL" />.
+
+      Hvis du slår på denne innstillingen, ignorerer <ph name="PRODUCT_NAME" /> alle proxy-tjenerrelaterte alternativer som spesifiseres fra kommandolinjen.
+
+      Hvis du ikke spesifiserer denne regelen, kan brukerne velge egne innstillinger for proxy-tjenere.</translation>
 <translation id="3213821784736959823">Kontrollerer hvorvidt den innebygde DNS-klinten brukes i <ph name="PRODUCT_NAME" />.
 
       Hvis denne innstillingen er angitt som «true», blir den innebygde DNS-klienten brukt, så sant den er tilgjengelig.
@@ -700,6 +728,9 @@
 
       Hvis denne retningslinjen er angitt som Usann, tillater ikke <ph name="PRODUCT_OS_NAME" /> at gjesteøkter startes.</translation>
 <translation id="3428247105888806363">Slå på nettverksforutsigelse</translation>
+<translation id="3449886121729668969">Konfigurerer innstillingene for proxy-tjenere for <ph name="PRODUCT_NAME" />. Disse er også tilgjengelige for ARC-apper.
+
+      Denne regelen er ikke klar til bruk ennå, så ikke bruk den.</translation>
 <translation id="3460784402832014830">Spesifiserer nettadressen som søkemotoren bruker for å levere en ny fane-side.
 
           Denne innstillingen er valgfri. Hvis den ikke angis, leveres ingen nye fane-side.
@@ -710,6 +741,14 @@
           Hvis innstillingen er satt til True, begynner ikke tidtakingen av strømstyringsforsinkelser og øktens varighet å løpe før etter at brukerens første aktivitet i en økt er registrert.
 
           Hvis innstillingen er satt til False eller ikke er angitt, begynner tidtakingen av strømstyringsforsinkelser og øktens varighet å løpe umiddelbart når økten starter.</translation>
+<translation id="3469657928310999477"><ph name="PRODUCT_NAME" /> omgår alle proxy-tjenere for listen med verter som spesifiseres her. ARC-apper kan bruke denne listen som en liste for omgåelse av regler.
+
+          Denne regelen trer bare i kraft hvis du har valgt manuelle innstillinger for proxy-tjenere under «Velg hvordan innstillinger for proxy-tjener angis».
+
+          Du bør ikke spesifisere denne regelen hvis du har valgt en annen modus for spesifisering av regler for proxy-tjenere.
+
+          Du finner detaljerte eksempler her:
+          <ph name="PROXY_HELP_URL" /></translation>
 <translation id="3478024346823118645">Slett brukerdata ved avlogging</translation>
 <translation id="348495353354674884">Aktiver virtuelt tastatur</translation>
 <translation id="3496296378755072552">Passordbehandling</translation>
@@ -1370,6 +1409,9 @@
       Denne retningslinjen påvirker alle typer lagringsmedier, for eksempel USB-flashstasjoner, eksterne harddisker, SD-kort og andre minnekort, optisk lagring osv. Intern lagring påvirkes ikke, så filer du har lastet ned til nedlastingsmappen, er fortsatt tilgjengelige. Google Disk påvirkes heller ikke av denne retningslinjen.
 
       Hvis denne innstillingen er deaktivert eller ikke konfigurert, kan brukere anvende alle typer ekstern lagring som støttes, på enhetene sine.</translation>
+<translation id="6076099373507468537">Definerer listen over USB-enheter som kan kobles fra kjernedriveren, så de kan brukes via chrome.usb API direkte i nettprogrammer. Oppføringene er par av leverandør- og produktkoder som identifiserer spesifikke USB-enheter.
+
+      Hvis denne regelen ikke er spesifisert, er listen over frakoblingsbare USB-enheter tom.</translation>
 <translation id="6095999036251797924">Angir hvor mye tid som kan gå uten brukeraktivitet før skjermen låses når nettstrøm eller batteri brukes.
 
           Hvis tidslengden er satt til en verdi større enn null, avgjør den hvor lenge brukeren kan være borte før skjermen på <ph name="PRODUCT_OS_NAME" /> låses.
@@ -1899,6 +1941,14 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
       Hvis regelen settes til false (usann), rapporteres ikke øktinformasjonen.
       Hvis den settes til true (sann) eller ikke angis, rapporteres øktinformasjonen.</translation>
 <translation id="7774768074957326919">Bruk systeminnstillingene for mellomtjener</translation>
+<translation id="7775831859772431793">Du kan spesifisere nettadressen til proxytjeneren her.
+
+          Denne regelen trer bare i kraft hvis du har valgt manuelle innstillinger for proxy-tjenere under «Velg hvordan innstillinger for proxy-tjener angis».
+
+          Du bør ikke spesifisere denne regelen hvis du har valgt en annen modus for spesifisering av regler for proxy-tjenere.
+
+          Du finner detaljerte eksempler her:
+          <ph name="PROXY_HELP_URL" /></translation>
 <translation id="7788511847830146438">Per profil</translation>
 <translation id="7796141075993499320">Gjør at du kan angi en liste over nettadressemønstre som spesifiserer hvilke nettsteder som får kjøre programtillegg.
 
@@ -1931,6 +1981,14 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
       Bestemmer ID-en for utvidelsen som skal brukes som skjermsparer på påloggingssiden. Utvidelsen må være del av AppPack-elementet som er konfigurert for dette domenet gjennom DeviceAppPack-retningslinjene.</translation>
 <translation id="7882890448959833986">Ignorer advarselen om at operativsystemet ikke støttes</translation>
 <translation id="7912255076272890813">Konfigurer tillatte typer apper og utvidelser</translation>
+<translation id="7915236031252389808">Du kan angi nettadressen til en .pac-fil for en proxy-tjener her.
+
+          Denne regelen trer bare i kraft hvis du har valgt manuelle innstillinger for proxy-tjenere under «Velg hvordan innstillinger for proxy-tjener angis».
+
+          Du bør ikke spesifisere denne regelen hvis du har valgt en annen modus for spesifisering av regler for proxy-tjenere.
+
+          Du finner detaljerte eksempler her:
+          <ph name="PROXY_HELP_URL" /></translation>
 <translation id="793134539373873765">Angir om p2p skal brukes for nyttelast av OS-oppdatering. Hvis angitt til «True», kommer enhetene til å dele og forsøke å konsumere oppdateringsnyttelast på LAN, noe som potensielt kan redusere Internett-båndbredden og -trafikken. Hvis oppdateringsnyttelasten ikke er tilgjengelig på LAN, går enheten tilbake til å laste ned fra en oppdateringstjener. Hvis angitt til «False» eller ikke konfigurert, blir ikke p2p brukt.</translation>
 <translation id="7933141401888114454">Slå på oppretting av administrerte brukere</translation>
 <translation id="7936098023732125869">Slår på bruk av en standard søkeleverandør.
@@ -2076,6 +2134,11 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 <translation id="8382184662529825177">Slå på bruken av ekstern attestasjon for innholdsbeskyttelse på enheten</translation>
 <translation id="838870586332499308">Aktiver datastreifing</translation>
 <translation id="8412312801707973447">Angir om OCSP/CRL-kontroller utføres på nettet</translation>
+<translation id="8413348101535146315">Slår på muligheten for å avslutte prosesser i oppgavebehandlingen i <ph name="PRODUCT_NAME" />.
+
+      Hvis denne regelen er satt til false (usann), er «Avslutt prosessen»-knappen deaktivert i oppgavebehandlingen.
+
+      Hvis denne regelen er satt til true (sann) eller ikke er konfigurert, kan brukeren avslutte prosesser i oppgavebehandlingen.</translation>
 <translation id="8424255554404582727">Angi standardverdien for skjermrotasjon. Denne brukes hver gang enheten starter på nytt</translation>
 <translation id="8426231401662877819">Rotér skjermen 90 grader med klokken</translation>
 <translation id="8451988835943702790">Bruk siden Ny fane som startside</translation>
@@ -2294,6 +2357,24 @@ programtillegg. Shockwave Flash-programtillegget tilhører for eksempel Adobe Fl
 <translation id="9112897538922695510">Med denne innstillingen kan du registrere en liste over protokollbehandlere. Dette er bare en anbefalt innstilling. Egenskapen |protocol| bør settes til det aktuelle skjemaet, for eksempel «mailto», og egenskapen |url| bør settes til nettadressemønsteret for appen som behandler skjemaet. Mønsteret kan inkludere en «%s» som, hvis den brukes, erstattes av nettadressen som behandles.
 
           Protokollbehandlere som registreres via denne innstillingen, slås sammen med de som er registrert av brukeren, og begge er tilgjengelige for bruk. Brukeren kan overstyre protokollbehandlerne som innstillingen har installert, ved å installere en ny standardbehandler, men kan ikke fjerne en protokollbehandler som er registrert via en innstilling.</translation>
+<translation id="913138516158420759">Lar deg spesifisere hvilken proxy-tjener som brukes av <ph name="PRODUCT_NAME" />, og hindrer brukerne i å endre innstillingene for proxy-tjenere. ARC-apper kan også bruke denne proxy-tjeneren.
+
+          Hvis du velger at det aldri skal brukes proxy-tjenere og alltid kobles til direkte, ignoreres alle andre alternativer.
+
+          Hvis du velger at systeminnstillingene for proxy-tjenere skal brukes, ignoreres alle andre alternativer.
+
+          Hvis du velger at proxy-tjenere skal oppdages automatisk, ignoreres alle andre alternativer.
+
+          Hvis du velger at proxy-tjenermodusen med fast tjener skal brukes, kan du spesifisere flere alternativer i reglene for omgåelse av proxy-tjenere, mer konkret i «Adresse eller nettadresse for proxy-tjener» og «Kommadelt liste over regler for å omgå proxy-tjener». ARC-apper kan bare bruke den HTTP-proxy-tjeneren som har høyest prioritet.
+
+          Hvis du velger å bruke et .pac-skript for en proxy-tjener, må du spesifisere nettadressen til skriptet i «Nettadresse til en .pac-fil for proxy-tjener».
+
+          Du finner detaljerte eksempler her:
+          <ph name="PROXY_HELP_URL" />.
+
+          Hvis du slår på denne innstillingen, ignorerer <ph name="PRODUCT_NAME" /> og ARC-apper alle proxy-tjenerrelaterte alternativer som spesifiseres fra kommandolinjen.
+
+          Hvis du ikke spesifiserer denne regelen, kan brukerne velge egne innstillinger for proxy-tjenere.</translation>
 <translation id="913195841488580904">Blokker tilgang til en liste over nettadresser</translation>
 <translation id="9135033364005346124">Aktiver mellomtjener for <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="9147029539363974059">Sender systemlogger til administrasjonstjeneren for å la administratorer

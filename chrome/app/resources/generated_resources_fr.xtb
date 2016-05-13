@@ -343,7 +343,6 @@ Pour en savoir plus, veuillez consulter votre compte de messagerie (<ph name="AC
 <translation id="1482124012545051544">Prêt à sauvegarder <ph name="FILE_COUNT" /> nouvelles photos</translation>
 <translation id="148466539719134488">Suisse</translation>
 <translation id="1485015260175968628">Elle peut désormais :</translation>
-<translation id="1485146213770915382">Insérez <ph name="SEARCH_TERMS_LITERAL" /> dans l'URL où les termes de recherche devraient apparaître.</translation>
 <translation id="1486096554574027028">Rechercher</translation>
 <translation id="1493263392339817010">Personnaliser les polices...</translation>
 <translation id="1493492096534259649">Impossible d'utiliser cette langue pour corriger l'orthographe.</translation>
@@ -802,7 +801,6 @@ Pour en savoir plus, veuillez consulter votre compte de messagerie (<ph name="AC
 <translation id="2176045495080708525">Les extensions suivantes ont été installées :</translation>
 <translation id="2177950615300672361">Onglet de navigation privée : <ph name="TAB_NAME" /></translation>
 <translation id="2178614541317717477">Autorité de certification compromise</translation>
-<translation id="2179052183774520942">Ajouter un moteur de recherche</translation>
 <translation id="218492098606937156">Activer les événements tactiles</translation>
 <translation id="2187895286714876935">Erreur d'importation du certificat serveur</translation>
 <translation id="2190069059097339078">Obtention des identifiants Wi-Fi</translation>
@@ -968,7 +966,6 @@ Une fois que vous avez créé un compte utilisateur supervisé, vous pouvez gér
 <translation id="2392369802118427583">Activer</translation>
 <translation id="2394296868155622118">Gérer les informations de facturation…</translation>
 <translation id="2394566832561516196">Les paramètres seront effacés lors du prochain chargement de la page.</translation>
-<translation id="2396635603035772766">Activer l'interface utilisateur expérimentale d'enregistrement des mots de passe via une info-bulle ; remplace la barre d'informations existante.</translation>
 <translation id="2399147786307302860">Paramètres de synchronisation avancés…</translation>
 <translation id="2401053206567162910">Cette application n'est pas compatible avec cet appareil pour le moment, mais les petits lutins de Google Chrome sont à pied d'œuvre pour qu'elle le devienne rapidement.</translation>
 <translation id="2403091441537561402">Passerelle :</translation>
@@ -985,7 +982,6 @@ Une fois que vous avez créé un compte utilisateur supervisé, vous pouvez gér
 <translation id="2431394478374894294">Cette option active la saisie vocale sur le clavier virtuel.</translation>
 <translation id="2433452467737464329">Ajoutez un paramètre de requête dans l'URL pour une actualisation automatique de la page : chrome://network/?refresh=&lt;sec&gt;.</translation>
 <translation id="2433507940547922241">Apparence</translation>
-<translation id="2433728760128592593">Appuyez sur Alt + Maj pour basculer entre les modes de saisie.</translation>
 <translation id="2435248616906486374">Réseau déconnecté.</translation>
 <translation id="2436186046335138073">Autoriser <ph name="HANDLER_HOSTNAME" /> à ouvrir tous les liens <ph name="PROTOCOL" /> ?</translation>
 <translation id="2436707352762155834">Minimum</translation>
@@ -2002,7 +1998,6 @@ Domaine d'origine : <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3764800135428056022">Proposer d'enregistrer mes mots de passe Web</translation>
 <translation id="3764986667044728669">Impossible de s'inscrire</translation>
 <translation id="3768037234834996183">Synchronisation des préférences en cours…</translation>
-<translation id="3770072361759252365">Lorsque cette option est activée, une paire encodeur/décodeur vidéo logiciel H.264 est incluse. (Si un décodeur matériel est également disponible, il peut être utilisé à la place de celui-ci).</translation>
 <translation id="3771294271822695279">Fichiers vidéo</translation>
 <translation id="3774278775728862009">Mode de saisie du thaï (clavier TIS-820.2538)</translation>
 <translation id="3775432569830822555">Certificat du serveur SSL</translation>
@@ -2273,7 +2268,6 @@ Tous les utilisateurs doivent se déconnecter pour continuer.</translation>
 <translation id="418179967336296930">Clavier russe phonétique (YaZHert)</translation>
 <translation id="4181841719683918333">Langues</translation>
 <translation id="4187248015940562149">Active Web Bluetooth, qui permet aux sites Web de se connecter aux appareils Bluetooth à proximité et de les contrôler.</translation>
-<translation id="4188026131102273494">Mot clé :</translation>
 <translation id="4189406272289638749">L'extension &lt;b&gt;<ph name="EXTENSION_NAME" />&lt;/b&gt; contrôle ce paramètre.</translation>
 <translation id="4193154014135846272">Document Google</translation>
 <translation id="4193182321948161343">Activer le gestionnaire d'utilisateurs Material Design</translation>
@@ -2575,7 +2569,6 @@ Pour poursuivre l'exploration, veuillez appuyer sur n'importe quelle touche.</tr
 <translation id="4685045708662437080">Cette fonctionnalité aide Google à reconnaître votre voix, et à améliorer la reconnaissance vocale et audio afin de vous proposer, plus rapidement, des résultats améliorés. <ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /></translation>
 <translation id="4690246192099372265">Suédois</translation>
 <translation id="4690462567478992370">Arrêter d'utiliser un certificat non valide</translation>
-<translation id="4691088804026137116">Ne rien synchroniser</translation>
 <translation id="469230890969474295">Dossier OEM</translation>
 <translation id="4692342183939154835">Encodage vidéo matériel avec WebRTC</translation>
 <translation id="4692623383562244444">Moteurs de recherche</translation>
@@ -3240,7 +3233,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="5627086634964711283">Elle contrôle également la page qui s'affiche lorsque vous cliquez sur le bouton "Accueil".</translation>
 <translation id="5627259319513858869">Permet d'utiliser des fonctionnalités de canvas expérimentales qui sont toujours en phase de développement.</translation>
 <translation id="5627618611556177958">WebUSB</translation>
-<translation id="5630163645818715367">Material Design dans le chrome supérieur du navigateur</translation>
 <translation id="5636996382092289526">Pour utiliser <ph name="NETWORK_ID" />, vous devez d'abord <ph name="LINK_START" />accéder à la page de connexion du réseau<ph name="LINK_END" />, qui s'ouvrira automatiquement dans quelques secondes. Dans le cas contraire, ce réseau ne pourra pas être utilisé pour la connexion Internet.</translation>
 <translation id="5637357908912398026">Enregistrement forcé des mots de passe</translation>
 <translation id="5637380810526272785">Mode de saisie</translation>
@@ -3932,7 +3924,6 @@ Il est possible que certaines fonctionnalités ne soient pas disponibles. Veuill
 <translation id="6708242697268981054">Source :</translation>
 <translation id="6709357832553498500">Se connecter avec "<ph name="EXTENSIONNAME" />"</translation>
 <translation id="6710213216561001401">Précédent</translation>
-<translation id="6713912347540154876">Info-bulle d'enregistrement des mots de passe</translation>
 <translation id="6718273304615422081">Compression en cours…</translation>
 <translation id="671928215901716392">Verrouillage d'écran</translation>
 <translation id="6721972322305477112">&amp;Fichier</translation>
@@ -4288,7 +4279,6 @@ Il est possible que certaines fonctionnalités ne soient pas disponibles. Veuill
 <translation id="7255220508626648026">Diffusion de l'élément suivant : <ph name="ROUTETITLE" /></translation>
 <translation id="7255935316994522020">Appliquer</translation>
 <translation id="7256710573727326513">Ouvrir dans un onglet</translation>
-<translation id="7257173066616499747">Réseaux Wi-Fi</translation>
 <translation id="7257666756905341374">Accéder aux données que vous copiez et collez</translation>
 <translation id="7260504762447901703">Révoquer l'accès</translation>
 <translation id="7262004276116528033">Ce service de connexion est hébergé par <ph name="SAML_DOMAIN" />.</translation>
@@ -4716,6 +4706,7 @@ Il est possible que certaines fonctionnalités ne soient pas disponibles. Veuill
 <translation id="7896906914454843592">Clavier américain étendu</translation>
 <translation id="7897900149154324287">À l'avenir, assurez-vous d'éjecter votre appareil amovible via l'application Fichiers avant de le retirer afin d'éviter toute perte de données.</translation>
 <translation id="7898627924844766532">Garder dans la barre d'outils</translation>
+<translation id="7898725031477653577">Toujours traduire</translation>
 <translation id="7899177175067029110">Impossible de trouver votre téléphone. Assurez-vous que votre <ph name="DEVICE_TYPE" /> est connecté à Internet. &lt;a&gt;En savoir plus&lt;/a&gt;</translation>
 <translation id="7900476766547206086">Étant donné que ce paramètre est activé pour au moins un des utilisateurs, les mots de passe sont obligatoires pour tous les utilisateurs connectés.</translation>
 <translation id="7903128267494448252">Supprimer ce profil utilisateur</translation>
@@ -5288,7 +5279,6 @@ Calcul de la durée restante</translation>
 <translation id="871476437400413057">Mots de passe Google enregistrés</translation>
 <translation id="8714838604780058252">Graphiques d'arrière-plan</translation>
 <translation id="8722421161699219904">Clavier international américain</translation>
-<translation id="872451400847464257">Modifier le moteur de recherche</translation>
 <translation id="8724859055372736596">&amp;Afficher dans le dossier</translation>
 <translation id="8725066075913043281">Réessayer</translation>
 <translation id="8725178340343806893">Favoris</translation>

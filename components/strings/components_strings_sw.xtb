@@ -42,7 +42,7 @@
 <translation id="1254117744268754948">Chagua Folda</translation>
 <translation id="1285320974508926690">Kamwe usitafsiri tovuti hii</translation>
 <translation id="129553762522093515">Vilivyofungwa hivi karibuni</translation>
-<translation id="129863573139666797"><ph name="BEGIN_LINK" />Jaribu kufuta vidakuzi vyako<ph name="END_LINK" /></translation>
+<translation id="129863573139666797"><ph name="BEGIN_LINK" />Jaribu kufuta vidakuzi kwenye kivinjari chako<ph name="END_LINK" /></translation>
 <translation id="1339601241726513588">Kikoa cha kujiandikisha:</translation>
 <translation id="1344588688991793829">Mipangilio ya Kujaza otomatiki ya Chromium...</translation>
 <translation id="1374468813861204354">mapendekezo</translation>
@@ -440,7 +440,7 @@
 <translation id="5650551054760837876">Matokeo ya utafutaji hayakupatikana.</translation>
 <translation id="5663999524854166235">Weka CVC ya tarakimu 3 iliyo nyuma ya kadi yako ili uthibitishe</translation>
 <translation id="5677928146339483299">Vilivyozuiwa</translation>
-<translation id="5696590819423335174">Weka tarehe ya kuisha muda na CVC yenye tarakimu 4 iliyo mbele ya kadi yako ya <ph name="CREDIT_CARD" /></translation>
+<translation id="5696590819423335174">Weka tarehe ya kuisha kwa muda wa matumizi na CVC yenye tarakimu 4 iliyo mbele ya kadi yako ya <ph name="CREDIT_CARD" /></translation>
 <translation id="5699278517904102888">Weka CVC yenye tarakimu 3 iliyo nyuma ya kadi yako ya <ph name="CREDIT_CARD" /> ili uthibitishe</translation>
 <translation id="5710435578057952990">Utambulisho wa tovuti hii haujathibitishwa.</translation>
 <translation id="5720705177508910913">Mtumiaji wa sasa</translation>
@@ -658,6 +658,7 @@ Hebu! Huenda hali fiche <ph name="SHORTCUT_KEY" /> ikakufaa wakati ujao.</transl
 <translation id="8225771182978767009">Mtu ambaye aliweka mipangilio ya kompyuta hii ameamua kuzuia tovuti hii.</translation>
 <translation id="8241707690549784388">Ukurasa unaotafuta ulitumia maelezo uliyoyaingiza. Kurudi kwenye ukurasa huo huenda kukasababisha tendo lolote ulilofanya lirudiwe. Je, ungependa kuendelea?</translation>
 <translation id="8249320324621329438">Iliyoletwa mwisho:</translation>
+<translation id="8261506727792406068">Futa</translation>
 <translation id="8266098793847448402">Bofya
           <ph name="BEGIN_BOLD" />Anza<ph name="END_BOLD" />,
           bofya

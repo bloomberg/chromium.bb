@@ -343,7 +343,6 @@
 <translation id="1482124012545051544"><ph name="FILE_COUNT" /> కొత్త ఫోటోలను బ్యాకప్ చేయడానికి సిద్ధంగా ఉంది</translation>
 <translation id="148466539719134488">స్విస్</translation>
 <translation id="1485015260175968628">ఇప్పుడు ఇది వీటిని చేయగలదు:</translation>
-<translation id="1485146213770915382">శోధన నిబంధనలు ప్రత్యక్షమవ్వాల్సిన చోట <ph name="SEARCH_TERMS_LITERAL" />ను URLలో ఇన్సర్ట్ చెయ్యి.</translation>
 <translation id="1486096554574027028">పాస్‌వర్డ్‌లను శోధించు</translation>
 <translation id="1493263392339817010">ఫాంట్‌లను అనుకూలీకరించు...</translation>
 <translation id="1493492096534259649">అక్షర క్రమం తనిఖీ కోసం ఈ భాష ఉపయోగించబడదు</translation>
@@ -802,7 +801,6 @@
 <translation id="2176045495080708525">క్రింది పొడిగింపులు ఇప్పుడు వ్యవస్థాపించబడ్డాయి:</translation>
 <translation id="2177950615300672361">అజ్ఞాత ట్యాబ్: <ph name="TAB_NAME" /></translation>
 <translation id="2178614541317717477">CA రాజీ</translation>
-<translation id="2179052183774520942">శోధన ఇంజన్‌ను జోడించు</translation>
 <translation id="218492098606937156">స్పర్శ ఈవెంట్‌లను ప్రారంభించు</translation>
 <translation id="2187895286714876935">సర్వర్  ప్రమాణపత్రం  దిగుమతి లోపం</translation>
 <translation id="2190069059097339078">WiFi క్రెడెన్షియల్స్ గెట్టర్</translation>
@@ -968,7 +966,6 @@
 <translation id="2392369802118427583">సక్రియం చెయ్యి</translation>
 <translation id="2394296868155622118">బిల్లింగ్ వివరాలను నిర్వహించండి...</translation>
 <translation id="2394566832561516196">సెట్టింగ్‌లు తదుపరి రీలోడ్‌ సమయంలో క్లియర్ చేయబడతాయి.</translation>
-<translation id="2396635603035772766">పాస్‌వర్డ్‌లను సేవ్ చేయడం కోసం ప్రయోగాత్మక బబుల్-ఆధారిత UIని ప్రారంభించండి; ఇది ఇప్పటికే ఉన్న సమాచార బార్‌ను భర్తీ చేస్తుంది.</translation>
 <translation id="2399147786307302860">అధునాతన సమకాలీకరణ సెట్టింగ్‌లు...</translation>
 <translation id="2401053206567162910">ఈ అనువర్తనానికి ఈ పరికరంలో ప్రస్తుతం మద్దతు లేదు కానీ Chrome బృందం త్వరలో దీనికి మద్దతు ఇచ్చేలా చేయడానికి కష్టపడి పని చేస్తున్నారు.</translation>
 <translation id="2403091441537561402">గేట్‌వే:</translation>
@@ -985,7 +982,6 @@
 <translation id="2431394478374894294">వర్చువల్ కీబోర్డ్‌లో వాయిస్ ఇన్‌పుట్‌ను ప్రారంభిస్తుంది.</translation>
 <translation id="2433452467737464329">పేజీని స్వీయ రీఫ్రెష్ చేయడానికి URLలో ప్రశ్న పరామితిని జోడించండి: chrome://network/?refresh=&lt;sec&gt;</translation>
 <translation id="2433507940547922241">కనిపించే తీరు</translation>
-<translation id="2433728760128592593">ఇన్‌పుట్ పద్ధతుల మధ్య మారడానికి Alt+Shift నొక్కండి.</translation>
 <translation id="2435248616906486374">నెట్‌వర్క్ డిస్‌కనెక్ట్ అయింది</translation>
 <translation id="2436186046335138073">అన్ని <ph name="PROTOCOL" /> లింక్‌లను తెరవడానికి <ph name="HANDLER_HOSTNAME" />ను అనుమతించాలా?</translation>
 <translation id="2436707352762155834">కనిష్టం</translation>
@@ -2002,7 +1998,6 @@
 <translation id="3764800135428056022">మీ వెబ్ పాస్‌వర్డ్‌లను సేవ్ చేసుకునే సదుపాయం.</translation>
 <translation id="3764986667044728669">నమోదు చేయడం సాధ్యపడలేదు</translation>
 <translation id="3768037234834996183">మీ ప్రాధాన్యతలను సమకాలీకరిస్తోంది...</translation>
-<translation id="3770072361759252365">ప్రారంభించినప్పుడు, H.264 సాఫ్ట్‌వేర్ వీడియో ఎన్‌కోడర్/డీకోడర్ చేర్చబడుతుంది. (హార్డ్‌వేర్ డీకోడర్ కూడా అందుబాటులో ఉన్నట్లయితే ఈ డీకోడర్ బదులుగా అది ఉపయోగించబడవచ్చు).</translation>
 <translation id="3771294271822695279">వీడియో ఫైళ్ళు</translation>
 <translation id="3774278775728862009">థాయ్ ఇన్‌పుట్ పద్ధతి (TIS-820.2538 కీబోర్డ్)</translation>
 <translation id="3775432569830822555">SSL సర్వర్ సర్టిఫికెట్</translation>
@@ -2273,7 +2268,6 @@
 <translation id="418179967336296930">రష్యన్ ఫొనెటిక్ (YaZHert) కీబోర్డ్</translation>
 <translation id="4181841719683918333">భాషలు</translation>
 <translation id="4187248015940562149">మీ చుట్టూ ఉన్న బ్లూటూత్ పరికరాలకు కనెక్ట్ చేయడానికి మరియు వాటిని నియంత్రించడానికి వెబ్‌సైట్‌లను అనుమతించే వెబ్ బ్లూటూత్‌ను ప్రారంభిస్తుంది.</translation>
-<translation id="4188026131102273494">కీవర్డ్:</translation>
 <translation id="4189406272289638749">&lt;b&gt;<ph name="EXTENSION_NAME" />&lt;/b&gt; అనే పొడిగింపు ఈ సెట్టింగ్‌ను నియంత్రిస్తోంది.</translation>
 <translation id="4193154014135846272">Google పత్రం</translation>
 <translation id="4193182321948161343">విశిష్ట రూపకల్పన వినియోగదారు నిర్వాహికిని ప్రారంభించు</translation>
@@ -2575,7 +2569,6 @@
 <translation id="4685045708662437080">ఇది మీకు ఫలితాలను వేగంగా మరియు స్వల్ప అవాంతరాలతో అందించడానికి మీ వాయిస్‌ను గుర్తించి, ప్రసంగం మరియు ఆడియో గుర్తింపును మెరుగుపరచడంలో Googleకి సహాయపడుతుంది. <ph name="BEGIN_LINK" />మరింత తెలుసుకోండి<ph name="END_LINK" /></translation>
 <translation id="4690246192099372265">స్వీడిష్</translation>
 <translation id="4690462567478992370">చెల్లని ప్రమాణపత్రాన్ని ఉపయోగించడాన్ని ఆపివేయి</translation>
-<translation id="4691088804026137116">దేన్నీ సమకాలీకరించవద్దు</translation>
 <translation id="469230890969474295">OEM ఫోల్డర్</translation>
 <translation id="4692342183939154835">WebRTC హార్డ్‌వేర్ వీడియో ఎన్‌కోడింగ్</translation>
 <translation id="4692623383562244444">శోధన ఇంజిన్‌లు</translation>
@@ -3240,7 +3233,6 @@
 <translation id="5627086634964711283">ఇది హోమ్ బటన్‌ను క్లిక్ చేసేటప్పుడు చూపబడే పేజీని కూడా నియంత్రిస్తుంది.</translation>
 <translation id="5627259319513858869">ఇప్పటికీ అభివృద్ధి దశలో ఉన్న ప్రయోగాత్మక కాన్వస్ లక్షణాలను ఉపయోగించడాన్ని ప్రారంభిస్తుంది.</translation>
 <translation id="5627618611556177958">WebUSB</translation>
-<translation id="5630163645818715367">బ్రౌజర్‌లో అత్యుత్తమమైన chromeలో విశిష్ట రూపకల్పన</translation>
 <translation id="5636996382092289526">మీరు <ph name="NETWORK_ID" />ని ఉపయోగించడానికి మొదట కొన్ని సెకన్లలో స్వయంచాలకంగా తెరవబడే <ph name="LINK_START" />నెట్‌వర్క్ సైన్ ఇన్ పేజీని సందర్శించాలి<ph name="LINK_END" />. ఇది జరగకపోతే, నెట్‌వర్క్‌ను ఉపయోగించలేరు.</translation>
 <translation id="5637357908912398026">పాస్‌వర్డ్‌లను నిర్బంధంగా సేవ్ చేయడం</translation>
 <translation id="5637380810526272785">ఇన్‌పుట్ విధానం</translation>
@@ -3930,7 +3922,6 @@
 <translation id="6708242697268981054">మూలం:</translation>
 <translation id="6709357832553498500"><ph name="EXTENSIONNAME" />ని ఉపయోగించి కనెక్ట్ చేయి</translation>
 <translation id="6710213216561001401">మునుపటి</translation>
-<translation id="6713912347540154876">పాస్‌వర్డ్‌ను సేవ్ చేసే బబుల్ UI</translation>
 <translation id="6718273304615422081">జిప్ చేస్తోంది...</translation>
 <translation id="671928215901716392">స్క్రీన్‌ను లాక్ చేయి</translation>
 <translation id="6721972322305477112">&amp;ఫైల్</translation>
@@ -4287,7 +4278,6 @@
 <translation id="7255220508626648026">ప్రసారం చేస్తోంది: <ph name="ROUTETITLE" /></translation>
 <translation id="7255935316994522020">వర్తింపజేయి</translation>
 <translation id="7256710573727326513">ట్యాబ్‌లో తెరువు</translation>
-<translation id="7257173066616499747">Wi-Fi నెట్‌వర్క్‌లు</translation>
 <translation id="7257666756905341374">మీరు కాపీ చేసి అతికించే డేటాను చదవడం</translation>
 <translation id="7260504762447901703">ప్రాప్యతను ఉపసంహరించు</translation>
 <translation id="7262004276116528033">ఈ సైన్-ఇన్ సేవ <ph name="SAML_DOMAIN" /> ద్వారా హోస్ట్ చేయబడుతోంది</translation>
@@ -4715,6 +4705,7 @@
 <translation id="7896906914454843592">US విస్తారిత కీబోర్డ్</translation>
 <translation id="7897900149154324287">భవిష్యత్తులో, మీ తీసివేయదగిన పరికరాన్ని అన్‌ప్లగ్ చేయడానికి ముందు ఫైల్‌ల అనువర్తనంలో దాన్ని ఎజెక్ట్ చేయడం మర్చిపోవద్దు. లేదంటే, మీరు డేటాను కోల్పోయే అవకాశం ఉంటుంది.</translation>
 <translation id="7898627924844766532">సాధనపట్టీలో ఉంచండి</translation>
+<translation id="7898725031477653577">ఎల్లప్పుడూ అనువదించు</translation>
 <translation id="7899177175067029110">మీ ఫోన్‌ను కనుగొనలేము. మీ <ph name="DEVICE_TYPE" /> ఇంటర్నెట్‌కి కనెక్ట్ చేయబడి ఉందని నిర్ధారించుకోండి. &lt;a&gt;మరింత తెలుసుకోండి&lt;/a&gt;</translation>
 <translation id="7900476766547206086">ఈ సెట్టింగ్‌ను ఒకరు లేదా అంతకంటే ఎక్కువ మంది వినియోగదారులు ప్రారంభించినందున సైన్-ఇన్ చేసిన వినియోగదారులకు పాస్‌వర్డ్‌లు అవసరం.</translation>
 <translation id="7903128267494448252">ఈ వ్యక్తిని తొలగించు</translation>
@@ -5283,7 +5274,6 @@
 <translation id="871476437400413057">Google సేవ్ చేసిన పాస్‌వర్డ్‌లు</translation>
 <translation id="8714838604780058252">నేపథ్య గ్రాఫిక్స్</translation>
 <translation id="8722421161699219904">US అంతర్జాతీయ కీబోర్డ్</translation>
-<translation id="872451400847464257">శోధన ఇంజిన్‌ను సవరించు</translation>
 <translation id="8724859055372736596">ఫోల్డర్‌లో &amp;చూపించు</translation>
 <translation id="8725066075913043281">మళ్ళీ ప్రయత్నించండి</translation>
 <translation id="8725178340343806893">ఇష్టమైనవి/బుక్‌మార్క్‌లు</translation>

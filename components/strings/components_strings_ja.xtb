@@ -657,6 +657,7 @@
 <translation id="8225771182978767009">このサイトは、このパソコンを設定したユーザーによってブロックされています。</translation>
 <translation id="8241707690549784388">検索しているページは、入力した情報を使用しています。このページに戻った場合、操作のやり直しが発生する可能性があります。続行しますか？</translation>
 <translation id="8249320324621329438">前回の取得:</translation>
+<translation id="8261506727792406068">削除</translation>
 <translation id="8266098793847448402">まず [<ph name="BEGIN_BOLD" />スタート<ph name="END_BOLD" />] をクリックして [<ph name="BEGIN_BOLD" />ファイル名を指定して実行<ph name="END_BOLD" />] をクリックし、
       <ph name="BEGIN_BOLD" />%windir%\network diagnostic\xpnetdiag.exe<ph name="END_BOLD" /> と入力して
       [<ph name="BEGIN_BOLD" />OK<ph name="END_BOLD" />] をクリックします。</translation>

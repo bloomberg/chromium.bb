@@ -48,6 +48,7 @@
 <translation id="1557201757634521564">自动检测编码</translation>
 <translation id="1620510694547887537">摄像头</translation>
 <translation id="1623104350909869708">阻止此页创建其他对话框</translation>
+<translation id="1639239467298939599">正在加载</translation>
 <translation id="1641113438599504367">安全浏览</translation>
 <translation id="164269334534774161">您目前浏览的是此网页的离线副本（创建时间：<ph name="CREATION_TIME" />）</translation>
 <translation id="1643702317193804718">正在将网页翻译成<ph name="SOURCE_LANGUAGE" />…</translation>
@@ -73,7 +74,6 @@
 <translation id="1943432128510653496">保存密码</translation>
 <translation id="1944384637046898011">自 <ph name="TIME" />起，使用 Google 密码加密所有数据</translation>
 <translation id="1946005195648379376">控制 Google 如何使用您的浏览记录对 Google 搜索和其他 Google 服务进行个性化设置。</translation>
-<translation id="1959930595721737608">在以下网站上允许 JavaScript。</translation>
 <translation id="1966710179511230534">请更新您的登录详细信息。</translation>
 <translation id="1974060860693918893">高级</translation>
 <translation id="1984321224716884559">Chrome Dev 版书签</translation>
@@ -99,11 +99,9 @@
 <translation id="2268044343513325586">优化</translation>
 <translation id="2315043854645842844">操作系统不支持选择客户端证书。</translation>
 <translation id="2321958826496381788">拖动该滑块，将文字调整到适合您阅读的大小。点按两次某段落后，显示的文字至少应是这么大。</translation>
-<translation id="2329597144923131178">登录后可获取您所有设备上保存的书签、历史记录、密码和其他设置。</translation>
 <translation id="2343328333327081434">正在安装…</translation>
 <translation id="2351097562818989364">您的翻译设置已重置。</translation>
 <translation id="2359808026110333948">继续</translation>
-<translation id="2381756643783702095">发送前先询问（推荐）</translation>
 <translation id="2385560268894525395">过去 1 周</translation>
 <translation id="2387895666653383613">文字大小</translation>
 <translation id="238909021488141516">下载该内容时出现错误。</translation>
@@ -185,6 +183,7 @@
 <translation id="3387650086002190359">未能成功下载 <ph name="FILE_NAME" />，因为文件系统出现了错误。</translation>
 <translation id="3414952576877147120">大小：</translation>
 <translation id="3435896845095436175">启用</translation>
+<translation id="3452612588551937789">在任意设备上登录 Google 帐户后，您即可获取自己的书签、历史记录、密码及其他设置。</translation>
 <translation id="3485544713029068372">Smart Lock（密码专用）</translation>
 <translation id="3492207499832628349">新的隐身标签页</translation>
 <translation id="3518985090088779359">接受并继续</translation>
@@ -234,6 +233,7 @@
 <translation id="4259722352634471385">已屏蔽 <ph name="URL" /></translation>
 <translation id="4269820728363426813">复制链接地址</translation>
 <translation id="4271185234001491831">一律不翻译<ph name="LANGUAGE" /></translation>
+<translation id="4275663329226226506">媒体</translation>
 <translation id="4278390842282768270">允许的 Cookie</translation>
 <translation id="4297410240212242334">分开显示标签页和应用</translation>
 <translation id="4307992518367153382">基本设置</translation>
@@ -336,7 +336,6 @@
 <translation id="5596627076506792578">更多选项</translation>
 <translation id="5626134646977739690">名字：</translation>
 <translation id="5626370437647899551">添加 Google 帐户</translation>
-<translation id="563535393368633106">访问前先询问（推荐）</translation>
 <translation id="5646376287012673985">位置</translation>
 <translation id="5659593005791499971">电子邮件</translation>
 <translation id="5668404140385795438">覆盖网站的请求，以防止放大</translation>
@@ -419,7 +418,6 @@
 <translation id="6656545060687952787">Chrome 需要拥有位置信息权限才能扫描设备。<ph name="BEGIN_LINK" />更新权限<ph name="END_LINK" /></translation>
 <translation id="666268767214822976">当您在地址栏中输入查询内容时，使用联想查询服务显示相关查询和热门网站</translation>
 <translation id="666981079809192359">Chrome 隐私权声明</translation>
-<translation id="6683720003467092441">允许在以下网站上执行后台同步操作。</translation>
 <translation id="6698801883190606802">管理已同步的数据</translation>
 <translation id="6710213216561001401">上一个</translation>
 <translation id="6738867403308150051">即将开始下载…</translation>
@@ -551,7 +549,6 @@
 <translation id="8374821112118309944">您需要将 TalkBack 更新到更高版本。</translation>
 <translation id="8396312449826231789">只能访问经过批准的网站</translation>
 <translation id="8413126021676339697">显示全部历史记录</translation>
-<translation id="8413385045638830869">先询问（推荐）</translation>
 <translation id="8428213095426709021">设置</translation>
 <translation id="8433057134996913067">这将使您退出大多数网站。</translation>
 <translation id="8481940801237642152">您与此网站建立的是私密连接，但网络上的某些用户也许能更改此网页的外观。</translation>

@@ -635,7 +635,7 @@ Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearch
 
       Se attivi questa impostazione, <ph name="PRODUCT_NAME" /> e le app ARC ignorano tutte le opzioni relative al proxy specificate dalla riga di comando.
 
-      Se questa norme non vengono impostate, gli utenti potranno scegliere autonomamente le impostazioni proxy.</translation>
+      Se queste norme non vengono impostate, gli utenti potranno scegliere autonomamente le impostazioni proxy.</translation>
 <translation id="3213821784736959823">Controlla se il client DNS integrato è in uso in <ph name="PRODUCT_NAME" />.
 
       Se il criterio è impostato su True, verrà utilizzato il client DNS integrato, se disponibile.
@@ -2155,7 +2155,7 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 
           Se scegli di utilizzare le impostazioni proxy del sistema, tutte le altre opzioni vengono ignorate.
 
-          Se scegli di rilevare automaticamente il server proxy, utte le altre opzioni vengono ignorate.
+          Se scegli di rilevare automaticamente il server proxy, tutte le altre opzioni vengono ignorate.
 
           Se scegli di utilizzare la modalità server proxy definito, puoi specificare ulteriori opzioni in "Indirizzo o URL del server proxy" ed "Elenco separato da virgole delle regole bypass proxy". Le app ARC utilizzeranno solo il server proxy HTTP con la priorità più alta.
 

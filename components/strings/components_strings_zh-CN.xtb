@@ -641,6 +641,7 @@
 <translation id="8225771182978767009">设置此计算机的用户已选择屏蔽此网站。</translation>
 <translation id="8241707690549784388">您所查找的网页要使用已输入的信息。返回此页可能需要重复已进行的所有操作。是否要继续操作？</translation>
 <translation id="8249320324621329438">最后一次抓取时间：</translation>
+<translation id="8261506727792406068">删除</translation>
 <translation id="8266098793847448402">依次点击<ph name="BEGIN_BOLD" />开始<ph name="END_BOLD" />和<ph name="BEGIN_BOLD" />运行<ph name="END_BOLD" />，输入 <ph name="BEGIN_BOLD" />%windir%\network diagnostic\xpnetdiag.exe<ph name="END_BOLD" />，然后点击<ph name="BEGIN_BOLD" />确定<ph name="END_BOLD" />。</translation>
 <translation id="8279107132611114222">您想访问该网站的请求已发送给<ph name="NAME" />。</translation>
 <translation id="8289355894181816810">如果您不确定这是什么意思，请与您的网络管理员联系。</translation>

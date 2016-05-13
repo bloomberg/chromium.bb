@@ -520,7 +520,7 @@
 Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam daftar ini dengan mudah. Lokasi file *.crx dan laman tempat unduhan dimulai (perujuk) harus diizinkan dengan pola ini.
 
           ExtensionInstallBlacklist lebih diutamakan dibandingkan dengan kebijakan ini. Artinya, ekstensi dalam daftar hitam tidak akan dipasang, meskipun berasal dari situs dalam daftar ini.</translation>
-<translation id="2813740161943223811">Kebijakan ini tidak lagi digunakan, gunakan ProxyMode sebagai gantinya.
+<translation id="2813740161943223811">Kebijakan ini tidak digunakan lagi, gunakan ProxyMode sebagai gantinya.
 
           Memungkinkan Anda menetapkan server proxy yang digunakan <ph name="PRODUCT_NAME" /> dan mencegah pengguna mengubah setelan proxy. Aplikasi ARC juga dapat menggunakan server proxy ini.
 
@@ -530,7 +530,7 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 
           Jika memilih setelan proxy manual, Anda dapat menetapkan opsi lebih lanjut di 'Alamat atau URL server proxy', 'URL ke file .pac proxy', dan 'Daftar aturan pengabaian proxy yang dipisahkan koma'. Hanya server proxy HTTP dengan prioritas tertinggi yang tersedia untuk aplikasi ARC.
 
-          Untuk contoh mendetail, kunjungi:
+          Untuk contoh detailnya, buka:
           <ph name="PROXY_HELP_URL" />.
 
           Jika Anda mengaktifkan setelan ini, <ph name="PRODUCT_NAME" /> akan mengabaikan semua opsi terkait proxy yang ditetapkan dari baris perintah.
@@ -642,13 +642,13 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
           </translation>
 <translation id="3205825995289802549">Maksimalkan jendela browser pertama di percobaan pertama</translation>
 <translation id="3206731874112238027">Menonaktifkan Pratinjau Cetak (tak lagi digunakan)</translation>
-<translation id="3208854390109736596">Memungkinkan Anda menetapkan server proxy tang digunakan <ph name="PRODUCT_NAME" /> dan mencegah pengguna mengubah setelan proxy. Aplikasi ARC juga dapat menggunakan server proxy ini.
+<translation id="3208854390109736596">Memungkinkan Anda menetapkan server proxy yang digunakan <ph name="PRODUCT_NAME" /> dan mencegah pengguna mengubah setelan proxy. Aplikasi ARC juga dapat menggunakan server proxy ini.
 
       Jika Anda memilih untuk tidak pernah menggunakan server proxy dan selalu tersambung secara langsung, semua opsi lainnya akan diabaikan.
 
       Jika Anda memilih untuk mendeteksi server proxy secara otomatis, semua opsi lainnya akan diabaikan.
 
-      Untuk contoh mendetail, kunjungi:
+      Untuk contoh detailnya, buka:
       <ph name="PROXY_HELP_URL" />.
 
       Jika Anda mengaktifkan setelan ini, <ph name="PRODUCT_NAME" /> dan aplikasi ARC akan mengabaikan semua opsi terkait proxy yang ditetapkan dari baris perintah.
@@ -723,7 +723,7 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 
           Sebaiknya biarkan kebijakan ini tidak disetel jika Anda telah memilih mode lain untuk menyetel kebijakan proxy.
 
-          Untuk contoh yang lebih mendetail, kunjungi:
+          Untuk contoh yang lebih detail, buka:
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="3478024346823118645">Hapus data pengguna saat keluar</translation>
 <translation id="348495353354674884">Aktifkan keyboard virtual</translation>
@@ -1837,7 +1837,7 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 
           Sebaiknya biarkan kebijakan ini tidak disetel jika Anda telah memilih mode lainnya untuk menyetel kebijakan proxy.
 
-          Untuk opsi lain dan contoh mendetailnya, kunjungi:
+          Untuk opsi lain dan contoh detailnya, buka:
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7788511847830146438">Per Profil</translation>
 <translation id="7796141075993499320">Memungkinkan Anda menyetel daftar pola url yang menentukan situs yang diizinkan untuk menjalankan plugin. Jika kebijakan ini tidak disetel, nilai default global akan digunakan untuk semua situs, baik dari kebijakan 'DefaultPluginsSetting', jika disetel, atau konfigurasi pribadi pengguna.</translation>
@@ -1875,7 +1875,7 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 
           Sebaiknya biarkan kebijakan ini tidak disetel jika Anda telah memilih mode lainnya untuk menyetel kebijakan proxy.
 
-          Untuk contoh mendetail, kunjungi:
+          Untuk contoh detailnya, buka:
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="793134539373873765">Tentukan apakah p2p akan digunakan untuk payload pembaruan OS. Jika disetel ke True, perangkat akan membagi dan berusaha menggunakan payload pembaruan pada LAN, serta berpotensi mengurangi penggunaan dan kepadatan bandwidth internet. Jika payload pembaruan tidak tersedia di LAN, perangkat tersebut akan kembali mengunduh dari server yang diperbarui. Jika disetel ke False atau tidak dikonfigurasi, p2p tidak akan digunakan.</translation>
 <translation id="7933141401888114454">Mengaktifkan pembuatan pengguna yang dilindungi</translation>
@@ -2237,7 +2237,7 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 
           Jika memilih untuk menggunakan skrip proxy .pac, Anda harus menetapkan URL ke skrip di 'URL ke file .pac proxy'.
 
-          Untuk contoh mendetail, kunjungi:
+          Untuk contoh detailnya, buka:
           <ph name="PROXY_HELP_URL" />.
 
           Jika Anda mengaktifkan setelan ini, <ph name="PRODUCT_NAME" /> dan aplikasi ARC akan mengabaikan semua opsi terkait proxy yang ditetapkan dari baris perintah.

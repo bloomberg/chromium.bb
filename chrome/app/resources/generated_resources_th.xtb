@@ -343,7 +343,6 @@
 <translation id="1482124012545051544">พร้อมที่จะสำรองรูปภาพใหม่ <ph name="FILE_COUNT" /> รูปแล้ว</translation>
 <translation id="148466539719134488">สวิส</translation>
 <translation id="1485015260175968628">ส่วนขยายตอนนี้สามารถ:</translation>
-<translation id="1485146213770915382">เพิ่ม <ph name="SEARCH_TERMS_LITERAL" /> ใน URL ที่คำค้นหาควรปรากฏขึ้น</translation>
 <translation id="1486096554574027028">ค้นหารหัสผ่าน</translation>
 <translation id="1493263392339817010">กำหนดค่าแบบอักษร...</translation>
 <translation id="1493492096534259649">ภาษานี้ใช้ในการตรวจสอบการสะกดไม่ได้</translation>
@@ -802,7 +801,6 @@
 <translation id="2176045495080708525">ติดตั้งส่วนขยายต่อไปนี้แล้ว:</translation>
 <translation id="2177950615300672361">แท็บไม่ระบุตัวตน: <ph name="TAB_NAME" /></translation>
 <translation id="2178614541317717477">ผู้มีสิทธิ์ออกใบรับรองไม่สมบูรณ์</translation>
-<translation id="2179052183774520942">เพิ่มเครื่องมือค้นหา</translation>
 <translation id="218492098606937156">เปิดใช้งานกิจกรรมการสัมผัส</translation>
 <translation id="2187895286714876935">ข้อผิดพลาดในการนำเข้าใบรับรองเซิร์ฟเวอร์</translation>
 <translation id="2190069059097339078">ตัวรับข้อมูลรับรอง Wi-Fi</translation>
@@ -968,7 +966,6 @@
 <translation id="2392369802118427583">เปิดใช้งาน</translation>
 <translation id="2394296868155622118">จัดการรายละเอียดสำหรับการเรียกเก็บเงิน...</translation>
 <translation id="2394566832561516196">การตั้งค่าจะถูกล้างในการโหลดซ้ำครั้งถัดไป</translation>
-<translation id="2396635603035772766">เปิดใช้ UI ฟองอากาศแบบทดลองเพื่อบันทึกรหัสผ่าน (แทนที่แถบข้อมูลที่มีอยู่)</translation>
 <translation id="2399147786307302860">การตั้งค่าการซิงค์ขั้นสูง...</translation>
 <translation id="2401053206567162910">ในขณะนี้ แอปพลิเคชันนี้ยังไม่ได้รับการสนับสนุนบนอุปกรณ์นี้ แต่เหล่าบรรดาโนมผู้รอบรู้ของ Chrome กำลังมุ่งมั่นทำงานอย่างหนักเพื่อให้สามารถใช้งานแอปพลิเคชันดังกล่าวได้ในเร็วๆ นี้</translation>
 <translation id="2403091441537561402">เกตเวย์:</translation>
@@ -985,7 +982,6 @@
 <translation id="2431394478374894294">เปิดใช้การป้อนข้อมูลด้วยเสียงบนแป้นพิมพ์เสมือน</translation>
 <translation id="2433452467737464329">เพิ่มพารามิเตอร์ข้อความค้นหาใน URL เพื่อรีเฟรชหน้าอัตโนมัติ: chrome://network/?refresh=&lt;sec&gt;</translation>
 <translation id="2433507940547922241">ลักษณะที่ปรากฏ</translation>
-<translation id="2433728760128592593">กด Alt+Shift เพื่อสลับระหว่างวิธีการป้อนข้อมูล</translation>
 <translation id="2435248616906486374">เครือข่ายถูกตัดการเชื่อมต่อ</translation>
 <translation id="2436186046335138073">อนุญาตให้ <ph name="HANDLER_HOSTNAME" /> เปิดลิงก์ <ph name="PROTOCOL" /> ทั้งหมดไหม</translation>
 <translation id="2436707352762155834">ขั้นต่ำ</translation>
@@ -2001,7 +1997,6 @@
 <translation id="3764800135428056022">เสนอการบันทึกรหัสผ่านเว็บของคุณ</translation>
 <translation id="3764986667044728669">ไม่สามารถลงทะเบียน</translation>
 <translation id="3768037234834996183">กำลังซิงค์ค่ากำหนดของคุณ...</translation>
-<translation id="3770072361759252365">เมื่อเปิดใช้ จะรวมคู่โปรแกรมเปลี่ยนไฟล์/โปรแกรมถอดรหัสวิดีโอของซอฟต์แวร์ H.264 (สามารถใช้ตัวถอดรหัสแบบฮาร์ดแวร์แทนโปรแกรมถอดรหัสนี้ หากมี)</translation>
 <translation id="3771294271822695279">ไฟล์วิดีโอ</translation>
 <translation id="3774278775728862009">วิธีป้อนข้อมูลภาษาไทย (แป้นพิมพ์ TIS-820.2538)</translation>
 <translation id="3775432569830822555">ใบรับรองเซิร์ฟเวอร์ SSL</translation>
@@ -2272,7 +2267,6 @@
 <translation id="418179967336296930">แป้นพิมพ์การถ่ายเสียงภาษารัสเซีย (YaZHert)</translation>
 <translation id="4181841719683918333">ภาษา</translation>
 <translation id="4187248015940562149">เปิดใช้เว็บบลูทูธซึ่งช่วยให้เว็บไซต์เชื่อมต่อและควบคุมอุปกรณ์บลูทูธรอบตัวคุณได้</translation>
-<translation id="4188026131102273494">คำหลัก:</translation>
 <translation id="4189406272289638749">ส่วนขยาย &lt;b&gt;<ph name="EXTENSION_NAME" />&lt;/b&gt; กำลังควบคุมการตั้งค่านี้</translation>
 <translation id="4193154014135846272">เอกสารของ Google</translation>
 <translation id="4193182321948161343">เปิดใช้การจัดการผู้ใช้ในดีไซน์ Material</translation>
@@ -2573,7 +2567,6 @@
 <translation id="4685045708662437080">การดำเนินการนี้จะช่วยให้ Google จดจำเสียงพูดของคุณและปรับปรุงการจดจำเสียงพูดและเสียงเพื่อให้คุณได้รับผลลัพธ์ได้รวดเร็วยิ่งขึ้นและมีปัญหาน้อยลง <ph name="BEGIN_LINK" />เรียนรู้เพิ่มเติม<ph name="END_LINK" /></translation>
 <translation id="4690246192099372265">สวีเดน</translation>
 <translation id="4690462567478992370">หยุดใช้ใบรับรองที่ไม่ถูกต้อง</translation>
-<translation id="4691088804026137116">ไม่ซิงค์อะไรเลย</translation>
 <translation id="469230890969474295">โฟลเดอร์ OEM</translation>
 <translation id="4692342183939154835">การเข้ารหัสวิดีโอฮาร์ดแวร์ WebRTC</translation>
 <translation id="4692623383562244444">เครื่องมือค้นหา</translation>
@@ -3238,7 +3231,6 @@
 <translation id="5627086634964711283">อีกทั้งยังควบคุมหน้าที่จะแสดงเมื่อคุณคลิกปุ่ม "หน้าแรก"</translation>
 <translation id="5627259319513858869">เปิดใช้งานการใช้คุณลักษณะ canvas แบบทดลองซึ่งยังอยู่ในช่วงพัฒนา</translation>
 <translation id="5627618611556177958">WebUSB</translation>
-<translation id="5630163645818715367">ดีไซน์ Material ของ Chrome ที่ด้านบนของเบราว์เซอร์</translation>
 <translation id="5636996382092289526">หากต้องการใช้ <ph name="NETWORK_ID" /> ก่อนอื่น คุณอาจจำเป็นต้อง<ph name="LINK_START" />ไปที่หน้าลงชื่อเข้าใช้ของเครือข่าย<ph name="LINK_END" /> ซึ่งจะเปิดขึ้นโดยอัตโนมัติในอีกไม่กี่วินาที ถ้าหน้าดังกล่าวไม่เปิดขึ้น แสดงว่าไม่สามารถใช้เครือข่ายดังกล่าวได้</translation>
 <translation id="5637357908912398026">การบังคับให้บันทึกรหัสผ่าน</translation>
 <translation id="5637380810526272785">วิธีป้อนข้อมูล</translation>
@@ -3928,7 +3920,6 @@
 <translation id="6708242697268981054">ต้นทาง:</translation>
 <translation id="6709357832553498500">เชื่อมต่อโดยใช้ <ph name="EXTENSIONNAME" /></translation>
 <translation id="6710213216561001401">ก่อนหน้า</translation>
-<translation id="6713912347540154876">UI ฟองอากาศเพื่อบันทึกรหัสผ่าน</translation>
 <translation id="6718273304615422081">กำลังซิป...</translation>
 <translation id="671928215901716392">ล็อกหน้าจอ</translation>
 <translation id="6721972322305477112">&amp;ไฟล์</translation>
@@ -4284,7 +4275,6 @@
 <translation id="7255220508626648026">กำลังแคสต์: <ph name="ROUTETITLE" /></translation>
 <translation id="7255935316994522020">นำไปใช้</translation>
 <translation id="7256710573727326513">เปิดในแท็บ</translation>
-<translation id="7257173066616499747">เครือข่าย Wi-Fi</translation>
 <translation id="7257666756905341374">อ่านข้อมูลที่คุณคัดลอกและวาง</translation>
 <translation id="7260504762447901703">เพิกถอนสิทธิ์การเข้าถึง</translation>
 <translation id="7262004276116528033">บริการลงชื่อเข้าใช้นี้โฮสต์โดย <ph name="SAML_DOMAIN" /></translation>
@@ -4712,6 +4702,7 @@
 <translation id="7896906914454843592">แป้นพิมพ์ภาษาอังกฤษสหรัฐอเมริกาแบบ Extended</translation>
 <translation id="7897900149154324287">ในอนาคต โปรดตรวจสอบว่าได้ยกเลิกการเชื่อมต่ออุปกรณ์แบบถอดออกได้ในแอป Files ก่อนที่จะถอดปลั๊ก มิฉะนั้นคุณอาจสูญเสียข้อมูล</translation>
 <translation id="7898627924844766532">เก็บในแถบเครื่องมือ</translation>
+<translation id="7898725031477653577">แปลทุกครั้ง</translation>
 <translation id="7899177175067029110">ไม่พบโทรศัพท์ของคุณ โปรดตรวจสอบว่า <ph name="DEVICE_TYPE" /> เชื่อมต่ออินเทอร์เน็ตอยู่ &lt;a&gt;เรียนรู้เพิ่มเติม&lt;/a&gt;</translation>
 <translation id="7900476766547206086">ต้องใช้รหัสผ่านสำหรับผู้ใช้ที่ลงชื่อเข้าใช้ เพราะมีผู้ใช้อย่างน้อยหนึ่งคนเปิดการตั้งค่านี้ไว้</translation>
 <translation id="7903128267494448252">ลบบุคคลนี้</translation>
@@ -5283,7 +5274,6 @@
 <translation id="871476437400413057">รหัสผ่านที่ Google บันทึกไว้</translation>
 <translation id="8714838604780058252">กราฟิกพื้นหลัง</translation>
 <translation id="8722421161699219904">แป้นพิมพ์สากลสหรัฐอเมริกา</translation>
-<translation id="872451400847464257">แก้ไขเครื่องมือค้นหา</translation>
 <translation id="8724859055372736596">&amp;แสดงในโฟลเดอร์</translation>
 <translation id="8725066075913043281">ลองอีกครั้ง</translation>
 <translation id="8725178340343806893">รายการโปรด/บุ๊กมาร์ก</translation>

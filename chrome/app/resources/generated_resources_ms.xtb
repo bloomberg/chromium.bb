@@ -152,7 +152,7 @@
 <translation id="1202596434010270079">Apl Kiosk telah dikemas kini. Sila alih keluar batang USB.</translation>
 <translation id="1205489148908752564">Baca dan ubah pengguna senarai putih</translation>
 <translation id="1208421848177517699">Pengalihan huruf (namaste → નમસ્તે)</translation>
-<translation id="1208881655517375167">Untuk mengelakkan <ph name="NEW_PROFILE_NAME" /> daripada mengakses akaun anda, pastikan anda keluar dan dan gunakan kunci kanak-kanak apabila anda tidak menggunakan Chrome. Untuk melakukannya, klik nama profil anda di penjuru kanan sebelah atas dan pilih "Keluar dan gunakan kunci kanak-kanak".
+<translation id="1208881655517375167">Untuk mengelakkan <ph name="NEW_PROFILE_NAME" /> daripada mengakses akaun anda, pastikan anda keluar dan gunakan kunci kanak-kanak apabila anda tidak menggunakan Chrome. Untuk melakukannya, klik nama profil anda di penjuru kanan sebelah atas dan pilih "Keluar dan gunakan kunci kanak-kanak".
 <ph name="BEGIN_LINK" />Ketahui lebih lanjut<ph name="END_LINK" />
 
 Sila semak e-mel anda di <ph name="ACCOUNT_EMAIL" /> untuk mendapatkan arahan lanjut.</translation>
@@ -343,7 +343,6 @@ Sila semak e-mel anda di <ph name="ACCOUNT_EMAIL" /> untuk mendapatkan arahan la
 <translation id="1482124012545051544">Bersedia untuk menyandarkan <ph name="FILE_COUNT" /> foto baharu</translation>
 <translation id="148466539719134488">Bahasa Switzerland</translation>
 <translation id="1485015260175968628">Item kini boleh:</translation>
-<translation id="1485146213770915382">Masukkan <ph name="SEARCH_TERMS_LITERAL" /> dalam URL bagi istilah carian untuk muncul.</translation>
 <translation id="1486096554574027028">Cari kata laluan</translation>
 <translation id="1493263392339817010">Sesuaikan fon...</translation>
 <translation id="1493492096534259649">Bahasa ini tidak dapat digunakan untuk memeriksa ejaan</translation>
@@ -802,7 +801,6 @@ Sila semak e-mel anda di <ph name="ACCOUNT_EMAIL" /> untuk mendapatkan arahan la
 <translation id="2176045495080708525">Sambungan berikut kini terpasang:</translation>
 <translation id="2177950615300672361">Tab Inkognito: <ph name="TAB_NAME" /></translation>
 <translation id="2178614541317717477">Tolak ansur CA</translation>
-<translation id="2179052183774520942">Tambah Enjin Carian</translation>
 <translation id="218492098606937156">Dayakan acara sentuh</translation>
 <translation id="2187895286714876935">Ralat Import Sijil Pelayan</translation>
 <translation id="2190069059097339078">Pengutip Bukti Kelayakan WiFi</translation>
@@ -968,7 +966,6 @@ Selepas anda membuat pengguna di bawah seliaan yang baharu, anda boleh mengurus 
 <translation id="2392369802118427583">Aktifkan</translation>
 <translation id="2394296868155622118">Urus butiran pengebilan...</translation>
 <translation id="2394566832561516196">Tetapan akan dikosongkan pada muat semula seterusnya.</translation>
-<translation id="2396635603035772766">Dayakan UI berasaskan gelembung eksperimen untuk menyimpan kata laluan; menggantikan bar maklumat yang sedia ada.</translation>
 <translation id="2399147786307302860">Tetapan penyegerakan terperinci...</translation>
 <translation id="2401053206567162910">Apl ini tidak disokong pada peranti ini pada masa ini, tetapi gnome Chrome sedang bekerja keras untuk merealisasikannya tidak lama lagi.</translation>
 <translation id="2403091441537561402">Get laluan:</translation>
@@ -985,7 +982,6 @@ Selepas anda membuat pengguna di bawah seliaan yang baharu, anda boleh mengurus 
 <translation id="2431394478374894294">Mendayakan input suara pada papan kekunci maya.</translation>
 <translation id="2433452467737464329">Tambahkan parameter pertanyaan dalam URL untuk auto muat semula halaman: chrome://network/?refresh=&lt;sec&gt;</translation>
 <translation id="2433507940547922241">Tampilan</translation>
-<translation id="2433728760128592593">Tekan Alt+Shift untuk saling beralih kaedah input.</translation>
 <translation id="2435248616906486374">Rangkaian diputuskan</translation>
 <translation id="2436186046335138073">Benarkan <ph name="HANDLER_HOSTNAME" /> untuk membuka semua <ph name="PROTOCOL" /> pautan?</translation>
 <translation id="2436707352762155834">Minimum</translation>
@@ -2003,7 +1999,6 @@ Daripada <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3764800135428056022">Tawaran untuk menyimpan kata laluan web anda.</translation>
 <translation id="3764986667044728669">Tidak dapat mendaftar</translation>
 <translation id="3768037234834996183">Menyegerakkan pilihan anda...</translation>
-<translation id="3770072361759252365">Apabila didayakan, pasangan pengekod/penyahkod video perisian H.264 disertakan. (Jika penyahkod perkakasan turut tersedia, penyahkod itu boleh digunakan untuk menggantikan penyahkod ini).</translation>
 <translation id="3771294271822695279">Fail Video</translation>
 <translation id="3774278775728862009">Kaedah input Thai (papan kekunci TIS-820.2538)</translation>
 <translation id="3775432569830822555">Sijil Pelayan SSL</translation>
@@ -2274,7 +2269,6 @@ Semua pengguna mesti melog keluar untuk meneruskan.</translation>
 <translation id="418179967336296930">Papan kekunci Fonetik Rusia (YaZHert)</translation>
 <translation id="4181841719683918333">Bahasa</translation>
 <translation id="4187248015940562149">Mendayakan Bluetooth Web yang mungkin membenarkan tapak web menyambung dan mengawal peranti Bluetooth di sekitar anda.</translation>
-<translation id="4188026131102273494">Kata kunci:</translation>
 <translation id="4189406272289638749">Sambungan, &lt;b&gt;<ph name="EXTENSION_NAME" />&lt;/b&gt;, mengawal tetapan ini.</translation>
 <translation id="4193154014135846272">Dokumen Google</translation>
 <translation id="4193182321948161343">Dayakan Pengurus Pengguna Reka Bentuk Bahan</translation>
@@ -2576,7 +2570,6 @@ Tekan sebarang kekunci untuk terus meneroka.</translation>
 <translation id="4685045708662437080">Ini membantu Google mengecam suara anda dan meningkatkan pertuturan dan pengecaman audio untuk memberi anda keputusan yang lebih cepat dan mudah. <ph name="BEGIN_LINK" />Ketahui lebih lanjut<ph name="END_LINK" /></translation>
 <translation id="4690246192099372265">Sweden</translation>
 <translation id="4690462567478992370">Berhenti menggunakan sijil tidak sah</translation>
-<translation id="4691088804026137116">Jangan segerakkan apa-apa</translation>
 <translation id="469230890969474295">Folder OEM</translation>
 <translation id="4692342183939154835">Pengekodan video perkakasan WebRTC</translation>
 <translation id="4692623383562244444">Enjin carian</translation>
@@ -3241,7 +3234,6 @@ Tekan sebarang kekunci untuk terus meneroka.</translation>
 <translation id="5627086634964711283">Sambungan turut mengawal halaman yang ditunjukkan apabila anda mengklik butang Laman Utama.</translation>
 <translation id="5627259319513858869">Membolehkan penggunaan ciri kanvas eksperimen yang masih dalam pembangunan.</translation>
 <translation id="5627618611556177958">WebUSB</translation>
-<translation id="5630163645818715367">Reka bentuk bahan di krom atas penyemak imbas</translation>
 <translation id="5636996382092289526">Untuk menggunakan <ph name="NETWORK_ID" /> anda mungkin perlu <ph name="LINK_START" />melawat halaman log masuk rangkaian<ph name="LINK_END" /> terlebih dahulu, yang akan terbuka secara automatik dalam beberapa saat. Jika ini tidak berlaku, rangkaian tersebut tidak boleh digunakan.</translation>
 <translation id="5637357908912398026">Penyimpanan kata laluan secara paksa</translation>
 <translation id="5637380810526272785">Kaedah Masukan</translation>
@@ -3931,7 +3923,6 @@ Tekan sebarang kekunci untuk terus meneroka.</translation>
 <translation id="6708242697268981054">Asal:</translation>
 <translation id="6709357832553498500">Sambung menggunakan <ph name="EXTENSIONNAME" /></translation>
 <translation id="6710213216561001401">Sebelumnya</translation>
-<translation id="6713912347540154876">UI Gelembung Simpan Kata Laluan</translation>
 <translation id="6718273304615422081">Mengezip...</translation>
 <translation id="671928215901716392">Kunci skrin</translation>
 <translation id="6721972322305477112">&amp;Fail</translation>
@@ -4288,7 +4279,6 @@ Tekan sebarang kekunci untuk terus meneroka.</translation>
 <translation id="7255220508626648026">Menghantar: <ph name="ROUTETITLE" /></translation>
 <translation id="7255935316994522020">Guna</translation>
 <translation id="7256710573727326513">Buka dalam tab</translation>
-<translation id="7257173066616499747">Rangkaian Wi-Fi</translation>
 <translation id="7257666756905341374">Baca data yang anda salin dan tampal</translation>
 <translation id="7260504762447901703">Batalkan akses</translation>
 <translation id="7262004276116528033">Perkhidmatan log masuk ini dihoskan oleh <ph name="SAML_DOMAIN" /></translation>
@@ -4715,6 +4705,7 @@ Tekan sebarang kekunci untuk terus meneroka.</translation>
 <translation id="7896906914454843592">Papan kekunci Lanjutan AS</translation>
 <translation id="7897900149154324287">Pada masa hadapan, pastikan anda melentingkan peranti boleh dialih keluar anda dalam apl Fail sebelum mencabutnya. Jika tidak, anda mungkin kehilangan data.</translation>
 <translation id="7898627924844766532">Simpan dalam bar alat</translation>
+<translation id="7898725031477653577">Sentiasa terjemahkan</translation>
 <translation id="7899177175067029110">Tidak boleh mencari telefon anda. Pastikan <ph name="DEVICE_TYPE" /> anda bersambung ke Internet. &lt;a&gt;Ketahui lebih lanjut&lt;/a&gt;</translation>
 <translation id="7900476766547206086">Kata laluan diperlukan untuk pengguna yang dilog masuk, memandangkan satu atau lebih pengguna telah menghidupkan tetapan ini.</translation>
 <translation id="7903128267494448252">Padamkan orang ini</translation>
@@ -5288,7 +5279,6 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="871476437400413057">Kata laluan disimpan Google</translation>
 <translation id="8714838604780058252">Grafik latar</translation>
 <translation id="8722421161699219904">Papan kekunci Antarabangsa AS</translation>
-<translation id="872451400847464257">Edit Enjin Carian</translation>
 <translation id="8724859055372736596">&amp;Paparkan dalam Folder</translation>
 <translation id="8725066075913043281">Cuba lagi</translation>
 <translation id="8725178340343806893">Kegemaran/Penanda halaman</translation>

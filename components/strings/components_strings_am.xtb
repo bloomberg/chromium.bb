@@ -349,7 +349,7 @@
 <translation id="4553532082208702698">በእርስዎ <ph name="CREDIT_CARD" /> ፊት ላይ ያለውን ባለ4 አኃዝ CVCን ያስገቡ</translation>
 <translation id="4558551763791394412">ቅጥያዎችዎን አሰናክለው ይሞክሩ።</translation>
 <translation id="4587425331216688090">አድራሻ ከChrome ይወገድ?</translation>
-<translation id="4592951414987517459">ወደ የእርስዎ <ph name="DOMAIN" /> ግንኙነት ዘመናዊ የምስጠራ ጥቅል በመጠቀም ተመሳጥሯል።</translation>
+<translation id="4592951414987517459">ወደ የእርስዎ <ph name="DOMAIN" /> ግንኙነት ዘመናዊ የምስጠራ ጥቅል በመጠቀም ተመስጥሯል።</translation>
 <translation id="4594403342090139922">&amp;ሰርዝን ቀልብስ</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="4670097147947922288">የቅጥያ ገጽ እየተመለከቱ ነው።</translation>
@@ -659,6 +659,7 @@ nil</translation>
 <translation id="8225771182978767009">ይህን ኮምፒውተር ያቀናበረው ሰው ይህን ጣቢያ ለማገድ መርጧል።</translation>
 <translation id="8241707690549784388">እየፈለጉት ያሉት ገጽ ያስገቡትን መረጃ ተጥቅሟል። ወደዛ ገጽ መመለስ ወስደውት የነበረውን ርምጃ እንዲደገም ሊያደርግ ይችላል። ለመቀጠል ይፈልጋሉ?</translation>
 <translation id="8249320324621329438">ለመጨረሻ ጊዜ የመጣው፦</translation>
+<translation id="8261506727792406068">ሰርዝ</translation>
 <translation id="8266098793847448402"><ph name="BEGIN_BOLD" />ጀምር<ph name="END_BOLD" />ን ጠቅ ያድርጉ፣
           <ph name="BEGIN_BOLD" />አሂድ<ph name="END_BOLD" />ን ጠቅ ያድርጉ፣
           <ph name="BEGIN_BOLD" />%windir%\network diagnostic\xpnetdiag.exe<ph name="END_BOLD" /> ብለው ይተይቡ፣

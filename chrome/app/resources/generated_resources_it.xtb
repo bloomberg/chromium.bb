@@ -343,7 +343,6 @@ Tieni presente che il Bluetooth verrà attivato per tutti i dispositivi compatib
 <translation id="1482124012545051544">Pronto per il backup di <ph name="FILE_COUNT" /> nuove foto</translation>
 <translation id="148466539719134488">Svizzero</translation>
 <translation id="1485015260175968628">Ora può:</translation>
-<translation id="1485146213770915382">Inserisci <ph name="SEARCH_TERMS_LITERAL" /> nell'URL come segnaposto per i termini di ricerca.</translation>
 <translation id="1486096554574027028">Cerca password</translation>
 <translation id="1493263392339817010">Personalizza caratteri...</translation>
 <translation id="1493492096534259649">Impossibile utilizzare questa lingua per il controllo ortografico</translation>
@@ -802,7 +801,6 @@ Tieni presente che il Bluetooth verrà attivato per tutti i dispositivi compatib
 <translation id="2176045495080708525">Le seguenti estensioni sono ora installate:</translation>
 <translation id="2177950615300672361">Scheda di navigazione in incognito: <ph name="TAB_NAME" /></translation>
 <translation id="2178614541317717477">Compromesso CA</translation>
-<translation id="2179052183774520942">Aggiungi motore di ricerca</translation>
 <translation id="218492098606937156">Attiva eventi al tocco</translation>
 <translation id="2187895286714876935">Errore di importazione del certificato del server</translation>
 <translation id="2190069059097339078">WiFi Credentials Getter</translation>
@@ -967,7 +965,6 @@ Dopo avere creato un nuovo utente supervisionato, puoi gestirne le impostazioni 
 <translation id="2392369802118427583">Attiva</translation>
 <translation id="2394296868155622118">Gestisci dettagli di fatturazione...</translation>
 <translation id="2394566832561516196">Le impostazioni verranno cancellate al prossimo aggiornamento della pagina.</translation>
-<translation id="2396635603035772766">Consente di attivare l'interfaccia utente sperimentale basata su fumetti per il salvataggio delle password; sostituisce la barra delle informazioni esistente.</translation>
 <translation id="2399147786307302860">Impostazioni di sincronizzazione avanzate...</translation>
 <translation id="2401053206567162910">Questa applicazione non è attualmente supportata su questo dispositivo, ma i tecnici di Chrome sono al lavoro per farla funzionare al più presto.</translation>
 <translation id="2403091441537561402">Gateway:</translation>
@@ -984,7 +981,6 @@ Dopo avere creato un nuovo utente supervisionato, puoi gestirne le impostazioni 
 <translation id="2431394478374894294">Consente di attivare la funzione di input vocale della tastiera virtuale.</translation>
 <translation id="2433452467737464329">Aggiungi un parametro di ricerca nell'URL per aggiornare automaticamente la pagina: chrome://network/?refresh=&lt;sec&gt;</translation>
 <translation id="2433507940547922241">Aspetto</translation>
-<translation id="2433728760128592593">Premi Alt+Maiusc per passare da un metodo di immissione all'altro.</translation>
 <translation id="2435248616906486374">Rete scollegata</translation>
 <translation id="2436186046335138073">Consentire a <ph name="HANDLER_HOSTNAME" /> di aprire tutti i link <ph name="PROTOCOL" />?</translation>
 <translation id="2436707352762155834">Minimi</translation>
@@ -1998,7 +1994,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="3764800135428056022">Richiedi di salvare le tue password web.</translation>
 <translation id="3764986667044728669">Impossibile registrare</translation>
 <translation id="3768037234834996183">Sincronizzazione delle preferenze...</translation>
-<translation id="3770072361759252365">Se viene attivata questa opzione, viene inclusa una coppia di programmi software di codifica/decodifica video H.264 (se è disponibile anche un decodificatore hardware, è possibile utilizzarlo come sostituto del componente software corrispondente).</translation>
 <translation id="3771294271822695279">File video</translation>
 <translation id="3774278775728862009">Metodo di immissione tailandese (tastiera TIS-820.2538)</translation>
 <translation id="3775432569830822555">Certificato server SSL</translation>
@@ -2269,7 +2264,6 @@ Per continuare, devono disconnettersi tutti gli utenti.</translation>
 <translation id="418179967336296930">Tastiera fonetica russa (YaZHert)</translation>
 <translation id="4181841719683918333">Lingue</translation>
 <translation id="4187248015940562149">Attiva Web Bluetooth, che potrebbe permettere ai siti web di connettersi ai dispositivi Bluetooth nelle vicinanze e di assumerne il controllo.</translation>
-<translation id="4188026131102273494">Parola chiave:</translation>
 <translation id="4189406272289638749">Un'estensione, &lt;b&gt;<ph name="EXTENSION_NAME" />&lt;/b&gt;, controlla questa impostazione.</translation>
 <translation id="4193154014135846272">Documento Google</translation>
 <translation id="4193182321948161343">Attiva Gestione utenti di Material Design</translation>
@@ -2571,7 +2565,6 @@ Premi un tasto qualsiasi per continuare a esplorare.</translation>
 <translation id="4685045708662437080">Questo consente a Google di distinguere la tua voce e migliorare il riconoscimento vocale e dell'audio, in modo da restituire i risultati più velocemente e con meno problemi. <ph name="BEGIN_LINK" />Ulteriori informazioni<ph name="END_LINK" /></translation>
 <translation id="4690246192099372265">Svedese</translation>
 <translation id="4690462567478992370">Interrompi l'utilizzo di un certificato non valido</translation>
-<translation id="4691088804026137116">Non sincronizzare nulla</translation>
 <translation id="469230890969474295">Cartella OEM</translation>
 <translation id="4692342183939154835">Codifica video hardware WebRTC</translation>
 <translation id="4692623383562244444">Motori di ricerca</translation>
@@ -3233,7 +3226,6 @@ Premi un tasto qualsiasi per continuare a esplorare.</translation>
 <translation id="5627086634964711283">Controlla anche la pagina visualizzata quando fai clic sul pulsante Pagina iniziale.</translation>
 <translation id="5627259319513858869">Consente l'utilizzo di funzioni canvas sperimentali che sono ancora in fase di sviluppo.</translation>
 <translation id="5627618611556177958">WebUSB</translation>
-<translation id="5630163645818715367">Material design nel riquadro superiore del browser</translation>
 <translation id="5636996382092289526">Per poter utilizzare la rete <ph name="NETWORK_ID" />, potrebbe essere necessario <ph name="LINK_START" />visitare la pagina di accesso della rete<ph name="LINK_END" />, che si aprirà automaticamente tra alcuni secondi. In caso contrario, non è possibile utilizzare la rete.</translation>
 <translation id="5637357908912398026">Salvataggio forzato delle password</translation>
 <translation id="5637380810526272785">Metodo di immissione</translation>
@@ -3923,7 +3915,6 @@ Premi un tasto qualsiasi per continuare a esplorare.</translation>
 <translation id="6708242697268981054">Origine:</translation>
 <translation id="6709357832553498500">Connettiti utilizzando <ph name="EXTENSIONNAME" /></translation>
 <translation id="6710213216561001401">Indietro</translation>
-<translation id="6713912347540154876">Interfaccia utente di fumetti per il salvataggio delle password</translation>
 <translation id="6718273304615422081">Compressione...</translation>
 <translation id="671928215901716392">Blocco schermo</translation>
 <translation id="6721972322305477112">&amp;File</translation>
@@ -4280,7 +4271,6 @@ Premi un tasto qualsiasi per continuare a esplorare.</translation>
 <translation id="7255220508626648026">Trasmissione: <ph name="ROUTETITLE" /></translation>
 <translation id="7255935316994522020">Applica</translation>
 <translation id="7256710573727326513">Apri in una scheda</translation>
-<translation id="7257173066616499747">Reti Wi-Fi</translation>
 <translation id="7257666756905341374">Lettura dei dati copiati e incollati</translation>
 <translation id="7260504762447901703">Revoca accesso</translation>
 <translation id="7262004276116528033">Questo servizio di accesso è in hosting su <ph name="SAML_DOMAIN" /></translation>
@@ -4699,6 +4689,7 @@ Premi un tasto qualsiasi per continuare a esplorare.</translation>
 <translation id="7896906914454843592">Tastiera estesa americana</translation>
 <translation id="7897900149154324287">In futuro, assicurati di espellere il dispositivo rimovibile nell'app File prima di scollegarlo. In caso contrario potresti perdere i dati.</translation>
 <translation id="7898627924844766532">Mantieni in barra degli strumenti</translation>
+<translation id="7898725031477653577">Traduci sempre</translation>
 <translation id="7899177175067029110">Impossibile trovare il telefono. Assicurati che il tuo dispositivo <ph name="DEVICE_TYPE" /> sia connesso a Internet. &lt;a&gt;Ulteriori informazioni&lt;/a&gt;</translation>
 <translation id="7900476766547206086">Gli utenti che hanno eseguito l'accesso hanno bisogno della password perché uno o più utenti hanno attivato questa impostazione.</translation>
 <translation id="7903128267494448252">Elimina questa persona</translation>
@@ -5270,7 +5261,6 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="871476437400413057">Password Google salvate</translation>
 <translation id="8714838604780058252">Grafica in background</translation>
 <translation id="8722421161699219904">Tastiera internazionale americana</translation>
-<translation id="872451400847464257">Modifica motore di ricerca</translation>
 <translation id="8724859055372736596">Mo&amp;stra nella cartella</translation>
 <translation id="8725066075913043281">Riprova</translation>
 <translation id="8725178340343806893">Preferiti/Segnalibri</translation>

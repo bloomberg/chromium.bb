@@ -48,6 +48,7 @@ Vous devez activer le Bluetooth et les services de localisation pour utiliser le
 <translation id="1557201757634521564">Détecter automatiquement l'encodage</translation>
 <translation id="1620510694547887537">Appareil photo</translation>
 <translation id="1623104350909869708">Empêcher cette page de générer des boîtes de dialogue supplémentaires</translation>
+<translation id="1639239467298939599">Chargement en cours</translation>
 <translation id="1641113438599504367">Navigation sécurisée</translation>
 <translation id="164269334534774161">Vous regardez une copie hors connexion de cette page depuis le <ph name="CREATION_TIME" />.</translation>
 <translation id="1643702317193804718">Traduction de la page en <ph name="SOURCE_LANGUAGE" /> en cours…</translation>
@@ -73,7 +74,6 @@ Vous devez activer le Bluetooth et les services de localisation pour utiliser le
 <translation id="1943432128510653496">Enregistrer les mots de passe</translation>
 <translation id="1944384637046898011">Tout chiffrer avec le mot de passe Google à compter du <ph name="TIME" /></translation>
 <translation id="1946005195648379376">Contrôlez la façon dont Google utilise votre historique de navigation pour personnaliser la recherche et d'autres services Google.</translation>
-<translation id="1959930595721737608">Autorise JavaScript sur le site suivant.</translation>
 <translation id="1966710179511230534">Veuillez mettre à jour vos informations de connexion.</translation>
 <translation id="1974060860693918893">Paramètres avancés</translation>
 <translation id="1984321224716884559">Favoris de la version en développement de Chrome</translation>
@@ -99,11 +99,9 @@ Vous devez activer le Bluetooth et les services de localisation pour utiliser le
 <translation id="2268044343513325586">Affiner</translation>
 <translation id="2315043854645842844">La sélection de certificat côté client n'est pas compatible avec le système d'exploitation.</translation>
 <translation id="2321958826496381788">Faites glisser le curseur pour lire le texte aisément. Sa taille doit être similaire à celle-ci lorsque vous appuyez deux fois sur un paragraphe.</translation>
-<translation id="2329597144923131178">Connectez-vous pour synchroniser favoris, historique, mots de passe et autres sur vos appareils. </translation>
 <translation id="2343328333327081434">Installation…</translation>
 <translation id="2351097562818989364">Les paramètres de traduction ont été réinitialisés.</translation>
 <translation id="2359808026110333948">Continuer</translation>
-<translation id="2381756643783702095">Demander l'autorisation avant d'envoyer (recommandé)</translation>
 <translation id="2385560268894525395">de la dernière semaine</translation>
 <translation id="2387895666653383613">Mise à l'échelle du texte</translation>
 <translation id="238909021488141516">Une erreur s'est produite lors du téléchargement du contenu.</translation>
@@ -185,6 +183,7 @@ Vous vous connectez avec un compte géré, et vous donnez à l'administrateur le
 <translation id="3387650086002190359">Échec du téléchargement du fichier "<ph name="FILE_NAME" />" en raison d'erreurs liées au système de fichiers.</translation>
 <translation id="3414952576877147120">Taille :</translation>
 <translation id="3435896845095436175">Activer</translation>
+<translation id="3452612588551937789">Connectez-vous à votre compte Google pour synchroniser vos favoris, vos mots de passe, votre historique et d'autres paramètres sur tous vos appareils.</translation>
 <translation id="3485544713029068372">Smart Lock pour les mots de passe</translation>
 <translation id="3492207499832628349">Nouvel onglet nav. privée</translation>
 <translation id="3518985090088779359">Accepter et continuer</translation>
@@ -234,6 +233,7 @@ Pour modifier le terme de recherche, appuyez sur celui-ci de manière prolongée
 <translation id="4259722352634471385">La navigation sur <ph name="URL" /> est bloquée.</translation>
 <translation id="4269820728363426813">Copier l'adresse du lien</translation>
 <translation id="4271185234001491831">Ne jamais traduire les pages rédigées en <ph name="LANGUAGE" /></translation>
+<translation id="4275663329226226506">Médias</translation>
 <translation id="4278390842282768270">Autorisé</translation>
 <translation id="4297410240212242334">Séparer les onglets et les applications</translation>
 <translation id="4307992518367153382">Options de base</translation>
@@ -337,7 +337,6 @@ Pour modifier le terme de recherche, appuyez sur celui-ci de manière prolongée
 <translation id="5596627076506792578">Plus d'options</translation>
 <translation id="5626134646977739690">Nom :</translation>
 <translation id="5626370437647899551">Ajouter un compte Google</translation>
-<translation id="563535393368633106">Demander l'autorisation avant d'accéder (recommandé)</translation>
 <translation id="5646376287012673985">Localisation</translation>
 <translation id="5659593005791499971">E-mail</translation>
 <translation id="5668404140385795438">Ignorer la demande d'un site refusant de faire un zoom avant</translation>
@@ -420,7 +419,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="6656545060687952787">Chrome doit accéder aux données de localisation pour rechercher des appareils. <ph name="BEGIN_LINK" />Mettre à jour les autorisations<ph name="END_LINK" /></translation>
 <translation id="666268767214822976">Utiliser un service de prédiction pour suggérer des requêtes associées et des sites populaires lorsque vous saisissez des termes dans la barre d'adresse</translation>
 <translation id="666981079809192359">Avis de confidentialité de Chrome</translation>
-<translation id="6683720003467092441">Autorise la synchronisation en arrière-plan sur le site suivant.</translation>
 <translation id="6698801883190606802">Gérer les données synchronisées</translation>
 <translation id="6710213216561001401">Précédent</translation>
 <translation id="6738867403308150051">Téléchargement en cours…</translation>
@@ -552,7 +550,6 @@ Votre compte Google conserve peut-être d'autres formes d'historique de navigati
 <translation id="8374821112118309944">Vous devez mettre à jour TalkBack vers une version plus récente</translation>
 <translation id="8396312449826231789">Uniquement les sites approuvés</translation>
 <translation id="8413126021676339697">Afficher l'historique complet</translation>
-<translation id="8413385045638830869">Demander d'abord (recommandé)</translation>
 <translation id="8428213095426709021">Paramètres</translation>
 <translation id="8433057134996913067">Vous serez déconnecté de la plupart des sites.</translation>
 <translation id="8481940801237642152">Votre connexion à ce site est privée, mais d'autres personnes connectées au réseau peuvent réussir à modifier l'apparence de la page.</translation>

@@ -48,6 +48,7 @@ Anda harus mengaktifkan Bluetooth dan Lokasi agar dapat menggunakan Web Fisik.</
 <translation id="1557201757634521564">Deteksi otomatis enkode</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1623104350909869708">Cegah dialog lain dari laman ini.</translation>
+<translation id="1639239467298939599">Memuat</translation>
 <translation id="1641113438599504367">Penelusuran Aman</translation>
 <translation id="164269334534774161">Anda melihat salinan offline laman ini dari <ph name="CREATION_TIME" /></translation>
 <translation id="1643702317193804718">Menerjemahkan laman ke bahasa <ph name="SOURCE_LANGUAGE" />...</translation>
@@ -73,7 +74,6 @@ Anda harus mengaktifkan Bluetooth dan Lokasi agar dapat menggunakan Web Fisik.</
 <translation id="1943432128510653496">Menyimpan sandi</translation>
 <translation id="1944384637046898011">Enkripsikan semua dengan sandi Google mulai tanggal <ph name="TIME" /></translation>
 <translation id="1946005195648379376">Kontrol cara Google menggunakan riwayat penjelajahan Anda untuk mempersonalisasi Penelusuran dan layanan Google lainnya.</translation>
-<translation id="1959930595721737608">Izinkan JavaScript di situs berikut.</translation>
 <translation id="1966710179511230534">Perbarui detail ID masuk Anda.</translation>
 <translation id="1974060860693918893">Lanjutan</translation>
 <translation id="1984321224716884559">Bookmark Chrome Dev</translation>
@@ -99,11 +99,9 @@ Anda harus mengaktifkan Bluetooth dan Lokasi agar dapat menggunakan Web Fisik.</
 <translation id="2268044343513325586">Saring</translation>
 <translation id="2315043854645842844">Pilihan sertifikat sisi klien tidak didukung oleh sistem operasi.</translation>
 <translation id="2321958826496381788">Seret penggeser sampai Anda dapat membacanya dengan nyaman. Teks harus terlihat setidaknya sebesar ini setelah paragraf diketuk dua kali.</translation>
-<translation id="2329597144923131178">Masuk untuk mendapatkan bookmark, riwayat, sandi, dan setelan Anda lainnya di semua perangkat.</translation>
 <translation id="2343328333327081434">Memasang...</translation>
 <translation id="2351097562818989364">Setelan terjemah telah disetel ulang.</translation>
 <translation id="2359808026110333948">Lanjut</translation>
-<translation id="2381756643783702095">Tanyakan sebelum mengirim (disarankan)</translation>
 <translation id="2385560268894525395">minggu lalu</translation>
 <translation id="2387895666653383613">Penskalaan teks</translation>
 <translation id="238909021488141516">Terjadi kesalahan saat mengunduh konten.</translation>
@@ -135,7 +133,7 @@ Anda harus mengaktifkan Bluetooth dan Lokasi agar dapat menggunakan Web Fisik.</
 <translation id="2762000892062317888">baru saja</translation>
 <translation id="2770465223704140727">Hapus dari daftar</translation>
 <translation id="278029852808208386">Tidak ditemukan perangkat bluetooth. <ph name="BEGIN_LINK" />Telusuri lagi<ph name="END_LINK" />.</translation>
-<translation id="2781389167600714117">Pilih pengiriman</translation>
+<translation id="2781389167600714117">Pilih opsi pengiriman</translation>
 <translation id="2811892995384186721">Tidak melihat perangkat? <ph name="BEGIN_LINK" />Dapatkan bantuan<ph name="END_LINK" /></translation>
 <translation id="2836148919159985482">Ketuk tombol kembali untuk keluar dari mode layar penuh.</translation>
 <translation id="2842985007712546952">Folder induk</translation>
@@ -185,6 +183,7 @@ Anda masuk dengan akun yang dikelola dan memberikan administratornya kontrol ata
 <translation id="3387650086002190359">Unduhan <ph name="FILE_NAME" /> gagal karena kesalahan sistem file.</translation>
 <translation id="3414952576877147120">Ukuran:</translation>
 <translation id="3435896845095436175">Aktifkan</translation>
+<translation id="3452612588551937789">Masuk dengan Akun Google untuk mendapatkan bookmark, sandi, riwayat, dan setelan lainnya di semua perangkat Anda.</translation>
 <translation id="3485544713029068372">Smart Lock untuk Sandi</translation>
 <translation id="3492207499832628349">Tab penyamaran baru</translation>
 <translation id="3518985090088779359">Terima &amp; lanjutkan</translation>
@@ -234,6 +233,7 @@ Untuk menyesuaikan istilah penelusuran, tekan lama untuk memilih. Untuk menyarin
 <translation id="4259722352634471385">Navigasi diblokir: <ph name="URL" /></translation>
 <translation id="4269820728363426813">Salin alamat tautan</translation>
 <translation id="4271185234001491831">Jangan pernah terjemahkan bahasa <ph name="LANGUAGE" /></translation>
+<translation id="4275663329226226506">Media</translation>
 <translation id="4278390842282768270">Diizinkan</translation>
 <translation id="4297410240212242334">Pisahkan tab dan aplikasi</translation>
 <translation id="4307992518367153382">Dasar-Dasar</translation>
@@ -336,7 +336,6 @@ Untuk menyesuaikan istilah penelusuran, tekan lama untuk memilih. Untuk menyarin
 <translation id="5596627076506792578">Opsi lainnya</translation>
 <translation id="5626134646977739690">Nama:</translation>
 <translation id="5626370437647899551">Tambahkan Akun Google</translation>
-<translation id="563535393368633106">Tanyakan sebelum mengakses (disarankan)</translation>
 <translation id="5646376287012673985">Lokasi</translation>
 <translation id="5659593005791499971">Email</translation>
 <translation id="5668404140385795438">Mengganti permintaan situs web untuk mencegah pembesaran</translation>
@@ -419,7 +418,6 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="6656545060687952787">Chrome memerlukan akses lokasi untuk memindai perangkat. <ph name="BEGIN_LINK" />Perbarui izin<ph name="END_LINK" /></translation>
 <translation id="666268767214822976">Gunakan layanan prediksi untuk menunjukkan kueri terkait dan situs web populer saat Anda mengetik di bilah alamat</translation>
 <translation id="666981079809192359">Notifikasi Privasi Chrome</translation>
-<translation id="6683720003467092441">Izinkan Sinkronisasi Latar Belakang di situs berikut.</translation>
 <translation id="6698801883190606802">Kelola data yang disinkronkan</translation>
 <translation id="6710213216561001401">Sebelumnya</translation>
 <translation id="6738867403308150051">Mengunduh…</translation>
@@ -551,7 +549,6 @@ Akun Google Anda mungkin memiliki bentuk riwayat penjelajahan lain seperti penel
 <translation id="8374821112118309944">Anda perlu memperbarui TalkBack ke versi yang lebih baru.</translation>
 <translation id="8396312449826231789">Hanya situs yang disetujui</translation>
 <translation id="8413126021676339697">Tampilkan riwayat lengkap</translation>
-<translation id="8413385045638830869">Tanya dulu (disarankan)</translation>
 <translation id="8428213095426709021">Setelan</translation>
 <translation id="8433057134996913067">Tindakan ini akan mengeluarkan Anda dari sebagian besar situs web.</translation>
 <translation id="8481940801237642152">Sambungan Anda ke situs ini bersifat pribadi, namun seseorang yang berada dalam jaringan Anda mungkin dapat mengubah tampilan laman.</translation>

@@ -48,6 +48,7 @@
 <translation id="1557201757634521564">Определять кодировку</translation>
 <translation id="1620510694547887537">Камера</translation>
 <translation id="1623104350909869708">Запретить создание дополнительных диалоговых окон на этой странице</translation>
+<translation id="1639239467298939599">Загрузка</translation>
 <translation id="1641113438599504367">Безопасный просмотр</translation>
 <translation id="164269334534774161">Эта офлайн-копия страницы была создана <ph name="CREATION_TIME" /></translation>
 <translation id="1643702317193804718">Выполняется перевод на <ph name="SOURCE_LANGUAGE" />…</translation>
@@ -73,7 +74,6 @@
 <translation id="1943432128510653496">Сохранение паролей</translation>
 <translation id="1944384637046898011">Зашифровать все с помощью пароля аккаунта Google с <ph name="TIME" /></translation>
 <translation id="1946005195648379376">Укажите, как Google может использовать историю просмотров для персонализации Поиска и других сервисов.</translation>
-<translation id="1959930595721737608">Разрешить JavaScript на указанных сайтах.</translation>
 <translation id="1966710179511230534">Обновите учетные данные</translation>
 <translation id="1974060860693918893">Дополнительные</translation>
 <translation id="1984321224716884559">Закладки Chrome для разработчиков</translation>
@@ -99,11 +99,9 @@
 <translation id="2268044343513325586">Уточнить</translation>
 <translation id="2315043854645842844">Сертификат, выбранный клиентом, не поддерживается операционной системой.</translation>
 <translation id="2321958826496381788">Перемещайте ползунок, пока текст не станет удобным для чтения. После двойного нажатия на абзац текст должен быть такого размера.</translation>
-<translation id="2329597144923131178">Войдите, чтобы синхронизировать закладки, пароли, историю и т. д. на всех устройствах.</translation>
 <translation id="2343328333327081434">Установка…</translation>
 <translation id="2351097562818989364">Настройки перевода сброшены</translation>
 <translation id="2359808026110333948">Далее</translation>
-<translation id="2381756643783702095">Спрашивать разрешение перед отправкой (рекомендуется)</translation>
 <translation id="2385560268894525395">прошлую неделю</translation>
 <translation id="2387895666653383613">Масштабирование текста</translation>
 <translation id="238909021488141516">Во время скачивания произошла ошибка.</translation>
@@ -185,6 +183,7 @@
 <translation id="3387650086002190359">Не удалось скачать файл <ph name="FILE_NAME" /> из-за ошибок файловой системы.</translation>
 <translation id="3414952576877147120">Размер:</translation>
 <translation id="3435896845095436175">Включить</translation>
+<translation id="3452612588551937789">Войдите в аккаунт Google, чтобы пользоваться закладками, паролями, историей и другими вашими настройками на любом устройстве.</translation>
 <translation id="3485544713029068372">Smart Lock для паролей</translation>
 <translation id="3492207499832628349">Новая вкладка инкогнито</translation>
 <translation id="3518985090088779359">Продолжить</translation>
@@ -234,6 +233,7 @@
 <translation id="4259722352634471385">Навигация заблокирована: <ph name="URL" /></translation>
 <translation id="4269820728363426813">Копировать адрес ссылки</translation>
 <translation id="4271185234001491831">Никогда не переводить <ph name="LANGUAGE" /></translation>
+<translation id="4275663329226226506">Камера и микрофон </translation>
 <translation id="4278390842282768270">Разрешены</translation>
 <translation id="4297410240212242334">Вкладки внутри Chrome</translation>
 <translation id="4307992518367153382">Основные</translation>
@@ -336,7 +336,6 @@
 <translation id="5596627076506792578">Ещё</translation>
 <translation id="5626134646977739690">Имя:</translation>
 <translation id="5626370437647899551">Добавление аккаунта Google</translation>
-<translation id="563535393368633106">Спрашивать разрешение на доступ (рекомендуется)</translation>
 <translation id="5646376287012673985">Местоположение</translation>
 <translation id="5659593005791499971">Электронная почта</translation>
 <translation id="5668404140385795438">Игнорировать запросы сайтов на запрет масштабирования</translation>
@@ -419,7 +418,6 @@
 <translation id="6656545060687952787">Чтобы выполнить поиск устройств, браузеру Chrome нужен доступ к геоданным. <ph name="BEGIN_LINK" />Обновить разрешения<ph name="END_LINK" /></translation>
 <translation id="666268767214822976">Показывать подсказки с похожими запросами и часто посещаемыми сайтами по мере ввода в адресную строку</translation>
 <translation id="666981079809192359">Примечание о конфиденциальности Chrome</translation>
-<translation id="6683720003467092441">Разрешить фоновую синхронизацию на этом сайте.</translation>
 <translation id="6698801883190606802">Управление синхронизированными данными</translation>
 <translation id="6710213216561001401">Назад</translation>
 <translation id="6738867403308150051">Скачивание…</translation>
@@ -551,7 +549,6 @@
 <translation id="8374821112118309944">Установите последнюю версию TalkBack.</translation>
 <translation id="8396312449826231789">Только одобренные сайты</translation>
 <translation id="8413126021676339697">Показать всю историю</translation>
-<translation id="8413385045638830869">Всегда спрашивать (рекомендуется)</translation>
 <translation id="8428213095426709021">Настройки</translation>
 <translation id="8433057134996913067">На большинстве сайтов будет выполнен выход из аккаунта.</translation>
 <translation id="8481940801237642152">Подключение к веб-сайту защищено, но посторонний пользователь может изменить вид страницы</translation>

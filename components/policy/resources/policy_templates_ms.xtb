@@ -569,14 +569,14 @@
 
           Jika anda memilih untuk menggunakan tetapan proksi sistem atau mengesan pelayan proksi secara automatik, semua pilihan lain akan diabaikan.
 
-          Jika anda memilih tetapan proksi manual, anda boleh menetapkan pilihan lanjutan dalam 'Alamat atau URL pelayan proksi', 'URL kepada fail .pac proksi' dan 'Senarai dipisahkan koma peraturan pintasan proksi'. Hanya pelayan proksi HTTP dengan keutamaan tertinggi tersedia untuk apl ARC.
+          Jika anda memilih tetapan proksi manual, anda boleh menetapkan pilihan lanjut dalam 'Alamat atau URL pelayan proksi', 'URL kepada fail .pac proksi' dan 'Senarai dipisahkan koma peraturan pintasan proksi'. Hanya pelayan proksi HTTP dengan keutamaan tertinggi tersedia untuk apl ARC.
 
           Untuk melihat contoh terperinci, lawati:
           <ph name="PROXY_HELP_URL" />.
 
           Jika anda mendayakan tetapan ini, <ph name="PRODUCT_NAME" /> akan mengabaikan semua pilihan berkaitan proksi yang ditetapkan daripada baris perintah.
 
-          Jika dasar ini dibiarkan tanpa tidak ditetapkan, pengguna boleh memilih tetapan proksi mereka sendiri.</translation>
+          Jika dasar ini dibiarkan tanpa ditetapkan, pengguna boleh memilih tetapan proksi mereka sendiri.</translation>
 <translation id="2824715612115726353">Dayakan mod Inkognito</translation>
 <translation id="2844404652289407061">Mendayakan ketersediaan Sentuh untuk Cari dalam paparan kandungan <ph name="PRODUCT_NAME" />.
 
@@ -2442,7 +2442,7 @@ Jika dasar ini dibiarkan tidak ditetapkan mana-mana pemalam yang sepadan dengan 
 
           Jika anda memilih untuk mengesan pelayan proksi secara automatik, semua pilihan lain akan  diabaikan.
 
-          Jika anda memilih mod proksi pelayan tetap, anda boleh menetapkan pilihan lanjutan dalam 'Alamat atau URL pelayan proksi', dan 'Senarai dipisahkan koma peraturan pintasan proksi'. Hanya pelayan proksi HTTP dengan keutamaan tertinggi tersedia untuk apl ARC.
+          Jika anda memilih mod proksi pelayan tetap, anda boleh menetapkan pilihan lanjut dalam 'Alamat atau URL pelayan proksi' dan 'Senarai dipisahkan koma peraturan pintasan proksi'. Hanya pelayan proksi HTTP dengan keutamaan tertinggi tersedia untuk apl ARC.
 
           Jika anda memilih untuk menggunakan skrip proksi .pac, anda mesti menetapkan URL kepada skrip tersebut dalam 'URL kepada fail .pac proksi'.
 
@@ -2451,7 +2451,7 @@ Jika dasar ini dibiarkan tidak ditetapkan mana-mana pemalam yang sepadan dengan 
 
           Jika anda mendayakan tetapan ini, <ph name="PRODUCT_NAME" /> dan apl ARC akan mengabaikan semua pilihan berkaitan proksi yang ditetapkan daripada baris perintah.
 
-          Jika dasar ini dibiarkan tanpa tidak ditetapkan, pengguna dapat memilih tetapan proksi mereka sendiri.</translation>
+          Jika dasar ini dibiarkan tanpa ditetapkan, pengguna dapat memilih tetapan proksi mereka sendiri.</translation>
 <translation id="913195841488580904">Sekat akses kepada senarai URL</translation>
 <translation id="9135033364005346124">Dayakan proksi <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="9147029539363974059">Hantar log sistem ke pelayan pengurusan, untuk membolehkan

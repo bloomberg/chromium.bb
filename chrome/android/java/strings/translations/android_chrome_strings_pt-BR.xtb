@@ -48,6 +48,7 @@
 <translation id="1557201757634521564">Detectar codificação automaticamente</translation>
 <translation id="1620510694547887537">Câmera</translation>
 <translation id="1623104350909869708">Impedir que esta página crie caixas de diálogo adicionais</translation>
+<translation id="1639239467298939599">Carregando</translation>
 <translation id="1641113438599504367">Navegação segura</translation>
 <translation id="164269334534774161">Você está vendo uma cópia off-line desta página de <ph name="CREATION_TIME" /></translation>
 <translation id="1643702317193804718">Traduzindo página para <ph name="SOURCE_LANGUAGE" />...</translation>
@@ -73,7 +74,6 @@
 <translation id="1943432128510653496">Salvar senhas</translation>
 <translation id="1944384637046898011">Criptografar tudo com senha do Google a partir de <ph name="TIME" /></translation>
 <translation id="1946005195648379376">Controle a maneira como o Google usa seu histórico de navegação para personalizar a Pesquisa e outros serviços do Google.</translation>
-<translation id="1959930595721737608">Permitir o JavaScript no site a seguir.</translation>
 <translation id="1966710179511230534">Atualize seus detalhes de login.</translation>
 <translation id="1974060860693918893">Avançado</translation>
 <translation id="1984321224716884559">Favoritos do Chrome Dev</translation>
@@ -99,11 +99,9 @@
 <translation id="2268044343513325586">Refinar</translation>
 <translation id="2315043854645842844">A seleção de certificado do cliente não é compatível com o sistema operacional.</translation>
 <translation id="2321958826496381788">Arraste o controle deslizante até que você possa ler confortavelmente. O texto deve ter pelo menos este tamanho após um toque duplo em um parágrafo.</translation>
-<translation id="2329597144923131178">Faça login para que favoritos, histórico, senhas e outras configurações fiquem disponíveis em todos os seus dispositivos.</translation>
 <translation id="2343328333327081434">Instalando...</translation>
 <translation id="2351097562818989364">As configurações de tradução foram redefinidas.</translation>
 <translation id="2359808026110333948">Continuar</translation>
-<translation id="2381756643783702095">Perguntar antes de enviar (recomendado)</translation>
 <translation id="2385560268894525395">da última semana</translation>
 <translation id="2387895666653383613">Escala do texto</translation>
 <translation id="238909021488141516">Ocorreu um erro durante o download do conteúdo.</translation>
@@ -185,6 +183,7 @@ Você está fazendo login com uma conta gerenciada e fornecendo ao administrador
 <translation id="3387650086002190359">Falha no download de <ph name="FILE_NAME" /> devido a erros do sistema de arquivos.</translation>
 <translation id="3414952576877147120">Tamanho:</translation>
 <translation id="3435896845095436175">Ativar</translation>
+<translation id="3452612588551937789">Faça login com sua Conta do Google para ter seus favoritos, histórico, senhas e outras configurações em todos os seus dispositivos.</translation>
 <translation id="3485544713029068372">Smart Lock para senhas</translation>
 <translation id="3492207499832628349">Nova guia anônima</translation>
 <translation id="3518985090088779359">Aceitar e continuar</translation>
@@ -234,6 +233,7 @@ Para ajustar seu termo de pesquisa, mantenha-o pressionado para selecionar. Para
 <translation id="4259722352634471385">A Navegação GPS está bloqueada: <ph name="URL" /></translation>
 <translation id="4269820728363426813">Copiar endereço do link</translation>
 <translation id="4271185234001491831">Nunca traduzir <ph name="LANGUAGE" /></translation>
+<translation id="4275663329226226506">Mídia</translation>
 <translation id="4278390842282768270">Permitido</translation>
 <translation id="4297410240212242334">Separar guias e apps</translation>
 <translation id="4307992518367153382">Básicas</translation>
@@ -336,7 +336,6 @@ Para ajustar seu termo de pesquisa, mantenha-o pressionado para selecionar. Para
 <translation id="5596627076506792578">Mais opções</translation>
 <translation id="5626134646977739690">Nome:</translation>
 <translation id="5626370437647899551">Adicionar uma Conta do Google</translation>
-<translation id="563535393368633106">Perguntar antes de acessar (recomendado)</translation>
 <translation id="5646376287012673985">Local</translation>
 <translation id="5659593005791499971">E-mail</translation>
 <translation id="5668404140385795438">Substituir a solicitação de um site para evitar a aplicação de zoom</translation>
@@ -418,7 +417,6 @@ Por exemplo, alguns websites podem responder a esta solicitação mostrando anú
 <translation id="6656545060687952787">O Chrome precisa de acesso ao local para procurar por dispositivos. <ph name="BEGIN_LINK" />Atualizar permissões<ph name="END_LINK" /></translation>
 <translation id="666268767214822976">Usar um serviço de previsão para mostrar consultas relacionadas e sites populares quando você digitar na barra de endereços</translation>
 <translation id="666981079809192359">Aviso de Privacidade do Chrome</translation>
-<translation id="6683720003467092441">Permitir a sincronização em segundo plano no site a seguir.</translation>
 <translation id="6698801883190606802">Gerenciar dados sincronizados</translation>
 <translation id="6710213216561001401">Anterior</translation>
 <translation id="6738867403308150051">Fazendo o download...</translation>
@@ -550,7 +548,6 @@ Por exemplo, alguns websites podem responder a esta solicitação mostrando anú
 <translation id="8374821112118309944">Atualize o TalkBack para receber uma versão mais nova.</translation>
 <translation id="8396312449826231789">Somente sites aprovados</translation>
 <translation id="8413126021676339697">Mostrar histórico completo</translation>
-<translation id="8413385045638830869">Perguntar primeiro (recomendado)</translation>
 <translation id="8428213095426709021">Configurações</translation>
 <translation id="8433057134996913067">Essa opção desconecta você da maioria dos websites.</translation>
 <translation id="8481940801237642152">Sua conexão a este site é particular, mas alguém na rede pode conseguir alterar a aparência da página.</translation>

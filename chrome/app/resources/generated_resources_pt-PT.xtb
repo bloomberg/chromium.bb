@@ -344,7 +344,6 @@ Consulte o seu email em <ph name="ACCOUNT_EMAIL" /> para obter mais instruções
 <translation id="1482124012545051544">Pronto para fazer uma cópia de segurança de <ph name="FILE_COUNT" /> novas fotografias</translation>
 <translation id="148466539719134488">Suíço</translation>
 <translation id="1485015260175968628">Esta pode agora:</translation>
-<translation id="1485146213770915382">Insira <ph name="SEARCH_TERMS_LITERAL" /> no URL em que os termos de pesquisa deverão ser apresentados.</translation>
 <translation id="1486096554574027028">Pesquisar palavras-passe</translation>
 <translation id="1493263392339817010">Personalizar tipos de letra...</translation>
 <translation id="1493492096534259649">Não é possível utilizar este idioma para a verificação ortográfica</translation>
@@ -803,7 +802,6 @@ Consulte o seu email em <ph name="ACCOUNT_EMAIL" /> para obter mais instruções
 <translation id="2176045495080708525">As seguintes extensões estão agora instaladas:</translation>
 <translation id="2177950615300672361">Separador de navegação anónima: <ph name="TAB_NAME" /></translation>
 <translation id="2178614541317717477">AC comprometida</translation>
-<translation id="2179052183774520942">Adicionar motor de pesquisa</translation>
 <translation id="218492098606937156">Ativar eventos de toque</translation>
 <translation id="2187895286714876935">Erro na importação do certificado do servidor</translation>
 <translation id="2190069059097339078">Obtenção de credenciais de Wi-Fi</translation>
@@ -969,7 +967,6 @@ Depois de criar um novo utilizador supervisionado, pode gerir as respetivas defi
 <translation id="2392369802118427583">Activar</translation>
 <translation id="2394296868155622118">Gerir os detalhes de faturação...</translation>
 <translation id="2394566832561516196">As definições serão limpas na atualização seguinte.</translation>
-<translation id="2396635603035772766">Ativar interface experimental baseada em balões para guardar palavras-passe; substitui a barra de informações existente.</translation>
 <translation id="2399147786307302860">Definições de sincronização avançadas...</translation>
 <translation id="2401053206567162910">Esta aplicação não é atualmente suportada neste dispositivo, mas a equipa do Chrome está a trabalhar arduamente para que funcione brevemente.</translation>
 <translation id="2403091441537561402">Gateway:</translation>
@@ -986,7 +983,6 @@ Depois de criar um novo utilizador supervisionado, pode gerir as respetivas defi
 <translation id="2431394478374894294">Ativa a entrada de texto por voz no teclado virtual.</translation>
 <translation id="2433452467737464329">Adicione um parâmetro de consulta ao URL para atualizar automaticamente a página: chrome://network/?refresh=&lt;sec&gt;</translation>
 <translation id="2433507940547922241">Aspeto</translation>
-<translation id="2433728760128592593">Prima Alt + Shift para alternar entre métodos de introdução.</translation>
 <translation id="2435248616906486374">Rede desligada</translation>
 <translation id="2436186046335138073">Permitir que <ph name="HANDLER_HOSTNAME" /> abra todos os links <ph name="PROTOCOL" />?</translation>
 <translation id="2436707352762155834">Mínimo</translation>
@@ -2003,7 +1999,6 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3764800135428056022">Oferecer-se para guardar as suas palavras-passe da Web.</translation>
 <translation id="3764986667044728669">Não foi possível efetuar a inscrição</translation>
 <translation id="3768037234834996183">A sincronizar as preferências...</translation>
-<translation id="3770072361759252365">Quando a opção está ativada, é incluído um codificador/descodificador de vídeo de software H.246. (Se também estiver disponível um descodificador de hardware, pode ser utilizado em vez deste descodificador.)</translation>
 <translation id="3771294271822695279">Ficheiros de vídeo</translation>
 <translation id="3774278775728862009">Método de introdução tailandês (teclado TIS-820.2538)</translation>
 <translation id="3775432569830822555">Certificado de servidor SSL</translation>
@@ -2274,7 +2269,6 @@ Todos os utilizadores têm de terminar sessão para continuar.</translation>
 <translation id="418179967336296930">Teclado com a fonética russa (YaZHert)</translation>
 <translation id="4181841719683918333">Idiomas</translation>
 <translation id="4187248015940562149">Ativa o Bluetooth Web, o que pode permitir que Websites se liguem a dispositivos Bluetooth à sua volta e os controlem.</translation>
-<translation id="4188026131102273494">Palavra-chave:</translation>
 <translation id="4189406272289638749">Uma extensão, &lt;b&gt;<ph name="EXTENSION_NAME" />&lt;/b&gt;, está a controlar esta definição.</translation>
 <translation id="4193154014135846272">Documento do Google</translation>
 <translation id="4193182321948161343">Ativar gestor de utilizadores do Material Design</translation>
@@ -2575,7 +2569,6 @@ Prima qualquer tecla para continuar a explorar.</translation>
 <translation id="4685045708662437080">Isto ajuda o Google a reconhecer a sua voz e a melhorar o reconhecimento de fala e áudio, de modo a disponibilizar-lhe resultados mais depressa e com menos complicações. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="4690246192099372265">Sueco</translation>
 <translation id="4690462567478992370">Parar de utilizar um certificado inválido</translation>
-<translation id="4691088804026137116">Não sincronizar</translation>
 <translation id="469230890969474295">Pasta OEM</translation>
 <translation id="4692342183939154835">Codificação de vídeo de hardware WebRTC</translation>
 <translation id="4692623383562244444">Motores de pesquisa</translation>
@@ -3241,7 +3234,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="5627086634964711283">Também controla a página apresentada quando clica no botão Página Inicial.</translation>
 <translation id="5627259319513858869">Ativa a utilização de funcionalidades de telas experimentais que ainda estão em desenvolvimento.</translation>
 <translation id="5627618611556177958">WebUSB</translation>
-<translation id="5630163645818715367">Material design no cromado superior do navegador</translation>
 <translation id="5636996382092289526">Para utilizar <ph name="NETWORK_ID" /> poderá ter primeiro de <ph name="LINK_START" />visitar a página de início de sessão da rede<ph name="LINK_END" />, que será aberta automaticamente dentro de alguns segundos. Se isso não acontecer, a rede não pode ser utilizada.</translation>
 <translation id="5637357908912398026">Memorização forçada de palavras-passe</translation>
 <translation id="5637380810526272785">Método de introdução</translation>
@@ -3931,7 +3923,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="6708242697268981054">Origem:</translation>
 <translation id="6709357832553498500">Ligar através de <ph name="EXTENSIONNAME" /></translation>
 <translation id="6710213216561001401">Anterior</translation>
-<translation id="6713912347540154876">Interface em balões para guardar palavras-passe</translation>
 <translation id="6718273304615422081">A comprimir...</translation>
 <translation id="671928215901716392">Bloquear ecrã</translation>
 <translation id="6721972322305477112">&amp;Ficheiro</translation>
@@ -4287,7 +4278,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="7255220508626648026">Transmissão: <ph name="ROUTETITLE" /></translation>
 <translation id="7255935316994522020">Candidatar-se</translation>
 <translation id="7256710573727326513">Abrir num separador</translation>
-<translation id="7257173066616499747">Redes Wi-Fi</translation>
 <translation id="7257666756905341374">Ler dados que copia e cola</translation>
 <translation id="7260504762447901703">Revogar acesso</translation>
 <translation id="7262004276116528033">Este serviço de início de sessão é alojado por <ph name="SAML_DOMAIN" /></translation>
@@ -4715,6 +4705,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="7896906914454843592">Teclado americano alargado</translation>
 <translation id="7897900149154324287">De futuro, não se esqueça de ejetar o dispositivo amovível na aplicação Ficheiros antes de a desligar. Caso contrário, pode perder dados.</translation>
 <translation id="7898627924844766532">Manter na barra de ferramentas</translation>
+<translation id="7898725031477653577">Traduzir sempre</translation>
 <translation id="7899177175067029110">Não é possível localizar o telemóvel. Certifique-se de que o <ph name="DEVICE_TYPE" /> está ligado à Internet. &lt;a&gt;Saiba mais&lt;/a&gt;</translation>
 <translation id="7900476766547206086">As palavras-passe são necessárias para utilizadores com sessão iniciada, dado que um ou mais utilizadores ativaram esta definição.</translation>
 <translation id="7903128267494448252">Eliminar esta pessoa</translation>
@@ -5286,7 +5277,6 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="871476437400413057">Palavras-passe guardadas do Google</translation>
 <translation id="8714838604780058252">Imagens em segundo plano</translation>
 <translation id="8722421161699219904">Teclado americano internacional</translation>
-<translation id="872451400847464257">Editar motor de pesquisa</translation>
 <translation id="8724859055372736596">Mo&amp;strar numa Pasta</translation>
 <translation id="8725066075913043281">Tentar novamente</translation>
 <translation id="8725178340343806893">Favoritos/Marcadores</translation>
