@@ -146,6 +146,8 @@
         'path_output.h',
         'pattern.cc',
         'pattern.h',
+        'qt_creator_writer.cc',
+        'qt_creator_writer.h',
         'runtime_deps.cc',
         'runtime_deps.h',
         'scheduler.cc',

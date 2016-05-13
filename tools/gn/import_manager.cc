@@ -111,3 +111,11 @@ bool ImportManager::DoImport(const SourceFile& file,
   return import_scope->NonRecursiveMergeTo(scope, options, node_for_err,
                                            "import", err);
 }
+
+std::vector<SourceFile> ImportManager::GetImportedFiles() const {
+  std::vector<SourceFile> imported_files;
+  imported_files.resize(imports_.size());
+  std::transform(imports_.begin(), imports_.end(), imported_files.begin(),
+                 [](const ImportMap::value_type& val) { return val.first; });
+  return imported_files;
+}

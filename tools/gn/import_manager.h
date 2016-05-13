@@ -7,6 +7,7 @@
 
 #include <map>
 #include <memory>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/synchronization/lock.h"
@@ -29,6 +30,8 @@ class ImportManager {
                 const ParseNode* node_for_err,
                 Scope* scope,
                 Err* err);
+
+  std::vector<SourceFile> GetImportedFiles() const;
 
  private:
   struct ImportInfo;
