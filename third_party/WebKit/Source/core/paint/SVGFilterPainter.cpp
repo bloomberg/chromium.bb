@@ -20,15 +20,12 @@ GraphicsContext* SVGFilterRecordingContext::beginContent(FilterData* filterData)
 {
     ASSERT(filterData->m_state == FilterData::Initial);
 
-    GraphicsContext* context = &paintingContext();
-
     // Create a new context so the contents of the filter can be drawn and cached.
     m_paintController = PaintController::create();
     m_context = adoptPtr(new GraphicsContext(*m_paintController));
-    context = m_context.get();
 
     filterData->m_state = FilterData::RecordingContent;
-    return context;
+    return m_context.get();
 }
 
 void SVGFilterRecordingContext::endContent(FilterData* filterData)
@@ -38,17 +35,14 @@ void SVGFilterRecordingContext::endContent(FilterData* filterData)
     SourceGraphic* sourceGraphic = filterData->filter->getSourceGraphic();
     ASSERT(sourceGraphic);
 
-    GraphicsContext* context = &paintingContext();
-
     // Use the context that contains the filtered content.
     ASSERT(m_paintController);
     ASSERT(m_context);
-    context = m_context.get();
-    context->beginRecording(filterData->filter->filterRegion());
+    m_context->beginRecording(filterData->filter->filterRegion());
     m_paintController->commitNewDisplayItems();
-    m_paintController->paintArtifact().replay(*context);
+    m_paintController->paintArtifact().replay(*m_context);
 
-    SkiaImageFilterBuilder::buildSourceGraphic(sourceGraphic, toSkSp(context->endRecording()));
+    SkiaImageFilterBuilder::buildSourceGraphic(sourceGraphic, toSkSp(m_context->endRecording()));
 
     // Content is cached by the source graphic so temporaries can be freed.
     m_paintController = nullptr;
@@ -57,7 +51,7 @@ void SVGFilterRecordingContext::endContent(FilterData* filterData)
     filterData->m_state = FilterData::ReadyToPaint;
 }
 
-static void paintFilteredContent(const LayoutObject& object, GraphicsContext& context, FilterData* filterData)
+static void paintFilteredContent(GraphicsContext& context, FilterData* filterData)
 {
     ASSERT(filterData->m_state == FilterData::ReadyToPaint);
     ASSERT(filterData->filter->getSourceGraphic());
@@ -155,7 +149,7 @@ void SVGFilterPainter::finishEffect(const LayoutObject& object, SVGFilterRecordi
     // TODO(chrishtr): stop using an infinite rect, and instead bound the filter.
     LayoutObjectDrawingRecorder recorder(context, object, DisplayItem::SVGFilter, LayoutRect::infiniteIntRect());
     if (filterData && filterData->m_state == FilterData::ReadyToPaint)
-        paintFilteredContent(object, context, filterData);
+        paintFilteredContent(context, filterData);
 }
 
 } // namespace blink
