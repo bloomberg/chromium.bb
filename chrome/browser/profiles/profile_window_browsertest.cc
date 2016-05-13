@@ -268,8 +268,9 @@ IN_PROC_BROWSER_TEST_F(ProfileWindowWebUIBrowserTest,
   EXPECT_TRUE(RunJavascriptTest("testNoPodFocused"));
 }
 
+// This test is flaky, see https://crbug.com/611619.
 IN_PROC_BROWSER_TEST_F(ProfileWindowWebUIBrowserTest,
-                       UserManagerFocusMultipleProfiles) {
+                       DISABLED_UserManagerFocusMultipleProfiles) {
   // The profile names are meant to sort differently by ICU collation and by
   // naive sorting. See crbug/596280.
   base::FilePath expected_path = CreateTestingProfile("#abc", "Profile 1");
