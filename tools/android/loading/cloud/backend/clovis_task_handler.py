@@ -6,14 +6,16 @@ import os
 
 from common.clovis_task import ClovisTask
 from failure_database import FailureDatabase
+from report_task_handler import ReportTaskHandler
 from trace_task_handler import TraceTaskHandler
 
 
 class ClovisTaskHandler(object):
   """Handles all the supported clovis tasks."""
 
-  def __init__(self, base_path, failure_database, google_storage_accessor,
-               binaries_path, logger, instance_name=None):
+  def __init__(self, project_name, base_path, failure_database,
+               google_storage_accessor, bigquery_service, binaries_path, logger,
+               instance_name=None):
     """Creates a ClovisTaskHandler.
 
     Args:
@@ -22,10 +24,14 @@ class ClovisTaskHandler(object):
       instance_name(str, optional): Name of the ComputeEngine instance.
     """
     self._failure_database = failure_database
+    trace_path = os.path.join(base_path, 'trace')
     self._handlers = {
         'trace': TraceTaskHandler(
-            os.path.join(base_path, 'trace'), failure_database,
-            google_storage_accessor, binaries_path, logger, instance_name)}
+            trace_path, failure_database, google_storage_accessor,
+            binaries_path, logger, instance_name),
+        'report': ReportTaskHandler(
+            project_name, failure_database, google_storage_accessor,
+            bigquery_service, logger)}
 
   def Run(self, clovis_task):
     """Runs a clovis_task.

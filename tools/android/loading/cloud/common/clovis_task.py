@@ -23,7 +23,7 @@ class ClovisTask(object):
           'tag' key, a unique tag will be generated.
     """
     self._action = action
-    self._action_params = action_params
+    self._action_params = action_params or {}
     self._backend_params = backend_params or {}
     # If no tag is specified, generate a unique tag.
     if not self._backend_params.get('tag'):
@@ -39,12 +39,14 @@ class ClovisTask(object):
     try:
       data = json.loads(json_dict)
       action = data['action']
-      action_params = data['action_params']
       # Vaidate the format.
       if action == 'trace':
+        action_params = data['action_params']
         urls = action_params['urls']
         if (type(urls) is not list) or (len(urls) == 0):
           return None
+      elif action == 'report':
+        action_params = data.get('action_params')
       else:
         # When more actions are supported, check that they are valid here.
         return None

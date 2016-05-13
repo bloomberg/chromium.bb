@@ -83,14 +83,13 @@ class TraceTaskHandler(object):
     except OSError:
       pass  # Nothing to remove.
 
-    if not url.startswith('http') and not url.startswith('file'):
-      url = 'http://' + url
-
     old_stdout = sys.stdout
     old_stderr = sys.stderr
 
     trace_metadata = { 'succeeded' : False, 'url' : url }
     trace = None
+    if not url.startswith('http') and not url.startswith('file'):
+      url = 'http://' + url
     with open(log_filename, 'w') as sys.stdout:
       try:
         sys.stderr = sys.stdout

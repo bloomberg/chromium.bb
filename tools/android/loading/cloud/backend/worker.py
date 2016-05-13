@@ -73,10 +73,12 @@ class Worker(object):
       self._failure_database.AddFailure(FailureDatabase.DIRTY_STATE_ERROR,
                                         'failure_database')
 
+    bigquery_service = discovery.build('bigquery', 'v2',
+                                      credentials=self._credentials)
     self._clovis_task_handler = ClovisTaskHandler(
-        self._base_path_in_bucket, self._failure_database,
-        self._google_storage_accessor, config['binaries_path'], self._logger,
-        self._instance_name)
+        self._project_name, self._base_path_in_bucket, self._failure_database,
+        self._google_storage_accessor, bigquery_service,
+        config['binaries_path'], self._logger, self._instance_name)
 
     self._UploadFailureDatabase()
 
