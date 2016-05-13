@@ -19,9 +19,9 @@ class ChromeFrameDistribution : public BrowserDistribution {
 
   base::string16 GetDisplayName() override;
 
-  base::string16 GetShortcutName(ShortcutType shortcut_type) override;
+  base::string16 GetShortcutName() override;
 
-  int GetIconIndex(ShortcutType shortcut_type) override;
+  int GetIconIndex() override;
 
   base::string16 GetBaseAppName() override;
 

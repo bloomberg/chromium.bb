@@ -157,24 +157,14 @@ base::string16 BrowserDistribution::GetBaseAppName() {
 }
 
 base::string16 BrowserDistribution::GetDisplayName() {
-  return GetShortcutName(SHORTCUT_CHROME);
+  return GetShortcutName();
 }
 
-base::string16 BrowserDistribution::GetShortcutName(
-    ShortcutType shortcut_type) {
-  switch (shortcut_type) {
-    case SHORTCUT_APP_LAUNCHER:
-      return installer::GetLocalizedString(IDS_APP_LIST_SHORTCUT_NAME_BASE);
-    default:
-      DCHECK_EQ(SHORTCUT_CHROME, shortcut_type);
-      return GetBaseAppName();
-  }
+base::string16 BrowserDistribution::GetShortcutName() {
+  return GetBaseAppName();
 }
 
-int BrowserDistribution::GetIconIndex(ShortcutType shortcut_type) {
-  if (shortcut_type == SHORTCUT_APP_LAUNCHER)
-    return icon_resources::kAppLauncherIndex;
-  DCHECK_EQ(SHORTCUT_CHROME, shortcut_type);
+int BrowserDistribution::GetIconIndex() {
   return icon_resources::kApplicationIndex;
 }
 
@@ -189,7 +179,7 @@ base::string16 BrowserDistribution::GetStartMenuShortcutSubfolder(
       return installer::GetLocalizedString(IDS_APP_SHORTCUTS_SUBDIR_NAME_BASE);
     default:
       DCHECK_EQ(SUBFOLDER_CHROME, subfolder_type);
-      return GetShortcutName(SHORTCUT_CHROME);
+      return GetShortcutName();
   }
 }
 

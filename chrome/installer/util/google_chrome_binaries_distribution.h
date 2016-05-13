@@ -14,7 +14,7 @@ class GoogleChromeBinariesDistribution : public ChromiumBinariesDistribution {
  public:
   base::string16 GetDisplayName() override;
 
-  base::string16 GetShortcutName(ShortcutType shortcut_type) override;
+  base::string16 GetShortcutName() override;
 
   void UpdateInstallStatus(bool system_install,
                            installer::ArchiveType archive_type,

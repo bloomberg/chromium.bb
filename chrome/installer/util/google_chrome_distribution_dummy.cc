@@ -44,12 +44,11 @@ base::string16 GoogleChromeDistribution::GetBaseAppName() {
   return base::string16();
 }
 
-base::string16 GoogleChromeDistribution::GetShortcutName(
-    ShortcutType shortcut_type) {
+base::string16 GoogleChromeDistribution::GetShortcutName() {
   return base::string16();
 }
 
-int GoogleChromeDistribution::GetIconIndex(ShortcutType shortcut_type) {
+int GoogleChromeDistribution::GetIconIndex() {
   return 0;
 }
 

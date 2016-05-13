@@ -52,8 +52,7 @@ base::string16 ChromiumBinariesDistribution::GetDisplayName() {
   return kChromiumBinariesName;
 }
 
-base::string16 ChromiumBinariesDistribution::GetShortcutName(
-    ShortcutType shortcut_type) {
+base::string16 ChromiumBinariesDistribution::GetShortcutName() {
   NOTREACHED();
   return base::string16();
 }
@@ -105,7 +104,7 @@ BrowserDistribution::DefaultBrowserControlPolicy
   return DEFAULT_BROWSER_UNSUPPORTED;
 }
 
-int ChromiumBinariesDistribution::GetIconIndex(ShortcutType shortcut_type) {
+int ChromiumBinariesDistribution::GetIconIndex() {
   NOTREACHED();
   return 0;
 }

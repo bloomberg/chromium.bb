@@ -51,8 +51,7 @@ base::string16 ChromeFrameDistribution::GetDisplayName() {
 #endif
 }
 
-base::string16 ChromeFrameDistribution::GetShortcutName(
-    ShortcutType shortcut_type) {
+base::string16 ChromeFrameDistribution::GetShortcutName() {
   NOTREACHED();
   return base::string16();
 }
@@ -88,14 +87,8 @@ base::string16 ChromeFrameDistribution::GetIconFilename() {
   return installer::kChromeExe;
 }
 
-int ChromeFrameDistribution::GetIconIndex(ShortcutType shortcut_type) {
-  switch (shortcut_type) {
-    case SHORTCUT_CHROME:
-      return 0;
-    default:
-      NOTREACHED();
-      return 0;
-  }
+int ChromeFrameDistribution::GetIconIndex() {
+  return 0;
 }
 
 BrowserDistribution::DefaultBrowserControlPolicy

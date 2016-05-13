@@ -137,9 +137,7 @@ class InstallShortcutTest : public testing::Test {
         new base::ScopedPathOverride(base::DIR_COMMON_START_MENU,
                                      fake_common_start_menu_.path()));
 
-    base::string16 shortcut_name(
-        dist_->GetShortcutName(BrowserDistribution::SHORTCUT_CHROME) +
-        installer::kLnkExt);
+    base::string16 shortcut_name(dist_->GetShortcutName() + installer::kLnkExt);
 
     user_desktop_shortcut_ =
         fake_user_desktop_.path().Append(shortcut_name);

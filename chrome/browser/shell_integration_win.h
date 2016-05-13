@@ -57,10 +57,6 @@ base::string16 GetAppModelIdForProfile(const base::string16& app_name,
 // calling GetAppModelIdForProfile() with ShellUtil::GetAppId() as app_name.
 base::string16 GetChromiumModelIdForProfile(const base::FilePath& profile_path);
 
-// Get the AppUserModelId for the App List, for the profile in |profile_path|.
-base::string16 GetAppListAppModelIdForProfile(
-    const base::FilePath& profile_path);
-
 // Migrates existing chrome taskbar pins by tagging them with correct app id.
 // see http://crbug.com/28104
 void MigrateTaskbarPins();

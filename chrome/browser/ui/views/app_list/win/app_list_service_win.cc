@@ -4,13 +4,11 @@
 
 #include "chrome/browser/ui/views/app_list/win/app_list_service_win.h"
 
-#include <dwmapi.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <sstream>
 
 #include "base/command_line.h"
-#include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/message_loop/message_loop.h"
@@ -19,21 +17,15 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/time/time.h"
-#include "base/win/shortcut.h"
-#include "base/win/windows_version.h"
-#include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/shell_integration_win.h"
 #include "chrome/browser/ui/app_list/app_list_util.h"
-#include "chrome/browser/ui/ash/app_list/app_list_service_ash.h"
 #include "chrome/browser/ui/views/app_list/win/activation_tracker_win.h"
 #include "chrome/browser/ui/views/app_list/win/app_list_controller_delegate_win.h"
 #include "chrome/browser/ui/views/app_list/win/app_list_win.h"
-#include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
@@ -45,7 +37,6 @@
 #include "content/public/common/content_switches.h"
 #include "ui/app_list/views/app_list_view.h"
 #include "ui/base/ui_base_switches.h"
-#include "ui/base/win/shell.h"
 
 #if defined(GOOGLE_CHROME_BUILD)
 #include "chrome/installer/util/google_update_settings.h"
@@ -68,56 +59,6 @@ void AppListService::InitAll(Profile* initial_profile,
 namespace {
 
 const int kUnusedAppListNoWarmupDays = 28;
-
-int GetAppListIconIndex() {
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  return dist->GetIconIndex(BrowserDistribution::SHORTCUT_APP_LAUNCHER);
-}
-
-base::FilePath GetAppListIconPath() {
-  base::FilePath icon_path;
-  if (!PathService::Get(base::FILE_EXE, &icon_path)) {
-    NOTREACHED();
-    return base::FilePath();
-  }
-
-  return icon_path;
-}
-
-base::string16 GetAppListShortcutName() {
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  return dist->GetShortcutName(BrowserDistribution::SHORTCUT_APP_LAUNCHER);
-}
-
-base::CommandLine GetAppListCommandLine() {
-  const char* const kSwitchesToCopy[] = { switches::kUserDataDir };
-  base::CommandLine* current = base::CommandLine::ForCurrentProcess();
-  base::FilePath chrome_exe;
-  if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {
-     NOTREACHED();
-     return base::CommandLine(base::CommandLine::NO_PROGRAM);
-  }
-  base::CommandLine command_line(chrome_exe);
-  command_line.CopySwitchesFrom(*current, kSwitchesToCopy,
-                                arraysize(kSwitchesToCopy));
-  command_line.AppendSwitch(switches::kShowAppList);
-  return command_line;
-}
-
-base::string16 GetAppModelId() {
-  // The AppModelId should be the same for all profiles in a user data directory
-  // but different for different user data directories, so base it on the
-  // initial profile in the current user data directory.
-  base::FilePath initial_profile_path;
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kUserDataDir)) {
-    initial_profile_path =
-        command_line->GetSwitchValuePath(switches::kUserDataDir).AppendASCII(
-            chrome::kInitialProfile);
-  }
-  return shell_integration::win::GetAppListAppModelIdForProfile(
-      initial_profile_path);
-}
 
 #if defined(GOOGLE_CHROME_BUILD)
 void SetDidRunForNDayActiveStats() {
@@ -144,97 +85,6 @@ void SetDidRunForNDayActiveStats() {
   }
 }
 #endif  // GOOGLE_CHROME_BUILD
-
-// The start menu shortcut is created on first run by users that are
-// upgrading. The desktop and taskbar shortcuts are created the first time the
-// user enables the app list. The taskbar shortcut is created in
-// |user_data_dir| and will use a Windows Application Model Id of
-// |app_model_id|. This runs on the FILE thread and not in the blocking IO
-// thread pool as there are other tasks running (also on the FILE thread)
-// which fiddle with shortcut icons
-// (shell_integration::MigrateWin7ShortcutsOnPath). Having different threads
-// fiddle with the same shortcuts could cause race issues.
-void CreateAppListShortcuts(
-    const base::FilePath& user_data_dir,
-    const base::string16& app_model_id,
-    const web_app::ShortcutLocations& creation_locations) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
-
-  // Shortcut paths under which to create shortcuts.
-  std::vector<base::FilePath> shortcut_paths =
-      web_app::internals::GetShortcutPaths(creation_locations);
-
-  bool pin_to_taskbar = creation_locations.in_quick_launch_bar &&
-                        base::win::CanPinShortcutToTaskbar();
-
-  // Create a shortcut in the |user_data_dir| for taskbar pinning.
-  if (pin_to_taskbar)
-    shortcut_paths.push_back(user_data_dir);
-  bool success = true;
-
-  base::FilePath chrome_exe;
-  if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {
-    NOTREACHED();
-    return;
-  }
-
-  base::string16 app_list_shortcut_name = GetAppListShortcutName();
-
-  base::string16 wide_switches(GetAppListCommandLine().GetArgumentsString());
-
-  base::win::ShortcutProperties shortcut_properties;
-  shortcut_properties.set_target(chrome_exe);
-  shortcut_properties.set_working_dir(chrome_exe.DirName());
-  shortcut_properties.set_arguments(wide_switches);
-  shortcut_properties.set_description(app_list_shortcut_name);
-  shortcut_properties.set_icon(chrome_exe, GetAppListIconIndex());
-  shortcut_properties.set_app_id(app_model_id);
-
-  for (size_t i = 0; i < shortcut_paths.size(); ++i) {
-    base::FilePath shortcut_file =
-        shortcut_paths[i].Append(app_list_shortcut_name).
-            AddExtension(installer::kLnkExt);
-    if (!base::PathExists(shortcut_file.DirName()) &&
-        !base::CreateDirectory(shortcut_file.DirName())) {
-      NOTREACHED();
-      return;
-    }
-    success = success && base::win::CreateOrUpdateShortcutLink(
-        shortcut_file, shortcut_properties,
-        base::win::SHORTCUT_CREATE_ALWAYS);
-  }
-
-  if (success && pin_to_taskbar) {
-    base::FilePath shortcut_to_pin =
-        user_data_dir.Append(app_list_shortcut_name).
-            AddExtension(installer::kLnkExt);
-    success = base::win::PinShortcutToTaskbar(shortcut_to_pin) && success;
-  }
-}
-
-// Customizes the app list |hwnd| for Windows (eg: disable aero peek, set up
-// restart params).
-void SetWindowAttributes(HWND hwnd) {
-  if (base::win::GetVersion() > base::win::VERSION_VISTA) {
-    // Disable aero peek. Without this, hovering over the taskbar popup puts
-    // Windows into a mode for switching between windows in the same
-    // application. The app list has just one window, so it is just distracting.
-    BOOL disable_value = TRUE;
-    ::DwmSetWindowAttribute(hwnd,
-                            DWMWA_DISALLOW_PEEK,
-                            &disable_value,
-                            sizeof(disable_value));
-  }
-
-  ui::win::SetAppIdForWindow(GetAppModelId(), hwnd);
-  base::CommandLine relaunch = GetAppListCommandLine();
-  base::string16 app_name(GetAppListShortcutName());
-  ui::win::SetRelaunchDetailsForWindow(
-      relaunch.GetCommandLineString(), app_name, hwnd);
-  ::SetWindowText(hwnd, app_name.c_str());
-  ui::win::SetAppIconForWindow(GetAppListIconPath(), GetAppListIconIndex(),
-                               hwnd);
-}
 
 }  // namespace
 
@@ -287,23 +137,7 @@ void AppListServiceWin::Init(Profile* initial_profile) {
 }
 
 void AppListServiceWin::CreateShortcut() {
-  // Check if the app launcher shortcuts have ever been created before.
-  // Shortcuts should only be created once. If the user unpins the taskbar
-  // shortcut, they can restore it by pinning the start menu or desktop
-  // shortcut.
-  web_app::ShortcutLocations shortcut_locations;
-  shortcut_locations.on_desktop = true;
-  shortcut_locations.in_quick_launch_bar = true;
-  shortcut_locations.applications_menu_location =
-      web_app::APP_MENU_LOCATION_SUBDIR_CHROME_DEPRECATED;
-  base::FilePath user_data_dir(
-      g_browser_process->profile_manager()->user_data_dir());
-
-  content::BrowserThread::PostTask(
-      content::BrowserThread::FILE,
-      FROM_HERE,
-      base::Bind(&CreateAppListShortcuts,
-                 user_data_dir, GetAppModelId(), shortcut_locations));
+  NOTREACHED();
 }
 
 void AppListServiceWin::ScheduleWarmup() {
@@ -395,7 +229,6 @@ void AppListServiceWin::OnViewCreated() {
     shower().app_list()->SetNextPaintCallback(next_paint_callback_);
     next_paint_callback_.Reset();
   }
-  SetWindowAttributes(shower().app_list()->GetHWND());
   activation_tracker_.reset(new ActivationTrackerWin(this));
 }
 

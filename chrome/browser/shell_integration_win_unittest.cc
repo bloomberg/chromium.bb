@@ -58,7 +58,6 @@ class ShellIntegrationWinMigrateShortcutTest : public testing::Test {
     chrome::GetDefaultUserDataDirectory(&default_user_data_dir);
     base::FilePath default_profile_path =
         default_user_data_dir.AppendASCII(chrome::kInitialProfile);
-    app_list_app_id_ = GetAppListAppModelIdForProfile(default_profile_path);
     non_default_user_data_dir_ = base::FilePath(FILE_PATH_LITERAL("root"))
         .Append(FILE_PATH_LITERAL("Non Default Data Dir"));
     non_default_profile_ = L"NonDefault";
@@ -245,9 +244,6 @@ class ShellIntegrationWinMigrateShortcutTest : public testing::Test {
   // profile.
   base::string16 non_default_user_data_dir_and_profile_chrome_app_id_;
 
-  // The app launcher's app id.
-  base::string16 app_list_app_id_;
-
   // An example extension id of an example app.
   base::string16 extension_id_;
 
@@ -319,31 +315,6 @@ TEST(ShellIntegrationWinTest, GetAppModelIdForProfileTest) {
   profile_path = profile_path.Append(FILE_PATH_LITERAL("User Data - Test"));
   EXPECT_EQ(base_app_id + L".udd.UserDataTest",
             GetAppModelIdForProfile(base_app_id, profile_path));
-}
-
-TEST(ShellIntegrationWinTest, GetAppListAppModelIdForProfileTest) {
-  base::string16 base_app_id(
-      BrowserDistribution::GetDistribution()->GetBaseAppId());
-  base_app_id.append(L"AppList");
-
-  // Empty profile path should get chrome::kBrowserAppID + AppList
-  base::FilePath empty_path;
-  EXPECT_EQ(base_app_id, GetAppListAppModelIdForProfile(empty_path));
-
-  // Default profile path should get chrome::kBrowserAppID + AppList
-  base::FilePath default_user_data_dir;
-  chrome::GetDefaultUserDataDirectory(&default_user_data_dir);
-  base::FilePath default_profile_path =
-      default_user_data_dir.AppendASCII(chrome::kInitialProfile);
-  EXPECT_EQ(base_app_id, GetAppListAppModelIdForProfile(default_profile_path));
-
-  // Non-default profile path should get chrome::kBrowserAppID + AppList joined
-  // with profile info.
-  base::FilePath profile_path(FILE_PATH_LITERAL("root"));
-  profile_path = profile_path.Append(FILE_PATH_LITERAL("udd"));
-  profile_path = profile_path.Append(FILE_PATH_LITERAL("User Data - Test"));
-  EXPECT_EQ(base_app_id + L".udd.UserDataTest",
-            GetAppListAppModelIdForProfile(profile_path));
 }
 
 }  // namespace win

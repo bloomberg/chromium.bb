@@ -32,16 +32,8 @@ base::string16 GoogleChromeSxSDistribution::GetBaseAppName() {
   return L"Google Chrome Canary";
 }
 
-base::string16 GoogleChromeSxSDistribution::GetShortcutName(
-    ShortcutType shortcut_type) {
-  switch (shortcut_type) {
-    case SHORTCUT_APP_LAUNCHER:
-      return installer::GetLocalizedString(
-          IDS_APP_LIST_SHORTCUT_NAME_CANARY_BASE);
-    default:
-      DCHECK_EQ(SHORTCUT_CHROME, shortcut_type);
-      return installer::GetLocalizedString(IDS_SXS_SHORTCUT_NAME_BASE);
-  }
+base::string16 GoogleChromeSxSDistribution::GetShortcutName() {
+  return installer::GetLocalizedString(IDS_SXS_SHORTCUT_NAME_BASE);
 }
 
 base::string16 GoogleChromeSxSDistribution::GetStartMenuShortcutSubfolder(
@@ -52,7 +44,7 @@ base::string16 GoogleChromeSxSDistribution::GetStartMenuShortcutSubfolder(
           IDS_APP_SHORTCUTS_SUBDIR_NAME_CANARY_BASE);
     default:
       DCHECK_EQ(subfolder_type, SUBFOLDER_CHROME);
-      return GetShortcutName(SHORTCUT_CHROME);
+      return GetShortcutName();
   }
 }
 
@@ -83,10 +75,7 @@ BrowserDistribution::DefaultBrowserControlPolicy
   return DEFAULT_BROWSER_OS_CONTROL_ONLY;
 }
 
-int GoogleChromeSxSDistribution::GetIconIndex(ShortcutType shortcut_type) {
-  if (shortcut_type == SHORTCUT_APP_LAUNCHER)
-    return icon_resources::kSxSAppLauncherIndex;
-  DCHECK_EQ(SHORTCUT_CHROME, shortcut_type);
+int GoogleChromeSxSDistribution::GetIconIndex() {
   return icon_resources::kSxSApplicationIndex;
 }
 

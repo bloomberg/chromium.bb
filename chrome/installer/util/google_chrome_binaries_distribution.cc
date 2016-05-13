@@ -26,8 +26,7 @@ base::string16 GoogleChromeBinariesDistribution::GetDisplayName() {
   return kChromeBinariesName;
 }
 
-base::string16 GoogleChromeBinariesDistribution::GetShortcutName(
-    ShortcutType shortcut_type) {
+base::string16 GoogleChromeBinariesDistribution::GetShortcutName() {
   NOTREACHED();
   return base::string16();
 }

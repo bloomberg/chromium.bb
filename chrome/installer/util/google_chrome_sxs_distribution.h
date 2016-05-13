@@ -20,8 +20,8 @@
 class GoogleChromeSxSDistribution : public GoogleChromeDistribution {
  public:
   base::string16 GetBaseAppName() override;
-  base::string16 GetShortcutName(ShortcutType shortcut_type) override;
-  int GetIconIndex(ShortcutType shortcut_type) override;
+  base::string16 GetShortcutName() override;
+  int GetIconIndex() override;
   base::string16 GetStartMenuShortcutSubfolder(
       Subfolder subfolder_type) override;
   base::string16 GetBaseAppId() override;
@@ -36,6 +36,7 @@ class GoogleChromeSxSDistribution : public GoogleChromeDistribution {
   bool HasUserExperiments() override;
   // returns the channel name for GoogleChromeSxSDistribution
   static base::string16 ChannelName();
+
  private:
   friend class BrowserDistribution;
 

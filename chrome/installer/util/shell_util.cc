@@ -350,8 +350,7 @@ void GetChromeProgIdEntries(BrowserDistribution* dist,
                             const base::FilePath& chrome_exe,
                             const base::string16& suffix,
                             ScopedVector<RegistryEntry>* entries) {
-  int chrome_icon_index =
-      dist->GetIconIndex(BrowserDistribution::SHORTCUT_CHROME);
+  int chrome_icon_index = dist->GetIconIndex();
 
   ApplicationInfo app_info;
   app_info.prog_id = GetBrowserProgId(suffix);
@@ -412,8 +411,8 @@ void GetShellIntegrationEntries(BrowserDistribution* dist,
                                 const base::FilePath& chrome_exe,
                                 const base::string16& suffix,
                                 ScopedVector<RegistryEntry>* entries) {
-  const base::string16 icon_path(ShellUtil::FormatIconLocation(
-      chrome_exe, dist->GetIconIndex(BrowserDistribution::SHORTCUT_CHROME)));
+  const base::string16 icon_path(
+      ShellUtil::FormatIconLocation(chrome_exe, dist->GetIconIndex()));
   const base::string16 quoted_exe_path(L"\"" + chrome_exe.value() + L"\"");
 
   // Register for the Start Menu "Internet" link (pre-Win7).
@@ -600,8 +599,8 @@ void GetXPStyleDefaultBrowserUserEntries(BrowserDistribution* dist,
 
   // Protocols associations.
   base::string16 chrome_open = ShellUtil::GetChromeShellOpenCmd(chrome_exe);
-  base::string16 chrome_icon = ShellUtil::FormatIconLocation(
-      chrome_exe, dist->GetIconIndex(BrowserDistribution::SHORTCUT_CHROME));
+  base::string16 chrome_icon =
+      ShellUtil::FormatIconLocation(chrome_exe, dist->GetIconIndex());
   for (int i = 0; ShellUtil::kBrowserProtocolAssociations[i] != NULL; i++) {
     GetXPStyleUserProtocolEntries(ShellUtil::kBrowserProtocolAssociations[i],
                                   chrome_icon, chrome_open, entries);
@@ -919,9 +918,7 @@ bool RegisterChromeAsDefaultProtocolClientXPStyle(
   const base::string16 chrome_open(
       ShellUtil::GetChromeShellOpenCmd(chrome_exe));
   const base::string16 chrome_icon(
-      ShellUtil::FormatIconLocation(
-          chrome_exe,
-          dist->GetIconIndex(BrowserDistribution::SHORTCUT_CHROME)));
+      ShellUtil::FormatIconLocation(chrome_exe, dist->GetIconIndex()));
   GetXPStyleUserProtocolEntries(protocol, chrome_icon, chrome_open, &entries);
   // Change the default protocol handler for current user.
   if (!ShellUtil::AddRegistryEntries(HKEY_CURRENT_USER, entries)) {
@@ -933,19 +930,15 @@ bool RegisterChromeAsDefaultProtocolClientXPStyle(
 }
 
 // Returns |properties.shortcut_name| if the property is set, otherwise it
-// returns dist->GetShortcutName(BrowserDistribution::SHORTCUT_CHROME). In any
-// case, it makes sure the return value is suffixed with ".lnk".
+// returns dist->GetShortcutName(). In any case, it makes sure the return value
+// is suffixed with ".lnk".
 base::string16 ExtractShortcutNameFromProperties(
     BrowserDistribution* dist,
     const ShellUtil::ShortcutProperties& properties) {
   DCHECK(dist);
-  base::string16 shortcut_name;
-  if (properties.has_shortcut_name()) {
-    shortcut_name = properties.shortcut_name;
-  } else {
-    shortcut_name =
-        dist->GetShortcutName(BrowserDistribution::SHORTCUT_CHROME);
-  }
+  base::string16 shortcut_name = properties.has_shortcut_name()
+                                     ? properties.shortcut_name
+                                     : dist->GetShortcutName();
 
   if (!base::EndsWith(shortcut_name, installer::kLnkExt,
                       base::CompareCase::INSENSITIVE_ASCII))

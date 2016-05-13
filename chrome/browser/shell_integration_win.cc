@@ -59,8 +59,6 @@ namespace shell_integration {
 
 namespace {
 
-const wchar_t kAppListAppNameSuffix[] = L"AppList";
-
 // Helper function for GetAppId to generates profile id
 // from profile path. "profile_id" is composed of sanitized basenames of
 // user data dir and profile dir joined by a ".".
@@ -97,13 +95,6 @@ base::string16 GetProfileIdFromPath(const base::FilePath& profile_path) {
   return profile_id;
 }
 
-base::string16 GetAppListAppName() {
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  base::string16 app_name(dist->GetBaseAppId());
-  app_name.append(kAppListAppNameSuffix);
-  return app_name;
-}
-
 // Gets expected app id for given Chrome (based on |command_line| and
 // |is_per_user_install|).
 base::string16 GetExpectedAppId(const base::CommandLine& command_line,
@@ -136,8 +127,6 @@ base::string16 GetExpectedAppId(const base::CommandLine& command_line,
     app_name = base::UTF8ToUTF16(
         web_app::GenerateApplicationNameFromExtensionId(
             command_line.GetSwitchValueASCII(switches::kAppId)));
-  } else if (command_line.HasSwitch(switches::kShowAppList)) {
-    app_name = GetAppListAppName();
   } else {
     BrowserDistribution* dist = BrowserDistribution::GetDistribution();
     app_name = ShellUtil::GetBrowserModelId(dist, is_per_user_install);
@@ -563,11 +552,6 @@ base::string16 GetChromiumModelIdForProfile(
       profile_path);
 }
 
-base::string16 GetAppListAppModelIdForProfile(
-    const base::FilePath& profile_path) {
-  return GetAppModelIdForProfile(GetAppListAppName(), profile_path);
-}
-
 void MigrateTaskbarPins() {
   if (base::win::GetVersion() < base::win::VERSION_WIN7)
     return;
@@ -696,9 +680,8 @@ base::FilePath GetStartMenuShortcut(const base::FilePath& chrome_exe) {
     base::DIR_START_MENU,
   };
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  const base::string16 shortcut_name(
-      dist->GetShortcutName(BrowserDistribution::SHORTCUT_CHROME) +
-      installer::kLnkExt);
+  const base::string16 shortcut_name(dist->GetShortcutName() +
+                                     installer::kLnkExt);
   base::FilePath programs_folder;
   base::FilePath shortcut;
 

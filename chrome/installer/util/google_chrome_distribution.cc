@@ -159,24 +159,11 @@ base::string16 GoogleChromeDistribution::GetBaseAppName() {
   return L"Google Chrome";
 }
 
-base::string16 GoogleChromeDistribution::GetShortcutName(
-    ShortcutType shortcut_type) {
-  int string_id = IDS_PRODUCT_NAME_BASE;
-  switch (shortcut_type) {
-    case SHORTCUT_APP_LAUNCHER:
-      string_id = IDS_APP_LIST_SHORTCUT_NAME_BASE;
-      break;
-    default:
-      DCHECK_EQ(SHORTCUT_CHROME, shortcut_type);
-      break;
-  }
-  return installer::GetLocalizedString(string_id);
+base::string16 GoogleChromeDistribution::GetShortcutName() {
+  return installer::GetLocalizedString(IDS_PRODUCT_NAME_BASE);
 }
 
-int GoogleChromeDistribution::GetIconIndex(ShortcutType shortcut_type) {
-  if (shortcut_type == SHORTCUT_APP_LAUNCHER)
-    return icon_resources::kAppLauncherIndex;
-  DCHECK_EQ(SHORTCUT_CHROME, shortcut_type);
+int GoogleChromeDistribution::GetIconIndex() {
   return icon_resources::kApplicationIndex;
 }
 
