@@ -103,6 +103,17 @@ const char kNoColor_HelpShort[] =
     "--nocolor: Force non-colored output.";
 const char kNoColor_Help[] = COLOR_HELP_LONG;
 
+const char kScriptExecutable[] = "script-executable";
+const char kScriptExecutable_HelpShort[] =
+    "--script-executable: Set the executable used to execute scripts.";
+const char kScriptExecutable_Help[] =
+    "--script-executable: Set the executable used to execute scripts.\n"
+    "\n"
+    "  By default GN searches the PATH for Python to execute scripts in\n"
+    "  action targets and exec_script calls. This flag allows the\n"
+    "  specification of a specific Python executable or potentially\n"
+    "  a different language interpreter.\n";
+
 const char kQuiet[] = "q";
 const char kQuiet_HelpShort[] =
     "-q: Quiet mode. Don't print output on success.";
@@ -254,6 +265,7 @@ const SwitchInfoMap& GetSwitches() {
     INSERT_VARIABLE(Root)
     INSERT_VARIABLE(Quiet)
     INSERT_VARIABLE(RuntimeDepsListFile)
+    INSERT_VARIABLE(ScriptExecutable)
     INSERT_VARIABLE(Threads)
     INSERT_VARIABLE(Time)
     INSERT_VARIABLE(Tracelog)

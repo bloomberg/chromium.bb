@@ -52,6 +52,10 @@ extern const char kNoColor[];
 extern const char kNoColor_HelpShort[];
 extern const char kNoColor_Help[];
 
+extern const char kScriptExecutable[];
+extern const char kScriptExecutable_HelpShort[];
+extern const char kScriptExecutable_Help[];
+
 extern const char kQuiet[];
 extern const char kQuiet_HelpShort[];
 extern const char kQuiet_Help[];

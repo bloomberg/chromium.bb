@@ -299,7 +299,7 @@ bool Setup::DoSetup(const std::string& build_dir, bool force_create) {
     if (!FillArguments(*cmdline))
       return false;
   }
-  FillPythonPath();
+  FillPythonPath(*cmdline);
 
   return true;
 }
@@ -594,20 +594,25 @@ bool Setup::FillBuildDir(const std::string& build_dir, bool require_exists) {
   return true;
 }
 
-void Setup::FillPythonPath() {
+void Setup::FillPythonPath(const base::CommandLine& cmdline) {
   // Trace this since it tends to be a bit slow on Windows.
   ScopedTrace setup_trace(TraceItem::TRACE_SETUP, "Fill Python Path");
+  if (cmdline.HasSwitch(switches::kScriptExecutable)) {
+    build_settings_.set_python_path(
+        cmdline.GetSwitchValuePath(switches::kScriptExecutable));
+  } else {
 #if defined(OS_WIN)
-  base::FilePath python_path = FindWindowsPython();
-  if (python_path.empty()) {
-    scheduler_.Log("WARNING", "Could not find python on path, using "
-        "just \"python.exe\"");
-    python_path = base::FilePath(kPythonExeName);
-  }
-  build_settings_.set_python_path(python_path.NormalizePathSeparatorsTo('/'));
+    base::FilePath python_path = FindWindowsPython();
+    if (python_path.empty()) {
+      scheduler_.Log("WARNING", "Could not find python on path, using "
+          "just \"python.exe\"");
+      python_path = base::FilePath(kPythonExeName);
+    }
+    build_settings_.set_python_path(python_path.NormalizePathSeparatorsTo('/'));
 #else
-  build_settings_.set_python_path(base::FilePath("python"));
+    build_settings_.set_python_path(base::FilePath("python"));
 #endif
+  }
 }
 
 bool Setup::RunConfigFile() {

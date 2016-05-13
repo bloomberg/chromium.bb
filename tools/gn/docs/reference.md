@@ -176,6 +176,16 @@
 
 
 ```
+## **\--script-executable**: Set the executable used to execute scripts.
+
+```
+  By default GN searches the PATH for Python to execute scripts in
+  action targets and exec_script calls. This flag allows the
+  specification of a specific Python executable or potentially
+  a different language interpreter.
+
+
+```
 ## **\--threads**: Specify number of worker threads.
 
 ```
@@ -681,16 +691,53 @@
              (default Visual Studio version: 2015)
       "vs2013" - Visual Studio 2013 project/solution files.
       "vs2015" - Visual Studio 2015 project/solution files.
-
-  --sln=<file_name>
-      Override default sln file name ("all"). Solution file is written
-      to the root build directory. Only for Visual Studio.
+      "xcode" - Xcode workspace/solution files.
+      "qtcreator" - QtCreator project files.
 
   --filters=<path_prefixes>
       Semicolon-separated list of label patterns used to limit the set
       of generated projects (see "gn help label_pattern"). Only
-      matching targets will be included to the solution. Only for Visual
-      Studio.
+      matching targets will be included to the solution. Only used for
+      Visual Studio and Xcode.
+
+```
+
+### **Visual Studio Flags**
+
+```
+  --sln=<file_name>
+      Override default sln file name ("all"). Solution file is written
+      to the root build directory.
+
+```
+
+### **Xcode Flags**
+
+```
+  --workspace=<file_name>
+      Override defaut workspace file name ("all"). The workspace file
+      is written to the root build directory.
+
+  --ninja-extra-args=<string>
+      This string is passed without any quoting to the ninja invocation
+      command-line. Can be used to configure ninja flags, like "-j" if
+      using goma for example.
+
+  --root-target=<target_name>
+      Name of the target corresponding to "All" target in Xcode.
+      If unset, "All" invokes ninja without any target
+      and builds everything.
+
+```
+
+### **QtCreator Flags**
+
+```
+  --root-target=<target_name>
+      Name of the root target for which the QtCreator project will be
+      generated to contain files of it and its dependencies. If unset, 
+      the whole build graph will be omitted.
+
 
 ```
 
@@ -1377,7 +1424,8 @@
 
 ```
   bundle_root_dir*, bundle_resources_dir*, bundle_executable_dir*,
-  bundle_plugins_dir*, deps, data_deps, public_deps, visibility
+  bundle_plugins_dir*, deps, data_deps, public_deps, visibility,
+  product_type
   * = required
 
 ```
@@ -1427,6 +1475,7 @@
       }
 
       create_bundle("${app_name}.app") {
+        product_type = "com.apple.product-type.application"
         deps = [
           ":${app_name}_bundle_executable",
           ":${app_name}_bundle_info_plist",
@@ -4989,6 +5038,18 @@
 
 
 ```
+## **product_type**: Product type for Xcode projects.
+
+```
+  Correspond to the type of the product of a create_bundle target. Only
+  meaningful to Xcode (used as part of the Xcode project generation).
+
+  When generating Xcode project files, only create_bundle target with
+  a non-empty product_type will have a corresponding target in Xcode
+  project.
+
+
+```
 ## **public**: Declare public header files for a target.
 
 ```
@@ -5966,6 +6027,7 @@
 **  -q**: Quiet mode. Don't print output on success.
 **  \--root**: Explicitly specify source root.
 **  \--runtime-deps-list-file**: Save runtime dependencies for targets in file.
+**  \--script-executable**: Set the executable used to execute scripts.
 **  \--threads**: Specify number of worker threads.
 **  \--time**: Outputs a summary of how long everything took.
 **  \--tracelog**: Writes a Chrome-compatible trace log to the given file.
