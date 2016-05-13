@@ -1290,6 +1290,9 @@ void WebContentsImpl::NotifyNavigationStateChanged(
 
   if (delegate_)
     delegate_->NavigationStateChanged(this, changed_flags);
+
+  if (GetOuterWebContents())
+    GetOuterWebContents()->NotifyNavigationStateChanged(changed_flags);
 }
 
 base::TimeTicks WebContentsImpl::GetLastActiveTime() const {
@@ -3044,7 +3047,9 @@ void WebContentsImpl::InsertCSS(const std::string& css) {
 }
 
 bool WebContentsImpl::WasRecentlyAudible() {
-  return audio_stream_monitor_.WasRecentlyAudible();
+  return audio_stream_monitor_.WasRecentlyAudible() ||
+         (browser_plugin_embedder_ &&
+          browser_plugin_embedder_->WereAnyGuestsRecentlyAudible());
 }
 
 void WebContentsImpl::GetManifest(const GetManifestCallback& callback) {

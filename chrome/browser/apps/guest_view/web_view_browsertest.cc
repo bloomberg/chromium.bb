@@ -818,6 +818,83 @@ class WebContentsAudioMutedObserver : public content::WebContentsObserver {
   DISALLOW_COPY_AND_ASSIGN(WebContentsAudioMutedObserver);
 };
 
+class WasAudibleWebContentsDelegate : public content::WebContentsDelegate {
+ public:
+  WasAudibleWebContentsDelegate() : invalidate_type_tab_seen_(false) {}
+
+  void NavigationStateChanged(content::WebContents* contents,
+                              content::InvalidateTypes changed_flags) override {
+    if (changed_flags == content::INVALIDATE_TYPE_TAB) {
+      invalidate_type_tab_seen_ = true;
+      if (message_loop_runner_.get())
+        message_loop_runner_->Quit();
+    }
+  }
+
+  void WaitForInvalidateTypeTab() {
+    if (!invalidate_type_tab_seen_) {
+      message_loop_runner_ = new content::MessageLoopRunner;
+      message_loop_runner_->Run();
+    }
+    invalidate_type_tab_seen_ = false;
+  }
+
+ private:
+  bool invalidate_type_tab_seen_;
+  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
+
+  DISALLOW_COPY_AND_ASSIGN(WasAudibleWebContentsDelegate);
+};
+
+IN_PROC_BROWSER_TEST_P(WebViewTest, AudibilityStatePropagates) {
+  ASSERT_TRUE(StartEmbeddedTestServer());  // For serving guest audio.
+
+  LoadAppWithGuest("web_view/simple");
+
+  content::WebContents* embedder = GetEmbedderWebContents();
+  content::WebContents* guest = GetGuestWebContents();
+
+  EXPECT_FALSE(embedder->WasRecentlyAudible());
+  EXPECT_FALSE(guest->WasRecentlyAudible());
+
+  std::unique_ptr<WasAudibleWebContentsDelegate> was_audible_delegate(
+      new WasAudibleWebContentsDelegate);
+  embedder->SetDelegate(was_audible_delegate.get());
+
+  // Just in case we get console error messages from the guest, we should
+  // surface them in the test output.
+  EXPECT_TRUE(content::ExecuteScript(
+      embedder,
+      "wv = document.getElementsByTagName('webview')[0];"
+      "wv.addEventListener('consolemessage', function (e) {"
+      "  console.log('WebViewTest Guest: ' + e.message);"
+      "});"));
+
+  // Inject JS to start audio.
+  GURL audio_url = embedded_test_server()->GetURL(
+      "/extensions/platform_apps/web_view/simple/ping.mp3");
+  std::string setup_audio_script = base::StringPrintf(
+      "ae = document.createElement('audio');"
+      "ae.src='%s';"
+      "document.body.appendChild(ae);"
+      "ae.play();",
+      audio_url.spec().c_str());
+  EXPECT_TRUE(content::ExecuteScript(guest, setup_audio_script));
+
+  was_audible_delegate->WaitForInvalidateTypeTab();
+  EXPECT_TRUE(embedder->WasRecentlyAudible());
+  EXPECT_TRUE(guest->WasRecentlyAudible());
+
+  // Wait for audio to stop (the .mp3 is shorter than the audio stream
+  // monitor's timeout, so no need to explicitly stop it. Other callers may
+  // call NotifyNavigationStateChanged() on the embedder web contents, so
+  // we may have to wait several times).
+  while (embedder->WasRecentlyAudible())
+    was_audible_delegate->WaitForInvalidateTypeTab();
+  EXPECT_FALSE(embedder->WasRecentlyAudible());
+  EXPECT_FALSE(guest->WasRecentlyAudible());
+}
+
 IN_PROC_BROWSER_TEST_P(WebViewTest, AudioMutesWhileAttached) {
   LoadAppWithGuest("web_view/simple");
 

@@ -219,6 +219,17 @@ BrowserPluginGuest* BrowserPluginEmbedder::GetFullPageGuest() {
 }
 
 // static
+bool BrowserPluginEmbedder::GuestRecentlyAudibleCallback(WebContents* guest) {
+  return guest->WasRecentlyAudible();
+}
+
+bool BrowserPluginEmbedder::WereAnyGuestsRecentlyAudible() {
+  return GetBrowserPluginGuestManager()->ForEachGuest(
+      web_contents(),
+      base::Bind(&BrowserPluginEmbedder::GuestRecentlyAudibleCallback));
+}
+
+// static
 bool BrowserPluginEmbedder::UnlockMouseIfNecessaryCallback(bool* mouse_unlocked,
                                                            WebContents* guest) {
   *mouse_unlocked |= static_cast<WebContentsImpl*>(guest)
