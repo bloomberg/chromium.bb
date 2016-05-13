@@ -695,7 +695,8 @@ void ServiceWorkerDispatcherHost::OnPostMessageToWorker(
   ServiceWorkerProviderHost* sender_provider_host =
       GetContext()->GetProviderHost(render_process_id_, provider_id);
   if (!sender_provider_host) {
-    bad_message::ReceivedBadMessage(this, bad_message::SWDH_POST_MESSAGE);
+    // This may occur when destruction of the sender provider overtakes
+    // postMessage() because of thread hopping on WebServiceWorkerImpl.
     return;
   }
 
