@@ -40,6 +40,7 @@ case $TEST_FILE in
 	ivi-*.la|ivi-*.so)
 		SHELL_PLUGIN=$MODDIR/ivi-shell.so
 
+		set -x
 		WESTON_BUILD_DIR=$abs_builddir \
 		WESTON_TEST_REFERENCE_PATH=$abs_top_srcdir/tests/reference \
 		$WESTON --backend=$MODDIR/$BACKEND \
@@ -52,6 +53,7 @@ case $TEST_FILE in
 			&> "$OUTLOG"
 		;;
 	*.la|*.so)
+		set -x
 		WESTON_BUILD_DIR=$abs_builddir \
 		WESTON_TEST_REFERENCE_PATH=$abs_top_srcdir/tests/reference \
 		$WESTON --backend=$MODDIR/$BACKEND \
@@ -65,6 +67,7 @@ case $TEST_FILE in
 	ivi-*.weston)
 		SHELL_PLUGIN=$MODDIR/ivi-shell.so
 
+		set -x
 		WESTON_BUILD_DIR=$abs_builddir \
 		WESTON_TEST_REFERENCE_PATH=$abs_top_srcdir/tests/reference \
 		WESTON_TEST_CLIENT_PATH=$abs_builddir/$TEST_FILE \
@@ -78,6 +81,7 @@ case $TEST_FILE in
 			&> "$OUTLOG"
 		;;
 	*)
+		set -x
 		WESTON_BUILD_DIR=$abs_builddir \
 		WESTON_TEST_REFERENCE_PATH=$abs_top_srcdir/tests/reference \
 		WESTON_TEST_CLIENT_PATH=$abs_builddir/$TEST_FILE \
