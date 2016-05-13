@@ -115,6 +115,7 @@ class PageCyclerIntlKoThVi(_PageCycler):
               possible_browser.platform.GetOSVersionName() == 'snowleopard'))
 
 
+@benchmark.Disabled('all') # crbug.com/606277 crbug.com/611484
 class PageCyclerMorejs(_PageCycler):
   """Page load for a variety of pages that were JavaScript heavy in 2009."""
   page_set = page_sets.MorejsPageSet
