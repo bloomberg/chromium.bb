@@ -700,9 +700,15 @@ void MediaControls::computeWhichControlsFit()
     };
 
     int usedWidth = 0;
-    // Assume that all controls require 48px.  Ideally, we could get this from
-    // the computed style, but that requires the controls to be shown.
-    const int minimumWidth = 48;
+
+    // Assume that all controls require 48px, unless we can get the computed
+    // style for the play button.  Since the play button is always shown, it
+    // should be available the first time we're called after layout.  This will
+    // also be the first time we have m_panelWidth!=0, so it won't matter if
+    // we get this wrong before that.
+    int minimumWidth = (m_playButton->layoutObject() && m_playButton->layoutObject()->style())
+        ? m_playButton->layoutObject()->style()->width().pixels()
+        : 48;
 
     // Special-case the play button; it always fits.
     if (m_playButton->isWanted()) {
