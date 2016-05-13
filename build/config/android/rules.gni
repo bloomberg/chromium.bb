@@ -66,12 +66,6 @@ template("generate_jni") {
       rebase_path(jni_generator_include, jni_output_dir),
       "--native_exports_optional",
     ]
-    if (defined(invoker.jni_generator_jarjar_file)) {
-      args += [
-        "--jarjar",
-        rebase_path(jni_generator_jarjar_file, root_build_dir),
-      ]
-    }
   }
 
   config("jni_includes_${target_name}") {
