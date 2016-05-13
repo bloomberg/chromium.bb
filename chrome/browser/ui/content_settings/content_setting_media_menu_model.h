@@ -16,6 +16,8 @@ class ContentSettingBubbleModel;
 
 // A menu model that builds the contents of the media capture devices menu in
 // the content setting bubble.
+// DEPRECATED: only used on OSX. Port OSX to
+// ContentSettingBubbleContents::MediaComboboxModel. See crbug.com/590850
 class ContentSettingMediaMenuModel : public ui::SimpleMenuModel,
                                      public ui::SimpleMenuModel::Delegate {
  public:

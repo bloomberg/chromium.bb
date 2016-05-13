@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_CONTENT_SETTING_BUBBLE_CONTENTS_H_
 #define CHROME_BROWSER_UI_VIEWS_CONTENT_SETTING_BUBBLE_CONTENTS_H_
 
+#include <list>
 #include <map>
 
 #include "base/compiler_specific.h"
@@ -12,27 +13,21 @@
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/media_stream_request.h"
+#include "ui/base/models/combobox_model.h"
 #include "ui/views/bubble/bubble_dialog_delegate.h"
 #include "ui/views/controls/button/button.h"
-#include "ui/views/controls/button/menu_button_listener.h"
+#include "ui/views/controls/combobox/combobox_listener.h"
 #include "ui/views/controls/link_listener.h"
 
 class ContentSettingBubbleModel;
-class ContentSettingMediaMenuModel;
 class Profile;
 
 namespace chrome {
 class ContentSettingBubbleViewsBridge;
 }
 
-namespace ui {
-class SimpleMenuModel;
-}
-
 namespace views {
 class LabelButton;
-class MenuButton;
-class MenuRunner;
 class RadioButton;
 }
 
@@ -49,7 +44,7 @@ class ContentSettingBubbleContents : public content::WebContentsObserver,
                                      public views::BubbleDialogDelegateView,
                                      public views::ButtonListener,
                                      public views::LinkListener,
-                                     public views::MenuButtonListener {
+                                     public views::ComboboxListener {
  public:
   ContentSettingBubbleContents(
       ContentSettingBubbleModel* content_setting_bubble_model,
@@ -60,10 +55,6 @@ class ContentSettingBubbleContents : public content::WebContentsObserver,
 
   gfx::Size GetPreferredSize() const override;
 
-  // Callback to allow ContentSettingMediaMenuModel to update the menu label.
-  void UpdateMenuLabel(content::MediaStreamType type,
-                       const std::string& label);
-
  protected:
   // views::BubbleDialogDelegateView:
   void Init() override;
@@ -72,14 +63,33 @@ class ContentSettingBubbleContents : public content::WebContentsObserver,
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
 
  private:
+  // A combobox model that builds the contents of the media capture devices menu
+  // in the content setting bubble.
+  class MediaComboboxModel : public ui::ComboboxModel {
+   public:
+    explicit MediaComboboxModel(content::MediaStreamType type);
+    ~MediaComboboxModel() override;
+
+    content::MediaStreamType type() const { return type_; }
+    const content::MediaStreamDevices& GetDevices() const;
+    int GetDeviceIndex(const content::MediaStreamDevice& device) const;
+
+    // ui::ComboboxModel:
+    int GetItemCount() const override;
+    base::string16 GetItemAt(int index) override;
+
+   private:
+    content::MediaStreamType type_;
+
+    DISALLOW_COPY_AND_ASSIGN(MediaComboboxModel);
+  };
+
   class Favicon;
-  struct MediaMenuParts;
 
   // This allows ContentSettingBubbleViewsBridge to call SetAnchorRect().
   friend class chrome::ContentSettingBubbleViewsBridge;
 
   typedef std::map<views::Link*, int> ListItemLinks;
-  typedef std::map<views::MenuButton*, MediaMenuParts*> MediaMenuPartsMap;
 
   // content::WebContentsObserver:
   void DidNavigateMainFrame(
@@ -92,13 +102,8 @@ class ContentSettingBubbleContents : public content::WebContentsObserver,
   // views::LinkListener:
   void LinkClicked(views::Link* source, int event_flags) override;
 
-  // views::MenuButtonListener:
-  void OnMenuButtonClicked(views::MenuButton* source,
-                           const gfx::Point& point,
-                           const ui::Event* event) override;
-
-  // Helper to get the preferred width of the media menu.
-  void UpdateMenuButtonSizes();
+  // views::ComboboxListener:
+  void OnPerformAction(views::Combobox* combobox) override;
 
   // Provides data for this bubble.
   std::unique_ptr<ContentSettingBubbleModel> content_setting_bubble_model_;
@@ -112,8 +117,9 @@ class ContentSettingBubbleContents : public content::WebContentsObserver,
   views::Link* manage_link_;
   views::Link* learn_more_link_;
   views::LabelButton* close_button_;
-  std::unique_ptr<views::MenuRunner> menu_runner_;
-  MediaMenuPartsMap media_menus_;
+
+  // Combobox models the bubble owns.
+  std::list<MediaComboboxModel> combobox_models_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(ContentSettingBubbleContents);
 };

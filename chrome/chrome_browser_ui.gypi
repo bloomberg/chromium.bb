@@ -1289,6 +1289,10 @@
       'browser/ui/cocoa/website_settings/website_settings_utils_cocoa.mm',
       'browser/ui/cocoa/window_size_autosaver.h',
       'browser/ui/cocoa/window_size_autosaver.mm',
+      # TODO(estade): this class should be deleted in favor of a combobox model.
+      # See crbug.com/590850
+      'browser/ui/content_settings/content_setting_media_menu_model.cc',
+      'browser/ui/content_settings/content_setting_media_menu_model.h',
     ],
     # Files used only on desktop systems (not iOS, Android, ChromeOS).
     'chrome_browser_ui_desktop_sources': [
@@ -1584,8 +1588,6 @@
       'browser/ui/content_settings/content_setting_bubble_model_delegate.h',
       'browser/ui/content_settings/content_setting_image_model.cc',
       'browser/ui/content_settings/content_setting_image_model.h',
-      'browser/ui/content_settings/content_setting_media_menu_model.cc',
-      'browser/ui/content_settings/content_setting_media_menu_model.h',
       'browser/ui/exclusive_access/exclusive_access_bubble.cc',
       'browser/ui/exclusive_access/exclusive_access_bubble.h',
       'browser/ui/exclusive_access/exclusive_access_bubble_type.cc',

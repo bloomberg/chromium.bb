@@ -13,10 +13,10 @@
 #include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "chrome/browser/plugins/plugin_finder.h"
 #include "chrome/browser/plugins/plugin_metadata.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
-#include "chrome/browser/ui/content_settings/content_setting_media_menu_model.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -32,6 +32,7 @@
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/button/radio_button.h"
+#include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
@@ -52,14 +53,52 @@ const int kMaxContentsWidth = 500;
 // narrow bubbles with lots of line-wrapping.
 const int kMinMultiLineContentsWidth = 250;
 
-// The minimum width of the media menu buttons.
-const int kMinMediaMenuButtonWidth = 150;
-
 }  // namespace
 
 using content::PluginService;
 using content::WebContents;
 
+// ContentSettingBubbleContents::MediaComboboxModel ----------------------------
+
+ContentSettingBubbleContents::MediaComboboxModel::MediaComboboxModel(
+    content::MediaStreamType type)
+    : type_(type) {
+  DCHECK(type_ == content::MEDIA_DEVICE_AUDIO_CAPTURE ||
+         type_ == content::MEDIA_DEVICE_VIDEO_CAPTURE);
+}
+
+ContentSettingBubbleContents::MediaComboboxModel::~MediaComboboxModel() {}
+
+const content::MediaStreamDevices&
+ContentSettingBubbleContents::MediaComboboxModel::GetDevices() const {
+  MediaCaptureDevicesDispatcher* dispatcher =
+      MediaCaptureDevicesDispatcher::GetInstance();
+  return type_ == content::MEDIA_DEVICE_AUDIO_CAPTURE
+             ? dispatcher->GetAudioCaptureDevices()
+             : dispatcher->GetVideoCaptureDevices();
+}
+
+int ContentSettingBubbleContents::MediaComboboxModel::GetDeviceIndex(
+    const content::MediaStreamDevice& device) const {
+  const auto& devices = GetDevices();
+  for (size_t i = 0; i < devices.size(); ++i) {
+    if (device.id == devices[i].id)
+      return i;
+  }
+  NOTREACHED();
+  return 0;
+}
+
+int ContentSettingBubbleContents::MediaComboboxModel::GetItemCount() const {
+  return std::max(1, static_cast<int>(GetDevices().size()));
+}
+
+base::string16 ContentSettingBubbleContents::MediaComboboxModel::GetItemAt(
+    int index) {
+  return GetDevices().empty()
+             ? l10n_util::GetStringUTF16(IDS_MEDIA_MENU_NO_DEVICE_TITLE)
+             : base::UTF8ToUTF16(GetDevices()[index].name);
+}
 
 // ContentSettingBubbleContents::Favicon --------------------------------------
 
@@ -111,25 +150,6 @@ gfx::NativeCursor ContentSettingBubbleContents::Favicon::GetCursor(
 }
 
 
-// ContentSettingBubbleContents::MediaMenuParts -------------------------------
-
-struct ContentSettingBubbleContents::MediaMenuParts {
-  explicit MediaMenuParts(content::MediaStreamType type);
-  ~MediaMenuParts();
-
-  content::MediaStreamType type;
-  std::unique_ptr<ui::SimpleMenuModel> menu_model;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MediaMenuParts);
-};
-
-ContentSettingBubbleContents::MediaMenuParts::MediaMenuParts(
-    content::MediaStreamType type)
-    : type(type) {}
-
-ContentSettingBubbleContents::MediaMenuParts::~MediaMenuParts() {}
-
 // ContentSettingBubbleContents -----------------------------------------------
 
 ContentSettingBubbleContents::ContentSettingBubbleContents(
@@ -150,7 +170,9 @@ ContentSettingBubbleContents::ContentSettingBubbleContents(
 }
 
 ContentSettingBubbleContents::~ContentSettingBubbleContents() {
-  STLDeleteValues(&media_menus_);
+  // Must remove the children here so the comboboxes get destroyed before
+  // their associated models.
+  RemoveAllChildViews(true);
 }
 
 gfx::Size ContentSettingBubbleContents::GetPreferredSize() const {
@@ -162,20 +184,6 @@ gfx::Size ContentSettingBubbleContents::GetPreferredSize() const {
           : preferred_size.width();
   preferred_size.set_width(std::min(preferred_width, kMaxContentsWidth));
   return preferred_size;
-}
-
-void ContentSettingBubbleContents::UpdateMenuLabel(
-    content::MediaStreamType type,
-    const std::string& label) {
-  for (MediaMenuPartsMap::const_iterator it = media_menus_.begin();
-       it != media_menus_.end(); ++it) {
-    if (it->second->type == type) {
-      it->first->SetText(base::UTF8ToUTF16(label));
-      it->first->Layout();
-      return;
-    }
-  }
-  NOTREACHED();
 }
 
 void ContentSettingBubbleContents::Init() {
@@ -305,42 +313,23 @@ void ContentSettingBubbleContents::Init() {
       views::Label* label =
           new views::Label(base::UTF8ToUTF16(i->second.label));
       label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-
-      views::MenuButton* menu_button = new views::MenuButton(
-          base::UTF8ToUTF16((i->second.selected_device.name)), this, true);
-      menu_button->SetStyle(views::Button::STYLE_BUTTON);
-      menu_button->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-      menu_button->set_animate_on_state_change(false);
-
-      MediaMenuParts* menu_view = new MediaMenuParts(i->first);
-      menu_view->menu_model.reset(new ContentSettingMediaMenuModel(
-          i->first,
-          content_setting_bubble_model_.get(),
-          base::Bind(&ContentSettingBubbleContents::UpdateMenuLabel,
-                     base::Unretained(this))));
-      media_menus_[menu_button] = menu_view;
-
-      if (!menu_view->menu_model->GetItemCount()) {
-        // Show a "None available" title and grey out the menu when there are
-        // no available devices.
-        menu_button->SetText(
-            l10n_util::GetStringUTF16(IDS_MEDIA_MENU_NO_DEVICE_TITLE));
-        menu_button->SetEnabled(false);
-      }
-
-      // Disable the device selection when the website is managing the devices
-      // itself.
-      if (i->second.disabled)
-        menu_button->SetEnabled(false);
-
       layout->AddView(label);
-      layout->AddView(menu_button);
+
+      combobox_models_.emplace_back(i->first);
+      MediaComboboxModel* model = &combobox_models_.back();
+      views::Combobox* combobox = new views::Combobox(model);
+      // Disable the device selection when the website is managing the devices
+      // itself or if there are no devices present.
+      combobox->SetEnabled(
+          !(i->second.disabled || model->GetDevices().empty()));
+      combobox->set_listener(this);
+      combobox->SetSelectedIndex(
+          model->GetDeviceIndex(i->second.selected_device));
+      layout->AddView(combobox);
 
       bubble_content_empty = false;
     }
   }
-
-  UpdateMenuButtonSizes();
 
   const gfx::FontList& domain_font =
       ui::ResourceBundle::GetSharedInstance().GetFontList(
@@ -445,53 +434,9 @@ void ContentSettingBubbleContents::LinkClicked(views::Link* source,
   content_setting_bubble_model_->OnListItemClicked(i->second);
 }
 
-void ContentSettingBubbleContents::OnMenuButtonClicked(
-    views::MenuButton* source,
-    const gfx::Point& point,
-    const ui::Event* event) {
-  MediaMenuPartsMap::iterator j(
-      media_menus_.find(static_cast<views::MenuButton*>(source)));
-  DCHECK(j != media_menus_.end());
-  menu_runner_.reset(new views::MenuRunner(j->second->menu_model.get(),
-                                           views::MenuRunner::HAS_MNEMONICS));
-
-  gfx::Point screen_location;
-  views::View::ConvertPointToScreen(j->first, &screen_location);
-  ignore_result(menu_runner_->RunMenuAt(
-      source->GetWidget(), j->first,
-      gfx::Rect(screen_location, j->first->size()), views::MENU_ANCHOR_TOPLEFT,
-      ui::MENU_SOURCE_NONE));
-}
-
-void ContentSettingBubbleContents::UpdateMenuButtonSizes() {
-  const views::MenuConfig& config = views::MenuConfig::instance();
-  const int margins = config.item_left_margin + config.check_width +
-                      config.label_to_arrow_padding + config.arrow_width +
-                      config.arrow_to_edge_padding;
-
-  // The preferred media menu size sort of copies the logic in
-  // MenuItemView::CalculateDimensions(). When this was using TextButton, it
-  // completely coincidentally matched the logic in MenuItemView. We now need
-  // to redo this manually.
-  int menu_width = 0;
-  for (MediaMenuPartsMap::const_iterator i = media_menus_.begin();
-       i != media_menus_.end(); ++i) {
-    for (int j = 0; j < i->second->menu_model->GetItemCount(); ++j) {
-      int string_width = gfx::GetStringWidth(
-          i->second->menu_model->GetLabelAt(j),
-          config.font_list);
-
-      menu_width = std::max(menu_width, string_width);
-    }
-  }
-
-  // Make sure the width is at least kMinMediaMenuButtonWidth. The
-  // maximum width will be clamped by kMaxContentsWidth of the view.
-  menu_width = std::max(kMinMediaMenuButtonWidth, menu_width + margins);
-
-  for (MediaMenuPartsMap::const_iterator i = media_menus_.begin();
-       i != media_menus_.end(); ++i) {
-    i->first->SetMinSize(gfx::Size(menu_width, 0));
-    i->first->SetMaxSize(gfx::Size(menu_width, 0));
-  }
+void ContentSettingBubbleContents::OnPerformAction(views::Combobox* combobox) {
+  MediaComboboxModel* model =
+      static_cast<MediaComboboxModel*>(combobox->model());
+  content_setting_bubble_model_->OnMediaMenuClicked(
+      model->type(), model->GetDevices()[combobox->selected_index()].id);
 }
