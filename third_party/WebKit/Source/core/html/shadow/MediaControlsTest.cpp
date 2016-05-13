@@ -72,6 +72,13 @@ protected:
         m_mediaControls->mediaElement().remoteRouteAvailabilityChanged(true);
     }
 
+    void ensureLayout()
+    {
+        // Force a relayout, so that the controls know the width.  Otherwise,
+        // they don't know if, for example, the cast button will fit.
+        m_mediaControls->mediaElement().clientWidth();
+    }
+
     MediaControls& mediaControls() { return *m_mediaControls; }
     Document& document() { return m_pageHolder->document(); }
 
@@ -133,6 +140,7 @@ TEST_F(MediaControlsTest, ResetDoesNotTriggerInitialLayout)
 
 TEST_F(MediaControlsTest, CastButtonRequiresRoute)
 {
+    ensureLayout();
     mediaControls().mediaElement().setBooleanAttribute(HTMLNames::controlsAttr, true);
 
     Element* castButton = getElementByShadowPseudoId(mediaControls(), "-internal-media-controls-cast-button");
@@ -146,6 +154,7 @@ TEST_F(MediaControlsTest, CastButtonRequiresRoute)
 
 TEST_F(MediaControlsTest, CastButtonDisableRemotePlaybackAttr)
 {
+    ensureLayout();
     mediaControls().mediaElement().setBooleanAttribute(HTMLNames::controlsAttr, true);
 
     Element* castButton = getElementByShadowPseudoId(mediaControls(), "-internal-media-controls-cast-button");

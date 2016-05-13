@@ -37,7 +37,7 @@ const base::Feature kExperimentalFramework{"ExperimentalFramework",
 // Enable the material design playback UI for media elements.  This is always
 // on for OS_ANDROID, but may be enabled by experiment for other platforms.
 const base::Feature kNewMediaPlaybackUi{"NewMediaPlaybackUi",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
+                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
 // FeatureList definition for trials to enable the download button on
 // MediaDocument.

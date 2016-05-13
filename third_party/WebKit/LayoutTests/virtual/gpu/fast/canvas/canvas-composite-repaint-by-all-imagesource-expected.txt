@@ -246,7 +246,7 @@
             },
             {
               "position": [15, 854],
-              "bounds": [150, 25],
+              "bounds": [150, 18],
               "drawsContent": true
             }
           ]

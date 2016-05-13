@@ -209,7 +209,7 @@ TEST_F('OutputE2ETest', 'Audio', function() {
            {value: new Output.NodeSpan(el.parent), start: 24, end: 41}],
           o);
 
-      el = el.nextSibling;
+      el = el.nextSibling.nextSibling;
       var prevRange = range;
       range = cursors.Range.fromNode(el);
       var o = new Output().withSpeechAndBraille(range, prevRange, 'navigate');
