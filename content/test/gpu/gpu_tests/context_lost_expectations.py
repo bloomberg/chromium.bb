@@ -31,12 +31,6 @@ class ContextLostExpectations(GpuTestExpectations):
     self.Skip('ContextLost.WebGLContextLostFromSelectElement',
               ['lion', 'debug'], bug=498149)
 
-    # Flaky on linux_chromium_rel_ng and mac_chromium_rel_ng bots.
-    self.Flaky('GpuCrash.GPUProcessCrashesExactlyOnce',
-               ['linux'], bug=608923)
-    self.Flaky('GpuCrash.GPUProcessCrashesExactlyOnce',
-               ['mac'], bug=608923)
-
     # 'Browser must support tab control' raised on Android
     self.Fail('GpuCrash.GPUProcessCrashesExactlyOnce',
               ['android'], bug=609629)
