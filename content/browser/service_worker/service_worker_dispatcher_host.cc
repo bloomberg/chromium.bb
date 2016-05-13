@@ -680,7 +680,7 @@ void ServiceWorkerDispatcherHost::OnPostMessageToWorker(
     int provider_id,
     const base::string16& message,
     const url::Origin& source_origin,
-    const std::vector<TransferredMessagePort>& sent_message_ports) {
+    const std::vector<int>& sent_message_ports) {
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerDispatcherHost::OnPostMessageToWorker");
   if (!GetContext())
@@ -710,11 +710,11 @@ void ServiceWorkerDispatcherHost::DispatchExtendableMessageEvent(
     scoped_refptr<ServiceWorkerVersion> worker,
     const base::string16& message,
     const url::Origin& source_origin,
-    const std::vector<TransferredMessagePort>& sent_message_ports,
+    const std::vector<int>& sent_message_ports,
     ServiceWorkerProviderHost* sender_provider_host,
     const StatusCallback& callback) {
-  for (const TransferredMessagePort& port : sent_message_ports)
-    MessagePortService::GetInstance()->HoldMessages(port.id);
+  for (int port : sent_message_ports)
+    MessagePortService::GetInstance()->HoldMessages(port);
 
   switch (sender_provider_host->provider_type()) {
     case SERVICE_WORKER_PROVIDER_FOR_WINDOW:
@@ -863,7 +863,7 @@ void ServiceWorkerDispatcherHost::DispatchExtendableMessageEventInternal(
     scoped_refptr<ServiceWorkerVersion> worker,
     const base::string16& message,
     const url::Origin& source_origin,
-    const std::vector<TransferredMessagePort>& sent_message_ports,
+    const std::vector<int>& sent_message_ports,
     const StatusCallback& callback,
     const SourceInfo& source_info) {
   if (!source_info.IsValid()) {
@@ -888,7 +888,7 @@ void ServiceWorkerDispatcherHost::
         scoped_refptr<ServiceWorkerVersion> worker,
         const base::string16& message,
         const url::Origin& source_origin,
-        const std::vector<TransferredMessagePort>& sent_message_ports,
+        const std::vector<int>& sent_message_ports,
         const ExtendableMessageEventSource& source,
         const StatusCallback& callback) {
   int request_id =
@@ -921,13 +921,13 @@ void ServiceWorkerDispatcherHost::
 
 template <typename SourceInfo>
 void ServiceWorkerDispatcherHost::DidFailToDispatchExtendableMessageEvent(
-    const std::vector<TransferredMessagePort>& sent_message_ports,
+    const std::vector<int>& sent_message_ports,
     const SourceInfo& source_info,
     const StatusCallback& callback,
     ServiceWorkerStatusCode status) {
   // Transfering the message ports failed, so destroy the ports.
-  for (const TransferredMessagePort& port : sent_message_ports)
-    MessagePortService::GetInstance()->ClosePort(port.id);
+  for (int port : sent_message_ports)
+    MessagePortService::GetInstance()->ClosePort(port);
   if (source_info.IsValid())
     ReleaseSourceInfo(source_info);
   callback.Run(status);

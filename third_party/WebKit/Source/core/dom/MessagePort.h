@@ -117,8 +117,6 @@ protected:
 private:
     // WebMessagePortChannelClient implementation.
     void messageAvailable() override;
-    v8::Isolate* scriptIsolate() override;
-    v8::Local<v8::Context> scriptContextForMessageConversion() override;
     void dispatchMessages();
 
     OwnPtr<WebMessagePortChannel> m_entangledChannel;

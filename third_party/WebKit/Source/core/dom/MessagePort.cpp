@@ -273,20 +273,4 @@ DEFINE_TRACE(MessagePort)
     EventTargetWithInlineData::trace(visitor);
 }
 
-v8::Isolate* MessagePort::scriptIsolate()
-{
-    DCHECK(getExecutionContext());
-    return toIsolate(getExecutionContext());
-}
-
-v8::Local<v8::Context> MessagePort::scriptContextForMessageConversion()
-{
-    DCHECK(getExecutionContext());
-    if (!m_scriptStateForConversion) {
-        v8::Isolate* isolate = scriptIsolate();
-        m_scriptStateForConversion = ScriptState::create(v8::Context::New(isolate), DOMWrapperWorld::create(isolate));
-    }
-    return m_scriptStateForConversion->context();
-}
-
 } // namespace blink

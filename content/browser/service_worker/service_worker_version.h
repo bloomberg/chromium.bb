@@ -55,7 +55,6 @@ class ServiceWorkerRegistration;
 class ServiceWorkerURLRequestJob;
 struct ServiceWorkerClientInfo;
 struct ServiceWorkerVersionInfo;
-struct TransferredMessagePort;
 
 // This class corresponds to a specific version of a ServiceWorker
 // script for a given pattern. When a script is upgraded, there may be
@@ -511,10 +510,9 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void OnClearCachedMetadata(const GURL& url);
   void OnClearCachedMetadataFinished(int64_t callback_id, int result);
 
-  void OnPostMessageToClient(
-      const std::string& client_uuid,
-      const base::string16& message,
-      const std::vector<TransferredMessagePort>& sent_message_ports);
+  void OnPostMessageToClient(const std::string& client_uuid,
+                             const base::string16& message,
+                             const std::vector<int>& sent_message_ports);
   void OnFocusClient(int request_id, const std::string& client_uuid);
   void OnNavigateClient(int request_id,
                         const std::string& client_uuid,

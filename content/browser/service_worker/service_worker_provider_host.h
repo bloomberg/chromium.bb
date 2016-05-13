@@ -168,10 +168,9 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   bool IsContextAlive();
 
   // Dispatches message event to the document.
-  void PostMessageToClient(
-      ServiceWorkerVersion* version,
-      const base::string16& message,
-      const std::vector<TransferredMessagePort>& sent_message_ports);
+  void PostMessageToClient(ServiceWorkerVersion* version,
+                           const base::string16& message,
+                           const std::vector<int>& sent_message_ports);
 
   // Adds reference of this host's process to the |pattern|, the reference will
   // be removed in destructor.

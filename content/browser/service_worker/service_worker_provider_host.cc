@@ -378,7 +378,7 @@ bool ServiceWorkerProviderHost::CanAssociateRegistration(
 void ServiceWorkerProviderHost::PostMessageToClient(
     ServiceWorkerVersion* version,
     const base::string16& message,
-    const std::vector<TransferredMessagePort>& sent_message_ports) {
+    const std::vector<int>& sent_message_ports) {
   if (!dispatcher_host_)
     return;  // Could be NULL in some tests.
 

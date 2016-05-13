@@ -281,10 +281,8 @@ void EmbeddedSharedWorkerStub::ConnectToChannel(
       new WorkerHostMsg_WorkerConnected(channel->message_port_id(), route_id_));
 }
 
-void EmbeddedSharedWorkerStub::OnConnect(int sent_message_port_id,
+void EmbeddedSharedWorkerStub::OnConnect(int port,
                                          int routing_id) {
-  TransferredMessagePort port;
-  port.id = sent_message_port_id;
   WebMessagePortChannelImpl* channel = new WebMessagePortChannelImpl(
       routing_id, port, base::ThreadTaskRunnerHandle::Get().get());
   if (running_) {

@@ -32,8 +32,8 @@ class AwMessagePortMessageFilter : public content::BrowserMessageFilter,
   // MessagePortDelegate implementation.
   void SendMessage(
       int msg_port_route_id,
-      const content::MessagePortMessage& message,
-      const std::vector<content::TransferredMessagePort>& sent_message_ports)
+      const base::string16& message,
+      const std::vector<int>& sent_message_ports)
       override;
   void SendMessagesAreQueued(int route_id) override;
  private:

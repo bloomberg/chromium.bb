@@ -13,7 +13,6 @@
 #include "content/common/service_worker/service_worker_client_info.h"
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "content/common/service_worker/service_worker_types.h"
-#include "content/public/common/message_port_types.h"
 #include "content/public/common/platform_notification_data.h"
 #include "content/public/common/push_event_payload.h"
 #include "ipc/ipc_message_macros.h"
@@ -131,7 +130,7 @@ IPC_STRUCT_TRAITS_END()
 IPC_STRUCT_BEGIN(ServiceWorkerMsg_ExtendableMessageEvent_Params)
   IPC_STRUCT_MEMBER(base::string16, message)
   IPC_STRUCT_MEMBER(url::Origin, source_origin)
-  IPC_STRUCT_MEMBER(std::vector<content::TransferredMessagePort>, message_ports)
+  IPC_STRUCT_MEMBER(std::vector<int>, message_ports)
   IPC_STRUCT_MEMBER(std::vector<int>, new_routing_ids)
   IPC_STRUCT_MEMBER(content::ExtendableMessageEventSource, source)
 IPC_STRUCT_END()
@@ -141,7 +140,7 @@ IPC_STRUCT_BEGIN(ServiceWorkerMsg_MessageToDocument_Params)
   IPC_STRUCT_MEMBER(int, provider_id)
   IPC_STRUCT_MEMBER(content::ServiceWorkerObjectInfo, service_worker_info)
   IPC_STRUCT_MEMBER(base::string16, message)
-  IPC_STRUCT_MEMBER(std::vector<content::TransferredMessagePort>, message_ports)
+  IPC_STRUCT_MEMBER(std::vector<int>, message_ports)
   IPC_STRUCT_MEMBER(std::vector<int>, new_routing_ids)
 IPC_STRUCT_END()
 
@@ -198,7 +197,7 @@ IPC_MESSAGE_CONTROL5(
     int /* provider_id */,
     base::string16 /* message */,
     url::Origin /* source_origin */,
-    std::vector<content::TransferredMessagePort> /* sent_message_ports */)
+    std::vector<int> /* sent_message_ports */)
 
 // Informs the browser of a new ServiceWorkerProvider in the child process,
 // |provider_id| is unique within its child process. When this provider is
@@ -292,7 +291,7 @@ IPC_MESSAGE_ROUTED3(
     ServiceWorkerHostMsg_PostMessageToClient,
     std::string /* uuid */,
     base::string16 /* message */,
-    std::vector<content::TransferredMessagePort> /* sent_message_ports */)
+    std::vector<int> /* sent_message_ports */)
 
 // ServiceWorker -> Browser message to request that the ServiceWorkerStorage
 // cache |data| associated with |url|.

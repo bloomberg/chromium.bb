@@ -13,13 +13,11 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "base/synchronization/lock.h"
-#include "content/public/common/message_port_types.h"
 #include "ipc/ipc_listener.h"
 #include "third_party/WebKit/public/platform/WebMessagePortChannel.h"
 
 namespace base {
 class SingleThreadTaskRunner;
-class Value;
 }
 
 namespace content {
@@ -36,7 +34,7 @@ class WebMessagePortChannelImpl
           main_thread_task_runner);
   WebMessagePortChannelImpl(
       int route_id,
-      const TransferredMessagePort& port,
+      int port_id,
       const scoped_refptr<base::SingleThreadTaskRunner>&
           main_thread_task_runner);
 
@@ -48,12 +46,12 @@ class WebMessagePortChannelImpl
 
   // Extracts port IDs for passing on to the browser process, and queues any
   // received messages.
-  static std::vector<TransferredMessagePort> ExtractMessagePortIDs(
+  static std::vector<int> ExtractMessagePortIDs(
       std::unique_ptr<blink::WebMessagePortChannelArray> channels);
 
   // Extracts port IDs for passing on to the browser process, and queues any
   // received messages.
-  static std::vector<TransferredMessagePort> ExtractMessagePortIDs(
+  static std::vector<int> ExtractMessagePortIDs(
       const blink::WebMessagePortChannelArray& channels);
 
   // Extracts port IDs for passing on to the browser process, but doesn't
@@ -61,14 +59,14 @@ class WebMessagePortChannelImpl
   // calling code is responsible for initiating the queueing in the browser
   // process. This is useful when transfering ports over an IPC channel that
   // does not share ordering guarentees with regular IPC.
-  static std::vector<TransferredMessagePort>
+  static std::vector<int>
   ExtractMessagePortIDsWithoutQueueing(
       std::unique_ptr<blink::WebMessagePortChannelArray> channels);
 
   // Creates WebMessagePortChannelImpl instances for port IDs passed in from the
   // browser process.
   static blink::WebMessagePortChannelArray CreatePorts(
-      const std::vector<TransferredMessagePort>& message_ports,
+      const std::vector<int>& message_ports,
       const std::vector<int>& new_routing_ids,
       const scoped_refptr<base::SingleThreadTaskRunner>&
           main_thread_task_runner);
@@ -94,14 +92,14 @@ class WebMessagePortChannelImpl
   void Entangle(scoped_refptr<WebMessagePortChannelImpl> channel);
   void Send(IPC::Message* message);
   void SendPostMessage(
-      const MessagePortMessage& message,
+      const base::string16& message,
       std::unique_ptr<blink::WebMessagePortChannelArray> channels);
 
   // IPC::Listener implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
 
-  void OnMessage(const MessagePortMessage& message,
-                 const std::vector<TransferredMessagePort>& sent_message_ports,
+  void OnMessage(const base::string16& message,
+                 const std::vector<int>& sent_message_ports,
                  const std::vector<int>& new_routing_ids);
   void OnMessagesQueued();
 
@@ -110,7 +108,7 @@ class WebMessagePortChannelImpl
     Message(const Message& other);
     ~Message();
 
-    MessagePortMessage message;
+    base::string16 message;
     blink::WebMessagePortChannelArray ports;
   };
 
@@ -122,10 +120,6 @@ class WebMessagePortChannelImpl
 
   int route_id_;  // The routing id for this object.
   int message_port_id_;  // A globally unique identifier for this message port.
-  // Flag to indicate if messages should be sent to the browser process as
-  // base::Value instances as opposed to being serialized using the default
-  // blink::WebSerializedScriptValue.
-  bool send_messages_as_values_;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(WebMessagePortChannelImpl);

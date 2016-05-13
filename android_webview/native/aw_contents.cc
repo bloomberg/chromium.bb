@@ -68,7 +68,6 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/message_port_types.h"
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/common/ssl_status.h"
 #include "jni/AwContents_jni.h"
@@ -1241,14 +1240,11 @@ void AwContents::PostMessageToFrame(JNIEnv* env,
                    base::Unretained(AwMessagePortServiceImpl::GetInstance()),
                    j_ports));
   }
-  std::vector<content::TransferredMessagePort> ports(j_ports.size());
-  for (size_t i = 0; i < j_ports.size(); ++i)
-    ports[i].id = j_ports[i];
   content::MessagePortProvider::PostMessageToFrame(web_contents_.get(),
                                                    source_origin,
                                                    j_target_origin,
                                                    j_message,
-                                                   ports);
+                                                   j_ports);
 }
 
 scoped_refptr<AwMessagePortMessageFilter>

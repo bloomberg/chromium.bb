@@ -144,8 +144,6 @@
       'public/common/media_stream_request.h',
       'public/common/menu_item.cc',
       'public/common/menu_item.h',
-      'public/common/message_port_types.cc',
-      'public/common/message_port_types.h',
       'public/common/mojo_application_info.cc',
       'public/common/mojo_application_info.h',
       'public/common/mojo_channel_switches.cc',

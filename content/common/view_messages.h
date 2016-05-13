@@ -29,7 +29,6 @@
 #include "content/public/common/file_chooser_file_info.h"
 #include "content/public/common/file_chooser_params.h"
 #include "content/public/common/menu_item.h"
-#include "content/public/common/message_port_types.h"
 #include "content/public/common/page_state.h"
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/referrer.h"

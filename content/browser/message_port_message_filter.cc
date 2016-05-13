@@ -64,8 +64,8 @@ int MessagePortMessageFilter::GetNextRoutingID() {
 
 void MessagePortMessageFilter::SendMessage(
     int route_id,
-    const MessagePortMessage& message,
-    const std::vector<TransferredMessagePort>& sent_message_ports) {
+    const base::string16& message,
+    const std::vector<int>& sent_message_ports) {
   // Generate new routing ids for all ports that were sent around. This avoids
   // waiting for the created ports to send a sync message back to get routing
   // ids.
@@ -80,7 +80,7 @@ void MessagePortMessageFilter::SendMessagesAreQueued(int route_id) {
 }
 
 void MessagePortMessageFilter::UpdateMessagePortsWithNewRoutes(
-    const std::vector<TransferredMessagePort>& message_ports,
+    const std::vector<int>& message_ports,
     std::vector<int>* new_routing_ids) {
   DCHECK(new_routing_ids);
   new_routing_ids->clear();
@@ -89,7 +89,7 @@ void MessagePortMessageFilter::UpdateMessagePortsWithNewRoutes(
   for (size_t i = 0; i < message_ports.size(); ++i) {
     (*new_routing_ids)[i] = GetNextRoutingID();
     MessagePortService::GetInstance()->UpdateMessagePort(
-        message_ports[i].id,
+        message_ports[i],
         this,
         (*new_routing_ids)[i]);
   }

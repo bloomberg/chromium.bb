@@ -30,7 +30,6 @@
 #include "content/public/common/context_menu_params.h"
 #include "content/public/common/frame_navigate_params.h"
 #include "content/public/common/javascript_message_type.h"
-#include "content/public/common/message_port_types.h"
 #include "content/public/common/page_importance_signals.h"
 #include "content/public/common/page_state.h"
 #include "content/public/common/resource_response.h"
@@ -321,7 +320,7 @@ IPC_STRUCT_BEGIN(FrameMsg_PostMessage_Params)
   IPC_STRUCT_MEMBER(base::string16, target_origin)
 
   // Information about the MessagePorts this message contains.
-  IPC_STRUCT_MEMBER(std::vector<content::TransferredMessagePort>, message_ports)
+  IPC_STRUCT_MEMBER(std::vector<int>, message_ports)
   IPC_STRUCT_MEMBER(std::vector<int>, new_routing_ids)
 IPC_STRUCT_END()
 

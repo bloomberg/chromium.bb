@@ -39,13 +39,11 @@ static void SaveStatusCallback(bool* called,
   *out = status;
 }
 
-void SetUpDummyMessagePort(std::vector<TransferredMessagePort>* ports) {
+void SetUpDummyMessagePort(std::vector<int>* ports) {
   int port_id = -1;
   MessagePortService::GetInstance()->Create(MSG_ROUTING_NONE, nullptr,
                                             &port_id);
-  TransferredMessagePort dummy_port;
-  dummy_port.id = port_id;
-  ports->push_back(dummy_port);
+  ports->push_back(port_id);
 }
 
 }  // namespace
@@ -225,7 +223,7 @@ class ServiceWorkerDispatcherHostTest : public testing::Test {
       scoped_refptr<ServiceWorkerVersion> worker,
       const base::string16& message,
       const url::Origin& source_origin,
-      const std::vector<TransferredMessagePort>& sent_message_ports,
+      const std::vector<int>& sent_message_ports,
       ServiceWorkerProviderHost* sender_provider_host,
       const ServiceWorkerDispatcherHost::StatusCallback& callback) {
     dispatcher_host_->DispatchExtendableMessageEvent(
@@ -677,23 +675,23 @@ TEST_F(ServiceWorkerDispatcherHostTest, DispatchExtendableMessageEvent) {
   const int ref_count = sender_worker_handle->ref_count();
 
   // Dispatch ExtendableMessageEvent.
-  std::vector<TransferredMessagePort> ports;
+  std::vector<int> ports;
   SetUpDummyMessagePort(&ports);
   bool called = false;
   ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_MAX_VALUE;
   DispatchExtendableMessageEvent(
       version_, base::string16(), url::Origin(version_->scope().GetOrigin()),
       ports, provider_host_, base::Bind(&SaveStatusCallback, &called, &status));
-  for (TransferredMessagePort port : ports)
-    EXPECT_TRUE(MessagePortService::GetInstance()->AreMessagesHeld(port.id));
+  for (int port : ports)
+    EXPECT_TRUE(MessagePortService::GetInstance()->AreMessagesHeld(port));
   EXPECT_EQ(ref_count + 1, sender_worker_handle->ref_count());
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(called);
   EXPECT_EQ(SERVICE_WORKER_OK, status);
 
   // Messages should be held until ports are created at the destination.
-  for (TransferredMessagePort port : ports)
-    EXPECT_TRUE(MessagePortService::GetInstance()->AreMessagesHeld(port.id));
+  for (int port : ports)
+    EXPECT_TRUE(MessagePortService::GetInstance()->AreMessagesHeld(port));
 
   EXPECT_EQ(ref_count + 1, sender_worker_handle->ref_count());
 }
@@ -719,23 +717,23 @@ TEST_F(ServiceWorkerDispatcherHostTest, DispatchExtendableMessageEvent_Fail) {
 
   // Try to dispatch ExtendableMessageEvent. This should fail to start the
   // worker and to dispatch the event.
-  std::vector<TransferredMessagePort> ports;
+  std::vector<int> ports;
   SetUpDummyMessagePort(&ports);
   bool called = false;
   ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_MAX_VALUE;
   DispatchExtendableMessageEvent(
       version_, base::string16(), url::Origin(version_->scope().GetOrigin()),
       ports, provider_host_, base::Bind(&SaveStatusCallback, &called, &status));
-  for (TransferredMessagePort port : ports)
-    EXPECT_TRUE(MessagePortService::GetInstance()->AreMessagesHeld(port.id));
+  for (int port : ports)
+    EXPECT_TRUE(MessagePortService::GetInstance()->AreMessagesHeld(port));
   EXPECT_EQ(ref_count + 1, sender_worker_handle->ref_count());
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(called);
   EXPECT_EQ(SERVICE_WORKER_ERROR_START_WORKER_FAILED, status);
 
   // The error callback should clean up the ports and handle.
-  for (TransferredMessagePort port : ports)
-    EXPECT_FALSE(MessagePortService::GetInstance()->AreMessagesHeld(port.id));
+  for (int port : ports)
+    EXPECT_FALSE(MessagePortService::GetInstance()->AreMessagesHeld(port));
   EXPECT_EQ(ref_count, sender_worker_handle->ref_count());
 }
 

@@ -40,7 +40,6 @@ struct ServiceWorkerObjectInfo;
 struct ServiceWorkerRegistrationInfo;
 struct ServiceWorkerRegistrationObjectInfo;
 struct ServiceWorkerVersionAttributes;
-struct TransferredMessagePort;
 
 class CONTENT_EXPORT ServiceWorkerDispatcherHost : public BrowserMessageFilter {
  public:
@@ -141,12 +140,11 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost : public BrowserMessageFilter {
   void OnDecrementServiceWorkerRefCount(int handle_id);
   void OnIncrementRegistrationRefCount(int registration_handle_id);
   void OnDecrementRegistrationRefCount(int registration_handle_id);
-  void OnPostMessageToWorker(
-      int handle_id,
-      int provider_id,
-      const base::string16& message,
-      const url::Origin& source_origin,
-      const std::vector<TransferredMessagePort>& sent_message_ports);
+  void OnPostMessageToWorker(int handle_id,
+                             int provider_id,
+                             const base::string16& message,
+                             const url::Origin& source_origin,
+                             const std::vector<int>& sent_message_ports);
 
   void OnTerminateWorker(int handle_id);
 
@@ -154,7 +152,7 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost : public BrowserMessageFilter {
       scoped_refptr<ServiceWorkerVersion> worker,
       const base::string16& message,
       const url::Origin& source_origin,
-      const std::vector<TransferredMessagePort>& sent_message_ports,
+      const std::vector<int>& sent_message_ports,
       ServiceWorkerProviderHost* sender_provider_host,
       const StatusCallback& callback);
   template <typename SourceInfo>
@@ -162,19 +160,19 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost : public BrowserMessageFilter {
       scoped_refptr<ServiceWorkerVersion> worker,
       const base::string16& message,
       const url::Origin& source_origin,
-      const std::vector<TransferredMessagePort>& sent_message_ports,
+      const std::vector<int>& sent_message_ports,
       const StatusCallback& callback,
       const SourceInfo& source_info);
   void DispatchExtendableMessageEventAfterStartWorker(
       scoped_refptr<ServiceWorkerVersion> worker,
       const base::string16& message,
       const url::Origin& source_origin,
-      const std::vector<TransferredMessagePort>& sent_message_ports,
+      const std::vector<int>& sent_message_ports,
       const ExtendableMessageEventSource& source,
       const StatusCallback& callback);
   template <typename SourceInfo>
   void DidFailToDispatchExtendableMessageEvent(
-      const std::vector<TransferredMessagePort>& sent_message_ports,
+      const std::vector<int>& sent_message_ports,
       const SourceInfo& source_info,
       const StatusCallback& callback,
       ServiceWorkerStatusCode status);

@@ -32,33 +32,17 @@
 #define WebMessagePortChannelClient_h
 
 #include "WebCommon.h"
-#include <v8.h>
 
 namespace blink {
 
 // Provides an interface for users of WebMessagePortChannel to be notified
-// when messages are available. This also gives users of WebMessagePortChannel
-// access to the V8 Context this message port lives in.
+// when messages are available.
 class BLINK_PLATFORM_EXPORT WebMessagePortChannelClient {
 public:
     // Alerts that new messages have arrived, which are retrieved by calling
     // WebMessagePortChannel::tryGetMessage. Note that this may be called
     // on any thread.
     virtual void messageAvailable() = 0;
-
-    // Returns the V8 isolate this message port lives in.
-    // Do not rely on this API, it is only exposed so content code can convert
-    // messages to base::Value, and will be removed when this conversion can be
-    // integrated into blink itself.
-    virtual v8::Isolate* scriptIsolate() = 0;
-
-    // Returns a V8 context messages sent to this port can be (de)serialized in.
-    // Can return null if no valid V8 context could be determined.
-    // Do not rely on this API, it is only exposed so content code can convert
-    // messages to base::Value, and will be removed when this conversion can be
-    // integrated into blink itself.
-    // FIXME: Remove this method when no longer needed (http://crbug.com/461906)
-    virtual v8::Local<v8::Context> scriptContextForMessageConversion() = 0;
 
 protected:
     ~WebMessagePortChannelClient() { }

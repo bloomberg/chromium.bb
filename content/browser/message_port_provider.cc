@@ -21,7 +21,7 @@ void MessagePortProvider::PostMessageToFrame(
     const base::string16& source_origin,
     const base::string16& target_origin,
     const base::string16& data,
-    const std::vector<TransferredMessagePort>& ports) {
+    const std::vector<int>& ports) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   FrameMsg_PostMessage_Params params;
@@ -62,8 +62,8 @@ void MessagePortProvider::CreateMessageChannel(MessagePortDelegate* delegate,
 // static
 void MessagePortProvider::PostMessageToPort(
     int sender_port_id,
-    const MessagePortMessage& message,
-    const std::vector<TransferredMessagePort>& sent_ports) {
+    const base::string16& message,
+    const std::vector<int>& sent_ports) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   MessagePortService* msp = MessagePortService::GetInstance();
   msp->PostMessage(sender_port_id, message, sent_ports);

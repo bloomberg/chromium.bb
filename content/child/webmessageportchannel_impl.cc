@@ -8,11 +8,9 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/values.h"
 #include "content/child/child_process.h"
 #include "content/child/child_thread_impl.h"
 #include "content/common/message_port_messages.h"
-#include "content/public/child/v8_value_converter.h"
 #include "third_party/WebKit/public/platform/WebMessagePortChannelClient.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebSerializedScriptValue.h"
@@ -30,7 +28,6 @@ WebMessagePortChannelImpl::WebMessagePortChannelImpl(
     : client_(NULL),
       route_id_(MSG_ROUTING_NONE),
       message_port_id_(MSG_ROUTING_NONE),
-      send_messages_as_values_(false),
       main_thread_task_runner_(main_thread_task_runner) {
   AddRef();
   Init();
@@ -38,12 +35,11 @@ WebMessagePortChannelImpl::WebMessagePortChannelImpl(
 
 WebMessagePortChannelImpl::WebMessagePortChannelImpl(
     int route_id,
-    const TransferredMessagePort& port,
+    int port_id,
     const scoped_refptr<base::SingleThreadTaskRunner>& main_thread_task_runner)
     : client_(NULL),
       route_id_(route_id),
-      message_port_id_(port.id),
-      send_messages_as_values_(port.send_messages_as_values),
+      message_port_id_(port_id),
       main_thread_task_runner_(main_thread_task_runner) {
   AddRef();
   Init();
@@ -85,64 +81,60 @@ void WebMessagePortChannelImpl::CreatePair(
 }
 
 // static
-std::vector<TransferredMessagePort>
+std::vector<int>
 WebMessagePortChannelImpl::ExtractMessagePortIDs(
     std::unique_ptr<WebMessagePortChannelArray> channels) {
-  std::vector<TransferredMessagePort> message_ports;
+  std::vector<int> message_ports;
   if (channels)
     message_ports = ExtractMessagePortIDs(*channels);
   return message_ports;
 }
 
 // static
-std::vector<TransferredMessagePort>
+std::vector<int>
 WebMessagePortChannelImpl::ExtractMessagePortIDs(
     const WebMessagePortChannelArray& channels) {
-  std::vector<TransferredMessagePort> message_ports(channels.size());
+  std::vector<int> message_ports(channels.size());
   for (size_t i = 0; i < channels.size(); ++i) {
     WebMessagePortChannelImpl* webchannel =
         static_cast<WebMessagePortChannelImpl*>(channels[i]);
     // The message port ids might not be set up yet if this channel
     // wasn't created on the main thread.
     DCHECK(webchannel->main_thread_task_runner_->BelongsToCurrentThread());
-    message_ports[i].id = webchannel->message_port_id();
-    message_ports[i].send_messages_as_values =
-        webchannel->send_messages_as_values_;
+    message_ports[i] = webchannel->message_port_id();
     webchannel->QueueMessages();
-    DCHECK(message_ports[i].id != MSG_ROUTING_NONE);
+    DCHECK(message_ports[i] != MSG_ROUTING_NONE);
   }
   return message_ports;
 }
 
 // static
-std::vector<TransferredMessagePort>
+std::vector<int>
 WebMessagePortChannelImpl::ExtractMessagePortIDsWithoutQueueing(
     std::unique_ptr<WebMessagePortChannelArray> channels) {
   if (!channels)
-    return std::vector<TransferredMessagePort>();
+    return std::vector<int>();
 
-  std::vector<TransferredMessagePort> message_ports(channels->size());
+  std::vector<int> message_ports(channels->size());
   for (size_t i = 0; i < channels->size(); ++i) {
     WebMessagePortChannelImpl* webchannel =
         static_cast<WebMessagePortChannelImpl*>((*channels)[i]);
     // The message port ids might not be set up yet if this channel
     // wasn't created on the main thread.
     DCHECK(webchannel->main_thread_task_runner_->BelongsToCurrentThread());
-    message_ports[i].id = webchannel->message_port_id();
-    message_ports[i].send_messages_as_values =
-        webchannel->send_messages_as_values_;
+    message_ports[i] = webchannel->message_port_id();
     // Don't queue messages, but do increase the child processes ref-count to
     // ensure this child process stays alive long enough to receive all
     // in-flight messages.
     ChildProcess::current()->AddRefProcess();
-    DCHECK(message_ports[i].id != MSG_ROUTING_NONE);
+    DCHECK(message_ports[i] != MSG_ROUTING_NONE);
   }
   return message_ports;
 }
 
 // static
 WebMessagePortChannelArray WebMessagePortChannelImpl::CreatePorts(
-    const std::vector<TransferredMessagePort>& message_ports,
+    const std::vector<int>& message_ports,
     const std::vector<int>& new_routing_ids,
     const scoped_refptr<base::SingleThreadTaskRunner>&
         main_thread_task_runner) {
@@ -172,21 +164,9 @@ void WebMessagePortChannelImpl::destroy() {
 }
 
 void WebMessagePortChannelImpl::postMessage(
-    const WebString& message_as_string,
+    const WebString& message,
     WebMessagePortChannelArray* channels_ptr) {
-  MessagePortMessage message(message_as_string);
   std::unique_ptr<WebMessagePortChannelArray> channels(channels_ptr);
-  if (send_messages_as_values_) {
-    blink::WebSerializedScriptValue serialized_value =
-        blink::WebSerializedScriptValue::fromString(message_as_string);
-    v8::Local<v8::Value> v8_value = serialized_value.deserialize();
-    std::unique_ptr<V8ValueConverter> converter(V8ValueConverter::create());
-    converter->SetDateAllowed(true);
-    converter->SetRegExpAllowed(true);
-    std::unique_ptr<base::Value> message_as_value(converter->FromV8Value(
-        v8_value, v8::Isolate::GetCurrent()->GetCurrentContext()));
-    message = MessagePortMessage(std::move(message_as_value));
-  }
   if (!main_thread_task_runner_->BelongsToCurrentThread()) {
     main_thread_task_runner_->PostTask(
         FROM_HERE, base::Bind(&WebMessagePortChannelImpl::SendPostMessage, this,
@@ -197,7 +177,7 @@ void WebMessagePortChannelImpl::postMessage(
 }
 
 void WebMessagePortChannelImpl::SendPostMessage(
-    const MessagePortMessage& message,
+    const base::string16& message,
     std::unique_ptr<WebMessagePortChannelArray> channels) {
   IPC::Message* msg = new MessagePortHostMsg_PostMessage(
       message_port_id_, message, ExtractMessagePortIDs(std::move(channels)));
@@ -211,23 +191,7 @@ bool WebMessagePortChannelImpl::tryGetMessage(
   if (message_queue_.empty())
     return false;
 
-  const MessagePortMessage& data = message_queue_.front().message;
-  DCHECK(data.is_string() != data.is_value());
-  if (data.is_value()) {
-    v8::HandleScope handle_scope(client_->scriptIsolate());
-    v8::Context::Scope context_scope(
-        client_->scriptContextForMessageConversion());
-    std::unique_ptr<V8ValueConverter> converter(V8ValueConverter::create());
-    converter->SetDateAllowed(true);
-    converter->SetRegExpAllowed(true);
-    v8::Local<v8::Value> v8_value = converter->ToV8Value(
-        data.as_value(), client_->scriptContextForMessageConversion());
-    blink::WebSerializedScriptValue serialized_value =
-        blink::WebSerializedScriptValue::serialize(v8_value);
-    *message = serialized_value.toString();
-  } else {
-    *message = message_queue_.front().message.message_as_string;
-  }
+  *message = message_queue_.front().message;
   channels = message_queue_.front().ports;
   message_queue_.pop();
   return true;
@@ -309,8 +273,8 @@ bool WebMessagePortChannelImpl::OnMessageReceived(const IPC::Message& message) {
 }
 
 void WebMessagePortChannelImpl::OnMessage(
-    const MessagePortMessage& message,
-    const std::vector<TransferredMessagePort>& sent_message_ports,
+    const base::string16& message,
+    const std::vector<int>& sent_message_ports,
     const std::vector<int>& new_routing_ids) {
   base::AutoLock auto_lock(lock_);
   Message msg;
@@ -331,8 +295,8 @@ void WebMessagePortChannelImpl::OnMessagesQueued() {
     base::AutoLock auto_lock(lock_);
     queued_messages.reserve(message_queue_.size());
     while (!message_queue_.empty()) {
-      MessagePortMessage message = message_queue_.front().message;
-      std::vector<TransferredMessagePort> ports =
+      base::string16 message = message_queue_.front().message;
+      std::vector<int> ports =
           ExtractMessagePortIDs(message_queue_.front().ports);
       queued_messages.push_back(std::make_pair(message, ports));
       message_queue_.pop();

@@ -15,8 +15,6 @@ namespace content {
 
 class MessagePortDelegate;
 class WebContents;
-struct MessagePortMessage;
-struct TransferredMessagePort;
 
 // An interface consisting of methods that can be called to use Message ports.
 class CONTENT_EXPORT MessagePortProvider {
@@ -32,7 +30,7 @@ class CONTENT_EXPORT MessagePortProvider {
       const base::string16& source_origin,
       const base::string16& target_origin,
       const base::string16& data,
-      const std::vector<TransferredMessagePort>& ports);
+      const std::vector<int>& ports);
 
   // Creates a message channel and provide the ids of the message ports that are
   // associated with this message channel.
@@ -48,8 +46,8 @@ class CONTENT_EXPORT MessagePortProvider {
   // Should be called on IO thread.
   static void PostMessageToPort(
       int sender_port_id,
-      const MessagePortMessage& message,
-      const std::vector<TransferredMessagePort>& sent_ports);
+      const base::string16& message,
+      const std::vector<int>& sent_ports);
 
   // Close the message port. Should be called on IO thread.
   static void ClosePort(int message_port_id);

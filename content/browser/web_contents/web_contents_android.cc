@@ -576,7 +576,7 @@ void WebContentsAndroid::SendMessageToFrame(
   base::string16 source_origin;
   base::string16 j_target_origin(ConvertJavaStringToUTF16(env, target_origin));
   base::string16 j_message(ConvertJavaStringToUTF16(env, message));
-  std::vector<content::TransferredMessagePort> ports;
+  std::vector<int> ports;
   content::MessagePortProvider::PostMessageToFrame(
       web_contents_, source_origin, j_target_origin, j_message, ports);
 }

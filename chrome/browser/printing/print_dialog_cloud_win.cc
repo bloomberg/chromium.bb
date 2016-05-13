@@ -30,7 +30,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/message_port_provider.h"
 #include "content/public/browser/render_frame_host.h"
-#include "content/public/common/message_port_types.h"
 
 namespace print_dialog_cloud {
 
@@ -76,7 +75,7 @@ class PrintDataSetter : public content::WebContentsObserver {
       base::string16 origin = base::UTF8ToUTF16(url.GetOrigin().spec());
       content::MessagePortProvider::PostMessageToFrame(
           web_contents(), origin, origin, message_data_,
-          std::vector<content::TransferredMessagePort>());
+          std::vector<int>());
     }
   }
 
