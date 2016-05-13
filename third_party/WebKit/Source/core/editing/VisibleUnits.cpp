@@ -1926,6 +1926,8 @@ static InlineBoxPosition computeInlineBoxPositionTemplate(const PositionTemplate
     Node* const anchorNode = position.anchorNode();
     LayoutObject* layoutObject = anchorNode->isShadowRoot() ? toShadowRoot(anchorNode)->host()->layoutObject() : anchorNode->layoutObject();
 
+    DCHECK(layoutObject) << position;
+
     if (!layoutObject->isText()) {
         inlineBox = 0;
         if (canHaveChildrenForEditing(anchorNode) && layoutObject->isLayoutBlockFlow() && hasRenderedNonAnonymousDescendantsWithHeight(layoutObject)) {
