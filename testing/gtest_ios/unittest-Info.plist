@@ -151,10 +151,10 @@
 		<dict>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>com.google.sso.chrome</string>
 				<string>${BUNDLE_ID_TEST_NAME}.http</string>
 				<string>${BUNDLE_ID_TEST_NAME}.https</string>
 				<string>${BUNDLE_ID_TEST_NAME}-x-callback</string>
+                                <string>com.google.sso.${BUNDLE_ID_TEST_NAME}</string>
 			</array>
 		</dict>
 	</array>
@@ -186,5 +186,7 @@
 	<array>
 		<string>fetch</string>
 	</array>
+        <key>SSOAuthURLScheme</key>
+        <string>com.google.sso.${BUNDLE_ID_TEST_NAME}</string>
 </dict>
 </plist>
