@@ -16,6 +16,8 @@
 namespace cc {
 namespace {
 
+int g_gpu_memory_buffer_id_counter = 0;
+
 class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
  public:
   GpuMemoryBufferImpl(const gfx::Size& size,
@@ -23,7 +25,8 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
                       std::unique_ptr<base::SharedMemory> shared_memory,
                       size_t offset,
                       size_t stride)
-      : size_(size),
+      : id_(++g_gpu_memory_buffer_id_counter),
+        size_(size),
         format_(format),
         shared_memory_(std::move(shared_memory)),
         offset_(offset),
@@ -62,10 +65,7 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
     return base::checked_cast<int>(gfx::RowSizeForBufferFormat(
         size_.width(), format_, static_cast<int>(plane)));
   }
-  gfx::GpuMemoryBufferId GetId() const override {
-    NOTREACHED();
-    return gfx::GpuMemoryBufferId(0);
-  }
+  gfx::GpuMemoryBufferId GetId() const override { return id_; }
   gfx::GpuMemoryBufferHandle GetHandle() const override {
     gfx::GpuMemoryBufferHandle handle;
     handle.type = gfx::SHARED_MEMORY_BUFFER;
@@ -83,6 +83,7 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
   }
 
  private:
+  gfx::GpuMemoryBufferId id_;
   const gfx::Size size_;
   gfx::BufferFormat format_;
   std::unique_ptr<base::SharedMemory> shared_memory_;

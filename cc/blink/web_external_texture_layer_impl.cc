@@ -92,9 +92,10 @@ bool WebExternalTextureLayerImpl::PrepareTextureMailbox(
                        client_mailbox.textureSize.height);
     }
 
-    *mailbox =
-        cc::TextureMailbox(name, sync_token, client_mailbox.textureTarget, size,
-                           client_mailbox.allowOverlay, false);
+    *mailbox = cc::TextureMailbox(
+        name, sync_token, client_mailbox.textureTarget, size,
+        gfx::GpuMemoryBufferId(client_mailbox.gpuMemoryBufferId),
+        client_mailbox.allowOverlay, false);
   }
   mailbox->set_nearest_neighbor(client_mailbox.nearestNeighbor);
 
