@@ -5275,7 +5275,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Scroll prediction
       </message>
       <message name="IDS_FLAGS_TOP_CHROME_MD" desc="Title of the flag which enables or disables material design in the top chrome of the browser.">
-        Material design in the browser's top chrome
+        Material Design in the browser's top chrome
       </message>
       <message name="IDS_FLAGS_TOP_CHROME_MD_DESCRIPTION" desc="Description of the flag which changes the material design elements in the top chrome of the browser.">
         Sets the material design elements in the browser's top chrome.
@@ -5288,6 +5288,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_FLAGS_TOP_CHROME_MD_NON_MATERIAL" desc="Top Chrome non-material design option.">
         Non-material
+      </message>
+      <message name="IDS_FLAGS_SECONDARY_UI_MD" desc="Title of the flag which enables or disables material design in the rest of the native UI of the browser (beyond top chrome).">
+        Material Design in the rest of the browser's native UI
+      </message>
+      <message name="IDS_FLAGS_SECONDARY_UI_MD_DESCRIPTION" desc="Description of the flag which enables or disables material design in the rest of the native UI of the browser (beyond top chrome).">
+        Extends the --top-chrome-md setting to secondary UI (bubbles, dialogs, etc.).
       </message>
       <message name="IDS_FLAGS_SCROLL_PREDICTION_DESCRIPTION" desc="Description of the flag to enable scroll prediction.">
         Predicts the finger's future position during scrolls allowing time to render the frame before the finger is there.

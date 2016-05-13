@@ -349,7 +349,6 @@ const FeatureEntry::Choice kFillOnAccountSelectChoices[] = {
     autofill::switches::kEnableFillOnAccountSelectNoHighlighting, "" },
 };
 
-#if defined(ENABLE_TOPCHROME_MD)
 const FeatureEntry::Choice kTopChromeMaterialDesignChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
   { IDS_FLAGS_TOP_CHROME_MD_NON_MATERIAL,
@@ -362,7 +361,6 @@ const FeatureEntry::Choice kTopChromeMaterialDesignChoices[] = {
     switches::kTopChromeMD,
     switches::kTopChromeMDMaterialHybrid },
 };
-#endif
 
 #if defined(OS_CHROMEOS)
 
@@ -747,11 +745,12 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-scroll-prediction", IDS_FLAGS_SCROLL_PREDICTION_NAME,
      IDS_FLAGS_SCROLL_PREDICTION_DESCRIPTION, kOsDesktop,
      SINGLE_VALUE_TYPE(switches::kEnableScrollPrediction)},
-#if defined(ENABLE_TOPCHROME_MD)
     {"top-chrome-md", IDS_FLAGS_TOP_CHROME_MD,
-     IDS_FLAGS_TOP_CHROME_MD_DESCRIPTION, kOsWin | kOsLinux | kOsCrOS | kOsMac,
+     IDS_FLAGS_TOP_CHROME_MD_DESCRIPTION, kOsDesktop,
      MULTI_VALUE_TYPE(kTopChromeMaterialDesignChoices)},
-#endif
+    {"secondary-ui-md", IDS_FLAGS_SECONDARY_UI_MD,
+     IDS_FLAGS_SECONDARY_UI_MD_DESCRIPTION, kOsDesktop,
+     SINGLE_VALUE_TYPE(switches::kExtendMdToSecondaryUi)},
     {"touch-events", IDS_FLAGS_TOUCH_EVENTS_NAME,
      IDS_FLAGS_TOUCH_EVENTS_DESCRIPTION, kOsDesktop,
      MULTI_VALUE_TYPE(kTouchEventsChoices)},

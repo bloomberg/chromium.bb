@@ -63,7 +63,6 @@ const char kMaterialDesignInkDropAnimationSpeedFast[] = "fast";
 // Defines that Material Design visual feedback animations should be slow.
 const char kMaterialDesignInkDropAnimationSpeedSlow[] = "slow";
 
-#if defined(ENABLE_TOPCHROME_MD)
 // Enables top Chrome material design elements.
 const char kTopChromeMD[] = "top-chrome-md";
 
@@ -80,6 +79,5 @@ const char kTopChromeMDNonMaterial[] = "non-material";
 // Applies the material design mode passed via --top-chrome-md to elements
 // throughout Chrome (not just top Chrome).
 const char kExtendMdToSecondaryUi[] = "secondary-ui-md";
-#endif  // defined(ENABLE_TOPCHROME_MD)
 
 }  // namespace switches
