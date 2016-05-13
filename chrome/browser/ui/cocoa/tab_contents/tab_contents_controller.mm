@@ -50,11 +50,11 @@ class FullscreenObserver : public WebContentsObserver {
     return WebContentsObserver::web_contents();
   }
 
-  void DidShowFullscreenWidget(int routing_id) override {
+  void DidShowFullscreenWidget() override {
     [controller_ toggleFullscreenWidget:YES];
   }
 
-  void DidDestroyFullscreenWidget(int routing_id) override {
+  void DidDestroyFullscreenWidget() override {
     [controller_ toggleFullscreenWidget:NO];
   }
 

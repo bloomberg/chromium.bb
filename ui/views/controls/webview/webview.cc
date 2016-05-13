@@ -285,12 +285,12 @@ void WebView::WebContentsDestroyed() {
   NotifyAccessibilityWebContentsChanged();
 }
 
-void WebView::DidShowFullscreenWidget(int routing_id) {
+void WebView::DidShowFullscreenWidget() {
   if (embed_fullscreen_widget_mode_enabled_)
     ReattachForFullscreenChange(true);
 }
 
-void WebView::DidDestroyFullscreenWidget(int routing_id) {
+void WebView::DidDestroyFullscreenWidget() {
   if (embed_fullscreen_widget_mode_enabled_)
     ReattachForFullscreenChange(false);
 }

@@ -1681,8 +1681,7 @@ void WebContentsImpl::RenderWidgetDeleted(
       delegate_->ExitFullscreenModeForTab(this);
     FOR_EACH_OBSERVER(WebContentsObserver,
                       observers_,
-                      DidDestroyFullscreenWidget(
-                          fullscreen_widget_routing_id_));
+                      DidDestroyFullscreenWidget());
     fullscreen_widget_routing_id_ = MSG_ROUTING_NONE;
     if (fullscreen_widget_had_focus_at_shutdown_)
       view_->RestoreFocus();
@@ -2183,7 +2182,7 @@ void WebContentsImpl::ShowCreatedWidget(int route_id,
     }
     FOR_EACH_OBSERVER(WebContentsObserver,
                       observers_,
-                      DidShowFullscreenWidget(route_id));
+                      DidShowFullscreenWidget());
     if (!widget_host_view->HasFocus())
       widget_host_view->Focus();
   } else {

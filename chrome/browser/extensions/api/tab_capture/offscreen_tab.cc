@@ -402,7 +402,7 @@ bool OffscreenTab::CheckMediaAccessPermission(
       type == content::MEDIA_TAB_VIDEO_CAPTURE;
 }
 
-void OffscreenTab::DidShowFullscreenWidget(int routing_id) {
+void OffscreenTab::DidShowFullscreenWidget() {
   if (offscreen_tab_web_contents_->GetCapturerCount() == 0 ||
       offscreen_tab_web_contents_->GetPreferredSize().IsEmpty())
     return;  // Do nothing, since no preferred size is specified.

@@ -132,8 +132,8 @@ class WEBVIEW_EXPORT WebView : public View,
   void RenderViewHostChanged(content::RenderViewHost* old_host,
                              content::RenderViewHost* new_host) override;
   void WebContentsDestroyed() override;
-  void DidShowFullscreenWidget(int routing_id) override;
-  void DidDestroyFullscreenWidget(int routing_id) override;
+  void DidShowFullscreenWidget() override;
+  void DidDestroyFullscreenWidget() override;
   void DidToggleFullscreenModeForTab(bool entered_fullscreen,
                                      bool will_cause_resize) override;
   void DidAttachInterstitialPage() override;

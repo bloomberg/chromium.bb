@@ -401,8 +401,8 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
 
   // Invoked when a pepper plugin creates and shows or destroys a fullscreen
   // RenderWidget.
-  virtual void DidShowFullscreenWidget(int routing_id) {}
-  virtual void DidDestroyFullscreenWidget(int routing_id) {}
+  virtual void DidShowFullscreenWidget() {}
+  virtual void DidDestroyFullscreenWidget() {}
 
   // Invoked when the renderer process has toggled the tab into/out of
   // fullscreen mode.

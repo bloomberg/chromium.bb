@@ -163,11 +163,11 @@ void WebContentsTracker::WebContentsDestroyed() {
   OnPossibleTargetChange(false);
 }
 
-void WebContentsTracker::DidShowFullscreenWidget(int routing_id) {
+void WebContentsTracker::DidShowFullscreenWidget() {
   OnPossibleTargetChange(false);
 }
 
-void WebContentsTracker::DidDestroyFullscreenWidget(int routing_id) {
+void WebContentsTracker::DidDestroyFullscreenWidget() {
   OnPossibleTargetChange(false);
 }
 

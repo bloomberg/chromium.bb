@@ -167,7 +167,7 @@ class OffscreenTab : protected content::WebContentsDelegate,
                                   content::MediaStreamType type) final;
 
   // content::WebContentsObserver overrides
-  void DidShowFullscreenWidget(int routing_id) final;
+  void DidShowFullscreenWidget() final;
 
  private:
   bool in_fullscreen_mode() const {

@@ -104,13 +104,13 @@ class TabCaptureRegistry::LiveRequest : public content::WebContentsObserver {
   }
 
  protected:
-  void DidShowFullscreenWidget(int routing_id) override {
+  void DidShowFullscreenWidget() override {
     is_fullscreened_ = true;
     if (capture_state_ == tab_capture::TAB_CAPTURE_STATE_ACTIVE)
       registry_->DispatchStatusChangeEvent(this);
   }
 
-  void DidDestroyFullscreenWidget(int routing_id) override {
+  void DidDestroyFullscreenWidget() override {
     is_fullscreened_ = false;
     if (capture_state_ == tab_capture::TAB_CAPTURE_STATE_ACTIVE)
       registry_->DispatchStatusChangeEvent(this);
