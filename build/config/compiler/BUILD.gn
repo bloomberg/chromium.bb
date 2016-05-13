@@ -34,7 +34,8 @@ declare_args() {
   # These are not multi-arch so cannot be used except on x86 and x86-64 (the
   # only two architectures that are currently checked in). Turn this off when
   # you are using a custom toolchain and need to control -B in cflags.
-  linux_use_bundled_binutils = is_linux && current_cpu == "x64"
+  linux_use_bundled_binutils =
+      is_linux && (current_cpu == "x64" || current_cpu == "x86")
   binutils_path = rebase_path("//third_party/binutils/Linux_x64/Release/bin",
                               root_build_dir)
 
