@@ -31,7 +31,6 @@
 #include "core/inspector/InspectorInputAgent.h"
 
 #include "core/frame/FrameView.h"
-#include "core/frame/LocalFrame.h"
 #include "core/input/EventHandler.h"
 #include "core/inspector/InspectedFrames.h"
 #include "core/page/ChromeClient.h"

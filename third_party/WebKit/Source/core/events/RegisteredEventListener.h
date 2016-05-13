@@ -36,6 +36,7 @@ public:
     RegisteredEventListener()
         : m_useCapture(false)
         , m_passive(false)
+        , m_blockedEventWarningEmitted(false)
     {
     }
 
@@ -43,6 +44,7 @@ public:
         : m_listener(listener)
         , m_useCapture(options.capture())
         , m_passive(options.passive())
+        , m_blockedEventWarningEmitted(false)
     {
     }
 
@@ -79,6 +81,16 @@ public:
         return m_useCapture;
     }
 
+    bool blockedEventWarningEmitted() const
+    {
+        return m_blockedEventWarningEmitted;
+    }
+
+    void setBlockedEventWarningEmitted()
+    {
+        m_blockedEventWarningEmitted = true;
+    }
+
     bool matches(const EventListener* listener, const EventListenerOptions& options) const
     {
         // Equality is soley based on the listener and useCapture flags.
@@ -99,6 +111,7 @@ private:
     Member<EventListener> m_listener;
     unsigned m_useCapture : 1;
     unsigned m_passive : 1;
+    unsigned m_blockedEventWarningEmitted : 1;
 };
 
 } // namespace blink

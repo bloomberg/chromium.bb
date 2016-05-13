@@ -109,6 +109,7 @@ public:
     void startScreencast(ErrorString*, const Maybe<String>& format, const Maybe<int>& quality, const Maybe<int>& maxWidth, const Maybe<int>& maxHeight, const Maybe<int>& everyNthFrame) override;
     void stopScreencast(ErrorString*) override;
     void setOverlayMessage(ErrorString*, const Maybe<String>& message) override;
+    void setBlockedEventsWarningThreshold(ErrorString*, double threshold) override;
 
     // InspectorInstrumentation API
     void didClearDocumentOfWindowObject(LocalFrame*);

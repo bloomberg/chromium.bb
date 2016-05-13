@@ -403,3 +403,8 @@ resizeIsDeviceSizeChange initial=false
 # Whether the browser process sends gesture events for wheel events.
 # Can be removed when crbug.com/598798 is fixed.
 wheelGesturesEnabled initial=false
+
+# If set to a positive value, emit a console warning once for each non-passive
+# event listener that caused an event to be dispatched to main thread and
+# delayed by more than the specified time (in seconds).
+blockedMainThreadEventsWarningThreshold type=double, initial=0

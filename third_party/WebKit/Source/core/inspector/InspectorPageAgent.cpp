@@ -43,7 +43,9 @@
 #include "core/fetch/Resource.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/fetch/ScriptResource.h"
+#include "core/frame/FrameHost.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/Settings.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/html/VoidCallback.h"
 #include "core/html/imports/HTMLImportLoader.h"
@@ -77,6 +79,7 @@ static const char pageAgentEnabled[] = "pageAgentEnabled";
 static const char pageAgentScriptsToEvaluateOnLoad[] = "pageAgentScriptsToEvaluateOnLoad";
 static const char screencastEnabled[] = "screencastEnabled";
 static const char autoAttachToCreatedPages[] = "autoAttachToCreatedPages";
+static const char blockedEventsWarningThreshold[] = "blockedEventsWarningThreshold";
 }
 
 namespace {
@@ -360,10 +363,10 @@ InspectorPageAgent::InspectorPageAgent(InspectedFrames* inspectedFrames, Client*
 
 void InspectorPageAgent::restore()
 {
-    if (m_state->booleanProperty(PageAgentState::pageAgentEnabled, false)) {
-        ErrorString error;
+    ErrorString error;
+    if (m_state->booleanProperty(PageAgentState::pageAgentEnabled, false))
         enable(&error);
-    }
+    setBlockedEventsWarningThreshold(&error, m_state->numberProperty(PageAgentState::blockedEventsWarningThreshold, 0.0));
 }
 
 void InspectorPageAgent::enable(ErrorString*)
@@ -763,6 +766,15 @@ void InspectorPageAgent::setOverlayMessage(ErrorString*, const Maybe<String>& me
 {
     if (m_client)
         m_client->setPausedInDebuggerMessage(message.fromMaybe(String()));
+}
+
+void InspectorPageAgent::setBlockedEventsWarningThreshold(ErrorString*, double threshold)
+{
+    m_state->setNumber(PageAgentState::blockedEventsWarningThreshold, threshold);
+    FrameHost* host = m_inspectedFrames->root()->host();
+    if (!host)
+        return;
+    host->settings().setBlockedMainThreadEventsWarningThreshold(threshold);
 }
 
 DEFINE_TRACE(InspectorPageAgent)

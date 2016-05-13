@@ -38,6 +38,8 @@ public:
     void setURL(const String&);
     unsigned lineNumber() const;
     void setLineNumber(unsigned);
+    unsigned columnNumber() const;
+    void setColumnNumber(unsigned);
     PassRefPtr<ScriptCallStack> callStack() const;
     void setCallStack(PassRefPtr<ScriptCallStack>);
     ScriptState* getScriptState() const;
@@ -58,7 +60,6 @@ public:
     MessageSource source() const;
     MessageLevel level() const;
     const String& message() const;
-    unsigned columnNumber() const;
 
     void frameWindowDiscarded(LocalDOMWindow*);
     unsigned argumentCount();

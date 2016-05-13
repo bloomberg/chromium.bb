@@ -32,15 +32,18 @@
 #include "core/events/EventTarget.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/V8AbstractEventListener.h"
+#include "bindings/core/v8/ScriptEventListener.h"
 #include "bindings/core/v8/V8DOMActivityLogger.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/editing/Editor.h"
 #include "core/events/Event.h"
 #include "core/events/EventUtil.h"
-#include "core/inspector/InspectorInstrumentation.h"
+#include "core/frame/FrameHost.h"
 #include "core/frame/LocalDOMWindow.h"
+#include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
+#include "core/inspector/ConsoleMessage.h"
+#include "core/inspector/InspectorInstrumentation.h"
 #include "platform/EventDispatchForbiddenScope.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/Threading.h"
@@ -67,6 +70,53 @@ void setDefaultAddEventListenerOptions(AddEventListenerOptions& options)
     if (!options.hasPassive())
         options.setPassive(false);
 }
+
+double blockedEventsWarningThreshold(const ExecutionContext* context, const Event* event)
+{
+    if (!event->cancelable())
+        return 0.0;
+    const AtomicString& eventType = event->type();
+    if (eventType != EventTypeNames::touchstart
+        && eventType != EventTypeNames::touchmove
+        && eventType != EventTypeNames::touchend
+        && eventType != EventTypeNames::mousewheel
+        && eventType != EventTypeNames::wheel) {
+        return 0.0;
+    }
+
+    if (!context->isDocument())
+        return 0.0;
+    FrameHost* frameHost = toDocument(context)->frameHost();
+    if (!frameHost)
+        return 0.0;
+    return frameHost->settings().blockedMainThreadEventsWarningThreshold();
+}
+
+void reportBlockedEvent(ExecutionContext* context, const Event* event, RegisteredEventListener* registeredListener, double delayedSeconds)
+{
+    if (registeredListener->listener()->type() != EventListener::JSEventListenerType)
+        return;
+
+    V8AbstractEventListener* v8Listener = V8AbstractEventListener::cast(registeredListener->listener());
+    v8::HandleScope handles(v8Listener->isolate());
+    v8::Local<v8::Object> handler = v8Listener->getListenerObject(context);
+
+    String messageText = String::format(
+        "Handling of '%s' input event was delayed for %ld ms due to main thread being busy. "
+        "Consider marking event handler as 'passive' to make the page more responive.",
+        event->type().characters8(), lround(delayedSeconds * 1000));
+    ConsoleMessage* message = ConsoleMessage::create(JSMessageSource, WarningMessageLevel, messageText);
+
+    v8::Local<v8::Function> function = eventListenerEffectiveFunction(v8Listener->isolate(), handler);
+    if (!function.IsEmpty()) {
+        message->setLineNumber(function->GetScriptLineNumber() + 1);
+        message->setColumnNumber(function->GetScriptColumnNumber());
+        message->setScriptId(function->ScriptId());
+    }
+    context->addConsoleMessage(message);
+    registeredListener->setBlockedEventWarningEmitted();
+}
+
 
 } // namespace
 
@@ -449,11 +499,24 @@ void EventTarget::fireEventListeners(Event* event, EventTargetData* d, EventList
             UseCounter::count(executingWindow->document(), UseCounter::TextInputFired);
     }
 
+    ExecutionContext* context = getExecutionContext();
+    if (!context)
+        return;
+
     size_t i = 0;
     size_t size = entry.size();
     if (!d->firingEventIterators)
         d->firingEventIterators = adoptPtr(new FiringEventIteratorVector);
     d->firingEventIterators->append(FiringEventIterator(event->type(), i, size));
+
+    double blockedEventThreshold = blockedEventsWarningThreshold(context, event);
+    double now = 0.0;
+    bool shouldReportBlockedEvent = false;
+    if (blockedEventThreshold) {
+        now = WTF::monotonicallyIncreasingTime();
+        shouldReportBlockedEvent = now - event->platformTimeStamp() > blockedEventThreshold;
+    }
+
     while (i < size) {
         RegisteredEventListener& registeredListener = entry[i];
 
@@ -472,10 +535,6 @@ void EventTarget::fireEventListeners(Event* event, EventTargetData* d, EventList
         if (event->immediatePropagationStopped())
             break;
 
-        ExecutionContext* context = getExecutionContext();
-        if (!context)
-            break;
-
         event->setHandlingPassive(registeredListener.passive());
 
         InspectorInstrumentation::NativeBreakpoint nativeBreakpoint(context, this, event);
@@ -483,6 +542,10 @@ void EventTarget::fireEventListeners(Event* event, EventTargetData* d, EventList
         // To match Mozilla, the AT_TARGET phase fires both capturing and bubbling
         // event listeners, even though that violates some versions of the DOM spec.
         registeredListener.listener()->handleEvent(context, event);
+
+        if (shouldReportBlockedEvent && !registeredListener.passive() && !registeredListener.blockedEventWarningEmitted() && !event->defaultPrevented())
+            reportBlockedEvent(context, event, &registeredListener, now - event->platformTimeStamp());
+
         event->setHandlingPassive(false);
 
         RELEASE_ASSERT(i <= size);
