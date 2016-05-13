@@ -151,6 +151,22 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTestChromeOs, RemoveService) {
       << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTestChromeOs,
+                       NotifyCharacteristicValueChanged) {
+  ASSERT_TRUE(
+      RunPlatformAppTest("api_test/bluetooth_low_energy/"
+                         "notify_characteristic_value_changed"))
+      << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTestChromeOs,
+                       NotifyCharacteristicValueChanged_ErrorConditions) {
+  ASSERT_TRUE(RunPlatformAppTest(
+      "api_test/bluetooth_low_energy/"
+      "notify_characteristic_value_changed_error_conditions"))
+      << message_;
+}
+
 // TODO(rkc): Figure out how to integrate with BluetoothTestBlueZ and write
 // comprehensive tests for GATT server events. See http://crbug.com/607395 for
 // details.

@@ -73,6 +73,15 @@ const char kErrorUnsupportedDevice[] =
 const char kErrorInvalidServiceId[] = "The service ID doesn't exist.";
 const char kErrorInvalidCharacteristicId[] =
     "The characteristic ID doesn't exist.";
+const char kErrorNotifyPropertyNotSet[] =
+    "The characteristic does not have the notify property set.";
+const char kErrorIndicatePropertyNotSet[] =
+    "The characteristic does not have the indicate property set.";
+const char kErrorServiceNotRegistered[] =
+    "The characteristic is not owned by a service that is registered.";
+const char kErrorUnknownNotificationError[] =
+    "An unknown notification error occured.";
+
 const char kStatusAdvertisementAlreadyExists[] =
     "An advertisement is already advertising";
 const char kStatusAdvertisementDoesNotExist[] =
@@ -1410,7 +1419,39 @@ template class BLEPeripheralExtensionFunction<
     apibtle::NotifyCharacteristicValueChanged::Params>;
 
 void BluetoothLowEnergyNotifyCharacteristicValueChangedFunction::DoWork() {
-  Respond(Error(kErrorPermissionDenied));
+  device::BluetoothLocalGattCharacteristic* characteristic =
+      event_router_->GetLocalCharacteristic(params_->characteristic_id);
+  if (!characteristic) {
+    Respond(Error(kErrorInvalidCharacteristicId));
+    return;
+  }
+  std::vector<uint8_t> uint8_vector;
+  uint8_vector.assign(params_->notification.value.begin(),
+                      params_->notification.value.end());
+
+  bool indicate = params_->notification.should_indicate.get()
+                      ? *params_->notification.should_indicate
+                      : false;
+  device::BluetoothLocalGattCharacteristic::NotificationStatus status =
+      characteristic->NotifyValueChanged(uint8_vector, indicate);
+
+  switch (status) {
+    case device::BluetoothLocalGattCharacteristic::NOTIFICATION_SUCCESS:
+      Respond(NoArguments());
+      break;
+    case device::BluetoothLocalGattCharacteristic::NOTIFY_PROPERTY_NOT_SET:
+      Respond(Error(kErrorNotifyPropertyNotSet));
+      break;
+    case device::BluetoothLocalGattCharacteristic::INDICATE_PROPERTY_NOT_SET:
+      Respond(Error(kErrorIndicatePropertyNotSet));
+      break;
+    case device::BluetoothLocalGattCharacteristic::SERVICE_NOT_REGISTERED:
+      Respond(Error(kErrorServiceNotRegistered));
+      break;
+    default:
+      LOG(ERROR) << "Unknown notification error!";
+      Respond(Error(kErrorUnknownNotificationError));
+  }
 }
 
 // removeService:
