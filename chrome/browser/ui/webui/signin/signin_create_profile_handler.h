@@ -12,6 +12,8 @@
 #include "base/time/time.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_window.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 
@@ -25,7 +27,8 @@ class SupervisedUserRegistrationUtility;
 #endif
 
 // Handler for the 'create profile' page.
-class SigninCreateProfileHandler : public content::WebUIMessageHandler {
+class SigninCreateProfileHandler : public content::WebUIMessageHandler,
+                                   public content::NotificationObserver {
  public:
   SigninCreateProfileHandler();
   ~SigninCreateProfileHandler() override;
@@ -54,6 +57,12 @@ class SigninCreateProfileHandler : public content::WebUIMessageHandler {
 
   // WebUIMessageHandler implementation.
   void RegisterMessages() override;
+
+  // content::NotificationObserver implementation:
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
+
   // Represents the final profile creation status. It is used to map
   // the status to the javascript method to be called.
   enum ProfileCreationStatus {
@@ -230,6 +239,13 @@ class SigninCreateProfileHandler : public content::WebUIMessageHandler {
   bool IsAccountConnected(Profile* profile) const;
   // Returns true if profile has authentication error.
   bool HasAuthError(Profile* profile) const;
+
+  // This callback is run after a new browser (but not the window) has been
+  // created for the new profile.
+  void OnBrowserReadyCallback(Profile* profile,
+                              Profile::CreateStatus status);
+
+  content::NotificationRegistrar registrar_;
 
   base::WeakPtrFactory<SigninCreateProfileHandler> weak_ptr_factory_;
 

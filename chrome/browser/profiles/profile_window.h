@@ -57,12 +57,21 @@ void FindOrCreateNewWindowForProfile(
     chrome::startup::IsFirstRun is_first_run,
     bool always_create);
 
+// Opens a Browser for |profile|.
+// If |always_create| is true a window is created even if one already exists.
+// If |is_new_profile| is true a first run window is created.
+// When the browser is opened, |callback| will be run if it isn't null.
+void OpenBrowserWindowForProfile(ProfileManager::CreateCallback callback,
+                                 bool always_create,
+                                 bool is_new_profile,
+                                 Profile* profile,
+                                 Profile::CreateStatus status);
+
+#if !defined(OS_ANDROID)
 // Opens a Browser with the specified profile given by |path|.
 // If |always_create| is true then a new window is created
 // even if a window for that profile already exists. When the browser is
 // opened, |callback| will be run if it isn't null.
-
-#if !defined(OS_ANDROID)
 void SwitchToProfile(const base::FilePath& path,
                      bool always_create,
                      ProfileManager::CreateCallback callback,

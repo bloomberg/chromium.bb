@@ -18,6 +18,7 @@
 #include "base/value_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
@@ -27,6 +28,8 @@
 #include "chrome/browser/signin/signin_error_controller_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/user_manager.h"
 #include "chrome/browser/ui/webui/profile_helper.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -36,6 +39,7 @@
 #include "components/signin/core/browser/signin_error_controller.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_ui.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -409,7 +413,13 @@ void SigninCreateProfileHandler::CreateShortcutAndShowSuccess(
 void SigninCreateProfileHandler::OpenNewWindowForProfile(
     Profile* profile,
     Profile::CreateStatus status) {
-  webui::OpenNewWindowForProfile(profile, status);
+  profiles::OpenBrowserWindowForProfile(
+      base::Bind(&SigninCreateProfileHandler::OnBrowserReadyCallback,
+                 weak_ptr_factory_.GetWeakPtr()),
+      false,  // Don't create a window if one already exists.
+      true,  // Create a first run window.
+      profile,
+      status);
 }
 
 void SigninCreateProfileHandler::ShowProfileCreationError(
@@ -444,6 +454,38 @@ base::string16 SigninCreateProfileHandler::GetProfileCreationErrorMessageLocal()
     message_id = IDS_LEGACY_SUPERVISED_USER_IMPORT_LOCAL_ERROR;
 #endif
   return l10n_util::GetStringUTF16(message_id);
+}
+
+void SigninCreateProfileHandler::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  switch (type) {
+    case chrome::NOTIFICATION_BROWSER_WINDOW_READY:
+      // Only respond to one Browser Window Ready event.
+      registrar_.Remove(this,
+                        chrome::NOTIFICATION_BROWSER_WINDOW_READY,
+                        content::NotificationService::AllSources());
+      UserManager::Hide();
+    break;
+    default:
+      NOTREACHED();
+  }
+}
+
+void SigninCreateProfileHandler::OnBrowserReadyCallback(
+    Profile* profile,
+    Profile::CreateStatus profile_create_status) {
+  Browser* browser = chrome::FindAnyBrowser(profile, false);
+  // Closing the User Manager before the window is created can flakily cause
+  // Chrome to close.
+  if (browser && browser->window()) {
+    UserManager::Hide();
+  } else {
+    registrar_.Add(this,
+                   chrome::NOTIFICATION_BROWSER_WINDOW_READY,
+                   content::NotificationService::AllSources());
+  }
 }
 
 #if defined(ENABLE_SUPERVISED_USERS)
@@ -750,9 +792,13 @@ void SigninCreateProfileHandler::SwitchToProfile(
       GetProfileByPath(profile_file_path);
   DCHECK(profile);
 
-  profiles::FindOrCreateNewWindowForProfile(
-      profile, chrome::startup::IS_PROCESS_STARTUP,
-      chrome::startup::IS_FIRST_RUN, false);
+  profiles::OpenBrowserWindowForProfile(
+      base::Bind(&SigninCreateProfileHandler::OnBrowserReadyCallback,
+                 weak_ptr_factory_.GetWeakPtr()),
+      false,  // Don't create a window if one already exists.
+      true,  // Create a first run window.
+      profile,
+      Profile::CREATE_STATUS_INITIALIZED);
 }
 
 #endif

@@ -118,74 +118,6 @@ class BrowserAddedForProfileObserver : public chrome::BrowserListObserver {
   DISALLOW_COPY_AND_ASSIGN(BrowserAddedForProfileObserver);
 };
 
-void OpenBrowserWindowForProfile(
-    ProfileManager::CreateCallback callback,
-    bool always_create,
-    bool is_new_profile,
-    Profile* profile,
-    Profile::CreateStatus status) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  if (status != Profile::CREATE_STATUS_INITIALIZED)
-    return;
-
-  chrome::startup::IsProcessStartup is_process_startup =
-      chrome::startup::IS_NOT_PROCESS_STARTUP;
-  chrome::startup::IsFirstRun is_first_run = chrome::startup::IS_NOT_FIRST_RUN;
-
-  // If this is a brand new profile, then start a first run window.
-  if (is_new_profile) {
-    is_process_startup = chrome::startup::IS_PROCESS_STARTUP;
-    is_first_run = chrome::startup::IS_FIRST_RUN;
-  }
-
-#if defined(ENABLE_EXTENSIONS)
-  // The signin bit will still be set if the profile is being unlocked and the
-  // browser window for it is opening. As part of this unlock process, unblock
-  // all the extensions.
-  if (!profile->IsGuestSession()) {
-    ProfileAttributesEntry* entry;
-    if (g_browser_process->profile_manager()->GetProfileAttributesStorage().
-            GetProfileAttributesWithPath(profile->GetPath(), &entry) &&
-        entry->IsSigninRequired()) {
-      UnblockExtensions(profile);
-    }
-  }
-#endif  // defined(ENABLE_EXTENSIONS)
-
-  // If |always_create| is false, and we have a |callback| to run, check
-  // whether a browser already exists so that we can run the callback. We don't
-  // want to rely on the observer listening to OnBrowserSetLastActive in this
-  // case, as you could manually activate an incorrect browser and trigger
-  // a false positive.
-  if (!always_create) {
-    Browser* browser = chrome::FindTabbedBrowser(profile, false);
-    if (browser) {
-      browser->window()->Activate();
-      if (!callback.is_null())
-        callback.Run(profile, Profile::CREATE_STATUS_INITIALIZED);
-      return;
-    }
-  }
-
-  // If there is a callback, create an observer to make sure it is only
-  // run when the browser has been completely created. This observer will
-  // delete itself once that happens. This should not leak, because we are
-  // passing |always_create| = true to FindOrCreateNewWindow below, which ends
-  // up calling LaunchBrowser and opens a new window. If for whatever reason
-  // that fails, either something has crashed, or the observer will be cleaned
-  // up when a different browser for this profile is opened.
-  if (!callback.is_null())
-    new BrowserAddedForProfileObserver(profile, callback);
-
-  // We already dealt with the case when |always_create| was false and a browser
-  // existed, which means that here a browser definitely needs to be created.
-  // Passing true for |always_create| means we won't duplicate the code that
-  // tries to find a browser.
-  profiles::FindOrCreateNewWindowForProfile(profile, is_process_startup,
-                                            is_first_run, true);
-}
-
 // Called after a |system_profile| is available to be used by the user manager.
 // Based on the value of |tutorial_mode| we determine a url to be displayed
 // by the webui and run the |callback|, if it exists. After opening a profile,
@@ -273,6 +205,74 @@ void FindOrCreateNewWindowForProfile(
       command_line, profile, base::FilePath(), process_startup, is_first_run);
 }
 
+void OpenBrowserWindowForProfile(
+    ProfileManager::CreateCallback callback,
+    bool always_create,
+    bool is_new_profile,
+    Profile* profile,
+    Profile::CreateStatus status) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  if (status != Profile::CREATE_STATUS_INITIALIZED)
+    return;
+
+  chrome::startup::IsProcessStartup is_process_startup =
+      chrome::startup::IS_NOT_PROCESS_STARTUP;
+  chrome::startup::IsFirstRun is_first_run = chrome::startup::IS_NOT_FIRST_RUN;
+
+  // If this is a brand new profile, then start a first run window.
+  if (is_new_profile) {
+    is_process_startup = chrome::startup::IS_PROCESS_STARTUP;
+    is_first_run = chrome::startup::IS_FIRST_RUN;
+  }
+
+#if defined(ENABLE_EXTENSIONS)
+  // The signin bit will still be set if the profile is being unlocked and the
+  // browser window for it is opening. As part of this unlock process, unblock
+  // all the extensions.
+  if (!profile->IsGuestSession()) {
+    ProfileAttributesEntry* entry;
+    if (g_browser_process->profile_manager()->GetProfileAttributesStorage().
+            GetProfileAttributesWithPath(profile->GetPath(), &entry) &&
+        entry->IsSigninRequired()) {
+      UnblockExtensions(profile);
+    }
+  }
+#endif  // defined(ENABLE_EXTENSIONS)
+
+  // If |always_create| is false, and we have a |callback| to run, check
+  // whether a browser already exists so that we can run the callback. We don't
+  // want to rely on the observer listening to OnBrowserSetLastActive in this
+  // case, as you could manually activate an incorrect browser and trigger
+  // a false positive.
+  if (!always_create) {
+    Browser* browser = chrome::FindTabbedBrowser(profile, false);
+    if (browser) {
+      browser->window()->Activate();
+      if (!callback.is_null())
+        callback.Run(profile, Profile::CREATE_STATUS_INITIALIZED);
+      return;
+    }
+  }
+
+  // If there is a callback, create an observer to make sure it is only
+  // run when the browser has been completely created. This observer will
+  // delete itself once that happens. This should not leak, because we are
+  // passing |always_create| = true to FindOrCreateNewWindow below, which ends
+  // up calling LaunchBrowser and opens a new window. If for whatever reason
+  // that fails, either something has crashed, or the observer will be cleaned
+  // up when a different browser for this profile is opened.
+  if (!callback.is_null())
+    new BrowserAddedForProfileObserver(profile, callback);
+
+  // We already dealt with the case when |always_create| was false and a browser
+  // existed, which means that here a browser definitely needs to be created.
+  // Passing true for |always_create| means we won't duplicate the code that
+  // tries to find a browser.
+  profiles::FindOrCreateNewWindowForProfile(profile, is_process_startup,
+                                            is_first_run, true);
+}
+
 #if !defined(OS_ANDROID)
 void SwitchToProfile(const base::FilePath& path,
                      bool always_create,
@@ -283,7 +283,10 @@ void SwitchToProfile(const base::FilePath& path,
                                    path);
   g_browser_process->profile_manager()->CreateProfileAsync(
       path,
-      base::Bind(&OpenBrowserWindowForProfile, callback, always_create, false),
+      base::Bind(&profiles::OpenBrowserWindowForProfile,
+                 callback,
+                 always_create,
+                 false),
       base::string16(), std::string(), std::string());
 }
 
@@ -293,7 +296,10 @@ void SwitchToGuestProfile(ProfileManager::CreateCallback callback) {
                                    g_browser_process->profile_manager(),
                                    path);
   g_browser_process->profile_manager()->CreateProfileAsync(
-      path, base::Bind(&OpenBrowserWindowForProfile, callback, false, false),
+      path, base::Bind(&profiles::OpenBrowserWindowForProfile,
+                       callback,
+                       false,
+                       false),
       base::string16(), std::string(), std::string());
 }
 #endif
@@ -314,7 +320,10 @@ void CreateAndSwitchToNewProfile(ProfileManager::CreateCallback callback,
   ProfileManager::CreateMultiProfileAsync(
       storage.ChooseNameForNewProfile(placeholder_avatar_index),
       profiles::GetDefaultAvatarIconUrl(placeholder_avatar_index),
-      base::Bind(&OpenBrowserWindowForProfile, callback, true, true),
+      base::Bind(&profiles::OpenBrowserWindowForProfile,
+                 callback,
+                 true,
+                 true),
       std::string());
   ProfileMetrics::LogProfileAddNewUser(metric);
 }
