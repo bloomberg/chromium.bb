@@ -379,7 +379,8 @@ class CC_EXPORT PropertyTree {
   int next_available_id() const { return static_cast<int>(size()); }
 
   void ToProtobuf(proto::PropertyTree* proto) const;
-  void FromProtobuf(const proto::PropertyTree& proto);
+  void FromProtobuf(const proto::PropertyTree& proto,
+                    std::unordered_map<int, int>* node_id_to_index_map);
 
   void SetPropertyTrees(PropertyTrees* property_trees) {
     property_trees_ = property_trees;
@@ -506,7 +507,8 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
   gfx::Transform ToScreenSpaceTransformWithoutSublayerScale(int id) const;
 
   void ToProtobuf(proto::PropertyTree* proto) const;
-  void FromProtobuf(const proto::PropertyTree& proto);
+  void FromProtobuf(const proto::PropertyTree& proto,
+                    std::unordered_map<int, int>* node_id_to_index_map);
 
  private:
   // Returns true iff the node at |desc_id| is a descendant of the node at
@@ -562,7 +564,8 @@ class CC_EXPORT ClipTree final : public PropertyTree<ClipNode> {
   gfx::RectF ViewportClip();
 
   void ToProtobuf(proto::PropertyTree* proto) const;
-  void FromProtobuf(const proto::PropertyTree& proto);
+  void FromProtobuf(const proto::PropertyTree& proto,
+                    std::unordered_map<int, int>* node_id_to_index_map);
 };
 
 class CC_EXPORT EffectTree final : public PropertyTree<EffectNode> {
@@ -582,7 +585,8 @@ class CC_EXPORT EffectTree final : public PropertyTree<EffectNode> {
   void ResetChangeTracking();
 
   void ToProtobuf(proto::PropertyTree* proto) const;
-  void FromProtobuf(const proto::PropertyTree& proto);
+  void FromProtobuf(const proto::PropertyTree& proto,
+                    std::unordered_map<int, int>* node_id_to_index_map);
 
  private:
   void UpdateOpacities(EffectNode* node, EffectNode* parent_node);
@@ -600,7 +604,8 @@ class CC_EXPORT ScrollTree final : public PropertyTree<ScrollNode> {
   bool operator==(const ScrollTree& other) const;
 
   void ToProtobuf(proto::PropertyTree* proto) const;
-  void FromProtobuf(const proto::PropertyTree& proto);
+  void FromProtobuf(const proto::PropertyTree& proto,
+                    std::unordered_map<int, int>* node_id_to_index_map);
 
   void clear();
 
@@ -666,6 +671,10 @@ class CC_EXPORT PropertyTrees final {
   void ToProtobuf(proto::PropertyTrees* proto) const;
   void FromProtobuf(const proto::PropertyTrees& proto);
 
+  std::unordered_map<int, int> transform_id_to_index_map;
+  std::unordered_map<int, int> effect_id_to_index_map;
+  std::unordered_map<int, int> clip_id_to_index_map;
+  std::unordered_map<int, int> scroll_id_to_index_map;
   TransformTree transform_tree;
   EffectTree effect_tree;
   ClipTree clip_tree;

@@ -60,6 +60,10 @@ struct DataForRecursion {
   bool axis_align_since_render_target;
   int sequence_number;
   SkColor safe_opaque_background_color;
+  std::unordered_map<int, int>* transform_id_to_index_map;
+  std::unordered_map<int, int>* effect_id_to_index_map;
+  std::unordered_map<int, int>* clip_id_to_index_map;
+  std::unordered_map<int, int>* scroll_id_to_index_map;
 };
 
 template <typename LayerType>
@@ -332,6 +336,7 @@ void AddClipNodeIfNeeded(const DataForRecursion<LayerType>& data_from_ancestor,
 
     data_for_children->clip_tree_parent =
         data_for_children->clip_tree->Insert(node, parent_id);
+    (*data_for_children->clip_id_to_index_map)[layer->id()] = node.id;
   }
 
   layer->SetClipTreeIndex(data_for_children->clip_tree_parent);
@@ -486,6 +491,7 @@ bool AddTransformNodeIfNeeded(
 
   TransformNode* node = data_for_children->transform_tree->back();
   layer->SetTransformTreeIndex(node->id);
+  (*data_for_children->transform_id_to_index_map)[layer->id()] = node->id;
   if (layer->mask_layer())
     layer->mask_layer()->SetTransformTreeIndex(node->id);
 
@@ -842,6 +848,7 @@ bool AddEffectNodeIfNeeded(
   data_for_children->effect_tree_parent =
       data_for_children->effect_tree->Insert(node, parent_id);
   layer->SetEffectTreeIndex(data_for_children->effect_tree_parent);
+  (*data_for_children->effect_id_to_index_map)[layer->id()] = node.id;
   if (should_create_render_surface) {
     data_for_children->compound_transform_since_render_target =
         gfx::Transform();
@@ -920,6 +927,7 @@ void AddScrollNodeIfNeeded(
         node.data.main_thread_scrolling_reasons;
     data_for_children->scroll_tree_parent_created_by_uninheritable_criteria =
         scroll_node_uninheritable_criteria;
+    (*data_for_children->scroll_id_to_index_map)[layer->id()] = node.id;
 
     if (node.data.scrollable) {
       data_for_children->scroll_tree->SetBaseScrollOffset(
@@ -1154,6 +1162,14 @@ void BuildPropertyTreesTopLevelInternal(
   data_for_recursion.scroll_tree_parent_created_by_uninheritable_criteria =
       true;
   data_for_recursion.device_transform = &device_transform;
+  data_for_recursion.transform_id_to_index_map =
+      &property_trees->transform_id_to_index_map;
+  data_for_recursion.effect_id_to_index_map =
+      &property_trees->effect_id_to_index_map;
+  data_for_recursion.clip_id_to_index_map =
+      &property_trees->clip_id_to_index_map;
+  data_for_recursion.scroll_id_to_index_map =
+      &property_trees->scroll_id_to_index_map;
 
   data_for_recursion.transform_tree->clear();
   data_for_recursion.clip_tree->clear();
@@ -1165,6 +1181,10 @@ void BuildPropertyTreesTopLevelInternal(
   data_for_recursion.transform_tree->set_device_scale_factor(
       device_scale_factor);
   data_for_recursion.safe_opaque_background_color = color;
+  data_for_recursion.transform_id_to_index_map->clear();
+  data_for_recursion.effect_id_to_index_map->clear();
+  data_for_recursion.clip_id_to_index_map->clear();
+  data_for_recursion.scroll_id_to_index_map->clear();
 
   ClipNode root_clip;
   root_clip.data.resets_clip = true;

@@ -689,6 +689,100 @@ class LayerTreeHostTestPushPropertiesTo : public LayerTreeHostTest {
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestPushPropertiesTo);
 
+class LayerTreeHostTestPushNodeOwnerToNodeIdMap : public LayerTreeHostTest {
+ protected:
+  void SetupTree() override {
+    root_ = Layer::Create();
+    child_ = Layer::Create();
+    root_->AddChild(child_);
+    layer_tree_host()->SetRootLayer(root_);
+    LayerTreeHostTest::SetupTree();
+  }
+
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+
+  void DidCommit() override {
+    switch (layer_tree_host()->source_frame_number()) {
+      case 1:
+        // child_ should create transform, effect, clip node.
+        child_->SetForceRenderSurfaceForTesting(true);
+        break;
+      case 2:
+        // child_ should create a scroll node.
+        child_->SetScrollClipLayerId(root_->id());
+        break;
+      case 3:
+        // child_ should not create any property tree node.
+        child_->SetForceRenderSurfaceForTesting(false);
+        child_->SetScrollClipLayerId(Layer::INVALID_ID);
+    }
+  }
+
+  void CommitCompleteOnThread(LayerTreeHostImpl* impl) override {
+    PropertyTrees* property_trees = impl->sync_tree()->property_trees();
+    switch (impl->sync_tree()->source_frame_number()) {
+      case 0:
+        // root_ should create every property tree node and child_ should not
+        // create any.
+        EXPECT_NE(property_trees->transform_id_to_index_map.find(root_->id()),
+                  property_trees->transform_id_to_index_map.end());
+        EXPECT_NE(property_trees->effect_id_to_index_map.find(root_->id()),
+                  property_trees->effect_id_to_index_map.end());
+        EXPECT_NE(property_trees->clip_id_to_index_map.find(root_->id()),
+                  property_trees->clip_id_to_index_map.end());
+        EXPECT_NE(property_trees->scroll_id_to_index_map.find(root_->id()),
+                  property_trees->scroll_id_to_index_map.end());
+        EXPECT_EQ(property_trees->transform_id_to_index_map.find(child_->id()),
+                  property_trees->transform_id_to_index_map.end());
+        EXPECT_EQ(property_trees->effect_id_to_index_map.find(child_->id()),
+                  property_trees->effect_id_to_index_map.end());
+        EXPECT_EQ(property_trees->clip_id_to_index_map.find(child_->id()),
+                  property_trees->clip_id_to_index_map.end());
+        EXPECT_EQ(property_trees->scroll_id_to_index_map.find(child_->id()),
+                  property_trees->scroll_id_to_index_map.end());
+        break;
+      case 1:
+        // child_ should create a transfrom, clip, effect nodes but not a scroll
+        // node.
+        EXPECT_NE(property_trees->transform_id_to_index_map.find(child_->id()),
+                  property_trees->transform_id_to_index_map.end());
+        EXPECT_NE(property_trees->effect_id_to_index_map.find(child_->id()),
+                  property_trees->effect_id_to_index_map.end());
+        EXPECT_NE(property_trees->clip_id_to_index_map.find(child_->id()),
+                  property_trees->clip_id_to_index_map.end());
+        EXPECT_EQ(property_trees->scroll_id_to_index_map.find(child_->id()),
+                  property_trees->scroll_id_to_index_map.end());
+        break;
+      case 2:
+        // child_ should create a scroll node.
+        EXPECT_NE(property_trees->scroll_id_to_index_map.find(child_->id()),
+                  property_trees->scroll_id_to_index_map.end());
+        break;
+      case 3:
+        // child_ should not create any property tree nodes.
+        EXPECT_EQ(property_trees->transform_id_to_index_map.find(child_->id()),
+                  property_trees->transform_id_to_index_map.end());
+        EXPECT_EQ(property_trees->effect_id_to_index_map.find(child_->id()),
+                  property_trees->effect_id_to_index_map.end());
+        EXPECT_EQ(property_trees->clip_id_to_index_map.find(child_->id()),
+                  property_trees->clip_id_to_index_map.end());
+        EXPECT_EQ(property_trees->scroll_id_to_index_map.find(child_->id()),
+                  property_trees->scroll_id_to_index_map.end());
+
+        EndTest();
+        break;
+    }
+  }
+
+  void AfterTest() override {}
+
+ private:
+  scoped_refptr<Layer> root_;
+  scoped_refptr<Layer> child_;
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestPushNodeOwnerToNodeIdMap);
+
 class LayerTreeHostTestDamageWithReplica : public LayerTreeHostTest {
  protected:
   void SetupTree() override {

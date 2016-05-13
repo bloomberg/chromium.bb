@@ -117,7 +117,9 @@ void PropertyTree<T>::ToProtobuf(proto::PropertyTree* proto) const {
 }
 
 template <typename T>
-void PropertyTree<T>::FromProtobuf(const proto::PropertyTree& proto) {
+void PropertyTree<T>::FromProtobuf(
+    const proto::PropertyTree& proto,
+    std::unordered_map<int, int>* node_id_to_index_map) {
   // Verify that the property tree is empty.
   DCHECK_EQ(static_cast<int>(nodes_.size()), 1);
   DCHECK_EQ(back()->id, 0);
@@ -127,9 +129,11 @@ void PropertyTree<T>::FromProtobuf(const proto::PropertyTree& proto) {
   DCHECK_GT(proto.nodes_size(), 0);
   nodes_.back().FromProtobuf(proto.nodes(0));
 
+  DCHECK(!node_id_to_index_map || (*node_id_to_index_map).empty());
   for (int i = 1; i < proto.nodes_size(); ++i) {
     nodes_.push_back(T());
     nodes_.back().FromProtobuf(proto.nodes(i));
+    (*node_id_to_index_map)[nodes_.back().owner_id] = nodes_.back().id;
   }
 
   needs_update_ = proto.needs_update();
@@ -1282,11 +1286,13 @@ void TransformTree::ToProtobuf(proto::PropertyTree* proto) const {
     data->add_nodes_affected_by_outer_viewport_bounds_delta(i);
 }
 
-void TransformTree::FromProtobuf(const proto::PropertyTree& proto) {
+void TransformTree::FromProtobuf(
+    const proto::PropertyTree& proto,
+    std::unordered_map<int, int>* node_id_to_index_map) {
   DCHECK(proto.has_property_type());
   DCHECK_EQ(proto.property_type(), proto::PropertyTree::Transform);
 
-  PropertyTree::FromProtobuf(proto);
+  PropertyTree::FromProtobuf(proto, node_id_to_index_map);
   const proto::TransformTreeData& data = proto.transform_tree_data();
 
   source_to_parent_updates_allowed_ = data.source_to_parent_updates_allowed();
@@ -1460,11 +1466,13 @@ void ClipTree::ToProtobuf(proto::PropertyTree* proto) const {
   PropertyTree::ToProtobuf(proto);
 }
 
-void ClipTree::FromProtobuf(const proto::PropertyTree& proto) {
+void ClipTree::FromProtobuf(
+    const proto::PropertyTree& proto,
+    std::unordered_map<int, int>* node_id_to_index_map) {
   DCHECK(proto.has_property_type());
   DCHECK_EQ(proto.property_type(), proto::PropertyTree::Clip);
 
-  PropertyTree::FromProtobuf(proto);
+  PropertyTree::FromProtobuf(proto, node_id_to_index_map);
 }
 
 bool EffectTree::operator==(const EffectTree& other) const {
@@ -1478,11 +1486,13 @@ void EffectTree::ToProtobuf(proto::PropertyTree* proto) const {
   PropertyTree::ToProtobuf(proto);
 }
 
-void EffectTree::FromProtobuf(const proto::PropertyTree& proto) {
+void EffectTree::FromProtobuf(
+    const proto::PropertyTree& proto,
+    std::unordered_map<int, int>* node_id_to_index_map) {
   DCHECK(proto.has_property_type());
   DCHECK_EQ(proto.property_type(), proto::PropertyTree::Effect);
 
-  PropertyTree::FromProtobuf(proto);
+  PropertyTree::FromProtobuf(proto, node_id_to_index_map);
 }
 
 ScrollTree::ScrollTree()
@@ -1547,11 +1557,13 @@ void ScrollTree::ToProtobuf(proto::PropertyTree* proto) const {
   }
 }
 
-void ScrollTree::FromProtobuf(const proto::PropertyTree& proto) {
+void ScrollTree::FromProtobuf(
+    const proto::PropertyTree& proto,
+    std::unordered_map<int, int>* node_id_to_index_map) {
   DCHECK(proto.has_property_type());
   DCHECK_EQ(proto.property_type(), proto::PropertyTree::Scroll);
 
-  PropertyTree::FromProtobuf(proto);
+  PropertyTree::FromProtobuf(proto, node_id_to_index_map);
   const proto::ScrollTreeData& data = proto.scroll_tree_data();
 
   currently_scrolling_node_id_ = data.currently_scrolling_node_id();
@@ -1911,6 +1923,10 @@ bool PropertyTrees::operator==(const PropertyTrees& other) const {
   return transform_tree == other.transform_tree &&
          effect_tree == other.effect_tree && clip_tree == other.clip_tree &&
          scroll_tree == other.scroll_tree &&
+         transform_id_to_index_map == other.transform_id_to_index_map &&
+         effect_id_to_index_map == other.effect_id_to_index_map &&
+         clip_id_to_index_map == other.clip_id_to_index_map &&
+         scroll_id_to_index_map == other.scroll_id_to_index_map &&
          needs_rebuild == other.needs_rebuild && changed == other.changed &&
          full_tree_damaged == other.full_tree_damaged &&
          is_main_thread == other.is_main_thread &&
@@ -1924,6 +1940,10 @@ PropertyTrees& PropertyTrees::operator=(const PropertyTrees& from) {
   effect_tree = from.effect_tree;
   clip_tree = from.clip_tree;
   scroll_tree = from.scroll_tree;
+  transform_id_to_index_map = from.transform_id_to_index_map;
+  effect_id_to_index_map = from.effect_id_to_index_map;
+  clip_id_to_index_map = from.clip_id_to_index_map;
+  scroll_id_to_index_map = from.scroll_id_to_index_map;
   needs_rebuild = from.needs_rebuild;
   changed = from.changed;
   full_tree_damaged = from.full_tree_damaged;
@@ -1965,10 +1985,11 @@ void PropertyTrees::ToProtobuf(proto::PropertyTrees* proto) const {
 
 // static
 void PropertyTrees::FromProtobuf(const proto::PropertyTrees& proto) {
-  transform_tree.FromProtobuf(proto.transform_tree());
-  effect_tree.FromProtobuf(proto.effect_tree());
-  clip_tree.FromProtobuf(proto.clip_tree());
-  scroll_tree.FromProtobuf(proto.scroll_tree());
+  transform_tree.FromProtobuf(proto.transform_tree(),
+                              &transform_id_to_index_map);
+  effect_tree.FromProtobuf(proto.effect_tree(), &effect_id_to_index_map);
+  clip_tree.FromProtobuf(proto.clip_tree(), &clip_id_to_index_map);
+  scroll_tree.FromProtobuf(proto.scroll_tree(), &scroll_id_to_index_map);
 
   needs_rebuild = proto.needs_rebuild();
   changed = proto.changed();

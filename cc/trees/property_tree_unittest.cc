@@ -79,13 +79,16 @@ TEST(PropertyTreeSerializationTest, TransformNodeSerialization) {
 TEST(PropertyTreeSerializationTest, TransformTreeSerialization) {
   TransformTree original;
   TransformNode& root = *original.Node(0);
+  root.owner_id = 1;
   root.data.target_id = 3;
   root.data.content_target_id = 4;
   TransformNode second;
+  second.owner_id = 2;
   second.data.local.Translate3d(2.f, 2.f, 0.f);
   second.data.source_node_id = 0;
   second.data.target_id = 0;
   TransformNode third;
+  third.owner_id = 3;
   third.data.scrolls = true;
   third.data.source_node_id = 1;
   third.data.target_id = 0;
@@ -106,8 +109,12 @@ TEST(PropertyTreeSerializationTest, TransformTreeSerialization) {
   proto::PropertyTree proto;
   original.ToProtobuf(&proto);
   TransformTree result;
-  result.FromProtobuf(proto);
+  std::unordered_map<int, int> transform_id_to_index_map;
+  result.FromProtobuf(proto, &transform_id_to_index_map);
 
+  EXPECT_EQ(transform_id_to_index_map[1], 0);
+  EXPECT_EQ(transform_id_to_index_map[2], 1);
+  EXPECT_EQ(transform_id_to_index_map[3], 2);
   EXPECT_EQ(original, result);
 }
 
@@ -150,12 +157,15 @@ TEST(PropertyTreeSerializationTest, ClipNodeSerialization) {
 TEST(PropertyTreeSerializationTest, ClipTreeSerialization) {
   ClipTree original;
   ClipNode& root = *original.Node(0);
+  root.owner_id = 1;
   root.data.transform_id = 2;
   root.data.target_id = 1;
   ClipNode second;
+  second.owner_id = 2;
   second.data.transform_id = 4;
   second.data.applies_local_clip = true;
   ClipNode third;
+  third.owner_id = 3;
   third.data.target_id = 3;
   third.data.target_is_clipped = false;
 
@@ -166,8 +176,12 @@ TEST(PropertyTreeSerializationTest, ClipTreeSerialization) {
   proto::PropertyTree proto;
   original.ToProtobuf(&proto);
   ClipTree result;
-  result.FromProtobuf(proto);
+  std::unordered_map<int, int> clip_id_to_index_map;
+  result.FromProtobuf(proto, &clip_id_to_index_map);
 
+  EXPECT_EQ(clip_id_to_index_map[1], 0);
+  EXPECT_EQ(clip_id_to_index_map[2], 1);
+  EXPECT_EQ(clip_id_to_index_map[3], 2);
   EXPECT_EQ(original, result);
 }
 
@@ -204,12 +218,15 @@ TEST(PropertyTreeSerializationTest, EffectNodeSerialization) {
 TEST(PropertyTreeSerializationTest, EffectTreeSerialization) {
   EffectTree original;
   EffectNode& root = *original.Node(0);
+  root.owner_id = 5;
   root.data.transform_id = 2;
   root.data.clip_id = 1;
   EffectNode second;
+  second.owner_id = 6;
   second.data.transform_id = 4;
   second.data.opacity = true;
   EffectNode third;
+  third.owner_id = 7;
   third.data.clip_id = 3;
   third.data.has_render_surface = false;
 
@@ -220,8 +237,12 @@ TEST(PropertyTreeSerializationTest, EffectTreeSerialization) {
   proto::PropertyTree proto;
   original.ToProtobuf(&proto);
   EffectTree result;
-  result.FromProtobuf(proto);
+  std::unordered_map<int, int> effect_id_to_index_map;
+  result.FromProtobuf(proto, &effect_id_to_index_map);
 
+  EXPECT_EQ(effect_id_to_index_map[5], 0);
+  EXPECT_EQ(effect_id_to_index_map[6], 1);
+  EXPECT_EQ(effect_id_to_index_map[7], 2);
   EXPECT_EQ(original, result);
 }
 
@@ -264,9 +285,11 @@ TEST(PropertyTreeSerializationTest, ScrollTreeSerialization) {
   property_trees.is_main_thread = true;
   ScrollTree& original = property_trees.scroll_tree;
   ScrollNode second;
+  second.owner_id = 10;
   second.data.scrollable = true;
   second.data.bounds = gfx::Size(15, 15);
   ScrollNode third;
+  third.owner_id = 20;
   third.data.contains_non_fast_scrollable_region = true;
 
   original.Insert(second, 0);
@@ -278,9 +301,12 @@ TEST(PropertyTreeSerializationTest, ScrollTreeSerialization) {
   proto::PropertyTree proto;
   original.ToProtobuf(&proto);
   ScrollTree result;
-  result.FromProtobuf(proto);
+  std::unordered_map<int, int> scroll_id_to_index_map;
+  result.FromProtobuf(proto, &scroll_id_to_index_map);
 
   EXPECT_EQ(original, result);
+  EXPECT_EQ(scroll_id_to_index_map[10], 1);
+  EXPECT_EQ(scroll_id_to_index_map[20], 2);
 
   original.clear();
   original.set_currently_scrolling_node(0);
@@ -289,21 +315,50 @@ TEST(PropertyTreeSerializationTest, ScrollTreeSerialization) {
   proto::PropertyTree proto2;
   original.ToProtobuf(&proto2);
   result = ScrollTree();
-  result.FromProtobuf(proto2);
+  scroll_id_to_index_map.clear();
+  result.FromProtobuf(proto2, &scroll_id_to_index_map);
 
   EXPECT_EQ(original, result);
 }
 
 TEST(PropertyTreeSerializationTest, PropertyTrees) {
   PropertyTrees original;
-  original.transform_tree.Insert(TransformNode(), 0);
-  original.transform_tree.Insert(TransformNode(), 1);
-  original.clip_tree.Insert(ClipNode(), 0);
-  original.clip_tree.Insert(ClipNode(), 1);
-  original.effect_tree.Insert(EffectNode(), 0);
-  original.effect_tree.Insert(EffectNode(), 1);
-  original.scroll_tree.Insert(ScrollNode(), 0);
-  original.scroll_tree.Insert(ScrollNode(), 1);
+  TransformNode transform_node1 = TransformNode();
+  transform_node1.owner_id = 10;
+  original.transform_tree.Insert(transform_node1, 0);
+  TransformNode transform_node2 = TransformNode();
+  transform_node2.owner_id = 20;
+  original.transform_tree.Insert(transform_node2, 1);
+  original.transform_id_to_index_map[10] = 1;
+  original.transform_id_to_index_map[20] = 2;
+
+  ClipNode clip_node1 = ClipNode();
+  clip_node1.owner_id = 10;
+  original.clip_tree.Insert(clip_node1, 0);
+  ClipNode clip_node2 = ClipNode();
+  clip_node2.owner_id = 22;
+  original.clip_tree.Insert(clip_node2, 1);
+  original.clip_id_to_index_map[10] = 1;
+  original.clip_id_to_index_map[22] = 2;
+
+  EffectNode effect_node1 = EffectNode();
+  effect_node1.owner_id = 11;
+  original.effect_tree.Insert(effect_node1, 0);
+  EffectNode effect_node2 = EffectNode();
+  effect_node2.owner_id = 23;
+  original.effect_tree.Insert(effect_node2, 1);
+  original.effect_id_to_index_map[11] = 1;
+  original.effect_id_to_index_map[23] = 2;
+
+  ScrollNode scroll_node1 = ScrollNode();
+  scroll_node1.owner_id = 10;
+  original.scroll_tree.Insert(scroll_node1, 0);
+  ScrollNode scroll_node2 = ScrollNode();
+  scroll_node2.owner_id = 20;
+  original.scroll_tree.Insert(scroll_node2, 1);
+  original.scroll_id_to_index_map[10] = 1;
+  original.scroll_id_to_index_map[20] = 2;
+
   original.needs_rebuild = false;
   original.non_root_surfaces_enabled = false;
   original.sequence_number = 3;
@@ -335,7 +390,8 @@ class PropertyTreeTest : public testing::Test {
     TransformTree new_tree;
     proto::PropertyTree proto;
     transform_tree.ToProtobuf(&proto);
-    new_tree.FromProtobuf(proto);
+    std::unordered_map<int, int> transform_id_to_index_map;
+    new_tree.FromProtobuf(proto, &transform_id_to_index_map);
 
     new_tree.SetPropertyTrees(transform_tree.property_trees());
 
@@ -350,7 +406,8 @@ class PropertyTreeTest : public testing::Test {
     EffectTree new_tree;
     proto::PropertyTree proto;
     effect_tree.ToProtobuf(&proto);
-    new_tree.FromProtobuf(proto);
+    std::unordered_map<int, int> effect_id_to_index_map;
+    new_tree.FromProtobuf(proto, &effect_id_to_index_map);
 
     EXPECT_EQ(effect_tree, new_tree);
     return new_tree;
