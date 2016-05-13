@@ -5800,7 +5800,7 @@ All users must sign out to continue.
     Play, edit, share, get stuff done.
   </message>
   <message name="IDS_FIRST_RUN_APP_LIST_STEP_TEXT_1" desc="First part of message on the first-run tutorial bubble pointing to application list button.">
-    Access all your apps from this handy launcher. Play games, video chat, listen to music, edit documents, or get more apps from the Chrome Web Store.
+    Access all your apps from this handy launcher. Play games, video chat, listen to music, edit documents, or get more apps.
   </message>
   <message name="IDS_FIRST_RUN_APP_LIST_STEP_TEXT_2" desc="Second part of message on the first-run tutorial bubble pointing to application list button. Part of the phrase &quot;Access all your apps from this handy launcher. Play games, video chat, listen to music, edit documents, or get more apps from the Chrome Web Store. It's all here.&quot;">
     It's all here.
