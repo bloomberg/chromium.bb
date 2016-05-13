@@ -440,12 +440,6 @@ source_set("browser") {
       "//chrome/browser/apps/app_shim",
     ]
   }
-  if (is_mac || is_android) {
-    sources += rebase_path(
-            gypi_values.chrome_browser_password_manager_mac_android_sources,
-            ".",
-            "//chrome")
-  }
   if (enable_extensions) {
     public_deps += [ "//chrome/browser/extensions" ]
     deps += [

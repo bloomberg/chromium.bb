@@ -102,10 +102,6 @@ class ChromePasswordManagerClient
   // Observer for PasswordGenerationPopup events. Used for testing.
   void SetTestObserver(autofill::PasswordGenerationPopupObserver* observer);
 
-  // Returns true if the bubble UI is enabled, and false if we're still using
-  // the sad old Infobar UI.
-  static bool IsTheHotNewBubbleUIEnabled();
-
   static void BindCredentialManager(
       content::RenderFrameHost* render_frame_host,
       password_manager::mojom::CredentialManagerRequest request);

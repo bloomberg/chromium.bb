@@ -1292,12 +1292,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"inert-visual-viewport", IDS_FLAGS_INERT_VISUAL_VIEWPORT_NAME,
      IDS_FLAGS_INERT_VISUAL_VIEWPORT_DESCRIPTION, kOsAll,
      SINGLE_VALUE_TYPE(switches::kInertVisualViewport)},
-#if defined(OS_MACOSX)
-    {"enable-save-password-bubble", IDS_FLAGS_SAVE_PASSWORD_BUBBLE_NAME,
-     IDS_FLAGS_SAVE_PASSWORD_BUBBLE_DESCRIPTION, kOsMac,
-     ENABLE_DISABLE_VALUE_TYPE(switches::kEnableSavePasswordBubble,
-                               switches::kDisableSavePasswordBubble)},
-#endif
     {"enable-apps-file-associations", IDS_FLAGS_APPS_FILE_ASSOCIATIONS_NAME,
      IDS_FLAGS_APPS_FILE_ASSOCIATIONS_DESCRIPTION, kOsMac,
      SINGLE_VALUE_TYPE(switches::kEnableAppsFileAssociations)},

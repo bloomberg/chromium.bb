@@ -9,7 +9,6 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -18,9 +17,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
-#include "components/infobars/core/confirm_infobar_delegate.h"
-#include "components/infobars/core/infobar.h"
-#include "components/infobars/core/infobar_manager.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/test_password_store.h"
 #include "components/password_manager/core/common/password_manager_features.h"
@@ -82,64 +78,6 @@ void PromptObserver::AcceptUpdatePrompt(
   AcceptUpdatePromptImpl(form);
 }
 
-class InfoBarObserver : public PromptObserver,
-                        public infobars::InfoBarManager::Observer {
- public:
-  explicit InfoBarObserver(content::WebContents* web_contents)
-      : infobar_is_being_shown_(false),
-        infobar_service_(InfoBarService::FromWebContents(web_contents)) {
-    infobar_service_->AddObserver(this);
-  }
-
-  ~InfoBarObserver() override {
-    if (infobar_service_)
-      infobar_service_->RemoveObserver(this);
-  }
-
-  void Dismiss() const override {
-    NOTIMPLEMENTED();
-  }
-
- private:
-  // PromptObserver:
-  bool IsShowingPrompt() const override { return infobar_is_being_shown_; }
-
-  void AcceptImpl() const override {
-    EXPECT_EQ(1u, infobar_service_->infobar_count());
-    if (!infobar_service_->infobar_count())
-      return;  // Let the test finish to gather possibly more diagnostics.
-
-    // ConfirmInfoBarDelegate::Accept returning true means the infobar is
-    // immediately closed. Checking the return value is preferred to testing
-    // IsShowingPrompt() here, for it avoids the delay until the closing
-    // notification is received.
-    EXPECT_TRUE(infobar_service_->infobar_at(0)
-                    ->delegate()
-                    ->AsConfirmInfoBarDelegate()
-                    ->Accept());
-  }
-
-  // infobars::InfoBarManager::Observer:
-  void OnInfoBarAdded(infobars::InfoBar* infobar) override {
-    infobar_is_being_shown_ = true;
-  }
-
-  void OnInfoBarRemoved(infobars::InfoBar* infobar, bool animate) override {
-    infobar_is_being_shown_ = false;
-  }
-
-  void OnManagerShuttingDown(infobars::InfoBarManager* manager) override {
-    ASSERT_EQ(infobar_service_, manager);
-    infobar_service_->RemoveObserver(this);
-    infobar_service_ = nullptr;
-  }
-
-  bool infobar_is_being_shown_;
-  InfoBarService* infobar_service_;
-
-  DISALLOW_COPY_AND_ASSIGN(InfoBarObserver);
-};
-
 class BubbleObserver : public PromptObserver {
  public:
   explicit BubbleObserver(content::WebContents* web_contents)
@@ -188,11 +126,7 @@ class BubbleObserver : public PromptObserver {
 
 std::unique_ptr<PromptObserver> PromptObserver::Create(
     content::WebContents* web_contents) {
-  if (ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled()) {
-    return std::unique_ptr<PromptObserver>(new BubbleObserver(web_contents));
-  } else {
-    return std::unique_ptr<PromptObserver>(new InfoBarObserver(web_contents));
-  }
+  return base::WrapUnique(new BubbleObserver(web_contents));
 }
 
 PasswordManagerBrowserTestBase::PasswordManagerBrowserTestBase() {

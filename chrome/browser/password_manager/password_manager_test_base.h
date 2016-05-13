@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/test_utils.h"

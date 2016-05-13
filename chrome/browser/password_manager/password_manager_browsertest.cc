@@ -2049,7 +2049,6 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
                        ChangePwdNoAccountStored) {
-  ASSERT_TRUE(ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled());
   NavigateToFile("/password/password_form.html");
 
   // Fill a form and submit through a <input type="submit"> button.
@@ -2087,7 +2086,6 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
                        ChangePwd1AccountStored) {
-  ASSERT_TRUE(ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled());
   // At first let us save credentials to the PasswordManager.
   scoped_refptr<password_manager::TestPasswordStore> password_store =
       static_cast<password_manager::TestPasswordStore*>(
@@ -2134,7 +2132,6 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
                        PasswordOverridenUpdateBubbleShown) {
-  ASSERT_TRUE(ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled());
   // At first let us save credentials to the PasswordManager.
   scoped_refptr<password_manager::TestPasswordStore> password_store =
       static_cast<password_manager::TestPasswordStore*>(
@@ -2175,7 +2172,6 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
                        PasswordNotOverridenUpdateBubbleNotShown) {
-  ASSERT_TRUE(ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled());
   // At first let us save credentials to the PasswordManager.
   scoped_refptr<password_manager::TestPasswordStore> password_store =
       static_cast<password_manager::TestPasswordStore*>(
@@ -2208,7 +2204,6 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
                        ChangePwdWhenTheFormContainNotUsernameTextfield) {
-  ASSERT_TRUE(ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled());
   // At first let us save credentials to the PasswordManager.
   scoped_refptr<password_manager::TestPasswordStore> password_store =
       static_cast<password_manager::TestPasswordStore*>(
@@ -2789,7 +2784,6 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
 // and there is stored credentials with the same password.
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
                        PasswordRetryFormNoBubbleWhenPasswordTheSame) {
-  ASSERT_TRUE(ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled());
   // At first let us save credentials to the PasswordManager.
   scoped_refptr<password_manager::TestPasswordStore> password_store =
       static_cast<password_manager::TestPasswordStore*>(
@@ -2824,7 +2818,6 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
 // submitted and there are stored credentials but with different password.
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
                        PasswordRetryFormUpdateBubbleShown) {
-  ASSERT_TRUE(ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled());
   // At first let us save credentials to the PasswordManager.
   scoped_refptr<password_manager::TestPasswordStore> password_store =
       static_cast<password_manager::TestPasswordStore*>(
@@ -2863,7 +2856,6 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
                        NoCrashWhenNavigatingWithOpenAccountPicker) {
-  ASSERT_TRUE(ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled());
   // Save credentials with 'skip_zero_click'.
   scoped_refptr<password_manager::TestPasswordStore> password_store =
       static_cast<password_manager::TestPasswordStore*>(
@@ -2926,7 +2918,6 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
                        SkipZeroClickNotToggledAfterSuccessfulSubmissionWithAPI)
 {
-  ASSERT_TRUE(ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled());
   // Save credentials with 'skip_zero_click'
   scoped_refptr<password_manager::TestPasswordStore> password_store =
       static_cast<password_manager::TestPasswordStore*>(
@@ -2973,7 +2964,6 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
                        SkipZeroClickNotToggledAfterSuccessfulAutofill) {
-  ASSERT_TRUE(ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled());
   // Save credentials with 'skip_zero_click'
   scoped_refptr<password_manager::TestPasswordStore> password_store =
       static_cast<password_manager::TestPasswordStore*>(

@@ -343,12 +343,10 @@
       '../tools/json_schema_compiler/test/objects_unittest.cc',
       '../tools/json_schema_compiler/test/simple_api_unittest.cc',
     ],
-    'chrome_unit_tests_mac_android_sources': [
-      'browser/password_manager/save_password_infobar_delegate_unittest.cc',
-    ],
     'chrome_unit_tests_android_sources': [
       'browser/autofill/autofill_save_card_infobar_delegate_mobile_unittest.cc',
       'browser/password_manager/auto_signin_first_run_dialog_android_unittest.cc',
+      'browser/password_manager/save_password_infobar_delegate_unittest.cc',
       'browser/permissions/permission_queue_controller_unittest.cc',
     ],
     'chrome_unit_tests_non_mobile_sources': [
@@ -2594,9 +2592,6 @@
           # but when we tried to pull it up to the common.gypi level, it broke
           # other things like the ui and startup tests. *shrug*
           'xcode_settings': {'OTHER_LDFLAGS': ['-Wl,-ObjC']},
-        }],
-        ['OS=="mac" or OS=="android"', {
-          'sources': [ '<@(chrome_unit_tests_mac_android_sources)' ],
         }],
         ['OS=="android"', {
           'sources': [ '<@(chrome_unit_tests_android_sources)' ],
