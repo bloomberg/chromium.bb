@@ -362,21 +362,21 @@ const HTTPHeaderMap& ResourceResponse::httpHeaderFields() const
     return m_httpHeaderFields;
 }
 
-bool ResourceResponse::cacheControlContainsNoCache()
+bool ResourceResponse::cacheControlContainsNoCache() const
 {
     if (!m_cacheControlHeader.parsed)
         m_cacheControlHeader = parseCacheControlDirectives(m_httpHeaderFields.get(cacheControlHeaderString()), m_httpHeaderFields.get(pragmaHeaderString()));
     return m_cacheControlHeader.containsNoCache;
 }
 
-bool ResourceResponse::cacheControlContainsNoStore()
+bool ResourceResponse::cacheControlContainsNoStore() const
 {
     if (!m_cacheControlHeader.parsed)
         m_cacheControlHeader = parseCacheControlDirectives(m_httpHeaderFields.get(cacheControlHeaderString()), m_httpHeaderFields.get(pragmaHeaderString()));
     return m_cacheControlHeader.containsNoStore;
 }
 
-bool ResourceResponse::cacheControlContainsMustRevalidate()
+bool ResourceResponse::cacheControlContainsMustRevalidate() const
 {
     if (!m_cacheControlHeader.parsed)
         m_cacheControlHeader = parseCacheControlDirectives(m_httpHeaderFields.get(cacheControlHeaderString()), m_httpHeaderFields.get(pragmaHeaderString()));
@@ -390,14 +390,14 @@ bool ResourceResponse::hasCacheValidatorFields() const
     return !m_httpHeaderFields.get(lastModifiedHeader).isEmpty() || !m_httpHeaderFields.get(eTagHeader).isEmpty();
 }
 
-double ResourceResponse::cacheControlMaxAge()
+double ResourceResponse::cacheControlMaxAge() const
 {
     if (!m_cacheControlHeader.parsed)
         m_cacheControlHeader = parseCacheControlDirectives(m_httpHeaderFields.get(cacheControlHeaderString()), m_httpHeaderFields.get(pragmaHeaderString()));
     return m_cacheControlHeader.maxAge;
 }
 
-double ResourceResponse::cacheControlStaleWhileRevalidate()
+double ResourceResponse::cacheControlStaleWhileRevalidate() const
 {
     if (!m_cacheControlHeader.parsed)
         m_cacheControlHeader = parseCacheControlDirectives(m_httpHeaderFields.get(cacheControlHeaderString()), m_httpHeaderFields.get(pragmaHeaderString()));
