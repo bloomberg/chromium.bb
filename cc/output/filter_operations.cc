@@ -58,9 +58,11 @@ static int SpreadForStdDeviation(float std_deviation) {
   return static_cast<int>(ceilf(d * 3.f / 2.f));
 }
 
-gfx::Rect FilterOperations::MapRect(const gfx::Rect& rect) const {
-  auto accumulate_rect = [](const gfx::Rect& rect, const FilterOperation& op) {
-    return op.MapRect(rect);
+gfx::Rect FilterOperations::MapRect(const gfx::Rect& rect,
+                                    const SkMatrix& matrix) const {
+  auto accumulate_rect = [matrix](const gfx::Rect& rect,
+                                  const FilterOperation& op) {
+    return op.MapRect(rect, matrix);
   };
   return std::accumulate(operations_.begin(), operations_.end(), rect,
                          accumulate_rect);

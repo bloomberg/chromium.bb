@@ -30,8 +30,8 @@ TEST(FilterOperationsTest, GetOutsetsBlur) {
 TEST(FilterOperationsTest, MapRectBlur) {
   FilterOperations ops;
   ops.Append(FilterOperation::CreateBlurFilter(20));
-  EXPECT_EQ(gfx::Rect(-57, -57, 124, 124),
-            ops.MapRect(gfx::Rect(0, 0, 10, 10)));
+  EXPECT_EQ(gfx::Rect(-60, -60, 130, 130),
+            ops.MapRect(gfx::Rect(0, 0, 10, 10), SkMatrix::I()));
 }
 
 TEST(FilterOperationsTest, GetOutsetsDropShadowReferenceFilter) {
@@ -62,14 +62,16 @@ TEST(FilterOperationsTest, MapRectDropShadowReferenceFilter) {
           SkIntToScalar(9), SK_ColorBLACK,
           SkDropShadowImageFilter::kDrawShadowAndForeground_ShadowMode,
           nullptr)));
-  EXPECT_EQ(gfx::Rect(-9, -19, 34, 64), ops.MapRect(gfx::Rect(0, 0, 10, 10)));
+  EXPECT_EQ(gfx::Rect(-9, -19, 34, 64),
+            ops.MapRect(gfx::Rect(0, 0, 10, 10), SkMatrix::I()));
 }
 
 TEST(FilterOperationsTest, MapRectOffsetReferenceFilter) {
   sk_sp<SkImageFilter> filter = SkOffsetImageFilter::Make(30, 40, nullptr);
   FilterOperations ops;
   ops.Append(FilterOperation::CreateReferenceFilter(std::move(filter)));
-  EXPECT_EQ(gfx::Rect(30, 40, 10, 10), ops.MapRect(gfx::Rect(0, 0, 10, 10)));
+  EXPECT_EQ(gfx::Rect(30, 40, 10, 10),
+            ops.MapRect(gfx::Rect(0, 0, 10, 10), SkMatrix::I()));
 }
 
 TEST(FilterOperationsTest, GetOutsetsNullReferenceFilter) {
@@ -88,7 +90,8 @@ TEST(FilterOperationsTest, GetOutsetsNullReferenceFilter) {
 TEST(FilterOperationsTest, MapRectNullReferenceFilter) {
   FilterOperations ops;
   ops.Append(FilterOperation::CreateReferenceFilter(nullptr));
-  EXPECT_EQ(gfx::Rect(0, 0, 10, 10), ops.MapRect(gfx::Rect(0, 0, 10, 10)));
+  EXPECT_EQ(gfx::Rect(0, 0, 10, 10),
+            ops.MapRect(gfx::Rect(0, 0, 10, 10), SkMatrix::I()));
 }
 
 TEST(FilterOperationsTest, GetOutsetsDropShadow) {
@@ -106,8 +109,8 @@ TEST(FilterOperationsTest, GetOutsetsDropShadow) {
 TEST(FilterOperationsTest, MapRectDropShadow) {
   FilterOperations ops;
   ops.Append(FilterOperation::CreateDropShadowFilter(gfx::Point(3, 8), 20, 0));
-  EXPECT_EQ(gfx::Rect(-54, -49, 124, 124),
-            ops.MapRect(gfx::Rect(0, 0, 10, 10)));
+  EXPECT_EQ(gfx::Rect(-57, -52, 130, 130),
+            ops.MapRect(gfx::Rect(0, 0, 10, 10), SkMatrix::I()));
 }
 
 #define SAVE_RESTORE_AMOUNT(filter_name, filter_type, a)                  \

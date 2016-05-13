@@ -315,26 +315,25 @@ void FilterOperation::AsValueInto(base::trace_event::TracedValue* value) const {
   }
 }
 
-static int SpreadForStdDeviation(float std_deviation) {
-  // https://dvcs.w3.org/hg/FXTF/raw-file/tip/filters/index.html#feGaussianBlurElement
-  // provides this approximation for evaluating a gaussian blur by a triple box
-  // filter.
-  float d = floorf(std_deviation * 3.f * sqrt(8.f * atan(1.f)) / 4.f + 0.5f);
-  return static_cast<int>(ceilf(d * 3.f / 2.f));
+static SkVector MapStdDeviation(float std_deviation, const SkMatrix& matrix) {
+  SkVector sigma = SkVector::Make(std_deviation, std_deviation);
+  matrix.mapVectors(&sigma, 1);
+  return sigma * SkIntToScalar(3);
 }
 
-gfx::Rect FilterOperation::MapRect(const gfx::Rect& rect) const {
+gfx::Rect FilterOperation::MapRect(const gfx::Rect& rect,
+                                   const SkMatrix& matrix) const {
   switch (type_) {
     case FilterOperation::BLUR: {
-      int spread = SpreadForStdDeviation(amount());
+      SkVector spread = MapStdDeviation(amount(), matrix);
       gfx::Rect result = rect;
-      result.Inset(-spread, -spread, -spread, -spread);
+      result.Inset(-spread.x(), -spread.y(), -spread.x(), -spread.y());
       return result;
     }
     case FilterOperation::DROP_SHADOW: {
-      int spread = SpreadForStdDeviation(amount());
+      SkVector spread = MapStdDeviation(amount(), matrix);
       gfx::Rect result = rect;
-      result.Inset(-spread, -spread, -spread, -spread);
+      result.Inset(-spread.x(), -spread.y(), -spread.x(), -spread.y());
       result += drop_shadow_offset().OffsetFromOrigin();
       result.Union(rect);
       return result;
@@ -344,7 +343,7 @@ gfx::Rect FilterOperation::MapRect(const gfx::Rect& rect) const {
         return rect;
       SkIRect in_rect = gfx::RectToSkIRect(rect);
       SkIRect out_rect = image_filter()->filterBounds(
-          in_rect, SkMatrix::I(), SkImageFilter::kForward_MapDirection);
+          in_rect, matrix, SkImageFilter::kForward_MapDirection);
       return gfx::SkIRectToRect(out_rect);
     }
     default:

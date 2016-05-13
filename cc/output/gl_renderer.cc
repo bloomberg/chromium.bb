@@ -899,10 +899,13 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
   DCHECK(contents_texture);
   DCHECK(contents_texture->id());
 
+  SkMatrix scale_matrix;
+  scale_matrix.setScale(quad->filters_scale.x(), quad->filters_scale.y());
+  gfx::RectF dst_rect(quad->filters.MapRect(quad->rect, scale_matrix));
   gfx::Transform quad_rect_matrix;
   QuadRectTransform(&quad_rect_matrix,
                     quad->shared_quad_state->quad_to_target_transform,
-                    gfx::RectF(quad->rect));
+                    dst_rect);
   gfx::Transform contents_device_transform =
       frame->window_matrix * frame->projection_matrix * quad_rect_matrix;
   contents_device_transform.FlattenTo2d();
@@ -1016,21 +1019,6 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
         filter = sk_ref_sp(filter->getInput(0));
       }
       if (filter) {
-        gfx::Vector2dF scale = quad->filters_scale;
-        SkMatrix scale_matrix;
-        scale_matrix.setScale(scale.x(), scale.y());
-        SkIRect result_rect =
-            filter->filterBounds(gfx::RectToSkIRect(quad->rect), scale_matrix,
-                                 SkImageFilter::kForward_MapDirection);
-        gfx::RectF dst_rect = gfx::SkRectToRectF(SkRect::Make(result_rect));
-        // If the destination rect is not the same as the source rect, the edges
-        // previously computed for AA will be wrong. Rather than recompute them
-        // here, disable antialiasing and use a 1-pixel transparent
-        // border to achieve a similar effect.
-        if (use_aa && dst_rect != rect) {
-          dst_rect.Inset(-1.0f, -1.0f);
-          use_aa = false;
-        }
         gfx::Rect clip_rect = quad->shared_quad_state->clip_rect;
         if (clip_rect.IsEmpty()) {
           clip_rect = current_draw_rect_;
@@ -1050,14 +1038,14 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
         RoundUpToPow2(&dst_rect);
         filter_image = ApplyImageFilter(
             ScopedUseGrContext::Create(this, frame), resource_provider_, rect,
-            dst_rect, scale, std::move(filter), contents_texture);
-        if (filter_image) {
-          filter_image_id = skia::GrBackendObjectToGrGLTextureInfo(
-                                filter_image->getTextureHandle(true))
-                                ->fID;
-          DCHECK(filter_image_id);
-          rect = dst_rect;
+            dst_rect, quad->filters_scale, std::move(filter), contents_texture);
+        if (!filter_image) {
+          return;
         }
+        filter_image_id = skia::GrBackendObjectToGrGLTextureInfo(
+                              filter_image->getTextureHandle(true))
+                              ->fID;
+        DCHECK(filter_image_id);
       }
     }
   }
@@ -1276,7 +1264,7 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
   SetShaderOpacity(quad->shared_quad_state->opacity, locations.alpha);
   SetShaderQuadF(surface_quad, locations.quad);
   DrawQuadGeometry(frame, quad->shared_quad_state->quad_to_target_transform,
-                   rect, locations.matrix);
+                   dst_rect, locations.matrix);
 
   // Flush the compositor context before the filter bitmap goes out of
   // scope, so the draw gets processed before the filter texture gets deleted.
