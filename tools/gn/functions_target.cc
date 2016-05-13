@@ -656,6 +656,7 @@ const char kStaticLibrary_Help[] =
     "\n"
     "Variables\n"
     "\n"
+    "complete_static_lib\n"
     CONFIG_VALUES_VARS_HELP
     DEPS_VARS
     DEPENDENT_CONFIG_VARS
