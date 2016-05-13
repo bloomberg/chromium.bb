@@ -52,7 +52,8 @@ class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
       base::Callback<void(OptionalSnippets snippets)>;
 
   // Enumeration listing all possible outcomes for fetch attempts. Used for UMA
-  // histograms, so do not change existing values.
+  // histograms, so do not change existing values. Insert new values at the end,
+  // and update the histogram definition.
   enum class FetchResult {
     SUCCESS,
     EMPTY_HOSTS,
@@ -60,6 +61,7 @@ class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
     HTTP_ERROR,
     JSON_PARSE_ERROR,
     INVALID_SNIPPET_CONTENT_ERROR,
+    OAUTH_TOKEN_ERROR,
     RESULT_MAX
   };
 
@@ -99,7 +101,7 @@ class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
   }
 
  private:
-  enum class Variant { kRestrictedPersonalized, kRestricted, kPersonalized };
+  enum class Personalization { kPersonal, kNonPersonal, kBoth };
 
   void FetchSnippetsImpl(const GURL& url,
                          const std::string& auth_header,
@@ -163,8 +165,10 @@ class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
   // Flag for picking the right (stable/non-stable) API key for Chrome Reader.
   bool is_stable_channel_;
 
-  // The variant of the fetching to use.
-  Variant variant_;
+  // The variant of the fetching to use, loaded from variation parameters.
+  Personalization personalization_;
+  // Should we apply host restriction? It is loaded from variation parameters.
+  bool use_host_restriction_;
 
   // Allow for an injectable tick clock for testing.
   std::unique_ptr<base::TickClock> tick_clock_;

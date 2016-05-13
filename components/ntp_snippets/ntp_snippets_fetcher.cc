@@ -48,22 +48,28 @@ const char kSnippetsServer[] =
 const char kSnippetsServerNonAuthorizedFormat[] = "%s?key=%s";
 const char kAuthorizationRequestHeaderFormat[] = "Bearer %s";
 
-// Variation parameter for the variant of fetching to use.
-const char kVariantName[] = "fetching_variant";
+// Variation parameter for personalizing fetching of snippets.
+const char kPersonalizationName[] = "fetching_personalization";
+// Variation parameter for setting whether to restrict to a passed set of hosts.
+const char kHostRestrictionName[] = "fetching_host_restrict";
 
-// Constants listing possible values of the "fetching_variant" parameter.
-const char kVariantRestrictedString[] = "restricted";
-const char kVariantPersonalizedString[] = "personalized";
-const char kVariantRestrictedPersonalizedString[] = "restricted_personalized";
+// Constants for possible values of the "fetching_personalization" parameter.
+const char kPersonalizationPersonalString[] = "personal";
+const char kPersonalizationNonPersonalString[] = "non_personal";
+const char kPersonalizationBothString[] = "both";  // the default value
 
-const char kRequestParameterFormat[] =
+// Constants for possible values of the "fetching_host_restrict" parameter.
+const char kHostRestrictionOnString[] = "on";  // the default value
+const char kHostRestrictionOffString[] = "off";
+
+const char kRequestFormat[] =
     "{"
     "  \"response_detail_level\": \"STANDARD\","
     "%s"  // If authenticated - an obfuscated Gaia ID will be inserted here.
     "  \"advanced_options\": {"
     "    \"local_scoring_params\": {"
     "      \"content_params\": {"
-    "        \"only_return_personalized_results\": false"
+    "        \"only_return_personalized_results\": %s"
     "%s"  // If authenticated - user segment (lang code) will be inserted here.
     "      },"
     "      \"content_restricts\": ["
@@ -96,6 +102,8 @@ const char kHostRestrictFormat[] =
     "        \"type\": \"HOST_RESTRICT\","
     "        \"value\": \"%s\""
     "      }";
+const char kTrueString[] = "true";
+const char kFalseString[] = "false";
 
 std::string FetchResultToString(NTPSnippetsFetcher::FetchResult result) {
   switch (result) {
@@ -111,11 +119,24 @@ std::string FetchResultToString(NTPSnippetsFetcher::FetchResult result) {
       return "Received invalid JSON";
     case NTPSnippetsFetcher::FetchResult::INVALID_SNIPPET_CONTENT_ERROR:
       return "Invalid / empty list.";
+    case NTPSnippetsFetcher::FetchResult::OAUTH_TOKEN_ERROR:
+      return "Error in obtaining an OAuth2 access token.";
     case NTPSnippetsFetcher::FetchResult::RESULT_MAX:
       break;
   }
   NOTREACHED();
   return "Unknown error";
+}
+
+std::string BuildRequest(const std::string& obfuscated_gaia_id,
+                         bool only_return_personalized_results,
+                         const std::string& user_segment,
+                         const std::string& host_restricts,
+                         int count_to_fetch) {
+  return base::StringPrintf(
+      kRequestFormat, obfuscated_gaia_id.c_str(),
+      only_return_personalized_results ? kTrueString : kFalseString,
+      user_segment.c_str(), host_restricts.c_str(), count_to_fetch);
 }
 
 }  // namespace
@@ -136,17 +157,30 @@ NTPSnippetsFetcher::NTPSnippetsFetcher(
       tick_clock_(new base::DefaultTickClock()),
       weak_ptr_factory_(this) {
   // Parse the variation parameters and set the defaults if missing.
-  std::string variant = variations::GetVariationParamValue(
-      ntp_snippets::kStudyName, kVariantName);
-  if (variant == kVariantRestrictedString) {
-    variant_ = Variant::kRestricted;
-  } else if (variant == kVariantPersonalizedString) {
-    variant_ = Variant::kPersonalized;
+  std::string personalization = variations::GetVariationParamValue(
+      ntp_snippets::kStudyName, kPersonalizationName);
+  if (personalization == kPersonalizationNonPersonalString) {
+    personalization_ = Personalization::kNonPersonal;
+  } else if (personalization == kPersonalizationPersonalString) {
+    personalization_ = Personalization::kPersonal;
   } else {
-    variant_ = Variant::kRestrictedPersonalized;
-    LOG_IF(WARNING,
-           !variant.empty() && variant != kVariantRestrictedPersonalizedString)
-        << "Unknown fetching variant provided: " << variant;
+    personalization_ = Personalization::kBoth;
+    LOG_IF(WARNING, !personalization.empty() &&
+                        personalization != kPersonalizationBothString)
+        << "Unknown value for " << kPersonalizationName << ": "
+        << personalization;
+  }
+
+  std::string host_restriction = variations::GetVariationParamValue(
+      ntp_snippets::kStudyName, kHostRestrictionName);
+  if (host_restriction == kHostRestrictionOffString) {
+    use_host_restriction_ = false;
+  } else {
+    use_host_restriction_ = true;
+    LOG_IF(WARNING, !host_restriction.empty() &&
+                        host_restriction != kHostRestrictionOnString)
+        << "Unknown value for " << kHostRestrictionName << ": "
+        << host_restriction;
   }
 }
 
@@ -241,15 +275,14 @@ std::string NTPSnippetsFetcher::GetHostRestricts() const {
 }
 
 bool NTPSnippetsFetcher::UseHostRestriction() const {
-  return (variant_ == Variant::kRestricted ||
-          variant_ == Variant::kRestrictedPersonalized) &&
+  return use_host_restriction_ &&
          !base::CommandLine::ForCurrentProcess()->HasSwitch(
              switches::kDontRestrict);
 }
 
 bool NTPSnippetsFetcher::UseAuthentication() const {
-  return (variant_ == Variant::kPersonalized ||
-          variant_ == Variant::kRestrictedPersonalized);
+  return (personalization_ == Personalization::kPersonal ||
+          personalization_ == Personalization::kBoth);
 }
 
 void NTPSnippetsFetcher::FetchSnippetsNonAuthenticated() {
@@ -260,16 +293,17 @@ void NTPSnippetsFetcher::FetchSnippetsNonAuthenticated() {
   GURL url(base::StringPrintf(kSnippetsServerNonAuthorizedFormat,
                               kSnippetsServer, key.c_str()));
 
-  FetchSnippetsImpl(
-      url, std::string(),
-      base::StringPrintf(kRequestParameterFormat, "", "",
-                         GetHostRestricts().c_str(), count_to_fetch_));
+  FetchSnippetsImpl(url, std::string(),
+                    BuildRequest(/*obfuscated_gaia_id=*/std::string(),
+                                 /*only_return_personalized_results=*/false,
+                                 /*user_segment=*/std::string(),
+                                 GetHostRestricts(), count_to_fetch_));
 }
 
 void NTPSnippetsFetcher::FetchSnippetsAuthenticated(
     const std::string& account_id,
     const std::string& oauth_access_token) {
-  std::string auth = base::StringPrintf(kGaiaIdFormat, account_id.c_str());
+  std::string gaia_id = base::StringPrintf(kGaiaIdFormat, account_id.c_str());
   std::string user_segment =
       base::StringPrintf(kUserSegmentFormat, locale_.c_str());
 
@@ -277,9 +311,8 @@ void NTPSnippetsFetcher::FetchSnippetsAuthenticated(
       GURL(kSnippetsServer),
       base::StringPrintf(kAuthorizationRequestHeaderFormat,
                          oauth_access_token.c_str()),
-      base::StringPrintf(kRequestParameterFormat, auth.c_str(),
-                         user_segment.c_str(), GetHostRestricts().c_str(),
-                         count_to_fetch_));
+      BuildRequest(gaia_id, personalization_ == Personalization::kPersonal,
+                   user_segment, GetHostRestricts(), count_to_fetch_));
 }
 
 void NTPSnippetsFetcher::StartTokenRequest() {
@@ -310,9 +343,9 @@ void NTPSnippetsFetcher::OnGetTokenFailure(
   oauth_request_.reset();
   DLOG(ERROR) << "Unable to get token: " << error.ToString()
               << " - fetching the snippets without authentication.";
-
-  // Fallback to fetching non-authenticated tokens.
-  FetchSnippetsNonAuthenticated();
+  FetchFinished(
+      OptionalSnippets(), FetchResult::OAUTH_TOKEN_ERROR,
+      /*extra_message=*/base::StringPrintf(" (%s)", error.ToString().c_str()));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
