@@ -166,6 +166,7 @@ HttpCache::Transaction::Transaction(RequestPriority priority, HttpCache* cache)
       effective_load_flags_(0),
       write_len_(0),
       transaction_pattern_(PATTERN_UNDEFINED),
+      validation_cause_(VALIDATION_CAUSE_UNDEFINED),
       total_received_bytes_(0),
       total_sent_bytes_(0),
       websocket_handshake_stream_base_create_helper_(NULL),
@@ -2158,6 +2159,7 @@ ValidationType HttpCache::Transaction::RequiresValidation() {
       !response_.vary_data.MatchesRequest(*request_,
                                           *response_.headers.get())) {
     vary_mismatch_ = true;
+    validation_cause_ = VALIDATION_CAUSE_VARY_MISMATCH;
     return VALIDATION_SYNCHRONOUS;
   }
 
@@ -2174,8 +2176,10 @@ ValidationType HttpCache::Transaction::RequiresValidation() {
     return VALIDATION_NONE;
   }
 
-  if (effective_load_flags_ & LOAD_VALIDATE_CACHE)
+  if (effective_load_flags_ & LOAD_VALIDATE_CACHE) {
+    validation_cause_ = VALIDATION_CAUSE_VALIDATE_FLAG;
     return VALIDATION_SYNCHRONOUS;
+  }
 
   if (request_->method == "PUT" || request_->method == "DELETE")
     return VALIDATION_SYNCHRONOUS;
@@ -2184,6 +2188,14 @@ ValidationType HttpCache::Transaction::RequiresValidation() {
       response_.headers->RequiresValidation(response_.request_time,
                                             response_.response_time,
                                             cache_->clock_->Now());
+
+  if (validation_required_by_headers != VALIDATION_NONE) {
+    validation_cause_ =
+        response_.headers->GetFreshnessLifetimes(response_.response_time)
+                    .freshness == base::TimeDelta()
+            ? VALIDATION_CAUSE_ZERO_FRESHNESS
+            : VALIDATION_CAUSE_STALE;
+  }
 
   if (validation_required_by_headers == VALIDATION_ASYNCHRONOUS) {
     // Asynchronous revalidation is only supported for GET methods.
@@ -2705,6 +2717,8 @@ void HttpCache::Transaction::RecordHistograms() {
     return;
   }
 
+  bool validation_request = transaction_pattern_ == PATTERN_ENTRY_VALIDATED ||
+                            transaction_pattern_ == PATTERN_ENTRY_UPDATED;
   std::string mime_type;
   HttpResponseHeaders* response_headers = GetResponseInfo()->headers.get();
   if (response_headers && response_headers->GetMimeType(&mime_type)) {
@@ -2712,41 +2726,83 @@ void HttpCache::Transaction::RecordHistograms() {
     // response header mime type, which could be incorrect, so this is just an
     // estimate.
     if (mime_type == "text/html" && (request_->load_flags & LOAD_MAIN_FRAME)) {
-      UMA_HISTOGRAM_ENUMERATION(std::string("HttpCache.Pattern.MainFrameHTML"),
+      UMA_HISTOGRAM_ENUMERATION("HttpCache.Pattern.MainFrameHTML",
                                 transaction_pattern_, PATTERN_MAX);
+      if (validation_request) {
+        UMA_HISTOGRAM_ENUMERATION("HttpCache.ValidationCause.MainFrameHTML",
+                                  validation_cause_, VALIDATION_CAUSE_MAX);
+      }
     } else if (mime_type == "text/html") {
-      UMA_HISTOGRAM_ENUMERATION(
-          std::string("HttpCache.Pattern.NonMainFrameHTML"),
-          transaction_pattern_, PATTERN_MAX);
-    } else if (mime_type == "text/css") {
-      UMA_HISTOGRAM_ENUMERATION(std::string("HttpCache.Pattern.CSS"),
+      UMA_HISTOGRAM_ENUMERATION("HttpCache.Pattern.NonMainFrameHTML",
                                 transaction_pattern_, PATTERN_MAX);
+      if (validation_request) {
+        UMA_HISTOGRAM_ENUMERATION("HttpCache.ValidationCause.NonMainFrameHTML",
+                                  validation_cause_, VALIDATION_CAUSE_MAX);
+      }
+    } else if (mime_type == "text/css") {
+      UMA_HISTOGRAM_ENUMERATION("HttpCache.Pattern.CSS", transaction_pattern_,
+                                PATTERN_MAX);
+      if (validation_request) {
+        UMA_HISTOGRAM_ENUMERATION("HttpCache.ValidationCause.CSS",
+                                  validation_cause_, VALIDATION_CAUSE_MAX);
+      }
     } else if (base::StartsWith(mime_type, "image/",
                                 base::CompareCase::SENSITIVE)) {
       int64_t content_length = response_headers->GetContentLength();
       if (content_length >= 0 && content_length < 100) {
-        UMA_HISTOGRAM_ENUMERATION(std::string("HttpCache.Pattern.TinyImage"),
+        UMA_HISTOGRAM_ENUMERATION("HttpCache.Pattern.TinyImage",
                                   transaction_pattern_, PATTERN_MAX);
+        if (validation_request) {
+          UMA_HISTOGRAM_ENUMERATION("HttpCache.ValidationCause.TinyImage",
+                                    validation_cause_, VALIDATION_CAUSE_MAX);
+        }
       } else if (content_length >= 100) {
-        UMA_HISTOGRAM_ENUMERATION(std::string("HttpCache.Pattern.NonTinyImage"),
+        UMA_HISTOGRAM_ENUMERATION("HttpCache.Pattern.NonTinyImage",
                                   transaction_pattern_, PATTERN_MAX);
+        if (validation_request) {
+          UMA_HISTOGRAM_ENUMERATION("HttpCache.ValidationCause.NonTinyImage",
+                                    validation_cause_, VALIDATION_CAUSE_MAX);
+        }
       }
-      UMA_HISTOGRAM_ENUMERATION(std::string("HttpCache.Pattern.Image"),
-                                transaction_pattern_, PATTERN_MAX);
+      UMA_HISTOGRAM_ENUMERATION("HttpCache.Pattern.Image", transaction_pattern_,
+                                PATTERN_MAX);
+      if (validation_request) {
+        UMA_HISTOGRAM_ENUMERATION("HttpCache.ValidationCause.Image",
+                                  validation_cause_, VALIDATION_CAUSE_MAX);
+      }
     } else if (base::EndsWith(mime_type, "javascript",
                               base::CompareCase::SENSITIVE) ||
                base::EndsWith(mime_type, "ecmascript",
                               base::CompareCase::SENSITIVE)) {
-      UMA_HISTOGRAM_ENUMERATION(std::string("HttpCache.Pattern.JavaScript"),
+      UMA_HISTOGRAM_ENUMERATION("HttpCache.Pattern.JavaScript",
                                 transaction_pattern_, PATTERN_MAX);
+      if (validation_request) {
+        UMA_HISTOGRAM_ENUMERATION("HttpCache.ValidationCause.JavaScript",
+                                  validation_cause_, VALIDATION_CAUSE_MAX);
+      }
     } else if (mime_type.find("font") != std::string::npos) {
-      UMA_HISTOGRAM_ENUMERATION(std::string("HttpCache.Pattern.Font"),
-                                transaction_pattern_, PATTERN_MAX);
+      UMA_HISTOGRAM_ENUMERATION("HttpCache.Pattern.Font", transaction_pattern_,
+                                PATTERN_MAX);
+      if (validation_request) {
+        UMA_HISTOGRAM_ENUMERATION("HttpCache.ValidationCause.Font",
+                                  validation_cause_, VALIDATION_CAUSE_MAX);
+      }
     }
   }
 
   UMA_HISTOGRAM_ENUMERATION(
       "HttpCache.Pattern", transaction_pattern_, PATTERN_MAX);
+
+  if (validation_request) {
+    UMA_HISTOGRAM_ENUMERATION("HttpCache.ValidationCause", validation_cause_,
+                              VALIDATION_CAUSE_MAX);
+  }
+
+  if (transaction_pattern_ == PATTERN_ENTRY_CANT_CONDITIONALIZE) {
+    UMA_HISTOGRAM_ENUMERATION("HttpCache.CantConditionalizeCause",
+                              validation_cause_, VALIDATION_CAUSE_MAX);
+  }
+
   if (transaction_pattern_ == PATTERN_NOT_COVERED)
     return;
   DCHECK(!range_requested_);

@@ -246,6 +246,18 @@ class HttpCache::Transaction : public HttpTransaction {
     PATTERN_MAX,
   };
 
+  // Used for categorizing validation triggers in histograms.
+  // NOTE: This enumeration is used in histograms, so please do not add entries
+  // in the middle.
+  enum ValidationCause {
+    VALIDATION_CAUSE_UNDEFINED,
+    VALIDATION_CAUSE_VARY_MISMATCH,
+    VALIDATION_CAUSE_VALIDATE_FLAG,
+    VALIDATION_CAUSE_STALE,
+    VALIDATION_CAUSE_ZERO_FRESHNESS,
+    VALIDATION_CAUSE_MAX
+  };
+
   // Runs the state transition loop. Resets and calls |callback_| on exit,
   // unless the return value is ERR_IO_PENDING.
   int DoLoop(int result);
@@ -468,6 +480,7 @@ class HttpCache::Transaction : public HttpTransaction {
 
   // Members used to track data for histograms.
   TransactionPattern transaction_pattern_;
+  ValidationCause validation_cause_;
   base::TimeTicks entry_lock_waiting_since_;
   base::TimeTicks first_cache_access_since_;
   base::TimeTicks send_request_since_;

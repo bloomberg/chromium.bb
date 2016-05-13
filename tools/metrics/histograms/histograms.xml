@@ -17611,6 +17611,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="HttpCache.CantConditionalizeCause"
+    enum="HttpCacheValidationCause">
+  <owner>jkarlin@chromium.org</owner>
+  <summary>
+    For each request that results in an unconditionalizable network request, the
+    cause for the request.
+  </summary>
+</histogram>
+
 <histogram name="HttpCache.EntryLockWait" units="ms">
   <owner>jkarlin@chromium.org</owner>
   <owner>gavinp@chromium.org</owner>
@@ -17661,6 +17670,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="HttpCache.ReadErrorRestartable" enum="NetErrorCodes">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>Net error results from restartable cache read errors.</summary>
+</histogram>
+
+<histogram name="HttpCache.ValidationCause" enum="HttpCacheValidationCause">
+  <owner>jkarlin@chromium.org</owner>
+  <summary>For each validation attempt, the cause for the validation.</summary>
 </histogram>
 
 <histogram name="HttpCache.Vary" enum="VaryType">
@@ -74962,6 +74976,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="6" label="CantConditionalize"/>
 </enum>
 
+<enum name="HttpCacheValidationCause" type="int">
+  <int value="0" label="Undefined"/>
+  <int value="1" label="Vary Mismatch"/>
+  <int value="2" label="Validate Flag"/>
+  <int value="3" label="Stale Resource"/>
+  <int value="4" label="Zero Freshness"/>
+</enum>
+
 <enum name="HttpHeaderParserEvent" type="int">
   <int value="0" label="PARSER_INVOKED"/>
   <int value="1" label="HTTP_09_RESPONSE"/>
@@ -89846,6 +89868,7 @@ To add a new entry, add it with any value and run test to compute valid value.
              content-length &gt;= 100 bytes."/>
   <suffix name="Font" label="Showing cache patterns only for font resources."/>
   <affected-histogram name="HttpCache.Pattern"/>
+  <affected-histogram name="HttpCache.ValidationCause"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="CacheInstance" separator="." ordering="prefix">
