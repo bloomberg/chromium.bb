@@ -300,6 +300,9 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   virtual void IncrementWorkerRefCount() = 0;
   virtual void DecrementWorkerRefCount() = 0;
 
+  // Purges and suspends the renderer process.
+  virtual void PurgeAndSuspend() = 0;
+
   // Returns the current number of active views in this process.  Excludes
   // any RenderViewHosts that are swapped out.
   size_t GetActiveViewCount();

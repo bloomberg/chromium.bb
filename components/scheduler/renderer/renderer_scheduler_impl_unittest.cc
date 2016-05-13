@@ -2124,6 +2124,24 @@ TEST_F(RendererSchedulerImplTest, MultipleSuspendsNeedMultipleResumes) {
               testing::ElementsAre(std::string("T1"), std::string("T2")));
 }
 
+TEST_F(RendererSchedulerImplTest, SuspendRendererWhenBackgrounded) {
+  // Assume that the renderer is backgrounded.
+  scheduler_->OnRendererBackgrounded();
+
+  // Tasks don't fire when the renderer is suspended.
+  std::vector<std::string> run_order;
+  PostTestTasks(&run_order, "T1 T2");
+  scheduler_->SuspendRenderer();
+  RunUntilIdle();
+  EXPECT_TRUE(run_order.empty());
+
+  // The queued tasks fire when the tab goes foregrounded.
+  scheduler_->OnRendererForegrounded();
+  RunUntilIdle();
+  EXPECT_THAT(run_order,
+              testing::ElementsAre(std::string("T1"), std::string("T2")));
+}
+
 TEST_F(RendererSchedulerImplTest, UseCaseToString) {
   CheckAllUseCaseToString();
 }

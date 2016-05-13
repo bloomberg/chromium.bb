@@ -395,4 +395,4 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, ProtectVideoTabs) {
 
 }  // namespace memory
 
-#endif  // OS_WIN || OS_CHROMEOS
+#endif  // OS_WIN || OS_MAXOSX || OS_LINUX

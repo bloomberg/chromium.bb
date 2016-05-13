@@ -298,6 +298,8 @@ void MockRenderProcessHost::DecrementWorkerRefCount() {
   --worker_ref_count_;
 }
 
+void MockRenderProcessHost::PurgeAndSuspend() {}
+
 void MockRenderProcessHost::FilterURL(bool empty_allowed, GURL* url) {
   RenderProcessHostImpl::FilterURL(this, empty_allowed, url);
 }

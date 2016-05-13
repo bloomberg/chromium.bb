@@ -1128,6 +1128,10 @@ void RenderProcessHostImpl::DecrementWorkerRefCount() {
     Cleanup();
 }
 
+void RenderProcessHostImpl::PurgeAndSuspend() {
+  Send(new ChildProcessMsg_PurgeAndSuspend());
+}
+
 void RenderProcessHostImpl::AddRoute(int32_t routing_id,
                                      IPC::Listener* listener) {
   CHECK(!listeners_.Lookup(routing_id)) << "Found Routing ID Conflict: "

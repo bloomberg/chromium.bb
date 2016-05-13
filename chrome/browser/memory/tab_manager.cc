@@ -41,6 +41,7 @@
 #include "chrome/browser/ui/tabs/tab_utils.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "components/metrics/system_memory_stats_recorder.h"
 #include "components/variations/variations_associated_data.h"
@@ -484,7 +485,7 @@ void TabManager::AddTabStats(const TabStripModel* model,
                              bool is_app,
                              bool active_model,
                              TabStatsList* stats_list) {
-for (int i = 0; i < model->count(); i++) {
+  for (int i = 0; i < model->count(); i++) {
     WebContents* contents = model->GetWebContentsAt(i);
     if (!contents->IsCrashed()) {
       TabStats stats;
@@ -514,7 +515,9 @@ for (int i = 0; i < model->count(); i++) {
 
 // This function is called when |update_timer_| fires. It will adjust the clock
 // if needed (if it detects that the machine was asleep) and will fire the stats
-// updating on ChromeOS via the delegate.
+// updating on ChromeOS via the delegate. This function also tries to purge
+// cache memory and suspend tabs which becomes and keeps backgrounded for a
+// while.
 void TabManager::UpdateTimerCallback() {
   // If Chrome is shutting down, do not do anything.
   if (g_browser_process->IsShuttingDown())
@@ -541,6 +544,37 @@ void TabManager::UpdateTimerCallback() {
   // This starts the CrOS specific OOM adjustments in /proc/<pid>/oom_score_adj.
   delegate_->AdjustOomPriorities(stats_list);
 #endif
+
+  PurgeAndSuspendBackgroundedTabs();
+}
+
+void TabManager::PurgeAndSuspendBackgroundedTabs() {
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+  if (!command_line.HasSwitch(switches::kPurgeAndSuspendTime))
+    return;
+  int purge_and_suspend_time = 0;
+  if (!base::StringToInt(
+          command_line.GetSwitchValueASCII(switches::kPurgeAndSuspendTime),
+          &purge_and_suspend_time)) {
+    return;
+  }
+  if (purge_and_suspend_time <= 0)
+    return;
+  auto purge_and_suspend_time_threshold = NowTicks() -
+      base::TimeDelta::FromSeconds(purge_and_suspend_time);
+  auto tab_stats = GetUnsortedTabStats();
+  for (auto& tab : tab_stats) {
+    if (!tab.render_process_host->IsProcessBackgrounded())
+      continue;
+    // TODO(hajimehoshi): Now calling PurgeAndSuspend is implemented without
+    // timers for simplicity, so PurgeAndSuspend is called even after the
+    // renderer is purged and suspended once. This should be replaced with
+    // timers if we want necessary and sufficient signals.
+    if (tab.last_active > purge_and_suspend_time_threshold)
+      continue;
+    tab.render_process_host->PurgeAndSuspend();
+  }
 }
 
 bool TabManager::CanDiscardTab(int64_t target_web_contents_id) const {

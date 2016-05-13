@@ -63,6 +63,7 @@ class SCHEDULER_EXPORT RendererSchedulerImpl
   void DidAnimateForInputOnCompositorThread() override;
   void OnRendererBackgrounded() override;
   void OnRendererForegrounded() override;
+  void SuspendRenderer() override;
   void AddPendingNavigation(
       blink::WebScheduler::NavigatingFrameType type) override;
   void RemovePendingNavigation(

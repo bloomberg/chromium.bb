@@ -129,6 +129,11 @@ class SCHEDULER_EXPORT RendererScheduler : public ChildScheduler {
   // Must be called on the main thread.
   virtual void OnRendererForegrounded() = 0;
 
+  // Tells the scheduler that the render process should be suspended. This can
+  // only be done when the renderer is backgrounded. The renderer will be
+  // automatically resumed when foregrounded.
+  virtual void SuspendRenderer() = 0;
+
   // Tells the scheduler that a navigation task is pending. While any main-frame
   // navigation tasks are pending, the scheduler will ensure that loading tasks
   // are not blocked even if they are expensive. Must be called on the main

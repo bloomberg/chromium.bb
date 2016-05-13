@@ -637,6 +637,8 @@ bool ChildThreadImpl::OnMessageReceived(const IPC::Message& msg) {
                         OnProfilingPhaseCompleted)
     IPC_MESSAGE_HANDLER(ChildProcessMsg_SetProcessBackgrounded,
                         OnProcessBackgrounded)
+    IPC_MESSAGE_HANDLER(ChildProcessMsg_PurgeAndSuspend,
+                        OnProcessPurgeAndSuspend)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -659,6 +661,9 @@ void ChildThreadImpl::OnProcessBackgrounded(bool backgrounded) {
   if (backgrounded)
     timer_slack = base::TIMER_SLACK_MAXIMUM;
   base::MessageLoop::current()->SetTimerSlack(timer_slack);
+}
+
+void ChildThreadImpl::OnProcessPurgeAndSuspend() {
 }
 
 void ChildThreadImpl::OnShutdown() {

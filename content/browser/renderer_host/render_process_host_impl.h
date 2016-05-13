@@ -167,6 +167,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   bool IsProcessBackgrounded() const override;
   void IncrementWorkerRefCount() override;
   void DecrementWorkerRefCount() override;
+  void PurgeAndSuspend() override;
 
   // IPC::Sender via RenderProcessHost.
   bool Send(IPC::Message* msg) override;

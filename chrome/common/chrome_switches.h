@@ -243,6 +243,7 @@ extern const char kProxyAutoDetect[];
 extern const char kProxyBypassList[];
 extern const char kProxyPacUrl[];
 extern const char kProxyServer[];
+extern const char kPurgeAndSuspendTime[];
 extern const char kQuicConnectionOptions[];
 extern const char kQuicHostWhitelist[];
 extern const char kQuicMaxPacketLength[];

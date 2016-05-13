@@ -822,6 +822,8 @@ void RenderThreadImpl::Init(
 
   service_registry()->ConnectToRemoteService(
       mojo::GetProxy(&storage_partition_service_));
+
+  is_renderer_suspended_ = false;
 }
 
 RenderThreadImpl::~RenderThreadImpl() {
@@ -1707,10 +1709,21 @@ bool RenderThreadImpl::OnControlMessageReceived(const IPC::Message& msg) {
 void RenderThreadImpl::OnProcessBackgrounded(bool backgrounded) {
   ChildThreadImpl::OnProcessBackgrounded(backgrounded);
 
-  if (backgrounded)
+  if (backgrounded) {
     renderer_scheduler_->OnRendererBackgrounded();
-  else
+  } else {
     renderer_scheduler_->OnRendererForegrounded();
+    is_renderer_suspended_ = false;
+  }
+}
+
+void RenderThreadImpl::OnProcessPurgeAndSuspend() {
+  ChildThreadImpl::OnProcessPurgeAndSuspend();
+  if (is_renderer_suspended_)
+    return;
+  // TODO(hajimehoshi): Implement purging e.g. cache (crbug/607077)
+  is_renderer_suspended_ = true;
+  renderer_scheduler_->SuspendRenderer();
 }
 
 void RenderThreadImpl::OnCreateNewFrame(FrameMsg_NewFrame_Params params) {

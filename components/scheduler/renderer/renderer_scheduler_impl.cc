@@ -387,6 +387,17 @@ void RendererSchedulerImpl::OnRendererForegrounded() {
   ResumeTimerQueueWhenForegrounded();
 }
 
+void RendererSchedulerImpl::SuspendRenderer() {
+  helper_.CheckOnValidThread();
+  DCHECK(MainThreadOnly().renderer_backgrounded);
+  if (helper_.IsShutdown())
+    return;
+  suspend_timers_when_backgrounded_closure_.Cancel();
+  // TODO(hajimehoshi): We might need to suspend not only timer queue but also
+  // e.g. loading tasks or postMessage.
+  SuspendTimerQueueWhenBackgrounded();
+}
+
 void RendererSchedulerImpl::EndIdlePeriod() {
   if (MainThreadOnly().in_idle_period_for_testing)
     return;

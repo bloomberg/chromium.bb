@@ -195,6 +195,9 @@ class TabManager : public TabStripModelObserver {
   // that need to be run periodically (see comment in implementation).
   void UpdateTimerCallback();
 
+  // Purges and suspends renderers in backgrounded tabs.
+  void PurgeAndSuspendBackgroundedTabs();
+
   // Does the actual discard by destroying the WebContents in |model| at |index|
   // and replacing it by an empty one. Returns the new WebContents or NULL if
   // the operation fails (return value used only in testing).
