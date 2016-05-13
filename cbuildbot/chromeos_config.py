@@ -308,6 +308,18 @@ class HWTestList(object):
                                     **default_dict),
             config_lib.HWTestConfig(constants.HWTEST_COMMIT_SUITE,
                                     **default_dict)]
+  @classmethod
+  def ToolchainTest(cls, **kwargs):
+    """Return a list of HWTESTConfigs which run toolchain tests."""
+    default_dict = dict(pool=constants.HWTEST_MACH_POOL, file_bugs=False,
+                        priority=constants.HWTEST_DEFAULT_PRIORITY)
+    default_dict.update(kwargs)
+    return [config_lib.HWTestConfig(constants.HWTEST_BVT_SUITE,
+                                    **default_dict),
+            config_lib.HWTestConfig(constants.HWTEST_COMMIT_SUITE,
+                                    **default_dict),
+            config_lib.HWTestConfig(constants.HWTEST_TOOLCHAIN_SUITE,
+                                    **default_dict)]
 
 
 
@@ -2188,8 +2200,8 @@ def GetConfig():
       _toolchain,
       no_vmtest_builder,
       profile='llvm',
-      hw_tests=HWTestList.AsanTest(),
-      hw_tests_override=HWTestList.AsanTest(),
+      hw_tests=HWTestList.ToolchainTest(),
+      hw_tests_override=HWTestList.ToolchainTest(),
       images=['base', 'test'],
       description='Full release build with LLVM toolchain',
       paygen=False,
@@ -2230,8 +2242,8 @@ def GetConfig():
       # build and that we are using AFDO.
       _toolchain,
       no_vmtest_builder,
-      hw_tests=HWTestList.AsanTest(),
-      hw_tests_override=HWTestList.AsanTest(),
+      hw_tests=HWTestList.ToolchainTest(),
+      hw_tests_override=HWTestList.ToolchainTest(),
       images=['base', 'test'],
       description='Full release build with next minor GCC toolchain revision.',
       paygen=False,
