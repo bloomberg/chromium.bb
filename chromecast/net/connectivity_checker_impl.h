@@ -65,8 +65,14 @@ class ConnectivityCheckerImpl
   // Sets connectivity and alerts observers if it has changed
   void SetConnected(bool connected);
 
+  enum class ErrorType {
+    BAD_HTTP_STATUS = 1,
+    SSL_CERTIFICATE_ERROR = 2,
+    REQUEST_TIMEOUT = 3,
+  };
+
   // Called when URL request failed.
-  void OnUrlRequestError();
+  void OnUrlRequestError(ErrorType type);
 
   // Called when URL request timed out.
   void OnUrlRequestTimeout();

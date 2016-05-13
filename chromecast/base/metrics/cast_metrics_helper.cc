@@ -48,6 +48,16 @@ std::unique_ptr<std::string> SerializeToJson(const base::Value& value) {
   return json_str;
 }
 
+std::unique_ptr<base::DictionaryValue> CreateEventBase(
+    const std::string& name) {
+  std::unique_ptr<base::DictionaryValue> cast_event(
+      new base::DictionaryValue());
+  cast_event->SetString("name", name);
+  cast_event->SetDouble("time", base::TimeTicks::Now().ToInternalValue());
+
+  return cast_event;
+}
+
 }  // namespace
 
 // static
@@ -291,32 +301,32 @@ void CastMetricsHelper::LogMediumTimeHistogramEvent(
                         50);
 }
 
+void CastMetricsHelper::RecordEventWithValue(const std::string& event,
+                                             int value) {
+  std::unique_ptr<base::DictionaryValue> cast_event(CreateEventBase(event));
+  cast_event->SetInteger("value", value);
+  const std::string message = *SerializeToJson(*cast_event);
+  RecordSimpleAction(message);
+}
+
 void CastMetricsHelper::RecordApplicationEvent(const std::string& event) {
-  std::unique_ptr<base::DictionaryValue> cast_event(
-      new base::DictionaryValue());
-  cast_event->SetString("name", event);
-  base::TimeTicks now = base::TimeTicks::Now();
-  cast_event->SetDouble("time", now.ToInternalValue());
+  std::unique_ptr<base::DictionaryValue> cast_event(CreateEventBase(event));
   cast_event->SetString("app_id", app_id_);
   cast_event->SetString("session_id", session_id_);
   cast_event->SetString("sdk_version", sdk_version_);
-  const std::string message = *SerializeToJson(*cast_event.get()).get();
+  const std::string message = *SerializeToJson(*cast_event);
   RecordSimpleAction(message);
 }
 
 void CastMetricsHelper::RecordApplicationEventWithValue(
     const std::string& event,
     int value) {
-  std::unique_ptr<base::DictionaryValue> cast_event(
-      new base::DictionaryValue());
-  cast_event->SetString("name", event);
-  base::TimeTicks now = base::TimeTicks::Now();
-  cast_event->SetDouble("time", now.ToInternalValue());
+  std::unique_ptr<base::DictionaryValue> cast_event(CreateEventBase(event));
   cast_event->SetString("app_id", app_id_);
   cast_event->SetString("session_id", session_id_);
   cast_event->SetString("sdk_version", sdk_version_);
   cast_event->SetInteger("value", value);
-  const std::string message = *SerializeToJson(*cast_event.get()).get();
+  const std::string message = *SerializeToJson(*cast_event);
   RecordSimpleAction(message);
 }
 

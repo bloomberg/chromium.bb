@@ -8,6 +8,8 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/values.h"
+#include "chromecast/base/metrics/cast_metrics_helper.h"
 #include "chromecast/net/net_switches.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_response_headers.h"
@@ -41,6 +43,9 @@ const char kDefaultConnectivityCheckUrl[] =
 // Histogram "Cast.Network.Down.Duration.In.Seconds" shows 40% of network
 // downtime is less than 3 seconds.
 const char kNetworkChangedDelayInSeconds = 3;
+
+const char kMetricNameNetworkConnectivityCheckingErrorType[] =
+    "Network.ConnectivityChecking.ErrorType";
 
 }  // namespace
 
@@ -174,7 +179,7 @@ void ConnectivityCheckerImpl::OnResponseStarted(net::URLRequest* request) {
     return;
   }
   VLOG(1) << "Connectivity check failed: " << http_response_code;
-  OnUrlRequestError();
+  OnUrlRequestError(ErrorType::BAD_HTTP_STATUS);
   timeout_.Cancel();
 }
 
@@ -189,13 +194,19 @@ void ConnectivityCheckerImpl::OnSSLCertificateError(
     bool fatal) {
   LOG(ERROR) << "OnSSLCertificateError: cert_status=" << ssl_info.cert_status;
   net::SSLClientSocket::ClearSessionCache();
-  OnUrlRequestError();
+  OnUrlRequestError(ErrorType::SSL_CERTIFICATE_ERROR);
   timeout_.Cancel();
 }
 
-void ConnectivityCheckerImpl::OnUrlRequestError() {
+void ConnectivityCheckerImpl::OnUrlRequestError(ErrorType type) {
   ++check_errors_;
   if (check_errors_ > kNumErrorsToNotifyOffline) {
+    // Only record event on the connectivity transition.
+    if (connected_) {
+      metrics::CastMetricsHelper::GetInstance()->RecordEventWithValue(
+          kMetricNameNetworkConnectivityCheckingErrorType,
+          static_cast<int>(type));
+    }
     check_errors_ = kNumErrorsToNotifyOffline;
     SetConnected(false);
   }
@@ -208,7 +219,7 @@ void ConnectivityCheckerImpl::OnUrlRequestError() {
 
 void ConnectivityCheckerImpl::OnUrlRequestTimeout() {
   LOG(ERROR) << "time out";
-  OnUrlRequestError();
+  OnUrlRequestError(ErrorType::REQUEST_TIMEOUT);
 }
 
 void ConnectivityCheckerImpl::Cancel() {

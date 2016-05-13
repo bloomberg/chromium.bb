@@ -26,6 +26,7 @@ source_set("net") {
   deps = [
     "//base",
     "//chromecast/base:cast_sys_info",
+    "//chromecast/base/metrics",
     "//chromecast/public",
     "//net",
   ]

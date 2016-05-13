@@ -77,6 +77,9 @@ class CastMetricsHelper {
   // This is used as an in-place replacement of content::RecordComputedAction().
   virtual void RecordSimpleAction(const std::string& action);
 
+  // Logs a generic event.
+  virtual void RecordEventWithValue(const std::string& action, int value);
+
   // Logs application specific events.
   virtual void RecordApplicationEvent(const std::string& event);
   virtual void RecordApplicationEventWithValue(const std::string& event,
