@@ -148,11 +148,27 @@ void DOMWrapperWorld::markWrappersInAllWorlds(ScriptWrappable* scriptWrappable, 
     if (!isMainThread())
         return;
     WorldMap& isolatedWorlds = isolatedWorldMap();
-    for (auto& keyValuePair : isolatedWorlds) {
-        DOMDataStore& dataStore = keyValuePair.value->domDataStore();
+    for (auto& world : isolatedWorlds.values()) {
+        DOMDataStore& dataStore = world->domDataStore();
         if (dataStore.containsWrapper(scriptWrappable)) {
             // Marking for the isolated worlds
             dataStore.markWrapper(scriptWrappable);
+        }
+    }
+}
+
+void DOMWrapperWorld::setWrapperReferencesInAllWorlds(const v8::Persistent<v8::Object>& parent, ScriptWrappable* scriptWrappable, v8::Isolate* isolate)
+{
+    // Marking for the main world
+    scriptWrappable->setReference(parent, isolate);
+    if (!isMainThread())
+        return;
+    WorldMap& isolatedWorlds = isolatedWorldMap();
+    for (auto& world : isolatedWorlds.values()) {
+        DOMDataStore& dataStore = world->domDataStore();
+        if (dataStore.containsWrapper(scriptWrappable)) {
+            // Marking for the isolated worlds
+            dataStore.setReference(parent, scriptWrappable, isolate);
         }
     }
 }

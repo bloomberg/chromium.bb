@@ -782,12 +782,9 @@ static void namedPropertyEnumeratorCallback(const v8::PropertyCallbackInfo<v8::A
 void V8TestInterface5::visitDOMWrapper(v8::Isolate* isolate, ScriptWrappable* scriptWrappable, const v8::Persistent<v8::Object>& wrapper)
 {
     TestInterface5Implementation* impl = scriptWrappable->toImpl<TestInterface5Implementation>();
-    v8::Local<v8::Object> context = v8::Local<v8::Object>::New(isolate, wrapper);
-    v8::Context::Scope scope(context->CreationContext());
     TestInterface5Implementation* referencedName = impl->referencedName();
     if (referencedName) {
-        if (DOMDataStore::containsWrapper(referencedName, isolate))
-            DOMDataStore::setWrapperReference(wrapper, referencedName, isolate);
+        DOMWrapperWorld::setWrapperReferencesInAllWorlds(wrapper, referencedName, isolate);
     }
 }
 
