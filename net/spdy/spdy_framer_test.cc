@@ -305,6 +305,8 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
   void OnDataFrameHeader(SpdyStreamId stream_id,
                          size_t length,
                          bool fin) override {
+    VLOG(1) << "OnDataFrameHeader(" << stream_id << ", " << length << ", "
+            << fin << ")";
     ++data_frame_count_;
     header_stream_id_ = stream_id;
   }
@@ -326,24 +328,27 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
   }
 
   void OnStreamPadding(SpdyStreamId stream_id, size_t len) override {
+    VLOG(1) << "OnStreamPadding(" << stream_id << ", " << len << ")\n";
     EXPECT_EQ(header_stream_id_, stream_id);
     data_bytes_ += len;
-    VLOG(1) << "OnStreamPadding(" << stream_id << ", " << len << ")\n";
   }
 
   SpdyHeadersHandlerInterface* OnHeaderFrameStart(
       SpdyStreamId stream_id) override {
-    LOG(FATAL);
+    LOG(FATAL) << "OnHeaderFrameStart(" << stream_id << ")";
     return nullptr;
   }
 
   void OnHeaderFrameEnd(SpdyStreamId stream_id, bool end_headers) override {
-    LOG(FATAL);
+    LOG(FATAL) << "OnHeaderFrameEnd(" << stream_id << ", " << end_headers
+               << ")";
   }
 
   bool OnControlFrameHeaderData(SpdyStreamId stream_id,
                                 const char* header_data,
                                 size_t len) override {
+    VLOG(1) << "OnControlFrameHeaderData(" << stream_id << ", data, " << len
+            << ")";
     ++control_frame_header_data_count_;
     CHECK_EQ(header_stream_id_, stream_id);
     if (len == 0) {
@@ -369,6 +374,9 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
                    SpdyPriority priority,
                    bool fin,
                    bool unidirectional) override {
+    VLOG(1) << "OnSynStream(" << stream_id << ", " << associated_stream_id
+            << ", " << priority << ", " << (fin ? 1 : 0) << ", "
+            << (unidirectional ? 1 : 0) << ")";
     ++syn_frame_count_;
     if (framer_.protocol_version() == SPDY3) {
       InitHeaderStreaming(SYN_STREAM, stream_id);
@@ -394,6 +402,7 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
 
   void OnRstStream(SpdyStreamId stream_id,
                    SpdyRstStreamStatus status) override {
+    VLOG(1) << "OnRstStream(" << stream_id << ", " << status << ")";
     ++fin_frame_count_;
   }
 
@@ -405,24 +414,31 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
   }
 
   void OnSetting(SpdySettingsIds id, uint8_t flags, uint32_t value) override {
+    VLOG(1) << "OnSetting(" << id << ", " << std::hex << flags << ", " << value
+            << ")";
     ++setting_count_;
   }
 
   void OnSettingsAck() override {
+    VLOG(1) << "OnSettingsAck";
     DCHECK_EQ(HTTP2, framer_.protocol_version());
     ++settings_ack_received_;
   }
 
   void OnSettingsEnd() override {
+    VLOG(1) << "OnSettingsEnd";
     if (framer_.protocol_version() == HTTP2) {
       ++settings_ack_sent_;
     }
   }
 
-  void OnPing(SpdyPingId unique_id, bool is_ack) override { DLOG(FATAL); }
+  void OnPing(SpdyPingId unique_id, bool is_ack) override {
+    LOG(DFATAL) << "OnPing(" << unique_id << ", " << (is_ack ? 1 : 0) << ")";
+  }
 
   void OnGoAway(SpdyStreamId last_accepted_stream_id,
                 SpdyGoAwayStatus status) override {
+    VLOG(1) << "OnGoAway(" << last_accepted_stream_id << ", " << status << ")";
     ++goaway_count_;
   }
 
@@ -433,6 +449,9 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
                  bool exclusive,
                  bool fin,
                  bool end) override {
+    VLOG(1) << "OnHeaders(" << stream_id << ", " << has_priority << ", "
+            << priority << ", " << parent_stream_id << ", " << exclusive << ", "
+            << fin << ", " << end << ")";
     ++headers_frame_count_;
     InitHeaderStreaming(HEADERS, stream_id);
     if (fin) {
@@ -444,6 +463,8 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
   }
 
   void OnWindowUpdate(SpdyStreamId stream_id, int delta_window_size) override {
+    VLOG(1) << "OnWindowUpdate(" << stream_id << ", " << delta_window_size
+            << ")";
     last_window_update_stream_ = stream_id;
     last_window_update_delta_ = delta_window_size;
   }
@@ -451,6 +472,8 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
   void OnPushPromise(SpdyStreamId stream_id,
                      SpdyStreamId promised_stream_id,
                      bool end) override {
+    VLOG(1) << "OnPushPromise(" << stream_id << ", " << promised_stream_id
+            << ", " << end << ")";
     ++push_promise_frame_count_;
     InitHeaderStreaming(PUSH_PROMISE, stream_id);
     last_push_promise_stream_ = stream_id;
@@ -458,6 +481,7 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
   }
 
   void OnContinuation(SpdyStreamId stream_id, bool end) override {
+    VLOG(1) << "OnContinuation(" << stream_id << ", " << end << ")";
     ++continuation_count_;
   }
 
@@ -465,6 +489,8 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
                 StringPiece origin,
                 const SpdyAltSvcWireFormat::AlternativeServiceVector&
                     altsvc_vector) override {
+    VLOG(1) << "OnAltSvc(" << stream_id << ", \"" << origin
+            << "\", altsvc_vector)";
     test_altsvc_ir_.set_stream_id(stream_id);
     if (origin.length() > 0) {
       test_altsvc_ir_.set_origin(origin.as_string());
@@ -480,6 +506,8 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
                   SpdyStreamId parent_stream_id,
                   uint8_t weight,
                   bool exclusive) override {
+    VLOG(1) << "OnPriority(" << stream_id << ", " << parent_stream_id << ", "
+            << weight << ", " << (exclusive ? 1 : 0) << ")";
     ++priority_count_;
   }
 
@@ -492,6 +520,8 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
                              SpdyFrameType type,
                              size_t payload_len,
                              size_t frame_len) override {
+    VLOG(1) << "OnSendCompressedFrame(" << stream_id << ", " << type << ", "
+            << payload_len << ", " << frame_len << ")";
     last_payload_len_ = payload_len;
     last_frame_len_ = frame_len;
   }
@@ -499,6 +529,8 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
   void OnReceiveCompressedFrame(SpdyStreamId stream_id,
                                 SpdyFrameType type,
                                 size_t frame_len) override {
+    VLOG(1) << "OnReceiveCompressedFrame(" << stream_id << ", " << type << ", "
+            << frame_len << ")";
     last_frame_len_ = frame_len;
   }
 
@@ -1119,8 +1151,7 @@ TEST_P(SpdyFramerTest, GoawayWithStreamIdNotZero) {
 }
 
 // Test that if we receive a CONTINUATION with stream ID zero, we signal an
-// error
-// (but don't crash).
+// SPDY_INVALID_STREAM_ID.
 TEST_P(SpdyFramerTest, ContinuationWithStreamIdZero) {
   if (!IsHttp2()) {
     return;
@@ -1145,7 +1176,7 @@ TEST_P(SpdyFramerTest, ContinuationWithStreamIdZero) {
 }
 
 // Test that if we receive a PUSH_PROMISE with stream ID zero, we signal an
-// error (but don't crash).
+// SPDY_INVALID_STREAM_ID.
 TEST_P(SpdyFramerTest, PushPromiseWithStreamIdZero) {
   if (!IsHttp2()) {
     return;
@@ -1168,7 +1199,7 @@ TEST_P(SpdyFramerTest, PushPromiseWithStreamIdZero) {
 }
 
 // Test that if we receive a PUSH_PROMISE with promised stream ID zero, we
-// signal an error (but don't crash).
+// signal SPDY_INVALID_STREAM_ID.
 TEST_P(SpdyFramerTest, PushPromiseWithPromisedStreamIdZero) {
   if (!IsHttp2()) {
     return;
@@ -3102,17 +3133,19 @@ TEST_P(SpdyFramerTest, CreatePushPromiseUncompressed) {
     const char kDescription[] = "PUSH_PROMISE frame without padding";
 
     const unsigned char kFrameData[] = {
-        0x00, 0x00, 0x16, 0x05,  // PUSH_PROMISE
-        0x04, 0x00, 0x00, 0x00,  // END_HEADERS
-        0x2a, 0x00, 0x00, 0x00,  // Stream 42
-        0x39, 0x00, 0x03, 0x62,  // Promised stream 57, @.b
+        0x00, 0x00, 0x16,        // Length 22
+        0x05,                    // PUSH_PROMISE
+        0x04,                    // END_HEADERS
+        0x00, 0x00, 0x00, 0x29,  // Stream 41
+        0x00, 0x00, 0x00, 0x3a,  // Promised stream 58
+        0x00, 0x03, 0x62,        // @.b
         0x61, 0x72, 0x03, 0x66,  // ar.f
         0x6f, 0x6f, 0x00, 0x03,  // oo@.
         0x66, 0x6f, 0x6f, 0x03,  // foo.
         0x62, 0x61, 0x72,        // bar
     };
 
-    SpdyPushPromiseIR push_promise(42, 57);
+    SpdyPushPromiseIR push_promise(41, 58);
     push_promise.SetHeader("bar", "foo");
     push_promise.SetHeader("foo", "bar");
     SpdySerializedFrame frame(framer.SerializePushPromise(push_promise));
@@ -3126,17 +3159,20 @@ TEST_P(SpdyFramerTest, CreatePushPromiseUncompressed) {
     const char kDescription[] = "PUSH_PROMISE frame with one byte of padding";
 
     const unsigned char kFrameData[] = {
-        0x00, 0x00, 0x17, 0x05,  // PUSH_PROMISE
-        0x0c, 0x00, 0x00, 0x00,  // END_HEADERS | PADDED
-        0x2a, 0x00, 0x00, 0x00,  // Stream 42, Pad length field
-        0x00, 0x39, 0x00, 0x03,  // Promised stream 57
+        0x00, 0x00, 0x17,
+        0x05,                    // PUSH_PROMISE
+        0x0c,                    // END_HEADERS | PADDED
+        0x00, 0x00, 0x00, 0x29,  // Stream 41,
+        0x00,                    //  Pad length field
+        0x00, 0x00, 0x00, 0x3a,  // Promised stream 58
+        0x00, 0x03,              // @.
         0x62, 0x61, 0x72, 0x03,  // bar.
         0x66, 0x6f, 0x6f, 0x00,  // foo@
         0x03, 0x66, 0x6f, 0x6f,  // .foo
         0x03, 0x62, 0x61, 0x72,  // .bar
     };
 
-    SpdyPushPromiseIR push_promise(42, 57);
+    SpdyPushPromiseIR push_promise(41, 58);
     push_promise.set_padding_len(1);
     push_promise.SetHeader("bar", "foo");
     push_promise.SetHeader("foo", "bar");
@@ -3675,7 +3711,7 @@ TEST_P(SpdyFramerTest, ControlFrameMuchTooLarge) {
   EXPECT_EQ(1, visitor.error_count_);
   EXPECT_EQ(SpdyFramer::SPDY_CONTROL_PAYLOAD_TOO_LARGE,
             visitor.framer_.error_code())
-      << SpdyFramer::ErrorCodeToString(framer.error_code());
+      << SpdyFramer::ErrorCodeToString(visitor.framer_.error_code());
 
   // The framer should have stoped delivering chunks after the visitor
   // signaled "stop" by returning false from OnControlFrameHeaderData().
@@ -3714,7 +3750,7 @@ TEST_P(SpdyFramerTest, DecompressCorruptHeaderBlock) {
       control_frame.size());
   EXPECT_EQ(1, visitor.error_count_);
   EXPECT_EQ(SpdyFramer::SPDY_DECOMPRESS_FAILURE, visitor.framer_.error_code())
-      << SpdyFramer::ErrorCodeToString(framer.error_code());
+      << SpdyFramer::ErrorCodeToString(visitor.framer_.error_code());
   EXPECT_EQ(0u, visitor.header_buffer_length_);
 }
 
@@ -3762,7 +3798,7 @@ TEST_P(SpdyFramerTest, ControlFrameSizesAreValidated) {
   EXPECT_EQ(1, visitor.error_count_);  // This generated an error.
   EXPECT_EQ(SpdyFramer::SPDY_INVALID_CONTROL_FRAME,
             visitor.framer_.error_code())
-      << SpdyFramer::ErrorCodeToString(framer.error_code());
+      << SpdyFramer::ErrorCodeToString(visitor.framer_.error_code());
   EXPECT_EQ(0, visitor.goaway_count_);  // Frame not parsed.
 }
 
@@ -4304,9 +4340,8 @@ TEST_P(SpdyFramerTest, ReadContinuationOutOfOrder) {
   visitor.SimulateInFramer(kInput, sizeof(kInput));
 
   EXPECT_EQ(1, visitor.error_count_);
-  EXPECT_EQ(SpdyFramer::SPDY_UNEXPECTED_FRAME,
-            visitor.framer_.error_code())
-      << SpdyFramer::ErrorCodeToString(framer.error_code());
+  EXPECT_EQ(SpdyFramer::SPDY_UNEXPECTED_FRAME, visitor.framer_.error_code())
+      << SpdyFramer::ErrorCodeToString(visitor.framer_.error_code());
   EXPECT_EQ(0, visitor.continuation_count_);
   EXPECT_EQ(0u, visitor.header_buffer_length_);
 }
@@ -4335,9 +4370,8 @@ TEST_P(SpdyFramerTest, ExpectContinuationReceiveData) {
   visitor.SimulateInFramer(kInput, sizeof(kInput));
 
   EXPECT_EQ(1, visitor.error_count_);
-  EXPECT_EQ(SpdyFramer::SPDY_UNEXPECTED_FRAME,
-            visitor.framer_.error_code())
-      << SpdyFramer::ErrorCodeToString(framer.error_code());
+  EXPECT_EQ(SpdyFramer::SPDY_UNEXPECTED_FRAME, visitor.framer_.error_code())
+      << SpdyFramer::ErrorCodeToString(visitor.framer_.error_code());
   EXPECT_EQ(1, visitor.headers_frame_count_);
   EXPECT_EQ(0, visitor.continuation_count_);
   EXPECT_EQ(0u, visitor.header_buffer_length_);
@@ -4350,16 +4384,23 @@ TEST_P(SpdyFramerTest, ExpectContinuationReceiveControlFrame) {
   }
 
   const unsigned char kInput[] = {
-      0x00, 0x00, 0x10, 0x01, 0x00,  // HEADERS
-      0x00, 0x00, 0x00, 0x01,        // Stream 1
-      0x00, 0x06, 0x63, 0x6f, 0x6f, 0x6b, 0x69, 0x65,
-      0x07, 0x66, 0x6f, 0x6f, 0x3d, 0x62, 0x61, 0x72,
+      0x00, 0x00, 0x10,        // Payload Size
+      0x01,                    // HEADERS
+      0x00,                    // No flags (!END_HEADERS)
+      0x00, 0x00, 0x00, 0x01,  // Stream 1
+      0x00, 0x06, 0x63, 0x6f,  // Payload
+      0x6f, 0x6b, 0x69, 0x65,  // Payload
+      0x07, 0x66, 0x6f, 0x6f,  // Payload
+      0x3d, 0x62, 0x61, 0x72,  // Payload
 
-      0x00, 0x00, 0x1c, 0x08, 0x00,  // HEADERS
-      0x00, 0x00, 0x00, 0x01,        // Stream 1
-      0x00, 0x06, 0x63, 0x6f,  // (Note this is a valid continued encoding).
-      0x6f, 0x6b, 0x69, 0x65, 0x08, 0x62, 0x61, 0x7a,
-      0x3d, 0x62, 0x69, 0x6e, 0x67, 0x00, 0x06, 0x63,
+      0x00, 0x00, 0x10,        // Payload Size
+      0x01,                    // HEADERS
+      0x00,                    // No flags (!END_HEADERS)
+      0x00, 0x00, 0x00, 0x01,  // Stream 1
+      0x00, 0x06, 0x63, 0x6f,  // Payload
+      0x6f, 0x6b, 0x69, 0x65,  // Payload
+      0x07, 0x66, 0x6f, 0x6f,  // Payload
+      0x3d, 0x62, 0x61, 0x72,  // Payload
   };
 
   SpdyFramer framer(spdy_version_);
@@ -4368,9 +4409,8 @@ TEST_P(SpdyFramerTest, ExpectContinuationReceiveControlFrame) {
   visitor.SimulateInFramer(kInput, sizeof(kInput));
 
   EXPECT_EQ(1, visitor.error_count_);
-  EXPECT_EQ(SpdyFramer::SPDY_UNEXPECTED_FRAME,
-            visitor.framer_.error_code())
-      << SpdyFramer::ErrorCodeToString(framer.error_code());
+  EXPECT_EQ(SpdyFramer::SPDY_UNEXPECTED_FRAME, visitor.framer_.error_code())
+      << SpdyFramer::ErrorCodeToString(visitor.framer_.error_code());
   EXPECT_EQ(1, visitor.headers_frame_count_);
   EXPECT_EQ(0, visitor.continuation_count_);
   EXPECT_EQ(0u, visitor.header_buffer_length_);
@@ -4396,10 +4436,12 @@ TEST_P(SpdyFramerTest, ReadUnknownExtensionFrame) {
 
   // The unrecognized frame type should still have a valid length.
   const unsigned char unknown_frame[] = {
-    0x00, 0x00, 0x08, 0xff, 0xff,
-    0xff, 0xff, 0xff, 0xff,
-    0xff, 0xff, 0xff, 0xff,
-    0xff, 0xff, 0xff, 0xff,
+      0x00, 0x00, 0x08,        // Payload length 8
+      0xff,                    // Frame type 0xff
+      0xff,                    // Flags 0xff
+      0xff, 0xff, 0xff, 0xff,  // R=1 and Stream Id 0x7fffffff
+      0xff, 0xff, 0xff, 0xff,  // Payload
+      0xff, 0xff, 0xff, 0xff,  // Payload
   };
   TestSpdyVisitor visitor(spdy_version_);
 
@@ -4674,7 +4716,8 @@ TEST_P(SpdyFramerTest, DataFrameFlagsV2V3) {
 
   uint8_t flags = 0;
   do {
-    SCOPED_TRACE(testing::Message() << "Flags " << flags);
+    SCOPED_TRACE(testing::Message() << "Flags " << flags << std::hex
+                                    << static_cast<int>(flags));
 
     testing::StrictMock<test::MockSpdyFramerVisitor> visitor;
     SpdyFramer framer(spdy_version_);
@@ -4716,7 +4759,8 @@ TEST_P(SpdyFramerTest, DataFrameFlagsV4) {
 
   uint8_t flags = 0;
   do {
-    SCOPED_TRACE(testing::Message() << "Flags " << flags);
+    SCOPED_TRACE(testing::Message() << "Flags " << flags << std::hex
+                                    << static_cast<int>(flags));
 
     testing::StrictMock<test::MockSpdyFramerVisitor> visitor;
     SpdyFramer framer(spdy_version_);
@@ -4731,7 +4775,8 @@ TEST_P(SpdyFramerTest, DataFrameFlagsV4) {
     } else {
       EXPECT_CALL(visitor, OnDataFrameHeader(1, 5, flags & DATA_FLAG_FIN));
       if (flags & DATA_FLAG_PADDED) {
-        // The first byte of payload is parsed as padding length.
+        // The first byte of payload is parsed as padding length, but 'h'
+        // (0x68) is too large a padding length for a 5 byte payload.
         EXPECT_CALL(visitor, OnStreamPadding(_, 1));
         // Expect Error since the frame ends prematurely.
         EXPECT_CALL(visitor, OnError(_));
@@ -4767,7 +4812,8 @@ TEST_P(SpdyFramerTest, SynStreamFrameFlags) {
 
   uint8_t flags = 0;
   do {
-    SCOPED_TRACE(testing::Message() << "Flags " << flags);
+    SCOPED_TRACE(testing::Message() << "Flags " << flags << std::hex
+                                    << static_cast<int>(flags));
 
     testing::StrictMock<test::MockSpdyFramerVisitor> visitor;
     testing::StrictMock<test::MockDebugVisitor> debug_visitor;
@@ -4821,7 +4867,8 @@ TEST_P(SpdyFramerTest, SynReplyFrameFlags) {
 
   uint8_t flags = 0;
   do {
-    SCOPED_TRACE(testing::Message() << "Flags " << flags);
+    SCOPED_TRACE(testing::Message() << "Flags " << flags << std::hex
+                                    << static_cast<int>(flags));
 
     testing::StrictMock<test::MockSpdyFramerVisitor> visitor;
     SpdyFramer framer(spdy_version_);
@@ -4860,7 +4907,8 @@ TEST_P(SpdyFramerTest, SynReplyFrameFlags) {
 TEST_P(SpdyFramerTest, RstStreamFrameFlags) {
   uint8_t flags = 0;
   do {
-    SCOPED_TRACE(testing::Message() << "Flags " << flags);
+    SCOPED_TRACE(testing::Message() << "Flags " << flags << std::hex
+                                    << static_cast<int>(flags));
 
     testing::StrictMock<test::MockSpdyFramerVisitor> visitor;
     SpdyFramer framer(spdy_version_);
@@ -4887,7 +4935,8 @@ TEST_P(SpdyFramerTest, SettingsFrameFlagsOldFormat) {
 
   uint8_t flags = 0;
   do {
-    SCOPED_TRACE(testing::Message() << "Flags " << flags);
+    SCOPED_TRACE(testing::Message() << "Flags " << flags << std::hex
+                                    << static_cast<int>(flags));
 
     testing::StrictMock<test::MockSpdyFramerVisitor> visitor;
     SpdyFramer framer(spdy_version_);
@@ -4932,7 +4981,8 @@ TEST_P(SpdyFramerTest, SettingsFrameFlags) {
 
   uint8_t flags = 0;
   do {
-    SCOPED_TRACE(testing::Message() << "Flags " << flags);
+    SCOPED_TRACE(testing::Message() << "Flags " << flags << std::hex
+                                    << static_cast<int>(flags));
 
     testing::StrictMock<test::MockSpdyFramerVisitor> visitor;
     SpdyFramer framer(spdy_version_);
@@ -4969,7 +5019,8 @@ TEST_P(SpdyFramerTest, SettingsFrameFlags) {
 TEST_P(SpdyFramerTest, GoawayFrameFlags) {
   uint8_t flags = 0;
   do {
-    SCOPED_TRACE(testing::Message() << "Flags " << flags);
+    SCOPED_TRACE(testing::Message() << "Flags " << flags << std::hex
+                                    << static_cast<int>(flags));
 
     testing::StrictMock<test::MockSpdyFramerVisitor> visitor;
     SpdyFramer framer(spdy_version_);
@@ -4991,7 +5042,8 @@ TEST_P(SpdyFramerTest, GoawayFrameFlags) {
 TEST_P(SpdyFramerTest, HeadersFrameFlags) {
   uint8_t flags = 0;
   do {
-    SCOPED_TRACE(testing::Message() << "Flags " << flags);
+    SCOPED_TRACE(testing::Message() << "Flags " << flags << std::hex
+                                    << static_cast<int>(flags));
 
     testing::StrictMock<test::MockSpdyFramerVisitor> visitor;
     SpdyFramer framer(spdy_version_);
@@ -5050,7 +5102,8 @@ TEST_P(SpdyFramerTest, HeadersFrameFlags) {
 TEST_P(SpdyFramerTest, PingFrameFlags) {
   uint8_t flags = 0;
   do {
-    SCOPED_TRACE(testing::Message() << "Flags " << flags);
+    SCOPED_TRACE(testing::Message() << "Flags " << flags << std::hex
+                                    << static_cast<int>(flags));
 
     testing::StrictMock<test::MockSpdyFramerVisitor> visitor;
     SpdyFramer framer(spdy_version_);
@@ -5075,7 +5128,8 @@ TEST_P(SpdyFramerTest, PingFrameFlags) {
 TEST_P(SpdyFramerTest, WindowUpdateFrameFlags) {
   uint8_t flags = 0;
   do {
-    SCOPED_TRACE(testing::Message() << "Flags " << flags);
+    SCOPED_TRACE(testing::Message() << "Flags " << flags << std::hex
+                                    << static_cast<int>(flags));
 
     testing::StrictMock<test::MockSpdyFramerVisitor> visitor;
     SpdyFramer framer(spdy_version_);
@@ -5099,9 +5153,12 @@ TEST_P(SpdyFramerTest, PushPromiseFrameFlags) {
     return;
   }
 
+  const SpdyStreamId client_id = 123;   // Must be odd.
+  const SpdyStreamId promised_id = 22;  // Must be even.
   uint8_t flags = 0;
   do {
-    SCOPED_TRACE(testing::Message() << "Flags " << flags);
+    SCOPED_TRACE(testing::Message() << "Flags " << flags << std::hex
+                                    << static_cast<int>(flags));
 
     testing::StrictMock<test::MockSpdyFramerVisitor> visitor;
     testing::StrictMock<test::MockDebugVisitor> debug_visitor;
@@ -5109,20 +5166,21 @@ TEST_P(SpdyFramerTest, PushPromiseFrameFlags) {
     framer.set_visitor(&visitor);
     framer.set_debug_visitor(&debug_visitor);
 
-    EXPECT_CALL(debug_visitor, OnSendCompressedFrame(42, PUSH_PROMISE, _, _));
+    EXPECT_CALL(debug_visitor,
+                OnSendCompressedFrame(client_id, PUSH_PROMISE, _, _));
 
-    SpdyPushPromiseIR push_promise(42, 57);
+    SpdyPushPromiseIR push_promise(client_id, promised_id);
     push_promise.SetHeader("foo", "bar");
     SpdySerializedFrame frame(framer.SerializePushPromise(push_promise));
     // TODO(jgraettinger): Add padding to SpdyPushPromiseIR,
     // and implement framing.
     SetFrameFlags(&frame, flags & ~HEADERS_FLAG_PADDED, spdy_version_);
 
-    EXPECT_CALL(debug_visitor, OnReceiveCompressedFrame(42, PUSH_PROMISE, _));
-    EXPECT_CALL(
-        visitor,
-        OnPushPromise(42, 57, flags & PUSH_PROMISE_FLAG_END_PUSH_PROMISE));
-    EXPECT_CALL(visitor, OnControlFrameHeaderData(42, _, _))
+    bool end = flags & PUSH_PROMISE_FLAG_END_PUSH_PROMISE;
+    EXPECT_CALL(debug_visitor,
+                OnReceiveCompressedFrame(client_id, PUSH_PROMISE, _));
+    EXPECT_CALL(visitor, OnPushPromise(client_id, promised_id, end));
+    EXPECT_CALL(visitor, OnControlFrameHeaderData(client_id, _, _))
         .WillRepeatedly(testing::Return(true));
 
     framer.ProcessInput(frame.data(), frame.size());
@@ -5139,7 +5197,8 @@ TEST_P(SpdyFramerTest, ContinuationFrameFlags) {
 
   uint8_t flags = 0;
   do {
-    SCOPED_TRACE(testing::Message() << "Flags " << flags);
+    SCOPED_TRACE(testing::Message() << "Flags " << flags << std::hex
+                                    << static_cast<int>(flags));
 
     testing::StrictMock<test::MockSpdyFramerVisitor> visitor;
     testing::StrictMock<test::MockDebugVisitor> debug_visitor;
