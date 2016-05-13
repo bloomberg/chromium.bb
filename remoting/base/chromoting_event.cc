@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/signaling/chromoting_event.h"
+#include "remoting/base/chromoting_event.h"
 
 #include "base/sys_info.h"
 
@@ -37,12 +37,12 @@ ChromotingEvent::ChromotingEvent(Type type) : ChromotingEvent() {
 }
 
 ChromotingEvent::ChromotingEvent(const ChromotingEvent& other) {
-  try_count_ = other.try_count_;
+  send_attempts_ = other.send_attempts_;
   values_map_ = other.values_map_->CreateDeepCopy();
 }
 
 ChromotingEvent::ChromotingEvent(ChromotingEvent&& other) {
-  try_count_ = other.try_count_;
+  send_attempts_ = other.send_attempts_;
   values_map_ = std::move(other.values_map_);
 }
 
@@ -50,14 +50,14 @@ ChromotingEvent::~ChromotingEvent() {}
 
 ChromotingEvent& ChromotingEvent::operator=(const ChromotingEvent& other) {
   if (this != &other) {
-    try_count_ = other.try_count_;
+    send_attempts_ = other.send_attempts_;
     values_map_ = other.values_map_->CreateDeepCopy();
   }
   return *this;
 }
 
 ChromotingEvent& ChromotingEvent::operator=(ChromotingEvent&& other) {
-  try_count_ = other.try_count_;
+  send_attempts_ = other.send_attempts_;
   values_map_ = std::move(other.values_map_);
   return *this;
 }
@@ -101,8 +101,8 @@ void ChromotingEvent::AddSystemInfo() {
   SetEnum(kOsKey, os);
 }
 
-void ChromotingEvent::IncrementTryCount() {
-  try_count_++;
+void ChromotingEvent::IncrementSendAttempts() {
+  send_attempts_++;
 }
 
 std::unique_ptr<base::DictionaryValue> ChromotingEvent::CopyDictionaryValue()

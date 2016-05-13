@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_SIGNALING_CHROMOTING_EVENT_LOG_WRITER_H_
-#define REMOTING_SIGNALING_CHROMOTING_EVENT_LOG_WRITER_H_
+#ifndef REMOTING_BASE_CHROMOTING_EVENT_LOG_WRITER_H_
+#define REMOTING_BASE_CHROMOTING_EVENT_LOG_WRITER_H_
 
 namespace remoting {
 
@@ -11,7 +11,7 @@ class ChromotingEvent;
 
 class ChromotingEventLogWriter {
  public:
-  virtual ~ChromotingEventLogWriter() {};
+  virtual ~ChromotingEventLogWriter(){};
 
   virtual void SetAuthToken(const std::string& auth_token) = 0;
   virtual void SetAuthClosure(const base::Closure& closure) = 0;
@@ -20,4 +20,4 @@ class ChromotingEventLogWriter {
 
 }  // namespace remoting
 
-#endif  // REMOTING_SIGNALING_CHROMOTING_EVENT_LOG_WRITER_H_
+#endif  // REMOTING_BASE_CHROMOTING_EVENT_LOG_WRITER_H_

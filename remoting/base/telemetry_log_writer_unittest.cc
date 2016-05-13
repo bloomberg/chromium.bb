@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/signaling/telemetry_log_writer.h"
+#include "remoting/base/telemetry_log_writer.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "net/http/http_status_code.h"
+#include "remoting/base/chromoting_event.h"
 #include "remoting/base/url_request.h"
-#include "remoting/signaling/chromoting_event.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace remoting {
@@ -170,12 +170,35 @@ TEST_F(TelemetryLogWriterTest, PostOneLogFailedResendWithTwoPendingLogs) {
   LogFakeEvent();
 
   auto respond2 = request_factory_->AddExpectedRequest(
-      "{\"event\":[{\"id\":1},{\"id\":2},{\"id\":0}]}", success_result_);
+      "{\"event\":[{\"id\":0},{\"id\":1},{\"id\":2}]}", success_result_);
   LogFakeEvent();
   LogFakeEvent();
 
   respond1.Run();
   respond2.Run();
+}
+
+TEST_F(TelemetryLogWriterTest, PostThreeLogsFailedAndResendWithOnePending) {
+  // This tests the ordering of the resent log.
+  auto respond1 = request_factory_->AddExpectedRequest(
+      "{\"event\":[{\"id\":0}]}", UrlRequest::Result::Failed());
+  LogFakeEvent();
+
+  auto respond2 = request_factory_->AddExpectedRequest(
+      "{\"event\":[{\"id\":0},{\"id\":1},{\"id\":2}]}",
+      UrlRequest::Result::Failed());
+  LogFakeEvent();
+  LogFakeEvent();
+
+  respond1.Run();
+
+  auto respond3 = request_factory_->AddExpectedRequest(
+      "{\"event\":[{\"id\":0},{\"id\":1},{\"id\":2},{\"id\":3}]}",
+      success_result_);
+  LogFakeEvent();
+
+  respond2.Run();
+  respond3.Run();
 }
 
 TEST_F(TelemetryLogWriterTest, PostOneUnauthorizedCallClosureAndRetry) {

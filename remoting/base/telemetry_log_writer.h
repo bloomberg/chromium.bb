@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_SIGNALING_TELEMETRY_LOG_WRITER_H_
-#define REMOTING_SIGNALING_TELEMETRY_LOG_WRITER_H_
+#ifndef REMOTING_BASE_TELEMETRY_LOG_WRITER_H_
+#define REMOTING_BASE_TELEMETRY_LOG_WRITER_H_
 
 #include <deque>
 #include <string>
@@ -11,11 +11,11 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/threading/thread_checker.h"
 #include "base/values.h"
+#include "remoting/base/chromoting_event.h"
+#include "remoting/base/chromoting_event_log_writer.h"
 #include "remoting/base/url_request.h"
-#include "remoting/signaling/chromoting_event.h"
-#include "remoting/signaling/chromoting_event_log_writer.h"
 
 namespace remoting {
 
@@ -24,8 +24,7 @@ namespace remoting {
 // Logs to be sent will be queued and sent when it is available. Logs failed
 // to send will be retried for a few times and dropped if they still can't be
 // sent.
-class TelemetryLogWriter :  public ChromotingEventLogWriter,
-                            public base::NonThreadSafe {
+class TelemetryLogWriter : public ChromotingEventLogWriter {
  public:
   TelemetryLogWriter(const std::string& telemetry_base_url,
                      std::unique_ptr<UrlRequestFactory> request_factory);
@@ -51,6 +50,7 @@ class TelemetryLogWriter :  public ChromotingEventLogWriter,
   void PostJsonToServer(const std::string& json);
   void OnSendLogResult(const remoting::UrlRequest::Result& result);
 
+  base::ThreadChecker thread_checker_;
   std::string telemetry_base_url_;
   std::unique_ptr<UrlRequestFactory> request_factory_;
   std::string auth_token_;
@@ -68,4 +68,4 @@ class TelemetryLogWriter :  public ChromotingEventLogWriter,
 };
 
 }  // namespace remoting
-#endif  // REMOTING_SIGNALING_TELEMETRY_LOG_WRITER_H_
+#endif  // REMOTING_BASE_TELEMETRY_LOG_WRITER_H_

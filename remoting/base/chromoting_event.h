@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_SIGNALING_CHROMOTING_EVENT_H_
-#define REMOTING_SIGNALING_CHROMOTING_EVENT_H_
+#ifndef REMOTING_BASE_CHROMOTING_EVENT_H_
+#define REMOTING_BASE_CHROMOTING_EVENT_H_
 
 #include <memory>
 #include <string>
@@ -38,7 +38,7 @@ class ChromotingEvent {
     NACL_PLUGIN_CRASHED = 18
   };
 
-  enum class Mode { IT2ME = 1, ME2ME = 2, LGAPP = 3 };
+  enum class Mode { IT2ME = 1, ME2ME = 2 };
 
   // macro defines from command line have polluted OS names like
   // "LINUX", "ANDROID", etc.
@@ -123,16 +123,16 @@ class ChromotingEvent {
   void SetInteger(const std::string& key, int value);
   void SetBoolean(const std::string& key, bool value);
   void SetDouble(const std::string& key, double value);
-  template <typename E>
-  void SetEnum(const std::string& key, E e) {
-    SetInteger(key, static_cast<int>(e));
+  template <typename EnumType>
+  void SetEnum(const std::string& key, EnumType value) {
+    SetInteger(key, static_cast<int>(value));
   }
 
   // Adds fields of CPU type, OS type and OS version.
   void AddSystemInfo();
 
-  void IncrementTryCount();
-  int try_count() const { return try_count_; }
+  void IncrementSendAttempts();
+  int send_attempts() const { return send_attempts_; }
 
   // Returns a copy of the internal dictionary value.
   std::unique_ptr<base::DictionaryValue> CopyDictionaryValue() const;
@@ -143,9 +143,9 @@ class ChromotingEvent {
  private:
   std::unique_ptr<base::DictionaryValue> values_map_;
 
-  int try_count_ = 0;
+  int send_attempts_ = 0;
 };
 
 }  // namespace remoting
 
-#endif  // REMOTING_SIGNALING_CHROMOTING_EVENT_H_
+#endif  // REMOTING_BASE_CHROMOTING_EVENT_H_

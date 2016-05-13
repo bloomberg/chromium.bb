@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "base/rand_util.h"
-#include "remoting/signaling/telemetry_log_writer.h"
+#include "remoting/base/telemetry_log_writer.h"
 
 namespace {
 

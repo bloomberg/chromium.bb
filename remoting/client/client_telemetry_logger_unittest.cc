@@ -8,8 +8,6 @@
 #include <string>
 
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "remoting/protocol/connection_to_host.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
