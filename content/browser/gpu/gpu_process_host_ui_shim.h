@@ -69,7 +69,7 @@ class GpuProcessHostUIShim : public IPC::Listener,
   CONTENT_EXPORT static GpuProcessHostUIShim* GetOneInstance();
 
   // Stops the GPU process.
-  void StopGpuProcess(const base::Closure& callback);
+  CONTENT_EXPORT void StopGpuProcess(const base::Closure& callback);
 
   // IPC::Sender implementation.
   bool Send(IPC::Message* msg) override;
