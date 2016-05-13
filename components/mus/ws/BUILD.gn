@@ -171,8 +171,7 @@ group("tests") {
     ":mus_ws_unittests",
   ]
   if (!is_android) {
-    deps +=
-        [ "//components/mus/public/cpp/tests:mojo_view_manager_lib_unittests" ]
+    deps += [ "//components/mus/public/cpp/tests:mus_public_unittests" ]
   }
 }
 

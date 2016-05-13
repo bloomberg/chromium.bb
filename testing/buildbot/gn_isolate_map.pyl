@@ -420,8 +420,8 @@
     "label": "//mojo/edk/system:mojo_system_unittests",
     "type": "console_test_launcher",
   },
-  "mojo_view_manager_lib_unittests": {
-    "label": "//components/mus/public/cpp/tests:mojo_view_manager_lib_unittests",
+  "mus_public_unittests": {
+    "label": "//components/mus/public/cpp/tests:mus_public_unittests",
     "type": "windowed_test_launcher",
   },
   "message_center_unittests": {

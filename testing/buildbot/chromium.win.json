@@ -2252,7 +2252,7 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "mojo_view_manager_lib_unittests"
+        "test": "mus_public_unittests"
       },
       {
         "args": [

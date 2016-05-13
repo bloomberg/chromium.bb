@@ -38,7 +38,7 @@ source_set("test_support") {
   ]
 }
 
-test("mojo_view_manager_lib_unittests") {
+test("mus_public_unittests") {
   sources = [
     "property_type_converters_unittest.cc",
     "run_all_unittests.cc",
