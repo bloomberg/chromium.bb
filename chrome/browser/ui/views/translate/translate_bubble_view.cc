@@ -541,7 +541,13 @@ views::View* TranslateBubbleView::CreateViewBeforeTranslate() {
   views::ColumnSet* cs = layout->AddColumnSet(COLUMN_SET_ID_MESSAGE);
   cs->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
                 GridLayout::USE_PREF, 0, 0);
-  cs->AddPaddingColumn(0, views::kRelatedButtonHSpacing);
+  if (Use2016Q2UI()) {
+    // Add padding between the icon and the text.
+    cs->AddPaddingColumn(0, views::kUnrelatedControlHorizontalSpacing);
+  } else {
+    // Add padding between the text and the link.
+    cs->AddPaddingColumn(0, views::kRelatedButtonHSpacing);
+  }
   cs->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
                 GridLayout::USE_PREF, 0, 0);
   cs->AddPaddingColumn(1, 0);
@@ -588,6 +594,7 @@ views::View* TranslateBubbleView::CreateViewBeforeTranslate() {
 
   // In an incognito window, the "Always translate" checkbox shouldn't be shown.
   if (Use2016Q2UI() && !is_in_incognito_window_) {
+    layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
     layout->StartRow(0, COLUMN_SET_ID_MESSAGE);
     layout->SkipColumns(1);
     always_translate_checkbox_ = new views::Checkbox(
@@ -598,7 +605,11 @@ views::View* TranslateBubbleView::CreateViewBeforeTranslate() {
     always_translate_checkbox_->set_listener(this);
     layout->AddView(always_translate_checkbox_);
   }
-  layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
+  if (Use2016Q2UI()) {
+    layout->AddPaddingRow(0, views::kPanelSubVerticalSpacing);
+  } else {
+    layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
+  }
 
   layout->StartRow(0, COLUMN_SET_ID_CONTENT);
   views::LabelButton* accept_button =
@@ -659,7 +670,8 @@ views::View* TranslateBubbleView::CreateViewTranslating() {
   if (Use2016Q2UI()) {
     cs->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
                   views::GridLayout::USE_PREF, 0, 0);
-    cs->AddPaddingColumn(0, views::kRelatedButtonHSpacing);
+    // Add padding between the icon and the text.
+    cs->AddPaddingColumn(0, views::kUnrelatedControlHorizontalSpacing);
   }
   cs->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
                 GridLayout::USE_PREF, 0, 0);
