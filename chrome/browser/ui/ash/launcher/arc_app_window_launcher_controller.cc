@@ -29,10 +29,8 @@ enum class FullScreenMode {
 
 class ArcAppWindowLauncherController::AppWindow : public ui::BaseWindow {
  public:
-  AppWindow(int task_id,
-            std::string package_name,
-            ArcAppWindowLauncherController* owner)
-      : task_id_(task_id), package_name_(package_name), owner_(owner) {}
+  AppWindow(int task_id, ArcAppWindowLauncherController* owner)
+      : task_id_(task_id), owner_(owner) {}
   ~AppWindow() {}
 
   void SetController(ArcAppWindowLauncherItemController* controller) {
@@ -48,8 +46,6 @@ class ArcAppWindowLauncherController::AppWindow : public ui::BaseWindow {
   FullScreenMode fullscreen_mode() const { return fullscreen_mode_; }
 
   int task_id() const { return task_id_; }
-
-  const std::string& package_name() const { return package_name_; }
 
   ash::ShelfID shelf_id() const { return shelf_id_; }
 
@@ -163,7 +159,6 @@ class ArcAppWindowLauncherController::AppWindow : public ui::BaseWindow {
   }
 
   int task_id_;
-  std::string package_name_;
   ash::ShelfID shelf_id_ = 0;
   FullScreenMode fullscreen_mode_ = FullScreenMode::NOT_DEFINED;
   // Unowned pointers
@@ -232,39 +227,24 @@ ArcAppWindowLauncherController::GetAppWindowForTask(int task_id) {
 
 void ArcAppWindowLauncherController::CheckForAppWindowWidget(
     aura::Window* window) {
-  // exo::ShellSurface::GetApplicationId() will return the package name
-  // if available and org.chromium.arc.TASKID otherwise. org.chromium.arc.0
-  // is the default window and never used by real applications, only by
-  // system dialogs and effects.
   const std::string app_id = exo::ShellSurface::GetApplicationId(window);
   if (app_id.empty())
     return;
 
-  bool is_app_window = false;
-  // Check if we have any app windows with matching package names.
-  // TODO(reveman): Revisit this if we need to have different icons for
-  // different sub intents.
-  for (auto& it : task_id_to_app_window_) {
-    if (it.second->package_name() != app_id)
-      continue;
-    it.second->set_widget(views::Widget::GetWidgetForNativeWindow(window));
-    is_app_window = true;
-  }
+  int task_id = -1;
+  if (sscanf(app_id.c_str(), "org.chromium.arc.%d", &task_id) != 1)
+    return;
 
-  if (!is_app_window) {
-    int task_id = -1;
-    if (sscanf(app_id.c_str(), "org.chromium.arc.%d", &task_id) != 1)
-      return;
-
-    if (task_id) {
-      AppWindow* app_window = GetAppWindowForTask(task_id);
-      if (app_window)
-        app_window->set_widget(views::Widget::GetWidgetForNativeWindow(window));
-    } else {
-      // task_id=0 is the default window. It will not contain any real
-      // apps so best if it's ignored by the shelf for purposes of darkening.
-      ash::wm::GetWindowState(window)->set_ignored_by_shelf(true);
-    }
+  if (task_id) {
+    AppWindow* app_window = GetAppWindowForTask(task_id);
+    if (app_window)
+      app_window->set_widget(views::Widget::GetWidgetForNativeWindow(window));
+  } else {
+    // task_id=0 is the default window. It will not contain any real
+    // apps so best if it's ignored by the shelf for purposes of darkening
+    // and always on top.
+    ash::wm::GetWindowState(window)->set_ignored_by_shelf(true);
+    window->SetProperty(aura::client::kAlwaysOnTopKey, true);
   }
 
   // Apps do their own animation and don't want any from the system.
@@ -277,8 +257,7 @@ void ArcAppWindowLauncherController::OnTaskCreated(
     const std::string& activity_name) {
   DCHECK(!GetAppWindowForTask(task_id));
 
-  std::unique_ptr<AppWindow> app_window(
-      new AppWindow(task_id, package_name, this));
+  std::unique_ptr<AppWindow> app_window(new AppWindow(task_id, this));
 
   const std::string app_id =
       ArcAppListPrefs::GetAppId(package_name, activity_name);
