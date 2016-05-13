@@ -12,6 +12,7 @@ import re
 import shutil
 
 from chromite.cbuildbot import config_lib
+from chromite.cbuildbot import commands
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import git
@@ -359,7 +360,7 @@ class RepoRepository(object):
 
   def _CleanUpAndRunCommand(self, *args, **kwargs):
     """Clean up repository and run command"""
-    ClearBuildRoot(self.directory, self.preserve_paths)
+    commands.BuildRootGitCleanup(self.directory)
     local_manifest = kwargs.pop('local_manifest', None)
     # Always re-initialize to the current branch.
     self.Initialize(local_manifest)
@@ -407,6 +408,8 @@ class RepoRepository(object):
         if constants.SYNC_RETRIES > 0:
           # Retry on clean up and repo sync commands,
           # decrement max_retry for this command
+          logging.warning('cmd %s failed, clean up repository and retry sync.'
+                          % cmd)
           retry_util.RetryCommand(self._CleanUpAndRunCommand,
                                   constants.SYNC_RETRIES - 1,
                                   cmd + ['-n'], cwd=self.directory,
