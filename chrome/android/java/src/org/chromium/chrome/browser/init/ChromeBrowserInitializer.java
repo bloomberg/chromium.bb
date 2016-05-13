@@ -41,6 +41,7 @@ import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.services.GoogleServicesManager;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModelImpl;
 import org.chromium.chrome.browser.webapps.ActivityAssigner;
+import org.chromium.chrome.browser.webapps.ChromeWebApkHost;
 import org.chromium.components.variations.VariationsAssociatedData;
 import org.chromium.content.app.ContentApplication;
 import org.chromium.content.browser.BrowserStartupController;
@@ -189,6 +190,9 @@ public class ChromeBrowserInitializer {
         ContentApplication.initCommandLine(mApplication);
         waitForDebuggerIfNeeded();
         ChromeStrictMode.configureStrictMode();
+        if (CommandLine.getInstance().hasSwitch(ChromeSwitches.ENABLE_WEBAPK)) {
+            ChromeWebApkHost.init();
+        }
 
         warmUpSharedPrefs();
 

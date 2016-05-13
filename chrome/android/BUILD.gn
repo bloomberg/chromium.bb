@@ -119,6 +119,7 @@ java_strings_grd("chrome_strings_grd") {
 android_library("chrome_java") {
   deps = [
     "//base:base_java",
+    "//chrome/android/webapk/libs/client",
     "//components/safe_json/android:safe_json_java",
     "//components/variations/android:variations_java",
     "//components/web_contents_delegate_android:web_contents_delegate_android_java",

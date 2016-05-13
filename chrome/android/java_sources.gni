@@ -867,6 +867,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/webapps/ActivityAssigner.java",
   "java/src/org/chromium/chrome/browser/webapps/AddToHomescreenDialog.java",
   "java/src/org/chromium/chrome/browser/webapps/AddToHomescreenDialogHelper.java",
+  "java/src/org/chromium/chrome/browser/webapps/ChromeWebApkHost.java",
   "java/src/org/chromium/chrome/browser/webapps/FullScreenActivity.java",
   "java/src/org/chromium/chrome/browser/webapps/FullScreenDelegateFactory.java",
   "java/src/org/chromium/chrome/browser/webapps/WebappActivity.java",
