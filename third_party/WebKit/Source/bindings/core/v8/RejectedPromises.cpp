@@ -220,7 +220,7 @@ void RejectedPromises::handlerAdded(v8::PromiseRejectMessage data)
         OwnPtr<Message>& message = m_reportedAsErrors.at(i);
         if (!message->isCollected() && message->hasPromise(data.GetPromise())) {
             message->makePromiseStrong();
-            Platform::current()->currentThread()->scheduler()->timerTaskRunner()->postTask(BLINK_FROM_HERE, bind(&RejectedPromises::revokeNow, this, passed(message.release())));
+            Platform::current()->currentThread()->scheduler()->timerTaskRunner()->postTask(BLINK_FROM_HERE, bind(&RejectedPromises::revokeNow, this, passed(std::move(message))));
             m_reportedAsErrors.remove(i);
             return;
         }
@@ -239,7 +239,7 @@ void RejectedPromises::dispose()
 
     OwnPtr<MessageQueue> queue = createMessageQueue();
     queue->swap(m_queue);
-    processQueueNow(queue.release());
+    processQueueNow(std::move(queue));
 }
 
 void RejectedPromises::processQueue()
@@ -249,7 +249,7 @@ void RejectedPromises::processQueue()
 
     OwnPtr<MessageQueue> queue = createMessageQueue();
     queue->swap(m_queue);
-    Platform::current()->currentThread()->scheduler()->timerTaskRunner()->postTask(BLINK_FROM_HERE, bind(&RejectedPromises::processQueueNow, PassRefPtr<RejectedPromises>(this), passed(queue.release())));
+    Platform::current()->currentThread()->scheduler()->timerTaskRunner()->postTask(BLINK_FROM_HERE, bind(&RejectedPromises::processQueueNow, PassRefPtr<RejectedPromises>(this), passed(std::move(queue))));
 }
 
 void RejectedPromises::processQueueNow(PassOwnPtr<MessageQueue> queue)
@@ -269,7 +269,7 @@ void RejectedPromises::processQueueNow(PassOwnPtr<MessageQueue> queue)
         if (!message->hasHandler()) {
             message->report();
             message->makePromiseWeak();
-            m_reportedAsErrors.append(message.release());
+            m_reportedAsErrors.append(std::move(message));
             if (m_reportedAsErrors.size() > maxReportedHandlersPendingResolution)
                 m_reportedAsErrors.remove(0, maxReportedHandlersPendingResolution / 10);
         }

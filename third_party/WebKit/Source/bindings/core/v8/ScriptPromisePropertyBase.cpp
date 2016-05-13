@@ -147,7 +147,7 @@ v8::Local<v8::Object> ScriptPromisePropertyBase::ensureHolderWrapper(ScriptState
     OwnPtr<ScopedPersistent<v8::Object>> weakPersistent = adoptPtr(new ScopedPersistent<v8::Object>);
     weakPersistent->set(m_isolate, wrapper);
     weakPersistent->setWeak(weakPersistent.get(), &clearHandle);
-    m_wrappers.append(weakPersistent.release());
+    m_wrappers.append(std::move(weakPersistent));
     return wrapper;
 }
 

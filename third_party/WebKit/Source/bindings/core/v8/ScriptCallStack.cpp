@@ -58,7 +58,7 @@ PassRefPtr<ScriptCallStack> ScriptCallStack::capture(size_t maxStackSize)
         return nullptr;
     ScriptForbiddenScope::AllowUserAgentScript allowScripting;
     OwnPtr<V8StackTrace> stack = data->threadDebugger()->debugger()->captureStackTrace(maxStackSize);
-    return stack ? adoptRef(new ScriptCallStack(stack.release())) : nullptr;
+    return stack ? adoptRef(new ScriptCallStack(std::move(stack))) : nullptr;
 }
 
 PassRefPtr<ScriptCallStack> ScriptCallStack::captureForConsole()

@@ -142,7 +142,7 @@ private:
     template <typename T>
     static PassOwnPtr<T> adopt(std::unique_ptr<T>& x) { return adoptPtr(x.release()); }
     template <typename T> static PassType<T> pass(T& x) { return x; }
-    template <typename T> static PassOwnPtr<T> pass(OwnPtr<T>& x) { return x.release(); }
+    template <typename T> static PassOwnPtr<T> pass(OwnPtr<T>& x) { return std::move(x); }
 
     template <typename S, typename T>
     class Base : public WebCallbacks<WebPassType<typename S::WebType>, WebPassType<typename T::WebType>> {

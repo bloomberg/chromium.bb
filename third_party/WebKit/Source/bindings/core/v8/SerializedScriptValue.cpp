@@ -138,7 +138,7 @@ void SerializedScriptValue::transferImageBitmaps(v8::Isolate* isolate, const Ima
         visited.add(imageBitmaps[i]);
         contents->append(imageBitmaps[i]->transfer());
     }
-    m_imageBitmapContentsArray = contents.release();
+    m_imageBitmapContentsArray = std::move(contents);
 }
 
 void SerializedScriptValue::transferOffscreenCanvas(v8::Isolate* isolate, const OffscreenCanvasArray& offscreenCanvases, ExceptionState& exceptionState)
@@ -212,7 +212,7 @@ void SerializedScriptValue::transferArrayBuffers(v8::Isolate* isolate, const Arr
         }
 
     }
-    m_arrayBufferContentsArray = contents.release();
+    m_arrayBufferContentsArray = std::move(contents);
 }
 
 SerializedScriptValue::SerializedScriptValue(const String& wireData)
