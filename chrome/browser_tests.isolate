@@ -35,8 +35,8 @@
     ['OS=="linux"', {
       'variables': {
         'files': [
-          '<(PRODUCT_DIR)/libclearkeycdm.so',
-          '<(PRODUCT_DIR)/libclearkeycdmadapter.so',
+          '<(PRODUCT_DIR)/ClearKeyCdm/libclearkeycdm.so',
+          '<(PRODUCT_DIR)/ClearKeyCdm/libclearkeycdmadapter.so',
           '<(PRODUCT_DIR)/libpower_saver_test_plugin.so',
           '<(PRODUCT_DIR)/libppapi_tests.so',
         ],
@@ -45,8 +45,8 @@
     ['OS=="linux" and branding=="Chrome" and enable_pepper_cdms==1', {
       'variables': {
         'files': [
-          '<(PRODUCT_DIR)/libwidevinecdm.so',
-          '<(PRODUCT_DIR)/libwidevinecdmadapter.so',
+          '<(PRODUCT_DIR)/WidevineCdm/libwidevinecdm.so',
+          '<(PRODUCT_DIR)/WidevineCdm/libwidevinecdmadapter.so',
         ],
       },
     }],
@@ -183,9 +183,9 @@
     ['OS=="mac"', {
       'variables': {
         'files': [
-          '<(PRODUCT_DIR)/clearkeycdmadapter.plugin',
+          '<(PRODUCT_DIR)/ClearKeyCdm/clearkeycdmadapter.plugin',
+          '<(PRODUCT_DIR)/ClearKeyCdm/libclearkeycdm.dylib',
           '<(PRODUCT_DIR)/content_shell.pak',
-          '<(PRODUCT_DIR)/libclearkeycdm.dylib',
           '<(PRODUCT_DIR)/osmesa.so',
           '<(PRODUCT_DIR)/power_saver_test_plugin.plugin/Contents/MacOS/power_saver_test_plugin',
           '<(PRODUCT_DIR)/ppapi_tests.plugin/Contents/MacOS/ppapi_tests',
@@ -195,8 +195,8 @@
     ['OS=="mac" and branding=="Chrome" and enable_pepper_cdms==1', {
       'variables': {
         'files': [
-          '<(PRODUCT_DIR)/libwidevinecdm.dylib',
-          '<(PRODUCT_DIR)/widevinecdmadapter.plugin',
+          '<(PRODUCT_DIR)/WidevineCdm/libwidevinecdm.dylib',
+          '<(PRODUCT_DIR)/WidevineCdm/widevinecdmadapter.plugin',
         ],
       },
     }],
@@ -205,8 +205,8 @@
         'files': [
           '../native_client/build/build_nexe.py',
           '<(PRODUCT_DIR)/chrome_elf.dll',
-          '<(PRODUCT_DIR)/clearkeycdm.dll',
-          '<(PRODUCT_DIR)/clearkeycdmadapter.dll',
+          '<(PRODUCT_DIR)/ClearKeyCdm/clearkeycdm.dll',
+          '<(PRODUCT_DIR)/ClearKeyCdm/clearkeycdmadapter.dll',
           '<(PRODUCT_DIR)/crashpad_handler.exe',
           '<(PRODUCT_DIR)/power_saver_test_plugin.dll',
           '<(PRODUCT_DIR)/ppapi_tests.dll',
@@ -217,8 +217,8 @@
     ['OS=="win" and branding=="Chrome" and enable_pepper_cdms==1', {
       'variables': {
         'files': [
-          '<(PRODUCT_DIR)/widevinecdm.dll',
-          '<(PRODUCT_DIR)/widevinecdmadapter.dll',
+          '<(PRODUCT_DIR)/WidevineCdm/widevinecdm.dll',
+          '<(PRODUCT_DIR)/WidevineCdm/widevinecdmadapter.dll',
         ],
       },
     }],

@@ -55,7 +55,7 @@ chrome_material_200_percent.pak: %(VersionDir)s\
 
 [GOOGLE_CHROME]
 SecondaryTile.png: %(VersionDir)s\
-widevinecdmadapter.dll: %(VersionDir)s\
+WidevineCdm\widevinecdmadapter.dll: %(VersionDir)s\WidevineCdm\
 #
 # Pepper Flash sub-dir.
 #

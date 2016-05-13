@@ -1327,6 +1327,13 @@
           'sources': [
             'cdm/cdm_adapter_unittest.cc',
           ],
+          'conditions': [
+            ['OS == "mac"', {
+                'xcode_settings': {
+                  'LD_RUNPATH_SEARCH_PATHS' : [ '@executable_path/ClearKeyCdm' ],
+                },
+            }]
+          ],
         }],
         ['target_arch != "arm" and chromeos == 1 and use_x11 == 1', {
           'sources': [

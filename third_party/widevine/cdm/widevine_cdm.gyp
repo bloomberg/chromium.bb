@@ -10,6 +10,7 @@
     },
     'enable_widevine%': '<(enable_widevine)',
     'widevine_cdm_version_h_file%': 'widevine_cdm_version.h',
+    # TODO(xhwang): Also include manifest.json.
     'widevine_cdm_binary_files%': [],
     'conditions': [
       [ 'branding == "Chrome"', {
@@ -86,6 +87,7 @@
     {
       # GN version: //third_party/widevine/cdm:widevinecdmadapter
       'target_name': 'widevinecdmadapter',
+      'product_dir': '<(PRODUCT_DIR)/WidevineCdm',
       'type': 'none',
       'conditions': [
         [ '(branding == "Chrome" or enable_widevine == 1) and enable_pepper_cdms == 1', {
@@ -104,19 +106,19 @@
               'libraries': [
                 '-lrt',
                 # Copied/created by widevinecdm.
-                '<(PRODUCT_DIR)/libwidevinecdm.so',
+                '<(PRODUCT_DIR)/WidevineCdm/libwidevinecdm.so',
               ],
             }],
             [ 'OS == "win"', {
               'libraries': [
                 # Copied/created by widevinecdm.
-                '<(PRODUCT_DIR)/widevinecdm.dll.lib',
+                '<(PRODUCT_DIR)/WidevineCdm/widevinecdm.dll.lib',
               ],
             }],
             [ 'OS == "mac"', {
               'libraries': [
                 # Copied/created by widevinecdm.
-                '<(PRODUCT_DIR)/libwidevinecdm.dylib',
+                '<(PRODUCT_DIR)/WidevineCdm/libwidevinecdm.dylib',
               ],
             }],
           ],
@@ -146,17 +148,16 @@
             }],
           ],
           'copies': [{
-            # TODO(ddorwin): Do we need a sub-directory? We either need a
-            # sub-directory or to rename manifest.json before we can copy it.
-            'destination': '<(PRODUCT_DIR)',
+            'destination': '<(PRODUCT_DIR)/WidevineCdm',
             'files': [ '<@(widevine_cdm_binary_files)' ],
           }],
         }],
         [ 'branding != "Chrome" and enable_widevine == 1', {
+          'product_dir': '<(PRODUCT_DIR)/WidevineCdm',
           'conditions': [
             ['os_posix == 1 and OS != "mac"', {
               'type': 'loadable_module',
-              # Note that this causes the binary to be put in PRODUCT_DIR
+              # This causes the binary to be put in <(PRODUCT_DIR)/WidevineCdm
               # instead of lib/. This matches what happens in the copy step
               # above.
             }],
