@@ -29,6 +29,7 @@
 #include "base/memory/weak_ptr.h"
 #include "ui/base/hit_test.h"
 #include "ui/compositor/layer.h"
+#include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/transform.h"
 #include "ui/wm/public/window_types.h"

@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "ui/app_list/views/app_list_view.h"
 #include "ui/aura/window.h"
+#include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/view.h"

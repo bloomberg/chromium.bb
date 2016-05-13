@@ -19,6 +19,8 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/test/ui_controls.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/controls/menu/menu_controller.h"
 #include "ui/views/view.h"

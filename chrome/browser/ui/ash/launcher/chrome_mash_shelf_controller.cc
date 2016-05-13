@@ -18,6 +18,7 @@
 #include "services/shell/public/cpp/connector.h"
 #include "skia/public/type_converters.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/display/display.h"
 #include "ui/display/screen.h"
 
 class ChromeShelfItemDelegate : public mash::shelf::mojom::ShelfItemDelegate {

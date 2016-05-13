@@ -27,6 +27,7 @@
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/image/image_skia.h"
 

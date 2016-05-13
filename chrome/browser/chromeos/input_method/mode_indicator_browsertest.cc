@@ -21,6 +21,7 @@
 #include "ui/base/ime/chromeos/input_method_whitelist.h"
 #include "ui/base/ime/ime_bridge.h"
 #include "ui/base/ime/input_method_factory.h"
+#include "ui/display/display.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
 

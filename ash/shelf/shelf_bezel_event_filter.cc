@@ -7,6 +7,7 @@
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
 #include "ui/aura/window.h"
+#include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/wm/core/coordinate_conversion.h"
 

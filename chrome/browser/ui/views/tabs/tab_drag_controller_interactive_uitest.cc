@@ -37,6 +37,7 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/test/ui_controls.h"
+#include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"

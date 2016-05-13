@@ -10,6 +10,7 @@
 #include "build/build_config.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/compositor/compositor.h"
+#include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
 

@@ -10,6 +10,7 @@
 #include "ash/wm/common/wm_screen_util.h"
 #include "ash/wm/common/wm_window.h"
 #include "ui/compositor/layer.h"
+#include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/insets.h"
 

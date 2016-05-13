@@ -14,6 +14,7 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/views/controls/webview/web_dialog_view.h"
 #include "ui/views/widget/widget.h"

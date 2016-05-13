@@ -35,6 +35,7 @@
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/window_open_disposition.h"
+#include "ui/display/display.h"
 #include "ui/display/display_switches.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/codec/png_codec.h"

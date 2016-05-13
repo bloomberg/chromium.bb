@@ -17,6 +17,7 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
+#include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/image/image.h"
 

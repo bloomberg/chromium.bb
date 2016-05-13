@@ -22,6 +22,7 @@
 #include "ui/base/ime/input_method_initializer.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_switches.h"
+#include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/native_theme/native_theme_aura.h"
 #include "ui/native_theme/native_theme_dark_aura.h"

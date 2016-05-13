@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "build/build_config.h"
 #include "chrome/browser/fullscreen.h"
+#include "ui/display/display.h"
 #include "ui/display/screen.h"
 
 namespace {

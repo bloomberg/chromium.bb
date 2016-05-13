@@ -14,6 +14,7 @@
 #include "ash/wm/common/wm_window.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/display/display.h"
 #include "ui/display/screen.h"
 
 namespace ash {

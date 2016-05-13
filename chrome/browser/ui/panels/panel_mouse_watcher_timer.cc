@@ -7,6 +7,7 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/ui/panels/panel_mouse_watcher.h"
 #include "ui/display/screen.h"
+#include "ui/gfx/geometry/point.h"
 
 // A timer based implementation of PanelMouseWatcher.  Currently used for Gtk
 // and Mac panels implementations.

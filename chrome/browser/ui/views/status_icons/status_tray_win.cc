@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/views/status_icons/status_tray_state_changer_win.h"
 #include "chrome/common/chrome_constants.h"
 #include "ui/display/screen.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/gfx/win/hwnd_util.h"
 
 static const UINT kStatusIconMessage = WM_APP + 1;

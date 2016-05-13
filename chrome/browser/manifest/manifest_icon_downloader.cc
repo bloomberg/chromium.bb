@@ -15,6 +15,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/console_message_level.h"
 #include "skia/ext/image_operations.h"
+#include "ui/display/display.h"
 #include "ui/display/screen.h"
 
 // DevToolsConsoleHelper is a class that holds a WebContents in order to be able

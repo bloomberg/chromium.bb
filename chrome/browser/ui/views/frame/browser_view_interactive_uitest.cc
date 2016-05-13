@@ -15,6 +15,7 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
+#include "ui/display/display.h"
 #include "ui/display/screen.h"
 #endif
 

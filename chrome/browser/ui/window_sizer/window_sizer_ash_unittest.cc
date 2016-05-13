@@ -26,6 +26,7 @@
 #include "ui/aura/env.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/wm/public/activation_client.h"
 

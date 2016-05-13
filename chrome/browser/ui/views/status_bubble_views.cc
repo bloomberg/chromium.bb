@@ -21,6 +21,7 @@
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkRRect.h"
 #include "ui/base/theme_provider.h"
+#include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/linear_animation.h"

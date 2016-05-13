@@ -53,6 +53,7 @@
 #include "extensions/grit/extensions_browser_resources.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 

@@ -5,6 +5,7 @@
 #include "ui/display/screen.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/display/display.h"
 
 namespace display {
 

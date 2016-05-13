@@ -31,6 +31,7 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/message_center/message_center_style.h"
 #include "ui/message_center/message_center_tray_delegate.h"

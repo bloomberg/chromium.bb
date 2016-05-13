@@ -21,6 +21,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "url/gurl.h"
 

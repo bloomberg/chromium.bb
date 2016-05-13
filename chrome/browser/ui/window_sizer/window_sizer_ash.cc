@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/display/display.h"
 #include "ui/display/screen.h"
 
 bool WindowSizer::GetBrowserBoundsAsh(gfx::Rect* bounds,

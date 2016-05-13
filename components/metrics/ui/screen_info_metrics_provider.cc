@@ -6,6 +6,7 @@
 
 #include "build/build_config.h"
 #include "components/metrics/proto/system_profile.pb.h"
+#include "ui/display/display.h"
 #include "ui/display/screen.h"
 
 namespace metrics {

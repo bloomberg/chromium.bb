@@ -31,6 +31,7 @@
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/x/x11_util.h"
+#include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_util.h"

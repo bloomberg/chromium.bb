@@ -19,6 +19,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "components/prefs/pref_service.h"
 #include "ui/base/ui_base_switches.h"
+#include "ui/display/display.h"
 #include "ui/display/screen.h"
 
 #if defined(USE_ASH)

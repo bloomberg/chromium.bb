@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "build/build_config.h"
 #include "chrome/browser/banners/app_banner_data_fetcher_desktop.h"
+#include "ui/display/display.h"
 #include "ui/display/screen.h"
 
 namespace {
