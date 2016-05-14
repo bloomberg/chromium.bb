@@ -56,8 +56,6 @@ class AuthService(object):
 
 def add_auth_options(parser):
   """Adds command line options related to authentication."""
-  parser.auth_group = optparse.OptionGroup(parser, 'Authentication')
-  parser.add_option_group(parser.auth_group)
   oauth.add_oauth_options(parser)
 
 
