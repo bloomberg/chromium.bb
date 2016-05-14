@@ -216,9 +216,6 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
   // Updates the advanced view.
   void UpdateAdvancedView();
 
-  // Logs metrics for the user's TranslateBubbleUiEvent |action|.
-  void ReportUiAction(translate::TranslateBubbleUiEvent action);
-
   static TranslateBubbleView* translate_bubble_view_;
 
   views::View* before_translate_view_;

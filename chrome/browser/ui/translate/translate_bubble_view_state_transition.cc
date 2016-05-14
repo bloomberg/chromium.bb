@@ -9,7 +9,10 @@
 
 namespace translate {
 
-const char kTranslateBubbleUIEvent[] = "Translate.BubbleUiEvent";
+void ReportUiAction(translate::TranslateBubbleUiEvent action) {
+  UMA_HISTOGRAM_ENUMERATION("Translate.BubbleUiEvent", action,
+                            translate::TRANSLATE_BUBBLE_UI_EVENT_MAX);
+}
 
 }  // namespace translate
 
@@ -26,15 +29,11 @@ void TranslateBubbleViewStateTransition::SetViewState(
   if (view_state != TranslateBubbleModel::VIEW_STATE_ADVANCED)
     view_state_before_advanced_view_ = view_state;
   else
-    UMA_HISTOGRAM_ENUMERATION(translate::kTranslateBubbleUIEvent,
-                              translate::SET_STATE_OPTIONS,
-                              translate::TRANSLATE_BUBBLE_UI_EVENT_MAX);
+    translate::ReportUiAction(translate::SET_STATE_OPTIONS);
 }
 
 void TranslateBubbleViewStateTransition::GoBackFromAdvanced() {
   DCHECK(view_state_ == TranslateBubbleModel::VIEW_STATE_ADVANCED);
-  UMA_HISTOGRAM_ENUMERATION(translate::kTranslateBubbleUIEvent,
-                            translate::LEAVE_STATE_OPTIONS,
-                            translate::TRANSLATE_BUBBLE_UI_EVENT_MAX);
+  translate::ReportUiAction(translate::LEAVE_STATE_OPTIONS);
   SetViewState(view_state_before_advanced_view_);
 }

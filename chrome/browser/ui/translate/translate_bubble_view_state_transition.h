@@ -71,7 +71,8 @@ enum TranslateBubbleUiEvent {
   TRANSLATE_BUBBLE_UI_EVENT_MAX
 };
 
-extern const char kTranslateBubbleUIEvent[];
+// Logs metrics for the user's TranslateBubbleUiEvent |action|.
+void ReportUiAction(translate::TranslateBubbleUiEvent action);
 
 }  // namespace translate
 

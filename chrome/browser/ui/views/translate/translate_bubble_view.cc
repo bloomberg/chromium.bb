@@ -315,11 +315,12 @@ void TranslateBubbleView::ExecuteCommand(int command_id, int event_flags) {
   switch (command_id) {
     case DenialMenuItem::NEVER_TRANSLATE_LANGUAGE:
       model_->SetNeverTranslateLanguage(true);
-      ReportUiAction(translate::NEVER_TRANSLATE_LANGUAGE_MENU_CLICKED);
+      translate::ReportUiAction(
+          translate::NEVER_TRANSLATE_LANGUAGE_MENU_CLICKED);
       break;
     case DenialMenuItem::NEVER_TRANSLATE_SITE:
       model_->SetNeverTranslateSite(true);
-      ReportUiAction(translate::NEVER_TRANSLATE_SITE_MENU_CLICKED);
+      translate::ReportUiAction(translate::NEVER_TRANSLATE_SITE_MENU_CLICKED);
       break;
     default:
       NOTREACHED();
@@ -331,7 +332,7 @@ void TranslateBubbleView::StyledLabelLinkClicked(views::StyledLabel* label,
                                                  const gfx::Range& range,
                                                  int event_flags) {
   SwitchView(TranslateBubbleModel::VIEW_STATE_ADVANCED);
-  ReportUiAction(translate::ADVANCED_LINK_CLICKED);
+  translate::ReportUiAction(translate::ADVANCED_LINK_CLICKED);
 }
 
 void TranslateBubbleView::WebContentsDestroyed() {
@@ -341,7 +342,7 @@ void TranslateBubbleView::WebContentsDestroyed() {
 void TranslateBubbleView::OnWidgetClosing(views::Widget* widget) {
   if (GetBubbleFrameView()->close_button_clicked()) {
     model_->DeclineTranslation();
-    ReportUiAction(translate::CLOSE_BUTTON_CLICKED);
+    translate::ReportUiAction(translate::CLOSE_BUTTON_CLICKED);
   }
 }
 
@@ -399,7 +400,7 @@ void TranslateBubbleView::HandleButtonPressed(
       if (always_translate_checkbox_)
         model_->SetAlwaysTranslate(always_translate_checkbox_->checked());
       model_->Translate();
-      ReportUiAction(translate::TRANSLATE_BUTTON_CLICKED);
+      translate::ReportUiAction(translate::TRANSLATE_BUTTON_CLICKED);
       break;
     }
     case BUTTON_ID_DONE: {
@@ -413,33 +414,33 @@ void TranslateBubbleView::HandleButtonPressed(
         model_->Translate();
         SwitchView(TranslateBubbleModel::VIEW_STATE_TRANSLATING);
       }
-      ReportUiAction(translate::DONE_BUTTON_CLICKED);
+      translate::ReportUiAction(translate::DONE_BUTTON_CLICKED);
       break;
     }
     case BUTTON_ID_CANCEL: {
       model_->GoBackFromAdvanced();
       UpdateChildVisibilities();
       SizeToContents();
-      ReportUiAction(translate::CANCEL_BUTTON_CLICKED);
+      translate::ReportUiAction(translate::CANCEL_BUTTON_CLICKED);
       break;
     }
     case BUTTON_ID_TRY_AGAIN: {
       model_->Translate();
-      ReportUiAction(translate::TRY_AGAIN_BUTTON_CLICKED);
+      translate::ReportUiAction(translate::TRY_AGAIN_BUTTON_CLICKED);
       break;
     }
     case BUTTON_ID_SHOW_ORIGINAL: {
       model_->RevertTranslation();
       GetWidget()->Close();
-      ReportUiAction(translate::SHOW_ORIGINAL_BUTTON_CLICKED);
+      translate::ReportUiAction(translate::SHOW_ORIGINAL_BUTTON_CLICKED);
       break;
     }
     case BUTTON_ID_ALWAYS_TRANSLATE: {
       // Do nothing. The state of the checkbox affects only when the 'Done'
       // button is pressed.
-      ReportUiAction(always_translate_checkbox_->checked()
-                         ? translate::ALWAYS_TRANSLATE_CHECKED
-                         : translate::ALWAYS_TRANSLATE_UNCHECKED);
+      translate::ReportUiAction(always_translate_checkbox_->checked()
+                                    ? translate::ALWAYS_TRANSLATE_CHECKED
+                                    : translate::ALWAYS_TRANSLATE_UNCHECKED);
       break;
     }
   }
@@ -450,7 +451,7 @@ void TranslateBubbleView::HandleLinkClicked(
   switch (sender_id) {
     case LINK_ID_ADVANCED: {
       SwitchView(TranslateBubbleModel::VIEW_STATE_ADVANCED);
-      ReportUiAction(translate::ADVANCED_LINK_CLICKED);
+      translate::ReportUiAction(translate::ADVANCED_LINK_CLICKED);
       break;
     }
     case LINK_ID_LANGUAGE_SETTINGS: {
@@ -458,7 +459,7 @@ void TranslateBubbleView::HandleLinkClicked(
       web_contents()->OpenURL(
           content::OpenURLParams(url, content::Referrer(), NEW_FOREGROUND_TAB,
                                  ui::PAGE_TRANSITION_LINK, false));
-      ReportUiAction(translate::SETTINGS_LINK_CLICKED);
+      translate::ReportUiAction(translate::SETTINGS_LINK_CLICKED);
       break;
     }
   }
@@ -473,15 +474,17 @@ void TranslateBubbleView::HandleComboboxPerformAction(
           static_cast<DenialComboboxIndex>(denial_combobox_->selected_index());
       switch (index) {
         case DenialComboboxIndex::DONT_TRANSLATE:
-          ReportUiAction(translate::NOPE_MENU_CLICKED);
+          translate::ReportUiAction(translate::NOPE_MENU_CLICKED);
           break;
         case DenialComboboxIndex::NEVER_TRANSLATE_LANGUAGE:
           model_->SetNeverTranslateLanguage(true);
-          ReportUiAction(translate::NEVER_TRANSLATE_LANGUAGE_MENU_CLICKED);
+          translate::ReportUiAction(
+              translate::NEVER_TRANSLATE_LANGUAGE_MENU_CLICKED);
           break;
         case DenialComboboxIndex::NEVER_TRANSLATE_SITE:
           model_->SetNeverTranslateSite(true);
-          ReportUiAction(translate::NEVER_TRANSLATE_SITE_MENU_CLICKED);
+          translate::ReportUiAction(
+              translate::NEVER_TRANSLATE_SITE_MENU_CLICKED);
           break;
         default:
           NOTREACHED();
@@ -498,7 +501,7 @@ void TranslateBubbleView::HandleComboboxPerformAction(
       model_->UpdateOriginalLanguageIndex(
           source_language_combobox_->selected_index());
       UpdateAdvancedView();
-      ReportUiAction(translate::SOURCE_LANGUAGE_MENU_CLICKED);
+      translate::ReportUiAction(translate::SOURCE_LANGUAGE_MENU_CLICKED);
       break;
     }
     case COMBOBOX_ID_TARGET_LANGUAGE: {
@@ -509,7 +512,7 @@ void TranslateBubbleView::HandleComboboxPerformAction(
       model_->UpdateTargetLanguageIndex(
           target_language_combobox_->selected_index());
       UpdateAdvancedView();
-      ReportUiAction(translate::TARGET_LANGUAGE_MENU_CLICKED);
+      translate::ReportUiAction(translate::TARGET_LANGUAGE_MENU_CLICKED);
       break;
     }
   }
@@ -940,10 +943,4 @@ void TranslateBubbleView::UpdateAdvancedView() {
   advanced_done_button_->SizeToPreferredSize();
   if (advanced_view_)
     advanced_view_->Layout();
-}
-
-void TranslateBubbleView::ReportUiAction(
-    translate::TranslateBubbleUiEvent action) {
-  UMA_HISTOGRAM_ENUMERATION(translate::kTranslateBubbleUIEvent, action,
-                            translate::TRANSLATE_BUBBLE_UI_EVENT_MAX);
 }

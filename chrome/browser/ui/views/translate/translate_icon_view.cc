@@ -29,11 +29,9 @@ void TranslateIconView::OnExecuting(
     BubbleIconView::ExecuteSource execute_source) {}
 
 void TranslateIconView::OnPressed(bool activated) {
-  UMA_HISTOGRAM_ENUMERATION(
-      translate::kTranslateBubbleUIEvent,
-      (activated ? translate::PAGE_ACTION_ICON_ACTIVATED
-                 : translate::PAGE_ACTION_ICON_DEACTIVATED),
-      translate::TRANSLATE_BUBBLE_UI_EVENT_MAX);
+  translate::ReportUiAction((activated
+                                 ? translate::PAGE_ACTION_ICON_ACTIVATED
+                                 : translate::PAGE_ACTION_ICON_DEACTIVATED));
 }
 
 views::BubbleDialogDelegateView* TranslateIconView::GetBubble() const {
