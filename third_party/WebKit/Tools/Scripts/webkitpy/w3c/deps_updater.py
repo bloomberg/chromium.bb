@@ -9,6 +9,10 @@ import re
 
 from webkitpy.common.webkit_finder import WebKitFinder
 
+# Import destination directories (under LayoutTests/imported/).
+WPT_DEST_NAME = 'wpt'
+CSS_DEST_NAME = 'csswg-test'
+
 
 class DepsUpdater(object):
 
@@ -32,18 +36,20 @@ class DepsUpdater(object):
         chromium_commitish = self.run(['git', 'show-ref', 'HEAD'])[1].split()[0]
 
         if self.target == 'wpt':
-            import_commitish = self.update('web-platform-tests',
-                                           'https://chromium.googlesource.com/external/w3c/web-platform-tests.git')
+            import_commitish = self.update(
+                WPT_DEST_NAME,
+                'https://chromium.googlesource.com/external/w3c/web-platform-tests.git')
 
             for resource in ['testharnessreport.js', 'vendor-prefix.js']:
                 source = self.path_from_webkit_base('LayoutTests', 'resources', resource)
-                destination = self.path_from_webkit_base('LayoutTests', 'imported', 'web-platform-tests', 'resources', resource)
+                destination = self.path_from_webkit_base('LayoutTests', 'imported', WPT_DEST_NAME, 'resources', resource)
                 self.copyfile(source, destination)
                 self.run(['git', 'add', destination])
 
         elif self.target == 'css':
-            import_commitish = self.update('csswg-test',
-                                           'https://chromium.googlesource.com/external/w3c/csswg-test.git')
+            import_commitish = self.update(
+                CSS_DEST_NAME,
+                'https://chromium.googlesource.com/external/w3c/csswg-test.git')
         else:
             raise AssertionError("Unsupported target %s" % self.target)
 
@@ -79,39 +85,49 @@ class DepsUpdater(object):
             self.print_('## checkout has local commits, aborting')
             return False
 
-        if self.fs.exists(self.path_from_webkit_base('web-platform-tests')):
+        if self.fs.exists(self.path_from_webkit_base(WPT_DEST_NAME)):
             self.print_('## web-platform-tests repo exists, aborting')
             return False
 
-        if self.fs.exists(self.path_from_webkit_base('csswg-test')):
+        if self.fs.exists(self.path_from_webkit_base(CSS_DEST_NAME)):
             self.print_('## csswg-test repo exists, aborting')
             return False
 
         return True
 
-    def update(self, repo, url):
-        self.print_('## cloning %s' % repo)
+    def update(self, dest, url):
+        """Updates an imported repository.
+
+        Args:
+            dest: The destination directory name.
+            url: URL of the git repository.
+
+        Returns:
+            A string for the commit description "<destination>@<commitish>".
+        """
+        self.print_('## cloning %s into %s' % (url, dest))
         self.cd('')
-        self.run(['git', 'clone', url])
-        self.cd(re.compile('.*/([^/]+)\.git').match(url).group(1))
+        self.run(['git', 'clone', url, dest])
+
+        self.cd(dest)
         self.run(['git', 'submodule', 'update', '--init', '--recursive'])
 
         self.print_('## noting the revision we are importing')
         master_commitish = self.run(['git', 'show-ref', 'origin/master'])[1].split()[0]
 
-        self.print_('## cleaning out tests from LayoutTests/imported/%s' % repo)
-        dest_repo = self.path_from_webkit_base('LayoutTests', 'imported', repo)
+        self.print_('## cleaning out tests from LayoutTests/imported/%s' % dest)
+        dest_repo = self.path_from_webkit_base('LayoutTests', 'imported', dest)
         files_to_delete = self.fs.files_under(dest_repo, file_filter=self.is_not_baseline)
         for subpath in files_to_delete:
             self.remove('LayoutTests', 'imported', subpath)
 
         self.print_('## importing the tests')
-        src_repo = self.path_from_webkit_base(repo)
+        src_repo = self.path_from_webkit_base(dest)
         import_path = self.path_from_webkit_base('Tools', 'Scripts', 'import-w3c-tests')
         self.run([self.host.executable, import_path, '-d', 'imported', src_repo])
 
         self.cd('')
-        self.run(['git', 'add', '--all', 'LayoutTests/imported/%s' % repo])
+        self.run(['git', 'add', '--all', 'LayoutTests/imported/%s' % dest])
 
         self.print_('## deleting manual tests')
         files_to_delete = self.fs.files_under(dest_repo, file_filter=self.is_manual_test)
@@ -126,11 +142,11 @@ class DepsUpdater(object):
                 self.fs.remove(full_path)
 
         if not self.keep_w3c_repos_around:
-            self.print_('## deleting %s repo' % repo)
+            self.print_('## deleting %s repo directory' % dest)
             self.cd('')
             self.rmtree(repo)
 
-        return '%s@%s' % (repo, master_commitish)
+        return '%s@%s' % (dest, master_commitish)
 
     def commit_changes_if_needed(self, chromium_commitish, import_commitish):
         if self.run(['git', 'diff', '--quiet', 'HEAD'], exit_on_failure=False)[0]:
