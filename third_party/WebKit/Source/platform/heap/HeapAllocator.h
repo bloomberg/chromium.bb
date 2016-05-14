@@ -21,6 +21,20 @@
 
 namespace blink {
 
+template<typename T, typename Traits = WTF::VectorTraits<T>> class HeapVectorBacking {
+    DISALLOW_NEW();
+public:
+    static void finalize(void* pointer);
+    void finalizeGarbageCollectedObject() { finalize(this); }
+};
+
+template<typename Table> class HeapHashTableBacking {
+    DISALLOW_NEW();
+public:
+    static void finalize(void* pointer);
+    void finalizeGarbageCollectedObject() { finalize(this); }
+};
+
 // This is a static-only class used as a trait on collections to make them heap
 // allocated.  However see also HeapListHashSetAllocator.
 class PLATFORM_EXPORT HeapAllocator {
@@ -40,7 +54,7 @@ public:
     {
         ThreadState* state = ThreadStateFor<ThreadingTrait<T>::Affinity>::state();
         ASSERT(state->isAllocationAllowed());
-        size_t gcInfoIndex = GCInfoTrait<HeapVectorBacking<T, VectorTraits<T>>>::index();
+        size_t gcInfoIndex = GCInfoTrait<HeapVectorBacking<T>>::index();
         NormalPageArena* arena = static_cast<NormalPageArena*>(state->vectorBackingArena(gcInfoIndex));
         return reinterpret_cast<T*>(arena->allocateObject(ThreadHeap::allocationSizeFromSize(size), gcInfoIndex));
     }
@@ -49,7 +63,7 @@ public:
     {
         ThreadState* state = ThreadStateFor<ThreadingTrait<T>::Affinity>::state();
         ASSERT(state->isAllocationAllowed());
-        size_t gcInfoIndex = GCInfoTrait<HeapVectorBacking<T, VectorTraits<T>>>::index();
+        size_t gcInfoIndex = GCInfoTrait<HeapVectorBacking<T>>::index();
         NormalPageArena* arena = static_cast<NormalPageArena*>(state->expandedVectorBackingArena(gcInfoIndex));
         return reinterpret_cast<T*>(arena->allocateObject(ThreadHeap::allocationSizeFromSize(size), gcInfoIndex));
     }
@@ -59,11 +73,9 @@ public:
     template <typename T>
     static T* allocateInlineVectorBacking(size_t size)
     {
-        size_t gcInfoIndex = GCInfoTrait<HeapVectorBacking<T, VectorTraits<T>>>::index();
+        size_t gcInfoIndex = GCInfoTrait<HeapVectorBacking<T>>::index();
         ThreadState* state = ThreadStateFor<ThreadingTrait<T>::Affinity>::state();
-#define COMMA ,
-        const char* typeName = WTF_HEAP_PROFILER_TYPE_NAME(HeapVectorBacking<T COMMA VectorTraits<T>>);
-#undef COMMA
+        const char* typeName = WTF_HEAP_PROFILER_TYPE_NAME(HeapVectorBacking<T>);
         return reinterpret_cast<T*>(ThreadHeap::allocateOnArenaIndex(state, size, BlinkGC::InlineVectorArenaIndex, gcInfoIndex, typeName));
     }
     static void freeInlineVectorBacking(void*);
@@ -246,13 +258,6 @@ public:
     }
 };
 
-template<typename T, typename Traits = WTF::VectorTraits<T>> class HeapVectorBacking {
-    DISALLOW_NEW();
-public:
-    static void finalize(void* pointer);
-    void finalizeGarbageCollectedObject() { finalize(this); }
-};
-
 template<typename T, typename Traits>
 void HeapVectorBacking<T, Traits>::finalize(void* pointer)
 {
@@ -283,13 +288,6 @@ void HeapVectorBacking<T, Traits>::finalize(void* pointer)
         }
     }
 }
-
-template<typename Table> class HeapHashTableBacking {
-    DISALLOW_NEW();
-public:
-    static void finalize(void* pointer);
-    void finalizeGarbageCollectedObject() { finalize(this); }
-};
 
 template<typename Table>
 void HeapHashTableBacking<Table>::finalize(void* pointer)
