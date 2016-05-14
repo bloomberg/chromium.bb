@@ -144,10 +144,10 @@ class QuicChromiumClientStreamTest
  public:
   QuicChromiumClientStreamTest()
       : crypto_config_(CryptoTestUtils::ProofVerifierForTesting()),
-        session_(new MockConnection(&helper_,
-                                    &alarm_factory_,
-                                    Perspective::IS_CLIENT,
-                                    SupportedVersions(GetParam())),
+        session_(new MockQuicConnection(&helper_,
+                                        &alarm_factory_,
+                                        Perspective::IS_CLIENT,
+                                        SupportedVersions(GetParam())),
                  &push_promise_index_) {
     stream_ =
         new QuicChromiumClientStream(kTestStreamId, &session_, BoundNetLog());
@@ -195,7 +195,7 @@ class QuicChromiumClientStreamTest
 
   QuicCryptoClientConfig crypto_config_;
   testing::StrictMock<MockDelegate> delegate_;
-  MockConnectionHelper helper_;
+  MockQuicConnectionHelper helper_;
   MockAlarmFactory alarm_factory_;
   MockQuicClientSessionBase session_;
   QuicChromiumClientStream* stream_;

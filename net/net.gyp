@@ -819,6 +819,8 @@
         'net_quic_proto',
       ],
       'sources': [
+        'tools/quic/chlo_extractor.cc',
+	'tools/quic/chlo_extractor.h',
         'tools/quic/quic_client_base.cc',
         'tools/quic/quic_client_base.h',
         'tools/quic/quic_client_session.cc',

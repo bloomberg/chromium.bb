@@ -1799,6 +1799,7 @@
     ],
     'net_linux_test_sources': [
       'quic/quic_end_to_end_unittest.cc',
+      'tools/quic/chlo_extractor_test.cc',
       'tools/quic/end_to_end_test.cc',
       'tools/quic/quic_client_session_test.cc',
       'tools/quic/quic_client_test.cc',

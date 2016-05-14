@@ -468,7 +468,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
   TestQuicConnection* connection_;
   std::unique_ptr<QuicChromiumConnectionHelper> helper_;
   std::unique_ptr<QuicChromiumAlarmFactory> alarm_factory_;
-  testing::StrictMock<MockConnectionVisitor> visitor_;
+  testing::StrictMock<MockQuicConnectionVisitor> visitor_;
   std::unique_ptr<QuicHttpStream> stream_;
   TransportSecurityState transport_security_state_;
   std::unique_ptr<QuicChromiumClientSession> session_;

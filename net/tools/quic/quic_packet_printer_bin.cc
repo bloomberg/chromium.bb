@@ -105,7 +105,7 @@ class QuicPacketPrinter : public QuicFramerVisitorInterface {
   bool OnStreamFrame(const QuicStreamFrame& frame) override {
     cerr << "OnStreamFrame: " << frame;
     cerr << "         data: { "
-         << QuicUtils::HexEncode(frame.frame_buffer, frame.frame_length)
+         << QuicUtils::HexEncode(frame.data_buffer, frame.data_length)
          << " }\n";
     return true;
   }
@@ -118,7 +118,7 @@ class QuicPacketPrinter : public QuicFramerVisitorInterface {
     return true;
   }
   bool OnPaddingFrame(const QuicPaddingFrame& frame) override {
-    cerr << "OnPaddingFrame";
+    cerr << "OnPaddingFrame: " << frame;
     return true;
   }
   bool OnPingFrame(const QuicPingFrame& frame) override {

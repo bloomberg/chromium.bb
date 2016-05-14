@@ -72,9 +72,9 @@ class QuicClientPromisedInfoTest : public ::testing::Test {
   class StreamVisitor;
 
   QuicClientPromisedInfoTest()
-      : connection_(new StrictMock<MockConnection>(&helper_,
-                                                   &alarm_factory_,
-                                                   Perspective::IS_CLIENT)),
+      : connection_(new StrictMock<MockQuicConnection>(&helper_,
+                                                       &alarm_factory_,
+                                                       Perspective::IS_CLIENT)),
         session_(connection_, &push_promise_index_),
         body_("hello world"),
         promise_id_(gfe_quic::test::kServerDataStreamId1) {
@@ -144,9 +144,9 @@ class QuicClientPromisedInfoTest : public ::testing::Test {
     stream_->OnPromiseHeadersComplete(id, serialized_push_promise_.size());
   }
 
-  MockConnectionHelper helper_;
+  MockQuicConnectionHelper helper_;
   MockAlarmFactory alarm_factory_;
-  StrictMock<MockConnection>* connection_;
+  StrictMock<MockQuicConnection>* connection_;
   QuicClientPushPromiseIndex push_promise_index_;
 
   MockQuicClientSession session_;
