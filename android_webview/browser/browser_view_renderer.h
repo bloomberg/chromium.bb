@@ -99,7 +99,6 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
   bool IsVisible() const;
   gfx::Rect GetScreenRect() const;
   bool attached_to_window() const { return attached_to_window_; }
-  bool hardware_enabled() const { return hardware_enabled_; }
   gfx::Size size() const { return size_; }
 
   bool IsClientVisible() const;
