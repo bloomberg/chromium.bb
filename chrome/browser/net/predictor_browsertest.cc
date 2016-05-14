@@ -1072,6 +1072,23 @@ IN_PROC_BROWSER_TEST_F(PredictorBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(PredictorBrowserTest,
+                       RendererInitiatedNavigationPreconnect) {
+  NavigateToCrossSiteHtmlUrl(1 /* num_cors */, "" /* file_suffix */);
+  EXPECT_EQ(1, observer()->CrossSiteLearned());
+  EXPECT_EQ(0u, cross_site_connection_listener_->GetAcceptedSocketCount());
+
+  // Now, navigate using a renderer initiated navigation and expect preconnects.
+  EXPECT_TRUE(content::ExecuteScript(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      "window.location.href='/title1.html'"));
+
+  // The renderer initiated navigation is not synchronous, so just wait for the
+  // preconnects to go through.
+  // Note that ceil(2 + .33) + 1 = 4.
+  cross_site_connection_listener_->WaitForAcceptedConnectionsOnUI(4u);
+}
+
+IN_PROC_BROWSER_TEST_F(PredictorBrowserTest,
                        PRE_ShutdownStartupCyclePreresolve) {
   // Prepare state that will be serialized on this shut-down and read on next
   // start-up. Ensure preresolution over preconnection.

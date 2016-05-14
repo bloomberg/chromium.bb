@@ -252,6 +252,14 @@
             "group_name": "Enabled"
         }
     ],
+    "PreconnectMore": [
+        {
+            "enable_features": [
+                "PreconnectMore"
+            ],
+            "group_name": "Enabled"
+        }
+    ],
     "ProgressBarAnimationAndroid": [
         {
             "group_name": "SmoothAnimation",

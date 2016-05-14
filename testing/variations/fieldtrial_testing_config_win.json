@@ -231,6 +231,14 @@
             }
         }
     ],
+    "PreconnectMore": [
+        {
+            "enable_features": [
+                "PreconnectMore"
+            ],
+            "group_name": "Enabled"
+        }
+    ],
     "QUIC": [
         {
             "group_name": "Enabled",
