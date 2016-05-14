@@ -56,6 +56,11 @@ public class ToolbarControlContainer extends FrameLayout implements ControlConta
     }
 
     @Override
+    public View getView() {
+        return this;
+    }
+
+    @Override
     public void getProgressBarDrawingInfo(DrawingInfo drawingInfoOut) {
         // TODO(yusufo): Avoid casting to the layout without making the interface bigger.
         ToolbarProgressBar progressBar = ((ToolbarLayout) mToolbar).getProgressBar();

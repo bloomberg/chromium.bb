@@ -190,13 +190,6 @@ public class StripLayoutHelperManager implements SceneOverlay {
     }
 
     /**
-     * @param brightness Sets the brightness for the entire tabstrip.
-     */
-    public void setBrightness(float brightness) {
-        getActiveStripLayoutHelper().setBrightness(brightness);
-    }
-
-    /**
      * @return The brightness of the entire tabstrip.
      */
     public float getBrightness() {

@@ -637,15 +637,6 @@ public abstract class Layout implements TabContentManager.ThumbnailChangeListene
     }
 
     /**
-     * @param currentOffset The current top controls offset in dp.
-     * @return {@link Float#NaN} if no offset should be used, or a value in dp if the top controls
-     *         offset should be overridden.
-     */
-    public float getTopControlsOffset(float currentOffset) {
-        return Float.NaN;
-    }
-
-    /**
      * Initializes a {@link LayoutTab} with data from the {@link LayoutUpdateHost}. This function
      * eventually needs to be called but may be overridden to manage the posting traffic.
      *
@@ -1172,8 +1163,6 @@ public abstract class Layout implements TabContentManager.ThumbnailChangeListene
         float offsetPx = fullscreenManager != null ? fullscreenManager.getControlOffset() : 0.f;
         float dpToPx = getContext().getResources().getDisplayMetrics().density;
         float offsetDp = offsetPx / dpToPx;
-        float offsetOverride = getTopControlsOffset(offsetDp);
-        if (!Float.isNaN(offsetOverride)) offsetDp = offsetOverride;
 
         SceneLayer content = getSceneLayer();
         for (int i = 0; i < mSceneOverlays.size(); i++) {
@@ -1196,13 +1185,6 @@ public abstract class Layout implements TabContentManager.ThumbnailChangeListene
             if (mSceneOverlays.get(i).shouldHideAndroidTopControls()) return true;
         }
         return false;
-    }
-
-    /**
-     * @return The toolbar brightness.
-     */
-    public float getToolbarBrightness() {
-        return 1.0f;
     }
 
     /**

@@ -27,6 +27,7 @@ namespace chrome {
 namespace android {
 
 class ContentLayer;
+class ToolbarLayer;
 
 // A SceneLayer to render a static tab.
 class StaticTabSceneLayer : public SceneLayer {
@@ -58,17 +59,37 @@ class StaticTabSceneLayer : public SceneLayer {
       jfloat static_to_view_blend,
       jfloat saturation,
       jfloat brightness);
-
-  // Set the given |jscene_layer| as content of this SceneLayer, along with its
-  // own content.
-  void SetContentSceneLayer(
+  // Update the compositor version of the toolbar.
+  void UpdateToolbarLayer(
       JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& jobj,
-      const base::android::JavaParamRef<jobject>& jscene_layer);
+      const base::android::JavaParamRef<jobject>& object,
+      const base::android::JavaParamRef<jobject>& jresource_manager,
+      jint toolbar_resource_id,
+      jint toolbar_background_color,
+      jint url_bar_resource_id,
+      jfloat url_bar_alpha,
+      jfloat top_offset,
+      bool visible,
+      bool show_shadow);
+  // Update the progress bar.
+  void UpdateProgressBar(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& object,
+      jint progress_bar_x,
+      jint progress_bar_y,
+      jint progress_bar_width,
+      jint progress_bar_height,
+      jint progress_bar_color,
+      jint progress_bar_background_x,
+      jint progress_bar_background_y,
+      jint progress_bar_background_width,
+      jint progress_bar_background_height,
+      jint progress_bar_background_color);
 
  private:
   scoped_refptr<chrome::android::ContentLayer> content_layer_;
   scoped_refptr<cc::Layer> content_scene_layer_;
+  scoped_refptr<ToolbarLayer> toolbar_layer_;
 
   int last_set_tab_id_;
   int background_color_;

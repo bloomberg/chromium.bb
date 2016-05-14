@@ -233,7 +233,6 @@ void TabLayer::SetProperties(int id,
                                toolbar_textbox_resource_id,
                                toolbar_textbox_alpha,
                                false,
-                               1.f,
                                false);
   toolbar_layer_->UpdateProgressBar(0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 

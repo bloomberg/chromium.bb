@@ -40,6 +40,7 @@ import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tab.TopControlsVisibilityDelegate;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.UrlUtilities;
+import org.chromium.chrome.browser.widget.ControlContainer;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.content.browser.ScreenOrientationProvider;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -544,7 +545,8 @@ public class WebappActivity extends FullScreenActivity {
     }
 
     @Override
-    protected final ChromeFullscreenManager createFullscreenManager(View controlContainer) {
+    protected final ChromeFullscreenManager createFullscreenManager(
+            ControlContainer controlContainer) {
         return new ChromeFullscreenManager(this, controlContainer, getTabModelSelector(),
                 getControlContainerHeightResource(), false /* supportsBrowserOverride */);
     }

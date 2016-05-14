@@ -37,7 +37,6 @@ class ToolbarLayer : public Layer {
                     int url_bar_background_resource_id,
                     float url_bar_alpha,
                     bool show_debug,
-                    float brightness,
                     bool clip_shadow);
 
   void UpdateProgressBar(int progress_bar_x,
@@ -66,7 +65,6 @@ class ToolbarLayer : public Layer {
   scoped_refptr<cc::SolidColorLayer> progress_bar_background_layer_;
   scoped_refptr<cc::SolidColorLayer> anonymize_layer_;
   scoped_refptr<cc::SolidColorLayer> debug_layer_;
-  float brightness_;
 
   DISALLOW_COPY_AND_ASSIGN(ToolbarLayer);
 };

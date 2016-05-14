@@ -25,7 +25,6 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
-import org.chromium.chrome.browser.compositor.layouts.Layout.SizingFlags;
 import org.chromium.chrome.browser.compositor.layouts.LayoutProvider;
 import org.chromium.chrome.browser.compositor.layouts.LayoutRenderHost;
 import org.chromium.chrome.browser.compositor.layouts.components.LayoutTab;
@@ -33,9 +32,7 @@ import org.chromium.chrome.browser.compositor.layouts.content.ContentOffsetProvi
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.compositor.resources.StaticResourcePreloads;
 import org.chromium.chrome.browser.compositor.scene_layer.SceneLayer;
-import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.externalnav.IntentWithGesturesHandler;
-import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.tabmodel.TabModelImpl;
 import org.chromium.chrome.browser.widget.ClipDrawableProgressBar.DrawingInfo;
@@ -305,58 +302,6 @@ public class CompositorView
         mRenderHost.onSwapBuffersCompleted(pendingSwapBuffersCount);
     }
 
-    private void updateToolbarLayer(LayoutProvider provider, boolean forRotation,
-            final DrawingInfo progressBarDrawingInfo) {
-        if (forRotation || !DeviceClassManager.enableFullscreen()) return;
-
-        ChromeFullscreenManager fullscreenManager = provider.getFullscreenManager();
-        if (fullscreenManager == null) return;
-
-        float offset = fullscreenManager.getControlOffset();
-        boolean forceHideTopControlsAndroidView =
-                provider.getActiveLayout().forceHideTopControlsAndroidView();
-        boolean useTexture = fullscreenManager.drawControlsAsTexture() || offset == 0
-                || forceHideTopControlsAndroidView;
-
-        float dpToPx = getContext().getResources().getDisplayMetrics().density;
-        float layoutOffsetDp = provider.getActiveLayout().getTopControlsOffset(offset / dpToPx);
-        boolean validLayoutOffset = !Float.isNaN(layoutOffsetDp);
-
-        if (validLayoutOffset) {
-            offset = layoutOffsetDp * dpToPx;
-            useTexture = true;
-        }
-
-        fullscreenManager.setHideTopControlsAndroidView(forceHideTopControlsAndroidView
-                || (validLayoutOffset && layoutOffsetDp != 0.f));
-
-        int flags = provider.getActiveLayout().getSizingFlags();
-        if ((flags & SizingFlags.REQUIRE_FULLSCREEN_SIZE) != 0
-                && (flags & SizingFlags.ALLOW_TOOLBAR_HIDE) == 0
-                && (flags & SizingFlags.ALLOW_TOOLBAR_ANIMATE) == 0) {
-            useTexture = false;
-        }
-
-        nativeUpdateToolbarLayer(mNativeCompositorView, R.id.control_container,
-                mRenderHost.getTopControlsBackgroundColor(), R.drawable.textbox,
-                mRenderHost.getTopControlsUrlBarAlpha(), offset,
-                provider.getActiveLayout().getToolbarBrightness(),
-                useTexture, forceHideTopControlsAndroidView);
-
-        if (progressBarDrawingInfo == null) return;
-        nativeUpdateProgressBar(mNativeCompositorView,
-                progressBarDrawingInfo.progressBarRect.left,
-                progressBarDrawingInfo.progressBarRect.top,
-                progressBarDrawingInfo.progressBarRect.width(),
-                progressBarDrawingInfo.progressBarRect.height(),
-                progressBarDrawingInfo.progressBarColor,
-                progressBarDrawingInfo.progressBarBackgroundRect.left,
-                progressBarDrawingInfo.progressBarBackgroundRect.top,
-                progressBarDrawingInfo.progressBarBackgroundRect.width(),
-                progressBarDrawingInfo.progressBarBackgroundRect.height(),
-                progressBarDrawingInfo.progressBarBackgroundColor);
-    }
-
     /**
      * Converts the layout into compositor layers. This is to be called on every frame the layout
      * is changing.
@@ -393,9 +338,6 @@ public class CompositorView
         nativeSetLayoutViewport(mNativeCompositorView, mCacheViewport.left, mCacheViewport.top,
                 mCacheViewport.width(), mCacheViewport.height(), mCacheVisibleViewport.left,
                 mCacheVisibleViewport.top, 1.0f);
-
-        // TODO(changwan): move to treeprovider.
-        updateToolbarLayer(provider, forRotation, progressBarDrawingInfo);
 
         SceneLayer sceneLayer =
                 provider.getUpdatedActiveSceneLayer(mCacheViewport, mCacheVisibleViewport,
@@ -441,21 +383,6 @@ public class CompositorView
     private native void nativeSetLayoutViewport(long nativeCompositorView, float x, float y,
             float width, float height, float visibleXOffset, float visibleYOffset,
             float dpToPixel);
-    private native void nativeUpdateToolbarLayer(long nativeCompositorView, int resourceId,
-            int toolbarBackgroundColor, int urlBarResourceId, float urlBarAlpha, float topOffset,
-            float brightness, boolean visible, boolean showShadow);
-    private native void nativeUpdateProgressBar(
-            long nativeCompositorView,
-            int progressBarX,
-            int progressBarY,
-            int progressBarWidth,
-            int progressBarHeight,
-            int progressBarColor,
-            int progressBarBackgroundX,
-            int progressBarBackgroundY,
-            int progressBarBackgroundWidth,
-            int progressBarBackgroundHeight,
-            int progressBarBackgroundColor);
     private native void nativeSetOverlayVideoMode(long nativeCompositorView, boolean enabled);
     private native void nativeSetSceneLayer(long nativeCompositorView, SceneLayer sceneLayer);
 }

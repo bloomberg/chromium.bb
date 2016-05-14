@@ -4,13 +4,21 @@
 
 package org.chromium.chrome.browser.compositor.scene_layer;
 
+import android.content.Context;
 import android.graphics.Rect;
 
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.LayerTitleCache;
+import org.chromium.chrome.browser.compositor.layouts.Layout.SizingFlags;
 import org.chromium.chrome.browser.compositor.layouts.components.LayoutTab;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
+import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
+import org.chromium.chrome.browser.widget.ClipDrawableProgressBar.DrawingInfo;
+import org.chromium.chrome.browser.widget.ControlContainer;
+import org.chromium.ui.base.DeviceFormFactor;
+import org.chromium.ui.resources.ResourceManager;
 
 /**
  * A SceneLayer to render a static tab.
@@ -21,10 +29,17 @@ public class StaticTabSceneLayer extends SceneLayer {
     // downcast using reinterpret_cast<>. We keep a separate pointer to avoid it.
     private long mNativePtr;
 
+    private final Context mContext;
+
     private final int mResToolbarControlContainer;
 
-    public StaticTabSceneLayer(int resToolbarControlContainer) {
+    private DrawingInfo mProgressBarDrawingInfo;
+    private final boolean mIsTablet;
+
+    public StaticTabSceneLayer(Context context, int resToolbarControlContainer) {
+        mContext = context;
         mResToolbarControlContainer = resToolbarControlContainer;
+        mIsTablet = DeviceFormFactor.isTablet(mContext);
     }
 
     /**
@@ -59,13 +74,59 @@ public class StaticTabSceneLayer extends SceneLayer {
     }
 
     /**
-     * Set the given sceneLayer as content along with {@link StaticTabSceneLayer}'s own.
+     * Update the toolbar and progress bar layers.
      *
-     * @param sceneLayer
+     * @param dpToPx The conversion factor of dp to px.
+     * @param topControlsBackgroundColor The background color of the top controls.
+     * @param topControlsUrlBarAlpha The alpha of the URL bar.
+     * @param fullscreenManager A ChromeFullscreenManager instance.
+     * @param resourceManager A ResourceManager for loading static resources.
+     * @param forceHideAndroidTopControls True if the Android top controls are being hidden.
+     * @param sizingFlags The sizing flags for the toolbar.
      */
-    // TODO(pedrosimonetti): Remove this once contextual search is moved into an overlay.
-    public void setContentSceneLayer(SceneLayer sceneLayer) {
-        nativeSetContentSceneLayer(mNativePtr, sceneLayer);
+    public void updateToolbarLayer(float dpToPx, int topControlsBackgroundColor,
+            float topControlsUrlBarAlpha, ChromeFullscreenManager fullscreenManager,
+            ResourceManager resourceManager, boolean forceHideAndroidTopControls,
+            int sizingFlags) {
+        if (!DeviceClassManager.enableFullscreen()) return;
+
+        if (fullscreenManager == null) return;
+        ControlContainer toolbarContainer = fullscreenManager.getControlContainer();
+        if (!mIsTablet && toolbarContainer != null) {
+            if (mProgressBarDrawingInfo == null) mProgressBarDrawingInfo = new DrawingInfo();
+            toolbarContainer.getProgressBarDrawingInfo(mProgressBarDrawingInfo);
+        } else {
+            assert mProgressBarDrawingInfo == null;
+        }
+
+        float offset = fullscreenManager.getControlOffset();
+        boolean useTexture = fullscreenManager.drawControlsAsTexture() || offset == 0
+                || forceHideAndroidTopControls;
+
+        fullscreenManager.setHideTopControlsAndroidView(forceHideAndroidTopControls);
+
+        if ((sizingFlags & SizingFlags.REQUIRE_FULLSCREEN_SIZE) != 0
+                && (sizingFlags & SizingFlags.ALLOW_TOOLBAR_HIDE) == 0
+                && (sizingFlags & SizingFlags.ALLOW_TOOLBAR_ANIMATE) == 0) {
+            useTexture = false;
+        }
+
+        nativeUpdateToolbarLayer(mNativePtr, resourceManager, R.id.control_container,
+                topControlsBackgroundColor, R.drawable.textbox, topControlsUrlBarAlpha, offset,
+                useTexture, forceHideAndroidTopControls);
+
+        if (mProgressBarDrawingInfo == null) return;
+        nativeUpdateProgressBar(mNativePtr,
+                mProgressBarDrawingInfo.progressBarRect.left,
+                mProgressBarDrawingInfo.progressBarRect.top,
+                mProgressBarDrawingInfo.progressBarRect.width(),
+                mProgressBarDrawingInfo.progressBarRect.height(),
+                mProgressBarDrawingInfo.progressBarColor,
+                mProgressBarDrawingInfo.progressBarBackgroundRect.left,
+                mProgressBarDrawingInfo.progressBarBackgroundRect.top,
+                mProgressBarDrawingInfo.progressBarBackgroundRect.width(),
+                mProgressBarDrawingInfo.progressBarBackgroundRect.height(),
+                mProgressBarDrawingInfo.progressBarBackgroundColor);
     }
 
     @Override
@@ -89,6 +150,13 @@ public class StaticTabSceneLayer extends SceneLayer {
             boolean canUseLiveLayer, int backgroundColor, float x, float y, float width,
             float height, float contentOffsetY, float staticToViewBlend, float saturation,
             float brightness);
-    private native void nativeSetContentSceneLayer(
-            long nativeStaticTabSceneLayer, SceneLayer sceneLayer);
+    private native void nativeUpdateToolbarLayer(long nativeStaticTabSceneLayer,
+            ResourceManager resourceManager, int resourceId, int toolbarBackgroundColor,
+            int urlBarResourceId, float urlBarAlpha, float topOffset, boolean visible,
+            boolean showShadow);
+    private native void nativeUpdateProgressBar(
+            long nativeStaticTabSceneLayer, int progressBarX, int progressBarY,
+            int progressBarWidth, int progressBarHeight, int progressBarColor,
+            int progressBarBackgroundX, int progressBarBackgroundY, int progressBarBackgroundWidth,
+            int progressBarBackgroundHeight, int progressBarBackgroundColor);
 }

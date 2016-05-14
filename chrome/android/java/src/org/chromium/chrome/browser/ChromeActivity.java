@@ -1271,7 +1271,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
      *                         manager.
      * @return A {@link ChromeFullscreenManager} instance that's been created.
      */
-    protected ChromeFullscreenManager createFullscreenManager(View controlContainer) {
+    protected ChromeFullscreenManager createFullscreenManager(ControlContainer controlContainer) {
         return new ChromeFullscreenManager(this, controlContainer, getTabModelSelector(),
                 getControlContainerHeightResource(), true);
     }
@@ -1310,7 +1310,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             LayoutManagerDocument layoutManager, View urlBar, ViewGroup contentContainer,
             ControlContainer controlContainer) {
         if (controlContainer != null) {
-            mFullscreenManager = createFullscreenManager((View) controlContainer);
+            mFullscreenManager = createFullscreenManager(controlContainer);
         }
 
         if (mContextualSearchManager != null) {

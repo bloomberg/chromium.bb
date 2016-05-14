@@ -82,29 +82,6 @@ class CompositorView : public content::CompositorClient,
                          jfloat visible_x_offset,
                          jfloat visible_y_offset,
                          jfloat dp_to_pixel);
-  void UpdateToolbarLayer(JNIEnv* env,
-                          const base::android::JavaParamRef<jobject>& object,
-                          jint toolbar_resource_id,
-                          jint toolbar_background_color,
-                          jint url_bar_resource_id,
-                          jfloat url_bar_alpha,
-                          jfloat top_offset,
-                          jfloat brightness,
-                          bool visible,
-                          bool show_shadow);
-  void UpdateProgressBar(JNIEnv* env,
-                         const base::android::JavaParamRef<jobject>& object,
-                         jint progress_bar_x,
-                         jint progress_bar_y,
-                         jint progress_bar_width,
-                         jint progress_bar_height,
-                         jint progress_bar_color,
-                         jint progress_bar_background_x,
-                         jint progress_bar_background_y,
-                         jint progress_bar_background_width,
-                         jint progress_bar_background_height,
-                         jint progress_bar_background_color);
-
   void SurfaceCreated(JNIEnv* env,
                       const base::android::JavaParamRef<jobject>& object);
   void SurfaceDestroyed(JNIEnv* env,
@@ -145,7 +122,6 @@ class CompositorView : public content::CompositorClient,
   TabContentManager* tab_content_manager_;
 
   scoped_refptr<cc::SolidColorLayer> root_layer_;
-  scoped_refptr<ToolbarLayer> toolbar_layer_;
   SceneLayer* scene_layer_;
   scoped_refptr<cc::Layer> scene_layer_layer_;
 

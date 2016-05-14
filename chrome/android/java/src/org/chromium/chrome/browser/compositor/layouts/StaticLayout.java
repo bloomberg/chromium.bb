@@ -10,7 +10,6 @@ import android.os.Handler;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.LayerTitleCache;
-import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager;
 import org.chromium.chrome.browser.compositor.layouts.components.LayoutTab;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
@@ -72,7 +71,7 @@ public class StaticLayout extends ContextualSearchSupportedLayout {
         mHandler = new Handler();
         mUnstallRunnable = new UnstallRunnable();
         mUnstalling = false;
-        mSceneLayer = new StaticTabSceneLayer(R.id.control_container);
+        mSceneLayer = new StaticTabSceneLayer(context, R.id.control_container);
     }
 
     /**
@@ -236,14 +235,9 @@ public class StaticLayout extends ContextualSearchSupportedLayout {
 
         mSceneLayer.update(dpToPx, contentViewport, layerTitleCache, tabContentManager,
                 fullscreenManager, layoutTab);
-
-        // TODO(pedrosimonetti): Coordinate w/ dtrainor@ to improve integration with TreeProvider.
-        SceneLayer overlayLayer = null;
-        OverlayPanel panel = mPanelManager.getActivePanel();
-        if (panel != null && panel.isShowing()) {
-            overlayLayer = super.getSceneLayer();
-        }
-        mSceneLayer.setContentSceneLayer(overlayLayer);
+        mSceneLayer.updateToolbarLayer(dpToPx, mRenderHost.getTopControlsBackgroundColor(),
+                mRenderHost.getTopControlsUrlBarAlpha(), fullscreenManager, resourceManager,
+                forceHideTopControlsAndroidView(), getSizingFlags());
 
         // TODO(dtrainor): Find the best way to properly track this metric for cold starts.
         // We should probably erase the thumbnail when we select a tab that we need to restore.

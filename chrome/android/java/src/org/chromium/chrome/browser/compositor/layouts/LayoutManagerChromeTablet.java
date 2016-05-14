@@ -187,7 +187,6 @@ public class LayoutManagerChromeTablet extends LayoutManagerChrome {
     public SceneLayer getUpdatedActiveSceneLayer(Rect viewport, Rect contentViewport,
             LayerTitleCache layerTitleCache, TabContentManager tabContentManager,
             ResourceManager resourceManager, ChromeFullscreenManager fullscreenManager) {
-        mTabStripLayoutHelperManager.setBrightness(getActiveLayout().getToolbarBrightness());
         return super.getUpdatedActiveSceneLayer(viewport, contentViewport, layerTitleCache,
                 tabContentManager, resourceManager, fullscreenManager);
     }

@@ -106,7 +106,6 @@ public class ContextualSearchLayout extends ContextualSearchSupportedLayout {
         return SizingFlags.HELPER_SUPPORTS_FULLSCREEN;
     }
 
-    @Override
     public float getTopControlsOffset(float currentOffsetDp) {
         return MathUtils.clamp(mBaseTab.getY(), -mPanelManager.getActivePanel().getToolbarHeight(),
                 Math.min(currentOffsetDp, 0f));
@@ -284,7 +283,6 @@ public class ContextualSearchLayout extends ContextualSearchSupportedLayout {
         return true;
     }
 
-    @Override
     public float getToolbarBrightness() {
         return mPanelManager.getActivePanel().getBasePageBrightness();
     }

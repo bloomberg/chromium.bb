@@ -6,11 +6,13 @@
 
 #include "cc/layers/layer.h"
 #include "chrome/browser/android/compositor/layer/content_layer.h"
+#include "chrome/browser/android/compositor/layer/toolbar_layer.h"
 #include "chrome/browser/android/compositor/layer_title_cache.h"
 #include "chrome/browser/android/compositor/tab_content_manager.h"
 #include "content/public/browser/android/compositor.h"
 #include "jni/StaticTabSceneLayer_jni.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/android/resources/resource_manager_impl.h"
 
 namespace chrome {
 namespace android {
@@ -63,6 +65,7 @@ void StaticTabSceneLayer::UpdateTabLayer(
         chrome::android::TabContentManager::FromJavaObject(
             jtab_content_manager);
     content_layer_ = chrome::android::ContentLayer::Create(tab_content_manager);
+    layer_->AddChild(content_layer_->layer());
   }
 
   // Only override the alpha of content layers when the static tab is first
@@ -109,8 +112,6 @@ void StaticTabSceneLayer::UpdateTabLayer(
   content_layer_->layer()->SetPosition(gfx::PointF(x, y));
   content_layer_->layer()->SetIsDrawable(true);
 
-  layer_->AddChild(content_layer_->layer());
-
   // Only applies the brightness filter if the value has changed and is less
   // than 1.
   if (brightness != brightness_) {
@@ -122,29 +123,60 @@ void StaticTabSceneLayer::UpdateTabLayer(
   }
 }
 
-void StaticTabSceneLayer::SetContentSceneLayer(
+void StaticTabSceneLayer::UpdateToolbarLayer(
     JNIEnv* env,
-    const JavaParamRef<jobject>& jobj,
-    const JavaParamRef<jobject>& jcontent_scene_layer) {
-  SceneLayer* content_scene_layer = FromJavaObject(env, jcontent_scene_layer);
-  scoped_refptr<cc::Layer> layer = content_scene_layer ?
-      content_scene_layer->layer() : nullptr;
-
-  if (content_scene_layer_ && content_scene_layer_ != layer) {
-    content_scene_layer_->RemoveFromParent();
-    content_scene_layer_ = nullptr;
+    const JavaParamRef<jobject>& object,
+    const JavaParamRef<jobject>& jresource_manager,
+    jint toolbar_resource_id,
+    jint toolbar_background_color,
+    jint url_bar_resource_id,
+    jfloat url_bar_alpha,
+    jfloat top_offset,
+    bool visible,
+    bool show_shadow) {
+  // If the toolbar layer has not been created yet, create it.
+  if (!toolbar_layer_) {
+    ui::ResourceManager* resource_manager =
+        ui::ResourceManagerImpl::FromJavaObject(jresource_manager);
+    toolbar_layer_ = ToolbarLayer::Create(resource_manager);
+    toolbar_layer_->layer()->SetHideLayerAndSubtree(true);
+    layer_->AddChild(toolbar_layer_->layer());
   }
 
-  // TODO(pedrosimonetti): Consider being smarter with regards to when to
-  // add the layer to the hierarchy. For now, we need to keep adding the
-  // content_scene_layer on every frame because the content_layer is also
-  // added on every frame. This means that if we only add it once, the
-  // content_layer will be added again on the next frame and will
-  // occlude the content_scene_layer.
-  if (layer) {
-    content_scene_layer_ = layer;
-    layer_->AddChild(layer);
+  toolbar_layer_->layer()->SetHideLayerAndSubtree(!visible);
+  if (visible) {
+    toolbar_layer_->layer()->SetPosition(gfx::PointF(0, top_offset));
+    // If we're at rest, hide the shadow.  The Android view should be drawing.
+    bool clip_shadow = top_offset >= 0.f && !show_shadow;
+    toolbar_layer_->PushResource(toolbar_resource_id, toolbar_background_color,
+                                 false, SK_ColorWHITE, url_bar_resource_id,
+                                 url_bar_alpha, false, clip_shadow);
   }
+}
+
+void StaticTabSceneLayer::UpdateProgressBar(JNIEnv* env,
+                                       const JavaParamRef<jobject>& object,
+                                       jint progress_bar_x,
+                                       jint progress_bar_y,
+                                       jint progress_bar_width,
+                                       jint progress_bar_height,
+                                       jint progress_bar_color,
+                                       jint progress_bar_background_x,
+                                       jint progress_bar_background_y,
+                                       jint progress_bar_background_width,
+                                       jint progress_bar_background_height,
+                                       jint progress_bar_background_color) {
+  if (!toolbar_layer_) return;
+  toolbar_layer_->UpdateProgressBar(progress_bar_x,
+                                    progress_bar_y,
+                                    progress_bar_width,
+                                    progress_bar_height,
+                                    progress_bar_color,
+                                    progress_bar_background_x,
+                                    progress_bar_background_y,
+                                    progress_bar_background_width,
+                                    progress_bar_background_height,
+                                    progress_bar_background_color);
 }
 
 static jlong Init(JNIEnv* env, const JavaParamRef<jobject>& jobj) {
