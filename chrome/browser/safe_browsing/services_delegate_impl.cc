@@ -180,12 +180,16 @@ void ServicesDelegateImpl::StopOnIOThread(bool shutdown) {
 }
 
 V4LocalDatabaseManager* ServicesDelegateImpl::CreateV4LocalDatabaseManager() {
-  return new V4LocalDatabaseManager();
+  return new V4LocalDatabaseManager(SafeBrowsingService::GetBaseFilename());
 }
 
 bool ServicesDelegateImpl::IsV4LocalDatabaseManagerEnabled() {
-  return base::FeatureList::IsEnabled(
+  bool enabled = base::FeatureList::IsEnabled(
       kSafeBrowsingV4LocalDatabaseManagerEnabled);
+#ifndef NDEBUG
+  enabled = true;
+#endif
+  return enabled;
 }
 
 }  // namespace safe_browsing

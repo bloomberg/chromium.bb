@@ -167,6 +167,7 @@ source_set("v4_database") {
     ":v4_protocol_manager_util",
     ":v4_store",
     "//base",
+    "//content/public/browser",
   ]
 }
 
@@ -221,9 +222,12 @@ source_set("v4_protocol_manager_util") {
 
 source_set("v4_store") {
   sources = [
+    "v4_store.cc",
     "v4_store.h",
   ]
-  deps = []
+  deps = [
+    "//base",
+  ]
 }
 
 source_set("v4_update_protocol_manager") {
