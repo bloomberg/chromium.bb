@@ -155,6 +155,14 @@ if (!is_android && !is_mac) {
         configs -= [ "//build/config/win:console" ]
         configs += [ "//build/config/win:windowed" ]
       }
+
+      ldflags = [
+        "/DELAYLOAD:dbghelp.dll",
+        "/DELAYLOAD:dwmapi.dll",
+        "/DELAYLOAD:uxtheme.dll",
+        "/DELAYLOAD:ole32.dll",
+        "/DELAYLOAD:oleaut32.dll",
+      ]
     } else if (use_aura) {
       # Non-Windows aura entrypoint.
       sources += [ "app/chrome_exe_main_aura.cc" ]
@@ -291,10 +299,23 @@ if (is_win) {
         "//third_party/wtl",
         "//ui/views",
       ]
-      if (current_cpu == "x86") {
-        # TODO(GYP) bug 512861: Lots of VCLinkerTool stuff on Windows.
-        #deps += [ 'chrome_user32_delay_imports' ]  TODO(GYP)
-      }
+
+      ldflags += [
+        "/DELAYLOAD:comdlg32.dll",
+        "/DELAYLOAD:crypt32.dll",
+        "/DELAYLOAD:cryptui.dll",
+        "/DELAYLOAD:dhcpcsvc.dll",
+        "/DELAYLOAD:imagehlp.dll",
+        "/DELAYLOAD:imm32.dll",
+        "/DELAYLOAD:iphlpapi.dll",
+        "/DELAYLOAD:setupapi.dll",
+        "/DELAYLOAD:urlmon.dll",
+        "/DELAYLOAD:winhttp.dll",
+        "/DELAYLOAD:wininet.dll",
+        "/DELAYLOAD:winspool.drv",
+        "/DELAYLOAD:ws2_32.dll",
+        "/DELAYLOAD:wsock32.dll",
+      ]
 
       # This is a large module that can't do incremental linking in some cases.
       configs -= [ "//build/config/win:default_incremental_linking" ]
