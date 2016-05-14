@@ -626,6 +626,7 @@ BookmarkBarView::BookmarkBarView(Browser* browser, BrowserView* browser_view)
     // Don't let the bookmarks show on top of the location bar while animating.
     SetPaintToLayer(true);
     layer()->SetMasksToBounds(true);
+    layer()->SetFillsBoundsOpaquely(false);
   }
 
   size_animation_.Reset(1);
