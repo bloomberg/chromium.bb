@@ -742,7 +742,7 @@ void ChromotingInstance::HandleInjectKeyEvent(
 
   // Inject after the KeyEventMapper, so the event won't get mapped or trapped.
   if (IsConnected())
-    input_tracker_.InjectKeyEvent(event);
+    touch_input_scaler_.InjectKeyEvent(event);
 }
 
 void ChromotingInstance::HandleRemapKey(const base::DictionaryValue& data) {
