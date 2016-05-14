@@ -152,7 +152,7 @@ private:
 V8HeapProfilerAgentImpl::V8HeapProfilerAgentImpl(V8InspectorSessionImpl* session)
     : m_session(session)
     , m_isolate(session->debugger()->isolate())
-    , m_timerId(0)
+    , m_hasTimer(false)
 {
 }
 
@@ -315,18 +315,26 @@ void V8HeapProfilerAgentImpl::requestHeapStatsUpdate()
     m_frontend->lastSeenObjectId(lastSeenObjectId, m_session->debugger()->client()->currentTimeMS());
 }
 
+// static
+void V8HeapProfilerAgentImpl::onTimer(void* data)
+{
+    reinterpret_cast<V8HeapProfilerAgentImpl*>(data)->requestHeapStatsUpdate();
+}
+
 void V8HeapProfilerAgentImpl::startTrackingHeapObjectsInternal(bool trackAllocations)
 {
     m_isolate->GetHeapProfiler()->StartTrackingHeapObjects(trackAllocations);
-    if (!m_timerId)
-        m_timerId = m_session->debugger()->client()->startRepeatingTimer(0.05, bind<>(&V8HeapProfilerAgentImpl::requestHeapStatsUpdate, this));
+    if (!m_hasTimer) {
+        m_hasTimer = true;
+        m_session->debugger()->client()->startRepeatingTimer(0.05, &V8HeapProfilerAgentImpl::onTimer, reinterpret_cast<void*>(this));
+    }
 }
 
 void V8HeapProfilerAgentImpl::stopTrackingHeapObjectsInternal()
 {
-    if (m_timerId) {
-        m_session->debugger()->client()->cancelTimer(m_timerId);
-        m_timerId = 0;
+    if (m_hasTimer) {
+        m_session->debugger()->client()->cancelTimer(reinterpret_cast<void*>(this));
+        m_hasTimer = false;
     }
     m_isolate->GetHeapProfiler()->StopTrackingHeapObjects();
     m_state->setBoolean(HeapProfilerAgentState::heapObjectsTrackingEnabled, false);

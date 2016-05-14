@@ -11,7 +11,7 @@
 #include "platform/v8_inspector/public/V8Debugger.h"
 #include "platform/v8_inspector/public/V8DebuggerClient.h"
 #include "wtf/Forward.h"
-#include "wtf/HashMap.h"
+#include "wtf/Vector.h"
 
 #include <v8.h>
 
@@ -44,8 +44,8 @@ public:
     void consoleTime(const String16& title) override;
     void consoleTimeEnd(const String16& title) override;
     void consoleTimeStamp(const String16& title) override;
-    int startRepeatingTimer(double, std::unique_ptr<V8DebuggerClient::TimerCallback>) override;
-    void cancelTimer(int) override;
+    void startRepeatingTimer(double, V8DebuggerClient::TimerCallback, void* data) override;
+    void cancelTimer(void* data) override;
 
     V8Debugger* debugger() const { return m_debugger.get(); }
     virtual bool isWorker() { return true; }
@@ -55,9 +55,9 @@ protected:
 
     v8::Isolate* m_isolate;
     OwnPtr<V8Debugger> m_debugger;
-    HashMap<int, OwnPtr<Timer<ThreadDebugger>>> m_timers;
-    HashMap<Timer<ThreadDebugger>*, std::unique_ptr<V8DebuggerClient::TimerCallback>> m_timerCallbacks;
-    int m_lastTimerId;
+    Vector<OwnPtr<Timer<ThreadDebugger>>> m_timers;
+    Vector<V8DebuggerClient::TimerCallback> m_timerCallbacks;
+    Vector<void*> m_timerData;
     OwnPtr<UserGestureIndicator> m_userGestureIndicator;
 };
 

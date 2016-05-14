@@ -46,12 +46,13 @@ private:
     void startTrackingHeapObjectsInternal(bool trackAllocations);
     void stopTrackingHeapObjectsInternal();
     void requestHeapStatsUpdate();
+    static void onTimer(void*);
 
     V8InspectorSessionImpl* m_session;
     v8::Isolate* m_isolate;
     protocol::Frontend::HeapProfiler* m_frontend;
     protocol::DictionaryValue* m_state;
-    int m_timerId;
+    bool m_hasTimer;
 };
 
 } // namespace blink

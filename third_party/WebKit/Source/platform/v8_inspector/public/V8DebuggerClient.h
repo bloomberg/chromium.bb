@@ -10,7 +10,6 @@
 #include "platform/v8_inspector/public/ConsoleTypes.h"
 #include "platform/v8_inspector/public/V8ContextInfo.h"
 #include "platform/v8_inspector/public/V8EventListenerInfo.h"
-#include "wtf/Functional.h"
 
 #include <v8.h>
 
@@ -44,9 +43,9 @@ public:
 
     virtual v8::MaybeLocal<v8::Value> memoryInfo(v8::Isolate*, v8::Local<v8::Context>, v8::Local<v8::Object> creationContext) = 0;
 
-    using TimerCallback = Function<void()>;
-    virtual int startRepeatingTimer(double, std::unique_ptr<TimerCallback>) = 0;
-    virtual void cancelTimer(int) = 0;
+    typedef void (*TimerCallback)(void*);
+    virtual void startRepeatingTimer(double, TimerCallback, void* data) = 0;
+    virtual void cancelTimer(void* data) = 0;
 };
 
 } // namespace blink

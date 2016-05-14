@@ -25,7 +25,6 @@ namespace blink {
 ThreadDebugger::ThreadDebugger(v8::Isolate* isolate)
     : m_isolate(isolate)
     , m_debugger(V8Debugger::create(isolate, this))
-    , m_lastTimerId(0)
 {
 }
 
@@ -156,31 +155,38 @@ void ThreadDebugger::consoleTimeStamp(const String16& title)
     TRACE_EVENT_INSTANT1("devtools.timeline", "TimeStamp", TRACE_EVENT_SCOPE_THREAD, "data", InspectorTimeStampEvent::data(currentExecutionContext(isolate), title));
 }
 
-int ThreadDebugger::startRepeatingTimer(double interval, std::unique_ptr<V8DebuggerClient::TimerCallback> callback)
+void ThreadDebugger::startRepeatingTimer(double interval, V8DebuggerClient::TimerCallback callback, void* data)
 {
-    int id = ++m_lastTimerId;
+    m_timerData.append(data);
+    m_timerCallbacks.append(callback);
+
     OwnPtr<Timer<ThreadDebugger>> timer = adoptPtr(new Timer<ThreadDebugger>(this, &ThreadDebugger::onTimer));
     Timer<ThreadDebugger>* timerPtr = timer.get();
-    m_timerCallbacks.set(timerPtr, std::move(callback));
-    m_timers.set(id, timer.release());
+    m_timers.append(timer.release());
     timerPtr->startRepeating(interval, BLINK_FROM_HERE);
-    return id;
 }
 
-void ThreadDebugger::cancelTimer(int id)
+void ThreadDebugger::cancelTimer(void* data)
 {
-    if (!m_timers.contains(id))
-        return;
-    Timer<ThreadDebugger>* timer = m_timers.get(id);
-    timer->stop();
-    m_timerCallbacks.remove(timer);
-    m_timers.remove(id);
+    for (size_t index = 0; index < m_timerData.size(); ++index) {
+        if (m_timerData[index] == data) {
+            m_timers[index]->stop();
+            m_timerCallbacks.remove(index);
+            m_timers.remove(index);
+            m_timerData.remove(index);
+            return;
+        }
+    }
 }
 
 void ThreadDebugger::onTimer(Timer<ThreadDebugger>* timer)
 {
-    ASSERT(m_timerCallbacks.contains(timer));
-    (*m_timerCallbacks.get(timer))();
+    for (size_t index = 0; index < m_timers.size(); ++index) {
+        if (m_timers[index] == timer) {
+            m_timerCallbacks[index](m_timerData[index]);
+            return;
+        }
+    }
 }
 
 } // namespace blink
