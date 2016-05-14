@@ -26,6 +26,7 @@
 #ifndef CSSSegmentedFontFace_h
 #define CSSSegmentedFontFace_h
 
+#include "platform/fonts/FontCacheKey.h"
 #include "platform/fonts/FontTraits.h"
 #include "platform/fonts/SegmentedFontData.h"
 #include "platform/heap/Handle.h"
@@ -82,7 +83,7 @@ private:
 
     Member<CSSFontSelector> m_fontSelector;
     FontTraits m_traits;
-    HashMap<unsigned, RefPtr<SegmentedFontData>> m_fontDataTable;
+    HashMap<FontCacheKey, RefPtr<SegmentedFontData>, FontCacheKeyHash, FontCacheKeyTraits> m_fontDataTable;
     // All non-CSS-connected FontFaces are stored after the CSS-connected ones.
     FontFaceList m_fontFaces;
     FontFaceList::iterator m_firstNonCssConnectedFace;

@@ -3928,6 +3928,7 @@
             'clipboard/DataObjectTest.cpp',
             'css/AffectedByFocusTest.cpp',
             'css/CSSCalculationValueTest.cpp',
+            'css/CSSFontFaceSourceTest.cpp',
             'css/CSSPageRuleTest.cpp',
             'css/CSSSelectorTest.cpp',
             'css/CSSStyleDeclarationTest.cpp',

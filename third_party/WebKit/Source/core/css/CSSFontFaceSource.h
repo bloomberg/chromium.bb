@@ -26,6 +26,8 @@
 #ifndef CSSFontFaceSource_h
 #define CSSFontFaceSource_h
 
+#include "core/CoreExport.h"
+#include "platform/fonts/FontCacheKey.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Allocator.h"
 #include "wtf/HashMap.h"
@@ -36,7 +38,7 @@ class CSSFontFace;
 class FontDescription;
 class SimpleFontData;
 
-class CSSFontFaceSource : public GarbageCollectedFinalized<CSSFontFaceSource> {
+class CORE_EXPORT CSSFontFaceSource : public GarbageCollectedFinalized<CSSFontFaceSource> {
     WTF_MAKE_NONCOPYABLE(CSSFontFaceSource);
 public:
     virtual ~CSSFontFaceSource();
@@ -62,7 +64,7 @@ protected:
     CSSFontFaceSource();
     virtual PassRefPtr<SimpleFontData> createFontData(const FontDescription&) = 0;
 
-    using FontDataTable = HashMap<unsigned, RefPtr<SimpleFontData>>; // The hash key is composed of size synthetic styles.
+    using FontDataTable = HashMap<FontCacheKey, RefPtr<SimpleFontData>, FontCacheKeyHash, FontCacheKeyTraits>;
 
     Member<CSSFontFace> m_face; // Our owning font face.
     FontDataTable m_fontDataTable;

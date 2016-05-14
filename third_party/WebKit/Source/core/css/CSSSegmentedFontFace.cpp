@@ -107,7 +107,7 @@ PassRefPtr<FontData> CSSSegmentedFontFace::getFontData(const FontDescription& fo
     FontTraits desiredTraits = fontDescription.traits();
     FontCacheKey key = fontDescription.cacheKey(FontFaceCreationParams(), desiredTraits);
 
-    RefPtr<SegmentedFontData>& fontData = m_fontDataTable.add(key.hash(), nullptr).storedValue->value;
+    RefPtr<SegmentedFontData>& fontData = m_fontDataTable.add(key, nullptr).storedValue->value;
     if (fontData && fontData->numFaces())
         return fontData; // No release, we have a reference to an object in the cache which should retain the ref count it has.
 
