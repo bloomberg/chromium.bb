@@ -16,6 +16,7 @@
         'cast_net',
         'cast_receiver',
         '<(DEPTH)/base/base.gyp:test_support_base',
+        '<(DEPTH)/media/media.gyp:media_features',
         '<(DEPTH)/media/media.gyp:media_test_support',
         '<(DEPTH)/testing/gtest.gyp:gtest',
         '<(DEPTH)/third_party/libyuv/libyuv.gyp:libyuv',
