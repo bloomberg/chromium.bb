@@ -16,6 +16,7 @@ import tempfile
 
 from chromite.cbuildbot import chromeos_config
 from chromite.cbuildbot import constants
+from chromite.cbuildbot import failures_lib
 from chromite.cbuildbot import lkgm_manager
 from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot import manifest_version_unittest
@@ -185,8 +186,6 @@ class ManifestVersionedSyncStageTest(
     self.PatchObject(sync_stages.ManifestVersionedSyncStage,
                      '_GetMasterVersion', return_value='foo',
                      autospec=True)
-    self.PatchObject(sync_stages.ManifestVersionedSyncStage,
-                     '_VerifyMasterId', autospec=True)
     self.PatchObject(manifest_version.BuildSpecsManager, 'BootstrapFromVersion',
                      autospec=True)
     self.PatchObject(repository.RepoRepository, 'Sync', autospec=True)
@@ -450,14 +449,17 @@ class BaseCQTestCase(generic_stages_unittest.StageTestCase):
 class SlaveCQSyncTest(BaseCQTestCase):
   """Tests the CommitQueueSync stage for the paladin slaves."""
   BOT_ID = 'x86-alex-paladin'
+  MILESTONE_VERSION = '10'
 
   def setUp(self):
-    self._run.options.master_build_id = 1234
+    self._run.options.master_build_id = self.fake_db.InsertBuild(
+        'master builder name', 'waterfall', 1, 'master-paladin', 'bot hostname')
+    self.fake_db.UpdateMetadata(
+        self._run.options.master_build_id,
+        {'version': {'milestone': self.MILESTONE_VERSION}})
     self.PatchObject(sync_stages.ManifestVersionedSyncStage,
                      '_GetMasterVersion', return_value='foo',
                      autospec=True)
-    self.PatchObject(sync_stages.MasterSlaveLKGMSyncStage,
-                     '_VerifyMasterId', autospec=True)
     self.PatchObject(lkgm_manager.LKGMManager, 'BootstrapFromVersion',
                      return_value=self.manifest_path, autospec=True)
     self.PatchObject(repository.RepoRepository, 'Sync', autospec=True)
@@ -466,6 +468,29 @@ class SlaveCQSyncTest(BaseCQTestCase):
     """Test basic ability to sync and reload the patches from disk."""
     self.sync_stage.PerformStage()
     self.ReloadPool()
+
+  def testSupplantedMaster(self):
+    """Test that stage fails if master has been supplanted."""
+    new_master_build_id = self.fake_db.InsertBuild(
+        'master builder name', 'waterfall', 2, 'master-paladin', 'bot hostname')
+    self.fake_db.UpdateMetadata(
+        new_master_build_id,
+        {'version': {'milestone': self.MILESTONE_VERSION}})
+    with self.assertRaises(failures_lib.MasterSlaveVersionMismatchFailure):
+      self.sync_stage.PerformStage()
+
+  def testSupplantedMasterDifferentMilestone(self):
+    """Test that master supplanting logic respects milestone.
+
+    The master-was-supplanted logic should ignore masters for different
+    milestone version.
+    """
+    new_master_build_id = self.fake_db.InsertBuild(
+        'master builder name', 'waterfall', 2, 'master-paladin', 'bot hostname')
+    self.fake_db.UpdateMetadata(
+        new_master_build_id,
+        {'version': {'milestone': 'foo'}})
+    self.sync_stage.PerformStage()
 
 
 class MasterCQSyncTestCase(BaseCQTestCase):
@@ -1169,8 +1194,8 @@ class MasterSlaveLKGMSyncTest(generic_stages_unittest.StageTestCase):
         {'version': {'full': 'R43-7141.0.0-rc1'}})
     self._run.attrs.metadata.UpdateWithDict(
         {'version': {'full': 'R44-7142.0.0-rc1'}})
-    self.fake_db.UpdateMetadata(id1 + 1, metadata_1)
-    self.fake_db.UpdateMetadata(id2 + 1, metadata_2)
+    self.fake_db.UpdateMetadata(id1, metadata_1)
+    self.fake_db.UpdateMetadata(id2, metadata_2)
     v = self.sync_stage.GetLastChromeOSVersion()
     self.assertEqual(v.milestone, '43')
     self.assertEqual(v.platform, '7141.0.0-rc1')

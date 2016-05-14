@@ -10,6 +10,7 @@ import datetime
 import itertools
 
 from chromite.cbuildbot import constants
+from chromite.lib import cidb
 from chromite.lib import clactions
 
 
@@ -29,6 +30,11 @@ class FakeCIDBConnection(object):
     self.failureTable = {}
     self.fake_time = None
     self.fake_keyvals = fake_keyvals or {}
+
+  def _TrimStatus(self, status):
+    """Trims a build row to keys that should be returned by GetBuildStatus"""
+    return {k: v for (k, v) in status.items()
+            if k in cidb.CIDBConnection.BUILD_STATUS_KEYS}
 
   def SetTime(self, fake_time):
     """Sets a fake time to be retrieved by GetTime.
@@ -74,10 +80,18 @@ class FakeCIDBConnection(object):
     return build_id
 
   def UpdateMetadata(self, build_id, metadata):
-    """See cidb.UpdateMetadata."""
-    d = metadata.GetDict()
+    """See cidb.UpdateMetadata.
+
+    Args:
+      build_id: The build to update.
+      metadata: A cbuildbot metadata object. Or, a dictionary (note: using
+                a dictionary is not supported by the base cidb API, but
+                is provided for this fake class for ease of use in test
+                set-up code).
+    """
+    d = metadata if isinstance(metadata, dict) else metadata.GetDict()
     versions = d.get('version') or {}
-    self.buildTable[build_id - 1].update(
+    self.buildTable[build_id].update(
         {'chrome_version': versions.get('chrome'),
          'milestone_version': versions.get('milestone'),
          'platform_version': versions.get('platform'),
@@ -199,48 +213,48 @@ class FakeCIDBConnection(object):
 
   def GetBuildStatus(self, build_id):
     """Gets the status of the build."""
-    return self.buildTable[build_id - 1]
+    try:
+      return self._TrimStatus(self.buildTable[build_id])
+    except IndexError:
+      return None
 
   def GetBuildStatuses(self, build_ids):
     """Gets the status of the builds."""
-    return [self.buildTable[x -1] for x in build_ids]
+    return [self._TrimStatus(self.buildTable[x]) for x in build_ids]
 
   def GetSlaveStatuses(self, master_build_id):
     """Gets the slaves of given build."""
-    return [b for b in self.buildTable
+    return [self._TrimStatus(b) for b in self.buildTable
             if b['master_build_id'] == master_build_id]
 
   def GetBuildHistory(self, build_config, num_results,
                       ignore_build_id=None, start_date=None, end_date=None,
-                      starting_build_number=None):
+                      starting_build_number=None, milestone_version=None):
     """Returns the build history for the given |build_config|."""
-    def ReduceToBuildConfig(new_list, current_build):
-      """Filters a build list to only those of a given config."""
-      if current_build['build_config'] == build_config:
-        new_list.append(current_build)
-
-      return new_list
-
-    build_configs = reduce(ReduceToBuildConfig, self.buildTable, [])
+    builds = [b for b in self.buildTable
+              if b['build_config'] == build_config]
     # Reverse sort as that's what's expected.
-    build_configs = sorted(build_configs[-num_results:], reverse=True)
+    builds = sorted(builds[-num_results:], reverse=True)
 
     # Filter results.
     if ignore_build_id is not None:
-      build_configs = [b for b in build_configs if b['id'] != ignore_build_id]
+      builds = [b for b in builds if b['id'] != ignore_build_id]
     if start_date is not None:
-      build_configs = [b for b in build_configs
-                       if b['start_time'].date() >= start_date]
+      builds = [b for b in builds
+                if b['start_time'].date() >= start_date]
     if end_date is not None:
-      build_configs = [b for b in build_configs
-                       if 'finish_time' in b and
-                       b['finish_time'] and
-                       b['finish_time'].date() <= end_date]
+      builds = [b for b in builds
+                if 'finish_time' in b and
+                b['finish_time'] and
+                b['finish_time'].date() <= end_date]
     if starting_build_number is not None:
-      build_configs = [b for b in build_configs
-                       if b['build_number'] >= starting_build_number]
+      builds = [b for b in builds
+                if b['build_number'] >= starting_build_number]
+    if milestone_version is not None:
+      builds = [b for b in builds
+                if b['milestone_version'] == milestone_version]
 
-    return build_configs
+    return builds
 
   def GetTimeToDeadline(self, build_id):
     """Gets the time remaining until deadline."""

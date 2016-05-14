@@ -699,7 +699,9 @@ class ManifestVersionedSyncStage(SyncStage):
     if db and master_id:
       assert not self._run.options.force_version
       master_build_status = db.GetBuildStatus(master_id)
-      latest = db.GetBuildHistory(master_build_status['build_config'], 1)
+      latest = db.GetBuildHistory(
+          master_build_status['build_config'], 1,
+          milestone_version=master_build_status['milestone_version'])
       if latest and latest[0]['id'] != master_id:
         raise failures_lib.MasterSlaveVersionMismatchFailure(
             'This slave\'s master (id=%s) has been supplanted by a newer '

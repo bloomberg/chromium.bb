@@ -588,6 +588,11 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
 
   NUM_RESULTS_NO_LIMIT = -1
 
+  BUILD_STATUS_KEYS = (
+      'id', 'build_config', 'start_time', 'finish_time', 'status', 'waterfall',
+      'build_number', 'builder_name', 'platform_version', 'full_version',
+      'milestone_version', 'important')
+
   def __init__(self, db_credentials_dir, *args, **kwargs):
     super(CIDBConnection, self).__init__('cidb', CIDB_MIGRATIONS_DIR,
                                          db_credentials_dir, *args, **kwargs)
@@ -959,15 +964,13 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     Returns:
       A list of dictionary with keys (id, build_config, start_time,
       finish_time, status, waterfall, build_number, builder_name,
-      platform_version, full_version, important), or None if no build
-      with this id was found.
+      platform_version, full_version, milestone_version, important)
+      (see BUILD_STATUS_KEYS) or None if no build with this id was found.
     """
     return self._SelectWhere(
         'buildTable',
         'id IN (%s)' % ','.join(str(int(x)) for x in build_ids),
-        ['id', 'build_config', 'start_time', 'finish_time', 'status',
-         'waterfall', 'build_number', 'builder_name', 'platform_version',
-         'full_version', 'important'])
+        self.BUILD_STATUS_KEYS)
 
   @minimum_schema(30)
   def GetBuildStages(self, build_id):
@@ -1013,13 +1016,11 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
 
     Returns:
       A list containing, for each slave build (row) found, a dictionary
-      with keys (id, build_config, start_time, finish_time, status, important).
+      with keys BUILD_STATUS_KEYS.
     """
     return self._SelectWhere('buildTable',
                              'master_build_id = %d' % master_build_id,
-                             ['id', 'build_config', 'start_time',
-                              'finish_time', 'status', 'important',
-                              'waterfall'])
+                             self.BUILD_STATUS_KEYS)
 
   @minimum_schema(30)
   def GetSlaveStages(self, master_build_id):
@@ -1105,7 +1106,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
   @minimum_schema(43)
   def GetBuildHistory(self, build_config, num_results,
                       ignore_build_id=None, start_date=None, end_date=None,
-                      starting_build_number=None):
+                      starting_build_number=None, milestone_version=None):
     """Returns basic information about most recent builds.
 
     By default this function returns the most recent builds. Some arguments can
@@ -1125,6 +1126,8 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
           before this date.
       starting_build_number: (Optional) The minimum build_number on the CQ
           master for which data should be retrieved.
+      milestone_version: (Optional) Return only results for this
+          milestone_version.
 
     Returns:
       A sorted list of dicts containing up to |number| dictionaries for
@@ -1133,6 +1136,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
       start_time, finish_time, platform_version, full_version, status,
       important].
     """
+    # TODO(akeshet): Unify this with BUILD_STATUS_KEYS
     columns = ['id', 'build_config', 'buildbot_generation', 'waterfall',
                'build_number', 'start_time', 'finish_time', 'platform_version',
                'full_version', 'status', 'important']
@@ -1148,6 +1152,8 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
       where_clauses.append('build_number >= %d' % starting_build_number)
     if ignore_build_id is not None:
       where_clauses.append('id != %d' % ignore_build_id)
+    if milestone_version is not None:
+      where_clauses.append('milestone_version = "%s"' % milestone_version)
     query = (
         'SELECT %s'
         ' FROM buildTable'

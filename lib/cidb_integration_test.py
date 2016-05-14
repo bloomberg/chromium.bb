@@ -200,6 +200,14 @@ class CIDBAPITest(CIDBIntegrationTest):
     current_db_time = db.GetTime()
     self.assertEqual(type(current_db_time), datetime.datetime)
 
+  def testGetBuildStatusKeys(self):
+    db = self._PrepareFreshDatabase()
+    build_id = db.InsertBuild('builder_name', 'waterfall', 1, 'build_config',
+                              'bot_hostname')
+    build_status = db.GetBuildStatus(build_id)
+    for k in db.BUILD_STATUS_KEYS:
+      self.assertIn(k, build_status)
+
   def testBuildMessages(self):
     db = self._PrepareFreshDatabase(45)
     self.assertEqual([], db.GetBuildMessages(1))
@@ -356,6 +364,9 @@ class DataSeries0Test(CIDBIntegrationTest):
     self.assertEqual(len(last_status), 1)
     last_status = readonly_db.GetBuildHistory('master-paladin', 5)
     self.assertEqual(len(last_status), 5)
+    last_status = readonly_db.GetBuildHistory('master-paladin', 5,
+                                              milestone_version=52)
+    self.assertEqual(len(last_status), 0)
     # Make sure keys are sorted correctly.
     build_ids = []
     for index, status in enumerate(last_status):
