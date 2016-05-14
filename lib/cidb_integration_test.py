@@ -356,6 +356,9 @@ class DataSeries0Test(CIDBIntegrationTest):
     self.assertEqual(len(last_status), 1)
     last_status = readonly_db.GetBuildHistory('master-paladin', 5)
     self.assertEqual(len(last_status), 5)
+    last_status = readonly_db.GetBuildHistory('master-paladin', 5,
+                                              milestone_version=52)
+    self.assertEqual(len(last_status), 0)
     # Make sure keys are sorted correctly.
     build_ids = []
     for index, status in enumerate(last_status):
