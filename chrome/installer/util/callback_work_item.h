@@ -35,6 +35,9 @@ class CallbackWorkItem : public WorkItem {
  public:
   ~CallbackWorkItem() override;
 
+  bool Do() override;
+  void Rollback() override;
+
   bool IsRollback() const;
 
  private:
@@ -46,12 +49,7 @@ class CallbackWorkItem : public WorkItem {
     RS_BACKWARD,
   };
 
-  explicit CallbackWorkItem(
-      base::Callback<bool(const CallbackWorkItem&)> callback);
-
-  // WorkItem:
-  bool DoImpl() override;
-  void RollbackImpl() override;
+  CallbackWorkItem(base::Callback<bool(const CallbackWorkItem&)> callback);
 
   base::Callback<bool(const CallbackWorkItem&)> callback_;
   RollState roll_state_;

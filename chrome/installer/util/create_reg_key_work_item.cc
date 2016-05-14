@@ -46,7 +46,7 @@ CreateRegKeyWorkItem::CreateRegKeyWorkItem(HKEY predefined_root,
          wow64_access == KEY_WOW64_64KEY);
 }
 
-bool CreateRegKeyWorkItem::DoImpl() {
+bool CreateRegKeyWorkItem::Do() {
   if (!InitKeyList()) {
     // Nothing needs to be done here.
     VLOG(1) << "no key to create";
@@ -90,7 +90,7 @@ bool CreateRegKeyWorkItem::DoImpl() {
   return true;
 }
 
-void CreateRegKeyWorkItem::RollbackImpl() {
+void CreateRegKeyWorkItem::Rollback() {
   if (!key_created_)
     return;
 

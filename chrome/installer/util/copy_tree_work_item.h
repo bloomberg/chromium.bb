@@ -27,6 +27,10 @@ class CopyTreeWorkItem : public WorkItem {
  public:
   ~CopyTreeWorkItem() override;
 
+  bool Do() override;
+
+  void Rollback() override;
+
  private:
   friend class WorkItem;
 
@@ -40,10 +44,6 @@ class CopyTreeWorkItem : public WorkItem {
                    const base::FilePath& temp_dir,
                    CopyOverWriteOption overwrite_option,
                    const base::FilePath& alternative_path);
-
-  // WorkItem:
-  bool DoImpl() override;
-  void RollbackImpl() override;
 
   // Checks if the path specified is in use (and hence can not be deleted)
   bool IsFileInUse(const base::FilePath& path);

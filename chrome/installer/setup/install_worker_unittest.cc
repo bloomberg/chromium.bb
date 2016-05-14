@@ -66,6 +66,10 @@ class MockWorkItemList : public WorkItemList {
   MOCK_METHOD4(
       AddDeleteRegValueWorkItem,
       WorkItem*(HKEY, const std::wstring&, REGSAM, const std::wstring&));
+  MOCK_METHOD3(AddDeleteTreeWorkItem,
+               WorkItem*(const base::FilePath&,
+                         const base::FilePath&,
+                         const std::vector<base::FilePath>&));
   MOCK_METHOD2(AddDeleteTreeWorkItem,
                WorkItem*(const base::FilePath&, const base::FilePath&));
   MOCK_METHOD4(AddMoveTreeWorkItem,
@@ -459,7 +463,8 @@ TEST_F(InstallWorkerTest, TestInstallChromeSingleSystem) {
       WorkItem::CreateSetRegValueWorkItem(
           kRegRoot, kRegKeyPath, WorkItem::kWow64Default, L"", L"", false));
   std::unique_ptr<DeleteTreeWorkItem> delete_tree_work_item(
-      WorkItem::CreateDeleteTreeWorkItem(base::FilePath(), base::FilePath()));
+      WorkItem::CreateDeleteTreeWorkItem(base::FilePath(), base::FilePath(),
+                                         std::vector<base::FilePath>()));
   std::unique_ptr<DeleteRegKeyWorkItem> delete_reg_key_work_item(
       WorkItem::CreateDeleteRegKeyWorkItem(kRegRoot, kRegKeyPath,
                                            WorkItem::kWow64Default));

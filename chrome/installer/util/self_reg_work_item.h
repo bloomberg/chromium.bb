@@ -15,6 +15,9 @@ class SelfRegWorkItem : public WorkItem {
  public:
   ~SelfRegWorkItem() override;
 
+  bool Do() override;
+  void Rollback() override;
+
  private:
   friend class WorkItem;
 
@@ -28,10 +31,6 @@ class SelfRegWorkItem : public WorkItem {
   //    "DllRegisterServer" and "DllUnregisterUserServer" will be used.
   SelfRegWorkItem(const std::wstring& dll_path, bool do_register,
                   bool user_level_registration);
-
-  // WorkItem:
-  bool DoImpl() override;
-  void RollbackImpl() override;
 
   // Examines the DLL at dll_path looking for either DllRegisterServer (if
   // do_register is true) or DllUnregisterServer (if do_register is false).

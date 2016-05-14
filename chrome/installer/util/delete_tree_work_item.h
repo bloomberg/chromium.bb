@@ -5,6 +5,11 @@
 #ifndef CHROME_INSTALLER_UTIL_DELETE_TREE_WORK_ITEM_H_
 #define CHROME_INSTALLER_UTIL_DELETE_TREE_WORK_ITEM_H_
 
+#include <stddef.h>
+
+#include <memory>
+#include <vector>
+
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "chrome/installer/util/work_item.h"
@@ -18,6 +23,10 @@ class DeleteTreeWorkItem : public WorkItem {
  public:
   ~DeleteTreeWorkItem() override;
 
+  bool Do() override;
+
+  void Rollback() override;
+
  private:
   friend class WorkItem;
 
@@ -26,11 +35,8 @@ class DeleteTreeWorkItem : public WorkItem {
   // should be on the same volume; otherwise, the move will be simulated
   // by a copy-and-delete operation.
   DeleteTreeWorkItem(const base::FilePath& root_path,
-                     const base::FilePath& temp_path);
-
-  // WorkItem:
-  bool DoImpl() override;
-  void RollbackImpl() override;
+                     const base::FilePath& temp_path,
+                     const std::vector<base::FilePath>& key_paths);
 
   // Return temporary path for work based on |backup_path_| and |root_path_|.
   base::FilePath GetBackupPath();
@@ -42,16 +48,28 @@ class DeleteTreeWorkItem : public WorkItem {
   bool MoveRootToBackup();
 
   // Root path to delete.
-  const base::FilePath root_path_;
+  base::FilePath root_path_;
 
   // Temporary directory that can be used.
-  const base::FilePath temp_path_;
+  base::FilePath temp_path_;
+
+  // The number of key files.
+  ptrdiff_t num_key_files_;
+
+  // Contains the paths to the key files. If specified, deletion will be
+  // performed only if none of the key files are in use.
+  std::unique_ptr<base::FilePath[]> key_paths_;
+
+  // Contains the temp directories for the backed-up key files. The directories
+  // are created and populated in Do() as-needed. We don't use a standard
+  // container for this since base::ScopedTempDir isn't CopyConstructible.
+  std::unique_ptr<base::ScopedTempDir[]> key_backup_paths_;
 
   // The temporary directory into which the original root_path_ has been moved.
   base::ScopedTempDir backup_path_;
 
   // Set to true once root_path_ has been moved into backup_path_.
-  bool moved_to_backup_ = false;
+  bool moved_to_backup_;
 };
 
 #endif  // CHROME_INSTALLER_UTIL_DELETE_TREE_WORK_ITEM_H_

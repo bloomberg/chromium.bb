@@ -22,6 +22,10 @@ class MoveTreeWorkItem : public WorkItem {
  public:
   ~MoveTreeWorkItem() override;
 
+  bool Do() override;
+
+  void Rollback() override;
+
  private:
   friend class WorkItem;
   FRIEND_TEST_ALL_PREFIXES(MoveTreeWorkItemTest,
@@ -42,10 +46,6 @@ class MoveTreeWorkItem : public WorkItem {
                    const base::FilePath& dest_path,
                    const base::FilePath& temp_dir,
                    MoveTreeOption duplicate_option);
-
-  // WorkItem:
-  bool DoImpl() override;
-  void RollbackImpl() override;
 
   // Source path to move files from.
   base::FilePath source_path_;

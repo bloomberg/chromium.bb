@@ -16,19 +16,18 @@ class CreateDirWorkItem : public WorkItem {
  public:
   ~CreateDirWorkItem() override;
 
- private:
-  friend class WorkItem;
-
-  explicit CreateDirWorkItem(const base::FilePath& path);
-
-  // WorkItem:
-  bool DoImpl() override;
+  bool Do() override;
 
   // Rollback tries to remove all directories created along the path.
   // If the leaf directory or one of the intermediate directories are not
   // empty, the non-empty directory and its parent directories will not be
   // removed.
-  void RollbackImpl() override;
+  void Rollback() override;
+
+ private:
+  friend class WorkItem;
+
+  explicit CreateDirWorkItem(const base::FilePath& path);
 
   // Get the top most directory that needs to be created in order to create
   // "path_", and set "top_path_" accordingly. if "path_" already exists,

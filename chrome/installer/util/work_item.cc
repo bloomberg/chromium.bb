@@ -6,7 +6,6 @@
 
 #include <windows.h>
 
-#include "base/logging.h"
 #include "chrome/installer/util/callback_work_item.h"
 #include "chrome/installer/util/conditional_work_item_list.h"
 #include "chrome/installer/util/copy_tree_work_item.h"
@@ -20,8 +19,11 @@
 #include "chrome/installer/util/set_reg_value_work_item.h"
 #include "chrome/installer/util/work_item_list.h"
 
-WorkItem::WorkItem() = default;
-WorkItem::~WorkItem() = default;
+WorkItem::WorkItem() : ignore_failure_(false) {
+}
+
+WorkItem::~WorkItem() {
+}
 
 CallbackWorkItem* WorkItem::CreateCallbackWorkItem(
     base::Callback<bool(const CallbackWorkItem&)> callback) {
@@ -68,8 +70,9 @@ DeleteRegValueWorkItem* WorkItem::CreateDeleteRegValueWorkItem(
 
 DeleteTreeWorkItem* WorkItem::CreateDeleteTreeWorkItem(
     const base::FilePath& root_path,
-    const base::FilePath& temp_path) {
-  return new DeleteTreeWorkItem(root_path, temp_path);
+    const base::FilePath& temp_path,
+    const std::vector<base::FilePath>& key_paths) {
+  return new DeleteTreeWorkItem(root_path, temp_path, key_paths);
 }
 
 MoveTreeWorkItem* WorkItem::CreateMoveTreeWorkItem(
@@ -151,30 +154,11 @@ WorkItemList* WorkItem::CreateWorkItemList() {
   return new WorkItemList();
 }
 
+// static
+WorkItemList* WorkItem::CreateNoRollbackWorkItemList() {
+  return new NoRollbackWorkItemList();
+}
+
 WorkItemList* WorkItem::CreateConditionalWorkItemList(Condition* condition) {
   return new ConditionalWorkItemList(condition);
-}
-
-bool WorkItem::Do() {
-  DCHECK_EQ(BEFORE_DO, state_);
-  const bool success = DoImpl();
-  state_ = AFTER_DO;
-  return best_effort() ? true : success;
-}
-
-void WorkItem::Rollback() {
-  DCHECK_EQ(AFTER_DO, state_);
-  if (rollback_enabled())
-    RollbackImpl();
-  state_ = AFTER_ROLLBACK;
-}
-
-void WorkItem::set_best_effort(bool best_effort) {
-  DCHECK_EQ(BEFORE_DO, state());
-  best_effort_ = best_effort;
-}
-
-void WorkItem::set_rollback_enabled(bool rollback_enabled) {
-  DCHECK_EQ(BEFORE_DO, state());
-  rollback_enabled_ = rollback_enabled;
 }

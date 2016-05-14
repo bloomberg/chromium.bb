@@ -272,7 +272,7 @@ void AddDeleteUninstallEntryForMSIWorkItems(
 
   WorkItem* delete_reg_key = work_item_list->AddDeleteRegKeyWorkItem(
       reg_root, uninstall_reg, KEY_WOW64_32KEY);
-  delete_reg_key->set_best_effort(true);
+  delete_reg_key->set_ignore_failure(true);
 }
 
 // Adds Chrome specific install work items to |install_list|.
@@ -289,20 +289,17 @@ void AddChromeWorkItems(const InstallationState& original_state,
   const base::FilePath& target_path = installer_state.target_path();
 
   if (current_version) {
-    // Delete the archive from an existing install to save some disk space.
+    // Delete the archive from an existing install to save some disk space.  We
+    // make this an unconditional work item since there's no need to roll this
+    // back; if installation fails we'll be moved to the "-full" channel anyway.
     base::FilePath old_installer_dir(
         installer_state.GetInstallerDirectory(*current_version));
     base::FilePath old_archive(
         old_installer_dir.Append(installer::kChromeArchive));
     // Don't delete the archive that we are actually installing from.
     if (archive_path != old_archive) {
-      auto* delete_old_archive_work_item =
-          install_list->AddDeleteTreeWorkItem(old_archive, temp_path);
-      // Don't cause failure of |install_list| if this WorkItem fails.
-      delete_old_archive_work_item->set_best_effort(true);
-      // No need to roll this back; if installation fails we'll be moved to the
-      // "-full" channel anyway.
-      delete_old_archive_work_item->set_rollback_enabled(false);
+      install_list->AddDeleteTreeWorkItem(old_archive, temp_path)->
+          set_ignore_failure(true);
     }
   }
 
@@ -377,10 +374,9 @@ void AddChromeWorkItems(const InstallationState& original_state,
                              WorkItem::ALWAYS_MOVE);
 
   // Delete any old_chrome.exe if present (ignore failure if it's in use).
-  install_list
-      ->AddDeleteTreeWorkItem(target_path.Append(installer::kChromeOldExe),
-                              temp_path)
-      ->set_best_effort(true);
+  install_list->AddDeleteTreeWorkItem(
+      target_path.Append(installer::kChromeOldExe), temp_path)->
+          set_ignore_failure(true);
 }
 
 // Adds work items to remove COM registration for |product|'s deprecated
@@ -1148,7 +1144,7 @@ void AddRegisterComDllWorkItems(const base::FilePath& dll_folder,
                                 const std::vector<base::FilePath>& dll_list,
                                 bool system_level,
                                 bool do_register,
-                                bool best_effort,
+                                bool ignore_failures,
                                 WorkItemList* work_item_list) {
   DCHECK(work_item_list);
   if (dll_list.empty()) {
@@ -1160,7 +1156,7 @@ void AddRegisterComDllWorkItems(const base::FilePath& dll_folder,
       WorkItem* work_item = work_item_list->AddSelfRegWorkItem(
           dll_path.value(), do_register, !system_level);
       DCHECK(work_item);
-      work_item->set_best_effort(best_effort);
+      work_item->set_ignore_failure(ignore_failures);
     }
   }
 }
@@ -1179,7 +1175,7 @@ void AddSetMsiMarkerWorkItem(const InstallerState& installer_state,
                                              msi_value,
                                              true);
   DCHECK(set_msi_work_item);
-  set_msi_work_item->set_best_effort(true);
+  set_msi_work_item->set_ignore_failure(true);
   set_msi_work_item->set_log_message("Could not write MSI marker!");
 }
 

@@ -17,17 +17,15 @@ class ConditionalWorkItemList : public WorkItemList {
   explicit ConditionalWorkItemList(Condition* condition);
   ~ConditionalWorkItemList() override;
 
- private:
-  // WorkItemList:
-
   // If condition_->ShouldRun() returns true, then execute the items in this
   // list and return true iff they all succeed. If condition_->ShouldRun()
   // returns false, does nothing and returns true.
-  bool DoImpl() override;
+  bool Do() override;
 
   // Does a rollback of the items (if any) that were run in Do.
-  void RollbackImpl() override;
+  void Rollback() override;
 
+ protected:
   // Pointer to a Condition that is used to determine whether to run this
   // WorkItemList.
   std::unique_ptr<Condition> condition_;

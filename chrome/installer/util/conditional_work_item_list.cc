@@ -13,20 +13,20 @@ ConditionalWorkItemList::ConditionalWorkItemList(Condition* condition)
 
 ConditionalWorkItemList::~ConditionalWorkItemList() {}
 
-bool ConditionalWorkItemList::DoImpl() {
+bool ConditionalWorkItemList::Do() {
   VLOG(1) << "Evaluating " << log_message_ << " condition...";
   if (condition_.get() && condition_->ShouldRun()) {
     VLOG(1) << "Beginning conditional work item list";
-    return WorkItemList::DoImpl();
+    return WorkItemList::Do();
   }
   VLOG(1) << "No work to do in condition work item list "
           << log_message_;
   return true;
 }
 
-void ConditionalWorkItemList::RollbackImpl() {
+void ConditionalWorkItemList::Rollback() {
   VLOG(1) << "Rolling back conditional list " << log_message_;
-  WorkItemList::RollbackImpl();
+  WorkItemList::Rollback();
 }
 
 // Pre-defined conditions:

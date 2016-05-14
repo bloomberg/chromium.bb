@@ -190,7 +190,6 @@
             'installer/util/work_item_list_unittest.cc',
             'installer/util/work_item_mocks.cc',
             'installer/util/work_item_mocks.h',
-            'installer/util/work_item_unittest.cc',
           ],
           'msvs_settings': {
             'VCManifestTool': {

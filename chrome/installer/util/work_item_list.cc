@@ -28,22 +28,19 @@ WorkItemList::~WorkItemList() {
   }
 }
 
-WorkItemList::WorkItemList() = default;
+WorkItemList::WorkItemList()
+    : status_(ADD_ITEM) {
+}
 
-bool WorkItemList::DoImpl() {
-  VLOG(1) << "Beginning execution of work item list " << log_message();
+bool WorkItemList::Do() {
+  if (status_ != ADD_ITEM)
+    return false;
 
   bool result = true;
   while (!list_.empty()) {
     WorkItem* work_item = list_.front();
     list_.pop_front();
     executed_list_.push_front(work_item);
-
-    if (best_effort())
-      work_item->set_best_effort(true);
-    if (!rollback_enabled())
-      work_item->set_rollback_enabled(false);
-
     if (!work_item->Do()) {
       LOG(ERROR) << "item execution failed " << work_item->log_message();
       result = false;
@@ -52,22 +49,27 @@ bool WorkItemList::DoImpl() {
   }
 
   if (result)
-    VLOG(1) << "Successful execution of work item list " << log_message();
-  else
-    LOG(ERROR) << "Failed execution of work item list " << log_message();
+    VLOG(1) << "list execution succeeded";
 
+  status_ = LIST_EXECUTED;
   return result;
 }
 
-void WorkItemList::RollbackImpl() {
+void WorkItemList::Rollback() {
+  if (status_ != LIST_EXECUTED)
+    return;
+
   for (WorkItemIterator itr = executed_list_.begin();
        itr != executed_list_.end(); ++itr) {
     (*itr)->Rollback();
   }
+
+  status_ = LIST_ROLLED_BACK;
+  return;
 }
 
 void WorkItemList::AddWorkItem(WorkItem* work_item) {
-  DCHECK_EQ(BEFORE_DO, state());
+  DCHECK(status_ == ADD_ITEM);
   list_.push_back(work_item);
 }
 
@@ -129,11 +131,20 @@ WorkItem* WorkItemList::AddDeleteRegValueWorkItem(
   return item;
 }
 
-WorkItem* WorkItemList::AddDeleteTreeWorkItem(const base::FilePath& root_path,
-                                              const base::FilePath& temp_path) {
-  WorkItem* item = WorkItem::CreateDeleteTreeWorkItem(root_path, temp_path);
+WorkItem* WorkItemList::AddDeleteTreeWorkItem(
+    const base::FilePath& root_path,
+    const base::FilePath& temp_path,
+    const std::vector<base::FilePath>& key_paths) {
+  WorkItem* item = WorkItem::CreateDeleteTreeWorkItem(root_path, temp_path,
+                                                      key_paths);
   AddWorkItem(item);
   return item;
+}
+
+WorkItem* WorkItemList::AddDeleteTreeWorkItem(const base::FilePath& root_path,
+                                              const base::FilePath& temp_path) {
+  std::vector<base::FilePath> no_key_files;
+  return AddDeleteTreeWorkItem(root_path, temp_path, no_key_files);
 }
 
 WorkItem* WorkItemList::AddMoveTreeWorkItem(const std::wstring& source_path,
@@ -219,4 +230,36 @@ WorkItem* WorkItemList::AddSelfRegWorkItem(const std::wstring& dll_path,
                                                    user_level_registration);
   AddWorkItem(item);
   return item;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+NoRollbackWorkItemList::~NoRollbackWorkItemList() {
+}
+
+bool NoRollbackWorkItemList::Do() {
+  if (status_ != ADD_ITEM)
+    return false;
+
+  bool result = true;
+  while (!list_.empty()) {
+    WorkItem* work_item = list_.front();
+    list_.pop_front();
+    executed_list_.push_front(work_item);
+    work_item->set_ignore_failure(true);
+    if (!work_item->Do()) {
+      LOG(ERROR) << "NoRollbackWorkItemList: item execution failed "
+                 << work_item->log_message();
+      result = false;
+    }
+  }
+
+  if (result)
+    VLOG(1) << "NoRollbackWorkItemList: list execution succeeded";
+
+  status_ = LIST_EXECUTED;
+  return result;
+}
+
+void NoRollbackWorkItemList::Rollback() {
+  // Ignore rollback.
 }

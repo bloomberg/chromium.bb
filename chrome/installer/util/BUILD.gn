@@ -331,7 +331,6 @@ if (is_win) {
       "work_item_list_unittest.cc",
       "work_item_mocks.cc",
       "work_item_mocks.h",
-      "work_item_unittest.cc",
     ]
 
     deps = [

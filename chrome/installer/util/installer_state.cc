@@ -671,10 +671,8 @@ void InstallerState::WriteInstallerResult(
     int string_resource_id,
     const std::wstring* const launch_cmd) const {
   // Use a no-rollback list since this is a best-effort deal.
-  std::unique_ptr<WorkItemList> install_list(WorkItem::CreateWorkItemList());
-  install_list->set_log_message("Write Installer Result");
-  install_list->set_best_effort(true);
-  install_list->set_rollback_enabled(false);
+  std::unique_ptr<WorkItemList> install_list(
+      WorkItem::CreateNoRollbackWorkItemList());
   const bool system_install = this->system_install();
   // Write the value for all products upon which we're operating.
   Products::const_iterator end = products().end();
@@ -690,7 +688,8 @@ void InstallerState::WriteInstallerResult(
         system_install, multi_package_binaries_distribution()->GetStateKey(),
         status, string_resource_id, launch_cmd, install_list.get());
   }
-  install_list->Do();
+  if (!install_list->Do())
+    LOG(ERROR) << "Failed to record installer error information in registry.";
 }
 
 bool InstallerState::RequiresActiveSetup() const {
