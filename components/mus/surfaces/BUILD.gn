@@ -8,6 +8,8 @@ source_set("surfaces") {
   sources = [
     "direct_output_surface.cc",
     "direct_output_surface.h",
+    "display_compositor.cc",
+    "display_compositor.h",
     "surfaces_context_provider.cc",
     "surfaces_context_provider.h",
     "surfaces_context_provider_delegate.h",

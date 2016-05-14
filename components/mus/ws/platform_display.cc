@@ -15,8 +15,8 @@
 #include "components/mus/gles2/gpu_state.h"
 #include "components/mus/public/interfaces/gpu.mojom.h"
 #include "components/mus/public/interfaces/quads.mojom.h"
+#include "components/mus/surfaces/display_compositor.h"
 #include "components/mus/surfaces/surfaces_state.h"
-#include "components/mus/surfaces/top_level_display_client.h"
 #include "components/mus/ws/platform_display_factory.h"
 #include "components/mus/ws/server_window.h"
 #include "components/mus/ws/server_window_surface.h"
@@ -207,9 +207,9 @@ DefaultPlatformDisplay::~DefaultPlatformDisplay() {
   delegate_ = nullptr;
 
   // Invalidate WeakPtrs now to avoid callbacks back into the
-  // DefaultPlatformDisplay during destruction of |top_level_display_client_|.
+  // DefaultPlatformDisplay during destruction of |display_compositor_|.
   weak_factory_.InvalidateWeakPtrs();
-  top_level_display_client_.reset();
+  display_compositor_.reset();
   // Destroy the PlatformWindow early on as it may call us back during
   // destruction and we want to be in a known state. But destroy the surface
   // first because it can still be using the platform window.
@@ -287,15 +287,15 @@ void DefaultPlatformDisplay::Draw() {
   // TODO(fsamuel): We should add a trace for generating a top level frame.
   std::unique_ptr<cc::CompositorFrame> frame(GenerateCompositorFrame());
   frame_pending_ = true;
-  if (top_level_display_client_) {
-    top_level_display_client_->SubmitCompositorFrame(
+  if (display_compositor_) {
+    display_compositor_->SubmitCompositorFrame(
         std::move(frame), base::Bind(&DefaultPlatformDisplay::DidDraw,
                                      weak_factory_.GetWeakPtr()));
   }
   dirty_rect_ = gfx::Rect();
 }
 
-void DefaultPlatformDisplay::DidDraw() {
+void DefaultPlatformDisplay::DidDraw(cc::SurfaceDrawStatus status) {
   frame_pending_ = false;
   delegate_->OnCompositorFrameDrawn();
   if (!dirty_rect_.IsEmpty())
@@ -420,10 +420,10 @@ void DefaultPlatformDisplay::OnAcceleratedWidgetAvailable(
     gfx::AcceleratedWidget widget,
     float device_pixel_ratio) {
   if (widget != gfx::kNullAcceleratedWidget) {
-    top_level_display_client_.reset(
-        new TopLevelDisplayClient(widget, gpu_state_, surfaces_state_));
-    delegate_->OnTopLevelSurfaceChanged(
-        top_level_display_client_->surface_id());
+    display_compositor_.reset(
+        new DisplayCompositor(base::ThreadTaskRunnerHandle::Get(), widget,
+                              gpu_state_, surfaces_state_));
+    delegate_->OnTopLevelSurfaceChanged(display_compositor_->surface_id());
   }
   UpdateMetrics(metrics_.size_in_pixels.To<gfx::Size>(), device_pixel_ratio);
 }
@@ -436,8 +436,8 @@ void DefaultPlatformDisplay::OnActivationChanged(bool active) {}
 
 void DefaultPlatformDisplay::RequestCopyOfOutput(
     std::unique_ptr<cc::CopyOutputRequest> output_request) {
-  if (top_level_display_client_)
-    top_level_display_client_->RequestCopyOfOutput(std::move(output_request));
+  if (display_compositor_)
+    display_compositor_->RequestCopyOfOutput(std::move(output_request));
 }
 
 }  // namespace ws

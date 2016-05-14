@@ -15,6 +15,7 @@
 #include "base/strings/string16.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
+#include "cc/surfaces/surface.h"
 #include "components/mus/public/interfaces/window_manager.mojom.h"
 #include "components/mus/public/interfaces/window_manager_constants.mojom.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
@@ -49,7 +50,7 @@ namespace mus {
 
 class GpuState;
 class SurfacesState;
-class TopLevelDisplayClient;
+class DisplayCompositor;
 
 namespace ws {
 
@@ -140,7 +141,7 @@ class DefaultPlatformDisplay : public PlatformDisplay,
   // This is called after cc::Display has completed generating a new frame
   // for the display. TODO(fsamuel): Idle time processing should happen here
   // if there is budget for it.
-  void DidDraw();
+  void DidDraw(cc::SurfaceDrawStatus status);
   void UpdateMetrics(const gfx::Size& size, float device_pixel_ratio);
   std::unique_ptr<cc::CompositorFrame> GenerateCompositorFrame();
 
@@ -167,7 +168,7 @@ class DefaultPlatformDisplay : public PlatformDisplay,
   base::Timer draw_timer_;
   bool frame_pending_;
 
-  std::unique_ptr<TopLevelDisplayClient> top_level_display_client_;
+  std::unique_ptr<DisplayCompositor> display_compositor_;
   std::unique_ptr<ui::PlatformWindow> platform_window_;
 
 #if !defined(OS_ANDROID)
