@@ -236,6 +236,8 @@ void ExtensionInstalledBubbleView::Init() {
   layout->set_inside_border_insets(gfx::Insets(
       0, GetIconSize().width() + views::kUnrelatedControlHorizontalSpacing, 0,
       0));
+  layout->set_cross_axis_alignment(
+      views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
   SetLayoutManager(layout.release());
 
   if (controller_->options() & ExtensionInstalledBubble::HOW_TO_USE)
