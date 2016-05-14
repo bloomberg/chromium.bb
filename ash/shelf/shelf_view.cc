@@ -986,7 +986,8 @@ views::View* ShelfView::CreateViewForItem(const ShelfItem& item) {
     case TYPE_WINDOWED_APP:
     case TYPE_PLATFORM_APP:
     case TYPE_DIALOG:
-    case TYPE_APP_PANEL: {
+    case TYPE_APP_PANEL:
+    case TYPE_IME_MENU: {
       ShelfButton* button = new ShelfButton(this);
       button->SetImage(item.image);
       ReflectItemStatus(item, button);
@@ -1312,6 +1313,7 @@ bool ShelfView::SameDragType(ShelfItemType typea, ShelfItemType typeb) const {
     case TYPE_WINDOWED_APP:
     case TYPE_APP_PANEL:
     case TYPE_DIALOG:
+    case TYPE_IME_MENU:
       return typeb == typea;
     case TYPE_UNDEFINED:
       NOTREACHED() << "ShelfItemType must be set.";
@@ -1633,7 +1635,8 @@ void ShelfView::ShelfItemChanged(int model_index, const ShelfItem& old_item) {
     case TYPE_WINDOWED_APP:
     case TYPE_PLATFORM_APP:
     case TYPE_DIALOG:
-    case TYPE_APP_PANEL: {
+    case TYPE_APP_PANEL:
+    case TYPE_IME_MENU: {
       CHECK_EQ(ShelfButton::kViewClassName, view->GetClassName());
       ShelfButton* button = static_cast<ShelfButton*>(view);
       ReflectItemStatus(item, button);
@@ -1720,6 +1723,7 @@ void ShelfView::ButtonPressed(views::Button* sender, const ui::Event& event) {
 
       case TYPE_APP_PANEL:
       case TYPE_DIALOG:
+      case TYPE_IME_MENU:
         break;
 
       case TYPE_UNDEFINED:

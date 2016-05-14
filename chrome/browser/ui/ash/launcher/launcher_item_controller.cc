@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/ash/launcher/launcher_item_controller.h"
 
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/common/extensions/extension_constants.h"
 
 LauncherItemController::LauncherItemController(
     Type type,
@@ -20,6 +21,9 @@ LauncherItemController::LauncherItemController(
 LauncherItemController::~LauncherItemController() {}
 
 ash::ShelfItemType LauncherItemController::GetShelfItemType() const {
+  if (extension_misc::IsImeMenuExtensionId(app_id_))
+    return ash::TYPE_IME_MENU;
+
   switch (type_) {
     case LauncherItemController::TYPE_SHORTCUT:
     case LauncherItemController::TYPE_WINDOWED_APP:
