@@ -27,6 +27,7 @@
 
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/V8BindingMacros.h"
 #include "bindings/modules/v8/WebGLAny.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/DOMTypedArray.h"
@@ -1402,7 +1403,7 @@ void WebGLRenderingContextBase::attachShader(ScriptState* scriptState, WebGLProg
     }
     contextGL()->AttachShader(objectOrZero(program), objectOrZero(shader));
     shader->onAttached();
-    preserveObjectWrapper(scriptState, program, "shader", shader->type(), shader);
+    preserveObjectWrapper(scriptState, program, V8HiddenValue::webglShaders(scriptState->isolate()), program->getPersistentCache(), static_cast<uint32_t>(shader->type()), shader);
 }
 
 void WebGLRenderingContextBase::bindAttribLocation(WebGLProgram* program, GLuint index, const String& name)
@@ -1471,7 +1472,17 @@ void WebGLRenderingContextBase::bindBuffer(ScriptState* scriptState, GLenum targ
         return;
 
     contextGL()->BindBuffer(target, objectOrZero(buffer));
-    preserveObjectWrapper(scriptState, this, "buffer", target, buffer);
+    PreservedWrapperIndex idx = PreservedArrayBuffer;
+    switch (target) {
+    case GL_ARRAY_BUFFER:
+        idx = PreservedArrayBuffer;
+        break;
+    case GL_ELEMENT_ARRAY_BUFFER:
+        idx = PreservedElementArrayBuffer;
+        break;
+    }
+
+    preserveObjectWrapper(scriptState, this, V8HiddenValue::webglMisc(scriptState->isolate()), &m_miscWrappers, static_cast<uint32_t>(idx), buffer);
     maybePreserveDefaultVAOObjectWrapper(scriptState);
 }
 
@@ -1492,8 +1503,9 @@ void WebGLRenderingContextBase::bindFramebuffer(ScriptState* scriptState, GLenum
     setFramebuffer(target, buffer);
     // This is called both internally and externally (from JavaScript). We only update which wrapper
     // is preserved when it's called from JavaScript.
-    if (scriptState)
-        preserveObjectWrapper(scriptState, this, "framebuffer", 0, buffer);
+    if (scriptState) {
+        preserveObjectWrapper(scriptState, this, V8HiddenValue::webglMisc(scriptState->isolate()), &m_miscWrappers, static_cast<uint32_t>(PreservedFramebuffer), buffer);
+    }
 }
 
 void WebGLRenderingContextBase::bindRenderbuffer(ScriptState* scriptState, GLenum target, WebGLRenderbuffer* renderBuffer)
@@ -1509,7 +1521,7 @@ void WebGLRenderingContextBase::bindRenderbuffer(ScriptState* scriptState, GLenu
     }
     m_renderbufferBinding = renderBuffer;
     contextGL()->BindRenderbuffer(target, objectOrZero(renderBuffer));
-    preserveObjectWrapper(scriptState, this, "renderbuffer", 0, renderBuffer);
+    preserveObjectWrapper(scriptState, this, V8HiddenValue::webglMisc(scriptState->isolate()), &m_miscWrappers, PreservedRenderbuffer, renderBuffer);
 
     drawingBuffer()->setRenderbufferBinding(objectOrZero(renderBuffer));
 
@@ -1529,22 +1541,38 @@ void WebGLRenderingContextBase::bindTexture(ScriptState* scriptState, GLenum tar
         return;
     }
 
-    const char* bindingPointName = nullptr;
+    // ScriptState may be null if this method is called internally
+    // during restoration of texture unit bindings. Skip the
+    // preserveObjectWrapper work in this case.
+    v8::Local<v8::String> hiddenValueName;
+    V8CopyablePersistent<v8::Array>* persistentCache = nullptr;
     if (target == GL_TEXTURE_2D) {
         m_textureUnits[m_activeTextureUnit].m_texture2DBinding = texture;
 
         if (!m_activeTextureUnit)
             drawingBuffer()->setTexture2DBinding(objectOrZero(texture));
-        bindingPointName = "texture_2d";
+        if (scriptState) {
+            hiddenValueName = V8HiddenValue::webgl2DTextures(scriptState->isolate());
+            persistentCache = &m_2DTextureWrappers;
+        }
     } else if (target == GL_TEXTURE_CUBE_MAP) {
         m_textureUnits[m_activeTextureUnit].m_textureCubeMapBinding = texture;
-        bindingPointName = "texture_cube_map";
+        if (scriptState) {
+            hiddenValueName = V8HiddenValue::webglCubeMapTextures(scriptState->isolate());
+            persistentCache = &m_cubeMapTextureWrappers;
+        }
     } else if (isWebGL2OrHigher() && target == GL_TEXTURE_2D_ARRAY) {
         m_textureUnits[m_activeTextureUnit].m_texture2DArrayBinding = texture;
-        bindingPointName = "texture_2d_array";
+        if (scriptState) {
+            hiddenValueName = V8HiddenValue::webgl2DArrayTextures(scriptState->isolate());
+            persistentCache = &m_2DArrayTextureWrappers;
+        }
     } else if (isWebGL2OrHigher() && target == GL_TEXTURE_3D) {
         m_textureUnits[m_activeTextureUnit].m_texture3DBinding = texture;
-        bindingPointName = "texture_3d";
+        if (scriptState) {
+            hiddenValueName = V8HiddenValue::webgl3DTextures(scriptState->isolate());
+            persistentCache = &m_3DTextureWrappers;
+        }
     } else {
         synthesizeGLError(GL_INVALID_ENUM, "bindTexture", "invalid target");
         return;
@@ -1554,7 +1582,7 @@ void WebGLRenderingContextBase::bindTexture(ScriptState* scriptState, GLenum tar
     // This is called both internally and externally (from JavaScript). We only update which wrapper
     // is preserved when it's called from JavaScript.
     if (scriptState) {
-        preserveObjectWrapper(scriptState, this, bindingPointName, m_activeTextureUnit, texture);
+        preserveObjectWrapper(scriptState, this, hiddenValueName, persistentCache, m_activeTextureUnit, texture);
     }
     if (texture) {
         texture->setTarget(target);
@@ -1957,7 +1985,7 @@ void WebGLRenderingContextBase::setBoundVertexArrayObject(ScriptState* scriptSta
     else
         m_boundVertexArrayObject = m_defaultVertexArrayObject;
 
-    preserveObjectWrapper(scriptState, this, "boundvao", 0, arrayObject);
+    preserveObjectWrapper(scriptState, this, V8HiddenValue::webglMisc(scriptState->isolate()), &m_miscWrappers, static_cast<uint32_t>(PreservedVAO), arrayObject);
 }
 
 WebGLShader* WebGLRenderingContextBase::createShader(GLenum type)
@@ -2118,7 +2146,7 @@ void WebGLRenderingContextBase::detachShader(ScriptState* scriptState, WebGLProg
     }
     contextGL()->DetachShader(objectOrZero(program), objectOrZero(shader));
     shader->onDetached(contextGL());
-    preserveObjectWrapper(scriptState, program, "shader", shader->type(), nullptr);
+    preserveObjectWrapper(scriptState, program, V8HiddenValue::webglShaders(scriptState->isolate()), program->getPersistentCache(), static_cast<uint32_t>(shader->type()), nullptr);
 }
 
 void WebGLRenderingContextBase::disable(GLenum cap)
@@ -2292,12 +2320,12 @@ void WebGLRenderingContextBase::framebufferRenderbuffer(ScriptState* scriptState
         contextGL()->FramebufferRenderbuffer(target, GL_STENCIL_ATTACHMENT, renderbuffertarget, bufferObject);
         framebufferBinding->setAttachmentForBoundFramebuffer(target, GL_DEPTH_ATTACHMENT, buffer);
         framebufferBinding->setAttachmentForBoundFramebuffer(target, GL_STENCIL_ATTACHMENT, buffer);
-        preserveObjectWrapper(scriptState, framebufferBinding, "attachment", GL_DEPTH_ATTACHMENT, buffer);
-        preserveObjectWrapper(scriptState, framebufferBinding, "attachment", GL_STENCIL_ATTACHMENT, buffer);
+        preserveObjectWrapper(scriptState, framebufferBinding, V8HiddenValue::webglAttachments(scriptState->isolate()), framebufferBinding->getPersistentCache(), GL_DEPTH_ATTACHMENT, buffer);
+        preserveObjectWrapper(scriptState, framebufferBinding, V8HiddenValue::webglAttachments(scriptState->isolate()), framebufferBinding->getPersistentCache(), GL_STENCIL_ATTACHMENT, buffer);
     } else {
         contextGL()->FramebufferRenderbuffer(target, attachment, renderbuffertarget, bufferObject);
         framebufferBinding->setAttachmentForBoundFramebuffer(target, attachment, buffer);
-        preserveObjectWrapper(scriptState, framebufferBinding, "attachment", attachment, buffer);
+        preserveObjectWrapper(scriptState, framebufferBinding, V8HiddenValue::webglAttachments(scriptState->isolate()), framebufferBinding->getPersistentCache(), attachment, buffer);
     }
     applyStencilTest();
 }
@@ -2326,12 +2354,12 @@ void WebGLRenderingContextBase::framebufferTexture2D(ScriptState* scriptState, G
         contextGL()->FramebufferTexture2D(target, GL_STENCIL_ATTACHMENT, textarget, textureObject, level);
         framebufferBinding->setAttachmentForBoundFramebuffer(target, GL_DEPTH_ATTACHMENT, textarget, texture, level, 0);
         framebufferBinding->setAttachmentForBoundFramebuffer(target, GL_STENCIL_ATTACHMENT, textarget, texture, level, 0);
-        preserveObjectWrapper(scriptState, framebufferBinding, "attachment", GL_DEPTH_ATTACHMENT, texture);
-        preserveObjectWrapper(scriptState, framebufferBinding, "attachment", GL_STENCIL_ATTACHMENT, texture);
+        preserveObjectWrapper(scriptState, framebufferBinding, V8HiddenValue::webglAttachments(scriptState->isolate()), framebufferBinding->getPersistentCache(), GL_DEPTH_ATTACHMENT, texture);
+        preserveObjectWrapper(scriptState, framebufferBinding, V8HiddenValue::webglAttachments(scriptState->isolate()), framebufferBinding->getPersistentCache(), GL_STENCIL_ATTACHMENT, texture);
     } else {
         contextGL()->FramebufferTexture2D(target, attachment, textarget, textureObject, level);
         framebufferBinding->setAttachmentForBoundFramebuffer(target, attachment, textarget, texture, level, 0);
-        preserveObjectWrapper(scriptState, framebufferBinding, "attachment", attachment, texture);
+        preserveObjectWrapper(scriptState, framebufferBinding, V8HiddenValue::webglAttachments(scriptState->isolate()), framebufferBinding->getPersistentCache(), attachment, texture);
     }
     applyStencilTest();
 }
@@ -2562,7 +2590,7 @@ ScriptValue WebGLRenderingContextBase::getExtension(ScriptState* scriptState, co
     if (linkContextToExtension) {
         // Keep the extension's JavaScript wrapper alive as long as the context is alive, so that
         // expando properties that are added to the extension persist.
-        preserveObjectWrapper(scriptState, this, "extension", static_cast<unsigned long>(extension->name()), extension);
+        preserveObjectWrapper(scriptState, this, V8HiddenValue::webglExtensions(scriptState->isolate()), &m_extensionWrappers, static_cast<uint32_t>(extension->name()), extension);
     }
 
     return ScriptValue(scriptState, wrappedExtension);
@@ -4857,7 +4885,7 @@ void WebGLRenderingContextBase::useProgram(ScriptState* scriptState, WebGLProgra
         contextGL()->UseProgram(objectOrZero(program));
         if (program)
             program->onAttached();
-        preserveObjectWrapper(scriptState, this, "program", 0, program);
+        preserveObjectWrapper(scriptState, this, V8HiddenValue::webglMisc(scriptState->isolate()), &m_miscWrappers, static_cast<uint32_t>(PreservedProgram), program);
     }
 }
 
@@ -5020,7 +5048,7 @@ void WebGLRenderingContextBase::vertexAttribPointer(ScriptState* scriptState, GL
     m_boundVertexArrayObject->setArrayBufferForAttrib(index, m_boundArrayBuffer.get());
     contextGL()->VertexAttribPointer(index, size, type, normalized, stride, reinterpret_cast<void*>(static_cast<intptr_t>(offset)));
     maybePreserveDefaultVAOObjectWrapper(scriptState);
-    preserveObjectWrapper(scriptState, m_boundVertexArrayObject, "arraybuffer", index, m_boundArrayBuffer);
+    preserveObjectWrapper(scriptState, m_boundVertexArrayObject, V8HiddenValue::webglBuffers(scriptState->isolate()), m_boundVertexArrayObject->getPersistentCache(), index, m_boundArrayBuffer);
 }
 
 void WebGLRenderingContextBase::vertexAttribDivisorANGLE(GLuint index, GLuint divisor)
@@ -6256,36 +6284,31 @@ void WebGLRenderingContextBase::findNewMaxNonDefaultTextureUnit()
     m_onePlusMaxNonDefaultTextureUnit = 0;
 }
 
-void WebGLRenderingContextBase::preserveObjectWrapper(ScriptState* scriptState, ScriptWrappable* sourceObject, const char* baseName, unsigned long index, ScriptWrappable* targetObject)
+void WebGLRenderingContextBase::preserveObjectWrapper(ScriptState* scriptState, ScriptWrappable* sourceObject, v8::Local<v8::String> hiddenValueName, V8CopyablePersistent<v8::Array>* persistentCache, uint32_t index, ScriptWrappable* targetObject)
 {
-    ASSERT(scriptState);
-
-    v8::Local<v8::Value> value;
     v8::Isolate* isolate = scriptState->isolate();
-
-    // TODO (kbr): move this logic to V8HiddenValue. The difficulty in doing so is that the index
-    // may vary, so it'd be necessary to lazily instantiate the V8 internalized strings, and have
-    // efficient lookup for already-created ones.
-    StringBuilder builder;
-    builder.append(baseName);
-    builder.appendNumber(static_cast<unsigned>(index));
-    CString name = builder.toString().utf8();
-    v8::Local<v8::String> jsName = v8::String::NewFromUtf8(
-        isolate,
-        name.data(),
-        v8::NewStringType::kNormal,
-        name.length()).ToLocalChecked();
-    if (targetObject) {
+    if (persistentCache->IsEmpty()) {
+        // TODO(kbr): eliminate the persistent caches and just use
+        // V8HiddenValue::getHiddenValue. Unfortunately, it's
+        // currently too slow to use. crbug.com/611864
+        persistentCache->Reset(isolate, v8::Array::New(isolate));
         V8HiddenValue::setHiddenValue(
             scriptState,
             sourceObject->newLocalWrapper(isolate),
-            jsName,
-            targetObject->newLocalWrapper(isolate));
+            hiddenValueName,
+            persistentCache->Get(isolate));
+        // It is important to mark the persistent cache as weak
+        // (phantom, actually). Otherwise there will be a reference
+        // cycle between it and its JavaScript wrapper, and currently
+        // there are problems collecting such cycles.
+        persistentCache->SetWeak();
+    }
+
+    v8::Local<v8::Array> localCache = persistentCache->Get(isolate);
+    if (targetObject) {
+        v8CallOrCrash(localCache->Set(scriptState->context(), index, targetObject->newLocalWrapper(isolate)));
     } else {
-        V8HiddenValue::deleteHiddenValue(
-            scriptState,
-            sourceObject->newLocalWrapper(isolate),
-            jsName);
+        v8CallOrCrash(localCache->Set(scriptState->context(), index, v8::Null(isolate)));
     }
 }
 
@@ -6297,7 +6320,7 @@ void WebGLRenderingContextBase::maybePreserveDefaultVAOObjectWrapper(ScriptState
         // The default VAO does not have a JavaScript wrapper created for it, but one is needed to
         // link up the WebGLBuffers associated with the vertex attributes.
         toV8(m_defaultVertexArrayObject, scriptState->context()->Global(), scriptState->isolate());
-        preserveObjectWrapper(scriptState, this, "defaultvao", 0, m_defaultVertexArrayObject);
+        preserveObjectWrapper(scriptState, this, V8HiddenValue::webglMisc(scriptState->isolate()), &m_miscWrappers, static_cast<uint32_t>(PreservedDefaultVAO), m_defaultVertexArrayObject);
         m_preservedDefaultVAOObjectWrapper = true;
     }
 }

@@ -34,6 +34,8 @@ public:
     void setArrayBufferForAttrib(GLuint, WebGLBuffer*);
     void unbindBuffer(WebGLBuffer*);
 
+    V8CopyablePersistent<v8::Array>* getPersistentCache();
+
     DECLARE_VIRTUAL_TRACE();
 
 protected:
@@ -51,6 +53,10 @@ private:
     bool m_destructionInProgress;
     Member<WebGLBuffer> m_boundElementArrayBuffer;
     HeapVector<Member<WebGLBuffer>> m_arrayBufferList;
+
+    // For preserving the wrappers of WebGLBuffer objects latched in
+    // via vertexAttribPointer calls.
+    V8CopyablePersistent<v8::Array> m_arrayBufferWrappers;
 };
 
 } // namespace blink

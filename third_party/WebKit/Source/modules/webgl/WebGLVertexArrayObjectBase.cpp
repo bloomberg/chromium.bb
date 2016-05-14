@@ -109,6 +109,11 @@ void WebGLVertexArrayObjectBase::unbindBuffer(WebGLBuffer* buffer)
     }
 }
 
+V8CopyablePersistent<v8::Array>* WebGLVertexArrayObjectBase::getPersistentCache()
+{
+    return &m_arrayBufferWrappers;
+}
+
 DEFINE_TRACE(WebGLVertexArrayObjectBase)
 {
     visitor->trace(m_boundElementArrayBuffer);

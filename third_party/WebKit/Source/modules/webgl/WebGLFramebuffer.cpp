@@ -422,6 +422,11 @@ GLenum WebGLFramebuffer::getDrawBuffer(GLenum drawBuffer)
     return GL_NONE;
 }
 
+V8CopyablePersistent<v8::Array>* WebGLFramebuffer::getPersistentCache()
+{
+    return &m_attachmentWrappers;
+}
+
 DEFINE_TRACE(WebGLFramebuffer)
 {
     visitor->trace(m_attachments);

@@ -58,6 +58,8 @@ public:
     bool attachShader(WebGLShader*);
     bool detachShader(WebGLShader*);
 
+    V8CopyablePersistent<v8::Array>* getPersistentCache();
+
     DECLARE_VIRTUAL_TRACE();
 
 protected:
@@ -84,6 +86,8 @@ private:
     Member<WebGLShader> m_fragmentShader;
 
     bool m_infoValid;
+
+    V8CopyablePersistent<v8::Array> m_shaderWrappers;
 };
 
 } // namespace blink

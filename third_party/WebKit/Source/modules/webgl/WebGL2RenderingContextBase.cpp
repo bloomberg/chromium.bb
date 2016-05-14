@@ -321,11 +321,11 @@ void WebGL2RenderingContextBase::framebufferTextureLayer(ScriptState* scriptStat
         // We divide it here so in WebGLFramebuffer, we don't have to handle DEPTH_STENCIL_ATTACHMENT in WebGL 2.
         framebufferBinding->setAttachmentForBoundFramebuffer(target, GL_DEPTH_ATTACHMENT, textarget, texture, level, layer);
         framebufferBinding->setAttachmentForBoundFramebuffer(target, GL_STENCIL_ATTACHMENT, textarget, texture, level, layer);
-        preserveObjectWrapper(scriptState, framebufferBinding, "attachment", GL_DEPTH_ATTACHMENT, texture);
-        preserveObjectWrapper(scriptState, framebufferBinding, "attachment", GL_STENCIL_ATTACHMENT, texture);
+        preserveObjectWrapper(scriptState, framebufferBinding, V8HiddenValue::webglAttachments(scriptState->isolate()), framebufferBinding->getPersistentCache(), GL_DEPTH_ATTACHMENT, texture);
+        preserveObjectWrapper(scriptState, framebufferBinding, V8HiddenValue::webglAttachments(scriptState->isolate()), framebufferBinding->getPersistentCache(), GL_STENCIL_ATTACHMENT, texture);
     } else {
         framebufferBinding->setAttachmentForBoundFramebuffer(target, attachment, textarget, texture, level, layer);
-        preserveObjectWrapper(scriptState, framebufferBinding, "attachment", attachment, texture);
+        preserveObjectWrapper(scriptState, framebufferBinding, V8HiddenValue::webglAttachments(scriptState->isolate()), framebufferBinding->getPersistentCache(), attachment, texture);
     }
     applyStencilTest();
 }
@@ -2717,8 +2717,9 @@ void WebGL2RenderingContextBase::bindFramebuffer(ScriptState* scriptState, GLenu
     }
 
     setFramebuffer(target, buffer);
-    if (scriptState)
-        preserveObjectWrapper(scriptState, this, "framebuffer", 0, buffer);
+    if (scriptState) {
+        preserveObjectWrapper(scriptState, this, V8HiddenValue::webglMisc(scriptState->isolate()), &m_miscWrappers, static_cast<uint32_t>(PreservedFramebuffer), buffer);
+    }
 }
 
 void WebGL2RenderingContextBase::deleteFramebuffer(WebGLFramebuffer* framebuffer)

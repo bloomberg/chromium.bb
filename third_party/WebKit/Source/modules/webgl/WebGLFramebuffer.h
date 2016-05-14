@@ -94,6 +94,8 @@ public:
 
     GLenum getReadBuffer() const { return m_readBuffer; }
 
+    V8CopyablePersistent<v8::Array>* getPersistentCache();
+
     DECLARE_VIRTUAL_TRACE();
 
 protected:
@@ -127,6 +129,8 @@ private:
     Vector<GLenum> m_filteredDrawBuffers;
 
     GLenum m_readBuffer;
+
+    V8CopyablePersistent<v8::Array> m_attachmentWrappers;
 };
 
 } // namespace blink

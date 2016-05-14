@@ -56,6 +56,18 @@ GLuint objectNonZero(const T* object)
     return result;
 }
 
+// TODO(kbr): v8::Persistent doesn't auto-reset in its destructor,
+// which wreaks havoc when they're embedded in Oilpan objects even if
+// they use GarbageCollectedFinalized. The first V8 GC after the
+// Oilpan object is reclaimed will reset the cell in the
+// v8::Persistent, scribbling over the Oilpan heap. If v8::Persistents
+// are ever embedded in Oilpan objects, they must use
+// CopyablePersistentTraits to pick up the kResetInDestructor = true
+// setting. This alias template ensures correct usage, but ideally,
+// these persistent caches would not be necessary. crbug.com/611864
+template <typename T>
+using V8CopyablePersistent = v8::Persistent<T, v8::CopyablePersistentTraits<T>>;
+
 class WebGLObject : public GarbageCollectedFinalized<WebGLObject>, public ScriptWrappable {
 public:
     virtual ~WebGLObject();

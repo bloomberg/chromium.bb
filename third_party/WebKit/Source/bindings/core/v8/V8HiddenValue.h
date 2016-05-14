@@ -48,6 +48,15 @@ class ScriptWrappable;
     V(thenableHiddenPromise) \
     V(toStringString) \
     V(injectedScriptNative) \
+    V(webgl2DTextures) \
+    V(webgl2DArrayTextures) \
+    V(webgl3DTextures) \
+    V(webglAttachments) \
+    V(webglBuffers) \
+    V(webglCubeMapTextures) \
+    V(webglExtensions) \
+    V(webglMisc) \
+    V(webglShaders) \
     SCRIPT_PROMISE_PROPERTIES(V, Promise)  \
     SCRIPT_PROMISE_PROPERTIES(V, Resolver)
 
