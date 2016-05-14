@@ -147,12 +147,12 @@ void GetClientCertsImpl(const scoped_refptr<X509Certificate>& preferred_cert,
 
     // Skip duplicates (a cert may be in multiple keychains).
     const SHA1HashValue& fingerprint = cert->fingerprint();
-    size_t pos;
-    for (pos = 0; pos < selected_certs->size(); ++pos) {
-      if ((*selected_certs)[pos]->fingerprint().Equals(fingerprint))
-        break;
-    }
-    if (pos < selected_certs->size())
+    auto cert_iter = std::find_if(
+        selected_certs->begin(), selected_certs->end(),
+        [&fingerprint](const scoped_refptr<X509Certificate>& cert) {
+          return cert->fingerprint() == fingerprint;
+        });
+    if (cert_iter != selected_certs->end())
       continue;
 
     // Check if the certificate issuer is allowed by the server.

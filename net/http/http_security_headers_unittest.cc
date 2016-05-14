@@ -81,14 +81,8 @@ bool ParseAsHPKPHeader(const std::string& value,
   bool result = ParseHPKPHeader(value, chain_hashes, max_age,
                                 include_subdomains, hashes, report_uri);
   if (!result || report_only_include_subdomains != *include_subdomains ||
-      report_only_uri != *report_uri ||
-      report_only_hashes.size() != hashes->size()) {
+      report_only_uri != *report_uri || report_only_hashes != *hashes) {
     return false;
-  }
-
-  for (size_t i = 0; i < report_only_hashes.size(); i++) {
-    if (!(*hashes)[i].Equals(report_only_hashes[i]))
-      return false;
   }
 
   return true;
@@ -692,10 +686,7 @@ TEST_F(HttpSecurityHeadersTest, UpdateDynamicPKPOnly) {
   TransportSecurityState::PKPState new_static_pkp_state;
   EXPECT_TRUE(state.GetStaticDomainState(domain, &new_static_sts_state,
                                          &new_static_pkp_state));
-  for (size_t i = 0; i < saved_hashes.size(); ++i) {
-    EXPECT_TRUE(
-        HashValuesEqual(saved_hashes[i])(new_static_pkp_state.spki_hashes[i]));
-  }
+  EXPECT_EQ(saved_hashes, new_static_pkp_state.spki_hashes);
 
   // Expect the dynamic state to reflect the header.
   TransportSecurityState::PKPState dynamic_pkp_state;
@@ -703,14 +694,13 @@ TEST_F(HttpSecurityHeadersTest, UpdateDynamicPKPOnly) {
   EXPECT_EQ(2UL, dynamic_pkp_state.spki_hashes.size());
   EXPECT_EQ(report_uri, dynamic_pkp_state.report_uri);
 
-  HashValueVector::const_iterator hash = std::find_if(
-      dynamic_pkp_state.spki_hashes.begin(),
-      dynamic_pkp_state.spki_hashes.end(), HashValuesEqual(good_hash));
+  HashValueVector::const_iterator hash =
+      std::find(dynamic_pkp_state.spki_hashes.begin(),
+                dynamic_pkp_state.spki_hashes.end(), good_hash);
   EXPECT_NE(dynamic_pkp_state.spki_hashes.end(), hash);
 
-  hash = std::find_if(dynamic_pkp_state.spki_hashes.begin(),
-                      dynamic_pkp_state.spki_hashes.end(),
-                      HashValuesEqual(backup_hash));
+  hash = std::find(dynamic_pkp_state.spki_hashes.begin(),
+                   dynamic_pkp_state.spki_hashes.end(), backup_hash);
   EXPECT_NE(dynamic_pkp_state.spki_hashes.end(), hash);
 
   // Expect the overall state to reflect the header, too.
@@ -729,14 +719,12 @@ TEST_F(HttpSecurityHeadersTest, UpdateDynamicPKPOnly) {
   EXPECT_EQ(2UL, new_dynamic_pkp_state.spki_hashes.size());
   EXPECT_EQ(report_uri, new_dynamic_pkp_state.report_uri);
 
-  hash = std::find_if(new_dynamic_pkp_state.spki_hashes.begin(),
-                      new_dynamic_pkp_state.spki_hashes.end(),
-                      HashValuesEqual(good_hash));
+  hash = std::find(new_dynamic_pkp_state.spki_hashes.begin(),
+                   new_dynamic_pkp_state.spki_hashes.end(), good_hash);
   EXPECT_NE(new_dynamic_pkp_state.spki_hashes.end(), hash);
 
-  hash = std::find_if(new_dynamic_pkp_state.spki_hashes.begin(),
-                      new_dynamic_pkp_state.spki_hashes.end(),
-                      HashValuesEqual(backup_hash));
+  hash = std::find(new_dynamic_pkp_state.spki_hashes.begin(),
+                   new_dynamic_pkp_state.spki_hashes.end(), backup_hash);
   EXPECT_NE(new_dynamic_pkp_state.spki_hashes.end(), hash);
 }
 
@@ -770,11 +758,7 @@ TEST_F(HttpSecurityHeadersTest, UpdateDynamicPKPMaxAge0) {
   TransportSecurityState::PKPState new_static_pkp_state;
   EXPECT_TRUE(state.GetStaticDomainState(domain, &new_static_sts_state,
                                          &new_static_pkp_state));
-  EXPECT_EQ(saved_hashes.size(), new_static_pkp_state.spki_hashes.size());
-  for (size_t i = 0; i < saved_hashes.size(); ++i) {
-    EXPECT_TRUE(
-        HashValuesEqual(saved_hashes[i])(new_static_pkp_state.spki_hashes[i]));
-  }
+  EXPECT_EQ(saved_hashes, new_static_pkp_state.spki_hashes);
 
   // Expect the dynamic state to have pins.
   TransportSecurityState::PKPState new_dynamic_pkp_state;
@@ -791,11 +775,7 @@ TEST_F(HttpSecurityHeadersTest, UpdateDynamicPKPMaxAge0) {
   TransportSecurityState::PKPState new_static_pkp_state2;
   EXPECT_TRUE(state.GetStaticDomainState(domain, &static_sts_state,
                                          &new_static_pkp_state2));
-  EXPECT_EQ(saved_hashes.size(), new_static_pkp_state2.spki_hashes.size());
-  for (size_t i = 0; i < saved_hashes.size(); ++i) {
-    EXPECT_TRUE(
-        HashValuesEqual(saved_hashes[i])(new_static_pkp_state2.spki_hashes[i]));
-  }
+  EXPECT_EQ(saved_hashes, new_static_pkp_state2.spki_hashes);
 
   // Expect the dynamic pins to be gone.
   TransportSecurityState::PKPState new_dynamic_pkp_state2;

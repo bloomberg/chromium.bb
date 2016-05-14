@@ -350,22 +350,6 @@ void CheckFullRequestHeaders(const HttpRequestHeaders& headers,
   EXPECT_EQ("keep-alive", sent_value);
 }
 
-#if !defined(OS_IOS)
-bool FingerprintsEqual(const HashValueVector& a, const HashValueVector& b) {
-  size_t size = a.size();
-
-  if (size != b.size())
-    return false;
-
-  for (size_t i = 0; i < size; ++i) {
-    if (!a[i].Equals(b[i]))
-      return false;
-  }
-
-  return true;
-}
-#endif  // !defined(OS_IOS)
-
 // A network delegate that allows the user to choose a subset of request stages
 // to block in. When blocking, the delegate can do one of the following:
 //  * synchronously return a pre-specified error code, or
@@ -8458,10 +8442,9 @@ TEST_F(HTTPSRequestTest, HTTPSErrorsNoClobberTSSTest) {
             static_sts_state.include_subdomains);
   EXPECT_EQ(new_static_pkp_state.include_subdomains,
             static_pkp_state.include_subdomains);
-  EXPECT_TRUE(FingerprintsEqual(new_static_pkp_state.spki_hashes,
-                                static_pkp_state.spki_hashes));
-  EXPECT_TRUE(FingerprintsEqual(new_static_pkp_state.bad_spki_hashes,
-                                static_pkp_state.bad_spki_hashes));
+  EXPECT_EQ(new_static_pkp_state.spki_hashes, static_pkp_state.spki_hashes);
+  EXPECT_EQ(new_static_pkp_state.bad_spki_hashes,
+            static_pkp_state.bad_spki_hashes);
 }
 
 // Make sure HSTS preserves a POST request's method and body.

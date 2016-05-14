@@ -637,21 +637,21 @@ TEST_F(TransportSecurityStateTest, NewPinsOverride) {
 
   ASSERT_TRUE(state.GetDynamicPKPState("foo.example.com", &pkp_state));
   ASSERT_EQ(1u, pkp_state.spki_hashes.size());
-  EXPECT_TRUE(pkp_state.spki_hashes[0].Equals(hash1));
+  EXPECT_EQ(pkp_state.spki_hashes[0], hash1);
 
   state.AddHPKP("foo.example.com", expiry, false, HashValueVector(1, hash2),
                 report_uri);
 
   ASSERT_TRUE(state.GetDynamicPKPState("foo.example.com", &pkp_state));
   ASSERT_EQ(1u, pkp_state.spki_hashes.size());
-  EXPECT_TRUE(pkp_state.spki_hashes[0].Equals(hash2));
+  EXPECT_EQ(pkp_state.spki_hashes[0], hash2);
 
   state.AddHPKP("foo.example.com", expiry, false, HashValueVector(1, hash3),
                 report_uri);
 
   ASSERT_TRUE(state.GetDynamicPKPState("foo.example.com", &pkp_state));
   ASSERT_EQ(1u, pkp_state.spki_hashes.size());
-  EXPECT_TRUE(pkp_state.spki_hashes[0].Equals(hash3));
+  EXPECT_EQ(pkp_state.spki_hashes[0], hash3);
 }
 
 TEST_F(TransportSecurityStateTest, DeleteAllDynamicDataSince) {

@@ -76,8 +76,8 @@ class PrivetV3ContextGetter::CertVerifier : public net::CertVerifier {
     if (it == fingerprints_.end())
       return false;
 
-    return it->second.Equals(
-        net::X509Certificate::CalculateFingerprint256(cert->os_cert_handle()));
+    return it->second == net::X509Certificate::CalculateFingerprint256(
+                             cert->os_cert_handle());
   }
 
   std::map<std::string, net::SHA256HashValue> fingerprints_;
