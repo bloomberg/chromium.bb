@@ -91,17 +91,17 @@ TEST(ActivityIconLoaderTest, TestGetActivityIcons) {
   activities.emplace_back("p0", "a0");
   activities.emplace_back("p1", "a1");
   activities.emplace_back("p1", "a0");
-  loader->GetActivityIcons(activities, base::Bind(&OnIconsReady0));
+  EXPECT_TRUE(loader->GetActivityIcons(activities, base::Bind(&OnIconsReady0)));
 
   // Test with different |activities|.
   activities.clear();
   activities.emplace_back("p1", "a1");
-  loader->GetActivityIcons(activities, base::Bind(&OnIconsReady1));
+  EXPECT_TRUE(loader->GetActivityIcons(activities, base::Bind(&OnIconsReady1)));
   activities.clear();
   activities.emplace_back("p1", "a_unknown");
-  loader->GetActivityIcons(activities, base::Bind(&OnIconsReady2));
+  EXPECT_TRUE(loader->GetActivityIcons(activities, base::Bind(&OnIconsReady2)));
   activities.clear();
-  loader->GetActivityIcons(activities, base::Bind(&OnIconsReady2));
+  EXPECT_TRUE(loader->GetActivityIcons(activities, base::Bind(&OnIconsReady2)));
 }
 
 // Tests if OnIconsResized updates the cache.

@@ -49,12 +49,12 @@ class ActivityIconLoader : public base::RefCounted<ActivityIconLoader> {
   // Removes icons associated with |package_name| from the cache.
   void InvalidateIcons(const std::string& package_name);
 
-  // Retrieves icons for the |activities| and calls |cb|. The |cb| is first
-  // called synchronously in the GetActivityIcons() with locally cached icons
-  // (possibly none), and then asynchronously called with icons fetched from
-  // ARC side. GetActivityIcons() always runs the |cb| synchronously, but the
-  // asynchronous one is done only when an IPC to ARC is made.
-  void GetActivityIcons(const std::vector<ActivityName>& activities,
+  // Retrieves icons for the |activities| and calls |cb|. The |cb| is called
+  // back exactly once, either synchronously in the GetActivityIcons() when
+  // all icons were already cached locally, or asynchronously with icons fetched
+  // from ARC side.
+  // Returns true in the former synchronous case, where everything is done.
+  bool GetActivityIcons(const std::vector<ActivityName>& activities,
                         const OnIconsReadyCallback& cb);
 
   void OnIconsResizedForTesting(const OnIconsReadyCallback& cb,
@@ -69,7 +69,8 @@ class ActivityIconLoader : public base::RefCounted<ActivityIconLoader> {
   ~ActivityIconLoader();
 
   // A function called when the mojo IPC returns.
-  void OnIconsReady(const OnIconsReadyCallback& cb,
+  void OnIconsReady(std::unique_ptr<ActivityToIconsMap> cached_result,
+                    const OnIconsReadyCallback& cb,
                     mojo::Array<mojom::ActivityIconPtr> icons);
 
   // Resize |icons| and returns the results as ActivityToIconsMap.
@@ -78,7 +79,8 @@ class ActivityIconLoader : public base::RefCounted<ActivityIconLoader> {
 
   // A function called when ResizeIcons finishes. Append items in |result| to
   // |cached_icons_|.
-  void OnIconsResized(const OnIconsReadyCallback& cb,
+  void OnIconsResized(std::unique_ptr<ActivityToIconsMap> cached_result,
+                      const OnIconsReadyCallback& cb,
                       std::unique_ptr<ActivityToIconsMap> result);
 
   // The maximum scale factor the current platform supports.

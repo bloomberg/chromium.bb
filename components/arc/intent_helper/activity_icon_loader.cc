@@ -9,6 +9,7 @@
 #include <tuple>
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/task_runner_util.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
@@ -74,7 +75,7 @@ void ActivityIconLoader::InvalidateIcons(const std::string& package_name) {
   }
 }
 
-void ActivityIconLoader::GetActivityIcons(
+bool ActivityIconLoader::GetActivityIcons(
     const std::vector<ActivityName>& activities,
     const OnIconsReadyCallback& cb) {
   std::unique_ptr<ActivityToIconsMap> result(new ActivityToIconsMap);
@@ -92,22 +93,26 @@ void ActivityIconLoader::GetActivityIcons(
     }
   }
 
-  cb.Run(std::move(result));
-
   mojom::IntentHelperInstance* instance = GetIntentHelperInstance();
-  if (activities_to_fetch.empty() || !instance)
-    return;
+  if (activities_to_fetch.empty() || !instance) {
+    // If there's nothing to fetch or the mojo channel is not available, call
+    // back right now.
+    cb.Run(std::move(result));
+    return true;
+  }
 
   // Fetch icons from ARC.
   instance->RequestActivityIcons(
       std::move(activities_to_fetch), mojom::ScaleFactor(scale_factor_),
-      base::Bind(&ActivityIconLoader::OnIconsReady, this, cb));
+      base::Bind(&ActivityIconLoader::OnIconsReady, this, base::Passed(&result),
+                 cb));
+  return false;
 }
 
 void ActivityIconLoader::OnIconsResizedForTesting(
     const OnIconsReadyCallback& cb,
     std::unique_ptr<ActivityToIconsMap> result) {
-  OnIconsResized(cb, std::move(result));
+  OnIconsResized(base::MakeUnique<ActivityToIconsMap>(), cb, std::move(result));
 }
 
 void ActivityIconLoader::AddIconToCacheForTesting(const ActivityName& activity,
@@ -116,13 +121,15 @@ void ActivityIconLoader::AddIconToCacheForTesting(const ActivityName& activity,
 }
 
 void ActivityIconLoader::OnIconsReady(
+    std::unique_ptr<ActivityToIconsMap> cached_result,
     const OnIconsReadyCallback& cb,
     mojo::Array<mojom::ActivityIconPtr> icons) {
   ArcServiceManager* manager = ArcServiceManager::Get();
   base::PostTaskAndReplyWithResult(
       manager->blocking_task_runner().get(), FROM_HERE,
       base::Bind(&ActivityIconLoader::ResizeIcons, this, base::Passed(&icons)),
-      base::Bind(&ActivityIconLoader::OnIconsResized, this, cb));
+      base::Bind(&ActivityIconLoader::OnIconsResized, this,
+                 base::Passed(&cached_result), cb));
 }
 
 std::unique_ptr<ActivityIconLoader::ActivityToIconsMap>
@@ -165,6 +172,7 @@ ActivityIconLoader::ResizeIcons(mojo::Array<mojom::ActivityIconPtr> icons) {
 }
 
 void ActivityIconLoader::OnIconsResized(
+    std::unique_ptr<ActivityToIconsMap> cached_result,
     const OnIconsReadyCallback& cb,
     std::unique_ptr<ActivityToIconsMap> result) {
   // Update |cached_icons_|.
@@ -173,6 +181,8 @@ void ActivityIconLoader::OnIconsResized(
     cached_icons_.insert(std::make_pair(kv.first, kv.second));
   }
 
+  // Merge the results that were obtained from cache before doing IPC.
+  result->insert(cached_result->begin(), cached_result->end());
   cb.Run(std::move(result));
 }
 

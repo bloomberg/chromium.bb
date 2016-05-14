@@ -77,17 +77,22 @@ void LinkHandlerModelImpl::OnUrlHandlerList(
     mojo::Array<mojom::UrlHandlerInfoPtr> handlers) {
   handlers_ = std::move(handlers);
 
+  bool icon_info_notified = false;
   if (icon_loader_) {
     std::vector<ActivityIconLoader::ActivityName> activities;
     for (size_t i = 0; i < handlers_.size(); ++i) {
       activities.emplace_back(handlers_[i]->package_name,
                               handlers_[i]->activity_name);
     }
-    icon_loader_->GetActivityIcons(
+    icon_info_notified = icon_loader_->GetActivityIcons(
         activities, base::Bind(&LinkHandlerModelImpl::NotifyObserver,
                                weak_ptr_factory_.GetWeakPtr()));
-  } else {
-    // Call NotifyObserver() without icon information.
+  }
+
+  if (!icon_info_notified) {
+    // Call NotifyObserver() without icon information, unless
+    // GetActivityIcons has already called it. Otherwise if we delay the
+    // notification waiting for all icons, context menu may flicker.
     NotifyObserver(nullptr);
   }
 }
