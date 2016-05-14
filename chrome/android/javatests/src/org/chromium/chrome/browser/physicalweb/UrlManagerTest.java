@@ -69,6 +69,23 @@ public class UrlManagerTest extends InstrumentationTestCase {
     }
 
     @SmallTest
+    public void testAddUrlAfterClearUrlsWorks() {
+        addPwsResult1();
+        addPwsResult2();
+        addPwsResult1();
+        addPwsResult2();
+        mUrlManager.addUrl(URL1);
+        mUrlManager.addUrl(URL2);
+        getInstrumentation().waitForIdleSync();
+        mUrlManager.clearUrls();
+
+        // Add some more URLs...this should not crash if we cleared correctly.
+        mUrlManager.addUrl(URL1);
+        mUrlManager.addUrl(URL2);
+        getInstrumentation().waitForIdleSync();
+    }
+
+    @SmallTest
     public void testAddUrlWhileOnboardingMakesNotification() throws Exception {
         setOnboarding();
         addPwsResult1();

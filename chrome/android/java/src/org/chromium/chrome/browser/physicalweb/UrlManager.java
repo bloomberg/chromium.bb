@@ -261,6 +261,7 @@ class UrlManager {
     public void clearUrls() {
         mNearbyUrls.clear();
         mResolvedUrls.clear();
+        mUrlsSortedByTimestamp.clear();
         mUrlInfoMap.clear();
         putCachedNearbyUrls();
         putCachedResolvedUrls();
