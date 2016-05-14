@@ -224,8 +224,6 @@
 
     'chromium.gpu': {
       # These all use the 'trybot' mixins to ensure that dcheck is on.
-      'Android Debug (Nexus 5)': 'android_gn_debug_static_trybot',
-      'Android Debug (Nexus 6)': 'android_gn_debug_static_trybot',
       'GPU Mac Builder': 'swarming_gpu_tests_gyp_release_trybot',
       'GPU Mac Builder (dbg)': 'swarming_gpu_tests_gyp_debug_trybot',
       'GPU Linux Builder (dbg)': 'swarming_gpu_tests_gn_debug_trybot',
