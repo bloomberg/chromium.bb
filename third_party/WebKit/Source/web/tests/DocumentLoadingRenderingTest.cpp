@@ -301,4 +301,45 @@ TEST_F(DocumentLoadingRenderingTest, ShouldNotPaintIframeContentWithPendingSheet
     EXPECT_TRUE(frame3.contains(SimCanvas::Text));
 }
 
+TEST_F(DocumentLoadingRenderingTest, ShouldContinuePaintingWhenSheetsStartedAfterBody)
+{
+    SimRequest mainResource("https://example.com/test.html", "text/html");
+    SimRequest cssHeadResource("https://example.com/testHead.css", "text/css");
+    SimRequest cssBodyResource("https://example.com/testBody.css", "text/css");
+
+    loadURL("https://example.com/test.html");
+
+    mainResource.start();
+
+    // Still in the head, should not paint.
+    mainResource.write("<!DOCTYPE html><link rel=stylesheet href=testHead.css>");
+    EXPECT_FALSE(document().isRenderingReady());
+
+    // Sheet is streaming in, but not ready yet.
+    cssHeadResource.start();
+    cssHeadResource.write("a { color: red; }");
+    EXPECT_FALSE(document().isRenderingReady());
+
+    // Body inserted but sheet is still pending so don't paint.
+    mainResource.write("<body>");
+    EXPECT_FALSE(document().isRenderingReady());
+
+    // Sheet finished and body inserted, ok to paint.
+    cssHeadResource.finish();
+    EXPECT_TRUE(document().isRenderingReady());
+
+    // In the body, should not stop painting.
+    mainResource.write("<link rel=stylesheet href=testBody.css>");
+    EXPECT_TRUE(document().isRenderingReady());
+
+    // Finish loading the CSS resource (no change to painting).
+    cssBodyResource.complete("a { color: red; }");
+    EXPECT_TRUE(document().isRenderingReady());
+
+    // Finish the load, painting should stay enabled.
+    mainResource.finish();
+    EXPECT_TRUE(document().isRenderingReady());
+}
+
+
 } // namespace blink
