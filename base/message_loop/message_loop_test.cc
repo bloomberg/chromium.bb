@@ -662,13 +662,14 @@ void RunTest_NonNestableWithNoNesting(MessagePumpFactory factory) {
 
   TaskList order;
 
-  MessageLoop::current()->PostNonNestableTask(
+  MessageLoop::current()->task_runner()->PostNonNestableTask(
       FROM_HERE,
       Bind(&OrderedFunc, &order, 1));
-  MessageLoop::current()->PostTask(FROM_HERE,
-                                   Bind(&OrderedFunc, &order, 2));
-  MessageLoop::current()->PostTask(FROM_HERE,
-                                   Bind(&QuitFunc, &order, 3));
+  MessageLoop::current()->task_runner()->PostTask(
+      FROM_HERE,
+      Bind(&OrderedFunc, &order, 2));
+  MessageLoop::current()->task_runner()->PostTask(FROM_HERE,
+                                                  Bind(&QuitFunc, &order, 3));
   MessageLoop::current()->Run();
 
   // FIFO order.
@@ -703,20 +704,22 @@ void RunTest_NonNestableInNestedLoop(MessagePumpFactory factory) {
 
   TaskList order;
 
-  MessageLoop::current()->PostTask(
+  MessageLoop::current()->task_runner()->PostTask(
       FROM_HERE,
       Bind(&FuncThatPumps, &order, 1));
-  MessageLoop::current()->PostNonNestableTask(
+  MessageLoop::current()->task_runner()->PostNonNestableTask(
       FROM_HERE,
       Bind(&OrderedFunc, &order, 2));
-  MessageLoop::current()->PostTask(FROM_HERE,
-                                   Bind(&OrderedFunc, &order, 3));
-  MessageLoop::current()->PostTask(
+  MessageLoop::current()->task_runner()->PostTask(
+      FROM_HERE,
+      Bind(&OrderedFunc, &order, 3));
+  MessageLoop::current()->task_runner()->PostTask(
       FROM_HERE,
       Bind(&SleepFunc, &order, 4, TimeDelta::FromMilliseconds(50)));
-  MessageLoop::current()->PostTask(FROM_HERE,
-                                   Bind(&OrderedFunc, &order, 5));
-  MessageLoop::current()->PostNonNestableTask(
+  MessageLoop::current()->task_runner()->PostTask(
+      FROM_HERE,
+      Bind(&OrderedFunc, &order, 5));
+  MessageLoop::current()->task_runner()->PostNonNestableTask(
       FROM_HERE,
       Bind(&QuitFunc, &order, 6));
 

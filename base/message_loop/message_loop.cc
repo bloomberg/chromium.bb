@@ -288,12 +288,6 @@ void MessageLoop::PostDelayedTask(
   task_runner_->PostDelayedTask(from_here, task, delay);
 }
 
-void MessageLoop::PostNonNestableTask(
-    const tracked_objects::Location& from_here,
-    const Closure& task) {
-  task_runner_->PostNonNestableTask(from_here, task);
-}
-
 void MessageLoop::Run() {
   DCHECK(pump_);
   RunLoop run_loop;
@@ -673,14 +667,14 @@ bool MessageLoop::DoIdleWork() {
 void MessageLoop::DeleteSoonInternal(const tracked_objects::Location& from_here,
                                      void(*deleter)(const void*),
                                      const void* object) {
-  PostNonNestableTask(from_here, Bind(deleter, object));
+  task_runner()->PostNonNestableTask(from_here, Bind(deleter, object));
 }
 
 void MessageLoop::ReleaseSoonInternal(
     const tracked_objects::Location& from_here,
     void(*releaser)(const void*),
     const void* object) {
-  PostNonNestableTask(from_here, Bind(releaser, object));
+  task_runner()->PostNonNestableTask(from_here, Bind(releaser, object));
 }
 
 #if !defined(OS_NACL)

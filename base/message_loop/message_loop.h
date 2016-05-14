@@ -200,9 +200,6 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate {
                        const Closure& task,
                        TimeDelta delay);
 
-  void PostNonNestableTask(const tracked_objects::Location& from_here,
-                           const Closure& task);
-
   // A variant on PostTask that deletes the given object.  This is useful
   // if the object needs to live until the next run of the MessageLoop (for
   // example, deleting a RenderProcessHost from within an IPC callback is not
