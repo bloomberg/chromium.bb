@@ -34,6 +34,22 @@ Polymer({
   ],
 
   properties: {
+    /** @private */
+    pages: {
+      type: Object,
+      value: settings.PageStatus,
+      readOnly: true,
+    },
+
+    /**
+     * The curerntly displayed page.
+     * @private {!settings.PageStatus}
+     */
+    selectedPage_: {
+      type: String,
+      value: settings.PageStatus.SPINNER,
+    },
+
     /**
      * The current active route.
      */
@@ -84,7 +100,7 @@ Polymer({
         this.currentRoute.subpage.length == 1 &&
         this.currentRoute.subpage[0] == 'sync') {
       // Display loading page until the settings have been retrieved.
-      this.$.pages.selected = 'loading';
+      this.selectedPage_ = settings.PageStatus.SPINNER;
       this.browserProxy_.didNavigateToSyncPage();
     } else {
       this.browserProxy_.didNavigateAwayFromSyncPage();
@@ -97,10 +113,11 @@ Polymer({
    */
   handleSyncPrefsChanged_: function(syncPrefs) {
     this.syncPrefs = syncPrefs;
+    this.selectedPage_ = settings.PageStatus.CONFIGURE;
 
-    this.creatingNewPassphrase_ = false;
-
-    this.$.pages.selected = 'main';
+    // Hide the new passphrase box if the sync data has been encrypted.
+    if (this.syncPrefs.encryptAllData)
+      this.creatingNewPassphrase_ = false;
   },
 
   /**
@@ -177,18 +194,29 @@ Polymer({
    * @private
    */
   handlePageStatusChanged_: function(pageStatus) {
-    if (pageStatus == settings.PageStatus.DONE) {
-      if (this.currentRoute.section == 'people' &&
-          this.currentRoute.subpage.length == 1 &&
-          this.currentRoute.subpage[0] == 'sync') {
-        // Event is caught by settings-animated-pages.
-        this.fire('subpage-back');
-      }
-    } else if (pageStatus == settings.PageStatus.TIMEOUT) {
-      this.$.pages.selected = 'timeout';
-    } else if (pageStatus == settings.PageStatus.PASSPHRASE_FAILED) {
-      this.$$('#incorrectPassphraseError').hidden = false;
+    switch (pageStatus) {
+      case settings.PageStatus.SPINNER:
+      case settings.PageStatus.TIMEOUT:
+      case settings.PageStatus.CONFIGURE:
+        this.selectedPage_ = pageStatus;
+        return;
+      case settings.PageStatus.DONE:
+        if (this.currentRoute.section == 'people' &&
+            this.currentRoute.subpage.length == 1 &&
+            this.currentRoute.subpage[0] == 'sync') {
+          // Event is caught by settings-animated-pages.
+          this.fire('subpage-back');
+        }
+        return;
+      case settings.PageStatus.PASSPHRASE_FAILED:
+        if (this.selectedPage_ == this.pages.CONFIGURE &&
+            this.syncPrefs && this.syncPrefs.passphraseRequired) {
+          this.$$('#existingPassphraseInput').invalid = true;
+        }
+        return;
     }
+
+    assertNotReached();
   },
 
   /**
@@ -205,7 +233,7 @@ Polymer({
    * @private
    */
   selectedEncryptionRadio_: function() {
-    return this.syncPrefs.passphraseTypeIsCustom ?
+    return this.syncPrefs.encryptAllData || this.creatingNewPassphrase_ ?
         RadioButtonNames.ENCRYPT_WITH_PASSPHRASE :
         RadioButtonNames.ENCRYPT_WITH_GOOGLE;
   },
@@ -239,22 +267,20 @@ Polymer({
    * @private
    */
   validateCreatedPassphrases_: function() {
-    this.$$('#emptyPassphraseError').hidden = true;
-    this.$$('#mismatchedPassphraseError').hidden = true;
+    var passphraseInput = this.$$('#passphraseInput');
+    var passphraseConfirmationInput = this.$$('#passphraseConfirmationInput');
 
-    var passphrase = this.$$('#passphraseInput').value;
-    if (!passphrase) {
-      this.$$('#emptyPassphraseError').hidden = false;
-      return false;
-    }
+    var passphrase = passphraseInput.value;
+    var confirmation = passphraseConfirmationInput.value;
 
-    var confirmation = this.$$('#passphraseConfirmationInput').value;
-    if (passphrase != confirmation) {
-      this.$$('#mismatchedPassphraseError').hidden = false;
-      return false;
-    }
+    var emptyPassphrase = !passphrase;
+    var mismatchedPassphrase = passphrase != confirmation;
 
-    return true;
+    passphraseInput.invalid = emptyPassphrase;
+    passphraseConfirmationInput.invalid =
+        !emptyPassphrase && mismatchedPassphrase;
+
+    return !emptyPassphrase && !mismatchedPassphrase;
   },
 });
 

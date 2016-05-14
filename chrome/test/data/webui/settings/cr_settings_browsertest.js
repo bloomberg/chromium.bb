@@ -174,6 +174,32 @@ TEST_F('CrSettingsPeoplePageTest', 'PeoplePage', function() {
 });
 
 /**
+ * Test fixture for
+ * chrome/browser/resources/settings/people_page/sync_page.html.
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+*/
+function CrSettingsPeoplePageSyncPageTest() {}
+
+CrSettingsPeoplePageSyncPageTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://md-settings/people_page/sync_page.html',
+
+  /** @override */
+  extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
+    'test_browser_proxy.js',
+    'people_page_sync_page_test.js',
+  ]),
+};
+
+TEST_F('CrSettingsPeoplePageSyncPageTest', 'SyncPage', function() {
+  settings_people_page_sync_page.registerTests();
+  mocha.run();
+});
+
+/**
  * @constructor
  * @extends {CrSettingsBrowserTest}
  */

@@ -24,12 +24,13 @@
         width: var(--paper-input-max-width);
       }
     </style>
-    <iron-pages id="pages" selected="loading" attr-for-selected="id">
-      <div id="loading">$i18n{syncLoading}</div>
-      <div id="timeout">$i18n{syncTimeout}</div>
-      <div id="main">
+    <iron-pages id="pages" selected="[[selectedPage_]]" attr-for-selected="id">
+      <div id="[[pages.SPINNER]]">$i18n{syncLoading}</div>
+      <div id="[[pages.TIMEOUT]]">$i18n{syncTimeout}</div>
+      <div id="[[pages.CONFIGURE]]">
         <div class="settings-box first">
-          <paper-checkbox checked="{{syncPrefs.syncAllDataTypes}}"
+          <paper-checkbox id="syncAllDataTypesCheckbox"
+              checked="{{syncPrefs.syncAllDataTypes}}"
               on-change="onSyncAllDataTypesChanged_">
             $i18n{syncEverythingCheckboxLabel}
           </paper-checkbox>
@@ -110,44 +111,39 @@
           </div>
         </div>
 
-        <template is="dom-if" if="[[!syncPrefs.passphraseRequired]]">
-          <div class="list-frame">
-            <paper-radio-group id="encryptRadioGroup"
-                selected="[[selectedEncryptionRadio_(
-                    syncPrefs.passphraseTypeIsCustom)]]"
-                on-paper-radio-group-changed="onEncryptionRadioSelectionChanged_">
-              <paper-radio-button name="encrypt-with-google"
-                  class="list-item" disabled="[[syncPrefs.encryptAllData]]">
-                <span>$i18n{encryptWithGoogleCredentialsLabel}</span>
-              </paper-radio-button>
-              <paper-radio-button name="encrypt-with-passphrase"
-                  class="list-item" disabled="[[syncPrefs.encryptAllData]]">
-                <span>
-                  [[encryptWithPassphraseBody_(syncPrefs.fullEncryptionBody)]]
-                </span>
-              </paper-radio-button>
-            </paper-radio-group>
-          </div>
-        </template>
+        <div id="encryptionRadioGroupContainer" class="list-frame"
+            hidden="[[syncPrefs.passphraseRequired]]">
+          <paper-radio-group
+              selected="[[selectedEncryptionRadio_(
+                  syncPrefs.passphraseTypeIsCustom)]]"
+              on-paper-radio-group-changed="onEncryptionRadioSelectionChanged_">
+            <paper-radio-button name="encrypt-with-google"
+                class="list-item" disabled="[[syncPrefs.encryptAllData]]">
+              $i18n{encryptWithGoogleCredentialsLabel}
+            </paper-radio-button>
+            <paper-radio-button name="encrypt-with-passphrase"
+                class="list-item" disabled="[[syncPrefs.encryptAllData]]">
+              <span>
+                [[encryptWithPassphraseBody_(syncPrefs.fullEncryptionBody)]]
+              </span>
+            </paper-radio-button>
+          </paper-radio-group>
+        </div>
 
         <template is="dom-if" if="[[creatingNewPassphrase_]]">
           <div class="list-frame">
             <div id="create-password-box">
               <div>$i18n{passphraseExplanationText}</div>
               <paper-input id="passphraseInput" type="password"
-                  placeholder="$i18n{passphrasePlaceholder}">
+                  placeholder="$i18n{passphrasePlaceholder}"
+                  error-message="$i18n{emptyPassphraseError}">
               </paper-input>
               <paper-input id="passphraseConfirmationInput" type="password"
-                  placeholder="$i18n{passphraseConfirmationPlaceholder}">
+                  placeholder="$i18n{passphraseConfirmationPlaceholder}"
+                  error-message="$i18n{mismatchedPassphraseError}">
               </paper-input>
-              <div id="emptyPassphraseError" hidden>
-                $i18n{emptyPassphraseError}
-              </div>
-              <div id="mismatchedPassphraseError" hidden>
-                $i18n{mismatchedPassphraseError}
-              </div>
-              <paper-button on-tap="onSaveNewPassphraseTap_"
-                  class="action-button">
+              <paper-button id="saveNewPassphrase"
+                  on-tap="onSaveNewPassphraseTap_" class="action-button">
                 $i18n{save}
               </paper-button>
             </div>
@@ -165,13 +161,11 @@
               [[syncPrefs.enterGooglePassphraseBody]]
             </div>
             <paper-input id="existingPassphraseInput" type="password"
-                placeholder="$i18n{passphrasePlaceholder}">
+                placeholder="$i18n{passphrasePlaceholder}"
+                error-message="$i18n{incorrectPassphraseError}">
             </paper-input>
-            <div id="incorrectPassphraseError" hidden>
-              $i18n{incorrectPassphraseError}
-            </div>
-            <paper-button on-tap="onSubmitExistingPassphraseTap_"
-                class="action-button">
+            <paper-button id="submitExistingPassphrase"
+                on-tap="onSubmitExistingPassphraseTap_" class="action-button">
               $i18n{submitPassphraseButton}
             </paper-button>
           </div>

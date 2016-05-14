@@ -60,7 +60,6 @@ settings.SyncStatus;
  *   preferencesSynced: boolean,
  *   setNewPassphrase: (boolean|undefined),
  *   syncAllDataTypes: boolean,
- *   syncNothing: boolean,
  *   tabsEnforced: boolean,
  *   tabsRegistered: boolean,
  *   tabsSynced: boolean,
