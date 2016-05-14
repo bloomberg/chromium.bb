@@ -1940,9 +1940,15 @@ void AXLayoutObject::setSelection(const AXRange& selection)
     if (!frame)
         return;
 
-    frame->selection().setSelection(VisibleSelection(
-        Position(anchorNode, selection.anchorOffset),
-        Position(focusNode, selection.focusOffset)));
+    // Set the selection based on visible positions, because the offsets in accessibility nodes
+    // are based on visible indexes, which often skips redundant whitespace, for example.
+    VisiblePosition anchorVisiblePosition = anchorNode->isTextNode()
+        ? blink::visiblePositionForIndex(selection.anchorOffset, anchorNode->parentNode())
+        : createVisiblePosition(Position(anchorNode, selection.anchorOffset));
+    VisiblePosition focusVisiblePosition = focusNode->isTextNode()
+        ? blink::visiblePositionForIndex(selection.focusOffset, focusNode->parentNode())
+        : createVisiblePosition(Position(focusNode, selection.focusOffset));
+    frame->selection().setSelection(VisibleSelection(anchorVisiblePosition, focusVisiblePosition));
 }
 
 bool AXLayoutObject::isValidSelectionBound(const AXObject* boundObject) const

@@ -281,7 +281,7 @@ int indexForVisiblePosition(const VisiblePosition&, ContainerNode*& scope);
 EphemeralRange makeRange(const VisiblePosition&, const VisiblePosition&);
 EphemeralRange normalizeRange(const EphemeralRange&);
 EphemeralRangeInFlatTree normalizeRange(const EphemeralRangeInFlatTree&);
-VisiblePosition visiblePositionForIndex(int index, ContainerNode* scope);
+CORE_EXPORT VisiblePosition visiblePositionForIndex(int index, ContainerNode* scope);
 
 // -------------------------------------------------------------------------
 // HTMLElement
