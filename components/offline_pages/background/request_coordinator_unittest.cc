@@ -8,8 +8,10 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/offline_pages/background/offliner.h"
 #include "components/offline_pages/background/offliner_factory.h"
 #include "components/offline_pages/background/offliner_policy.h"
 #include "components/offline_pages/background/request_queue.h"
@@ -46,6 +48,30 @@ class SchedulerStub : public Scheduler {
  private:
   bool schedule_called_;
   bool unschedule_called_;
+};
+
+class OfflinerStub : public Offliner {
+  bool LoadAndSave(const SavePageRequest& request,
+                   const CompletionCallback& callback) override {
+    // Post the callback on the run loop.
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(callback, request, Offliner::SAVED));
+    return true;
+  }
+
+  // Clears the currently processing request, if any.
+  void Cancel() override {}
+};
+
+class OfflinerFactoryStub : public OfflinerFactory {
+ public:
+  Offliner* GetOffliner(const OfflinerPolicy* policy) override {
+    offliner_.reset(new OfflinerStub());
+    return offliner_.get();
+  }
+
+ private:
+  std::unique_ptr<Offliner> offliner_;
 };
 
 class RequestCoordinatorTest
@@ -95,7 +121,7 @@ RequestCoordinatorTest::~RequestCoordinatorTest() {}
 
 void RequestCoordinatorTest::SetUp() {
   std::unique_ptr<OfflinerPolicy> policy(new OfflinerPolicy());
-  std::unique_ptr<OfflinerFactory> factory;
+  std::unique_ptr<OfflinerFactory> factory(new OfflinerFactoryStub());
   std::unique_ptr<RequestQueueInMemoryStore>
       store(new RequestQueueInMemoryStore());
   std::unique_ptr<RequestQueue> queue(new RequestQueue(std::move(store)));
@@ -132,10 +158,10 @@ TEST_F(RequestCoordinatorTest, SavePageLater) {
       base::Bind(&RequestCoordinatorTest::GetRequestsDone,
                  base::Unretained(this)));
 
-  // Wait for callback to finish.
+  // Wait for callbacks to finish, both request queue and offliner.
   PumpLoop();
 
-  // Check the results are as expected.
+  // Check the request queue is as expected.
   EXPECT_EQ(1UL, last_requests().size());
   EXPECT_EQ(kUrl, last_requests()[0].url());
   EXPECT_EQ(kClientId, last_requests()[0].client_id());
@@ -144,6 +170,11 @@ TEST_F(RequestCoordinatorTest, SavePageLater) {
   SchedulerStub* scheduler_stub = reinterpret_cast<SchedulerStub*>(
       coordinator()->GetSchedulerForTesting());
   EXPECT_TRUE(scheduler_stub->schedule_called());
+
+  // Check that the offliner callback got a response.
+  EXPECT_EQ(Offliner::SAVED, coordinator()->last_offlining_status());
+
+  // TODO(petewil): Expect that the scheduler got notified.
 }
 
 }  // namespace offline_pages

@@ -21,6 +21,7 @@ class Offliner {
     CANCELED = 1,
     FAILED_CONSIDER_RETRY = 2,
     FAILED_DO_NOT_RETRY = 3,
+    UNKNOWN = 4,
   };
 
   // Reports the completion status of a request.

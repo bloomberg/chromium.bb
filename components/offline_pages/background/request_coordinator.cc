@@ -15,13 +15,15 @@
 
 namespace offline_pages {
 
-RequestCoordinator::RequestCoordinator(
-    std::unique_ptr<OfflinerPolicy> policy,
-    std::unique_ptr<OfflinerFactory> factory,
-    std::unique_ptr<RequestQueue> queue,
-    std::unique_ptr<Scheduler> scheduler)
-    :   policy_(std::move(policy)), factory_(std::move(factory)),
-        queue_(std::move(queue)), scheduler_(std::move(scheduler)) {
+RequestCoordinator::RequestCoordinator(std::unique_ptr<OfflinerPolicy> policy,
+                                       std::unique_ptr<OfflinerFactory> factory,
+                                       std::unique_ptr<RequestQueue> queue,
+                                       std::unique_ptr<Scheduler> scheduler)
+    : policy_(std::move(policy)),
+      factory_(std::move(factory)),
+      queue_(std::move(queue)),
+      scheduler_(std::move(scheduler)),
+      last_offlining_status_(Offliner::UNKNOWN) {
   DCHECK(policy_ != nullptr);
 }
 
@@ -45,6 +47,10 @@ bool RequestCoordinator::SavePageLater(
                                 AsWeakPtr()));
   // TODO: Do I need to persist the request in case the add fails?
 
+  // TODO(petewil): Eventually we will wait for the StartProcessing callback,
+  // but for now just kick start the request so we can test the wiring.
+  SendRequestToOffliner(request);
+
   return true;
 }
 
@@ -65,6 +71,28 @@ bool RequestCoordinator::StartProcessing(
 }
 
 void RequestCoordinator::StopProcessing() {
+}
+
+void RequestCoordinator::SendRequestToOffliner(SavePageRequest& request) {
+  // TODO(petewil): When we have multiple offliners, we need to pick one.
+  Offliner* offliner = factory_->GetOffliner(policy_.get());
+  if (!offliner) {
+    LOG(ERROR) << "Unable to create Prerendering Offliner. "
+               << "Cannot background offline page.";
+    return;
+  }
+
+  // Start the load and save process in the prerenderer (Async).
+  offliner->LoadAndSave(
+      request,
+      base::Bind(&RequestCoordinator::OfflinerDoneCallback, AsWeakPtr()));
+}
+
+void RequestCoordinator::OfflinerDoneCallback(
+    const SavePageRequest& request,
+    Offliner::CompletionStatus status) {
+  DVLOG(2) << "prerenderer finished, status " << status << ", " << __FUNCTION__;
+  last_offlining_status_ = status;
 }
 
 }  // namespace offline_pages

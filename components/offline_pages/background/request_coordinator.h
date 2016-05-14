@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/offline_pages/background/offliner.h"
 #include "components/offline_pages/background/request_queue.h"
 #include "url/gurl.h"
 
@@ -58,10 +59,21 @@ class RequestCoordinator :
 
   Scheduler* GetSchedulerForTesting() { return scheduler_.get(); }
 
+  // Returns the status of the most recent offlining.
+  Offliner::CompletionStatus last_offlining_status() {
+    return last_offlining_status_;
+  }
+
  private:
   void AddRequestResultCallback(RequestQueue::AddRequestResult result,
                                 const SavePageRequest& request);
-  // OfflinerPolicy.  Used to store policies. Owned.
+
+  void SendRequestToOffliner(SavePageRequest& request);
+
+  void OfflinerDoneCallback(const SavePageRequest& request,
+                            Offliner::CompletionStatus status);
+
+  // RequestCoordinator takes over ownership of the policy
   std::unique_ptr<OfflinerPolicy> policy_;
   // OfflinerFactory.  Used to create offline pages. Owned.
   std::unique_ptr<OfflinerFactory> factory_;
@@ -69,6 +81,8 @@ class RequestCoordinator :
   std::unique_ptr<RequestQueue> queue_;
   // Scheduler. Used to request a callback when network is available.  Owned.
   std::unique_ptr<Scheduler> scheduler_;
+  // Status of the most recent offlining.
+  Offliner::CompletionStatus last_offlining_status_;
 
   DISALLOW_COPY_AND_ASSIGN(RequestCoordinator);
 };
