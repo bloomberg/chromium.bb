@@ -190,7 +190,7 @@ void Link::SetUnderline(bool underline) {
 void Link::Init() {
   listener_ = NULL;
   pressed_ = false;
-  underline_ = true;
+  underline_ = !ui::MaterialDesignController::IsSecondaryUiMaterial();
   RecalculateFont();
 
   // Label::Init() calls SetText(), but if that's being called from Label(), our
