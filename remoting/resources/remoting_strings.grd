@@ -708,6 +708,9 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
       <message desc="Confirmation prompt shown when a user attempts to delete a Me2Me host from their host list." name="IDS_CONFIRM_HOST_DELETE">
         Are you sure you want to disable remote connections to <ph name="HOSTNAME">$1<ex>My Linux desktop</ex></ph>? If you change your mind, you'll need to visit that computer to re-enable connections.
       </message>
+      <message desc="Confirmation prompt shown when a user attempts remove or deactivate a machine from the list of their remotely-accessible machines." name="IDS_CONFIRM_HOST_DELETE_ANDROID" formatter_data="android_java">
+        Are you sure you want to disable remote connections to <ph name="HOSTNAME">%1$s<ex>My Linux desktop</ex></ph>?
+      </message>
       <message desc="Column header in the connection history table showing the email address of the client end of the connection (the initiator) which may be this or another computer." name="IDS_CONNECTION_FROM_HEADER">
         From
       </message>
@@ -1112,6 +1115,9 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
       </message>
       <message desc="Link to allow a host's paired clients to be viewed or edited." name="IDS_HOME_DAEMON_MANAGE_PAIRINGS">
         View/edit
+      </message>
+      <message desc="This text is used on a button or context-menu or similar control. When chosen or pressed, it deletes a selected item from a list." meaning="Delete an item from a list." name="IDS_DELETE_LIST_ITEM" formatter_data="android_java">
+        Delete
       </message>
       <message desc="Link to delete a specific paired client." name="IDS_DELETE_PAIRED_CLIENT">
         Delete

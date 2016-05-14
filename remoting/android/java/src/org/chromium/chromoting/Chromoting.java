@@ -20,6 +20,7 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.ContextMenu;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -184,6 +185,7 @@ public class Chromoting extends AppCompatActivity implements ConnectionListener,
 
         // Get ahold of our view widgets.
         mHostListView = (ListView) findViewById(R.id.hostList_chooser);
+        registerForContextMenu(mHostListView);
         mEmptyView = findViewById(R.id.hostList_empty);
         mHostListView.setOnItemClickListener(
                 new AdapterView.OnItemClickListener() {
@@ -395,6 +397,35 @@ public class Chromoting extends AppCompatActivity implements ConnectionListener,
         mDrawerToggle.onConfigurationChanged(newConfig);
     }
 
+    private static int getHostIndexForMenu(ContextMenu.ContextMenuInfo menuInfo) {
+        return ((AdapterView.AdapterContextMenuInfo) menuInfo).position;
+    }
+
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v,
+            ContextMenu.ContextMenuInfo menuInfo) {
+        super.onCreateContextMenu(menu, v, menuInfo);
+        if (v.getId() == R.id.hostList_chooser) {
+            getMenuInflater().inflate(R.menu.host_context_menu, menu);
+            HostInfo info = mHosts[getHostIndexForMenu(menuInfo)];
+            menu.setHeaderTitle(info.name);
+        }
+    }
+
+    @Override
+    public boolean onContextItemSelected(MenuItem item) {
+        int itemId = item.getItemId();
+        int hostIndex = getHostIndexForMenu(item.getMenuInfo());
+        if (itemId == R.id.connect) {
+            onHostClicked(hostIndex);
+        } else if (itemId == R.id.delete) {
+            onDeleteHostClicked(hostIndex);
+        } else {
+            return false;
+        }
+        return true;
+    }
+
     /** Called to initialize the action bar. */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -430,6 +461,24 @@ public class Chromoting extends AppCompatActivity implements ConnectionListener,
     @Override
     public void onClick(View view) {
         HelpSingleton.getInstance().launchHelp(this, HelpContext.HOST_SETUP);
+    }
+
+    private void onDeleteHostClicked(int hostIndex) {
+        HostInfo hostInfo = mHosts[hostIndex];
+        final String hostId = hostInfo.id;
+        String message = getString(R.string.confirm_host_delete_android, hostInfo.name);
+        new AlertDialog.Builder(this)
+                .setMessage(message)
+                .setPositiveButton(android.R.string.yes,
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                deleteHost(hostId);
+                                dialog.dismiss();
+                            }
+                        })
+                .setNegativeButton(android.R.string.no, null)
+                .create().show();
     }
 
     /** Called when the user taps on a host entry. */
