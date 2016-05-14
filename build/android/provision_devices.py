@@ -369,16 +369,16 @@ def FinishProvisioning(device, options):
   def _set_and_verify_date():
     if device.build_version_sdk >= version_codes.MARSHMALLOW:
       date_format = '%m%d%H%M%Y.%S'
-      set_date_command = ['date']
+      set_date_command = ['date', '-u']
     else:
       date_format = '%Y%m%d.%H%M%S'
-      set_date_command = ['date', '-s']
+      set_date_command = ['date', '-u', '-s']
     strgmtime = time.strftime(date_format, time.gmtime())
     set_date_command.append(strgmtime)
     device.RunShellCommand(set_date_command, as_root=True, check_return=True)
 
     device_time = device.RunShellCommand(
-        ['date', '+"%Y%m%d.%H%M%S"'], as_root=True,
+        ['date', '-u', '+"%Y%m%d.%H%M%S"'], as_root=True,
         single_line=True).replace('"', '')
     device_time = datetime.datetime.strptime(device_time, "%Y%m%d.%H%M%S")
     correct_time = datetime.datetime.strptime(strgmtime, date_format)
