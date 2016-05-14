@@ -4,8 +4,11 @@
 
 import("//build/config/android/config.gni")
 import("//build/config/sanitizers/sanitizers.gni")
+import("//build/config/sysroot.gni")
 
 assert(is_android)
+
+use_gold = current_cpu == "x86" || current_cpu == "x64" || current_cpu == "arm"
 
 # This is included by reference in the //build/config/compiler config that
 # is applied to all targets. It is here to separate out the logic that is
@@ -22,7 +25,12 @@ config("compiler") {
     # does. Define them here instead.
     "HAVE_SYS_UIO_H",
   ]
+  ldflags = []
 
+  if (!is_clang) {
+    # Clang doesn't support these flags.
+    cflags += [ "-finline-limit=64" ]
+  }
   if (is_clang) {
     rebased_android_toolchain_root =
         rebase_path(android_toolchain_root, root_build_dir)
@@ -34,12 +42,29 @@ config("compiler") {
         "-B${rebased_android_toolchain_root}/bin",  # Else /usr/bin/as gets picked up.
       ]
     }
-  } else {
-    # Clang doesn't support these flags.
-    cflags += [ "-finline-limit=64" ]
   }
 
-  ldflags = [
+  # Use gold for Android for most CPU architectures.
+  if (use_gold) {
+    ldflags += [ "-fuse-ld=gold" ]
+    if (is_clang) {
+      # Let clang find the ld.gold in the NDK.
+      ldflags += [ "--gcc-toolchain=$rebased_android_toolchain_root" ]
+    }
+
+    # Use -mstackrealign due to a bug on ia32 Jelly Bean.
+    # See crbug.com/521527
+    if (current_cpu == "x86") {
+      cflags += [ "-mstackrealign" ]
+    }
+  }
+
+  if (current_cpu == "mipsel" && is_clang) {
+    # Let clang find the ld.bfd in the NDK.
+    ldflags += [ "--gcc-toolchain=$rebased_android_toolchain_root" ]
+  }
+
+  ldflags += [
     "-Wl,--build-id=sha1",
     "-Wl,--no-undefined",
 
@@ -53,6 +78,12 @@ config("compiler") {
     # http://crbug.com/448386
     "-Wl,--exclude-libs=libvpx_assembly_arm.a",
   ]
+  if (current_cpu == "arm" && !use_order_profiling) {
+    ldflags += [
+      # Enable identical code folding to reduce size.
+      "-Wl,--icf=all",
+    ]
+  }
 
   if (is_clang) {
     if (current_cpu == "arm") {
@@ -150,6 +181,12 @@ config("executable_config") {
   cflags = [ "-fPIE" ]
   asmflags = [ "-fPIE" ]
   ldflags = [ "-pie" ]
+
+  if (!use_gold) {
+    # ld needs help finding libraries when linking.
+    _rebased_sysroot = rebase_path(sysroot, root_build_dir)
+    ldflags += [ "-Wl,-rpath-link=.:$_rebased_sysroot/usr/lib" ]
+  }
 }
 
 config("hide_native_jni_exports") {
