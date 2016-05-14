@@ -502,7 +502,7 @@ class GpuProcessTestsStorySet(story_set_module.StorySet):
 
   """ Tests that accelerated content triggers the creation of a GPU process """
 
-  def __init__(self, expectations):
+  def __init__(self, expectations, is_platform_android):
     super(GpuProcessTestsStorySet, self).__init__(
       serving_dirs=set(['../../../../content/test/data']))
 
@@ -522,8 +522,8 @@ class GpuProcessTestsStorySet(story_set_module.StorySet):
     self.AddStory(GpuInfoCompletePage(self, expectations))
     self.AddStory(NoGpuProcessPage(self, expectations))
     self.AddStory(SoftwareGpuProcessPage(self, expectations))
-    #TODO(cblume): no good way to skip this test. crbug.com/611629
-    #self.AddStory(SkipGpuProcessPage(self, expectations))
+    if not is_platform_android:
+      self.AddStory(SkipGpuProcessPage(self, expectations))
     self.AddStory(DriverBugWorkaroundsInGpuProcessPage(self, expectations))
     self.AddStory(IdentifyActiveGpuPage1(self, expectations))
     self.AddStory(IdentifyActiveGpuPage2(self, expectations))
