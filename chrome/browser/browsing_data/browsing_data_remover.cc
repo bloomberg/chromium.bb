@@ -1004,8 +1004,9 @@ void BrowsingDataRemover::RemoveImpl(
                    weak_ptr_factory_.GetWeakPtr()));
   }
 
-  if ((remove_mask & REMOVE_OFFLINE_PAGE_DATA) &&
-      offline_pages::IsOfflinePagesEnabled()) {
+  // For now we're considering offline pages as cache, so if we're removing
+  // cache we should remove offline pages as well.
+  if ((remove_mask & REMOVE_CACHE) && offline_pages::IsOfflinePagesEnabled()) {
     waiting_for_clear_offline_page_data_ = true;
     offline_pages::OfflinePageModelFactory::GetForBrowserContext(profile_)
         ->DeletePagesByURLPredicate(

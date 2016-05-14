@@ -114,7 +114,6 @@ class BrowsingDataRemover : public KeyedService
     REMOVE_CACHE_STORAGE = 1 << 18,
 #if BUILDFLAG(ANDROID_JAVA_UI)
     REMOVE_WEBAPP_DATA = 1 << 19,
-    REMOVE_OFFLINE_PAGE_DATA = 1 << 20,
 #endif
     // The following flag is used only in tests. In normal usage, hosted app
     // data is controlled by the REMOVE_COOKIES flag, applied to the
@@ -135,7 +134,6 @@ class BrowsingDataRemover : public KeyedService
                        REMOVE_SITE_USAGE_DATA |
 #if BUILDFLAG(ANDROID_JAVA_UI)
                        REMOVE_WEBAPP_DATA |
-                       REMOVE_OFFLINE_PAGE_DATA |
 #endif
                        REMOVE_WEBRTC_IDENTITY,
 
