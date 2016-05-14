@@ -123,7 +123,10 @@ TEST_P(ActiveMapRefreshTest, Test) {
   ASSERT_NO_FATAL_FAILURE(RunLoop(&video));
 }
 
-AV1_INSTANTIATE_TEST_CASE(ActiveMapRefreshTest,
-                          ::testing::Values(::libaom_test::kRealTime),
-                          ::testing::Range(5, 6));
+INSTANTIATE_TEST_CASE_P(
+    DISABLED_AV1, ActiveMapRefreshTest,
+    ::testing::Combine(
+        ::testing::Values(
+            static_cast<const libaom_test::CodecFactory *>(&libaom_test::kAV1)),
+        ::testing::Values(::libaom_test::kRealTime), ::testing::Range(5, 6)));
 }  // namespace
