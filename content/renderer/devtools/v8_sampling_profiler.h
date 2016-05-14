@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/threading/thread_checker.h"
 #include "base/trace_event/trace_log.h"
 #include "content/common/content_export.h"
 
@@ -39,6 +40,7 @@ class CONTENT_EXPORT V8SamplingProfiler final
   std::unique_ptr<base::WaitableEvent> waitable_event_for_testing_;
   std::unique_ptr<V8SamplingThread> sampling_thread_;
   std::unique_ptr<Sampler> render_thread_sampler_;
+  base::ThreadChecker thread_checker_;
   base::WeakPtrFactory<V8SamplingProfiler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(V8SamplingProfiler);

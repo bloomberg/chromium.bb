@@ -581,6 +581,7 @@ V8SamplingProfiler::V8SamplingProfiler(bool underTest)
       render_thread_sampler_(Sampler::CreateForCurrentThread()),
       weak_factory_(this) {
   DCHECK(underTest || RenderThreadImpl::current());
+  DCHECK(thread_checker_.CalledOnValidThread());
   // Force the "v8.cpu_profile*" categories to show up in the trace viewer.
   TraceLog::GetCategoryGroupEnabled(
       TRACE_DISABLED_BY_DEFAULT("v8.cpu_profile"));
@@ -591,18 +592,21 @@ V8SamplingProfiler::V8SamplingProfiler(bool underTest)
 }
 
 V8SamplingProfiler::~V8SamplingProfiler() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   TraceLog::GetInstance()->RemoveAsyncEnabledStateObserver(this);
   DCHECK(!sampling_thread_.get());
 }
 
 void V8SamplingProfiler::StartSamplingThread() {
   DCHECK(!sampling_thread_.get());
+  DCHECK(thread_checker_.CalledOnValidThread());
   sampling_thread_.reset(new V8SamplingThread(
       render_thread_sampler_.get(), waitable_event_for_testing_.get()));
   sampling_thread_->Start();
 }
 
 void V8SamplingProfiler::StopSamplingThread() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (!sampling_thread_.get())
     return;
   sampling_thread_->Stop();
