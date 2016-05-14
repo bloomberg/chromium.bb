@@ -544,12 +544,14 @@ if (is_linux && !is_chromeos) {
 # not reference these.
 
 static_library("cast_sender") {
+  complete_static_lib = true
   deps = [
     ":sender",
   ]
 }
 
 static_library("cast_receiver") {
+  complete_static_lib = true
   deps = [
     ":receiver",
   ]

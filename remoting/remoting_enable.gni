@@ -10,6 +10,7 @@ enable_remoting_host = false
 enable_me2me_host = false
 
 # TODO(GYP) Make remoting hosts work on Mac.
+# TODO(gyp): Enable once https://crbug.com/611859 is fixed.
 #if (is_mac) {
 #  enable_remoting_host = true
 #  enable_me2me_host = true

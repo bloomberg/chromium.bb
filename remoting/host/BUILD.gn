@@ -68,7 +68,10 @@ action("credits") {
   ]
 }
 
-if (is_mac) {  # TODO(GYP) Mac build of remoting host.
+if (is_mac) {
+  # TODO(GYP) Mac build of remoting host, https://crbug.com/611859
+  # If you fix this, also enable in //remoting/remoting_enable.gni
+  # on mac.
   group("host") {
   }
   group("test_support") {
