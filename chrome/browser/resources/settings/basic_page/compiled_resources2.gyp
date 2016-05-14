@@ -7,7 +7,6 @@
       'target_name': 'basic_page',
       'dependencies': [
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:load_time_data',
-        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:i18n_behavior',
         '../settings_page/compiled_resources2.gyp:main_page_behavior',
         '../settings_page/compiled_resources2.gyp:settings_page_visibility',
         '../settings_page/compiled_resources2.gyp:settings_router',

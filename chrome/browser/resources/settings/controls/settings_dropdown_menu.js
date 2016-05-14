@@ -75,7 +75,6 @@ Polymer({
   },
 
   behaviors: [
-    I18nBehavior,
     PrefControlBehavior,
   ],
 

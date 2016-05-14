@@ -5,19 +5,11 @@
 /**
  * @fileoverview
  * 'settings-people-page' is the settings page containing sign-in settings.
- *
- * Example:
- *
- *    <iron-animated-pages>
- *      <settings-people-page prefs="{{prefs}}"></settings-people-page>
- *      ... other pages ...
- *    </iron-animated-pages>
  */
 Polymer({
   is: 'settings-people-page',
 
   behaviors: [
-    I18nBehavior,
     WebUIListenerBehavior,
   ],
 

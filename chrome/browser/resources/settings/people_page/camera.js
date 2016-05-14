@@ -21,10 +21,6 @@ var CAPTURE_SIZE = {
 Polymer({
   is: 'settings-camera',
 
-  behaviors: [
-    I18nBehavior,
-  ],
-
   properties: {
     /**
      * True if the user has selected the camera as the user image source.

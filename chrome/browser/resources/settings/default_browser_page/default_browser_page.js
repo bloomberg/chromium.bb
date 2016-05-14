@@ -6,14 +6,6 @@
  * @fileoverview
  * 'settings-default-browser-page' is the settings page that contains
  * settings to change the default browser (i.e. which the OS will open).
- *
- * Example:
- *
- *   <iron-animated-pages>
- *     <settings-default-browser-page>
- *     </settings-default-browser-page>
- *     ... other pages ...
- *   </iron-animated-pages>
  */
 Polymer({
   is: 'settings-default-browser-page',
@@ -58,10 +50,6 @@ Polymer({
       type: Boolean,
     },
   },
-
-  behaviors: [
-    I18nBehavior,
-  ],
 
   ready: function() {
     var self = this;

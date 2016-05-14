@@ -5,18 +5,11 @@
 /**
  * @fileoverview
  * 'settings-basic-page' is the settings page containing the basic settings.
- *
- * Example:
- *
- *    <iron-animated-pages>
- *      <settings-basic-page prefs="{{prefs}}"></settings-basic-page>
- *      ... other pages ...
- *    </iron-animated-pages>
  */
 Polymer({
   is: 'settings-basic-page',
 
-  behaviors: [I18nBehavior, SettingsPageVisibility, RoutableBehavior],
+  behaviors: [SettingsPageVisibility, RoutableBehavior],
 
   properties: {
     /**

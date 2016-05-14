@@ -6,21 +6,9 @@
  * @fileoverview
  * 'settings-privacy-page' is the settings page containing privacy and
  * security settings.
- *
- * Example:
- *
- *    <iron-animated-pages>
- *      <settings-privacy-page prefs="{{prefs}}">
- *      </settings-privacy-page>
- *      ... other pages ...
- *    </iron-animated-pages>
  */
 Polymer({
   is: 'settings-privacy-page',
-
-  behaviors: [
-    I18nBehavior,
-  ],
 
   properties: {
     /**

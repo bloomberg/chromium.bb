@@ -122,7 +122,6 @@ Polymer({
   is: 'settings-passwords-and-forms-page',
 
   behaviors: [
-    I18nBehavior,
     PrefsBehavior,
   ],
 

@@ -8,7 +8,6 @@
       'dependencies': [
         '<(DEPTH)/ui/webui/resources/cr_elements/network/compiled_resources2.gyp:cr_onc_types',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
-        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:i18n_behavior',
         '<(INTERFACES_GYP):networking_private_interface',
         '../settings_page/compiled_resources2.gyp:settings_animated_pages',
       ],
