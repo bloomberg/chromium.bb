@@ -329,7 +329,7 @@ void AddClipNodeIfNeeded(const DataForRecursion<LayerType>& data_from_ancestor,
     data_for_children->clip_tree_parent =
         data_for_children->property_trees->clip_tree.Insert(node, parent_id);
     data_for_children->property_trees->clip_id_to_index_map[layer->id()] =
-        node.id;
+        data_for_children->clip_tree_parent;
   }
 
   layer->SetClipTreeIndex(data_for_children->clip_tree_parent);
@@ -845,7 +845,7 @@ bool AddEffectNodeIfNeeded(
       data_for_children->property_trees->effect_tree.Insert(node, parent_id);
   layer->SetEffectTreeIndex(data_for_children->effect_tree_parent);
   data_for_children->property_trees->effect_id_to_index_map[layer->id()] =
-      node.id;
+      data_for_children->effect_tree_parent;
   if (should_create_render_surface) {
     data_for_children->compound_transform_since_render_target =
         gfx::Transform();
@@ -925,7 +925,7 @@ void AddScrollNodeIfNeeded(
     data_for_children->scroll_tree_parent_created_by_uninheritable_criteria =
         scroll_node_uninheritable_criteria;
     data_for_children->property_trees->scroll_id_to_index_map[layer->id()] =
-        node.id;
+        data_for_children->scroll_tree_parent;
 
     if (node.data.scrollable) {
       data_for_children->property_trees->scroll_tree.SetBaseScrollOffset(

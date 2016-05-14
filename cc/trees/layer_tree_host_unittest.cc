@@ -720,25 +720,46 @@ class LayerTreeHostTestPushNodeOwnerToNodeIdMap : public LayerTreeHostTest {
 
   void CommitCompleteOnThread(LayerTreeHostImpl* impl) override {
     PropertyTrees* property_trees = impl->sync_tree()->property_trees();
+    auto root_transform_id_to_index =
+        property_trees->transform_id_to_index_map.find(root_->id());
+    auto child_transform_id_to_index =
+        property_trees->transform_id_to_index_map.find(child_->id());
+    auto root_effect_id_to_index =
+        property_trees->effect_id_to_index_map.find(root_->id());
+    auto child_effect_id_to_index =
+        property_trees->effect_id_to_index_map.find(child_->id());
+    auto root_clip_id_to_index =
+        property_trees->clip_id_to_index_map.find(root_->id());
+    auto child_clip_id_to_index =
+        property_trees->clip_id_to_index_map.find(child_->id());
+    auto root_scroll_id_to_index =
+        property_trees->scroll_id_to_index_map.find(root_->id());
+    auto child_scroll_id_to_index =
+        property_trees->scroll_id_to_index_map.find(child_->id());
     switch (impl->sync_tree()->source_frame_number()) {
       case 0:
         // root_ should create every property tree node and child_ should not
         // create any.
-        EXPECT_NE(property_trees->transform_id_to_index_map.find(root_->id()),
+        EXPECT_NE(root_transform_id_to_index,
                   property_trees->transform_id_to_index_map.end());
-        EXPECT_NE(property_trees->effect_id_to_index_map.find(root_->id()),
+        EXPECT_EQ(root_transform_id_to_index->second,
+                  root_->transform_tree_index());
+        EXPECT_NE(root_effect_id_to_index,
                   property_trees->effect_id_to_index_map.end());
-        EXPECT_NE(property_trees->clip_id_to_index_map.find(root_->id()),
+        EXPECT_EQ(root_effect_id_to_index->second, root_->effect_tree_index());
+        EXPECT_NE(root_clip_id_to_index,
                   property_trees->clip_id_to_index_map.end());
-        EXPECT_NE(property_trees->scroll_id_to_index_map.find(root_->id()),
+        EXPECT_EQ(root_clip_id_to_index->second, root_->clip_tree_index());
+        EXPECT_NE(root_scroll_id_to_index,
                   property_trees->scroll_id_to_index_map.end());
-        EXPECT_EQ(property_trees->transform_id_to_index_map.find(child_->id()),
+        EXPECT_EQ(root_scroll_id_to_index->second, root_->scroll_tree_index());
+        EXPECT_EQ(child_transform_id_to_index,
                   property_trees->transform_id_to_index_map.end());
-        EXPECT_EQ(property_trees->effect_id_to_index_map.find(child_->id()),
+        EXPECT_EQ(child_effect_id_to_index,
                   property_trees->effect_id_to_index_map.end());
-        EXPECT_EQ(property_trees->clip_id_to_index_map.find(child_->id()),
+        EXPECT_EQ(child_clip_id_to_index,
                   property_trees->clip_id_to_index_map.end());
-        EXPECT_EQ(property_trees->scroll_id_to_index_map.find(child_->id()),
+        EXPECT_EQ(child_scroll_id_to_index,
                   property_trees->scroll_id_to_index_map.end());
         break;
       case 1:
@@ -746,10 +767,15 @@ class LayerTreeHostTestPushNodeOwnerToNodeIdMap : public LayerTreeHostTest {
         // node.
         EXPECT_NE(property_trees->transform_id_to_index_map.find(child_->id()),
                   property_trees->transform_id_to_index_map.end());
+        EXPECT_EQ(child_transform_id_to_index->second,
+                  child_->transform_tree_index());
         EXPECT_NE(property_trees->effect_id_to_index_map.find(child_->id()),
                   property_trees->effect_id_to_index_map.end());
+        EXPECT_EQ(child_effect_id_to_index->second,
+                  child_->effect_tree_index());
         EXPECT_NE(property_trees->clip_id_to_index_map.find(child_->id()),
                   property_trees->clip_id_to_index_map.end());
+        EXPECT_EQ(child_clip_id_to_index->second, child_->clip_tree_index());
         EXPECT_EQ(property_trees->scroll_id_to_index_map.find(child_->id()),
                   property_trees->scroll_id_to_index_map.end());
         break;
@@ -757,6 +783,8 @@ class LayerTreeHostTestPushNodeOwnerToNodeIdMap : public LayerTreeHostTest {
         // child_ should create a scroll node.
         EXPECT_NE(property_trees->scroll_id_to_index_map.find(child_->id()),
                   property_trees->scroll_id_to_index_map.end());
+        EXPECT_EQ(child_scroll_id_to_index->second,
+                  child_->scroll_tree_index());
         break;
       case 3:
         // child_ should not create any property tree nodes.
