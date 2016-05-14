@@ -181,7 +181,7 @@ TEST_F('SettingsBluetoothPageBrowserTest', 'MAYBE_Bluetooth', function() {
           self.bluetoothPrivateApi_.connectedDevices_.keys().next().value;
 
       // Close the dialog.
-      var close = dialog.$$('#closePair');
+      var close = dialog.$.dialog.getCloseButton();
       assertTrue(!!close);
       MockInteractions.tap(close);
       Polymer.dom.flush();

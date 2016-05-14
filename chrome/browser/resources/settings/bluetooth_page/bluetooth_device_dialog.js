@@ -65,9 +65,6 @@ settings.BluetoothAddDeviceBehavior = {
     this.fire('device-event', e.detail);
     /** @type {Event} */(e).stopPropagation();
   },
-
-  /** @private */
-  onAddCancelTap_: function() { this.fire('close-dialog'); },
 };
 
 /** @polymerBehavior */
@@ -222,13 +219,6 @@ settings.BluetoothPairDeviceBehavior = {
   },
 
   /** @private */
-  onPairCancelTap_: function() {
-    this.sendResponse_(chrome.bluetoothPrivate.PairingResponse.CANCEL);
-    // Close the dialog immediately.
-    this.fire('close-dialog', '');
-  },
-
-  /** @private */
   onDismissTap_: function() { this.fire('close-dialog', ''); },
 
   /** @private */
@@ -336,6 +326,15 @@ Polymer({
   },
 
   /**
+   * @param {string} dialogType
+   * @return {string} The title of for that |dialogType|.
+   */
+  getTitle_: function(dialogType) {
+    return this.i18n(dialogType == 'addDevice' ?
+        'bluetoothAddDevicePageTitle' : 'bluetoothPairDevicePageTitle');
+  },
+
+  /**
    * @param {string} currentDialogType
    * @param {string} wantedDialogType
    * @return {boolean}
@@ -343,6 +342,25 @@ Polymer({
    */
   isDialogType_: function(currentDialogType, wantedDialogType) {
     return currentDialogType == wantedDialogType;
+  },
+
+  /** @private */
+  onCancelTap_: function() {
+    // NOTE: tapping on an element with [dialog-dismiss] doesn't trigger an
+    // iron-overlay-cancel event, whereas tapping (X) or pressing Esc does.
+    // Using cancel() ensures all 3 ways to close the dialog run the same code.
+    this.$.dialog.cancel();
+  },
+
+  /** @private */
+  onIronOverlayCanceled_: function() {
+    if (this.dialogType == 'pairDevice')
+      this.sendResponse_(chrome.bluetoothPrivate.PairingResponse.CANCEL);
+  },
+
+  /** @private */
+  onIronOverlayClosed_: function() {
+    this.fire('close-dialog', '');
   },
 
   open: function() {

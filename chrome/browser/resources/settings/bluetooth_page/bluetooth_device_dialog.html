@@ -14,15 +14,6 @@
 <dom-module id="bluetooth-device-dialog">
   <template>
     <style include="settings-shared">
-      #dialogOuterDiv {
-        margin-bottom: 16px;
-      }
-
-      #dialogHeaderDiv {
-        height: 40px;
-        margin: 0 5px 10px;
-      }
-
       #dialogFooterDiv {
         height: 40px;
         margin: 0 20px;
@@ -30,11 +21,6 @@
 
       #dialogMessage {
         margin-bottom: 10px;
-      }
-
-      #dialogTitle {
-        font-size: 125%;
-        margin: 0 10px;
       }
 
       #dialogDeviceList {
@@ -102,18 +88,12 @@
         margin: 0 20px;
       }
     </style>
-    <settings-dialog id="dialog" class="layout vertical">
-      <!-- TODO(dbeam): use .title instead. -->
+    <settings-dialog id="dialog" class="layout vertical"
+        on-iron-overlay-canceled="onIronOverlayCanceled_"
+        on-iron-overlay-closed="onIronOverlayClosed_">
+      <div class="title">[[getTitle_(dialogType)]]</div>
       <div class="body">
         <template is="dom-if" if="[[isDialogType_(dialogType, 'addDevice')]]">
-          <div id="dialogHeaderDiv" class="settings-box layout horizontal">
-            <span id="dialogTitle" class="flex">
-              $i18n{bluetoothAddDevicePageTitle}
-            </span>
-            <paper-icon-button icon="close" on-tap="onAddCancelTap_"
-                id="closeAdd">
-            </paper-icon-button>
-          </div>
           <div class="settings-box flex">
             <div id="dialogDeviceList" class="settings-box layout vertical"
                 on-device-event="onDeviceEvent_">
@@ -131,15 +111,6 @@
           </div>
         </template>
         <template is="dom-if" if="[[isDialogType_(dialogType, 'pairDevice')]]">
-          <div id="dialogHeaderDiv"
-              class="settings-box layout horizontal center">
-            <span id="dialogTitle" class="flex">
-              $i18n{bluetoothPairDevicePageTitle}
-            </span>
-            <paper-icon-button icon="close" on-tap="onPairCancelTap_"
-                id="closePair">
-            </paper-icon-button>
-          </div>
           <div id="pairing" class="settings-blox layout vertical center
               center-justified flex">
             <div id="dialogMessage">
@@ -175,8 +146,7 @@
             </paper-spinner>
             <span>$i18n{bluetoothScanning}</span>
           </div>
-          <paper-button id="cancel" class="end-justified"
-              on-tap="onAddCancelTap_">
+          <paper-button class="end-justified" on-tap="onCancelTap_">
             $i18n{cancel}
           </paper-button>
         </template>
@@ -189,8 +159,8 @@
               on-tap="onConnectTap_">$i18n{bluetoothConnect}</paper-button>
           <paper-button hidden$="[[!showDismiss_(pairingDevice, pairingEvent)]]"
               on-tap="onDismissTap_">$i18n{bluetoothDismiss}</paper-button>
-          <paper-button on-tap="onPairCancelTap_"
-              hidden$="[[showDismiss_(pairingDevice, pairingEvent)]]">
+          <paper-button hidden$="[[showDismiss_(pairingDevice, pairingEvent)]]"
+              on-tap="onCancelTap_">
             $i18n{cancel}
           </paper-button>
         </template>
