@@ -3123,18 +3123,6 @@
    fun:_ZN4base4BindIMN7content21ChromeAppCacheServiceEFvRKNS_8FilePathEPNS1_15ResourceContextEPN3net23URLRequestContextGetterE13scoped_refptrIN7storage20SpecialStoragePolicyEEEJPS2_S3_S7_SB_IS9_ESE_EEENS_8CallbackINS_8internal22MakeUnboundRunTypeImplIT_JDpT0_EE4TypeEEESM_DpOSN_
 }
 {
-   bug_600484
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN4mojo3edk2js13HandleWrapper6Create*
-   fun:_ZN3gin9ConverterIN4mojo6Handle*
-   fun:_ZN3gin11ConvertToV8IN4mojo6Handle*
-   fun:_ZN3gin10ToV8TraitsIN4mojo6HandleELb0EE14TryConvertToV8*
-   fun:_ZN3gin14TryConvertToV8IN4mojo6Handle*
-   fun:_ZN3gin10Dictionary3SetIN4mojo6Handle*
-   fun:_ZN4mojo3edk2js12_GLOBAL__N_114CreateDataPipe*
-}
-{
    bug_602964
    Memcheck:Leak
    fun:_Znw*
