@@ -418,10 +418,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux'], bug=483282)
     self.Fail('conformance2/rendering/draw-buffers.html',
         ['linux'], bug=483282)
-    # Flaky because the virtual gl contexts implementation calls glUseProgram
-    # while a transform feedback is active.
-    self.Flaky('deqp/functional/gles3/negativeshaderapi.html',
-        ['linux'], bug=483282)
 
     self.Skip('deqp/data/gles3/shaders/qualification_order.html',
         ['linux', 'amd', 'intel'], bug=483282)
