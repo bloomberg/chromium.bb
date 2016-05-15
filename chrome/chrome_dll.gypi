@@ -139,6 +139,13 @@
                 '../ui/compositor/compositor.gyp:compositor',
               ],
             }],
+            ['OS=="win" and target_arch=="ia32"', {
+              # Add a dependency to custom import library for user32 delay
+              # imports only in x86 builds.
+              'dependencies': [
+                'chrome_user32_delay_imports',
+              ],
+            },],
             ['OS=="win"', {
               'product_name': 'chrome',
               'dependencies': [

@@ -443,6 +443,31 @@
         'chrome_process_finder.gypi',
       ],
     }],  # OS=="win"
+    ['OS=="win" and target_arch=="ia32"',
+      { 'targets': [
+        {
+          'target_name': 'chrome_user32_delay_imports',
+          'type': 'none',
+          'variables': {
+            'lib_dir': '<(INTERMEDIATE_DIR)',
+          },
+          'sources': [
+              'chrome.user32.delay.imports'
+          ],
+          'includes': [
+              '../build/win/importlibs/create_import_lib.gypi',
+          ],
+          'direct_dependent_settings': {
+            'msvs_settings': {
+              'VCLinkerTool': {
+                'AdditionalLibraryDirectories': ['<(lib_dir)', ],
+                'AdditionalDependencies': ['chrome.user32.delay.lib', ],
+              },
+            },
+          },
+        },
+      ]},  # 'targets'
+    ],  # OS=="win" and target_arch=="ia32"
     ['chromeos==1', {
       'includes': [ 'chrome_browser_chromeos.gypi' ],
     }],  # chromeos==1
