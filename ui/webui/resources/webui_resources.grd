@@ -21,6 +21,7 @@ without changes to the corresponding grd file. -->
       <if expr="not android">
         <include name="IDR_WEBUI_ROBOTO_ROBOTO_REGULAR_WOFF2" file="roboto/roboto-regular.woff2" type="BINDATA" />
         <include name="IDR_WEBUI_ROBOTO_ROBOTO_MEDIUM_WOFF2" file="roboto/roboto-medium.woff2" type="BINDATA" />
+        <include name="IDR_WEBUI_ROBOTO_ROBOTO_BOLD_WOFF2" file="roboto/roboto-bold.woff2" type="BINDATA" />
       </if>
 
       <!-- Component apps common image resources - 1x -->
