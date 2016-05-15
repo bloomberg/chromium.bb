@@ -242,7 +242,7 @@ TEST_F(V4UpdateProtocolManagerTest, TestGetUpdatesNoError) {
   // No error, back off multiplier is unchanged.
   EXPECT_EQ(0ul, pm->update_error_count_);
   EXPECT_EQ(1ul, pm->update_back_off_mult_);
-  EXPECT_FALSE(pm->IsUpdateScheduled());
+  EXPECT_TRUE(pm->IsUpdateScheduled());
 }
 
 TEST_F(V4UpdateProtocolManagerTest, TestGetUpdatesWithOneBackoff) {
@@ -295,7 +295,7 @@ TEST_F(V4UpdateProtocolManagerTest, TestGetUpdatesWithOneBackoff) {
   // No error, back off multiplier is unchanged.
   EXPECT_EQ(0ul, pm->update_error_count_);
   EXPECT_EQ(1ul, pm->update_back_off_mult_);
-  EXPECT_FALSE(pm->IsUpdateScheduled());
+  EXPECT_TRUE(pm->IsUpdateScheduled());
 }
 
 }  // namespace safe_browsing
