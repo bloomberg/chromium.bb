@@ -5,19 +5,11 @@
 # GYP version: mojo/mojo_base.gyp:mojo_application_base
 source_set("cpp") {
   public_deps = [
-    ":init_commandline",
     ":sources",
   ]
 }
 
-# Like the target above, but without special commandline initialization that
-# apps use.
-source_set("cpp_for_chromium") {
-  public_deps = [
-    ":sources",
-  ]
-}
-
+# TODO(rockot): Rename this to "cpp".
 source_set("sources") {
   sources = [
     "application_runner.h",
@@ -26,7 +18,6 @@ source_set("sources") {
     "connection.h",
     "connector.h",
     "identity.h",
-    "initialize_base_and_icu.cc",
     "interface_binder.h",
     "interface_factory.h",
     "interface_factory_impl.h",
@@ -50,12 +41,8 @@ source_set("sources") {
     "shell_connection_ref.h",
   ]
 
-  deps = [
-    "//base",
-    "//base:i18n",
-  ]
-
   public_deps = [
+    "//base",
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/system",
     "//services/shell/public/interfaces",
@@ -63,9 +50,16 @@ source_set("sources") {
   ]
 }
 
-source_set("init_commandline") {
+source_set("application_support") {
   sources = [
     "lib/init_commandline.cc",
+    "lib/initialize_base_and_icu.cc",
+  ]
+
+  deps = [
+    "//base",
+    "//base:i18n",
+    "//mojo/public/c/system",
   ]
 }
 

@@ -41,8 +41,6 @@
       'public/cpp/connection.h',
       'public/cpp/connector.h',
       'public/cpp/identity.h',
-      'public/cpp/initialize_base_and_icu.cc',
-      'public/cpp/initialize_base_and_icu.h',
       'public/cpp/interface_binder.h',
       'public/cpp/interface_factory.h',
       'public/cpp/interface_factory_impl.h',

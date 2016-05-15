@@ -74,7 +74,7 @@ source_set("browser") {
     "//net",
     "//net:extras",
     "//services/shell",
-    "//services/shell/public/cpp:cpp_for_chromium",
+    "//services/shell/public/cpp",
     "//services/shell/public/interfaces",
     "//services/shell/runner/common",
     "//services/shell/runner/host:lib",
