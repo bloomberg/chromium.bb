@@ -26,10 +26,7 @@
 #include "widevine_cdm_version.h"  //  In SHARED_INTERMEDIATE_DIR.
 
 #if defined(ENABLE_PEPPER_CDMS)
-// Base path for Clear Key CDM (relative to the chrome executable).
-const char kClearKeyCdmBaseDirectory[] = "ClearKeyCdm";
-
-// Platform-specific filename relative to kClearKeyCdmBaseDirectory.
+// Platform-specific filename relative to the chrome executable.
 const char kClearKeyCdmAdapterFileName[] =
 #if defined(OS_MACOSX)
     "clearkeycdmadapter.plugin";
@@ -264,13 +261,11 @@ class EncryptedMediaTestBase : public MediaBrowserTest {
 
 #if defined(ENABLE_PEPPER_CDMS)
     if (IsExternalClearKey(key_system)) {
-      RegisterPepperCdm(command_line, kClearKeyCdmBaseDirectory,
-                        kClearKeyCdmAdapterFileName, key_system);
+      RegisterPepperCdm(command_line, kClearKeyCdmAdapterFileName, key_system);
     }
 #if defined(WIDEVINE_CDM_AVAILABLE) && defined(WIDEVINE_CDM_IS_COMPONENT)
     else if (IsWidevine(key_system)) {  // NOLINT
-      RegisterPepperCdm(command_line, kWidevineCdmBaseDirectory,
-                        kWidevineCdmAdapterFileName, key_system);
+      RegisterPepperCdm(command_line, kWidevineCdmAdapterFileName, key_system);
     }
 #endif  // defined(WIDEVINE_CDM_AVAILABLE) && defined(WIDEVINE_CDM_IS_COMPONENT)
 #endif  // defined(ENABLE_PEPPER_CDMS)
@@ -278,24 +273,18 @@ class EncryptedMediaTestBase : public MediaBrowserTest {
 
  private:
 #if defined(ENABLE_PEPPER_CDMS)
-  // The CDM adapter should be located in |adapter_base_dir| in DIR_MODULE.
   void RegisterPepperCdm(base::CommandLine* command_line,
-                         const std::string& adapter_base_dir,
                          const std::string& adapter_name,
                          const std::string& key_system) {
     DCHECK(!is_pepper_cdm_registered_)
         << "RegisterPepperCdm() can only be called once.";
     is_pepper_cdm_registered_ = true;
 
-    // Build the CDM adapter path.
+    // Append the switch to register the Clear Key CDM Adapter.
     base::FilePath plugin_dir;
     EXPECT_TRUE(PathService::Get(base::DIR_MODULE, &plugin_dir));
-    plugin_dir = plugin_dir.AppendASCII(adapter_base_dir);
-
     base::FilePath plugin_lib = plugin_dir.AppendASCII(adapter_name);
     EXPECT_TRUE(base::PathExists(plugin_lib)) << plugin_lib.value();
-
-    // Build pepper plugin registration switch.
     base::FilePath::StringType pepper_plugin = plugin_lib.value();
     pepper_plugin.append(FILE_PATH_LITERAL("#CDM#0.1.0.0;"));
 #if defined(OS_WIN)
@@ -303,8 +292,6 @@ class EncryptedMediaTestBase : public MediaBrowserTest {
 #else
     pepper_plugin.append(GetPepperType(key_system));
 #endif
-
-    // Append the switch to register the CDM Adapter.
     command_line->AppendSwitchNative(switches::kRegisterPepperPlugins,
                                      pepper_plugin);
   }

@@ -322,30 +322,27 @@ class PepperContentSettingsSpecialCasesTest : public ContentSettingsTest {
   // Registers any CDM plugins not registered by default.
   void SetUpCommandLine(base::CommandLine* command_line) override {
 #if defined(ENABLE_PEPPER_CDMS)
-    // Base path for Clear Key CDM (relative to the chrome executable).
-    const char kClearKeyCdmBaseDirectory[] = "ClearKeyCdm";
-
-// Platform-specific filename relative to kClearKeyCdmBaseDirectory.
+    // Platform-specific filename relative to the chrome executable.
 #if defined(OS_WIN)
-    const char kClearKeyCdmAdapterFileName[] = "clearkeycdmadapter.dll";
+    const char kLibraryName[] = "clearkeycdmadapter.dll";
 #else  // !defined(OS_WIN)
 #if defined(OS_MACOSX)
-    const char kClearKeyCdmAdapterFileName[] = "clearkeycdmadapter.plugin";
+    const char kLibraryName[] = "clearkeycdmadapter.plugin";
 #elif defined(OS_POSIX)
-    const char kClearKeyCdmAdapterFileName[] = "libclearkeycdmadapter.so";
+    const char kLibraryName[] = "libclearkeycdmadapter.so";
 #endif  // defined(OS_MACOSX)
 #endif  // defined(OS_WIN)
 
     // Append the switch to register the External Clear Key CDM.
     base::FilePath::StringType pepper_plugins = BuildPepperPluginRegistration(
-        kClearKeyCdmBaseDirectory, kClearKeyCdmAdapterFileName, "Clear Key CDM",
-        kExternalClearKeyMimeType);
+        kLibraryName, "Clear Key CDM", kExternalClearKeyMimeType);
 #if defined(WIDEVINE_CDM_AVAILABLE) && defined(WIDEVINE_CDM_IS_COMPONENT)
     // The CDM must be registered when it is a component.
     pepper_plugins.append(FILE_PATH_LITERAL(","));
-    pepper_plugins.append(BuildPepperPluginRegistration(
-        kWidevineCdmBaseDirectory, kWidevineCdmAdapterFileName,
-        kWidevineCdmDisplayName, kWidevineCdmPluginMimeType));
+    pepper_plugins.append(
+        BuildPepperPluginRegistration(kWidevineCdmAdapterFileName,
+                                      kWidevineCdmDisplayName,
+                                      kWidevineCdmPluginMimeType));
 #endif  // defined(WIDEVINE_CDM_AVAILABLE) && defined(WIDEVINE_CDM_IS_COMPONENT)
     command_line->AppendSwitchNative(switches::kRegisterPepperPlugins,
                                      pepper_plugins);
@@ -437,13 +434,11 @@ class PepperContentSettingsSpecialCasesTest : public ContentSettingsTest {
   // plugin using the provided parameters and a dummy version.
   // Multiple results may be passed to kRegisterPepperPlugins, separated by ",".
   base::FilePath::StringType BuildPepperPluginRegistration(
-      const char* library_path,
       const char* library_name,
       const char* display_name,
       const char* mime_type) {
     base::FilePath plugin_dir;
     EXPECT_TRUE(PathService::Get(base::DIR_MODULE, &plugin_dir));
-    plugin_dir = plugin_dir.AppendASCII(library_path);
 
     base::FilePath plugin_lib = plugin_dir.AppendASCII(library_name);
     EXPECT_TRUE(base::PathExists(plugin_lib));

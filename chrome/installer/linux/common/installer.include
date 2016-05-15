@@ -159,14 +159,9 @@ stage_install_common() {
   find "${STAGEDIR}/${INSTALLDIR}/locales" -type d -exec chmod 755 '{}' \;
 
   # Widevine CDM.
-  WIDEVINECDM_SRCDIR="${BUILDDIR}/WidevineCdm"
-  WIDEVINECDM_DESTDIR="${STAGEDIR}/${INSTALLDIR}/WidevineCdm"
-  if [ -f "${WIDEVINECDM_SRCDIR}/libwidevinecdmadapter.so" ]; then
-    install -m 755 -d "${WIDEVINECDM_DESTDIR}"
-    install -m 644 -s "${WIDEVINECDM_SRCDIR}/libwidevinecdmadapter.so" \
-      "${WIDEVINECDM_DESTDIR}/"
-    install -m 644 "${WIDEVINECDM_SRCDIR}/libwidevinecdm.so" \
-      "${WIDEVINECDM_DESTDIR}/"
+  if [ -f "${BUILDDIR}/libwidevinecdmadapter.so" ]; then
+    install -m 644 -s "${BUILDDIR}/libwidevinecdmadapter.so" "${STAGEDIR}/${INSTALLDIR}/"
+    install -m 644 "${BUILDDIR}/libwidevinecdm.so" "${STAGEDIR}/${INSTALLDIR}/"
   fi
 
   # ANGLE

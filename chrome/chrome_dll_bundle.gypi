@@ -132,14 +132,14 @@
       ],
     },
     {
-      # The adapter is not a complete plugin on its own. It needs the Widevine
-      # CDM to work.
-      'destination': '<(PRODUCT_DIR)/$(CONTENTS_FOLDER_PATH)/Internet Plug-Ins/WidevineCdm',
+      # This file is used by the component installer.
+      # It is not a complete plugin on its own.
+      'destination': '<(PRODUCT_DIR)/$(CONTENTS_FOLDER_PATH)/Internet Plug-Ins/',
       'files': [],
       'conditions': [
         ['branding == "Chrome"', {
           'files': [
-            '<(PRODUCT_DIR)/WidevineCdm/widevinecdmadapter.plugin',
+            '<(PRODUCT_DIR)/widevinecdmadapter.plugin',
           ],
         }],
       ],

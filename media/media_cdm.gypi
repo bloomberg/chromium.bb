@@ -23,7 +23,6 @@
         {
           # GN version: //media/cdm/ppapi:clearkeycdm
           'target_name': 'clearkeycdm',
-          'product_dir': '<(PRODUCT_DIR)/ClearKeyCdm',
           'type': 'none',
           # TODO(tomfinegan): Simplify this by unconditionally including all the
           # decoders, and changing clearkeycdm to select which decoder to use
@@ -70,7 +69,7 @@
             }],
             ['OS == "mac"', {
               'xcode_settings': {
-                'DYLIB_INSTALL_NAME_BASE': '@rpath',
+                'DYLIB_INSTALL_NAME_BASE': '@loader_path',
               },
             }]
           ],
@@ -116,7 +115,6 @@
         {
           # GN version: //media/cdm/ppapi:clearkeycdmadapter
           'target_name': 'clearkeycdmadapter',
-          'product_dir': '<(PRODUCT_DIR)/ClearKeyCdm',
           'type': 'none',
           # Check whether the plugin's origin URL is valid.
           'defines': ['CHECK_DOCUMENT_URL'],
@@ -136,14 +134,9 @@
               'libraries': [
                '-lrt',
                 # Built by clearkeycdm.
-                '<(PRODUCT_DIR)/ClearKeyCdm/libclearkeycdm.so',
+                '<(PRODUCT_DIR)/libclearkeycdm.so',
               ],
             }],
-            ['OS == "mac"', {
-              'xcode_settings': {
-                'LD_RUNPATH_SEARCH_PATHS' : [ '@loader_path/.' ],
-              },
-            }]
           ],
         },
       ],

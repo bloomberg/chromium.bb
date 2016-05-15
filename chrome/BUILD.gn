@@ -222,9 +222,8 @@ if (!is_android && !is_mac) {
       # On Mac, internal plugins go inside the framework, so these
       # dependencies are on chrome.dll.
       "//third_party/adobe/flash:flapper_binaries",
+      "//third_party/widevine/cdm:widevinecdmadapter",
     ]
-
-    data_deps += [ "//third_party/widevine/cdm:widevinecdmadapter" ]
 
     if (is_multi_dll_chrome) {
       defines += [ "CHROME_MULTIPLE_DLL" ]

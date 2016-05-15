@@ -19,8 +19,6 @@ namespace media {
 #define STRINGIFY(X) #X
 #define MAKE_STRING(X) STRINGIFY(X)
 
-const char kClearKeyCdmBaseDirectory[] = "ClearKeyCdm";
-
 // File name of the External ClearKey CDM on different platforms.
 const base::FilePath::CharType kExternalClearKeyCdmFileName[] =
 #if defined(OS_MACOSX)
@@ -42,10 +40,10 @@ ExternalClearKeyTestHelper::~ExternalClearKeyTestHelper() {
 void ExternalClearKeyTestHelper::LoadLibrary() {
   // Determine the location of the CDM. It is expected to be in the same
   // directory as the current module.
-  base::FilePath library_dir;
-  ASSERT_TRUE(PathService::Get(base::DIR_MODULE, &library_dir));
-  library_dir = library_dir.AppendASCII(kClearKeyCdmBaseDirectory);
-  library_path_ = library_dir.Append(kExternalClearKeyCdmFileName);
+  base::FilePath current_module_dir;
+  ASSERT_TRUE(PathService::Get(base::DIR_MODULE, &current_module_dir));
+  library_path_ =
+      current_module_dir.Append(base::FilePath(kExternalClearKeyCdmFileName));
   ASSERT_TRUE(base::PathExists(library_path_)) << library_path_.value();
 
   // Now load the CDM library.

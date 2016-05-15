@@ -345,7 +345,7 @@ bool PathProvider(int key, base::FilePath* result) {
     case chrome::DIR_COMPONENT_WIDEVINE_CDM:
       if (!PathService::Get(chrome::DIR_USER_DATA, &cur))
         return false;
-      cur = cur.AppendASCII(kWidevineCdmBaseDirectory);
+      cur = cur.Append(FILE_PATH_LITERAL("WidevineCDM"));
       break;
 #endif  // defined(WIDEVINE_CDM_IS_COMPONENT)
     // TODO(xhwang): FILE_WIDEVINE_CDM_ADAPTER has different meanings.
@@ -354,7 +354,6 @@ bool PathProvider(int key, base::FilePath* result) {
     case chrome::FILE_WIDEVINE_CDM_ADAPTER:
       if (!GetInternalPluginsDirectory(&cur))
         return false;
-      cur = cur.AppendASCII(kWidevineCdmBaseDirectory);
       cur = cur.AppendASCII(kWidevineCdmAdapterFileName);
       break;
 #endif  // defined(WIDEVINE_CDM_AVAILABLE) && defined(ENABLE_PEPPER_CDMS)
