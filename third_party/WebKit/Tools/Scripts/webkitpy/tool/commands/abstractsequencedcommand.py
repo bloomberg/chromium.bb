@@ -30,7 +30,7 @@ import logging
 
 from webkitpy.common.system.executive import ScriptError
 from webkitpy.tool.commands.stepsequence import StepSequence
-from webkitpy.tool.multicommandtool import Command
+from webkitpy.tool.commands.command import Command
 
 _log = logging.getLogger(__name__)
 

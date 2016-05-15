@@ -29,11 +29,9 @@ import time
 import traceback
 
 from webkitpy.common.config.irc import update_wait_seconds
-from webkitpy.tool.bot.commitannouncer import CommitAnnouncer, CommitAnnouncerThread
-from webkitpy.tool.multicommandtool import Command
 from webkitpy.tool.bot.commitannouncer import CommitAnnouncer
 from webkitpy.tool.bot.commitannouncer import CommitAnnouncerThread
-from webkitpy.tool.multicommandtool import Command
+from webkitpy.tool.commands.command import Command
 
 _log = logging.getLogger(__name__)
 announce_path = "third_party/WebKit"
