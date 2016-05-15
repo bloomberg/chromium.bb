@@ -162,22 +162,6 @@ public:
     }
 #endif
 
-    template<typename T>
-    struct ResultType {
-        using Type = T*;
-    };
-
-    template<typename T>
-    struct OtherType {
-        using Type = T*;
-    };
-
-    template<typename T>
-    static T& getOther(T* other)
-    {
-        return *other;
-    }
-
     static void enterGCForbiddenScope()
     {
         ThreadState::current()->enterGCForbiddenScope();

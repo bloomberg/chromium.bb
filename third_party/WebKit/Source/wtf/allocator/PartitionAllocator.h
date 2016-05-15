@@ -127,17 +127,6 @@ public:
 
     static bool isAllocationAllowed() { return true; }
 
-    template<typename T>
-    struct OtherType {
-        typedef T* Type;
-    };
-
-    template<typename T>
-    static T& getOther(T* other)
-    {
-        return *other;
-    }
-
     static void enterGCForbiddenScope() { }
     static void leaveGCForbiddenScope() { }
 

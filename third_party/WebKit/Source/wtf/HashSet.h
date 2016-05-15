@@ -62,12 +62,6 @@ public:
         m_impl.swap(ref.m_impl);
     }
 
-    void swap(typename Allocator::template OtherType<HashSet>::Type other)
-    {
-        HashSet& ref = Allocator::getOther(other);
-        m_impl.swap(ref.m_impl);
-    }
-
     unsigned size() const;
     unsigned capacity() const;
     bool isEmpty() const;

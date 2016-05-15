@@ -81,12 +81,6 @@ public:
         m_impl.swap(ref.m_impl);
     }
 
-    void swap(typename Allocator::template OtherType<HashMap>::Type other)
-    {
-        HashMap& ref = Allocator::getOther(other);
-        m_impl.swap(ref.m_impl);
-    }
-
     unsigned size() const;
     unsigned capacity() const;
     void reserveCapacityForSize(unsigned size)

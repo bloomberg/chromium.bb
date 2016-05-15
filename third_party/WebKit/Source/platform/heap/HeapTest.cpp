@@ -2779,7 +2779,7 @@ TEST(HeapTest, HeapCollectionTypes)
             set2->swap(cset2);
             set->swap(cset2);
             cset1.swap(cset2);
-            cset2.swap(set2);
+            cset2.swap(*set2);
 
             MemberCountedSet& cCountedSet = container->set3;
             set3->swap(cCountedSet);
@@ -2787,10 +2787,10 @@ TEST(HeapTest, HeapCollectionTypes)
             set3->swap(cCountedSet);
 
             // Triple swap.
-            container->map.swap(memberMember2);
+            container->map.swap(*memberMember2);
             MemberMember& containedMap = container->map;
             memberMember3->swap(containedMap);
-            memberMember3->swap(memberMember);
+            memberMember3->swap(*memberMember);
 
             EXPECT_TRUE(memberMember->get(one) == two);
             EXPECT_TRUE(memberMember->get(two) == three);
