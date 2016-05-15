@@ -2965,7 +2965,8 @@ void RenderFrameImpl::didCreateDataSource(blink::WebLocalFrame* frame,
 
   // The rest of RenderView assumes that a WebDataSource will always have a
   // non-null NavigationState.
-  UpdateNavigationState(document_state, false /* was_within_same_page */);
+  UpdateNavigationState(document_state, false /* was_within_same_page */,
+                        content_initiated);
 
   // DocumentState::referred_by_prefetcher_ is true if we are
   // navigating from a page that used prefetching using a link on that
@@ -3564,22 +3565,18 @@ void RenderFrameImpl::didFinishLoad(blink::WebLocalFrame* frame) {
                                       ds->request().url()));
 }
 
-void RenderFrameImpl::didNavigateWithinPage(blink::WebLocalFrame* frame,
+void RenderFrameImpl::didNavigateWithinPage(
+    blink::WebLocalFrame* frame,
     const blink::WebHistoryItem& item,
-    blink::WebHistoryCommitType commit_type) {
+    blink::WebHistoryCommitType commit_type,
+    bool content_initiated) {
   TRACE_EVENT1("navigation", "RenderFrameImpl::didNavigateWithinPage",
                "id", routing_id_);
   DCHECK_EQ(frame_, frame);
-  // If this was a reference fragment navigation that we initiated, then we
-  // could end up having a non-null pending navigation params.  We just need to
-  // update the ExtraData on the datasource so that others who read the
-  // ExtraData will get the new NavigationState.  Similarly, if we did not
-  // initiate this navigation, then we need to take care to reset any pre-
-  // existing navigation state to a content-initiated navigation state.
-  // UpdateNavigationState conveniently takes care of this for us.
   DocumentState* document_state =
       DocumentState::FromDataSource(frame->dataSource());
-  UpdateNavigationState(document_state, true /* was_within_same_page */);
+  UpdateNavigationState(document_state, true /* was_within_same_page */,
+                        content_initiated);
   static_cast<NavigationStateImpl*>(document_state->navigation_state())
       ->set_was_within_same_page(true);
 
@@ -5881,35 +5878,41 @@ NavigationState* RenderFrameImpl::CreateNavigationStateFromPending() {
 }
 
 void RenderFrameImpl::UpdateNavigationState(DocumentState* document_state,
-                                            bool was_within_same_page) {
-  if (pending_navigation_params_) {
-    // If this is a browser-initiated load that doesn't override
-    // navigation_start, set it here.
-    if (pending_navigation_params_->common_params.navigation_start.is_null()) {
-      pending_navigation_params_->common_params.navigation_start =
-          base::TimeTicks::Now();
-    }
-    document_state->set_navigation_state(CreateNavigationStateFromPending());
-
-    // The |set_was_load_data_with_base_url_request| state should not change for
-    // an in-page navigation, so skip updating it from the in-page navigation
-    // params in this case.
-    if (!was_within_same_page) {
-      const CommonNavigationParams& common_params =
-          pending_navigation_params_->common_params;
-      bool load_data = !common_params.base_url_for_data_url.is_empty() &&
-                       !common_params.history_url_for_data_url.is_empty() &&
-                       common_params.url.SchemeIs(url::kDataScheme);
-      document_state->set_was_load_data_with_base_url_request(load_data);
-      if (load_data)
-        document_state->set_data_url(common_params.url);
-    }
-
-    pending_navigation_params_.reset();
-  } else {
+                                            bool was_within_same_page,
+                                            bool content_initiated) {
+  // If this was a browser-initiated navigation, then there could be pending
+  // navigation params, so use them. Otherwise, just reset the document state
+  // here, since if pending navigation params exist they are for some other
+  // navigation <https://crbug.com/597239>.
+  if (!pending_navigation_params_ || content_initiated) {
     document_state->set_navigation_state(
         NavigationStateImpl::CreateContentInitiated());
+    return;
   }
+
+  // If this is a browser-initiated load that doesn't override
+  // navigation_start, set it here.
+  if (pending_navigation_params_->common_params.navigation_start.is_null()) {
+    pending_navigation_params_->common_params.navigation_start =
+        base::TimeTicks::Now();
+  }
+  document_state->set_navigation_state(CreateNavigationStateFromPending());
+
+  // The |set_was_load_data_with_base_url_request| state should not change for
+  // an in-page navigation, so skip updating it from the in-page navigation
+  // params in this case.
+  if (!was_within_same_page) {
+    const CommonNavigationParams& common_params =
+        pending_navigation_params_->common_params;
+    bool load_data = !common_params.base_url_for_data_url.is_empty() &&
+                     !common_params.history_url_for_data_url.is_empty() &&
+                     common_params.url.SchemeIs(url::kDataScheme);
+    document_state->set_was_load_data_with_base_url_request(load_data);
+    if (load_data)
+      document_state->set_data_url(common_params.url);
+  }
+
+  pending_navigation_params_.reset();
 }
 
 #if defined(OS_ANDROID)

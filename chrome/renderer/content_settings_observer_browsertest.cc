@@ -158,7 +158,7 @@ TEST_F(ChromeRenderViewTest, PluginsTemporarilyAllowed) {
   EXPECT_FALSE(observer->IsPluginTemporarilyAllowed(bar_plugin));
 
   // Simulate a navigation within the page.
-  DidNavigateWithinPage(GetMainFrame(), true);
+  DidNavigateWithinPage(GetMainFrame(), true, true);
   EXPECT_TRUE(observer->IsPluginTemporarilyAllowed(foo_plugin));
   EXPECT_FALSE(observer->IsPluginTemporarilyAllowed(bar_plugin));
 
@@ -428,7 +428,7 @@ TEST_F(ChromeRenderViewTest, ContentSettingsSamePageNavigation) {
 
   // The page shouldn't see the change to script blocking setting after a
   // same page navigation.
-  DidNavigateWithinPage(GetMainFrame(), true);
+  DidNavigateWithinPage(GetMainFrame(), true, true);
   EXPECT_TRUE(observer->allowScript(true));
 }
 

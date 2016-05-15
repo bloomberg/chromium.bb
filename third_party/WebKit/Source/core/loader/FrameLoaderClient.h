@@ -92,7 +92,7 @@ public:
 
     virtual void dispatchDidHandleOnloadEvents() = 0;
     virtual void dispatchDidReceiveServerRedirectForProvisionalLoad() = 0;
-    virtual void dispatchDidNavigateWithinPage(HistoryItem*, HistoryCommitType) { }
+    virtual void dispatchDidNavigateWithinPage(HistoryItem*, HistoryCommitType, bool contentInitiated) { }
     virtual void dispatchWillClose() = 0;
     virtual void dispatchDidStartProvisionalLoad(double triggeringEventTime) = 0;
     virtual void dispatchDidReceiveTitle(const String&) = 0;

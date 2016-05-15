@@ -197,10 +197,11 @@ TEST_F(RenderFrameImplTest, LoFiNotUpdatedOnSubframeCommits) {
   // The main frame's and subframe's LoFi states should stay the same on
   // navigations within the page.
   frame()->didNavigateWithinPage(frame()->GetWebFrame(), item,
-                                 blink::WebStandardCommit);
+                                 blink::WebStandardCommit, true);
   EXPECT_TRUE(frame()->IsUsingLoFi());
   GetMainRenderFrame()->didNavigateWithinPage(
-      GetMainRenderFrame()->GetWebFrame(), item, blink::WebStandardCommit);
+      GetMainRenderFrame()->GetWebFrame(), item, blink::WebStandardCommit,
+      true);
   EXPECT_TRUE(GetMainRenderFrame()->IsUsingLoFi());
 
   // The subframe's LoFi state should not be reset on commit.
@@ -257,10 +258,11 @@ TEST_F(RenderFrameImplTest, EffectiveConnectionType) {
     // The main frame's and subframe's effective connection type should stay the
     // same on navigations within the page.
     frame()->didNavigateWithinPage(frame()->GetWebFrame(), item,
-                                   blink::WebStandardCommit);
+                                   blink::WebStandardCommit, true);
     EXPECT_EQ(tests[i].type, frame()->getEffectiveConnectionType());
     GetMainRenderFrame()->didNavigateWithinPage(
-        GetMainRenderFrame()->GetWebFrame(), item, blink::WebStandardCommit);
+        GetMainRenderFrame()->GetWebFrame(), item, blink::WebStandardCommit,
+        true);
     EXPECT_EQ(tests[i].type, frame()->getEffectiveConnectionType());
 
     // The subframe's effective connection type should not be reset on commit.

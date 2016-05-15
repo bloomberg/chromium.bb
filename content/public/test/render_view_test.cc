@@ -664,15 +664,15 @@ bool RenderViewTest::OnMessageReceived(const IPC::Message& msg) {
 }
 
 void RenderViewTest::DidNavigateWithinPage(blink::WebLocalFrame* frame,
-                                           bool is_new_navigation) {
+                                           bool is_new_navigation,
+                                           bool content_initiated) {
   RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
   blink::WebHistoryItem item;
   item.initialize();
   impl->GetMainRenderFrame()->didNavigateWithinPage(
-      frame,
-      item,
-      is_new_navigation ? blink::WebStandardCommit
-                        : blink::WebHistoryInertCommit);
+      frame, item, is_new_navigation ? blink::WebStandardCommit
+                                     : blink::WebHistoryInertCommit,
+      content_initiated);
 }
 
 blink::WebWidget* RenderViewTest::GetWebWidget() {

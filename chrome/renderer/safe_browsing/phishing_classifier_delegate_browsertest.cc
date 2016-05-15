@@ -186,7 +186,7 @@ TEST_F(PhishingClassifierDelegateTest, Navigation) {
   // Navigating within page works similarly to a subframe navigation, but
   // see the TODO in PhishingClassifierDelegate::DidCommitProvisionalLoad.
   EXPECT_CALL(*classifier_, CancelPendingClassification());
-  DidNavigateWithinPage(GetMainFrame(), true);
+  DidNavigateWithinPage(GetMainFrame(), true, true);
   Mock::VerifyAndClearExpectations(classifier_);
 
   OnStartPhishingDetection(url);
@@ -251,7 +251,7 @@ TEST_F(PhishingClassifierDelegateTest, Navigation) {
 
   EXPECT_CALL(*classifier_, CancelPendingClassification());
   // In-page navigation.
-  DidNavigateWithinPage(GetMainFrame(), true);
+  DidNavigateWithinPage(GetMainFrame(), true, true);
   Mock::VerifyAndClearExpectations(classifier_);
 
   OnStartPhishingDetection(url);

@@ -3379,6 +3379,48 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   ResourceDispatcherHost::Get()->SetDelegate(nullptr);
 }
 
+// This test ensures that if we go back from a page that has a replaceState()
+// call in the window.beforeunload function, we commit to the proper navigation
+// entry. https://crbug.com/597239
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       BackFromPageWithReplaceStateInBeforeUnload) {
+  NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
+      shell()->web_contents()->GetController());
+
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  // Load an initial page.
+  GURL start_url(embedded_test_server()->GetURL(
+      "/navigation_controller/beforeunload_replacestate_1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), start_url));
+  EXPECT_EQ(1, controller.GetEntryCount());
+  EXPECT_EQ(start_url, controller.GetLastCommittedEntry()->GetURL());
+
+  // Go to the second page.
+  std::string script = "document.getElementById('thelink').click()";
+  EXPECT_TRUE(ExecuteScript(root->current_frame_host(), script));
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  EXPECT_EQ(2, controller.GetEntryCount());
+  EXPECT_EQ(1, controller.GetLastCommittedEntryIndex());
+
+  // Go back to the first page, which never completes. The attempt to unload the
+  // second page, though, causes it to do a replaceState().
+  NavigationStallDelegate stall_delegate(start_url);
+  ResourceDispatcherHost::Get()->SetDelegate(&stall_delegate);
+  TestNavigationObserver back_load_observer(shell()->web_contents());
+  controller.GoBack();
+  back_load_observer.Wait();
+
+  // The navigation that just happened was the replaceState(), which should not
+  // have changed the position into the navigation entry list. Make sure that
+  // the pending navigation didn't confuse anything.
+  EXPECT_EQ(1, controller.GetLastCommittedEntryIndex());
+
+  ResourceDispatcherHost::Get()->SetDelegate(nullptr);
+}
+
 // Ensure the renderer process does not get confused about the current entry
 // due to subframes and replaced entries.  See https://crbug.com/480201.
 // TODO(creis): Re-enable for Site Isolation FYI bots: https://crbug.com/502317.

@@ -519,7 +519,8 @@ class CONTENT_EXPORT RenderFrameImpl
   void didFinishLoad(blink::WebLocalFrame* frame) override;
   void didNavigateWithinPage(blink::WebLocalFrame* frame,
                              const blink::WebHistoryItem& item,
-                             blink::WebHistoryCommitType commit_type) override;
+                             blink::WebHistoryCommitType commit_type,
+                             bool content_initiated) override;
   void didUpdateCurrentHistoryItem() override;
   void didChangeThemeColor() override;
   void dispatchLoad() override;
@@ -962,7 +963,8 @@ class CONTENT_EXPORT RenderFrameImpl
   // Sets the NavigationState on the DocumentState based on
   // the value of |pending_navigation_params_|.
   void UpdateNavigationState(DocumentState* document_state,
-                             bool was_within_same_page);
+                             bool was_within_same_page,
+                             bool content_initiated);
 
 #if defined(OS_ANDROID)
   blink::WebMediaPlayer* CreateAndroidWebMediaPlayer(

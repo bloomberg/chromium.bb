@@ -168,7 +168,8 @@ class RenderViewTest : public testing::Test, blink::WebLeakDetectorClient {
   // These are all methods from RenderViewImpl that we expose to testing code.
   bool OnMessageReceived(const IPC::Message& msg);
   void DidNavigateWithinPage(blink::WebLocalFrame* frame,
-                             bool is_new_navigation);
+                             bool is_new_navigation,
+                             bool content_initiated);
   blink::WebWidget* GetWebWidget();
 
   // Allows a subclass to override the various content client implementations.
