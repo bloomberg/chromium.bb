@@ -129,24 +129,3 @@ repack("resources_200") {
     "//ash/resources:ash_test_resources_200_percent",
   ]
 }
-
-source_set("unittests") {
-  testonly = true
-
-  sources = [
-    "shelf_delegate_mus_unittest.cc",
-  ]
-
-  deps = [
-    "//base",
-    "//components/mus/public/interfaces",
-    "//mash/shelf/public/interfaces",
-    "//mojo/public/cpp/bindings",
-    "//services/shell/public/cpp:shell_test_support",
-  ]
-
-  data_deps = [
-    "//mash/session",
-    ":mus",
-  ]
-}
