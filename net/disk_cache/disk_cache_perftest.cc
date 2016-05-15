@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <limits>
 #include <string>
 
 #include "base/bind.h"
@@ -9,6 +10,7 @@
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/hash.h"
+#include "base/process/process_metrics.h"
 #include "base/strings/string_util.h"
 #include "base/test/perf_time_logger.h"
 #include "base/test/test_file_util.h"
@@ -29,12 +31,37 @@ using base::Time;
 
 namespace {
 
+size_t MaybeGetMaxFds() {
+#if defined(OS_POSIX)
+  return base::GetMaxFds();
+#else
+  return std::numeric_limits<size_t>::max();
+#endif
+}
+
+void MaybeSetFdLimit(unsigned int max_descriptors) {
+#if defined(OS_POSIX)
+  base::SetFdLimit(max_descriptors);
+#endif
+}
+
 struct TestEntry {
   std::string key;
   int data_len;
 };
 
 class DiskCachePerfTest : public DiskCacheTestWithCache {
+ public:
+  DiskCachePerfTest() : saved_fd_limit_(MaybeGetMaxFds()) {
+    if (saved_fd_limit_ < kFdLimitForCacheTests)
+      MaybeSetFdLimit(kFdLimitForCacheTests);
+  }
+
+  ~DiskCachePerfTest() override {
+    if (saved_fd_limit_ < kFdLimitForCacheTests)
+      MaybeSetFdLimit(kFdLimitForCacheTests);
+  }
+
  protected:
   enum class WhatToRead {
     HEADERS_ONLY,
@@ -49,11 +76,16 @@ class DiskCachePerfTest : public DiskCacheTestWithCache {
   // Complete perf tests.
   void CacheBackendPerformance();
 
+  const size_t kFdLimitForCacheTests = 8192;
+
   const int kNumEntries = 1000;
   const int kHeadersSize = 200;
   const int kBodySize = 16 * 1024 - 1;
 
   std::vector<TestEntry> entries_;
+
+ private:
+  const size_t saved_fd_limit_;
 };
 
 // Creates num_entries on the cache, and writes 200 bytes of metadata and up
@@ -180,12 +212,15 @@ void DiskCachePerfTest::ResetAndEvictSystemDiskCache() {
        file_path = enumerator.Next()) {
     ASSERT_TRUE(base::EvictFileFromSystemCache(file_path));
   }
-  // And, cache directories.
+#if defined(OS_LINUX)
+  // And, cache directories, on platforms where the eviction utility supports
+  // this (currently Linux only).
   if (simple_cache_mode_) {
     ASSERT_TRUE(
         base::EvictFileFromSystemCache(cache_path_.AppendASCII("index-dir")));
   }
   ASSERT_TRUE(base::EvictFileFromSystemCache(cache_path_));
+#endif
 
   DisableFirstCleanup();
   InitCache();
