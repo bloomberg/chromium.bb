@@ -100,11 +100,26 @@ TEST_F(Http2PriorityWriteSchedulerTest, RegisterAndUnregisterStreams) {
   scheduler_.RegisterStream(17, 13, 170, false);
 
   // TODO(birenroy): Add a separate test that verifies weight invariants when
-  // SetStreamWeight is called.
-  scheduler_.SetStreamWeight(17, 150);
+  // UpdateStreamWeight is called.
+  scheduler_.UpdateStreamWeight(17, 150);
   EXPECT_EQ(150, scheduler_.GetStreamWeight(17));
 
   ASSERT_TRUE(peer_.ValidateInvariants());
+}
+
+TEST_F(Http2PriorityWriteSchedulerTest, RegisterStream) {
+  EXPECT_FALSE(scheduler_.StreamRegistered(1));
+  scheduler_.RegisterStream(1, 3);
+  EXPECT_EQ(0u, scheduler_.NumReadyStreams());
+  EXPECT_TRUE(scheduler_.StreamRegistered(1));
+  EXPECT_EQ(3, scheduler_.GetStreamPriority(1));
+  EXPECT_EQ(SpdyPriorityToHttp2Weight(3), scheduler_.GetStreamWeight(1));
+  EXPECT_EQ(kHttp2RootStreamId, scheduler_.GetStreamParent(1));
+  EXPECT_THAT(scheduler_.GetStreamChildren(1), IsEmpty());
+
+  EXPECT_SPDY_BUG(scheduler_.RegisterStream(1, 4),
+                  "Stream 1 already registered");
+  EXPECT_EQ(3, scheduler_.GetStreamPriority(1));
 }
 
 TEST_F(Http2PriorityWriteSchedulerTest, GetStreamWeight) {
@@ -113,11 +128,24 @@ TEST_F(Http2PriorityWriteSchedulerTest, GetStreamWeight) {
       "Stream 3 not registered");
   scheduler_.RegisterStream(3, 0, 130, true);
   EXPECT_EQ(130, scheduler_.GetStreamWeight(3));
-  scheduler_.SetStreamWeight(3, 50);
+  scheduler_.UpdateStreamWeight(3, 50);
   EXPECT_EQ(50, scheduler_.GetStreamWeight(3));
   scheduler_.UnregisterStream(3);
-  EXPECT_DFATAL(EXPECT_EQ(kHttp2MinStreamWeight, scheduler_.GetStreamWeight(3)),
-                "Stream 3 not registered");
+  EXPECT_SPDY_BUG(
+      EXPECT_EQ(kHttp2MinStreamWeight, scheduler_.GetStreamWeight(3)),
+      "Stream 3 not registered");
+}
+
+TEST_F(Http2PriorityWriteSchedulerTest, GetStreamPriority) {
+  EXPECT_SPDY_BUG(EXPECT_EQ(kV3LowestPriority, scheduler_.GetStreamPriority(3)),
+                  "Stream 3 not registered");
+  scheduler_.RegisterStream(3, 0, 130, true);
+  EXPECT_EQ(Http2WeightToSpdyPriority(130), scheduler_.GetStreamPriority(3));
+  scheduler_.UpdateStreamWeight(3, 50);
+  EXPECT_EQ(Http2WeightToSpdyPriority(50), scheduler_.GetStreamPriority(3));
+  scheduler_.UnregisterStream(3);
+  EXPECT_SPDY_BUG(EXPECT_EQ(kV3LowestPriority, scheduler_.GetStreamPriority(3)),
+                  "Stream 3 not registered");
 }
 
 TEST_F(Http2PriorityWriteSchedulerTest, GetStreamParent) {
@@ -144,23 +172,25 @@ TEST_F(Http2PriorityWriteSchedulerTest, GetStreamChildren) {
                   "Stream 7 not registered");
 }
 
-TEST_F(Http2PriorityWriteSchedulerTest, SetStreamWeight) {
-  EXPECT_SPDY_BUG(scheduler_.SetStreamWeight(0, 10),
+TEST_F(Http2PriorityWriteSchedulerTest, UpdateStreamWeight) {
+  EXPECT_SPDY_BUG(scheduler_.UpdateStreamWeight(0, 10),
                   "Cannot set weight of root stream");
-  EXPECT_SPDY_BUG(scheduler_.SetStreamWeight(3, 10), "Stream 3 not registered");
+  EXPECT_SPDY_BUG(scheduler_.UpdateStreamWeight(3, 10),
+                  "Stream 3 not registered");
   scheduler_.RegisterStream(3, 0, 10, false);
-  scheduler_.SetStreamWeight(3, 20);
+  scheduler_.UpdateStreamWeight(3, 20);
   EXPECT_EQ(20, scheduler_.GetStreamWeight(3));
-  EXPECT_SPDY_BUG(scheduler_.SetStreamWeight(3, 500), "Invalid weight: 500");
+  EXPECT_SPDY_BUG(scheduler_.UpdateStreamWeight(3, 500), "Invalid weight: 500");
   EXPECT_EQ(kHttp2MaxStreamWeight, scheduler_.GetStreamWeight(3));
-  EXPECT_SPDY_BUG(scheduler_.SetStreamWeight(3, 0), "Invalid weight: 0");
+  EXPECT_SPDY_BUG(scheduler_.UpdateStreamWeight(3, 0), "Invalid weight: 0");
   EXPECT_EQ(kHttp2MinStreamWeight, scheduler_.GetStreamWeight(3));
   scheduler_.UnregisterStream(3);
-  EXPECT_SPDY_BUG(scheduler_.SetStreamWeight(3, 10), "Stream 3 not registered");
+  EXPECT_SPDY_BUG(scheduler_.UpdateStreamWeight(3, 10),
+                  "Stream 3 not registered");
 }
 
 // Basic case of reparenting a subtree.
-TEST_F(Http2PriorityWriteSchedulerTest, SetStreamParentBasicNonExclusive) {
+TEST_F(Http2PriorityWriteSchedulerTest, UpdateStreamParentBasicNonExclusive) {
   /* Tree:
         0
        / \
@@ -172,7 +202,7 @@ TEST_F(Http2PriorityWriteSchedulerTest, SetStreamParentBasicNonExclusive) {
   scheduler_.RegisterStream(2, 0, 100, false);
   scheduler_.RegisterStream(3, 1, 100, false);
   scheduler_.RegisterStream(4, 1, 100, false);
-  scheduler_.SetStreamParent(1, 2, false);
+  scheduler_.UpdateStreamParent(1, 2, false);
   EXPECT_THAT(scheduler_.GetStreamChildren(0), ElementsAre(2));
   EXPECT_THAT(scheduler_.GetStreamChildren(1), UnorderedElementsAre(3, 4));
   EXPECT_THAT(scheduler_.GetStreamChildren(2), ElementsAre(1));
@@ -183,7 +213,7 @@ TEST_F(Http2PriorityWriteSchedulerTest, SetStreamParentBasicNonExclusive) {
 
 // Basic case of reparenting a subtree.  Result here is the same as the
 // non-exclusive case.
-TEST_F(Http2PriorityWriteSchedulerTest, SetStreamParentBasicExclusive) {
+TEST_F(Http2PriorityWriteSchedulerTest, UpdateStreamParentBasicExclusive) {
   /* Tree:
         0
        / \
@@ -195,7 +225,7 @@ TEST_F(Http2PriorityWriteSchedulerTest, SetStreamParentBasicExclusive) {
   scheduler_.RegisterStream(2, 0, 100, false);
   scheduler_.RegisterStream(3, 1, 100, false);
   scheduler_.RegisterStream(4, 1, 100, false);
-  scheduler_.SetStreamParent(1, 2, true);
+  scheduler_.UpdateStreamParent(1, 2, true);
   EXPECT_THAT(scheduler_.GetStreamChildren(0), ElementsAre(2));
   EXPECT_THAT(scheduler_.GetStreamChildren(1), UnorderedElementsAre(3, 4));
   EXPECT_THAT(scheduler_.GetStreamChildren(2), ElementsAre(1));
@@ -206,15 +236,15 @@ TEST_F(Http2PriorityWriteSchedulerTest, SetStreamParentBasicExclusive) {
 
 // We can't set the parent of a nonexistent stream, or set the parent to a
 // nonexistent stream.
-TEST_F(Http2PriorityWriteSchedulerTest, SetStreamParentNonexistent) {
+TEST_F(Http2PriorityWriteSchedulerTest, UpdateStreamParentNonexistent) {
   scheduler_.RegisterStream(1, 0, 100, false);
   scheduler_.RegisterStream(2, 0, 100, false);
   for (bool exclusive : {true, false}) {
-    EXPECT_SPDY_BUG(scheduler_.SetStreamParent(1, 3, exclusive),
+    EXPECT_SPDY_BUG(scheduler_.UpdateStreamParent(1, 3, exclusive),
                     "Parent stream 3 not registered");
-    EXPECT_SPDY_BUG(scheduler_.SetStreamParent(4, 2, exclusive),
+    EXPECT_SPDY_BUG(scheduler_.UpdateStreamParent(4, 2, exclusive),
                     "Stream 4 not registered");
-    EXPECT_SPDY_BUG(scheduler_.SetStreamParent(3, 4, exclusive),
+    EXPECT_SPDY_BUG(scheduler_.UpdateStreamParent(3, 4, exclusive),
                     "Stream 3 not registered");
     EXPECT_THAT(scheduler_.GetStreamChildren(0), UnorderedElementsAre(1, 2));
     EXPECT_THAT(scheduler_.GetStreamChildren(1), IsEmpty());
@@ -225,7 +255,7 @@ TEST_F(Http2PriorityWriteSchedulerTest, SetStreamParentNonexistent) {
 
 // We should be able to add multiple children to streams.
 TEST_F(Http2PriorityWriteSchedulerTest,
-       SetStreamParentMultipleChildrenNonExclusive) {
+       UpdateStreamParentMultipleChildrenNonExclusive) {
   /* Tree:
         0
        / \
@@ -238,7 +268,7 @@ TEST_F(Http2PriorityWriteSchedulerTest,
   scheduler_.RegisterStream(3, 1, 100, false);
   scheduler_.RegisterStream(4, 1, 100, false);
   scheduler_.RegisterStream(5, 2, 100, false);
-  scheduler_.SetStreamParent(2, 1, false);
+  scheduler_.UpdateStreamParent(2, 1, false);
   EXPECT_THAT(scheduler_.GetStreamChildren(0), ElementsAre(1));
   EXPECT_THAT(scheduler_.GetStreamChildren(1), UnorderedElementsAre(2, 3, 4));
   EXPECT_THAT(scheduler_.GetStreamChildren(2), ElementsAre(5));
@@ -249,7 +279,7 @@ TEST_F(Http2PriorityWriteSchedulerTest,
 }
 
 TEST_F(Http2PriorityWriteSchedulerTest,
-       SetStreamParentMultipleChildrenExclusive) {
+       UpdateStreamParentMultipleChildrenExclusive) {
   /* Tree:
         0
        / \
@@ -262,7 +292,7 @@ TEST_F(Http2PriorityWriteSchedulerTest,
   scheduler_.RegisterStream(3, 1, 100, false);
   scheduler_.RegisterStream(4, 1, 100, false);
   scheduler_.RegisterStream(5, 2, 100, false);
-  scheduler_.SetStreamParent(2, 1, true);
+  scheduler_.UpdateStreamParent(2, 1, true);
   EXPECT_THAT(scheduler_.GetStreamChildren(0), ElementsAre(1));
   EXPECT_THAT(scheduler_.GetStreamChildren(1), ElementsAre(2));
   EXPECT_THAT(scheduler_.GetStreamChildren(2), UnorderedElementsAre(3, 4, 5));
@@ -272,7 +302,7 @@ TEST_F(Http2PriorityWriteSchedulerTest,
   ASSERT_TRUE(peer_.ValidateInvariants());
 }
 
-TEST_F(Http2PriorityWriteSchedulerTest, SetStreamParentToChildNonExclusive) {
+TEST_F(Http2PriorityWriteSchedulerTest, UpdateStreamParentToChildNonExclusive) {
   /* Tree:
         0
         |
@@ -286,7 +316,7 @@ TEST_F(Http2PriorityWriteSchedulerTest, SetStreamParentToChildNonExclusive) {
   scheduler_.RegisterStream(2, 1, 100, false);
   scheduler_.RegisterStream(3, 1, 100, false);
   scheduler_.RegisterStream(4, 2, 100, false);
-  scheduler_.SetStreamParent(1, 2, false);
+  scheduler_.UpdateStreamParent(1, 2, false);
   EXPECT_THAT(scheduler_.GetStreamChildren(0), ElementsAre(2));
   EXPECT_THAT(scheduler_.GetStreamChildren(1), ElementsAre(3));
   EXPECT_THAT(scheduler_.GetStreamChildren(2), UnorderedElementsAre(1, 4));
@@ -295,7 +325,7 @@ TEST_F(Http2PriorityWriteSchedulerTest, SetStreamParentToChildNonExclusive) {
   ASSERT_TRUE(peer_.ValidateInvariants());
 }
 
-TEST_F(Http2PriorityWriteSchedulerTest, SetStreamParentToChildExclusive) {
+TEST_F(Http2PriorityWriteSchedulerTest, UpdateStreamParentToChildExclusive) {
   /* Tree:
         0
         |
@@ -309,7 +339,7 @@ TEST_F(Http2PriorityWriteSchedulerTest, SetStreamParentToChildExclusive) {
   scheduler_.RegisterStream(2, 1, 100, false);
   scheduler_.RegisterStream(3, 1, 100, false);
   scheduler_.RegisterStream(4, 2, 100, false);
-  scheduler_.SetStreamParent(1, 2, true);
+  scheduler_.UpdateStreamParent(1, 2, true);
   EXPECT_THAT(scheduler_.GetStreamChildren(0), ElementsAre(2));
   EXPECT_THAT(scheduler_.GetStreamChildren(1), UnorderedElementsAre(3, 4));
   EXPECT_THAT(scheduler_.GetStreamChildren(2), ElementsAre(1));
@@ -319,7 +349,7 @@ TEST_F(Http2PriorityWriteSchedulerTest, SetStreamParentToChildExclusive) {
 }
 
 TEST_F(Http2PriorityWriteSchedulerTest,
-       SetStreamParentToGrandchildNonExclusive) {
+       UpdateStreamParentToGrandchildNonExclusive) {
   /* Tree:
         0
         |
@@ -337,7 +367,7 @@ TEST_F(Http2PriorityWriteSchedulerTest,
   scheduler_.RegisterStream(4, 2, 100, false);
   scheduler_.RegisterStream(5, 2, 100, false);
   scheduler_.RegisterStream(6, 4, 100, false);
-  scheduler_.SetStreamParent(1, 4, false);
+  scheduler_.UpdateStreamParent(1, 4, false);
   EXPECT_THAT(scheduler_.GetStreamChildren(0), ElementsAre(4));
   EXPECT_THAT(scheduler_.GetStreamChildren(1), UnorderedElementsAre(2, 3));
   EXPECT_THAT(scheduler_.GetStreamChildren(2), ElementsAre(5));
@@ -348,7 +378,8 @@ TEST_F(Http2PriorityWriteSchedulerTest,
   ASSERT_TRUE(peer_.ValidateInvariants());
 }
 
-TEST_F(Http2PriorityWriteSchedulerTest, SetStreamParentToGrandchildExclusive) {
+TEST_F(Http2PriorityWriteSchedulerTest,
+       UpdateStreamParentToGrandchildExclusive) {
   /* Tree:
         0
         |
@@ -366,7 +397,7 @@ TEST_F(Http2PriorityWriteSchedulerTest, SetStreamParentToGrandchildExclusive) {
   scheduler_.RegisterStream(4, 2, 100, false);
   scheduler_.RegisterStream(5, 2, 100, false);
   scheduler_.RegisterStream(6, 4, 100, false);
-  scheduler_.SetStreamParent(1, 4, true);
+  scheduler_.UpdateStreamParent(1, 4, true);
   EXPECT_THAT(scheduler_.GetStreamChildren(0), ElementsAre(4));
   EXPECT_THAT(scheduler_.GetStreamChildren(1), UnorderedElementsAre(2, 3, 6));
   EXPECT_THAT(scheduler_.GetStreamChildren(2), ElementsAre(5));
@@ -377,12 +408,12 @@ TEST_F(Http2PriorityWriteSchedulerTest, SetStreamParentToGrandchildExclusive) {
   ASSERT_TRUE(peer_.ValidateInvariants());
 }
 
-TEST_F(Http2PriorityWriteSchedulerTest, SetStreamParentToParent) {
+TEST_F(Http2PriorityWriteSchedulerTest, UpdateStreamParentToParent) {
   scheduler_.RegisterStream(1, 0, 100, false);
   scheduler_.RegisterStream(2, 1, 100, false);
   scheduler_.RegisterStream(3, 1, 100, false);
   for (bool exclusive : {true, false}) {
-    scheduler_.SetStreamParent(2, 1, exclusive);
+    scheduler_.UpdateStreamParent(2, 1, exclusive);
     EXPECT_THAT(scheduler_.GetStreamChildren(0), ElementsAre(1));
     EXPECT_THAT(scheduler_.GetStreamChildren(1), UnorderedElementsAre(2, 3));
     EXPECT_THAT(scheduler_.GetStreamChildren(2), IsEmpty());
@@ -391,11 +422,11 @@ TEST_F(Http2PriorityWriteSchedulerTest, SetStreamParentToParent) {
   ASSERT_TRUE(peer_.ValidateInvariants());
 }
 
-TEST_F(Http2PriorityWriteSchedulerTest, SetStreamParentToSelf) {
+TEST_F(Http2PriorityWriteSchedulerTest, UpdateStreamParentToSelf) {
   scheduler_.RegisterStream(1, 0, 100, false);
-  EXPECT_SPDY_BUG(scheduler_.SetStreamParent(1, 1, false),
+  EXPECT_SPDY_BUG(scheduler_.UpdateStreamParent(1, 1, false),
                   "Cannot set stream to be its own parent");
-  EXPECT_SPDY_BUG(scheduler_.SetStreamParent(1, 1, true),
+  EXPECT_SPDY_BUG(scheduler_.UpdateStreamParent(1, 1, true),
                   "Cannot set stream to be its own parent");
   EXPECT_THAT(scheduler_.GetStreamChildren(0), ElementsAre(1));
   EXPECT_THAT(scheduler_.GetStreamChildren(1), IsEmpty());
@@ -447,7 +478,7 @@ TEST_F(Http2PriorityWriteSchedulerTest, BlockAndUnblock) {
   scheduler_.RegisterStream(7, 0, 100, false);
   scheduler_.RegisterStream(13, 7, 100, true);
   scheduler_.RegisterStream(14, 7, 100, false);
-  scheduler_.SetStreamParent(7, 3, false);
+  scheduler_.UpdateStreamParent(7, 3, false);
   EXPECT_EQ(0u, scheduler_.GetStreamParent(1));
   EXPECT_EQ(0u, scheduler_.GetStreamParent(2));
   EXPECT_EQ(0u, scheduler_.GetStreamParent(3));
@@ -478,22 +509,18 @@ TEST_F(Http2PriorityWriteSchedulerTest, BlockAndUnblock) {
   ASSERT_TRUE(peer_.ValidateInvariants());
 }
 
-TEST_F(Http2PriorityWriteSchedulerTest, HasUsableStreams) {
-  EXPECT_FALSE(scheduler_.HasUsableStreams());
+TEST_F(Http2PriorityWriteSchedulerTest, HasReadyStreams) {
+  EXPECT_FALSE(scheduler_.HasReadyStreams());
   scheduler_.RegisterStream(1, 0, 10, false);
-  EXPECT_FALSE(scheduler_.HasUsableStreams());
-  scheduler_.MarkStreamReady(1, true);
-  EXPECT_TRUE(scheduler_.HasUsableStreams());
-  scheduler_.MarkStreamBlocked(1, true);
-  EXPECT_FALSE(scheduler_.HasUsableStreams());
+  EXPECT_FALSE(scheduler_.HasReadyStreams());
   scheduler_.MarkStreamReady(1, false);
-  EXPECT_FALSE(scheduler_.HasUsableStreams());
-  scheduler_.MarkStreamBlocked(1, false);
-  EXPECT_FALSE(scheduler_.HasUsableStreams());
+  EXPECT_TRUE(scheduler_.HasReadyStreams());
+  scheduler_.MarkStreamNotReady(1);
+  EXPECT_FALSE(scheduler_.HasReadyStreams());
   scheduler_.MarkStreamReady(1, true);
-  EXPECT_TRUE(scheduler_.HasUsableStreams());
+  EXPECT_TRUE(scheduler_.HasReadyStreams());
   scheduler_.UnregisterStream(1);
-  EXPECT_FALSE(scheduler_.HasUsableStreams());
+  EXPECT_FALSE(scheduler_.HasReadyStreams());
   ASSERT_TRUE(peer_.ValidateInvariants());
 }
 
@@ -531,7 +558,53 @@ TEST_F(Http2PriorityWriteSchedulerTest, CalculateRoundedWeights) {
   ASSERT_TRUE(peer_.ValidateInvariants());
 }
 
-class PopNextUsableStreamTest : public Http2PriorityWriteSchedulerTest {
+TEST_F(Http2PriorityWriteSchedulerTest, GetLatestEventWithPrecedence) {
+  EXPECT_SPDY_BUG(scheduler_.RecordStreamEventTime(3, 5),
+                  "Stream 3 not registered");
+  EXPECT_SPDY_BUG(EXPECT_EQ(0, scheduler_.GetLatestEventWithPrecedence(4)),
+                  "Stream 4 not registered");
+
+  for (int i = 1; i < 5; ++i) {
+    scheduler_.RegisterStream(i, 0, SpdyPriorityToHttp2Weight(i), false);
+  }
+  for (int i = 1; i < 5; ++i) {
+    EXPECT_EQ(0, scheduler_.GetLatestEventWithPrecedence(i));
+  }
+  for (int i = 1; i < 5; ++i) {
+    scheduler_.RecordStreamEventTime(i, i * 100);
+  }
+  for (int i = 1; i < 5; ++i) {
+    EXPECT_EQ((i - 1) * 100, scheduler_.GetLatestEventWithPrecedence(i));
+  }
+}
+
+// Add ready streams at front and back.
+TEST_F(Http2PriorityWriteSchedulerTest, MarkReadyFrontAndBack) {
+  scheduler_.RegisterStream(1, 0, 10, false);
+  scheduler_.RegisterStream(2, 0, 20, false);
+  scheduler_.RegisterStream(3, 0, 20, false);
+  scheduler_.RegisterStream(4, 0, 20, false);
+  scheduler_.RegisterStream(5, 0, 30, false);
+
+  for (int i = 1; i < 6; ++i) {
+    scheduler_.MarkStreamReady(i, false);
+  }
+  EXPECT_EQ(5u, scheduler_.PopNextReadyStream());
+  EXPECT_EQ(2u, scheduler_.PopNextReadyStream());
+  scheduler_.MarkStreamReady(2, false);
+  EXPECT_EQ(3u, scheduler_.PopNextReadyStream());
+  scheduler_.MarkStreamReady(3, false);
+  EXPECT_EQ(4u, scheduler_.PopNextReadyStream());
+  scheduler_.MarkStreamReady(4, false);
+  EXPECT_EQ(2u, scheduler_.PopNextReadyStream());
+  scheduler_.MarkStreamReady(2, true);
+  EXPECT_EQ(2u, scheduler_.PopNextReadyStream());
+  scheduler_.MarkStreamReady(5, false);
+  scheduler_.MarkStreamReady(2, true);
+  EXPECT_EQ(5u, scheduler_.PopNextReadyStream());
+}
+
+class PopNextReadyStreamTest : public Http2PriorityWriteSchedulerTest {
  protected:
   void SetUp() override {
     /* Create the tree.
@@ -556,7 +629,7 @@ class PopNextUsableStreamTest : public Http2PriorityWriteSchedulerTest {
 
     // Set all nodes ready to write.
     for (SpdyStreamId id = 1; id <= 8; ++id) {
-      scheduler_.MarkStreamReady(id, true);
+      scheduler_.MarkStreamReady(id, false);
     }
   }
 
@@ -566,8 +639,8 @@ class PopNextUsableStreamTest : public Http2PriorityWriteSchedulerTest {
     const int kNumCyclesToCheck = 2;
     for (int i = 0; i < kNumCyclesToCheck; i++) {
       for (SpdyStreamId expected_id : stream_ids) {
-        SpdyStreamId next_id = scheduler_.PopNextUsableStream();
-        scheduler_.MarkStreamReady(next_id, true);
+        SpdyStreamId next_id = scheduler_.PopNextReadyStream();
+        scheduler_.MarkStreamReady(next_id, false);
         if (next_id != expected_id) {
           return AssertionFailure() << "Pick " << count << ": expected stream "
                                     << expected_id << " instead of " << next_id;
@@ -583,39 +656,39 @@ class PopNextUsableStreamTest : public Http2PriorityWriteSchedulerTest {
 };
 
 // When all streams are schedulable, only top-level streams should be returned.
-TEST_F(PopNextUsableStreamTest, NoneBlocked) {
+TEST_F(PopNextReadyStreamTest, NoneBlocked) {
   EXPECT_TRUE(PopNextReturnsCycle({1, 2, 3}));
 }
 
 // When a parent stream is blocked, its children should be scheduled, if
 // priorities allow.
-TEST_F(PopNextUsableStreamTest, SingleStreamBlocked) {
-  scheduler_.MarkStreamReady(1, false);
+TEST_F(PopNextReadyStreamTest, SingleStreamBlocked) {
+  scheduler_.MarkStreamNotReady(1);
 
   // Round-robin only across 2 and 3, since children of 1 have lower priority.
   EXPECT_TRUE(PopNextReturnsCycle({2, 3}));
 
   // Make children of 1 have equal priority as 2 and 3, after which they should
   // be returned as well.
-  scheduler_.SetStreamWeight(1, 200);
+  scheduler_.UpdateStreamWeight(1, 200);
   EXPECT_TRUE(PopNextReturnsCycle({4, 5, 2, 3}));
 }
 
 // Block multiple levels of streams.
-TEST_F(PopNextUsableStreamTest, MultiLevelBlocked) {
+TEST_F(PopNextReadyStreamTest, MultiLevelBlocked) {
   for (SpdyStreamId stream_id : {1, 4, 5}) {
-    scheduler_.MarkStreamReady(stream_id, false);
+    scheduler_.MarkStreamNotReady(stream_id);
   }
   // Round-robin only across 2 and 3, since children of 1 have lower priority.
   EXPECT_TRUE(PopNextReturnsCycle({2, 3}));
 
   // Make 8 have equal priority as 2 and 3.
-  scheduler_.SetStreamWeight(1, 200);
+  scheduler_.UpdateStreamWeight(1, 200);
   EXPECT_TRUE(PopNextReturnsCycle({8, 2, 3}));
 }
 
 // A removed stream shouldn't be scheduled.
-TEST_F(PopNextUsableStreamTest, RemoveStream) {
+TEST_F(PopNextReadyStreamTest, RemoveStream) {
   scheduler_.UnregisterStream(1);
 
   // Round-robin only across 2 and 3, since previous children of 1 have lower
@@ -624,52 +697,52 @@ TEST_F(PopNextUsableStreamTest, RemoveStream) {
   EXPECT_TRUE(PopNextReturnsCycle({2, 3}));
 
   // Make previous children of 1 have equal priority as 2 and 3.
-  scheduler_.SetStreamWeight(4, 100);
-  scheduler_.SetStreamWeight(5, 100);
+  scheduler_.UpdateStreamWeight(4, 100);
+  scheduler_.UpdateStreamWeight(5, 100);
   EXPECT_TRUE(PopNextReturnsCycle({4, 5, 2, 3}));
 }
 
 // Block an entire subtree.
-TEST_F(PopNextUsableStreamTest, SubtreeBlocked) {
+TEST_F(PopNextReadyStreamTest, SubtreeBlocked) {
   for (SpdyStreamId stream_id : {1, 4, 5, 8}) {
-    scheduler_.MarkStreamReady(stream_id, false);
+    scheduler_.MarkStreamNotReady(stream_id);
   }
   EXPECT_TRUE(PopNextReturnsCycle({2, 3}));
 }
 
 // If all parent streams are blocked, children should be returned.
-TEST_F(PopNextUsableStreamTest, ParentsBlocked) {
+TEST_F(PopNextReadyStreamTest, ParentsBlocked) {
   for (SpdyStreamId stream_id : {1, 2, 3}) {
-    scheduler_.MarkStreamReady(stream_id, false);
+    scheduler_.MarkStreamNotReady(stream_id);
   }
   EXPECT_TRUE(PopNextReturnsCycle({4, 5, 6, 7}));
 }
 
 // Unblocking streams should make them schedulable.
-TEST_F(PopNextUsableStreamTest, BlockAndUnblock) {
+TEST_F(PopNextReadyStreamTest, BlockAndUnblock) {
   EXPECT_TRUE(PopNextReturnsCycle({1, 2, 3}));
-  scheduler_.MarkStreamReady(2, false);
+  scheduler_.MarkStreamNotReady(2);
   EXPECT_TRUE(PopNextReturnsCycle({1, 3}));
-  scheduler_.MarkStreamReady(2, true);
+  scheduler_.MarkStreamReady(2, false);
   // Cycle order permuted since 2 effectively appended at tail.
   EXPECT_TRUE(PopNextReturnsCycle({1, 3, 2}));
 }
 
 // Block nodes in multiple subtrees.
-TEST_F(PopNextUsableStreamTest, ScatteredBlocked) {
+TEST_F(PopNextReadyStreamTest, ScatteredBlocked) {
   for (SpdyStreamId stream_id : {1, 2, 6, 7}) {
-    scheduler_.MarkStreamReady(stream_id, false);
+    scheduler_.MarkStreamNotReady(stream_id);
   }
   // Only 3 returned, since of remaining streams it has highest priority.
   EXPECT_TRUE(PopNextReturnsCycle({3}));
 
   // Make children of 1 have priority equal to 3.
-  scheduler_.SetStreamWeight(1, 200);
+  scheduler_.UpdateStreamWeight(1, 200);
   EXPECT_TRUE(PopNextReturnsCycle({4, 5, 3}));
 
   // When 4 is blocked, its child 8 should take its place, since it has same
   // priority.
-  scheduler_.MarkStreamReady(4, false);
+  scheduler_.MarkStreamNotReady(4);
   EXPECT_TRUE(PopNextReturnsCycle({8, 5, 3}));
 }
 
