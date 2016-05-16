@@ -172,6 +172,9 @@ def chromium_bare(c):
   p['pdfium'] = ('src/third_party/pdfium', 'HEAD')
   p['skia'] = ('src/third_party/skia', 'HEAD')
   p['flac'] = ('src/third_party/flac', 'HEAD')
+  # TODO(kjellander): Change to the path below to src/third_party/webrtc mapping
+  # to 'HEAD' after http://crbug.com/611808 is fixed.
+  p['webrtc'] = ('src/third_party', None)
 
 @config_ctx(includes=['chromium_bare'])
 def chromium_empty(c):
