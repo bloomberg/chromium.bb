@@ -29091,6 +29091,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.QuicStreamFactory.TSVIPCliIsLoaded" enum="Boolean">
+  <owner>rtenneti@chromium.org</owner>
+  <summary>
+    Whether TSVIPCli DLL is loaded or not on windows when the socket is
+    configured.
+  </summary>
+</histogram>
+
 <histogram name="Net.QuicTimeBetweenTwoPacketSent" units="ms">
   <owner>zhongyi@chromium.org</owner>
   <summary>

@@ -1478,6 +1478,13 @@ int QuicStreamFactory::ConfigureSocket(DatagramClientSocket* socket,
 #endif
   }
 
+#if defined(OS_WIN)
+  // TODO(rtenneti): Delete the check for TSVIPCli.dll loaded and the histogram.
+  bool tsvipcli_loaded = ::GetModuleHandle(L"TSVIPCli.dll") != NULL;
+  UMA_HISTOGRAM_BOOLEAN("Net.QuicStreamFactory.TSVIPCliIsLoaded",
+                        tsvipcli_loaded);
+#endif
+
   int rv;
   if (migrate_sessions_on_network_change_) {
     // If caller leaves network unspecified, use current default network.
