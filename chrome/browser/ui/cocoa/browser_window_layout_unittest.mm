@@ -9,6 +9,22 @@
 #import "chrome/browser/ui/cocoa/browser_window_layout.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
+#include "ui/base/material_design/material_design_controller.h"
+
+namespace {
+
+// In Material Design, the tabstrip's height is 2px smaller. As such, the
+// expected y values in the tests need to take account of the offset.
+
+int TabStripYOffset() {
+  return ui::MaterialDesignController::IsModeMaterial() ? 2 : 0;
+}
+
+int AvatarYOffset() {
+  return ui::MaterialDesignController::IsModeMaterial() ? 1 : 0;
+}
+
+} // namespace
 
 class BrowserWindowLayoutTest : public testing::Test {
  public:
@@ -56,39 +72,46 @@ class BrowserWindowLayoutTest : public testing::Test {
 };
 
 TEST_F(BrowserWindowLayoutTest, TestAllViews) {
+  int yOffset = TabStripYOffset();
   chrome::LayoutOutput output = [layout computeLayout];
 
-  EXPECT_NSEQ(NSMakeRect(0, 585, 600, 37), output.tabStripLayout.frame);
-  EXPECT_NSEQ(NSMakeRect(502, 589, 63, 28), output.tabStripLayout.avatarFrame);
+  EXPECT_NSEQ(NSMakeRect(0, 585 + yOffset, 600, 37 - yOffset),
+              output.tabStripLayout.frame);
+  EXPECT_NSEQ(NSMakeRect(502, 589 + AvatarYOffset(), 63, 28),
+              output.tabStripLayout.avatarFrame);
   EXPECT_EQ(70, output.tabStripLayout.leftIndent);
   EXPECT_EQ(98, output.tabStripLayout.rightIndent);
-  EXPECT_NSEQ(NSMakeRect(0, 553, 600, 32), output.toolbarFrame);
-  EXPECT_NSEQ(NSMakeRect(0, 527, 600, 26), output.bookmarkFrame);
+
+  EXPECT_NSEQ(NSMakeRect(0, 553 + yOffset, 600, 32), output.toolbarFrame);
+  EXPECT_NSEQ(NSMakeRect(0, 527 + yOffset, 600, 26), output.bookmarkFrame);
   EXPECT_NSEQ(NSZeroRect, output.fullscreenBackingBarFrame);
-  EXPECT_EQ(527, output.findBarMaxY);
-  EXPECT_NSEQ(NSMakeRect(0, 455, 600, 111), output.infoBarFrame);
+  EXPECT_EQ(527 + yOffset, output.findBarMaxY);
+  EXPECT_NSEQ(NSMakeRect(0, 455 + yOffset, 600, 111), output.infoBarFrame);
   EXPECT_NSEQ(NSMakeRect(0, 0, 600, 44), output.downloadShelfFrame);
-  EXPECT_NSEQ(NSMakeRect(0, 44, 600, 411), output.contentAreaFrame);
+  EXPECT_NSEQ(NSMakeRect(0, 44, 600, 411 + yOffset), output.contentAreaFrame);
 }
 
 TEST_F(BrowserWindowLayoutTest, TestAllViewsFullscreen) {
   ApplyStandardFullscreenLayoutParameters();
-
+  int yOffset = TabStripYOffset();
   chrome::LayoutOutput output = [layout computeLayout];
 
-  EXPECT_NSEQ(NSMakeRect(0, 585, 600, 37), output.tabStripLayout.frame);
-  EXPECT_NSEQ(NSMakeRect(533, 589, 63, 28), output.tabStripLayout.avatarFrame);
+  EXPECT_NSEQ(NSMakeRect(0, 585 + yOffset, 600, 37 - yOffset),
+              output.tabStripLayout.frame);
+  EXPECT_NSEQ(NSMakeRect(533, 589 + AvatarYOffset(), 63, 28),
+              output.tabStripLayout.avatarFrame);
   EXPECT_EQ(0, output.tabStripLayout.leftIndent);
   EXPECT_FALSE(output.tabStripLayout.addCustomWindowControls);
   EXPECT_EQ(67, output.tabStripLayout.rightIndent);
-  EXPECT_NSEQ(NSMakeRect(0, 553, 600, 32), output.toolbarFrame);
-  EXPECT_NSEQ(NSMakeRect(0, 527, 600, 26), output.bookmarkFrame);
-  EXPECT_NSEQ(NSMakeRect(0, 527, 600, 95), output.fullscreenBackingBarFrame);
-  EXPECT_EQ(527, output.findBarMaxY);
-  EXPECT_EQ(527, output.fullscreenExitButtonMaxY);
-  EXPECT_NSEQ(NSMakeRect(0, 455, 600, 111), output.infoBarFrame);
+  EXPECT_NSEQ(NSMakeRect(0, 553 + yOffset, 600, 32), output.toolbarFrame);
+  EXPECT_NSEQ(NSMakeRect(0, 527 + yOffset, 600, 26), output.bookmarkFrame);
+  EXPECT_NSEQ(NSMakeRect(0, 527 + yOffset, 600, 95 - yOffset),
+              output.fullscreenBackingBarFrame);
+  EXPECT_EQ(527 + yOffset, output.findBarMaxY);
+  EXPECT_EQ(527 + yOffset, output.fullscreenExitButtonMaxY);
+  EXPECT_NSEQ(NSMakeRect(0, 455 + yOffset, 600, 111), output.infoBarFrame);
   EXPECT_NSEQ(NSMakeRect(0, 0, 600, 44), output.downloadShelfFrame);
-  EXPECT_NSEQ(NSMakeRect(0, 44, 600, 411), output.contentAreaFrame);
+  EXPECT_NSEQ(NSMakeRect(0, 44, 600, 411 + yOffset), output.contentAreaFrame);
 }
 
 // In fullscreen mode for Yosemite, the tab strip's left indent should be
@@ -107,21 +130,25 @@ TEST_F(BrowserWindowLayoutTest, TestAllViewsFullscreenMenuBarShowing) {
   ApplyStandardFullscreenLayoutParameters();
   [layout setFullscreenMenubarOffset:-10];
 
+  int yOffset = TabStripYOffset();
   chrome::LayoutOutput output = [layout computeLayout];
 
-  EXPECT_NSEQ(NSMakeRect(0, 575, 600, 37), output.tabStripLayout.frame);
-  EXPECT_NSEQ(NSMakeRect(533, 579, 63, 28), output.tabStripLayout.avatarFrame);
+  EXPECT_NSEQ(NSMakeRect(0, 575 + yOffset, 600, 37 - yOffset),
+              output.tabStripLayout.frame);
+  EXPECT_NSEQ(NSMakeRect(533, 579 + AvatarYOffset(), 63, 28),
+              output.tabStripLayout.avatarFrame);
   EXPECT_EQ(0, output.tabStripLayout.leftIndent);
   EXPECT_FALSE(output.tabStripLayout.addCustomWindowControls);
   EXPECT_EQ(67, output.tabStripLayout.rightIndent);
-  EXPECT_NSEQ(NSMakeRect(0, 543, 600, 32), output.toolbarFrame);
-  EXPECT_NSEQ(NSMakeRect(0, 517, 600, 26), output.bookmarkFrame);
-  EXPECT_NSEQ(NSMakeRect(0, 517, 600, 95), output.fullscreenBackingBarFrame);
-  EXPECT_EQ(517, output.findBarMaxY);
-  EXPECT_EQ(517, output.fullscreenExitButtonMaxY);
-  EXPECT_NSEQ(NSMakeRect(0, 445, 600, 111), output.infoBarFrame);
+  EXPECT_NSEQ(NSMakeRect(0, 543 + yOffset, 600, 32), output.toolbarFrame);
+  EXPECT_NSEQ(NSMakeRect(0, 517 + yOffset, 600, 26), output.bookmarkFrame);
+  EXPECT_NSEQ(NSMakeRect(0, 517 + yOffset, 600, 95 - yOffset),
+              output.fullscreenBackingBarFrame);
+  EXPECT_EQ(517 + yOffset, output.findBarMaxY);
+  EXPECT_EQ(517 + yOffset, output.fullscreenExitButtonMaxY);
+  EXPECT_NSEQ(NSMakeRect(0, 445 + yOffset, 600, 111), output.infoBarFrame);
   EXPECT_NSEQ(NSMakeRect(0, 0, 600, 44), output.downloadShelfFrame);
-  EXPECT_NSEQ(NSMakeRect(0, 44, 600, 411), output.contentAreaFrame);
+  EXPECT_NSEQ(NSMakeRect(0, 44, 600, 411 + yOffset), output.contentAreaFrame);
 }
 
 TEST_F(BrowserWindowLayoutTest, TestPopupWindow) {
@@ -211,5 +238,6 @@ TEST_F(BrowserWindowLayoutTest, TestAvatarButtonPixelAlignment) {
 
   chrome::LayoutOutput output = [layout computeLayout];
 
-  EXPECT_NSEQ(NSMakeRect(537, 589, 28, 28), output.tabStripLayout.avatarFrame);
+  EXPECT_NSEQ(NSMakeRect(537, 589 + AvatarYOffset(), 28, 28),
+              output.tabStripLayout.avatarFrame);
 }

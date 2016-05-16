@@ -10,11 +10,20 @@
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
+#include "ui/base/material_design/material_design_controller.h"
 
 namespace chrome {
 
 // The height of the tab strip.
 const CGFloat kTabStripHeight = 37;
+const CGFloat kMaterialTabStripHeight = 35;
+
+CGFloat TabStripHeight() {
+  if (ui::MaterialDesignController::IsModeMaterial())
+    return kMaterialTabStripHeight;
+
+  return kTabStripHeight;
+}
 
 }  // namespace chrome
 
@@ -195,8 +204,8 @@ const CGFloat kLocationBarRightOffset = 35;
   // Lay out the tab strip.
   maxY_ = parameters_.windowSize.height + fullscreenYOffset_;
   CGFloat width = parameters_.contentViewSize.width;
-  layout.frame = NSMakeRect(
-      0, maxY_ - chrome::kTabStripHeight, width, chrome::kTabStripHeight);
+  layout.frame = NSMakeRect(0, maxY_ - chrome::TabStripHeight(), width,
+                            chrome::TabStripHeight());
   maxY_ = NSMinY(layout.frame);
 
   // In Yosemite, there is no longer an exit fullscreen button in the top-right
@@ -226,14 +235,14 @@ const CGFloat kLocationBarRightOffset = 35;
       // Center the button, but make sure that it's pixel aligned on non-retina
       // displays. Use trunc() instead of round() to mimic the behavior of
       // autoresizesSubviews.
-      badgeYOffset = trunc((chrome::kTabStripHeight - buttonHeight) / 2);
+      badgeYOffset = trunc((chrome::TabStripHeight() - buttonHeight) / 2);
     } else {
       // Actually place the badge *above* |maxY|, by +2 to miss the divider.
       badgeYOffset = 2 * parameters_.avatarLineWidth;
     }
 
     NSSize size = NSMakeSize(parameters_.avatarSize.width,
-                             std::min(buttonHeight, chrome::kTabStripHeight));
+                             std::min(buttonHeight, chrome::TabStripHeight()));
     NSPoint origin =
         NSMakePoint(width - parameters_.avatarSize.width + badgeXOffset,
                     maxY_ + badgeYOffset);
@@ -377,7 +386,7 @@ const CGFloat kLocationBarRightOffset = 35;
 
   CGFloat totalHeight = 0;
   if (parameters_.hasTabStrip)
-    totalHeight += chrome::kTabStripHeight;
+    totalHeight += chrome::TabStripHeight();
 
   if (parameters_.hasToolbar) {
     totalHeight += parameters_.toolbarHeight;

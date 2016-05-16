@@ -93,8 +93,8 @@
     [self insertTabStripBackgroundViewIntoWindow:window titleBar:hasTitleBar];
 
     tabStripView_.reset([[TabStripView alloc]
-        initWithFrame:NSMakeRect(
-                          0, 0, kDefaultWidth, chrome::kTabStripHeight)]);
+        initWithFrame:NSMakeRect(0, 0, kDefaultWidth,
+                                 chrome::TabStripHeight())]);
     [tabStripView_ setAutoresizingMask:NSViewWidthSizable |
                                        NSViewMinYMargin];
     if (hasTabStrip)

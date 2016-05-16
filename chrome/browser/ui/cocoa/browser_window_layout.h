@@ -11,8 +11,8 @@
 
 namespace chrome {
 
-// The height of the tab strip.
-extern const CGFloat kTabStripHeight;
+// Returns the height of the tab strip.
+CGFloat TabStripHeight();
 
 // The parameters used to calculate the layout of the views managed by the
 // BrowserWindowController.
