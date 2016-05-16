@@ -18,21 +18,24 @@
     <application android:label="Android System WebView"
         android:icon="@drawable/icon_webview"
         android:multiArch="true">
-        <activity android:name="com.android.webview.chromium.LicenseActivity"
-                  android:label="@string/license_activity_title"
-                  >
-            <intent-filter>
-                <action android:name="android.settings.WEBVIEW_LICENSE" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-            <meta-data android:name="com.android.settings.PRIMARY_PROFILE_CONTROLLED"
-                       android:value="true" />
-        </activity>
-        <provider android:name="com.android.webview.chromium.LicenseContentProvider"
-                  android:exported="true"
-                  android:authorities="{{package|default('com.android.webview')}}.LicenseContentProvider" />
-        <meta-data android:name="com.android.webview.WebViewLibrary"
-                   android:value="libwebviewchromium.so" />
+        {# This part is shared between stand-alone WebView and Monochrome #}
+        {% macro common(manifest_package, webview_lib) %}
+            <activity android:name="com.android.webview.chromium.LicenseActivity"
+                    android:label="@string/license_activity_title">
+                <intent-filter>
+                    <action android:name="android.settings.WEBVIEW_LICENSE" />
+                    <category android:name="android.intent.category.DEFAULT" />
+                </intent-filter>
+                <meta-data android:name="com.android.settings.PRIMARY_PROFILE_CONTROLLED"
+                        android:value="true" />
+            </activity>
+            <provider android:name="com.android.webview.chromium.LicenseContentProvider"
+                    android:exported="true"
+                    android:authorities="{{ manifest_package }}.LicenseContentProvider" />
+            <meta-data android:name="com.android.webview.WebViewLibrary"
+                    android:value="{{ webview_lib }}" />
+        {% endmacro %}
+        {{ common(package|default('com.android.webview'), 'libwebviewchromium.so') }}
         <meta-data android:name="org.chromium.content.browser.NUM_SANDBOXED_SERVICES"
                    android:value="1"/>
         <service android:name="org.chromium.content.app.SandboxedProcessService0"
