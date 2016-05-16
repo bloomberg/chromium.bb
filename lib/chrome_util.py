@@ -54,7 +54,7 @@ def DictToGypDefines(def_dict):
   """Convert a dict to GYP_DEFINES format."""
   def_list = []
   for k, v in def_dict.iteritems():
-    def_list.append("%s='%s'" % (k, v))
+    def_list.append('%s="%s"' % (k, v))
   return ' '.join(def_list)
 
 
