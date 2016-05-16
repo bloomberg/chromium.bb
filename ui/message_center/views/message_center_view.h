@@ -44,8 +44,7 @@ class MESSAGE_CENTER_EXPORT MessageCenterView : public views::View,
                     MessageCenterTray* tray,
                     int max_height,
                     bool initially_settings_visible,
-                    bool top_down,
-                    const base::string16& title);
+                    bool top_down);
   ~MessageCenterView() override;
 
   void SetNotifications(const NotificationList::Notifications& notifications);
@@ -97,6 +96,7 @@ class MESSAGE_CENTER_EXPORT MessageCenterView : public views::View,
 
   void AddNotificationAt(const Notification& notification, int index);
   void NotificationsChanged();
+  base::string16 GetButtonBarTitle() const;
   void SetNotificationViewForTest(MessageView* view);
 
   MessageCenter* message_center_;  // Weak reference.

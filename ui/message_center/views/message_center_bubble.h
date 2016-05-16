@@ -55,8 +55,6 @@ class MESSAGE_CENTER_EXPORT MessageCenterBubble
   // the used anchor.
   bool first_item_has_no_margin_;
 
-  base::string16 title_;
-
   DISALLOW_COPY_AND_ASSIGN(MessageCenterBubble);
 };
 

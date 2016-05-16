@@ -198,9 +198,8 @@ void MessageCenterViewTest::SetUp() {
   message_center_->SetVisibleNotifications(notifications_);
 
   // Then create a new MessageCenterView with that single notification.
-  base::string16 title;
   message_center_view_.reset(new MessageCenterView(
-      message_center_.get(), NULL, 100, false, /*top_down =*/false, title));
+      message_center_.get(), NULL, 100, false, /*top_down =*/false));
   GetMessageListView()->quit_message_loop_after_animation_for_test_ = true;
   GetMessageCenterView()->SetBounds(0, 0, 380, 600);
   message_center_view_->SetNotifications(notifications_);

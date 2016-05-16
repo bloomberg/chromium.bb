@@ -278,6 +278,10 @@ void MessageCenterButtonBar::SetBackArrowVisible(bool visible) {
   Layout();
 }
 
+void MessageCenterButtonBar::SetTitle(const base::string16& title) {
+  notification_label_->SetText(title);
+}
+
 void MessageCenterButtonBar::ChildVisibilityChanged(views::View* child) {
   InvalidateLayout();
 }

@@ -633,7 +633,7 @@ need to be translated for each locale.-->
         </message>
       </if>
       <message name="IDS_MESSAGE_CENTER_NO_MESSAGES" desc="The message displayed in the message center when there are no notifications.">
-        Nothing to see here, move along.
+        You have no notifications
       </message>
       <message name="IDS_MESSAGE_CENTER_QUIET_MODE" desc="The button label for do not disturb mode.">
         Do not disturb

@@ -111,8 +111,7 @@ MessageCenterView::MessageCenterView(MessageCenter* message_center,
                                      MessageCenterTray* tray,
                                      int max_height,
                                      bool initially_settings_visible,
-                                     bool top_down,
-                                     const base::string16& title)
+                                     bool top_down)
     : message_center_(message_center),
       tray_(tray),
       scroller_(NULL),
@@ -133,11 +132,9 @@ MessageCenterView::MessageCenterView(MessageCenter* message_center,
 
   NotifierSettingsProvider* notifier_settings_provider =
       message_center_->GetNotifierSettingsProvider();
-  button_bar_ = new MessageCenterButtonBar(this,
-                                           message_center,
-                                           notifier_settings_provider,
-                                           initially_settings_visible,
-                                           title);
+  button_bar_ = new MessageCenterButtonBar(
+      this, message_center, notifier_settings_provider,
+      initially_settings_visible, GetButtonBarTitle());
 
   const int button_height = button_bar_->GetPreferredSize().height();
 
@@ -253,6 +250,7 @@ void MessageCenterView::SetSettingsVisible(bool visible) {
   settings_transition_animation_->Start();
 
   button_bar_->SetBackArrowVisible(visible);
+  button_bar_->SetTitle(GetButtonBarTitle());
 }
 
 void MessageCenterView::ClearAllClosableNotifications() {
@@ -601,6 +599,7 @@ void MessageCenterView::NotificationsChanged() {
     }
   }
   button_bar_->SetCloseAllButtonEnabled(!no_closable_views);
+  button_bar_->SetTitle(GetButtonBarTitle());
 
   if (no_message_views) {
     scroller_->SetFocusBehavior(FocusBehavior::NEVER);
@@ -618,6 +617,14 @@ void MessageCenterView::NotificationsChanged() {
   scroller_->InvalidateLayout();
   PreferredSizeChanged();
   Layout();
+}
+
+base::string16 MessageCenterView::GetButtonBarTitle() const {
+  bool no_message_views = notification_views_.empty();
+  if (no_message_views && !settings_visible_)
+    return l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_NO_MESSAGES);
+
+  return l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_FOOTER_TITLE);
 }
 
 void MessageCenterView::SetNotificationViewForTest(MessageView* view) {
