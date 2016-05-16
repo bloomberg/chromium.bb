@@ -141,6 +141,7 @@ HostedAppTest*
 ImageWriterPrivateApiTest.TestWriteFromFile
 InlineInstallPrivateApiTestApp*
 InstallGoodExtensionSettingsWebUITest.showOptions
+ManageProfileUITestAsync.CreateExistingSupervisedUser
 MaterialHistoryBrowserTest*
 MimeHandlerViewTest.Abort
 MimeHandlerViewTest.EmbeddedDataUrlObject
@@ -148,10 +149,12 @@ MultilanguageOptionsWebUI*
 PDFExtensionTest*
 PasswordsPrivateApiTest.RequestPlaintextPassword
 PolicyPref*
+PredictorBrowserTest*
 ProfileWindow*
 PushMessagingBrowserTest.SubscribeWithoutKeySuccessNotificationsGranted
 SubframeTaskBrowserTest.TaskManagerShowsSubframeTasks
 SyncSetupWebUITestAsync.RestoreSyncDataTypes
+WebRtcDisableEncryptionFlagBrowserTest.VerifyEncryption
 WebUIWebView*
 WebrtcEventLogApiTest*
 ZoomControllerBrowserTest.NavigationResetsManualMode
