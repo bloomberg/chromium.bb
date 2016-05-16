@@ -191,6 +191,7 @@ BlimpClientSession::~BlimpClientSession() {
 }
 
 void BlimpClientSession::Connect(const std::string& client_auth_token) {
+  VLOG(1) << "Trying to get assignment.";
   assignment_source_->GetAssignment(
       client_auth_token, base::Bind(&BlimpClientSession::ConnectWithAssignment,
                                     weak_factory_.GetWeakPtr()));
@@ -201,9 +202,11 @@ void BlimpClientSession::ConnectWithAssignment(AssignmentSource::Result result,
   OnAssignmentConnectionAttempted(result, assignment);
 
   if (result != AssignmentSource::Result::RESULT_OK) {
-    VLOG(1) << "Assignment request failed: " << result;
+    LOG(FATAL) << "Assignment failed, reason: " << result;
     return;
   }
+
+  VLOG(1) << "Assignment succeeded";
 
   io_thread_.task_runner()->PostTask(
       FROM_HERE,
