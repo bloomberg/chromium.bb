@@ -785,7 +785,7 @@
           ],
         },
         {
-          'target_name': 'libcronet',
+          'target_name': 'libcronet_shared',
           'type': 'shared_library',
           'sources': [
             'cronet/ios/Cronet.h',
@@ -879,7 +879,7 @@
             'dependencies': [
               # Depend on the dummy target so that all of CrNet's dependencies
               # are built before packaging.
-              'libcronet',
+              'libcronet_shared',
             ],
             'actions': [
               {
@@ -891,13 +891,13 @@
                 # Actions need an inputs list, even if it's empty.
                 'inputs': [
                   '<(tool_path)',
-                  '<(PRODUCT_DIR)/libcronet.dylib',
+                  '<(PRODUCT_DIR)/libcronet_shared.dylib',
                 ],
                 # Only specify one output, since this will be libtool's output.
                 'outputs': [ '<(package_dir)/libcronet_standalone_with_symbols.a' ],
                 'action': ['<(tool_path)',
                            '<(PRODUCT_DIR)',
-                           'libcronet.dylib',
+                           'libcronet_shared.dylib',
                            '<@(_outputs)',
                 ],
               },
