@@ -1,6 +1,6 @@
 Name: Brotli
 URL: https://github.com/google/brotli
-Version: 510131d1db47f91602f45b9a8d7b1ee54d12a629
+Version: 45f130ac4c5d2abf13e0ed1e9a3e08369c6b9c34
 License: MIT
 License File: LICENSE
 Security Critical: yes
@@ -11,8 +11,10 @@ byte-compression level in WOFF 2.0 font file format. This library is used
 to decode WOFF 2.0 fonts.
 
 Local Modifications:
-- This only includes the dec/ directory, the README.md and the LICENSE
-  files, removing unneeded direcories such as encoder, tests, and tools.
-- .gitignore: Added.
+- This only includes the enc/, dec/ and tools/ directories, the README.md and
+  the LICENSE files, removing unneeded direcories such as docs, tests, and
+  tools.
 - BUILD.gn: Added.
 - brotli.gyp: Added.
+- enc/static_dict_lut.h: split up into two files (enc/static_dict_lut.h,
+  enc/static_dict_lut2.h) to allow upload to codereview.
