@@ -767,7 +767,8 @@ void BrowserPluginGuest::OnWillAttachComplete(
   delegate_->DidAttach(GetGuestProxyRoutingID());
   RenderWidgetHostViewGuest* rwhv = static_cast<RenderWidgetHostViewGuest*>(
       web_contents()->GetRenderWidgetHostView());
-  rwhv->RegisterSurfaceNamespaceId();
+  if (rwhv)
+    rwhv->RegisterSurfaceNamespaceId();
   has_render_view_ = true;
 
   RecordAction(base::UserMetricsAction("BrowserPlugin.Guest.Attached"));
