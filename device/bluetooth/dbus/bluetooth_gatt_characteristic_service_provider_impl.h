@@ -93,19 +93,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattCharacteristicServiceProviderImpl
                 const std::vector<uint8_t>& value);
 
   // Writes an array of the service's properties into the provided writer.
-  void WriteProperties(dbus::MessageWriter* writer,
-                       const std::vector<uint8_t>* value) override;
-
-  // Called by the Delegate in response to a successful method call to get the
-  // characteristic value.
-  void OnGet(dbus::MethodCall* method_call,
-             dbus::ExportedObject::ResponseSender response_sender,
-             const std::vector<uint8_t>& value);
-
-  // Called by the Delegate in response to a successful method call to set the
-  // characteristic value.
-  void OnSet(dbus::MethodCall* method_call,
-             dbus::ExportedObject::ResponseSender response_sender);
+  void WriteProperties(dbus::MessageWriter* writer) override;
 
   // Called by the Delegate in response to a method to call to read the value
   // of this characteristic.

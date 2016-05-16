@@ -138,10 +138,9 @@ void BluetoothGattServiceServiceProviderImpl::Get(
 void BluetoothGattServiceServiceProviderImpl::Set(
     dbus::MethodCall* method_call,
     dbus::ExportedObject::ResponseSender response_sender) {
-  VLOG(2) << "BluetoothGattServiceServiceProvider::Set: "
+  VLOG(2) << "BluetoothGattServiceServiceProviderImpl::Set: "
           << object_path_.value();
   DCHECK(OnOriginThread());
-
   // All of the properties on this interface are read-only, so just return
   // error.
   std::unique_ptr<dbus::ErrorResponse> error_response =

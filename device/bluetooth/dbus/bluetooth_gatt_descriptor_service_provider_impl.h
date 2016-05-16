@@ -63,29 +63,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattDescriptorServiceProviderImpl
                   const std::string& method_name,
                   bool success);
 
-  // Called by the Delegate in response to a method to call to get all
-  // properties, in which the delegate has successfully returned the
-  // descriptor value.
-  void OnGetAll(dbus::MethodCall* method_call,
-                dbus::ExportedObject::ResponseSender response_sender,
-                const std::vector<uint8_t>& value);
-
   // Writes the characteristics's properties into the provided writer. If
   // value is not null, it is written also, otherwise no value property is
   // written.
-  void WriteProperties(dbus::MessageWriter* writer,
-                       const std::vector<uint8_t>* value) override;
-
-  // Called by the Delegate in response to a successful method call to get the
-  // descriptor value.
-  void OnGet(dbus::MethodCall* method_call,
-             dbus::ExportedObject::ResponseSender response_sender,
-             const std::vector<uint8_t>& value);
-
-  // Called by the Delegate in response to a successful method call to set the
-  // descriptor value.
-  void OnSet(dbus::MethodCall* method_call,
-             dbus::ExportedObject::ResponseSender response_sender);
+  void WriteProperties(dbus::MessageWriter* writer) override;
 
   // Called by the Delegate in response to a failed method call to get or set
   // the descriptor value.

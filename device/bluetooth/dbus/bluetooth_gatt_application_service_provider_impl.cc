@@ -86,26 +86,8 @@ void BluetoothGattApplicationServiceProviderImpl::WriteInterfaceDict(
   // Key: Interface name. [ {s ]
   interface_dict_writer.AppendString(attribute_interface);
   // Value: Open a array for properties_list. [ a{sv}} ]
-  WriteAttributeProperties(&interface_dict_writer, attribute_provider);
+  attribute_provider->WriteProperties(&interface_dict_writer);
   writer->CloseContainer(&interface_dict_writer);
-}
-
-void BluetoothGattApplicationServiceProviderImpl::WriteAttributeProperties(
-    dbus::MessageWriter* writer,
-    BluetoothGattServiceServiceProvider* service_provider) {
-  service_provider->WriteProperties(writer);
-}
-
-void BluetoothGattApplicationServiceProviderImpl::WriteAttributeProperties(
-    dbus::MessageWriter* writer,
-    BluetoothGattCharacteristicServiceProvider* characteristic_provider) {
-  characteristic_provider->WriteProperties(writer, nullptr);
-}
-
-void BluetoothGattApplicationServiceProviderImpl::WriteAttributeProperties(
-    dbus::MessageWriter* writer,
-    BluetoothGattDescriptorServiceProvider* descriptor_provider) {
-  descriptor_provider->WriteProperties(writer, nullptr);
 }
 
 void BluetoothGattApplicationServiceProviderImpl::GetManagedObjects(

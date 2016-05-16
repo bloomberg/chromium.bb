@@ -43,8 +43,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattDescriptorServiceProvider {
   // Writes the descriptor's properties into the provided writer. If
   // value is not null, it is written also, otherwise no value property is
   // written.
-  virtual void WriteProperties(dbus::MessageWriter* writer,
-                               const std::vector<uint8_t>* value) {}
+  virtual void WriteProperties(dbus::MessageWriter* writer) {}
 
   virtual const dbus::ObjectPath& object_path() const = 0;
 
