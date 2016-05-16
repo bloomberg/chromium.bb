@@ -101,9 +101,9 @@ struct SBFullHashResult {
   // TODO(shess): Refactor to allow ListType here.
   int list_id;
   ThreatMetadata metadata;
-  // Used only for V4 results. The cache lifetime for this result. The response
-  // must not be cached for more than this duration to avoid false positives.
-  base::TimeDelta cache_duration;
+  // Used only for V4 results. The cache expire time for this result. The
+  // response must not be cached after this time to avoid false positives.
+  base::Time cache_expire_after;
 };
 
 // Caches individual response from GETHASH request.

@@ -19,6 +19,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/threading/non_thread_safe.h"
+#include "base/time/default_clock.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "components/safe_browsing_db/safebrowsing.pb.h"
@@ -76,6 +77,9 @@ class V4GetHashProtocolManager : public net::URLFetcherDelegate,
   // invoked synchronously.
   virtual void GetFullHashesWithApis(const std::vector<SBPrefix>& prefixes,
                                      FullHashCallback callback);
+
+  // Overrides the clock used to check the time.
+  void SetClockForTests(std::unique_ptr<base::Clock> clock);
 
  protected:
   // Constructs a V4GetHashProtocolManager that issues
@@ -164,6 +168,9 @@ class V4GetHashProtocolManager : public net::URLFetcherDelegate,
 
   // ID for URLFetchers for testing.
   int url_fetcher_id_;
+
+  // The clock used to vend times.
+  std::unique_ptr<base::Clock> clock_;
 
   DISALLOW_COPY_AND_ASSIGN(V4GetHashProtocolManager);
 };

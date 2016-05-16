@@ -115,7 +115,8 @@ V4GetHashProtocolManager::V4GetHashProtocolManager(
       next_gethash_time_(Time::FromDoubleT(0)),
       config_(config),
       request_context_getter_(request_context_getter),
-      url_fetcher_id_(0) {
+      url_fetcher_id_(0),
+      clock_(new base::DefaultClock()) {
 }
 
 V4GetHashProtocolManager::~V4GetHashProtocolManager() {
@@ -179,7 +180,7 @@ bool V4GetHashProtocolManager::ParseHashResponse(
   if (response.has_minimum_wait_duration()) {
     // Seconds resolution is good enough so we ignore the nanos field.
     next_gethash_time_ =
-        Time::Now() + base::TimeDelta::FromSeconds(
+        clock_->Now() + base::TimeDelta::FromSeconds(
                           response.minimum_wait_duration().seconds());
   }
 
@@ -214,8 +215,10 @@ bool V4GetHashProtocolManager::ParseHashResponse(
 
     if (match.has_cache_duration()) {
       // Seconds resolution is good enough so we ignore the nanos field.
-      result.cache_duration =
+      result.cache_expire_after = clock_->Now() +
           base::TimeDelta::FromSeconds(match.cache_duration().seconds());
+    } else {
+      result.cache_expire_after = clock_->Now();
     }
 
     // Different threat types will handle the metadata differently.
@@ -303,7 +306,7 @@ void V4GetHashProtocolManager::GetFullHashes(
   // we need to check if we're past the next allowed time. If we are, we can
   // proceed with the request. If not, we are required to return empty results
   // (i.e. treat the page as safe).
-  if (Time::Now() <= next_gethash_time_) {
+  if (clock_->Now() <= next_gethash_time_) {
     if (gethash_error_count_) {
       RecordGetHashResult(V4OperationResult::BACKOFF_ERROR);
     } else {
@@ -333,6 +336,11 @@ void V4GetHashProtocolManager::GetFullHashesWithApis(
     FullHashCallback callback) {
   std::vector<PlatformType> platform = {CHROME_PLATFORM};
   GetFullHashes(prefixes, platform, API_ABUSE, callback);
+}
+
+void V4GetHashProtocolManager::SetClockForTests(
+    std::unique_ptr<base::Clock> clock) {
+  clock_ = std::move(clock);
 }
 
 // net::URLFetcherDelegate implementation ----------------------------------
@@ -367,7 +375,7 @@ void V4GetHashProtocolManager::OnURLFetchComplete(
       RecordGetHashResult(V4OperationResult::PARSE_ERROR);
     }
   } else {
-    HandleGetHashError(Time::Now());
+    HandleGetHashError(clock_->Now());
 
     DVLOG(1) << "SafeBrowsing GetEncodedFullHashes request for: "
              << source->GetURL() << " failed with error: " << status.error()

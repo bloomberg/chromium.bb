@@ -8,7 +8,9 @@
 #include <vector>
 
 #include "base/base64.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/simple_test_clock.h"
 #include "base/time/time.h"
 #include "components/safe_browsing_db/safebrowsing.pb.h"
 #include "components/safe_browsing_db/testing_util.h"
@@ -79,7 +81,7 @@ void ValidateGetV4HashResults(
     const SBFullHashResult& actual = full_hashes[i];
     EXPECT_TRUE(SBFullHashEqual(expected.hash, actual.hash));
     EXPECT_EQ(expected.metadata, actual.metadata);
-    EXPECT_EQ(expected.cache_duration, actual.cache_duration);
+    EXPECT_EQ(expected.cache_expire_after, actual.cache_expire_after);
   }
 }
 
@@ -140,12 +142,17 @@ TEST_F(SafeBrowsingV4GetHashProtocolManagerTest, TestGetHashErrorHandlingOK) {
   net::TestURLFetcherFactory factory;
   std::unique_ptr<V4GetHashProtocolManager> pm(CreateProtocolManager());
 
+  base::Time now = base::Time::UnixEpoch();
+  base::SimpleTestClock* clock = new base::SimpleTestClock();
+  clock->SetNow(now);
+  pm->SetClockForTests(base::WrapUnique(clock));
+
   std::vector<SBPrefix> prefixes;
   std::vector<SBFullHashResult> expected_full_hashes;
   SBFullHashResult hash_result;
   hash_result.hash = SBFullHashForString("Everything's shiny, Cap'n.");
   hash_result.metadata.api_permissions.push_back("NOTIFICATIONS");
-  hash_result.cache_duration = base::TimeDelta::FromSeconds(300);
+  hash_result.cache_expire_after = now + base::TimeDelta::FromSeconds(300);
   expected_full_hashes.push_back(hash_result);
   base::TimeDelta expected_cache_duration = base::TimeDelta::FromSeconds(600);
 
@@ -203,6 +210,11 @@ TEST_F(SafeBrowsingV4GetHashProtocolManagerTest, TestGetHashRequest) {
 TEST_F(SafeBrowsingV4GetHashProtocolManagerTest, TestParseHashResponse) {
   std::unique_ptr<V4GetHashProtocolManager> pm(CreateProtocolManager());
 
+  base::Time now = base::Time::UnixEpoch();
+  base::SimpleTestClock* clock = new base::SimpleTestClock();
+  clock->SetNow(now);
+  pm->SetClockForTests(base::WrapUnique(clock));
+
   FindFullHashesResponse res;
   res.mutable_negative_cache_duration()->set_seconds(600);
   res.mutable_minimum_wait_duration()->set_seconds(400);
@@ -222,7 +234,6 @@ TEST_F(SafeBrowsingV4GetHashProtocolManagerTest, TestParseHashResponse) {
   std::string res_data;
   res.SerializeToString(&res_data);
 
-  Time now = Time::Now();
   std::vector<SBFullHashResult> full_hashes;
   base::TimeDelta cache_lifetime;
   EXPECT_TRUE(pm->ParseHashResponse(res_data, &full_hashes, &cache_lifetime));
@@ -233,8 +244,9 @@ TEST_F(SafeBrowsingV4GetHashProtocolManagerTest, TestParseHashResponse) {
                               full_hashes[0].hash));
   EXPECT_EQ(1ul, full_hashes[0].metadata.api_permissions.size());
   EXPECT_EQ("NOTIFICATIONS", full_hashes[0].metadata.api_permissions[0]);
-  EXPECT_EQ(base::TimeDelta::FromSeconds(300), full_hashes[0].cache_duration);
-  EXPECT_LE(now + base::TimeDelta::FromSeconds(400), pm->next_gethash_time_);
+  EXPECT_EQ(now +
+      base::TimeDelta::FromSeconds(300), full_hashes[0].cache_expire_after);
+  EXPECT_EQ(now + base::TimeDelta::FromSeconds(400), pm->next_gethash_time_);
 }
 
 // Adds an entry with an ignored ThreatEntryType.
