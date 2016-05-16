@@ -2,8 +2,20 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
 
 <dom-module id="network-proxy-input">
-  <link rel="import" type="css" href="network_proxy_input.css">
   <template>
+    <style>
+      #port {
+        width: 50px;
+      }
+
+      span {
+        -webkit-margin-end: 5px;
+      }
+
+      paper-input {
+        margin: -9px 5px 0;
+      }
+    </style>
     <div id="outer" class="layout horizontal">
       <span class="flex">[[label]]</span>
       <paper-input no-label-float id="url" disabled="[[!editable]]"

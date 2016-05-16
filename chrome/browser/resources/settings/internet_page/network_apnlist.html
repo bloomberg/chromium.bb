@@ -4,8 +4,25 @@
 <link rel="import" href="network_property_list.html">
 
 <dom-module id="network-apnlist">
-  <link rel="import" type="css" href="network_apnlist.css">
   <template>
+    <style>
+      #outerDiv {
+        margin-bottom: 10px;
+      }
+
+      #selectDiv {
+        margin-bottom: 10px;
+      }
+
+      #selectDiv select {
+        -webkit-margin-start: 10px;
+        padding: 5px;
+      }
+
+      #otherDiv network-property-list {
+        -webkit-margin-start: 15px;
+      }
+    </style>
     <div id="outerDiv" class="layout vertical">
       <div id="selectDiv" class="layout horizontal center">
         <span>Access Point:</span>

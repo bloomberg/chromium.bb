@@ -9,8 +9,52 @@
 <link rel="import" href="network_property_list.html">
 
 <dom-module id="network-siminfo">
-  <link rel="import" type="css" href="network_siminfo.css">
   <template>
+    <style>
+      iron-icon {
+       -webkit-margin-end: 5px;
+       -webkit-margin-start: -3px;
+      }
+
+      paper-button {
+        margin: 0;
+      }
+
+      span {
+        -webkit-margin-end: 10px;
+      }
+
+      #lockedDiv span {
+        color: red;
+        font-weight: 500;
+      }
+
+      #lockedDiv paper-input {
+        -webkit-margin-start: 10px;
+        width: 80px;
+      }
+
+      #unlockSimDialog paper-input {
+        -webkit-margin-start: 5px;
+      }
+
+      #unlockSimDialog span {
+        -webkit-margin-start: 5px;
+      }
+
+      .pin {
+        min-width: 100px;
+      }
+
+      .puk {
+        min-width: 200px;
+      }
+
+      .error {
+        color: red;
+        max-width: 400px;
+      }
+    </style>
     <div id="outerDiv" class="layout vertical">
       <div class="layout horizontal center"
           hidden$="[[networkProperties.Cellular.SIMPresent]]">

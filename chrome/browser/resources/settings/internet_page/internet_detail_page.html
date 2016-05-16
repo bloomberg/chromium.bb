@@ -19,9 +19,58 @@
 <link rel="import" href="network_siminfo.html">
 
 <dom-module id="settings-internet-detail-page">
-  <link rel="import" type="css" href="internet_detail_page.css">
   <template>
-    <style include="settings-shared"></style>
+    <style include="settings-shared">
+      .section {
+        margin-bottom: 5px;
+      }
+
+      iron-collapse {
+        margin: 10px;
+      }
+
+      cr-network-icon {
+        height: 32px;
+        width: 32px;
+      }
+
+      cr-policy-network-indicator {
+        -webkit-margin-start: 10px;
+      }
+
+      #networkName,
+      #networkState {
+        -webkit-margin-start: 10px;
+        font-size: 20px;
+      }
+
+      #networkName {
+        font-weight: bold;
+      }
+
+      #networkState[connected] {
+        color: green;
+      }
+
+      #outerDiv {
+        margin: 10px 20px;
+      }
+
+      #ipAddressLabel {
+        -webkit-margin-end: 10px;
+        font-weight: bold;
+      }
+
+      #preferButton {
+        -webkit-margin-end: 8px;
+        -webkit-margin-start: -3px;
+        padding: 0
+      }
+
+      #proxyDiv {
+        max-width: 500px;
+      }
+    </style>
     <div class="layout vertical">
       <!-- Title section: Icon + name + connection state. -->
       <div id="titleDiv" class="layout horizontal center">

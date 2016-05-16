@@ -2,8 +2,23 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <dom-module id="network-proxy-exclusions">
-  <link rel="import" type="css" href="network_proxy_exclusions.css">
   <template>
+    <style>
+      span {
+        margin: 5px;
+      }
+
+      iron-icon {
+        margin: 5px;
+      }
+
+      div#container {
+        border: 1px solid lightgrey;
+        height: 100px;
+        margin: 5px;
+        overflow-y: auto;
+      }
+    </style>
     <div id="container" class="layout vertical">
       <template is="dom-repeat" items="[[exclusions]]">
         <div class="layout horizontal">

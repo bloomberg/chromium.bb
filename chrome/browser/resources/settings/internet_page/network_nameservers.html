@@ -3,8 +3,20 @@
 <link rel="import" href="chrome://resources/cr_elements/network/cr_onc_types.html">
 
 <dom-module id="network-nameservers">
-  <link rel="import" type="css" href="network_nameservers.css">
   <template>
+    <style>
+      #selectTypeDiv {
+        margin: 10px 0;
+      }
+
+      select {
+        padding: 5px;
+      }
+
+      paper-input-container {
+        margin: -9px 5px 0;
+      }
+    </style>
     <div id="outer" class="layout vertical">
       <div id="selectTypeDiv">
         <!-- TODO(stevenjb): Use cr-dropdown-menu once available. -->

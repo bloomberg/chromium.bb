@@ -4,8 +4,16 @@
 <link rel="import" href="network_property_list.html">
 
 <dom-module id="network-ip-config">
-  <link rel="import" type="css" href="network_ip_config.css">
   <template>
+    <style>
+      paper-checkbox {
+        margin-bottom: 10px;
+      }
+
+      network-property-list {
+        -webkit-margin-start: 28px;
+      }
+    </style>
     <div id="outer" class="layout vertical">
       <paper-checkbox checked="{{automatic}}" disabled="[[!editable]]">
           Configure IP Address Automatically

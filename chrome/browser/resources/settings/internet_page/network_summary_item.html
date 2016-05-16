@@ -7,8 +7,38 @@
 <link rel="import" href="chrome://resources/cr_elements/network/cr_network_list_item.html">
 
 <dom-module name="network-summary-item">
-  <link rel="import" type="css" href="network_summary_item.css">
   <template>
+    <style>
+      #details.selectable:hover {
+        background-color: lightgrey;
+      }
+
+      #buttons {
+        align-items: center;
+      }
+
+      .invisible {
+        visibility: hidden;
+      }
+
+      paper-spinner {
+        -webkit-margin-start: 20px;
+      }
+
+      #deviceEnabledButton {
+        -webkit-margin-start: 10px;
+      }
+
+      #listDiv {
+        -webkit-margin-end: 10px;
+        -webkit-margin-start: 40px;
+      }
+
+      #networkList {
+        margin: 5px 0 10px;
+        max-height: 400px;
+      }
+    </style>
     <div class="layout vertical" hidden$="[[isHidden]]">
       <div id="details" class="layout horizontal center"
           on-tap="onDetailsTap_">

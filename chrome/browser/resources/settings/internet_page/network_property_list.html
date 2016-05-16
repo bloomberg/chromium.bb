@@ -5,8 +5,34 @@
 <link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_network_indicator.html">
 
 <dom-module name="network-property-list">
-  <link rel="import" type="css" href="network_property_list.css">
   <template>
+    <style>
+      span {
+        -webkit-margin-end: 5px;
+        margin-bottom: 5px;
+      }
+
+      cr-policy-network-indicator {
+        margin-bottom: 5px;
+      }
+
+      span.fill {
+        border-bottom-color: grey;
+        border-bottom-style: dotted;
+        border-width: thin;
+        min-width: 20px;
+      }
+
+      paper-input-container {
+        -webkit-margin-start: 5px;
+        margin-bottom: -3px;
+        margin-top: -12px;
+      }
+
+      #outerDiv {
+        padding: 5px 0;
+      }
+    </style>
     <div id="outerDiv" class="layout horizontal">
       <div class="layout vertical">
         <template is="dom-repeat" items="[[fields]]">
