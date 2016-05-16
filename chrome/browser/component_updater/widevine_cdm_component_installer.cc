@@ -252,7 +252,7 @@ class WidevineCdmComponentInstallerTraits : public ComponentInstallerTraits {
   void ComponentReady(const base::Version& version,
                       const base::FilePath& path,
                       std::unique_ptr<base::DictionaryValue> manifest) override;
-  base::FilePath GetBaseDirectory() const override;
+  base::FilePath GetRelativeInstallDir() const override;
   void GetHash(std::vector<uint8_t>* hash) const override;
   std::string GetName() const override;
   std::string GetAp() const override;
@@ -315,10 +315,9 @@ bool WidevineCdmComponentInstallerTraits::VerifyInstallation(
 
 // The base directory on Windows looks like:
 // <profile>\AppData\Local\Google\Chrome\User Data\WidevineCdm\.
-base::FilePath WidevineCdmComponentInstallerTraits::GetBaseDirectory() const {
-  base::FilePath result;
-  PathService::Get(chrome::DIR_COMPONENT_WIDEVINE_CDM, &result);
-  return result;
+base::FilePath WidevineCdmComponentInstallerTraits::GetRelativeInstallDir()
+    const {
+  return base::FilePath(FILE_PATH_LITERAL("WidevineCdm"));
 }
 
 void WidevineCdmComponentInstallerTraits::GetHash(

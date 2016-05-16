@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
@@ -20,7 +21,6 @@
 #include "components/update_client/update_client.h"
 
 namespace base {
-class FilePath;
 class SequencedTaskRunner;
 class SingleThreadTaskRunner;
 }  // namespace base
@@ -76,9 +76,9 @@ class ComponentInstallerTraits {
       const base::FilePath& install_dir,
       std::unique_ptr<base::DictionaryValue> manifest) = 0;
 
-  // Returns the directory that the installer will place versioned installs of
-  // the component into.
-  virtual base::FilePath GetBaseDirectory() const = 0;
+  // Returns a relative path that will be appended to the component updater
+  // root directories to find the data for this particular component.
+  virtual base::FilePath GetRelativeInstallDir() const = 0;
 
   // Returns the component's SHA2 hash as raw bytes.
   virtual void GetHash(std::vector<uint8_t>* hash) const = 0;
@@ -112,12 +112,17 @@ class DefaultComponentInstaller : public update_client::CrxInstaller {
                const base::FilePath& unpack_path) override;
   bool GetInstalledFile(const std::string& file,
                         base::FilePath* installed_file) override;
+  // Only user-level component installations can be uninstalled.
   bool Uninstall() override;
 
  private:
   ~DefaultComponentInstaller() override;
 
-  base::FilePath GetInstallDirectory();
+  // If there is a installation of the component set up alongside Chrome's
+  // files (as opposed to in the user data directory), sets current_* to the
+  // values associated with that installation and returns true; otherwise,
+  // returns false.
+  bool FindPreinstallation();
   bool InstallHelper(const base::DictionaryValue& manifest,
                      const base::FilePath& unpack_path,
                      const base::FilePath& install_path);
@@ -127,6 +132,7 @@ class DefaultComponentInstaller : public update_client::CrxInstaller {
   void ComponentReady(std::unique_ptr<base::DictionaryValue> manifest);
   void UninstallOnTaskRunner();
 
+  base::FilePath current_install_dir_;
   base::Version current_version_;
   std::string current_fingerprint_;
   std::unique_ptr<base::DictionaryValue> current_manifest_;

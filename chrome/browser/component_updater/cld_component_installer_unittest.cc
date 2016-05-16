@@ -110,9 +110,8 @@ TEST_F(CldComponentInstallerTest, GetInstalledPath) {
                              base::CompareCase::SENSITIVE));
 }
 
-TEST_F(CldComponentInstallerTest, GetBaseDirectory) {
-  const base::FilePath result = traits_.GetBaseDirectory();
-  ASSERT_FALSE(result.empty());
+TEST_F(CldComponentInstallerTest, GetRelativeInstallDir) {
+  ASSERT_FALSE(traits_.GetRelativeInstallDir().empty());
 }
 
 TEST_F(CldComponentInstallerTest, GetHash) {

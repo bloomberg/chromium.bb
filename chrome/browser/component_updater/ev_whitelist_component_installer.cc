@@ -116,10 +116,9 @@ bool EVWhitelistComponentInstallerTraits::VerifyInstallation(
   return base::PathExists(GetInstalledPath(install_dir));
 }
 
-base::FilePath EVWhitelistComponentInstallerTraits::GetBaseDirectory() const {
-  base::FilePath result;
-  PathService::Get(DIR_COMPONENT_EV_WHITELIST, &result);
-  return result;
+base::FilePath EVWhitelistComponentInstallerTraits::GetRelativeInstallDir()
+    const {
+  return base::FilePath(FILE_PATH_LITERAL("EVWhitelist"));
 }
 
 void EVWhitelistComponentInstallerTraits::GetHash(

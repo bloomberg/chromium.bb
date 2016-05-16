@@ -74,10 +74,9 @@ void OriginTrialsComponentInstallerTraits::ComponentReady(
   }
 }
 
-base::FilePath OriginTrialsComponentInstallerTraits::GetBaseDirectory() const {
-  base::FilePath result;
-  PathService::Get(DIR_ORIGIN_TRIAL_KEYS, &result);
-  return result;
+base::FilePath OriginTrialsComponentInstallerTraits::GetRelativeInstallDir()
+    const {
+  return base::FilePath(FILE_PATH_LITERAL("OriginTrials"));
 }
 
 void OriginTrialsComponentInstallerTraits::GetHash(

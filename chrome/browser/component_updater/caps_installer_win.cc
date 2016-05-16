@@ -51,9 +51,6 @@ const uint8_t kSha256Hash[] = {0x12, 0xf6, 0xea, 0xea, 0x64, 0xac, 0xd5, 0xae,
 const base::FilePath::CharType kCapsBinary[] =
     FILE_PATH_LITERAL("chrome_crash_svc.exe");
 
-const base::FilePath::CharType kCapsDirectory[] =
-    FILE_PATH_LITERAL("Caps");
-
 // This function is called from a worker thread to launch crash service.
 void LaunchService(const base::FilePath& exe_path) {
   base::CommandLine service_cmdline(exe_path);
@@ -98,10 +95,8 @@ class CAPSInstallerTraits : public ComponentInstallerTraits {
   }
 
   // Directory is usually "%appdata%\Local\Chrome\User Data\Caps".
-  base::FilePath GetBaseDirectory() const override {
-    base::FilePath user_data;
-    PathService::Get(chrome::DIR_USER_DATA, &user_data);
-    return user_data.Append(kCapsDirectory);
+  base::FilePath GetRelativeInstallDir() const override {
+    return base::FilePath(FILE_PATH_LITERAL("Caps"));
   }
 
   void GetHash(std::vector<uint8_t>* hash) const override {

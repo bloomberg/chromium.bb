@@ -40,6 +40,8 @@ enum {
                                 // "Downloads". (Linux)
   DIR_DEFAULT_DOWNLOADS,        // Directory for a user's downloads.
   DIR_INTERNAL_PLUGINS,         // Directory where internal plugins reside.
+  DIR_COMPONENTS,               // Directory where built-in implementations of
+                                // component-updated libraries or data reside.
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   DIR_POLICY_FILES,             // Directory for system-wide read-only
                                 // policy files that allow sys-admins

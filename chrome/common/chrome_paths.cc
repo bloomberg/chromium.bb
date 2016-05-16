@@ -85,6 +85,25 @@ bool GetInternalPluginsDirectory(base::FilePath* result) {
   return PathService::Get(base::DIR_MODULE, result);
 }
 
+// Gets the path for bundled implementations of components. Note that these
+// implementations should not be used if higher-versioned component-updated
+// implementations are available in DIR_USER_DATA.
+bool GetComponentDirectory(base::FilePath* result) {
+#if defined(OS_MACOSX)
+  // If called from Chrome, return the framework's Libraries directory.
+  if (base::mac::AmIBundled()) {
+    *result = chrome::GetFrameworkBundlePath();
+    DCHECK(!result->empty());
+    *result = result->Append("Libraries");
+    return true;
+  }
+// In tests, just look in the module directory (below).
+#endif
+
+  // The rest of the world expects components in the module directory.
+  return PathService::Get(base::DIR_MODULE, result);
+}
+
 #if defined(OS_WIN)
 // Gets the Pepper Flash path if installed on the system.
 bool GetSystemFlashFilename(base::FilePath* out_path) {
@@ -254,6 +273,10 @@ bool PathProvider(int key, base::FilePath* result) {
       break;
     case chrome::DIR_INTERNAL_PLUGINS:
       if (!GetInternalPluginsDirectory(&cur))
+        return false;
+      break;
+    case chrome::DIR_COMPONENTS:
+      if (!GetComponentDirectory(&cur))
         return false;
       break;
     case chrome::DIR_PEPPER_FLASH_PLUGIN:

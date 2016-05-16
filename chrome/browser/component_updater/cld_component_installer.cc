@@ -98,10 +98,8 @@ bool CldComponentInstallerTraits::VerifyInstallation(
   return result;
 }
 
-base::FilePath CldComponentInstallerTraits::GetBaseDirectory() const {
-  base::FilePath result;
-  PathService::Get(DIR_COMPONENT_CLD2, &result);
-  return result;
+base::FilePath CldComponentInstallerTraits::GetRelativeInstallDir() const {
+  return base::FilePath(FILE_PATH_LITERAL("CLD"));
 }
 
 void CldComponentInstallerTraits::GetHash(std::vector<uint8_t>* hash) const {

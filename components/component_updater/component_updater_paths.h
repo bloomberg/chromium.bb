@@ -9,26 +9,33 @@
 
 namespace component_updater {
 
+extern const base::FilePath::CharType kSupervisedUserWhitelistDirName[];
+
 enum {
   PATH_START = 10000,
-  DIR_COMPONENT_CLD2 = PATH_START,  // Directory that contains component-updated
-                                    // Compact Language Detector files.
-  DIR_RECOVERY_BASE,                // Full path to the dir for Recovery
-                                    // component.
-  DIR_SWIFT_SHADER,                 // Path to the SwiftShader component.
-  DIR_SW_REPORTER,                  // Path to the SwReporter component.
-  DIR_COMPONENT_EV_WHITELIST,       // EV whitelist for CT files.
-  DIR_SUPERVISED_USER_WHITELISTS,   // Supervised user whitelists.
-  DIR_CERT_TRANS_TREE_STATES,       // Signed Tree Heads for CT logs.
-  DIR_ORIGIN_TRIAL_KEYS,            // Public keys and revoked tokens for origin
-                                    // trials.
+  DIR_COMPONENT_PREINSTALLED = PATH_START,  // Directory that contains component
+                                            // implementations installed by the
+                                            // Chrome installer or package
+                                            // manager.
+  DIR_COMPONENT_USER,                       // Directory that contains user-wide
+                                            // (component-updater-installer)
+                                            // component implementations.
+  // The following paths live in the user directory only, and point to the base
+  // installation directory for the component.
+  DIR_COMPONENT_CLD2,              // The Compact Language Detector.
+  DIR_RECOVERY_BASE,               // The Recovery.
+  DIR_SWIFT_SHADER,                // The SwiftShader.
+  DIR_SUPERVISED_USER_WHITELISTS,  // The Supervised user whitelists.
   PATH_END
 };
 
 // Call once to register the provider for the path keys defined above.
-// |components_root_key| is the path provider key defining where the
-// components should be installed.
-void RegisterPathProvider(int components_root_key);
+// |components_system_root_key| is the path provider key defining where bundled
+// components are already installed system-wide.
+// |components_user_root_key| is the path provider key defining where the
+// component updater should install new versions of components.
+void RegisterPathProvider(int components_system_root_key,
+                          int components_user_root_key);
 
 }  // namespace component_updater
 

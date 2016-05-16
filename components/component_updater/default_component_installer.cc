@@ -12,11 +12,13 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
+#include "base/path_service.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "base/version.h"
+#include "components/component_updater/component_updater_paths.h"
 // TODO(ddorwin): Find a better place for ReadManifest.
 #include "components/component_updater/component_updater_service.h"
 #include "components/update_client/component_unpacker.h"
@@ -106,8 +108,11 @@ bool DefaultComponentInstaller::Install(const base::DictionaryValue& manifest,
     return false;
   if (current_version_.CompareTo(version) > 0)
     return false;
-  base::FilePath install_path =
-      installer_traits_->GetBaseDirectory().AppendASCII(version.GetString());
+  base::FilePath install_path;
+  if (!PathService::Get(DIR_COMPONENT_USER, &install_path))
+    return false;
+  install_path = install_path.Append(installer_traits_->GetRelativeInstallDir())
+                     .AppendASCII(version.GetString());
   if (base::PathExists(install_path)) {
     if (!base::DeleteFile(install_path, true))
       return false;
@@ -117,6 +122,7 @@ bool DefaultComponentInstaller::Install(const base::DictionaryValue& manifest,
     return false;
   }
   current_version_ = version;
+  current_install_dir_ = install_path;
   // TODO(ddorwin): Change parameter to std::unique_ptr<base::DictionaryValue>
   // so we can avoid this DeepCopy.
   current_manifest_.reset(manifest.DeepCopy());
@@ -134,10 +140,7 @@ bool DefaultComponentInstaller::GetInstalledFile(
     base::FilePath* installed_file) {
   if (current_version_ == base::Version(kNullVersion))
     return false;  // No component has been installed yet.
-
-  *installed_file = installer_traits_->GetBaseDirectory()
-                        .AppendASCII(current_version_.GetString())
-                        .AppendASCII(file);
+  *installed_file = current_install_dir_.AppendASCII(file);
   return true;
 }
 
@@ -149,21 +152,52 @@ bool DefaultComponentInstaller::Uninstall() {
   return true;
 }
 
+bool DefaultComponentInstaller::FindPreinstallation() {
+  base::FilePath path;
+  if (!PathService::Get(DIR_COMPONENT_PREINSTALLED, &path))
+    return false;
+  path = path.Append(installer_traits_->GetRelativeInstallDir());
+  if (!base::PathExists(path))
+    return false;
+  std::unique_ptr<base::DictionaryValue> manifest =
+      update_client::ReadManifest(path);
+  if (!manifest || !installer_traits_->VerifyInstallation(*manifest, path))
+    return false;
+  std::string version_lexical;
+  if (!manifest->GetStringASCII("version", &version_lexical))
+    return false;
+  const base::Version version(version_lexical);
+  if (!version.IsValid())
+    return false;
+  current_install_dir_ = path;
+  current_manifest_ = std::move(manifest);
+  current_version_ = version;
+  return true;
+}
+
 void DefaultComponentInstaller::StartRegistration(ComponentUpdateService* cus) {
   DCHECK(task_runner_.get());
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
-  base::FilePath base_dir = installer_traits_->GetBaseDirectory();
+
+  base::Version latest_version(kNullVersion);
+
+  // First check for an installation set up alongside Chrome itself.
+  if (FindPreinstallation())
+    latest_version = current_version_;
+
+  // Then check for a higher-versioned user-wide installation.
+  base::FilePath latest_path;
+  std::unique_ptr<base::DictionaryValue> latest_manifest;
+  base::FilePath base_dir;
+  if (!PathService::Get(DIR_COMPONENT_USER, &base_dir))
+    return;
+  base_dir = base_dir.Append(installer_traits_->GetRelativeInstallDir());
   if (!base::PathExists(base_dir) && !base::CreateDirectory(base_dir)) {
     PLOG(ERROR) << "Could not create the base directory for "
                 << installer_traits_->GetName() << " ("
                 << base_dir.MaybeAsASCII() << ").";
     return;
   }
-
-  base::FilePath latest_path;
-  base::Version latest_version(kNullVersion);
-  std::unique_ptr<base::DictionaryValue> latest_manifest;
-
   std::vector<base::FilePath> older_paths;
   base::FileEnumerator file_enumerator(
       base_dir, false, base::FileEnumerator::DIRECTORIES);
@@ -196,10 +230,8 @@ void DefaultComponentInstaller::StartRegistration(ComponentUpdateService* cus) {
 
     // New valid |version| folder found!
 
-    if (latest_manifest) {
-      DCHECK(!latest_path.empty());
+    if (!latest_path.empty())
       older_paths.push_back(latest_path);
-    }
 
     latest_path = path;
     latest_version = version;
@@ -209,6 +241,7 @@ void DefaultComponentInstaller::StartRegistration(ComponentUpdateService* cus) {
   if (latest_manifest) {
     current_version_ = latest_version;
     current_manifest_ = std::move(latest_manifest);
+    current_install_dir_ = latest_path;
     // TODO(ddorwin): Remove these members and pass them directly to
     // FinishRegistration().
     base::ReadFileToString(latest_path.AppendASCII("manifest.fingerprint"),
@@ -224,8 +257,15 @@ void DefaultComponentInstaller::StartRegistration(ComponentUpdateService* cus) {
 void DefaultComponentInstaller::UninstallOnTaskRunner() {
   DCHECK(task_runner_.get());
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
-  const base::FilePath base_dir = installer_traits_->GetBaseDirectory();
 
+  // Only try to delete any files that are in our user-level install path.
+  base::FilePath userInstallPath;
+  if (!PathService::Get(DIR_COMPONENT_USER, &userInstallPath))
+    return;
+  if (!userInstallPath.IsParent(current_install_dir_))
+    return;
+
+  const base::FilePath base_dir = current_install_dir_.DirName();
   base::FileEnumerator file_enumerator(base_dir, false,
                                        base::FileEnumerator::DIRECTORIES);
   for (base::FilePath path = file_enumerator.Next(); !path.value().empty();
@@ -246,11 +286,6 @@ void DefaultComponentInstaller::UninstallOnTaskRunner() {
     if (base::DeleteFile(base_dir, false))
       DLOG(ERROR) << "Couldn't delete " << base_dir.value();
   }
-}
-
-base::FilePath DefaultComponentInstaller::GetInstallDirectory() {
-  return installer_traits_->GetBaseDirectory()
-      .AppendASCII(current_version_.GetString());
 }
 
 void DefaultComponentInstaller::FinishRegistration(
@@ -287,8 +322,8 @@ void DefaultComponentInstaller::FinishRegistration(
 void DefaultComponentInstaller::ComponentReady(
     std::unique_ptr<base::DictionaryValue> manifest) {
   VLOG(1) << "Component ready, version " << current_version_.GetString()
-          << " in " << GetInstallDirectory().value();
-  installer_traits_->ComponentReady(current_version_, GetInstallDirectory(),
+          << " in " << current_install_dir_.value();
+  installer_traits_->ComponentReady(current_version_, current_install_dir_,
                                     std::move(manifest));
 }
 

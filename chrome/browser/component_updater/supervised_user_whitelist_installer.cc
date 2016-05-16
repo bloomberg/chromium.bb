@@ -257,7 +257,7 @@ class SupervisedUserWhitelistComponentInstallerTraits
   void ComponentReady(const base::Version& version,
                       const base::FilePath& install_dir,
                       std::unique_ptr<base::DictionaryValue> manifest) override;
-  base::FilePath GetBaseDirectory() const override;
+  base::FilePath GetRelativeInstallDir() const override;
   void GetHash(std::vector<uint8_t>* hash) const override;
   std::string GetName() const override;
   std::string GetAp() const override;
@@ -306,10 +306,9 @@ void SupervisedUserWhitelistComponentInstallerTraits::ComponentReady(
 }
 
 base::FilePath
-SupervisedUserWhitelistComponentInstallerTraits::GetBaseDirectory() const {
-  base::FilePath whitelist_directory;
-  PathService::Get(DIR_SUPERVISED_USER_WHITELISTS, &whitelist_directory);
-  return whitelist_directory.AppendASCII(crx_id_);
+SupervisedUserWhitelistComponentInstallerTraits::GetRelativeInstallDir() const {
+  return base::FilePath(component_updater::kSupervisedUserWhitelistDirName)
+      .AppendASCII(crx_id_);
 }
 
 void SupervisedUserWhitelistComponentInstallerTraits::GetHash(

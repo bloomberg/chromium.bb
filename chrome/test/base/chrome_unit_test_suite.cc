@@ -132,7 +132,8 @@ void ChromeUnitTestSuite::InitializeProviders() {
       new translate::BrowserCldDataProviderFactory());
   translate::CldDataSource::SetDefault(
       translate::CldDataSource::GetStaticDataSource());
-  component_updater::RegisterPathProvider(chrome::DIR_USER_DATA);
+  component_updater::RegisterPathProvider(chrome::DIR_COMPONENTS,
+                                          chrome::DIR_USER_DATA);
 
 #if defined(OS_CHROMEOS)
   chromeos::RegisterPathProvider();

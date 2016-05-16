@@ -132,21 +132,15 @@ class SwReporterInstallerTraits : public ComponentInstallerTraits {
                                  base::WorkerPool::GetTaskRunner(true));
   }
 
-  base::FilePath GetBaseDirectory() const override { return install_dir(); }
+  base::FilePath GetRelativeInstallDir() const override {
+    return base::FilePath(FILE_PATH_LITERAL("SwReporter"));
+  }
 
   void GetHash(std::vector<uint8_t>* hash) const override { GetPkHash(hash); }
 
   std::string GetName() const override { return "Software Reporter Tool"; }
 
   std::string GetAp() const override { return std::string(); }
-
-  static base::FilePath install_dir() {
-    // The base directory on windows looks like:
-    // <profile>\AppData\Local\Google\Chrome\User Data\SwReporter\.
-    base::FilePath result;
-    PathService::Get(DIR_SW_REPORTER, &result);
-    return result;
-  }
 
   static std::string ID() {
     update_client::CrxComponent component;

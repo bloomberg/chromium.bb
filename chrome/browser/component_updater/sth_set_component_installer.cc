@@ -89,10 +89,8 @@ bool STHSetComponentInstallerTraits::VerifyInstallation(
   return base::PathExists(GetInstalledPath(install_dir));
 }
 
-base::FilePath STHSetComponentInstallerTraits::GetBaseDirectory() const {
-  base::FilePath result;
-  PathService::Get(DIR_CERT_TRANS_TREE_STATES, &result);
-  return result;
+base::FilePath STHSetComponentInstallerTraits::GetRelativeInstallDir() const {
+  return base::FilePath(FILE_PATH_LITERAL("CertificateTransparency"));
 }
 
 void STHSetComponentInstallerTraits::GetHash(std::vector<uint8_t>* hash) const {

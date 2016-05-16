@@ -12,20 +12,32 @@ namespace component_updater {
 namespace {
 
 // This key gives the root directory of all the component installations.
-static int g_components_root_key = -1;
+static int g_components_preinstalled_root_key = -1;
+static int g_components_user_root_key = -1;
 
 }  // namespace
 
+const base::FilePath::CharType kSupervisedUserWhitelistDirName[] =
+    FILE_PATH_LITERAL("SupervisedUserWhitelists");
+
 bool PathProvider(int key, base::FilePath* result) {
-  DCHECK_GT(g_components_root_key, 0);
+  DCHECK_GT(g_components_user_root_key, 0);
+  DCHECK_GT(g_components_preinstalled_root_key, 0);
 
   // Early exit here to prevent a potential infinite loop when we retrieve
-  // the path for g_components_root_key.
+  // the path for g_components_*_root_key.
   if (key < PATH_START || key > PATH_END)
     return false;
 
+  switch (key) {
+    case DIR_COMPONENT_PREINSTALLED:
+      return PathService::Get(g_components_preinstalled_root_key, result);
+    case DIR_COMPONENT_USER:
+      return PathService::Get(g_components_user_root_key, result);
+  }
+
   base::FilePath cur;
-  if (!PathService::Get(g_components_root_key, &cur))
+  if (!PathService::Get(g_components_user_root_key, &cur))
     return false;
 
   switch (key) {
@@ -38,20 +50,8 @@ bool PathProvider(int key, base::FilePath* result) {
     case DIR_SWIFT_SHADER:
       cur = cur.Append(FILE_PATH_LITERAL("SwiftShader"));
       break;
-    case DIR_SW_REPORTER:
-      cur = cur.Append(FILE_PATH_LITERAL("SwReporter"));
-      break;
-    case DIR_COMPONENT_EV_WHITELIST:
-      cur = cur.Append(FILE_PATH_LITERAL("EVWhitelist"));
-      break;
     case DIR_SUPERVISED_USER_WHITELISTS:
-      cur = cur.Append(FILE_PATH_LITERAL("SupervisedUserWhitelists"));
-      break;
-    case DIR_CERT_TRANS_TREE_STATES:
-      cur = cur.Append(FILE_PATH_LITERAL("CertificateTransparency"));
-      break;
-    case DIR_ORIGIN_TRIAL_KEYS:
-      cur = cur.Append(FILE_PATH_LITERAL("OriginTrials"));
+      cur = cur.Append(kSupervisedUserWhitelistDirName);
       break;
     default:
       return false;
@@ -63,12 +63,19 @@ bool PathProvider(int key, base::FilePath* result) {
 
 // This cannot be done as a static initializer sadly since Visual Studio will
 // eliminate this object file if there is no direct entry point into it.
-void RegisterPathProvider(int components_root_key) {
-  DCHECK_EQ(g_components_root_key, -1);
-  DCHECK_GT(components_root_key, 0);
-  DCHECK(components_root_key < PATH_START || components_root_key > PATH_END);
+void RegisterPathProvider(int components_preinstalled_root_key,
+                          int components_user_root_key) {
+  DCHECK_EQ(g_components_preinstalled_root_key, -1);
+  DCHECK_EQ(g_components_user_root_key, -1);
+  DCHECK_GT(components_preinstalled_root_key, 0);
+  DCHECK_GT(components_user_root_key, 0);
+  DCHECK(components_preinstalled_root_key < PATH_START ||
+         components_preinstalled_root_key > PATH_END);
+  DCHECK(components_user_root_key < PATH_START ||
+         components_user_root_key > PATH_END);
 
-  g_components_root_key = components_root_key;
+  g_components_preinstalled_root_key = components_preinstalled_root_key;
+  g_components_user_root_key = components_user_root_key;
   PathService::RegisterProvider(PathProvider, PATH_START, PATH_END);
 }
 
