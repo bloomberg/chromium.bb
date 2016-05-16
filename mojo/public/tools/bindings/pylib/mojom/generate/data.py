@@ -500,6 +500,14 @@ def ModuleFromData(data):
   return module
 
 def OrderedModuleFromData(data):
+  """Convert Mojom IR to a module.
+
+  Args:
+    data: The Mojom IR as a dict.
+
+  Returns:
+    A mojom.generate.module.Module object.
+  """
   module = ModuleFromData(data)
   for interface in module.interfaces:
     next_ordinal = 0

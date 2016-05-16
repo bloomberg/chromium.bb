@@ -429,6 +429,15 @@ class Parser(object):
 
 
 def Parse(source, filename):
+  """Parse source file to AST.
+
+  Args:
+    source: The source text as a str.
+    filename: The filename that |source| originates from.
+
+  Returns:
+    The AST as a mojom.parse.ast.Mojom object.
+  """
   lexer = Lexer(filename)
   parser = Parser(lexer, source, filename)
 

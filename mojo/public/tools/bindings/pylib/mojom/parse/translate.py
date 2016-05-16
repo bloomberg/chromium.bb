@@ -222,4 +222,13 @@ class _MojomBuilder(object):
 
 
 def Translate(tree, name):
+  """Translate AST to Mojom IR.
+
+  Args:
+    tree: The AST as a mojom.parse.ast.Mojom object.
+    name: The filename as a str.
+
+  Returns:
+    The Mojom IR as a dict.
+  """
   return _MojomBuilder().Build(tree, name)
