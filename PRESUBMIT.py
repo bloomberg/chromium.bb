@@ -1439,6 +1439,13 @@ def _CheckAndroidCrLogUsage(input_api, output_api):
     - Are using 'TAG' as variable name for the tags (warn)
     - Are using a tag that is shorter than 20 characters (error)
   """
+
+  # Do not check format of logs in //chrome/android/webapk because
+  # //chrome/android/webapk cannot depend on //base
+  cr_log_check_excluded_paths = [
+    r"^chrome[\\\/]android[\\\/]webapk[\\\/].*",
+  ]
+
   cr_log_import_pattern = input_api.re.compile(
       r'^import org\.chromium\.base\.Log;$', input_api.re.MULTILINE)
   class_in_base_pattern = input_api.re.compile(
@@ -1453,7 +1460,8 @@ def _CheckAndroidCrLogUsage(input_api, output_api):
 
   REF_MSG = ('See docs/android_logging.md '
             'or contact dgn@chromium.org for more info.')
-  sources = lambda x: input_api.FilterSourceFile(x, white_list=(r'.*\.java$',))
+  sources = lambda x: input_api.FilterSourceFile(x, white_list=(r'.*\.java$',),
+      black_list=cr_log_check_excluded_paths)
 
   tag_decl_errors = []
   tag_length_errors = []
