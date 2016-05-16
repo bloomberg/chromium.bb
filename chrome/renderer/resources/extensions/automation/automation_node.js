@@ -199,6 +199,7 @@ var utils = require('utils');
  */
 function AutomationNodeImpl(root) {
   this.rootImpl = root;
+  this.hostNode_ = null;
   this.listeners = {__proto__: null};
 }
 
@@ -208,8 +209,14 @@ AutomationNodeImpl.prototype = {
   id: -1,
   isRootNode: false,
 
+  detach: function() {
+    this.rootImpl = null;
+    this.hostNode_ = null;
+    this.listeners = {__proto__: null};
+  },
+
   get root() {
-    return this.rootImpl.wrapper;
+    return this.rootImpl && this.rootImpl.wrapper;
   },
 
   get parent() {
@@ -907,11 +914,16 @@ AutomationRootNodeImpl.prototype = {
   },
 
   remove: function(id) {
+    if (this.axNodeDataCache_[id])
+      privates(this.axNodeDataCache_[id]).impl.detach();
     delete this.axNodeDataCache_[id];
   },
 
   destroy: function() {
     this.dispatchEvent(schema.EventType.destroyed);
+    for (var id in this.axNodeDataCache_)
+      this.remove(id);
+    this.detach();
   },
 
   setHostNode(hostNode) {

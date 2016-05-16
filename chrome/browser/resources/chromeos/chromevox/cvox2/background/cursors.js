@@ -284,6 +284,14 @@ cursors.Cursor.prototype = {
     newNode = newNode || this.node_;
     newIndex = goog.isDef(newIndex) ? newIndex : this.index_;
     return new cursors.Cursor(newNode, newIndex);
+  },
+
+  /**
+   * Returns whether this cursor points to a valid position.
+   * @return {boolean}
+   */
+  isValid: function() {
+    return this.node.role !== undefined;
   }
 };
 
@@ -528,6 +536,14 @@ cursors.Range.prototype = {
   isWebRange: function() {
     return this.start.node.root.role != RoleType.desktop ||
         this.end.node.root.role != RoleType.desktop;
+  },
+
+  /**
+   * Returns whether this range has valid start and end cursors.
+   * @return {boolean}
+   */
+  isValid: function() {
+    return this.start.isValid() && this.end.isValid();
   }
 };
 

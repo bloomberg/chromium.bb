@@ -913,6 +913,9 @@ Output.prototype = {
    * @private
    */
   render_: function(range, prevRange, type, buff) {
+    if (prevRange && !prevRange.isValid())
+      prevRange = null;
+
     if (range.isSubNode())
       this.subNode_(range, prevRange, type, buff);
     else
