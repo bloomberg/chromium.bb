@@ -8,8 +8,8 @@
 //    clang-format -i -style=chromium filename
 // DO NOT EDIT!
 
-#ifndef UI_GFX_GL_GL_BINDINGS_AUTOGEN_EGL_H_
-#define UI_GFX_GL_GL_BINDINGS_AUTOGEN_EGL_H_
+#ifndef UI_GL_GL_BINDINGS_AUTOGEN_EGL_H_
+#define UI_GL_GL_BINDINGS_AUTOGEN_EGL_H_
 
 namespace gfx {
 
@@ -522,4 +522,4 @@ class GL_EXPORT EGLApi {
 #define eglWaitNative ::gfx::g_current_egl_context->eglWaitNativeFn
 #define eglWaitSyncKHR ::gfx::g_current_egl_context->eglWaitSyncKHRFn
 
-#endif  //  UI_GFX_GL_GL_BINDINGS_AUTOGEN_EGL_H_
+#endif  //  UI_GL_GL_BINDINGS_AUTOGEN_EGL_H_

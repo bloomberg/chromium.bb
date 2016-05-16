@@ -12,6 +12,7 @@
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface_egl.h"
+#include "ui/gl/init/gl_factory.h"
 #include "ui/gl/vsync_provider_win.h"
 
 namespace gpu {
@@ -37,7 +38,7 @@ scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateNativeSurface(
     if (!egl_surface->Initialize(std::move(vsync_provider)))
       return nullptr;
   } else {
-    surface = gfx::GLSurface::CreateViewGLSurface(surface_handle);
+    surface = gl::init::CreateViewGLSurface(surface_handle);
     if (!surface)
       return nullptr;
   }

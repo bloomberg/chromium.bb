@@ -8,8 +8,8 @@
 //    clang-format -i -style=chromium filename
 // DO NOT EDIT!
 
-#ifndef UI_GFX_GL_GL_BINDINGS_AUTOGEN_OSMESA_H_
-#define UI_GFX_GL_GL_BINDINGS_AUTOGEN_OSMESA_H_
+#ifndef UI_GL_GL_BINDINGS_AUTOGEN_OSMESA_H_
+#define UI_GL_GL_BINDINGS_AUTOGEN_OSMESA_H_
 
 namespace gfx {
 
@@ -120,4 +120,4 @@ class GL_EXPORT OSMESAApi {
 #define OSMesaMakeCurrent ::gfx::g_current_osmesa_context->OSMesaMakeCurrentFn
 #define OSMesaPixelStore ::gfx::g_current_osmesa_context->OSMesaPixelStoreFn
 
-#endif  //  UI_GFX_GL_GL_BINDINGS_AUTOGEN_OSMESA_H_
+#endif  //  UI_GL_GL_BINDINGS_AUTOGEN_OSMESA_H_

@@ -25,6 +25,7 @@
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface.h"
+#include "ui/gl/init/gl_factory.h"
 
 #if defined(OS_WIN)
 #include <windows.h>
@@ -194,7 +195,7 @@ void RenderingHelper::InitializeOneOff(base::WaitableEvent* done) {
   cmd_line->AppendSwitchASCII(switches::kUseGL, gfx::kGLImplementationEGLName);
 #endif
 
-  if (!gfx::GLSurface::InitializeOneOff())
+  if (!gl::init::InitializeGLOneOff())
     LOG(FATAL) << "Could not initialize GL";
   done->Signal();
 }
@@ -329,14 +330,14 @@ void RenderingHelper::Initialize(const RenderingHelperParams& params,
   render_as_thumbnails_ = params.render_as_thumbnails;
   message_loop_ = base::MessageLoop::current();
 
-  gl_surface_ = gfx::GLSurface::CreateViewGLSurface(window_);
+  gl_surface_ = gl::init::CreateViewGLSurface(window_);
 #if defined(USE_OZONE)
   gl_surface_->Resize(platform_window_delegate_->GetSize(), 1.f, true);
 #endif  // defined(USE_OZONE)
   screen_size_ = gl_surface_->GetSize();
 
-  gl_context_ = gfx::GLContext::CreateGLContext(NULL, gl_surface_.get(),
-                                                gfx::PreferIntegratedGpu);
+  gl_context_ = gl::init::CreateGLContext(nullptr, gl_surface_.get(),
+                                          gfx::PreferIntegratedGpu);
   CHECK(gl_context_->MakeCurrent(gl_surface_.get()));
 
   CHECK_GT(params.window_sizes.size(), 0U);

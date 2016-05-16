@@ -5,6 +5,7 @@
 #include "gpu/ipc/service/image_transport_surface.h"
 
 #include "gpu/ipc/service/pass_through_image_transport_surface.h"
+#include "ui/gl/init/gl_factory.h"
 
 namespace gpu {
 
@@ -17,10 +18,10 @@ scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateNativeSurface(
   DCHECK_NE(surface_handle, kNullSurfaceHandle);
   scoped_refptr<gfx::GLSurface> surface;
 #if defined(USE_OZONE)
-  surface = gfx::GLSurface::CreateSurfacelessViewGLSurface(surface_handle);
+  surface = gl::init::CreateSurfacelessViewGLSurface(surface_handle);
 #endif
   if (!surface)
-    surface = gfx::GLSurface::CreateViewGLSurface(surface_handle);
+    surface = gl::init::CreateViewGLSurface(surface_handle);
   if (!surface)
     return surface;
   return scoped_refptr<gfx::GLSurface>(new PassThroughImageTransportSurface(

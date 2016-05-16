@@ -21,7 +21,7 @@
 #include "ui/base/ui_base_paths.h"
 #include "ui/compositor/test/in_process_context_factory.h"
 #include "ui/display/screen.h"
-#include "ui/gl/gl_surface.h"
+#include "ui/gl/init/gl_factory.h"
 #include "ui/views/examples/example_base.h"
 #include "ui/views/examples/examples_window.h"
 #include "ui/views/test/desktop_test_views_delegate.h"
@@ -59,7 +59,7 @@ int main(int argc, char** argv) {
   gfx::InitializeThreadedX11();
 #endif
 
-  gfx::GLSurface::InitializeOneOff();
+  gl::init::InitializeGLOneOff();
 
   // The ContextFactory must exist before any Compositors are created.
   bool context_factory_for_test = false;

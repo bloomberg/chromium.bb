@@ -11,6 +11,7 @@
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_surface_stub.h"
+#include "ui/gl/init/gl_factory.h"
 
 namespace android_webview {
 
@@ -22,9 +23,9 @@ class AppContextSurface {
  public:
   AppContextSurface()
       : surface(new gfx::GLSurfaceStub),
-        context(gfx::GLContext::CreateGLContext(NULL,
-                                                surface.get(),
-                                                gfx::PreferDiscreteGpu)) {}
+        context(gl::init::CreateGLContext(nullptr,
+                                          surface.get(),
+                                          gfx::PreferDiscreteGpu)) {}
   void MakeCurrent() { context->MakeCurrent(surface.get()); }
 
  private:

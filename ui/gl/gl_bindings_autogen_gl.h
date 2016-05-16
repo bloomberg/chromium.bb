@@ -8,8 +8,8 @@
 //    clang-format -i -style=chromium filename
 // DO NOT EDIT!
 
-#ifndef UI_GFX_GL_GL_BINDINGS_AUTOGEN_GL_H_
-#define UI_GFX_GL_GL_BINDINGS_AUTOGEN_GL_H_
+#ifndef UI_GL_GL_BINDINGS_AUTOGEN_GL_H_
+#define UI_GL_GL_BINDINGS_AUTOGEN_GL_H_
 
 namespace gfx {
 
@@ -2745,4 +2745,4 @@ class GL_EXPORT GLApi {
 #define glViewport ::gfx::g_current_gl_context->glViewportFn
 #define glWaitSync ::gfx::g_current_gl_context->glWaitSyncFn
 
-#endif  //  UI_GFX_GL_GL_BINDINGS_AUTOGEN_GL_H_
+#endif  //  UI_GL_GL_BINDINGS_AUTOGEN_GL_H_

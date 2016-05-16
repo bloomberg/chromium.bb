@@ -39,7 +39,7 @@
 #include "sandbox/mac/seatbelt.h"
 #include "third_party/icu/source/common/unicode/uchar.h"
 #include "ui/base/layout.h"
-#include "ui/gl/gl_surface.h"
+#include "ui/gl/init/gl_factory.h"
 
 extern "C" {
 void CGSSetDenyWindowServerConnections(bool);
@@ -329,7 +329,7 @@ void Sandbox::SandboxWarmup(int sandbox_type) {
   if (sandbox_type == SANDBOX_TYPE_GPU) {
     // Preload either the desktop GL or the osmesa so, depending on the
     // --use-gl flag.
-    gfx::GLSurface::InitializeOneOff();
+    gl::init::InitializeGLOneOff();
 
     // Preload VideoToolbox.
     media::InitializeVideoToolbox();

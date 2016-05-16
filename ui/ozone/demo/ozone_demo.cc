@@ -22,6 +22,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gl/gl_surface.h"
+#include "ui/gl/init/gl_factory.h"
 #include "ui/ozone/demo/gl_renderer.h"
 #include "ui/ozone/demo/software_renderer.h"
 #include "ui/ozone/demo/surfaceless_gl_renderer.h"
@@ -45,9 +46,9 @@ class DemoWindow;
 scoped_refptr<gfx::GLSurface> CreateGLSurface(gfx::AcceleratedWidget widget) {
   scoped_refptr<gfx::GLSurface> surface;
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(kDisableSurfaceless))
-    surface = gfx::GLSurface::CreateSurfacelessViewGLSurface(widget);
+    surface = gl::init::CreateSurfacelessViewGLSurface(widget);
   if (!surface)
-    surface = gfx::GLSurface::CreateViewGLSurface(widget);
+    surface = gl::init::CreateViewGLSurface(widget);
   return surface;
 }
 
@@ -197,8 +198,7 @@ RendererFactory::~RendererFactory() {
 
 bool RendererFactory::Initialize() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (!command_line->HasSwitch(kDisableGpu) &&
-      gfx::GLSurface::InitializeOneOff() &&
+  if (!command_line->HasSwitch(kDisableGpu) && gl::init::InitializeGLOneOff() &&
       gpu_helper_.Initialize(base::ThreadTaskRunnerHandle::Get(),
                              base::ThreadTaskRunnerHandle::Get())) {
     type_ = GL;

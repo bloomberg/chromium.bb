@@ -311,6 +311,7 @@
         '../../testing/gmock.gyp:gmock',
         '../../third_party/khronos/khronos.gyp:khronos_headers',
         'gl',
+        'init/gl_init.gyp:gl_init',
       ],
       'include_dirs': [
         '../..',
@@ -332,6 +333,7 @@
         '<(DEPTH)/testing/gtest.gyp:gtest',
         '../../third_party/khronos/khronos.gyp:khronos_headers',
         'gl',
+        'init/gl_init.gyp:gl_init',
       ],
       'include_dirs': [
         '../..',

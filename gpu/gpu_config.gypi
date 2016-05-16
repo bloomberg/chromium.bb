@@ -7,6 +7,7 @@
     '../third_party/re2/re2.gyp:re2',
     '../base/base.gyp:base',
     '../ui/gl/gl.gyp:gl',
+    '../ui/gl/init/gl_init.gyp:gl_init',
   ],
   'include_dirs': [
     '..',

@@ -25,6 +25,7 @@
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/gl_version_info.h"
 #include "ui/gl/gpu_timing.h"
+#include "ui/gl/init/gl_factory.h"
 #include "ui/gl/scoped_make_current.h"
 
 #if defined(USE_OZONE)
@@ -183,13 +184,13 @@ class TextureUploadPerfTest : public testing::Test {
     // thread.
     base::MessageLoopForUI main_loop;
 #endif
-    static bool gl_initialized = gfx::GLSurface::InitializeOneOff();
+    static bool gl_initialized = gl::init::InitializeGLOneOff();
     DCHECK(gl_initialized);
     // Initialize an offscreen surface and a gl context.
-    surface_ = gfx::GLSurface::CreateOffscreenGLSurface(gfx::Size());
-    gl_context_ = gfx::GLContext::CreateGLContext(NULL,  // share_group
-                                                  surface_.get(),
-                                                  gfx::PreferIntegratedGpu);
+    surface_ = gl::init::CreateOffscreenGLSurface(gfx::Size());
+    gl_context_ =
+        gl::init::CreateGLContext(nullptr,  // share_group
+                                  surface_.get(), gfx::PreferIntegratedGpu);
     ui::ScopedMakeCurrent smc(gl_context_.get(), surface_.get());
     glGenTextures(1, &color_texture_);
     glBindTexture(GL_TEXTURE_2D, color_texture_);

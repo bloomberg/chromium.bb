@@ -24,12 +24,13 @@
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/gl_version_info.h"
+#include "ui/gl/init/gl_factory.h"
 
 namespace {
 
 scoped_refptr<gfx::GLSurface> InitializeGLSurface() {
   scoped_refptr<gfx::GLSurface> surface(
-      gfx::GLSurface::CreateOffscreenGLSurface(gfx::Size()));
+      gl::init::CreateOffscreenGLSurface(gfx::Size()));
   if (!surface.get()) {
     LOG(ERROR) << "gfx::GLContext::CreateOffscreenGLSurface failed";
     return NULL;
@@ -39,13 +40,10 @@ scoped_refptr<gfx::GLSurface> InitializeGLSurface() {
 }
 
 scoped_refptr<gfx::GLContext> InitializeGLContext(gfx::GLSurface* surface) {
-
   scoped_refptr<gfx::GLContext> context(
-      gfx::GLContext::CreateGLContext(NULL,
-                                      surface,
-                                      gfx::PreferIntegratedGpu));
+      gl::init::CreateGLContext(nullptr, surface, gfx::PreferIntegratedGpu));
   if (!context.get()) {
-    LOG(ERROR) << "gfx::GLContext::CreateGLContext failed";
+    LOG(ERROR) << "gl::init::CreateGLContext failed";
     return NULL;
   }
 

@@ -24,6 +24,7 @@ if (is_linux && !is_chromeos && target_cpu != "arm" && use_x11) {
       "//base",
       "//build/config/sanitizers:deps",
       "//ui/gl",
+      "//ui/gl/init",
     ]
   }
 }

@@ -260,6 +260,7 @@
         '../third_party/WebKit/public/blink.gyp:blink',
         '../ui/events/events.gyp:gesture_detection',
         '../ui/gl/gl.gyp:gl',
+        '../ui/gl/init/gl_init.gyp:gl_init',
         '../ui/shell_dialogs/shell_dialogs.gyp:shell_dialogs',
         '../url/ipc/url_ipc.gyp:url_ipc',
         '../v8/src/v8.gyp:v8',

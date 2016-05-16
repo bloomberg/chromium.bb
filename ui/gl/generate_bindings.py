@@ -1905,8 +1905,8 @@ def GenerateHeader(file, functions, set_name,
   file.write(LICENSE_AND_HEADER +
 """
 
-#ifndef UI_GFX_GL_GL_BINDINGS_AUTOGEN_%(name)s_H_
-#define UI_GFX_GL_GL_BINDINGS_AUTOGEN_%(name)s_H_
+#ifndef UI_GL_GL_BINDINGS_AUTOGEN_%(name)s_H_
+#define UI_GL_GL_BINDINGS_AUTOGEN_%(name)s_H_
 
 namespace gfx {
 
@@ -1962,7 +1962,7 @@ class GLContext;
         (func['known_as'], set_name.lower(), func['known_as']))
 
   file.write('\n')
-  file.write('#endif  //  UI_GFX_GL_GL_BINDINGS_AUTOGEN_%s_H_\n' %
+  file.write('#endif  //  UI_GL_GL_BINDINGS_AUTOGEN_%s_H_\n' %
       set_name.upper())
 
 

@@ -35,6 +35,7 @@
         '../../ui/base/ui_base.gyp:ui_base',
         '../../ui/gfx/gfx.gyp:gfx_geometry',
         '../../ui/gl/gl.gyp:gl',
+        '../../ui/gl/init/gl_init.gyp:gl_init',
       ],
       'sources': [
         'egl/config.cc',

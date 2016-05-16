@@ -19,6 +19,7 @@
 #include "gpu/gles2_conform_support/egl/display.h"
 #include "gpu/gles2_conform_support/egl/surface.h"
 #include "gpu/gles2_conform_support/egl/thread_state.h"
+#include "ui/gl/init/gl_factory.h"
 
 // The slight complexification in this file comes from following properties:
 // 1) Command buffer connection (context) can not be established without a
@@ -271,8 +272,8 @@ bool Context::CreateService(gfx::GLSurface* gl_surface) {
 
   decoder->set_engine(command_executor.get());
 
-  scoped_refptr<gfx::GLContext> gl_context(gfx::GLContext::CreateGLContext(
-      nullptr, gl_surface, gfx::PreferDiscreteGpu));
+  scoped_refptr<gfx::GLContext> gl_context(
+      gl::init::CreateGLContext(nullptr, gl_surface, gfx::PreferDiscreteGpu));
   if (!gl_context)
     return false;
 

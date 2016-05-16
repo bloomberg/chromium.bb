@@ -14,6 +14,7 @@
     '../ui/gfx/ipc/geometry/gfx_ipc_geometry.gyp:gfx_ipc_geometry',
     '../ui/gfx/ipc/gfx_ipc.gyp:gfx_ipc',
     '../ui/gl/gl.gyp:gl',
+    '../ui/gl/init/gl_init.gyp:gl_init',
     '../url/url.gyp:url_lib',
     '../url/ipc/url_ipc.gyp:url_ipc',
   ],

@@ -22,6 +22,7 @@
     '../ui/gfx/gfx.gyp:gfx',
     '../ui/gfx/gfx.gyp:gfx_geometry',
     '../ui/gl/gl.gyp:gl',
+    '../ui/gl/init/gl_init.gyp:gl_init',
     '<(angle_path)/src/angle.gyp:commit_id',
     '<(angle_path)/src/angle.gyp:translator',
   ],

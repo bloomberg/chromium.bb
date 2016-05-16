@@ -42,6 +42,7 @@
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/gl_switches.h"
 #include "ui/gl/gpu_switching_manager.h"
+#include "ui/gl/init/gl_factory.h"
 
 #if defined(OS_WIN)
 #include <dwmapi.h>
@@ -54,8 +55,8 @@
 #endif
 
 #if defined(OS_WIN)
-#include "base/win/windows_version.h"
 #include "base/win/scoped_com_initializer.h"
+#include "base/win/windows_version.h"
 #include "media/gpu/dxva_video_decode_accelerator_win.h"
 #include "sandbox/win/src/sandbox.h"
 #endif
@@ -275,13 +276,13 @@ int GpuMain(const MainFunctionParams& parameters) {
     bool gl_already_initialized = false;
 #if defined(OS_MACOSX)
     if (!command_line.HasSwitch(switches::kNoSandbox)) {
-      // On Mac, if the sandbox is enabled, then GLSurface::InitializeOneOff()
+      // On Mac, if the sandbox is enabled, then gl::init::InitializeGLOneOff()
       // is called from the sandbox warmup code before getting here.
       gl_already_initialized = true;
     }
 #endif
     if (command_line.HasSwitch(switches::kInProcessGPU)) {
-      // With in-process GPU, GLSurface::InitializeOneOff() is called from
+      // With in-process GPU, gl::init::InitializeGLOneOff() is called from
       // GpuChildThread before getting here.
       gl_already_initialized = true;
     }
@@ -290,7 +291,7 @@ int GpuMain(const MainFunctionParams& parameters) {
     bool gl_initialized =
         gl_already_initialized
             ? gfx::GetGLImplementation() != gfx::kGLImplementationNone
-            : gfx::GLSurface::InitializeOneOff();
+            : gl::init::InitializeGLOneOff();
     if (gl_initialized) {
       // We need to collect GL strings (VENDOR, RENDERER) for blacklisting
       // purposes. However, on Mac we don't actually use them. As documented in
@@ -334,7 +335,7 @@ int GpuMain(const MainFunctionParams& parameters) {
       UMA_HISTOGRAM_TIMES("GPU.CollectContextGraphicsInfo",
                           collect_context_time);
     } else {  // gl_initialized
-      VLOG(1) << "gfx::GLSurface::InitializeOneOff failed";
+      VLOG(1) << "gl::init::InitializeGLOneOff failed";
       dead_on_arrival = true;
     }
 
@@ -524,18 +525,18 @@ bool CanAccessNvidiaDeviceFile() {
 
 void CreateDummyGlContext() {
   scoped_refptr<gfx::GLSurface> surface(
-      gfx::GLSurface::CreateOffscreenGLSurface(gfx::Size()));
+      gl::init::CreateOffscreenGLSurface(gfx::Size()));
   if (!surface.get()) {
-    DVLOG(1) << "gfx::GLSurface::CreateOffscreenGLSurface failed";
+    DVLOG(1) << "gl::init::CreateOffscreenGLSurface failed";
     return;
   }
 
   // On Linux, this is needed to make sure /dev/nvidiactl has
   // been opened and its descriptor cached.
-  scoped_refptr<gfx::GLContext> context(gfx::GLContext::CreateGLContext(
-      NULL, surface.get(), gfx::PreferDiscreteGpu));
+  scoped_refptr<gfx::GLContext> context(
+      gl::init::CreateGLContext(NULL, surface.get(), gfx::PreferDiscreteGpu));
   if (!context.get()) {
-    DVLOG(1) << "gfx::GLContext::CreateGLContext failed";
+    DVLOG(1) << "gl::init::CreateGLContext failed";
     return;
   }
 

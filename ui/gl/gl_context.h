@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/cancellation_flag.h"
+#include "ui/gl/gl_export.h"
 #include "ui/gl/gl_share_group.h"
 #include "ui/gl/gl_state_restorer.h"
 #include "ui/gl/gpu_preference.h"
@@ -102,6 +103,7 @@ class GL_EXPORT GLContext : public base::RefCounted<GLContext> {
   // Create a GL context that is compatible with the given surface.
   // |share_group|, if non-NULL, is a group of contexts which the
   // internally created OpenGL context shares textures and other resources.
+  // DEPRECATED(kylechar): Use gl::init::CreateGLContext from gl_factory.h.
   static scoped_refptr<GLContext> CreateGLContext(
       GLShareGroup* share_group,
       GLSurface* compatible_surface,

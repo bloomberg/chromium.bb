@@ -8,6 +8,7 @@
 #include "gpu/gles2_conform_support/egl/context.h"
 #include "gpu/gles2_conform_support/egl/surface.h"
 #include "gpu/gles2_conform_support/egl/thread_state.h"
+#include "ui/gl/init/gl_factory.h"
 
 namespace egl {
 
@@ -178,8 +179,7 @@ EGLSurface Display::DoCreatePbufferSurface(ThreadState* ts,
                                            EGLint height) {
   lock_.AssertAcquired();
   scoped_refptr<gfx::GLSurface> gl_surface;
-  gl_surface =
-      gfx::GLSurface::CreateOffscreenGLSurface(gfx::Size(width, height));
+  gl_surface = gl::init::CreateOffscreenGLSurface(gfx::Size(width, height));
   if (!gl_surface)
     return ts->ReturnError(EGL_BAD_ALLOC, nullptr);
   surfaces_.emplace_back(new Surface(gl_surface.get(), config));
@@ -214,7 +214,7 @@ EGLSurface Display::CreateWindowSurface(ThreadState* ts,
     return result;
   }
   scoped_refptr<gfx::GLSurface> gl_surface;
-  gl_surface = gfx::GLSurface::CreateViewGLSurface(win);
+  gl_surface = gl::init::CreateViewGLSurface(win);
   if (!gl_surface)
     return ts->ReturnError(EGL_BAD_ALLOC, EGL_NO_SURFACE);
   surfaces_.emplace_back(new Surface(gl_surface.get(), config));

@@ -8,6 +8,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "ui/gl/gl_context.h"
+#include "ui/gl/gl_export.h"
 
 typedef struct osmesa_context* OSMesaContext;
 
@@ -17,7 +18,7 @@ class GLShareGroup;
 class GLSurface;
 
 // Encapsulates an OSMesa OpenGL context that uses software rendering.
-class GLContextOSMesa : public GLContextReal {
+class GL_EXPORT GLContextOSMesa : public GLContextReal {
  public:
   explicit GLContextOSMesa(GLShareGroup* share_group);
 

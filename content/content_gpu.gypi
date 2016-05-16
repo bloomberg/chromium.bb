@@ -12,6 +12,7 @@
     '../media/media.gyp:media_gpu',
     '../skia/skia.gyp:skia',
     '../ui/gl/gl.gyp:gl',
+    '../ui/gl/init/gl_init.gyp:gl_init',
     'content_common_mojo_bindings.gyp:content_common_mojo_bindings',
   ],
   'sources': [

@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
+#include "ui/gl/gl_export.h"
 #include "ui/gl/gl_surface_egl.h"
 
 namespace gfx {

@@ -368,6 +368,7 @@ if (is_win || is_android || is_chromeos) {
       "//ui/gfx/geometry",
       "//ui/gl",
       "//ui/gl:test_support",
+      "//ui/gl/init",
     ]
 
     configs += [ "//third_party/khronos:khronos_headers" ]

@@ -26,6 +26,7 @@
         '../base/ui_base.gyp:ui_base',
         '../gfx/gfx.gyp:gfx_geometry',
         '../gl/gl.gyp:gl',
+        '../gl/init/gl_init.gyp:gl_init',
       ],
       'sources': [
         'surface_export.h',

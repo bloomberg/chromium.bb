@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gl/gl_export.h"
 #include "ui/gl/gl_surface.h"
 
 namespace gfx {

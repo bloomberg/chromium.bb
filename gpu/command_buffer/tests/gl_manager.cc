@@ -43,6 +43,7 @@
 #include "ui/gl/gl_image_ref_counted_memory.h"
 #include "ui/gl/gl_share_group.h"
 #include "ui/gl/gl_surface.h"
+#include "ui/gl/init/gl_factory.h"
 
 #if defined(OS_MACOSX)
 #include "ui/gfx/mac/io_surface.h"
@@ -312,7 +313,7 @@ void GLManager::InitializeWithCommandLine(
 
   decoder_->set_engine(executor_.get());
 
-  surface_ = gfx::GLSurface::CreateOffscreenGLSurface(gfx::Size());
+  surface_ = gl::init::CreateOffscreenGLSurface(gfx::Size());
   ASSERT_TRUE(surface_.get() != NULL) << "could not create offscreen surface";
 
   if (base_context_) {
@@ -327,9 +328,8 @@ void GLManager::InitializeWithCommandLine(
       ASSERT_TRUE(context_->Initialize(
           surface_.get(), gfx::PreferIntegratedGpu));
     } else {
-      context_ = gfx::GLContext::CreateGLContext(share_group_.get(),
-                                                 surface_.get(),
-                                                 gpu_preference);
+      context_ = gl::init::CreateGLContext(share_group_.get(), surface_.get(),
+                                           gpu_preference);
     }
   }
   ASSERT_TRUE(context_.get() != NULL) << "could not create GL context";
@@ -392,12 +392,11 @@ void GLManager::SetupBaseContext() {
           new gfx::GLShareGroup);
       gfx::Size size(4, 4);
       base_surface_ = new scoped_refptr<gfx::GLSurface>(
-          gfx::GLSurface::CreateOffscreenGLSurface(size));
+          gl::init::CreateOffscreenGLSurface(size));
       gfx::GpuPreference gpu_preference(gfx::PreferDiscreteGpu);
-      base_context_ = new scoped_refptr<gfx::GLContext>(
-          gfx::GLContext::CreateGLContext(base_share_group_->get(),
-                                          base_surface_->get(),
-                                          gpu_preference));
+      base_context_ =
+          new scoped_refptr<gfx::GLContext>(gl::init::CreateGLContext(
+              base_share_group_->get(), base_surface_->get(), gpu_preference));
     #endif
   }
   ++use_count_;

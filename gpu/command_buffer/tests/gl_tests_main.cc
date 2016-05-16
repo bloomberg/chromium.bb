@@ -15,7 +15,7 @@
 #include "gpu/config/gpu_info_collector.h"
 #include "gpu/config/gpu_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "ui/gl/gl_surface.h"
+#include "ui/gl/init/gl_factory.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_android.h"
@@ -34,7 +34,7 @@ int RunHelper(base::TestSuite* testSuite) {
   gpu::CollectBasicGraphicsInfo(&gpu_info);
   gpu::ApplyGpuDriverBugWorkarounds(gpu_info,
                                     base::CommandLine::ForCurrentProcess());
-  gfx::GLSurface::InitializeOneOff();
+  gl::init::InitializeGLOneOff();
   ::gles2::Initialize();
   return testSuite->Run();
 }

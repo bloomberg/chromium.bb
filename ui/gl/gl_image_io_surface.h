@@ -14,6 +14,7 @@
 #include "base/threading/thread_checker.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/generic_shared_memory_id.h"
+#include "ui/gl/gl_export.h"
 #include "ui/gl/gl_image.h"
 
 #if defined(__OBJC__)

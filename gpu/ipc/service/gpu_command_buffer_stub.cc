@@ -38,9 +38,11 @@
 #include "gpu/ipc/service/gpu_watchdog.h"
 #include "gpu/ipc/service/image_transport_surface.h"
 #include "ui/gl/gl_bindings.h"
+#include "ui/gl/gl_context.h"
 #include "ui/gl/gl_image.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_switches.h"
+#include "ui/gl/init/gl_factory.h"
 
 #if defined(OS_WIN)
 #include "base/win/win_util.h"
@@ -563,8 +565,8 @@ void GpuCommandBufferStub::OnInitialize(
   if (use_virtualized_gl_context_ && share_group) {
     context = share_group->GetSharedContext();
     if (!context.get()) {
-      context = gfx::GLContext::CreateGLContext(
-          share_group,
+      context = gl::init::CreateGLContext(
+          channel_->share_group(),
           channel_->gpu_channel_manager()->GetDefaultOffscreenSurface(),
           gpu_preference_);
       if (!context.get()) {
@@ -595,8 +597,8 @@ void GpuCommandBufferStub::OnInitialize(
     }
   }
   if (!context.get()) {
-    context = gfx::GLContext::CreateGLContext(
-        share_group, surface_.get(), gpu_preference_);
+    context =
+        gl::init::CreateGLContext(share_group, surface_.get(), gpu_preference_);
   }
   if (!context.get()) {
     DLOG(ERROR) << "Failed to create context.";

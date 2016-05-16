@@ -24,6 +24,7 @@
 #include "ui/gl/gl_image.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface.h"
+#include "ui/gl/init/gl_factory.h"
 #include "ui/gl/test/gl_image_test_support.h"
 #include "ui/gl/test/gl_test_helper.h"
 
@@ -125,9 +126,9 @@ class GLImageTest : public testing::Test {
   // Overridden from testing::Test:
   void SetUp() override {
     GLImageTestSupport::InitializeGL();
-    surface_ = gfx::GLSurface::CreateOffscreenGLSurface(gfx::Size());
-    context_ = gfx::GLContext::CreateGLContext(nullptr, surface_.get(),
-                                               gfx::PreferIntegratedGpu);
+    surface_ = gl::init::CreateOffscreenGLSurface(gfx::Size());
+    context_ = gl::init::CreateGLContext(nullptr, surface_.get(),
+                                         gfx::PreferIntegratedGpu);
     context_->MakeCurrent(surface_.get());
   }
   void TearDown() override {

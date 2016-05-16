@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "ui/gl/gl_context_stub.h"
+#include "ui/gl/gl_export.h"
 
 namespace gfx {
 

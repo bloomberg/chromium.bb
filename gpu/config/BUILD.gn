@@ -77,6 +77,7 @@ source_set("config_sources") {
     "//base",
     "//third_party/re2",
     "//ui/gl",
+    "//ui/gl/init",
   ]
 
   # Prefer mesa GL headers to system headers, which cause problems on Win.

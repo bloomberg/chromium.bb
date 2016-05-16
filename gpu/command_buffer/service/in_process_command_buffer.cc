@@ -44,6 +44,7 @@
 #include "ui/gl/gl_image.h"
 #include "ui/gl/gl_image_shared_memory.h"
 #include "ui/gl/gl_share_group.h"
+#include "ui/gl/init/gl_factory.h"
 
 #if defined(OS_WIN)
 #include <windows.h>
@@ -342,9 +343,9 @@ bool InProcessCommandBuffer::InitializeOnGpuThread(
 
   if (!surface_.get()) {
     if (params.is_offscreen)
-      surface_ = gfx::GLSurface::CreateOffscreenGLSurface(params.size);
+      surface_ = gl::init::CreateOffscreenGLSurface(params.size);
     else
-      surface_ = gfx::GLSurface::CreateViewGLSurface(params.window);
+      surface_ = gl::init::CreateViewGLSurface(params.window);
   }
 
   if (!surface_.get()) {
@@ -364,7 +365,7 @@ bool InProcessCommandBuffer::InitializeOnGpuThread(
           .use_virtualized_gl_contexts) {
     context_ = gl_share_group_->GetSharedContext();
     if (!context_.get()) {
-      context_ = gfx::GLContext::CreateGLContext(
+      context_ = gl::init::CreateGLContext(
           gl_share_group_.get(), surface_.get(), params.gpu_preference);
       gl_share_group_->SetSharedContext(context_.get());
     }
@@ -377,8 +378,8 @@ bool InProcessCommandBuffer::InitializeOnGpuThread(
       context_ = NULL;
     }
   } else {
-    context_ = gfx::GLContext::CreateGLContext(
-        gl_share_group_.get(), surface_.get(), params.gpu_preference);
+    context_ = gl::init::CreateGLContext(gl_share_group_.get(), surface_.get(),
+                                         params.gpu_preference);
   }
 
   if (!context_.get()) {

@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "ui/gfx/buffer_types.h"
+#include "ui/gl/gl_export.h"
 #include "ui/gl/gl_image_egl.h"
 #include "ui/ozone/public/native_pixmap.h"
 

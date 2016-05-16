@@ -29,7 +29,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/skia_util.h"
-#include "ui/gl/gl_surface.h"
+#include "ui/gl/init/gl_factory.h"
 
 #if defined(USE_X11)
 #include "ui/gfx/x/x11_connection.h"  // nogncheck
@@ -130,7 +130,7 @@ int DemoMain() {
   gfx::InitializeThreadedX11();
 #endif
 
-  gfx::GLSurface::InitializeOneOff();
+  gl::init::InitializeGLOneOff();
 
 #if defined(OS_WIN)
   display::win::SetDefaultDeviceScaleFactor(1.0f);

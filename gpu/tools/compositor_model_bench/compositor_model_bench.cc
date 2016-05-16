@@ -35,7 +35,7 @@
 #include "gpu/tools/compositor_model_bench/render_model_utils.h"
 #include "gpu/tools/compositor_model_bench/render_models.h"
 #include "gpu/tools/compositor_model_bench/render_tree.h"
-#include "ui/gl/gl_surface.h"
+#include "ui/gl/init/gl_factory.h"
 
 using base::TimeTicks;
 using base::DirectoryExists;
@@ -186,8 +186,8 @@ class Simulator {
 
   // Initialize the OpenGL context.
   bool InitGLContext() {
-    if (!gfx::GLSurface::InitializeOneOff()) {
-      LOG(FATAL) << "gfx::GLSurface::InitializeOneOff failed";
+    if (!gl::init::InitializeGLOneOff()) {
+      LOG(FATAL) << "gl::init::InitializeGLOneOff failed";
       return false;
     }
 

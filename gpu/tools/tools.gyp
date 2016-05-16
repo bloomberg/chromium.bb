@@ -19,6 +19,7 @@
             '../../base/base.gyp:base',
             '../../build/linux/system.gyp:x11',
             '../../ui/gl/gl.gyp:gl',
+            '../../ui/gl/init/gl_init.gyp:gl_init',
           ],
           'libraries': [
             '-lGL',

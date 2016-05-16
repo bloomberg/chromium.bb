@@ -33,6 +33,7 @@
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_image_shared_memory.h"
 #include "ui/gl/gl_surface.h"
+#include "ui/gl/init/gl_factory.h"
 
 #if defined(USE_OZONE)
 #include "ui/gl/gl_image_ozone_native_pixmap.h"
@@ -86,16 +87,16 @@ bool CommandBufferDriver::Initialize(
 
   const bool offscreen = widget_ == gfx::kNullAcceleratedWidget;
   if (offscreen) {
-    surface_ = gfx::GLSurface::CreateOffscreenGLSurface(gfx::Size(0, 0));
+    surface_ = gl::init::CreateOffscreenGLSurface(gfx::Size(0, 0));
   } else {
 #if defined(USE_OZONE)
     scoped_refptr<gfx::GLSurface> underlying_surface =
-        gfx::GLSurface::CreateSurfacelessViewGLSurface(widget_);
+        gl::init::CreateSurfacelessViewGLSurface(widget_);
     if (!underlying_surface)
-      underlying_surface = gfx::GLSurface::CreateViewGLSurface(widget_);
+      underlying_surface = gl::init::CreateViewGLSurface(widget_);
 #else
     scoped_refptr<gfx::GLSurface> underlying_surface =
-        gfx::GLSurface::CreateViewGLSurface(widget_);
+        gl::init::CreateViewGLSurface(widget_);
 #endif
     scoped_refptr<GLSurfaceAdapterMus> surface_adapter =
         new GLSurfaceAdapterMus(underlying_surface);
@@ -117,7 +118,7 @@ bool CommandBufferDriver::Initialize(
     return false;
 
   // TODO(piman): virtual contexts, gpu preference.
-  context_ = gfx::GLContext::CreateGLContext(
+  context_ = gl::init::CreateGLContext(
       gpu_state_->share_group(), surface_.get(), gfx::PreferIntegratedGpu);
   if (!context_.get())
     return false;

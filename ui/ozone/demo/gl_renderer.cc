@@ -10,6 +10,7 @@
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_surface.h"
+#include "ui/gl/init/gl_factory.h"
 
 namespace ui {
 
@@ -22,8 +23,8 @@ GlRenderer::~GlRenderer() {
 }
 
 bool GlRenderer::Initialize() {
-  context_ = gfx::GLContext::CreateGLContext(NULL, surface_.get(),
-                                             gfx::PreferIntegratedGpu);
+  context_ = gl::init::CreateGLContext(nullptr, surface_.get(),
+                                       gfx::PreferIntegratedGpu);
   if (!context_.get()) {
     LOG(ERROR) << "Failed to create GL context";
     return false;

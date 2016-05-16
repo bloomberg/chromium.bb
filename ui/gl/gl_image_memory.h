@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/numerics/safe_math.h"
 #include "ui/gfx/buffer_types.h"
+#include "ui/gl/gl_export.h"
 
 namespace gl {
 

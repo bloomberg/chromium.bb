@@ -8,8 +8,8 @@
 //    clang-format -i -style=chromium filename
 // DO NOT EDIT!
 
-#ifndef UI_GFX_GL_GL_BINDINGS_AUTOGEN_WGL_H_
-#define UI_GFX_GL_GL_BINDINGS_AUTOGEN_WGL_H_
+#ifndef UI_GL_GL_BINDINGS_AUTOGEN_WGL_H_
+#define UI_GL_GL_BINDINGS_AUTOGEN_WGL_H_
 
 namespace gfx {
 
@@ -144,4 +144,4 @@ class GL_EXPORT WGLApi {
 #define wglSwapIntervalEXT ::gfx::g_current_wgl_context->wglSwapIntervalEXTFn
 #define wglSwapLayerBuffers ::gfx::g_current_wgl_context->wglSwapLayerBuffersFn
 
-#endif  //  UI_GFX_GL_GL_BINDINGS_AUTOGEN_WGL_H_
+#endif  //  UI_GL_GL_BINDINGS_AUTOGEN_WGL_H_

@@ -27,6 +27,7 @@
 #include "gpu/ipc/service/gpu_memory_manager.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_share_group.h"
+#include "ui/gl/init/gl_factory.h"
 
 namespace gpu {
 
@@ -234,7 +235,7 @@ void GpuChannelManager::DestroyAllChannels() {
 gfx::GLSurface* GpuChannelManager::GetDefaultOffscreenSurface() {
   if (!default_offscreen_surface_.get()) {
     default_offscreen_surface_ =
-        gfx::GLSurface::CreateOffscreenGLSurface(gfx::Size());
+        gl::init::CreateOffscreenGLSurface(gfx::Size());
   }
   return default_offscreen_surface_.get();
 }

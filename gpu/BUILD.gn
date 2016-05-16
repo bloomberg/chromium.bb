@@ -391,6 +391,7 @@ test("gpu_perftests") {
     "//testing/perf",
     "//ui/gfx/geometry",
     "//ui/gl",
+    "//ui/gl/init",
   ]
 
   # This target should not require the Chrome executable to run.

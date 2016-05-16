@@ -22,6 +22,7 @@
 #include "gpu/gles2_conform_support/egl/test_support.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_surface.h"
+#include "ui/gl/init/gl_factory.h"
 
 // Thread local key for ThreadState instance. Accessed when holding g_egl_lock
 // only, since the initialization can not be Guaranteed otherwise.  Not in
@@ -83,7 +84,7 @@ egl::ThreadState* ThreadState::Get() {
         gpu::ApplyGpuDriverBugWorkarounds(gpu_info, command_line);
       }
 
-      gfx::GLSurface::InitializeOneOff();
+      gl::init::InitializeGLOneOff();
     }
 
     g_egl_default_display = new egl::Display();

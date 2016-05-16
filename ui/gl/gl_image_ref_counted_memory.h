@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "ui/gl/gl_export.h"
 #include "ui/gl/gl_image_memory.h"
 
 namespace base {

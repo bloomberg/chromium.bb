@@ -155,6 +155,7 @@ source_set("service_sources") {
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/gl",
+    "//ui/gl/init",
   ]
 
   if (is_mac) {

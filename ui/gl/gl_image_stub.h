@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include "ui/gl/gl_export.h"
 #include "ui/gl/gl_image.h"
 
 namespace gl {

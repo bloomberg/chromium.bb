@@ -17,6 +17,7 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gl/android/surface_texture.h"
 #include "ui/gl/gl_surface.h"
+#include "ui/gl/init/gl_factory.h"
 
 namespace gpu {
 
@@ -40,7 +41,7 @@ TEST_F(GLSurfaceTextureTest, SimpleTest) {
   EXPECT_TRUE(window != NULL);
 
   scoped_refptr<gfx::GLSurface> gl_surface =
-      gfx::GLSurface::CreateViewGLSurface(window);
+      gl::init::CreateViewGLSurface(window);
   EXPECT_TRUE(gl_surface.get() != NULL);
 
   gl_.SetSurface(gl_surface.get());

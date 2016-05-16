@@ -589,6 +589,7 @@ source_set("common") {
     "//third_party/WebKit/public:blink",
     "//ui/events:gesture_detection",
     "//ui/gl",
+    "//ui/gl/init",
     "//ui/shell_dialogs",
     "//v8",
   ]

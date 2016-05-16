@@ -13,6 +13,7 @@
     '../ui/display/display.gyp:display_types',
     '../ui/gfx/gfx.gyp:gfx_geometry',
     '../ui/gl/gl.gyp:gl',
+    '../ui/gl/init/gl_init.gyp:gl_init',
     '../ui/platform_window/platform_window.gyp:platform_window',
   ],
   'sources': [
@@ -322,6 +323,7 @@
       'dependencies': [
         '../media/media.gyp:media',
         '../ui/gl/gl.gyp:gl',
+        '../ui/gl/init/gl_init.gyp:gl_init',
       ],
       'link_settings': {
         'libraries': [

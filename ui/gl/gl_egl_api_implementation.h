@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "gl_bindings.h"
+#include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_export.h"
 
 namespace base {

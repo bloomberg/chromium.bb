@@ -38,6 +38,7 @@
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_switches.h"
 #include "ui/gl/gpu_switching_manager.h"
+#include "ui/gl/init/gl_factory.h"
 #include "url/gurl.h"
 
 #if defined(USE_OZONE)
@@ -199,8 +200,8 @@ GpuChildThread::GpuChildThread(
          base::CommandLine::ForCurrentProcess()->HasSwitch(
              switches::kInProcessGPU));
 
-  if (!gfx::GLSurface::InitializeOneOff())
-    VLOG(1) << "gfx::GLSurface::InitializeOneOff failed";
+  if (!gl::init::InitializeGLOneOff())
+    VLOG(1) << "gl::init::InitializeGLOneOff failed";
 
   g_thread_safe_sender.Get() = thread_safe_sender();
   g_lazy_tls.Pointer()->Set(this);

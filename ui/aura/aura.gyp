@@ -261,6 +261,7 @@
         '../gfx/gfx.gyp:gfx',
         '../gfx/gfx.gyp:gfx_geometry',
         '../gl/gl.gyp:gl',
+        '../gl/init/gl_init.gyp:gl_init',
         'aura_test_support',
         'aura',
       ],

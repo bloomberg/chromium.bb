@@ -322,6 +322,7 @@ source_set("test_support") {
 
   public_deps = [
     ":gl",
+    "//ui/gl/init",
   ]
   deps = [
     "//testing/gtest",
@@ -374,6 +375,7 @@ test("gl_unittests") {
     "//testing/gtest",
     "//ui/gfx",
     "//ui/gfx/geometry",
+    "//ui/gl/init",
   ]
 
   data_deps = [

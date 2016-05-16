@@ -15,7 +15,7 @@
 #include "blimp/client/app/blimp_discardable_memory_allocator.h"
 #include "blimp/client/feature/compositor/decoding_image_generator.h"
 #include "third_party/skia/include/core/SkGraphics.h"
-#include "ui/gl/gl_surface.h"
+#include "ui/gl/init/gl_factory.h"
 
 class SkImageGenerator;
 
@@ -73,7 +73,7 @@ bool InitializeMainMessageLoop() {
   // Set the DiscardableMemoryAllocator.
   base::DiscardableMemoryAllocator::SetInstance(
       g_discardable_memory_allocator.Pointer());
-  if (!gfx::GLSurface::InitializeOneOff())
+  if (!gl::init::InitializeGLOneOff())
     return false;
   SkGraphics::Init();
   SkGraphics::SetImageGeneratorFromEncodedFactory(CreateImageGenerator);
