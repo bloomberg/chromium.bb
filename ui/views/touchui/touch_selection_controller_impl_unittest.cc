@@ -181,6 +181,10 @@ class TouchSelectionControllerImplTest : public ViewsTestBase {
     return GetSelectionController()->GetCursorHandleNativeView();
   }
 
+  ui::SelectionBound::Type GetSelectionHandle1Type() {
+    return GetSelectionController()->GetSelectionHandle1Type();
+  }
+
   gfx::Rect GetSelectionHandle1Bounds() {
     return GetSelectionController()->GetSelectionHandle1Bounds();
   }
@@ -267,6 +271,36 @@ class TouchSelectionControllerImplTest : public ViewsTestBase {
         EXPECT_EQ(ui::SelectionBound::CENTER, anchor.type()) << from_str;
       }
     }
+  }
+
+  // Sets up a textfield with a long text string such that it doesn't all fit
+  // into the textfield. Then selects the text - the first handle is expected
+  // to be invisible. |selection_start| is the position of the first handle.
+  void SetupSelectionInvisibleHandle(uint32_t selection_start) {
+    // Create a textfield with lots of text in it.
+    CreateTextfield();
+    std::string some_text("some text");
+    std::string textfield_text;
+    for (int i = 0; i < 10; ++i)
+      textfield_text += some_text;
+    textfield_->SetText(ASCIIToUTF16(textfield_text));
+
+    // Tap the textfield to invoke selection.
+    ui::GestureEventDetails details(ui::ET_GESTURE_TAP);
+    details.set_tap_count(1);
+    ui::GestureEvent tap(0, 0, 0, base::TimeDelta(), details);
+    textfield_->OnGestureEvent(&tap);
+
+    // Select some text such that one handle is hidden.
+    textfield_->SelectRange(gfx::Range(
+        selection_start, static_cast<uint32_t>(textfield_text.length())));
+
+    // Check that one selection handle is hidden.
+    EXPECT_FALSE(IsSelectionHandle1Visible());
+    EXPECT_TRUE(IsSelectionHandle2Visible());
+    EXPECT_EQ(gfx::Range(selection_start,
+                         static_cast<uint32_t>(textfield_text.length())),
+              textfield_->GetSelectedRange());
   }
 
   Widget* textfield_widget_;
@@ -539,29 +573,8 @@ TEST_F(TouchSelectionControllerImplTest, SelectRectInBidiCallbackTest) {
 
 TEST_F(TouchSelectionControllerImplTest,
        HiddenSelectionHandleRetainsCursorPosition) {
-  // Create a textfield with lots of text in it.
-  CreateTextfield();
-  std::string textfield_text("some text");
-  for (int i = 0; i < 10; ++i)
-    textfield_text += textfield_text;
-  textfield_->SetText(ASCIIToUTF16(textfield_text));
-
-  // Tap the textfield to invoke selection.
-  ui::GestureEventDetails details(ui::ET_GESTURE_TAP);
-  details.set_tap_count(1);
-  ui::GestureEvent tap(0, 0, 0, base::TimeDelta(), details);
-  textfield_->OnGestureEvent(&tap);
-
-  // Select some text such that one handle is hidden.
-  textfield_->SelectRange(
-      gfx::Range(10u, static_cast<uint32_t>(textfield_text.length())));
-
-  // Check that one selection handle is hidden.
-  EXPECT_FALSE(IsSelectionHandle1Visible());
-  EXPECT_TRUE(IsSelectionHandle2Visible());
-  EXPECT_EQ(
-      gfx::Range(10u, static_cast<uint32_t>(textfield_text.length())),
-      textfield_->GetSelectedRange());
+  static const uint32_t selection_start = 10u;
+  SetupSelectionInvisibleHandle(selection_start);
 
   // Drag the visible handle around and make sure the selection end point of the
   // invisible handle does not change.
@@ -574,6 +587,24 @@ TEST_F(TouchSelectionControllerImplTest,
     visible_handle_position = textfield_->GetSelectedRange().end();
     EXPECT_EQ((size_t) 10, textfield_->GetSelectedRange().start());
   }
+}
+
+// Tests that we can handle the hidden handle getting exposed as a result of a
+// drag and that it maintains the correct orientation when exposed.
+TEST_F(TouchSelectionControllerImplTest, HiddenSelectionHandleExposed) {
+  static const uint32_t selection_start = 0u;
+  SetupSelectionInvisibleHandle(selection_start);
+
+  // Drag the handle until the selection shrinks such that the other handle
+  // becomes visible.
+  while (!IsSelectionHandle1Visible()) {
+    static const int drag_diff = -10;
+    SimulateSelectionHandleDrag(gfx::Vector2d(drag_diff, 0), 2);
+  }
+
+  // Confirm that the exposed handle maintains the LEFT orientation
+  // (and does not reset to ui::SelectionBound::Type::CENTER).
+  EXPECT_EQ(ui::SelectionBound::Type::LEFT, GetSelectionHandle1Type());
 }
 
 TEST_F(TouchSelectionControllerImplTest,

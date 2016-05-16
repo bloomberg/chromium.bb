@@ -110,6 +110,7 @@ class VIEWS_EXPORT TouchSelectionControllerImpl
 
   // Convenience methods for testing.
   gfx::NativeView GetCursorHandleNativeView();
+  ui::SelectionBound::Type GetSelectionHandle1Type();
   gfx::Rect GetSelectionHandle1Bounds();
   gfx::Rect GetSelectionHandle2Bounds();
   gfx::Rect GetCursorHandleBounds();
