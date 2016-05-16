@@ -167,6 +167,7 @@ bool DisplayItemList::RetainsIndividualDisplayItems() const {
 }
 
 void DisplayItemList::Finalize() {
+  TRACE_EVENT0("cc", "DisplayItemList::Finalize");
   // TODO(dtrainor): Need to deal with serializing visual_rects_.
   // http://crbug.com/568757.
   DCHECK(!retain_individual_display_items_ ||
@@ -200,7 +201,9 @@ bool DisplayItemList::IsSuitableForGpuRasterization() const {
 }
 
 int DisplayItemList::ApproximateOpCount() const {
-  return approximate_op_count_;
+  if (retain_individual_display_items_)
+    return approximate_op_count_;
+  return picture_ ? picture_->approximateOpCount() : 0;
 }
 
 size_t DisplayItemList::ApproximateMemoryUsage() const {

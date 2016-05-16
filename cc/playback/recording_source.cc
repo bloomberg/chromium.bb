@@ -104,6 +104,7 @@ void RecordingSource::UpdateInvalidationForNewViewport(
 }
 
 void RecordingSource::FinishDisplayItemListUpdate() {
+  TRACE_EVENT0("cc", "RecordingSource::FinishDisplayItemListUpdate");
   DetermineIfSolidColor();
   display_list_->EmitTraceSnapshot();
   if (generate_discardable_images_metadata_)
@@ -227,6 +228,8 @@ void RecordingSource::DetermineIfSolidColor() {
   if (!display_list_->ShouldBeAnalyzedForSolidColor())
     return;
 
+  TRACE_EVENT1("cc", "RecordingSource::DetermineIfSolidColor", "opcount",
+               display_list_->ApproximateOpCount());
   gfx::Size layer_size = GetSize();
   skia::AnalysisCanvas canvas(layer_size.width(), layer_size.height());
   display_list_->Raster(&canvas, nullptr, gfx::Rect(), 1.f);

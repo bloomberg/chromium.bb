@@ -541,6 +541,7 @@ TEST(DisplayItemListTest, IsSuitableForGpuRasterizationWithCachedPicture) {
   DrawingDisplayItem suitable_item(suitable_picture);
   list->RasterIntoCanvas(suitable_item);
   list->Finalize();
+  EXPECT_TRUE(list->ApproximateOpCount());
   EXPECT_TRUE(list->IsSuitableForGpuRasterization());
 
   list = DisplayItemList::Create(layer_rect, settings);
