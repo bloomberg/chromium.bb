@@ -38,6 +38,8 @@
       #icon {
         height: 32px;
         width: 32px;
+
+        @apply(--cr-network-icon-mixin);
       }
 
       #divDetail {
@@ -56,12 +58,16 @@
       #networkName {
         -webkit-margin-start: 8px;
         font-size: 16px;
+
+        @apply(--cr-network-name-mixin);
       }
 
       #networkStateText {
         -webkit-margin-start: 8px;
         color: grey;
         font-size: 14px;
+
+        @apply(--cr-network-state-mixin);
       }
 
       .buttons {

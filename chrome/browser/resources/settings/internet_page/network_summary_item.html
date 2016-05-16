@@ -5,12 +5,24 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_expand_button/cr_expand_button.html">
 <link rel="import" href="chrome://resources/cr_elements/network/cr_network_list.html">
 <link rel="import" href="chrome://resources/cr_elements/network/cr_network_list_item.html">
+<link rel="import" href="chrome://md-settings/settings_shared_css.html">
 
 <dom-module name="network-summary-item">
   <template>
-    <style>
-      #details.selectable:hover {
-        background-color: lightgrey;
+    <style include="settings-shared">
+      :host {
+        --cr-network-icon-mixin: {
+          height: 24px;
+          left: -4px;
+          width: 24px;
+        }
+        --cr-network-name-mixin: {
+          font-size: inherit;
+        };
+        --cr-network-state-mixin: {
+          @apply(--settings-secondary);
+          font-size: inherit;
+        };
       }
 
       #buttons {
@@ -29,25 +41,19 @@
         -webkit-margin-start: 10px;
       }
 
-      #listDiv {
-        -webkit-margin-end: 10px;
-        -webkit-margin-start: 40px;
-      }
-
       #networkList {
         margin: 5px 0 10px;
         max-height: 400px;
       }
     </style>
-    <div class="layout vertical" hidden$="[[isHidden]]">
-      <div id="details" class="layout horizontal center"
-          on-tap="onDetailsTap_">
-        <cr-network-list-item id="detailsItem"
-            network-state="[[networkState]]">
+    <div class="settings-box two-line" hidden$="[[isHidden]]">
+      <div id="details" class="start" on-tap="onDetailsTap_">
+        <cr-network-list-item id="detailsItem" network-state="[[networkState]]">
         </cr-network-list-item>
         <paper-spinner active="[[showScanning_(deviceState, expanded)]]">
         </paper-spinner>
-        <span class="flex"></span>
+      </div>
+      <div>
         <div id="buttons" class="layout horizontal">
           <cr-expand-button id="expandListButton"
               class$="[[getExpandButtonClass_(deviceState, networkStateList)]]"
@@ -60,7 +66,9 @@
           </paper-toggle-button>
         </div>
       </div>
-      <div id="listDiv" class="layout vertical">
+    </div>
+    <template is="dom-if" if="[[expanded]]">
+      <div class="list-frame">
         <cr-network-list id="networkList"
             max-height="[[maxHeight]]"
             networks="[[networkStateList]]"
@@ -74,7 +82,7 @@
           </paper-button>
         </div>
       </div>
-    </div>
+    </template>
   </template>
   <script src="network_summary_item.js"></script>
 </dom-module>
