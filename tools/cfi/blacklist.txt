@@ -18,17 +18,6 @@ type:*SkBlockComRef*
 # https://crbug.com/517959
 type:*NoAddRefRelease*
 
-# All types and sources from libclearkeycdm.so.
-# See https://crbug.com/557969
-type:media::CdmVideoDecoder
-type:media::ClearKeyCdm
-type:media::FakeCdmVideoDecoder
-type:media::FFmpegCdmAudioDecoder
-type:media::FFmpegCdmVideoDecoder
-type:media::LibvpxCdmVideoDecoder
-src:*external_clear_key*
-type:cdm::*
-
 # invalid downcasts for IPC messages
 # https://crbug.com/520760
 src:*nacl_message_scanner.cc*
