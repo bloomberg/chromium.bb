@@ -293,7 +293,7 @@ const char kGen_Help[] =
     "  --root-target=<target_name>\n"
     "      Name of the root target for which the QtCreator project will be\n"
     "      generated to contain files of it and its dependencies. If unset, \n"
-    "      the whole build graph will be omitted.\n"
+    "      the whole build graph will be emitted.\n"
     "\n"
     "\n"
     "Eclipse IDE Support\n"
