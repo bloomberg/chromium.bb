@@ -254,6 +254,9 @@ void ArcGpuVideoDecodeAccelerator::ProvidePictureBuffers(
       // CrCb) as well as planar and semi-planar layouts.
       video_format.pixel_format = HAL_PIXEL_FORMAT_YCbCr_420_888;
       break;
+    case media::PIXEL_FORMAT_ARGB:
+      video_format.pixel_format = HAL_PIXEL_FORMAT_BGRA_8888;
+      break;
     default:
       DLOG(ERROR) << "Format not supported: " << output_format;
       arc_client_->OnError(PLATFORM_FAILURE);

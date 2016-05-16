@@ -16,24 +16,23 @@
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
 
-namespace {
-// We decode video into YUV420, but for usage with GLImages we have to convert
-// to BGRX_8888.
-const gfx::BufferFormat kPictureForGLImageFormat = gfx::BufferFormat::BGRX_8888;
-
-}  // namespace
-
 namespace media {
 
 VaapiDrmPicture::VaapiDrmPicture(
     const scoped_refptr<VaapiWrapper>& vaapi_wrapper,
     const MakeGLContextCurrentCallback& make_context_current_cb,
+    const BindGLImageCallback& bind_image_cb,
     int32_t picture_buffer_id,
+    const gfx::Size& size,
     uint32_t texture_id,
-    const gfx::Size& size)
-    : VaapiPicture(picture_buffer_id, texture_id, size),
-      vaapi_wrapper_(vaapi_wrapper),
-      make_context_current_cb_(make_context_current_cb) {}
+    uint32_t client_texture_id)
+    : VaapiPicture(vaapi_wrapper,
+                   make_context_current_cb,
+                   bind_image_cb,
+                   picture_buffer_id,
+                   size,
+                   texture_id,
+                   client_texture_id) {}
 
 VaapiDrmPicture::~VaapiDrmPicture() {
   if (gl_image_ && make_context_current_cb_.Run()) {
@@ -45,18 +44,7 @@ VaapiDrmPicture::~VaapiDrmPicture() {
 }
 
 bool VaapiDrmPicture::Initialize() {
-  // We want to create a VASurface and an EGLImage out of the same
-  // memory buffer, so we can output decoded pictures to it using
-  // VAAPI and also use it to paint with GL.
-  ui::OzonePlatform* platform = ui::OzonePlatform::GetInstance();
-  ui::SurfaceFactoryOzone* factory = platform->GetSurfaceFactoryOzone();
-  pixmap_ = factory->CreateNativePixmap(gfx::kNullAcceleratedWidget, size(),
-                                        kPictureForGLImageFormat,
-                                        gfx::BufferUsage::SCANOUT);
-  if (!pixmap_) {
-    LOG(ERROR) << "Failed creating an Ozone NativePixmap";
-    return false;
-  }
+  DCHECK(pixmap_);
 
   va_surface_ = vaapi_wrapper_->CreateVASurfaceForPixmap(pixmap_);
   if (!va_surface_) {
@@ -67,24 +55,63 @@ bool VaapiDrmPicture::Initialize() {
   pixmap_->SetProcessingCallback(
       base::Bind(&VaapiWrapper::ProcessPixmap, vaapi_wrapper_));
 
-  if (!make_context_current_cb_.Run())
-    return false;
+  if (texture_id_ != 0 && !make_context_current_cb_.is_null()) {
+    if (!make_context_current_cb_.Run())
+      return false;
 
-  gfx::ScopedTextureBinder texture_binder(GL_TEXTURE_EXTERNAL_OES,
-                                          texture_id());
-  scoped_refptr<gfx::GLImageOzoneNativePixmap> image(
-      new gfx::GLImageOzoneNativePixmap(size(), GL_BGRA_EXT));
-  if (!image->Initialize(pixmap_.get(), pixmap_->GetBufferFormat())) {
-    LOG(ERROR) << "Failed to create GLImage";
-    return false;
+    gfx::ScopedTextureBinder texture_binder(GL_TEXTURE_EXTERNAL_OES,
+                                            texture_id_);
+    scoped_refptr<gfx::GLImageOzoneNativePixmap> image(
+        new gfx::GLImageOzoneNativePixmap(size_, GL_BGRA_EXT));
+    if (!image->Initialize(pixmap_.get(), pixmap_->GetBufferFormat())) {
+      LOG(ERROR) << "Failed to create GLImage";
+      return false;
+    }
+    gl_image_ = image;
+    if (!gl_image_->BindTexImage(GL_TEXTURE_EXTERNAL_OES)) {
+      LOG(ERROR) << "Failed to bind texture to GLImage";
+      return false;
+    }
   }
-  gl_image_ = image;
-  if (!gl_image_->BindTexImage(GL_TEXTURE_EXTERNAL_OES)) {
-    LOG(ERROR) << "Failed to bind texture to GLImage";
-    return false;
+
+  if (client_texture_id_ != 0 && !bind_image_cb_.is_null()) {
+    if (!bind_image_cb_.Run(client_texture_id_, GL_TEXTURE_EXTERNAL_OES,
+                            gl_image_, true)) {
+      LOG(ERROR) << "Failed to bind client_texture_id";
+      return false;
+    }
   }
 
   return true;
+}
+
+bool VaapiDrmPicture::Allocate(gfx::BufferFormat format) {
+  ui::OzonePlatform* platform = ui::OzonePlatform::GetInstance();
+  ui::SurfaceFactoryOzone* factory = platform->GetSurfaceFactoryOzone();
+  pixmap_ = factory->CreateNativePixmap(gfx::kNullAcceleratedWidget, size_,
+                                        format, gfx::BufferUsage::SCANOUT);
+  if (!pixmap_) {
+    DVLOG(1) << "Failed allocating a pixmap";
+    return false;
+  }
+
+  return Initialize();
+}
+
+bool VaapiDrmPicture::ImportGpuMemoryBufferHandle(
+    gfx::BufferFormat format,
+    const gfx::GpuMemoryBufferHandle& gpu_memory_buffer_handle) {
+  ui::OzonePlatform* platform = ui::OzonePlatform::GetInstance();
+  ui::SurfaceFactoryOzone* factory = platform->GetSurfaceFactoryOzone();
+  // CreateNativePixmapFromHandle() will take ownership of the handle.
+  pixmap_ = factory->CreateNativePixmapFromHandle(
+      size_, format, gpu_memory_buffer_handle.native_pixmap_handle);
+  if (!pixmap_) {
+    DVLOG(1) << "Failed creating a pixmap from a native handle";
+    return false;
+  }
+
+  return Initialize();
 }
 
 bool VaapiDrmPicture::DownloadFromSurface(
@@ -92,12 +119,8 @@ bool VaapiDrmPicture::DownloadFromSurface(
   return vaapi_wrapper_->BlitSurface(va_surface, va_surface_);
 }
 
-scoped_refptr<gl::GLImage> VaapiDrmPicture::GetImageToBind() {
-  return gl_image_;
-}
-
 bool VaapiDrmPicture::AllowOverlay() const {
   return true;
 }
 
-}  // namespace
+}  // namespace media

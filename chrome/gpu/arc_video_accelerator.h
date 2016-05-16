@@ -13,6 +13,7 @@ namespace arc {
 enum HalPixelFormatExtension {
   // The pixel formats defined in Android but are used here. They are defined
   // in "system/core/include/system/graphics.h"
+  HAL_PIXEL_FORMAT_BGRA_8888 = 5,
   HAL_PIXEL_FORMAT_YCbCr_420_888 = 0x23,
 
   // The following formats are not defined in Android, but used in

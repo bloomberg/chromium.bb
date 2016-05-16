@@ -36,6 +36,7 @@ class GbmBuffer : public GbmBufferBase {
   gfx::BufferUsage GetUsage() const { return usage_; }
   int GetFd() const;
   int GetStride() const;
+  gfx::Size GetSize() const override;
 
  private:
   GbmBuffer(const scoped_refptr<GbmDevice>& gbm,
@@ -43,12 +44,14 @@ class GbmBuffer : public GbmBufferBase {
             gfx::BufferFormat format,
             gfx::BufferUsage usage,
             base::ScopedFD fd,
+            const gfx::Size& size,
             int stride);
   ~GbmBuffer() override;
 
   gfx::BufferFormat format_;
   gfx::BufferUsage usage_;
   base::ScopedFD fd_;
+  gfx::Size size_;
   int stride_;
 
   DISALLOW_COPY_AND_ASSIGN(GbmBuffer);

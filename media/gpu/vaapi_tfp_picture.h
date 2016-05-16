@@ -34,22 +34,24 @@ class VaapiTFPPicture : public VaapiPicture {
  public:
   VaapiTFPPicture(const scoped_refptr<VaapiWrapper>& vaapi_wrapper,
                   const MakeGLContextCurrentCallback& make_context_current_cb,
+                  const BindGLImageCallback& bind_image_cb,
                   int32_t picture_buffer_id,
+                  const gfx::Size& size,
                   uint32_t texture_id,
-                  const gfx::Size& size);
+                  uint32_t client_texture_id);
 
   ~VaapiTFPPicture() override;
 
-  bool Initialize() override;
+  bool Allocate(gfx::BufferFormat format) override;
+  bool ImportGpuMemoryBufferHandle(
+      gfx::BufferFormat format,
+      const gfx::GpuMemoryBufferHandle& gpu_memory_buffer_handle) override;
 
   bool DownloadFromSurface(const scoped_refptr<VASurface>& va_surface) override;
 
-  scoped_refptr<gl::GLImage> GetImageToBind() override;
-
  private:
-  scoped_refptr<VaapiWrapper> vaapi_wrapper_;
+  bool Initialize();
 
-  MakeGLContextCurrentCallback make_context_current_cb_;
   Display* x_display_;
 
   Pixmap x_pixmap_;

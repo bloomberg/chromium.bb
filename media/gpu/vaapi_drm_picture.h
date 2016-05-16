@@ -35,23 +35,25 @@ class VaapiDrmPicture : public VaapiPicture {
  public:
   VaapiDrmPicture(const scoped_refptr<VaapiWrapper>& vaapi_wrapper,
                   const MakeGLContextCurrentCallback& make_context_current_cb,
+                  const BindGLImageCallback& bind_image_cb_,
                   int32_t picture_buffer_id,
+                  const gfx::Size& size,
                   uint32_t texture_id,
-                  const gfx::Size& size);
+                  uint32_t client_texture_id);
 
   ~VaapiDrmPicture() override;
 
-  bool Initialize() override;
+  bool Allocate(gfx::BufferFormat format) override;
+  bool ImportGpuMemoryBufferHandle(
+      gfx::BufferFormat format,
+      const gfx::GpuMemoryBufferHandle& gpu_memory_buffer_handle) override;
 
   bool DownloadFromSurface(const scoped_refptr<VASurface>& va_surface) override;
-
-  scoped_refptr<gl::GLImage> GetImageToBind() override;
 
   bool AllowOverlay() const override;
 
  private:
-  scoped_refptr<VaapiWrapper> vaapi_wrapper_;
-  MakeGLContextCurrentCallback make_context_current_cb_;
+  bool Initialize();
 
   // Ozone buffer, the storage of the EGLImage and the VASurface.
   scoped_refptr<ui::NativePixmap> pixmap_;

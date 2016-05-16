@@ -9,6 +9,7 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/metrics/histogram.h"
@@ -36,6 +37,10 @@ enum VAVDADecoderFailure {
   VAAPI_ERROR = 0,
   VAVDA_DECODER_FAILURES_MAX,
 };
+
+// Buffer format to use for output buffers backing PictureBuffers. This is the
+// format decoded frames in VASurfaces are converted into.
+const gfx::BufferFormat kOutputPictureFormat = gfx::BufferFormat::BGRA_8888;
 }
 
 static void ReportToUMA(VAVDADecoderFailure failure) {
@@ -320,19 +325,14 @@ bool VaapiVideoDecodeAccelerator::Initialize(const Config& config,
                                              Client* client) {
   DCHECK_EQ(message_loop_, base::MessageLoop::current());
 
-  if (make_context_current_cb_.is_null() || bind_image_cb_.is_null()) {
-    NOTREACHED() << "GL callbacks are required for this VDA";
-    return false;
-  }
-
   if (config.is_encrypted) {
     NOTREACHED() << "Encrypted streams are not supported for this VDA";
     return false;
   }
 
-  if (config.output_mode != Config::OutputMode::ALLOCATE) {
-    NOTREACHED() << "Only ALLOCATE OutputMode is supported by this VDA";
-    return false;
+  if (config.output_mode != Config::OutputMode::ALLOCATE &&
+      config.output_mode != Config::OutputMode::IMPORT) {
+    NOTREACHED() << "Only ALLOCATE and IMPORT OutputModes are supported";
   }
 
   client_ptr_factory_.reset(new base::WeakPtrFactory<Client>(client));
@@ -387,6 +387,7 @@ bool VaapiVideoDecodeAccelerator::Initialize(const Config& config,
   decoder_thread_task_runner_ = decoder_thread_.task_runner();
 
   state_ = kIdle;
+  output_mode_ = config.output_mode;
   return true;
 }
 
@@ -758,32 +759,29 @@ void VaapiVideoDecodeAccelerator::AssignPictureBuffers(
   DCHECK_EQ(va_surface_ids.size(), buffers.size());
 
   for (size_t i = 0; i < buffers.size(); ++i) {
-    DCHECK_LE(1u, buffers[i].texture_ids().size());
-    DVLOG(2) << "Assigning picture id: " << buffers[i].id()
-             << " to texture id: " << buffers[i].texture_ids()[0]
-             << " VASurfaceID: " << va_surface_ids[i];
+    uint32_t texture_id =
+        buffers[i].texture_ids().size() > 0 ? buffers[i].texture_ids()[0] : 0;
+    uint32_t internal_texture_id = buffers[i].internal_texture_ids().size() > 0
+                                       ? buffers[i].internal_texture_ids()[0]
+                                       : 0;
 
     linked_ptr<VaapiPicture> picture(VaapiPicture::CreatePicture(
-        vaapi_wrapper_, make_context_current_cb_, buffers[i].id(),
-        buffers[i].texture_ids()[0], requested_pic_size_));
-
-    scoped_refptr<gl::GLImage> image = picture->GetImageToBind();
-    if (image && buffers[i].internal_texture_ids().size() > 0) {
-      RETURN_AND_NOTIFY_ON_FAILURE(
-          bind_image_cb_.Run(buffers[i].internal_texture_ids()[0],
-                             VaapiPicture::GetGLTextureTarget(), image, true),
-          "Failed to bind image", PLATFORM_FAILURE, );
-    }
-
+        vaapi_wrapper_, make_context_current_cb_, bind_image_cb_,
+        buffers[i].id(), requested_pic_size_, texture_id, internal_texture_id));
     RETURN_AND_NOTIFY_ON_FAILURE(
-        picture.get(), "Failed assigning picture buffer to a texture.",
-        PLATFORM_FAILURE, );
+        picture.get(), "Failed creating a VaapiPicture", PLATFORM_FAILURE, );
 
     bool inserted =
         pictures_.insert(std::make_pair(buffers[i].id(), picture)).second;
     DCHECK(inserted);
 
-    output_buffers_.push(buffers[i].id());
+    if (output_mode_ == Config::OutputMode::ALLOCATE) {
+      RETURN_AND_NOTIFY_ON_FAILURE(
+          picture->Allocate(kOutputPictureFormat),
+          "Failed to allocate memory for a VaapiPicture", PLATFORM_FAILURE, );
+      output_buffers_.push(buffers[i].id());
+    }
+
     available_va_surfaces_.push_back(va_surface_ids[i]);
     surfaces_available_.Signal();
   }
@@ -793,6 +791,57 @@ void VaapiVideoDecodeAccelerator::AssignPictureBuffers(
       FROM_HERE, base::Bind(&VaapiVideoDecodeAccelerator::DecodeTask,
                             base::Unretained(this)));
 }
+
+#if defined(USE_OZONE)
+static void CloseGpuMemoryBuferHandles(
+    const std::vector<gfx::GpuMemoryBufferHandle>& handles) {
+  for (const auto& handle : handles) {
+    // Close the fd by wrapping it in a ScopedFD and letting
+    // it fall out of scope.
+    base::ScopedFD fd(handle.native_pixmap_handle.fd.fd);
+  }
+}
+
+void VaapiVideoDecodeAccelerator::ImportBufferForPicture(
+    int32_t picture_buffer_id,
+    const std::vector<gfx::GpuMemoryBufferHandle>& gpu_memory_buffer_handles) {
+  DCHECK_EQ(message_loop_, base::MessageLoop::current());
+  DVLOG(2) << "Importing picture id: " << picture_buffer_id;
+
+  if (output_mode_ != Config::OutputMode::IMPORT) {
+    CloseGpuMemoryBuferHandles(gpu_memory_buffer_handles);
+    LOG(ERROR) << "Cannot import in non-import mode";
+    NotifyError(INVALID_ARGUMENT);
+    return;
+  }
+
+  if (gpu_memory_buffer_handles.size() != 1) {
+    CloseGpuMemoryBuferHandles(gpu_memory_buffer_handles);
+    LOG(ERROR) << "Buffers backed by multiple handles unsupported";
+    NotifyError(INVALID_ARGUMENT);
+    return;
+  }
+
+  VaapiPicture* picture = PictureById(picture_buffer_id);
+  if (!picture) {
+    CloseGpuMemoryBuferHandles(gpu_memory_buffer_handles);
+    LOG(ERROR) << "Invalid picture_buffer_id";
+    NotifyError(INVALID_ARGUMENT);
+    return;
+  }
+
+  if (!picture->ImportGpuMemoryBufferHandle(kOutputPictureFormat,
+                                            gpu_memory_buffer_handles[0])) {
+    // ImportGpuMemoryBufferHandle will close the handles even on failure, so
+    // we don't need to do this ourselves.
+    LOG(ERROR) << "Failed to import GpuMemoryBufferHandles";
+    NotifyError(PLATFORM_FAILURE);
+    return;
+  }
+
+  ReusePictureBuffer(picture_buffer_id);
+}
+#endif
 
 void VaapiVideoDecodeAccelerator::ReusePictureBuffer(
     int32_t picture_buffer_id) {
@@ -994,6 +1043,22 @@ bool VaapiVideoDecodeAccelerator::TryToSetupDecodeOnSeparateThread(
     const base::WeakPtr<Client>& decode_client,
     const scoped_refptr<base::SingleThreadTaskRunner>& decode_task_runner) {
   return false;
+}
+
+static VideoPixelFormat BufferFormatToVideoPixelFormat(
+    gfx::BufferFormat format) {
+  switch (format) {
+    case gfx::BufferFormat::BGRA_8888:
+      return PIXEL_FORMAT_ARGB;
+
+    default:
+      LOG(FATAL) << "Add more cases as needed";
+      return PIXEL_FORMAT_UNKNOWN;
+  }
+}
+
+VideoPixelFormat VaapiVideoDecodeAccelerator::GetOutputFormat() const {
+  return BufferFormatToVideoPixelFormat(kOutputPictureFormat);
 }
 
 bool VaapiVideoDecodeAccelerator::DecodeSurface(

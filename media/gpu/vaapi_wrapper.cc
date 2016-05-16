@@ -67,6 +67,8 @@ uint32_t BufferFormatToVAFourCC(gfx::BufferFormat fmt) {
   switch (fmt) {
     case gfx::BufferFormat::BGRX_8888:
       return VA_FOURCC_BGRX;
+    case gfx::BufferFormat::BGRA_8888:
+      return VA_FOURCC_BGRA;
     case gfx::BufferFormat::UYVY_422:
       return VA_FOURCC_UYVY;
     default:
@@ -80,6 +82,7 @@ uint32_t BufferFormatToVARTFormat(gfx::BufferFormat fmt) {
     case gfx::BufferFormat::UYVY_422:
       return VA_RT_FORMAT_YUV422;
     case gfx::BufferFormat::BGRX_8888:
+    case gfx::BufferFormat::BGRA_8888:
       return VA_RT_FORMAT_RGB32;
     default:
       NOTREACHED();

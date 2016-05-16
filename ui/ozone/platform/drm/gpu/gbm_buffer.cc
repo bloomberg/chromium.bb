@@ -30,11 +30,13 @@ GbmBuffer::GbmBuffer(const scoped_refptr<GbmDevice>& gbm,
                      gfx::BufferFormat format,
                      gfx::BufferUsage usage,
                      base::ScopedFD fd,
+                     const gfx::Size& size,
                      int stride)
     : GbmBufferBase(gbm, bo, format, usage),
       format_(format),
       usage_(usage),
       fd_(std::move(fd)),
+      size_(size),
       stride_(stride) {}
 
 GbmBuffer::~GbmBuffer() {
@@ -48,6 +50,12 @@ int GbmBuffer::GetFd() const {
 
 int GbmBuffer::GetStride() const {
   return stride_;
+}
+
+// TODO(reveman): This should not be needed once crbug.com/597932 is fixed,
+// as the size would be queried directly from the underlying bo.
+gfx::Size GbmBuffer::GetSize() const {
+  return size_;
 }
 
 // static
@@ -87,7 +95,7 @@ scoped_refptr<GbmBuffer> GbmBuffer::CreateBuffer(
   }
 
   scoped_refptr<GbmBuffer> buffer(new GbmBuffer(
-      gbm, bo, format, usage, std::move(fd), gbm_bo_get_stride(bo)));
+      gbm, bo, format, usage, std::move(fd), size, gbm_bo_get_stride(bo)));
   if (usage == gfx::BufferUsage::SCANOUT && !buffer->GetFramebufferId())
     return nullptr;
 
@@ -106,8 +114,9 @@ scoped_refptr<GbmBuffer> GbmBuffer::CreateBufferFromFD(
 
   // TODO(reveman): Use gbm_bo_import after making buffers survive
   // GPU process crashes. crbug.com/597932
-  return make_scoped_refptr(new GbmBuffer(
-      gbm, nullptr, format, gfx::BufferUsage::GPU_READ, std::move(fd), stride));
+  return make_scoped_refptr(new GbmBuffer(gbm, nullptr, format,
+                                          gfx::BufferUsage::GPU_READ,
+                                          std::move(fd), size, stride));
 }
 
 GbmPixmap::GbmPixmap(GbmSurfaceFactory* surface_manager,

@@ -67,6 +67,11 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
   void Decode(const media::BitstreamBuffer& bitstream_buffer) override;
   void AssignPictureBuffers(
       const std::vector<media::PictureBuffer>& buffers) override;
+#if defined(USE_OZONE)
+  void ImportBufferForPicture(int32_t picture_buffer_id,
+                              const std::vector<gfx::GpuMemoryBufferHandle>&
+                                  gpu_memory_buffer_handles) override;
+#endif
   void ReusePictureBuffer(int32_t picture_buffer_id) override;
   void Flush() override;
   void Reset() override;
@@ -75,6 +80,7 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
       const base::WeakPtr<Client>& decode_client,
       const scoped_refptr<base::SingleThreadTaskRunner>& decode_task_runner)
       override;
+  VideoPixelFormat GetOutputFormat() const override;
 
   static media::VideoDecodeAccelerator::SupportedProfiles
   GetSupportedProfiles();
@@ -204,6 +210,7 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
   // Protects input buffer and surface queues and state_.
   base::Lock lock_;
   State state_;
+  Config::OutputMode output_mode_;
 
   // An input buffer awaiting consumption, provided by the client.
   struct InputBuffer {
@@ -214,7 +221,7 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
     std::unique_ptr<SharedMemoryRegion> shm;
   };
 
-  // Queue for incoming input buffers.
+  // Queue for available PictureBuffers (picture_buffer_ids).
   typedef std::queue<linked_ptr<InputBuffer>> InputBuffers;
   InputBuffers input_buffers_;
   // Signalled when input buffers are queued onto the input_buffers_ queue.
