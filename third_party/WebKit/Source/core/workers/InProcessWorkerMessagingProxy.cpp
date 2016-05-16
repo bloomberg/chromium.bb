@@ -112,7 +112,7 @@ void InProcessWorkerMessagingProxy::startWorkerGlobalScope(const KURL& scriptURL
 
     m_loaderProxy = WorkerLoaderProxy::create(this);
     m_workerThread = createWorkerThread(originTime);
-    m_workerThread->start(startupData.release());
+    m_workerThread->start(std::move(startupData));
     workerThreadCreated();
     m_workerInspectorProxy->workerThreadCreated(document, m_workerThread.get(), scriptURL);
 }

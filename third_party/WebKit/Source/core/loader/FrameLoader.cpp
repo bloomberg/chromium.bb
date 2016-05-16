@@ -1562,7 +1562,7 @@ PassOwnPtr<TracedValue> FrameLoader::toTracedValue() const
     tracedValue->setString("stateMachine", m_stateMachine.toString());
     tracedValue->setString("provisionalDocumentLoaderURL", m_provisionalDocumentLoader ? m_provisionalDocumentLoader->url() : String());
     tracedValue->setString("documentLoaderURL", m_documentLoader ? m_documentLoader->url() : String());
-    return tracedValue.release();
+    return tracedValue;
 }
 
 inline void FrameLoader::takeObjectSnapshot() const

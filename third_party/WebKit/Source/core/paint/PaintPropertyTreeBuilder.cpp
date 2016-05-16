@@ -213,7 +213,7 @@ void PaintPropertyTreeBuilder::updateLocalBorderBoxContext(LayoutObject& object,
     borderBoxContext->transform = context.currentTransform;
     borderBoxContext->clip = context.currentClip;
     borderBoxContext->effect = context.currentEffect;
-    object.ensureObjectPaintProperties().setLocalBorderBoxProperties(borderBoxContext.release());
+    object.ensureObjectPaintProperties().setLocalBorderBoxProperties(std::move(borderBoxContext));
 }
 
 // TODO(trchen): Remove this once we bake the paint offset into frameRect.

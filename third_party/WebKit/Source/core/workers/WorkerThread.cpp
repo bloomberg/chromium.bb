@@ -180,7 +180,7 @@ void WorkerThread::initialize(PassOwnPtr<WorkerThreadStartupData> startupData)
     KURL scriptURL = startupData->m_scriptURL;
     String sourceCode = startupData->m_sourceCode;
     WorkerThreadStartMode startMode = startupData->m_startMode;
-    OwnPtr<Vector<char>> cachedMetaData = startupData->m_cachedMetaData.release();
+    OwnPtr<Vector<char>> cachedMetaData = std::move(startupData->m_cachedMetaData);
     V8CacheOptions v8CacheOptions = startupData->m_v8CacheOptions;
     m_webScheduler = workerBackingThread().backingThread().platformThread().scheduler();
 

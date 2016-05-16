@@ -19,7 +19,7 @@ ScrollState* CreateScrollState(double deltaX, double deltaY, bool beginning, boo
     scrollStateData->delta_y = deltaY;
     scrollStateData->is_beginning = beginning;
     scrollStateData->is_ending = ending;
-    return ScrollState::create(scrollStateData.release());
+    return ScrollState::create(std::move(scrollStateData));
 }
 
 class ScrollStateTest : public testing::Test {

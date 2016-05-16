@@ -154,7 +154,7 @@ private:
     ContentData* cloneInternal() const override
     {
         OwnPtr<CounterContent> counterData = adoptPtr(new CounterContent(*counter()));
-        return create(counterData.release());
+        return create(std::move(counterData));
     }
 
     bool equals(const ContentData& data) const override

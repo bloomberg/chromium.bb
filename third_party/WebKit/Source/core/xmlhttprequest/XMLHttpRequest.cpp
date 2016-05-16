@@ -340,7 +340,7 @@ Blob* XMLHttpRequest::responseBlob()
                 blobData->setContentType(finalResponseMIMETypeWithFallback().lower());
                 m_binaryResponseBuilder.clear();
             }
-            m_responseBlob = Blob::create(BlobDataHandle::create(blobData.release(), size));
+            m_responseBlob = Blob::create(BlobDataHandle::create(std::move(blobData), size));
         }
     }
 
@@ -1026,7 +1026,7 @@ bool XMLHttpRequest::internalAbort()
     // If, window.onload contains open() and send(), m_loader will be set to
     // non 0 value. So, we cannot continue the outer open(). In such case,
     // just abort the outer open() by returning false.
-    OwnPtr<ThreadableLoader> loader = m_loader.release();
+    OwnPtr<ThreadableLoader> loader = std::move(m_loader);
     loader->cancel();
 
     // If abort() called internalAbort() and a nested open() ended up
@@ -1448,7 +1448,7 @@ PassRefPtr<BlobDataHandle> XMLHttpRequest::createBlobDataHandleFromResponse()
         // finalResponseMIMEType() after compatibility investigation.
         blobData->setContentType(finalResponseMIMETypeWithFallback().lower());
     }
-    return BlobDataHandle::create(blobData.release(), m_lengthDownloadedToFile);
+    return BlobDataHandle::create(std::move(blobData), m_lengthDownloadedToFile);
 }
 
 void XMLHttpRequest::notifyParserStopped()
@@ -1554,7 +1554,7 @@ PassOwnPtr<TextResourceDecoder> XMLHttpRequest::createDecoder() const
     if (!m_finalResponseCharset.isEmpty()) {
         OwnPtr<TextResourceDecoder> decoder(TextResourceDecoder::create("text/plain"));
         decoder->setEncoding(WTF::TextEncoding(m_finalResponseCharset), TextResourceDecoder::EncodingFromHTTPHeader);
-        return decoder.release();
+        return decoder;
     }
 
     // allow TextResourceDecoder to look inside the m_response if it's XML or HTML
@@ -1565,7 +1565,7 @@ PassOwnPtr<TextResourceDecoder> XMLHttpRequest::createDecoder() const
         // versions, Firefox and Opera.
         decoder->useLenientXMLDecoding();
 
-        return decoder.release();
+        return decoder;
     }
 
     if (responseIsHTML())

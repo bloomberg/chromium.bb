@@ -48,7 +48,7 @@ DedicatedWorkerGlobalScope* DedicatedWorkerGlobalScope::create(DedicatedWorkerTh
 {
     // Note: startupData is finalized on return. After the relevant parts has been
     // passed along to the created 'context'.
-    DedicatedWorkerGlobalScope* context = new DedicatedWorkerGlobalScope(startupData->m_scriptURL, startupData->m_userAgent, thread, timeOrigin, startupData->m_starterOriginPrivilegeData.release(), startupData->m_workerClients.release());
+    DedicatedWorkerGlobalScope* context = new DedicatedWorkerGlobalScope(startupData->m_scriptURL, startupData->m_userAgent, thread, timeOrigin, std::move(startupData->m_starterOriginPrivilegeData), startupData->m_workerClients.release());
     context->applyContentSecurityPolicyFromVector(*startupData->m_contentSecurityPolicyHeaders);
     context->setAddressSpace(startupData->m_addressSpace);
     OriginTrialContext::addTokens(context, startupData->m_originTrialTokens.get());
@@ -75,7 +75,7 @@ void DedicatedWorkerGlobalScope::postMessage(ExecutionContext* context, PassRefP
     OwnPtr<MessagePortChannelArray> channels = MessagePort::disentanglePorts(context, ports, exceptionState);
     if (exceptionState.hadException())
         return;
-    thread()->workerObjectProxy().postMessageToWorkerObject(message, channels.release());
+    thread()->workerObjectProxy().postMessageToWorkerObject(message, std::move(channels));
 }
 
 DedicatedWorkerThread* DedicatedWorkerGlobalScope::thread() const

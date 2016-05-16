@@ -88,7 +88,7 @@ PassOwnPtr<DrawLooperBuilder> ShadowList::createDrawLooper(DrawLooperBuilder::Sh
             DrawLooperBuilder::ShadowRespectsTransforms, alphaMode);
     }
     drawLooperBuilder->addUnmodifiedContent();
-    return drawLooperBuilder.release();
+    return drawLooperBuilder;
 }
 
 } // namespace blink

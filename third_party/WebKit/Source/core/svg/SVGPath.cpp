@@ -43,7 +43,7 @@ PassOwnPtr<SVGPathByteStream> blendPathByteStreams(const SVGPathByteStream& from
     SVGPathByteStreamSource toSource(toStream);
     SVGPathBlender blender(&fromSource, &toSource, &builder);
     blender.blendAnimatedPath(progress);
-    return resultStream.release();
+    return resultStream;
 }
 
 PassOwnPtr<SVGPathByteStream> addPathByteStreams(const SVGPathByteStream& fromStream, const SVGPathByteStream& byStream, unsigned repeatCount = 1)
@@ -54,7 +54,7 @@ PassOwnPtr<SVGPathByteStream> addPathByteStreams(const SVGPathByteStream& fromSt
     SVGPathByteStreamSource bySource(byStream);
     SVGPathBlender blender(&fromSource, &bySource, &builder);
     blender.addAnimatedPath(repeatCount);
-    return resultStream.release();
+    return resultStream;
 }
 
 PassOwnPtr<SVGPathByteStream> conditionallyAddPathByteStreams(PassOwnPtr<SVGPathByteStream> fromStream, const SVGPathByteStream& byStream, unsigned repeatCount = 1)
@@ -98,7 +98,7 @@ SVGParsingError SVGPath::setValueAsString(const String& string)
 {
     OwnPtr<SVGPathByteStream> byteStream = SVGPathByteStream::create();
     SVGParsingError parseStatus = buildByteStreamFromString(string, *byteStream);
-    m_pathValue = CSSPathValue::create(byteStream.release());
+    m_pathValue = CSSPathValue::create(std::move(byteStream));
     return parseStatus;
 }
 
@@ -106,7 +106,7 @@ SVGPropertyBase* SVGPath::cloneForAnimation(const String& value) const
 {
     OwnPtr<SVGPathByteStream> byteStream = SVGPathByteStream::create();
     buildByteStreamFromString(value, *byteStream);
-    return SVGPath::create(CSSPathValue::create(byteStream.release()));
+    return SVGPath::create(CSSPathValue::create(std::move(byteStream)));
 }
 
 void SVGPath::add(SVGPropertyBase* other, SVGElement*)
@@ -158,13 +158,13 @@ void SVGPath::calculateAnimatedValue(SVGAnimationElement* animationElement, floa
 
     // Handle additive='sum'.
     if (animationElement->isAdditive() && !isToAnimation)
-        newStream = conditionallyAddPathByteStreams(newStream.release(), byteStream());
+        newStream = conditionallyAddPathByteStreams(std::move(newStream), byteStream());
 
     // Handle accumulate='sum'.
     if (animationElement->isAccumulated() && repeatCount)
-        newStream = conditionallyAddPathByteStreams(newStream.release(), toSVGPath(toAtEndOfDurationValue)->byteStream(), repeatCount);
+        newStream = conditionallyAddPathByteStreams(std::move(newStream), toSVGPath(toAtEndOfDurationValue)->byteStream(), repeatCount);
 
-    m_pathValue = CSSPathValue::create(newStream.release());
+    m_pathValue = CSSPathValue::create(std::move(newStream));
 }
 
 float SVGPath::calculateDistance(SVGPropertyBase* to, SVGElement*)

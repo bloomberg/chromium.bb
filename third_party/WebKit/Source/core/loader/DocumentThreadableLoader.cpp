@@ -622,7 +622,7 @@ void DocumentThreadableLoader::handlePreflightResponse(const ResourceResponse& r
         return;
     }
 
-    CrossOriginPreflightResultCache::shared().appendEntry(getSecurityOrigin()->toString(), m_actualRequest.url(), preflightResult.release());
+    CrossOriginPreflightResultCache::shared().appendEntry(getSecurityOrigin()->toString(), m_actualRequest.url(), std::move(preflightResult));
 }
 
 void DocumentThreadableLoader::reportResponseReceived(unsigned long identifier, const ResourceResponse& response)

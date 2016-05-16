@@ -55,7 +55,7 @@ static PassOwnPtr<Vector<char>> createVectorFromMemoryRegion(const char* data, u
 {
     OwnPtr<Vector<char>> buffer = adoptPtr(new Vector<char>(dataLength));
     memcpy(buffer->data(), data, dataLength);
-    return buffer.release();
+    return buffer;
 }
 
 WorkerThreadableLoader::WorkerThreadableLoader(WorkerGlobalScope& workerGlobalScope, ThreadableLoaderClient* client, const ThreadableLoaderOptions& options, const ResourceLoaderOptions& resourceLoaderOptions, BlockingBehavior blockingBehavior)

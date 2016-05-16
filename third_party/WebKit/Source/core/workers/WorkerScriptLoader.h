@@ -76,7 +76,7 @@ public:
     unsigned long identifier() const { return m_identifier; }
     long long appCacheID() const { return m_appCacheID; }
 
-    PassOwnPtr<Vector<char>> releaseCachedMetadata() { return m_cachedMetadata.release(); }
+    PassOwnPtr<Vector<char>> releaseCachedMetadata() { return std::move(m_cachedMetadata); }
     const Vector<char>* cachedMetadata() const { return m_cachedMetadata.get(); }
 
     ContentSecurityPolicy* contentSecurityPolicy() { return m_contentSecurityPolicy.get(); }

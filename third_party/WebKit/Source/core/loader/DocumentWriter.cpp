@@ -87,7 +87,7 @@ void DocumentWriter::addData(const char* bytes, size_t length)
     ASSERT(m_parser);
     if (m_parser->needsDecoder() && 0 < length) {
         OwnPtr<TextResourceDecoder> decoder = m_decoderBuilder.buildFor(m_document);
-        m_parser->setDecoder(decoder.release());
+        m_parser->setDecoder(std::move(decoder));
     }
     // appendBytes() can result replacing DocumentLoader::m_writer.
     m_parser->appendBytes(bytes, length);
@@ -102,7 +102,7 @@ void DocumentWriter::end()
 
     if (m_parser->needsDecoder()) {
         OwnPtr<TextResourceDecoder> decoder = m_decoderBuilder.buildFor(m_document);
-        m_parser->setDecoder(decoder.release());
+        m_parser->setDecoder(std::move(decoder));
     }
 
     m_parser->finish();

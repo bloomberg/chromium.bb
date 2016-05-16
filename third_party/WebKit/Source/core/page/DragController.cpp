@@ -831,7 +831,7 @@ static PassOwnPtr<DragImage> dragImageForImage(Element* element, Image* image, f
     }
 
     dragLocation = dragOrigin + origin;
-    return dragImage.release();
+    return dragImage;
 }
 
 static PassOwnPtr<DragImage> dragImageForLink(const KURL& linkURL, const String& linkText, float deviceScaleFactor, const IntPoint& mouseDraggedPoint, IntPoint& dragLoc)
@@ -844,7 +844,7 @@ static PassOwnPtr<DragImage> dragImageForLink(const KURL& linkURL, const String&
     IntPoint dragImageOffset(-size.width() / 2, -LinkDragBorderInset);
     dragLoc = IntPoint(mouseDraggedPoint.x() + dragImageOffset.x(), mouseDraggedPoint.y() + dragImageOffset.y());
 
-    return dragImage.release();
+    return dragImage;
 }
 
 bool DragController::startDrag(LocalFrame* src, const DragState& state, const PlatformMouseEvent& dragEvent, const IntPoint& dragOrigin)

@@ -37,7 +37,7 @@ PassOwnPtr<CounterDirectiveMap> clone(const CounterDirectiveMap& counterDirectiv
 {
     OwnPtr<CounterDirectiveMap> result = adoptPtr(new CounterDirectiveMap);
     *result = counterDirectives;
-    return result.release();
+    return result;
 }
 
 } // namespace blink

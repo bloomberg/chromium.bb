@@ -40,7 +40,7 @@ ScrollState* ScrollState::create(ScrollStateInit init)
     scrollStateData->from_user_input = init.fromUserInput();
     scrollStateData->is_direct_manipulation = init.isDirectManipulation();
     scrollStateData->delta_granularity = init.deltaGranularity();
-    ScrollState* scrollState = new ScrollState(scrollStateData.release());
+    ScrollState* scrollState = new ScrollState(std::move(scrollStateData));
     return scrollState;
 }
 

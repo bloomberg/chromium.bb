@@ -171,7 +171,7 @@ PassOwnPtr<TextResourceDecoder> TextResourceDecoderBuilder::buildFor(Document* d
 {
     OwnPtr<TextResourceDecoder> decoder = createDecoderInstance(document);
     setupEncoding(decoder.get(), document);
-    return decoder.release();
+    return decoder;
 }
 
 void TextResourceDecoderBuilder::clear()

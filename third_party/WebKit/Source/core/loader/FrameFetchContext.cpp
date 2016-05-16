@@ -393,7 +393,7 @@ static PassOwnPtr<TracedValue> loadResourceTraceData(unsigned long identifier, c
     value->setString("requestId", requestId);
     value->setString("url", url.getString());
     value->setInteger("priority", priority);
-    return value.release();
+    return value;
 }
 
 void FrameFetchContext::willStartLoadingResource(Resource* resource, ResourceRequest& request)
