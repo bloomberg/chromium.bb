@@ -109,7 +109,7 @@ def LoadPlist(path):
     os.unlink(name)
 
 
-def AcceptLicense(directory):
+def AcceptLicense():
   """Use xcodebuild to accept new toolchain license if necessary.  Don't accept
   the license if a newer license has already been accepted. This only works if
   xcodebuild and xcode-select are passwordless in sudoers."""
@@ -135,7 +135,7 @@ def AcceptLicense(directory):
       # Don't accept the license of older toolchain builds, this will break the
       # license of newer builds.
       return
-  except (subprocess.CalledProcessError, KeyError) as e:
+  except (subprocess.CalledProcessError, KeyError):
     # If there's never been a license of type |build_type| accepted,
     # |target_license_plist_path| or |agreed_to_key| may not exist.
     pass
@@ -176,7 +176,7 @@ def main():
                                       TOOLCHAIN_VERSION)
   if ReadStampFile() == toolchain_revision:
     print 'Toolchain (%s) is already up to date.' % toolchain_revision
-    AcceptLicense(TOOLCHAIN_BUILD_DIR)
+    AcceptLicense()
     return 0
 
   if not CanAccessToolchainBucket():
@@ -194,13 +194,14 @@ def main():
     toolchain_file = 'toolchain-%s.tgz' % toolchain_revision
     toolchain_full_url = TOOLCHAIN_URL + toolchain_file
     DownloadAndUnpack(toolchain_full_url, TOOLCHAIN_BUILD_DIR)
-    AcceptLicense(TOOLCHAIN_BUILD_DIR)
+    AcceptLicense()
 
     print 'Toolchain %s unpacked.' % toolchain_revision
     WriteStampFile(toolchain_revision)
     return 0
-  except:
+  except Exception as e:
     print 'Failed to download toolchain %s.' % toolchain_file
+    print 'Exception %s' % e
     print 'Exiting.'
     return 1
 
