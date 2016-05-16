@@ -15,6 +15,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_piece.h"
 #include "content/common/mojo/embedded_application_runner.h"
+#include "content/public/common/mojo_application_info.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/shell/public/cpp/connector.h"
 #include "services/shell/public/cpp/interface_factory.h"
@@ -49,14 +50,10 @@ class BrowserShellConnection
   shell::Connector* GetConnector();
 
   // Adds an embedded application to this connection's ShellClientFactory.
-  // |callback| will be used to create a new instance of the application on
-  // |task_runner|'s thread if no instance is running when an incoming
-  // connection is made to |name|. If |task_runner| is null, the calling thread
-  // will be used to run the application.
-  void AddEmbeddedApplication(
-      const base::StringPiece& name,
-      const EmbeddedApplicationRunner::FactoryCallback& callback,
-      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
+  // |info| provides details on how to construct new instances of the
+  // application when an incoming connection is made to |name|.
+  void AddEmbeddedApplication(const base::StringPiece& name,
+                              const MojoApplicationInfo& info);
 
   // Adds a generic ShellClientRequestHandler for a given application name. This
   // will be used to satisfy any incoming calls to CreateShellClient() which

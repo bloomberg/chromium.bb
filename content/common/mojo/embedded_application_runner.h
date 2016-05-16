@@ -12,6 +12,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/string_piece.h"
+#include "content/public/common/mojo_application_info.h"
 #include "services/shell/public/cpp/shell_client.h"
 #include "services/shell/public/interfaces/shell_client.mojom.h"
 
@@ -25,21 +27,11 @@ namespace content {
 // EmbeddedApplicationRunner instance.
 class EmbeddedApplicationRunner {
  public:
-  // Callback used to construct a new instance of the embedded application. Note
-  // that |quit_closure| destroys the returned ShellClient instance when run.
-  using FactoryCallback = base::Callback<
-      std::unique_ptr<shell::ShellClient>(const base::Closure& quit_closure)>;
-
-  // Constructs a runner which hosts the application on |task_runner|'s thread.
-  // If an existing instance of the app is not running when an incoming
-  // connection is made, |callback| will be run on |task_runner|'s thread to
-  // create a new instance which will live on that thread.
-  //
-  // If |task_runner| is null, the calling thread's TaskRunner is used.
-  EmbeddedApplicationRunner(
-      const FactoryCallback& callback,
-      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
-
+  // Constructs a runner which hosts a Mojo application. If an existing instance
+  // of the app is not running when an incoming connection is made, details from
+  // |info| will be used to construct a new instance.
+  EmbeddedApplicationRunner(const base::StringPiece& name,
+                            const MojoApplicationInfo& info);
   ~EmbeddedApplicationRunner();
 
   // Binds an incoming ShellClientRequest for this application. If the
@@ -55,11 +47,6 @@ class EmbeddedApplicationRunner {
   class Instance;
 
   void OnQuit();
-
-  // The TaskRunner on which the factory callback will be run. The
-  // shell::ShellClient it returns will live and die on this TaskRunner's
-  // thread.
-  const scoped_refptr<base::SingleThreadTaskRunner> application_task_runner_;
 
   // A reference to the application instance which may operate on the
   // |application_task_runner_|'s thread.

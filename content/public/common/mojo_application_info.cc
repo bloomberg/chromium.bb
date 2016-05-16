@@ -5,16 +5,13 @@
 #include "content/public/common/mojo_application_info.h"
 
 #include "base/callback.h"
-#include "base/single_thread_task_runner.h"
 
 namespace content {
 
 MojoApplicationInfo::MojoApplicationInfo() {}
 
-MojoApplicationInfo::MojoApplicationInfo(const MojoApplicationInfo& other) {
-  application_factory = other.application_factory;
-  application_task_runner = other.application_task_runner;
-}
+MojoApplicationInfo::MojoApplicationInfo(const MojoApplicationInfo& other)
+    = default;
 
 MojoApplicationInfo::~MojoApplicationInfo() {}
 

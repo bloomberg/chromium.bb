@@ -29,6 +29,7 @@ void GpuProcessControlImpl::RegisterApplications(ApplicationMap* apps) {
 
   MojoApplicationInfo app_info;
   app_info.application_factory = base::Bind(&media::CreateMojoMediaApplication);
+  app_info.use_own_thread = true;
   apps->insert(std::make_pair("mojo:media", app_info));
 #endif
 }

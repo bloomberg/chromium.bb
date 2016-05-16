@@ -278,11 +278,8 @@ MojoShellContext::MojoShellContext() {
 
   ContentBrowserClient::StaticMojoApplicationMap apps;
   GetContentClient()->browser()->RegisterInProcessMojoApplications(&apps);
-  for (const auto& entry : apps) {
-    browser_shell_connection->AddEmbeddedApplication(
-        entry.first, entry.second.application_factory,
-        entry.second.application_task_runner);
-  }
+  for (const auto& entry : apps)
+    browser_shell_connection->AddEmbeddedApplication(entry.first, entry.second);
 
   ContentBrowserClient::OutOfProcessMojoApplicationMap sandboxed_apps;
   GetContentClient()

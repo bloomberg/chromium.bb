@@ -30,8 +30,7 @@ void ProcessControlImpl::LoadApplication(
     RegisterApplications(&apps);
     for (const auto& app : apps) {
       std::unique_ptr<EmbeddedApplicationRunner> runner(
-          new EmbeddedApplicationRunner(app.second.application_factory,
-                                        app.second.application_task_runner));
+          new EmbeddedApplicationRunner(app.first, app.second));
       runner->SetQuitClosure(base::Bind(&ProcessControlImpl::OnApplicationQuit,
                                         base::Unretained(this)));
       apps_.insert(std::make_pair(app.first, std::move(runner)));

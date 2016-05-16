@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "content/browser/mojo/constants.h"
+#include "content/public/common/mojo_application_info.h"
 #include "services/shell/public/interfaces/connector.mojom.h"
 
 namespace content {
@@ -25,10 +26,9 @@ shell::Connector* BrowserShellConnection::GetConnector() {
 
 void BrowserShellConnection::AddEmbeddedApplication(
     const base::StringPiece& name,
-    const EmbeddedApplicationRunner::FactoryCallback& callback,
-    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
+    const MojoApplicationInfo& info) {
   std::unique_ptr<EmbeddedApplicationRunner> app(
-      new EmbeddedApplicationRunner(callback, task_runner));
+      new EmbeddedApplicationRunner(name, info));
   AddShellClientRequestHandler(
       name, base::Bind(&EmbeddedApplicationRunner::BindShellClientRequest,
                        base::Unretained(app.get())));

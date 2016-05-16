@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
+#include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "services/shell/public/cpp/shell_connection.h"
@@ -19,19 +20,50 @@ namespace content {
 class EmbeddedApplicationRunner::Instance
     : public base::RefCountedThreadSafe<Instance> {
  public:
-  explicit Instance(
-      const EmbeddedApplicationRunner::FactoryCallback& callback,
-      const base::Closure& quit_closure)
-      : factory_callback_(callback),
+  Instance(const base::StringPiece& name,
+           const MojoApplicationInfo& info,
+           const base::Closure& quit_closure)
+      : name_(name.as_string()),
+        factory_callback_(info.application_factory),
+        use_own_thread_(!info.application_task_runner && info.use_own_thread),
         quit_closure_(quit_closure),
-        quit_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
-    // This object may be used exclusively from a single thread which may be
-    // different from the one that created it.
-    thread_checker_.DetachFromThread();
+        quit_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+        application_task_runner_(info.application_task_runner) {
+    application_thread_checker_.DetachFromThread();
+
+    if (!use_own_thread_ && !application_task_runner_)
+      application_task_runner_ = base::ThreadTaskRunnerHandle::Get();
   }
 
   void BindShellClientRequest(shell::mojom::ShellClientRequest request) {
-    DCHECK(thread_checker_.CalledOnValidThread());
+    DCHECK(runner_thread_checker_.CalledOnValidThread());
+
+    if (use_own_thread_ && !thread_) {
+      // Start a new thread if necessary.
+      thread_.reset(new base::Thread(name_));
+      thread_->Start();
+      application_task_runner_ = thread_->task_runner();
+    }
+
+    DCHECK(application_task_runner_);
+    application_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&Instance::BindShellClientRequestOnApplicationThread, this,
+                   base::Passed(&request)));
+  }
+
+  void ShutDown() {
+    DCHECK(runner_thread_checker_.CalledOnValidThread());
+    if (thread_) {
+      application_task_runner_ = nullptr;
+      thread_.reset();
+    }
+  }
+
+ private:
+  void BindShellClientRequestOnApplicationThread(
+      shell::mojom::ShellClientRequest request) {
+    DCHECK(application_thread_checker_.CalledOnValidThread());
 
     if (!shell_client_) {
       shell_client_ = factory_callback_.Run(
@@ -49,10 +81,14 @@ class EmbeddedApplicationRunner::Instance
  private:
   friend class base::RefCountedThreadSafe<Instance>;
 
-  ~Instance() { DCHECK(thread_checker_.CalledOnValidThread()); }
+  ~Instance() {
+    // If this instance had its own thread, it MUST be explicitly destroyed by
+    // ShutDown() on the runner's thread by the time this destructor is run.
+    DCHECK(!thread_);
+  }
 
   void OnShellConnectionLost(shell::ShellConnection* connection) {
-    DCHECK(thread_checker_.CalledOnValidThread());
+    DCHECK(application_thread_checker_.CalledOnValidThread());
 
     for (auto it = shell_connections_.begin(); it != shell_connections_.end();
          ++it) {
@@ -64,41 +100,63 @@ class EmbeddedApplicationRunner::Instance
   }
 
   void Quit() {
+    DCHECK(application_thread_checker_.CalledOnValidThread());
+
     shell_connections_.clear();
     shell_client_.reset();
-    quit_task_runner_->PostTask(FROM_HERE, quit_closure_);
+    quit_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&Instance::QuitOnRunnerThread, this));
   }
 
-  base::ThreadChecker thread_checker_;
-  const FactoryCallback factory_callback_;
-  std::unique_ptr<shell::ShellClient> shell_client_;
-  std::vector<std::unique_ptr<shell::ShellConnection>> shell_connections_;
+  void QuitOnRunnerThread() {
+    DCHECK(runner_thread_checker_.CalledOnValidThread());
+    ShutDown();
+    quit_closure_.Run();
+  }
+
+  const std::string name_;
+  const MojoApplicationInfo::ApplicationFactory factory_callback_;
+  const bool use_own_thread_;
   const base::Closure quit_closure_;
   const scoped_refptr<base::SingleThreadTaskRunner> quit_task_runner_;
+
+  // Thread checker used to ensure certain operations happen only on the
+  // runner's (i.e. our owner's) thread.
+  base::ThreadChecker runner_thread_checker_;
+
+  // Thread checker used to ensure certain operations happen only on the
+  // application task runner's thread.
+  base::ThreadChecker application_thread_checker_;
+
+  // These fields must only be accessed from the runner's thread.
+  std::unique_ptr<base::Thread> thread_;
+  scoped_refptr<base::SingleThreadTaskRunner> application_task_runner_;
+
+  // These fields must only be accessed from the application thread, except in
+  // the destructor which may run on either the runner thread or the application
+  // thread.
+  std::unique_ptr<shell::ShellClient> shell_client_;
+  std::vector<std::unique_ptr<shell::ShellConnection>> shell_connections_;
 
   DISALLOW_COPY_AND_ASSIGN(Instance);
 };
 
 EmbeddedApplicationRunner::EmbeddedApplicationRunner(
-    const FactoryCallback& callback,
-    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner)
-    : application_task_runner_(
-          task_runner ? task_runner : base::ThreadTaskRunnerHandle::Get()),
-      weak_factory_(this) {
-  instance_ = new Instance(callback,
+    const base::StringPiece& name,
+    const MojoApplicationInfo& info)
+    : weak_factory_(this) {
+  instance_ = new Instance(name, info,
                            base::Bind(&EmbeddedApplicationRunner::OnQuit,
                                       weak_factory_.GetWeakPtr()));
 }
 
 EmbeddedApplicationRunner::~EmbeddedApplicationRunner() {
+  instance_->ShutDown();
 }
 
 void EmbeddedApplicationRunner::BindShellClientRequest(
     shell::mojom::ShellClientRequest request) {
-  application_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&Instance::BindShellClientRequest, instance_,
-                 base::Passed(&request)));
+  instance_->BindShellClientRequest(std::move(request));
 }
 
 void EmbeddedApplicationRunner::SetQuitClosure(
@@ -107,7 +165,8 @@ void EmbeddedApplicationRunner::SetQuitClosure(
 }
 
 void EmbeddedApplicationRunner::OnQuit() {
-  quit_closure_.Run();
+  if (!quit_closure_.is_null())
+    quit_closure_.Run();
 }
 
 }  // namespace content
