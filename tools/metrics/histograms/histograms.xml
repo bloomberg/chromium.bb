@@ -56540,7 +56540,37 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="UMA.Debug.EnableCrashUpload.DeferredStartUptime" units="ms">
+  <owner>asvitkine@chromium.org</owner>
+  <summary>
+    Measures how much time since start up it took for onDeferredStartup() to be
+    called, which schedules enablePotentialCrashUploading() to be executed on an
+    async task. Only logged on Android.
+  </summary>
+</histogram>
+
+<histogram name="UMA.Debug.EnableCrashUpload.PostDeferredStartUptime"
+    units="ms">
+  <owner>asvitkine@chromium.org</owner>
+  <summary>
+    Measures how much time since start up it took before ChromeActivity's
+    postDeferredStartupIfNeeded() was called. Only logged on Android.
+  </summary>
+</histogram>
+
 <histogram name="UMA.Debug.EnableCrashUpload.Uptime" units="ms">
+  <obsolete>
+    Replaced by UMA.Debug.EnableCrashUpload.Uptime2
+  </obsolete>
+  <owner>asvitkine@chromium.org</owner>
+  <summary>
+    Measures how much time since start up it took before crash reporting was
+    enabled via enablePotentialCrashUploading() as part of deferred start up.
+    Only logged on Android.
+  </summary>
+</histogram>
+
+<histogram name="UMA.Debug.EnableCrashUpload.Uptime2" units="ms">
   <owner>asvitkine@chromium.org</owner>
   <summary>
     Measures how much time since start up it took before crash reporting was

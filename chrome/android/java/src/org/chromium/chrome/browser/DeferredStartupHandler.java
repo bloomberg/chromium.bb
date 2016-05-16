@@ -63,6 +63,10 @@ public class DeferredStartupHandler {
         if (mDeferredStartupComplete) return;
         ThreadUtils.assertOnUiThread();
 
+        RecordHistogram.recordLongTimesHistogram("UMA.Debug.EnableCrashUpload.DeferredStartUptime",
+                SystemClock.uptimeMillis() - UmaUtils.getMainEntryPointTime(),
+                TimeUnit.MILLISECONDS);
+
         // Punt all tasks that may block the UI thread off onto a background thread.
         new AsyncTask<Void, Void, Void>() {
             @Override
@@ -70,8 +74,8 @@ public class DeferredStartupHandler {
                 try {
                     TraceEvent.begin("ChromeBrowserInitializer.onDeferredStartup.doInBackground");
                     if (!crashDumpUploadingCommandLineDisabled) {
-                        RecordHistogram.recordMediumTimesHistogram(
-                                "UMA.Debug.EnableCrashUpload.Uptime",
+                        RecordHistogram.recordLongTimesHistogram(
+                                "UMA.Debug.EnableCrashUpload.Uptime2",
                                 SystemClock.uptimeMillis() - UmaUtils.getMainEntryPointTime(),
                                 TimeUnit.MILLISECONDS);
                         PrivacyPreferencesManager.getInstance(application)

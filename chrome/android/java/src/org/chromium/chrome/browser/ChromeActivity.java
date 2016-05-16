@@ -88,6 +88,7 @@ import org.chromium.chrome.browser.init.AsyncInitializationActivity;
 import org.chromium.chrome.browser.metrics.LaunchMetrics;
 import org.chromium.chrome.browser.metrics.StartupMetrics;
 import org.chromium.chrome.browser.metrics.UmaSessionStats;
+import org.chromium.chrome.browser.metrics.UmaUtils;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.nfc.BeamController;
 import org.chromium.chrome.browser.nfc.BeamProvider;
@@ -1651,6 +1652,11 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
 
     protected final void postDeferredStartupIfNeeded() {
         if (!mDeferredStartupNotified) {
+            RecordHistogram.recordLongTimesHistogram(
+                    "UMA.Debug.EnableCrashUpload.PostDeferredStartUptime",
+                    SystemClock.uptimeMillis() - UmaUtils.getMainEntryPointTime(),
+                    TimeUnit.MILLISECONDS);
+
             // We want to perform deferred startup tasks a short time after the first page
             // load completes, but only when the main thread Looper has become idle.
             mHandler.postDelayed(new Runnable() {
