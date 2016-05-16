@@ -1521,8 +1521,9 @@ class ValidationPool(object):
     """
 
     def IsCrosReview(change):
-      return (change.project.startswith('chromiumos') or
-              change.project.startswith('chromeos'))
+      return (change.project.startswith('chromiumos/') or
+              change.project.startswith('chromeos/') or
+              change.project.startswith('aosp/'))
 
     # First we filter to only Chromium OS repositories.
     changes = [c for c in changes if IsCrosReview(c)]
