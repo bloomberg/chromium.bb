@@ -862,41 +862,14 @@ class LayerTreeHostAnimationTestScrollOffsetAnimationRemoval
   }
 
   void BeginCommitOnThread(LayerTreeHostImpl* host_impl) override {
-    host_impl->BlockNotifyReadyToActivateForTesting(true);
+    host_impl->BlockNotifyReadyToActivateForTesting(
+        ShouldBlockActivation(host_impl));
   }
 
   void WillBeginImplFrameOnThread(LayerTreeHostImpl* host_impl,
                                   const BeginFrameArgs& args) override {
-    if (!host_impl->pending_tree())
-      return;
-
-    if (!host_impl->active_tree()->root_layer()) {
-      host_impl->BlockNotifyReadyToActivateForTesting(false);
-      return;
-    }
-
-    scoped_refptr<AnimationTimeline> timeline_impl =
-        host_impl->animation_host()->GetTimelineById(timeline_id_);
-    scoped_refptr<AnimationPlayer> player_impl =
-        timeline_impl->GetPlayerById(player_child_id_);
-
-    LayerImpl* scroll_layer_impl =
-        host_impl->active_tree()->LayerById(scroll_layer_->id());
-    Animation* animation = player_impl->element_animations()
-                               ->GetAnimation(TargetProperty::SCROLL_OFFSET);
-
-    if (!animation || animation->run_state() != Animation::RUNNING) {
-      host_impl->BlockNotifyReadyToActivateForTesting(false);
-      return;
-    }
-
-    // Block activation until the running animation has a chance to produce a
-    // scroll delta.
-    gfx::Vector2dF scroll_delta = ScrollDelta(scroll_layer_impl);
-    if (scroll_delta.x() < 1.f || scroll_delta.y() < 1.f)
-      return;
-
-    host_impl->BlockNotifyReadyToActivateForTesting(false);
+    host_impl->BlockNotifyReadyToActivateForTesting(
+        ShouldBlockActivation(host_impl));
   }
 
   void WillActivateTreeOnThread(LayerTreeHostImpl* host_impl) override {
@@ -921,6 +894,35 @@ class LayerTreeHostAnimationTestScrollOffsetAnimationRemoval
   }
 
  private:
+  bool ShouldBlockActivation(LayerTreeHostImpl* host_impl) {
+    if (!host_impl->pending_tree())
+      return false;
+
+    if (!host_impl->active_tree()->root_layer())
+      return false;
+
+    scoped_refptr<AnimationTimeline> timeline_impl =
+        host_impl->animation_host()->GetTimelineById(timeline_id_);
+    scoped_refptr<AnimationPlayer> player_impl =
+        timeline_impl->GetPlayerById(player_child_id_);
+
+    LayerImpl* scroll_layer_impl =
+        host_impl->active_tree()->LayerById(scroll_layer_->id());
+    Animation* animation = player_impl->element_animations()->GetAnimation(
+        TargetProperty::SCROLL_OFFSET);
+
+    if (!animation || animation->run_state() != Animation::RUNNING)
+      return false;
+
+    // Block activation until the running animation has a chance to produce a
+    // scroll delta.
+    gfx::Vector2dF scroll_delta = ScrollDelta(scroll_layer_impl);
+    if (scroll_delta.x() > 0.f || scroll_delta.y() > 0.f)
+      return false;
+
+    return true;
+  }
+
   FakeContentLayerClient client_;
   scoped_refptr<FakePictureLayer> scroll_layer_;
   const gfx::ScrollOffset final_postion_;

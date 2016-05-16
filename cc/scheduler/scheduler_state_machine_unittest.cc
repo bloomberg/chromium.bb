@@ -609,19 +609,8 @@ TEST(SchedulerStateMachineTest, TestFailedDrawsDoNotRestartForcedDraw) {
   EXPECT_TRUE(state.ForcedRedrawState() ==
               SchedulerStateMachine::FORCED_REDRAW_STATE_WAITING_FOR_COMMIT);
 
-  state.NotifyBeginMainFrameStarted();
-  state.NotifyReadyToCommit();
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_COMMIT);
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-  EXPECT_TRUE(state.RedrawPending());
-  EXPECT_FALSE(state.CommitPending());
-
-  // Now force redraw should be in waiting for activation
-  EXPECT_TRUE(state.ForcedRedrawState() ==
-    SchedulerStateMachine::FORCED_REDRAW_STATE_WAITING_FOR_ACTIVATION);
-
   // After failing additional draws, we should still be in a forced
-  // redraw, but not back in WAITING_FOR_COMMIT.
+  // redraw, but not back in IDLE.
   for (int i = 0; i < draw_limit; ++i) {
     state.SetNeedsRedraw(true);
     state.OnBeginImplFrame();
@@ -636,7 +625,7 @@ TEST(SchedulerStateMachineTest, TestFailedDrawsDoNotRestartForcedDraw) {
   }
   EXPECT_TRUE(state.RedrawPending());
   EXPECT_TRUE(state.ForcedRedrawState() ==
-    SchedulerStateMachine::FORCED_REDRAW_STATE_WAITING_FOR_ACTIVATION);
+              SchedulerStateMachine::FORCED_REDRAW_STATE_WAITING_FOR_COMMIT);
 }
 
 TEST(SchedulerStateMachineTest, TestFailedDrawIsRetriedInNextBeginImplFrame) {
@@ -1021,6 +1010,7 @@ TEST(SchedulerStateMachineTest, CommitWithoutDrawWithPendingTree) {
 TEST(SchedulerStateMachineTest, DontCommitWithoutDrawWithoutPendingTree) {
   SchedulerSettings scheduler_settings;
   scheduler_settings.commit_to_active_tree = true;
+  scheduler_settings.main_frame_before_activation_enabled = false;
   StateMachine state(scheduler_settings);
   SET_UP_STATE(state)
 
@@ -1102,6 +1092,7 @@ TEST(SchedulerStateMachineTest, AbortedMainFrameDoesNotResetPendingTree) {
 TEST(SchedulerStateMachineTest, TestFullCycleWithCommitToActive) {
   SchedulerSettings scheduler_settings;
   scheduler_settings.commit_to_active_tree = true;
+  scheduler_settings.main_frame_before_activation_enabled = false;
   StateMachine state(scheduler_settings);
   SET_UP_STATE(state)
 
