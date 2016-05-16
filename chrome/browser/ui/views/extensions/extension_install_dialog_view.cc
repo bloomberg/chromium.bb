@@ -773,6 +773,6 @@ void ExpandableContainerView::UpdateArrowToggle(bool expanded) {
 
 // static
 ExtensionInstallPrompt::ShowDialogCallback
-ExtensionInstallPrompt::GetDefaultShowDialogCallback() {
+ExtensionInstallPrompt::GetViewsShowDialogCallback() {
   return base::Bind(&ShowExtensionInstallDialogImpl);
 }

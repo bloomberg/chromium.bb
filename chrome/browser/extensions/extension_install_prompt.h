@@ -260,6 +260,10 @@ class ExtensionInstallPrompt {
   // The implementations of this function are platform-specific.
   static ShowDialogCallback GetDefaultShowDialogCallback();
 
+  // Callback to show the Views extension install dialog. Don't use this; it is
+  // a temporary hack for MacViews.
+  static ShowDialogCallback GetViewsShowDialogCallback();
+
   // Returns the appropriate prompt type for the given |extension|.
   // TODO(devlin): This method is yucky - callers probably only care about one
   // prompt type. We just need to comb through and figure out what it is.
