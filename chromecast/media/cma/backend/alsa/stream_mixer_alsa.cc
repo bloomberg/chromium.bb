@@ -6,7 +6,6 @@
 
 #include <algorithm>
 #include <cmath>
-#include <limits>
 #include <utility>
 
 #include "base/bind_helpers.h"
@@ -72,6 +71,8 @@ const bool kPcmRecoverIsSilent = false;
 // are present.
 const int kPreventUnderrunChunkSize = 512;
 const int kDefaultCheckCloseTimeoutMs = 2000;
+
+const int kMaxWriteSizeMs = 20;
 
 // A list of supported sample rates.
 // TODO(jyw): move this up into chromecast/public for 1) documentation and
@@ -704,7 +705,7 @@ bool StreamMixerAlsa::TryWriteFrames() {
   DCHECK(mixer_task_runner_->BelongsToCurrentThread());
   if (state_ != kStateNormalPlayback)
     return false;
-  int chunk_size = std::numeric_limits<int>::max();
+  int chunk_size = output_samples_per_second_ * kMaxWriteSizeMs / 1000;
   std::vector<InputQueue*> active_inputs;
   for (auto&& input : inputs_) {
     int read_size = input->MaxReadSize();
