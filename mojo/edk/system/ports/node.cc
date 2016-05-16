@@ -30,6 +30,8 @@ bool CanAcceptMoreMessages(const Port* port) {
   // Have we already doled out the last message (i.e., do we expect to NOT
   // receive further messages)?
   uint64_t next_sequence_num = port->message_queue.next_sequence_num();
+  if (port->state == Port::kClosed)
+    return false;
   if (port->peer_closed || port->remove_proxy_on_last_message) {
     if (port->last_sequence_num_to_receive == next_sequence_num - 1)
       return false;
@@ -819,11 +821,6 @@ int Node::AddPortWithName(const PortName& port_name,
 
   DVLOG(2) << "Created port " << port_name << "@" << name_;
   return OK;
-}
-
-void Node::ErasePort(const PortName& port_name) {
-  base::AutoLock lock(ports_lock_);
-  return ErasePort_Locked(port_name);
 }
 
 void Node::ErasePort_Locked(const PortName& port_name) {

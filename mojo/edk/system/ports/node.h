@@ -154,7 +154,6 @@ class Node {
 
   int AddPortWithName(const PortName& port_name,
                       const scoped_refptr<Port>& port);
-  void ErasePort(const PortName& port_name);
   void ErasePort_Locked(const PortName& port_name);
   scoped_refptr<Port> GetPort(const PortName& port_name);
   scoped_refptr<Port> GetPort_Locked(const PortName& port_name);
