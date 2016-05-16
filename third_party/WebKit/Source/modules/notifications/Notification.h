@@ -46,7 +46,7 @@
 #include "public/platform/WebVector.h"
 #include "public/platform/modules/notifications/WebNotificationData.h"
 #include "public/platform/modules/notifications/WebNotificationDelegate.h"
-#include "public/platform/modules/permissions/permission_status.mojom.h"
+#include "public/platform/modules/permissions/permission_status.mojom-blink.h"
 
 namespace blink {
 
@@ -99,9 +99,9 @@ public:
     ScriptValue data(ScriptState*);
     HeapVector<NotificationAction> actions() const;
 
-    static String permissionString(mojom::PermissionStatus);
+    static String permissionString(mojom::blink::PermissionStatus);
     static String permission(ExecutionContext*);
-    static mojom::PermissionStatus checkPermission(ExecutionContext*);
+    static mojom::blink::PermissionStatus checkPermission(ExecutionContext*);
     static ScriptPromise requestPermission(ScriptState*, NotificationPermissionCallback*);
 
     static size_t maxActions();

@@ -76,6 +76,7 @@ source_set("renderer") {
     "//storage/common",
     "//third_party/WebKit/public:blink",
     "//third_party/WebKit/public:mojo_bindings",
+    "//third_party/WebKit/public:mojo_bindings_blink",
     "//third_party/boringssl",
     "//third_party/icu",
     "//third_party/libjingle",

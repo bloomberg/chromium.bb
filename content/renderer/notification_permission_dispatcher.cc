@@ -11,6 +11,7 @@
 #include "content/public/renderer/render_frame.h"
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/platform/WebString.h"
+#include "third_party/WebKit/public/platform/modules/permissions/permission_status.mojom-blink.h"
 #include "third_party/WebKit/public/platform/modules/permissions/permission_status.mojom.h"
 #include "third_party/WebKit/public/web/modules/notifications/WebNotificationPermissionCallback.h"
 
@@ -48,7 +49,10 @@ void NotificationPermissionDispatcher::OnPermissionRequestComplete(
     blink::mojom::PermissionStatus status) {
   DCHECK(callback);
 
-  callback->permissionRequestComplete(status);
+  blink::mojom::blink::PermissionStatus blink_status =
+      static_cast<blink::mojom::blink::PermissionStatus>(status);
+
+  callback->permissionRequestComplete(blink_status);
 }
 
 }  // namespace content

@@ -209,7 +209,7 @@ void NotificationManager::notifyDelegateDestroyed(
   }
 }
 
-blink::mojom::PermissionStatus NotificationManager::checkPermission(
+blink::mojom::blink::PermissionStatus NotificationManager::checkPermission(
     const blink::WebSecurityOrigin& origin) {
   blink::mojom::PermissionStatus permission_status =
       blink::mojom::PermissionStatus::DENIED;
@@ -220,7 +220,7 @@ blink::mojom::PermissionStatus NotificationManager::checkPermission(
   thread_safe_sender_->Send(new PlatformNotificationHostMsg_CheckPermission(
       blink::WebStringToGURL(origin.toString()), &permission_status));
 
-  return permission_status;
+  return static_cast<blink::mojom::blink::PermissionStatus>(permission_status);
 }
 
 bool NotificationManager::OnMessageReceived(const IPC::Message& message) {

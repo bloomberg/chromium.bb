@@ -16,7 +16,9 @@
 namespace blink {
 
 namespace mojom {
+namespace blink {
 enum class PermissionStatus;
+}
 }
 
 class WebNotificationDelegate;
@@ -62,7 +64,7 @@ public:
     virtual void notifyDelegateDestroyed(WebNotificationDelegate*) = 0;
 
     // Synchronously checks the permission level for the given origin.
-    virtual mojom::PermissionStatus checkPermission(const WebSecurityOrigin&) = 0;
+    virtual mojom::blink::PermissionStatus checkPermission(const WebSecurityOrigin&) = 0;
 };
 
 } // namespace blink
