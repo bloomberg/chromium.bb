@@ -51,13 +51,6 @@ class PlatformTestHelperMus : public PlatformTestHelper {
     shell::Connector* connector = shell_connection_->connector();
     connector->Connect("mojo:desktop_wm");
     WindowManagerConnection::Create(connector, shell_connection_->identity());
-
-    // On X we need to reset the ContextFactory before every NativeWidgetMus
-    // is created.
-    // TODO(sad): this is a hack, figure out a better solution.
-    ViewsDelegate::GetInstance()->set_native_widget_factory(base::Bind(
-        &PlatformTestHelperMus::CreateNativeWidgetMus, base::Unretained(this),
-        std::map<std::string, std::vector<uint8_t>>()));
   }
 
   ~PlatformTestHelperMus() override {
@@ -69,19 +62,6 @@ class PlatformTestHelperMus : public PlatformTestHelper {
   bool IsMus() const override { return true; }
 
  private:
-  NativeWidget* CreateNativeWidgetMus(
-      const std::map<std::string, std::vector<uint8_t>>& props,
-      const Widget::InitParams& init_params,
-      internal::NativeWidgetDelegate* delegate) {
-    ui::ContextFactory* factory = aura::Env::GetInstance()->context_factory();
-    aura::Env::GetInstance()->set_context_factory(nullptr);
-    NativeWidget* result =
-        WindowManagerConnection::Get()->CreateNativeWidgetMus(
-            props, init_params, delegate);
-    aura::Env::GetInstance()->set_context_factory(factory);
-    return result;
-  }
-
   std::unique_ptr<BackgroundShell> background_shell_;
   std::unique_ptr<shell::ShellConnection> shell_connection_;
   std::unique_ptr<DefaultShellClient> shell_client_;

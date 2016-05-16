@@ -14,6 +14,10 @@
 #include "ui/views/test/test_views_delegate.h"
 #include "ui/views/test/views_test_helper.h"
 
+#if defined(USE_AURA)
+#include "ui/aura/env.h"
+#endif
+
 namespace views {
 
 ScopedViewsTestHelper::ScopedViewsTestHelper()
@@ -32,6 +36,17 @@ ScopedViewsTestHelper::ScopedViewsTestHelper(
   test_helper_.reset(ViewsTestHelper::Create(base::MessageLoopForUI::current(),
                                              context_factory));
   test_helper_->SetUp();
+
+#if defined(USE_AURA)
+  // When running inside mus, the context-factory from
+  // ui::InitializeContextFactoryForTests() is only needed for the default
+  // WindowTreeHost instance created by TestScreen. After that, the
+  // context-factory is used when creating Widgets (to set-up the compositor for
+  // the corresponding mus::Windows). So unset the context-factory, so that
+  // NativeWidgetMus installs the correct context-factory that can talk to mus.
+  if (platform_test_helper_->IsMus())
+    aura::Env::GetInstance()->set_context_factory(nullptr);
+#endif
 
   ui::InitializeInputMethodForTesting();
 }
