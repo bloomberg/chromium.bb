@@ -89,8 +89,8 @@ public:
     WebRange markedRange() const override;
     bool firstRectForCharacterRange(unsigned location, unsigned length, WebRect&) const override;
     size_t characterIndexForPoint(const WebPoint&) const override;
-    bool executeCommand(const WebString&, const WebNode& = WebNode()) override;
-    bool executeCommand(const WebString&, const WebString& value, const WebNode& = WebNode()) override;
+    bool executeCommand(const WebString&) override;
+    bool executeCommand(const WebString&, const WebString& value) override;
     bool isCommandEnabled(const WebString&) const override;
     void enableContinuousSpellChecking(bool) override;
     bool isContinuousSpellCheckingEnabled() const override;

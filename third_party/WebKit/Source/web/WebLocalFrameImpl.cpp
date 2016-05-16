@@ -259,12 +259,17 @@ WebPluginContainerImpl* WebLocalFrameImpl::pluginContainerFromFrame(LocalFrame* 
     return toWebPluginContainerImpl(pluginDocument->pluginWidget());
 }
 
-WebPluginContainerImpl* WebLocalFrameImpl::pluginContainerFromNode(LocalFrame* frame, const WebNode& node)
+WebPluginContainerImpl* WebLocalFrameImpl::currentPluginContainer(LocalFrame* frame, Node* node)
 {
     WebPluginContainerImpl* pluginContainer = pluginContainerFromFrame(frame);
     if (pluginContainer)
         return pluginContainer;
-    return toWebPluginContainerImpl(node.pluginContainer());
+
+    if (!node) {
+        DCHECK(frame->document());
+        node = frame->document()->focusedElement();
+    }
+    return toWebPluginContainerImpl(WebNode::pluginContainerFromNode(node));
 }
 
 // Simple class to override some of PrintContext behavior. Some of the methods
@@ -1011,7 +1016,7 @@ size_t WebLocalFrameImpl::characterIndexForPoint(const WebPoint& pointInViewport
     return PlainTextRange::create(*editable, range).start();
 }
 
-bool WebLocalFrameImpl::executeCommand(const WebString& name, const WebNode& node)
+bool WebLocalFrameImpl::executeCommand(const WebString& name)
 {
     DCHECK(frame());
 
@@ -1029,18 +1034,19 @@ bool WebLocalFrameImpl::executeCommand(const WebString& name, const WebNode& nod
     if (command[command.length() - 1] == UChar(':'))
         command = command.substring(0, command.length() - 1);
 
-    WebPluginContainerImpl* pluginContainer = pluginContainerFromNode(frame(), node);
+    Node* pluginLookupContextNode = m_contextMenuNode && name == "Copy" ? m_contextMenuNode : nullptr;
+    WebPluginContainerImpl* pluginContainer = currentPluginContainer(frame(), pluginLookupContextNode);
     if (pluginContainer && pluginContainer->executeEditCommand(name))
         return true;
 
     return frame()->editor().executeCommand(command);
 }
 
-bool WebLocalFrameImpl::executeCommand(const WebString& name, const WebString& value, const WebNode& node)
+bool WebLocalFrameImpl::executeCommand(const WebString& name, const WebString& value)
 {
     DCHECK(frame());
 
-    WebPluginContainerImpl* pluginContainer = pluginContainerFromNode(frame(), node);
+    WebPluginContainerImpl* pluginContainer = currentPluginContainer(frame());
     if (pluginContainer && pluginContainer->executeEditCommand(name, value))
         return true;
 
@@ -1224,7 +1230,7 @@ VisiblePosition WebLocalFrameImpl::visiblePositionForViewportPoint(const WebPoin
 
 WebPlugin* WebLocalFrameImpl::focusedPluginIfInputMethodSupported()
 {
-    WebPluginContainerImpl* container = WebLocalFrameImpl::pluginContainerFromNode(frame(), WebNode(frame()->document()->focusedElement()));
+    WebPluginContainerImpl* container = WebLocalFrameImpl::currentPluginContainer(frame());
     if (container && container->supportsInputMethod())
         return container->plugin();
     return 0;

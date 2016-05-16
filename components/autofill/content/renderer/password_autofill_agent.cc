@@ -1429,7 +1429,8 @@ void PasswordAutofillAgent::OnAutofillUsernameAndPasswordDataReceived(
 void PasswordAutofillAgent::OnFindFocusedPasswordForm() {
   std::unique_ptr<PasswordForm> password_form;
 
-  blink::WebElement element = render_frame()->GetFocusedElement();
+  blink::WebElement element =
+      render_frame()->GetWebFrame()->document().focusedElement();
   if (!element.isNull() && element.hasHTMLTagName("input")) {
     blink::WebInputElement input = element.to<blink::WebInputElement>();
     if (input.isPasswordField() && !input.form().isNull()) {

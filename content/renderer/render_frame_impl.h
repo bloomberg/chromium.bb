@@ -384,7 +384,6 @@ class CONTENT_EXPORT RenderFrameImpl
   RenderView* GetRenderView() override;
   int GetRoutingID() override;
   blink::WebLocalFrame* GetWebFrame() override;
-  blink::WebElement GetFocusedElement() const override;
   WebPreferences& GetWebkitPreferences() override;
   int ShowContextMenu(ContextMenuClient* client,
                       const ContextMenuParams& params) override;

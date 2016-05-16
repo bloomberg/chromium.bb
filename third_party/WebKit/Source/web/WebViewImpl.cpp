@@ -2654,7 +2654,7 @@ bool WebViewImpl::selectionBounds(WebRect& anchor, WebRect& focus) const
 
 WebPlugin* WebViewImpl::focusedPluginIfInputMethodSupported(LocalFrame* frame)
 {
-    WebPluginContainerImpl* container = WebLocalFrameImpl::pluginContainerFromNode(frame, WebNode(focusedElement()));
+    WebPluginContainerImpl* container = WebLocalFrameImpl::currentPluginContainer(frame);
     if (container && container->supportsInputMethod())
         return container->plugin();
     return nullptr;

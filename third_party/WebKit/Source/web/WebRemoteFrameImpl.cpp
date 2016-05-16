@@ -367,13 +367,13 @@ size_t WebRemoteFrameImpl::characterIndexForPoint(const WebPoint&) const
     return 0;
 }
 
-bool WebRemoteFrameImpl::executeCommand(const WebString&, const WebNode&)
+bool WebRemoteFrameImpl::executeCommand(const WebString&)
 {
     NOTREACHED();
     return false;
 }
 
-bool WebRemoteFrameImpl::executeCommand(const WebString&, const WebString& value, const WebNode&)
+bool WebRemoteFrameImpl::executeCommand(const WebString&, const WebString& value)
 {
     NOTREACHED();
     return false;

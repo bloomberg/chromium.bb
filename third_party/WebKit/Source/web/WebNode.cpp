@@ -217,20 +217,27 @@ bool WebNode::focused() const
     return m_private->focused();
 }
 
+WebPluginContainer* WebNode::pluginContainerFromNode(const Node* node)
+{
+    if (!node)
+        return nullptr;
+
+    if (!isHTMLObjectElement(node) && !isHTMLEmbedElement(node))
+        return nullptr;
+
+    LayoutObject* object = node->layoutObject();
+    if (object && object->isLayoutPart()) {
+        Widget* widget = toLayoutPart(object)->widget();
+        if (widget && widget->isPluginContainer())
+            return toWebPluginContainerImpl(widget);
+    }
+
+    return nullptr;
+}
+
 WebPluginContainer* WebNode::pluginContainer() const
 {
-    if (isNull())
-        return 0;
-    const Node& coreNode = *constUnwrap<Node>();
-    if (isHTMLObjectElement(coreNode) || isHTMLEmbedElement(coreNode)) {
-        LayoutObject* object = coreNode.layoutObject();
-        if (object && object->isLayoutPart()) {
-            Widget* widget = toLayoutPart(object)->widget();
-            if (widget && widget->isPluginContainer())
-                return toWebPluginContainerImpl(widget);
-        }
-    }
-    return 0;
+    return pluginContainerFromNode(constUnwrap<Node>());
 }
 
 WebAXObject WebNode::accessibilityObject()

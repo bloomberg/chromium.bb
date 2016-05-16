@@ -146,8 +146,8 @@ public:
     WebRange markedRange() const override;
     bool firstRectForCharacterRange(unsigned location, unsigned length, WebRect&) const override;
     size_t characterIndexForPoint(const WebPoint&) const override;
-    bool executeCommand(const WebString&, const WebNode& = WebNode()) override;
-    bool executeCommand(const WebString&, const WebString& value, const WebNode& = WebNode()) override;
+    bool executeCommand(const WebString&) override;
+    bool executeCommand(const WebString&, const WebString& value) override;
     bool isCommandEnabled(const WebString&) const override;
     void enableContinuousSpellChecking(bool) override;
     bool isContinuousSpellCheckingEnabled() const override;
@@ -270,8 +270,8 @@ public:
 
     // If the frame hosts a PluginDocument, this method returns the WebPluginContainerImpl
     // that hosts the plugin. If the provided node is a plugin, then it runs its
-    // WebPluginContainerImpl.
-    static WebPluginContainerImpl* pluginContainerFromNode(LocalFrame*, const WebNode&);
+    // WebPluginContainerImpl. Otherwise, uses the currently focused element (if any).
+    static WebPluginContainerImpl* currentPluginContainer(LocalFrame*, Node* = nullptr);
 
     WebViewImpl* viewImpl() const;
 

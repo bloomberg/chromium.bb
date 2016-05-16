@@ -88,7 +88,8 @@ void PageClickTracker::FocusChangeComplete() {
 }
 
 void PageClickTracker::DoFocusChangeComplete() {
-  WebElement focused_element = render_frame()->GetFocusedElement();
+  WebElement focused_element =
+      render_frame()->GetWebFrame()->document().focusedElement();
   if (focused_node_was_last_clicked_ && !focused_element.isNull()) {
     const WebFormControlElement control =
         GetTextFormControlElement(focused_element);

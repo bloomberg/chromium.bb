@@ -1695,36 +1695,32 @@ void RenderFrameImpl::OnCustomContextMenuAction(
 }
 
 void RenderFrameImpl::OnUndo() {
-  frame_->executeCommand(WebString::fromUTF8("Undo"), GetFocusedElement());
+  frame_->executeCommand(WebString::fromUTF8("Undo"));
 }
 
 void RenderFrameImpl::OnRedo() {
-  frame_->executeCommand(WebString::fromUTF8("Redo"), GetFocusedElement());
+  frame_->executeCommand(WebString::fromUTF8("Redo"));
 }
 
 void RenderFrameImpl::OnCut() {
   base::AutoReset<bool> handling_select_range(&handling_select_range_, true);
-  frame_->executeCommand(WebString::fromUTF8("Cut"), GetFocusedElement());
+  frame_->executeCommand(WebString::fromUTF8("Cut"));
 }
 
 void RenderFrameImpl::OnCopy() {
   base::AutoReset<bool> handling_select_range(&handling_select_range_, true);
-  WebNode current_node = frame_->contextMenuNode();
-  frame_->executeCommand(WebString::fromUTF8("Copy"), current_node.isNull()
-                                                          ? GetFocusedElement()
-                                                          : current_node);
+  frame_->executeCommand(WebString::fromUTF8("Copy"));
 }
 
 void RenderFrameImpl::OnPaste() {
   base::AutoReset<bool> handling_select_range(&handling_select_range_, true);
   base::AutoReset<bool> handling_paste(&is_pasting_, true);
-  frame_->executeCommand(WebString::fromUTF8("Paste"), GetFocusedElement());
+  frame_->executeCommand(WebString::fromUTF8("Paste"));
 }
 
 void RenderFrameImpl::OnPasteAndMatchStyle() {
   base::AutoReset<bool> handling_select_range(&handling_select_range_, true);
-  frame_->executeCommand(
-      WebString::fromUTF8("PasteAndMatchStyle"), GetFocusedElement());
+  frame_->executeCommand(WebString::fromUTF8("PasteAndMatchStyle"));
 }
 
 #if defined(OS_MACOSX)
@@ -1740,12 +1736,12 @@ void RenderFrameImpl::OnCopyToFindPboard() {
 #endif
 
 void RenderFrameImpl::OnDelete() {
-  frame_->executeCommand(WebString::fromUTF8("Delete"), GetFocusedElement());
+  frame_->executeCommand(WebString::fromUTF8("Delete"));
 }
 
 void RenderFrameImpl::OnSelectAll() {
   base::AutoReset<bool> handling_select_range(&handling_select_range_, true);
-  frame_->executeCommand(WebString::fromUTF8("SelectAll"), GetFocusedElement());
+  frame_->executeCommand(WebString::fromUTF8("SelectAll"));
 }
 
 void RenderFrameImpl::OnSelectRange(const gfx::Point& base,
@@ -1784,7 +1780,7 @@ void RenderFrameImpl::OnAdjustSelectionByCharacterOffset(int start_adjust,
 
 void RenderFrameImpl::OnUnselect() {
   base::AutoReset<bool> handling_select_range(&handling_select_range_, true);
-  frame_->executeCommand(WebString::fromUTF8("Unselect"), GetFocusedElement());
+  frame_->executeCommand(WebString::fromUTF8("Unselect"));
 }
 
 void RenderFrameImpl::OnMoveRangeSelectionExtent(const gfx::Point& point) {
@@ -1977,7 +1973,7 @@ void RenderFrameImpl::OnSetCompositionFromExistingText(
 }
 
 void RenderFrameImpl::OnExecuteNoValueEditCommand(const std::string& name) {
-  frame_->executeCommand(WebString::fromUTF8(name), GetFocusedElement());
+  frame_->executeCommand(WebString::fromUTF8(name));
 }
 
 void RenderFrameImpl::OnExtendSelectionAndDelete(int before, int after) {
@@ -2238,14 +2234,6 @@ int RenderFrameImpl::GetRoutingID() {
 blink::WebLocalFrame* RenderFrameImpl::GetWebFrame() {
   DCHECK(frame_);
   return frame_;
-}
-
-WebElement RenderFrameImpl::GetFocusedElement() const {
-  WebDocument doc = frame_->document();
-  if (!doc.isNull())
-    return doc.focusedElement();
-
-  return WebElement();
 }
 
 WebPreferences& RenderFrameImpl::GetWebkitPreferences() {
@@ -5042,8 +5030,7 @@ void RenderFrameImpl::OnFind(int request_id,
 
     if (!result) {
       // Don't leave text selected as you move to the next frame.
-      search_frame->executeCommand(WebString::fromUTF8("Unselect"),
-                                   GetFocusedElement());
+      search_frame->executeCommand(WebString::fromUTF8("Unselect"));
 
       // Find the next frame, but skip the invisible ones.
       do {
@@ -5056,8 +5043,7 @@ void RenderFrameImpl::OnFind(int request_id,
                search_frame != focused_frame);
 
       // Make sure selection doesn't affect the search operation in new frame.
-      search_frame->executeCommand(WebString::fromUTF8("Unselect"),
-                                   GetFocusedElement());
+      search_frame->executeCommand(WebString::fromUTF8("Unselect"));
 
       // If we have multiple frames and we have wrapped back around to the
       // focused frame, we need to search it once more allowing wrap within
@@ -5136,8 +5122,7 @@ void RenderFrameImpl::OnStopFinding(StopFindAction action) {
 
   bool clear_selection = action == STOP_FIND_ACTION_CLEAR_SELECTION;
   if (clear_selection) {
-    view->focusedFrame()->executeCommand(WebString::fromUTF8("Unselect"),
-                                         GetFocusedElement());
+    view->focusedFrame()->executeCommand(WebString::fromUTF8("Unselect"));
   }
 
   WebLocalFrame* frame = GetWebFrame();

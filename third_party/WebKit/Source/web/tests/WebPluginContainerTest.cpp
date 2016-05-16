@@ -312,8 +312,42 @@ TEST_F(WebPluginContainerTest, Copy)
     webView->updateAllLifecyclePhases();
     runPendingTasks();
 
-    WebElement pluginContainerOneElement = webView->mainFrame()->document().getElementById(WebString::fromUTF8("translated-plugin"));
-    EXPECT_TRUE(webView->mainFrame()->executeCommand("Copy",  pluginContainerOneElement));
+    webView->mainFrame()->document().unwrap<Document>()->body()->getElementById("translated-plugin")->focus();
+    EXPECT_TRUE(webView->mainFrame()->executeCommand("Copy"));
+    EXPECT_EQ(WebString("x"), Platform::current()->clipboard()->readPlainText(WebClipboard::Buffer()));
+}
+
+TEST_F(WebPluginContainerTest, CopyFromContextMenu)
+{
+    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("plugin_container.html"));
+    TestPluginWebFrameClient pluginWebFrameClient; // Must outlive webViewHelper.
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    WebView* webView = webViewHelper.initializeAndLoad(m_baseURL + "plugin_container.html", true, &pluginWebFrameClient);
+    DCHECK(webView);
+    webView->settings()->setPluginsEnabled(true);
+    webView->resize(WebSize(300, 300));
+    webView->updateAllLifecyclePhases();
+    runPendingTasks();
+
+    auto event = FrameTestHelpers::createMouseEvent(WebMouseEvent::MouseDown, WebMouseEvent::ButtonRight, WebPoint(30, 30), 0);
+    event.clickCount = 1;
+
+    // Make sure the right-click + Copy works in common scenario.
+    webView->handleInputEvent(event);
+    EXPECT_TRUE(webView->mainFrame()->executeCommand("Copy"));
+    EXPECT_EQ(WebString("x"), Platform::current()->clipboard()->readPlainText(WebClipboard::Buffer()));
+
+    // Clear the clipboard buffer.
+    Platform::current()->clipboard()->writePlainText(WebString(""));
+    EXPECT_EQ(WebString(""), Platform::current()->clipboard()->readPlainText(WebClipboard::Buffer()));
+
+    // Now, let's try a more complex scenario:
+    // 1) open the context menu. This will focus the plugin.
+    webView->handleInputEvent(event);
+    // 2) document blurs the plugin, because it can.
+    webView->clearFocusedElement();
+    // 3) Copy should still operate on the context node, even though the focus had shifted.
+    EXPECT_TRUE(webView->mainFrame()->executeCommand("Copy"));
     EXPECT_EQ(WebString("x"), Platform::current()->clipboard()->readPlainText(WebClipboard::Buffer()));
 }
 
