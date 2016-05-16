@@ -17,7 +17,20 @@ typedef __int64 int64_t;
 // Define CDM_API so that functionality implemented by the CDM module
 // can be exported to consumers. Note: the implementation lives in
 // a dynamic library even in a non-component build.
+// Also define CDM_CLASS_API to export class types. We have to add
+// visibility attributes to make sure virtual tables in CDM consumer
+// and CDM implementation are the same. Generally, it was always a
+// good idea, as there're no guarantees about that for the internal
+// symbols, but it has only become a practical issue after
+// introduction of LTO devirtualization. See more details on
+// https://crbug.com/609564#c35
 #if defined(WIN32)
+
+#if defined(__clang__)
+#define CDM_CLASS_API [[clang::lto_visibility_public]]
+#else
+#define CDM_CLASS_API
+#endif
 
 #if defined(CDM_IMPLEMENTATION)
 #define CDM_API __declspec(dllexport)
@@ -27,6 +40,7 @@ typedef __int64 int64_t;
 
 #else  // defined(WIN32)
 #define CDM_API __attribute__((visibility("default")))
+#define CDM_CLASS_API __attribute__((visibility("default")))
 #endif  // defined(WIN32)
 
 // The version number must be rolled when the exported functions are updated!
@@ -379,7 +393,7 @@ enum MessageType {
 // Note to implementors of this interface:
 // Per-origin storage and the ability for users to clear it are important.
 // See http://www.w3.org/TR/encrypted-media/#privacy-storedinfo.
-class CDM_API FileIO {
+class CDM_CLASS_API FileIO {
  public:
   // Opens the file with |file_name| for read and write.
   // FileIOClient::OnOpenComplete() will be called after the opening
@@ -419,7 +433,7 @@ class CDM_API FileIO {
 // When kError is returned, the FileIO object could be in an error state. All
 // following calls (other than Close()) could return kError. The CDM should
 // still call Close() to destroy the FileIO object.
-class CDM_API FileIOClient {
+class CDM_CLASS_API FileIOClient {
  public:
   enum Status {
     kSuccess = 0,
@@ -460,7 +474,7 @@ class CDM_API FileIOClient {
 // provided in CreateCdmInstance() to allocate any Buffer that needs to
 // be passed back to the caller. Implementations must call Buffer::Destroy()
 // when a Buffer is created that will never be returned to the caller.
-class CDM_API ContentDecryptionModule_7 {
+class CDM_CLASS_API ContentDecryptionModule_7 {
  public:
   static const int kVersion = 7;
   typedef Host_7 Host;
@@ -639,7 +653,7 @@ class CDM_API ContentDecryptionModule_7 {
 // provided in CreateCdmInstance() to allocate any Buffer that needs to
 // be passed back to the caller. Implementations must call Buffer::Destroy()
 // when a Buffer is created that will never be returned to the caller.
-class CDM_API ContentDecryptionModule_8 {
+class CDM_CLASS_API ContentDecryptionModule_8 {
  public:
   static const int kVersion = 8;
   typedef Host_8 Host;
@@ -824,7 +838,7 @@ class CDM_API ContentDecryptionModule_8 {
 typedef ContentDecryptionModule_8 ContentDecryptionModule;
 
 // Represents a buffer created by Allocator implementations.
-class CDM_API Buffer {
+class CDM_CLASS_API Buffer {
  public:
   // Destroys the buffer in the same context as it was created.
   virtual void Destroy() = 0;
@@ -843,7 +857,7 @@ class CDM_API Buffer {
   void operator=(const Buffer&);
 };
 
-class CDM_API Host_7 {
+class CDM_CLASS_API Host_7 {
  public:
   static const int kVersion = 7;
 
@@ -980,7 +994,7 @@ class CDM_API Host_7 {
   virtual ~Host_7() {}
 };
 
-class CDM_API Host_8 {
+class CDM_CLASS_API Host_8 {
  public:
   static const int kVersion = 8;
 
@@ -1118,7 +1132,7 @@ class CDM_API Host_8 {
 };
 
 // Represents a decrypted block that has not been decoded.
-class CDM_API DecryptedBlock {
+class CDM_CLASS_API DecryptedBlock {
  public:
   virtual void SetDecryptedBuffer(Buffer* buffer) = 0;
   virtual Buffer* DecryptedBuffer() = 0;
@@ -1133,7 +1147,7 @@ class CDM_API DecryptedBlock {
   virtual ~DecryptedBlock() {}
 };
 
-class CDM_API VideoFrame {
+class CDM_CLASS_API VideoFrame {
  public:
   enum VideoPlane {
     kYPlane = 0,
@@ -1176,7 +1190,7 @@ class CDM_API VideoFrame {
 //
 // |<----------------- AudioFrames ------------------>|
 // | audio buffer 0 | audio buffer 1 | audio buffer 2 |
-class CDM_API AudioFrames {
+class CDM_CLASS_API AudioFrames {
  public:
   virtual void SetFrameBuffer(Buffer* buffer) = 0;
   virtual Buffer* FrameBuffer() = 0;
