@@ -247,17 +247,25 @@ class Channel : public base::RefCountedThreadSafe<Channel> {
   // |extra_header| and |extra_header_size| correspond to the extra header data.
   // Depending on the Channel implementation, this body may encode platform
   // handles, or handles may be stored and managed elsewhere by the
-  // implementation.  If |num_handles| handles cannot be returned, this must
-  // return null.
-  virtual ScopedPlatformHandleVectorPtr GetReadPlatformHandles(
+  // implementation.
+  //
+  // Returns |false| on unrecoverable error (i.e. the Channel should be closed).
+  // Returns |true| otherwise. Note that it is possible on some platforms for an
+  // insufficient number of handles to be available when this call is made, but
+  // this is not necessarily an error condition. In such cases this returns
+  // |true| but |*handles| will also be reset to null.
+  virtual bool GetReadPlatformHandles(
       size_t num_handles,
       const void* extra_header,
-      size_t extra_header_size) = 0;
+      size_t extra_header_size,
+      ScopedPlatformHandleVectorPtr* handles) = 0;
 
-  virtual void OnControlMessage(Message::Header::MessageType message_type,
+  // Handles a received control message. Returns |true| if the message is
+  // accepted, or |false| otherwise.
+  virtual bool OnControlMessage(Message::Header::MessageType message_type,
                                 const void* payload,
                                 size_t payload_size,
-                                ScopedPlatformHandleVectorPtr handles) {}
+                                ScopedPlatformHandleVectorPtr handles);
 
  private:
   friend class base::RefCountedThreadSafe<Channel>;

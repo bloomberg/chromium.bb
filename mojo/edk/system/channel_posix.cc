@@ -9,6 +9,7 @@
 
 #include <algorithm>
 #include <deque>
+#include <limits>
 #include <memory>
 
 #include "base/bind.h"
@@ -132,10 +133,13 @@ class ChannelPosix : public Channel,
     }
   }
 
-  ScopedPlatformHandleVectorPtr GetReadPlatformHandles(
+  bool GetReadPlatformHandles(
       size_t num_handles,
       const void* extra_header,
-      size_t extra_header_size) override {
+      size_t extra_header_size,
+      ScopedPlatformHandleVectorPtr* handles) override {
+    if (num_handles > std::numeric_limits<uint16_t>::max())
+      return false;
 #if defined(OS_MACOSX) && !defined(OS_IOS)
     // On OSX, we can have mach ports which are located in the extra header
     // section.
@@ -147,41 +151,43 @@ class ChannelPosix : public Channel,
         reinterpret_cast<const MachPortsExtraHeader*>(extra_header);
     size_t num_mach_ports = mach_ports_header->num_ports;
     CHECK(num_mach_ports <= num_handles);
-    if (incoming_platform_handles_.size() + num_mach_ports < num_handles)
-      return nullptr;
+    if (incoming_platform_handles_.size() + num_mach_ports < num_handles) {
+      handles->reset();
+      return true;
+    }
 
-    ScopedPlatformHandleVectorPtr handles(
-        new PlatformHandleVector(num_handles));
+    handles->reset(new PlatformHandleVector(num_handles));
     const MachPortsEntry* mach_ports = mach_ports_header->entries;
     for (size_t i = 0, mach_port_index = 0; i < num_handles; ++i) {
       if (mach_port_index < num_mach_ports &&
           mach_ports[mach_port_index].index == i) {
-        (*handles)[i] = PlatformHandle(
+        (*handles)->at(i) = PlatformHandle(
             static_cast<mach_port_t>(mach_ports[mach_port_index].mach_port));
-        CHECK((*handles)[i].type == PlatformHandle::Type::MACH);
+        CHECK((*handles)->at(i).type == PlatformHandle::Type::MACH);
         // These are actually just Mach port names until they're resolved from
         // the remote process.
-        (*handles)[i].type = PlatformHandle::Type::MACH_NAME;
+        (*handles)->at(i).type = PlatformHandle::Type::MACH_NAME;
         mach_port_index++;
       } else {
         CHECK(!incoming_platform_handles_.empty());
-        (*handles)[i] = incoming_platform_handles_.front();
+        (*handles)->at(i) = incoming_platform_handles_.front();
         incoming_platform_handles_.pop_front();
       }
     }
 #else
-    if (incoming_platform_handles_.size() < num_handles)
-      return nullptr;
+    if (incoming_platform_handles_.size() < num_handles) {
+      handles->reset();
+      return true;
+    }
 
-    ScopedPlatformHandleVectorPtr handles(
-        new PlatformHandleVector(num_handles));
+    handles->reset(new PlatformHandleVector(num_handles));
     for (size_t i = 0; i < num_handles; ++i) {
-      (*handles)[i] = incoming_platform_handles_.front();
+      (*handles)->at(i) = incoming_platform_handles_.front();
       incoming_platform_handles_.pop_front();
     }
 #endif
 
-    return handles;
+    return true;
   }
 
  private:
@@ -395,30 +401,37 @@ class ChannelPosix : public Channel,
   }
 
 #if defined(OS_MACOSX)
-  void OnControlMessage(Message::Header::MessageType message_type,
+  bool OnControlMessage(Message::Header::MessageType message_type,
                         const void* payload,
                         size_t payload_size,
                         ScopedPlatformHandleVectorPtr handles) override {
     switch (message_type) {
       case Message::Header::MessageType::HANDLES_SENT: {
+        if (payload_size == 0)
+          break;
         MessagePtr message(new Channel::Message(
             payload_size, 0, Message::Header::MessageType::HANDLES_SENT_ACK));
         memcpy(message->mutable_payload(), payload, payload_size);
         Write(std::move(message));
-        break;
+        return true;
       }
+
       case Message::Header::MessageType::HANDLES_SENT_ACK: {
+        size_t num_fds = payload_size / sizeof(int);
+        if (num_fds == 0 || payload_size % sizeof(int) != 0)
+          break;
+
         const int* fds = reinterpret_cast<const int*>(payload);
-        size_t num_fds = payload_size / sizeof(*fds);
-        if (payload_size % sizeof(*fds) != 0 || !CloseHandles(fds, num_fds)) {
-          io_task_runner_->PostTask(FROM_HERE,
-                                    base::Bind(&ChannelPosix::OnError, this));
-        }
-        break;
+        if (!CloseHandles(fds, num_fds))
+          break;
+        return true;
       }
+
       default:
-        NOTREACHED();
+        break;
     }
+
+    return false;
   }
 
   // Closes handles referenced by |fds|. Returns false if |num_fds| is 0, or if

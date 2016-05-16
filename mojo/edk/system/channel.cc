@@ -150,7 +150,8 @@ Channel::MessagePtr Channel::Message::Deserialize(const void* data,
 #if defined(OS_WIN)
   uint32_t max_handles = extra_header_size / sizeof(PlatformHandle);
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
-  uint32_t max_handles = extra_header_size / sizeof(MachPortsEntry);
+  uint32_t max_handles = (extra_header_size - sizeof(MachPortsExtraHeader)) /
+      sizeof(MachPortsEntry);
 #endif
   if (header->num_handles > max_handles) {
     DLOG(ERROR) << "Decoding invalid message:" << header->num_handles
@@ -164,14 +165,20 @@ Channel::MessagePtr Channel::Message::Deserialize(const void* data,
   DCHECK_EQ(message->extra_header_size(), extra_header_size);
   DCHECK_EQ(message->header_->num_header_bytes, header->num_header_bytes);
 
-  // Copy all payload bytes.
-  memcpy(message->mutable_payload(),
-         static_cast<const char*>(data) + header->num_header_bytes,
-         data_num_bytes - header->num_header_bytes);
-  // Copy extra header bytes.
-  memcpy(message->mutable_extra_header(),
-         static_cast<const char*>(data) + sizeof(Header),
-         message->extra_header_size());
+  if (data_num_bytes > header->num_header_bytes) {
+    // Copy all payload bytes.
+    memcpy(message->mutable_payload(),
+           static_cast<const char*>(data) + header->num_header_bytes,
+           data_num_bytes - header->num_header_bytes);
+  }
+
+  if (message->extra_header_size()) {
+    // Copy extra header bytes.
+    memcpy(message->mutable_extra_header(),
+           static_cast<const char*>(data) + sizeof(Header),
+           message->extra_header_size());
+  }
+
   message->header_->num_handles = header->num_handles;
 
   return message;
@@ -530,9 +537,14 @@ bool Channel::OnReadComplete(size_t bytes_read, size_t *next_read_size_hint) {
     void* payload = payload_size ? const_cast<Message::Header*>(&header[1])
                                  : nullptr;
 #else
+    if (header->num_header_bytes < sizeof(Message::Header) ||
+        header->num_header_bytes > header->num_bytes) {
+      LOG(ERROR) << "Invalid message header size: " << header->num_header_bytes;
+      return false;
+    }
     size_t extra_header_size =
         header->num_header_bytes - sizeof(Message::Header);
-    const void* extra_header = header + 1;
+    const void* extra_header = extra_header_size ? header + 1 : nullptr;
     size_t payload_size = header->num_bytes - header->num_header_bytes;
     void* payload =
         payload_size ? reinterpret_cast<Message::Header*>(
@@ -543,8 +555,11 @@ bool Channel::OnReadComplete(size_t bytes_read, size_t *next_read_size_hint) {
 
     ScopedPlatformHandleVectorPtr handles;
     if (header->num_handles > 0) {
-      handles = GetReadPlatformHandles(header->num_handles, extra_header,
-                                       extra_header_size);
+      if (!GetReadPlatformHandles(header->num_handles, extra_header,
+                                 extra_header_size, &handles)) {
+        return false;
+      }
+
       if (!handles) {
         // Not enough handles available for this message.
         break;
@@ -553,8 +568,10 @@ bool Channel::OnReadComplete(size_t bytes_read, size_t *next_read_size_hint) {
 
     // We've got a complete message! Dispatch it and try another.
     if (header->message_type != Message::Header::MessageType::NORMAL) {
-      OnControlMessage(header->message_type, payload, payload_size,
-                       std::move(handles));
+      if (!OnControlMessage(header->message_type, payload, payload_size,
+                            std::move(handles))) {
+        return false;
+      }
       did_dispatch_message = true;
     } else if (delegate_) {
       delegate_->OnChannelMessage(payload, payload_size, std::move(handles));
@@ -571,6 +588,13 @@ bool Channel::OnReadComplete(size_t bytes_read, size_t *next_read_size_hint) {
 void Channel::OnError() {
   if (delegate_)
     delegate_->OnChannelError();
+}
+
+bool Channel::OnControlMessage(Message::Header::MessageType message_type,
+                               const void* payload,
+                               size_t payload_size,
+                               ScopedPlatformHandleVectorPtr handles) {
+  return false;
 }
 
 }  // namespace edk
