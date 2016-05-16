@@ -46,10 +46,7 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::SlideOutView,
                                           public views::ButtonListener {
  public:
   MessageView(MessageCenterController* controller,
-              const std::string& notification_id,
-              const NotifierId& notifier_id,
-              const gfx::ImageSkia& small_image,
-              const base::string16& display_source);
+              const Notification& notification);
   ~MessageView() override;
 
   // Updates this view with the new data contained in the notification.
@@ -61,9 +58,9 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::SlideOutView,
   // Creates a shadow around the notification.
   void CreateShadowBorder();
 
-  virtual bool IsCloseButtonFocused();
-  virtual void RequestFocusOnCloseButton();
-  virtual bool IsPinned();
+  bool IsCloseButtonFocused();
+  void RequestFocusOnCloseButton();
+  bool IsPinned();
 
   void set_accessible_name(const base::string16& accessible_name) {
     accessible_name_ = accessible_name;
@@ -98,27 +95,34 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::SlideOutView,
   // Overridden from views::SlideOutView:
   void OnSlideOut() override;
 
+  // Creates and add close button to view hierarchy when necessary. Derived
+  // classes should call this after its view hierarchy is populated to ensure
+  // it is on top of other views.
+  void CreateOrUpdateCloseButtonView(const Notification& notification);
+
   views::ImageView* small_image() { return small_image_view_.get(); }
+  views::ImageButton* close_button() { return close_button_.get(); }
   views::ScrollView* scroller() { return scroller_; }
   MessageCenterController* controller() { return controller_; }
 
  private:
+  // Changes the background color being used by |background_view_| and schedules
+  // a paint.
+  void SetDrawBackgroundAsActive(bool active);
+
   MessageCenterController* controller_;  // Weak, lives longer then views.
   std::string notification_id_;
   NotifierId notifier_id_;
-  views::View* background_view_;  // Owned by views hierarchy.
+  views::View* background_view_ = nullptr;  // Owned by views hierarchy.
   std::unique_ptr<views::ImageView> small_image_view_;
-  views::ScrollView* scroller_;
+  std::unique_ptr<views::ImageButton> close_button_;
+  views::ScrollView* scroller_ = nullptr;
 
   base::string16 accessible_name_;
 
   base::string16 display_source_;
 
   std::unique_ptr<views::Painter> focus_painter_;
-
-  // Changes the background color being used by |background_view_| and schedules
-  // a paint.
-  void SetDrawBackgroundAsActive(bool active);
 
   DISALLOW_COPY_AND_ASSIGN(MessageView);
 };

@@ -179,12 +179,11 @@ class NotificationViewTest : public views::ViewsTestBase,
   }
 
   views::ImageButton* GetCloseButton() {
-    return notification_view()->close_button_.get();
+    return notification_view()->close_button();
   }
 
   void UpdateNotificationViews() {
-    notification_view()->CreateOrUpdateViews(*notification());
-    notification_view()->Layout();
+    notification_view()->UpdateWithNotification(*notification());
   }
 
   float GetNotificationScrollAmount() const {

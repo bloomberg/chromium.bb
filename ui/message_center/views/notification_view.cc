@@ -59,9 +59,6 @@ namespace {
 // Dimensions.
 const int kProgressBarBottomPadding = 0;
 
-const int kCloseIconTopPadding = 5;
-const int kCloseIconRightPadding = 5;
-
 // static
 std::unique_ptr<views::Border> MakeEmptyBorder(int top,
                                                int left,
@@ -207,8 +204,8 @@ views::View* NotificationView::TargetForRect(views::View* root,
                                     action_buttons_.end());
   if (settings_button_view_)
     buttons.push_back(settings_button_view_);
-  if (close_button_)
-    buttons.push_back(close_button_.get());
+  if (close_button())
+    buttons.push_back(close_button());
 
   for (size_t i = 0; i < buttons.size(); ++i) {
     gfx::Point point_in_child = point;
@@ -221,7 +218,6 @@ views::View* NotificationView::TargetForRect(views::View* root,
 }
 
 void NotificationView::CreateOrUpdateViews(const Notification& notification) {
-  CreateOrUpdateCloseButtonView(notification);
   CreateOrUpdateTitleView(notification);
   CreateOrUpdateMessageView(notification);
   CreateOrUpdateProgressBarView(notification);
@@ -249,22 +245,8 @@ void NotificationView::SetAccessibleName(const Notification& notification) {
 
 NotificationView::NotificationView(MessageCenterController* controller,
                                    const Notification& notification)
-    : MessageView(controller,
-                  notification.id(),
-                  notification.notifier_id(),
-                  notification.small_image().AsImageSkia(),
-                  notification.display_source()),
-      clickable_(notification.clickable()),
-      top_view_(NULL),
-      title_view_(NULL),
-      message_view_(NULL),
-      context_message_view_(NULL),
-      settings_button_view_(NULL),
-      icon_view_(NULL),
-      bottom_view_(NULL),
-      image_container_(NULL),
-      image_view_(NULL),
-      progress_bar_view_(NULL) {
+    : MessageView(controller, notification),
+      clickable_(notification.clickable()) {
   // Create the top_view_, which collects into a vertical box all content
   // at the top of the notification (to the right of the icon) except for the
   // close button.
@@ -288,6 +270,7 @@ NotificationView::NotificationView(MessageCenterController* controller,
   // image to overlap the content as needed to provide large enough click and
   // touch areas (<http://crbug.com/168822> and <http://crbug.com/168856>).
   AddChildView(small_image());
+  CreateOrUpdateCloseButtonView(notification);
   SetAccessibleName(notification);
 
   SetEventTargeter(
@@ -360,16 +343,6 @@ void NotificationView::Layout() {
   int top_height = top_view_->GetHeightForWidth(content_width);
   top_view_->SetBounds(insets.left(), insets.top(), content_width, top_height);
 
-  // Close button.
-  if (close_button_) {
-    gfx::Rect content_bounds = GetContentsBounds();
-    gfx::Size close_size(close_button_->GetPreferredSize());
-    gfx::Rect close_rect(content_bounds.right() - close_size.width(),
-                         content_bounds.y(), close_size.width(),
-                         close_size.height());
-    close_button_->SetBoundsRect(close_rect);
-  }
-
   // Icon.
   icon_view_->SetBounds(insets.left(), insets.top(), kNotificationIconSize,
                         kNotificationIconSize);
@@ -436,10 +409,6 @@ void NotificationView::ButtonPressed(views::Button* sender,
       controller()->ClickOnNotificationButton(id, i);
       return;
     }
-  }
-
-  if (close_button_ && sender == close_button_.get()) {
-    controller()->RemoveNotification(notification_id(), true);  // By user.
   }
 
   // Let the superclass handle everything else.
@@ -754,29 +723,6 @@ void NotificationView::CreateOrUpdateActionButtonViews(
   }
 }
 
-void NotificationView::CreateOrUpdateCloseButtonView(
-    const Notification& notification) {
-  set_slide_out_enabled(!notification.pinned());
-
-  if (!notification.pinned() && !close_button_) {
-    PaddedButton* close = new PaddedButton(this);
-    close->SetPadding(-kCloseIconRightPadding, kCloseIconTopPadding);
-    close->SetNormalImage(IDR_NOTIFICATION_CLOSE);
-    close->SetHoveredImage(IDR_NOTIFICATION_CLOSE_HOVER);
-    close->SetPressedImage(IDR_NOTIFICATION_CLOSE_PRESSED);
-    close->set_animate_on_state_change(false);
-    close->SetAccessibleName(l10n_util::GetStringUTF16(
-        IDS_MESSAGE_CENTER_CLOSE_NOTIFICATION_BUTTON_ACCESSIBLE_NAME));
-    // The close button should be added to view hierarchy by the derived class.
-    // This ensures that it is on top of other views.
-    close->set_owned_by_client();
-    close_button_.reset(close);
-    AddChildView(close_button_.get());
-  } else if (notification.pinned() && close_button_) {
-    close_button_.reset();
-  }
-}
-
 int NotificationView::GetMessageLineLimit(int title_lines, int width) const {
   // Image notifications require that the image must be kept flush against
   // their icons, but we can allow more text if no image.
@@ -816,24 +762,6 @@ int NotificationView::GetMessageLineLimit(int title_lines, int width) const {
 int NotificationView::GetMessageHeight(int width, int limit) const {
   return message_view_ ?
          message_view_->GetSizeForWidthAndLines(width, limit).height() : 0;
-}
-
-bool NotificationView::IsCloseButtonFocused() {
-  if (!close_button_)
-    return false;
-
-  views::FocusManager* focus_manager = GetFocusManager();
-  return focus_manager &&
-         focus_manager->GetFocusedView() == close_button_.get();
-}
-
-void NotificationView::RequestFocusOnCloseButton() {
-  if (close_button_)
-    close_button_->RequestFocus();
-}
-
-bool NotificationView::IsPinned() {
-  return !close_button_;
 }
 
 }  // namespace message_center
