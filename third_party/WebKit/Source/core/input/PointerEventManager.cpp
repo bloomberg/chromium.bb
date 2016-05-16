@@ -165,15 +165,17 @@ EventTarget* PointerEventManager::getEffectiveTargetForPointerEvent(
     return target;
 }
 
-void PointerEventManager::sendMouseAndPossiblyPointerNodeTransitionEvents(
+void PointerEventManager::sendMouseAndPossiblyPointerBoundaryEvents(
     Node* exitedNode,
     Node* enteredNode,
     const PlatformMouseEvent& mouseEvent,
     bool isFrameBoundaryTransition)
 {
-    // Pointer event type does not matter as it will be overridden in the sendNodeTransitionEvents
-    PointerEvent* pointerEvent =
-        m_pointerEventFactory.create(EventTypeNames::mouseout, mouseEvent,
+    // Mouse event type does not matter as this pointerevent will only be used
+    // to create boundary pointer events and its type will be overridden in
+    // |sendBoundaryEvents| function.
+    PointerEvent* dummyPointerEvent =
+        m_pointerEventFactory.create(EventTypeNames::mousedown, mouseEvent,
         nullptr, m_frame->document()->domWindow());
 
     // TODO(crbug/545647): This state should reset with pointercancel too.
@@ -181,17 +183,17 @@ void PointerEventManager::sendMouseAndPossiblyPointerNodeTransitionEvents(
     // stage. So if the event is not frame boundary transition it is only a
     // compatibility mouse event and we do not need to change pointer event
     // behavior regarding preventMouseEvent state in that case.
-    if (isFrameBoundaryTransition && pointerEvent->buttons() == 0
-        && pointerEvent->isPrimary()) {
+    if (isFrameBoundaryTransition && dummyPointerEvent->buttons() == 0
+        && dummyPointerEvent->isPrimary()) {
         m_preventMouseEventForPointerType[toPointerTypeIndex(
             mouseEvent.pointerProperties().pointerType)] = false;
     }
 
-    processCaptureAndPositionOfPointerEvent(pointerEvent, enteredNode,
+    processCaptureAndPositionOfPointerEvent(dummyPointerEvent, enteredNode,
         exitedNode, mouseEvent, true, isFrameBoundaryTransition);
 }
 
-void PointerEventManager::sendNodeTransitionEvents(
+void PointerEventManager::sendBoundaryEvents(
     EventTarget* exitedTarget,
     EventTarget* enteredTarget,
     PointerEvent* pointerEvent,
@@ -324,12 +326,12 @@ void PointerEventManager::setNodeUnderPointer(
                 EventTargetAttributes(target, false));
         }
         if (sendEvent)
-            sendNodeTransitionEvents(node.target, target, pointerEvent);
+            sendBoundaryEvents(node.target, target, pointerEvent);
     } else if (target) {
         m_nodeUnderPointer.add(pointerEvent->pointerId(),
             EventTargetAttributes(target, false));
         if (sendEvent)
-            sendNodeTransitionEvents(nullptr, target, pointerEvent);
+            sendBoundaryEvents(nullptr, target, pointerEvent);
     }
 }
 
@@ -576,7 +578,7 @@ void PointerEventManager::processCaptureAndPositionOfPointerEvent(
     }
     if (sendMouseEvent && !isCaptureChanged) {
         // lastNodeUnderMouse is needed here because it is still stored in EventHandler.
-        sendNodeTransitionEvents(lastNodeUnderMouse, hitTestTarget,
+        sendBoundaryEvents(lastNodeUnderMouse, hitTestTarget,
             pointerEvent, mouseEvent, true);
     }
 }
@@ -607,10 +609,10 @@ bool PointerEventManager::processPendingPointerCapture(
             if (sendMouseEvent) {
                 // Send pointer event transitions as the line after this if
                 // block sends the mouse events
-                sendNodeTransitionEvents(nodeUnderPointerAtt.target, nullptr,
+                sendBoundaryEvents(nodeUnderPointerAtt.target, nullptr,
                     pointerEvent);
             }
-            sendNodeTransitionEvents(nodeUnderPointerAtt.target, nullptr,
+            sendBoundaryEvents(nodeUnderPointerAtt.target, nullptr,
                 pointerEvent, mouseEvent, sendMouseEvent);
         }
         if (pointerCaptureTarget) {
@@ -628,7 +630,7 @@ bool PointerEventManager::processPendingPointerCapture(
     }
 
     // Set pointerCaptureTarget from pendingPointerCaptureTarget. This does
-    // affect the behavior of sendNodeTransitionEvents function. So the
+    // affect the behavior of sendBoundaryEvents function. So the
     // ordering of the surrounding blocks of code for sending transition events
     // are important.
     if (pendingPointerCaptureTarget)
@@ -647,9 +649,9 @@ bool PointerEventManager::processPendingPointerCapture(
             if (sendMouseEvent) {
                 // Send pointer event transitions as the line after this if
                 // block sends the mouse events
-                sendNodeTransitionEvents(nullptr, hitTestTarget, pointerEvent);
+                sendBoundaryEvents(nullptr, hitTestTarget, pointerEvent);
             }
-            sendNodeTransitionEvents(nullptr, hitTestTarget, pointerEvent,
+            sendBoundaryEvents(nullptr, hitTestTarget, pointerEvent,
                 mouseEvent, sendMouseEvent);
         }
     }

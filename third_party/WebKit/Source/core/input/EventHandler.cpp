@@ -1722,7 +1722,7 @@ void EventHandler::updateMouseEventTargetNodeAndSendEvents(Node* targetNode,
     const PlatformMouseEvent& mouseEvent, bool isFrameBoundaryTransition)
 {
     Node* lastNodeUnderMouse = updateMouseEventTargetNode(targetNode, mouseEvent);
-    m_pointerEventManager.sendMouseAndPossiblyPointerNodeTransitionEvents(
+    m_pointerEventManager.sendMouseAndPossiblyPointerBoundaryEvents(
         lastNodeUnderMouse, m_nodeUnderMouse, mouseEvent,
         isFrameBoundaryTransition);
 }

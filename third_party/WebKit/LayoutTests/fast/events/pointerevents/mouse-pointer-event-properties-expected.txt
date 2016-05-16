@@ -1,16 +1,16 @@
-CONSOLE ERROR: line 67: Uncaught TypeError: Cannot read property 'type' of undefined
-CONSOLE ERROR: line 67: Uncaught TypeError: Cannot read property 'type' of undefined
-CONSOLE ERROR: line 67: Uncaught TypeError: Cannot read property 'type' of undefined
-CONSOLE ERROR: line 67: Uncaught TypeError: Cannot read property 'type' of undefined
-CONSOLE ERROR: line 67: Uncaught TypeError: Cannot read property 'type' of undefined
-CONSOLE ERROR: line 67: Uncaught TypeError: Cannot read property 'type' of undefined
-CONSOLE ERROR: line 67: Uncaught TypeError: Cannot read property 'type' of undefined
-CONSOLE ERROR: line 67: Uncaught TypeError: Cannot read property 'type' of undefined
-CONSOLE ERROR: line 67: Uncaught TypeError: Cannot read property 'type' of undefined
-CONSOLE ERROR: line 67: Uncaught TypeError: Cannot read property 'type' of undefined
-CONSOLE ERROR: line 67: Uncaught TypeError: Cannot read property 'type' of undefined
-CONSOLE ERROR: line 67: Uncaught TypeError: Cannot read property 'type' of undefined
-CONSOLE ERROR: line 67: Uncaught TypeError: Cannot read property 'type' of undefined
+CONSOLE ERROR: line 69: Uncaught TypeError: Cannot read property 'type' of undefined
+CONSOLE ERROR: line 69: Uncaught TypeError: Cannot read property 'type' of undefined
+CONSOLE ERROR: line 69: Uncaught TypeError: Cannot read property 'type' of undefined
+CONSOLE ERROR: line 69: Uncaught TypeError: Cannot read property 'type' of undefined
+CONSOLE ERROR: line 69: Uncaught TypeError: Cannot read property 'type' of undefined
+CONSOLE ERROR: line 69: Uncaught TypeError: Cannot read property 'type' of undefined
+CONSOLE ERROR: line 69: Uncaught TypeError: Cannot read property 'type' of undefined
+CONSOLE ERROR: line 69: Uncaught TypeError: Cannot read property 'type' of undefined
+CONSOLE ERROR: line 69: Uncaught TypeError: Cannot read property 'type' of undefined
+CONSOLE ERROR: line 69: Uncaught TypeError: Cannot read property 'type' of undefined
+CONSOLE ERROR: line 69: Uncaught TypeError: Cannot read property 'type' of undefined
+CONSOLE ERROR: line 69: Uncaught TypeError: Cannot read property 'type' of undefined
+CONSOLE ERROR: line 69: Uncaught TypeError: Cannot read property 'type' of undefined
 Verifies that pointer event parameters are correct when fired for mouse events.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

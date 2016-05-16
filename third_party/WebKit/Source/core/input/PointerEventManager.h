@@ -36,7 +36,7 @@ public:
     WebInputEventResult handleTouchEvents(
         const PlatformTouchEvent&);
 
-    // Sends node transition events mouseout/leave/over/enter to the
+    // Sends boundary events mouseout/leave/over/enter to the
     // corresponding targets. This function sends pointerout/leave/over/enter
     // only when isFrameBoundaryTransition is true which indicates the
     // transition is over the document boundary and not only the elements border
@@ -44,10 +44,10 @@ public:
     // then the event is a compatibility event like those created by touch
     // and in that case the corresponding pointer events will be handled by
     // sendTouchPointerEvent for example and there is no need to send pointer
-    // transition events. Note that normal mouse events (e.g. mousemove/down/up)
-    // and their corresponding transition events will be handled altogether by
+    // boundary events. Note that normal mouse events (e.g. mousemove/down/up)
+    // and their corresponding boundary events will be handled altogether by
     // sendMousePointerEvent function.
-    void sendMouseAndPossiblyPointerNodeTransitionEvents(
+    void sendMouseAndPossiblyPointerBoundaryEvents(
         Node* exitedNode,
         Node* enteredNode,
         const PlatformMouseEvent&,
@@ -103,7 +103,7 @@ private:
     // Returns whether the event is consumed or not.
     WebInputEventResult sendTouchPointerEvent(EventTarget*, PointerEvent*);
 
-    void sendNodeTransitionEvents(
+    void sendBoundaryEvents(
         EventTarget* exitedTarget,
         EventTarget* enteredTarget,
         PointerEvent*,
@@ -112,9 +112,11 @@ private:
     void setNodeUnderPointer(PointerEvent*,
         EventTarget*, bool sendEvent = true);
 
-    // Returns whether the pointer capture is changed. In this case this
-    // function will take care of transition events and setNodeUnderPointer
-    // should not send transition events.
+    // Processes the assignment of |m_pointerCaptureTarget| from |m_pendingPointerCaptureTarget|
+    // and sends the got/lostpointercapture events, as per the spec:
+    // https://w3c.github.io/pointerevents/#process-pending-pointer-capture
+    // Returns whether the pointer capture is changed. When pointer capture is changed,
+    // this function will take care of boundary events.
     bool processPendingPointerCapture(
         PointerEvent*,
         EventTarget*,
@@ -122,8 +124,8 @@ private:
         bool sendMouseEvent = false);
 
     // Processes the capture state of a pointer, updates node under
-    // pointer, and sends corresponding transition events for pointer if
-    // setPointerPosition is true. It also sends corresponding transition events
+    // pointer, and sends corresponding boundary events for pointer if
+    // setPointerPosition is true. It also sends corresponding boundary events
     // for mouse if sendMouseEvent is true.
     void processCaptureAndPositionOfPointerEvent(
         PointerEvent*,

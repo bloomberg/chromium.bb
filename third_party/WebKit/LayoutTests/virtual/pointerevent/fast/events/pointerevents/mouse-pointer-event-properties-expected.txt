@@ -31,6 +31,8 @@ PASS lastPointerEvents[0].y is 31
 PASS lastPointerEvents[0].button is -1
 PASS lastPointerEvents[0].buttons is 0
 PASS lastPointerEvents[0].pressure is 0
+PASS lastPointerEvents[0].width is 1
+PASS lastPointerEvents[0].height is 1
 Received mouseenter
 PASS lastPointerEvents.length is 1
 PASS lastPointerEvents[0].type is "pointerenter"
@@ -56,6 +58,8 @@ PASS lastPointerEvents[0].y is 31
 PASS lastPointerEvents[0].button is -1
 PASS lastPointerEvents[0].buttons is 0
 PASS lastPointerEvents[0].pressure is 0
+PASS lastPointerEvents[0].width is 1
+PASS lastPointerEvents[0].height is 1
 Received pointermove
 Received mousemove
 PASS lastPointerEvents.length is 1
@@ -82,6 +86,8 @@ PASS lastPointerEvents[0].y is 31
 PASS lastPointerEvents[0].button is -1
 PASS lastPointerEvents[0].buttons is 0
 PASS lastPointerEvents[0].pressure is 0
+PASS lastPointerEvents[0].width is 1
+PASS lastPointerEvents[0].height is 1
 
 --- move within target ---
 Received pointermove
@@ -110,6 +116,8 @@ PASS lastPointerEvents[0].y is 41
 PASS lastPointerEvents[0].button is -1
 PASS lastPointerEvents[0].buttons is 0
 PASS lastPointerEvents[0].pressure is 0
+PASS lastPointerEvents[0].width is 1
+PASS lastPointerEvents[0].height is 1
 Received pointermove
 Received mousemove
 PASS lastPointerEvents.length is 1
@@ -136,6 +144,8 @@ PASS lastPointerEvents[0].y is 31
 PASS lastPointerEvents[0].button is -1
 PASS lastPointerEvents[0].buttons is 0
 PASS lastPointerEvents[0].pressure is 0
+PASS lastPointerEvents[0].width is 1
+PASS lastPointerEvents[0].height is 1
 
 --- click each button ---
 Received pointerdown
@@ -164,6 +174,8 @@ PASS lastPointerEvents[0].y is 31
 PASS lastPointerEvents[0].button is 0
 PASS lastPointerEvents[0].buttons is 1
 PASS lastPointerEvents[0].pressure is 0.5
+PASS lastPointerEvents[0].width is 1
+PASS lastPointerEvents[0].height is 1
 Received pointerup
 Received mouseup
 PASS lastPointerEvents.length is 1
@@ -190,6 +202,8 @@ PASS lastPointerEvents[0].y is 31
 PASS lastPointerEvents[0].button is 0
 PASS lastPointerEvents[0].buttons is 0
 PASS lastPointerEvents[0].pressure is 0
+PASS lastPointerEvents[0].width is 1
+PASS lastPointerEvents[0].height is 1
 Received pointerdown
 Received mousedown
 PASS lastPointerEvents.length is 1
@@ -216,6 +230,8 @@ PASS lastPointerEvents[0].y is 31
 PASS lastPointerEvents[0].button is 1
 PASS lastPointerEvents[0].buttons is 4
 PASS lastPointerEvents[0].pressure is 0.5
+PASS lastPointerEvents[0].width is 1
+PASS lastPointerEvents[0].height is 1
 Received pointerup
 Received mouseup
 PASS lastPointerEvents.length is 1
@@ -242,6 +258,8 @@ PASS lastPointerEvents[0].y is 31
 PASS lastPointerEvents[0].button is 1
 PASS lastPointerEvents[0].buttons is 0
 PASS lastPointerEvents[0].pressure is 0
+PASS lastPointerEvents[0].width is 1
+PASS lastPointerEvents[0].height is 1
 Received pointerdown
 Received mousedown
 PASS lastPointerEvents.length is 1
@@ -268,6 +286,8 @@ PASS lastPointerEvents[0].y is 31
 PASS lastPointerEvents[0].button is 2
 PASS lastPointerEvents[0].buttons is 2
 PASS lastPointerEvents[0].pressure is 0.5
+PASS lastPointerEvents[0].width is 1
+PASS lastPointerEvents[0].height is 1
 Received pointerup
 Received mouseup
 PASS lastPointerEvents.length is 1
@@ -294,6 +314,8 @@ PASS lastPointerEvents[0].y is 31
 PASS lastPointerEvents[0].button is 2
 PASS lastPointerEvents[0].buttons is 0
 PASS lastPointerEvents[0].pressure is 0
+PASS lastPointerEvents[0].width is 1
+PASS lastPointerEvents[0].height is 1
 
 --- click with each modifier ---
 Received pointerdown
@@ -605,6 +627,8 @@ PASS lastPointerEvents[0].y is 21
 PASS lastPointerEvents[0].button is -1
 PASS lastPointerEvents[0].buttons is 0
 PASS lastPointerEvents[0].pressure is 0
+PASS lastPointerEvents[0].width is 1
+PASS lastPointerEvents[0].height is 1
 Received mouseleave
 PASS lastPointerEvents.length is 1
 PASS lastPointerEvents[0].type is "pointerleave"
@@ -630,6 +654,8 @@ PASS lastPointerEvents[0].y is 21
 PASS lastPointerEvents[0].button is -1
 PASS lastPointerEvents[0].buttons is 0
 PASS lastPointerEvents[0].pressure is 0
+PASS lastPointerEvents[0].width is 1
+PASS lastPointerEvents[0].height is 1
 PASS successfullyParsed is true
 
 TEST COMPLETE

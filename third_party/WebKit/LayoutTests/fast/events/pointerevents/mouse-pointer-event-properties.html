@@ -41,6 +41,8 @@ var numericAttributes = [
     "button",
     "buttons",
     "pressure",
+    "width",
+    "height",
 ];
 
 function init() {
@@ -80,6 +82,8 @@ function init() {
             var expectedValue = eval("event." + attribute);
             if (attribute == "button" && event.type != "mousedown" && event.type != "mouseup")
               expectedValue = -1;
+            if (attribute == "width" || attribute == "height")
+              expectedValue = 1;
             if (attribute == "pressure") {
               if (event.buttons == 0)
                 expectedValue = 0.0;

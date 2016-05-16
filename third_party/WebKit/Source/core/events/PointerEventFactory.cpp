@@ -92,6 +92,10 @@ PointerEvent* PointerEventFactory::create(
     EventTarget* relatedTarget,
     LocalDOMWindow* view)
 {
+    DCHECK(mouseEventName == EventTypeNames::mousemove
+        || mouseEventName == EventTypeNames::mousedown
+        || mouseEventName == EventTypeNames::mouseup);
+
     AtomicString pointerEventName = pointerEventNameForMouseEventName(mouseEventName);
     unsigned buttons = MouseEvent::platformModifiersToButtons(mouseEvent.getModifiers());
     PointerEventInit pointerEventInit;
@@ -119,13 +123,15 @@ PointerEvent* PointerEventFactory::create(
     if (pointerEventName == EventTypeNames::pointerdown
         || pointerEventName == EventTypeNames::pointerup) {
         pointerEventInit.setButton(mouseEvent.button());
-    } else {
-        // TODO(crbug.com/587955): We are setting NoButton for transition
-        // pointerevents should be resolved as part of this bug
+    } else { // Only when pointerEventName == EventTypeNames::pointermove
         pointerEventInit.setButton(NoButton);
     }
     pointerEventInit.setPressure(getPointerEventPressure(
         mouseEvent.pointerProperties().force, pointerEventInit.buttons()));
+
+    // Set width/height to 1 because it matches Edge (and supported by the spec).
+    pointerEventInit.setWidth(1);
+    pointerEventInit.setHeight(1);
 
     UIEventWithKeyState::setFromPlatformModifiers(pointerEventInit, mouseEvent.getModifiers());
 
