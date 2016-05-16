@@ -48,7 +48,7 @@ public:
     void addRegions(const HeapVector<Member<VTTRegion>>&);
     using TextTrack::addListOfCues;
 
-    size_t trackElementIndex();
+    size_t trackElementIndex() const;
     HTMLTrackElement* trackElement() { return m_trackElement; }
 
     bool isDefault() const override;
