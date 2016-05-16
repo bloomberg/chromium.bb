@@ -213,12 +213,12 @@ int Node::ClosePort(const PortRef& port_ref) {
     // If the port being closed still has unread messages, then we need to take
     // care to close those ports so as to avoid leaking memory.
     port->message_queue.GetReferencedPorts(&referenced_port_names);
+
+    ErasePort_Locked(port_ref.name());
   }
 
   DVLOG(2) << "Sending ObserveClosure from " << port_ref.name() << "@" << name_
            << " to " << peer_port_name << "@" << peer_node_name;
-
-  ErasePort(port_ref.name());
 
   delegate_->ForwardMessage(
       peer_node_name,
