@@ -17,6 +17,13 @@
 #include "remoting/base/logging.h"
 #include "remoting/host/chromoting_messages.h"
 
+#if defined(OS_WIN)
+#include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
+#include "base/win/win_util.h"
+#include "remoting/host/ipc_util.h"
+#endif  // defined(OS_WIN)
+
 namespace {
 
 // Returns the command code (the first byte of the data) if it exists, or -1 if
@@ -52,13 +59,35 @@ bool RemoteSecurityKeyIpcServerImpl::CreateChannel(
   DCHECK(!ipc_channel_);
   security_key_request_timeout_ = request_timeout;
 
+#if defined(OS_WIN)
+  // Create a named pipe owned by the current user (the LocalService account
+  // (SID: S-1-5-19) when running in the network process) which is available to
+  // all authenticated users.
+  // presubmit: allow wstring
+  std::wstring user_sid;
+  if (!base::win::GetUserSidString(&user_sid)) {
+    return false;
+  }
+  std::string user_sid_utf8 = base::WideToUTF8(user_sid);
+  std::string security_descriptor = base::StringPrintf(
+      "O:%sG:%sD:(A;;GA;;;AU)", user_sid_utf8.c_str(), user_sid_utf8.c_str());
+
+  base::win::ScopedHandle pipe;
+  if (!CreateIpcChannel(channel_name, security_descriptor, &pipe)) {
+    return false;
+  }
+
+  ipc_channel_ =
+      IPC::Channel::CreateNamedServer(IPC::ChannelHandle(pipe.Get()), this);
+#else  // defined(OS_WIN)
   ipc_channel_ =
       IPC::Channel::CreateNamedServer(IPC::ChannelHandle(channel_name), this);
+#endif  // !defined(OS_WIN)
+
   if (!ipc_channel_->Connect()) {
     ipc_channel_.reset();
     return false;
   }
-
   // It is safe to use base::Unretained here as |timer_| will be stopped and
   // this task will be removed when this instance is being destroyed.  All
   // methods must execute on the same thread (due to |thread_Checker_| so

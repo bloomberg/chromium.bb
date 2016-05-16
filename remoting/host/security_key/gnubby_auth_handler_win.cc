@@ -10,15 +10,19 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "base/win/win_util.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
 #include "remoting/base/logging.h"
 #include "remoting/host/chromoting_messages.h"
+#include "remoting/host/ipc_util.h"
 #include "remoting/host/security_key/remote_security_key_ipc_constants.h"
 #include "remoting/host/security_key/remote_security_key_ipc_server.h"
 
@@ -180,8 +184,21 @@ void GnubbyAuthHandlerWin::SetRequestTimeoutForTest(base::TimeDelta timeout) {
 void GnubbyAuthHandlerWin::StartIpcServerChannel() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  ipc_server_channel_ = IPC::Channel::CreateNamedServer(
-      IPC::ChannelHandle(remoting::GetRemoteSecurityKeyIpcChannelName()), this);
+  // Create a named pipe owned by the current user (the LocalService account
+  // (SID: S-1-5-19) when running in the network process) which is available to
+  // all authenticated users.
+  // presubmit: allow wstring
+  std::wstring user_sid;
+  CHECK(base::win::GetUserSidString(&user_sid));
+  std::string user_sid_utf8 = base::WideToUTF8(user_sid);
+  std::string security_descriptor = base::StringPrintf(
+      "O:%sG:%sD:(A;;GA;;;AU)", user_sid_utf8.c_str(), user_sid_utf8.c_str());
+
+  base::win::ScopedHandle pipe;
+  CHECK(CreateIpcChannel(remoting::GetRemoteSecurityKeyIpcChannelName(),
+                         security_descriptor, &pipe));
+  ipc_server_channel_ =
+      IPC::Channel::CreateNamedServer(IPC::ChannelHandle(pipe.Get()), this);
   CHECK(ipc_server_channel_->Connect());
 }
 
