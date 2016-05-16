@@ -60222,6 +60222,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="WebRTC.Audio.Encoder.CodecType" enum="WebRtcAudioCodecs">
+  <owner>aleloi@chromium.org</owner>
+  <summary>
+    Histogram of audio codec usage. Every sample corresponds to 5 seconds of
+    encoding with that codec.
+  </summary>
+</histogram>
+
 <histogram name="WebRTC.Audio.NumOfAecSystemDelayJumps" units="jumps">
   <owner>bjornv@chromium.org</owner>
   <summary>
@@ -89182,6 +89190,16 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="0" label="WEB_HISTORY_QUERY_FAILED">Failed</int>
   <int value="1" label="WEB_HISTORY_QUERY_SUCCEEDED">Succeeded</int>
   <int value="2" label="WEB_HISTORY_QUERY_TIMED_OUT">Timed out</int>
+</enum>
+
+<enum name="WebRtcAudioCodecs" type="int">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Opus"/>
+  <int value="2" label="iSAC"/>
+  <int value="3" label="pcmA"/>
+  <int value="4" label="pcmU"/>
+  <int value="5" label="g722"/>
+  <int value="6" label="iLBC"/>
 </enum>
 
 <enum name="WebRtcH264DecoderImplEvent" type="int">
