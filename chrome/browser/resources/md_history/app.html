@@ -24,10 +24,6 @@
         overflow: hidden;
       }
 
-      #toolbar {
-        flex: 0 0 56px;
-      }
-
       history-list,
       #history-synced-device-manager {
         flex: 1 0 0;
@@ -42,7 +38,7 @@
         background: var(--md-toolbar-color);
       }
     </style>
-    <history-toolbar class="paper-header" id="toolbar"></history-toolbar>
+    <history-toolbar id="toolbar"></history-toolbar>
 
     <div id="main-container">
       <history-side-bar id="history-side-bar" selected-page="{{selectedPage}}">

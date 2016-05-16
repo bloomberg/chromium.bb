@@ -4,12 +4,14 @@
 
 #include "chrome/browser/ui/webui/md_history_ui.h"
 
+#include "base/command_line.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/browsing_history_handler.h"
 #include "chrome/browser/ui/webui/foreign_session_handler.h"
 #include "chrome/browser/ui/webui/history_login_handler.h"
 #include "chrome/browser/ui/webui/metrics_handler.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/prefs/pref_service.h"
@@ -39,6 +41,7 @@ content::WebUIDataSource* CreateMdHistoryUIHTMLSource(Profile* profile) {
   source->AddLocalizedString("delete", IDS_MD_HISTORY_DELETE);
   source->AddLocalizedString("foundSearchResults",
                              IDS_HISTORY_FOUND_SEARCH_RESULTS);
+  source->AddLocalizedString("historyInterval", IDS_HISTORY_INTERVAL);
   source->AddLocalizedString("historyMenuItem",
                              IDS_MD_HISTORY_HISTORY_MENU_ITEM);
   source->AddLocalizedString("itemsSelected", IDS_MD_HISTORY_ITEMS_SELECTED);
@@ -49,6 +52,12 @@ content::WebUIDataSource* CreateMdHistoryUIHTMLSource(Profile* profile) {
                              IDS_MD_HISTORY_OPEN_TABS_MENU_ITEM);
   source->AddLocalizedString("noResults", IDS_HISTORY_NO_RESULTS);
   source->AddLocalizedString("noSearchResults", IDS_HISTORY_NO_SEARCH_RESULTS);
+  source->AddLocalizedString("rangeAllTime", IDS_HISTORY_RANGE_ALL_TIME);
+  source->AddLocalizedString("rangeWeek", IDS_HISTORY_RANGE_WEEK);
+  source->AddLocalizedString("rangeMonth", IDS_HISTORY_RANGE_MONTH);
+  source->AddLocalizedString("rangeToday", IDS_HISTORY_RANGE_TODAY);
+  source->AddLocalizedString("rangeNext", IDS_HISTORY_RANGE_NEXT);
+  source->AddLocalizedString("rangePrevious", IDS_HISTORY_RANGE_PREVIOUS);
   source->AddLocalizedString("removeFromHistory", IDS_HISTORY_REMOVE_PAGE);
   source->AddLocalizedString("search", IDS_MD_HISTORY_SEARCH);
   source->AddLocalizedString("searchResult", IDS_HISTORY_SEARCH_RESULT);
@@ -58,6 +67,11 @@ content::WebUIDataSource* CreateMdHistoryUIHTMLSource(Profile* profile) {
   bool allow_deleting_history =
       prefs->GetBoolean(prefs::kAllowDeletingBrowserHistory);
   source->AddBoolean("allowDeletingHistory", allow_deleting_history);
+
+  bool group_by_domain = base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kHistoryEnableGroupByDomain);
+  source->AddBoolean("groupByDomain", group_by_domain);
+
   source->AddResourcePath("app.html", IDR_MD_HISTORY_APP_HTML);
   source->AddResourcePath("app.js", IDR_MD_HISTORY_APP_JS);
   source->AddResourcePath("browser_service.html",

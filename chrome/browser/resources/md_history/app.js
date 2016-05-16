@@ -21,6 +21,10 @@ Polymer({
     'search-changed': 'searchChanged',
   },
 
+  ready: function() {
+    this.$.toolbar.isGroupedMode = loadTimeData.getBoolean('groupByDomain');
+  },
+
   /**
    * Listens for history-item being selected or deselected (through checkbox)
    * and changes the view of the top toolbar.
@@ -79,6 +83,10 @@ Polymer({
     /** @type {HistoryToolbarElement} */(this.$.toolbar).searching = false;
     if (info.finished)
       list.disableResultLoading();
+
+    var toolbar = /** @type {HistoryToolbarElement} */(this.$.toolbar);
+    toolbar.queryStartTime = info.queryStartTime;
+    toolbar.queryEndTime = info.queryEndTime;
   },
 
   /**

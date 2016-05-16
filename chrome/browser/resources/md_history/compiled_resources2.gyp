@@ -44,6 +44,7 @@
       'dependencies': [
         '<(DEPTH)/ui/webui/resources/cr_elements/cr_search_field/compiled_resources2.gyp:cr_search_field',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:load_time_data',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:util',
       ],
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
     },

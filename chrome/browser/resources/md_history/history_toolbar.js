@@ -43,11 +43,30 @@ Polymer({
       value: ''
     },
 
-    // True if it's searching at the backend.
+    // True if waiting on the search backend.
     searching: {
       type: Boolean,
       value: false
     },
+
+    // Whether domain-grouped history is enabled.
+    isGroupedMode: {
+      type: Boolean,
+      reflectToAttribute: true,
+    },
+
+    // The period to search over. Matches BrowsingHistoryHandler::Range.
+    groupedRange: {
+      type: Number,
+      value: 0,
+      reflectToAttribute: true
+    },
+
+    // The start time of the query range.
+    queryStartTime: String,
+
+    // The end time of the query range.
+    queryEndTime: String,
   },
 
   /**
@@ -108,5 +127,11 @@ Polymer({
 
   numberOfItemsSelected_: function(count) {
     return count > 0 ? loadTimeData.getStringF('itemsSelected', count) : '';
+  },
+
+  getHistoryInterval_: function(queryStartTime, queryEndTime) {
+    // TODO(calamity): Fix the format of these dates.
+    return loadTimeData.getStringF(
+      'historyInterval', queryStartTime, queryEndTime);
   }
 });
