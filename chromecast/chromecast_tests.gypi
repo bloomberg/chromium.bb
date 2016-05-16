@@ -193,7 +193,7 @@
           'conditions': [
             ['use_alsa==1', {
               'dependencies': [
-                'media/media.gyp:alsa_cma_backend_unittests',
+                'media/media.gyp:cast_alsa_cma_backend_unittests',
               ],
             }],
           ],

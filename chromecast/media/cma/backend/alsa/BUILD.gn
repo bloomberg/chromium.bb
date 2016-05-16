@@ -70,8 +70,8 @@ buildflag_header("alsa_features") {
   flags = [ "ALSA_MONOTONIC_RAW_TSTAMPS=$use_alsa_monotonic_raw_tstamps" ]
 }
 
-# GYP target: chromecast/media/media.gyp:alsa_cma_backend_unittests
-test("alsa_cma_backend_unittests") {
+# GYP target: chromecast/media/media.gyp:cast_alsa_cma_backend_unittests
+test("cast_alsa_cma_backend_unittests") {
   sources = [
     "stream_mixer_alsa_unittest.cc",
   ]

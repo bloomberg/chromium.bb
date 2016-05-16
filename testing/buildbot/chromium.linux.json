@@ -529,6 +529,9 @@
         "test": "cacheinvalidation_unittests"
       },
       {
+        "test": "cast_alsa_cma_backend_unittests"
+      },
+      {
         "test": "cast_base_unittests"
       },
       {

@@ -447,7 +447,7 @@
     ['use_alsa==1', {
       'targets': [
         {
-          'target_name': 'alsa_cma_backend_unittests',
+          'target_name': 'cast_alsa_cma_backend_unittests',
           'type': '<(gtest_target_type)',
           'dependencies': [
             'alsa_cma_backend',
@@ -460,7 +460,7 @@
             'cma/backend/alsa/mock_alsa_wrapper.h',
             'cma/backend/alsa/stream_mixer_alsa_unittest.cc',
           ],
-        },  # end of target 'alsa_cma_backend_unittests'
+        },  # end of target 'cast_alsa_cma_backend_unittests'
       ],  # end of targets
     }],
   ],  # end of conditions

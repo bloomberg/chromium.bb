@@ -163,6 +163,10 @@
       "--test-launcher-bot-mode",
     ],
   },
+  "cast_alsa_cma_backend_unittests": {
+    "label": "//chromecast/media/cma/backend/alsa:cast_alsa_cma_backend_unittests",
+    "type": "unknown",
+  },
   "cast_base_unittests": {
     "label": "//cast:cast_base_unittests",
     "type": "unknown",
