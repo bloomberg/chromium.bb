@@ -37,6 +37,8 @@ To have the client use the given client auth token file, use the
 `--blimp-client-token-path` flag (e.g.
 `--blimp-client-token-path=/data/data/org.chromium.blimp/blimp_client_token`)
 
+An example of a client token file is
+[test_client_token](https://code.google.com/p/chromium/codesearch#chromium/src/blimp/test/data/test_client_token).
 
 ### Android Client
 
@@ -114,3 +116,15 @@ also start a new shell and keep the following command running:
   Typically this would be `out-linux/Debug/gen/third_party/blimp_fonts`.
 * `--disable-remote-fonts`: Disables downloading of custom web fonts in the
   renderer.
+
+#### Typical invocation
+
+One can start the engine using these flags:
+
+```bash
+out-linux/Debug/blimp_engine_app \
+  --android-fonts-path=out-linux/Debug/gen/third_party/blimp_fonts \
+  --blimp-client-token-path=/tmp/blimpengine-token \
+  --enable-logging=stderr \
+  --vmodule="blimp*=1"
+```
