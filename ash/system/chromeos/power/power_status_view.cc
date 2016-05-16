@@ -28,10 +28,13 @@ const int kPaddingBetweenBatteryStatusAndIcon = 3;
 
 PowerStatusView::PowerStatusView(bool default_view_right_align)
     : default_view_right_align_(default_view_right_align),
-      time_status_label_(new views::Label),
       percentage_label_(new views::Label),
+      separator_label_(new views::Label),
+      time_status_label_(new views::Label),
       icon_(nullptr) {
   percentage_label_->SetEnabledColor(kHeaderTextColorNormal);
+  separator_label_->SetEnabledColor(kHeaderTextColorNormal);
+  separator_label_->SetText(base::ASCIIToUTF16(" - "));
   LayoutView();
   PowerStatus::Get()->AddObserver(this);
   OnPowerStatusChanged();
@@ -61,6 +64,7 @@ void PowerStatusView::LayoutView() {
     SetLayoutManager(layout);
 
     AddChildView(percentage_label_);
+    AddChildView(separator_label_);
     AddChildView(time_status_label_);
 
     icon_ = new views::ImageView;
@@ -76,6 +80,7 @@ void PowerStatusView::LayoutView() {
     AddChildView(icon_);
 
     AddChildView(percentage_label_);
+    AddChildView(separator_label_);
     AddChildView(time_status_label_);
   }
 }
@@ -118,11 +123,11 @@ void PowerStatusView::UpdateText() {
                 minute);
       }
     }
-    battery_percentage = battery_time_status.empty() ?
-        battery_percentage : battery_percentage + base::ASCIIToUTF16(" - ");
   }
   percentage_label_->SetVisible(!battery_percentage.empty());
   percentage_label_->SetText(battery_percentage);
+  separator_label_->SetVisible(!battery_percentage.empty() &&
+                               !battery_time_status.empty());
   time_status_label_->SetVisible(!battery_time_status.empty());
   time_status_label_->SetText(battery_time_status);
 }
@@ -143,10 +148,12 @@ int PowerStatusView::GetHeightForWidth(int width) const {
 void PowerStatusView::Layout() {
   views::View::Layout();
 
-  // Move the time_status_label_ closer to percentage_label_.
-  if (percentage_label_ && time_status_label_ &&
+  // Move the time_status_label_, separator_label_, and percentage_label_
+  // closer to each other.
+  if (percentage_label_ && separator_label_ && time_status_label_ &&
       percentage_label_->visible() && time_status_label_->visible()) {
-    time_status_label_->SetX(percentage_label_->bounds().right() + 1);
+    separator_label_->SetX(percentage_label_->bounds().right() + 1);
+    time_status_label_->SetX(separator_label_->bounds().right() + 1);
   }
 }
 
