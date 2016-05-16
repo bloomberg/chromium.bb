@@ -72682,6 +72682,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1348" label="EventCancelBubbleAffected"/>
   <int value="1349" label="EventCancelBubbleWasChangedToTrue"/>
   <int value="1350" label="EventCancelBubbleWasChangedToFalse"/>
+  <int value="1351" label="CSSValueAppearanceNone"/>
+  <int value="1352" label="CSSValueAppearanceNotNone"/>
+  <int value="1353" label="CSSValueAppearanceOthers"/>
+  <int value="1354" label="CSSValueAppearanceButton"/>
+  <int value="1355" label="CSSValueAppearanceCaret"/>
+  <int value="1356" label="CSSValueAppearanceCheckbox"/>
+  <int value="1357" label="CSSValueAppearanceMenulist"/>
+  <int value="1358" label="CSSValueAppearanceMenulistButton"/>
+  <int value="1359" label="CSSValueAppearanceListbox"/>
+  <int value="1360" label="CSSValueAppearanceRadio"/>
+  <int value="1361" label="CSSValueAppearanceSearchField"/>
+  <int value="1362" label="CSSValueAppearanceTextField"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">

@@ -1164,6 +1164,18 @@ public:
         EventCancelBubbleAffected = 1348,
         EventCancelBubbleWasChangedToTrue = 1349,
         EventCancelBubbleWasChangedToFalse = 1350,
+        CSSValueAppearanceNone = 1351,
+        CSSValueAppearanceNotNone = 1352,
+        CSSValueAppearanceOthers = 1353,
+        CSSValueAppearanceButton = 1354,
+        CSSValueAppearanceCaret = 1355,
+        CSSValueAppearanceCheckbox = 1356,
+        CSSValueAppearanceMenulist = 1357,
+        CSSValueAppearanceMenulistButton = 1358,
+        CSSValueAppearanceListbox = 1359,
+        CSSValueAppearanceRadio = 1360,
+        CSSValueAppearanceSearchField = 1361,
+        CSSValueAppearanceTextField = 1362,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

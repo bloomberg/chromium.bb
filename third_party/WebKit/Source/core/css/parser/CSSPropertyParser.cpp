@@ -3548,12 +3548,51 @@ static CSSValue* consumeGridTemplateAreas(CSSParserTokenRange& range)
     return CSSGridTemplateAreasValue::create(gridAreaMap, rowCount, columnCount);
 }
 
+static void countKeywordOnlyPropertyUsage(CSSPropertyID property, UseCounter* counter, CSSValueID valueID)
+{
+    if (!counter)
+        return;
+    switch (property) {
+    case CSSPropertyWebkitAppearance:
+        if (valueID == CSSValueNone) {
+            counter->count(UseCounter::CSSValueAppearanceNone);
+        } else {
+            counter->count(UseCounter::CSSValueAppearanceNotNone);
+            if (valueID == CSSValueButton)
+                counter->count(UseCounter::CSSValueAppearanceButton);
+            else if (valueID == CSSValueCaret)
+                counter->count(UseCounter::CSSValueAppearanceCaret);
+            else if (valueID == CSSValueCheckbox)
+                counter->count(UseCounter::CSSValueAppearanceCheckbox);
+            else if (valueID == CSSValueMenulist)
+                counter->count(UseCounter::CSSValueAppearanceMenulist);
+            else if (valueID == CSSValueMenulistButton)
+                counter->count(UseCounter::CSSValueAppearanceMenulistButton);
+            else if (valueID == CSSValueListbox)
+                counter->count(UseCounter::CSSValueAppearanceListbox);
+            else if (valueID == CSSValueRadio)
+                counter->count(UseCounter::CSSValueAppearanceRadio);
+            else if (valueID == CSSValueSearchfield)
+                counter->count(UseCounter::CSSValueAppearanceSearchField);
+            else if (valueID == CSSValueTextfield)
+                counter->count(UseCounter::CSSValueAppearanceTextField);
+            else
+                counter->count(UseCounter::CSSValueAppearanceOthers);
+        }
+        break;
+
+    default:
+        break;
+    }
+}
+
 CSSValue* CSSPropertyParser::parseSingleValue(CSSPropertyID unresolvedProperty, CSSPropertyID currentShorthand)
 {
     CSSPropertyID property = resolveCSSPropertyID(unresolvedProperty);
     if (CSSParserFastPaths::isKeywordPropertyID(property)) {
         if (!CSSParserFastPaths::isValidKeywordPropertyAndValue(property, m_range.peek().id(), m_context.mode()))
             return nullptr;
+        countKeywordOnlyPropertyUsage(property, m_context.useCounter(), m_range.peek().id());
         return consumeIdent(m_range);
     }
     switch (property) {
