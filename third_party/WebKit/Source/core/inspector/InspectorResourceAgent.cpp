@@ -545,16 +545,10 @@ void InspectorResourceAgent::markResourceAsCached(unsigned long identifier)
     frontend()->requestServedFromCache(IdentifiersFactory::requestId(identifier));
 }
 
-void InspectorResourceAgent::didReceiveResourceResponse(LocalFrame* frame, unsigned long identifier, DocumentLoader* loader, const ResourceResponse& response, ResourceLoader* resourceLoader)
+void InspectorResourceAgent::didReceiveResourceResponse(LocalFrame* frame, unsigned long identifier, DocumentLoader* loader, const ResourceResponse& response, Resource* cachedResource)
 {
     String requestId = IdentifiersFactory::requestId(identifier);
     bool isNotModified = response.httpStatusCode() == 304;
-
-    Resource* cachedResource = 0;
-    if (resourceLoader && !isNotModified)
-        cachedResource = resourceLoader->cachedResource();
-    if (!cachedResource)
-        cachedResource = InspectorPageAgent::cachedResource(frame, response.url());
 
     bool resourceIsEmpty = true;
     OwnPtr<protocol::Network::Response> resourceResponse = buildObjectForResourceResponse(response, cachedResource, &resourceIsEmpty);
@@ -615,10 +609,10 @@ void InspectorResourceAgent::didFinishLoading(unsigned long identifier, double m
     frontend()->loadingFinished(requestId, monotonicFinishTime, encodedDataLength);
 }
 
-void InspectorResourceAgent::didReceiveCORSRedirectResponse(LocalFrame* frame, unsigned long identifier, DocumentLoader* loader, const ResourceResponse& response, ResourceLoader* resourceLoader)
+void InspectorResourceAgent::didReceiveCORSRedirectResponse(LocalFrame* frame, unsigned long identifier, DocumentLoader* loader, const ResourceResponse& response, Resource* resource)
 {
     // Update the response and finish loading
-    didReceiveResourceResponse(frame, identifier, loader, response, resourceLoader);
+    didReceiveResourceResponse(frame, identifier, loader, response, resource);
     didFinishLoading(identifier, 0, WebURLLoaderClient::kUnknownEncodedDataLength);
 }
 

@@ -155,7 +155,7 @@ class XMLHttpRequest;
     void markResourceAsCached(LocalFrame*, unsigned long identifier);
 
     [Resource]
-    void didReceiveResourceResponse([Keep] LocalFrame*, unsigned long identifier, DocumentLoader*, const ResourceResponse&, ResourceLoader*);
+    void didReceiveResourceResponse([Keep] LocalFrame*, unsigned long identifier, DocumentLoader*, const ResourceResponse&, Resource*);
 
     [Resource]
     void didReceiveData([Keep] LocalFrame*, unsigned long identifier, const char* data, int dataLength, int encodedDataLength);
@@ -164,7 +164,7 @@ class XMLHttpRequest;
     void didFinishLoading(LocalFrame* frame, unsigned long identifier, double finishTime, int64_t encodedDataLength);
 
     [Resource]
-    void didReceiveCORSRedirectResponse([Keep] LocalFrame*, unsigned long identifier, DocumentLoader*, const ResourceResponse&, ResourceLoader*);
+    void didReceiveCORSRedirectResponse([Keep] LocalFrame*, unsigned long identifier, DocumentLoader*, const ResourceResponse&, Resource*);
 
     [Resource]
     void didFailLoading(LocalFrame* frame, unsigned long identifier, const ResourceError&);

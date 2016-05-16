@@ -168,19 +168,19 @@ bool isDebuggerPaused(LocalFrame*)
     return MainThreadDebugger::instance()->debugger()->isPaused();
 }
 
-void didReceiveResourceResponseButCanceled(LocalFrame* frame, DocumentLoader* loader, unsigned long identifier, const ResourceResponse& r)
+void didReceiveResourceResponseButCanceled(LocalFrame* frame, DocumentLoader* loader, unsigned long identifier, const ResourceResponse& r, Resource* resource)
 {
-    didReceiveResourceResponse(frame, identifier, loader, r, 0);
+    didReceiveResourceResponse(frame, identifier, loader, r, resource);
 }
 
-void canceledAfterReceivedResourceResponse(LocalFrame* frame, DocumentLoader* loader, unsigned long identifier, const ResourceResponse& r)
+void canceledAfterReceivedResourceResponse(LocalFrame* frame, DocumentLoader* loader, unsigned long identifier, const ResourceResponse& r, Resource* resource)
 {
-    didReceiveResourceResponseButCanceled(frame, loader, identifier, r);
+    didReceiveResourceResponseButCanceled(frame, loader, identifier, r, resource);
 }
 
-void continueWithPolicyIgnore(LocalFrame* frame, DocumentLoader* loader, unsigned long identifier, const ResourceResponse& r)
+void continueWithPolicyIgnore(LocalFrame* frame, DocumentLoader* loader, unsigned long identifier, const ResourceResponse& r, Resource* resource)
 {
-    didReceiveResourceResponseButCanceled(frame, loader, identifier, r);
+    didReceiveResourceResponseButCanceled(frame, loader, identifier, r, resource);
 }
 
 void willDestroyResource(Resource* cachedResource)

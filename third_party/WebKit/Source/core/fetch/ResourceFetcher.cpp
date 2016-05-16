@@ -905,7 +905,7 @@ void ResourceFetcher::didFailLoading(const Resource* resource, const ResourceErr
     context().dispatchDidFail(resource->identifier(), error, isInternalRequest);
 }
 
-void ResourceFetcher::didReceiveResponse(const Resource* resource, const ResourceResponse& response)
+void ResourceFetcher::didReceiveResponse(Resource* resource, const ResourceResponse& response)
 {
     // If the response is fetched via ServiceWorker, the original URL of the response could be different from the URL of the request.
     // We check the URL not to load the resources which are forbidden by the page CSP.
@@ -919,7 +919,7 @@ void ResourceFetcher::didReceiveResponse(const Resource* resource, const Resourc
             return;
         }
     }
-    context().dispatchDidReceiveResponse(resource->identifier(), response, resource->resourceRequest().frameType(), resource->resourceRequest().requestContext(), resource->loader());
+    context().dispatchDidReceiveResponse(resource->identifier(), response, resource->resourceRequest().frameType(), resource->resourceRequest().requestContext(), resource);
 }
 
 void ResourceFetcher::didReceiveData(const Resource* resource, const char* data, int dataLength, int encodedDataLength)

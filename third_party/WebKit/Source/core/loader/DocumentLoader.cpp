@@ -260,7 +260,7 @@ void DocumentLoader::notifyFinished(Resource* resource)
 
     // TODO(mkwst): Magic numbers bad.
     if (m_mainResource->resourceError().errorCode() == -27)
-        InspectorInstrumentation::canceledAfterReceivedResourceResponse(m_frame, this, mainResourceIdentifier(), resource->response());
+        InspectorInstrumentation::canceledAfterReceivedResourceResponse(m_frame, this, mainResourceIdentifier(), resource->response(), m_mainResource.get());
 
     frameLoader()->loadFailed(this, m_mainResource->resourceError());
     clearMainResourceHandle();
@@ -357,7 +357,7 @@ bool DocumentLoader::shouldContinueForResponse() const
 
 void DocumentLoader::cancelLoadAfterCSPDenied(const ResourceResponse& response)
 {
-    InspectorInstrumentation::canceledAfterReceivedResourceResponse(m_frame, this, mainResourceIdentifier(), response);
+    InspectorInstrumentation::canceledAfterReceivedResourceResponse(m_frame, this, mainResourceIdentifier(), response, m_mainResource.get());
 
     setWasBlockedAfterCSP();
 
@@ -399,7 +399,7 @@ void DocumentLoader::responseReceived(Resource* resource, const ResourceResponse
         m_mainResource->setDataBufferingPolicy(BufferData);
 
     if (!shouldContinueForResponse()) {
-        InspectorInstrumentation::continueWithPolicyIgnore(m_frame, this, m_mainResource->identifier(), m_response);
+        InspectorInstrumentation::continueWithPolicyIgnore(m_frame, this, m_mainResource->identifier(), m_response, m_mainResource.get());
         m_fetcher->stopFetching();
         return;
     }

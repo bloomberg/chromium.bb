@@ -107,7 +107,7 @@ public:
     bool willFollowRedirect(Resource*, ResourceRequest&, const ResourceResponse&);
     void didFinishLoading(Resource*, double finishTime, int64_t encodedDataLength);
     void didFailLoading(const Resource*, const ResourceError&);
-    void didReceiveResponse(const Resource*, const ResourceResponse&);
+    void didReceiveResponse(Resource*, const ResourceResponse&);
     void didReceiveData(const Resource*, const char* data, int dataLength, int encodedDataLength);
     void didDownloadData(const Resource*, int dataLength, int encodedDataLength);
     void willStartLoadingResource(Resource*, ResourceLoader*, ResourceRequest&);
