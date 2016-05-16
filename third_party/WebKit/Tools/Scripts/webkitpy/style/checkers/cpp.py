@@ -108,6 +108,13 @@ for op, inv_replacement in [('==', 'NE'), ('!=', 'EQ'),
     _CHECK_REPLACEMENT['EXPECT_FALSE_M'][op] = 'EXPECT_%s_M' % inv_replacement
     _CHECK_REPLACEMENT['ASSERT_FALSE_M'][op] = 'ASSERT_%s_M' % inv_replacement
 
+_DEPRECATED_MACROS = [
+    ['ASSERT', 'DCHECK or its variants'],
+    ['ASSERT_UNUSED', 'DCHECK or its variants'],
+    ['ASSERT_NOT_REACHED', 'NOTREACHED'],
+    ['ASSERT_WITH_SECURITY_IMPLICATION', 'SECURITY_DCHECK'],
+    ['WTF_LOG', 'DVLOG']
+]
 
 # These constants define types of headers for use with
 # _IncludeState.check_next_include_order().
@@ -2618,6 +2625,22 @@ def check_check(clean_lines, line_number, error):
             break
 
 
+def check_deprecated_macros(clean_lines, line_number, error):
+    """Checks the use of obsolete macros.
+
+    Args:
+      clean_lines: A CleansedLines instance containing the file.
+      line_number: The number of the line to check.
+      error: The function to call with any errors found.
+    """
+
+    line = clean_lines.elided[line_number]
+    for pair in _DEPRECATED_MACROS:
+        if search(r'\b' + pair[0] + r'\(', line):
+            error(line_number, 'build/deprecated', 5,
+                  '%s is deprecated. Use %s instead.' % (pair[0], pair[1]))
+
+
 def check_for_comparisons_to_boolean(clean_lines, line_number, error):
     # Get the line without comments and strings.
     line = clean_lines.elided[line_number]
@@ -2974,6 +2997,7 @@ def check_style(clean_lines, line_number, file_extension, class_state, file_stat
     check_exit_statement_simplifications(clean_lines, line_number, error)
     check_spacing(file_extension, clean_lines, line_number, error)
     check_check(clean_lines, line_number, error)
+    check_deprecated_macros(clean_lines, line_number, error)
     check_for_comparisons_to_boolean(clean_lines, line_number, error)
     check_for_null(clean_lines, line_number, file_state, error)
     check_indentation_amount(clean_lines, line_number, error)
