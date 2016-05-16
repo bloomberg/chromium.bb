@@ -30,6 +30,13 @@ public interface SceneOverlay {
             ResourceManager resourceManager, float yOffset);
 
     /**
+     * Notify the layout that a SceneOverlay is visible. If not visible, the content tree will not
+     * be modified.
+     * @return True if the SceneOverlay tree is showing.
+     */
+    boolean isSceneOverlayTreeShowing();
+
+    /**
      * @return The {@link EventFilter} that processes events for this {@link SceneOverlay}.
      */
     EventFilter getEventFilter();

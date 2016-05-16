@@ -785,6 +785,11 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
     }
 
     @Override
+    public boolean isSceneOverlayTreeShowing() {
+        return isShowing();
+    }
+
+    @Override
     public EventFilter getEventFilter() {
         return mEventFilter;
     }

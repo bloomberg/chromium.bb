@@ -126,6 +126,13 @@ public class StripLayoutHelperManager implements SceneOverlay {
     }
 
     @Override
+    public boolean isSceneOverlayTreeShowing() {
+        // TODO(mdjones): This matches existing behavior but can be improved to return false if
+        // the top controls offset is equal to the top controls height.
+        return true;
+    }
+
+    @Override
     public EventFilter getEventFilter() {
         return mEventFilter;
     }

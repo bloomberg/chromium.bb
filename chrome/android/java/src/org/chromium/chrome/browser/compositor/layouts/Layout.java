@@ -1166,6 +1166,9 @@ public abstract class Layout implements TabContentManager.ThumbnailChangeListene
 
         SceneLayer content = getSceneLayer();
         for (int i = 0; i < mSceneOverlays.size(); i++) {
+            // If the SceneOverlay is not showing, don't bother adding it to the tree.
+            if (!mSceneOverlays.get(i).isSceneOverlayTreeShowing()) continue;
+
             SceneOverlayLayer overlayLayer = mSceneOverlays.get(i).getUpdatedSceneOverlayTree(
                     layerTitleCache, resourceManager, offsetDp);
 
