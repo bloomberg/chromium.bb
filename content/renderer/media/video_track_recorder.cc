@@ -46,23 +46,32 @@ namespace content {
 // - receives VideoFrames on |origin_task_runner_| and runs OnEncodedVideoCB on
 // that thread as well. This task runner is cached on first frame arrival, and
 // is supposed to be the render IO thread (but this is not enforced);
-// - uses an internal |encoding_thread_| for actual encoder interactions, namely
-// configuration, encoding (which might take some time) and destruction.
+// - uses an internal |encoding_task_runner_| for actual encoder interactions,
+// namely configuration, encoding (which might take some time) and destruction.
+// This task runner can be passed on the creation. If nothing is passed, a new
+// encoding thread is created and used.
 class VideoTrackRecorder::Encoder : public base::RefCountedThreadSafe<Encoder> {
  public:
   Encoder(const OnEncodedVideoCB& on_encoded_video_callback,
-          int32_t bits_per_second)
+          int32_t bits_per_second,
+          scoped_refptr<base::SingleThreadTaskRunner> encoding_task_runner =
+              nullptr)
       : main_task_runner_(base::MessageLoop::current()->task_runner()),
-        encoding_thread_(new base::Thread("EncodingThread")),
+        encoding_task_runner_(encoding_task_runner),
         paused_(false),
         on_encoded_video_callback_(on_encoded_video_callback),
         bits_per_second_(bits_per_second) {
     DCHECK(!on_encoded_video_callback_.is_null());
+    if (encoding_thread_)
+      return;
+    encoding_thread_.reset(new base::Thread("EncodingThread"));
+    encoding_thread_->Start();
+    encoding_task_runner_ = encoding_thread_->task_runner();
   }
 
   // Start encoding |frame|, returning via |on_encoded_video_callback_|. This
-  // call will also trigger a ConfigureEncoderOnEncodingThread() upon first
-  // frame arrival or parameter change, and an EncodeOnEncodingThread() to
+  // call will also trigger a ConfigureEncoderOnEncodingTaskRunner() upon first
+  // frame arrival or parameter change, and an EncodeOnEncodingTaskRunner() to
   // actually encode the frame.
   void StartFrameEncode(const scoped_refptr<VideoFrame>& frame,
                         base::TimeTicks capture_timestamp);
@@ -73,9 +82,10 @@ class VideoTrackRecorder::Encoder : public base::RefCountedThreadSafe<Encoder> {
   friend class base::RefCountedThreadSafe<Encoder>;
   virtual ~Encoder() {}
 
-  virtual void EncodeOnEncodingThread(const scoped_refptr<VideoFrame>& frame,
-                                      base::TimeTicks capture_timestamp) = 0;
-  virtual void ConfigureEncoderOnEncodingThread(const gfx::Size& size) = 0;
+  virtual void EncodeOnEncodingTaskRunner(
+      const scoped_refptr<VideoFrame>& frame,
+      base::TimeTicks capture_timestamp) = 0;
+  virtual void ConfigureEncoderOnEncodingTaskRunner(const gfx::Size& size) = 0;
 
   // Used to shutdown properly on the same thread we were created.
   const scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
@@ -83,7 +93,10 @@ class VideoTrackRecorder::Encoder : public base::RefCountedThreadSafe<Encoder> {
   // Task runner where frames to encode and reply callbacks must happen.
   scoped_refptr<base::SingleThreadTaskRunner> origin_task_runner_;
 
-  // Thread for encoding. Active for the lifetime of VpxEncoder.
+  // Task runner where encoding interactions happen.
+  scoped_refptr<base::SingleThreadTaskRunner> encoding_task_runner_;
+
+  // Optional thread for encoding. Active for the lifetime of VpxEncoder.
   std::unique_ptr<base::Thread> encoding_thread_;
 
   // While |paused_|, frames are not encoded. Used only from |encoding_thread_|.
@@ -119,14 +132,14 @@ void VideoTrackRecorder::Encoder::StartFrameEncode(
   if (frame->format() == media::PIXEL_FORMAT_YV12A)
     frame = media::WrapAsI420VideoFrame(video_frame);
 
-  encoding_thread_->task_runner()->PostTask(
-      FROM_HERE, base::Bind(&Encoder::EncodeOnEncodingThread,
-                            this, frame, capture_timestamp));
+  encoding_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&Encoder::EncodeOnEncodingTaskRunner, this, frame,
+                            capture_timestamp));
 }
 
 void VideoTrackRecorder::Encoder::SetPaused(bool paused) {
-  if (!encoding_thread_->task_runner()->BelongsToCurrentThread()) {
-    encoding_thread_->task_runner()->PostTask(
+  if (!encoding_task_runner_->BelongsToCurrentThread()) {
+    encoding_task_runner_->PostTask(
         FROM_HERE, base::Bind(&Encoder::SetPaused, this, paused));
     return;
   }
@@ -180,9 +193,9 @@ class VpxEncoder final : public VideoTrackRecorder::Encoder {
  private:
   // VideoTrackRecorder::Encoder
   ~VpxEncoder() override;
-  void EncodeOnEncodingThread(const scoped_refptr<VideoFrame>& frame,
+  void EncodeOnEncodingTaskRunner(const scoped_refptr<VideoFrame>& frame,
                               base::TimeTicks capture_timestamp) override;
-  void ConfigureEncoderOnEncodingThread(const gfx::Size& size) override;
+  void ConfigureEncoderOnEncodingTaskRunner(const gfx::Size& size) override;
 
   // Returns true if |codec_config_| has been filled in at least once.
   bool IsInitialized() const;
@@ -232,9 +245,9 @@ class H264Encoder final : public VideoTrackRecorder::Encoder {
  private:
   // VideoTrackRecorder::Encoder
   ~H264Encoder() override;
-  void EncodeOnEncodingThread(const scoped_refptr<VideoFrame>& frame,
+  void EncodeOnEncodingTaskRunner(const scoped_refptr<VideoFrame>& frame,
                               base::TimeTicks capture_timestamp) override;
-  void ConfigureEncoderOnEncodingThread(const gfx::Size& size) override;
+  void ConfigureEncoderOnEncodingTaskRunner(const gfx::Size& size) override;
 
   // |openh264_encoder_| is a special scoped pointer to guarantee proper
   // destruction, also when reconfiguring due to parameters change. Only used on
@@ -266,9 +279,7 @@ VpxEncoder::VpxEncoder(
     : Encoder(on_encoded_video_callback, bits_per_second),
       use_vp9_(use_vp9) {
   codec_config_.g_timebase.den = 0;  // Not initialized.
-
-  DCHECK(!encoding_thread_->IsRunning());
-  encoding_thread_->Start();
+  DCHECK(encoding_thread_->IsRunning());
 }
 
 VpxEncoder::~VpxEncoder() {
@@ -278,15 +289,16 @@ VpxEncoder::~VpxEncoder() {
                                          base::Passed(&encoder_)));
 }
 
-void VpxEncoder::EncodeOnEncodingThread(const scoped_refptr<VideoFrame>& frame,
-                                        base::TimeTicks capture_timestamp) {
-  TRACE_EVENT0("video", "VpxEncoder::EncodeOnEncodingThread");
-  DCHECK(encoding_thread_->task_runner()->BelongsToCurrentThread());
+void VpxEncoder::EncodeOnEncodingTaskRunner(
+    const scoped_refptr<VideoFrame>& frame,
+    base::TimeTicks capture_timestamp) {
+  TRACE_EVENT0("video", "VpxEncoder::EncodeOnEncodingTaskRunner");
+  DCHECK(encoding_task_runner_->BelongsToCurrentThread());
 
   const gfx::Size frame_size = frame->visible_rect().size();
   if (!IsInitialized() ||
       gfx::Size(codec_config_.g_w, codec_config_.g_h) != frame_size) {
-    ConfigureEncoderOnEncodingThread(frame_size);
+    ConfigureEncoderOnEncodingTaskRunner(frame_size);
   }
 
   vpx_image_t vpx_image;
@@ -338,8 +350,8 @@ void VpxEncoder::EncodeOnEncodingThread(const scoped_refptr<VideoFrame>& frame,
                  keyframe));
 }
 
-void VpxEncoder::ConfigureEncoderOnEncodingThread(const gfx::Size& size) {
-  DCHECK(encoding_thread_->task_runner()->BelongsToCurrentThread());
+void VpxEncoder::ConfigureEncoderOnEncodingTaskRunner(const gfx::Size& size) {
+  DCHECK(encoding_task_runner_->BelongsToCurrentThread());
   if (IsInitialized()) {
     // TODO(mcasas) VP8 quirk/optimisation: If the new |size| is strictly less-
     // than-or-equal than the old size, in terms of area, the existing encoder
@@ -428,13 +440,13 @@ void VpxEncoder::ConfigureEncoderOnEncodingThread(const gfx::Size& size) {
 }
 
 bool VpxEncoder::IsInitialized() const {
-  DCHECK(encoding_thread_->task_runner()->BelongsToCurrentThread());
+  DCHECK(encoding_task_runner_->BelongsToCurrentThread());
   return codec_config_.g_timebase.den != 0;
 }
 
 base::TimeDelta VpxEncoder::EstimateFrameDuration(
     const scoped_refptr<VideoFrame>& frame) {
-  DCHECK(encoding_thread_->task_runner()->BelongsToCurrentThread());
+  DCHECK(encoding_task_runner_->BelongsToCurrentThread());
 
   using base::TimeDelta;
   TimeDelta predicted_frame_duration;
@@ -471,8 +483,7 @@ H264Encoder::H264Encoder(
     const VideoTrackRecorder::OnEncodedVideoCB& on_encoded_video_callback,
     int32_t bits_per_second)
     : Encoder(on_encoded_video_callback, bits_per_second) {
-  DCHECK(!encoding_thread_->IsRunning());
-  encoding_thread_->Start();
+  DCHECK(encoding_thread_->IsRunning());
 }
 
 H264Encoder::~H264Encoder() {
@@ -482,14 +493,15 @@ H264Encoder::~H264Encoder() {
                                          base::Passed(&openh264_encoder_)));
 }
 
-void H264Encoder::EncodeOnEncodingThread(const scoped_refptr<VideoFrame>& frame,
-                                         base::TimeTicks capture_timestamp) {
-  TRACE_EVENT0("video", "H264Encoder::EncodeOnEncodingThread");
-  DCHECK(encoding_thread_->task_runner()->BelongsToCurrentThread());
+void H264Encoder::EncodeOnEncodingTaskRunner(
+    const scoped_refptr<VideoFrame>& frame,
+    base::TimeTicks capture_timestamp) {
+  TRACE_EVENT0("video", "H264Encoder::EncodeOnEncodingTaskRunner");
+  DCHECK(encoding_task_runner_->BelongsToCurrentThread());
 
   const gfx::Size frame_size = frame->visible_rect().size();
   if (!openh264_encoder_ || configured_size_ != frame_size) {
-    ConfigureEncoderOnEncodingThread(frame_size);
+    ConfigureEncoderOnEncodingTaskRunner(frame_size);
     first_frame_timestamp_ = capture_timestamp;
   }
 
@@ -539,8 +551,8 @@ void H264Encoder::EncodeOnEncodingThread(const scoped_refptr<VideoFrame>& frame,
                  base::Passed(&data), capture_timestamp, is_key_frame));
 }
 
-void H264Encoder::ConfigureEncoderOnEncodingThread(const gfx::Size& size) {
-  DCHECK(encoding_thread_->task_runner()->BelongsToCurrentThread());
+void H264Encoder::ConfigureEncoderOnEncodingTaskRunner(const gfx::Size& size) {
+  DCHECK(encoding_task_runner_->BelongsToCurrentThread());
   ISVCEncoder* temp_encoder = nullptr;
   if (WelsCreateSVCEncoder(&temp_encoder) != 0) {
     NOTREACHED() << "Failed to create OpenH264 encoder";
