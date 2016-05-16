@@ -31,22 +31,6 @@ TabListSceneLayer::TabListSceneLayer(JNIEnv* env, jobject jobj)
 TabListSceneLayer::~TabListSceneLayer() {
 }
 
-void TabListSceneLayer::SetContentTree(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& jobj,
-    const JavaParamRef<jobject>& jcontent_tree) {
-  SceneLayer* content_tree = FromJavaObject(env, jcontent_tree);
-  if (content_tree && content_tree->layer()) {
-    content_tree_ = content_tree->layer();
-  } else {
-    content_tree_->RemoveFromParent();
-    content_tree_ = nullptr;
-  }
-
-  if (content_tree_.get())
-    layer()->AddChild(content_tree_);
-}
-
 void TabListSceneLayer::BeginBuildingFrame(JNIEnv* env,
                                            const JavaParamRef<jobject>& jobj) {
   write_index_ = 0;

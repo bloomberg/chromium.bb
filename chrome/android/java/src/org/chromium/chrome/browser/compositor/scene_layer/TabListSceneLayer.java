@@ -27,18 +27,6 @@ public class TabListSceneLayer extends SceneLayer {
     private long mNativePtr;
 
     /**
-     * Sets a content tree inside this scene overlay tree.
-     *
-     * TODO(changwan): use SceneOverlayTree's setContentTree() once we have refactored
-     * ContextualSearchSupportedLayout into LayoutHelper.
-     *
-     * @param contentTree A content tree.
-     */
-    public void setContentTree(SceneLayer contentTree) {
-        nativeSetContentTree(mNativePtr, contentTree);
-    }
-
-    /**
      * Pushes all relevant {@link LayoutTab}s from a {@link Layout} to the CC Layer tree.  This will
      * let them be rendered on the screen.  This should only be called when the Compositor has
      * disabled ScheduleComposite calls as this will change the tree and could subsequently cause
@@ -128,7 +116,6 @@ public class TabListSceneLayer extends SceneLayer {
     }
 
     private native long nativeInit();
-    private native void nativeSetContentTree(long nativeTabListSceneLayer, SceneLayer contentTree);
     private native void nativeBeginBuildingFrame(long nativeTabListSceneLayer);
     private native void nativeFinishBuildingFrame(long nativeTabListSceneLayer);
     private native void nativeUpdateLayer(long nativeTabListSceneLayer, int backgroundColor,

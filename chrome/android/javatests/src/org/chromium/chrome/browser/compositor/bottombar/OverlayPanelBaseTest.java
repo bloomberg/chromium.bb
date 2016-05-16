@@ -31,7 +31,7 @@ public class OverlayPanelBaseTest extends InstrumentationTestCase {
      */
     private static class MockOverlayPanel extends OverlayPanel {
         public MockOverlayPanel(Context context, OverlayPanelManager manager) {
-            super(context, null, manager);
+            super(context, null, null, manager);
         }
 
         /**

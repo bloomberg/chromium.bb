@@ -14,7 +14,7 @@ import org.chromium.ui.resources.ResourceManager;
  * A SceneLayer to render layers for Reader Mode.
  */
 @JNINamespace("chrome::android")
-public class ReaderModeSceneLayer extends SceneLayer {
+public class ReaderModeSceneLayer extends SceneOverlayLayer {
 
     /** Pointer to native ReaderModeSceneLayer. */
     private long mNativePtr;
@@ -41,7 +41,10 @@ public class ReaderModeSceneLayer extends SceneLayer {
      */
     public void update(ResourceManager resourceManager, OverlayPanel panel, int barTextViewId,
             float barTextOpacity) {
-        if (!mIsInitialized && resourceManager != null) {
+        // Don't try to update the layer if not initialized or showing.
+        if (resourceManager == null || !panel.isShowing()) return;
+
+        if (!mIsInitialized) {
             nativeCreateReaderModeLayer(mNativePtr, resourceManager);
             // TODO(mdjones): Rename contextual search resources below to be generic to overlay
             // panels.
@@ -54,10 +57,10 @@ public class ReaderModeSceneLayer extends SceneLayer {
             mIsInitialized = true;
         }
 
-        // Don't try to update the layer if not initialized.
-        if (!mIsInitialized) return;
         nativeUpdate(mNativePtr,
                 mDpToPx,
+                panel.getBasePageBrightness(),
+                panel.getBasePageY() * mDpToPx,
                 panel.getContentViewCore(),
                 panel.getOffsetX() * mDpToPx,
                 panel.getOffsetY() * mDpToPx,
@@ -70,6 +73,19 @@ public class ReaderModeSceneLayer extends SceneLayer {
                 panel.getBarBorderHeight() * mDpToPx,
                 panel.getBarShadowVisible(),
                 panel.getBarShadowOpacity());
+    }
+
+    @Override
+    public void setContentTree(SceneLayer contentTree) {
+        nativeSetContentTree(mNativePtr, contentTree);
+    }
+
+    /**
+     * Hide the layer tree; for use if the panel is not being shown.
+     */
+    public void hideTree() {
+        if (!mIsInitialized) return;
+        nativeHideTree(mNativePtr);
     }
 
     @Override
@@ -94,6 +110,11 @@ public class ReaderModeSceneLayer extends SceneLayer {
     private native void nativeCreateReaderModeLayer(
             long nativeReaderModeSceneLayer,
             ResourceManager resourceManager);
+    private native void nativeSetContentTree(
+            long nativeReaderModeSceneLayer,
+            SceneLayer contentTree);
+    private native void nativeHideTree(
+            long nativeReaderModeSceneLayer);
     private native void nativeSetResourceIds(
             long nativeReaderModeSceneLayer,
             int barTextResourceId,
@@ -104,6 +125,8 @@ public class ReaderModeSceneLayer extends SceneLayer {
     private native void nativeUpdate(
             long nativeReaderModeSceneLayer,
             float dpToPx,
+            float basePageBrightness,
+            float basePageYOffset,
             ContentViewCore contentViewCore,
             float panelX,
             float panelY,

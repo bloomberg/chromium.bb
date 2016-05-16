@@ -32,26 +32,15 @@ public class OverlayPanelManagerTest extends InstrumentationTestCase {
 
         private PanelPriority mPriority;
         private boolean mCanBeSuppressed;
-        private OverlayPanelHost mHost;
         private ViewGroup mContainerView;
         private DynamicResourceLoader mResourceLoader;
 
         public MockOverlayPanel(Context context, LayoutUpdateHost updateHost,
                 OverlayPanelManager panelManager, PanelPriority priority,
                 boolean canBeSuppressed) {
-            super(context, updateHost, panelManager);
+            super(context, updateHost, null, panelManager);
             mPriority = priority;
             mCanBeSuppressed = canBeSuppressed;
-        }
-
-        @Override
-        public void setHost(OverlayPanelHost host) {
-            super.setHost(host);
-            mHost = host;
-        }
-
-        public OverlayPanelHost getHost() {
-            return mHost;
         }
 
         @Override
@@ -222,22 +211,13 @@ public class OverlayPanelManagerTest extends InstrumentationTestCase {
         MockOverlayPanel earlyPanel =
                 new MockOverlayPanel(context, null, panelManager, PanelPriority.MEDIUM, true);
 
-        OverlayPanelHost host = new OverlayPanelHost() {
-                    @Override
-                    public void hideLayout(boolean immediately) {
-                        // Intentionally do nothing.
-                    }
-                };
-
         // Set necessary vars before any other panels are registered in the manager.
-        panelManager.setPanelHost(host);
         panelManager.setContainerView(new LinearLayout(getInstrumentation().getTargetContext()));
         panelManager.setDynamicResourceLoader(new DynamicResourceLoader(0, null));
 
         MockOverlayPanel latePanel =
                 new MockOverlayPanel(context, null, panelManager, PanelPriority.MEDIUM, true);
 
-        assertTrue(earlyPanel.getHost() == latePanel.getHost());
         assertTrue(earlyPanel.getContainerView() == latePanel.getContainerView());
         assertTrue(earlyPanel.getDynamicResourceLoader() == latePanel.getDynamicResourceLoader());
     }

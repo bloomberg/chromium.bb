@@ -33,13 +33,6 @@ class TabListSceneLayer : public SceneLayer {
   TabListSceneLayer(JNIEnv* env, jobject jobj);
   ~TabListSceneLayer() override;
 
-  // TODO(changwan): remove this once we have refactored
-  // ContextualSearchSupportedLayout into LayoutHelper.
-  void SetContentTree(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& jobj,
-      const base::android::JavaParamRef<jobject>& jcontent_tree);
-
   void BeginBuildingFrame(JNIEnv* env,
                           const base::android::JavaParamRef<jobject>& jobj);
   void FinishBuildingFrame(JNIEnv* env,
@@ -133,9 +126,7 @@ class TabListSceneLayer : public SceneLayer {
   TabLayerList layers_;
   SkColor background_color_;
 
-  // We need to make sure that content_tree_ is always in front of own_tree_.
   scoped_refptr<cc::Layer> own_tree_;
-  scoped_refptr<cc::Layer> content_tree_;
 
   DISALLOW_COPY_AND_ASSIGN(TabListSceneLayer);
 };

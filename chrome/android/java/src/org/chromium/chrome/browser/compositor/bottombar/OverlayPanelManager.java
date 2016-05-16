@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.compositor.bottombar;
 
 import android.view.ViewGroup;
 
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
 
@@ -46,9 +47,6 @@ public class OverlayPanelManager {
 
     /** When a panel is suppressed, this the reason the pending panel is to be shown. */
     private StateChangeReason mPendingReason;
-
-    /** This handles communication between each panel and it's host layout. */
-    private OverlayPanelHost mOverlayPanelHost;
 
     /** This handles resource loading for each panels. */
     private DynamicResourceLoader mDynamicResourceLoader;
@@ -133,6 +131,7 @@ public class OverlayPanelManager {
      * Get the panel that has been determined to be active.
      * @return The active OverlayPanel.
      */
+    @VisibleForTesting
     public OverlayPanel getActivePanel() {
         return mActivePanel;
     }
@@ -149,20 +148,8 @@ public class OverlayPanelManager {
         mSuppressedPanel = null;
 
         // Clear references to held resources.
-        mOverlayPanelHost = null;
         mDynamicResourceLoader = null;
         mContainerViewGroup = null;
-    }
-
-    /**
-     * Set the panel host for all OverlayPanels.
-     * @param host The OverlayPanel host.
-     */
-    public void setPanelHost(OverlayPanelHost host) {
-        mOverlayPanelHost = host;
-        for (OverlayPanel p : mPanelSet) {
-            p.setHost(host);
-        }
     }
 
     /**
@@ -188,17 +175,6 @@ public class OverlayPanelManager {
     }
 
     /**
-     * Send size change event to all panels.
-     * @param width The new width.
-     * @param height The new height.
-     */
-    public void onSizeChanged(float width, float height) {
-        for (OverlayPanel p : mPanelSet) {
-            p.onSizeChanged(width, height);
-        }
-    }
-
-    /**
      * Add a panel to the collection that is managed by this class. If any of the setters for this
      * class were called before a panel was added, that panel will still get those resources.
      * @param panel An OverlayPanel to be managed.
@@ -206,9 +182,6 @@ public class OverlayPanelManager {
     public void registerPanel(OverlayPanel panel) {
         // If any of the setters for this manager were called before some panel registration,
         // make sure that panel gets the appropriate resources.
-        if (mOverlayPanelHost != null) {
-            panel.setHost(mOverlayPanelHost);
-        }
         if (mDynamicResourceLoader != null) {
             panel.setDynamicResourceLoader(mDynamicResourceLoader);
         }

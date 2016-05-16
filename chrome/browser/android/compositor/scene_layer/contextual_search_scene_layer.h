@@ -14,6 +14,11 @@
 #include "base/macros.h"
 #include "chrome/browser/android/compositor/scene_layer/scene_layer.h"
 
+namespace cc {
+class Layer;
+class SolidColorLayer;
+}
+
 namespace chrome {
 namespace android {
 
@@ -23,6 +28,11 @@ class ContextualSearchSceneLayer : public SceneLayer {
  public:
   ContextualSearchSceneLayer(JNIEnv* env, jobject jobj);
   ~ContextualSearchSceneLayer() override;
+
+  void CreateContextualSearchLayer(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& object,
+      const base::android::JavaParamRef<jobject>& jresource_manager);
 
   void UpdateContextualSearchLayer(
       JNIEnv* env,
@@ -42,6 +52,8 @@ class ContextualSearchSceneLayer : public SceneLayer {
       jint peek_promo_ripple_resource_id,
       jint peek_promo_text_resource_id,
       jfloat dp_to_px,
+      jfloat base_page_brightness,
+      jfloat base_page_offset,
       const base::android::JavaParamRef<jobject>& jcontent_view_core,
       jboolean search_promo_visible,
       jfloat search_promo_height,
@@ -73,11 +85,22 @@ class ContextualSearchSceneLayer : public SceneLayer {
       jboolean progress_bar_visible,
       jfloat progress_bar_height,
       jfloat progress_bar_opacity,
-      jint progress_bar_completion,
-      const base::android::JavaParamRef<jobject>& jresource_manager);
+      jint progress_bar_completion);
+
+  void SetContentTree(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& jobj,
+      const base::android::JavaParamRef<jobject>& jcontent_tree);
+
+  void HideTree(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& jobj);
 
  private:
+  float base_page_brightness_;
+
   scoped_refptr<ContextualSearchLayer> contextual_search_layer_;
+  scoped_refptr<cc::Layer> content_container_;
 
   DISALLOW_COPY_AND_ASSIGN(ContextualSearchSceneLayer);
 };

@@ -276,7 +276,8 @@ abstract class OverlayPanelBase {
     }
 
     /**
-     * @return Whether the Overlay Panel is opened. That is, whether it is EXPANDED or MAXIMIZED.
+     * @return Whether the Overlay Panel is opened. That is, whether the current height is greater
+     * than the peeking height.
      */
     public boolean isPanelOpened() {
         return mHeight > mBarHeightPeeking;
@@ -491,8 +492,8 @@ abstract class OverlayPanelBase {
     // Base Page states
     // --------------------------------------------------------------------------------------------
 
-    private float mBasePageY;
-    private float mBasePageBrightness;
+    private float mBasePageY = 0.0f;
+    private float mBasePageBrightness = 1.0f;
 
     /**
      * @return The vertical offset of the base page.

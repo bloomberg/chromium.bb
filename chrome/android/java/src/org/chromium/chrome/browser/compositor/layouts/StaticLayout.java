@@ -30,7 +30,7 @@ import java.util.LinkedList;
  * {@link #tabSelecting(long, int)} call, and is used to show a thumbnail of a {@link Tab}
  * until that {@link Tab} is ready to be shown.
  */
-public class StaticLayout extends ContextualSearchSupportedLayout {
+public class StaticLayout extends Layout {
     public static final String TAG = "StaticLayout";
 
     private static final int HIDE_TIMEOUT_MS = 2000;
@@ -66,7 +66,7 @@ public class StaticLayout extends ContextualSearchSupportedLayout {
      */
     public StaticLayout(Context context, LayoutUpdateHost updateHost, LayoutRenderHost renderHost,
             EventFilter eventFilter, OverlayPanelManager panelManager) {
-        super(context, updateHost, renderHost, eventFilter, panelManager);
+        super(context, updateHost, renderHost, eventFilter);
 
         mHandler = new Handler();
         mUnstallRunnable = new UnstallRunnable();

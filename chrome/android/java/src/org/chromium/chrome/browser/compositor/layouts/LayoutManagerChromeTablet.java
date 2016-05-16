@@ -68,9 +68,15 @@ public class LayoutManagerChromeTablet extends LayoutManagerChrome {
         // Set up state
         mDefaultTitle = context.getString(R.string.tab_loading_default_title);
 
-        addGlobalSceneOverlay(mTabStripLayoutHelperManager);
 
         setNextLayout(null);
+    }
+
+    @Override
+    protected void addAllSceneOverlays() {
+        // Add the tab strip overlay before any others.
+        addGlobalSceneOverlay(mTabStripLayoutHelperManager);
+        super.addAllSceneOverlays();
     }
 
     @Override

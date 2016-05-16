@@ -11,7 +11,9 @@ import android.os.Handler;
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
+
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.compositor.LayerTitleCache;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayContentProgressObserver;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelContent;
@@ -19,8 +21,9 @@ import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager.PanelPriority;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPromoControl.ContextualSearchPromoHost;
 import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
+import org.chromium.chrome.browser.compositor.layouts.eventfilter.EventFilterHost;
 import org.chromium.chrome.browser.compositor.scene_layer.ContextualSearchSceneLayer;
-import org.chromium.chrome.browser.compositor.scene_layer.SceneLayer;
+import org.chromium.chrome.browser.compositor.scene_layer.SceneOverlayLayer;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManagementDelegate;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.ui.resources.ResourceManager;
@@ -72,12 +75,12 @@ public class ContextualSearchPanel extends OverlayPanel {
     /**
      * @param context The current Android {@link Context}.
      * @param updateHost The {@link LayoutUpdateHost} used to request updates in the Layout.
+     * @param eventHost The {@link EventFilterHost} for propagating events.
      * @param panelManager The object managing the how different panels are shown.
      */
     public ContextualSearchPanel(Context context, LayoutUpdateHost updateHost,
-                OverlayPanelManager panelManager) {
-        super(context, updateHost, panelManager);
-
+                EventFilterHost eventHost, OverlayPanelManager panelManager) {
+        super(context, updateHost, eventHost, panelManager);
         mSceneLayer = createNewContextualSearchSceneLayer();
         mPanelMetrics = new ContextualSearchPanelMetrics();
 
@@ -124,30 +127,26 @@ public class ContextualSearchPanel extends OverlayPanel {
     }
 
     // ============================================================================================
-    // Scene layer
+    // Scene Overlay
     // ============================================================================================
-
-    @Override
-    public SceneLayer getSceneLayer() {
-        return mSceneLayer;
-    }
-
-    @Override
-    public void updateSceneLayer(ResourceManager resourceManager) {
-        if (mSceneLayer == null) return;
-
-        mSceneLayer.update(resourceManager, this,
-                getSearchBarControl(),
-                getPeekPromoControl(),
-                getPromoControl(),
-                getIconSpriteControl());
-    }
 
     /**
      * Create a new scene layer for this panel. This should be overridden by tests as necessary.
      */
     protected ContextualSearchSceneLayer createNewContextualSearchSceneLayer() {
         return new ContextualSearchSceneLayer(mContext.getResources().getDisplayMetrics().density);
+    }
+
+    @Override
+    public SceneOverlayLayer getUpdatedSceneOverlayTree(LayerTitleCache layerTitleCache,
+            ResourceManager resourceManager, float yOffset) {
+        mSceneLayer.update(resourceManager, this,
+                getSearchBarControl(),
+                getPeekPromoControl(),
+                getPromoControl(),
+                getIconSpriteControl());
+
+        return mSceneLayer;
     }
 
     // ============================================================================================
@@ -255,6 +254,8 @@ public class ContextualSearchPanel extends OverlayPanel {
         setProgressBarVisible(false);
 
         super.onClosed(reason);
+
+        if (mSceneLayer != null) mSceneLayer.hideTree();
     }
 
     // ============================================================================================
@@ -324,11 +325,6 @@ public class ContextualSearchPanel extends OverlayPanel {
         // The selected text on the page is lost when the panel is closed, thus, this panel cannot
         // be restored if it is suppressed.
         return false;
-    }
-
-    @Override
-    public boolean supportsContextualSearchLayout() {
-        return mManagementDelegate != null && !mManagementDelegate.isRunningInCompatibilityMode();
     }
 
     @Override

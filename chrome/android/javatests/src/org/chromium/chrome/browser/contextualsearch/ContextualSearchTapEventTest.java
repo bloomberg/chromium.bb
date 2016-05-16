@@ -14,8 +14,11 @@ import android.widget.LinearLayout;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManagerWrapper;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel;
+import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
+import org.chromium.chrome.browser.compositor.layouts.eventfilter.EventFilterHost;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.ContextualSearchClient;
@@ -48,6 +51,21 @@ public class ContextualSearchTapEventTest extends ChromeActivityTestCaseBase<Chr
                 boolean shouldPrefetch) {
             return Uri.parse("");
         }
+    }
+
+    // --------------------------------------------------------------------------------------------
+
+    /**
+     * ContextualSearchPanel wrapper that prevents native calls.
+     */
+    private static class ContextualSearchPanelWrapper extends ContextualSearchPanel {
+        public ContextualSearchPanelWrapper(Context context, LayoutUpdateHost updateHost,
+                EventFilterHost eventHost, OverlayPanelManager panelManager) {
+            super(context, updateHost, eventHost, panelManager);
+        }
+
+        @Override
+        public void setBasePageTextControlsVisibility(boolean visible) {}
     }
 
     // --------------------------------------------------------------------------------------------
@@ -166,7 +184,7 @@ public class ContextualSearchTapEventTest extends ChromeActivityTestCaseBase<Chr
 
         mContextualSearchManager =
                 new ContextualSearchManagerWrapper(getActivity(), getActivity().getWindowAndroid());
-        mPanel = new ContextualSearchPanel(getActivity(), null, mPanelManager);
+        mPanel = new ContextualSearchPanelWrapper(getActivity(), null, null, mPanelManager);
         mPanel.setManagementDelegate(mContextualSearchManager);
         mContextualSearchManager.setContextualSearchPanel(mPanel);
 

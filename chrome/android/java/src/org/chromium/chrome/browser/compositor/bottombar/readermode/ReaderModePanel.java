@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.compositor.bottombar.readermode;
 import android.content.Context;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.compositor.LayerTitleCache;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayContentDelegate;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayContentProgressObserver;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
@@ -16,8 +17,9 @@ import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelContentViewD
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager.PanelPriority;
 import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
+import org.chromium.chrome.browser.compositor.layouts.eventfilter.EventFilterHost;
 import org.chromium.chrome.browser.compositor.scene_layer.ReaderModeSceneLayer;
-import org.chromium.chrome.browser.compositor.scene_layer.SceneLayer;
+import org.chromium.chrome.browser.compositor.scene_layer.SceneOverlayLayer;
 import org.chromium.chrome.browser.dom_distiller.DomDistillerTabUtils;
 import org.chromium.chrome.browser.dom_distiller.ReaderModeManagerDelegate;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler;
@@ -57,11 +59,14 @@ public class ReaderModePanel extends OverlayPanel {
     /**
      * @param context The current Android {@link Context}.
      * @param updateHost The {@link LayoutUpdateHost} used to request updates in the Layout.
+     * @param eventHost The {@link EventFilterHost} for propagating events.
+     * @param panelManager The {@link OverlayPanelManager} used to control panel show/hide.
+     * @param contentViewDelegate Notifies the activity that a ContentViewCore has been created.
      */
-    public ReaderModePanel(Context context, LayoutUpdateHost updateHost,
+    public ReaderModePanel(Context context, LayoutUpdateHost updateHost, EventFilterHost eventHost,
                 OverlayPanelManager panelManager,
                 OverlayPanelContentViewDelegate contentViewDelegate) {
-        super(context, updateHost, panelManager);
+        super(context, updateHost, eventHost, panelManager);
         mSceneLayer = createNewReaderModeSceneLayer();
         mContentViewDelegate = contentViewDelegate;
     }
@@ -115,30 +120,31 @@ public class ReaderModePanel extends OverlayPanel {
     }
 
     // ============================================================================================
-    // Scene layer
+    // Scene Overlay
     // ============================================================================================
-
-    @Override
-    public SceneLayer getSceneLayer() {
-        return mSceneLayer;
-    }
-
-    @Override
-    public void updateSceneLayer(ResourceManager resourceManager) {
-        if (mSceneLayer == null) return;
-
-        // This will cause the ContentViewCore to size itself appropriately for the panel (includes
-        // top controls height).
-        updateTopControlsState();
-
-        mSceneLayer.update(resourceManager, this, getBarTextViewId(), mReaderBarTextOpacity);
-    }
 
     /**
      * Create a new scene layer for this panel. This should be overridden by tests as necessary.
      */
     protected ReaderModeSceneLayer createNewReaderModeSceneLayer() {
         return new ReaderModeSceneLayer(mContext.getResources().getDisplayMetrics().density);
+    }
+
+    @Override
+    public SceneOverlayLayer getUpdatedSceneOverlayTree(LayerTitleCache layerTitleCache,
+            ResourceManager resourceManager, float yOffset) {
+        mSceneLayer.update(resourceManager, this, getBarTextViewId(), mReaderBarTextOpacity);
+
+        return mSceneLayer;
+    }
+
+    @Override
+    public boolean updateOverlay(long time, long dt) {
+        // This will cause the ContentViewCore to size itself appropriately for the panel (includes
+        // top controls height).
+        updateTopControlsState();
+
+        return super.updateOverlay(time, dt);
     }
 
     // ============================================================================================
@@ -275,6 +281,7 @@ public class ReaderModePanel extends OverlayPanel {
     @Override
     protected void onClosed(StateChangeReason reason) {
         super.onClosed(reason);
+        if (mSceneLayer != null) mSceneLayer.hideTree();
         if (mManagerDelegate == null) return;
         mManagerDelegate.onClosed(reason);
     }

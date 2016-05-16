@@ -1508,12 +1508,28 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
     @SuppressWarnings("javadoc")
     public void onAttachedToWindow() {
         setAccessibilityState(mAccessibilityManager.isEnabled());
-        setTextHandlesTemporarilyHidden(false);
-        restoreSelectionPopupsIfNecessary();
+        updateTextSelectionUI(true);
         ScreenOrientationListener.getInstance().addObserver(this, mContext);
         GamepadList.onAttachedToWindow(mContext);
         mAccessibilityManager.addAccessibilityStateChangeListener(this);
         mSystemCaptioningBridge.addListener(this);
+    }
+
+    /**
+     * Update the text selection UI depending on the focus of the page. This will hide the selection
+     * handles and selection popups if focus is lost.
+     * TODO(mdjones): This was added as a temporary measure to hide text UI while Reader Mode or
+     * Contextual Search are showing. This should be removed in favor of proper focusing of the
+     * panel's ContentViewCore (which is currently not being added to the view hierarchy).
+     * @param focused If the ContentViewCore currently has focus.
+     */
+    public void updateTextSelectionUI(boolean focused) {
+        setTextHandlesTemporarilyHidden(!focused);
+        if (focused) {
+            restoreSelectionPopupsIfNecessary();
+        } else {
+            hidePopupsAndPreserveSelection();
+        }
     }
 
     /**
@@ -1533,8 +1549,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
         // Override the handle visibility explicitly to address this, but
         // preserve the underlying selection for detachment cases like screen
         // locking and app switching.
-        setTextHandlesTemporarilyHidden(true);
-        hidePopupsAndPreserveSelection();
+        updateTextSelectionUI(false);
         mSystemCaptioningBridge.removeListener(this);
     }
 
