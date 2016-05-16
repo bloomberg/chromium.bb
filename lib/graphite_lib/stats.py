@@ -16,10 +16,6 @@ try:
 except ImportError:
   from chromite.lib.graphite_lib import statsd_mock as statsd
 
-try:
-  from infra_libs.ts_mon.common import metrics
-except (ImportError, RuntimeError):
-  from chromite.lib.graphite_lib import monarch_mock as metrics
 
 # This is _type for all metadata logged to elasticsearch from here.
 STATS_ES_TYPE = 'stats_metadata'
@@ -84,10 +80,6 @@ def _prepend_init(_es, _conn, _prefix):
   return wrapper
 
 
-def TsMonMetricName(name, subname):
-  return 'chromeos/%s/%s' % (name, subname)
-
-
 class Statsd(object):
   """Parent class for recording stats to graphite."""
   def __init__(self, es, host, port, prefix):
@@ -126,8 +118,6 @@ class Statsd(object):
                    'daisy.reboot')
           value: Value to be sent.
         """
-        metrics.CounterMetric(
-            TsMonMetricName(self.name, subname)).increment_by(value)
         statsd.Counter._send(self, subname, value)
         self.es.post(type_str=STATS_ES_TYPE, metadata=self.metadata,
                      subname=subname, value=value)
@@ -146,8 +136,6 @@ class Statsd(object):
                    'daisy.reboot')
           value: Value to be sent.
         """
-        metrics.FloatMetric(
-            TsMonMetricName(self.name, subname)).set(value)
         statsd.Gauge.send(self, subname, value)
         self.es.post(type_str=STATS_ES_TYPE, metadata=self.metadata,
                      subname=subname, value=value)
@@ -171,8 +159,6 @@ class Statsd(object):
                    'daisy.reboot')
           value: Value to be sent.
         """
-        metrics.FloatMetric(
-            TsMonMetricName(self.name, subname)).set(value)
         statsd.Timer.send(self, subname, value)
         self.es.post(type_str=STATS_ES_TYPE, metadata=self.metadata,
                      subname=self.name, value=value)
@@ -205,8 +191,6 @@ class Statsd(object):
           value: Value to be sent.
           timestamp: Time associated with when this stat was sent.
         """
-        metrics.FloatMetric(
-            TsMonMetricName(self.name, subname)).set(value)
         statsd.Raw.send(self, subname, value, timestamp)
         self.es.post(type_str=STATS_ES_TYPE, metadata=self.metadata,
                      subname=subname, value=value, timestamp=timestamp)
