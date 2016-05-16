@@ -947,7 +947,7 @@ void ResourceFetcher::moveResourceLoaderToNonBlocking(ResourceLoader* loader)
 
 void ResourceFetcher::willStartLoadingResource(Resource* resource, ResourceLoader* loader, ResourceRequest& request)
 {
-    if (loader->cachedResource()->shouldBlockLoadEvent()) {
+    if (resource->shouldBlockLoadEvent()) {
         if (!m_loaders)
             m_loaders = ResourceLoaderSet::create();
         m_loaders->add(loader);

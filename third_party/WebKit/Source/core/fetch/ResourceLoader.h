@@ -56,8 +56,6 @@ public:
     void cancel();
     void cancel(const ResourceError&);
 
-    Resource* cachedResource() { return m_resource.get(); }
-
     void setDefersLoading(bool);
 
     void didChangePriority(ResourceLoadPriority, int intraPriorityValue);
