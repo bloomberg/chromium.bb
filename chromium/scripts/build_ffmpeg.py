@@ -517,6 +517,7 @@ def main(argv):
 
     configure_flags['Common'].extend([
         '--toolchain=msvc',
+        '--cpu=opteron',  # Enable HAVE_FAST_CMOV and disable HAVE_FAST_CLZ.
         '--enable-yasm',
         '--extra-cflags=-I' + os.path.join(FFMPEG_DIR, 'chromium/include/win'),
     ])
