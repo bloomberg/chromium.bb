@@ -39,6 +39,7 @@ TEST(URLRequestContextConfigTest, SetQuicExperimentalOptions) {
       "fake agent",
       // JSON encoded experimental options.
       "{\"QUIC\":{\"max_server_configs_stored_in_properties\":2,"
+      "\"delay_tcp_race\":true,"
       "\"max_number_of_lossy_connections\":10,"
       "\"prefer_aes\":true,"
       "\"user_agent_id\":\"Custom QUIC UAID\","
@@ -79,6 +80,9 @@ TEST(URLRequestContextConfigTest, SetQuicExperimentalOptions) {
 
   // Check max_server_configs_stored_in_properties.
   EXPECT_EQ(2u, params->quic_max_server_configs_stored_in_properties);
+
+  // Check delay_tcp_race.
+  EXPECT_TRUE(params->quic_delay_tcp_race);
 
   // Check prefer_aes.
   EXPECT_TRUE(params->quic_prefer_aes);

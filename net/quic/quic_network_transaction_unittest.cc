@@ -706,6 +706,10 @@ TEST_P(QuicNetworkTransactionTest, ForceQuic) {
 
   mock_quic_data.AddSocketDataToFactory(&socket_factory_);
 
+  // The non-alternate protocol job needs to hang in order to guarantee that
+  // the alternate-protocol job will "win".
+  AddHangingNonAlternateProtocolSocketData();
+
   params_.enable_alternative_service_with_different_host = false;
   CreateSession();
 
@@ -827,6 +831,7 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyWithCert) {
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details2);
 
   request_.url = GURL("http://" + origin_host);
+  AddHangingNonAlternateProtocolSocketData();
   CreateSession();
   AddQuicAlternateProtocolMapping(MockCryptoClientStream::CONFIRM_HANDSHAKE);
   SendRequestAndExpectQuicResponseFromProxyOnPort("hello!", 70);
@@ -868,6 +873,7 @@ TEST_P(QuicNetworkTransactionTest, AlternativeServicesDifferentHost) {
   request_.url = GURL("https://" + origin.host());
   AddQuicRemoteAlternativeServiceMapping(
       MockCryptoClientStream::CONFIRM_HANDSHAKE, alternative);
+  AddHangingNonAlternateProtocolSocketData();
   CreateSession();
 
   SendRequestAndExpectQuicResponse("hello!");
@@ -951,6 +957,7 @@ TEST_P(QuicNetworkTransactionTest, UseAlternativeServiceForQuic) {
 
   mock_quic_data.AddSocketDataToFactory(&socket_factory_);
 
+  AddHangingNonAlternateProtocolSocketData();
   CreateSession();
 
   SendRequestAndExpectHttpResponse("hello world");
@@ -985,6 +992,7 @@ TEST_P(QuicNetworkTransactionTest,
 
   mock_quic_data.AddSocketDataToFactory(&socket_factory_);
 
+  AddHangingNonAlternateProtocolSocketData();
   CreateSession();
 
   SendRequestAndExpectHttpResponse("hello world");
@@ -1085,6 +1093,7 @@ TEST_P(QuicNetworkTransactionTest, UseAlternativeServiceQuicSupportedVersion) {
 
   mock_quic_data.AddSocketDataToFactory(&socket_factory_);
 
+  AddHangingNonAlternateProtocolSocketData();
   CreateSession();
 
   SendRequestAndExpectHttpResponse("hello world");
@@ -1230,6 +1239,7 @@ TEST_P(QuicNetworkTransactionTest, UseExistingAlternativeServiceForQuic) {
 
   mock_quic_data.AddSocketDataToFactory(&socket_factory_);
 
+  AddHangingNonAlternateProtocolSocketData();
   CreateSession();
 
   SendRequestAndExpectHttpResponse("hello world");
@@ -1451,6 +1461,7 @@ TEST_P(QuicNetworkTransactionTest,
 
   mock_quic_data.AddSocketDataToFactory(&socket_factory_);
 
+  AddHangingNonAlternateProtocolSocketData();
   CreateSession();
 
   // Send two HTTP requests, responses set up alt-svc lists for the origins.
@@ -1482,6 +1493,7 @@ TEST_P(QuicNetworkTransactionTest, AlternativeServiceDifferentPort) {
   socket_factory_.AddSocketDataProvider(&http_data);
   socket_factory_.AddSSLSocketDataProvider(&ssl_data_);
 
+  AddHangingNonAlternateProtocolSocketData();
   CreateSession();
 
   SendRequestAndExpectHttpResponse("hello world");
@@ -1522,6 +1534,7 @@ TEST_P(QuicNetworkTransactionTest, ConfirmAlternativeService) {
 
   mock_quic_data.AddSocketDataToFactory(&socket_factory_);
 
+  AddHangingNonAlternateProtocolSocketData();
   CreateSession();
 
   AlternativeService alternative_service(QUIC,
@@ -1598,6 +1611,10 @@ TEST_P(QuicNetworkTransactionTest, UseAlternateProtocolForQuic) {
 
   mock_quic_data.AddSocketDataToFactory(&socket_factory_);
 
+  // The non-alternate protocol job needs to hang in order to guarantee that
+  // the alternate-protocol job will "win".
+  AddHangingNonAlternateProtocolSocketData();
+
   params_.parse_alternative_services = false;
   params_.parse_alternative_services = false;
   CreateSession();
@@ -1633,6 +1650,10 @@ TEST_P(QuicNetworkTransactionTest, UseAlternateProtocolWithProbabilityForQuic) {
 
   mock_quic_data.AddSocketDataToFactory(&socket_factory_);
 
+  // The non-alternate protocol job needs to hang in order to guarantee that
+  // the alternate-protocol job will "win".
+  AddHangingNonAlternateProtocolSocketData();
+
   params_.parse_alternative_services = false;
   params_.parse_alternative_services = false;
   CreateSession();
@@ -1653,6 +1674,10 @@ TEST_P(QuicNetworkTransactionTest, AlternateProtocolDifferentPort) {
                                      0);
   socket_factory_.AddSocketDataProvider(&http_data);
   socket_factory_.AddSSLSocketDataProvider(&ssl_data_);
+
+  // The non-alternate protocol job needs to hang in order to guarantee that
+  // the alternate-protocol job will "win".
+  AddHangingNonAlternateProtocolSocketData();
 
   params_.parse_alternative_services = false;
   CreateSession();
@@ -1694,6 +1719,10 @@ TEST_P(QuicNetworkTransactionTest, ConfirmAlternateProtocol) {
   mock_quic_data.AddRead(ASYNC, 0);               // EOF
 
   mock_quic_data.AddSocketDataToFactory(&socket_factory_);
+
+  // The non-alternate protocol job needs to hang in order to guarantee that
+  // the alternate-protocol job will "win".
+  AddHangingNonAlternateProtocolSocketData();
 
   params_.parse_alternative_services = false;
   CreateSession();
@@ -1739,7 +1768,10 @@ TEST_P(QuicNetworkTransactionTest, UseAlternateProtocolForQuicForHttps) {
 
   mock_quic_data.AddSocketDataToFactory(&socket_factory_);
 
+  // The non-alternate protocol job needs to hang in order to guarantee that
+  // the alternate-protocol job will "win".
   AddHangingNonAlternateProtocolSocketData();
+
   CreateSession();
 
   // TODO(rtenneti): Test QUIC over HTTPS, GetSSLInfo().
@@ -1813,6 +1845,10 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithHttpRace) {
 
   mock_quic_data.AddSocketDataToFactory(&socket_factory_);
 
+  // The non-alternate protocol job needs to hang in order to guarantee that
+  // the alternate-protocol job will "win".
+  AddHangingNonAlternateProtocolSocketData();
+
   CreateSession();
   AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
   SendRequestAndExpectQuicResponse("hello!");
@@ -1843,6 +1879,7 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithNoHttpRace) {
   host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address, CompletionCallback(),
                          nullptr, net_log_.bound());
 
+  AddHangingNonAlternateProtocolSocketData();
   CreateSession();
   AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
   SendRequestAndExpectQuicResponse("hello!");
@@ -1896,6 +1933,10 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithConfirmationRequired) {
   mock_quic_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // No more data to read
   mock_quic_data.AddSocketDataToFactory(&socket_factory_);
 
+  // The non-alternate protocol job needs to hang in order to guarantee that
+  // the alternate-protocol job will "win".
+  AddHangingNonAlternateProtocolSocketData();
+
   // In order for a new QUIC session to be established via alternate-protocol
   // without racing an HTTP connection, we need the host resolution to happen
   // synchronously.  Of course, even though QUIC *could* perform a 0-RTT
@@ -1908,10 +1949,6 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithConfirmationRequired) {
   AddressList address;
   host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address, CompletionCallback(),
                          nullptr, net_log_.bound());
-
-  // The non-alternate protocol job needs to hang in order to guarantee that
-  // the alternate-protocol job will "win".
-  AddHangingNonAlternateProtocolSocketData();
 
   CreateSession();
   session_->quic_stream_factory()->set_require_confirmation(true);
@@ -2111,6 +2148,7 @@ TEST_P(QuicNetworkTransactionTest, NoBrokenAlternateProtocolIfTcpFails) {
   socket_factory_.AddSocketDataProvider(&http_data);
   socket_factory_.AddSSLSocketDataProvider(&ssl_data_);
 
+  AddHangingNonAlternateProtocolSocketData();
   CreateSession();
 
   AddQuicAlternateProtocolMapping(MockCryptoClientStream::COLD_START);
@@ -2132,6 +2170,8 @@ TEST_P(QuicNetworkTransactionTest, FailedZeroRttBrokenAlternateProtocol) {
                                      0);
   socket_factory_.AddSocketDataProvider(&quic_data);
 
+  AddHangingNonAlternateProtocolSocketData();
+
   // Second Alternate-protocol job which will race with the TCP job.
   StaticSocketDataProvider quic_data2(quic_reads, arraysize(quic_reads),
                                       nullptr, 0);
@@ -2148,7 +2188,6 @@ TEST_P(QuicNetworkTransactionTest, FailedZeroRttBrokenAlternateProtocol) {
   socket_factory_.AddSocketDataProvider(&http_data);
   socket_factory_.AddSSLSocketDataProvider(&ssl_data_);
 
-  AddHangingNonAlternateProtocolSocketData();
   CreateSession();
 
   AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
@@ -2180,6 +2219,7 @@ TEST_P(QuicNetworkTransactionTest, DISABLED_HangingZeroRttFallback) {
                                      0);
   socket_factory_.AddSocketDataProvider(&http_data);
 
+  AddHangingNonAlternateProtocolSocketData();
   CreateSession();
 
   AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
@@ -2266,6 +2306,7 @@ TEST_P(QuicNetworkTransactionTest, SecureResourceOverSecureQuic) {
   mock_quic_data.AddSocketDataToFactory(&socket_factory_);
 
   request_.url = GURL("https://www.example.org:443");
+  AddHangingNonAlternateProtocolSocketData();
   CreateSession();
   AddQuicAlternateProtocolMapping(MockCryptoClientStream::CONFIRM_HANDSHAKE);
   SendRequestAndExpectQuicResponse("hello!");
@@ -2282,6 +2323,10 @@ TEST_P(QuicNetworkTransactionTest, QuicUpload) {
   SequencedSocketData socket_data(reads, arraysize(reads), writes,
                                   arraysize(writes));
   socket_factory_.AddSocketDataProvider(&socket_data);
+
+  // The non-alternate protocol job needs to hang in order to guarantee that
+  // the alternate-protocol job will "win".
+  AddHangingNonAlternateProtocolSocketData();
 
   params_.enable_alternative_service_with_different_host = false;
   CreateSession();
