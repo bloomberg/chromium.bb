@@ -1,0 +1,12 @@
+# For security review of IPC message files.
+per-file *_param_traits.*=set noparent
+per-file *_param_traits.*=dcheng@chromium.org
+per-file *_param_traits.*=inferno@chromium.org
+per-file *_param_traits.*=jln@chromium.org
+per-file *_param_traits.*=jschuh@chromium.org
+per-file *_param_traits.*=kenrb@chromium.org
+per-file *_param_traits.*=mkwst@chromium.org
+per-file *_param_traits.*=nasko@chromium.org
+per-file *_param_traits.*=palmer@chromium.org
+per-file *_param_traits.*=tsepez@chromium.org
+per-file *_param_traits.*=wfh@chromium.org
