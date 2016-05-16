@@ -25,7 +25,9 @@ def CommonChecks(input_api, output_api, tests_to_black_list):
       r'^recipes\.py$',
       r'^site-packages-py[0-9]\.[0-9][\/\\].+',
       r'^svn_bin[\/\\].+',
-      r'^testing_support[\/\\]_rietveld[\/\\].+']
+      r'^testing_support[\/\\]_rietveld[\/\\].+',
+      r'^testing_support[\/\\]_infra[\/\\].+',
+  ]
   if os.path.exists('.gitignore'):
     with open('.gitignore') as fh:
       lines = [l.strip() for l in fh.readlines()]
