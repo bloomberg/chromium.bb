@@ -184,7 +184,6 @@ void ProxyImpl::BeginMainFrameAbortedOnImpl(
                CommitEarlyOutReasonToString(reason));
   DCHECK(IsImplThread());
   DCHECK(scheduler_->CommitPending());
-  DCHECK(!layer_tree_host_impl_->pending_tree());
 
   if (CommitEarlyOutHandledCommit(reason)) {
     SetInputThrottledUntilCommitOnImpl(false);

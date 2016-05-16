@@ -559,6 +559,9 @@ void SchedulerStateMachine::WillSendBeginMainFrame() {
 }
 
 void SchedulerStateMachine::WillCommit(bool commit_has_no_updates) {
+  DCHECK(!has_pending_tree_ ||
+         (settings_.main_frame_before_activation_enabled &&
+          commit_has_no_updates));
   commit_count_++;
 
   if (commit_has_no_updates || settings_.main_frame_before_activation_enabled) {
@@ -567,8 +570,9 @@ void SchedulerStateMachine::WillCommit(bool commit_has_no_updates) {
     begin_main_frame_state_ = BEGIN_MAIN_FRAME_STATE_WAITING_FOR_ACTIVATION;
   }
 
-  // If the commit was aborted, then there is no pending tree.
-  has_pending_tree_ = !commit_has_no_updates;
+  // Pending tree only exists if commit had updates.
+  if (!commit_has_no_updates)
+    has_pending_tree_ = true;
 
   wait_for_ready_to_draw_ =
       !commit_has_no_updates && settings_.commit_to_active_tree;

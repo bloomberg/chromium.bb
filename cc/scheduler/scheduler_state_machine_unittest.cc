@@ -145,6 +145,7 @@ class StateMachine : public SchedulerStateMachine {
     return SchedulerStateMachine::PendingActivationsShouldBeForced();
   }
 
+  bool has_pending_tree() const { return has_pending_tree_; }
   void SetHasPendingTree(bool has_pending_tree) {
     has_pending_tree_ = has_pending_tree;
   }
@@ -1041,6 +1042,61 @@ TEST(SchedulerStateMachineTest, DontCommitWithoutDrawWithoutPendingTree) {
   state.SetNeedsBeginMainFrame();
   state.OnBeginImplFrame();
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+}
+
+TEST(SchedulerStateMachineTest, AbortedMainFrameDoesNotResetPendingTree) {
+  SchedulerSettings scheduler_settings;
+  scheduler_settings.main_frame_before_activation_enabled = true;
+  StateMachine state(scheduler_settings);
+  SET_UP_STATE(state);
+
+  // Perform a commit so that we have an active tree.
+  state.SetNeedsBeginMainFrame();
+  state.OnBeginImplFrame();
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+  state.NotifyBeginMainFrameStarted();
+  state.NotifyReadyToCommit();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_COMMIT);
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+  EXPECT_TRUE(state.has_pending_tree());
+  state.OnBeginImplFrameDeadline();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+
+  // Ask for another commit but abort it. Verify that we didn't reset pending
+  // tree state.
+  state.SetNeedsBeginMainFrame();
+  state.OnBeginImplFrame();
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+  EXPECT_TRUE(state.has_pending_tree());
+  state.NotifyBeginMainFrameStarted();
+  state.BeginMainFrameAborted(CommitEarlyOutReason::FINISHED_NO_UPDATES);
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+  EXPECT_TRUE(state.has_pending_tree());
+  state.OnBeginImplFrameDeadline();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+
+  // Ask for another commit that doesn't abort.
+  state.SetNeedsBeginMainFrame();
+  state.OnBeginImplFrame();
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+  state.NotifyBeginMainFrameStarted();
+  state.NotifyReadyToCommit();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+  EXPECT_TRUE(state.has_pending_tree());
+
+  // Verify that commit is delayed until the pending tree is activated.
+  state.NotifyReadyToActivate();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ACTIVATE_SYNC_TREE);
+  EXPECT_FALSE(state.has_pending_tree());
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_COMMIT);
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+  EXPECT_TRUE(state.has_pending_tree());
 }
 
 TEST(SchedulerStateMachineTest, TestFullCycleWithCommitToActive) {
