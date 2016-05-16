@@ -107,6 +107,10 @@ class IPC_EXPORT AttachmentBroker : public Listener {
   virtual void RegisterBrokerCommunicationChannel(Endpoint* endpoint);
   virtual void DeregisterBrokerCommunicationChannel(Endpoint* endpoint);
 
+  // Informs the attachment broker that a channel endpoint has received its
+  // peer's PID.
+  virtual void ReceivedPeerPid(base::ProcessId peer_pid);
+
   // True if and only if this broker is privileged.
   virtual bool IsPrivilegedBroker();
 

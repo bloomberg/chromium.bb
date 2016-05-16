@@ -100,6 +100,10 @@ void AttachmentBroker::DeregisterBrokerCommunicationChannel(
   NOTREACHED();
 }
 
+void AttachmentBroker::ReceivedPeerPid(base::ProcessId peer_pid) {
+  NOTREACHED();
+}
+
 bool AttachmentBroker::IsPrivilegedBroker() {
   NOTREACHED();
   return false;

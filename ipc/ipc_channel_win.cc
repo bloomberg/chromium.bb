@@ -263,6 +263,11 @@ void ChannelWin::HandleInternalMessage(const Message& msg) {
   listener()->OnChannelConnected(claimed_pid);
 
   FlushPrelimQueue();
+
+  if (IsAttachmentBrokerEndpoint() &&
+      AttachmentBroker::GetGlobal()->IsPrivilegedBroker()) {
+    AttachmentBroker::GetGlobal()->ReceivedPeerPid(claimed_pid);
+  }
 }
 
 base::ProcessId ChannelWin::GetSenderPID() {

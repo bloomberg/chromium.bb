@@ -76166,6 +76166,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="14" label="ERROR_INVALID_PERMISSIONS">
     Broker was asked to transfer a HANDLE with invalid permissions.
   </int>
+  <int value="15" label="DELAYED">
+    Broker was not immediately able to send an attachment.
+  </int>
+  <int value="16" label="DELAYED_SEND">
+    Broker successfully sent a delayed attachment.
+  </int>
 </enum>
 
 <enum name="IPCAttachmentBrokerUnprivilegedBrokerAttachmentError" type="int">

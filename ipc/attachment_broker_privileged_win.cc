@@ -34,7 +34,7 @@ bool AttachmentBrokerPrivilegedWin::SendAttachmentToProcess(
       handle_attachment->reset_handle_ownership();
       if (new_wire_format.handle == 0)
         return false;
-      RouteDuplicatedHandle(new_wire_format);
+      RouteDuplicatedHandle(new_wire_format, true);
       return true;
     }
     case BrokerableAttachment::MACH_PORT:
@@ -43,6 +43,20 @@ bool AttachmentBrokerPrivilegedWin::SendAttachmentToProcess(
       return false;
   }
   return false;
+}
+
+void AttachmentBrokerPrivilegedWin::ReceivedPeerPid(base::ProcessId peer_pid) {
+  auto it = stored_wire_formats_.find(peer_pid);
+  if (it == stored_wire_formats_.end())
+    return;
+
+  // Make a copy, and destroy the original.
+  WireFormats wire_formats = it->second;
+  stored_wire_formats_.erase(it);
+
+  for (const HandleWireFormat& format : wire_formats) {
+    RouteDuplicatedHandle(format, false);
+  }
 }
 
 bool AttachmentBrokerPrivilegedWin::OnMessageReceived(const Message& msg) {
@@ -70,11 +84,12 @@ void AttachmentBrokerPrivilegedWin::OnDuplicateWinHandle(
 
   HandleWireFormat new_wire_format =
       DuplicateWinHandle(wire_format, message.get_sender_pid());
-  RouteDuplicatedHandle(new_wire_format);
+  RouteDuplicatedHandle(new_wire_format, true);
 }
 
 void AttachmentBrokerPrivilegedWin::RouteDuplicatedHandle(
-    const HandleWireFormat& wire_format) {
+    const HandleWireFormat& wire_format,
+    bool store_on_failure) {
   // This process is the destination.
   if (wire_format.destination_process == base::Process::Current().Pid()) {
     scoped_refptr<BrokerableAttachment> attachment(
@@ -89,16 +104,25 @@ void AttachmentBrokerPrivilegedWin::RouteDuplicatedHandle(
   AttachmentBrokerPrivileged::EndpointRunnerPair pair =
       GetSenderWithProcessId(dest);
   if (!pair.first) {
-    // Assuming that this message was not sent from a malicious process, the
-    // channel endpoint that would have received this message will block
-    // forever.
-    LOG(ERROR) << "Failed to deliver brokerable attachment to process with id: "
-               << dest;
-    LogError(DESTINATION_NOT_FOUND);
+    if (store_on_failure) {
+      LogError(DELAYED);
+      stored_wire_formats_[dest].push_back(wire_format);
+    } else {
+      // Assuming that this message was not sent from a malicious process, the
+      // channel endpoint that would have received this message will block
+      // forever.
+      LOG(ERROR)
+          << "Failed to deliver brokerable attachment to process with id: "
+          << dest;
+      LogError(DESTINATION_NOT_FOUND);
+    }
     return;
   }
 
   LogError(DESTINATION_FOUND);
+  if (!store_on_failure)
+    LogError(DELAYED_SEND);
+
   SendMessageToEndpoint(
       pair, new AttachmentBrokerMsg_WinHandleHasBeenDuplicated(wire_format));
 }

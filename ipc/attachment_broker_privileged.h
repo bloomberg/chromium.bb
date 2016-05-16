@@ -71,7 +71,7 @@ class IPC_EXPORT AttachmentBrokerPrivileged : public IPC::AttachmentBroker {
   void SendMessageToEndpoint(EndpointRunnerPair pair, Message* message);
 
   // Errors that can be reported by subclasses.
-  // These match tools/metrics/histograms.xml.
+  // These match tools/metrics/histograms/histograms.xml.
   // This enum is append-only.
   enum UMAError {
     // The brokerable attachment had a valid destination. This is the success
@@ -108,6 +108,10 @@ class IPC_EXPORT AttachmentBrokerPrivileged : public IPC::AttachmentBroker {
     ERROR_COULD_NOT_OPEN_SOURCE_OR_DEST = 13,
     // The broker was asked to transfer a HANDLE with invalid permissions.
     ERROR_INVALID_PERMISSIONS = 14,
+    // The broker was not immediately able to send an attachment.
+    DELAYED = 15,
+    // The broker successfully sent a delayed attachment.
+    DELAYED_SEND = 16,
     ERROR_MAX
   };
 
