@@ -33,6 +33,11 @@ class MinimizeButtonMetrics {
   // Gets the value for GetMinimizeButtonOffsetX(), caching if found.
   int GetAndCacheMinimizeButtonOffsetX() const;
 
+  int GetButtonBoundsPositionOffset(const RECT& button_bounds,
+                                    const RECT& window_bounds) const;
+
+  int GetMinimizeButtonOffsetForWindow() const;
+
   HWND hwnd_;
 
   // Cached offset of the minimize button. If RTL this is the location of the
@@ -42,6 +47,10 @@ class MinimizeButtonMetrics {
 
   // Static cache of |cached_minimize_button_x_delta_|.
   static int last_cached_minimize_button_x_delta_;
+
+  // Static cache of offset value representing the different between
+  // DWMWA_CAPTION_BUTTON_BOUNDS and WM_GETTITLEBARINFOEX
+  static int button_bounds_position_offset_;
 
   // Has OnHWNDActivated() been invoked?
   bool was_activated_;
