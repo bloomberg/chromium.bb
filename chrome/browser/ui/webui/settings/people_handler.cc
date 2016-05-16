@@ -549,7 +549,9 @@ void PeopleHandler::HandleStopSyncing(const base::ListValue* args) {
 
   if (delete_profile) {
     // Do as BrowserOptionsHandler::DeleteProfile().
-    webui::DeleteProfileAtPath(profile_->GetPath(), web_ui());
+    webui::DeleteProfileAtPath(profile_->GetPath(),
+                               web_ui(),
+                               ProfileMetrics::DELETE_PROFILE_SETTINGS);
   }
 }
 #endif

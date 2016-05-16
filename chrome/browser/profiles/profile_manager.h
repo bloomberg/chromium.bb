@@ -22,6 +22,7 @@
 #include "base/threading/non_thread_safe.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/profiles/profile_shortcut_manager.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "content/public/browser/notification_observer.h"
@@ -189,6 +190,14 @@ class ProfileManager : public base::NonThreadSafe,
   ProfileShortcutManager* profile_shortcut_manager();
 
 #if !defined(OS_ANDROID)
+  // Less strict version of ScheduleProfileForDeletion(), silently fail if
+  // profile already marked for deletion. Returns true if the profile scheduled
+  // for deletion.
+  bool MaybeScheduleProfileForDeletion(
+      const base::FilePath& profile_dir,
+      const CreateCallback& callback,
+      ProfileMetrics::ProfileDelete deletion_source);
+
   // Schedules the profile at the given path to be deleted on shutdown. If we're
   // deleting the last profile, a new one will be created in its place, and in
   // that case the callback will be called when profile creation is complete.

@@ -232,8 +232,11 @@ void CreateProfileHandler::ShowProfileCreationError(
       GetJavascriptMethodName(PROFILE_CREATION_ERROR),
       base::StringValue(error));
   // The ProfileManager calls us back with a NULL profile in some cases.
-  if (profile)
-    webui::DeleteProfileAtPath(profile->GetPath(), web_ui());
+  if (profile) {
+    webui::DeleteProfileAtPath(profile->GetPath(),
+                               web_ui(),
+                               ProfileMetrics::DELETE_PROFILE_SETTINGS);
+  }
 }
 
 void CreateProfileHandler::RecordProfileCreationMetrics(
@@ -374,7 +377,9 @@ void CreateProfileHandler::CancelProfileRegistration(bool user_initiated) {
   // Cancelling registration means the callback passed into
   // RegisterAndInitSync() won't be called, so the cleanup must be done here.
   profile_path_being_created_.clear();
-  webui::DeleteProfileAtPath(new_profile->GetPath(), web_ui());
+  webui::DeleteProfileAtPath(new_profile->GetPath(),
+                             web_ui(),
+                             ProfileMetrics::DELETE_PROFILE_SETTINGS);
 }
 
 void CreateProfileHandler::RegisterSupervisedUser(

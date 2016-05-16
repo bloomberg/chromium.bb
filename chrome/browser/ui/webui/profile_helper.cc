@@ -26,16 +26,15 @@ void OpenNewWindowForProfile(Profile* profile, Profile::CreateStatus status) {
       chrome::startup::IS_FIRST_RUN, false);
 }
 
-void DeleteProfileAtPath(base::FilePath file_path, content::WebUI* web_ui) {
+void DeleteProfileAtPath(base::FilePath file_path,
+                         content::WebUI* web_ui,
+                         ProfileMetrics::ProfileDelete deletion_source) {
   DCHECK(web_ui);
 
   if (!profiles::IsMultipleProfilesEnabled())
     return;
-
-  ProfileMetrics::LogProfileDeleteUser(ProfileMetrics::DELETE_PROFILE_SETTINGS);
-
-  g_browser_process->profile_manager()->ScheduleProfileForDeletion(
-      file_path, base::Bind(&OpenNewWindowForProfile));
+  g_browser_process->profile_manager()->MaybeScheduleProfileForDeletion(
+      file_path, base::Bind(&OpenNewWindowForProfile), deletion_source);
 }
 
 }  // namespace webui

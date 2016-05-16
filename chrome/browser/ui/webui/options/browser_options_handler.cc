@@ -1390,7 +1390,9 @@ void BrowserOptionsHandler::DeleteProfile(const base::ListValue* args) {
     return;
   }
 
-  webui::DeleteProfileAtPath(file_path, web_ui());
+  webui::DeleteProfileAtPath(file_path,
+                             web_ui(),
+                             ProfileMetrics::DELETE_PROFILE_SETTINGS);
 }
 
 void BrowserOptionsHandler::ObserveThemeChanged() {

@@ -463,17 +463,13 @@ void UserManagerScreenHandler::HandleRemoveUser(const base::ListValue* args) {
     return;
   }
 
-  if (!profiles::IsMultipleProfilesEnabled()) {
-    NOTREACHED();
-    return;
-  }
+  DCHECK(profiles::IsMultipleProfilesEnabled());
 
   // The callback is run if the only profile has been deleted, and a new
   // profile has been created to replace it.
-  g_browser_process->profile_manager()->ScheduleProfileForDeletion(
-      profile_path, base::Bind(&webui::OpenNewWindowForProfile));
-  ProfileMetrics::LogProfileDeleteUser(
-      ProfileMetrics::DELETE_PROFILE_USER_MANAGER);
+  webui::DeleteProfileAtPath(profile_path,
+                             web_ui(),
+                             ProfileMetrics::DELETE_PROFILE_USER_MANAGER);
 }
 
 void UserManagerScreenHandler::HandleLaunchGuest(const base::ListValue* args) {

@@ -668,7 +668,9 @@ void SyncSetupHandler::HandleStopSyncing(const base::ListValue* args) {
 
   if (delete_profile) {
     // Do as BrowserOptionsHandler::DeleteProfile().
-    webui::DeleteProfileAtPath(GetProfile()->GetPath(), web_ui());
+    webui::DeleteProfileAtPath(GetProfile()->GetPath(),
+                               web_ui(),
+                               ProfileMetrics::DELETE_PROFILE_SETTINGS);
   }
 }
 #endif

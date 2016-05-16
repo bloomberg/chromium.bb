@@ -726,10 +726,22 @@ ProfileShortcutManager* ProfileManager::profile_shortcut_manager() {
 }
 
 #if !defined(OS_ANDROID)
+bool ProfileManager::MaybeScheduleProfileForDeletion(
+    const base::FilePath& profile_dir,
+    const CreateCallback& callback,
+    ProfileMetrics::ProfileDelete deletion_source) {
+  if (IsProfileMarkedForDeletion(profile_dir))
+    return false;
+  ScheduleProfileForDeletion(profile_dir, callback);
+  ProfileMetrics::LogProfileDeleteUser(deletion_source);
+  return true;
+}
+
 void ProfileManager::ScheduleProfileForDeletion(
     const base::FilePath& profile_dir,
     const CreateCallback& callback) {
   DCHECK(profiles::IsMultipleProfilesEnabled());
+  DCHECK(!IsProfileMarkedForDeletion(profile_dir));
 
   // Cancel all in-progress downloads before deleting the profile to prevent a
   // "Do you want to exit Google Chrome and cancel the downloads?" prompt
