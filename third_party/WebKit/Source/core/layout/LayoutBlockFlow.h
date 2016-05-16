@@ -91,6 +91,7 @@ public:
     ~LayoutBlockFlow() override;
 
     static LayoutBlockFlow* createAnonymous(Document*);
+    bool beingDestroyed() const { return m_beingDestroyed; }
 
     bool isLayoutBlockFlow() const final { return true; }
 
@@ -308,6 +309,7 @@ protected:
 
     void createFloatingObjects();
 
+    void willBeDestroyed() override;
     void styleWillChange(StyleDifference, const ComputedStyle& newStyle) override;
     void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
 

@@ -2194,6 +2194,52 @@ void LayoutBlockFlow::createFloatingObjects()
     m_floatingObjects = adoptPtr(new FloatingObjects(this, isHorizontalWritingMode()));
 }
 
+void LayoutBlockFlow::willBeDestroyed()
+{
+    // Mark as being destroyed to avoid trouble with merges in removeChild().
+    m_beingDestroyed = true;
+
+    // Make sure to destroy anonymous children first while they are still connected to the rest of the tree, so that they will
+    // properly dirty line boxes that they are removed from. Effects that do :before/:after only on hover could crash otherwise.
+    children()->destroyLeftoverChildren();
+
+    // Destroy our continuation before anything other than anonymous children.
+    // The reason we don't destroy it before anonymous children is that they may
+    // have continuations of their own that are anonymous children of our continuation.
+    LayoutBoxModelObject* continuation = this->continuation();
+    if (continuation) {
+        continuation->destroy();
+        setContinuation(nullptr);
+    }
+
+    if (!documentBeingDestroyed()) {
+        // TODO(mstensho): figure out if we need this. We have no test coverage for it. It looks
+        // like all line boxes have been removed at this point.
+        if (firstLineBox()) {
+            // We can't wait for LayoutBox::destroy to clear the selection,
+            // because by then we will have nuked the line boxes.
+            // FIXME: The FrameSelection should be responsible for this when it
+            // is notified of DOM mutations.
+            if (isSelectionBorder())
+                view()->clearSelection();
+
+            // If we are an anonymous block, then our line boxes might have children
+            // that will outlast this block. In the non-anonymous block case those
+            // children will be destroyed by the time we return from this function.
+            if (isAnonymousBlock()) {
+                for (InlineFlowBox* box = firstLineBox(); box; box = box->nextLineBox()) {
+                    while (InlineBox* childBox = box->firstChild())
+                        childBox->remove();
+                }
+            }
+        }
+    }
+
+    m_lineBoxes.deleteLineBoxes();
+
+    LayoutBlock::willBeDestroyed();
+}
+
 void LayoutBlockFlow::styleWillChange(StyleDifference diff, const ComputedStyle& newStyle)
 {
     const ComputedStyle* oldStyle = style();
@@ -2587,10 +2633,10 @@ void LayoutBlockFlow::makeChildrenInlineIfPossible()
             return;
         // If one of the children is being destroyed then it is unsafe to clean up anonymous wrappers as the
         // entire branch may be being destroyed.
-        if (toLayoutBlock(child)->beingDestroyed())
+        if (toLayoutBlockFlow(child)->beingDestroyed())
             return;
         // We can't remove anonymous wrappers if they contain continuations as this means there are block children present.
-        if (toLayoutBlock(child)->continuation())
+        if (toLayoutBlockFlow(child)->continuation())
             return;
         // We are only interested in removing anonymous wrappers if there are inline siblings underneath them.
         if (!child->childrenInline())
