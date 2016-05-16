@@ -15,6 +15,8 @@
 #include "base/run_loop.h"
 #include "blimp/client/app/blimp_client_switches.h"
 #include "blimp/client/session/assignment_source.h"
+#include "blimp/common/get_client_token.h"
+#include "blimp/common/switches.h"
 #include "blimp/engine/app/blimp_browser_main_parts.h"
 #include "blimp/engine/app/blimp_content_browser_client.h"
 #include "blimp/engine/app/blimp_engine_config.h"
@@ -60,7 +62,8 @@ void BlimpBrowserTest::OnGetEnginePort(uint16_t port) {
 
 client::Assignment BlimpBrowserTest::GetAssignment() {
   client::Assignment assignment;
-  assignment.client_token = client::kDummyClientToken;
+  assignment.client_token = GetClientToken(
+      *base::CommandLine::ForCurrentProcess());
   assignment.engine_endpoint =
       net::IPEndPoint(net::IPAddress::IPv4Localhost(), engine_port_);
   assignment.transport_protocol = client::Assignment::TransportProtocol::TCP;
@@ -87,8 +90,7 @@ void BlimpBrowserTest::SetUpCommandLine(base::CommandLine* command_line) {
   command_line->AppendSwitchASCII(blimp::engine::kEnginePort, "0");
   base::FilePath src_root;
   PathService::Get(base::DIR_SOURCE_ROOT, &src_root);
-  command_line->AppendSwitchASCII(
-      blimp::engine::kClientTokenPath,
+  command_line->AppendSwitchASCII(kClientTokenPath,
       src_root.Append(kClientTokenFilePath).value());
 }
 

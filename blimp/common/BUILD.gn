@@ -17,9 +17,13 @@ component("common") {
     "compositor/blimp_task_graph_runner.h",
     "create_blimp_message.cc",
     "create_blimp_message.h",
+    "get_client_token.cc",
+    "get_client_token.h",
     "logging.cc",
     "logging.h",
     "protocol_version.h",
+    "switches.cc",
+    "switches.h",
   ]
 
   defines = [ "BLIMP_COMMON_IMPLEMENTATION=1" ]

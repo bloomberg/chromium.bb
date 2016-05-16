@@ -16,7 +16,9 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "blimp/client/app/blimp_client_switches.h"
+#include "blimp/common/get_client_token.h"
 #include "blimp/common/protocol_version.h"
+#include "blimp/common/switches.h"
 #include "components/safe_json/testing_json_parser.h"
 #include "net/base/test_data_directory.h"
 #include "net/url_request/test_url_fetcher_factory.h"
@@ -45,6 +47,7 @@ const char kCertRelativePath[] =
 const char kTestClientToken[] = "secrett0ken";
 const char kTestAuthToken[] = "UserAuthT0kenz";
 const char kAssignerUrl[] = "http://www.assigner.test/";
+const char kTestClientTokenPath[] = "blimp/test/data/test_client_token";
 
 MATCHER_P(AssignmentEquals, assignment, "") {
   return arg.transport_protocol == assignment.transport_protocol &&
@@ -74,6 +77,7 @@ class AssignmentSourceTest : public testing::Test {
     PathService::Get(base::DIR_SOURCE_ROOT, &src_root);
     ASSERT_FALSE(src_root.empty());
     cert_path_ = src_root.Append(kCertRelativePath);
+    client_token_path_ = src_root.Append(kTestClientTokenPath);
     ASSERT_TRUE(base::ReadFileToString(cert_path_, &cert_pem_));
     net::CertificateList cert_list =
         net::X509Certificate::CreateCertificateListFromBytes(
@@ -163,6 +167,9 @@ class AssignmentSourceTest : public testing::Test {
   // Path to the PEM-encoded certificate chain.
   base::FilePath cert_path_;
 
+  // Path to the client token;
+  base::FilePath client_token_path_;
+
   // Payload of PEM certificate chain at |cert_path_|.
   std::string cert_pem_;
 
@@ -199,15 +206,18 @@ TEST_F(AssignmentSourceTest, TestTCPAlternateEndpointSuccess) {
   Assignment assignment;
   assignment.transport_protocol = Assignment::TransportProtocol::TCP;
   assignment.engine_endpoint = net::IPEndPoint(kTestIpAddress, kTestPort);
-  assignment.client_token = kDummyClientToken;
   assignment.cert = scoped_refptr<net::X509Certificate>(nullptr);
 
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kEngineIP, kTestIpAddressString);
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kEnginePort, std::to_string(kTestPort));
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kEngineTransport, kTcpTransportName);
+  auto cmd_line = base::CommandLine::ForCurrentProcess();
+  cmd_line->AppendSwitchASCII(switches::kEngineIP, kTestIpAddressString);
+  cmd_line->AppendSwitchASCII(switches::kEnginePort,
+                              std::to_string(kTestPort));
+  cmd_line->AppendSwitchASCII(switches::kEngineTransport, kTcpTransportName);
+  cmd_line->AppendSwitchASCII(kClientTokenPath, client_token_path_.value());
+
+  assignment.client_token = GetClientToken(*cmd_line);
+
+  CHECK_EQ("MyVoiceIsMyPassport", assignment.client_token);
 
   EXPECT_CALL(*this, AssignmentResponse(AssignmentSource::Result::RESULT_OK,
                                         AssignmentEquals(assignment)))
@@ -220,17 +230,18 @@ TEST_F(AssignmentSourceTest, TestSSLAlternateEndpointSuccess) {
   Assignment assignment;
   assignment.transport_protocol = Assignment::TransportProtocol::SSL;
   assignment.engine_endpoint = net::IPEndPoint(kTestIpAddress, kTestPort);
-  assignment.client_token = kDummyClientToken;
   assignment.cert = cert_;
 
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kEngineIP, kTestIpAddressString);
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kEnginePort, std::to_string(kTestPort));
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kEngineTransport, kSslTransportName);
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kEngineCertPath, cert_path_.value());
+  auto cmd_line = base::CommandLine::ForCurrentProcess();
+
+  cmd_line->AppendSwitchASCII(switches::kEngineIP, kTestIpAddressString);
+  cmd_line->AppendSwitchASCII(switches::kEnginePort,
+                              std::to_string(kTestPort));
+  cmd_line->AppendSwitchASCII(switches::kEngineTransport, kSslTransportName);
+  cmd_line->AppendSwitchASCII(switches::kEngineCertPath, cert_path_.value());
+  cmd_line->AppendSwitchASCII(kClientTokenPath, client_token_path_.value());
+
+  assignment.client_token = GetClientToken(*cmd_line);
 
   EXPECT_CALL(*this, AssignmentResponse(AssignmentSource::Result::RESULT_OK,
                                         AssignmentEquals(assignment)))

@@ -12,7 +12,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/strings/stringprintf.h"
-#include "blimp/engine/app/switches.h"
+#include "blimp/common/switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blimp {

@@ -23,6 +23,21 @@ file (e.g. `--engine-cert-path=/path/to/file.pem`.)
 The engine sends partially rendered content to the client. To request the complete
 page from the engine, use the `--download-whole-document` flag on the client.
 
+### Specifying the client auth token file
+The client needs access to a file containing a client auth token. One should
+make sure this file is available by pushing it onto the device before running
+the client. One can do this by running the following command:
+
+```bash
+adb push /path/to/blimp_client_token \
+  /data/data/org.chromium.blimp/blimp_client_token
+```
+
+To have the client use the given client auth token file, use the
+`--blimp-client-token-path` flag (e.g.
+`--blimp-client-token-path=/data/data/org.chromium.blimp/blimp_client_token`)
+
+
 ### Android Client
 
 Install the Blimp APK with the following:
@@ -99,26 +114,3 @@ also start a new shell and keep the following command running:
   Typically this would be `out-linux/Debug/gen/third_party/blimp_fonts`.
 * `--disable-remote-fonts`: Disables downloading of custom web fonts in the
   renderer.
-
-#### Typical invocation
-When the client connects to a manually specified engine instead of using the
-assigner, it will use a dummy token. The engine needs to know what this token
-is, so it must be provided using the `--blimp-client-token-path` flag. The token
-is available in the constant `kDummyClientToken` in
-`blimp/client/session/assignment_source.h`. You can easily store that to a file
-by running the following command once:
-
-```bash
-awk '{if ( match($0, /^\s*const char kDummyClientToken.*/) ) { print substr($5, 2, length($5)-3);} }' \
-  ./blimp/client/session/assignment_source.h > /tmp/blimpengine-token
-```
-
-Then start the engine using these flags:
-
-```bash
-out-linux/Debug/blimp_engine_app \
-  --android-fonts-path=out-linux/Debug/gen/third_party/blimp_fonts \
-  --blimp-client-token-path=/tmp/blimpengine-token \
-  --enable-logging=stderr \
-  --vmodule="blimp*=1"
-```

@@ -22,6 +22,7 @@ source_set("engine_browsertests") {
     "//blimp/client:session",
     "//blimp/client:switches",
     "//blimp/client:test_support",
+    "//blimp/common",
     "//blimp/engine:app",
     "//blimp/engine:app_config",
     "//blimp/engine:app_switches",

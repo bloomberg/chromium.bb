@@ -13,7 +13,7 @@
 #include "base/files/file_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
-#include "blimp/engine/app/switches.h"
+#include "blimp/common/get_client_token.h"
 #include "cc/base/switches.h"
 #include "content/public/common/content_switches.h"
 #include "ui/gl/gl_switches.h"
@@ -21,20 +21,6 @@
 
 namespace blimp {
 namespace engine {
-
-namespace {
-// Gets the client token from the file provided by the command line. If a read
-// does not succeed, or the switch is malformed, an empty string is returned.
-std::string GetClientToken(const base::CommandLine& cmd_line) {
-  std::string file_contents;
-  const base::FilePath path = cmd_line.GetSwitchValuePath(kClientTokenPath);
-  if (!base::ReadFileToString(path, &file_contents)) {
-    LOG(ERROR) << "Could not read client token file at "
-               << (path.empty() ? "(not provided)" : path.AsUTF8Unsafe());
-  }
-  return base::CollapseWhitespaceASCII(file_contents, true);
-}
-}  // namespace
 
 void SetCommandLineDefaults(base::CommandLine* command_line) {
   command_line->AppendSwitch(::switches::kEnableOverlayScrollbar);

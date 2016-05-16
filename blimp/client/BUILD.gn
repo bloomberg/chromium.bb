@@ -100,10 +100,15 @@ source_set("blimp_client_unit_tests") {
   if (is_linux) {
     sources += [ "session/assignment_source_unittest.cc" ]
     deps += [
+      "//blimp/common",
+      "//blimp/common:test_support",
       "//components/safe_json:test_support",
       "//net:test_support",
     ]
-    data += [ "session/test_selfsigned_cert.pem" ]
+    data += [
+      "session/test_selfsigned_cert.pem",
+      "//blimp/test/data/test_client_token",
+    ]
   }
 }
 

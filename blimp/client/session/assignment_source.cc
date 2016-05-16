@@ -15,8 +15,10 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task_runner_util.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "blimp/client/app/blimp_client_switches.h"
+#include "blimp/common/get_client_token.h"
 #include "blimp/common/protocol_version.h"
 #include "components/safe_json/safe_json_parser.h"
 #include "net/base/ip_address.h"
@@ -99,22 +101,21 @@ bool IsValidIpPortNumber(unsigned port) {
 // Must be called on a thread suitable for file IO.
 Assignment GetAssignmentFromCommandLine() {
   Assignment assignment;
-  assignment.client_token = kDummyClientToken;
+
+  const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
+  assignment.client_token = GetClientToken(*cmd_line);
+  CHECK(!assignment.client_token.empty()) << "No client token provided.";
 
   unsigned port_parsed = 0;
   if (!base::StringToUint(
-          base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-              switches::kEnginePort),
-          &port_parsed) ||
-      !IsValidIpPortNumber(port_parsed)) {
+          cmd_line->GetSwitchValueASCII(switches::kEnginePort),
+          &port_parsed) || !IsValidIpPortNumber(port_parsed)) {
     DLOG(FATAL) << "--engine-port must be a value between 1 and 65535.";
     return Assignment();
   }
 
   net::IPAddress ip_address;
-  std::string ip_str =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kEngineIP);
+  std::string ip_str = cmd_line->GetSwitchValueASCII(switches::kEngineIP);
   if (!ip_address.AssignFromIPLiteral(ip_str)) {
     DLOG(FATAL) << "Invalid engine IP " << ip_str;
     return Assignment();
@@ -123,8 +124,7 @@ Assignment GetAssignmentFromCommandLine() {
       net::IPEndPoint(ip_address, base::checked_cast<uint16_t>(port_parsed));
 
   std::string transport_str =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kEngineTransport);
+      cmd_line->GetSwitchValueASCII(switches::kEngineTransport);
   if (transport_str == kSSLTransportValue) {
     assignment.transport_protocol = Assignment::TransportProtocol::SSL;
   } else if (transport_str == kTCPTransportValue) {
@@ -137,8 +137,7 @@ Assignment GetAssignmentFromCommandLine() {
   scoped_refptr<net::X509Certificate> cert;
   if (assignment.transport_protocol == Assignment::TransportProtocol::SSL) {
     base::FilePath cert_path =
-        base::CommandLine::ForCurrentProcess()->GetSwitchValuePath(
-            switches::kEngineCertPath);
+        cmd_line->GetSwitchValuePath(switches::kEngineCertPath);
     if (cert_path.empty()) {
       DLOG(FATAL) << "Missing required parameter --"
                   << switches::kEngineCertPath << ".";

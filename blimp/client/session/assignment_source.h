@@ -28,9 +28,6 @@ class X509Certificate;
 namespace blimp {
 namespace client {
 
-// TODO(kmarshall): Take values from configuration data.
-const char kDummyClientToken[] = "MyVoiceIsMyPassport";
-
 // An Assignment contains the configuration data needed for a client
 // to connect to the engine.
 struct Assignment {
