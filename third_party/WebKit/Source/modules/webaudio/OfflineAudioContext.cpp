@@ -30,6 +30,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
+#include "modules/webaudio/AudioListener.h"
 #include "modules/webaudio/DeferredTaskHandler.h"
 #include "modules/webaudio/OfflineAudioCompletionEvent.h"
 #include "modules/webaudio/OfflineAudioDestinationNode.h"
@@ -335,6 +336,9 @@ bool OfflineAudioContext::handlePreOfflineRenderTasks()
     // that this locker does not use tryLock() inside because the timing of
     // suspension MUST NOT be delayed.
     OfflineGraphAutoLocker locker(this);
+
+    // Update the dirty state of the listener.
+    listener()->updateState();
 
     deferredTaskHandler().handleDeferredTasks();
     handleStoppableSourceNodes();

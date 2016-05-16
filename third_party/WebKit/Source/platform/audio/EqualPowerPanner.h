@@ -36,19 +36,15 @@ public:
     EqualPowerPanner(float sampleRate);
 
     void pan(double azimuth, double elevation, const AudioBus* inputBus, AudioBus* outputBuf, size_t framesToProcess) override;
+    void panWithSampleAccurateValues(double* azimuth, double* elevation, const AudioBus* inputBus, AudioBus* outputBus, size_t framesToProcess) override;
 
-    void reset() override { m_isFirstRender = true; }
+    void reset() override { }
 
     double tailTime() const override { return 0; }
     double latencyTime() const override { return 0; }
 
 private:
-    // For smoothing / de-zippering
-    bool m_isFirstRender;
-    double m_smoothingConstant;
-
-    double m_gainL;
-    double m_gainR;
+    void calculateDesiredGain(double& desiredGainL, double& desiredGainR, double azimuth, int numberOfChannels);
 };
 
 } // namespace blink

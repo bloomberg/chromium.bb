@@ -135,10 +135,12 @@ void AbstractAudioContext::initialize()
         return;
 
     FFTFrame::initialize();
-    m_listener = AudioListener::create();
 
     if (m_destinationNode) {
         m_destinationNode->handler().initialize();
+        // The AudioParams in the listener need access to the destination node, so only create the
+        // listener if the destination node exists.
+        m_listener = AudioListener::create(*this);
     }
 }
 
@@ -854,6 +856,9 @@ void AbstractAudioContext::handlePreRenderTasks()
 
         // Check to see if source nodes can be stopped because the end time has passed.
         handleStoppableSourceNodes();
+
+        // Update the dirty state of the listener.
+        listener()->updateState();
 
         unlock();
     }

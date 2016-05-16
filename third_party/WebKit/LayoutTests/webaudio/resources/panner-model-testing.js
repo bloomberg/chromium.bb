@@ -26,7 +26,7 @@ var renderedBuffer;
 var renderedLeft;
 var renderedRight;
 
-function createGraph(context, nodeCount) {
+function createGraph(context, nodeCount, positionSetter) {
     bufferSource = new Array(nodeCount);
     panner = new Array(nodeCount);
     position = new Array(nodeCount);
@@ -51,7 +51,7 @@ function createGraph(context, nodeCount) {
 
         var angle = angleStep * k;
         position[k] = {angle : angle, x : Math.cos(angle), z : Math.sin(angle)};
-        panner[k].setPosition(position[k].x, 0, position[k].z);
+        positionSetter(panner[k], position[k].x, 0, position[k].z);
 
         bufferSource[k].connect(panner[k]);
         panner[k].connect(context.destination);
@@ -62,10 +62,10 @@ function createGraph(context, nodeCount) {
     }
 }
 
-function createTestAndRun(context, nodeCount, numberOfSourceChannels) {
+function createTestAndRun(context, nodeCount, numberOfSourceChannels, positionSetter) {
     numberOfChannels = numberOfSourceChannels;
 
-    createGraph(context, nodeCount);
+    createGraph(context, nodeCount, positionSetter);
 
     context.oncomplete = checkResult;
     context.startRendering();

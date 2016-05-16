@@ -9,7 +9,7 @@
 
   <body>
     <script>
-      description("Test Automation of SpatialListener Position.");
+      description("Test AudioParam Nominal Range Values.");
       window.jsTestIsAsync = true;
 
       // Some arbitrary sample rate for the offline context. 
@@ -144,6 +144,35 @@
             maxValue: mostPositiveFloat
           }
         }
+      }, {
+        creator: "createPanner",
+        args: [],
+        limits : {
+          positionX: {
+            minValue: -mostPositiveFloat,
+            maxValue: mostPositiveFloat,
+          },
+          positionY: {
+            minValue: -mostPositiveFloat,
+            maxValue: mostPositiveFloat,
+          },
+          positionZ: {
+            minValue: -mostPositiveFloat,
+            maxValue: mostPositiveFloat,
+          },
+          orientationX: {
+            minValue: -mostPositiveFloat,
+            maxValue: mostPositiveFloat,
+          },
+          orientationY: {
+            minValue: -mostPositiveFloat,
+            maxValue: mostPositiveFloat,
+          },
+          orientationZ: {
+            minValue: -mostPositiveFloat,
+            maxValue: mostPositiveFloat,
+          }
+        },
       },
       // These nodes don't have AudioParams, but we want to test them anyway.  Any arguments for the
       // constructor are pretty much arbitrary; they just need to be valid.
@@ -175,9 +204,6 @@
         creator: "createChannelMerger",
         args: [],
       }, {
-        creator: "createPanner",
-        args: [],
-      }, {
         creator: "createMediaElementSource",
         args: [new Audio()]
       },{
@@ -205,6 +231,49 @@
           };
         })(config));
       }
+
+      // Test the AudioListener params that were added for the automated Panner
+      audit.defineTask("AudioListener", function (done) {
+        testLimits("", context.listener, {
+          positionX: {
+            minValue: -mostPositiveFloat,
+            maxValue: mostPositiveFloat,
+          },
+          positionY: {
+            minValue: -mostPositiveFloat,
+            maxValue: mostPositiveFloat,
+          },
+          positionZ: {
+            minValue: -mostPositiveFloat,
+            maxValue: mostPositiveFloat,
+          },
+          forwardX: {
+            minValue: -mostPositiveFloat,
+            maxValue: mostPositiveFloat,
+          },
+          forwardY: {
+            minValue: -mostPositiveFloat,
+            maxValue: mostPositiveFloat,
+          },
+          forwardZ: {
+            minValue: -mostPositiveFloat,
+            maxValue: mostPositiveFloat,
+          },
+          upX: {
+            minValue: -mostPositiveFloat,
+            maxValue: mostPositiveFloat,
+          },
+          upY: {
+            minValue: -mostPositiveFloat,
+            maxValue: mostPositiveFloat,
+          },
+          upZ: {
+            minValue: -mostPositiveFloat,
+            maxValue: mostPositiveFloat,
+          }
+        });
+        done();
+      });
 
       // Verify that we have tested all the create methods available on the context.
       audit.defineTask("verifyTests", function (done) {

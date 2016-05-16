@@ -58,6 +58,7 @@ public:
     virtual ~Panner() { };
 
     virtual void pan(double azimuth, double elevation, const AudioBus* inputBus, AudioBus* outputBus, size_t framesToProcess) = 0;
+    virtual void panWithSampleAccurateValues(double* azimuth, double* elevation, const AudioBus* inputBus, AudioBus* outputBus, size_t framesToProcess) = 0;
 
     virtual void reset() = 0;
 

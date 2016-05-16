@@ -27,6 +27,7 @@
 
 #include "modules/webaudio/AudioListener.h"
 #include "modules/webaudio/AudioNode.h"
+#include "modules/webaudio/AudioParam.h"
 #include "platform/audio/AudioBus.h"
 #include "platform/audio/Cone.h"
 #include "platform/audio/Distance.h"
@@ -53,11 +54,21 @@ public:
         DistanceConeGainDirty = 0x2,
     };
 
-    static PassRefPtr<PannerHandler> create(AudioNode&, float sampleRate);
+    static PassRefPtr<PannerHandler> create(
+        AudioNode&,
+        float sampleRate,
+        AudioParamHandler& positionX,
+        AudioParamHandler& positionY,
+        AudioParamHandler& positionZ,
+        AudioParamHandler& orientationX,
+        AudioParamHandler& orientationY,
+        AudioParamHandler& orientationZ);
+
     ~PannerHandler() override;
 
     // AudioHandler
     void process(size_t framesToProcess) override;
+    void processSampleAccurateValues(AudioBus* destination, const AudioBus* source, size_t framesToProcess);
     void initialize() override;
     void uninitialize() override;
 
@@ -93,6 +104,7 @@ public:
     void setConeOuterGain(double);
 
     void markPannerAsDirty(unsigned);
+    void updateDirtyState();
 
     double tailTime() const override { return m_panner ? m_panner->tailTime() : 0; }
     double latencyTime() const override { return m_panner ? m_panner->latencyTime() : 0; }
@@ -101,15 +113,35 @@ public:
     void setChannelCountMode(const String&, ExceptionState&) final;
 
 private:
-    PannerHandler(AudioNode&, float sampleRate);
+    PannerHandler(
+        AudioNode&,
+        float sampleRate,
+        AudioParamHandler& positionX,
+        AudioParamHandler& positionY,
+        AudioParamHandler& positionZ,
+        AudioParamHandler& orientationX,
+        AudioParamHandler& orientationY,
+        AudioParamHandler& orientationZ);
+
     // AbstractAudioContext's listener
     AudioListener* listener();
 
     bool setPanningModel(unsigned); // Returns true on success.
     bool setDistanceModel(unsigned); // Returns true on success.
 
-    void calculateAzimuthElevation(double* outAzimuth, double* outElevation);
-    float calculateDistanceConeGain(); // Returns the combined distance and cone gain attenuation.
+    void calculateAzimuthElevation(
+        double* outAzimuth,
+        double* outElevation,
+        const FloatPoint3D& position,
+        const FloatPoint3D& listenerPosition,
+        const FloatPoint3D& listenerForward,
+        const FloatPoint3D& listenerUp);
+
+    // Returns the combined distance and cone gain attenuation.
+    float calculateDistanceConeGain(
+        const FloatPoint3D& position,
+        const FloatPoint3D& orientation,
+        const FloatPoint3D& listenerPosition);
 
     void azimuthElevation(double* outAzimuth, double* outElevation);
     float distanceConeGain();
@@ -124,10 +156,6 @@ private:
     unsigned m_panningModel;
     unsigned m_distanceModel;
 
-    // Current source location information
-    FloatPoint3D m_position;
-    FloatPoint3D m_orientation;
-
     bool m_isAzimuthElevationDirty;
     bool m_isDistanceConeGainDirty;
 
@@ -141,6 +169,36 @@ private:
     double m_cachedElevation;
     float m_cachedDistanceConeGain;
 
+    const FloatPoint3D position() const
+    {
+        return FloatPoint3D(
+            m_positionX->value(),
+            m_positionY->value(),
+            m_positionZ->value());
+    }
+
+    const FloatPoint3D orientation() const
+    {
+        return FloatPoint3D(
+            m_orientationX->value(),
+            m_orientationY->value(),
+            m_orientationZ->value());
+    }
+
+    // True if any of this panner's AudioParams have automations.
+    bool hasSampleAccurateValues() const;
+
+    RefPtr<AudioParamHandler> m_positionX;
+    RefPtr<AudioParamHandler> m_positionY;
+    RefPtr<AudioParamHandler> m_positionZ;
+
+    RefPtr<AudioParamHandler> m_orientationX;
+    RefPtr<AudioParamHandler> m_orientationY;
+    RefPtr<AudioParamHandler> m_orientationZ;
+
+    FloatPoint3D m_lastPosition;
+    FloatPoint3D m_lastOrientation;
+
     // Synchronize process() with setting of the panning model, source's location information, listener, distance parameters and sound cones.
     mutable Mutex m_processLock;
 };
@@ -150,6 +208,17 @@ class PannerNode final : public AudioNode {
 public:
     static PannerNode* create(AbstractAudioContext&, float sampleRate);
     PannerHandler& pannerHandler() const;
+
+    DECLARE_VIRTUAL_TRACE();
+
+    // Uses a 3D cartesian coordinate system
+    AudioParam* positionX() const { return m_positionX; };
+    AudioParam* positionY() const { return m_positionY; };
+    AudioParam* positionZ() const { return m_positionZ; };
+
+    AudioParam* orientationX() const { return m_orientationX; };
+    AudioParam* orientationY() const { return m_orientationY; };
+    AudioParam* orientationZ() const { return m_orientationZ; };
 
     String panningModel() const;
     void setPanningModel(const String&);
@@ -173,6 +242,14 @@ public:
 
 private:
     PannerNode(AbstractAudioContext&, float sampleRate);
+
+    Member<AudioParam> m_positionX;
+    Member<AudioParam> m_positionY;
+    Member<AudioParam> m_positionZ;
+
+    Member<AudioParam> m_orientationX;
+    Member<AudioParam> m_orientationY;
+    Member<AudioParam> m_orientationZ;
 };
 
 } // namespace blink

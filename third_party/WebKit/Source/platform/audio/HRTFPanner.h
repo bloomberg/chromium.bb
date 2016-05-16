@@ -39,6 +39,8 @@ public:
 
     // Panner
     void pan(double azimuth, double elevation, const AudioBus* inputBus, AudioBus* outputBus, size_t framesToProcess) override;
+    void panWithSampleAccurateValues(double* azimuth, double* elevation, const AudioBus* inputBus, AudioBus* outputBus, size_t framesToProcess) override;
+
     void reset() override;
 
     size_t fftSize() const { return fftSizeForSampleRate(m_sampleRate); }

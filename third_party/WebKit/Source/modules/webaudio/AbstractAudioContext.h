@@ -301,6 +301,7 @@ private:
 
     void removeFinishedSourceNodes();
 
+    // Listener for the PannerNodes
     Member<AudioListener> m_listener;
 
     // Only accessed in the audio thread.

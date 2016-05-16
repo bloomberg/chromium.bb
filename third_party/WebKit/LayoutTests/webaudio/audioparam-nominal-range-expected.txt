@@ -15,12 +15,14 @@ CONSOLE WARNING: BiquadFilter.frequency.value -1 outside nominal range [0, 24000
 CONSOLE WARNING: BiquadFilter.frequency.value 48001 outside nominal range [0, 24000]; value will be clamped.
 CONSOLE WARNING: Oscillator.frequency.value -1 outside nominal range [0, 24000]; value will be clamped.
 CONSOLE WARNING: Oscillator.frequency.value 48001 outside nominal range [0, 24000]; value will be clamped.
+CONSOLE WARNING: 'AudioListener.dopplerFactor' is deprecated and will be removed in M55, around November 2016. It has no effect as the Web Audio doppler effects have already been removed internally. See https://www.chromestatus.com/features/5238926818148352 for more details.
+CONSOLE WARNING: 'AudioListener.speedOfSound' is deprecated and will be removed in M55, around November 2016. It has no effect as the Web Audio doppler effects have already been removed internally. See https://www.chromestatus.com/features/5238926818148352 for more details.
 CONSOLE WARNING: Delay.delayTime.setValueAtTime value -1 outside nominal range [0, 1]; value will be clamped.
 CONSOLE WARNING: Delay.delayTime.linearRampToValueAtTime value 2 outside nominal range [0, 1]; value will be clamped.
 CONSOLE WARNING: Delay.delayTime.exponentialRampToValue value 3 outside nominal range [0, 1]; value will be clamped.
 CONSOLE WARNING: Delay.delayTime.setTargetAtTime value -1 outside nominal range [0, 1]; value will be clamped.
 CONSOLE WARNING: Delay.delayTime.setValueCurveAtTime value 1.5 outside nominal range [0, 1]; value will be clamped.
-Test Automation of SpatialListener Position.
+Test AudioParam Nominal Range Values.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
@@ -162,6 +164,44 @@ PASS OscillatorNode.detune.maxValue = Math.PI is not equal to 3.141592653589793.
 PASS OscillatorNode.detune.maxValue is read-only.
 PASS Nominal ranges for AudioParam(s) of OscillatorNode are correct.
 
+PASS PannerNode.positionX.minValue is equal to -3.4028234663852886e+38.
+PASS PannerNode.positionX.maxValue is equal to 3.4028234663852886e+38.
+PASS PannerNode.positionX.minValue = Math.PI is not equal to 3.141592653589793.
+PASS PannerNode.positionX.minValue is read-only.
+PASS PannerNode.positionX.maxValue = Math.PI is not equal to 3.141592653589793.
+PASS PannerNode.positionX.maxValue is read-only.
+PASS PannerNode.positionY.minValue is equal to -3.4028234663852886e+38.
+PASS PannerNode.positionY.maxValue is equal to 3.4028234663852886e+38.
+PASS PannerNode.positionY.minValue = Math.PI is not equal to 3.141592653589793.
+PASS PannerNode.positionY.minValue is read-only.
+PASS PannerNode.positionY.maxValue = Math.PI is not equal to 3.141592653589793.
+PASS PannerNode.positionY.maxValue is read-only.
+PASS PannerNode.positionZ.minValue is equal to -3.4028234663852886e+38.
+PASS PannerNode.positionZ.maxValue is equal to 3.4028234663852886e+38.
+PASS PannerNode.positionZ.minValue = Math.PI is not equal to 3.141592653589793.
+PASS PannerNode.positionZ.minValue is read-only.
+PASS PannerNode.positionZ.maxValue = Math.PI is not equal to 3.141592653589793.
+PASS PannerNode.positionZ.maxValue is read-only.
+PASS PannerNode.orientationX.minValue is equal to -3.4028234663852886e+38.
+PASS PannerNode.orientationX.maxValue is equal to 3.4028234663852886e+38.
+PASS PannerNode.orientationX.minValue = Math.PI is not equal to 3.141592653589793.
+PASS PannerNode.orientationX.minValue is read-only.
+PASS PannerNode.orientationX.maxValue = Math.PI is not equal to 3.141592653589793.
+PASS PannerNode.orientationX.maxValue is read-only.
+PASS PannerNode.orientationY.minValue is equal to -3.4028234663852886e+38.
+PASS PannerNode.orientationY.maxValue is equal to 3.4028234663852886e+38.
+PASS PannerNode.orientationY.minValue = Math.PI is not equal to 3.141592653589793.
+PASS PannerNode.orientationY.minValue is read-only.
+PASS PannerNode.orientationY.maxValue = Math.PI is not equal to 3.141592653589793.
+PASS PannerNode.orientationY.maxValue is read-only.
+PASS PannerNode.orientationZ.minValue is equal to -3.4028234663852886e+38.
+PASS PannerNode.orientationZ.maxValue is equal to 3.4028234663852886e+38.
+PASS PannerNode.orientationZ.minValue = Math.PI is not equal to 3.141592653589793.
+PASS PannerNode.orientationZ.minValue is read-only.
+PASS PannerNode.orientationZ.maxValue = Math.PI is not equal to 3.141592653589793.
+PASS PannerNode.orientationZ.maxValue is read-only.
+PASS Nominal ranges for AudioParam(s) of PannerNode are correct.
+
 PASS AudioBuffer has no AudioParams as expected.
 
 PASS IIRFilterNode has no AudioParams as expected.
@@ -180,11 +220,65 @@ PASS ChannelSplitterNode has no AudioParams as expected.
 
 PASS ChannelMergerNode has no AudioParams as expected.
 
-PASS PannerNode has no AudioParams as expected.
-
 PASS MediaElementAudioSourceNode has no AudioParams as expected.
 
 PASS MediaStreamAudioDestinationNode has no AudioParams as expected.
+
+PASS AudioListener.positionX.minValue is equal to -3.4028234663852886e+38.
+PASS AudioListener.positionX.maxValue is equal to 3.4028234663852886e+38.
+PASS AudioListener.positionX.minValue = Math.PI is not equal to 3.141592653589793.
+PASS AudioListener.positionX.minValue is read-only.
+PASS AudioListener.positionX.maxValue = Math.PI is not equal to 3.141592653589793.
+PASS AudioListener.positionX.maxValue is read-only.
+PASS AudioListener.positionY.minValue is equal to -3.4028234663852886e+38.
+PASS AudioListener.positionY.maxValue is equal to 3.4028234663852886e+38.
+PASS AudioListener.positionY.minValue = Math.PI is not equal to 3.141592653589793.
+PASS AudioListener.positionY.minValue is read-only.
+PASS AudioListener.positionY.maxValue = Math.PI is not equal to 3.141592653589793.
+PASS AudioListener.positionY.maxValue is read-only.
+PASS AudioListener.positionZ.minValue is equal to -3.4028234663852886e+38.
+PASS AudioListener.positionZ.maxValue is equal to 3.4028234663852886e+38.
+PASS AudioListener.positionZ.minValue = Math.PI is not equal to 3.141592653589793.
+PASS AudioListener.positionZ.minValue is read-only.
+PASS AudioListener.positionZ.maxValue = Math.PI is not equal to 3.141592653589793.
+PASS AudioListener.positionZ.maxValue is read-only.
+PASS AudioListener.forwardX.minValue is equal to -3.4028234663852886e+38.
+PASS AudioListener.forwardX.maxValue is equal to 3.4028234663852886e+38.
+PASS AudioListener.forwardX.minValue = Math.PI is not equal to 3.141592653589793.
+PASS AudioListener.forwardX.minValue is read-only.
+PASS AudioListener.forwardX.maxValue = Math.PI is not equal to 3.141592653589793.
+PASS AudioListener.forwardX.maxValue is read-only.
+PASS AudioListener.forwardY.minValue is equal to -3.4028234663852886e+38.
+PASS AudioListener.forwardY.maxValue is equal to 3.4028234663852886e+38.
+PASS AudioListener.forwardY.minValue = Math.PI is not equal to 3.141592653589793.
+PASS AudioListener.forwardY.minValue is read-only.
+PASS AudioListener.forwardY.maxValue = Math.PI is not equal to 3.141592653589793.
+PASS AudioListener.forwardY.maxValue is read-only.
+PASS AudioListener.forwardZ.minValue is equal to -3.4028234663852886e+38.
+PASS AudioListener.forwardZ.maxValue is equal to 3.4028234663852886e+38.
+PASS AudioListener.forwardZ.minValue = Math.PI is not equal to 3.141592653589793.
+PASS AudioListener.forwardZ.minValue is read-only.
+PASS AudioListener.forwardZ.maxValue = Math.PI is not equal to 3.141592653589793.
+PASS AudioListener.forwardZ.maxValue is read-only.
+PASS AudioListener.upX.minValue is equal to -3.4028234663852886e+38.
+PASS AudioListener.upX.maxValue is equal to 3.4028234663852886e+38.
+PASS AudioListener.upX.minValue = Math.PI is not equal to 3.141592653589793.
+PASS AudioListener.upX.minValue is read-only.
+PASS AudioListener.upX.maxValue = Math.PI is not equal to 3.141592653589793.
+PASS AudioListener.upX.maxValue is read-only.
+PASS AudioListener.upY.minValue is equal to -3.4028234663852886e+38.
+PASS AudioListener.upY.maxValue is equal to 3.4028234663852886e+38.
+PASS AudioListener.upY.minValue = Math.PI is not equal to 3.141592653589793.
+PASS AudioListener.upY.minValue is read-only.
+PASS AudioListener.upY.maxValue = Math.PI is not equal to 3.141592653589793.
+PASS AudioListener.upY.maxValue is read-only.
+PASS AudioListener.upZ.minValue is equal to -3.4028234663852886e+38.
+PASS AudioListener.upZ.maxValue is equal to 3.4028234663852886e+38.
+PASS AudioListener.upZ.minValue = Math.PI is not equal to 3.141592653589793.
+PASS AudioListener.upZ.minValue is read-only.
+PASS AudioListener.upZ.maxValue = Math.PI is not equal to 3.141592653589793.
+PASS AudioListener.upZ.maxValue is read-only.
+PASS Nominal ranges for AudioParam(s) of AudioListener are correct.
 
 PASS All nodes were tested.
 

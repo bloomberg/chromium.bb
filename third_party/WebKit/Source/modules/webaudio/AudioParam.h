@@ -64,7 +64,22 @@ enum AudioParamType {
     ParamTypeGainGain,
     ParamTypeOscillatorFrequency,
     ParamTypeOscillatorDetune,
-    ParamTypeStereoPannerPan
+    ParamTypeStereoPannerPan,
+    ParamTypePannerPositionX,
+    ParamTypePannerPositionY,
+    ParamTypePannerPositionZ,
+    ParamTypePannerOrientationX,
+    ParamTypePannerOrientationY,
+    ParamTypePannerOrientationZ,
+    ParamTypeAudioListenerPositionX,
+    ParamTypeAudioListenerPositionY,
+    ParamTypeAudioListenerPositionZ,
+    ParamTypeAudioListenerForwardX,
+    ParamTypeAudioListenerForwardY,
+    ParamTypeAudioListenerForwardZ,
+    ParamTypeAudioListenerUpX,
+    ParamTypeAudioListenerUpY,
+    ParamTypeAudioListenerUpZ,
 };
 
 // AudioParamHandler is an actual implementation of web-exposed AudioParam

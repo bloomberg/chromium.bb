@@ -40,9 +40,18 @@ enum DistanceModelType {
     attribute PanningModelType panningModel;
 
     // Uses a 3D cartesian coordinate system
-    void setPosition(float x, float y, float z);
-    void setOrientation(float x, float y, float z);
+    [MeasureAs=PannerNodeSetPosition] void setPosition(float x, float y, float z);
+    [MeasureAs=PannerNodeSetOrientation] void setOrientation(float x, float y, float z);
     [DeprecateAs=PannerNodeSetVelocity] void setVelocity(float x, float y, float z);
+
+    // Uses a 3D cartesian coordinate system
+    readonly attribute AudioParam positionX;
+    readonly attribute AudioParam positionY;
+    readonly attribute AudioParam positionZ;
+
+    readonly attribute AudioParam orientationX;
+    readonly attribute AudioParam orientationY;
+    readonly attribute AudioParam orientationZ;
 
     // Distance model
     attribute DistanceModelType distanceModel;

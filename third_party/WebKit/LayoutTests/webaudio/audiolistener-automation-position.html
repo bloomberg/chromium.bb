@@ -1,0 +1,204 @@
+<!doctype html>
+<html>
+  <head>
+    <script src="../resources/js-test.js"></script>
+    <script src="resources/compatibility.js"></script>
+    <script src="resources/audio-testing.js"></script>
+    <title>Test Automation of AudioListener</title>
+  </head>
+
+  <body>
+    <script>
+      description("Test Automation of AudioListener Position.");
+      window.jsTestIsAsync = true;
+
+      var sampleRate = 48000;
+      // These tests are quite slow, so don't run for many frames.  1024 frames should be enough to
+      // demonstrate that automations are working.
+      var renderFrames = 1024;
+      var renderDuration = renderFrames / sampleRate;
+
+      // End time of the automation.  Fairly arbitrary, but must be less than the render duration so
+      // that we can verify that the automation did end at the correct time and value.
+      var endTime = 0.75 * renderDuration;
+
+      var audit = Audit.createTaskRunner();
+
+      // Starting position for the panner
+      var defaultStartPosition = {
+        x: 0,
+        y: 0,
+        z: 0
+      };
+
+      // Ending position for the panner
+      var pannerEndPosition = {
+        x: 1000,
+        y: 1000,
+        z: 1000
+      };
+
+      // Ending position for the listener.  It MUST be the the negative of the pannerEndPosition!
+      var listenerEndPosition = {
+        x: -pannerEndPosition.x,
+        y: -pannerEndPosition.y,
+        z: -pannerEndPosition.z
+      };
+
+
+      // Test the linear, inverse, and exponential distance models when the AudioListener is moving
+      // instead of the panner.  We take advantage that motion is relative and create a reference by
+      // moving the panner in one direction.  The resulting output is the expected result.  Then we
+      // redo the test, but this time move the listener in the opposite direction.  The output of
+      // this test is compared against the panner result.  They should be the same.
+
+      audit.defineTask("linear", function (done) {
+        runTest({
+          startPosition: defaultStartPosition,
+          endPosition: pannerEndPosition,
+          distanceModel: {
+            model: "linear",
+            rolloff: 1
+          }
+        }).then(done);
+      });
+
+      audit.defineTask("exponential", function (done) {
+        runTest({
+          startPosition: defaultStartPosition,
+          endPosition: pannerEndPosition,
+          distanceModel: {
+            model: "exponential",
+            rolloff: 1.5
+          }
+        }).then(done);
+      });
+
+      audit.defineTask("inverse", function (done) {
+        runTest({
+          startPosition: defaultStartPosition,
+          endPosition: pannerEndPosition,
+          distanceModel: {
+            model: "inverse",
+            rolloff: 1
+          }
+        }).then(done);
+      });
+
+      audit.defineTask("finish", function (done) {
+        finishJSTest();
+        done();
+      });
+
+      audit.runTasks();
+        
+      function createGraph() {
+        var context = new OfflineAudioContext(2, renderFrames, sampleRate);
+        // Stereo source for the panner.
+        var source = context.createBufferSource();
+        source.buffer = createConstantBuffer(context, renderFrames, [1, 2]);
+
+        var panner = context.createPanner();
+        panner.panningModel = "equalpower";
+
+        source.connect(panner);
+        panner.connect(context.destination);
+
+        return {
+          context: context,
+          source: source,
+          panner: panner
+        };
+      }
+
+      // Run a listener test with the given options.
+      function runTest(options) {
+        var refResult;
+
+        return runPannerTest(options).then(function (renderedBuffer) {
+          refResult = renderedBuffer;
+        }).then(function () {
+          // Move the listener in the opposite direction.
+          options.endPosition = listenerEndPosition;
+          return runListenerTest(options).then(function (renderedBuffer) {
+            compareResults(renderedBuffer, refResult, options);
+          });
+        });
+      }
+
+      function runPannerTest(options) {
+        var graph = createGraph();
+
+        return runTestCore(graph, options, graph.panner);
+      }
+
+
+      function runListenerTest(options) {
+        var graph = createGraph();
+
+        return runTestCore(graph, options, graph.context.listener);
+      }
+
+      function runTestCore(graph, options, audioOjbect) {
+        var {context, source, panner} = graph;
+
+        // Initialize the panner with known values.
+        panner.distanceModel = options.distanceModel.model;
+        panner.rolloffFactor = options.distanceModel.rolloff;
+        panner.panningModel = "equalpower";
+        
+        // Automate the location.  audioObject must be either a PannerNode or the context's
+        // AudioListener.
+        
+        audioOjbect.positionX.setValueAtTime(options.startPosition.x, 0);
+        audioOjbect.positionY.setValueAtTime(options.startPosition.y, 0);
+        audioOjbect.positionZ.setValueAtTime(options.startPosition.z, 0);
+
+        audioOjbect.positionX.linearRampToValueAtTime(options.endPosition.x, endTime);
+        audioOjbect.positionY.linearRampToValueAtTime(options.endPosition.y, endTime);
+        audioOjbect.positionZ.linearRampToValueAtTime(options.endPosition.z, endTime);
+
+        // Start the source, render the graph, and return the resulting promise from rendering.
+        source.start();
+
+        return context.startRendering().then(function (resultBuffer) {
+          return resultBuffer;
+        });
+      }
+
+      function compareResults(actualResult, expectedResult, options) {
+        // Compare the output with the reference output from moving the source in the opposite
+        // direction.
+
+        var success = true;
+
+        var expectedLeft = expectedResult.getChannelData(0);
+        var expectedRight = expectedResult.getChannelData(1);
+
+        var actualLeft = actualResult.getChannelData(0);
+        var actualRight = actualResult.getChannelData(1);
+
+        var prefix = 'Distance model: "' + options.distanceModel.model + '"';
+        prefix += ', rolloff: ' + options.distanceModel.rolloff;
+        success = Should(prefix + ": left channel", actualLeft, {
+            verbose: true
+          })
+          .beCloseToArray(expectedLeft, 0) && success;
+        success = Should(prefix + ": right channel", actualRight, {
+            verbose: true
+          })
+          .beCloseToArray(expectedRight, 0) && success;
+
+        var message = 'Moving AudioListener with distance model: "';
+        message += options.distanceModel.model + '", rolloff: ';
+        message += options.distanceModel.rolloff + ": ";
+        if (success)
+          testPassed(message + " passed.\n");
+        else
+          testFailed(message + " failed.\n");
+
+        return success;
+      }
+    </script>
+  </body>
+</html>

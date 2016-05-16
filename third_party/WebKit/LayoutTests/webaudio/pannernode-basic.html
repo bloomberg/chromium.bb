@@ -1,184 +1,196 @@
 <!DOCTYPE html>
 <html>
-<head>
-<script src="../resources/js-test.js"></script>
-<script src="resources/compatibility.js"></script>
-<script src="resources/audio-testing.js"></script>
-</head>
 
-<body>
-<div id="description"></div>
-<div id="console"></div>
+  <head>
+    <script src="../resources/js-test.js"></script>
+    <script src="resources/compatibility.js"></script>
+    <script src="resources/audio-testing.js"></script>
+  </head>
 
-<script>
-description("Basic tests for PannerNode.");
+  <body>
+    <script>
+      description("Basic tests for PannerNode.");
+      window.jsTestIsAsync = true;
 
-var context = 0;
+      var context;
+      var panner;
+      var audit = Audit.createTaskRunner();
 
-function runTest() {
-    if (window.testRunner) {
-        testRunner.dumpAsText();
-        testRunner.waitUntilDone();
-    }
+      audit.defineTask("initialize", function (done) {
+        context = new AudioContext();
+        panner = context.createPanner();
+        done();
+      });
 
-    window.jsTestIsAsync = true;
+      audit.defineTask("basic", function (done) {
+        var success = true;
 
-    context = new AudioContext();
-    var panner = context.createPanner();
+        success = Should("panner.numberOfInputs", panner.numberOfInputs)
+          .beEqualTo(1) && success;
+        success = Should("panner.numberOfOutputs", panner.numberOfOutputs)
+          .beEqualTo(1) && success;
+        success = Should("panner.refDistance", panner.refDistance)
+          .beEqualTo(1) && success;
+        panner.refDistance = 270.5;
+        success = Should("panner.refDistance = 270.5", panner.refDistance)
+          .beEqualTo(270.5) && success;
+        success = Should("panner.maxDistance", panner.maxDistance)
+          .beEqualTo(10000) && success;
+        panner.maxDistance = 100.5;
+        success = Should("panner.maxDistance = 100.5", panner.maxDistance)
+          .beEqualTo(100.5) && success;
+        success = Should("panner.rolloffFactor", panner.rolloffFactor)
+          .beEqualTo(1) && success;
+        panner.rolloffFactor = 0.75;
+        success = Should("panner.rolloffFactor = 0.75", panner.rolloffFactor)
+          .beEqualTo(0.75) && success;
+        success = Should("panner.coneInnerAngle", panner.coneInnerAngle)
+          .beEqualTo(360) && success;
+        panner.coneInnerAngle = 240.5;
+        success = Should("panner.coneInnerAngle = 240.5", panner.coneInnerAngle)
+          .beEqualTo(240.5) && success;
+        success = Should("panner.coneOuterAngle", panner.coneOuterAngle)
+          .beEqualTo(360) && success;
+        panner.coneOuterAngle = 166.5;
+        success = Should("panner.coneOuterAngle = 166.5", panner.coneOuterAngle)
+          .beEqualTo(166.5) && success;
+        success = Should("panner.coneOuterGain", panner.coneOuterGain)
+          .beEqualTo(0) && success;
+        panner.coneOuterGain = 0.25;
+        success = Should("panner.coneOuterGain = 0.25", panner.coneOuterGain)
+          .beEqualTo(0.25) && success;
+        success = Should("panner.panningModel", panner.panningModel)
+          .beEqualTo("equalpower") && success;
+        success = Should("panner.distanceModel", panner.distanceModel)
+          .beEqualTo("inverse") && success;
 
-    if (panner.numberOfInputs === 1)
-        testPassed("PannerNode has one input.");
-    else
-        testFailed("PannerNode should have one input.");
+        success = Should("panner.positionX", panner.positionX.value)
+          .beEqualTo(0) && success;
+        success = Should("panner.positionY", panner.positionY.value)
+          .beEqualTo(0) && success;
+        success = Should("panner.positionZ", panner.positionZ.value)
+          .beEqualTo(0) && success;
+        success = Should("panner.orientationX", panner.orientationX.value)
+          .beEqualTo(1) && success;
+        success = Should("panner.orientationY", panner.orientationY.value)
+          .beEqualTo(0) && success;
+        success = Should("panner.orientationZ", panner.orientationZ.value)
+          .beEqualTo(0) && success;
 
-    if (panner.numberOfOutputs === 1)
-        testPassed("PannerNode has one output.");
-    else
-        testFailed("PannerNode should have one output.");
+        if (success)
+          testPassed("Basic Panner attribute tests.\n");
+        else
+          testFailed("Basic Panner attribute tests.\n");
 
-    if (panner.refDistance === 1)
-        testPassed("refDistance default value is 1.");
-    else
-        testFailed("refDistance default value should be 1.");
+        done();
+      });
 
-    panner.refDistance = 270.52
-    if (panner.refDistance === 270.52)
-        testPassed("refDistance value is set to 270.52.");
-    else
-        testFailed("refDistance value should be set to 270.52.");
+      audit.defineTask("listener", function (done) {
+        var success = true;
 
-    if (panner.maxDistance === 10000)
-        testPassed("maxDistance default value is 10000.");
-    else
-        testFailed("maxDistance default value should be 10000.");
+        success = Should("listener.positionX", context.listener.positionX.value)
+          .beEqualTo(0) && success;
+        success = Should("listener.positionY", context.listener.positionY.value)
+          .beEqualTo(0) && success;
+        success = Should("listener.positionZ", context.listener.positionZ.value)
+          .beEqualTo(0) && success;
+        success = Should("listener.forwardX", context.listener.forwardX.value)
+          .beEqualTo(0) && success;
+        success = Should("listener.forwardY", context.listener.forwardY.value)
+          .beEqualTo(0) && success;
+        success = Should("listener.forwardZ", context.listener.forwardZ.value)
+          .beEqualTo(-1) && success;
+        success = Should("listener.upX", context.listener.upX.value)
+          .beEqualTo(0) && success;
+        success = Should("listener.upY", context.listener.upY.value)
+          .beEqualTo(1) && success;
+        success = Should("listener.upZ", context.listener.upZ.value)
+          .beEqualTo(0) && success;
 
-    panner.maxDistance = 100.55
-    if (panner.maxDistance === 100.55)
-        testPassed("maxDistance value is set to 100.55.");
-    else
-        testFailed("maxDistance value should be set to 100.55.");
+        if (success)
+          testPassed("Basic AudioListener attribute tests.\n");
+        else
+          testFailed("Basic AudioListener attribute tests.\n");
+        done();
+      });
 
-    if (panner.rolloffFactor === 1)
-        testPassed("rolloffFactor default value is 1.");
-    else
-        testFailed("rolloffFactor default value should be 1.");
+      audit.defineTask("panning models", function (done) {
+        // Check that the .panningModel attribute can be set to all legal values.
+        var panningModels = ["equalpower", "HRTF"];
 
-    panner.rolloffFactor = 0.83
-    if (panner.rolloffFactor === 0.83)
-        testPassed("rolloffFactor value is set to 0.83.");
-    else
-        testFailed("rolloffFactor value should be set to 0.83.");
+        var success = true;
+        for (var i = 0; i < panningModels.length; ++i) {
+          success = Should('panner.panningModel = "' + panningModels[i] + '"', function () {
+            panner.panningModel = panningModels[i];
+          }).notThrow() && success;
 
-    if (panner.coneInnerAngle === 360)
-        testPassed("coneInnerAngle default value is 360.");
-    else
-        testFailed("coneInnerAngle default value should be 360.");
-
-    panner.coneInnerAngle = 240.45
-    if (panner.coneInnerAngle === 240.45)
-        testPassed("coneInnerAngle value is set to 240.45.");
-    else
-        testFailed("coneInnerAngle value should be set to 240.45.");
-
-    if (panner.coneOuterAngle === 360)
-        testPassed("coneOuterAngle default value is 360.");
-    else
-        testFailed("coneOuterAngle default value should be 360.");
-
-    panner.coneOuterAngle = 166.66
-    if (panner.coneOuterAngle === 166.66)
-        testPassed("coneOuterAngle value is set to 166.66.");
-    else
-        testFailed("coneOuterAngle value should be set to 166.66.");
-
-    if (panner.coneOuterGain === 0)
-        testPassed("coneOuterGain default value is 0.");
-    else
-        testFailed("coneOuterGain default value should be 0.");
-
-    panner.coneOuterGain = 0.35
-    if (panner.coneOuterGain === 0.35)
-        testPassed("coneOuterGain value is set to 0.35.");
-    else
-        testFailed("coneOuterGain value should be set to 0.35.");
-
-    if (panner.panningModel === "equalpower")
-        testPassed("PannerNode defaults to 'equalpower' panningModel.");
-    else
-        testFailed("PannerNode should default to 'equalpower' panningModel.");
-
-    if (panner.distanceModel === "inverse")
-        testPassed("PannerNode defaults to 'inverse' distanceModel.");
-    else
-        testFailed("PannerNode should default to 'inverse' distanceModel.");
-
-    // Check that the .panningModel attribute can be set to all legal values.
-    var panningModels = [{value: "equalpower", integerValue: panner.EQUALPOWER},
-                         {value: "HRTF", integerValue: panner.HRTF},
-                        ];
-
-    for (var i = 0; i < panningModels.length; ++i) {
-        try {
-            panner.panningModel = panningModels[i].value;
-            if (panner.panningModel === panningModels[i].value) {
-                var message = "panningModel: '" + panningModels[i].value + "' is settable.";
-                testPassed(message);
-            } else {
-                var message = "panningModel: '" + panningModels[i].value + "' was not correctly set.";
-                testFailed(message);
-            }
-        } catch(e) {
-            var message = "Setting panningModel to '" + panningModels[i].value + "' should not throw exception.";
-            testFailed(message);
+          success = Should('panner.panningModel = "' + panningModels[i] + '"', panner.panningModel)
+            .beEqualTo(panningModels[i]) && success;
         }
-    }
 
-    // Check that numerical values are no longer supported.
-    panner.panningModel = "HRTF";
-    panner.panningModel = 1;
-    if (panner.panningModel == 1) {
-        testFailed("panningModel incorrectly set to " + panner.panningModel + ".");
-    } else {
-        testPassed("panningModel correctly not set to 1.");
-    }
+        success = Should('panner.panningModel = "invalid"', function () {
+          panner.panningModel = "invalid";
+        }).notThrow() && success;
 
-    // Check that the .distanceModel attribute can be set to all legal values.
-    var distanceModels = [{value: "linear"},
-                          {value: "inverse"},
-                          {value: "exponential"}
-                        ];
+        success = Should("panner.panningModel", panner.panningModel)
+          .beEqualTo("HRTF") && success;
 
-    for (var i = 0; i < distanceModels.length; ++i) {
-        try {
-            panner.distanceModel = distanceModels[i].value;
-            if (panner.distanceModel === distanceModels[i].value) {
-                var message = "distanceModel: '" + distanceModels[i].value + "' is settable.";
-                testPassed(message);
-            } else {
-                var message = "distanceModel: '" + distanceModels[i].value + "' was not correctly set.";
-                testFailed(message);
-            }
-        } catch(e) {
-            var message = "Setting distanceModel to '" + distanceModels[i].value + "' should not throw exception.";
-            testFailed(message);
+        // Check that numerical values are no longer supported.  We shouldn't throw and the value
+        // shouldn't be changed.
+        panner.panningModel = "HRTF";
+        success = Should('panner.panningModel = 1', function () {
+          panner.panningModel = 1;
+        }).notThrow() && success;
+
+        success = Should('panner.panningModel', panner.panningModel)
+          .beEqualTo("HRTF") && success;
+
+        if (success)
+          testPassed("Basic Panner panning models tests.\n");
+        else
+          testFailed("Basic Panner panning models tests.\n");
+        done();
+      });
+
+      audit.defineTask("distance models", function (done) {
+        // Check that the .panningModel attribute can be set to all legal values.
+        var distanceModels = ["linear", "inverse", "exponential"];
+
+        var success = true;
+        for (var i = 0; i < distanceModels.length; ++i) {
+          success = Should('panner.distanceModel = "' + distanceModels[i] + '"',
+            function () {
+              panner.distanceModel = distanceModels[i];
+            }).notThrow() && success;
+
+          success = Should('panner.distanceModel = "' + distanceModels[i] + '"', panner
+              .distanceModel)
+            .beEqualTo(distanceModels[i]) && success;
         }
-    }
 
-    // Check that numerical values are no longer supported.
-    panner.distanceModel = "inverse";
-    panner.distanceModel = 1;
-    if (panner.distanceModel == 1) {
-        testFailed("distanceModel incorrectly set to " + panner.distanceModel + ".");
-    } else {
-        testPassed("distanceModel correctly not set to 1.");
-    }
+        success = Should('panner.distanceModel = "invalid"', function () {
+          panner.distanceModel = "invalid";
+        }).notThrow() && success;
 
-    finishJSTest();
-}
+        success = Should("panner.distanceModel", panner.distanceModel)
+          .beEqualTo("exponential") && success;
 
-runTest();
+        if (success)
+          testPassed("Basic Panner distance models tests.\n");
+        else
+          testFailed("Basic Panner distance models tests.\n");
+        done();
+      });
 
-</script>
+      audit.defineTask("finish", function (done) {
+        finishJSTest();
+        done();
+      });
 
-</body>
+
+      audit.runTasks();
+    </script>
+
+  </body>
+
 </html>

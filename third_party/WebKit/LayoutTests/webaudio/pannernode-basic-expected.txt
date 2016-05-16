@@ -1,32 +1,66 @@
+CONSOLE WARNING: The provided value 'invalid' is not a valid enum value of type PanningModelType.
 CONSOLE WARNING: The provided value '1' is not a valid enum value of type PanningModelType.
-CONSOLE WARNING: The provided value '1' is not a valid enum value of type DistanceModelType.
+CONSOLE WARNING: The provided value 'invalid' is not a valid enum value of type DistanceModelType.
 Basic tests for PannerNode.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-PASS PannerNode has one input.
-PASS PannerNode has one output.
-PASS refDistance default value is 1.
-PASS refDistance value is set to 270.52.
-PASS maxDistance default value is 10000.
-PASS maxDistance value is set to 100.55.
-PASS rolloffFactor default value is 1.
-PASS rolloffFactor value is set to 0.83.
-PASS coneInnerAngle default value is 360.
-PASS coneInnerAngle value is set to 240.45.
-PASS coneOuterAngle default value is 360.
-PASS coneOuterAngle value is set to 166.66.
-PASS coneOuterGain default value is 0.
-PASS coneOuterGain value is set to 0.35.
-PASS PannerNode defaults to 'equalpower' panningModel.
-PASS PannerNode defaults to 'inverse' distanceModel.
-PASS panningModel: 'equalpower' is settable.
-PASS panningModel: 'HRTF' is settable.
-PASS panningModel correctly not set to 1.
-PASS distanceModel: 'linear' is settable.
-PASS distanceModel: 'inverse' is settable.
-PASS distanceModel: 'exponential' is settable.
-PASS distanceModel correctly not set to 1.
+
+PASS panner.numberOfInputs is equal to 1.
+PASS panner.numberOfOutputs is equal to 1.
+PASS panner.refDistance is equal to 1.
+PASS panner.refDistance = 270.5 is equal to 270.5.
+PASS panner.maxDistance is equal to 10000.
+PASS panner.maxDistance = 100.5 is equal to 100.5.
+PASS panner.rolloffFactor is equal to 1.
+PASS panner.rolloffFactor = 0.75 is equal to 0.75.
+PASS panner.coneInnerAngle is equal to 360.
+PASS panner.coneInnerAngle = 240.5 is equal to 240.5.
+PASS panner.coneOuterAngle is equal to 360.
+PASS panner.coneOuterAngle = 166.5 is equal to 166.5.
+PASS panner.coneOuterGain is equal to 0.
+PASS panner.coneOuterGain = 0.25 is equal to 0.25.
+PASS panner.panningModel is equal to "equalpower".
+PASS panner.distanceModel is equal to "inverse".
+PASS panner.positionX is equal to 0.
+PASS panner.positionY is equal to 0.
+PASS panner.positionZ is equal to 0.
+PASS panner.orientationX is equal to 1.
+PASS panner.orientationY is equal to 0.
+PASS panner.orientationZ is equal to 0.
+PASS Basic Panner attribute tests.
+
+PASS listener.positionX is equal to 0.
+PASS listener.positionY is equal to 0.
+PASS listener.positionZ is equal to 0.
+PASS listener.forwardX is equal to 0.
+PASS listener.forwardY is equal to 0.
+PASS listener.forwardZ is equal to -1.
+PASS listener.upX is equal to 0.
+PASS listener.upY is equal to 1.
+PASS listener.upZ is equal to 0.
+PASS Basic AudioListener attribute tests.
+
+PASS panner.panningModel = "equalpower" did not throw an exception.
+PASS panner.panningModel = "equalpower" is equal to "equalpower".
+PASS panner.panningModel = "HRTF" did not throw an exception.
+PASS panner.panningModel = "HRTF" is equal to "HRTF".
+PASS panner.panningModel = "invalid" did not throw an exception.
+PASS panner.panningModel is equal to "HRTF".
+PASS panner.panningModel = 1 did not throw an exception.
+PASS panner.panningModel is equal to "HRTF".
+PASS Basic Panner panning models tests.
+
+PASS panner.distanceModel = "linear" did not throw an exception.
+PASS panner.distanceModel = "linear" is equal to "linear".
+PASS panner.distanceModel = "inverse" did not throw an exception.
+PASS panner.distanceModel = "inverse" is equal to "inverse".
+PASS panner.distanceModel = "exponential" did not throw an exception.
+PASS panner.distanceModel = "exponential" is equal to "exponential".
+PASS panner.distanceModel = "invalid" did not throw an exception.
+PASS panner.distanceModel is equal to "exponential".
+PASS Basic Panner distance models tests.
+
 PASS successfullyParsed is true
 
 TEST COMPLETE

@@ -72775,6 +72775,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1360" label="CSSValueAppearanceRadio"/>
   <int value="1361" label="CSSValueAppearanceSearchField"/>
   <int value="1362" label="CSSValueAppearanceTextField"/>
+  <int value="1363" label="AudioContextCreatePannerAutomated"/>
+  <int value="1364" label="PannerNodeSetPosition"/>
+  <int value="1365" label="PannerNodeSetOrientation"/>
+  <int value="1366" label="AudioListenerSetPosition"/>
+  <int value="1367" label="AudioListenerSetOrientation"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">

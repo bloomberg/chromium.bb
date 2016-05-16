@@ -105,6 +105,36 @@ String AudioParamHandler::getParamName() const
         return "Oscillator.detune";
     case ParamTypeStereoPannerPan:
         return "StereoPanner.pan";
+    case ParamTypePannerPositionX:
+        return "Panner.positionX";
+    case ParamTypePannerPositionY:
+        return "Panner.positionY";
+    case ParamTypePannerPositionZ:
+        return "Panner.positionZ";
+    case ParamTypePannerOrientationX:
+        return "Panner.orientationX";
+    case ParamTypePannerOrientationY:
+        return "Panner.orientationY";
+    case ParamTypePannerOrientationZ:
+        return "Panner.orientationZ";
+    case ParamTypeAudioListenerPositionX:
+        return "AudioListener.positionX";
+    case ParamTypeAudioListenerPositionY:
+        return "AudioListener.positionY";
+    case ParamTypeAudioListenerPositionZ:
+        return "AudioListener.positionZ";
+    case ParamTypeAudioListenerForwardX:
+        return "AudioListener.forwardX";
+    case ParamTypeAudioListenerForwardY:
+        return "AudioListener.forwardY";
+    case ParamTypeAudioListenerForwardZ:
+        return "AudioListener.forwardZ";
+    case ParamTypeAudioListenerUpX:
+        return "AudioListener.upX";
+    case ParamTypeAudioListenerUpY:
+        return "AudioListener.upY";
+    case ParamTypeAudioListenerUpZ:
+        return "AudioListener.upZ";
     };
 
     NOTREACHED();

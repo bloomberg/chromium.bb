@@ -1176,6 +1176,11 @@ public:
         CSSValueAppearanceRadio = 1360,
         CSSValueAppearanceSearchField = 1361,
         CSSValueAppearanceTextField = 1362,
+        AudioContextCreatePannerAutomated = 1363,
+        PannerNodeSetPosition = 1364,
+        PannerNodeSetOrientation = 1365,
+        AudioListenerSetPosition = 1366,
+        AudioListenerSetOrientation = 1367,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

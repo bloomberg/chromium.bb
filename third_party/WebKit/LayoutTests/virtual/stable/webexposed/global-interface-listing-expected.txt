@@ -164,7 +164,16 @@ interface AudioDestinationNode : AudioNode
 interface AudioListener
     attribute @@toStringTag
     getter dopplerFactor
+    getter forwardX
+    getter forwardY
+    getter forwardZ
+    getter positionX
+    getter positionY
+    getter positionZ
     getter speedOfSound
+    getter upX
+    getter upY
+    getter upZ
     method constructor
     method setOrientation
     method setPosition
