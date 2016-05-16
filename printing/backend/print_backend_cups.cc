@@ -31,6 +31,9 @@ class PrintBackendCUPS : public PrintBackend {
   PrintBackendCUPS(const GURL& print_server_url,
                    http_encryption_t encryption, bool blocking);
 
+ private:
+  ~PrintBackendCUPS() override {}
+
   // PrintBackend implementation.
   bool EnumeratePrinters(PrinterList* printer_list) override;
   std::string GetDefaultPrinterName() override;
@@ -42,16 +45,16 @@ class PrintBackendCUPS : public PrintBackend {
   std::string GetPrinterDriverInfo(const std::string& printer_name) override;
   bool IsValidPrinter(const std::string& printer_name) override;
 
- protected:
-  ~PrintBackendCUPS() override {}
-
- private:
-  // Following functions are wrappers around corresponding CUPS functions.
-  // <functions>2()  are called when print server is specified, and plain
-  // version in another case. There is an issue specifing CUPS_HTTP_DEFAULT
-  // in the <functions>2(), it does not work in CUPS prior to 1.4.
+  // The following functions are wrappers around corresponding CUPS functions.
+  // <functions>2() are called when print server is specified, and plain version
+  // in another case. There is an issue specifying CUPS_HTTP_DEFAULT in the
+  // functions>2(), it does not work in CUPS prior to 1.4.
   int GetDests(cups_dest_t** dests);
   base::FilePath GetPPD(const char* name);
+
+  // Wrapper around cupsGetNamedDest(). Returned result should be freed with
+  // cupsFreeDests().
+  cups_dest_t* GetNamedDest(const std::string& printer_name);
 
   GURL print_server_url_;
   http_encryption_t cups_encryption_;
@@ -70,9 +73,9 @@ bool PrintBackendCUPS::EnumeratePrinters(PrinterList* printer_list) {
   DCHECK(printer_list);
   printer_list->clear();
 
-  cups_dest_t* destinations = NULL;
+  cups_dest_t* destinations = nullptr;
   int num_dests = GetDests(&destinations);
-  if ((num_dests == 0) && (cupsLastError() > IPP_OK_EVENTS_COMPLETE)) {
+  if (!num_dests && cupsLastError() > IPP_OK_EVENTS_COMPLETE) {
     VLOG(1) << "CUPS: Error getting printers from CUPS server"
             << ", server: " << print_server_url_
             << ", error: " << static_cast<int>(cupsLastError());
@@ -86,7 +89,7 @@ bool PrintBackendCUPS::EnumeratePrinters(PrinterList* printer_list) {
     // At least on Mac. Check for scanners and skip them.
     const char* type_str = cupsGetOption(kCUPSPrinterTypeOpt,
         printer.num_options, printer.options);
-    if (type_str != NULL) {
+    if (type_str) {
       int type;
       if (base::StringToInt(type_str, &type) && (type & CUPS_PRINTER_SCANNER))
         continue;
@@ -98,12 +101,12 @@ bool PrintBackendCUPS::EnumeratePrinters(PrinterList* printer_list) {
 
     const char* info = cupsGetOption(kCUPSPrinterInfoOpt,
         printer.num_options, printer.options);
-    if (info != NULL)
+    if (info)
       printer_info.printer_description = info;
 
     const char* state = cupsGetOption(kCUPSPrinterStateOpt,
         printer.num_options, printer.options);
-    if (state != NULL)
+    if (state)
       base::StringToInt(state, &printer_info.printer_status);
 
     const char* drv_info = cupsGetOption(kCUPSPrinterMakeModelOpt,
@@ -123,8 +126,7 @@ bool PrintBackendCUPS::EnumeratePrinters(PrinterList* printer_list) {
 
   cupsFreeDests(num_dests, destinations);
 
-  VLOG(1) << "CUPS: Enumerated printers"
-          << ", server: " << print_server_url_
+  VLOG(1) << "CUPS: Enumerated printers, server: " << print_server_url_
           << ", # of printers: " << printer_list->size();
   return true;
 }
@@ -133,7 +135,7 @@ std::string PrintBackendCUPS::GetDefaultPrinterName() {
   // Not using cupsGetDefault() because it lies about the default printer.
   cups_dest_t* dests;
   int num_dests = GetDests(&dests);
-  cups_dest_t* dest = cupsGetDest(NULL, NULL, num_dests, dests);
+  cups_dest_t* dest = cupsGetDest(nullptr, nullptr, num_dests, dests);
   std::string name = dest ? std::string(dest->name) : std::string();
   cupsFreeDests(num_dests, dests);
   return name;
@@ -155,8 +157,7 @@ bool PrintBackendCUPS::GetPrinterCapsAndDefaults(
     PrinterCapsAndDefaults* printer_info) {
   DCHECK(printer_info);
 
-  VLOG(1) << "CUPS: Getting caps and defaults"
-          << ", printer name: " << printer_name;
+  VLOG(1) << "CUPS: Getting caps and defaults, printer name: " << printer_name;
 
   base::FilePath ppd_path(GetPPD(printer_name.c_str()));
   // In some cases CUPS failed to get ppd file.
@@ -183,36 +184,28 @@ bool PrintBackendCUPS::GetPrinterCapsAndDefaults(
 
 std::string PrintBackendCUPS::GetPrinterDriverInfo(
     const std::string& printer_name) {
-  cups_dest_t* destinations = NULL;
-  int num_dests = GetDests(&destinations);
   std::string result;
-  for (int printer_index = 0; printer_index < num_dests; ++printer_index) {
-    const cups_dest_t& printer = destinations[printer_index];
-    if (printer_name == printer.name) {
-      const char* info = cupsGetOption(kCUPSPrinterMakeModelOpt,
-                                       printer.num_options,
-                                       printer.options);
-      if (info)
-        result = *info;
-    }
-  }
 
-  cupsFreeDests(num_dests, destinations);
+  cups_dest_t* dest = GetNamedDest(printer_name);
+  if (!dest)
+    return result;
+
+  DCHECK_EQ(printer_name, dest->name);
+  const char* info =
+      cupsGetOption(kCUPSPrinterMakeModelOpt, dest->num_options, dest->options);
+  if (info)
+    result = *info;
+  cupsFreeDests(1, dest);
   return result;
 }
 
 bool PrintBackendCUPS::IsValidPrinter(const std::string& printer_name) {
-  // This is not very efficient way to get specific printer info. CUPS 1.4
-  // supports cupsGetNamedDest() function. However, CUPS 1.4 is not available
-  // everywhere (for example, it supported from Mac OS 10.6 only).
-  PrinterList printer_list;
-  EnumeratePrinters(&printer_list);
+  cups_dest_t* dest = GetNamedDest(printer_name);
+  if (!dest)
+    return false;
 
-  PrinterList::iterator it;
-  for (it = printer_list.begin(); it != printer_list.end(); ++it)
-    if (it->printer_name == printer_name)
-      return true;
-  return false;
+  cupsFreeDests(1, dest);
+  return true;
 }
 
 scoped_refptr<PrintBackend> PrintBackend::CreateInstance(
@@ -256,7 +249,7 @@ base::FilePath PrintBackendCUPS::GetPPD(const char* name) {
   CR_DEFINE_STATIC_LOCAL(base::Lock, ppd_lock, ());
   base::AutoLock ppd_autolock(ppd_lock);
   base::FilePath ppd_path;
-  const char* ppd_file_path = NULL;
+  const char* ppd_file_path = nullptr;
   if (print_server_url_.is_empty()) {  // Use default (local) print server.
     ppd_file_path = cupsGetPPD(name);
     if (ppd_file_path)
@@ -288,8 +281,7 @@ base::FilePath PrintBackendCUPS::GetPPD(const char* name) {
       ipp_status_t error_code = cupsLastError();
       int http_error = httpError(http.http());
       if (error_code > IPP_OK_EVENTS_COMPLETE || http_error != 0) {
-        LOG(ERROR) << "Error downloading PPD file"
-                   << ", name: " << name
+        LOG(ERROR) << "Error downloading PPD file, name: " << name
                    << ", CUPS error: " << static_cast<int>(error_code)
                    << ", HTTP error: " << http_error;
         base::DeleteFile(ppd_path, false);
@@ -298,6 +290,16 @@ base::FilePath PrintBackendCUPS::GetPPD(const char* name) {
     }
   }
   return ppd_path;
+}
+
+cups_dest_t* PrintBackendCUPS::GetNamedDest(const std::string& printer_name) {
+  // Use default (local) print server.
+  if (print_server_url_.is_empty())
+    return cupsGetNamedDest(CUPS_HTTP_DEFAULT, printer_name.c_str(), nullptr);
+
+  HttpConnectionCUPS http(print_server_url_, cups_encryption_);
+  http.SetBlocking(blocking_);
+  return cupsGetNamedDest(http.http(), printer_name.c_str(), nullptr);
 }
 
 }  // namespace printing
