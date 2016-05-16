@@ -168,6 +168,14 @@ public class NativeTestInstrumentationTestRunner extends Instrumentation {
                 }
                 mHandler.post(new ShardEnder(pid));
             }
+
+            @Override
+            public void uncaughtException(int pid, String stackTrace) {
+                mLogBundle.putString(Instrumentation.REPORT_KEY_STREAMRESULT,
+                        String.format("Uncaught exception in test process (pid: %d)%n%s%n",
+                                pid, stackTrace));
+                sendStatus(0, mLogBundle);
+            }
         });
 
         mHandler.post(new ShardStarter());

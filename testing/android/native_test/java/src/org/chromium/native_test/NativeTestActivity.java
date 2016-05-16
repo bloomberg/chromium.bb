@@ -49,6 +49,25 @@ public class NativeTestActivity extends Activity {
     private boolean mStdoutFifo = false;
     private String mStdoutFilePath;
 
+    private static class ReportingUncaughtExceptionHandler
+            implements Thread.UncaughtExceptionHandler {
+
+        private TestStatusReporter mReporter;
+        private Thread.UncaughtExceptionHandler mWrappedHandler;
+
+        public ReportingUncaughtExceptionHandler(TestStatusReporter reporter,
+                Thread.UncaughtExceptionHandler wrappedHandler) {
+            mReporter = reporter;
+            mWrappedHandler = wrappedHandler;
+        }
+
+        @Override
+        public void uncaughtException(Thread thread, Throwable ex) {
+            mReporter.uncaughtException(Process.myPid(), ex);
+            if (mWrappedHandler != null) mWrappedHandler.uncaughtException(thread, ex);
+        }
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         ChromiumMultiDexInstaller.install(this);
@@ -58,6 +77,10 @@ public class NativeTestActivity extends Activity {
 
         parseArgumentsFromIntent(getIntent());
         mReporter = new TestStatusReporter(this);
+        mReporter.testRunStarted(Process.myPid());
+        Thread.setDefaultUncaughtExceptionHandler(
+                new ReportingUncaughtExceptionHandler(mReporter,
+                        Thread.getDefaultUncaughtExceptionHandler()));
     }
 
     private void parseArgumentsFromIntent(Intent intent) {
@@ -135,7 +158,6 @@ public class NativeTestActivity extends Activity {
     }
 
     private void runTests() {
-        mReporter.testRunStarted(Process.myPid());
         nativeRunTests(mCommandLineFlags.toString(), mCommandLineFilePath, mStdoutFilePath,
                 mStdoutFifo, getApplicationContext());
         finish();

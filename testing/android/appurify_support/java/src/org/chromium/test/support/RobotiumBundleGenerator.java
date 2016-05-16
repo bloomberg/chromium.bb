@@ -18,6 +18,11 @@ public class RobotiumBundleGenerator implements ResultsBundleGenerator {
     private static final String TAG = "RobotiumBundleGenerator";
 
     public Bundle generate(Map<String, ResultsBundleGenerator.TestResult> rawResults) {
+        Bundle resultsBundle = new Bundle();
+        if (rawResults.isEmpty()) {
+            return resultsBundle;
+        }
+
         int testsPassed = 0;
         int testsFailed = 0;
         int testsErrored = 0;
@@ -53,7 +58,6 @@ public class RobotiumBundleGenerator implements ResultsBundleGenerator {
             resultBuilder.append("\nOK (" + Integer.toString(testsPassed) + " tests)");
         }
 
-        Bundle resultsBundle = new Bundle();
         resultsBundle.putString(Instrumentation.REPORT_KEY_STREAMRESULT,
                 resultBuilder.toString());
         return resultsBundle;

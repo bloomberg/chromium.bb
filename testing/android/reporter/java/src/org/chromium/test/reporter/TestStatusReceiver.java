@@ -37,6 +37,7 @@ public class TestStatusReceiver extends BroadcastReceiver {
         filter.addAction(TestStatusReporter.ACTION_TEST_STARTED);
         filter.addAction(TestStatusReporter.ACTION_TEST_RUN_STARTED);
         filter.addAction(TestStatusReporter.ACTION_TEST_RUN_FINISHED);
+        filter.addAction(TestStatusReporter.ACTION_UNCAUGHT_EXCEPTION);
         try {
             filter.addDataType(TestStatusReporter.DATA_TYPE_HEARTBEAT);
             filter.addDataType(TestStatusReporter.DATA_TYPE_RESULT);
@@ -70,6 +71,7 @@ public class TestStatusReceiver extends BroadcastReceiver {
     public interface TestRunCallback {
         void testRunStarted(int pid);
         void testRunFinished(int pid);
+        void uncaughtException(int pid, String stackTrace);
     }
 
     /** Register a callback for when a test has failed. */
@@ -143,6 +145,11 @@ public class TestStatusReceiver extends BroadcastReceiver {
             case TestStatusReporter.ACTION_TEST_RUN_FINISHED:
                 for (TestRunCallback c: mTestRunCallbacks) {
                     c.testRunFinished(pid);
+                }
+                break;
+            case TestStatusReporter.ACTION_UNCAUGHT_EXCEPTION:
+                for (TestRunCallback c: mTestRunCallbacks) {
+                    c.uncaughtException(pid, stackTrace);
                 }
                 break;
             default:
