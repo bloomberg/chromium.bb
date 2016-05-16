@@ -6,12 +6,17 @@
 
 #include <stdint.h>
 
+#include <map>
+#include <sstream>
+
 #include "base/bind.h"
 #include "components/mus/common/event_matcher_util.h"
 #include "components/mus/common/util.h"
+#include "components/mus/public/cpp/property_type_converters.h"
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_tree_connection.h"
 #include "components/mus/public/cpp/window_tree_host_factory.h"
+#include "components/mus/public/interfaces/window_manager.mojom.h"
 #include "mash/session/public/interfaces/session.mojom.h"
 #include "mash/wm/background_layout.h"
 #include "mash/wm/container_ids.h"
@@ -23,6 +28,7 @@
 #include "mash/wm/window_layout.h"
 #include "mash/wm/window_manager.h"
 #include "mash/wm/window_manager_application.h"
+#include "mojo/public/cpp/bindings/type_converter.h"
 #include "services/shell/public/cpp/connector.h"
 #include "ui/mojo/display/display_type_converters.h"
 
@@ -171,7 +177,15 @@ void RootWindowController::OnWindowDestroyed(mus::Window* window) {
 void RootWindowController::CreateContainer(
     mash::wm::mojom::Container container,
     mash::wm::mojom::Container parent_container) {
-  mus::Window* window = root_->connection()->NewWindow();
+  // Set the window's name to the container name (e.g. "Container::LOGIN"),
+  // which makes the window hierarchy easier to read.
+  std::map<std::string, std::vector<uint8_t>> properties;
+  std::ostringstream container_name;
+  container_name << container;
+  properties[mus::mojom::WindowManager::kName_Property] =
+      mojo::ConvertTo<std::vector<uint8_t>>(container_name.str());
+
+  mus::Window* window = root_->connection()->NewWindow(&properties);
   window->set_local_id(ContainerToLocalId(container));
   layout_managers_[window].reset(new FillLayout(window));
 
