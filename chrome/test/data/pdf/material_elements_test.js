@@ -160,17 +160,20 @@ var tests = [
     zoomToolbar.addEventListener('fit-to-page', logEvent);
 
     // Initial: Show fit-to-page.
-    chrome.test.assertEq(fitPageIcon, fab.icon);
+    // TODO(tsergeant): This assertion attempts to be resilient to iconset
+    // changes. A better solution is something like
+    // https://github.com/PolymerElements/iron-icon/issues/68.
+    chrome.test.assertTrue(fab.icon.endsWith(fitPageIcon));
 
     // Tap 1: Fire fit-to-page, show fit-to-width.
     MockInteractions.tap(fab);
     assertEvent('fit-to-page');
-    chrome.test.assertEq(fitWidthIcon, fab.icon);
+    chrome.test.assertTrue(fab.icon.endsWith(fitWidthIcon));
 
     // Tap 2: Fire fit-to-width, show fit-to-page.
     MockInteractions.tap(fab);
     assertEvent('fit-to-width');
-    chrome.test.assertEq(fitPageIcon, fab.icon);
+    chrome.test.assertTrue(fab.icon.endsWith(fitPageIcon));
 
     // Tap 3: Fire fit-to-page again.
     MockInteractions.tap(fab);

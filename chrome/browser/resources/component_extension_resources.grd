@@ -170,6 +170,7 @@
         <include name="IDR_PDF_CONTENT_SCRIPT_JS" file="pdf/content_script.js" type="BINDATA" />
 
         <include name="IDR_PDF_SHARED_ICON_STYLE_CSS" file="pdf/elements/shared-icon-style.css" type="BINDATA" />
+        <include name="IDR_PDF_ICONS_HTML" file="pdf/elements/icons.html" type="BINDATA" />
         <include name="IDR_PDF_VIEWER_BOOKMARK_CSS" file="pdf/elements/viewer-bookmark/viewer-bookmark.css" type="BINDATA" />
         <include name="IDR_PDF_VIEWER_BOOKMARK_HTML" file="pdf/elements/viewer-bookmark/viewer-bookmark.html" type="BINDATA" />
         <include name="IDR_PDF_VIEWER_BOOKMARK_JS" file="pdf/elements/viewer-bookmark/viewer-bookmark.js" type="BINDATA" />

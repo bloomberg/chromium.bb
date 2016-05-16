@@ -1,5 +1,6 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
+<link rel="import" href="chrome://resources/cr_elements/icons.html">
+<link rel="import" href="../icons.html">
 <link rel="import" href="viewer-zoom-button.html">
 
 <dom-module id="viewer-zoom-toolbar">
@@ -7,12 +8,12 @@
   <template>
 
     <div id="zoom-buttons">
-      <viewer-zoom-button id="fit-button" icons="fullscreen-exit fullscreen"
-          on-fabclick="fitToggle" delay="100">
+      <viewer-zoom-button id="fit-button" on-fabclick="fitToggle" delay="100"
+          icons="pdf:fullscreen-exit cr:fullscreen">
       </viewer-zoom-button>
-      <viewer-zoom-button id="zoom-in-button" icons="add"
+      <viewer-zoom-button id="zoom-in-button" icons="pdf:add"
           on-fabclick="zoomIn" delay="50"></viewer-zoom-button>
-      <viewer-zoom-button id="zoom-out-button" icons="remove"
+      <viewer-zoom-button id="zoom-out-button" icons="pdf:remove"
           on-fabclick="zoomOut" delay="0"></viewer-zoom-button>
     </div>
   </template>
