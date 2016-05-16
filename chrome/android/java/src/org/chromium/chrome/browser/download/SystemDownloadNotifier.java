@@ -248,11 +248,14 @@ public class SystemDownloadNotifier implements DownloadNotifier {
                         break;
                     case DOWNLOAD_NOTIFICATION_TYPE_SUCCESS:
                         mBoundService.notifyDownloadSuccessful(
-                                info.getDownloadGuid(), notificationInfo.intent);
+                                info.getNotificationId(), info.getDownloadGuid(),
+                                info.getFileName(), notificationInfo.intent);
                         stopServiceIfNeeded();
                         break;
                     case DOWNLOAD_NOTIFICATION_TYPE_FAILURE:
-                        mBoundService.notifyDownloadFailed(info.getDownloadGuid());
+                        mBoundService.notifyDownloadFailed(
+                                info.getNotificationId(), info.getDownloadGuid(),
+                                info.getFileName());
                         stopServiceIfNeeded();
                         break;
                     case DOWNLOAD_NOTIFICATION_TYPE_CANCEL:

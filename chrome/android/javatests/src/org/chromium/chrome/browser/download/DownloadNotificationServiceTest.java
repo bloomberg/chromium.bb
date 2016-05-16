@@ -162,12 +162,12 @@ public class DownloadNotificationServiceTest extends
                 sharedPrefs, DownloadNotificationService.PENDING_DOWNLOAD_NOTIFICATIONS);
         assertEquals(3, entries.size());
 
-        service.notifyDownloadSuccessful(guid1, null);
+        service.notifyDownloadSuccessful(3, guid1, "success", null);
         entries = DownloadManagerService.getStoredDownloadInfo(
                 sharedPrefs, DownloadNotificationService.PENDING_DOWNLOAD_NOTIFICATIONS);
         assertEquals(2, entries.size());
 
-        service.notifyDownloadFailed(guid2);
+        service.notifyDownloadFailed(4, guid2, "failed");
         entries = DownloadManagerService.getStoredDownloadInfo(
                 sharedPrefs, DownloadNotificationService.PENDING_DOWNLOAD_NOTIFICATIONS);
         assertEquals(1, entries.size());
@@ -175,6 +175,21 @@ public class DownloadNotificationServiceTest extends
         service.cancelNotification(1, guid3);
         assertEquals(2, getService().getNotificationIds().size());
         assertFalse(getService().getNotificationIds().contains(1));
+    }
+
+    /**
+     * Tests that notification is updated if download success comes without any prior progress.
+     */
+    @SmallTest
+    @Feature({"Download"})
+    public void testDownloadSuccessNotification() {
+        setupService();
+        startNotificationService();
+        DownloadNotificationService service = bindNotificationService();
+        String guid = UUID.randomUUID().toString();
+        service.notifyDownloadSuccessful(1, guid, "test", null);
+        assertEquals(1, getService().getNotificationIds().size());
+        assertTrue(getService().getNotificationIds().contains(1));
     }
 
     /**

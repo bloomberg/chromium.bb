@@ -210,34 +210,35 @@ public class DownloadNotificationService extends Service {
 
     /**
      * Add a download successful notification.
+     * @param notificationId Notification ID of the download.
      * @param downloadGuid GUID of the download.
+     * @param fileName GUID of the download.
      * @param intent Intent to launch when clicking the notification.
      */
-    public void notifyDownloadSuccessful(String downloadGuid, Intent intent) {
-        DownloadSharedPreferenceEntry entry = getDownloadSharedPreferenceEntry(downloadGuid);
-        if (entry == null) return;
+    public void notifyDownloadSuccessful(int notificationId, String downloadGuid, String fileName,
+            Intent intent) {
         NotificationCompat.Builder builder = buildNotification(
-                android.R.drawable.stat_sys_download_done, entry.fileName,
+                android.R.drawable.stat_sys_download_done, fileName,
                 mContext.getResources().getString(R.string.download_notification_completed));
         if (intent != null) {
             builder.setContentIntent(PendingIntent.getActivity(
                     mContext, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT));
         }
-        updateNotification(entry.notificationId, builder.build());
+        updateNotification(notificationId, builder.build());
         removeSharedPreferenceEntry(downloadGuid);
     }
 
     /**
      * Add a download failed notification.
+     * @param notificationId Notification ID of the download.
      * @param downloadGuid GUID of the download.
+     * @param fileName GUID of the download.
      */
-    public void notifyDownloadFailed(String downloadGuid) {
-        DownloadSharedPreferenceEntry entry = getDownloadSharedPreferenceEntry(downloadGuid);
-        if (entry == null) return;
+    public void notifyDownloadFailed(int notificationId, String downloadGuid, String fileName) {
         NotificationCompat.Builder builder = buildNotification(
-                android.R.drawable.stat_sys_download_done, entry.fileName,
+                android.R.drawable.stat_sys_download_done, fileName,
                 mContext.getResources().getString(R.string.download_notification_failed));
-        updateNotification(entry.notificationId, builder.build());
+        updateNotification(notificationId, builder.build());
         removeSharedPreferenceEntry(downloadGuid);
     }
 
