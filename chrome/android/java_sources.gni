@@ -919,6 +919,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/widget/accessibility/AccessibilityTabModelListItem.java",
   "java/src/org/chromium/chrome/browser/widget/accessibility/AccessibilityTabModelListView.java",
   "java/src/org/chromium/chrome/browser/widget/accessibility/AccessibilityTabModelWrapper.java",
+  "java/src/org/chromium/chrome/browser/widget/animation/AnimatorProperties.java",
   "java/src/org/chromium/chrome/browser/widget/emptybackground/EmptyBackgroundViewTablet.java",
   "java/src/org/chromium/chrome/browser/widget/emptybackground/EmptyBackgroundViewWrapper.java",
   "java/src/org/chromium/chrome/browser/widget/findinpage/FindResultBar.java",

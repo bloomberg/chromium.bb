@@ -88,6 +88,7 @@ import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.KeyNavigationUtil;
 import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.widget.TintedImageButton;
+import org.chromium.chrome.browser.widget.animation.AnimatorProperties;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -2163,7 +2164,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
         if (mFadeInOmniboxBackgroundAnimator == null) {
             mFadeInOmniboxBackgroundAnimator = ObjectAnimator.ofInt(
                     getRootView().findViewById(R.id.omnibox_results_container).getBackground(),
-                    "alpha", 0, 255);
+                    AnimatorProperties.DRAWABLE_ALPHA_PROPERTY, 0, 255);
             mFadeInOmniboxBackgroundAnimator.setDuration(OMNIBOX_CONTAINER_BACKGROUND_FADE_MS);
             mFadeInOmniboxBackgroundAnimator.setInterpolator(
                     BakedBezierInterpolator.FADE_IN_CURVE);
@@ -2175,7 +2176,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
         if (mFadeOutOmniboxBackgroundAnimator == null) {
             mFadeOutOmniboxBackgroundAnimator = ObjectAnimator.ofInt(
                     getRootView().findViewById(R.id.omnibox_results_container).getBackground(),
-                    "alpha", 255, 0);
+                    AnimatorProperties.DRAWABLE_ALPHA_PROPERTY, 255, 0);
             mFadeOutOmniboxBackgroundAnimator.setDuration(OMNIBOX_CONTAINER_BACKGROUND_FADE_MS);
             mFadeOutOmniboxBackgroundAnimator.setInterpolator(
                     BakedBezierInterpolator.FADE_OUT_CURVE);

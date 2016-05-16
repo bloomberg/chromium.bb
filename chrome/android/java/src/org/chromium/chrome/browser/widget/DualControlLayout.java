@@ -17,14 +17,14 @@ import org.chromium.chrome.R;
 import org.chromium.ui.widget.ButtonCompat;
 
 /**
- * Automatically lays out one or two Views for an infobar, placing them on the same row if possible
- * and stacking them otherwise.
+ * Automatically lays out one or two Views, placing them on the same row if possible and stacking
+ * them otherwise.
  *
  * Use cases of this Layout include placement of infobar buttons and placement of TextViews inside
  * of spinner controls (http://goto.google.com/infobar-spec).
  *
- * Layout parameters (i.e. margins) are ignored to enforce infobar consistency.  Alignment defines
- * where the controls are placed (for RTL, flip everything):
+ * Layout parameters (i.e. margins) are ignored to enforce consistency.  Alignment defines where the
+ * controls are placed (for RTL, flip everything):
  *
  * ALIGN_START                      ALIGN_APART                      ALIGN_END
  * -----------------------------    -----------------------------    -----------------------------
@@ -53,7 +53,8 @@ public final class DualControlLayout extends ViewGroup {
      */
     public static Button createButtonForLayout(
             Context context, boolean isPrimary, String text, OnClickListener listener) {
-        int lightActiveColor = context.getResources().getColor(R.color.light_active_color);
+        int lightActiveColor =
+                ApiCompatibilityUtils.getColor(context.getResources(), R.color.light_active_color);
 
         if (isPrimary) {
             ButtonCompat primaryButton = new ButtonCompat(context, lightActiveColor, false);

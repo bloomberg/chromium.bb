@@ -3,25 +3,22 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android" >
-
-    <!-- Dimming scrim. -->
-    <View
-        android:id="@+id/scrim"
-        android:background="@color/payments_ui_scrim"
-        android:layout_height="match_parent"
-        android:layout_width="match_parent" />
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:chrome="http://schemas.android.com/apk/res-auto"
+    android:background="@color/payments_ui_scrim" >
 
     <!-- Payments fields dialog.
          TODO(dfalcantara): Figure out if it makes sense to recombine this and the PaymentResult
                             dialog box once redlines stabilize. -->
-    <LinearLayout
+    <org.chromium.chrome.browser.widget.BoundedLinearLayout
         android:id="@+id/dialogContainer"
         android:orientation="vertical"
         android:background="@android:color/white"
         android:layout_height="wrap_content"
         android:layout_width="match_parent"
-        android:layout_gravity="bottom|center_horizontal" >
+        android:layout_gravity="bottom|center_horizontal"
+        chrome:maxWidth="@dimen/payments_ui_max_dialog_width" >
 
         <!-- Box header. -->
         <FrameLayout
@@ -127,5 +124,5 @@
             android:padding="@dimen/payments_section_large_spacing"
             android:background="@android:color/white"
             android:visibility="gone" />
-    </LinearLayout>
+    </org.chromium.chrome.browser.widget.BoundedLinearLayout>
 </FrameLayout>

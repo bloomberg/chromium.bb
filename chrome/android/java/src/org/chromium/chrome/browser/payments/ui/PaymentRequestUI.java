@@ -43,6 +43,7 @@ import org.chromium.chrome.browser.payments.ui.PaymentRequestSection.OptionSecti
 import org.chromium.chrome.browser.payments.ui.PaymentRequestSection.SectionSeparator;
 import org.chromium.chrome.browser.widget.AlwaysDismissedDialog;
 import org.chromium.chrome.browser.widget.DualControlLayout;
+import org.chromium.chrome.browser.widget.animation.AnimatorProperties;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -159,7 +160,6 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
     private final ViewGroup mBottomSheetContainer;
     private final PaymentResultUI mResultUI;
 
-    private final View mScrim;
     private final ScrollView mPaymentContainer;
     private final ViewGroup mPaymentContainerLayout;
     private final DualControlLayout mButtonBar;
@@ -220,6 +220,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         mAnimatorTranslation = activity.getResources().getDimensionPixelSize(
                 R.dimen.payments_ui_translation);
 
+        // Inflate the layout.
         mFullContainer =
                 (ViewGroup) LayoutInflater.from(mContext).inflate(R.layout.payment_request, null);
         mBottomSheetContainer = (ViewGroup) mFullContainer.findViewById(R.id.dialogContainer);
@@ -228,11 +229,6 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         mPaymentContainer = (ScrollView) mBottomSheetContainer.findViewById(R.id.paymentContainer);
         ((TextView) mBottomSheetContainer.findViewById(R.id.pageTitle)).setText(title);
         ((TextView) mBottomSheetContainer.findViewById(R.id.hostname)).setText(origin);
-
-        // Setting the container as clickable prevents the scrim from acknowledging the event.
-        mBottomSheetContainer.setClickable(true);
-        mScrim = mFullContainer.findViewById(R.id.scrim);
-        mScrim.setOnClickListener(this);
 
         // Set up the buttons.
         mCloseButton = mBottomSheetContainer.findViewById(R.id.close_button);
@@ -501,7 +497,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         new DisappearingAnimator(false);
 
         int floatingDialogWidth = PaymentResultUI.computeMaxWidth(
-                mContext, mScrim.getMeasuredWidth(), mScrim.getMeasuredHeight());
+                mContext, mFullContainer.getMeasuredWidth(), mFullContainer.getMeasuredHeight());
         FrameLayout.LayoutParams overlayParams =
                 new FrameLayout.LayoutParams(floatingDialogWidth, LayoutParams.WRAP_CONTENT);
         overlayParams.gravity = Gravity.CENTER;
@@ -659,10 +655,15 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
                 int oldLeft, int oldTop, int oldRight, int oldBottom) {
             mBottomSheetContainer.removeOnLayoutChangeListener(this);
 
+            Animator scrimFader = ObjectAnimator.ofInt(mFullContainer.getBackground(),
+                    AnimatorProperties.DRAWABLE_ALPHA_PROPERTY, 0, 127);
             Animator alphaAnimator = ObjectAnimator.ofFloat(mFullContainer, View.ALPHA, 0f, 1f);
-            alphaAnimator.setDuration(DIALOG_ENTER_ANIMATION_MS);
-            alphaAnimator.setInterpolator(new LinearOutSlowInInterpolator());
-            alphaAnimator.start();
+
+            AnimatorSet alphaSet = new AnimatorSet();
+            alphaSet.playTogether(scrimFader, alphaAnimator);
+            alphaSet.setDuration(DIALOG_ENTER_ANIMATION_MS);
+            alphaSet.setInterpolator(new LinearOutSlowInInterpolator());
+            alphaSet.start();
         }
     }
 
@@ -909,12 +910,13 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
                     mBottomSheetContainer, View.ALPHA, mBottomSheetContainer.getAlpha(), 0f);
             Animator sheetTranslator = ObjectAnimator.ofFloat(
                     mBottomSheetContainer, View.TRANSLATION_Y, 0f, mAnimatorTranslation);
-            Animator scrimFader = ObjectAnimator.ofFloat(mScrim, View.ALPHA, mScrim.getAlpha(), 0f);
 
             AnimatorSet current = new AnimatorSet();
             current.setDuration(DIALOG_EXIT_ANIMATION_MS);
             current.setInterpolator(new FastOutLinearInInterpolator());
             if (mIsDialogClosing) {
+                Animator scrimFader = ObjectAnimator.ofInt(mFullContainer.getBackground(),
+                        AnimatorProperties.DRAWABLE_ALPHA_PROPERTY, 127, 0);
                 current.playTogether(sheetFader, sheetTranslator, scrimFader);
             } else {
                 current.playTogether(sheetFader, sheetTranslator);

@@ -35,10 +35,15 @@ public class BoundedLinearLayout extends LinearLayout {
      */
     public BoundedLinearLayout(Context context, AttributeSet attrs) {
         super(context, attrs);
+
         TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.BoundedView);
-        mMaxWidth = a.getDimensionPixelSize(R.styleable.BoundedView_maxWidth, NOT_SPECIFIED);
-        mMaxHeight = a.getDimensionPixelSize(R.styleable.BoundedView_maxHeight, NOT_SPECIFIED);
+        int maxWidth = a.getDimensionPixelSize(R.styleable.BoundedView_maxWidth, NOT_SPECIFIED);
+        int maxHeight = a.getDimensionPixelSize(R.styleable.BoundedView_maxHeight, NOT_SPECIFIED);
         a.recycle();
+
+        // Treat 0 or below as being unconstrained.
+        mMaxWidth = maxWidth <= 0 ? NOT_SPECIFIED : maxWidth;
+        mMaxHeight = maxHeight <= 0 ? NOT_SPECIFIED : maxHeight;
     }
 
     @Override
