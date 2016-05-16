@@ -814,11 +814,6 @@ void ResourceFetcher::reloadImagesIfNotDeferred()
     }
 }
 
-void ResourceFetcher::didLoadResource(Resource* resource)
-{
-    context().didLoadResource(resource);
-}
-
 int ResourceFetcher::requestCount() const
 {
     return m_loaders ? m_loaders->size() : 0;
@@ -877,12 +872,19 @@ ArchiveResource* ResourceFetcher::createArchive(Resource* resource)
     return m_archive ? m_archive->mainResource() : nullptr;
 }
 
-void ResourceFetcher::didFinishLoading(Resource* resource, double finishTime, int64_t encodedDataLength)
+void ResourceFetcher::didFinishLoading(Resource* resource, double finishTime, int64_t encodedDataLength, DidFinishLoadingReason finishReason)
 {
     TRACE_EVENT_ASYNC_END0("blink.net", "Resource", resource);
-    // The ResourceLoader might be in |m_nonBlockingLoaders| for multipart responses.
-    ASSERT(resource);
-    ASSERT(!(m_loaders && m_loaders->contains(resource->loader())));
+    DCHECK(resource);
+
+    // When loading a multipart resource, make the loader non-block when
+    // finishing loading the first part.
+    if (finishReason == DidFinishFirstPartInMultipart)
+        moveResourceLoaderToNonBlocking(resource->loader());
+    else
+        removeResourceLoader(resource->loader());
+    DCHECK(!m_loaders || !m_loaders->contains(resource->loader()));
+    DCHECK(finishReason == DidFinishFirstPartInMultipart || !m_nonBlockingLoaders || !m_nonBlockingLoaders->contains(resource->loader()));
 
     if (OwnPtr<ResourceTimingInfo> info = m_resourceTimingInfoMap.take(resource)) {
         if (resource->response().isHTTP() && resource->response().httpStatusCode() < 400) {
@@ -894,15 +896,20 @@ void ResourceFetcher::didFinishLoading(Resource* resource, double finishTime, in
         }
     }
     context().dispatchDidFinishLoading(resource->identifier(), finishTime, encodedDataLength);
+    if (finishReason == DidFinishLoading)
+        resource->finish(finishTime);
+    context().didLoadResource(resource);
 }
 
-void ResourceFetcher::didFailLoading(const Resource* resource, const ResourceError& error)
+void ResourceFetcher::didFailLoading(Resource* resource, const ResourceError& error)
 {
     TRACE_EVENT_ASYNC_END0("blink.net", "Resource", resource);
     removeResourceLoader(resource->loader());
     m_resourceTimingInfoMap.take(const_cast<Resource*>(resource));
     bool isInternalRequest = resource->options().initiatorInfo.name == FetchInitiatorTypeNames::internal;
     context().dispatchDidFail(resource->identifier(), error, isInternalRequest);
+    resource->error(error);
+    context().didLoadResource(resource);
 }
 
 void ResourceFetcher::didReceiveResponse(Resource* resource, const ResourceResponse& response)

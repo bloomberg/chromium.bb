@@ -538,7 +538,7 @@ void ImageResource::onePartInMultipartReceived(const ResourceResponse& response)
             setStatus(Cached);
         checkNotify();
         if (m_loader)
-            m_loader->didFinishLoadingOnePart(0, WebURLLoaderClient::kUnknownEncodedDataLength);
+            m_loader->didFinishLoadingFirstPartInMultipart();
     }
 }
 

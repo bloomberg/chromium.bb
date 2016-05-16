@@ -21,6 +21,7 @@ WebURLLoaderMock::WebURLLoaderMock(WebURLLoaderMockFactoryImpl* factory,
 }
 
 WebURLLoaderMock::~WebURLLoaderMock() {
+  cancel();
 }
 
 void WebURLLoaderMock::ServeAsynchronousRequest(

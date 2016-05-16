@@ -48,30 +48,36 @@ public:
     ~ResourceLoader() override;
     DECLARE_TRACE();
 
-    // Promptly release m_loader.
-    EAGERLY_FINALIZE();
-
     void start(ResourceRequest&);
-
     void cancel();
-    void cancel(const ResourceError&);
 
     void setDefersLoading(bool);
 
     void didChangePriority(ResourceLoadPriority, int intraPriorityValue);
 
     // WebURLLoaderClient
+    //
+    // A succesful load will consist of:
+    // 0+  willFollowRedirect()
+    // 0+  didSendData()
+    // 1   didReceiveResponse()
+    // 0-1 didReceiveCachedMetadata()
+    // 0+  didReceiveData() or didDownloadData(), but never both
+    // 1   didFinishLoading()
+    // A failed load is indicated by 1 didFail(), which can occur at any time
+    // before didFinishLoading(), including synchronous inside one of the other
+    // callbacks via ResourceLoader::cancel()
     void willFollowRedirect(WebURLLoader*, WebURLRequest&, const WebURLResponse& redirectResponse) override;
     void didSendData(WebURLLoader*, unsigned long long bytesSent, unsigned long long totalBytesToBeSent) override;
     void didReceiveResponse(WebURLLoader*, const WebURLResponse&) override;
     void didReceiveResponse(WebURLLoader*, const WebURLResponse&, WebDataConsumerHandle*) override;
-    void didReceiveData(WebURLLoader*, const char*, int, int encodedDataLength) override;
     void didReceiveCachedMetadata(WebURLLoader*, const char* data, int length) override;
+    void didReceiveData(WebURLLoader*, const char*, int, int encodedDataLength) override;
+    void didDownloadData(WebURLLoader*, int, int) override;
     void didFinishLoading(WebURLLoader*, double finishTime, int64_t encodedDataLength) override;
     void didFail(WebURLLoader*, const WebURLError&) override;
-    void didDownloadData(WebURLLoader*, int, int) override;
 
-    void didFinishLoadingOnePart(double finishTime, int64_t encodedDataLength);
+    void didFinishLoadingFirstPartInMultipart();
 
 private:
     // Assumes ResourceFetcher and Resource are non-null.
@@ -81,29 +87,9 @@ private:
 
     bool responseNeedsAccessControlCheck() const;
 
-    ResourceRequest& applyOptions(ResourceRequest&) const;
-
-    void releaseResources();
-
     OwnPtr<WebURLLoader> m_loader;
     Member<ResourceFetcher> m_fetcher;
-
-    bool m_notifiedLoadComplete;
-
-    enum ConnectionState {
-        ConnectionStateNew,
-        ConnectionStateStarted,
-        ConnectionStateReceivedResponse,
-        ConnectionStateReceivingData,
-        ConnectionStateFinishedLoading,
-        ConnectionStateReleased
-    };
-
     Member<Resource> m_resource;
-
-    // Used for sanity checking to make sure we don't experience illegal state
-    // transitions.
-    ConnectionState m_state;
 };
 
 } // namespace blink
