@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/cc_messages.h"
-
 #include <stddef.h>
 #include <string.h>
 #include <algorithm>
@@ -11,11 +9,13 @@
 
 #include "base/macros.h"
 #include "build/build_config.h"
+#include "cc/ipc/cc_param_traits.h"
 #include "cc/output/compositor_frame.h"
+#include "cc/quads/picture_draw_quad.h"
+#include "cc/quads/render_pass_draw_quad.h"
 #include "content/public/common/common_param_traits.h"
 #include "ipc/ipc_message.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/khronos/GLES2/gl2ext.h"
 #include "third_party/skia/include/effects/SkBlurImageFilter.h"
 
 #if defined(OS_POSIX)

@@ -12,6 +12,7 @@
 #include "base/process/process.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
+#include "cc/ipc/cc_param_traits.h"
 #include "cc/output/begin_frame_args.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/compositor_frame_ack.h"

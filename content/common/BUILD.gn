@@ -39,6 +39,7 @@ source_set("common") {
     "//base/third_party/dynamic_annotations",
     "//build/util:webkit_version",
     "//cc",
+    "//cc/ipc",
     "//cc/surfaces",
     "//components/mus/public/interfaces",
     "//components/tracing",

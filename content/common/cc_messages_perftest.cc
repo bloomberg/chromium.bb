@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/cc_messages.h"
-
 #include <utility>
 
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/test_suite.h"
+#include "cc/ipc/cc_param_traits.h"
 #include "cc/output/compositor_frame.h"
+#include "cc/quads/picture_draw_quad.h"
 #include "ipc/ipc_message.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/perf/perf_test.h"

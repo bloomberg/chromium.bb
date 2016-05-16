@@ -1,0 +1,35 @@
+# Copyright 2016 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+component("ipc") {
+  output_name = "cc_ipc"
+
+  defines = [ "CC_IPC_IMPLEMENTATION" ]
+
+  sources = [
+    "cc_ipc_export.h",
+    "cc_param_traits.cc",
+    "cc_param_traits.h",
+    "cc_param_traits_macros.h",
+  ]
+
+  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+
+  public_deps = [
+    "//cc",
+    "//cc/surfaces",
+  ]
+
+  deps = [
+    "//base",
+    "//gpu/ipc/common",
+    "//ipc",
+    "//skia",
+    "//ui/events/ipc",
+    "//ui/gfx",
+    "//ui/gfx/ipc",
+    "//ui/gfx/ipc/geometry",
+    "//ui/gfx/ipc/skia",
+  ]
+}

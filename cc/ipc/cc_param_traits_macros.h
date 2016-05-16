@@ -1,20 +1,19 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
-// IPC Messages sent between compositor instances.
 
+#ifndef CC_IPC_CC_PARAM_TRAITS_MACROS_H_
+#define CC_IPC_CC_PARAM_TRAITS_MACROS_H_
+
+#include "cc/input/selection_bound_type.h"
 #include "cc/output/begin_frame_args.h"
 #include "cc/output/compositor_frame.h"
-#include "cc/output/compositor_frame_ack.h"
 #include "cc/output/filter_operation.h"
-#include "cc/output/viewport_selection_bound.h"
 #include "cc/quads/debug_border_draw_quad.h"
 #include "cc/quads/draw_quad.h"
 #include "cc/quads/io_surface_draw_quad.h"
-#include "cc/quads/picture_draw_quad.h"
 #include "cc/quads/render_pass.h"
-#include "cc/quads/render_pass_draw_quad.h"
+#include "cc/quads/render_pass_id.h"
 #include "cc/quads/shared_quad_state.h"
 #include "cc/quads/solid_color_draw_quad.h"
 #include "cc/quads/stream_video_draw_quad.h"
@@ -27,148 +26,22 @@
 #include "cc/resources/transferable_resource.h"
 #include "cc/surfaces/surface_id.h"
 #include "cc/surfaces/surface_sequence.h"
-#include "content/common/content_export.h"
-#include "gpu/ipc/common/gpu_command_buffer_traits.h"
-#include "ipc/ipc_message_macros.h"
+#include "ui/events/ipc/latency_info_param_traits.h"
 #include "ui/gfx/ipc/gfx_param_traits.h"
 #include "ui/gfx/ipc/skia/gfx_skia_param_traits.h"
 
-#ifndef CONTENT_COMMON_CC_MESSAGES_H_
-#define CONTENT_COMMON_CC_MESSAGES_H_
-
-namespace gfx {
-class Transform;
-}
-
-namespace cc {
-class FilterOperations;
-}
-
-namespace IPC {
-
-template <>
-struct ParamTraits<cc::FilterOperation> {
-  typedef cc::FilterOperation param_type;
-  static void GetSize(base::PickleSizer* s, const param_type& p);
-  static void Write(base::Pickle* m, const param_type& p);
-  static bool Read(const base::Pickle* m,
-                   base::PickleIterator* iter,
-                   param_type* r);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct ParamTraits<cc::FilterOperations> {
-  typedef cc::FilterOperations param_type;
-  static void GetSize(base::PickleSizer* s, const param_type& p);
-  static void Write(base::Pickle* m, const param_type& p);
-  static bool Read(const base::Pickle* m,
-                   base::PickleIterator* iter,
-                   param_type* r);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct ParamTraits<sk_sp<SkImageFilter> > {
-  typedef sk_sp<SkImageFilter> param_type;
-  static void GetSize(base::PickleSizer* s, const param_type& p);
-  static void Write(base::Pickle* m, const param_type& p);
-  static bool Read(const base::Pickle* m,
-                   base::PickleIterator* iter,
-                   param_type* r);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct CONTENT_EXPORT ParamTraits<cc::RenderPass> {
-  typedef cc::RenderPass param_type;
-  static void Write(base::Pickle* m, const param_type& p);
-  static bool Read(const base::Pickle* m,
-                   base::PickleIterator* iter,
-                   param_type* r);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template<>
-struct CONTENT_EXPORT ParamTraits<cc::CompositorFrame> {
-  typedef cc::CompositorFrame param_type;
-  static void Write(base::Pickle* m, const param_type& p);
-  static bool Read(const base::Pickle* m,
-                   base::PickleIterator* iter,
-                   param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template<>
-struct CONTENT_EXPORT ParamTraits<cc::CompositorFrameAck> {
-  typedef cc::CompositorFrameAck param_type;
-  static void Write(base::Pickle* m, const param_type& p);
-  static bool Read(const base::Pickle* m,
-                   base::PickleIterator* iter,
-                   param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template<>
-struct CONTENT_EXPORT ParamTraits<cc::DelegatedFrameData> {
-  typedef cc::DelegatedFrameData param_type;
-  static void Write(base::Pickle* m, const param_type& p);
-  static bool Read(const base::Pickle* m,
-                   base::PickleIterator* iter,
-                   param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct CONTENT_EXPORT ParamTraits<cc::DrawQuad::Resources> {
-  typedef cc::DrawQuad::Resources param_type;
-  static void GetSize(base::PickleSizer* s, const param_type& p);
-  static void Write(base::Pickle* m, const param_type& p);
-  static bool Read(const base::Pickle* m,
-                   base::PickleIterator* iter,
-                   param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct CONTENT_EXPORT ParamTraits<cc::StreamVideoDrawQuad::OverlayResources> {
-  typedef cc::StreamVideoDrawQuad::OverlayResources param_type;
-  static void GetSize(base::PickleSizer* s, const param_type& p);
-  static void Write(base::Pickle* m, const param_type& p);
-  static bool Read(const base::Pickle* m,
-                   base::PickleIterator* iter,
-                   param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct CONTENT_EXPORT ParamTraits<cc::TextureDrawQuad::OverlayResources> {
-  typedef cc::TextureDrawQuad::OverlayResources param_type;
-  static void GetSize(base::PickleSizer* s, const param_type& p);
-  static void Write(base::Pickle* m, const param_type& p);
-  static bool Read(const base::Pickle* m,
-                   base::PickleIterator* iter,
-                   param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
-}  // namespace IPC
-
-#endif  // CONTENT_COMMON_CC_MESSAGES_H_
-
-// Multiply-included message file, hence no include guard.
-
-#define IPC_MESSAGE_START CCMsgStart
 #undef IPC_MESSAGE_EXPORT
-#define IPC_MESSAGE_EXPORT CONTENT_EXPORT
+#define IPC_MESSAGE_EXPORT CC_IPC_EXPORT
 
 IPC_ENUM_TRAITS_MAX_VALUE(cc::DrawQuad::Material, cc::DrawQuad::MATERIAL_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(cc::IOSurfaceDrawQuad::Orientation,
                           cc::IOSurfaceDrawQuad::ORIENTATION_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(cc::FilterOperation::FilterType,
-                          cc::FilterOperation::FILTER_TYPE_LAST )
+                          cc::FilterOperation::FILTER_TYPE_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(cc::ResourceFormat, cc::RESOURCE_FORMAT_MAX)
 IPC_ENUM_TRAITS_MAX_VALUE(cc::SelectionBoundType, cc::SELECTION_BOUND_TYPE_LAST)
+
+// TODO(fsamuel): This trait belongs with skia code.
 IPC_ENUM_TRAITS_MAX_VALUE(SkXfermode::Mode, SkXfermode::kLastMode)
 IPC_ENUM_TRAITS_MAX_VALUE(cc::YUVVideoDrawQuad::ColorSpace,
                           cc::YUVVideoDrawQuad::COLOR_SPACE_LAST)
@@ -270,9 +143,9 @@ IPC_STRUCT_TRAITS_BEGIN(cc::YUVVideoDrawQuad)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(cc::SharedQuadState)
-IPC_STRUCT_TRAITS_MEMBER(quad_to_target_transform)
-IPC_STRUCT_TRAITS_MEMBER(quad_layer_bounds)
-IPC_STRUCT_TRAITS_MEMBER(visible_quad_layer_rect)
+  IPC_STRUCT_TRAITS_MEMBER(quad_to_target_transform)
+  IPC_STRUCT_TRAITS_MEMBER(quad_layer_bounds)
+  IPC_STRUCT_TRAITS_MEMBER(visible_quad_layer_rect)
   IPC_STRUCT_TRAITS_MEMBER(clip_rect)
   IPC_STRUCT_TRAITS_MEMBER(is_clipped)
   IPC_STRUCT_TRAITS_MEMBER(opacity)
@@ -313,9 +186,8 @@ IPC_STRUCT_TRAITS_BEGIN(cc::ViewportSelection)
   IPC_STRUCT_TRAITS_MEMBER(is_empty_text_form_control)
 IPC_STRUCT_TRAITS_END()
 
-IPC_ENUM_TRAITS_MAX_VALUE( \
-    cc::BeginFrameArgs::BeginFrameArgsType, \
-    cc::BeginFrameArgs::BEGIN_FRAME_ARGS_TYPE_MAX - 1)
+IPC_ENUM_TRAITS_MAX_VALUE(cc::BeginFrameArgs::BeginFrameArgsType,
+                          cc::BeginFrameArgs::BEGIN_FRAME_ARGS_TYPE_MAX - 1)
 
 IPC_STRUCT_TRAITS_BEGIN(cc::BeginFrameArgs)
   IPC_STRUCT_TRAITS_MEMBER(frame_time)
@@ -349,3 +221,5 @@ IPC_STRUCT_TRAITS_BEGIN(cc::GLFrameData)
   IPC_STRUCT_TRAITS_MEMBER(size)
   IPC_STRUCT_TRAITS_MEMBER(sub_buffer_rect)
 IPC_STRUCT_TRAITS_END()
+
+#endif  // CC_IPC_CC_PARAM_TRAITS_MACROS_H_

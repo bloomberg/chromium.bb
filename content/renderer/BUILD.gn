@@ -32,6 +32,7 @@ source_set("renderer") {
     "//base:i18n",
     "//cc",
     "//cc/blink",
+    "//cc/ipc",
     "//cc/proto",
     "//cc/surfaces",
     "//cc/surfaces:surface_id",

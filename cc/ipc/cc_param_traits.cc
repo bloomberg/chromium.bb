@@ -2,22 +2,30 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/cc_messages.h"
+#include "cc/ipc/cc_param_traits.h"
 
 #include <stddef.h>
 #include <utility>
 
 #include "base/numerics/safe_conversions.h"
+#include "base/time/time.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/filter_operations.h"
+#include "cc/quads/debug_border_draw_quad.h"
 #include "cc/quads/draw_quad.h"
+#include "cc/quads/io_surface_draw_quad.h"
 #include "cc/quads/largest_draw_quad.h"
-#include "cc/quads/render_pass_id.h"
-#include "content/public/common/common_param_traits.h"
+#include "cc/quads/render_pass_draw_quad.h"
+#include "cc/quads/solid_color_draw_quad.h"
+#include "cc/quads/surface_draw_quad.h"
+#include "cc/quads/tile_draw_quad.h"
+#include "cc/quads/yuv_video_draw_quad.h"
 #include "third_party/skia/include/core/SkData.h"
 #include "third_party/skia/include/core/SkFlattenableSerialization.h"
 #include "third_party/skia/include/core/SkImageFilter.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
+#include "ui/gfx/ipc/geometry/gfx_param_traits.h"
+#include "ui/gfx/ipc/skia/gfx_skia_param_traits.h"
 
 namespace IPC {
 
@@ -151,10 +159,8 @@ bool ParamTraits<cc::FilterOperation>::Read(const base::Pickle* m,
       break;
     }
     case cc::FilterOperation::ZOOM:
-      if (ReadParam(m, iter, &amount) &&
-          ReadParam(m, iter, &zoom_inset) &&
-          amount >= 0.f &&
-          zoom_inset >= 0) {
+      if (ReadParam(m, iter, &amount) && ReadParam(m, iter, &zoom_inset) &&
+          amount >= 0.f && zoom_inset >= 0) {
         r->set_amount(amount);
         r->set_zoom_inset(zoom_inset);
         success = true;
@@ -176,8 +182,8 @@ bool ParamTraits<cc::FilterOperation>::Read(const base::Pickle* m,
   return success;
 }
 
-void ParamTraits<cc::FilterOperation>::Log(
-    const param_type& p, std::string* l) {
+void ParamTraits<cc::FilterOperation>::Log(const param_type& p,
+                                           std::string* l) {
   l->append("(");
   LogParam(static_cast<unsigned>(p.type()), l);
   l->append(", ");
@@ -256,8 +262,8 @@ bool ParamTraits<cc::FilterOperations>::Read(const base::Pickle* m,
   return true;
 }
 
-void ParamTraits<cc::FilterOperations>::Log(
-    const param_type& p, std::string* l) {
+void ParamTraits<cc::FilterOperations>::Log(const param_type& p,
+                                            std::string* l) {
   l->append("(");
   for (std::size_t i = 0; i < p.size(); ++i) {
     if (i)
@@ -306,8 +312,8 @@ bool ParamTraits<sk_sp<SkImageFilter>>::Read(const base::Pickle* m,
   return true;
 }
 
-void ParamTraits<sk_sp<SkImageFilter> >::Log(
-    const param_type& p, std::string* l) {
+void ParamTraits<sk_sp<SkImageFilter>>::Log(const param_type& p,
+                                            std::string* l) {
   l->append("(");
   LogParam(p.get() ? p->countInputs() : 0, l);
   l->append(")");
@@ -432,10 +438,7 @@ bool ParamTraits<cc::RenderPass>::Read(const base::Pickle* m,
       !ReadParam(m, iter, &quad_list_size))
     return false;
 
-  p->SetAll(id,
-            output_rect,
-            damage_rect,
-            transform_to_root_target,
+  p->SetAll(id, output_rect, damage_rect, transform_to_root_target,
             has_transparent_background);
 
   for (uint32_t i = 0; i < quad_list_size; ++i) {
@@ -512,8 +515,7 @@ bool ParamTraits<cc::RenderPass>::Read(const base::Pickle* m,
   return true;
 }
 
-void ParamTraits<cc::RenderPass>::Log(
-    const param_type& p, std::string* l) {
+void ParamTraits<cc::RenderPass>::Log(const param_type& p, std::string* l) {
   l->append("RenderPass((");
   LogParam(p.id, l);
   l->append("), ");
@@ -575,11 +577,11 @@ void ParamTraits<cc::RenderPass>::Log(
 }
 
 namespace {
-  enum CompositorFrameType {
-    NO_FRAME,
-    DELEGATED_FRAME,
-    GL_FRAME,
-  };
+enum CompositorFrameType {
+  NO_FRAME,
+  DELEGATED_FRAME,
+  GL_FRAME,
+};
 }
 
 void ParamTraits<cc::CompositorFrame>::Write(base::Pickle* m,
@@ -700,8 +702,8 @@ void ParamTraits<cc::DelegatedFrameData>::Write(base::Pickle* m,
   WriteParam(m, base::checked_cast<uint32_t>(p.render_pass_list.size()));
   for (const auto& pass : p.render_pass_list) {
     WriteParam(m, base::checked_cast<uint32_t>(pass->quad_list.size()));
-    WriteParam(m, base::checked_cast<uint32_t>(
-        pass->shared_quad_state_list.size()));
+    WriteParam(
+        m, base::checked_cast<uint32_t>(pass->shared_quad_state_list.size()));
     WriteParam(m, *pass);
   }
 }
@@ -709,12 +711,12 @@ void ParamTraits<cc::DelegatedFrameData>::Write(base::Pickle* m,
 bool ParamTraits<cc::DelegatedFrameData>::Read(const base::Pickle* m,
                                                base::PickleIterator* iter,
                                                param_type* p) {
+  const size_t kMaxRenderPasses = 10000;
+  const size_t kMaxSharedQuadStateListSize = 100000;
+  const size_t kMaxQuadListSize = 1000000;
+
   if (!ReadParam(m, iter, &p->device_scale_factor))
     return false;
-
-  const static size_t kMaxRenderPasses = 10000;
-  const static size_t kMaxSharedQuadStateListSize = 100000;
-  const static size_t kMaxQuadListSize = 1000000;
 
   std::set<cc::RenderPassId> pass_set;
 
@@ -814,7 +816,8 @@ void ParamTraits<cc::DrawQuad::Resources>::Log(const param_type& p,
 }
 
 void ParamTraits<cc::StreamVideoDrawQuad::OverlayResources>::GetSize(
-    base::PickleSizer* s, const param_type& p) {
+    base::PickleSizer* s,
+    const param_type& p) {
   for (size_t i = 0; i < cc::DrawQuad::Resources::kMaxResourceIdCount; ++i) {
     GetParamSize(s, p.size_in_pixels[i]);
   }
@@ -852,7 +855,8 @@ void ParamTraits<cc::StreamVideoDrawQuad::OverlayResources>::Log(
 }
 
 void ParamTraits<cc::TextureDrawQuad::OverlayResources>::GetSize(
-    base::PickleSizer* s, const param_type& p) {
+    base::PickleSizer* s,
+    const param_type& p) {
   for (size_t i = 0; i < cc::DrawQuad::Resources::kMaxResourceIdCount; ++i) {
     GetParamSize(s, p.size_in_pixels[i]);
   }
@@ -889,4 +893,32 @@ void ParamTraits<cc::TextureDrawQuad::OverlayResources>::Log(
   l->append("])");
 }
 
+}  // namespace IPC
+
+// Generate param traits size methods.
+#include "ipc/param_traits_size_macros.h"
+namespace IPC {
+#undef CC_IPC_CC_PARAM_TRAITS_MACROS_H_
+#include "cc/ipc/cc_param_traits_macros.h"
+}
+
+// Generate param traits write methods.
+#include "ipc/param_traits_write_macros.h"
+namespace IPC {
+#undef CC_IPC_CC_PARAM_TRAITS_MACROS_H_
+#include "cc/ipc/cc_param_traits_macros.h"
+}  // namespace IPC
+
+// Generate param traits read methods.
+#include "ipc/param_traits_read_macros.h"
+namespace IPC {
+#undef CC_IPC_CC_PARAM_TRAITS_MACROS_H_
+#include "cc/ipc/cc_param_traits_macros.h"
+}  // namespace IPC
+
+// Generate param traits log methods.
+#include "ipc/param_traits_log_macros.h"
+namespace IPC {
+#undef CC_IPC_CC_PARAM_TRAITS_MACROS_H_
+#include "cc/ipc/cc_param_traits_macros.h"
 }  // namespace IPC

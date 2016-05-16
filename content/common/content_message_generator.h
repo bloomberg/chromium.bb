@@ -12,7 +12,6 @@
 #include "content/common/bluetooth/bluetooth_messages.h"
 #include "content/common/browser_plugin/browser_plugin_messages.h"
 #include "content/common/cache_storage/cache_storage_messages.h"
-#include "content/common/cc_messages.h"
 #include "content/common/clipboard_messages.h"
 #include "content/common/database_messages.h"
 #include "content/common/device_sensors/device_light_messages.h"

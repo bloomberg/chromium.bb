@@ -6,6 +6,7 @@
   'dependencies': [
     '../base/base.gyp:base',
     '../cc/cc.gyp:cc',
+    '../cc/ipc/cc_ipc.gyp:cc_ipc',
     '../components/tracing.gyp:tracing',
     '../device/bluetooth/bluetooth.gyp:device_bluetooth',
     '../gpu/command_buffer/command_buffer.gyp:gles2_utils',
@@ -256,8 +257,6 @@
       'common/cache_storage/cache_storage_messages.h',
       'common/cache_storage/cache_storage_types.cc',
       'common/cache_storage/cache_storage_types.h',
-      'common/cc_messages.cc',
-      'common/cc_messages.h',
       'common/child_process_host_impl.cc',
       'common/child_process_host_impl.h',
       'common/child_process_messages.h',

@@ -837,6 +837,7 @@
       'dependencies': [
         '../cc/blink/cc_blink.gyp:cc_blink',
         '../cc/cc.gyp:cc',
+        '../cc/ipc/cc_ipc.gyp:cc_ipc',
         '../cc/cc_tests.gyp:cc_test_support',
         '../components/components.gyp:display_compositor',
         '../components/scheduler/scheduler.gyp:scheduler',
