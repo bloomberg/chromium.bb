@@ -140,6 +140,7 @@ RendererSchedulerImpl::AnyThread::AnyThread()
       in_idle_period(false),
       begin_main_frame_on_critical_path(false),
       last_gesture_was_compositor_driven(false),
+      default_gesture_prevented(true),
       have_seen_touchstart(false) {}
 
 RendererSchedulerImpl::AnyThread::~AnyThread() {}
@@ -493,6 +494,9 @@ void RendererSchedulerImpl::UpdateForInputEventOnCompositorThread(
         // yet where the gesture will run.
         AnyThread().last_gesture_was_compositor_driven = false;
         AnyThread().have_seen_touchstart = true;
+        // Assume the default gesture is prevented until we see evidence
+        // otherwise.
+        AnyThread().default_gesture_prevented = true;
         break;
 
       case blink::WebInputEvent::TouchMove:
@@ -515,6 +519,7 @@ void RendererSchedulerImpl::UpdateForInputEventOnCompositorThread(
         AnyThread().last_gesture_was_compositor_driven =
             input_event_state == InputEventState::EVENT_CONSUMED_BY_COMPOSITOR;
         AnyThread().awaiting_touch_start_response = false;
+        AnyThread().default_gesture_prevented = false;
         break;
 
       case blink::WebInputEvent::GestureFlingCancel:
@@ -569,6 +574,7 @@ bool RendererSchedulerImpl::IsHighPriorityWorkAnticipated() {
   return MainThreadOnly().touchstart_expected_soon ||
          use_case == UseCase::TOUCHSTART ||
          use_case == UseCase::MAIN_THREAD_GESTURE ||
+         use_case == UseCase::MAIN_THREAD_CUSTOM_INPUT_HANDLING ||
          use_case == UseCase::SYNCHRONIZED_GESTURE;
 }
 
@@ -589,6 +595,7 @@ bool RendererSchedulerImpl::ShouldYieldForHighPriorityWork() {
       return MainThreadOnly().touchstart_expected_soon;
 
     case UseCase::MAIN_THREAD_GESTURE:
+    case UseCase::MAIN_THREAD_CUSTOM_INPUT_HANDLING:
     case UseCase::SYNCHRONIZED_GESTURE:
       return compositor_task_runner_->HasPendingImmediateWork() ||
              MainThreadOnly().touchstart_expected_soon;
@@ -739,14 +746,27 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
       }
       break;
 
-    case UseCase::MAIN_THREAD_GESTURE:
-      // In main thread gestures we don't have perfect knowledge about which
-      // things we should be prioritizing, so we don't attempt to block
-      // expensive tasks because we don't know whether they were integral to the
-      // page's functionality or not.
+    case UseCase::MAIN_THREAD_CUSTOM_INPUT_HANDLING:
+      // In main thread input handling scenarios we don't have perfect knowledge
+      // about which things we should be prioritizing, so we don't attempt to
+      // block expensive tasks because we don't know whether they were integral
+      // to the page's functionality or not.
       new_policy.compositor_queue_policy.priority =
           main_thread_compositing_is_fast ? TaskQueue::HIGH_PRIORITY
                                           : TaskQueue::NORMAL_PRIORITY;
+      break;
+
+    case UseCase::MAIN_THREAD_GESTURE:
+      // A main thread gesture is for example a scroll gesture which is handled
+      // by the main thread. Since we know the established gesture type, we can
+      // be a little more aggressive about prioritizing compositing and input
+      // handling over other tasks.
+      new_policy.compositor_queue_policy.priority = TaskQueue::HIGH_PRIORITY;
+      if (touchstart_expected_soon) {
+        expensive_task_policy = ExpensiveTaskPolicy::BLOCK;
+      } else {
+        expensive_task_policy = ExpensiveTaskPolicy::THROTTLE;
+      }
       break;
 
     case UseCase::TOUCHSTART:
@@ -911,12 +931,15 @@ RendererSchedulerImpl::UseCase RendererSchedulerImpl::ComputeCurrentUseCase(
     }
 
     // Yes a gesture has been established.  Based on how the gesture is handled
-    // we need to choose between one of three use cases:
+    // we need to choose between one of four use cases:
     // 1. COMPOSITOR_GESTURE where the gesture is processed only on the
     //    compositor thread.
     // 2. MAIN_THREAD_GESTURE where the gesture is processed only on the main
     //    thread.
-    // 3. SYNCHRONIZED_GESTURE where the gesture is processed on both threads.
+    // 3. MAIN_THREAD_CUSTOM_INPUT_HANDLING where the main thread processes a
+    //    stream of input events and has prevented a default gesture from being
+    //    started.
+    // 4. SYNCHRONIZED_GESTURE where the gesture is processed on both threads.
     // TODO(skyostil): Consider removing in_idle_period_ and
     // HadAnIdlePeriodRecently() unless we need them here.
     if (AnyThread().last_gesture_was_compositor_driven) {
@@ -926,7 +949,11 @@ RendererSchedulerImpl::UseCase RendererSchedulerImpl::ComputeCurrentUseCase(
         return UseCase::COMPOSITOR_GESTURE;
       }
     }
-    return UseCase::MAIN_THREAD_GESTURE;
+    if (AnyThread().default_gesture_prevented) {
+      return UseCase::MAIN_THREAD_CUSTOM_INPUT_HANDLING;
+    } else {
+      return UseCase::MAIN_THREAD_GESTURE;
+    }
   }
 
   // TODO(alexclarke): return UseCase::LOADING if signals suggest the system is
@@ -943,6 +970,7 @@ base::TimeDelta RendererSchedulerImpl::EstimateLongestJankFreeTaskDuration()
     case UseCase::NONE:
       return base::TimeDelta::FromMilliseconds(kRailsResponseTimeMillis);
 
+    case UseCase::MAIN_THREAD_CUSTOM_INPUT_HANDLING:
     case UseCase::MAIN_THREAD_GESTURE:
     case UseCase::SYNCHRONIZED_GESTURE:
       return MainThreadOnly().idle_time_estimator.GetExpectedIdleDuration(
@@ -1096,6 +1124,8 @@ RendererSchedulerImpl::AsValueLocked(base::TimeTicks optional_now) const {
                     AnyThread().begin_main_frame_on_critical_path);
   state->SetBoolean("last_gesture_was_compositor_driven",
                     AnyThread().last_gesture_was_compositor_driven);
+  state->SetBoolean("default_gesture_prevented",
+                    AnyThread().default_gesture_prevented);
   state->SetDouble("expected_loading_task_duration",
                    MainThreadOnly()
                        .loading_task_cost_estimator.expected_task_duration()

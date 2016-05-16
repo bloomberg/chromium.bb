@@ -65,14 +65,16 @@ const char* RendererScheduler::UseCaseToString(UseCase use_case) {
       return "none";
     case UseCase::COMPOSITOR_GESTURE:
       return "compositor_gesture";
-    case UseCase::MAIN_THREAD_GESTURE:
-      return "main_thread_gesture";
+    case UseCase::MAIN_THREAD_CUSTOM_INPUT_HANDLING:
+      return "main_thread_custom_input_handling";
     case UseCase::SYNCHRONIZED_GESTURE:
       return "synchronized_gesture";
     case UseCase::TOUCHSTART:
       return "touchstart";
     case UseCase::LOADING:
       return "loading";
+    case UseCase::MAIN_THREAD_GESTURE:
+      return "main_thread_gesture";
     default:
       NOTREACHED();
       return nullptr;
