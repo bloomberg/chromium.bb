@@ -19,6 +19,7 @@
 #include "components/password_manager/core/browser/password_generation_manager.h"
 #include "components/prefs/pref_service.h"
 #include "google_apis/gaia/identity_provider.h"
+#include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/web_data_service_factory.h"
@@ -63,11 +64,8 @@ IdentityProvider* AutofillClientIOS::GetIdentityProvider() {
   return identity_provider_.get();
 }
 
-// TODO(dconnelly): [Merge] Does this need a real implementation?
-// http://crbug.com/468326
 rappor::RapporService* AutofillClientIOS::GetRapporService() {
-  NOTIMPLEMENTED();
-  return nullptr;
+  return GetApplicationContext()->GetRapporService();
 }
 
 void AutofillClientIOS::ShowAutofillSettings() {
