@@ -404,6 +404,17 @@ Polymer({
     this.putSearchAtBottom_();
 
     Polymer.RenderStatus.afterNextRender(this, function() {
+      // Import the elements that aren't needed at startup. This reduces
+      // initial load time.
+      this.importHref(this.resolveUrl(
+          'chrome://resources/polymer/v1_0/neon-animation/' +
+              'web-animations.html'));
+      this.importHref(this.resolveUrl(
+          '../issue_banner/issue_banner.html'));
+      this.importHref(this.resolveUrl(
+          '../media_router_search_highlighter/' +
+              'media_router_search_highlighter.html'));
+
       // If this is not on a Mac platform, remove the placeholder. See
       // onFocus_() for more details. ready() is only called once, so no need
       // to check if the placeholder exist before removing.
