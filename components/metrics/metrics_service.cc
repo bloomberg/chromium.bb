@@ -591,8 +591,10 @@ void MetricsService::InitializeMetricsState() {
   }
 
   bool has_initial_stability_log = false;
+  bool providers_have_initial_stability_metrics =
+      ProvidersHaveInitialStabilityMetrics();
   if (!clean_exit_beacon_.exited_cleanly() ||
-      ProvidersHaveInitialStabilityMetrics()) {
+      providers_have_initial_stability_metrics) {
     // TODO(rtenneti): On windows, consider saving/getting execution_phase from
     // the registry.
     int execution_phase =

@@ -17,6 +17,7 @@ void TestMetricsProvider::OnRecordingDisabled() {
 }
 
 bool TestMetricsProvider::HasInitialStabilityMetrics() {
+  has_initial_stability_metrics_called_ = true;
   return has_initial_stability_metrics_;
 }
 

@@ -18,6 +18,7 @@ class TestMetricsProvider : public MetricsProvider {
       : init_called_(false),
         on_recording_disabled_called_(false),
         has_initial_stability_metrics_(false),
+        has_initial_stability_metrics_called_(false),
         provide_initial_stability_metrics_called_(false),
         provide_stability_metrics_called_(false) {}
 
@@ -32,6 +33,9 @@ class TestMetricsProvider : public MetricsProvider {
 
   bool init_called() { return init_called_; }
   bool on_recording_disabled_called() { return on_recording_disabled_called_; }
+  bool has_initial_stability_metrics_called() {
+    return has_initial_stability_metrics_called_;
+  }
   void set_has_initial_stability_metrics(bool has_initial_stability_metrics) {
     has_initial_stability_metrics_ = has_initial_stability_metrics;
   }
@@ -46,6 +50,7 @@ class TestMetricsProvider : public MetricsProvider {
   bool init_called_;
   bool on_recording_disabled_called_;
   bool has_initial_stability_metrics_;
+  bool has_initial_stability_metrics_called_;
   bool provide_initial_stability_metrics_called_;
   bool provide_stability_metrics_called_;
 

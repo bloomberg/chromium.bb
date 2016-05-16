@@ -176,9 +176,14 @@ TEST_F(MetricsServiceTest, InitialStabilityLogAfterCleanShutDown) {
       std::unique_ptr<MetricsProvider>(test_provider));
 
   service.InitializeMetricsRecordingState();
+
   // No initial stability log should be generated.
   EXPECT_FALSE(service.log_manager()->has_unsent_logs());
   EXPECT_FALSE(service.log_manager()->has_staged_log());
+
+  // Ensure that HasInitialStabilityMetrics() is always called on providers,
+  // for consistency, even if other conditions already indicate their presence.
+  EXPECT_TRUE(test_provider->has_initial_stability_metrics_called());
 
   // The test provider should not have been called upon to provide initial
   // stability nor regular stability metrics.
@@ -221,6 +226,10 @@ TEST_F(MetricsServiceTest, InitialStabilityLogAtProviderRequest) {
   MetricsLogManager* log_manager = service.log_manager();
   EXPECT_TRUE(log_manager->has_unsent_logs());
   EXPECT_FALSE(log_manager->has_staged_log());
+
+  // Ensure that HasInitialStabilityMetrics() is always called on providers,
+  // for consistency, even if other conditions already indicate their presence.
+  EXPECT_TRUE(test_provider->has_initial_stability_metrics_called());
 
   // The test provider should have been called upon to provide initial
   // stability and regular stability metrics.
@@ -285,6 +294,10 @@ TEST_F(MetricsServiceTest, InitialStabilityLogAfterCrash) {
   MetricsLogManager* log_manager = service.log_manager();
   EXPECT_TRUE(log_manager->has_unsent_logs());
   EXPECT_FALSE(log_manager->has_staged_log());
+
+  // Ensure that HasInitialStabilityMetrics() is always called on providers,
+  // for consistency, even if other conditions already indicate their presence.
+  EXPECT_TRUE(test_provider->has_initial_stability_metrics_called());
 
   // The test provider should have been called upon to provide initial
   // stability and regular stability metrics.
