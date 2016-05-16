@@ -170,9 +170,9 @@ void TabManager::Start() {
   std::string allow_multiple_discards = variations::GetVariationParamValue(
       features::kAutomaticTabDiscarding.name, "AllowMultipleDiscards");
   if (allow_multiple_discards == "true")
-    discard_once_ = true;
-  else
     discard_once_ = false;
+  else
+    discard_once_ = true;
 
   // Check the variation parameter to see if a tab is to be protected for an
   // amount of time after being backgrounded. The value is in seconds.
