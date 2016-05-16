@@ -79,18 +79,16 @@ public:
 
 private:
 
-    // TextResourceDecoder does four kinds of encoding detection:
+    // TextResourceDecoder does three kind of encoding detection:
     // 1. By BOM,
     // 2. By Content if |m_contentType| is not |PlainTextContext|
-    //    (e.g. <meta> tag for HTML),
-    // 3. By isUTF8Encoded() to detect if the document
-    //    is of UTF-8, and
-    // 4. By detectTextEncodingUniversal().
+    //    (e.g. <meta> tag for HTML), and
+    // 3. By detectTextEncoding().
     enum EncodingDetectionOption {
-        // Use 1. + 2. + 4.
+        // Use 1. + 2. + 3.
         UseAllAutoDetection,
 
-        // Use 1. + 2. + 3.
+        // Use 1. + 2.
         UseContentAndBOMBasedDetection,
 
         // Use None of them.
@@ -110,8 +108,7 @@ private:
     bool checkForCSSCharset(const char*, size_t, bool& movedDataToBuffer);
     bool checkForXMLCharset(const char*, size_t, bool& movedDataToBuffer);
     void checkForMetaCharset(const char*, size_t);
-    void detectTextEncoding(const char*, size_t);
-    bool shouldDetectEncoding() const;
+    bool shouldAutoDetect() const;
 
     ContentType m_contentType;
     WTF::TextEncoding m_encoding;
