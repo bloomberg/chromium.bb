@@ -38,3 +38,10 @@ class ContextLostExpectations(GpuTestExpectations):
               ['android'], bug=609629)
     self.Fail('ContextLost.WebGLContextLostInHiddenTab',
               ['android'], bug=609629)
+
+    # Nexus 6
+    # The Nexus 6 times out on these tests while waiting for the JS to complete
+    self.Fail('ContextLost.WebGLContextLostFromLoseContextExtension',
+              ['android', ('qualcomm', 'Adreno (TM) 420')], bug=611906)
+    self.Fail('ContextLost.WebGLContextLostFromQuantity',
+              ['android', ('qualcomm', 'Adreno (TM) 420')], bug=611906)

@@ -86,6 +86,30 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # Nexus 5
     self.Fail('WebglExtension.OES_texture_float_linear',
               ['android', ('qualcomm', 'Adreno (TM) 330')])
+    self.Fail('conformance/extensions/angle-instanced-arrays.html',
+              ['android', ('qualcomm', 'Adreno (TM) 330')], bug=611943)
+    self.Fail('conformance/extensions/ext-texture-filter-anisotropic.html',
+              ['android', ('qualcomm', 'Adreno (TM) 330')], bug=611943)
+    self.Fail('conformance/extensions/oes-texture-half-float.html',
+              ['android', ('qualcomm', 'Adreno (TM) 330')], bug=611943)
+    self.Fail('conformance/extensions/oes-texture-half-float-with-canvas.html',
+              ['android', ('qualcomm', 'Adreno (TM) 330')], bug=611943)
+    self.Fail('conformance/extensions/webgl-compressed-texture-atc.html',
+              ['android', ('qualcomm', 'Adreno (TM) 330')], bug=611943)
+    self.Fail('conformance/glsl/bugs/' +
+              'array-of-struct-with-int-first-position.html',
+              ['android', ('qualcomm', 'Adreno (TM) 330')], bug=611943)
+    self.Fail('conformance/glsl/bugs/gl-fragcoord-multisampling-bug.html',
+              ['android', ('qualcomm', 'Adreno (TM) 330')], bug=611943)
+    self.Fail('conformance/glsl/bugs/sampler-struct-function-arg.html',
+              ['android', ('qualcomm', 'Adreno (TM) 330')], bug=611943)
+    self.Fail('conformance/glsl/matrices/glsl-mat4-to-mat3.html',
+              ['android', ('qualcomm', 'Adreno (TM) 330')], bug=611943)
+    self.Fail('conformance/glsl/misc/shader-struct-scope.html',
+              ['android', ('qualcomm', 'Adreno (TM) 330')], bug=611943)
+    self.Fail('conformance/glsl/misc/' +
+              'shader-with-vec4-vec3-vec4-conditional.html',
+              ['android', ('qualcomm', 'Adreno (TM) 330')], bug=611943)
 
     # Nexus 5X
     self.Fail('conformance/extensions/oes-texture-float-with-image-data.html',
@@ -160,10 +184,69 @@ class WebGLConformanceExpectations(GpuTestExpectations):
               'tex-2d-rgb-rgb-unsigned_byte.html',
               ['android', 'android-content-shell',
                ('qualcomm', 'Adreno (TM) 418')], bug=610951)
+    self.Fail('conformance/textures/video/' +
+              'tex-2d-rgb-rgb-unsigned_short_5_6_5.html',
+              ['android', 'android-content-shell',
+               ('qualcomm', 'Adreno (TM) 418')], bug=610951)
+    self.Fail('conformance/textures/video/tex-2d-rgba-rgba-unsigned_byte.html',
+              ['android', 'android-content-shell',
+               ('qualcomm', 'Adreno (TM) 418')], bug=610951)
+    self.Fail('conformance/textures/video/' +
+              'tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html',
+              ['android', 'android-content-shell',
+               ('qualcomm', 'Adreno (TM) 418')], bug=610951)
+    self.Fail('conformance/textures/video/' +
+              'tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html',
+              ['android', 'android-content-shell',
+               ('qualcomm', 'Adreno (TM) 418')], bug=610951)
+    self.Fail('conformance/textures/webgl_canvas/' +
+              'tex-2d-rgb-rgb-unsigned_byte.html',
+              ['android', ('qualcomm', 'Adreno (TM) 418')], bug=610951)
+    self.Fail('conformance/textures/webgl_canvas/' +
+              'tex-2d-rgb-rgb-unsigned_short_5_6_5.html',
+              ['android', ('qualcomm', 'Adreno (TM) 418')], bug=610951)
+    self.Fail('conformance/textures/webgl_canvas/' +
+              'tex-2d-rgba-rgba-unsigned_byte.html',
+              ['android', ('qualcomm', 'Adreno (TM) 418')], bug=610951)
+    self.Fail('conformance/textures/webgl_canvas/' +
+              'tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html',
+              ['android', ('qualcomm', 'Adreno (TM) 418')], bug=610951)
+    self.Fail('conformance/textures/webgl_canvas/' +
+              'tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html',
+              ['android', ('qualcomm', 'Adreno (TM) 418')], bug=610951)
+    self.Fail('conformance/textures/image_bitmap_from_image_data/' +
+              'tex-2d-rgb-rgb-unsigned_byte.html',
+              ['android', ('qualcomm', 'Adreno (TM) 418')], bug=610951)
+    self.Fail('conformance/textures/image_bitmap_from_image_data/' +
+              'tex-2d-rgb-rgb-unsigned_short_5_6_5.html',
+              ['android', ('qualcomm', 'Adreno (TM) 418')], bug=610951)
 
     # Nexus 6
     self.Fail('WebglExtension.EXT_sRGB',
               ['android', ('qualcomm', 'Adreno (TM) 420')])
+    self.Fail('conformance/context/context-size-change.html',
+              ['android', ('qualcomm', 'Adreno (TM) 420')], bug=611945)
+    self.Fail('conformance/extensions/oes-texture-half-float.html',
+              ['android', ('qualcomm', 'Adreno (TM) 420')], bug=611945)
+    self.Fail('conformance/extensions/oes-texture-half-float-with-canvas.html',
+              ['android', ('qualcomm', 'Adreno (TM) 420')], bug=611945)
+    self.Fail('conformance/extensions/' +
+              'oes-texture-half-float-with-image-data.html',
+              ['android', ('qualcomm', 'Adreno (TM) 420')], bug=611945)
+    self.Fail('conformance/extensions/oes-texture-half-float-with-image.html',
+              ['android', ('qualcomm', 'Adreno (TM) 420')], bug=611945)
+    self.Fail('conformance/extensions/oes-texture-half-float-with-video.html',
+              ['android', ('qualcomm', 'Adreno (TM) 420')], bug=611945)
+    self.Fail('conformance/extensions/webgl-compressed-texture-atc.html',
+              ['android', ('qualcomm', 'Adreno (TM) 420')], bug=611945)
+    self.Fail('conformance/glsl/bugs/gl-fragcoord-multisampling-bug.html',
+              ['android', ('qualcomm', 'Adreno (TM) 420')], bug=611945)
+    self.Fail('conformance/glsl/bugs/qualcomm-crash.html',
+              ['android', ('qualcomm', 'Adreno (TM) 420')], bug=611945)
+    self.Fail('conformance/glsl/bugs/sampler-struct-function-arg.html',
+              ['android', ('qualcomm', 'Adreno (TM) 420')], bug=611945)
+    self.Fail('conformance/glsl/misc/shader-struct-scope.html',
+              ['android', ('qualcomm', 'Adreno (TM) 420')], bug=611945)
 
     # Nexus 9
     self.Fail('WebglExtension.WEBGL_compressed_texture_atc',
