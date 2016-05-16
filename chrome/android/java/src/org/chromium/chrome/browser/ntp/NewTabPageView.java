@@ -309,7 +309,7 @@ public class NewTabPageView extends FrameLayout
         mMostVisitedDesign = new MostVisitedDesign(getContext());
         mMostVisitedLayout =
                 (MostVisitedLayout) mNewTabPageLayout.findViewById(R.id.most_visited_layout);
-        mMostVisitedDesign.initMostVisitedLayout(mMostVisitedLayout, searchProviderHasLogo);
+        mMostVisitedDesign.initMostVisitedLayout(searchProviderHasLogo);
 
         mSearchProviderLogoView =
                 (LogoView) mNewTabPageLayout.findViewById(R.id.search_provider_logo);
@@ -1070,13 +1070,13 @@ public class NewTabPageView extends FrameLayout
 
         if (showPlaceholder) {
             if (mMostVisitedPlaceholder == null) {
-                ViewStub mostVisitedPlaceholderStub = (ViewStub) findViewById(
-                        R.id.most_visited_placeholder_stub);
+                ViewStub mostVisitedPlaceholderStub = (ViewStub) mNewTabPageLayout
+                        .findViewById(R.id.most_visited_placeholder_stub);
+
                 mMostVisitedPlaceholder = mostVisitedPlaceholderStub.inflate();
             }
             mMostVisitedLayout.setVisibility(GONE);
             mMostVisitedPlaceholder.setVisibility(VISIBLE);
-            return;
         } else if (mMostVisitedPlaceholder != null) {
             mMostVisitedLayout.setVisibility(VISIBLE);
             mMostVisitedPlaceholder.setVisibility(GONE);
@@ -1118,9 +1118,8 @@ public class NewTabPageView extends FrameLayout
             return searchProviderHasLogo ? NUM_TILES : NUM_TILES_NO_LOGO;
         }
 
-        public void initMostVisitedLayout(MostVisitedLayout mostVisitedLayout,
-                boolean searchProviderHasLogo) {
-            mostVisitedLayout.setMaxRows(searchProviderHasLogo ? MAX_ROWS : MAX_ROWS_NO_LOGO);
+        public void initMostVisitedLayout(boolean searchProviderHasLogo) {
+            mMostVisitedLayout.setMaxRows(searchProviderHasLogo ? MAX_ROWS : MAX_ROWS_NO_LOGO);
         }
 
         public void setSearchProviderHasLogo(View mostVisitedLayout, boolean hasLogo) {
