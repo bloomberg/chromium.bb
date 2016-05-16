@@ -11,6 +11,7 @@ config("jingle_unexported_configs") {
     "FEATURE_ENABLE_SSL",
     "GTEST_RELATIVE_PATH",
     "HAVE_OPENSSL_SSL_H",
+    "HAVE_SCTP",
     "HAVE_SRTP",
     "HAVE_WEBRTC_VIDEO",
     "HAVE_WEBRTC_VOICE",
@@ -379,6 +380,8 @@ if (enable_webrtc) {
       "../webrtc/media/engine/webrtcvoe.h",
       "../webrtc/media/engine/webrtcvoiceengine.cc",
       "../webrtc/media/engine/webrtcvoiceengine.h",
+      "../webrtc/media/sctp/sctpdataengine.cc",
+      "../webrtc/media/sctp/sctpdataengine.h",
       "../webrtc/pc/audiomonitor.cc",
       "../webrtc/pc/audiomonitor.h",
       "../webrtc/pc/bundlefilter.cc",
@@ -412,22 +415,13 @@ if (enable_webrtc) {
     deps = [
       ":libjingle",
       "//third_party/libsrtp",
+      "//third_party/usrsctp",
       "//third_party/webrtc",
       "//third_party/webrtc/modules/media_file",
       "//third_party/webrtc/modules/video_capture",
       "//third_party/webrtc/system_wrappers",
       "//third_party/webrtc/voice_engine",
     ]
-
-    if (!is_ios) {
-      # TODO(mallinath) - Enable SCTP for iOS.
-      sources += [
-        "../webrtc/media/sctp/sctpdataengine.cc",
-        "../webrtc/media/sctp/sctpdataengine.h",
-      ]
-      defines = [ "HAVE_SCTP" ]
-      deps += [ "//third_party/usrsctp" ]
-    }
   }
 
   source_set("libstunprober") {
