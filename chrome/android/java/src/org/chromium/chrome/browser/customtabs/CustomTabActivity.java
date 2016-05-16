@@ -204,7 +204,9 @@ public class CustomTabActivity extends ChromeActivity {
         mIntentDataProvider = new CustomTabIntentDataProvider(getIntent(), this);
         mSession = mIntentDataProvider.getSession();
         supportRequestWindowFeature(Window.FEATURE_ACTION_MODE_OVERLAY);
-        if (CustomTabsConnection.hasWarmUpBeenFinished(getApplication())) {
+        boolean prerendered = !TextUtils.isEmpty(
+                CustomTabsConnection.getInstance(getApplication()).getPrerenderedUrl(mSession));
+        if (CustomTabsConnection.hasWarmUpBeenFinished(getApplication()) && !prerendered) {
             mMainTab = createMainTab();
             loadUrlInTab(mMainTab, new LoadUrlParams(getUrlToLoad()),
                     IntentHandler.getTimestampFromIntent(getIntent()));
