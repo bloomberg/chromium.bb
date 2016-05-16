@@ -87,5 +87,5 @@
     const unsigned short CHANGE    = 32768;
     [MeasureAs=EventSrcElement] readonly attribute EventTarget srcElement;
     [MeasureAs=EventReturnValue, CallWith=ExecutionContext, ImplementedAs=legacyReturnValue] attribute boolean returnValue;
-    [MeasureAs=EventCancelBubble] attribute boolean cancelBubble;
+    [MeasureAs=EventCancelBubble, CallWith=ExecutionContext] attribute boolean cancelBubble;
 };

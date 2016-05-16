@@ -1161,6 +1161,9 @@ public:
         ProgressElementWithNoneAppearance = 1345,
         ProgressElementWithProgressBarAppearance = 1346,
         PointerEventAddListenerCount = 1347,
+        EventCancelBubbleAffected = 1348,
+        EventCancelBubbleWasChangedToTrue = 1349,
+        EventCancelBubbleWasChangedToFalse = 1350,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

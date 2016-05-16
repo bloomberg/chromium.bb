@@ -28,6 +28,7 @@
 
 #include "modules/indexeddb/IDBEventDispatcher.h"
 
+#include "core/frame/UseCounter.h"
 #include "modules/EventModules.h"
 #include "modules/EventTargetModules.h"
 
@@ -49,15 +50,29 @@ DispatchEventResult IDBEventDispatcher::dispatch(Event* event, HeapVector<Member
     event->setEventPhase(Event::AT_TARGET);
     event->setCurrentTarget(eventTargets[0].get());
     eventTargets[0]->fireEventListeners(event);
-    if (event->propagationStopped() || !event->bubbles() || event->cancelBubble())
+    if (event->propagationStopped() || !event->bubbles())
         goto doneDispatching;
+    if (event->bubbles() && event->cancelBubble()) {
+        for (size_t i = 1; i < size; ++i) { // Don't do the first element.
+            if (eventTargets[i]->hasEventListeners(event->type()))
+                UseCounter::count(eventTargets[i]->getExecutionContext(), UseCounter::EventCancelBubbleAffected);
+        }
+        goto doneDispatching;
+    }
 
     event->setEventPhase(Event::BUBBLING_PHASE);
     for (size_t i = 1; i < size; ++i) { // Don't do the first element.
         event->setCurrentTarget(eventTargets[i].get());
         eventTargets[i]->fireEventListeners(event);
-        if (event->propagationStopped() || event->cancelBubble())
+        if (event->propagationStopped())
             goto doneDispatching;
+        if (event->cancelBubble()) {
+            for (size_t j = i + 1; j < size; ++j) {
+                if (eventTargets[j]->hasEventListeners(event->type()))
+                    UseCounter::count(eventTargets[j]->getExecutionContext(), UseCounter::EventCancelBubbleAffected);
+            }
+            goto doneDispatching;
+        }
     }
 
 doneDispatching:

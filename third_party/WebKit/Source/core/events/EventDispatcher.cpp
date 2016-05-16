@@ -34,6 +34,7 @@
 #include "core/events/WindowEventContext.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalDOMWindow.h"
+#include "core/frame/UseCounter.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "platform/EventDispatchForbiddenScope.h"
 #include "platform/TraceEvent.h"
@@ -177,12 +178,15 @@ inline void EventDispatcher::dispatchEventAtBubbling()
     size_t size = m_event->eventPath().size();
     for (size_t i = 1; i < size; ++i) {
         const NodeEventContext& eventContext = m_event->eventPath()[i];
-        if (eventContext.currentTargetSameAsTarget())
+        if (eventContext.currentTargetSameAsTarget()) {
             m_event->setEventPhase(Event::AT_TARGET);
-        else if (m_event->bubbles() && !m_event->cancelBubble())
+        } else if (m_event->bubbles() && !m_event->cancelBubble()) {
             m_event->setEventPhase(Event::BUBBLING_PHASE);
-        else
+        } else {
+            if (m_event->bubbles() && m_event->cancelBubble() && eventContext.node()->hasEventListeners(m_event->type()))
+                UseCounter::count(eventContext.node()->document(), UseCounter::EventCancelBubbleAffected);
             continue;
+        }
         eventContext.handleLocalEvents(*m_event);
         if (m_event->propagationStopped())
             return;
@@ -190,6 +194,8 @@ inline void EventDispatcher::dispatchEventAtBubbling()
     if (m_event->bubbles() && !m_event->cancelBubble()) {
         m_event->setEventPhase(Event::BUBBLING_PHASE);
         m_event->eventPath().windowEventContext().handleLocalEvents(*m_event);
+    } else if (m_event->bubbles() && m_event->eventPath().windowEventContext().window()->hasEventListeners(m_event->type())) {
+        UseCounter::count(m_event->eventPath().windowEventContext().window()->getExecutionContext(), UseCounter::EventCancelBubbleAffected);
     }
 }
 

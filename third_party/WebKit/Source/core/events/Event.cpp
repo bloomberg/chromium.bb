@@ -358,6 +358,15 @@ double Event::timeStamp(ScriptState* scriptState) const
     return timeStamp;
 }
 
+void Event::setCancelBubble(ExecutionContext* context, bool cancel)
+{
+    if (!m_cancelBubble && cancel)
+        UseCounter::count(context, UseCounter::EventCancelBubbleWasChangedToTrue);
+    else if (m_cancelBubble && !cancel)
+        UseCounter::count(context, UseCounter::EventCancelBubbleWasChangedToFalse);
+    m_cancelBubble = cancel;
+}
+
 DEFINE_TRACE(Event)
 {
     visitor->trace(m_currentTarget);

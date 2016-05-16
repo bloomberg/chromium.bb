@@ -179,8 +179,8 @@ public:
     bool defaultHandled() const { return m_defaultHandled; }
     void setDefaultHandled() { m_defaultHandled = true; }
 
-    bool cancelBubble() const { return m_cancelBubble; }
-    void setCancelBubble(bool cancel) { m_cancelBubble = cancel; }
+    bool cancelBubble(ExecutionContext* = nullptr) const { return m_cancelBubble; }
+    void setCancelBubble(ExecutionContext*, bool);
 
     Event* underlyingEvent() const { return m_underlyingEvent.get(); }
     void setUnderlyingEvent(Event*);
