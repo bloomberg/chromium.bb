@@ -100,6 +100,9 @@ class CONTENT_EXPORT CrossProcessFrameConnector {
   // Pass acked touch events to the root view for gesture processing.
   void ForwardProcessAckedTouchEvent(const TouchEventWithLatencyInfo& touch,
                                      InputEventAckState ack_result);
+  // Gesture and wheel events with unused scroll deltas must be bubbled to
+  // ancestors who may consume the delta.
+  void BubbleScrollEvent(const blink::WebInputEvent& event);
 
   // Determines whether the root RenderWidgetHostView (and thus the current
   // page) has focus.

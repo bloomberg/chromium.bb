@@ -802,8 +802,13 @@ class FrameRectChangedMessageFilter : public content::BrowserMessageFilter {
   gfx::Rect last_rect() const { return last_rect_; }
 
   void Wait() {
-    last_rect_ = gfx::Rect();
     message_loop_runner_->Run();
+  }
+
+  void Reset() {
+    last_rect_ = gfx::Rect();
+    message_loop_runner_ = new content::MessageLoopRunner;
+    frame_rect_received_ = false;
   }
 
  private:
@@ -906,6 +911,154 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // earlier position.
   gfx::Rect update_rect = filter->last_rect();
   EXPECT_LT(update_rect.y(), bounds.y() - rwhv_root->GetViewBounds().y());
+}
+
+// Test that scrolling a nested out-of-process iframe bubbles unused scroll
+// delta to a parent frame.
+#if defined(OS_ANDROID)
+// Browser process hit testing is not implemented on Android.
+// https://crbug.com/491334
+#define MAYBE_ScrollBubblingFromOOPIFTest DISABLED_ScrollBubblingFromOOPIFTest
+#else
+#define MAYBE_ScrollBubblingFromOOPIFTest ScrollBubblingFromOOPIFTest
+#endif
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       MAYBE_ScrollBubblingFromOOPIFTest) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  NavigateToURL(shell(), main_url);
+
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  ASSERT_EQ(1U, root->child_count());
+
+  FrameTreeNode* parent_iframe_node = root->child_at(0);
+
+  // This test uses the position of the nested iframe within the parent iframe
+  // to infer the scroll position of the parent. FrameRectChangedMessageFilter
+  // catches updates to the position in order to avoid busy waiting.
+  // It gets set created early to catch the initial rects from the navigation.
+  scoped_refptr<FrameRectChangedMessageFilter> filter =
+      new FrameRectChangedMessageFilter();
+  parent_iframe_node->current_frame_host()->GetProcess()->AddFilter(
+      filter.get());
+
+  GURL site_url(embedded_test_server()->GetURL(
+      "b.com", "/frame_tree/page_with_positioned_frame.html"));
+  NavigateFrameToURL(parent_iframe_node, site_url);
+
+  EXPECT_EQ(
+      " Site A ------------ proxies for B C\n"
+      "   +--Site B ------- proxies for A C\n"
+      "        +--Site C -- proxies for A B\n"
+      "Where A = http://a.com/\n"
+      "      B = http://b.com/\n"
+      "      C = http://baz.com/",
+      DepictFrameTree(root));
+
+  RenderWidgetHostViewBase* rwhv_parent =
+      static_cast<RenderWidgetHostViewBase*>(
+          parent_iframe_node->current_frame_host()
+              ->GetRenderWidgetHost()
+              ->GetView());
+
+  FrameTreeNode* nested_iframe_node = parent_iframe_node->child_at(0);
+  RenderWidgetHostViewBase* rwhv_nested =
+      static_cast<RenderWidgetHostViewBase*>(
+          nested_iframe_node->current_frame_host()
+              ->GetRenderWidgetHost()
+              ->GetView());
+
+  SurfaceHitTestReadyNotifier notifier(
+      static_cast<RenderWidgetHostViewChildFrame*>(rwhv_nested));
+  notifier.WaitForSurfaceReady();
+
+  // Save the original offset as a point of reference.
+  filter->Wait();
+  gfx::Rect update_rect = filter->last_rect();
+  int initial_y = update_rect.y();
+  filter->Reset();
+
+  // Scroll the parent frame downward.
+  blink::WebMouseWheelEvent scroll_event;
+  scroll_event.type = blink::WebInputEvent::MouseWheel;
+  scroll_event.x = 1;
+  scroll_event.y = 1;
+  scroll_event.deltaX = 0.0f;
+  scroll_event.deltaY = -5.0f;
+  rwhv_parent->ProcessMouseWheelEvent(scroll_event);
+
+  // Ensure that the view position is propagated to the child properly.
+  filter->Wait();
+  update_rect = filter->last_rect();
+  EXPECT_LT(update_rect.y(), initial_y);
+  filter->Reset();
+
+  // Now scroll the nested frame upward, which should bubble to the parent.
+  // The upscroll exceeds the amount that the frame was initially scrolled
+  // down to account for rounding.
+  scroll_event.deltaY = 6.0f;
+  rwhv_nested->ProcessMouseWheelEvent(scroll_event);
+
+  filter->Wait();
+  // This loop isn't great, but it accounts for the possibility of multiple
+  // incremental updates happening as a result of the scroll animation.
+  // A failure condition of this test is that the loop might not terminate
+  // due to bubbling not working properly. If the overscroll bubbles to the
+  // parent iframe then the nested frame's y coord will return to its
+  // initial position.
+  update_rect = filter->last_rect();
+  while (update_rect.y() > initial_y) {
+    base::RunLoop run_loop;
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
+    run_loop.Run();
+    update_rect = filter->last_rect();
+  }
+
+  filter->Reset();
+
+  // Scroll the parent down again in order to test scroll bubbling from
+  // gestures.
+  scroll_event.deltaY = -5.0f;
+  rwhv_parent->ProcessMouseWheelEvent(scroll_event);
+
+  // Ensure ensuing offset change is received, and then reset the filter.
+  filter->Wait();
+  filter->Reset();
+
+  // Scroll down the nested iframe via gesture. This requires 3 separate input
+  // events.
+  blink::WebGestureEvent gesture_event;
+  gesture_event.type = blink::WebGestureEvent::GestureScrollBegin;
+  gesture_event.sourceDevice = blink::WebGestureDeviceTouchpad;
+  gesture_event.x = 1;
+  gesture_event.y = 1;
+  rwhv_nested->GetRenderWidgetHost()->ForwardGestureEvent(gesture_event);
+
+  gesture_event.type = blink::WebGestureEvent::GestureScrollUpdate;
+  gesture_event.data.scrollUpdate.deltaX = 0.0f;
+  gesture_event.data.scrollUpdate.deltaY = 6.0f;
+  gesture_event.data.scrollUpdate.velocityX = 0;
+  gesture_event.data.scrollUpdate.velocityY = 0;
+  rwhv_nested->GetRenderWidgetHost()->ForwardGestureEvent(gesture_event);
+
+  gesture_event.type = blink::WebGestureEvent::GestureScrollEnd;
+  rwhv_nested->GetRenderWidgetHost()->ForwardGestureEvent(gesture_event);
+
+  filter->Wait();
+  update_rect = filter->last_rect();
+  // As above, if this loop does not terminate then it indicates an issue
+  // with scroll bubbling.
+  while (update_rect.y() > initial_y) {
+    base::RunLoop run_loop;
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
+    run_loop.Run();
+    update_rect = filter->last_rect();
+  }
 }
 
 // Test that mouse events are being routed to the correct RenderWidgetHostView

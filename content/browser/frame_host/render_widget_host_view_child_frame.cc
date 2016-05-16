@@ -332,6 +332,27 @@ void RenderWidgetHostViewChildFrame::UnregisterSurfaceNamespaceId() {
   }
 }
 
+void RenderWidgetHostViewChildFrame::WheelEventAck(
+    const blink::WebMouseWheelEvent& event,
+    InputEventAckState ack_result) {
+  if (frame_connector_ &&
+      (ack_result == INPUT_EVENT_ACK_STATE_NOT_CONSUMED ||
+       ack_result == INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS))
+    frame_connector_->BubbleScrollEvent(event);
+}
+
+void RenderWidgetHostViewChildFrame::GestureEventAck(
+    const blink::WebGestureEvent& event,
+    InputEventAckState ack_result) {
+  bool not_consumed = ack_result == INPUT_EVENT_ACK_STATE_NOT_CONSUMED ||
+                      ack_result == INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS;
+  // GestureScrollBegin/End are always consumed by the target frame, so we only
+  // forward GestureScrollUpdate.
+  if (frame_connector_ &&
+      event.type == blink::WebInputEvent::GestureScrollUpdate && not_consumed)
+    frame_connector_->BubbleScrollEvent(event);
+}
+
 void RenderWidgetHostViewChildFrame::SurfaceDrawn(uint32_t output_surface_id,
                                                   cc::SurfaceDrawStatus drawn) {
   cc::CompositorFrameAck ack;

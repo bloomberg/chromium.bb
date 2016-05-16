@@ -143,6 +143,41 @@ void CrossProcessFrameConnector::ForwardProcessAckedTouchEvent(
     main_view->ProcessAckedTouchEvent(touch, ack_result);
 }
 
+void CrossProcessFrameConnector::BubbleScrollEvent(
+    const blink::WebInputEvent& event) {
+  auto parent_view = GetParentRenderWidgetHostView();
+
+  if (!parent_view)
+    return;
+
+  gfx::Vector2d offset_from_parent = child_frame_rect_.OffsetFromOrigin();
+  if (event.type == blink::WebInputEvent::GestureScrollUpdate) {
+    blink::WebGestureEvent resent_gesture_event;
+    memcpy(&resent_gesture_event, &event, sizeof(resent_gesture_event));
+    resent_gesture_event.x += offset_from_parent.x();
+    resent_gesture_event.y += offset_from_parent.y();
+    // TODO(wjmaclean, kenrb): The resendingPluginId field is used by
+    // BrowserPlugin to associate bubbled events with each plugin, which is
+    // not needed for OOPIFs. However the field needs to be set in order
+    // to prompt the parent frame's RenderWidgetHostImpl to
+    // manage the gesture scroll event lifetime (in particular creating the
+    // GestureScrollBegin and GestureScrollEnd events). This can be converted
+    // to a flag or otherwise refactored out when BrowserPlugin supporting
+    // code is eventually removed (https://crbug.com/533069).
+    resent_gesture_event.resendingPluginId = 1;
+    ui::LatencyInfo latency_info;
+    parent_view->ProcessGestureEvent(resent_gesture_event, latency_info);
+  } else if (event.type == blink::WebInputEvent::MouseWheel) {
+    blink::WebMouseWheelEvent resent_wheel_event;
+    memcpy(&resent_wheel_event, &event, sizeof(resent_wheel_event));
+    resent_wheel_event.x += offset_from_parent.x();
+    resent_wheel_event.y += offset_from_parent.y();
+    parent_view->ProcessMouseWheelEvent(resent_wheel_event);
+  } else {
+    NOTIMPLEMENTED();
+  }
+}
+
 bool CrossProcessFrameConnector::HasFocus() {
   RenderWidgetHostViewBase* root_view = GetRootRenderWidgetHostView();
   if (root_view)
