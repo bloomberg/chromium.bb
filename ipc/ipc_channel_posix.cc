@@ -1017,6 +1017,12 @@ void ChannelPosix::HandleInternalMessage(const Message& msg) {
 
       if (!FlushPrelimQueue())
         ClosePipeOnError();
+
+      if (IsAttachmentBrokerEndpoint() &&
+          AttachmentBroker::GetGlobal() &&
+          AttachmentBroker::GetGlobal()->IsPrivilegedBroker()) {
+        AttachmentBroker::GetGlobal()->ReceivedPeerPid(pid);
+      }
       break;
 
 #if defined(OS_MACOSX)

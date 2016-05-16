@@ -66,6 +66,7 @@ class IPC_EXPORT AttachmentBrokerPrivilegedMac
       const scoped_refptr<IPC::BrokerableAttachment>& attachment,
       base::ProcessId destination_process) override;
   void DeregisterCommunicationChannel(Endpoint* endpoint) override;
+  void ReceivedPeerPid(base::ProcessId peer_pid) override;
 
   // IPC::Listener overrides.
   bool OnMessageReceived(const Message& message) override;
@@ -167,7 +168,10 @@ class IPC_EXPORT AttachmentBrokerPrivilegedMac
 
   // Atempts to broker all precursors whose destination is |pid|. Has no effect
   // if |port_provider_| does not have the task port for |pid|.
-  void SendPrecursorsForProcess(base::ProcessId pid);
+  // If a communication channel has not been established from the destination
+  // process, and |store_on_failure| is true, then the precursor is kept for
+  // later reuse. If |store_on_failure| is false, then the precursor is deleted.
+  void SendPrecursorsForProcess(base::ProcessId pid, bool store_on_failure);
 
   // Brokers a single precursor into the task represented by |task_port|.
   // Returns |false| on irrecoverable error.
@@ -180,7 +184,10 @@ class IPC_EXPORT AttachmentBrokerPrivilegedMac
 
   // Atempts to process all extractors whose source is |pid|. Has no effect
   // if |port_provider_| does not have the task port for |pid|.
-  void ProcessExtractorsForProcess(base::ProcessId pid);
+  // If a communication channel has not been established from the source
+  // process, and |store_on_failure| is true, then the extractor is kept for
+  // later reuse. If |store_on_failure| is false, then the extractor is deleted.
+  void ProcessExtractorsForProcess(base::ProcessId pid, bool store_on_failure);
 
   // Processes a single extractor whose source pid is represented by
   // |task_port|.

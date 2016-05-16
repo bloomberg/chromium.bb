@@ -54,7 +54,7 @@ bool AttachmentBrokerPrivilegedMac::SendAttachmentToProcess(
                    base::mac::ScopedMachSendRight(wire_format.mach_port),
                    wire_format.attachment_id);
       mach_port_attachment->reset_mach_port_ownership();
-      SendPrecursorsForProcess(wire_format.destination_process);
+      SendPrecursorsForProcess(wire_format.destination_process, true);
       return true;
     }
     default:
@@ -94,6 +94,11 @@ void AttachmentBrokerPrivilegedMac::DeregisterCommunicationChannel(
   }
 }
 
+void AttachmentBrokerPrivilegedMac::ReceivedPeerPid(base::ProcessId peer_pid) {
+  ProcessExtractorsForProcess(peer_pid, false);
+  SendPrecursorsForProcess(peer_pid, false);
+}
+
 bool AttachmentBrokerPrivilegedMac::OnMessageReceived(const Message& msg) {
   bool handled = true;
   switch (msg.type()) {
@@ -106,7 +111,7 @@ bool AttachmentBrokerPrivilegedMac::OnMessageReceived(const Message& msg) {
 
 void AttachmentBrokerPrivilegedMac::OnReceivedTaskPort(
     base::ProcessHandle process) {
-  SendPrecursorsForProcess(process);
+  SendPrecursorsForProcess(process, true);
 }
 
 AttachmentBrokerPrivilegedMac::AttachmentPrecursor::AttachmentPrecursor(
@@ -152,7 +157,7 @@ void AttachmentBrokerPrivilegedMac::OnDuplicateMachPort(
 
   AddExtractor(message.get_sender_pid(), wire_format.destination_process,
                wire_format.mach_port, wire_format.attachment_id);
-  ProcessExtractorsForProcess(message.get_sender_pid());
+  ProcessExtractorsForProcess(message.get_sender_pid(), true);
 }
 
 void AttachmentBrokerPrivilegedMac::RoutePrecursorToSelf(
@@ -177,9 +182,9 @@ bool AttachmentBrokerPrivilegedMac::RouteWireFormatToAnother(
   AttachmentBrokerPrivileged::EndpointRunnerPair pair =
       GetSenderWithProcessId(dest);
   if (!pair.first) {
-    // Assuming that this message was not sent from a malicious process, the
-    // channel endpoint that would have received this message will block
-    // forever.
+    // The extractor was successfully processed, which implies that the
+    // communication channel was established. This implies that the
+    // communication was taken down in the interim.
     LOG(ERROR) << "Failed to deliver brokerable attachment to process with id: "
                << dest;
     LogError(DESTINATION_NOT_FOUND);
@@ -223,7 +228,8 @@ AttachmentBrokerPrivilegedMac::CopyWireFormat(
 }
 
 void AttachmentBrokerPrivilegedMac::SendPrecursorsForProcess(
-    base::ProcessId pid) {
+    base::ProcessId pid,
+    bool store_on_failure) {
   base::AutoLock l(precursors_lock_);
   auto it = precursors_.find(pid);
   if (it == precursors_.end())
@@ -237,11 +243,15 @@ void AttachmentBrokerPrivilegedMac::SendPrecursorsForProcess(
     AttachmentBrokerPrivileged::EndpointRunnerPair pair =
         GetSenderWithProcessId(pid);
     if (!pair.first) {
-      // If there is no sender, then the destination process is no longer
-      // running, or never existed to begin with.
-      LogError(DESTINATION_NOT_FOUND);
-      delete it->second;
-      precursors_.erase(it);
+      if (store_on_failure) {
+        // Try again later.
+        LogError(DELAYED);
+      } else {
+        // If there is no sender, then permanently fail.
+        LogError(DESTINATION_NOT_FOUND);
+        delete it->second;
+        precursors_.erase(it);
+      }
       return;
     }
   }
@@ -318,7 +328,8 @@ void AttachmentBrokerPrivilegedMac::AddPrecursor(
 }
 
 void AttachmentBrokerPrivilegedMac::ProcessExtractorsForProcess(
-    base::ProcessId pid) {
+    base::ProcessId pid,
+    bool store_on_failure) {
   base::AutoLock l(extractors_lock_);
   auto it = extractors_.find(pid);
   if (it == extractors_.end())
@@ -329,10 +340,16 @@ void AttachmentBrokerPrivilegedMac::ProcessExtractorsForProcess(
     AttachmentBrokerPrivileged::EndpointRunnerPair pair =
         GetSenderWithProcessId(pid);
     if (!pair.first) {
-      // If there is no sender, then the source process is no longer running.
-      LogError(ERROR_SOURCE_NOT_FOUND);
-      delete it->second;
-      extractors_.erase(it);
+      if (store_on_failure) {
+        // If there is no sender, then the communication channel with the source
+        // process has not yet been established. Try again later.
+        LogError(DELAYED);
+      } else {
+        // There is no sender. Permanently fail.
+        LogError(ERROR_SOURCE_NOT_FOUND);
+        delete it->second;
+        extractors_.erase(it);
+      }
       return;
     }
   }
@@ -363,7 +380,7 @@ void AttachmentBrokerPrivilegedMac::ProcessExtractor(
   AddPrecursor(extractor->dest_pid(),
                base::mac::ScopedMachSendRight(send_right.release()),
                extractor->id());
-  SendPrecursorsForProcess(extractor->dest_pid());
+  SendPrecursorsForProcess(extractor->dest_pid(), true);
 }
 
 void AttachmentBrokerPrivilegedMac::AddExtractor(
