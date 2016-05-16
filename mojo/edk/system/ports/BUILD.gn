@@ -8,7 +8,6 @@ source_set("ports") {
   sources = [
     "event.cc",
     "event.h",
-    "hash_functions.h",
     "message.cc",
     "message.h",
     "message_queue.cc",

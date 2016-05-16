@@ -15,7 +15,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "mojo/edk/system/ports/event.h"
-#include "mojo/edk/system/ports/hash_functions.h"
 #include "mojo/edk/system/ports/message.h"
 #include "mojo/edk/system/ports/name.h"
 #include "mojo/edk/system/ports/port.h"

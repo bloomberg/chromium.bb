@@ -29,7 +29,6 @@
       'sources': [
         'edk/system/ports/event.cc',
         'edk/system/ports/event.h',
-        'edk/system/ports/hash_functions.h',
         'edk/system/ports/message.cc',
         'edk/system/ports/message.h',
         'edk/system/ports/message_queue.cc',

@@ -21,7 +21,6 @@
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/edk/system/atomic_flag.h"
 #include "mojo/edk/system/node_channel.h"
-#include "mojo/edk/system/ports/hash_functions.h"
 #include "mojo/edk/system/ports/name.h"
 #include "mojo/edk/system/ports/node.h"
 #include "mojo/edk/system/ports/node_delegate.h"

@@ -10,6 +10,8 @@
 #include <ostream>
 #include <tuple>
 
+#include "base/hash.h"
+
 namespace mojo {
 namespace edk {
 namespace ports {
@@ -50,5 +52,23 @@ const NodeName kInvalidNodeName = {0, 0};
 }  // namespace ports
 }  // namespace edk
 }  // namespace mojo
+
+namespace std {
+
+template <>
+struct hash<mojo::edk::ports::PortName> {
+  std::size_t operator()(const mojo::edk::ports::PortName& name) const {
+    return base::HashInts64(name.v1, name.v2);
+  }
+};
+
+template <>
+struct hash<mojo::edk::ports::NodeName> {
+  std::size_t operator()(const mojo::edk::ports::NodeName& name) const {
+    return base::HashInts64(name.v1, name.v2);
+  }
+};
+
+}  // namespace std
 
 #endif  // MOJO_EDK_SYSTEM_PORTS_NAME_H_
