@@ -78,7 +78,7 @@ PassOwnPtr<WebServiceWorkerCacheStorage> assertCacheStorage(ErrorString* errorSt
     OwnPtr<WebServiceWorkerCacheStorage> cache = adoptPtr(Platform::current()->cacheStorage(WebSecurityOrigin(secOrigin)));
     if (!cache)
         *errorString = "Could not find cache storage.";
-    return cache.release();
+    return cache;
 }
 
 PassOwnPtr<WebServiceWorkerCacheStorage> assertCacheStorageAndNameForId(ErrorString* errorString, const String& cacheId, String* cacheName)
@@ -130,9 +130,9 @@ public:
                 .setSecurityOrigin(m_securityOrigin)
                 .setCacheName(name)
                 .setCacheId(buildCacheId(m_securityOrigin, name)).build();
-            array->addItem(entry.release());
+            array->addItem(std::move(entry));
         }
-        m_callback->sendSuccess(array.release());
+        m_callback->sendSuccess(std::move(array));
     }
 
     void onError(WebServiceWorkerCacheError error) override
@@ -201,9 +201,9 @@ public:
             OwnPtr<DataEntry> entry = DataEntry::create()
                 .setRequest(requestResponse.request)
                 .setResponse(requestResponse.response).build();
-            array->addItem(entry.release());
+            array->addItem(std::move(entry));
         }
-        m_callback->sendSuccess(array.release(), hasMore);
+        m_callback->sendSuccess(std::move(array), hasMore);
     }
 
     void sendFailure(const String& error)
@@ -263,10 +263,10 @@ public:
     {
         if (requests.isEmpty()) {
             OwnPtr<Array<DataEntry>> array = Array<DataEntry>::create();
-            m_callback->sendSuccess(array.release(), false);
+            m_callback->sendSuccess(std::move(array), false);
             return;
         }
-        RefPtr<ResponsesAccumulator> accumulator = adoptRef(new ResponsesAccumulator(requests.size(), m_params, m_callback.release()));
+        RefPtr<ResponsesAccumulator> accumulator = adoptRef(new ResponsesAccumulator(requests.size(), m_params, std::move(m_callback)));
 
         for (size_t i = 0; i < requests.size(); i++) {
             const auto& request = requests[i];
@@ -300,7 +300,7 @@ public:
 
     void onSuccess(std::unique_ptr<WebServiceWorkerCache> cache) override
     {
-        auto* cacheRequest = new GetCacheKeysForRequestData(m_params, adoptPtr(cache.release()), m_callback.release());
+        auto* cacheRequest = new GetCacheKeysForRequestData(m_params, adoptPtr(cache.release()), std::move(m_callback));
         cacheRequest->cache()->dispatchKeys(cacheRequest, nullptr, WebServiceWorkerCache::QueryParams());
     }
 
@@ -377,7 +377,7 @@ public:
 
     void onSuccess(std::unique_ptr<WebServiceWorkerCache> cache) override
     {
-        auto* deleteRequest = new DeleteCacheEntry(m_callback.release());
+        auto* deleteRequest = new DeleteCacheEntry(std::move(m_callback));
         BatchOperation deleteOperation;
         deleteOperation.operationType = WebServiceWorkerCache::OperationTypeDelete;
         deleteOperation.request.setURL(KURL(ParsedURLString, m_requestSpec));

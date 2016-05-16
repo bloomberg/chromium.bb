@@ -150,7 +150,7 @@ public:
             needsNotification = m_queue.isEmpty();
             OwnPtr<Vector<char>> data = adoptPtr(new Vector<char>);
             data->append(buffer, size);
-            m_queue.append(data.release());
+            m_queue.append(std::move(data));
         }
         if (needsNotification)
             notify();
@@ -425,8 +425,8 @@ void DataConsumerTee::create(ExecutionContext* executionContext, PassOwnPtr<Fetc
 
     OwnPtr<WebDataConsumerHandle> webDest1, webDest2;
     DataConsumerTee::create(executionContext, static_cast<PassOwnPtr<WebDataConsumerHandle>>(std::move(src)), &webDest1, &webDest2);
-    *dest1 = createFetchDataConsumerHandleFromWebHandle(webDest1.release());
-    *dest2 = createFetchDataConsumerHandleFromWebHandle(webDest2.release());
+    *dest1 = createFetchDataConsumerHandleFromWebHandle(std::move(webDest1));
+    *dest2 = createFetchDataConsumerHandleFromWebHandle(std::move(webDest2));
     return;
 }
 

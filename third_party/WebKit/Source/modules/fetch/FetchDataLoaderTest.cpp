@@ -143,7 +143,7 @@ TEST(FetchDataLoaderTest, LoadAsBlobViaDrainAsBlobDataHandleWithSameContentType)
     OwnPtr<BlobData> blobData = BlobData::create();
     blobData->appendBytes(kQuickBrownFox, kQuickBrownFoxLengthWithTerminatingNull);
     blobData->setContentType("text/test");
-    RefPtr<BlobDataHandle> inputBlobDataHandle = BlobDataHandle::create(blobData.release(), kQuickBrownFoxLengthWithTerminatingNull);
+    RefPtr<BlobDataHandle> inputBlobDataHandle = BlobDataHandle::create(std::move(blobData), kQuickBrownFoxLengthWithTerminatingNull);
 
     Checkpoint checkpoint;
 
@@ -182,7 +182,7 @@ TEST(FetchDataLoaderTest, LoadAsBlobViaDrainAsBlobDataHandleWithDifferentContent
     OwnPtr<BlobData> blobData = BlobData::create();
     blobData->appendBytes(kQuickBrownFox, kQuickBrownFoxLengthWithTerminatingNull);
     blobData->setContentType("text/different");
-    RefPtr<BlobDataHandle> inputBlobDataHandle = BlobDataHandle::create(blobData.release(), kQuickBrownFoxLengthWithTerminatingNull);
+    RefPtr<BlobDataHandle> inputBlobDataHandle = BlobDataHandle::create(std::move(blobData), kQuickBrownFoxLengthWithTerminatingNull);
 
     Checkpoint checkpoint;
 

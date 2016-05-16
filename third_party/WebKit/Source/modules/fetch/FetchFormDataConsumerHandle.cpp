@@ -65,7 +65,7 @@ public:
         blobData->appendBytes(m_flattenFormData.data(), m_flattenFormData.size());
         m_flattenFormData.clear();
         auto length = blobData->length();
-        return BlobDataHandle::create(blobData.release(), length);
+        return BlobDataHandle::create(std::move(blobData), length);
     }
 
     PassRefPtr<EncodedFormData> drainFormData()
@@ -268,9 +268,9 @@ private:
         auto size = blobData->length();
         if (factory) {
             // For testing
-            m_handle = FetchBlobDataConsumerHandle::create(executionContext, BlobDataHandle::create(blobData.release(), size), factory);
+            m_handle = FetchBlobDataConsumerHandle::create(executionContext, BlobDataHandle::create(std::move(blobData), size), factory);
         } else {
-            m_handle = FetchBlobDataConsumerHandle::create(executionContext, BlobDataHandle::create(blobData.release(), size));
+            m_handle = FetchBlobDataConsumerHandle::create(executionContext, BlobDataHandle::create(std::move(blobData), size));
         }
         // It is important to initialize |m_formData| here, because even
         // read-only operations may make the form data unsharable with implicit

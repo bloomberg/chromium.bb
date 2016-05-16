@@ -513,7 +513,7 @@ public:
                 return nullptr;
             m_event->wait();
             m_isDone = true;
-            return m_result.release();
+            return std::move(m_result);
         }
 
     private:

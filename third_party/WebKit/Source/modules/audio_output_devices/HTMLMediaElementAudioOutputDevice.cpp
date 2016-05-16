@@ -66,7 +66,7 @@ void SetSinkIdResolver::timerFired(Timer<SetSinkIdResolver>* timer)
         webMediaPlayer->setSinkId(m_sinkId, WebSecurityOrigin(context->getSecurityOrigin()), callbacks.leakPtr());
     } else {
         if (AudioOutputDeviceClient* client = AudioOutputDeviceClient::from(context)) {
-            client->checkIfAudioSinkExistsAndIsAuthorized(context, m_sinkId, callbacks.release());
+            client->checkIfAudioSinkExistsAndIsAuthorized(context, m_sinkId, std::move(callbacks));
         } else {
             // The context has been detached. Impossible to get a security origin to check.
             ASSERT(context->activeDOMObjectsAreStopped());

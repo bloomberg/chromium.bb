@@ -65,7 +65,7 @@ PassRefPtr<BlobDataHandle> createBlobDataHandle(const char* s)
     OwnPtr<BlobData> data = BlobData::create();
     data->appendText(s, false);
     auto size = data->length();
-    return BlobDataHandle::create(data.release(), size);
+    return BlobDataHandle::create(std::move(data), size);
 }
 
 String toString(const Vector<char>& data)
@@ -236,8 +236,8 @@ TEST_F(FetchBlobDataConsumerHandleTest, ReadTest)
     checkpoint.Call(1);
     testing::runPendingTasks();
     checkpoint.Call(2);
-    client->didReceiveResponse(0, ResourceResponse(), src.release());
-    HandleReaderRunner<HandleReader> runner(handle.release());
+    client->didReceiveResponse(0, ResourceResponse(), std::move(src));
+    HandleReaderRunner<HandleReader> runner(std::move(handle));
     OwnPtr<HandleReadResult> r = runner.wait();
     EXPECT_EQ(kDone, r->result());
     EXPECT_EQ("hello, world", toString(r->data()));
@@ -275,8 +275,8 @@ TEST_F(FetchBlobDataConsumerHandleTest, TwoPhaseReadTest)
     checkpoint.Call(1);
     testing::runPendingTasks();
     checkpoint.Call(2);
-    client->didReceiveResponse(0, ResourceResponse(), src.release());
-    HandleReaderRunner<HandleTwoPhaseReader> runner(handle.release());
+    client->didReceiveResponse(0, ResourceResponse(), std::move(src));
+    HandleReaderRunner<HandleTwoPhaseReader> runner(std::move(handle));
     OwnPtr<HandleReadResult> r = runner.wait();
     EXPECT_EQ(kDone, r->result());
     EXPECT_EQ("hello, world", toString(r->data()));
@@ -307,7 +307,7 @@ TEST_F(FetchBlobDataConsumerHandleTest, LoadErrorTest)
     testing::runPendingTasks();
     checkpoint.Call(2);
     client->didFail(ResourceError());
-    HandleReaderRunner<HandleReader> runner(handle.release());
+    HandleReaderRunner<HandleReader> runner(std::move(handle));
     OwnPtr<HandleReadResult> r = runner.wait();
     EXPECT_EQ(kUnexpectedError, r->result());
 }
@@ -342,8 +342,8 @@ TEST_F(FetchBlobDataConsumerHandleTest, BodyLoadErrorTest)
     checkpoint.Call(1);
     testing::runPendingTasks();
     checkpoint.Call(2);
-    client->didReceiveResponse(0, ResourceResponse(), src.release());
-    HandleReaderRunner<HandleReader> runner(handle.release());
+    client->didReceiveResponse(0, ResourceResponse(), std::move(src));
+    HandleReaderRunner<HandleReader> runner(std::move(handle));
     OwnPtr<HandleReadResult> r = runner.wait();
     EXPECT_EQ(kUnexpectedError, r->result());
 }

@@ -192,8 +192,8 @@ FetchResponseData* FetchResponseData::clone(ScriptState* scriptState)
         if (m_buffer) {
             OwnPtr<WebDataConsumerHandle> handle1, handle2;
             DataConsumerTee::create(scriptState->getExecutionContext(), m_buffer->releaseHandle(), &handle1, &handle2);
-            m_buffer = new BodyStreamBuffer(scriptState, createFetchDataConsumerHandleFromWebHandle(handle1.release()));
-            newResponse->m_buffer = new BodyStreamBuffer(scriptState, createFetchDataConsumerHandleFromWebHandle(handle2.release()));
+            m_buffer = new BodyStreamBuffer(scriptState, createFetchDataConsumerHandleFromWebHandle(std::move(handle1)));
+            newResponse->m_buffer = new BodyStreamBuffer(scriptState, createFetchDataConsumerHandleFromWebHandle(std::move(handle2)));
         }
         break;
     }

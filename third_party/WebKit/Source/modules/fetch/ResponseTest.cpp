@@ -38,7 +38,7 @@ PassOwnPtr<WebServiceWorkerResponse> createTestWebServiceWorkerResponse()
     webResponse->setResponseType(WebServiceWorkerResponseTypeDefault);
     for (int i = 0; headers[i].key; ++i)
         webResponse->setHeader(WebString::fromUTF8(headers[i].key), WebString::fromUTF8(headers[i].value));
-    return webResponse.release();
+    return webResponse;
 }
 
 class ServiceWorkerResponseTest : public ::testing::Test {
@@ -191,7 +191,7 @@ BodyStreamBuffer* createHelloWorldBuffer(ScriptState* scriptState)
     src->add(Command(Command::Data, "Hello, "));
     src->add(Command(Command::Data, "world"));
     src->add(Command(Command::Done));
-    return new BodyStreamBuffer(scriptState, createFetchDataConsumerHandleFromWebHandle(src.release()));
+    return new BodyStreamBuffer(scriptState, createFetchDataConsumerHandleFromWebHandle(std::move(src)));
 }
 
 TEST_F(ServiceWorkerResponseTest, BodyStreamBufferCloneDefault)

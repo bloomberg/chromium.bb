@@ -82,12 +82,12 @@ TEST(DataConsumerTeeTest, CreateDone)
     src->add(Command(Command::Done));
 
     OwnPtr<TeeCreationThread<WebDataConsumerHandle>> t = adoptPtr(new TeeCreationThread<WebDataConsumerHandle>());
-    t->run(src.release(), &dest1, &dest2);
+    t->run(std::move(src), &dest1, &dest2);
 
     ASSERT_TRUE(dest1);
     ASSERT_TRUE(dest2);
 
-    HandleReaderRunner<HandleReader> r1(dest1.release()), r2(dest2.release());
+    HandleReaderRunner<HandleReader> r1(std::move(dest1)), r2(std::move(dest2));
 
     OwnPtr<HandleReadResult> res1 = r1.wait();
     OwnPtr<HandleReadResult> res2 = r2.wait();
@@ -112,13 +112,13 @@ TEST(DataConsumerTeeTest, Read)
     src->add(Command(Command::Done));
 
     OwnPtr<TeeCreationThread<WebDataConsumerHandle>> t = adoptPtr(new TeeCreationThread<WebDataConsumerHandle>());
-    t->run(src.release(), &dest1, &dest2);
+    t->run(std::move(src), &dest1, &dest2);
 
     ASSERT_TRUE(dest1);
     ASSERT_TRUE(dest2);
 
-    HandleReaderRunner<HandleReader> r1(dest1.release());
-    HandleReaderRunner<HandleReader> r2(dest2.release());
+    HandleReaderRunner<HandleReader> r1(std::move(dest1));
+    HandleReaderRunner<HandleReader> r2(std::move(dest2));
 
     OwnPtr<HandleReadResult> res1 = r1.wait();
     OwnPtr<HandleReadResult> res2 = r2.wait();
@@ -145,13 +145,13 @@ TEST(DataConsumerTeeTest, TwoPhaseRead)
     src->add(Command(Command::Done));
 
     OwnPtr<TeeCreationThread<WebDataConsumerHandle>> t = adoptPtr(new TeeCreationThread<WebDataConsumerHandle>());
-    t->run(src.release(), &dest1, &dest2);
+    t->run(std::move(src), &dest1, &dest2);
 
     ASSERT_TRUE(dest1);
     ASSERT_TRUE(dest2);
 
-    HandleReaderRunner<HandleTwoPhaseReader> r1(dest1.release());
-    HandleReaderRunner<HandleTwoPhaseReader> r2(dest2.release());
+    HandleReaderRunner<HandleTwoPhaseReader> r1(std::move(dest1));
+    HandleReaderRunner<HandleTwoPhaseReader> r2(std::move(dest2));
 
     OwnPtr<HandleReadResult> res1 = r1.wait();
     OwnPtr<HandleReadResult> res2 = r2.wait();
@@ -173,13 +173,13 @@ TEST(DataConsumerTeeTest, Error)
     src->add(Command(Command::Error));
 
     OwnPtr<TeeCreationThread<WebDataConsumerHandle>> t = adoptPtr(new TeeCreationThread<WebDataConsumerHandle>());
-    t->run(src.release(), &dest1, &dest2);
+    t->run(std::move(src), &dest1, &dest2);
 
     ASSERT_TRUE(dest1);
     ASSERT_TRUE(dest2);
 
-    HandleReaderRunner<HandleReader> r1(dest1.release());
-    HandleReaderRunner<HandleReader> r2(dest2.release());
+    HandleReaderRunner<HandleReader> r1(std::move(dest1));
+    HandleReaderRunner<HandleReader> r2(std::move(dest2));
 
     OwnPtr<HandleReadResult> res1 = r1.wait();
     OwnPtr<HandleReadResult> res2 = r2.wait();
@@ -202,13 +202,13 @@ TEST(DataConsumerTeeTest, StopSource)
     src->add(Command(Command::Data, "world"));
 
     OwnPtr<TeeCreationThread<WebDataConsumerHandle>> t = adoptPtr(new TeeCreationThread<WebDataConsumerHandle>());
-    t->run(src.release(), &dest1, &dest2);
+    t->run(std::move(src), &dest1, &dest2);
 
     ASSERT_TRUE(dest1);
     ASSERT_TRUE(dest2);
 
-    HandleReaderRunner<HandleReader> r1(dest1.release());
-    HandleReaderRunner<HandleReader> r2(dest2.release());
+    HandleReaderRunner<HandleReader> r1(std::move(dest1));
+    HandleReaderRunner<HandleReader> r2(std::move(dest2));
 
     // We can pass a raw pointer because the subsequent |wait| calls ensure
     // t->thread() is alive.
@@ -230,13 +230,13 @@ TEST(DataConsumerTeeTest, DetachSource)
     src->add(Command(Command::Data, "world"));
 
     OwnPtr<TeeCreationThread<WebDataConsumerHandle>> t = adoptPtr(new TeeCreationThread<WebDataConsumerHandle>());
-    t->run(src.release(), &dest1, &dest2);
+    t->run(std::move(src), &dest1, &dest2);
 
     ASSERT_TRUE(dest1);
     ASSERT_TRUE(dest2);
 
-    HandleReaderRunner<HandleReader> r1(dest1.release());
-    HandleReaderRunner<HandleReader> r2(dest2.release());
+    HandleReaderRunner<HandleReader> r1(std::move(dest1));
+    HandleReaderRunner<HandleReader> r2(std::move(dest2));
 
     t = nullptr;
 
@@ -257,12 +257,12 @@ TEST(DataConsumerTeeTest, DetachSourceAfterReadingDone)
     src->add(Command(Command::Done));
 
     OwnPtr<TeeCreationThread<WebDataConsumerHandle>> t = adoptPtr(new TeeCreationThread<WebDataConsumerHandle>());
-    t->run(src.release(), &dest1, &dest2);
+    t->run(std::move(src), &dest1, &dest2);
 
     ASSERT_TRUE(dest1);
     ASSERT_TRUE(dest2);
 
-    HandleReaderRunner<HandleReader> r1(dest1.release());
+    HandleReaderRunner<HandleReader> r1(std::move(dest1));
     OwnPtr<HandleReadResult> res1 = r1.wait();
 
     EXPECT_EQ(kDone, res1->result());
@@ -270,7 +270,7 @@ TEST(DataConsumerTeeTest, DetachSourceAfterReadingDone)
 
     t = nullptr;
 
-    HandleReaderRunner<HandleReader> r2(dest2.release());
+    HandleReaderRunner<HandleReader> r2(std::move(dest2));
     OwnPtr<HandleReadResult> res2 = r2.wait();
 
     EXPECT_EQ(kDone, res2->result());
@@ -287,14 +287,14 @@ TEST(DataConsumerTeeTest, DetachOneDestination)
     src->add(Command(Command::Done));
 
     OwnPtr<TeeCreationThread<WebDataConsumerHandle>> t = adoptPtr(new TeeCreationThread<WebDataConsumerHandle>());
-    t->run(src.release(), &dest1, &dest2);
+    t->run(std::move(src), &dest1, &dest2);
 
     ASSERT_TRUE(dest1);
     ASSERT_TRUE(dest2);
 
     dest1 = nullptr;
 
-    HandleReaderRunner<HandleReader> r2(dest2.release());
+    HandleReaderRunner<HandleReader> r2(std::move(dest2));
     OwnPtr<HandleReadResult> res2 = r2.wait();
 
     EXPECT_EQ(kDone, res2->result());
@@ -311,7 +311,7 @@ TEST(DataConsumerTeeTest, DetachBothDestinationsShouldStopSourceReader)
     src->add(Command(Command::Data, "world"));
 
     OwnPtr<TeeCreationThread<WebDataConsumerHandle>> t = adoptPtr(new TeeCreationThread<WebDataConsumerHandle>());
-    t->run(src.release(), &dest1, &dest2);
+    t->run(std::move(src), &dest1, &dest2);
 
     ASSERT_TRUE(dest1);
     ASSERT_TRUE(dest2);
@@ -345,7 +345,7 @@ TEST(FetchDataConsumerTeeTest, Create)
     OwnPtr<TeeCreationThread<FetchDataConsumerHandle>> t = adoptPtr(new TeeCreationThread<FetchDataConsumerHandle>());
 
     checkpoint.Call(1);
-    t->run(src.release(), &dest1, &dest2);
+    t->run(std::move(src), &dest1, &dest2);
     checkpoint.Call(2);
 
     ASSERT_TRUE(dest1);
@@ -375,7 +375,7 @@ TEST(FetchDataConsumerTeeTest, CreateFromBlobWithInvalidSize)
     OwnPtr<TeeCreationThread<FetchDataConsumerHandle>> t = adoptPtr(new TeeCreationThread<FetchDataConsumerHandle>());
 
     checkpoint.Call(1);
-    t->run(src.release(), &dest1, &dest2);
+    t->run(std::move(src), &dest1, &dest2);
     checkpoint.Call(2);
 
     ASSERT_TRUE(dest1);
@@ -394,7 +394,7 @@ TEST(FetchDataConsumerTeeTest, CreateDone)
     src->add(Command(Command::Done));
 
     OwnPtr<TeeCreationThread<FetchDataConsumerHandle>> t = adoptPtr(new TeeCreationThread<FetchDataConsumerHandle>());
-    t->run(createFetchDataConsumerHandleFromWebHandle(src.release()), &dest1, &dest2);
+    t->run(createFetchDataConsumerHandleFromWebHandle(std::move(src)), &dest1, &dest2);
 
     ASSERT_TRUE(dest1);
     ASSERT_TRUE(dest2);
@@ -402,7 +402,7 @@ TEST(FetchDataConsumerTeeTest, CreateDone)
     EXPECT_FALSE(dest1->obtainReader(nullptr)->drainAsBlobDataHandle(kAllowBlobWithInvalidSize));
     EXPECT_FALSE(dest2->obtainReader(nullptr)->drainAsBlobDataHandle(kAllowBlobWithInvalidSize));
 
-    HandleReaderRunner<HandleReader> r1(dest1.release()), r2(dest2.release());
+    HandleReaderRunner<HandleReader> r1(std::move(dest1)), r2(std::move(dest2));
 
     OwnPtr<HandleReadResult> res1 = r1.wait();
     OwnPtr<HandleReadResult> res2 = r2.wait();

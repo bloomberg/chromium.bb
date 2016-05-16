@@ -143,7 +143,7 @@ ScriptPromise Body::blob(ScriptState* scriptState)
     } else {
         OwnPtr<BlobData> blobData = BlobData::create();
         blobData->setContentType(mimeType());
-        resolver->resolve(Blob::create(BlobDataHandle::create(blobData.release(), 0)));
+        resolver->resolve(Blob::create(BlobDataHandle::create(std::move(blobData), 0)));
     }
     return promise;
 

@@ -60,13 +60,13 @@ public:
         OwnPtr<MockThreadableLoader> loader = MockThreadableLoader::create();
         EXPECT_CALL(*loader, start(_)).WillOnce(InvokeWithoutArgs(this, &LoaderFactory::handleDidReceiveResponse));
         EXPECT_CALL(*loader, cancel()).Times(1);
-        return loader.release();
+        return std::move(loader);
     }
 
 private:
     void handleDidReceiveResponse()
     {
-        m_client->didReceiveResponse(0, ResourceResponse(), m_handle.release());
+        m_client->didReceiveResponse(0, ResourceResponse(), std::move(m_handle));
     }
 
     ThreadableLoaderClient* m_client;
@@ -93,7 +93,7 @@ PassRefPtr<EncodedFormData> complexFormData()
     OwnPtr<BlobData> blobData = BlobData::create();
     blobData->appendText("hello", false);
     auto size = blobData->length();
-    RefPtr<BlobDataHandle> blobDataHandle = BlobDataHandle::create(blobData.release(), size);
+    RefPtr<BlobDataHandle> blobDataHandle = BlobDataHandle::create(std::move(blobData), size);
     data->appendBlob(blobDataHandle->uuid(), blobDataHandle);
     Vector<char> boundary;
     boundary.append("\0", 1);
@@ -133,7 +133,7 @@ void verifyComplexFormData(EncodedFormData* data)
 TEST_F(FetchFormDataConsumerHandleTest, ReadFromString)
 {
     OwnPtr<FetchDataConsumerHandle> handle = FetchFormDataConsumerHandle::create(String("hello, world"));
-    HandleReaderRunner<HandleReader> runner(handle.release());
+    HandleReaderRunner<HandleReader> runner(std::move(handle));
     OwnPtr<HandleReadResult> r = runner.wait();
     EXPECT_EQ(kDone, r->result());
     EXPECT_EQ("hello, world", toString(r->data()));
@@ -142,7 +142,7 @@ TEST_F(FetchFormDataConsumerHandleTest, ReadFromString)
 TEST_F(FetchFormDataConsumerHandleTest, TwoPhaseReadFromString)
 {
     OwnPtr<FetchDataConsumerHandle> handle = FetchFormDataConsumerHandle::create(String("hello, world"));
-    HandleReaderRunner<HandleTwoPhaseReader> runner(handle.release());
+    HandleReaderRunner<HandleTwoPhaseReader> runner(std::move(handle));
     OwnPtr<HandleReadResult> r = runner.wait();
     EXPECT_EQ(kDone, r->result());
     EXPECT_EQ("hello, world", toString(r->data()));
@@ -152,7 +152,7 @@ TEST_F(FetchFormDataConsumerHandleTest, ReadFromStringNonLatin)
 {
     UChar cs[] = {0x3042, 0};
     OwnPtr<FetchDataConsumerHandle> handle = FetchFormDataConsumerHandle::create(String(cs));
-    HandleReaderRunner<HandleReader> runner(handle.release());
+    HandleReaderRunner<HandleReader> runner(std::move(handle));
     OwnPtr<HandleReadResult> r = runner.wait();
     EXPECT_EQ(kDone, r->result());
     EXPECT_EQ("\xe3\x81\x82", toString(r->data()));
@@ -163,7 +163,7 @@ TEST_F(FetchFormDataConsumerHandleTest, ReadFromArrayBuffer)
     const unsigned char data[] = { 0x21, 0xfe, 0x00, 0x00, 0xff, 0xa3, 0x42, 0x30, 0x42, 0x99, 0x88 };
     DOMArrayBuffer* buffer = DOMArrayBuffer::create(data, WTF_ARRAY_LENGTH(data));
     OwnPtr<FetchDataConsumerHandle> handle = FetchFormDataConsumerHandle::create(buffer);
-    HandleReaderRunner<HandleReader> runner(handle.release());
+    HandleReaderRunner<HandleReader> runner(std::move(handle));
     OwnPtr<HandleReadResult> r = runner.wait();
     EXPECT_EQ(kDone, r->result());
     Vector<char> expected;
@@ -177,7 +177,7 @@ TEST_F(FetchFormDataConsumerHandleTest, ReadFromArrayBufferView)
     const size_t offset = 1, size = 4;
     DOMArrayBuffer* buffer = DOMArrayBuffer::create(data, WTF_ARRAY_LENGTH(data));
     OwnPtr<FetchDataConsumerHandle> handle = FetchFormDataConsumerHandle::create(DOMUint8Array::create(buffer, offset, size));
-    HandleReaderRunner<HandleReader> runner(handle.release());
+    HandleReaderRunner<HandleReader> runner(std::move(handle));
     OwnPtr<HandleReadResult> r = runner.wait();
     EXPECT_EQ(kDone, r->result());
     Vector<char> expected;
@@ -192,7 +192,7 @@ TEST_F(FetchFormDataConsumerHandleTest, ReadFromSimplFormData)
     data->appendData("hoge", 4);
 
     OwnPtr<FetchDataConsumerHandle> handle = FetchFormDataConsumerHandle::create(getDocument(), data);
-    HandleReaderRunner<HandleReader> runner(handle.release());
+    HandleReaderRunner<HandleReader> runner(std::move(handle));
     testing::runPendingTasks();
     OwnPtr<HandleReadResult> r = runner.wait();
     EXPECT_EQ(kDone, r->result());
@@ -205,12 +205,12 @@ TEST_F(FetchFormDataConsumerHandleTest, ReadFromComplexFormData)
     OwnPtr<ReplayingHandle> src = ReplayingHandle::create();
     src->add(Command(Command::Data, "bar"));
     src->add(Command(Command::Done));
-    OwnPtr<FetchDataConsumerHandle> handle = FetchFormDataConsumerHandle::createForTest(getDocument(), data, new LoaderFactory(src.release()));
+    OwnPtr<FetchDataConsumerHandle> handle = FetchFormDataConsumerHandle::createForTest(getDocument(), data, new LoaderFactory(std::move(src)));
     char c;
     size_t readSize;
     EXPECT_EQ(kShouldWait, handle->obtainReader(nullptr)->read(&c, 1, kNone, &readSize));
 
-    HandleReaderRunner<HandleReader> runner(handle.release());
+    HandleReaderRunner<HandleReader> runner(std::move(handle));
     testing::runPendingTasks();
     OwnPtr<HandleReadResult> r = runner.wait();
     EXPECT_EQ(kDone, r->result());
@@ -223,12 +223,12 @@ TEST_F(FetchFormDataConsumerHandleTest, TwoPhaseReadFromComplexFormData)
     OwnPtr<ReplayingHandle> src = ReplayingHandle::create();
     src->add(Command(Command::Data, "bar"));
     src->add(Command(Command::Done));
-    OwnPtr<FetchDataConsumerHandle> handle = FetchFormDataConsumerHandle::createForTest(getDocument(), data, new LoaderFactory(src.release()));
+    OwnPtr<FetchDataConsumerHandle> handle = FetchFormDataConsumerHandle::createForTest(getDocument(), data, new LoaderFactory(std::move(src)));
     char c;
     size_t readSize;
     EXPECT_EQ(kShouldWait, handle->obtainReader(nullptr)->read(&c, 1, kNone, &readSize));
 
-    HandleReaderRunner<HandleTwoPhaseReader> runner(handle.release());
+    HandleReaderRunner<HandleTwoPhaseReader> runner(std::move(handle));
     testing::runPendingTasks();
     OwnPtr<HandleReadResult> r = runner.wait();
     EXPECT_EQ(kDone, r->result());
@@ -397,7 +397,7 @@ TEST_F(FetchFormDataConsumerHandleTest, ZeroByteReadDoesNotAffectDrainingForComp
     OwnPtr<ReplayingHandle> src = ReplayingHandle::create();
     src->add(Command(Command::Data, "bar"));
     src->add(Command(Command::Done));
-    OwnPtr<FetchDataConsumerHandle> handle = FetchFormDataConsumerHandle::createForTest(getDocument(), complexFormData(), new LoaderFactory(src.release()));
+    OwnPtr<FetchDataConsumerHandle> handle = FetchFormDataConsumerHandle::createForTest(getDocument(), complexFormData(), new LoaderFactory(std::move(src)));
     OwnPtr<FetchDataConsumerHandle::Reader> reader = handle->obtainReader(nullptr);
     size_t readSize;
     EXPECT_EQ(kShouldWait, reader->read(nullptr, 0, kNone, &readSize));
@@ -414,7 +414,7 @@ TEST_F(FetchFormDataConsumerHandleTest, OneByteReadAffectsDrainingForComplexForm
     OwnPtr<ReplayingHandle> src = ReplayingHandle::create();
     src->add(Command(Command::Data, "bar"));
     src->add(Command(Command::Done));
-    OwnPtr<FetchDataConsumerHandle> handle = FetchFormDataConsumerHandle::createForTest(getDocument(), complexFormData(), new LoaderFactory(src.release()));
+    OwnPtr<FetchDataConsumerHandle> handle = FetchFormDataConsumerHandle::createForTest(getDocument(), complexFormData(), new LoaderFactory(std::move(src)));
     OwnPtr<FetchDataConsumerHandle::Reader> reader = handle->obtainReader(nullptr);
     char c;
     size_t readSize;
@@ -432,7 +432,7 @@ TEST_F(FetchFormDataConsumerHandleTest, BeginReadAffectsDrainingForComplexFormDa
     src->add(Command(Command::Data, "bar"));
     src->add(Command(Command::Done));
     const void* buffer = nullptr;
-    OwnPtr<FetchDataConsumerHandle> handle = FetchFormDataConsumerHandle::createForTest(getDocument(), complexFormData(), new LoaderFactory(src.release()));
+    OwnPtr<FetchDataConsumerHandle> handle = FetchFormDataConsumerHandle::createForTest(getDocument(), complexFormData(), new LoaderFactory(std::move(src)));
     OwnPtr<FetchDataConsumerHandle::Reader> reader = handle->obtainReader(nullptr);
     size_t available;
     EXPECT_EQ(kShouldWait, reader->beginRead(&buffer, kNone, &available));

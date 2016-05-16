@@ -110,7 +110,7 @@ public:
             WebAddressSpaceLocal,
             nullptr,
             V8CacheOptionsDefault));
-        return workerThread.release();
+        return workerThread;
     }
 
     // Attempts to run some simple script for |worker|.

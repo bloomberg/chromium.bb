@@ -52,7 +52,7 @@ public:
         Updater* u = nullptr;
         OwnPtr<CompositeDataConsumerHandle> p = adoptPtr(new CompositeDataConsumerHandle(std::move(handle), &u));
         *updater = u;
-        return p.release();
+        return std::move(p);
     }
     ~CompositeDataConsumerHandle() override;
 

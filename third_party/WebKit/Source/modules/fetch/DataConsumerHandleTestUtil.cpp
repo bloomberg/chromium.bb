@@ -250,7 +250,7 @@ void DataConsumerHandleTestUtil::HandleReader::didGetReadable()
     }
     OwnPtr<HandleReadResult> result = adoptPtr(new HandleReadResult(r, m_data));
     m_data.clear();
-    Platform::current()->currentThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, bind(&HandleReader::runOnFinishedReading, this, passed(result.release())));
+    Platform::current()->currentThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, bind(&HandleReader::runOnFinishedReading, this, passed(std::move(result))));
     m_reader = nullptr;
 }
 
@@ -285,7 +285,7 @@ void DataConsumerHandleTestUtil::HandleTwoPhaseReader::didGetReadable()
     }
     OwnPtr<HandleReadResult> result = adoptPtr(new HandleReadResult(r, m_data));
     m_data.clear();
-    Platform::current()->currentThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, bind(&HandleTwoPhaseReader::runOnFinishedReading, this, passed(result.release())));
+    Platform::current()->currentThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, bind(&HandleTwoPhaseReader::runOnFinishedReading, this, passed(std::move(result))));
     m_reader = nullptr;
 }
 

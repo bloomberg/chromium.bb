@@ -156,7 +156,7 @@ Response* Response::create(ScriptState* scriptState, ScriptValue bodyValue, cons
         contentType = "text/plain;charset=UTF-8";
     }
     // TODO(yhirano): Add the URLSearchParams case.
-    Response* response = create(scriptState, bodyHandle.release(), contentType, ResponseInit(init, exceptionState), exceptionState);
+    Response* response = create(scriptState, std::move(bodyHandle), contentType, ResponseInit(init, exceptionState), exceptionState);
     if (!exceptionState.hadException() && !reader.isEmpty()) {
         // Add a hidden reference so that the weak persistent in the
         // ReadableStreamDataConsumerHandle will be valid as long as the

@@ -98,7 +98,7 @@ PassOwnPtr<AXRelatedNode> relatedNodeForAXObject(const AXObject* axObject, Strin
         return PassOwnPtr<AXRelatedNode>();
     OwnPtr<AXRelatedNode> relatedNode = AXRelatedNode::create().setBackendNodeId(backendNodeId).build();
     if (!node->isElementNode())
-        return relatedNode.release();
+        return relatedNode;
 
     Element* element = toElement(node);
     String idref = element->getIdAttribute();
@@ -107,14 +107,14 @@ PassOwnPtr<AXRelatedNode> relatedNodeForAXObject(const AXObject* axObject, Strin
 
     if (name)
         relatedNode->setText(*name);
-    return relatedNode.release();
+    return relatedNode;
 }
 
 PassOwnPtr<AXValue> createRelatedNodeListValue(const AXObject* axObject, String* name, const String& valueType)
 {
     OwnPtr<protocol::Array<AXRelatedNode>> relatedNodes = protocol::Array<AXRelatedNode>::create();
     relatedNodes->addItem(relatedNodeForAXObject(axObject, name));
-    return AXValue::create().setType(valueType).setRelatedNodes(relatedNodes.release()).build();
+    return AXValue::create().setType(valueType).setRelatedNodes(std::move(relatedNodes)).build();
 }
 
 PassOwnPtr<AXValue> createRelatedNodeListValue(AXRelatedObjectVector& relatedObjects, const String& valueType)
@@ -123,9 +123,9 @@ PassOwnPtr<AXValue> createRelatedNodeListValue(AXRelatedObjectVector& relatedObj
     for (unsigned i = 0; i < relatedObjects.size(); i++) {
         OwnPtr<AXRelatedNode> frontendRelatedNode = relatedNodeForAXObject(relatedObjects[i]->object, &(relatedObjects[i]->text));
         if (frontendRelatedNode)
-            frontendRelatedNodes->addItem(frontendRelatedNode.release());
+            frontendRelatedNodes->addItem(std::move(frontendRelatedNode));
     }
-    return AXValue::create().setType(valueType).setRelatedNodes(frontendRelatedNodes.release()).build();
+    return AXValue::create().setType(valueType).setRelatedNodes(std::move(frontendRelatedNodes)).build();
 }
 
 PassOwnPtr<AXValue> createRelatedNodeListValue(AXObject::AXObjectVector& axObjects, const String& valueType)
@@ -134,9 +134,9 @@ PassOwnPtr<AXValue> createRelatedNodeListValue(AXObject::AXObjectVector& axObjec
     for (unsigned i = 0; i < axObjects.size(); i++) {
         OwnPtr<AXRelatedNode> relatedNode = relatedNodeForAXObject(axObjects[i].get());
         if (relatedNode)
-            relatedNodes->addItem(relatedNode.release());
+            relatedNodes->addItem(std::move(relatedNode));
     }
-    return AXValue::create().setType(valueType).setRelatedNodes(relatedNodes.release()).build();
+    return AXValue::create().setType(valueType).setRelatedNodes(std::move(relatedNodes)).build();
 }
 
 String valueSourceType(AXNameFrom nameFrom)
@@ -189,7 +189,7 @@ PassOwnPtr<AXValueSource> createValueSource(NameSource& nameSource)
             OwnPtr<AXValue> attributeValue = createRelatedNodeListValue(nameSource.relatedObjects, AXValueTypeEnum::IdrefList);
             if (!nameSource.attributeValue.isNull())
                 attributeValue->setValue(protocol::StringValue::create(nameSource.attributeValue.getString()));
-            valueSource->setAttributeValue(attributeValue.release());
+            valueSource->setAttributeValue(std::move(attributeValue));
         } else if (nameSource.attribute == QualifiedName::null()) {
             valueSource->setNativeSourceValue(createRelatedNodeListValue(nameSource.relatedObjects, AXValueTypeEnum::NodeList));
         }
@@ -206,7 +206,7 @@ PassOwnPtr<AXValueSource> createValueSource(NameSource& nameSource)
         valueSource->setInvalid(true);
     if (nameSource.nativeSource != AXTextFromNativeHTMLUninitialized)
         valueSource->setNativeSource(nativeSourceType(nameSource.nativeSource));
-    return valueSource.release();
+    return valueSource;
 }
 
 } // namespace blink

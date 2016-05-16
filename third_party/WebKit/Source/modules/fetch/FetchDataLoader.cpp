@@ -74,7 +74,7 @@ private:
             case WebDataConsumerHandle::Done: {
                 m_reader.clear();
                 long long size = m_blobData->length();
-                m_client->didFetchDataLoadedBlobHandle(BlobDataHandle::create(m_blobData.release(), size));
+                m_client->didFetchDataLoadedBlobHandle(BlobDataHandle::create(std::move(m_blobData), size));
                 m_client.clear();
                 return;
             }

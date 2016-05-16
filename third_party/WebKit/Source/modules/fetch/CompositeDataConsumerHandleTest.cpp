@@ -296,13 +296,13 @@ TEST(CompositeDataConsumerHandleTest, Read)
     ASSERT_TRUE(reader2.leakPtr());
 
     CompositeDataConsumerHandle::Updater* updater = nullptr;
-    OwnPtr<WebDataConsumerHandle> handle = CompositeDataConsumerHandle::create(handle1.release(), &updater);
+    OwnPtr<WebDataConsumerHandle> handle = CompositeDataConsumerHandle::create(std::move(handle1), &updater);
     checkpoint.Call(0);
     OwnPtr<WebDataConsumerHandle::Reader> reader = handle->obtainReader(&client);
     checkpoint.Call(1);
     EXPECT_EQ(kOk, reader->read(buffer, sizeof(buffer), kNone, &size));
     checkpoint.Call(2);
-    updater->update(handle2.release());
+    updater->update(std::move(handle2));
     checkpoint.Call(3);
     EXPECT_EQ(kOk, reader->read(buffer, sizeof(buffer), kNone, &size));
     checkpoint.Call(4);
@@ -339,7 +339,7 @@ TEST(CompositeDataConsumerHandleTest, TwoPhaseRead)
     ASSERT_TRUE(reader2.leakPtr());
 
     CompositeDataConsumerHandle::Updater* updater = nullptr;
-    OwnPtr<WebDataConsumerHandle> handle = CompositeDataConsumerHandle::create(handle1.release(), &updater);
+    OwnPtr<WebDataConsumerHandle> handle = CompositeDataConsumerHandle::create(std::move(handle1), &updater);
     checkpoint.Call(0);
     OwnPtr<WebDataConsumerHandle::Reader> reader = handle->obtainReader(nullptr);
     checkpoint.Call(1);
@@ -347,7 +347,7 @@ TEST(CompositeDataConsumerHandleTest, TwoPhaseRead)
     checkpoint.Call(2);
     EXPECT_EQ(kOk, reader->endRead(0));
     checkpoint.Call(3);
-    updater->update(handle2.release());
+    updater->update(std::move(handle2));
     checkpoint.Call(4);
     EXPECT_EQ(kOk, reader->beginRead(&p, kNone, &size));
     checkpoint.Call(5);
@@ -393,19 +393,19 @@ TEST(CompositeDataConsumerHandleTest, HangingTwoPhaseRead)
     ASSERT_TRUE(reader3.leakPtr());
 
     CompositeDataConsumerHandle::Updater* updater = nullptr;
-    OwnPtr<WebDataConsumerHandle> handle = CompositeDataConsumerHandle::create(handle1.release(), &updater);
+    OwnPtr<WebDataConsumerHandle> handle = CompositeDataConsumerHandle::create(std::move(handle1), &updater);
     checkpoint.Call(0);
     OwnPtr<WebDataConsumerHandle::Reader> reader = handle->obtainReader(nullptr);
     checkpoint.Call(1);
     EXPECT_EQ(kOk, reader->beginRead(&p, kNone, &size));
     checkpoint.Call(2);
-    updater->update(handle2.release());
+    updater->update(std::move(handle2));
     checkpoint.Call(3);
     EXPECT_EQ(kOk, reader->endRead(0));
     checkpoint.Call(4);
     EXPECT_EQ(kShouldWait, reader->beginRead(&p, kNone, &size));
     checkpoint.Call(5);
-    updater->update(handle3.release());
+    updater->update(std::move(handle3));
     checkpoint.Call(6);
     EXPECT_EQ(kOk, reader->beginRead(&p, kNone, &size));
     checkpoint.Call(7);

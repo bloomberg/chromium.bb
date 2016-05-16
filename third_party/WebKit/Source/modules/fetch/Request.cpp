@@ -344,7 +344,7 @@ Request* Request::createRequestWithRequestOrString(ScriptState* scriptState, Req
         //   contains no header named `Content-Type`, append
         //   `Content-Type`/|Content-Type| to |r|'s Headers object. Rethrow any
         //   exception."
-        temporaryBody = new BodyStreamBuffer(scriptState, init.body.release());
+        temporaryBody = new BodyStreamBuffer(scriptState, std::move(init.body));
         if (!init.contentType.isEmpty() && !r->getHeaders()->has(HTTPNames::Content_Type, exceptionState)) {
             r->getHeaders()->append(HTTPNames::Content_Type, init.contentType, exceptionState);
         }

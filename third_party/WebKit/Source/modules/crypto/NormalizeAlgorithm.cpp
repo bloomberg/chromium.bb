@@ -946,7 +946,7 @@ bool parseAlgorithmDictionary(const String& algorithmName, const Dictionary& raw
     if (!parseAlgorithmParams(raw, paramsType, params, context, error))
         return false;
 
-    algorithm = WebCryptoAlgorithm(algorithmId, params.release());
+    algorithm = WebCryptoAlgorithm(algorithmId, std::move(params));
     return true;
 }
 

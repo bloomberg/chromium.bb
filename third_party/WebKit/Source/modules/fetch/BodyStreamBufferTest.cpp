@@ -57,7 +57,7 @@ TEST_F(BodyStreamBufferTest, ReleaseHandle)
 {
     OwnPtr<FetchDataConsumerHandle> handle = createFetchDataConsumerHandleFromWebHandle(createWaitingDataConsumerHandle());
     FetchDataConsumerHandle* rawHandle = handle.get();
-    BodyStreamBuffer* buffer = new BodyStreamBuffer(getScriptState(), handle.release());
+    BodyStreamBuffer* buffer = new BodyStreamBuffer(getScriptState(), std::move(handle));
 
     EXPECT_FALSE(buffer->hasPendingActivity());
     EXPECT_FALSE(buffer->isStreamLocked());
@@ -77,7 +77,7 @@ TEST_F(BodyStreamBufferTest, DrainAsBlobDataHandle)
     OwnPtr<BlobData> data = BlobData::create();
     data->appendText("hello", false);
     auto size = data->length();
-    RefPtr<BlobDataHandle> blobDataHandle = BlobDataHandle::create(data.release(), size);
+    RefPtr<BlobDataHandle> blobDataHandle = BlobDataHandle::create(std::move(data), size);
     BodyStreamBuffer* buffer = new BodyStreamBuffer(getScriptState(), FetchBlobDataConsumerHandle::create(getExecutionContext(), blobDataHandle, new FakeLoaderFactory));
 
     EXPECT_FALSE(buffer->isStreamLocked());
@@ -95,7 +95,7 @@ TEST_F(BodyStreamBufferTest, DrainAsBlobDataHandleReturnsNull)
 {
     // This handle is not drainable.
     OwnPtr<FetchDataConsumerHandle> handle = createFetchDataConsumerHandleFromWebHandle(createWaitingDataConsumerHandle());
-    BodyStreamBuffer* buffer = new BodyStreamBuffer(getScriptState(), handle.release());
+    BodyStreamBuffer* buffer = new BodyStreamBuffer(getScriptState(), std::move(handle));
 
     EXPECT_FALSE(buffer->isStreamLocked());
     EXPECT_FALSE(buffer->isStreamDisturbed());
@@ -132,7 +132,7 @@ TEST_F(BodyStreamBufferTest, DrainAsFormDataReturnsNull)
 {
     // This handle is not drainable.
     OwnPtr<FetchDataConsumerHandle> handle = createFetchDataConsumerHandleFromWebHandle(createWaitingDataConsumerHandle());
-    BodyStreamBuffer* buffer = new BodyStreamBuffer(getScriptState(), handle.release());
+    BodyStreamBuffer* buffer = new BodyStreamBuffer(getScriptState(), std::move(handle));
 
     EXPECT_FALSE(buffer->isStreamLocked());
     EXPECT_FALSE(buffer->isStreamDisturbed());
@@ -159,7 +159,7 @@ TEST_F(BodyStreamBufferTest, LoadBodyStreamBufferAsArrayBuffer)
     OwnPtr<ReplayingHandle> handle = ReplayingHandle::create();
     handle->add(Command(Command::Data, "hello"));
     handle->add(Command(Command::Done));
-    BodyStreamBuffer* buffer = new BodyStreamBuffer(getScriptState(), createFetchDataConsumerHandleFromWebHandle(handle.release()));
+    BodyStreamBuffer* buffer = new BodyStreamBuffer(getScriptState(), createFetchDataConsumerHandleFromWebHandle(std::move(handle)));
     buffer->startLoading(FetchDataLoader::createLoaderAsArrayBuffer(), client);
 
     EXPECT_TRUE(buffer->isStreamLocked());
@@ -191,7 +191,7 @@ TEST_F(BodyStreamBufferTest, LoadBodyStreamBufferAsBlob)
     OwnPtr<ReplayingHandle> handle = ReplayingHandle::create();
     handle->add(Command(Command::Data, "hello"));
     handle->add(Command(Command::Done));
-    BodyStreamBuffer* buffer = new BodyStreamBuffer(getScriptState(), createFetchDataConsumerHandleFromWebHandle(handle.release()));
+    BodyStreamBuffer* buffer = new BodyStreamBuffer(getScriptState(), createFetchDataConsumerHandleFromWebHandle(std::move(handle)));
     buffer->startLoading(FetchDataLoader::createLoaderAsBlobHandle("text/plain"), client);
 
     EXPECT_TRUE(buffer->isStreamLocked());
@@ -221,7 +221,7 @@ TEST_F(BodyStreamBufferTest, LoadBodyStreamBufferAsString)
     OwnPtr<ReplayingHandle> handle = ReplayingHandle::create();
     handle->add(Command(Command::Data, "hello"));
     handle->add(Command(Command::Done));
-    BodyStreamBuffer* buffer = new BodyStreamBuffer(getScriptState(), createFetchDataConsumerHandleFromWebHandle(handle.release()));
+    BodyStreamBuffer* buffer = new BodyStreamBuffer(getScriptState(), createFetchDataConsumerHandleFromWebHandle(std::move(handle)));
     buffer->startLoading(FetchDataLoader::createLoaderAsString(), client);
 
     EXPECT_TRUE(buffer->isStreamLocked());
@@ -354,7 +354,7 @@ TEST_F(BodyStreamBufferTest, LoaderShouldBeKeptAliveByBodyStreamBuffer)
     OwnPtr<ReplayingHandle> handle = ReplayingHandle::create();
     handle->add(Command(Command::Data, "hello"));
     handle->add(Command(Command::Done));
-    Persistent<BodyStreamBuffer> buffer = new BodyStreamBuffer(getScriptState(), createFetchDataConsumerHandleFromWebHandle(handle.release()));
+    Persistent<BodyStreamBuffer> buffer = new BodyStreamBuffer(getScriptState(), createFetchDataConsumerHandleFromWebHandle(std::move(handle)));
     buffer->startLoading(FetchDataLoader::createLoaderAsString(), client);
 
     ThreadHeap::collectAllGarbage();
@@ -396,7 +396,7 @@ TEST_F(BodyStreamBufferTest, SourceHandleAndReaderShouldBeDestructedWhenCanceled
     // |reader| is adopted by |obtainReader|.
     ASSERT_TRUE(reader.leakPtr());
 
-    BodyStreamBuffer* buffer = new BodyStreamBuffer(getScriptState(), handle.release());
+    BodyStreamBuffer* buffer = new BodyStreamBuffer(getScriptState(), std::move(handle));
     checkpoint.Call(1);
     ScriptValue reason(getScriptState(), v8String(getScriptState()->isolate(), "reason"));
     buffer->cancelSource(getScriptState(), reason);

@@ -72,8 +72,8 @@ FetchRequestData* FetchRequestData::clone(ScriptState* scriptState)
     if (m_buffer) {
         OwnPtr<FetchDataConsumerHandle> dest1, dest2;
         DataConsumerTee::create(scriptState->getExecutionContext(), m_buffer->releaseHandle(), &dest1, &dest2);
-        m_buffer = new BodyStreamBuffer(scriptState, dest1.release());
-        request->m_buffer = new BodyStreamBuffer(scriptState, dest2.release());
+        m_buffer = new BodyStreamBuffer(scriptState, std::move(dest1));
+        request->m_buffer = new BodyStreamBuffer(scriptState, std::move(dest2));
     }
     return request;
 }
