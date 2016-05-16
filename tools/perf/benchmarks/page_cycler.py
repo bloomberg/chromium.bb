@@ -204,7 +204,6 @@ class PageCyclerBasicOopifIsolated(_PageCycler):
     options.AppendExtraBrowserArgs(['--site-per-process'])
 
 
-@benchmark.Disabled('reference')  # crbug.com/523346
 class PageCyclerBasicOopif(_PageCycler):
   """ A benchmark measuring performance of the out-of-process iframes page
   set, without running in out-of-process iframes mode.. """
