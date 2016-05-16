@@ -3944,6 +3944,7 @@
             'css/RuleSetTest.cpp',
             'css/StyleSheetContentsTest.cpp',
             'css/invalidation/InvalidationSetTest.cpp',
+            'css/parser/CSSParserTokenTest.cpp',
             'css/parser/CSSPropertyParserTest.cpp',
             'css/parser/CSSSelectorParserTest.cpp',
             'css/parser/CSSTokenizerTest.cpp',

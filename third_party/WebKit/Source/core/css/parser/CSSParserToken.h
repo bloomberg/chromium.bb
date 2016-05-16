@@ -83,6 +83,7 @@ public:
     CSSParserToken(HashTokenType, CSSParserString);
 
     bool operator==(const CSSParserToken& other) const;
+    bool operator!=(const CSSParserToken& other) const { return !(*this == other); }
 
     // Converts NumberToken to DimensionToken.
     void convertToDimensionWithUnit(CSSParserString);
@@ -132,6 +133,8 @@ private:
     unsigned m_numericValueType : 1; // NumericValueType
     unsigned m_numericSign : 2; // NumericSign
     unsigned m_unit : 7; // CSSPrimitiveValue::UnitType
+
+    bool valueDataCharRawEqual(const CSSParserToken& other) const;
 
     // m_value... is an unpacked CSSParserString so that we can pack it
     // tightly with the rest of this object for a smaller object size.

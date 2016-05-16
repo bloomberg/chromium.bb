@@ -147,6 +147,25 @@ CSSParserToken CSSParserToken::copyWithUpdatedString(const CSSParserString& pars
     return copy;
 }
 
+bool CSSParserToken::valueDataCharRawEqual(const CSSParserToken& other) const
+{
+    if (m_valueLength != other.m_valueLength)
+        return false;
+
+    if (m_valueDataCharRaw == other.m_valueDataCharRaw && m_valueIs8Bit == other.m_valueIs8Bit)
+        return true;
+
+    if (m_valueIs8Bit) {
+        return other.m_valueIs8Bit ?
+            equal(static_cast<const LChar*>(m_valueDataCharRaw), static_cast<const LChar*>(other.m_valueDataCharRaw), m_valueLength) :
+            equal(static_cast<const LChar*>(m_valueDataCharRaw), static_cast<const UChar*>(other.m_valueDataCharRaw), m_valueLength);
+    } else {
+        return other.m_valueIs8Bit ?
+            equal(static_cast<const UChar*>(m_valueDataCharRaw), static_cast<const LChar*>(other.m_valueDataCharRaw), m_valueLength) :
+            equal(static_cast<const UChar*>(m_valueDataCharRaw), static_cast<const UChar*>(other.m_valueDataCharRaw), m_valueLength);
+    }
+}
+
 bool CSSParserToken::operator==(const CSSParserToken& other) const
 {
     if (m_type != other.m_type)
@@ -162,9 +181,9 @@ bool CSSParserToken::operator==(const CSSParserToken& other) const
     case FunctionToken:
     case StringToken:
     case UrlToken:
-        return m_valueDataCharRaw == other.m_valueDataCharRaw && m_valueLength == other.m_valueLength && m_valueIs8Bit == other.m_valueIs8Bit;
+        return valueDataCharRawEqual(other);
     case DimensionToken:
-        if (m_valueDataCharRaw != other.m_valueDataCharRaw || m_valueLength != other.m_valueLength || m_valueIs8Bit != other.m_valueIs8Bit)
+        if (!valueDataCharRawEqual(other))
             return false;
         // fallthrough
     case NumberToken:
