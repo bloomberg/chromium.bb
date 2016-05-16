@@ -102,9 +102,9 @@ mojo::Array<mojom::MimeTypePtr> GeneratePluginMimeTypes(
 
 }  // namespace
 
-PluginsHandler::PluginsHandler(
+PluginsPageHandler::PluginsPageHandler(
     content::WebUI* web_ui,
-    mojo::InterfaceRequest<mojom::PluginsHandlerMojo> request)
+    mojo::InterfaceRequest<mojom::PluginsPageHandler> request)
     : web_ui_(web_ui),
       binding_(this, std::move(request)),
       weak_ptr_factory_(this) {
@@ -116,10 +116,10 @@ PluginsHandler::PluginsHandler(
                  content::Source<Profile>(profile));
 }
 
-PluginsHandler::~PluginsHandler() {}
+PluginsPageHandler::~PluginsPageHandler() {}
 
-void PluginsHandler::SetPluginEnabled(const mojo::String& plugin_path,
-                                      bool enable) {
+void PluginsPageHandler::SetPluginEnabled(const mojo::String& plugin_path,
+                                          bool enable) {
   Profile* profile = Profile::FromWebUI(web_ui_);
   PluginPrefs* plugin_prefs = PluginPrefs::GetForProfile(profile).get();
   plugin_prefs->EnablePlugin(
@@ -127,8 +127,8 @@ void PluginsHandler::SetPluginEnabled(const mojo::String& plugin_path,
       base::Bind(&AssertPluginEnabled));
 }
 
-void PluginsHandler::SetPluginGroupEnabled(const mojo::String& group_name,
-                                           bool enable) {
+void PluginsPageHandler::SetPluginGroupEnabled(const mojo::String& group_name,
+                                               bool enable) {
   Profile* profile = Profile::FromWebUI(web_ui_);
   PluginPrefs* plugin_prefs = PluginPrefs::GetForProfile(profile).get();
   base::string16 group_name_as_string16 = group_name.To<base::string16>();
@@ -148,16 +148,17 @@ void PluginsHandler::SetPluginGroupEnabled(const mojo::String& group_name,
     plugin_prefs->EnablePluginGroup(false, adobereader);
 }
 
-void PluginsHandler::GetShowDetails(const GetShowDetailsCallback& callback) {
+void PluginsPageHandler::GetShowDetails(
+    const GetShowDetailsCallback& callback) {
   callback.Run(show_details_.GetValue());
 }
 
-void PluginsHandler::SaveShowDetailsToPrefs(bool details_mode) {
+void PluginsPageHandler::SaveShowDetailsToPrefs(bool details_mode) {
   show_details_.SetValue(details_mode);
 }
 
-void PluginsHandler::SetPluginAlwaysAllowed(const mojo::String& plugin,
-                                            bool allowed) {
+void PluginsPageHandler::SetPluginAlwaysAllowed(const mojo::String& plugin,
+                                                bool allowed) {
   Profile* profile = Profile::FromWebUI(web_ui_);
   HostContentSettingsMapFactory::GetForProfile(profile)
       ->SetContentSettingCustomScope(
@@ -173,44 +174,46 @@ void PluginsHandler::SetPluginAlwaysAllowed(const mojo::String& plugin,
   update->SetBoolean(plugin, allowed);
 }
 
-void PluginsHandler::GetPluginsData(const GetPluginsDataCallback& callback) {
+void PluginsPageHandler::GetPluginsData(
+    const GetPluginsDataCallback& callback) {
   if (weak_ptr_factory_.HasWeakPtrs())
     return;
 
   content::PluginService::GetInstance()->GetPlugins(
-      base::Bind(&PluginsHandler::RespondWithPluginsData,
+      base::Bind(&PluginsPageHandler::RespondWithPluginsData,
                  weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
-void PluginsHandler::SetClientPage(mojom::PluginsPageMojoPtr page) {
+void PluginsPageHandler::SetClientPage(mojom::PluginsPagePtr page) {
   page_ = std::move(page);
 }
 
-void PluginsHandler::Observe(int type,
-                             const content::NotificationSource& source,
-                             const content::NotificationDetails& details) {
+void PluginsPageHandler::Observe(int type,
+                                 const content::NotificationSource& source,
+                                 const content::NotificationDetails& details) {
   DCHECK_EQ(chrome::NOTIFICATION_PLUGIN_ENABLE_STATUS_CHANGED, type);
 
   if (weak_ptr_factory_.HasWeakPtrs())
     return;
 
-  content::PluginService::GetInstance()->GetPlugins(base::Bind(
-      &PluginsHandler::NotifyWithPluginsData, weak_ptr_factory_.GetWeakPtr()));
+  content::PluginService::GetInstance()->GetPlugins(
+      base::Bind(&PluginsPageHandler::NotifyWithPluginsData,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
-void PluginsHandler::RespondWithPluginsData(
+void PluginsPageHandler::RespondWithPluginsData(
     const GetPluginsDataCallback& callback,
     const std::vector<WebPluginInfo>& plugins) {
   callback.Run(GeneratePluginsData(plugins));
 }
 
-void PluginsHandler::NotifyWithPluginsData(
+void PluginsPageHandler::NotifyWithPluginsData(
     const std::vector<WebPluginInfo>& plugins) {
   if (page_)
     page_->OnPluginsUpdated(GeneratePluginsData(plugins));
 }
 
-mojo::Array<mojom::PluginDataPtr> PluginsHandler::GeneratePluginsData(
+mojo::Array<mojom::PluginDataPtr> PluginsPageHandler::GeneratePluginsData(
     const std::vector<WebPluginInfo>& plugins) {
   Profile* profile = Profile::FromWebUI(web_ui_);
   PluginPrefs* plugin_prefs = PluginPrefs::GetForProfile(profile).get();
@@ -291,7 +294,7 @@ mojo::Array<mojom::PluginDataPtr> PluginsHandler::GeneratePluginsData(
   return plugins_data;
 }
 
-mojom::PluginFilePtr PluginsHandler::GeneratePluginFile(
+mojom::PluginFilePtr PluginsPageHandler::GeneratePluginFile(
     const WebPluginInfo& plugin,
     const base::string16& group_name,
     bool plugin_enabled) const {
@@ -308,7 +311,7 @@ mojom::PluginFilePtr PluginsHandler::GeneratePluginFile(
   return plugin_file;
 }
 
-std::string PluginsHandler::GetPluginEnabledMode(
+std::string PluginsPageHandler::GetPluginEnabledMode(
     const base::string16& plugin_name,
     const base::string16& group_name,
     bool plugin_enabled) const {
@@ -330,7 +333,7 @@ std::string PluginsHandler::GetPluginEnabledMode(
   return plugin_enabled ? "enabledByUser" : "disabledByUser";
 }
 
-std::string PluginsHandler::GetPluginGroupEnabledMode(
+std::string PluginsPageHandler::GetPluginGroupEnabledMode(
     const mojo::Array<mojom::PluginFilePtr>& plugin_files,
     bool group_enabled) const {
   bool plugins_enabled_by_policy = true;

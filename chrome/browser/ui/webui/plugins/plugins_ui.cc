@@ -102,6 +102,6 @@ void PluginsUI::RegisterProfilePrefs(
 }
 
 void PluginsUI::BindUIHandler(
-    mojo::InterfaceRequest<mojom::PluginsHandlerMojo> request) {
-  plugins_handler_.reset(new PluginsHandler(web_ui(), std::move(request)));
+    mojo::InterfaceRequest<mojom::PluginsPageHandler> request) {
+  plugins_handler_.reset(new PluginsPageHandler(web_ui(), std::move(request)));
 }

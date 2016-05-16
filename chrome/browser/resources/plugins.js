@@ -287,17 +287,16 @@ function initializeProxies() {
     var serviceProvider = modules[4];
 
     browserProxy = connection.bindHandleToProxy(
-        serviceProvider.connectToService(
-            pluginsMojom.PluginsHandlerMojo.name),
-        pluginsMojom.PluginsHandlerMojo);
+        serviceProvider.connectToService(pluginsMojom.PluginsPageHandler.name),
+        pluginsMojom.PluginsPageHandler);
 
     // Connect pipe handle to JS code.
     var pipe = core.createMessagePipe();
     pluginsPageStub = connection.bindHandleToStub(
-        pipe.handle0, pluginsMojom.PluginsPageMojo);
+        pipe.handle0, pluginsMojom.PluginsPage);
 
     pageProxy = {
-      __proto__: pluginsMojom.PluginsPageMojo.stubClass.prototype,
+      __proto__: pluginsMojom.PluginsPage.stubClass.prototype,
       onPluginsUpdated: function(plugins) {
         returnPluginsData({plugins: plugins});
       },

@@ -104,9 +104,9 @@ PluginsTest.prototype = {
         var serviceProvider = modules[3];
 
         serviceProvider.addServiceOverrideForTesting(
-            pluginsMojom.PluginsHandlerMojo.name, function(handle) {
+            pluginsMojom.PluginsPageHandler.name, function(handle) {
               var stub = connection.bindHandleToStub(
-                  handle, pluginsMojom.PluginsHandlerMojo);
+                  handle, pluginsMojom.PluginsPageHandler);
               this.browserProxy = new TestBrowserProxy();
               bindings.StubBindings(stub).delegate = this.browserProxy;
             }.bind(this));

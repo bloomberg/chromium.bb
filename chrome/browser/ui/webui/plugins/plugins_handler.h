@@ -17,15 +17,15 @@
 #include "content/public/common/webplugininfo.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
-class PluginsHandler : public MojoWebUIHandler,
-                       public mojom::PluginsHandlerMojo,
-                       public content::NotificationObserver {
+class PluginsPageHandler : public MojoWebUIHandler,
+                           public mojom::PluginsPageHandler,
+                           public content::NotificationObserver {
  public:
-  PluginsHandler(content::WebUI* web_ui,
-                 mojo::InterfaceRequest<mojom::PluginsHandlerMojo> request);
-  ~PluginsHandler() override;
+  PluginsPageHandler(content::WebUI* web_ui,
+                     mojo::InterfaceRequest<mojom::PluginsPageHandler> request);
+  ~PluginsPageHandler() override;
 
-  // mojom::PluginsHandlerMojo overrides:
+  // mojom::PluginsPageHandler overrides:
   void GetPluginsData(const GetPluginsDataCallback& callback) override;
   void GetShowDetails(const GetShowDetailsCallback& callback) override;
   void SaveShowDetailsToPrefs(bool details_mode) override;
@@ -34,7 +34,7 @@ class PluginsHandler : public MojoWebUIHandler,
   void SetPluginEnabled(const mojo::String& plugin_path, bool enable) override;
   void SetPluginGroupEnabled(const mojo::String& group_name,
                              bool enable) override;
-  void SetClientPage(mojom::PluginsPageMojoPtr page) override;
+  void SetClientPage(mojom::PluginsPagePtr page) override;
 
   // content::NotificationObserver implementation.
   void Observe(int type,
@@ -81,14 +81,14 @@ class PluginsHandler : public MojoWebUIHandler,
   // Owned by RenderFrameHostImpl.
   content::WebUI* web_ui_;
 
-  mojo::Binding<mojom::PluginsHandlerMojo> binding_;
+  mojo::Binding<mojom::PluginsPageHandler> binding_;
 
   // Handle back to the page by which JS methods can be called.
-  mojom::PluginsPageMojoPtr page_;
+  mojom::PluginsPagePtr page_;
 
-  base::WeakPtrFactory<PluginsHandler> weak_ptr_factory_;
+  base::WeakPtrFactory<PluginsPageHandler> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(PluginsHandler);
+  DISALLOW_COPY_AND_ASSIGN(PluginsPageHandler);
 };
 
 #endif  // CHROME_BROWSER_UI_WEBUI_PLUGINS_PLUGINS_HANDLER_H_

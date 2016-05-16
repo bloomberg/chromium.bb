@@ -33,16 +33,16 @@ struct PluginData {
   array<PluginFile> plugin_files;
 };
 
-interface PluginsHandlerMojo {
+interface PluginsPageHandler {
   GetPluginsData() => (array<PluginData> plugins);
   GetShowDetails() => (bool show_details);
   SaveShowDetailsToPrefs(bool details_mode);
   SetPluginAlwaysAllowed(string plugin, bool allowed);
   SetPluginEnabled(string plugin_path, bool enable);
   SetPluginGroupEnabled(string group_name, bool enable);
-  SetClientPage(PluginsPageMojo page);
+  SetClientPage(PluginsPage page);
 };
 
-interface PluginsPageMojo {
+interface PluginsPage {
   OnPluginsUpdated(array<PluginData> plugins);
 };
