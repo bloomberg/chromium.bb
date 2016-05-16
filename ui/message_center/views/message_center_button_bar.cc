@@ -255,9 +255,8 @@ void MessageCenterButtonBar::ViewVisibilityChanged() {
 
 MessageCenterButtonBar::~MessageCenterButtonBar() {}
 
-void MessageCenterButtonBar::SetAllButtonsEnabled(bool enabled) {
-  if (close_all_button_)
-    close_all_button_->SetEnabled(enabled);
+void MessageCenterButtonBar::SetSettingsAndQuietModeButtonsEnabled(
+    bool enabled) {
   settings_button_->SetEnabled(enabled);
   quiet_mode_button_->SetEnabled(enabled);
 }

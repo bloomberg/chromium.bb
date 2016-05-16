@@ -94,9 +94,13 @@ class MESSAGE_CENTER_EXPORT MessageCenterView : public views::View,
  private:
   friend class MessageCenterViewTest;
 
+  enum class Mode { NOTIFICATIONS, SETTINGS, BUTTONS_ONLY };
+
   void AddNotificationAt(const Notification& notification, int index);
-  void NotificationsChanged();
   base::string16 GetButtonBarTitle() const;
+  void Update(bool animate);
+  void SetVisibilityMode(Mode mode, bool animate);
+  void UpdateButtonBarStatus();
   void SetNotificationViewForTest(MessageView* view);
 
   MessageCenter* message_center_;  // Weak reference.
@@ -110,7 +114,6 @@ class MESSAGE_CENTER_EXPORT MessageCenterView : public views::View,
   // Child views.
   views::ScrollView* scroller_;
   std::unique_ptr<MessageListView> message_list_view_;
-  std::unique_ptr<views::View> empty_list_view_;
   NotifierSettingsView* settings_view_;
   MessageCenterButtonBar* button_bar_;
   bool top_down_;
@@ -132,6 +135,11 @@ class MESSAGE_CENTER_EXPORT MessageCenterView : public views::View,
   // True when the widget is closing so that further operations should be
   // ignored.
   bool is_closing_;
+
+  bool is_clearing_ = false;
+
+  // Current view mode. During animation, it is the target mode.
+  Mode mode_ = Mode::BUTTONS_ONLY;
 
   std::unique_ptr<MessageViewContextMenuController> context_menu_controller_;
 
