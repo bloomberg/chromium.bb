@@ -185,9 +185,6 @@ void PeopleHandler::RegisterMessages() {
       "SyncSetupShowSetupUI",
       base::Bind(&PeopleHandler::HandleShowSetupUI, base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "SyncSetupCloseTimeout",
-      base::Bind(&PeopleHandler::HandleCloseTimeout, base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
       "SyncSetupGetSyncStatus",
       base::Bind(&PeopleHandler::HandleGetSyncStatus, base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
@@ -342,6 +339,7 @@ void PeopleHandler::DisplayTimeout() {
 }
 
 void PeopleHandler::OnDidClosePage(const base::ListValue* args) {
+  MarkFirstSetupComplete();
   CloseSyncSetup();
 }
 
@@ -393,7 +391,6 @@ void PeopleHandler::HandleSetDatatypes(const base::ListValue* args) {
 
   service->OnUserChoseDatatypes(configuration.sync_everything,
                                 configuration.data_types);
-  MarkFirstSetupComplete();
 
   // Choosing data types to sync never fails.
   ResolveJavascriptCallback(*callback_id,
@@ -472,7 +469,6 @@ void PeopleHandler::HandleSetEncryption(const base::ListValue* args) {
     ResolveJavascriptCallback(*callback_id,
                               base::StringValue(kPassphraseFailedPageStatus));
   } else {
-    MarkFirstSetupComplete();
     ResolveJavascriptCallback(*callback_id,
                               base::StringValue(kConfigurePageStatus));
   }
@@ -555,10 +551,6 @@ void PeopleHandler::HandleStopSyncing(const base::ListValue* args) {
   }
 }
 #endif
-
-void PeopleHandler::HandleCloseTimeout(const base::ListValue* args) {
-  CloseSyncSetup();
-}
 
 void PeopleHandler::HandleGetSyncStatus(const base::ListValue* args) {
   AllowJavascript();

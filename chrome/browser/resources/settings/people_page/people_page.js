@@ -166,11 +166,6 @@ Polymer({
 </if>
 
   /** @private */
-  onActionLinkTap_: function() {
-    this.syncBrowserProxy_.showSetupUI();
-  },
-
-  /** @private */
   onPictureTap_: function() {
 <if expr="chromeos">
     this.$.pages.setSubpageChain(['changePicture']);

@@ -135,7 +135,6 @@ class PeopleHandler : public SettingsPageUIHandler,
   void HandleDoSignOutOnAuthError(const base::ListValue* args);
   void HandleStartSignin(const base::ListValue* args);
   void HandleStopSyncing(const base::ListValue* args);
-  void HandleCloseTimeout(const base::ListValue* args);
   void HandleGetSyncStatus(const base::ListValue* args);
   void HandleManageOtherPeople(const base::ListValue* args);
 

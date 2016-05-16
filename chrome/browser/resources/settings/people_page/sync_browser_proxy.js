@@ -115,12 +115,6 @@ cr.define('settings', function() {
     getSyncStatus: function() {},
 
     /**
-     * Determines the appropriate page to show in the Sync Setup UI based on
-     * the state of the Sync backend. Does nothing if the user is not signed in.
-     */
-    showSetupUI: function() {},
-
-    /**
      * Function to invoke when the sync page has been navigated to. This
      * registers the UI as the "active" sync UI so that if the user tries to
      * open another sync UI, this one will be shown instead.
@@ -184,11 +178,6 @@ cr.define('settings', function() {
     /** @override */
     getSyncStatus: function() {
       return cr.sendWithPromise('SyncSetupGetSyncStatus');
-    },
-
-    /** @override */
-    showSetupUI: function() {
-      chrome.send('SyncSetupShowSetupUI');
     },
 
     /** @override */

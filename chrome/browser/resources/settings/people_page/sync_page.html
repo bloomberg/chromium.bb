@@ -25,8 +25,12 @@
       }
     </style>
     <iron-pages id="pages" selected="[[selectedPage_]]" attr-for-selected="id">
-      <div id="[[pages.SPINNER]]">$i18n{syncLoading}</div>
-      <div id="[[pages.TIMEOUT]]">$i18n{syncTimeout}</div>
+      <div id="[[pages.SPINNER]]" class="settings-box first">
+        $i18n{syncLoading}
+      </div>
+      <div id="[[pages.TIMEOUT]]" class="settings-box first">
+        $i18n{syncTimeout}
+      </div>
       <div id="[[pages.CONFIGURE]]">
         <div class="settings-box first">
           <paper-checkbox id="syncAllDataTypesCheckbox"
