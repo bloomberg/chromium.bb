@@ -754,7 +754,7 @@ PassOwnPtr<ImageBufferSurface> HTMLCanvasElement::createImageBufferSurface(const
         OwnPtr<ImageBufferSurface> surface = adoptPtr(new Canvas2DImageBufferSurface(deviceSize, *msaaSampleCount, opacityMode, Canvas2DLayerBridge::EnableAcceleration));
         if (surface->isValid()) {
             CanvasMetrics::countCanvasContextUsage(CanvasMetrics::GPUAccelerated2DCanvasImageBufferCreated);
-            return surface.release();
+            return surface;
         }
         CanvasMetrics::countCanvasContextUsage(CanvasMetrics::GPUAccelerated2DCanvasImageBufferCreationFailed);
     }
@@ -762,10 +762,10 @@ PassOwnPtr<ImageBufferSurface> HTMLCanvasElement::createImageBufferSurface(const
     OwnPtr<RecordingImageBufferFallbackSurfaceFactory> surfaceFactory = adoptPtr(new UnacceleratedSurfaceFactory());
 
     if (shouldUseDisplayList(deviceSize)) {
-        OwnPtr<ImageBufferSurface> surface = adoptPtr(new RecordingImageBufferSurface(deviceSize, surfaceFactory.release(), opacityMode));
+        OwnPtr<ImageBufferSurface> surface = adoptPtr(new RecordingImageBufferSurface(deviceSize, std::move(surfaceFactory), opacityMode));
         if (surface->isValid()) {
             CanvasMetrics::countCanvasContextUsage(CanvasMetrics::DisplayList2DCanvasImageBufferCreated);
-            return surface.release();
+            return surface;
         }
         surfaceFactory = adoptPtr(new UnacceleratedSurfaceFactory()); // recreate because previous one was released
     }
@@ -802,7 +802,7 @@ void HTMLCanvasElement::createImageBufferInternal(PassOwnPtr<ImageBufferSurface>
     } else {
         surface = createImageBufferSurface(size(), &msaaSampleCount);
     }
-    m_imageBuffer = ImageBuffer::create(surface.release());
+    m_imageBuffer = ImageBuffer::create(std::move(surface));
     if (!m_imageBuffer)
         return;
     m_imageBuffer->setClient(this);

@@ -319,7 +319,7 @@ PassOwnPtr<Vector<CSPHeaderAndType>> ContentSecurityPolicy::headers() const
         CSPHeaderAndType headerAndType(policy->header(), policy->headerType());
         headers->append(headerAndType);
     }
-    return headers.release();
+    return headers;
 }
 
 template<bool (CSPDirectiveList::*allowed)(ContentSecurityPolicy::ReportingStatus) const>

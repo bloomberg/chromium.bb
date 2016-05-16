@@ -683,7 +683,7 @@ void StyleBuilderFunctions::applyValueCSSPropertyContent(StyleResolverState& sta
             if (listStyleIdent != CSSValueNone)
                 listStyleType = static_cast<EListStyleType>(listStyleIdent - CSSValueDisc);
             OwnPtr<CounterContent> counter = adoptPtr(new CounterContent(AtomicString(counterValue->identifier()), listStyleType, AtomicString(counterValue->separator())));
-            nextContent = ContentData::create(counter.release());
+            nextContent = ContentData::create(std::move(counter));
         } else if (item->isPrimitiveValue()) {
             QuoteType quoteType;
             switch (toCSSPrimitiveValue(*item).getValueID()) {

@@ -302,7 +302,7 @@ void HTMLDocumentParser::notifyPendingParsedChunks()
     if (!document()->documentElement()) {
         for (auto& chunk : pendingChunks) {
             for (auto& request : chunk->preloads)
-                m_queuedPreloads.append(request.release());
+                m_queuedPreloads.append(std::move(request));
             for (auto& index : chunk->likelyDocumentWriteScriptIndices) {
                 const CompactHTMLToken& token = chunk->tokens->at(index);
                 ASSERT(token.type() == HTMLToken::TokenType::Character);
@@ -326,7 +326,7 @@ void HTMLDocumentParser::notifyPendingParsedChunks()
     }
 
     for (auto& chunk : pendingChunks)
-        m_speculations.append(chunk.release());
+        m_speculations.append(std::move(chunk));
 
     if (!isWaitingForScripts() && !isScheduledForResume()) {
         if (m_tasksWereSuspended)
@@ -355,8 +355,8 @@ void HTMLDocumentParser::validateSpeculations(PassOwnPtr<ParsedChunk> chunk)
     }
 
     ASSERT(!m_lastChunkBeforeScript);
-    OwnPtr<HTMLTokenizer> tokenizer = m_tokenizer.release();
-    OwnPtr<HTMLToken> token = m_token.release();
+    OwnPtr<HTMLTokenizer> tokenizer = std::move(m_tokenizer);
+    OwnPtr<HTMLToken> token = std::move(m_token);
 
     if (!tokenizer) {
         // There must not have been any changes to the HTMLTokenizer state on
@@ -377,7 +377,7 @@ void HTMLDocumentParser::validateSpeculations(PassOwnPtr<ParsedChunk> chunk)
         return;
     }
 
-    discardSpeculationsAndResumeFrom(std::move(chunk), token.release(), tokenizer.release());
+    discardSpeculationsAndResumeFrom(std::move(chunk), std::move(token), std::move(tokenizer));
 }
 
 void HTMLDocumentParser::discardSpeculationsAndResumeFrom(PassOwnPtr<ParsedChunk> lastChunkBeforeScript, PassOwnPtr<HTMLToken> token, PassOwnPtr<HTMLTokenizer> tokenizer)
@@ -396,7 +396,7 @@ void HTMLDocumentParser::discardSpeculationsAndResumeFrom(PassOwnPtr<ParsedChunk
     m_input.current().clear(); // FIXME: This should be passed in instead of cleared.
 
     ASSERT(checkpoint->unparsedInput.isSafeToSendToAnotherThread());
-    HTMLParserThread::shared()->postTask(threadSafeBind(&BackgroundHTMLParser::resumeFrom, AllowCrossThreadAccess(m_backgroundParser), passed(checkpoint.release())));
+    HTMLParserThread::shared()->postTask(threadSafeBind(&BackgroundHTMLParser::resumeFrom, AllowCrossThreadAccess(m_backgroundParser), passed(std::move(checkpoint))));
 }
 
 size_t HTMLDocumentParser::processParsedChunkFromBackgroundParser(PassOwnPtr<ParsedChunk> popChunk)
@@ -415,7 +415,7 @@ size_t HTMLDocumentParser::processParsedChunkFromBackgroundParser(PassOwnPtr<Par
     ASSERT(!m_lastChunkBeforeScript);
 
     OwnPtr<ParsedChunk> chunk(std::move(popChunk));
-    OwnPtr<CompactHTMLTokenStream> tokens = chunk->tokens.release();
+    OwnPtr<CompactHTMLTokenStream> tokens = std::move(chunk->tokens);
     size_t elementTokenCount = 0;
 
     HTMLParserThread::shared()->postTask(threadSafeBind(&BackgroundHTMLParser::startedChunkWithCheckpoint, AllowCrossThreadAccess(m_backgroundParser), chunk->inputCheckpoint));
@@ -469,7 +469,7 @@ size_t HTMLDocumentParser::processParsedChunkFromBackgroundParser(PassOwnPtr<Par
         if (isWaitingForScripts()) {
             ASSERT(it + 1 == tokens->end()); // The </script> is assumed to be the last token of this bunch.
             runScriptsForPausedTreeBuilder();
-            validateSpeculations(chunk.release());
+            validateSpeculations(std::move(chunk));
             break;
         }
 
@@ -525,7 +525,7 @@ void HTMLDocumentParser::pumpPendingSpeculations()
     SpeculationsPumpSession session(m_pumpSpeculationsSessionNestingLevel);
     while (!m_speculations.isEmpty()) {
         ASSERT(!isScheduledForResume());
-        size_t elementTokenCount = processParsedChunkFromBackgroundParser(m_speculations.takeFirst().release());
+        size_t elementTokenCount = processParsedChunkFromBackgroundParser(m_speculations.takeFirst());
         session.addedElementTokens(elementTokenCount);
 
         // Always check isParsing first as m_document may be null.
@@ -730,7 +730,7 @@ void HTMLDocumentParser::startBackgroundParser()
     HTMLParserThread::shared()->postTask(threadSafeBind(
         &BackgroundHTMLParser::start,
         reference.release(),
-        passed(config.release()),
+        passed(std::move(config)),
         document()->url(),
         passed(CachedDocumentParameters::create(document())),
         MediaValuesCached::MediaValuesCachedData(*document()),
@@ -927,7 +927,7 @@ void HTMLDocumentParser::resumeParsingAfterScriptExecution()
     ASSERT(!isWaitingForScripts());
 
     if (m_haveBackgroundParser) {
-        validateSpeculations(m_lastChunkBeforeScript.release());
+        validateSpeculations(std::move(m_lastChunkBeforeScript));
         ASSERT(!m_lastChunkBeforeScript);
         pumpPendingSpeculations();
         return;
@@ -1016,7 +1016,7 @@ void HTMLDocumentParser::appendBytes(const char* data, size_t length)
         memcpy(buffer->data(), data, length);
         TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("blink.debug"), "HTMLDocumentParser::appendBytes", "size", (unsigned)length);
 
-        HTMLParserThread::shared()->postTask(threadSafeBind(&BackgroundHTMLParser::appendRawBytesFromMainThread, AllowCrossThreadAccess(m_backgroundParser), passed(buffer.release())));
+        HTMLParserThread::shared()->postTask(threadSafeBind(&BackgroundHTMLParser::appendRawBytesFromMainThread, AllowCrossThreadAccess(m_backgroundParser), passed(std::move(buffer))));
         return;
     }
 

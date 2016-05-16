@@ -37,7 +37,7 @@ public:
 
     ~CSSParserSelector();
 
-    PassOwnPtr<CSSSelector> releaseSelector() { return m_selector.release(); }
+    PassOwnPtr<CSSSelector> releaseSelector() { return std::move(m_selector); }
 
     CSSSelector::RelationType relation() const { return m_selector->relation(); }
     void setValue(const AtomicString& value, bool matchLowerCase = false) { m_selector->setValue(value, matchLowerCase); }

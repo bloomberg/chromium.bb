@@ -52,7 +52,7 @@ static PassOwnPtr<HTTPHeaderSet> createAllowedCrossOriginResponseHeadersSet()
     headerSet->add("last-modified");
     headerSet->add("pragma");
 
-    return headerSet.release();
+    return headerSet;
 }
 
 bool isOnAccessControlResponseHeaderWhitelist(const String& name)

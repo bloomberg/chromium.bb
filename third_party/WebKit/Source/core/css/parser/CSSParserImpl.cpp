@@ -222,7 +222,7 @@ CSSSelectorList CSSParserImpl::parsePageSelector(CSSParserTokenRange range, Styl
 
     selector->setForPage();
     Vector<OwnPtr<CSSParserSelector>> selectorVector;
-    selectorVector.append(selector.release());
+    selectorVector.append(std::move(selector));
     CSSSelectorList selectorList = CSSSelectorList::adoptSelectorVector(selectorVector);
     return selectorList;
 }
@@ -656,7 +656,7 @@ StyleRuleKeyframe* CSSParserImpl::consumeKeyframeStyleRule(CSSParserTokenRange p
     }
 
     consumeDeclarationList(block, StyleRule::Keyframe);
-    return StyleRuleKeyframe::create(keyList.release(), createStylePropertySet(m_parsedProperties, m_context.mode()));
+    return StyleRuleKeyframe::create(std::move(keyList), createStylePropertySet(m_parsedProperties, m_context.mode()));
 }
 
 static void observeSelectors(CSSParserObserverWrapper& wrapper, CSSParserTokenRange selectors)
@@ -818,7 +818,7 @@ PassOwnPtr<Vector<double>> CSSParserImpl::consumeKeyframeKeyList(CSSParserTokenR
         else
             return nullptr; // Parser error, invalid value in keyframe selector
         if (range.atEnd())
-            return result.release();
+            return result;
         if (range.consume().type() != CommaToken)
             return nullptr; // Parser error
     }

@@ -105,7 +105,7 @@ Blob* Blob::create(ExecutionContext* context, const HeapVector<ArrayBufferOrArra
     populateBlobData(blobData.get(), blobParts, normalizeLineEndingsToNative);
 
     long long blobSize = blobData->length();
-    return new Blob(BlobDataHandle::create(blobData.release(), blobSize));
+    return new Blob(BlobDataHandle::create(std::move(blobData), blobSize));
 }
 
 Blob* Blob::create(const unsigned char* data, size_t bytes, const String& contentType)
@@ -117,7 +117,7 @@ Blob* Blob::create(const unsigned char* data, size_t bytes, const String& conten
     blobData->appendBytes(data, bytes);
     long long blobSize = blobData->length();
 
-    return new Blob(BlobDataHandle::create(blobData.release(), blobSize));
+    return new Blob(BlobDataHandle::create(std::move(blobData), blobSize));
 }
 
 // static
@@ -180,7 +180,7 @@ Blob* Blob::slice(long long start, long long end, const String& contentType, Exc
     OwnPtr<BlobData> blobData = BlobData::create();
     blobData->setContentType(contentType);
     blobData->appendBlob(m_blobDataHandle, start, length);
-    return Blob::create(BlobDataHandle::create(blobData.release(), length));
+    return Blob::create(BlobDataHandle::create(std::move(blobData), length));
 }
 
 void Blob::close(ExecutionContext* executionContext, ExceptionState& exceptionState)
@@ -201,7 +201,7 @@ void Blob::close(ExecutionContext* executionContext, ExceptionState& exceptionSt
     // (e.g., XHR.send()) consider them as empty.
     OwnPtr<BlobData> blobData = BlobData::create();
     blobData->setContentType(type());
-    m_blobDataHandle = BlobDataHandle::create(blobData.release(), 0);
+    m_blobDataHandle = BlobDataHandle::create(std::move(blobData), 0);
     m_isClosed = true;
 }
 

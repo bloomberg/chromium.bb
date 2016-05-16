@@ -277,7 +277,7 @@ void ResourceFetcher::requestLoadStarted(Resource* resource, const FetchRequest&
         populateResourceTiming(info.get(), resource);
         info->clearLoadTimings();
         info->setLoadFinishTime(info->initialTime());
-        m_scheduledResourceTimingReports.append(info.release());
+        m_scheduledResourceTimingReports.append(std::move(info));
         if (!m_resourceTimingReportTimer.isActive())
             m_resourceTimingReportTimer.startOneShot(0, BLINK_FROM_HERE);
     }
@@ -292,7 +292,7 @@ static PassOwnPtr<TracedValue> urlForTraceEvent(const KURL& url)
 {
     OwnPtr<TracedValue> value = TracedValue::create();
     value->setString("url", url.getString());
-    return value.release();
+    return value;
 }
 
 Resource* ResourceFetcher::resourceForStaticData(const FetchRequest& request, const ResourceFactory& factory, const SubstituteData& substituteData)
@@ -595,7 +595,7 @@ void ResourceFetcher::storeResourceTimingInitiatorInformation(Resource* resource
     }
 
     if (!isMainResource || context().updateTimingInfoForIFrameNavigation(info.get()))
-        m_resourceTimingInfoMap.add(resource, info.release());
+        m_resourceTimingInfoMap.add(resource, std::move(info));
 }
 
 ResourceFetcher::RevalidationPolicy ResourceFetcher::determineRevalidationPolicy(Resource::Type type, const FetchRequest& fetchRequest, Resource* existingResource, bool isStaticData) const

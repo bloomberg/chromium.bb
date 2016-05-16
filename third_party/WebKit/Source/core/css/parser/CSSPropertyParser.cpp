@@ -1551,7 +1551,7 @@ static CSSValue* consumePath(CSSParserTokenRange& range)
     range = functionRange;
     if (byteStream->isEmpty())
         return cssValuePool().createIdentifierValue(CSSValueNone);
-    return CSSPathValue::create(byteStream.release());
+    return CSSPathValue::create(std::move(byteStream));
 }
 
 static CSSValue* consumePathOrNone(CSSParserTokenRange& range)

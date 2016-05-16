@@ -236,7 +236,7 @@ public:
         request->setCharset(charset());
         request->setDefer(m_defer);
         request->setIntegrityMetadata(m_integrityMetadata);
-        return request.release();
+        return request;
     }
 
 private:
@@ -736,7 +736,7 @@ void TokenPreloadScanner::scanCommon(const Token& token, const SegmentedString& 
             scanner.handlePictureSourceURL(m_pictureData);
         OwnPtr<PreloadRequest> request = scanner.createPreloadRequest(m_predictedBaseElementURL, source, m_clientHintsPreferences, m_pictureData, m_documentParameters->referrerPolicy);
         if (request)
-            requests.append(request.release());
+            requests.append(std::move(request));
         return;
     }
     default: {

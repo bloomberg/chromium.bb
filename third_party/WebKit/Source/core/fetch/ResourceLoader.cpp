@@ -247,7 +247,7 @@ void ResourceLoader::didReceiveResponse(WebURLLoader*, const WebURLResponse& res
         }
     }
 
-    m_resource->responseReceived(resourceResponse, handle.release());
+    m_resource->responseReceived(resourceResponse, std::move(handle));
     if (m_state == ConnectionStateReleased)
         return;
 

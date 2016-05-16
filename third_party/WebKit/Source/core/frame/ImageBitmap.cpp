@@ -37,7 +37,7 @@ static PassOwnPtr<uint8_t[]> copySkImageData(SkImage* input, SkImageInfo info)
 {
     OwnPtr<uint8_t[]> dstPixels = adoptArrayPtr(new uint8_t[input->width() * input->height() * info.bytesPerPixel()]);
     input->readPixels(info, dstPixels.get(), input->width() * info.bytesPerPixel(), 0, 0);
-    return dstPixels.release();
+    return dstPixels;
 }
 
 static PassRefPtr<SkImage> newSkImageFromRaster(SkImageInfo info, PassOwnPtr<uint8_t[]> imagePixels, int imageRowBytes)
@@ -81,14 +81,14 @@ static PassRefPtr<SkImage> flipSkImageVertically(SkImage* input, AlphaDispositio
         int bottomFirstElement = (height - 1 - i) * imageRowBytes;
         std::swap_ranges(imagePixels.get() + topFirstElement, imagePixels.get() + topLastElement, imagePixels.get() + bottomFirstElement);
     }
-    return newSkImageFromRaster(info, imagePixels.release(), imageRowBytes);
+    return newSkImageFromRaster(info, std::move(imagePixels), imageRowBytes);
 }
 
 static PassRefPtr<SkImage> premulSkImageToUnPremul(SkImage* input)
 {
     SkImageInfo info = SkImageInfo::Make(input->width(), input->height(), kN32_SkColorType, kUnpremul_SkAlphaType);
     OwnPtr<uint8_t[]> dstPixels = copySkImageData(input, info);
-    return newSkImageFromRaster(info, dstPixels.release(), input->width() * info.bytesPerPixel());
+    return newSkImageFromRaster(info, std::move(dstPixels), input->width() * info.bytesPerPixel());
 }
 
 PassRefPtr<SkImage> ImageBitmap::getSkImageFromDecoder(PassOwnPtr<ImageDecoder> decoder)
@@ -119,7 +119,7 @@ static PassRefPtr<StaticBitmapImage> cropImage(Image* image, const IntRect& crop
     if (srcRect.isEmpty() && !premultiplyAlpha) {
         SkImageInfo info = SkImageInfo::Make(cropRect.width(), cropRect.height(), kN32_SkColorType, kUnpremul_SkAlphaType);
         OwnPtr<uint8_t[]> dstPixels = adoptArrayPtr(new uint8_t[cropRect.width() * cropRect.height() * info.bytesPerPixel()]());
-        return StaticBitmapImage::create(newSkImageFromRaster(info, dstPixels.release(), cropRect.width() * info.bytesPerPixel()));
+        return StaticBitmapImage::create(newSkImageFromRaster(info, std::move(dstPixels), cropRect.width() * info.bytesPerPixel()));
     }
 
     RefPtr<SkImage> skiaImage = image->imageForCurrentFrame();
@@ -131,7 +131,7 @@ static PassRefPtr<StaticBitmapImage> cropImage(Image* image, const IntRect& crop
         if (!decoder)
             return nullptr;
         decoder->setData(image->data(), true);
-        skiaImage = ImageBitmap::getSkImageFromDecoder(decoder.release());
+        skiaImage = ImageBitmap::getSkImageFromDecoder(std::move(decoder));
         if (!skiaImage)
             return nullptr;
     }
@@ -288,7 +288,7 @@ ImageBitmap::ImageBitmap(ImageData* data, const IntRect& cropRect, const ImageBi
                     }
                 }
             }
-            m_image = StaticBitmapImage::create(newSkImageFromRaster(info, copiedDataBuffer.release(), dstPixelBytesPerRow));
+            m_image = StaticBitmapImage::create(newSkImageFromRaster(info, std::move(copiedDataBuffer), dstPixelBytesPerRow));
         }
         m_image->setPremultiplied(premultiplyAlpha);
         return;
@@ -414,7 +414,7 @@ PassOwnPtr<uint8_t[]> ImageBitmap::copyBitmapData(AlphaDisposition alphaOp)
 {
     SkImageInfo info = SkImageInfo::Make(width(), height(), kRGBA_8888_SkColorType, (alphaOp == PremultiplyAlpha) ? kPremul_SkAlphaType : kUnpremul_SkAlphaType);
     OwnPtr<uint8_t[]> dstPixels = copySkImageData(m_image->imageForCurrentFrame().get(), info);
-    return dstPixels.release();
+    return dstPixels;
 }
 
 unsigned long ImageBitmap::width() const

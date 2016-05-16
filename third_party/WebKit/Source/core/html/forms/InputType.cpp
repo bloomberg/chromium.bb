@@ -105,7 +105,7 @@ static PassOwnPtr<InputTypeFactoryMap> createInputTypeFactoryMap()
     map->add(InputTypeNames::url, URLInputType::create);
     map->add(InputTypeNames::week, WeekInputType::create);
     // No need to register "text" because it is the default type.
-    return map.release();
+    return map;
 }
 
 static const InputTypeFactoryMap* factoryMap()

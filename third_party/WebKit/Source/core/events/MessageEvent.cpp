@@ -200,7 +200,7 @@ MessagePortArray MessageEvent::ports() const
 
 void MessageEvent::entangleMessagePorts(ExecutionContext* context)
 {
-    m_ports = MessagePort::entanglePorts(*context, m_channels.release());
+    m_ports = MessagePort::entanglePorts(*context, std::move(m_channels));
 }
 
 DEFINE_TRACE(MessageEvent)

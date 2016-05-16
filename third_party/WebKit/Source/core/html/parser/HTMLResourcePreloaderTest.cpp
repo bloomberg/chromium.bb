@@ -65,7 +65,7 @@ protected:
         if (testCase.isCORS)
             preloadRequest->setCrossOrigin(CrossOriginAttributeAnonymous);
         HTMLResourcePreloader* preloader = HTMLResourcePreloader::create(m_dummyPageHolder->document());
-        preloader->preload(preloadRequest.release(), networkHints);
+        preloader->preload(std::move(preloadRequest), networkHints);
         ASSERT_TRUE(networkHints.didPreconnect());
         ASSERT_EQ(testCase.isCORS, networkHints.isCrossOrigin());
         ASSERT_EQ(testCase.isHTTPS, networkHints.isHTTPS());

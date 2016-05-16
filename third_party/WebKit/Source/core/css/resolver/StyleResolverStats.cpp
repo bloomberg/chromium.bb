@@ -87,7 +87,7 @@ PassOwnPtr<TracedValue> StyleResolverStats::toTracedValue() const
     tracedValue->setInteger("elementsStyled", elementsStyled);
     tracedValue->setInteger("pseudoElementsStyled", pseudoElementsStyled);
     tracedValue->setInteger("baseStylesUsed", baseStylesUsed);
-    return tracedValue.release();
+    return tracedValue;
 }
 
 

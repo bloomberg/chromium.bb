@@ -14,7 +14,7 @@ void ResourcePreloader::takeAndPreload(PreloadRequestStream& r)
     requests.swap(r);
 
     for (PreloadRequestStream::iterator it = requests.begin(); it != requests.end(); ++it)
-        preload(it->release(), networkHintsInterface);
+        preload(std::move(*it), networkHintsInterface);
 }
 
 } // namespace blink

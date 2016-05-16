@@ -222,7 +222,7 @@ PassOwnPtr<SavedFormState> SavedFormState::deserialize(const Vector<String>& sta
             return nullptr;
         savedFormState->appendControlState(AtomicString(name), AtomicString(type), state);
     }
-    return savedFormState.release();
+    return savedFormState;
 }
 
 void SavedFormState::serializeTo(Vector<String>& stateVector) const
@@ -493,7 +493,7 @@ void FormController::formStatesFromStateVector(const Vector<String>& stateVector
             i = 0;
             break;
         }
-        map.add(formKey, state.release());
+        map.add(formKey, std::move(state));
     }
     if (i != stateVector.size())
         map.clear();

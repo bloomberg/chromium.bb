@@ -238,7 +238,7 @@ void ImageBitmapFactories::ImageBitmapLoader::decodeImageOnDecoderThread(WebTask
     RefPtr<SkImage> frame;
     if (decoder) {
         decoder->setData(sharedBuffer.get(), true);
-        frame = ImageBitmap::getSkImageFromDecoder(decoder.release());
+        frame = ImageBitmap::getSkImageFromDecoder(std::move(decoder));
     }
     taskRunner->postTask(BLINK_FROM_HERE, threadSafeBind(&ImageBitmapFactories::ImageBitmapLoader::resolvePromiseOnOriginalThread, AllowCrossThreadAccess(this), frame.release()));
 }

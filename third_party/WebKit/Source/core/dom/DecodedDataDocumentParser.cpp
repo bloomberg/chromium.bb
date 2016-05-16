@@ -57,7 +57,7 @@ TextResourceDecoder* DecodedDataDocumentParser::decoder()
 
 PassOwnPtr<TextResourceDecoder> DecodedDataDocumentParser::takeDecoder()
 {
-    return m_decoder.release();
+    return std::move(m_decoder);
 }
 
 void DecodedDataDocumentParser::appendBytes(const char* data, size_t length)

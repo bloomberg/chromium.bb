@@ -242,7 +242,7 @@ void CanvasAsyncBlobCreator::encodeRowsJpegOnMainThread()
     ASSERT(m_idleTaskStatus == IdleTaskSwitchedToMainThreadTask);
 
     // Continue encoding from the last completed row
-    if (JPEGImageEncoder::encodeWithPreInitializedState(m_jpegEncoderState.release(), m_data->data(), m_numRowsCompleted)) {
+    if (JPEGImageEncoder::encodeWithPreInitializedState(std::move(m_jpegEncoderState), m_data->data(), m_numRowsCompleted)) {
         this->createBlobAndInvokeCallback();
     } else {
         this->createNullAndInvokeCallback();

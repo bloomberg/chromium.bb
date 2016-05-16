@@ -39,13 +39,13 @@ CSSParserSelector::~CSSParserSelector()
     if (!m_tagHistory)
         return;
     Vector<OwnPtr<CSSParserSelector>, 16> toDelete;
-    OwnPtr<CSSParserSelector> selector = m_tagHistory.release();
+    OwnPtr<CSSParserSelector> selector = std::move(m_tagHistory);
     while (true) {
-        OwnPtr<CSSParserSelector> next = selector->m_tagHistory.release();
-        toDelete.append(selector.release());
+        OwnPtr<CSSParserSelector> next = std::move(selector->m_tagHistory);
+        toDelete.append(std::move(selector));
         if (!next)
             break;
-        selector = next.release();
+        selector = std::move(next);
     }
 }
 
@@ -92,15 +92,15 @@ void CSSParserSelector::appendTagHistory(CSSSelector::RelationType relation, Pas
 PassOwnPtr<CSSParserSelector> CSSParserSelector::releaseTagHistory()
 {
     setRelation(CSSSelector::SubSelector);
-    return m_tagHistory.release();
+    return std::move(m_tagHistory);
 }
 
 void CSSParserSelector::prependTagSelector(const QualifiedName& tagQName, bool isImplicit)
 {
     OwnPtr<CSSParserSelector> second = CSSParserSelector::create();
-    second->m_selector = m_selector.release();
-    second->m_tagHistory = m_tagHistory.release();
-    m_tagHistory = second.release();
+    second->m_selector = std::move(m_selector);
+    second->m_tagHistory = std::move(m_tagHistory);
+    m_tagHistory = std::move(second);
     m_selector = adoptPtr(new CSSSelector(tagQName, isImplicit));
 }
 

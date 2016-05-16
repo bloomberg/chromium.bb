@@ -87,7 +87,7 @@ void MessagePort::postMessage(ExecutionContext* context, PassRefPtr<SerializedSc
         getExecutionContext()->addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, "MessagePort cannot send an ArrayBuffer as a transferable object yet. See http://crbug.com/334408"));
 
     WebString messageString = message->toWireString();
-    OwnPtr<WebMessagePortChannelArray> webChannels = toWebMessagePortChannelArray(channels.release());
+    OwnPtr<WebMessagePortChannelArray> webChannels = toWebMessagePortChannelArray(std::move(channels));
     m_entangledChannel->postMessage(messageString, webChannels.leakPtr());
 }
 
@@ -100,7 +100,7 @@ PassOwnPtr<WebMessagePortChannelArray> MessagePort::toWebMessagePortChannelArray
         for (size_t i = 0; i < channels->size(); ++i)
             (*webChannels)[i] = (*channels)[i].leakPtr();
     }
-    return webChannels.release();
+    return webChannels;
 }
 
 // static
@@ -109,14 +109,14 @@ MessagePortArray* MessagePort::toMessagePortArray(ExecutionContext* context, con
     OwnPtr<MessagePortChannelArray> channels = adoptPtr(new MessagePortChannelArray(webChannels.size()));
     for (size_t i = 0; i < webChannels.size(); ++i)
         (*channels)[i] = adoptPtr(webChannels[i]);
-    return MessagePort::entanglePorts(*context, channels.release());
+    return MessagePort::entanglePorts(*context, std::move(channels));
 }
 
 PassOwnPtr<WebMessagePortChannel> MessagePort::disentangle()
 {
     DCHECK(m_entangledChannel);
     m_entangledChannel->setClient(0);
-    return m_entangledChannel.release();
+    return std::move(m_entangledChannel);
 }
 
 // Invoked to notify us that there are messages available for this port.
@@ -204,7 +204,7 @@ void MessagePort::dispatchMessages()
         if (getExecutionContext()->isWorkerGlobalScope() && toWorkerGlobalScope(getExecutionContext())->isClosing())
             return;
 
-        MessagePortArray* ports = MessagePort::entanglePorts(*getExecutionContext(), channels.release());
+        MessagePortArray* ports = MessagePort::entanglePorts(*getExecutionContext(), std::move(channels));
         Event* evt = MessageEvent::create(ports, message.release());
 
         dispatchEvent(evt);
@@ -248,7 +248,7 @@ PassOwnPtr<MessagePortChannelArray> MessagePort::disentanglePorts(ExecutionConte
     OwnPtr<MessagePortChannelArray> portArray = adoptPtr(new MessagePortChannelArray(ports.size()));
     for (unsigned i = 0; i < ports.size(); ++i)
         (*portArray)[i] = ports[i]->disentangle();
-    return portArray.release();
+    return portArray;
 }
 
 MessagePortArray* MessagePort::entanglePorts(ExecutionContext& context, PassOwnPtr<MessagePortChannelArray> channels)
@@ -261,7 +261,7 @@ MessagePortArray* MessagePort::entanglePorts(ExecutionContext& context, PassOwnP
     MessagePortArray* portArray = new MessagePortArray(channels->size());
     for (unsigned i = 0; i < channels->size(); ++i) {
         MessagePort* port = MessagePort::create(context);
-        port->entangle((*channels)[i].release());
+        port->entangle(std::move((*channels)[i]));
         (*portArray)[i] = port;
     }
     return portArray;

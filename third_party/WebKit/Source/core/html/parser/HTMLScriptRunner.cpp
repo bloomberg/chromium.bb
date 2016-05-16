@@ -63,7 +63,7 @@ PassOwnPtr<TracedValue> getTraceArgsForScriptElement(Element* element, const Tex
         value->setInteger("lineNumber", textPosition.m_line.oneBasedInt());
         value->setInteger("columnNumber", textPosition.m_column.oneBasedInt());
     }
-    return value.release();
+    return value;
 }
 
 bool doExecuteScript(Element* scriptElement, const ScriptSourceCode& sourceCode, const TextPosition& textPosition)

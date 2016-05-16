@@ -102,9 +102,9 @@ BackgroundHTMLParser::BackgroundHTMLParser(PassRefPtr<WeakReference<BackgroundHT
     , m_parser(config->parser)
     , m_pendingTokens(adoptPtr(new CompactHTMLTokenStream))
     , m_pendingTokenLimit(config->pendingTokenLimit)
-    , m_xssAuditor(config->xssAuditor.release())
+    , m_xssAuditor(std::move(config->xssAuditor))
     , m_preloadScanner(adoptPtr(new TokenPreloadScanner(documentURL, std::move(cachedDocumentParameters), mediaValuesCachedData)))
-    , m_decoder(config->decoder.release())
+    , m_decoder(std::move(config->decoder))
     , m_loadingTaskRunner(std::move(loadingTaskRunner))
     , m_parsedChunkQueue(config->parsedChunkQueue.release())
     , m_startingScript(false)
@@ -171,8 +171,8 @@ void BackgroundHTMLParser::updateDocument(const String& decodedData)
 void BackgroundHTMLParser::resumeFrom(PassOwnPtr<Checkpoint> checkpoint)
 {
     m_parser = checkpoint->parser;
-    m_token = checkpoint->token.release();
-    m_tokenizer = checkpoint->tokenizer.release();
+    m_token = std::move(checkpoint->token);
+    m_tokenizer = std::move(checkpoint->tokenizer);
     m_treeBuilderSimulator.setState(checkpoint->treeBuilderState);
     m_input.rewindTo(checkpoint->inputCheckpoint, checkpoint->unparsedInput);
     m_preloadScanner->rewindTo(checkpoint->preloadScannerCheckpoint);
@@ -242,7 +242,7 @@ void BackgroundHTMLParser::pumpTokenizer()
 
             if (OwnPtr<XSSInfo> xssInfo = m_xssAuditor->filterToken(FilterTokenRequest(*m_token, m_sourceTracker, m_tokenizer->shouldAllowCDATA()))) {
                 xssInfo->m_textPosition = position;
-                m_pendingXSSInfos.append(xssInfo.release());
+                m_pendingXSSInfos.append(std::move(xssInfo));
             }
 
             CompactHTMLToken token(m_token.get(), position);
@@ -297,12 +297,12 @@ void BackgroundHTMLParser::sendTokensToMainThread()
     chunk->treeBuilderState = m_treeBuilderSimulator.state();
     chunk->inputCheckpoint = m_input.createCheckpoint(m_pendingTokens->size());
     chunk->preloadScannerCheckpoint = m_preloadScanner->createCheckpoint();
-    chunk->tokens = m_pendingTokens.release();
+    chunk->tokens = std::move(m_pendingTokens);
     chunk->startingScript = m_startingScript;
     chunk->likelyDocumentWriteScriptIndices.swap(m_likelyDocumentWriteScriptIndices);
     m_startingScript = false;
 
-    bool isEmpty = m_parsedChunkQueue->enqueue(chunk.release());
+    bool isEmpty = m_parsedChunkQueue->enqueue(std::move(chunk));
     if (isEmpty) {
         m_loadingTaskRunner->postTask(
             BLINK_FROM_HERE,

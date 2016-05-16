@@ -36,21 +36,21 @@ MatrixTransformComponent* MatrixTransformComponent::perspective(double length)
     OwnPtr<TransformationMatrix> matrix = TransformationMatrix::create();
     if (length != 0)
         matrix->setM34(-1 / length);
-    return new MatrixTransformComponent(matrix.release(), PerspectiveType);
+    return new MatrixTransformComponent(std::move(matrix), PerspectiveType);
 }
 
 MatrixTransformComponent* MatrixTransformComponent::rotate(double angle)
 {
     OwnPtr<TransformationMatrix> matrix = TransformationMatrix::create();
     matrix->rotate(angle);
-    return new MatrixTransformComponent(matrix.release(), RotationType);
+    return new MatrixTransformComponent(std::move(matrix), RotationType);
 }
 
 MatrixTransformComponent* MatrixTransformComponent::rotate3d(double angle, double x, double y, double z)
 {
     OwnPtr<TransformationMatrix> matrix = TransformationMatrix::create();
     matrix->rotate3d(x, y, z, angle);
-    return new MatrixTransformComponent(matrix.release(), Rotation3DType);
+    return new MatrixTransformComponent(std::move(matrix), Rotation3DType);
 }
 
 MatrixTransformComponent* MatrixTransformComponent::scale(double x, double y)
@@ -58,7 +58,7 @@ MatrixTransformComponent* MatrixTransformComponent::scale(double x, double y)
     OwnPtr<TransformationMatrix> matrix = TransformationMatrix::create();
     matrix->setM11(x);
     matrix->setM22(y);
-    return new MatrixTransformComponent(matrix.release(), ScaleType);
+    return new MatrixTransformComponent(std::move(matrix), ScaleType);
 }
 
 MatrixTransformComponent* MatrixTransformComponent::scale3d(double x, double y, double z)
@@ -67,7 +67,7 @@ MatrixTransformComponent* MatrixTransformComponent::scale3d(double x, double y, 
     matrix->setM11(x);
     matrix->setM22(y);
     matrix->setM33(z);
-    return new MatrixTransformComponent(matrix.release(), Scale3DType);
+    return new MatrixTransformComponent(std::move(matrix), Scale3DType);
 }
 
 MatrixTransformComponent* MatrixTransformComponent::skew(double ax, double ay)
@@ -78,7 +78,7 @@ MatrixTransformComponent* MatrixTransformComponent::skew(double ax, double ay)
     OwnPtr<TransformationMatrix> matrix = TransformationMatrix::create();
     matrix->setM12(tanAy);
     matrix->setM21(tanAx);
-    return new MatrixTransformComponent(matrix.release(), SkewType);
+    return new MatrixTransformComponent(std::move(matrix), SkewType);
 }
 
 MatrixTransformComponent* MatrixTransformComponent::translate(double x, double y)
@@ -86,7 +86,7 @@ MatrixTransformComponent* MatrixTransformComponent::translate(double x, double y
     OwnPtr<TransformationMatrix> matrix = TransformationMatrix::create();
     matrix->setM41(x);
     matrix->setM42(y);
-    return new MatrixTransformComponent(matrix.release(), TranslationType);
+    return new MatrixTransformComponent(std::move(matrix), TranslationType);
 }
 
 MatrixTransformComponent* MatrixTransformComponent::translate3d(double x, double y, double z)
@@ -95,7 +95,7 @@ MatrixTransformComponent* MatrixTransformComponent::translate3d(double x, double
     matrix->setM41(x);
     matrix->setM42(y);
     matrix->setM43(z);
-    return new MatrixTransformComponent(matrix.release(), Translation3DType);
+    return new MatrixTransformComponent(std::move(matrix), Translation3DType);
 }
 
 } // namespace blink

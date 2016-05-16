@@ -256,7 +256,7 @@ public:
 
     PassOwnPtr<DoctypeData> releaseDoctypeData()
     {
-        return m_doctypeData.release();
+        return std::move(m_doctypeData);
     }
 
     /* Start/End Tag Tokens */

@@ -628,7 +628,7 @@ ScrollResult EventHandler::scrollBox(LayoutBox* box,
     scrollStateData->from_user_input = true;
     scrollStateData->delta_consumed_for_scroll_sequence = false;
     ScrollState* scrollState =
-        ScrollState::create(scrollStateData.release());
+        ScrollState::create(std::move(scrollStateData));
 
     customizedScroll(*node, *scrollState);
 
@@ -2376,7 +2376,7 @@ WebInputEventResult EventHandler::handleGestureScrollEnd(const PlatformGestureEv
             scrollStateData->from_user_input = true;
             scrollStateData->is_direct_manipulation = true;
             scrollStateData->delta_consumed_for_scroll_sequence = m_deltaConsumedForScrollSequence;
-            ScrollState* scrollState = ScrollState::create(scrollStateData.release());
+            ScrollState* scrollState = ScrollState::create(std::move(scrollStateData));
             customizedScroll(*node, *scrollState);
         }
     }
@@ -2417,7 +2417,7 @@ WebInputEventResult EventHandler::handleGestureScrollBegin(const PlatformGesture
         scrollStateData->is_beginning = true;
         scrollStateData->from_user_input = true;
         scrollStateData->delta_consumed_for_scroll_sequence = m_deltaConsumedForScrollSequence;
-        ScrollState* scrollState = ScrollState::create(scrollStateData.release());
+        ScrollState* scrollState = ScrollState::create(std::move(scrollStateData));
         customizedScroll(*m_scrollGestureHandlingNode.get(), *scrollState);
     } else {
         if (m_frame->isMainFrame())
@@ -2485,7 +2485,7 @@ WebInputEventResult EventHandler::handleGestureScrollUpdate(const PlatformGestur
             scrollStateData->is_in_inertial_phase = gestureEvent.inertial();
             scrollStateData->from_user_input = true;
             scrollStateData->delta_consumed_for_scroll_sequence = m_deltaConsumedForScrollSequence;
-            ScrollState* scrollState = ScrollState::create(scrollStateData.release());
+            ScrollState* scrollState = ScrollState::create(std::move(scrollStateData));
             if (m_previousGestureScrolledNode) {
                 // The ScrollState needs to know what the current
                 // native scrolling element is, so that for an

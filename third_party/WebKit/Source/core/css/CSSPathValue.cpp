@@ -34,7 +34,7 @@ CSSPathValue* createPathValue()
     // Need to be registered as LSan ignored, as it will be reachable and
     // separately referred to by emptyPathValue() callers.
     LEAK_SANITIZER_IGNORE_OBJECT(pathByteStream.get());
-    return CSSPathValue::create(pathByteStream.release());
+    return CSSPathValue::create(std::move(pathByteStream));
 }
 
 } // namespace
