@@ -1721,9 +1721,9 @@ const FeatureEntry kFeatureEntries[] = {
      ENABLE_DISABLE_VALUE_TYPE(switches::kEnableInputImeAPI,
                                switches::kDisableInputImeAPI)},
 #endif  // defined(OS_WIN) || defined(OS_LINUX)
-    {"enable-experimental-framework", IDS_FLAGS_EXPERIMENTAL_FRAMEWORK_NAME,
-     IDS_FLAGS_EXPERIMENTAL_FRAMEWORK_DESCRIPTION, kOsAll,
-     FEATURE_VALUE_TYPE(features::kExperimentalFramework)},
+    {"enable-origin-trials", IDS_FLAGS_ORIGIN_TRIALS_NAME,
+     IDS_FLAGS_ORIGIN_TRIALS_DESCRIPTION, kOsAll,
+     FEATURE_VALUE_TYPE(features::kOriginTrials)},
     {"enable-brotli", IDS_FLAGS_ENABLE_BROTLI_NAME,
      IDS_FLAGS_ENABLE_BROTLI_DESCRIPTION, kOsAll,
      FEATURE_VALUE_TYPE(features::kBrotliEncoding)},

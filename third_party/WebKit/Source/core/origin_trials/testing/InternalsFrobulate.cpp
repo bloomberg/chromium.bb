@@ -14,7 +14,7 @@ namespace blink {
 bool InternalsFrobulate::frobulate(ScriptState* scriptState, Internals& internals, ExceptionState& exceptionState)
 {
     String errorMessage;
-    if (!OriginTrials::experimentalFrameworkSampleAPIEnabled(scriptState->getExecutionContext(), errorMessage)) {
+    if (!OriginTrials::originTrialsSampleAPIEnabled(scriptState->getExecutionContext(), errorMessage)) {
         exceptionState.throwDOMException(NotSupportedError, errorMessage);
         return false;
     }

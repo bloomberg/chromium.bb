@@ -64,8 +64,8 @@ public:
     BLINK_EXPORT static void forceDisplayList2dCanvas(bool);
     BLINK_EXPORT static void forceDisable2dCanvasCopyOnWrite(bool);
 
-    BLINK_EXPORT static void enableExperimentalFramework(bool);
-    BLINK_EXPORT static bool isExperimentalFrameworkEnabled();
+    BLINK_EXPORT static void enableOriginTrials(bool);
+    BLINK_EXPORT static bool isOriginTrialsEnabled();
 
     BLINK_EXPORT static void enableApplicationCache(bool);
     BLINK_EXPORT static void enableAudioOutputDevices(bool);

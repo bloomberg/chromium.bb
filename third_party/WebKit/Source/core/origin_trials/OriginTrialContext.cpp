@@ -243,7 +243,7 @@ void OriginTrialContext::addTokens(const Vector<String>& tokens)
 
 bool OriginTrialContext::isFeatureEnabled(const String& featureName, String* errorMessage, WebTrialTokenValidator* validator)
 {
-    if (!RuntimeEnabledFeatures::experimentalFrameworkEnabled()) {
+    if (!RuntimeEnabledFeatures::originTrialsEnabled()) {
         // Do not set an error message. When the framework is disabled, it
         // should behave the same as when only runtime flags are used.
         return false;

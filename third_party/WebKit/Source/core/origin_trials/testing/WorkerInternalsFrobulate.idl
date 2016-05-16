@@ -3,6 +3,6 @@
 // found in the LICENSE file.
 
 partial interface WorkerInternals {
-    [OriginTrialEnabled=ExperimentalFrameworkSampleAPI] readonly attribute boolean frobulate;
+    [OriginTrialEnabled=OriginTrialsSampleAPI] readonly attribute boolean frobulate;
 };
 

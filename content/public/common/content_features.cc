@@ -30,10 +30,6 @@ const base::Feature kDownloadResumption{"DownloadResumption",
 const base::Feature kDocumentWriteEvaluator{"DocumentWriteEvaluator",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
-// The Experimental Framework for controlling access to API experiments.
-const base::Feature kExperimentalFramework{"ExperimentalFramework",
-                                           base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enable the material design playback UI for media elements.  This is always
 // on for OS_ANDROID, but may be enabled by experiment for other platforms.
 const base::Feature kNewMediaPlaybackUi{"NewMediaPlaybackUi",
@@ -57,6 +53,10 @@ const base::Feature kNonValidatingReloadOnRefreshContent{
 const base::Feature kOptimizeIPCForSmallResource{
     "OptimizeForSmallResource",
     base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Origin Trials for controlling access to feature/API experiments.
+const base::Feature kOriginTrials{"OriginTrials",
+                                  base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Partial support for pointer event feature.
 const base::Feature kPointerEvents{"PointerEvent",

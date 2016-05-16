@@ -120,16 +120,6 @@ void WebRuntimeFeatures::enableExperimentalCanvasFeatures(bool enable)
     RuntimeEnabledFeatures::setExperimentalCanvasFeaturesEnabled(enable);
 }
 
-void WebRuntimeFeatures::enableExperimentalFramework(bool enable)
-{
-    RuntimeEnabledFeatures::setExperimentalFrameworkEnabled(enable);
-}
-
-bool WebRuntimeFeatures::isExperimentalFrameworkEnabled()
-{
-    return RuntimeEnabledFeatures::experimentalFrameworkEnabled();
-}
-
 void WebRuntimeFeatures::enableFastMobileScrolling(bool enable)
 {
     RuntimeEnabledFeatures::setFastMobileScrollingEnabled(enable);
@@ -183,6 +173,16 @@ void WebRuntimeFeatures::enableNetworkInformation(bool enable)
 void WebRuntimeFeatures::enableOrientationEvent(bool enable)
 {
     RuntimeEnabledFeatures::setOrientationEventEnabled(enable);
+}
+
+void WebRuntimeFeatures::enableOriginTrials(bool enable)
+{
+    RuntimeEnabledFeatures::setOriginTrialsEnabled(enable);
+}
+
+bool WebRuntimeFeatures::isOriginTrialsEnabled()
+{
+    return RuntimeEnabledFeatures::originTrialsEnabled();
 }
 
 void WebRuntimeFeatures::enablePagePopup(bool enable)

@@ -77,18 +77,18 @@ private:
 class OriginTrialContextTest : public ::testing::Test {
 protected:
     OriginTrialContextTest()
-        : m_frameworkWasEnabled(RuntimeEnabledFeatures::experimentalFrameworkEnabled())
+        : m_frameworkWasEnabled(RuntimeEnabledFeatures::originTrialsEnabled())
         , m_executionContext(new NullExecutionContext())
         , m_tokenValidator(adoptPtr(new MockTokenValidator()))
         , m_originTrialContext(new OriginTrialContext(m_executionContext.get()))
         , m_histogramTester(new HistogramTester())
     {
-        RuntimeEnabledFeatures::setExperimentalFrameworkEnabled(true);
+        RuntimeEnabledFeatures::setOriginTrialsEnabled(true);
     }
 
     ~OriginTrialContextTest()
     {
-        RuntimeEnabledFeatures::setExperimentalFrameworkEnabled(m_frameworkWasEnabled);
+        RuntimeEnabledFeatures::setOriginTrialsEnabled(m_frameworkWasEnabled);
     }
 
     MockTokenValidator* tokenValidator() { return m_tokenValidator.get(); }
