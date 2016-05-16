@@ -256,8 +256,8 @@ void ApplyStyleCommand::applyBlockStyle(EditingStyle *style, EditingState* editi
     // addBlockStyleIfNeeded may moveParagraphs, which can remove these endpoints.
     // Calculate start and end indices from the start of the tree that they're in.
     Node& scope = NodeTraversal::highestAncestorOrSelf(*visibleStart.deepEquivalent().anchorNode());
-    Range* startRange = Range::create(document(), firstPositionInNode(&scope), visibleStart.deepEquivalent().parentAnchoredEquivalent());
-    Range* endRange = Range::create(document(), firstPositionInNode(&scope), visibleEnd.deepEquivalent().parentAnchoredEquivalent());
+    Range* startRange = Range::create(document(), Position::firstPositionInNode(&scope), visibleStart.deepEquivalent().parentAnchoredEquivalent());
+    Range* endRange = Range::create(document(), Position::firstPositionInNode(&scope), visibleEnd.deepEquivalent().parentAnchoredEquivalent());
     int startIndex = TextIterator::rangeLength(startRange->startPosition(), startRange->endPosition(), true);
     int endIndex = TextIterator::rangeLength(endRange->startPosition(), endRange->endPosition(), true);
 
@@ -1304,7 +1304,7 @@ void ApplyStyleCommand::splitTextAtStart(const Position& start, const Position& 
 
     Text* text = toText(start.computeContainerNode());
     splitTextNode(text, start.offsetInContainerNode());
-    updateStartEnd(firstPositionInNode(text), newEnd);
+    updateStartEnd(Position::firstPositionInNode(text), newEnd);
 }
 
 void ApplyStyleCommand::splitTextAtEnd(const Position& start, const Position& end)

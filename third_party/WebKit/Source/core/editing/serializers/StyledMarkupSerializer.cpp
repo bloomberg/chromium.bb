@@ -198,7 +198,7 @@ String StyledMarkupSerializer<Strategy>::createMarkup()
         // TODO(hajimehoshi): This is calculated at createMarkupInternal too.
         Node* commonAncestor = Strategy::commonAncestor(*m_start.computeContainerNode(), *m_end.computeContainerNode());
         DCHECK(commonAncestor);
-        HTMLBodyElement* body = toHTMLBodyElement(enclosingElementWithTag(firstPositionInNode(commonAncestor), bodyTag));
+        HTMLBodyElement* body = toHTMLBodyElement(enclosingElementWithTag(Position::firstPositionInNode(commonAncestor), bodyTag));
         HTMLBodyElement* fullySelectedRoot = nullptr;
         // FIXME: Do this for all fully selected blocks, not just the body.
         if (body && areSameRanges(body, m_start, m_end))

@@ -210,7 +210,7 @@ static HTMLElement* highestAncestorToWrapMarkup(const PositionTemplate<Strategy>
 
     Node* checkAncestor = specialCommonAncestor ? specialCommonAncestor : commonAncestor;
     if (checkAncestor->layoutObject()) {
-        HTMLElement* newSpecialCommonAncestor = toHTMLElement(highestEnclosingNodeOfType(firstPositionInNode(checkAncestor), &isPresentationalHTMLElement, CanCrossEditingBoundary, constrainingAncestor));
+        HTMLElement* newSpecialCommonAncestor = toHTMLElement(highestEnclosingNodeOfType(Position::firstPositionInNode(checkAncestor), &isPresentationalHTMLElement, CanCrossEditingBoundary, constrainingAncestor));
         if (newSpecialCommonAncestor)
             specialCommonAncestor = newSpecialCommonAncestor;
     }
@@ -224,7 +224,7 @@ static HTMLElement* highestAncestorToWrapMarkup(const PositionTemplate<Strategy>
     if (!specialCommonAncestor && isTabHTMLSpanElement(commonAncestor))
         specialCommonAncestor = toHTMLSpanElement(commonAncestor);
 
-    if (HTMLAnchorElement* enclosingAnchor = toHTMLAnchorElement(enclosingElementWithTag(firstPositionInNode(specialCommonAncestor ? specialCommonAncestor : commonAncestor), aTag)))
+    if (HTMLAnchorElement* enclosingAnchor = toHTMLAnchorElement(enclosingElementWithTag(Position::firstPositionInNode(specialCommonAncestor ? specialCommonAncestor : commonAncestor), aTag)))
         specialCommonAncestor = enclosingAnchor;
 
     return specialCommonAncestor;

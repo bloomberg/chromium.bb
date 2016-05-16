@@ -210,7 +210,7 @@ void ApplyBlockElementCommand::rangeForParagraphSplittingTextNodesIfNeeded(const
             int startOffset = start.offsetInContainerNode();
             Text* startText = toText(start.computeContainerNode());
             splitTextNode(startText, startOffset);
-            start = firstPositionInNode(startText);
+            start = Position::firstPositionInNode(startText);
             if (isStartAndEndOnSameNode) {
                 DCHECK_GE(end.offsetInContainerNode(), startOffset);
                 end = Position(startText, end.offsetInContainerNode() - startOffset);
@@ -263,7 +263,7 @@ VisiblePosition ApplyBlockElementCommand::endOfNextParagrahSplittingTextNodesIfN
         return endOfNextParagraph;
 
     Text* text = toText(position.computeContainerNode());
-    if (!style->preserveNewline() || !position.offsetInContainerNode() || !isNewLineAtPosition(firstPositionInNode(text)))
+    if (!style->preserveNewline() || !position.offsetInContainerNode() || !isNewLineAtPosition(Position::firstPositionInNode(text)))
         return endOfNextParagraph;
 
     // \n at the beginning of the text node immediately following the current paragraph is trimmed by moveParagraphWithClones.

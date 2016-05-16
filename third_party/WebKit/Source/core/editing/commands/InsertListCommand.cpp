@@ -278,10 +278,10 @@ bool InsertListCommand::doApplyForSingleParagraph(bool forceCreateList, const HT
             if (editingState->isAborted())
                 return false;
 
-            Node* firstChildInList = enclosingListChild(createVisiblePosition(firstPositionInNode(listElement)).deepEquivalent().anchorNode(), listElement);
+            Node* firstChildInList = enclosingListChild(createVisiblePosition(Position::firstPositionInNode(listElement)).deepEquivalent().anchorNode(), listElement);
             Element* outerBlock = firstChildInList && isBlockFlowElement(*firstChildInList) ? toElement(firstChildInList) : listElement;
 
-            moveParagraphWithClones(createVisiblePosition(firstPositionInNode(listElement)), createVisiblePosition(lastPositionInNode(listElement)), newList, outerBlock, editingState);
+            moveParagraphWithClones(createVisiblePosition(Position::firstPositionInNode(listElement)), createVisiblePosition(lastPositionInNode(listElement)), newList, outerBlock, editingState);
             if (editingState->isAborted())
                 return false;
 
@@ -305,7 +305,7 @@ bool InsertListCommand::doApplyForSingleParagraph(bool forceCreateList, const HT
             if (rangeEndIsInList && newList)
                 currentSelection.setEnd(newList, lastOffsetInNode(newList), IGNORE_EXCEPTION);
 
-            setEndingSelection(createVisiblePosition(firstPositionInNode(newList)));
+            setEndingSelection(createVisiblePosition(Position::firstPositionInNode(newList)));
 
             return true;
         }
@@ -332,7 +332,7 @@ void InsertListCommand::unlistifyParagraph(const VisiblePosition& originalStart,
     VisiblePosition end;
     DCHECK(listChildNode);
     if (isHTMLLIElement(*listChildNode)) {
-        start = createVisiblePosition(firstPositionInNode(listChildNode));
+        start = createVisiblePosition(Position::firstPositionInNode(listChildNode));
         end = createVisiblePosition(lastPositionInNode(listChildNode));
         nextListChild = listChildNode->nextSibling();
         previousListChild = listChildNode->previousSibling();

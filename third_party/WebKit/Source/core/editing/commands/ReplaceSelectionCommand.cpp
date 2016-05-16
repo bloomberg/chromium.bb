@@ -549,7 +549,7 @@ void ReplaceSelectionCommand::removeRedundantStylesAndKeepStyleSpanInline(Insert
             // styles from blockquoteNode are allowed to override those from the source document, see <rdar://problem/4930986> and <rdar://problem/5089327>.
             HTMLQuoteElement* blockquoteElement = !context || isMailPasteAsQuotationHTMLBlockQuoteElement(context) ?
                 toHTMLQuoteElement(context) :
-                toHTMLQuoteElement(enclosingNodeOfType(firstPositionInNode(context), isMailHTMLBlockquoteElement, CanCrossEditingBoundary));
+                toHTMLQuoteElement(enclosingNodeOfType(Position::firstPositionInNode(context), isMailHTMLBlockquoteElement, CanCrossEditingBoundary));
             if (blockquoteElement)
                 newInlineStyle->removeStyleFromRulesAndContext(element, document().documentElement());
 
@@ -571,7 +571,7 @@ void ReplaceSelectionCommand::removeRedundantStylesAndKeepStyleSpanInline(Insert
 
         // FIXME: Tolerate differences in id, class, and style attributes.
         if (element->parentNode() && isNonTableCellHTMLBlockElement(element) && areIdenticalElements(*element, *element->parentNode())
-            && createVisiblePosition(firstPositionInNode(element->parentNode())).deepEquivalent() == createVisiblePosition(firstPositionInNode(element)).deepEquivalent()
+            && createVisiblePosition(Position::firstPositionInNode(element->parentNode())).deepEquivalent() == createVisiblePosition(Position::firstPositionInNode(element)).deepEquivalent()
             && createVisiblePosition(lastPositionInNode(element->parentNode())).deepEquivalent() == createVisiblePosition(lastPositionInNode(element)).deepEquivalent()) {
             insertedNodes.willRemoveNodePreservingChildren(*element);
             removeNodePreservingChildren(element, editingState);
@@ -857,12 +857,12 @@ void ReplaceSelectionCommand::handleStyleSpans(InsertedNodes& insertedNodes, Edi
     // styles from blockquoteElement are allowed to override those from the source document, see <rdar://problem/4930986> and <rdar://problem/5089327>.
     HTMLQuoteElement* blockquoteElement = isMailPasteAsQuotationHTMLBlockQuoteElement(context) ?
         toHTMLQuoteElement(context) :
-        toHTMLQuoteElement(enclosingNodeOfType(firstPositionInNode(context), isMailHTMLBlockquoteElement, CanCrossEditingBoundary));
+        toHTMLQuoteElement(enclosingNodeOfType(Position::firstPositionInNode(context), isMailHTMLBlockquoteElement, CanCrossEditingBoundary));
     if (blockquoteElement)
         context = document().documentElement();
 
     // This operation requires that only editing styles to be removed from sourceDocumentStyle.
-    style->prepareToApplyAt(firstPositionInNode(context));
+    style->prepareToApplyAt(Position::firstPositionInNode(context));
 
     // Remove block properties in the span's style. This prevents properties that probably have no effect
     // currently from affecting blocks later if the style is cloned for a new block element during a future
@@ -1153,7 +1153,7 @@ void ReplaceSelectionCommand::doApply(EditingState* editingState)
     if (!m_matchStyle && !enclosingList(insertionPos.computeContainerNode())) {
         if (insertionPos.computeContainerNode()->isTextNode() && insertionPos.offsetInContainerNode() && !insertionPos.atLastEditingPositionForNode()) {
             splitTextNode(toText(insertionPos.computeContainerNode()), insertionPos.offsetInContainerNode());
-            insertionPos = firstPositionInNode(insertionPos.computeContainerNode());
+            insertionPos = Position::firstPositionInNode(insertionPos.computeContainerNode());
         }
 
         if (HTMLElement* elementToSplitTo = elementToSplitToAvoidPastingIntoInlineElementsWithStyle(insertionPos)) {
@@ -1351,7 +1351,7 @@ void ReplaceSelectionCommand::doApply(EditingState* editingState)
                     insertNodeAfter(newListItem, enclosingBlockElement, editingState);
                     if (editingState->isAborted())
                         return;
-                    setEndingSelection(createVisiblePosition(firstPositionInNode(newListItem)));
+                    setEndingSelection(createVisiblePosition(Position::firstPositionInNode(newListItem)));
                 } else {
                     // Use a default paragraph element (a plain div) for the empty paragraph, using the last paragraph
                     // block's style seems to annoy users.
@@ -1482,7 +1482,7 @@ void ReplaceSelectionCommand::addSpacesForSmartReplace(EditingState* editingStat
             insertNodeBefore(node, startNode, editingState);
             if (editingState->isAborted())
                 return;
-            m_startOfInsertedContent = firstPositionInNode(node);
+            m_startOfInsertedContent = Position::firstPositionInNode(node);
         }
     }
 }

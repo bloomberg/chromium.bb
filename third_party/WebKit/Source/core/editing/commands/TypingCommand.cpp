@@ -463,7 +463,7 @@ bool TypingCommand::makeEditableRootEmpty(EditingState* editingState)
     addBlockPlaceholderIfNeeded(root, editingState);
     if (editingState->isAborted())
         return false;
-    setEndingSelection(VisibleSelection(firstPositionInNode(root), TextAffinity::Downstream, endingSelection().isDirectional()));
+    setEndingSelection(VisibleSelection(Position::firstPositionInNode(root), TextAffinity::Downstream, endingSelection().isDirectional()));
 
     return true;
 }
@@ -522,7 +522,7 @@ void TypingCommand::deleteKeyPressed(TextGranularity granularity, bool killRing,
 
         // If we have a caret selection at the beginning of a cell, we have nothing to do.
         Node* enclosingTableCell = enclosingNodeOfType(visibleStart.deepEquivalent(), &isTableCell);
-        if (enclosingTableCell && visibleStart.deepEquivalent() == createVisiblePosition(firstPositionInNode(enclosingTableCell)).deepEquivalent())
+        if (enclosingTableCell && visibleStart.deepEquivalent() == createVisiblePosition(Position::firstPositionInNode(enclosingTableCell)).deepEquivalent())
             return;
 
         // If the caret is at the start of a paragraph after a table, move content into the last table cell.

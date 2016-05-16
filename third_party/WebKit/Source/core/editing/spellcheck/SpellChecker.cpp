@@ -127,7 +127,7 @@ void SpellChecker::didBeginEditing(Element* element)
         bool isTextField = false;
         HTMLTextFormControlElement* enclosingHTMLTextFormControlElement = 0;
         if (!isHTMLTextFormControlElement(*element))
-            enclosingHTMLTextFormControlElement = enclosingTextFormControl(firstPositionInNode(element));
+            enclosingHTMLTextFormControlElement = enclosingTextFormControl(Position::firstPositionInNode(element));
         element = enclosingHTMLTextFormControlElement ? enclosingHTMLTextFormControlElement : element;
         Element* parent = element;
         if (isHTMLTextFormControlElement(*element)) {
@@ -518,7 +518,7 @@ void SpellChecker::chunkAndMarkAllMisspellingsAndBadGrammar(Node* node, const Ep
     TRACE_EVENT0("blink", "SpellChecker::chunkAndMarkAllMisspellingsAndBadGrammar");
     if (!node)
         return;
-    EphemeralRange paragraphRange(firstPositionInNode(node), lastPositionInNode(node));
+    EphemeralRange paragraphRange(Position::firstPositionInNode(node), lastPositionInNode(node));
     TextCheckingParagraph textToCheck(insertedRange, paragraphRange);
     chunkAndMarkAllMisspellingsAndBadGrammar(resolveTextCheckingTypeMask(TextCheckingTypeSpelling | TextCheckingTypeGrammar), textToCheck);
 }

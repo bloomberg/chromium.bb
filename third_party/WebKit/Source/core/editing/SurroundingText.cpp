@@ -79,7 +79,7 @@ void SurroundingText::initialize(const Position& startPosition, const Position& 
     // Same as with the forward range but with the backward range. The range
     // starts at the document's start and ends at the selection start and will
     // be updated.
-    BackwardsCharacterIterator backwardsIterator(firstPositionInNode(document->documentElement()).parentAnchoredEquivalent(), startPosition, TextIteratorStopsOnFormControls);
+    BackwardsCharacterIterator backwardsIterator(Position::firstPositionInNode(document->documentElement()).parentAnchoredEquivalent(), startPosition, TextIteratorStopsOnFormControls);
     if (!backwardsIterator.atEnd())
         backwardsIterator.advance(halfMaxLength);
 

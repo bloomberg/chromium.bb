@@ -1581,7 +1581,7 @@ int indexForVisiblePosition(const VisiblePosition& visiblePosition, ContainerNod
     else
         scope = document.documentElement();
 
-    Range* range = Range::create(document, firstPositionInNode(scope), p.parentAnchoredEquivalent());
+    Range* range = Range::create(document, Position::firstPositionInNode(scope), p.parentAnchoredEquivalent());
 
     return TextIterator::rangeLength(range->startPosition(), range->endPosition(), true);
 }

@@ -284,7 +284,7 @@ void InsertParagraphSeparatorCommand::doApply(EditingState* editingState)
         if (editingState->isAborted())
             return;
 
-        setEndingSelection(VisibleSelection(firstPositionInNode(parent), TextAffinity::Downstream, endingSelection().isDirectional()));
+        setEndingSelection(VisibleSelection(Position::firstPositionInNode(parent), TextAffinity::Downstream, endingSelection().isDirectional()));
         return;
     }
 
@@ -406,7 +406,7 @@ void InsertParagraphSeparatorCommand::doApply(EditingState* editingState)
         bool atEnd = static_cast<unsigned>(textOffset) >= textNode->length();
         if (textOffset > 0 && !atEnd) {
             splitTextNode(textNode, textOffset);
-            positionAfterSplit = firstPositionInNode(textNode);
+            positionAfterSplit = Position::firstPositionInNode(textNode);
             insertionPosition = Position(textNode->previousSibling(), textOffset);
             visiblePos = createVisiblePosition(insertionPosition);
         }
@@ -480,7 +480,7 @@ void InsertParagraphSeparatorCommand::doApply(EditingState* editingState)
         }
     }
 
-    setEndingSelection(VisibleSelection(firstPositionInNode(blockToInsert), TextAffinity::Downstream, endingSelection().isDirectional()));
+    setEndingSelection(VisibleSelection(Position::firstPositionInNode(blockToInsert), TextAffinity::Downstream, endingSelection().isDirectional()));
     applyStyleAfterInsertion(startBlock, editingState);
 }
 

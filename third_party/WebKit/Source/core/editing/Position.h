@@ -309,11 +309,6 @@ PositionTemplate<Strategy> PositionTemplate<Strategy>::firstPositionInNode(Node*
     return PositionTemplate<Strategy>(anchorNode, PositionAnchorType::BeforeChildren);
 }
 
-inline Position firstPositionInNode(Node* anchorNode)
-{
-    return Position::firstPositionInNode(anchorNode);
-}
-
 template <typename Strategy>
 PositionTemplate<Strategy> PositionTemplate<Strategy>::lastPositionInNode(Node* anchorNode)
 {

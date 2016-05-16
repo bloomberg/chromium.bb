@@ -107,7 +107,7 @@ void StyledMarkupAccumulator::appendTextWithInlineStyle(Text& text, EditingStyle
     if (!shouldAnnotate()) {
         appendText(text);
     } else {
-        const bool useRenderedText = !enclosingElementWithTag(firstPositionInNode(&text), selectTag);
+        const bool useRenderedText = !enclosingElementWithTag(Position::firstPositionInNode(&text), selectTag);
         String content = useRenderedText ? renderedText(text) : stringValueForRange(text);
         StringBuilder buffer;
         MarkupFormatter::appendCharactersReplacingEntities(buffer, content, 0, content.length(), EntityMaskInPCDATA);
