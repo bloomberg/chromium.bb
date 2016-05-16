@@ -132,13 +132,15 @@ class TestDelegateBase : public BidirectionalStream::Delegate {
       loop_->Run();
   }
 
-  void SendData(IOBuffer* data, int length, bool end_of_stream) {
+  void SendData(const scoped_refptr<IOBuffer>& data,
+                int length,
+                bool end_of_stream) {
     not_expect_callback_ = true;
     stream_->SendData(data, length, end_of_stream);
     not_expect_callback_ = false;
   }
 
-  void SendvData(const std::vector<IOBuffer*>& data,
+  void SendvData(const std::vector<scoped_refptr<IOBuffer>>& data,
                  const std::vector<int>& length,
                  bool end_of_stream) {
     not_expect_callback_ = true;
@@ -540,7 +542,7 @@ TEST_F(BidirectionalStreamTest, TestNetLogContainEntries) {
   scoped_refptr<StringIOBuffer> buf(
       new StringIOBuffer(std::string(kBodyData, kBodyDataSize)));
   // Send a DATA frame.
-  delegate->SendData(buf.get(), buf->size(), true);
+  delegate->SendData(buf, buf->size(), true);
   // ReadData returns asynchronously because no data is buffered.
   int rv = delegate->ReadData();
   EXPECT_EQ(ERR_IO_PENDING, rv);
@@ -671,7 +673,7 @@ TEST_F(BidirectionalStreamTest, TestInterleaveReadDataAndSendData) {
       new StringIOBuffer(std::string(kBodyData, kBodyDataSize)));
 
   // Send a DATA frame.
-  delegate->SendData(buf.get(), buf->size(), false);
+  delegate->SendData(buf, buf->size(), false);
   // ReadData and it should return asynchronously because no data is buffered.
   int rv = delegate->ReadData();
   EXPECT_EQ(ERR_IO_PENDING, rv);
@@ -684,7 +686,7 @@ TEST_F(BidirectionalStreamTest, TestInterleaveReadDataAndSendData) {
   EXPECT_EQ(1, delegate->on_data_read_count());
 
   // Send a DATA frame.
-  delegate->SendData(buf.get(), buf->size(), false);
+  delegate->SendData(buf, buf->size(), false);
   // ReadData and it should return asynchronously because no data is buffered.
   rv = delegate->ReadData();
   EXPECT_EQ(ERR_IO_PENDING, rv);
@@ -698,7 +700,7 @@ TEST_F(BidirectionalStreamTest, TestInterleaveReadDataAndSendData) {
   EXPECT_EQ(2, delegate->on_data_sent_count());
 
   // Send the last body frame. Client half closes.
-  delegate->SendData(buf.get(), buf->size(), true);
+  delegate->SendData(buf, buf->size(), true);
   sequenced_data_->Resume();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(3, delegate->on_data_sent_count());
@@ -767,8 +769,7 @@ TEST_F(BidirectionalStreamTest, TestCoalesceSmallDataBuffers) {
   scoped_refptr<StringIOBuffer> buf(new StringIOBuffer(body_data.substr(0, 5)));
   scoped_refptr<StringIOBuffer> buf2(
       new StringIOBuffer(body_data.substr(5, body_data.size() - 5)));
-  delegate->SendvData({buf.get(), buf2.get()}, {buf->size(), buf2->size()},
-                      true);
+  delegate->SendvData({buf, buf2.get()}, {buf->size(), buf2->size()}, true);
   sequenced_data_->RunUntilPaused();  // OnHeadersReceived.
   // ReadData and it should return asynchronously because no data is buffered.
   EXPECT_EQ(ERR_IO_PENDING, delegate->ReadData());
@@ -1066,7 +1067,7 @@ TEST_F(BidirectionalStreamTest, CancelStreamAfterSendData) {
   // Send a DATA frame.
   scoped_refptr<StringIOBuffer> buf(
       new StringIOBuffer(std::string(kBodyData, kBodyDataSize)));
-  delegate->SendData(buf.get(), buf->size(), false);
+  delegate->SendData(buf, buf->size(), false);
   sequenced_data_->Resume();
   base::RunLoop().RunUntilIdle();
   // Cancel the stream.

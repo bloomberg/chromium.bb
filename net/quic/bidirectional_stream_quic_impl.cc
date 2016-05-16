@@ -97,7 +97,7 @@ int BidirectionalStreamQuicImpl::ReadData(IOBuffer* buffer, int buffer_len) {
   return ERR_IO_PENDING;
 }
 
-void BidirectionalStreamQuicImpl::SendData(IOBuffer* data,
+void BidirectionalStreamQuicImpl::SendData(const scoped_refptr<IOBuffer>& data,
                                            int length,
                                            bool end_stream) {
   DCHECK(stream_);
@@ -117,7 +117,7 @@ void BidirectionalStreamQuicImpl::SendData(IOBuffer* data,
 }
 
 void BidirectionalStreamQuicImpl::SendvData(
-    const std::vector<IOBuffer*>& buffers,
+    const std::vector<scoped_refptr<IOBuffer>>& buffers,
     const std::vector<int>& lengths,
     bool end_stream) {
   DCHECK(stream_);

@@ -98,19 +98,19 @@ int BidirectionalStreamSpdyImpl::ReadData(IOBuffer* buf, int buf_len) {
   return ERR_IO_PENDING;
 }
 
-void BidirectionalStreamSpdyImpl::SendData(IOBuffer* data,
+void BidirectionalStreamSpdyImpl::SendData(const scoped_refptr<IOBuffer>& data,
                                            int length,
                                            bool end_stream) {
   DCHECK(!stream_closed_);
   DCHECK(stream_);
   DCHECK(!disable_auto_flush_);
 
-  stream_->SendData(data, length,
+  stream_->SendData(data.get(), length,
                     end_stream ? NO_MORE_DATA_TO_SEND : MORE_DATA_TO_SEND);
 }
 
 void BidirectionalStreamSpdyImpl::SendvData(
-    const std::vector<IOBuffer*>& buffers,
+    const std::vector<scoped_refptr<IOBuffer>>& buffers,
     const std::vector<int>& lengths,
     bool end_stream) {
   DCHECK(!stream_closed_);

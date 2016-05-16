@@ -140,7 +140,7 @@ int QuicChromiumClientStream::WriteStreamData(
 }
 
 int QuicChromiumClientStream::WritevStreamData(
-    const std::vector<IOBuffer*>& buffers,
+    const std::vector<scoped_refptr<IOBuffer>>& buffers,
     const std::vector<int>& lengths,
     bool fin,
     const CompletionCallback& callback) {

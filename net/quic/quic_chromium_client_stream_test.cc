@@ -477,9 +477,9 @@ TEST_P(QuicChromiumClientStreamTest, WritevStreamData) {
       .WillOnce(Return(QuicConsumedData(buf1->size(), false)))
       .WillOnce(Return(QuicConsumedData(buf2->size(), true)));
   TestCompletionCallback callback;
-  EXPECT_EQ(OK, stream_->WritevStreamData({buf1.get(), buf2.get()},
-                                          {buf1->size(), buf2->size()}, true,
-                                          callback.callback()));
+  EXPECT_EQ(
+      OK, stream_->WritevStreamData({buf1, buf2}, {buf1->size(), buf2->size()},
+                                    true, callback.callback()));
 }
 
 TEST_P(QuicChromiumClientStreamTest, WritevStreamDataAsync) {

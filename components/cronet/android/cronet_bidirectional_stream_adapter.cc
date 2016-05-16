@@ -49,6 +49,24 @@ size_t SafeGetArrayLength(JNIEnv* env, JavaArrayType jarray) {
 
 }  // namespace
 
+PendingWriteData::PendingWriteData(JNIEnv* env,
+                                   jobjectArray jwrite_buffer_list,
+                                   jintArray jwrite_buffer_pos_list,
+                                   jintArray jwrite_buffer_limit_list,
+                                   jboolean jwrite_end_of_stream) {
+  this->jwrite_buffer_list.Reset(env, jwrite_buffer_list);
+  this->jwrite_buffer_pos_list.Reset(env, jwrite_buffer_pos_list);
+  this->jwrite_buffer_limit_list.Reset(env, jwrite_buffer_limit_list);
+  this->jwrite_end_of_stream = jwrite_end_of_stream;
+}
+
+PendingWriteData::~PendingWriteData() {
+  // Reset global references.
+  jwrite_buffer_list.Reset();
+  jwrite_buffer_pos_list.Reset();
+  jwrite_buffer_limit_list.Reset();
+}
+
 static jlong CreateBidirectionalStream(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jbidi_stream,
@@ -79,7 +97,6 @@ CronetBidirectionalStreamAdapter::CronetBidirectionalStreamAdapter(
     : context_(context),
       owner_(env, jbidi_stream),
       disable_auto_flush_(disable_auto_flush),
-      write_end_of_stream_(false),
       stream_failed_(false) {}
 
 CronetBidirectionalStreamAdapter::~CronetBidirectionalStreamAdapter() {
@@ -164,29 +181,35 @@ jboolean CronetBidirectionalStreamAdapter::WritevData(
     return JNI_FALSE;
   }
 
-  IOBufferWithByteBufferList buffers;
+  std::unique_ptr<PendingWriteData> pending_write_data;
+  pending_write_data.reset(
+      new PendingWriteData(env, jbyte_buffers.obj(), jbyte_buffers_pos.obj(),
+                           jbyte_buffers_limit.obj(), jend_of_stream));
   for (size_t i = 0; i < buffers_array_size; ++i) {
     ScopedJavaLocalRef<jobject> jbuffer(
-        env, env->GetObjectArrayElement(jbyte_buffers, i));
+        env, env->GetObjectArrayElement(
+                 pending_write_data->jwrite_buffer_list.obj(), i));
     void* data = env->GetDirectBufferAddress(jbuffer.obj());
     if (!data)
       return JNI_FALSE;
     jint pos;
-    env->GetIntArrayRegion(jbyte_buffers_pos.obj(), i, 1, &pos);
+    env->GetIntArrayRegion(pending_write_data->jwrite_buffer_pos_list.obj(), i,
+                           1, &pos);
     jint limit;
-    env->GetIntArrayRegion(jbyte_buffers_limit.obj(), i, 1, &limit);
+    env->GetIntArrayRegion(pending_write_data->jwrite_buffer_limit_list.obj(),
+                           i, 1, &limit);
     DCHECK_LE(pos, limit);
-    scoped_refptr<IOBufferWithByteBuffer> write_buffer(
-        new IOBufferWithByteBuffer(
-            env, base::android::JavaParamRef<jobject>(env, jbuffer.Release()),
-            data, pos, limit));
-    buffers.push_back(write_buffer);
+    scoped_refptr<net::WrappedIOBuffer> write_buffer(
+        new net::WrappedIOBuffer(static_cast<char*>(data) + pos));
+    pending_write_data->write_buffer_list.push_back(write_buffer);
+    pending_write_data->write_buffer_len_list.push_back(limit - pos);
   }
+
   context_->PostTaskToNetworkThread(
       FROM_HERE,
       base::Bind(&CronetBidirectionalStreamAdapter::WritevDataOnNetworkThread,
-                 base::Unretained(this), buffers, jend_of_stream));
-
+                 base::Unretained(this),
+                 base::Passed(std::move(pending_write_data))));
   return JNI_TRUE;
 }
 
@@ -254,35 +277,18 @@ void CronetBidirectionalStreamAdapter::OnDataRead(int bytes_read) {
 
 void CronetBidirectionalStreamAdapter::OnDataSent() {
   DCHECK(context_->IsOnNetworkThread());
-  DCHECK(!write_buffer_list_.empty());
+  DCHECK(pending_write_data_);
 
   JNIEnv* env = base::android::AttachCurrentThread();
-  base::android::ScopedJavaLocalRef<jclass> byte_buffer_clazz(
-      env, env->FindClass("java/nio/ByteBuffer"));
-  size_t size = write_buffer_list_.size();
-  jobjectArray jbuffer_array =
-      env->NewObjectArray(size, byte_buffer_clazz.obj(), NULL);
-  base::android::CheckException(env);
-  std::vector<int> initial_positions;
-  std::vector<int> initial_limits;
-  for (size_t i = 0; i < size; ++i) {
-    env->SetObjectArrayElement(jbuffer_array, i,
-                               write_buffer_list_[i]->byte_buffer());
-    initial_positions.push_back(write_buffer_list_[i]->initial_position());
-    initial_limits.push_back(write_buffer_list_[i]->initial_limit());
-  }
-  ScopedJavaLocalRef<jobjectArray> jbuffers(env, jbuffer_array);
-  ScopedJavaLocalRef<jintArray> jinitial_positions =
-      base::android::ToJavaIntArray(env, initial_positions);
-  ScopedJavaLocalRef<jintArray> jinitial_limits =
-      base::android::ToJavaIntArray(env, initial_limits);
   // Call into Java.
   cronet::Java_CronetBidirectionalStream_onWritevCompleted(
-      env, owner_.obj(), jbuffers.obj(), jinitial_positions.obj(),
-      jinitial_limits.obj(), write_end_of_stream_);
-  // Free the write buffers. This lets the Java ByteBuffer be freed, if the
+      env, owner_.obj(), pending_write_data_->jwrite_buffer_list.obj(),
+      pending_write_data_->jwrite_buffer_pos_list.obj(),
+      pending_write_data_->jwrite_buffer_limit_list.obj(),
+      pending_write_data_->jwrite_end_of_stream);
+  // Free the java objects. This lets the Java ByteBuffers be freed, if the
   // embedder releases it, too.
-  write_buffer_list_.clear();
+  pending_write_data_.reset();
 }
 
 void CronetBidirectionalStreamAdapter::OnTrailersReceived(
@@ -340,12 +346,10 @@ void CronetBidirectionalStreamAdapter::ReadDataOnNetworkThread(
 }
 
 void CronetBidirectionalStreamAdapter::WritevDataOnNetworkThread(
-    const IOBufferWithByteBufferList& write_buffer_list,
-    bool end_of_stream) {
+    std::unique_ptr<PendingWriteData> pending_write_data) {
   DCHECK(context_->IsOnNetworkThread());
-  DCHECK(write_buffer_list_.empty());
-  DCHECK(!write_buffer_list.empty());
-  DCHECK(!write_end_of_stream_);
+  DCHECK(pending_write_data);
+  DCHECK(!pending_write_data_);
 
   if (stream_failed_) {
     // If stream failed between the time when WritevData is invoked and
@@ -356,18 +360,16 @@ void CronetBidirectionalStreamAdapter::WritevDataOnNetworkThread(
     return;
   }
 
-  write_end_of_stream_ = end_of_stream;
-  std::vector<net::IOBuffer*> buffers;
-  std::vector<int> lengths;
-  for (const auto& buffer : write_buffer_list) {
-    write_buffer_list_.push_back(buffer);
-    buffers.push_back(buffer.get());
-    lengths.push_back(buffer->initial_limit() - buffer->initial_position());
-  }
-  if (buffers.size() == 1) {
-    bidi_stream_->SendData(buffers[0], lengths[0], end_of_stream);
+  pending_write_data_ = std::move(pending_write_data);
+  bool end_of_stream = pending_write_data_->jwrite_end_of_stream == JNI_TRUE;
+  if (pending_write_data_->write_buffer_list.size() == 1) {
+    bidi_stream_->SendData(pending_write_data_->write_buffer_list[0],
+                           pending_write_data_->write_buffer_len_list[0],
+                           end_of_stream);
   } else {
-    bidi_stream_->SendvData(buffers, lengths, end_of_stream);
+    bidi_stream_->SendvData(pending_write_data_->write_buffer_list,
+                            pending_write_data_->write_buffer_len_list,
+                            end_of_stream);
   }
 }
 

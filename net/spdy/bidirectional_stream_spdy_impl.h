@@ -8,8 +8,10 @@
 #include <stdint.h>
 
 #include <memory>
+#include <vector>
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "net/http/bidirectional_stream_impl.h"
 #include "net/http/bidirectional_stream_request_info.h"
@@ -44,8 +46,10 @@ class NET_EXPORT_PRIVATE BidirectionalStreamSpdyImpl
              BidirectionalStreamImpl::Delegate* delegate,
              std::unique_ptr<base::Timer> timer) override;
   int ReadData(IOBuffer* buf, int buf_len) override;
-  void SendData(IOBuffer* data, int length, bool end_stream) override;
-  void SendvData(const std::vector<IOBuffer*>& buffers,
+  void SendData(const scoped_refptr<IOBuffer>& data,
+                int length,
+                bool end_stream) override;
+  void SendvData(const std::vector<scoped_refptr<IOBuffer>>& buffers,
                  const std::vector<int>& lengths,
                  bool end_stream) override;
   void Cancel() override;

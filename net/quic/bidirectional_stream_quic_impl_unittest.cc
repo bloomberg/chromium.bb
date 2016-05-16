@@ -134,13 +134,15 @@ class TestDelegateBase : public BidirectionalStreamImpl::Delegate {
                        nullptr);
   }
 
-  void SendData(IOBuffer* data, int length, bool end_of_stream) {
+  void SendData(const scoped_refptr<IOBuffer>& data,
+                int length,
+                bool end_of_stream) {
     not_expect_callback_ = true;
     stream_job_->SendData(data, length, end_of_stream);
     not_expect_callback_ = false;
   }
 
-  void SendvData(const std::vector<IOBuffer*>& data,
+  void SendvData(const std::vector<scoped_refptr<IOBuffer>>& data,
                  const std::vector<int>& lengths,
                  bool end_of_stream) {
     not_expect_callback_ = true;
@@ -711,9 +713,8 @@ TEST_P(BidirectionalStreamQuicImplTest, CoalesceSmallBuffers) {
   scoped_refptr<StringIOBuffer> buf1(new StringIOBuffer(kBody1));
   scoped_refptr<StringIOBuffer> buf2(new StringIOBuffer(kBody2));
 
-  std::vector<IOBuffer*> buffers = {buf1.get(), buf2.get()};
   std::vector<int> lengths = {buf1->size(), buf2->size()};
-  delegate->SendvData(buffers, lengths, !kFin);
+  delegate->SendvData({buf1, buf2}, lengths, !kFin);
   delegate->WaitUntilNextCallback();  // OnDataSent
 
   // Server acks the request.
@@ -744,7 +745,7 @@ TEST_P(BidirectionalStreamQuicImplTest, CoalesceSmallBuffers) {
   scoped_refptr<StringIOBuffer> buf4(new StringIOBuffer(kBody4));
   scoped_refptr<StringIOBuffer> buf5(new StringIOBuffer(kBody5));
 
-  delegate->SendvData({buf3.get(), buf4.get(), buf5.get()},
+  delegate->SendvData({buf3, buf4, buf5},
                       {buf3->size(), buf4->size(), buf5->size()}, kFin);
   delegate->WaitUntilNextCallback();  // OnDataSent
 
@@ -801,7 +802,7 @@ TEST_P(BidirectionalStreamQuicImplTest, PostRequest) {
   // Send a DATA frame.
   scoped_refptr<StringIOBuffer> buf(new StringIOBuffer(kUploadData));
 
-  delegate->SendData(buf.get(), buf->size(), true);
+  delegate->SendData(buf, buf->size(), true);
   delegate->WaitUntilNextCallback();  // OnDataSent
 
   // Server acks the request.
@@ -891,7 +892,7 @@ TEST_P(BidirectionalStreamQuicImplTest, InterleaveReadDataAndSendData) {
   // Client sends a data packet.
   scoped_refptr<StringIOBuffer> buf(new StringIOBuffer(kUploadData));
 
-  delegate->SendData(buf.get(), buf->size(), false);
+  delegate->SendData(buf, buf->size(), false);
   delegate->WaitUntilNextCallback();  // OnDataSent
 
   TestCompletionCallback cb;
@@ -907,7 +908,7 @@ TEST_P(BidirectionalStreamQuicImplTest, InterleaveReadDataAndSendData) {
   EXPECT_EQ(std::string(kResponseBody), delegate->data_received());
 
   // Client sends a data packet.
-  delegate->SendData(buf.get(), buf->size(), true);
+  delegate->SendData(buf, buf->size(), true);
   delegate->WaitUntilNextCallback();  // OnDataSent
 
   TestCompletionCallback cb2;
@@ -1066,7 +1067,7 @@ TEST_P(BidirectionalStreamQuicImplTest, CancelStreamAfterSendData) {
   // Send a DATA frame.
   scoped_refptr<StringIOBuffer> buf(new StringIOBuffer(kUploadData));
 
-  delegate->SendData(buf.get(), buf->size(), false);
+  delegate->SendData(buf, buf->size(), false);
   delegate->WaitUntilNextCallback();  // OnDataSent
 
   delegate->CancelStream();

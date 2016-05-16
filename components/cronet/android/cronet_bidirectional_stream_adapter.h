@@ -28,6 +28,32 @@ namespace cronet {
 class CronetURLRequestContextAdapter;
 class IOBufferWithByteBuffer;
 
+// Convenient wrapper to hold Java references and data to represent the pending
+// data to be written.
+struct PendingWriteData {
+  PendingWriteData(JNIEnv* env,
+                   jobjectArray jwrite_buffer_list,
+                   jintArray jwrite_buffer_pos_list,
+                   jintArray jwrite_buffer_limit_list,
+                   jboolean jwrite_end_of_stream);
+  ~PendingWriteData();
+
+  // Arguments passed in from Java. Retain a global ref so they won't get GC-ed
+  // until the corresponding onWriteCompleted is invoked.
+  base::android::ScopedJavaGlobalRef<jobjectArray> jwrite_buffer_list;
+  base::android::ScopedJavaGlobalRef<jintArray> jwrite_buffer_pos_list;
+  base::android::ScopedJavaGlobalRef<jintArray> jwrite_buffer_limit_list;
+  // A copy of the end of stream flag passed in from Java.
+  jboolean jwrite_end_of_stream;
+  // Every IOBuffer in |write_buffer_list| points to the memory owned by the
+  // corresponding Java ByteBuffer in |jwrite_buffer_list|.
+  std::vector<scoped_refptr<net::IOBuffer>> write_buffer_list;
+  // A list of the length of each IOBuffer in |write_buffer_list|.
+  std::vector<int> write_buffer_len_list;
+
+  DISALLOW_COPY_AND_ASSIGN(PendingWriteData);
+};
+
 // An adapter from Java BidirectionalStream object to net::BidirectionalStream.
 // Created and configured from a Java thread. Start, ReadData, WritevData and
 // Destroy can be called on any thread (including network thread), and post
@@ -94,8 +120,6 @@ class CronetBidirectionalStreamAdapter
                jboolean jsend_on_canceled);
 
  private:
-  typedef std::vector<scoped_refptr<IOBufferWithByteBuffer>>
-      IOBufferWithByteBufferList;
   // net::BidirectionalStream::Delegate implementations:
   void OnStreamReady() override;
   void OnHeadersReceived(const net::SpdyHeaderBlock& response_headers) override;
@@ -109,8 +133,8 @@ class CronetBidirectionalStreamAdapter
   void ReadDataOnNetworkThread(
       scoped_refptr<IOBufferWithByteBuffer> read_buffer,
       int buffer_size);
-  void WritevDataOnNetworkThread(const IOBufferWithByteBufferList& buffers,
-                                 bool end_of_stream);
+  void WritevDataOnNetworkThread(
+      std::unique_ptr<PendingWriteData> pending_write_data);
   void DestroyOnNetworkThread(bool send_on_canceled);
   // Gets headers as a Java array.
   base::android::ScopedJavaLocalRef<jobjectArray> GetHeadersArray(
@@ -122,12 +146,9 @@ class CronetBidirectionalStreamAdapter
   // Java object that owns this CronetBidirectionalStreamAdapter.
   base::android::ScopedJavaGlobalRef<jobject> owner_;
   const bool disable_auto_flush_;
-  // Whether an end of stream flag is passed in through a write call.
-  // Not applicable to HTTP methods that do not send data.
-  bool write_end_of_stream_;
 
   scoped_refptr<IOBufferWithByteBuffer> read_buffer_;
-  IOBufferWithByteBufferList write_buffer_list_;
+  std::unique_ptr<PendingWriteData> pending_write_data_;
   std::unique_ptr<net::BidirectionalStream> bidi_stream_;
 
   // Whether BidirectionalStream::Delegate::OnFailed callback is invoked.

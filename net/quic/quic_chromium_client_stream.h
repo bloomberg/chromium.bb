@@ -82,7 +82,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientStream : public QuicSpdyStream {
                       const CompletionCallback& callback);
   // Same as WriteStreamData except it writes data from a vector of IOBuffers,
   // with the length of each buffer at the corresponding index in |lengths|.
-  int WritevStreamData(const std::vector<IOBuffer*>& buffers,
+  int WritevStreamData(const std::vector<scoped_refptr<IOBuffer>>& buffers,
                        const std::vector<int>& lengths,
                        bool fin,
                        const CompletionCallback& callback);
