@@ -125,7 +125,6 @@ void LayerTreeHostCommonTestBase::
       outer_viewport_scroll_layer, overscroll_elasticity_layer,
       elastic_overscroll, page_scale_factor, device_scale_factor,
       gfx::Rect(device_viewport_size), identity_transform, property_trees);
-  draw_property_utils::UpdateRenderSurfaces(root_layer, property_trees);
   draw_property_utils::UpdatePropertyTrees(property_trees,
                                            can_render_to_separate_surface);
   draw_property_utils::FindLayersThatNeedUpdates(

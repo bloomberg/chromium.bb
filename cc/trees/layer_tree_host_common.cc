@@ -639,7 +639,6 @@ void LayerTreeHostCommon::CalculateDrawPropertiesForTesting(
       inputs->page_scale_factor, inputs->device_scale_factor,
       gfx::Rect(inputs->device_viewport_size), inputs->device_transform,
       property_trees);
-  draw_property_utils::UpdateRenderSurfaces(inputs->root_layer, property_trees);
   draw_property_utils::UpdatePropertyTrees(property_trees,
                                            can_render_to_separate_surface);
   draw_property_utils::FindLayersThatNeedUpdates(

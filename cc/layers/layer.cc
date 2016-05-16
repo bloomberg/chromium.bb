@@ -78,7 +78,6 @@ Layer::Layer()
       use_local_transform_for_backface_visibility_(false),
       should_check_backface_visibility_(false),
       force_render_surface_for_testing_(false),
-      has_render_surface_(false),
       subtree_property_changed_(false),
       background_color_(0),
       safe_opaque_background_color_(0),
@@ -1350,7 +1349,6 @@ void Layer::LayerSpecificPropertiesToProto(proto::LayerProperties* proto) {
   base->set_double_sided(double_sided_);
   base->set_draws_content(draws_content_);
   base->set_hide_layer_and_subtree(hide_layer_and_subtree_);
-  base->set_has_render_surface(has_render_surface_);
   base->set_subtree_property_changed(subtree_property_changed_);
 
   // TODO(nyquist): Add support for serializing FilterOperations for
@@ -1433,7 +1431,6 @@ void Layer::FromLayerSpecificPropertiesProto(
   double_sided_ = base.double_sided();
   draws_content_ = base.draws_content();
   hide_layer_and_subtree_ = base.hide_layer_and_subtree();
-  has_render_surface_ = base.has_render_surface();
   subtree_property_changed_ = base.subtree_property_changed();
   masks_to_bounds_ = base.masks_to_bounds();
   main_thread_scrolling_reasons_ = base.main_thread_scrolling_reasons();
@@ -1562,10 +1559,6 @@ Layer::TakeDebugInfo() {
     return client_->TakeDebugInfo(this);
   else
     return nullptr;
-}
-
-void Layer::SetHasRenderSurface(bool has_render_surface) {
-  has_render_surface_ = has_render_surface;
 }
 
 void Layer::SetSubtreePropertyChanged() {

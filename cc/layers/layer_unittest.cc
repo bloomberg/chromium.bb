@@ -156,7 +156,6 @@ class LayerSerializationTest : public testing::Test {
     EXPECT_EQ(src->double_sided_, dest->double_sided_);
     EXPECT_EQ(src->draws_content_, dest->draws_content_);
     EXPECT_EQ(src->hide_layer_and_subtree_, dest->hide_layer_and_subtree_);
-    EXPECT_EQ(src->has_render_surface_, dest->has_render_surface_);
     EXPECT_EQ(src->masks_to_bounds_, dest->masks_to_bounds_);
     EXPECT_EQ(src->main_thread_scrolling_reasons_,
               dest->main_thread_scrolling_reasons_);
@@ -264,7 +263,6 @@ class LayerSerializationTest : public testing::Test {
     layer->double_sided_ = true;
     layer->draws_content_ = true;
     layer->hide_layer_and_subtree_ = false;
-    layer->has_render_surface_ = false;
     layer->masks_to_bounds_ = true;
     layer->main_thread_scrolling_reasons_ =
         MainThreadScrollingReason::kNotScrollingOnMain;
@@ -309,7 +307,6 @@ class LayerSerializationTest : public testing::Test {
     layer->double_sided_ = !layer->double_sided_;
     layer->draws_content_ = !layer->draws_content_;
     layer->hide_layer_and_subtree_ = !layer->hide_layer_and_subtree_;
-    layer->has_render_surface_ = !layer->has_render_surface_;
     layer->masks_to_bounds_ = !layer->masks_to_bounds_;
     layer->main_thread_scrolling_reasons_ =
         MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects;

@@ -33,13 +33,6 @@ static bool IsRootLayer(const LayerImpl* layer) {
 }
 
 #if DCHECK_IS_ON()
-static Layer* EffectNodeOwner(Layer* layer) {
-  EffectNode* node =
-      layer->layer_tree_host()->property_trees()->effect_tree.Node(
-          layer->effect_tree_index());
-  return layer->layer_tree_host()->LayerById(node->owner_id);
-}
-
 static LayerImpl* EffectNodeOwner(LayerImpl* layer) {
   EffectNode* node =
       layer->layer_tree_impl()->property_trees()->effect_tree.Node(
@@ -47,14 +40,7 @@ static LayerImpl* EffectNodeOwner(LayerImpl* layer) {
   return layer->layer_tree_impl()->LayerById(node->owner_id);
 }
 
-static void inline ValidateIsNotRootForIsolatedGroup(Layer* layer) {
-  DCHECK(!layer->is_root_for_isolated_group()) << "layer: " << layer->id();
-}
-
-static void inline ValidateIsNotRootForIsolatedGroup(LayerImpl* layer) {}
-
-template <typename LayerType>
-static void ValidateRenderSurfaceForLayer(LayerType* layer) {
+static void ValidateRenderSurfaceForLayer(LayerImpl* layer) {
   // This test verifies that there are no cases where a LayerImpl needs
   // a render surface, but doesn't have one.
   if (layer->has_render_surface())
@@ -68,7 +54,6 @@ static void ValidateRenderSurfaceForLayer(LayerType* layer) {
   DCHECK(!layer->mask_layer()) << "layer: " << layer->id();
   DCHECK(!layer->replica_layer()) << "layer: " << layer->id();
   DCHECK(!layer->HasCopyRequest()) << "layer: " << layer->id();
-  ValidateIsNotRootForIsolatedGroup(layer);
 }
 
 #endif
@@ -350,10 +335,9 @@ void FindLayersThatNeedUpdates(LayerTreeImpl* layer_tree_impl,
   }
 }
 
-template <typename LayerType>
 void UpdateRenderSurfaceForLayer(EffectTree* effect_tree,
                                  bool non_root_surfaces_enabled,
-                                 LayerType* layer) {
+                                 LayerImpl* layer) {
   if (!non_root_surfaces_enabled) {
     layer->SetHasRenderSurface(IsRootLayer(layer));
     return;
@@ -795,17 +779,6 @@ static void ComputeVisibleRectsInternal(
   CalculateVisibleRects<LayerImpl>(
       *visible_layer_list, property_trees->clip_tree,
       property_trees->transform_tree, can_render_to_separate_surface);
-}
-
-void UpdateRenderSurfaces(Layer* root_layer, PropertyTrees* property_trees) {
-  for (auto* layer : *root_layer->layer_tree_host()) {
-    UpdateRenderSurfaceForLayer(&property_trees->effect_tree,
-                                property_trees->non_root_surfaces_enabled,
-                                layer);
-#if DCHECK_IS_ON()
-    ValidateRenderSurfaceForLayer(layer);
-#endif
-  }
 }
 
 void UpdatePropertyTrees(PropertyTrees* property_trees,

@@ -56,9 +56,6 @@ void CC_EXPORT BuildPropertyTreesAndComputeVisibleRects(
     PropertyTrees* property_trees,
     LayerImplList* visible_layer_list);
 
-void CC_EXPORT UpdateRenderSurfaces(Layer* root_layer,
-                                    PropertyTrees* property_trees);
-
 void CC_EXPORT UpdatePropertyTrees(PropertyTrees* property_trees,
                                    bool can_render_to_separate_surface);
 

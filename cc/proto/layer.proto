@@ -81,7 +81,6 @@ message BaseLayerProperties {
   optional bool double_sided = 8;
   optional bool draws_content = 9;
   optional bool hide_layer_and_subtree = 10;
-  optional bool has_render_surface = 11;
   optional bool subtree_property_changed = 47;
   // TODO(nyquist): Add support for FilterOperation. See crbug.com/541321.
   // repeated FilterOperation filters = 12;

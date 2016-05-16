@@ -1003,7 +1003,6 @@ bool LayerTreeHost::DoUpdateLayers(Layer* root_layer) {
                            TRACE_EVENT_SCOPE_THREAD, "property_trees",
                            property_trees_.AsTracedValue());
     }
-    draw_property_utils::UpdateRenderSurfaces(root_layer, &property_trees_);
     draw_property_utils::UpdatePropertyTrees(&property_trees_,
                                              can_render_to_separate_surface);
     draw_property_utils::FindLayersThatNeedUpdates(

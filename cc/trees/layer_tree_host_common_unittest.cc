@@ -4171,48 +4171,43 @@ TEST_F(LayerTreeHostCommonTest, BackFaceCullingWithoutPreserves3d) {
   // "flattened" to each parent layer according to current W3C spec.
 
   const gfx::Transform identity_matrix;
-  scoped_refptr<Layer> parent = Layer::Create();
-  scoped_refptr<LayerWithForcedDrawsContent> front_facing_child =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
-  scoped_refptr<LayerWithForcedDrawsContent> back_facing_child =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
-  scoped_refptr<LayerWithForcedDrawsContent> front_facing_surface =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
-  scoped_refptr<LayerWithForcedDrawsContent> back_facing_surface =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
-  scoped_refptr<LayerWithForcedDrawsContent>
-      front_facing_child_of_front_facing_surface =
-          make_scoped_refptr(new LayerWithForcedDrawsContent());
-  scoped_refptr<LayerWithForcedDrawsContent>
-      back_facing_child_of_front_facing_surface =
-          make_scoped_refptr(new LayerWithForcedDrawsContent());
-  scoped_refptr<LayerWithForcedDrawsContent>
-      front_facing_child_of_back_facing_surface =
-          make_scoped_refptr(new LayerWithForcedDrawsContent());
-  scoped_refptr<LayerWithForcedDrawsContent>
-      back_facing_child_of_back_facing_surface =
-          make_scoped_refptr(new LayerWithForcedDrawsContent());
-
-  parent->AddChild(front_facing_child);
-  parent->AddChild(back_facing_child);
-  parent->AddChild(front_facing_surface);
-  parent->AddChild(back_facing_surface);
-  front_facing_surface->AddChild(front_facing_child_of_front_facing_surface);
-  front_facing_surface->AddChild(back_facing_child_of_front_facing_surface);
-  back_facing_surface->AddChild(front_facing_child_of_back_facing_surface);
-  back_facing_surface->AddChild(back_facing_child_of_back_facing_surface);
-
-  host()->SetRootLayer(parent);
+  LayerImpl* parent = root_layer();
+  LayerImpl* front_facing_child = AddChildToRoot<LayerImpl>();
+  LayerImpl* back_facing_child = AddChildToRoot<LayerImpl>();
+  LayerImpl* front_facing_surface = AddChildToRoot<LayerImpl>();
+  LayerImpl* back_facing_surface = AddChildToRoot<LayerImpl>();
+  LayerImpl* front_facing_child_of_front_facing_surface =
+      AddChild<LayerImpl>(front_facing_surface);
+  LayerImpl* back_facing_child_of_front_facing_surface =
+      AddChild<LayerImpl>(front_facing_surface);
+  LayerImpl* front_facing_child_of_back_facing_surface =
+      AddChild<LayerImpl>(back_facing_surface);
+  LayerImpl* back_facing_child_of_back_facing_surface =
+      AddChild<LayerImpl>(back_facing_surface);
 
   // Nothing is double-sided
-  front_facing_child->SetDoubleSided(false);
-  back_facing_child->SetDoubleSided(false);
-  front_facing_surface->SetDoubleSided(false);
-  back_facing_surface->SetDoubleSided(false);
-  front_facing_child_of_front_facing_surface->SetDoubleSided(false);
-  back_facing_child_of_front_facing_surface->SetDoubleSided(false);
-  front_facing_child_of_back_facing_surface->SetDoubleSided(false);
-  back_facing_child_of_back_facing_surface->SetDoubleSided(false);
+  front_facing_child->test_properties()->double_sided = false;
+  back_facing_child->test_properties()->double_sided = false;
+  front_facing_surface->test_properties()->double_sided = false;
+  back_facing_surface->test_properties()->double_sided = false;
+  front_facing_child_of_front_facing_surface->test_properties()->double_sided =
+      false;
+  back_facing_child_of_front_facing_surface->test_properties()->double_sided =
+      false;
+  front_facing_child_of_back_facing_surface->test_properties()->double_sided =
+      false;
+  back_facing_child_of_back_facing_surface->test_properties()->double_sided =
+      false;
+
+  // Everything draws content.
+  front_facing_child->SetDrawsContent(true);
+  back_facing_child->SetDrawsContent(true);
+  front_facing_surface->SetDrawsContent(true);
+  back_facing_surface->SetDrawsContent(true);
+  front_facing_child_of_front_facing_surface->SetDrawsContent(true);
+  back_facing_child_of_front_facing_surface->SetDrawsContent(true);
+  front_facing_child_of_back_facing_surface->SetDrawsContent(true);
+  back_facing_child_of_back_facing_surface->SetDrawsContent(true);
 
   gfx::Transform backface_matrix;
   backface_matrix.Translate(50.0, 50.0);
@@ -4226,71 +4221,34 @@ TEST_F(LayerTreeHostCommonTest, BackFaceCullingWithoutPreserves3d) {
   // Nothing preserves 3d. According to current W3C CSS gfx::Transforms spec,
   // these layers should blindly use their own local transforms to determine
   // back-face culling.
-  SetLayerPropertiesForTesting(parent.get(),
-                               identity_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(100, 100),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(front_facing_child.get(),
-                               identity_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(100, 100),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(back_facing_child.get(),
-                               backface_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(100, 100),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(front_facing_surface.get(),
-                               identity_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(100, 100),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(back_facing_surface.get(),
-                               backface_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(100, 100),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(front_facing_child_of_front_facing_surface.get(),
-                               identity_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(100, 100),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(back_facing_child_of_front_facing_surface.get(),
-                               backface_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(100, 100),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(front_facing_child_of_back_facing_surface.get(),
-                               identity_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(100, 100),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(back_facing_child_of_back_facing_surface.get(),
-                               backface_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(100, 100),
-                               true,
-                               false);
+  SetLayerPropertiesForTesting(parent, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(100, 100), true, false);
+  SetLayerPropertiesForTesting(front_facing_child, identity_matrix,
+                               gfx::Point3F(), gfx::PointF(),
+                               gfx::Size(100, 100), true, false);
+  SetLayerPropertiesForTesting(back_facing_child, backface_matrix,
+                               gfx::Point3F(), gfx::PointF(),
+                               gfx::Size(100, 100), true, false);
+  SetLayerPropertiesForTesting(front_facing_surface, identity_matrix,
+                               gfx::Point3F(), gfx::PointF(),
+                               gfx::Size(100, 100), true, false);
+  SetLayerPropertiesForTesting(back_facing_surface, backface_matrix,
+                               gfx::Point3F(), gfx::PointF(),
+                               gfx::Size(100, 100), true, false);
+  SetLayerPropertiesForTesting(front_facing_child_of_front_facing_surface,
+                               identity_matrix, gfx::Point3F(), gfx::PointF(),
+                               gfx::Size(100, 100), true, false);
+  SetLayerPropertiesForTesting(back_facing_child_of_front_facing_surface,
+                               backface_matrix, gfx::Point3F(), gfx::PointF(),
+                               gfx::Size(100, 100), true, false);
+  SetLayerPropertiesForTesting(front_facing_child_of_back_facing_surface,
+                               identity_matrix, gfx::Point3F(), gfx::PointF(),
+                               gfx::Size(100, 100), true, false);
+  SetLayerPropertiesForTesting(back_facing_child_of_back_facing_surface,
+                               backface_matrix, gfx::Point3F(), gfx::PointF(),
+                               gfx::Size(100, 100), true, false);
 
-  ExecuteCalculateDrawPropertiesWithPropertyTrees(parent.get());
+  ExecuteCalculateDrawPropertiesWithPropertyTrees(parent);
 
   // Verify which render surfaces were created.
   EXPECT_FALSE(front_facing_child->has_render_surface());
@@ -4303,13 +4261,13 @@ TEST_F(LayerTreeHostCommonTest, BackFaceCullingWithoutPreserves3d) {
   EXPECT_FALSE(front_facing_child_of_back_facing_surface->has_render_surface());
   EXPECT_FALSE(back_facing_child_of_back_facing_surface->has_render_surface());
 
-  EXPECT_EQ(4u, update_layer_list().size());
-  EXPECT_TRUE(UpdateLayerListContains(front_facing_child->id()));
-  EXPECT_TRUE(UpdateLayerListContains(front_facing_surface->id()));
-  EXPECT_TRUE(UpdateLayerListContains(
+  EXPECT_EQ(4u, update_layer_list_impl()->size());
+  EXPECT_TRUE(UpdateLayerListImplContains(front_facing_child->id()));
+  EXPECT_TRUE(UpdateLayerListImplContains(front_facing_surface->id()));
+  EXPECT_TRUE(UpdateLayerListImplContains(
       front_facing_child_of_front_facing_surface->id()));
-  EXPECT_TRUE(
-      UpdateLayerListContains(front_facing_child_of_back_facing_surface->id()));
+  EXPECT_TRUE(UpdateLayerListImplContains(
+      front_facing_child_of_back_facing_surface->id()));
 }
 
 TEST_F(LayerTreeHostCommonTest, BackFaceCullingWithPreserves3d) {
@@ -4430,98 +4388,59 @@ TEST_F(LayerTreeHostCommonTest, BackFaceCullingWithAnimatingTransforms) {
   // Verify that layers are appropriately culled when their back face is showing
   // and they are not double sided, while animations are going on.
   //
-  // Layers that are animating do not get culled on the main thread, as their
-  // transforms should be treated as "unknown" so we can not be sure that their
-  // back face is really showing.
+  // Even layers that are animating get culled if their back face is showing and
+  // they are not double sided.
   const gfx::Transform identity_matrix;
-  scoped_refptr<Layer> parent = Layer::Create();
-  scoped_refptr<LayerWithForcedDrawsContent> child =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
-  scoped_refptr<LayerWithForcedDrawsContent> animating_surface =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
-  scoped_refptr<LayerWithForcedDrawsContent> child_of_animating_surface =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
-  scoped_refptr<LayerWithForcedDrawsContent> animating_child =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
-  scoped_refptr<LayerWithForcedDrawsContent> child2 =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
-
-  parent->AddChild(child);
-  parent->AddChild(animating_surface);
-  animating_surface->AddChild(child_of_animating_surface);
-  parent->AddChild(animating_child);
-  parent->AddChild(child2);
-
-  host()->SetRootLayer(parent);
+  LayerImpl* parent = root_layer();
+  LayerImpl* child = AddChildToRoot<LayerImpl>();
+  LayerImpl* animating_surface = AddChildToRoot<LayerImpl>();
+  LayerImpl* child_of_animating_surface =
+      AddChild<LayerImpl>(animating_surface);
+  LayerImpl* animating_child = AddChildToRoot<LayerImpl>();
+  LayerImpl* child2 = AddChildToRoot<LayerImpl>();
 
   // Nothing is double-sided
-  child->SetDoubleSided(false);
-  child2->SetDoubleSided(false);
-  animating_surface->SetDoubleSided(false);
-  child_of_animating_surface->SetDoubleSided(false);
-  animating_child->SetDoubleSided(false);
+  child->test_properties()->double_sided = false;
+  child2->test_properties()->double_sided = false;
+  animating_surface->test_properties()->double_sided = false;
+  child_of_animating_surface->test_properties()->double_sided = false;
+  animating_child->test_properties()->double_sided = false;
+
+  // Everything draws content.
+  child->SetDrawsContent(true);
+  child2->SetDrawsContent(true);
+  animating_surface->SetDrawsContent(true);
+  child_of_animating_surface->SetDrawsContent(true);
+  animating_child->SetDrawsContent(true);
 
   gfx::Transform backface_matrix;
   backface_matrix.Translate(50.0, 50.0);
   backface_matrix.RotateAboutYAxis(180.0);
   backface_matrix.Translate(-50.0, -50.0);
 
-  // Make our render surface.
-  animating_surface->SetForceRenderSurfaceForTesting(true);
-
   // Animate the transform on the render surface.
-  AddAnimatedTransformToLayerWithPlayer(animating_surface->id(), timeline(),
-                                        10.0, 30, 0);
+  AddAnimatedTransformToLayerWithPlayer(animating_surface->id(),
+                                        timeline_impl(), 10.0, 30, 0);
   // This is just an animating layer, not a surface.
-  AddAnimatedTransformToLayerWithPlayer(animating_child->id(), timeline(), 10.0,
-                                        30, 0);
+  AddAnimatedTransformToLayerWithPlayer(animating_child->id(), timeline_impl(),
+                                        10.0, 30, 0);
 
-  SetLayerPropertiesForTesting(parent.get(),
-                               identity_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(100, 100),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(child.get(),
-                               backface_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(100, 100),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(animating_surface.get(),
-                               backface_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(100, 100),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(child_of_animating_surface.get(),
-                               backface_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(100, 100),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(animating_child.get(),
-                               backface_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(100, 100),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(child2.get(),
-                               identity_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(100, 100),
-                               true,
-                               false);
+  SetLayerPropertiesForTesting(parent, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(100, 100), true, false);
+  SetLayerPropertiesForTesting(child, backface_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(100, 100), true, false);
+  SetLayerPropertiesForTesting(animating_surface, backface_matrix,
+                               gfx::Point3F(), gfx::PointF(),
+                               gfx::Size(100, 100), true, false, true);
+  SetLayerPropertiesForTesting(child_of_animating_surface, backface_matrix,
+                               gfx::Point3F(), gfx::PointF(),
+                               gfx::Size(100, 100), true, false);
+  SetLayerPropertiesForTesting(animating_child, backface_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(100, 100), true, false);
+  SetLayerPropertiesForTesting(child2, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(100, 100), true, false);
 
-  LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
-      parent.get(), parent->bounds());
-  LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
+  ExecuteCalculateDrawPropertiesWithPropertyTrees(parent);
 
   EXPECT_FALSE(child->has_render_surface());
   EXPECT_TRUE(animating_surface->has_render_surface());
@@ -4529,29 +4448,17 @@ TEST_F(LayerTreeHostCommonTest, BackFaceCullingWithAnimatingTransforms) {
   EXPECT_FALSE(animating_child->has_render_surface());
   EXPECT_FALSE(child2->has_render_surface());
 
-  ExecuteCalculateDrawPropertiesWithPropertyTrees(parent.get());
+  EXPECT_EQ(1u, update_layer_list_impl()->size());
 
-  EXPECT_EQ(4u, update_layer_list().size());
+  // The back facing layers are culled from the layer list, and have an empty
+  // visible rect.
+  EXPECT_TRUE(UpdateLayerListImplContains(child2->id()));
+  EXPECT_TRUE(child->visible_layer_rect().IsEmpty());
+  EXPECT_TRUE(animating_surface->visible_layer_rect().IsEmpty());
+  EXPECT_TRUE(child_of_animating_surface->visible_layer_rect().IsEmpty());
+  EXPECT_TRUE(animating_child->visible_layer_rect().IsEmpty());
 
-  // The non-animating child be culled from the layer list for the parent render
-  // surface.
-  EXPECT_TRUE(UpdateLayerListContains(animating_surface->id()));
-  EXPECT_TRUE(UpdateLayerListContains(animating_child->id()));
-  EXPECT_TRUE(UpdateLayerListContains(child2->id()));
-  EXPECT_TRUE(UpdateLayerListContains(child_of_animating_surface->id()));
-
-  EXPECT_FALSE(child2->visible_layer_rect_for_testing().IsEmpty());
-
-  // The animating layers should have a visible content rect that represents the
-  // area of the front face that is within the viewport.
-  EXPECT_EQ(animating_child->visible_layer_rect_for_testing(),
-            gfx::Rect(animating_child->bounds()));
-  EXPECT_EQ(animating_surface->visible_layer_rect_for_testing(),
-            gfx::Rect(animating_surface->bounds()));
-  // And layers in the subtree of the animating layer should have valid visible
-  // content rects also.
-  EXPECT_EQ(child_of_animating_surface->visible_layer_rect_for_testing(),
-            gfx::Rect(child_of_animating_surface->bounds()));
+  EXPECT_EQ(gfx::Rect(100, 100), child2->visible_layer_rect());
 }
 
 TEST_F(LayerTreeHostCommonTest,
@@ -4560,72 +4467,47 @@ TEST_F(LayerTreeHostCommonTest,
   // created when it flattens its subtree, and its parent has preserves-3d.
 
   const gfx::Transform identity_matrix;
-  scoped_refptr<Layer> parent = Layer::Create();
-  scoped_refptr<LayerWithForcedDrawsContent> front_facing_surface =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
-  scoped_refptr<LayerWithForcedDrawsContent> back_facing_surface =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
-  scoped_refptr<LayerWithForcedDrawsContent> child1 =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
-  scoped_refptr<LayerWithForcedDrawsContent> child2 =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
-
-  parent->AddChild(front_facing_surface);
-  parent->AddChild(back_facing_surface);
-  front_facing_surface->AddChild(child1);
-  back_facing_surface->AddChild(child2);
-
-  host()->SetRootLayer(parent);
+  LayerImpl* parent = root_layer();
+  LayerImpl* front_facing_surface = AddChildToRoot<LayerImpl>();
+  LayerImpl* back_facing_surface = AddChildToRoot<LayerImpl>();
+  LayerImpl* child1 = AddChild<LayerImpl>(front_facing_surface);
+  LayerImpl* child2 = AddChild<LayerImpl>(back_facing_surface);
 
   // RenderSurfaces are not double-sided
-  front_facing_surface->SetDoubleSided(false);
-  back_facing_surface->SetDoubleSided(false);
+  front_facing_surface->test_properties()->double_sided = false;
+  back_facing_surface->test_properties()->double_sided = false;
+
+  // Everything draws content.
+  front_facing_surface->SetDrawsContent(true);
+  back_facing_surface->SetDrawsContent(true);
+  child1->SetDrawsContent(true);
+  child2->SetDrawsContent(true);
 
   gfx::Transform backface_matrix;
   backface_matrix.Translate(50.0, 50.0);
   backface_matrix.RotateAboutYAxis(180.0);
   backface_matrix.Translate(-50.0, -50.0);
 
-  SetLayerPropertiesForTesting(parent.get(),
-                               identity_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(100, 100),
-                               false,
+  SetLayerPropertiesForTesting(parent, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(100, 100), false,
                                true);  // parent transform style is preserve3d.
-  SetLayerPropertiesForTesting(front_facing_surface.get(),
-                               identity_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(100, 100),
-                               true,
+  SetLayerPropertiesForTesting(front_facing_surface, identity_matrix,
+                               gfx::Point3F(), gfx::PointF(),
+                               gfx::Size(100, 100), true,
                                true);  // surface transform style is flat.
-  SetLayerPropertiesForTesting(back_facing_surface.get(),
-                               backface_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(100, 100),
-                               true,
+  SetLayerPropertiesForTesting(back_facing_surface, backface_matrix,
+                               gfx::Point3F(), gfx::PointF(),
+                               gfx::Size(100, 100), true,
                                true);  // surface transform style is flat.
-  SetLayerPropertiesForTesting(child1.get(),
-                               identity_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(100, 100),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(child2.get(),
-                               identity_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(100, 100),
-                               true,
-                               false);
+  SetLayerPropertiesForTesting(child1, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(100, 100), true, false);
+  SetLayerPropertiesForTesting(child2, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(100, 100), true, false);
 
   front_facing_surface->Set3dSortingContextId(1);
   back_facing_surface->Set3dSortingContextId(1);
 
-  ExecuteCalculateDrawPropertiesWithPropertyTrees(parent.get());
+  ExecuteCalculateDrawPropertiesWithPropertyTrees(parent);
 
   // Verify which render surfaces were created and used.
   EXPECT_TRUE(front_facing_surface->has_render_surface());
@@ -4635,9 +4517,9 @@ TEST_F(LayerTreeHostCommonTest,
   EXPECT_FALSE(child1->has_render_surface());
   EXPECT_FALSE(child2->has_render_surface());
 
-  EXPECT_EQ(2u, update_layer_list().size());
-  EXPECT_TRUE(UpdateLayerListContains(front_facing_surface->id()));
-  EXPECT_TRUE(UpdateLayerListContains(child1->id()));
+  EXPECT_EQ(2u, update_layer_list_impl()->size());
+  EXPECT_TRUE(UpdateLayerListImplContains(front_facing_surface->id()));
+  EXPECT_TRUE(UpdateLayerListImplContains(child1->id()));
 }
 
 TEST_F(LayerTreeHostCommonScalingTest, LayerTransformsInHighDPI) {
@@ -5091,41 +4973,22 @@ TEST_F(LayerTreeHostCommonTest, LayerSearch) {
 }
 
 TEST_F(LayerTreeHostCommonTest, TransparentChildRenderSurfaceCreation) {
-  scoped_refptr<Layer> root = Layer::Create();
-  scoped_refptr<Layer> child = Layer::Create();
-  scoped_refptr<LayerWithForcedDrawsContent> grand_child =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
+  LayerImpl* root = root_layer();
+  LayerImpl* child = AddChild<LayerImpl>(root);
+  LayerImpl* grand_child = AddChild<LayerImpl>(child);
+  grand_child->SetDrawsContent(true);
 
   const gfx::Transform identity_matrix;
-  SetLayerPropertiesForTesting(root.get(),
-                               identity_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(100, 100),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(child.get(),
-                               identity_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(10, 10),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(grand_child.get(),
-                               identity_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(10, 10),
-                               true,
-                               false);
+  SetLayerPropertiesForTesting(root, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(100, 100), true, false);
+  SetLayerPropertiesForTesting(child, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(10, 10), true, false);
+  SetLayerPropertiesForTesting(grand_child, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(10, 10), true, false);
 
-  root->AddChild(child);
-  child->AddChild(grand_child);
   child->SetOpacity(0.5f);
 
-  host()->SetRootLayer(root);
-
-  ExecuteCalculateDrawProperties(root.get());
+  ExecuteCalculateDrawProperties(root);
 
   EXPECT_FALSE(child->has_render_surface());
 }
@@ -8228,24 +8091,21 @@ TEST_F(LayerTreeHostCommonTest,
 // Verify that having an animated filter (but no current filter, as these
 // are mutually exclusive) correctly creates a render surface.
 TEST_F(LayerTreeHostCommonTest, AnimatedFilterCreatesRenderSurface) {
-  scoped_refptr<Layer> root = Layer::Create();
-  scoped_refptr<Layer> child = Layer::Create();
-  scoped_refptr<Layer> grandchild = Layer::Create();
-  root->AddChild(child);
-  child->AddChild(grandchild);
+  LayerImpl* root = root_layer();
+  LayerImpl* child = AddChild<LayerImpl>(root);
+  LayerImpl* grandchild = AddChild<LayerImpl>(child);
 
   gfx::Transform identity_transform;
-  SetLayerPropertiesForTesting(root.get(), identity_transform, gfx::Point3F(),
+  SetLayerPropertiesForTesting(root, identity_transform, gfx::Point3F(),
                                gfx::PointF(), gfx::Size(50, 50), true, false);
-  SetLayerPropertiesForTesting(child.get(), identity_transform, gfx::Point3F(),
+  SetLayerPropertiesForTesting(child, identity_transform, gfx::Point3F(),
                                gfx::PointF(), gfx::Size(50, 50), true, false);
-  SetLayerPropertiesForTesting(grandchild.get(), identity_transform,
-                               gfx::Point3F(), gfx::PointF(), gfx::Size(50, 50),
-                               true, false);
-  host()->SetRootLayer(root);
+  SetLayerPropertiesForTesting(grandchild, identity_transform, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(50, 50), true, false);
 
-  AddAnimatedFilterToLayerWithPlayer(child->id(), timeline(), 10.0, 0.1f, 0.2f);
-  ExecuteCalculateDrawProperties(root.get());
+  AddAnimatedFilterToLayerWithPlayer(child->id(), timeline_impl(), 10.0, 0.1f,
+                                     0.2f);
+  ExecuteCalculateDrawProperties(root);
 
   EXPECT_TRUE(root->has_render_surface());
   EXPECT_TRUE(child->has_render_surface());
@@ -8263,21 +8123,17 @@ TEST_F(LayerTreeHostCommonTest, AnimatedFilterCreatesRenderSurface) {
 // Verify that having a filter animation with a delayed start time creates a
 // render surface.
 TEST_F(LayerTreeHostCommonTest, DelayedFilterAnimationCreatesRenderSurface) {
-  scoped_refptr<Layer> root = Layer::Create();
-  scoped_refptr<Layer> child = Layer::Create();
-  scoped_refptr<Layer> grandchild = Layer::Create();
-  root->AddChild(child);
-  child->AddChild(grandchild);
+  LayerImpl* root = root_layer();
+  LayerImpl* child = AddChild<LayerImpl>(root);
+  LayerImpl* grandchild = AddChild<LayerImpl>(child);
 
   gfx::Transform identity_transform;
-  SetLayerPropertiesForTesting(root.get(), identity_transform, gfx::Point3F(),
+  SetLayerPropertiesForTesting(root, identity_transform, gfx::Point3F(),
                                gfx::PointF(), gfx::Size(50, 50), true, false);
-  SetLayerPropertiesForTesting(child.get(), identity_transform, gfx::Point3F(),
+  SetLayerPropertiesForTesting(child, identity_transform, gfx::Point3F(),
                                gfx::PointF(), gfx::Size(50, 50), true, false);
-  SetLayerPropertiesForTesting(grandchild.get(), identity_transform,
-                               gfx::Point3F(), gfx::PointF(), gfx::Size(50, 50),
-                               true, false);
-  host()->SetRootLayer(root);
+  SetLayerPropertiesForTesting(grandchild, identity_transform, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(50, 50), true, false);
 
   std::unique_ptr<KeyframedFilterAnimationCurve> curve(
       KeyframedFilterAnimationCurve::Create());
@@ -8294,8 +8150,9 @@ TEST_F(LayerTreeHostCommonTest, DelayedFilterAnimationCreatesRenderSurface) {
   animation->set_fill_mode(Animation::FILL_MODE_NONE);
   animation->set_time_offset(base::TimeDelta::FromMilliseconds(-1000));
 
-  AddAnimationToLayerWithPlayer(child->id(), timeline(), std::move(animation));
-  ExecuteCalculateDrawProperties(root.get());
+  AddAnimationToLayerWithPlayer(child->id(), timeline_impl(),
+                                std::move(animation));
+  ExecuteCalculateDrawProperties(root);
 
   EXPECT_TRUE(root->has_render_surface());
   EXPECT_TRUE(child->has_render_surface());

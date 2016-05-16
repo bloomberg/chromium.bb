@@ -476,14 +476,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
 
   void set_clip_rect(const gfx::Rect& rect) {}
 
-  // This should only be called during BeginMainFrame since it does not trigger
-  // a Commit. This is called right after property tree being built and should
-  // not trigger property tree rebuild.
-  void SetHasRenderSurface(bool has_render_surface);
-  bool has_render_surface() const {
-    return has_render_surface_;
-  }
-
   void SetSubtreePropertyChanged();
   bool subtree_property_changed() const { return subtree_property_changed_; }
 
@@ -642,7 +634,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   bool use_local_transform_for_backface_visibility_ : 1;
   bool should_check_backface_visibility_ : 1;
   bool force_render_surface_for_testing_ : 1;
-  bool has_render_surface_ : 1;
   bool subtree_property_changed_ : 1;
   Region non_fast_scrollable_region_;
   Region touch_event_handler_region_;
