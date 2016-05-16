@@ -23,6 +23,7 @@ namespace platform_util {
 namespace {
 
 const char kNautilusKey[] = "nautilus.desktop";
+const char kNautilusKeyExtended[] = "nautilus-folder-handler.desktop";
 const char kNautilusCmd[] = "nautilus";
 const char kSupportedNautilusVersion[] = "3.0.2";
 
@@ -105,7 +106,8 @@ bool CheckNautilusIsDefault() {
                             base::TRIM_TRAILING,
                             &file_browser);
 
-  if (!success || file_browser != kNautilusKey)
+  if (!success ||
+      (file_browser != kNautilusKey && file_browser != kNautilusKeyExtended))
     return false;
 
   const base::Version supported_version(kSupportedNautilusVersion);
