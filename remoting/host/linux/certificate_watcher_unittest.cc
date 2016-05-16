@@ -16,21 +16,23 @@
 
 namespace remoting {
 
-const char kWatchFileName[] = "testfile.txt";
+const char kCertFileName[] = "cert9.db";
+const char kKeyFileName[] = "key4.db";
+const char kPKCSFileName[] = "pkcs11.txt";
+const char kOtherFileName[] = "testfile.txt";
 
 const int kMessageLoopWaitMsecs = 150;
 
 class CertificateWatcherTest : public testing::Test {
  public:
-  CertificateWatcherTest()
-      : task_runner_(message_loop_.task_runner()),
-        watch_path_(CreateAndGetUniqueTempDir().AppendASCII(kWatchFileName)) {
+  CertificateWatcherTest() : task_runner_(message_loop_.task_runner()) {
+    EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
     watcher_.reset(new CertificateWatcher(
         base::Bind(&CertificateWatcherTest::OnRestart,
         base::Unretained(this)),
         task_runner_));
     watcher_->SetDelayForTests(base::TimeDelta::FromSeconds(0));
-    watcher_->SetWatchPathForTests(watch_path_);
+    watcher_->SetWatchPathForTests(temp_dir_.path());
   }
 
   ~CertificateWatcherTest() override {
@@ -74,23 +76,28 @@ class CertificateWatcherTest : public testing::Test {
                    base::Unretained(watcher_.get()), ""));
   }
 
-  void TouchFile() {
-    task_runner_->PostTask(
-              FROM_HERE, base::Bind(&CertificateWatcherTest::TouchFileTask,
-                                    base::Unretained(this)));
+  void TouchFile(const char* filename) {
+    task_runner_->PostTask(FROM_HERE,
+                           base::Bind(&CertificateWatcherTest::TouchFileTask,
+                                      base::Unretained(this), filename));
   }
 
-  void TouchFileTask() {
+  void TouchFileTask(const char* filename) {
     std::string testWriteString = std::to_string(rand());
+    base::FilePath path = temp_dir_.path().AppendASCII(filename);
 
-    base::WriteFile(watch_path_, testWriteString.c_str(),
-                    testWriteString.length());
+    if (base::PathExists(path)) {
+      EXPECT_TRUE(base::AppendToFile(path, testWriteString.c_str(),
+                                     testWriteString.length()));
+    } else {
+      EXPECT_TRUE(base::WriteFile(path, testWriteString.c_str(),
+                                  testWriteString.length()));
+    }
   }
 
   base::MessageLoopForIO message_loop_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   base::ScopedTempDir temp_dir_;
-  base::FilePath watch_path_;
   std::unique_ptr<CertificateWatcher> watcher_;
   int restart_count_ = 0;
   base::TimeDelta loop_wait_ =
@@ -98,11 +105,6 @@ class CertificateWatcherTest : public testing::Test {
   base::Closure quit_loop_closure_;
 
  private:
-  const base::FilePath& CreateAndGetUniqueTempDir() {
-    EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
-    return temp_dir_.path();
-  }
-
   void OnRestart() {
     restart_count_++;
     quit_loop_closure_.Run();
@@ -113,7 +115,17 @@ TEST_F(CertificateWatcherTest, OneTouch) {
   EXPECT_EQ(0, restart_count_);
   Start();
   EXPECT_EQ(0, restart_count_);
-  TouchFile();
+  TouchFile(kCertFileName);
+  RunLoop();
+  EXPECT_EQ(1, restart_count_);
+}
+
+TEST_F(CertificateWatcherTest, OneTouchAppend) {
+  EXPECT_EQ(0, restart_count_);
+  TouchFileTask(kKeyFileName);
+  Start();
+  EXPECT_EQ(0, restart_count_);
+  TouchFile(kKeyFileName);  // Appends to existing file.
   RunLoop();
   EXPECT_EQ(1, restart_count_);
 }
@@ -123,7 +135,7 @@ TEST_F(CertificateWatcherTest, InhibitDeferRestart) {
   EXPECT_EQ(0, restart_count_);
   Connect();
   EXPECT_EQ(0, restart_count_);
-  TouchFile();
+  TouchFile(kPKCSFileName);
   RunAndWait();
   EXPECT_EQ(0, restart_count_);
   Disconnect();
@@ -139,9 +151,20 @@ TEST_F(CertificateWatcherTest, UninhibitAndRestart) {
   Disconnect();
   RunAndWait();
   EXPECT_EQ(0, restart_count_);
-  TouchFile();
+  TouchFile(kCertFileName);
   RunLoop();
   EXPECT_EQ(1, restart_count_);
+}
+
+TEST_F(CertificateWatcherTest, TouchOtherFile) {
+  // The watcher should not trigger if changes are made that don't affect the
+  // NSS DB contents.
+  EXPECT_EQ(0, restart_count_);
+  Start();
+  EXPECT_EQ(0, restart_count_);
+  TouchFile(kOtherFileName);
+  RunAndWait();
+  EXPECT_EQ(0, restart_count_);
 }
 
 } // namespace remoting
