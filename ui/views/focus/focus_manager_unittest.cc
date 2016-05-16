@@ -798,6 +798,39 @@ TEST_F(FocusManagerTest, StoreFocusedViewFullKeyboardAccess) {
   EXPECT_TRUE(GetFocusManager()->RestoreFocusedView());
   EXPECT_EQ(view3, GetFocusManager()->GetFocusedView());
 }
+
+// Test that View::RequestFocus() respects full keyboard access mode.
+TEST_F(FocusManagerTest, RequestFocus) {
+  View* view1 = new View();
+  View* view2 = new View();
+
+  // Make view1 always focusable, view2 only focusable in accessibility mode.
+  view1->SetFocusBehavior(View::FocusBehavior::ALWAYS);
+  view2->SetFocusBehavior(View::FocusBehavior::ACCESSIBLE_ONLY);
+
+  // Adds views to the view hierarchy.
+  GetWidget()->GetRootView()->AddChildView(view1);
+  GetWidget()->GetRootView()->AddChildView(view2);
+
+  // Verify view1 can always get focus via View::RequestFocus, while view2 can
+  // only get focus in full keyboard accessibility mode.
+  EXPECT_TRUE(GetFocusManager()->keyboard_accessible());
+  view1->RequestFocus();
+  EXPECT_EQ(view1, GetFocusManager()->GetFocusedView());
+  view2->RequestFocus();
+  EXPECT_EQ(view2, GetFocusManager()->GetFocusedView());
+
+  // Toggle full keyboard accessibility.
+  GetFocusManager()->SetKeyboardAccessible(false);
+
+  GetFocusManager()->ClearFocus();
+  EXPECT_NE(view1, GetFocusManager()->GetFocusedView());
+  view1->RequestFocus();
+  EXPECT_EQ(view1, GetFocusManager()->GetFocusedView());
+  view2->RequestFocus();
+  EXPECT_EQ(view1, GetFocusManager()->GetFocusedView());
+}
+
 #endif
 
 namespace {

@@ -408,6 +408,26 @@ TEST_F(TabTest, CloseButtonLayout) {
   EXPECT_EQ(50, GetCloseButton(tab)->bounds().height());
 }
 
+// Regression test for http://crbug.com/609701. Ensure TabCloseButton does not
+// get focus on right click.
+TEST_F(TabTest, CloseButtonFocus) {
+  Widget widget;
+  InitWidget(&widget);
+  FakeTabController tab_controller;
+  Tab tab(&tab_controller, nullptr);
+  widget.GetContentsView()->AddChildView(&tab);
+
+  views::ImageButton* tab_close_button = GetCloseButton(tab);
+
+  // Verify tab_close_button does not get focus on right click.
+  ui::MouseEvent right_click_event(ui::ET_KEY_PRESSED, gfx::Point(),
+                                   gfx::Point(), base::TimeDelta(),
+                                   ui::EF_RIGHT_MOUSE_BUTTON, 0);
+  tab_close_button->OnMousePressed(right_click_event);
+  EXPECT_NE(tab_close_button,
+            tab_close_button->GetFocusManager()->GetFocusedView());
+}
+
 // Tests expected changes to the ThrobberView state when the WebContents loading
 // state changes or the animation timer (usually in BrowserView) triggers.
 TEST_F(TabTest, LayeredThrobber) {

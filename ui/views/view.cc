@@ -1226,8 +1226,13 @@ const FocusManager* View::GetFocusManager() const {
 
 void View::RequestFocus() {
   FocusManager* focus_manager = GetFocusManager();
-  if (focus_manager && IsAccessibilityFocusable())
-    focus_manager->SetFocusedView(this);
+  if (focus_manager) {
+    bool focusable = focus_manager->keyboard_accessible()
+                         ? IsAccessibilityFocusable()
+                         : IsFocusable();
+    if (focusable)
+      focus_manager->SetFocusedView(this);
+  }
 }
 
 bool View::SkipDefaultKeyEventProcessing(const ui::KeyEvent& event) {

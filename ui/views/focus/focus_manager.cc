@@ -387,16 +387,23 @@ void FocusManager::StoreFocusedView(bool clear_native_focus) {
 
 bool FocusManager::RestoreFocusedView() {
   View* view = GetStoredFocusView();
-  if (view && ContainsView(view)) {
-    // This usually just sets the focus if this view is accessibility
-    // focusable, but let the view override RequestFocus if necessary.
-    view->RequestFocus();
+  if (view) {
+    if (ContainsView(view)) {
+      if (!view->IsFocusable() && view->IsAccessibilityFocusable()) {
+        // RequestFocus would fail, but we want to restore focus to controls
+        // that had focus in accessibility mode.
+        SetFocusedViewWithReason(view, kReasonFocusRestore);
+      } else {
+        // This usually just sets the focus if this view is focusable, but
+        // let the view override RequestFocus if necessary.
+        view->RequestFocus();
 
-    // If it succeeded, the reason would be incorrect; set it to
-    // focus restore.
-    if (focused_view_ == view)
-      focus_change_reason_ = kReasonFocusRestore;
-
+        // If it succeeded, the reason would be incorrect; set it to
+        // focus restore.
+        if (focused_view_ == view)
+          focus_change_reason_ = kReasonFocusRestore;
+      }
+    }
     // The |keyboard_accessible_| mode may have changed while the widget was
     // inactive.
     AdvanceFocusIfNecessary();
