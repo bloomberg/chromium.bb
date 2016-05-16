@@ -15,12 +15,6 @@ function runRepaintTest()
         return;
     }
 
-    // TODO(enne): this is a workaround for multiple svg onload events.
-    // See: http://crbug.com/372946
-    if (window.hasRunRepaintTest)
-        return;
-    window.hasRunRepaintTest = true;
-
     if (window.enablePixelTesting)
         testRunner.dumpAsTextWithPixelResults();
     else

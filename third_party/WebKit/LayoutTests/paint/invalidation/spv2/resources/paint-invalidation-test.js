@@ -15,12 +15,6 @@ function runPaintInvalidationTest()
         return;
     }
 
-    // TODO(enne): this is a workaround for multiple svg onload events.
-    // See: http://crbug.com/372946
-    if (window.hasRunPaintInvalidationTest)
-        return;
-    window.hasRunPaintInvalidationTest = true;
-
     testRunner.layoutAndPaintAsyncThen(function()
     {
         window.internals.startTrackingPaintInvalidationObjects();
