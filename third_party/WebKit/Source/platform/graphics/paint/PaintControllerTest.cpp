@@ -21,9 +21,7 @@ class PaintControllerTest : public ::testing::Test {
 public:
     PaintControllerTest()
         : m_paintController(PaintController::create())
-        , m_originalSlimmingPaintV2Enabled(RuntimeEnabledFeatures::slimmingPaintV2Enabled())
-    {
-    }
+        , m_originalSlimmingPaintV2Enabled(RuntimeEnabledFeatures::slimmingPaintV2Enabled()) { }
 
     IntRect visualRect(const PaintArtifact& paintArtifact, unsigned index)
     {

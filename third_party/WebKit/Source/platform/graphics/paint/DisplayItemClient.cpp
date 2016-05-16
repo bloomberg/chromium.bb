@@ -5,14 +5,10 @@
 #include "platform/graphics/paint/DisplayItemClient.h"
 
 #if ENABLE(ASSERT)
+
 #include "wtf/HashSet.h"
-#endif
 
 namespace blink {
-
-DisplayItemCacheGeneration::Generation DisplayItemCacheGeneration::s_nextGeneration = 1;
-
-#if ENABLE(ASSERT)
 
 HashSet<const DisplayItemClient*>* liveDisplayItemClients = nullptr;
 
@@ -33,6 +29,6 @@ bool DisplayItemClient::isAlive(const DisplayItemClient& client)
     return liveDisplayItemClients && liveDisplayItemClients->contains(&client);
 }
 
-#endif // ENABLE(ASSERT)
-
 } // namespace blink
+
+#endif // ENABLE(ASSERT)

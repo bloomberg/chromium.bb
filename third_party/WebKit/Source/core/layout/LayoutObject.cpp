@@ -140,7 +140,6 @@ struct SameSizeAsLayoutObject {
     unsigned m_bitfields2;
     LayoutRect rect; // Stores the previous paint invalidation rect.
     LayoutPoint position; // Stores the previous position from the paint invalidation container.
-    DisplayItemCacheGeneration cacheGeneration;
 };
 
 static_assert(sizeof(LayoutObject) == sizeof(SameSizeAsLayoutObject), "LayoutObject should stay small");

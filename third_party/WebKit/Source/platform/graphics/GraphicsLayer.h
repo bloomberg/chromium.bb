@@ -359,8 +359,6 @@ private:
     OwnPtr<PaintController> m_paintController;
 
     IntRect m_previousInterestRect;
-
-    DISPLAY_ITEM_CACHE_STATUS_IMPLEMENTATION
 };
 
 } // namespace blink
