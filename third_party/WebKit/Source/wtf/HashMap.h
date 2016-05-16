@@ -59,7 +59,6 @@ public:
 
 private:
     typedef typename MappedTraits::PassInType MappedPassInType;
-    typedef typename MappedTraits::PassOutType MappedPassOutType;
     typedef typename MappedTraits::PeekOutType MappedPeekType;
 
     typedef HashArg HashFunctions;
@@ -125,7 +124,7 @@ public:
     template <typename Collection>
     void removeAll(const Collection& toBeRemoved) { WTF::removeAll(*this, toBeRemoved); }
 
-    MappedPassOutType take(KeyPeekInType); // efficient combination of get with remove
+    MappedType take(KeyPeekInType); // efficient combination of get with remove
 
     // An alternate version of find() that finds the object by hashing and
     // comparing with some other type, to avoid the cost of type
@@ -422,13 +421,12 @@ inline void HashMap<T, U, V, W, X, Y>::clear()
 }
 
 template <typename T, typename U, typename V, typename W, typename X, typename Y>
-typename HashMap<T, U, V, W, X, Y>::MappedPassOutType
-HashMap<T, U, V, W, X, Y>::take(KeyPeekInType key)
+auto HashMap<T, U, V, W, X, Y>::take(KeyPeekInType key) -> MappedType
 {
     iterator it = find(key);
     if (it == end())
-        return MappedTraits::passOut(MappedTraits::emptyValue());
-    MappedPassOutType result = MappedTraits::passOut(it->value);
+        return MappedTraits::emptyValue();
+    MappedType result = std::move(it->value);
     remove(it);
     return result;
 }

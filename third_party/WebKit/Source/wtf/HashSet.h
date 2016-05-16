@@ -43,7 +43,6 @@ private:
     typedef TraitsArg ValueTraits;
     typedef typename ValueTraits::PeekInType ValuePeekInType;
     typedef typename ValueTraits::PassInType ValuePassInType;
-    typedef typename ValueTraits::PassOutType ValuePassOutType;
 
 public:
     typedef typename ValueTraits::TraitType ValueType;
@@ -105,9 +104,9 @@ public:
     template <typename Collection>
     void removeAll(const Collection& toBeRemoved) { WTF::removeAll(*this, toBeRemoved); }
 
-    ValuePassOutType take(iterator);
-    ValuePassOutType take(ValuePeekInType);
-    ValuePassOutType takeAny();
+    ValueType take(iterator);
+    ValueType take(ValuePeekInType);
+    ValueType takeAny();
 
     template <typename VisitorDispatcher>
     void trace(VisitorDispatcher visitor) { m_impl.trace(visitor); }
@@ -225,25 +224,25 @@ inline void HashSet<T, U, V, W>::clear()
 }
 
 template <typename T, typename U, typename V, typename W>
-inline typename HashSet<T, U, V, W>::ValuePassOutType HashSet<T, U, V, W>::take(iterator it)
+inline auto HashSet<T, U, V, W>::take(iterator it) -> ValueType
 {
     if (it == end())
         return ValueTraits::emptyValue();
 
-    ValuePassOutType result = ValueTraits::passOut(const_cast<ValueType&>(*it));
+    ValueType result = std::move(const_cast<ValueType&>(*it));
     remove(it);
 
     return result;
 }
 
 template <typename T, typename U, typename V, typename W>
-inline typename HashSet<T, U, V, W>::ValuePassOutType HashSet<T, U, V, W>::take(ValuePeekInType value)
+inline auto HashSet<T, U, V, W>::take(ValuePeekInType value) -> ValueType
 {
     return take(find(value));
 }
 
 template <typename T, typename U, typename V, typename W>
-inline typename HashSet<T, U, V, W>::ValuePassOutType HashSet<T, U, V, W>::takeAny()
+inline auto HashSet<T, U, V, W>::takeAny() -> ValueType
 {
     return take(begin());
 }

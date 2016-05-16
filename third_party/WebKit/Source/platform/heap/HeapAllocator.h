@@ -467,16 +467,13 @@ template<typename T> struct HashTraits<blink::Member<T>> : SimpleClassHashTraits
     using IteratorConstReferenceType = const blink::Member<T>&;
     static IteratorReferenceType getToReferenceConversion(IteratorGetType x) { return *x; }
     static IteratorConstReferenceType getToReferenceConstConversion(IteratorConstGetType x) { return *x; }
-    // FIXME: Similarly, there is no need for a distinction between PeekOutType
-    // and PassOutType without reference counting.
+
     using PeekOutType = T*;
-    using PassOutType = T*;
 
     template<typename U>
     static void store(const U& value, blink::Member<T>& storage) { storage = value; }
 
     static PeekOutType peek(const blink::Member<T>& value) { return value; }
-    static PassOutType passOut(const blink::Member<T>& value) { return value; }
 };
 
 template<typename T> struct HashTraits<blink::WeakMember<T>> : SimpleClassHashTraits<blink::WeakMember<T>> {
@@ -495,16 +492,13 @@ template<typename T> struct HashTraits<blink::WeakMember<T>> : SimpleClassHashTr
     using IteratorConstReferenceType = const blink::WeakMember<T>&;
     static IteratorReferenceType getToReferenceConversion(IteratorGetType x) { return *x; }
     static IteratorConstReferenceType getToReferenceConstConversion(IteratorConstGetType x) { return *x; }
-    // FIXME: Similarly, there is no need for a distinction between PeekOutType
-    // and PassOutType without reference counting.
+
     using PeekOutType = T*;
-    using PassOutType = T*;
 
     template<typename U>
     static void store(const U& value, blink::WeakMember<T>& storage) { storage = value; }
 
     static PeekOutType peek(const blink::WeakMember<T>& value) { return value; }
-    static PassOutType passOut(const blink::WeakMember<T>& value) { return value; }
 
     template<typename VisitorDispatcher>
     static bool traceInCollection(VisitorDispatcher visitor, blink::WeakMember<T>& weakMember, ShouldWeakPointersBeMarkedStrongly strongify)
@@ -532,16 +526,12 @@ template<typename T> struct HashTraits<blink::UntracedMember<T>> : SimpleClassHa
     using IteratorConstReferenceType = const blink::UntracedMember<T>&;
     static IteratorReferenceType getToReferenceConversion(IteratorGetType x) { return *x; }
     static IteratorConstReferenceType getToReferenceConstConversion(IteratorConstGetType x) { return *x; }
-    // FIXME: Similarly, there is no need for a distinction between PeekOutType
-    // and PassOutType without reference counting.
     using PeekOutType = T*;
-    using PassOutType = T*;
 
     template<typename U>
     static void store(const U& value, blink::UntracedMember<T>& storage) { storage = value; }
 
     static PeekOutType peek(const blink::UntracedMember<T>& value) { return value; }
-    static PassOutType passOut(const blink::UntracedMember<T>& value) { return value; }
 };
 
 template<typename T, size_t inlineCapacity>

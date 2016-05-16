@@ -74,7 +74,6 @@ public:
     typedef ValueArg ValueType;
     typedef HashTraits<ValueType> ValueTraits;
     typedef typename ValueTraits::PeekInType ValuePeekInType;
-    typedef typename ValueTraits::PassOutType ValuePassOutType;
 
     typedef ListHashSetIterator<ListHashSet> iterator;
     typedef ListHashSetConstIterator<ListHashSet> const_iterator;
@@ -173,9 +172,9 @@ public:
     template <typename Collection>
     void removeAll(const Collection& other) { WTF::removeAll(*this, other); }
 
-    ValuePassOutType take(iterator);
-    ValuePassOutType take(ValuePeekInType);
-    ValuePassOutType takeFirst();
+    ValueType take(iterator);
+    ValueType take(ValuePeekInType);
+    ValueType takeFirst();
 
     template <typename VisitorDispatcher>
     void trace(VisitorDispatcher);
@@ -910,30 +909,30 @@ inline void ListHashSet<T, inlineCapacity, U, V>::clear()
 }
 
 template <typename T, size_t inlineCapacity, typename U, typename V>
-typename ListHashSet<T, inlineCapacity, U, V>::ValuePassOutType ListHashSet<T, inlineCapacity, U, V>::take(iterator it)
+auto ListHashSet<T, inlineCapacity, U, V>::take(iterator it) -> ValueType
 {
     if (it == end())
         return ValueTraits::emptyValue();
 
     m_impl.remove(it.getNode());
-    ValuePassOutType result = ValueTraits::passOut(it.getNode()->m_value);
+    ValueType result = std::move(it.getNode()->m_value);
     unlinkAndDelete(it.getNode());
 
     return result;
 }
 
 template <typename T, size_t inlineCapacity, typename U, typename V>
-typename ListHashSet<T, inlineCapacity, U, V>::ValuePassOutType ListHashSet<T, inlineCapacity, U, V>::take(ValuePeekInType value)
+auto ListHashSet<T, inlineCapacity, U, V>::take(ValuePeekInType value) -> ValueType
 {
     return take(find(value));
 }
 
 template <typename T, size_t inlineCapacity, typename U, typename V>
-typename ListHashSet<T, inlineCapacity, U, V>::ValuePassOutType ListHashSet<T, inlineCapacity, U, V>::takeFirst()
+auto ListHashSet<T, inlineCapacity, U, V>::takeFirst() -> ValueType
 {
     ASSERT(!isEmpty());
     m_impl.remove(m_head);
-    ValuePassOutType result = ValueTraits::passOut(m_head->m_value);
+    ValueType result = std::move(m_head->m_value);
     unlinkAndDelete(m_head);
 
     return result;

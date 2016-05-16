@@ -260,6 +260,14 @@ template &lt;typename T&gt;<br/>void Function(T&& t) { ... }</code></td>
 </tr>
 
 <tr>
+<td>Trailing Return Types</td>
+<td><code>auto <i>function declaration</i> -> <i>return_type</i></code></td>
+<td>Allows trailing function return value syntax</td>
+<td><a href="http://en.cppreference.com/w/cpp/language/function">Declaring functions</a></td>
+<td>Use only where it considerably improves readability. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/OQyYSfH9m2M">Discussion thread</a>. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/cxx/Lkp0nubVd0Q">Another discussion thread.</a></td>
+</tr>
+
+<tr>
 <td>Uniform Initialization Syntax</td>
 <td><code><i>type</i> <i>name</i> {[<i>value</i> ..., <i>value</i>]};</code></td>
 <td>Allows any object of primitive, aggregate or class type to be initialized using brace syntax</td>
@@ -867,14 +875,6 @@ work in all our compilers yet.</p>
 <td>Provides a standard system error library</td>
 <td><a href="http://en.cppreference.com/w/cpp/error/system_error">std::system_error</a></td>
 <td></td>
-</tr>
-
-<tr>
-<td>Trailing Return Types</td>
-<td><code>auto <i>function declaration</i> -> <i>return_type</i></code></td>
-<td>Allows trailing function return value syntax</td>
-<td><a href="http://en.cppreference.com/w/cpp/language/function">Declaring functions</a></td>
-<td><a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/OQyYSfH9m2M">Discussion thread</a></td>
 </tr>
 
 <tr>

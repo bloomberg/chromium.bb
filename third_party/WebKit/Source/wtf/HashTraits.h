@@ -109,11 +109,6 @@ template <typename T> struct GenericHashTraits : GenericHashTraitsBase<std::is_i
     template <typename IncomingValueType>
     static void store(IncomingValueType&& value, T& storage) { storage = std::forward<IncomingValueType>(value); }
 
-    // Type for return value of functions that transfer ownership, such as take.
-    typedef T PassOutType;
-    static T&& passOut(T& value) { return std::move(value); }
-    static T&& passOut(T&& value) { return std::move(value); }
-
     // Type for return value of functions that do not transfer ownership, such
     // as get.
     // FIXME: We could change this type to const T& for better performance if we
@@ -172,10 +167,6 @@ template <typename P> struct HashTraits<OwnPtr<P>> : SimpleClassHashTraits<OwnPt
     typedef PassOwnPtr<P> PassInType;
     static void store(PassOwnPtr<P> value, OwnPtr<P>& storage) { storage = std::move(value); }
 
-    typedef PassOwnPtr<P> PassOutType;
-    static PassOwnPtr<P> passOut(OwnPtr<P>& value) { return value.release(); }
-    static PassOwnPtr<P> passOut(std::nullptr_t) { return nullptr; }
-
     typedef typename OwnPtr<P>::PtrType PeekOutType;
     static PeekOutType peek(const OwnPtr<P>& value) { return value.get(); }
     static PeekOutType peek(std::nullptr_t) { return 0; }
@@ -199,10 +190,6 @@ template <typename P> struct HashTraits<RefPtr<P>> : SimpleClassHashTraits<RefPt
     typedef PassRefPtr<P> PassInType;
     static void store(PassRefPtr<P> value, RefPtr<P>& storage) { storage = value; }
 
-    typedef PassRefPtr<P> PassOutType;
-    static PassOutType passOut(RefPtr<P>& value) { return value.release(); }
-    static PassOutType passOut(std::nullptr_t) { return nullptr; }
-
     typedef P* PeekOutType;
     static PeekOutType peek(const RefPtr<P>& value) { return value.get(); }
     static PeekOutType peek(std::nullptr_t) { return 0; }
@@ -220,10 +207,6 @@ struct HashTraits<std::unique_ptr<T>> : SimpleClassHashTraits<std::unique_ptr<T>
 
     using PassInType = std::unique_ptr<T>;
     static void store(std::unique_ptr<T>&& value, std::unique_ptr<T>& storage) { storage = std::move(value); }
-
-    using PassOutType = std::unique_ptr<T>;
-    static std::unique_ptr<T>&& passOut(std::unique_ptr<T>& value) { return std::move(value); }
-    static std::unique_ptr<T> passOut(std::nullptr_t) { return nullptr; }
 
     using PeekOutType = T*;
     static PeekOutType peek(const std::unique_ptr<T>& value) { return value.get(); }
