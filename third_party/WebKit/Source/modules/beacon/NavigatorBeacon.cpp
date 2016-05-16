@@ -5,7 +5,7 @@
 #include "modules/beacon/NavigatorBeacon.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "bindings/modules/v8/UnionTypesModules.h"
+#include "bindings/modules/v8/ArrayBufferViewOrBlobOrStringOrFormData.h"
 #include "core/dom/DOMArrayBufferView.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"

@@ -8,9 +8,10 @@
 #define TestDictionary_h
 
 #include "bindings/core/v8/Dictionary.h"
+#include "bindings/core/v8/DoubleOrString.h"
 #include "bindings/core/v8/Nullable.h"
 #include "bindings/core/v8/ScriptValue.h"
-#include "bindings/core/v8/UnionTypesCore.h"
+#include "bindings/core/v8/TestInterface2OrUint8Array.h"
 #include "bindings/tests/idls/core/TestInterface2.h"
 #include "bindings/tests/idls/core/TestInterfaceGarbageCollected.h"
 #include "bindings/tests/idls/core/TestInterfaceImplementation.h"

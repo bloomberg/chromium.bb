@@ -28,7 +28,6 @@
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/SerializedScriptValue.h"
-#include "bindings/modules/v8/UnionTypesModules.h"
 #include "modules/indexeddb/IDBCursor.h"
 #include "modules/indexeddb/IDBIndex.h"
 #include "modules/indexeddb/IDBIndexParameters.h"

@@ -31,8 +31,8 @@
 #ifndef Blob_h
 #define Blob_h
 
+#include "bindings/core/v8/ArrayBufferOrArrayBufferViewOrBlobOrUSVString.h"
 #include "bindings/core/v8/ScriptWrappable.h"
-#include "bindings/core/v8/UnionTypesCore.h"
 #include "core/CoreExport.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/DOMArrayBufferView.h"

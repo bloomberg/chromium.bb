@@ -86,7 +86,7 @@ import cPickle as pickle
 import optparse
 import sys
 
-from utilities import idl_filename_to_component, read_pickle_files, write_pickle_file, merge_dict_recursively
+from utilities import idl_filename_to_component, read_pickle_files, write_pickle_file, merge_dict_recursively, shorten_union_name
 
 INHERITED_EXTENDED_ATTRIBUTES = set([
     'ActiveScriptWrappable',
@@ -287,9 +287,10 @@ def compute_interfaces_info_overall(info_individuals):
             else:
                 dependencies_other_component_include_paths.append(include_path)
 
-        if interface_info['has_union_types']:
+        for union_type in interface_info.get('union_types', []):
+            name = shorten_union_name(union_type)
             dependencies_include_paths.append(
-                'bindings/%s/v8/UnionTypes%s.h' % (component, component.capitalize()))
+                'bindings/%s/v8/%s.h' % (component, name))
 
         interface_info.update({
             'dependencies_full_paths': dependencies_full_paths,
@@ -303,7 +304,7 @@ def compute_interfaces_info_overall(info_individuals):
     # Clean up temporary private information
     for interface_info in interfaces_info.itervalues():
         del interface_info['extended_attributes']
-        del interface_info['has_union_types']
+        del interface_info['union_types']
         del interface_info['is_legacy_treat_as_partial_interface']
 
     # Compute global_type_info to interfaces_info so that idl_compiler does

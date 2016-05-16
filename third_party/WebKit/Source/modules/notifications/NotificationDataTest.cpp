@@ -5,7 +5,6 @@
 #include "modules/notifications/NotificationData.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "bindings/modules/v8/UnionTypesModules.h"
 #include "core/testing/NullExecutionContext.h"
 #include "modules/notifications/Notification.h"
 #include "modules/notifications/NotificationOptions.h"

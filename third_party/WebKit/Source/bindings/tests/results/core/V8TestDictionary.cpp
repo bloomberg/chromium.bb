@@ -7,9 +7,10 @@
 #include "V8TestDictionary.h"
 
 #include "bindings/core/v8/Dictionary.h"
+#include "bindings/core/v8/DoubleOrString.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptValue.h"
-#include "bindings/core/v8/UnionTypesCore.h"
+#include "bindings/core/v8/TestInterface2OrUint8Array.h"
 #include "bindings/core/v8/V8ArrayBufferView.h"
 #include "bindings/core/v8/V8Element.h"
 #include "bindings/core/v8/V8EventTarget.h"

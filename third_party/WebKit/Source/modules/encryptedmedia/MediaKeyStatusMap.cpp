@@ -4,6 +4,7 @@
 
 #include "modules/encryptedmedia/MediaKeyStatusMap.h"
 
+#include "bindings/core/v8/ArrayBufferOrArrayBufferView.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/DOMArrayPiece.h"
 #include "public/platform/WebData.h"

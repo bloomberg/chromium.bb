@@ -7,8 +7,18 @@
 #ifndef V8TestObject_h
 #define V8TestObject_h
 
+#include "bindings/core/v8/ArrayBufferOrArrayBufferViewOrDictionary.h"
+#include "bindings/core/v8/BooleanOrStringOrUnrestrictedDouble.h"
+#include "bindings/core/v8/DoubleOrString.h"
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "bindings/core/v8/StringOrArrayBufferOrArrayBufferView.h"
+#include "bindings/core/v8/StringOrDouble.h"
+#include "bindings/core/v8/StringOrStringSequence.h"
+#include "bindings/core/v8/TestEnumOrDouble.h"
+#include "bindings/core/v8/TestInterfaceGarbageCollectedOrString.h"
+#include "bindings/core/v8/TestInterfaceOrLong.h"
 #include "bindings/core/v8/ToV8.h"
+#include "bindings/core/v8/UnrestrictedDoubleOrString.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8DOMWrapper.h"
 #include "bindings/core/v8/WrapperTypeInfo.h"

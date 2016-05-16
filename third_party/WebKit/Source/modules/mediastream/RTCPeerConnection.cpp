@@ -39,7 +39,7 @@
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8ThrowException.h"
-#include "bindings/modules/v8/UnionTypesModules.h"
+#include "bindings/modules/v8/RTCIceCandidateInitOrRTCIceCandidate.h"
 #include "bindings/modules/v8/V8RTCCertificate.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/DOMTimeStamp.h"

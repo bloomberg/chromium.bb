@@ -31,9 +31,9 @@
 #ifndef FormData_h
 #define FormData_h
 
+#include "bindings/core/v8/FileOrUSVString.h"
 #include "bindings/core/v8/Iterable.h"
 #include "bindings/core/v8/ScriptState.h"
-#include "bindings/core/v8/UnionTypesCore.h"
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "platform/network/EncodedFormData.h"

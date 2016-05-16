@@ -7,7 +7,7 @@
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/SerializedScriptValue.h"
-#include "bindings/modules/v8/UnionTypesModules.h"
+#include "bindings/modules/v8/FormDataOrURLSearchParams.h"
 #include "modules/ModulesExport.h"
 #include "modules/credentialmanager/SiteBoundCredential.h"
 #include "platform/heap/Handle.h"

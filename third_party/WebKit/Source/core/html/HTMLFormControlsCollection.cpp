@@ -23,7 +23,7 @@
 
 #include "core/html/HTMLFormControlsCollection.h"
 
-#include "bindings/core/v8/UnionTypesCore.h"
+#include "bindings/core/v8/RadioNodeListOrElement.h"
 #include "core/HTMLNames.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLFieldSetElement.h"

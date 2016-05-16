@@ -26,7 +26,7 @@
 #ifndef File_h
 #define File_h
 
-#include "bindings/core/v8/UnionTypesCore.h"
+#include "bindings/core/v8/ArrayBufferOrArrayBufferViewOrBlobOrUSVString.h"
 #include "core/CoreExport.h"
 #include "core/fileapi/Blob.h"
 #include "platform/heap/Handle.h"

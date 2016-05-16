@@ -5,7 +5,7 @@
 #include "core/animation/AnimationEffectTiming.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/UnionTypesCore.h"
+#include "bindings/core/v8/UnrestrictedDoubleOrString.h"
 #include "core/animation/AnimationEffect.h"
 #include "core/animation/KeyframeEffect.h"
 #include "platform/animation/TimingFunction.h"

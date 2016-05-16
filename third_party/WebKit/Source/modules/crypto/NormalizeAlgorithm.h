@@ -31,7 +31,7 @@
 #ifndef NormalizeAlgorithm_h
 #define NormalizeAlgorithm_h
 
-#include "bindings/modules/v8/UnionTypesModules.h"
+#include "bindings/modules/v8/DictionaryOrString.h"
 #include "modules/ModulesExport.h"
 #include "public/platform/WebCrypto.h"
 #include "public/platform/WebCryptoAlgorithm.h"

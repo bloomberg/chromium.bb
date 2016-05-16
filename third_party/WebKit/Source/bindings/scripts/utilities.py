@@ -88,7 +88,7 @@ class ComponentInfoProvider(object):
         return set()
 
     @property
-    def include_path_for_union_types(self):
+    def include_path_for_union_types(self, union_type):
         return None
 
 
@@ -118,9 +118,9 @@ class ComponentInfoProviderCore(ComponentInfoProvider):
     def union_types(self):
         return self._component_info['union_types']
 
-    @property
-    def include_path_for_union_types(self):
-        return 'bindings/core/v8/UnionTypesCore.h'
+    def include_path_for_union_types(self, union_type):
+        name = shorten_union_name(union_type)
+        return 'bindings/core/v8/%s.h' % name
 
     @property
     def specifier_for_export(self):
@@ -165,9 +165,13 @@ class ComponentInfoProviderModules(ComponentInfoProvider):
         # generating multiple container generation.
         return self._component_info_modules['union_types'] - self._component_info_core['union_types']
 
-    @property
-    def include_path_for_union_types(self):
-        return 'bindings/modules/v8/UnionTypesModules.h'
+    def include_path_for_union_types(self, union_type):
+        core_union_type_names = [core_union_type.name for core_union_type
+                                 in self._component_info_core['union_types']]
+        name = shorten_union_name(union_type)
+        if union_type.name in core_union_type_names:
+            return 'bindings/core/v8/%s.h' % name
+        return 'bindings/modules/v8/%s.h' % name
 
     @property
     def specifier_for_export(self):
@@ -384,3 +388,20 @@ def get_interface_exposed_arguments(file_contents):
         arguments.append({'exposed': exposed, 'runtime_enabled': runtime_enabled})
 
     return arguments
+
+
+# Workaround for http://crbug.com/611437
+# TODO(bashi): Remove this hack once we resolve too-long generated file names.
+def shorten_union_name(union_type):
+    aliases = {
+        'CanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContextOrImageBitmapRenderingContext': 'RenderingContext',
+    }
+
+    idl_type = union_type
+    if union_type.is_nullable:
+        idl_type = union_type.inner_type
+    name = idl_type.cpp_type or idl_type.name
+    alias = aliases.get(name)
+    if alias:
+        return alias
+    return name

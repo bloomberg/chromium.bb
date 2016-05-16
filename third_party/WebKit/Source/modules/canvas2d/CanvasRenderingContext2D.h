@@ -27,7 +27,6 @@
 #define CanvasRenderingContext2D_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
-#include "bindings/modules/v8/UnionTypesModules.h"
 #include "core/html/canvas/CanvasContextCreationAttributes.h"
 #include "core/html/canvas/CanvasRenderingContext.h"
 #include "core/html/canvas/CanvasRenderingContextFactory.h"

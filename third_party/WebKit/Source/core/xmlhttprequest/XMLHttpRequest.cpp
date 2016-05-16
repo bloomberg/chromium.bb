@@ -22,10 +22,11 @@
 
 #include "core/xmlhttprequest/XMLHttpRequest.h"
 
+#include "bindings/core/v8/ArrayBufferOrArrayBufferViewOrBlobOrDocumentOrStringOrFormData.h"
+#include "bindings/core/v8/ArrayBufferOrArrayBufferViewOrBlobOrUSVString.h"
 #include "bindings/core/v8/DOMWrapperWorld.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptState.h"
-#include "bindings/core/v8/UnionTypesCore.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/DOMArrayBufferView.h"
 #include "core/dom/DOMException.h"

@@ -80,7 +80,7 @@ import v8_interface
 import v8_types
 import v8_union
 from v8_utilities import capitalize, cpp_name, v8_class_name
-from utilities import KNOWN_COMPONENTS, idl_filename_to_component, is_valid_component_dependency, is_testing_target
+from utilities import KNOWN_COMPONENTS, idl_filename_to_component, is_valid_component_dependency, is_testing_target, shorten_union_name
 
 
 def normalize_and_sort_includes(include_paths):
@@ -129,15 +129,20 @@ def should_generate_code(definitions):
     return definitions.interfaces or definitions.dictionaries
 
 
-def depends_on_union_types(idl_type):
-    """Returns true when a given idl_type depends on union containers
-    directly.
+def depending_union_type(idl_type):
+    """Returns the union type name if the given idl_type depends on a
+    union type.
     """
-    if idl_type.is_union_type:
-        return True
-    if idl_type.is_array_or_sequence_type:
-        return idl_type.element_type.is_union_type
-    return False
+    def find_base_type(current_type):
+        if current_type.is_array_or_sequence_type:
+            return find_base_type(current_type.element_type)
+        if current_type.is_nullable:
+            return find_base_type(current_type.inner_type)
+        return current_type
+    base_type = find_base_type(idl_type)
+    if base_type.is_union_type:
+        return base_type
+    return None
 
 
 class TypedefResolver(Visitor):
@@ -149,16 +154,14 @@ class TypedefResolver(Visitor):
         self.typedefs = {}
         for name, typedef in self.info_provider.typedefs.iteritems():
             self.typedefs[name] = typedef.idl_type
-        self.additional_includes = set()
+        self.additional_header_includes = set()
         definitions.accept(self)
         self._update_dependencies_include_paths(definition_name)
 
     def _update_dependencies_include_paths(self, definition_name):
         interface_info = self.info_provider.interfaces_info[definition_name]
-        dependencies_include_paths = interface_info['dependencies_include_paths']
-        for include_path in self.additional_includes:
-            if include_path not in dependencies_include_paths:
-                dependencies_include_paths.append(include_path)
+        interface_info['additional_header_includes'] = set(
+            self.additional_header_includes)
 
     def _resolve_typedefs(self, typed_object):
         """Resolve typedefs to actual types in the object."""
@@ -170,9 +173,12 @@ class TypedefResolver(Visitor):
             if not idl_type:
                 continue
             resolved_idl_type = idl_type.resolve_typedefs(self.typedefs)
-            if depends_on_union_types(resolved_idl_type):
-                self.additional_includes.add(
-                    self.info_provider.include_path_for_union_types)
+            # TODO(bashi): Dependency resolution shouldn't happen here.
+            # Move this into includes_for_type() families.
+            union_type = depending_union_type(resolved_idl_type)
+            if union_type:
+                self.additional_header_includes.add(
+                    self.info_provider.include_path_for_union_types(union_type))
             # Need to re-assign the attribute, not just mutate idl_type, since
             # type(idl_type) may change.
             setattr(typed_object, attribute_name, resolved_idl_type)
@@ -265,7 +271,8 @@ class CodeGeneratorV8(CodeGeneratorBase):
             template_context['header_includes'].add('core/dom/DOMTypedArray.h')
         elif interface_info['include_path']:
             template_context['header_includes'].add(interface_info['include_path'])
-
+        template_context['header_includes'].update(
+            interface_info.get('additional_header_includes', []))
         header_template = self.jinja_env.get_template(header_template_filename)
         cpp_template = self.jinja_env.get_template(cpp_template_filename)
         header_text, cpp_text = render_template(
@@ -323,16 +330,11 @@ class CodeGeneratorDictionaryImpl(CodeGeneratorBase):
         template_context = v8_dictionary.dictionary_impl_context(
             dictionary, interfaces_info)
         include_paths = interface_info.get('dependencies_include_paths')
-        # Add union containers header file to header_includes rather than
-        # cpp file so that union containers can be used in dictionary headers.
-        union_container_headers = [header for header in include_paths
-                                   if header.find('UnionTypes') > 0]
-        include_paths = [header for header in include_paths
-                         if header not in union_container_headers]
-        template_context['header_includes'].update(union_container_headers)
         if not is_testing_target(interface_info.get('full_path')):
             template_context['exported'] = self.info_provider.specifier_for_export
             template_context['header_includes'].add(self.info_provider.include_path_for_export)
+        template_context['header_includes'].update(
+            interface_info.get('additional_header_includes', []))
         header_text, cpp_text = render_template(
             include_paths, header_template, cpp_template, template_context)
         header_path, cpp_path = self.output_paths(
@@ -356,44 +358,53 @@ class CodeGeneratorUnionType(object):
         self.target_component = target_component
         set_global_type_info(info_provider)
 
-    def generate_code(self):
-        union_types = self.info_provider.union_types
-        if not union_types:
-            return ()
-        header_template = self.jinja_env.get_template('union.h')
-        cpp_template = self.jinja_env.get_template('union.cpp')
-        template_context = v8_union.union_context(
-            union_types, self.info_provider.interfaces_info)
-        template_context['code_generator'] = module_pyname
-        capitalized_component = self.target_component.capitalize()
-        template_context['exported'] = self.info_provider.specifier_for_export
-        template_context['header_filename'] = 'bindings/%s/v8/UnionTypes%s.h' % (
-            self.target_component, capitalized_component)
-        template_context['macro_guard'] = 'UnionType%s_h' % capitalized_component
-        additional_header_includes = [self.info_provider.include_path_for_export]
-
-        # Add UnionTypesCore.h as a dependency when we generate modules union types
-        # because we only generate union type containers which are used by both
-        # core and modules in UnionTypesCore.h.
-        # FIXME: This is an ad hoc workaround and we need a general way to
-        # handle core <-> modules dependency.
-        if self.target_component == 'modules':
-            additional_header_includes.append(
-                'bindings/core/v8/UnionTypesCore.h')
-
+    def _generate_container_code(self, union_type):
+        header_template = self.jinja_env.get_template('union_container.h')
+        cpp_template = self.jinja_env.get_template('union_container.cpp')
+        template_context = v8_union.container_context(
+            union_type, self.info_provider.interfaces_info)
+        template_context['header_includes'].append(
+            self.info_provider.include_path_for_export)
         template_context['header_includes'] = normalize_and_sort_includes(
-            template_context['header_includes'] + additional_header_includes)
-
+            template_context['header_includes'])
+        template_context['code_generator'] = module_pyname
+        template_context['exported'] = self.info_provider.specifier_for_export
+        name = shorten_union_name(union_type)
+        template_context['this_include_header_name'] = name
         header_text = header_template.render(template_context)
         cpp_text = cpp_template.render(template_context)
-        header_path = posixpath.join(self.output_dir,
-                                     'UnionTypes%s.h' % capitalized_component)
-        cpp_path = posixpath.join(self.output_dir,
-                                  'UnionTypes%s.cpp' % capitalized_component)
+        header_path = posixpath.join(self.output_dir, '%s.h' % name)
+        cpp_path = posixpath.join(self.output_dir, '%s.cpp' % name)
         return (
             (header_path, header_text),
             (cpp_path, cpp_text),
         )
+
+    def _get_union_types_for_containers(self):
+        union_types = self.info_provider.union_types
+        if not union_types:
+            return None
+        # For container classes we strip nullable wrappers. For example,
+        # both (A or B)? and (A? or B) will become AOrB. This should be OK
+        # because container classes can handle null and it seems that
+        # distinguishing (A or B)? and (A? or B) doesn't make sense.
+        container_cpp_types = set()
+        union_types_for_containers = set()
+        for union_type in union_types:
+            cpp_type = union_type.cpp_type
+            if cpp_type not in container_cpp_types:
+                union_types_for_containers.add(union_type)
+                container_cpp_types.add(cpp_type)
+        return union_types_for_containers
+
+    def generate_code(self):
+        union_types = self._get_union_types_for_containers()
+        if not union_types:
+            return ()
+        outputs = set()
+        for union_type in union_types:
+            outputs.update(self._generate_container_code(union_type))
+        return outputs
 
 
 def initialize_jinja_env(cache_dir):

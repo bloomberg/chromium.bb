@@ -7,7 +7,6 @@
 #include "V8TestDictionaryDerived.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/UnionTypesCore.h"
 #include "bindings/core/v8/V8TestDictionary.h"
 
 namespace blink {

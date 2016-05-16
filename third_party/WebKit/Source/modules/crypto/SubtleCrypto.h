@@ -31,9 +31,11 @@
 #ifndef SubtleCrypto_h
 #define SubtleCrypto_h
 
+#include "bindings/core/v8/ArrayBufferOrArrayBufferView.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptWrappable.h"
-#include "bindings/modules/v8/UnionTypesModules.h"
+#include "bindings/modules/v8/ArrayBufferOrArrayBufferViewOrDictionary.h"
+#include "bindings/modules/v8/DictionaryOrString.h"
 #include "core/dom/DOMArrayPiece.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"

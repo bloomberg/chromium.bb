@@ -32,7 +32,7 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptState.h"
-#include "bindings/core/v8/UnionTypesCore.h"
+#include "bindings/core/v8/StringOrArrayBufferOrArrayBufferView.h"
 #include "core/CSSValueKeywords.h"
 #include "core/css/BinaryDataFontFaceSource.h"
 #include "core/css/CSSFontFace.h"

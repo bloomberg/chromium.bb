@@ -5,7 +5,7 @@
 #include "core/animation/KeyframeEffect.h"
 
 #include "bindings/core/v8/Dictionary.h"
-#include "bindings/core/v8/UnionTypesCore.h"
+#include "bindings/core/v8/EffectModelOrDictionarySequenceOrDictionary.h"
 #include "bindings/core/v8/V8BindingForTesting.h"
 #include "bindings/core/v8/V8KeyframeEffectOptions.h"
 #include "core/animation/AnimationClock.h"

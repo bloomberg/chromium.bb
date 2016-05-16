@@ -31,7 +31,7 @@
 #include "core/animation/EffectInput.h"
 
 #include "bindings/core/v8/Dictionary.h"
-#include "bindings/core/v8/UnionTypesCore.h"
+#include "bindings/core/v8/EffectModelOrDictionarySequenceOrDictionary.h"
 #include "core/animation/AnimationInputHelpers.h"
 #include "core/animation/CompositorAnimations.h"
 #include "core/animation/KeyframeEffectModel.h"

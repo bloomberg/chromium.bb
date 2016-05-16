@@ -7,7 +7,7 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8Binding.h"
-#include "bindings/modules/v8/UnionTypesModules.h"
+#include "bindings/modules/v8/ArrayBufferOrArrayBufferViewOrUSVString.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/fileapi/Blob.h"
 #include "platform/blob/BlobData.h"

@@ -26,7 +26,7 @@
 #define Node_h
 
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
-#include "bindings/core/v8/UnionTypesCore.h"
+#include "bindings/core/v8/NodeOrString.h"
 #include "core/CoreExport.h"
 #include "core/dom/MutationObserver.h"
 #include "core/dom/SimulatedClickOptions.h"

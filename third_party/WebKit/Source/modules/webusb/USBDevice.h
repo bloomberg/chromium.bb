@@ -5,9 +5,9 @@
 #ifndef USBDevice_h
 #define USBDevice_h
 
+#include "bindings/core/v8/ArrayBufferOrArrayBufferView.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptWrappable.h"
-#include "bindings/modules/v8/UnionTypesModules.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "device/usb/public/interfaces/device.mojom-blink.h"
 #include "platform/heap/Handle.h"

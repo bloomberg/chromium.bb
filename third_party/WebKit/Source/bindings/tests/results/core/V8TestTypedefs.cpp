@@ -7,7 +7,8 @@
 #include "V8TestTypedefs.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/UnionTypesCore.h"
+#include "bindings/core/v8/StringOrDouble.h"
+#include "bindings/core/v8/TestInterfaceOrTestInterfaceEmpty.h"
 #include "bindings/core/v8/V8DOMConfiguration.h"
 #include "bindings/core/v8/V8ObjectConstructor.h"
 #include "bindings/core/v8/V8TestCallbackInterface.h"

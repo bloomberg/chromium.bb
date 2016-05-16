@@ -7,7 +7,6 @@
 
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptWrappable.h"
-#include "bindings/modules/v8/UnionTypesModules.h"
 #include "modules/ModulesExport.h"
 #include "modules/cachestorage/CacheQueryOptions.h"
 #include "modules/fetch/GlobalFetch.h"

@@ -6,6 +6,8 @@
 
 #include "TestDictionary.h"
 
+#include "bindings/core/v8/DoubleOrString.h"
+#include "bindings/core/v8/TestInterface2OrUint8Array.h"
 
 namespace blink {
 

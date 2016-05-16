@@ -31,7 +31,7 @@
 #include "core/fileapi/FileReader.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/UnionTypesCore.h"
+#include "bindings/core/v8/StringOrArrayBuffer.h"
 #include "core/dom/CrossThreadTask.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/Document.h"
