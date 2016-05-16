@@ -8,7 +8,7 @@ Push
 Unregister
 Source
 service-worker-empty.js
-Last modified
+Received
 Status
 #N activated and is running
 stop
@@ -24,7 +24,7 @@ Push
 Unregister
 Source
 service-worker-empty.js
-Last modified
+Received
 Status
 #N activated and is running
 stop
@@ -39,7 +39,7 @@ Push
 Unregister
 Source
 service-worker-empty.js
-Last modified
+Received
 Status
 #N activated and is running
 stop
@@ -55,7 +55,7 @@ Push
 Unregister
 Source
 service-worker-empty.js
-Last modified
+Received
 Status
 Clients
 Errors
@@ -68,7 +68,7 @@ Push
 Unregister
 Source
 service-worker-empty.js
-Last modified
+Received
 Status
 #N activated and is running
 stop
