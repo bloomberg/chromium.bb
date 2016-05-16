@@ -55,6 +55,7 @@ class CONTENT_EXPORT ContextProviderCommandBuffer
       const GURL& active_url,
       gfx::GpuPreference gpu_preference,
       bool automatic_flushes,
+      bool support_locking,
       const gpu::SharedMemoryLimits& memory_limits,
       const gpu::gles2::ContextCreationAttribHelper& attributes,
       ContextProviderCommandBuffer* shared_context_provider,
@@ -74,11 +75,6 @@ class CONTENT_EXPORT ContextProviderCommandBuffer
   void DeleteCachedResources() override;
   void SetLostContextCallback(
       const LostContextCallback& lost_context_callback) override;
-
-  // Sets up a lock so this context can be used from multiple threads. After
-  // calling this, all functions without explicit thread usage constraints can
-  // be used on any thread while the lock returned by GetLock() is acquired.
-  void SetupLock();
 
   // Set the default task runner for command buffers to use for handling IPCs.
   // If not specified, this will be the ThreadTaskRunner for the thread on
@@ -109,15 +105,16 @@ class CONTENT_EXPORT ContextProviderCommandBuffer
   bool bind_succeeded_ = false;
   bool bind_failed_ = false;
 
-  int32_t stream_id_;
-  gpu::GpuStreamPriority stream_priority_;
-  gpu::SurfaceHandle surface_handle_;
-  GURL active_url_;
-  gfx::GpuPreference gpu_preference_;
-  bool automatic_flushes_;
-  gpu::SharedMemoryLimits memory_limits_;
-  gpu::gles2::ContextCreationAttribHelper attributes_;
-  command_buffer_metrics::ContextType context_type_;
+  const int32_t stream_id_;
+  const gpu::GpuStreamPriority stream_priority_;
+  const gpu::SurfaceHandle surface_handle_;
+  const GURL active_url_;
+  const gfx::GpuPreference gpu_preference_;
+  const bool automatic_flushes_;
+  const bool support_locking_;
+  const gpu::SharedMemoryLimits memory_limits_;
+  const gpu::gles2::ContextCreationAttribHelper attributes_;
+  const command_buffer_metrics::ContextType context_type_;
 
   scoped_refptr<SharedProviders> shared_providers_;
   scoped_refptr<gpu::GpuChannelHost> channel_;

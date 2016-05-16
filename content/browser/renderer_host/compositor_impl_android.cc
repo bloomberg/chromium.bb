@@ -663,6 +663,7 @@ void CompositorImpl::CreateOutputSurface() {
 
     GURL url("chrome://gpu/CompositorImpl::CreateOutputSurface");
     constexpr bool automatic_flushes = false;
+    constexpr bool support_locking = false;
 
     constexpr size_t kBytesPerPixel = 4;
     const size_t full_screen_texture_size_in_bytes =
@@ -686,8 +687,9 @@ void CompositorImpl::CreateOutputSurface() {
     context_provider = new ContextProviderCommandBuffer(
         std::move(gpu_channel_host), gpu::GPU_STREAM_DEFAULT,
         gpu::GpuStreamPriority::NORMAL, surface_handle_, url,
-        gfx::PreferIntegratedGpu, automatic_flushes, limits, attributes,
-        nullptr, command_buffer_metrics::DISPLAY_COMPOSITOR_ONSCREEN_CONTEXT);
+        gfx::PreferIntegratedGpu, automatic_flushes, support_locking, limits,
+        attributes, nullptr,
+        command_buffer_metrics::DISPLAY_COMPOSITOR_ONSCREEN_CONTEXT);
     DCHECK(context_provider.get());
 
     real_output_surface = base::WrapUnique(new OutputSurfaceWithoutParent(

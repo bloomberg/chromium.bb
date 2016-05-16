@@ -778,20 +778,21 @@ std::unique_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface(
   attributes.lose_context_when_out_of_memory = true;
 
   constexpr bool automatic_flushes = false;
+  constexpr bool support_locking = false;
 
-    // The compositor context shares resources with the worker context unless
-    // the worker is async.
-    ContextProviderCommandBuffer* share_context = worker_context_provider.get();
-    if (compositor_deps_->IsAsyncWorkerContextEnabled())
-      share_context = nullptr;
+  // The compositor context shares resources with the worker context unless
+  // the worker is async.
+  ContextProviderCommandBuffer* share_context = worker_context_provider.get();
+  if (compositor_deps_->IsAsyncWorkerContextEnabled())
+    share_context = nullptr;
 
-    scoped_refptr<ContextProviderCommandBuffer> context_provider(
-        new ContextProviderCommandBuffer(
-            std::move(gpu_channel_host), gpu::GPU_STREAM_DEFAULT,
-            gpu::GpuStreamPriority::NORMAL, gpu::kNullSurfaceHandle,
-            GetURLForGraphicsContext3D(), gfx::PreferIntegratedGpu,
-            automatic_flushes, limits, attributes, share_context,
-            command_buffer_metrics::RENDER_COMPOSITOR_CONTEXT));
+  scoped_refptr<ContextProviderCommandBuffer> context_provider(
+      new ContextProviderCommandBuffer(
+          std::move(gpu_channel_host), gpu::GPU_STREAM_DEFAULT,
+          gpu::GpuStreamPriority::NORMAL, gpu::kNullSurfaceHandle,
+          GetURLForGraphicsContext3D(), gfx::PreferIntegratedGpu,
+          automatic_flushes, support_locking, limits, attributes, share_context,
+          command_buffer_metrics::RENDER_COMPOSITOR_CONTEXT));
 
 #if defined(OS_ANDROID)
   if (RenderThreadImpl::current()->sync_compositor_message_filter()) {

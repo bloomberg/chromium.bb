@@ -182,13 +182,15 @@ void GLHelperHolder::Initialize() {
   // screen readback to be mapped.
   limits.mapped_memory_reclaim_limit = full_screen_texture_size_in_bytes;
 
-  bool automatic_flushes = false;
-  GURL url("chrome://gpu/RenderWidgetHostViewAndroid");
+  constexpr bool automatic_flushes = false;
+  constexpr bool support_locking = false;
+  const GURL url("chrome://gpu/RenderWidgetHostViewAndroid");
 
   provider_ = new ContextProviderCommandBuffer(
       std::move(gpu_channel_host), gpu::GPU_STREAM_DEFAULT,
       gpu::GpuStreamPriority::NORMAL, gpu::kNullSurfaceHandle, url,
-      gfx::PreferIntegratedGpu, automatic_flushes, limits, attributes, nullptr,
+      gfx::PreferIntegratedGpu, automatic_flushes, support_locking, limits,
+      attributes, nullptr,
       command_buffer_metrics::BROWSER_OFFSCREEN_MAINTHREAD_CONTEXT);
   if (!provider_->BindToCurrentThread())
     return;

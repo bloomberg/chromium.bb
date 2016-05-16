@@ -61,6 +61,7 @@ ContextProviderCommandBuffer::ContextProviderCommandBuffer(
     const GURL& active_url,
     gfx::GpuPreference gpu_preference,
     bool automatic_flushes,
+    bool support_locking,
     const gpu::SharedMemoryLimits& memory_limits,
     const gpu::gles2::ContextCreationAttribHelper& attributes,
     ContextProviderCommandBuffer* shared_context_provider,
@@ -71,6 +72,7 @@ ContextProviderCommandBuffer::ContextProviderCommandBuffer(
       active_url_(active_url),
       gpu_preference_(gpu_preference),
       automatic_flushes_(automatic_flushes),
+      support_locking_(support_locking),
       memory_limits_(memory_limits),
       attributes_(attributes),
       context_type_(type),
@@ -238,6 +240,13 @@ bool ContextProviderCommandBuffer::BindToCurrentThread() {
   std::string unique_context_name =
       base::StringPrintf("%s-%p", type_name.c_str(), gles2_impl_.get());
   ContextGL()->TraceBeginCHROMIUM("gpu_toplevel", unique_context_name.c_str());
+  // If support_locking_ is true, the context may be used from multiple
+  // threads, and any async callstacks will need to hold the same lock, so
+  // give it to the command buffer.
+  // We don't hold a lock here since there's no need, so set the lock very last
+  // to prevent asserts that we're not holding it.
+  if (support_locking_)
+    command_buffer_->SetLock(&context_lock_);
   return true;
 }
 
@@ -283,12 +292,6 @@ void ContextProviderCommandBuffer::InvalidateGrContext(uint32_t state) {
   }
 }
 
-void ContextProviderCommandBuffer::SetupLock() {
-  DCHECK(bind_succeeded_);
-  DCHECK(context_thread_checker_.CalledOnValidThread());
-  command_buffer_->SetLock(&context_lock_);
-}
-
 void ContextProviderCommandBuffer::SetDefaultTaskRunner(
     scoped_refptr<base::SingleThreadTaskRunner> default_task_runner) {
   DCHECK(!bind_succeeded_);
@@ -296,6 +299,7 @@ void ContextProviderCommandBuffer::SetDefaultTaskRunner(
 }
 
 base::Lock* ContextProviderCommandBuffer::GetLock() {
+  DCHECK(support_locking_);
   return &context_lock_;
 }
 

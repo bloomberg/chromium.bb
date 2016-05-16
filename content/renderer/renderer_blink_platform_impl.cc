@@ -1086,16 +1086,17 @@ RendererBlinkPlatformImpl::createOffscreenGraphicsContext3DProvider(
   else
     attributes.context_type = gpu::gles2::CONTEXT_TYPE_WEBGL1;
 
-  bool automatic_flushes = true;
+  constexpr bool automatic_flushes = true;
+  constexpr bool support_locking = false;
   // Prefer discrete GPU for WebGL.
-  gfx::GpuPreference gpu_preference = gfx::PreferDiscreteGpu;
+  constexpr gfx::GpuPreference gpu_preference = gfx::PreferDiscreteGpu;
 
   scoped_refptr<ContextProviderCommandBuffer> provider(
       new ContextProviderCommandBuffer(
           std::move(gpu_channel_host), gpu::GPU_STREAM_DEFAULT,
           gpu::GpuStreamPriority::NORMAL, gpu::kNullSurfaceHandle,
           GURL(top_document_web_url), gpu_preference, automatic_flushes,
-          gpu::SharedMemoryLimits(), attributes, share_context,
+          support_locking, gpu::SharedMemoryLimits(), attributes, share_context,
           command_buffer_metrics::OFFSCREEN_CONTEXT_FOR_WEBGL));
   if (will_bind_to_current_thread == blink::Platform::BindToCurrentThread) {
     if (!provider->BindToCurrentThread()) {

@@ -99,6 +99,7 @@ const int kNumRetriesBeforeSoftwareFallback = 4;
 scoped_refptr<content::ContextProviderCommandBuffer> CreateContextCommon(
     scoped_refptr<gpu::GpuChannelHost> gpu_channel_host,
     gpu::SurfaceHandle surface_handle,
+    bool support_locking,
     content::ContextProviderCommandBuffer* shared_context_provider,
     content::command_buffer_metrics::ContextType type) {
   DCHECK(
@@ -126,14 +127,14 @@ scoped_refptr<content::ContextProviderCommandBuffer> CreateContextCommon(
   attributes.bind_generates_resource = false;
   attributes.lose_context_when_out_of_memory = true;
 
-  bool automatic_flushes = false;
+  constexpr bool automatic_flushes = false;
 
   GURL url("chrome://gpu/GpuProcessTransportFactory::CreateContextCommon");
   return make_scoped_refptr(new content::ContextProviderCommandBuffer(
       std::move(gpu_channel_host), gpu::GPU_STREAM_DEFAULT,
       gpu::GpuStreamPriority::NORMAL, surface_handle, url,
-      gfx::PreferIntegratedGpu, automatic_flushes, gpu::SharedMemoryLimits(),
-      attributes, shared_context_provider, type));
+      gfx::PreferIntegratedGpu, automatic_flushes, support_locking,
+      gpu::SharedMemoryLimits(), attributes, shared_context_provider, type));
 }
 
 #if defined(OS_MACOSX)
@@ -361,8 +362,9 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
       shared_worker_context_provider_ = nullptr;
     } else {
       if (!shared_worker_context_provider_) {
+        const bool support_locking = true;
         shared_worker_context_provider_ = CreateContextCommon(
-            gpu_channel_host, gpu::kNullSurfaceHandle, nullptr,
+            gpu_channel_host, gpu::kNullSurfaceHandle, support_locking, nullptr,
             command_buffer_metrics::BROWSER_WORKER_CONTEXT);
         // TODO(vadimt): Remove ScopedTracker below once crbug.com/125248 is
         // fixed. Tracking time in BindToCurrentThread.
@@ -371,9 +373,7 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
                 "125248"
                 " GpuProcessTransportFactory::EstablishedGpuChannel"
                 "::Worker"));
-        if (shared_worker_context_provider_->BindToCurrentThread())
-          shared_worker_context_provider_->SetupLock();
-        else
+        if (!shared_worker_context_provider_->BindToCurrentThread())
           shared_worker_context_provider_ = nullptr;
       }
 
@@ -381,8 +381,9 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
       // display compositor. It shares resources with the worker context, so if
       // we failed to make a worker context, just start over and try again.
       if (shared_worker_context_provider_) {
+        bool support_locking = false;
         context_provider = CreateContextCommon(
-            std::move(gpu_channel_host), data->surface_handle,
+            std::move(gpu_channel_host), data->surface_handle, support_locking,
             shared_worker_context_provider_.get(),
             command_buffer_metrics::DISPLAY_COMPOSITOR_ONSCREEN_CONTEXT);
         // TODO(vadimt): Remove ScopedTracker below once crbug.com/125248 is
@@ -686,9 +687,10 @@ GpuProcessTransportFactory::SharedMainThreadContextProvider() {
 
   // We need a separate context from the compositor's so that skia and gl_helper
   // don't step on each other.
+  bool support_locking = false;
   shared_main_thread_contexts_ = CreateContextCommon(
-      std::move(gpu_channel_host), gpu::kNullSurfaceHandle, nullptr,
-      command_buffer_metrics::BROWSER_OFFSCREEN_MAINTHREAD_CONTEXT);
+      std::move(gpu_channel_host), gpu::kNullSurfaceHandle, support_locking,
+      nullptr, command_buffer_metrics::BROWSER_OFFSCREEN_MAINTHREAD_CONTEXT);
   shared_main_thread_contexts_->SetLostContextCallback(base::Bind(
       &GpuProcessTransportFactory::OnLostMainThreadSharedContextInsideCallback,
       callback_factory_.GetWeakPtr()));
