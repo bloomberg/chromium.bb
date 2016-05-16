@@ -124,9 +124,6 @@ public:
 protected:
     TextTrack(const AtomicString& kind, const AtomicString& label, const AtomicString& language, const AtomicString& id, TextTrackType);
 
-    bool isValidKind(const AtomicString& kind) const override { return isValidKindKeyword(kind); }
-    AtomicString invalidValueDefaultKind() const override { return metadataKeyword(); }
-
     void addListOfCues(HeapVector<Member<TextTrackCue>>&);
 
 private:

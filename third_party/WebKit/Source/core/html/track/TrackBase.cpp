@@ -40,9 +40,10 @@ static WebMediaPlayer::TrackId nextTrackId()
     return ++next;
 }
 
-TrackBase::TrackBase(WebMediaPlayer::TrackType type, const AtomicString& label, const AtomicString& language, const String& id)
+TrackBase::TrackBase(WebMediaPlayer::TrackType type, const AtomicString& kind, const AtomicString& label, const AtomicString& language, const String& id)
     : m_trackId(nextTrackId())
     , m_type(type)
+    , m_kind(kind)
     , m_label(label)
     , m_language(language)
     , m_id(id)
@@ -67,10 +68,7 @@ DEFINE_TRACE(TrackBase)
 
 void TrackBase::setKind(const AtomicString& kind)
 {
-    if (isValidKind(kind))
-        m_kind = kind;
-    else
-        m_kind = invalidValueDefaultKind();
+    m_kind = kind;
 }
 
 } // namespace blink

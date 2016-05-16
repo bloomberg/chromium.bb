@@ -17,7 +17,7 @@ class CORE_EXPORT AudioTrack final : public GarbageCollectedFinalized<AudioTrack
 public:
     static AudioTrack* create(const String& id, const AtomicString& kind, const AtomicString& label, const AtomicString& language, bool enabled)
     {
-        return new AudioTrack(id, kind, label, language, enabled);
+        return new AudioTrack(id, isValidKindKeyword(kind) ? kind : emptyAtom, label, language, enabled);
     }
 
     ~AudioTrack() override;
@@ -38,10 +38,6 @@ public:
 
 private:
     AudioTrack(const String& id, const AtomicString& kind, const AtomicString& label, const AtomicString& language, bool enabled);
-
-    // TrackBase
-    bool isValidKind(const AtomicString& kind) const override { return isValidKindKeyword(kind); }
-    AtomicString invalidValueDefaultKind() const override;
 
     bool m_enabled;
 };

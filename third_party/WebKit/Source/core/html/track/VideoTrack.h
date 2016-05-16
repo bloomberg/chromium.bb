@@ -17,7 +17,7 @@ class CORE_EXPORT VideoTrack final : public GarbageCollectedFinalized<VideoTrack
 public:
     static VideoTrack* create(const String& id, const AtomicString& kind, const AtomicString& label, const AtomicString& language, bool selected)
     {
-        return new VideoTrack(id, kind, label, language, selected);
+        return new VideoTrack(id, isValidKindKeyword(kind) ? kind : emptyAtom, label, language, selected);
     }
 
     ~VideoTrack() override;
@@ -42,10 +42,6 @@ public:
 
 private:
     VideoTrack(const String& id, const AtomicString& kind, const AtomicString& label, const AtomicString& language, bool selected);
-
-    // TrackBase
-    bool isValidKind(const AtomicString& kind) const override { return isValidKindKeyword(kind); }
-    AtomicString invalidValueDefaultKind() const override;
 
     bool m_selected;
 };

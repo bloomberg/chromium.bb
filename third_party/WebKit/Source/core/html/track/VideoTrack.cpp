@@ -9,10 +9,9 @@
 namespace blink {
 
 VideoTrack::VideoTrack(const String& id, const AtomicString& kind, const AtomicString& label, const AtomicString& language, bool selected)
-    : TrackBase(WebMediaPlayer::VideoTrack, label, language, id)
+    : TrackBase(WebMediaPlayer::VideoTrack, kind, label, language, id)
     , m_selected(selected)
 {
-    setKind(kind);
 }
 
 VideoTrack::~VideoTrack()
@@ -75,18 +74,13 @@ const AtomicString& VideoTrack::commentaryKeyword()
 
 bool VideoTrack::isValidKindKeyword(const String& kind)
 {
-    return (kind == alternativeKeyword())
-        || (kind == captionsKeyword())
-        || (kind == mainKeyword())
-        || (kind == signKeyword())
-        || (kind == subtitlesKeyword())
-        || (kind == commentaryKeyword())
-        || (kind == emptyAtom);
-}
-
-AtomicString VideoTrack::invalidValueDefaultKind() const
-{
-    return emptyAtom;
+    return kind == alternativeKeyword()
+        || kind == captionsKeyword()
+        || kind == mainKeyword()
+        || kind == signKeyword()
+        || kind == subtitlesKeyword()
+        || kind == commentaryKeyword()
+        || kind == emptyAtom;
 }
 
 } // namespace blink

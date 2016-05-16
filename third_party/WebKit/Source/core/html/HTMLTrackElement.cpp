@@ -94,7 +94,15 @@ void HTMLTrackElement::parseAttribute(const QualifiedName& name, const AtomicStr
     // 4.8.10.12.3 Sourcing out-of-band text tracks
     // As the kind, label, and srclang attributes are set, changed, or removed, the text track must update accordingly...
     } else if (name == kindAttr) {
-        track()->setKind(!value.isNull() ? value.lower() : TextTrack::subtitlesKeyword());
+        AtomicString lowerCaseValue = value.lower();
+        // 'missing value default' ("subtitles")
+        if (lowerCaseValue.isNull())
+            lowerCaseValue = TextTrack::subtitlesKeyword();
+        // 'invalid value default' ("metadata")
+        else if (!TextTrack::isValidKindKeyword(lowerCaseValue))
+            lowerCaseValue = TextTrack::metadataKeyword();
+
+        track()->setKind(lowerCaseValue);
     } else if (name == labelAttr) {
         track()->setLabel(value);
     } else if (name == srclangAttr) {

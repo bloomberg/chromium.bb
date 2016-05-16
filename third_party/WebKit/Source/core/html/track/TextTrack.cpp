@@ -78,24 +78,24 @@ const AtomicString& TextTrack::metadataKeyword()
 
 const AtomicString& TextTrack::disabledKeyword()
 {
-    DEFINE_STATIC_LOCAL(const AtomicString, open, ("disabled"));
-    return open;
+    DEFINE_STATIC_LOCAL(const AtomicString, disabled, ("disabled"));
+    return disabled;
 }
 
 const AtomicString& TextTrack::hiddenKeyword()
 {
-    DEFINE_STATIC_LOCAL(const AtomicString, closed, ("hidden"));
-    return closed;
+    DEFINE_STATIC_LOCAL(const AtomicString, hidden, ("hidden"));
+    return hidden;
 }
 
 const AtomicString& TextTrack::showingKeyword()
 {
-    DEFINE_STATIC_LOCAL(const AtomicString, ended, ("showing"));
-    return ended;
+    DEFINE_STATIC_LOCAL(const AtomicString, showing, ("showing"));
+    return showing;
 }
 
 TextTrack::TextTrack(const AtomicString& kind, const AtomicString& label, const AtomicString& language, const AtomicString& id, TextTrackType type)
-    : TrackBase(WebMediaPlayer::TextTrack, label, language, id)
+    : TrackBase(WebMediaPlayer::TextTrack, kind, label, language, id)
     , m_cues(nullptr)
     , m_regions(nullptr)
     , m_trackList(nullptr)
@@ -106,7 +106,6 @@ TextTrack::TextTrack(const AtomicString& kind, const AtomicString& label, const 
     , m_renderedTrackIndex(invalidTrackIndex)
     , m_hasBeenConfigured(false)
 {
-    setKind(kind);
 }
 
 TextTrack::~TextTrack()

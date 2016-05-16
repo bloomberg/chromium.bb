@@ -63,10 +63,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 protected:
-    TrackBase(WebMediaPlayer::TrackType, const AtomicString& label, const AtomicString& language, const String& id);
-
-    virtual bool isValidKind(const AtomicString&) const = 0;
-    virtual AtomicString invalidValueDefaultKind() const = 0;
+    TrackBase(WebMediaPlayer::TrackType, const AtomicString& kind, const AtomicString& label, const AtomicString& language, const String& id);
 
 private:
     WebMediaPlayer::TrackId m_trackId;

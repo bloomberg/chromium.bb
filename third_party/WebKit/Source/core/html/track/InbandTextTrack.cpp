@@ -25,18 +25,40 @@
 
 #include "core/html/track/InbandTextTrack.h"
 
-#include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/track/vtt/VTTCue.h"
-#include "platform/Logging.h"
 #include "public/platform/WebInbandTextTrack.h"
 #include "public/platform/WebString.h"
-#include <math.h>
 
 using blink::WebInbandTextTrack;
 using blink::WebString;
 
 namespace blink {
+
+namespace {
+
+const AtomicString& textTrackKindToString(WebInbandTextTrack::Kind kind)
+{
+    switch (kind) {
+    case WebInbandTextTrack::KindSubtitles:
+        return TextTrack::subtitlesKeyword();
+    case WebInbandTextTrack::KindCaptions:
+        return TextTrack::captionsKeyword();
+    case WebInbandTextTrack::KindDescriptions:
+        return TextTrack::descriptionsKeyword();
+    case WebInbandTextTrack::KindChapters:
+        return TextTrack::chaptersKeyword();
+    case WebInbandTextTrack::KindMetadata:
+        return TextTrack::metadataKeyword();
+    case WebInbandTextTrack::KindNone:
+    default:
+        break;
+    }
+    ASSERT_NOT_REACHED();
+    return TextTrack::subtitlesKeyword();
+}
+
+} // namespace
 
 InbandTextTrack* InbandTextTrack::create(WebInbandTextTrack* webTrack)
 {
@@ -44,32 +66,10 @@ InbandTextTrack* InbandTextTrack::create(WebInbandTextTrack* webTrack)
 }
 
 InbandTextTrack::InbandTextTrack(WebInbandTextTrack* webTrack)
-    : TextTrack(subtitlesKeyword(), webTrack->label(), webTrack->language(), webTrack->id(), InBand)
+    : TextTrack(textTrackKindToString(webTrack->kind()), webTrack->label(), webTrack->language(), webTrack->id(), InBand)
     , m_webTrack(webTrack)
 {
     m_webTrack->setClient(this);
-
-    switch (m_webTrack->kind()) {
-    case WebInbandTextTrack::KindSubtitles:
-        setKind(TextTrack::subtitlesKeyword());
-        break;
-    case WebInbandTextTrack::KindCaptions:
-        setKind(TextTrack::captionsKeyword());
-        break;
-    case WebInbandTextTrack::KindDescriptions:
-        setKind(TextTrack::descriptionsKeyword());
-        break;
-    case WebInbandTextTrack::KindChapters:
-        setKind(TextTrack::chaptersKeyword());
-        break;
-    case WebInbandTextTrack::KindMetadata:
-        setKind(TextTrack::metadataKeyword());
-        break;
-    case WebInbandTextTrack::KindNone:
-    default:
-        ASSERT_NOT_REACHED();
-        break;
-    }
 }
 
 InbandTextTrack::~InbandTextTrack()
