@@ -35,7 +35,6 @@
 #include "core/html/HTMLElement.h"
 #include "core/layout/LayoutGeometryMap.h"
 #include "core/layout/LayoutPart.h"
-#include "core/layout/LayoutView.h"
 #include "core/layout/api/LayoutViewItem.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/layout/compositing/PaintLayerCompositor.h"
@@ -498,7 +497,7 @@ static void projectRectsToGraphicsLayerSpaceRecursive(
     if (mapIter != layerChildFrameMap.end()) {
         for (size_t i = 0; i < mapIter->value.size(); i++) {
             const LocalFrame* childFrame = mapIter->value[i];
-            const PaintLayer* childLayer = childFrame->view()->layoutView()->layer();
+            const PaintLayer* childLayer = childFrame->view()->layoutViewItem().layer();
             if (layersWithRects.contains(childLayer)) {
                 LayerFrameMap newLayerChildFrameMap;
                 makeLayerChildFrameMap(childFrame, &newLayerChildFrameMap);
@@ -898,8 +897,8 @@ bool ScrollingCoordinator::isForRootLayer(ScrollableArea* scrollableArea) const
         return false;
 
     // FIXME(305811): Refactor for OOPI.
-    LayoutView* layoutView = m_page->deprecatedLocalMainFrame()->view()->layoutView();
-    return layoutView ? scrollableArea == layoutView->layer()->getScrollableArea() : false;
+    LayoutViewItem layoutViewItem = m_page->deprecatedLocalMainFrame()->view()->layoutViewItem();
+    return layoutViewItem.isNull() ? false : scrollableArea == layoutViewItem.layer()->getScrollableArea();
 }
 
 bool ScrollingCoordinator::isForMainFrame(ScrollableArea* scrollableArea) const
