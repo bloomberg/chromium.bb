@@ -1865,7 +1865,8 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
     return_code = InstallUtil::GetInstallReturnCode(install_status);
   }
 
-  installer::EndPersistentHistogramStorage(installer_state.target_path());
+  installer::EndPersistentHistogramStorage(installer_state.target_path(),
+                                           system_install);
   VLOG(1) << "Installation complete, returning: " << return_code;
 
   return return_code;

@@ -56586,6 +56586,26 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="UMA.FileMetricsProvider.DeletedFiles">
+  <owner>asvitkine@chromium.org</owner>
+  <owner>bcwhite@chromium.org</owner>
+  <summary>
+    The number of old metrics files for which a delete was attempted. This is
+    logged once with each upload operation. Values greater than 1 indicate that
+    the files are not deletable by the browser and must be cleaned up by
+    whatever process is creating them.
+  </summary>
+</histogram>
+
+<histogram name="UMA.FileMetricsProvider.DirectoryFiles">
+  <owner>asvitkine@chromium.org</owner>
+  <owner>bcwhite@chromium.org</owner>
+  <summary>
+    The number of metrics files in a directory that need to be uploaded. This is
+    logged once with each upload operation.
+  </summary>
+</histogram>
+
 <histogram name="UMA.FileMetricsProvider.InitialAccessResult"
     enum="FileMetricsProviderAccessResult">
   <owner>asvitkine@chromium.org</owner>
@@ -73532,6 +73552,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="3" label="File is invalid (e.g. directory or zero-size)."/>
   <int value="4" label="File could not be memory-mapped by system."/>
   <int value="5" label="File has invalid contents."/>
+  <int value="6" label="File could not be exclusively opened."/>
 </enum>
 
 <enum name="FileSystemDatabaseInitResult" type="int">
@@ -74739,7 +74760,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="4" label="Linear histograms created"/>
   <int value="5" label="Boolean histograms created"/>
   <int value="6" label="Custom histograms created"/>
-  <int value="7" label="sparse histograms created"/>
+  <int value="7" label="Sparse histograms created"/>
   <int value="8" label="UMA-targeted histograms created"/>
   <int value="9" label="UMA-stability histograms created"/>
   <int value="10" label="Persistent histograms created"/>

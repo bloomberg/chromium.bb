@@ -32,6 +32,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/installer/setup/app_launcher_installer.h"
 #include "chrome/installer/setup/install.h"
+#include "chrome/installer/setup/installer_metrics.h"
 #include "chrome/installer/setup/setup_constants.h"
 #include "chrome/installer/setup/setup_util.h"
 #include "chrome/installer/setup/update_active_setup_version_work_item.h"
@@ -1047,6 +1048,10 @@ void AddInstallWorkItems(const InstallationState& original_state,
   // A temp directory that work items need and the actual install directory.
   install_list->AddCreateDirWorkItem(temp_path);
   install_list->AddCreateDirWorkItem(target_path);
+
+  // Create the directory in which persistent metrics will be stored.
+  install_list->AddCreateDirWorkItem(
+      GetPersistentHistogramStorageDir(target_path));
 
   if (installer_state.FindProduct(BrowserDistribution::CHROME_BROWSER) ||
       installer_state.FindProduct(BrowserDistribution::CHROME_BINARIES)) {

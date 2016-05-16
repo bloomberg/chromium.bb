@@ -195,9 +195,9 @@ CreateInstallerFileMetricsProvider(bool metrics_reporting_enabled) {
       if (allocator) {
         const char* allocator_name = allocator->Name();
         allocator->SetPersistentLocation(metrics_file);
-        file_metrics_provider->RegisterFile(
+        file_metrics_provider->RegisterSource(
             metrics_file,
-            metrics::FileMetricsProvider::FILE_HISTOGRAMS_ATOMIC,
+            metrics::FileMetricsProvider::SOURCE_HISTOGRAMS_ATOMIC_FILE,
             metrics::FileMetricsProvider::ASSOCIATE_PREVIOUS_RUN,
             allocator_name);
       }
@@ -213,10 +213,9 @@ CreateInstallerFileMetricsProvider(bool metrics_reporting_enabled) {
   // Read metrics file from setup.exe.
   base::FilePath program_dir;
   base::PathService::Get(base::DIR_EXE, &program_dir);
-  file_metrics_provider->RegisterFile(
-      program_dir.AppendASCII(installer::kSetupHistogramAllocatorName)
-          .AddExtension(FILE_PATH_LITERAL(".pma")),
-      metrics::FileMetricsProvider::FILE_HISTOGRAMS_ATOMIC,
+  file_metrics_provider->RegisterSource(
+      program_dir.AppendASCII(installer::kSetupHistogramAllocatorName),
+      metrics::FileMetricsProvider::SOURCE_HISTOGRAMS_ATOMIC_DIR,
       metrics::FileMetricsProvider::ASSOCIATE_CURRENT_RUN,
       installer::kSetupHistogramAllocatorName);
 #endif
