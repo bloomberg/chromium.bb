@@ -294,7 +294,7 @@ class QuicStreamFactoryTestBase {
         threshold_timeouts_with_open_streams_(2),
         threshold_public_resets_post_handshake_(2),
         receive_buffer_size_(0),
-        delay_tcp_race_(false),
+        delay_tcp_race_(true),
         close_sessions_on_ip_change_(false),
         disable_quic_on_timeout_with_open_streams_(false),
         idle_connection_timeout_seconds_(kIdleConnectionTimeoutSeconds),

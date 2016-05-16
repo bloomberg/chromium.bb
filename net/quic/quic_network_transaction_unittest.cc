@@ -2170,8 +2170,6 @@ TEST_P(QuicNetworkTransactionTest, FailedZeroRttBrokenAlternateProtocol) {
                                      0);
   socket_factory_.AddSocketDataProvider(&quic_data);
 
-  AddHangingNonAlternateProtocolSocketData();
-
   // Second Alternate-protocol job which will race with the TCP job.
   StaticSocketDataProvider quic_data2(quic_reads, arraysize(quic_reads),
                                       nullptr, 0);
@@ -2188,6 +2186,7 @@ TEST_P(QuicNetworkTransactionTest, FailedZeroRttBrokenAlternateProtocol) {
   socket_factory_.AddSocketDataProvider(&http_data);
   socket_factory_.AddSSLSocketDataProvider(&ssl_data_);
 
+  AddHangingNonAlternateProtocolSocketData();
   CreateSession();
 
   AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);

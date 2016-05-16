@@ -186,7 +186,7 @@ URLRequestContextBuilder::HttpNetworkSessionParams::HttpNetworkSessionParams()
       enable_alternative_service_with_different_host(false),
       enable_quic(false),
       quic_max_server_configs_stored_in_properties(0),
-      quic_delay_tcp_race(false),
+      quic_delay_tcp_race(true),
       quic_max_number_of_lossy_connections(0),
       quic_prefer_aes(false),
       quic_packet_loss_threshold(1.0f),

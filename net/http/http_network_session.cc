@@ -113,7 +113,7 @@ HttpNetworkSession::Params::Params()
       quic_max_number_of_lossy_connections(0),
       quic_packet_loss_threshold(1.0f),
       quic_socket_receive_buffer_size(kQuicSocketReceiveBufferSize),
-      quic_delay_tcp_race(false),
+      quic_delay_tcp_race(true),
       quic_max_server_configs_stored_in_properties(0u),
       quic_clock(NULL),
       quic_random(NULL),
