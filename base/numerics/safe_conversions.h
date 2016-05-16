@@ -67,6 +67,24 @@ struct SaturatedCastNaNBehaviorReturnZero {
   }
 };
 
+namespace internal {
+// This wrapper is used for C++11 constexpr support by avoiding the declaration
+// of local variables in the saturated_cast template function.
+template <typename Dst, class NaNHandler, typename Src>
+inline constexpr Dst saturated_cast_impl(const Src value,
+                                         const RangeConstraint constraint) {
+  return constraint == RANGE_VALID
+             ? static_cast<Dst>(value)
+             : (constraint == RANGE_UNDERFLOW
+                    ? std::numeric_limits<Dst>::min()
+                    : (constraint == RANGE_OVERFLOW
+                           ? std::numeric_limits<Dst>::max()
+                           : (constraint == RANGE_INVALID
+                                  ? NaNHandler::template HandleNaN<Dst>()
+                                  : (NOTREACHED(), static_cast<Dst>(value)))));
+}
+}  // namespace internal
+
 // saturated_cast<> is analogous to static_cast<> for numeric types, except
 // that the specified numeric conversion will saturate rather than overflow or
 // underflow. NaN assignment to an integral will defer the behavior to a
@@ -74,28 +92,11 @@ struct SaturatedCastNaNBehaviorReturnZero {
 template <typename Dst,
           class NaNHandler = SaturatedCastNaNBehaviorReturnZero,
           typename Src>
-inline Dst saturated_cast(Src value) {
-  // Optimization for floating point values, which already saturate.
-  if (std::numeric_limits<Dst>::is_iec559)
-    return static_cast<Dst>(value);
-
-  switch (internal::DstRangeRelationToSrcRange<Dst>(value)) {
-    case internal::RANGE_VALID:
-      return static_cast<Dst>(value);
-
-    case internal::RANGE_UNDERFLOW:
-      return std::numeric_limits<Dst>::min();
-
-    case internal::RANGE_OVERFLOW:
-      return std::numeric_limits<Dst>::max();
-
-    // Should fail only on attempting to assign NaN to a saturated integer.
-    case internal::RANGE_INVALID:
-      return NaNHandler::template HandleNaN<Dst>();
-  }
-
-  NOTREACHED();
-  return static_cast<Dst>(value);
+inline constexpr Dst saturated_cast(Src value) {
+  return std::numeric_limits<Dst>::is_iec559
+             ? static_cast<Dst>(value)  // Floating point optimization.
+             : internal::saturated_cast_impl<Dst, NaNHandler>(
+                   value, internal::DstRangeRelationToSrcRange<Dst>(value));
 }
 
 // strict_cast<> is analogous to static_cast<> for numeric types, except that
