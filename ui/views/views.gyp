@@ -854,8 +854,8 @@
         '<@(views_test_support_sources)',
         # These are not listed in views_test_support_sources as they are not
         # used by the gn target that pulls in views_test_support_sources.
-        'test/default_platform_test_helper.cc',
         'test/native_widget_factory_desktop.cc',
+        'test/platform_test_helper.cc',
         'test/platform_test_helper.h',
       ],
       'conditions': [

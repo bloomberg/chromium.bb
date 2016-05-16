@@ -5,5 +5,5 @@
 #include "ui/views/run_all_unittests.h"
 
 int main(int argc, char** argv) {
-  views::RunAllUnittests(argc, argv);
+  return views::ViewTestSuite(argc, argv).RunTests();
 }

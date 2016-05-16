@@ -24,7 +24,7 @@ include_rules = [
 ]
 
 specific_include_rules = {
-  "platform_test_helper_mus.cc": [
+  "run_all_unittests_mus.cc": [
     "+services/shell/background",
   ],
 }

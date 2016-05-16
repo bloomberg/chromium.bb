@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/ptr_util.h"
 #include "ui/views/test/platform_test_helper.h"
+
+#include "base/callback.h"
+#include "base/logging.h"
+#include "base/memory/ptr_util.h"
 
 namespace views {
 namespace {
@@ -20,11 +23,20 @@ class DefaultPlatformTestHelper : public PlatformTestHelper {
   DISALLOW_COPY_AND_ASSIGN(DefaultPlatformTestHelper);
 };
 
+PlatformTestHelper::Factory test_helper_factory;
+
 }  // namespace
+
+void PlatformTestHelper::set_factory(const Factory& factory) {
+  DCHECK(test_helper_factory.is_null());
+  test_helper_factory = factory;
+}
 
 // static
 std::unique_ptr<PlatformTestHelper> PlatformTestHelper::Create() {
-  return base::WrapUnique(new DefaultPlatformTestHelper);
+  return !test_helper_factory.is_null()
+             ? test_helper_factory.Run()
+             : base::WrapUnique(new DefaultPlatformTestHelper);
 }
 
 }  // namespace views

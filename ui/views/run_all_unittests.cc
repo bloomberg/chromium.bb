@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ui/views/run_all_unittests.h"
+
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -21,45 +23,35 @@
 
 namespace views {
 
-class ViewTestSuite : public base::TestSuite {
- public:
-  ViewTestSuite(int argc, char** argv) : base::TestSuite(argc, argv) {}
+ViewTestSuite::ViewTestSuite(int argc, char** argv)
+    : base::TestSuite(argc, argv), argc_(argc), argv_(argv) {}
 
- protected:
-  void Initialize() override {
-    base::TestSuite::Initialize();
-    gfx::GLSurfaceTestSupport::InitializeOneOff();
-    ui::RegisterPathProvider();
+ViewTestSuite::~ViewTestSuite() {}
 
-    base::FilePath ui_test_pak_path;
-    ASSERT_TRUE(PathService::Get(ui::UI_TEST_PAK, &ui_test_pak_path));
-    ui::ResourceBundle::InitSharedInstanceWithPakPath(ui_test_pak_path);
-#if defined(USE_AURA)
-    env_ = aura::Env::CreateInstance();
-#endif
-  }
-
-  void Shutdown() override {
-#if defined(USE_AURA)
-    env_.reset();
-#endif
-    ui::ResourceBundle::CleanupSharedInstance();
-    base::TestSuite::Shutdown();
-  }
-
- private:
-#if defined(USE_AURA)
-  std::unique_ptr<aura::Env> env_;
-#endif
-  DISALLOW_COPY_AND_ASSIGN(ViewTestSuite);
-};
-
-int RunAllUnittests(int argc, char** argv) {
-  ViewTestSuite test_suite(argc, argv);
-
+int ViewTestSuite::RunTests() {
   return base::LaunchUnitTests(
-      argc, argv, base::Bind(&ViewTestSuite::Run,
-                             base::Unretained(&test_suite)));
+      argc_, argv_, base::Bind(&ViewTestSuite::Run, base::Unretained(this)));
+}
+
+void ViewTestSuite::Initialize() {
+  base::TestSuite::Initialize();
+  gfx::GLSurfaceTestSupport::InitializeOneOff();
+  ui::RegisterPathProvider();
+
+  base::FilePath ui_test_pak_path;
+  ASSERT_TRUE(PathService::Get(ui::UI_TEST_PAK, &ui_test_pak_path));
+  ui::ResourceBundle::InitSharedInstanceWithPakPath(ui_test_pak_path);
+#if defined(USE_AURA)
+  env_ = aura::Env::CreateInstance();
+#endif
+}
+
+void ViewTestSuite::Shutdown() {
+#if defined(USE_AURA)
+  env_.reset();
+#endif
+  ui::ResourceBundle::CleanupSharedInstance();
+  base::TestSuite::Shutdown();
 }
 
 }  // namespace views

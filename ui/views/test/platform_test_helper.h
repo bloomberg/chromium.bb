@@ -7,15 +7,18 @@
 
 #include <memory>
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
 
 namespace views {
 
 class PlatformTestHelper {
  public:
+  using Factory = base::Callback<std::unique_ptr<PlatformTestHelper>(void)>;
   PlatformTestHelper() {}
   virtual ~PlatformTestHelper() {}
 
+  static void set_factory(const Factory& factory);
   static std::unique_ptr<PlatformTestHelper> Create();
 
   virtual bool IsMus() const = 0;
