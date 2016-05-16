@@ -105,6 +105,7 @@
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/browser_plugin_guest_mode.h"
 #include "content/public/common/browser_side_navigation_policy.h"
+#include "content/public/common/child_process_host.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/page_zoom.h"
@@ -404,6 +405,7 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
       zoom_scroll_remainder_(0),
       render_view_message_source_(NULL),
       render_frame_message_source_(NULL),
+      fullscreen_widget_process_id_(ChildProcessHost::kInvalidUniqueID),
       fullscreen_widget_routing_id_(MSG_ROUTING_NONE),
       fullscreen_widget_had_focus_at_shutdown_(false),
       is_subframe_(false),
@@ -855,10 +857,6 @@ void WebContentsImpl::CancelActiveAndPendingDialogs() {
     browser_plugin_embedder_->CancelGuestDialogs();
 }
 
-int WebContentsImpl::GetFullscreenWidgetRoutingID() const {
-  return fullscreen_widget_routing_id_;
-}
-
 void WebContentsImpl::ClosePage() {
   GetRenderViewHost()->ClosePage();
 }
@@ -876,8 +874,8 @@ RenderWidgetHostView* WebContentsImpl::GetTopLevelRenderWidgetHostView() {
 RenderWidgetHostView* WebContentsImpl::GetFullscreenRenderWidgetHostView()
     const {
   RenderWidgetHost* const widget_host =
-      RenderWidgetHostImpl::FromID(GetRenderProcessHost()->GetID(),
-                                   GetFullscreenWidgetRoutingID());
+      RenderWidgetHostImpl::FromID(fullscreen_widget_process_id_,
+                                   fullscreen_widget_routing_id_);
   return widget_host ? widget_host->GetView() : NULL;
 }
 
@@ -1679,12 +1677,15 @@ void WebContentsImpl::RenderWidgetDeleted(
     return;
 
   if (render_widget_host &&
-      render_widget_host->GetRoutingID() == fullscreen_widget_routing_id_) {
+      render_widget_host->GetRoutingID() == fullscreen_widget_routing_id_ &&
+      render_widget_host->GetProcess()->GetID() ==
+          fullscreen_widget_process_id_) {
     if (delegate_ && delegate_->EmbedsFullscreenWidget())
       delegate_->ExitFullscreenModeForTab(this);
     FOR_EACH_OBSERVER(WebContentsObserver,
                       observers_,
                       DidDestroyFullscreenWidget());
+    fullscreen_widget_process_id_ = ChildProcessHost::kInvalidUniqueID;
     fullscreen_widget_routing_id_ = MSG_ROUTING_NONE;
     if (fullscreen_widget_had_focus_at_shutdown_)
       view_->RestoreFocus();
@@ -2176,6 +2177,8 @@ void WebContentsImpl::ShowCreatedWidget(int route_id,
   if (is_fullscreen) {
     DCHECK_EQ(MSG_ROUTING_NONE, fullscreen_widget_routing_id_);
     view_->StoreFocus();
+    fullscreen_widget_process_id_ =
+        widget_host_view->GetRenderWidgetHost()->GetProcess()->GetID();
     fullscreen_widget_routing_id_ = route_id;
     if (delegate_ && delegate_->EmbedsFullscreenWidget()) {
       widget_host_view->InitAsChild(GetRenderWidgetHostView()->GetNativeView());

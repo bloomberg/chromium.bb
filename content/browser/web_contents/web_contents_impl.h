@@ -167,10 +167,6 @@ class CONTENT_EXPORT WebContentsImpl
   // plugins it is hosting.
   void CancelActiveAndPendingDialogs();
 
-  // Gets the current fullscreen render widget's routing ID. Returns
-  // MSG_ROUTING_NONE when there is no fullscreen render widget.
-  int GetFullscreenWidgetRoutingID() const;
-
   // Invoked when visible SSL state (as defined by SSLStatus) changes.
   void DidChangeVisibleSSLState();
 
@@ -1316,6 +1312,10 @@ private:
   // All live RenderWidgetHostImpls that are created by this object and may
   // outlive it.
   std::set<RenderWidgetHostImpl*> created_widgets_;
+
+  // Process id of the shown fullscreen widget, or kInvalidUniqueID if there is
+  // no fullscreen widget.
+  int fullscreen_widget_process_id_;
 
   // Routing id of the shown fullscreen widget or MSG_ROUTING_NONE otherwise.
   int fullscreen_widget_routing_id_;

@@ -980,8 +980,7 @@ void RenderViewHostImpl::OnShowWidget(int route_id,
 }
 
 void RenderViewHostImpl::OnShowFullscreenWidget(int route_id) {
-  if (is_active_)
-    delegate_->ShowCreatedFullscreenWidget(route_id);
+  delegate_->ShowCreatedFullscreenWidget(route_id);
   Send(new ViewMsg_Move_ACK(route_id));
 }
 
