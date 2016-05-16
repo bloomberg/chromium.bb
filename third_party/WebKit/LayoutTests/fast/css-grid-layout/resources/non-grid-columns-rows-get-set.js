@@ -58,7 +58,7 @@ testNonGridDefinitionsSetJSValues("+3fr", "+4fr", "3fr", "4fr", "3fr", "4fr");
 testNonGridDefinitionsSetJSValues("minmax(auto, 8vh)", "minmax(10vw, auto)", "minmax(auto, 48px)", "minmax(80px, auto)");
 // Flex factor values can be zero.
 testGridDefinitionsSetJSValues("0fr", ".0fr", "0px", "0px", "0fr", "0fr");
-testGridDefinitionsSetJSValues("minmax(0fr, 0fr)", "minmax(.0fr, .0fr)", "0px", "0px", "minmax(0fr, 0fr)", "minmax(0fr, 0fr)");
+testGridDefinitionsSetJSValues("minmax(auto, 0fr)", "minmax(auto, .0fr)", "0px", "0px", "minmax(auto, 0fr)", "minmax(auto, 0fr)");
 
 debug("");
 debug("Test setting grid-template-columns and grid-template-rows to bad values through JS");
@@ -77,6 +77,9 @@ testGridDefinitionsSetBadJSValues("7.-fr", "-8,0fr");
 // Negative values are not allowed.
 testGridDefinitionsSetBadJSValues("-1px", "-6em");
 testGridDefinitionsSetBadJSValues("minmax(-1%, 32%)", "minmax(2vw, -6em)");
+// Flexible lengths are invalid on the min slot of minmax().
+testGridDefinitionsSetBadJSValues("minmax(0fr, 100px)", "minmax(.0fr, 200px)");
+testGridDefinitionsSetBadJSValues("minmax(1fr, 100px)", "minmax(2.5fr, 200px)");
 
 debug("");
 debug("Test setting grid-template-columns and grid-template-rows back to 'none' through JS");

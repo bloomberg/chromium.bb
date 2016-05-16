@@ -35,7 +35,7 @@
 }
 
 .gridFixedFraction {
-    grid-template-columns: minmax(10px, 1fr) minmax(2fr, 20px);
+    grid-template-columns: minmax(10px, 1fr) minmax(20px, 2fr);
     grid-template-rows: 10px;
 }
 
@@ -103,7 +103,7 @@
     <div class="firstRowSecondColumn">XX XX XX</div>
 </div>
 
-<div class="grid gridFixedFraction min-content" data-expected-height="10" data-expected-width="10"></div>
+<div class="grid gridFixedFraction min-content" data-expected-height="10" data-expected-width="30"></div>
 </div>
 
 <div class="grid gridFixedFraction max-content" data-expected-height="10" data-expected-width="30"></div>
@@ -213,7 +213,7 @@
 
 <div class="min-content grid gridFixedFraction minWidth70" data-expected-height="10" data-expected-width="70"></div>
 
-<div class="min-content grid gridFixedFraction maxWidth20" data-expected-height="10" data-expected-width="10"></div>
+<div class="min-content grid gridFixedFraction maxWidth20" data-expected-height="10" data-expected-width="20"></div>
 
 </body>
 </html>

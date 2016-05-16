@@ -2,13 +2,9 @@
 <html>
 <link href="resources/grid.css" rel="stylesheet">
 <style>
-.gridMinFlexContent {
+.gridFlexContent {
     grid-template-columns: 50px;
-    grid-template-rows: minmax(1fr, 50px);
-}
-.gridZeroFlexContent {
-    grid-template-columns: 50px;
-    grid-template-rows: minmax(1fr, 0px);
+    grid-template-rows: 1fr 1fr;
 }
 .gridMaxFlexContent {
     grid-template-columns: 50px;
@@ -49,43 +45,11 @@
 
 <p>Test that resolving auto tracks on grid items works properly.</p>
 
-<div style="height: 0px">
-    <div class="grid gridMinFlexContent" style="height: 100%">
-        <div class="sizedToGridArea firstRowFirstColumn" data-expected-width="50" data-expected-height="0"></div>
-    </div>
-</div>
 
-<div style="height: 0px">
-    <div class="grid gridZeroFlexContent">
-        <div class="sizedToGridArea firstRowFirstColumn" data-expected-width="50" data-expected-height="0"></div>
-    </div>
+<div class="grid gridFlexContent constrainedContainer" style="position: relative;">
+    <div class="sizedToGridArea firstRowFirstColumn" data-offset-x="0" data-offset-y="0" data-expected-width="50" data-expected-height="30">X<br>X<br>X</div>
+    <div class="sizedToGridArea secondRowFirstColumn" data-offset-x="0" data-offset-y="30" data-expected-width="50" data-expected-height="50">X<br>X<br>X<br>X<br>X</div>
 </div>
-
-<div style="height: 0px">
-    <div class="grid gridMinFlexContent">
-        <div class="sizedToGridArea firstRowFirstColumn" data-expected-width="50" data-expected-height="50"></div>
-    </div>
-</div>
-
-<!-- Allow the extra logical space distribution to occur. -->
-<div style="width: 10px; height: 40px">
-    <div class="grid gridMinFlexContent" style="height: 100%">
-        <div class="sizedToGridArea firstRowFirstColumn" data-expected-width="50" data-expected-height="40"></div>
-    </div>
-</div>
-
-<div style="width: 10px; height: 40px">
-    <div class="grid gridMinFlexContent">
-        <div class="sizedToGridArea firstRowFirstColumn" data-expected-width="50" data-expected-height="50"></div>
-    </div>
-</div>
-
-<div style="width: 10px; height: 100px;">
-    <div class="grid gridMinFlexContent">
-        <div class="sizedToGridArea firstRowFirstColumn" data-expected-width="50" data-expected-height="50"></div>
-    </div>
-</div>
-
 
 <div class="constrainedContainer">
     <div class="grid gridMaxFlexContent">

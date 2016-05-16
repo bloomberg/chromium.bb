@@ -3374,16 +3374,16 @@ static bool parseGridTemplateAreasRow(const String& gridRowNames, NamedGridAreaM
     return true;
 }
 
-enum TrackSizeRestriction { FixedSizeOnly, AllowAll };
+enum TrackSizeRestriction { FixedSizeOnly, InflexibleSizeOnly, AllowAll };
 
 static CSSPrimitiveValue* consumeGridBreadth(CSSParserTokenRange& range, CSSParserMode cssParserMode, TrackSizeRestriction restriction = AllowAll)
 {
-    if (restriction == AllowAll) {
+    if (restriction != FixedSizeOnly) {
         const CSSParserToken& token = range.peek();
         if (identMatches<CSSValueMinContent, CSSValueMaxContent, CSSValueAuto>(token.id()))
             return consumeIdent(range);
         if (token.type() == DimensionToken && token.unitType() == CSSPrimitiveValue::UnitType::Fraction) {
-            if (range.peek().numericValue() < 0)
+            if (restriction == InflexibleSizeOnly || range.peek().numericValue() < 0)
                 return nullptr;
             return cssValuePool().createValue(range.consumeIncludingWhitespace().numericValue(), CSSPrimitiveValue::UnitType::Fraction);
         }
@@ -3401,7 +3401,8 @@ static CSSValue* consumeGridTrackSize(CSSParserTokenRange& range, CSSParserMode 
     if (token.functionId() == CSSValueMinmax) {
         CSSParserTokenRange rangeCopy = range;
         CSSParserTokenRange args = consumeFunction(rangeCopy);
-        CSSPrimitiveValue* minTrackBreadth = consumeGridBreadth(args, cssParserMode, restriction);
+        TrackSizeRestriction minTrackBreadthRestriction = restriction == AllowAll ? InflexibleSizeOnly : restriction;
+        CSSPrimitiveValue* minTrackBreadth = consumeGridBreadth(args, cssParserMode, minTrackBreadthRestriction);
         if (!minTrackBreadth || !consumeCommaIncludingWhitespace(args))
             return nullptr;
         CSSPrimitiveValue* maxTrackBreadth = consumeGridBreadth(args, cssParserMode);
