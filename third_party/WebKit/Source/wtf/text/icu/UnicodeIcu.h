@@ -165,7 +165,7 @@ inline bool isArabicChar(UChar32 c)
 
 inline bool isAlphanumeric(UChar32 c)
 {
-    return u_isalnum(c);
+    return !!u_isalnum(c);
 }
 
 inline bool isSeparatorSpace(UChar32 c)
