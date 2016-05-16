@@ -264,6 +264,13 @@ void ThreadState::cleanupMainThread()
 {
     ASSERT(isMainThread());
 
+#if defined(LEAK_SANITIZER)
+    // See comment below, clear out most garbage before releasing static
+    // persistents should some of the finalizers depend on touching
+    // these persistents.
+    ThreadHeap::collectAllGarbage();
+#endif
+
     releaseStaticPersistentNodes();
 
 #if defined(LEAK_SANITIZER)
