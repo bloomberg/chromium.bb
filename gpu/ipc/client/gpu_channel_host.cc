@@ -9,16 +9,11 @@
 
 #include "base/atomic_sequence_num.h"
 #include "base/bind.h"
-#include "base/location.h"
-#include "base/memory/ptr_util.h"
-#include "base/posix/eintr_wrapper.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
-#include "gpu/ipc/client/command_buffer_proxy_impl.h"
 #include "gpu/ipc/common/gpu_messages.h"
 #include "gpu/ipc/common/gpu_param_traits_macros.h"
 #include "ipc/ipc_sync_message_filter.h"
@@ -187,78 +182,6 @@ void GpuChannelHost::InternalFlush(StreamFlushInfo* flush_info) {
   flush_info->flush_pending = false;
 
   flush_info->flushed_stream_flush_id = flush_info->flush_id;
-}
-
-std::unique_ptr<CommandBufferProxyImpl> GpuChannelHost::CreateCommandBuffer(
-    gpu::SurfaceHandle surface_handle,
-    const gfx::Size& size,
-    CommandBufferProxyImpl* share_group,
-    int32_t stream_id,
-    gpu::GpuStreamPriority stream_priority,
-    const std::vector<int32_t>& attribs,
-    const GURL& active_url,
-    gfx::GpuPreference gpu_preference,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  DCHECK(!share_group || (stream_id == share_group->stream_id()));
-  TRACE_EVENT1("gpu", "GpuChannelHost::CreateViewCommandBuffer",
-               "surface_handle", surface_handle);
-
-  GPUCreateCommandBufferConfig init_params;
-  init_params.share_group_id =
-      share_group ? share_group->route_id() : MSG_ROUTING_NONE;
-  init_params.stream_id = stream_id;
-  init_params.stream_priority = stream_priority;
-  init_params.attribs = attribs;
-  init_params.active_url = active_url;
-  init_params.gpu_preference = gpu_preference;
-
-  int32_t route_id = GenerateRouteID();
-
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/125248 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "125248 GpuChannelHost::CreateCommandBuffer"));
-
-  // We're blocking the UI thread, which is generally undesirable.
-  // In this case we need to wait for this before we can show any UI /anyway/,
-  // so it won't cause additional jank.
-  // TODO(piman): Make this asynchronous (http://crbug.com/125248).
-
-  bool succeeded = false;
-  if (!Send(new GpuChannelMsg_CreateCommandBuffer(
-          surface_handle, size, init_params, route_id, &succeeded))) {
-    LOG(ERROR) << "Failed to send GpuChannelMsg_CreateCommandBuffer.";
-    return nullptr;
-  }
-
-  if (!succeeded) {
-    LOG(ERROR) << "GpuChannelMsg_CreateCommandBuffer returned failure.";
-    return nullptr;
-  }
-
-  std::unique_ptr<CommandBufferProxyImpl> command_buffer =
-      base::WrapUnique(new CommandBufferProxyImpl(this, route_id, stream_id));
-  AddRouteWithTaskRunner(route_id, command_buffer->AsWeakPtr(),
-                         std::move(task_runner));
-  if (!command_buffer->Initialize())
-    return nullptr;
-
-  return command_buffer;
-}
-
-void GpuChannelHost::DestroyCommandBuffer(
-    CommandBufferProxyImpl* command_buffer) {
-  TRACE_EVENT0("gpu", "GpuChannelHost::DestroyCommandBuffer");
-
-  int32_t route_id = command_buffer->route_id();
-  int32_t stream_id = command_buffer->stream_id();
-  Send(new GpuChannelMsg_DestroyCommandBuffer(route_id));
-  RemoveRoute(route_id);
-
-  AutoLock lock(context_lock_);
-  StreamFlushInfo& flush_info = stream_flush_info_[stream_id];
-  if (flush_info.flush_pending && flush_info.route_id == route_id)
-    flush_info.flush_pending = false;
 }
 
 void GpuChannelHost::DestroyChannel() {

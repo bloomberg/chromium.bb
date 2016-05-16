@@ -22,7 +22,7 @@ namespace content {
 // This class is used on Android and Mac, and is responsible for tracking native
 // window surfaces exposed to the GPU process. Every surface gets registered to
 // this class, and gets a handle.  The handle can be passed to
-// GpuChannelHost::CreateCommandBuffer or to
+// CommandBufferProxyImpl::Create or to
 // GpuMemoryBufferManager::AllocateGpuMemoryBuffer.
 // On Android, the handle is used in the GPU process to get a reference to the
 // ANativeWindow, using GpuSurfaceLookup (implemented by

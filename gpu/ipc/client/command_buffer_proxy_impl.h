@@ -28,15 +28,24 @@
 #include "gpu/command_buffer/common/command_buffer_shared.h"
 #include "gpu/command_buffer/common/gpu_memory_allocation.h"
 #include "gpu/gpu_export.h"
+#include "gpu/ipc/common/gpu_stream_constants.h"
+#include "gpu/ipc/common/surface_handle.h"
 #include "ipc/ipc_listener.h"
 #include "ui/events/latency_info.h"
 #include "ui/gfx/swap_result.h"
+#include "ui/gl/gpu_preference.h"
 
 struct GPUCommandBufferConsoleMessage;
+struct GPUCreateCommandBufferConfig;
 struct GpuCommandBufferMsg_SwapBuffersCompleted_Params;
+class GURL;
 
 namespace base {
 class SharedMemory;
+}
+
+namespace gfx {
+class Size;
 }
 
 namespace gpu {
@@ -68,11 +77,19 @@ class GPU_EXPORT CommandBufferProxyImpl
   typedef base::Callback<void(const std::string& msg, int id)>
       GpuConsoleMessageCallback;
 
-  CommandBufferProxyImpl(scoped_refptr<GpuChannelHost> channel,
-                         int32_t route_id,
-                         int32_t stream_id);
+  // Create and connect to a command buffer in the GPU process.
+  static std::unique_ptr<CommandBufferProxyImpl> Create(
+      scoped_refptr<GpuChannelHost> host,
+      gpu::SurfaceHandle surface_handle,
+      const gfx::Size& size,
+      CommandBufferProxyImpl* share_group,
+      int32_t stream_id,
+      gpu::GpuStreamPriority stream_priority,
+      std::vector<int32_t> attribs,
+      const GURL& active_url,
+      gfx::GpuPreference gpu_preference,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~CommandBufferProxyImpl() override;
-  bool Initialize();
 
   // IPC::Listener implementation:
   bool OnMessageReceived(const IPC::Message& message) override;
@@ -149,8 +166,6 @@ class GPU_EXPORT CommandBufferProxyImpl
 
   int32_t route_id() const { return route_id_; }
 
-  int32_t stream_id() const { return stream_id_; }
-
   const scoped_refptr<GpuChannelHost>& channel() const { return channel_; }
 
   base::SharedMemoryHandle GetSharedStateHandle() const {
@@ -161,6 +176,11 @@ class GPU_EXPORT CommandBufferProxyImpl
  private:
   typedef std::map<int32_t, scoped_refptr<gpu::Buffer>> TransferBufferMap;
   typedef base::hash_map<uint32_t, base::Closure> SignalTaskMap;
+
+  CommandBufferProxyImpl(int channel_id, int32_t route_id, int32_t stream_id);
+  bool Initialize(scoped_refptr<GpuChannelHost> channel,
+                  const GPUCreateCommandBufferConfig& config,
+                  scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   void CheckLock() {
     if (lock_) {

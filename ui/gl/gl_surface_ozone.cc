@@ -733,8 +733,8 @@ scoped_refptr<GLSurface> GLSurface::CreateViewGLSurface(
       return nullptr;
     return surface;
   }
-  DCHECK(GetGLImplementation() == kGLImplementationEGLGLES2);
-  if (window != kNullAcceleratedWidget) {
+  if ((window != kNullAcceleratedWidget) &&
+      (GetGLImplementation() == kGLImplementationEGLGLES2)) {
     scoped_refptr<GLSurface> surface;
     if (GLSurfaceEGL::IsEGLSurfacelessContextSupported())
       surface = CreateViewGLSurfaceOzoneSurfacelessSurfaceImpl(window);
@@ -742,6 +742,7 @@ scoped_refptr<GLSurface> GLSurface::CreateViewGLSurface(
       surface = CreateViewGLSurfaceOzone(window);
     return surface;
   } else {
+    DCHECK_EQ(GetGLImplementation(), kGLImplementationMockGL);
     scoped_refptr<GLSurface> surface = new GLSurfaceStub();
     if (surface->Initialize())
       return surface;

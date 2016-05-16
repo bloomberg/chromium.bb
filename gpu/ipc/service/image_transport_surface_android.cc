@@ -8,6 +8,7 @@
 #include "gpu/ipc/common/gpu_surface_lookup.h"
 #include "gpu/ipc/service/pass_through_image_transport_surface.h"
 #include "ui/gl/gl_surface_egl.h"
+#include "ui/gl/gl_surface_stub.h"
 
 namespace gpu {
 
@@ -17,6 +18,8 @@ scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateNativeSurface(
     GpuCommandBufferStub* stub,
     SurfaceHandle surface_handle,
     gfx::GLSurface::Format format) {
+  if (gfx::GetGLImplementation() == gfx::kGLImplementationMockGL)
+    return new gfx::GLSurfaceStub;
   DCHECK(GpuSurfaceLookup::GetInstance());
   DCHECK_NE(surface_handle, kNullSurfaceHandle);
   // On Android, the surface_handle is the id of the surface in the

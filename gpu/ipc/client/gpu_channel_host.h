@@ -22,17 +22,12 @@
 #include "gpu/config/gpu_info.h"
 #include "gpu/gpu_export.h"
 #include "gpu/ipc/common/gpu_stream_constants.h"
-#include "gpu/ipc/common/surface_handle.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_sync_channel.h"
 #include "ipc/message_filter.h"
 #include "ipc/message_router.h"
 #include "ui/events/latency_info.h"
-#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
-#include "ui/gl/gpu_preference.h"
-
-class GURL;
 
 namespace base {
 class WaitableEvent;
@@ -47,8 +42,6 @@ class GpuMemoryBufferManager;
 }
 
 namespace gpu {
-class CommandBufferProxyImpl;
-class GpuChannelHost;
 
 class GPU_EXPORT GpuChannelHostFactory {
  public:
@@ -103,21 +96,6 @@ class GPU_EXPORT GpuChannelHost
                            bool do_flush);
 
   void FlushPendingStream(int32_t stream_id);
-
-  // Create and connect to a command buffer in the GPU process.
-  std::unique_ptr<CommandBufferProxyImpl> CreateCommandBuffer(
-      gpu::SurfaceHandle surface_handle,
-      const gfx::Size& size,
-      CommandBufferProxyImpl* share_group,
-      int32_t stream_id,
-      gpu::GpuStreamPriority stream_priority,
-      const std::vector<int32_t>& attribs,
-      const GURL& active_url,
-      gfx::GpuPreference gpu_preference,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
-
-  // Destroy a command buffer created by this channel.
-  void DestroyCommandBuffer(CommandBufferProxyImpl* command_buffer);
 
   // Destroy this channel. Must be called on the main thread, before
   // destruction.

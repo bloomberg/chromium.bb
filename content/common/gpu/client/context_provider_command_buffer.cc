@@ -152,13 +152,11 @@ bool ContextProviderCommandBuffer::BindToCurrentThread() {
         default_task_runner_;
     if (!task_runner)
       task_runner = base::ThreadTaskRunnerHandle::Get();
-    command_buffer_ = channel_->CreateCommandBuffer(
-        surface_handle_, gfx::Size(), shared_command_buffer, stream_id_,
-        stream_priority_, serialized_attributes, active_url_, gpu_preference_,
+    command_buffer_ = gpu::CommandBufferProxyImpl::Create(
+        std::move(channel_), surface_handle_, gfx::Size(),
+        shared_command_buffer, stream_id_, stream_priority_,
+        std::move(serialized_attributes), active_url_, gpu_preference_,
         std::move(task_runner));
-    // The command buffer takes ownership of the |channel_|, so no need to keep
-    // a reference around here.
-    channel_ = nullptr;
     if (!command_buffer_) {
       DLOG(ERROR) << "GpuChannelHost failed to create command buffer.";
       command_buffer_metrics::UmaRecordContextInitFailed(context_type_);

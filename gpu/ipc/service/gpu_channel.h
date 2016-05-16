@@ -188,14 +188,19 @@ class GPU_EXPORT GpuChannel
   void RemoveRouteFromStream(int32_t route_id);
 
   // Message handlers for control messages.
-  void OnCreateCommandBuffer(SurfaceHandle surface_handle,
-                             const gfx::Size& size,
-                             const GPUCreateCommandBufferConfig& init_params,
+  void OnCreateCommandBuffer(const GPUCreateCommandBufferConfig& init_params,
                              int32_t route_id,
-                             bool* succeeded);
+                             base::SharedMemoryHandle shared_state_shm,
+                             bool* result,
+                             gpu::Capabilities* capabilities);
   void OnDestroyCommandBuffer(int32_t route_id);
   void OnGetDriverBugWorkArounds(
       std::vector<std::string>* gpu_driver_bug_workarounds);
+
+  std::unique_ptr<GpuCommandBufferStub> CreateCommandBuffer(
+      const GPUCreateCommandBufferConfig& init_params,
+      int32_t route_id,
+      base::SharedMemoryHandle shared_state_shm);
 
   // The lifetime of objects of this class is managed by a GpuChannelManager.
   // The GpuChannelManager destroy all the GpuChannels that they own when they

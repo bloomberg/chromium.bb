@@ -53,6 +53,8 @@ IPC_STRUCT_BEGIN(GPUCommandBufferConsoleMessage)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(GPUCreateCommandBufferConfig)
+  IPC_STRUCT_MEMBER(gpu::SurfaceHandle, surface_handle)
+  IPC_STRUCT_MEMBER(gfx::Size, size)
   IPC_STRUCT_MEMBER(int32_t, share_group_id)
   IPC_STRUCT_MEMBER(int32_t, stream_id)
   IPC_STRUCT_MEMBER(gpu::GpuStreamPriority, stream_priority)
@@ -98,12 +100,12 @@ IPC_STRUCT_END()
 // ignored, and it will render directly to the native surface (only the browser
 // process is allowed to create those). Otherwise it will create an offscreen
 // backbuffer of dimensions |size|.
-IPC_SYNC_MESSAGE_CONTROL4_1(GpuChannelMsg_CreateCommandBuffer,
-                            gpu::SurfaceHandle /* surface_handle */,
-                            gfx::Size /* size */,
+IPC_SYNC_MESSAGE_CONTROL3_2(GpuChannelMsg_CreateCommandBuffer,
                             GPUCreateCommandBufferConfig /* init_params */,
                             int32_t /* route_id */,
-                            bool /* succeeded */)
+                            base::SharedMemoryHandle /* shared_state */,
+                            bool /* result */,
+                            gpu::Capabilities /* capabilities */)
 
 // The CommandBufferProxy sends this to the GpuCommandBufferStub in its
 // destructor, so that the stub deletes the actual CommandBufferService
@@ -145,13 +147,6 @@ IPC_MESSAGE_ROUTED0(GpuStreamTextureMsg_FrameAvailable)
 // GPU Command Buffer Messages
 // These are messages between a renderer process to the GPU process relating to
 // a single OpenGL context.
-// Initialize a command buffer with the given number of command entries.
-// Returns the shared memory handle for the command buffer mapped to the
-// calling process.
-IPC_SYNC_MESSAGE_ROUTED1_2(GpuCommandBufferMsg_Initialize,
-                           base::SharedMemoryHandle /* shared_state */,
-                           bool /* result */,
-                           gpu::Capabilities /* capabilities */)
 
 // Sets the shared memory buffer used for commands.
 IPC_SYNC_MESSAGE_ROUTED1_0(GpuCommandBufferMsg_SetGetBuffer,

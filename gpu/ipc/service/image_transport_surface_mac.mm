@@ -8,6 +8,7 @@
 #include "gpu/ipc/service/pass_through_image_transport_surface.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gl/gl_surface_osmesa.h"
+#include "ui/gl/gl_surface_stub.h"
 
 namespace gpu {
 
@@ -56,6 +57,8 @@ scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateNativeSurface(
     case gfx::kGLImplementationAppleGL:
       return ImageTransportSurfaceCreateNativeSurface(manager, stub,
                                                       surface_handle);
+    case gfx::kGLImplementationMockGL:
+      return new gfx::GLSurfaceStub;
     default:
       // Content shell in DRT mode spins up a gpu process which needs an
       // image transport surface, but that surface isn't used to read pixel

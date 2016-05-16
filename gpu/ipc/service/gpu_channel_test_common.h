@@ -106,6 +106,9 @@ class GpuChannelTestCommon : public testing::Test {
   GpuChannelTestCommon();
   ~GpuChannelTestCommon() override;
 
+  void SetUp() override;
+  void TearDown() override;
+
  protected:
   GpuChannelManager* channel_manager() { return channel_manager_.get(); }
   TestGpuChannelManagerDelegate* channel_manager_delegate() {

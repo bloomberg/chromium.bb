@@ -293,8 +293,6 @@ bool GpuCommandBufferStub::OnMessageReceived(const IPC::Message& message) {
   // here. This is so the reply can be delayed if the scheduler is unscheduled.
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(GpuCommandBufferStub, message)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuCommandBufferMsg_Initialize,
-                                    OnInitialize);
     IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuCommandBufferMsg_SetGetBuffer,
                                     OnSetGetBuffer);
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_TakeFrontBuffer, OnTakeFrontBuffer);
@@ -505,13 +503,6 @@ void GpuCommandBufferStub::Destroy() {
   surface_ = NULL;
 }
 
-void GpuCommandBufferStub::OnInitializeFailed(IPC::Message* reply_message) {
-  Destroy();
-  GpuCommandBufferMsg_Initialize::WriteReplyParams(
-      reply_message, false, Capabilities());
-  Send(reply_message);
-}
-
 scoped_refptr<gfx::GLSurface> GpuCommandBufferStub::CreateSurface() {
   GpuChannelManager* manager = channel_->gpu_channel_manager();
   scoped_refptr<gfx::GLSurface> surface;
@@ -526,10 +517,9 @@ scoped_refptr<gfx::GLSurface> GpuCommandBufferStub::CreateSurface() {
   return surface;
 }
 
-void GpuCommandBufferStub::OnInitialize(
-    base::SharedMemoryHandle shared_state_handle,
-    IPC::Message* reply_message) {
-  TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnInitialize");
+bool GpuCommandBufferStub::Initialize(
+    base::SharedMemoryHandle shared_state_handle) {
+  TRACE_EVENT0("gpu", "GpuCommandBufferStub::Initialize");
   DCHECK(!command_buffer_.get());
 
   std::unique_ptr<base::SharedMemory> shared_state_shm(
@@ -556,8 +546,7 @@ void GpuCommandBufferStub::OnInitialize(
   surface_ = CreateSurface();
   if (!surface_.get()) {
     DLOG(ERROR) << "Failed to create surface.";
-    OnInitializeFailed(reply_message);
-    return;
+    return false;
   }
 
   scoped_refptr<gfx::GLContext> context;
@@ -571,8 +560,7 @@ void GpuCommandBufferStub::OnInitialize(
           gpu_preference_);
       if (!context.get()) {
         DLOG(ERROR) << "Failed to create shared context for virtualization.";
-        OnInitializeFailed(reply_message);
-        return;
+        return false;
       }
       // Ensure that context creation did not lose track of the intended
       // share_group.
@@ -592,8 +580,7 @@ void GpuCommandBufferStub::OnInitialize(
       context = NULL;
 
       DLOG(ERROR) << "Failed to initialize virtual GL context.";
-      OnInitializeFailed(reply_message);
-      return;
+      return false;
     }
   }
   if (!context.get()) {
@@ -602,14 +589,12 @@ void GpuCommandBufferStub::OnInitialize(
   }
   if (!context.get()) {
     DLOG(ERROR) << "Failed to create context.";
-    OnInitializeFailed(reply_message);
-    return;
+    return false;
   }
 
   if (!context->MakeCurrent(surface_.get())) {
     LOG(ERROR) << "Failed to make context current.";
-    OnInitializeFailed(reply_message);
-    return;
+    return false;
   }
 
   if (!context->GetGLStateRestorer()) {
@@ -628,8 +613,7 @@ void GpuCommandBufferStub::OnInitialize(
   if (!decoder_->Initialize(surface_, context, offscreen, initial_size_,
                             disallowed_features_, requested_attribs_)) {
     DLOG(ERROR) << "Failed to initialize decoder.";
-    OnInitializeFailed(reply_message);
-    return;
+    return false;
   }
 
   if (channel_->gpu_channel_manager()->
@@ -663,22 +647,16 @@ void GpuCommandBufferStub::OnInitialize(
   const size_t kSharedStateSize = sizeof(CommandBufferSharedState);
   if (!shared_state_shm->Map(kSharedStateSize)) {
     DLOG(ERROR) << "Failed to map shared state buffer.";
-    OnInitializeFailed(reply_message);
-    return;
+    return false;
   }
   command_buffer_->SetSharedStateBuffer(MakeBackingFromSharedMemory(
       std::move(shared_state_shm), kSharedStateSize));
-
-  Capabilities capabilities = decoder_->GetCapabilities();
-
-  GpuCommandBufferMsg_Initialize::WriteReplyParams(
-      reply_message, true, capabilities);
-  Send(reply_message);
 
   if ((surface_handle_ == kNullSurfaceHandle) && !active_url_.is_empty())
     manager->delegate()->DidCreateOffscreenContext(active_url_);
 
   initialized_ = true;
+  return true;
 }
 
 void GpuCommandBufferStub::OnCreateStreamTexture(uint32_t texture_id,

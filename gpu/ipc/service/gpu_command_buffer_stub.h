@@ -88,6 +88,7 @@ class GPU_EXPORT GpuCommandBufferStub
       int32_t route_id,
       GpuWatchdog* watchdog,
       const GURL& active_url);
+  bool Initialize(base::SharedMemoryHandle shared_state_shm);
 
   ~GpuCommandBufferStub() override;
 
@@ -151,14 +152,9 @@ class GPU_EXPORT GpuCommandBufferStub
 
   bool MakeCurrent();
 
-  // Cleans up and sends reply if OnInitialize failed.
-  void OnInitializeFailed(IPC::Message* reply_message);
-
   scoped_refptr<gfx::GLSurface> CreateSurface();
 
   // Message handlers:
-  void OnInitialize(base::SharedMemoryHandle shared_state_shm,
-                    IPC::Message* reply_message);
   void OnSetGetBuffer(int32_t shm_id, IPC::Message* reply_message);
   void OnTakeFrontBuffer(const Mailbox& mailbox);
   void OnReturnFrontBuffer(const Mailbox& mailbox,

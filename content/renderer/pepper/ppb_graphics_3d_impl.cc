@@ -227,7 +227,7 @@ bool PPB_Graphics3D_Impl::InitRaw(PPB_Graphics3D_API* share_context,
   gfx::Size surface_size;
   std::vector<int32_t> attribs;
   gfx::GpuPreference gpu_preference = gfx::PreferDiscreteGpu;
-  // TODO(alokp): Change GpuChannelHost::CreateCommandBuffer()
+  // TODO(alokp): Change CommandBufferProxyImpl::Create()
   // interface to accept width and height in the attrib_list so that
   // we do not need to filter for width and height here.
   if (attrib_list) {
@@ -265,10 +265,11 @@ bool PPB_Graphics3D_Impl::InitRaw(PPB_Graphics3D_API* share_context,
     share_buffer = share_graphics->GetCommandBufferProxy();
   }
 
-  command_buffer_ = channel->CreateCommandBuffer(
-      gpu::kNullSurfaceHandle, surface_size, share_buffer,
-      gpu::GPU_STREAM_DEFAULT, gpu::GpuStreamPriority::NORMAL, attribs,
-      GURL::EmptyGURL(), gpu_preference, base::ThreadTaskRunnerHandle::Get());
+  command_buffer_ = gpu::CommandBufferProxyImpl::Create(
+      std::move(channel), gpu::kNullSurfaceHandle, surface_size, share_buffer,
+      gpu::GPU_STREAM_DEFAULT, gpu::GpuStreamPriority::NORMAL,
+      std::move(attribs), GURL::EmptyGURL(), gpu_preference,
+      base::ThreadTaskRunnerHandle::Get());
   if (!command_buffer_)
     return false;
 

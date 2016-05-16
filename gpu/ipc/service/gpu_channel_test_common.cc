@@ -134,21 +134,24 @@ GpuChannelTestCommon::GpuChannelTestCommon()
     : task_runner_(new base::TestSimpleTaskRunner),
       io_task_runner_(new base::TestSimpleTaskRunner),
       sync_point_manager_(new SyncPointManager(false)),
-      channel_manager_delegate_(new TestGpuChannelManagerDelegate()),
-      channel_manager_(
-          new TestGpuChannelManager(gpu_preferences_,
-                                    channel_manager_delegate_.get(),
-                                    task_runner_.get(),
-                                    io_task_runner_.get(),
-                                    sync_point_manager_.get(),
-                                    nullptr)) {}
+      channel_manager_delegate_(new TestGpuChannelManagerDelegate()) {}
 
 GpuChannelTestCommon::~GpuChannelTestCommon() {
-  // Destroying channels causes tasks to run on the IO task runner.
-  channel_manager_ = nullptr;
   // Clear pending tasks to avoid refptr cycles that get flagged by ASAN.
   task_runner_->ClearPendingTasks();
   io_task_runner_->ClearPendingTasks();
 }
+
+void GpuChannelTestCommon::SetUp() {
+  channel_manager_.reset(new TestGpuChannelManager(
+      gpu_preferences_, channel_manager_delegate_.get(), task_runner_.get(),
+      io_task_runner_.get(), sync_point_manager_.get(), nullptr));
+}
+
+void GpuChannelTestCommon::TearDown() {
+  // Destroying channels causes tasks to run on the IO task runner.
+  channel_manager_ = nullptr;
+}
+
 
 }  // namespace gpu
