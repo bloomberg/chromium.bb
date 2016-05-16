@@ -29,8 +29,8 @@ namespace blink {
 
 BiquadFilterNode::BiquadFilterNode(AbstractAudioContext& context, float sampleRate)
     : AudioNode(context)
-    , m_frequency(AudioParam::create(context, ParamTypeBiquadFilterFrequency, 350.0))
-    , m_q(AudioParam::create(context, ParamTypeBiquadFilterQ, 1))
+    , m_frequency(AudioParam::create(context, ParamTypeBiquadFilterFrequency, 350.0, 0, sampleRate / 2))
+    , m_q(AudioParam::create(context, ParamTypeBiquadFilterQ, 1.0))
     , m_gain(AudioParam::create(context, ParamTypeBiquadFilterGain, 0.0))
     , m_detune(AudioParam::create(context, ParamTypeBiquadFilterDetune, 0.0))
 {

@@ -1,0 +1,194 @@
+CONSOLE WARNING: Delay.delayTime.value -1 outside nominal range [0, 1.5]; value will be clamped.
+CONSOLE WARNING: Delay.delayTime.value 4 outside nominal range [0, 1.5]; value will be clamped.
+CONSOLE WARNING: StereoPanner.pan.value -3 outside nominal range [-1, 1]; value will be clamped.
+CONSOLE WARNING: StereoPanner.pan.value 3 outside nominal range [-1, 1]; value will be clamped.
+CONSOLE WARNING: DynamicsCompressor.threshold.value -201 outside nominal range [-100, 0]; value will be clamped.
+CONSOLE WARNING: DynamicsCompressor.threshold.value 1 outside nominal range [-100, 0]; value will be clamped.
+CONSOLE WARNING: DynamicsCompressor.knee.value -1 outside nominal range [0, 40]; value will be clamped.
+CONSOLE WARNING: DynamicsCompressor.knee.value 81 outside nominal range [0, 40]; value will be clamped.
+CONSOLE WARNING: DynamicsCompressor.ratio.value 41 outside nominal range [1, 20]; value will be clamped.
+CONSOLE WARNING: DynamicsCompressor.attack.value -1 outside nominal range [0, 1]; value will be clamped.
+CONSOLE WARNING: DynamicsCompressor.attack.value 3 outside nominal range [0, 1]; value will be clamped.
+CONSOLE WARNING: DynamicsCompressor.release.value -1 outside nominal range [0, 1]; value will be clamped.
+CONSOLE WARNING: DynamicsCompressor.release.value 3 outside nominal range [0, 1]; value will be clamped.
+CONSOLE WARNING: BiquadFilter.frequency.value -1 outside nominal range [0, 24000]; value will be clamped.
+CONSOLE WARNING: BiquadFilter.frequency.value 48001 outside nominal range [0, 24000]; value will be clamped.
+CONSOLE WARNING: Oscillator.frequency.value -1 outside nominal range [0, 24000]; value will be clamped.
+CONSOLE WARNING: Oscillator.frequency.value 48001 outside nominal range [0, 24000]; value will be clamped.
+CONSOLE WARNING: Delay.delayTime.setValueAtTime value -1 outside nominal range [0, 1]; value will be clamped.
+CONSOLE WARNING: Delay.delayTime.linearRampToValueAtTime value 2 outside nominal range [0, 1]; value will be clamped.
+CONSOLE WARNING: Delay.delayTime.exponentialRampToValue value 3 outside nominal range [0, 1]; value will be clamped.
+CONSOLE WARNING: Delay.delayTime.setTargetAtTime value -1 outside nominal range [0, 1]; value will be clamped.
+CONSOLE WARNING: Delay.delayTime.setValueCurveAtTime value 1.5 outside nominal range [0, 1]; value will be clamped.
+Test Automation of SpatialListener Position.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS GainNode.gain.minValue is equal to -3.4028234663852886e+38.
+PASS GainNode.gain.maxValue is equal to 3.4028234663852886e+38.
+PASS GainNode.gain.minValue = Math.PI is not equal to 3.141592653589793.
+PASS GainNode.gain.minValue is read-only.
+PASS GainNode.gain.maxValue = Math.PI is not equal to 3.141592653589793.
+PASS GainNode.gain.maxValue is read-only.
+PASS Nominal ranges for AudioParam(s) of GainNode are correct.
+
+PASS DelayNode.delayTime.minValue is equal to 0.
+PASS DelayNode.delayTime.maxValue is equal to 1.5.
+PASS DelayNode.delayTime.minValue = Math.PI is not equal to 3.141592653589793.
+PASS DelayNode.delayTime.minValue is read-only.
+PASS DelayNode.delayTime.maxValue = Math.PI is not equal to 3.141592653589793.
+PASS DelayNode.delayTime.maxValue is read-only.
+PASS Set DelayNode.delayTime.value = -1 is equal to 0.
+PASS Set DelayNode.delayTime.value = 4 is equal to 1.5.
+PASS DelayNode.delayTime was correctly clipped to lie within the nominal range.
+PASS Nominal ranges for AudioParam(s) of DelayNode are correct.
+
+PASS AudioBufferSourceNode.playbackRate.minValue is equal to -3.4028234663852886e+38.
+PASS AudioBufferSourceNode.playbackRate.maxValue is equal to 3.4028234663852886e+38.
+PASS AudioBufferSourceNode.playbackRate.minValue = Math.PI is not equal to 3.141592653589793.
+PASS AudioBufferSourceNode.playbackRate.minValue is read-only.
+PASS AudioBufferSourceNode.playbackRate.maxValue = Math.PI is not equal to 3.141592653589793.
+PASS AudioBufferSourceNode.playbackRate.maxValue is read-only.
+PASS AudioBufferSourceNode.detune.minValue is equal to -3.4028234663852886e+38.
+PASS AudioBufferSourceNode.detune.maxValue is equal to 3.4028234663852886e+38.
+PASS AudioBufferSourceNode.detune.minValue = Math.PI is not equal to 3.141592653589793.
+PASS AudioBufferSourceNode.detune.minValue is read-only.
+PASS AudioBufferSourceNode.detune.maxValue = Math.PI is not equal to 3.141592653589793.
+PASS AudioBufferSourceNode.detune.maxValue is read-only.
+PASS Nominal ranges for AudioParam(s) of AudioBufferSourceNode are correct.
+
+PASS StereoPannerNode.pan.minValue is equal to -1.
+PASS StereoPannerNode.pan.maxValue is equal to 1.
+PASS StereoPannerNode.pan.minValue = Math.PI is not equal to 3.141592653589793.
+PASS StereoPannerNode.pan.minValue is read-only.
+PASS StereoPannerNode.pan.maxValue = Math.PI is not equal to 3.141592653589793.
+PASS StereoPannerNode.pan.maxValue is read-only.
+PASS Set StereoPannerNode.pan.value = -3 is equal to -1.
+PASS Set StereoPannerNode.pan.value = 3 is equal to 1.
+PASS StereoPannerNode.pan was correctly clipped to lie within the nominal range.
+PASS Nominal ranges for AudioParam(s) of StereoPannerNode are correct.
+
+PASS DynamicsCompressorNode.threshold.minValue is equal to -100.
+PASS DynamicsCompressorNode.threshold.maxValue is equal to 0.
+PASS DynamicsCompressorNode.threshold.minValue = Math.PI is not equal to 3.141592653589793.
+PASS DynamicsCompressorNode.threshold.minValue is read-only.
+PASS DynamicsCompressorNode.threshold.maxValue = Math.PI is not equal to 3.141592653589793.
+PASS DynamicsCompressorNode.threshold.maxValue is read-only.
+PASS Set DynamicsCompressorNode.threshold.value = -201 is equal to -100.
+PASS Set DynamicsCompressorNode.threshold.value = 1 is equal to 0.
+PASS DynamicsCompressorNode.threshold was correctly clipped to lie within the nominal range.
+PASS DynamicsCompressorNode.knee.minValue is equal to 0.
+PASS DynamicsCompressorNode.knee.maxValue is equal to 40.
+PASS DynamicsCompressorNode.knee.minValue = Math.PI is not equal to 3.141592653589793.
+PASS DynamicsCompressorNode.knee.minValue is read-only.
+PASS DynamicsCompressorNode.knee.maxValue = Math.PI is not equal to 3.141592653589793.
+PASS DynamicsCompressorNode.knee.maxValue is read-only.
+PASS Set DynamicsCompressorNode.knee.value = -1 is equal to 0.
+PASS Set DynamicsCompressorNode.knee.value = 81 is equal to 40.
+PASS DynamicsCompressorNode.knee was correctly clipped to lie within the nominal range.
+PASS DynamicsCompressorNode.ratio.minValue is equal to 1.
+PASS DynamicsCompressorNode.ratio.maxValue is equal to 20.
+PASS DynamicsCompressorNode.ratio.minValue = Math.PI is not equal to 3.141592653589793.
+PASS DynamicsCompressorNode.ratio.minValue is read-only.
+PASS DynamicsCompressorNode.ratio.maxValue = Math.PI is not equal to 3.141592653589793.
+PASS DynamicsCompressorNode.ratio.maxValue is read-only.
+PASS Set DynamicsCompressorNode.ratio.value = 1 is equal to 1.
+PASS Set DynamicsCompressorNode.ratio.value = 41 is equal to 20.
+PASS DynamicsCompressorNode.ratio was correctly clipped to lie within the nominal range.
+PASS DynamicsCompressorNode.attack.minValue is equal to 0.
+PASS DynamicsCompressorNode.attack.maxValue is equal to 1.
+PASS DynamicsCompressorNode.attack.minValue = Math.PI is not equal to 3.141592653589793.
+PASS DynamicsCompressorNode.attack.minValue is read-only.
+PASS DynamicsCompressorNode.attack.maxValue = Math.PI is not equal to 3.141592653589793.
+PASS DynamicsCompressorNode.attack.maxValue is read-only.
+PASS Set DynamicsCompressorNode.attack.value = -1 is equal to 0.
+PASS Set DynamicsCompressorNode.attack.value = 3 is equal to 1.
+PASS DynamicsCompressorNode.attack was correctly clipped to lie within the nominal range.
+PASS DynamicsCompressorNode.release.minValue is equal to 0.
+PASS DynamicsCompressorNode.release.maxValue is equal to 1.
+PASS DynamicsCompressorNode.release.minValue = Math.PI is not equal to 3.141592653589793.
+PASS DynamicsCompressorNode.release.minValue is read-only.
+PASS DynamicsCompressorNode.release.maxValue = Math.PI is not equal to 3.141592653589793.
+PASS DynamicsCompressorNode.release.maxValue is read-only.
+PASS Set DynamicsCompressorNode.release.value = -1 is equal to 0.
+PASS Set DynamicsCompressorNode.release.value = 3 is equal to 1.
+PASS DynamicsCompressorNode.release was correctly clipped to lie within the nominal range.
+PASS Nominal ranges for AudioParam(s) of DynamicsCompressorNode are correct.
+
+PASS BiquadFilterNode.frequency.minValue is equal to 0.
+PASS BiquadFilterNode.frequency.maxValue is equal to 24000.
+PASS BiquadFilterNode.frequency.minValue = Math.PI is not equal to 3.141592653589793.
+PASS BiquadFilterNode.frequency.minValue is read-only.
+PASS BiquadFilterNode.frequency.maxValue = Math.PI is not equal to 3.141592653589793.
+PASS BiquadFilterNode.frequency.maxValue is read-only.
+PASS Set BiquadFilterNode.frequency.value = -1 is equal to 0.
+PASS Set BiquadFilterNode.frequency.value = 48001 is equal to 24000.
+PASS BiquadFilterNode.frequency was correctly clipped to lie within the nominal range.
+PASS BiquadFilterNode.detune.minValue is equal to -3.4028234663852886e+38.
+PASS BiquadFilterNode.detune.maxValue is equal to 3.4028234663852886e+38.
+PASS BiquadFilterNode.detune.minValue = Math.PI is not equal to 3.141592653589793.
+PASS BiquadFilterNode.detune.minValue is read-only.
+PASS BiquadFilterNode.detune.maxValue = Math.PI is not equal to 3.141592653589793.
+PASS BiquadFilterNode.detune.maxValue is read-only.
+PASS BiquadFilterNode.Q.minValue is equal to -3.4028234663852886e+38.
+PASS BiquadFilterNode.Q.maxValue is equal to 3.4028234663852886e+38.
+PASS BiquadFilterNode.Q.minValue = Math.PI is not equal to 3.141592653589793.
+PASS BiquadFilterNode.Q.minValue is read-only.
+PASS BiquadFilterNode.Q.maxValue = Math.PI is not equal to 3.141592653589793.
+PASS BiquadFilterNode.Q.maxValue is read-only.
+PASS BiquadFilterNode.gain.minValue is equal to -3.4028234663852886e+38.
+PASS BiquadFilterNode.gain.maxValue is equal to 3.4028234663852886e+38.
+PASS BiquadFilterNode.gain.minValue = Math.PI is not equal to 3.141592653589793.
+PASS BiquadFilterNode.gain.minValue is read-only.
+PASS BiquadFilterNode.gain.maxValue = Math.PI is not equal to 3.141592653589793.
+PASS BiquadFilterNode.gain.maxValue is read-only.
+PASS Nominal ranges for AudioParam(s) of BiquadFilterNode are correct.
+
+PASS OscillatorNode.frequency.minValue is equal to 0.
+PASS OscillatorNode.frequency.maxValue is equal to 24000.
+PASS OscillatorNode.frequency.minValue = Math.PI is not equal to 3.141592653589793.
+PASS OscillatorNode.frequency.minValue is read-only.
+PASS OscillatorNode.frequency.maxValue = Math.PI is not equal to 3.141592653589793.
+PASS OscillatorNode.frequency.maxValue is read-only.
+PASS Set OscillatorNode.frequency.value = -1 is equal to 0.
+PASS Set OscillatorNode.frequency.value = 48001 is equal to 24000.
+PASS OscillatorNode.frequency was correctly clipped to lie within the nominal range.
+PASS OscillatorNode.detune.minValue is equal to -3.4028234663852886e+38.
+PASS OscillatorNode.detune.maxValue is equal to 3.4028234663852886e+38.
+PASS OscillatorNode.detune.minValue = Math.PI is not equal to 3.141592653589793.
+PASS OscillatorNode.detune.minValue is read-only.
+PASS OscillatorNode.detune.maxValue = Math.PI is not equal to 3.141592653589793.
+PASS OscillatorNode.detune.maxValue is read-only.
+PASS Nominal ranges for AudioParam(s) of OscillatorNode are correct.
+
+PASS AudioBuffer has no AudioParams as expected.
+
+PASS IIRFilterNode has no AudioParams as expected.
+
+PASS WaveShaperNode has no AudioParams as expected.
+
+PASS ConvolverNode has no AudioParams as expected.
+
+PASS AnalyserNode has no AudioParams as expected.
+
+PASS ScriptProcessorNode has no AudioParams as expected.
+
+PASS PeriodicWave has no AudioParams as expected.
+
+PASS ChannelSplitterNode has no AudioParams as expected.
+
+PASS ChannelMergerNode has no AudioParams as expected.
+
+PASS PannerNode has no AudioParams as expected.
+
+PASS MediaElementAudioSourceNode has no AudioParams as expected.
+
+PASS MediaStreamAudioDestinationNode has no AudioParams as expected.
+
+PASS All nodes were tested.
+
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

@@ -228,6 +228,8 @@ interface AudioNode : EventTarget
 interface AudioParam
     attribute @@toStringTag
     getter defaultValue
+    getter maxValue
+    getter minValue
     getter value
     method cancelScheduledValues
     method constructor

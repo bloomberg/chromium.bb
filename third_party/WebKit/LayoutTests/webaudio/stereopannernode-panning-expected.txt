@@ -1,3 +1,15 @@
+CONSOLE WARNING: StereoPanner.pan.value -1.0625 outside nominal range [-1, 1]; value will be clamped.
+CONSOLE WARNING: StereoPanner.pan.value -1.04104 outside nominal range [-1, 1]; value will be clamped.
+CONSOLE WARNING: StereoPanner.pan.value -1.01957 outside nominal range [-1, 1]; value will be clamped.
+CONSOLE WARNING: StereoPanner.pan.value 1.01957 outside nominal range [-1, 1]; value will be clamped.
+CONSOLE WARNING: StereoPanner.pan.value 1.04104 outside nominal range [-1, 1]; value will be clamped.
+CONSOLE WARNING: StereoPanner.pan.value 1.0625 outside nominal range [-1, 1]; value will be clamped.
+CONSOLE WARNING: StereoPanner.pan.value -1.0625 outside nominal range [-1, 1]; value will be clamped.
+CONSOLE WARNING: StereoPanner.pan.value -1.04104 outside nominal range [-1, 1]; value will be clamped.
+CONSOLE WARNING: StereoPanner.pan.value -1.01957 outside nominal range [-1, 1]; value will be clamped.
+CONSOLE WARNING: StereoPanner.pan.value 1.01957 outside nominal range [-1, 1]; value will be clamped.
+CONSOLE WARNING: StereoPanner.pan.value 1.04104 outside nominal range [-1, 1]; value will be clamped.
+CONSOLE WARNING: StereoPanner.pan.value 1.0625 outside nominal range [-1, 1]; value will be clamped.
 Test panning model of StereoPannerNode.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

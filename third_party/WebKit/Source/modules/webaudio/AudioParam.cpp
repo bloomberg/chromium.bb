@@ -24,11 +24,14 @@
  */
 
 #include "modules/webaudio/AudioParam.h"
+
+#include "core/inspector/ConsoleMessage.h"
 #include "modules/webaudio/AudioNode.h"
 #include "modules/webaudio/AudioNodeOutput.h"
 #include "platform/FloatConversion.h"
 #include "platform/Histogram.h"
 #include "platform/audio/AudioUtilities.h"
+#include "platform/v8_inspector/public/ConsoleTypes.h"
 #include "wtf/MathExtras.h"
 
 namespace blink {
@@ -36,11 +39,13 @@ namespace blink {
 const double AudioParamHandler::DefaultSmoothingConstant = 0.05;
 const double AudioParamHandler::SnapThreshold = 0.001;
 
-AudioParamHandler::AudioParamHandler(AbstractAudioContext& context, AudioParamType paramType, double defaultValue)
+AudioParamHandler::AudioParamHandler(AbstractAudioContext& context, AudioParamType paramType, double defaultValue, float minValue, float maxValue)
     : AudioSummingJunction(context.deferredTaskHandler())
     , m_paramType(paramType)
     , m_intrinsicValue(defaultValue)
     , m_defaultValue(defaultValue)
+    , m_minValue(minValue)
+    , m_maxValue(maxValue)
     , m_smoothedValue(defaultValue)
 {
     // The destination MUST exist because we need the destination handler for the AudioParam.
@@ -120,6 +125,12 @@ float AudioParamHandler::value()
 
     setIntrinsicValue(v);
     return v;
+}
+
+void AudioParamHandler::setIntrinsicValue(float newValue)
+{
+    newValue = clampTo(newValue, m_minValue, m_maxValue);
+    noBarrierStore(&m_intrinsicValue, newValue);
 }
 
 void AudioParamHandler::setValue(float value)
@@ -294,15 +305,24 @@ void AudioParamHandler::updateHistograms(float newValue)
 
 // ----------------------------------------------------------------
 
-AudioParam::AudioParam(AbstractAudioContext& context, AudioParamType paramType, double defaultValue)
-    : m_handler(AudioParamHandler::create(context, paramType, defaultValue))
+AudioParam::AudioParam(AbstractAudioContext& context, AudioParamType paramType, double defaultValue, float minValue, float maxValue)
+    : m_handler(AudioParamHandler::create(context, paramType, defaultValue, minValue, maxValue))
     , m_context(context)
 {
 }
 
 AudioParam* AudioParam::create(AbstractAudioContext& context, AudioParamType paramType, double defaultValue)
 {
-    return new AudioParam(context, paramType, defaultValue);
+    // Default nominal range is most negative float to most positive.  This basically means any
+    // value is valid, except that floating-point infinities are excluded.
+    float limit = std::numeric_limits<float>::max();
+    return new AudioParam(context, paramType, defaultValue, -limit, limit);
+}
+
+AudioParam* AudioParam::create(AbstractAudioContext& context, AudioParamType paramType, double defaultValue, float minValue, float maxValue)
+{
+    DCHECK_LE(minValue, maxValue);
+    return new AudioParam(context, paramType, defaultValue, minValue, maxValue);
 }
 
 DEFINE_TRACE(AudioParam)
@@ -315,14 +335,43 @@ float AudioParam::value() const
     return handler().value();
 }
 
+void AudioParam::warnIfOutsideRange(const String& paramMethod, float value)
+{
+    if (value < minValue() || value > maxValue()) {
+        context()->getExecutionContext()->addConsoleMessage(
+            ConsoleMessage::create(
+                JSMessageSource,
+                WarningMessageLevel,
+                handler().getParamName()
+                + "."
+                + paramMethod
+                + " "
+                + String::number(value)
+                + " outside nominal range ["
+                + String::number(minValue()) + ", " + String::number(maxValue())
+                + "]; value will be clamped."));
+    }
+}
+
 void AudioParam::setValue(float value)
 {
+    warnIfOutsideRange("value", value);
     handler().setValue(value);
 }
 
 float AudioParam::defaultValue() const
 {
     return handler().defaultValue();
+}
+
+float AudioParam::minValue() const
+{
+    return handler().minValue();
+}
+
+float AudioParam::maxValue() const
+{
+    return handler().maxValue();
 }
 
 void AudioParam::setParamType(AudioParamType paramType)
@@ -332,6 +381,7 @@ void AudioParam::setParamType(AudioParamType paramType)
 
 AudioParam* AudioParam::setValueAtTime(float value, double time, ExceptionState& exceptionState)
 {
+    warnIfOutsideRange("setValueAtTime value", value);
     handler().timeline().setValueAtTime(value, time, exceptionState);
     handler().updateHistograms(value);
     return this;
@@ -339,6 +389,7 @@ AudioParam* AudioParam::setValueAtTime(float value, double time, ExceptionState&
 
 AudioParam* AudioParam::linearRampToValueAtTime(float value, double time, ExceptionState& exceptionState)
 {
+    warnIfOutsideRange("linearRampToValueAtTime value", value);
     handler().timeline().linearRampToValueAtTime(
         value, time, handler().intrinsicValue(), context()->currentTime(), exceptionState);
 
@@ -351,6 +402,7 @@ AudioParam* AudioParam::linearRampToValueAtTime(float value, double time, Except
 
 AudioParam* AudioParam::exponentialRampToValueAtTime(float value, double time, ExceptionState& exceptionState)
 {
+    warnIfOutsideRange("exponentialRampToValue value", value);
     handler().timeline().exponentialRampToValueAtTime(value, time, handler().intrinsicValue(), context()->currentTime(), exceptionState);
 
     // This is probably the best we can do for the histogram.  We don't want to run the automation
@@ -362,6 +414,7 @@ AudioParam* AudioParam::exponentialRampToValueAtTime(float value, double time, E
 
 AudioParam* AudioParam::setTargetAtTime(float target, double time, double timeConstant, ExceptionState& exceptionState)
 {
+    warnIfOutsideRange("setTargetAtTime value", target);
     handler().timeline().setTargetAtTime(target, time, timeConstant, exceptionState);
 
     // Don't update the histogram here.  It's not clear in normal usage if the parameter value will
@@ -371,6 +424,19 @@ AudioParam* AudioParam::setTargetAtTime(float target, double time, double timeCo
 
 AudioParam* AudioParam::setValueCurveAtTime(DOMFloat32Array* curve, double time, double duration, ExceptionState& exceptionState)
 {
+    // Just find the first value in the curve (if any) that is outside the nominal range.  It's
+    // probably not necessary to produce a warning on every value outside the nominal range.
+    float* curveData = curve->data();
+    float min = minValue();
+    float max = maxValue();
+
+    for (unsigned k = 0; k < curve->length(); ++k) {
+        if (curveData[k] < min || curveData[k] > max) {
+            warnIfOutsideRange("setValueCurveAtTime value", curveData[k]);
+            break;
+        }
+    }
+
     handler().timeline().setValueCurveAtTime(curve, time, duration, exceptionState);
 
     // We could update the histogram with every value in the curve, due to interpolation, we'll

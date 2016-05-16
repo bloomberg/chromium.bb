@@ -84,9 +84,14 @@ public:
     static const double DefaultSmoothingConstant;
     static const double SnapThreshold;
 
-    static PassRefPtr<AudioParamHandler> create(AbstractAudioContext& context, AudioParamType paramType, double defaultValue)
+    static PassRefPtr<AudioParamHandler> create(
+        AbstractAudioContext& context,
+        AudioParamType paramType,
+        double defaultValue,
+        float minValue,
+        float maxValue)
     {
-        return adoptRef(new AudioParamHandler(context, paramType, defaultValue));
+        return adoptRef(new AudioParamHandler(context, paramType, defaultValue, minValue, maxValue));
     }
 
     // This should be used only in audio rendering thread.
@@ -106,6 +111,8 @@ public:
     float finalValue();
 
     float defaultValue() const { return static_cast<float>(m_defaultValue); }
+    float minValue() const { return m_minValue; }
+    float maxValue() const { return m_maxValue; }
 
     // Value smoothing:
 
@@ -135,7 +142,9 @@ public:
     void updateHistograms(float newValue);
 
 private:
-    AudioParamHandler(AbstractAudioContext&, AudioParamType, double defaultValue);
+    AudioParamHandler(AbstractAudioContext&, AudioParamType, double defaultValue, float min, float max);
+
+    void warnIfOutsideRange(float value, float minValue, float maxValue);
 
     // sampleAccurate corresponds to a-rate (audio rate) vs. k-rate in the Web Audio specification.
     void calculateFinalValues(float* values, unsigned numberOfValues, bool sampleAccurate);
@@ -149,9 +158,13 @@ private:
 
     // Intrinsic value
     float m_intrinsicValue;
-    void setIntrinsicValue(float newValue) { noBarrierStore(&m_intrinsicValue, newValue); }
+    void setIntrinsicValue(float newValue);
 
     float m_defaultValue;
+
+    // Nominal range for the value
+    float m_minValue;
+    float m_maxValue;
 
     // Smoothing (de-zippering)
     float m_smoothedValue;
@@ -167,6 +180,8 @@ class AudioParam final : public GarbageCollectedFinalized<AudioParam>, public Sc
     DEFINE_WRAPPERTYPEINFO();
 public:
     static AudioParam* create(AbstractAudioContext&, AudioParamType, double defaultValue);
+    static AudioParam* create(AbstractAudioContext&, AudioParamType, double defaultValue, float minValue, float maxValue);
+
     DECLARE_TRACE();
     // |handler| always returns a valid object.
     AudioParamHandler& handler() const { return *m_handler; }
@@ -180,6 +195,10 @@ public:
     float value() const;
     void setValue(float);
     float defaultValue() const;
+
+    float minValue() const;
+    float maxValue() const;
+
     AudioParam* setValueAtTime(float value, double time, ExceptionState&);
     AudioParam* linearRampToValueAtTime(float value, double time, ExceptionState&);
     AudioParam* exponentialRampToValueAtTime(float value, double time, ExceptionState&);
@@ -188,7 +207,9 @@ public:
     AudioParam* cancelScheduledValues(double startTime, ExceptionState&);
 
 private:
-    AudioParam(AbstractAudioContext&, AudioParamType, double defaultValue);
+    AudioParam(AbstractAudioContext&, AudioParamType, double defaultValue, float min, float max);
+
+    void warnIfOutsideRange(const String& paramMethd, float value);
 
     RefPtr<AudioParamHandler> m_handler;
     Member<AbstractAudioContext> m_context;

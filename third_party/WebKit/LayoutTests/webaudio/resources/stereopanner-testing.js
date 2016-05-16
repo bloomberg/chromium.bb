@@ -88,6 +88,9 @@ var StereoPannerTest = (function () {
     this.maxErrorIndexL = 0;
     this.maxErrorIndexR = 0;
 
+    // The maximum value to use for panner pan value. The value will range from -panLimit to
+    // +panLimit.
+    this.panLimit = 1.0625;
   }
 
 
@@ -105,7 +108,7 @@ var StereoPannerTest = (function () {
 
     // Moves the pan value for each panner by pan step unit from -2 to 2.
     // This is to check if the internal panning value is clipped properly.
-    var panStep = 4 / (gNodesToCreate - 1);
+    var panStep = (2 * this.panLimit) / (gNodesToCreate - 1);
 
     if (this.numberOfInputChannels === 1) {
       impulse = createImpulseBuffer(this.context, impulseLength);
@@ -119,7 +122,7 @@ var StereoPannerTest = (function () {
       sources[i].connect(panners[i]);
       panners[i].connect(this.context.destination);
       sources[i].buffer = impulse;
-      panners[i].pan.value = this.panPositions[i] = panStep * i - 2;
+      panners[i].pan.value = this.panPositions[i] = panStep * i - this.panLimit;
 
       // Store the onset time position of impulse.
       this.onsets[i] = gTimeStep * i;
