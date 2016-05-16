@@ -2007,7 +2007,7 @@ void Internals::forceFullRepaint(Document* document, ExceptionState& exceptionSt
 void Internals::startTrackingPaintInvalidationObjects()
 {
     ASSERT(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
-    GraphicsLayer* graphicsLayer = toLocalFrame(frame()->page()->mainFrame())->view()->layoutView()->layer()->graphicsLayerBacking();
+    GraphicsLayer* graphicsLayer = toLocalFrame(frame()->page()->mainFrame())->view()->layoutViewItem().layer()->graphicsLayerBacking();
     if (graphicsLayer->drawsContent())
         graphicsLayer->getPaintController().startTrackingPaintInvalidationObjects();
 }
@@ -2015,7 +2015,7 @@ void Internals::startTrackingPaintInvalidationObjects()
 void Internals::stopTrackingPaintInvalidationObjects()
 {
     ASSERT(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
-    GraphicsLayer* graphicsLayer = toLocalFrame(frame()->page()->mainFrame())->view()->layoutView()->layer()->graphicsLayerBacking();
+    GraphicsLayer* graphicsLayer = toLocalFrame(frame()->page()->mainFrame())->view()->layoutViewItem().layer()->graphicsLayerBacking();
     if (graphicsLayer->drawsContent())
         graphicsLayer->getPaintController().stopTrackingPaintInvalidationObjects();
 }
@@ -2023,7 +2023,7 @@ void Internals::stopTrackingPaintInvalidationObjects()
 Vector<String> Internals::trackedPaintInvalidationObjects()
 {
     ASSERT(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
-    GraphicsLayer* graphicsLayer = toLocalFrame(frame()->page()->mainFrame())->view()->layoutView()->layer()->graphicsLayerBacking();
+    GraphicsLayer* graphicsLayer = toLocalFrame(frame()->page()->mainFrame())->view()->layoutViewItem().layer()->graphicsLayerBacking();
     if (!graphicsLayer->drawsContent())
         return Vector<String>();
     return graphicsLayer->getPaintController().trackedPaintInvalidationObjects();
