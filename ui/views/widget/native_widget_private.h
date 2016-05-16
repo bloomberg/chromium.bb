@@ -73,6 +73,10 @@ class VIEWS_EXPORT NativeWidgetPrivate : public NativeWidget {
 
   static gfx::FontList GetWindowTitleFontList();
 
+  // Returns the NativeView with capture, otherwise NULL if there is no current
+  // capture set, or if |native_view| has no root.
+  static gfx::NativeView GetGlobalCapture(gfx::NativeView native_view);
+
   // Initializes the NativeWidget.
   virtual void InitNativeWidget(const Widget::InitParams& params) = 0;
 

@@ -10,6 +10,7 @@
 #include "build/build_config.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/client/screen_position_client.h"
@@ -1184,6 +1185,16 @@ gfx::FontList NativeWidgetPrivate::GetWindowTitleFontList() {
 #else
   return gfx::FontList();
 #endif
+}
+
+// static
+gfx::NativeView NativeWidgetPrivate::GetGlobalCapture(
+    gfx::NativeView native_view) {
+  aura::client::CaptureClient* capture_client =
+      aura::client::GetCaptureClient(native_view->GetRootWindow());
+  if (!capture_client)
+    return nullptr;
+  return capture_client->GetGlobalCaptureWindow();
 }
 
 }  // namespace internal

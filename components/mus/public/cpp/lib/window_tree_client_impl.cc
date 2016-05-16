@@ -196,6 +196,16 @@ void WindowTreeClientImpl::WaitForEmbed() {
 }
 
 void WindowTreeClientImpl::DestroyWindow(Window* window) {
+  // TODO(jonross): Also clear the focused window (crbug.com/611983)
+  if (window == capture_window_) {
+    InFlightCaptureChange reset_change(this, nullptr);
+    ApplyServerChangeToExistingInFlightChange(reset_change);
+    // Normally just updating the queued changes is sufficient. However since
+    // |window| is being destroyed, it will not be possible to notify its
+    // observers
+    // of the lost capture. Update local state now.
+    LocalSetCapture(nullptr);
+  }
   DCHECK(tree_);
   const uint32_t change_id = ScheduleInFlightChange(base::WrapUnique(
       new CrashInFlightChange(window, ChangeType::DELETE_WINDOW)));

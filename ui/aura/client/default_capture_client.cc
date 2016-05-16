@@ -11,6 +11,10 @@
 namespace aura {
 namespace client {
 
+// static
+// Track the active capture window across root windows.
+Window* global_capture_window_ = nullptr;
+
 DefaultCaptureClient::DefaultCaptureClient(Window* root_window)
     : root_window_(root_window),
       capture_window_(NULL) {
@@ -18,6 +22,8 @@ DefaultCaptureClient::DefaultCaptureClient(Window* root_window)
 }
 
 DefaultCaptureClient::~DefaultCaptureClient() {
+  if (global_capture_window_ == capture_window_)
+    global_capture_window_ = nullptr;
   SetCaptureClient(root_window_, NULL);
 }
 
@@ -29,6 +35,7 @@ void DefaultCaptureClient::SetCapture(Window* window) {
 
   Window* old_capture_window = capture_window_;
   capture_window_ = window;
+  global_capture_window_ = window;
 
   CaptureDelegate* capture_delegate = root_window_->GetHost()->dispatcher();
   if (capture_window_)
@@ -50,7 +57,7 @@ Window* DefaultCaptureClient::GetCaptureWindow() {
 }
 
 Window* DefaultCaptureClient::GetGlobalCaptureWindow() {
-  return capture_window_;
+  return global_capture_window_;
 }
 
 }  // namespace client

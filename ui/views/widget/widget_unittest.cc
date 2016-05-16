@@ -1701,9 +1701,6 @@ TEST_F(WidgetTest, SynthesizeMouseMoveEvent) {
   EXPECT_EQ(1, v2->GetEventCount(ui::ET_MOUSE_MOVED));
 }
 
-// No touch on desktop Mac. Tracked in http://crbug.com/445520.
-#if !defined(OS_MACOSX) || defined(USE_AURA)
-
 namespace {
 
 // ui::EventHandler which handles all mouse press events.
@@ -1722,6 +1719,9 @@ class MousePressEventConsumer : public ui::EventHandler {
 };
 
 }  // namespace
+
+// No touch on desktop Mac. Tracked in http://crbug.com/445520.
+#if !defined(OS_MACOSX) || defined(USE_AURA)
 
 // Test that mouse presses and mouse releases are dispatched normally when a
 // touch is down.
@@ -1752,6 +1752,107 @@ TEST_F(WidgetTest, MouseEventDispatchWhileTouchIsDown) {
 }
 
 #endif  // !defined(OS_MACOSX) || defined(USE_AURA)
+
+// Tests that when there is no active capture, that a mouse press causes capture
+// to be set.
+TEST_F(WidgetTest, MousePressCausesCapture) {
+  Widget* widget = CreateTopLevelNativeWidget();
+  widget->Show();
+  widget->SetSize(gfx::Size(300, 300));
+
+  EventCountView* event_count_view = new EventCountView();
+  event_count_view->SetBounds(0, 0, 300, 300);
+  widget->GetRootView()->AddChildView(event_count_view);
+
+  // No capture has been set.
+  EXPECT_EQ(nullptr, internal::NativeWidgetPrivate::GetGlobalCapture(
+                         widget->GetNativeView()));
+
+  MousePressEventConsumer consumer;
+  event_count_view->AddPostTargetHandler(&consumer);
+  std::unique_ptr<ui::test::EventGenerator> generator(
+      new ui::test::EventGenerator(
+          IsMus() ? widget->GetNativeWindow() : GetContext(),
+          widget->GetNativeWindow()));
+  generator->PressLeftButton();
+
+  EXPECT_EQ(1, event_count_view->GetEventCount(ui::ET_MOUSE_PRESSED));
+  EXPECT_EQ(
+      widget->GetNativeView(),
+      internal::NativeWidgetPrivate::GetGlobalCapture(widget->GetNativeView()));
+
+  // For mus it's important we destroy the widget before the EventGenerator.
+  widget->CloseNow();
+}
+
+namespace {
+
+// An EventHandler which shows a Wiget upon receiving a mouse event. The Widget
+// proceeds to take capture.
+class CaptureEventConsumer : public ui::EventHandler {
+ public:
+  CaptureEventConsumer(Widget* widget)
+      : event_count_view_(new EventCountView()), widget_(widget) {}
+  ~CaptureEventConsumer() override { widget_->CloseNow(); }
+
+ private:
+  // ui::EventHandler:
+  void OnMouseEvent(ui::MouseEvent* event) override {
+    if (event->type() == ui::ET_MOUSE_PRESSED) {
+      event->SetHandled();
+      widget_->Show();
+      widget_->SetSize(gfx::Size(200, 200));
+
+      event_count_view_->SetBounds(0, 0, 200, 200);
+      widget_->GetRootView()->AddChildView(event_count_view_);
+      widget_->SetCapture(event_count_view_);
+    }
+  }
+
+  EventCountView* event_count_view_;
+  Widget* widget_;
+  DISALLOW_COPY_AND_ASSIGN(CaptureEventConsumer);
+};
+
+}  // namespace
+
+// Tests that if explicit capture occurs during a mouse press, that implicit
+// capture is not applied.
+TEST_F(WidgetTest, CaptureDuringMousePressNotOverridden) {
+  Widget* widget = CreateTopLevelNativeWidget();
+  widget->Show();
+  widget->SetSize(gfx::Size(300, 300));
+
+  EventCountView* event_count_view = new EventCountView();
+  event_count_view->SetBounds(0, 0, 300, 300);
+  widget->GetRootView()->AddChildView(event_count_view);
+
+  EXPECT_EQ(nullptr, internal::NativeWidgetPrivate::GetGlobalCapture(
+                         widget->GetNativeView()));
+
+  Widget* widget2 = CreateTopLevelNativeWidget();
+  // Gives explicit capture to |widget2|
+  CaptureEventConsumer consumer(widget2);
+  event_count_view->AddPostTargetHandler(&consumer);
+  std::unique_ptr<ui::test::EventGenerator> generator(
+      new ui::test::EventGenerator(
+          IsMus() ? widget->GetNativeWindow() : GetContext(),
+          widget->GetNativeWindow()));
+  // This event should implicitly give capture to |widget|, except that
+  // |consumer| will explicitly set capture on |widget2|.
+  generator->PressLeftButton();
+
+  EXPECT_EQ(1, event_count_view->GetEventCount(ui::ET_MOUSE_PRESSED));
+  EXPECT_NE(
+      widget->GetNativeView(),
+      internal::NativeWidgetPrivate::GetGlobalCapture(widget->GetNativeView()));
+  EXPECT_EQ(
+      widget2->GetNativeView(),
+      internal::NativeWidgetPrivate::GetGlobalCapture(widget->GetNativeView()));
+
+  // For mus it's important we destroy the widget before the EventGenerator.
+  widget->CloseNow();
+}
 
 // Verifies WindowClosing() is invoked correctly on the delegate when a Widget
 // is closed.

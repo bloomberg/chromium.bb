@@ -56,6 +56,7 @@
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace_controller.h"
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "ui/aura/client/aura_constants.h"
@@ -71,6 +72,7 @@
 #include "ui/display/screen.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_util.h"
+#include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/view_model.h"
 #include "ui/views/view_model_utils.h"
@@ -589,27 +591,26 @@ void RootWindowController::ShowContextMenu(const gfx::Point& location_in_screen,
                                            ui::MenuSourceType source_type) {
   ShellDelegate* delegate = Shell::GetInstance()->delegate();
   DCHECK(delegate);
-  std::unique_ptr<ui::MenuModel> menu_model(
-      delegate->CreateContextMenu(shelf_->shelf(), nullptr));
-  if (!menu_model)
+  menu_model_.reset(delegate->CreateContextMenu(shelf_->shelf(), nullptr));
+  if (!menu_model_)
     return;
+
+  menu_model_adapter_.reset(new views::MenuModelAdapter(
+      menu_model_.get(),
+      base::Bind(&RootWindowController::OnMenuClosed, base::Unretained(this))));
 
   // Background controller may not be set yet if user clicked on status are
   // before initial animation completion. See crbug.com/222218
   if (!wallpaper_controller_.get())
     return;
 
-  views::MenuRunner menu_runner(menu_model.get(),
-                                views::MenuRunner::CONTEXT_MENU);
-  if (menu_runner.RunMenuAt(wallpaper_controller_->widget(),
-                            NULL,
-                            gfx::Rect(location_in_screen, gfx::Size()),
-                            views::MENU_ANCHOR_TOPLEFT,
-                            source_type) == views::MenuRunner::MENU_DELETED) {
-    return;
-  }
-
-  Shell::GetInstance()->UpdateShelfVisibility();
+  menu_runner_.reset(new views::MenuRunner(
+      menu_model_adapter_->CreateMenu(),
+      views::MenuRunner::CONTEXT_MENU | views::MenuRunner::ASYNC));
+  ignore_result(
+      menu_runner_->RunMenuAt(wallpaper_controller_->widget(), NULL,
+                              gfx::Rect(location_in_screen, gfx::Size()),
+                              views::MENU_ANCHOR_TOPLEFT, source_type));
 }
 
 void RootWindowController::UpdateShelfVisibility() {
@@ -1041,6 +1042,13 @@ void RootWindowController::DisableTouchHudProjection() {
   if (!touch_hud_projection_)
     return;
   touch_hud_projection_->Remove();
+}
+
+void RootWindowController::OnMenuClosed() {
+  menu_runner_.reset();
+  menu_model_adapter_.reset();
+  menu_model_.reset();
+  Shell::GetInstance()->UpdateShelfVisibility();
 }
 
 void RootWindowController::OnLoginStateChanged(user::LoginStatus status) {

@@ -18,7 +18,9 @@
 #include "ui/views/controls/menu/menu_types.h"
 #include "ui/views/controls/menu/submenu_view.h"
 #include "ui/views/test/menu_test_utils.h"
+#include "ui/views/test/test_views.h"
 #include "ui/views/test/views_test_base.h"
+#include "ui/views/widget/native_widget_private.h"
 #include "ui/views/widget/widget.h"
 
 namespace views {
@@ -184,6 +186,72 @@ TEST_F(MenuRunnerTest, NestingDuringDrag) {
   EXPECT_EQ(1, delegate->on_menu_closed_called());
   EXPECT_NE(nullptr, delegate->on_menu_closed_menu());
   EXPECT_EQ(MenuRunner::NORMAL_EXIT, delegate->on_menu_closed_run_result());
+}
+
+namespace {
+
+// An EventHandler that launches a menu in response to a mouse press.
+class MenuLauncherEventHandler : public ui::EventHandler {
+ public:
+  MenuLauncherEventHandler(MenuRunner* runner, Widget* owner)
+      : runner_(runner), owner_(owner) {}
+  ~MenuLauncherEventHandler() override {}
+
+ private:
+  // ui::EventHandler:
+  void OnMouseEvent(ui::MouseEvent* event) override {
+    if (event->type() == ui::ET_MOUSE_PRESSED) {
+      runner_->RunMenuAt(owner_, nullptr, gfx::Rect(), MENU_ANCHOR_TOPLEFT,
+                         ui::MENU_SOURCE_NONE);
+      event->SetHandled();
+    }
+  }
+
+  MenuRunner* runner_;
+  Widget* owner_;
+
+  DISALLOW_COPY_AND_ASSIGN(MenuLauncherEventHandler);
+};
+
+}  // namespace
+
+// Tests that when a mouse press launches a menu, that the target widget does
+// not take explicit capture, nor closes the menu.
+TEST_F(MenuRunnerTest, WidgetDoesntTakeCapture) {
+  Widget* widget = new Widget;
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
+  widget->Init(params);
+  widget->Show();
+  widget->SetSize(gfx::Size(300, 300));
+
+  EventCountView* event_count_view = new EventCountView();
+  event_count_view->SetBounds(0, 0, 300, 300);
+  widget->GetRootView()->AddChildView(event_count_view);
+
+  InitMenuRunner(MenuRunner::ASYNC);
+  MenuRunner* runner = menu_runner();
+
+  MenuLauncherEventHandler consumer(runner, owner());
+  event_count_view->AddPostTargetHandler(&consumer);
+  EXPECT_EQ(nullptr, internal::NativeWidgetPrivate::GetGlobalCapture(
+                         widget->GetNativeView()));
+  std::unique_ptr<ui::test::EventGenerator> generator(
+      new ui::test::EventGenerator(
+          IsMus() ? widget->GetNativeWindow() : GetContext(),
+          widget->GetNativeWindow()));
+  // Implicit capture should not be held by |widget|.
+  generator->PressLeftButton();
+  EXPECT_EQ(1, event_count_view->GetEventCount(ui::ET_MOUSE_PRESSED));
+  EXPECT_NE(
+      widget->GetNativeView(),
+      internal::NativeWidgetPrivate::GetGlobalCapture(widget->GetNativeView()));
+
+  // The menu should still be open.
+  TestMenuDelegate* delegate = menu_delegate();
+  EXPECT_TRUE(runner->IsRunning());
+  EXPECT_EQ(0, delegate->on_menu_closed_called());
+
+  widget->CloseNow();
 }
 
 typedef MenuRunnerTest MenuRunnerImplTest;

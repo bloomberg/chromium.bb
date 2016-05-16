@@ -34,9 +34,12 @@ class KeyboardController;
 
 namespace ui {
 class EventHandler;
+class MenuModel;
 }
 
 namespace views {
+class MenuModelAdapter;
+class MenuRunner;
 class Widget;
 }
 
@@ -254,6 +257,9 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   // Disables projection touch HUD.
   void DisableTouchHudProjection();
 
+  // Callback for MenuModelAdapter.
+  void OnMenuClosed();
+
   // Overridden from ShellObserver.
   void OnLoginStateChanged(user::LoginStatus status) override;
   void OnTouchHudProjectionToggled(bool enabled) override;
@@ -302,6 +308,11 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   std::unique_ptr<DesktopBackgroundWidgetController> wallpaper_controller_;
   std::unique_ptr<AnimatingDesktopController> animating_wallpaper_controller_;
   std::unique_ptr<::wm::ScopedCaptureClient> capture_client_;
+
+  // Manages the context menu.
+  std::unique_ptr<ui::MenuModel> menu_model_;
+  std::unique_ptr<views::MenuModelAdapter> menu_model_adapter_;
+  std::unique_ptr<views::MenuRunner> menu_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(RootWindowController);
 };

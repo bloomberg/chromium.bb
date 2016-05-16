@@ -719,6 +719,13 @@ gfx::FontList NativeWidgetPrivate::GetWindowTitleFontList() {
   return gfx::FontList();
 }
 
+// static
+gfx::NativeView NativeWidgetPrivate::GetGlobalCapture(
+    gfx::NativeView native_view) {
+  NOTIMPLEMENTED();
+  return nullptr;
+}
+
 }  // namespace internal
 }  // namespace views
 
