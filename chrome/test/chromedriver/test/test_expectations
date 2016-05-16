@@ -63,7 +63,6 @@ _REVISION_NEGATIVE_FILTER['HEAD'] = [
     'SessionStorageTest.*',
     'SqlDatabaseTest.*',
     'SvgDocumentTest.testClickOnSvgElement',
-    'TakesScreenshotTest.testShouldCaptureScreenshot',
     'TakesScreenshotTest.testShouldCaptureScreenshotAtIFramePage',
     'TakesScreenshotTest.testShouldCaptureScreenshotWithLongX',
     'TakesScreenshotTest.testShouldCaptureScreenshotWithLongY',
@@ -235,6 +234,8 @@ _OS_NEGATIVE_FILTER['android:chromedriver_webview_shell'] = (
         'ClickScrollingTest.testShouldBeAbleToClickElementThatIsOutOfViewInANestedFrameThatIsOutOfView',
          # Not applicable on ChromeDriverWebViewShell (doesn't support tabs).
         'WindowSwitchingTest.*',
+
+        'TakesScreenshotTest.testShouldCaptureScreenshot',
     ]
 )
 
