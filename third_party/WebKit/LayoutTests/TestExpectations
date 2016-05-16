@@ -338,7 +338,6 @@ crbug.com/240374 compositing/overlap-blending/children-opacity-huge.html [ Failu
 crbug.com/240374 compositing/overlap-blending/children-opacity-no-overlap.html [ Failure ]
 
 crbug.com/410145 [ Win ] fast/table/column-in-inline.html [ Failure ]
-crbug.com/609669 fast/dom/HTMLMeterElement/meter-styles.html [ NeedsRebaseline ]
 crbug.com/411164 [ Win ] http/tests/security/powerfulFeatureRestrictions/serviceworker-on-insecure-origin.html [ Pass ]
 
 crbug.com/475984 [ Mac Debug ] css2.1/t100801-c544-valgn-03-d-agi.html [ Failure ]
