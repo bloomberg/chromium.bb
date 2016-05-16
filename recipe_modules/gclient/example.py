@@ -22,6 +22,8 @@ TEST_CONFIGS = [
   'chromium',
   'chromium_lkcr',
   'chromium_lkgr',
+  'chromium_perf',
+  'chromium_perf_android',
   'chromium_skia',
   'chromium_webrtc',
   'chromium_webrtc_tot',

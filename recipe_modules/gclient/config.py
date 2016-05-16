@@ -473,6 +473,14 @@ def perf(c):
     del c.solutions[1].custom_deps[key]
   c.solutions[1].managed = False
 
+@config_ctx(includes=['chromium', 'chrome_internal'])
+def chromium_perf(c):
+  pass
+
+@config_ctx(includes=['chromium_perf', 'android'])
+def chromium_perf_android(c):
+  pass
+
 @config_ctx(includes=['chromium'])
 def chromium_skia(c):
   c.solutions[0].revision = 'HEAD'
