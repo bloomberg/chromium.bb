@@ -113,8 +113,8 @@ PlatformEvent::Modifiers PlatformKeyboardEvent::getCurrentModifierState()
     if (currentModifiers & ::cmdKey)
         modifiers |= MetaKey;
 #else
-    // See https://crbug.com/538289
-    NOTIMPLEMENTED();
+    // TODO(crbug.com/538289): Implement on other platforms.
+    return static_cast<Modifiers>(0);
 #endif
     return static_cast<Modifiers>(modifiers);
 }
