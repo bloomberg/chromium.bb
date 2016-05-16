@@ -44,6 +44,14 @@ public class AsyncTabParamsManager {
     }
 
     /**
+     * @return A map of tab IDs to AsyncTabParams containing data that will be used later when a tab
+     *         is opened via an intent.
+     */
+    public static SparseArray<AsyncTabParams> getAsyncTabParams() {
+        return sAsyncTabParams;
+    }
+
+    /**
      * @return Retrieves and removes AsyncTabCreationParams for a particular tab id.
      */
     public static AsyncTabParams remove(int tabId) {

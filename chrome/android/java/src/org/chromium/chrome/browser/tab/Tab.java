@@ -1447,14 +1447,17 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
             TabModelSelector tabModelSelector = getTabModelSelector();
             if (tabModelSelector == null) return false;
             mIsDetachedForReparenting = true;
+
+            // Add the tab to AsyncTabParamsManager before removing it from the current model to
+            // ensure the global count of tabs is correct. See crbug.com/611806.
+            intent.putExtra(IntentHandler.EXTRA_TAB_ID, mId);
+            AsyncTabParamsManager.add(mId,
+                    new TabReparentingParams(this, intent, finalizeCallback));
+
             tabModelSelector.getModel(mIncognito).removeTab(this);
 
             if (mContentViewCore != null) mContentViewCore.updateWindowAndroid(null);
             attachTabContentManager(null);
-
-            intent.putExtra(IntentHandler.EXTRA_TAB_ID, mId);
-            AsyncTabParamsManager.add(mId,
-                    new TabReparentingParams(this, intent, finalizeCallback));
         }
 
         activity.startActivity(intent, startActivityOptions);

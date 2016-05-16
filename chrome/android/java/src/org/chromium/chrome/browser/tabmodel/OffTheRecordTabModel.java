@@ -232,6 +232,9 @@ public class OffTheRecordTabModel implements TabModel {
     @Override
     public void removeTab(Tab tab) {
         mDelegateModel.removeTab(tab);
+        // Call destroyIncognitoIfNecessary() in case the last incognito tab in this model is
+        // reparented to a different activity. See crbug.com/611806.
+        destroyIncognitoIfNecessary();
     }
 
 }
