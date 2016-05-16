@@ -190,10 +190,6 @@ _SINGLE_PAGE_SPECS = {
         _PageSpec(
             name='wikipedia',
             url='https://en.wikipedia.org/wiki/Science'),
-        # Redirects to the "http://" version.
-        _PageSpec(
-            name='engadget',
-            url='https://www.engadget.com/uk/'),
     ],
 
     # Audio and video.

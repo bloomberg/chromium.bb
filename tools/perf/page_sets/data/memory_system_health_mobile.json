@@ -45,8 +45,7 @@
             "load:news:sohu", 
             "load:news:qq", 
             "load:news:bbc", 
-            "load:news:wikipedia", 
-            "load:news:engadget"
+            "load:news:wikipedia"
         ]
     }
 }
