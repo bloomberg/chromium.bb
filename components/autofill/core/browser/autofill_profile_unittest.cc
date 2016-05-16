@@ -1194,17 +1194,15 @@ TEST(AutofillProfileTest, SaveAdditionalInfo_Name_KeepNameFull) {
             a.GetRawInfo(NAME_FULL));
 }
 
-// TODO(crbug.com/608074): No loss of information for names should happen when
-// using SaveAddtitionalInfo.
-// Tests the merging of two similar profiles results the second profile's non-
-// empty fields overwriting the initial profiles values.
+// Tests the merging of two similar profiles results in the second profile's
+// non-empty fields overwriting the initial profiles values.
 TEST(AutofillProfileTest, SaveAdditionalInfo_Name_DifferentCaseNoNameFull) {
   AutofillProfile a;
 
   a.SetRawInfo(NAME_FIRST, base::ASCIIToUTF16("marion"));
   a.SetRawInfo(NAME_MIDDLE, base::ASCIIToUTF16("mitchell"));
   a.SetRawInfo(NAME_LAST, base::ASCIIToUTF16("morrison"));
-  a.SetRawInfo(NAME_FULL, base::ASCIIToUTF16("Marion Mitchell Morrison"));
+  a.SetRawInfo(NAME_FULL, base::ASCIIToUTF16("marion mitchell morrison"));
 
   AutofillProfile b = a;
   b.SetRawInfo(NAME_FIRST, base::ASCIIToUTF16("Marion"));
@@ -1216,15 +1214,13 @@ TEST(AutofillProfileTest, SaveAdditionalInfo_Name_DifferentCaseNoNameFull) {
 
   // The first, middle and last names should have their first letter in
   // uppercase.
-  EXPECT_EQ(base::ASCIIToUTF16("marion"), a.GetRawInfo(NAME_FIRST));
-  EXPECT_EQ(base::ASCIIToUTF16("mitchell"), a.GetRawInfo(NAME_MIDDLE));
-  EXPECT_EQ(base::ASCIIToUTF16("morrison"), a.GetRawInfo(NAME_LAST));
-  EXPECT_EQ(base::ASCIIToUTF16("Marion Mitchell Morrison"),
+  EXPECT_EQ(base::ASCIIToUTF16("Marion"), a.GetRawInfo(NAME_FIRST));
+  EXPECT_EQ(base::ASCIIToUTF16("Mitchell"), a.GetRawInfo(NAME_MIDDLE));
+  EXPECT_EQ(base::ASCIIToUTF16("Morrison"), a.GetRawInfo(NAME_LAST));
+  EXPECT_EQ(base::ASCIIToUTF16("marion mitchell morrison"),
             a.GetRawInfo(NAME_FULL));
 }
 
-// TODO(crbug.com/608074): No loss of information for names should happen when
-// using SaveAddtitionalInfo.
 // Tests that no loss of information happens when SavingAdditionalInfo with a
 // profile with an empty name part.
 TEST(AutofillProfileTest, SaveAdditionalInfo_Name_LossOfInformation) {
@@ -1240,14 +1236,10 @@ TEST(AutofillProfileTest, SaveAdditionalInfo_Name_LossOfInformation) {
   EXPECT_TRUE(a.SaveAdditionalInfo(b, "en-US"));
 
   EXPECT_EQ(base::ASCIIToUTF16("Marion"), a.GetRawInfo(NAME_FIRST));
-  // This should not be empty.
-  EXPECT_EQ(base::ASCIIToUTF16(""), a.GetRawInfo(NAME_MIDDLE));
+  EXPECT_EQ(base::ASCIIToUTF16("Mitchell"), a.GetRawInfo(NAME_MIDDLE));
   EXPECT_EQ(base::ASCIIToUTF16("Morrison"), a.GetRawInfo(NAME_LAST));
-  EXPECT_EQ(base::ASCIIToUTF16(""), a.GetRawInfo(NAME_FULL));
 }
 
-// TODO(crbug.com/608074): No loss of information for names should happen when
-// using SaveAddtitionalInfo.
 // Tests that merging two complementary profiles for names results in a profile
 // with a complete name.
 TEST(AutofillProfileTest, SaveAdditionalInfo_Name_ComplementaryInformation) {
@@ -1262,10 +1254,11 @@ TEST(AutofillProfileTest, SaveAdditionalInfo_Name_ComplementaryInformation) {
 
   EXPECT_TRUE(a.SaveAdditionalInfo(b, "en-US"));
 
-  // The first, middle and last names should be kept.
-  EXPECT_EQ(base::ASCIIToUTF16(""), a.GetRawInfo(NAME_FIRST));
-  EXPECT_EQ(base::ASCIIToUTF16(""), a.GetRawInfo(NAME_MIDDLE));
-  EXPECT_EQ(base::ASCIIToUTF16(""), a.GetRawInfo(NAME_LAST));
+  // The first, middle and last names should be kept and name full should be
+  // added.
+  EXPECT_EQ(base::ASCIIToUTF16("Marion"), a.GetRawInfo(NAME_FIRST));
+  EXPECT_EQ(base::ASCIIToUTF16("Mitchell"), a.GetRawInfo(NAME_MIDDLE));
+  EXPECT_EQ(base::ASCIIToUTF16("Morrison"), a.GetRawInfo(NAME_LAST));
   EXPECT_EQ(base::ASCIIToUTF16("Marion Mitchell Morrison"),
             a.GetRawInfo(NAME_FULL));
 }

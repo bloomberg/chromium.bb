@@ -4011,6 +4011,119 @@ TEST_F(PersonalDataManagerTest, SaveImportedProfile) {
       // two profiles being saved.
       {ProfileFields(), {{NAME_FIRST, "Marionette"}}},
 
+      // Test that saving an identical profile except with the middle name
+      // initial instead of the full middle name results in the profiles
+      // getting merged and the full middle name being kept.
+      {ProfileFields(), {{NAME_MIDDLE, "M"}}, {{NAME_MIDDLE, "Mitchell"}}},
+
+      // Test that saving an identical profile except with the full middle name
+      // instead of the middle name initial results in the profiles getting
+      // merged and the full middle name replacing the initial.
+      {{{NAME_MIDDLE, "M"}},
+       {{NAME_MIDDLE, "Mitchell"}},
+       {{NAME_MIDDLE, "Mitchell"}}},
+
+      // Test that saving an identical profile except with no middle name
+      // results in the profiles getting merged and the full middle name being
+      // kept.
+      {ProfileFields(), {{NAME_MIDDLE, ""}}, {{NAME_MIDDLE, "Mitchell"}}},
+
+      // Test that saving an identical profile except with a middle name initial
+      // results in the profiles getting merged and the middle name initial
+      // being saved.
+      {{{NAME_MIDDLE, ""}}, {{NAME_MIDDLE, "M"}}, {{NAME_MIDDLE, "M"}}},
+
+      // Test that saving an identical profile except with a middle name
+      // results in the profiles getting merged and the full middle name being
+      // saved.
+      {{{NAME_MIDDLE, ""}},
+       {{NAME_MIDDLE, "Mitchell"}},
+       {{NAME_MIDDLE, "Mitchell"}}},
+
+      // Test that saving a identical profile except with the full name set
+      // instead of the name parts results in the two profiles being merged and
+      // all the name parts kept and the full name being added.
+      {
+          {
+              {NAME_FIRST, "Marion"},
+              {NAME_MIDDLE, "Mitchell"},
+              {NAME_LAST, "Morrison"},
+              {NAME_FULL, ""},
+          },
+          {
+              {NAME_FIRST, ""},
+              {NAME_MIDDLE, ""},
+              {NAME_LAST, ""},
+              {NAME_FULL, "Marion Mitchell Morrison"},
+          },
+          {
+              {NAME_FIRST, "Marion"},
+              {NAME_MIDDLE, "Mitchell"},
+              {NAME_LAST, "Morrison"},
+              {NAME_FULL, "Marion Mitchell Morrison"},
+          },
+      },
+
+      // Test that saving a identical profile except with the name parts set
+      // instead of the full name results in the two profiles being merged and
+      // the full name being kept and all the name parts being added.
+      {
+          {
+              {NAME_FIRST, ""},
+              {NAME_MIDDLE, ""},
+              {NAME_LAST, ""},
+              {NAME_FULL, "Marion Mitchell Morrison"},
+          },
+          {
+              {NAME_FIRST, "Marion"},
+              {NAME_MIDDLE, "Mitchell"},
+              {NAME_LAST, "Morrison"},
+              {NAME_FULL, ""},
+          },
+          {
+              {NAME_FIRST, "Marion"},
+              {NAME_MIDDLE, "Mitchell"},
+              {NAME_LAST, "Morrison"},
+              {NAME_FULL, "Marion Mitchell Morrison"},
+          },
+      },
+
+      // Test that saving a profile that has only a full name set does not get
+      // merged with a profile with only the name parts set if the names are
+      // different.
+      {
+          {
+              {NAME_FIRST, "Marion"},
+              {NAME_MIDDLE, "Mitchell"},
+              {NAME_LAST, "Morrison"},
+              {NAME_FULL, ""},
+          },
+          {
+              {NAME_FIRST, ""},
+              {NAME_MIDDLE, ""},
+              {NAME_LAST, ""},
+              {NAME_FULL, "John Thompson Smith"},
+          },
+      },
+
+      // Test that saving a profile that has only the name parts set does not
+      // get merged with a profile with only the full name set if the names are
+      // different.
+      {
+          {
+              {NAME_FIRST, ""},
+              {NAME_MIDDLE, ""},
+              {NAME_LAST, ""},
+              {NAME_FULL, "John Thompson Smith"},
+          },
+          {
+              {NAME_FIRST, "Marion"},
+              {NAME_MIDDLE, "Mitchell"},
+              {NAME_LAST, "Morrison"},
+              {NAME_FULL, ""},
+          },
+      },
+
       // Test that saving an identical profile except for the first address line
       // results in two profiles being saved.
       {ProfileFields(), {{ADDRESS_HOME_LINE1, "123 Aquarium St."}}},
@@ -4152,6 +4265,8 @@ TEST_F(PersonalDataManagerTest, SaveImportedProfile) {
     if (test_case.changed_field_values.empty()) {
       EXPECT_EQ(2U, saved_profiles.size());
     } else {
+      EXPECT_EQ(1U, saved_profiles.size());
+
       // Make sure the new information was merged correctly.
       for (ProfileField changed_field : test_case.changed_field_values) {
         EXPECT_EQ(base::UTF8ToUTF16(changed_field.field_value),

@@ -499,7 +499,9 @@ bool AutofillProfile::OverwriteName(const NameInfo& imported_name,
   l10n::CaseInsensitiveCompare compare;
   AutofillType type = AutofillType(NAME_FULL);
   base::string16 full_name = name_.GetInfo(type, app_locale);
-  if (compare.StringsEqual(full_name,
+  // Always overwrite if the name parts are empty.
+  if (!name_.NamePartsAreEmpty() &&
+      compare.StringsEqual(full_name,
                            imported_name.GetInfo(type, app_locale))) {
     // The imported name has the same full name string as the name for this
     // profile.  Because full names are _heuristically_ parsed into
@@ -514,7 +516,7 @@ bool AutofillProfile::OverwriteName(const NameInfo& imported_name,
       return false;
   }
 
-  name_ = imported_name;
+  name_.OverwriteName(imported_name);
   return true;
 }
 
@@ -585,6 +587,7 @@ bool AutofillProfile::SaveAdditionalInfo(const AutofillProfile& profile,
   ServerFieldTypeSet field_types, other_field_types;
   GetNonEmptyTypes(app_locale, &field_types);
   profile.GetNonEmptyTypes(app_locale, &other_field_types);
+
   // The address needs to be compared line by line to take into account the
   // logic for empty fields implemented in the loop.
   field_types.erase(ADDRESS_HOME_STREET_ADDRESS);
@@ -641,6 +644,7 @@ bool AutofillProfile::SaveAdditionalInfo(const AutofillProfile& profile,
         }
         continue;
       }
+
       // Special case for the state to support abbreviations. Currently only the
       // US states are supported.
       if (field_type == ADDRESS_HOME_STATE) {
@@ -660,6 +664,20 @@ bool AutofillProfile::SaveAdditionalInfo(const AutofillProfile& profile,
         if (compare.StringsEqual(
                 CanonicalizeProfileString(profile.GetRawInfo(field_type)),
                 CanonicalizeProfileString(GetRawInfo(field_type)))) {
+          continue;
+        }
+      }
+
+      // Special case for middle name to support initials.
+      if (field_type == NAME_MIDDLE) {
+        base::string16 middle_name = GetRawInfo(NAME_MIDDLE);
+        base::string16 profile_middle_name = profile.GetRawInfo(NAME_MIDDLE);
+        DCHECK(!middle_name.empty());
+        DCHECK(!profile_middle_name.empty());
+        // If one of the two middle names is an initial that matches the first
+        // letter of the other middle name, they are considered equivalent.
+        if ((middle_name.size() == 1 || profile_middle_name.size() == 1) &&
+            middle_name[0] == profile_middle_name[0]) {
           continue;
         }
       }

@@ -26,6 +26,14 @@ class NameInfo : public FormGroup {
   // The comparison is case sensitive.
   bool ParsedNamesAreEqual(const NameInfo& info) const;
 
+  // For every non-empty NameInfo part in |new_name|, the corresponding NameInfo
+  // part in | this | is overwritten.Special logic so that a middle initial may
+  // not overwrite a full middle name.
+  void OverwriteName(const NameInfo& new_name);
+
+  // Returns true if all the name parts (first, middle and last) are empty.
+  bool NamePartsAreEmpty() const;
+
   // FormGroup:
   base::string16 GetRawInfo(ServerFieldType type) const override;
   void SetRawInfo(ServerFieldType type, const base::string16& value) override;
