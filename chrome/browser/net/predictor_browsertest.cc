@@ -880,6 +880,7 @@ IN_PROC_BROWSER_TEST_F(PredictorBrowserTest,
                        CrossSiteSimplePredictionAfterTwoNavigations) {
   NavigateToCrossSiteHtmlUrl(1 /* num_cors */, "" /* file_suffix */);
   EXPECT_EQ(0, observer()->CrossSitePreconnected());
+  EXPECT_EQ(1, observer()->CrossSiteLearned());
 
   NavigateToCrossSiteHtmlUrl(1 /* num_cors */, "" /* file_suffix */);
   EXPECT_EQ(4, observer()->CrossSitePreconnected());
@@ -905,6 +906,7 @@ IN_PROC_BROWSER_TEST_F(PredictorBrowserTest,
                        CrossSiteSimplePredictionAfterTwoNavigations2) {
   NavigateToCrossSiteHtmlUrl(2 /* num_cors */, "" /* file_suffix */);
   EXPECT_EQ(0, observer()->CrossSitePreconnected());
+  EXPECT_EQ(2, observer()->CrossSiteLearned());
 
   NavigateToCrossSiteHtmlUrl(2 /* num_cors */, "" /* file_suffix */);
 
