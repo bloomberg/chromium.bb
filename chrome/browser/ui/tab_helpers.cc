@@ -172,7 +172,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   SearchTabHelper::CreateForWebContents(web_contents);
   ChromeSecurityStateModelClient::CreateForWebContents(web_contents);
   if (SiteEngagementService::IsEnabled())
-    SiteEngagementHelper::CreateForWebContents(web_contents);
+    SiteEngagementService::Helper::CreateForWebContents(web_contents);
   // TODO(vabr): Remove TabSpecificContentSettings from here once their function
   // is taken over by ChromeContentSettingsClient. http://crbug.com/387075
   TabSpecificContentSettings::CreateForWebContents(web_contents);

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_ENGAGEMENT_SITE_ENGAGEMENT_SERVICE_H_
 
 #include <map>
+#include <memory>
 #include <set>
 
 #include "base/gtest_prod_util.h"
@@ -28,163 +29,6 @@ class HistoryService;
 
 class GURL;
 class Profile;
-
-class SiteEngagementScore {
- public:
-  // The parameters which can be varied via field trial. All "points" values
-  // should be appended to the end of the enum prior to MAX_VARIATION.
-  enum Variation {
-    // The maximum number of points that can be accrued in one day.
-    MAX_POINTS_PER_DAY = 0,
-
-    // The period over which site engagement decays.
-    DECAY_PERIOD_IN_DAYS,
-
-    // The number of points to decay per period.
-    DECAY_POINTS,
-
-    // The number of points given for navigations.
-    NAVIGATION_POINTS,
-
-    // The number of points given for user input.
-    USER_INPUT_POINTS,
-
-    // The number of points given for media playing. Initially calibrated such
-    // that at least 30 minutes of foreground media would be required to allow a
-    // site to reach the daily engagement maximum.
-    VISIBLE_MEDIA_POINTS,
-    HIDDEN_MEDIA_POINTS,
-
-    // The number of points added to engagement when a site is launched from
-    // homescreen or added as a bookmark app. This bonus will apply for ten days
-    // following a launch; each new launch resets the ten days.
-    WEB_APP_INSTALLED_POINTS,
-
-    // The number of points given for the first engagement event of the day for
-    // each site.
-    FIRST_DAILY_ENGAGEMENT,
-
-    // The number of points that the engagement service must accumulate to be
-    // considered 'useful'.
-    BOOTSTRAP_POINTS,
-
-    // The boundaries between low/medium and medium/high engagement as returned
-    // by GetEngagementLevel().
-    MEDIUM_ENGAGEMENT_BOUNDARY,
-    HIGH_ENGAGEMENT_BOUNDARY,
-
-    MAX_VARIATION
-  };
-
-  // The maximum number of points that are allowed.
-  static const double kMaxPoints;
-
-  static double GetMaxPointsPerDay();
-  static double GetDecayPeriodInDays();
-  static double GetDecayPoints();
-  static double GetNavigationPoints();
-  static double GetUserInputPoints();
-  static double GetVisibleMediaPoints();
-  static double GetHiddenMediaPoints();
-  static double GetWebAppInstalledPoints();
-  static double GetFirstDailyEngagementPoints();
-  static double GetBootstrapPoints();
-  static double GetMediumEngagementBoundary();
-  static double GetHighEngagementBoundary();
-
-  // Update the default engagement settings via variations.
-  static void UpdateFromVariations();
-
-  // The SiteEngagementService does not take ownership of |clock|. It is the
-  // responsibility of the caller to make sure |clock| outlives this
-  // SiteEngagementScore.
-  SiteEngagementScore(base::Clock* clock,
-                      const base::DictionaryValue& score_dict);
-  ~SiteEngagementScore();
-
-  double Score() const;
-  void AddPoints(double points);
-
-  // Resets the score to |points| and resets the daily point limit. If
-  // |updated_time| is non-null, sets the last engagement time and last
-  // shortcut launch time (if it is non-null) to |updated_time|. Otherwise, last
-  // engagement time is set to the current time and last shortcut launch time is
-  // left unchanged.
-  // TODO(calamity): Ideally, all SiteEngagementScore methods should take a
-  // base::Time argument like this one does rather than each Score hold a
-  // pointer to a base::Clock. Then SiteEngagementScore doesn't need to worry
-  // about clock vending. See crbug.com/604305
-  void Reset(double points, const base::Time* updated_time);
-
-  // Returns true if the maximum number of points today has been added.
-  bool MaxPointsPerDayAdded() const;
-
-  // Get/set the last time this origin was launched from an installed shortcut.
-  base::Time last_shortcut_launch_time() const {
-    return last_shortcut_launch_time_;
-  }
-  void set_last_shortcut_launch_time(const base::Time& time) {
-    last_shortcut_launch_time_ = time;
-  }
-
-  // Updates the content settings dictionary |score_dict| with the current score
-  // fields. Returns true if |score_dict| changed, otherwise return false.
-  bool UpdateScoreDict(base::DictionaryValue* score_dict);
-
- private:
-  FRIEND_TEST_ALL_PREFIXES(SiteEngagementScoreTest, PartiallyEmptyDictionary);
-  FRIEND_TEST_ALL_PREFIXES(SiteEngagementScoreTest, PopulatedDictionary);
-  FRIEND_TEST_ALL_PREFIXES(SiteEngagementScoreTest, Reset);
-  FRIEND_TEST_ALL_PREFIXES(SiteEngagementScoreTest, FirstDailyEngagementBonus);
-  friend class SiteEngagementHelperTest;
-  friend class SiteEngagementScoreTest;
-  friend class SiteEngagementServiceTest;
-  friend class ImportantSitesUtilTest;
-
-  // Array holding the values corresponding to each item in Variation array.
-  static double param_values[];
-
-  // Keys used in the content settings dictionary.
-  static const char* kRawScoreKey;
-  static const char* kPointsAddedTodayKey;
-  static const char* kLastEngagementTimeKey;
-  static const char* kLastShortcutLaunchTimeKey;
-
-  // This version of the constructor is used in unit tests.
-  explicit SiteEngagementScore(base::Clock* clock);
-
-  // Determine the score, accounting for any decay.
-  double DecayedScore() const;
-
-  // Determine any score bonus from having installed shortcuts.
-  double BonusScore() const;
-
-  // Sets fixed parameter values for testing site engagement. Ensure that any
-  // newly added parameters receive a fixed value here.
-  static void SetParamValuesForTesting();
-
-  // The clock used to vend times. Enables time travelling in tests. Owned by
-  // the SiteEngagementService.
-  base::Clock* clock_;
-
-  // |raw_score_| is the score before any decay is applied.
-  double raw_score_;
-
-  // The points added 'today' are tracked to avoid adding more than
-  // kMaxPointsPerDay on any one day. 'Today' is defined in local time.
-  double points_added_today_;
-
-  // The last time the score was updated for engagement. Used in conjunction
-  // with |points_added_today_| to avoid adding more than kMaxPointsPerDay on
-  // any one day.
-  base::Time last_engagement_time_;
-
-  // The last time the site with this score was launched from an installed
-  // shortcut.
-  base::Time last_shortcut_launch_time_;
-
-  DISALLOW_COPY_AND_ASSIGN(SiteEngagementScore);
-};
 
 class SiteEngagementScoreProvider {
  public:
@@ -210,6 +54,10 @@ class SiteEngagementService : public KeyedService,
                               public history::HistoryServiceObserver,
                               public SiteEngagementScoreProvider {
  public:
+  // WebContentsObserver that detects engagement triggering events and notifies
+  // the service of them.
+  class Helper;
+
   enum EngagementLevel {
     ENGAGEMENT_LEVEL_NONE,
     ENGAGEMENT_LEVEL_LOW,
@@ -221,13 +69,22 @@ class SiteEngagementService : public KeyedService,
   // The name of the site engagement variation field trial.
   static const char kEngagementParams[];
 
+  // Returns the site engagement service attached to this profile. May return
+  // null if the service does not exist (e.g. the user is in incognito).
   static SiteEngagementService* Get(Profile* profile);
 
-  // Returns whether or not the SiteEngagementService is enabled.
+  // Returns the maximum possible amount of engagement that a site can accrue.
+  static double GetMaxPoints();
+
+  // Returns whether or not the site engagement service is enabled.
   static bool IsEnabled();
 
   explicit SiteEngagementService(Profile* profile);
   ~SiteEngagementService() override;
+
+  // Returns the engagement level of |url|. This is the recommended API for
+  // clients
+  EngagementLevel GetEngagementLevel(const GURL& url) const;
 
   // Returns a map of all stored origins and their engagement scores.
   std::map<GURL, double> GetScoreMap() const;
@@ -237,41 +94,17 @@ class SiteEngagementService : public KeyedService,
   // this is true.
   bool IsBootstrapped();
 
-  // Returns the engagement level of |url|. This is the recommended API for
-  // clients
-  EngagementLevel GetEngagementLevel(const GURL& url) const;
-
   // Returns whether |url| has at least the given |level| of engagement.
   bool IsEngagementAtLeast(const GURL& url, EngagementLevel level) const;
 
-  // Update the engagement score of the origin matching |url| for navigation.
-  void HandleNavigation(const GURL& url, ui::PageTransition transition);
-
-  // Update the engagement score of the origin matching |url| for time-on-site,
-  // based on user input.
-  void HandleUserInput(const GURL& url,
-                       SiteEngagementMetrics::EngagementType type);
-
-  // Update the engagement score of the origin matching |url| for media playing.
-  // The points awarded are discounted if the media is being played in a non-
-  // visible tab.
-  void HandleMediaPlaying(const GURL& url, bool is_hidden);
-
   // Resets the engagement score |url| to |score|, clearing daily limits.
   void ResetScoreForURL(const GURL& url, double score);
-
-  // Overridden from history::HistoryServiceObserver:
-  void OnURLsDeleted(history::HistoryService* history_service,
-                     bool all_history,
-                     bool expired,
-                     const history::URLRows& deleted_rows,
-                     const std::set<GURL>& favicon_urls) override;
 
   // Update the last time |url| was opened from an installed shortcut to be
   // clock_->Now().
   void SetLastShortcutLaunchTime(const GURL& url);
 
-  // Overridden from SiteEngagementScoreProvider:
+  // Overridden from SiteEngagementScoreProvider.
   double GetScore(const GURL& url) const override;
   double GetTotalEngagementPoints() const override;
 
@@ -289,7 +122,6 @@ class SiteEngagementService : public KeyedService,
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest, EngagementLevel);
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest, ScoreDecayHistograms);
   FRIEND_TEST_ALL_PREFIXES(AppBannerSettingsHelperTest, SiteEngagementTrigger);
-  FRIEND_TEST_ALL_PREFIXES(ImportantSitesUtilTest, NotificationsThenEngagement);
 
   // Only used in tests.
   SiteEngagementService(Profile* profile, std::unique_ptr<base::Clock> clock);
@@ -307,11 +139,33 @@ class SiteEngagementService : public KeyedService,
   // Returns the median engagement score of all recorded origins.
   double GetMedianEngagement(const std::map<GURL, double>& score_map) const;
 
+  // Update the engagement score of the origin matching |url| for media playing.
+  // The points awarded are discounted if the media is being played in a non-
+  // visible tab.
+  void HandleMediaPlaying(const GURL& url, bool is_hidden);
+
+  // Update the engagement score of the origin matching |url| for navigation.
+  void HandleNavigation(const GURL& url, ui::PageTransition transition);
+
+  // Update the engagement score of the origin matching |url| for time-on-site,
+  // based on user input.
+  void HandleUserInput(const GURL& url,
+                       SiteEngagementMetrics::EngagementType type);
+
+  // Overridden from history::HistoryServiceObserver:
+  void OnURLsDeleted(history::HistoryService* history_service,
+                     bool all_history,
+                     bool expired,
+                     const history::URLRows& deleted_rows,
+                     const std::set<GURL>& favicon_urls) override;
+
   // Returns the number of origins with maximum daily and total engagement
   // respectively.
   int OriginsWithMaxDailyEngagement() const;
   int OriginsWithMaxEngagement(const std::map<GURL, double>& score_map) const;
 
+  // Callback for the history service when it is asked for a map of origins to
+  // how many URLs corresponding to that origin remain in history.
   void GetCountsAndLastVisitForOriginsComplete(
     history::HistoryService* history_service,
     const std::multiset<GURL>& deleted_url_origins,

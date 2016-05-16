@@ -8,7 +8,6 @@
 #include "chrome/browser/banners/app_banner_metrics.h"
 #include "chrome/browser/banners/app_banner_settings_helper.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
-#include "chrome/browser/engagement/site_engagement_service_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
@@ -783,8 +782,7 @@ TEST_F(AppBannerSettingsHelperTest, SiteEngagementTrigger) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   command_line->AppendSwitch(switches::kEnableSiteEngagementAppBanner);
 
-  SiteEngagementService* service =
-      SiteEngagementServiceFactory::GetForProfile(profile());
+  SiteEngagementService* service = SiteEngagementService::Get(profile());
   DCHECK(service);
 
   // Not used, but needed for method call.

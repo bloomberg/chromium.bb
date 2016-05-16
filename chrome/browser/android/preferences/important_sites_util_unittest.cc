@@ -10,10 +10,8 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/engagement/site_engagement_helper.h"
-#include "chrome/browser/engagement/site_engagement_metrics.h"
+#include "chrome/browser/engagement/site_engagement_score.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
-#include "chrome/browser/engagement/site_engagement_service_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
@@ -78,8 +76,7 @@ TEST_F(ImportantSitesUtilTest, TestNoImportantSites) {
 }
 
 TEST_F(ImportantSitesUtilTest, NotificationsThenEngagement) {
-  SiteEngagementService* service =
-      SiteEngagementServiceFactory::GetForProfile(profile());
+  SiteEngagementService* service = SiteEngagementService::Get(profile());
   ASSERT_TRUE(service);
 
   GURL url1("http://www.google.com/");

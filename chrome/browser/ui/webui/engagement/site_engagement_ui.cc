@@ -57,7 +57,7 @@ class SiteEngagementUIHandlerImpl : public mojom::SiteEngagementUIHandler {
                                        double score) override {
     GURL origin_gurl(origin.get());
     if (!origin_gurl.is_valid() || score < 0 ||
-        score > SiteEngagementScore::kMaxPoints || std::isnan(score)) {
+        score > SiteEngagementService::GetMaxPoints() || std::isnan(score)) {
       return;
     }
 

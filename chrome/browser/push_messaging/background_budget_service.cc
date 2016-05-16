@@ -142,7 +142,7 @@ double BackgroundBudgetService::GetBudget(const GURL& origin) {
 void BackgroundBudgetService::StoreBudget(const GURL& origin, double budget) {
   DCHECK_EQ(origin, origin.GetOrigin());
   DCHECK_GE(budget, 0.0);
-  DCHECK_LE(budget, SiteEngagementScore::kMaxPoints);
+  DCHECK_LE(budget, SiteEngagementService::GetMaxPoints());
 
   // Get the current SES score to write into the prefs with the new budget.
   SiteEngagementService* service = SiteEngagementService::Get(profile_);

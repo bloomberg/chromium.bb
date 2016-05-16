@@ -102,6 +102,7 @@
       'browser/download/download_ui_controller_unittest.cc',
       'browser/engagement/site_engagement_eviction_policy_unittest.cc',
       'browser/engagement/site_engagement_helper_unittest.cc',
+      'browser/engagement/site_engagement_score_unittest.cc',
       'browser/engagement/site_engagement_service_unittest.cc',
       'browser/enumerate_modules_model_unittest_win.cc',
       'browser/external_protocol/external_protocol_handler_unittest.cc',

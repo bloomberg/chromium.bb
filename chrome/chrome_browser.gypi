@@ -1638,6 +1638,8 @@
       'browser/engagement/site_engagement_helper.h',
       'browser/engagement/site_engagement_metrics.cc',
       'browser/engagement/site_engagement_metrics.h',
+      'browser/engagement/site_engagement_score.cc',
+      'browser/engagement/site_engagement_score.h',
       'browser/engagement/site_engagement_service.cc',
       'browser/engagement/site_engagement_service.h',
       'browser/engagement/site_engagement_service_factory.cc',
