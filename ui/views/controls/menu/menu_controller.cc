@@ -2669,15 +2669,19 @@ void MenuController::SetInitialHotTrackedView(
 void MenuController::SetHotTrackedButton(CustomButton* hot_button) {
   if (hot_button == hot_button_) {
     // Hot-tracked state may change outside of the MenuController. Correct it.
-    if (hot_button && !hot_button->IsHotTracked())
+    if (hot_button && !hot_button->IsHotTracked()) {
       hot_button->SetHotTracked(true);
+      hot_button->NotifyAccessibilityEvent(ui::AX_EVENT_SELECTION, true);
+    }
     return;
   }
   if (hot_button_)
     hot_button_->SetHotTracked(false);
   hot_button_ = hot_button;
-  if (hot_button)
+  if (hot_button) {
     hot_button->SetHotTracked(true);
+    hot_button->NotifyAccessibilityEvent(ui::AX_EVENT_SELECTION, true);
+  }
 }
 
 }  // namespace views

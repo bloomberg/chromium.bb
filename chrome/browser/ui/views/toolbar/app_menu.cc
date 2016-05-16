@@ -44,6 +44,7 @@
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPaint.h"
+#include "ui/accessibility/ax_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
 #include "ui/base/material_design/material_design_controller.h"
@@ -120,6 +121,11 @@ class FullscreenButton : public ImageButton {
       pref.Enlarge(insets.width(), insets.height());
     }
     return pref;
+  }
+
+  void GetAccessibleState(ui::AXViewState* state) override {
+    ImageButton::GetAccessibleState(state);
+    state->role = ui::AX_ROLE_MENU_ITEM;
   }
 
  private:
@@ -299,6 +305,11 @@ class InMenuButton : public LabelButton {
 
   void SetOtherButtons(const InMenuButton* left, const InMenuButton* right) {
     in_menu_background_->SetOtherButtons(left, right);
+  }
+
+  void GetAccessibleState(ui::AXViewState* state) override {
+    LabelButton::GetAccessibleState(state);
+    state->role = ui::AX_ROLE_MENU_ITEM;
   }
 
   // views::LabelButton
