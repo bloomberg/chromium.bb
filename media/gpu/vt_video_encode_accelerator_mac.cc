@@ -11,6 +11,7 @@
 #include "media/base/mac/coremedia_glue.h"
 #include "media/base/mac/corevideo_glue.h"
 #include "media/base/mac/video_frame_mac.h"
+#include "third_party/webrtc/system_wrappers/include/clock.h"
 
 namespace media {
 
@@ -63,8 +64,16 @@ struct VTVideoEncodeAccelerator::BitstreamBufferRef {
   DISALLOW_IMPLICIT_CONSTRUCTORS(BitstreamBufferRef);
 };
 
+// .5 is set as a minimum to prevent overcompensating for large temporary
+// overshoots. We don't want to degrade video quality too badly.
+// .95 is set to prevent oscillations. When a lower bitrate is set on the
+// encoder than previously set, its output seems to have a brief period of
+// drastically reduced bitrate, so we want to avoid that. In steady state
+// conditions, 0.95 seems to give us better overall bitrate over long periods
+// of time.
 VTVideoEncodeAccelerator::VTVideoEncodeAccelerator()
-    : client_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+    : bitrate_adjuster_(webrtc::Clock::GetRealTimeClock(), .5, .95),
+      client_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       encoder_thread_("VTEncoderThread"),
       encoder_task_weak_factory_(this) {
   encoder_weak_ptr_ = encoder_task_weak_factory_.GetWeakPtr();
@@ -273,6 +282,10 @@ void VTVideoEncodeAccelerator::EncodeTask(
   std::unique_ptr<InProgressFrameEncode> request(
       new InProgressFrameEncode(frame->timestamp(), ref_time));
 
+  // Update the bitrate if needed.
+  RequestEncodingParametersChangeTask(bitrate_adjuster_.GetAdjustedBitrateBps(),
+                                      frame_rate_);
+
   // We can pass the ownership of |request| to the encode callback if
   // successful. Otherwise let it fall out of scope.
   OSStatus status = videotoolbox_glue_->VTCompressionSessionEncodeFrame(
@@ -308,28 +321,39 @@ void VTVideoEncodeAccelerator::RequestEncodingParametersChangeTask(
     uint32_t framerate) {
   DCHECK(encoder_thread_task_runner_->BelongsToCurrentThread());
 
-  frame_rate_ = framerate > 1 ? framerate : 1;
-  target_bitrate_ = bitrate > 1 ? bitrate : 1;
-
   if (!compression_session_) {
     NotifyError(kPlatformFailureError);
     return;
   }
 
-  media::video_toolbox::SessionPropertySetter session_property_setter(
-      compression_session_, videotoolbox_glue_);
-  // TODO(emircan): See crbug.com/425352.
-  bool rv = session_property_setter.Set(
-      videotoolbox_glue_->kVTCompressionPropertyKey_AverageBitRate(),
-      target_bitrate_);
-  rv &= session_property_setter.Set(
-      videotoolbox_glue_->kVTCompressionPropertyKey_ExpectedFrameRate(),
-      frame_rate_);
-  rv &= session_property_setter.Set(
-      videotoolbox_glue_->kVTCompressionPropertyKey_DataRateLimits(),
-      media::video_toolbox::ArrayWithIntegerAndFloat(
-          target_bitrate_ / kBitsPerByte, 1.0f));
-  DLOG_IF(ERROR, !rv) << "Couldn't change session encoding parameters.";
+  bool rv;
+  if (framerate != static_cast<uint32_t>(frame_rate_)) {
+    frame_rate_ = framerate > 1 ? framerate : 1;
+    media::video_toolbox::SessionPropertySetter session_property_setter(
+        compression_session_, videotoolbox_glue_);
+    rv = session_property_setter.Set(
+        videotoolbox_glue_->kVTCompressionPropertyKey_ExpectedFrameRate(),
+        frame_rate_);
+    DLOG_IF(ERROR, !rv)
+        << "Couldn't change frame rate parameters of encode session.";
+  }
+
+  if (bitrate != static_cast<uint32_t>(adjusted_bitrate_)) {
+    target_bitrate_ = bitrate > 1 ? bitrate : 1;
+    bitrate_adjuster_.SetTargetBitrateBps(target_bitrate_);
+    adjusted_bitrate_ = bitrate_adjuster_.GetAdjustedBitrateBps();
+    media::video_toolbox::SessionPropertySetter session_property_setter(
+        compression_session_, videotoolbox_glue_);
+    rv = session_property_setter.Set(
+        videotoolbox_glue_->kVTCompressionPropertyKey_AverageBitRate(),
+        adjusted_bitrate_);
+    rv &= session_property_setter.Set(
+        videotoolbox_glue_->kVTCompressionPropertyKey_DataRateLimits(),
+        media::video_toolbox::ArrayWithIntegerAndFloat(
+            adjusted_bitrate_ / kBitsPerByte, 1.0f));
+    DLOG_IF(ERROR, !rv)
+        << "Couldn't change bitrate parameters of encode session.";
+  }
 }
 
 void VTVideoEncodeAccelerator::DestroyTask() {
@@ -435,6 +459,7 @@ void VTVideoEncodeAccelerator::ReturnBitstreamBuffer(
     DLOG(ERROR) << "Cannot copy output from SampleBuffer to AnnexBBuffer.";
     used_buffer_size = 0;
   }
+  bitrate_adjuster_.Update(used_buffer_size);
 
   client_task_runner_->PostTask(
       FROM_HERE, base::Bind(&Client::BitstreamBufferReady, client_,

@@ -12,6 +12,7 @@
 #include "media/base/mac/videotoolbox_helpers.h"
 #include "media/gpu/media_gpu_export.h"
 #include "media/video/video_encode_accelerator.h"
+#include "third_party/webrtc/common_video/include/bitrate_adjuster.h"
 
 namespace media {
 
@@ -107,6 +108,10 @@ class MEDIA_GPU_EXPORT VTVideoEncodeAccelerator
   size_t bitstream_buffer_size_;
   int32_t frame_rate_;
   int32_t target_bitrate_;
+  int32_t adjusted_bitrate_;
+
+  // Bitrate adjuster used to fix VideoToolbox's inconsistent bitrate issues.
+  webrtc::BitrateAdjuster bitrate_adjuster_;
 
   // Bitstream buffers ready to be used to return encoded output as a FIFO.
   std::deque<std::unique_ptr<BitstreamBufferRef>> bitstream_buffer_queue_;

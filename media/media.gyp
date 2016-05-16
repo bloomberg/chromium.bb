@@ -2149,6 +2149,11 @@
             '<(DEPTH)/third_party/libyuv',
           ],
           'conditions': [
+            ['OS=="mac"', {
+              'dependencies': [
+                '../third_party/webrtc/common_video/common_video.gyp:common_video',
+              ],
+            }],
             ['use_x11==1', {
               'dependencies': [
                 '../ui/gfx/x/gfx_x11.gyp:gfx_x11',

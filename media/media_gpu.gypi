@@ -35,6 +35,7 @@
       'dependencies': [
         '../media/media.gyp:media',
         '../content/app/resources/content_resources.gyp:content_resources',
+        '../third_party/webrtc/common_video/common_video.gyp:common_video',
         '../ui/accelerated_widget_mac/accelerated_widget_mac.gyp:accelerated_widget_mac'
       ],
       'sources': [

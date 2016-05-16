@@ -184,7 +184,10 @@ component("gpu") {
                  "vt_video_encode_accelerator_mac.cc",
                  "vt_video_encode_accelerator_mac.h",
                ] + get_target_outputs(":libvt_generate_stubs")
-    deps += [ ":libvt_generate_stubs" ]
+    deps += [
+      ":libvt_generate_stubs",
+      "//third_party/webrtc/common_video:common_video",
+    ]
     libs += [
       "CoreFoundation.framework",
       "Foundation.framework",

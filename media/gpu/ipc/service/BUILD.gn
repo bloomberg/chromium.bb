@@ -44,4 +44,8 @@ source_set("service") {
   if (is_win) {
     configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
   }
+
+  if (is_mac) {
+    deps += [ "//third_party/webrtc/common_video:common_video" ]
+  }
 }

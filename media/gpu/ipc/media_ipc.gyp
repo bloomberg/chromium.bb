@@ -99,6 +99,11 @@
             },
           },
         }],
+        ['OS=="mac"', {
+          'dependencies': [
+            '../../../third_party/webrtc/common_video/common_video.gyp:common_video',
+          ],
+        }],
       ],
     }
   ]
