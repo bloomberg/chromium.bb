@@ -50,8 +50,7 @@ const int kMiddlePaddingPx = 30;
 const int kOuterPaddingHorizPx = 40;
 const int kOuterPaddingVertPx = 8;
 
-// Partially-transparent background color. Only used with
-// IsSimplifiedFullscreenUIEnabled.
+// Partially-transparent background color.
 const SkColor kBackgroundColor = SkColorSetARGB(0xcc, 0x28, 0x2c, 0x32);
 
 class ButtonView : public views::View {
@@ -211,6 +210,7 @@ class ExclusiveAccessBubbleViews::ExclusiveAccessView
   // mode only.)
   views::Label* message_label_;
   // Clickable buttons to exit fullscreen. (Non-simplified mode only.)
+  // TODO(mgiuca): Delete this; it is no longer used on any code path.
   ButtonView* button_view_;
   // Instruction for exiting fullscreen / mouse lock. Only present if there is
   // no link or button (always present in simplified mode).
@@ -231,29 +231,11 @@ ExclusiveAccessBubbleViews::ExclusiveAccessView::ExclusiveAccessView(
       button_view_(nullptr),
       exit_instruction_(nullptr),
       browser_fullscreen_exit_accelerator_(accelerator) {
-  views::BubbleBorder::Shadow shadow_type = views::BubbleBorder::BIG_SHADOW;
-#if defined(OS_LINUX)
-  // Use a smaller shadow on Linux (including ChromeOS) as the shadow assets can
-  // overlap each other in a fullscreen notification bubble.
-  // See http://crbug.com/462983.
-  shadow_type = views::BubbleBorder::SMALL_SHADOW;
-#endif
-  if (ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled())
-    shadow_type = views::BubbleBorder::NO_ASSETS;
-
-  // TODO(estade): don't use this static instance. See http://crbug.com/558162
-  ui::NativeTheme* theme = ui::NativeTheme::GetInstanceForWeb();
-  SkColor background_color =
-      ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled()
-          ? kBackgroundColor
-          : theme->GetSystemColor(ui::NativeTheme::kColorId_BubbleBackground);
-  SkColor foreground_color =
-      ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled()
-          ? SK_ColorWHITE
-          : theme->GetSystemColor(ui::NativeTheme::kColorId_LabelEnabledColor);
+  const SkColor kForegroundColor = SK_ColorWHITE;
 
   std::unique_ptr<views::BubbleBorder> bubble_border(new views::BubbleBorder(
-      views::BubbleBorder::NONE, shadow_type, background_color));
+      views::BubbleBorder::NONE, views::BubbleBorder::NO_ASSETS,
+      kBackgroundColor));
   set_background(new views::BubbleBackground(bubble_border.get()));
   SetBorder(std::move(bubble_border));
 
@@ -263,12 +245,12 @@ ExclusiveAccessBubbleViews::ExclusiveAccessView::ExclusiveAccessView(
 
   if (!ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled()) {
     message_label_ = new views::Label(base::string16(), font_list);
-    message_label_->SetEnabledColor(foreground_color);
-    message_label_->SetBackgroundColor(background_color);
+    message_label_->SetEnabledColor(kForegroundColor);
+    message_label_->SetBackgroundColor(kBackgroundColor);
   }
 
   exit_instruction_ = new InstructionView(base::string16(), font_list,
-                                          foreground_color, background_color);
+                                          kForegroundColor, kBackgroundColor);
 
   link_ = new views::Link();
   link_->SetFocusBehavior(FocusBehavior::NEVER);
@@ -278,9 +260,9 @@ ExclusiveAccessBubbleViews::ExclusiveAccessView::ExclusiveAccessView(
 #endif
   link_->set_listener(this);
   link_->SetFontList(font_list);
-  link_->SetPressedColor(foreground_color);
-  link_->SetEnabledColor(foreground_color);
-  link_->SetBackgroundColor(background_color);
+  link_->SetPressedColor(kForegroundColor);
+  link_->SetEnabledColor(kForegroundColor);
+  link_->SetBackgroundColor(kBackgroundColor);
   link_->SetVisible(false);
 
   button_view_ = new ButtonView(this, kPaddingPx);
@@ -290,9 +272,6 @@ ExclusiveAccessBubbleViews::ExclusiveAccessView::ExclusiveAccessView(
   if (!ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled()) {
     DCHECK(message_label_);
     AddChildView(message_label_);
-
-    outer_padding_horiz = kPaddingPx;
-    outer_padding_vert = kPaddingPx;
   }
   AddChildView(button_view_);
   AddChildView(exit_instruction_);
@@ -329,49 +308,33 @@ void ExclusiveAccessBubbleViews::ExclusiveAccessView::UpdateContent(
     ExclusiveAccessBubbleType bubble_type) {
   DCHECK_NE(EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE, bubble_type);
 
-  if (!ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled()) {
-    DCHECK(message_label_);
-    message_label_->SetText(bubble_->GetCurrentMessageText());
-  }
-
-  if (exclusive_access_bubble::ShowButtonsForType(bubble_type)) {
-    link_->SetVisible(false);
-    exit_instruction_->SetVisible(false);
-    button_view_->SetVisible(true);
-    button_view_->deny_button()->SetText(bubble_->GetCurrentDenyButtonText());
-    button_view_->deny_button()->SetMinSize(gfx::Size());
-    button_view_->accept_button()->SetText(
-        bubble_->GetCurrentAllowButtonText());
-    button_view_->accept_button()->SetMinSize(gfx::Size());
+  bool link_visible =
+      !ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled();
+  base::string16 accelerator;
+  if (bubble_type ==
+          EXCLUSIVE_ACCESS_BUBBLE_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION ||
+      bubble_type ==
+          EXCLUSIVE_ACCESS_BUBBLE_TYPE_EXTENSION_FULLSCREEN_EXIT_INSTRUCTION) {
+    accelerator = browser_fullscreen_exit_accelerator_;
   } else {
-    bool link_visible =
-        !ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled();
-    base::string16 accelerator;
-    if (bubble_type ==
-            EXCLUSIVE_ACCESS_BUBBLE_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION ||
-        bubble_type ==
-            EXCLUSIVE_ACCESS_BUBBLE_TYPE_EXTENSION_FULLSCREEN_EXIT_INSTRUCTION) {
-      accelerator = browser_fullscreen_exit_accelerator_;
-    } else {
-      accelerator = l10n_util::GetStringUTF16(IDS_APP_ESC_KEY);
-      if (bubble_type !=
-          EXCLUSIVE_ACCESS_BUBBLE_TYPE_FULLSCREEN_EXIT_INSTRUCTION) {
-        link_visible = false;
-      }
+    accelerator = l10n_util::GetStringUTF16(IDS_APP_ESC_KEY);
+    if (bubble_type !=
+        EXCLUSIVE_ACCESS_BUBBLE_TYPE_FULLSCREEN_EXIT_INSTRUCTION) {
+      link_visible = false;
     }
-#if !defined(OS_CHROMEOS)
-    if (link_visible) {
-      link_->SetText(l10n_util::GetStringUTF16(IDS_EXIT_FULLSCREEN_MODE) +
-                     base::UTF8ToUTF16(" ") +
-                     l10n_util::GetStringFUTF16(
-                         IDS_EXIT_FULLSCREEN_MODE_ACCELERATOR, accelerator));
-    }
-#endif
-    link_->SetVisible(link_visible);
-    exit_instruction_->SetText(bubble_->GetInstructionText(accelerator));
-    exit_instruction_->SetVisible(!link_visible);
-    button_view_->SetVisible(false);
   }
+#if !defined(OS_CHROMEOS)
+  if (link_visible) {
+    link_->SetText(l10n_util::GetStringUTF16(IDS_EXIT_FULLSCREEN_MODE) +
+                   base::UTF8ToUTF16(" ") +
+                   l10n_util::GetStringFUTF16(
+                       IDS_EXIT_FULLSCREEN_MODE_ACCELERATOR, accelerator));
+  }
+#endif
+  link_->SetVisible(link_visible);
+  exit_instruction_->SetText(bubble_->GetInstructionText(accelerator));
+  exit_instruction_->SetVisible(!link_visible);
+  button_view_->SetVisible(false);
 }
 
 // ExclusiveAccessBubbleViews --------------------------------------------------
@@ -490,10 +453,8 @@ views::View* ExclusiveAccessBubbleViews::GetView() {
 
 ExclusiveAccessBubbleViews::AnimatedAttribute
 ExclusiveAccessBubbleViews::ExpectedAnimationAttribute() {
-  return ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled() ||
-                 bubble_view_context_->IsImmersiveModeEnabled()
-             ? ANIMATED_ATTRIBUTE_OPACITY
-             : ANIMATED_ATTRIBUTE_BOUNDS;
+  // TODO(mgiuca): Delete this function.
+  return ANIMATED_ATTRIBUTE_OPACITY;
 }
 
 void ExclusiveAccessBubbleViews::UpdateMouseWatcher() {
@@ -593,10 +554,7 @@ gfx::Rect ExclusiveAccessBubbleViews::GetPopupRect(
         bubble_view_context_->GetTopContainerBoundsInScreen().bottom();
   }
   // |desired_top| is the top of the bubble area including the shadow.
-  int popup_top = ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled()
-                      ? kSimplifiedPopupTopPx
-                      : kPopupTopPx;
-  int desired_top = popup_top - view_->border()->GetInsets().top();
+  int desired_top = kSimplifiedPopupTopPx - view_->border()->GetInsets().top();
   int y = top_container_bottom + desired_top;
 
   if (!ignore_animation_state &&

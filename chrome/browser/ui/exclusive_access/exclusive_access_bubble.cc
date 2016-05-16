@@ -181,10 +181,15 @@ base::string16 ExclusiveAccessBubble::GetCurrentAllowButtonText() const {
 
 base::string16 ExclusiveAccessBubble::GetInstructionText(
     const base::string16& accelerator) const {
+#if defined(OS_MACOSX)
+  // On Mac, if simplified-fullscreen is disabled, the Cocoa code is unable to
+  // deal with the special formatting returned by GetInstructionTextForType, so
+  // just return the old string.
   if (!ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled()) {
     return l10n_util::GetStringFUTF16(IDS_FULLSCREEN_PRESS_ESC_TO_EXIT_SENTENCE,
                                       accelerator);
   }
+#endif
 
   return exclusive_access_bubble::GetInstructionTextForType(bubble_type_,
                                                             accelerator);
