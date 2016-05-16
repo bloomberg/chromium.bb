@@ -214,7 +214,7 @@ void PointerEventManager::sendBoundaryEvents(
     // Dispatch pointerout/mouseout events
     if (isInDocument(exitedTarget)) {
         if (!sendMouseEvent) {
-            dispatchPointerEvent(exitedTarget, m_pointerEventFactory.createPointerTransitionEvent(
+            dispatchPointerEvent(exitedTarget, m_pointerEventFactory.createPointerBoundaryEvent(
                 pointerEvent, EventTypeNames::pointerout, enteredTarget));
         } else {
             dispatchMouseEvent(exitedTarget,
@@ -263,7 +263,7 @@ void PointerEventManager::sendBoundaryEvents(
     for (size_t j = 0; j < exitedAncestorsCommonParentIndex; j++) {
         if (!sendMouseEvent) {
             dispatchPointerEvent(exitedAncestors[j].get(),
-                m_pointerEventFactory.createPointerTransitionEvent(
+                m_pointerEventFactory.createPointerBoundaryEvent(
                     pointerEvent, EventTypeNames::pointerleave, enteredTarget),
                 !exitedNodeHasCapturingAncestor);
         } else {
@@ -277,7 +277,7 @@ void PointerEventManager::sendBoundaryEvents(
     // Dispatch pointerover/mouseover.
     if (isInDocument(enteredTarget)) {
         if (!sendMouseEvent) {
-            dispatchPointerEvent(enteredTarget, m_pointerEventFactory.createPointerTransitionEvent(
+            dispatchPointerEvent(enteredTarget, m_pointerEventFactory.createPointerBoundaryEvent(
                 pointerEvent, EventTypeNames::pointerover, exitedTarget));
         } else {
             dispatchMouseEvent(enteredTarget,
@@ -299,7 +299,7 @@ void PointerEventManager::sendBoundaryEvents(
     for (size_t i = enteredAncestorsCommonParentIndex; i > 0; i--) {
         if (!sendMouseEvent) {
             dispatchPointerEvent(enteredAncestors[i-1].get(),
-                m_pointerEventFactory.createPointerTransitionEvent(
+                m_pointerEventFactory.createPointerBoundaryEvent(
                     pointerEvent, EventTypeNames::pointerenter, exitedTarget),
                 !enteredNodeHasCapturingAncestor);
         } else {
@@ -431,7 +431,9 @@ void PointerEventManager::dispatchTouchPointerEvents(
                 pointerEventNameForTouchPointState(touchPoint.state()),
                 touchPoint, event.getModifiers(),
                 touchInfo.adjustedRadius,
-                framePoint);
+                framePoint,
+                touchInfo.touchNode ?
+                    touchInfo.touchNode->document().domWindow() : nullptr);
 
             // Consume the touch point if its pointer event is anything but NotHandled
             // (e.g. preventDefault is called in the listener for the pointer event).

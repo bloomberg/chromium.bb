@@ -12,18 +12,21 @@ TEST COMPLETE
 pointermove of mouse is recieved:
 clientX = 150
 clientY = 100
+view.name = innerFrame
 mousemove is recieved:
 clientX = 150
 clientY = 100
 pointerdown of mouse is recieved:
 clientX = 150
 clientY = 100
+view.name = innerFrame
 mousedown is recieved:
 clientX = 150
 clientY = 100
 pointerup of mouse is recieved:
 clientX = 150
 clientY = 100
+view.name = innerFrame
 mouseup is recieved:
 clientX = 150
 clientY = 100
@@ -31,18 +34,21 @@ clientY = 100
 pointerdown of touch is recieved:
 clientX = 150
 clientY = 100
+view.name = innerFrame
 touchstart is recieved:
 clientX = 150
 clientY = 100
 pointermove of touch is recieved:
 clientX = 150
 clientY = 100
+view.name = innerFrame
 touchmove is recieved:
 clientX = 150
 clientY = 100
 pointerup of touch is recieved:
 clientX = 150
 clientY = 100
+view.name = innerFrame
 touchend is recieved:
 clientX = 150
 clientY = 100
@@ -52,18 +58,21 @@ clientY = 100
 pointermove of mouse is recieved:
 clientX = 150
 clientY = 100
+view.name = innerFrame
 mousemove is recieved:
 clientX = 150
 clientY = 100
 pointerdown of mouse is recieved:
 clientX = 150
 clientY = 100
+view.name = innerFrame
 mousedown is recieved:
 clientX = 150
 clientY = 100
 pointerup of mouse is recieved:
 clientX = 150
 clientY = 100
+view.name = innerFrame
 mouseup is recieved:
 clientX = 150
 clientY = 100
@@ -71,18 +80,21 @@ clientY = 100
 pointerdown of touch is recieved:
 clientX = 150
 clientY = 100
+view.name = innerFrame
 touchstart is recieved:
 clientX = 150
 clientY = 100
 pointermove of touch is recieved:
 clientX = 150
 clientY = 100
+view.name = innerFrame
 touchmove is recieved:
 clientX = 150
 clientY = 100
 pointerup of touch is recieved:
 clientX = 150
 clientY = 100
+view.name = innerFrame
 touchend is recieved:
 clientX = 150
 clientY = 100
@@ -92,18 +104,21 @@ clientY = 100
 pointermove of mouse is recieved:
 clientX = 50
 clientY = 0
+view.name = innerFrame
 mousemove is recieved:
 clientX = 50
 clientY = 0
 pointerdown of mouse is recieved:
 clientX = 50
 clientY = 0
+view.name = innerFrame
 mousedown is recieved:
 clientX = 50
 clientY = 0
 pointerup of mouse is recieved:
 clientX = 50
 clientY = 0
+view.name = innerFrame
 mouseup is recieved:
 clientX = 50
 clientY = 0
@@ -111,18 +126,21 @@ clientY = 0
 pointerdown of touch is recieved:
 clientX = 50
 clientY = 0
+view.name = innerFrame
 touchstart is recieved:
 clientX = 50
 clientY = 0
 pointermove of touch is recieved:
 clientX = 50
 clientY = 0
+view.name = innerFrame
 touchmove is recieved:
 clientX = 50
 clientY = 0
 pointerup of touch is recieved:
 clientX = 50
 clientY = 0
+view.name = innerFrame
 touchend is recieved:
 clientX = 50
 clientY = 0

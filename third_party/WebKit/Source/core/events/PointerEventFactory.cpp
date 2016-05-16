@@ -152,7 +152,8 @@ PointerEvent* PointerEventFactory::create(
 PointerEvent* PointerEventFactory::create(const AtomicString& type,
     const PlatformTouchPoint& touchPoint, PlatformEvent::Modifiers modifiers,
     const FloatSize& pointRadius,
-    const FloatPoint& clientPoint)
+    const FloatPoint& clientPoint,
+    DOMWindow* view)
 {
     const PlatformTouchPoint::TouchState pointState = touchPoint.state();
 
@@ -181,6 +182,7 @@ PointerEvent* PointerEventFactory::create(const AtomicString& type,
     pointerEventInit.setButton(pointerPressedOrReleased ? LeftButton: NoButton);
     pointerEventInit.setPressure(getPointerEventPressure(
         touchPoint.force(), pointerEventInit.buttons()));
+    pointerEventInit.setView(view);
 
     UIEventWithKeyState::setFromPlatformModifiers(pointerEventInit, modifiers);
 
@@ -224,7 +226,7 @@ PointerEvent* PointerEventFactory::createPointerCaptureEvent(
     return PointerEvent::create(type, pointerEventInit);
 }
 
-PointerEvent* PointerEventFactory::createPointerTransitionEvent(
+PointerEvent* PointerEventFactory::createPointerBoundaryEvent(
     PointerEvent* pointerEvent,
     const AtomicString& type,
     EventTarget* relatedTarget)
@@ -250,6 +252,7 @@ PointerEvent* PointerEventFactory::createPointerTransitionEvent(
     pointerEventInit.setButton(pointerEvent->button());
     pointerEventInit.setButtons(pointerEvent->buttons());
     pointerEventInit.setPressure(pointerEvent->pressure());
+    pointerEventInit.setView(pointerEvent->view());
 
     setBubblesAndCancelable(pointerEventInit, type);
 

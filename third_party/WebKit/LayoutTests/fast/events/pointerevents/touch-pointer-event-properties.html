@@ -4,6 +4,7 @@
 <h1>Test that pointer properties propagates from touches to PointerEvents</h1>
 <div id="target0" style="height: 100px;"></div>
 <script>
+window.name = "mainWindow";
 async_test(function() {
   if (!window.eventSender) {
     this.done();
@@ -24,6 +25,7 @@ async_test(function() {
       var pp = POINTER_PROPERTIES[event.pointerId-1];
       for (var i in pp)
         assert_equals(event[i], pp[i], "" + i);
+      assert_equals(event.view.name, "mainWindow");
     }, "Pointer event properties for pointer " + event.pointerId + " on " + event.type);
   }
   on_event(target0, "pointerdown", this.step_func(checkPointerEvent));

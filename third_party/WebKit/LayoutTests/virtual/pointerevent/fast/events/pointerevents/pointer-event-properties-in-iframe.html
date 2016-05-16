@@ -14,6 +14,7 @@ iframe {
 <iframe id='target' srcdoc="
   <body style='height:500px; width: 500px; padding: 0; margin: 0;'>
     <script>
+      window.name = 'innerFrame';
       var testEventList = ['pointerup', 'pointerdown', 'pointermove',
                            'touchstart', 'touchmove', 'touchend',
                            'mouseup', 'mousedown', 'mousemove'];
@@ -29,6 +30,7 @@ iframe {
 <div id='console'></div>
 
 <script>
+window.name = 'outerFrame';
 
 var attributes = [
     'clientX',
@@ -79,6 +81,7 @@ function dumpEvents()
       attributes.forEach(function(att) {
         debug(att + " = " + event[att]);
       });
+      debug("view.name = " + event.view.name);
     } else if (event.type.startsWith('touch')) {
       debug(event.type + " is recieved:");
       attributes.forEach(function(att) {

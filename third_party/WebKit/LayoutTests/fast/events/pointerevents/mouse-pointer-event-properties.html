@@ -15,6 +15,7 @@ div.box {
 <div id="console"></div>
 
 <script>
+window.name = "mainWindow";
 description("Verifies that pointer event parameters are correct when fired for mouse events.");
 
 var testEventList = ["mouseenter", "mouseleave", "mouseover", "mouseout", "mouseup", "mousedown", "mousemove",
@@ -92,6 +93,7 @@ function init() {
             }
             shouldBeEqualToNumber("lastPointerEvents[0]." + attribute, expectedValue);
           });
+          shouldBeEqualToString("lastPointerEvents[0].view.name", "mainWindow");
 
         } else {
 

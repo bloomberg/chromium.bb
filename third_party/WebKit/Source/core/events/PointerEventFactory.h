@@ -37,7 +37,8 @@ public:
     PointerEvent* create(const AtomicString& type,
         const PlatformTouchPoint&, PlatformEvent::Modifiers,
         const FloatSize& pointRadius,
-        const FloatPoint& clientPoint);
+        const FloatPoint& clientPoint,
+        DOMWindow*);
 
     PointerEvent* createPointerCancelEvent(
         const int pointerId, const WebPointerProperties::PointerType);
@@ -47,8 +48,8 @@ public:
         PointerEvent*,
         const AtomicString&);
 
-    // For creating transition events (i.e pointerout/leave/over/enter)
-    PointerEvent* createPointerTransitionEvent(
+    // For creating boundary events (i.e pointerout/leave/over/enter)
+    PointerEvent* createPointerBoundaryEvent(
         PointerEvent*,
         const AtomicString&,
         EventTarget*);
