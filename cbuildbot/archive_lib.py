@@ -124,7 +124,10 @@ class Archive(object):
   def download_url(self):
     if self._options.buildbot or self._options.remote_trybot:
       # Translate the gs:// URI to the URL for downloading the same files.
-      return self.upload_url.replace('gs://', gs.PRIVATE_BASE_HTTPS_URL)
+      # TODO(akeshet): The use of a special download url is a workaround for
+      # b/27653354. If that is ultimately fixed, revisit this workaround.
+      return self.upload_url.replace(
+          'gs://', gs.PRIVATE_BASE_HTTPS_DOWNLOAD_URL)
     else:
       return self.archive_path
 

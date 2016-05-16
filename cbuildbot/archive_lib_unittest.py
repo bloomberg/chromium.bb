@@ -214,7 +214,7 @@ class ArchiveTest(cros_test_lib.TestCase):
   def testDownloadURLBuildbot(self):
     value = self._GetAttributeValue('download_url')
     expected_value = ('%s%s/%s/%s' %
-                      (archive_lib.gs.PRIVATE_BASE_HTTPS_URL,
+                      (archive_lib.gs.PRIVATE_BASE_HTTPS_DOWNLOAD_URL,
                        DEFAULT_ARCHIVE_PREFIX,
                        DEFAULT_BOT_NAME,
                        self._VERSION))
