@@ -16,6 +16,8 @@ class PrintBackendChromeOS : public PrintBackend {
   // PrintBackend implementation.
   bool EnumeratePrinters(PrinterList* printer_list) override;
   std::string GetDefaultPrinterName() override;
+  bool GetPrinterBasicInfo(const std::string& printer_name,
+                           PrinterBasicInfo* printer_info) override;
   bool GetPrinterSemanticCapsAndDefaults(
       const std::string& printer_name,
       PrinterSemanticCapsAndDefaults* printer_info) override;
@@ -32,6 +34,11 @@ PrintBackendChromeOS::PrintBackendChromeOS() {}
 
 bool PrintBackendChromeOS::EnumeratePrinters(PrinterList* printer_list) {
   return true;
+}
+
+bool PrintBackendChromeOS::GetPrinterBasicInfo(const std::string& printer_name,
+                                               PrinterBasicInfo* printer_info) {
+  return false;
 }
 
 bool PrintBackendChromeOS::GetPrinterSemanticCapsAndDefaults(

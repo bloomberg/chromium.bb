@@ -1249,6 +1249,8 @@ cr.define('print_preview', function() {
      */
     onLocalDestinationCapabilitiesSet_: function(event) {
       var destinationId = event.settingsInfo['printerId'];
+      var printerName = event.settingsInfo['printerName'];
+      var printerDescription = event.settingsInfo['printerDescription'];
       var key = this.getDestinationKey_(
           print_preview.Destination.Origin.LOCAL,
           destinationId,
@@ -1272,20 +1274,19 @@ cr.define('print_preview', function() {
           }
           destination.capabilities = capabilities;
         } else {
-          // TODO(rltoscano): This makes the assumption that the "deviceName" is
-          // the same as "printerName". We should include the "printerName" in
-          // the response. See http://crbug.com/132831.
           destination = print_preview.LocalDestinationParser.parse(
-              {deviceName: destinationId, printerName: destinationId});
+              {deviceName: destinationId,
+               printerName: printerName,
+               printerDescription: printerDescription});
           destination.capabilities = capabilities;
           this.insertDestination_(destination);
         }
       }
       if (this.selectedDestination_ &&
           this.selectedDestination_.id == destinationId) {
-        cr.dispatchSimpleEvent(this,
-                               DestinationStore.EventType.
-                                   SELECTED_DESTINATION_CAPABILITIES_READY);
+        cr.dispatchSimpleEvent(
+            this,
+            DestinationStore.EventType.SELECTED_DESTINATION_CAPABILITIES_READY);
       }
     },
 

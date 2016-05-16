@@ -162,6 +162,8 @@ class PrintBackendWin : public PrintBackend {
   // PrintBackend implementation.
   bool EnumeratePrinters(PrinterList* printer_list) override;
   std::string GetDefaultPrinterName() override;
+  bool GetPrinterBasicInfo(const std::string& printer_name,
+                           PrinterBasicInfo* printer_info) override;
   bool GetPrinterSemanticCapsAndDefaults(
       const std::string& printer_name,
       PrinterSemanticCapsAndDefaults* printer_info) override;
@@ -181,17 +183,17 @@ bool PrintBackendWin::EnumeratePrinters(PrinterList* printer_list) {
   DWORD bytes_needed = 0;
   DWORD count_returned = 0;
   const DWORD kLevel = 4;
-  BOOL ret = EnumPrinters(PRINTER_ENUM_LOCAL|PRINTER_ENUM_CONNECTIONS, NULL,
-                          kLevel, NULL, 0, &bytes_needed, &count_returned);
+  EnumPrinters(PRINTER_ENUM_LOCAL | PRINTER_ENUM_CONNECTIONS, nullptr, kLevel,
+               nullptr, 0, &bytes_needed, &count_returned);
   if (!bytes_needed)
     return false;
   std::unique_ptr<BYTE[]> printer_info_buffer(new BYTE[bytes_needed]);
-  ret = EnumPrinters(PRINTER_ENUM_LOCAL|PRINTER_ENUM_CONNECTIONS, NULL, kLevel,
-                     printer_info_buffer.get(), bytes_needed, &bytes_needed,
-                     &count_returned);
-  DCHECK(ret);
-  if (!ret)
+  if (!EnumPrinters(PRINTER_ENUM_LOCAL | PRINTER_ENUM_CONNECTIONS, nullptr,
+                    kLevel, printer_info_buffer.get(), bytes_needed,
+                    &bytes_needed, &count_returned)) {
+    NOTREACHED();
     return false;
+  }
 
   std::string default_printer = GetDefaultPrinterName();
   PRINTER_INFO_4* printer_info =
@@ -211,9 +213,24 @@ bool PrintBackendWin::EnumeratePrinters(PrinterList* printer_list) {
 std::string PrintBackendWin::GetDefaultPrinterName() {
   DWORD size = MAX_PATH;
   TCHAR default_printer_name[MAX_PATH];
-  if (!::GetDefaultPrinter(default_printer_name, &size))
-    return std::string();
-  return base::WideToUTF8(default_printer_name);
+  std::string ret;
+  if (::GetDefaultPrinter(default_printer_name, &size))
+    ret = base::WideToUTF8(default_printer_name);
+  return ret;
+}
+
+bool PrintBackendWin::GetPrinterBasicInfo(const std::string& printer_name,
+                                          PrinterBasicInfo* printer_info) {
+  ScopedPrinterHandle printer_handle;
+  if (!printer_handle.OpenPrinter(base::UTF8ToWide(printer_name).c_str()))
+    return false;
+
+  if (!InitBasicPrinterInfo(printer_handle.Get(), printer_info))
+    return false;
+
+  std::string default_printer = GetDefaultPrinterName();
+  printer_info->is_default = (printer_info->printer_name == default_printer);
+  return true;
 }
 
 bool PrintBackendWin::GetPrinterSemanticCapsAndDefaults(

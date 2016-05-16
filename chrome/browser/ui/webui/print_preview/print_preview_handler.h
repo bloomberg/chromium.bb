@@ -209,12 +209,11 @@ class PrintPreviewHandler
                        const std::string& access_token);
 
   // Sends the printer capabilities to the Web UI. |settings_info| contains
-  // printer capabilities information.
-  void SendPrinterCapabilities(const base::DictionaryValue* settings_info);
-
-  // Sends error notification to the Web UI when unable to return the printer
-  // capabilities.
-  void SendFailedToGetPrinterCapabilities(const std::string& printer_name);
+  // printer capabilities information. If |settings_info| is empty, sends
+  // error notification to the Web UI instead.
+  void SendPrinterCapabilities(
+      const std::string& printer_name,
+      std::unique_ptr<base::DictionaryValue> settings_info);
 
   // Send the list of printers to the Web UI.
   void SetupPrinterList(const base::ListValue* printers);

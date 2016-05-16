@@ -21,10 +21,52 @@
 
 namespace printing {
 
-static const char kCUPSPrinterInfoOpt[] = "printer-info";
-static const char kCUPSPrinterStateOpt[] = "printer-state";
-static const char kCUPSPrinterTypeOpt[] = "printer-type";
-static const char kCUPSPrinterMakeModelOpt[] = "printer-make-and-model";
+namespace {
+
+const char kCUPSPrinterInfoOpt[] = "printer-info";
+const char kCUPSPrinterStateOpt[] = "printer-state";
+const char kCUPSPrinterTypeOpt[] = "printer-type";
+const char kCUPSPrinterMakeModelOpt[] = "printer-make-and-model";
+
+bool PrinterBasicInfoFromCUPS(const cups_dest_t& printer,
+                              PrinterBasicInfo* printer_info) {
+  // CUPS can have 'printers' that are actually scanners. (not MFC)
+  // At least on Mac. Check for scanners and skip them.
+  const char* type_str =
+      cupsGetOption(kCUPSPrinterTypeOpt, printer.num_options, printer.options);
+  if (type_str) {
+    int type;
+    if (base::StringToInt(type_str, &type) && (type & CUPS_PRINTER_SCANNER))
+      return false;
+  }
+
+  printer_info->printer_name = printer.name;
+  printer_info->is_default = printer.is_default;
+
+  const char* info =
+      cupsGetOption(kCUPSPrinterInfoOpt, printer.num_options, printer.options);
+  if (info)
+    printer_info->printer_description = info;
+
+  const char* state =
+      cupsGetOption(kCUPSPrinterStateOpt, printer.num_options, printer.options);
+  if (state)
+    base::StringToInt(state, &printer_info->printer_status);
+
+  const char* drv_info = cupsGetOption(kCUPSPrinterMakeModelOpt,
+                                       printer.num_options, printer.options);
+  if (drv_info)
+    printer_info->options[kDriverInfoTagName] = *drv_info;
+
+  // Store printer options.
+  for (int opt_index = 0; opt_index < printer.num_options; ++opt_index) {
+    printer_info->options[printer.options[opt_index].name] =
+        printer.options[opt_index].value;
+  }
+  return true;
+}
+
+}  // namespace
 
 class PrintBackendCUPS : public PrintBackend {
  public:
@@ -37,6 +79,8 @@ class PrintBackendCUPS : public PrintBackend {
   // PrintBackend implementation.
   bool EnumeratePrinters(PrinterList* printer_list) override;
   std::string GetDefaultPrinterName() override;
+  bool GetPrinterBasicInfo(const std::string& printer_name,
+                           PrinterBasicInfo* printer_info) override;
   bool GetPrinterSemanticCapsAndDefaults(
       const std::string& printer_name,
       PrinterSemanticCapsAndDefaults* printer_info) override;
@@ -85,43 +129,9 @@ bool PrintBackendCUPS::EnumeratePrinters(PrinterList* printer_list) {
   for (int printer_index = 0; printer_index < num_dests; ++printer_index) {
     const cups_dest_t& printer = destinations[printer_index];
 
-    // CUPS can have 'printers' that are actually scanners. (not MFC)
-    // At least on Mac. Check for scanners and skip them.
-    const char* type_str = cupsGetOption(kCUPSPrinterTypeOpt,
-        printer.num_options, printer.options);
-    if (type_str) {
-      int type;
-      if (base::StringToInt(type_str, &type) && (type & CUPS_PRINTER_SCANNER))
-        continue;
-    }
-
     PrinterBasicInfo printer_info;
-    printer_info.printer_name = printer.name;
-    printer_info.is_default = printer.is_default;
-
-    const char* info = cupsGetOption(kCUPSPrinterInfoOpt,
-        printer.num_options, printer.options);
-    if (info)
-      printer_info.printer_description = info;
-
-    const char* state = cupsGetOption(kCUPSPrinterStateOpt,
-        printer.num_options, printer.options);
-    if (state)
-      base::StringToInt(state, &printer_info.printer_status);
-
-    const char* drv_info = cupsGetOption(kCUPSPrinterMakeModelOpt,
-                                         printer.num_options,
-                                         printer.options);
-    if (drv_info)
-      printer_info.options[kDriverInfoTagName] = *drv_info;
-
-    // Store printer options.
-    for (int opt_index = 0; opt_index < printer.num_options; ++opt_index) {
-      printer_info.options[printer.options[opt_index].name] =
-          printer.options[opt_index].value;
-    }
-
-    printer_list->push_back(printer_info);
+    if (PrinterBasicInfoFromCUPS(printer, &printer_info))
+      printer_list->push_back(printer_info);
   }
 
   cupsFreeDests(num_dests, destinations);
@@ -139,6 +149,18 @@ std::string PrintBackendCUPS::GetDefaultPrinterName() {
   std::string name = dest ? std::string(dest->name) : std::string();
   cupsFreeDests(num_dests, dests);
   return name;
+}
+
+bool PrintBackendCUPS::GetPrinterBasicInfo(const std::string& printer_name,
+                                           PrinterBasicInfo* printer_info) {
+  cups_dest_t* dest = GetNamedDest(printer_name);
+  if (!dest)
+    return false;
+
+  DCHECK_EQ(printer_name, dest->name);
+  bool ret = PrinterBasicInfoFromCUPS(*dest, printer_info);
+  cupsFreeDests(1, dest);
+  return ret;
 }
 
 bool PrintBackendCUPS::GetPrinterSemanticCapsAndDefaults(

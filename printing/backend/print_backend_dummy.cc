@@ -27,6 +27,11 @@ class DummyPrintBackend : public PrintBackend {
     return std::string();
   }
 
+  bool GetPrinterBasicInfo(const std::string& printer_name,
+                           PrinterBasicInfo* printer_info) override {
+    return false;
+  }
+
   bool GetPrinterSemanticCapsAndDefaults(
       const std::string& printer_name,
       PrinterSemanticCapsAndDefaults* printer_info) override {
