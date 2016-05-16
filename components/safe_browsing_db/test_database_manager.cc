@@ -94,12 +94,6 @@ bool TestSafeBrowsingDatabaseManager::MatchDownloadWhitelistString(
   return true;
 }
 
-bool TestSafeBrowsingDatabaseManager::MatchInclusionWhitelistUrl(
-    const GURL& url) {
-  NOTIMPLEMENTED();
-  return true;
-}
-
 bool TestSafeBrowsingDatabaseManager::MatchModuleWhitelistString(
     const std::string& str) {
   NOTIMPLEMENTED();

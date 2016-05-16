@@ -83,7 +83,6 @@ int GetThreatSeverity(ListType threat) {
     case BINURL:              // Falls through.
     case CSDWHITELIST:        // Falls through.
     case DOWNLOADWHITELIST:   // Falls through.
-    case INCLUSIONWHITELIST:  // Falls through.
     case MODULEWHITELIST:     // Falls through.
     case EXTENSIONBLACKLIST:  // Falls through.
     case IPBLACKLIST:
@@ -455,14 +454,6 @@ bool LocalSafeBrowsingDatabaseManager::MatchDownloadWhitelistString(
     return true;
   }
   return database_->ContainsDownloadWhitelistedString(str);
-}
-
-bool LocalSafeBrowsingDatabaseManager::MatchInclusionWhitelistUrl(
-    const GURL& url) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (!enabled_ || !MakeDatabaseAvailable())
-    return true;
-  return database_->ContainsInclusionWhitelistedUrl(url);
 }
 
 bool LocalSafeBrowsingDatabaseManager::MatchModuleWhitelistString(

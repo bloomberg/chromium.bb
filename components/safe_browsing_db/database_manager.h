@@ -131,12 +131,6 @@ class SafeBrowsingDatabaseManager
   // method must be called on the IO thread.
   virtual bool MatchDownloadWhitelistString(const std::string& str) = 0;
 
-  // Check if the |url| matches any of the full-length hashes from the off-
-  // domain inclusion whitelist. Returns true if there was a match and false
-  // otherwise. To make sure we are conservative, we will return true if an
-  // error occurs.  This method must be called on the IO thread.
-  virtual bool MatchInclusionWhitelistUrl(const GURL& url) = 0;
-
   // Check if |str|, a lowercase DLL file name, matches any of the full-length
   // hashes from the module whitelist.  Returns true if there was a match and
   // false otherwise.  To make sure we are conservative we will return true if

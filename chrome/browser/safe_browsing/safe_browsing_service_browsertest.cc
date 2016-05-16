@@ -250,9 +250,6 @@ class TestSafeBrowsingDatabase : public SafeBrowsingDatabase {
     return true;
   }
   bool ContainsDownloadWhitelistedUrl(const GURL& url) override { return true; }
-  bool ContainsInclusionWhitelistedUrl(const GURL& url) override {
-    return true;
-  }
   bool ContainsModuleWhitelistedString(const std::string& str) override {
     return true;
   }

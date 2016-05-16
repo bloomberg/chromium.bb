@@ -57,11 +57,6 @@ class SafeBrowsingUIManager;
 class SafeBrowsingURLRequestContextGetter;
 struct V4ProtocolConfig;
 
-#if defined(FULL_SAFE_BROWSING)
-class IncidentReportingService;
-class OffDomainInclusionDetector;
-#endif
-
 // Construction needs to happen on the main thread.
 // The SafeBrowsingService owns both the UI and Database managers which do
 // the heavylifting of safebrowsing service. Both of these managers stay

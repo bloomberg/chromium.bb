@@ -2634,8 +2634,6 @@
       'browser/safe_browsing/incident_reporting/module_load_analyzer.cc',
       'browser/safe_browsing/incident_reporting/module_load_analyzer.h',
       'browser/safe_browsing/incident_reporting/module_load_analyzer_win.cc',
-      'browser/safe_browsing/incident_reporting/off_domain_inclusion_detector.cc',
-      'browser/safe_browsing/incident_reporting/off_domain_inclusion_detector.h',
       'browser/safe_browsing/incident_reporting/platform_state_store.cc',
       'browser/safe_browsing/incident_reporting/platform_state_store.h',
       'browser/safe_browsing/incident_reporting/platform_state_store_win.cc',

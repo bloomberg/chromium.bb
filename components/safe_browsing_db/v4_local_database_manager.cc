@@ -89,12 +89,6 @@ bool V4LocalDatabaseManager::MatchDownloadWhitelistString(
   return true;
 }
 
-bool V4LocalDatabaseManager::MatchInclusionWhitelistUrl(const GURL& url) {
-  // TODO(vakh): Implement this skeleton.
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  return true;
-}
-
 bool V4LocalDatabaseManager::MatchModuleWhitelistString(
     const std::string& str) {
   // TODO(vakh): Implement this skeleton.

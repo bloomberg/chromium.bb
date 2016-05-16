@@ -46791,6 +46791,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="SBOffDomainInclusion2.Abort" enum="ContentResourceType2">
+  <obsolete>
+    Deprecated 2016-05 as the OffDomainInclusionDetector was removed.
+  </obsolete>
   <owner>gab@chromium.org</owner>
   <summary>
     Logs the resource type of each resource request for which the off-domain
@@ -46800,6 +46803,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="SBOffDomainInclusion2.InHistory" enum="ContentResourceType2">
+  <obsolete>
+    Deprecated 2016-05 as the OffDomainInclusionDetector was removed.
+  </obsolete>
   <owner>gab@chromium.org</owner>
   <summary>
     Logs the resource type of each resource request for which the off-domain
@@ -46810,6 +46816,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="SBOffDomainInclusion2.RequestAnalyzed"
     enum="ContentResourceType2">
+  <obsolete>
+    Deprecated 2016-05 as the OffDomainInclusionDetector was removed.
+  </obsolete>
   <owner>gab@chromium.org</owner>
   <summary>
     Logs the resource type of each resource request analyzed by the
@@ -46818,6 +46827,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="SBOffDomainInclusion2.Suspicious" enum="ContentResourceType2">
+  <obsolete>
+    Deprecated 2016-05 as the OffDomainInclusionDetector was removed.
+  </obsolete>
   <owner>gab@chromium.org</owner>
   <summary>
     Logs the resource type of each resource request for which an off-domain
@@ -46827,6 +46839,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="SBOffDomainInclusion2.Whitelisted" enum="ContentResourceType2">
+  <obsolete>
+    Deprecated 2016-05 as the OffDomainInclusionDetector was removed.
+  </obsolete>
   <owner>gab@chromium.org</owner>
   <summary>
     Logs the resource type of each resource request for which the off-domain
@@ -93428,6 +93443,9 @@ To add a new entry, add it with any value and run test to compute valid value.
 </histogram_suffixes>
 
 <histogram_suffixes name="OffDomainInclusionAbortReason" separator=".">
+  <obsolete>
+    Deprecated 2016-05 as the OffDomainInclusionDetector was removed.
+  </obsolete>
   <suffix name="EmptyMainFrameURL" label="The main frame URL was empty."/>
   <suffix name="HistoryLookupFailed"
       label="The lookup to the HistoryService failed."/>

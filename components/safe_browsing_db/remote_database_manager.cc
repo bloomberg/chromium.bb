@@ -207,12 +207,6 @@ bool RemoteSafeBrowsingDatabaseManager::MatchDownloadWhitelistString(
   return true;
 }
 
-bool RemoteSafeBrowsingDatabaseManager::MatchInclusionWhitelistUrl(
-    const GURL& url) {
-  NOTREACHED();
-  return true;
-}
-
 bool RemoteSafeBrowsingDatabaseManager::MatchModuleWhitelistString(
     const std::string& str) {
   NOTREACHED();

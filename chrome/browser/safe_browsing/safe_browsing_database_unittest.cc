@@ -276,8 +276,6 @@ class SafeBrowsingDatabaseTest : public PlatformTest {
         new SafeBrowsingStoreFile(task_runner_);
     SafeBrowsingStoreFile* download_whitelist_store =
         new SafeBrowsingStoreFile(task_runner_);
-    SafeBrowsingStoreFile* inclusion_whitelist_store =
-        new SafeBrowsingStoreFile(task_runner_);
     SafeBrowsingStoreFile* extension_blacklist_store =
         new SafeBrowsingStoreFile(task_runner_);
     SafeBrowsingStoreFile* ip_blacklist_store =
@@ -289,10 +287,16 @@ class SafeBrowsingDatabaseTest : public PlatformTest {
     SafeBrowsingStoreFile* resource_blacklist_store =
         new SafeBrowsingStoreFile(task_runner_);
     database_.reset(new SafeBrowsingDatabaseNew(
-        task_runner_, browse_store, download_store, csd_whitelist_store,
-        download_whitelist_store, inclusion_whitelist_store,
-        extension_blacklist_store, ip_blacklist_store, unwanted_software_store,
-        module_whitelist_store, resource_blacklist_store));
+        task_runner_,
+        browse_store,
+        download_store,
+        csd_whitelist_store,
+        download_whitelist_store,
+        extension_blacklist_store,
+        ip_blacklist_store,
+        unwanted_software_store,
+        module_whitelist_store,
+        resource_blacklist_store));
     database_->Init(database_filename_);
   }
 
@@ -431,45 +435,40 @@ TEST_F(SafeBrowsingDatabaseTest, ListNames) {
   database_->InsertChunks(kBinUrlList, chunks);
 
   chunks.clear();
-  chunks.push_back(AddChunkFullHashValue(5, "www.forwhitelist.com/a.html"));
+  chunks.push_back(AddChunkFullHashValue(4, "www.forwhitelist.com/a.html"));
   database_->InsertChunks(kCsdWhiteList, chunks);
 
   chunks.clear();
-  chunks.push_back(AddChunkFullHashValue(6, "www.download.com/"));
+  chunks.push_back(AddChunkFullHashValue(5, "www.download.com/"));
   database_->InsertChunks(kDownloadWhiteList, chunks);
 
   chunks.clear();
-  chunks.push_back(AddChunkFullHashValue(7, "www.inclusion.com/"));
-  database_->InsertChunks(kInclusionWhitelist,
-                          chunks);
-
-  chunks.clear();
-  chunks.push_back(AddChunkFullHashValue(8,
+  chunks.push_back(AddChunkFullHashValue(6,
                                          "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
                                          "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"));
   database_->InsertChunks(kExtensionBlacklist,
                           chunks);
 
   chunks.clear();
-  chunks.push_back(AddChunkHashedIpValue(10, "::ffff:192.168.1.0", 120));
+  chunks.push_back(AddChunkHashedIpValue(7, "::ffff:192.168.1.0", 120));
   database_->InsertChunks(kIPBlacklist, chunks);
 
   chunks.clear();
-  chunks.push_back(AddChunkPrefixValue(11, "www.unwanted.com/software.html"));
+  chunks.push_back(AddChunkPrefixValue(8, "www.unwanted.com/software.html"));
   database_->InsertChunks(kUnwantedUrlList, chunks);
 
   chunks.clear();
-  chunks.push_back(AddChunkPrefixValue(12, "chrome.dll"));
+  chunks.push_back(AddChunkPrefixValue(9, "chrome.dll"));
   database_->InsertChunks(kModuleWhitelist, chunks);
 
   chunks.clear();
-  chunks.push_back(AddChunkPrefixValue(13, "foo.com/script.js"));
+  chunks.push_back(AddChunkPrefixValue(10, "foo.com/script.js"));
   database_->InsertChunks(kResourceBlacklist, chunks);
 
   database_->UpdateFinished(true);
 
   GetListsInfo(&lists);
-  ASSERT_EQ(11U, lists.size());
+  ASSERT_EQ(10U, lists.size());
   EXPECT_EQ(kMalwareList, lists[0].name);
   EXPECT_EQ("1", lists[0].adds);
   EXPECT_TRUE(lists[0].subs.empty());
@@ -480,29 +479,26 @@ TEST_F(SafeBrowsingDatabaseTest, ListNames) {
   EXPECT_EQ("3", lists[2].adds);
   EXPECT_TRUE(lists[2].subs.empty());
   EXPECT_EQ(kCsdWhiteList, lists[3].name);
-  EXPECT_EQ("5", lists[3].adds);
+  EXPECT_EQ("4", lists[3].adds);
   EXPECT_TRUE(lists[3].subs.empty());
   EXPECT_EQ(kDownloadWhiteList, lists[4].name);
-  EXPECT_EQ("6", lists[4].adds);
+  EXPECT_EQ("5", lists[4].adds);
   EXPECT_TRUE(lists[4].subs.empty());
-  EXPECT_EQ(kInclusionWhitelist, lists[5].name);
-  EXPECT_EQ("7", lists[5].adds);
+  EXPECT_EQ(kExtensionBlacklist, lists[5].name);
+  EXPECT_EQ("6", lists[5].adds);
   EXPECT_TRUE(lists[5].subs.empty());
-  EXPECT_EQ(kExtensionBlacklist, lists[6].name);
-  EXPECT_EQ("8", lists[6].adds);
+  EXPECT_EQ(kIPBlacklist, lists[6].name);
+  EXPECT_EQ("7", lists[6].adds);
   EXPECT_TRUE(lists[6].subs.empty());
-  EXPECT_EQ(kIPBlacklist, lists[7].name);
-  EXPECT_EQ("10", lists[7].adds);
+  EXPECT_EQ(kUnwantedUrlList, lists[7].name);
+  EXPECT_EQ("8", lists[7].adds);
   EXPECT_TRUE(lists[7].subs.empty());
-  EXPECT_EQ(kUnwantedUrlList, lists[8].name);
-  EXPECT_EQ("11", lists[8].adds);
+  EXPECT_EQ(kModuleWhitelist, lists[8].name);
+  EXPECT_EQ("9", lists[8].adds);
   EXPECT_TRUE(lists[8].subs.empty());
-  EXPECT_EQ(kModuleWhitelist, lists[9].name);
-  EXPECT_EQ("12", lists[9].adds);
+  EXPECT_EQ(kResourceBlacklist, lists[9].name);
+  EXPECT_EQ("10", lists[9].adds);
   EXPECT_TRUE(lists[9].subs.empty());
-  EXPECT_EQ(kResourceBlacklist, lists[10].name);
-  EXPECT_EQ("13", lists[10].adds);
-  EXPECT_TRUE(lists[10].subs.empty());
 
   database_.reset();
 }
@@ -567,7 +563,7 @@ TEST_F(SafeBrowsingDatabaseTest, BrowseAndUnwantedDatabasesAndPrefixSets) {
     },
     {
       kUnwantedUrlList,
-      8U,
+      7U,
       &SafeBrowsingDatabase::ContainsUnwantedSoftwareUrl,
       &SafeBrowsingDatabase::ContainsUnwantedSoftwareHashes
     },
@@ -1185,8 +1181,7 @@ TEST_F(SafeBrowsingDatabaseTest, DISABLED_FileCorruptionHandling) {
   base::MessageLoop loop;
   SafeBrowsingStoreFile* store = new SafeBrowsingStoreFile(task_runner_);
   database_.reset(new SafeBrowsingDatabaseNew(
-      task_runner_, store, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-      NULL));
+      task_runner_, store, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
   database_->Init(database_filename_);
 
   // This will cause an empty database to be created.
@@ -1397,8 +1392,6 @@ TEST_F(SafeBrowsingDatabaseTest, Whitelists) {
       {kDownloadWhiteList,
        &SafeBrowsingDatabase::ContainsDownloadWhitelistedUrl,
        &SafeBrowsingDatabase::ContainsDownloadWhitelistedString},
-      {kInclusionWhitelist,
-       &SafeBrowsingDatabase::ContainsInclusionWhitelistedUrl, nullptr},
       {kModuleWhitelist, nullptr,
        &SafeBrowsingDatabase::ContainsModuleWhitelistedString},
   };
@@ -1406,7 +1399,7 @@ TEST_F(SafeBrowsingDatabaseTest, Whitelists) {
   // If the whitelist is disabled everything should match the whitelist.
   database_.reset(new SafeBrowsingDatabaseNew(
       task_runner_, new SafeBrowsingStoreFile(task_runner_), NULL, NULL, NULL,
-      NULL, NULL, NULL, NULL, NULL, NULL));
+      NULL, NULL, NULL, NULL, NULL));
   database_->Init(database_filename_);
   for (const auto& test_case : kTestCases) {
     SCOPED_TRACE(std::string("Tested list at fault => ") +

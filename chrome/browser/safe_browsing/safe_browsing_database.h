@@ -158,9 +158,6 @@ class SafeBrowsingDatabase {
   virtual bool ContainsDownloadWhitelistedUrl(const GURL& url) = 0;
   virtual bool ContainsDownloadWhitelistedString(const std::string& str) = 0;
 
-  // Returns true if |url| is on the off-domain inclusion whitelist.
-  virtual bool ContainsInclusionWhitelistedUrl(const GURL& url) = 0;
-
   // Returns true if the given module is on the module whitelist.
   virtual bool ContainsModuleWhitelistedString(const std::string& str) = 0;
 
@@ -254,7 +251,8 @@ class SafeBrowsingDatabase {
   static base::FilePath DownloadWhitelistDBFilename(
       const base::FilePath& download_whitelist_base_filename);
 
-  // Filename for the off-domain inclusion whitelist databsae.
+  // Filename for the off-domain inclusion whitelist databsae.  This database no
+  // longer exists, but the filename is retained so the database may be deleted.
   static base::FilePath InclusionWhitelistDBFilename(
       const base::FilePath& inclusion_whitelist_base_filename);
 
@@ -355,7 +353,6 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
       SafeBrowsingStore* download_store,
       SafeBrowsingStore* csd_whitelist_store,
       SafeBrowsingStore* download_whitelist_store,
-      SafeBrowsingStore* inclusion_whitelist_store,
       SafeBrowsingStore* extension_blacklist_store,
       SafeBrowsingStore* ip_blacklist_store,
       SafeBrowsingStore* unwanted_software_store,
@@ -386,7 +383,6 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
   bool ContainsCsdWhitelistedUrl(const GURL& url) override;
   bool ContainsDownloadWhitelistedUrl(const GURL& url) override;
   bool ContainsDownloadWhitelistedString(const std::string& str) override;
-  bool ContainsInclusionWhitelistedUrl(const GURL& url) override;
   bool ContainsModuleWhitelistedString(const std::string& str) override;
   bool ContainsExtensionPrefixes(const std::vector<SBPrefix>& prefixes,
                                  std::vector<SBPrefix>* prefix_hits) override;
@@ -448,7 +444,6 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
     enum class SBWhitelistId {
       CSD,
       DOWNLOAD,
-      INCLUSION,
       MODULE,
     };
     enum class PrefixSetId {
@@ -709,8 +704,6 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
   //     bit hashes.
   //   - |download_whitelist_store_|: For the download whitelist chunks and
   //     full-length hashes.  This list only contains 256 bit hashes.
-  //   - |inclusion_whitelist_store_|: For the inclusion whitelist. Same format
-  //     as |download_whitelist_store_|.
   //   - |extension_blacklist_store_|: For extension IDs.
   //   - |ip_blacklist_store_|: For IP blacklist.
   //   - |unwanted_software_store_|: For unwanted software list (format
@@ -730,7 +723,6 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
   const std::unique_ptr<SafeBrowsingStore> download_store_;
   const std::unique_ptr<SafeBrowsingStore> csd_whitelist_store_;
   const std::unique_ptr<SafeBrowsingStore> download_whitelist_store_;
-  const std::unique_ptr<SafeBrowsingStore> inclusion_whitelist_store_;
   const std::unique_ptr<SafeBrowsingStore> extension_blacklist_store_;
   const std::unique_ptr<SafeBrowsingStore> ip_blacklist_store_;
   const std::unique_ptr<SafeBrowsingStore> unwanted_software_store_;
