@@ -418,6 +418,24 @@ TEST_F(DamageTrackerTest, VerifyDamageForPropertyChanges) {
   EXPECT_FLOAT_RECT_EQ(expected_rect, root_damage_rect);
 }
 
+TEST_F(DamageTrackerTest, VerifyDamageWhenSurfaceRemoved) {
+  LayerImpl* root = CreateAndSetUpTestTreeWithTwoSurfaces();
+  LayerImpl* surface = root->children()[0];
+  LayerImpl* child = surface->children()[0];
+  child->SetDrawsContent(true);
+  EmulateDrawingOneFrame(root);
+  ClearDamageForAllSurfaces(root);
+
+  surface->test_properties()->force_render_surface = false;
+  child->SetDrawsContent(false);
+  root->layer_tree_impl()->property_trees()->needs_rebuild = true;
+  EmulateDrawingOneFrame(root);
+  gfx::Rect root_damage_rect =
+      root->render_surface()->damage_tracker()->current_damage_rect();
+  EXPECT_EQ(gfx::Rect(290, 290, 16, 18).ToString(),
+            root_damage_rect.ToString());
+}
+
 TEST_F(DamageTrackerTest, VerifyDamageForTransformedLayer) {
   // If a layer is transformed, the damage rect should still enclose the entire
   // transformed layer.

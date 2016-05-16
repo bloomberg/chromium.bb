@@ -153,18 +153,34 @@ void DamageTracker::UpdateDamageTrackingState(
   current_damage_rect_.Union(damage_rect_for_this_update);
 }
 
-DamageTracker::RectMapData& DamageTracker::RectDataForLayer(
+DamageTracker::LayerRectMapData& DamageTracker::RectDataForLayer(
     int layer_id,
     bool* layer_is_new) {
+  LayerRectMapData data(layer_id);
 
-  RectMapData data(layer_id);
+  SortedRectMapForLayers::iterator it = std::lower_bound(
+      rect_history_for_layers_.begin(), rect_history_for_layers_.end(), data);
 
-  SortedRectMap::iterator it = std::lower_bound(rect_history_.begin(),
-    rect_history_.end(), data);
-
-  if (it == rect_history_.end() || it->layer_id_ != layer_id) {
+  if (it == rect_history_for_layers_.end() || it->layer_id_ != layer_id) {
     *layer_is_new = true;
-    it = rect_history_.insert(it, data);
+    it = rect_history_for_layers_.insert(it, data);
+  }
+
+  return *it;
+}
+
+DamageTracker::SurfaceRectMapData& DamageTracker::RectDataForSurface(
+    int surface_id,
+    bool* surface_is_new) {
+  SurfaceRectMapData data(surface_id);
+
+  SortedRectMapForSurfaces::iterator it =
+      std::lower_bound(rect_history_for_surfaces_.begin(),
+                       rect_history_for_surfaces_.end(), data);
+
+  if (it == rect_history_for_surfaces_.end() || it->surface_id_ != surface_id) {
+    *surface_is_new = true;
+    it = rect_history_for_surfaces_.insert(it, data);
   }
 
   return *it;
@@ -222,8 +238,12 @@ gfx::Rect DamageTracker::TrackDamageFromLeftoverRects() {
   // So, these regions are now exposed on the target surface.
 
   gfx::Rect damage_rect;
-  SortedRectMap::iterator cur_pos = rect_history_.begin();
-  SortedRectMap::iterator copy_pos = cur_pos;
+  SortedRectMapForLayers::iterator layer_cur_pos =
+      rect_history_for_layers_.begin();
+  SortedRectMapForLayers::iterator layer_copy_pos = layer_cur_pos;
+  SortedRectMapForSurfaces::iterator surface_cur_pos =
+      rect_history_for_surfaces_.begin();
+  SortedRectMapForSurfaces::iterator surface_copy_pos = surface_cur_pos;
 
   // Loop below basically implements std::remove_if loop with and extra
   // processing (adding deleted rect to damage_rect) for deleted items.
@@ -233,25 +253,47 @@ gfx::Rect DamageTracker::TrackDamageFromLeftoverRects() {
   // moved to the next position.
   // If there are no deleted elements then copy_pos iterator is in sync with
   // cur_pos and no copy happens.
-  while (cur_pos < rect_history_.end()) {
-    if (cur_pos->mailboxId_ == mailboxId_) {
-      if (cur_pos != copy_pos)
-        *copy_pos = *cur_pos;
+  while (layer_cur_pos < rect_history_for_layers_.end()) {
+    if (layer_cur_pos->mailboxId_ == mailboxId_) {
+      if (layer_cur_pos != layer_copy_pos)
+        *layer_copy_pos = *layer_cur_pos;
 
-      ++copy_pos;
+      ++layer_copy_pos;
     } else {
-      damage_rect.Union(cur_pos->rect_);
+      damage_rect.Union(layer_cur_pos->rect_);
     }
 
-    ++cur_pos;
+    ++layer_cur_pos;
   }
 
-  if (copy_pos != rect_history_.end())
-    rect_history_.erase(copy_pos, rect_history_.end());
+  while (surface_cur_pos < rect_history_for_surfaces_.end()) {
+    if (surface_cur_pos->mailboxId_ == mailboxId_) {
+      if (surface_cur_pos != surface_copy_pos)
+        *surface_copy_pos = *surface_cur_pos;
+
+      ++surface_copy_pos;
+    } else {
+      damage_rect.Union(surface_cur_pos->rect_);
+    }
+
+    ++surface_cur_pos;
+  }
+
+  if (layer_copy_pos != rect_history_for_layers_.end())
+    rect_history_for_layers_.erase(layer_copy_pos,
+                                   rect_history_for_layers_.end());
+  if (surface_copy_pos != rect_history_for_surfaces_.end())
+    rect_history_for_surfaces_.erase(surface_copy_pos,
+                                     rect_history_for_surfaces_.end());
 
   // If the vector has excessive storage, shrink it
-  if (rect_history_.capacity() > rect_history_.size() * 4)
-    SortedRectMap(rect_history_).swap(rect_history_);
+  if (rect_history_for_layers_.capacity() > rect_history_for_layers_.size() * 4)
+    SortedRectMapForLayers(rect_history_for_layers_)
+        .swap(rect_history_for_layers_);
+  if (rect_history_for_surfaces_.capacity() >
+      rect_history_for_surfaces_.size() * 4)
+    SortedRectMapForSurfaces(rect_history_for_surfaces_)
+        .swap(rect_history_for_surfaces_);
 
   return damage_rect;
 }
@@ -277,7 +319,7 @@ void DamageTracker::ExtendDamageForLayer(LayerImpl* layer,
   // ancestor surface, ExtendDamageForRenderSurface() must be called instead.
 
   bool layer_is_new = false;
-  RectMapData& data = RectDataForLayer(layer->id(), &layer_is_new);
+  LayerRectMapData& data = RectDataForLayer(layer->id(), &layer_is_new);
   gfx::Rect old_rect_in_target_space = data.rect_;
 
   gfx::Rect rect_in_target_space = layer->GetEnclosingRectInTargetSpace();
@@ -327,7 +369,7 @@ void DamageTracker::ExtendDamageForRenderSurface(
   RenderSurfaceImpl* render_surface = layer->render_surface();
 
   bool surface_is_new = false;
-  RectMapData& data = RectDataForLayer(layer->id(), &surface_is_new);
+  SurfaceRectMapData& data = RectDataForSurface(layer->id(), &surface_is_new);
   gfx::Rect old_surface_rect = data.rect_;
 
   // The drawableContextRect() already includes the replica if it exists.
@@ -369,7 +411,7 @@ void DamageTracker::ExtendDamageForRenderSurface(
     LayerImpl* replica_mask_layer = layer->replica_layer()->mask_layer();
 
     bool replica_is_new = false;
-    RectMapData& data =
+    LayerRectMapData& data =
         RectDataForLayer(replica_mask_layer->id(), &replica_is_new);
 
     const gfx::Transform& replica_draw_transform =

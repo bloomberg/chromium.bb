@@ -1217,7 +1217,7 @@ class TextureLayerChangeInvisibleMailboxTest
         // So the old mailbox isn't returned yet.
         EXPECT_EQ(0, mailbox_returned_);
         // Make layer visible again.
-        parent_layer_->SetOpacity(1.f);
+        parent_layer_->SetOpacity(0.9f);
         break;
       case 4:
         // Layer should have been updated.
