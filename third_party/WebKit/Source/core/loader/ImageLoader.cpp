@@ -80,7 +80,7 @@ static ImageLoader::BypassMainWorldBehavior shouldBypassMainWorldCSP(ImageLoader
     return ImageLoader::DoNotBypassMainWorldCSP;
 }
 
-class ImageLoader::Task : public WebTaskRunner::Task {
+class ImageLoader::Task {
 public:
     static std::unique_ptr<Task> create(ImageLoader* loader, UpdateFromElementBehavior updateBehavior, ReferrerPolicy referrerPolicy)
     {
@@ -108,11 +108,7 @@ public:
         }
     }
 
-    ~Task() override
-    {
-    }
-
-    void run() override
+    void run()
     {
         if (!m_loader)
             return;
@@ -250,7 +246,7 @@ inline void ImageLoader::enqueueImageLoadingMicroTask(UpdateFromElementBehavior 
 {
     std::unique_ptr<Task> task = Task::create(this, updateBehavior, referrerPolicy);
     m_pendingTask = task->createWeakPtr();
-    Microtask::enqueueMicrotask(std::move(task));
+    Microtask::enqueueMicrotask(WTF::bind(&Task::run, passed(std::move(task))));
     m_loadDelayCounter = IncrementLoadEventDelayCount::create(m_element->document());
 }
 
