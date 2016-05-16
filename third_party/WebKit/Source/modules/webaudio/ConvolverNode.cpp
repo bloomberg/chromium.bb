@@ -132,7 +132,7 @@ void ConvolverHandler::setBuffer(AudioBuffer* buffer, ExceptionState& exceptionS
     {
         // Synchronize with process().
         MutexLocker locker(m_processLock);
-        m_reverb = reverb.release();
+        m_reverb = std::move(reverb);
         m_buffer = buffer;
     }
 }

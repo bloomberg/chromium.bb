@@ -71,7 +71,7 @@ public:
         OwnPtr<protocol::Database::Error> errorObject = protocol::Database::Error::create()
             .setMessage(error->message())
             .setCode(error->code()).build();
-        m_callback->sendSuccess(Maybe<protocol::Array<String>>(), Maybe<protocol::Array<protocol::Value>>(), errorObject.release());
+        m_callback->sendSuccess(Maybe<protocol::Array<String>>(), Maybe<protocol::Array<protocol::Value>>(), std::move(errorObject));
     }
 
 private:
@@ -112,7 +112,7 @@ public:
             case SQLValue::NullValue: values->addItem(protocol::Value::null()); break;
             }
         }
-        m_requestCallback->get()->sendSuccess(columnNames.release(), values.release(), Maybe<protocol::Database::Error>());
+        m_requestCallback->get()->sendSuccess(std::move(columnNames), std::move(values), Maybe<protocol::Database::Error>());
         return true;
     }
 
@@ -320,7 +320,7 @@ void InspectorDatabaseAgent::executeSQL(ErrorString*, const String& databaseId, 
         return;
     }
 
-    RefPtr<ExecuteSQLCallbackWrapper> wrapper = ExecuteSQLCallbackWrapper::create(requestCallback.release());
+    RefPtr<ExecuteSQLCallbackWrapper> wrapper = ExecuteSQLCallbackWrapper::create(std::move(requestCallback));
     SQLTransactionCallback* callback = TransactionCallback::create(query, wrapper);
     SQLTransactionErrorCallback* errorCallback = TransactionErrorCallback::create(wrapper);
     VoidCallback* successCallback = TransactionSuccessCallback::create();

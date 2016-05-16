@@ -646,7 +646,7 @@ void DOMWebSocket::didReceiveBinaryMessage(PassOwnPtr<Vector<char>> binaryData)
         binaryData->swap(*rawData->mutableData());
         OwnPtr<BlobData> blobData = BlobData::create();
         blobData->appendData(rawData.release(), 0, BlobDataItem::toEndOfFile);
-        Blob* blob = Blob::create(BlobDataHandle::create(blobData.release(), size));
+        Blob* blob = Blob::create(BlobDataHandle::create(std::move(blobData), size));
         recordReceiveTypeHistogram(WebSocketReceiveTypeBlob);
         m_eventQueue->dispatch(MessageEvent::create(blob, SecurityOrigin::create(m_url)->toString()));
         break;

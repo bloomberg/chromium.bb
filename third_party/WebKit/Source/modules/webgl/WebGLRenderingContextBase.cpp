@@ -543,7 +543,7 @@ public:
     Platform::GraphicsInfo glInfo() { return m_glInfo; }
     ScriptState* scriptState() { return m_scriptState; }
     void setContextProvider(PassOwnPtr<WebGraphicsContext3DProvider> provider) { m_provider = std::move(provider); }
-    PassOwnPtr<WebGraphicsContext3DProvider> releaseContextProvider() { return m_provider.release(); }
+    PassOwnPtr<WebGraphicsContext3DProvider> releaseContextProvider() { return std::move(m_provider); }
 private:
     Platform::ContextAttributes m_contextAttributes;
     Platform::GraphicsInfo m_glInfo;
@@ -557,7 +557,7 @@ void WebGLRenderingContextBase::createContextProviderOnMainThread(ContextProvide
     Platform::GraphicsInfo glInfo = creationInfo->glInfo();
     OwnPtr<WebGraphicsContext3DProvider> provider = adoptPtr(Platform::current()->createOffscreenGraphicsContext3DProvider(
         creationInfo->contextAttributes(), creationInfo->scriptState()->getExecutionContext()->url(), 0, &glInfo, Platform::DoNotBindToCurrentThread));
-    creationInfo->setContextProvider(provider.release());
+    creationInfo->setContextProvider(std::move(provider));
     waitableEvent->signal();
 }
 
@@ -601,7 +601,7 @@ PassOwnPtr<WebGraphicsContext3DProvider> WebGLRenderingContextBase::createContex
             canvas->dispatchEvent(WebGLContextEvent::create(EventTypeNames::webglcontextcreationerror, false, true, "OES_packed_depth_stencil support is required."));
         return nullptr;
     }
-    return contextProvider.release();
+    return contextProvider;
 }
 
 PassOwnPtr<WebGraphicsContext3DProvider> WebGLRenderingContextBase::createWebGraphicsContext3DProvider(HTMLCanvasElement* canvas, WebGLContextAttributes attributes, unsigned webGLVersion)
@@ -4265,7 +4265,7 @@ void WebGLRenderingContextBase::texImage2D(GLenum target, GLint level, GLint int
         // Try using an accelerated image buffer, this allows YUV conversion to be done on the GPU.
         OwnPtr<ImageBufferSurface> surface = adoptPtr(new AcceleratedImageBufferSurface(IntSize(video->videoWidth(), video->videoHeight())));
         if (surface->isValid()) {
-            OwnPtr<ImageBuffer> imageBuffer(ImageBuffer::create(surface.release()));
+            OwnPtr<ImageBuffer> imageBuffer(ImageBuffer::create(std::move(surface)));
             if (imageBuffer) {
                 // The video element paints an RGBA frame into our surface here. By using an AcceleratedImageBufferSurface,
                 // we enable the WebMediaPlayer implementation to do any necessary color space conversion on the GPU (though it
@@ -6055,7 +6055,7 @@ void WebGLRenderingContextBase::maybeRestoreContext(Timer<WebGLRenderingContextB
     RefPtr<DrawingBuffer> buffer;
     if (contextProvider) {
         // Construct a new drawing buffer with the new GL context.
-        buffer = createDrawingBuffer(contextProvider.release());
+        buffer = createDrawingBuffer(std::move(contextProvider));
         // If DrawingBuffer::create() fails to allocate a fbo, |drawingBuffer| is set to null.
     }
     if (!buffer) {
@@ -6114,7 +6114,7 @@ ImageBuffer* WebGLRenderingContextBase::LRUImageBufferCache::imageBuffer(const I
     if (!temp)
         return nullptr;
     i = std::min(m_capacity - 1, i);
-    m_buffers[i] = temp.release();
+    m_buffers[i] = std::move(temp);
 
     ImageBuffer* buf = m_buffers[i].get();
     bubbleToFront(i);

@@ -18,7 +18,7 @@ PassOwnPtr<TracedValue> InspectorWebSocketCreateEvent::data(Document* document, 
     if (!protocol.isNull())
         value->setString("webSocketProtocol", protocol);
     setCallStack(value.get());
-    return value.release();
+    return value;
 }
 
 PassOwnPtr<TracedValue> InspectorWebSocketEvent::data(Document* document, unsigned long identifier)
@@ -27,7 +27,7 @@ PassOwnPtr<TracedValue> InspectorWebSocketEvent::data(Document* document, unsign
     value->setInteger("identifier", identifier);
     value->setString("frame", toHexString(document->frame()));
     setCallStack(value.get());
-    return value.release();
+    return value;
 }
 
 } // namespace blink

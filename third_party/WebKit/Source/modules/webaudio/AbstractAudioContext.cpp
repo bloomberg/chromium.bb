@@ -309,7 +309,7 @@ MediaStreamAudioSourceNode* AbstractAudioContext::createMediaStreamSource(MediaS
     // Use the first audio track in the media stream.
     MediaStreamTrack* audioTrack = audioTracks[0];
     OwnPtr<AudioSourceProvider> provider = audioTrack->createWebAudioSource();
-    MediaStreamAudioSourceNode* node = MediaStreamAudioSourceNode::create(*this, *mediaStream, audioTrack, provider.release());
+    MediaStreamAudioSourceNode* node = MediaStreamAudioSourceNode::create(*this, *mediaStream, audioTrack, std::move(provider));
 
     // FIXME: Only stereo streams are supported right now. We should be able to accept multi-channel streams.
     node->setFormat(2, sampleRate());

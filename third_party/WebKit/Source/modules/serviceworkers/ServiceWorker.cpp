@@ -70,7 +70,7 @@ void ServiceWorker::postMessage(ExecutionContext* context, PassRefPtr<Serialized
         context->addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, "ServiceWorker cannot send an ArrayBuffer as a transferable object yet. See http://crbug.com/511119"));
 
     WebString messageString = message->toWireString();
-    OwnPtr<WebMessagePortChannelArray> webChannels = MessagePort::toWebMessagePortChannelArray(channels.release());
+    OwnPtr<WebMessagePortChannelArray> webChannels = MessagePort::toWebMessagePortChannelArray(std::move(channels));
     m_handle->serviceWorker()->postMessage(client->provider(), messageString, WebSecurityOrigin(getExecutionContext()->getSecurityOrigin()), webChannels.leakPtr());
 }
 

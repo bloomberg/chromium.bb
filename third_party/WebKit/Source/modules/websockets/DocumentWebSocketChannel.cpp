@@ -508,7 +508,7 @@ void DocumentWebSocketChannel::didReceiveData(WebSocketHandle* handle, bool fin,
     } else {
         OwnPtr<Vector<char>> binaryData = adoptPtr(new Vector<char>);
         binaryData->swap(m_receivingMessageData);
-        m_client->didReceiveBinaryMessage(binaryData.release());
+        m_client->didReceiveBinaryMessage(std::move(binaryData));
     }
 }
 

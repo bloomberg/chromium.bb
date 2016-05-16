@@ -266,7 +266,7 @@ bool Database::openAndVerifyVersion(bool setVersionInNewDatabase, DatabaseError&
     DatabaseTracker::tracker().prepareToOpenDatabase(this);
     bool success = false;
     OwnPtr<DatabaseOpenTask> task = DatabaseOpenTask::create(this, setVersionInNewDatabase, &synchronizer, error, errorMessage, success);
-    getDatabaseContext()->databaseThread()->scheduleTask(task.release());
+    getDatabaseContext()->databaseThread()->scheduleTask(std::move(task));
     synchronizer.waitForTaskCompletion();
 
     return success;
@@ -334,7 +334,7 @@ void Database::scheduleTransaction()
         OwnPtr<DatabaseTransactionTask> task = DatabaseTransactionTask::create(transaction);
         WTF_LOG(StorageAPI, "Scheduling DatabaseTransactionTask %p for transaction %p\n", task.get(), task->transaction());
         m_transactionInProgress = true;
-        getDatabaseContext()->databaseThread()->scheduleTask(task.release());
+        getDatabaseContext()->databaseThread()->scheduleTask(std::move(task));
     } else {
         m_transactionInProgress = false;
     }
@@ -347,7 +347,7 @@ void Database::scheduleTransactionStep(SQLTransactionBackend* transaction)
 
     OwnPtr<DatabaseTransactionTask> task = DatabaseTransactionTask::create(transaction);
     WTF_LOG(StorageAPI, "Scheduling DatabaseTransactionTask %p for the transaction step\n", task.get());
-    getDatabaseContext()->databaseThread()->scheduleTask(task.release());
+    getDatabaseContext()->databaseThread()->scheduleTask(std::move(task));
 }
 
 SQLTransactionClient* Database::transactionClient() const
@@ -836,7 +836,7 @@ void Database::runTransaction(
         ASSERT(callback == originalErrorCallback);
         if (callback) {
             OwnPtr<SQLErrorData> error = SQLErrorData::create(SQLError::UNKNOWN_ERR, "database has been closed");
-            getExecutionContext()->postTask(BLINK_FROM_HERE, createSameThreadTask(&callTransactionErrorCallback, callback, passed(error.release())));
+            getExecutionContext()->postTask(BLINK_FROM_HERE, createSameThreadTask(&callTransactionErrorCallback, callback, passed(std::move(error))));
         }
     }
 }
@@ -888,7 +888,7 @@ Vector<String> Database::tableNames()
         return result;
 
     OwnPtr<DatabaseTableNamesTask> task = DatabaseTableNamesTask::create(this, &synchronizer, result);
-    getDatabaseContext()->databaseThread()->scheduleTask(task.release());
+    getDatabaseContext()->databaseThread()->scheduleTask(std::move(task));
     synchronizer.waitForTaskCompletion();
 
     return result;

@@ -127,9 +127,9 @@ void InspectorDOMStorageAgent::getDOMStorageItems(ErrorString* errorString, Pass
         OwnPtr<protocol::Array<String>> entry = protocol::Array<String>::create();
         entry->addItem(name);
         entry->addItem(value);
-        storageItems->addItem(entry.release());
+        storageItems->addItem(std::move(entry));
     }
-    *items = storageItems.release();
+    *items = std::move(storageItems);
 }
 
 static String toErrorString(ExceptionState& exceptionState)
@@ -182,13 +182,13 @@ void InspectorDOMStorageAgent::didDispatchDOMStorageEvent(const String& key, con
     OwnPtr<protocol::DOMStorage::StorageId> id = storageId(securityOrigin, storageType == LocalStorage);
 
     if (key.isNull())
-        frontend()->domStorageItemsCleared(id.release());
+        frontend()->domStorageItemsCleared(std::move(id));
     else if (newValue.isNull())
-        frontend()->domStorageItemRemoved(id.release(), key);
+        frontend()->domStorageItemRemoved(std::move(id), key);
     else if (oldValue.isNull())
-        frontend()->domStorageItemAdded(id.release(), key, newValue);
+        frontend()->domStorageItemAdded(std::move(id), key, newValue);
     else
-        frontend()->domStorageItemUpdated(id.release(), key, oldValue, newValue);
+        frontend()->domStorageItemUpdated(std::move(id), key, oldValue, newValue);
 }
 
 StorageArea* InspectorDOMStorageAgent::findStorageArea(ErrorString* errorString, PassOwnPtr<protocol::DOMStorage::StorageId> storageId, LocalFrame*& targetFrame)

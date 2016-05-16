@@ -89,7 +89,7 @@ CanvasRenderingContext* WebGLRenderingContext::Factory::create(ScriptState* scri
     if (!shouldCreateContext(contextProvider.get()))
         return nullptr;
 
-    WebGLRenderingContext* renderingContext = new WebGLRenderingContext(offscreenCanvas, contextProvider.release(), attributes);
+    WebGLRenderingContext* renderingContext = new WebGLRenderingContext(offscreenCanvas, std::move(contextProvider), attributes);
     if (!renderingContext->drawingBuffer())
         return nullptr;
     renderingContext->initializeNewContext();
@@ -105,7 +105,7 @@ CanvasRenderingContext* WebGLRenderingContext::Factory::create(HTMLCanvasElement
     if (!shouldCreateContext(contextProvider.get()))
         return nullptr;
 
-    WebGLRenderingContext* renderingContext = new WebGLRenderingContext(canvas, contextProvider.release(), attributes);
+    WebGLRenderingContext* renderingContext = new WebGLRenderingContext(canvas, std::move(contextProvider), attributes);
     if (!renderingContext->drawingBuffer()) {
         canvas->dispatchEvent(WebGLContextEvent::create(EventTypeNames::webglcontextcreationerror, false, true, "Could not create a WebGL context."));
         return nullptr;

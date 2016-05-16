@@ -76,7 +76,7 @@ public:
             m_resolver->resolve();
             return;
         }
-        m_resolver->resolve(ServiceWorkerClient::take(m_resolver, client.release()));
+        m_resolver->resolve(ServiceWorkerClient::take(m_resolver, std::move(client)));
     }
 
     void onError(const WebServiceWorkerError& error) override

@@ -408,7 +408,7 @@ void Bridge::send(const CString& message)
     if (message.length())
         memcpy(data->data(), static_cast<const char*>(message.data()), message.length());
 
-    m_loaderProxy->postTaskToLoader(createCrossThreadTask(&Peer::sendTextAsCharVector, AllowCrossThreadAccess(m_peer.get()), passed(data.release())));
+    m_loaderProxy->postTaskToLoader(createCrossThreadTask(&Peer::sendTextAsCharVector, AllowCrossThreadAccess(m_peer.get()), passed(std::move(data))));
 }
 
 void Bridge::send(const DOMArrayBuffer& binaryData, unsigned byteOffset, unsigned byteLength)
@@ -419,7 +419,7 @@ void Bridge::send(const DOMArrayBuffer& binaryData, unsigned byteOffset, unsigne
     if (binaryData.byteLength())
         memcpy(data->data(), static_cast<const char*>(binaryData.data()) + byteOffset, byteLength);
 
-    m_loaderProxy->postTaskToLoader(createCrossThreadTask(&Peer::sendBinaryAsCharVector, AllowCrossThreadAccess(m_peer.get()), passed(data.release())));
+    m_loaderProxy->postTaskToLoader(createCrossThreadTask(&Peer::sendBinaryAsCharVector, AllowCrossThreadAccess(m_peer.get()), passed(std::move(data))));
 }
 
 void Bridge::send(PassRefPtr<BlobDataHandle> data)

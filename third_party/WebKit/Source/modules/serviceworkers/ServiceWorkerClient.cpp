@@ -78,8 +78,8 @@ void ServiceWorkerClient::postMessage(ExecutionContext* context, PassRefPtr<Seri
         context->addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, "ServiceWorkerClient cannot send an ArrayBuffer as a transferable object yet. See http://crbug.com/511119"));
 
     WebString messageString = message->toWireString();
-    OwnPtr<WebMessagePortChannelArray> webChannels = MessagePort::toWebMessagePortChannelArray(channels.release());
-    ServiceWorkerGlobalScopeClient::from(context)->postMessageToClient(m_uuid, messageString, webChannels.release());
+    OwnPtr<WebMessagePortChannelArray> webChannels = MessagePort::toWebMessagePortChannelArray(std::move(channels));
+    ServiceWorkerGlobalScopeClient::from(context)->postMessageToClient(m_uuid, messageString, std::move(webChannels));
 }
 
 } // namespace blink

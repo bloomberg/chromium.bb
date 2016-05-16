@@ -69,7 +69,7 @@ ServiceWorkerGlobalScope* ServiceWorkerGlobalScope::create(ServiceWorkerThread* 
 {
     // Note: startupData is finalized on return. After the relevant parts has been
     // passed along to the created 'context'.
-    ServiceWorkerGlobalScope* context = new ServiceWorkerGlobalScope(startupData->m_scriptURL, startupData->m_userAgent, thread, monotonicallyIncreasingTime(), startupData->m_starterOriginPrivilegeData.release(), startupData->m_workerClients.release());
+    ServiceWorkerGlobalScope* context = new ServiceWorkerGlobalScope(startupData->m_scriptURL, startupData->m_userAgent, thread, monotonicallyIncreasingTime(), std::move(startupData->m_starterOriginPrivilegeData), startupData->m_workerClients.release());
 
     context->setV8CacheOptions(startupData->m_v8CacheOptions);
     context->applyContentSecurityPolicyFromVector(*startupData->m_contentSecurityPolicyHeaders);

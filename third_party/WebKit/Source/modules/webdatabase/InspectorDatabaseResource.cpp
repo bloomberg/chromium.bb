@@ -62,7 +62,7 @@ void InspectorDatabaseResource::bind(protocol::Frontend::Database* frontend)
         .setDomain(m_domain)
         .setName(m_name)
         .setVersion(m_version).build();
-    frontend->addDatabase(jsonObject.release());
+    frontend->addDatabase(std::move(jsonObject));
 }
 
 } // namespace blink

@@ -50,7 +50,7 @@ CanvasRenderingContext* WebGL2RenderingContext::Factory::create(HTMLCanvasElemen
         gl->PushGroupMarkerEXT(0, contextLabel.ascii().data());
     }
 
-    WebGL2RenderingContext* renderingContext = new WebGL2RenderingContext(canvas, contextProvider.release(), attributes);
+    WebGL2RenderingContext* renderingContext = new WebGL2RenderingContext(canvas, std::move(contextProvider), attributes);
 
     if (!renderingContext->drawingBuffer()) {
         canvas->dispatchEvent(WebGLContextEvent::create(EventTypeNames::webglcontextcreationerror, false, true, "Could not create a WebGL2 context."));

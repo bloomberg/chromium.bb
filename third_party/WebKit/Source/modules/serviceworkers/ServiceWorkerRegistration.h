@@ -94,7 +94,7 @@ public:
     {
         HeapVector<Member<ServiceWorkerRegistration>> registrations;
         for (auto& registration : *webServiceWorkerRegistrations)
-            registrations.append(ServiceWorkerRegistration::getOrCreate(resolver->getExecutionContext(), registration.release()));
+            registrations.append(ServiceWorkerRegistration::getOrCreate(resolver->getExecutionContext(), std::move(registration)));
         return registrations;
     }
 };
