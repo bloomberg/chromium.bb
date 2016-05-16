@@ -3270,12 +3270,7 @@ bool HTMLMediaElement::hasClosedCaptions() const
 {
     if (m_textTracks) {
         for (unsigned i = 0; i < m_textTracks->length(); ++i) {
-            TextTrack* track = m_textTracks->anonymousIndexedGetter(i);
-            if (track->getReadinessState() == TextTrack::FailedToLoad)
-                continue;
-
-            if (track->kind() == TextTrack::captionsKeyword()
-                || track->kind() == TextTrack::subtitlesKeyword())
+            if (m_textTracks->anonymousIndexedGetter(i)->canBeRendered())
                 return true;
         }
     }
@@ -3385,9 +3380,7 @@ void HTMLMediaElement::markCaptionAndSubtitleTracksAsUnconfigured()
     // the user has turned captions on).
     for (unsigned i = 0; i < m_textTracks->length(); ++i) {
         TextTrack* textTrack = m_textTracks->anonymousIndexedGetter(i);
-        String kind = textTrack->kind();
-
-        if (kind == TextTrack::subtitlesKeyword() || kind == TextTrack::captionsKeyword())
+        if (textTrack->isVisualKind())
             textTrack->setHasBeenConfigured(false);
     }
 }

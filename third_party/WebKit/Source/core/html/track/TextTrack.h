@@ -59,6 +59,7 @@ public:
     TextTrackList* trackList() { return m_trackList; }
 
     void setKind(const AtomicString&) override;
+    bool isVisualKind() const;
 
     static const AtomicString& subtitlesKeyword();
     static const AtomicString& captionsKeyword();

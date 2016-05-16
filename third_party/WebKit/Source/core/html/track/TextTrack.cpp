@@ -137,6 +137,11 @@ void TextTrack::setTrackList(TextTrackList* trackList)
     invalidateTrackIndex();
 }
 
+bool TextTrack::isVisualKind() const
+{
+    return kind() == subtitlesKeyword() || kind() == captionsKeyword();
+}
+
 void TextTrack::setKind(const AtomicString& newKind)
 {
     AtomicString oldKind = kind();
@@ -144,10 +149,8 @@ void TextTrack::setKind(const AtomicString& newKind)
 
     // If kind changes from visual to non-visual and mode is 'showing', then force mode to 'hidden'.
     // FIXME: This is not per spec. crbug.com/460923
-    if (oldKind != kind() && mode() == showingKeyword()) {
-        if (kind() != captionsKeyword() && kind() != subtitlesKeyword())
-            setMode(hiddenKeyword());
-    }
+    if (oldKind != kind() && mode() == showingKeyword() && !isVisualKind())
+        setMode(hiddenKeyword());
 }
 
 void TextTrack::setMode(const AtomicString& mode)
@@ -415,25 +418,13 @@ void TextTrack::invalidateTrackIndex()
 
 bool TextTrack::isRendered() const
 {
-    if (kind() != captionsKeyword() && kind() != subtitlesKeyword())
-        return false;
-
-    if (m_mode != showingKeyword())
-        return false;
-
-    return true;
+    return m_mode == showingKeyword() && isVisualKind();
 }
 
 bool TextTrack::canBeRendered() const
 {
     // A track can be displayed when it's of kind captions or subtitles and hasn't failed to load.
-    if (kind() != captionsKeyword() && kind() != subtitlesKeyword())
-        return false;
-
-    if (getReadinessState() == FailedToLoad)
-        return false;
-
-    return true;
+    return getReadinessState() != FailedToLoad && isVisualKind();
 }
 
 TextTrackCueList* TextTrack::ensureTextTrackCueList()

@@ -50,7 +50,7 @@ static int textTrackLanguageSelectionScore(const TextTrack& track)
 
 static int textTrackSelectionScore(const TextTrack& track)
 {
-    if (track.kind() != TextTrack::captionsKeyword() && track.kind() != TextTrack::subtitlesKeyword())
+    if (!track.isVisualKind())
         return 0;
 
     return textTrackLanguageSelectionScore(track);
