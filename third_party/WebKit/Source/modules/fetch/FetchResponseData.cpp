@@ -10,7 +10,6 @@
 #include "core/fetch/FetchUtils.h"
 #include "modules/fetch/BodyStreamBuffer.h"
 #include "modules/fetch/DataConsumerHandleUtil.h"
-#include "modules/fetch/DataConsumerTee.h"
 #include "modules/fetch/FetchHeaderList.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerResponse.h"
 
@@ -190,10 +189,11 @@ FetchResponseData* FetchResponseData::clone(ScriptState* scriptState)
     case DefaultType: {
         ASSERT(!m_internalResponse);
         if (m_buffer) {
-            OwnPtr<WebDataConsumerHandle> handle1, handle2;
-            DataConsumerTee::create(scriptState->getExecutionContext(), m_buffer->releaseHandle(), &handle1, &handle2);
-            m_buffer = new BodyStreamBuffer(scriptState, createFetchDataConsumerHandleFromWebHandle(std::move(handle1)));
-            newResponse->m_buffer = new BodyStreamBuffer(scriptState, createFetchDataConsumerHandleFromWebHandle(std::move(handle2)));
+            BodyStreamBuffer* new1 = nullptr;
+            BodyStreamBuffer* new2 = nullptr;
+            m_buffer->tee(&new1, &new2);
+            m_buffer = new1;
+            newResponse->m_buffer = new2;
         }
         break;
     }

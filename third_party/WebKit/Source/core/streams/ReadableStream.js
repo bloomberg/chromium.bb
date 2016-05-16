@@ -914,6 +914,7 @@
   binding.IsReadableStreamErrored = IsReadableStreamErrored;
   binding.IsReadableStreamDefaultReader = IsReadableStreamDefaultReader;
   binding.ReadableStreamDefaultReaderRead = ReadableStreamDefaultReaderRead;
+  binding.ReadableStreamTee = ReadableStreamTee;
 
   binding.ReadableStreamDefaultControllerClose = ReadableStreamDefaultControllerClose;
   binding.ReadableStreamDefaultControllerGetDesiredSize = ReadableStreamDefaultControllerGetDesiredSize;

@@ -15,6 +15,7 @@
 #include "core/dom/Document.h"
 #include "core/frame/Frame.h"
 #include "core/testing/DummyPageHolder.h"
+#include "modules/fetch/BodyStreamBuffer.h"
 #include "modules/fetch/FetchFormDataConsumerHandle.h"
 #include "modules/fetch/GlobalFetch.h"
 #include "modules/fetch/Request.h"
@@ -625,7 +626,7 @@ TEST_F(CacheStorageTest, Add)
     fetcher->setExpectedFetchUrl(&url);
 
     Request* request = newRequestFromUrl(url);
-    Response* response = Response::create(getScriptState(), FetchFormDataConsumerHandle::create(content), contentType, ResponseInit(), exceptionState());
+    Response* response = Response::create(getScriptState(), new BodyStreamBuffer(getScriptState(), FetchFormDataConsumerHandle::create(content)), contentType, ResponseInit(), exceptionState());
     fetcher->setResponse(response);
 
     WebVector<WebServiceWorkerCache::BatchOperation> expectedPutOperations(size_t(1));

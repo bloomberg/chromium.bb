@@ -119,44 +119,49 @@ Response* Response::create(ScriptState* scriptState, ScriptValue bodyValue, cons
     v8::Isolate* isolate = scriptState->isolate();
     ExecutionContext* executionContext = scriptState->getExecutionContext();
 
-    OwnPtr<FetchDataConsumerHandle> bodyHandle;
+    BodyStreamBuffer* bodyBuffer = nullptr;
     String contentType;
     if (bodyValue.isUndefined() || bodyValue.isNull()) {
         // Note: The IDL processor cannot handle this situation. See
         // https://crbug.com/335871.
     } else if (V8Blob::hasInstance(body, isolate)) {
         Blob* blob = V8Blob::toImpl(body.As<v8::Object>());
-        bodyHandle = FetchBlobDataConsumerHandle::create(executionContext, blob->blobDataHandle());
+        bodyBuffer = new BodyStreamBuffer(scriptState, FetchBlobDataConsumerHandle::create(executionContext, blob->blobDataHandle()));
         contentType = blob->type();
     } else if (V8ArrayBuffer::hasInstance(body, isolate)) {
-        bodyHandle = FetchFormDataConsumerHandle::create(V8ArrayBuffer::toImpl(body.As<v8::Object>()));
+        bodyBuffer = new BodyStreamBuffer(scriptState, FetchFormDataConsumerHandle::create(V8ArrayBuffer::toImpl(body.As<v8::Object>())));
     } else if (V8ArrayBufferView::hasInstance(body, isolate)) {
-        bodyHandle = FetchFormDataConsumerHandle::create(V8ArrayBufferView::toImpl(body.As<v8::Object>()));
+        bodyBuffer = new BodyStreamBuffer(scriptState, FetchFormDataConsumerHandle::create(V8ArrayBufferView::toImpl(body.As<v8::Object>())));
     } else if (V8FormData::hasInstance(body, isolate)) {
         RefPtr<EncodedFormData> formData = V8FormData::toImpl(body.As<v8::Object>())->encodeMultiPartFormData();
         // Here we handle formData->boundary() as a C-style string. See
         // FormDataEncoder::generateUniqueBoundaryString.
         contentType = AtomicString("multipart/form-data; boundary=") + formData->boundary().data();
-        bodyHandle = FetchFormDataConsumerHandle::create(executionContext, formData.release());
+        bodyBuffer = new BodyStreamBuffer(scriptState, FetchFormDataConsumerHandle::create(executionContext, formData.release()));
     } else if (RuntimeEnabledFeatures::responseConstructedWithReadableStreamEnabled() && ReadableStreamOperations::isReadableStream(scriptState, bodyValue)) {
-        bodyHandle = ReadableStreamDataConsumerHandle::create(scriptState, bodyValue);
-        reader = ReadableStreamOperations::getReader(scriptState, bodyValue, exceptionState);
-        if (exceptionState.hadException()) {
-            reader = ScriptValue();
-            bodyHandle = createFetchDataConsumerHandleFromWebHandle(createUnexpectedErrorDataConsumerHandle());
-            exceptionState.clearException();
+        if (RuntimeEnabledFeatures::responseBodyWithV8ExtraStreamEnabled()) {
+            bodyBuffer = new BodyStreamBuffer(scriptState, bodyValue);
         } else {
-            bodyHandle = ReadableStreamDataConsumerHandle::create(scriptState, reader);
+            OwnPtr<FetchDataConsumerHandle> bodyHandle;
+            reader = ReadableStreamOperations::getReader(scriptState, bodyValue, exceptionState);
+            if (exceptionState.hadException()) {
+                reader = ScriptValue();
+                bodyHandle = createFetchDataConsumerHandleFromWebHandle(createUnexpectedErrorDataConsumerHandle());
+                exceptionState.clearException();
+            } else {
+                bodyHandle = ReadableStreamDataConsumerHandle::create(scriptState, reader);
+            }
+            bodyBuffer = new BodyStreamBuffer(scriptState, std::move(bodyHandle));
         }
     } else {
         String string = toUSVString(isolate, body, exceptionState);
         if (exceptionState.hadException())
             return nullptr;
-        bodyHandle = FetchFormDataConsumerHandle::create(string);
+        bodyBuffer = new BodyStreamBuffer(scriptState, FetchFormDataConsumerHandle::create(string));
         contentType = "text/plain;charset=UTF-8";
     }
     // TODO(yhirano): Add the URLSearchParams case.
-    Response* response = create(scriptState, std::move(bodyHandle), contentType, ResponseInit(init, exceptionState), exceptionState);
+    Response* response = create(scriptState, bodyBuffer, contentType, ResponseInit(init, exceptionState), exceptionState);
     if (!exceptionState.hadException() && !reader.isEmpty()) {
         // Add a hidden reference so that the weak persistent in the
         // ReadableStreamDataConsumerHandle will be valid as long as the
@@ -172,7 +177,7 @@ Response* Response::create(ScriptState* scriptState, ScriptValue bodyValue, cons
     return response;
 }
 
-Response* Response::create(ScriptState* scriptState, PassOwnPtr<FetchDataConsumerHandle> bodyHandle, const String& contentType, const ResponseInit& init, ExceptionState& exceptionState)
+Response* Response::create(ScriptState* scriptState, BodyStreamBuffer* body, const String& contentType, const ResponseInit& init, ExceptionState& exceptionState)
 {
     unsigned short status = init.status;
 
@@ -219,7 +224,7 @@ Response* Response::create(ScriptState* scriptState, PassOwnPtr<FetchDataConsume
             return nullptr;
     }
     // "7. If body is given, run these substeps:"
-    if (bodyHandle) {
+    if (body) {
         // "1. If |init|'s status member is a null body status, throw a
         //     TypeError."
         // "2. Let |stream| and |Content-Type| be the result of extracting
@@ -236,7 +241,7 @@ Response* Response::create(ScriptState* scriptState, PassOwnPtr<FetchDataConsume
             exceptionState.throwTypeError("Response with null body status cannot have body");
             return nullptr;
         }
-        r->m_response->replaceBodyStreamBuffer(new BodyStreamBuffer(scriptState, std::move(bodyHandle)));
+        r->m_response->replaceBodyStreamBuffer(body);
         if (!contentType.isEmpty() && !r->m_response->headerList()->has("Content-Type"))
             r->m_response->headerList()->append("Content-Type", contentType);
     }

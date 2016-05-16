@@ -12,7 +12,6 @@
 #include "modules/credentialmanager/PasswordCredential.h"
 #include "modules/fetch/BodyStreamBuffer.h"
 #include "modules/fetch/DataConsumerHandleUtil.h"
-#include "modules/fetch/DataConsumerTee.h"
 #include "modules/fetch/FetchBlobDataConsumerHandle.h"
 #include "modules/fetch/FetchHeaderList.h"
 #include "platform/HTTPNames.h"
@@ -70,10 +69,11 @@ FetchRequestData* FetchRequestData::clone(ScriptState* scriptState)
 {
     FetchRequestData* request = FetchRequestData::cloneExceptBody();
     if (m_buffer) {
-        OwnPtr<FetchDataConsumerHandle> dest1, dest2;
-        DataConsumerTee::create(scriptState->getExecutionContext(), m_buffer->releaseHandle(), &dest1, &dest2);
-        m_buffer = new BodyStreamBuffer(scriptState, std::move(dest1));
-        request->m_buffer = new BodyStreamBuffer(scriptState, std::move(dest2));
+        BodyStreamBuffer* new1 = nullptr;
+        BodyStreamBuffer* new2 = nullptr;
+        m_buffer->tee(&new1, &new2);
+        m_buffer = new1;
+        request->m_buffer = new2;
     }
     return request;
 }

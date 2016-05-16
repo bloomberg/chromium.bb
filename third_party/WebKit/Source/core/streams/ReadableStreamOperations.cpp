@@ -116,4 +116,21 @@ ScriptPromise ReadableStreamOperations::defaultReaderRead(ScriptState* scriptSta
     return ScriptPromise::cast(scriptState, V8ScriptRunner::callExtraOrCrash(scriptState, "ReadableStreamDefaultReaderRead", args));
 }
 
+void ReadableStreamOperations::tee(ScriptState* scriptState, ScriptValue stream, ScriptValue* newStream1, ScriptValue* newStream2)
+{
+    DCHECK(isReadableStream(scriptState, stream));
+    DCHECK(!isLocked(scriptState, stream));
+
+    v8::Local<v8::Value> args[] = { stream.v8Value() };
+    ScriptValue result(scriptState, V8ScriptRunner::callExtraOrCrash(scriptState, "ReadableStreamTee", args));
+    DCHECK(result.v8Value()->IsArray());
+    v8::Local<v8::Array> branches = result.v8Value().As<v8::Array>();
+    DCHECK_EQ(2u, branches->Length());
+    *newStream1 = ScriptValue(scriptState, v8CallOrCrash(branches->Get(scriptState->context(), 0)));
+    *newStream2 = ScriptValue(scriptState, v8CallOrCrash(branches->Get(scriptState->context(), 1)));
+
+    DCHECK(isReadableStream(scriptState, *newStream1));
+    DCHECK(isReadableStream(scriptState, *newStream2));
+}
+
 } // namespace blink

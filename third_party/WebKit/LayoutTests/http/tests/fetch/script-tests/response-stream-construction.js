@@ -11,8 +11,7 @@ test(() => {
     var stream = new ReadableStream({start: c => controller = c});
 
     var response = new Response(stream);
-    // TODO(yhirano): This should be assert_equals.
-    assert_not_equals(response.body, stream);
+    assert_equals(response.body, stream);
   }, 'Response constructed with a stream');
 
 promise_test(() => {

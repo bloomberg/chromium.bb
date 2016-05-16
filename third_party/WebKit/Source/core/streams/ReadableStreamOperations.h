@@ -65,6 +65,10 @@ public:
     // ReadableStreamDefaultReaderRead
     // This function assumes |isReadableStreamDefaultReader(reader)|.
     static ScriptPromise defaultReaderRead(ScriptState*, ScriptValue reader);
+
+    // ReadableStreamTee
+    // This function assumes |isReadableStream(stream)| and |!isLocked(stream)|
+    static void tee(ScriptState*, ScriptValue stream, ScriptValue* newStream1, ScriptValue* newStream2);
 };
 
 } // namespace blink

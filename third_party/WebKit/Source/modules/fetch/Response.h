@@ -35,7 +35,7 @@ public:
     static Response* create(ScriptState*, ExceptionState&);
     static Response* create(ScriptState*, ScriptValue body, const Dictionary&, ExceptionState&);
 
-    static Response* create(ScriptState*, PassOwnPtr<FetchDataConsumerHandle> bodyHandle, const String& contentType, const ResponseInit&, ExceptionState&);
+    static Response* create(ScriptState*, BodyStreamBuffer*, const String& contentType, const ResponseInit&, ExceptionState&);
     static Response* create(ExecutionContext*, FetchResponseData*);
     static Response* create(ScriptState*, const WebServiceWorkerResponse&);
 

@@ -33,6 +33,8 @@ public:
     EAGERLY_FINALIZE();
     // |handle| cannot be null and cannot be locked.
     BodyStreamBuffer(ScriptState*, PassOwnPtr<FetchDataConsumerHandle> /* handle */);
+    // |ReadableStreamOperations::isReadableStream(stream)| must hold.
+    BodyStreamBuffer(ScriptState*, ScriptValue stream);
 
     ScriptValue stream();
 
@@ -40,13 +42,7 @@ public:
     PassRefPtr<BlobDataHandle> drainAsBlobDataHandle(FetchDataConsumerHandle::Reader::BlobSizePolicy);
     PassRefPtr<EncodedFormData> drainAsFormData();
     void startLoading(FetchDataLoader*, FetchDataLoader::Client* /* client */);
-
-    // Callable only when not locked. Returns a non-null handle.
-    // There is no means to "return" the handle to the body buffer: Calling
-    // this function locks, disturbs and closes the stream and no one will
-    // not be able to get any information from the stream and this buffer after
-    // that.
-    PassOwnPtr<FetchDataConsumerHandle> releaseHandle();
+    void tee(BodyStreamBuffer**, BodyStreamBuffer**);
 
     // UnderlyingSource
     void pullSource() override;
@@ -84,6 +80,7 @@ private:
     void processData();
     void endLoading();
     void stopLoading();
+    PassOwnPtr<FetchDataConsumerHandle> releaseHandle();
 
     RefPtr<ScriptState> m_scriptState;
     OwnPtr<FetchDataConsumerHandle> m_handle;
@@ -92,6 +89,7 @@ private:
     // We need this member to keep it alive while loading.
     Member<FetchDataLoader> m_loader;
     bool m_streamNeedsMore = false;
+    bool m_madeFromReadableStream;
 };
 
 } // namespace blink

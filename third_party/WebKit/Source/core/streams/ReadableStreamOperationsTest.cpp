@@ -401,6 +401,45 @@ TEST_F(ReadableStreamOperationsTest, IsErrored)
     EXPECT_TRUE(ReadableStreamOperations::isErrored(getScriptState(), errored));
 }
 
+TEST_F(ReadableStreamOperationsTest, Tee)
+{
+    ScriptValue original = evalWithPrintingError(
+        "var controller;"
+        "new ReadableStream({start: c => controller = c})");
+    ASSERT_FALSE(original.isEmpty());
+    ScriptValue new1, new2;
+    ReadableStreamOperations::tee(getScriptState(), original, &new1, &new2);
+
+    NonThrowableExceptionState ec;
+    ScriptValue reader1 = ReadableStreamOperations::getReader(getScriptState(), new1, ec);
+    ScriptValue reader2 = ReadableStreamOperations::getReader(getScriptState(), new2, ec);
+
+    Iteration* it1 = new Iteration();
+    Iteration* it2 = new Iteration();
+    ReadableStreamOperations::defaultReaderRead(getScriptState(), reader1).then(
+        Function::createFunction(getScriptState(), it1),
+        NotReached::createFunction(getScriptState()));
+    ReadableStreamOperations::defaultReaderRead(getScriptState(), reader2).then(
+        Function::createFunction(getScriptState(), it2),
+        NotReached::createFunction(getScriptState()));
+
+    v8::MicrotasksScope::PerformCheckpoint(isolate());
+    EXPECT_FALSE(it1->isSet());
+    EXPECT_FALSE(it2->isSet());
+
+    ASSERT_FALSE(evalWithPrintingError("controller.enqueue('hello')").isEmpty());
+    v8::MicrotasksScope::PerformCheckpoint(isolate());
+
+    EXPECT_TRUE(it1->isSet());
+    EXPECT_TRUE(it1->isValid());
+    EXPECT_FALSE(it1->isDone());
+    EXPECT_EQ("hello", it1->value());
+    EXPECT_TRUE(it2->isSet());
+    EXPECT_TRUE(it2->isValid());
+    EXPECT_FALSE(it2->isDone());
+    EXPECT_EQ("hello", it2->value());
+}
+
 } // namespace
 
 } // namespace blink
