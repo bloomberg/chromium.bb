@@ -464,6 +464,8 @@ class PredictorBrowserTest : public InProcessBrowserTest {
         switches::kEnableExperimentalWebPlatformFeatures);
     command_line->AppendSwitchASCII(
         switches::kEnableBlinkFeatures, kBlinkPreconnectFeature);
+    command_line->AppendSwitchASCII(switches::kEnableFeatures,
+                                    "PreconnectMore");
   }
 
   void SetUpOnMainThread() override {
@@ -594,10 +596,13 @@ class PredictorBrowserTest : public InProcessBrowserTest {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     observer_.reset(
         new CrossSitePredictorObserver(source_host, cross_site_host));
-    BrowserThread::PostTask(
+    base::RunLoop run_loop;
+    BrowserThread::PostTaskAndReply(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&PredictorBrowserTest::InstallPredictorObserverOnIOThread,
-                   base::Unretained(this), base::Unretained(predictor())));
+                   base::Unretained(this), base::Unretained(predictor())),
+        run_loop.QuitClosure());
+    run_loop.Run();
   }
 
   void InstallPredictorObserverOnIOThread(
