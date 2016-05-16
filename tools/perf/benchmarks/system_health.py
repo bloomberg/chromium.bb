@@ -88,4 +88,7 @@ class MobileMemorySystemHealth(_MemorySystemHealthBenchmark):
 
   @classmethod
   def ShouldDisable(cls, possible_browser):
-    return possible_browser.platform.GetDeviceTypeName() == 'Desktop'
+    # http://crbug.com/612144 (reference on Nexus 5X).
+    return possible_browser.platform.GetDeviceTypeName() == 'Desktop' or (
+        possible_browser.browser_type == 'reference' and
+        possible_browser.platform.GetDeviceTypeName() == 'Nexus 5X')
