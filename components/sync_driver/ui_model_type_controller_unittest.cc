@@ -180,6 +180,7 @@ class UIModelTypeControllerTest : public testing::Test,
         &UIModelTypeControllerTest::LoadModelsDone, base::Unretained(this)));
     if (!type_processor_->IsAllowingChanges()) {
       type_processor_->OnMetadataLoaded(
+          syncer::SyncError(),
           base::WrapUnique(new syncer_v2::MetadataBatch()));
     }
 

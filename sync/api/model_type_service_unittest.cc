@@ -8,6 +8,7 @@
 #include "base/memory/ptr_util.h"
 #include "sync/api/fake_model_type_change_processor.h"
 #include "sync/api/fake_model_type_service.h"
+#include "sync/internal_api/public/test/data_type_error_handler_mock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer_v2 {
@@ -68,8 +69,9 @@ class ModelTypeServiceTest : public ::testing::Test {
   ~ModelTypeServiceTest() override {}
 
   void OnSyncStarting() {
-    service_.OnSyncStarting(base::Bind(
-        &ModelTypeServiceTest::OnProcessorStarted, base::Unretained(this)));
+    service_.OnSyncStarting(
+        &error_handler_, base::Bind(&ModelTypeServiceTest::OnProcessorStarted,
+                                    base::Unretained(this)));
   }
 
   bool start_callback_called() const { return start_callback_called_; }
@@ -83,6 +85,7 @@ class ModelTypeServiceTest : public ::testing::Test {
   }
 
   bool start_callback_called_;
+  syncer::DataTypeErrorHandlerMock error_handler_;
   MockModelTypeService service_;
 };
 

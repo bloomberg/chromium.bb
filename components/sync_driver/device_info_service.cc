@@ -228,7 +228,8 @@ void DeviceInfoService::OnChangeProcessorSet() {
   // have created the processor ourselves because we had no metadata. So there
   // must not be any metadata on disk.
   if (has_metadata_loaded_) {
-    change_processor()->OnMetadataLoaded(base::WrapUnique(new MetadataBatch()));
+    change_processor()->OnMetadataLoaded(syncer::SyncError(),
+                                         base::WrapUnique(new MetadataBatch()));
     TryReconcileLocalAndStored();
   }
 }
@@ -430,7 +431,7 @@ void DeviceInfoService::OnReadAllMetadata(
       LOG(WARNING) << "Failed to deserialize entity metadata.";
     }
   }
-  change_processor()->OnMetadataLoaded(std::move(batch));
+  change_processor()->OnMetadataLoaded(syncer::SyncError(), std::move(batch));
   TryReconcileLocalAndStored();
 }
 

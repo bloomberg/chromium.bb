@@ -8,6 +8,28 @@ namespace syncer {
 
 DataTypeErrorHandlerMock::DataTypeErrorHandlerMock() {}
 
-DataTypeErrorHandlerMock::~DataTypeErrorHandlerMock() {}
+DataTypeErrorHandlerMock::~DataTypeErrorHandlerMock() {
+  DCHECK_EQ(SyncError::UNSET, expected_error_type_);
+}
+
+void DataTypeErrorHandlerMock::OnSingleDataTypeUnrecoverableError(
+    const SyncError& error) {
+  DCHECK_NE(SyncError::UNSET, expected_error_type_);
+  DCHECK(error.IsSet());
+  DCHECK_EQ(expected_error_type_, error.error_type());
+  expected_error_type_ = SyncError::UNSET;
+}
+
+SyncError DataTypeErrorHandlerMock::CreateAndUploadError(
+    const tracked_objects::Location& location,
+    const std::string& message,
+    ModelType type) {
+  return SyncError(location, SyncError::DATATYPE_ERROR, message, type);
+}
+
+void DataTypeErrorHandlerMock::ExpectError(SyncError::ErrorType error_type) {
+  DCHECK_EQ(SyncError::UNSET, expected_error_type_);
+  expected_error_type_ = error_type;
+}
 
 }  // namespace syncer

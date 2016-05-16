@@ -18,6 +18,10 @@
 #include "sync/base/sync_export.h"
 #include "sync/internal_api/public/activation_context.h"
 
+namespace syncer {
+class DataTypeErrorHandler;
+}  // namespace syncer
+
 namespace syncer_v2 {
 
 class DataBatch;
@@ -93,9 +97,10 @@ class SYNC_EXPORT ModelTypeService {
       const EntityData& remote_data) const;
 
   // Called by the DataTypeController to gather additional information needed
-  // before this model type can be connected to a sync worker. Once the
+  // before the processor can be connected to a sync worker. Once the
   // metadata has been loaded, the info is collected and given to |callback|.
-  void OnSyncStarting(const ModelTypeChangeProcessor::StartCallback& callback);
+  void OnSyncStarting(syncer::DataTypeErrorHandler* error_handler,
+                      const ModelTypeChangeProcessor::StartCallback& callback);
 
   // Indicates that we no longer want to do any sync-related things for this
   // data type. Severs all ties to the sync thread, deletes all local sync

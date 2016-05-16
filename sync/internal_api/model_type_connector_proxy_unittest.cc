@@ -18,6 +18,7 @@
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/model_type_connector.h"
 #include "sync/internal_api/public/shared_model_type_processor.h"
+#include "sync/internal_api/public/test/data_type_error_handler_mock.h"
 #include "sync/sessions/model_type_registry.h"
 #include "sync/test/engine/mock_nudge_handler.h"
 #include "sync/test/engine/test_directory_setter_upper.h"
@@ -52,6 +53,7 @@ class ModelTypeConnectorProxyTest : public ::testing::Test,
 
   void OnSyncStarting(SharedModelTypeProcessor* processor) {
     processor->OnSyncStarting(
+        &error_handler_,
         base::Bind(&ModelTypeConnectorProxyTest::OnReadyToConnect,
                    base::Unretained(this)));
   }
@@ -64,7 +66,8 @@ class ModelTypeConnectorProxyTest : public ::testing::Test,
   std::unique_ptr<SharedModelTypeProcessor> CreateModelTypeProcessor() {
     std::unique_ptr<SharedModelTypeProcessor> processor =
         base::WrapUnique(new SharedModelTypeProcessor(syncer::THEMES, this));
-    processor->OnMetadataLoaded(base::WrapUnique(new MetadataBatch()));
+    processor->OnMetadataLoaded(syncer::SyncError(),
+                                base::WrapUnique(new MetadataBatch()));
     return processor;
   }
 
@@ -77,6 +80,7 @@ class ModelTypeConnectorProxyTest : public ::testing::Test,
   syncer::TestDirectorySetterUpper dir_maker_;
   syncer::MockNudgeHandler nudge_handler_;
   std::unique_ptr<syncer::ModelTypeRegistry> registry_;
+  syncer::DataTypeErrorHandlerMock error_handler_;
 
   std::unique_ptr<ModelTypeConnectorProxy> connector_proxy_;
 };

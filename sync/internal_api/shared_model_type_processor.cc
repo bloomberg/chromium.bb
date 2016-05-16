@@ -82,6 +82,7 @@ SharedModelTypeProcessor::SharedModelTypeProcessor(syncer::ModelType type,
       is_metadata_loaded_(false),
       is_initial_pending_data_loaded_(false),
       service_(service),
+      error_handler_(nullptr),
       weak_ptr_factory_(this) {
   DCHECK(service);
 }
@@ -97,25 +98,36 @@ SharedModelTypeProcessor::CreateAsChangeProcessor(syncer::ModelType type,
 }
 
 void SharedModelTypeProcessor::OnSyncStarting(
+    syncer::DataTypeErrorHandler* error_handler,
     const StartCallback& start_callback) {
   DCHECK(CalledOnValidThread());
   DCHECK(start_callback_.is_null());
   DCHECK(!IsConnected());
+  DCHECK(error_handler);
   DVLOG(1) << "Sync is starting for " << ModelTypeToString(type_);
 
+  error_handler_ = error_handler;
   start_callback_ = start_callback;
   ConnectIfReady();
 }
 
 void SharedModelTypeProcessor::OnMetadataLoaded(
+    syncer::SyncError error,
     std::unique_ptr<MetadataBatch> batch) {
   DCHECK(CalledOnValidThread());
   DCHECK(entities_.empty());
   DCHECK(!is_metadata_loaded_);
   DCHECK(!IsConnected());
 
+  is_metadata_loaded_ = true;
   // Flip this flag here to cover all cases where we don't need to load data.
   is_initial_pending_data_loaded_ = true;
+
+  if (error.IsSet()) {
+    start_error_ = error;
+    ConnectIfReady();
+    return;
+  }
 
   if (batch->GetDataTypeState().initial_sync_done()) {
     EntityMetadataMap metadata_map(batch->TakeAllMetadata());
@@ -143,7 +155,6 @@ void SharedModelTypeProcessor::OnMetadataLoaded(
         GetSpecificsFieldNumberFromModelType(type_));
   }
 
-  is_metadata_loaded_ = true;
   ConnectIfReady();
 }
 
@@ -154,14 +165,17 @@ void SharedModelTypeProcessor::ConnectIfReady() {
     return;
   }
 
-  std::unique_ptr<ActivationContext> activation_context =
-      base::WrapUnique(new ActivationContext);
-  activation_context->data_type_state = data_type_state_;
-  activation_context->type_processor =
-      base::WrapUnique(new ModelTypeProcessorProxy(
-          weak_ptr_factory_.GetWeakPtr(), base::ThreadTaskRunnerHandle::Get()));
+  std::unique_ptr<ActivationContext> activation_context;
 
-  start_callback_.Run(syncer::SyncError(), std::move(activation_context));
+  if (!start_error_.IsSet()) {
+    activation_context = base::WrapUnique(new ActivationContext);
+    activation_context->data_type_state = data_type_state_;
+    activation_context->type_processor = base::WrapUnique(
+        new ModelTypeProcessorProxy(weak_ptr_factory_.GetWeakPtr(),
+                                    base::ThreadTaskRunnerHandle::Get()));
+  }
+
+  start_callback_.Run(start_error_, std::move(activation_context));
   start_callback_.Reset();
 }
 
@@ -326,8 +340,11 @@ void SharedModelTypeProcessor::OnCommitCompleted(
     }
   }
 
-  // TODO(stanisc): crbug.com/570085: Error handling.
-  service_->ApplySyncChanges(std::move(change_list), EntityChangeList());
+  syncer::SyncError error =
+      service_->ApplySyncChanges(std::move(change_list), EntityChangeList());
+  if (error.IsSet()) {
+    error_handler_->OnSingleDataTypeUnrecoverableError(error);
+  }
 }
 
 void SharedModelTypeProcessor::OnUpdateReceived(
@@ -379,11 +396,15 @@ void SharedModelTypeProcessor::OnUpdateReceived(
   }
 
   // Inform the service of the new or updated data.
-  // TODO(stanisc): crbug.com/570085: Error handling.
-  service_->ApplySyncChanges(std::move(metadata_changes), entity_changes);
+  syncer::SyncError error =
+      service_->ApplySyncChanges(std::move(metadata_changes), entity_changes);
 
-  // There may be new reasons to commit by the time this function is done.
-  FlushPendingCommitRequests();
+  if (error.IsSet()) {
+    error_handler_->OnSingleDataTypeUnrecoverableError(error);
+  } else {
+    // There may be new reasons to commit by the time this function is done.
+    FlushPendingCommitRequests();
+  }
 }
 
 ProcessorEntityTracker* SharedModelTypeProcessor::ProcessUpdate(
@@ -567,18 +588,28 @@ void SharedModelTypeProcessor::OnInitialUpdateReceived(
   }
 
   // Let the service handle associating and merging the data.
-  // TODO(stanisc): crbug.com/570085: Error handling.
-  service_->MergeSyncData(std::move(metadata_changes), data_map);
+  syncer::SyncError error =
+      service_->MergeSyncData(std::move(metadata_changes), data_map);
 
-  // We may have new reasons to commit by the time this function is done.
-  FlushPendingCommitRequests();
+  if (error.IsSet()) {
+    error_handler_->OnSingleDataTypeUnrecoverableError(error);
+  } else {
+    // We may have new reasons to commit by the time this function is done.
+    FlushPendingCommitRequests();
+  }
 }
 
 void SharedModelTypeProcessor::OnInitialPendingDataLoaded(
     syncer::SyncError error,
     std::unique_ptr<DataBatch> data_batch) {
   DCHECK(!is_initial_pending_data_loaded_);
-  ConsumeDataBatch(std::move(data_batch));
+
+  if (error.IsSet()) {
+    start_error_ = error;
+  } else {
+    ConsumeDataBatch(std::move(data_batch));
+  }
+
   is_initial_pending_data_loaded_ = true;
   ConnectIfReady();
 }
@@ -587,6 +618,12 @@ void SharedModelTypeProcessor::OnDataLoadedForReEncryption(
     syncer::SyncError error,
     std::unique_ptr<DataBatch> data_batch) {
   DCHECK(is_initial_pending_data_loaded_);
+
+  if (error.IsSet()) {
+    error_handler_->OnSingleDataTypeUnrecoverableError(error);
+    return;
+  }
+
   ConsumeDataBatch(std::move(data_batch));
   FlushPendingCommitRequests();
 }

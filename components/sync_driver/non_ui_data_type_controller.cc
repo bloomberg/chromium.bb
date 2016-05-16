@@ -270,8 +270,6 @@ void NonUIDataTypeController::DisableImpl(
                             ModelTypeToHistogramInt(type()),
                             syncer::MODEL_TYPE_COUNT);
   if (!model_load_callback_.is_null()) {
-    syncer::SyncMergeResult local_merge_result(type());
-    local_merge_result.set_error(error);
     model_load_callback_.Run(type(), error);
   }
 }

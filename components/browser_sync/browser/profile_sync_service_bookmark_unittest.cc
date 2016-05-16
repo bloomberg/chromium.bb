@@ -1058,9 +1058,6 @@ TEST_F(ProfileSyncServiceBookmarkTest,
 
 // Verifies that the bookmark association skips sync nodes with invalid URLs.
 TEST_F(ProfileSyncServiceBookmarkTest, InitialModelAssociateWithInvalidUrl) {
-  EXPECT_CALL(*mock_error_handler(), CreateAndUploadError(_, _, _))
-      .WillOnce(Return(syncer::SyncError()));
-
   LoadBookmarkModel(DELETE_EXISTING_STORAGE, DONT_SAVE_TO_STORAGE);
   // On the local side create a folder and two nodes.
   const BookmarkNode* folder = model()->AddFolder(
@@ -1458,8 +1455,6 @@ TEST_F(ProfileSyncServiceBookmarkTest, RepeatedMiddleInsertion) {
 // Introduce a consistency violation into the model, and see that it
 // puts itself into a lame, error state.
 TEST_F(ProfileSyncServiceBookmarkTest, UnrecoverableErrorSuspendsService) {
-  EXPECT_CALL(*mock_error_handler(), OnSingleDataTypeUnrecoverableError(_));
-
   LoadBookmarkModel(DELETE_EXISTING_STORAGE, DONT_SAVE_TO_STORAGE);
   StartSync();
 
@@ -1480,6 +1475,8 @@ TEST_F(ProfileSyncServiceBookmarkTest, UnrecoverableErrorSuspendsService) {
   // The models don't match at this point, but the ProfileSyncService
   // doesn't know it yet.
   ExpectSyncerNodeKnown(node);
+
+  mock_error_handler()->ExpectError(syncer::SyncError::DATATYPE_ERROR);
 
   // Add a child to the inconsistent node.  This should cause detection of the
   // problem and the syncer should stop processing changes.

@@ -20,6 +20,7 @@
 #include "sync/api/sync_error.h"
 #include "sync/base/sync_export.h"
 #include "sync/internal_api/public/base/model_type.h"
+#include "sync/internal_api/public/data_type_error_handler.h"
 #include "sync/internal_api/public/model_type_processor.h"
 #include "sync/internal_api/public/non_blocking_sync_common.h"
 #include "sync/protocol/data_type_state.pb.h"
@@ -57,8 +58,10 @@ class SYNC_EXPORT SharedModelTypeProcessor : public ModelTypeProcessor,
            MetadataChangeList* metadata_change_list) override;
   void Delete(const std::string& client_tag,
               MetadataChangeList* metadata_change_list) override;
-  void OnMetadataLoaded(std::unique_ptr<MetadataBatch> batch) override;
-  void OnSyncStarting(const StartCallback& callback) override;
+  void OnMetadataLoaded(syncer::SyncError error,
+                        std::unique_ptr<MetadataBatch> batch) override;
+  void OnSyncStarting(syncer::DataTypeErrorHandler* error_handler,
+                      const StartCallback& callback) override;
   void DisableSync() override;
 
   // ModelTypeProcessor implementation.
@@ -135,6 +138,10 @@ class SYNC_EXPORT SharedModelTypeProcessor : public ModelTypeProcessor,
   // Stores the start callback in between OnSyncStarting() and ReadyToConnect().
   StartCallback start_callback_;
 
+  // A cache for any error that may occur during startup and should be passed
+  // into the |start_callback_|.
+  syncer::SyncError start_error_;
+
   // Indicates whether the metadata has finished loading.
   bool is_metadata_loaded_;
 
@@ -155,6 +162,10 @@ class SYNC_EXPORT SharedModelTypeProcessor : public ModelTypeProcessor,
   // The service owns this processor instance so the pointer should never
   // become invalid.
   ModelTypeService* const service_;
+
+  // The object used for informing sync of errors; will be non-null after
+  // OnSyncStarting has been called. This pointer is not owned.
+  syncer::DataTypeErrorHandler* error_handler_;
 
   // WeakPtrFactory for this processor which will be sent to sync thread.
   base::WeakPtrFactory<SharedModelTypeProcessor> weak_ptr_factory_;

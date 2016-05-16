@@ -82,6 +82,7 @@ void NonBlockingDataTypeController::LoadModelsOnModelThread() {
   }
 
   model_type_service->OnSyncStarting(
+      this,
       base::Bind(&NonBlockingDataTypeController::OnProcessorStarted, this));
 }
 

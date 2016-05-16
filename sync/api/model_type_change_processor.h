@@ -13,6 +13,7 @@
 #include "sync/internal_api/public/activation_context.h"
 
 namespace syncer {
+class DataTypeErrorHandler;
 class SyncError;
 }  // namespace syncer
 
@@ -46,13 +47,17 @@ class SYNC_EXPORT ModelTypeChangeProcessor {
 
   // Accept the initial sync metadata loaded by the service. This should be
   // called as soon as the metadata is available to the service.
-  virtual void OnMetadataLoaded(std::unique_ptr<MetadataBatch> batch) = 0;
+  virtual void OnMetadataLoaded(syncer::SyncError error,
+                                std::unique_ptr<MetadataBatch> batch) = 0;
 
-  // Called by the DataTypeController to gather additional information needed
-  // before a CommitQueue object can be created for this model type. Once the
-  // metadata has been loaded, the info is collected and given to |callback|.
-  // Once called, this can only be called again if sync is disconnected.
-  virtual void OnSyncStarting(const StartCallback& callback) = 0;
+  // Indicates that sync wants to connect a sync worker to this processor. Once
+  // the processor has metadata from the service, it will pass the info needed
+  // for the worker into |callback|. |error_handler| is how the processor will
+  // inform sync of any unrecoverable errors after calling |callback|, and it is
+  // guaranteed to outlive the processor. StartCallback takes a SyncError and an
+  // ActivationContext; the context should be nullptr iff the error is set.
+  virtual void OnSyncStarting(syncer::DataTypeErrorHandler* error_handler,
+                              const StartCallback& callback) = 0;
 
   // Indicates that sync is being disabled permanently for this data type. All
   // metadata should be erased from storage.

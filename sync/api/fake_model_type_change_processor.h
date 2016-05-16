@@ -31,8 +31,10 @@ class FakeModelTypeChangeProcessor : public ModelTypeChangeProcessor {
            MetadataChangeList* metadata_change_list) override;
   void Delete(const std::string& client_tag,
               MetadataChangeList* metadata_change_list) override;
-  void OnMetadataLoaded(std::unique_ptr<MetadataBatch> batch) override;
-  void OnSyncStarting(const StartCallback& callback) override;
+  void OnMetadataLoaded(syncer::SyncError error,
+                        std::unique_ptr<MetadataBatch> batch) override;
+  void OnSyncStarting(syncer::DataTypeErrorHandler* error_handler,
+                      const StartCallback& callback) override;
   void DisableSync() override;
 };
 

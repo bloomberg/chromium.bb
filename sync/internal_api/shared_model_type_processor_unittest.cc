@@ -22,6 +22,7 @@
 #include "sync/internal_api/public/data_batch_impl.h"
 #include "sync/internal_api/public/non_blocking_sync_common.h"
 #include "sync/internal_api/public/simple_metadata_change_list.h"
+#include "sync/internal_api/public/test/data_type_error_handler_mock.h"
 #include "sync/protocol/data_type_state.pb.h"
 #include "sync/protocol/sync.pb.h"
 #include "sync/syncable/syncable_util.h"
@@ -73,6 +74,11 @@ std::unique_ptr<EntityData> CopyEntityData(const EntityData& old_data) {
   new_data->creation_time = old_data.creation_time;
   new_data->modification_time = old_data.modification_time;
   return new_data;
+}
+
+syncer::SyncError CreateSyncError(syncer::SyncError::ErrorType error_type) {
+  return syncer::SyncError(FROM_HERE, error_type, "TestError",
+                           syncer::PREFERENCES);
 }
 
 // A basic in-memory storage mechanism for data and metadata. This makes it
@@ -188,9 +194,7 @@ class SharedModelTypeProcessorTest : public ::testing::Test,
       : FakeModelTypeService(
             base::Bind(&SharedModelTypeProcessor::CreateAsChangeProcessor)) {}
 
-  ~SharedModelTypeProcessorTest() override {
-    DCHECK(data_callback_.is_null());
-  }
+  ~SharedModelTypeProcessorTest() override { CheckPostConditions(); }
 
   void InitializeToMetadataLoaded() {
     CreateChangeProcessor();
@@ -210,7 +214,8 @@ class SharedModelTypeProcessorTest : public ::testing::Test,
   }
 
   void OnMetadataLoaded() {
-    type_processor()->OnMetadataLoaded(db_.CreateMetadataBatch());
+    type_processor()->OnMetadataLoaded(syncer::SyncError(),
+                                       db_.CreateMetadataBatch());
   }
 
   void OnPendingCommitDataLoaded() {
@@ -221,6 +226,7 @@ class SharedModelTypeProcessorTest : public ::testing::Test,
 
   void OnSyncStarting() {
     type_processor()->OnSyncStarting(
+        &error_handler_,
         base::Bind(&SharedModelTypeProcessorTest::OnReadyToConnect,
                    base::Unretained(this)));
   }
@@ -269,7 +275,7 @@ class SharedModelTypeProcessorTest : public ::testing::Test,
     clear_change_processor();
     db_.Reset();
     worker_ = nullptr;
-    DCHECK(data_callback_.is_null());
+    CheckPostConditions();
   }
 
   // Wipes existing DB and simulates a pending update of a server-known item.
@@ -328,6 +334,19 @@ class SharedModelTypeProcessorTest : public ::testing::Test,
     conflict_resolution_.reset(new ConflictResolution(std::move(resolution)));
   }
 
+  // Sets the error that the next fallible call to the service will generate.
+  void SetServiceError(syncer::SyncError::ErrorType error_type) {
+    DCHECK(!service_error_.IsSet());
+    service_error_ = CreateSyncError(error_type);
+  }
+
+  // Sets the error type that OnReadyToConnect (our StartCallback) expects to
+  // receive.
+  void ExpectStartError(syncer::SyncError::ErrorType error_type) {
+    DCHECK(expected_start_error_ == syncer::SyncError::UNSET);
+    expected_start_error_ = error_type;
+  }
+
   const SimpleStore& db() const { return db_; }
 
   MockModelTypeWorker* worker() { return worker_; }
@@ -336,9 +355,25 @@ class SharedModelTypeProcessorTest : public ::testing::Test,
     return static_cast<SharedModelTypeProcessor*>(change_processor());
   }
 
+  syncer::DataTypeErrorHandlerMock* error_handler() { return &error_handler_; }
+
  private:
+  void CheckPostConditions() {
+    DCHECK(data_callback_.is_null());
+    DCHECK(!service_error_.IsSet());
+    DCHECK_EQ(syncer::SyncError::UNSET, expected_start_error_);
+  }
+
   void OnReadyToConnect(syncer::SyncError error,
                         std::unique_ptr<ActivationContext> context) {
+    if (expected_start_error_ != syncer::SyncError::UNSET) {
+      EXPECT_TRUE(error.IsSet());
+      EXPECT_EQ(expected_start_error_, error.error_type());
+      EXPECT_EQ(nullptr, context);
+      expected_start_error_ = syncer::SyncError::UNSET;
+      return;
+    }
+
     std::unique_ptr<MockModelTypeWorker> worker(
         new MockModelTypeWorker(context->data_type_state, type_processor()));
     // Keep an unsafe pointer to the commit queue the processor will use.
@@ -363,6 +398,11 @@ class SharedModelTypeProcessorTest : public ::testing::Test,
   syncer::SyncError MergeSyncData(
       std::unique_ptr<MetadataChangeList> metadata_changes,
       EntityDataMap data_map) override {
+    if (service_error_.IsSet()) {
+      syncer::SyncError error = service_error_;
+      service_error_ = syncer::SyncError();
+      return error;
+    }
     // Commit any local entities that aren't being overwritten by the server.
     const auto& local_data = db_.GetAllData();
     for (auto it = local_data.begin(); it != local_data.end(); it++) {
@@ -382,6 +422,11 @@ class SharedModelTypeProcessorTest : public ::testing::Test,
   syncer::SyncError ApplySyncChanges(
       std::unique_ptr<MetadataChangeList> metadata_changes,
       EntityChangeList entity_changes) override {
+    if (service_error_.IsSet()) {
+      syncer::SyncError error = service_error_;
+      service_error_ = syncer::SyncError();
+      return error;
+    }
     for (const EntityChange& change : entity_changes) {
       switch (change.type()) {
         case EntityChange::ACTION_ADD:
@@ -435,6 +480,11 @@ class SharedModelTypeProcessorTest : public ::testing::Test,
   }
 
   void GetData(ClientTagList tags, DataCallback callback) override {
+    if (service_error_.IsSet()) {
+      data_callback_ = base::Bind(callback, service_error_, nullptr);
+      service_error_ = syncer::SyncError();
+      return;
+    }
     std::unique_ptr<DataBatchImpl> batch(new DataBatchImpl());
     for (const std::string& tag : tags) {
       DCHECK(db_.HasData(tag)) << "No data for " << tag;
@@ -465,6 +515,15 @@ class SharedModelTypeProcessorTest : public ::testing::Test,
 
   // Contains all of the data and metadata state for these tests.
   SimpleStore db_;
+
+  // The processor's error handler.
+  syncer::DataTypeErrorHandlerMock error_handler_;
+
+  // The error to produce on the next service call.
+  syncer::SyncError service_error_;
+
+  // The error to expect in OnReadyToConnect().
+  syncer::SyncError::ErrorType expected_start_error_ = syncer::SyncError::UNSET;
 };
 
 // Test that an initial sync handles local and remote items properly.
@@ -493,6 +552,42 @@ TEST_F(SharedModelTypeProcessorTest, InitialSync) {
   EXPECT_EQ(1, db().GetMetadata(kTag1).sequence_number());
   EXPECT_EQ(0, db().GetMetadata(kTag2).sequence_number());
   worker()->ExpectPendingCommits({kTag1});
+}
+
+// Test that an error during the merge is propagated to the error handler.
+TEST_F(SharedModelTypeProcessorTest, InitialSyncError) {
+  CreateChangeProcessor();
+  OnMetadataLoaded();
+  OnSyncStarting();
+
+  SetServiceError(syncer::SyncError::DATATYPE_ERROR);
+  error_handler()->ExpectError(syncer::SyncError::DATATYPE_ERROR);
+  OnInitialSyncDone();
+}
+
+// Test that errors before it's called are passed to |start_callback| correctly.
+TEST_F(SharedModelTypeProcessorTest, StartErrors) {
+  CreateChangeProcessor();
+  type_processor()->OnMetadataLoaded(
+      CreateSyncError(syncer::SyncError::DATATYPE_ERROR), nullptr);
+  ExpectStartError(syncer::SyncError::DATATYPE_ERROR);
+  OnSyncStarting();
+
+  // Test OnSyncStarting happening first.
+  ResetState();
+  CreateChangeProcessor();
+  OnSyncStarting();
+  ExpectStartError(syncer::SyncError::DATATYPE_ERROR);
+  type_processor()->OnMetadataLoaded(
+      CreateSyncError(syncer::SyncError::DATATYPE_ERROR), nullptr);
+
+  // Test an error loading pending data.
+  ResetStateWriteItem(kTag1, kValue1);
+  SetServiceError(syncer::SyncError::DATATYPE_ERROR);
+  InitializeToMetadataLoaded();
+  OnPendingCommitDataLoaded();
+  ExpectStartError(syncer::SyncError::DATATYPE_ERROR);
+  OnSyncStarting();
 }
 
 // This test covers race conditions during loading pending data. All cases
@@ -741,6 +836,24 @@ TEST_F(SharedModelTypeProcessorTest, LocalCreateItem) {
   EXPECT_TRUE(metadata.has_creation_time());
   EXPECT_TRUE(metadata.has_modification_time());
   EXPECT_TRUE(metadata.has_specifics_hash());
+
+  worker()->AckOnePendingCommit();
+  EXPECT_EQ(1U, db().MetadataCount());
+  const sync_pb::EntityMetadata acked_metadata = db().GetMetadata(kTag1);
+  EXPECT_TRUE(acked_metadata.has_server_id());
+  EXPECT_EQ(1, acked_metadata.sequence_number());
+  EXPECT_EQ(1, acked_metadata.acked_sequence_number());
+  EXPECT_EQ(1, acked_metadata.server_version());
+}
+
+// Test that an error applying metadata changes from a commit response is
+// propagated to the error handler.
+TEST_F(SharedModelTypeProcessorTest, ErrorApplyingAck) {
+  InitializeToReadyState();
+  WriteItem(kTag1, kValue1);
+  SetServiceError(syncer::SyncError::DATATYPE_ERROR);
+  error_handler()->ExpectError(syncer::SyncError::DATATYPE_ERROR);
+  worker()->AckOnePendingCommit();
 }
 
 // The purpose of this test case is to test setting |client_tag_hash| and |id|
@@ -898,6 +1011,15 @@ TEST_F(SharedModelTypeProcessorTest, ServerCreateItem) {
   EXPECT_TRUE(metadata.has_creation_time());
   EXPECT_TRUE(metadata.has_modification_time());
   EXPECT_TRUE(metadata.has_specifics_hash());
+}
+
+// Test that an error applying changes from a server update is
+// propagated to the error handler.
+TEST_F(SharedModelTypeProcessorTest, ErrorApplyingUpdate) {
+  InitializeToReadyState();
+  SetServiceError(syncer::SyncError::DATATYPE_ERROR);
+  error_handler()->ExpectError(syncer::SyncError::DATATYPE_ERROR);
+  worker()->UpdateFromServer(kTag1, kValue1);
 }
 
 // Thoroughly tests the data generated by a server item creation.
@@ -1227,6 +1349,17 @@ TEST_F(SharedModelTypeProcessorTest, ReEncryptCommitsWithNewKey) {
   OnPendingCommitDataLoaded();
   ASSERT_EQ(3U, worker()->GetNumPendingCommits());
   worker()->ExpectNthPendingCommit(2, kTag1, kValue1);
+}
+
+// Test that an error loading pending commit data for re-encryption is
+// propagated to the error handler.
+TEST_F(SharedModelTypeProcessorTest, ReEncryptErrorLoadingData) {
+  InitializeToReadyState();
+  WriteItemAndAck(kTag1, kValue1);
+  SetServiceError(syncer::SyncError::DATATYPE_ERROR);
+  worker()->UpdateWithEncryptionKey("k1");
+  error_handler()->ExpectError(syncer::SyncError::DATATYPE_ERROR);
+  OnPendingCommitDataLoaded();
 }
 
 // Test receipt of updates with new and old keys.

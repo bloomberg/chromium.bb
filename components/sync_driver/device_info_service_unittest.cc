@@ -21,6 +21,7 @@
 #include "sync/api/fake_model_type_change_processor.h"
 #include "sync/api/metadata_batch.h"
 #include "sync/api/model_type_store.h"
+#include "sync/internal_api/public/test/data_type_error_handler_mock.h"
 #include "sync/internal_api/public/test/model_type_store_test_util.h"
 #include "sync/protocol/data_type_state.pb.h"
 #include "sync/util/time.h"
@@ -143,7 +144,8 @@ class RecordingModelTypeChangeProcessor
     delete_set_.insert(client_tag);
   }
 
-  void OnMetadataLoaded(std::unique_ptr<MetadataBatch> batch) override {
+  void OnMetadataLoaded(syncer::SyncError error,
+                        std::unique_ptr<MetadataBatch> batch) override {
     std::swap(metadata_, batch);
   }
 
@@ -206,6 +208,10 @@ class DeviceInfoServiceTest : public testing::Test,
     service_->AddObserver(this);
   }
 
+  void OnSyncStarting() {
+    service()->OnSyncStarting(&error_handler_, StartCallback());
+  }
+
   // Creates the service and runs any outstanding tasks. This will typically
   // cause all initialization callbacks between the sevice and store to fire.
   void InitializeAndPump() {
@@ -217,7 +223,7 @@ class DeviceInfoServiceTest : public testing::Test,
   // service that sync wants to start and forces the processor to be created.
   void InitializeAndPumpAndStart() {
     InitializeAndPump();
-    service()->OnSyncStarting(StartCallback());
+    OnSyncStarting();
     ASSERT_TRUE(processor_);
   }
 
@@ -322,6 +328,9 @@ class DeviceInfoServiceTest : public testing::Test,
 
   std::unique_ptr<LocalDeviceInfoProviderMock> local_device_;
 
+  // Mock error handler passed to the processor.
+  syncer::DataTypeErrorHandlerMock error_handler_;
+
   // Not initialized immediately (upon test's constructor). This allows each
   // test case to modify the dependencies the service will be constructed with.
   std::unique_ptr<DeviceInfoService> service_;
@@ -340,7 +349,7 @@ namespace {
 TEST_F(DeviceInfoServiceTest, EmptyDataReconciliation) {
   InitializeAndPump();
   ASSERT_EQ(0u, service()->GetAllDeviceInfo().size());
-  service()->OnSyncStarting(StartCallback());
+  OnSyncStarting();
   ScopedVector<DeviceInfo> all_device_info(service()->GetAllDeviceInfo());
   ASSERT_EQ(1u, all_device_info.size());
   ASSERT_TRUE(
@@ -349,7 +358,7 @@ TEST_F(DeviceInfoServiceTest, EmptyDataReconciliation) {
 
 TEST_F(DeviceInfoServiceTest, EmptyDataReconciliationSlowLoad) {
   InitializeService();
-  service()->OnSyncStarting(StartCallback());
+  OnSyncStarting();
   ASSERT_EQ(0u, service()->GetAllDeviceInfo().size());
   base::RunLoop().RunUntilIdle();
   ScopedVector<DeviceInfo> all_device_info(service()->GetAllDeviceInfo());

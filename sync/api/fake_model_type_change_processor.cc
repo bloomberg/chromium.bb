@@ -36,9 +36,11 @@ void FakeModelTypeChangeProcessor::Delete(
     MetadataChangeList* metadata_change_list) {}
 
 void FakeModelTypeChangeProcessor::OnMetadataLoaded(
+    syncer::SyncError error,
     std::unique_ptr<MetadataBatch> batch) {}
 
 void FakeModelTypeChangeProcessor::OnSyncStarting(
+    syncer::DataTypeErrorHandler* error_handler,
     const StartCallback& callback) {
   if (!callback.is_null()) {
     callback.Run(syncer::SyncError(), nullptr);

@@ -9,19 +9,28 @@
 
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/data_type_error_handler.h"
-#include "testing/gmock/include/gmock/gmock.h"
 
 namespace syncer {
 
+// A mock DataTypeErrorHandler for testing. Set the expected error type with
+// ExpectError and OnSingleDataTypeUnrecoverableError will pass. If the error is
+// not called this object's destructor will DCHECK.
 class DataTypeErrorHandlerMock : public DataTypeErrorHandler {
  public:
   DataTypeErrorHandlerMock();
-  virtual ~DataTypeErrorHandlerMock();
-  MOCK_METHOD1(OnSingleDataTypeUnrecoverableError, void(const SyncError&));
-  MOCK_METHOD3(CreateAndUploadError,
-               SyncError(const tracked_objects::Location&,
-                         const std::string&,
-                         ModelType));
+  ~DataTypeErrorHandlerMock() override;
+
+  void OnSingleDataTypeUnrecoverableError(const SyncError& error) override;
+  SyncError CreateAndUploadError(const tracked_objects::Location& location,
+                                 const std::string& message,
+                                 ModelType type) override;
+
+  // Set the |error_type| to expect.
+  void ExpectError(SyncError::ErrorType error_type);
+
+ private:
+  // The error type to expect.
+  SyncError::ErrorType expected_error_type_ = SyncError::UNSET;
 };
 
 }  // namespace syncer
