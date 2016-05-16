@@ -1014,13 +1014,14 @@ void LoginDisplayHostImpl::ShutdownDisplayHost(bool post_quit_task) {
     base::MessageLoop::current()->PostTask(FROM_HERE, completion_callback_);
 
   if (ash::Shell::HasInstance() &&
-      finalize_animation_type_ == ANIMATION_ADD_USER &&
-      !chrome::IsRunningInMash()) {
-    ash::Shell::GetInstance()
-        ->desktop_background_controller()
-        ->MoveDesktopToUnlockedContainer();
-  } else {
-    NOTIMPLEMENTED();
+      finalize_animation_type_ == ANIMATION_ADD_USER) {
+    if (!chrome::IsRunningInMash()) {
+      ash::Shell::GetInstance()
+          ->desktop_background_controller()
+          ->MoveDesktopToUnlockedContainer();
+    } else {
+      NOTIMPLEMENTED();
+    }
   }
 }
 
