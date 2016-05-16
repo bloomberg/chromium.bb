@@ -24,6 +24,7 @@ group("all") {
 
 test("mash_unittests") {
   deps = [
+    "//ash/mus:unittests",
     "//base",
     "//base/test:test_config",
     "//base/test:test_support",

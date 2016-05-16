@@ -5,6 +5,9 @@
   "capabilities": {
     "required": {
       "*": { "classes": [ "app" ] },
+      "mojo:ash_sysui": {
+        "interfaces": [ "mash::shelf::mojom::ShelfController" ]
+      },
       "mojo:desktop_wm": {
         "interfaces": [
           "mus::mojom::AcceleratorRegistrar",
