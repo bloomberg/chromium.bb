@@ -1,9 +1,6 @@
+<!DOCTYPE html>
 <html>
 <head>
-<script>
-if (window.testRunner)
-    testRunner.notifyDone();
-</script>
 <style>
   meter.tall { width: 30px; height: 40px; }
   ul, h2, p { margin: 0.2em; }
@@ -48,6 +45,7 @@ if (window.testRunner)
   <div style="background-color: #eee">
   <ul>
     <li><meter style="-webkit-appearance: none" min="0" max="100" low="30" high="60" optimum="100" value="80" >80</meter> has "none" appearance, should render METER content.</li> 
+    <li><meter id="appearanceNoneLater" min="0" max="100" low="30" high="60" optimum="100" value="80" >80%</meter> gets "none" appearance after the initial rendering with "meter" appearance.</li>
   </ul>
   </div>
   <h2>Providing bar paddings</h2>
@@ -55,5 +53,11 @@ if (window.testRunner)
     <meter id="bar-paddings" min="0" max="100" low="30" high="60" optimum="50" value="50" ></meter> has "padding" on the bar.
   </ul>
   </div>
+<script>
+var noneLater = document.getElementById('appearanceNoneLater');
+noneLater.offsetLeft; // Force layout.
+noneLater.setAttribute('style', '-webkit-appearance:none');
+noneLater.offsetLeft; // Force layout.
+</script>
 </body>
 </html>

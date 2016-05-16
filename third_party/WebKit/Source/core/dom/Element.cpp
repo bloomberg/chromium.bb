@@ -2765,7 +2765,7 @@ const AtomicString& Element::shadowPseudoId() const
 
 void Element::setShadowPseudoId(const AtomicString& id)
 {
-    DCHECK_EQ(CSSSelector::parsePseudoType(id, false), CSSSelector::PseudoWebKitCustomElement);
+    DCHECK(CSSSelector::parsePseudoType(id, false) == CSSSelector::PseudoWebKitCustomElement || CSSSelector::parsePseudoType(id, false) == CSSSelector::PseudoBlinkInternalElement);
     setAttribute(pseudoAttr, id);
 }
 

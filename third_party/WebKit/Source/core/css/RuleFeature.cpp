@@ -143,6 +143,7 @@ bool supportsInvalidation(CSSSelector::PseudoType type)
     case CSSSelector::PseudoInRange:
     case CSSSelector::PseudoOutOfRange:
     case CSSSelector::PseudoWebKitCustomElement:
+    case CSSSelector::PseudoBlinkInternalElement:
     case CSSSelector::PseudoCue:
     case CSSSelector::PseudoFutureCue:
     case CSSSelector::PseudoPastCue:
@@ -152,6 +153,7 @@ bool supportsInvalidation(CSSSelector::PseudoType type)
     case CSSSelector::PseudoShadow:
     case CSSSelector::PseudoSpatialNavigationFocus:
     case CSSSelector::PseudoListBox:
+    case CSSSelector::PseudoHostHasAppearance:
     case CSSSelector::PseudoSlotted:
         return true;
     case CSSSelector::PseudoUnknown:
@@ -296,7 +298,7 @@ bool RuleFeatureSet::extractInvalidationSetFeature(const CSSSelector& selector, 
         features.attributes.append(selector.attribute().localName());
         return true;
     }
-    if (selector.getPseudoType() == CSSSelector::PseudoWebKitCustomElement) {
+    if (selector.getPseudoType() == CSSSelector::PseudoWebKitCustomElement || selector.getPseudoType() == CSSSelector::PseudoBlinkInternalElement) {
         features.customPseudoElement = true;
         return true;
     }

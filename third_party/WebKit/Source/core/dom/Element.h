@@ -450,6 +450,9 @@ public:
     virtual String defaultToolTip() const { return String(); }
 
     virtual const AtomicString& shadowPseudoId() const;
+    // The specified string must start with "-webkit-" or "-internal-". The
+    // former can be used as a selector in any places, and the latter can be
+    // used only in UA stylesheet.
     void setShadowPseudoId(const AtomicString&);
 
     LayoutSize minimumSizeForResizing() const;

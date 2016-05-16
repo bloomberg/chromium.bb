@@ -61,7 +61,7 @@ public:
     CSSSelector::PseudoType pseudoType() const { return m_selector->getPseudoType(); }
     const CSSSelectorList* selectorList() const { return m_selector->selectorList(); }
 
-    bool needsImplicitShadowCombinatorForMatching() const { return pseudoType() == CSSSelector::PseudoWebKitCustomElement || pseudoType() == CSSSelector::PseudoCue || pseudoType() == CSSSelector::PseudoShadow || pseudoType() == CSSSelector::PseudoSlotted; }
+    bool needsImplicitShadowCombinatorForMatching() const { return pseudoType() == CSSSelector::PseudoWebKitCustomElement || pseudoType() == CSSSelector::PseudoBlinkInternalElement || pseudoType() == CSSSelector::PseudoCue || pseudoType() == CSSSelector::PseudoShadow || pseudoType() == CSSSelector::PseudoSlotted; }
 
     bool isSimple() const;
 

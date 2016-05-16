@@ -851,9 +851,18 @@ meter {
 meter::-webkit-meter-inner-element {
     -webkit-appearance: inherit;
     box-sizing: inherit;
+    display: none;
     -webkit-user-modify: read-only !important;
     height: 100%;
     width: 100%;
+}
+
+meter::-webkit-meter-inner-element:-internal-shadow-host-has-appearance {
+    display: block;
+}
+
+meter::-internal-fallback:-internal-shadow-host-has-appearance {
+    display: none;
 }
 
 meter::-webkit-meter-bar {

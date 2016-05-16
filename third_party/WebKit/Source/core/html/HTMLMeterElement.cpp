@@ -30,7 +30,6 @@
 #include "core/html/HTMLContentElement.h"
 #include "core/html/HTMLDivElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
-#include "core/html/shadow/AppearanceSwitchElement.h"
 #include "core/layout/LayoutObject.h"
 #include "core/style/ComputedStyle.h"
 
@@ -195,7 +194,7 @@ void HTMLMeterElement::didAddUserAgentShadowRoot(ShadowRoot& root)
 {
     ASSERT(!m_value);
 
-    AppearanceSwitchElement* inner = AppearanceSwitchElement::create(document(), AppearanceSwitchElement::ShowIfHostHasAppearance);
+    HTMLDivElement* inner = HTMLDivElement::create(document());
     inner->setShadowPseudoId(AtomicString("-webkit-meter-inner-element"));
     root.appendChild(inner);
 
@@ -208,8 +207,9 @@ void HTMLMeterElement::didAddUserAgentShadowRoot(ShadowRoot& root)
 
     inner->appendChild(bar);
 
-    AppearanceSwitchElement* fallback = AppearanceSwitchElement::create(document(), AppearanceSwitchElement::ShowIfHostHasNoAppearance);
+    HTMLDivElement* fallback = HTMLDivElement::create(document());
     fallback->appendChild(HTMLContentElement::create(document()));
+    fallback->setShadowPseudoId(AtomicString("-internal-fallback"));
     root.appendChild(fallback);
 }
 

@@ -917,6 +917,16 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, M
         return m_isUARule && matchesSpatialNavigationFocusPseudoClass(element);
     case CSSSelector::PseudoListBox:
         return m_isUARule && matchesListBoxPseudoClass(element);
+    case CSSSelector::PseudoHostHasAppearance:
+        if (!m_isUARule)
+            return false;
+        if (ShadowRoot* root = element.containingShadowRoot()) {
+            if (root->type() != ShadowRootType::UserAgent)
+                return false;
+            const ComputedStyle* style = root->host()->computedStyle();
+            return style && style->hasAppearance();
+        }
+        return false;
     case CSSSelector::PseudoWindowInactive:
         if (!context.hasSelectionPseudo)
             return false;
@@ -965,6 +975,12 @@ bool SelectorChecker::checkPseudoElement(const SelectorCheckingContext& context,
                 return root->type() == ShadowRootType::UserAgent && element.shadowPseudoId() == selector.value();
             return false;
         }
+    case CSSSelector::PseudoBlinkInternalElement:
+        if (!m_isUARule)
+            return false;
+        if (ShadowRoot* root = element.containingShadowRoot())
+            return root->type() == ShadowRootType::UserAgent && element.shadowPseudoId() == selector.value();
+        return false;
     case CSSSelector::PseudoSlotted:
         {
             SelectorCheckingContext subContext(context);

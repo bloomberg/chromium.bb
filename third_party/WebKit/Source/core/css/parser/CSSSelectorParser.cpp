@@ -248,6 +248,7 @@ bool isPseudoClassValidAfterPseudoElement(CSSSelector::PseudoType pseudoClass, C
     case CSSSelector::PseudoSelection:
         return pseudoClass == CSSSelector::PseudoWindowInactive;
     case CSSSelector::PseudoWebKitCustomElement:
+    case CSSSelector::PseudoBlinkInternalElement:
         return isUserActionPseudoClass(pseudoClass);
     default:
         return false;

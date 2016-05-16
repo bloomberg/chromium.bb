@@ -193,7 +193,10 @@ public:
         PseudoFullScreenAncestor,
         PseudoInRange,
         PseudoOutOfRange,
+        // Pseudo elements in UA ShadowRoots. Available in any stylesheets.
         PseudoWebKitCustomElement,
+        // Pseudo elements in UA ShadowRoots. Availble only in UA stylesheets.
+        PseudoBlinkInternalElement,
         PseudoCue,
         PseudoFutureCue,
         PseudoPastCue,
@@ -204,6 +207,7 @@ public:
         PseudoShadow,
         PseudoSpatialNavigationFocus,
         PseudoListBox,
+        PseudoHostHasAppearance,
         PseudoSlotted
     };
 

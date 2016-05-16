@@ -144,7 +144,7 @@ static void extractValuesforSelector(const CSSSelector* selector, AtomicString& 
     default:
         break;
     }
-    if (selector->getPseudoType() == CSSSelector::PseudoWebKitCustomElement)
+    if (selector->getPseudoType() == CSSSelector::PseudoWebKitCustomElement || selector->getPseudoType() == CSSSelector::PseudoBlinkInternalElement)
         customPseudoElementName = selector->value();
 }
 

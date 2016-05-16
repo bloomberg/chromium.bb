@@ -144,6 +144,7 @@ const char* pseudoTypeToString(CSSSelector::PseudoType pseudoType)
         DEFINE_STRING_MAPPING(PseudoInRange)
         DEFINE_STRING_MAPPING(PseudoOutOfRange)
         DEFINE_STRING_MAPPING(PseudoWebKitCustomElement)
+        DEFINE_STRING_MAPPING(PseudoBlinkInternalElement)
         DEFINE_STRING_MAPPING(PseudoCue)
         DEFINE_STRING_MAPPING(PseudoFutureCue)
         DEFINE_STRING_MAPPING(PseudoPastCue)
@@ -155,6 +156,7 @@ const char* pseudoTypeToString(CSSSelector::PseudoType pseudoType)
         DEFINE_STRING_MAPPING(PseudoSlotted)
         DEFINE_STRING_MAPPING(PseudoSpatialNavigationFocus)
         DEFINE_STRING_MAPPING(PseudoListBox)
+        DEFINE_STRING_MAPPING(PseudoHostHasAppearance)
 #undef DEFINE_STRING_MAPPING
     }
 
