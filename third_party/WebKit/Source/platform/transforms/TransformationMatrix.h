@@ -263,7 +263,7 @@ public:
     double f() const { return m_matrix[3][1]; }
     void setF(double f) { m_matrix[3][1] = f; }
 
-    // this = mat * this.
+    // *this = *this * mat.
     TransformationMatrix& multiply(const TransformationMatrix&);
 
     TransformationMatrix& scale(double);

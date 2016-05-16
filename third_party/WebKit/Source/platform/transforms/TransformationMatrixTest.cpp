@@ -74,4 +74,28 @@ TEST(TransformationMatrixTest, ApplyTransformOrigin)
     EXPECT_EQ(FloatPoint3D(-1, -4, -9), matrix.mapPoint(FloatPoint3D(0, 0, 0)));
 }
 
+
+TEST(TransformationMatrixTest, Multiplication)
+{
+    TransformationMatrix a(1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4);
+    // [ 1 2 3 4 ]
+    // [ 1 2 3 4 ]
+    // [ 1 2 3 4 ]
+    // [ 1 2 3 4 ]
+
+    TransformationMatrix b(1, 2, 3, 5, 1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4);
+    // [ 1 1 1 1 ]
+    // [ 2 2 2 2 ]
+    // [ 3 3 3 3 ]
+    // [ 5 4 4 4 ]
+
+    TransformationMatrix expectedAtimesB(34, 34, 34, 34, 30, 30, 30, 30,
+        30, 30, 30, 30, 30, 30, 30, 30);
+
+    EXPECT_EQ(expectedAtimesB, a * b);
+
+    a.multiply(b);
+    EXPECT_EQ(expectedAtimesB, a);
+}
+
 } // namespace blink
