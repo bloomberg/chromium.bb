@@ -57,6 +57,16 @@ message GesturePinchUpdate {
   optional float scale = 2;
 }
 
+message GestureTapDown {
+  optional float width = 1;
+  optional float height = 2;
+}
+
+message GestureShowPress {
+  optional float width = 1;
+  optional float height = 2;
+}
+
 message InputMessage {
   enum Type {
     UNKNOWN = 0;
@@ -74,27 +84,33 @@ message InputMessage {
     Type_GesturePinchBegin = 7;
     Type_GesturePinchEnd = 8;
     Type_GesturePinchUpdate = 9;
+    Type_GestureTapDown = 10;
+    Type_GestureTapCancel = 11;
+    Type_GestureTapUnconfirmed = 12;
+    Type_GestureShowPress = 13;
   }
 
   optional Type type = 1;
 
   // An ID that corresponds to RenderWidgetMessage.render_widget_id.
-  optional int32 render_widget_id = 10;
+  optional int32 render_widget_id = 2;
 
   // Seconds since client platform start (boot) with millisecond resolution.
   // On Android, this is based off of the client's SystemClock#uptimeMillis().
-  optional double timestamp_seconds = 2;
+  optional double timestamp_seconds = 3;
 
-  optional GestureCommon gesture_common = 3;
+  optional GestureCommon gesture_common = 4;
 
   // Input event specific messages follow.
   // Only one of these fields may be set per InputMessage.
   // TODO(dtrainor): use a 'oneof' union when it's supported in Chromium.  See
   // crbug.com/570371.
-  optional GestureScrollBegin gesture_scroll_begin = 4;
-  optional GestureScrollUpdate gesture_scroll_update = 5;
-  optional GestureFlingStart gesture_fling_start = 6;
-  optional GestureFlingCancel gesture_fling_cancel = 7;
-  optional GestureTap gesture_tap = 8;
-  optional GesturePinchUpdate gesture_pinch_update = 9;
+  optional GestureScrollBegin gesture_scroll_begin = 5;
+  optional GestureScrollUpdate gesture_scroll_update = 6;
+  optional GestureFlingStart gesture_fling_start = 7;
+  optional GestureFlingCancel gesture_fling_cancel = 8;
+  optional GestureTap gesture_tap = 9;
+  optional GesturePinchUpdate gesture_pinch_update = 10;
+  optional GestureTapDown gesture_tap_down = 11;
+  optional GestureShowPress gesture_show_press = 12;
 }

@@ -106,6 +106,40 @@ void GesturePinchUpdateToProto(const blink::WebGestureEvent& event,
   details->set_scale(event.data.pinchUpdate.scale);
 }
 
+void GestureTapDownToProto(const blink::WebGestureEvent& event,
+                           InputMessage* proto) {
+  CommonWebGestureToProto(event, InputMessage::Type_GestureTapDown, proto);
+
+  GestureTapDown* details = proto->mutable_gesture_tap_down();
+  details->set_width(event.data.tapDown.width);
+  details->set_height(event.data.tapDown.height);
+}
+
+void GestureTapCancelToProto(const blink::WebGestureEvent& event,
+                             InputMessage* proto) {
+  CommonWebGestureToProto(event, InputMessage::Type_GestureTapCancel, proto);
+}
+
+void GestureTapUnconfirmedToProto(const blink::WebGestureEvent& event,
+                                  InputMessage* proto) {
+  CommonWebGestureToProto(event, InputMessage::Type_GestureTapUnconfirmed,
+                          proto);
+
+  GestureTap* details = proto->mutable_gesture_tap();
+  details->set_tap_count(event.data.tap.tapCount);
+  details->set_width(event.data.tap.width);
+  details->set_height(event.data.tap.height);
+}
+
+void GestureShowPressToProto(const blink::WebGestureEvent& event,
+                             InputMessage* proto) {
+  CommonWebGestureToProto(event, InputMessage::Type_GestureShowPress, proto);
+
+  GestureShowPress* details = proto->mutable_gesture_show_press();
+  details->set_width(event.data.showPress.width);
+  details->set_height(event.data.showPress.height);
+}
+
 }  // namespace
 
 InputMessageGenerator::InputMessageGenerator() {}
@@ -145,6 +179,19 @@ std::unique_ptr<BlimpMessage> InputMessageGenerator::GenerateMessage(
     case blink::WebInputEvent::Type::GesturePinchUpdate:
       GesturePinchUpdateToProto(event, details);
       break;
+    case blink::WebInputEvent::Type::GestureShowPress:
+      GestureShowPressToProto(event, details);
+      break;
+    case blink::WebInputEvent::Type::GestureTapUnconfirmed:
+      GestureTapUnconfirmedToProto(event, details);
+      break;
+    case blink::WebInputEvent::Type::GestureTapDown:
+      GestureTapDownToProto(event, details);
+      break;
+    case blink::WebInputEvent::Type::GestureTapCancel:
+      GestureTapCancelToProto(event, details);
+      break;
+
     // Unsupported types:
     case blink::WebInputEvent::Type::Undefined:
     case blink::WebInputEvent::Type::MouseDown:
@@ -158,10 +205,6 @@ std::unique_ptr<BlimpMessage> InputMessageGenerator::GenerateMessage(
     case blink::WebInputEvent::Type::KeyDown:
     case blink::WebInputEvent::Type::KeyUp:
     case blink::WebInputEvent::Type::Char:
-    case blink::WebInputEvent::Type::GestureShowPress:
-    case blink::WebInputEvent::Type::GestureTapUnconfirmed:
-    case blink::WebInputEvent::Type::GestureTapDown:
-    case blink::WebInputEvent::Type::GestureTapCancel:
     case blink::WebInputEvent::Type::GestureDoubleTap:
     case blink::WebInputEvent::Type::GestureTwoFingerTap:
     case blink::WebInputEvent::Type::GestureLongPress:
@@ -171,7 +214,7 @@ std::unique_ptr<BlimpMessage> InputMessageGenerator::GenerateMessage(
     case blink::WebInputEvent::Type::TouchEnd:
     case blink::WebInputEvent::Type::TouchCancel:
     case blink::WebInputEvent::Type::TouchScrollStarted:
-      NOTIMPLEMENTED();
+      DVLOG(1) << "Unsupported WebInputEvent type " << event.type;
       return nullptr;
   }
 

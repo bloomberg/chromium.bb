@@ -388,8 +388,8 @@ void BlimpEngineSession::Reload(const int target_tab_id) {
 void BlimpEngineSession::OnWebGestureEvent(
     content::RenderWidgetHost* render_widget_host,
     std::unique_ptr<blink::WebGestureEvent> event) {
-  TRACE_EVENT0("blimp", "BlimpEngineSession::OnWebGestureEvent");
-
+  TRACE_EVENT1("blimp", "BlimpEngineSession::OnWebGestureEvent", "type",
+               event->type);
   render_widget_host->ForwardGestureEvent(*event);
 }
 
