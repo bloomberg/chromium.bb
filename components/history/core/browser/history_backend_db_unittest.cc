@@ -601,12 +601,15 @@ TEST_F(HistoryBackendDBTest, MigrateHashHttpMethodAndGenerateGuids) {
       EXPECT_EQ(cur_version, s.ColumnInt(0));
     }
     {
-      sql::Statement s(db.GetUniqueStatement("SELECT guid from downloads"));
+      sql::Statement s(db.GetUniqueStatement("SELECT guid, id from downloads"));
       std::unordered_set<std::string> guids;
       while (s.Step()) {
         std::string guid = s.ColumnString(0);
+        uint32_t id = static_cast<uint32_t>(s.ColumnInt64(1));
         EXPECT_TRUE(IsValidRFC4122Ver4GUID(guid));
         EXPECT_EQ(guid, base::ToUpperASCII(guid));
+        // Id is used as time_low in RFC 4122 to guarantee unique GUIDs
+        EXPECT_EQ(guid.substr(0, 8), base::StringPrintf("%08" PRIX32, id));
         guids.insert(guid);
       }
       EXPECT_TRUE(s.Succeeded());

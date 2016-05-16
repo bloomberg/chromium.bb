@@ -4,6 +4,8 @@
 
 #include "components/history/core/browser/download_database.h"
 
+#include <inttypes.h>
+
 #include <limits>
 #include <memory>
 #include <string>
@@ -12,6 +14,7 @@
 #include "base/debug/alias.h"
 #include "base/files/file_path.h"
 #include "base/metrics/histogram.h"
+#include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -238,16 +241,26 @@ bool DownloadDatabase::MigrateHashHttpMethodAndGenerateGuids() {
   // have an elevated risk of collision with GUIDs generated via
   // base::GenerateGUID() and are considered valid by all known consumers. Hence
   // no additional migration logic is being introduced to fix those GUIDs.
-  const char kMigrateGuidsQuery[] =
-      "UPDATE downloads SET guid = printf"
-      "(\"%08X-%s-4%s-%01X%s-%s\","
-      " id,"
-      " hex(randomblob(2)),"
-      " substr(hex(randomblob(2)),2),"
-      " (8 | (random() & 3)),"
-      " substr(hex(randomblob(2)),2),"
-      " hex(randomblob(6)))";
-  return GetDB().Execute(kMigrateGuidsQuery);
+  sql::Statement select(GetDB().GetUniqueStatement("SELECT id FROM downloads"));
+  sql::Statement update(
+      GetDB().GetUniqueStatement("UPDATE downloads SET guid = ? WHERE id = ?"));
+  while (select.Step()) {
+    uint32_t id = select.ColumnInt(0);
+    uint64_t r1 = base::RandUint64();
+    uint64_t r2 = base::RandUint64();
+    std::string guid = base::StringPrintf(
+        "%08" PRIX32 "-%04" PRIX64 "-4%03" PRIX64 "-%04" PRIX64 "-%012" PRIX64,
+        id, r1 >> 48,
+        (r1 >> 36) & 0xfff,
+        ((8 | ((r1 >> 34) & 3)) << 12) | ((r1 >> 22) & 0xfff),
+        r2 & 0xffffffffffff);
+    update.BindString(0, guid);
+    update.BindInt(1, id);
+    if (!update.Run())
+      return false;
+    update.Reset(true);
+  }
+  return true;
 }
 
 bool DownloadDatabase::MigrateDownloadTabUrl() {
