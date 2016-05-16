@@ -43,6 +43,7 @@
           # GN: //third_party/kasko
           'target_name': 'kasko',
           'type': 'none',
+          'hard_dependency': 1,
           'dependencies': [
             'copy_kasko_dll',
             'kasko_features',
