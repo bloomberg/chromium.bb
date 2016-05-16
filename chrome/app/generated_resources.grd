@@ -11705,7 +11705,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
           Never translate this site
         </message>
         <message name="IDS_TRANSLATE_BUBBLE_TRANSLATING" desc="Text to show for the translate bubble label when page is currently being translated by servers">
-          This page is being translated ...
+          This page is being translated...
         </message>
         <message name="IDS_TRANSLATE_BUBBLE_TRANSLATED" desc="Text to show for the translate bubble label when the page has been translated from one language to another">
           This page has been translated.
