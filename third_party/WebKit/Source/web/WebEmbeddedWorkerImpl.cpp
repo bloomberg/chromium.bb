@@ -359,7 +359,12 @@ void WebEmbeddedWorkerImpl::onScriptLoaderFinished()
     if (m_askedToTerminate)
         return;
 
-    if (m_mainScriptLoader->failed()) {
+    // The browser is expected to associate a registration and then load the
+    // script. If there's no associated registration, the browser could not
+    // successfully handle the SetHostedVersionID IPC, and the script load came
+    // through the normal network stack rather than through service worker
+    // loading code.
+    if (!m_workerContextClient->hasAssociatedRegistration() || m_mainScriptLoader->failed()) {
         m_mainScriptLoader.clear();
         // This deletes 'this'.
         m_workerContextClient->workerContextFailedToStart();

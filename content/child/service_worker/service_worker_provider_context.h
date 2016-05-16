@@ -65,6 +65,9 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
   void GetAssociatedRegistration(ServiceWorkerRegistrationObjectInfo* info,
                                  ServiceWorkerVersionAttributes* attrs);
 
+  // May be called on the main or worker thread.
+  bool HasAssociatedRegistration();
+
   int provider_id() const { return provider_id_; }
 
   ServiceWorkerHandleReference* controller();

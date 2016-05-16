@@ -347,6 +347,10 @@ void ServiceWorkerContextClient::workerScriptLoaded() {
   Send(new EmbeddedWorkerHostMsg_WorkerScriptLoaded(embedded_worker_id_));
 }
 
+bool ServiceWorkerContextClient::hasAssociatedRegistration() {
+  return provider_context_ && provider_context_->HasAssociatedRegistration();
+}
+
 void ServiceWorkerContextClient::workerContextStarted(
     blink::WebServiceWorkerContextProxy* proxy) {
   DCHECK(!worker_task_runner_.get());

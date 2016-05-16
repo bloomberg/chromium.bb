@@ -19,7 +19,7 @@ namespace content {
 
 class ServiceWorkerProviderContext::Delegate {
  public:
-  virtual ~Delegate(){};
+  virtual ~Delegate() {}
   virtual void AssociateRegistration(
       std::unique_ptr<ServiceWorkerRegistrationHandleReference> registration,
       std::unique_ptr<ServiceWorkerHandleReference> installing,
@@ -29,6 +29,7 @@ class ServiceWorkerProviderContext::Delegate {
   virtual void GetAssociatedRegistration(
       ServiceWorkerRegistrationObjectInfo* info,
       ServiceWorkerVersionAttributes* attrs) = 0;
+  virtual bool HasAssociatedRegistration() = 0;
   virtual void SetController(
       std::unique_ptr<ServiceWorkerHandleReference> controller) = 0;
   virtual ServiceWorkerHandleReference* controller() = 0;
@@ -64,6 +65,8 @@ class ServiceWorkerProviderContext::ControlleeDelegate
            controller->handle_id() != kInvalidServiceWorkerHandleId);
     controller_ = std::move(controller);
   }
+
+  bool HasAssociatedRegistration() override { return !!registration_; }
 
   void GetAssociatedRegistration(
       ServiceWorkerRegistrationObjectInfo* info,
@@ -112,10 +115,12 @@ class ServiceWorkerProviderContext::ControllerDelegate
     NOTREACHED();
   }
 
+  bool HasAssociatedRegistration() override { return !!registration_; }
+
   void GetAssociatedRegistration(
       ServiceWorkerRegistrationObjectInfo* info,
       ServiceWorkerVersionAttributes* attrs) override {
-    DCHECK(registration_);
+    DCHECK(HasAssociatedRegistration());
     *info = registration_->info();
     if (installing_)
       attrs->installing = installing_->info();
@@ -192,6 +197,10 @@ void ServiceWorkerProviderContext::GetAssociatedRegistration(
     ServiceWorkerVersionAttributes* attrs) {
   DCHECK(!main_thread_task_runner_->RunsTasksOnCurrentThread());
   delegate_->GetAssociatedRegistration(info, attrs);
+}
+
+bool ServiceWorkerProviderContext::HasAssociatedRegistration() {
+  return delegate_->HasAssociatedRegistration();
 }
 
 ServiceWorkerHandleReference* ServiceWorkerProviderContext::controller() {

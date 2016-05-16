@@ -69,6 +69,8 @@ public:
     // be started. Called on the main thread.
     virtual void workerScriptLoaded() { }
 
+    virtual bool hasAssociatedRegistration() { return false; }
+
     // A new WorkerGlobalScope is created and started to run on the
     // worker thread.
     // This also gives back a proxy to the client to talk to the
