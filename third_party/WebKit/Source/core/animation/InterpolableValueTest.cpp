@@ -98,7 +98,7 @@ TEST_F(AnimationInterpolableValueTest, SimpleList)
     listB->set(1, InterpolableNumber::create(-200));
     listB->set(2, InterpolableNumber::create(300));
 
-    RefPtr<Interpolation> i = interpolateLists(listA.release(), listB.release(), 0.3);
+    RefPtr<Interpolation> i = interpolateLists(std::move(listA), std::move(listB), 0.3);
     InterpolableList* outList = toInterpolableList(interpolationValue(*i.get()));
     EXPECT_FLOAT_EQ(30, toInterpolableNumber(outList->get(0))->value());
     EXPECT_FLOAT_EQ(-30.6f, toInterpolableNumber(outList->get(1))->value());
@@ -111,17 +111,17 @@ TEST_F(AnimationInterpolableValueTest, NestedList)
     listA->set(0, InterpolableNumber::create(0));
     OwnPtr<InterpolableList> subListA = InterpolableList::create(1);
     subListA->set(0, InterpolableNumber::create(100));
-    listA->set(1, subListA.release());
+    listA->set(1, std::move(subListA));
     listA->set(2, InterpolableBool::create(false));
 
     OwnPtr<InterpolableList> listB = InterpolableList::create(3);
     listB->set(0, InterpolableNumber::create(100));
     OwnPtr<InterpolableList> subListB = InterpolableList::create(1);
     subListB->set(0, InterpolableNumber::create(50));
-    listB->set(1, subListB.release());
+    listB->set(1, std::move(subListB));
     listB->set(2, InterpolableBool::create(true));
 
-    RefPtr<Interpolation> i = interpolateLists(listA.release(), listB.release(), 0.5);
+    RefPtr<Interpolation> i = interpolateLists(std::move(listA), std::move(listB), 0.5);
     InterpolableList* outList = toInterpolableList(interpolationValue(*i.get()));
     EXPECT_FLOAT_EQ(50, toInterpolableNumber(outList->get(0))->value());
     EXPECT_FLOAT_EQ(75, toInterpolableNumber(toInterpolableList(outList->get(1))->get(0))->value());

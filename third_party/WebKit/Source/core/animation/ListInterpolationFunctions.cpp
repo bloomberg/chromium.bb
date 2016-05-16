@@ -47,24 +47,24 @@ PairwiseInterpolationValue ListInterpolationFunctions::maybeMergeSingles(Interpo
 
     if (startLength == 0 && endLength == 0) {
         return PairwiseInterpolationValue(
-            start.interpolableValue.release(),
-            end.interpolableValue.release(),
+            std::move(start.interpolableValue),
+            std::move(end.interpolableValue),
             nullptr);
     }
 
     if (startLength == 0) {
         OwnPtr<InterpolableValue> startInterpolableValue = end.interpolableValue->cloneAndZero();
         return PairwiseInterpolationValue(
-            startInterpolableValue.release(),
-            end.interpolableValue.release(),
+            std::move(startInterpolableValue),
+            std::move(end.interpolableValue),
             end.nonInterpolableValue.release());
     }
 
     if (endLength == 0) {
         OwnPtr<InterpolableValue> endInterpolableValue = start.interpolableValue->cloneAndZero();
         return PairwiseInterpolationValue(
-            start.interpolableValue.release(),
-            endInterpolableValue.release(),
+            std::move(start.interpolableValue),
+            std::move(endInterpolableValue),
             start.nonInterpolableValue.release());
     }
 
@@ -84,14 +84,14 @@ PairwiseInterpolationValue ListInterpolationFunctions::maybeMergeSingles(Interpo
         PairwiseInterpolationValue result = mergeSingleItemConversions(std::move(start), std::move(end));
         if (!result)
             return nullptr;
-        resultStartInterpolableList->set(i, result.startInterpolableValue.release());
-        resultEndInterpolableList->set(i, result.endInterpolableValue.release());
+        resultStartInterpolableList->set(i, std::move(result.startInterpolableValue));
+        resultEndInterpolableList->set(i, std::move(result.endInterpolableValue));
         resultNonInterpolableValues[i] = result.nonInterpolableValue.release();
     }
 
     return PairwiseInterpolationValue(
-        resultStartInterpolableList.release(),
-        resultEndInterpolableList.release(),
+        std::move(resultStartInterpolableList),
+        std::move(resultEndInterpolableList),
         NonInterpolableList::create(std::move(resultNonInterpolableValues)));
 }
 
@@ -107,10 +107,10 @@ static void repeatToLength(InterpolationValue& value, size_t length)
     OwnPtr<InterpolableList> newInterpolableList = InterpolableList::create(length);
     Vector<RefPtr<NonInterpolableValue>> newNonInterpolableValues(length);
     for (size_t i = length; i-- > 0;) {
-        newInterpolableList->set(i, i < currentLength ? interpolableList.getMutable(i).release() : interpolableList.get(i % currentLength)->clone());
+        newInterpolableList->set(i, i < currentLength ? std::move(interpolableList.getMutable(i)) : interpolableList.get(i % currentLength)->clone());
         newNonInterpolableValues[i] = nonInterpolableList.get(i % currentLength);
     }
-    value.interpolableValue = newInterpolableList.release();
+    value.interpolableValue = std::move(newInterpolableList);
     value.nonInterpolableValue = NonInterpolableList::create(std::move(newNonInterpolableValues));
 }
 

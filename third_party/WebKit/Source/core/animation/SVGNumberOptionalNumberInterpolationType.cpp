@@ -14,7 +14,7 @@ InterpolationValue SVGNumberOptionalNumberInterpolationType::maybeConvertNeutral
     OwnPtr<InterpolableList> result = InterpolableList::create(2);
     result->set(0, InterpolableNumber::create(0));
     result->set(1, InterpolableNumber::create(0));
-    return InterpolationValue(result.release());
+    return InterpolationValue(std::move(result));
 }
 
 InterpolationValue SVGNumberOptionalNumberInterpolationType::maybeConvertSVGValue(const SVGPropertyBase& svgValue) const
@@ -26,7 +26,7 @@ InterpolationValue SVGNumberOptionalNumberInterpolationType::maybeConvertSVGValu
     OwnPtr<InterpolableList> result = InterpolableList::create(2);
     result->set(0, InterpolableNumber::create(numberOptionalNumber.firstNumber()->value()));
     result->set(1, InterpolableNumber::create(numberOptionalNumber.secondNumber()->value()));
-    return InterpolationValue(result.release());
+    return InterpolationValue(std::move(result));
 }
 
 SVGPropertyBase* SVGNumberOptionalNumberInterpolationType::appliedSVGValue(const InterpolableValue& interpolableValue, const NonInterpolableValue*) const

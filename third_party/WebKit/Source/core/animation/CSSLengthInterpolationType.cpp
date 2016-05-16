@@ -56,14 +56,14 @@ PassOwnPtr<InterpolableValue> CSSLengthInterpolationType::createInterpolablePixe
 {
     OwnPtr<InterpolableList> interpolableList = createNeutralInterpolableValue();
     interpolableList->set(CSSPrimitiveValue::UnitTypePixels, InterpolableNumber::create(pixels));
-    return interpolableList.release();
+    return std::move(interpolableList);
 }
 
 InterpolationValue CSSLengthInterpolationType::createInterpolablePercent(double percent)
 {
     OwnPtr<InterpolableList> interpolableList = createNeutralInterpolableValue();
     interpolableList->set(CSSPrimitiveValue::UnitTypePercentage, InterpolableNumber::create(percent));
-    return InterpolationValue(interpolableList.release(), CSSLengthNonInterpolableValue::create(true));
+    return InterpolationValue(std::move(interpolableList), CSSLengthNonInterpolableValue::create(true));
 }
 
 InterpolationValue CSSLengthInterpolationType::maybeConvertLength(const Length& length, float zoom)
@@ -76,7 +76,7 @@ InterpolationValue CSSLengthInterpolationType::maybeConvertLength(const Length& 
     values->set(CSSPrimitiveValue::UnitTypePixels, InterpolableNumber::create(pixelsAndPercent.pixels / zoom));
     values->set(CSSPrimitiveValue::UnitTypePercentage, InterpolableNumber::create(pixelsAndPercent.percent));
 
-    return InterpolationValue(values.release(), CSSLengthNonInterpolableValue::create(length.hasPercent()));
+    return InterpolationValue(std::move(values), CSSLengthNonInterpolableValue::create(length.hasPercent()));
 }
 
 PassOwnPtr<InterpolableList> CSSLengthInterpolationType::createNeutralInterpolableValue()
@@ -85,14 +85,14 @@ PassOwnPtr<InterpolableList> CSSLengthInterpolationType::createNeutralInterpolab
     OwnPtr<InterpolableList> values = InterpolableList::create(length);
     for (size_t i = 0; i < length; i++)
         values->set(i, InterpolableNumber::create(0));
-    return values.release();
+    return values;
 }
 
 PairwiseInterpolationValue CSSLengthInterpolationType::staticMergeSingleConversions(InterpolationValue&& start, InterpolationValue&& end)
 {
     return PairwiseInterpolationValue(
-        start.interpolableValue.release(),
-        end.interpolableValue.release(),
+        std::move(start.interpolableValue),
+        std::move(end.interpolableValue),
         CSSLengthNonInterpolableValue::merge(start.nonInterpolableValue.get(), end.nonInterpolableValue.get()));
 }
 
@@ -141,7 +141,7 @@ InterpolationValue CSSLengthInterpolationType::maybeConvertCSSValue(const CSSVal
         values->set(i, InterpolableNumber::create(lengthArray.values[i]));
 
     bool hasPercentage = lengthArray.typeFlags.get(CSSPrimitiveValue::UnitTypePercentage);
-    return InterpolationValue(values.release(), CSSLengthNonInterpolableValue::create(hasPercentage));
+    return InterpolationValue(std::move(values), CSSLengthNonInterpolableValue::create(hasPercentage));
 }
 
 class ParentLengthChecker : public InterpolationType::ConversionChecker {

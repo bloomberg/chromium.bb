@@ -221,7 +221,7 @@ public:
             RefPtr<AnimatableDouble> value = AnimatableDouble::create(values[i]);
             frames->append(createReplaceOpKeyframe(CSSPropertyOpacity, value.get(), offset).get());
         }
-        return frames.release();
+        return frames;
     }
 
     PassOwnPtr<AnimatableValueKeyframeVector> createCompositableTransformKeyframeVector(const Vector<TransformOperations>& values)
@@ -232,7 +232,7 @@ public:
             RefPtr<AnimatableTransform> value = AnimatableTransform::create(values[i], 1);
             frames->append(createReplaceOpKeyframe(CSSPropertyTransform, value.get(), offset).get());
         }
-        return frames.release();
+        return frames;
     }
 
     AnimatableValueKeyframeEffectModel* createKeyframeEffectModel(PassRefPtr<AnimatableValueKeyframe> prpFrom, PassRefPtr<AnimatableValueKeyframe> prpTo, PassRefPtr<AnimatableValueKeyframe> prpC = nullptr, PassRefPtr<AnimatableValueKeyframe> prpD = nullptr)

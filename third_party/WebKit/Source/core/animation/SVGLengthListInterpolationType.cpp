@@ -22,7 +22,7 @@ InterpolationValue SVGLengthListInterpolationType::maybeConvertNeutral(const Int
     OwnPtr<InterpolableList> result = InterpolableList::create(underlyingLength);
     for (size_t i = 0; i < underlyingLength; i++)
         result->set(i, SVGLengthInterpolationType::neutralInterpolableValue());
-    return InterpolationValue(result.release());
+    return InterpolationValue(std::move(result));
 }
 
 InterpolationValue SVGLengthListInterpolationType::maybeConvertSVGValue(const SVGPropertyBase& svgValue) const
@@ -34,9 +34,9 @@ InterpolationValue SVGLengthListInterpolationType::maybeConvertSVGValue(const SV
     OwnPtr<InterpolableList> result = InterpolableList::create(lengthList.length());
     for (size_t i = 0; i < lengthList.length(); i++) {
         InterpolationValue component = SVGLengthInterpolationType::convertSVGLength(*lengthList.at(i));
-        result->set(i, component.interpolableValue.release());
+        result->set(i, std::move(component.interpolableValue));
     }
-    return InterpolationValue(result.release());
+    return InterpolationValue(std::move(result));
 }
 
 PairwiseInterpolationValue SVGLengthListInterpolationType::maybeMergeSingles(InterpolationValue&& start, InterpolationValue&& end) const

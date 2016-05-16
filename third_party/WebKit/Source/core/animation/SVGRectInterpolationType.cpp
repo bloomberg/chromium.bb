@@ -23,7 +23,7 @@ InterpolationValue SVGRectInterpolationType::maybeConvertNeutral(const Interpola
     OwnPtr<InterpolableList> result = InterpolableList::create(RectComponentIndexCount);
     for (size_t i = 0; i < RectComponentIndexCount; i++)
         result->set(i, InterpolableNumber::create(0));
-    return InterpolationValue(result.release());
+    return InterpolationValue(std::move(result));
 }
 
 InterpolationValue SVGRectInterpolationType::maybeConvertSVGValue(const SVGPropertyBase& svgValue) const
@@ -37,7 +37,7 @@ InterpolationValue SVGRectInterpolationType::maybeConvertSVGValue(const SVGPrope
     result->set(RectY, InterpolableNumber::create(rect.y()));
     result->set(RectWidth, InterpolableNumber::create(rect.width()));
     result->set(RectHeight, InterpolableNumber::create(rect.height()));
-    return InterpolationValue(result.release());
+    return InterpolationValue(std::move(result));
 }
 
 SVGPropertyBase* SVGRectInterpolationType::appliedSVGValue(const InterpolableValue& interpolableValue, const NonInterpolableValue*) const

@@ -147,12 +147,12 @@ InterpolationValue convertBorderImageLengthBox(const BorderImageLengthBox& box, 
             InterpolationValue convertedSide = CSSLengthInterpolationType::maybeConvertLength(side.length(), zoom);
             if (!convertedSide)
                 return nullptr;
-            list->set(i, convertedSide.interpolableValue.release());
+            list->set(i, std::move(convertedSide.interpolableValue));
             nonInterpolableValues[i] = convertedSide.nonInterpolableValue.release();
         }
     }
 
-    return InterpolationValue(list.release(), CSSBorderImageLengthBoxNonInterpolableValue::create(SideNumbers(box), std::move(nonInterpolableValues)));
+    return InterpolationValue(std::move(list), CSSBorderImageLengthBoxNonInterpolableValue::create(SideNumbers(box), std::move(nonInterpolableValues)));
 }
 
 } // namespace
@@ -207,12 +207,12 @@ InterpolationValue CSSBorderImageLengthBoxInterpolationType::maybeConvertValue(c
             InterpolationValue convertedSide = CSSLengthInterpolationType::maybeConvertCSSValue(side);
             if (!convertedSide)
                 return nullptr;
-            list->set(i, convertedSide.interpolableValue.release());
+            list->set(i, std::move(convertedSide.interpolableValue));
             nonInterpolableValues[i] = convertedSide.nonInterpolableValue.release();
         }
     }
 
-    return InterpolationValue(list.release(), CSSBorderImageLengthBoxNonInterpolableValue::create(SideNumbers(quad), std::move(nonInterpolableValues)));
+    return InterpolationValue(std::move(list), CSSBorderImageLengthBoxNonInterpolableValue::create(SideNumbers(quad), std::move(nonInterpolableValues)));
 }
 
 InterpolationValue CSSBorderImageLengthBoxInterpolationType::maybeConvertUnderlyingValue(const InterpolationEnvironment& environment) const
@@ -229,7 +229,7 @@ PairwiseInterpolationValue CSSBorderImageLengthBoxInterpolationType::maybeMergeS
     if (startSideNumbers != endSideNumbers)
         return nullptr;
 
-    return PairwiseInterpolationValue(start.interpolableValue.release(), end.interpolableValue.release(), start.nonInterpolableValue.release());
+    return PairwiseInterpolationValue(std::move(start.interpolableValue), std::move(end.interpolableValue), start.nonInterpolableValue.release());
 }
 
 void CSSBorderImageLengthBoxInterpolationType::composite(UnderlyingValueOwner& underlyingValueOwner, double underlyingFraction, const InterpolationValue& value, double interpolationFraction) const

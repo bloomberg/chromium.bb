@@ -64,7 +64,7 @@ PassOwnPtr<InterpolableValue> consumeSingleCoordinate(const PathSegmentData& seg
         coordinates.initialY = coordinates.currentY;
     }
 
-    return result.release();
+    return std::move(result);
 }
 
 PathSegmentData consumeInterpolableSingleCoordinate(const InterpolableValue& value, SVGPathSegType segType, PathCoordinates& coordinates)
@@ -95,7 +95,7 @@ PassOwnPtr<InterpolableValue> consumeCurvetoCubic(const PathSegmentData& segment
     result->set(3, consumeControlAxis(segment.y2(), isAbsolute, coordinates.currentY));
     result->set(4, consumeCoordinateAxis(segment.x(), isAbsolute, coordinates.currentX));
     result->set(5, consumeCoordinateAxis(segment.y(), isAbsolute, coordinates.currentY));
-    return result.release();
+    return std::move(result);
 }
 
 PathSegmentData consumeInterpolableCurvetoCubic(const InterpolableValue& value, SVGPathSegType segType, PathCoordinates& coordinates)
@@ -121,7 +121,7 @@ PassOwnPtr<InterpolableValue> consumeCurvetoQuadratic(const PathSegmentData& seg
     result->set(1, consumeControlAxis(segment.y1(), isAbsolute, coordinates.currentY));
     result->set(2, consumeCoordinateAxis(segment.x(), isAbsolute, coordinates.currentX));
     result->set(3, consumeCoordinateAxis(segment.y(), isAbsolute, coordinates.currentY));
-    return result.release();
+    return std::move(result);
 }
 
 PathSegmentData consumeInterpolableCurvetoQuadratic(const InterpolableValue& value, SVGPathSegType segType, PathCoordinates& coordinates)
@@ -148,7 +148,7 @@ PassOwnPtr<InterpolableValue> consumeArc(const PathSegmentData& segment, PathCoo
     result->set(4, InterpolableNumber::create(segment.arcAngle()));
     result->set(5, InterpolableBool::create(segment.largeArcFlag()));
     result->set(6, InterpolableBool::create(segment.sweepFlag()));
-    return result.release();
+    return std::move(result);
 }
 
 PathSegmentData consumeInterpolableArc(const InterpolableValue& value, SVGPathSegType segType, PathCoordinates& coordinates)
@@ -205,7 +205,7 @@ PassOwnPtr<InterpolableValue> consumeCurvetoCubicSmooth(const PathSegmentData& s
     result->set(1, consumeControlAxis(segment.y2(), isAbsolute, coordinates.currentY));
     result->set(2, consumeCoordinateAxis(segment.x(), isAbsolute, coordinates.currentX));
     result->set(3, consumeCoordinateAxis(segment.y(), isAbsolute, coordinates.currentY));
-    return result.release();
+    return std::move(result);
 }
 
 PathSegmentData consumeInterpolableCurvetoCubicSmooth(const InterpolableValue& value, SVGPathSegType segType, PathCoordinates& coordinates)

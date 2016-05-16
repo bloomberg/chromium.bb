@@ -76,7 +76,7 @@ InterpolationValue CSSPaintInterpolationType::maybeConvertValue(const CSSValue& 
     OwnPtr<InterpolableValue> interpolableColor = CSSColorInterpolationType::maybeCreateInterpolableColor(value);
     if (!interpolableColor)
         return nullptr;
-    return InterpolationValue(interpolableColor.release());
+    return InterpolationValue(std::move(interpolableColor));
 }
 
 InterpolationValue CSSPaintInterpolationType::maybeConvertUnderlyingValue(const InterpolationEnvironment& environment) const

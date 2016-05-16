@@ -24,8 +24,8 @@ struct PairwiseInterpolationValue {
     PairwiseInterpolationValue(std::nullptr_t) { }
 
     PairwiseInterpolationValue(PairwiseInterpolationValue&& other)
-        : startInterpolableValue(other.startInterpolableValue.release())
-        , endInterpolableValue(other.endInterpolableValue.release())
+        : startInterpolableValue(std::move(other.startInterpolableValue))
+        , endInterpolableValue(std::move(other.endInterpolableValue))
         , nonInterpolableValue(other.nonInterpolableValue.release())
     { }
 

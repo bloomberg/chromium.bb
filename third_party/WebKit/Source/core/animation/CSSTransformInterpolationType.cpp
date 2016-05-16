@@ -163,7 +163,7 @@ InterpolationValue CSSTransformInterpolationType::maybeConvertValue(const CSSVal
         OwnPtr<InterpolationType::ConversionChecker> lengthUnitsChecker = LengthUnitsChecker::maybeCreate(std::move(lengthArray), state);
 
         if (lengthUnitsChecker)
-            conversionCheckers.append(lengthUnitsChecker.release());
+            conversionCheckers.append(std::move(lengthUnitsChecker));
     }
 
     TransformOperations transform;

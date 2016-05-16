@@ -52,7 +52,7 @@ PassRefPtr<AnimatableValue> AnimatablePath::interpolateTo(const AnimatableValue*
     SVGPathBlender blender(&fromSource, &toSource, &builder);
     bool ok = blender.blendAnimatedPath(fraction);
     ASSERT_UNUSED(ok, ok);
-    return AnimatablePath::create(StylePath::create(byteStream.release()));
+    return AnimatablePath::create(StylePath::create(std::move(byteStream)));
 }
 
 bool AnimatablePath::equalTo(const AnimatableValue* value) const

@@ -42,7 +42,7 @@ struct Scale {
         OwnPtr<InterpolableList> result = InterpolableList::create(3);
         for (size_t i = 0; i < 3; i++)
             result->set(i, InterpolableNumber::create(array[i]));
-        return result.release();
+        return std::move(result);
     }
 
     bool operator==(const Scale& other) const
@@ -169,8 +169,8 @@ InterpolationValue CSSScaleInterpolationType::maybeConvertSingle(const PropertyS
 PairwiseInterpolationValue CSSScaleInterpolationType::maybeMergeSingles(InterpolationValue&& start, InterpolationValue&& end) const
 {
     return PairwiseInterpolationValue(
-        start.interpolableValue.release(),
-        end.interpolableValue.release(),
+        std::move(start.interpolableValue),
+        std::move(end.interpolableValue),
         CSSScaleNonInterpolableValue::merge(
             toCSSScaleNonInterpolableValue(*start.nonInterpolableValue),
             toCSSScaleNonInterpolableValue(*end.nonInterpolableValue)));

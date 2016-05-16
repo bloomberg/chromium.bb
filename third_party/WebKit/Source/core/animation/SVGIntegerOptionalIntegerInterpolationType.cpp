@@ -14,7 +14,7 @@ InterpolationValue SVGIntegerOptionalIntegerInterpolationType::maybeConvertNeutr
     OwnPtr<InterpolableList> result = InterpolableList::create(2);
     result->set(0, InterpolableNumber::create(0));
     result->set(1, InterpolableNumber::create(0));
-    return InterpolationValue(result.release());
+    return InterpolationValue(std::move(result));
 }
 
 InterpolationValue SVGIntegerOptionalIntegerInterpolationType::maybeConvertSVGValue(const SVGPropertyBase& svgValue) const
@@ -26,7 +26,7 @@ InterpolationValue SVGIntegerOptionalIntegerInterpolationType::maybeConvertSVGVa
     OwnPtr<InterpolableList> result = InterpolableList::create(2);
     result->set(0, InterpolableNumber::create(integerOptionalInteger.firstInteger()->value()));
     result->set(1, InterpolableNumber::create(integerOptionalInteger.secondInteger()->value()));
-    return InterpolationValue(result.release());
+    return InterpolationValue(std::move(result));
 }
 
 static SVGInteger* toPositiveInteger(const InterpolableValue* number)

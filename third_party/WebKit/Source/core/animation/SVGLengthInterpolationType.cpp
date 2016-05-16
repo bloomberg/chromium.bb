@@ -81,7 +81,7 @@ PassOwnPtr<InterpolableValue> SVGLengthInterpolationType::neutralInterpolableVal
     for (size_t i = 0; i < numLengthInterpolatedUnits; ++i)
         listOfValues->set(i, InterpolableNumber::create(0));
 
-    return listOfValues.release();
+    return std::move(listOfValues);
 }
 
 InterpolationValue SVGLengthInterpolationType::convertSVGLength(const SVGLength& length)
@@ -96,7 +96,7 @@ InterpolationValue SVGLengthInterpolationType::convertSVGLength(const SVGLength&
     for (size_t i = 0; i < numLengthInterpolatedUnits; ++i)
         listOfValues->set(i, InterpolableNumber::create(values[i]));
 
-    return InterpolationValue(listOfValues.release());
+    return InterpolationValue(std::move(listOfValues));
 }
 
 SVGLength* SVGLengthInterpolationType::resolveInterpolableSVGLength(const InterpolableValue& interpolableValue, const SVGLengthContext& lengthContext, SVGLengthMode unitMode, bool negativeValuesForbidden)

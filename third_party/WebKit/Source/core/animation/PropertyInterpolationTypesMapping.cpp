@@ -372,7 +372,7 @@ const InterpolationTypes& PropertyInterpolationTypesMapping::get(const PropertyH
         applicableTypes->append(adoptPtr(new SVGValueInterpolationType(attribute)));
     }
 
-    auto addResult = applicableTypesMap.add(property, applicableTypes.release());
+    auto addResult = applicableTypesMap.add(property, std::move(applicableTypes));
     return *addResult.storedValue->value.get();
 }
 

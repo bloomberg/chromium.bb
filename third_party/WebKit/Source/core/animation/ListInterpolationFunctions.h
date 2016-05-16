@@ -75,10 +75,10 @@ InterpolationValue ListInterpolationFunctions::createList(size_t length, CreateI
         InterpolationValue item = createItem(i);
         if (!item)
             return nullptr;
-        interpolableList->set(i, item.interpolableValue.release());
+        interpolableList->set(i, std::move(item.interpolableValue));
         nonInterpolableValues[i] = item.nonInterpolableValue.release();
     }
-    return InterpolationValue(interpolableList.release(), NonInterpolableList::create(std::move(nonInterpolableValues)));
+    return InterpolationValue(std::move(interpolableList), NonInterpolableList::create(std::move(nonInterpolableValues)));
 }
 
 } // namespace blink

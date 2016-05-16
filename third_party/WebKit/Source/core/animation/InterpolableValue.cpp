@@ -67,7 +67,7 @@ PassOwnPtr<InterpolableValue> InterpolableList::cloneAndZero() const
     OwnPtr<InterpolableList> result = InterpolableList::create(m_size);
     for (size_t i = 0; i < m_size; i++)
         result->set(i, m_values[i]->cloneAndZero());
-    return result.release();
+    return std::move(result);
 }
 
 void InterpolableNumber::scale(double scale)

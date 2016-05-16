@@ -148,7 +148,7 @@ static PassOwnPtr<InterpolableValue> convertClipComponent(const Length& length, 
 {
     if (length.isAuto())
         return InterpolableList::create(0);
-    return CSSLengthInterpolationType::maybeConvertLength(length, zoom).interpolableValue.release();
+    return CSSLengthInterpolationType::maybeConvertLength(length, zoom).interpolableValue;
 }
 
 static InterpolationValue createClipValue(const LengthBox& clip, double zoom)
@@ -158,7 +158,7 @@ static InterpolationValue createClipValue(const LengthBox& clip, double zoom)
     list->set(ClipRight, convertClipComponent(clip.right(), zoom));
     list->set(ClipBottom, convertClipComponent(clip.bottom(), zoom));
     list->set(ClipLeft, convertClipComponent(clip.left(), zoom));
-    return InterpolationValue(list.release(), CSSClipNonInterpolableValue::create(ClipAutos(clip)));
+    return InterpolationValue(std::move(list), CSSClipNonInterpolableValue::create(ClipAutos(clip)));
 }
 
 InterpolationValue CSSClipInterpolationType::maybeConvertNeutral(const InterpolationValue& underlying, ConversionCheckers& conversionCheckers) const
@@ -198,7 +198,7 @@ static PassOwnPtr<InterpolableValue> convertClipComponent(const CSSPrimitiveValu
 {
     if (isCSSAuto(length))
         return InterpolableList::create(0);
-    return CSSLengthInterpolationType::maybeConvertCSSValue(length).interpolableValue.release();
+    return CSSLengthInterpolationType::maybeConvertCSSValue(length).interpolableValue;
 }
 
 InterpolationValue CSSClipInterpolationType::maybeConvertValue(const CSSValue& value, const StyleResolverState& state, ConversionCheckers&) const
@@ -216,7 +216,7 @@ InterpolationValue CSSClipInterpolationType::maybeConvertValue(const CSSValue& v
         isCSSAuto(*quad.right()),
         isCSSAuto(*quad.bottom()),
         isCSSAuto(*quad.left()));
-    return InterpolationValue(list.release(), CSSClipNonInterpolableValue::create(autos));
+    return InterpolationValue(std::move(list), CSSClipNonInterpolableValue::create(autos));
 }
 
 InterpolationValue CSSClipInterpolationType::maybeConvertUnderlyingValue(const InterpolationEnvironment& environment) const
@@ -232,7 +232,7 @@ PairwiseInterpolationValue CSSClipInterpolationType::maybeMergeSingles(Interpola
     const ClipAutos& endAutos = toCSSClipNonInterpolableValue(*end.nonInterpolableValue).clipAutos();
     if (startAutos != endAutos)
         return nullptr;
-    return PairwiseInterpolationValue(start.interpolableValue.release(), end.interpolableValue.release(), start.nonInterpolableValue.release());
+    return PairwiseInterpolationValue(std::move(start.interpolableValue), std::move(end.interpolableValue), start.nonInterpolableValue.release());
 }
 
 void CSSClipInterpolationType::composite(UnderlyingValueOwner& underlyingValueOwner, double underlyingFraction, const InterpolationValue& value, double interpolationFraction) const

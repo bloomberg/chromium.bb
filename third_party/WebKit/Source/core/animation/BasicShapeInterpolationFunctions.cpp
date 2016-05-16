@@ -75,7 +75,7 @@ namespace {
 PassOwnPtr<InterpolableValue> unwrap(InterpolationValue&& value)
 {
     ASSERT(value.interpolableValue);
-    return value.interpolableValue.release();
+    return std::move(value.interpolableValue);
 }
 
 PassOwnPtr<InterpolableValue> convertCSSCoordinate(const CSSValue* coordinate)
@@ -173,9 +173,9 @@ InterpolationValue convertCSSValue(const CSSBasicShapeCircleValue& circle)
     OwnPtr<InterpolableValue> radius;
     if (!(radius = convertCSSRadius(circle.radius())))
         return nullptr;
-    list->set(CircleRadiusIndex, radius.release());
+    list->set(CircleRadiusIndex, std::move(radius));
 
-    return InterpolationValue(list.release(), BasicShapeNonInterpolableValue::create(BasicShape::BasicShapeCircleType));
+    return InterpolationValue(std::move(list), BasicShapeNonInterpolableValue::create(BasicShape::BasicShapeCircleType));
 }
 
 InterpolationValue convertBasicShape(const BasicShapeCircle& circle, double zoom)
@@ -187,9 +187,9 @@ InterpolationValue convertBasicShape(const BasicShapeCircle& circle, double zoom
     OwnPtr<InterpolableValue> radius;
     if (!(radius = convertRadius(circle.radius(), zoom)))
         return nullptr;
-    list->set(CircleRadiusIndex, radius.release());
+    list->set(CircleRadiusIndex, std::move(radius));
 
-    return InterpolationValue(list.release(), BasicShapeNonInterpolableValue::create(BasicShape::BasicShapeCircleType));
+    return InterpolationValue(std::move(list), BasicShapeNonInterpolableValue::create(BasicShape::BasicShapeCircleType));
 }
 
 PassOwnPtr<InterpolableValue> createNeutralValue()
@@ -198,7 +198,7 @@ PassOwnPtr<InterpolableValue> createNeutralValue()
     list->set(CircleCenterXIndex, createNeutralInterpolableCoordinate());
     list->set(CircleCenterYIndex, createNeutralInterpolableCoordinate());
     list->set(CircleRadiusIndex, createNeutralInterpolableRadius());
-    return list.release();
+    return std::move(list);
 }
 
 PassRefPtr<BasicShape> createBasicShape(const InterpolableValue& interpolableValue, const CSSToLengthConversionData& conversionData)
@@ -232,12 +232,12 @@ InterpolationValue convertCSSValue(const CSSBasicShapeEllipseValue& ellipse)
     OwnPtr<InterpolableValue> radius;
     if (!(radius = convertCSSRadius(ellipse.radiusX())))
         return nullptr;
-    list->set(EllipseRadiusXIndex, radius.release());
+    list->set(EllipseRadiusXIndex, std::move(radius));
     if (!(radius = convertCSSRadius(ellipse.radiusY())))
         return nullptr;
-    list->set(EllipseRadiusYIndex, radius.release());
+    list->set(EllipseRadiusYIndex, std::move(radius));
 
-    return InterpolationValue(list.release(), BasicShapeNonInterpolableValue::create(BasicShape::BasicShapeEllipseType));
+    return InterpolationValue(std::move(list), BasicShapeNonInterpolableValue::create(BasicShape::BasicShapeEllipseType));
 }
 
 InterpolationValue convertBasicShape(const BasicShapeEllipse& ellipse, double zoom)
@@ -249,12 +249,12 @@ InterpolationValue convertBasicShape(const BasicShapeEllipse& ellipse, double zo
     OwnPtr<InterpolableValue> radius;
     if (!(radius = convertRadius(ellipse.radiusX(), zoom)))
         return nullptr;
-    list->set(EllipseRadiusXIndex, radius.release());
+    list->set(EllipseRadiusXIndex, std::move(radius));
     if (!(radius = convertRadius(ellipse.radiusY(), zoom)))
         return nullptr;
-    list->set(EllipseRadiusYIndex, radius.release());
+    list->set(EllipseRadiusYIndex, std::move(radius));
 
-    return InterpolationValue(list.release(), BasicShapeNonInterpolableValue::create(BasicShape::BasicShapeEllipseType));
+    return InterpolationValue(std::move(list), BasicShapeNonInterpolableValue::create(BasicShape::BasicShapeEllipseType));
 }
 
 PassOwnPtr<InterpolableValue> createNeutralValue()
@@ -264,7 +264,7 @@ PassOwnPtr<InterpolableValue> createNeutralValue()
     list->set(EllipseCenterYIndex, createNeutralInterpolableCoordinate());
     list->set(EllipseRadiusXIndex, createNeutralInterpolableRadius());
     list->set(EllipseRadiusYIndex, createNeutralInterpolableRadius());
-    return list.release();
+    return std::move(list);
 }
 
 PassRefPtr<BasicShape> createBasicShape(const InterpolableValue& interpolableValue, const CSSToLengthConversionData& conversionData)
@@ -314,7 +314,7 @@ InterpolationValue convertCSSValue(const CSSBasicShapeInsetValue& inset)
     list->set(InsetBorderBottomRightHeightIndex, convertCSSBorderRadiusHeight(inset.bottomRightRadius()));
     list->set(InsetBorderBottomLeftWidthIndex, convertCSSBorderRadiusWidth(inset.bottomLeftRadius()));
     list->set(InsetBorderBottomLeftHeightIndex, convertCSSBorderRadiusHeight(inset.bottomLeftRadius()));
-    return InterpolationValue(list.release(), BasicShapeNonInterpolableValue::create(BasicShape::BasicShapeInsetType));
+    return InterpolationValue(std::move(list), BasicShapeNonInterpolableValue::create(BasicShape::BasicShapeInsetType));
 }
 
 InterpolationValue convertBasicShape(const BasicShapeInset& inset, double zoom)
@@ -333,7 +333,7 @@ InterpolationValue convertBasicShape(const BasicShapeInset& inset, double zoom)
     list->set(InsetBorderBottomRightHeightIndex, convertLength(inset.bottomRightRadius().height(), zoom));
     list->set(InsetBorderBottomLeftWidthIndex, convertLength(inset.bottomLeftRadius().width(), zoom));
     list->set(InsetBorderBottomLeftHeightIndex, convertLength(inset.bottomLeftRadius().height(), zoom));
-    return InterpolationValue(list.release(), BasicShapeNonInterpolableValue::create(BasicShape::BasicShapeInsetType));
+    return InterpolationValue(std::move(list), BasicShapeNonInterpolableValue::create(BasicShape::BasicShapeInsetType));
 }
 
 PassOwnPtr<InterpolableValue> createNeutralValue()
@@ -352,7 +352,7 @@ PassOwnPtr<InterpolableValue> createNeutralValue()
     list->set(InsetBorderBottomRightHeightIndex, CSSLengthInterpolationType::createNeutralInterpolableValue());
     list->set(InsetBorderBottomLeftWidthIndex, CSSLengthInterpolationType::createNeutralInterpolableValue());
     list->set(InsetBorderBottomLeftHeightIndex, CSSLengthInterpolationType::createNeutralInterpolableValue());
-    return list.release();
+    return std::move(list);
 }
 
 PassRefPtr<BasicShape> createBasicShape(const InterpolableValue& interpolableValue, const CSSToLengthConversionData& conversionData)
@@ -381,7 +381,7 @@ InterpolationValue convertCSSValue(const CSSBasicShapePolygonValue& polygon)
     OwnPtr<InterpolableList> list = InterpolableList::create(size);
     for (size_t i = 0; i < size; i++)
         list->set(i, convertCSSLength(polygon.values()[i].get()));
-    return InterpolationValue(list.release(), BasicShapeNonInterpolableValue::createPolygon(polygon.getWindRule(), size));
+    return InterpolationValue(std::move(list), BasicShapeNonInterpolableValue::createPolygon(polygon.getWindRule(), size));
 }
 
 InterpolationValue convertBasicShape(const BasicShapePolygon& polygon, double zoom)
@@ -390,7 +390,7 @@ InterpolationValue convertBasicShape(const BasicShapePolygon& polygon, double zo
     OwnPtr<InterpolableList> list = InterpolableList::create(size);
     for (size_t i = 0; i < size; i++)
         list->set(i, convertLength(polygon.values()[i], zoom));
-    return InterpolationValue(list.release(), BasicShapeNonInterpolableValue::createPolygon(polygon.getWindRule(), size));
+    return InterpolationValue(std::move(list), BasicShapeNonInterpolableValue::createPolygon(polygon.getWindRule(), size));
 }
 
 PassOwnPtr<InterpolableValue> createNeutralValue(const BasicShapeNonInterpolableValue& nonInterpolableValue)
@@ -398,7 +398,7 @@ PassOwnPtr<InterpolableValue> createNeutralValue(const BasicShapeNonInterpolable
     OwnPtr<InterpolableList> list = InterpolableList::create(nonInterpolableValue.size());
     for (size_t i = 0; i < nonInterpolableValue.size(); i++)
         list->set(i, CSSLengthInterpolationType::createNeutralInterpolableValue());
-    return list.release();
+    return std::move(list);
 }
 
 PassRefPtr<BasicShape> createBasicShape(const InterpolableValue& interpolableValue, const BasicShapeNonInterpolableValue& nonInterpolableValue, const CSSToLengthConversionData& conversionData)

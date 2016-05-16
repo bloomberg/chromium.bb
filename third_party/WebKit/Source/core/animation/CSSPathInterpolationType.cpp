@@ -18,7 +18,7 @@ void CSSPathInterpolationType::apply(const InterpolableValue& interpolableValue,
         environment.state().style()->setD(nullptr);
         return;
     }
-    environment.state().style()->setD(StylePath::create(pathByteStream.release()));
+    environment.state().style()->setD(StylePath::create(std::move(pathByteStream)));
 }
 
 void CSSPathInterpolationType::composite(UnderlyingValueOwner& underlyingValueOwner, double underlyingFraction, const InterpolationValue& value, double interpolationFraction) const

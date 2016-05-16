@@ -86,8 +86,8 @@ protected:
         ASSERT(!start.nonInterpolableValue);
         ASSERT(!end.nonInterpolableValue);
         return PairwiseInterpolationValue(
-            start.interpolableValue.release(),
-            end.interpolableValue.release(),
+            std::move(start.interpolableValue),
+            std::move(end.interpolableValue),
             nullptr);
     }
 

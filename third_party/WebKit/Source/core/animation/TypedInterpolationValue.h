@@ -22,7 +22,7 @@ public:
     PassOwnPtr<TypedInterpolationValue> clone() const
     {
         InterpolationValue copy = m_value.clone();
-        return create(m_type, copy.interpolableValue.release(), copy.nonInterpolableValue.release());
+        return create(m_type, std::move(copy.interpolableValue), copy.nonInterpolableValue.release());
     }
 
     const InterpolationType& type() const { return m_type; }

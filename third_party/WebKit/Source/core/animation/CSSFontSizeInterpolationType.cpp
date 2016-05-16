@@ -77,9 +77,9 @@ InterpolationValue CSSFontSizeInterpolationType::maybeConvertInherit(const Style
 
 InterpolationValue CSSFontSizeInterpolationType::maybeConvertValue(const CSSValue& value, const StyleResolverState& state, ConversionCheckers& conversionCheckers) const
 {
-    OwnPtr<InterpolableValue> result = CSSLengthInterpolationType::maybeConvertCSSValue(value).interpolableValue.release();
+    OwnPtr<InterpolableValue> result = CSSLengthInterpolationType::maybeConvertCSSValue(value).interpolableValue;
     if (result)
-        return InterpolationValue(result.release());
+        return InterpolationValue(std::move(result));
 
     if (!value.isPrimitiveValue() || !toCSSPrimitiveValue(value).isValueID())
         return nullptr;

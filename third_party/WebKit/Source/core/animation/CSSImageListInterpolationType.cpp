@@ -114,10 +114,10 @@ InterpolationValue CSSImageListInterpolationType::maybeConvertValue(const CSSVal
         InterpolationValue component = CSSImageInterpolationType::maybeConvertCSSValue(*valueList.item(i), false);
         if (!component)
             return nullptr;
-        interpolableList->set(i, component.interpolableValue.release());
+        interpolableList->set(i, std::move(component.interpolableValue));
         nonInterpolableValues[i] = component.nonInterpolableValue.release();
     }
-    return InterpolationValue(interpolableList.release(), NonInterpolableList::create(std::move(nonInterpolableValues)));
+    return InterpolationValue(std::move(interpolableList), NonInterpolableList::create(std::move(nonInterpolableValues)));
 }
 
 PairwiseInterpolationValue CSSImageListInterpolationType::maybeMergeSingles(InterpolationValue&& start, InterpolationValue&& end) const

@@ -30,7 +30,7 @@ static PassOwnPtr<InterpolableValue> createInterpolableColorForIndex(Interpolabl
     OwnPtr<InterpolableList> list = InterpolableList::create(InterpolableColorIndexCount);
     for (int i = 0; i < InterpolableColorIndexCount; i++)
         list->set(i, InterpolableNumber::create(i == index));
-    return list.release();
+    return std::move(list);
 }
 
 PassOwnPtr<InterpolableValue> CSSColorInterpolationType::createInterpolableColor(const Color& color)
@@ -44,7 +44,7 @@ PassOwnPtr<InterpolableValue> CSSColorInterpolationType::createInterpolableColor
     list->set(WebkitActivelink, InterpolableNumber::create(0));
     list->set(WebkitLink, InterpolableNumber::create(0));
     list->set(QuirkInherit, InterpolableNumber::create(0));
-    return list.release();
+    return std::move(list);
 }
 
 PassOwnPtr<InterpolableValue> CSSColorInterpolationType::createInterpolableColor(CSSValueID keyword)
@@ -193,8 +193,8 @@ InterpolationValue CSSColorInterpolationType::maybeConvertValue(const CSSValue& 
         return nullptr;
     OwnPtr<InterpolableList> colorPair = InterpolableList::create(InterpolableColorPairIndexCount);
     colorPair->set(Unvisited, interpolableColor->clone());
-    colorPair->set(Visited, interpolableColor.release());
-    return InterpolationValue(colorPair.release());
+    colorPair->set(Visited, std::move(interpolableColor));
+    return InterpolationValue(std::move(colorPair));
 }
 
 InterpolationValue CSSColorInterpolationType::convertStyleColorPair(const StyleColor& unvisitedColor, const StyleColor& visitedColor) const
@@ -202,7 +202,7 @@ InterpolationValue CSSColorInterpolationType::convertStyleColorPair(const StyleC
     OwnPtr<InterpolableList> colorPair = InterpolableList::create(InterpolableColorPairIndexCount);
     colorPair->set(Unvisited, createInterpolableColor(unvisitedColor));
     colorPair->set(Visited, createInterpolableColor(visitedColor));
-    return InterpolationValue(colorPair.release());
+    return InterpolationValue(std::move(colorPair));
 }
 
 InterpolationValue CSSColorInterpolationType::maybeConvertUnderlyingValue(const InterpolationEnvironment& environment) const

@@ -617,7 +617,7 @@ void CompositorAnimationsImpl::addKeyframesToCurve(CompositorAnimationCurve& cur
             OwnPtr<CompositorFilterOperations> ops = adoptPtr(CompositorFactory::current().createFilterOperations());
             toCompositorFilterOperations(toAnimatableFilterOperations(value)->operations(), ops.get());
 
-            CompositorFilterKeyframe filterKeyframe(keyframe->offset(), ops.release());
+            CompositorFilterKeyframe filterKeyframe(keyframe->offset(), std::move(ops));
             CompositorFilterAnimationCurve* filterCurve = static_cast<CompositorFilterAnimationCurve*>(&curve);
             addKeyframeWithTimingFunction(*filterCurve, filterKeyframe, keyframeTimingFunction);
             break;
@@ -632,7 +632,7 @@ void CompositorAnimationsImpl::addKeyframesToCurve(CompositorAnimationCurve& cur
             OwnPtr<CompositorTransformOperations> ops = adoptPtr(CompositorFactory::current().createTransformOperations());
             toCompositorTransformOperations(toAnimatableTransform(value)->transformOperations(), ops.get());
 
-            CompositorTransformKeyframe transformKeyframe(keyframe->offset(), ops.release());
+            CompositorTransformKeyframe transformKeyframe(keyframe->offset(), std::move(ops));
             CompositorTransformAnimationCurve* transformCurve = static_cast<CompositorTransformAnimationCurve*>(&curve);
             addKeyframeWithTimingFunction(*transformCurve, transformKeyframe, keyframeTimingFunction);
             break;
@@ -744,7 +744,7 @@ void CompositorAnimationsImpl::getAnimationOnCompositor(const Timing& timing, in
         default:
             ASSERT_NOT_REACHED();
         }
-        animations.append(animation.release());
+        animations.append(std::move(animation));
     }
     ASSERT(!animations.isEmpty());
 }

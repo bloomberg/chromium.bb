@@ -35,8 +35,8 @@ PassOwnPtr<PairwisePrimitiveInterpolation> InvalidatableInterpolation::maybeConv
         addConversionCheckers(*interpolationType, conversionCheckers);
         if (result) {
             return PairwisePrimitiveInterpolation::create(*interpolationType,
-                result.startInterpolableValue.release(),
-                result.endInterpolableValue.release(),
+                std::move(result.startInterpolableValue),
+                std::move(result.endInterpolableValue),
                 result.nonInterpolableValue.release());
         }
     }
@@ -54,7 +54,7 @@ PassOwnPtr<TypedInterpolationValue> InvalidatableInterpolation::convertSingleKey
         InterpolationValue result = interpolationType->maybeConvertSingle(keyframe, environment, underlyingValueOwner.value(), conversionCheckers);
         addConversionCheckers(*interpolationType, conversionCheckers);
         if (result)
-            return TypedInterpolationValue::create(*interpolationType, result.interpolableValue.release(), result.nonInterpolableValue.release());
+            return TypedInterpolationValue::create(*interpolationType, std::move(result.interpolableValue), result.nonInterpolableValue.release());
     }
     ASSERT(keyframe.isNeutral());
     return nullptr;
@@ -64,7 +64,7 @@ void InvalidatableInterpolation::addConversionCheckers(const InterpolationType& 
 {
     for (size_t i = 0; i < conversionCheckers.size(); i++) {
         conversionCheckers[i]->setType(type);
-        m_conversionCheckers.append(conversionCheckers[i].release());
+        m_conversionCheckers.append(std::move(conversionCheckers[i]));
     }
 }
 
@@ -73,7 +73,7 @@ PassOwnPtr<TypedInterpolationValue> InvalidatableInterpolation::maybeConvertUnde
     for (const auto& interpolationType : m_interpolationTypes) {
         InterpolationValue result = interpolationType->maybeConvertUnderlyingValue(environment);
         if (result)
-            return TypedInterpolationValue::create(*interpolationType, result.interpolableValue.release(), result.nonInterpolableValue.release());
+            return TypedInterpolationValue::create(*interpolationType, std::move(result.interpolableValue), result.nonInterpolableValue.release());
     }
     return nullptr;
 }
@@ -128,7 +128,7 @@ const TypedInterpolationValue* InvalidatableInterpolation::ensureValidInterpolat
         OwnPtr<PairwisePrimitiveInterpolation> pairwiseConversion = maybeConvertPairwise(environment, underlyingValueOwner);
         if (pairwiseConversion) {
             m_cachedValue = pairwiseConversion->initialValue();
-            m_cachedPairConversion = pairwiseConversion.release();
+            m_cachedPairConversion = std::move(pairwiseConversion);
         } else {
             m_cachedPairConversion = FlipPrimitiveInterpolation::create(
                 convertSingleKeyframe(*m_startKeyframe, environment, underlyingValueOwner),

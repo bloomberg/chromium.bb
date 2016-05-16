@@ -53,7 +53,7 @@ InterpolationValue createNeutralValue()
     result->set(TranslateX, CSSLengthInterpolationType::createNeutralInterpolableValue());
     result->set(TranslateY, CSSLengthInterpolationType::createNeutralInterpolableValue());
     result->set(TranslateZ, CSSLengthInterpolationType::createNeutralInterpolableValue());
-    return InterpolationValue(result.release());
+    return InterpolationValue(std::move(result));
 }
 
 InterpolationValue convertTranslateOperation(const TranslateTransformOperation* translate, double zoom)
@@ -62,10 +62,10 @@ InterpolationValue convertTranslateOperation(const TranslateTransformOperation* 
         return createNeutralValue();
 
     OwnPtr<InterpolableList> result = InterpolableList::create(TranslateComponentIndexCount);
-    result->set(TranslateX, CSSLengthInterpolationType::maybeConvertLength(translate->x(), zoom).interpolableValue.release());
-    result->set(TranslateY, CSSLengthInterpolationType::maybeConvertLength(translate->y(), zoom).interpolableValue.release());
-    result->set(TranslateZ, CSSLengthInterpolationType::maybeConvertLength(Length(translate->z(), Fixed), zoom).interpolableValue.release());
-    return InterpolationValue(result.release());
+    result->set(TranslateX, CSSLengthInterpolationType::maybeConvertLength(translate->x(), zoom).interpolableValue);
+    result->set(TranslateY, CSSLengthInterpolationType::maybeConvertLength(translate->y(), zoom).interpolableValue);
+    result->set(TranslateZ, CSSLengthInterpolationType::maybeConvertLength(Length(translate->z(), Fixed), zoom).interpolableValue);
+    return InterpolationValue(std::move(result));
 }
 
 } // namespace
@@ -106,9 +106,9 @@ InterpolationValue CSSTranslateInterpolationType::maybeConvertValue(const CSSVal
         } else {
             component = InterpolationValue(CSSLengthInterpolationType::createNeutralInterpolableValue());
         }
-        result->set(i, component.interpolableValue.release());
+        result->set(i, std::move(component.interpolableValue));
     }
-    return InterpolationValue(result.release());
+    return InterpolationValue(std::move(result));
 }
 
 InterpolationValue CSSTranslateInterpolationType::maybeConvertUnderlyingValue(const InterpolationEnvironment& environment) const

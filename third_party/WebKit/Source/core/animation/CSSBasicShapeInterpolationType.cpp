@@ -96,7 +96,7 @@ PairwiseInterpolationValue CSSBasicShapeInterpolationType::maybeMergeSingles(Int
 {
     if (!BasicShapeInterpolationFunctions::shapesAreCompatible(*start.nonInterpolableValue, *end.nonInterpolableValue))
         return nullptr;
-    return PairwiseInterpolationValue(start.interpolableValue.release(), end.interpolableValue.release(), start.nonInterpolableValue.release());
+    return PairwiseInterpolationValue(std::move(start.interpolableValue), std::move(end.interpolableValue), start.nonInterpolableValue.release());
 }
 
 InterpolationValue CSSBasicShapeInterpolationType::maybeConvertUnderlyingValue(const InterpolationEnvironment& environment) const

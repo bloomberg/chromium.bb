@@ -115,8 +115,8 @@ PairwiseInterpolationValue CSSMotionRotationInterpolationType::maybeMergeSingles
     if (startType != endType)
         return nullptr;
     return PairwiseInterpolationValue(
-        start.interpolableValue.release(),
-        end.interpolableValue.release(),
+        std::move(start.interpolableValue),
+        std::move(end.interpolableValue),
         start.nonInterpolableValue.release());
 }
 
